@@ -80,8 +80,8 @@ export const a3d_prd10_wind: ShaderChunk = {
  * Instance origin: the attribute-instancing translation column when present.
  * Weights: vertex colour when present, else a trunk-bend default. A program
  * that already defines a C-18 entry (prd06.deform, emitted first by id
- * order) sets `A3D_DEFORM_ENTRY`; wind then stays out of that program
- * instead of redefining `a3dDeform`.
+ * order) sets `A3D_DEFORM_ENTRY` and exports `a3dDeformBeforeWind`, so wind
+ * composes after morph/skin instead of silently suppressing either effect.
  */
 const deformGlsl = /* glsl */ `
 uniform vec4 u_windDirStrength;   // dir.xz, strength, time
@@ -89,9 +89,10 @@ uniform vec4 u_windGust;          // gustStrength, 1/gustScale, -, -
 uniform sampler2D u_windNoise;    // 64² RG8, repeat
 uniform float u_windAssetHeight;  // metres, asset bounds height
 ${WIND_OFFSET_FN_GLSL}
-#ifndef A3D_DEFORM_ENTRY
-#define A3D_DEFORM_ENTRY 1
 void a3dDeform(inout vec4 localPos, inout vec3 localNormal, inout vec4 localTangent) {
+#ifdef A3D_DEFORM_ENTRY
+  a3dDeformBeforeWind(localPos, localNormal, localTangent);
+#endif
   vec3 origin = vec3(0.0);
 #if defined(USE_INSTANCING) && defined(A3D_STAGE_VERTEX)
   origin = a_instanceMatrix3.xyz;
@@ -102,7 +103,6 @@ void a3dDeform(inout vec4 localPos, inout vec3 localNormal, inout vec4 localTang
 #endif
   localPos.xyz += a3dWindOffset(localPos.xyz, origin, weights, max(u_windAssetHeight, 0.01));
 }
-#endif
 `;
 
 export const a3d_prd10_wind_deform: ShaderChunk = {

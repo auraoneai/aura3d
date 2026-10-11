@@ -55,7 +55,8 @@ const SPEC_TOOLS = new Set([
   "box-uploads",
   "frame-graph",
   "capture-pdb",
-  "dpr"
+  "dpr",
+  "temporal-dolly"
 ]);
 
 async function main(): Promise<void> {

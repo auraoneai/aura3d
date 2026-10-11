@@ -18,6 +18,7 @@ type HarnessReport = {
     widgetCount: number;
     anchors: Record<string, string[]>;
     widgetRects: Record<string, { x: number; y: number; w: number; h: number }>;
+    hiddenWidgets: string[];
     screenFraction: number;
     canvasCoverage: number;
     domText: string;
@@ -96,10 +97,34 @@ test.describe("hud layout", () => {
     expect(bank.anchors["bottom"]).toContain("prompt");
   }
 
+  // Desktop renders every widget: `mobileAnchor` must not leak into desktop.
+  function assertDesktopShowsAll(report: HarnessReport) {
+    for (const fixture of report.reports) {
+      expect(fixture.hiddenWidgets, `${fixture.name} hidden on desktop`).toEqual([]);
+      expect(Object.keys(fixture.widgetRects).length, `${fixture.name} measured widgets`).toBe(WIDGET_COUNTS[fixture.name]);
+    }
+  }
+
+  // Mobile applies `mobileAnchor`: "hidden" widgets drop out, the rest relocate.
+  function assertMobileLayout(report: HarnessReport) {
+    const courier = report.reports.find((r) => r.name === "courier")!;
+    expect(courier.hiddenWidgets).toEqual(["speed"]);
+    expect(courier.anchors["bottom-right"]).toContain("combo");
+    expect(courier.anchors["top-right"] ?? []).not.toContain("combo");
+    const clash = report.reports.find((r) => r.name === "aura-clash")!;
+    expect([...clash.hiddenWidgets].sort()).toEqual(["p1-state", "p2-state"]);
+    const bank = report.reports.find((r) => r.name === "bank-shot")!;
+    expect(bank.hiddenWidgets).toEqual([]);
+    for (const fixture of report.reports) {
+      expect(Object.keys(fixture.widgetRects).length + fixture.hiddenWidgets.length, `${fixture.name} widgets accounted`).toBe(WIDGET_COUNTS[fixture.name]);
+    }
+  }
+
   test("desktop 1280x720: anchors, caps, coverage, banned tokens, no test hook", async ({ page }) => {
     const report = await runHarness(page, 1280, 720);
     assertCommon(report, DESKTOP_CAP, 0.95);
     assertAnchorMap(report);
+    assertDesktopShowsAll(report);
     await expect.poll(() => page.evaluate(() => typeof (window as unknown as Record<string, unknown>).__AURA3D_GAME_TEST__)).toBe("undefined");
   });
 
@@ -107,12 +132,14 @@ test.describe("hud layout", () => {
     const report = await runHarness(page, 1920, 1080);
     assertCommon(report, DESKTOP_CAP, 0.95);
     assertAnchorMap(report);
+    assertDesktopShowsAll(report);
     await expect.poll(() => page.evaluate(() => typeof (window as unknown as Record<string, unknown>).__AURA3D_GAME_TEST__)).toBe("undefined");
   });
 
   test("mobile 390x844: rects on-screen, mobile cap, coverage, banned tokens, no test hook", async ({ page }) => {
     const report = await runHarness(page, 390, 844);
     assertCommon(report, MOBILE_CAP, 0.7);
+    assertMobileLayout(report);
     for (const fixture of report.reports) {
       for (const [id, r] of Object.entries(fixture.widgetRects)) {
         expect(r.x + r.w, `${fixture.name}:${id} right edge`).toBeLessThanOrEqual(390);

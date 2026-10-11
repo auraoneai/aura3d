@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aura3d.dev/schemas/showcase-kits/kit.schema.json",
+  "title": "Aura3D showcase kit manifest (PRD-14 §6.4, T3.2)",
+  "description": "One kit.json per shared kit K1-K7 and K9 under apps/showcase-kits/<Kn>/. Per file: source, licence, sha256, triangles, textures[] and the three r185 look-dev verdict. Approval is decided by a human reviewer on the three r185 pane of apps/showcase-kits/lookdev/.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "kit", "name", "consumers", "budget", "lookdev", "files"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "kit": { "type": "string", "enum": ["K1", "K2", "K3", "K4", "K5", "K6", "K7", "K9"] },
+    "name": { "type": "string", "minLength": 1 },
+    "consumers": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary"],
+      "properties": {
+        "summary": { "type": "string", "minLength": 1 },
+        "maxBytesRaw": { "type": ["integer", "null"], "minimum": 0 },
+        "maxBytesShipped": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "contents": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "lookdev": { "$ref": "#/$defs/lookdev" },
+    "files": { "type": "array", "items": { "$ref": "#/$defs/file" } },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "licence": {
+      "description": "Allow-list: CC0 or a licence that allows bundled web redistribution.",
+      "type": "string",
+      "enum": ["CC0-1.0", "CC-BY-4.0"]
+    },
+    "verdict": {
+      "description": "pending until a human reviewer records accept or reject on the three r185 pane.",
+      "type": "string",
+      "enum": ["pending", "accept", "reject"]
+    },
+    "lookdev": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runId", "reviewer", "verdict"],
+      "properties": {
+        "runId": { "type": ["string", "null"], "minLength": 1 },
+        "reviewer": { "type": ["string", "null"], "minLength": 1 },
+        "verdict": { "$ref": "#/$defs/verdict" },
+        "reviewedAt": { "type": ["string", "null"] },
+        "notes": { "type": "string" }
+      }
+    },
+    "texture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "width", "height", "format"],
+      "properties": {
+        "role": { "type": "string", "minLength": 1 },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "format": { "type": "string", "minLength": 1 }
+      }
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "path", "source", "licence", "sha256", "bytes", "triangles", "textures", "lookdev"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "kind": { "type": "string", "enum": ["model", "texture", "environment", "flipbook"] },
+        "path": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "pattern": "^https://" },
+        "licence": { "$ref": "#/$defs/licence" },
+        "author": { "type": "string" },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "bytes": { "type": "integer", "minimum": 1 },
+        "triangles": { "type": ["integer", "null"], "minimum": 0 },
+        "textures": { "type": "array", "items": { "$ref": "#/$defs/texture" } },
+        "lookdev": { "$ref": "#/$defs/lookdev" },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

@@ -46,14 +46,14 @@ export const TEMPLATE_LOOK_FLOOR = Object.freeze({
   "prompt-animation-channel": Object.freeze({ look: "character-showcase", anchor: "preset" }),
   "episode-builder": Object.freeze({ look: "character-showcase", anchor: "preset" }),
   "animation-studio": Object.freeze({ look: "interior-warm", anchor: "set" }),
-  "three-compat-premium-product-viewer": Object.freeze({ look: "product-studio", anchor: "preset" }),
-  "three-compat-architecture-interior": Object.freeze({ look: "interior-warm", anchor: "preset" }),
-  "three-compat-postprocess-scene": Object.freeze({ look: "neon-arcade", anchor: "preset" }),
-  "three-compat-material-authoring": Object.freeze({ look: "product-studio", anchor: "preset" }),
-  "three-compat-large-scene": Object.freeze({ look: "outdoor-day", anchor: "preset" }),
-  "three-compat-character-viewer": Object.freeze({ look: "character-showcase", anchor: "preset" }),
-  "three-compat-asset-inspector": Object.freeze({ look: "product-studio", anchor: "preset" }),
-  "three-compat-custom-threejs-migration": Object.freeze({ look: "outdoor-day", anchor: "preset" })
+  "premium-product-viewer": Object.freeze({ look: "product-studio", anchor: "preset" }),
+  "architecture-interior": Object.freeze({ look: "interior-warm", anchor: "preset" }),
+  "postprocess-scene": Object.freeze({ look: "neon-arcade", anchor: "preset" }),
+  "material-authoring": Object.freeze({ look: "product-studio", anchor: "preset" }),
+  "large-scene": Object.freeze({ look: "outdoor-day", anchor: "preset" }),
+  "character-viewer": Object.freeze({ look: "character-showcase", anchor: "preset" }),
+  "asset-inspector": Object.freeze({ look: "product-studio", anchor: "preset" }),
+  "custom-scene": Object.freeze({ look: "outdoor-day", anchor: "preset" })
 });
 
 function readIfExists(file) {

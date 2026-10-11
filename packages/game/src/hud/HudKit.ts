@@ -79,6 +79,27 @@ export interface HudKitDeps {
   readonly warn?: (message: string) => void;
   /** Optional world→screen projection for damage numbers; [x,y] in root units. */
   readonly project?: (world: Vec3Like) => readonly [number, number] | null;
+  /**
+   * Mobile layout query (default: `matchMedia(HUD_MOBILE_QUERY)` when
+   * available). While it matches, widgets with a `mobileAnchor` move to that
+   * slot; pass `null` to pin the desktop layout.
+   */
+  readonly mobileQuery?: HudMediaQuery | null;
+}
+
+/** Structural subset of `MediaQueryList` the kit listens to. */
+export interface HudMediaQuery {
+  readonly matches: boolean;
+  addEventListener?(type: "change", cb: () => void): void;
+  removeEventListener?(type: "change", cb: () => void): void;
+}
+
+/** Same breakpoint as `styles/hud-base.css` (mobile anchors + `.a3g-mobile-hidden`). */
+export const HUD_MOBILE_QUERY = "(orientation: portrait) and (max-width: 480px)";
+
+function defaultMobileQuery(): HudMediaQuery | null {
+  const mm = (globalThis as { matchMedia?: (q: string) => HudMediaQuery }).matchMedia;
+  return typeof mm === "function" ? mm.call(globalThis, HUD_MOBILE_QUERY) : null;
 }
 
 const ANCHORS: readonly HudAnchor[] = [
@@ -174,14 +195,28 @@ export function mountHud(deps: HudKitDeps, options: HudMountOptions): Hud {
   hud.appendChild(dmgHost);
 
   const widgets = new Map<string, HudWidgetInstance>();
+  // `mobileAnchor` applies only while the mobile layout query matches; the
+  // desktop layout always uses `anchor`. "hidden" is a CSS-only rule
+  // (`.a3g-mobile-hidden` is display:none inside the same media query).
+  const mobileQuery = deps.mobileQuery === undefined ? defaultMobileQuery() : deps.mobileQuery;
+  const relocatable: Array<{ el: HudElement; anchor: HudAnchor; mobileAnchor: HudAnchor }> = [];
   for (const spec of options.widgets) {
     if (widgets.has(spec.id)) throw new Error(`a3g-hud: duplicate widget id "${spec.id}"`);
     const w = createWidget(spec, doc);
-    const anchor = (spec.mobileAnchor && spec.mobileAnchor !== "hidden" ? spec.mobileAnchor : spec.anchor) as HudAnchor;
+    slots.get(spec.anchor)?.appendChild(w.el);
     if (spec.mobileAnchor === "hidden") w.el.classList.add("a3g-mobile-hidden");
-    slots.get(anchor)?.appendChild(w.el);
+    else if (spec.mobileAnchor && spec.mobileAnchor !== spec.anchor) {
+      relocatable.push({ el: w.el, anchor: spec.anchor, mobileAnchor: spec.mobileAnchor });
+    }
     widgets.set(spec.id, w);
   }
+  const applyLayout = () => {
+    const mobile = mobileQuery?.matches === true;
+    for (const r of relocatable) slots.get(mobile ? r.mobileAnchor : r.anchor)?.appendChild(r.el);
+  };
+  applyLayout();
+  const onLayoutChange = () => applyLayout();
+  if (relocatable.length > 0) mobileQuery?.addEventListener?.("change", onLayoutChange);
 
   root.appendChild(hud);
 
@@ -312,6 +347,7 @@ export function mountHud(deps: HudKitDeps, options: HudMountOptions): Hud {
       bannerDone?.();
       bannerDone = null;
       restoreInnerHtml();
+      mobileQuery?.removeEventListener?.("change", onLayoutChange);
       hud.remove();
     }
   };

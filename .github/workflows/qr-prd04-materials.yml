@@ -59,14 +59,17 @@ on:
         required: false
         default: '["core,materials"]'
       gpu_class:
-        description: "GPU job runner class: l4 (runners labelled gpu-l4) | any (whole azure-gpu pool, includes the unlabelled T4s). Pin l4 for golden/pixel comparisons."
+        description: "GPU job runner class: l4 (gpu-l4 runners) | t4 (gpu-t4 runners) | any (whole azure-gpu pool). Pin one class for golden/pixel comparisons."
         required: false
         default: "l4"
         type: choice
-        options: [l4, any]
+        options: [l4, t4, any]
 
 concurrency:
-  group: qr-prd04-materials-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
+  # main + dispatch get run_id in the group: cancel-in-progress false does not
+  # stop GitHub replacing a PENDING run in a shared group (lighting-quality
+  # main runs 38184180415, 38182964974 were cancelled that way).
+  group: qr-prd04-materials-${{ github.ref }}${{ (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main') && format('-r-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
@@ -314,8 +317,13 @@ jobs:
           set -euo pipefail
           node tests/qr/prd04/gpu-probe.mjs
           # Label-drift guard: a pinned class must be the GPU actually present.
-          if [ "${GPU_CLASS}" = "l4" ]; then
-            node -e 'const r=require("./tests/reports/prd04/gpu-probe.json");if(!/NVIDIA L4/.test(r.webgl.renderer)){console.error("::error::gpu_class=l4 but renderer is "+r.webgl.renderer);process.exit(1)}'
+          case "${GPU_CLASS}" in
+            l4) want="NVIDIA L4" ;;
+            t4) want="Tesla T4" ;;
+            *) want="" ;;
+          esac
+          if [ -n "$want" ]; then
+            WANT="$want" node -e 'const r=require("./tests/reports/prd04/gpu-probe.json");if(!r.webgl.renderer.includes(process.env.WANT)){console.error(`::error::gpu_class=${process.env.GPU_CLASS} but renderer is ${r.webgl.renderer}`);process.exit(1)}'
           fi
           node -e 'const r=require("./tests/reports/prd04/gpu-probe.json");console.log(`renderer: ${r.webgl.renderer}\nwebgpu adapter: ${r.webgpu.adapter} ${JSON.stringify(r.webgpu.info)}`)' | tee -a "$GITHUB_STEP_SUMMARY"
       - name: prd04 browser specs (all; flag-pinned specs keep their own flags)

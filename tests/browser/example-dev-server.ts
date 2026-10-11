@@ -74,6 +74,15 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/engine/workflows", "/packages/workflows/src/index.ts"],
   ["@aura3d/editor-runtime", "/packages/editor-runtime/src/index.ts"],
   ["@aura3d/debug", "/packages/debug/src/index.ts"],
+  // PRD-09 game runtime: the game-shell harness and packages/game/fixtures/*
+  // import `@aura3d/game`, and createGame imports `@aura3d/engine/lanes`. The
+  // package exports point at dist/, which the browser job does not build, so
+  // unmapped these fail the harness bundle and 404 in the fixture routes.
+  ["@aura3d/engine/lanes", "/packages/engine/src/lanes/index.ts"],
+  ["@aura3d/game/capture", "/packages/game/src/capture/index.ts"],
+  ["@aura3d/game/art", "/packages/game/src/art/index.ts"],
+  ["@aura3d/game/util", "/packages/game/src/util/index.ts"],
+  ["@aura3d/game", "/packages/game/src/index.ts"],
   ["@loaders.gl/core", "/node_modules/@loaders.gl/core/dist/index.js"],
   ["@loaders.gl/images", "/node_modules/.pnpm/@loaders.gl+images@4.4.1_@loaders.gl+core@4.4.1/node_modules/@loaders.gl/images/dist/index.js"],
   ["@loaders.gl/loader-utils", "/node_modules/.pnpm/@loaders.gl+loader-utils@4.4.1_@loaders.gl+core@4.4.1/node_modules/@loaders.gl/loader-utils/dist/index.js"],
@@ -273,10 +282,12 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
       }
 
       if (file.endsWith(".ts")) {
-        // Entries under tests/browser are page-level module scripts: serve them
-        // as a single esbuild bundle so the browser evaluates one module
-        // instead of ~1,300 individually transformed files.
-        const bundled = normalize(pathname).replace(/\\/g, "/").startsWith("/tests/browser/")
+        // Entries under tests/browser (and the PRD-09 packages/game/fixtures/*
+        // page entries, which the game-shell specs load as routes) are
+        // page-level module scripts: serve them as a single esbuild bundle so
+        // the browser evaluates one module instead of ~1,300 transformed files.
+        const servedPath = normalize(pathname).replace(/\\/g, "/");
+        const bundled = servedPath.startsWith("/tests/browser/") || /^\/packages\/game\/fixtures\/[^/]+\/src\/main\.ts$/.test(servedPath)
           ? await bundleForBrowser(file)
           : undefined;
         const output = bundled ?? transformed(file, () => transpileForBrowser(readFileSync(file, "utf8"), file, root));

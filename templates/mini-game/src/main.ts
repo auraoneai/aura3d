@@ -1,6 +1,7 @@
 import {
   camera,
   game,
+  gameFeel,
   looks,
   material,
   model,
@@ -73,7 +74,7 @@ const level = {
 
 // Side-follow framing: the camera sits 10.4 m off the play plane and tracks
 // the hero on x only (side-scroller). The C-22 rig is the live camera
-// surface; `setPose` every frame applies state to the camera itself.
+// surface; the mounted rig owns the presented pose.
 const CAMERA_OFFSET = { y: 3.45, z: 10.4, targetY: 0.47 } as const;
 
 const inputOptions = {
@@ -137,19 +138,28 @@ const checkpoint = app.nodes.require("checkpoint-mid");
 const goal = app.nodes.require("goal");
 const hudRoot = createHud();
 let objective = "Collect stars, avoid the hazard, reach the gate";
-let activeClip = "idle";
-player.play("idle");
+// Locomotion states map onto the KayKit barbarian's clip names (the
+// catalog hero's literal clip ids are replaced by the library rig's).
+const LOCOMOTION_CLIPS = {
+  idle: "Idle",
+  walk: "Walking_A",
+  sprint: "Running_A",
+  jump: "Jump_Start",
+  fall: "Jump_Idle"
+} as const;
+type LocomotionState = keyof typeof LOCOMOTION_CLIPS;
+let activeClip: LocomotionState = "idle";
+player.play(LOCOMOTION_CLIPS.idle);
 
-// Mount the C-22 camera surface when the extension is present (stub today,
-// real controller under PRD 08): the rig pins the follow framing and each
-// frame writes the actual pose. No camera state is parked in evidence.
+// Mount the C-22 camera surface (stub controller flag-off, real under PRD 08).
+// F-08-1: the follow2d rig owns the presented camera (flag-off mounts the
+// no-op stub controller, so the scene's camera.follow spec stays the
+// fallback). F-08-5: feel bus + GameFeel attach through app.time.
 app.camera?.use(
-  camera.rigs.fromSpec({
-    position: [level.start.x, level.start.y + CAMERA_OFFSET.y, CAMERA_OFFSET.z],
-    target: [level.start.x, level.start.y + CAMERA_OFFSET.targetY, 0],
-    fov: 50
-  })
+  camera.rigs.follow2d({ target: "mini-player", framing: { subjectHeightFraction: 0.28 } })
 );
+const feel = gameFeel.create({ app, time: app.time });
+app.feel?.preset("platformer");
 
 app.onFrame(({ dt }) => {
   if (input.pressed("reset")) {
@@ -184,7 +194,7 @@ app.onFrame(({ dt }) => {
     firstSubstep = false;
   } while (remaining > 0.000_001);
 
-  // The certified Oobi hero is feet-origin (GLB min y = 0), so the visual
+  // The KayKit barbarian hero is feet-origin (GLB min y = 0), so the visual
   // rides at the physics point instead of a +0.5 lift.
   player.setPosition(state.player.x + 0.38, state.player.y + 0.01, 0);
   player.setRotation(0, state.player.facing === 1 ? Math.PI / 2 : -Math.PI / 2, 0);
@@ -193,10 +203,7 @@ app.onFrame(({ dt }) => {
   for (const [id, node] of coins) node.setVisible(!state.collected.includes(id));
   checkpoint.setVisible(!state.activatedCheckpoints.includes("mid"));
   goal.setScale(state.status === "completed" ? [1.35, 1.35, 1.35] : 1);
-  app.camera?.setPose({
-    position: [state.player.x, state.player.y + CAMERA_OFFSET.y, CAMERA_OFFSET.z],
-    target: [state.player.x, state.player.y + CAMERA_OFFSET.targetY, 0]
-  });
+  feel.update(dt * 1000);
   renderHud(state);
   publishEvidence(state);
 });
@@ -214,11 +221,10 @@ void miniGame.ready().then(() => {
 });
 
 function buildScene() {
-  // Platform geometry comes from the typed platformer-kit block (catalog
-  // `kenney/platformer-kit`, PRD 05 curated-kit swap is tracked as Q-05-3).
-  // The kit's 2.08 × 1.0 m grass block scales to each collision rect.
-  const block = assets.kenneyPlatformerKitBlockGrassLarge;
-  const BLOCK_SIZE = [2.082, 1.0, 2.082] as const;
+  // Platform geometry comes from the library crate (PRD 05 template-starters
+  // swap, #481 mapping); the 0.824 m cube scales to each collision rect.
+  const block = assets.quaterniusCrate;
+  const BLOCK_SIZE = assets.quaterniusCrate.bounds;
   const blockScale = (width: number, height: number, depth: number) =>
     [width / BLOCK_SIZE[0], height / BLOCK_SIZE[1], depth / BLOCK_SIZE[2]] as const;
   const nodes: AuraNodeBuilder<AuraSceneNode>[] = [
@@ -227,9 +233,9 @@ function buildScene() {
         .position(platform.x + platform.width / 2, platform.y, -0.05)
         .scale(blockScale(platform.width, platform.height, 1.24))),
     ...level.movingPlatforms.map((platform) =>
-      model(assets.kenneyPlatformerKitBrick, { name: `${platform.id} moving platform` })
+      model(assets.quaterniusCubeCrate, { name: `${platform.id} moving platform` })
         .position(platform.x + platform.width / 2, movingLiftY(0) - platform.height / 2, 0)
-        .scale([platform.width / 0.5, platform.height / 0.5, 0.7])
+        .scale([platform.width / assets.quaterniusCubeCrate.bounds[0], platform.height / assets.quaterniusCubeCrate.bounds[1], 0.7])
         .runtime(game.runtimeNode("platform-lift", { tags: ["platform", "moving"] }))),
     // Stars are models, not primitives: emissive 3–5 reads as coin sparkle
     // under the daylight-outdoor grade.
@@ -241,12 +247,12 @@ function buildScene() {
         .position(coin.x, coin.y, 0.02)
         .scale(1.15)
         .runtime(game.runtimeNode(`coin-${coin.id}`, { tags: ["collectible"] }))),
-    model(assets.kenneyPlatformerKitBrick, {
+    model(assets.quaterniusCubeCrate, {
       name: "spikes hazard",
       material: material.emissive({ color: "#e5484d", emissive: "#e5484d", emissiveIntensity: 0.9, roughness: 0.4 })
     })
       .position(level.hazards[0].x + level.hazards[0].width / 2, level.hazards[0].y, 0.05)
-      .scale([level.hazards[0].width / 0.5, level.hazards[0].height / 0.5, 0.5]),
+      .scale([level.hazards[0].width / assets.quaterniusCubeCrate.bounds[0], level.hazards[0].height / assets.quaterniusCubeCrate.bounds[1], 0.5]),
     model(assets.kenneyPlatformerKitKey, { name: "checkpoint key" })
       .position(level.checkpoints[0].x, level.checkpoints[0].y + 0.2, 0.08)
       .scale(2)
@@ -264,9 +270,10 @@ function buildScene() {
   return scene()
     .add(looks.preset(LOOK_ID))
     .add(
-      model(assets.showcaseKenneyOobiPlatformerHero, { name: "certified hero" })
+      model(assets.kaykitBarbarian, { name: "certified hero" })
         .position(level.start.x + 0.38, level.start.y + 0.01, 0)
-        .scale(1)
+        // Barbarian is 2.4 m tall vs the 0.9 m hero the level was tuned for.
+        .scale(0.91 / assets.kaykitBarbarian.bounds[1])
         .runtime(game.runtimeNode("mini-player", { tags: ["player"] }))
     )
     .addMany(nodes)
@@ -283,13 +290,13 @@ function buildScene() {
 function playLocomotionClip(state: GamePlatformerSnapshot): void {
   // C-19 stub surface: `play` switches clips immediately (`crossFadeTo` is the
   // PRD 06 blend path on the same handle when it lands).
-  const next = !state.player.grounded
+  const next: LocomotionState = !state.player.grounded
     ? state.player.vy > 0 ? "jump" : "fall"
     : Math.abs(state.player.vx) > level.dashSpeed * 0.7 ? "sprint"
       : Math.abs(state.player.vx) > 0.4 ? "walk" : "idle";
   if (next === activeClip) return;
   activeClip = next;
-  player.play(next);
+  player.play(LOCOMOTION_CLIPS[next]);
 }
 
 function updateObjective(event: GamePlatformerEvent): void {
@@ -326,7 +333,7 @@ function publishEvidence(state: GamePlatformerSnapshot): void {
     deaths: state.deaths,
     checkpointId: state.checkpointId,
     collected: state.collected,
-    hero: { assetId: assets.showcaseKenneyOobiPlatformerHero.id, url: assets.showcaseKenneyOobiPlatformerHero.url },
+    hero: { assetId: assets.kaykitBarbarian.id, url: assets.kaykitBarbarian.url },
     player: { x: state.player.x, y: state.player.y, grounded: state.player.grounded },
     events: [...routeEvents],
     look: { id: LOOK_ID, category: looks.describe(LOOK_ID).category },

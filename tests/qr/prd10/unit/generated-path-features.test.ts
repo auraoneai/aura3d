@@ -5,6 +5,11 @@
 // generated program's sources.
 import { afterEach, describe, expect, it, vi } from "vitest";
 import "../../../../packages/engine/src/lanes/prd10";
+import "../../../../packages/engine/src/lanes/prd06";
+import { Texture } from "../../../../packages/rendering/src/Texture";
+import { TextureBinding } from "../../../../packages/rendering/src/TextureBinding";
+import { setPrd10CausticsState } from "../../../../packages/rendering/src/world/water/UnderwaterState";
+import { setPrd10WindState } from "../../../../packages/rendering/src/world/vegetation/WindField";
 import "../../../../packages/rendering/src/program/ProgramGenerator";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import { shaderFeaturesFor, type ProgramFeatures } from "../../../../packages/rendering/src/contracts/program";
@@ -12,7 +17,7 @@ import { featureGeneratorIncompatibility, selectShaderFeatureBits } from "../../
 import { normalizeProgramFeatures } from "../../../../packages/rendering/src/program/ProgramFeatures";
 import { generateProgramImpl } from "../../../../packages/rendering/src/program/ProgramGenerator";
 
-const FLAGS = resolveQrFlags({ env: { A3D_QR: "world" } });
+const FLAGS = resolveQrFlags({ env: { A3D_QR: "world,animation,-lighting,-core" } });
 const LIGHT1 = { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } as const;
 
 function feature(id: string) {
@@ -84,6 +89,43 @@ describe("#1143 lane-10 features on the generated-program path", () => {
       // No A3DWind block on the generated path (it would alias AuraFrame's binding 0).
       expect(vertex, pass).not.toContain("uniform A3DWind");
     }
+  });
+
+  it("composes wind after the morph/skin deformation entry", () => {
+    for (const pass of ["forward", "depth", "distance"] as const) {
+      const { vertex } = program(pass, { "prd10.wind": 1, "prd06.deform": 1 });
+      expect(vertex).toContain("void a3dDeformBeforeWind(out vec4 localPos");
+      expect(vertex).toContain("a3dDeformBeforeWind(localPos, localNormal, localTangent);");
+      expect(vertex.indexOf("a3dDeformBeforeWind(localPos, localNormal, localTangent);")).toBeLessThan(
+        vertex.indexOf("localPos.xyz += a3dWindOffset(")
+      );
+    }
+  });
+
+  it("publishes wind uniforms and resets them when wind is removed", () => {
+    const values = new Map<string, unknown>();
+    const bind = () => feature("prd10.wind").bindUniforms?.(1, {} as never, (name, value) => values.set(name, value));
+    setPrd10WindState({ direction: [1, 0, 0], strength: 2, gust: 0.3, gustFrequency: 0.2, turbulence: 0 }, 4, 3);
+    bind();
+    expect(Array.from(values.get("u_windDirStrength") as Float32Array)).toEqual([1, 0, 2, 4]);
+    expect(values.get("u_windAssetHeight")).toBe(3);
+    setPrd10WindState(null, 5);
+    bind();
+    expect(Array.from(values.get("u_windDirStrength") as Float32Array)).toEqual([0, 0, 0, 0]);
+  });
+
+  it("retains an omitted atlas but releases an explicitly cleared atlas", () => {
+    const atlas = new Texture({ width: 1, height: 1, format: "rgba8", data: new Uint8Array([255, 255, 255, 255]) });
+    const values = new Map<string, unknown>();
+    const bind = () => feature("prd10.caustics").bindUniforms?.(1, {} as never, (name, value) => values.set(name, value));
+    setPrd10CausticsState({ atlas });
+    setPrd10CausticsState({ strength: 0.5 });
+    bind();
+    expect((values.get("u_causticAtlas") as TextureBinding).texture).toBe(atlas);
+    setPrd10CausticsState({ atlas: null, strength: 0 });
+    bind();
+    expect((values.get("u_causticAtlas") as TextureBinding).texture).not.toBe(atlas);
+    atlas.dispose();
   });
 
   it("bindUniforms binds every uniform the generated chunks declare", () => {

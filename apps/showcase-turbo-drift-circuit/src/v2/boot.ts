@@ -108,11 +108,11 @@ const gameShell = createGame({
     "speed-streaks": { speedThresholdRatio: 0.85 }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_turbo_drift_circuit` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-turbo-drift-circuit`).
-    flags: ["route_turbo_drift_circuit", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_turbo_drift_circuit", "game"]
   }
 });
 

@@ -91,7 +91,7 @@ export function setPrd10CausticsState(state: Prd10CausticsState): void {
     strength: state.strength ?? causticsState.strength,
     waterHeight: state.waterHeight ?? causticsState.waterHeight,
     sunDirection: state.sunDirection ?? causticsState.sunDirection,
-    atlasBinding: state.atlas ? new TextureBinding({ name: "u_causticAtlas", texture: state.atlas, sampler: REPEAT }) : causticsState.atlasBinding
+    atlasBinding: state.atlas ? new TextureBinding({ name: "u_causticAtlas", texture: state.atlas, sampler: REPEAT }) : state.atlas === null ? undefined : causticsState.atlasBinding
   };
 }
 

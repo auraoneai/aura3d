@@ -28,7 +28,7 @@ interface Variant { readonly core: boolean; readonly envBackground: boolean; rea
 const writer = (name: string, reads: readonly string[], writes: readonly string[]): RenderPass => ({ name, reads, writes, execute() {} });
 
 function flagsFor(core: boolean) {
-  return resolveQrFlags({ options: core ? ["world", "core"] : ["world"], env: {} });
+  return resolveQrFlags({ options: core ? ["world", "core"] : ["world", "-core"], env: {} });
 }
 
 function ctx(v: Variant): FrameContributorContext {

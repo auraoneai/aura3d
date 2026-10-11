@@ -22,27 +22,31 @@ withServer((getServer) => {
     await loadTouch(page, getServer().origin);
     await page.waitForTimeout(300);
 
+    // Controls mount hidden (inside a display:none `.a3g-touch` host), so
+    // "rendered" means the element has a layout box, not that it exists.
     const before = await page.evaluate(() =>
-      document.querySelectorAll<HTMLElement>(".a3g-touch [data-control]").length
+      [...document.querySelectorAll<HTMLElement>(".a3g-touch [data-control]")].filter((el) => el.getClientRects().length > 0).length
     );
 
     await page.touchscreen.tap(200, 600);
     await page.waitForTimeout(100);
 
     const after = await page.evaluate(() => {
-      const els = [...Array.from(document.querySelectorAll<HTMLElement>(".a3g-touch [data-control]"))];
+      const els = [...Array.from(document.querySelectorAll<HTMLElement>(".a3g-touch [data-control]"))]
+        .filter((el) => el.getClientRects().length > 0);
       return {
         count: els.length,
         minTarget: els.length
           ? Math.min(...els.map((el) => { const r = el.getBoundingClientRect(); return Math.min(r.width, r.height); }))
           : 0,
-        visible: els.filter((el) => getComputedStyle(el).display !== "none").length
+        visible: els.filter((el) => getComputedStyle(el).visibility !== "hidden").length
       };
     });
 
     // The fixture mounts a touch preset — controls materialize on first touch
     // with ≥44 px targets (§6.11). If the build exposes no touch layer the
     // assert fails loudly instead of passing vacuously.
+    expect(before, "touch controls rendered before the first touch").toBe(0);
     expect(after.count, "no touch controls rendered after first touch").toBeGreaterThan(before);
     expect(after.minTarget).toBeGreaterThanOrEqual(44);
     expect(after.visible).toBeGreaterThan(0);
@@ -55,7 +59,7 @@ withServer((getServer) => {
 
     const pressed = await page.evaluate(async () => {
       const els = [...Array.from(document.querySelectorAll<HTMLElement>(".a3g-touch [data-control]"))]
-        .filter((el) => getComputedStyle(el).display !== "none");
+        .filter((el) => el.getClientRects().length > 0);
       if (els.length === 0) return null;
       const el = els[0];
       const r = el.getBoundingClientRect();

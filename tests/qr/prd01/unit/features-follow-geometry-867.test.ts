@@ -8,22 +8,21 @@
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Material, MaterialBinding, MaterialBindingError, PBRMaterial, Renderer, Texture, TextureBinding } from "@aura3d/rendering";
+import { MaterialBinding, MaterialBindingError, PBRMaterial, Renderer, Texture, TexturedPBRMaterial } from "@aura3d/rendering";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import { setRendererQrFlags } from "../../../../packages/rendering/src/renderer/FrameGraph";
 import { Geometry } from "../../../../packages/rendering/src/Geometry";
 import { VertexBuffer } from "../../../../packages/rendering/src/VertexBuffer";
 import { VertexFormat } from "../../../../packages/rendering/src/VertexFormat";
 import { featuresForGeometry } from "../../../../packages/rendering/src/program/MaterialFeatures";
-import { ProgramCache } from "../../../../packages/rendering/src/program/ProgramCache";
 import { QUALITY_TIERS } from "../../../../packages/rendering/src/contracts/quality";
-import type { ProgramFeatures } from "../../../../packages/rendering/src/contracts/program";
+import type { RenderDevice, ShaderSources } from "../../../../packages/rendering/src/RenderDevice";
 import type { RenderItem } from "../../../../packages/rendering/src/ForwardPass";
 
 const ALL_LANES = "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler";
 const ALL = resolveQrFlags({ env: { A3D_QR: ALL_LANES } });
 const ALL_STRICT = resolveQrFlags({ env: { A3D_QR: `${ALL_LANES},strict` } });
-const OFF = resolveQrFlags({ env: {} });
+const OFF = resolveQrFlags({ env: { A3D_QR: "none" } });
 const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
 function texture(colorSpace: "srgb" | "linear" = "linear"): Texture {
@@ -41,18 +40,13 @@ function triangle(format: VertexFormat, uv: boolean): Geometry {
   return new Geometry(vertices, null, "triangles", { min: [-1, -1, 0], max: [3, 3, 0] });
 }
 
-/**
- * A lit allow-listed material whose look bound base-color and normal maps
- * without declaring uv/tangent inputs (default C-02 feature derivation).
- */
-function mappedMaterial(): Material {
-  return new Material({
-    shaderKey: "aura3d/pbr-direct",
-    requiredAttributes: ["a_position", "a_normal"],
-    parameters: {
-      u_baseColorTexture: new TextureBinding({ name: "u_baseColorTexture", texture: texture("srgb") }),
-      u_normalTexture: new TextureBinding({ name: "u_normalTexture", texture: texture() })
-    }
+/** A lit material whose lane-04 look bound base-color and normal maps. */
+function mappedMaterial(): TexturedPBRMaterial {
+  // Physical feature generation reads the material descriptor, so use the
+  // supported textured-material options to keep bindings and features aligned.
+  return new TexturedPBRMaterial({
+    baseColorTexture: texture("srgb"),
+    normalTexture: texture()
   });
 }
 
@@ -95,48 +89,56 @@ describe("generated draws follow geometry attributes ($ALL, mock device)", () =>
   async function renderOne(item: RenderItem, flags = ALL_STRICT) {
     setRendererQrFlags(flags);
     const renderer = await Renderer.create({ backend: "mock", width: 16, height: 16 });
-    const device = (renderer as unknown as { device: { draw(c: { shader: { label: string; reflection: { attributes: Map<string, number> } } }): void } }).device;
-    const drawn: { label: string; attributes: string[] }[] = [];
-    const acquired: ProgramFeatures[] = [];
-    const acquire = ProgramCache.prototype.acquire;
-    vi.spyOn(ProgramCache.prototype, "acquire").mockImplementation(function (this: ProgramCache, features: ProgramFeatures) {
-      if (features.pass === "forward") acquired.push(features);
-      return acquire.call(this, features);
+    const device = (renderer as unknown as { device: RenderDevice }).device;
+    const sources = new Map<string, ShaderSources>();
+    const compile = device.createShaderProgram.bind(device);
+    vi.spyOn(device, "createShaderProgram").mockImplementation((source) => {
+      sources.set(source.label, source);
+      return compile(source);
     });
+    const drawn: { label: string; attributes: string[]; vertex: string }[] = [];
     const draw = device.draw.bind(device);
     device.draw = (command) => {
-      drawn.push({ label: command.shader.label, attributes: [...command.shader.reflection.attributes.keys()] });
+      const shader = command.shader;
+      if (shader) {
+        drawn.push({ label: shader.label, attributes: [...shader.reflection.attributes.keys()], vertex: sources.get(shader.label)?.vertex ?? "" });
+      }
       draw(command);
     };
     try {
-      return { diagnostics: renderer.render([item]), drawn, acquired };
+      return { diagnostics: renderer.render([item]), drawn };
     } finally {
       renderer.dispose();
     }
   }
 
-  const generatedOf = (drawn: { label: string; attributes: string[] }[]) => drawn.filter((d) => d.label.startsWith("a3d-program:"));
+  const generatedOf = (drawn: { label: string; attributes: string[]; vertex: string }[]) => drawn.filter((d) => d.label.startsWith("a3d-program:"));
 
-  it("primitive without uv: the generated program draws and declares no a_uv / a_tangent", async () => {
+  it("primitive without uv: the generated program draws with a_uv disabled and no a_tangent", async () => {
     const item = { geometry: triangle(VertexFormat.P3N3, false), material: mappedMaterial(), modelMatrix: IDENTITY, label: "box" } as RenderItem;
-    const { diagnostics, drawn, acquired } = await renderOne(item);
+    const { diagnostics, drawn } = await renderOne(item);
     expect(diagnostics.drawCalls).toBeGreaterThan(0);
-    expect(generatedOf(drawn).length).toBeGreaterThan(0);
-    expect(acquired.length).toBeGreaterThan(0);
-    // No uv-set map → the generator never defines A3D_NEED_UV0 (no a_uv input).
-    for (const f of acquired) expect(Object.values(f.maps).filter(Boolean)).toEqual([]);
+    const generated = generatedOf(drawn);
+    expect(generated.length).toBeGreaterThan(0);
+    for (const d of generated) {
+      // Mock reflection sees inactive declarations; the GPU preprocessor
+      // removes this guarded input when geometry-driven features omit UV0.
+      expect(d.vertex).toMatch(/#ifdef A3D_NEED_UV0\s+layout\(location = 2\) in vec2 a_uv;\s+#endif/);
+      expect(d.vertex).not.toMatch(/^#define A3D_NEED_UV0\b/m);
+      expect(d.attributes).not.toContain("a_tangent");
+    }
   });
 
   it("uv but no tangent: the generated program consumes a_uv and never a_tangent", async () => {
     const item = { geometry: triangle(VertexFormat.P3N3T2, true), material: mappedMaterial(), modelMatrix: IDENTITY, label: "plane" } as RenderItem;
-    const { diagnostics, drawn, acquired } = await renderOne(item);
+    const { diagnostics, drawn } = await renderOne(item);
     expect(diagnostics.drawCalls).toBeGreaterThan(0);
     const generated = generatedOf(drawn);
     expect(generated.length).toBeGreaterThan(0);
-    for (const d of generated) expect(d.attributes).not.toContain("a_tangent");
-    for (const f of acquired) {
-      expect(f.maps.baseColor).toBeDefined();
-      expect(f.maps.normal).toBeDefined();
+    for (const d of generated) {
+      expect(d.attributes).toContain("a_uv");
+      expect(d.vertex).toMatch(/^#define A3D_NEED_UV0\b/m);
+      expect(d.attributes).not.toContain("a_tangent");
     }
   });
 
@@ -148,13 +150,13 @@ describe("generated draws follow geometry attributes ($ALL, mock device)", () =>
       label: "rigless",
       skinning: { jointCount: 1, matrices: new Float32Array(IDENTITY) }
     } as RenderItem;
-    const { diagnostics, drawn, acquired } = await renderOne(item);
+    const { diagnostics, drawn } = await renderOne(item);
     expect(diagnostics.drawCalls).toBeGreaterThan(0);
-    expect(generatedOf(drawn).length).toBeGreaterThan(0);
-    expect(acquired.length).toBeGreaterThan(0);
-    for (const f of acquired) {
-      expect(f.skinning).toBeUndefined();
-      expect(f.features["prd06.deform"]).toBeUndefined();
+    const generated = generatedOf(drawn);
+    expect(generated.length).toBeGreaterThan(0);
+    for (const d of generated) {
+      expect(d.attributes).not.toContain("a_joints");
+      expect(d.attributes).not.toContain("a_weights");
     }
   });
 

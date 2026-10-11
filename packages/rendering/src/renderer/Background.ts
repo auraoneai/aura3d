@@ -94,32 +94,45 @@ export function collectEnvironmentLighting(source: RenderSource | Iterable<Rende
     if (probeLighting) return probeLighting;
     // #1141 / 02-S2: without A3D_QR_COMPILER no C-09 probe is ever bound
     // (only compileScene binds one), so the legacy bridge's environment —
-    // the category procedural map or the authored-ambient-only branch — was
+    // the category generated map or the authored-ambient-only branch — was
     // all that lit a scene once the fallback rig is gone. Under the flag the
-    // neutral room is the floor (C-09 `prd02.neutral-room`); an authored
-    // environment map still wins, and authored ambient stays additive.
-    if (!hasEnvironmentMap(source.environmentLighting)) return resolvePrd02NeutralRoomLighting(source.environmentLighting);
+    // neutral room replaces those fallbacks (C-09 `prd02.neutral-room`);
+    // authored environments keep their lighting, authored ambient stays additive.
+    if (isPrd02LegacyFallbackEnvironment(source.environmentLighting)) return resolvePrd02NeutralRoomLighting(source.environmentLighting);
   }
   if (source.environmentLighting) return source.environmentLighting;
   return cloneEnvironmentLighting(DEFAULT_RENDERER_ENVIRONMENT_LIGHTING);
 }
 
-function hasEnvironmentMap(lighting: EnvironmentLightingOptions | undefined): boolean {
-  return Boolean(lighting?.environmentMapTexture || lighting?.environmentCubeMapTexture);
+/** Same process-global registry `compiler/environment.ts` fills (Symbol.for: survives duplicated module instances). */
+const PRD02_LEGACY_FALLBACK_ENVIRONMENTS = Symbol.for("aura3d.prd02.legacyFallbackEnvironments");
+
+/**
+ * True when the source has no environment at all, or the engine marked it as
+ * the legacy fallback of a scene with no environment and no lights (the
+ * scene-category generated map). Authored environments and scenes with
+ * authored lights are never marked and keep their lighting.
+ */
+export function isPrd02LegacyFallbackEnvironment(lighting: EnvironmentLightingOptions | undefined): boolean {
+  if (!lighting) return true;
+  const store = globalThis as { [PRD02_LEGACY_FALLBACK_ENVIRONMENTS]?: WeakSet<object> };
+  return store[PRD02_LEGACY_FALLBACK_ENVIRONMENTS]?.has(lighting) ?? false;
 }
 
 /** One neutral floor per renderer process: analytic constant cube + baked SH (T0-25), no prefilter. */
 let prd02NeutralFloor: EnvironmentProbe | null = null;
 
 /**
- * Neutral-room lighting for a source with no probe and no environment map.
- * The legacy authored-ambient branch (no procedural map) keeps its colour and
- * intensity as the additive ambient term; the category procedural map is
- * dropped (PRD-02 R16: no category heuristics under the flag).
+ * Neutral-room lighting replacing a legacy fallback environment. The
+ * authored-ambient branch (a constant colour, no map, no procedural sky)
+ * keeps its colour and intensity as the additive ambient term; the
+ * scene-category generated map is dropped entirely (PRD-02 R16: no category
+ * heuristics under the flag).
  */
 export function resolvePrd02NeutralRoomLighting(legacy: EnvironmentLightingOptions | undefined): EnvironmentLightingOptions {
   prd02NeutralFloor ??= buildNeutralFloorProbe(128, { label: "env-neutral-floor-legacy" });
-  const ambient = legacy && !legacy.proceduralMap && legacy.intensity > 0
+  const ambientOnly = legacy && !legacy.proceduralMap && !legacy.environmentMapTexture && !legacy.environmentCubeMapTexture;
+  const ambient = ambientOnly && legacy.intensity > 0
     ? { color: [legacy.color[0], legacy.color[1], legacy.color[2]] as [number, number, number], intensity: legacy.intensity }
     : null;
   const probeSource = { environmentProbe: prd02NeutralFloor, environmentProbeAmbient: ambient } as unknown as RenderSource;

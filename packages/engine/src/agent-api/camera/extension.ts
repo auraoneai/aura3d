@@ -259,22 +259,77 @@ export function createAuraCameraController(
     (liveSpec() && liveSpec() !== writeSpec ? (liveSpec() as LegacyCameraSpec) : boundSpec) ??
     boundSpec;
 
+  /*
+   * Pixels, not evidence. The production renderer reads the camera from its
+   * render snapshot, a shallow copy made at mount (`{ ...snapshot, nodes }`)
+   * that keeps a reference to the authored camera object. Replacing
+   * `app.scene.camera` never reached the GPU (promote run 38151983512:
+   * byte-identical PNGs, NO-EFFECT; fixed in #1202). Until the Q-15-9 renderer
+   * camera-override seam (#645) exists, the presented pose is written into
+   * that renderer-held object (`renderCamera`):
+   * - only pose fields are written (mode, position, target, up, roll, fov,
+   *   near, far, orthographicSize). Authored fields such as `targetNode`,
+   *   `offset` and `smoothing` stay; in perspective/orthographic mode the
+   *   renderer's camera resolver ignores them, so 08-POSE's "targetNode
+   *   survives applyPose" holds. `up`/`roll` are recorded but not yet drawn
+   *   (the renderer has no up/roll consumer; #645 / Q-15-1 #222);
+   * - the authored pose values are backed up at bind and restored when the
+   *   scene's camera changes (setScene / rebind), so a reused builder or spec
+   *   gets its own values back (Codex review on #1202);
+   * - `freezeSpecs` still exposes a frozen copy on `app.scene.camera`, but the
+   *   writes keep going to `renderCamera`, so pixels stay live (Codex review
+   *   on #1202).
+   * Rig inputs and spec deps take copies, so nothing feeds back.
+   */
+  const POSE_KEYS = ["mode", "position", "target", "up", "roll", "fov", "near", "far", "orthographicSize"] as const;
+  let renderCamera: CameraSpecMutable | undefined;
+  let renderCameraBackup: Partial<Record<(typeof POSE_KEYS)[number], unknown>> | undefined;
+
+  const restoreRenderCamera = () => {
+    if (!renderCamera || !renderCameraBackup || Object.isFrozen(renderCamera)) return;
+    const target = renderCamera as Record<string, unknown>;
+    for (const key of POSE_KEYS) {
+      if (key in renderCameraBackup) target[key] = renderCameraBackup[key];
+      else delete target[key];
+    }
+  };
+
+  const adoptRenderCamera = (spec: CameraSpecMutable | undefined) => {
+    if (spec === renderCamera) return;
+    restoreRenderCamera();
+    renderCamera = spec && !Object.isFrozen(spec) ? spec : undefined;
+    renderCameraBackup = undefined;
+    if (renderCamera) {
+      const backup: Partial<Record<(typeof POSE_KEYS)[number], unknown>> = {};
+      for (const key of POSE_KEYS) if (key in renderCamera) backup[key] = renderCamera[key];
+      renderCameraBackup = backup;
+    }
+  };
+
   const applyPose = (pose: AuraCameraPose) => {
     const scene = app.scene as unknown as { camera?: CameraSpecMutable } | undefined;
     if (!scene) return;
     const mode = pose.orthographicSize !== undefined ? "orthographic" : "perspective";
-    const fields = {
+    const fields: CameraSpecMutable = {
       mode,
       position: pose.position,
       target: pose.target,
+      up: pose.up,
+      roll: pose.roll,
       fov: pose.fov,
       near: pose.near,
-      far: pose.far,
-      orthographicSize: pose.orthographicSize
+      far: pose.far
     };
-    // Always REPLACE the spec: writing fields would mutate the object the
-    // bound rig reads as authored input (feedback into its own smoothing).
-    const next: CameraSpecMutable = { ...fields };
+    if (pose.orthographicSize !== undefined) fields.orthographicSize = pose.orthographicSize;
+    if (renderCamera) {
+      Object.assign(renderCamera, fields);
+      if (pose.orthographicSize === undefined) delete renderCamera.orthographicSize;
+    }
+    if (renderCamera && scene.camera === renderCamera && !options.freezeSpecs) {
+      writeSpec = renderCamera;
+      return;
+    }
+    const next: CameraSpecMutable = { ...(renderCamera ?? {}), ...fields };
     scene.camera = options.freezeSpecs ? Object.freeze(next) : next;
     writeSpec = next;
   };
@@ -303,7 +358,8 @@ export function createAuraCameraController(
   const controller = createCameraController({
     resolveSubject,
     probe,
-    specDeps: specDepsFor((app.scene?.camera as LegacyCameraSpec | undefined) ?? {}),
+    // Copy: applyPose writes the presented pose into the authored object.
+    specDeps: specDepsFor({ ...((app.scene?.camera as LegacyCameraSpec | undefined) ?? {}) }),
     aspect: () => {
       const canvas = (app as { canvas?: { width: number; height: number } }).canvas;
       return canvas && canvas.height > 0 ? canvas.width / canvas.height : 16 / 9;
@@ -327,7 +383,7 @@ export function createAuraCameraController(
           return canvas && canvas.height > 0 ? canvas.width / canvas.height : 16 / 9;
         })()
       }),
-    initial: { spec: currentSpec() }
+    initial: { spec: (() => { const s = currentSpec(); return s ? { ...s } : undefined; })() }
   });
 
   // Rebind when the scene's camera spec object changes (setScene / new spec).
@@ -335,7 +391,10 @@ export function createAuraCameraController(
     const spec = liveSpec() as LegacyCameraSpec | undefined;
     if (spec && spec !== boundSpec && spec !== (writeSpec as LegacyCameraSpec | undefined)) {
       boundSpec = spec;
-      const rig = createFromSpecRig({ ...spec }, specDepsFor(spec));
+      adoptRenderCamera(spec as CameraSpecMutable);
+      // Snapshot the authored spec: applyPose later writes pose fields into this object.
+      const authored = { ...spec };
+      const rig = createFromSpecRig(authored, specDepsFor(authored));
       controller.use(rig);
     }
   };
@@ -429,8 +488,46 @@ export function createAuraCameraController(
     const spec = liveSpec();
     const scene = app.scene as unknown as { camera?: CameraSpecMutable } | undefined;
     if (spec && scene && !Object.isFrozen(spec)) {
-      scene.camera = Object.freeze({ ...spec });
+      // Route-facing frozen copy; renderCamera keeps receiving the pose.
+      const frozen = Object.freeze({ ...spec });
+      scene.camera = frozen;
+      writeSpec = frozen;
     }
+  }
+
+  /*
+   * Scene swaps restore the outgoing authored camera immediately. An idle
+   * camera (static rig settled → onFrame unsubscribed, no present driver)
+   * never reaches `rebindIfNeeded`, so without this hook the previous
+   * builder/spec kept the last presented pose after `app.setScene()` and a
+   * later reuse rendered the mutated camera (Codex review on #1209). The app
+   * method is wrapped on this app instance only; flag-off apps never install
+   * the real controller, so they are untouched.
+   */
+  const appWithSetScene = app as { setScene?: (next: unknown) => unknown };
+  if (typeof appWithSetScene.setScene === "function") {
+    const originalSetScene = appWithSetScene.setScene.bind(app);
+    appWithSetScene.setScene = (next: unknown) => {
+      const previous = renderCamera;
+      restoreRenderCamera();
+      // If this throws, the scene did not change: renderCamera stays bound and
+      // the next update writes the pose into it again.
+      const result = originalSetScene(next);
+      if (previous && liveSpec() === previous) {
+        // Same camera object kept across the swap: the runtime-node remount
+        // (`app.nodes.add/remove` → setScene({ ...scene, nodes }),
+        // runtimeNodes.ts) or a repeated AuraSceneBuilder.toJSON(). Keep the
+        // binding: do NOT rebind (controller.use would drop setPose/FOV/roll
+        // overrides and any custom rig; Codex review on #1215). Re-write the
+        // current presented pose so the remounted renderer draws it (#1213).
+        applyPose(controller.presented());
+        arm();
+        return result;
+      }
+      rebindIfNeeded();
+      arm();
+      return result;
+    };
   }
 
   return armed;

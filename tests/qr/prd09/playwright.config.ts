@@ -18,7 +18,11 @@ export default defineConfig({
     viewport: { width: 1920, height: 1080 },
     launchOptions: {
       ...(chromiumExecutablePath ? { executablePath: chromiumExecutablePath } : {}),
-      args: ["--enable-unsafe-webgpu", "--ignore-gpu-blocklist", "--use-angle=metal", "--enable-gpu", "--mute-audio"],
+      // QR_CHROMIUM_ARGS (set by the workflow's runner step) replaces the macOS
+      // Metal defaults on Linux GPU runners (Vulkan ANGLE, #956 pattern).
+      args: process.env.QR_CHROMIUM_ARGS
+        ? [...process.env.QR_CHROMIUM_ARGS.split(/\s+/).filter(Boolean), "--enable-unsafe-webgpu", "--mute-audio"]
+        : ["--enable-unsafe-webgpu", "--ignore-gpu-blocklist", "--use-angle=metal", "--enable-gpu", "--mute-audio"],
     },
   },
   // P-22: no-skipped-reporter fails the run on CI when any test is skipped.

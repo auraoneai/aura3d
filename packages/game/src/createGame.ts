@@ -36,12 +36,15 @@ import { captureFromUrl } from "./capture/captureFromUrl";
 import { lookSignature, type LookSource } from "./capture/lookSignature";
 import { installGameBeacon } from "./evidence/beacon";
 import { installEvidenceChannel, createPerfRing, type EvidenceChannelContract, type EvidenceSectionCollect } from "./evidence/channel";
-import { GameShellImpl, GameHudImpl, GameFxLayerImpl } from "./components";
+import { GameShellImpl, GameHudImpl } from "./components";
+import { createPoolFxLayer, withFxPool, type PoolNodeHandle } from "./juice/fxPoolLayer";
 import { mountHud } from "./hud/HudKit";
 import { mountTouchControls } from "./touch/TouchControls";
 import { createJuice, type Juice, type JuiceCamera, type JuiceEventMap } from "./juice/Juice";
 import type { HudDocument, HudElement } from "./hud/dom";
 import { createOverlayDriver } from "./juice/overlay";
+import { wireContextLoss, type DeviceLossApp } from "./shell/contextLoss";
+import { domTransitionDriver } from "./shell/transition";
 import { createRumbleDriver } from "./juice/rumble";
 import { createTweenEngine } from "./juice/tween";
 import { createGameAudio, type GameAudio, type GameAudioOptions } from "@aura3d/engine";
@@ -92,9 +95,11 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
   const fallbackTime = new StubTimeController();
   const session = new GameSessionImpl({ seed: capture.seed ?? 0, time: fallbackTime });
 
-  const authoredScene = normalizeSceneSnapshot(
+  // §6.7: every game scene carries the hidden FX pool nodes (one instanced
+  // node per GameFxKind) so `fx.burst` / juice `fx` presets render.
+  const authoredScene = withFxPool(normalizeSceneSnapshot(
     options.scene() as AuraSceneBuilder | AuraSceneSnapshot
-  );
+  ));
   let lookSource: LookSource = authoredScene as unknown as LookSource;
 
   const {
@@ -119,8 +124,16 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
 
   const hasDom = typeof document !== "undefined" && typeof window !== "undefined";
 
-  const shell = new GameShellImpl(session);
-  const fx = new GameFxLayerImpl();
+  const fx = createPoolFxLayer({
+    node: (name) => {
+      try {
+        return app.nodes.get(name) as unknown as PoolNodeHandle | undefined;
+      } catch {
+        return undefined;
+      }
+    },
+    seed: capture.seed ?? 1
+  });
 
   // §7.7 HUD (mountHud) + §6.11 touch controls mount only in DOM contexts;
   // node/test contexts keep the contract stubs. `target` may be a selector,
@@ -130,6 +143,23 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
       ? (document.querySelector(options.target) as HTMLElement | null)
       : options.target instanceof HTMLElement ? options.target : null)
     : null;
+
+  // §6.2 loading transition: a DOM `.a3g-overlay` (opacity 0 at idle) fades to
+  // opaque, the scene swaps, and it fades back only after the runtime presents
+  // the new scene's first frame. The fade-out sleep adds one frame so the CSS
+  // opacity transition has settled at 1 before the swap.
+  const transitionOverlay = hasDom ? createTransitionOverlay() : null;
+  const shell = new GameShellImpl(
+    session,
+    transitionOverlay
+      ? domTransitionDriver(transitionOverlay as unknown as HudElement, {
+        firstPresentedFrame: () => runtime.firstPresentedFrame().then(() => undefined),
+        sleep: (ms) => new Promise<void>((resolve) => {
+          setTimeout(() => (typeof requestAnimationFrame === "function" ? requestAnimationFrame(() => resolve()) : resolve()), ms);
+        })
+      })
+      : undefined
+  );
   const hud: Hud = hasDom && options.hud
     ? (mountHud(
       { root: (targetEl ?? document.body) as unknown as HudElement, doc: document as unknown as HudDocument },
@@ -189,9 +219,21 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
   const perfRing = createPerfRing();
   // Session time delegates per real frame: dt flowing through the loop is
   // real time; the controller returns the scaled dt routes should simulate on.
+  // §15 juice envelopes run on the presented-frame clock, not wall time: the
+  // overlay advances by each frame's dt and re-writes inside the frame, so a
+  // flash decays over the frames that show it (real dt under rAF; exactly the
+  // stepped dt under `__AURA3D_GAME_TEST__.stepFrames`, which runs frames
+  // faster than wall time and would otherwise never see the 200 ms decay).
+  let overlayClock = 0;
+  const overlayFrameCallbacks = new Set<() => void>();
   runtime.onFrame((frame) => {
     session.tick(frame.dt);
     perfRing.record(frame.dt * 1000);
+    overlayClock += Math.max(0, frame.dt);
+    fx.tick(session.scaledDt(frame.dt));
+    const due = [...overlayFrameCallbacks];
+    overlayFrameCallbacks.clear();
+    for (const cb of due) cb();
   });
 
   // AuraCameraController already carries shake/punch/evidence (JuiceCamera);
@@ -201,18 +243,68 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
     ? (app as unknown as Parameters<typeof createOverlayDriver>[0]["app"])
     : undefined;
 
+  function createTransitionOverlay(): HTMLElement {
+    const host = targetEl ?? document.body;
+    const el = document.createElement("div");
+    el.className = "a3g-overlay";
+    el.setAttribute("aria-hidden", "true");
+    el.style.cssText = "position:absolute;inset:0;pointer-events:none;background:#000;opacity:0;z-index:35;";
+    if (host !== document.body && getComputedStyle(host).position === "static") host.style.position = "relative";
+    host.appendChild(el);
+    return el;
+  }
+
+  // §7.8 DOM fallback: without the C-05 output overlay (A3D_QR_CORE off) the
+  // flash/vignette drive a transparent full-bleed layer over the canvas;
+  // without it juice.flash was a silent no-op. Transparent at idle, so idle
+  // frames stay pixel-identical (overlay-identity).
+  function juiceOverlayElement(): HTMLElement | null {
+    if (!hasDom) return null;
+    const host = targetEl ?? document.body;
+    const el = document.createElement("div");
+    el.className = "a3g-juice-overlay";
+    el.setAttribute("aria-hidden", "true");
+    el.style.cssText = "position:absolute;inset:0;pointer-events:none;background:transparent;z-index:30;";
+    if (host !== document.body && getComputedStyle(host).position === "static") host.style.position = "relative";
+    host.appendChild(el);
+    return el;
+  }
+
+  const ownedJuiceOverlay = overlayApp ? undefined : juiceOverlayElement();
   const juice: Juice<TEvent> = createJuice<TEvent, TCue>({
     events: (options.juice ?? {}) as JuiceEventMap<TEvent, TCue>,
     camera: app.camera as unknown as JuiceCamera,
     session,
     fx,
-    overlay: createOverlayDriver({ app: overlayApp }),
+    overlay: createOverlayDriver({
+      app: overlayApp,
+      domElement: ownedJuiceOverlay,
+      now: () => overlayClock,
+      schedule: (cb) => {
+        overlayFrameCallbacks.add(cb);
+        return () => { overlayFrameCallbacks.delete(cb); };
+      }
+    }),
     tweens: createTweenEngine(),
     rumble: createRumbleDriver(),
     sound: audio ? { cue: (cue) => { void audio.cue(cue); } } : undefined
   });
 
   const detachLifecycle = attachSessionLifecycle({ session, sound: lifecycleSound });
+
+  // §6.2 context loss: the engine owns `webglcontextlost` behind
+  // app.onDeviceLost; the shell pauses with reason "context-lost", hides the
+  // HUD and shows the ContextLost screen (Reload after 3 s unrecovered).
+  const deviceApp = app as unknown as Partial<DeviceLossApp>;
+  const contextLoss = hasDom && typeof deviceApp.onDeviceLost === "function" && typeof deviceApp.onDeviceRestored === "function"
+    ? wireContextLoss(deviceApp as DeviceLossApp, document as unknown as HudDocument, {
+      pause: (reason) => session.pause(reason),
+      hideHud: () => hud.setVisible(false),
+      showHud: () => hud.setVisible(true),
+      mount: (el) => { (targetEl ?? document.body).appendChild(el as Node); },
+      onReload: () => location.reload()
+    })
+    : null;
 
   let disposed = false;
   let readyPromise: Promise<void> | null = null;
@@ -256,10 +348,10 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
     async setScene(scene: AuraSceneSnapshot, o?: { transition?: TransitionSpec | false }): Promise<void> {
       if (disposed) return;
       const apply = async () => {
-        await app.setScene(scene);
-        lookSource = normalizeSceneSnapshot(
-          scene as AuraSceneBuilder | AuraSceneSnapshot
-        ) as unknown as LookSource;
+        const next = withFxPool(normalizeSceneSnapshot(scene as AuraSceneBuilder | AuraSceneSnapshot));
+        await app.setScene(next);
+        fx.reset();
+        lookSource = next as unknown as LookSource;
         sceneRevision += 1;
         armFirstPresented();
       };
@@ -273,6 +365,7 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
       if (disposed) return;
       disposed = true;
       detachLifecycle();
+      contextLoss?.dispose();
       feelSoundDetach?.();
       accessibilityUnsub();
       accessibility.dispose();
@@ -281,6 +374,8 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
       session.transition("disposed");
       hud.dispose();
       touch?.dispose();
+      transitionOverlay?.remove();
+      ownedJuiceOverlay?.remove();
       runtime.dispose();
       await app.dispose();
     }

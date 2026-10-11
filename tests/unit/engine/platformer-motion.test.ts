@@ -174,7 +174,8 @@ describe("PRD-08 platformer kit flag defaults (lane 08)", () => {
   it("flag-off: no feel profile, no presentation, flat arc", async () => {
     const { createGamePlatformerKit } = await import("../../../packages/engine/src/agent-api/GameGenreKits");
     const { resolveQrFlags } = await import("../../../packages/engine/src/contracts/flags");
-    const flags = resolveQrFlags({ options: [] });
+    // A3D_QR_CAMERA is default-on (#1224): "off" must be explicit.
+    const flags = resolveQrFlags({ options: ["-camera"] });
     const kit = createGamePlatformerKit({ flags, lowerBound: -5 } as never);
     const snap = kit.snapshot();
     expect(snap.player.presentation).toBeUndefined();
@@ -183,7 +184,7 @@ describe("PRD-08 platformer kit flag defaults (lane 08)", () => {
     kit.step(1 / 60, { jumpPressed: true });
     const airborne = kit.snapshot();
     expect(airborne.player.vy).toBeGreaterThan(0);
-  });
+  }, 30_000); // cold dynamic import of GameGenreKits exceeded 5 s on CI (run 38167183471)
 
   it("flag-on: presentation state appears with stretch on jump", async () => {
     const { createGamePlatformerKit } = await import("../../../packages/engine/src/agent-api/GameGenreKits");

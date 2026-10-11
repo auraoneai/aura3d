@@ -234,11 +234,13 @@ interface LookQrUpgrade {
   readonly environmentIntensity: number;
   readonly background: boolean;
 }
-const LOOK_QR_UPGRADES: Partial<Record<AuraLookId, LookQrUpgrade>> = {
-  "night-city": { hdri: "night-2k", environmentIntensity: 0.45, background: true },
-  "polar-night": { hdri: "night-2k", environmentIntensity: 0.55, background: true },
-  "neon-arcade": { hdri: "night-2k", environmentIntensity: 0.35, background: false }
-};
+// Measured on gpu-l4 (qr-prd13-looks-capture 38148101893): the night-2k
+// upgrade made night-city (cinematic-scene) and neon-arcade
+// (three-compat-postprocess-scene) darker with fewer highlights (mean 14.5 ->
+// 7.2, p99 205 -> 171, detail 7.6 -> 5.5), i.e. worse than the engine-default
+// environment they fell back to. Withdrawn until a probe beats flag-off; the
+// table and plumbing stay for the next measured candidate.
+const LOOK_QR_UPGRADES: Partial<Record<AuraLookId, LookQrUpgrade>> = {};
 
 /** HDRI files a look references (flag-aware); template scaffolds copy these. */
 export function lookHdriFiles(id: AuraLookId, flags: QrFlags = resolveFlags()): readonly string[] {

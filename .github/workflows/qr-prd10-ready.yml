@@ -1,0 +1,97 @@
+name: QR PRD-10 ready time
+
+# Track 0 (a), lane 10: attribute the 87-310 s READY times of the world base
+# scenes (09-outdoor-environment, 17-large-environment) on a real GPU.
+#   probe   — ready-probe.mjs on the vite dev server: CPU profile from
+#             navigation to READY, self time per source bucket with lane 10
+#             (world) singled out, plus rAF frame stats and a3d:mount marks.
+#   capture — the production build through ci.sh (flags-bisect), the same
+#             path as the Track 0 rounds, for the real READY times per set.
+# Runner: self-hosted azure-gpu (NVIDIA, Vulkan ANGLE). Frames from this
+# runner are never compared with macos-14 or GitLab frames. Nothing is
+# masked: a timeout is reported as a timeout, and a missing result or
+# artifact fails the job.
+
+on:
+  push:
+    branches: [qr/prd10-ready-time]
+    paths:
+      - "benchmarks/quality-rebuild/scenes/prd10/ready/**"
+      - ".github/workflows/qr-prd10-ready.yml"
+      - "packages/rendering/src/world/**"
+      - "packages/engine/src/production-runtime/world/**"
+      - "packages/engine/src/lanes/prd10.ts"
+  workflow_dispatch:
+    inputs:
+      scenes:
+        description: "Comma-separated scene ids"
+        required: false
+        default: "09-outdoor-environment,17-large-environment"
+      flag_sets:
+        description: "';'-separated flag sets"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qr-prd10-ready-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  QR_ALL_FLAGS: "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler"
+
+jobs:
+  ready:
+    name: prd10 ready-time attribution (azure-gpu)
+    runs-on: [self-hosted, azure-gpu]
+    timeout-minutes: 150
+    env:
+      SCENES: ${{ inputs.scenes || '09-outdoor-environment,17-large-environment' }}
+      IN_FLAG_SETS: ${{ inputs.flag_sets || '' }}
+      QR_BENCH_CHROME_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
+      PROBE_OUT: benchmarks/quality-rebuild/scenes/prd10/ready/out
+      QR_BENCH_OUT: benchmarks/quality-rebuild/scenes/prd10/ready/out/capture
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Flag sets
+        run: |
+          set -euo pipefail
+          sets="${IN_FLAG_SETS:-none;world;$QR_ALL_FLAGS;$QR_ALL_FLAGS,-world}"
+          echo "FLAG_SETS=$sets" >> "$GITHUB_ENV"
+          echo "flag sets: $sets" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Profile probe (dev server, per-lane CPU attribution)
+        run: |
+          set -euo pipefail
+          mkdir -p "$PROBE_OUT"
+          node benchmarks/quality-rebuild/scenes/prd10/ready/ready-probe.mjs \
+            --scenes "$SCENES" --flags "$FLAG_SETS" --out "$PROBE_OUT" --timeout 240000
+          cat "$PROBE_OUT/ready-probe.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Production capture (ci.sh flags-bisect, real READY times)
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          export QR_BENCH_SCENES="$SCENES" QR_BENCH_ENGINES=aura3d QR_BENCH_FLAG_SETS="$FLAG_SETS"
+          bash benchmarks/quality-rebuild/ci.sh
+      - name: READY table from the capture reports
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          node benchmarks/quality-rebuild/scenes/prd10/ready/capture-table.mjs "$QR_BENCH_OUT" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qr-prd10-ready-${{ github.run_id }}
+          path: benchmarks/quality-rebuild/scenes/prd10/ready/out/
+          if-no-files-found: error
+          retention-days: 30

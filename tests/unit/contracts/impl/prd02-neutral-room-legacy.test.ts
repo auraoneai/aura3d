@@ -22,12 +22,17 @@ import {
   sampleRoomEnvironment
 } from "../../../../packages/rendering/src/environment/RoomEnvironmentScene";
 import { NEUTRAL_FLOOR_RADIANCE, NEUTRAL_FLOOR_SH9 } from "../../../../packages/rendering/src/environment/probeBuild";
+import { createProductionRuntimeEnvironment } from "../../../../packages/engine/src/agent-api/compiler/environment";
 
 const LIGHTING_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
-const BASE = resolveQrFlags({});
+const BASE = resolveQrFlags({ options: ["none"] });
 afterEach(() => setRendererQrFlags(BASE));
 
-const AMBIENT_ONLY = { color: [1, 1, 1] as [number, number, number], intensity: 0.05, environmentMapIntensity: 0, environmentMapSpecularIntensity: 0 };
+// The engine's legacy bridge marks the fallback of a scene with no environment and no lights.
+const snapshot = (nodes: readonly unknown[]) => ({ nodes, camera: {}, background: "#000000" }) as never;
+const AMBIENT_ONLY = createProductionRuntimeEnvironment(snapshot([{ kind: "light", light: "ambient", color: "#ffffff", intensity: 0.05 }])).lighting;
+const SUN_ONLY = createProductionRuntimeEnvironment(snapshot([{ kind: "light", light: "directional", color: "#ffffff", intensity: 3 }])).lighting;
+const CATEGORY = createProductionRuntimeEnvironment(snapshot([])).lighting;
 const PROCEDURAL = {
   color: [0.78, 0.8, 0.84] as [number, number, number],
   intensity: 0.42,
@@ -35,19 +40,15 @@ const PROCEDURAL = {
 };
 
 describe("legacy path under A3D_QR_LIGHTING binds the neutral room (#1141 / 02-S2)", () => {
-  it("ambient-only scene: neutral-room map bound, authored ambient stays additive", () => {
+  it("scenes with authored lights keep their legacy environment (01/12/14 stay at three parity)", () => {
     setRendererQrFlags(LIGHTING_ON);
-    const lighting = collectEnvironmentLighting({ environmentLighting: AMBIENT_ONLY } as never)!;
-    expect(lighting.environmentMapTexture?.texture?.format).toBe("rgba16f");
-    expect(lighting.environmentMapEncoding).toBe("linear");
-    expect(lighting.environmentMapIntensity).toBe(1);
-    expect(lighting.intensity).toBe(0.05);
-    expect(lighting.color).toEqual([1, 1, 1]);
+    expect(collectEnvironmentLighting({ environmentLighting: AMBIENT_ONLY } as never)).toBe(AMBIENT_ONLY);
+    expect(collectEnvironmentLighting({ environmentLighting: SUN_ONLY } as never)).toBe(SUN_ONLY);
   });
 
-  it("no lights / category procedural map: neutral room replaces it, no ambient added", () => {
+  it("no environment and no lights: the neutral room replaces the category map, no ambient added", () => {
     setRendererQrFlags(LIGHTING_ON);
-    for (const source of [{}, { environmentLighting: PROCEDURAL }]) {
+    for (const source of [{}, { environmentLighting: CATEGORY }]) {
       const lighting = collectEnvironmentLighting(source as never)!;
       expect(lighting.environmentMapTexture).toBeDefined();
       expect(lighting.proceduralMap).toBeUndefined();
@@ -55,8 +56,9 @@ describe("legacy path under A3D_QR_LIGHTING binds the neutral room (#1141 / 02-S
     }
   });
 
-  it("an authored environment map still wins under the flag", () => {
+  it("authored (unmarked) environments keep their lighting under the flag", () => {
     setRendererQrFlags(LIGHTING_ON);
+    expect(collectEnvironmentLighting({ environmentLighting: PROCEDURAL } as never)).toBe(PROCEDURAL);
     const map = new TextureBinding({ name: "u_environmentMapTexture", texture: new Texture({ label: "hdri", width: 2, height: 1 }), required: true });
     const authored = { ...PROCEDURAL, environmentMapTexture: map, environmentMapIntensity: 0.8 };
     expect(collectEnvironmentLighting({ environmentLighting: authored } as never)).toBe(authored);
@@ -65,6 +67,7 @@ describe("legacy path under A3D_QR_LIGHTING binds the neutral room (#1141 / 02-S
   it("flag off is unchanged: the legacy environment is returned as-is", () => {
     setRendererQrFlags(BASE);
     expect(collectEnvironmentLighting({ environmentLighting: AMBIENT_ONLY } as never)).toBe(AMBIENT_ONLY);
+    expect(collectEnvironmentLighting({ environmentLighting: CATEGORY } as never)).toBe(CATEGORY);
     expect(collectEnvironmentLighting({} as never)?.environmentMapTexture).toBeUndefined();
   });
 });

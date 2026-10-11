@@ -28,6 +28,14 @@ on:
         description: "QRC_GAMES override (comma-separated app dirs)"
         required: false
         default: ""
+      runner:
+        # 14-S1..S9 on the GPU pool (program-lead ruling): same labels as
+        # qr-azure-gpu.yml (#956). Frames compare within one runner class only.
+        # Default track0: hosted macos-14 never starts jobs for this repo.
+        description: "Capture runner: track0 (L4, default) | azure-gpu (L4) | macos-14"
+        type: choice
+        options: [track0, azure-gpu, macos-14]
+        default: track0
 
 concurrency:
   group: qr-prd14-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
@@ -83,8 +91,11 @@ jobs:
           # CI-1: no shallow re-fetch — it broke "$BASE...HEAD" merge-base
           # resolution and silently emptied DIRS, skipping static+capture.
           set -o pipefail
-          DIRS="$(git diff --name-only "$BASE"...HEAD -- 'apps/' | cut -d/ -f2 | sort -u | paste -sd, -)"
-          APPS_TOUCHED="$(git diff --name-only "$BASE"...HEAD -- 'apps/' | wc -l)"
+          # 14-KITS: apps/showcase-kits is kit staging + the internal look-dev
+          # page, not a route (no route-health.json, not in games.json); its
+          # manifests are gated by tests/qr/prd14/unit/kits.test.ts in `unit`.
+          DIRS="$(git diff --name-only "$BASE"...HEAD -- 'apps/' ':(exclude)apps/showcase-kits/**' | cut -d/ -f2 | sort -u | paste -sd, -)"
+          APPS_TOUCHED="$(git diff --name-only "$BASE"...HEAD -- 'apps/' ':(exclude)apps/showcase-kits/**' | wc -l)"
           if [ -n "${GAMES_INPUT:-}" ]; then DIRS="${GAMES_INPUT}"; fi
           # 14-CI: the nightly run covers all 18 routes so every job executes
           # on main even when the last commit touched no app.
@@ -148,8 +159,10 @@ jobs:
       - run: node scripts/check-art-direction.mjs --routes "${{ needs.routes.outputs.dirs }}"
 
   capture:
-    name: Capture changed games + runtime audit (macos-14)
-    runs-on: macos-14
+    name: Capture changed games + runtime audit (${{ inputs.runner || 'track0' }})
+    # Fork PR heads never reach a self-hosted runner (non-dispatch events and
+    # unset input stay on macos-14).
+    runs-on: ${{ (inputs.runner || 'track0') == 'azure-gpu' && fromJSON('["self-hosted","azure-gpu","gpu-l4"]') || ((inputs.runner || 'track0') == 'track0' && fromJSON('["self-hosted","track0","gpu-l4"]')) || 'macos-14' }}
     # 14-S1..S9: capture + every lane chromium spec for the selected routes
     # (18 routes on the nightly run, each with a 60 s S9 window).
     timeout-minutes: 180
@@ -173,6 +186,18 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install chromium
+      - name: Chromium GPU flags for this runner
+        env:
+          RUNNER_KIND: ${{ inputs.runner || 'track0' }}
+          QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
+        run: |
+          set -euo pipefail
+          case "$RUNNER_KIND" in
+            macos-14) args="--use-angle=metal --enable-gpu --ignore-gpu-blocklist" ;;
+            azure-gpu|track0) args="${QR_AZURE_GPU_CHROME_ARGS:---headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist}" ;;
+            *) echo "::error::unknown runner '$RUNNER_KIND'"; exit 1 ;;
+          esac
+          { echo "QRC_GPU_ARGS=$args"; echo "QR_CHROMIUM_ARGS=$args"; } >> "$GITHUB_ENV"
       - name: Fail when route detection produced no dirs on a code PR
         if: needs.routes.outputs.dirs == ''
         run: |
@@ -215,7 +240,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: prd14-evidence-${{ github.sha }}
+          name: prd14-evidence-${{ inputs.runner || 'track0' }}-${{ github.sha }}
           path: |
             tools/quality-rebuild-capture/out/
             tests/qr/prd14/reports/
@@ -234,8 +259,9 @@ jobs:
   browser-matrix:
     # WEBKIT-FF (PRD-14 §18): WebKit covers S1/S2/S11; Firefox covers the S1
     # boot + 60 s timeline with 0 errors (A3D_DISPATCH_SOAK_MS).
-    name: WebKit + Firefox S-matrix (macos-14)
-    runs-on: macos-14
+    # Hosted macos-14 never starts jobs for this repo; Linux WebKit/Firefox.
+    name: WebKit + Firefox S-matrix (ubuntu-latest)
+    runs-on: ubuntu-latest
     timeout-minutes: 120
     needs: [unit, routes]
     if: needs.routes.outputs.dirs != ''
@@ -255,7 +281,7 @@ jobs:
           node-version: "22"
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install webkit firefox
+      - run: pnpm exec playwright install --with-deps webkit firefox
       - name: Build changed games
         run: node tools/quality-rebuild-capture/capture-games.mjs --build-only --local-build
       - name: Select the specs for the built routes

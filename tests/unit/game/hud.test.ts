@@ -258,6 +258,47 @@ describe("mountHud (PRD-09 1758/1759)", () => {
     const value = (slot.children[0] as FakeEl).children.find((n) => String(n.className).includes("a3g-w-value"))!;
     expect(value.textContent).toBe("0");
   });
+
+  it("applies mobileAnchor only while the mobile layout query matches", () => {
+    const doc = new FakeDoc();
+    const root = doc.createElement("div");
+    const listeners = new Set<() => void>();
+    const query = {
+      matches: false,
+      addEventListener: (_t: "change", cb: () => void) => { listeners.add(cb); },
+      removeEventListener: (_t: "change", cb: () => void) => { listeners.delete(cb); }
+    };
+    const hud = mountHud(
+      { root, doc, devAssertions: false, mobileQuery: query, schedule: () => ({ cancel: () => {} }) },
+      {
+        widgets: [
+          { id: "combo", kind: "combo", anchor: "top-right", mobileAnchor: "bottom-right" },
+          { id: "speed", kind: "speedometer", anchor: "bottom-right", mobileAnchor: "hidden" }
+        ]
+      }
+    );
+    const hudEl = root.children[0] as FakeEl;
+    const slotIds = (anchor: string) =>
+      hudEl.children.find((c) => c.dataset.anchor === anchor)!.children.map((c) => c.dataset.widgetId);
+    // Desktop: both widgets sit in their desktop anchors; "hidden" is a CSS
+    // class that only the mobile media query turns into display:none.
+    expect(slotIds("top-right")).toEqual(["combo"]);
+    expect(slotIds("bottom-right")).toEqual(["speed"]);
+    const speed = hudEl.children.find((c) => c.dataset.anchor === "bottom-right")!.children[0] as FakeEl;
+    expect(speed.classList.contains("a3g-mobile-hidden")).toBe(true);
+
+    query.matches = true;
+    listeners.forEach((cb) => cb());
+    expect(slotIds("top-right")).toEqual([]);
+    expect(slotIds("bottom-right")).toEqual(["speed", "combo"]);
+
+    query.matches = false;
+    listeners.forEach((cb) => cb());
+    expect(slotIds("top-right")).toEqual(["combo"]);
+
+    hud.dispose();
+    expect(listeners.size).toBe(0);
+  });
 });
 
 describe("screenFraction", () => {

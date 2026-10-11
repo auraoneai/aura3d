@@ -23,6 +23,8 @@ export async function runSpecTool(tool: string, stage: HTMLElement): Promise<{ r
       return (await import("./captureTools")).runCapturePdbTool(stage);
     case "dpr":
       return (await import("./captureTools")).runDprTool(stage);
+    case "temporal-dolly":
+      return (await import("./temporalDollyTools")).runTemporalDollyTool(stage);
     default:
       throw new Error(`unknown spec tool "${tool}"`);
   }

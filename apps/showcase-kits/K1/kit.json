@@ -1,0 +1,107 @@
+{
+  "$schema": "../kit.schema.json",
+  "schemaVersion": 1,
+  "kit": "K1",
+  "name": "HDRI set",
+  "consumers": [
+    "all 18"
+  ],
+  "budget": {
+    "summary": "2k RGBE .hdr per HDRI for IBL (<= 6 MB), 4k AVIF or KTX2 UASTC LDR background plate (<= 3 MB); Low tier 1k",
+    "maxBytesRaw": null,
+    "maxBytesShipped": null
+  },
+  "contents": [
+    "studioSmall08, autumnFieldPuresky, kloppenheim06Puresky (existing benchmark HDRIs)",
+    "night-city street",
+    "pool-hall/bar interior",
+    "industrial hangar",
+    "dusk rooftop city",
+    "sunset ocean",
+    "deep-space starfield (8k equirect)",
+    "museum interior"
+  ],
+  "lookdev": {
+    "runId": null,
+    "reviewer": null,
+    "verdict": "pending"
+  },
+  "files": [
+    {
+      "id": "studio-small-08-1k",
+      "kind": "environment",
+      "path": "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
+      "source": "https://polyhaven.com/a/studio_small_08",
+      "licence": "CC0-1.0",
+      "author": "Poly Haven",
+      "sha256": "f6a989f89432eb4eee3191364a9c1ceed195c4ec3544173a3c04fd96cb91d0ba",
+      "bytes": 1508872,
+      "triangles": null,
+      "textures": [
+        {
+          "role": "ibl-equirect",
+          "width": 1024,
+          "height": 512,
+          "format": "rgbe-hdr"
+        }
+      ],
+      "lookdev": {
+        "runId": null,
+        "reviewer": null,
+        "verdict": "pending"
+      },
+      "notes": "1k benchmark fixture (benchmarks/quality-rebuild/shared/assets.ts). The game library admits the 2k/4k versions of the same Poly Haven CC0 source (PRD-14 §6.4 K1)."
+    },
+    {
+      "id": "autumn-field-puresky-1k",
+      "kind": "environment",
+      "path": "fixtures/environment-corpus/hdri/autumn_field_puresky_1k.hdr",
+      "source": "https://polyhaven.com/a/autumn_field_puresky",
+      "licence": "CC0-1.0",
+      "author": "Poly Haven",
+      "sha256": "e60470d3a0f219585df1d74c393b472361c5400a7ff8d071ebe6eca29b7fe2b0",
+      "bytes": 1092974,
+      "triangles": null,
+      "textures": [
+        {
+          "role": "ibl-equirect",
+          "width": 1024,
+          "height": 512,
+          "format": "rgbe-hdr"
+        }
+      ],
+      "lookdev": {
+        "runId": null,
+        "reviewer": null,
+        "verdict": "pending"
+      },
+      "notes": "1k benchmark fixture (benchmarks/quality-rebuild/shared/assets.ts). The game library admits the 2k/4k versions of the same Poly Haven CC0 source (PRD-14 §6.4 K1)."
+    },
+    {
+      "id": "kloppenheim-06-puresky-1k",
+      "kind": "environment",
+      "path": "fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr",
+      "source": "https://polyhaven.com/a/kloppenheim_06_puresky",
+      "licence": "CC0-1.0",
+      "author": "Poly Haven",
+      "sha256": "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34",
+      "bytes": 1173154,
+      "triangles": null,
+      "textures": [
+        {
+          "role": "ibl-equirect",
+          "width": 1024,
+          "height": 512,
+          "format": "rgbe-hdr"
+        }
+      ],
+      "lookdev": {
+        "runId": null,
+        "reviewer": null,
+        "verdict": "pending"
+      },
+      "notes": "1k benchmark fixture (benchmarks/quality-rebuild/shared/assets.ts). The game library admits the 2k/4k versions of the same Poly Haven CC0 source (PRD-14 §6.4 K1)."
+    }
+  ],
+  "notes": "Candidates staged by reference; verdict stays pending until a human reviewer records accept on the three r185 look-dev pane."
+}

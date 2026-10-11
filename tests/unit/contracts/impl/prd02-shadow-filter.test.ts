@@ -37,7 +37,7 @@ describe("02-T1945 shadow filter → A3D_SHADOW_FILTER", () => {
 
   it("prd02.shadowFilter is active only with A3D_QR_LIGHTING and emits the tier kernel for forward receivers", () => {
     expect(shaderFeaturesFor(FLAGS_ON).map((f) => f.id)).toContain("prd02.shadowFilter");
-    expect(shaderFeaturesFor(resolveQrFlags({})).map((f) => f.id)).not.toContain("prd02.shadowFilter");
+    expect(shaderFeaturesFor(resolveQrFlags({ options: ["none"] })).map((f) => f.id)).not.toContain("prd02.shadowFilter");
     const select = (tier: keyof typeof QUALITY_TIERS, extra: Partial<RenderItem> = {}, pass: "forward" | "depth" = "forward") =>
       PRD02_SHADOW_FILTER_FEATURE.select({ item: item(extra), pass, tier: QUALITY_TIERS[tier], flags: FLAGS_ON });
     expect(select("medium")).toBe(2);

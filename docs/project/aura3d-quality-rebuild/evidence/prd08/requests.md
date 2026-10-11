@@ -32,5 +32,4 @@ One `qr-request` issue per row, labelled `to:prdNN` (CCR rows also `ccr`).
 | Q-15-7 | 15 | https://github.com/auraoneai/aura3d/issues/628 |
 | Q-15-8 | 15 | https://github.com/auraoneai/aura3d/issues/629 |
 | Q-15-9 | 15 | https://github.com/auraoneai/aura3d/issues/645 |
-
-| #734 | to:prd15 | `createShoulderCamera` undefined via `@aura3d/engine` barrel — import-order cycle in `agent-api/index.ts`; leaf/facade resolve fine. Repro R-5 `camera-rigs-view.test.ts`. Filed 2026-10-09 during S19 work; predates the rig-registry refactor (reproduced on pre-change head). |
+| R-5 barrel (#734) | 15 | https://github.com/auraoneai/aura3d/issues/734 (closed: not an import cycle; `@aura3d/engine` never exported `createShoulderCamera`, R-5 imports `@aura3d/engine/lanes`; green in main run 38113231509) |

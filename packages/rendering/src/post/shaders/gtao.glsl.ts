@@ -119,6 +119,9 @@ void main() {
   vec2 uv = gl_FragCoord.xy * texel;
   vec3 viewPos = getViewPosition(uv, viewZ);
   vec3 viewNormal = computeNormalFromDepth(p, texel);
+  // #1185's orthographic +Z view direction made GTAO a no-op (contact
+  // darkening 0, GPU run 38151583035); reverted until the slice math is
+  // proven for orthographic cameras.
   vec3 viewDir = normalize(-viewPos);
 
   // radius metres → pixels at this depth, clamped to the march budget.

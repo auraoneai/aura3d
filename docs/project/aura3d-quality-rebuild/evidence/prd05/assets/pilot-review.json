@@ -7,7 +7,19 @@
     "deltas are per-G-PANEL asset changes: which replacement-lists.json picks shipped, visual delta vs the previous checkpoint capture (rubric axes from the lookdev record), and VRAM/draw/ready-byte movement vs tier-measurements.json.",
     "Every pilot requires a named human sign-off (pass|fail + notes). Misses are filed as qr-ic-regression issues, attributed per game by leave-one-out: re-run the pilot with one replacement reverted; the delta isolates the offending asset."
   ],
-  "rounds": [],
+  "rounds": [
+    {
+      "round": "IC-4 G-PANEL 1",
+      "plannedDate": "2026-11-05",
+      "status": "pending",
+      "note": "Skeleton only (05-PHASE7). No data yet: fill from the lane-14 games-capture run on main (GitHub macos-14) at IC-4. Every field stays empty or null until then.",
+      "captureRunIds": [],
+      "leaveOneOutRunIds": [],
+      "games": [],
+      "humanSignOff": null,
+      "qrIcRegressionIssues": []
+    }
+  ],
   "pilots": [
     { "game": "showcase-skyline-runner", "title": "Skyline Runner", "status": "awaiting-g-panel", "signOff": null, "deltas": [] },
     { "game": "showcase-mech-hangar", "title": "Mech Hangar", "status": "awaiting-g-panel", "signOff": null, "deltas": [] },

@@ -42,7 +42,9 @@ export interface FxPreset {
 }
 
 export const FX_PRESETS: Readonly<Record<GameFxKind, FxPreset>> = Object.freeze({
-  spark: { shape: "sphere", life: [0.2, 0.45], speed: [3, 7], gravity: 9.8, drag: 1.5, scale: [0.02, 0.05], color: "#ffd27a", spread: 1.2 },
+  // Pool growth starts at 35% of this size. Keep the opening burst visible
+  // at gameplay distance; the former 2–5 cm range became subpixel at onset.
+  spark: { shape: "sphere", life: [0.2, 0.45], speed: [3, 7], gravity: 9.8, drag: 1.5, scale: [0.14, 0.35], color: "#ffd27a", spread: 1.2 },
   dust: { shape: "quad", life: [0.5, 0.9], speed: [0.4, 1.2], gravity: 0.4, drag: 2.5, scale: [0.15, 0.35], color: "#c8c0b4", spread: 2.2 },
   debris: { shape: "sphere", life: [0.4, 0.8], speed: [2, 5], gravity: 12, drag: 0.8, scale: [0.03, 0.07], color: "#8a8a8a", spread: 1.6 },
   ring: { shape: "quad", life: [0.3, 0.5], speed: [2.5, 4], gravity: 0, drag: 3, scale: [0.1, 0.2], color: "#9fd8ff", spread: 0.3 },

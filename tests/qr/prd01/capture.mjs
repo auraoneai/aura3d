@@ -142,7 +142,12 @@ async function main() {
   }
   const { server, url } = await startStaticServer(DIST, PORT);
   console.log(`[prd01-capture] serving ${DIST} at ${url}`);
-  const browser = await chromium.launch();
+  // GPU job: same env contract as playwright.config.ts (unset = default launch).
+  const gpuArgs = (process.env.QR_PRD01_CHROME_ARGS ?? "").split(/\s+/).filter(Boolean);
+  const browser = await chromium.launch({
+    ...(process.env.QR_PRD01_CHANNEL ? { channel: process.env.QR_PRD01_CHANNEL } : {}),
+    ...(gpuArgs.length > 0 ? { args: gpuArgs } : {})
+  });
   const failures = [];
   const report = { generated: new Date().toISOString(), flags: FLAG_SETS, scenes: {}, metrics: [], captures: [] };
 

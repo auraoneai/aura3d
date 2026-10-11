@@ -48,6 +48,7 @@ import { wireGravityPrediction } from "./prediction";
 import { wireGravitySync } from "./sync";
 import { wireGravityHud } from "./hud";
 import { wireGravityUpdate } from "./update";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_GRAVITY_POST" as const;
 const MAX_LAUNCH_SPEED = 2.85;
@@ -130,16 +131,16 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "launch": { asset: "gravityPostLaunchWhooshSfx" },
-      "burn": { asset: "gravityPostBurnLoopSfx" },
-      "dock": { asset: "gravityPostDockLockSfx" },
-      "bounce": { asset: "gravityPostBounceOffSfx" },
-      "pod-lost": { asset: "gravityPostPodLostSfx" },
-      "contract-clear": { asset: "gravityPostContractClearSfx" },
-      "assist": { asset: "gravityPostAssistChimeSfx" },
-      "warp": { asset: "gravityPostWarpHumSfx" },
-      "ui-confirm": { asset: "gravityPostUiConfirmSfx" },
-      "ambient": { asset: "gravityPostAmbientSpaceSfx" }
+      "launch": { asset: assets.gravityPostLaunchWhooshSfx },
+      "burn": { asset: assets.gravityPostBurnLoopSfx },
+      "dock": { asset: assets.gravityPostDockLockSfx },
+      "bounce": { asset: assets.gravityPostBounceOffSfx },
+      "pod-lost": { asset: assets.gravityPostPodLostSfx },
+      "contract-clear": { asset: assets.gravityPostContractClearSfx },
+      "assist": { asset: assets.gravityPostAssistChimeSfx },
+      "warp": { asset: assets.gravityPostWarpHumSfx },
+      "ui-confirm": { asset: assets.gravityPostUiConfirmSfx },
+      "ambient": { asset: assets.gravityPostAmbientSpaceSfx }
     }
   },
   juice: {
@@ -150,11 +151,11 @@ const game = createGame({
     "assist": { trauma: 0.06 }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_gravity_post` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-gravity-post`).
-    flags: ["route_gravity_post", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_gravity_post", "game"]
   }
 });
 

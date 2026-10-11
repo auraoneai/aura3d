@@ -91,13 +91,48 @@ export function getRootPerformanceBaseSize(canvas: HTMLCanvasElement): { readonl
 
 export interface RootRenderSourceBridge { readonly source: RenderSource; readonly onFrame?: (diagnostics: RenderDeviceDiagnostics, submittedItems: readonly RenderItem[]) => void }
 const bridges = new WeakMap<HTMLCanvasElement, RootRenderSourceBridge>();
+// PRD-07 FIX-bridge-exclusive: the effects extension publishes its feeds as an
+// overlay in its own slot, so an app that owns the exclusive compatibility
+// bridge (Aura Clash, smart-city) and the vfx bridge can share one canvas in
+// either attach order. Reads see one merged view: overlay keys win, except
+// `collectedLights`, which concatenates both sides.
+const overlays = new WeakMap<HTMLCanvasElement, RenderSource>();
+const merged = new WeakMap<HTMLCanvasElement, RootRenderSourceBridge>();
 export function attachRootRenderSource(canvas: HTMLCanvasElement, bridge: RootRenderSourceBridge): () => void {
   if (bridges.has(canvas)) throw new Error("A canvas already has a production-runtime source bridge.");
   bridges.set(canvas, bridge);
-  return () => { if (bridges.get(canvas) === bridge) bridges.delete(canvas); };
+  merged.delete(canvas);
+  return () => { if (bridges.get(canvas) === bridge) { bridges.delete(canvas); merged.delete(canvas); } };
 }
-export function getRootRenderSource(canvas: HTMLCanvasElement): RootRenderSourceBridge | undefined { return bridges.get(canvas); }
-export function hasRootRenderableContent(canvas: HTMLCanvasElement | undefined, hasPublicGeometry: boolean): boolean { return hasPublicGeometry || Boolean(canvas && bridges.has(canvas)); }
+/** One overlay per canvas; a second attach throws (the vfx bridge reports VFX_APP_BINDING_AMBIGUOUS). */
+export function attachRootRenderSourceOverlay(canvas: HTMLCanvasElement, overlay: RenderSource): () => void {
+  if (overlays.has(canvas)) throw new Error("A canvas already has a production-runtime source overlay.");
+  overlays.set(canvas, overlay);
+  merged.delete(canvas);
+  return () => { if (overlays.get(canvas) === overlay) { overlays.delete(canvas); merged.delete(canvas); } };
+}
+function mergeRootRenderSource(base: RootRenderSourceBridge | undefined, overlay: RenderSource): RootRenderSourceBridge {
+  const source = {} as RenderSource;
+  // Descriptors (not values) so getter-backed feeds stay live per frame.
+  if (base) Object.defineProperties(source, Object.getOwnPropertyDescriptors(base.source));
+  Object.defineProperties(source, Object.getOwnPropertyDescriptors(overlay));
+  if (base && "collectedLights" in base.source && "collectedLights" in overlay) {
+    Object.defineProperty(source, "collectedLights", {
+      enumerable: true,
+      configurable: true,
+      get: () => [...(base.source.collectedLights ?? []), ...(overlay.collectedLights ?? [])]
+    });
+  }
+  return base?.onFrame ? { source, onFrame: base.onFrame } : { source };
+}
+export function getRootRenderSource(canvas: HTMLCanvasElement): RootRenderSourceBridge | undefined {
+  const overlay = overlays.get(canvas);
+  if (!overlay) return bridges.get(canvas);
+  let view = merged.get(canvas);
+  if (!view) merged.set(canvas, (view = mergeRootRenderSource(bridges.get(canvas), overlay)));
+  return view;
+}
+export function hasRootRenderableContent(canvas: HTMLCanvasElement | undefined, hasPublicGeometry: boolean): boolean { return hasPublicGeometry || Boolean(canvas && (bridges.has(canvas) || overlays.has(canvas))); }
 export function includeRootSourceMetadata<T extends { meshCount: number; primitiveCount: number; materialCount: number }>(metadata: T, attachedItems: readonly RenderItem[]): T {
   const renderable = attachedItems.filter(item => item.geometry && item.material);
   if (!renderable.length) return metadata;

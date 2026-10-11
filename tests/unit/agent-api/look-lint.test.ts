@@ -181,7 +181,7 @@ describe("collectGeneratedCodeWarnings flag gating (T1.6)", () => {
   const unlit = snap([prim("a")]);
 
   it("flag off keeps the legacy no-lights sentence byte-identical", () => {
-    const warnings = collectGeneratedCodeWarnings(unlit, resolveQrFlags({ options: [] }));
+    const warnings = collectGeneratedCodeWarnings(unlit, resolveQrFlags({ options: ["none"] }));
     expect(warnings[0]).toBe(
       "Scene has no lights. Suggested fix: add lights.studio() or lights.ambient()."
     );
@@ -196,7 +196,7 @@ describe("collectGeneratedCodeWarnings flag gating (T1.6)", () => {
     // ambient-authored scenes get the §6.2 ambient-kills-ibl text.
     const ambientWarnings = collectGeneratedCodeWarnings(
       snap([amb(0.6)]),
-      resolveQrFlags({ options: ["looks"] })
+      resolveQrFlags({ options: ["looks", "-lighting"] })
     );
     expect(ambientWarnings.some((w) => w.includes("lights.ambient` disables"))).toBe(true);
   });

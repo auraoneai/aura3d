@@ -1,17 +1,10 @@
 /**
  * PRD-06 T0.9a — the fighting-game clip-map pattern as a lane fixture.
  *
- * `templates/fighting-game/src/game/fighters.ts` still registers nine
- * `tracks: []` / `poseBakedFallback` clips; its rewrite (Q-13-1, PRD 13)
- * adopts this pattern. The map is modelled on
- * `apps/aura-clash-showcase/src/playable/animation/auraClashClipMaps.ts` and
- * is explicit about stand-ins for today's default hero pair (E9b), read by
- * path from `templates/fighting-game/src/aura-assets.ts`:
- *
- * - player `showcaseWalkAnimatedGirl` embeds only "Take 001" → every state
- *   maps to it, `standIn: true` on all but `walk`;
- * - rival `showcaseRunnerRobot` embeds IDLE/WALK/RUN/ALL → idle→IDLE,
- *   walk→WALK, dash→RUN, everything else stands in on IDLE.
+ * Validate the real starter rigs from the template's typed asset manifest.
+ * Each gameplay state resolves to an embedded clip. Neither rig has a
+ * dedicated special-attack clip, so those states explicitly stand in on idle.
+ * The fixture tests clip resolution; it does not assert runtime choreography.
  */
 
 import { validateClipMap, type AuraClipMapEntry, type AuraClipMapValidationReport } from "../../../../../packages/engine/src/agent-api/GameCharacterAnimation";
@@ -37,27 +30,27 @@ export type FighterAssetKey = keyof typeof assets;
 export type FighterClipMap = Record<FighterAssetKey, Record<FighterClip, AuraClipMapEntry>>;
 
 export const fighterClipMap: FighterClipMap = {
-  showcaseWalkAnimatedGirl: {
-    idle: { clip: "Take 001", standIn: true },
-    walk: { clip: "Take 001" },
-    jump: { clip: "Take 001", standIn: true },
-    dash: { clip: "Take 001", standIn: true },
-    guard: { clip: "Take 001", standIn: true },
-    light: { clip: "Take 001", standIn: true },
-    heavy: { clip: "Take 001", standIn: true },
-    special: { clip: "Take 001", standIn: true },
-    hitstun: { clip: "Take 001", standIn: true }
+  auraclashPlayerRig: {
+    idle: { clip: "Idle_Loop" },
+    walk: { clip: "Walk_Loop" },
+    jump: { clip: "Jump_Loop" },
+    dash: { clip: "Sprint_Loop" },
+    guard: { clip: "Sword_Block" },
+    light: { clip: "Punch_Jab" },
+    heavy: { clip: "Punch_Cross" },
+    special: { clip: "Idle_Loop", standIn: true },
+    hitstun: { clip: "Hit_Chest" }
   },
-  showcaseRunnerRobot: {
-    idle: { clip: "IDLE" },
-    walk: { clip: "WALK" },
-    jump: { clip: "IDLE", standIn: true },
-    dash: { clip: "RUN" },
-    guard: { clip: "IDLE", standIn: true },
-    light: { clip: "IDLE", standIn: true },
-    heavy: { clip: "IDLE", standIn: true },
-    special: { clip: "IDLE", standIn: true },
-    hitstun: { clip: "IDLE", standIn: true }
+  auraclashRivalRig: {
+    idle: { clip: "Idle_FoldArms_Loop" },
+    walk: { clip: "Zombie_Walk_Fwd_Loop" },
+    jump: { clip: "NinjaJump_Idle_Loop" },
+    dash: { clip: "Shield_Dash_RM" },
+    guard: { clip: "Sword_Block" },
+    light: { clip: "Melee_Hook" },
+    heavy: { clip: "Sword_Regular_A" },
+    special: { clip: "Idle_FoldArms_Loop", standIn: true },
+    hitstun: { clip: "Hit_Knockback" }
   }
 };
 

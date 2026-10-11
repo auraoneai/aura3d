@@ -25,12 +25,13 @@ import {
   executePrd02BridgedShadowMap,
   prd02LookupConsumerExists,
   prd02ShadowConfig,
+  shadowFrameCamera,
   takePrd02BridgedShadowFrame
 } from "../../../../packages/rendering/src/shadows/Prd02ShadowBridge";
 import { createPrd02ShadowsContributor } from "../../../../packages/rendering/src/shadows/Prd02ShadowsContributor";
 
 const FLAGS_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
-const BASE = resolveQrFlags({});
+const BASE = resolveQrFlags({ options: ["none"] });
 
 afterEach(() => setRendererQrFlags(BASE));
 
@@ -267,5 +268,41 @@ describe("T0-26 review fixes (structural camera, receiver consumers, maxDistance
     device.endFrame();
     const last = map!.cascades![map!.cascades!.length - 1]!;
     expect(last.far).toBeCloseTo(20, 5);
+  });
+});
+
+describe("#1141 structural camera without a collect-phase observation", () => {
+  it("renders the sun cascades from the renderer's frame camera (VP + eye)", () => {
+    const { device, labels } = countingDevice();
+    const cam = camera();
+    const frameCamera = shadowFrameCamera(cam.viewProjectionMatrix, [0, 3, 8]);
+    // near/far recovered from the matrix, not defaulted.
+    expect(frameCamera?.near).toBeCloseTo(0.1, 3);
+    expect(frameCamera?.far).toBeCloseTo(60, 1);
+    device.beginFrame(256, 256);
+    const map = executePrd02BridgedShadowMap({ device, source: source(), items: [item()], camera: undefined, frameCamera, flags: FLAGS_ON });
+    device.endFrame();
+    expect(map?.cascades).toHaveLength(2);
+    expect(labels.filter((l) => l.startsWith("prd02-cascade-"))).toHaveLength(2);
+  });
+
+  it("the orchestrator forwards frameCamera to the bridge under the flag", () => {
+    const { device, labels } = countingDevice();
+    setRendererQrFlags(FLAGS_ON);
+    const orchestrator = new RendererShadowOrchestrator({
+      device, width: 256, height: 256, shaderLibrary: createLeanCoreShaderLibrary(),
+      shadowDepthTarget: null, frameIndex: 0
+    } as never);
+    const cam = camera();
+    device.beginFrame(256, 256);
+    const map = orchestrator.executeRendererShadowMap({
+      shadowOptions: { enabled: true, prd02Shadows: PRD02_SHADOWS } as never,
+      source: source(), items: [item()], lights: [sunLight()],
+      ownedTargets: [], ownedShadowPasses: [],
+      frameCamera: shadowFrameCamera(cam.viewProjectionMatrix, [0, 3, 8])
+    });
+    device.endFrame();
+    expect(map?.cascades).toHaveLength(2);
+    expect(labels.filter((l) => l.startsWith("prd02-cascade-"))).toHaveLength(2);
   });
 });

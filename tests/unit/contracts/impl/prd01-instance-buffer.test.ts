@@ -15,7 +15,7 @@ import "../../../../packages/rendering/src/lanes/prd01";
 describe("prd01 C-07 InstanceBuffer", () => {
   it("slot.get returns the stub when the flag is off, the real buffer when provided+on", () => {
     const device = new MockRenderDevice();
-    const flagsOff = resolveQrFlags({});
+    const flagsOff = resolveQrFlags({ options: ["-core"] });
     const flagsOn = resolveQrFlags({ env: { A3D_QR_CORE: "v2" } });
     const make = instanceBufferSlot.get(flagsOff);
     const madeOff = make(device, 4);

@@ -6,13 +6,14 @@
 //   key    KIRO_PRISM_API_KEY  (CI secret store — never written to disk)
 //   model  A3D_EVAL_AGENT_MODEL (pinned per round; Operator route id, e.g.
 //          "kiro-prism/claude-opus-5.5" or the bare catalog id)
-// Claude Code is configured the documented way: ANTHROPIC_BASE_URL points at
-// the Prism Anthropic leg (`<KIRO_PRISM_URL>/anthropic`, override with
+// Claude Code is configured the way kiro-prism SETUP.md "Claude Code (separate
+// setup)" documents: ANTHROPIC_BASE_URL is the Prism root (Prism serves the
+// Anthropic Messages API at `/v1/messages`; override with
 // A3D_EVAL_AGENT_BASE_URL), ANTHROPIC_AUTH_TOKEN carries the key in-process,
-// and ANTHROPIC_CUSTOM_HEADERS carries the X-Prism-* attribution headers.
-// (Authoritative doc: /Users/gurbakshchahal/kiro-prism/{README,API,SETUP,LLM}.md
-// — mirrored conventions from auraoneai/Operator prism-client.mjs until those
-// files are committed; adjust the env block below, nowhere else.)
+// and ANTHROPIC_CUSTOM_HEADERS carries the X-Prism-* attribution headers
+// (kiro-prism API.md "Required App Attribution Headers"). The model sent to
+// Prism is the canonical catalog id (`claude-opus-5.5`); the Operator/Codex
+// route form `kiro-prism/<id>` is accepted and stripped to it.
 import { spawn } from "node:child_process";
 import { createWriteStream, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
@@ -76,6 +77,22 @@ export function stubAgent(): AgentRunner {
 // ---------------------------------------------------------------------------
 // Claude Code headless via Kiro Prism.
 // ---------------------------------------------------------------------------
+
+/** Prism catalog id for a pinned model: `kiro-prism/claude-opus-5.5` → `claude-opus-5.5`. */
+export function prismModelId(model: string): string {
+  return model.replace(/^kiro-prism\//, "");
+}
+
+/** X-Prism-* attribution headers (one `Name: value` per entry) for one eval cell. */
+export function prismAttributionHeaders(req: Pick<AgentRunRequest, "runId" | "cellId">): string[] {
+  return [
+    "X-Prism-Client: aura3d-agent-eval",
+    "X-Prism-Job-Type: agent",
+    "X-Prism-Repo: auraoneai/aura3d",
+    `X-Prism-Session: ${req.runId}/${req.cellId}`,
+    `X-Prism-Agent-Id: ${req.cellId}`
+  ];
+}
 export function claudeCodeAgent(opts: { cli?: string } = {}): AgentRunner {
   const cli = opts.cli ?? process.env.A3D_EVAL_AGENT_CMD ?? "claude";
   return {
@@ -91,21 +108,18 @@ export function claudeCodeAgent(opts: { cli?: string } = {}): AgentRunner {
         };
       }
       const prismBase = (process.env.KIRO_PRISM_URL ?? "https://prism.auraone.ai").replace(/\/+$/, "");
-      const anthropicBase =
-        process.env.A3D_EVAL_AGENT_BASE_URL ?? `${prismBase}/anthropic`;
-      const headers = [
-        `X-Prism-Client: aura3d-agent-eval`,
-        `X-Prism-Job-Type: agent`,
-        `X-Prism-Repo: auraoneai/aura3d`,
-        `X-Prism-Session: ${req.runId}/${req.cellId}`
-      ].join("\n");
-      const env = {
+      const anthropicBase = process.env.A3D_EVAL_AGENT_BASE_URL ?? prismBase;
+      const model = prismModelId(req.model);
+      const headers = prismAttributionHeaders(req).join("\n");
+      const env: NodeJS.ProcessEnv = {
         ...process.env,
         ANTHROPIC_BASE_URL: anthropicBase,
         ANTHROPIC_AUTH_TOKEN: apiKey,
-        ANTHROPIC_MODEL: req.model,
+        ANTHROPIC_MODEL: model,
         ANTHROPIC_CUSTOM_HEADERS: headers
       };
+      // A stray native key must not route the cell around Prism.
+      delete env.ANTHROPIC_API_KEY;
       mkdirSync(join(req.transcriptPath, ".."), { recursive: true });
       const started = Date.now();
       return await new Promise<AgentRunResult>((resolvePromise) => {
@@ -116,7 +130,7 @@ export function claudeCodeAgent(opts: { cli?: string } = {}): AgentRunner {
             "-p", req.promptText,
             "--output-format", "stream-json",
             "--dangerously-skip-permissions",
-            "--model", req.model
+            "--model", model
           ],
           { cwd: req.workdir, env, stdio: ["ignore", "pipe", "pipe"] }
         );

@@ -2,7 +2,7 @@
 // camera frustum (far 100 m) instead of the bounded 14 m set, so shadows came
 // out coarse and detached. The fitter must shrink to the caster rectangle.
 import { describe, expect, it } from "vitest";
-import { fitDirectionalCascades, sliceDepthWithinRect } from "../../../../packages/rendering/src/shadows/DirectionalCascadeFitter";
+import { casterRectClamp, fitDirectionalCascades, sliceDepthWithinRect } from "../../../../packages/rendering/src/shadows/DirectionalCascadeFitter";
 import type { RenderItem } from "../../../../packages/rendering/src/contracts/renderItem";
 
 type V3 = readonly [number, number, number];
@@ -47,10 +47,11 @@ const casters = [
   box([-0.2, 1.6, -1.4], [1.2, 0.1, 1.2])
 ];
 const sunDirection = norm([-5, -8, -4]);
-const fit12 = () => fitDirectionalCascades({
+const fit12 = (sceneCasters: readonly RenderItem[] = casters, padding = 0.25) => fitDirectionalCascades({
   camera: { viewProjectionMatrix: viewProjection([0, 4.2, 7.2], [0, 0.4, 0], 45, 16 / 9, 0.1, 100), near: 0.1, far: 100 },
   lightDirection: sunDirection,
-  casters,
+  casters: sceneCasters,
+  padding,
   mapSize: 2048,
   cascadeCount: 1,
   maxDistance: 100
@@ -78,6 +79,20 @@ describe("#1141 bounded-scene sun cascade (12-shadows)", () => {
     const t = top[1] / -sunDirection[1];
     expect(inside([top[0] + sunDirection[0] * t, 0, top[2] + sunDirection[2] * t])).toBe(true);
   });
+
+  it("orders depth nearest-to-light first, so the less-equal depth pass keeps occluders", () => {
+    const cascade = fit12();
+    const top: V3 = [-1.9, 2, -0.4];
+    const t = top[1] / -sunDirection[1];
+    const ground: V3 = [top[0] + sunDirection[0] * t, 0, top[2] + sunDirection[2] * t];
+    const [uTop, vTop, zTop] = apply(cascade.viewProjection, top);
+    const [uGround, vGround, zGround] = apply(cascade.viewProjection, ground);
+    // Same shadow-map texel (the ray from the occluder hits this ground point)…
+    expect(uGround!).toBeCloseTo(uTop!, 5);
+    expect(vGround!).toBeCloseTo(vTop!, 5);
+    // …and the receiver is deeper than its occluder.
+    expect(zGround!).toBeGreaterThan(zTop!);
+  });
 });
 
 describe("sliceDepthWithinRect", () => {
@@ -91,5 +106,35 @@ describe("sliceDepthWithinRect", () => {
 
   it("returns null when the rectangle misses the slice", () => {
     expect(sliceDepthWithinRect(cube, { minX: 10, maxX: 11, minY: 10, maxY: 11 })).toBeNull();
+  });
+});
+
+
+describe("bounded cascade fallback guards", () => {
+  it("keeps zero-size casters with zero padding on a finite broad fit", () => {
+    const cascade = fit12([box([0, 0, 0], [0, 0, 0])], 0);
+    expect(cascade.texelWorld).toBeGreaterThan(0);
+    expect(cascade.texelWorld * 2048).toBeCloseTo(2 * cascade.radius);
+    expect(Array.from(cascade.viewProjection).every(Number.isFinite)).toBe(true);
+    expect(Array.from(cascade.drawViewProjection).every(Number.isFinite)).toBe(true);
+  });
+
+  it.each(["missing", "nonfinite"])("disables shrinking when a caster has %s bounds", (kind) => {
+    const unbounded = kind === "missing"
+      ? { ...box([0, 0, 0], [1, 1, 1]), geometry: {} } as unknown as RenderItem
+      : box([0, 0, 0], [Infinity, 1, 1]);
+    const cascade = fit12([...casters, unbounded]);
+    expect(cascade.casterCount).toBe(casters.length + 1);
+    expect(cascade.texelWorld * 2048).toBeCloseTo(2 * cascade.radius + 0.5);
+    expect(cascade.texelWorld).toBeGreaterThan(fit12().texelWorld * 10);
+    expect(Array.from(cascade.viewProjection).every(Number.isFinite)).toBe(true);
+  });
+
+  it("rejects nonfinite clamp extents", () => {
+    const cube: V3[] = [];
+    for (const x of [0, 4]) for (const y of [0, 4]) cube.push([x, y, 0], [x, y, 4]);
+    expect(casterRectClamp(cube, [{ min: [1, 1, 1], max: [2, 2, 2] }], {
+      right: [1, 0, 0], up: [0, 1, 0], forward: [0, 0, 1]
+    }, Infinity)).toBeNull();
   });
 });

@@ -34,7 +34,8 @@
       .a3g-toasts { position: absolute; bottom: 18%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 6px; }
       .a3g-toast { padding: 6px 12px; background: rgba(8,10,16,.9); border-radius: 4px; }
       .a3g-damage, .a3g-dmg { position: absolute; inset: 0; pointer-events: none; }
-      .a3g-mobile-hidden { display: none; }
+      /* mirrors hud-base.css: mobile-only rule, same breakpoint as HUD_MOBILE_QUERY */
+      @media (orientation: portrait) and (max-width: 480px) { .a3g-mobile-hidden { display: none; } }
       .a3g-touch { position: absolute; inset: 0; }
       .a3g-tc { position: absolute; width: 48px; height: 48px; border-radius: 8px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.3); }
       #keyhint { position: absolute; top: 45%; left: 12px; padding: 4px 8px; background: #223; }

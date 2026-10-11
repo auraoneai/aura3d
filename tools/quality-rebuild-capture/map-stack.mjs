@@ -103,24 +103,53 @@ export function mapStack(text, buildDir) {
  * game that carries a `<chunk>.js:<line>:<col>` frame is mapped. Markdown rows
  * `| game | flags | error | mapped frames |`.
  */
+/** Keys whose stacks are harness probes (not exceptions); #979. */
+const PROBE_KEYS = new Set(["forbiddenParamReads"]);
+
+/**
+ * Crash table for a capture-games report.json. Every string carrying a
+ * `<chunk>.js:<line>:<col>` frame is mapped, and each row is labelled with its
+ * kind:
+ *   crash  page errors / thrown exceptions (counted)
+ *   probe  harness instrumentation stacks, e.g. the T5.2 forbidden-param probe
+ *          (`Error: forbidden-param` from legacy routes reading ?capture). These
+ *          are not exceptions and are excluded from the crash count (#979).
+ * Returns markdown: a summary line, then `| game | flags | kind | error | mapped frames |`.
+ */
 export function crashTable(report, buildDir) {
-  const rows = ["| game | flags | error | mapped frames |", "|---|---|---|---|"];
   const games = Array.isArray(report?.games) ? report.games : Object.values(report?.games ?? {});
+  const rows = [];
+  let crashes = 0;
+  let probes = 0;
   for (const game of games) {
-    const texts = [];
-    const visit = (v) => {
-      if (typeof v === "string") { if (/\.js:\d+:\d+/.test(v)) texts.push(v); }
-      else if (Array.isArray(v)) v.forEach(visit);
-      else if (v && typeof v === "object") Object.values(v).forEach(visit);
+    const found = [];
+    const visit = (v, probe) => {
+      if (typeof v === "string") {
+        if (/\.js:\d+:\d+/.test(v)) found.push({ text: v, probe: probe || /^Error: forbidden-param\b/.test(v) });
+      } else if (Array.isArray(v)) v.forEach((x) => visit(x, probe));
+      else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) visit(x, probe || PROBE_KEYS.has(k));
     };
-    visit(game);
-    for (const text of texts) {
+    visit(game, false);
+    for (const { text, probe } of found) {
+      if (probe) probes += 1;
+      else crashes += 1;
       const mapped = mapStack(text, buildDir).slice(0, 6).join("<br>");
       const first = text.split("\n")[0].slice(0, 160).replace(/\|/g, "\\|");
-      rows.push(`| ${game?.id ?? "?"} | ${report?.qrFlags ?? report?.flags ?? ""} | ${first} | ${mapped} |`);
+      rows.push(`| ${game?.id ?? "?"} | ${report?.qrFlags ?? report?.flags ?? ""} | ${probe ? "probe" : "crash"} | ${first} | ${mapped} |`);
     }
   }
-  return rows.join("\n");
+  return [
+    `**crashes: ${crashes}** (probe stacks, not counted: ${probes})`,
+    "",
+    "| game | flags | kind | error | mapped frames |",
+    "|---|---|---|---|---|",
+    ...rows,
+  ].join("\n");
+}
+
+/** Crash count only (probe rows excluded). */
+export function crashCount(report) {
+  return Number(/\*\*crashes: (\d+)\*\*/.exec(crashTable(report, ""))?.[1] ?? 0);
 }
 
 if (import.meta.url === `file://${process.argv[1]}` && process.argv[2] === "--report") {

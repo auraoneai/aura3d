@@ -163,7 +163,7 @@ export function geometryHasSkin(has: GeometryAttributeTest): boolean {
  * three.js. A primitive or procedural mesh with no `a_uv` cannot sample
  * uv-set-0 maps (they and the extension lobe maps are dropped); no `a_uv1`
  * drops uv-set-1 maps; no `a_color` drops vertex colors; no joints/weights
- * drops skinning and the `prd06.deform` bit (morph is texture-driven and
+ * drops skinning segments from `prd06.deform` (morph is texture-driven and
  * untouched). Normal maps need only uv: the generated program never reads `a_tangent`
  * (derivative TBN when the geometry has none). Returns `record` itself when
  * nothing is dropped, so program keys stay stable for complete geometry.
@@ -188,14 +188,30 @@ export function featuresForGeometry<T extends FeatureRecord>(record: T, has: Geo
       });
   const vertexColors = record.vertexColors && has("a_color");
   if (vertexColors !== record.vertexColors) changed = true;
-  const skinning = skin ? record.skinning : undefined;
+  const extraSkin = skin && has("a_joints1") && has("a_weights1");
+  const skinning = skin
+    ? record.skinning?.influences === 8 && !extraSkin
+      ? { ...record.skinning, influences: 4 as const }
+      : record.skinning
+    : undefined;
   if (skinning !== record.skinning) changed = true;
   let features = record.features;
-  if (!skin && features["prd06.deform"] !== undefined) {
-    const { ["prd06.deform"]: _dropped, ...rest } = features;
-    void _dropped;
-    features = rest;
-    changed = true;
+  const deform = features["prd06.deform"];
+  if (deform !== undefined) {
+    // Selection may combine skinning and texture-driven morphs. Dropping the
+    // whole feature for a geometry without joint attributes freezes morphs.
+    const masked = typeof deform === "string"
+      ? deform.split("|").flatMap((part) => {
+          if (part === "skin4" || part === "skin8") return skin ? [part === "skin8" && !extraSkin ? "skin4" : part] : [];
+          return [part];
+        }).join("|") || undefined
+      : skin ? deform : undefined;
+    if (masked !== deform) {
+      features = { ...features };
+      if (masked === undefined) delete (features as Record<string, string | number | boolean>)["prd06.deform"];
+      else features = { ...features, "prd06.deform": masked };
+      changed = true;
+    }
   }
   if (!changed) return record;
   return { ...record, maps, extensions, vertexColors, skinning, features };

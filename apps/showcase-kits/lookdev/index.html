@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aura3D showcase kits look-dev (internal, not deployed)</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #0b0d10; color: #e6edf3; font: 14px/1.4 system-ui, sans-serif; }
+      .layout { display: grid; grid-template-columns: 1fr 1fr 22rem; height: 100%; }
+      .pane { position: relative; border-right: 1px solid #222a33; }
+      .pane h2 { position: absolute; top: 0.5rem; left: 0.75rem; margin: 0; font-size: 0.9rem; z-index: 1; }
+      #aura { width: 100%; height: 100%; }
+      #three { display: grid; place-items: center; padding: 2rem; text-align: center; color: #9aa7b4; }
+      aside { padding: 1rem; overflow: auto; }
+      label { display: block; margin-bottom: 0.75rem; }
+      select { width: 100%; padding: 0.35rem; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+      th, td { text-align: left; padding: 0.25rem; border-bottom: 1px solid #222a33; vertical-align: top; }
+    </style>
+  </head>
+  <body>
+    <main class="layout">
+      <section class="pane" aria-label="three r185 reference pane">
+        <h2>three r185 (decides approval)</h2>
+        <div id="three" role="status"></div>
+      </section>
+      <section class="pane" aria-label="Aura pane">
+        <h2>Aura</h2>
+        <div id="aura"></div>
+      </section>
+      <aside aria-label="Kit manifest">
+        <label for="kit">Kit</label>
+        <select id="kit"></select>
+        <label for="hdri">K1 HDRI</label>
+        <select id="hdri"></select>
+        <div id="manifest" aria-live="polite"></div>
+      </aside>
+    </main>
+    <script type="module" src="/apps/showcase-kits/lookdev/main.ts"></script>
+  </body>
+</html>

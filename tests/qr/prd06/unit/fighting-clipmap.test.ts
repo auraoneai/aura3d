@@ -58,6 +58,7 @@ describe("fighting-clipmap fixture (T0.9a)", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const report = validateFighterClipMap();
     expect(report.ok).toBe(true);
+    expect(DECLARED_STAND_INS).toBe(2);
     expect(report.standIns).toHaveLength(DECLARED_STAND_INS);
     const emitted = warn.mock.calls.filter(([first]) => String(first).startsWith("FIGHTER_CLIP_STAND_IN"));
     expect(emitted).toHaveLength(DECLARED_STAND_INS);
@@ -65,19 +66,19 @@ describe("fighting-clipmap fixture (T0.9a)", () => {
 
   it("unmapped states fail with FIGHTER_CLIP_MISSING", () => {
     const map = {
-      showcaseWalkAnimatedGirl: Object.fromEntries(
-        Object.entries(fighterClipMap.showcaseWalkAnimatedGirl).filter(([state]) => state !== "hitstun")
+      auraclashPlayerRig: Object.fromEntries(
+        Object.entries(fighterClipMap.auraclashPlayerRig).filter(([state]) => state !== "hitstun")
       ) as Partial<Record<FighterClip, { clip: string }>>
     };
-    expect(() => validateFighterClipMap(map as never)).toThrowError(/FIGHTER_CLIP_MISSING.*hitstun/);
+    expect(() => validateFighterClipMap(map)).toThrowError(/FIGHTER_CLIP_MISSING.*hitstun/);
   });
 
   it("a mapped clip absent from the asset throws FIGHTER_CLIP_MISSING with the list", () => {
     const map = {
-      showcaseRunnerRobot: { ...fighterClipMap.showcaseRunnerRobot, special: { clip: "FIREBALL" } }
+      auraclashRivalRig: { ...fighterClipMap.auraclashRivalRig, special: { clip: "FIREBALL" } }
     };
     try {
-      validateFighterClipMap(map as never);
+      validateFighterClipMap(map);
       expect.unreachable("expected FIGHTER_CLIP_MISSING");
     } catch (error) {
       expect(String(error)).toContain("FIGHTER_CLIP_MISSING");

@@ -13,8 +13,8 @@ describe("C-00 flags", () => {
     expect(flags.on("A3D_QR_CORE")).toBe(true);
     expect(flags.on("A3D_QR_POST")).toBe(true);
   });
-  it("no input disables everything", () => {
-    const flags = resolveQrFlags({});
+  it("explicit \"none\" disables everything", () => {
+    const flags = resolveQrFlags({ options: "none" });
     expect(flags.on("A3D_QR_CORE")).toBe(false);
   });
   it("T1.11: animation.mixer:\"pose\" aliases A3D_QR_ANIMATION_POSE_MIXER; an explicit flags value wins", () => {

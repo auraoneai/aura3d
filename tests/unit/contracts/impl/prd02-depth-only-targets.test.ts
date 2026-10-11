@@ -19,7 +19,7 @@ import { setRendererQrFlags } from "../../../../packages/rendering/src/renderer/
 import { Prd02ShadowSystem, type ShadowSystemConfigInput } from "../../../../packages/rendering/src/shadows/ShadowSystem";
 
 const FLAGS_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
-const BASE = resolveQrFlags({});
+const BASE = resolveQrFlags({ options: ["none"] });
 const CONFIG: ShadowSystemConfigInput = {
   enabled: true, mapSize: 512, cascades: 2, maxDistance: 60, splitLambda: 0.6,
   filter: "pcf", strength: 1, bias: 0, normalBias: 1.5

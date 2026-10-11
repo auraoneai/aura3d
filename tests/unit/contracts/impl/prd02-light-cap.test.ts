@@ -21,7 +21,7 @@ import {
 import type { CollectedLight } from "../../../../packages/rendering/src/LightCollector";
 
 const LIGHTING_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
-const BASE = resolveQrFlags({});
+const BASE = resolveQrFlags({ options: ["none"] });
 
 afterEach(() => setRendererQrFlags(BASE));
 

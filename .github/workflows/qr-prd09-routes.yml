@@ -12,6 +12,12 @@ on:
         description: "Comma-separated game ids (empty = all affected routes)"
         required: false
         default: ""
+      runner:
+        # Default track0: hosted macos-14 never starts jobs for this repo.
+        description: "Browser job runner: track0 (L4, default) | azure-gpu (self-hosted Linux L4, Vulkan ANGLE) | macos-14 (Metal)"
+        type: choice
+        options: [track0, azure-gpu, macos-14]
+        default: track0
   pull_request:
     branches: [main]
     paths:
@@ -70,7 +76,9 @@ concurrency:
 jobs:
   capture_review_divergence:
     name: Capture-review divergence (macos-14, record-only)
-    runs-on: macos-14
+    # Default macos-14; workflow_dispatch `runner` can move it to the Linux L4
+    # pool (#956 pattern). Compare frames only within one runner class.
+    runs-on: ${{ (inputs.runner || 'track0') == 'macos-14' && 'macos-14' || ((inputs.runner || 'track0') == 'track0' && fromJSON('["self-hosted","track0","gpu-l4"]')) || fromJSON('["self-hosted","azure-gpu","gpu-l4"]') }}
     timeout-minutes: 120
     env:
       QRC_GAMES: ${{ github.event_name == 'workflow_dispatch' && inputs.games || '' }}
@@ -96,6 +104,22 @@ jobs:
 
       - name: Install Playwright Chromium
         run: pnpm exec playwright install chromium
+
+      - name: Chromium GPU flags for this runner (#956 pattern)
+        env:
+          RUNNER_KIND: ${{ inputs.runner || 'track0' }}
+          QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
+        run: |
+          set -euo pipefail
+          case "$RUNNER_KIND" in
+            macos-14) ;;  # configs keep their Metal defaults
+            azure-gpu|track0)
+              args="${QR_AZURE_GPU_CHROME_ARGS:---headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist}"
+              { echo "QR_CHROMIUM_ARGS=$args"; echo "QRC_GPU_ARGS=$args"; } >> "$GITHUB_ENV"
+              # Record the GPU so frames are only compared within this class.
+              QR_CHROMIUM_ARGS="$args" node tools/quality-rebuild-capture/gpu-renderer.mjs | tee -a "$GITHUB_STEP_SUMMARY" ;;
+            *) echo "::error::unknown runner '$RUNNER_KIND'"; exit 1 ;;
+          esac
 
       - name: Regenerate route-composition baseline
         run: node tools/quality-rebuild-capture/route-composition.mjs --json docs/project/aura3d-quality-rebuild/migration/baseline.json

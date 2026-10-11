@@ -14,6 +14,7 @@ import { DEFAULT_RENDER_STATE } from "../Material";
 import type { RenderDevice, RenderShaderProgram, RenderTarget, UniformValue } from "../RenderDevice";
 import { RenderPipeline } from "../RenderPipeline";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
+import { Sampler } from "../Sampler";
 import { ShaderModule } from "../ShaderModule";
 import { TextureBinding } from "../TextureBinding";
 import { VertexBuffer } from "../VertexBuffer";
@@ -39,15 +40,27 @@ void main() {
 }
 `;
 
-const DEPTH_COPY_RENDER_STATE = {
+/**
+ * Depth must be written, and the copy target is never cleared, so the test
+ * is `always`: with the default `less-equal`, the written `gl_FragDepth` was
+ * tested against the zero-initialised attachment and every fragment failed
+ * (#1083 GPU frame-graph: copy center = corner = 0).
+ */
+export const DEPTH_COPY_RENDER_STATE = {
   ...DEFAULT_RENDER_STATE,
   blend: false,
-  // Fullscreen triangle at clip z=0 (0.5 depth) passes LESS vs cleared 1.0;
-  // gl_FragDepth then overrides the written value with the sampled depth.
   depthTest: true,
+  depthCompare: "always" as const,
   depthWrite: true,
   cullMode: "none" as const
 };
+
+/**
+ * A depth texture sampled as a float (compare mode NONE) is incomplete under
+ * a LINEAR filter (GLES 3.0 §3.8.13) and samples 0; the default `Sampler` is
+ * linear. Consumers of `aura.scene.depth.copy` bind this sampler too.
+ */
+export const DEPTH_TEXTURE_SAMPLER = new Sampler({ minFilter: "nearest", magFilter: "nearest", addressU: "clamp-to-edge", addressV: "clamp-to-edge" });
 
 function createFullscreenTriangleGeometry(): Geometry {
   const vertices = new VertexBuffer(VertexFormat.P3, 3);
@@ -80,7 +93,7 @@ export class SceneDepthCopyPass extends BaseRenderPass {
     });
     const shader = SceneDepthCopyPass.module.compile(context.device);
     const uniforms = new Map<string, UniformValue>();
-    uniforms.set("u_depth", new TextureBinding({ name: "u_depth", texture: depthTexture, required: true }));
+    uniforms.set("u_depth", new TextureBinding({ name: "u_depth", texture: depthTexture, sampler: DEPTH_TEXTURE_SAMPLER, required: true }));
     // Phase 6: persistent fullscreen geometry + pipeline — steady state makes
     // no RenderPipeline constructions and no buffer creates.
     let cached = this.cachedDraw;

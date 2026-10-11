@@ -26,6 +26,27 @@ describe("§5.3 default-on promotion is honoured by resolveQrFlags", () => {
     expect(flags.on("A3D_QR_GAME")).toBe(true);
     expect(flags.on("A3D_QR_CAMERA")).toBe(true);
   });
+
+  it("a programmatic string list is a flag list: \"none\" turns a default-on flag off", () => {
+    expect(resolveQrFlags({ options: "none", env: {} }).on("A3D_QR_CAMERA")).toBe(false);
+    expect(resolveQrFlags({ options: "-camera", env: {} }).on("A3D_QR_CAMERA")).toBe(false);
+    const list = resolveQrFlags({ options: "game", env: {} });
+    expect(list.on("A3D_QR_GAME")).toBe(true);
+    expect(list.on("A3D_QR_CAMERA")).toBe(true);
+  });
+
+  it("#1232: URL and env override flags hard-coded in app options", () => {
+    const opts = ["game", "camera", "lighting"] as const;
+    const url = resolveQrFlags({ options: [...opts], url: "http://x/?a3d-qr=none", env: {} });
+    expect(url.on("A3D_QR_GAME")).toBe(false);
+    expect(url.on("A3D_QR_CAMERA")).toBe(false);
+    const neg = resolveQrFlags({ options: [...opts], url: "http://x/?a3d-qr=-lighting", env: {} });
+    expect(neg.on("A3D_QR_LIGHTING")).toBe(false);
+    expect(neg.on("A3D_QR_GAME")).toBe(true);
+    const env = resolveQrFlags({ options: [...opts], env: { A3D_QR_GAME: "0" } });
+    expect(env.on("A3D_QR_GAME")).toBe(false);
+    expect(env.on("A3D_QR_LIGHTING")).toBe(true);
+  });
 });
 
 describe("§5.3 the real state table", () => {

@@ -51,6 +51,7 @@ import { createLanderAudioBlock, wireLanderAudioUnlock } from "./audio";
 import { createLanderInput, wireLanderInput } from "./input";
 import { wireAuroraRuntime } from "./runtime";
 import { wireAuroraRender } from "./render";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_AURORA_LANDER" as const;
 const FIXED_DT = 1 / 60;
@@ -119,16 +120,16 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "thrust-loop": { asset: "auroraThrustLoopSfx" },
-      "rcs-puff": { asset: "auroraRcsPuffSfx" },
-      "pad-lock": { asset: "auroraPadLockSfx" },
-      "fuel-low": { asset: "auroraFuelLowSfx" },
-      "gust-warn": { asset: "auroraGustWarnSfx" },
-      "touch-soft": { asset: "auroraTouchSoftSfx" },
-      "touch-hard": { asset: "auroraTouchHardSfx" },
-      "crash": { asset: "auroraCrashSfx" },
-      "site-clear": { asset: "auroraSiteClearSfx" },
-      "ambient-wind": { asset: "auroraAmbientWindSfx" }
+      "thrust-loop": { asset: assets.auroraThrustLoopSfx },
+      "rcs-puff": { asset: assets.auroraRcsPuffSfx },
+      "pad-lock": { asset: assets.auroraPadLockSfx },
+      "fuel-low": { asset: assets.auroraFuelLowSfx },
+      "gust-warn": { asset: assets.auroraGustWarnSfx },
+      "touch-soft": { asset: assets.auroraTouchSoftSfx },
+      "touch-hard": { asset: assets.auroraTouchHardSfx },
+      "crash": { asset: assets.auroraCrashSfx },
+      "site-clear": { asset: assets.auroraSiteClearSfx },
+      "ambient-wind": { asset: assets.auroraAmbientWindSfx }
     }
   },
   juice: {
@@ -138,11 +139,11 @@ const game = createGame({
     "site-clear": { trauma: 0.18 }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_aurora_lander` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-aurora-lander`).
-    flags: ["route_aurora_lander", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_aurora_lander", "game"]
   }
 });
 

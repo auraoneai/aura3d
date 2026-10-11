@@ -33,6 +33,7 @@ import type { RenderSource } from "../contracts/renderSource";
 import { prd02SubFlagOff, readPrd02KillSwitches, SUB_FLAG_CSM } from "../passes/Prd02SubFlags";
 import { sceneFromSource } from "../renderer/RenderShared";
 import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput } from "./ShadowSystem";
+import { clipRangeFromViewProjection } from "./DirectionalCascadeFitter";
 
 /** Uniform the `a3d_prd02_shadow_lookup` chunk declares (C-11); marks a lookup consumer. */
 export const PRD02_SHADOW_LOOKUP_UNIFORM = "u_prd02CascadeCompare0";
@@ -244,8 +245,35 @@ export interface Prd02BridgeInput {
   /** Shadow casters (items with `castShadow !== false`). */
   readonly items: readonly RenderItem[];
   readonly camera: Camera | undefined;
+  /**
+   * #1141: the renderer's resolved frame camera (VP + eye). Production-runtime
+   * frames render through a structural CameraLike, so `camera` is undefined
+   * and the contributor observation may be absent; without this the bridge
+   * skipped and the flag path rendered no sun shadow map at all.
+   */
+  readonly frameCamera?: Prd02BridgeFrameCamera;
   readonly flags: QrFlags;
   readonly tier?: AuraQualityTierSettings;
+}
+
+/** Structural frame camera handed to the bridge by the renderer (#1141). */
+export interface Prd02BridgeFrameCamera {
+  readonly viewProjectionMatrix: Float32Array | readonly number[];
+  readonly near?: number;
+  readonly far?: number;
+}
+
+/**
+ * Renderer VP + eye → bridge camera, recovering near/far from the matrix
+ * (the cascade fitter lerps the VP's frustum corners by view distance).
+ */
+export function shadowFrameCamera(
+  viewProjection: Float32Array | readonly number[] | undefined,
+  eye: readonly [number, number, number] | undefined
+): Prd02BridgeFrameCamera | undefined {
+  if (!viewProjection || viewProjection.length < 16) return undefined;
+  const range = eye ? clipRangeFromViewProjection(viewProjection, eye) : null;
+  return range ? { viewProjectionMatrix: viewProjection, near: range.near, far: range.far } : { viewProjectionMatrix: viewProjection };
 }
 
 /**
@@ -269,7 +297,7 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
   const capabilities = input.device.info.capabilities;
   if (!capabilities?.includes("render-targets") || !capabilities.includes("depth-textures")) return bail("capabilities");
   const concrete = input.camera as (Camera & { near?: number; far?: number }) | undefined;
-  const camera = concrete?.viewProjectionMatrix ? concrete : observed?.camera ?? undefined;
+  const camera = concrete?.viewProjectionMatrix ? concrete : observed?.camera ?? input.frameCamera;
   if (!camera?.viewProjectionMatrix) return bail("no-camera");
   const sun = prd02SunDirection(input.source);
   if (!sun) return bail("no-sun");
