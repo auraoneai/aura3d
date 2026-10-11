@@ -20,7 +20,7 @@ export function collectWorldDiagnostics(app: AuraApp): AuraWorldDiagnostics {
   if (drawPath === "S") pending.push("C-01:frame-graph", "C-02:program-cache");
   return {
     drawPath,
-    terrain: terrainDiagnostics().map(({ id, nodesDrawn, trianglesDrawn, layers, degraded }) => ({ id, nodesDrawn, trianglesDrawn, layers, degraded })),
+    terrain: terrainDiagnostics(),
     scatter: [],
     grass: [],
     water: [],

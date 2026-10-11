@@ -8,13 +8,13 @@ import type { ShaderChunk } from "../../../contracts/program.js";
 const glsl = /* glsl */ `
 uniform sampler2D u_baseColor;
 uniform float u_alphaCutoff;          // default 0.5
-uniform int u_alphaToCoverage;        // C-15 alphaToCoverage active (MSAA on)
+uniform float u_alphaToCoverage;      // C-15 alphaToCoverage active (MSAA on); float: no int upload (#491)
 
 // Alpha handling: A2C path sharpens for multisample resolve; otherwise a hard
 // alpha test (Path S, where the C-15 stub ignores alphaToCoverage).
 float a3dFoliageAlpha(vec2 uv) {
   float alpha = texture(u_baseColor, uv).a;
-  if (u_alphaToCoverage == 0) {
+  if (u_alphaToCoverage < 0.5) {
     if (alpha < u_alphaCutoff) discard;
     return 1.0;
   }

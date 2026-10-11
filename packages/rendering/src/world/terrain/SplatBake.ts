@@ -80,11 +80,12 @@ precision highp float;
 precision highp int;
 in vec2 v_uv;
 out vec4 o_weights;
-uniform int u_layerOffset;          // 0 for splat0, 4 for splat1
-uniform int u_layerCount;
-uniform int u_ruleCount;
-uniform int u_ruleLayer[${MAX_RULES}];
-uniform float u_ruleWeight[${MAX_RULES}];
+// Counts are floats and (layer, weight) pack into vec4s: the RenderDevice
+// uploads only float types (#491), so int/float[] uniforms never arrived.
+uniform float u_layerOffset;        // 0 for splat0, 4 for splat1
+uniform float u_layerCount;
+uniform float u_ruleCount;
+uniform vec4 u_ruleLW[${MAX_RULES}];   // x: layer index, y: weight
 uniform vec4 u_ruleSlope[${MAX_RULES}];  // lo, hi, falloff, has
 uniform vec4 u_ruleHeight[${MAX_RULES}]; // lo, hi, falloff, has
 uniform vec4 u_ruleNoise[${MAX_RULES}];  // scale, threshold, seed, has
@@ -140,15 +141,15 @@ void main() {
   float w[8];
   for (int i = 0; i < 8; i++) w[i] = 0.0;
   for (int r = 0; r < ${MAX_RULES}; r++) {
-    if (r >= u_ruleCount) break;
-    float rw = u_ruleWeight[r]
+    if (float(r) >= u_ruleCount) break;
+    float rw = u_ruleLW[r].y
       * a3dBakeRangeWeight(slopeDeg, u_ruleSlope[r])
       * a3dBakeRangeWeight(hNorm, u_ruleHeight[r]);
     if (u_ruleNoise[r].w > 0.5) {
       float nn = a3dBakeNoise(v_uv.x * u_ruleNoise[r].x, v_uv.y * u_ruleNoise[r].x, int(u_ruleNoise[r].z));
       rw *= nn >= u_ruleNoise[r].y ? 1.0 : 0.0;
     }
-    w[u_ruleLayer[r]] += rw;
+    w[int(u_ruleLW[r].x + 0.5)] += rw;
   }
   float total = 0.0;
   for (int i = 0; i < 8; i++) total += w[i];
@@ -157,8 +158,8 @@ void main() {
   for (int i = 0; i < 8; i++) sum += w[i];
   vec4 outW = vec4(0.0);
   for (int i = 0; i < 4; i++) {
-    int layer = u_layerOffset + i;
-    outW[i] = layer < u_layerCount ? w[layer] / max(sum, 1e-6) : 0.0;
+    int layer = int(u_layerOffset + 0.5) + i;
+    outW[i] = float(layer) < u_layerCount ? w[layer] / max(sum, 1e-6) : 0.0;
   }
   o_weights = outW;
 }
@@ -262,6 +263,16 @@ fn bakeWeights(uv : vec2f) -> vec4f {
 `;
 
 /** Fullscreen-triangle sources for the splat bake (GLSL Path S / WGSL Path G). */
+/** (layer, weight) per rule as vec4[MAX_RULES] — see BAKE_FRAG `u_ruleLW`. */
+export function packRuleLW(ruleLayer: ArrayLike<number>, ruleWeight: ArrayLike<number>): Float32Array {
+  const out = new Float32Array(MAX_RULES * 4);
+  for (let r = 0; r < MAX_RULES; r += 1) {
+    out[r * 4] = ruleLayer[r] ?? 0;
+    out[r * 4 + 1] = ruleWeight[r] ?? 0;
+  }
+  return out;
+}
+
 export function splatBakeShaderSources(): ShaderSources {
   return {
     label: "prd10-terrain-splat-bake",
@@ -277,6 +288,8 @@ export function encodeSplatBakeRules(rules: readonly SplatBakeRule[]): {
   readonly ruleCount: number;
   readonly ruleLayer: Int32Array;
   readonly ruleWeight: Float32Array;
+  /** vec4[MAX_RULES] (layer, weight, 0, 0) — the uploaded form (`u_ruleLW`). */
+  readonly ruleLW: Float32Array;
   readonly ruleSlope: Float32Array;
   readonly ruleHeight: Float32Array;
   readonly ruleNoise: Float32Array;
@@ -299,7 +312,7 @@ export function encodeSplatBakeRules(rules: readonly SplatBakeRule[]): {
       r * 4
     );
   });
-  return { ruleCount: capped.length, ruleLayer, ruleWeight, ruleSlope, ruleHeight, ruleNoise, dropped: Math.max(0, rules.length - MAX_RULES) };
+  return { ruleCount: capped.length, ruleLayer, ruleWeight, ruleLW: packRuleLW(ruleLayer, ruleWeight), ruleSlope, ruleHeight, ruleNoise, dropped: Math.max(0, rules.length - MAX_RULES) };
 }
 
 const BAKE_FORMAT = new VertexFormat([{ semantic: "position", components: 2, offset: 0, shaderName: "a_pos" }]);
@@ -342,8 +355,7 @@ export function bakeTerrainSplat(device: RenderDevice, spec: SplatBakeSpec): Spl
         ["u_layerOffset", group * 4],
         ["u_layerCount", spec.layerCount],
         ["u_ruleCount", rules.ruleCount],
-        ["u_ruleLayer", rules.ruleLayer],
-        ["u_ruleWeight", rules.ruleWeight],
+        ["u_ruleLW", rules.ruleLW],
         ["u_ruleSlope", rules.ruleSlope],
         ["u_ruleHeight", rules.ruleHeight],
         ["u_ruleNoise", rules.ruleNoise]
