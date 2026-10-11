@@ -61,6 +61,17 @@ describe("11-S5 allocation-free culler", () => {
     box3.mockRestore();
   });
 
+  it("NaN and empty boxes follow Box3 semantics (NaN visible, inverted culled)", () => {
+    const frustum = testFrustum();
+    const planes = packFrustumPlanes(frustum.planes);
+    const out = new Uint8Array(2);
+    const bounds = new Float64Array([Number.NaN, 0, -5, Number.NaN, 1, -4, 1, 1, -4, 0, 0, -5]);
+    cull(bounds, 2, planes, out);
+    const nanBox = new math.Box3(new math.Vector3(Number.NaN, 0, -5), new math.Vector3(Number.NaN, 1, -4));
+    const inverted = new math.Box3(new math.Vector3(1, 1, -4), new math.Vector3(0, 0, -5));
+    expect([out[0] === 1, out[1] === 1]).toEqual([frustum.intersectsBox(nanBox), frustum.intersectsBox(inverted)]);
+  });
+
   it("cull() rejects undersized buffers", () => {
     expect(() => cull(new Float32Array(5), 1, new Float32Array(24), new Uint8Array(1))).toThrow(RangeError);
     expect(() => cull(new Float32Array(6), 1, new Float32Array(24), new Uint8Array(0))).toThrow(RangeError);

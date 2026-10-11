@@ -13,6 +13,7 @@ import { planBatches, type BatchPlan, type PlanBatchesOptions, type InstancedBat
 import { MaterialInstance } from "../MaterialInstance";
 import { rendererQrFlags } from "./FrameGraph";
 import { Frustum } from "@aura3d/math";
+import { cull, packFrustumPlanes } from "../performance/FrustumCuller";
 import { Bounds3 as SceneBounds3, Camera, type Mat4, identityMat4, multiplyMat4, toMathMat4 } from "@aura3d/scene";
 
 export function explicitCullingFrustum(
@@ -39,6 +40,12 @@ export function cullExplicitRenderItems(
     return items;
   }
   const visible: RenderItem[] = [];
+  // 11-S5: one plane pack per call and a reused 6-float box, instead of a Box3
+  // plus six Vector3s per item inside Frustum.intersectsBox. Same
+  // positive-vertex test, same empty-box rule, so results are identical.
+  const planes = packFrustumPlanes(frustum.planes);
+  const box = new Float64Array(6);
+  const verdict = new Uint8Array(1);
   for (const item of items) {
     diagnostics.submittedObjects += 1;
     if (!isFrustumCullableRenderItem(item)) {
@@ -48,7 +55,9 @@ export function cullExplicitRenderItems(
     }
     diagnostics.frustumTestedObjects += 1;
     const bounds = explicitRenderItemWorldBounds(item);
-    if (!frustum.intersectsBox(bounds.toMathBox())) {
+    box[0] = bounds.min[0]; box[1] = bounds.min[1]; box[2] = bounds.min[2];
+    box[3] = bounds.max[0]; box[4] = bounds.max[1]; box[5] = bounds.max[2];
+    if (cull(box, 1, planes, verdict) === 0) {
       diagnostics.culledObjects += 1;
       continue;
     }

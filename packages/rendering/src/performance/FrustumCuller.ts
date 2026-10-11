@@ -30,7 +30,8 @@ export function cull(bounds: PackedFloats, count: number, planes: PackedFloats, 
     const maxX = bounds[base + 3]!;
     const maxY = bounds[base + 4]!;
     const maxZ = bounds[base + 5]!;
-    let inside = maxX >= minX && maxY >= minY && maxZ >= minZ;
+    // Same emptiness rule as Box3.isEmpty (`max < min` on any axis), so NaN bounds stay visible like before.
+    let inside = !(maxX < minX || maxY < minY || maxZ < minZ);
     for (let plane = 0; inside && plane < planeCount; plane += 1) {
       const p = plane * 4;
       const nx = planes[p]!;
