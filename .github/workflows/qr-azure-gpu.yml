@@ -103,7 +103,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: qr-gpu-${{ github.ref }}-${{ inputs.suite || 'default' }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  group: qr-gpu-${{ github.ref }}-${{ inputs.suite || 'default' }}-${{ inputs.promote_flag || inputs.bench_flag_sets || 'x' }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
