@@ -5,8 +5,6 @@
 import { particleRenderHookSlot } from "../contracts/particles";
 import { skyBackgroundSlot } from "../contracts/atmosphere";
 import { registerShaderFeature } from "../contracts/program";
-import type { QrFlags } from "../contracts";
-import { setRendererQrFlags } from "../renderer/FrameGraph";
 import { particlePassFor, registerPrd07Contributors } from "../vfx/contributors";
 import { skyPassFor } from "../atmosphere/SkyBackgroundPass";
 import { registerParticleChunks } from "../vfx/shaders/particle.glsl";
@@ -68,15 +66,9 @@ try {
   if (!(error instanceof Error && error.message.startsWith("SHADER_FEATURE"))) throw error;
 }
 
-/**
- * PRD 15's `setRendererQrFlags` has no caller yet (qr-request filed). Lane 07
- * needs renderer-side flags so its contributors gate on the app's resolved
- * flags; the engine's `effects` extension calls this from its create() with
- * the app's `qrFlags`. Global store — last app wins; flagged on the CCR.
- */
-export function bindPrd07RendererFlags(flags: QrFlags): void {
-  setRendererQrFlags(flags);
-}
+// T0-28: no global flag binding here. Renderer-side flags resolve per device
+// via the Renderer's `qrFlags` option (set by the engine at mount); lane 07
+// contributors read them through FrameContributorContext.flags.
 
 export { particlePassFor, notePrd07VolumetricGpuMs, froxelBudgetMs, prd07VolumetricCostFallback, lastParticleUpdateMs } from "../vfx/contributors";
 export { skyPassFor, skyDrawPassFor, SkyBackgroundPass } from "../atmosphere/SkyBackgroundPass";

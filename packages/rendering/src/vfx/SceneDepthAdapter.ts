@@ -3,20 +3,40 @@
 // `available: false`, soft depth is off and SOFT_DEPTH_PENDING is reported once.
 
 import { FRAME_RESOURCES, type FrameContributorContext, type SceneDepthSource } from "../contracts/frameGraph";
-import type { Texture } from "../Texture";
+import { Texture } from "../Texture";
+import type { RenderTarget } from "../RenderDevice";
 
 let softDepthPendingReported = false;
+let softDepthInvalidReported = false;
 
 /** Test hook. */
 export function resetSceneDepthAdapterReports(): void {
   softDepthPendingReported = false;
+  softDepthInvalidReported = false;
 }
 
 export interface ResolvedSceneDepth {
   readonly source: SceneDepthSource;
   readonly available: boolean;
   /** Non-null when the caller should emit a once-per-session degradation note. */
-  readonly pendingNote: "SOFT_DEPTH_PENDING" | null;
+  readonly pendingNote: "SOFT_DEPTH_PENDING" | "SOFT_DEPTH_INVALID_SOURCE" | null;
+}
+
+/**
+ * #868: lane 01's FrameGraph publishes `aura.scene.depth.copy` as the copy
+ * RenderTarget (depth lives in its `depthTexture`), not as a Texture. Binding
+ * the target itself as a sampler source crashed `getTextureHandle` (reading
+ * `mipLevels.length` of a RenderTarget) under `$ALL`. Accept a Texture or a
+ * RenderTarget with a sampleable `depthTexture`; anything else is rejected so
+ * the caller degrades to hard particles with a C-36 note instead of throwing.
+ */
+export function sceneDepthCopyTexture(published: unknown): Texture | null {
+  if (published instanceof Texture) return published.disposed ? null : published;
+  if (published !== null && typeof published === "object") {
+    const target = published as Partial<RenderTarget>;
+    if (target.disposed !== true && target.depthTexture instanceof Texture && !target.depthTexture.disposed) return target.depthTexture;
+  }
+  return null;
 }
 
 export function resolveSceneDepth(ctx: FrameContributorContext): ResolvedSceneDepth {
@@ -26,7 +46,8 @@ export function resolveSceneDepth(ctx: FrameContributorContext): ResolvedSceneDe
   // (aura.scene.depth.copy, produced by lane 01/10's scene-copy pass) is safe
   // to sample. Without it, soft depth degrades to hard particles with a
   // one-shot C-36 note.
-  const copy = ctx.blackboard.get(FRAME_RESOURCES.sceneDepthCopy) as Texture | undefined;
+  const published = ctx.blackboard.get(FRAME_RESOURCES.sceneDepthCopy);
+  const copy = sceneDepthCopyTexture(published);
   if (copy) {
     const source: SceneDepthSource = {
       texture: copy,
@@ -34,6 +55,12 @@ export function resolveSceneDepth(ctx: FrameContributorContext): ResolvedSceneDe
       available: true
     };
     return { source, available: true, pendingNote: null };
+  }
+  if (published !== undefined && published !== null) {
+    // Published but not sampleable: fail closed (hard particles) and say so once.
+    const note = softDepthInvalidReported ? null : "SOFT_DEPTH_INVALID_SOURCE";
+    softDepthInvalidReported = true;
+    return { source: ctx.sceneDepth, available: false, pendingNote: note };
   }
   if (!softDepthPendingReported) {
     softDepthPendingReported = true;
