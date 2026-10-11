@@ -12,6 +12,8 @@ interface FootSample {
   readonly side: "left" | "right";
   readonly worldPosition: readonly [number, number, number];
   readonly contactError: number;
+  /** 06-S7: signed ankle height above the planted target (m); < 0 = penetration, > 0 = float. */
+  readonly signedError: number;
   readonly locked: boolean;
 }
 
@@ -23,11 +25,13 @@ function sampleFeet(api: AuraActorAnimationApi, legs: readonly FootIkLeg[], terr
     const local = socket.worldMatrix();
     const [wx, wy, wz] = applyMatrixPoint(nodeWorld, [local[12]!, local[13]!, local[14]!]);
     const ground = rampStairsHeightAt(terrain, wx, wz);
-    const contactError = Math.abs(wy - (ground.height + (leg.ankleHeight ?? 0)));
+    const signedError = wy - (ground.height + (leg.ankleHeight ?? 0));
+    const contactError = Math.abs(signedError);
     return {
       side: leg.side,
       worldPosition: [wx, wy, wz] as const,
       contactError,
+      signedError,
       locked: socket.valid && contactError <= maxContactError
     };
   });
@@ -84,6 +88,7 @@ async function collectFootIk(app: AuraApp): Promise<Readonly<Record<string, unkn
       side: foot.side,
       worldPosition: foot.worldPosition,
       contactError: foot.contactError,
+      signedError: foot.signedError,
       locked: (lockedSamples.get(leg.side) ?? 0) > 0
     };
   });
