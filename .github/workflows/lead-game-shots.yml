@@ -26,12 +26,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('[{{"ref":"{0}","flags":"{1}","label":"{2}"}}]', inputs.ref, inputs.flags, inputs.label) || '[{"ref":"afb475c2f093b4d5f2501a218203729c1c8bb117","flags":"none","label":"A-before"},{"ref":"322d78b1391f1c8293cc8e714c7d8a6ba7541343","flags":"none","label":"B-after"},{"ref":"322d78b1391f1c8293cc8e714c7d8a6ba7541343","flags":"all","label":"C-after-all"}]') }}
+        include: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('[{{"ref":"{0}","flags":"{1}","label":"{2}"}}]', inputs.ref, inputs.flags, inputs.label) || '[{"ref":"afb475c2f093b4d5f2501a218203729c1c8bb117","flags":"none","label":"A-before"},{"ref":"322d78b1391f1c8293cc8e714c7d8a6ba7541343","flags":"none","label":"B-after"},{"ref":"322d78b1391f1c8293cc8e714c7d8a6ba7541343","flags":"all","label":"C-after-all"},{"ref":"322d78b1391f1c8293cc8e714c7d8a6ba7541343","flags":"none","label":"D-diag","games":"aura-clash-showcase,showcase-orbital-defense"}]') }}
     env:
       QRC_LOCAL_BUILD: "true"
       QRC_NO_MOBILE: "true"
       QRC_VIEWPORTS: "1280x720"
       QRC_FLAGS: ${{ matrix.flags }}
+      QRC_GAMES: ${{ matrix.games || '' }}
+      QRC_RUN_TIMEOUT_MS: "420000"
+      QRC_GAME_TIMEOUT_MS: "480000"
       QRC_GPU_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
     steps:
       - name: Require NVIDIA L4
@@ -53,6 +56,23 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install chromium
+      - name: Renderer probe (same launch args)
+        run: |
+          cat > /tmp/probe.mjs <<'JS'
+          import { chromium } from "@playwright/test";
+          const args = process.env.QRC_GPU_ARGS.split(/\s+/).filter(Boolean);
+          const b = await chromium.launch({ channel: "chromium", headless: true, args });
+          const p = await b.newPage();
+          await p.setContent("<canvas id=c></canvas>");
+          const r = await p.evaluate(() => { const gl = document.getElementById("c").getContext("webgl2");
+            const i = gl && gl.getExtension("WEBGL_debug_renderer_info");
+            return { webgl2: !!gl, renderer: i ? gl.getParameter(i.UNMASKED_RENDERER_WEBGL) : null, webgpu: !!navigator.gpu }; });
+          await p.goto("chrome://gpu"); await p.waitForTimeout(2000);
+          const t = (await p.evaluate(() => document.body.innerText)).split("\n").filter((l) => /Vulkan|ANGLE|GL_RENDERER|WebGL|Rasterization|SwiftShader/i.test(l)).slice(0, 25);
+          console.log(JSON.stringify({ version: b.version(), ...r }, null, 1)); console.log(t.join("\n"));
+          await b.close();
+          JS
+          cp /tmp/probe.mjs ./qr-lead-probe.mjs && node ./qr-lead-probe.mjs | tee -a "$GITHUB_STEP_SUMMARY"; rm -f ./qr-lead-probe.mjs
       - name: Build all 18 games from source
         run: node tools/quality-rebuild-capture/capture-games.mjs --build-only --no-alt-routes
       - name: Capture
@@ -64,7 +84,7 @@ jobs:
             echo "runner=$RUNNER_NAME"; nvidia-smi --query-gpu=name,driver_version --format=csv,noheader; } \
             > tools/quality-rebuild-capture/out/run-meta.txt
       - name: Upload
-        if: ${{ !cancelled() }}
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: lead-shots-${{ matrix.label }}
