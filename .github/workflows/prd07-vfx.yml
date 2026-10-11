@@ -209,6 +209,9 @@ jobs:
           --flags "$VFX_FLAGS"
           --strict
       - name: Capture (flags none)
+        # Runs even when the vfx arm failed: the none control is what makes a
+        # vfx-arm failure attributable (the job still fails on either arm).
+        if: always()
         run: >-
           node benchmarks/quality-rebuild/capture.mjs
           --dist benchmarks/quality-rebuild/dist
@@ -219,6 +222,11 @@ jobs:
       - name: Verify capture reports (no non-ready / zero-draw / missing frame)
         if: always()
         run: node tests/qr/prd07/ci/verify-reports.mjs capture
+      - name: Numeric visual checks (vfx vs none frames)
+        # Lane-07 S-rows, numeric half: not blank/flat, vfx changes the frame,
+        # emitter-colour coverage, sky gradient. Writes vfx-pixels.json.
+        if: always()
+        run: node tests/qr/prd07/ci/vfx-pixels.mjs "$EVIDENCE_DIR"
       - name: Upload capture evidence
         if: always()
         uses: actions/upload-artifact@v4
