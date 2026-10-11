@@ -33,7 +33,7 @@ on:
       scenes:
         description: "Lane scene ids (comma-separated; default all prd11 scenes)"
         required: false
-        default: "prd11-tier-ladder"
+        default: "prd11-tier-ladder,prd11-draw-call-stress,prd11-instancing-100k"
 
 permissions:
   contents: read
@@ -103,7 +103,7 @@ jobs:
     if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'lane:prd11')
     env:
       PRD11_FLAGS: ${{ github.event_name == 'workflow_dispatch' && inputs.flags || 'tiers,none' }}
-      PRD11_SCENES: ${{ github.event_name == 'workflow_dispatch' && inputs.scenes || 'prd11-tier-ladder' }}
+      PRD11_SCENES: ${{ github.event_name == 'workflow_dispatch' && inputs.scenes || 'prd11-tier-ladder,prd11-draw-call-stress,prd11-instancing-100k' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -130,6 +130,43 @@ jobs:
         with:
           name: prd11-lane-captures
           path: benchmarks/quality-rebuild/scenes/prd11/out/
+          if-no-files-found: warn
+          retention-days: 30
+
+  # Real-GPU twin of lane-captures (NVIDIA L4, ANGLE Vulkan) for T0-35 and the
+  # S-rows; macos-14 is a paravirtual GPU. Same capture + perf-gate, own artifact.
+  # Frames are never compared across providers or runner types.
+  lane-captures-gpu:
+    name: Lane scene captures + perf-gate (azure-gpu L4)
+    runs-on: [self-hosted, azure-gpu]
+    timeout-minutes: 60
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'lane:prd11')
+    env:
+      PRD11_FLAGS: ${{ github.event_name == 'workflow_dispatch' && inputs.flags || 'tiers,none' }}
+      PRD11_SCENES: ${{ github.event_name == 'workflow_dispatch' && inputs.scenes || 'prd11-tier-ladder,prd11-draw-call-stress,prd11-instancing-100k' }}
+      QR_BENCH_CHROME_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Lane captures (flags + none), L4 GPU
+        run: node benchmarks/quality-rebuild/scenes/prd11/capture.mjs --flags "$PRD11_FLAGS" --scenes "$PRD11_SCENES" --engines aura3d,three --out benchmarks/quality-rebuild/scenes/prd11/out-gpu
+      - name: perf-gate over lane report
+        run: node tools/perf-gate/index.mjs --report benchmarks/quality-rebuild/scenes/prd11/out-gpu/report.json --out benchmarks/quality-rebuild/scenes/prd11/out-gpu/perf-gate.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prd11-lane-captures-gpu
+          path: benchmarks/quality-rebuild/scenes/prd11/out-gpu/
           if-no-files-found: warn
           retention-days: 30
 

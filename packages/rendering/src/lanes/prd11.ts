@@ -14,7 +14,7 @@ import type { AuraQualityTierSettings } from "../contracts/quality";
 import type { QrFlags } from "../contracts/core";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
 import type { RenderDevice } from "../RenderDevice";
-import { rendererQrFlags, setRendererQrFlags } from "../renderer/FrameGraph";
+import { setRendererQrFlags } from "../renderer/FrameGraph";
 import { FrameStats, diffDeviceCounters } from "../quality/FrameStats";
 import { gpuTimingBackendForDevice } from "../quality/DeviceProbe";
 import { RenderTargetPool } from "../resources/RenderTargetPool";
@@ -221,6 +221,11 @@ registerFrameContributor({
  * `quality` app extension (`packages/engine/src/lanes/prd11.ts`) forwards the
  * resolved flags through this helper so `frameContributors(flags)` gates
  * correctly on `A3D_QR_TIERS` for every subsequently mounted FrameGraph.
+ *
+ * @deprecated T11-GLOBALFLAGS: writes the global last-writer-wins store and so
+ * arms every app on the page. The engine no longer calls it; renderers take
+ * per-device flags through `Renderer.create({ qrFlags })` (T0-28). Kept one
+ * release for external callers.
  */
 export function prd11SetRendererQrFlags(flags: QrFlags): void {
   setRendererQrFlags(flags);
@@ -261,7 +266,8 @@ registerFrameContributor({
       restoreInstalled.add(ctx.device);
       installDeviceRestoreRebuild(ctx.device, {
         registry: sharedResourceRegistry(),
-        flags: rendererQrFlags()
+        // T11-GLOBALFLAGS: this frame's flags (per device since T0-28), not the global default.
+        flags: ctx.flags
       });
     }
     return items;

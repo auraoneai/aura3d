@@ -132,3 +132,119 @@ export function normalizeTextureBudgetBytes(value: number | undefined): number {
   }
   return Math.floor(value);
 }
+
+/* ------------------------------------------------------------------ */
+/* PRD-11 Wave B RendererOptions (C-27): one parser for the lane-11    */
+/* renderer options plus the URL overrides, used by the `quality` app  */
+/* extension. Invalid values throw so a typo never silently runs auto. */
+/* ------------------------------------------------------------------ */
+
+export type AuraQualityTierName = "low" | "medium" | "high" | "ultra";
+
+export interface ParsedQualityRendererOptions {
+  readonly requested: AuraQualityTierName | "auto";
+  /** `"url"` when `?aura3d-quality=` chose the tier; `"options"` otherwise. */
+  readonly requestedSource: "url" | "options";
+  readonly overrides: Readonly<Record<string, unknown>> | undefined;
+  readonly adaptive: boolean;
+  /** `"url"` when `?aura3d-adaptive=` set it. */
+  readonly adaptiveSource: "url" | "options";
+  readonly targetFrameRate: number | undefined;
+  readonly batching: boolean | "auto";
+  /** One-time deprecation warnings for this call (empty after the first). */
+  readonly warnings: readonly string[];
+}
+
+const QUALITY_TIER_NAMES: readonly string[] = ["low", "medium", "high", "ultra"];
+const warnedDeprecations = new Set<string>();
+
+function parseTier(value: unknown, where: string): AuraQualityTierName | "auto" {
+  if (value === undefined || value === "auto") return "auto";
+  if (typeof value === "string" && QUALITY_TIER_NAMES.includes(value)) return value as AuraQualityTierName;
+  throw new Error(`QUALITY_OPTION_INVALID:${where}=${String(value)} (expected low|medium|high|ultra|auto)`);
+}
+
+function deprecation(id: string, message: string, out: string[]): void {
+  if (warnedDeprecations.has(id)) return;
+  warnedDeprecations.add(id);
+  out.push(message);
+}
+
+/** Test seam: forget which one-time deprecation warnings were already emitted. */
+export function resetRendererOptionDeprecationsForTests(): void {
+  warnedDeprecations.clear();
+}
+
+/**
+ * Parse `renderer.quality` (tier string or `{ tier, overrides }`),
+ * `renderer.adaptive`, `renderer.targetFrameRate`, `renderer.batching`, and
+ * the URL overrides `?aura3d-quality=<tier|auto>` / `?aura3d-adaptive=0|1`,
+ * which apply in every build and win over options (the decision then reports
+ * `source: "url"`). `qualityProfile` and root `performanceQuality` stay
+ * accepted and emit a one-time deprecation warning pointing at `quality`.
+ */
+export function parseQualityRendererOptions(
+  renderer: AuraCreateAppRendererOptions | undefined,
+  search: string | null = typeof location !== "undefined" ? location.search : null,
+  root: { readonly performanceQuality?: unknown } = {}
+): ParsedQualityRendererOptions {
+  const warnings: string[] = [];
+  const quality = renderer?.quality;
+  let requested: AuraQualityTierName | "auto";
+  let overrides: Readonly<Record<string, unknown>> | undefined;
+  if (quality !== null && typeof quality === "object") {
+    const shaped = quality as { readonly tier?: unknown; readonly overrides?: unknown };
+    requested = parseTier(shaped.tier, "renderer.quality.tier");
+    if (shaped.overrides !== undefined && (shaped.overrides === null || typeof shaped.overrides !== "object")) {
+      throw new Error("QUALITY_OPTION_INVALID:renderer.quality.overrides (expected an object)");
+    }
+    overrides = shaped.overrides as Readonly<Record<string, unknown>> | undefined;
+  } else {
+    requested = parseTier(quality, "renderer.quality");
+  }
+
+  const adaptiveOption = renderer?.adaptive;
+  if (adaptiveOption !== undefined && typeof adaptiveOption !== "boolean") {
+    throw new Error(`QUALITY_OPTION_INVALID:renderer.adaptive=${String(adaptiveOption)} (expected boolean)`);
+  }
+  let adaptive = adaptiveOption !== false;
+
+  const targetFrameRate = renderer?.targetFrameRate;
+  if (targetFrameRate !== undefined && (!Number.isFinite(targetFrameRate) || targetFrameRate <= 0)) {
+    throw new Error(`QUALITY_OPTION_INVALID:renderer.targetFrameRate=${String(targetFrameRate)} (expected a positive number)`);
+  }
+
+  const batchingOption = renderer?.batching;
+  if (batchingOption !== undefined && typeof batchingOption !== "boolean" && batchingOption !== "auto") {
+    throw new Error(`QUALITY_OPTION_INVALID:renderer.batching=${String(batchingOption)} (expected boolean|"auto")`);
+  }
+  const batching = (batchingOption ?? "auto") as boolean | "auto";
+
+  let requestedSource: "url" | "options" = "options";
+  let adaptiveSource: "url" | "options" = "options";
+  if (search) {
+    const params = new URLSearchParams(search);
+    const urlTier = params.get("aura3d-quality");
+    if (urlTier !== null) {
+      requested = parseTier(urlTier, "?aura3d-quality");
+      requestedSource = "url";
+    }
+    const urlAdaptive = params.get("aura3d-adaptive");
+    if (urlAdaptive !== null) {
+      if (urlAdaptive !== "0" && urlAdaptive !== "1") {
+        throw new Error(`QUALITY_OPTION_INVALID:?aura3d-adaptive=${urlAdaptive} (expected 0|1)`);
+      }
+      adaptive = urlAdaptive === "1";
+      adaptiveSource = "url";
+    }
+  }
+
+  if (renderer?.qualityProfile !== undefined) {
+    deprecation("qualityProfile", "Aura3D: renderer.qualityProfile is deprecated; use renderer.quality (\"low\"|\"medium\"|\"high\"|\"ultra\"|\"auto\").", warnings);
+  }
+  if (root.performanceQuality !== undefined) {
+    deprecation("performanceQuality", "Aura3D: performanceQuality is deprecated; use renderer.quality and renderer.adaptive.", warnings);
+  }
+
+  return { requested, requestedSource, overrides, adaptive, adaptiveSource, targetFrameRate, batching, warnings };
+}
