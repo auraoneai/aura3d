@@ -52,6 +52,12 @@ async function render(subject: Subject, bloom: boolean): Promise<Frame> {
     .background("#000000")
     .camera(camera.perspective({ position: [0, 0, 6], target: [0, 0, 0], fov: 30, near: 0.1, far: 40 }));
   if (subject.kind === "sphere") {
+    // A scene with no direct light gets the production fallback key/fill/rim
+    // rig; its specular highlight on the sphere is a strength-independent
+    // excess above threshold (GPU 38157297976: core = strength exactly, but
+    // bloom totals 1 : 2.87 : 6.60). An authored zero-intensity light keeps
+    // the rig off so the emitter is pure emission.
+    built = built.add(lights.directional({ name: "no-fallback-rig", intensity: 0, position: [0, 0, 6] }));
     built = built.add(primitives.sphere({
       name: "emitter",
       size: 0.7,
@@ -73,12 +79,7 @@ async function render(subject: Subject, bloom: boolean): Promise<Frame> {
     pixelRatio: 1,
     resize: false,
     autoStart: false,
-    // Dither on: with the 5-mip halo spread across the frame at a few LSB,
-    // undithered 8-bit rounding biased the faint strength-2 halo upward
-    // (GPU 38154706149: ratios 2.74 / 6.27 while the core read exactly
-    // strength). The triangular dither makes the quantized sum unbiased; it
-    // is deterministic per pixel/frame, so it cancels in on − off.
-    output: { toneMapping: "linear", exposure: EXPOSURE, dither: true },
+    output: { toneMapping: "linear", exposure: EXPOSURE, dither: false },
     qualityRebuild: { flags: ["post"] }
   } as never);
   try {

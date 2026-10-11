@@ -196,6 +196,10 @@ export async function runToneEvalProbe(): Promise<{
       .background("#000000")
       .camera(camera.orthographic({ position: [0, 0, 10], target: [0, 0, 0], orthographicSize: 3.75 }));
     built = built.add(lights.ambient({ name: "off", intensity: 0, color: "#000000" }));
+    // Ambient is not a direct light, so the production fallback key/fill/rim
+    // rig still lit the ladder (GPU 38157297976: step 0 155 vs 152, a
+    // constant ≈ +0.014 HDR). A zero-intensity directional keeps it off.
+    built = built.add(lights.directional({ name: "no-fallback-rig", intensity: 0, position: [0, 0, 10] }));
     // GPU lane 38141069039 read 0 at the ladder: `primitives.plane` is the
     // horizontal XZ ground plane (size is a Vec3; `[1.4, 1.4]` left z
     // undefined), so from this camera on +Z every step was edge-on and
