@@ -57,7 +57,13 @@ async function renderFrame(built: ReturnType<typeof scene>, flags: readonly stri
   try {
     await app.ready();
     await postV2ModulesReady();
-    if (tier) (app as { setQualityTier?: (t: string) => void }).setQualityTier?.(tier);
+    if (tier) {
+      // The tier is read at compile time; the scene compiled before ready()
+      // resolved, so re-submit it after recording the tier (GPU run
+      // 38158478621 showed both legs identical without this).
+      (app as { setQualityTier?: (t: string) => void }).setQualityTier?.(tier);
+      (app as { setScene?: (s: unknown) => void }).setScene?.(built);
+    }
     // Read in the stepping task from the default framebuffer (qr-prd03-frame-capture).
     const canvasEl = host.querySelector("canvas")!;
     const capture = installFrameCapture(app, canvasEl);
