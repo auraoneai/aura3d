@@ -1,5 +1,7 @@
 # Q-12-6: `viewer.renderer.backend` → `renderer.device.kind` (benchmark scene)
 
+**Issue:** #1037 (P-64 writeback)
+
 **From:** lane 15 · **To:** lane 12 · **Filed:** 2026-10-06
 
 T2.6 deleted `ProductionRuntimeRenderer`/`ProductionWebGL2Renderer` and the

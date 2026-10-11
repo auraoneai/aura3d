@@ -1,5 +1,7 @@
 # Q-05-1 — asset-corpus GLB parse unification (APPLIED BY LANE 15)
 
+**Issue:** #1003 (P-64 writeback)
+
 **Filed by:** Lane 15 (PRD-15 T6.10)
 **Status:** applied — recorded per single-writer rule because the touched files are lane-05
 

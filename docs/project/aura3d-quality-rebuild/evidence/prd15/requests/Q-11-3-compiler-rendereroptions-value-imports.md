@@ -1,5 +1,7 @@
 # Q-11-3: `compiler/*` imports `app/rendererOptions.ts` values — layering violation
 
+**Issue:** #1027 (P-64 writeback)
+
 **From:** lane 15 · **To:** lane 11 · **Filed:** 2026-10-06 · **Status:** OPEN
 
 PRD-15 §6.3 layering: `compiler/` may not import `app/` values. The T3.14

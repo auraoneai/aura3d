@@ -1,5 +1,7 @@
 # Q-01-7 — Delete the D-10 barrel-only orphan rendering files
 
+**Issue:** #994 (P-64 writeback)
+
 - **Requester:** lane 15 (T5.4)
 - **Owner:** lane 01 (`packages/rendering/src/` blanket prefix)
 - **SLA:** 2 working days (CONTRACTS §6.5); requester does not wait

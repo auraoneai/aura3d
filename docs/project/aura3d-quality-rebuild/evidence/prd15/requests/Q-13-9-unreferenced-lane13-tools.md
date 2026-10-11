@@ -1,5 +1,7 @@
 # Q-13-9 — 2 unreferenced lane-13-owned tools/ directories
 
+**Issue:** #692 (P-64 writeback)
+
 **From:** Lane 15 (PRD-15, Phase 7 T7.5)
 **To:** Lane 13 (owner per `.github/QR_OWNERSHIP.json`)
 **Status:** filed

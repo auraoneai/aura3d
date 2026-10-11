@@ -1,5 +1,7 @@
 # Q-05-11 → to:prd05 (qr-request, CONTRACTS §6.5)
 
+**Issue:** #1005 (P-64 writeback)
+
 **Files:** `packages/aura3d-cli/skills/aura3d-materials-environments/SKILL.md`,
 `packages/aura3d-cli/skills/aura3d-threejs-migration/SKILL.md`,
 `packages/aura3d-cli/skills/manifest.json` (all 05-owned; mirrors under

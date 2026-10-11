@@ -1,5 +1,7 @@
 # Q-02-3: HdrEquirect.ts relied on Node `Buffer` (packed consumers break)
 
+**Issue:** #478 (P-64 writeback)
+
 **To:** lane 02 (`packages/rendering/src/environment/HdrEquirect.ts` owner)
 **From:** lane 15 (Phase 8 packed-consumer gate)
 **Status:** FIXED ON qr/prd15-40-removal (courtesy notice; revert-free)

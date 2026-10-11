@@ -1,5 +1,7 @@
 # Q-12-2 — `tools/verify-architecture` replaced by arch-gates fail mode
 
+**Issue:** #1032 (P-64 writeback)
+
 **From:** Lane 15 (PRD-15, Phase 7 T7.7)
 **To:** Lane 12 (owner of `tools/external-parity-codebase-root-readiness`)
 **Status:** filed

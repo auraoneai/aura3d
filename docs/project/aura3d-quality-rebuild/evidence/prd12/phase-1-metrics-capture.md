@@ -47,4 +47,4 @@ Scope: T1.1–T1.9, T1.11 (partial), T1.13 (skeleton), T1.14, T1.15, T1.16, T1.1
 
 ## qr-request filings needed
 
-- `benchmarks/external-parity/shared/threejs-visual-parity-scenes.ts` still carries `a3dSetupLines`/`threeSetupLines` (§7.6 delete) — spec consumer `tests/browser/external-parity-threejs-visual-parity.spec.ts` is owner-15; issue to be filed to prd15 rather than edited across lanes.
+- `benchmarks/external-parity/shared/threejs-visual-parity-scenes.ts` still carries `a3dSetupLines`/`threeSetupLines` (§7.6 delete) — spec consumer `tests/browser/external-parity-threejs-visual-parity.spec.ts` is owner-15; filed to prd15 as #142 rather than edited across lanes.

@@ -1,5 +1,7 @@
 # Q-04-1: `apps/wow-webgpu-product-viewer` — `renderFrameAsync`/`backendSelection` gone
 
+**Issue:** #1000 (P-64 writeback)
+
 **From:** lane 15 · **To:** lane 04 · **Filed:** 2026-10-06
 
 T2.6/T2.9 collapsed the renderer wrappers onto the single C-29 `Renderer`.

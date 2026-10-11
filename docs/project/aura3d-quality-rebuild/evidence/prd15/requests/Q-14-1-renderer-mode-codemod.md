@@ -1,5 +1,7 @@
 # Q-14-1: lane-14 `mode: "safe-basic"` hits — `renderer-mode` codemod report
 
+**Issue:** #1042 (P-64 writeback)
+
 **From:** lane 15 · **To:** lane 14 · **Filed:** 2026-10-06 · **SLA:** 2 working days
 
 T4.5 removed `renderer.mode`/`renderer.fallback` (CCR-15-1): deprecated now,

@@ -71,7 +71,7 @@ Everything below is code that measures; nothing here asserts pixel claims.
 
 ## qr-request opened
 - games.json timeline adoption of `strip`/`webm` steps at the 04-action moment (lane 14 owns
-  games.json; plugins + overlay land in this PR).
+  games.json; plugins + overlay land in this PR). Issue: #344.
 
 ## NOT RUN (runner-required)
 - Real captures of the ref scenes / variants (local captures are forbidden by lane rules).

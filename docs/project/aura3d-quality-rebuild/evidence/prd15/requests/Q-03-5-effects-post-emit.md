@@ -1,5 +1,7 @@
 # Q-03-5 → to:prd03 (qr-request, CONTRACTS §6.5)
 
+**Issue:** #999 (P-64 writeback)
+
 **Files:** `packages/engine/src/agent-api/nodes/effects.post.ts` (03-owned)
 **Contract served:** PRD-15 T8.2 — `pnpm build` (`tsc -p tsconfig.build.json`)
 must pass for `pack:check`.
