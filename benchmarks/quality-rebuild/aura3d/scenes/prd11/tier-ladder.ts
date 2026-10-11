@@ -114,7 +114,13 @@ export default async function run(host: HTMLElement): Promise<ReadyPayload> {
     autoStart: false
   });
   (window as unknown as { __PRD11_APP__?: AuraApp }).__PRD11_APP__ = app;
+  // Track 0 ready-time attribution: adapter-side marks the capture runner reads
+  // even when ready never arrives (ms since run() started).
+  const progress: Record<string, number> = { created: Math.round(performance.now() - started) };
+  (window as unknown as { __PRD11_PROGRESS__?: Record<string, number> }).__PRD11_PROGRESS__ = progress;
+  const mark = (name: string): void => { progress[name] = Math.round(performance.now() - started); };
   await app.ready();
+  mark("appReady");
   const mountDiag = app.diagnostics();
   if (mountDiag.errors.length > 0) {
     throw new Error(`prd11 lane mount failed: ${mountDiag.errors.join("; ")}`);
@@ -147,10 +153,17 @@ export default async function run(host: HTMLElement): Promise<ReadyPayload> {
     }
     app.step(0);
     frames += 1;
-    try {
-      lastDrawCalls = app.diagnostics().drawCalls;
-    } catch {
-      // diagnostics may transiently fail during early frames; keep stepping.
+    progress.frames = frames;
+    if (frames === 1) mark("firstStep");
+    // Full diagnostics are not free (every section collects): poll only until
+    // the first draw, every 10th frame, so the measured loop is the render loop.
+    if (lastDrawCalls === 0 && frames % 10 === 1) {
+      try {
+        lastDrawCalls = app.diagnostics().drawCalls;
+        if (lastDrawCalls > 0) mark("firstDraw");
+      } catch {
+        // diagnostics may transiently fail during early frames; keep stepping.
+      }
     }
     requestAnimationFrame(loop);
   };

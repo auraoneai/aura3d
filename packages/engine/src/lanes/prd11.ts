@@ -91,10 +91,30 @@ function emptyCounters(): Pick<DeviceCounters, "drawCalls" | "bufferCreates" | "
   return { drawCalls: 0, bufferCreates: 0, textureUploads: 0, readbacks: 0, renderTargetsCreated: 0, programCompiles: 0, liveBuffers: 0, liveVertexArrays: 0, textureBytes: 0, renderTargetBytes: 0 };
 }
 
+/**
+ * T11-COUNTERS follow-up (Track 0 ready time): `device.getDiagnostics()` walks
+ * every live buffer/texture/target, and the `frame` section ran it on every
+ * `app.diagnostics()` call — capture harnesses poll that many times per frame.
+ * The only field read is the cumulative program-compile count, so one walk per
+ * rendered frame is enough.
+ */
+const diagnosticsMemo = new WeakMap<Prd11FrameTelemetry, { readonly sample: object | null; readonly value: ReturnType<Prd11FrameTelemetry["device"]["getDiagnostics"]> }>();
+
+function memoDiagnostics(telemetry: Prd11FrameTelemetry): ReturnType<Prd11FrameTelemetry["device"]["getDiagnostics"]> {
+  // `lastSample` is a fresh object every completed frame (FrameStats.end), so
+  // its identity marks the frame; counters like `samples` saturate at capacity.
+  const sample = telemetry.lastSample;
+  const cached = diagnosticsMemo.get(telemetry);
+  if (cached && sample !== null && cached.sample === sample) return cached.value;
+  const value = telemetry.device.getDiagnostics();
+  diagnosticsMemo.set(telemetry, { sample, value });
+  return value;
+}
+
 function frameReport(telemetry: Prd11FrameTelemetry | null, app: AuraApp): AuraFrameTimingReport {
   const stats = telemetry?.stats ?? null;
   const counters = telemetry?.counters ?? emptyCounters();
-  const diag = telemetry ? telemetry.device.getDiagnostics() : null;
+  const diag = telemetry ? memoDiagnostics(telemetry) : null;
   const percentiles = (field: "intervalMs" | "cpuFrameMs" | "cpuSubmitMs" | "gpuMs"): AuraPercentiles =>
     stats ? stats.percentiles(field) : EMPTY_PERCENTILES;
   const p50Interval = percentiles("intervalMs").p50;
