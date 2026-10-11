@@ -208,7 +208,7 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
           size: [size, size],
           normal: at.normal,
           baseOpacity: options?.opacity ?? 0.85,
-          ...(options?.color !== undefined ? { color: options.color as never } : {}),
+          ...(options?.color !== undefined ? { color: options.color } : {}),
           ...(options?.lifetime !== undefined ? { lifetime: options.lifetime } : {})
         }
       });
