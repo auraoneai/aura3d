@@ -69,6 +69,23 @@ class TestReferenceMetrics(unittest.TestCase):
         self.assertEqual(flip_result, 0.0)
         self.assertEqual(lpips_result, 0.0)
 
+    def test_flip_pinned_signature_and_mask(self):
+        # flip-evaluator==1.7 takes ppd inside parameters= and returns
+        # (errorMap, meanError, parameters); the old call raised TypeError.
+        try:
+            import flip_evaluator  # noqa: F401
+        except ImportError:
+            self.skipTest("flip-evaluator not installed (CI installs requirements.lock)")
+        ref = np.zeros((32, 32, 3), np.float32)
+        test = ref.copy()
+        test[8:16, 8:16] = 1.0
+        mask = np.zeros((32, 32), bool)
+        mask[8:16, 8:16] = True
+        self.assertEqual(m.flip(ref, ref), 0.0)
+        whole, masked = m.flip(ref, test), m.flip(ref, test, mask)
+        self.assertGreater(whole, 0.0)
+        self.assertGreater(masked, whole)  # the error is concentrated inside the mask
+
 
 class TestOptionalDeps(unittest.TestCase):
     def test_optional_deps_flag(self):
