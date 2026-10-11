@@ -19,16 +19,28 @@ function lerpTrack(values: readonly number[], u: number, fallback: number): numb
   return values[i] + (values[i + 1] - values[i]) * t;
 }
 
+/**
+ * Arc-length LUT resolution for the position track. The spline default (256)
+ * quantises `pointAt(u)` coarsely enough that per-frame camera speed varies
+ * ~14 % on a 6-point closed rail at 60 Hz; 1024 holds it under 1 % (S11:
+ * speed variation ≤ 5 %, measured in rail-continuity.test.ts).
+ */
+const RAIL_ARC_SAMPLES = 1024;
+
 export function createRailRig(o: AuraCameraRailOptions): AuraCameraRig {
   if (o.points.length < 2) throw new Error("rigs.rail needs >= 2 points");
-  const spline = createSpline(o.points, { closed: o.loop === "loop", alpha: o.alpha ?? 0.5 });
+  const spline = createSpline(o.points, { closed: o.loop === "loop", alpha: o.alpha ?? 0.5, samples: RAIL_ARC_SAMPLES });
   // lookAt: string id | single vec3 | vec3 track. A vec3 is an array too —
   // distinguish by element type.
   const lookTrack =
     Array.isArray(o.lookAt) && o.lookAt.length > 0 && typeof o.lookAt[0] !== "number"
       ? createSpline(o.lookAt as readonly AuraVec3[], { alpha: o.alpha ?? 0.5 })
       : undefined;
-  const easeFn = ease[o.ease ?? "inOutSine"];
+  // A closed loop has no ends to ease into: easing each lap would stop the
+  // camera at the seam (speed → 0 at u = 0/1, an S11 violation), so `loop`
+  // defaults to constant arc-length speed. One-shot and pingpong rails keep
+  // the inOutSine default; an explicit `ease` always wins.
+  const easeFn = ease[o.ease ?? (o.loop === "loop" ? "linear" : "inOutSine")];
   const fovTrack = Array.isArray(o.fov) ? o.fov : undefined;
   const fovScalar = typeof o.fov === "number" ? o.fov : 50;
 

@@ -12,7 +12,8 @@ import { gameCameraRigs } from "../GameCameraRigs.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { boundsFromAsset, boundsSize } from "../SceneGroundingUtils.js";
 import { lazyNamespace } from "../lazyNamespace.js";
-import { stubCameraRigFactories } from "../../contracts/camera.js";
+import { stubCameraRigFactories, type AuraCameraRig, type AuraCameraRigFactories } from "../../contracts/camera.js";
+import { rigFactory } from "../camera/rigs/registry.js";
 import { resolveQrFlags } from "../../contracts/flags.js";
 import { smoothingToHalflife } from "../camera/Spring.js";
 
@@ -31,7 +32,32 @@ function warnSmoothingDeprecated(options: object | undefined): void {
   );
 }
 
-
+/**
+ * P-61 (lane-08 review of #173/#276): `camera.rigs` shipped as the PR 0a stub
+ * factories, so `app.camera.use(camera.rigs.shoulder({ target: "hero" }))`
+ * (create-aura3d templates) always got a static pose that never followed the
+ * subject. Resolve each factory through the S19 rig registry instead — the
+ * same lookup `app.camera.rigs` uses, so no rig module is imported here and
+ * the S19 tree-shake still holds. A rig module that was never imported falls
+ * back to its stub. `static` stays the stub's (already real); `fromSpec`
+ * needs a controller's spec deps, so the namespace keeps the stub and real
+ * spec rigs come from `app.camera.rigs.fromSpec`. Flag-off is unchanged in
+ * effect: the stub controller's `use()` ignores the rig.
+ */
+const NAMESPACE_STUB_ONLY = new Set<string>(["static", "fromSpec"]);
+// Built inside the lazy namespace init: `stubCameraRigFactories` can still be
+// uninitialised while this module evaluates inside the barrel's import cycle.
+function createCameraRigFactories(): AuraCameraRigFactories {
+  return new Proxy(stubCameraRigFactories, {
+    get(target, prop, receiver) {
+      if (typeof prop === "string" && !NAMESPACE_STUB_ONLY.has(prop)) {
+        const factory = rigFactory(prop);
+        if (factory) return (options: unknown) => factory(options) as AuraCameraRig;
+      }
+      return Reflect.get(target, prop, receiver);
+    }
+  });
+}
 
 export const camera = lazyNamespace(() => ({
   perspective: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => ({
@@ -219,9 +245,10 @@ export const camera = lazyNamespace(() => ({
    * C-22 rig factories (`chase`, `shoulder`, `topDown`, `fromSpec`, …) —
    * `AuraCameraRig` values for `app.camera.use(rig)` + `app.camera.setPose`,
    * as distinct from the `AuraCameraSpec` builders above that mount through
-   * the scene camera slot. Stub factories until PRD 08 lands the real rigs:
-   * each returns a static rig carrying its authored pose.
+   * the scene camera slot. Real PRD-08 rigs resolved through the S19 rig
+   * registry (see `createCameraRigFactories` above); `static`/`fromSpec` and any
+   * unimported rig module fall back to the PR 0a stubs.
    */
-  rigs: stubCameraRigFactories,
+  rigs: createCameraRigFactories(),
   ...gameCameraRigs
 } as const));

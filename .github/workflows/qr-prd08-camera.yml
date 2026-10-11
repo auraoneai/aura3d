@@ -28,6 +28,9 @@ on:
       - 'tools/camera-cast-codemod/**'
       - 'benchmarks/quality-rebuild/motion/**'
       - 'benchmarks/quality-rebuild/scenes/prd08/**'
+      - 'benchmarks/quality-rebuild/aura3d/scenes/prd08/**'
+      - 'benchmarks/quality-rebuild/three/scenes/prd08/**'
+      - 'packages/aura3d-cli/src/commands/prd08/**'
       - 'tests/qr/prd08/**'
       - 'tests/unit/engine/{fixed-step-determinism,game-camera-rigs,game-feel,platformer-motion,vehicle-chassis}.test.ts'
       - 'tests/unit/contracts/impl/prd08-*.ts'
@@ -50,6 +53,9 @@ on:
       - 'tools/camera-cast-codemod/**'
       - 'benchmarks/quality-rebuild/motion/**'
       - 'benchmarks/quality-rebuild/scenes/prd08/**'
+      - 'benchmarks/quality-rebuild/aura3d/scenes/prd08/**'
+      - 'benchmarks/quality-rebuild/three/scenes/prd08/**'
+      - 'packages/aura3d-cli/src/commands/prd08/**'
       - 'tests/qr/prd08/**'
       - 'tests/unit/engine/{fixed-step-determinism,game-camera-rigs,game-feel,platformer-motion,vehicle-chassis}.test.ts'
       - 'tests/unit/contracts/impl/prd08-*.ts'
@@ -89,10 +95,6 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # T0-31 (lane 15) tracks pre-existing typecheck errors on main; this step
-      # stays unmasked — no continue-on-error per the program rule.
-      - run: pnpm typecheck:raw
-      - run: pnpm lint
       - name: Lane-08 unit suites (frame loop, time, interpolation, spring, spline, framing, noise, bicycle, fromSpec parity, codemod)
         run: pnpm exec vitest run --config tests/qr/prd08/vitest.config.ts
       - name: Lane-08 engine unit files
@@ -103,13 +105,19 @@ jobs:
         run: |
           node tools/camera-cast-codemod/index.mjs apps packages/create-aura3d/templates --report \
             | tee /tmp/camera-cast.md
-          grep -q 'showcase-courier-rush/src/main.ts:1394' /tmp/camera-cast.md
-          grep -q 'showcase-patrol-wing/src/main.ts:805' /tmp/camera-cast.md
-          grep -q 'showcase-turbo-drift-circuit/src/main.ts:2760' /tmp/camera-cast.md
+          # Lane 14 moved the pre-v2 game sources to src/legacy/; same cast sites.
+          grep -q 'showcase-courier-rush/src/legacy/main.ts:1394' /tmp/camera-cast.md
+          grep -q 'showcase-patrol-wing/src/legacy/main.ts:796' /tmp/camera-cast.md
+          grep -q 'showcase-turbo-drift-circuit/src/legacy/main.ts:2760' /tmp/camera-cast.md
           grep -q 'showcase-cinematic-architecture/src/main.ts:500' /tmp/camera-cast.md
-          grep -q 'showcase-skyline-runner/src/feel.ts' /tmp/camera-cast.md
-          grep -q 'showcase-blockfall-reactor/src/camera-feel.ts' /tmp/camera-cast.md
+          grep -q 'showcase-skyline-runner/src/legacy/feel.ts' /tmp/camera-cast.md
+          grep -q 'showcase-blockfall-reactor/src/legacy/camera-feel.ts' /tmp/camera-cast.md
       - run: node tools/qr-ownership/check.mjs
+      # Repo-wide gates run after the lane suites so lane results are always
+      # reported. T0-31 (lane 15) tracks pre-existing typecheck errors on main;
+      # these steps stay unmasked — no continue-on-error per the program rule.
+      - run: pnpm typecheck:raw
+      - run: pnpm lint
 
   browser-gpu:
     name: browser-gpu (macos-14, ANGLE Metal)
@@ -134,14 +142,14 @@ jobs:
         with:
           name: prd08-frame-pacing-${{ github.run_id }}
           path: tests/reports/prd08/
-          if-no-files-found: warn
+          if-no-files-found: error
       - name: Playwright report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: prd08-playwright-${{ github.run_id }}
           path: tests/qr/prd08/playwright-report/
-          if-no-files-found: warn
+          if-no-files-found: error
 
   motion-capture:
     name: motion scenes (macos-14, ANGLE Metal)
@@ -154,28 +162,52 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      # Fail closed: the six prd08-motion-* scenes (motion/scenes.ts) must be
+      # discovered, built and captured; no "none registered" skip path.
       - name: Discover registered prd08-motion scenes
         id: scenes
         run: |
-          IDS="$(rg -o 'prd08-motion-[a-z0-9-]+' benchmarks/quality-rebuild/motion/scenes.ts 2>/dev/null | sort -u | paste -sd, -)"
+          IDS="$(grep -oE 'prd08-motion-[a-z0-9-]+' benchmarks/quality-rebuild/motion/scenes.ts | sort -u | paste -sd, -)"
+          if [ -z "${IDS}" ]; then
+            echo "::error::no prd08-motion-* scenes found in benchmarks/quality-rebuild/motion/scenes.ts"
+            exit 1
+          fi
           echo "ids=${IDS}" >> "$GITHUB_OUTPUT"
-          echo "motion scenes: ${IDS:-<none registered yet (08-S9)>}"
+          echo "motion scenes: ${IDS}"
       - name: Build benchmark bundle
-        if: steps.scenes.outputs.ids != ''
         run: pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts
+      # capture.mjs exits non-zero when no scene is captured or any capture is
+      # not ready (T0-11/P-01), so quarantined scenes fail this step.
       - name: Capture prd08-motion-* (12-frame strip + WebM, flags=camera)
-        if: steps.scenes.outputs.ids != ''
         env:
           QR_BENCH_CHROME_ARGS: ${{ env.QRC_GPU_ARGS }}
         run: |
           node benchmarks/quality-rebuild/capture.mjs \
             --scenes "${{ steps.scenes.outputs.ids }}" \
-            --engines aura3d,three --variants camera \
+            --engines aura3d,three --flags camera \
             --out benchmarks/quality-rebuild/out/prd08-motion
+      # S9: `aura3d prd08 motion-report` renders report.json (strips +
+      # trajectory metrics) to markdown; exits non-zero on incomplete evidence
+      # (missing scene/engine, non-ready capture, stub camera, short/blank strip).
+      - name: prd08 motion-report
+        run: |
+          pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts prd08 motion-report \
+            --report benchmarks/quality-rebuild/out/prd08-motion/report.json \
+            --out benchmarks/quality-rebuild/out/prd08-motion/motion-report \
+            --scenes "${{ steps.scenes.outputs.ids }}"
+          cat benchmarks/quality-rebuild/out/prd08-motion/motion-report/motion-report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload motion report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prd08-motion-report-${{ github.run_id }}
+          path: benchmarks/quality-rebuild/out/prd08-motion/motion-report/
+          if-no-files-found: error
       - name: Upload motion strips + report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: prd08-motion-${{ github.run_id }}
           path: benchmarks/quality-rebuild/out/prd08-motion/
-          if-no-files-found: warn
+          if-no-files-found: error

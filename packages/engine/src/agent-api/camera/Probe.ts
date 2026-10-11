@@ -33,6 +33,8 @@ export interface AuraCameraProbeDeps {
 
 const sub = (a: AuraVec3, b: AuraVec3): AuraVec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const len = (v: AuraVec3): number => Math.hypot(v[0], v[1], v[2]);
+const contains = (b: ProbeBoundsEntry, p: AuraVec3): boolean =>
+  p[0] >= b.min[0] && p[0] <= b.max[0] && p[1] >= b.min[1] && p[1] <= b.max[1] && p[2] >= b.min[2] && p[2] <= b.max[2];
 
 /**
  * Ray-vs-AABB slab test on a segment `from→to` (t ∈ [0,1]) against the box
@@ -97,10 +99,14 @@ export function createCameraProbe(deps: AuraCameraProbeDeps): AuraCameraProbe {
       }
 
       // AABB tier: sweep a sphere-equivalent box-expanded AABB per node.
+      // A box that already contains the cast origin is the volume the camera
+      // looks FROM (the subject's own bounds around its look point) — it can
+      // not occlude the arm, and counting it would collapse every collision
+      // rig onto its subject at t = 0.
       let bestT = Number.POSITIVE_INFINITY;
       let bestId: string | undefined;
       for (const b of deps.bounds?.() ?? []) {
-        if (ignore(b.id)) continue;
+        if (ignore(b.id) || contains(b, from)) continue;
         const t = rayHitsExpandedAabb(from, delta, b.min, b.max, radius);
         if (t !== undefined && t < bestT) {
           bestT = t;
@@ -116,7 +122,7 @@ export function createCameraProbe(deps: AuraCameraProbeDeps): AuraCameraProbe {
       const ids: string[] = [];
       // Thin-probe radius so occluders() reports what a near-infinitesimal cast hits.
       for (const b of deps.bounds?.() ?? []) {
-        if (ignore(b.id)) continue;
+        if (ignore(b.id) || contains(b, from)) continue;
         if (rayHitsExpandedAabb(from, delta, b.min, b.max, 0.02) !== undefined) ids.push(b.id);
       }
       return ids;
