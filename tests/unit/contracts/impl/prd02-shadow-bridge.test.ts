@@ -31,7 +31,7 @@ import {
 import { createPrd02ShadowsContributor } from "../../../../packages/rendering/src/shadows/Prd02ShadowsContributor";
 
 const FLAGS_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
-const BASE = resolveQrFlags({});
+const BASE = resolveQrFlags({ options: ["none"] });
 
 afterEach(() => setRendererQrFlags(BASE));
 

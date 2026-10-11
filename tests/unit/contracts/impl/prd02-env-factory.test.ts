@@ -22,7 +22,7 @@ import {
 } from "../../../../packages/rendering/src/environment/EnvironmentCache";
 
 const LIGHTING_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
-const LIGHTING_OFF = resolveQrFlags({});
+const LIGHTING_OFF = resolveQrFlags({ options: ["none"] });
 
 describe("C-09 Prd02EnvironmentProbeFactory", () => {
   it("slot.get resolves the real factory under the flag and the pending stub without it", () => {

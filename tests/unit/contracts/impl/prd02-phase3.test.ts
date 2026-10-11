@@ -28,7 +28,7 @@ import { descriptorToAuraLightData } from "../../../../packages/engine/src/agent
 import { bindPrd02EnvironmentProbe } from "../../../../packages/engine/src/agent-api/compiler/environment";
 
 const LIGHTING_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
-const BASE = resolveQrFlags({});
+const BASE = resolveQrFlags({ options: ["none"] });
 
 afterEach(() => setRendererQrFlags(BASE));
 

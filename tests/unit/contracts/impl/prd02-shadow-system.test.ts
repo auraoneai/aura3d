@@ -190,7 +190,7 @@ describe("contributor + binding", () => {
     expect(c.flag).toBe("A3D_QR_LIGHTING");
     expect(c.phases).toContain("shadows");
     expect(FLAGS_ON.on("A3D_QR_LIGHTING")).toBe(true);
-    expect(resolveQrFlags({}).on("A3D_QR_LIGHTING")).toBe(false);
+    expect(resolveQrFlags({ options: ["none"] }).on("A3D_QR_LIGHTING")).toBe(false);
   });
 
   it("bindShadowFrameUniforms writes every u_prd02* parameter", () => {
