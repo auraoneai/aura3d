@@ -23,6 +23,7 @@
  *   node tools/agent-templates/capture-templates.mjs --skip-pack
  *   node tools/agent-templates/capture-templates.mjs --flags a3d_qr_looks
  *   node tools/agent-templates/capture-templates.mjs --source <dir,...>   # pre-built dirs
+ *   QRC_SOURCE_REF=v3.0.1 node tools/agent-templates/capture-templates.mjs   # records templateSource
  *
  * --source mode (T0.5 agent-output-eval capture leg): each argument is a
  * directory containing a built index.html (a dist/ dir, or a project whose
@@ -77,6 +78,19 @@ if (qrFlags !== "none" && qrFlags !== "all" && !/^[A-Za-z0-9_,.-]+$/.test(qrFlag
   process.exit(2);
 }
 const urlFlags = qrFlags === "none" ? [] : qrFlags.split(",");
+
+// 13-BASE: the workflow's `source_ref` step swaps packages/create-aura3d/templates
+// for a tagged tree (e.g. v3.0.1) before this tool runs. Record the ref and the
+// commit it resolves to so baseline frames are attributable; packages and this
+// tool stay at the checked-out commit (environment.sha).
+const sourceRef = opt("--source-ref", "QRC_SOURCE_REF", "");
+const sourceRefCommit = sourceRef
+  ? spawnSync("git", ["rev-parse", "--verify", `${sourceRef}^{commit}`], { cwd: repoRoot, encoding: "utf8" }).stdout?.trim() || null
+  : null;
+if (sourceRef && !sourceRefCommit) {
+  console.error(`--source-ref "${sourceRef}" does not resolve to a commit (fetch the tag first)`);
+  process.exit(2);
+}
 
 const VIEWPORTS = [
   { name: "desktop-1920x1080", width: 1920, height: 1080, dpr: 1, mobile: false },
@@ -409,6 +423,7 @@ async function main() {
       browserChannel: channelOpt,
       sha: process.env.GITHUB_SHA ?? process.env.CI_COMMIT_SHA ?? spawnSync("git", ["rev-parse", "HEAD"], { cwd: repoRoot, encoding: "utf8" }).stdout?.trim() ?? null
     },
+    templateSource: { ref: sourceRef || null, commit: sourceRefCommit },
     flags: { requested: qrFlags, urlParam: urlFlags },
     viewports: VIEWPORTS,
     shots: SHOTS,
