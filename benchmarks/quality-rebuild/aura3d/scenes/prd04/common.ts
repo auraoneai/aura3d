@@ -306,7 +306,10 @@ export async function runPrd04AuraScene(
     // createAuraApp's flags field is `readonly string[]` (lane-15 signature) —
     // it resolves for renderer extensions only; the actor seams above carry the
     // expanded object so `all,-x` still reaches the materials path correctly.
-    ...(qrFlags.length > 0 ? { qualityRebuild: { flags: qrFlags } } : {}),
+    // createAuraApp re-installs the actor flag seam from these flags (6f263f9c7),
+    // so pass the expanded set (`all,-x` included) instead of the raw list.
+    // resolveQrFlags accepts the QrFlagInput object at runtime (applyInput).
+    ...(qrFlags.length > 0 ? { qualityRebuild: { flags: flagInput as unknown as readonly string[] } } : {}),
     resize: false,
     autoStart: false
   });

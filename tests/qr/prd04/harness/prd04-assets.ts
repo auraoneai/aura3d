@@ -189,6 +189,8 @@ async function main(): Promise<void> {
     const proof = rendererProofCapture(renderer, {
       source: staged.source,
       camera: staged.camera,
+      // rendererProofCapture reads the frame size from the device canvas or this.
+      viewport: { width, height },
       metadata: {
         assetId: pipeline.metadata.assetId,
         assetName: pipeline.metadata.assetName,
