@@ -35,6 +35,11 @@ on:
       - "tools/impostor-bake/**"
       - ".github/workflows/qr-prd10-world.yml"
   workflow_dispatch:
+    inputs:
+      gitlab:
+        description: "Also run the GitLab flags-bisect capture (uses GitLab minutes)"
+        type: boolean
+        default: false
   # Reusable — other lane/meta workflows may invoke this gate in place.
   workflow_call:
   # Nightly lane audit so a broken main cannot sit green-looking until a PR
@@ -217,7 +222,7 @@ jobs:
     # flags-bisect pipeline (`none;world`), WAITS for it, and fails on its
     # result: the mirror must hold this SHA, the pipeline must end `success`
     # on it, and every prd10 scene must be ready with draws in both arms.
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.gitlab
     runs-on: ubuntu-latest
     timeout-minutes: 240
     env:
