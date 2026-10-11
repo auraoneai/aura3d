@@ -452,12 +452,28 @@ export function drawTerrainsForReflection(ctx: FrameContributorContext, device: 
  * per patch size across terrains on the device).
  */
 export function terrainBackgroundPass(ctx: FrameContributorContext): RenderPass {
+  return terrainPass(ctx, "prd10.terrain", [ENVIRONMENT_BACKGROUND_COLOR_RESOURCE]);
+}
+
+/**
+ * Fallback for frames without an environment background: lane 01 runs the
+ * `background` phase only when an EnvironmentBackgroundPass exists, so a
+ * scene with a plain colour background never drew its terrain. This pass is
+ * emitted in `after-opaque` instead — depth-tested against the opaque depth,
+ * so occlusion is identical; no declared read, so it orders by insertion
+ * (after ForwardPass) and needs no producer.
+ */
+export function terrainAfterOpaquePass(ctx: FrameContributorContext): RenderPass {
+  return terrainPass(ctx, "prd10.terrain.late", []);
+}
+
+function terrainPass(ctx: FrameContributorContext, name: string, reads: readonly string[]): RenderPass {
   return {
-    name: "prd10.terrain",
-    // T0-33: the `background` phase only runs when an EnvironmentBackgroundPass
-    // exists, so this read always has a producer and orders terrain after it.
-    // Unique write name — two passes may not both write "color".
-    reads: [ENVIRONMENT_BACKGROUND_COLOR_RESOURCE],
+    name,
+    // T0-33: the `background` variant reads the environment background colour
+    // so it orders after EnvironmentBackgroundPass. Unique write name — two
+    // passes may not both write "color".
+    reads,
     writes: ["prd10.terrain.color"],
     execute(rp: RenderPassContext) {
       const device = rp.device;
