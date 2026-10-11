@@ -147,3 +147,19 @@ describe("#95 EFFECT_PENDING_GPU_PASS", () => {
     expect(collectPostSection({} as AuraApp).warnings.some((w) => w.startsWith("EFFECT_PENDING_GPU_PASS"))).toBe(false);
   });
 });
+
+describe("T0-17 skipped CPU passes cost no readback", () => {
+  it("flag-on, a CPU-only chain is skipped before the loop: no readPixels, source presented", () => {
+    setRendererQrFlags(flagsWith("A3D_QR_POST"));
+    const device = new MockRenderDevice();
+    const read = vi.spyOn(device, "readPixels");
+    const present = vi.fn();
+    (device as unknown as { presentRenderTarget: (t: RenderTarget) => void }).presentRenderTarget = present;
+    const pipeline = new RendererPostprocessPipeline({ device, width: 8, height: 8, fusedLdrPostprocessScratch: {}, frameIndex: 0 } as never);
+    const forward = device.createRenderTarget({ width: 8, height: 8, format: "rgba8", depth: false });
+    pipeline.executePostprocess({ filmGrain: { intensity: 0.05 }, toneMapping: false } as never, [forward]);
+    expect(read).not.toHaveBeenCalled();
+    expect(present).toHaveBeenCalledWith(forward);
+    expect(postSkippedReasons()).toContain("POSTPROCESS_PASS_NOT_GPU:film-grain");
+  });
+});
