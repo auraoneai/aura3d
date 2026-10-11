@@ -3,7 +3,19 @@ import { mergedCustomPasses, runV2HdrStages, runV2LdrTail } from "../../../../pa
 import { postSkippedReasons, resetPostSkipped } from "../../../../packages/rendering/src/renderer/postSkipped";
 import { setRendererQrFlags } from "../../../../packages/rendering/src/renderer/FrameGraph";
 import { registerPostPass } from "../../../../packages/rendering/src/contracts/post";
-import { Prd03PostSurface } from "../../../../packages/engine/src/agent-api/postBridge";
+import {
+  collectPostSection,
+  Prd03PostSurface,
+  recordAuthoredPostContext,
+  resetAuthoredPostContext
+} from "../../../../packages/engine/src/agent-api/postBridge";
+import {
+  postGraphV2LastOutcome,
+  RendererPostprocessPipeline,
+  resetPostGraphV2Outcome
+} from "../../../../packages/rendering/src/renderer/PostprocessExecution";
+import { MockRenderDevice } from "../../../../packages/rendering/src/RenderDevice";
+import type { AuraApp } from "@aura3d/engine";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import type { PostInsertAt, PostPassDescriptor, PostPipelineOptions } from "../../../../packages/rendering/src/contracts/post";
 import type { WebGL2DeviceHost } from "../../../../packages/rendering/src/webgl2/DeviceHost";
@@ -167,5 +179,41 @@ describe("03-S18c display pass before tonemap is rejected", () => {
     const trace: string[] = [];
     const source = fakeTarget("rgba16f", true);
     expect(() => runV2HdrStages(fakeHost(trace), source, pipeline, null)).not.toThrow();
+  });
+});
+
+describe("03-S18c diagnostics().post.customPasses reports what executed", () => {
+  const status = () => collectPostSection({} as AuraApp).customPasses.find((pass) => pass.id === "prd03.custom.s18c-status")?.status;
+  const register = () => releases.push(new Prd03PostSurface(resolveQrFlags({ options: ["post"] })).addPostPass({
+    name: "s18c-status",
+    insertAt: "before-tonemap",
+    fragment: { glsl: "void main() { outColor = texture(u_color, v_uv); }" }
+  }));
+
+  afterEach(() => {
+    resetAuthoredPostContext();
+    resetPostGraphV2Outcome();
+  });
+
+  it("flag-off and compat.post 3.0 name the legacy chain", () => {
+    register();
+    recordAuthoredPostContext({ flags: resolveQrFlags({ options: [] }), options: {} });
+    expect(status()).toBe("legacy-chain:A3D_QR_POST-off");
+    recordAuthoredPostContext({ flags: resolveQrFlags({ options: ["post"] }), options: { compat: { post: "3.0" } } });
+    expect(status()).toBe("legacy-chain:compat.post-3.0");
+  });
+
+  it("flag-on reports not-executed until a frame reaches the v2 seam, then the seam's outcome", () => {
+    register();
+    recordAuthoredPostContext({ flags: resolveQrFlags({ options: ["post"] }), options: {} });
+    expect(status()).toBe("not-executed");
+    // A non-WebGL2 backend declines the seam: the passes did not run.
+    setRendererQrFlags(resolveQrFlags({ options: ["post"] }) as never);
+    const device = new MockRenderDevice();
+    const pipeline = new RendererPostprocessPipeline({ device, width: 8, height: 8, fusedLdrPostprocessScratch: {}, frameIndex: 0 } as never);
+    const forward = device.createRenderTarget({ width: 8, height: 8, format: "rgba8", depth: false });
+    pipeline.executePostprocess({ v2: true, pipeline: PIPELINE } as never, [forward]);
+    expect(status()).toBe("legacy-chain:backend");
+    expect(postGraphV2LastOutcome()).toBe("legacy-chain:backend");
   });
 });
