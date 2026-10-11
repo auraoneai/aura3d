@@ -54,3 +54,29 @@ describe("P5-T4 weather legacy carve", () => {
     expect(hidden).toEqual([]);
   });
 });
+
+// Grouped-effects walk (PRD-16 §4.7): legacy primitives nested in a group are
+// hidden too; a hidden group's subtree is left alone (already invisible).
+describe("grouped legacy weather nodes", () => {
+  const run = (groupVisible: boolean) => {
+    const { nodes } = weather.precipitation({ type: "rain", streakLimit: 5 });
+    const hidden: string[] = [];
+    const app = {
+      scene: { nodes: [{ kind: "group", name: "storm", visible: groupVisible, children: nodes }] },
+      nodes: { get: (id: string) => ({ setVisible: (v: boolean) => { if (!v) hidden.push(id); } }) },
+      onFrame: () => () => {}
+    };
+    new ProductionEffectSystem(app as never).setWeatherFlagOn(true);
+    return hidden;
+  };
+
+  it("flag-on hides tagged nodes inside a visible group", () => {
+    const hidden = run(true);
+    expect(hidden.length).toBe(5);
+    for (const id of hidden) expect(id.startsWith("prd07.legacyWeather.")).toBe(true);
+  });
+
+  it("skips the subtree of a hidden group", () => {
+    expect(run(false)).toEqual([]);
+  });
+});

@@ -6,9 +6,12 @@ import { registerShaderChunk } from "../contracts/program";
 
 export const FOG_CHUNK_NAME = "a3d_prd07_fog" as const;
 export const WETNESS_CHUNK_NAME = "a3d_prd07_wetness" as const;
+/** #880 / T0-05 call chunks (statements only) for the C-02 body hooks. */
+export const FOG_APPLY_CHUNK_NAME = "a3d_prd07_fog_apply" as const;
+export const WETNESS_APPLY_CHUNK_NAME = "a3d_prd07_wetness_apply" as const;
 
-import { PRD07_FOG_CHUNK_GLSL } from "./shaders/fog.glsl";
-import { PRD07_WETNESS_CHUNK_GLSL } from "./shaders/wetness.glsl";
+import { PRD07_FOG_APPLY_CHUNK_GLSL, PRD07_FOG_CHUNK_GLSL } from "./shaders/fog.glsl";
+import { PRD07_WETNESS_APPLY_CHUNK_GLSL, PRD07_WETNESS_CHUNK_GLSL } from "./shaders/wetness.glsl";
 
 // §8.4 uniform-block chunk (u_fogA/u_fogB/u_fogColor/u_fogAbsorption/u_fogMode/
 // u_fogNear/u_fogFar/u_fogVolumes + env uniforms u_cameraPosition/u_sunDirection/
@@ -23,7 +26,11 @@ const WETNESS_GLSL = PRD07_WETNESS_CHUNK_GLSL;
 export function registerPrd07Chunks(): void {
   const chunks = [
     { name: FOG_CHUNK_NAME, owner: "prd07" as const, stage: "fragment" as const, glsl: FOG_GLSL },
-    { name: WETNESS_CHUNK_NAME, owner: "prd07" as const, stage: "fragment" as const, glsl: WETNESS_GLSL }
+    { name: WETNESS_CHUNK_NAME, owner: "prd07" as const, stage: "fragment" as const, glsl: WETNESS_GLSL },
+    // Pars/call split (#880): the declaration chunks above go to
+    // `fragment:pars`; these run inside main() and require them.
+    { name: FOG_APPLY_CHUNK_NAME, owner: "prd07" as const, stage: "fragment" as const, glsl: PRD07_FOG_APPLY_CHUNK_GLSL, requires: [FOG_CHUNK_NAME] },
+    { name: WETNESS_APPLY_CHUNK_NAME, owner: "prd07" as const, stage: "fragment" as const, glsl: PRD07_WETNESS_APPLY_CHUNK_GLSL, requires: [WETNESS_CHUNK_NAME] }
   ];
   for (const chunk of chunks) {
     try {
