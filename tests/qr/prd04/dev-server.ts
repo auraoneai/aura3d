@@ -35,6 +35,12 @@ const ESCAPE = /[.*+?^${}()|[\]\\]/g;
  */
 const LANE_ENTRY_POINTS = new Map<string, string>([
   ["@aura3d/rendering/contracts", "/packages/rendering/src/contracts/index.ts"],
+  // 04-BOOT (GPU run 38117582189): bbb52fe43 repointed the lane-seam imports
+  // (prd04 common.ts, the perf/procedural/light-count harnesses) to the
+  // `./lanes` export of @aura3d/engine, which the shared map does not cover.
+  // The bare specifier failed module resolution, so every prd04 page stopped
+  // at "module-load" on both engines.
+  ["@aura3d/engine/lanes", "/packages/engine/src/lanes/index.ts"],
 ]);
 
 /**
