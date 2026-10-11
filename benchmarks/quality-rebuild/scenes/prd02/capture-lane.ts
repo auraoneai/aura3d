@@ -112,7 +112,9 @@ async function captureOne(
   timeoutMs: number,
   flags: string
 ): Promise<CaptureResult> {
-  const flagsQuery = flags && flags !== "none" ? `&a3d-qr=${encodeURIComponent(flags)}` : "";
+  // Always pass the flag set: lane specs default to qrFlags ["lighting"], so
+  // omitting `a3d-qr` for flags=none silently captured flag-on frames.
+  const flagsQuery = `&a3d-qr=${encodeURIComponent(flags || "none")}`;
   const controlQuery = control ? `&control=${encodeURIComponent(control)}` : "";
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, colorScheme: "dark" });
   const page = await context.newPage();
