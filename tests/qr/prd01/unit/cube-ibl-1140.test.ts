@@ -80,3 +80,50 @@ describe("#1140: OutputPass dithering default", () => {
     expect(DEFAULT_OUTPUT_DITHERING).toBe(false);
   });
 });
+
+describe("#1140: generated direct-light loop covers 9-16 lights and reads the real cluster layout", () => {
+  async function gen(lights: Record<string, unknown>) {
+    await import("../../../../packages/rendering/src/lanes/prd01");
+    const { generateProgramImpl } = await import("../../../../packages/rendering/src/program/ProgramGenerator");
+    const { normalizeProgramFeatures } = await import("../../../../packages/rendering/src/program/ProgramFeatures");
+    const { resolveQrFlags } = await import("../../../../packages/engine/src/contracts/flags");
+    return generateProgramImpl(normalizeProgramFeatures({ pass: "forward", lighting: "lit", lights: { dir: 0, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false, ...lights } } as never), { flags: resolveQrFlags({ env: { A3D_QR_CORE: "v2" } }) });
+  }
+
+  it("10 point lights (bucket 8, not clustered) loop the full u_lightData capacity with a u_lightCount break", async () => {
+    const p = await gen({ point: 8 });
+    expect(p.defines.LIGHTS_CLUSTERED).toBeUndefined();
+    expect(p.defines.A3D_NUM_DIRECT_LIGHTS).toBe(16);
+    expect(p.fragment).toContain("for (int i = 0; i < 16; ++i)");
+    expect(p.fragment).toContain("if (i >= int(u_lightCount)) break;");
+  });
+
+  it("small exact buckets keep their compile-time bound", async () => {
+    const p = await gen({ dir: 1, point: 2 });
+    expect(p.defines.A3D_NUM_DIRECT_LIGHTS).toBe(3);
+    expect(p.fragment).toContain("for (int i = 0; i < 3; ++i)");
+  });
+
+  it("clustered programs read count from texel(0).g and indices from texel(i).r, i from 0 (legacy layout)", async () => {
+    const p = await gen({ point: 8, clustered: true });
+    expect(p.defines.LIGHTS_CLUSTERED).toBe(true);
+    expect(p.defines.A3D_NUM_DIRECT_LIGHTS).toBe(0);
+    expect(p.fragment).not.toContain("for (int i = 0; i <");
+    expect(p.fragment).toContain("texelFetch(u_clusterLightIndices, ivec2(0, a3dCluster), 0).g");
+    expect(p.fragment).toContain("for (int j = 0; j < 64; ++j)");
+    expect(p.fragment).toContain("texelFetch(u_clusterLightIndices, ivec2(j, a3dCluster), 0).r");
+  });
+
+  it("binds the cluster textures for generated programs (no legacy u_clusteredLightEnabled switch)", async () => {
+    const { applyClusteredLightingUniforms } = await import("../../../../packages/rendering/src/forward/Lighting");
+    const shader = { reflection: { uniforms: new Map(["u_clusterGridSize", "u_clusterViewportSize", "u_clusterLightData", "u_clusterLightIndices"].map((n) => [n, {}])) } } as never;
+    const lightData = new TextureBinding({ name: "u_clusterLightData", texture: flatTexture() });
+    const lightIndices = new TextureBinding({ name: "u_clusterLightIndices", texture: flatTexture() });
+    const uniforms = new Map<string, unknown>();
+    applyClusteredLightingUniforms({ lightData, lightIndices, diagnostics: { gridWidth: 16, gridHeight: 9, viewportWidth: 1280, viewportHeight: 720 } } as never, shader, uniforms as never);
+    expect(uniforms.get("u_clusterLightData")).toBe(lightData);
+    expect(uniforms.get("u_clusterLightIndices")).toBe(lightIndices);
+    expect(uniforms.get("u_clusterGridSize")).toEqual([16, 9]);
+    expect(uniforms.has("u_clusteredLightEnabled")).toBe(false);
+  });
+});

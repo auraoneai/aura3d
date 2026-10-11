@@ -118,7 +118,12 @@ describe("PRD-01 §15 pass-owned feature axes", () => {
     expect(axes.lights).toEqual({ dir: 2, point: 1, spot: 0, rect: 0, clustered: false, hemisphere: false });
     const many = forwardPassFeatureAxes({ lights: Array(9).fill(light("point")) }, false);
     expect(many.lights.point).toBe(8);
-    expect(many.lights.clustered).toBe(true);
+    // #1140: up to 16 lights live in u_lightData; clustering (and its cluster
+    // textures) only engages above FORWARD_DIRECT_LIGHT_CAPACITY, as in
+    // resolveForwardClusteredLighting. 9-16 lights was black under core.
+    expect(many.lights.clustered).toBe(false);
+    expect(forwardPassFeatureAxes({ lights: Array(17).fill(light("point")) }, false).lights.clustered).toBe(true);
+    expect(forwardPassFeatureAxes({ lights: Array(9).fill(light("point")) }, true).lights.clustered).toBe(true);
   });
 
   it("no shadowMap → cascades 0 (shadows off)", () => {

@@ -102,8 +102,7 @@ function definesFor(f: ProgramFeatures, contributions: readonly Contribution[]):
   // may loop over with `a3dLegacyLightRadiance` (0 on the clustered path).
   d.A3D_GENERATED_PROGRAM = true;
   if (f.pass === "forward" && f.lighting === "lit") d.A3D_LIT = true;
-  const directLights = totalLightCount(f.lights);
-  d.A3D_NUM_DIRECT_LIGHTS = f.lights.clustered || directLights > 8 ? 0 : directLights;
+  d.A3D_NUM_DIRECT_LIGHTS = directLightLoopBound(f);
   if (f.instancing) {
     d.USE_INSTANCING = true;
     if (f.instancing.color) d.USE_INSTANCING_COLOR = true;
@@ -136,8 +135,10 @@ function definesFor(f: ProgramFeatures, contributions: readonly Contribution[]):
   if (f.skinning) d.USE_SKINNING = true;
   if (f.morph) d.USE_MORPH = true;
   if (f.drawId) d.USE_DRAW_ID = true;
-  const total = totalLightCount(f.lights);
-  if (f.lights.clustered || total > 8) {
+  // #1140: clustering follows the pass's resolved cluster resources only
+  // (ForwardPass: more than FORWARD_DIRECT_LIGHT_CAPACITY lights). Up to 16
+  // lights live in u_lightData; a bucket sum above 8 is not "clustered".
+  if (f.lights.clustered) {
     d.LIGHTS_CLUSTERED = true;
   } else {
     d.NUM_DIR_LIGHTS = f.lights.dir;
@@ -360,29 +361,48 @@ in vec4 v_color;
 in vec4 v_instanceColor;
 #endif`;
 
+/** u_lightData capacity (LightUniforms.pack MAX_DIRECT_LIGHTS, `u_lightData[96]` = 16 × 6 vec4). */
+const MAX_PACKED_DIRECT_LIGHTS = 16;
+
+/**
+ * Compile-time bound of the `u_lightData` loop (#1140). Buckets {0,1,2,4}
+ * are exact upper bounds; a per-kind bucket of 8 means "5 or more", so any
+ * total above 4 compiles the full packed capacity. The loop also breaks at
+ * the runtime `u_lightCount`, so unused slots are never shaded. Clustered
+ * programs read lights from the cluster textures only.
+ */
+function directLightLoopBound(f: ProgramFeatures): number {
+  if (f.lights.clustered) return 0;
+  const total = totalLightCount(f.lights);
+  return total <= 4 ? total : MAX_PACKED_DIRECT_LIGHTS;
+}
+
 /** Default `fragment:lights` body: `u_lightData` kind-discriminated loop.
- * Bucketed total ({0,1,2,4,8}) is baked so each bucket compiles its own bound;
  * `a3dLegacyLightRadiance` switches on directionKind.w, so packing order is
- * irrelevant. Above 8 / clustered, only the cluster path runs. */
+ * irrelevant. Clustered (cluster resources bound), only the cluster path runs. */
 function defaultLightsBody(f: ProgramFeatures, lobeDirect: readonly string[] = []): string {
   const lines = ["  vec3 L;"];
   // C-03 per-light lobe hook (04-LOBES): each active lobe's `direct` call chunk
   // runs inside every light iteration (bucketed AND clustered) with L, radiance,
   // V, N, material and the direct accumulators in scope.
   const direct = lobeDirect.map((s) => indent(indent(s)));
-  const total = totalLightCount(f.lights);
-  const clustered = f.lights.clustered || total > 8;
-  if (!clustered && total > 0) {
-    lines.push(`  for (int i = 0; i < ${Math.min(total, 8)}; ++i) {  // bucketed light count`);
+  const bound = directLightLoopBound(f);
+  if (bound > 0) {
+    lines.push(`  for (int i = 0; i < ${bound}; ++i) {  // bucketed light count (bound; breaks at u_lightCount)`);
+    lines.push("    if (i >= int(u_lightCount)) break;");
     lines.push("    vec3 radiance = a3dLegacyLightRadiance(i * 6, v_worldPosition, L);");
     lines.push("    a3dDirectLight(L, radiance, V, N, material, directDiffuse, directSpecular);");
     lines.push(...direct);
     lines.push("  }");
   }
+  // Cluster index texel layout (forward/Lighting.ts createClusteredForwardLighting,
+  // same as the flag-off shader): texel (0, cluster).g = light count; texel
+  // (i, cluster).r = i-th light index, i from 0.
   lines.push("#ifdef LIGHTS_CLUSTERED");
   lines.push("  int a3dCluster = a3dClusterIndex(gl_FragCoord.xy);");
-  lines.push("  int a3dClusterCount = int(texelFetch(u_clusterLightIndices, ivec2(0, a3dCluster), 0).r);");
-  lines.push("  for (int j = 1; j <= a3dClusterCount; ++j) {");
+  lines.push("  int a3dClusterCount = min(int(texelFetch(u_clusterLightIndices, ivec2(0, a3dCluster), 0).g), 64);");
+  lines.push("  for (int j = 0; j < 64; ++j) {");
+  lines.push("    if (j >= a3dClusterCount) break;");
   lines.push("    int lightIndex = int(texelFetch(u_clusterLightIndices, ivec2(j, a3dCluster), 0).r);");
   lines.push("    vec3 radiance = a3dClusteredLightRadiance(lightIndex, v_worldPosition, L);");
   lines.push("    a3dDirectLight(L, radiance, V, N, material, directDiffuse, directSpecular);");

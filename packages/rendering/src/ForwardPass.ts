@@ -35,7 +35,7 @@ import { qrCoreGeneratorOn, rendererProgramCache, rendererAuraFrame } from "./re
 
 // PR 0b-2 re-imports for moved carve-out modules (CONTRACTS.md §3.3).
 import { SkinningPaletteUploadManager, applyGpuMorphUniforms, resolveRenderGeometry } from "./forward/Deform.js";
-import { applyClusteredLightingUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap } from "./forward/Lighting.js";
+import { FORWARD_DIRECT_LIGHT_CAPACITY, applyClusteredLightingUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap } from "./forward/Lighting.js";
 import { flushMultiDrawQueue, submitDraw } from "./forward/DrawSubmit.js";
 import { bindVelocityUniforms } from "./forward/Velocity.js";
 
@@ -700,8 +700,8 @@ function lightBucket(count: number, max: 4 | 8 = 8): 0 | 1 | 2 | 4 | 8 {
 
 /**
  * Pass-owned feature axes (C-02): lights/shadows/environment/fog shared by every
- * material in the pass. `clustered` is the pass's resolved state; callers that
- * only have counts should pass `dir>8||point>8||spot>8||rect>8`.
+ * material in the pass. `clustered` is the pass's resolved state; above
+ * FORWARD_DIRECT_LIGHT_CAPACITY lights the axes report clustered regardless.
  */
 export function forwardPassFeatureAxes(
   options: Pick<ForwardPassOptions, "lights" | "shadowMap" | "environmentLighting" | "environmentFog">,
@@ -732,7 +732,9 @@ export function forwardPassFeatureAxes(
       point: lightBucket(point),
       spot: lightBucket(spot),
       rect: lightBucket(rect, 4) as 0 | 1 | 2 | 4,
-      clustered: clustered || directional > 8 || point > 8 || spot > 8 || rect > 8,
+      // #1140: mirrors resolveForwardClusteredLighting (clusters above the
+      // u_lightData capacity), not the per-kind key bucket.
+      clustered: clustered || directional + point + spot + rect > FORWARD_DIRECT_LIGHT_CAPACITY,
       hemisphere: env?.proceduralMap !== undefined
     },
     shadows: options.shadowMap
