@@ -6,6 +6,9 @@
  *
  * The barrel (`lanes/prd01.ts`) merges these into DIAGNOSTIC_ONLY_FIELDS at
  * import until the PRD-15 index merge lands.
+ *
+ * 01-T1.5: `transform.rotationOrder` and `transform.quaternion` are wired by
+ * `compiler/sceneGraph.ts` under A3D_QR_CORE and no longer listed here.
  */
 
 export const PRD01_DIAGNOSTIC_ONLY_FIELDS: Readonly<Record<string, { readonly reason: string; readonly ownerPrd: number }>> = {
@@ -47,14 +50,6 @@ export const PRD01_DIAGNOSTIC_ONLY_FIELDS: Readonly<Record<string, { readonly re
   },
   "material.ior": {
     reason: "C-03 IOR feeds the Phase-3 BRDF inputs; declared now, consumed then.",
-    ownerPrd: 1
-  },
-  "transform.rotationOrder": {
-    reason: "C-06 Euler order is ZYX today (matches three.js default); XYZ wiring lands with the scene graph.",
-    ownerPrd: 1
-  },
-  "transform.quaternion": {
-    reason: "C-06 quaternion transform wins over `rotation` when wired; pre-declared for Phase 1.",
     ownerPrd: 1
   },
   "background.toneMapped": {

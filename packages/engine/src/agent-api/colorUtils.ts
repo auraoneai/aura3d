@@ -1,9 +1,11 @@
-// PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
+// PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts. The only change is the
+// flag-gated 01-S5 delegation (compiler/color.ts); with A3D_QR_CORE off the bodies run unchanged.
 
 import type { AuraColor } from "./nodes/types.js";
 import { clampNumber } from "./compiler/observations.js";
 import { srgbToLinearChannel } from "@aura3d/rendering";
 import { round } from "./GameRuntime.js";
+import { prd01ColorLinear, prd01ColorSrgb } from "./compiler/color.js";
 
 export function multiplyRgb(
   color: readonly [number, number, number],
@@ -18,6 +20,9 @@ export function colorToRgba(color: AuraColor): readonly [number, number, number,
 }
 
 export function colorToClearColor(color: AuraColor): readonly [number, number, number, number] {
+  // 01-S5 (C-06): under A3D_QR_CORE delegate to parseAuraColorSrgb; null = flag off or warned fallback.
+  const parsed = prd01ColorSrgb(color);
+  if (parsed !== null) return parsed;
   if (typeof color === "string" && /^#[0-9a-f]{6}$/i.test(color)) {
     const value = Number.parseInt(color.slice(1), 16);
     return [((value >> 16) & 0xff) / 255, ((value >> 8) & 0xff) / 255, (value & 0xff) / 255, 1];
@@ -26,6 +31,9 @@ export function colorToClearColor(color: AuraColor): readonly [number, number, n
 }
 
 function colorToLinearClearColor(color: AuraColor): readonly [number, number, number, number] {
+  // 01-S5 (C-06): under A3D_QR_CORE delegate to parseAuraColor (linear); null = flag off or warned fallback.
+  const parsed = prd01ColorLinear(color);
+  if (parsed !== null) return parsed;
   const [red, green, blue, alpha] = colorToClearColor(color);
   return [srgbToLinearChannel(red), srgbToLinearChannel(green), srgbToLinearChannel(blue), alpha];
 }
