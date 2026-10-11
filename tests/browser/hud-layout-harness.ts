@@ -14,6 +14,8 @@ interface FixtureReport {
   widgetCount: number;
   anchors: Record<string, string[]>;
   widgetRects: Record<string, RectReport>;
+  /** Widgets the active layout hides by design (`mobileAnchor: "hidden"` on mobile). */
+  hiddenWidgets: string[];
   screenFraction: number;
   canvasCoverage: number;
   domText: string;
@@ -46,7 +48,11 @@ function rectOf(el: Element): RectReport {
   return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) };
 }
 
-function runFixture(suite: (typeof suites)[number]): FixtureReport {
+function nextFrame(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+async function runFixture(suite: (typeof suites)[number]): Promise<FixtureReport> {
   const app = document.getElementById("app")!;
   const host = document.createElement("div");
   host.className = "a3g-game-hud";
@@ -71,12 +77,21 @@ function runFixture(suite: (typeof suites)[number]): FixtureReport {
     hud.set(spec.id, spec.kind === "timer" ? 37 : spec.kind === "lives" ? 2 : spec.kind === "meter" ? 0.65 : spec.kind === "combo" ? 3 : "drive");
   }
 
+  // set() values apply in the kit's batched rAF write phase; measure after it.
+  await nextFrame();
+  await nextFrame();
+
   const snap = hud.snapshot();
   const anchors: Record<string, string[]> = {};
   const widgetRects: Record<string, RectReport> = {};
+  const hiddenWidgets: string[] = [];
   for (const w of snap.widgets) {
     const el = host.querySelector(`[data-widget-id="${w.id}"]`);
     if (!el) continue;
+    if (getComputedStyle(el).display === "none") {
+      hiddenWidgets.push(w.id);
+      continue;
+    }
     const slot = el.closest(".a3g-hud-slot");
     const anchor = slot?.getAttribute("data-anchor") ?? "?";
     (anchors[anchor] ??= []).push(w.id);
@@ -84,7 +99,6 @@ function runFixture(suite: (typeof suites)[number]): FixtureReport {
   }
 
   const touchEls = [...host.querySelectorAll(".a3g-touch [data-control]")] as HTMLElement[];
-  const minTargetPx = Math.min(...touchEls.flatMap((el) => { const r = el.getBoundingClientRect(); return [r.width, r.height]; }));
 
   const keyhint = document.querySelector<HTMLElement>("[data-a3g-keyhint]");
   const keyhintBefore = keyhint ? getComputedStyle(keyhint).display !== "none" : true;
@@ -93,6 +107,10 @@ function runFixture(suite: (typeof suites)[number]): FixtureReport {
   bodyTouchStart();
   touch.update();
   const visibleAfterTouch = touch.visible;
+  // Targets are measured once revealed (hidden controls have a 0x0 box).
+  const minTargetPx = touchEls.length === 0
+    ? 0
+    : Math.min(...touchEls.flatMap((el) => { const r = el.getBoundingClientRect(); return [r.width, r.height]; }));
   const keyhintHiddenAfterTouch = keyhint ? getComputedStyle(keyhint).display === "none" : keyhintBefore === false;
 
   const hostRect = host.getBoundingClientRect();
@@ -103,6 +121,7 @@ function runFixture(suite: (typeof suites)[number]): FixtureReport {
     widgetCount: snap.widgetCount,
     anchors,
     widgetRects,
+    hiddenWidgets,
     screenFraction: snap.screenFraction,
     canvasCoverage,
     domText: document.body.innerText,
@@ -119,14 +138,19 @@ function runFixture(suite: (typeof suites)[number]): FixtureReport {
 }
 
 function bodyTouchStart(): void {
-  document.body.dispatchEvent(new TouchEvent("touchstart", { bubbles: true }));
+  // Desktop Firefox has no TouchEvent constructor; the kit only listens for
+  // the "touchstart" type, so a plain Event exercises the same path there.
+  const event = typeof TouchEvent === "function"
+    ? new TouchEvent("touchstart", { bubbles: true })
+    : new Event("touchstart", { bubbles: true });
+  document.body.dispatchEvent(event);
 }
 
 async function main(): Promise<void> {
   try {
     const reports: FixtureReport[] = [];
     for (const suite of suites) {
-      reports.push(runFixture(suite));
+      reports.push(await runFixture(suite));
       // reset the visibility latch between suites
       document.getElementById("app")!.innerHTML = '<span id="keyhint" data-a3g-keyhint>A/D aim - Space charge</span>';
     }

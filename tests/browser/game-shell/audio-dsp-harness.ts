@@ -93,24 +93,23 @@ async function measureOcclusion(): Promise<number> {
 
 async function measureMasterChain(): Promise<{ peakDbfs: number; transparencyDb: number }> {
   const peakCtx = new OfflineAudioContext(2, SR, SR);
-  const peakChain = createMasterChain(peakCtx as never);
+  // createMasterChain wires input → … → destination itself (2nd argument).
+  const peakChain = createMasterChain(peakCtx as never, peakCtx.destination);
   for (let i = 0; i < 32; i += 1) {
     const src = peakCtx.createBufferSource();
     src.buffer = noiseBuffer(peakCtx, 0.1);
     src.connect(peakChain.input);
     src.start();
   }
-  peakChain.output.connect(peakCtx.destination as never);
   const peakOut = await peakCtx.startRendering();
   let peak = 0;
   for (let c = 0; c < 2; c += 1) for (const v of peakOut.getChannelData(c)) peak = Math.max(peak, Math.abs(v));
 
   const tCtx = new OfflineAudioContext(2, SR, SR);
-  const tChain = createMasterChain(tCtx as never);
+  const tChain = createMasterChain(tCtx as never, tCtx.destination);
   const src = tCtx.createBufferSource();
   src.buffer = sineBuffer(tCtx, 1.0, 440, -12);
   src.connect(tChain.input);
-  tChain.output.connect(tCtx.destination as never);
   src.start();
   const tOut = await tCtx.startRendering();
   // 440 Hz sine at -12 dBFS peak ≈ -15.01 dBFS RMS.

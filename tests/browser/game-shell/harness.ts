@@ -9,6 +9,7 @@
  */
 import { instances, lights, material, primitives, scene } from "@aura3d/engine";
 import { createGame, type Prd09Game } from "@aura3d/game";
+import { bankShotTouchOptions } from "../../../packages/game/fixtures/bank-shot/hud";
 
 const params = new URLSearchParams(location.search);
 const ANIMATE = params.get("animate") !== "0";
@@ -106,6 +107,9 @@ async function main(): Promise<void> {
         }
       }
     },
+    // Tabletop aim-drag preset (same bindings as the bank-shot fixture):
+    // mounted hidden, revealed by the first touchstart (touch.spec).
+    touch: { preset: bankShotTouchOptions.preset, bindings: bankShotTouchOptions.bindings },
     qualityRebuild: { flags: ["game"] }
   });
 

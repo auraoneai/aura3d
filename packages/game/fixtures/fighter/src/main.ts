@@ -42,6 +42,7 @@ const game = createGame({
         striker.setPosition(0.45, 0.45, 0);
         await new Promise((r) => setTimeout(r, 60));
         g.session.hitStop(0.045, { actors: ["target"] });
+        document.body.dataset.a3gScenario = "light-hit:landed";
       }
     },
     frozen: {
@@ -72,6 +73,8 @@ game.app.onFrame(({ dt }) => {
 });
 
 game.start();
+// Specs (hitstop.spec) drive the fixture through the session + test hook.
+(window as unknown as { __AURA3D_FIXTURE__?: { game: typeof game } }).__AURA3D_FIXTURE__ = { game };
 void game.ready().then(() => {
   document.body.dataset.a3gFixture = "ready";
 });
