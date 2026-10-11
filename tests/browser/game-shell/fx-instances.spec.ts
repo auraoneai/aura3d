@@ -6,7 +6,7 @@
  * delta against the same harness loaded with `?fx=0`). The C-37 extension is registered
  * under the "game" flag — the spec asserts its presence loudly if absent.
  */
-import { expect, test, loadHarness, stepFrames, withServer } from "./support";
+import { expect, test, loadHarness, pagePixels, stepFrames, withServer } from "./support";
 
 withServer((getServer) => {
   test("setInstanceTransforms moves one instance, draw count stays 1", async ({ page }) => {
@@ -42,7 +42,7 @@ withServer((getServer) => {
     expect(probe.hasApi, "C-37 setInstanceTransforms missing on instanced node").toBe(true);
     expect(probe.drawCalls - withoutFx, "instanced node (3 instances) must draw in 1 call").toBe(1);
 
-    const before = await page.evaluate(() => window.__AURA3D_SHELL__!.readPixels?.() ?? null);
+    const before = await pagePixels(page, "fx-instances-before");
 
     // Move instance 0 from (-0.5,0.1,-0.3) to (0.7,0.4,0.2) via a column-major
     // model matrix — same shape the FX layer writes per frame.
@@ -66,7 +66,7 @@ withServer((getServer) => {
     });
     await stepFrames(page, 1);
 
-    const after = await page.evaluate(() => window.__AURA3D_SHELL__!.readPixels?.() ?? null);
+    const after = await pagePixels(page, "fx-instances-after");
     if (!before || !after) throw new Error("canvas pixel readback unavailable");
 
     let changed = 0;

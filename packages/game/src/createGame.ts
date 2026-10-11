@@ -43,6 +43,8 @@ import { mountTouchControls } from "./touch/TouchControls";
 import { createJuice, type Juice, type JuiceCamera, type JuiceEventMap } from "./juice/Juice";
 import type { HudDocument, HudElement } from "./hud/dom";
 import { createOverlayDriver } from "./juice/overlay";
+import { wireContextLoss, type DeviceLossApp } from "./shell/contextLoss";
+import { domTransitionDriver } from "./shell/transition";
 import { createRumbleDriver } from "./juice/rumble";
 import { createTweenEngine } from "./juice/tween";
 import { createGameAudio, type GameAudio, type GameAudioOptions } from "@aura3d/engine";
@@ -122,7 +124,6 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
 
   const hasDom = typeof document !== "undefined" && typeof window !== "undefined";
 
-  const shell = new GameShellImpl(session);
   const fx = createPoolFxLayer({
     node: (name) => {
       try {
@@ -142,6 +143,23 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
       ? (document.querySelector(options.target) as HTMLElement | null)
       : options.target instanceof HTMLElement ? options.target : null)
     : null;
+
+  // §6.2 loading transition: a DOM `.a3g-overlay` (opacity 0 at idle) fades to
+  // opaque, the scene swaps, and it fades back only after the runtime presents
+  // the new scene's first frame. The fade-out sleep adds one frame so the CSS
+  // opacity transition has settled at 1 before the swap.
+  const transitionOverlay = hasDom ? createTransitionOverlay() : null;
+  const shell = new GameShellImpl(
+    session,
+    transitionOverlay
+      ? domTransitionDriver(transitionOverlay as unknown as HudElement, {
+        firstPresentedFrame: () => runtime.firstPresentedFrame().then(() => undefined),
+        sleep: (ms) => new Promise<void>((resolve) => {
+          setTimeout(() => (typeof requestAnimationFrame === "function" ? requestAnimationFrame(() => resolve()) : resolve()), ms);
+        })
+      })
+      : undefined
+  );
   const hud: Hud = hasDom && options.hud
     ? (mountHud(
       { root: (targetEl ?? document.body) as unknown as HudElement, doc: document as unknown as HudDocument },
@@ -225,6 +243,17 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
     ? (app as unknown as Parameters<typeof createOverlayDriver>[0]["app"])
     : undefined;
 
+  function createTransitionOverlay(): HTMLElement {
+    const host = targetEl ?? document.body;
+    const el = document.createElement("div");
+    el.className = "a3g-overlay";
+    el.setAttribute("aria-hidden", "true");
+    el.style.cssText = "position:absolute;inset:0;pointer-events:none;background:#000;opacity:0;z-index:35;";
+    if (host !== document.body && getComputedStyle(host).position === "static") host.style.position = "relative";
+    host.appendChild(el);
+    return el;
+  }
+
   // §7.8 DOM fallback: without the C-05 output overlay (A3D_QR_CORE off) the
   // flash/vignette drive a transparent full-bleed layer over the canvas;
   // without it juice.flash was a silent no-op. Transparent at idle, so idle
@@ -261,6 +290,20 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
   });
 
   const detachLifecycle = attachSessionLifecycle({ session, sound: lifecycleSound });
+
+  // §6.2 context loss: the engine owns `webglcontextlost` behind
+  // app.onDeviceLost; the shell pauses with reason "context-lost", hides the
+  // HUD and shows the ContextLost screen (Reload after 3 s unrecovered).
+  const deviceApp = app as unknown as Partial<DeviceLossApp>;
+  const contextLoss = hasDom && typeof deviceApp.onDeviceLost === "function" && typeof deviceApp.onDeviceRestored === "function"
+    ? wireContextLoss(deviceApp as DeviceLossApp, document as unknown as HudDocument, {
+      pause: (reason) => session.pause(reason),
+      hideHud: () => hud.setVisible(false),
+      showHud: () => hud.setVisible(true),
+      mount: (el) => { (targetEl ?? document.body).appendChild(el as Node); },
+      onReload: () => location.reload()
+    })
+    : null;
 
   let disposed = false;
   let readyPromise: Promise<void> | null = null;
@@ -321,6 +364,7 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
       if (disposed) return;
       disposed = true;
       detachLifecycle();
+      contextLoss?.dispose();
       feelSoundDetach?.();
       accessibilityUnsub();
       accessibility.dispose();
@@ -329,6 +373,7 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
       session.transition("disposed");
       hud.dispose();
       touch?.dispose();
+      transitionOverlay?.remove();
       if (hasDom) document.querySelectorAll(".a3g-juice-overlay").forEach((el) => { if ((targetEl ?? document.body).contains(el)) el.remove(); });
       runtime.dispose();
       await app.dispose();

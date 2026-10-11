@@ -10,31 +10,9 @@
  * juice overlay is the DOM `.a3g-juice-overlay` layer above the canvas, which
  * a canvas readback cannot see (what the player sees is the composite).
  */
-import { expect, test, loadHarness, stepFrames, withServer } from "./support";
+import { expect, test, loadHarness, pagePixels as snapPage, stepFrames, withServer } from "./support";
 
 type Pixels = number[] | null;
-
-async function snap(page: Parameters<typeof loadHarness>[0]): Promise<Pixels> {
-  return page.evaluate(() => window.__AURA3D_SHELL__!.readPixels?.() ?? null);
-}
-
-/** Page-composite pixels (canvas + DOM layers), same 4×4 stride as readPixels. */
-async function snapPage(page: Parameters<typeof loadHarness>[0]): Promise<Pixels> {
-  const png = await page.screenshot({ clip: { x: 0, y: 0, width: 1280, height: 720 } });
-  return page.evaluate(async (b64) => {
-    const blob = await (await fetch(`data:image/png;base64,${b64}`)).blob();
-    const bitmap = await createImageBitmap(blob);
-    const probe = document.createElement("canvas");
-    probe.width = bitmap.width;
-    probe.height = bitmap.height;
-    const ctx = probe.getContext("2d")!;
-    ctx.drawImage(bitmap, 0, 0);
-    const data = ctx.getImageData(0, 0, bitmap.width, bitmap.height).data;
-    const out: number[] = [];
-    for (let i = 0; i < data.length; i += 16 * 4) out.push(data[i], data[i + 1], data[i + 2]);
-    return out;
-  }, png.toString("base64"));
-}
 
 function luma(px: Pixels): number {
   if (!px || px.length === 0) return 0;
@@ -54,7 +32,7 @@ withServer((getServer) => {
   test("flash envelope: +25 luma at N+1, 0-diff at N+13", async ({ page }) => {
     await loadHarness(page, getServer(), "?scenario=frozen&animate=0");
     await stepFrames(page, 2);
-    const frameN = await snapPage(page);
+    const frameN = await snapPage(page, "flash-frame-N");
 
     await page.evaluate(() => {
       const g = window.__AURA3D_SHELL__!.game as {
@@ -63,41 +41,48 @@ withServer((getServer) => {
       g.juice.flash("#ffffff", { peak: 0.6, ms: 200 });
     });
     await stepFrames(page, 1);
-    const frameN1 = await snapPage(page);
+    const frameN1 = await snapPage(page, "flash-frame-N+1");
 
     expect(luma(frameN1) - luma(frameN), "flash did not raise mean luma by ≥ 25").toBeGreaterThanOrEqual(25);
 
     // Envelope is exp-decay to exactly 0 at ms=200 ≈ 12 frames; N+13 is clear.
     for (let i = 0; i < 12; i += 1) await stepFrames(page, 1);
-    const frameN13 = await snapPage(page);
+    const frameN13 = await snapPage(page, "flash-frame-N+13");
     expect(maxChannelDiff(frameN13, frameN), "envelope did not return to 0").toBe(0);
   });
 
   test("spark burst paints ≥ 0.15 % of canvas near the projected point", async ({ page }) => {
     await loadHarness(page, getServer(), "?scenario=frozen&animate=0");
     await stepFrames(page, 2);
-    const baseline = await snap(page);
+    // Page composite, like the flash: a WebGL canvas without
+    // preserveDrawingBuffer may read back cleared outside its frame task.
+    const baseline = await snapPage(page, "spark-frame-N");
+    if (!baseline) throw new Error("page pixel readback unavailable");
 
-    const spark = await page.evaluate(() => {
+    await page.evaluate(() => {
       const g = window.__AURA3D_SHELL__!.game as {
-        fx: { burst(kind: string, p: number[], o: { count: number }): void };
+        fx: { burst(kind: string, p: number[], o: { count: number; seed?: number }): void };
       };
-      g.fx.burst("spark", [0, 0.3, 0], { count: 24 });
-      return window.__AURA3D_SHELL__!.sparkScreenPos ?? { x: innerWidth / 2, y: innerHeight / 3 };
+      g.fx.burst("spark", [0, 0.3, 0], { count: 24, seed: 7 });
     });
-    await stepFrames(page, 1);
-    const after = await snap(page);
 
-    if (!baseline || !after) {
-      throw new Error("canvas pixel readback unavailable in this build");
+    const fractions: number[] = [];
+    for (let frame = 1; frame <= 6; frame += 1) {
+      await stepFrames(page, 1);
+      const after = await snapPage(page, `spark-frame-N+${frame}`);
+      if (!after || after.length !== baseline.length) throw new Error("page pixel readback unavailable");
+      // A pixel counts once when any channel moved by > 20 (ΔE2000 < 12 to the
+      // spark color is the integrated metric; this is the standalone proxy).
+      let changed = 0;
+      for (let i = 0; i < after.length; i += 3) {
+        if (Math.abs(after[i] - baseline[i]) > 20 || Math.abs(after[i + 1] - baseline[i + 1]) > 20 || Math.abs(after[i + 2] - baseline[i + 2]) > 20) changed += 1;
+      }
+      fractions.push(changed / (after.length / 3));
     }
-    const changed = after.reduce((n, v, i) => n + (Math.abs(v - baseline[i]) > 20 ? 1 : 0), 0);
-    const fraction = changed / (after.length / 3);
-    // ΔE2000<12 proximity is approximated by channel diff > 20 near the spark;
-    // the exact metric is the integrated variant's job once C-37 instance
-    // writes land — standalone asserts the burst visibly painted pixels.
-    expect(fraction, `burst painted ${(fraction * 100).toFixed(3)}% of canvas (need ≥ 0.15%)`)
-      .toBeGreaterThanOrEqual(0.0015);
-    void spark;
+    test.info().annotations.push({ type: "spark-coverage", description: fractions.map((f) => (f * 100).toFixed(3)).join(",") });
+    for (const [i, fraction] of fractions.entries()) {
+      expect(fraction, `burst painted ${(fraction * 100).toFixed(3)}% of canvas at N+${i + 1} (need ≥ 0.15%)`)
+        .toBeGreaterThanOrEqual(0.0015);
+    }
   });
 });
