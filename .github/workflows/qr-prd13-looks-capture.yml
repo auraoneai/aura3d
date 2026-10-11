@@ -40,17 +40,22 @@ concurrency:
 
 jobs:
   capture:
-    name: Looks capture (macos-14, flags=${{ matrix.flags }})
+    name: Looks capture (macos-14, flags=${{ matrix.flags }}, shard ${{ matrix.shard.id }})
     # Same-repo PRs only; fork code never reaches this job.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: macos-14
-    timeout-minutes: 150
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         flags: [none, looks]
+        shard:
+          - { id: 1, templates: "product-viewer,cinematic-scene,mini-game,racing-starter,falling-blocks-starter" }
+          - { id: 2, templates: "fighting-game,arena-shooter,character-controller,animation-channel,prompt-animation-channel" }
+          - { id: 3, templates: "animation-studio,episode-builder,three-compat-premium-product-viewer,three-compat-architecture-interior,three-compat-material-authoring" }
+          - { id: 4, templates: "three-compat-asset-inspector,three-compat-character-viewer,three-compat-postprocess-scene,three-compat-custom-threejs-migration,three-compat-large-scene" }
     env:
-      QRC_TEMPLATES: ${{ github.event_name == 'workflow_dispatch' && inputs.templates || '' }}
+      QRC_TEMPLATES: ${{ github.event_name == 'workflow_dispatch' && inputs.templates || matrix.shard.templates }}
       QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
     steps:
       - uses: actions/checkout@v4
@@ -81,7 +86,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: prd13-looks-capture-${{ matrix.flags }}
+          name: prd13-looks-capture-${{ matrix.flags }}-s${{ matrix.shard.id }}
           path: |
             tools/agent-templates/out/looks-capture-${{ matrix.flags }}/
             tools/agent-templates/out/workspace-build/build-report.json
@@ -92,16 +97,21 @@ jobs:
   # Same capture on the L4 GPU runners (Vulkan ANGLE). Frames are compared only
   # within one runner type: never macos-14 vs gpu-l4.
   capture-gpu:
-    name: Looks capture (gpu-l4 Vulkan, flags=${{ matrix.flags }})
+    name: Looks capture (gpu-l4 Vulkan, flags=${{ matrix.flags }}, shard ${{ matrix.shard.id }})
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, azure-gpu]
-    timeout-minutes: 150
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         flags: [none, looks]
+        shard:
+          - { id: 1, templates: "product-viewer,cinematic-scene,mini-game,racing-starter,falling-blocks-starter" }
+          - { id: 2, templates: "fighting-game,arena-shooter,character-controller,animation-channel,prompt-animation-channel" }
+          - { id: 3, templates: "animation-studio,episode-builder,three-compat-premium-product-viewer,three-compat-architecture-interior,three-compat-material-authoring" }
+          - { id: 4, templates: "three-compat-asset-inspector,three-compat-character-viewer,three-compat-postprocess-scene,three-compat-custom-threejs-migration,three-compat-large-scene" }
     env:
-      QRC_TEMPLATES: ${{ github.event_name == 'workflow_dispatch' && inputs.templates || '' }}
+      QRC_TEMPLATES: ${{ github.event_name == 'workflow_dispatch' && inputs.templates || matrix.shard.templates }}
       QRC_GPU_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
     steps:
       - uses: actions/checkout@v4
@@ -128,11 +138,17 @@ jobs:
           QRC_FLAGS: ${{ matrix.flags }}
           QRC_OUT: tools/agent-templates/out/looks-capture-gpu-${{ matrix.flags }}
         run: node tools/agent-templates/capture-templates.mjs --source "${{ steps.build.outputs.sources }}"
+      - name: Runner resources on failure
+        if: failure()
+        run: |
+          free -m
+          nvidia-smi
+          df -h .
       - name: Upload captures
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: prd13-looks-capture-gpu-${{ matrix.flags }}
+          name: prd13-looks-capture-gpu-${{ matrix.flags }}-s${{ matrix.shard.id }}
           path: |
             tools/agent-templates/out/looks-capture-gpu-${{ matrix.flags }}/
             tools/agent-templates/out/workspace-build/build-report.json
