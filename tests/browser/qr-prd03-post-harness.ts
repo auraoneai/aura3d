@@ -15,6 +15,7 @@ import { FXAA_185_FRAGMENT_GLSL } from "../../packages/rendering/src/post/shader
 // @ts-expect-error raw node_modules module (r185 FXAAShader, MIT)
 import { FXAAShader } from "/node_modules/three/examples/jsm/shaders/FXAAShader.js";
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { postV2ModulesReady } from "@aura3d/rendering";
 
 const LUMA = [0.3, 0.59, 0.11] as const;
 const luma = (p: ArrayLike<number>, i: number) => LUMA[0] * p[i] + LUMA[1] * p[i + 1] + LUMA[2] * p[i + 2];
@@ -39,8 +40,25 @@ function compileGl(gl: WebGL2RenderingContext, vsSource: string, fsSource: strin
   return program;
 }
 
-/** GLSL1 three-side vertex: emits `vUv` for a fullscreen triangle. */
-const THREE_VS = `attribute vec2 position; varying vec2 vUv; void main(){ vUv = position * 0.5 + 0.5; gl_Position = vec4(position, 0.0, 1.0); }`;
+/** three-side vertex: emits `vUv` for a fullscreen triangle (GLSL3, as three's WebGL2 renderer compiles it). */
+const THREE_VS = `#version 300 es\nin vec2 position; out vec2 vUv; void main(){ vUv = position * 0.5 + 0.5; gl_Position = vec4(position, 0.0, 1.0); }`;
+/**
+ * three r185's WebGLProgram prefix for a ShaderMaterial fragment on WebGL2
+ * (`#version 300 es`, default precisions, varying/gl_FragColor mapping).
+ * `FXAAShader.fragmentShader` is the raw body: it uses GLSL3 array
+ * constructors and `texture()`, so compiling it without this prefix fails
+ * as GLSL ES 1.0 (the "No precision specified" CI failure).
+ */
+const THREE_FS_PREFIX = [
+  "#version 300 es",
+  "precision highp float;",
+  "precision highp int;",
+  "#define varying in",
+  "layout(location = 0) out highp vec4 pc_fragColor;",
+  "#define gl_FragColor pc_fragColor",
+  "#define texture2D texture",
+  ""
+].join("\n");
 /** GLSL3 aura-side vertex: gl_VertexID fullscreen triangle (matches LegacyPost). */
 const AURA_VS = `#version 300 es\nvoid main(){ vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2)); gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0); }`;
 
@@ -175,7 +193,7 @@ export function runFxaaCompare(): { results: Record<string, FxaaCaseResult>; err
   const gl = canvas.getContext("webgl2", { antialias: false })!;
   try {
     const auraProgram = compileGl(gl, AURA_VS, FXAA_185_FRAGMENT_GLSL);
-    const threeProgram = compileGl(gl, THREE_VS, String(FXAAShader.fragmentShader));
+    const threeProgram = compileGl(gl, THREE_VS, THREE_FS_PREFIX + String(FXAAShader.fragmentShader));
     const results: Record<string, FxaaCaseResult> = {};
     for (const [name, pixels] of Object.entries({ line: lineInput(), noise: noiseInput(), checker: checkerInput() })) {
       const source = upload(gl, SIZE, SIZE, pixels);
@@ -257,6 +275,8 @@ async function mountApp(flags: readonly string[], build: ReturnType<typeof scene
     qualityRebuild: { flags: [...flags] }
   });
   await app.ready();
+  // The v2 stages load deferred; wait so measured frames run the real chain.
+  await postV2ModulesReady();
   app.step(0);
   const canvas = host.querySelector("canvas")!;
   const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;

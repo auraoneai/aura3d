@@ -35,6 +35,9 @@ registerVelocityShader(registerShaderChunk, registerShaderFeature);
 export { postPipelineSlot, PostGraph, planPostGraph, resolvePostGraph, type PostGraphLike, type PostGraphFrame } from "../post/PostGraph.js";
 export { velocityHistorySlot, VelocityHistory, postVelocityCoverage, type VelocitySurface, type VelocityUniformBinder, bindVelocityUniforms } from "../forward/Velocity.js";
 export { PostTimer } from "../post/PostTimer.js";
+// 03-S18c: the renderer-side outcome of the last v2 seam call, so
+// `diagnostics().post.customPasses` reports what executed, not what was authored.
+export { postGraphV2LastOutcome, postV2ModulesReady } from "../renderer/PostprocessExecution.js";
 export { applyToneOperator, POST_TONE_OPERATORS, acesFilmicToneMapping, agxToneMapping, neutralToneMapping, reinhardToneMapping, linearToneMapping, cineonToneMapping, type AuraToneOperator, type Vec3 } from "../post/ToneOperators.js";
 export { MSAA_PIXEL_GUARD, resolvePostAntiAlias, type PostAntiAliasAuthoredMode, type PostAntiAliasInput, type PostAntiAliasResolution } from "../post/PostAntiAlias.js";
 // Phase 5 (§6.8): C-27 → post tier mapping. Pure table data like

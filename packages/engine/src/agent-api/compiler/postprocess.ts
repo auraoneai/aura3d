@@ -247,6 +247,22 @@ export function createProductionRuntimePostprocess(
     if (nodeDiagnostics) fieldDiagnostics.push(...nodeDiagnostics);
   }
   const strictPostFields = postFlagOn && !authoredPostContext?.compatPost3;
+  // Q-03-2 (#95): flag-on, an authored effect whose serving chain has no GPU
+  // pass is reported, never silently run on the CPU or dropped. On the
+  // compat.post "3.0" legacy route, film grain and chromatic aberration have no
+  // pass at all, and volumetric fog runs as the CPU `volumetric-light` pass.
+  if (postFlagOn && !strictPostFields) {
+    for (const effectName of ["film-grain", "chromatic-aberration"] as const) {
+      // film-grain / chromatic-aberration are lane-03 factory ids outside the
+      // frozen AuraEffectType union, so compare as strings.
+      if (nodes.some((node) => node.kind === "effect" && (node.effect as string) === effectName)) {
+        fieldDiagnostics.push({ code: "EFFECT_PENDING_GPU_PASS", effect: effectName, message: `${effectName} has no GPU pass on the compat.post "3.0" chain` });
+      }
+    }
+    if (volumetricPass) {
+      fieldDiagnostics.push({ code: "EFFECT_PENDING_GPU_PASS", effect: "volumetric-light", message: "volumetric fog runs as the CPU volumetric-light pass on the compat.post \"3.0\" chain" });
+    }
+  }
   if (strictPostFields) {
     const unsupported = fieldDiagnostics.find((diagnostic) => diagnostic.code === "POST_FIELD_UNSUPPORTED");
     if (unsupported) {

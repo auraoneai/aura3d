@@ -15,6 +15,8 @@
 
 import {
   createRendererPostprocessPlanDiagnostics,
+  postGraphV2LastOutcome,
+  postV2ModulesReady,
   postVelocityCoverage,
   volumetricLightDirection,
   type CollectedLight,
@@ -274,11 +276,17 @@ function planForSubmitted(options: RendererPostProcessOptions, width: number, he
 export function collectPostSection(app: AuraApp): PostSectionReport {
   const submitted = (app.canvas ? canvasRecords.get(app.canvas) : undefined) ?? latestSubmittedPostprocess();
   const authoredContext = authoredPostContextFor(app.canvas ?? undefined);
-  // 03-S18c: registered C-13 passes run in the v2 chain (all five §6.1
-  // anchors) when `A3D_QR_POST` is on and compat.post is not "3.0"; otherwise
-  // the legacy chain serves the frame and skips them.
-  const v2Active = Boolean(authoredContext?.flags.post) && !authoredContext?.compatPost3;
-  const customStatus = v2Active ? "v2" : "legacy-chain:A3D_QR_POST-off";
+  // 03-S18c: report what the renderer executed, not what was authored.
+  // Registered C-13 passes run only when the v2 seam ran the stages
+  // (`postGraphV2LastOutcome() === "v2"`); otherwise the reason names the
+  // chain that served the frame (flag off, compat.post "3.0", a WebGPU
+  // backend, cpu-deterministic, unfusable passes, modules still loading, or
+  // `not-executed` when no postprocess frame reached the seam).
+  const customStatus = !authoredContext?.flags.post
+    ? "legacy-chain:A3D_QR_POST-off"
+    : authoredContext.compatPost3
+      ? "legacy-chain:compat.post-3.0"
+      : postGraphV2LastOutcome() ?? "not-executed";
   const custom = registeredPostPasses().map((pass) => ({ id: pass.id, status: customStatus }));
   const empty = {
     present: false,
@@ -463,6 +471,10 @@ export function createPrd03PostSurface(app: AuraApp, ctx: { readonly flags: QrFl
   // §6.8 re-resolution: a C-27 tier change re-records the authored tier so the
   // next postpipeline resolve reads the new `QUALITY_TIERS` row.
   qualityControllerOf(app)?.onChange((event) => recordPostQualityTier(event.to, app.canvas ?? undefined));
+  // Start the deferred v2 stage load at mount, not on the first frame, so the
+  // first frames after `app.ready()` run the real v2 chain (S1–S12 and C-13
+  // custom passes). A failed load is retried by the frame path.
+  if (ctx.flags.on("A3D_QR_POST")) postV2ModulesReady().catch(() => undefined);
   return new Prd03PostSurface(ctx.flags, app.canvas ?? undefined, app);
 }
 
@@ -518,7 +530,7 @@ export const POST_EFFECT_DEPRECATED_FIELDS: Readonly<Record<string, readonly str
 };
 
 export interface PostFieldDiagnostic {
-  readonly code: "POST_FIELD_UNSUPPORTED" | "post-field-deprecated" | "BLOOM_THRESHOLD_BELOW_HDR_WHITE" | "preset-capability-degraded" | "post-tier-disabled";
+  readonly code: "POST_FIELD_UNSUPPORTED" | "post-field-deprecated" | "BLOOM_THRESHOLD_BELOW_HDR_WHITE" | "preset-capability-degraded" | "post-tier-disabled" | "EFFECT_PENDING_GPU_PASS";
   readonly effect: string;
   readonly field?: string;
   readonly message: string;

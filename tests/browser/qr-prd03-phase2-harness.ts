@@ -16,6 +16,7 @@ import { LUT_BAKE_GLSL, DISPLAY_GRADE_GLSL } from "../../packages/rendering/src/
 import { DisplayLutCache } from "../../packages/rendering/src/post/DisplayLutCache";
 import { applyToneOperator } from "../../packages/rendering/src/post/ToneOperators";
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { postV2ModulesReady } from "@aura3d/rendering";
 
 const VS = `#version 300 es\nvoid main(){ vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2)); gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0); }`;
 
@@ -197,6 +198,8 @@ export async function runToneEvalProbe(): Promise<{ perStep: number[]; expected:
       output: { toneMapping: "aces", exposure: 1 }
     } as never);
     await app.ready();
+    // The v2 stages load deferred; wait so measured frames run the real chain.
+    await postV2ModulesReady();
     app.step(0);
     const canvas = host.querySelector("canvas")!;
     const gl = canvas.getContext("webgl2")!;
