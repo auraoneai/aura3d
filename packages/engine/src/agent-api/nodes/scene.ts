@@ -8,6 +8,35 @@ import { isPositiveFinite } from "../sceneMath.js";
 import { physics } from "./physics.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { timeline } from "./timeline.js";
+import { resolveQrFlags } from "../../contracts/flags.js";
+
+const DEFAULT_SCENE_BACKGROUND: AuraColor = "#070b12";
+
+/**
+ * A3D_QR_LOOKS (lane 13, #1142 follow-up): a look group carries its
+ * horizon-matched backdrop (`looks.preset(id)` -> `aura-look:<id>` group
+ * `background`), but only `scene.background` reached the renderer, so every
+ * template that left the backdrop to its look rendered the default near-black
+ * void (look/solid-void). Flag on, an unset scene background takes the last
+ * authored look's backdrop; an explicit `.background()` always wins, and flag
+ * off is byte-identical.
+ */
+function lookBackdrop(nodes: readonly AuraSceneNode[]): AuraColor | undefined {
+  let found: AuraColor | undefined;
+  for (const node of nodes) {
+    const group = node as { kind?: string; name?: string; background?: AuraColor };
+    if (group.kind === "group" && typeof group.name === "string" && group.name.startsWith("aura-look:") && group.background !== undefined) {
+      found = group.background;
+    }
+  }
+  return found;
+}
+
+function looksFlagOn(): boolean {
+  const env = typeof process !== "undefined" && process.env ? process.env : {};
+  const url = typeof location !== "undefined" ? location.href : undefined;
+  return resolveQrFlags({ url, env }).on("A3D_QR_LOOKS");
+}
 
 export function resolveFrameAssetRenderScale(bounds: ReturnType<typeof boundsFromAsset>, options: AuraCameraFrameAssetOptions): number {
   const size = boundsSize(bounds);
@@ -22,7 +51,8 @@ export function resolveFrameAssetRenderScale(bounds: ReturnType<typeof boundsFro
 
 export class AuraSceneBuilder {
   private readonly nodes: AuraSceneNode[] = [];
-  private backgroundColor: AuraColor = "#070b12";
+  private backgroundColor: AuraColor = DEFAULT_SCENE_BACKGROUND;
+  private backgroundExplicit = false;
   private cameraSpec: AuraCameraSpec = camera.orbit();
   private timelineSpec: AuraTimelineSpec | undefined;
   private physicsController: AuraPhysicsWorldController | undefined;
@@ -30,6 +60,7 @@ export class AuraSceneBuilder {
 
   background(color: AuraColor): this {
     this.backgroundColor = color;
+    this.backgroundExplicit = true;
     return this;
   }
 
@@ -67,7 +98,7 @@ export class AuraSceneBuilder {
   toJSON(): AuraSceneSnapshot {
     return {
       schema: "aura3d-scene-snapshot/1.0",
-      background: this.backgroundColor,
+      background: this.backgroundExplicit ? this.backgroundColor : (looksFlagOn() ? lookBackdrop(this.nodes) : undefined) ?? this.backgroundColor,
       camera: this.cameraSpec,
       timeline: this.timelineSpec,
       physics: this.physicsController?.snapshot(),
