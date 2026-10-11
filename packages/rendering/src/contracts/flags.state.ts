@@ -20,7 +20,7 @@ export const QR_FLAG_STATES: Readonly<Partial<Record<QrFlagName, QrFlagState>>> 
   A3D_QR_ASSETS: "dev",
   A3D_QR_ANIMATION: "dev",
   A3D_QR_VFX: "dev",
-  A3D_QR_CAMERA: "dev",
+  A3D_QR_CAMERA: "default-on",
   A3D_QR_GAME: "dev",
   A3D_QR_WORLD: "dev",
   A3D_QR_TIERS: "dev",
