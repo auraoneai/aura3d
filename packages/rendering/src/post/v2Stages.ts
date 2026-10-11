@@ -383,12 +383,23 @@ export interface PostFrameContextBag {
  * same first-frames window three's async `Image` load has. Returns true once
  * both GL textures exist.
  */
+let smaaTexturesLoad: Promise<void> | null = null;
+
+/**
+ * 03-S18a: settles once the in-flight SMAA area/search texture load (if any)
+ * finished, so a probe can wait for S11 to be active instead of guessing a
+ * frame count. Resolves immediately when no load was started.
+ */
+export function smaaTexturesSettled(): Promise<void> {
+  return smaaTexturesLoad ?? Promise.resolve();
+}
+
 function smaaTexturesReady(host: WebGL2DeviceHost, state: PostV2State): boolean {
   const gl = host.gl;
   if (state.smaa.area && state.smaa.search) return true;
   if (!state.smaa.requested) {
     state.smaa.requested = true;
-    void import("./smaa/textures.js").then(async (mod) => {
+    smaaTexturesLoad = import("./smaa/textures.js").then(async (mod) => {
       try {
         const decode = async (dataUrl: string): Promise<ImageBitmap> => {
           const blob = await (await fetch(dataUrl)).blob();
@@ -399,6 +410,10 @@ function smaaTexturesReady(host: WebGL2DeviceHost, state: PostV2State): boolean 
           const tex = gl.createTexture();
           if (!tex) return null;
           gl.bindTexture(gl.TEXTURE_2D, tex);
+          // three uploads these with flipY/premultiply off; the engine may
+          // have left either unpack flag set by an earlier upload.
+          gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+          gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
           gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmap);
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
@@ -410,11 +425,15 @@ function smaaTexturesReady(host: WebGL2DeviceHost, state: PostV2State): boolean 
         // three: AreaTex linear, SearchTex nearest, no mipmaps, no flipY.
         state.smaa.area = upload(area, gl.LINEAR);
         state.smaa.search = upload(search, gl.NEAREST);
+        // T0-16: the raw binds above bypass host.stateCache.
+        host.stateCache.invalidate();
       } catch {
         // Decode/upload failed — leave requested so we don't retry-loop;
         // S11 stays skipped (post.skipped shows SMAA only via the plan).
         state.smaa.requested = true;
       }
+    }).catch(() => {
+      // The lazy chunk itself failed to load: S11 stays skipped.
     });
   }
   return false;
