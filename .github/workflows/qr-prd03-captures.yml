@@ -54,7 +54,10 @@ permissions:
   actions: write
 
 concurrency:
-  group: qr-prd03-captures-${{ github.ref }}-${{ inputs.qr_flags }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
+  # main + dispatch get run_id in the group: cancel-in-progress false does not
+  # stop GitHub replacing a PENDING run in a shared group (lighting-quality
+  # main runs 38184180415, 38182964974 were cancelled that way).
+  group: qr-prd03-captures-${{ github.ref }}-${{ inputs.qr_flags }}${{ (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main') && format('-r-{0}', github.run_id) || '' }}
   cancel-in-progress: false
 
 jobs:
