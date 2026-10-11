@@ -16,7 +16,7 @@ import type { RenderDevice } from "../RenderDevice.js";
 import { Texture } from "../Texture.js";
 import type { EnvironmentProbe, EnvironmentProbeFactory } from "../contracts/environment.js";
 import { QUALITY_TIERS, type AuraQualityTier } from "../contracts/quality.js";
-import { decodeHdrEquirect } from "./HdrEquirect.js";
+import { decodeHdrEquirect, hdrImageToRgba32f } from "./HdrEquirect.js";
 import { readRgb9e5Cube } from "./Rgb9e5Cube.js";
 import { buildNeutralFloorProbe, buildProbeFromLevels } from "./probeBuild.js";
 
@@ -194,7 +194,8 @@ export function defaultProbeLoader(factory: EnvironmentProbeFactory): Environmen
     if (key.url) {
       const bytes = await fetchBytes(key.url);
       const image = decodeHdrEquirect(bytes);
-      const src = new Texture({ width: image.width, height: image.height, format: "rgba32f", data: image.data, label: `env-src-${key.url}` });
+      // #1153: decode yields RGB; rgba32f needs 4 floats per texel.
+      const src = new Texture({ width: image.width, height: image.height, format: "rgba32f", data: hdrImageToRgba32f(image), label: `env-src-${key.url}` });
       return factory.fromEquirect(src);
     }
     throw new Error("ENVIRONMENT_KEY_EMPTY: acquire() needs url or preset");
