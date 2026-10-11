@@ -145,6 +145,8 @@ jobs:
       PRD11_FLAGS: ${{ github.event_name == 'workflow_dispatch' && inputs.flags || 'tiers,none' }}
       PRD11_SCENES: ${{ github.event_name == 'workflow_dispatch' && inputs.scenes || 'prd11-tier-ladder,prd11-draw-call-stress,prd11-instancing-100k' }}
       QR_BENCH_CHROME_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
+      # Track 0: V8 profile summary (profileTop) for aura3d pages in report.json.
+      QR_PRD11_PROFILE: "1"
     steps:
       - uses: actions/checkout@v4
         with:
