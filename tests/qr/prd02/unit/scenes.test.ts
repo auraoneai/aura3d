@@ -30,7 +30,9 @@ const FIXTURES = [
   "prd02-caster-fixtures",
   "prd02-csm-poles",
   "prd02-softbox",
-  "prd02-wet-floor"
+  "prd02-wet-floor",
+  "prd02-pole-behind-camera",
+  "prd02-probe-stripe-room"
 ] as const;
 
 describe("prd02 scene registry", () => {
@@ -113,5 +115,18 @@ describe("prd02 scene registry", () => {
     }
     expect(applyBrokenControl(spec, "no-ibl").environment).toBeUndefined();
     expect(() => applyBrokenControl(spec, "bogus")).toThrow();
+  });
+
+  it("receive-shadow controls flip only the ground planes' receiveShadow (02-T1923)", () => {
+    const spec = prd02Specs["prd02-contact-cube"];
+    for (const [control, value] of [["receive-shadow-off", false], ["receive-shadow-on", true]] as const) {
+      const controlled = applyBrokenControl(spec, control);
+      for (const [index, object] of controlled.objects.entries()) {
+        const before = spec.objects[index]!;
+        if (object.kind === "primitive" && object.shape === "plane") expect(object.receiveShadow, control).toBe(value);
+        else expect(object, control).toEqual(before);
+      }
+      expect(controlled.lights).toEqual(spec.lights);
+    }
   });
 });

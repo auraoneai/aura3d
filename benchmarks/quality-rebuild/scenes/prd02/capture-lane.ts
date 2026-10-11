@@ -123,8 +123,8 @@ async function captureOne(
   try {
     await page.goto(`${baseUrl}/scenes/prd02/lane.html?engine=${engine}&scene=${scene}${flagsQuery}${controlQuery}`, { waitUntil: "load", timeout: 60_000 });
     // String payloads: esbuild `__name` must not leak into page.evaluate.
-    await page.waitForFunction("() => Boolean(window.__QR_READY__ || window.__QR_ERROR__)", undefined, { timeout: timeoutMs, polling: 250 });
-    const state = await page.evaluate("() => ({ ready: window.__QR_READY__ ?? null, error: window.__QR_ERROR__ ?? null })") as { ready: unknown; error: string | null };
+    await page.waitForFunction("Boolean(window.__QR_READY__ || window.__QR_ERROR__)", undefined, { timeout: timeoutMs, polling: 250 });
+    const state = await page.evaluate("({ ready: window.__QR_READY__ ?? null, error: window.__QR_ERROR__ ?? null })") as { ready: unknown; error: string | null };
     if (state.error) {
       result.error = state.error;
     } else {
@@ -159,11 +159,11 @@ async function metricsPass(
   const context = await browser.newContext();
   const page = await context.newPage();
   await page.goto(`${baseUrl}/scenes/prd02/lane.html?mode=metrics`, { waitUntil: "load", timeout: 60_000 });
-  await page.waitForFunction("() => Boolean(window.__qrPrd02)", undefined, { timeout: 60_000, polling: 250 });
+  await page.waitForFunction("Boolean(window.__qrPrd02)", undefined, { timeout: 60_000, polling: 250 });
 
   // NOTE: passed as a STRING, not a function — tsx/esbuild wraps evaluated
   // functions in its `__name` helper, which does not exist in page context.
-  const report = await page.evaluate(`async ({ sceneIds, engines }) => {
+  const report = await page.evaluate(`(async ({ sceneIds, engines }) => {
     const api = window.__qrPrd02;
 
     const loadPixels = async (path) => {
@@ -203,7 +203,7 @@ async function metricsPass(
       out[sceneId] = api.sceneMetrics.computeSceneMetrics(sceneId, spec, { aura, three, controls });
     }
     return out;
-  }`, { sceneIds, engines });
+  })(${JSON.stringify({ sceneIds, engines })})`);
 
   await context.close();
   return report as Record<string, unknown>;
