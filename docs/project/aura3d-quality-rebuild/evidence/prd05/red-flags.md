@@ -23,6 +23,9 @@ linked revert or annotation PR is merged **and** its lane run on main is green. 
 Pre-existing masks found on main (lane 05, not in the brief list):
 - `tests/qr/prd05/template-starters.test.ts:152` `templateId !== undefined || true` always passed. **Removed in this
   PR**: every generated route-module id must now map to a gated starter row (6/6 pass locally; not evidence).
-- `tests/unit/contracts/impl/prd05-asset-optimize.test.ts:19` `describe.runIf(hasToolDeps)` skips all four tests when
-`tools/asset-optimize/node_modules` is absent (true in every root `pnpm install`). It needs the workspace fix Q-15-6
-(#470) before the guard can go without turning the unit job red for an install reason.
+- `tests/unit/contracts/impl/prd05-asset-optimize.test.ts:19` `describe.runIf(hasToolDeps)` skipped all four tests in
+  every root install, and `tools/asset-optimize/tests/{determinism,msft-lod}.test.ts` carried the same guard.
+  **Removed in this batch**: all three now run, with no guard, under `tools/asset-optimize/vitest.config.ts` in
+  `asset-optimize.yml` after the tool deps install. The invariants test now lives at
+  `tools/asset-optimize/tests/prd05-pipeline-invariants.test.ts`. Running it caught a real defect: #716's `proxy`
+  profile enabled palette textures, which §6.2 forbids outside world-chunk/prop-small. The profile is fixed.

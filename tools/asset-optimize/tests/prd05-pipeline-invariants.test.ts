@@ -1,24 +1,24 @@
 /**
- * PRD-05 Phase 2 — §6.3 pipeline invariants run under the repo vitest suite.
- * The toolchain lives in tools/asset-optimize/ with its own npm deps
- * (CONTRACTS §4.4); every test skips when those deps are absent so lanes that
- * never run `npm ci --prefix tools/asset-optimize` stay green.
+ * PRD-05 Phase 2 — §6.3 pipeline invariants. Moved from
+ * tests/unit/contracts/impl/prd05-asset-optimize.test.ts, where every test
+ * skipped when the tool deps were absent (the root install never has them).
+ * Now part of the tool suite (tools/asset-optimize/vitest.config.ts), run in
+ * asset-optimize.yml after the deps install, with no skip guard.
  */
 
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const toolDir = join(repoRoot, "tools", "asset-optimize");
-const hasToolDeps = existsSync(join(toolDir, "node_modules", "@gltf-transform", "core"));
 
-describe.runIf(hasToolDeps)("prd05 asset-optimize tool", () => {
+describe("prd05 asset-optimize tool", () => {
   it("profile table: floor <= target <= ceiling and normal maps are UASTC", async () => {
-    const { ASSET_OPTIMIZE_PROFILES } = await import("../../../../tools/asset-optimize/profiles.js");
+    const { ASSET_OPTIMIZE_PROFILES } = await import("../profiles.js");
     for (const [id, profile] of Object.entries(ASSET_OPTIMIZE_PROFILES)) {
       expect(profile.id, id).toBe(id);
       expect(profile.triangles.floor, id).toBeLessThanOrEqual(profile.triangles.target);
@@ -36,7 +36,7 @@ describe.runIf(hasToolDeps)("prd05 asset-optimize tool", () => {
   });
 
   it("profileForRole maps roles to the §6.2 table", async () => {
-    const { profileForRole } = await import("../../../../tools/asset-optimize/profiles.js");
+    const { profileForRole } = await import("../profiles.js");
     expect(profileForRole("prop", [0.4, 0.4, 0.4])?.id).toBe("prop-small");
     expect(profileForRole("prop", [4, 4, 4])?.id).toBe("prop-large");
     expect(profileForRole("hero")?.id).toBe("hero-character");
@@ -54,7 +54,7 @@ describe.runIf(hasToolDeps)("prd05 asset-optimize tool", () => {
     // through its own package.json instead.
     const toolRequire = createRequire(join(toolDir, "package.json"));
     const { Document, Format, NodeIO } = await import(toolRequire.resolve("@gltf-transform/core"));
-    const { MSFTLod, MSFT_LOD_EXTENSION_NAME, MSFT_SCREENCOVERAGE_EXTRA } = await import("../../../../tools/asset-optimize/extensions/msft-lod.js");
+    const { MSFTLod, MSFT_LOD_EXTENSION_NAME, MSFT_SCREENCOVERAGE_EXTRA } = await import("../extensions/msft-lod.js");
     const doc = new Document();
     const scene = doc.createScene("s");
     const lod0 = doc.createNode("lod0");
@@ -77,8 +77,8 @@ describe.runIf(hasToolDeps)("prd05 asset-optimize tool", () => {
   });
 
   it("determinism: damaged-helmet optimizes twice to identical sha256", async () => {
-    const { optimizeGLB } = await import("../../../../tools/asset-optimize/pipeline.js");
-    const { ASSET_OPTIMIZE_PROFILES } = await import("../../../../tools/asset-optimize/profiles.js");
+    const { optimizeGLB } = await import("../pipeline.js");
+    const { ASSET_OPTIMIZE_PROFILES } = await import("../profiles.js");
     const source = readFileSync(join(repoRoot, "fixtures", "asset-corpus", "damaged-helmet.glb"));
     const profile = ASSET_OPTIMIZE_PROFILES["prop-large"]!;
     const opts = { profile, geometry: "none" as const, mobileCap: 0, log: () => undefined };
