@@ -69,6 +69,40 @@ describe("L-4 one render per tick", () => {
     driver.dispose();
   });
 
+  it("renderPerSubstep keeps camera real time advancing on 0-substep ticks (hit-stop)", () => {
+    const presented: number[] = [];
+    const steps: number[] = [];
+    const app = { advance: () => {}, step: (dt: number) => steps.push(dt) };
+    const driver = createFixedStepDriver(app, {
+      useRaf: false,
+      flags: interpFlags,
+      renderPerSubstep: true,
+      camera: { present: (dt: number) => presented.push(dt) }
+    });
+    // Sub-fixed-step tick: no substep, no render, but the camera still advances.
+    driver.step(0.005);
+    expect(steps).toHaveLength(0);
+    expect(presented).toHaveLength(1);
+    expect(presented[0]).toBeCloseTo(0.005, 9);
+    // Across mixed ticks the camera tracks real time. A substep may consume time
+    // the camera already received on an earlier 0-substep tick, so it can lead
+    // by less than one fixed step (the accumulator's own bound); the carried
+    // balance repays that lead on later ticks.
+    const ticks = [0.005, 1 / 60 + 0.004, 2 / 60, 0.001, 0.03];
+    for (const dt of ticks.slice(1)) driver.step(dt);
+    const sum = () => presented.reduce((a, b) => a + b, 0);
+    let total = ticks.reduce((a, b) => a + b, 0);
+    expect(Math.abs(sum() - total)).toBeLessThan(1 / 60);
+    // Long run at an uneven cadence: drift stays bounded, never accumulates.
+    for (let i = 0; i < 600; i += 1) {
+      const dt = i % 7 === 0 ? 0.004 : 0.011 + (i % 5) * 0.003;
+      driver.step(dt);
+      total += dt;
+      expect(Math.abs(sum() - total)).toBeLessThan(1 / 60);
+    }
+    driver.dispose();
+  });
+
   it("default mode presents the camera once per tick, before the single render", () => {
     const log: string[] = [];
     const app = {

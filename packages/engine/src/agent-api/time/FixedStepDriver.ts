@@ -76,6 +76,13 @@ export class FixedStepDriver {
   private readonly renderCallbacks = new Set<AuraRenderCallback>();
   private rendersLastTick = 0;
   private rendersThisTick = 0;
+  /**
+   * Per-substep mode: real seconds owed to the camera. Substeps present
+   * `fixedDt` each (and may consume time carried from earlier ticks), each
+   * tick adds its real dt, and only a positive balance is presented — so over
+   * any run the camera advances by exactly the real time that elapsed.
+   */
+  private cameraDebt = 0;
 
   constructor(app: FixedStepDriverApp, options: FixedStepDriverOptions = {}) {
     this.app = app;
@@ -164,6 +171,7 @@ export class FixedStepDriver {
       this.rendersThisTick += 1;
       const current = this.interpolation?.resolve(1);
       this.camera?.present(this.fixedDtValue, timeMs, current ? (id) => current.get(id)?.position : undefined);
+      if (this.camera) this.cameraDebt -= this.fixedDtValue;
       this.app.step(0);
     }
   }
@@ -180,6 +188,19 @@ export class FixedStepDriver {
     if (!this.renderPerSubstep) {
       this.camera?.present(realDt, this.time.realTime * 1000, resolved ? (id) => resolved.get(id)?.position : undefined);
       this.app.step(0);
+    } else {
+      // Per-substep mode presented `fixedDt` per rendered substep above. Real
+      // time not covered by those substeps (all of it on a 0-substep tick,
+      // e.g. global hit-stop) must still advance the camera — its sequences,
+      // shake, ramps and layers run on real time (Codex review on #946). No
+      // render here: the next submission shows the advanced pose.
+      if (this.camera) {
+        this.cameraDebt += realDt;
+        if (this.cameraDebt > 1e-9) {
+          this.camera.present(this.cameraDebt, this.time.realTime * 1000, resolved ? (id) => resolved.get(id)?.position : undefined);
+          this.cameraDebt = 0;
+        }
+      }
     }
     this.rendersLastTick = this.renderPerSubstep ? this.rendersThisTick : 1;
     this.rendersThisTick = 0;
