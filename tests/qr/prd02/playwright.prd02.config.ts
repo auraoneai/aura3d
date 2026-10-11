@@ -27,5 +27,8 @@ export default defineConfig({
         }
       }
     : {}),
-  reporter: [["list"], ["json", { outputFile: "tests/reports/qr-prd02-browser.json" }]]
+  // outputFile resolves against this config's directory: "../../reports" is
+  // the repo-root tests/reports/ path the workflow artifacts upload (a bare
+  // "tests/reports/..." landed in tests/qr/prd02/tests/reports/).
+  reporter: [["list"], ["json", { outputFile: "../../reports/qr-prd02-browser.json" }]]
 });
