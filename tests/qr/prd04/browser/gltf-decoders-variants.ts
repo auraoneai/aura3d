@@ -21,7 +21,8 @@ import { canvasPixels, CLEAR, deltaE00, maskedDeltaE, meanLab, subjectMask } fro
 
 declare global { interface Window { __QR_READY__?: unknown; __QR_ERROR__?: string } }
 
-const DECODER_BASE = "/fixtures/asset-corpus/decoders/";
+// C-16 per-decoder layout (`basis/`, `draco/`, `meshopt/`) from public/aura-decoders/.
+const DECODER_BASE = "/aura-decoders/";
 
 async function run(): Promise<void> {
   const canvas = document.getElementById("stage") as HTMLCanvasElement;
