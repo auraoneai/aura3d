@@ -119,12 +119,10 @@ describe("01-S8 (c) white furnace: metal F0 = 1, roughness 1", () => {
     return (sum / n) * 2 * PI;
   }
 
-  // PRD-01 §15 (c) also asks for "single within ±0.02 of dfg.x + dfg.y" and
-  // "multiscatter recovers ≥ half the loss". three r185 itself misses both at
-  // dotNV 0.5 / 1.0 (single-vs-LUT gap 0.026 / 0.038: bilinear LUT sampling at
-  // roughness 1 lands on texel centre 15.5/16; r185's direct Turquin term
-  // recovers < 50 % at high dotNV). Aura equals r185 to 1e-4 here, so those
-  // two bounds are a spec question raised with the G1 lead, not asserted.
+  // PRD-01 §15 (c) as amended by the #1087 errata (2026-10-11): ≤ 0.80
+  // single, multi > single, multi ≤ 1.02, multi == r185 within 1e-4. The
+  // dropped bounds ("single within ±0.02 of dfg.x + dfg.y", "recovers ≥ half
+  // the loss") fail on three r185 itself at dotNV 0.5 / 1.0.
   for (const dotNV of [0.2, 0.5, 1.0]) {
     it(`dotNV ${dotNV}: single ≤ 0.80; multiscatter raises albedo, stays ≤ 1.02, equals r185`, () => {
       const single = albedo(dotNV, (L, V) => auraDirectSpecular(L, V, N, metal, false));

@@ -23,6 +23,7 @@ import "../../../../packages/engine/src/lanes/index";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import { shaderFeaturesFor, type ProgramFeatures, type ShaderFeature } from "../../../../packages/rendering/src/contracts/program";
 import { normalizeProgramFeatures } from "../../../../packages/rendering/src/program/ProgramFeatures";
+import { featureGeneratorIncompatibility } from "../../../../packages/rendering/src/program/FeatureSelect";
 import { generateProgramImpl } from "../../../../packages/rendering/src/program/ProgramGenerator";
 
 const ALL = "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler";
@@ -91,11 +92,38 @@ function compileAll(label: string, record: ProgramFeatures): string[] {
   return failures;
 }
 
-const features = shaderFeaturesFor(ALL_STRICT);
+/**
+ * Features the T0-05 compatibility rule (FeatureSelect.featureGeneratorIncompatibility)
+ * keeps OFF the generated path today, each tracked by its open issue. This
+ * list may only SHRINK: a feature excluded but not listed fails the guard
+ * (a new non-conforming chunk cannot slip in silently), and a listed feature
+ * that became compatible fails too (remove it). Not a mask: excluded features
+ * never reach a generated program at runtime either.
+ */
+const KNOWN_EXCLUDED: Readonly<Record<string, string>> = {
+  "prd10.caustics": "#1143 (fragment body-hook chunk declares a uniform; needs pars/call split)",
+  "prd10.wind": "#881 (vertex:deform chunk must define a3dDeform(inout vec4, inout vec3, inout vec4))"
+};
+
+const registered = shaderFeaturesFor(ALL_STRICT);
+const excluded = new Map(registered.flatMap((f) => {
+  const why = featureGeneratorIncompatibility(f);
+  return why === undefined ? [] : [[f.id, why] as const];
+}));
+/** What the generator actually composes: registered and generator-compatible. */
+const features = registered.filter((f) => !excluded.has(f.id));
 
 describe("C-02 every registered chunk compiles (glslangValidator, GLSL ES 3.00)", () => {
   it("registry is populated (guards against an empty, vacuous pass)", () => {
     expect(features.length).toBeGreaterThan(5);
+  });
+
+  it("only KNOWN_EXCLUDED features are excluded from the generated path (list may only shrink)", () => {
+    const unlisted = [...excluded].filter(([id]) => !(id in KNOWN_EXCLUDED)).map(([id, why]) => `${id}: ${why}`);
+    // Stale = listed but no longer excluded (fixed) or no longer registered at all.
+    const stale = Object.keys(KNOWN_EXCLUDED).filter((id) => !excluded.has(id));
+    expect(unlisted, `newly excluded (fix the chunk, or file an issue and list it):\n${unlisted.join("\n")}`).toEqual([]);
+    expect(stale, `now generator-compatible: remove from KNOWN_EXCLUDED: ${stale.join(", ")}`).toEqual([]);
   });
 
   for (const pass of PASSES) {
@@ -111,6 +139,35 @@ describe("C-02 every registered chunk compiles (glslangValidator, GLSL ES 3.00)"
       const record = base(pass, Object.fromEntries(features.map((f) => [f.id, selectedValue(f)])));
       const failures = compileAll(`${pass}-ALL`, record);
       expect(failures, failures.join("\n\n")).toEqual([]);
+    });
+  }
+});
+
+/**
+ * Report-only (separate CI step, not a gate): force each KNOWN_EXCLUDED
+ * feature into a raw program anyway (generateProgramImpl does not filter;
+ * the exclusion is applied at select time in FeatureSelect) and print what
+ * glslang says, so the tracked breaks stay visible. The GATE tests above
+ * never compose them, because the runtime never selects them. Runs only when A3D_GLSL_REPORT_EXCLUDED=1.
+ */
+describe.runIf(process.env.A3D_GLSL_REPORT_EXCLUDED === "1")("report-only: raw validation of KNOWN_EXCLUDED features", () => {
+  for (const id of Object.keys(KNOWN_EXCLUDED)) {
+    it(`${id} (${KNOWN_EXCLUDED[id]})`, () => {
+      const feature = registered.find((f) => f.id === id);
+      expect(feature, `${id} is no longer registered: remove it from KNOWN_EXCLUDED`).toBeDefined();
+      const failures: string[] = [];
+      for (const pass of PASSES) {
+        try {
+          const program = generateProgramImpl(base(pass, { [id]: selectedValue(feature!) }), { flags: ALL_STRICT });
+          for (const [stage, src] of [["vert", program.vertex], ["frag", program.fragment]] as const) {
+            const log = validate(`raw-${pass}-${id}`, stage, src);
+            if (log) failures.push(`${pass} [${stage}] ${log.split("\n").find((l) => l.startsWith("ERROR")) ?? log.slice(0, 200)}`);
+          }
+        } catch (error) {
+          failures.push(`${pass}: generator threw ${String(error).slice(0, 200)}`);
+        }
+      }
+      console.log(`[report-only] ${id} ${KNOWN_EXCLUDED[id]}: ${failures.length === 0 ? "compiles raw — candidate for removal" : `\n  ${failures.join("\n  ")}`}`);
     });
   }
 });
