@@ -189,9 +189,20 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
   const perfRing = createPerfRing();
   // Session time delegates per real frame: dt flowing through the loop is
   // real time; the controller returns the scaled dt routes should simulate on.
+  // §15 juice envelopes run on the presented-frame clock, not wall time: the
+  // overlay advances by each frame's dt and re-writes inside the frame, so a
+  // flash decays over the frames that show it (real dt under rAF; exactly the
+  // stepped dt under `__AURA3D_GAME_TEST__.stepFrames`, which runs frames
+  // faster than wall time and would otherwise never see the 200 ms decay).
+  let overlayClock = 0;
+  const overlayFrameCallbacks = new Set<() => void>();
   runtime.onFrame((frame) => {
     session.tick(frame.dt);
     perfRing.record(frame.dt * 1000);
+    overlayClock += Math.max(0, frame.dt);
+    const due = [...overlayFrameCallbacks];
+    overlayFrameCallbacks.clear();
+    for (const cb of due) cb();
   });
 
   // AuraCameraController already carries shake/punch/evidence (JuiceCamera);
@@ -206,7 +217,14 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
     camera: app.camera as unknown as JuiceCamera,
     session,
     fx,
-    overlay: createOverlayDriver({ app: overlayApp }),
+    overlay: createOverlayDriver({
+      app: overlayApp,
+      now: () => overlayClock,
+      schedule: (cb) => {
+        overlayFrameCallbacks.add(cb);
+        return () => { overlayFrameCallbacks.delete(cb); };
+      }
+    }),
     tweens: createTweenEngine(),
     rumble: createRumbleDriver(),
     sound: audio ? { cue: (cue) => { void audio.cue(cue); } } : undefined
