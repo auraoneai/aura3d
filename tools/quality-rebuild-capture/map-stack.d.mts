@@ -5,3 +5,4 @@ export function originalPosition(
   column: number
 ): { readonly source: string; readonly line: number; readonly column: number } | null;
 export function mapStack(text: string, buildDir: string): string[];
+export function crashTable(report: unknown, buildDir: string): string;

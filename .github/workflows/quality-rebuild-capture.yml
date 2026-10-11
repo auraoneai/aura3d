@@ -32,6 +32,11 @@ on:
         type: boolean
         required: false
         default: true
+      sourcemap:
+        description: "T0-29: build games with sourcemaps and write a mapped crash table (crash-table.md)"
+        type: boolean
+        required: false
+        default: false
       ref:
         description: "Git ref to check out (e.g. a baseline commit like c08d8acb for T1.12 detectors)"
         required: false
@@ -66,6 +71,10 @@ on:
         type: boolean
         required: false
         default: true
+      sourcemap:
+        type: boolean
+        required: false
+        default: false
       ref:
         type: string
         required: false
@@ -102,6 +111,7 @@ jobs:
       QRC_LOCAL_BUILD: ${{ inputs.local_build_all && 'true' || 'false' }}
       QRC_FLAGS: ${{ inputs.qr_flags || 'none' }}
       QRC_TITLE_REPEATS: ${{ inputs.title_repeats || '0' }}
+      QRC_SOURCEMAP: ${{ inputs.sourcemap && 'true' || 'false' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -138,6 +148,14 @@ jobs:
       - name: Capture games
         id: capture
         run: node tools/quality-rebuild-capture/capture-games.mjs --skip-build
+
+      - name: Sourcemapped crash table (T0-29)
+        if: ${{ always() && inputs.sourcemap }}
+        run: |
+          set -euo pipefail
+          test -f tools/quality-rebuild-capture/out/report.json || { echo "::error::no capture report to map"; exit 1; }
+          node tools/quality-rebuild-capture/map-stack.mjs --report tools/quality-rebuild-capture/out/report.json \
+            tools/quality-rebuild-capture/.build | tee tools/quality-rebuild-capture/out/crash-table.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload game captures
         if: always()

@@ -5,13 +5,14 @@
  *
  *   node tools/quality-rebuild-capture/map-stack.mjs <build-dir> < stack.txt
  *   node tools/quality-rebuild-capture/map-stack.mjs <build-dir> "aura-engine-abc.js:79:253782"
+ *   node tools/quality-rebuild-capture/map-stack.mjs --report <out>/report.json <build-dir>   # crash table
  *
  * Every `<name>.js:<line>:<col>` frame whose `<name>.js.map` exists under
  * <build-dir> (built with capture-games.mjs --sourcemap) is printed as
  * `<frame> -> <source>:<line>:<col>`. Frames without a map are printed as
  * `<frame> -> (no sourcemap)`; nothing is guessed.
  */
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
 
 const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -68,16 +69,19 @@ export function originalPosition(map, line, column) {
   return best;
 }
 
+const mapIndexCache = new Map();
 function findMaps(dir) {
+  if (mapIndexCache.has(dir)) return mapIndexCache.get(dir);
   const maps = new Map();
   const walk = (d) => {
-    for (const entry of readdirSync(d)) {
-      const path = join(d, entry);
-      if (statSync(path).isDirectory()) walk(path);
-      else if (entry.endsWith(".js.map")) maps.set(entry.slice(0, -4), path);
+    for (const entry of readdirSync(d, { withFileTypes: true })) {
+      const path = join(d, entry.name);
+      if (entry.isDirectory()) walk(path);
+      else if (entry.name.endsWith(".js.map")) maps.set(entry.name.slice(0, -4), path);
     }
   };
   if (existsSync(dir)) walk(dir);
+  mapIndexCache.set(dir, maps);
   return maps;
 }
 
@@ -94,7 +98,35 @@ export function mapStack(text, buildDir) {
   });
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+/**
+ * Crash table for a capture-games report.json: every string field under a
+ * game that carries a `<chunk>.js:<line>:<col>` frame is mapped. Markdown rows
+ * `| game | flags | error | mapped frames |`.
+ */
+export function crashTable(report, buildDir) {
+  const rows = ["| game | flags | error | mapped frames |", "|---|---|---|---|"];
+  const games = Array.isArray(report?.games) ? report.games : Object.values(report?.games ?? {});
+  for (const game of games) {
+    const texts = [];
+    const visit = (v) => {
+      if (typeof v === "string") { if (/\.js:\d+:\d+/.test(v)) texts.push(v); }
+      else if (Array.isArray(v)) v.forEach(visit);
+      else if (v && typeof v === "object") Object.values(v).forEach(visit);
+    };
+    visit(game);
+    for (const text of texts) {
+      const mapped = mapStack(text, buildDir).slice(0, 6).join("<br>");
+      const first = text.split("\n")[0].slice(0, 160).replace(/\|/g, "\\|");
+      rows.push(`| ${game?.id ?? "?"} | ${report?.qrFlags ?? report?.flags ?? ""} | ${first} | ${mapped} |`);
+    }
+  }
+  return rows.join("\n");
+}
+
+if (import.meta.url === `file://${process.argv[1]}` && process.argv[2] === "--report") {
+  const [, , , reportPath, buildDir] = process.argv;
+  console.log(crashTable(JSON.parse(readFileSync(reportPath, "utf8")), buildDir));
+} else if (import.meta.url === `file://${process.argv[1]}`) {
   const [, , buildDir, inline] = process.argv;
   if (!buildDir) {
     console.error("usage: map-stack.mjs <build-dir> [frame-text]  (or pipe a stack on stdin)");
