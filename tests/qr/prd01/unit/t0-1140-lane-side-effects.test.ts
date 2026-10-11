@@ -119,3 +119,38 @@ describe("#1140: OutputPass dither uniform matches the device upload", () => {
     expect(src).not.toMatch(/uniform int u_dither;/);
   });
 });
+
+describe("#1140: generated programs get the environment map the flag-off path samples", () => {
+  it("binds u_environmentMap + intensity/rotation/maxLod/encoding from environmentMapTexture", async () => {
+    const { applyGeneratedEnvironmentMapUniforms } = await import("../../../../packages/rendering/src/ForwardPass");
+    const { Texture, TextureBinding, Sampler } = await import("@aura3d/rendering");
+    const texture = new Texture({ width: 2, height: 1, colorSpace: "srgb", data: new Uint8Array([16, 64, 255, 255, 255, 180, 80, 255]) });
+    const env = {
+      color: [1, 1, 1],
+      intensity: 0.1,
+      environmentMapTexture: new TextureBinding({ name: "u_environmentMapTexture", texture, sampler: new Sampler({ addressU: "repeat" }), expectedColorSpace: "srgb", required: true }),
+      environmentMapIntensity: 0.45,
+      environmentMapRotation: 0.15,
+      environmentMapMipCount: 5,
+      environmentMapEncoding: "rgbe"
+    } as never;
+    const shader = { reflection: { uniforms: new Map([["u_environmentMap", {}]]) } } as never;
+    const uniforms = new Map<string, unknown>();
+    applyGeneratedEnvironmentMapUniforms(env, { label: "t" } as never, shader, uniforms as never);
+    const bound = uniforms.get("u_environmentMap") as InstanceType<typeof TextureBinding>;
+    expect(bound.name).toBe("u_environmentMap");
+    expect(bound.texture).toBe(texture);
+    expect(uniforms.get("u_environmentMapIntensity")).toBe(0.45);
+    expect(uniforms.get("u_environmentMapRotation")).toBe(0.15);
+    expect(uniforms.get("u_environmentMapMaxLod")).toBe(4);
+    expect(uniforms.get("u_environmentMapEncoding")).toBe(1);
+  });
+
+  it("zeroes the contribution (never leaves the sampler unbound) without a 2D map", async () => {
+    const { applyGeneratedEnvironmentMapUniforms } = await import("../../../../packages/rendering/src/ForwardPass");
+    const shader = { reflection: { uniforms: new Map([["u_environmentMap", {}]]) } } as never;
+    const uniforms = new Map<string, unknown>();
+    applyGeneratedEnvironmentMapUniforms({ color: [1, 1, 1], intensity: 1, proceduralMap: {} } as never, { label: "t" } as never, shader, uniforms as never);
+    expect(uniforms.get("u_environmentMapIntensity")).toBe(0);
+  });
+});
