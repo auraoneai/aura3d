@@ -27,3 +27,4 @@ fixtures/asset-corpus/*.glb filter=lfs diff=lfs merge=lfs -text
 # re-admitted; LFS keeps clone size stable (PRD-12 T3.2).
 benchmarks/quality-rebuild/goldens/**/*.png filter=lfs diff=lfs merge=lfs -text
 benchmarks/quality-rebuild/refs/**/*.png filter=lfs diff=lfs merge=lfs -text
+fixtures/environment-corpus/hdri/*.hdr filter=lfs diff=lfs merge=lfs -text
