@@ -1,4 +1,4 @@
-From 5dec0fa9773356d33828592f6db08c3dc78bfec2 Mon Sep 17 00:00:00 2001
+From e09fddb0108f4e449026f5b213de3076e3134182 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:48 +0000
 Subject: [PATCH] showcase-courier-rush: delete evidence files+blocks (T5.8)
@@ -148,7 +148,7 @@ index f85cd954c..000000000
 -if (!report.pass) process.exitCode = 1;
 diff --git a/apps/showcase-courier-rush/scripts/write-route-health.mjs b/apps/showcase-courier-rush/scripts/write-route-health.mjs
 deleted file mode 100644
-index 005731d93..000000000
+index ec4e669df..000000000
 --- a/apps/showcase-courier-rush/scripts/write-route-health.mjs
 +++ /dev/null
 @@ -1,135 +0,0 @@
@@ -248,7 +248,7 @@ index 005731d93..000000000
 -    renderedProbeSha256: assetById.get(id).renderedProbe.sha256
 -  })),
 -  audioAssets: audioAssetIds.map((id) => ({ typedRef: `assets.${id}`, quality: assetById.get(id).quality, hash: assetById.get(id).hash, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
--  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "street/zone guides, light pools, feedback, and non-subject set dressing", status: "within-stated-role-and-budget" },
+-  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "street/zone guides, light pools, feedback, and non-subject set dressing", status: "within-stated-role-and-budget" },
 -  gameplay: {
 -    deliveries: 5,
 -    arc: ["nearby-zone-teach", "cross-traffic", "two-route-choice", "fragile-express-pressure", "combined-final-run"],

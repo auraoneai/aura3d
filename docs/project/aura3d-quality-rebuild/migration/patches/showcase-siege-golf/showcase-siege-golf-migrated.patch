@@ -1,4 +1,4 @@
-From ee01d64318e9525f5e891f60888687dec0cade77 Mon Sep 17 00:00:00 2001
+From 647a82213e302c1ac4c9ea25f3da7e3bde495909 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:10:29 +0000
 Subject: [PATCH] migration(showcase-siege-golf): regenerated patch set
@@ -551,12 +551,12 @@ index 000000000..1563f5a63
 +  }
 +];
 diff --git a/apps/showcase-siege-golf/src/v2/boot.ts b/apps/showcase-siege-golf/src/v2/boot.ts
-index 20bd69af9..8c3f8cee7 100644
+index 163dacdbc..86a6c1c1f 100644
 --- a/apps/showcase-siege-golf/src/v2/boot.ts
 +++ b/apps/showcase-siege-golf/src/v2/boot.ts
 @@ -8,7 +8,7 @@
  // unchanged; audio plays through the legacy cue controller until C-25
- // lands (standIn R-14-10).
+ // lands (standIn R-14-09).
  import { game as engineGame, scene } from "@aura3d/engine";
 -import { createGame, type Game, lookManifest } from "@aura3d/game";
 +import { createGame, type Game } from "@aura3d/game";

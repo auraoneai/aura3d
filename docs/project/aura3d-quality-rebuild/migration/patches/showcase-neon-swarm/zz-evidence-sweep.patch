@@ -1,4 +1,4 @@
-From fcbf79a06553ac05afb38f4e96c9443e989f9591 Mon Sep 17 00:00:00 2001
+From 1c9b78e67538e107fc3c73b9e905b289025cdbb7 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:51 +0000
 Subject: [PATCH] showcase-neon-swarm: delete evidence files+blocks (T5.8)
@@ -11,12 +11,12 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/register-models.mjs               |  66 ----
  .../scripts/register-sfx.mjs                  |  51 ---
  .../scripts/write-performance-report.ts       |  90 -----
- .../scripts/write-route-health.mjs            | 280 --------------
+ .../scripts/write-route-health.mjs            | 279 -------------
  apps/showcase-neon-swarm/src/legacy/main.ts   | 366 ------------------
  apps/showcase-neon-swarm/src/main.ts          |  10 -
  .../src/v2/evidence-block.ts                  |  51 ---
  .../src/v2/evidence/index.ts                  | 111 ------
- 11 files changed, 1431 deletions(-)
+ 11 files changed, 1430 deletions(-)
  delete mode 100644 apps/showcase-neon-swarm/performance-report.json
  delete mode 100644 apps/showcase-neon-swarm/scripts/build-review-art.mjs
  delete mode 100644 apps/showcase-neon-swarm/scripts/build-sfx.mjs
@@ -678,10 +678,10 @@ index 965ddb997..000000000
 -if (!pass) process.exitCode = 1;
 diff --git a/apps/showcase-neon-swarm/scripts/write-route-health.mjs b/apps/showcase-neon-swarm/scripts/write-route-health.mjs
 deleted file mode 100644
-index dbe9a04de..000000000
+index 1a3f2d545..000000000
 --- a/apps/showcase-neon-swarm/scripts/write-route-health.mjs
 +++ /dev/null
-@@ -1,280 +0,0 @@
+@@ -1,279 +0,0 @@
 -import { createHash } from "node:crypto";
 -import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 -import { dirname, join, resolve } from "node:path";
@@ -873,7 +873,6 @@ index dbe9a04de..000000000
 -    };
 -  }),
 -  primitiveStatus: {
--    sourceOccurrences: primitiveOccurrences,
 -    primitiveBudget: routeGate.primitiveBudget,
 -    role: "arena, player guides, collectible, boundaries, and effects around typed primary assets and abstract instanced enemies",
 -    pass: true

@@ -1,4 +1,4 @@
-From c012b520a80659a61d1231de623d38387e69124c Mon Sep 17 00:00:00 2001
+From 5736877bf1474e8993cf784f120c7f805a037327 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 15:34:49 +0000
 Subject: [PATCH] showcase-pulse-tunnel: delete evidence files+blocks (T5.8)
@@ -4050,7 +4050,7 @@ index f4cb94afd..000000000
 -if (!report.pass) process.exitCode = 1;
 diff --git a/apps/showcase-pulse-tunnel/scripts/write-route-health.mjs b/apps/showcase-pulse-tunnel/scripts/write-route-health.mjs
 deleted file mode 100644
-index 26165b125..000000000
+index 91f511bf8..000000000
 --- a/apps/showcase-pulse-tunnel/scripts/write-route-health.mjs
 +++ /dev/null
 @@ -1,157 +0,0 @@
@@ -4185,7 +4185,7 @@ index 26165b125..000000000
 -    }
 -  },
 -  audioAssets: audioAssetIds.map((id) => ({ typedRef: `assets.${id}`, quality: assetById.get(id).quality, hash: assetById.get(id).hash, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
--  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "abstract tunnel structure, obstacles, arena dressing, telegraph, and state-driven feedback around the typed player craft", status: "within-set-dressing-and-abstract-role-budget" },
+-  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "abstract tunnel structure, obstacles, arena dressing, telegraph, and state-driven feedback around the typed player craft", status: "within-set-dressing-and-abstract-role-budget" },
 -  clockContract: { decision: sync.decision, toleranceMs: sync.toleranceMs, naturalFlip: sync.naturalFlip, fallbackFlip: sync.fallbackFlip, measuredDriftSamples: sync.driftSamples, browser: sync.userAgent, claim: "Beat mode is conditional on measured tolerance; this measured profile runs the authored chart in deterministic pattern mode after the proven fallback." },
 -  gameplay: { runLengthSeconds: 90, sections: ["intro", "build", "drop", "finale"], actions: ["lane-left", "lane-right", "jump", "slide"], mechanics: ["telegraph", "avoid", "collision", "graze", "style", "three-shield-failure", "pause", "restart", "completion"], keyboardAndTouch: true, reducedMotionPreservesTimingAndCollision: true },
 -  performance,

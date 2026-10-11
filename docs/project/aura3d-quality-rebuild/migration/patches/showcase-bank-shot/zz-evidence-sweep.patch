@@ -1,4 +1,4 @@
-From d0f90d68f0c015e63ad573457bb0eee7e9c04e52 Mon Sep 17 00:00:00 2001
+From 8bc85a24b1d6a99373ff615ff417300570aaeed5 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:47 +0000
 Subject: [PATCH] showcase-bank-shot: delete evidence files+blocks (T5.8)
@@ -1017,7 +1017,7 @@ index dee490e7c..000000000
 -if (!report.pass) process.exitCode = 1;
 diff --git a/apps/showcase-bank-shot/scripts/write-route-health.mjs b/apps/showcase-bank-shot/scripts/write-route-health.mjs
 deleted file mode 100644
-index 9704ee9b4..000000000
+index 450d79daf..000000000
 --- a/apps/showcase-bank-shot/scripts/write-route-health.mjs
 +++ /dev/null
 @@ -1,143 +0,0 @@
@@ -1130,7 +1130,7 @@ index 9704ee9b4..000000000
 -  primaryAssets: initialPrimaryAssets.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
 -  typedModelFamily: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
 -  audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
--  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "pool-hall architecture, rail sights, chalk, aim/bank guides, contact marker, and lighting only", status: "no-primitive-primary-subjects" },
+-  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "pool-hall architecture, rail sights, chalk, aim/bank guides, contact marker, and lighting only", status: "no-primitive-primary-subjects" },
 -  gameplay: {
 -    racks: 3, rackClocksMs: [240000, 210000, 180000], publicRapierBodies: 34, pocketSensors: 6,
 -    controls: ["aim", "top/draw authored contact nudge", "charge/strike", "ball-in-hand placement", "pause", "full reset"],

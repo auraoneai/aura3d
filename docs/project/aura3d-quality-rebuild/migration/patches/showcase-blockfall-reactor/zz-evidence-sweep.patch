@@ -1,4 +1,4 @@
-From 433f254342731ca218ec3cb973e016e13ee3a77d Mon Sep 17 00:00:00 2001
+From 351a888b1fc0c6201f21b6b8f28eb66f4746e30c Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:47 +0000
 Subject: [PATCH] showcase-blockfall-reactor: delete evidence files+blocks
@@ -9,11 +9,11 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/build-review-art.mjs              | 180 ------
  .../scripts/build-sfx.mjs                     | 558 ------------------
  .../scripts/write-expert-fixture.ts           |  80 ---
- .../scripts/write-route-health.mjs            | 193 ------
+ .../scripts/write-route-health.mjs            | 191 ------
  .../src/legacy/main.ts                        | 401 -------------
  apps/showcase-blockfall-reactor/src/main.ts   |  10 -
  .../src/v2/evidence/index.ts                  |  84 ---
- 7 files changed, 1506 deletions(-)
+ 7 files changed, 1504 deletions(-)
  delete mode 100644 apps/showcase-blockfall-reactor/scripts/build-review-art.mjs
  delete mode 100644 apps/showcase-blockfall-reactor/scripts/build-sfx.mjs
  delete mode 100644 apps/showcase-blockfall-reactor/scripts/write-expert-fixture.ts
@@ -859,10 +859,10 @@ index 05f8bdbc2..000000000
 \ No newline at end of file
 diff --git a/apps/showcase-blockfall-reactor/scripts/write-route-health.mjs b/apps/showcase-blockfall-reactor/scripts/write-route-health.mjs
 deleted file mode 100644
-index c16b095f1..000000000
+index 2ea1113fe..000000000
 --- a/apps/showcase-blockfall-reactor/scripts/write-route-health.mjs
 +++ /dev/null
-@@ -1,193 +0,0 @@
+@@ -1,191 +0,0 @@
 -import { createHash } from "node:crypto";
 -import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 -import { dirname, join, resolve } from "node:path";
@@ -898,7 +898,6 @@ index c16b095f1..000000000
 -  }
 -}
 -
--const primitiveOccurrences = Array.from(source.matchAll(/\bprimitives\.[A-Za-z_$][\w$]*/g)).length;
 -const acceptanceReportPath = join(repoRoot, "tests/reports/blockfall-reactor-fx/acceptance-states.json");
 -if (!existsSync(acceptanceReportPath)) {
 -  throw new Error("Missing current Blockfall exact acceptance-state report; run the focused browser spec first.");
@@ -944,7 +943,6 @@ index c16b095f1..000000000
 -    }
 -  ],
 -  primitiveStatus: {
--    sourceOccurrences: primitiveOccurrences,
 -    primitiveBudget: 40,
 -    role: "falling-block cells, board rails, ghost guides, reactor indicators, and collision visuals inside the typed arcade cabinet",
 -    status: "gameplay-geometry-with-typed-primary-cabinet"

@@ -1,4 +1,4 @@
-From cfba3dca9ed654975f35b063302dce5535217dc9 Mon Sep 17 00:00:00 2001
+From 681d0afd56096a0b65f386e9f19472c19ebd637c Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 15:41:47 +0000
 Subject: [PATCH] showcase-aurora-lander: delete evidence files+blocks +
@@ -13,11 +13,11 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/build-sfx.mjs                     | 302 ---------------
  .../scripts/register-sfx.mjs                  |  56 ---
  .../scripts/write-performance-report.ts       | 128 -------
- .../scripts/write-route-health.mjs            | 226 ------------
+ .../scripts/write-route-health.mjs            | 225 ------------
  .../showcase-aurora-lander/src/legacy/main.ts |  41 ---
  apps/showcase-aurora-lander/src/main.ts       |   1 -
  .../src/v2/evidence/index.ts                  | 165 ---------
- 11 files changed, 1539 deletions(-)
+ 11 files changed, 1538 deletions(-)
  delete mode 100644 apps/showcase-aurora-lander/performance-report.json
  delete mode 100644 apps/showcase-aurora-lander/scripts/build-models.mjs
  delete mode 100644 apps/showcase-aurora-lander/scripts/build-review-extraction-bay.mjs
@@ -1178,10 +1178,10 @@ index 5ad8a66fe..000000000
 -if (!report.pass) process.exitCode = 1;
 diff --git a/apps/showcase-aurora-lander/scripts/write-route-health.mjs b/apps/showcase-aurora-lander/scripts/write-route-health.mjs
 deleted file mode 100644
-index d904fb630..000000000
+index f41bbfe23..000000000
 --- a/apps/showcase-aurora-lander/scripts/write-route-health.mjs
 +++ /dev/null
-@@ -1,226 +0,0 @@
+@@ -1,225 +0,0 @@
 -import { createHash } from "node:crypto";
 -import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 -import { dirname, join, resolve } from "node:path";
@@ -1320,7 +1320,6 @@ index d904fb630..000000000
 -    author: assetById.get(id).provenance.author
 -  })),
 -  primitiveStatus: {
--    sourceOccurrences: primitiveOccurrences,
 -    primitiveBudget: routeGate.primitiveBudget,
 -    role: "terrain/weather/pad/effect support around typed vehicle and beacon assets",
 -    pass: true

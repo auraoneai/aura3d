@@ -1,4 +1,4 @@
-From aefe3058a5c9856fb23bb14397e2a9af0b13f356 Mon Sep 17 00:00:00 2001
+From b4e33e64a1ea855e2604132f34eabe8a29f085b3 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:31 +0000
 Subject: [PATCH] migration(showcase-courier-rush): regenerated patch set
@@ -579,7 +579,7 @@ index eb9a86607..000000000
 -  console.log(`Registered ${id}`);
 -}
 diff --git a/apps/showcase-courier-rush/scripts/write-route-health.mjs b/apps/showcase-courier-rush/scripts/write-route-health.mjs
-index 9d017c903..005731d93 100644
+index 14c7e1ca7..ec4e669df 100644
 --- a/apps/showcase-courier-rush/scripts/write-route-health.mjs
 +++ b/apps/showcase-courier-rush/scripts/write-route-health.mjs
 @@ -9,7 +9,7 @@ const reportDir = join(repoRoot, "tests/reports/showcase-courier-rush");
@@ -2091,7 +2091,7 @@ index 000000000..584aeb9a0
 +  };
 +}
 diff --git a/apps/showcase-courier-rush/src/v2/boot.ts b/apps/showcase-courier-rush/src/v2/boot.ts
-index 751fd059a..bdd9e2492 100644
+index dcfe53e74..3374fb112 100644
 --- a/apps/showcase-courier-rush/src/v2/boot.ts
 +++ b/apps/showcase-courier-rush/src/v2/boot.ts
 @@ -7,7 +7,7 @@

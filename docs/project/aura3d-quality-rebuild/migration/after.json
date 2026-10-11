@@ -1,6 +1,6 @@
 {
  "schema": "aura3d.quality-rebuild.route-composition/1",
- "generatedAt": "2026-10-11T03:50:32.921Z",
+ "generatedAt": "2026-10-11T04:53:18.406Z",
  "root": "/tmp/all-shadow",
  "routes": {
   "aura-clash-showcase": {
@@ -9,9 +9,9 @@
    "loc": {
     "evidence": 1541,
     "presentation": 3885,
-    "gameplay": 43417,
+    "gameplay": 43418,
     "generated": 3862,
-    "classified": 48843,
+    "classified": 48844,
     "evidencePct": 3.2
    },
    "globals": [
@@ -49,9 +49,9 @@
    "loc": {
     "evidence": 253,
     "presentation": 1227,
-    "gameplay": 5963,
+    "gameplay": 5962,
     "generated": 0,
-    "classified": 7443,
+    "classified": 7442,
     "evidencePct": 3.4
    },
    "globals": [
@@ -78,9 +78,9 @@
    "loc": {
     "evidence": 584,
     "presentation": 6071,
-    "gameplay": 5630,
+    "gameplay": 5629,
     "generated": 2570,
-    "classified": 12285,
+    "classified": 12284,
     "evidencePct": 4.8
    },
    "globals": [
@@ -138,9 +138,9 @@
    "loc": {
     "evidence": 409,
     "presentation": 1436,
-    "gameplay": 4035,
+    "gameplay": 4034,
     "generated": 0,
-    "classified": 5880,
+    "classified": 5879,
     "evidencePct": 7
    },
    "globals": [
@@ -168,9 +168,9 @@
    "loc": {
     "evidence": 203,
     "presentation": 1249,
-    "gameplay": 4666,
+    "gameplay": 4665,
     "generated": 0,
-    "classified": 6118,
+    "classified": 6117,
     "evidencePct": 3.3
    },
    "globals": [
@@ -228,9 +228,9 @@
    "loc": {
     "evidence": 430,
     "presentation": 1268,
-    "gameplay": 4727,
+    "gameplay": 4726,
     "generated": 0,
-    "classified": 6425,
+    "classified": 6424,
     "evidencePct": 6.7
    },
    "globals": [
@@ -325,9 +325,9 @@
    "loc": {
     "evidence": 159,
     "presentation": 1484,
-    "gameplay": 5539,
+    "gameplay": 5538,
     "generated": 0,
-    "classified": 7182,
+    "classified": 7181,
     "evidencePct": 2.2
    },
    "globals": [
@@ -388,9 +388,9 @@
    "loc": {
     "evidence": 90,
     "presentation": 1405,
-    "gameplay": 4619,
+    "gameplay": 4618,
     "generated": 0,
-    "classified": 6114,
+    "classified": 6113,
     "evidencePct": 1.5
    },
    "globals": [
@@ -419,9 +419,9 @@
    "loc": {
     "evidence": 140,
     "presentation": 2368,
-    "gameplay": 5943,
+    "gameplay": 5942,
     "generated": 0,
-    "classified": 8451,
+    "classified": 8450,
     "evidencePct": 1.7
    },
    "globals": [
@@ -454,9 +454,9 @@
    "loc": {
     "evidence": 329,
     "presentation": 1577,
-    "gameplay": 3942,
+    "gameplay": 3941,
     "generated": 0,
-    "classified": 5848,
+    "classified": 5847,
     "evidencePct": 5.6
    },
    "globals": [
@@ -492,9 +492,9 @@
    "loc": {
     "evidence": 423,
     "presentation": 2404,
-    "gameplay": 4133,
+    "gameplay": 4132,
     "generated": 0,
-    "classified": 6960,
+    "classified": 6959,
     "evidencePct": 6.1
    },
    "globals": [
@@ -558,9 +558,9 @@
    "loc": {
     "evidence": 188,
     "presentation": 351,
-    "gameplay": 1382,
+    "gameplay": 1383,
     "generated": 0,
-    "classified": 1921,
+    "classified": 1922,
     "evidencePct": 9.8
    },
    "globals": [
@@ -588,7 +588,7 @@
   "loc": {
    "evidence": 8412,
    "presentation": 48424,
-   "gameplay": 132182,
+   "gameplay": 132174,
    "generated": 34301
   },
   "captureBranches": {

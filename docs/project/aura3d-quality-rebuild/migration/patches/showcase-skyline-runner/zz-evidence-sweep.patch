@@ -1,4 +1,4 @@
-From cba7db604723a8f1611160cce8ea7c21597e1d52 Mon Sep 17 00:00:00 2001
+From fe4cc4c2c16b432223dd0bb9250b2265353bbcb2 Mon Sep 17 00:00:00 2001
 From: Devin <devin@cognition.ai>
 Date: Fri, 9 Oct 2026 15:26:49 +0000
 Subject: [PATCH] showcase-skyline-runner: delete evidence files+blocks (T5.8)

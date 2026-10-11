@@ -1,4 +1,4 @@
-From f4271bfae79b32dc3e10b058c2cc678548b2bfaf Mon Sep 17 00:00:00 2001
+From 10ff7a78db0e39d033c4155d0442edf6b68bfe0c Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:45 +0000
 Subject: [PATCH] aura-clash-showcase: delete evidence files+blocks (T5.8)

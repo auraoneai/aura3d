@@ -1,4 +1,4 @@
-From ccfa562056cea19685c8dbfecbc81cb5f50707c2 Mon Sep 17 00:00:00 2001
+From 2a9ab82b5f7f29bc33bf69e3b8da0fdb36610331 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 15:46:15 +0000
 Subject: [PATCH] showcase-gravity-post: delete evidence files+blocks +
@@ -21,12 +21,12 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/register-sfx.mjs                  |  46 --
  .../scripts/verify-contracts.ts               | 150 -----
  .../scripts/write-performance-report.ts       | 117 ----
- .../scripts/write-route-health.mjs            | 225 -------
+ .../scripts/write-route-health.mjs            | 224 -------
  apps/showcase-gravity-post/src/evidence.ts    |  16 -
  apps/showcase-gravity-post/src/legacy/main.ts | 475 +++-----------
  apps/showcase-gravity-post/src/main.ts        |   1 -
  .../src/v2/evidence/index.ts                  | 190 ------
- 20 files changed, 84 insertions(+), 2981 deletions(-)
+ 20 files changed, 84 insertions(+), 2980 deletions(-)
  delete mode 100644 apps/showcase-gravity-post/performance-report.json
  delete mode 100644 apps/showcase-gravity-post/scripts/build-courier-skiff.py
  delete mode 100644 apps/showcase-gravity-post/scripts/build-freight-district.py
@@ -2296,10 +2296,10 @@ index 2ec6c8b2d..000000000
 -if (!report.pass) process.exitCode = 1;
 diff --git a/apps/showcase-gravity-post/scripts/write-route-health.mjs b/apps/showcase-gravity-post/scripts/write-route-health.mjs
 deleted file mode 100644
-index b79c8e0c5..000000000
+index 8019b16f9..000000000
 --- a/apps/showcase-gravity-post/scripts/write-route-health.mjs
 +++ /dev/null
-@@ -1,225 +0,0 @@
+@@ -1,224 +0,0 @@
 -import { createHash } from "node:crypto";
 -import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 -import { dirname, join, relative, resolve } from "node:path";
@@ -2450,7 +2450,6 @@ index b79c8e0c5..000000000
 -    author: assetById.get(id).provenance.author
 -  })),
 -  primitiveStatus: {
--    sourceOccurrences: primitiveOccurrences,
 -    primitiveBudget: routeGate.primitiveBudget,
 -    role: "authored planets, well/capture guides, prediction beads, dock sparks, and flyby presentation around typed pod/beacons plus typed non-colliding freight world/transit",
 -    status: "within-stated-role-and-budget"

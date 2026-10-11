@@ -1,4 +1,4 @@
-From b944f5e56752844e54d88be62203179d49603527 Mon Sep 17 00:00:00 2001
+From d44798c0031fc59c37f4270696aff4c49414c955 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:09:15 +0000
 Subject: [PATCH] migration(showcase-neon-swarm): regenerated patch set
@@ -1095,12 +1095,12 @@ index 000000000..16644c73b
 +  finale
 +];
 diff --git a/apps/showcase-neon-swarm/src/v2/boot.ts b/apps/showcase-neon-swarm/src/v2/boot.ts
-index 4f03ee8c1..799d116ed 100644
+index 85ee487ec..4a56f8472 100644
 --- a/apps/showcase-neon-swarm/src/v2/boot.ts
 +++ b/apps/showcase-neon-swarm/src/v2/boot.ts
 @@ -5,7 +5,7 @@
  // Gameplay modules (arena/swarm/waves/player/pickups/run) are unchanged;
- // audio plays through the legacy cue controller until C-25 lands (R-14-10).
+ // audio plays through the legacy cue controller until C-25 lands (R-14-09).
  import { game as engineGame, scene } from "@aura3d/engine";
 -import { createGame, type Game, lookManifest } from "@aura3d/game";
 +import { createGame, type Game } from "@aura3d/game";

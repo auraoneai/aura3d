@@ -1,4 +1,4 @@
-From 1fc9390d341caa919ee8a7231f0593a1e71d37cb Mon Sep 17 00:00:00 2001
+From 6491de4f42e674a487ac87de7ebb7c902295f8f3 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 15:34:24 +0000
 Subject: [PATCH] showcase-patrol-wing: delete evidence files+blocks (T5.8)
@@ -1038,7 +1038,7 @@ index dff617443..000000000
 -writeFileSync(resolve(appDir, "performance-report.json"), `${JSON.stringify(report, null, 2)}\n`); console.log(JSON.stringify({ pass, observed, drawEvidencePending })); if (!pass) process.exitCode = 1;
 diff --git a/apps/showcase-patrol-wing/scripts/write-route-health.mjs b/apps/showcase-patrol-wing/scripts/write-route-health.mjs
 deleted file mode 100644
-index c65443454..000000000
+index 8566595b6..000000000
 --- a/apps/showcase-patrol-wing/scripts/write-route-health.mjs
 +++ /dev/null
 @@ -1,53 +0,0 @@
@@ -1084,7 +1084,7 @@ index c65443454..000000000
 -  renderer: { path: "createGameApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
 -  primaryAssets: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
 -  audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
--  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "authored terrain/ocean, route rings, pad structure, beacons, return-fire orbs, lighting, and subordinate frontier dressing around four typed primary assets", status: "no-primitive-primary-subjects" },
+-  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "authored terrain/ocean, route rings, pad structure, beacons, return-fire orbs, lighting, and subordinate frontier dressing around four typed primary assets", status: "no-primitive-primary-subjects" },
 -  gameplay: { mission: ["takeoff", "six ordered rings", "seeded drone pair/waves", "canyon", "low-hull pressure", "visible return approach", "bounded touchdown"], flightOwner: "route-local deterministic authored arcade TypeScript", aerodynamicClaimed: false, sensorOwner: "Rapier-backed route-local player/ring/pad/orb proxies", combatOwner: "root game.combatWorld hit/health plus route-local seeded pursuit", ghostEffect: "visual replay only; no collision or scoring", keyboardAndTouch: true, pauseFreezeResume: true, fullReset: true, shotDownFail: true, touchdownWin: true, reducedMotionPreservesStateTruth: true },
 -  accessibility: { semanticHeading: true, namedStatusRegions: true, namedTouchControls: 11, minimumTouchTargetPx: 44, keyboardAndTouchParity: true, colorIndependentStatusText: true, pass: true },
 -  performance, deploy, routeGate: { config: "tools/showcase-library/route-gates.json", releaseClass: gate.releaseClass, published: gate.published, publicTemplateReady: false, pass: true },

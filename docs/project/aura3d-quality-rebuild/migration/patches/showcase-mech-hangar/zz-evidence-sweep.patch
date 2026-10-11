@@ -1,4 +1,4 @@
-From d7285d8b7d896c4df84551c674e0b495f0f7c4c0 Mon Sep 17 00:00:00 2001
+From d1c8952054123dc79018e25ed6a6d6ccba7e72df Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:50 +0000
 Subject: [PATCH] showcase-mech-hangar: delete evidence files+blocks (T5.8)
@@ -1821,7 +1821,7 @@ index 991e94a9e..000000000
 -if (!pass) process.exitCode = 1;
 diff --git a/apps/showcase-mech-hangar/scripts/write-route-health.mjs b/apps/showcase-mech-hangar/scripts/write-route-health.mjs
 deleted file mode 100644
-index facbe5a23..000000000
+index 3f64e1322..000000000
 --- a/apps/showcase-mech-hangar/scripts/write-route-health.mjs
 +++ /dev/null
 @@ -1,176 +0,0 @@
@@ -1967,7 +1967,7 @@ index facbe5a23..000000000
 -    contract: "metre-scale centered origins with root/chest/hips/right-hand sockets; +Z forward and +Y up"
 -  },
 -  audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
--  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "hangar/pit set dressing, invisible camera anchor, and renderer-owned hit/dust feedback only", status: "no-primitive-primary-subjects" },
+-  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "hangar/pit set dressing, invisible camera anchor, and renderer-owned hit/dust feedback only", status: "no-primitive-primary-subjects" },
 -  gameplay: { modes: ["hangar", "arena"], slots: ["chassis", "arms", "legs", "weapon"], choicesPerSlot: 4, selectionMatrixProven: 16, controls: ["move", "jump-thrust", "light", "heavy", "special", "guard", "pause", "rematch", "back-to-hangar"], keyboardAndTouch: true, invalidPlanRejection: true, deterministicAggressionPresets: ["keep-away", "balanced", "rushdown"], reducedMotionGatesCameraFeedback: true },
 -  performance,
 -  deploy,

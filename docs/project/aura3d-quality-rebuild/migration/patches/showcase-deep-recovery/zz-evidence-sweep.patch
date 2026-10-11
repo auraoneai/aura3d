@@ -1,4 +1,4 @@
-From d2b0735a16299977b2f80708e9c8253cfa2a87f7 Mon Sep 17 00:00:00 2001
+From 72cdff83d0cc0ecfc208ac2a0c54ce40a19304cd Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:48 +0000
 Subject: [PATCH] showcase-deep-recovery: delete evidence files+blocks (T5.8)
@@ -985,7 +985,7 @@ index f1d14aa3b..000000000
 -if (!pass) process.exitCode = 1;
 diff --git a/apps/showcase-deep-recovery/scripts/write-route-health.mjs b/apps/showcase-deep-recovery/scripts/write-route-health.mjs
 deleted file mode 100644
-index 781b964a7..000000000
+index fc5e57164..000000000
 --- a/apps/showcase-deep-recovery/scripts/write-route-health.mjs
 +++ /dev/null
 @@ -1,128 +0,0 @@
@@ -1085,7 +1085,7 @@ index 781b964a7..000000000
 -  renderer: { path: "createAuraApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
 -  primaryAssets: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
 -  audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
--  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "subordinate seabed/reef/wreck dressing, lamp volumes, sonar rings, grapple cable, warning beacon, bioluminescent silt, and UI around five typed primary assets", status: "no-primitive-primary-subjects" },
+-  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "subordinate seabed/reef/wreck dressing, lamp volumes, sonar rings, grapple cable, warning beacon, bioluminescent silt, and UI around five typed primary assets", status: "no-primitive-primary-subjects" },
 -  gameplay: {
 -    mission: ["descent", "wreck approach", "standard salvage", "collision breach", "explicit buoy repair", "heavy salvage", "ascent/surface win"],
 -    authoredMotion: { thrust: true, linearDrag: true, angularDrag: true, neutralBuoyancy: true, worldAndWreckCollision: true },

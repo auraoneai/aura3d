@@ -1,4 +1,4 @@
-From b1fab3360debd364d8994b2b6a595b13586b794c Mon Sep 17 00:00:00 2001
+From b75f0e3457160dbeaea5cf84a07f7d411ca7070d Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:54 +0000
 Subject: [PATCH] showcase-siege-golf: delete evidence files+blocks (T5.8)
@@ -9,11 +9,11 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/build-course-world.mjs            | 209 ------------
  .../showcase-siege-golf/scripts/build-sfx.mjs | 306 ------------------
  .../scripts/write-performance-report.ts       |  78 -----
- .../scripts/write-route-health.mjs            | 216 -------------
+ .../scripts/write-route-health.mjs            | 215 ------------
  apps/showcase-siege-golf/src/legacy/main.ts   | 115 +------
  apps/showcase-siege-golf/src/main.ts          |  10 -
  .../src/v2/evidence/index.ts                  | 111 -------
- 8 files changed, 1 insertion(+), 1225 deletions(-)
+ 8 files changed, 1 insertion(+), 1224 deletions(-)
  delete mode 100644 apps/showcase-siege-golf/performance-report.json
  delete mode 100644 apps/showcase-siege-golf/scripts/build-course-world.mjs
  delete mode 100644 apps/showcase-siege-golf/scripts/build-sfx.mjs
@@ -821,10 +821,10 @@ index e0df2365a..000000000
 -if (!report.pass) process.exitCode = 1;
 diff --git a/apps/showcase-siege-golf/scripts/write-route-health.mjs b/apps/showcase-siege-golf/scripts/write-route-health.mjs
 deleted file mode 100644
-index 44bf9d576..000000000
+index 16a71c5d2..000000000
 --- a/apps/showcase-siege-golf/scripts/write-route-health.mjs
 +++ /dev/null
-@@ -1,216 +0,0 @@
+@@ -1,215 +0,0 @@
 -import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 -import { dirname, join, resolve } from "node:path";
 -import { fileURLToPath } from "node:url";
@@ -939,7 +939,6 @@ index 44bf9d576..000000000
 -    author: "Aura3D synthesis"
 -  })),
 -  primitiveStatus: {
--    sourceOccurrences: primitiveOccurrences,
 -    primitiveBudget: 40,
 -    role: "physics guides, cup rings, renderer-owned shot-club aim cue, aim ticks, and trail puffs as set dressing around the typed continuous world plus ball/crate/barrel/plank models",
 -    status: "set-dressing-with-typed-primary-assets"
