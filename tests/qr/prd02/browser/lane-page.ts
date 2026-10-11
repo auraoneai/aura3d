@@ -87,11 +87,11 @@ export async function captureLaneScene(page: Page, server: LaneServer, options: 
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto(`${server.origin}/scenes/prd02/lane.html?${query.toString()}`, { waitUntil: "load", timeout: 60_000 });
   // String predicates: esbuild's `__name` helper must not leak into the page.
-  await page.waitForFunction("() => Boolean(window.__QR_READY__ || window.__QR_ERROR__)", undefined, {
+  await page.waitForFunction("Boolean(window.__QR_READY__ || window.__QR_ERROR__)", undefined, {
     timeout: READY_TIMEOUT_MS,
     polling: 250
   });
-  const state = (await page.evaluate("() => ({ ready: window.__QR_READY__ ?? null, error: window.__QR_ERROR__ ?? null })")) as {
+  const state = (await page.evaluate("({ ready: window.__QR_READY__ ?? null, error: window.__QR_ERROR__ ?? null })")) as {
     ready: unknown;
     error: unknown;
   };
