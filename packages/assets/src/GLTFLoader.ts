@@ -1776,8 +1776,7 @@ function createMaterialAssets(
         material.occlusionTexture?.strength
       ),
       emissiveTexture: resolveTextureInfo(textures, material.emissiveTexture, `material ${index} emissiveTexture`),
-      emissiveFactor: resolveColor3(material.emissiveFactor, [0, 0, 0], `material ${index} emissiveFactor`),
-      emissiveStrength: resolveEmissiveStrength(material, index),
+      ...resolveEmissive(material, index),
       ...(resolveClearcoat(material, textures, index)),
       ...(resolveTransmission(material, textures, index)),
       ...(resolveDiffuseTransmission(material, textures, pbrSpecularGlossiness, index)),
@@ -2151,12 +2150,57 @@ function resolveConeAngle(value: number | undefined, fallback: number, label: st
   return resolved;
 }
 
-function resolveEmissiveStrength(material: GLTFMaterial, materialIndex: number): number {
-  const strength = material.extensions?.KHR_materials_emissive_strength?.emissiveStrength ?? 1;
-  if (!Number.isFinite(strength) || strength < 0) {
-    throw new RangeError(`glTF material ${materialIndex} KHR_materials_emissive_strength.emissiveStrength must be finite and non-negative`);
+const warnedGLTFMaterialRepairs = new Set<string>();
+
+/** Warns once per distinct repair message (three.js GLTFLoader style: tolerate, don't throw). */
+function warnGLTFMaterialRepairOnce(message: string): void {
+  if (warnedGLTFMaterialRepairs.has(message) || warnedGLTFMaterialRepairs.size >= 256) return;
+  warnedGLTFMaterialRepairs.add(message);
+  if (typeof console === "undefined" || typeof console.warn !== "function") return;
+  console.warn(message);
+}
+
+/**
+ * Tolerant emissive resolve. three.js GLTFLoader accepts any emissiveFactor;
+ * the spec range is [0, 1] with HDR emission carried by
+ * KHR_materials_emissive_strength. Repairs, each warned once:
+ *  - missing/short/non-array factor or non-finite/negative channel -> 0;
+ *  - a channel above 1 -> the factor is normalized by its max channel and the
+ *    max is folded into emissiveStrength, so the emitted radiance is unchanged;
+ *  - non-finite/negative emissiveStrength -> 1.
+ */
+function resolveEmissive(
+  material: GLTFMaterial,
+  materialIndex: number
+): { readonly emissiveFactor: readonly [number, number, number]; readonly emissiveStrength: number } {
+  const label = `glTF material ${materialIndex} emissiveFactor`;
+  const raw: unknown = material.emissiveFactor;
+  let factor: [number, number, number] = [0, 0, 0];
+  if (raw !== undefined) {
+    if (!Array.isArray(raw) || raw.length !== 3) {
+      warnGLTFMaterialRepairOnce(`${label} must contain three values; using [0, 0, 0]`);
+    } else {
+      let repaired = false;
+      factor = raw.map((channel: unknown) => {
+        if (typeof channel === "number" && Number.isFinite(channel) && channel >= 0) return channel;
+        repaired = true;
+        return 0;
+      }) as [number, number, number];
+      if (repaired) warnGLTFMaterialRepairOnce(`${label} had non-finite or negative channels; replaced with 0`);
+    }
   }
-  return strength;
+  let strength = material.extensions?.KHR_materials_emissive_strength?.emissiveStrength ?? 1;
+  if (typeof strength !== "number" || !Number.isFinite(strength) || strength < 0) {
+    warnGLTFMaterialRepairOnce(`glTF material ${materialIndex} KHR_materials_emissive_strength.emissiveStrength must be finite and non-negative; using 1`);
+    strength = 1;
+  }
+  const peak = Math.max(factor[0], factor[1], factor[2]);
+  if (peak > 1) {
+    warnGLTFMaterialRepairOnce(`${label} exceeds [0, 1]; folded ${peak} into emissiveStrength (use KHR_materials_emissive_strength)`);
+    factor = [factor[0] / peak, factor[1] / peak, factor[2] / peak];
+    strength *= peak;
+  }
+  return { emissiveFactor: factor, emissiveStrength: strength };
 }
 
 function resolveClearcoat(
