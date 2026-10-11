@@ -104,8 +104,14 @@ jobs:
           git config user.name "qr-prd09 shadow"
           git worktree add /tmp/all-shadow origin/main --detach
           cd /tmp/all-shadow
+          base="$(git rev-parse --short HEAD)"
           for dir in "$GITHUB_WORKSPACE"/docs/project/aura3d-quality-rebuild/migration/patches/*/; do
-            git am "$dir"*.patch
+            # A patch that no longer applies means main moved under the route
+            # (usually a lane-14 apps/** change): fail with an actionable message.
+            if ! git am "$dir"*.patch; then
+              echo "::error title=Migration patches stale::patches stale vs main ${base}: $(basename "$dir") no longer applies with git am. Regenerate docs/project/aura3d-quality-rebuild/migration/patches/$(basename "$dir")/ onto ${base} (lane 09)."
+              exit 1
+            fi
           done
       - name: "Migrated tree compiles (bundle + route-local tsc vs main + createGame contract, issue 884)"
         # Every game route's src/main.ts must esbuild-bundle on the migrated
