@@ -425,6 +425,9 @@ export class WebGL2Device implements RenderDevice {
     host.textureRegistry = new WebGL2TextureRegistry(host);
     host.samplers = new WebGL2SamplerRegistry(host);
     host.drawBinder = new WebGL2DrawCallBinder(host);
+    // #94 (Q-01-1): the C-29 restore hook (`renderer/DeviceLifecycle.ts`)
+    // calls `host.invalidateGpuObjects?.()` before the registry rebuild.
+    (host as WebGL2DeviceHost & { invalidateGpuObjects: () => void }).invalidateGpuObjects = () => this.invalidateGpuObjects();
     host.probe = new WebGL2ReadbackProbe(host);
     host.post = new WebGL2LegacyPostPipeline(host);
     this.host = host;
@@ -552,6 +555,22 @@ export class WebGL2Device implements RenderDevice {
 
   multiDrawElementsInstanced(draws: readonly unknown[]): void {
     this.host.drawBinder.multiDrawElementsInstanced(draws);
+  }
+
+  /**
+   * #94 (Q-01-1, C-28/C-29): forget every GL object name and uploaded value
+   * cached against the lost context — VAOs, uniform locations, last-value
+   * uniform snapshots, the GL state shadow and texture-unit bindings — so
+   * they recreate lazily on the next draw after `webglcontextrestored`.
+   * `counters().liveVertexArrays` reads 0 afterwards. Buffers, textures and
+   * programs are recreated by the C-29 ResourceRegistry rebuild that runs
+   * right after this in the restore hook.
+   */
+  invalidateGpuObjects(): void {
+    this.host.drawBinder.invalidateGpuObjects();
+    this.host.stateCache.invalidate();
+    this.host.samplers.activeTextureUnitIndex = -1;
+    this.host.samplers.textureUnitBindings.clear();
   }
 
   createBuffer(usage: BufferUsage, byteLength: number, initialData?: ArrayBufferView): RenderBuffer {

@@ -5,6 +5,10 @@
 export class WebGL2Counters {
   bufferUpdateCount = 0;
   drawCalls = 0;
+  /** #180: `multiDrawElementsInstancedWEBGL` calls (each also counts one draw call). */
+  multiDrawSubmissions = 0;
+  /** #180: entries folded into those multi-draw calls. */
+  multiDrawMembers = 0;
   nativeEnvironmentBindings = 0;
   nativeInstancedSubmissions = 0;
   nativeShadowMapBindings = 0;
