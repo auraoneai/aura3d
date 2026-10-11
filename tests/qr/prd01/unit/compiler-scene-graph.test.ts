@@ -97,7 +97,7 @@ describe("01-S2 compiler/sceneGraph — flag off is the legacy path, verbatim", 
   it("flattenAuraSceneNodes(flag off) deep-equals legacy flattenSceneNodes on every fixture", () => {
     for (const nodes of fixtureScenes()) {
       expect(flattenAuraSceneNodes(nodes, false)).toEqual(flatLegacy(nodes));
-      expect(flattenAuraSceneNodes(nodes, resolveQrFlags({}))).toEqual(flatLegacy(nodes));
+      expect(flattenAuraSceneNodes(nodes, resolveQrFlags({ env: { A3D_QR: "none" } }))).toEqual(flatLegacy(nodes));
     }
   });
 
@@ -114,7 +114,7 @@ describe("01-S2 compiler/sceneGraph — flag off is the legacy path, verbatim", 
 
   it("modelMatrixFor(flag off) is the legacy createModelMatrix itself", () => {
     expect(modelMatrixFor(false)).toBe(createModelMatrix);
-    expect(modelMatrixFor(resolveQrFlags({}))).toBe(createModelMatrix);
+    expect(modelMatrixFor(resolveQrFlags({ env: { A3D_QR: "none" } }))).toBe(createModelMatrix);
   });
 
   it("flag-off ignores rotationOrder/quaternion (legacy behaviour unchanged)", () => {

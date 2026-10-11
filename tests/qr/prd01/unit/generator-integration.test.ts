@@ -28,7 +28,7 @@ const ctxHigh = { flags: resolveQrFlags({ env: { A3D_QR_CORE: "v2" } }), tier: Q
 
 describe("PRD-01 §15 sub-flag resolution", () => {
   it("flag-off leaves both sub-flags off", () => {
-    const flags = resolveQrFlags({ env: {} });
+    const flags = resolveQrFlags({ env: { A3D_QR: "none" } });
     expect(qrCoreGeneratorOn(flags)).toBe(false);
     expect(qrCoreOutputOn(flags)).toBe(false);
   });

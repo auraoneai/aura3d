@@ -663,7 +663,11 @@ export class ForwardPass extends BaseRenderPass {
         vertexFormat: geometry.vertexBuffer.format,
         topology: geometry.topology,
         renderState,
-        requiredAttributes: baseMaterial.requiredAttributes
+        requiredAttributes: this.lastProgramFeatures
+          ? baseMaterial.requiredAttributes.filter((attribute) =>
+              !["a_uv", "a_uv1", "a_color", "a_tangent", "a_joints", "a_weights", "a_joints1", "a_weights1"].includes(attribute)
+              || geometry.vertexBuffer.format.attributes.some((a) => a.semantic === attribute || a.shaderName === attribute))
+          : baseMaterial.requiredAttributes
       });
       cache.set(key, pipeline);
     }

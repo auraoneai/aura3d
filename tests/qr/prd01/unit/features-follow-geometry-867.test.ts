@@ -22,7 +22,7 @@ import type { RenderItem } from "../../../../packages/rendering/src/ForwardPass"
 const ALL_LANES = "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler";
 const ALL = resolveQrFlags({ env: { A3D_QR: ALL_LANES } });
 const ALL_STRICT = resolveQrFlags({ env: { A3D_QR: `${ALL_LANES},strict` } });
-const OFF = resolveQrFlags({ env: {} });
+const OFF = resolveQrFlags({ env: { A3D_QR: "none" } });
 const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
 function texture(colorSpace: "srgb" | "linear" = "linear"): Texture {
