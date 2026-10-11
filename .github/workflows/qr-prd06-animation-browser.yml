@@ -172,6 +172,18 @@ jobs:
           set -euo pipefail
           export QR_BENCH_FLAG_SETS="none;animation;$QR_ALL_FLAGS;$QR_ALL_FLAGS,strict"
           bash benchmarks/quality-rebuild/ci.sh
+      - name: Build workspace packages (lane specs)
+        if: always()
+        run: pnpm build:raw
+      - name: Lane browser specs on the GPU (chromium, Vulkan ANGLE)
+        if: always()
+        env:
+          A3D_DISABLE_SYSTEM_WEBGPU_BROWSER: "true"
+          PLAYWRIGHT_JSON_OUTPUT_NAME: "benchmarks/quality-rebuild/out/prd06-animation-matrix-gpu.json"
+        run: |
+          set -euo pipefail
+          export A3D_PRD06_CHROME_ARGS="$QR_BENCH_CHROME_ARGS"
+          pnpm exec playwright test --config playwright.animation-matrix.config.ts --project=chromium --output benchmarks/quality-rebuild/out/test-results
       - name: Upload GPU evidence (PNGs, report.json, bisect-summary.json)
         if: always()
         uses: actions/upload-artifact@v4
