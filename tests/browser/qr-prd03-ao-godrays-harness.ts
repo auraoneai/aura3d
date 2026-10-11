@@ -61,8 +61,13 @@ async function renderFrame(built: ReturnType<typeof scene>, flags: readonly stri
       // The tier is read at compile time; the scene compiled before ready()
       // resolved, so re-submit it after recording the tier (GPU run
       // 38158478621 showed both legs identical without this).
-      (app as { setQualityTier?: (t: string) => void }).setQualityTier?.(tier);
-      (app as { setScene?: (s: unknown) => void }).setScene?.(built);
+      // setQualityTier lives on app.post (not flattened onto app); a missing
+      // surface must fail loudly, never leave both legs at the default tier
+      // (GPU runs 38158478621 / 38159826267 rendered identical legs).
+      const post = (app as { post?: { setQualityTier?: (t: string) => void } }).post;
+      if (!post?.setQualityTier) throw new Error("app.post.setQualityTier unavailable");
+      post.setQualityTier(tier);
+      (app as unknown as { setScene(s: unknown): void }).setScene(built);
     }
     // Read in the stepping task from the default framebuffer (qr-prd03-frame-capture).
     const canvasEl = host.querySelector("canvas")!;
