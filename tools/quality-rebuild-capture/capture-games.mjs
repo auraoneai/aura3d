@@ -733,7 +733,7 @@ function timelineHasStep(steps, key) {
 async function captureRun(browser, game, run, url, gameDir, options = {}) {
   const record = {
     run: run.name, url, viewport: { width: run.width, height: run.height }, deviceScaleFactor: run.dpr, mobile: run.mobile,
-    shots: [], conditions: [], consoleErrors: [], consoleWarningCount: 0, consoleWarningSample: [], pageErrors: [], failedRequests: []
+    shots: [], conditions: [], consoleErrors: [], consoleWarningCount: 0, consoleWarningSample: [], consoleWarningKinds: {}, pageErrors: [], failedRequests: []
   };
   // Video is enabled only when the timeline carries a webm step (steps/webm.mjs);
   // the file finalizes on context.close().
@@ -759,6 +759,12 @@ async function captureRun(browser, game, run, url, gameDir, options = {}) {
     } else if (type === "warning") {
       record.consoleWarningCount++;
       if (record.consoleWarningSample.length < 10) record.consoleWarningSample.push(msg.text().slice(0, 300));
+      // Distinct-warning histogram: the 10-entry sample hides repeated
+      // per-frame warnings (e.g. a probe or compile failure logged each draw).
+      const kind = msg.text().slice(0, 200).replace(/\d+(\.\d+)?/g, "#");
+      if (kind in record.consoleWarningKinds || Object.keys(record.consoleWarningKinds).length < 60) {
+        record.consoleWarningKinds[kind] = (record.consoleWarningKinds[kind] ?? 0) + 1;
+      }
     }
   });
   page.on("pageerror", (err) => { if (record.pageErrors.length < 100) record.pageErrors.push(String(err?.stack ?? err?.message ?? err).slice(0, 800)); });
