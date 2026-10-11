@@ -2,11 +2,13 @@ name: Browser Matrix
 
 on:
   workflow_dispatch:
-  pull_request:
-    branches:
-      - main
-      - master
-      - develop
+  # 5 long shards (route-primary ~86 min, gallery ~47 min). On every PR they
+  # held most of the shared runner pool (#839), so they run on each main push
+  # (latest commit; pending runs supersede) and nightly instead.
+  push:
+    branches: [main]
+  schedule:
+    - cron: "30 6 * * *"
 
 concurrency:
   group: browser-matrix-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
