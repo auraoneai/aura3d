@@ -5,6 +5,7 @@
  * basis fold (Ahat_l per-band scale), radiance evaluation, equirect
  * projection, and the cosine convolution (band multipliers π, 2π/3, π/4).
  */
+import { CUBE_FACE_BASIS } from "./workers/cpuPrefilter.js";
 import { evaluateSH9Irradiance } from "../contracts/environment.js";
 
 export { evaluateSH9Irradiance };
@@ -41,14 +42,8 @@ export function projectCubeToSH9(faces: readonly Float32Array[], faceSize: numbe
   return out;
 }
 
-const FACE_BASIS = [
-  [[1, 0, 0], [0, -1, 0], [0, 0, -1]],
-  [[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
-  [[0, 1, 0], [0, 0, 1], [1, 0, 0]],
-  [[0, -1, 0], [0, 0, -1], [1, 0, 0]],
-  [[0, 0, 1], [0, -1, 0], [-1, 0, 0]],
-  [[0, 0, -1], [0, -1, 0], [1, 0, 0]]
-] as const;
+// GL cube-face basis shared with the prefilter/samplers (02 IBL fix).
+const FACE_BASIS = CUBE_FACE_BASIS;
 
 function accumulateBasis(out: Float32Array, x: number, y: number, z: number, r: number, g: number, b: number, w: number): void {
   const basis = [

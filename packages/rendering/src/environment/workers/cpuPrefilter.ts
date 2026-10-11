@@ -51,15 +51,26 @@ export function mipRoughness(level: number, mipCount: number): number {
   return lodToRoughness(level, mipCount);
 }
 
-/** Face basis matching contracts/environment.ts projectCubeToSH9. */
-const FACE_BASIS = [
-  [[1, 0, 0], [0, -1, 0], [0, 0, -1]],
-  [[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
-  [[0, 1, 0], [0, 0, 1], [1, 0, 0]],
-  [[0, -1, 0], [0, 0, -1], [1, 0, 0]],
-  [[0, 0, 1], [0, -1, 0], [-1, 0, 0]],
-  [[0, 0, -1], [0, -1, 0], [1, 0, 0]]
+/**
+ * GL cube-map face basis (OpenGL ES 3.0 §3.8.10 major-axis table), shared by
+ * every lane-02 cube writer and reader: face f's texel at (u, v) ∈ [-1, 1]²
+ * (u → +s, v → +t, row 0 = t at −1) looks along `n + u·U + v·V`.
+ *   +X: sc = −z, tc = −y   −X: sc = +z, tc = −y
+ *   +Y: sc = +x, tc = +z   −Y: sc = +x, tc = −z
+ *   +Z: sc = +x, tc = −y   −Z: sc = −x, tc = −y
+ * This is the inverse of `sampleCube` exactly (round trip 0 mismatches) and
+ * what the GPU samples, so CPU-built faces upload without transposition.
+ * (The previous table had U and V swapped on every face.)
+ */
+export const CUBE_FACE_BASIS = [
+  [[1, 0, 0], [0, 0, -1], [0, -1, 0]],
+  [[-1, 0, 0], [0, 0, 1], [0, -1, 0]],
+  [[0, 1, 0], [1, 0, 0], [0, 0, 1]],
+  [[0, -1, 0], [1, 0, 0], [0, 0, -1]],
+  [[0, 0, 1], [1, 0, 0], [0, -1, 0]],
+  [[0, 0, -1], [-1, 0, 0], [0, -1, 0]]
 ] as const;
+const FACE_BASIS = CUBE_FACE_BASIS;
 
 export function faceUvToDir(face: number, u: number, v: number): [number, number, number] {
   const [n, ux, vx] = FACE_BASIS[face]!;
