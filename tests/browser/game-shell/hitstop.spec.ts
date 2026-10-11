@@ -34,12 +34,18 @@ async function trackHit(
     async ([globalKey, actorId, struckName, controlName]) => {
       const g = (window as unknown as Record<string, { game: unknown }>)[globalKey]!.game as {
         app: { nodes: { require(id: string): { position: readonly number[] } } };
+        runtime: { pause(): unknown; step(dt: number): unknown };
         session: { hitStop(seconds: number, o?: { actors?: readonly string[] }): void };
       };
       const hook = window.__AURA3D_GAME_TEST__!;
       const struck = g.app.nodes.require(struckName);
       const control = g.app.nodes.require(controlName);
       const track = { struck: [] as number[][], control: [] as number[][] };
+      // Stop wall-clock ticks and consume the retained overload substep before
+      // starting the measured freeze. Otherwise the first manual 1/60 step can
+      // execute two simulation ticks after a slow software-rendered frame.
+      g.runtime.pause();
+      g.runtime.step(0);
       g.session.hitStop(0.045, { actors: [actorId] });
       for (let i = 0; i < 5; i += 1) {
         track.struck.push([struck.position[0], struck.position[1], struck.position[2]]);
