@@ -214,7 +214,9 @@ async function main(): Promise<void> {
   }
   mkdirSync(args.out, { recursive: true });
   const { server, url } = await serve(args.dist, args.out);
-  const browser = await chromium.launch({ args: GPU_ARGS });
+  // `--headless=new` in the args (lighting-quality `gpu` job): Playwright
+  // must not add its own headless flag on top.
+  const browser = await chromium.launch({ args: GPU_ARGS, headless: !GPU_ARGS.some((arg) => arg.startsWith("--headless")) });
   const results: CaptureResult[] = [];
   try {
     for (const scene of args.scenes) {

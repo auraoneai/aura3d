@@ -186,3 +186,76 @@ jobs:
           name: prd02-lane-capture-${{ github.sha }}
           path: benchmarks/quality-rebuild/scenes/prd02/out
           retention-days: 30
+
+  # Lane-02 GPU job (program-lead ruling 2026-10-11): the prd02 browser specs
+  # and the lane capture on the self-hosted NVIDIA scale set (labels
+  # self-hosted + azure-gpu, Vulkan ANGLE), alongside the macos-14 jobs.
+  # Dispatch-only, so PR code (forks included) never reaches the self-hosted
+  # runner. Chrome args follow qr-azure-gpu.yml (#956):
+  # vars.QR_AZURE_GPU_CHROME_ARGS, else the Vulkan ANGLE default below.
+  # The renderer step fails the job on a missing WebGL2 context or a software
+  # rasterizer. Frames are never compared across runner types.
+  gpu:
+    name: prd02 specs + lane capture (azure-gpu)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, azure-gpu]
+    timeout-minutes: 180
+    env:
+      QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: chrome args
+        run: |
+          args="${QR_AZURE_GPU_CHROME_ARGS:---headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist}"
+          source="default"; [ -n "$QR_AZURE_GPU_CHROME_ARGS" ] && source="vars.QR_AZURE_GPU_CHROME_ARGS"
+          echo "chrome args ($source): $args" | tee -a "$GITHUB_STEP_SUMMARY"
+          { echo "QR_PRD02_CHROME_ARGS=$args"; echo "QR_BENCH_CHROME_ARGS=$args"; } >> "$GITHUB_ENV"
+      - name: WebGL renderer must be the GPU
+        id: renderer
+        run: |
+          mkdir -p benchmarks/quality-rebuild/scenes/prd02/out
+          pnpm exec tsx benchmarks/quality-rebuild/scenes/prd02/gpu-probe.ts | tee benchmarks/quality-rebuild/scenes/prd02/out/renderer.json
+          echo "renderer: $(cat benchmarks/quality-rebuild/scenes/prd02/out/renderer.json)" >> "$GITHUB_STEP_SUMMARY"
+      - name: build package dist
+        run: pnpm build
+      - name: build lane bundle
+        id: bundle
+        run: pnpm exec vite build --config benchmarks/quality-rebuild/scenes/prd02/vite.lane.config.ts
+      - name: prd02 browser specs
+        run: pnpm exec playwright test tests/qr/prd02/browser --config tests/qr/prd02/playwright.prd02.config.ts
+      # Runs after a red spec step too (the job stays red): the captures are
+      # the screenshots that go with the spec numbers.
+      - name: lane capture
+        if: (success() || failure()) && steps.renderer.outcome == 'success' && steps.bundle.outcome == 'success'
+        env:
+          IN_FLAGS: ${{ github.event.inputs.flags || 'none' }}
+          IN_SCENES: ${{ github.event.inputs.scenes }}
+          IN_ENGINES: ${{ github.event.inputs.engines || 'aura3d,three' }}
+        run: |
+          scenes_arg=()
+          if [ -n "$IN_SCENES" ]; then scenes_arg=(--scenes "$IN_SCENES"); fi
+          pnpm exec tsx benchmarks/quality-rebuild/scenes/prd02/capture-lane.ts \
+            --flags "$IN_FLAGS" \
+            --engines "$IN_ENGINES" \
+            "${scenes_arg[@]}" \
+            --out benchmarks/quality-rebuild/scenes/prd02/out
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prd02-gpu-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            tests/reports/qr-prd02-browser.json
+            benchmarks/quality-rebuild/scenes/prd02/out
+          if-no-files-found: warn
+          retention-days: 30
