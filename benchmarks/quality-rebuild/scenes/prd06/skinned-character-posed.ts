@@ -52,6 +52,9 @@ export const prd06SkinnedCharacterPosed: SceneSpec = {
   time: 0.75,
   settleFrames: 4,
   owner: "prd06",
+  referenceProfile: "contract",
+  brokenControls: [],
+  primaryCriterion: "Soldier posed at t=0.75 s deforms with a coherent skinned cast shadow (C-18 bone-texture path)",
   qrFlags: ["animation"],
   masks: ["shadow-receiver", "silhouette-edge"],
   primaryRegion: "shadow-receiver"
