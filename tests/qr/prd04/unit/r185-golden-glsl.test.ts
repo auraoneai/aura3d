@@ -51,3 +51,39 @@ describe("PRD-04 P1-3 r185 golden generator GLSL", () => {
     });
   }
 });
+
+describe("PRD-04 04-S5 per-device golden manifest (fixtures/bsdf/r185-goldens.json)", () => {
+  const manifest = JSON.parse(readFileSync("tests/qr/prd04/fixtures/bsdf/r185-goldens.json", "utf8")) as {
+    goldens: { id: string; rendererMatch: string; file: string; renderer: string; runId: number | null }[];
+  };
+
+  it("ids are unique and every entry matches its own recorded renderer string", () => {
+    expect(new Set(manifest.goldens.map((g) => g.id)).size).toBe(manifest.goldens.length);
+    for (const g of manifest.goldens) {
+      expect(new RegExp(g.rendererMatch).test(g.renderer), `${g.id} matches ${g.renderer}`).toBe(true);
+      // No entry may also claim another entry's device (first-match must be unambiguous).
+      for (const other of manifest.goldens) {
+        if (other.id !== g.id) expect(new RegExp(g.rendererMatch).test(other.renderer), `${g.id} vs ${other.renderer}`).toBe(false);
+      }
+    }
+    expect(manifest.goldens.some((g) => /swiftshader/i.test(g.renderer))).toBe(false);
+  });
+
+  for (const g of manifest.goldens) {
+    it(`${g.id}: ${g.file} has the 20-case fixture schema`, () => {
+      const golden = JSON.parse(readFileSync(`tests/qr/prd04/fixtures/bsdf/${g.file}`, "utf8")) as {
+        meta: { renderer: string };
+        cases: (FixtureCase & { values: (number | null)[] })[];
+      };
+      expect(golden.meta.renderer).toBe(g.renderer);
+      expect(golden.cases.map((c) => c.fn)).toEqual(fixture.cases.map((c) => c.fn));
+      for (const c of golden.cases) {
+        const ref = fixture.cases.find((x) => x.fn === c.fn)!;
+        expect(c.argorder).toEqual(ref.argorder);
+        const total = c.argorder.reduce((acc, k) => acc * c.axes[k]!.length, 1);
+        expect(c.values, `${c.fn} values`).toHaveLength(total * c.out);
+      }
+      if (g.file !== "r185-golden.json") expect(g.runId, `${g.id} cites the remote run that generated it`).toBeGreaterThan(0);
+    });
+  }
+});
