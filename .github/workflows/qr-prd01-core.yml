@@ -21,6 +21,9 @@ on:
       - "packages/engine/src/agent-api/compiler/color.ts"
       - "packages/engine/src/lanes/prd01*/**"
       - "packages/engine/src/lanes/prd01.ts"
+      # Every lane's registered shader chunks feed the generated program; the
+      # glsl job (C-02 every-chunk-compiles) must see their changes too.
+      - "packages/engine/src/lanes/**"
       - "packages/engine/src/agent-api/compiler/diagnosticOnly.prd01.ts"
       - "benchmarks/quality-rebuild/scenes/prd01/**"
       - "benchmarks/quality-rebuild/aura3d/scenes/prd01/**"
@@ -40,6 +43,7 @@ on:
       - "packages/engine/src/agent-api/compiler/color.ts"
       - "packages/engine/src/lanes/prd01*/**"
       - "packages/engine/src/lanes/prd01.ts"
+      - "packages/engine/src/lanes/**"
       - "packages/engine/src/agent-api/compiler/diagnosticOnly.prd01.ts"
       - "benchmarks/quality-rebuild/scenes/prd01/**"
       - "benchmarks/quality-rebuild/aura3d/scenes/prd01/**"
@@ -138,6 +142,32 @@ jobs:
             "benchmarks/quality-rebuild/aura3d/scenes/prd01/**/*.ts" \
             "benchmarks/quality-rebuild/three/scenes/prd01/**/*.ts" \
             "tests/qr/prd01/**/*.ts"
+
+  glsl:
+    # C-02 "every registered chunk compiles": every registered ShaderFeature,
+    # alone and all together under $ALL,strict, for every pass, composed by the
+    # generator and validated with Khronos glslangValidator (GLSL ES 3.00).
+    # Catches the class of break behind the all,strict outage (GPU run
+    # 38123946016: 0/19 ready, "generated program failed to compile").
+    name: GLSL validate (C-02 every registered chunk compiles)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install glslangValidator
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q glslang-tools
+          glslangValidator --version
+      - name: Compose + validate every registered chunk
+        run: pnpm exec vitest run --root . tests/qr/prd01/glsl/every-chunk-compiles.test.ts --reporter=verbose
 
   build-harness:
     name: Build harness + lane capture smoke
