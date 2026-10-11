@@ -51,6 +51,40 @@ describe("L-4 one render per tick", () => {
     driver.dispose();
   });
 
+  it("renderPerSubstep presents the camera before each substep submission", () => {
+    const log: string[] = [];
+    const app = {
+      advance: () => log.push("advance"),
+      step: () => log.push("step")
+    };
+    const driver = createFixedStepDriver(app, {
+      useRaf: false,
+      flags: interpFlags,
+      renderPerSubstep: true,
+      camera: { present: (dt: number) => log.push(`present:${dt.toFixed(4)}`) }
+    });
+    driver.step(2 / 60);
+    // Each submitted frame must carry this substep's pose, never the previous tick's.
+    expect(log).toEqual(["advance", `present:${(1 / 60).toFixed(4)}`, "step", "advance", `present:${(1 / 60).toFixed(4)}`, "step"]);
+    driver.dispose();
+  });
+
+  it("default mode presents the camera once per tick, before the single render", () => {
+    const log: string[] = [];
+    const app = {
+      advance: () => log.push("advance"),
+      step: () => log.push("step")
+    };
+    const driver = createFixedStepDriver(app, {
+      useRaf: false,
+      flags: interpFlags,
+      camera: { present: () => log.push("present") }
+    });
+    driver.step(2 / 60);
+    expect(log).toEqual(["advance", "advance", "present", "step"]);
+    driver.dispose();
+  });
+
   it("onRender emits alpha/realDt/simTime once per tick", () => {
     const app = fakeApp();
     const driver = createFixedStepDriver(app, { useRaf: false, flags: interpFlags });

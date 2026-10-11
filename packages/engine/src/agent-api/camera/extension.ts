@@ -47,6 +47,7 @@ import {
   type SceneCameraNodeLike
 } from "./subject.js";
 import { flattenSceneNodes } from "./sceneNodes.js";
+import { createStaticProbeBoxSource } from "./staticBounds.js";
 
 interface FrameInfo {
   readonly dt: number;
@@ -279,20 +280,25 @@ export function createAuraCameraController(
   };
 
   // S8 / C-9: collision rigs (`collision: true` on chase/orbit/shoulder/
-  // flight) cast against the app's visible runtime-node bounds. Without a
+  // flight) cast against the app's visible runtime-node bounds AND the static
+  // scene nodes (primitives, dimensioned models) — static walls were missed
+  // before (Codex review on #911). Without a
   // probe the controller's default never hits and a mounted orbit swings
   // straight through walls. §17/§19: the cast count per presented frame is
   // capped by the live C-27 tier (`app.quality.tier`, re-read every frame
   // so `app.quality.set` applies on the next present).
+  const staticBoxes = createStaticProbeBoxSource();
   const probe = createCameraProbe({
     budget: () => cameraProbeBudgetForTier((app as { quality?: { tier?: unknown } }).quality?.tier),
-    bounds: () =>
-      (registry?.all() ?? [])
+    bounds: () => [
+      ...(registry?.all() ?? [])
         .filter((h) => h.visible !== false)
         .map((h) => {
           const b = h.bounds();
           return { id: h.id, min: b.min, max: b.max };
-        })
+        }),
+      ...staticBoxes(app.scene?.nodes as readonly SceneCameraNodeLike[] | undefined)
+    ]
   });
   const controller = createCameraController({
     resolveSubject,

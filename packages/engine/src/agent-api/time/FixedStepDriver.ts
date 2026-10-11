@@ -157,7 +157,13 @@ export class FixedStepDriver {
     this.app.advance(this.fixedDtValue);
     this.interpolation?.captureCurrent();
     if (this.renderPerSubstep) {
+      // Legacy escape hatch: each substep is a submitted frame, so the camera
+      // must be presented for that substep before it renders; otherwise every
+      // submission shows the previous tick's pose (Codex review on #911).
+      const timeMs = (this.time.realTime + this.rendersThisTick * this.fixedDtValue) * 1000;
       this.rendersThisTick += 1;
+      const current = this.interpolation?.resolve(1);
+      this.camera?.present(this.fixedDtValue, timeMs, current ? (id) => current.get(id)?.position : undefined);
       this.app.step(0);
     }
   }
@@ -171,8 +177,10 @@ export class FixedStepDriver {
     this.time.advance(realDt);
     const alpha = this.loop.snapshot().alpha;
     const resolved = this.interpolation?.resolve(alpha);
-    this.camera?.present(realDt, this.time.realTime * 1000, resolved ? (id) => resolved.get(id)?.position : undefined);
-    if (!this.renderPerSubstep) this.app.step(0);
+    if (!this.renderPerSubstep) {
+      this.camera?.present(realDt, this.time.realTime * 1000, resolved ? (id) => resolved.get(id)?.position : undefined);
+      this.app.step(0);
+    }
     this.rendersLastTick = this.renderPerSubstep ? this.rendersThisTick : 1;
     this.rendersThisTick = 0;
     const frame: AuraRenderFrame = { alpha, realDt, simTime: this.time.simTime };
