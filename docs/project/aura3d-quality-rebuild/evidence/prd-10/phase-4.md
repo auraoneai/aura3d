@@ -44,3 +44,17 @@ shadows → `prd10.reflection.*` (background, mirror re-draw of `reflectionLayer
 
 - Browser/GPU runs (WebGL draws, planar reflection pixels, refraction pixels) — no local GPU; the `qr-prd10-world.yml` macos-14 lane job covers them on push.
 - `WaterReflectionRefractionCapture` pixel-comparison retirement — importers still live (see #188).
+
+## UnderwaterState post (P2, 2026-10-11, PR #1006)
+
+- The old `prd10.underwaterDistortion` body could not compile once enabled. It redeclared the prelude's `u_time`, sampled
+  an unbound `u_scene` and had no `main()`. It now follows the §6.12 custom-pass contract (`u_color`, `main()`).
+- §8.7 deviation: C-13 binds no extra textures, so the two taps use an analytic wave field instead of the water
+  detail-normal atlas.
+- Unit `tests/unit/contracts/impl/prd10-underwater-post.test.ts`, run with `world,post` flags through `runV2HdrStages`:
+  0 compiles over 3 frames while `UNDERWATER_KEY` is false, and exactly 1 compile (program cache) once enabled.
+- Gap, #1065 (lane 03): the v2 custom-pass frame context reads a private `state.postBlackboard` that nothing writes. The
+  `WaterRuntime` write of `UNDERWATER_KEY` to the frame-graph blackboard therefore never reaches `enabled()`. Registry
+  passes are also not flag-gated (`registeredPostPasses()` returns `all()`).
+- Still open: `diagnostics().programs` with `world,post` in a browser run. This needs a browser spec in the lane
+  workflow's macos-14 job.
