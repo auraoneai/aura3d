@@ -112,6 +112,8 @@ jobs:
             echo "::notice::stale run: $BRANCH is now at $head, this run is $GITHUB_SHA; the newer run syncs it"
             echo "synced=false" >> "$GITHUB_OUTPUT"; exit 0
           fi
+          # Self-hosted runners can reuse a workspace: replace any existing remote.
+          git remote remove gitlab 2>/dev/null || :
           git remote add gitlab "$GITLAB_MIRROR_URL"
           git fetch --quiet --no-tags gitlab main || true
           base="$(git rev-parse --verify --quiet gitlab/main || true)"
