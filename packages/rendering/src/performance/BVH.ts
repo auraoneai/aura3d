@@ -87,7 +87,6 @@ export interface BvhSphereSweepResult<T = unknown> {
 }
 
 const MISS: BvhSphereSweepResult<never> = { hit: false, distance: Number.POSITIVE_INFINITY, nodeId: -1, item: null, point: null };
-const TRACE_ITERATIONS = 64;
 
 /**
  * Ray entry/exit against `bounds` grown by `radius` on every side; `null` when
@@ -124,24 +123,77 @@ function boxDistance(x: number, y: number, z: number, bounds: StaticSpatialBound
   return Math.hypot(dx, dy, dz);
 }
 
+/** Smallest root t >= 0 of a·t² + 2b·t + c = 0, or null. Callers ensure the start is outside. */
+function firstRoot(a: number, b: number, c: number): number | null {
+  if (a <= 0) return null;
+  const disc = b * b - a * c;
+  if (disc < 0) return null;
+  const t = (-b - Math.sqrt(disc)) / a;
+  return t >= 0 ? t : null;
+}
+
 /**
  * First contact of a sphere of `radius` moving from `origin` along unit `dir`
- * with the box, as a distance in `[0, maxT]`, or `null`. Sphere-traces the
- * rounded box's exact distance field from the grown-box entry, so corners and
- * edges are exact (not the grown-box overestimate).
+ * with the box, as a distance in `[0, maxT]`, or `null`. Analytic ray test
+ * against the rounded box (bounds ⊕ sphere), which is exactly the union of the
+ * box grown along one axis at a time (faces), 12 edge cylinders and 8 corner
+ * spheres. Solved from the grown-box entry point so long sweeps stay precise;
+ * tangent contacts resolve exactly (no iteration).
  */
 function sweepBox(origin: Vec3Tuple, dir: Vec3Tuple, bounds: StaticSpatialBounds, radius: number, maxT: number): number | null {
+  if (boxDistance(origin[0], origin[1], origin[2], bounds) <= radius) return 0;
   const range = slab(origin, dir, bounds, radius, maxT);
   if (!range) return null;
-  const tolerance = 1e-7 * Math.max(1, radius, maxT);
-  let t = range[0];
-  for (let step = 0; step < TRACE_ITERATIONS; step += 1) {
-    const gap = boxDistance(origin[0] + dir[0] * t, origin[1] + dir[1] * t, origin[2] + dir[2] * t, bounds) - radius;
-    if (gap <= tolerance) return t;
-    t += gap;
-    if (t > range[1]) return null;
+  const t0 = range[0];
+  // Local frame: start at the grown-box entry, coordinates relative to the box minimum.
+  const o: [number, number, number] = [0, 0, 0];
+  const size: [number, number, number] = [0, 0, 0];
+  for (let axis = 0; axis < 3; axis += 1) {
+    o[axis] = origin[axis]! + dir[axis]! * t0 - bounds.min[axis]!;
+    size[axis] = bounds.max[axis]! - bounds.min[axis]!;
   }
-  return null;
+  let best = Number.POSITIVE_INFINITY;
+
+  // Faces: the box grown by `radius` along one axis only.
+  for (let axis = 0; axis < 3; axis += 1) {
+    const grown: StaticSpatialBounds = {
+      min: [axis === 0 ? -radius : 0, axis === 1 ? -radius : 0, axis === 2 ? -radius : 0],
+      max: [size[0] + (axis === 0 ? radius : 0), size[1] + (axis === 1 ? radius : 0), size[2] + (axis === 2 ? radius : 0)]
+    };
+    const hit = slab(o, dir, grown, 0, best);
+    if (hit) best = Math.min(best, hit[0]);
+  }
+  const r2 = radius * radius;
+  // Edges: cylinders of `radius` along each axis, at the 4 corners of the other two axes.
+  for (let axis = 0; axis < 3; axis += 1) {
+    const u = (axis + 1) % 3;
+    const v = (axis + 2) % 3;
+    for (const cu of [0, size[u]]) {
+      for (const cv of [0, size[v]]) {
+        const pu = o[u] - cu;
+        const pv = o[v] - cv;
+        const t = firstRoot(dir[u]! * dir[u]! + dir[v]! * dir[v]!, pu * dir[u]! + pv * dir[v]!, pu * pu + pv * pv - r2);
+        if (t === null || t >= best) continue;
+        const along = o[axis] + dir[axis]! * t;
+        if (along >= 0 && along <= size[axis]) best = t;
+      }
+    }
+  }
+  // Corners: spheres of `radius` at the 8 box corners.
+  for (const cx of [0, size[0]]) {
+    for (const cy of [0, size[1]]) {
+      for (const cz of [0, size[2]]) {
+        const px = o[0] - cx;
+        const py = o[1] - cy;
+        const pz = o[2] - cz;
+        const t = firstRoot(1, px * dir[0] + py * dir[1] + pz * dir[2], px * px + py * py + pz * pz - r2);
+        if (t !== null && t < best) best = t;
+      }
+    }
+  }
+  if (!Number.isFinite(best)) return null;
+  const distance = t0 + best;
+  return distance <= maxT ? distance : null;
 }
 
 /**

@@ -111,6 +111,20 @@ describe("#215 sphereSweep over the static-bounds BVH", () => {
     expect(sphereSweep(bvh, [-5, 1.4, 1.4], [5, 1.4, 1.4], 0.5).hit).toBe(false);
   });
 
+  it("tangent face contact is a hit and long near-miss sweeps stay misses (PR #923 review)", () => {
+    const bvh = buildStaticBoundsBvh([unit]);
+    // Grazes the top face y = 1 exactly with radius 0.5 at y = 1.5.
+    const graze = sphereSweep(bvh, [-5, 1.5, 0], [5, 1.5, 0], 0.5);
+    expect(graze.hit).toBe(true);
+    expect(graze.distance).toBeCloseTo(4, 6);
+    // 10,000,000-unit sweep whose closest approach (0.4√2 ≈ 0.566) exceeds the radius.
+    expect(sphereSweep(bvh, [-5_000_000, 1.4, 1.4], [5_000_000, 1.4, 1.4], 0.5).hit).toBe(false);
+    // Same long sweep that does touch the corner region.
+    const far = sphereSweep(bvh, [-5_000_000, 1.3, 1.3], [5_000_000, 1.3, 1.3], 0.5);
+    expect(far.hit).toBe(true);
+    expect(far.distance).toBeCloseTo(5_000_000 - 1 - Math.sqrt(0.07), 3);
+  });
+
   it("starting in contact hits at distance 0; a short sweep that stops early misses", () => {
     const bvh = buildStaticBoundsBvh([unit]);
     expect(sphereSweep(bvh, [1.2, 0, 0], [3, 0, 0], 0.5)).toMatchObject({ hit: true, distance: 0 });
