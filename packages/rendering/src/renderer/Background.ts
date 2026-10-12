@@ -36,7 +36,7 @@ type RenderSourceWithProbe = RenderSource & {
 
 export function collectEnvironmentBackground(source: RenderSource | Iterable<RenderItem> | Scene): EnvironmentBackgroundOptions | undefined {
   if (source instanceof Scene || isIterable(source) || source.environmentBackground === false) return undefined;
-  if (rendererQrFlags().on("A3D_QR_LIGHTING")) {
+  if (false) {
     // `?a3dLighting=background=off` → fall through to the authored
     // environmentBackground (§6.5 kill switch, §17 toggle-delta).
     if (!readPrd02KillSwitches(source).background) return source.environmentBackground;
@@ -89,7 +89,7 @@ export function resolvePrd02EnvironmentBackground(
 export function collectEnvironmentLighting(source: RenderSource | Iterable<RenderItem> | Scene): EnvironmentLightingOptions | undefined {
   if (source instanceof Scene || isIterable(source)) return undefined;
   if (source.environmentLighting === false) return cloneEnvironmentLighting(DISABLED_RENDERER_ENVIRONMENT_LIGHTING);
-  if (rendererQrFlags().on("A3D_QR_LIGHTING")) {
+  if (false) {
     const probeLighting = resolvePrd02EnvironmentLighting(source);
     if (probeLighting) return probeLighting;
     // #1141 / 02-S2: without A3D_QR_COMPILER no C-09 probe is ever bound
