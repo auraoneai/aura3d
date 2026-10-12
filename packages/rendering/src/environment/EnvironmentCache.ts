@@ -179,6 +179,25 @@ async function fetchBytes(url: string): Promise<Uint8Array> {
  * with `ENVIRONMENT_PROBE_PENDING:fromEquirect` before fetching anything; the
  * caller keeps the neutral floor bound (see `bindPrd02EnvironmentProbe`).
  */
+/**
+ * Face size for an HDRI probe: three r185's PMREM sizing (cube = equirect
+ * width / 4, so 256 for a 1k HDRI), capped by the tier's environment size and
+ * by 256 while the GGX prefilter is CPU-only on the main thread. A 1024 face
+ * at Ultra took seconds and delayed the first draw of HDRI scenes
+ * (lighting+compiler games: ~3 s → 8-9 s, run 38182457655).
+ */
+export function hdriProbeFaceSize(equirectWidth: number, tier: AuraQualityTier): EnvironmentProbe["faceSize"] {
+  const target = Math.min(equirectWidth / 4, QUALITY_TIERS[tier]?.environmentSize ?? 256, 256);
+  return (target >= 256 ? 256 : 128) as EnvironmentProbe["faceSize"];
+}
+
+/** Resolve after two animation frames (immediately where there is no rAF, e.g. Node tests). */
+function afterFirstFrames(): Promise<void> {
+  const raf = (globalThis as { requestAnimationFrame?: (cb: () => void) => number }).requestAnimationFrame;
+  if (typeof raf !== "function") return Promise.resolve();
+  return new Promise((resolve) => raf(() => raf(() => resolve())));
+}
+
 export function defaultProbeLoader(factory: EnvironmentProbeFactory | (() => EnvironmentProbeFactory)): EnvironmentProbeLoader {
   const resolveFactory = (): EnvironmentProbeFactory => (typeof factory === "function" ? factory() : factory);
   return async (key) => {
@@ -201,10 +220,13 @@ export function defaultProbeLoader(factory: EnvironmentProbeFactory | (() => Env
     if (key.url) {
       if (isEnvironmentProbeFactoryPending(resolveFactory())) throw new Error("ENVIRONMENT_PROBE_PENDING:fromEquirect");
       const bytes = await fetchBytes(key.url);
+      // The decode + CPU GGX prefilter run on the main thread: let the first
+      // frames (drawn with the neutral floor) present before the work starts.
+      await afterFirstFrames();
       const image = decodeHdrEquirect(bytes);
       // #1153: decode yields RGB; rgba32f needs 4 floats per texel.
       const src = new Texture({ width: image.width, height: image.height, format: "rgba32f", data: hdrImageToRgba32f(image), label: `env-src-${key.url}` });
-      return resolveFactory().fromEquirect(src);
+      return resolveFactory().fromEquirect(src, { faceSize: hdriProbeFaceSize(image.width, key.tier) });
     }
     throw new Error("ENVIRONMENT_KEY_EMPTY: acquire() needs url or preset");
   };
