@@ -9,15 +9,14 @@
  *   node tools/quality-rebuild-capture/capture-examples.mjs --skip-build
  *   QRC_EXAMPLES=loader-obj,react node tools/quality-rebuild-capture/capture-examples.mjs
  *
- * Templates build through tools/agent-templates/capture-templates.mjs --build-only
- * (packed release tarballs, the create-aura3d scaffold flow); apps build with the
- * same vite wrapper as capture-games.mjs. Each example is captured at 1280x720
+ * Templates build as scaffold copies against the workspace packages (see
+ * buildTemplate); apps build with the capture-games.mjs vite wrapper. Each example is captured at 1280x720
  * DPR 1: opening (ready + 3 s), mid (after a 4 s fps window), action (input +1 s).
  * report.json records page errors, console errors, DOM error panels, draw calls
  * per frame and fps; pixel metrics are computed offline from the PNGs.
  */
 import { spawnSync } from "node:child_process";
-import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, createReadStream, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -39,20 +38,60 @@ for (const id of wanted) if (!registry.some((e) => e.id === id)) { console.error
 const selected = wanted.length ? registry.filter((e) => wanted.includes(e.id)) : registry;
 const viteBin = path.join(repoRoot, "node_modules", "vite", "bin", "vite.js");
 
-function templateWork(kind) { return path.join(workRoot, kind); }
+const buildLog = {};
 function distFor(ex) {
-  if (ex.kind === "app") return path.join(workRoot, "site", "apps", ex.dir ?? ex.id);
-  return path.join(templateWork(ex.kind), "work", ex.id, "dist");
+  if (ex.kind === "app") return path.join(workRoot, "app-sites", ex.id, "apps", ex.dir ?? ex.id);
+  return path.join(workRoot, "work", `${ex.kind}-${ex.id}`, "dist");
+}
+function run(command, args, cwd, label) {
+  const r = spawnSync(command, args, { cwd, encoding: "utf8", timeout: 20 * 60_000, maxBuffer: 64 << 20, env: { ...process.env, CI: "1", FORCE_COLOR: "0" } });
+  if (r.status === 0) return null;
+  return `${label} exited ${r.status}${r.error ? ` (${r.error.message})` : ""}\n${`${r.stdout ?? ""}\n${r.stderr ?? ""}`.trim().split("\n").slice(-30).join("\n")}`;
 }
 
-function buildTemplates(kind, ids, skipPack) {
-  if (!ids.length) return;
-  const args = [path.join(repoRoot, "tools/agent-templates/capture-templates.mjs"), "--build-only", "--templates", ids.join(","), "--out", templateWork(kind)];
-  if (kind === "root") args.push("--template-root", "templates");
-  if (skipPack) args.push("--skip-pack");
-  log(`build ${kind} templates: ${ids.join(",")}`);
-  const r = spawnSync(process.execPath, args, { cwd: repoRoot, stdio: "inherit", timeout: 90 * 60_000 });
-  if (r.status !== 0) log(`${kind} template build exited ${r.status} (per-template failures in ${path.relative(repoRoot, templateWork(kind))}/report.json)`);
+// @aura3d/* package name -> workspace dir (the repo root IS @aura3d/engine).
+const workspacePackages = new Map([["@aura3d/engine", repoRoot]]);
+for (const dir of readdirSync(path.join(repoRoot, "packages"))) {
+  const manifest = path.join(repoRoot, "packages", dir, "package.json");
+  if (existsSync(manifest)) workspacePackages.set(JSON.parse(readFileSync(manifest, "utf8")).name, path.join(repoRoot, "packages", dir));
+}
+
+// Template scaffold built against the checked-out workspace packages (their
+// dist/ from `pnpm build:raw`). The packed-tarball flow is blocked on main by
+// the @aura3d/controls <-> @aura3d/input dependency cycle in publish-all.mjs.
+// The copy lives under the repo so non-aura deps resolve from the root
+// node_modules; frameworks the root does not carry (vue, svelte, plugins) are
+// npm-installed into the scaffold.
+function buildTemplate(ex) {
+  const source = path.join(repoRoot, ex.kind === "root" ? "templates" : "packages/create-aura3d/templates", ex.id);
+  const dir = path.dirname(distFor(ex));
+  rmSync(dir, { recursive: true, force: true });
+  cpSync(source, dir, { recursive: true, filter: (src) => !/[\\/](node_modules|dist|test-results)([\\/]|$)/.test(path.relative(source, src)) });
+  const hdriSource = path.join(repoRoot, "packages/create-aura3d/hdri");
+  if (ex.kind === "packaged" && existsSync(hdriSource)) cpSync(hdriSource, path.join(dir, "public", "hdri"), { recursive: true });
+  const pkgPath = path.join(dir, "package.json");
+  const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+  const aura = [];
+  for (const field of ["dependencies", "devDependencies"]) {
+    for (const name of Object.keys(pkg[field] ?? {})) if (name.startsWith("@aura3d/")) { aura.push(name); delete pkg[field][name]; }
+  }
+  writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+  const others = [...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.devDependencies ?? {})];
+  const missing = others.filter((name) => !existsSync(path.join(repoRoot, "node_modules", name, "package.json")));
+  log(`build ${ex.kind} template ${ex.id} (aura: ${aura.join(",")}; npm: ${missing.join(",") || "none"})`);
+  if (missing.length) {
+    const err = run("npm", ["install", "--no-audit", "--no-fund", "--ignore-scripts", "--no-package-lock"], dir, "npm install");
+    if (err) return err;
+  }
+  for (const name of aura) {
+    const target = workspacePackages.get(name);
+    if (!target) return `no workspace package for ${name}`;
+    const link = path.join(dir, "node_modules", name);
+    mkdirSync(path.dirname(link), { recursive: true });
+    rmSync(link, { recursive: true, force: true });
+    symlinkSync(target, link, "dir");
+  }
+  return run("npm", ["run", "build"], dir, "npm run build");
 }
 
 function buildApp(ex) {
@@ -63,19 +102,17 @@ function buildApp(ex) {
   const configDir = path.join(workRoot, "configs");
   mkdirSync(configDir, { recursive: true });
   const configPath = path.join(configDir, `${ex.id}.vite.config.mjs`);
+  // root = repo so absolute /apps/<dir>/src/main.ts script tags resolve.
   writeFileSync(configPath, `import sourceConfig from ${JSON.stringify(sourceConfig)};
 const resolved = typeof sourceConfig === "function" ? await sourceConfig({ command: "build", mode: "production", isSsrBuild: false, isPreview: false }) : sourceConfig;
 const build = resolved.build ?? {};
 const rollupOptions = build.rollupOptions ?? {};
-export default { ...resolved, root: ${JSON.stringify(appDir)}, base: ${JSON.stringify(`/apps/${dir}/`)}, publicDir: false, logLevel: "warn",
-  build: { ...build, outDir: ${JSON.stringify(distFor(ex))}, emptyOutDir: true, sourcemap: false, reportCompressedSize: false,
+export default { ...resolved, root: ${JSON.stringify(repoRoot)}, base: "/", publicDir: false, logLevel: "warn",
+  build: { ...build, outDir: ${JSON.stringify(path.join(workRoot, "app-sites", ex.id))}, emptyOutDir: true, sourcemap: false, reportCompressedSize: false,
     rollupOptions: { ...rollupOptions, input: ${JSON.stringify(path.join(appDir, "index.html"))} } } };
 `);
   log(`build app ${ex.id}`);
-  const r = spawnSync(process.execPath, ["--max-old-space-size=6144", viteBin, "build", "--config", configPath], { cwd: repoRoot, encoding: "utf8", timeout: 20 * 60_000, maxBuffer: 64 << 20 });
-  const ok = r.status === 0 && existsSync(path.join(distFor(ex), "index.html"));
-  if (!ok) log(`build FAILED ${ex.id}\n${`${r.stdout}\n${r.stderr}`.trim().split("\n").slice(-30).join("\n")}`);
-  return ok;
+  return run(process.execPath, ["--max-old-space-size=6144", viteBin, "build", "--config", configPath], repoRoot, "vite build");
 }
 
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css", ".json": "application/json",
@@ -201,10 +238,12 @@ async function captureOne(browser, ex, url, shotsDir) {
 async function main() {
   mkdirSync(outDir, { recursive: true });
   if (!flag("--skip-build")) {
-    const ids = (k) => selected.filter((e) => e.kind === k).map((e) => e.id);
-    buildTemplates("packaged", ids("packaged"), false);
-    buildTemplates("root", ids("root"), ids("packaged").length > 0);
-    for (const ex of selected.filter((e) => e.kind === "app")) buildApp(ex);
+    for (const ex of selected) {
+      const err = ex.kind === "app" ? buildApp(ex) : buildTemplate(ex);
+      buildLog[ex.id] = err ?? "ok";
+      if (err) log(`build FAILED ${ex.id}\n${err}`);
+    }
+    writeFileSync(path.join(outDir, "build-log.json"), JSON.stringify(buildLog, null, 2));
     if (flag("--build-only")) return;
   }
   const { chromium } = await import("@playwright/test");
@@ -212,14 +251,15 @@ async function main() {
   const report = { schema: "aura3d.examples-audit/1", generatedAt: new Date().toISOString(), sha: process.env.GITHUB_SHA ?? null,
     examplesRef: process.env.QRC_EXAMPLES_REF || null, runner: process.env.RUNNER_NAME ?? null, browser: browser.version(), examples: [] };
   const persist = () => writeFileSync(path.join(outDir, "report.json"), JSON.stringify(report, null, 2) + "\n");
-  const appRoots = [path.join(workRoot, "site"), path.join(repoRoot, "public"), path.join(repoRoot, "marketing", "public")];
+  const appRoots = [path.join(repoRoot, "public"), path.join(repoRoot, "marketing", "public")];
+  const builds = existsSync(path.join(outDir, "build-log.json")) ? JSON.parse(readFileSync(path.join(outDir, "build-log.json"), "utf8")) : {};
   try {
     for (const ex of selected) {
       const dist = distFor(ex);
-      if (!existsSync(path.join(dist, "index.html"))) { report.examples.push({ id: ex.id, kind: ex.kind, error: "build produced no dist/index.html" }); persist(); continue; }
+      if (!existsSync(path.join(dist, "index.html"))) { report.examples.push({ id: ex.id, kind: ex.kind, error: "build produced no dist/index.html", build: String(builds[ex.id] ?? "").slice(0, 3000) }); persist(); continue; }
       // Root-only starters load /fixtures/... from the repo root exactly like
       // tests/browser/example-dev-server.ts serves them.
-      const roots = ex.kind === "app" ? [...appRoots, path.join(repoRoot, "apps", ex.dir ?? ex.id, "public")]
+      const roots = ex.kind === "app" ? [path.join(workRoot, "app-sites", ex.id), ...appRoots, path.join(repoRoot, "apps", ex.dir ?? ex.id, "public")]
         : ex.kind === "root" ? [dist, repoRoot, path.join(repoRoot, "public")] : [dist];
       const srv = await serve(roots, ex.kind === "app");
       const shotsDir = path.join(outDir, "shots", ex.id);
