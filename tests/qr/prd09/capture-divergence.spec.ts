@@ -86,7 +86,9 @@ test.afterAll(() => {
 });
 
 async function captureMode(page: Page, route: string, appDir: string, param: string | null, readyExpr: string | undefined) {
-  const url = `${origin}/apps/${appDir}/${param ? `?capture=${param}` : ""}`;
+  // baseline.json appDir is repo-relative ("apps/<dir>"); the built site
+  // serves /apps/<dir>/, so a raw join requested /apps/apps/<dir>/ (404).
+  const url = `${origin}/apps/${appDir.replace(/^apps\//, "")}/${param ? `?capture=${param}` : ""}`;
   await page.goto(url, { waitUntil: "domcontentloaded" });
   try {
     await page.waitForFunction(
