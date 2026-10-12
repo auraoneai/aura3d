@@ -19,6 +19,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { PROBE_INIT_SCRIPT, probeReady, probeSample } from "./gameplay-probe-page.mjs";
 import { analyseRun, summaryRow } from "./gameplay-probe-analyze.mjs";
+import { mapStack } from "./map-stack.mjs";
 
 const toolDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(toolDir, "..", "..");
@@ -35,6 +36,8 @@ const siteRoot = path.resolve(repoRoot, env("QRC_BUILD_DIR", "tools/quality-rebu
 const prodOrigin = new URL(env("QRC_BASE_URL", games.productionOrigin)).origin;
 const gpuArgs = env("QRC_GPU_ARGS", env("QR_CHROMIUM_ARGS", "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist")).split(/\s+/).filter(Boolean);
 const SAMPLE_MS = 200;
+// QRG_PROFILE=1: 2.5 s CDP CPU profile per run (top self-time functions) after the fps window.
+const profileOn = /^(1|true)$/i.test(env("QRG_PROFILE", ""));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = (...p) => process.stderr.write(`[qrg ${new Date().toISOString().slice(11, 19)}] ${p.join(" ")}\n`);
 const variantLabel = (v) => (v === DEFAULTS ? "defaults" : v.replace(DEFAULTS, "defaults"));
@@ -108,6 +111,42 @@ async function control(page, c, ms) {
   if (mode === "charge") await sleep(Math.max(0, ms - holdMs));
 }
 
+/** CDP sampling profile: top self-time functions (url:line) and GC/idle/program share. */
+async function cpuProfile(page, ms) {
+  let cdp;
+  try {
+    cdp = await page.context().newCDPSession(page);
+    await cdp.send("Profiler.enable");
+    await cdp.send("Profiler.setSamplingInterval", { interval: 500 });
+    await cdp.send("Profiler.start");
+    await sleep(ms);
+    const { profile } = await cdp.send("Profiler.stop");
+    const byId = new Map(profile.nodes.map((n) => [n.id, n]));
+    const self = new Map();
+    for (const id of profile.samples) self.set(id, (self.get(id) ?? 0) + 1);
+    const total = profile.samples.length || 1;
+    const fn = new Map();
+    for (const [id, count] of self) {
+      const cf = byId.get(id)?.callFrame;
+      if (!cf) continue;
+      const file = (cf.url || "").split("/").pop() || "(native)";
+      const key = `${cf.functionName || "(anon)"} ${file}:${cf.lineNumber + 1}:${cf.columnNumber + 1}`;
+      fn.set(key, (fn.get(key) ?? 0) + count);
+    }
+    const top = [...fn.entries()].sort((a, b) => b[1] - a[1]).slice(0, 25).map(([k, c]) => {
+      // Sourcemapped builds (sourcemap=true): append the original source position.
+      let mapped = "";
+      try { mapped = mapStack(k, path.dirname(siteRoot))[0]?.split(" -> ")[1] ?? ""; } catch { /* no map */ }
+      return `${((100 * c) / total).toFixed(1)}% ${k}${mapped && !mapped.startsWith("(") ? ` -> ${mapped}` : ""}`;
+    });
+    return { samples: total, top };
+  } catch (e) {
+    return { error: String(e?.message ?? e).slice(0, 200) };
+  } finally {
+    await cdp?.detach().catch(() => undefined);
+  }
+}
+
 async function probeGame(browser, game, variant, origin) {
   const cfg = probe.games[game.id];
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, serviceWorkers: "block" });
@@ -141,6 +180,10 @@ async function probeGame(browser, game, variant, origin) {
     const rafAt = () => page.evaluate(() => [performance.now(), window.__GPK__?.raf ?? 0]).catch(() => [0, 0]);
     const [ta, ra] = await rafAt(); await sleep(3000); const [tb, rb] = await rafAt();
     run.fpsClean = tb > ta ? +(((rb - ra) * 1000) / (tb - ta)).toFixed(1) : null;
+    run.engine = await page.evaluate(() => (globalThis.__AURA3D_LIVE_APPS__?.all?.() ?? []).map((app) => {
+      try { const d = app.diagnostics(); return { drawCalls: d.drawCalls, renderSize: d.renderSize, frameTiming: d.frameTiming ?? null, warnings: (d.warnings ?? []).length }; } catch (e) { return { error: String(e).slice(0, 120) }; }
+    })).catch(() => null);
+    if (profileOn) run.profile = await cpuProfile(page, 2500);
     const idleMs = cfg.idleMs ?? probe.idleMs; const ctlMs = probe.controlMs;
     const phases = [{ name: "idle", samples: await sampled(page, idleMs) }];
     await page.screenshot({ path: path.join(gameDir, `${game.id}__idle.jpg`), type: "jpeg", quality: 55 }).catch(() => undefined);

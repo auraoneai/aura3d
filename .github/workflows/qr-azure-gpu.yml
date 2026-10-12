@@ -143,6 +143,8 @@ jobs:
       # (games.json defaults are never prepended). Takes effect with #1120.
       QRC_FLAGS_EXACT: "true"
       PROMOTE_FLAG: ${{ inputs.promote_flag || '' }}
+      # suite=gameplay + sourcemap: sourcemapped builds and a CDP CPU profile per run.
+      QRG_PROFILE: ${{ inputs.sourcemap && '1' || '' }}
       QRG_VARIANTS: ${{ inputs.gameplay_variants || 'none;defaults;{route};{route},defaults;prod' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
