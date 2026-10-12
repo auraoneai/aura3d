@@ -234,7 +234,7 @@ registerAppExtension<"quality">({
       coarsePointer: typeof matchMedia === "function" ? matchMedia("(pointer: coarse)").matches : false,
       storage: typeof localStorage !== "undefined" ? localStorage : null
     });
-    qualityControllerUnregisters.set(controller, registerAuraQualityController(controller));
+    qualityControllerUnregisters.set(controller, registerAuraQualityController(controller, ctx.flags));
     return controller;
   },
   dispose(value) {
