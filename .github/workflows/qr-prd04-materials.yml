@@ -90,6 +90,15 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # prd02-depth-variants-glsl (#867) validates every composed depth variant
+      # with glslangValidator and fails when the binary is missing.
+      - name: Install glslang
+        run: |
+          if ! command -v glslangValidator >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq glslang-tools
+          fi
+          glslangValidator --version
       - name: "04-S4: spec-exact glTF import + Duck route (flag-on, flag-off controls)"
         # PRD-04 §16.1 S4. Named step so the row's run id cites these two files
         # directly; they also run again in the full lane vitest step below.

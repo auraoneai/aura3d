@@ -68,7 +68,7 @@ on:
         type: boolean
         default: false
       promote_flag:
-        description: "suite=promote: lane flag to score against flags-off (e.g. lighting). Captures none + flag with aura3d AND three.js; scores LPIPS/FLIP vs the three.js frame."
+        description: "suite=promote: lane flag to score against the current defaults without it (e.g. materials). Captures -flag + flag with aura3d AND three.js; scores LPIPS/FLIP vs the three.js frame."
         required: false
         default: ""
   workflow_call:
@@ -195,8 +195,18 @@ jobs:
             promote)
               test -n "$PROMOTE_FLAG" || { echo "::error::suite=promote needs promote_flag"; exit 1; }
               [[ "$PROMOTE_FLAG" =~ ^[a-z0-9][a-z0-9_.-]*$ ]] || { echo "::error::invalid promote_flag '$PROMOTE_FLAG'"; exit 1; }
+              # Baseline = the CURRENT DEFAULTS without the flag, not `none`: `none`
+              # turns every lane flag off, including the default-on ones (core,
+              # lighting, camera), so flag-vs-none scored the defaults plus the
+              # flag against all-off. `-x` sets only x off; flags.state default-on
+              # fills the rest in both arms. A sub-flag (materials.transmission)
+              # needs its parent on in both arms.
+              parent=""; [[ "$PROMOTE_FLAG" == *.* ]] && parent="${PROMOTE_FLAG%%.*},"
+              base_set="${parent}-${PROMOTE_FLAG}" flag_set="${parent}${PROMOTE_FLAG}"
+              echo "PROMOTE_BASE_ARM=${base_set//[^A-Za-z0-9_-]/_}" >> "$GITHUB_ENV"
+              echo "PROMOTE_FLAG_ARM=${flag_set//[^A-Za-z0-9_-]/_}" >> "$GITHUB_ENV"
               # Both engines: the three.js frame is the shared target both arms are scored against.
-              export QR_BENCH_ENGINES="aura3d,three" QR_BENCH_FLAG_SETS="none;$PROMOTE_FLAG"
+              export QR_BENCH_ENGINES="aura3d,three" QR_BENCH_FLAG_SETS="${base_set};${flag_set}"
               bash benchmarks/quality-rebuild/ci.sh ;;
             games)
               # Checkout is lfs:false; the games load GLB/texture blobs from
@@ -240,15 +250,16 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Promotion score (owner rule; flag-on vs flags-off against three.js)
+      - name: Promotion score (owner rule; defaults+flag vs defaults-flag against three.js)
         if: ${{ always() && inputs.suite == 'promote' }}
         run: |
           set -euo pipefail
           pip install -r tools/quality-gate/metrics/requirements.lock
           cd tools/quality-gate/metrics
           # Exit 0 only on PASS; FAIL / NO-EFFECT / unscorable fail the job.
-          arm="${PROMOTE_FLAG//[^A-Za-z0-9_-]/_}"   # same sanitising as ci.sh set dirs
-          python -m metrics.promote "$GITHUB_WORKSPACE/$QR_BENCH_OUT" "$arm" \
+          # Arm dirs come from the suite step (same sanitising as ci.sh set dirs).
+          test -n "${PROMOTE_BASE_ARM:-}" -a -n "${PROMOTE_FLAG_ARM:-}" || { echo "::error::promote arms not set by the suite step"; exit 1; }
+          python -m metrics.promote "$GITHUB_WORKSPACE/$QR_BENCH_OUT" "$PROMOTE_FLAG_ARM" --none "$PROMOTE_BASE_ARM" \
             --json "$GITHUB_WORKSPACE/$QR_BENCH_OUT/promote-$PROMOTE_FLAG.json" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: allflags-smoke evaluation (§2.5)
