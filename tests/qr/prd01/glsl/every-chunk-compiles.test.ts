@@ -116,6 +116,24 @@ describe("C-02 every registered chunk compiles (glslangValidator, GLSL ES 3.00)"
     expect(features.length).toBeGreaterThan(5);
   });
 
+  it("procedural environment (LIGHT_HEMISPHERE) compiles with and without a sampled map", () => {
+    const failures: string[] = [];
+    for (const environment of ["none", "equirect", "pmrem-cube"] as const) {
+      const record = normalizeProgramFeatures({
+        pass: "forward",
+        lighting: "lit",
+        lights: { ...LIGHT1, hemisphere: true },
+        environment,
+        maps: { baseColor: { uvSet: 0, transform: false } },
+        features: {}
+      } as Partial<ProgramFeatures>);
+      const program = generateProgramImpl(record, { flags: ALL_STRICT });
+      expect(program.fragment).toContain("a3dProceduralSpecularRadiance(reflect(-V, N)");
+      failures.push(...compileAll(`forward-hemisphere-${environment}`, record));
+    }
+    expect(failures, failures.join("\n\n")).toEqual([]);
+  });
+
   it("only KNOWN_EXCLUDED features are excluded from the generated path (list may only shrink)", () => {
     const unlisted = [...excluded].filter(([id]) => !(id in KNOWN_EXCLUDED)).map(([id, why]) => `${id}: ${why}`);
     // Stale = listed but no longer excluded (fixed) or no longer registered at all.

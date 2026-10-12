@@ -76,4 +76,38 @@ vec3 a3dAmbientDiffuse(vec3 diffuseContribution) {
   vec3 irradiance = u_environmentColor * u_environmentIntensity;
   return irradiance * BRDF_Lambert(diffuseContribution);
 }
+
+#ifdef LIGHT_HEMISPHERE
+// Procedural sky/horizon/ground environment (EnvironmentLightingOptions.proceduralMap),
+// the flag-off shader's analytic IBL. Without it, generated programs dropped the
+// whole term: scenes lit by a scene-category / parity-preset procedural map lost
+// their fill (shadowed and back-facing surfaces went black). Same blends as the
+// frozen library; distinct uniform names so the sampled map's
+// u_environmentMapIntensity stays independent.
+uniform vec3 u_a3dProceduralSkyColor;
+uniform vec3 u_a3dProceduralHorizonColor;
+uniform vec3 u_a3dProceduralGroundColor;
+uniform vec3 u_a3dProceduralSpecularColor;
+uniform float u_a3dProceduralIntensity;
+uniform float u_a3dProceduralSpecularIntensity;
+vec3 a3dProceduralDiffuseRadiance(vec3 n) {
+  float skyBlend = clamp(n.y * 0.5 + 0.5, 0.0, 1.0);
+  vec3 c = mix(u_a3dProceduralGroundColor, u_a3dProceduralSkyColor, skyBlend);
+  c = mix(c, u_a3dProceduralHorizonColor, clamp(1.0 - abs(n.y), 0.0, 1.0) * 0.55);
+  return c * u_a3dProceduralIntensity;
+}
+vec3 a3dProceduralSpecularRadiance(vec3 r, float roughness) {
+  float rough = clamp(roughness, 0.0, 1.0);
+  float band = pow(clamp(r.y * 0.5 + 0.5, 0.0, 1.0), mix(18.0, 2.0, rough));
+  float response = max(band, mix(0.04, 0.38, rough));
+  float horizonStripe = pow(clamp(1.0 - abs(r.y), 0.0, 1.0), mix(14.0, 3.0, rough));
+  float sideStripe = pow(clamp(abs(r.x), 0.0, 1.0), mix(10.0, 3.0, rough)) * smoothstep(0.0, 0.72, 1.0 - abs(r.y));
+  float overheadStripe = pow(clamp(r.y * 0.5 + 0.5, 0.0, 1.0), mix(22.0, 4.0, rough));
+  vec3 c = u_a3dProceduralSpecularColor * response
+    + u_a3dProceduralHorizonColor * horizonStripe * 0.42
+    + u_a3dProceduralSkyColor * overheadStripe * 0.28
+    + u_a3dProceduralGroundColor * sideStripe * 0.22;
+  return c * u_a3dProceduralSpecularIntensity;
+}
+#endif
 `;
