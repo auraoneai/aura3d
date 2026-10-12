@@ -36,7 +36,10 @@ function source() {
     renderItems: [
       { geometry: Geometry.litCube(1), material, modelMatrix: Float32Array.from([0.5, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0.5, 0, 0.6, 3, 9, 1]), label: "pole", castShadow: true, receiveShadow: true },
       { geometry: Geometry.litPlane(), material, modelMatrix: Float32Array.from([30, 0, 0, 0, 0, 1, 0, 0, 0, 0, 30, 0, 0, 0, 0, 1]), label: "ground", castShadow: false, receiveShadow: true },
-      { geometry: Geometry.litCube(1), material, modelMatrix: translate(0, 0.5, -4), label: "marker", castShadow: true, receiveShadow: true }
+      { geometry: Geometry.litCube(1), material, modelMatrix: translate(0, 0.5, -4), label: "marker", castShadow: true, receiveShadow: true },
+      // Off-screen behind the camera AND its sun shadow falls further behind
+      // (+z side of the sun travel is away from the view): must stay out.
+      { geometry: Geometry.litCube(1), material, modelMatrix: translate(0, 0.5, 30), label: "far-behind", castShadow: true, receiveShadow: true }
     ],
     collectedLights: [
       {
@@ -84,5 +87,8 @@ describe("02-S5: casters outside the view frustum still cast (A3D_QR_LIGHTING)",
     expect(forward.some((l) => l.startsWith("marker"))).toBe(true);
     expect(depth.some((l) => l.startsWith("pole"))).toBe(true);
     expect(depth.some((l) => l.startsWith("marker"))).toBe(true);
+    // Its shadow footprint never reaches the view: not a caster this frame.
+    expect(forward.some((l) => l.startsWith("far-behind"))).toBe(false);
+    expect(depth.some((l) => l.startsWith("far-behind"))).toBe(false);
   });
 });

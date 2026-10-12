@@ -1,6 +1,6 @@
 import type { TemporalHistory } from "./TemporalHistory";
 import { collectEnvironmentBackground, collectEnvironmentFog, collectEnvironmentLighting } from "./renderer/Background";
-import { applyRendererOwnedStaticBatching, applyRendererOwnedStaticMeshConsolidation, cullExplicitRenderItems, explicitCullingFrustum } from "./renderer/CullingBatching";
+import { applyRendererOwnedStaticBatching, applyRendererOwnedStaticMeshConsolidation, cullExplicitRenderItems, culledCastersReachingView, explicitCullingFrustum } from "./renderer/CullingBatching";
 import { rendererDeviceIsLost, subscribeRendererDeviceLost, subscribeRendererDeviceRestored } from "./renderer/DeviceLifecycle";
 import { createRendererFrameHooks, toFrameCamera } from "./renderer/FrameGraph";
 import type { FrameCamera } from "./contracts/frameGraph";
@@ -838,7 +838,10 @@ export class Renderer {
       // 02-S5: under A3D_QR_LIGHTING casters come from the pre-cull set
       // (frustum-culled casters rejoin); flag-off keeps the visible items only.
       const shadowCasterItems = rendererQrFlags().on("A3D_QR_LIGHTING")
-        ? [...items, ...collectedItems.culledShadowCasters].filter((item) => item.castShadow !== false)
+        ? [
+            ...items,
+            ...culledCastersReachingView(collectedItems.culledShadowCasters, items, collectedItems.cullingFrustum, shadowSunTravel(lights))
+          ].filter((item) => item.castShadow !== false)
         : items.filter((item) => item.castShadow !== false);
       const rendererShadowMap = this.frameStatsMonitor?.scope("shadow", () =>
         explicitShadowMap ?? this.executeRendererShadowMap({
@@ -1170,7 +1173,10 @@ export class Renderer {
       // 02-S5: under A3D_QR_LIGHTING casters come from the pre-cull set
       // (frustum-culled casters rejoin); flag-off keeps the visible items only.
       const shadowCasterItems = rendererQrFlags().on("A3D_QR_LIGHTING")
-        ? [...items, ...collectedItems.culledShadowCasters].filter((item) => item.castShadow !== false)
+        ? [
+            ...items,
+            ...culledCastersReachingView(collectedItems.culledShadowCasters, items, collectedItems.cullingFrustum, shadowSunTravel(lights))
+          ].filter((item) => item.castShadow !== false)
         : items.filter((item) => item.castShadow !== false);
       const rendererShadowMap = this.frameStatsMonitor?.scope("shadow", () =>
         explicitShadowMap ?? this.executeRendererShadowMap({
@@ -1891,7 +1897,7 @@ function collectRenderItemsWithDiagnostics(
   cameraViewProjection?: Mat4,
   camera?: Camera,
   keepCulledShadowCasters = false
-): { readonly items: readonly RenderItem[]; readonly diagnostics: RenderCollectionDiagnostics; readonly culledShadowCasters: readonly RenderItem[] } {
+): { readonly items: readonly RenderItem[]; readonly diagnostics: RenderCollectionDiagnostics; readonly culledShadowCasters: readonly RenderItem[]; readonly cullingFrustum?: Frustum } {
   const diagnostics = createRenderCollectionDiagnostics();
   // 02-S5 (A3D_QR_LIGHTING): frustum-culled items that still cast. A caster
   // outside the view (a pole behind the camera under a low sun) must reach
@@ -1905,10 +1911,12 @@ function collectRenderItemsWithDiagnostics(
   }
   if (source instanceof Scene) {
     const items = collectSceneRenderItems(source, {}, cameraViewProjection, camera, diagnostics, culledShadowCasters);
-    return { items, diagnostics, culledShadowCasters: culledShadowCasters ?? [] };
+    return { items, diagnostics, culledShadowCasters: culledShadowCasters ?? [], ...(camera ? { cullingFrustum: camera.frustum } : {}) };
   }
   const items: RenderItem[] = [];
+  let cullingFrustum: Frustum | undefined;
   if (source.scene) {
+    if (source.frustumCulling !== false && camera) cullingFrustum = camera.frustum;
     items.push(...collectSceneRenderItems(source.scene, source, cameraViewProjection, source.frustumCulling === false ? undefined : camera, diagnostics, culledShadowCasters));
   }
   const explicitItems: RenderItem[] = [];
@@ -1919,13 +1927,14 @@ function collectRenderItemsWithDiagnostics(
     explicitItems.push(...source.renderItems);
   }
   if (explicitItems.length > 0) {
-    const cullingFrustum = explicitCullingFrustum(source, cameraViewProjection, camera);
-    const visibleItems = cullExplicitRenderItems(explicitItems, cullingFrustum, diagnostics, culledShadowCasters);
+    const explicitFrustum = explicitCullingFrustum(source, cameraViewProjection, camera);
+    cullingFrustum ??= explicitFrustum;
+    const visibleItems = cullExplicitRenderItems(explicitItems, explicitFrustum, diagnostics, culledShadowCasters);
     const optimizedItems = applyRendererOwnedStaticBatching(source, applyRendererOwnedStaticMeshConsolidation(source, visibleItems));
     const projectedItems = applyViewProjection(optimizedItems, cameraViewProjection);
     items.push(...projectedItems);
   }
-  return { items, diagnostics, culledShadowCasters: culledShadowCasters ?? [] };
+  return { items, diagnostics, culledShadowCasters: culledShadowCasters ?? [], ...(cullingFrustum ? { cullingFrustum } : {}) };
 }
 function collectSceneRenderItems(
   scene: Scene,
@@ -1993,6 +2002,11 @@ function collectSceneRenderItems(
     });
   }
   return items;
+}
+/** Travel direction of the first shadow-casting directional light (02-S5). */
+function shadowSunTravel(lights: readonly CollectedLight[]): readonly [number, number, number] | undefined {
+  const sun = lights.find((light) => light.kind === "directional" && light.castsShadow);
+  return sun ? [sun.direction[0], sun.direction[1], sun.direction[2]] : undefined;
 }
 export function createRenderCollectionDiagnostics(): RenderCollectionDiagnostics {
   return {
