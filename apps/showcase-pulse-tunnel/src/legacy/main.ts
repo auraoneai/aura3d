@@ -47,6 +47,7 @@ import {
 import { createPulsePlayer } from "../gameplay/player";
 import { createPulseStyleSystem } from "../gameplay/style";
 import { createTunnelAudio } from "./tunnel-audio";
+import { PULSE_GATE_FLASH, pulseTunnelBaseHaze, pulseTunnelDownbeatFog, pulseTunnelEffectsPass } from "./effects-pass";
 import { isPulseDebugMode, setupPulseHud, updatePulseHud } from "./hud";
 
 const reducedMotion =
@@ -54,8 +55,8 @@ const reducedMotion =
 // Screenshot-only presentation mode keeps the gameplay/HUD contract intact while
 // giving visual review a clean renderer-first frame. The normal route remains
 // unchanged for players and for the interaction/evidence specs.
-const visualReviewCapture =
-  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("capture") === "review";
+// Shipped play path only: the ?capture= review lens was removed.
+const visualReviewCapture: boolean = false;
 // Candidate Meshy reactor-deck arena shell. Opt-in only via ?arena=candidate so
 // the release-validated V11 shell stays the default for players, specs, and
 // the review capture. Non-colliding presentation; lanes, chart, collisions,
@@ -211,7 +212,9 @@ const gateMaterialSpec = (kind: GateKindId, flashing: boolean): AuraMaterialSpec
     name: `pulse gate ${flashing ? "pre-flash" : "body"} ${kind}`,
     color: GATE_COLOR_BY_KIND[kind],
     emissive: GATE_COLOR_BY_KIND[kind],
-    emissiveIntensity: flashing ? 2.8 : 1.2
+    emissiveIntensity: visualReviewCapture
+      ? (flashing ? 2.8 : 1.2)
+      : (flashing ? PULSE_GATE_FLASH.flashIntensity : PULSE_GATE_FLASH.bodyIntensity)
   });
 
 const glowMaterial = material.emissive({ name: "pulse glider engine glow", color: "#a5f3fc", emissive: "#22d3ee", emissiveIntensity: 3.35 });
@@ -1467,15 +1470,19 @@ const app = createAuraApp("#app", {
           })]
         : []),
       effects.neonBloom({ intensity: visualReviewCapture ? 0.16 : reducedMotion ? 0.2 : 0.82, threshold: visualReviewCapture ? 0.84 : 0.74, maxIntensity: visualReviewCapture ? 0.42 : 0.72, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.12 }),
+      effects.colorGrade(visualReviewCapture ? { exposure: 1.05, contrast: 1.07, saturation: 1.12 } : { exposure: 1.34, contrast: 1.2, saturation: 1.45 }),
       effects.antiAlias({ mode: "fxaa" }),
-      effects.fog({ name: "pulse downbeat fog pulse", density: visualReviewCapture ? 0.009 : 0.065, color: visualReviewCapture ? "#11192a" : "#241044" })
+      // Visible effects pass (default boot; the named review lens is unchanged).
+      ...(visualReviewCapture ? [] : [...pulseTunnelEffectsPass({ reducedMotion, playerZ: PULSE_PLAYER_Z }), pulseTunnelBaseHaze()]),
+      (visualReviewCapture
+        ? effects.fog({ name: "pulse downbeat fog pulse", density: 0.009, color: "#11192a" })
+        : pulseTunnelDownbeatFog())
         .runtime(game.runtimeNode("pulse-fog-pulse", { tags: ["downbeat-fog"] })),
       // Review capture uses a deliberate three-plane lighting setup: neutral
       // front key on the player, warm terminal key, and a cooler crown/rim on
       // the deck and ribs. This is all renderer lighting—not an overlay—and
       // preserves the same world/material language in the playable route.
-      lights.directional({ name: "corridor sun", color: visualReviewCapture ? "#c0e1f2" : "#38bdf8", intensity: visualReviewCapture ? 0.88 : 1.6 }).position(-5, 10, 6),
+      lights.directional({ name: "corridor sun", color: visualReviewCapture ? "#c0e1f2" : "#38bdf8", intensity: visualReviewCapture ? 0.88 : 1.6, shadow: visualReviewCapture ? false : { cascades: 2, mapSize: 1024, filter: "pcf", maxDistance: 14 } }).position(-5, 10, 6),
       lights.directional({ name: "terminal warm edge", color: "#ffc08a", intensity: visualReviewCapture ? 0.72 : 0.34 }).position(4.5, 5.8, -3.6),
       lights.ambient({ name: "corridor ambient", color: visualReviewCapture ? "#5a537b" : "#1e1b4b", intensity: visualReviewCapture ? 0.72 : 1.2 }),
       // The V11 hulls use real dark panel materials; broad practicals keep
@@ -2440,6 +2447,15 @@ function renderWorld(dt: number): void {
     }
     const gate = gates[slot];
     if (!gate) {
+      parts.top.setVisible(false);
+      parts.bottom.setVisible(false);
+      parts.core.setVisible(false);
+      continue;
+    }
+    // Render-only near-camera cull: once a gate has cleared the player plane
+    // it is never drawn again, so it cannot sweep through the lens and flood
+    // the frame (the gameplay gate keeps moving until gates.ts culls it).
+    if (gate.z > PULSE_PLAYER_Z + PULSE_GATE_FLASH.hidePastPlayer) {
       parts.top.setVisible(false);
       parts.bottom.setVisible(false);
       parts.core.setVisible(false);
