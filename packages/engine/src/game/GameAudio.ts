@@ -165,6 +165,15 @@ export interface GameAudio<TCue extends string = string> {
   setOcclusion(cue: TCue, amount: number): GameAudioEvidence<TCue>;
   /** Route a foot-IK plant event to its surface-tagged cue. Null when no cue is registered. */
   onFootPlant(event: GameAudioFootPlant): Promise<GameAudioCueEvent<TCue> | null>;
+  /**
+   * Drive a playing cue (typically a loop: engine, wind, thrust, ambience) from
+   * game state. `volume` is linear relative to the cue's authored volume (0 =
+   * silent, 1 = authored), `rate` is a playback-rate multiplier; both glide
+   * over `rampMs` (default 60). A no-op when the cue is not playing.
+   */
+  setCueLevel(cue: TCue, level: { readonly volume?: number; readonly rate?: number }, rampMs?: number): GameAudioEvidence<TCue>;
+  /** Stop every live voice of a cue with a short fade (default 80 ms). */
+  stopCue(cue: TCue, fadeMs?: number): GameAudioEvidence<TCue>;
   /** Duck the music bus while dialogue/voice is active. */
   setDialogueActive(active: boolean): GameAudioEvidence<TCue>;
   setMuted(muted: boolean): GameAudioEvidence<TCue>;
@@ -212,6 +221,9 @@ const assetRefOf = (
 
 interface LiveVoiceHandle {
   readonly id: number;
+  /** Real engine voices report when they finished; stub handles omit it. */
+  readonly ended?: boolean;
+  setLevel?(level: { gain?: number; rate?: number }, rampMs?: number): void;
   stop(fadeMs?: number): void;
   setPosition(p: GameAudioVec3): void;
   setOcclusion(amount: number): void;
@@ -465,6 +477,16 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       suppressedCueCount += 1;
       return event;
     }
+    // A looping cue that is already playing keeps its one voice: re-cueing it
+    // (race restart, wave start, scene re-entry) used to stack another loop
+    // on top every time — the layered drones read as a permanent buzz.
+    if (definition.loop) {
+      const live = pruneEnded(cue);
+      if (live.size > 0) {
+        suppressedCueCount += 1;
+        return event;
+      }
+    }
     try {
       if (!unlocked) await audio.unlock();
       const sound = getEngine();
@@ -477,12 +499,7 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
         suppressedCueCount += 1;
         return event;
       }
-      let voices = liveVoices.get(cue);
-      if (!voices) {
-        voices = new Set();
-        liveVoices.set(cue, voices);
-      }
-      voices.add(handle);
+      pruneEnded(cue).add(handle);
       playedCueCount += 1;
       // Only actually-played cues become playing nodes — suppressed cues stay out (no silent-play claim).
       const position = spatial?.position ?? definition.position ?? listenerPosition;
@@ -495,6 +512,14 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       suppressedCueCount += 1;
     }
     return event;
+  };
+
+  /** Drop finished voices from the live set of a cue and return it. */
+  const pruneEnded = (cue: TCue): Set<LiveVoiceHandle> => {
+    const voices = liveVoices.get(cue) ?? new Set<LiveVoiceHandle>();
+    for (const v of voices) if (v.ended === true) voices.delete(v);
+    liveVoices.set(cue, voices);
+    return voices;
   };
 
   const audio: GameAudio<TCue> = {
@@ -545,6 +570,17 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       listenerUp = tuple(pose?.up, "up", true);
       listenerPosition = { x: position[0], y: position[1], z: position[2] };
       getEngine()?.setListener({ position, forward: [...listenerForward], up: [...listenerUp] });
+      return snapshot();
+    },
+    setCueLevel(cue, level, rampMs = 60) {
+      const volume = level.volume === undefined ? undefined : Math.max(0, Math.min(4, Number(level.volume) || 0));
+      const rate = level.rate === undefined ? undefined : Math.max(0.0625, Math.min(4, Number(level.rate) || 1));
+      for (const voice of pruneEnded(cue)) voice.setLevel?.({ gain: volume, rate }, rampMs);
+      return snapshot();
+    },
+    stopCue(cue, fadeMs = 80) {
+      for (const voice of pruneEnded(cue)) voice.stop(fadeMs);
+      liveVoices.delete(cue);
       return snapshot();
     },
     setOcclusion(cue, amount) {

@@ -219,6 +219,7 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
 
   const handles = new Set<LoopHandleImpl>();
   let muted = false;
+  let masterVolume = 1;
   let voicesPlayed = 0;
 
   const play = (
@@ -251,9 +252,35 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     if (allocation.dropped || !allocation.record) return null;
     const record = allocation.record;
     voicesPlayed += 1;
+    // Authored level after jitter: setLevel scales relative to it.
+    const baseGain = Math.max(1e-6, record.targetGain);
+    const baseRate = record.source.playbackRate?.value ?? 1;
     record.source.start();
     return {
       id: record.id,
+      /** True once the voice finished, was stopped, stolen or evicted. */
+      get ended() {
+        return record.ended;
+      },
+      /** Ramp this voice's gain (linear) and playback rate; loops follow game state. */
+      setLevel: (level: { gain?: number; rate?: number }, rampMs = 60) => {
+        const now = ctx.currentTime;
+        const tau = Math.max(1, rampMs) / 3000;
+        const g = (record.gain as unknown as { gain: { value: number; setTargetAtTime?(v: number, t: number, tau: number): void; cancelScheduledValues?(t: number): void } }).gain;
+        if (level.gain !== undefined) {
+          const target = clamp(level.gain, 0, 4) * baseGain;
+          if (g.setTargetAtTime) {
+            g.cancelScheduledValues?.(now);
+            g.setTargetAtTime(target, now, tau);
+          } else g.value = target;
+        }
+        const r = record.source.playbackRate;
+        if (level.rate !== undefined && r) {
+          const target = Math.max(0.0625, Math.min(4, level.rate * baseRate));
+          if (r.setTargetAtTime) r.setTargetAtTime(target, now, tau);
+          else r.value = target;
+        }
+      },
       stop: (fadeMs = 0) => {
         const g = (record.gain as unknown as { gain: { value: number; setTargetAtTime?(v: number, t: number, tau: number): void } }).gain;
         if (fadeMs > 0 && g.setTargetAtTime) {
@@ -379,7 +406,8 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
 
   const setBusVolume = (bus: GameBusId, v: number) => {
     if (bus === "master") {
-      chain.setMasterGain(v);
+      masterVolume = clamp(v, 0, 1);
+      if (!muted) chain.setMasterGain(masterVolume);
       return;
     }
     const g = busGains.get(bus) as unknown as { gain: { value: number } } | undefined;
@@ -446,7 +474,8 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     recordMaster,
     setMuted(m: boolean) {
       muted = m;
-      chain.setMasterGain(m ? 0 : 1);
+      // Unmute restores the user's master level, not unity.
+      chain.setMasterGain(m ? 0 : masterVolume);
     },
     duck,
     suspend: async () => {
