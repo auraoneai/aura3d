@@ -14,6 +14,9 @@
  * test pins the two), so the bound map is sampled exactly like the legacy
  * shader does. Emitted only when the draw has a shadow map
  * (`features.shadows.cascades > 0`). Point-light cube shadows stay legacy-only.
+ *
+ * `u_shadowMapNormalBias` (world units, three.js `shadow.normalBias`) offsets
+ * the receiver along its normal before the lookup; 0 keeps the legacy result.
  */
 
 export const SHADOW_FORWARD_FACTOR_GLSL = /* glsl */ `float a3dForwardShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) {
@@ -56,6 +59,7 @@ uniform float u_shadowMapSlopeBias;
 uniform vec2 u_shadowMapTexelSize;
 uniform float u_shadowPcfSampleCount;
 uniform vec4 u_shadowPcfSamples[32];
+uniform float u_shadowMapNormalBias;
 
 ${SHADOW_FORWARD_FACTOR_GLSL}
 
@@ -64,6 +68,7 @@ ${SHADOW_FORWARD_FACTOR_GLSL}
 // forward map, point (kind 1) and rect (> 2.5, packed z = 0) do not.
 float a3dForwardLightShadow(float kind, float castsShadow, vec3 worldPosition, vec3 normal, vec3 lightDirection) {
   if (castsShadow < 0.5 || (kind > 0.5 && kind < 1.5) || kind > 2.5) return 1.0;
-  return a3dForwardShadowFactor(worldPosition, normal, lightDirection);
+  vec3 offsetPosition = worldPosition + normalize(normal) * u_shadowMapNormalBias;
+  return a3dForwardShadowFactor(offsetPosition, normal, lightDirection);
 }
 `;

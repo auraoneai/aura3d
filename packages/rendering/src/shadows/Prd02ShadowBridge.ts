@@ -41,7 +41,10 @@ export const PRD02_SHADOW_LOOKUP_UNIFORM = "u_prd02CascadeCompare0";
 const DEFAULT_NORMAL_BIAS_TEXELS = 1.5;
 /** Constant depth bias for the legacy compare when the prd02 config says auto (0). */
 const BRIDGE_AUTO_DEPTH_BIAS = 0.001;
-const BRIDGE_SLOPE_BIAS = 1.5;
+// The receiver normal offset (C-11 normalBias) carries most of the acne
+// protection, as three's shadow.normalBias does; a 1.5 slope term on top of it
+// over-biased grazing receivers and dropped self-shadowing (prd02-15 S3).
+const BRIDGE_SLOPE_BIAS = 0.5;
 
 type SourceLike = RenderSource | Iterable<RenderItem> | unknown;
 
@@ -321,7 +324,7 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
   const fits = system.cascadeFits();
   const maps = fits.map((fit) => {
     const texture = uniforms.cascadeTextures[fit.index] ?? null;
-    return texture ? { fit, map: bridgeShadowMap(texture, fit.drawViewProjection, config) } : null;
+    return texture ? { fit, map: bridgeShadowMap(texture, fit.drawViewProjection, config, fit.texelWorld) } : null;
   });
   if (maps.length === 0 || maps.some((entry) => entry === null)) return bail(maps.length === 0 ? "no-cascade-fits" : "missing-cascade-texture");
   bridgedFrames.set(input.device, { uniforms, config, system });
@@ -342,7 +345,8 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
 function bridgeShadowMap(
   texture: NonNullable<Prd02ShadowFrameUniforms["cascadeTexture"]>,
   lightMatrix: Float32Array,
-  config: ShadowSystemConfigInput
+  config: ShadowSystemConfigInput,
+  texelWorld: number
 ): Omit<ForwardShadowMapOptions, "cascades"> {
   const texel = 1 / Math.max(1, config.mapSize);
   return {
@@ -352,6 +356,8 @@ function bridgeShadowMap(
     strength: config.strength,
     bias: config.bias > 0 ? config.bias : BRIDGE_AUTO_DEPTH_BIAS,
     slopeBias: BRIDGE_SLOPE_BIAS,
+    // C-11: `normalBias` is in shadow texels (1.5 × texel world size).
+    normalBias: Math.max(0, config.normalBias) * texelWorld,
     texelSize: [texel, texel],
     filterKernel: config.filter === "hard"
       ? createShadowFilterKernel({ filter: "none" })

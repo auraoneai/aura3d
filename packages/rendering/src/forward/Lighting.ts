@@ -77,6 +77,7 @@ export function applyForwardShadowMapUniforms(
     uniforms.set("u_shadowMapTexelSize", [1, 1]);
     uniforms.set("u_shadowPcfSampleCount", 1);
     uniforms.set("u_shadowPcfSamples", new Float32Array(MAX_FORWARD_SHADOW_PCF_SAMPLES * 4));
+    if (shader.reflection.uniforms.has("u_shadowMapNormalBias")) uniforms.set("u_shadowMapNormalBias", 0);
     return;
   }
   const validation = shadowMap.texture.validate();
@@ -111,6 +112,13 @@ export function applyForwardShadowMapUniforms(
       slopeBias
     });
   }
+  const normalBias = shadowMap.normalBias ?? 0;
+  if (!Number.isFinite(normalBias) || normalBias < 0) {
+    throw new RenderDeviceError("Forward shadow-map normalBias must be finite and non-negative", "FORWARD_SHADOW_MAP_CONTRACT", {
+      label: item.label,
+      normalBias
+    });
+  }
   if (texelSize.length !== 2 || !texelSize.every((value) => Number.isFinite(value) && value > 0)) {
     throw new RenderDeviceError("Forward shadow-map texelSize must contain two finite positive values", "FORWARD_SHADOW_MAP_CONTRACT", {
       label: item.label,
@@ -126,6 +134,7 @@ export function applyForwardShadowMapUniforms(
   uniforms.set("u_shadowMapStrength", shadowed ? strength : 0);
   uniforms.set("u_shadowMapBias", bias);
   uniforms.set("u_shadowMapSlopeBias", slopeBias);
+  if (shader.reflection.uniforms.has("u_shadowMapNormalBias")) uniforms.set("u_shadowMapNormalBias", normalBias);
   uniforms.set("u_shadowMapTexelSize", texelSize);
   uniforms.set("u_shadowPcfSampleCount", filterKernel.samples.length);
   uniforms.set("u_shadowPcfSamples", pcfSamples);

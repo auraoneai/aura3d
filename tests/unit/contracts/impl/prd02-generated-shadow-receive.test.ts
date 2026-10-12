@@ -49,7 +49,7 @@ function tokens(glsl: string): string {
 describe("generated forward program: shadow receive (#1225)", () => {
   it("a draw with a shadow map declares the forward shadow uniforms and scales the caster's radiance", () => {
     const out = gen({ lighting: "lit", lights: ONE_DIR, shadows: SHADOWED });
-    for (const name of ["u_shadowMapTexture", "u_shadowMapMatrix", "u_shadowMapEnabled", "u_shadowMapStrength", "u_shadowPcfSamples"]) {
+    for (const name of ["u_shadowMapTexture", "u_shadowMapMatrix", "u_shadowMapEnabled", "u_shadowMapStrength", "u_shadowPcfSamples", "u_shadowMapNormalBias"]) {
       expect(out.fragment).toContain(name);
     }
     expect(out.fragment).toMatch(/radiance \*= a3dForwardLightShadow\(u_lightData\[i \* 6 \+ 2\]\.w, u_lightData\[i \* 6 \+ 3\]\.z/);
