@@ -43,6 +43,11 @@ function* srcFiles(root: string): Generator<string> {
   }
 }
 
+/** Drop comment-only lines (`//`, `/*`, JSDoc `*` continuations); code lines are kept whole. */
+export function stripComments(text: string): string {
+  return text.replace(/^\s*(?:\/\/|\/\*|\*).*$/gm, "");
+}
+
 function exists(p: string): boolean {
   try { statSync(p); return true; } catch { return false; }
 }
@@ -55,7 +60,9 @@ export function checkSingleRenderer(root: string): GateFinding[] {
     if (DEVICE_OWNER_SUFFIXES.some((s) => file === s)) continue;
     const entry = fileAllowed(allowlist, RULE, file);
     if (entry && !isExpired(entry)) continue;
-    const text = readFileSync(path, "utf8");
+    // Comments are documentation, not GPU-context calls (e.g. a JSDoc line
+    // naming `canvas.getContext("webgl2", ...)`); strip them before matching.
+    const text = stripComments(readFileSync(path, "utf8"));
     const hits: string[] = [];
     for (const m of text.matchAll(GET_CONTEXT_RE)) hits.push(`getContext("${m[1]}")`);
     for (const m of text.matchAll(NEW_DEVICE_RE)) hits.push(`new ${m[1]}`);

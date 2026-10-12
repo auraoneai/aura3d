@@ -50,6 +50,10 @@ export function checkGlslLocation(root: string): GateFinding[] {
   for (const path of srcFiles(root)) {
     const file = relative(root, path);
     if (ALLOWED_PREFIXES.some((p) => file.startsWith(p))) continue;
+    // PRD-15 §6.12 / T4.9: `shaders/**` is a chunk location wherever a lane
+    // keeps its shader directory (vfx/shaders, atmosphere/shaders,
+    // world/terrain/shaders, ...), not only packages/rendering/src/shaders/.
+    if (file.startsWith("packages/rendering/src/") && file.split(/[\\/]/).includes("shaders")) continue;
     const entry = fileAllowed(allowlist, RULE, file);
     if (entry && !isExpired(entry)) continue;
     const text = readFileSync(path, "utf8");
