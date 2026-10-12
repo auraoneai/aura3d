@@ -44,10 +44,10 @@ import { createPrd02ProbesContributor } from "../probes/Prd02ProbesContributor.j
 import { ensurePrd02DepthFeatures } from "../shadows/Prd02DepthShaderLibrary.js";
 import { PRD02_SHADOW_FILTER_FEATURE } from "../shadows/Prd02ShadowFilter.js";
 
-registerFrameContributor(createPrd02ShadowsContributor());
-registerFrameContributor(createPrd02ContactShadowsContributor());
-registerFrameContributor(createPrd02ProbesContributor());
-ensurePrd02DepthFeatures();
+// EXP registerFrameContributor(createPrd02ShadowsContributor());
+// EXP registerFrameContributor(createPrd02ContactShadowsContributor());
+// EXP registerFrameContributor(createPrd02ProbesContributor());
+// EXP ensurePrd02DepthFeatures();
 // 02-T1945: tier shadow filter → A3D_SHADOW_FILTER for the lookup chunk.
 registerShaderFeature(PRD02_SHADOW_FILTER_FEATURE);
 
