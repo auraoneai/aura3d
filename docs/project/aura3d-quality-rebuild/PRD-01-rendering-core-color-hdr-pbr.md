@@ -328,11 +328,11 @@ All generated programs use one `brdf` chunk:
 | `opaque` | disabled | disabled | true | opaque |
 | `alpha` | ADD / SRC_ALPHA / ONE_MINUS_SRC_ALPHA | ADD / ONE / ONE_MINUS_SRC_ALPHA | false | transparent, back-to-front |
 | `premultiplied` | ADD / ONE / ONE_MINUS_SRC_ALPHA | ADD / ONE / ONE_MINUS_SRC_ALPHA | false | transparent, back-to-front |
-| `additive` | ADD / SRC_ALPHA / ONE | ADD / ZERO / ONE | false | transparent (order-independent) |
-| `multiply` | ADD / DST_COLOR / ONE_MINUS_SRC_ALPHA | ADD / ZERO / ONE | false | transparent |
+| `additive` | ADD / SRC_ALPHA / ONE | ADD / ONE / ONE | false | transparent (order-independent) |
+| `multiply` | ADD / DST_COLOR / ONE_MINUS_SRC_ALPHA | ADD / ONE / ONE | false | transparent |
 | `custom` | user-specified | user-specified | user | user |
 
-Additive and premultiplied draws accumulate into the HDR target, so additive emissive VFX adds energy that bloom (lane 03, C-13) can isolate. Alpha writes keep the canvas opaque (`alpha: false` context). `WebGL2StateCache` gains `blendFuncSeparate` and `blendEquationSeparate` dedupe. Contract form (C-04): `RenderCommandState.blendMode?` and `depthCompareV2?` are the PR 0a optional fields and win over the legacy `blend: boolean` / `depthCompare` when present; `resolveBlendMode` maps the legacy boolean (`true` → `alpha`). Lane 03's `(srcRGB, dstRGB, ZERO, ONE)` indirect-fraction blend (request Q-01-1 from lane 03) is a `custom` mode and needs no new member.
+Additive and premultiplied draws accumulate into the HDR target, so additive emissive VFX adds energy that bloom (lane 03, C-13) can isolate. Alpha writes keep the canvas opaque (`alpha: false` context). Additive and multiply accumulate alpha (ADD / ONE / ONE) so they mark C-05 output coverage: under `A3D_QR_CORE_OUTPUT` the HDR target clears with alpha 0 and `OutputPass` passes the untouched clear through un-tone-mapped, as three r185 does, while an additive quad over the clear is tone-mapped. `WebGL2StateCache` gains `blendFuncSeparate` and `blendEquationSeparate` dedupe. Contract form (C-04): `RenderCommandState.blendMode?` and `depthCompareV2?` are the PR 0a optional fields and win over the legacy `blend: boolean` / `depthCompare` when present; `resolveBlendMode` maps the legacy boolean (`true` → `alpha`). Lane 03's `(srcRGB, dstRGB, ZERO, ONE)` indirect-fraction blend (request Q-01-1 from lane 03) is a `custom` mode and needs no new member.
 
 ### 6.9 Resolution policy and governor
 
