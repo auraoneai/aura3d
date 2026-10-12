@@ -41,7 +41,7 @@ import type { RenderItem } from "../ForwardPass";
 import type { Texture } from "../Texture";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { rendererQrFlags } from "../renderer/FrameGraph";
-import { beginPostStageTrace, recordPostSkipped, recordPostStage } from "../renderer/postSkipped";
+import { beginPostStageTrace, markTaaHistoryWritten, recordPostSkipped, recordPostStage } from "../renderer/postSkipped";
 import { PostResources } from "./PostResources";
 import { QUALITY_TIERS } from "../contracts/quality";
 import {
@@ -814,6 +814,7 @@ export function runV2HdrStages(
     const taa = (pipeline.taa ?? {}) as Partial<TaaOptions>;
     const taaProg = program(state, gl, "taa-resolve", TAA_RESOLVE_GLSL);
     const resolved = temporal.historyOutput;
+    markTaaHistoryWritten();
     draw(host, state, taaProg, asGlTarget(resolved), [
       asGlTarget(hdr).colorHandle,
       asGlTarget(temporal.history).colorHandle,

@@ -33,6 +33,22 @@ export function postStagesRan(): readonly string[] {
   return [...postStagesRanList];
 }
 
+/**
+ * PRD-03 §8.6: set by S5 when it resolved into the TAA history target this
+ * frame; the Renderer consumes it before promoting the history ping-pong.
+ */
+let taaHistoryWritten = false;
+
+export function markTaaHistoryWritten(): void {
+  taaHistoryWritten = true;
+}
+
+export function consumeTaaHistoryWritten(): boolean {
+  const written = taaHistoryWritten;
+  taaHistoryWritten = false;
+  return written;
+}
+
 /** Test hook — clears the §6.9 skip registry. */
 export function resetPostSkipped(): void {
   postSkippedReasonsSet.clear();

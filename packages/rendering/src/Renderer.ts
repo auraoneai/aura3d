@@ -44,6 +44,7 @@ import { selectShaderFeatureBits } from "./program/FeatureSelect";
 import type { ProgramFeatures } from "./contracts/program";
 import { collectWarmupFeatures, ProgramWarmup, type WarmupInput } from "./program/ProgramWarmup";
 import { PRD03_EXPOSURE, rendererQrFlags, setRendererQrFlags, withRendererQrFlags } from "./renderer/FrameGraph";
+import { consumeTaaHistoryWritten } from "./renderer/postSkipped";
 import { qrCoreGeneratorOn, qrCoreOutputOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { resolveCoreOutputPostRoute, withCoreOutputOff, type CoreOutputPostSkipped } from "./renderer/coreOutputPostRoute";
 import { forwardPassFeatureAxes, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
@@ -712,10 +713,12 @@ export class Renderer {
    * When a frame was served by another chain (v2 modules still loading, an
    * unfusable pass list), the legacy native TAA wrote its own bytes (alpha =
    * depth, presentation-tuned) into the history target; promoting that seeded
-   * the v2 resolve with garbage. Such frames reset the history instead.
+   * the v2 resolve with garbage. Such frames — and TAA frames on which S5
+   * did not resolve (`markTaaHistoryWritten`) — reset the history instead.
    */
-  private commitTemporalHistory(): void {
-    if (rendererQrFlags(this.device).on("A3D_QR_POST") && postGraphV2LastOutcome() !== "v2") {
+  private commitTemporalHistory(taa: boolean): void {
+    const written = consumeTaaHistoryWritten();
+    if (rendererQrFlags(this.device).on("A3D_QR_POST") && (postGraphV2LastOutcome() !== "v2" || (taa && !written))) {
       this.temporalHistory.reset();
       return;
     }
@@ -1039,7 +1042,7 @@ export class Renderer {
           frameHooks.runPhase("post-hdr", items, postprocess !== undefined);
           this.executePostprocess(postprocess!, ownedTargets, explicitRenderTarget);
         });
-        if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.commitTemporalHistory();
+        if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.commitTemporalHistory(Boolean(postprocess.taa));
       } else if (qrOutput) {
         this.scopePost(() => frameHooks.runPhase("post-hdr", items, true));
         this.executeOutputPass(frameHooks, items, ownedTargets[0] ?? null, explicitRenderTarget);
@@ -1383,7 +1386,7 @@ export class Renderer {
           await frameHooks.runPhaseAsync("post-hdr", items, postprocess !== undefined);
           await this.executePostprocessAsync(postprocess!, ownedTargets, explicitRenderTarget);
         });
-        if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.commitTemporalHistory();
+        if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.commitTemporalHistory(Boolean(postprocess.taa));
       } else if (qrOutput) {
         await this.scopePost(() => frameHooks.runPhaseAsync("post-hdr", items, true));
         this.executeOutputPass(frameHooks, items, ownedTargets[0] ?? null, explicitRenderTarget);
