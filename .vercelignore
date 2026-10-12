@@ -21,10 +21,6 @@ tests/
 test-results/
 playwright-report/
 benchmark/
-benchmarks/*
-!benchmarks/quality-rebuild/
-benchmarks/quality-rebuild/*
-!benchmarks/quality-rebuild/shared/
 archive/
 downloads/
 tmp/
