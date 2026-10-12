@@ -153,6 +153,9 @@ export function createProductionRuntimePostprocess(
         // 1..4 so common authored values such as 0.22/0.38 do not all collapse
         // to a one-pixel blur after rounding.
         radius: resolveNativeBloomRadius(authoredBloom?.radius),
+        // §6.6 flag-on: the normalised 0..1 halo spread drives the v2 pyramid's
+        // per-mip weights (legacy pixel kernels above 1 saturate at 1).
+        ...(postFlagOn ? { spread: clampNumber(authoredBloom?.radius ?? 0.38, 0, 1) } : {}),
         ...(authoredBloom?.quality !== undefined ? { quality: authoredBloom.quality } : {}),
         ...(authoredBloom?.softKnee !== undefined ? { softKnee: authoredBloom.softKnee } : {}),
         ...(authoredBloom?.shoulder !== undefined ? { shoulder: authoredBloom.shoulder } : {})

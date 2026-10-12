@@ -5,7 +5,7 @@ import { RenderDeviceError, resolveGpuTargetOwner, type GpuTargetInventoryEntry,
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { temporalAccumulationWeight } from "../TemporalMath";
 import { WebGL2RenderTarget, type WebGL2BloomDiagnostics } from "../WebGL2Device";
-import { normalizeBloomQualityPreset, resolveBloomPyramidBlurRadii, resolveBloomPyramidPlan, resolveBloomPyramidResponseGain, type BloomPyramidPlan, type BloomQualityPreset } from "../postprocess/NativeBloomPyramid";
+import { normalizeBloomQualityPreset, resolveBloomPyramidBlurRadii, resolveBloomPyramidPlan, resolveBloomPyramidResponseGain, resolveBloomPyramidV2Response, type BloomPyramidPlan, type BloomQualityPreset } from "../postprocess/NativeBloomPyramid";
 import { BLOOM_BRIGHT_LUT_HEIGHT, BLOOM_BRIGHT_LUT_WIDTH, BLOOM_COMPOSITE_LUT_SIZE, OUTLINE_BLEND_LUT_WIDTH, OUTLINE_LIMB_RADIX, createBloomBrightThresholdLut, createBloomCompositeLut, createOutlineBlendLut, createOutlineGradientBound } from "../postprocess/NativeLdrEffectLuts";
 import type { WebGL2TextureUnit0Snapshot, WebGL2TextureUnitBindingSnapshot } from "./ContextLifecycle";
 import type { WebGL2DeviceHost } from "./DeviceHost";
@@ -32,6 +32,12 @@ export interface NativeBloomOptions {
    * Absent flag-off: the legacy full-colour gate and response heuristic.
    */
   readonly excess?: true;
+  /**
+   * PRD-03 §6.6 (flag-on only): normalised 0..1 halo spread (the authored
+   * bloom `radius`); moves per-mip weight from fine to wide mips
+   * (`resolveBloomPyramidV2Response`). Absent flag-off.
+   */
+  readonly spread?: number;
 }
 
 export interface NativeDepthOfFieldOptions {
@@ -867,7 +873,10 @@ export class WebGL2LegacyPostPipeline {
   ): WebGLTexture {
     const plan = resources.plan;
     const mipCount = plan.mips.length;
-    const blurRadii = resolveBloomPyramidBlurRadii(plan, options.radius);
+    // Flag-on (§6.6): fixed widening kernels + spread-weighted mips; flag-off
+    // keeps the radius-scaled kernels and the legacy preset weights.
+    const v2Response = options.excess === true ? resolveBloomPyramidV2Response(plan, options.spread ?? 0.7) : undefined;
+    const blurRadii = v2Response ? v2Response.blurRadii : resolveBloomPyramidBlurRadii(plan, options.radius);
     const downsampleProgram = this.ensureBloomDownsampleProgram();
     const brightProgram = this.ensureBloomBrightExtractProgram();
     const blurProgram = this.ensureBloomBlurProgram();
@@ -983,7 +992,7 @@ export class WebGL2LegacyPostPipeline {
 
     // Accumulate smallest-to-largest, ping-ponging between the two
     // accumulators (a pass must never sample its own bound target).
-    const weights = plan.weights;
+    const weights = v2Response ? v2Response.weights : plan.weights;
     let readAccumulator = { texture: resources.accumulatorTextureA, framebuffer: resources.accumulatorFramebufferA };
     let writeAccumulator = { texture: resources.accumulatorTextureB, framebuffer: resources.accumulatorFramebufferB };
     // Clear both accumulators; the seed reads the cleared sibling, never the
@@ -1612,7 +1621,8 @@ void main() {
   float coefficient = 0.39894 / sigma;
   vec4 sum = sourcePixel(pixel) * coefficient;
   float weightSum = coefficient;
-  for (int offset = 1; offset <= 16; offset += 1) {
+  // 24 covers the flag-on §6.6 kernels (≤ 22); flag-off radii stay ≤ 16.
+  for (int offset = 1; offset <= 24; offset += 1) {
     if (offset > u_radius) continue;
     float distance = float(offset);
     float weight = coefficient * exp(-0.5 * distance * distance / (sigma * sigma));
@@ -2500,7 +2510,11 @@ export function normalizeNativeBloomOptions(options: Readonly<Record<string, unk
   } catch {
     throw new RenderDeviceError("Bloom quality must be one of performance|balanced|cinematic.", "INVALID_POSTPROCESS_OPTIONS", { quality: options.quality });
   }
-  return { threshold, intensity, radius, quality, softKnee, shoulder, ...(v2 ? { excess: true as const } : {}) };
+  const spread = bloomNumberOption(options, "spread", 0.7);
+  if (v2 && (!(spread >= 0) || spread > 1)) {
+    throw new RenderDeviceError("Bloom spread must be finite and in [0, 1].", "INVALID_POSTPROCESS_OPTIONS", { spread });
+  }
+  return { threshold, intensity, radius, quality, softKnee, shoulder, ...(v2 ? { excess: true as const, spread } : {}) };
 }
 
 function normalizeNativeDepthOfFieldOptions(options: Readonly<Record<string, unknown>>): NativeDepthOfFieldOptions {

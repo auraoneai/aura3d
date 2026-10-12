@@ -29,6 +29,11 @@ export interface BloomOptions {
    * (threshold [0, 64], knee [0, 1]). Never authored by callers.
    */
   readonly v2?: true;
+  /**
+   * PRD-03 §6.6 (flag-on, additive): normalised 0..1 halo spread for the v2
+   * native pyramid weights. Ignored by the legacy chain and CPU kernels.
+   */
+  readonly spread?: number;
 }
 
 export interface FXAAOptions {

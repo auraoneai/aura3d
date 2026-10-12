@@ -692,6 +692,9 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
       environment: renderer?.environment,
       shadows: renderer?.shadows,
       bloom: renderer?.bloom,
+      // C-31 "post" section (flag A3D_QR_POST): resolved AA mode, executed
+      // chain and skipped stages — evidence for promote-run triage.
+      post: (diagnostics as unknown as { post?: unknown }).post ?? null,
       assets: diagnostics.assets.map((asset) => ({ id: asset.id, status: asset.status }))
     }
   };
