@@ -145,8 +145,8 @@ function buildCone(spec: BeamDrawSpec): BuiltGeometry {
     // — 0.175 is the mean of the noise band (the low-frequency noise term is
     // not baked per vertex). `softness` widens the axial tail (axial^(2·(1−s/2))).
     // The old pow(1−t, 0.6) peaked at full alpha and drew a near-opaque cone.
-    const axial = 1 - t;
-    const alpha = Math.pow(axial, 2 * (1 - Math.min(softness, 0.95) * 0.5)) * 0.175;
+    const along = 1 - t;
+    const alpha = Math.pow(along, 2 * (1 - Math.min(softness, 0.95) * 0.5)) * 0.175;
     const c: AuraVec4 = [spec.color[0] * spec.intensity, spec.color[1] * spec.intensity, spec.color[2] * spec.intensity, alpha];
     const row: number[] = [];
     for (let j = 0; j <= radial; j++) {

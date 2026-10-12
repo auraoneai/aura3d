@@ -178,6 +178,19 @@ export class RendererFrameHooks {
     return this.blackboard.get(key) as T | undefined;
   }
 
+  /**
+   * §6.2.7: publish the frame's forward output encoding as
+   * `"prd01.outputColorSpace"` — "linear" when the frame renders into an HDR
+   * target that a later pass encodes (postprocess chain or OutputPass), else
+   * the legacy in-shader "srgb" encode. Lane passes (particles, beams,
+   * ribbons) read it through `resolveOutputColorSpace`; nothing published it,
+   * so they sRGB/filmic-encoded into the linear HDR target and were encoded a
+   * second time downstream (washed-out, near-white particles).
+   */
+  setOutputColorSpace(space: "linear" | "srgb"): void {
+    this.blackboard.set("prd01.outputColorSpace", space);
+  }
+
   private context(items: readonly RenderItem[]): FrameContributorContext {
     const depthTexture = this.forwardTarget?.depthTexture ?? null;
     if (this.forwardTarget) {
