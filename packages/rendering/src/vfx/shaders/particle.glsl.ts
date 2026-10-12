@@ -30,7 +30,12 @@ in vec4 a_color;
 in vec4 a_rotFrameMisc;
 
 uniform mat4 u_view;
-uniform mat4 u_projection;
+// Projection goes through the renderer's view-projection (the matrix every
+// other lane-07 pass and the forward pass use). FrameCamera.projectionMatrix
+// is the camera object's own matrix and falls back to identity when the
+// renderer resolves a non-Camera CameraLike — particles then rendered
+// unprojected across the frame (promote runs 38196483050 / 38200947584).
+uniform mat4 u_viewProjection;
 uniform vec4 u_atlasRect;
 uniform vec2 u_grid;
 
@@ -45,7 +50,9 @@ void main() {
   vec3 P = a_posSize.xyz;
   float size = a_posSize.w;
   float rot = a_rotFrameMisc.x;
-  vec4 viewPos = u_view * vec4(P, 1.0);
+  // Camera right/up in world space = rows 0/1 of the view rotation.
+  vec3 camRight = vec3(u_view[0][0], u_view[1][0], u_view[2][0]);
+  vec3 camUp = vec3(u_view[0][1], u_view[1][1], u_view[2][1]);
   // Billboard basis in view space: +x right, +y up. STRETCH re-aims the up axis
   // at the view-space velocity direction and lengthens it by speed.
   vec2 up2 = vec2(0.0, 1.0);
@@ -62,9 +69,11 @@ void main() {
   float c = cos(rot);
   float s = sin(rot);
   vec2 k = vec2(c * a_corner.x - s * a_corner.y, s * a_corner.x + c * a_corner.y);
-  viewPos.xy += right2 * (k.x * size * 0.5) + up2 * (k.y * size * 0.5 * stretch);
-  v_viewZ = -viewPos.z;
-  gl_Position = u_projection * viewPos;
+  vec2 off = right2 * (k.x * size * 0.5) + up2 * (k.y * size * 0.5 * stretch);
+  vec3 world = P + camRight * off.x + camUp * off.y;
+  gl_Position = u_viewProjection * vec4(world, 1.0);
+  // Perspective clip w = view-space distance along -Z.
+  v_viewZ = gl_Position.w;
   float frames = max(u_grid.x * u_grid.y, 1.0);
   float f = clamp(a_rotFrameMisc.y, 0.0, frames - 1.0);
   float f0 = floor(f);
@@ -130,7 +139,11 @@ float a3dSceneViewZ(float depth) {
 void main() {
 #if PROCEDURAL_SOFT_DOT
   vec2 q = v_uv0 * 2.0 - 1.0;
-  vec4 t = vec4(1.0, 1.0, 1.0, smoothstep(1.0, 0.62, dot(q, q)));
+  // Premultiplied like the atlas path (rgb is multiplied by t.rgb below, not
+  // t.a): rgb = 1 drew every sprite as a full-intensity square under additive
+  // and premultiplied-over blending instead of a disc.
+  float dotA = smoothstep(1.0, 0.62, dot(q, q));
+  vec4 t = vec4(vec3(dotA), dotA);
 #else
   vec4 t = texture(u_atlas, v_uv0);
 #if FRAME_BLEND

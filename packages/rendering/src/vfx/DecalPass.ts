@@ -25,6 +25,47 @@ export const DECAL_VERTEX_FORMAT = new VertexFormat(
   DECAL_VERTEX_FLOATS * 4
 );
 
+/** One punctual light for the decal BRDF (three.js MeshStandardMaterial parity). */
+export interface DecalLight {
+  readonly kind: "directional" | "point";
+  /** directional: unit vector TOWARD the light; point: world position. */
+  readonly vector: readonly [number, number, number];
+  /** colour × intensity (linear). */
+  readonly radiance: readonly [number, number, number];
+  /** point range cutoff (0 = none). */
+  readonly range?: number;
+}
+
+/** Per-frame scene lighting the decals shade with — the same lights as the surface below. */
+export interface DecalLighting {
+  readonly lights: readonly DecalLight[];
+  /** Ambient colour × intensity; the shader applies BRDF_Lambert (1/π). */
+  readonly ambient: readonly [number, number, number];
+}
+
+// 5, not 4: the WebGL2 binder uploads any 16-float array as a mat4
+// (uniformMatrix4fv), so a vec4[4] array raised GL_INVALID_OPERATION (0x502).
+export const DECAL_MAX_LIGHTS = 5;
+
+/** Pack ≤4 lights into the u_lightVector / u_lightRadiance arrays. */
+export function packDecalLighting(lighting: DecalLighting): { vector: Float32Array; radiance: Float32Array; count: number } {
+  const vector = new Float32Array(DECAL_MAX_LIGHTS * 4);
+  const radiance = new Float32Array(DECAL_MAX_LIGHTS * 4);
+  const count = Math.min(DECAL_MAX_LIGHTS, lighting.lights.length);
+  for (let i = 0; i < count; i++) {
+    const light = lighting.lights[i]!;
+    vector.set([light.vector[0], light.vector[1], light.vector[2], light.kind === "point" ? 1 : 0], i * 4);
+    radiance.set([light.radiance[0], light.radiance[1], light.radiance[2], light.range ?? 0], i * 4);
+  }
+  return { vector, radiance, count };
+}
+
+/** Fallback when no scene lighting is published: one soft key + dim ambient. */
+const DEFAULT_DECAL_LIGHTING: DecalLighting = {
+  lights: [{ kind: "directional", vector: [0.5, 0.8, 0.3], radiance: [1, 1, 1] }],
+  ambient: [0.3, 0.3, 0.33]
+};
+
 /** Optional texture lookup for page keys — the engine resolves URLs/pages. */
 export type DecalTextureResolver = (pageKey: string) => Texture | null;
 
@@ -34,6 +75,8 @@ export interface DecalPassOptions {
   readonly sunDirection?: readonly [number, number, number];
   readonly sunColor?: readonly [number, number, number];
   readonly roughness?: number;
+  /** Scene lights for the decal BRDF; null/absent → DEFAULT_DECAL_LIGHTING. */
+  readonly lighting?: (ctx: FrameContributorContext) => DecalLighting | null;
   readonly fog?: boolean;
   /** §8.4 packed uniforms when `fog` is set (from the prd07.fog blackboard). */
   readonly fogUniforms?: (ctx: FrameContributorContext) => Map<string, UniformValue> | null;
@@ -81,14 +124,19 @@ export class DecalPass {
         `prd07.decals: multiply blend emulated as alpha-over (black at 1−luminance) for page "${geometry.pageKey}" under the C-04 stub`
       );
     }
-    const sh9 = new Float32Array(36);
-    sh9[0] = 0.5; sh9[1] = 0.5; sh9[2] = 0.55; sh9[3] = 1;
+    const sceneLighting = this.options.lighting?.(ctx) ?? DEFAULT_DECAL_LIGHTING;
+    const lighting = packDecalLighting(sceneLighting);
+    const ambient = sceneLighting.ambient;
     const uniforms = new Map<string, UniformValue>([
       ["u_viewProjection", ctx.camera?.viewProjectionMatrix ?? IDENTITY_MAT4],
+      // Fog-chunk inscatter inputs (the decal BRDF reads u_light* below).
       ["u_sunDirection", [...(this.options.sunDirection ?? [0.5, 0.8, 0.3])]],
       ["u_sunColor", [...(this.options.sunColor ?? [1, 1, 1])]],
       ["u_roughness", this.options.roughness ?? 0.5],
-      ["u_sh9", sh9],
+      ["u_lightVector", lighting.vector],
+      ["u_lightRadiance", lighting.radiance],
+      ["u_lightCount", lighting.count],
+      ["u_ambientIrradiance", [ambient[0], ambient[1], ambient[2]]],
       ["u_cameraPosition", [...(ctx.camera?.position ?? [0, 0, 0])]]
     ]);
     if (texture) uniforms.set("u_albedo", new TextureBinding({ name: "u_albedo", texture }));

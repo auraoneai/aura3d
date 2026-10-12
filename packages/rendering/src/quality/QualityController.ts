@@ -20,6 +20,7 @@ import type {
   AuraTierDecision
 } from "../contracts/quality";
 import { QUALITY_TIERS, resolveTierSettings } from "../contracts/quality";
+import { bindLiveQualityTier } from "./liveTier";
 import {
   TierResolver,
   calibrateTierDecision,
@@ -261,9 +262,14 @@ export class AuraQuality implements AuraQualityController {
 const liveControllers = new Set<AuraQuality>();
 const controllerDevices = new WeakMap<AuraQuality, unknown>();
 
-export function registerAuraQualityController(controller: AuraQuality): () => void {
+export function registerAuraQualityController(controller: AuraQuality, flags?: object): () => void {
   liveControllers.add(controller);
-  return () => { liveControllers.delete(controller); };
+  // PRD 11 pixel wiring: the renderer reads this app's live tier per frame.
+  const unbind = flags ? bindLiveQualityTier(flags, controller) : undefined;
+  return () => {
+    liveControllers.delete(controller);
+    unbind?.();
+  };
 }
 
 /**

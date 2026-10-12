@@ -38,6 +38,7 @@ import { frameStatsSlot, type FrameStatsLike } from "./contracts/device";
 import { resolveCanvasPixelRatio, watchDevicePixelRatio, type AuraResolutionOptions } from "./renderer/PixelRatio";
 import type { AuraQualityTier, AuraQualityTierSettings } from "./contracts/quality";
 import { QUALITY_TIERS } from "./contracts/quality";
+import { prd11LiveQualityTier, type LiveQualityTierSource } from "./quality/liveTier";
 import { MaterialInstance } from "./MaterialInstance";
 import { featuresForGeometry, materialRoutesToGeneratedProgram } from "./program/MaterialFeatures";
 import { selectShaderFeatureBits } from "./program/FeatureSelect";
@@ -545,7 +546,8 @@ export class Renderer {
       environmentLighting: collectEnvironmentLighting(source),
       environmentFog: collectEnvironmentFog(source),
       cameraViewProjectionMatrix: vp,
-      outputColorSpace: "linear"
+      outputColorSpace: "linear",
+      qualityTier: this.liveQualityTier()?.settings
     };
     const graph = (this.probeGraph ??= new RenderGraph());
     graph.clear();
@@ -632,7 +634,7 @@ export class Renderer {
     // identical to `globalThis.devicePixelRatio` while `resolution`/`tier` are unset.
     const devicePixelRatio = resolveCanvasPixelRatio({
       devicePixelRatio: globalThis.devicePixelRatio ?? 1,
-      tier: this.qualityTier ?? { maxPixelRatio: Number.POSITIVE_INFINITY },
+      tier: this.qualityTier ?? this.liveQualityTier()?.settings ?? { maxPixelRatio: Number.POSITIVE_INFINITY },
       explicit: options.devicePixelRatio,
       resolution: this.resolutionOptions
     });
@@ -779,6 +781,8 @@ export class Renderer {
       height: this.height,
       source,
       camera: toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition),
+      // PRD 11: the app's live C-27 tier (A3D_QR_TIERS); undefined → high.
+      tier: this.liveQualityTier()?.settings,
       ...(route.skipped ? { flags: withCoreOutputOff(rendererQrFlags(this.device)) } : {})
     });
     if (!resolvedCamera && cameraPolicy === "auto-frame") {
@@ -800,6 +804,8 @@ export class Renderer {
     // chain and bypasses OutputPass: encode stays single, and the authored
     // effects (bloom) are kept instead of dropped. The bypass is reported.
     const qrOutput = route.qrOutput;
+    // §6.2.7: lane passes encode in-shader only on the legacy LDR path.
+    frameHooks.setOutputColorSpace(postprocess || qrOutput ? "linear" : "srgb");
     this.lastPostSkipped = route.skipped;
     if (route.skipped) this.warnPostLegacyRoute(route.skipped);
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;
@@ -964,7 +970,8 @@ export class Renderer {
           cameraViewProjectionMatrix: rasterViewProjection,
           outputColorSpace: "linear",
           shaderLibrary: this.shaderLibrary,
-          backgroundCoverage: coverage
+          backgroundCoverage: coverage,
+          qualityTier: this.liveQualityTier()?.settings
         };
         // The graph enforces unique names + single-producer writes; per-phase
         // resources chain the order, and `aura.scene.color` is written once —
@@ -1123,6 +1130,8 @@ export class Renderer {
       height: this.height,
       source,
       camera: toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition),
+      // PRD 11: the app's live C-27 tier (A3D_QR_TIERS); undefined → high.
+      tier: this.liveQualityTier()?.settings,
       ...(route.skipped ? { flags: withCoreOutputOff(rendererQrFlags(this.device)) } : {})
     });
     if (!resolvedCamera && cameraPolicy === "auto-frame") {
@@ -1144,6 +1153,8 @@ export class Renderer {
     // chain and bypasses OutputPass: encode stays single, and the authored
     // effects (bloom) are kept instead of dropped. The bypass is reported.
     const qrOutput = route.qrOutput;
+    // §6.2.7: lane passes encode in-shader only on the legacy LDR path.
+    frameHooks.setOutputColorSpace(postprocess || qrOutput ? "linear" : "srgb");
     this.lastPostSkipped = route.skipped;
     if (route.skipped) this.warnPostLegacyRoute(route.skipped);
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;
@@ -1308,7 +1319,8 @@ export class Renderer {
           cameraViewProjectionMatrix: rasterViewProjection,
           outputColorSpace: "linear",
           shaderLibrary: this.shaderLibrary,
-          backgroundCoverage: coverage
+          backgroundCoverage: coverage,
+          qualityTier: this.liveQualityTier()?.settings
         };
         // The graph enforces unique names + single-producer writes; per-phase
         // resources chain the order, and `aura.scene.color` is written once —
@@ -1483,7 +1495,7 @@ export class Renderer {
   ): Promise<void> {
     const flags = rendererQrFlags(this.device);
     if (!qrGeneratedProgramsOn(flags)) return;
-    const tier: AuraQualityTier = this.qualityTierName ?? "high";
+    const tier: AuraQualityTier = this.qualityTierName ?? prd11LiveQualityTier(flags)?.tier ?? "high";
     const cache = rendererProgramCache(this.device, flags);
     const input = this.collectWarmupInput(items, lights, environmentLighting, environmentFog, shadowMap, cameraViewProjection, flags, tier);
     if (input.materials.length > 0) {
@@ -1511,7 +1523,7 @@ export class Renderer {
   ): void {
     const flags = rendererQrFlags(this.device);
     if (!qrGeneratedProgramsOn(flags)) return;
-    const tier: AuraQualityTier = this.qualityTierName ?? "high";
+    const tier: AuraQualityTier = this.qualityTierName ?? prd11LiveQualityTier(flags)?.tier ?? "high";
     const cache = rendererProgramCache(this.device, flags);
     const input = this.collectWarmupInput(items, lights, environmentLighting, environmentFog, shadowMap, cameraViewProjection, flags, tier);
     for (const features of collectWarmupFeatures(input, tier)) cache.acquire(features);
@@ -1653,6 +1665,11 @@ export class Renderer {
     this.forwardColorTarget = { target, key };
     return target;
   }
+  /** PRD 11: this device's app-bound live C-27 tier (A3D_QR_TIERS on), else undefined. */
+  private liveQualityTier(): LiveQualityTierSource | undefined {
+    return prd11LiveQualityTier(rendererQrFlags(this.device));
+  }
+
   private assertAlive(): void {
     if (this.disposed || this.device.disposed) {
       throw new RenderDeviceError("Renderer is disposed", "DISPOSED_DEVICE");

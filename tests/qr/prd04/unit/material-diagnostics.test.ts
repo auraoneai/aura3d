@@ -20,7 +20,7 @@ import { rendererProgramCache } from "../../../../packages/rendering/src/rendere
 import type { AuraApp } from "../../../../packages/engine/src/agent-api/index";
 
 const FLAGS_ON = resolveQrFlags({ options: { A3D_QR_MATERIALS: true, A3D_QR_MATERIALS_TRANSMISSION: true, A3D_QR_MATERIALS_KTX2: true } });
-const FLAGS_OFF = resolveQrFlags({ options: {} });
+const FLAGS_OFF = resolveQrFlags({ options: { A3D_QR_MATERIALS: false } }); // explicit: materials is default-on
 const APP = {} as AuraApp;
 
 afterEach(() => setTypedGLBActorQrFlags(FLAGS_OFF));

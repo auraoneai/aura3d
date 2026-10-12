@@ -74,6 +74,11 @@ void main() {
   alpha *= clamp((sceneZ - fragZ) / 0.5, 0.0, 1.0);
 #endif
   rgb *= alpha;
+  // GLSL pow(x, y) is undefined for x < 0: the interpolated cone-base alpha
+  // (0 at the rim) dips to -ε on NVIDIA and the encode returned NaN, which
+  // failed the HDR tone-map finite check (prd07-volumetric-shafts, run 38196483050).
+  rgb = max(rgb, vec3(0.0));
+  alpha = clamp(alpha, 0.0, 1.0);
   if (u_outputColorSpace > 0.5) {
     rgb = pow(rgb, vec3(1.0 / 2.2));
   }

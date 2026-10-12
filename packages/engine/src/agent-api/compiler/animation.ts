@@ -564,6 +564,9 @@ export function poseMixerCaptureTiming(
       const start = capture ?? animation.startTime;
       if (start === undefined || !Number.isFinite(start) || start <= 0) return 0;
       if (capture !== undefined && animation.loop !== false && duration > 0) return start % duration;
+      // A pinned capture past the clip end wraps like flag-off `applyClip` and
+      // three.js LoopRepeat `setTime` (clamping pinned the last frame instead).
+      if (capture !== undefined && duration > 0 && start > duration) return start % duration;
       return Math.min(start, duration);
     }
   };

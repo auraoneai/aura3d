@@ -1,7 +1,7 @@
 // PRD-07 P6-T1 — decal program (§8.8): lit projected marks. Albedo from the
 // atlas page (or flat colour), tangent-space normal perturb (optional page
-// normal map), page roughness; sun half-Lambert + GGX spec +
-// a3dSampleIrradianceSH (C-02 sh9 stub convention) + a3dApplyFog (§8.4 chunk,
+// normal map), page roughness; scene lights through the r185 standard BRDF +
+// ambient irradiance + a3dApplyFog (§8.4 chunk,
 // embedded — PRD 07 programs include it directly while the C-02 generator is
 // a stub). Angle fade + distance fade are folded into alpha per §6.9.
 // Blend is `alpha` for marks; `multiply` grime is emulated under the C-04
@@ -67,20 +67,38 @@ uniform vec3 u_sunDirection;
 uniform vec3 u_sunColor;
 #endif
 uniform float u_roughness;
-uniform vec4 u_sh9[9];      // A3DSH9 — a3dSampleIrradianceSH convention (C-02 stub: L0 only)
+// Scene lights (three.js MeshStandardMaterial parity, PRD-07 I3 "decal BRDF
+// matches surroundings"): ≤4 punctual lights, xyz = direction TOWARD the
+// light (w 0) or world position (w 1); rgb = colour × intensity, w = range.
+uniform vec4 u_lightVector[5];   // 5 × vec4 = 20 floats (a 16-float array binds as mat4)
+uniform vec4 u_lightRadiance[5];
+uniform float u_lightCount;
+uniform vec3 u_ambientIrradiance;  // ambient colour × intensity (× BRDF_Lambert below)
 ${d.fog ? PRD07_FOG_CHUNK_GLSL : ""}
 layout(location = 0) out vec4 o_color;
 
-vec3 a3dSampleIrradianceSH(vec3 N) {
-  return u_sh9[0].rgb * 0.282095;
-}
-
-// GGX distribution (Walter 2007) for the §8.8 spec lobe.
-float a3dGGX(float nDotH, float roughness) {
-  float a = max(roughness * roughness, 1e-3);
-  float a2 = a * a;
+// r185 BRDF_GGX pieces: GGX D, height-correlated Smith V, Schlick F (F0 0.04).
+float a3dDecalD(float nDotH, float alpha) {
+  float a2 = alpha * alpha;
   float dn = nDotH * nDotH * (a2 - 1.0) + 1.0;
-  return a2 / max(3.14159265 * dn * dn, 1e-6);
+  return 0.31830989 * a2 / max(dn * dn, 1e-6);
+}
+float a3dDecalV(float nDotL, float nDotV, float alpha) {
+  float a2 = alpha * alpha;
+  float gv = nDotL * sqrt(a2 + (1.0 - a2) * nDotV * nDotV);
+  float gl = nDotV * sqrt(a2 + (1.0 - a2) * nDotL * nDotL);
+  return 0.5 / max(gv + gl, 1e-6);
+}
+vec3 a3dDecalDirect(vec3 albedo, vec3 N, vec3 V, vec3 L, vec3 radiance, float alpha) {
+  float nDotL = clamp(dot(N, L), 0.0, 1.0);
+  if (nDotL <= 0.0) return vec3(0.0);
+  vec3 H = normalize(L + V);
+  float nDotH = clamp(dot(N, H), 0.0, 1.0);
+  float nDotV = clamp(dot(N, V), 1e-3, 1.0);
+  float vDotH = clamp(dot(V, H), 0.0, 1.0);
+  float f = 0.04 + 0.96 * pow(1.0 - vDotH, 5.0);
+  float spec = f * a3dDecalV(nDotL, nDotV, alpha) * a3dDecalD(nDotH, alpha);
+  return radiance * nDotL * (albedo * 0.31830989 + vec3(spec));
 }
 
 void main() {
@@ -108,15 +126,29 @@ void main() {
   float angleFade = v_fade.y > v_fade.x ? smoothstep(cosEnd, cosStart, facing) : 1.0;
   float distFade = 1.0 - smoothstep(v_fade.z, v_fade.w, dist);
 
-  // Lighting: sun half-Lambert + GGX spec + sh9 ambient (+ §8.4 fog below).
-  float halfLambert = dot(N, normalize(u_sunDirection)) * 0.5 + 0.5;
-  vec3 H = normalize(V + normalize(u_sunDirection));
-  float nDotH = max(dot(N, H), 0.0);
-  float nDotV = max(dot(N, V), 1e-3);
-  float nDotL = max(dot(N, normalize(u_sunDirection)), 0.0);
-  float spec = a3dGGX(nDotH, u_roughness) * nDotL / max(4.0 * nDotV * nDotL, 1e-3);
-  vec3 lit = albedo.rgb * (a3dSampleIrradianceSH(N) + u_sunColor * halfLambert * halfLambert)
-           + u_sunColor * spec;
+  // Lighting: the scene's lights through the r185 standard BRDF (Lambert/π +
+  // GGX, F0 0.04) plus ambient irradiance × BRDF_Lambert — the same response
+  // as the surface the decal sits on (+ §8.4 fog below).
+  if (dot(N, V) < 0.0) N = -N;     // double-sided projected quads
+  float alphaR = max(u_roughness * u_roughness, 0.0025);
+  vec3 lit = albedo.rgb * 0.31830989 * u_ambientIrradiance;
+  for (int i = 0; i < 5; i++) {
+    if (float(i) >= u_lightCount) break;
+    vec4 lv = u_lightVector[i];
+    vec4 lr = u_lightRadiance[i];
+    vec3 L = lv.xyz;
+    vec3 radiance = lr.rgb;
+    if (lv.w > 0.5) {
+      vec3 toLight = lv.xyz - v_world;
+      float d = max(length(toLight), 1e-4);
+      L = toLight / d;
+      // r185 getDistanceAttenuation (decay 2): inverse square, range cutoff.
+      float att = 1.0 / max(d * d, 0.01);
+      if (lr.w > 0.0) { float x = clamp(1.0 - pow(d / lr.w, 4.0), 0.0, 1.0); att *= x * x; }
+      radiance *= att;
+    }
+    lit += a3dDecalDirect(albedo.rgb, N, V, normalize(L), radiance, alphaR);
+  }
   ${d.fog ? "lit = a3dApplyFog(lit, v_world);" : ""}
 
   float alpha = albedo.a * angleFade * distFade;

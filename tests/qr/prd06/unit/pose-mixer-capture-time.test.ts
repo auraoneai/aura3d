@@ -23,8 +23,13 @@ describe("poseMixerCaptureTiming", () => {
     }
   });
 
-  it("clamps a pinned capture past the clip end to the clip duration", () => {
-    expect(poseMixerCaptureTiming({ captureTime: 5, loop: false }, true).startSeconds(2)).toBe(2);
+  it("wraps a pinned capture past the clip end like flag-off applyClip and three.js LoopRepeat", () => {
+    // 15-animation-skinning: Walk clips (Soldier 1.0333 s, Fox 0.7083 s) are shorter
+    // than captureTime 1.25; clamping pinned the last frame (GPU run 38198435735).
+    expect(poseMixerCaptureTiming({ captureTime: 5, loop: false }, true).startSeconds(2)).toBeCloseTo(1, 9);
+    expect(poseMixerCaptureTiming({ captureTime: 1.25, loop: false }, true).startSeconds(1.0333333)).toBeCloseTo(0.2166667, 6);
+    // Exactly at the clip end still lands on the end frame.
+    expect(poseMixerCaptureTiming({ captureTime: 1.1, loop: false }, true).startSeconds(1.1)).toBe(1.1);
   });
 
   it("phases a looping clip by captureTime and keeps it playing", () => {

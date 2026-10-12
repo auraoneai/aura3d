@@ -99,6 +99,12 @@ export function resolvePrd07FogSpec(spec: Prd07FogSpec | null | undefined): Reso
     // Legacy authoring: density/color/intensity only → exp2, maxOpacity 1.
     base.mode = "exp2";
     base.maxOpacity = 1;
+    // …and the legacy background behaviour: legacy exp2 never fogged the
+    // background. Fogging it at camera.far turned the dark hangar backdrop of
+    // prd07-volumetric-shafts (volumetricFog density 0.012) into the fog
+    // colour, which the god-ray pass then blew out to white. §6.6
+    // `affectsBackground` stays the default for height-mode fog.
+    if (spec.affectsBackground === undefined) base.affectsBackground = false;
   } else if (!authoredSemantic) {
     base.mode = PRD07_FOG_DEFAULTS.mode;
   }

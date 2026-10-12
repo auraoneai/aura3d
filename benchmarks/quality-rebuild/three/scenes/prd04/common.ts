@@ -185,7 +185,9 @@ export async function runPrd04ThreeScene(
   const textureLoader = new THREE.TextureLoader();
   const gltfLoader = new GLTFLoader();
   const ktx2 = new KTX2Loader()
-    .setTranscoderPath("/node_modules/three/examples/jsm/libs/basis/")
+    // Built bench page serves three's transcoder at /qr-assets/basis/ (shared/assets.ts);
+    // /node_modules/... only exists under the lane dev server (it 404'd in GPU run 38195592703).
+    .setTranscoderPath(import.meta.env?.PROD ? "/qr-assets/basis/" : "/node_modules/three/examples/jsm/libs/basis/")
     .detectSupport(renderer);
   gltfLoader.setKTX2Loader(ktx2);
 
@@ -337,6 +339,10 @@ export async function runPrd04ThreeScene(
     scene: spec.id,
     engineVersion: THREE.REVISION,
     capabilityLog: log.entries,
+    // capture.mjs classifies a payload without drawCalls as no-draw (every prd04
+    // three capture in GPU run 38195592703): report the last rendered frame's count.
+    drawCalls: renderer.info.render.calls,
+    triangles: renderer.info.render.triangles,
     warnings: [],
     errors,
     loadMs: Math.round(performance.now() - started),
