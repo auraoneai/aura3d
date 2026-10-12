@@ -5,20 +5,23 @@ import { FakeCompressor, FakeContext, FakeShaper } from "./fake-context";
 describe("MasterChain (PRD-09 §6.8)", () => {
   it("wires gain → glue → limiter → shaper → destination in order", () => {
     const ctx = new FakeContext();
-    const chain = createMasterChain(ctx, ctx.destination);
-    expect(chain.stages).toEqual(["masterGain", "glue(-18dB)", "limiter(-6dB)", "safetyClip(±0.966)"]);
+    const chain = createMasterChain(ctx, ctx.destination, { glue: true });
+    expect(chain.stages).toEqual(["masterGain", "glue(-18dB)", "limiter(-1dB)", "makeupTrim", "safetyClip(±0.966)"]);
     const [glue, limiter] = ctx.ofKind<FakeCompressor>("compressor");
     expect(glue.threshold.value).toBe(-18);
     expect(glue.ratio.value).toBe(3);
-    expect(limiter.threshold.value).toBe(-6);
-    expect(limiter.ratio.value).toBe(12);
+    expect(limiter.threshold.value).toBe(-1);
+    expect(limiter.ratio.value).toBe(20);
+    expect(limiter.knee.value).toBe(0);
     const [shaper] = ctx.ofKind<FakeShaper>("shaper");
     expect(shaper.curve).not.toBeNull();
     // input → glue: the master gain's first connection is the glue stage.
     const gains = ctx.ofKind<{ kind: string; connectedTo: unknown[] }>("gain");
     expect(gains[0].connectedTo[0]).toBe(glue);
     expect(glue.connectedTo[0]).toBe(limiter);
-    expect(limiter.connectedTo[0]).toBe(shaper);
+    const trim = limiter.connectedTo[0] as unknown as { gain: { value: number }; connectedTo: unknown[] };
+    expect(20 * Math.log10(trim.gain.value)).toBeCloseTo(-0.57, 2);
+    expect(trim.connectedTo[0]).toBe(shaper);
     expect(shaper.connectedTo[0]).toBe(ctx.destination);
   });
 
@@ -37,10 +40,10 @@ describe("MasterChain (PRD-09 §6.8)", () => {
     for (let i = 1; i < curve.length; i++) expect(curve[i]).toBeGreaterThanOrEqual(curve[i - 1]);
   });
 
-  it("master.glue:false drops the glue stage but keeps limiter+clipper", () => {
+  it("default chain has no glue stage (its makeup gain lifted quiet beds +8 dB)", () => {
     const ctx = new FakeContext();
-    const chain = createMasterChain(ctx, ctx.destination, { glue: false });
-    expect(chain.stages).toEqual(["masterGain", "limiter(-6dB)", "safetyClip(±0.966)"]);
+    const chain = createMasterChain(ctx, ctx.destination);
+    expect(chain.stages).toEqual(["masterGain", "limiter(-1dB)", "makeupTrim", "safetyClip(±0.966)"]);
     expect(ctx.ofKind("compressor").length).toBe(1);
   });
 
@@ -63,7 +66,7 @@ describe("MasterChain (PRD-09 §6.8)", () => {
     const ctx = new FakeContext();
     const chain = createMasterChain(ctx, ctx.destination);
     expect(chain.limiterEngaged).toBe(false);
-    const [, limiter] = ctx.ofKind<FakeCompressor>("compressor");
+    const [limiter] = ctx.ofKind<FakeCompressor>("compressor");
     limiter.reduction = -4;
     expect(chain.limiterEngaged).toBe(true);
   });

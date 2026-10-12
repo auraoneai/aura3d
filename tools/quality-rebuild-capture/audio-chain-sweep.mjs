@@ -16,6 +16,8 @@ const configs = [
   { name: "no glue, lim-6/12, head 0.6", headroom: 0.6, glue: null, lim: [-6, 6, 12] },
   { name: "no glue, lim-3/20 k2, head 0.6", headroom: 0.6, glue: null, lim: [-3, 2, 20] },
   { name: "no glue, lim-1/20 k0, head 0.6", headroom: 0.6, glue: null, lim: [-1, 0, 20] },
+  { name: "DEFAULT: lim-1/20 k0 + trim, head 0.6", headroom: 0.6, glue: null, lim: [-1, 0, 20], trimDb: -0.57 },
+  { name: "DEFAULT @ head 1.0", headroom: 1, glue: null, lim: [-1, 0, 20], trimDb: -0.57 },
   { name: "glue-10/2 k6 + lim-1/20 k0, head 0.6", headroom: 0.6, glue: [-10, 6, 2], lim: [-1, 0, 20] },
   { name: "glue-12/2 k6 + lim-3/20 k2, head 0.6", headroom: 0.6, glue: [-12, 6, 2], lim: [-3, 2, 20] }
 ];
@@ -41,6 +43,7 @@ const out = await page.evaluate(async (configs) => {
       c.attack.value = p === cfg.lim ? 0.001 : 0.005; c.release.value = p === cfg.lim ? 0.1 : 0.25;
       head.connect(c); head = c;
     }
+    if (cfg.trimDb) { const t = ctx.createGain(); t.gain.value = Math.pow(10, cfg.trimDb / 20); head.connect(t); head = t; }
     const s = ctx.createWaveShaper(); s.curve = curve; head.connect(s); s.connect(ctx.destination);
     return input;
   };
