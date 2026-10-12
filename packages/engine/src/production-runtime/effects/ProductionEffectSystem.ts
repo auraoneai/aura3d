@@ -10,7 +10,7 @@ import { QUALITY_TIERS, type AuraQualityTier } from "@aura3d/rendering/contracts
 import type { ParticlePassDiagnostics } from "@aura3d/rendering";
 import { MeshParticleBatch, RibbonBatch, RibbonTrail, DecalBatch, DECAL_TIER_CAP, decalQuadGeometry, ribbonStripToDecalGeometry, PARTICLE_GPU_BUDGET_MS, type BeamDrawSpec, type MeshParticleFeed, type DecalVertexData, type GpuSimSpec } from "@aura3d/rendering";
 import { createEmitter, stepEmitter, writeEmitterInstances, type EmitterState } from "./CpuEmitter";
-import { lowerEffectNode, type LoweredEffect, type EffectNodeLike } from "./EffectNodeLowering";
+import { lowerEffectNode, srgbChannelToLinear, type LoweredEffect, type EffectNodeLike } from "./EffectNodeLowering";
 import { EffectDiagnostics } from "./EffectDiagnostics";
 import { LiveAtmosphere } from "./LiveAtmosphere";
 import { TransientLightPool, type TransientLightFlash } from "./TransientLightPool";
@@ -94,8 +94,14 @@ function quatFromUnitVectors(
   return [cx / n, cy / n, cz / n, w / n];
 }
 
+/** Decal albedo hex → linear (three.js Color parity; the decal BRDF is linear). */
+function hexToLinearRgb(c: string): readonly [number, number, number] {
+  const [r, g, b] = hexToRgb(c);
+  return [srgbChannelToLinear(r), srgbChannelToLinear(g), srgbChannelToLinear(b)];
+}
+
 function decalColor4(color: string | readonly number[] | undefined): readonly [number, number, number, number] {
-  if (typeof color === "string") { const [r, g, b] = hexToRgb(color); return [r, g, b, 1]; }
+  if (typeof color === "string") { const [r, g, b] = hexToLinearRgb(color); return [r, g, b, 1]; }
   if (Array.isArray(color) && color.length >= 3) return [Number(color[0]), Number(color[1]), Number(color[2]), Number(color[3] ?? 1)];
   return [1, 1, 1, 1];
 }
@@ -491,7 +497,7 @@ export class ProductionEffectSystem {
       const id = runtimeId ?? `decal.${i}`;
       seen.add(id);
       const material = (node.material ?? {}) as { color?: unknown; roughness?: number; blend?: unknown; texture?: { url?: string } };
-      const [r, g, b] = typeof material.color === "string" ? hexToRgb(material.color) : [1, 1, 1] as const;
+      const [r, g, b] = typeof material.color === "string" ? hexToLinearRgb(material.color) : [1, 1, 1] as const;
       const geometry = decalNodeGeometry(node, decal);
       if (!geometry) continue;
       this.decals.upsert({

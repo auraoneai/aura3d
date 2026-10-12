@@ -130,7 +130,11 @@ export function resolveVolumetricFog(
       ? {
         lightPosition: params.lightPosition ?? [0.5, 0.18],
         color: [lightColor[0]!, lightColor[1]!, lightColor[2]!],
-        density: Math.min(1, Math.max(0, params.density ?? 0.4)),
+        // The CPU volumetric-light kernel validates density in [0.01, 2];
+        // physical fog densities (σ ≈ 0.008 /m, prd07-lit-smoke) sit below that
+        // floor and threw "Volumetric light density must be finite and within
+        // [0.01, 2]" on mount, so clamp into the kernel's range.
+        density: Math.min(1, Math.max(0.01, Number.isFinite(params.density) ? params.density! : 0.4)),
         decay: 0.94,
         weight: intensity,
         exposure: 1.1,

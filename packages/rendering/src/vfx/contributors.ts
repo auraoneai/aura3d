@@ -32,6 +32,7 @@ import { setPrd07ForwardFog } from "../atmosphere/fogUniformStore";
 import { evaluateSky, skyFrame } from "../atmosphere/SkyEval";
 import { RibbonPass } from "./RibbonPass";
 import { DecalPass } from "./DecalPass";
+import { resolveDecalLighting } from "./decalLighting";
 import type { DecalBatch } from "./DecalBatch";
 import { resolveSceneDepth } from "./SceneDepthAdapter";
 import { contextViewProjection, skyDrawPassFor } from "../atmosphere/SkyBackgroundPass";
@@ -487,6 +488,8 @@ function decalPassFor(device: RenderDevice): DecalPass {
   let pass = decalPasses.get(device);
   if (!pass) {
     pass = new DecalPass(device, {
+      // §8.8 / I3: shade with the scene's own lights so marks match the surface.
+      lighting: resolveDecalLighting,
       fog: true,
       fogUniforms: (ctx) => {
         const entry = ctx.blackboard.get("prd07.fog") as
