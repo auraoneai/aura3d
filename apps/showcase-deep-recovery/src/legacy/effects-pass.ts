@@ -43,6 +43,9 @@ export function deepRecoveryEffectsPass() {
       shadow: { cascades: "auto", maxDistance: 60 }
     }),
     effects.contactShadows({ length: 0.4, intensity: 0.8 }),
+    // The pre-pass suspended-particle exp2 haze stays: it is what keeps the
+    // far basin dark so the lit subject carries the frame.
+    effects.fog({ name: "deep recovery suspended-particle haze", color: "#0a2e3a", density: 0.017, intensity: 0.42 }),
     environments.preset("night", { intensity: 0.4, specularIntensity: 1.2, background: false }),
     // Water column: denser with depth below the surface reference, forward
     // in-scatter towards the sun.

@@ -36,7 +36,7 @@ export function bankShotEffectsPass() {
       position: [-0.6, 5.2, 1.4],
       target: [0, 0, 0],
       color: "#ffe6bf",
-      intensity: 1.15,
+      intensity: 1.35,
       shadow: { cascades: "auto", maxDistance: 12 }
     }),
     effects.contactShadows({ length: 0.12, thickness: 0.03, intensity: 0.9 }),
@@ -48,11 +48,12 @@ export function bankShotEffectsPass() {
       density: 0.02,
       color: "#3a3326",
       intensity: 0.14,
-      volumetricQuality: "balanced",
+      volumetricQuality: "off",
       heightFalloff: 0.35,
       heightReference: 0
     }),
-    effects.vignette({ intensity: 0.42, smoothness: 1.8 }),
+    effects.colorGrade({ saturation: 1.28, contrast: 1.06 }),
+    effects.vignette({ intensity: 0.36, smoothness: 1.8 }),
     ...(vfxOn
       ? [
           // Dust motes rising slowly through the lamp pool over the table

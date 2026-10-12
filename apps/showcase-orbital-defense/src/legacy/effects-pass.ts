@@ -46,7 +46,9 @@ export function orbitalEffectsPass() {
       intensity: 0.62,
       volumetricQuality: "balanced"
     }),
-    effects.colorGrade({ exposure: 1.38, contrast: 1.02, saturation: 1.25 }),
+    effects.colorGrade({ exposure: 1.5, contrast: 1.02, saturation: 1.45 }),
+    effects.vignette({ intensity: 0.22, smoothness: 1.6 }),
+    effects.neonBloom({ intensity: 0.45, threshold: 0.62, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
     ...(vfxOn
       ? [
           // Debris belt: a wide spawn disc (fountain plume preset) in the

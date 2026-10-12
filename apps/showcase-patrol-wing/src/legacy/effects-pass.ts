@@ -40,7 +40,7 @@ export function patrolWingEffectsPass() {
       density: 0.013,
       color: "#6f8fa3",
       intensity: 0.44,
-      volumetricQuality: "balanced",
+      volumetricQuality: "off",
       heightFalloff: 0.05,
       heightReference: 0
     }),
