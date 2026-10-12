@@ -1,0 +1,28 @@
+name: Worktree targeted validation
+on:
+  push:
+    branches: [audit/consolidation-followup-20261012]
+permissions:
+  contents: read
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Version-aware acceptance regression tests
+        run: node --test tools/release/package-acceptance.test.mjs
+      - name: Chase eye regression tests
+        if: ${{ !cancelled() }}
+        run: pnpm exec vitest run tests/unit/apps/courier-rush-camera-clearance.test.ts --maxWorkers=1 --reporter=verbose
+      - name: Typecheck final camera correction
+        if: ${{ !cancelled() }}
+        run: pnpm typecheck
