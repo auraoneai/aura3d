@@ -139,7 +139,13 @@ export function createProductionRuntimePostprocess(
     ...(bloomRequested ? {
       bloom: {
         threshold: clampNumber(authoredBloom?.threshold ?? 0.78, 0, 1),
-        intensity: clampNumber(authoredBloom?.intensity ?? 0.3, 0, 2),
+        // §7.1 (flag-on): the v2 chain reads the authored intensity — the
+        // factory's antiBlowout/maxIntensity cap (`postIntensity` keeps the
+        // pre-cap value) is a legacy safeguard; v2 maps it to clampLuminance
+        // and accepts intensity in [0, 4].
+        intensity: postFlagOn
+          ? clampNumber(authoredBloom?.postIntensity ?? authoredBloom?.intensity ?? 0.3, 0, 4)
+          : clampNumber(authoredBloom?.intensity ?? 0.3, 0, 2),
         // Public bloom radius follows the normalized UnrealBloomPass-style
         // control used by routes and prefabs (normally 0..1), while the native
         // separable blur consumes an integer pixel kernel. Preserve legacy

@@ -107,9 +107,25 @@ fn fs_taa_resolve(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4
   // Disocclusion: |prevLinZ − expectedZ| > 0.1·z → drop history.
   let out_of_bounds = any(uv_prev < vec2<f32>(0.0)) || any(uv_prev >= vec2<f32>(1.0));
   let z_curr = vel_tex.b;
-  let z_prev = textureSampleLevel(u_lin_z_prev_tex, u_lin_z_prev_smp,
+  // 3×3 previous-depth range around the reprojected texel (GLSL twin):
+  // sub-pixel jitter moving thin geometry on/off a texel is coverage, not
+  // disocclusion, and must not drop history.
+  let z_size = vec2<i32>(textureDimensions(u_lin_z_prev_tex, 0));
+  let prev_pixel = vec2<i32>(clamp(uv_prev, vec2<f32>(0.0), vec2<f32>(1.0)) * vec2<f32>(z_size));
+  // Centre tap through the bound sampler (keeps binding 5 live for an
+  // 'auto' pipeline layout), then the 3×3 texel range.
+  let z_prev_centre = textureSampleLevel(u_lin_z_prev_tex, u_lin_z_prev_smp,
     clamp(uv_prev, vec2<f32>(0.0), vec2<f32>(1.0)), 0.0).r;
-  let disoccluded = abs(z_prev - z_curr) > 0.1 * z_curr;
+  var z_prev_min = z_prev_centre;
+  var z_prev_max = z_prev_centre;
+  for (var zy = -1; zy <= 1; zy = zy + 1) {
+    for (var zx = -1; zx <= 1; zx = zx + 1) {
+      let z_tap = textureLoad(u_lin_z_prev_tex, clamp(prev_pixel + vec2<i32>(zx, zy), vec2<i32>(0), z_size - vec2<i32>(1)), 0).r;
+      z_prev_min = min(z_prev_min, z_tap);
+      z_prev_max = max(z_prev_max, z_tap);
+    }
+  }
+  let disoccluded = z_curr < z_prev_min - 0.1 * z_curr || z_curr > z_prev_max + 0.1 * z_curr;
 
   // Reactive mask (C-14) overrides accumulation; absent the attachment, a
   // luminance delta between current and reprojected history is the proxy.

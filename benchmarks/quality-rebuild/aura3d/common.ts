@@ -29,6 +29,7 @@ import {
 } from "@aura3d/engine";
 import { hdriAssets, modelAssets, type HdriAssetId, type ModelAssetId } from "../shared/assets";
 import { installFetchDedupe } from "../shared/fetch-once";
+import { mapThreeUnrealBloom } from "./scenes/prd03/bloomMapping";
 import { modelSpaceHeightAt, rampStairsHeightAt } from "../shared/terrain";
 import { createHeightFieldGround } from "@aura3d/animation";
 import type { BrokenControlId } from "../shared/contracts";
@@ -310,7 +311,11 @@ function buildAuraScene(spec: SceneSpec, log: CapabilityLog, extraNodes: readonl
     log.add("fog", "partial", "effects.fog() maps to exponential-squared fog but caps opacity at 0.25 + 0.55 * intensity (max 0.80), so distant geometry never fully fogs as FogExp2 does.");
   }
   if (spec.bloom) {
-    nodes.push(effects.bloom({ intensity: spec.bloom.strength, radius: spec.bloom.radius, threshold: spec.bloom.threshold, quality: "cinematic" }));
+    // PRD-03 Q-12-2: three UnrealBloomPass strength/radius/threshold go
+    // through the frozen `mapThreeUnrealBloom` (Σ lerpBloomFactor = 3.0 halo
+    // energy), so every scene — base and lane copies — gets the same units.
+    const mappedBloom = mapThreeUnrealBloom(spec.bloom.strength, spec.bloom.radius, spec.bloom.threshold);
+    nodes.push(effects.bloom({ intensity: mappedBloom.intensity, radius: mappedBloom.scatter, threshold: mappedBloom.threshold, quality: "cinematic" }));
     log.add("bloom", "partial", "effects.bloom() radius/threshold units are engine-specific; antiBlowout clamps intensity to <= 0.92 by default.");
   }
 

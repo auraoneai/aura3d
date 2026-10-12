@@ -488,7 +488,7 @@ export function createPrd03PostSurface(app: AuraApp, ctx: { readonly flags: QrFl
  * bookkeeping field `postAuthored` (CCR-03-3).
  */
 export const POST_EFFECT_COMMON_FIELDS: readonly string[] = [
-  "kind", "effect", "name", "id", "intensity", "enabled", "animation", "postAuthored",
+  "kind", "effect", "name", "id", "intensity", "enabled", "animation", "postAuthored", "postIntensity",
   "position", "rotation", "scale", "lookAt", "rotationOrder", "quaternion"
 ];
 
@@ -634,7 +634,10 @@ export function mapBloomOptionsV2(node: AuraEffectNode, mipLevels: 3 | 5 | 6): {
     options: {
       threshold: Math.min(64, Math.max(0, threshold)),
       knee: Math.min(1, Math.max(0, authoredNumber(node, "knee", V2_BLOOM_DEFAULTS.knee))),
-      intensity: Math.min(4, Math.max(0, authoredNumber(node, "intensity", V2_BLOOM_DEFAULTS.intensity))),
+      // `postIntensity` is the authored value before the legacy antiBlowout cap.
+      intensity: Math.min(4, Math.max(0, isAuthored(node, "intensity") && typeof node.postIntensity === "number" && Number.isFinite(node.postIntensity)
+        ? node.postIntensity
+        : authoredNumber(node, "intensity", V2_BLOOM_DEFAULTS.intensity))),
       scatter: Math.min(1, Math.max(0, Number.isFinite(scatterAuthored) ? scatterAuthored : Number.isFinite(radiusAlias) ? radiusAlias : V2_BLOOM_DEFAULTS.scatter)),
       tint: [tint.r, tint.g, tint.b] as const,
       clampLuminance,

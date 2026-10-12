@@ -102,8 +102,20 @@ void main() {
   // Disocclusion: |prevLinZ − expectedZ| > 0.1·z → drop history.
   bool outOfBounds = any(lessThan(uvPrev, vec2(0.0))) || any(greaterThanEqual(uvPrev, vec2(1.0)));
   float zCurr = velTex.b;
-  float zPrev = texture(u_linZPrev, clamp(uvPrev, vec2(0.0), vec2(1.0))).r;
-  bool disoccluded = abs(zPrev - zCurr) > 0.1 * zCurr;
+  // The test spans the previous frame's 3×3 depth range around the
+  // reprojected texel: sub-pixel jitter moves thin geometry (1-px lines,
+  // silhouettes) on/off a texel every frame, and a single-tap compare read
+  // that coverage change as a disocclusion — history was dropped on every
+  // edge texel and the "resolve" degenerated to the last jittered frame.
+  ivec2 zSize = textureSize(u_linZPrev, 0);
+  ivec2 prevPixel = ivec2(clamp(uvPrev, vec2(0.0), vec2(1.0)) * vec2(zSize));
+  float zPrevMin = 3.4e38, zPrevMax = 0.0;
+  for (int y = -1; y <= 1; y += 1) for (int x = -1; x <= 1; x += 1) {
+    float zTap = texelFetch(u_linZPrev, clamp(prevPixel + ivec2(x, y), ivec2(0), zSize - 1), 0).r;
+    zPrevMin = min(zPrevMin, zTap);
+    zPrevMax = max(zPrevMax, zTap);
+  }
+  bool disoccluded = zCurr < zPrevMin - 0.1 * zCurr || zCurr > zPrevMax + 0.1 * zCurr;
 
   // Reactive mask (C-14) overrides accumulation; absent the attachment, a
   // luminance delta between current and reprojected history is the proxy.
