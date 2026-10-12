@@ -70,8 +70,8 @@ uniform float u_roughness;
 // Scene lights (three.js MeshStandardMaterial parity, PRD-07 I3 "decal BRDF
 // matches surroundings"): ≤4 punctual lights, xyz = direction TOWARD the
 // light (w 0) or world position (w 1); rgb = colour × intensity, w = range.
-uniform vec4 u_lightVector[4];
-uniform vec4 u_lightRadiance[4];
+uniform vec4 u_lightVector[5];   // 5 × vec4 = 20 floats (a 16-float array binds as mat4)
+uniform vec4 u_lightRadiance[5];
 uniform float u_lightCount;
 uniform vec3 u_ambientIrradiance;  // ambient colour × intensity (× BRDF_Lambert below)
 ${d.fog ? PRD07_FOG_CHUNK_GLSL : ""}
@@ -132,7 +132,7 @@ void main() {
   if (dot(N, V) < 0.0) N = -N;     // double-sided projected quads
   float alphaR = max(u_roughness * u_roughness, 0.0025);
   vec3 lit = albedo.rgb * 0.31830989 * u_ambientIrradiance;
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 5; i++) {
     if (float(i) >= u_lightCount) break;
     vec4 lv = u_lightVector[i];
     vec4 lr = u_lightRadiance[i];
