@@ -644,8 +644,15 @@ export class ProductionEffectSystem {
       if (v) visible.add(n.id ?? n.name ?? "");
     });
     this.diagnostics.endFrame(visible);
+    // Fixed-step sim (CpuEmitter §6.3): app.step(t) hands one large dt to
+    // onFrame. Integrating it in a single Euler step launched or dropped every
+    // particle by v·dt metres — the promote fountains landed below the floor or
+    // far above the frame (runs 38196483050 / 38198732843). Substep at ≤1/60 s,
+    // capped at 30 s of simulation per frame like createEmitter's prewarm.
+    const substeps = dt > 0 ? Math.min(Math.ceil(dt * 60 - 1e-6), 1800) : 0;
+    const h = substeps > 0 ? dt / substeps : 0;
     for (const binding of this.emitters.values()) {
-      stepEmitter(binding.state, dt);
+      for (let s = 0; s < substeps; s++) stepEmitter(binding.state, h);
       this.diagnostics.track({
         nodeId: binding.lowered.nodeId,
         effect: binding.lowered.effect,

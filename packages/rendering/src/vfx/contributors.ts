@@ -637,19 +637,33 @@ const volumetricContributor: FrameContributor = {
       : undefined;
     const sky = ((ctx.source as Prd07FrameSource).atmosphere as { sky?: Record<string, unknown> | null } | undefined)?.sky ?? null;
     let sunDirection: Vec3 = [0, 1, 0];
+    let sunColor: Vec3 = (fogEntry?.sunColor ?? [1, 1, 1]) as Vec3;
+    // Without a sky, light the froxels with the scene's own key light and
+    // ambient (the same lights the surfaces get). A fixed +Y unit sun and a
+    // hard-coded [0.2, 0.22, 0.26] ambient washed the dark hangar of
+    // prd07-volumetric-shafts to grey (promote run 38198732843).
+    const sceneLighting = resolveDecalLighting(ctx);
+    const key = sceneLighting?.lights.find((light) => light.kind === "directional");
     if (sky) {
       try {
         const frame = skyFrame(sky as Parameters<typeof skyFrame>[0]);
         sunDirection = frame.preetham?.sunDirection ?? frame.gradient?.sunDirection ?? sunDirection;
       } catch { /* keep default */ }
+    } else if (key) {
+      sunDirection = [key.vector[0], key.vector[1], key.vector[2]];
+      sunColor = [key.radiance[0], key.radiance[1], key.radiance[2]];
     }
     const input: VolumetricFogPassInput = {
       fog: fogEntry?.uniforms ?? null,
       fogColor: [0.663, 0.737, 0.812],
       volumes: fogEntry?.volumes ?? [],
       sunDirection,
-      sunColor: (fogEntry?.sunColor ?? [1, 1, 1]) as Vec3,
-      ambientColor: [0.2, 0.22, 0.26],
+      sunColor,
+      // Ambient irradiance E (colour × intensity) → uniform radiance E/π, the
+      // same 1/π convention as the forward ambient (BRDF_Lambert).
+      ambientColor: sceneLighting
+        ? [sceneLighting.ambient[0] / Math.PI, sceneLighting.ambient[1] / Math.PI, sceneLighting.ambient[2] / Math.PI]
+        : [0.2, 0.22, 0.26],
       sceneDepth: depth.source.texture,
       depthLinearize: [depth.source.linearize.near, depth.source.linearize.far, depth.source.linearize.orthographic ? 1 : 0, 0]
     };

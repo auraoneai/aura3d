@@ -9,7 +9,7 @@ import type { FrameContributorContext, TransparentQueueItem } from "../contracts
 import { TextureBinding } from "../TextureBinding";
 import { PRD07_DEPTH_SAMPLER } from "./depthSampler";
 import { RIBBON_VERTEX_FORMAT } from "./RibbonPass";
-import { resolveSceneDepth } from "./SceneDepthAdapter";
+import { resolveOutputColorSpace, resolveSceneDepth } from "./SceneDepthAdapter";
 import { BEAM_SHADER_MARKER, beamFragmentSource, beamProgramKey, beamVertexSource } from "./shaders/beam.glsl";
 
 export type AuraVec3 = readonly [number, number, number];
@@ -141,9 +141,12 @@ function buildCone(spec: BeamDrawSpec): BuiltGeometry {
     const t = i / axial;
     const center = add(apex, scale(axis, length * t));
     const r = radius * t;
-    // alpha: bright at apex, fades to base; softened radial edge is implicit
-    // (only the surface exists — softness widens the alpha tail along the axis)
-    const alpha = Math.pow(1 - t, 1 - Math.min(softness, 0.95));
+    // PRD 14 §8.9 soft additive volume: coneColor · axial² · (0.15 + 0.05·noise)
+    // — 0.175 is the mean of the noise band (the low-frequency noise term is
+    // not baked per vertex). `softness` widens the axial tail (axial^(2·(1−s/2))).
+    // The old pow(1−t, 0.6) peaked at full alpha and drew a near-opaque cone.
+    const axial = 1 - t;
+    const alpha = Math.pow(axial, 2 * (1 - Math.min(softness, 0.95) * 0.5)) * 0.175;
     const c: AuraVec4 = [spec.color[0] * spec.intensity, spec.color[1] * spec.intensity, spec.color[2] * spec.intensity, alpha];
     const row: number[] = [];
     for (let j = 0; j <= radial; j++) {
@@ -226,7 +229,11 @@ export class BeamPass {
     const shader = this.program({ softParticles, aurora });
     const uniforms = new Map<string, import("../RenderDevice").UniformValue>([
       ["u_viewProjection", ctx.camera?.viewProjectionMatrix ?? IDENTITY_MAT4],
-      ["u_outputColorSpace", 1],
+      // Same §6.2.7 output contract as the particle pass: linear into the HDR
+      // scene target when PRD 01 publishes it, gamma-encode only on the legacy
+      // LDR path. A hard-coded 1 gamma-encoded beams into the linear target,
+      // which the output pass then tone-mapped again (washed-out cones).
+      ["u_outputColorSpace", resolveOutputColorSpace(ctx) === "srgb" ? 1 : 0],
       ["u_time", ctx.timeSeconds ?? 0],
       ["u_sway", spec.sway ?? 0],
       ["u_aurora", aurora ? 1 : 0],

@@ -43,7 +43,9 @@ export interface DecalLighting {
   readonly ambient: readonly [number, number, number];
 }
 
-export const DECAL_MAX_LIGHTS = 4;
+// 5, not 4: the WebGL2 binder uploads any 16-float array as a mat4
+// (uniformMatrix4fv), so a vec4[4] array raised GL_INVALID_OPERATION (0x502).
+export const DECAL_MAX_LIGHTS = 5;
 
 /** Pack ≤4 lights into the u_lightVector / u_lightRadiance arrays. */
 export function packDecalLighting(lighting: DecalLighting): { vector: Float32Array; radiance: Float32Array; count: number } {
