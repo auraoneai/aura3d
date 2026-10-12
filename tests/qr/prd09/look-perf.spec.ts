@@ -58,6 +58,7 @@ test.beforeAll(async () => {
 test.afterAll(() => closeServer?.());
 
 async function openV2(page: Page, r: Route, extra: string): Promise<string> {
+  expect(r.flag, `${r.route}: cannot collect v2 evidence without a v2 route flag`).toBeTruthy();
   const url = `${origin}/apps/${r.appDir}/?a3d-qr=${r.flag}${extra}`;
   await page.goto(url, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => (globalThis as any).__AURA3D_GAME__?.state === "playing", null, { timeout: READY_TIMEOUT_MS });
