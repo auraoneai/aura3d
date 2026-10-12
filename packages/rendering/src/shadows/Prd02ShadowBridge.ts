@@ -361,6 +361,23 @@ function bridgeShadowMap(
     texelSize: [texel, texel],
     filterKernel: config.filter === "hard"
       ? createShadowFilterKernel({ filter: "none" })
-      : createShadowFilterKernel({ filter: "pcf", pcfRadius: 1, pcfSamples: 9 })
+      : createShadowFilterKernel({ filter: "pcf", pcfRadius: bridgePcfRadiusTexels(texelWorld), pcfSamples: BRIDGE_PCF_SAMPLES })
   };
+}
+
+/**
+ * S3 (prd02-15): the PCF footprint is a world size, not a texel count. The
+ * #1141 caster-rect fit makes texels 2-3× finer than three's fixed ortho
+ * (12-shadows: 2.4 mm vs 5.9 mm), so a 1-texel kernel drew a penumbra less
+ * than half as wide as three r185 PCFShadowMap (5 Vogel taps at
+ * shadow.radius 1 texel, each a bilinear 2×2 compare: ≈ ±1.5 texels of a
+ * 4-6 mm texel). GPU run 38189660608: 9 % of three's shadow region, 1-3 px
+ * outside Aura's edge, stayed lit.
+ */
+export const BRIDGE_PCF_WORLD_RADIUS = 0.008;
+const BRIDGE_PCF_SAMPLES = 16;
+
+export function bridgePcfRadiusTexels(texelWorld: number): number {
+  if (!Number.isFinite(texelWorld) || texelWorld <= 0) return 1;
+  return Math.min(4, Math.max(1, BRIDGE_PCF_WORLD_RADIUS / texelWorld));
 }

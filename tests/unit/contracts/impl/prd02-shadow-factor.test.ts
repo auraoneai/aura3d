@@ -258,3 +258,21 @@ describe("prd02 bridged sun shadow: shader factor for a known shadowed point", (
     expect(shadowFactor(u, top, UP, TO_LIGHT)).toBeGreaterThan(0.95);
   });
 });
+
+describe("bridged sun PCF footprint is a world size (S3 prd02-15)", () => {
+  it("scales the kernel radius in texels by the cascade texel world size, clamped to [1, 4]", async () => {
+    const { BRIDGE_PCF_WORLD_RADIUS, bridgePcfRadiusTexels } = await import("../../../../packages/rendering/src/shadows/Prd02ShadowBridge");
+    expect(bridgePcfRadiusTexels(BRIDGE_PCF_WORLD_RADIUS / 2)).toBeCloseTo(2, 6);
+    expect(bridgePcfRadiusTexels(0.0001)).toBe(4);
+    expect(bridgePcfRadiusTexels(1)).toBe(1);
+    expect(bridgePcfRadiusTexels(Number.NaN)).toBe(1);
+  });
+
+  it("the floor's bound kernel spans the world radius", async () => {
+    const u = await floorShadowUniforms();
+    let reach = 0;
+    for (let i = 0; i < u.sampleCount; i += 1) reach = Math.max(reach, Math.hypot(u.samples[i * 4]!, u.samples[i * 4 + 1]!));
+    expect(u.sampleCount).toBe(16);
+    expect(reach).toBeGreaterThan(1);
+  });
+});
