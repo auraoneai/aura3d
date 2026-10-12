@@ -200,6 +200,12 @@ async function probeGame(browser, game, variant, origin) {
     run.activeElement = phases[0].samples[0]?.active ?? null;
     run.syntheticKeys = phases.at(-1).samples.at(-1)?.keys?.synthetic ?? [];
     run.analysis = analyseRun(phases);
+    // QRG_RAW=<game ids> + QRG_RAW_KEYS=<regex>: keep matching per-sample leaves/nodes for drill-down.
+    if (env("QRG_RAW", "").split(",").includes(game.id)) {
+      const re = new RegExp(env("QRG_RAW_KEYS", "player|p1|position|state"), "i");
+      const pick = (o) => Object.fromEntries(Object.entries(o).filter(([k]) => re.test(k)));
+      run.raw = phases.map((p) => ({ name: p.name, samples: p.samples.map((s) => ({ t: Math.round(s.t), frame: s.frame, leaves: pick(s.leaves), nodes: pick(s.nodes) })) }));
+    }
   } catch (e) {
     run.error = String(e?.message ?? e).slice(0, 400);
   } finally {

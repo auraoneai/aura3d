@@ -63,6 +63,18 @@ export const TURBO_AUDIO_BUS_VOLUMES: Record<TurboAudioBusId, number> = {
   ui: 0.6
 };
 
+/** Engine-loop playback rate at idle and at top speed (rpm → pitch). */
+export const TURBO_ENGINE_IDLE_RATE = 0.8;
+export const TURBO_ENGINE_MAX_RATE = 1.9;
+
+/**
+ * Engine level relative to its authored volume: a quiet idle (0.12), rising
+ * with speed, plus a throttle-load lift. Never above 1.
+ */
+export function turboEngineLevel(speedFraction: number, load: number): number {
+  return Math.min(1, 0.12 + 0.55 * speedFraction + 0.25 * load * (0.4 + 0.6 * speedFraction));
+}
+
 /** Music-bus level while the finish fanfare plays (ducked). */
 export const TURBO_AUDIO_MUSIC_DUCK_VOLUME = 0.08;
 
@@ -163,6 +175,12 @@ export interface TurboAudioController {
   readonly unlock: () => Promise<void>;
   /** Duck or restore the music bus (finish fanfare ducking). */
   readonly setMusicDucked: (ducked: boolean) => void;
+  /**
+   * Per-frame loop drive: the engine loop follows speed and throttle (pitch and
+   * level), wind follows speed. A parked car idles quietly; nothing drones at
+   * constant level regardless of what the car does.
+   */
+  readonly drive: (speedFraction: number, throttle: boolean) => void;
   readonly proof: () => TurboAudioProof;
   readonly dispose: () => Promise<void>;
 }
@@ -218,6 +236,15 @@ export function createTurboAudio(reducedMotion = false): TurboAudioController {
       musicDucked = ducked;
       // Duck only the music bus; engine/wind/gameplay cues keep their levels.
       audio.setBusVolume("music", ducked ? TURBO_AUDIO_MUSIC_DUCK_VOLUME : TURBO_AUDIO_BUS_VOLUMES.music);
+    },
+    drive(speedFraction, throttle) {
+      const v = Math.max(0, Math.min(1, Number.isFinite(speedFraction) ? speedFraction : 0));
+      const load = throttle ? 1 : 0;
+      audio.setCueLevel("engine", {
+        volume: turboEngineLevel(v, load),
+        rate: TURBO_ENGINE_IDLE_RATE + (TURBO_ENGINE_MAX_RATE - TURBO_ENGINE_IDLE_RATE) * v
+      }, 120);
+      audio.setCueLevel("wind", { volume: v * v }, 200);
     },
     proof() {
       const evidence = audio.evidence;

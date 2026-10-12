@@ -66,7 +66,8 @@ export class BucketsAudioController {
     if (!audio) return;
     this.ambienceElement = audio;
     audio.loop = true;
-    audio.volume = 0.35;
+    // Bed sits well under gameplay cues (the D-minor pad at 0.35 read as a drone).
+    audio.volume = 0.15;
     audio.play().catch(() => {});
   }
 

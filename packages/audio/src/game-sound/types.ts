@@ -15,6 +15,7 @@ export interface SoundGraphContext extends AudioContextLike {
   createWaveShaper?(): WaveShaperNode;
   createMediaElementSource?(element: HTMLMediaElement): MediaElementAudioSourceNode;
   decodeAudioData?(data: ArrayBuffer): Promise<AudioBuffer>;
+  createBuffer?(numberOfChannels: number, length: number, sampleRate: number): AudioBuffer;
 }
 
 /** Any node a fake can satisfy — connect/disconnect are all the engine uses generically. */

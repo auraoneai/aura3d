@@ -4387,6 +4387,9 @@ app.onFrame(({ dt }) => {
 
   if (!canSimulateRace(raceSession, raceSnapshot.status === "finished")) {
     mountedEvidence.gameplay.countdownBeforeMotion = !raceSession.startLights.complete;
+    // Simulation is held (flag fallen / lights): the car is stopped, so the
+    // engine settles to idle and the wind dies instead of holding race level.
+    if (engineLoopActive) turboAudio.drive(0, false);
     if (raceSnapshot.status === "finished") {
       // Vehicle simulation stops at the flag, but the result presentation must
       // continue. Apply the session blend to the mounted camera, HUD, and proof
@@ -5024,6 +5027,8 @@ app.onFrame(({ dt }) => {
   // by raw steering input: a stationary car turning its wheels must not smoke.
   const driftAmount = Math.min(1, Math.abs(raceSnapshot.drift));
   const speedFraction = Math.min(1, Math.abs(raceSnapshot.speed) / Math.max(gameplayMaxSpeed, 0.001));
+  // Engine/wind loops follow the car instead of droning at a fixed level.
+  if (engineLoopActive) turboAudio.drive(speedFraction, resolvedThrottleHeld);
   const driftVisible = driftAmount > 0.12 && speedFraction > 0.18;
   // PART F2 drift rumble: sustained slip holds trauma while the slide lasts and
   // releases on grip, so the chase lens trembles through a real drift only.
