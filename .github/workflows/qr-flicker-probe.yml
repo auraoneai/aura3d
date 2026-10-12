@@ -21,23 +21,30 @@ concurrency:
 jobs:
   probe:
     name: "flicker probe shard ${{ matrix.shard }}"
-    runs-on: [self-hosted, track0, gpu-l4]
+    # Shards alternate track0 / azure-gpu L4 pools; every comparison is within one game (one runner).
+    runs-on: ${{ fromJSON(matrix.labels) }}
     timeout-minutes: 150
     strategy:
       fail-fast: false
       matrix:
         include:
           - shard: a
+            labels: '["self-hosted","track0","gpu-l4"]'
             games: "aura-clash-showcase,showcase-blockfall-reactor,showcase-skyline-runner"
           - shard: b
+            labels: '["self-hosted","azure-gpu","gpu-l4"]'
             games: "showcase-turbo-drift-circuit,showcase-siege-golf,showcase-aurora-lander"
           - shard: c
+            labels: '["self-hosted","track0","gpu-l4"]'
             games: "showcase-neon-swarm,showcase-gravity-post,showcase-courier-rush"
           - shard: d
+            labels: '["self-hosted","azure-gpu","gpu-l4"]'
             games: "showcase-pulse-tunnel,showcase-mech-hangar,showcase-vault-breakers"
           - shard: e
+            labels: '["self-hosted","track0","gpu-l4"]'
             games: "showcase-rooftop-buckets,showcase-gallery-shift,showcase-deep-recovery"
           - shard: f
+            labels: '["self-hosted","azure-gpu","gpu-l4"]'
             games: "showcase-patrol-wing,showcase-bank-shot,showcase-orbital-defense"
     env:
       QRC_GAMES: ${{ inputs.games || matrix.games }}
