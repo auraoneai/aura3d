@@ -38,7 +38,7 @@ export function skylineEffectsPass(options: SkylineEffectsPassOptions): readonly
     }).position(x, y + 0.6, depth - 0.4)
   );
   return [
-    effects.vignette({ intensity: 0.3, smoothness: 2.4, roundness: 1 }),
+    effects.vignette({ intensity: 0.38, smoothness: 2.4, roundness: 1 }),
     ...motes
   ];
 }
