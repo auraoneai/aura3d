@@ -68,6 +68,12 @@ export async function runOutputSceneTool(stage: HTMLElement): Promise<OutputScen
       (builder.background as unknown as BackgroundFn).call(builder, "#336699", { toneMapped });
       if (additive) {
         builder.add(primitives.box({ name: "additive-quad", material: emissive(4, { blend: "additive" } as Partial<AuraMaterialSpec>), size: [0.8, 0.8, 0.02] }));
+      } else {
+        // A background-only snapshot never mounts the WebGL renderer
+        // (createAuraApp gates the production mount on renderable content), so
+        // the C-05 path was not exercised. A small corner anchor mounts it; the
+        // spec reads the centre pixel, which stays pure background.
+        builder.add(primitives.box({ name: "bg-anchor", material: emissive(0), size: [0.1, 0.1, 0.02] }).position(1.6, 0.9, 0));
       }
     } else {
       builder.background("#000000");
