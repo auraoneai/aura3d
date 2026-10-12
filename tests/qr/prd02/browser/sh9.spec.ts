@@ -46,8 +46,9 @@ test.describe("02-T1936 SH9 sky tint on the prd02-13 white sphere", () => {
     server = await startLaneServer();
     const page = await browser.newPage();
     await page.goto(`${server.origin}/scenes/prd02/sh9.html`, { waitUntil: "load", timeout: 60_000 });
-    await page.waitForFunction("() => Boolean(window.__A3D_PRD02_SH9__)", undefined, { timeout: 240_000, polling: 500 });
-    result = (await page.evaluate("() => window.__A3D_PRD02_SH9__")) as HarnessResult;
+    // Expression predicates (a "() => …" string is truthy at once; see chunks.spec.ts).
+    await page.waitForFunction("Boolean(window.__A3D_PRD02_SH9__)", undefined, { timeout: 240_000, polling: 500 });
+    result = (await page.evaluate("window.__A3D_PRD02_SH9__")) as HarnessResult;
     await page.close();
   });
 
