@@ -1,0 +1,3822 @@
+diff --git a/apps/aura-clash-showcase/src/v2/audio-proof.ts b/apps/aura-clash-showcase/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..0e4bad5593f15f1f50ba3002d7725eff73a21ee9
+--- /dev/null
++++ b/apps/aura-clash-showcase/src/v2/audio-proof.ts
+@@ -0,0 +1,77 @@
++// apps/aura-clash-showcase/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++// This route has no audio module: `pushCue` only logs intents, nothing is
++// voiced, so the proof stays at zero until C-25 sound is wired (#70).
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/aura-clash-showcase/src/v2/evidence/index.ts b/apps/aura-clash-showcase/src/v2/evidence/index.ts
+index 609afe94b8640f0900ffcbf4cbd0e94dc27b4dc5..88abdf676ffe6c12cc8b7981428a9f450627b446 100644
+--- a/apps/aura-clash-showcase/src/v2/evidence/index.ts
++++ b/apps/aura-clash-showcase/src/v2/evidence/index.ts
+@@ -3,6 +3,7 @@
+ // window.__AURA3D_GAME_EVIDENCE__["aura-clash-showcase"], lazily computed,
+ // no per-frame allocation > 1KB. `session` is shell-owned — the route
+ // publishes `playback` instead (spec reads paused via __AURA3D_GAME__.session).
++import { audioProof } from "../audio-proof";
+ import type {
+   AuraApp, FightingGameSnapshot, GameSession
+ } from "@aura3d/engine";
+@@ -86,7 +87,7 @@ export function publishAuraClashEvidence(b: AuraClashEvidenceBindings): void {
+       };
+     },
+     get audio() {
+-      return { cueLog: b.audioCueLog() };
++      return { cueLog: b.audioCueLog(), ...audioProof.snapshot() };
+     }
+   };
+ }
+diff --git a/apps/showcase-aurora-lander/src/v2/audio-proof.ts b/apps/showcase-aurora-lander/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..87aa5bfbba71044665ddb17e487e5004d07929e1
+--- /dev/null
++++ b/apps/showcase-aurora-lander/src/v2/audio-proof.ts
+@@ -0,0 +1,82 @@
++// apps/showcase-aurora-lander/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "thrust-loop": "throttle",
++  "ambient-wind": "wind",
++  "touch-soft": "touchdown",
++  "touch-hard": "touchdown",
++  "crash": "crash",
++  "site-clear": "success"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-aurora-lander/src/v2/audio.ts b/apps/showcase-aurora-lander/src/v2/audio.ts
+index 23045b93ffa274650682b3bfafb5e9c8e1820c94..c07eea282b38279ba7653554456f5138712c6b1e 100644
+--- a/apps/showcase-aurora-lander/src/v2/audio.ts
++++ b/apps/showcase-aurora-lander/src/v2/audio.ts
+@@ -1,9 +1,10 @@
+ // Lander audio + cue log — extracted from boot.ts for 14-LOC.
++import { instrumentAudio } from "./audio-proof";
+ import { createLanderAudio, type LanderAudioCue } from "../legacy/lander-audio";
+ import type { AuroraCtx } from "./state";
+ 
+ export function createLanderAudioBlock(ctx: AuroraCtx, reducedMotion: boolean) {
+-  const audio = createLanderAudio(reducedMotion);
++  const audio = instrumentAudio(createLanderAudio(reducedMotion), { cue: null });
+   const audioCueLog: string[] = [];
+   function pushCue(cue: LanderAudioCue): void {
+     audioCueLog.push(cue);
+diff --git a/apps/showcase-aurora-lander/src/v2/evidence/index.ts b/apps/showcase-aurora-lander/src/v2/evidence/index.ts
+index e9c48049d7e38442d1f4a10038339634434557eb..1946985e40d9daa9569c53971304e8eb708fb792 100644
+--- a/apps/showcase-aurora-lander/src/v2/evidence/index.ts
++++ b/apps/showcase-aurora-lander/src/v2/evidence/index.ts
+@@ -3,6 +3,7 @@
+ // lazy section getters. The required conditions read `lander.touchdown`
+ // ("landed" once a graded touchdown holds), `lander.altitude` (feet-plane AGL)
+ // and `framing.padInFrame` (active pad inside the rig's cone) here.
++import { audioProof } from "../audio-proof";
+ import type { AuraCameraPose, Game } from "@aura3d/engine";
+ import { pointInRigFrame } from "../scene/camera";
+ import type { LanderSite } from "../../gameplay/sites";
+@@ -156,7 +157,7 @@ export function publishAuroraEvidence(b: AuroraEvidenceBindings): void {
+       return b.appliedLook;
+     },
+     get audio() {
+-      return { cues: b.audioCueLog() };
++      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
+     },
+     get boot() {
+       return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };
+diff --git a/apps/showcase-bank-shot/src/v2/audio-proof.ts b/apps/showcase-bank-shot/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..640f0c1132a26c4af991a4df8fea6599f694bcac
+--- /dev/null
++++ b/apps/showcase-bank-shot/src/v2/audio-proof.ts
+@@ -0,0 +1,81 @@
++// apps/showcase-bank-shot/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "ball-hit": "ball-impact",
++  "cushion-hit": "cushion",
++  "pocket-drop": "pocket",
++  "cue-strike": "cue-strike",
++  "ambient-hall": "bed"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-bank-shot/src/v2/boot.ts b/apps/showcase-bank-shot/src/v2/boot.ts
+index e45e33613858abf0f69269ab64e10f99f1c41585..0151b3310661066dc8dd0396482ea486a95cfc79 100644
+--- a/apps/showcase-bank-shot/src/v2/boot.ts
++++ b/apps/showcase-bank-shot/src/v2/boot.ts
+@@ -3,6 +3,7 @@
+ // (no ambient, one shadowed spot, vendored HDRI reflections); gameplay modules
+ // are unchanged (rules/racks/table/cue/ball-visuals); audio plays through the
+ // existing route samples until C-25 game-sfx is real (standIn R-14-09).
++import { instrumentAudio } from "./audio-proof";
+ import { scene } from "@aura3d/engine";
+ import { createGame, type Game, lookManifest } from "@aura3d/game";
+ import { CueController, AIM_STEP, SPIN_STEP } from "../gameplay/cue";
+@@ -42,7 +43,7 @@ function buildScene() {
+ 
+ // ----------------------------------------------------------------- audio -----
+ 
+-const audio = createBilliardsAudio();
++const audio = instrumentAudio(createBilliardsAudio(), { cue: null });
+ const audioCueLog: string[] = [];
+ let audioUnlocked = false;
+ function pushCue(cue: Parameters<typeof audio.cue>[0]): void {
+diff --git a/apps/showcase-bank-shot/src/v2/evidence/index.ts b/apps/showcase-bank-shot/src/v2/evidence/index.ts
+index b452f489bc05a7cad0c0228ef45789282892cfcb..35bc546bdf9b4298a330bcd141b70ceeda987647 100644
+--- a/apps/showcase-bank-shot/src/v2/evidence/index.ts
++++ b/apps/showcase-bank-shot/src/v2/evidence/index.ts
+@@ -2,6 +2,7 @@
+ // Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-bank-shot"]` with lazy
+ // section getters (no per-frame allocation > 1 KB). The §7.2.1 required
+ // conditions read `table.pottedThisShot` and `balls.maxAngularSpeed` here.
++import { audioProof } from "../audio-proof";
+ import type { Game } from "@aura3d/engine";
+ import type { CueController } from "../../gameplay/cue";
+ import type { RulesEngine } from "../../gameplay/rules";
+@@ -94,7 +95,7 @@ export function publishBankShotEvidence(b: BankShotEvidenceBindings): void {
+       return { maxAngularSpeed: b.maxAngularSpeed(), liveCount: b.sim.liveBallCount() };
+     },
+     get audio() {
+-      return { cues: [...b.audioCueLog()], lastStrike: b.lastStrikeAudio() };
++      return { cues: [...b.audioCueLog()], lastStrike: b.lastStrikeAudio(), ...audioProof.snapshot() };
+     },
+     get aim() {
+       const s = b.cue.state();
+diff --git a/apps/showcase-blockfall-reactor/src/v2/audio-proof.ts b/apps/showcase-blockfall-reactor/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..c732258f8cee2dd65b8d3b0e61c7e3845ed8198f
+--- /dev/null
++++ b/apps/showcase-blockfall-reactor/src/v2/audio-proof.ts
+@@ -0,0 +1,81 @@
++// apps/showcase-blockfall-reactor/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "lock": "tile-lock",
++  "line-clear": "line-clear",
++  "quad": "quad-clear",
++  "level-up": "level-up",
++  "ambient-hum": "reactor-hum"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-blockfall-reactor/src/v2/audio.ts b/apps/showcase-blockfall-reactor/src/v2/audio.ts
+index b613564979ec90cf525c1aa186f4081cf2107bf8..f649d770593e3769d269b455e247ddcf590070c7 100644
+--- a/apps/showcase-blockfall-reactor/src/v2/audio.ts
++++ b/apps/showcase-blockfall-reactor/src/v2/audio.ts
+@@ -1,9 +1,10 @@
+ // Audio block — extracted from boot.ts for 14-LOC.
++import { instrumentAudio } from "./audio-proof";
+ import { createBlockfallReactorAudio } from "../gameplay/reactor-audio";
+ import type { BlockfallAudioCue } from "../gameplay/blockfall-audio-manifest";
+ 
+ export function createBlockfallAudioBlock(reducedMotion: boolean) {
+-  const audio = createBlockfallReactorAudio(reducedMotion);
++  const audio = instrumentAudio(createBlockfallReactorAudio(reducedMotion), { cue: null });
+   const audioCueLog: string[] = [];
+   function pushCue(cue: BlockfallAudioCue): void {
+     audioCueLog.push(cue);
+diff --git a/apps/showcase-blockfall-reactor/src/v2/evidence/index.ts b/apps/showcase-blockfall-reactor/src/v2/evidence/index.ts
+index 5b52c1b37f48cb720f3cc6236de08e3e59d5df62..06cc0bccadb7d63a37ded9fca4143fd9428f7b3c 100644
+--- a/apps/showcase-blockfall-reactor/src/v2/evidence/index.ts
++++ b/apps/showcase-blockfall-reactor/src/v2/evidence/index.ts
+@@ -4,6 +4,7 @@
+ //   board.stackHeight >= 4                                  (shot 03-mid, 20s)
+ // Plus the lane-standard sections: loading.sceneSwaps, appliedLook parity,
+ // audio cue log, touchEngaged, boardView parity, beat/clearFx proofs.
++import { audioProof } from "../audio-proof";
+ import type { BlockfallAudioProof } from "../../gameplay/reactor-audio";
+ import type { Game } from "@aura3d/game";
+ import type { ClearFxProof } from "../../legacy/clear-fx";
+@@ -64,7 +65,7 @@ export function publishBlockfallEvidence(b: BlockfallEvidenceBindings): void {
+     get fx() { return b.fx(); },
+     get clearFx() { return b.clearFx(); },
+     get cameraFeel() { return b.cameraFeel(); },
+-    get audio() { return b.audio(); },
++    get audio() { return { ...b.audio(), ...audioProof.snapshot() }; },
+ 
+     get framing() {
+       const ev = b.game.app.camera?.evidence?.();
+diff --git a/apps/showcase-courier-rush/src/v2/audio-proof.ts b/apps/showcase-courier-rush/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..4007c37c3c7cf7760692f4aef29c0d958758607d
+--- /dev/null
++++ b/apps/showcase-courier-rush/src/v2/audio-proof.ts
+@@ -0,0 +1,80 @@
++// apps/showcase-courier-rush/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "engine": "engine",
++  "horn": "horn",
++  "pickup": "pickup",
++  "ambient-city": "bed"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-courier-rush/src/v2/boot.ts b/apps/showcase-courier-rush/src/v2/boot.ts
+index dcfe53e74c2c131352c225622d07012e409f21a6..3bac146f005041c6de8ece7990028a448985b039 100644
+--- a/apps/showcase-courier-rush/src/v2/boot.ts
++++ b/apps/showcase-courier-rush/src/v2/boot.ts
+@@ -4,6 +4,7 @@
+ // look-back chase rig, autopilot scenario. Gameplay modules (van/traffic/
+ // dispatch/city street graph) are unchanged; audio plays through the legacy
+ // cue map until C-25 game-sfx is real (standIn R-14-09).
++import { instrumentAudio } from "./audio-proof";
+ import {
+   createGameArcadeVehicle, game as engineGame, scene
+ } from "@aura3d/engine";
+@@ -77,7 +78,7 @@ function buildScene() {
+ 
+ // ----------------------------------------------------------------- audio -----
+ 
+-const audio = createCourierAudio();
++const audio = instrumentAudio(createCourierAudio(), { cue: null });
+ const audioCueLog: string[] = [];
+ let audioUnlocked = false;
+ function pushCue(cue: CourierAudioCue): void {
+diff --git a/apps/showcase-courier-rush/src/v2/evidence/index.ts b/apps/showcase-courier-rush/src/v2/evidence/index.ts
+index 67bf01dc106db1451765fe8dfdf1722e6323fdc6..71965630d001cef679923b18c0835873a5eeb250 100644
+--- a/apps/showcase-courier-rush/src/v2/evidence/index.ts
++++ b/apps/showcase-courier-rush/src/v2/evidence/index.ts
+@@ -3,6 +3,7 @@
+ // lazy section getters (no per-frame allocation > 1 KB). The required
+ // condition reads `delivery.completed` here; van/traffic/fx sections feed the
+ // capture reports.
++import { audioProof } from "../audio-proof";
+ import type { Game } from "@aura3d/engine";
+ import type { DispatchState } from "../../gameplay/dispatch";
+ import type { TrafficCarSnapshot } from "../../gameplay/traffic";
+@@ -90,7 +91,7 @@ export function publishCourierEvidence(b: CourierEvidenceBindings): void {
+       return b.appliedLook;
+     },
+     get audio() {
+-      return { cues: b.audioCueLog() };
++      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
+     },
+     get boot() {
+       return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };
+diff --git a/apps/showcase-deep-recovery/src/v2/audio-proof.ts b/apps/showcase-deep-recovery/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..2cfd15f1f97465f5b9ac5f554e4c92c1d74deec8
+--- /dev/null
++++ b/apps/showcase-deep-recovery/src/v2/audio-proof.ts
+@@ -0,0 +1,80 @@
++// apps/showcase-deep-recovery/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "sonar-ping": "sonar",
++  "sonar-return": "sonar",
++  "grapple-latch": "grapple",
++  "ambient-deep": "bed"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-deep-recovery/src/v2/audio.ts b/apps/showcase-deep-recovery/src/v2/audio.ts
+index 4d1b66ca09143d2a9f1abcecf49dcc83b711142f..98019c039afa2ca736934c14ba83df0040912b9d 100644
+--- a/apps/showcase-deep-recovery/src/v2/audio.ts
++++ b/apps/showcase-deep-recovery/src/v2/audio.ts
+@@ -1,9 +1,10 @@
+ // Audio controller + cue log — extracted from boot.ts for 14-LOC.
++import { instrumentAudio } from "./audio-proof";
+ import { DeepAudioController } from "../legacy/deep-audio";
+ import type { DeepAudioCue } from "../legacy/deep-audio";
+ 
+ export function createDeepAudioBlock() {
+-  const audio = new DeepAudioController();
++  const audio = instrumentAudio(new DeepAudioController(), { playCue: null, startAmbience: "ambient-deep" });
+   void audio.init();
+   const audioCueLog: string[] = [];
+   type DeepAudioCue = Parameters<DeepAudioController["playCue"]>[0];
+diff --git a/apps/showcase-deep-recovery/src/v2/evidence/index.ts b/apps/showcase-deep-recovery/src/v2/evidence/index.ts
+index 299b3378b48abae42d9dd20f0bfc1e09dd306645..c1c59c32f9f0863d632c133233e11c914ec5a691 100644
+--- a/apps/showcase-deep-recovery/src/v2/evidence/index.ts
++++ b/apps/showcase-deep-recovery/src/v2/evidence/index.ts
+@@ -3,6 +3,7 @@
+ // getters. render.readbacksThisFrame is a constant 0: the v2 shell issues no
+ // GPU readbacks — the §6.9.14 volumetric-fog readback was removed at day-0
+ // (the four render.readbacksThisFrame===0 conditions measure exactly that).
++import { audioProof } from "../audio-proof";
+ import type { Game } from "@aura3d/engine";
+ 
+ export const DEEP_EVIDENCE_ID = "showcase-deep-recovery";
+@@ -135,7 +136,7 @@ export function publishDeepEvidence(b: DeepEvidenceBindings): void {
+       return b.appliedLook();
+     },
+     get audio() {
+-      return { cues: b.audioCueLog() };
++      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
+     },
+     get boot() {
+       return { bootedAtMs: b.bootedAtMs(), frame: b.frameCount() };
+diff --git a/apps/showcase-gallery-shift/src/v2/audio-proof.ts b/apps/showcase-gallery-shift/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..75620f7320affe2c5b1296d96fc0f9e88e9196ec
+--- /dev/null
++++ b/apps/showcase-gallery-shift/src/v2/audio-proof.ts
+@@ -0,0 +1,81 @@
++// apps/showcase-gallery-shift/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "walk-step": "footstep-marble",
++  "sneak-step": "footstep-marble",
++  "guard-alert": "guard-bark",
++  "laser-trip": "alarm",
++  "alert-rise": "tension-layer"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-gallery-shift/src/v2/audio.ts b/apps/showcase-gallery-shift/src/v2/audio.ts
+index d5e1bb157c4a39912a7be30920e9c9e0b5a5ba02..f3428130d65ed8c5e84977695172a21e7f6032be 100644
+--- a/apps/showcase-gallery-shift/src/v2/audio.ts
++++ b/apps/showcase-gallery-shift/src/v2/audio.ts
+@@ -1,11 +1,12 @@
+ // Heist audio + cue log — extracted from boot.ts for 14-LOC.
++import { instrumentAudio } from "./audio-proof";
+ import { createHeistAudio, type HeistAudioCue } from "../legacy/heist-audio";
+ import type { GalleryCtx } from "./state";
+ 
+ const MAX_CUE_LOG = 48;
+ 
+ export function createHeistAudioBlock(ctx: GalleryCtx) {
+-  const audio = createHeistAudio();
++  const audio = instrumentAudio(createHeistAudio(), { cue: null });
+   const audioCueLog: string[] = [];
+   const lastCueFrame = new Map<string, number>();
+   function pushCue(cue: HeistAudioCue): void {
+diff --git a/apps/showcase-gallery-shift/src/v2/evidence/index.ts b/apps/showcase-gallery-shift/src/v2/evidence/index.ts
+index 4f89ec7f91492b1786bf9e7e301e5796d7aab4d9..6f745d4daba75f3fb4252e7159736ab99e76218c 100644
+--- a/apps/showcase-gallery-shift/src/v2/evidence/index.ts
++++ b/apps/showcase-gallery-shift/src/v2/evidence/index.ts
+@@ -3,6 +3,7 @@
+ // ("floor-1"/"floor-2") while loading.sceneSwaps stays 0 — both floor sets
+ // live in one union scene.
+ 
++import { audioProof } from "../audio-proof";
+ import type { Game } from "@aura3d/game";
+ 
+ export interface GalleryEvidenceBindings {
+@@ -76,7 +77,7 @@ export function publishGalleryEvidence(bindings: GalleryEvidenceBindings) {
+       return bindings.detection();
+     },
+     get audio() {
+-      return bindings.audio();
++      return { ...bindings.audio(), ...audioProof.snapshot() };
+     },
+     get run() {
+       return bindings.run();
+diff --git a/apps/showcase-gravity-post/src/v2/audio-proof.ts b/apps/showcase-gravity-post/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..5cc0d1150035336561c83f775ccbb5d8853cdeeb
+--- /dev/null
++++ b/apps/showcase-gravity-post/src/v2/audio-proof.ts
+@@ -0,0 +1,81 @@
++// apps/showcase-gravity-post/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "launch-whoosh": "launch",
++  "burn-loop": "thrust",
++  "dock-lock": "dock",
++  "contract-clear": "delivered",
++  "ambient-space": "bed"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-gravity-post/src/v2/audio.ts b/apps/showcase-gravity-post/src/v2/audio.ts
+index d45d56be7c73ff834eaaeab329c4fe112a902c5e..5cf614f771f88f96b5740797aab633e05b49b5ca 100644
+--- a/apps/showcase-gravity-post/src/v2/audio.ts
++++ b/apps/showcase-gravity-post/src/v2/audio.ts
+@@ -1,8 +1,9 @@
+ // Audio controller + cue log — extracted from boot.ts for 14-LOC.
++import { instrumentAudio } from "./audio-proof";
+ import { createGravityPostAudio } from "../legacy/post-audio";
+ 
+ export function createPostAudioBlock() {
+-  const audio = createGravityPostAudio();
++  const audio = instrumentAudio(createGravityPostAudio(), { play: null });
+   const audioCueLog: string[] = [];
+   function pushCue(cue: Parameters<typeof audio.play>[0]): void {
+     audioCueLog.push(cue);
+diff --git a/apps/showcase-gravity-post/src/v2/evidence/index.ts b/apps/showcase-gravity-post/src/v2/evidence/index.ts
+index b882c476d76cff907a0359599cb4569a811ace12..d886683675367002ebfffbca78915936c7833891 100644
+--- a/apps/showcase-gravity-post/src/v2/evidence/index.ts
++++ b/apps/showcase-gravity-post/src/v2/evidence/index.ts
+@@ -3,6 +3,7 @@
+ // lazy section getters. The required condition reads `pod.state` (normalized
+ // "in-flight" while the authored integrator is coasting) and `pod.launchedBy`
+ // ("keyboard" when the Enter-key launch path fired, "pointer" for the drag).
++import { audioProof } from "../audio-proof";
+ import type { AuraCameraPose, Game } from "@aura3d/engine";
+ import type { ContractSpec } from "../../gameplay/contracts";
+ import type { PodRuntimeState } from "../../gameplay/pod";
+@@ -181,7 +182,7 @@ export function publishGravityEvidence(b: GravityEvidenceBindings): void {
+       return b.appliedLook;
+     },
+     get audio() {
+-      return { cues: [...b.audioCueLog()] };
++      return { cues: [...b.audioCueLog()], ...audioProof.snapshot() };
+     },
+     get boot() {
+       return { startedAtMs: b.bootedAtMs };
+diff --git a/apps/showcase-mech-hangar/src/v2/audio-proof.ts b/apps/showcase-mech-hangar/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..cd4c2f28b8da163bc4e46071a10078382c1b6dfd
+--- /dev/null
++++ b/apps/showcase-mech-hangar/src/v2/audio-proof.ts
+@@ -0,0 +1,81 @@
++// apps/showcase-mech-hangar/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "mechHeavyHitSfx": "metal-impact",
++  "mechLightHitSfx": "metal-impact",
++  "mechServoCycleSfx": "servo",
++  "mechWalkHeavySfx": "footstep",
++  "mechAmbientHangarSfx": "hangar-bed"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-mech-hangar/src/v2/boot.ts b/apps/showcase-mech-hangar/src/v2/boot.ts
+index ad7b42042212884262de83917e1cdaab337aaee2..8fecdbe1a3066fc0f4063c13964d3099f790e549 100644
+--- a/apps/showcase-mech-hangar/src/v2/boot.ts
++++ b/apps/showcase-mech-hangar/src/v2/boot.ts
+@@ -3,6 +3,7 @@
+ // floodlit pit ctx.bout. One union scene: the hangar set sits at z=0 and the pit
+ // at z=-34; entering the arena only moves the camera anchor, mounts the rival
+ // family and flips loading.sceneId — loading.sceneSwaps stays 0.
++import { instrumentAudio } from "./audio-proof";
+ import { game as engineGame, scene } from "@aura3d/engine";
+ import type { AuraRuntimeNodeHandle } from "@aura3d/engine";
+ import { createGame, lookManifest, type Prd09Game } from "@aura3d/game";
+@@ -88,7 +89,7 @@ const anchorHandle = handle(CAM_ANCHOR_ID);
+ const reducedMotion = engineGame.accessibility
+   .settings([engineGame.accessibility.reducedMotion({ enabled: matchMedia("(prefers-reduced-motion: reduce)").matches })])
+   .reducedMotion;
+-const audio = createHangarAudio();
++const audio = instrumentAudio(createHangarAudio(), { cue: null });
+ const unlockAudio = () => {
+   window.removeEventListener("pointerdown", unlockAudio);
+   window.removeEventListener("keydown", unlockAudio);
+diff --git a/apps/showcase-mech-hangar/src/v2/evidence/index.ts b/apps/showcase-mech-hangar/src/v2/evidence/index.ts
+index d5ea9a020b397387b6f7e9c527bfcb00995d4db2..dc57ec515927f4d02aeefef7c6dec058adfb1b8d 100644
+--- a/apps/showcase-mech-hangar/src/v2/evidence/index.ts
++++ b/apps/showcase-mech-hangar/src/v2/evidence/index.ts
+@@ -2,6 +2,7 @@
+ // capture + browser specs read. loading.sceneId reports the logical room
+ // ("hangar" before lock-in, "pit" after) while loading.sceneSwaps stays 0 —
+ // both sets live in one union scene.
++import { audioProof } from "../audio-proof";
+ import type { Game } from "@aura3d/game";
+ 
+ export interface MechEvidenceBindings {
+@@ -58,7 +59,7 @@ export function publishMechEvidence(bindings: MechEvidenceBindings) {
+       return bindings.fx();
+     },
+     get audio() {
+-      return bindings.audio();
++      return { ...bindings.audio(), ...audioProof.snapshot() };
+     },
+     get run() {
+       return bindings.run();
+diff --git a/apps/showcase-neon-swarm/src/v2/audio-proof.ts b/apps/showcase-neon-swarm/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..6fe52d14685d400e29fdabdf21c25e6abd188ff8
+--- /dev/null
++++ b/apps/showcase-neon-swarm/src/v2/audio-proof.ts
+@@ -0,0 +1,80 @@
++// apps/showcase-neon-swarm/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "pulse-fire": "fire",
++  "drone-hit": "hit",
++  "drone-die": "explosion",
++  "pickup": "pickup"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-neon-swarm/src/v2/audio.ts b/apps/showcase-neon-swarm/src/v2/audio.ts
+index 00c02c61b2b59b43c15bb6e2f7ab3bae2794d352..22f8dc859dcab291e15011cbd912fb42df734ad3 100644
+--- a/apps/showcase-neon-swarm/src/v2/audio.ts
++++ b/apps/showcase-neon-swarm/src/v2/audio.ts
+@@ -1,9 +1,10 @@
+ // Audio block — extracted from boot.ts for 14-LOC. Cue log + unlock gesture
+ // wiring unchanged; listeners attach on construction like before.
++import { instrumentAudio } from "./audio-proof";
+ import { createSwarmAudio, type SwarmCue } from "../legacy/swarm-audio";
+ 
+ export function createSwarmAudioBlock() {
+-  const audio = createSwarmAudio();
++  const audio = instrumentAudio(createSwarmAudio(), { cue: null });
+   const audioCueLog: string[] = [];
+   let audioUnlocked = false;
+   function pushCue(cue: SwarmCue): void {
+diff --git a/apps/showcase-neon-swarm/src/v2/evidence/index.ts b/apps/showcase-neon-swarm/src/v2/evidence/index.ts
+index 6b2a20f5bd2fcebf2b4885a0818d30605e7d8019..534efa2076b4f19c37fd4cb05578f33712a2eae8 100644
+--- a/apps/showcase-neon-swarm/src/v2/evidence/index.ts
++++ b/apps/showcase-neon-swarm/src/v2/evidence/index.ts
+@@ -2,6 +2,7 @@
+ // Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-neon-swarm"]` with
+ // lazy section getters. The required conditions read `swarm.killsThisWave`
+ // and `fx.liveCount` here.
++import { audioProof } from "../audio-proof";
+ import type { Game } from "@aura3d/engine";
+ import type { PlayerState, PlayerUpgrades } from "../../gameplay/player";
+ 
+@@ -102,7 +103,7 @@ export function publishSwarmEvidence(b: SwarmEvidenceBindings): void {
+       return b.appliedLook;
+     },
+     get audio() {
+-      return { cues: b.audioCueLog() };
++      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
+     },
+     get boot() {
+       return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };
+diff --git a/apps/showcase-orbital-defense/src/v2/audio-proof.ts b/apps/showcase-orbital-defense/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..b883463f07cf9314c89ecef28a03bf86a964dc64
+--- /dev/null
++++ b/apps/showcase-orbital-defense/src/v2/audio-proof.ts
+@@ -0,0 +1,77 @@
++// apps/showcase-orbital-defense/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++// This route has no audio module: `pushCue` only logs intents, nothing is
++// voiced, so the proof stays at zero until C-25 sound is wired (#70).
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-orbital-defense/src/v2/evidence/index.ts b/apps/showcase-orbital-defense/src/v2/evidence/index.ts
+index a6176c44854b16e210e1fbea242bd039574ac058..e976873bdd9ab96e1d0efaa7859c6f0728ae875a 100644
+--- a/apps/showcase-orbital-defense/src/v2/evidence/index.ts
++++ b/apps/showcase-orbital-defense/src/v2/evidence/index.ts
+@@ -4,6 +4,7 @@
+ // computed, no per-frame allocation > 1KB. `session` is shell-owned — the
+ // route publishes `playback` (spec reads paused via __AURA3D_GAME__.session).
+ // `fx.explosionsLive` and `framing.dronesUnderHud` back the §7.2.1 rows.
++import { audioProof } from "../audio-proof";
+ import type { AuraApp, GameSession } from "@aura3d/engine";
+ import type { WaveState } from "../../gameplay/waves";
+ import { polar } from "../../gameplay/waves";
+@@ -111,7 +112,7 @@ export function publishOrbitalEvidence(b: OrbitalEvidenceBindings): void {
+       };
+     },
+     get audio() {
+-      return { cueLog: b.audioCueLog() };
++      return { cueLog: b.audioCueLog(), ...audioProof.snapshot() };
+     }
+   };
+ }
+diff --git a/apps/showcase-patrol-wing/src/v2/audio-proof.ts b/apps/showcase-patrol-wing/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..54e7f4fd2394c38ac1aa907b0902d970adfd089b
+--- /dev/null
++++ b/apps/showcase-patrol-wing/src/v2/audio-proof.ts
+@@ -0,0 +1,81 @@
++// apps/showcase-patrol-wing/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "engine-loop": "engine-rpm",
++  "ambient-wind": "wind-speed",
++  "cannon-fire": "gunfire",
++  "drone-down": "drone-destroyed",
++  "ring-chime": "ring-clear"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-patrol-wing/src/v2/audio.ts b/apps/showcase-patrol-wing/src/v2/audio.ts
+index 74738a5424ba388d1960403390de3ceb0390aba2..2ae505b5297108368cb4fb4fd7231958677228b2 100644
+--- a/apps/showcase-patrol-wing/src/v2/audio.ts
++++ b/apps/showcase-patrol-wing/src/v2/audio.ts
+@@ -1,10 +1,11 @@
++import { instrumentAudio } from "./audio-proof";
+ import { createWingAudio, type WingAudioCue } from "../legacy/wing-audio";
+ import type { PatrolCtx } from "./state";
+ 
+ export function createPatrolAudioBlock(ctx: PatrolCtx) {
+ // ------------------------------------------------------------------ audio ---
+ 
+-const audio = createWingAudio();
++const audio = instrumentAudio(createWingAudio(), { cue: null });
+ const audioCueLog: string[] = [];
+ function pushCue(cue: WingAudioCue): void {
+   audioCueLog.push(cue);
+diff --git a/apps/showcase-patrol-wing/src/v2/evidence/index.ts b/apps/showcase-patrol-wing/src/v2/evidence/index.ts
+index f7130d7dfdb9d0964584e78fc1a91424e8397e22..a8d8e768ae7099a297b938fbb3ff0881fdd252a1 100644
+--- a/apps/showcase-patrol-wing/src/v2/evidence/index.ts
++++ b/apps/showcase-patrol-wing/src/v2/evidence/index.ts
+@@ -5,6 +5,7 @@
+ //   - flight.throttle: authored throttle 0..1 (> 0.4 while the sortie climbs)
+ //   - drones.hitsThisSortie: cumulative cannon-hit count for this sortie
+ //   - fx.liveCount: live fx-layer particles (trails keep it > 0 airborne)
++import { audioProof } from "../audio-proof";
+ import type { AuraCameraPose, Game } from "@aura3d/engine";
+ import type { RingTrackerSnapshot } from "../../gameplay/patrol";
+ import type { CannonSnapshot } from "../../gameplay/weapons";
+@@ -200,7 +201,7 @@ export function publishPatrolEvidence(b: PatrolEvidenceBindings): void {
+         : null;
+     },
+     get audio() {
+-      return { cueLog: [...b.audioCueLog()] };
++      return { cueLog: [...b.audioCueLog()], ...audioProof.snapshot() };
+     },
+     get boot() {
+       return {
+diff --git a/apps/showcase-pulse-tunnel/src/v2/audio-proof.ts b/apps/showcase-pulse-tunnel/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..078b51e8d0d4d993d3d9b96a64bf012f59efd09e
+--- /dev/null
++++ b/apps/showcase-pulse-tunnel/src/v2/audio-proof.ts
+@@ -0,0 +1,79 @@
++// apps/showcase-pulse-tunnel/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "graze": "graze",
++  "shieldHit": "hit",
++  "track-stems": "music"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-pulse-tunnel/src/v2/boot.ts b/apps/showcase-pulse-tunnel/src/v2/boot.ts
+index 2c1032a485cb0e967c25810e66390b47d817fb41..8a146793189c6cb85030f9c4494868a36126064d 100644
+--- a/apps/showcase-pulse-tunnel/src/v2/boot.ts
++++ b/apps/showcase-pulse-tunnel/src/v2/boot.ts
+@@ -5,6 +5,7 @@
+ // PT-01 honest fallback). Gameplay modules (beat-clock/gates/patterns/
+ // player/style) are unchanged; music + sfx play through the legacy
+ // stem-bus tunnel audio until C-25 lands (standIn R-14-09).
++import { instrumentAudio } from "./audio-proof";
+ import { game as engineGame, scene } from "@aura3d/engine";
+ import { createGame, type Game, lookManifest } from "@aura3d/game";
+ import { pulseSectionAtTime, pulseTimeForBeat } from "../gameplay/beat-clock";
+@@ -64,7 +65,7 @@ function buildScene() {
+ 
+ // ----------------------------------------------------------------- audio -----
+ 
+-const tunnelAudio = createTunnelAudio();
++const tunnelAudio = instrumentAudio(createTunnelAudio(), { sfx: null, startRun: "track-stems" });
+ const audioCueLog: string[] = [];
+ function pushCue(cue: PulseSfxCue): void {
+   audioCueLog.push(cue);
+diff --git a/apps/showcase-pulse-tunnel/src/v2/evidence/index.ts b/apps/showcase-pulse-tunnel/src/v2/evidence/index.ts
+index b1bb603d2304fc2e635b5dd66c3166c28a4707f4..92764f763aa0e1ce5d97d0af87ed10fec7a39b76 100644
+--- a/apps/showcase-pulse-tunnel/src/v2/evidence/index.ts
++++ b/apps/showcase-pulse-tunnel/src/v2/evidence/index.ts
+@@ -2,6 +2,7 @@
+ // Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-pulse-tunnel"]` with
+ // lazy section getters. The required conditions read `gates.passedOnBeat`,
+ // `fx.liveCount` and `framing.canvasMatchesViewport` here.
++import { audioProof } from "../audio-proof";
+ import type { Game } from "@aura3d/engine";
+ import type { PulsePlayerState } from "../../gameplay/player";
+ import type { BeatClockSample } from "../../gameplay/beat-clock";
+@@ -130,7 +131,7 @@ export function publishPulseEvidence(b: PulseEvidenceBindings): void {
+       return b.appliedLook;
+     },
+     get audio() {
+-      return { cues: b.audioCueLog() };
++      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
+     },
+     get boot() {
+       return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };
+diff --git a/apps/showcase-rooftop-buckets/src/v2/audio-proof.ts b/apps/showcase-rooftop-buckets/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..dd17e50f4bbf4f1f1e3e4bb802785630796c7f6b
+--- /dev/null
++++ b/apps/showcase-rooftop-buckets/src/v2/audio-proof.ts
+@@ -0,0 +1,79 @@
++// apps/showcase-rooftop-buckets/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (qr-request #70) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "rimClank": "rim",
++  "swish": "swish",
++  "ambientRooftop": "bed"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-rooftop-buckets/src/v2/boot.ts b/apps/showcase-rooftop-buckets/src/v2/boot.ts
+index a913c826ab517a37e150d27b3cb0f41990c9064e..43453e2733a4bfb6674c9c3f63dce88cc6d04b67 100644
+--- a/apps/showcase-rooftop-buckets/src/v2/boot.ts
++++ b/apps/showcase-rooftop-buckets/src/v2/boot.ts
+@@ -3,6 +3,7 @@
+ // scorer/defender via C-19 crossFadeTo, arc-ribbon ball trail, shoulder rig.
+ // Gameplay modules (court/hoop-sim/rim/scoring/shot) are unchanged; audio
+ // plays through the legacy cue map until C-25 game-sfx is real (R-14-10).
++import { instrumentAudio } from "./audio-proof";
+ import { scene } from "@aura3d/engine";
+ import { createGame, type Game, lookManifest } from "@aura3d/game";
+ import { COURT_SPOTS } from "../gameplay/court";
+@@ -51,7 +52,7 @@ function buildScene() {
+ 
+ // ----------------------------------------------------------------- audio -----
+ 
+-const audio = new BucketsAudioController();
++const audio = instrumentAudio(new BucketsAudioController(), { playCue: null });
+ const audioCueLog: string[] = [];
+ let audioUnlocked = false;
+ function pushCue(cue: BucketsAudioCue, volume = 0.8): void {
+diff --git a/apps/showcase-rooftop-buckets/src/v2/evidence/index.ts b/apps/showcase-rooftop-buckets/src/v2/evidence/index.ts
+index 83b20a1af39ec84194f06adda2b9d37f8fabf9a3..a4c3959f147e2397e7dd1d80dbfba24f7bf93b6a 100644
+--- a/apps/showcase-rooftop-buckets/src/v2/evidence/index.ts
++++ b/apps/showcase-rooftop-buckets/src/v2/evidence/index.ts
+@@ -3,6 +3,7 @@
+ // lazy section getters (no per-frame allocation > 1 KB). Required conditions
+ // read `shot.result`, `shot.meter`, `characters.skinnedVisible`,
+ // `characters.tracksApplied` and `fx.liveCount` here.
++import { audioProof } from "../audio-proof";
+ import type { Game } from "@aura3d/engine";
+ import type { BallState } from "../../gameplay/shot";
+ import type { GameScoreState } from "../../gameplay/scoring";
+@@ -100,7 +101,7 @@ export function publishRooftopEvidence(b: RooftopEvidenceBindings): void {
+       return b.appliedLook;
+     },
+     get audio() {
+-      return { cues: b.audioCueLog() };
++      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
+     },
+     get boot() {
+       return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };
+diff --git a/apps/showcase-siege-golf/src/v2/audio-proof.ts b/apps/showcase-siege-golf/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..8841cabf8572cd5582c13828e62a41171b104cf4
+--- /dev/null
++++ b/apps/showcase-siege-golf/src/v2/audio-proof.ts
+@@ -0,0 +1,80 @@
++// apps/showcase-siege-golf/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "drive-hit": "launch",
++  "wood-crack": "break",
++  "cup-sink": "hole",
++  "ambient-wind": "bed"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-siege-golf/src/v2/boot.ts b/apps/showcase-siege-golf/src/v2/boot.ts
+index 163dacdbc0cb0c9e16aab3fe66656b6214408240..a841cca2b3d4364d7c9ae88d899a9dcbdd5d95e4 100644
+--- a/apps/showcase-siege-golf/src/v2/boot.ts
++++ b/apps/showcase-siege-golf/src/v2/boot.ts
+@@ -7,6 +7,7 @@
+ // Gameplay modules (shot/course/hole-flow/score/structures/solutions) are
+ // unchanged; audio plays through the legacy cue controller until C-25
+ // lands (standIn R-14-09).
++import { instrumentAudio } from "./audio-proof";
+ import { game as engineGame, scene } from "@aura3d/engine";
+ import { createGame, type Game, lookManifest } from "@aura3d/game";
+ import { SIEGE_GOLF_HOLES } from "../gameplay/course";
+@@ -49,7 +50,7 @@ function buildScene() {
+ 
+ // ----------------------------------------------------------------- audio -----
+ 
+-const audio = createGolfAudio();
++const audio = instrumentAudio(createGolfAudio(), { cue: null });
+ const audioCueLog: string[] = [];
+ function pushCue(cue: GolfAudioCue): void {
+   audioCueLog.push(cue);
+diff --git a/apps/showcase-siege-golf/src/v2/evidence/index.ts b/apps/showcase-siege-golf/src/v2/evidence/index.ts
+index e13e1e7680f3eed43adf0091499ecf3e2a0391d1..9cf479af7d306f398eab112f15fbab7ee58be598 100644
+--- a/apps/showcase-siege-golf/src/v2/evidence/index.ts
++++ b/apps/showcase-siege-golf/src/v2/evidence/index.ts
+@@ -2,6 +2,7 @@
+ // Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-siege-golf"]` with
+ // lazy section getters. The required conditions read
+ // `structures.toppledThisShot`, `loading.sceneSwaps` and `shot.power` here.
++import { audioProof } from "../audio-proof";
+ import type { Game } from "@aura3d/engine";
+ import type { HoleFlowSnapshot } from "../../gameplay/hole-flow";
+ import type { AimState } from "../../gameplay/shot";
+@@ -102,7 +103,7 @@ export function publishSiegeEvidence(b: SiegeEvidenceBindings): void {
+       return b.appliedLook;
+     },
+     get audio() {
+-      return { cues: b.audioCueLog() };
++      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
+     },
+     get boot() {
+       return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };
+diff --git a/apps/showcase-skyline-runner/src/v2/audio-proof.ts b/apps/showcase-skyline-runner/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..03bfc6be9caab4d2fd0dd341995ec7e266cdeaa1
+--- /dev/null
++++ b/apps/showcase-skyline-runner/src/v2/audio-proof.ts
+@@ -0,0 +1,81 @@
++// apps/showcase-skyline-runner/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "jump": "jump",
++  "land-dust": "land",
++  "ember-pickup": "pickup",
++  "coin-chime": "pickup",
++  "act-ambience": "act-ambience"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-skyline-runner/src/v2/boot.ts b/apps/showcase-skyline-runner/src/v2/boot.ts
+index 4a7d8c34705a1576e061eae1433d23226af4a1cd..0e555d7d20b5e857fd344f4c33312ed755d21a2b 100644
+--- a/apps/showcase-skyline-runner/src/v2/boot.ts
++++ b/apps/showcase-skyline-runner/src/v2/boot.ts
+@@ -1,6 +1,7 @@
+ // apps/showcase-skyline-runner/src/v2/boot.ts — Skyline Runner v2 shell (T2.x).
+ // Drives the real platformer kit through the shared scene binding, with the
+ // Rapier character solver deciding contact truth exactly like the legacy loop.
++import { instrumentAudio } from "./audio-proof";
+ import { game as engineGame, scene } from "@aura3d/engine";
+ import { createGame, lookManifest, type Prd09Game } from "@aura3d/game";
+ import type { AuraRuntimeNodeHandle, GamePlatformerSnapshot } from "@aura3d/engine";
+@@ -67,7 +68,7 @@ const accessibilitySettings = engineGame.accessibility.settings([
+   })
+ ]);
+ const reducedMotion: boolean = accessibilitySettings.reducedMotion;
+-const audio = createSkylineAudio(reducedMotion);
++const audio = instrumentAudio(createSkylineAudio(reducedMotion), { cue: null, setAmbienceAct: "act-ambience" });
+ const feel = createSkylineFeel({
+   reducedMotion,
+   cameraTuning: skylineCameraTuning(false),
+diff --git a/apps/showcase-skyline-runner/src/v2/evidence/index.ts b/apps/showcase-skyline-runner/src/v2/evidence/index.ts
+index 42a05f395572fed982ba7012aa45f8e7b9638250..4e4fbc9e0f634f4e95309cc8b92bbcb36b30942a 100644
+--- a/apps/showcase-skyline-runner/src/v2/evidence/index.ts
++++ b/apps/showcase-skyline-runner/src/v2/evidence/index.ts
+@@ -1,5 +1,6 @@
+ // apps/showcase-skyline-runner/src/v2/evidence/index.ts — lazy evidence sections
+ // for games.json requiredConditions and the QR audits.
++import { audioProof } from "../audio-proof";
+ import { SKYLINE_SECTION_COUNT } from "../../gameplay/level";
+ import type { Game } from "@aura3d/game";
+ 
+@@ -51,7 +52,7 @@ export function publishSkylineEvidence(bindings: SkylineEvidenceBindings) {
+     get level() { return bindings.level(); },
+     get run() { return bindings.run(); },
+     get fx() { return bindings.fx(); },
+-    get audio() { return bindings.audio(); },
++    get audio() { return { ...bindings.audio(), ...audioProof.snapshot() }; },
+     get feel() { return bindings.feel(); },
+ 
+     get framing() {
+diff --git a/apps/showcase-turbo-drift-circuit/src/v2/audio-proof.ts b/apps/showcase-turbo-drift-circuit/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..fe1abfb086945d8fff65152ffc7d0ee1175d00e1
+--- /dev/null
++++ b/apps/showcase-turbo-drift-circuit/src/v2/audio-proof.ts
+@@ -0,0 +1,77 @@
++// apps/showcase-turbo-drift-circuit/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++// This route has no audio module: `pushCue` only logs intents, nothing is
++// voiced, so the proof stays at zero until C-25 sound is wired (#70).
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-turbo-drift-circuit/src/v2/evidence/index.ts b/apps/showcase-turbo-drift-circuit/src/v2/evidence/index.ts
+index 5a7beccc470b118bb23ab65c26a2ee1c7e0d734e..ba30566df5bcf273793a59d1320dc695b9552a74 100644
+--- a/apps/showcase-turbo-drift-circuit/src/v2/evidence/index.ts
++++ b/apps/showcase-turbo-drift-circuit/src/v2/evidence/index.ts
+@@ -4,6 +4,7 @@
+ // computed, no per-frame allocation > 1KB. `session` is shell-owned — the
+ // route republishes playback as `playback` (spec reads paused via
+ // __AURA3D_GAME__.session).
++import { audioProof } from "../audio-proof";
+ import type {
+   AuraApp, GameRacingSnapshot, GameSession
+ } from "@aura3d/engine";
+@@ -93,7 +94,7 @@ export function publishTurboDriftEvidence(b: TurboDriftEvidenceBindings): void {
+       };
+     },
+     get audio() {
+-      return { cueLog: b.audioCueLog() };
++      return { cueLog: b.audioCueLog(), ...audioProof.snapshot() };
+     }
+   };
+ }
+diff --git a/apps/showcase-vault-breakers/src/v2/audio-proof.ts b/apps/showcase-vault-breakers/src/v2/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..83f6d110eb69b509da0a3ead4a5b2605b2f85495
+--- /dev/null
++++ b/apps/showcase-vault-breakers/src/v2/audio-proof.ts
+@@ -0,0 +1,81 @@
++// apps/showcase-vault-breakers/src/v2/audio-proof.ts — S11 route audio proof (PRD-14 §16.1).
++// Published as `evidence.audio.{synthCues,voicesPlayed,cuesPlayed}` inside the
++// route's existing `audio` evidence section. Until C-25 game-sfx is real
++// (#70, R-14-09) the route voices cues through its legacy audio module;
++// `instrumentAudio` wraps that module so the proof counts only cue calls the
++// module resolved:
++//   voicesPlayed — cue plays the audio module resolved without error
++//   synthCues    — of those, plays not backed by a licensed sample. Every route
++//                  sfx in aura.assets.json is `author: "Aura3D synthesis"`
++//                  (scripts/build-sfx.mjs), so SAMPLE_CUES is empty today
++//   cuesPlayed   — art/direction.ts `audio[]` events voiced at least once
++// C-25 `game.sound.proof()` replaces this file when the route adopts it.
++
++export interface RouteAudioProof {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export interface RouteAudioProofRecorder {
++  played(cue: string): void;
++  snapshot(): RouteAudioProof;
++}
++
++export function createRouteAudioProof(
++  directionEvent: Readonly<Record<string, string>>,
++  sampleCues: ReadonlySet<string>
++): RouteAudioProofRecorder {
++  let voicesPlayed = 0;
++  let synthCues = 0;
++  const events = new Set<string>();
++  return {
++    played(cue) {
++      voicesPlayed += 1;
++      if (!sampleCues.has(cue)) synthCues += 1;
++      const event = directionEvent[cue];
++      if (event !== undefined) events.add(event);
++    },
++    snapshot: () => ({ synthCues, voicesPlayed, cuesPlayed: [...events] })
++  };
++}
++
++/**
++ * Wraps the listed controller methods: `null` = the first argument is the cue,
++ * a string = the fixed cue that method voices. A play is recorded only once
++ * the method's result resolves; the caller still receives the original result.
++ */
++export function instrumentAudio<T extends object>(
++  controller: T,
++  methods: Readonly<Record<string, string | null>>,
++  proof: RouteAudioProofRecorder = audioProof
++): T {
++  return new Proxy(controller, {
++    get(target, key) {
++      const value: unknown = Reflect.get(target, key, target);
++      if (typeof value !== "function") return value;
++      if (typeof key !== "string" || !Object.prototype.hasOwnProperty.call(methods, key)) return value.bind(target);
++      const fixed = methods[key];
++      return (...args: unknown[]) => {
++        const result: unknown = value.apply(target, args);
++        const cue = fixed ?? String(args[0]);
++        void Promise.resolve(result).then(() => proof.played(cue), () => undefined);
++        return result;
++      };
++    }
++  });
++}
++
++/** Route cue → the art/direction.ts `audio[]` event it voices. */
++const DIRECTION_EVENT: Readonly<Record<string, string>> = {
++  "flipper-snap": "flipper",
++  "bumper-hit": "bumper",
++  "plunger-release": "plunger",
++  "ramp-roll": "ball-roll",
++  "vault-open": "mission"
++};
++
++/** Route cues backed by a licensed sample (`provenance: "sample"`); none yet. */
++const SAMPLE_CUES: ReadonlySet<string> = new Set<string>();
++
++export const audioProof = createRouteAudioProof(DIRECTION_EVENT, SAMPLE_CUES);
+diff --git a/apps/showcase-vault-breakers/src/v2/boot.ts b/apps/showcase-vault-breakers/src/v2/boot.ts
+index 4c0f9684331b0dacb390106478e5c47f2ebeba33..ff3220231691e0ff1961a95b91e2e43eb447174a 100644
+--- a/apps/showcase-vault-breakers/src/v2/boot.ts
++++ b/apps/showcase-vault-breakers/src/v2/boot.ts
+@@ -3,6 +3,7 @@
+ // mechanism GLBs, chrome ball, lit inserts, one shadowed key. Gameplay modules
+ // (table/ball-flow/flippers/plunger/missions/scoring) are unchanged; audio
+ // plays through the legacy cue map until C-25 game-sfx is real (standIn R-14-09).
++import { instrumentAudio } from "./audio-proof";
+ import { scene } from "@aura3d/engine";
+ import { createGame, type Game, lookManifest } from "@aura3d/game";
+ import { createTableSimulation, quatToEuler } from "../gameplay/table";
+@@ -44,7 +45,7 @@ function buildScene() {
+ 
+ // ----------------------------------------------------------------- audio -----
+ 
+-const audio = createVaultAudio();
++const audio = instrumentAudio(createVaultAudio(), { cue: null });
+ const audioCueLog: string[] = [];
+ let audioUnlocked = false;
+ function pushCue(cue: Parameters<typeof audio.cue>[0]): void {
+diff --git a/apps/showcase-vault-breakers/src/v2/evidence/index.ts b/apps/showcase-vault-breakers/src/v2/evidence/index.ts
+index 8b89409afc51a3c2a725b467157d00ace703315e..d02e39fe3fb9e3e983a24586d3e3fbaa3521a4d8 100644
+--- a/apps/showcase-vault-breakers/src/v2/evidence/index.ts
++++ b/apps/showcase-vault-breakers/src/v2/evidence/index.ts
+@@ -2,6 +2,7 @@
+ // Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-vault-breakers"]` with
+ // lazy section getters (no per-frame allocation > 1 KB). The §7.2.1 required
+ // conditions read `ball.inPlay` and `table.bumperHitsThisBall` + `fx.liveCount`.
++import { audioProof } from "../audio-proof";
+ import type { Game } from "@aura3d/engine";
+ import type { VaultFlow } from "../../gameplay/ball-flow";
+ 
+@@ -89,7 +90,7 @@ export function publishVaultEvidence(b: VaultEvidenceBindings): void {
+       return b.appliedLook;
+     },
+     get audio() {
+-      return { cues: b.audioCueLog() };
++      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
+     },
+     get boot() {
+       return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };
+diff --git a/tests/qr/prd14/browser/aura-clash-showcase-v2.spec.ts b/tests/qr/prd14/browser/aura-clash-showcase-v2.spec.ts
+index dc36446c7244015a16b25ac26e71a472dc95d1e2..10ce0c8356f28e85c2f6c07398148447009fec95 100644
+--- a/tests/qr/prd14/browser/aura-clash-showcase-v2.spec.ts
++++ b/tests/qr/prd14/browser/aura-clash-showcase-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -138,6 +139,56 @@ test.describe("aura-clash-showcase v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("aura-clash-showcase: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // §7.2.1 timeline: walk toward the opponent and jab for the 03-mid
++      // framing read; keep pressuring for the 04-action hit condition.
++      await page.waitForTimeout(300);
++      await page.keyboard.down("KeyD");
++      await page.waitForTimeout(1400);
++      await page.keyboard.up("KeyD");
++      for (let i = 0; i < 6; i += 1) {
++        await page.keyboard.press("KeyJ");
++        await page.waitForTimeout(180);
++        await page.keyboard.down("KeyD");
++        await page.waitForTimeout(260);
++        await page.keyboard.up("KeyD");
++      }
++
++      // Keep fighting until the required conditions hold (or the deadline).
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 15_000);
++      const started = Date.now();
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev && REQUIRED.every((c) => evaluateRequiredCondition(c.expr, ev).ok)) break;
++        // Keep pressing: walk in and jab so a hit (and hit-stop) can land.
++        await page.keyboard.press("KeyJ");
++        await page.keyboard.down("KeyD");
++        await page.waitForTimeout(160);
++        await page.keyboard.up("KeyD");
++      }
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough of the first objective", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/lib/assets-admitted.ts b/tests/qr/prd14/browser/lib/assets-admitted.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..1f136c071e647780b3151643add8d8b854a148b1
+--- /dev/null
++++ b/tests/qr/prd14/browser/lib/assets-admitted.ts
+@@ -0,0 +1,92 @@
++// tests/qr/prd14/browser/lib/assets-admitted.ts — PRD-14 §16.1 S10 validator.
++// "Every art/direction.ts asset role resolves to an admitted id whose kit file
++// has an `accept` look-dev verdict on the three r185 pane."
++//   admitted — the role's `assetKey` is an asset id in the route manifest
++//              apps/<dir>/aura.assets.json or the root aura.assets.json
++//              (`aura3d assets add` writes the root map; src/aura-assets.ts is
++//              what every route imports)
++//   kit      — apps/showcase-kits/<kit>/kit.json (§6.4, T3.2) lists a file for
++//              that id whose `lookdev.verdict` is "accept"; a role with no
++//              shared `kit` must be listed by some apps/showcase-kits/*/kit.json
++// A missing manifest or kit.json is a violation, never a skip.
++import { existsSync, readdirSync, readFileSync } from "node:fs";
++import { join } from "node:path";
++import { parseDirectionAssets, readDirection, type DirectionAssetRole } from "./direction";
++
++export interface S10Violation {
++  readonly half: "admitted" | "kit";
++  readonly role: string;
++  readonly assetKey: string;
++  readonly reason: string;
++}
++
++interface ManifestLike { readonly assets?: readonly { readonly id?: string }[] }
++interface KitFileLike {
++  readonly id?: string;
++  readonly assetKey?: string;
++  readonly lookdev?: { readonly verdict?: string };
++}
++interface KitLike { readonly files?: readonly KitFileLike[] }
++
++function readJson<T>(path: string): T | null {
++  return existsSync(path) ? (JSON.parse(readFileSync(path, "utf8")) as T) : null;
++}
++
++/** Asset ids admitted for a route (route manifest ∪ root manifest). */
++export function admittedIds(repoRoot: string, appDir: string): Set<string> {
++  const ids = new Set<string>();
++  for (const path of [join(repoRoot, "apps", appDir, "aura.assets.json"), join(repoRoot, "aura.assets.json")]) {
++    for (const a of readJson<ManifestLike>(path)?.assets ?? []) if (typeof a.id === "string") ids.add(a.id);
++  }
++  return ids;
++}
++
++export function kitManifestPath(repoRoot: string, kit: string): string {
++  return join(repoRoot, "apps", "showcase-kits", kit, "kit.json");
++}
++
++function verdictOf(kitName: string, kit: KitLike, assetKey: string): string | null {
++  const file = (kit.files ?? []).find((f) => f.id === assetKey || f.assetKey === assetKey);
++  if (file === undefined) return `kit ${kitName} lists no file for "${assetKey}"`;
++  const verdict = file.lookdev?.verdict;
++  return verdict === "accept" ? null : `kit ${kitName} file "${assetKey}" look-dev verdict is ${verdict ?? "missing"}, not accept`;
++}
++
++function kitViolation(repoRoot: string, r: DirectionAssetRole): string | null {
++  if (r.kit !== null) {
++    const kit = readJson<KitLike>(kitManifestPath(repoRoot, r.kit));
++    return kit === null ? `no kit manifest apps/showcase-kits/${r.kit}/kit.json` : verdictOf(r.kit, kit, r.assetKey);
++  }
++  // Route-specific role (no shared kit named): any staged kit.json may list it.
++  const kitsRoot = join(repoRoot, "apps", "showcase-kits");
++  if (!existsSync(kitsRoot)) return "apps/showcase-kits/ does not exist (no kit manifest lists it)";
++  for (const name of readdirSync(kitsRoot).sort()) {
++    const kit = readJson<KitLike>(join(kitsRoot, name, "kit.json"));
++    if (kit !== null && (kit.files ?? []).some((f) => f.id === r.assetKey || f.assetKey === r.assetKey)) {
++      return verdictOf(name, kit, r.assetKey);
++    }
++  }
++  return `no apps/showcase-kits/*/kit.json lists "${r.assetKey}"`;
++}
++
++/** Both S10 halves for one route; `roles` defaults to the route's art/direction.ts. */
++export function checkS10(
++  repoRoot: string,
++  appDir: string,
++  roles: readonly DirectionAssetRole[] = parseDirectionAssets(readDirection(join(repoRoot, "apps"), appDir))
++): S10Violation[] {
++  const ids = admittedIds(repoRoot, appDir);
++  const out: S10Violation[] = [];
++  for (const r of roles) {
++    if (!ids.has(r.assetKey)) {
++      out.push({ half: "admitted", role: r.role, assetKey: r.assetKey, reason: `"${r.assetKey}" is not an admitted asset id` });
++    }
++    const kit = kitViolation(repoRoot, r);
++    if (kit !== null) out.push({ half: "kit", role: r.role, assetKey: r.assetKey, reason: kit });
++  }
++  return out;
++}
++
++export function formatS10(appDir: string, violations: readonly S10Violation[]): string[] {
++  return violations.map((v) => `${appDir}: [${v.half}] ${v.role} ${v.assetKey}: ${v.reason}`);
++}
+diff --git a/tests/qr/prd14/browser/lib/audio-proof.ts b/tests/qr/prd14/browser/lib/audio-proof.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..bbf9f8ee3db75bef97f35df51451c49a1f19fc69
+--- /dev/null
++++ b/tests/qr/prd14/browser/lib/audio-proof.ts
+@@ -0,0 +1,38 @@
++// tests/qr/prd14/browser/lib/audio-proof.ts — PRD-14 §16.1 S11 assertions.
++// Reads `window.__AURA3D_GAME_EVIDENCE__[<appDir>].audio.{synthCues,
++// voicesPlayed, cuesPlayed}` (apps/<dir>/src/v2/audio-proof.ts) after the
++// spec's scripted timeline and asserts: no synthesized cue played, and every
++// art/direction.ts `audio[]` event was voiced at least once.
++import { expect, type Page } from "@playwright/test";
++import { directionAudioEvents } from "./direction";
++import { APPS } from "./serve";
++
++export interface RouteAudioProofEvidence {
++  readonly synthCues: number;
++  readonly voicesPlayed: number;
++  readonly cuesPlayed: readonly string[];
++}
++
++export async function readAudioProof(page: Page, appDir: string): Promise<RouteAudioProofEvidence | null> {
++  // `appDir` crosses into the page as an argument (closures do not).
++  return page.evaluate((id) => {
++    const ev = (window as unknown as { __AURA3D_GAME_EVIDENCE__?: Record<string, { audio?: Record<string, unknown> }> })
++      .__AURA3D_GAME_EVIDENCE__?.[id];
++    const a = ev?.audio;
++    if (a === undefined || typeof a.synthCues !== "number" || typeof a.voicesPlayed !== "number" || !Array.isArray(a.cuesPlayed)) {
++      return null;
++    }
++    return { synthCues: a.synthCues, voicesPlayed: a.voicesPlayed, cuesPlayed: (a.cuesPlayed as unknown[]).map(String) };
++  }, appDir);
++}
++
++/** S11: `synthCues === 0`, `voicesPlayed` covers audio[], every audio[] event voiced. */
++export async function expectS11Audio(page: Page, appDir: string): Promise<void> {
++  const events = directionAudioEvents(APPS, appDir);
++  const proof = await readAudioProof(page, appDir);
++  expect(proof, `${appDir}: evidence.audio has no {synthCues, voicesPlayed, cuesPlayed} proof`).not.toBeNull();
++  const unvoiced = events.filter((e) => !proof!.cuesPlayed.includes(e));
++  expect(proof!.synthCues, `${appDir}: S11 synthCues (synthesized cue plays; #70 R-14-09)`).toBe(0);
++  expect(proof!.voicesPlayed, `${appDir}: S11 voicesPlayed below the ${events.length} audio[] events`).toBeGreaterThanOrEqual(events.length);
++  expect(unvoiced, `${appDir}: S11 audio[] events never voiced in the timeline`).toEqual([]);
++}
+diff --git a/tests/qr/prd14/browser/lib/direction.ts b/tests/qr/prd14/browser/lib/direction.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..60152256f619811f87b32f78d9a005a744542d42
+--- /dev/null
++++ b/tests/qr/prd14/browser/lib/direction.ts
+@@ -0,0 +1,72 @@
++// tests/qr/prd14/browser/lib/direction.ts — Node-side reader for the
++// `assets[]` and `audio[]` sections of apps/<dir>/art/direction.ts.
++// The lane jobs do not build package dist/, so specs and unit tests read the
++// authored source the same way stand-ins.test.ts does (literal parse).
++import { readFileSync } from "node:fs";
++import { join } from "node:path";
++
++export interface DirectionAssetRole {
++  readonly role: string;
++  readonly assetKey: string;
++  readonly kit: string | null;
++}
++
++export interface DirectionAudioCue {
++  readonly event: string;
++  readonly cue: string;
++}
++
++/** Body of the top-level `<name>: [ ... ]` array in a direction source. */
++function arrayBody(src: string, name: string): string {
++  const start = new RegExp(`\\n\\s*${name}:\\s*\\[`).exec(src);
++  if (start === null) throw new Error(`art/direction.ts has no ${name}: [...] section`);
++  let depth = 0;
++  for (let i = start.index + start[0].length - 1; i < src.length; i++) {
++    if (src[i] === "[") depth++;
++    else if (src[i] === "]" && --depth === 0) return src.slice(start.index + start[0].length, i);
++  }
++  throw new Error(`art/direction.ts ${name}: [...] is unterminated`);
++}
++
++function field(entry: string, key: string): string | null {
++  return new RegExp(`\\b${key}:\\s*"([^"]+)"`).exec(entry)?.[1] ?? null;
++}
++
++/** Top-level `{ ... }` entries of an array body (nested objects stay inside). */
++function entries(body: string): string[] {
++  const out: string[] = [];
++  let depth = 0;
++  let start = -1;
++  for (let i = 0; i < body.length; i++) {
++    if (body[i] === "{" && depth++ === 0) start = i;
++    else if (body[i] === "}" && --depth === 0) out.push(body.slice(start, i + 1));
++  }
++  return out;
++}
++
++export function parseDirectionAssets(src: string): DirectionAssetRole[] {
++  return entries(arrayBody(src, "assets")).map((e) => {
++    const role = field(e, "role");
++    const assetKey = field(e, "assetKey");
++    if (role === null || assetKey === null) throw new Error(`assets[] entry without role/assetKey: ${e}`);
++    return { role, assetKey, kit: field(e, "kit") };
++  });
++}
++
++export function parseDirectionAudio(src: string): DirectionAudioCue[] {
++  return entries(arrayBody(src, "audio")).map((e) => {
++    const event = field(e, "event");
++    const cue = field(e, "cue");
++    if (event === null || cue === null) throw new Error(`audio[] entry without event/cue: ${e}`);
++    return { event, cue };
++  });
++}
++
++export function readDirection(appsRoot: string, appDir: string): string {
++  return readFileSync(join(appsRoot, appDir, "art", "direction.ts"), "utf8");
++}
++
++/** The art/direction.ts `audio[]` events a route must voice (S11). */
++export function directionAudioEvents(appsRoot: string, appDir: string): string[] {
++  return parseDirectionAudio(readDirection(appsRoot, appDir)).map((a) => a.event);
++}
+diff --git a/tests/qr/prd14/browser/s10-assets.spec.ts b/tests/qr/prd14/browser/s10-assets.spec.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..9b9a97ac95e42d1af30f5b1264214156a63de2d0
+--- /dev/null
++++ b/tests/qr/prd14/browser/s10-assets.spec.ts
+@@ -0,0 +1,42 @@
++import { expect, test } from "@playwright/test";
++import { readFileSync } from "node:fs";
++import { join } from "node:path";
++import { checkS10, formatS10 } from "./lib/assets-admitted";
++import { ROOT } from "./lib/serve";
++
++/**
++ * PRD-14 §16.1 S10 "Assets admitted" for every selected route (A3D_QR_ROUTES,
++ * default all 18): every art/direction.ts `assets[]` role resolves to an
++ * admitted asset id (route or root aura.assets.json) AND that id's kit file in
++ * apps/showcase-kits/<Kn>/kit.json carries an `accept` look-dev verdict on the
++ * three r185 pane (T3.2).
++ *
++ * Node-only (no page): it lives in the lane browser job, not the T1.x unit
++ * job, because on main both halves fail for all 18 routes — no direction
++ * assetKey is admitted yet and apps/showcase-kits/ is pending (14-KITS). It is
++ * an honest red, not a skip: it turns green per route as kits are accepted and
++ * admitted (`aura3d assets add`). The validator itself is unit-tested in
++ * tests/qr/prd14/unit/s10-assets.test.ts.
++ */
++
++const games = (JSON.parse(readFileSync(join(ROOT, "tools/quality-rebuild-capture/games.json"), "utf8")) as {
++  games: { id: string; appDir?: string }[];
++}).games;
++const wanted = (process.env.A3D_QR_ROUTES ?? "").split(",").map((s) => s.trim()).filter(Boolean);
++const selected = games.filter((g) => wanted.length === 0 || wanted.includes(g.appDir ?? g.id) || wanted.includes(g.id));
++
++test.describe("S10 assets admitted (PRD-14 §16.1)", () => {
++  for (const entry of selected) {
++    const appDir = entry.appDir ?? entry.id;
++
++    test(`${appDir}: every asset role is admitted`, () => {
++      const lines = formatS10(appDir, checkS10(ROOT, appDir).filter((v) => v.half === "admitted"));
++      expect(lines, `S10 admitted half:\n${lines.join("\n")}`).toEqual([]);
++    });
++
++    test(`${appDir}: every asset role's kit file has an accept look-dev verdict`, () => {
++      const lines = formatS10(appDir, checkS10(ROOT, appDir).filter((v) => v.half === "kit"));
++      expect(lines, `S10 kit half:\n${lines.join("\n")}`).toEqual([]);
++    });
++  }
++});
+diff --git a/tests/qr/prd14/browser/showcase-aurora-lander-v2.spec.ts b/tests/qr/prd14/browser/showcase-aurora-lander-v2.spec.ts
+index 2f9dbe572efb0c99406d96e5ac29b1c237d9559c..c2bac62112cac2953332dfcfffa44bf97f18d076 100644
+--- a/tests/qr/prd14/browser/showcase-aurora-lander-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-aurora-lander-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -112,6 +113,43 @@ test.describe("showcase-aurora-lander v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-aurora-lander: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&autorun=1`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // Autorun feather-brakes under the hover line and slides over the pad —
++      // touchdown lands well inside the 40 s deadline.
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 30_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        await page.waitForTimeout(500);
++      }
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough: W thrusts, A/D rotate the craft", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-bank-shot-v2.spec.ts b/tests/qr/prd14/browser/showcase-bank-shot-v2.spec.ts
+index 93f756b1ac5a508fd3ae1e3aca30204aea7ac2ba..0fbb1a1bd2799562e17791ed2a1b7ec9d0b94f1d 100644
+--- a/tests/qr/prd14/browser/showcase-bank-shot-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-bank-shot-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -123,6 +124,57 @@ test.describe("showcase-bank-shot v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-bank-shot: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // §7.2.1 scripted timeline (mirrors games.json): hold Space, aim, strike.
++      await page.waitForTimeout(300);
++      await page.keyboard.down("Space");
++      await page.waitForTimeout(850);
++      await page.keyboard.up("Space");
++      await page.waitForTimeout(500);
++      await page.waitForTimeout(4600);
++      await page.keyboard.down("KeyD");
++      await page.waitForTimeout(400);
++      await page.keyboard.up("KeyD");
++      await page.keyboard.down("Space");
++      await page.waitForTimeout(700);
++      await page.keyboard.up("Space");
++      await page.waitForTimeout(400);
++
++      // Required conditions by deadline: pottedThisShot >= 1, maxAngularSpeed > 0.
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 15_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        await page.waitForTimeout(150);
++      }
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough of the first objective", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-blockfall-reactor-v2.spec.ts b/tests/qr/prd14/browser/showcase-blockfall-reactor-v2.spec.ts
+index 3a7747ea6f78f0bc4546e3f9a28b3cee04558809..f02e96952de7da76cdb07d599caec28916db8372 100644
+--- a/tests/qr/prd14/browser/showcase-blockfall-reactor-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-blockfall-reactor-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -121,6 +122,48 @@ test.describe("showcase-blockfall-reactor v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-blockfall-reactor: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&autorun=1`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // The 60 s demonstration replay drives real moves/rotates/hard-drops;
++      // the seeded stack already satisfies stackHeight >= 4 and its first
++      // scripted clear satisfies linesClearedThisRound >= 1 with fx live.
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 12_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        await page.waitForTimeout(250);
++      }
++
++      // Instanced-pool parity: the projected board view must equal kit state.
++      const parity = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".boardView.lastParityMatch"), EVIDENCE);
++      const sceneSwaps = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneSwaps"), EVIDENCE);
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough: arrows move, Z/X rotate, Space hard-drops, C holds", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-courier-rush-v2.spec.ts b/tests/qr/prd14/browser/showcase-courier-rush-v2.spec.ts
+index 74f42fcd00b81ee3c97f37a7375a524a60a5333f..98cfdb68728c54ecff3e6bdb0086e8ff3ed3d083 100644
+--- a/tests/qr/prd14/browser/showcase-courier-rush-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-courier-rush-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -114,6 +115,44 @@ test.describe("showcase-courier-rush v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-courier-rush: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      // The seeded autopilot drives the real dispatch loop: the van reaches
++      // the pickup zone (trigger-enter loads the parcel) and the drop zone.
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&autopilot=1`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 20_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        await page.waitForTimeout(500);
++      }
++      const delivery = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".delivery") as { completed?: number }, EVIDENCE);
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough: W accelerates the van", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-deep-recovery-v2.spec.ts b/tests/qr/prd14/browser/showcase-deep-recovery-v2.spec.ts
+index 9efa9e5aee768c2b2b445d137c3466d6cde24630..07f82d3450cb7f9192df8c9cee8daf34c3ee0236 100644
+--- a/tests/qr/prd14/browser/showcase-deep-recovery-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-deep-recovery-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -112,6 +113,43 @@ test.describe("showcase-deep-recovery v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-deep-recovery: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&autorun=1`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // The autopilot steers to crate-s1 and latches it — salvage.grappled>=1
++      // well inside the 40 s deadline; every readback condition is constant-true.
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 45_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        await page.waitForTimeout(400);
++      }
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough: W/S thrust, A/D turn, Space pings sonar", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-gallery-shift-v2.spec.ts b/tests/qr/prd14/browser/showcase-gallery-shift-v2.spec.ts
+index 671c299f8bdaadbbb84b97eca2ca51eb27f1784f..af7f6807161c36665652bc66cb20cd01b242a62a 100644
+--- a/tests/qr/prd14/browser/showcase-gallery-shift-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-gallery-shift-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -117,6 +118,44 @@ test.describe("showcase-gallery-shift v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-gallery-shift: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&autorun=1`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 30_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        await page.waitForTimeout(250);
++      }
++
++      const sceneSwaps = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneSwaps"), EVIDENCE);
++      const sceneId = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneId"), EVIDENCE);
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough: WASD moves, sneak toggle, E lifts near a pedestal", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-gravity-post-v2.spec.ts b/tests/qr/prd14/browser/showcase-gravity-post-v2.spec.ts
+index ec8ac664849ed1e429eadf1ae76b5a942e5983b6..8b6770ce4aa450c839968cdb3367a74cfae95364 100644
+--- a/tests/qr/prd14/browser/showcase-gravity-post-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-gravity-post-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -112,6 +113,44 @@ test.describe("showcase-gravity-post v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-gravity-post: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // Enter launches along the seeded origin→destination bearing — the
++      // §7.2.1 pair in-flight + launchedBy==="keyboard" must read by 10 s.
++      await page.keyboard.press("Enter");
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 12_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        await page.waitForTimeout(250);
++      }
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough: arrows steer the aim, Enter launches", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-mech-hangar-v2.spec.ts b/tests/qr/prd14/browser/showcase-mech-hangar-v2.spec.ts
+index 96ac3ab77dbb4cf3e49b564222fff1bc51567cc2..cd16de4c943deb2da1ca4d2eed6a4e0bb7288269 100644
+--- a/tests/qr/prd14/browser/showcase-mech-hangar-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-mech-hangar-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -119,6 +120,45 @@ test.describe("showcase-mech-hangar v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-mech-hangar: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&autorun=1`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // Autorun: lock at ~0.4 s → countdown (~1.2 s) → advance + strike script.
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 20_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        await page.waitForTimeout(250);
++      }
++
++      const sceneSwaps = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneSwaps"), EVIDENCE);
++      const sceneId = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneId"), EVIDENCE);
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough: digits+arrows build, Enter locks, K strikes", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-neon-swarm-v2.spec.ts b/tests/qr/prd14/browser/showcase-neon-swarm-v2.spec.ts
+index 0d32fbacc2b99fa08a500af85920d428de782716..6435c1d4bfe2cbb48fc58119cb8ab78a117c81a0 100644
+--- a/tests/qr/prd14/browser/showcase-neon-swarm-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-neon-swarm-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -136,6 +137,55 @@ test.describe("showcase-neon-swarm v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-neon-swarm: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // The seeded wave spawns 36 grunts over 8 s; pulse J while strafing.
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 20_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        await driveAndFire(page);
++      }
++      // The 05-burst 20-live-fx deadline (30 s) is separate: keep fighting and
++      // fire a charged radial burst when it reaches 100 for the burst shot.
++      const burstEnd = started + Math.max(...REQUIRED.map((c) => c.deadlineMs), 30_000);
++      while (Date.now() < burstEnd) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) break;
++        }
++        await driveAndFire(page);
++        const run = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".run") as { burstCharge?: number }, EVIDENCE);
++        if ((run?.burstCharge ?? 0) >= 100) await page.keyboard.press("Space");
++      }
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough: WASD moves the courier, J pulses", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-orbital-defense-v2.spec.ts b/tests/qr/prd14/browser/showcase-orbital-defense-v2.spec.ts
+index 2370a1fdbae8eb80c711047b8120703d540a532a..c4bbc6e573521fedb431cd322d03c3c35e8d6272 100644
+--- a/tests/qr/prd14/browser/showcase-orbital-defense-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-orbital-defense-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -127,6 +128,56 @@ test.describe("showcase-orbital-defense v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-orbital-defense: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // §7.2.1 timeline: rotate to track drones and hold Space to fire.
++      await page.waitForTimeout(400);
++      await page.keyboard.down("Space");
++      await page.waitForTimeout(1200);
++
++      // Required conditions by deadline (fx.explosionsLive >= 1 +
++      // framing.dronesUnderHud === 0): sweep angle while firing until a
++      // projectile connects.
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 20_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        // Sweep: alternate rotate keys while Space stays held.
++        await page.keyboard.down("KeyA");
++        await page.waitForTimeout(320);
++        await page.keyboard.up("KeyA");
++        await page.keyboard.down("KeyD");
++        await page.waitForTimeout(320);
++        await page.keyboard.up("KeyD");
++      }
++      await page.keyboard.up("Space");
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough of the first objective", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-patrol-wing-v2.spec.ts b/tests/qr/prd14/browser/showcase-patrol-wing-v2.spec.ts
+index eb4648e32bcf9e2c2dd8cc9bf6308d8b5643771e..8c0f5d4fd8e6348843851ecb353d39def593bf72 100644
+--- a/tests/qr/prd14/browser/showcase-patrol-wing-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-patrol-wing-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -113,6 +114,43 @@ test.describe("showcase-patrol-wing v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-patrol-wing: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&autorun=1`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // The autorun sortie throttles up, threads ring 0, draws the wave-0
++      // intercept wedge, and fires until the §7.2.1 pairs both read true.
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 12_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        await page.waitForTimeout(250);
++      }
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough: Shift takes off, A/D roll, Space fires", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-pulse-tunnel-v2.spec.ts b/tests/qr/prd14/browser/showcase-pulse-tunnel-v2.spec.ts
+index 00d3686f42ab2530ca3c82aaa335361a6e1d2aba..3bc2bef84b2870208d3d4c2138d82f653d1e1355 100644
+--- a/tests/qr/prd14/browser/showcase-pulse-tunnel-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-pulse-tunnel-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -113,6 +114,42 @@ test.describe("showcase-pulse-tunnel v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-pulse-tunnel: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&autorun=1`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // Autorun starts the chart immediately; two gates pass by beat ~8 (4 s).
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 20_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        await page.waitForTimeout(500);
++      }
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough: arrows switch lanes, Space jumps", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-rooftop-buckets-v2.spec.ts b/tests/qr/prd14/browser/showcase-rooftop-buckets-v2.spec.ts
+index 5a886c04f7c8479389b3af55c14dafae8347e470..62a8db51814ac44a5d096ca9b0b6156b3564d2e3 100644
+--- a/tests/qr/prd14/browser/showcase-rooftop-buckets-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-rooftop-buckets-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -130,6 +131,52 @@ test.describe("showcase-rooftop-buckets v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-rooftop-buckets: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // §7.2.1 timeline: charge past 0.5, release at sweetPower — flight,
++      // contacts, and scoring all run through the real solver.
++      await shootAtSweetSpot(page);
++      await page.waitForTimeout(400);
++
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 20_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        const shotState = await page.evaluate((EVIDENCE: string) =>
++          eval(EVIDENCE + ".shot") as { inFlight?: boolean; result?: string | null } | undefined, EVIDENCE);
++        if (!shotState?.inFlight) {
++          // Re-shoot until a make lands (moving-hoop sway can rim-out a look).
++          await shootAtSweetSpot(page);
++        }
++        await page.waitForTimeout(250);
++      }
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough: charge + release starts a flight", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-siege-golf-v2.spec.ts b/tests/qr/prd14/browser/showcase-siege-golf-v2.spec.ts
+index b4e9ff6a21f99fd9dd9fa154b158baffbed05ebe..6587dbeb1d42ecf5a5c7a98b164bc2c9bce80230 100644
+--- a/tests/qr/prd14/browser/showcase-siege-golf-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-siege-golf-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -112,6 +113,43 @@ test.describe("showcase-siege-golf v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-siege-golf: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&autorun=1`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // Autorun drives the hole-01 solution stroke (angle 0, power 1.9)
++      // after ~1 s — the ball demolishes the stack well inside the deadline.
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 30_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        await page.waitForTimeout(500);
++      }
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough: A/D aim, held Space charges, release drives", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-skyline-runner-v2.spec.ts b/tests/qr/prd14/browser/showcase-skyline-runner-v2.spec.ts
+index b32a82e6b4fb202e9c7109ec7895328dc89f90a1..55d196587cd73a0170c425271e4e05039cd5fbff 100644
+--- a/tests/qr/prd14/browser/showcase-skyline-runner-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-skyline-runner-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -117,6 +118,46 @@ test.describe("showcase-skyline-runner v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-skyline-runner: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&autorun=1`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // Autorun respawns at the first act-2 checkpoint through the kit's own
++      // reset path, then drives real moves/jumps/dashes — act >= 2 is live
++      // immediately and the first scripted jump fires airborne + fx.
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 12_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        await page.waitForTimeout(250);
++      }
++
++      const sceneSwaps = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneSwaps"), EVIDENCE);
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough: run, jump and dash move the kit forward", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-turbo-drift-circuit-v2.spec.ts b/tests/qr/prd14/browser/showcase-turbo-drift-circuit-v2.spec.ts
+index 9cbac87697faae1dadf4f03e1e701dd6da669da6..bfe42e52785191a5a5a1af6e275716196c5543ff 100644
+--- a/tests/qr/prd14/browser/showcase-turbo-drift-circuit-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-turbo-drift-circuit-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -143,6 +144,77 @@ test.describe("showcase-turbo-drift-circuit v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-turbo-drift-circuit: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // §7.2.1 scripted timeline (mirrors games.json): throttle, steer, drift.
++      await page.keyboard.down("KeyW");
++      await page.waitForTimeout(2000);
++      await page.waitForTimeout(4000);
++      await page.keyboard.down("KeyA");
++      await page.waitForTimeout(500);
++      await page.keyboard.up("KeyA");
++      await page.waitForTimeout(700);
++      await page.keyboard.down("KeyD");
++      await page.keyboard.down("Space");
++      await page.waitForTimeout(1300);
++      await page.keyboard.up("Space");
++      await page.keyboard.up("KeyD");
++      await page.waitForTimeout(900);
++      await page.keyboard.down("KeyA");
++      await page.keyboard.down("Space");
++      await page.waitForTimeout(1000);
++      await page.keyboard.up("Space");
++      await page.keyboard.up("KeyA");
++      await page.keyboard.up("KeyW");
++
++      // Required conditions by deadline: car.speedKph >= 120 (03-mid),
++      // car.drifting === true && fx.liveCount > 0 (04-action).
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 15_000);
++      const started = Date.now();
++      let allMet = false;
++      // Keep driving while polling: the drift window may be shorter than a poll.
++      await page.keyboard.down("KeyW");
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        if ((Date.now() - started) % 900 < 200) {
++          await page.keyboard.down("Space");
++          await page.keyboard.down("KeyA");
++        }
++        if ((Date.now() - started) % 900 > 400) {
++          await page.keyboard.up("Space");
++          await page.keyboard.up("KeyA");
++        }
++        await page.waitForTimeout(150);
++      }
++      await page.keyboard.up("KeyW");
++      await page.keyboard.up("Space");
++      await page.keyboard.up("KeyA");
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough of the first objective", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/browser/showcase-vault-breakers-v2.spec.ts b/tests/qr/prd14/browser/showcase-vault-breakers-v2.spec.ts
+index 4487b501e3345cc8fefc773c7c3b520b3674b35a..cce821caf75e798a42c121dc874b4fdf9372549b 100644
+--- a/tests/qr/prd14/browser/showcase-vault-breakers-v2.spec.ts
++++ b/tests/qr/prd14/browser/showcase-vault-breakers-v2.spec.ts
+@@ -1,5 +1,6 @@
+ import { expect, test, type Page } from "@playwright/test";
+ import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
++import { expectS11Audio } from "./lib/audio-proof";
+ import { readFileSync } from "node:fs";
+ import { join } from "node:path";
+ // Source imports: the lane jobs do not build package dist/, so the
+@@ -131,6 +132,54 @@ test.describe("showcase-vault-breakers v2 (T2.6)", () => {
+     }
+   });
+ 
++  test("showcase-vault-breakers: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
++    const root = builtDist(APP_DIR);
++    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
++    const errors = watchConsole(page);
++    const { server, url } = await serve(root!);
++    try {
++      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
++      await expect.poll(() => page.evaluate(() =>
++        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
++      // Same scripted timeline as the boot test (its S2 assertions omitted):
++      // S11 reads the audio proof once the timeline has run.
++      const state = await page.evaluate(() =>
++        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
++      expect(state).toBe("playing");
++
++      // §7.2.1 timeline: serve, then flip while the ball is live until a
++      // bumper registers (bumperHitsThisBall >= 1 && fx.liveCount > 0).
++      await plungerServe(page);
++      await page.waitForTimeout(400);
++
++      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 20_000);
++      const started = Date.now();
++      let allMet = false;
++      while (Date.now() - started < deadline) {
++        const ev = await readEvidence(page);
++        if (ev) {
++          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
++          if (results.every((r) => r.ok)) { allMet = true; break; }
++        }
++        // Flip both sides; re-serve if the ball drained.
++        await page.keyboard.down("KeyA");
++        await page.keyboard.down("KeyD");
++        await page.waitForTimeout(260);
++        await page.keyboard.up("KeyA");
++        await page.keyboard.up("KeyD");
++        const inPlay = await page.evaluate((EVIDENCE: string) =>
++          eval(EVIDENCE + ".ball") as { inPlay?: boolean } | undefined, EVIDENCE);
++        if (!inPlay?.inPlay) await plungerServe(page, 500);
++      }
++
++      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
++      // every art/direction.ts audio[] event voiced during the timeline.
++      await expectS11Audio(page, APP_DIR);
++    } finally {
++      server.close();
++    }
++  });
++
+   test("keyboard-only playthrough: serve puts a ball in play", async ({ page }) => {
+     const root = builtDist(APP_DIR);
+     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+diff --git a/tests/qr/prd14/unit/s10-assets.test.ts b/tests/qr/prd14/unit/s10-assets.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..34959a61f7ee3186f59009a268cfae9cb1831d33
+--- /dev/null
++++ b/tests/qr/prd14/unit/s10-assets.test.ts
+@@ -0,0 +1,127 @@
++// tests/qr/prd14/unit/s10-assets.test.ts — PRD-14 §16.1 S10 (assets admitted)
++// validator + the static half of S11 (route audio proof wiring).
++//
++// Structure (why the 18-game S10 gate is not in this file): on main no
++// direction `assetKey` is admitted yet (0 of 86 roles resolve in any
++// aura.assets.json) and apps/showcase-kits/ does not exist (14-KITS, T3.2), so
++// a per-game S10 assertion here would turn the lane unit job red for every
++// lane-14 PR. The per-game gate is tests/qr/prd14/browser/s10-assets.spec.ts,
++// which the lane capture job always selects (select-specs.mjs: no APP_DIR) and
++// which FAILS today for both halves — it is not skipped. This file proves the
++// validator itself (fixture repos) and that all 18 directions parse into roles
++// and cues it can check.
++import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { dirname, join } from "node:path";
++import { fileURLToPath } from "node:url";
++import { afterAll, describe, expect, it } from "vitest";
++import { checkS10, formatS10 } from "../browser/lib/assets-admitted";
++import { parseDirectionAssets, parseDirectionAudio, readDirection } from "../browser/lib/direction";
++
++const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
++const APPS = join(ROOT, "apps");
++const GAMES = (JSON.parse(readFileSync(join(ROOT, "tools/quality-rebuild-capture/games.json"), "utf8")) as {
++  games: { id: string; appDir?: string }[];
++}).games.map((g) => g.appDir ?? g.id);
++
++const fixtures = mkdtempSync(join(tmpdir(), "qr14-s10-"));
++afterAll(() => rmSync(fixtures, { recursive: true, force: true }));
++
++let fixtureCount = 0;
++function fixtureRepo(files: Record<string, unknown>): string {
++  const repo = join(fixtures, `repo-${fixtureCount++}`);
++  for (const [rel, body] of Object.entries(files)) {
++    mkdirSync(dirname(join(repo, rel)), { recursive: true });
++    writeFileSync(join(repo, rel), typeof body === "string" ? body : JSON.stringify(body));
++  }
++  return repo;
++}
++
++const ROLES = [
++  { role: "hero", assetKey: "bank-table", kit: "K4" },
++  { role: "prop", assetKey: "cue", kit: "K4" }
++];
++const kit = (verdicts: Record<string, string>) => ({
++  files: Object.entries(verdicts).map(([id, verdict]) => ({ id, licence: "CC0-1.0", lookdev: { runId: "r1", reviewer: "x", verdict } }))
++});
++
++describe("S10 validator (PRD-14 §16.1)", () => {
++  it("passes when every role is admitted and its kit file is accepted", () => {
++    const repo = fixtureRepo({
++      "apps/route/aura.assets.json": { assets: [{ id: "bank-table" }] },
++      "aura.assets.json": { assets: [{ id: "cue" }] },
++      "apps/showcase-kits/K4/kit.json": kit({ "bank-table": "accept", cue: "accept" })
++    });
++    expect(checkS10(repo, "route", ROLES)).toEqual([]);
++  });
++
++  it("fails the admitted half for an id in no manifest", () => {
++    const repo = fixtureRepo({
++      "aura.assets.json": { assets: [{ id: "bank-table" }] },
++      "apps/showcase-kits/K4/kit.json": kit({ "bank-table": "accept", cue: "accept" })
++    });
++    const v = checkS10(repo, "route", ROLES);
++    expect(v.map((x) => [x.half, x.assetKey])).toEqual([["admitted", "cue"]]);
++  });
++
++  it("fails the kit half when the kit manifest is missing (no skip)", () => {
++    const repo = fixtureRepo({ "aura.assets.json": { assets: [{ id: "bank-table" }, { id: "cue" }] } });
++    const v = checkS10(repo, "route", ROLES);
++    expect(v.map((x) => x.half)).toEqual(["kit", "kit"]);
++    expect(v[0]!.reason).toContain("no kit manifest apps/showcase-kits/K4/kit.json");
++  });
++
++  it("fails the kit half for a missing file or a non-accept verdict", () => {
++    const repo = fixtureRepo({
++      "aura.assets.json": { assets: [{ id: "bank-table" }, { id: "cue" }, { id: "rug" }] },
++      "apps/showcase-kits/K4/kit.json": kit({ "bank-table": "revise" })
++    });
++    const v = checkS10(repo, "route", [...ROLES, { role: "set-dressing", assetKey: "rug", kit: null }]);
++    expect(formatS10("route", v)).toEqual([
++      'route: [kit] hero bank-table: kit K4 file "bank-table" look-dev verdict is revise, not accept',
++      'route: [kit] prop cue: kit K4 lists no file for "cue"',
++      'route: [kit] set-dressing rug: no apps/showcase-kits/*/kit.json lists "rug"'
++    ]);
++  });
++
++  it("resolves a route-specific role (no shared kit) through any staged kit.json", () => {
++    const roles = [{ role: "hero", assetKey: "arcade-cabinet", kit: null }];
++    const none = fixtureRepo({ "aura.assets.json": { assets: [{ id: "arcade-cabinet" }] } });
++    expect(formatS10("route", checkS10(none, "route", roles))).toEqual([
++      "route: [kit] hero arcade-cabinet: apps/showcase-kits/ does not exist (no kit manifest lists it)"
++    ]);
++    const staged = fixtureRepo({
++      "aura.assets.json": { assets: [{ id: "arcade-cabinet" }] },
++      "apps/showcase-kits/route-blockfall/kit.json": kit({ "arcade-cabinet": "accept" })
++    });
++    expect(checkS10(staged, "route", roles)).toEqual([]);
++  });
++});
++
++describe("S10/S11 inputs parse for all 18 games", () => {
++  it("games.json lists 18 routes", () => {
++    expect(GAMES).toHaveLength(18);
++  });
++
++  for (const appDir of GAMES) {
++    it(`${appDir}: art/direction.ts assets[] and audio[] parse`, () => {
++      const src = readDirection(APPS, appDir);
++      const roles = parseDirectionAssets(src);
++      expect(roles.length, `${appDir} has no assets[] roles`).toBeGreaterThan(0);
++      for (const r of roles) expect(r.kit === null || /^K\d$/.test(r.kit), `${appDir} ${r.assetKey} kit "${r.kit}"`).toBe(true);
++      expect(parseDirectionAudio(src).length, `${appDir} has no audio[] cues`).toBeGreaterThan(0);
++    });
++
++    it(`${appDir}: S11 audio proof maps only to direction audio[] events and is published`, () => {
++      const events = new Set(parseDirectionAudio(readDirection(APPS, appDir)).map((a) => a.event));
++      const proofSrc = readFileSync(join(APPS, appDir, "src/v2/audio-proof.ts"), "utf8");
++      const mapBody = /const DIRECTION_EVENT[^=]*=\s*\{([^}]*)\}/.exec(proofSrc)?.[1];
++      expect(mapBody, `${appDir} audio-proof.ts has no DIRECTION_EVENT map`).toBeDefined();
++      for (const m of mapBody!.matchAll(/"[^"]+":\s*"([^"]+)"/g)) {
++        expect(events.has(m[1]!), `${appDir} maps to unknown direction event "${m[1]}"`).toBe(true);
++      }
++      const evidenceSrc = readFileSync(join(APPS, appDir, "src/v2/evidence/index.ts"), "utf8");
++      expect(evidenceSrc).toMatch(/get audio\(\)[^\n]*\n?[^\n]*\.\.\.audioProof\.snapshot\(\)/);
++    });
++  }
++});
+diff --git a/tests/qr/prd14/unit/write-evidence.test.ts b/tests/qr/prd14/unit/write-evidence.test.ts
+index 823d50be1381010f4fb9184fc5399527f9429341..efbc22a914d21c2f8ba8fbee34c3e85f0f4fc6ae 100644
+--- a/tests/qr/prd14/unit/write-evidence.test.ts
++++ b/tests/qr/prd14/unit/write-evidence.test.ts
+@@ -1,4 +1,4 @@
+-// tests/qr/prd14/unit/write-evidence.test.ts — the S1..S9 evidence writer
++// tests/qr/prd14/unit/write-evidence.test.ts — the S1..S11 evidence writer
+ // (tests/qr/prd14/write-evidence.mjs) marks rows from one run's outputs and
+ // fails the step when any row is not "pass".
+ import { execFileSync } from "node:child_process";
+@@ -24,11 +24,17 @@ function browserReport(overrides: Record<string, string> = {}) {
+       spec("bank-shot-dispatch.spec.ts", ["flag off boots legacy with its evidence global and no console errors"]),
+       spec("showcase-bank-shot-v2.spec.ts", [
+         "boots to playing, scripted timeline clean, conditions met, look parity",
+-        "appliedLook identical between play URL and every scenario URL"
++        "appliedLook identical between play URL and every scenario URL",
++        "showcase-bank-shot: S11 audio — synthCues 0, every audio[] event played"
+       ]),
+       spec("showcase-bank-shot-framing.spec.ts", ["subjectHeightFraction within band at 1920x1080"]),
+       spec("art-direction-audit.spec.ts", ["route showcase-bank-shot: no auditArtDirection/lookLint violations"]),
+-      spec("budgets.spec.ts", ["showcase-bank-shot: S8 Medium draws ≤ budget, 0 readbacks; S9 p95 rAF ≤ 50 ms"])
++      spec("budgets.spec.ts", ["showcase-bank-shot: S8 Medium draws ≤ budget, 0 readbacks; S9 p95 rAF ≤ 50 ms"]),
++      spec("s10-assets.spec.ts", [
++        "showcase-bank-shot: every asset role is admitted",
++        "showcase-bank-shot: every asset role's kit file has an accept look-dev verdict",
++        "showcase-courier-rush: every asset role is admitted"
++      ])
+     ]
+   };
+ }
+@@ -51,14 +57,29 @@ function run(browser: unknown, staticOutcome = "success"): { code: number; repor
+ 
+ afterEach(() => rmSync(EVIDENCE, { recursive: true, force: true }));
+ 
+-describe("write-evidence.mjs (14-S1..S9)", () => {
+-  it("writes S1-S9 pass and exits 0 when every source passed", () => {
++describe("write-evidence.mjs (14-S1..S11)", () => {
++  it("writes S1-S11 pass and exits 0 when every source passed", () => {
+     const { code, report } = run(browserReport());
+-    expect(report.summary).toBe("S1-S9 pass");
+-    expect(Object.values(report.s).map((r) => r.status)).toEqual(Array(9).fill("pass"));
++    expect(report.summary).toBe("S1-S11 pass");
++    expect(Object.keys(report.s)).toEqual(["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11"]);
++    expect(Object.values(report.s).map((r) => r.status)).toEqual(Array(11).fill("pass"));
+     expect(code).toBe(0);
+   });
+ 
++  it("a red S11 audio test fails S11 only, not S2", () => {
++    const { code, report } = run(browserReport({ "showcase-bank-shot: S11 audio — synthCues 0, every audio[] event played": "failed" }));
++    expect(report.s.S11?.status).toBe("fail");
++    expect(report.s.S2?.status).toBe("pass");
++    expect(code).toBe(1);
++  });
++
++  it("S10 counts only this route's s10-assets tests", () => {
++    const { report } = run(browserReport({ "showcase-courier-rush: every asset role is admitted": "failed" }));
++    expect(report.s.S10?.status).toBe("pass");
++    const kitRed = run(browserReport({ "showcase-bank-shot: every asset role's kit file has an accept look-dev verdict": "failed" }));
++    expect(kitRed.report.s.S10?.status).toBe("fail");
++  });
++
+   it("marks the failing row and exits 1", () => {
+     const { code, report } = run(browserReport({ "subjectHeightFraction within band at 1920x1080": "failed" }));
+     expect(report.s.S7?.status).toBe("fail");
+diff --git a/tests/qr/prd14/write-evidence.mjs b/tests/qr/prd14/write-evidence.mjs
+index 82d2e5ee7623a94c43923439d859cd595b22e8c3..f61fd3f27224abb82eee5af264eebd9650bcf178 100644
+--- a/tests/qr/prd14/write-evidence.mjs
++++ b/tests/qr/prd14/write-evidence.mjs
+@@ -1,10 +1,10 @@
+ #!/usr/bin/env node
+-// tests/qr/prd14/write-evidence.mjs — PRD-14 S1..S9 evidence per game.
++// tests/qr/prd14/write-evidence.mjs — PRD-14 S1..S11 evidence per game.
+ // Joins one lane run's outputs into
+ //   docs/project/aura3d-quality-rebuild/evidence/prd14/<game>/<run-id>/report.json
+ // Inputs (all from the same qr-prd14-games.yml run):
+ //   --capture <tools/quality-rebuild-capture/out/report.json>   (S3, readiness)
+-//   --browser <tests/qr/prd14/reports/browser.json>             (Playwright JSON: S1, S2, S5-S9)
++//   --browser <tests/qr/prd14/reports/browser.json>             (Playwright JSON: S1, S2, S5-S11)
+ //   --static <success|failure|skipped>                          (Static gates job: S4, S5 static half)
+ //   --run-id <GITHUB_RUN_ID> --sha <GITHUB_SHA> --routes <dirs>
+ // Each S row is "pass", "fail" or "missing" (no test produced it). Exit code
+@@ -77,7 +77,10 @@ for (const dir of dirs) {
+     S6: verdict(byTitle(/-v2\.spec\.ts$/, /appliedLook/)),
+     S7: verdict(byFile(/-framing\.spec\.ts$/)),
+     S8: verdict(byFile(/budgets\.spec\.ts$/)),
+-    S9: verdict(byFile(/budgets\.spec\.ts$/))
++    S9: verdict(byFile(/budgets\.spec\.ts$/)),
++    // S10: s10-assets.spec.ts has no APP_DIR; its titles start with `<appDir>:`.
++    S10: verdict(mine.filter((t) => /s10-assets\.spec\.ts$/.test(t.file ?? "") && t.title.startsWith(`${appDir}:`))),
++    S11: verdict(byTitle(/-v2\.spec\.ts$/, /S11 audio/))
+   };
+   s.S5.status = s.S5.static.status === "pass" && s.S5.runtime.status === "pass" ? "pass"
+     : [s.S5.static.status, s.S5.runtime.status].includes("fail") ? "fail" : "missing";
+@@ -86,10 +89,10 @@ for (const dir of dirs) {
+   const outDir = join(ROOT, "docs/project/aura3d-quality-rebuild/evidence/prd14", id, String(args["run-id"]));
+   mkdirSync(outDir, { recursive: true });
+   writeFileSync(join(outDir, "report.json"), JSON.stringify({
+-    schema: "prd14-s1-s9/1", game: id, appDir, runId: Number(args["run-id"]), sha: args.sha,
++    schema: "prd14-s1-s11/1", game: id, appDir, runId: Number(args["run-id"]), sha: args.sha,
+     provider: "github-actions macos-14", generatedAt: new Date().toISOString(),
+-    summary: failing.length === 0 ? "S1-S9 pass" : `not passing: ${failing.join(", ")}`, s
++    summary: failing.length === 0 ? "S1-S11 pass" : `not passing: ${failing.join(", ")}`, s
+   }, null, 2) + "\n");
+-  console.log(`${id}: ${failing.length === 0 ? "S1-S9 pass" : failing.join(", ")}`);
++  console.log(`${id}: ${failing.length === 0 ? "S1-S11 pass" : failing.join(", ")}`);
+ }
+ process.exit(bad === 0 ? 0 : 1);

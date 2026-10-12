@@ -1,0 +1,24 @@
+{
+  "branch": "qr/lead-shots",
+  "tip": "9f7682c0fb60ac10afff0b753f7c493d4d1beaa0",
+  "base": "322d78b1391f1c8293cc8e714c7d8a6ba7541343",
+  "tree": "3879e219d2755798362fdefda591e592480c5ac4",
+  "reconstructedTree": "3879e219d2755798362fdefda591e592480c5ac4",
+  "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/qr--lead-shots",
+  "committedPatchSha256": "8089bf907db26892d603dce40b4fe86a68a52708aae4337eae3017b988780385",
+  "committedPatchBytes": 6155,
+  "changedFiles": [
+    "A\t.github/workflows/lead-game-shots.yml"
+  ],
+  "uniqueCommits": [
+    "9f7682c0fb60ac10afff0b753f7c493d4d1beaa0 ci(qr/lead): B-after-lane shards (main, games.json lane flags as shipped in the tool)",
+    "517741bf9fd360ba4d9350190690dc8b528b1dd7 ci(qr/lead): shard A0/B0/C into 3x6-game jobs so a lost runner loses one shard",
+    "621ff15168d2a240d4982675aa81a524dd20b6d0 ci(qr/lead): true flags-off lanes B0/A0 (strip games.json qrFlags, #626)",
+    "4ef35b1528bec3b7d6db2c46dd86c757d1c02ff3 ci(qr/lead): renderer probe, longer run timeout, always upload, diag lane",
+    "7811ea84d0885534c7a4dbb46869e98231abba74 ci(qr/lead): before/after L4 game shots workflow (push-triggered A/B/C matrix)"
+  ],
+  "sourceWorktree": "",
+  "workingFiles": [],
+  "disposition": "Historical, negative-control or superseded proposal preserved losslessly; not installed into executable paths.",
+  "integratedPaths": []
+}

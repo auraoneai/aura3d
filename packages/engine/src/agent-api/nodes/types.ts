@@ -1488,6 +1488,12 @@ export interface AuraRendererRuntimeObservation {
 export interface AuraSceneSnapshot {
   readonly schema: "aura3d-scene-snapshot/1.0";
   readonly background: AuraColor;
+  /**
+   * PRD-01 C-05: `scene().background(color, { toneMapped: false })` opt-out —
+   * the background shows the authored sRGB colour exactly instead of being
+   * tone-mapped with the scene (the default). Omitted unless `false`.
+   */
+  readonly backgroundToneMapped?: false;
   readonly camera: AuraCameraSpec;
   readonly timeline?: AuraTimelineSpec;
   readonly physics?: AuraPhysicsSceneSummary;

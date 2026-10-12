@@ -1,3 +1,4 @@
+import { expectedPublicPackageCount } from './release-inventory.mjs';
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
@@ -9,7 +10,8 @@ export function loadValidatedReleasePlan(root=process.cwd(), path=process.env.A3
  if(!plan.source||Object.keys(source).some(k=>plan.source[k]!==source[k]))throw new Error('Exact release source mismatch');
  const manifestPaths=['package.json',...readdirSync(resolve(root,'packages')).map(n=>`packages/${n}/package.json`).filter(p=>existsSync(resolve(root,p)))];
  const manifests=manifestPaths.map(p=>JSON.parse(readFileSync(resolve(root,p),'utf8'))).filter(p=>p.private!==true);
- if(manifests.length!==29||plan.packages?.length!==29||new Set(plan.packages.map(p=>p.name)).size!==29)throw new Error('Exact release requires29publicpackages');
+ const expectedCount=expectedPublicPackageCount(plan.version);
+ if(manifests.length!==expectedCount||plan.packages?.length!==expectedCount||new Set(plan.packages.map(p=>p.name)).size!==expectedCount)throw new Error(`Exact release requires ${expectedCount} public packages for ${plan.version}`);
  for(const manifest of manifests){const p=plan.packages.find(p=>p.name===manifest.name);if(!p||p.version!==manifest.version||p.version!==plan.version)throw new Error(`Exact release version mismatch ${manifest.name}`);const data=readFileSync(resolve(root,p.tarball));if(hash(data)!==p.sha256||`sha512-${createHash('sha512').update(data).digest('base64')}`!==p.integrity)throw new Error(`Exact archive mismatch ${p.name}`);}
  return {...plan,reference:{path:relative(root,absolute),sha256:hash(bytes)}};
 }

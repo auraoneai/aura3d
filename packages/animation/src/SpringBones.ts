@@ -44,6 +44,16 @@ export interface SpringChainOptions {
    * leaving rigid follow-through untouched. ~8 visibly settles a hair preset.
    */
   readonly relativeDamping?: number;
+  /**
+   * Frame the particles' inertia lives in (default `"model"`, the legacy
+   * behaviour). `"anchor"` simulates in the kinematic root's animated frame:
+   * each step first carries the particles and their velocities rigidly with
+   * the root's translation and rotation, so animation of the anchor bone
+   * itself never flings the chain — the spring reacts to gravity and to the
+   * animated pose *below* the anchor (the rest offsets), and settles relative
+   * to the animated parent. Omitted `rotation` means identity.
+   */
+  readonly space?: "model" | "anchor";
   /** Optional chain label (telemetry). */
   readonly name?: string;
 }
@@ -53,6 +63,14 @@ export interface SpringRootTransform {
   readonly position: Vec3;
   /** Optional rotation so the rest offsets follow the character's facing. */
   readonly rotation?: Quat;
+  /**
+   * Optional animated rest offsets, 3 floats per particle (index 0 ignored):
+   * each particle's rest position relative to its parent, already in the
+   * solver's frame. When set they replace the rotated bind offsets as the
+   * spring target and the segment length, so the chain settles onto the
+   * animated pose instead of the bind pose.
+   */
+  readonly offsets?: Float32Array;
 }
 
 export interface SpringChainTelemetry {
@@ -129,31 +147,80 @@ export function createSpringChain(options: SpringChainOptions): SpringChain {
     positions[i * 3 + 2] = bone[2];
   }
   let contacts = 0;
+  const anchorSpace = options.space === "anchor";
+  // Anchor rotation at the previous step (anchor space only).
+  const prevAnchorRot = new Float64Array([0, 0, 0, 1]);
 
+  /**
+   * Anchor space: carry every simulated particle and its velocity rigidly
+   * with the root's motion since the last step (translation + delta
+   * rotation about the root), before the spring/gravity update.
+   */
+  function transportWithAnchor(root: SpringRootTransform): void {
+    const q = root.rotation;
+    let dx = 0, dy = 0, dz = 0, dw = 1;
+    {
+      const qx = q?.[0] ?? 0, qy = q?.[1] ?? 0, qz = q?.[2] ?? 0, qw = q?.[3] ?? 1;
+      // dq = q * conj(prev)
+      const bx = -prevAnchorRot[0]!, by = -prevAnchorRot[1]!, bz = -prevAnchorRot[2]!, bw = prevAnchorRot[3]!;
+      dx = qx * bw + qw * bx + qy * bz - qz * by;
+      dy = qy * bw + qw * by + qz * bx - qx * bz;
+      dz = qz * bw + qw * bz + qx * by - qy * bx;
+      dw = qw * bw - qx * bx - qy * by - qz * bz;
+    }
+    const ox = positions[0]!, oy = positions[1]!, oz = positions[2]!;
+    const rx = root.position[0], ry = root.position[1], rz = root.position[2];
+    for (let i = 1; i < count; i += 1) {
+      const ci = i * 3;
+      // Scalar quaternion rotation keeps the hot transport path allocation-free.
+      const px = positions[ci]! - ox, py = positions[ci + 1]! - oy, pz = positions[ci + 2]! - oz;
+      const tx = 2 * (dy * pz - dz * py), ty = 2 * (dz * px - dx * pz), tz = 2 * (dx * py - dy * px);
+      positions[ci] = rx + px + dw * tx + dy * tz - dz * ty;
+      positions[ci + 1] = ry + py + dw * ty + dz * tx - dx * tz;
+      positions[ci + 2] = rz + pz + dw * tz + dx * ty - dy * tx;
+      const vx = velocities[ci]!, vy = velocities[ci + 1]!, vz = velocities[ci + 2]!;
+      const ux = 2 * (dy * vz - dz * vy), uy = 2 * (dz * vx - dx * vz), uz = 2 * (dx * vy - dy * vx);
+      velocities[ci] = vx + dw * ux + dy * uz - dz * uy;
+      velocities[ci + 1] = vy + dw * uy + dz * ux - dx * uz;
+      velocities[ci + 2] = vz + dw * uz + dx * uy - dy * ux;
+    }
+    prevAnchorRot[0] = q?.[0] ?? 0; prevAnchorRot[1] = q?.[1] ?? 0;
+    prevAnchorRot[2] = q?.[2] ?? 0; prevAnchorRot[3] = q?.[3] ?? 1;
+  }
   function step(dt: number, root: SpringRootTransform): void {
     contacts = 0;
     const q = root.rotation;
-    // Root particle is kinematic.
-    positions[0] = root.position[0];
-    positions[1] = root.position[1];
-    positions[2] = root.position[2];
+    const offs = root.offsets;
+    if (anchorSpace) transportWithAnchor(root);
+    // Root particle is kinematic (zero velocity: in anchor space it is the
+    // frame origin; in model space this is the legacy behaviour).
     velocities[0] = 0;
     velocities[1] = 0;
     velocities[2] = 0;
+    positions[0] = root.position[0];
+    positions[1] = root.position[1];
+    positions[2] = root.position[2];
     for (let i = 1; i < count; i += 1) {
       const pi = (i - 1) * 3;
       const ci = i * 3;
-      // Rest target = parent position + rest offset rotated into the root frame.
-      let ox = restOffsets[ci]!, oy = restOffsets[ci + 1]!, oz = restOffsets[ci + 2]!;
-      if (q !== undefined) {
-        const ix = q[3] * ox + q[1] * oz - q[2] * oy;
-        const iy = q[3] * oy + q[2] * ox - q[0] * oz;
-        const iz = q[3] * oz + q[0] * oy - q[1] * ox;
-        const iw = -q[0] * ox - q[1] * oy - q[2] * oz;
-        ox = ix * q[3] + iw * -q[0] + iy * -q[2] - iz * -q[1];
-        oy = iy * q[3] + iw * -q[1] + iz * -q[0] - ix * -q[2];
-        oz = iz * q[3] + iw * -q[2] + ix * -q[1] - iy * -q[0];
+      // Rest target = parent position + rest offset: the animated offset
+      // when supplied, else the bind offset rotated into the root frame.
+      let ox: number, oy: number, oz: number;
+      if (offs !== undefined) {
+        ox = offs[ci]!; oy = offs[ci + 1]!; oz = offs[ci + 2]!;
+      } else {
+        ox = restOffsets[ci]!; oy = restOffsets[ci + 1]!; oz = restOffsets[ci + 2]!;
+        if (q !== undefined) {
+          const ix = q[3] * ox + q[1] * oz - q[2] * oy;
+          const iy = q[3] * oy + q[2] * ox - q[0] * oz;
+          const iz = q[3] * oz + q[0] * oy - q[1] * ox;
+          const iw = -q[0] * ox - q[1] * oy - q[2] * oz;
+          ox = ix * q[3] + iw * -q[0] + iy * -q[2] - iz * -q[1];
+          oy = iy * q[3] + iw * -q[1] + iz * -q[0] - ix * -q[2];
+          oz = iz * q[3] + iw * -q[2] + ix * -q[1] - iy * -q[0];
+        }
       }
+      const restLength = offs !== undefined ? Math.hypot(ox, oy, oz) : restLengths[i]!;
       const rx = positions[pi]! + ox;
       const ry = positions[pi + 1]! + oy;
       const rz = positions[pi + 2]! + oz;
@@ -176,10 +243,10 @@ export function createSpringChain(options: SpringChainOptions): SpringChain {
         const l = Math.hypot(dx, dy, dz);
         if (l <= 1e-8) {
           npx = positions[pi]!;
-          npy = positions[pi + 1]! + restLengths[i]!;
+          npy = positions[pi + 1]! + restLength;
           npz = positions[pi + 2]!;
         } else {
-          const s = restLengths[i]! / l;
+          const s = restLength / l;
           npx = positions[pi]! + dx * s;
           npy = positions[pi + 1]! + dy * s;
           npz = positions[pi + 2]! + dz * s;
@@ -238,6 +305,7 @@ export function createSpringChain(options: SpringChainOptions): SpringChain {
   return {
     integrate(dt, rootTransform) {
       if (!Number.isFinite(dt) || dt <= 0) throw new Error("Spring chain dt must be finite and positive.");
+      if (rootTransform.offsets !== undefined && rootTransform.offsets.length !== count * 3) throw new Error("Spring chain offsets must contain 3 floats per particle.");
       const sub = dt / substeps;
       for (let s = 0; s < substeps; s += 1) step(sub, rootTransform);
     },
@@ -271,6 +339,11 @@ export function createSpringChain(options: SpringChainOptions): SpringChain {
     reset(rootTransform) {
       const rootPos = rootTransform?.position ?? options.bones[0]!;
       const q = rootTransform?.rotation;
+      const offs = rootTransform?.offsets;
+      if (offs !== undefined && offs.length !== count * 3) throw new Error("Spring chain offsets must contain 3 floats per particle.");
+      prevAnchorRot[0] = q?.[0] ?? 0; prevAnchorRot[1] = q?.[1] ?? 0;
+      prevAnchorRot[2] = q?.[2] ?? 0; prevAnchorRot[3] = q?.[3] ?? 1;
+      contacts = 0;
       positions[0] = rootPos[0];
       positions[1] = rootPos[1];
       positions[2] = rootPos[2];
@@ -278,6 +351,12 @@ export function createSpringChain(options: SpringChainOptions): SpringChain {
       for (let i = 1; i < count; i += 1) {
         const pi = (i - 1) * 3;
         const ci = i * 3;
+        if (offs !== undefined) {
+          positions[ci] = positions[pi]! + offs[ci]!;
+          positions[ci + 1] = positions[pi + 1]! + offs[ci + 1]!;
+          positions[ci + 2] = positions[pi + 2]! + offs[ci + 2]!;
+          continue;
+        }
         let ox = restOffsets[ci]!, oy = restOffsets[ci + 1]!, oz = restOffsets[ci + 2]!;
         if (q !== undefined) {
           const ix = q[3] * ox + q[1] * oz - q[2] * oy;
@@ -555,6 +634,17 @@ export function bindSpringChainToSkeleton(
   const simPos = new Float32Array(indices.length * 3);
   const rootPosArr: [number, number, number] = [0, 0, 0];
   const rootRotArr: [number, number, number, number] = [0, 0, 0, 1];
+  // Animated rest targets (this frame and the last integrated frame) and the
+  // per-substep interpolated copies handed to the chain.
+  const curOffsets = new Float32Array(indices.length * 3);
+  const prevOffsets = new Float32Array(indices.length * 3);
+  const subOffsets = new Float32Array(indices.length * 3);
+  const prevRoot = new Float32Array(3);
+  const subRoot: [number, number, number] = [0, 0, 0];
+  // Aim write bookkeeping (see `restoreUnauthoredAims`).
+  const aimRot = new Float32Array(indices.length * 4);
+  const authoredRot = new Float32Array(indices.length * 4);
+  const aimWritten = new Uint8Array(indices.length);
   let fGen = 0;
 
   /** World-frame of `joint` in `pose`, computed once per generation into the flat scratch. */
@@ -613,12 +703,59 @@ export function bindSpringChainToSkeleton(
 
   function initialize(pose: PoseBuffer): void {
     fGen += 1;
-    frameOf(pose, indices[0]!);
+    restoreUnauthoredAims(pose);
+    readAnimatedTargets(pose);
+    chain.reset({ position: rootPosArr, rotation: rootRotArr, offsets: curOffsets });
+    prevRoot.set(rootPosArr);
+    prevOffsets.set(curOffsets);
+    aimWritten.fill(0);
+    accumulator = 0;
+    initialized = true;
+  }
+
+  /**
+   * The aim write below edits `pose.rotations` in place. A host that mixes a
+   * fresh pose every frame overwrites it; one that re-steps the same buffer
+   * would otherwise feed the aimed rotation back in as the "animated" target
+   * (the spring would chase itself). An aimed joint whose rotation is still
+   * bit-identical to the value written is restored to the authored rotation.
+   */
+  function restoreUnauthoredAims(pose: PoseBuffer): void {
+    for (let i = 1; i + 1 < indices.length; i += 1) {
+      if (aimWritten[i] === 0) continue;
+      const jr = indices[i]! * 4;
+      const ar = i * 4;
+      if (
+        pose.rotations[jr] === aimRot[ar] && pose.rotations[jr + 1] === aimRot[ar + 1] &&
+        pose.rotations[jr + 2] === aimRot[ar + 2] && pose.rotations[jr + 3] === aimRot[ar + 3]
+      ) {
+        pose.rotations[jr] = authoredRot[ar]!;
+        pose.rotations[jr + 1] = authoredRot[ar + 1]!;
+        pose.rotations[jr + 2] = authoredRot[ar + 2]!;
+        pose.rotations[jr + 3] = authoredRot[ar + 3]!;
+      }
+    }
+  }
+
+  /**
+   * Animated (pre-aim) chain frame: root world position/rotation and each
+   * particle's FK offset from its parent. These are the spring's rest
+   * targets, so the chain settles onto the *animated* pose — a clip that
+   * re-poses the chain (a crouch, a landing) moves the target with it instead
+   * of leaving the particles springing toward bind-pose offsets.
+   */
+  function readAnimatedTargets(pose: PoseBuffer): void {
+    for (let i = 0; i < indices.length; i += 1) frameOf(pose, indices[i]!);
     const ri = indices[0]!;
     rootPosArr[0] = fPos[ri * 3]!; rootPosArr[1] = fPos[ri * 3 + 1]!; rootPosArr[2] = fPos[ri * 3 + 2]!;
     rootRotArr[0] = fRot[ri * 4]!; rootRotArr[1] = fRot[ri * 4 + 1]!; rootRotArr[2] = fRot[ri * 4 + 2]!; rootRotArr[3] = fRot[ri * 4 + 3]!;
-    chain.reset({ position: rootPosArr, rotation: rootRotArr });
-    initialized = true;
+    for (let i = 1; i < indices.length; i += 1) {
+      const a = indices[i - 1]! * 3;
+      const b = indices[i]! * 3;
+      curOffsets[i * 3] = fPos[b]! - fPos[a]!;
+      curOffsets[i * 3 + 1] = fPos[b + 1]! - fPos[a + 1]!;
+      curOffsets[i * 3 + 2] = fPos[b + 2]! - fPos[a + 2]!;
+    }
   }
 
   function step(pose: PoseBuffer, dt: number): void {
@@ -627,19 +764,35 @@ export function bindSpringChainToSkeleton(
     }
     if (!initialized) initialize(pose);
     fGen += 1;
+    restoreUnauthoredAims(pose);
     accumulator = Math.min(accumulator + dt, 0.25);
     const substeps = Math.min(Math.floor(accumulator / h), maxSubsteps);
     if (substeps > 0) {
-      const ri = indices[0]!;
-      frameOf(pose, ri);
-      rootPosArr[0] = fPos[ri * 3]!; rootPosArr[1] = fPos[ri * 3 + 1]!; rootPosArr[2] = fPos[ri * 3 + 2]!;
-      rootRotArr[0] = fRot[ri * 4]!; rootRotArr[1] = fRot[ri * 4 + 1]!; rootRotArr[2] = fRot[ri * 4 + 2]!; rootRotArr[3] = fRot[ri * 4 + 3]!;
+      readAnimatedTargets(pose);
+      // The animated pose only advances once per host frame; spread that
+      // motion across this call's substeps (linear in position/offset)
+      // instead of teleporting the anchor on the first substep. A teleport
+      // makes the length constraint convert a whole frame's anchor travel
+      // into one substep's velocity — ~substeps× the real anchor speed —
+      // which flings the chain on every fast anchor move (the landing).
       for (let k = 0; k < substeps; k += 1) {
-        chain.integrate(h, { position: rootPosArr, rotation: rootRotArr });
+        const u = (k + 1) / substeps;
+        subRoot[0] = prevRoot[0]! + (rootPosArr[0] - prevRoot[0]!) * u;
+        subRoot[1] = prevRoot[1]! + (rootPosArr[1] - prevRoot[1]!) * u;
+        subRoot[2] = prevRoot[2]! + (rootPosArr[2] - prevRoot[2]!) * u;
+        for (let c = 3; c < subOffsets.length; c += 1) {
+          subOffsets[c] = prevOffsets[c]! + (curOffsets[c]! - prevOffsets[c]!) * u;
+        }
+        chain.integrate(h, { position: subRoot, rotation: rootRotArr, offsets: subOffsets });
       }
+      prevRoot.set(rootPosArr);
+      prevOffsets.set(curOffsets);
       accumulator -= substeps * h;
     }
     chain.positionsFlat(simPos);
+    // Animated-target FK frames predate the aim writes. Recompute the parent
+    // chain lazily as each newly aimed rotation becomes a descendant's parent.
+    fGen += 1;
     // Aim bones[1..n-2]: each simulated bone that has a simulated child. The
     // chain root stays purely kinematic — writing its rotation would feed the
     // aim back into the next frame's root frame and the rest target would
@@ -708,6 +861,12 @@ export function bindSpringChainToSkeleton(
       pose.rotations[jr + 1] = -pry * m1w + prw * m1y - prz * m1x + prx * m1z;
       pose.rotations[jr + 2] = -prz * m1w + prw * m1z - prx * m1y + pry * m1x;
       pose.rotations[jr + 3] = prw * m1w + prx * m1x + pry * m1y + prz * m1z;
+      const ar = i * 4;
+      authoredRot[ar] = lrx; authoredRot[ar + 1] = lry; authoredRot[ar + 2] = lrz; authoredRot[ar + 3] = lrw;
+      aimRot[ar] = pose.rotations[jr]!; aimRot[ar + 1] = pose.rotations[jr + 1]!;
+      aimRot[ar + 2] = pose.rotations[jr + 2]!; aimRot[ar + 3] = pose.rotations[jr + 3]!;
+      aimWritten[i] = 1;
+      fMark[joint] = 0;
     }
   }
 

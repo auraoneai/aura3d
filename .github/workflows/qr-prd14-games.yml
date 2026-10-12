@@ -38,7 +38,11 @@ on:
         default: track0
 
 concurrency:
-  group: qr-prd14-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
+  # main: one group per commit. With a shared main group, each push replaced
+  # the still-pending run (only one pending run per group), and main moves
+  # every few minutes, so no main run ever started (2026-10-12: 30+ cancelled
+  # with 0 jobs). Branches keep cancel-in-progress on a shared group.
+  group: qr-prd14-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-{0}', github.sha) || '' }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:

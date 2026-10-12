@@ -82,6 +82,9 @@
       "@aura3d/assets/gltf-runtime": [
         "packages/assets/src/gltf-runtime.ts"
       ],
+      "@aura3d/assets/vite": [
+        "packages/assets/src/vite/auraDecoders.ts"
+      ],
       "@aura3d/animation/pose": [
         "packages/animation/src/contracts/pose.ts"
       ],

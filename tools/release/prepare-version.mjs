@@ -1,20 +1,23 @@
 #!/usr/bin/env node
 import { readFileSync, readdirSync, existsSync, writeFileSync, globSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { expectedPublicPackageCount } from './release-inventory.mjs';
 const root = resolve(import.meta.dirname, '../..');
 const version = process.argv[2];
 if (!/^\d+\.\d+\.\d+$/.test(version ?? '')) throw new Error('Usage: node tools/release/prepare-version.mjs VERSION [--check]');
 const check = process.argv.includes('--check');
 const read = p => JSON.parse(readFileSync(resolve(root, p), 'utf8'));
 const packages = ['package.json', ...readdirSync(resolve(root, 'packages')).map(n => `packages/${n}/package.json`).filter(p => existsSync(resolve(root,p)) && read(p).private !== true)];
-if (packages.length !== 29) throw new Error(`Public package inventory changed: ${packages.length}, expected 29`);
+const expectedCount = expectedPublicPackageCount(version);
+if (packages.length !== expectedCount) throw new Error(`Public package inventory changed: ${packages.length}, expected ${expectedCount} for ${version}`);
 const names = new Set(packages.map(p => read(p).name));
 const generatorPath = 'packages/create-aura3d/src/index.ts';
 const generator = readFileSync(resolve(root,generatorPath),'utf8');
 const templateBlock = generator.match(/CREATE_AURA3D_TEMPLATES = \[([\s\S]*?)\] as const/);
 if (!templateBlock) throw new Error('Missing canonical scaffold inventory');
 const templates = [...templateBlock[1].matchAll(/"([^"]+)"/g)].map(m=>m[1]);
-if (new Set(templates).size !== 19) throw new Error('Expected 19 canonical scaffolds');
+if (new Set(templates).size !== templates.length || templates.length === 0) throw new Error('Canonical scaffold inventory must be non-empty and unique');
+if (version === '3.0.1' && templates.length !== 19) throw new Error('Expected 19 canonical scaffolds for 3.0.1');
 const manifests = new Set([...packages, ...templates.map(n=>`packages/create-aura3d/templates/${n}/package.json`)]);
 // Include only root templates actually selected for publication, not archived compatibility surfaces.
 const selectedRootFiles=new Set();
