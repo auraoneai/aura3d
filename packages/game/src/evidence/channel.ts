@@ -107,6 +107,11 @@ export function installEvidenceChannel(options: EvidenceChannelInstall): { dispo
   };
 
   let memo: { at: number; value: Record<string, unknown> } | null = null;
+  // Route-published evidence (`__AURA3D_GAME_EVIDENCE__[id] = { get x() {...} }`,
+  // the v2 routes' publish*Evidence). Kept for the channel's lifetime: it used
+  // to live only as a 250 ms memo, after which the next collect replaced it
+  // with the shell-only snapshot, so route sections vanished for every reader.
+  let routeOwned: Record<string, unknown> | null = null;
   const build = (): Record<string, unknown> => {
     const now = Date.now();
     if (memo !== null && now - memo.at < MEMO_MS) return memo.value;
@@ -122,12 +127,11 @@ export function installEvidenceChannel(options: EvidenceChannelInstall): { dispo
         });
       }
     }
-    const value: Record<string, unknown> = {
-      id: options.id,
-      collectedAt: now,
-      optIn: optedIn,
-      sections
-    };
+    const value: Record<string, unknown> = {};
+    // Copy descriptors, not values: route getters stay lazy (read-time only).
+    if (routeOwned !== null) Object.defineProperties(value, Object.getOwnPropertyDescriptors(routeOwned));
+    Object.assign(value, { id: options.id, collectedAt: now, optIn: optedIn });
+    if (routeOwned === null || !("sections" in routeOwned)) value.sections = sections;
     memo = { at: now, value };
     return value;
   };
@@ -136,10 +140,12 @@ export function installEvidenceChannel(options: EvidenceChannelInstall): { dispo
     configurable: true,
     enumerable: true,
     get: build,
-    // Strict-mode `window.x = ...` writes must not throw; the assigned value
-    // becomes the channel's snapshot until the next real collect.
+    // Strict-mode `window.x = ...` writes must not throw. An assigned object
+    // is the route's own evidence: every later collect layers id/collectedAt/
+    // optIn (and the shell sections) over its properties instead of dropping it.
     set: (v: unknown) => {
-      memo = { at: Date.now(), value: v as Record<string, unknown> };
+      routeOwned = v !== null && typeof v === "object" ? (v as Record<string, unknown>) : null;
+      memo = null;
     }
   });
 
