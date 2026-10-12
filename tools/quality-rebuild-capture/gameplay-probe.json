@@ -57,7 +57,7 @@
       "controls": [
         { "name": "aim-left", "keys": ["KeyA"], "mode": "hold" },
         { "name": "aim-right", "keys": ["KeyD"], "mode": "hold" },
-        { "name": "launch-drag", "drag": { "selector": "[data-testid='gravity-post-stage'] canvas", "by": [-4, -79], "ms": 700 }, "ms": 3000 },
+        { "name": "launch-enter", "keys": ["Enter"], "mode": "charge", "chargeMs": 60, "ms": 3000 },
         { "name": "time-warp", "keys": ["Space"], "mode": "hold" }
       ]
     },
