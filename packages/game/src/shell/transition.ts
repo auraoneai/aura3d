@@ -61,6 +61,9 @@ export async function runTransition<T>(
   // swapped the scene at opacity 0.9724). Snap to fully opaque before the
   // swap so the remount gap is never visible.
   driver.setOverlay(1, 0, spec?.color);
+  // Present one more old-scene frame under the snapped, fully opaque overlay:
+  // the frame that ran in the same tick as the timer was composed before it.
+  await driver.sleep(0);
   const result = await run();
   // firstPresentedFrame only resolves for `frame.source === "raf"` frames —
   // under a stepper/offscreen present it would hang forever with the overlay
