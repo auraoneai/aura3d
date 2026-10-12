@@ -21,7 +21,7 @@ export const POST_V2_BLOOM_INTENSITY = 3;
 /** v2 prefilter knee ratio: bloom ramps in from `threshold * (1 - knee)`. */
 export const POST_V2_BLOOM_KNEE = 0;
 /** v2 exposure multiplier folded into `colorGrade.exposure`. */
-export const POST_V2_EXPOSURE = 1.6;
+export const POST_V2_EXPOSURE = 1.55;
 
 interface BloomBuilderLike {
   toJSON(): unknown;
