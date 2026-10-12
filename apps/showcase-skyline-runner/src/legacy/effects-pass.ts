@@ -4,7 +4,7 @@
  * Presentation only: the platformer controller, colliders, pickups and
  * checkpoints are untouched.
  * Families wired for the dusk-to-night skyline climb:
- *   - act key lights cast cascaded shadows (main.ts) + contact shadows
+ *   - act key lights cast cascaded shadows (main.ts)
  *   - act fog becomes height haze (ground-hugging, lighter higher up the climb)
  *   - drifting ember / snow motes per district along the route
  *   - grade + vignette (bloom values are unchanged; see main.ts)
@@ -25,8 +25,8 @@ export function skylineEffectsPass(options: SkylineEffectsPassOptions): readonly
       name: `skyline district ${index + 1} motes`,
       emitter: "ambient",
       materialMode: index % 2 === 0 ? "additive-glow" : "dust",
-      rate: reducedMotion ? 6 : 16,
-      maxParticles: 110,
+      rate: reducedMotion ? 6 : 9,
+      maxParticles: 66,
       prewarm: 6,
       seed: 9100 + index,
       lifetime: [5, 8],
@@ -38,7 +38,6 @@ export function skylineEffectsPass(options: SkylineEffectsPassOptions): readonly
     }).position(x, y + 0.6, depth - 0.4)
   );
   return [
-    effects.contactShadows({ length: 0.12, thickness: 0.03, steps: 8, intensity: 0.85 }),
     effects.vignette({ intensity: 0.3, smoothness: 2.4, roundness: 1 }),
     ...motes
   ];

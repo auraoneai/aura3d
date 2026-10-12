@@ -930,7 +930,7 @@ function buildWorldScene() {
       // pixel below threshold), so leave it unauthored here (clampLuminance 64).
       ? { name: "aurora sky bloom", intensity: 1.4, threshold: 0.5, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
       : { name: "aurora sky bloom", intensity: 0.22, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade(visualReviewCapture ? { exposure: 1.06, contrast: 1.05, saturation: 1.12 } : { exposure: 1.04, contrast: 1.12, saturation: 1.2 }))
+    .add(effects.colorGrade(visualReviewCapture ? { exposure: 1.06, contrast: 1.05, saturation: 1.12 } : { exposure: 1.08, contrast: 1.12, saturation: 1.22 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     // Ambient-only teal wash at 0.95 flattened the regolith into a single bright
     // silhouette and blew the typed probe out into a white disc. Drop the flat

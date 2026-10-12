@@ -3,8 +3,8 @@
  *
  * Presentation only: no node here owns gameplay state, colliders or input.
  * Families wired on the public planning board:
- *   - cascaded key shadow + contact shadows (the key light in main.ts now
- *     casts; contact shadows ground the pod, docks and planets on the board)
+ *   - cascaded key shadow (the key light in main.ts now casts onto the
+ *     board; screen-space contact shadows were dropped for frame cost)
  *   - volumetric inscatter / god rays from the warm solar key
  *   - height haze hugging the play plane (depth separation board -> void)
  *   - solar-wind dust and ember particles around Sol
@@ -21,7 +21,6 @@ export interface GravityPostEffectsPassOptions {
 export function gravityPostEffectsPass(options: GravityPostEffectsPassOptions): readonly AuraNodeInput[] {
   const { playPlaneY, reducedMotion } = options;
   return [
-    effects.contactShadows({ length: 0.22, thickness: 0.05, steps: 8, intensity: 0.85 }),
     effects.vignette({ intensity: 0.3, smoothness: 2.4, roundness: 1 }),
     // God rays: driven by the strongest directional light (the warm solar key).
     effects.volumetricFog({
@@ -39,8 +38,8 @@ export function gravityPostEffectsPass(options: GravityPostEffectsPassOptions): 
       name: "solar wind motes",
       emitter: "ambient",
       materialMode: "additive-glow",
-      rate: reducedMotion ? 12 : 30,
-      maxParticles: 240,
+      rate: reducedMotion ? 12 : 18,
+      maxParticles: 144,
       prewarm: 8,
       seed: 1414,
       lifetime: [6, 9],
@@ -55,8 +54,8 @@ export function gravityPostEffectsPass(options: GravityPostEffectsPassOptions): 
       name: "sol corona embers",
       emitter: "ambient",
       materialMode: "spark",
-      rate: reducedMotion ? 8 : 24,
-      maxParticles: 120,
+      rate: reducedMotion ? 8 : 14,
+      maxParticles: 72,
       prewarm: 3,
       seed: 2718,
       lifetime: [1.2, 2.2],
@@ -75,11 +74,11 @@ export function gravityPostHeightHaze(playPlaneY: number): AuraNodeInput {
     // heightDensity selects the C-21 height mode (no explicit `mode` needed).
     color: "#184a63",
     density: 0.012,
-    heightDensity: 0.085,
+    heightDensity: 0.06,
     heightFalloff: 1.1,
     heightReference: playPlaneY - 0.4,
     start: 1.5,
-    maxOpacity: 0.62,
+    maxOpacity: 0.5,
     sunInscatter: 0.45,
     anisotropy: 0.55,
     affectsBackground: false

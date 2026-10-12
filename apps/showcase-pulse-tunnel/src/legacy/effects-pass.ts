@@ -3,7 +3,7 @@
  *
  * Presentation only: gate timing, collision and scoring stay in gameplay/.
  * Families wired for the neon corridor:
- *   - corridor key cascaded shadow + contact shadows on the deck
+ *   - corridor key cascaded shadow on the deck
  *   - persistent height haze (violet floor mist) with a smoothed downbeat
  *     pulse: the pulse node now transitions instead of popping a dense fog
  *     on and off in one frame
@@ -32,15 +32,14 @@ const FOG_TRANSITION_SECONDS = 0.14;
 export function pulseTunnelEffectsPass(options: { readonly reducedMotion: boolean; readonly playerZ: number }): readonly AuraNodeInput[] {
   const { reducedMotion, playerZ } = options;
   return [
-    effects.contactShadows({ length: 0.2, thickness: 0.04, steps: 8, intensity: 0.85 }),
     effects.vignette({ intensity: 0.3, smoothness: 2.4, roundness: 1 }),
     // Neon dust streaming toward the camera from the tunnel throat.
     effects.particles({
       name: "tunnel neon dust stream",
       emitter: "ambient",
       materialMode: "additive-glow",
-      rate: reducedMotion ? 14 : 40,
-      maxParticles: 260,
+      rate: reducedMotion ? 14 : 24,
+      maxParticles: 156,
       prewarm: 4,
       seed: 7101,
       lifetime: [3, 5],
@@ -54,8 +53,8 @@ export function pulseTunnelEffectsPass(options: { readonly reducedMotion: boolea
       name: "tunnel cyan deck sparks",
       emitter: "ambient",
       materialMode: "spark",
-      rate: reducedMotion ? 10 : 30,
-      maxParticles: 180,
+      rate: reducedMotion ? 10 : 18,
+      maxParticles: 108,
       prewarm: 3,
       seed: 7102,
       lifetime: [1.6, 2.6],
@@ -73,8 +72,8 @@ export function pulseTunnelBaseHaze(): AuraNodeInput {
     name: "tunnel violet floor haze",
     // heightDensity selects the C-21 height mode.
     color: "#2a1458",
-    density: 0.012,
-    heightDensity: 0.035,
+    density: 0.008,
+    heightDensity: 0.025,
     heightFalloff: 1.4,
     heightReference: -0.1,
     start: 1.2,
@@ -89,8 +88,8 @@ export function pulseTunnelDownbeatFog(): ReturnType<typeof effects.fog> {
   return effects.fog({
     name: "pulse downbeat fog pulse",
     color: "#341a66",
-    density: 0.018,
-    heightDensity: 0.05,
+    density: 0.012,
+    heightDensity: 0.035,
     heightFalloff: 1.4,
     heightReference: -0.1,
     start: 1.2,

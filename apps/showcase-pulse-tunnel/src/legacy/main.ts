@@ -1470,7 +1470,7 @@ const app = createAuraApp("#app", {
           })]
         : []),
       effects.neonBloom({ intensity: visualReviewCapture ? 0.16 : reducedMotion ? 0.2 : 0.82, threshold: visualReviewCapture ? 0.84 : 0.74, maxIntensity: visualReviewCapture ? 0.42 : 0.72, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.colorGrade(visualReviewCapture ? { exposure: 1.05, contrast: 1.07, saturation: 1.12 } : { exposure: 1.1, contrast: 1.14, saturation: 1.22 }),
+      effects.colorGrade(visualReviewCapture ? { exposure: 1.05, contrast: 1.07, saturation: 1.12 } : { exposure: 1.22, contrast: 1.12, saturation: 1.22 }),
       effects.antiAlias({ mode: "fxaa" }),
       // Visible effects pass (default boot; the named review lens is unchanged).
       ...(visualReviewCapture ? [] : [...pulseTunnelEffectsPass({ reducedMotion, playerZ: PULSE_PLAYER_Z }), pulseTunnelBaseHaze()]),

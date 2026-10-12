@@ -2112,7 +2112,7 @@ const app = createAuraApp("#app", {
     .add(effects.neonBloom(postV2Bloom
       ? { intensity: visualReviewCapture ? 0 : 1.15, threshold: 0.55, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
       : { intensity: visualReviewCapture ? 0 : 0.1, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade(visualReviewCapture ? { exposure: 1.04, contrast: 1.06, saturation: 1.1 } : { exposure: 1.1, contrast: 1.14, saturation: 1.2 }))
+    .add(effects.colorGrade(visualReviewCapture ? { exposure: 1.04, contrast: 1.06, saturation: 1.1 } : { exposure: 1.18, contrast: 1.12, saturation: 1.2 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     .add(effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.34 : 0.2 }))
     .add(effects.contactOcclusion({ name: "platform landing contact", intensity: 0.32, radius: 0.5 }))

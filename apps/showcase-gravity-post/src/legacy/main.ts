@@ -1187,7 +1187,7 @@ for (let index = 0; index < FLYBY_DRONES; index += 1) {
 
 sceneBuilder = sceneBuilder
   .add(effects.neonBloom({ name: "gravity route glow", intensity: 0.18, threshold: 0.62, maxIntensity: 0.9, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-  .add(effects.colorGrade(visualReviewCapture ? { exposure: 1.04, contrast: 1.06, saturation: 1.1 } : { exposure: 1.16, contrast: 1.14, saturation: 1.2 }))
+  .add(effects.colorGrade(visualReviewCapture ? { exposure: 1.04, contrast: 1.06, saturation: 1.1 } : { exposure: 1.02, contrast: 1.14, saturation: 1.2 }))
   .add(effects.antiAlias({ mode: "fxaa" }))
   // Keep enough cool fill for the board while allowing the freight district's
   // graphite/alloy/rust material groups to retain real value separation in the

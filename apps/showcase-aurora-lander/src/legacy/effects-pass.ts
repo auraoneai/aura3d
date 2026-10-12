@@ -3,7 +3,7 @@
  *
  * Presentation only: nothing here owns flight, contact or scoring state.
  * Families wired for the night-valley landing:
- *   - moonlight key cascaded shadow (already authored) + contact shadows
+ *   - moonlight key cascaded shadow (already authored)
  *   - valley height fog: dense in the basin, clear at the ridgelines
  *   - regolith dust over the first pad and aurora sparkle high in the sky
  *   - grade + vignette (bloom values are unchanged; see main.ts)
@@ -21,15 +21,14 @@ export function auroraLanderEffectsPass(options: AuroraLanderEffectsPassOptions)
   const [padX, padY, padZ] = options.pad;
   const calm = options.reducedMotion;
   return [
-    effects.contactShadows({ length: 0.6, thickness: 0.12, steps: 8, intensity: 0.9 }),
     effects.vignette({ intensity: 0.3, smoothness: 2.4, roundness: 1 }),
     // Regolith dust lifting off the first landing pad (thruster wash read).
     effects.particles({
       name: "regolith pad dust",
       emitter: "ambient",
       materialMode: "dust",
-      rate: calm ? 10 : 26,
-      maxParticles: 220,
+      rate: calm ? 10 : 15,
+      maxParticles: 132,
       prewarm: 6,
       seed: 3301,
       lifetime: [4, 7],
@@ -44,8 +43,8 @@ export function auroraLanderEffectsPass(options: AuroraLanderEffectsPassOptions)
       name: "aurora sky sparkle",
       emitter: "ambient",
       materialMode: "additive-glow",
-      rate: calm ? 8 : 20,
-      maxParticles: 200,
+      rate: calm ? 8 : 12,
+      maxParticles: 120,
       prewarm: 10,
       seed: 3302,
       lifetime: [7, 10],
@@ -63,9 +62,9 @@ export function auroraLanderValleyFog(padY: number): AuraNodeInput {
   return effects.fog({
     name: "valley height fog",
     // heightDensity selects the C-21 height mode.
-    color: "#10213a",
-    density: 0.004,
-    heightDensity: 0.025,
+    color: "#183150",
+    density: 0.005,
+    heightDensity: 0.035,
     heightFalloff: 0.09,
     heightReference: padY,
     start: 3,

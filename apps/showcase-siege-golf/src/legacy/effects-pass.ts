@@ -3,7 +3,7 @@
  *
  * Presentation only: no collider, sensor or scoring authority lives here.
  * Families wired for the golden-hour causeway:
- *   - low golden sun cascaded shadow (already authored) + contact shadows
+ *   - low golden sun cascaded shadow (already authored)
  *   - golden-hour height haze: settles in the valley, keeps the fairway crisp
  *   - drifting pollen / chaff particles over the fairway and the keep
  *   - grade (no vignette: the phase-camera scene rebuilds rendered black
@@ -19,14 +19,13 @@ export interface SiegeGolfEffectsPassOptions {
 export function siegeGolfEffectsPass(options: SiegeGolfEffectsPassOptions): readonly AuraNodeInput[] {
   const { halfLength, reducedMotion } = options;
   return [
-    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 8, intensity: 0.9 }),
     // Pollen and chaff drifting through the low sun over the mid fairway.
     effects.particles({
       name: "golden-hour fairway pollen",
       emitter: "ambient",
       materialMode: "additive-glow",
-      rate: reducedMotion ? 10 : 26,
-      maxParticles: 240,
+      rate: reducedMotion ? 10 : 15,
+      maxParticles: 144,
       prewarm: 8,
       seed: 5101,
       lifetime: [6, 9],
@@ -41,8 +40,8 @@ export function siegeGolfEffectsPass(options: SiegeGolfEffectsPassOptions): read
       name: "keep timber dust",
       emitter: "ambient",
       materialMode: "dust",
-      rate: reducedMotion ? 6 : 16,
-      maxParticles: 140,
+      rate: reducedMotion ? 6 : 9,
+      maxParticles: 84,
       prewarm: 6,
       seed: 5102,
       lifetime: [5, 8],
@@ -69,7 +68,7 @@ export function siegeGolfHeightHaze(): AuraNodeInput {
     maxOpacity: 0.6,
     sunInscatter: 0.55,
     anisotropy: 0.6,
-    affectsBackground: true,
-    backgroundDistance: 60
+    // The sky stays as authored: fogging it clipped the opening frame.
+    affectsBackground: false
   });
 }
