@@ -29,6 +29,7 @@ import {
   type VehicleVec3
 } from "@aura3d/engine";
 import { assets } from "../../../../src/aura-assets";
+import { resolveQrFlags } from "@aura3d/engine/contracts";
 import { createShowcaseRapierPhysicsProof } from "../../../common/src/rapier-physics-proof";
 import { gameGeometryContract } from "../generated/game-geometry";
 import { turboAcceptanceExcursionInput } from "./acceptance-driver";
@@ -562,6 +563,12 @@ const collisionReviewCamera = new URLSearchParams(window.location.search).get("c
 // cars to thumbnail scale and let foreground barriers dominate the frame.
 // The public route remains on the closer gameplay chase camera.
 const visualCaptureCamera = new URLSearchParams(window.location.search).get("capture") === "overview";
+// PRD-03 §6.6 / Q-14-1: A3D_QR_POST (default on) bloom is linear HDR with no hidden
+// legacy gain; retune for v2 only so the `-post` legacy look is unchanged.
+const postV2Bloom = resolveQrFlags({
+  url: window.location.href,
+  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+}).on("A3D_QR_POST");
 const VISUAL_CAPTURE_CAMERA = {
   // Keep the review frame on the same proven road-facing geometry as the live
   // chase rig.  The former close/high variant targeted a separate midpoint
@@ -3363,7 +3370,9 @@ const app = createAuraApp("#app", {
       intensity: visualCaptureCamera ? 0.5 : 0.28,
       radius: visualCaptureCamera ? 0.68 : 0.54
     }))
-    .add(effects.neonBloom({ intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.neonBloom(postV2Bloom
+      ? { intensity: 1.8, threshold: 0.52, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
+      : { intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
     .add(effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.12 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     // Nonzero depth haze that grades the treeline into the sky and separates
