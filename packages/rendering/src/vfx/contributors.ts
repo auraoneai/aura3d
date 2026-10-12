@@ -314,7 +314,11 @@ const fogContributor: FrameContributor = {
   id: "prd07.fog",
   owner: "prd07",
   flag: "A3D_QR_VFX_FOG",
-  phases: ["background"],
+  // `collect`, not "background": FrameGraph only calls `collect()` on
+  // contributors listing that phase. Under "background" the fog store was
+  // never written, so forward geometry, the sky and the volumetric pass all
+  // saw "no fog" and A3D_QR_VFX_FOG frames matched flags-off byte for byte.
+  phases: ["collect"],
   collect: (items, ctx) => {
     const atmosphere = (ctx.source as Prd07FrameSource).atmosphere as {
       resolveFog?: (t: number) => Record<string, unknown> | null;
