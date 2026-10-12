@@ -23,7 +23,9 @@ export const QR_FLAG_STATES: Readonly<Partial<Record<QrFlagName, QrFlagState>>> 
   // Promoted 2026-10-11 (owner rule): GPU L4 promote run 38197365077 on
   // e0701cccd, PASS, mean LPIPS vs three.js 0.1684 -> 0.1630 over 30 scenes, 0 regressed.
   A3D_QR_MATERIALS: "default-on",
-  A3D_QR_ASSETS: "dev",
+  // Promoted 2026-10-11 (owner rule): GPU L4 promote run 38198433913 on
+  // b596b4a81, PASS, mean LPIPS vs three.js 0.1684 -> 0.1111 over 24 scenes, 0 regressed.
+  A3D_QR_ASSETS: "default-on",
   A3D_QR_ANIMATION: "dev",
   A3D_QR_VFX: "dev",
   A3D_QR_CAMERA: "default-on",
