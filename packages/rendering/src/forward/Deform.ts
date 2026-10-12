@@ -45,9 +45,13 @@ export class SkinningPaletteUploadManager {
   /**
    * C-18 palette cache (T0.10). Always allocated — it is inert while
    * `A3D_QR_ANIMATION` is off because `bind` never consults it without a
-   * stamped `paletteKey`.
+   * stamped `paletteKey`. Read lazily: `lanes/prd06` sits in an import
+   * cycle with this module, and a field initializer captured `undefined`
+   * when `@aura3d/engine` was imported before `@aura3d/rendering`.
    */
-  private readonly paletteCache = skinningPaletteCache;
+  private get paletteCache() {
+    return skinningPaletteCache;
+  }
 
   beginFrame(): void {
     this.paletteCache.beginFrame();

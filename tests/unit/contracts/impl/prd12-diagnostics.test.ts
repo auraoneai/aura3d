@@ -36,8 +36,23 @@ describe("PRD-12 T1.14 C-31 sections (appliedLook, frameTiming)", () => {
     expect(typeof look.fallbackLightsActive).toBe("boolean");
     expect(["production", "safe-basic", "lean", "compat-preset"]).toContain(look.renderPath);
     expect(typeof look.pixelRatio).toBe("number");
-    // No authored lights in the snapshot: fallback lights are genuinely active.
-    expect(look.fallbackLightsActive).toBe(true);
+    // No authored lights in the snapshot. A3D_QR_LIGHTING is default-on
+    // (#1238): the fallback rig is replaced by the neutral-room environment,
+    // so no fallback lights are active.
+    expect(look.fallbackLightsActive).toBe(false);
+  });
+
+  it("appliedLook reports fallback lights with A3D_QR_LIGHTING explicitly off", () => {
+    vi.stubEnv("A3D_QR_LIGHTING", "0");
+    try {
+      const snapshot = { background: "#10151f", nodes: [], camera: { mode: "orbit" }, diagnostics: { enabled: false } };
+      const state = engine.createInitialDiagnostics(snapshot as never);
+      const look = appliedLook!.collect(fakeApp(engine.snapshotDiagnostics(state), snapshot)) as Record<string, unknown>;
+      // Flag off: the legacy fallback rig is genuinely active.
+      expect(look.fallbackLightsActive).toBe(true);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("reports null where the source is absent — never a constant", () => {
