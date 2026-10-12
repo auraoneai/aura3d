@@ -2138,27 +2138,34 @@ function createBicycleArcadeVehicle(options: GameArcadeVehicleOptions): GameArca
     torqueCurve: options.torqueCurve,
     steerAssist: options.steerAssist
   });
+  // Heading conventions differ: GameArcadeVehicle (and every racing kit,
+  // surface query and chassis) moves along (cos h, sin h) on the (x, z) plane,
+  // while BicycleModel moves along (sin h, cos h). The two are mirror images
+  // (h_model = PI/2 - h), so heading, steer and every signed lateral/yaw
+  // quantity cross this adapter mirrored. Passing headings straight through
+  // drove the car at 90 degrees to its heading (sideways off the track).
+  const toModelHeading = (heading: number): number => Math.PI / 2 - heading;
   const snapshot = (): GameArcadeVehicleState => {
     const s = model.snapshot();
     return {
       x: s.x,
       z: s.z,
-      heading: s.heading,
+      heading: toModelHeading(s.heading),
       speed: s.vLong,
       drift: Math.min(1, Math.abs(s.rearSlipAngle) / 0.12),
-      lateralVelocity: s.vLat,
-      yawRate: s.yawRate,
-      slipAngle: s.slipAngle,
+      lateralVelocity: -s.vLat,
+      yawRate: -s.yawRate,
+      slipAngle: -s.slipAngle,
       drifting: s.drifting,
       rpm: s.rpm,
-      lateralG: s.lateralG
+      lateralG: -s.lateralG
     };
   };
   return {
     kind: "aura-game-arcade-vehicle",
     step(dt, input = {}) {
       model.step(clamp(dt, 0, 0.05), {
-        steer: input.steer,
+        steer: -clamp(input.steer ?? 0, -1, 1),
         throttle: input.throttle,
         brake: input.brake,
         handbrake: input.handbrake === true || input.drifting === true
@@ -2166,13 +2173,17 @@ function createBicycleArcadeVehicle(options: GameArcadeVehicleOptions): GameArca
       return snapshot();
     },
     constrain(constraint) {
-      model.setPoseState({ x: constraint.x, z: constraint.z, heading: constraint.heading });
+      model.setPoseState({
+        x: constraint.x,
+        z: constraint.z,
+        heading: constraint.heading === undefined ? undefined : toModelHeading(constraint.heading)
+      });
       const speedScale = Math.max(0, constraint.speedMultiplier ?? 1);
       model.scaleVelocity(speedScale * clamp(constraint.driftMultiplier ?? 1, 0.5, 1));
       return snapshot();
     },
     reset(next = {}) {
-      model.reset({ x: next.x, z: next.z, heading: next.heading });
+      model.reset({ x: next.x, z: next.z, heading: toModelHeading(next.heading ?? 0) });
       model.setVelocity(next.speed ?? 0);
       return snapshot();
     },
