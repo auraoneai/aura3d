@@ -11,6 +11,12 @@
  *   - grade + vignette (bloom values are unchanged; see main.ts)
  */
 import { effects, type AuraNodeInput } from "@aura3d/engine";
+import { resolveQrFlags } from "@aura3d/engine/contracts";
+
+const postOn = resolveQrFlags({
+  url: location.href,
+  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+}).on("A3D_QR_POST");
 
 export interface GravityPostEffectsPassOptions {
   readonly playPlaneY: number;
@@ -23,14 +29,20 @@ export function gravityPostEffectsPass(options: GravityPostEffectsPassOptions): 
   return [
     effects.vignette({ intensity: 0.3, smoothness: 2.4, roundness: 1 }),
     // God rays: driven by the strongest directional light (the warm solar key).
-    effects.volumetricFog({
-      name: "solar key inscatter",
-      density: 0.2,
-      intensity: 0.22,
-      color: "#ffbe7a",
-      heightFalloff: 0.9,
-      heightReference: playPlaneY
-    }),
+    // Gated on post: under a3d-qr=none this node takes a CPU march path that
+    // stalls the route (none-arm capture timeout, run 38316954791).
+    ...(postOn
+      ? [
+          effects.volumetricFog({
+            name: "solar key inscatter",
+            density: 0.2,
+            intensity: 0.22,
+            color: "#ffbe7a",
+            heightFalloff: 0.9,
+            heightReference: playPlaneY
+          })
+        ]
+      : []),
     // Solar wind: slow warm motes drifting off Sol across the board. The
     // "ambient" emitter spreads in every direction from the origin, so the
     // cloud radius is roughly speed x lifetime (~3 board units).

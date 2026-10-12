@@ -4,6 +4,12 @@
 // golden dust motes hanging in the sun over the court and a soft vignette.
 // Gameplay is untouched.
 import { effects, environments, type AuraNodeInput } from "@aura3d/engine";
+import { resolveQrFlags } from "@aura3d/engine/contracts";
+
+const postOn = resolveQrFlags({
+  url: location.href,
+  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+}).on("A3D_QR_POST");
 
 /** Linear HDR particle colour (array form; hex colours are capped at 1.0). */
 const hdr = (r: number, g: number, b: number): string => [r, g, b] as unknown as string;
@@ -12,13 +18,17 @@ export function createRooftopEffectsPass(options: { readonly reducedMotion: bool
   const nodes: AuraNodeInput[] = [
     // Replaces the 0.005 dusk haze (a no-op at court scale): ≈8% on the
     // athletes at ≈10 m, 30%+ on the skyline behind the pavilion.
-    effects.volumetricFog({
-      name: "rooftop dusk volumetric haze",
-      density: 0.022,
-      color: "#8a6a7c",
-      intensity: 0.3,
-      volumetricQuality: "off"
-    }),
+    ...(postOn
+      ? [
+          effects.volumetricFog({
+            name: "rooftop dusk volumetric haze",
+            density: 0.022,
+            color: "#8a6a7c",
+            intensity: 0.3,
+            volumetricQuality: "off"
+          })
+        ]
+      : []),
     environments.preset("sunset", { name: "rooftop sunset reflections", intensity: 0.5, background: false }),
     effects.vignette({ name: "rooftop vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];

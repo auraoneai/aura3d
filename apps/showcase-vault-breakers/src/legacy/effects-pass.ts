@@ -4,19 +4,29 @@
 // the backbox, a stronger IBL so the chrome rails and reflective floor pick up
 // reflections, and a framing vignette. Gameplay is untouched.
 import { effects, environments, type AuraNodeInput } from "@aura3d/engine";
+import { resolveQrFlags } from "@aura3d/engine/contracts";
+
+const postOn = resolveQrFlags({
+  url: location.href,
+  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+}).on("A3D_QR_POST");
 
 /** Linear HDR particle colour (array form, see blockfall effects-pass). */
 const hdr = (r: number, g: number, b: number): string => [r, g, b] as unknown as string;
 
 export function createVaultEffectsPass(options: { readonly reducedMotion: boolean }): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [
-    effects.volumetricFog({
-      name: "vault arcade volumetric haze",
-      density: 0.055,
-      color: "#5a4380",
-      intensity: 0.22,
-      volumetricQuality: "off"
-    }),
+    ...(postOn
+      ? [
+          effects.volumetricFog({
+            name: "vault arcade volumetric haze",
+            density: 0.055,
+            color: "#5a4380",
+            intensity: 0.22,
+            volumetricQuality: "off"
+          })
+        ]
+      : []),
     // Studio IBL (background off) gives the steel rails, flippers and floor a
     // real reflection source instead of the dim implicit room probe.
     environments.preset("studio", { name: "vault reflection environment", intensity: 0.5, background: false }),
