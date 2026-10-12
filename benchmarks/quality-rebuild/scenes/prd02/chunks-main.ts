@@ -110,11 +110,19 @@ void main() {
  * block; the prd02 punctual chunk declares the flattened default-block
  * `u_lightData[A3D_MAX_LIGHTS * 6]` itself (PRD-02 §8.1), so with both the
  * fragment fails "'u_lightData' : redefinition" (GPU run 38186219765). Drop the
- * stub block when the chunk brings its own declaration.
+ * stub block when the chunk brings its own declaration — in the vertex stage
+ * too, or the link fails "Name conflicts between a uniform and a uniform block
+ * field: u_lightData" (GPU run 38187586433).
  */
+const STUB_AURA_LIGHTS = /layout\(std140\)\s*uniform\s+AuraLights\s*\{[^}]*\};\s*/;
+function declaresOwnLightData(fragment: string): boolean {
+  return /uniform\s+vec4\s+u_lightData\s*\[\s*A3D_MAX_LIGHTS/.test(fragment);
+}
 function harnessFragment(fragment: string): string {
-  if (!/uniform\s+vec4\s+u_lightData\s*\[\s*A3D_MAX_LIGHTS/.test(fragment)) return fragment;
-  return fragment.replace(/layout\(std140\)\s*uniform\s+AuraLights\s*\{[^}]*\};\s*/, "");
+  return declaresOwnLightData(fragment) ? fragment.replace(STUB_AURA_LIGHTS, "") : fragment;
+}
+function harnessVertex(program: { readonly vertex: string; readonly fragment: string }): string {
+  return declaresOwnLightData(program.fragment) ? program.vertex.replace(STUB_AURA_LIGHTS, "") : program.vertex;
 }
 
 function compileRows(gl: WebGL2RenderingContext): CompileRow[] {
@@ -126,7 +134,7 @@ function compileRows(gl: WebGL2RenderingContext): CompileRow[] {
       continue;
     }
     const program = buildChunkHarnessProgram([chunk]);
-    const vs = compile(gl, gl.VERTEX_SHADER, program.vertex);
+    const vs = compile(gl, gl.VERTEX_SHADER, harnessVertex(program));
     const fs = compile(gl, gl.FRAGMENT_SHADER, harnessFragment(program.fragment));
     rows.push({ name, fragmentOk: fs.ok, vertexOk: vs.ok, linkOk: null, uniformVectors: null, samplers: null, log: `${vs.log}${fs.log}` });
   }
@@ -138,7 +146,7 @@ function compileRows(gl: WebGL2RenderingContext): CompileRow[] {
   const fragmentSource = harnessFragment(program.fragment)
     .replace("precision highp float;", "precision highp float;\nprecision highp int;\n#define A3D_PUNCTUAL_SHADOWS 1")
     .replace("void main() { fragColor = vec4(1.0); }", FORWARD_MAIN);
-  const vs = compile(gl, gl.VERTEX_SHADER, program.vertex);
+  const vs = compile(gl, gl.VERTEX_SHADER, harnessVertex(program));
   const fs = compile(gl, gl.FRAGMENT_SHADER, fragmentSource);
   const linked = vs.ok && fs.ok ? link(gl, vs.shader, fs.shader) : { linkOk: false, uniformVectors: null, samplers: null, log: "" };
   rows.push({ name: "forward-set", fragmentOk: fs.ok, vertexOk: vs.ok, ...linked, log: `${vs.log}${fs.log}${linked.log}` });

@@ -7,8 +7,8 @@
   "specular": "outdoor.specular.ktx2",
   "sh9": "outdoor.sh9.f32",
   "sha256": {
-    "specular": "cc11e7135b72879ab5f1469a9b9e17d9dc7c08352f94602939101c5c212b9edc",
-    "sh9": "5290f84b2737f64fb2916731460b94ed7c8d691b57d087616deb8f7ecf401252"
+    "specular": "9697a425bba444f4dc4e3dc7565a57a800df5baa5cfc4e406dbddbafde40e5b8",
+    "sh9": "a55741d5aa636a07ebcd18c7da865196df920827e3455f072947005ece079e04"
   },
   "license": "CC0",
   "tags": [

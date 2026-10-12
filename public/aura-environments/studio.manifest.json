@@ -7,8 +7,8 @@
   "specular": "studio.specular.ktx2",
   "sh9": "studio.sh9.f32",
   "sha256": {
-    "specular": "5082ddb4c9823aa8fd5d7a4071aae53490dc27f50a6db58fc218bb535fc6128c",
-    "sh9": "92e70a87d78dd13c3c4cc650a3d9fffb3418e572f2b8a1b25b7fcb9f5f017f60"
+    "specular": "b43dcd8d4310cdc059caabb7f7c41a713a510c0f393fee840f354546a0d9e035",
+    "sh9": "113bb10775057dd0ab64ef2c4e556cdf4be0e2f4c8e15135fd3ed2b5819ea170"
   },
   "license": "CC0",
   "tags": [

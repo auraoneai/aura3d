@@ -105,7 +105,11 @@ function writeRgbe(data: Float32Array, width: number, _h: number, y: number, x: 
   const r = src[off]!, g = src[off + 1]!, bl = src[off + 2]!, e = src[off + 3]!;
   const i = (y * width + x) * 3;
   if (e === 0) { data[i] = 0; data[i + 1] = 0; data[i + 2] = 0; return; }
-  const scale = Math.pow(2, e - 136) / 256; // ldexp(1, e - (128 + 8))
+  // RGBE → linear exactly as three r185's HDRLoader (RGBEByteToRGBFloat:
+  // m · 2^(e−128) / 255). The previous `2^(e−136) / 256` divided by 256 twice,
+  // decoding every HDRI ~256× too dark (kloppenheim_06_puresky_1k peaked at
+  // 0.127 instead of ~32), which blacked out the C-09 HDRI probes.
+  const scale = Math.pow(2, e - 128) / 255;
   data[i] = r * scale;
   data[i + 1] = g * scale;
   data[i + 2] = bl * scale;
