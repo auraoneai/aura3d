@@ -1,7 +1,15 @@
 /**
  * game-sound/MasterChain.ts — §6.8 master bus chain.
  *
- *   master gain → glue compressor → limiter compressor → safety clipper → destination
+ *   master gain (headroom) → [glue, opt-in] → limiter → makeup trim → safety clipper → destination
+ *
+ * Chrome's DynamicsCompressorNode always applies automatic makeup gain
+ * (≈ 0.6 × the full-scale gain reduction). The old default chain (glue −18 dB
+ * 3:1 + limiter −6 dB 12:1) therefore lifted quiet material by +8.3 dB and
+ * pushed −12 dBFS by +6.1 dB (L4 OfflineAudioContext sweep): beds, hums and
+ * tails came up to meet the hits — a squashed, loud, buzzing mix. The default
+ * is now a hard-knee −1 dBFS 20:1 limiter followed by a trim that cancels its
+ * makeup exactly, so the chain is level-transparent below the ceiling.
  *
  * The two `DynamicsCompressorNode`s are NOT brick-wall limiting (max ratio
  * 20, finite attack): 32 simultaneous 0 dBFS hits still overshoot ~1.5 dB.
@@ -13,9 +21,9 @@
 import type { SoundGraphContext, SoundNodeLike } from "./types";
 
 export interface MasterChainOptions {
-  /** Glue + limiter stages on by default (master.glue). */
+  /** Glue compressor stage (−18 dB, 3:1). Off by default: its makeup gain lifts quiet material. */
   readonly glue?: boolean;
-  /** Limiter threshold, default −6 dBFS. */
+  /** Limiter threshold, default −1 dBFS. */
   readonly limiterCeilingDb?: number;
   /**
    * Fixed headroom gain in front of the dynamics stages (default
@@ -28,6 +36,17 @@ export interface MasterChainOptions {
 
 /** Default master headroom: −4.4 dB (0.6 linear). */
 export const MASTER_HEADROOM = 0.6;
+export const LIMITER_CEILING_DB = -1;
+export const LIMITER_RATIO = 20;
+
+/**
+ * Makeup gain (dB) Chrome/WebKit's DynamicsCompressor adds for a hard-knee
+ * curve: 0.6 × the reduction a 0 dBFS input gets, i.e. 0.6·|T|·(1 − 1/R).
+ * L4 sweep: T −1, R 20 → measured +0.57 dB, formula 0.57.
+ */
+export function limiterMakeupDb(thresholdDb: number, ratio: number): number {
+  return 0.6 * Math.abs(thresholdDb) * (1 - 1 / ratio);
+}
 
 export interface MasterChain {
   readonly input: AudioNode;
@@ -75,8 +94,8 @@ export function createMasterChain(
   destination: AudioNode,
   options: MasterChainOptions = {}
 ): MasterChain {
-  const ceiling = options.limiterCeilingDb ?? -6;
-  const glueOn = options.glue ?? true;
+  const ceiling = options.limiterCeilingDb ?? LIMITER_CEILING_DB;
+  const glueOn = options.glue ?? false;
 
   const headroom = Math.max(0, Math.min(1, options.headroom ?? MASTER_HEADROOM));
   const input = ctx.createGain();
@@ -100,14 +119,19 @@ export function createMasterChain(
 
   if (ctx.createDynamicsCompressor) {
     limiter = ctx.createDynamicsCompressor() as unknown as CompressorLike;
-    // C-25 (#210): soft-knee limiter −6 dBFS threshold, 12:1, 6 dB knee.
+    // Hard-knee peak limiter; the safety clip below is the guaranteed ceiling.
     limiter.threshold.value = ceiling;
-    limiter.knee.value = 6;
-    limiter.ratio.value = 12;
+    limiter.knee.value = 0;
+    limiter.ratio.value = LIMITER_RATIO;
     limiter.attack.value = 0.001;
     limiter.release.value = 0.1;
     chain.push(limiter);
     stages.push(`limiter(${ceiling}dB)`);
+    // Cancel the compressor's automatic makeup gain (exact for knee 0).
+    const trim = ctx.createGain();
+    trim.gain.value = Math.pow(10, -limiterMakeupDb(ceiling, LIMITER_RATIO) / 20);
+    chain.push(trim as unknown as SoundNodeLike);
+    stages.push("makeupTrim");
   }
 
   if (ctx.createWaveShaper) {
