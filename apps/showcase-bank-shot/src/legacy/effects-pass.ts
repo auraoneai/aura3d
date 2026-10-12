@@ -36,22 +36,22 @@ export function bankShotEffectsPass() {
       position: [-0.6, 5.2, 1.4],
       target: [0, 0, 0],
       color: "#ffe6bf",
-      intensity: 2.4,
+      intensity: 1.15,
       shadow: { cascades: "auto", maxDistance: 12 }
     }),
     effects.contactShadows({ length: 0.12, thickness: 0.03, intensity: 0.9 }),
     // Indoor IBL: reflections on ball lacquer, rails and the cue ferrule.
-    environments.preset("indoor", { intensity: 0.5, specularIntensity: 1.2, background: false }),
+    environments.preset("indoor", { intensity: 0.32, specularIntensity: 1.0, background: false }),
     // Smoky lamp haze with forward in-scatter from the key.
     effects.volumetricFog({
       name: "pool hall lamp haze",
-      density: 0.03,
+      density: 0.02,
       color: "#3a3326",
-      intensity: 0.3,
+      intensity: 0.18,
       heightFalloff: 0.35,
       heightReference: 0
     }),
-    effects.vignette({ intensity: 0.22, smoothness: 1.8 }),
+    effects.vignette({ intensity: 0.3, smoothness: 1.8 }),
     ...(vfxOn
       ? [
           // Dust motes rising slowly through the lamp pool over the table
@@ -59,8 +59,8 @@ export function bankShotEffectsPass() {
           effects.particles({
             name: "lamp pool dust motes",
             emitter: "fountain",
-            particleCount: 150,
-            emissionRate: 32,
+            particleCount: 90,
+            emissionRate: 20,
             radius: 1.3,
             height: 1.1,
             size: [0.008, 0.02],

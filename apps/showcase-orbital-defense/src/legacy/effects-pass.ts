@@ -30,21 +30,23 @@ export function orbitalEffectsPass() {
       position: [-5.5, 3.6, 4.2],
       target: [0, 0, 0],
       color: "#ffe2b8",
-      intensity: 3.2,
+      intensity: 4.2,
       shadow: { cascades: "auto", maxDistance: 24 }
     }),
     // Studio IBL for reflections on the metallic stations and planet lacquer;
     // background stays the authored void.
-    environments.preset("studio", { intensity: 0.55, specularIntensity: 1.1, background: false }),
+    environments.preset("studio", { intensity: 0.7, specularIntensity: 1.25, background: false }),
     effects.contactShadows({ length: 0.3, intensity: 0.8 }),
-    // Depth-aware in-scatter: a faint cool haze that recedes the outer ring
+    // Depth-aware in-scatter: a cool haze that recedes the outer ring
     // and lets the sun throw rays past the planet limb.
     effects.volumetricFog({
       name: "orbital in-scatter",
-      density: 0.022,
-      color: "#1b2f4a",
-      intensity: 0.34
+      density: 0.045,
+      color: "#223c5c",
+      intensity: 0.5
     }),
+    effects.colorGrade({ exposure: 1.18, contrast: 1.05, saturation: 1.2 }),
+    effects.vignette({ intensity: 0.3, smoothness: 1.6 }),
     ...(vfxOn
       ? [
           // Debris belt: a wide spawn disc (fountain plume preset) in the
@@ -52,11 +54,11 @@ export function orbitalEffectsPass() {
           effects.particles({
             name: "orbital debris belt",
             emitter: "fountain",
-            particleCount: 260,
-            emissionRate: 60,
-            radius: 2.7,
-            height: 0.5,
-            size: [0.04, 0.09],
+            particleCount: 380,
+            emissionRate: 85,
+            radius: 5.5,
+            height: 0.9,
+            size: [0.06, 0.13],
             lifetime: [3.5, 4.5],
             color: "#9fd8ff",
             materialMode: "additive-glow",

@@ -43,14 +43,14 @@ export function deepRecoveryEffectsPass() {
       shadow: { cascades: "auto", maxDistance: 60 }
     }),
     effects.contactShadows({ length: 0.4, intensity: 0.8 }),
-    environments.preset("night", { intensity: 0.95, specularIntensity: 1.2, background: false }),
+    environments.preset("night", { intensity: 0.55, specularIntensity: 1.2, background: false }),
     // Water column: denser with depth below the surface reference, forward
     // in-scatter towards the sun.
     effects.volumetricFog({
       name: "deep recovery water column",
-      density: 0.024,
-      color: "#14525e",
-      intensity: 0.4,
+      density: 0.009,
+      color: "#0d3a44",
+      intensity: 0.2,
       heightFalloff: 0.06,
       heightReference: 0
     }),
@@ -74,8 +74,8 @@ export function deepRecoveryEffectsPass() {
           effects.particles({
             name: "marine snow",
             emitter: "ambient",
-            particleCount: 700,
-            emissionRate: 150,
+            particleCount: 420,
+            emissionRate: 95,
             speed: 2.6,
             drag: 0.55,
             gravity: -0.25,

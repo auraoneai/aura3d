@@ -32,29 +32,30 @@ export function patrolWingEffectsPass() {
   }
   return [
     effects.contactShadows({ length: 0.5, intensity: 0.7 }),
-    environments.preset("sunset", { intensity: 0.6, specularIntensity: 1.1, background: false }),
+    environments.preset("sunset", { intensity: 0.75, specularIntensity: 1.1, background: false }),
     // Aerial perspective: denser near the sea, thinning with altitude, with
     // forward in-scatter towards the golden-hour key (S4 god rays).
     effects.volumetricFog({
       name: "coastal aerial haze",
-      density: 0.0085,
+      density: 0.013,
       color: "#6f8fa3",
-      intensity: 0.36,
+      intensity: 0.44,
       heightFalloff: 0.05,
       heightReference: 0
     }),
+    effects.vignette({ intensity: 0.26, smoothness: 1.7 }),
     ...(vfxOn
       ? [
           ...WISPS.map((wisp, index) =>
             effects.particles({
               name: `flight corridor cloud wisp ${index + 1}`,
               emitter: "ambient",
-              particleCount: 60,
-              emissionRate: 12,
+              particleCount: 80,
+              emissionRate: 16,
               speed: 1.6,
               drag: 0.7,
               gravity: 0,
-              size: [1.2, 2.6],
+              size: [1.8, 3.4],
               lifetime: [4, 6],
               color: "#f4ede4",
               materialMode: "smoke",
@@ -65,8 +66,8 @@ export function patrolWingEffectsPass() {
           effects.particles({
             name: "surf line sea spray",
             emitter: "fountain",
-            particleCount: 160,
-            emissionRate: 40,
+            particleCount: 120,
+            emissionRate: 30,
             radius: 6,
             height: 1.4,
             size: [0.08, 0.2],
