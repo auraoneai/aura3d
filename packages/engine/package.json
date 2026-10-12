@@ -57,6 +57,8 @@
   },
   "sideEffects": [
     "./src/lanes/**/*.ts",
+    "./src/public/index.ts",
+    "./dist/public/index.js",
     "./src/agent-api/compiler/diagnosticOnly.*.ts",
     "./src/agent-api/compiler/optionCoverage.ts",
     "./src/agent-api/feel/lint/evidenceOnlyFeel.ts",

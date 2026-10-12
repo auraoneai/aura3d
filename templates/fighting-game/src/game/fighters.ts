@@ -7,8 +7,35 @@ import {
   model,
   primitives
 } from "@aura3d/engine";
-// T0.9a clip-map contract ships on the lane barrel, not the "." public surface.
-import { validateClipMap, type AuraClipMapEntry } from "@aura3d/engine/lanes";
+
+/**
+ * T0.9a clip-map contract (Q-06-8 / #488). The engine's `validateClipMap` lives
+ * on the in-repo lane barrel, which the published `@aura3d/engine` does not
+ * export, so a scaffolded project could not type-check or bundle the import.
+ * Same contract here: every required state must map to an embedded clip
+ * (else FIGHTER_CLIP_MISSING with the list); each stand-in warns once.
+ */
+interface AuraClipMapEntry {
+  readonly clip: string;
+  readonly standIn?: boolean;
+}
+
+function validateClipMap<State extends string>(
+  map: Record<State, AuraClipMapEntry>,
+  options: { readonly availableClips: readonly string[]; readonly requiredStates: readonly State[]; readonly label: string }
+): void {
+  const available = new Set(options.availableClips);
+  const missing: string[] = [];
+  for (const state of options.requiredStates) {
+    const entry = map[state];
+    if (!entry || !available.has(entry.clip)) {
+      missing.push(entry ? `${state}→"${entry.clip}"` : state);
+    } else if (entry.standIn === true) {
+      console.warn(`FIGHTER_CLIP_STAND_IN: ${options.label} state "${state}" stands in with "${entry.clip}".`);
+    }
+  }
+  if (missing.length > 0) throw new Error(`FIGHTER_CLIP_MISSING (${options.label}): ${missing.join(", ")}`);
+}
 
 export type FighterId = "player" | "rival";
 /**
