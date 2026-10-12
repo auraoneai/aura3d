@@ -116,7 +116,10 @@ async function probeGame(browser, game, variant, origin) {
   const run = { variant: variantLabel(variant), url: null, pageErrors: [], consoleErrors: 0 };
   page.on("pageerror", (e) => { if (run.pageErrors.length < 20) run.pageErrors.push(String(e?.message ?? e).slice(0, 300)); });
   page.on("console", (m) => { if (m.type() === "error") run.consoleErrors++; });
-  const flags = variant === "prod" || variant === "engine-default" ? "" : `?a3d-qr=${encodeURIComponent(variant)}`;
+  // `{route}` expands to the game's route flag token (games.json qrFlags[0], e.g. route-bank-shot):
+  // without it every main.ts boots src/legacy/main.ts; with it, src/v2/boot.ts.
+  const flagList = variant.replace(/\{route\}/g, game.qrFlags?.[0] ?? "").replace(/\bdefaults\b/g, DEFAULTS);
+  const flags = variant === "prod" || variant === "engine-default" ? "" : `?a3d-qr=${encodeURIComponent(flagList)}`;
   run.url = `${origin}${game.route}${flags}`;
   const gameDir = path.join(outDir, run.variant.replace(/[^a-z0-9-]/gi, "_"));
   mkdirSync(gameDir, { recursive: true });
