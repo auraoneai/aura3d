@@ -32,6 +32,7 @@ describe("T4.5 defaultVisemeExample", () => {
   });
 
   it("returns the primitive mouth-card fallback when the flag is off", () => {
+    process.env.A3D_QR_ANIMATION = "0"; // explicit: animation is default-on
     expect(defaultVisemeExample()).toBe(primitiveMouthVisemeExample);
     expect(defaultVisemeExample().mouthFallback).toBe("primitive-mouth-card");
   });

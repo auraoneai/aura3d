@@ -5,9 +5,11 @@
  * side-by-side filmstrip, and per-frame bone samples on the Aura side feeding
  * `MotionMetrics.ts` (§17.3 continuity C ≤ 1.5, foot slide, phase error).
  *
- * Unlike the frozen `animation:{clip,time}` scenes, this choreography is
- * *live*: the adapters keep stepping/rendering after READY so the strip
- * captures moving frames. The choreography is declared once here and driven
+ * Unlike the frozen `animation:{clip,time}` scenes, this choreography moves:
+ * the adapters step it on the fixed capture clock below (`crossfadeSchedule`)
+ * before READY, grabbing the strip at fixed sim steps, and freeze on the
+ * `horizonSeconds` frame for the harness screenshot — so the capture is
+ * deterministic. The choreography is declared once here and driven
  * identically by both adapters (three uses `crossFadeTo(…, 0.25, true)`).
  */
 import type { SceneSpec } from "../../shared/types";
@@ -65,6 +67,53 @@ export const SOLDIER_JOINTS: readonly string[] = [
   "mixamorig:LeftUpLeg", "mixamorig:LeftLeg", "mixamorig:LeftFoot", "mixamorig:LeftToeBase",
   "mixamorig:RightUpLeg", "mixamorig:RightLeg", "mixamorig:RightFoot", "mixamorig:RightToeBase"
 ];
+
+/**
+ * Fixed capture clock shared by both adapters (same idea as
+ * `motion/stage.ts#motionSchedule`): the choreography runs in integer 60 Hz
+ * sim steps 1..`steps` — never against wall-clock time — before READY, the
+ * strip tiles are grabbed at fixed steps ending on the capture frame
+ * (`horizonSeconds`), and the canvas is left frozen on that frame for the
+ * harness screenshot. Each transition fires before the step whose sim time
+ * first reaches `at`.
+ */
+export interface CrossfadeSchedule {
+  readonly dt: number;
+  readonly steps: number;
+  /** 1-based step after which each strip tile is rendered + grabbed. */
+  readonly stripSteps: readonly number[];
+  /** 1-based step at which each `motion.transitions[i]` fires (before advancing). */
+  readonly transitionSteps: readonly number[];
+}
+
+export function crossfadeSchedule(spec: CrossfadeFilmstripSpec): CrossfadeSchedule {
+  const { motion } = spec;
+  const dt = 1 / motion.sampleHz;
+  const steps = Math.max(1, Math.round(motion.horizonSeconds / dt));
+  const strip = spec.strip ?? { frames: 1, intervalMs: 0 };
+  const stripSteps: number[] = [];
+  for (let k = 0; k < strip.frames; k += 1) {
+    const at = motion.horizonSeconds - (strip.frames - 1 - k) * (strip.intervalMs / 1000);
+    stripSteps.push(Math.min(steps, Math.max(1, Math.round(at / dt))));
+  }
+  const transitionSteps = motion.transitions.map((t) => Math.max(1, Math.ceil(t.at / dt - 1e-6)));
+  return { dt, steps, stripSteps, transitionSteps };
+}
+
+/** Bones whose world positions both adapters publish per strip tile (`extra.probes`) for pose parity. */
+export const CROSSFADE_PROBE_BONES: readonly string[] = [
+  "mixamorig:Hips", "mixamorig:Head", "mixamorig:LeftHand", "mixamorig:RightHand",
+  "mixamorig:LeftToeBase", "mixamorig:RightToeBase"
+];
+
+export interface CrossfadeProbe {
+  readonly at: number;
+  readonly bones: Readonly<Record<string, readonly number[]>>;
+  readonly actions: readonly { readonly clip: string; readonly time: number; readonly weight: number }[];
+}
+
+const r4 = (x: number): number => Math.round(x * 1e4) / 1e4;
+export const roundProbe = (v: ArrayLike<number>): number[] => Array.from(v, r4);
 
 export const prd06CrossfadeFilmstrip: CrossfadeFilmstripSpec = {
   id: "prd06-crossfade-filmstrip",

@@ -400,6 +400,8 @@ function createRuntimeNodeStub(
 }
 
 const qrAnimationOn = () => resolveQrFlags({ options: ["animation"], env: {} });
+// animation is default-on: flag-off arms install an explicit off set.
+const qrAnimationOff = () => resolveQrFlags({ options: ["-animation"], env: {} });
 
 afterEach(() => {
   resetQrAnimationFlags();
@@ -419,6 +421,7 @@ describe("PRD-06 clip drive + resolveAnimationClips (T0.4–T0.6, T0.8)", () => 
   });
 
   it("flag-off embedded-name registry keeps legacy pose application verbatim (T0.4)", () => {
+    setQrAnimationFlags(qrAnimationOff());
     const controller = new AnimationController<string>();
     controller.registerEmbeddedGLBClips({ assetId: "glb-1", clips: ["Idle"] });
     const node = createRuntimeNodeStub("actor-embedded-off");
@@ -450,6 +453,7 @@ describe("PRD-06 clip drive + resolveAnimationClips (T0.4–T0.6, T0.8)", () => 
   });
 
   it("flag-off skeleton registry still emits the identity bind pose (T0.5)", () => {
+    setQrAnimationFlags(qrAnimationOff());
     const controller = new AnimationController<string>({ skeleton: { bones: ["Hips", "Spine"] } });
     controller.registerClip({ id: "walk", duration: 1 });
     controller.play("walk");
@@ -486,6 +490,7 @@ describe("PRD-06 clip drive + resolveAnimationClips (T0.4–T0.6, T0.8)", () => 
   });
 
   it("flag-off never calls resolveAnimationClips (T0.6)", () => {
+    setQrAnimationFlags(qrAnimationOff());
     const controller = new AnimationController<string>();
     controller.registerEmbeddedGLBClips({ assetId: "glb-1", clips: ["Walk"] });
     const resolver = vi.fn(() => new Promise<readonly AuraResolvedClipInfo[]>(() => {}));
@@ -617,7 +622,8 @@ describe("PRD-06 T1.10 — C-19 handle members on prd06.animation", () => {
   });
 
   it("flag off falls back to stub members (C-37 conformance)", () => {
-    // No flag installed → every member stubs.
+    // Explicit off set (animation is default-on) → every member stubs.
+    setQrAnimationFlags(qrAnimationOff());
     const { actor, mixer } = makeT110Actor("actor-t110-off");
     registerPrd06AnimationActor(actor);
     const api = createPrd06ActorAnimationApi({ id: "actor-t110-off", kind: "model" } as AuraRuntimeNodeHandle);

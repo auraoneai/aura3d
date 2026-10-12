@@ -1,0 +1,248 @@
+{
+  "summary": {
+    "flag": "animation",
+    "scenes": 21,
+    "scored": 21,
+    "broken": [],
+    "regressed": [],
+    "unscorable": [],
+    "meanLpipsNone": 0.05055551190993616,
+    "meanLpipsFlag": 0.05019288270601204,
+    "meanFlipNone": 0.09789943675111447,
+    "meanFlipFlag": 0.09710526428673238,
+    "verdict": "PASS"
+  },
+  "rows": [
+    {
+      "scene": "01-simple-geometry",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.0030581087339669466,
+      "lpips_flag": 0.0030581087339669466,
+      "flip_none": 0.003219171892851591,
+      "flip_flag": 0.003219171892851591,
+      "verdict": "OK"
+    },
+    {
+      "scene": "02-pbr-product",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.011373372748494148,
+      "lpips_flag": 0.011373372748494148,
+      "flip_none": 0.050397731363773346,
+      "flip_flag": 0.050397731363773346,
+      "verdict": "OK"
+    },
+    {
+      "scene": "03-damaged-helmet",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.023686042055487633,
+      "lpips_flag": 0.023686042055487633,
+      "flip_none": 0.03727761283516884,
+      "flip_flag": 0.03727761283516884,
+      "verdict": "OK"
+    },
+    {
+      "scene": "04-clearcoat",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.02447563409805298,
+      "lpips_flag": 0.02447563409805298,
+      "flip_none": 0.062437497079372406,
+      "flip_flag": 0.062437497079372406,
+      "verdict": "OK"
+    },
+    {
+      "scene": "05-transmission",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.056894443929195404,
+      "lpips_flag": 0.056894443929195404,
+      "flip_none": 0.1155022531747818,
+      "flip_flag": 0.1155022531747818,
+      "verdict": "OK"
+    },
+    {
+      "scene": "06-metal-roughness-sweep",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.01478391420096159,
+      "lpips_flag": 0.01478391420096159,
+      "flip_none": 0.056060850620269775,
+      "flip_flag": 0.056060850620269775,
+      "verdict": "OK"
+    },
+    {
+      "scene": "07-sheen-fabric",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.01853243261575699,
+      "lpips_flag": 0.01853243261575699,
+      "flip_none": 0.07861365377902985,
+      "flip_flag": 0.07861365377902985,
+      "verdict": "OK"
+    },
+    {
+      "scene": "08-skinned-character",
+      "none": "ready",
+      "flag": "ready",
+      "identical": false,
+      "lpips_none": 0.00883648544549942,
+      "lpips_flag": 0.007915522903203964,
+      "flip_none": 0.05391308665275574,
+      "flip_flag": 0.05006986856460571,
+      "verdict": "OK"
+    },
+    {
+      "scene": "09-outdoor-environment",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.07770839333534241,
+      "lpips_flag": 0.07770839333534241,
+      "flip_none": 0.24945834279060364,
+      "flip_flag": 0.24945834279060364,
+      "verdict": "OK"
+    },
+    {
+      "scene": "10-indoor-environment",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.014847991056740284,
+      "lpips_flag": 0.014847991056740284,
+      "flip_none": 0.0859571173787117,
+      "flip_flag": 0.0859571173787117,
+      "verdict": "OK"
+    },
+    {
+      "scene": "11-multiple-lights",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.0017223211470991373,
+      "lpips_flag": 0.0017223211470991373,
+      "flip_none": 0.010653229430317879,
+      "flip_flag": 0.010653229430317879,
+      "verdict": "OK"
+    },
+    {
+      "scene": "12-shadows",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.014406129717826843,
+      "lpips_flag": 0.014406129717826843,
+      "flip_none": 0.010856298729777336,
+      "flip_flag": 0.010856298729777336,
+      "verdict": "OK"
+    },
+    {
+      "scene": "13-ibl-only",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.13179081678390503,
+      "lpips_flag": 0.13179081678390503,
+      "flip_none": 0.3845975399017334,
+      "flip_flag": 0.3845975399017334,
+      "verdict": "OK"
+    },
+    {
+      "scene": "14-particles",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.20972689986228943,
+      "lpips_flag": 0.20972689986228943,
+      "flip_none": 0.03536752983927727,
+      "flip_flag": 0.03536752983927727,
+      "verdict": "OK"
+    },
+    {
+      "scene": "15-animation-skinning",
+      "none": "ready",
+      "flag": "ready",
+      "identical": false,
+      "lpips_none": 0.012845437042415142,
+      "lpips_flag": 0.012047839350998402,
+      "flip_none": 0.039993613958358765,
+      "flip_flag": 0.03643544390797615,
+      "verdict": "OK"
+    },
+    {
+      "scene": "16-instancing",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.006471410859376192,
+      "lpips_flag": 0.006471410859376192,
+      "flip_none": 0.036502905189991,
+      "flip_flag": 0.036502905189991,
+      "verdict": "OK"
+    },
+    {
+      "scene": "17-large-environment",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.12476090341806412,
+      "lpips_flag": 0.12476090341806412,
+      "flip_none": 0.18536429107189178,
+      "flip_flag": 0.18536429107189178,
+      "verdict": "OK"
+    },
+    {
+      "scene": "18-game-scene",
+      "none": "ready",
+      "flag": "ready",
+      "identical": false,
+      "lpips_none": 0.027144815772771835,
+      "lpips_flag": 0.027349062263965607,
+      "flip_none": 0.1768227517604828,
+      "flip_flag": 0.17653580009937286,
+      "verdict": "OK"
+    },
+    {
+      "scene": "prd06-crossfade-filmstrip",
+      "none": "ready",
+      "flag": "ready",
+      "identical": false,
+      "lpips_none": 0.026364343240857124,
+      "lpips_flag": 0.021504046395421028,
+      "flip_none": 0.07931230962276459,
+      "flip_flag": 0.07385268807411194,
+      "verdict": "OK"
+    },
+    {
+      "scene": "prd06-morph-face",
+      "none": "ready",
+      "flag": "ready",
+      "identical": false,
+      "lpips_none": 0.24440261721611023,
+      "lpips_flag": 0.2439621090888977,
+      "flip_none": 0.2518840432167053,
+      "flip_flag": 0.2518506348133087,
+      "verdict": "OK"
+    },
+    {
+      "scene": "prd06-skinned-character-posed",
+      "none": "ready",
+      "flag": "ready",
+      "identical": false,
+      "lpips_none": 0.007833236828446388,
+      "lpips_flag": 0.007033142261207104,
+      "flip_none": 0.05169634148478508,
+      "flip_flag": 0.0482000894844532,
+      "verdict": "OK"
+    }
+  ]
+}
