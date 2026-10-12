@@ -31,7 +31,10 @@ export function domTransitionDriver(
 ): TransitionDriver {
   return {
     setOverlay(opacity, ms, color) {
-      overlay.style.transition = `opacity ${ms}ms linear`;
+      // ms 0 must cancel a running fade: a 0 ms duration with the same end
+      // value leaves the running CSS transition untouched (CSS Transitions
+      // §3), while `none` cancels it and applies the value at once.
+      overlay.style.transition = ms > 0 ? `opacity ${ms}ms linear` : "none";
       overlay.style.opacity = String(opacity);
       if (color) overlay.style.background = color;
       overlay.classList.toggle("a3g-overlay-opaque", opacity > 0);
