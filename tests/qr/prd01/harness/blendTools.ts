@@ -147,7 +147,13 @@ function threeBlending(material: THREE.RawShaderMaterial, mode: SpecBlendMode): 
   material.transparent = true;
   material.depthTest = false;
   material.depthWrite = false;
-  material.premultipliedAlpha = mode === "premultiplied";
+  // three r185 WebGLState: MultiplyBlending exists only with premultipliedAlpha
+  // (DST_COLOR, ONE_MINUS_SRC_ALPHA, ZERO, ONE), the same factors as C-04
+  // `multiply`; without it three logs "MultiplyBlending requires
+  // material.premultipliedAlpha = true" and sets no blend func (run 38191585818:
+  // multiply MAD 110/255 against a reference that never blended). For a
+  // RawShaderMaterial the flag only selects factors; the shader output is unchanged.
+  material.premultipliedAlpha = mode === "premultiplied" || mode === "multiply";
   material.blending =
     mode === "additive" ? THREE.AdditiveBlending
     : mode === "multiply" ? THREE.MultiplyBlending

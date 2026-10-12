@@ -88,6 +88,10 @@ function threeMaterial(spec: Prd01MaterialSpec): THREE.Material {
       mat.blendDst = THREE.OneMinusSrcColorFactor;
     } else {
       mat.blending = BLENDING[spec.blend];
+      // three r185 only implements MultiplyBlending with premultipliedAlpha
+      // (DST_COLOR, ONE_MINUS_SRC_ALPHA, ZERO, ONE); otherwise it logs an error
+      // and draws with no blend func, so the reference frame never multiplied.
+      if (spec.blend === "multiply") mat.premultipliedAlpha = true;
     }
     mat.transparent = true;
     mat.depthWrite = false;
