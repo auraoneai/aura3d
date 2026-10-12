@@ -22,7 +22,6 @@ import {
   type AuraSceneNode
 } from "@aura3d/engine";
 import { assets } from "../../../../src/aura-assets";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
 import { SIEGE_GOLF_HOLES, type HoleDefinition } from "../gameplay/course";
 import { HoleFlow } from "../gameplay/hole-flow";
 import { createGolfAudio } from "./golf-audio";
@@ -46,12 +45,6 @@ const compactViewport = window.innerWidth <= 720;
 const captureMode = new URLSearchParams(window.location.search).get("capture");
 const visualReviewCapture = captureMode === "review";
 const evidenceCapture = captureMode === "evidence";
-// PRD-03 §6.6 / Q-14-1: A3D_QR_POST (default on) bloom is linear HDR with no hidden
-// legacy gain; retune for v2 only so the `-post` legacy look is unchanged.
-const postV2Bloom = resolveQrFlags({
-  url: window.location.href,
-  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
-}).on("A3D_QR_POST");
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 const APP_ID = "showcase-siege-golf";
@@ -847,9 +840,7 @@ function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening
         intensity: 0.72,
         color: "#ffe2b8"
       }),
-      effects.neonBloom(postV2Bloom
-        ? { intensity: reducedMotion ? 1 : 3.0, threshold: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
-        : { intensity: reducedMotion ? 0.02 : 0.055, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.neonBloom({ intensity: reducedMotion ? 0.02 : 0.055, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.fog({ name: "golden-hour distance haze", density: 0.016, color: "#a9d6e6", intensity: 0.42 }),
       effects.colorGrade({ exposure: 1.02, contrast: 1.12, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" }),
