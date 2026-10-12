@@ -6,6 +6,7 @@ export const MESH_PARTICLE_SHADER_MARKER = "prd07-mesh-particle-v1";
 
 export function meshParticleVertexSource(): string {
   return `#version 300 es
+// ${MESH_PARTICLE_SHADER_MARKER} vertex
 precision highp float;
 in vec3 a_position;
 in vec3 a_normal;
@@ -32,6 +33,7 @@ void main() {
 
 export function meshParticleFragmentSource(): string {
   return `#version 300 es
+// ${MESH_PARTICLE_SHADER_MARKER} fragment
 precision highp float;
 in vec3 v_normal;
 in vec4 v_color;

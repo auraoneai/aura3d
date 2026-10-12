@@ -7,6 +7,7 @@ export const RIBBON_SHADER_MARKER = "prd07-ribbon-v1";
 
 export function ribbonVertexSource(): string {
   return `#version 300 es
+// ${RIBBON_SHADER_MARKER} vertex
 precision highp float;
 in vec3 a_position;
 in vec3 a_normal;
@@ -27,6 +28,7 @@ void main() {
 
 export function ribbonFragmentSource(defines: { readonly softParticles?: boolean }): string {
   return `#version 300 es
+// ${RIBBON_SHADER_MARKER} fragment
 precision highp float;
 in vec2 v_uv;
 in vec4 v_color;
@@ -48,7 +50,7 @@ void main() {
   alpha *= clamp((sceneZ - fragZ) / 0.5, 0.0, 1.0);
 #endif
   vec3 rgb = v_color.rgb * alpha;
-  if (u_outputColorSpace == 1) {
+  if (u_outputColorSpace > 0.5) {
     rgb = pow(rgb, vec3(1.0 / 2.2));
   }
   o_color = vec4(rgb, alpha);
