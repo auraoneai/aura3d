@@ -53,6 +53,7 @@ import { PICKUP_DOORS, riskPickupForWave, sensePickupDoors, senseRiskPickup } fr
 import { createCombatFeel } from "./combat-feel";
 import { createSwarmAudio, type SwarmAudioController, type SwarmAudioProof } from "./swarm-audio";
 import { setupHud, type HudController } from "./hud";
+import { createNeonSwarmEffectsPass } from "./effects-pass";
 import {
   FINALE_SURVIVAL_SECONDS,
   MAX_CAMPAIGN_WAVES,
@@ -174,8 +175,8 @@ const INTERMISSION_FIRST_SECONDS = 3.2;
 
 const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const visualReviewCapture = typeof window !== "undefined"
-  && new URLSearchParams(window.location.search).get("capture") === "review";
+// Shipped play view only: no ?capture review lens (PRD-09 capture parity).
+const visualReviewCapture: boolean = false;
 // The retained desktop probe is a 1440x900 frame. Keep its camera language
 // closer to the actual horde-survival reference (player hierarchy first,
 // threats readable around a broad play pocket) without changing the gameplay
@@ -913,6 +914,7 @@ if (!reducedMotion) {
 }
 appScene.add(effects.colorGrade({ exposure: 1.05 * POST_V2_EXPOSURE, contrast: POST_V2_ON ? POST_V2_CONTRAST : 1.08, saturation: 1.12 }));
 appScene.add(effects.antiAlias({ mode: "fxaa" }));
+appScene.addMany(createNeonSwarmEffectsPass({ reducedMotion }));
 
 appScene.camera(
   camera.follow({

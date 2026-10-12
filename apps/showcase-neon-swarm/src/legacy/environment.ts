@@ -21,7 +21,9 @@ export function createNeonSwarmDistrictDressing(reviewCapture = false): AuraScen
     lights.directional({
       name: "cyber-key-light",
       color: "#e0f2fe",
-      intensity: reviewCapture ? 1.72 : 2.0
+      intensity: reviewCapture ? 1.72 : 2.0,
+      // Effects pass: cascaded PCSS key shadows under the swarm.
+      shadow: { cascades: 1, mapSize: 1024, filter: "pcss", softness: 1, intensity: 0.85 }
     }).position(8, 20, 8).toJSON(),
     lights.directional({
       name: "cyber-rim-light",

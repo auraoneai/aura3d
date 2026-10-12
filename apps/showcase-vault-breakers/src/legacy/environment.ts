@@ -16,7 +16,13 @@ export function createVaultBreakersEnvironment(): AuraSceneNode[] {
     // Keep ambient restrained so the table's authored steel and neon accents
     // retain shape separation instead of washing into a single blue slab.
     lights.ambient({ name: "vault ambient", color: "#18152c", intensity: 0.82 }).toJSON(),
-    lights.directional({ name: "vault warm key", color: "#ffd38a", intensity: 3.6 }).position(-3.2, 6.2, 3.4).toJSON(),
+    lights.directional({
+      name: "vault warm key",
+      color: "#ffd38a",
+      intensity: 3.6,
+      // Effects pass: explicit cascaded PCSS key shadow for the table furniture.
+      shadow: { cascades: 1, mapSize: 1024, filter: "pcss", softness: 1.1, intensity: 0.85 }
+    }).position(-3.2, 6.2, 3.4).toJSON(),
     lights.directional({ name: "vault cyan rim", color: "#29dff1", intensity: 2.2 }).position(3.4, 4.8, -2.2).toJSON(),
     lights.directional({ name: "vault magenta fill", color: "#ff3ac8", intensity: 1.15 }).position(0.6, 1.4, -5.4).toJSON(),
     lights.point({ name: "vault left bumper practical", color: "#ff9f43", intensity: 1.35, position: [-0.9, 1.15, -1.7] }).toJSON(),
