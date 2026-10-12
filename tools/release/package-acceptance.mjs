@@ -12,6 +12,7 @@ import { validateBudgetContinuity, BUDGET_SOURCE } from './budget-continuity.mjs
 import { validateVersionInventory } from './version-inventory.mjs';
 import { validateOptionalPeerObservation } from './optional-peer-fixture.mjs';
 import { loadValidatedReleasePlan } from './exact-release-plan.mjs';
+import { expectedPublicPackageCount } from './release-inventory.mjs';
 export const CHECKS = ['compatibility','optionalPeers','imports','exports','smoke','provenance','bundleBudgets','leanIsolation'];
 export const COMMANDS = {
   frozenLock:['pnpm','install','--frozen-lockfile','--ignore-scripts'],
@@ -123,14 +124,16 @@ export function producePackageAcceptance(root, {planPath, commands}) {
   const artifacts = new Map();
   const bind = path => { const full=file(root,path); const ref={path,sha256:digest(full)}; artifacts.set(path,ref); return ref; };
   const planRef=bind(planPath), plan=json(file(root,planPath));
-  requireThat(plan.schema === 'aura3d-release-plan/1.0' && plan.version === '3.0.1' && plan.packageCount === 29 && plan.expectedPackageCount === 29 && plan.packages?.length === 29, 'invalid 3.0.1 pack plan');
+  requireThat(plan.schema === 'aura3d-release-plan/1.0' && /^\d+\.\d+\.\d+$/.test(plan.version ?? ''), 'invalid pack plan version');
+  const version=plan.version, count=expectedPublicPackageCount(version), historical=version==='3.0.1';
+  requireThat(plan.packageCount === count && plan.expectedPackageCount === count && plan.packages?.length === count, `invalid ${version} pack plan`);
   requireThat(plan.source?.commit && plan.source?.fingerprint && plan.source?.lockfileSha256 === digest(file(root,'pnpm-lock.yaml')), 'plan source/lock identity missing or stale');
   const manifests=['package.json',...readdirSync(resolve(root,'packages'),{withFileTypes:true}).filter(e=>e.isDirectory() && existsSync(resolve(root,'packages',e.name,'package.json'))).map(e=>`packages/${e.name}/package.json`)].map(path=>({path,data:json(file(root,path))})).filter(p=>p.data.private !== true);
-  requireThat(manifests.length === 29 && new Set(manifests.map(p=>p.data.name)).size === 29, 'expected 29 public source manifests');
-  requireThat(new Set(plan.packages.map(p=>p.name)).size === 29, 'duplicate packed packages');
+  requireThat(manifests.length === count && new Set(manifests.map(p=>p.data.name)).size === count, `expected ${count} public source manifests`);
+  requireThat(new Set(plan.packages.map(p=>p.name)).size === count, 'duplicate packed packages');
   const packages=manifests.map(({path,data})=>{
     const p=plan.packages.find(p=>p.name===data.name);
-    requireThat(data.version === '3.0.1' && p?.version === '3.0.1', `manifest/version mismatch: ${data.name}`);
+    requireThat(data.version === version && p?.version === version, `manifest/version mismatch: ${data.name}`);
     const tarball=bind(p.tarball); bind(path);
     requireThat(tarball.sha256===p.sha256 && /^sha512-/.test(p.integrity ?? ''), `tarball mismatch: ${data.name}`);
     requireThat(`sha512-${createHash('sha512').update(readFileSync(file(root,p.tarball))).digest('base64')}`===p.integrity, `tarball integrity mismatch: ${data.name}`);
@@ -162,12 +165,12 @@ export function producePackageAcceptance(root, {planPath, commands}) {
   for(const path of inventory.paths)bind(path);
   const source=readCommand('source'), installed=readCommand('installed');
   requireThat(installed.releasePlan?.sha256===planRef.sha256, 'installed lifecycle not bound to exact plan');
-  requireThat(source.mode==='workspace-source-aliases' && installed.mode==='fresh-local-3.0.1-tarballs', 'wrong lifecycle legs');
+  requireThat(source.mode==='workspace-source-aliases' && installed.mode===`fresh-local-${version}-tarballs`, 'wrong lifecycle legs');
   const names=readdirSync(resolve(root,'packages/create-aura3d/templates'),{withFileTypes:true}).filter(e=>e.isDirectory() && existsSync(resolve(root,'packages/create-aura3d/templates',e.name,'package.json'))).map(e=>e.name).sort();
-  requireThat(names.length===19, 'expected 19 canonical scaffold manifests');
+  requireThat(names.length>0 && (!historical || names.length===19), 'canonical scaffold manifests missing (3.0.1 requires 19)');
   const stages=['build','browserSmoke','interactionSmoke','deployCheck','routeHealth','routeHealthReport','screenshot'];
   for(const [label,r] of [['source',source],['installed',installed]]) {
-    requireThat(r.checks.length>=149 && r.scaffoldSmoke?.length===19 && new Set(r.scaffoldSmoke.map(s=>s.template)).size===19, `${label}: lifecycle inventory below baseline`);
+    requireThat(r.checks.length>=149 && r.scaffoldSmoke?.length===names.length && new Set(r.scaffoldSmoke.map(s=>s.template)).size===names.length, `${label}: lifecycle inventory below baseline`);
     requireThat(names.every(name=>r.scaffoldSmoke.some(s=>s.template===name && stages.every(k=>s[k]===true) && s.screenshotFileBytes>1000)), `${label}: incomplete scaffold stages`);
   }
   const scaffolds=names.map(name=>{
@@ -175,7 +178,7 @@ export function producePackageAcceptance(root, {planPath, commands}) {
     requireThat(row.installedArtifacts?.length>0, `${name}: missing installed artifact observation`);
     const hashes=row.installedArtifacts.map(a=>{
       const p=plan.packages.find(p=>p.name===a.name);
-      requireThat(p && a.version==='3.0.1' && a.sha256===p.sha256 && a.integrity===p.integrity && a.installedIntegrity===p.integrity, `${name}: installed artifact mismatch`);
+      requireThat(p && a.version===version && a.sha256===p.sha256 && a.integrity===p.integrity && a.installedIntegrity===p.integrity, `${name}: installed artifact mismatch`);
       return a.sha256;
     });
     return {name,sourcePassed:true,installedPassed:true,tarballHashes:hashes};
@@ -194,7 +197,7 @@ export function producePackageAcceptance(root, {planPath, commands}) {
       requireThat(readFileSync(file(root,path),'utf8')===renderBundleSizeMarkdown(report.targets),'Bundle Markdown differs from canonical measured report');
       bundleMarkdown=bind(path); bind('tools/bundle-size/markdown.mjs');
     }
-    if(kind==='compatibility') requireThat(report.currentVersion==='3.0.1' && report.baseline==='v3.0.0' && report.counts?.baselinePackages===29 && report.counts?.currentPackages===29 && report.counts?.removals===0 && report.counts?.declarationContractChanges===0 && report.unresolvedEntrypoints?.length===0, 'patch compatibility scope incomplete');
+    if(kind==='compatibility') requireThat(report.currentVersion===version && report.counts?.currentPackages===count && report.unresolvedEntrypoints?.length===0 && (!historical || (report.baseline==='v3.0.0' && report.counts?.baselinePackages===29 && report.counts?.removals===0 && report.counts?.declarationContractChanges===0)), 'compatibility scope incomplete');
     if(kind==='optionalPeers') {
       requireThat(report.optionalPeerMatrix?.length===2, 'optional-peer matrix missing');
       for(const mode of ['absent','present']) {
@@ -216,7 +219,7 @@ export function producePackageAcceptance(root, {planPath, commands}) {
     if(kind==='smoke') {
       requireThat(packages.some(p=>p.sha256===report.tarballSha256), 'smoke did not test release tarball');
       const exact=report.exactPackages;
-      requireThat(exact?.schema==='aura3d-exact-package-smoke/v1' && exact.ok===true && exact.packageCount===29 && exact.packages?.length===29 && new Set(exact.packages.map(p=>p.name)).size===29 && exact.releasePlan?.sha256===planRef.sha256, 'all 29 exact package smoke results required');
+      requireThat(exact?.schema==='aura3d-exact-package-smoke/v1' && exact.ok===true && exact.packageCount===count && exact.packages?.length===count && new Set(exact.packages.map(p=>p.name)).size===count && exact.releasePlan?.sha256===planRef.sha256, `all ${count} exact package smoke results required`);
       for(const p of plan.packages) {
         const observed=exact.packages.find(o=>o.name===p.name);
         requireThat(observed?.ok===true && observed.version===p.version && observed.sha256===p.sha256 && observed.integrity===p.integrity && observed.installedIntegrity===p.integrity && observed.violations?.length===0 && (observed.importedEntrypoints?.length>0 || observed.binChecks?.length>0), `exact package smoke missing: ${p.name}`);
@@ -228,7 +231,7 @@ export function producePackageAcceptance(root, {planPath, commands}) {
       requireThat(report.signature.algorithm==='ed25519' && verify(null,Buffer.from(JSON.stringify(statement)),report.signature.publicKeyPem,Buffer.from(report.signature.signatureBase64,'base64')), 'provenance signature invalid');
       requireThat(report.materials?.length>0, 'provenance materials missing');
       for(const material of report.materials) requireThat(bind(material.uri).sha256===material.digest?.sha256, 'provenance material changed');
-      requireThat(report.packageCount===29 && report.packages?.length===29 && new Set(report.packages.map(p=>p.name)).size===29, 'all 29 provenance statements required');
+      requireThat(report.packageCount===count && report.packages?.length===count && new Set(report.packages.map(p=>p.name)).size===count, `all ${count} provenance statements required`);
       for(const p of plan.packages) {
         const proof=report.packages.find(o=>o.name===p.name), st=proof?.statement;
         requireThat(proof?.ok===true && proof.version===p.version && proof.sha256===p.sha256 && st?.subject?.name===p.name && st.subject.version===p.version && st.subject.digest?.sha256===p.sha256 && st.installedIntegrity===p.integrity && st.releasePlan?.sha256===planRef.sha256 && JSON.stringify(st.source)===JSON.stringify(plan.source), `package provenance mismatch: ${p.name}`);
@@ -239,7 +242,7 @@ export function producePackageAcceptance(root, {planPath, commands}) {
     }
     checks[kind]=true;
   }
-  return {acceptance:{schema:'muse301-packages/v1',version:'3.0.1',versionInventory:inventory,budgetContinuity,bundleMarkdown,packages,scaffolds,lifecycleAssertions:Math.min(source.checks.length,installed.checks.length),checks},source:plan.source,plan:planRef,artifacts:[...artifacts.values()]};
+  return {acceptance:{schema:'muse301-packages/v1',version,versionInventory:inventory,budgetContinuity,bundleMarkdown,packages,scaffolds,lifecycleAssertions:Math.min(source.checks.length,installed.checks.length),checks},source:plan.source,plan:planRef,artifacts:[...artifacts.values()]};
 }
 if (process.argv[1] && import.meta.url===pathToFileURL(resolve(process.argv[1])).href) {
   const [mode,input,output]=process.argv.slice(2); const config=json(resolve(input));

@@ -35,9 +35,12 @@ interface Route { route: string; appDir: string; flag: string | null }
 const baseline = JSON.parse(readFileSync(baselinePath, "utf8")) as { routes: Record<string, { route: string; appDir: string }> };
 const routes: Route[] = Object.values(baseline.routes)
   .map((r) => {
-    const main = join(repoRoot, "apps", r.appDir, "src", "main.ts");
+    // baseline.json appDir is repo-relative ("apps/<dir>"); strip it so the
+    // main.ts path and the /apps/<dir>/ URL are not doubled.
+    const appDir = r.appDir.replace(/^apps\//, "");
+    const main = join(repoRoot, "apps", appDir, "src", "main.ts");
     const m = existsSync(main) ? /ROUTE_FLAG = "A3D_QR_ROUTE_([A-Z0-9_]+)"/.exec(readFileSync(main, "utf8")) : null;
-    return { route: r.route, appDir: r.appDir, flag: m ? `route-${m[1].toLowerCase().replace(/_/g, "-")}` : null };
+    return { route: r.route, appDir, flag: m ? `route-${m[1].toLowerCase().replace(/_/g, "-")}` : null };
   })
   .sort((a, b) => a.route.localeCompare(b.route));
 

@@ -4,14 +4,15 @@ import { mkdtempSync, readFileSync, writeFileSync, rmSync, mkdirSync, cpSync } f
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { inspectInstalledRelease, loadValidatedReleasePlan } from './exact-release-plan.mjs';
+import { expectedPublicPackageCount } from './release-inventory.mjs';
 
-/** Run only on the remote release worker: installs and exercises the exact29archive set. */
+/** Run only on the remote release worker: installs and exercises the exact public archive set for the plan version. */
 export function runExactPackageSmoke(root, plan, options={}) {
- const project=mkdtempSync(join(tmpdir(),'aura29-exact-smoke-'));
+ const project=mkdtempSync(join(tmpdir(),'aura3d-exact-smoke-'));
  const results=[]; let installedIdentity; let installOutput='';
  const run=(exe,args)=>execFileSync(exe,args,{cwd:project,encoding:'utf8',maxBuffer:32*1024*1024,timeout:180000});
  try {
-  writeFileSync(join(project,'package.json'),JSON.stringify({name:'aura29-exact-consumer',version:'0.0.0',private:true,type:'module'}));
+  writeFileSync(join(project,'package.json'),JSON.stringify({name:'aura3d-exact-consumer',version:'0.0.0',private:true,type:'module'}));
   const installCommand=['npm',...withNpmTransport(['install','--ignore-scripts','--no-audit','--no-fund',...plan.packages.map(p=>options.registry ? `${p.name}@${p.version}` : resolve(root,p.tarball))])];
   installOutput=run(installCommand[0],installCommand.slice(1));
   installedIdentity=inspectInstalledRelease(root,project,plan);
@@ -47,6 +48,6 @@ export function runExactPackageSmoke(root, plan, options={}) {
   }
   const finishedPlan=loadValidatedReleasePlan(root,plan.reference.path);
   if(finishedPlan.reference.sha256!==plan.reference.sha256)throw new Error('Release plan changed during exact smoke');
-  return {schema:'aura3d-exact-package-smoke/v1',...(options.registry?{installationSource:'npm-registry',retained:options.retainDir}:{}),releasePlan:plan.reference,source:plan.source,packageCount:results.length,ok:results.length===29&&results.every(p=>p.ok),installCommand,installOutput,installedIdentity,packages:results};
+  return {schema:'aura3d-exact-package-smoke/v1',...(options.registry?{installationSource:'npm-registry',retained:options.retainDir}:{}),releasePlan:plan.reference,source:plan.source,packageCount:results.length,ok:results.length===expectedPublicPackageCount(plan.version)&&results.every(p=>p.ok),installCommand,installOutput,installedIdentity,packages:results};
  } finally {rmSync(project,{recursive:true,force:true});}
 }
