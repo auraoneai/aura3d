@@ -20,9 +20,11 @@ export const effectsPassOn = flags.on("A3D_QR_POST");
 const vfxOn = flags.on("A3D_QR_VFX");
 
 const SHAFTS = [
-  { position: [-6, 2, -2] as const, angle: 0.22, intensity: 0.42 },
-  { position: [1.5, 2, -7] as const, angle: 0.28, intensity: 0.5 },
-  { position: [7, 2, -14] as const, angle: 0.24, intensity: 0.36 }
+  // In front of the default follow camera (sub at 0,-6,0; camera at about
+  // 6.4,3.2,-15.4 looking +z and down towards -2,-9,-5).
+  { position: [-5, 3, 2] as const, angle: 0.24, intensity: 0.85 },
+  { position: [2.5, 3, 7] as const, angle: 0.3, intensity: 0.95 },
+  { position: [-1, 3, -3] as const, angle: 0.2, intensity: 0.7 }
 ];
 
 export function deepRecoveryEffectsPass() {
@@ -41,18 +43,18 @@ export function deepRecoveryEffectsPass() {
       shadow: { cascades: "auto", maxDistance: 60 }
     }),
     effects.contactShadows({ length: 0.4, intensity: 0.8 }),
-    environments.preset("night", { intensity: 0.6, specularIntensity: 1.2, background: false }),
+    environments.preset("night", { intensity: 0.95, specularIntensity: 1.2, background: false }),
     // Water column: denser with depth below the surface reference, forward
     // in-scatter towards the sun.
     effects.volumetricFog({
       name: "deep recovery water column",
       density: 0.024,
-      color: "#0d3a46",
+      color: "#14525e",
       intensity: 0.4,
       heightFalloff: 0.06,
       heightReference: 0
     }),
-    effects.vignette({ intensity: 0.35, smoothness: 1.8 }),
+    effects.vignette({ intensity: 0.22, smoothness: 1.8 }),
     ...(vfxOn
       ? [
           ...SHAFTS.map((shaft, index) =>
@@ -60,7 +62,7 @@ export function deepRecoveryEffectsPass() {
               name: `surface sun shaft ${index + 1}`,
               position: shaft.position,
               direction: [-0.18, -1, -0.1],
-              length: 22,
+              length: 24,
               coneAngle: shaft.angle,
               softness: 0.75,
               color: "#9ff3e6",
@@ -77,7 +79,7 @@ export function deepRecoveryEffectsPass() {
             speed: 2.6,
             drag: 0.55,
             gravity: -0.25,
-            size: [0.03, 0.07],
+            size: [0.06, 0.14],
             lifetime: [4, 6],
             color: "#bfe9e2",
             materialMode: "soft-alpha",
@@ -91,7 +93,7 @@ export function deepRecoveryEffectsPass() {
             emissionRate: 40,
             radius: 0.5,
             height: 6,
-            size: [0.04, 0.1],
+            size: [0.08, 0.18],
             lifetime: [3, 5],
             color: "#d6fbff",
             materialMode: "soft-alpha",

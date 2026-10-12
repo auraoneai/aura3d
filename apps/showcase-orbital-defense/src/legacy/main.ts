@@ -70,7 +70,10 @@ const systems = [
 const appScene = scene()
   .background("#05080f")
   .add(primitives.sphere({ name: "defended planet core", material: effectsPassOn ? material.physical({ color: "#2f6f8f", roughness: 0.48, metallic: 0.05, clearcoat: 0.55, clearcoatRoughness: 0.22 }) : material.pbr({ color: "#1a4862", roughness: 0.62, metallic: 0.04 }) }).scale(1.03))
-  .add(primitives.sphere({ name: "planet atmosphere shell", material: material.emissive({ color: "#0b2230", emissive: "#2dd4bf" }) }).scale(1.13))
+  .add(primitives.sphere({ name: "planet atmosphere shell", material: effectsPassOn
+    // Effects pass: a translucent shell so the sun-lit, clearcoated planet reads through it.
+    ? material.emissive({ color: "#0b2230", emissive: "#2dd4bf", opacity: 0.32 })
+    : material.emissive({ color: "#0b2230", emissive: "#2dd4bf" }) }).scale(1.13))
   .add(primitives.torus({ name: "inner orbital ring", material: material.emissive({ color: "#122536", emissive: "#38bdf8" }) }).rotate(1.5708, 0, 0).scale([2.05, 2.05, 0.03]))
   .add(primitives.torus({ name: "outer orbital ring", material: material.emissive({ color: "#201a33", emissive: "#a78bfa" }) }).rotate(1.5708, 0, 0).scale([3.1, 3.1, 0.025]))
   .add(primitives.box({ name: "north defense station", material: (effectsPassOn ? material.metal({ color: "#d7ecff", roughness: 0.22, metallic: 0.9 }) : material.pbr({ color: "#d7ecff", roughness: 0.28, metallic: 0.55 })) }).position(0, 1.4, 0).scale([0.28, 0.14, 0.28]))

@@ -37,8 +37,8 @@ export function auraClashRootEffects(options: { readonly reducedMotion: boolean 
     // Drives the S4 god rays from the moon key; the fog colour itself comes
     // from the compatibility source's environmentFog.
     effects.volumetricFog({ name: "Aura Clash stage haze rays", density: 0.02, color: "#3b4a6a", intensity: 0.32 }),
-    effects.colorGrade({ exposure: 1.12, contrast: 1.06, saturation: 1.1 }),
-    effects.vignette({ intensity: 0.35, smoothness: 1.8 }),
+    effects.colorGrade({ exposure: 1.2, contrast: 1.06, saturation: 1.1 }),
+    effects.vignette({ intensity: 0.22, smoothness: 1.8 }),
     ...(vfxOn
       ? [
           effects.particles({

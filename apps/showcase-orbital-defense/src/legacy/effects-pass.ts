@@ -30,7 +30,7 @@ export function orbitalEffectsPass() {
       position: [-5.5, 3.6, 4.2],
       target: [0, 0, 0],
       color: "#ffe2b8",
-      intensity: 2.6,
+      intensity: 3.2,
       shadow: { cascades: "auto", maxDistance: 24 }
     }),
     // Studio IBL for reflections on the metallic stations and planet lacquer;
@@ -45,7 +45,6 @@ export function orbitalEffectsPass() {
       color: "#1b2f4a",
       intensity: 0.34
     }),
-    effects.vignette({ intensity: 0.35, smoothness: 1.8 }),
     ...(vfxOn
       ? [
           // Debris belt: a wide spawn disc (fountain plume preset) in the
@@ -57,7 +56,7 @@ export function orbitalEffectsPass() {
             emissionRate: 60,
             radius: 2.7,
             height: 0.5,
-            size: [0.014, 0.036],
+            size: [0.04, 0.09],
             lifetime: [3.5, 4.5],
             color: "#9fd8ff",
             materialMode: "additive-glow",
@@ -69,7 +68,7 @@ export function orbitalEffectsPass() {
             emitter: "ambient",
             particleCount: 90,
             emissionRate: 24,
-            size: [0.012, 0.03],
+            size: [0.035, 0.08],
             lifetime: [2, 3.5],
             speed: 0.45,
             gravity: 0,

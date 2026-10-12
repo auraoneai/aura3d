@@ -1401,7 +1401,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     // Effects pass: brighter IBL on the dark rigs and a lighter, bluer haze
     // so the skyline separates from the fight plane.
     environmentLighting: effectsPassOn
-      ? { ...renderPreset.environmentLighting, intensity: (renderPreset.environmentLighting.intensity ?? 0.42) * 1.7 }
+      ? { ...renderPreset.environmentLighting, intensity: (renderPreset.environmentLighting.intensity ?? 0.42) * 2.2 }
       : renderPreset.environmentLighting,
     get environmentFog() {
       const densityControl = currentTweaks().fogDensity;

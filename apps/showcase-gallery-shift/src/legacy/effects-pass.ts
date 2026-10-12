@@ -39,17 +39,17 @@ export function galleryEffectsPass(options: { readonly visualReviewCapture: bool
       shadow: { cascades: "auto", maxDistance: 40 }
     }),
     effects.contactShadows({ length: 0.3, intensity: 0.9 }),
-    environments.preset("indoor", { intensity: 0.45, specularIntensity: 1.25, background: false }),
+    environments.preset("indoor", { intensity: 0.8, specularIntensity: 1.25, background: false }),
     // Cool skylight haze: recedes the far wings and carries god rays.
     effects.volumetricFog({
       name: "gallery skylight haze",
-      density: 0.016,
+      density: 0.01,
       color: "#2b4566",
-      intensity: 0.3,
+      intensity: 0.24,
       heightFalloff: 0.18,
       heightReference: 0
     }),
-    effects.vignette({ intensity: 0.35, smoothness: 1.8 }),
+    effects.vignette({ intensity: 0.22, smoothness: 1.8 }),
     ...(vfxOn
       ? [
           // Torch beam of the rotunda guard spot, visible in the haze.

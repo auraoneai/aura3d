@@ -36,7 +36,7 @@ export function bankShotEffectsPass(options: { readonly visualReviewCapture: boo
       position: [-0.6, 5.2, 1.4],
       target: [0, 0, 0],
       color: "#ffe6bf",
-      intensity: 1.9,
+      intensity: 2.4,
       shadow: { cascades: "auto", maxDistance: 12 }
     }),
     effects.contactShadows({ length: 0.12, thickness: 0.03, intensity: 0.9 }),
@@ -51,7 +51,7 @@ export function bankShotEffectsPass(options: { readonly visualReviewCapture: boo
       heightFalloff: 0.35,
       heightReference: 0
     }),
-    effects.vignette({ intensity: 0.35, smoothness: 1.8 }),
+    effects.vignette({ intensity: 0.22, smoothness: 1.8 }),
     ...(vfxOn
       ? [
           // Dust motes rising slowly through the lamp pool over the table
