@@ -1,4 +1,4 @@
-From 537042a5786127b73569df48993f8695c0c88ada Mon Sep 17 00:00:00 2001
+From a448786a66e1216e9c5077c5f85c1d7c678de3fa Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:11:20 +0000
 Subject: [PATCH] migration(aura-clash-showcase): regenerated patch set
@@ -77,7 +77,7 @@ index 4fa3fe5ed..ff51d5e87 100644
      composition: "Mid-combat hit frame with hit spark, readable attacker/defender poses, HUD state, and stage depth still visible.",
      evidenceRole: "visual-quality",
 diff --git a/apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts b/apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts
-index ca42b0597..c105591ed 100644
+index dbf70a938..e99fae1eb 100644
 --- a/apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts
 +++ b/apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts
 @@ -1,5 +1,8 @@
@@ -332,7 +332,7 @@ index ca42b0597..c105591ed 100644
 @@ -1521,8 +1556,20 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
          ? Math.min(1, 320 / Math.max(1, window.innerWidth))
          : Math.min(window.devicePixelRatio || 1, 1.75),
-     renderer: { mode: "production", qualityProfile: "production" },
+     renderer: { qualityProfile: "production" },
 -    scene: createRootStageScene()
 +    scene: () => createRootStageScene(),
 +    qualityRebuild: { flags: ["game"] },
@@ -900,7 +900,7 @@ index 000000000..a097fc4a7
 +  }
 +];
 diff --git a/apps/aura-clash-showcase/src/v2/boot.ts b/apps/aura-clash-showcase/src/v2/boot.ts
-index af1e968b5..8f97ff8ec 100644
+index fe62ecdb7..e3b5b0932 100644
 --- a/apps/aura-clash-showcase/src/v2/boot.ts
 +++ b/apps/aura-clash-showcase/src/v2/boot.ts
 @@ -5,14 +5,13 @@
@@ -920,9 +920,9 @@ index af1e968b5..8f97ff8ec 100644
  
  const ROUTE_FLAG = "A3D_QR_ROUTE_AURA_CLASH" as const;
 @@ -100,6 +99,17 @@ const game = createGame({
-     // art/direction.ts sections. `route_aura_clash` uses the engine-parseable
-     // underscore form (URL/dispatch form is `route-aura-clash`).
-     flags: ["route_aura_clash", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+     // flags come from URL/env/defaults like every other route, so `none`
+     // and `-<flag>` arms actually turn them off.
+     flags: ["route_aura_clash", "game"]
 +  },
 +  // T5.8: route evidence rides the shared createGame channel (C-24) —
 +  // only the sections games.json requiredConditions read.

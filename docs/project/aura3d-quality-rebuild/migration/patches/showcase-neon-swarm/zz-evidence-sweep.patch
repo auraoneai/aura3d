@@ -1,4 +1,4 @@
-From 1c9b78e67538e107fc3c73b9e905b289025cdbb7 Mon Sep 17 00:00:00 2001
+From 62a0ec3ac400ff8e59e3b22283014a5d505495a3 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:51 +0000
 Subject: [PATCH] showcase-neon-swarm: delete evidence files+blocks (T5.8)

@@ -1,4 +1,4 @@
-From 304d4c64ee6fb631a832150c71fa0cc2bd883cc8 Mon Sep 17 00:00:00 2001
+From 247fdac98580cf3093f766a049700096bed0e82b Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:54 +0000
 Subject: [PATCH] migration(showcase-gallery-shift): regenerated patch set
@@ -496,7 +496,7 @@ index 000000000..14919fd17
 +  }
 +];
 diff --git a/apps/showcase-gallery-shift/src/v2/boot.ts b/apps/showcase-gallery-shift/src/v2/boot.ts
-index 49a0ef472..54dab5395 100644
+index 9bb34e8d2..73949fb4a 100644
 --- a/apps/showcase-gallery-shift/src/v2/boot.ts
 +++ b/apps/showcase-gallery-shift/src/v2/boot.ts
 @@ -13,7 +13,7 @@ import {
@@ -526,9 +526,9 @@ index 49a0ef472..54dab5395 100644
  import { wireGalleryFx } from "./scene/fx";
  import { galleryLighting } from "./scene/lighting";
 @@ -111,6 +110,32 @@ const game: Prd09Game<string, string> = createGame({
-     // art/direction.ts sections. `route_gallery_shift` uses the engine-parseable
-     // underscore form (URL/dispatch form is `route-gallery-shift`).
-     flags: ["route_gallery_shift", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+     // flags come from URL/env/defaults like every other route, so `none`
+     // and `-<flag>` arms actually turn them off.
+     flags: ["route_gallery_shift", "game"]
 +  },
 +  // T5.8: route evidence rides the shared createGame channel (C-24) —
 +  // only the sections games.json requiredConditions read.

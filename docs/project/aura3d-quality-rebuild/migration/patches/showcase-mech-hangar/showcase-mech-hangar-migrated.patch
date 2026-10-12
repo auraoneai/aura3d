@@ -1,4 +1,4 @@
-From a5824fdb358063ba8d3f375dde83318a5be1f1c2 Mon Sep 17 00:00:00 2001
+From 2c8a0086e030139b5dad9a214aea5d3abeae468d Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:09:08 +0000
 Subject: [PATCH] migration(showcase-mech-hangar): regenerated patch set
@@ -171,7 +171,7 @@ index 154f17be5..212c9949c 100644
    readonly root: HTMLElement;
    readonly hpPlayer: ReturnType<typeof createBar>;
 diff --git a/apps/showcase-mech-hangar/src/legacy/main.ts b/apps/showcase-mech-hangar/src/legacy/main.ts
-index 38bbb034a..ec2a5d7a0 100644
+index 415f99711..c6b760a7b 100644
 --- a/apps/showcase-mech-hangar/src/legacy/main.ts
 +++ b/apps/showcase-mech-hangar/src/legacy/main.ts
 @@ -12,7 +12,6 @@
@@ -227,7 +227,7 @@ index 38bbb034a..ec2a5d7a0 100644
 +  id: "showcase-mech-hangar",
 +  target: "#app",
    diagnostics: { overlay: false, performancePanel: false },
-   renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+   renderer: { qualityProfile: "production" },
    physics: {
      seed: 20260920,
      continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
@@ -619,7 +619,7 @@ index 000000000..ce20a191a
 +  }
 +];
 diff --git a/apps/showcase-mech-hangar/src/v2/boot.ts b/apps/showcase-mech-hangar/src/v2/boot.ts
-index ad7b42042..1c7cb9fcf 100644
+index 83450b598..f11670aa8 100644
 --- a/apps/showcase-mech-hangar/src/v2/boot.ts
 +++ b/apps/showcase-mech-hangar/src/v2/boot.ts
 @@ -5,13 +5,12 @@
@@ -639,9 +639,9 @@ index ad7b42042..1c7cb9fcf 100644
  import { createMechBoutCtx, wireMechBout } from "./bout";
  import { wireMechTouch } from "./touch";
 @@ -70,6 +69,20 @@ const game: Prd09Game<string, string> = createGame({
-     // art/direction.ts sections. `route_mech_hangar` uses the engine-parseable
-     // underscore form (URL/dispatch form is `route-mech-hangar`).
-     flags: ["route_mech_hangar", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+     // flags come from URL/env/defaults like every other route, so `none`
+     // and `-<flag>` arms actually turn them off.
+     flags: ["route_mech_hangar", "game"]
 +  },
 +  // T5.8: route evidence rides the shared createGame channel (C-24) —
 +  // only the sections games.json requiredConditions read. Hangar and pit

@@ -1,4 +1,4 @@
-From 881c1561e22670c738c05ec526ee5bc59875121c Mon Sep 17 00:00:00 2001
+From 4dccb3f79c679698f2f893e1c4efc96991fc4ea4 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:10:13 +0000
 Subject: [PATCH] migration(showcase-pulse-tunnel): regenerated patch set
@@ -3337,7 +3337,7 @@ index 000000000..af7cc2ade
 +  finale
 +];
 diff --git a/apps/showcase-pulse-tunnel/src/v2/boot.ts b/apps/showcase-pulse-tunnel/src/v2/boot.ts
-index 2c1032a48..01aff0107 100644
+index 45318f9ce..48884fc27 100644
 --- a/apps/showcase-pulse-tunnel/src/v2/boot.ts
 +++ b/apps/showcase-pulse-tunnel/src/v2/boot.ts
 @@ -6,7 +6,7 @@
@@ -3357,10 +3357,10 @@ index 2c1032a48..01aff0107 100644
  import { applyPulseScenario } from "./scenarios";
  import { createPulseRunCtx, createPulseSystems, wirePulseRunState, MAX_SHIELDS } from "./run-state";
  import { createGateVisuals } from "./gate-visuals";
-@@ -131,6 +130,26 @@ const game = createGame({
-     // art/direction.ts sections. `route_pulse_tunnel` uses the engine-parseable
-     // underscore form (URL/dispatch form is `route-pulse-tunnel`).
-     flags: ["route_pulse_tunnel", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+@@ -132,6 +131,26 @@ const game = createGame({
+     // flags come from URL/env/defaults like every other route, so `none`
+     // and `-<flag>` arms actually turn them off.
+     flags: ["route_pulse_tunnel", "game"]
 +  },
 +  // T5.8: route evidence rides the shared createGame channel (C-24) —
 +  // only the sections games.json requiredConditions read.
@@ -3384,7 +3384,7 @@ index 2c1032a48..01aff0107 100644
    }
  });
  
-@@ -299,43 +318,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
+@@ -300,43 +319,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
    if (frame % 6 === 0) syncHud();
  });
  

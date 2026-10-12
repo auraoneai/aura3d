@@ -1,4 +1,4 @@
-From fe4cc4c2c16b432223dd0bb9250b2265353bbcb2 Mon Sep 17 00:00:00 2001
+From 1d0490be55be6e856540fda822bf896fb7ccd464 Mon Sep 17 00:00:00 2001
 From: Devin <devin@cognition.ai>
 Date: Fri, 9 Oct 2026 15:26:49 +0000
 Subject: [PATCH] showcase-skyline-runner: delete evidence files+blocks (T5.8)
@@ -1360,7 +1360,7 @@ index 4324f563a..72d062290 100644
    const bandColors = plan.bands.map((band) => {
      const colorRamp = band.side === "sky" ? palette.skyRamp : palette.groundRamp;
 diff --git a/apps/showcase-skyline-runner/src/legacy/main.ts b/apps/showcase-skyline-runner/src/legacy/main.ts
-index c31878334..cb46bc560 100644
+index a42aa4b6c..e2c4665e0 100644
 --- a/apps/showcase-skyline-runner/src/legacy/main.ts
 +++ b/apps/showcase-skyline-runner/src/legacy/main.ts
 @@ -26,7 +26,6 @@ import {
@@ -1640,7 +1640,7 @@ index c31878334..cb46bc560 100644
  // Unlock the web-audio context on the first real interaction so autoplay policy
  // lets synth SFX play (mirrors the Clash gesture-unlock discipline).
  const skylineAudioUnlock = (): void => {
-@@ -2073,11 +1873,6 @@ const skylineGame = createGame({
+@@ -2075,11 +1875,6 @@ const skylineGame = createGame({
      .add(lights.studio({ intensity: 0.86}))
      .camera(platformerCamera),
    qualityRebuild: { flags: ["game"] },
@@ -1652,7 +1652,7 @@ index c31878334..cb46bc560 100644
    scenarios: async () => (await import("../scenarios")).skylineScenarios
  });
  const app = skylineGame.app;
-@@ -2110,7 +1905,6 @@ const skylineJuice = createJuice<"jump" | "collect" | "checkpoint" | "hazard" |
+@@ -2112,7 +1907,6 @@ const skylineJuice = createJuice<"jump" | "collect" | "checkpoint" | "hazard" |
    tweens: skylineTween,
    rumble: createRumbleDriver()
  });
@@ -1660,7 +1660,7 @@ index c31878334..cb46bc560 100644
  
  const player = app.nodes.require("platformer-player");
  const skylineLiftCardHandles = skylineCharacterWorld.liftPoses().map((pose) => ({
-@@ -2203,36 +1997,13 @@ function clearActiveEventFeedbackVisuals(): void {
+@@ -2205,36 +1999,13 @@ function clearActiveEventFeedbackVisuals(): void {
      eventFeedbackVisualHandles[event].setScale([...HIDDEN_FEEDBACK_SCALE]).setVisible(false);
    }
  }
@@ -1698,7 +1698,7 @@ index c31878334..cb46bc560 100644
    }).plan.bands.map((band) =>
      app.nodes.require(`skyline-act-${actIndex}-${band.side}-${band.index}`)
    )
-@@ -2270,174 +2041,12 @@ function applySkylineInstancedPoolVisibility(actIndex: number): void {
+@@ -2272,174 +2043,12 @@ function applySkylineInstancedPoolVisibility(actIndex: number): void {
  }
  applySkylineInstancedPoolVisibility(0);
  skylineAudio.setAmbienceAct(0);
@@ -1873,7 +1873,7 @@ index c31878334..cb46bc560 100644
  skylineFeel.bindScorePopHost(hudElements?.score ?? null);
  /** Renderer-owned challenge feedback handles, updated from observed challenge state. */
  const feedbackNodes = {
-@@ -2459,8 +2068,6 @@ const skyShardGlitterNodes: Record<string, RuntimeNodeHandleLike> = Object.fromE
+@@ -2461,8 +2070,6 @@ const skyShardGlitterNodes: Record<string, RuntimeNodeHandleLike> = Object.fromE
      (collectible) => [collectible.id, app.nodes.require(`skyline-pickup-glitter-${collectible.id}`)]
    )
  );
@@ -1882,7 +1882,7 @@ index c31878334..cb46bc560 100644
  
  /*
   * SR-A1 speedrun ghost runtime.
-@@ -2499,38 +2106,6 @@ let ghostReplay: SkylineGhostReplay | null = null;
+@@ -2501,38 +2108,6 @@ let ghostReplay: SkylineGhostReplay | null = null;
  let ghostRecording: SkylineGhostRecording | null = null;
  let ghostEnabled = false;
  let ghostRunFinalized = false;
@@ -1921,7 +1921,7 @@ index c31878334..cb46bc560 100644
  
  function updateGhostBadge(): void {
    const badge = hudElements?.ghostBadge ?? null;
-@@ -2551,9 +2126,6 @@ function updateGhostBadge(): void {
+@@ -2553,9 +2128,6 @@ function updateGhostBadge(): void {
  function applyGhostRecording(recording: SkylineGhostRecording | null): void {
    ghostRecording = recording;
    ghostReplay = recording ? createSkylineGhostReplay(recording) : null;
@@ -1931,7 +1931,7 @@ index c31878334..cb46bc560 100644
    updateGhostBadge();
  }
  
-@@ -2582,9 +2154,7 @@ function toggleSkylineGhost(): boolean {
+@@ -2584,9 +2156,7 @@ function toggleSkylineGhost(): boolean {
    if (!ghostEnabled) {
      ghostEchoHandle.setVisible(false);
      ghostEchoAccentHandles.forEach((node) => node.setVisible(false));
@@ -1941,7 +1941,7 @@ index c31878334..cb46bc560 100644
    updateGhostBadge();
    return ghostEnabled;
  }
-@@ -2595,14 +2165,12 @@ function renderSkylineGhost(stepSeconds: number): void {
+@@ -2597,14 +2167,12 @@ function renderSkylineGhost(stepSeconds: number): void {
    if (!ghostEnabled || !ghostReplay || ghostReplay.recording.tickCount === 0) {
      ghostEchoHandle.setVisible(false);
      ghostEchoAccentHandles.forEach((node) => node.setVisible(false));
@@ -1956,7 +1956,7 @@ index c31878334..cb46bc560 100644
      return;
    }
    const scenePose = platformerScene.toScenePlayer({
-@@ -2636,9 +2204,6 @@ function renderSkylineGhost(stepSeconds: number): void {
+@@ -2638,9 +2206,6 @@ function renderSkylineGhost(stepSeconds: number): void {
        .setScale([scale[0] * pulse, scale[1] * pulse, scale[2]])
        .setVisible(true);
    });
@@ -1966,7 +1966,7 @@ index c31878334..cb46bc560 100644
  }
  
  function finalizeGhostRecordingIfFinished(elapsedSeconds: number): void {
-@@ -2661,8 +2226,6 @@ interface EmberVolley {
+@@ -2663,8 +2228,6 @@ interface EmberVolley {
  const emberVolleys: EmberVolley[] = [];
  let spentEmberCharges = 0;
  const pendingDefeatedSentries = new Set<string>();
@@ -1975,7 +1975,7 @@ index c31878334..cb46bc560 100644
  
  /**
   * Drives the challenge feedback nodes from the current challenge evidence.
-@@ -2694,7 +2257,6 @@ function renderChallengeFeedback(): void {
+@@ -2696,7 +2259,6 @@ function renderChallengeFeedback(): void {
        .setPosition(px - pose.facing * length * 0.5, py + heroHeight * 0.05, pz)
        .setScale([length, heroHeight * (0.04), heroHeight * (0.1)])
        .setVisible(true);
@@ -1983,7 +1983,7 @@ index c31878334..cb46bc560 100644
    } else {
      feedbackNodes.flow.setScale([...HIDDEN_FEEDBACK_SCALE]).setVisible(false);
    }
-@@ -2709,7 +2271,6 @@ function renderChallengeFeedback(): void {
+@@ -2711,7 +2273,6 @@ function renderChallengeFeedback(): void {
        .setPosition(px, py + heroHeight * 1.17, pz)
        .setScale([heroHeight * chainScale, heroHeight * chainScale, heroHeight * chainScale])
        .setVisible(true);
@@ -1991,7 +1991,7 @@ index c31878334..cb46bc560 100644
    } else {
      feedbackNodes.chain.setScale([...HIDDEN_FEEDBACK_SCALE]).setVisible(false);
    }
-@@ -2722,7 +2283,6 @@ function renderChallengeFeedback(): void {
+@@ -2724,7 +2285,6 @@ function renderChallengeFeedback(): void {
        .setPosition(px, py + heroHeight * 0.02, pz);
      feedbackNodes.objective.setScale([heroHeight * 0.15, heroHeight * 0.15, heroHeight * 0.032]);
      feedbackNodes.objective.setVisible(true);
@@ -1999,7 +1999,7 @@ index c31878334..cb46bc560 100644
    } else {
      feedbackNodes.objective.setScale([...HIDDEN_FEEDBACK_SCALE]).setVisible(false);
    }
-@@ -2763,7 +2323,6 @@ function renderSkyShardGlitter(): void {
+@@ -2765,7 +2325,6 @@ function renderSkyShardGlitter(): void {
      const pulse = reducedMotion ? 1 : 1 + Math.sin(t * 10 + phase) * 0.18;
      node.setVisible(true);
      node.setScale([0.085 * pulse, 0.13 * pulse, 0.075 * pulse]);
@@ -2007,7 +2007,7 @@ index c31878334..cb46bc560 100644
    }
  }
  
-@@ -2828,487 +2387,10 @@ function playerSurfaceAlignment() {
+@@ -2830,487 +2389,10 @@ function playerSurfaceAlignment() {
      playerTargetHeight: platformerScene.evidence.playerTargetHeight
    };
  }
@@ -2496,7 +2496,7 @@ index c31878334..cb46bc560 100644
    rememberAnimationState();
    renderSkylineLiftCards();
    const scenePlayer = platformerScene.toScenePlayer(state.player);
-@@ -3413,38 +2495,6 @@ function publishPlatformerEvidence(): void {
+@@ -3415,38 +2497,6 @@ function publishPlatformerEvidence(): void {
          : visualState === "hit" ? [1.045, 0.955, 1.045]
            : visualState === "land" ? [1.025, 0.975, 1.025]
              : idleScale);
@@ -2535,7 +2535,7 @@ index c31878334..cb46bc560 100644
    for (const checkpoint of checkpoints) {
      const active = state.activatedCheckpoints.includes(checkpoint.id);
      const pulse = active ? 1.14 : 1;
-@@ -3452,81 +2502,9 @@ function publishPlatformerEvidence(): void {
+@@ -3454,81 +2504,9 @@ function publishPlatformerEvidence(): void {
      // compact ring proportions while giving an activated relay a subtle pulse.
      relayLanguageNodes[checkpoint.id]?.setScale([0.13 * pulse, 0.13 * pulse, 0.035 * pulse]);
    }
@@ -2617,7 +2617,7 @@ index c31878334..cb46bc560 100644
  let runEnded = false;
  let runResultsEl: HTMLElement | null = null;
  
-@@ -3589,12 +2567,6 @@ function restartSkylineRun(): void {
+@@ -3591,12 +2569,6 @@ function restartSkylineRun(): void {
      ghostRecorder.reset();
      ghostRunFinalized = false;
      if (ghostReplay) ghostReplay.reset();
@@ -2630,7 +2630,7 @@ index c31878334..cb46bc560 100644
      lastActPaletteIndex = applySkylineActPaletteVisibility(0, actSkyBandSets, actFogSets);
      applySkylineInstancedPoolVisibility(0);
      skylineAudio.setAmbienceAct(0);
-@@ -3602,22 +2574,9 @@ function restartSkylineRun(): void {
+@@ -3604,22 +2576,9 @@ function restartSkylineRun(): void {
        node.setVisible(Number(key.split("-")[0]) === lastActPaletteIndex);
      }
      frameCount += 1;
@@ -2654,7 +2654,7 @@ index c31878334..cb46bc560 100644
    }
  
  app.onFrame(({ dt }) => {
-@@ -3629,8 +2588,7 @@ app.onFrame(({ dt }) => {
+@@ -3631,8 +2590,7 @@ app.onFrame(({ dt }) => {
    }
    if (input.pressed("pause") && !runEnded) {
      if (skylineFeel.togglePause()) skylineGame.session.pause("user"); else skylineGame.session.resume();
@@ -2664,7 +2664,7 @@ index c31878334..cb46bc560 100644
      return;
    }
    if (input.pressed("reset")) {
-@@ -3638,7 +2596,7 @@ app.onFrame(({ dt }) => {
+@@ -3640,7 +2598,7 @@ app.onFrame(({ dt }) => {
      return;
    }
    if (skylineGame.session.paused) {
@@ -2673,7 +2673,7 @@ index c31878334..cb46bc560 100644
      return;
    }
    const previous = state;
-@@ -3660,7 +2618,6 @@ app.onFrame(({ dt }) => {
+@@ -3662,7 +2620,6 @@ app.onFrame(({ dt }) => {
        });
        const [sx, sy] = platformerScene.toScenePoint({ x: spawnX, y: spawnY });
        skylineFeel.onEmberFire([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
@@ -2681,7 +2681,7 @@ index c31878334..cb46bc560 100644
      }
    } else if (input.pressed("fire") && emberCharges <= 0) {
      const [sx, sy] = platformerScene.toScenePoint({ x: state.player.x, y: state.player.y });
-@@ -3685,7 +2642,6 @@ app.onFrame(({ dt }) => {
+@@ -3687,7 +2644,6 @@ app.onFrame(({ dt }) => {
          volley.life = 0;
          const [sx, sy] = platformerScene.toScenePoint({ x: volley.x, y: volley.y });
          skylineFeel.onEmberImpact([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
@@ -2689,7 +2689,7 @@ index c31878334..cb46bc560 100644
        }
      }
    }
-@@ -3709,7 +2665,7 @@ app.onFrame(({ dt }) => {
+@@ -3711,7 +2667,7 @@ app.onFrame(({ dt }) => {
      runEnded = true;
      skylineGame.session.pause("user");
      showRunResults();
@@ -2698,7 +2698,7 @@ index c31878334..cb46bc560 100644
      return;
    }
    for (const event of state.events) {
-@@ -3797,7 +2753,6 @@ app.onFrame(({ dt }) => {
+@@ -3799,7 +2755,6 @@ app.onFrame(({ dt }) => {
    renderChallengeFeedback();
    renderEmberVolleys();
    renderSkylineGhost(step);
@@ -2706,7 +2706,7 @@ index c31878334..cb46bc560 100644
    const nextActIndex = resolveSkylineActIndex(state.player.x);
    if (nextActIndex !== lastActPaletteIndex) {
      lastActPaletteIndex = applySkylineActPaletteVisibility(nextActIndex, actSkyBandSets, actFogSets);
-@@ -3808,10 +2763,6 @@ app.onFrame(({ dt }) => {
+@@ -3810,10 +2765,6 @@ app.onFrame(({ dt }) => {
      applySkylineInstancedPoolVisibility(lastActPaletteIndex);
      skylineAudio.setAmbienceAct(lastActPaletteIndex);
    }
@@ -2717,7 +2717,7 @@ index c31878334..cb46bc560 100644
    activeCameraFrame = skylineFeel.applyCameraShake(platformerCamera, playerFacing);
    observedCameraFacing.add(activeCameraFrame.leadDirection);
    airborneFramingObserved ||= !state.player.grounded && Math.abs(state.player.vy) > 0.05;
-@@ -3831,30 +2782,8 @@ app.onFrame(({ dt }) => {
+@@ -3833,30 +2784,8 @@ app.onFrame(({ dt }) => {
      scoreElement: hudElements?.score ?? null
    });
    frameCount += 1;
