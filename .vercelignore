@@ -17,7 +17,6 @@ artifacts/
 test-screenshots/
 aura-evidence/
 .git/
-tests/
 test-results/
 playwright-report/
 benchmark/
