@@ -8,8 +8,9 @@
  * dispatch that lands on the per-actor PoseMixer's `crossFadeTo(…, 0.25,
  * {warp:true})` (T1.9).
  *
- * After READY the adapter keeps stepping `app.step(1/60)` on rAF so the strip
- * step's screenshots capture the moving crossfades, and samples every bone at
+ * Before READY the adapter steps `app.advance(1/60)` on the fixed capture
+ * clock (`crossfadeSchedule`), renders the strip tiles at fixed sim steps,
+ * freezes on the `horizonSeconds` frame for the harness screenshot, and samples every bone at
  * a fixed 60 Hz through `handle.animation.socket(bone).worldMatrix()`
  * (T0.18) → `MotionMetrics.ts` (E42: not MotionQuality). Metrics publish to
  * `window.__PRD06_CROSSFADE_FILMSTRIP__` once `motion.horizonSeconds` elapses.
@@ -35,7 +36,7 @@ import {
 } from "@aura3d/animation/lanes";
 import { hdriAssets, modelAssets } from "../../../shared/assets";
 import type { CapabilityEntry, ReadyPayload } from "../../../shared/types";
-import { prd06CrossfadeFilmstrip } from "../../../scenes/prd06/crossfade-filmstrip";
+import { crossfadeSchedule, prd06CrossfadeFilmstrip } from "../../../scenes/prd06/crossfade-filmstrip";
 
 const auraAssets = defineAuraAssets({
   soldier: {
@@ -200,14 +201,14 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
     extra: { filmstrip: true, choreography: motion.transitions.map((t) => `${t.at}s→${t.clip}@${t.fadeSeconds}s`) }
   };
 
-  // Live loop: sim ticks advance() at a fixed 60 Hz against wall-clock time so
-  // the horizon lands in ~horizonSeconds of real time regardless of rAF cadence;
-  // step(0) renders once per rAF so the 8 strip frames capture the live pose.
-  // step() renders every call — rendering each 60 Hz tick under headless
-  // SwiftShader costs ~300 ms/frame and the strip never reaches the horizon.
+  // Fixed capture clock (`crossfadeSchedule`): advance() in integer 60 Hz sim
+  // steps, never against wall-clock time, and run the whole choreography
+  // before READY so the harness screenshot (taken after READY) is the frozen
+  // `horizonSeconds` frame on every run. step(0) renders only on the strip
+  // steps — rendering every tick under headless SwiftShader costs ~300 ms.
+  const schedule = crossfadeSchedule(spec);
+  const dt = schedule.dt;
   let sim = 0;
-  const dt = 1 / motion.sampleHz;
-  const t0 = performance.now();
   // `strip: { frames: 8, intervalMs: 300 }` — captured in-page after each
   // render (canvas toDataURL; compositor screenshots read black under
   // headless SwiftShader, and `app.screenshot()` reads the app's offscreen
@@ -220,7 +221,6 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
     return canvases.item(canvases.length - 1) as HTMLCanvasElement | null;
   };
   const stripFrames: { readonly at: number; readonly dataUrl: string }[] = [];
-  let lastStripAt = 0;
   (window as { __PRD06_CROSSFADE_FILMSTRIP_FRAMES__?: unknown }).__PRD06_CROSSFADE_FILMSTRIP_FRAMES__ = stripFrames;
   const sample = (): void => {
     frames.push(motionFrame(sim, motion.sampledBones, (bone) => api?.socket(bone).valid === true ? api.socket(bone).worldMatrix() : undefined));
@@ -237,61 +237,48 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
       });
     }
   };
-  const tick = (): void => {
-    try {
-      tickBody();
-    } catch (error) {
-      (report as { status: string }).status = "error";
-      reportMut.error = error instanceof Error ? `${error.message}\n${error.stack ?? ""}` : String(error);
-    }
-  };
-  const tickBody = (): void => {
-    // Keep animating until the strip has its 8 frames too — headless renders
-    // cost seconds each, so the horizon usually lands before 8 captures; the
-    // last clip keeps looping so late frames still differ.
-    const simTarget = (performance.now() - t0) / 1000;
-    while (sim < simTarget) {
-      sim += dt;
-      for (const transition of motion.transitions) {
-        if (sim >= transition.at && !fired.has(transition.clip)) {
+  const renderStripTile = (): Promise<void> => new Promise<void>((resolve) => requestAnimationFrame(() => {
+    app.step(0);
+    const canvas = presentedCanvas();
+    if (canvas) stripFrames.push({ at: sim, dataUrl: canvas.toDataURL("image/png") });
+    resolve();
+  }));
+
+  try {
+    for (let step = 1; step <= schedule.steps; step += 1) {
+      sim = step * dt;
+      motion.transitions.forEach((transition, index) => {
+        if (step === schedule.transitionSteps[index] && !fired.has(transition.clip)) {
           fired.add(transition.clip);
           handle.play(transition.clip, { loop: true, crossFade: transition.fadeSeconds, warp: transition.warp, syncGroup: "locomotion" });
         }
-      }
+      });
       app.advance(dt);
       sample();
-    }
-    app.step(0);
-    if (stripFrames.length < strip.frames && performance.now() - lastStripAt >= strip.intervalMs) {
-      const canvas = presentedCanvas();
-      if (canvas) {
-        stripFrames.push({ at: sim, dataUrl: canvas.toDataURL("image/png") });
-        lastStripAt = performance.now();
-      }
-    }
-    reportMut.simSeconds = sim;
-    reportMut.frameCount = frames.length;
-    if (sim >= motion.horizonSeconds && stripFrames.length >= strip.frames) {
-      const slide = footSlide(frames, { footBones: [...motion.footBones] });
-      const phase = locomotionPhaseError(phaseSamples);
-      (report as { status: string }).status = "done";
+      // Tiles can share a step when the strip spans more than the horizon.
+      for (const stripStep of schedule.stripSteps) if (stripStep === step && stripFrames.length < strip.frames) await renderStripTile();
       reportMut.simSeconds = sim;
-      reportMut.firedTransitions = [...fired];
       reportMut.frameCount = frames.length;
-      reportMut.sampledBones = frames.at(-1)?.bones ? Object.keys(frames.at(-1)!.bones).length : 0;
-      reportMut.metrics = {
-        continuity: motion.transitions.map((t) => ({
-          at: t.at,
-          ...transitionContinuity(frames, { transitionTime: t.at, baselineWindows: motion.baselineWindows, isBone: isHumanoidMotionBone })
-        })),
-        footSlide: { maxSlideM: slide.maxSlideM, phases: slide.phases.length },
-        phaseError: { maxPhaseError: phase.maxPhaseError, meanPhaseError: phase.meanPhaseError, comparedFrames: phase.comparedFrames }
-      };
-      return;
     }
-    requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
+    // Leave the presented canvas on the capture frame (last strip step = horizon).
+    app.step(0);
+    const slide = footSlide(frames, { footBones: [...motion.footBones] });
+    const phase = locomotionPhaseError(phaseSamples);
+    reportMut.firedTransitions = [...fired];
+    reportMut.sampledBones = frames.at(-1)?.bones ? Object.keys(frames.at(-1)!.bones).length : 0;
+    reportMut.metrics = {
+      continuity: motion.transitions.map((t) => ({
+        at: t.at,
+        ...transitionContinuity(frames, { transitionTime: t.at, baselineWindows: motion.baselineWindows, isBone: isHumanoidMotionBone })
+      })),
+      footSlide: { maxSlideM: slide.maxSlideM, phases: slide.phases.length },
+      phaseError: { maxPhaseError: phase.maxPhaseError, meanPhaseError: phase.meanPhaseError, comparedFrames: phase.comparedFrames }
+    };
+    (report as { status: string }).status = "done";
+  } catch (error) {
+    (report as { status: string }).status = "error";
+    reportMut.error = error instanceof Error ? `${error.message}\n${error.stack ?? ""}` : String(error);
+  }
 
-  return payload;
+  return { ...payload, extra: { ...payload.extra, captureSimSeconds: sim, stripTimes: stripFrames.map((f) => f.at) } };
 }

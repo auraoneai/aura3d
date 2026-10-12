@@ -3,9 +3,9 @@
  *
  * Live choreography — bespoke runner instead of runThreeScene because the
  * frozen path plays one clip statically: soldier plays `motion.initialClip`,
- * then `previous.crossFadeTo(next, 0.25, true)` at each transition time and
- * `mixer.update(1/60)` + `renderer.render` keep running on rAF after READY so
- * the strip captures moving frames. Choreography markers publish to
+ * then `previous.crossFadeTo(next, 0.25, true)` at each transition time;
+ * `mixer.update(1/60)` runs on the fixed capture clock before READY and the
+ * canvas freezes on the `horizonSeconds` frame. Choreography markers publish to
  * `window.__PRD06_CROSSFADE_THREE__`; the graph stashes on
  * `window.__QR_THREE_GRAPH__` for the mask passes.
  */
@@ -16,7 +16,7 @@ import { CSM } from "three/addons/csm/CSM.js";
 import { hdriAssets, modelAssets } from "../../../shared/assets";
 import { fetchOnce } from "../../../shared/fetch-once";
 import type { CapabilityEntry, ReadyPayload } from "../../../shared/types";
-import { prd06CrossfadeFilmstrip } from "../../../scenes/prd06/crossfade-filmstrip";
+import { crossfadeSchedule, prd06CrossfadeFilmstrip } from "../../../scenes/prd06/crossfade-filmstrip";
 
 declare const __THREE_VERSION__: string;
 
@@ -141,65 +141,52 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
   window.__PRD06_CROSSFADE_THREE__ = report;
 
   const fired = new Set<string>();
+  // Fixed capture clock (`crossfadeSchedule`), same as the aura side: the
+  // mixer ticks in integer 60 Hz sim steps (never wall-clock), the whole
+  // choreography runs before READY, strip tiles render at fixed steps, and the
+  // canvas is left on the `horizonSeconds` frame for the harness screenshot
+  // and mask passes. In-page strip captures (toDataURL) — compositor
+  // screenshots read black under headless SwiftShader.
+  const schedule = crossfadeSchedule(spec);
+  const dt = schedule.dt;
   let sim = 0;
-  const dt = 1 / motion.sampleHz;
-  const t0 = performance.now();
-  // In-page strip captures after each render — compositor screenshots read
-  // black under headless SwiftShader; canvas toDataURL keeps the real frame.
   const stripFrames: { readonly at: number; readonly dataUrl: string }[] = [];
-  let lastStripAt = 0;
   (window as { __PRD06_CROSSFADE_THREE_FRAMES__?: unknown }).__PRD06_CROSSFADE_THREE_FRAMES__ = stripFrames;
-  const tick = (): void => {
-    try {
-      tickBody();
-    } catch (error) {
-      (report as { status: string }).status = "error";
-      reportMut.error = error instanceof Error ? `${error.message}\n${error.stack ?? ""}` : String(error);
-    }
-  };
-  const tickBody = (): void => {
-    // Wall-clock catch-up like the aura side: mixer ticks at a fixed 60 Hz,
-    // one render per rAF — headless renderers can't sustain a render per tick.
-    // Keep animating until the strip has 8 frames — headless renders can be
-    // slower than the 300 ms interval, so the horizon lands first; the last
-    // clip keeps looping so late frames still differ.
-    const simTarget = (performance.now() - t0) / 1000;
-    while (sim < simTarget) {
-      sim += dt;
-      for (const transition of motion.transitions) {
-        if (sim >= transition.at && !fired.has(transition.clip)) {
-          fired.add(transition.clip);
-          const next = actionFor(transition.clip);
-          next.enabled = true;
-          next.reset();
-          // Phase-matched entry (three's syncGroup equivalent — r185 has no
-          // phase sync): the new action starts at the outgoing action's
-          // normalised phase, then warp equalises cycle rates over the fade.
-          const outDur = current.getClip().duration;
-          if (outDur > 0) next.time = ((current.time % outDur) / outDur) * next.getClip().duration;
-          next.play();
-          // three-side crossfade per T1.14: crossFadeTo(…, 0.25, true)
-          current.crossFadeTo(next, transition.fadeSeconds, transition.warp);
-          current = next;
-        }
-      }
+  const renderStripTile = (): Promise<void> => new Promise<void>((resolve) => requestAnimationFrame(() => {
+    renderer.render(scene3, camera3);
+    stripFrames.push({ at: sim, dataUrl: renderer.domElement.toDataURL("image/png") });
+    resolve();
+  }));
+  try {
+    for (let step = 1; step <= schedule.steps; step += 1) {
+      sim = step * dt;
+      motion.transitions.forEach((transition, index) => {
+        if (step !== schedule.transitionSteps[index] || fired.has(transition.clip)) return;
+        fired.add(transition.clip);
+        const next = actionFor(transition.clip);
+        next.enabled = true;
+        next.reset();
+        // Phase-matched entry (three's syncGroup equivalent — r185 has no
+        // phase sync): the new action starts at the outgoing action's
+        // normalised phase, then warp equalises cycle rates over the fade.
+        const outDur = current.getClip().duration;
+        if (outDur > 0) next.time = ((current.time % outDur) / outDur) * next.getClip().duration;
+        next.play();
+        // three-side crossfade per T1.14: crossFadeTo(…, 0.25, true)
+        current.crossFadeTo(next, transition.fadeSeconds, transition.warp);
+        current = next;
+      });
       mixer.update(dt);
+      for (const stripStep of schedule.stripSteps) if (stripStep === step && stripFrames.length < strip.frames) await renderStripTile();
+      reportMut.simSeconds = sim;
     }
     renderer.render(scene3, camera3);
-    if (stripFrames.length < strip.frames && performance.now() - lastStripAt >= strip.intervalMs) {
-      stripFrames.push({ at: sim, dataUrl: renderer.domElement.toDataURL("image/png") });
-      lastStripAt = performance.now();
-    }
-    reportMut.simSeconds = sim;
-    if (sim >= motion.horizonSeconds && stripFrames.length >= strip.frames) {
-      (report as { status: string }).status = "done";
-      reportMut.simSeconds = sim;
-      reportMut.firedTransitions = [...fired];
-      return;
-    }
-    requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
+    reportMut.firedTransitions = [...fired];
+    (report as { status: string }).status = "done";
+  } catch (error) {
+    (report as { status: string }).status = "error";
+    reportMut.error = error instanceof Error ? `${error.message}\n${error.stack ?? ""}` : String(error);
+  }
 
   return {
     engine: "three",
@@ -220,6 +207,6 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
     fallbackLightsActive: null,
     assetHashes: { soldier: modelAssets.soldier.sha256 },
     qrFlags: opts?.qrFlags ?? [],
-    extra: { filmstrip: true, choreography: motion.transitions.map((t) => `${t.at}s→${t.clip}@${t.fadeSeconds}s`) }
+    extra: { filmstrip: true, choreography: motion.transitions.map((t) => `${t.at}s→${t.clip}@${t.fadeSeconds}s`), captureSimSeconds: sim, stripTimes: stripFrames.map((f) => f.at) }
   };
 }
