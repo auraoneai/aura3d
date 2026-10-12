@@ -544,6 +544,21 @@ the fallback. It is still a large step up from today's output, which is effectiv
 beyond about 2 m (19 §C14). The 22-ao-grounding criteria in §16.1 that gate on `f_ind` (emissive
 and sky pixels ≤ 1 LSB) are integrated. The contact-darkening criteria are standalone.
 
+Implementation note (2026-10-12). `generateProgram` is real and default-on (`A3D_QR_CORE`), so the
+feature now writes `f_ind` from the generator's `indirectDiffuse + indirectSpecular` at
+`fragment:end`. Because legacy shaderKey and custom-shader draws can share the frame, the alpha is
+tagged: opaque, non-alpha-to-coverage generated draws write `color0.a = 2 + f_ind`
+(`AO_INDIRECT_FRACTION_TAG`); blended and A2C draws keep their real alpha. S2 decodes per pixel:
+`alpha ≥ 1.5` gives `w = clamp(alpha − 2, 0, 1)`, otherwise the fallback weight; both are masked
+by sky, and alpha is restored to `min(alpha, 1)` (C-05 coverage `clamp(alpha, 0, 1)` stays 1 for
+drawn opaque pixels either way). The fallback is capped at `AO_FALLBACK_STRENGTH_MAX = 0.1`
+(`post/v2Stages.ts`), not 0.6. At 0.6 it darkened every lit surface: on L4 with post on,
+blockfall-reactor measured 30.3 vs 34.5 luma with vs without AO, neon-swarm 25.3 vs 29.5 and
+mech-hangar 59.5 vs 65.7. At 0.1 an open lit legacy surface (GTAO ao ≈ 0.9) loses about 1% luma.
+`AO_INDIRECT_FRACTION_PENDING` is still reported because legacy draws remain on the fallback.
+Known approximations: MSAA edges between tagged and untagged pixels resolve below the tag and take
+the fallback, and additive draws over a tagged pixel can push its decoded weight towards 1.
+
 This is weaker than Filament-style in-shader AO for specular occlusion. The Ultra-tier
 alternative, a depth-normal prepass with AO sampled in the forward shader, is noted in section 24
 and not built here.

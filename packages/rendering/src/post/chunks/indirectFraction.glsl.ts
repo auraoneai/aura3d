@@ -3,18 +3,22 @@
  * indirect-fraction into `color0.a` (PRD-03 §6.3).
  *
  * The forward shader computes `a3dColor = direct + indirect + emissive`; this
- * chunk's `fragment:end` hook writes
- * `alpha = clamp(luminance(indirectDiffuse + indirectSpecular) /
- * max(luminance(a3dColor), 1e-4), 0, 1)` so S2's apply can do `mix(1.0, aoMB, f_ind)` — ambient-dominated
- * pixels get full occlusion while emissive, sky and direct-lit pixels stay
- * untouched.
+ * chunk's `fragment:end` hook computes
+ * `f_ind = clamp(luminance(indirectDiffuse + indirectSpecular) /
+ * max(luminance(a3dColor), 1e-4), 0, 1)` so S2's apply can do
+ * `mix(1.0, aoMB, f_ind)` — ambient-dominated pixels get full occlusion while
+ * emissive, sky and direct-lit pixels stay untouched.
  *
- * Transparent/additive draws keeping the surface's `f_ind` require
- * `blendFuncSeparate(srcRGB, dstRGB, ZERO, ONE)` in `RenderCommandState` —
- * lane 01's C-04 surface, request Q-01-1. Until C-02 `generateProgram` is
- * real (lane 01) this feature is registered but never selected into a
- * compiled program; the S2 apply uses the `u_aoFallbackStrength` path and
- * the graph reports `AO_INDIRECT_FRACTION_PENDING`.
+ * Tagged encoding: the alpha written is `AO_INDIRECT_FRACTION_TAG + f_ind`
+ * (∈ [2, 3]) so the S2 apply can tell generated-program pixels (which carry
+ * f_ind) from legacy shaderKey draws, custom shaders and the clear (alpha
+ * ≤ 1, which carry none). Legacy pixels take the conservative
+ * `u_aoFallbackStrength` path. The tag also keeps C-05 alpha coverage intact:
+ * `clamp(alpha, 0, 1)` is still 1 for every drawn opaque pixel; the S2 apply
+ * restores alpha to 1 after decoding. Blended (`ALPHA_BLEND`) and
+ * alpha-to-coverage draws keep their real alpha (overwriting it would change
+ * blending / A2C coverage; keeping f_ind there needs Q-01-1
+ * `blendFuncSeparate(srcRGB, dstRGB, ZERO, ONE)`).
  */
 import type { ShaderChunk, ShaderFeature } from "../../contracts/program";
 
@@ -60,11 +64,18 @@ export const indirectFractionWriteChunk: ShaderChunk = {
   owner: "prd03",
   stage: "fragment",
   requires: ["a3d_prd03_indirectFractionPars"],
-  glsl: `#ifndef ALPHA_BLEND
-a3dAlpha = a3dWriteIndirectFraction(vec4(a3dColor, a3dAlpha), indirectDiffuse + indirectSpecular).a;
+  glsl: `#if !defined(ALPHA_BLEND) && !defined(ALPHA_TO_COVERAGE)
+a3dAlpha = 2.0 + a3dWriteIndirectFraction(vec4(a3dColor, a3dAlpha), indirectDiffuse + indirectSpecular).a;
 #endif`,
-  wgsl: `a3dAlpha = a3dWriteIndirectFraction(vec4<f32>(a3dColor, a3dAlpha), indirectDiffuse + indirectSpecular).a;`
+  wgsl: `a3dAlpha = 2.0 + a3dWriteIndirectFraction(vec4<f32>(a3dColor, a3dAlpha), indirectDiffuse + indirectSpecular).a;`
 };
+
+/**
+ * Offset added to f_ind in `color0.a` (see the module doc). The S2 apply
+ * treats `alpha ≥ AO_INDIRECT_FRACTION_TAG − 0.5` as tagged and decodes
+ * `w = clamp(alpha − AO_INDIRECT_FRACTION_TAG, 0, 1)`.
+ */
+export const AO_INDIRECT_FRACTION_TAG = 2;
 
 export const INDIRECT_FRACTION_BIT = "indirectFraction";
 
