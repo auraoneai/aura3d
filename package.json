@@ -267,6 +267,7 @@
     "./dist/engine/agent-api/feel/lint/evidenceOnlyFeel.js",
     "./dist/engine/agent-api/looks/lookLint.js",
     "./dist/engine/lanes/**/*.js",
+    "./dist/engine/public/index.js",
     "./dist/rendering/lanes/**/*.js",
     "./dist/rendering/program/ProgramGenerator.js"
   ],

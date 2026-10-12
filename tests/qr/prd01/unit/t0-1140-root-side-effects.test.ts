@@ -2,12 +2,15 @@
  * #1140 follow-up: the published `@aura3d/engine` tarball ships every
  * workspace package under the ROOT `dist/<pkg>/` tree with its imports
  * rewritten to relative paths (tools/finalize-dist). Those files are governed
- * by the root package.json, so a root `"sideEffects": false` drops
- * `dist/engine/lanes/**` and `dist/rendering/lanes/**` from every scaffolded
- * app's production bundle: createAuraApp then mounts on the stub program
- * cache ("program-generator-missing") and the templates lose their generated
- * lighting/shadow/post programs. The root manifest must carry each package's
- * dist side-effect globs re-rooted under `./dist/<pkg>/`.
+ * by the root package.json, so a root `"sideEffects": false` dropped the lane
+ * barrels from every scaffolded app's production bundle: createAuraApp then
+ * mounted on the stub program cache ("program-generator-missing").
+ *
+ * The lane globs alone are not enough: `public/index.ts` reaches the lanes
+ * through a bare `import "../lanes/index.js"`, and Rollup/esbuild never
+ * execute a side-effect-free barrel's own imports (L4 bundle diag on run
+ * 38276326492: lanes `hasModuleSideEffects: true`, `isIncluded: false`). The
+ * public entry itself must be side-effectful.
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -36,5 +39,13 @@ describe("#1140: root @aura3d/engine manifest keeps the lane side effects", () =
     expect(missing).toEqual([]);
     expect(globs).toContain("./dist/engine/lanes/**/*.js");
     expect(globs).toContain("./dist/rendering/lanes/**/*.js");
+    expect(globs).toContain("./dist/engine/public/index.js");
+  });
+
+  it("marks the in-repo public entry side-effectful (apps alias @aura3d/engine to source)", () => {
+    // esbuild keeps a barrel's bare imports regardless, so this is a manifest
+    // check; Rollup (Vite) is the bundler that drops them — proven on L4.
+    const engine = JSON.parse(readFileSync(join(repoRoot, "packages/engine/package.json"), "utf8")) as { sideEffects?: string[] };
+    expect(engine.sideEffects).toEqual(expect.arrayContaining(["./src/public/index.ts", "./dist/public/index.js"]));
   });
 });
