@@ -784,7 +784,13 @@ export function createRootPostPipeline(
       far: camera?.far ?? 1000,
       projection: camera?.mode === "orthographic" || camera?.mode === "isometric" ? "orthographic" : "perspective"
     },
-    renderScale: tierSettings.minRenderScale,
+    // The scale the post chain's input was rendered at, not the governor's
+    // floor: the renderer's postprocess forward target is full-size, so
+    // this is 1. Passing `minRenderScale` (0.5–0.75) made S5 run the §8.6
+    // TAAU upsample on a full-res frame (enlarging and re-filtering it: the
+    // prd03-taa 1-px line moved ~1 px and spread over five rows, promote run
+    // 38203056326) and armed the S12 RCAS sharpen on every frame.
+    renderScale: 1,
     ...(bloom ? { bloom: bloom.options } : {}),
     exposure,
     toneMapping: toneMapping as PostPipelineOptions["toneMapping"],
