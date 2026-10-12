@@ -29,6 +29,7 @@ import {
 } from "@aura3d/engine";
 import { hdriAssets, modelAssets, type HdriAssetId, type ModelAssetId } from "../shared/assets";
 import { installFetchDedupe } from "../shared/fetch-once";
+import { pointSizeToWorld } from "../shared/procedural";
 import { mapThreeUnrealBloom } from "./scenes/prd03/bloomMapping";
 import { modelSpaceHeightAt, rampStairsHeightAt } from "../shared/terrain";
 import { createHeightFieldGround } from "@aura3d/animation";
@@ -295,10 +296,18 @@ function buildAuraScene(spec: SceneSpec, log: CapabilityLog, extraNodes: readonl
         radius: object.radius,
         height: object.height,
         color: object.color,
-        materialMode: "additive-glow"
+        materialMode: "additive-glow",
+        // Same §6.2 surface as the prd07 adapter: deterministic seed, explicit
+        // blend, emitter cap, steady-state prewarm, and the spec's sprite size
+        // converted to engine world units (pointSizeToWorld).
+        seed: object.seed,
+        size: pointSizeToWorld(object.size, spec.camera.fov),
+        blend: object.blending === "additive" ? "additive" : "alpha",
+        maxParticles: object.count,
+        prewarm: spec.time + spec.settleFrames / 60
       }).position(...object.center));
-      log.add("particles:seeded-positions", "missing", `effects.particles() generates positions internally; no seed or explicit position buffer, so the spec's seeded distribution (seed ${object.seed}) cannot be reproduced.`);
-      log.add("particles:sprite-size", "missing", `No sprite size option (spec ${object.size}); engine sizeOverLife defaults used.`);
+      log.add("particles:seeded-positions", "partial", `effects.particles() simulates a seeded fountain (seed ${object.seed}); the spec's static seeded volume is approximated by the steady-state plume.`);
+      log.add("particles:sprite-size", "supported", `spec point size ${object.size} -> world ${pointSizeToWorld(object.size, spec.camera.fov).toFixed(4)}`);
     }
   }
 

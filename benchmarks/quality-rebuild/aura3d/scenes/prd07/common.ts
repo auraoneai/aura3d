@@ -26,6 +26,7 @@ import {
   type AuraSceneBuilder
 } from "@aura3d/engine";
 import { adapterBudgetMs, DEFAULT_CAPTURE_TIMEOUT_MS, waitForFirstDraw } from "../../lib/failfast";
+import { pointSizeToWorld } from "../../../shared/procedural";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload } from "../../../shared/types";
 import type { AuraVfxKind } from "@aura3d/engine/contracts";
 import type { BurstSheetSpec, DecalObjectSpec, EmitterMemberSpec, Prd07SceneSpec } from "../../../scenes/prd07/specs";
@@ -109,9 +110,10 @@ function particleNode(object: { readonly name: string; readonly seed: number; re
     height: object.height,
     color: object.color,
     // PRD-07 §6.2 surface: deterministic seed, world-space sprite size,
-    // explicit blend, emitter cap and steady-state prewarm.
+    // explicit blend, emitter cap and steady-state prewarm. The spec size is a
+    // three.js attenuated point size; convert it to world units.
     seed: object.seed,
-    size: object.size,
+    size: pointSizeToWorld(object.size, spec.camera.fov),
     blend: object.blending === "additive" ? "additive" : "alpha",
     maxParticles: object.count,
     prewarm,

@@ -142,7 +142,13 @@ void main() {
   // Premultiplied like the atlas path (rgb is multiplied by t.rgb below, not
   // t.a): rgb = 1 drew every sprite as a full-intensity square under additive
   // and premultiplied-over blending instead of a disc.
-  float dotA = smoothstep(1.0, 0.62, dot(q, q));
+  // Soft-dot radial profile: 1 at the centre, 0.55 at r = 0.35, 0 at the rim
+  // (piecewise linear — the classic radial-gradient point sprite). The old
+  // smoothstep(1, 0.62, r^2) was solid out to r ~ 0.79 and carried ~2.8x the
+  // coverage, so every soft-dot sprite read as a hard bright disc (promote
+  // run 38208531335: 14-particles / fountain / soft-particles / lit-smoke).
+  float r = length(q);
+  float dotA = r < 0.35 ? 1.0 - (0.45 / 0.35) * r : 0.55 * clamp((1.0 - r) / 0.65, 0.0, 1.0);
   vec4 t = vec4(vec3(dotA), dotA);
 #else
   vec4 t = texture(u_atlas, v_uv0);
