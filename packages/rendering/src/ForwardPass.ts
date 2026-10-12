@@ -397,6 +397,7 @@ export class ForwardPass extends BaseRenderPass {
     applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms);
     if (generated) applyGeneratedEnvironmentMapUniforms(this.options.environmentLighting, item, shader, uniforms);
     applyEnvironmentFogUniforms(this.options.environmentFog, item, shader, uniforms);
+    if (generated) applyGeneratedFogUniforms(this.options.environmentFog, shader, uniforms);
     applyForwardShadowMapUniforms(
       selectForwardShadowMap(this.options.shadowMap, item, this.options.cameraViewMatrix, this.options.cameraPosition),
       item,
@@ -810,6 +811,50 @@ function applyOutputColorSpaceUniform(
     });
   }
   uniforms.set("u_outputColorSpace", outputColorSpace === "srgb" ? 1 : 0);
+}
+
+/**
+ * C-02 generated-program fog. `fog_default` declares `u_fogColor`,
+ * `u_fogRange`, `u_fogDensity` and `u_fogHeightFalloff` under FOG_LINEAR /
+ * FOG_EXP2 / FOG_HEIGHT, and `forwardProgramFeatures` selects those defines
+ * whenever the frame has fog. Nothing bound them, so every uniform read 0:
+ * the exp2 factor was 1 - exp(0) = 0 and generated programs drew no fog at all
+ * (scenes 09/17/18 under A3D_QR_CORE: distant surfaces kept their own colour
+ * instead of blending to the fog colour).
+ *
+ * The values are the legacy `u_environmentFog*` inputs. The generated chunk
+ * follows three.js FogExp2/Fog: view depth, and no opacity cap (legacy
+ * `maxOpacity` is a legacy-only clamp). Lane 07's PRD-07 fog chunk shares
+ * `u_fogColor` (#880); a value it already set is kept.
+ */
+export function generatedFogUniformValues(
+  fog: ForwardEnvironmentFogOptions | false | undefined
+): ReadonlyMap<string, UniformValue> | undefined {
+  if (!fog) return undefined;
+  return new Map<string, UniformValue>([
+    ["u_fogColor", Array.from(fog.color)],
+    ["u_fogRange", [fog.near, fog.far]],
+    ["u_fogDensity", fog.density],
+    ["u_fogHeightFalloff", fog.heightFalloff ?? 0]
+  ]);
+}
+
+export function applyGeneratedFogUniforms(
+  fog: ForwardEnvironmentFogOptions | false | undefined,
+  shader: RenderShaderProgram,
+  uniforms: Map<string, UniformValue>
+): void {
+  // Reflection lists ACTIVE uniforms only: exp2 programs drop the unused
+  // `u_fogRange`, linear ones drop `u_fogDensity`. Either marks fog_default
+  // (forward programs declare neither otherwise; lane 07 uses u_fogA/u_fogB).
+  if (!shader.reflection.uniforms.has("u_fogRange") && !shader.reflection.uniforms.has("u_fogDensity")) return;
+  const values = generatedFogUniformValues(fog);
+  if (!values) return;
+  for (const [name, value] of values) {
+    if (!shader.reflection.uniforms.has(name)) continue;
+    if (name === "u_fogColor" && uniforms.has(name)) continue;
+    uniforms.set(name, value);
+  }
 }
 
 function applyEnvironmentFogUniforms(

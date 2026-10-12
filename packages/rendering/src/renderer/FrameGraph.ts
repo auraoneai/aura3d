@@ -107,6 +107,8 @@ export interface RendererFrameHooksInput {
   readonly camera: FrameCamera | null;
   readonly frameIndex?: number;
   readonly tier?: AuraQualityTierSettings;
+  /** Per-frame flags override (C-05 legacy-post route); defaults to the device's resolved flags. */
+  readonly flags?: QrFlags;
 }
 
 /** C-01 blackboard key for the forward color target (R-01-1). */
@@ -141,7 +143,7 @@ export class RendererFrameHooks {
   private readonly renderSource: RenderSource;
 
   constructor(private readonly input: RendererFrameHooksInput) {
-    this.flags = rendererQrFlags(input.device);
+    this.flags = input.flags ?? rendererQrFlags(input.device);
     this.frameIndex = input.frameIndex ?? 0;
     this.timeSeconds = typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000;
     const source = input.source;
