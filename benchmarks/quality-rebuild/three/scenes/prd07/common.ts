@@ -131,7 +131,8 @@ function lightConeMesh(options: { position: readonly number[]; direction: readon
  * the old FogExp2(σ_d + σ_h) approximation squared the distance term: it
  * under-fogged everything inside ~80 m by up to 10x (near ground ~0.2% vs the
  * spec's 2-7%), so the reference disagreed with the scene's own fog spec.
- * The FogExp2 object stays on the scene for USE_FOG + fogColor only.
+ * The FogExp2 object stays on the scene for USE_FOG + fogColor only; the
+ * mix happens on linear radiance before tone mapping (see below).
  *   τ = σ_d·d' + σ_h·e^(−b(c.y − h0))·d'·(1 − e^(−b·v.y·d'))/(b·v.y·d'),
  *   d' = max(d − start, 0), f = min(1 − e^(−τ), maxOpacity).
  */
@@ -167,7 +168,14 @@ function applyHeightFogIntegral(scene: THREE.Scene, fog: NonNullable<Prd07SceneS
           .replace("#include <fog_vertex>", "#include <fog_vertex>\n#ifdef USE_FOG\nvA3dFogWorld = (inverse(viewMatrix) * mvPosition).xyz;\n#endif");
         shader.fragmentShader = shader.fragmentShader
           .replace("#include <fog_pars_fragment>", "#include <fog_pars_fragment>\n#ifdef USE_FOG\nvarying vec3 vA3dFogWorld;\n#endif")
-          .replace("#include <fog_fragment>", fragment);
+          // Fog the scene-linear radiance before tone mapping, like the
+          // shipped model (§6.6 inscatter is a linear radiance colour). three's
+          // own fog_fragment runs after tonemapping + sRGB encode, i.e. it
+          // mixes display-space pixels toward the *linear* fogColor (a dark
+          // (101, 128, 159) target for #a9bccf) — run 38224774203 measured the
+          // fogged ridge at 65-83 vs 106-142 for the identical τ in Aura.
+          .replace("#include <tonemapping_fragment>", `${fragment}\n#include <tonemapping_fragment>`)
+          .replace("#include <fog_fragment>", "");
       };
       material.customProgramCacheKey = () => "a3d-height-fog";
       material.needsUpdate = true;
