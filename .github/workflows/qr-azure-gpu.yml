@@ -145,6 +145,8 @@ jobs:
       PROMOTE_FLAG: ${{ inputs.promote_flag || '' }}
       # suite=gameplay + sourcemap: sourcemapped builds and a CDP CPU profile per run.
       QRG_PROFILE: ${{ inputs.sourcemap && '1' || '' }}
+      # Drill-down: bench_scenes=raw keeps per-sample player/state leaves for every selected game.
+      QRG_RAW: ${{ inputs.bench_scenes == 'raw' && inputs.games || '' }}
       QRG_VARIANTS: ${{ inputs.gameplay_variants || 'none;defaults;{route};{route},defaults;prod' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
