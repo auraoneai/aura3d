@@ -77,7 +77,7 @@ export async function createProductionRuntimeSceneRenderer(
         })));
       })()
     : [];
-  let primitiveEntries: readonly ProductionRuntimePrimitiveEntry[] = flagsOn ? [] : createProductionRuntimePrimitiveEntries(flattened, qrPrimitiveGeometryOptions(flags, resolveMountQuality(rendererOptions)));
+  let primitiveEntries: readonly ProductionRuntimePrimitiveEntry[] = flagsOn ? [] : createProductionRuntimePrimitiveEntries(flattened, qrPrimitiveGeometryOptions(flags, resolveMountQuality(rendererOptions), canvas));
   // T2.4 — C-29 `Renderer.create` replaces `ProductionRuntimeRenderer.create`.
   // `preserveDrawingBuffer` is gone: frame capture flows through the C-05
   // `captureFrame`/`toBlob` path after a synchronous render, not the raw

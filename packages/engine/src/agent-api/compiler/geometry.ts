@@ -4,7 +4,7 @@
 import type { GltfBounds } from "./gltfRuntime.js";
 import type { ProductionPrimitiveMesh } from "./primitives.js";
 import { tilingSecondUnwrap } from "./primitives.js";
-import { createPrimitiveGeometry, type Geometry } from "@aura3d/rendering";
+import { createPrimitiveGeometry, Geometry } from "@aura3d/rendering";
 
 export function createPlaneGeometry(): ProductionPrimitiveMesh {
   const uvs = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);
@@ -213,16 +213,95 @@ export interface QrPrimitiveGeometryOptions {
   readonly core: boolean;
   /** C-27 `primitiveSegments` ("half" on low tiers). Defaults to "full". */
   readonly primitiveSegments?: "half" | "full";
+  /** Q-15-2 / #545: per-mount pool so identical primitives share one vertex + index upload. */
+  readonly pool?: QrPrimitiveGeometryPool;
 }
+
+/**
+ * Q-15-2 / #545 ("685 boxes → 1 upload"). Identical builtin primitives
+ * (same kind, tier segments, and for capsules the folded size) share one
+ * `VertexBuffer` + `IndexBuffer`, so the device uploads them once instead of
+ * once per node (685 boxes used to create 1,370+ GPU buffers).
+ *
+ * Each resource still gets its own `Geometry` handle (renderer identity,
+ * batching and per-resource disposal are unchanged). The handle's `dispose()`
+ * releases a reference, and the shared buffers are disposed with the last one.
+ * The pool is per mount (one device), never global: `VertexBuffer.upload`
+ * caches one device buffer.
+ */
+export class QrPrimitiveGeometryPool {
+  private readonly entries = new Map<string, { readonly geometry: Geometry; refs: number }>();
+
+  /** Distinct shared geometries alive (= vertex/index buffer pairs). */
+  get size(): number {
+    return this.entries.size;
+  }
+
+  refCount(key: string): number {
+    return this.entries.get(key)?.refs ?? 0;
+  }
+
+  acquire(key: string, create: () => Geometry): Geometry {
+    let entry = this.entries.get(key);
+    if (!entry) {
+      entry = { geometry: create(), refs: 0 };
+      this.entries.set(key, entry);
+    }
+    entry.refs += 1;
+    const shared = entry;
+    return new QrSharedPrimitiveGeometry(shared.geometry, () => {
+      shared.refs -= 1;
+      if (shared.refs === 0) {
+        this.entries.delete(key);
+        shared.geometry.dispose();
+      }
+    });
+  }
+}
+
+/** Per-resource handle over pooled buffers; `dispose()` releases one reference (idempotent). */
+class QrSharedPrimitiveGeometry extends Geometry {
+  private released = false;
+
+  constructor(base: Geometry, private readonly release: () => void) {
+    super(base.vertexBuffer, base.indexBuffer, base.topology, base.bounds);
+  }
+
+  override dispose(): void {
+    if (this.released) return;
+    this.released = true;
+    this.release();
+  }
+}
+
+/** Pool key: kind + tier segments, plus the folded size for capsules (other kinds are unit-sized). */
+export function qrPrimitiveGeometryKey(
+  primitive: string,
+  size: readonly [number, number, number],
+  options: QrPrimitiveGeometryOptions
+): string {
+  const segments = options.primitiveSegments ?? "full";
+  return primitive === "capsule" ? `capsule|${segments}|${size.map((v) => Math.abs(v)).join(",")}` : `${primitive}|${segments}`;
+}
+
+const scopedOptions = new WeakMap<object, QrPrimitiveGeometryOptions>();
 
 export function qrPrimitiveGeometryOptions(
   flags: { on(name: "A3D_QR_CORE"): boolean } | undefined,
   /** C-27 tier settings (the compile ctx types it loosely); only `primitiveSegments` is read. */
-  quality?: unknown
+  quality?: unknown,
+  /** Mount scope (canvas / compile ctx): one geometry pool per scope. Omitted = no sharing. */
+  scope?: object
 ): QrPrimitiveGeometryOptions | undefined {
   if (!flags?.on("A3D_QR_CORE")) return undefined;
   const segments = (quality as { readonly primitiveSegments?: unknown } | undefined)?.primitiveSegments;
-  return { core: true, primitiveSegments: segments === "half" ? "half" : "full" };
+  const primitiveSegments = segments === "half" ? "half" : "full";
+  if (scope === undefined) return { core: true, primitiveSegments };
+  const existing = scopedOptions.get(scope);
+  if (existing && existing.primitiveSegments === primitiveSegments) return existing;
+  const options: QrPrimitiveGeometryOptions = { core: true, primitiveSegments, pool: existing?.pool ?? new QrPrimitiveGeometryPool() };
+  scopedOptions.set(scope, options);
+  return options;
 }
 
 type QrBuiltinPrimitive = "box" | "sphere" | "plane" | "cylinder" | "capsule" | "torus";
