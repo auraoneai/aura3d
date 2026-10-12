@@ -189,15 +189,18 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
       mist: options.mist ?? true
     }),
   /**
-   * Flipbook explosion/muzzle-flash sprite sheet (muse3jsparity-PRD D4):
-   * recorded with validated sheet geometry, but withheld — root has no
-   * native sprite-sheet sampler yet, so no pass is submitted.
+   * Flipbook explosion/muzzle-flash sprite sheet (muse3jsparity-PRD D4).
+   * Under A3D_QR_VFX it draws through the particle pass: one upright sprite
+   * of world `size`, frame = age · `frameRate` over `spriteColumns ×
+   * spriteRows` (wrapping unless `loop: false`), sampling the built-in
+   * seeded `fireball` sheet. `prewarm` starts the sprite that many seconds in.
    */
   flipbook: (options: Omit<AuraEffectNode, "kind" | "effect"> & {
     readonly blend?: AuraBlendMode;
     readonly size?: number | readonly [number, number];
     readonly seed?: number;
     readonly loop?: boolean;
+    readonly prewarm?: number;
     readonly sprite?: AuraParticleEmitterOptions["sprite"];
   } = {}) => {
     const columns = options.spriteColumns ?? 4;

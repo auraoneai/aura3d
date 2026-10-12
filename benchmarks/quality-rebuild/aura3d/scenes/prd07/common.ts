@@ -26,6 +26,7 @@ import {
   type AuraSceneBuilder
 } from "@aura3d/engine";
 import { adapterBudgetMs, DEFAULT_CAPTURE_TIMEOUT_MS, waitForFirstDraw } from "../../lib/failfast";
+import { pointSizeToWorld } from "../../../shared/procedural";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload } from "../../../shared/types";
 import type { AuraVfxKind } from "@aura3d/engine/contracts";
 import type { BurstSheetSpec, DecalObjectSpec, EmitterMemberSpec, Prd07SceneSpec } from "../../../scenes/prd07/specs";
@@ -109,9 +110,10 @@ function particleNode(object: { readonly name: string; readonly seed: number; re
     height: object.height,
     color: object.color,
     // PRD-07 §6.2 surface: deterministic seed, world-space sprite size,
-    // explicit blend, emitter cap and steady-state prewarm.
+    // explicit blend, emitter cap and steady-state prewarm. The spec size is a
+    // three.js attenuated point size; convert it to world units.
     seed: object.seed,
-    size: object.size,
+    size: pointSizeToWorld(object.size, spec.camera.fov),
     blend: object.blending === "additive" ? "additive" : "alpha",
     maxParticles: object.count,
     prewarm,
@@ -228,15 +230,18 @@ function buildPrd07AuraScene(spec: Prd07SceneSpec, log: CapabilityLog): AuraScen
     } else if (object.kind === "flipbook") {
       nodes.push(effects.flipbook({
         name: object.name,
-        color: object.color ?? "#ffb347",
+        // three tints the SpriteMaterial white when the spec has no colour.
+        color: object.color ?? "#ffffff",
         spriteColumns: object.atlas.columns,
         spriteRows: object.atlas.rows,
         frameRate: object.atlas.frameRate,
         seed: object.atlas.seed,
         size: object.size,
-        blend: object.blending ?? "alpha"
+        blend: object.blending ?? "alpha",
+        // Sprite age at capture = spec.time + startAt (the three frame index).
+        ...(object.startAt !== undefined ? { prewarm: object.startAt } : {})
       }).position(...object.position));
-      log.add("flipbook", "partial", `effects.flipbook ${object.atlas.columns}x${object.atlas.rows} @ ${object.atlas.frameRate}fps — atlas sampling lands with P1-T11/T12.`);
+      log.add("flipbook", "supported", `effects.flipbook ${object.atlas.columns}x${object.atlas.rows} @ ${object.atlas.frameRate}fps, built-in seeded fireball sheet (seed ${object.atlas.seed})`);
     } else if (object.kind === "emitterSet") {
       for (const member of object.emitters) {
         nodes.push(particleNode({ ...member }, spec));

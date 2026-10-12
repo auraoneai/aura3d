@@ -239,14 +239,15 @@ export class ParticleBatchPass {
       blendAdditiveFallback: res.additiveFallback,
       unpremultiplyOutput: res.unpremultiplyOutput,
       proceduralSoftDot: batch.desc.atlas.width <= 1,
-      fogAnalytic: false
+      fogAnalytic: false,
+      straightAlpha: batch.desc.atlasStraightAlpha === true
     };
     const shader = this.program(defines);
     const uniforms = new Map<string, import("../RenderDevice").UniformValue>([
       ["u_view", camera?.viewMatrix ?? IDENTITY],
       ["u_viewProjection", camera?.viewProjectionMatrix ?? IDENTITY],
       ["u_atlasRect", [0, 0, 1, 1]],
-      ["u_grid", [1, 1]],
+      ["u_grid", batch.desc.atlasGrid ? [batch.desc.atlasGrid[0], batch.desc.atlasGrid[1]] : [1, 1]],
       ["u_atlas", new TextureBinding({ name: "u_atlas", texture: batch.desc.atlas })],
       ["u_nearFade", batch.desc.nearFade ?? 0.5],
       ["u_cameraNear", camera?.near ?? 0.1],

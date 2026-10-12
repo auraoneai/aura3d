@@ -15,10 +15,12 @@ export interface ParticleProgramDefines {
   readonly unpremultiplyOutput: boolean;
   readonly proceduralSoftDot: boolean;     // no atlas — analytic disc
   readonly fogAnalytic: boolean;
+  /** Atlas texels are straight (non-premultiplied) alpha — premultiply after the sRGB decode (procedural flipbook sheets). */
+  readonly straightAlpha?: boolean;
 }
 
 export function particleProgramKey(d: ParticleProgramDefines): string {
-  return `prd07.particle.${d.stretch ? "S" : ""}${d.frameBlend ? "F" : ""}${d.softParticles ? "O" : ""}${d.blendAdditive ? "B" : ""}${d.blendAdditiveFallback ? "A" : ""}${d.unpremultiplyOutput ? "U" : ""}${d.proceduralSoftDot ? "P" : ""}${d.fogAnalytic ? "G" : ""}`;
+  return `prd07.particle.${d.stretch ? "S" : ""}${d.frameBlend ? "F" : ""}${d.softParticles ? "O" : ""}${d.blendAdditive ? "B" : ""}${d.blendAdditiveFallback ? "A" : ""}${d.unpremultiplyOutput ? "U" : ""}${d.proceduralSoftDot ? "P" : ""}${d.fogAnalytic ? "G" : ""}${d.straightAlpha ? "T" : ""}`;
 }
 
 const VERT_BODY = `
@@ -142,12 +144,21 @@ void main() {
   // Premultiplied like the atlas path (rgb is multiplied by t.rgb below, not
   // t.a): rgb = 1 drew every sprite as a full-intensity square under additive
   // and premultiplied-over blending instead of a disc.
-  float dotA = smoothstep(1.0, 0.62, dot(q, q));
+  // Soft-dot radial profile: 1 at the centre, 0.55 at r = 0.35, 0 at the rim
+  // (piecewise linear — the classic radial-gradient point sprite). The old
+  // smoothstep(1, 0.62, r^2) was solid out to r ~ 0.79 and carried ~2.8x the
+  // coverage, so every soft-dot sprite read as a hard bright disc (promote
+  // run 38208531335: 14-particles / fountain / soft-particles / lit-smoke).
+  float r = length(q);
+  float dotA = r < 0.35 ? 1.0 - (0.45 / 0.35) * r : 0.55 * clamp((1.0 - r) / 0.65, 0.0, 1.0);
   vec4 t = vec4(vec3(dotA), dotA);
 #else
   vec4 t = texture(u_atlas, v_uv0);
 #if FRAME_BLEND
   t = mix(t, texture(u_atlas, v_uv1), v_frameT);
+#endif
+#if STRAIGHT_ALPHA
+  t.rgb *= t.a;   // straight-alpha sheet: premultiply in linear after the sRGB decode
 #endif
 #endif
   float fade = v_color.a;
@@ -203,7 +214,7 @@ ${define("STRETCH", d.stretch)}${VERT_BODY}`;
 export function particleFragmentSource(d: ParticleProgramDefines): string {
   return `#version 300 es
 precision highp float;
-${define("STRETCH", d.stretch)}${define("FRAME_BLEND", d.frameBlend)}${define("SOFT_PARTICLES", d.softParticles)}${define("BLEND_ADDITIVE", d.blendAdditive)}${define("BLEND_ADDITIVE_FALLBACK", d.blendAdditiveFallback)}${define("UNPREMULTIPLY_OUTPUT", d.unpremultiplyOutput)}${define("PROCEDURAL_SOFT_DOT", d.proceduralSoftDot)}${define("FOG_ANALYTIC", d.fogAnalytic)}${FRAG_BODY}`;
+${define("STRETCH", d.stretch)}${define("FRAME_BLEND", d.frameBlend)}${define("SOFT_PARTICLES", d.softParticles)}${define("BLEND_ADDITIVE", d.blendAdditive)}${define("BLEND_ADDITIVE_FALLBACK", d.blendAdditiveFallback)}${define("UNPREMULTIPLY_OUTPUT", d.unpremultiplyOutput)}${define("PROCEDURAL_SOFT_DOT", d.proceduralSoftDot)}${define("FOG_ANALYTIC", d.fogAnalytic)}${define("STRAIGHT_ALPHA", d.straightAlpha === true)}${FRAG_BODY}`;
 }
 
 /** C-02 chunk records for the particle program stages. */
