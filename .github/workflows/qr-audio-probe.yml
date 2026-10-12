@@ -1,0 +1,70 @@
+name: QR audio buzz probe
+
+# Dispatch-only: builds the 18 games from the dispatched ref (capture-games
+# --build-only) and runs tools/quality-rebuild-capture/audio-buzz-probe.mjs on
+# the L4 track0 runner, plus the same probe against a baseline origin
+# (default: the old production site) so the two can be compared.
+on:
+  # Pushes to qr/audio-probe/** run the probe too (dispatch needs the file on main).
+  push:
+    branches: ['qr/audio-probe/**']
+  workflow_dispatch:
+    inputs:
+      games:
+        description: "Comma-separated appDirs (empty = all 18)"
+        required: false
+        default: ""
+      baseline:
+        description: "Baseline origin to probe as well (empty = skip)"
+        required: false
+        default: "https://aura3d.auraone.ai"
+      query:
+        description: "Query string appended to every route (e.g. ?a3d-qr=game)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qr-audio-probe-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ["self-hosted", "track0", "gpu-l4"]
+    timeout-minutes: 120
+    env:
+      QRC_GAMES: ${{ inputs.games }}
+      IN_QUERY: ${{ inputs.query }}
+      IN_BASELINE: ${{ github.event_name == 'push' && 'https://aura3d.auraone.ai' || inputs.baseline }}
+      QRC_GPU_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          lfs: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Pull game assets (LFS)
+        run: git lfs pull --include="public/aura-assets/**,apps/*/public/**,apps/*/assets/**"
+      - name: Build games
+        run: QRC_LOCAL_BUILD=true node tools/quality-rebuild-capture/capture-games.mjs --build-only
+      - name: Probe local build
+        run: set -o pipefail; node tools/quality-rebuild-capture/audio-buzz-probe.mjs --base local --games "$QRC_GAMES" --query "$IN_QUERY" --out out-audio/local | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Probe baseline
+        if: ${{ env.IN_BASELINE != '' }}
+        continue-on-error: true
+        run: set -o pipefail; node tools/quality-rebuild-capture/audio-buzz-probe.mjs --base "$IN_BASELINE" --games "$QRC_GAMES" --out out-audio/baseline | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qr-audio-probe-${{ github.run_id }}
+          path: out-audio/**
+          retention-days: 14
