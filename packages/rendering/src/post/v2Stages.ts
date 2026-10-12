@@ -840,7 +840,7 @@ export function runV2HdrStages(
       const cur = new Float32Array(4 * 7);
       gl.bindFramebuffer(gl.FRAMEBUFFER, asGlTarget(hdr).framebuffer);
       gl.readPixels(Math.min(w - 1, probe[0]), Math.max(0, probe[1] - 3), 1, 7, gl.RGBA, gl.FLOAT, cur);
-      const g = (a: Float32Array) => Array.from({ length: 7 }, (_, i) => a[i * 4 + 1]!.toFixed(3)).join("/");
+      const g = (a: Float32Array) => Array.from({ length: 7 }, (_, i) => `${a[i * 4]!.toFixed(4)},${a[i * 4 + 1]!.toFixed(4)},${a[i * 4 + 2]!.toFixed(4)}`).join("/");
       recordPostStage(`S5:probe-resolved-g=${g(col)}:current-g=${g(cur)}:size=${w}x${h}:hist=${temporal.history.width}x${temporal.history.height}`);
       const hist = new Float32Array(4 * 7);
       gl.bindFramebuffer(gl.FRAMEBUFFER, asGlTarget(temporal.history).framebuffer);
