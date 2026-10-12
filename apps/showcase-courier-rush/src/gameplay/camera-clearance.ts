@@ -77,6 +77,35 @@ export interface ChaseClearance {
   readonly minOffsetY: number;
 }
 
+/** Resolve the final eye, including the lift applied by both camera callers. */
+function clearFinalEye(
+  vanX: number, vanZ: number, dirX: number, dirZ: number,
+  desired: number, offsetY: number, clearance: ChaseClearance
+): ChaseClearance {
+  const length = Math.hypot(dirX, dirZ) || 1;
+  const eyeX = vanX + dirX / length * clearance.distance;
+  const eyeZ = vanZ + dirZ / length * clearance.distance;
+  let minOffsetY = clearance.minOffsetY;
+  let eyeY = TARGET_Y + Math.max(offsetY + clearanceLift(desired, clearance.distance), minOffsetY);
+  // Pulling in cannot stop before a blocker closer than CHASE_MIN_DISTANCE.
+  // Lift above it instead. Repeat because a lift can enter another solid that
+  // was above the eye earlier in this pass (for example an overhead span).
+  for (let pass = 0; pass < CAMERA_SOLIDS.length; pass += 1) {
+    let lifted = false;
+    for (const box of CAMERA_SOLIDS) {
+      const thin = box.top - box.bottom < 1;
+      const vPad = thin ? 0.7 : 0;
+      if (!inside(box, eyeX, eyeZ, thin ? 1.4 : TOWER_PADDING)
+        || eyeY < box.bottom - vPad || eyeY > box.top + vPad) continue;
+      eyeY = box.top + vPad + 0.05;
+      minOffsetY = Math.max(minOffsetY, eyeY - TARGET_Y);
+      lifted = true;
+    }
+    if (!lifted) break;
+  }
+  return { distance: clearance.distance, minOffsetY };
+}
+
 /**
  * Clearance for a chase eye trailing `desired` metres from the van along the
  * unit direction (dirX, dirZ), at offset height `offsetY` above the target.
@@ -95,7 +124,9 @@ export function chaseClearance(
       minOffsetY = Math.max(minOffsetY, box.top + 1.6 - TARGET_Y);
     }
   }
-  if (minOffsetY > 0) return { distance: CHASE_MIN_DISTANCE, minOffsetY };
+  if (minOffsetY > 0) {
+    return clearFinalEye(vanX, vanZ, dirX, dirZ, desired, offsetY, { distance: CHASE_MIN_DISTANCE, minOffsetY });
+  }
   let distance = desired;
   for (let i = 1; i <= SAMPLES; i += 1) {
     const d = (desired * i) / SAMPLES;
@@ -115,7 +146,7 @@ export function chaseClearance(
       minOffsetY = Math.max(minOffsetY, box.top + 0.75 - TARGET_Y);
     }
   }
-  return { distance, minOffsetY };
+  return clearFinalEye(vanX, vanZ, dirX, dirZ, desired, offsetY, { distance, minOffsetY });
 }
 
 /**
@@ -136,7 +167,11 @@ export function createChaseClearance(): {
       else distance = Math.min(target.distance, distance + step * 2.4);
       if (target.minOffsetY > minY) minY = target.minOffsetY;
       else minY = Math.max(target.minOffsetY, minY - step * 3);
-      return { distance, minOffsetY: minY };
+      // The eased distance differs from the stateless target; validate that
+      // actual eye too, especially while turning next to a tower.
+      const clear = clearFinalEye(vanX, vanZ, dirX, dirZ, desired, offsetY, { distance, minOffsetY: minY });
+      minY = clear.minOffsetY;
+      return clear;
     },
     reset() {
       distance = null;

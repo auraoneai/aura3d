@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   CHASE_MIN_DISTANCE,
   cameraPointClear,
+  clearanceLift,
   chaseClearance,
   createChaseClearance
 } from "../../../apps/showcase-courier-rush/src/gameplay/camera-clearance";
@@ -30,6 +31,17 @@ describe("courier chase camera clearance", () => {
     const c = chaseClearance(-1.0, 4.6, -0.6, 0.8, 9, CHASE_CAMERA.height);
     expect(c.distance).toBeLessThan(9);
     expect(c.distance).toBeGreaterThanOrEqual(CHASE_MIN_DISTANCE);
+  });
+
+  it("lifts the final eye when the minimum distance still ends inside a tower", () => {
+    const c = chaseClearance(-1, 4.6, -0.6, 0.8, 9, CHASE_CAMERA.height);
+    expect(c.distance).toBe(CHASE_MIN_DISTANCE);
+    const eyeX = -1 - 0.6 * c.distance;
+    const eyeZ = 4.6 + 0.8 * c.distance;
+    const uncorrectedY = 0.2 + CHASE_CAMERA.height + clearanceLift(9, c.distance);
+    expect(cameraPointClear(eyeX, eyeZ, uncorrectedY)).toBe(false);
+    const eyeY = 0.2 + Math.max(CHASE_CAMERA.height + clearanceLift(9, c.distance), c.minOffsetY);
+    expect(cameraPointClear(eyeX, eyeZ, eyeY)).toBe(true);
   });
 
   it("rises above the roof when the van itself is inside a block", () => {
