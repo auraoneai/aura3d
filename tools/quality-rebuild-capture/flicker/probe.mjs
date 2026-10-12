@@ -41,7 +41,7 @@ const warmup = Number(opt("--warmup", "FLK_WARMUP", "30"));
 const dtMs = Number(opt("--dt", "FLK_DT_MS", "16.6667"));
 const [vw, vh] = opt("--viewport", "FLK_VIEWPORT", "1280x720").split("x").map(Number);
 const gpuArgs = (process.env.QRC_GPU_ARGS || process.env.QR_CHROMIUM_ARGS || "--use-angle=metal --enable-gpu --ignore-gpu-blocklist").split(/\s+/).filter(Boolean);
-for (const arm of arms) if (!/^(default|none|[-A-Za-z0-9_.,]+)$/.test(arm)) throw new Error(`bad arm ${arm}`);
+for (const arm of arms) if (!/^(default|none|[-A-Za-z0-9_.,]+)(\|[A-Za-z0-9_.-]+(=[A-Za-z0-9_.-]+)?)*$/.test(arm)) throw new Error(`bad arm ${arm}`);
 const selected = games.filter((g) => !wanted.length || wanted.includes(g.id));
 const log = (...p) => process.stderr.write(`[flk ${new Date().toISOString().slice(11, 19)}] ${p.join(" ")}\n`);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -109,9 +109,26 @@ export function summarize(list) {
 }
 
 async function probeArm(browser, game, arm, origin, gameDir) {
-  const url = `${origin}${game.route}${arm === "default" ? "" : `?a3d-qr=${encodeURIComponent(arm)}`}`;
+  // Arm grammar: <flags>[|dpr=N][|jitter][|key=value URL param] e.g. "default|aura3d-quality=ultra|dpr=2".
+  const [flagPart, ...mods] = arm.split("|");
+  const params = new URLSearchParams();
+  if (flagPart !== "default") params.set("a3d-qr", flagPart);
+  let dpr = 1; let jitter = false;
+  for (const m of mods) {
+    const [k, v] = m.split("=");
+    if (k === "dpr") dpr = Number(v) || 1;
+    else if (k === "jitter") jitter = true;
+    else if (k && v !== undefined) params.set(k, v);
+  }
+  // jitter: vsync-like timestamps, uniform +/-0.5 ms around the 60 Hz period (seeded, zero-mean pairs).
+  let seed = 12345;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+  let carry = 0;
+  const nextDt = () => { if (!jitter) return dtMs; const e = (rnd() - 0.5); const d = dtMs + e - carry; carry = e; return d; };
+  const query = params.toString();
+  const url = `${origin}${game.route}${query ? `?${query}` : ""}`;
   const rec = { arm, url, frames: [], diag: [], pageErrors: [], consoleErrors: [] };
-  const context = await browser.newContext({ viewport: { width: vw, height: vh }, deviceScaleFactor: 1, serviceWorkers: "block" });
+  const context = await browser.newContext({ viewport: { width: vw, height: vh }, deviceScaleFactor: dpr, serviceWorkers: "block" });
   await context.addInitScript(VIRTUAL_CLOCK_SCRIPT);
   const page = await context.newPage();
   page.on("pageerror", (e) => rec.pageErrors.length < 20 && rec.pageErrors.push(String(e?.message ?? e).slice(0, 300)));
@@ -143,15 +160,17 @@ async function probeArm(browser, game, arm, origin, gameDir) {
     const warmTicks = Math.max(warmup, Math.ceil(markAt / dtMs));
     for (let i = 0; i < warmTicks; i++) {
       await feed();
-      await page.evaluate(pageAdvance, { dtMs, count: 1 });
-      vt += dtMs;
+      const dt = nextDt();
+      await page.evaluate(pageAdvance, { dtMs: dt, count: 1 });
+      vt += dt;
     }
     rec.measuredFromMs = Math.round(vt);
     for (let i = 0; i < frames; i++) {
       await feed();
       const keepPng = i < 3 || i === 60;
-      const f = await page.evaluate(pageFrame, { dtMs, keepPng, grid: [32, 18] });
-      vt += dtMs;
+      const dt = nextDt();
+      const f = await page.evaluate(pageFrame, { dtMs: dt, keepPng, grid: [32, 18] });
+      vt += dt;
       if (i === 0) {
         const shot = await page.screenshot({ type: "png", timeout: 15_000 }).catch(() => null);
         if (shot) writeFileSync(path.join(gameDir, `${arm.replace(/[^A-Za-z0-9_-]/g, "_")}__page000.png`), shot);

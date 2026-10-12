@@ -97,7 +97,13 @@ export async function pageFrame({ dtMs, keepPng, grid }) {
     bigDiff: prev ? +(bigDiff / n).toFixed(5) : null,
     grid: Array.from(cells, (v, k) => +(v / Math.max(1, counts[k])).toFixed(1))
   };
-  if (keepPng) out.png = work.toDataURL("image/png");
+  // Auto-keep frames that jump (strobe / flash candidates), budgeted per page.
+  const lastLuma = window.__FLK_LAST_LUMA__;
+  window.__FLK_LAST_LUMA__ = out.luma;
+  window.__FLK_PNG_BUDGET__ ??= 6;
+  const jump = lastLuma !== undefined && (Math.abs(out.luma - lastLuma) > 2.5 || (out.mad ?? 0) > 12);
+  if (jump && window.__FLK_PNG_BUDGET__ > 0) { window.__FLK_PNG_BUDGET__--; out.jump = true; }
+  if (keepPng || out.jump) out.png = work.toDataURL("image/png");
   void t0;
   return out;
 }
