@@ -45,6 +45,7 @@ import type { ProgramFeatures } from "./contracts/program";
 import { collectWarmupFeatures, ProgramWarmup, type WarmupInput } from "./program/ProgramWarmup";
 import { PRD03_EXPOSURE, rendererQrFlags, setRendererQrFlags, withRendererQrFlags } from "./renderer/FrameGraph";
 import { qrCoreGeneratorOn, qrCoreOutputOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
+import { resolveCoreOutputPostRoute, withCoreOutputOff, type CoreOutputPostSkipped } from "./renderer/coreOutputPostRoute";
 import { forwardPassFeatureAxes, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
 import { InterleavedTransparentPass } from "./renderer/InterleavedTransparentPass";
 import { ensureSceneDepthCopyTarget, SceneDepthCopyPass } from "./renderer/SceneDepthCopyPass";
@@ -434,23 +435,14 @@ export class Renderer {
    *  under A3D_QR_CORE_OUTPUT (`null` when nothing was skipped). Read by the
    *  engine's C-31 `output.postSkipped` section; routing through PostGraph v2
    *  is lane 03's Q-03-2/Q-03-3. */
-  private lastPostSkipped: { readonly code: string; readonly message: string; readonly effects: readonly string[] } | null = null;
-  get postSkipped(): { readonly code: string; readonly message: string; readonly effects: readonly string[] } | null {
+  private lastPostSkipped: CoreOutputPostSkipped | null = null;
+  get postSkipped(): CoreOutputPostSkipped | null {
     return this.lastPostSkipped;
   }
-  private recordPostSkipped(postprocess: NonNullable<ReturnType<typeof collectPostprocess>>): void {
-    const effects = Object.entries(postprocess as Record<string, unknown>)
-      .filter(([key, value]) => key !== "targetFormat" && key !== "temporal" && (value === true || (typeof value === "object" && value !== null)))
-      .map(([key]) => key);
-    this.lastPostSkipped = {
-      code: "post-v2-unmigrated",
-      message: "legacy postprocess chain skipped under A3D_QR_CORE_OUTPUT; encode handled by OutputPass",
-      effects
-    };
-    if (!this.warnedV2Postprocess) {
-      this.warnedV2Postprocess = true;
-      if (typeof console !== "undefined") console.warn(`POSTPROCESS_V2_UNMIGRATED: ${this.lastPostSkipped.message}`);
-    }
+  private warnPostLegacyRoute(record: CoreOutputPostSkipped): void {
+    if (this.warnedV2Postprocess) return;
+    this.warnedV2Postprocess = true;
+    if (typeof console !== "undefined") console.warn(`POSTPROCESS_V2_UNMIGRATED: ${record.message}`);
   }
   private resolutionGovernor?: ResolutionGovernor;
   private renderScaleCeiling = 1;
@@ -752,12 +744,16 @@ export class Renderer {
     const explicitRenderTarget = collectRenderTarget(source);
     validateExplicitRenderTarget(explicitRenderTarget, this.width, this.height);
     let cameraPosition = sourceCameraPosition ?? resolvedCamera?.cameraPosition;
+    // C-05/T0-07: decide the frame's output route before the hooks exist, so
+    // contributors see the same v2/legacy resource names the graph writes.
+    const route = resolveCoreOutputPostRoute(qrCoreOutputOn(rendererQrFlags(this.device)), collectPostprocess(source));
     const frameHooks = createRendererFrameHooks({
       device: this.device,
       width: this.width,
       height: this.height,
       source,
-      camera: toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition)
+      camera: toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition),
+      ...(route.skipped ? { flags: withCoreOutputOff(rendererQrFlags(this.device)) } : {})
     });
     if (!resolvedCamera && cameraPolicy === "auto-frame") {
       const autoFrame = createAutoFrameCamera(source, items, this.width, this.height);
@@ -773,14 +769,13 @@ export class Renderer {
     const ownedShadowPasses: Array<{ dispose(): void }> = [];
     this.graph.clear();
     // C-05 (§8.4): under A3D_QR_CORE_OUTPUT encode happens once, in OutputPass.
-    // The legacy post chain's own encode/present is lane 03's to migrate into
-    // post-hdr contributors (Q-03-2/Q-03-3); until then a configured chain is
-    // reported once and skipped rather than double-encoded.
-    const qrOutput = qrCoreOutputOn(rendererQrFlags(this.device));
-    if (qrOutput && postprocess !== undefined) {
-      this.recordPostSkipped(postprocess);
-      postprocess = undefined;
-    }
+    // A configured legacy post chain still encodes itself (lane 03 migrates it
+    // into post-hdr contributors, Q-03-2/Q-03-3), so the frame takes the legacy
+    // chain and bypasses OutputPass: encode stays single, and the authored
+    // effects (bloom) are kept instead of dropped. The bypass is reported.
+    const qrOutput = route.qrOutput;
+    this.lastPostSkipped = route.skipped;
+    if (route.skipped) this.warnPostLegacyRoute(route.skipped);
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;
     if (postprocess) {
       const format = postprocess.targetFormat ?? defaultPostprocessTargetFormat(this.device, postprocess);
@@ -1079,12 +1074,16 @@ export class Renderer {
     const explicitRenderTarget = collectRenderTarget(source);
     validateExplicitRenderTarget(explicitRenderTarget, this.width, this.height);
     let cameraPosition = sourceCameraPosition ?? resolvedCamera?.cameraPosition;
+    // C-05/T0-07: decide the frame's output route before the hooks exist, so
+    // contributors see the same v2/legacy resource names the graph writes.
+    const route = resolveCoreOutputPostRoute(qrCoreOutputOn(rendererQrFlags(this.device)), collectPostprocess(source));
     const frameHooks = createRendererFrameHooks({
       device: this.device,
       width: this.width,
       height: this.height,
       source,
-      camera: toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition)
+      camera: toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition),
+      ...(route.skipped ? { flags: withCoreOutputOff(rendererQrFlags(this.device)) } : {})
     });
     if (!resolvedCamera && cameraPolicy === "auto-frame") {
       const autoFrame = createAutoFrameCamera(source, items, this.width, this.height);
@@ -1100,14 +1099,13 @@ export class Renderer {
     const ownedShadowPasses: Array<{ dispose(): void }> = [];
     this.graph.clear();
     // C-05 (§8.4): under A3D_QR_CORE_OUTPUT encode happens once, in OutputPass.
-    // The legacy post chain's own encode/present is lane 03's to migrate into
-    // post-hdr contributors (Q-03-2/Q-03-3); until then a configured chain is
-    // reported once and skipped rather than double-encoded.
-    const qrOutput = qrCoreOutputOn(rendererQrFlags(this.device));
-    if (qrOutput && postprocess !== undefined) {
-      this.recordPostSkipped(postprocess);
-      postprocess = undefined;
-    }
+    // A configured legacy post chain still encodes itself (lane 03 migrates it
+    // into post-hdr contributors, Q-03-2/Q-03-3), so the frame takes the legacy
+    // chain and bypasses OutputPass: encode stays single, and the authored
+    // effects (bloom) are kept instead of dropped. The bypass is reported.
+    const qrOutput = route.qrOutput;
+    this.lastPostSkipped = route.skipped;
+    if (route.skipped) this.warnPostLegacyRoute(route.skipped);
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;
     if (postprocess) {
       const format = postprocess.targetFormat ?? defaultPostprocessTargetFormat(this.device, postprocess);
