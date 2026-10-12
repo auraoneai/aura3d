@@ -60,8 +60,8 @@ const AGGRESSION_PRESET_COUNT = AGGRESSION_PRESETS.length;
 
 const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const visualReviewCapture = typeof window !== "undefined"
-  && new URLSearchParams(window.location.search).get("capture") === "review";
+// Shipped play view only: no ?capture review lens (PRD-09 capture parity).
+const visualReviewCapture: boolean = false;
 if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 

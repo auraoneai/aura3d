@@ -103,7 +103,8 @@ const reducedMotion = mediaMatches("(prefers-reduced-motion: reduce)");
 const highContrast = mediaMatches("(prefers-contrast: more)");
 const reducedFlash = reducedMotion;
 const compactViewport = window.innerWidth <= 620;
-const visualReviewCapture = new URL(window.location.href).searchParams.get("capture") === "review";
+// Shipped play view only: no ?capture review lens (PRD-09 capture parity).
+const visualReviewCapture: boolean = false;
 /*
  * The state and replay checksums are route evidence, not player HUD: raw
  * hashes on screen during normal play is exactly what the debug-visibility rule

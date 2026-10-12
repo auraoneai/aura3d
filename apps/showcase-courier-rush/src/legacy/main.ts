@@ -100,7 +100,8 @@ const urlParams = new URLSearchParams(window.location.search);
 const autopilotEnabled = urlParams.get("autopilot") === "1";
 const timerScale = Number(urlParams.get("timerScale") ?? "1") || 1;
 const debugMode = urlParams.get("debug") === "1";
-const visualReviewCapture = urlParams.get("capture") === "review";
+// Shipped play view only: no ?capture review lens (PRD-09 capture parity).
+const visualReviewCapture: boolean = false;
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 /** Deterministic shift seed (drives traffic line variation). */

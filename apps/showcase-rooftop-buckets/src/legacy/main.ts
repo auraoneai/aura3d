@@ -47,8 +47,8 @@ import { createRooftopDressing } from "./environment";
 import { createRooftopEffectsPass } from "./effects-pass";
 import { BucketsAudioController } from "./buckets-audio";
 
-const visualReviewCapture =
-  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("capture") === "review";
+// Shipped play view only: no ?capture review lens (PRD-09 capture parity).
+const visualReviewCapture: boolean = false;
 // Keep the heavyweight 191-joint clip actors opt-in for the standalone
 // animation/debug harness. The normal game/review lane uses the lighter
 // registered raised-pose counterparts, which keeps the visual pass within its

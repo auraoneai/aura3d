@@ -49,7 +49,8 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_VAULT_BREAKERS__", {
 });
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
+// Shipped play view only: no ?capture review lens (PRD-09 capture parity).
+const visualReviewCapture: boolean = false;
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 // Physics identity (backend / flipper mode / sensor + joint counts) is evidence a
 // reviewer asks for, not HUD a player receives. Opt in with `?evidence=1`.
