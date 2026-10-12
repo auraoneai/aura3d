@@ -612,6 +612,14 @@ export function runV2HdrStages(
     // the identity to ~1e-12 and reprojects in place.
     const invUnjittered = invertMat4(Array.from(temporal.v2.unjittered) as unknown as Mat4);
     const reprojection = Float32Array.from(multiplyMat4(Array.from(temporal.v2.previous) as unknown as Mat4, invUnjittered));
+    {
+      // C-31 stage trace: how far the camera reprojection is from identity
+      // (static camera → 0) and this frame's sub-pixel jitter.
+      let dev = 0;
+      for (let i = 0; i < 16; i += 1) dev = Math.max(dev, Math.abs(reprojection[i]! - IDENTITY_MAT4_F32[i]!));
+      const jx = temporal.v2.jitterClip[0] * w / 2, jy = temporal.v2.jitterClip[1] * h / 2;
+      recordPostStage(`S1C:reproj-dev=${dev.toExponential(2)}:jitter-px=${jx.toFixed(3)},${jy.toFixed(3)}`);
+    }
     draw(host, state, camVelProg, asGlTarget(temporal.velocity), [src.depthTextureHandle!], (g) => {
       g.uniform1i(g.getUniformLocation(camVelProg, "u_depth"), 0);
       g.uniform1f(g.getUniformLocation(camVelProg, "u_near"), near);
@@ -793,6 +801,15 @@ export function runV2HdrStages(
     ? `S5:${temporal.historyValid ? "history" : "seed"}:frames=${temporal.historyFrames}`
     : `S5:skip:velocity=${String(Boolean(dilatedVelocity))}`);
   if (taaActive && temporal?.v2 && dilatedVelocity) {
+    // Debug probe (benchmark harness only): read the dilated velocity at a
+    // probe pixel into the stage trace. Off unless the global is set.
+    const probe = (globalThis as { __A3D_QR_POST_PROBE__?: readonly [number, number] }).__A3D_QR_POST_PROBE__;
+    if (probe) {
+      const px = new Float32Array(4);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, asGlTarget(dilatedVelocity).framebuffer);
+      gl.readPixels(Math.min(w - 1, probe[0]), Math.min(h - 1, probe[1]), 1, 1, gl.RGBA, gl.FLOAT, px);
+      recordPostStage(`S5:probe-velocity-px=${(px[0]! * w).toExponential(2)},${(px[1]! * h).toExponential(2)}:z=${px[2]!.toFixed(3)}`);
+    }
     const taa = (pipeline.taa ?? {}) as Partial<TaaOptions>;
     const taaProg = program(state, gl, "taa-resolve", TAA_RESOLVE_GLSL);
     const resolved = temporal.historyOutput;
