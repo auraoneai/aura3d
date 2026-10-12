@@ -2,7 +2,7 @@
   "$comment": "Examples audited by capture-examples.mjs (owner demand: every example shows the effects). kind=packaged -> packages/create-aura3d/templates, root -> templates/ (root-only starters; mirrors are covered by packaged), app -> apps/<dir>.",
   "examples": [
     { "id": "animation-channel", "kind": "packaged" },
-    { "id": "animation-studio", "kind": "packaged" },
+    { "id": "animation-studio", "kind": "packaged", "entry": "live-route.html" },
     { "id": "architecture-interior", "kind": "packaged" },
     { "id": "arena-shooter", "kind": "packaged" },
     { "id": "asset-inspector", "kind": "packaged" },

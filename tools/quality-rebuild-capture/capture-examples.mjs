@@ -278,12 +278,13 @@ async function main() {
   const report = { schema: "aura3d.examples-audit/1", generatedAt: new Date().toISOString(), sha: process.env.GITHUB_SHA ?? null,
     examplesRef: process.env.QRC_EXAMPLES_REF || null, runner: process.env.RUNNER_NAME ?? null, browser: browser.version(), examples: [] };
   const persist = () => writeFileSync(path.join(outDir, "report.json"), JSON.stringify(report, null, 2) + "\n");
-  const appRoots = [path.join(repoRoot, "public"), path.join(repoRoot, "marketing", "public")];
+  // repoRoot last: /fixtures/... (asset + environment corpus) like the dev server.
+  const appRoots = [path.join(repoRoot, "public"), path.join(repoRoot, "marketing", "public"), repoRoot];
   const builds = existsSync(path.join(outDir, "build-log.json")) ? JSON.parse(readFileSync(path.join(outDir, "build-log.json"), "utf8")) : {};
   try {
     for (const ex of selected) {
       const dist = distFor(ex);
-      if (!existsSync(path.join(dist, "index.html"))) { report.examples.push({ id: ex.id, kind: ex.kind, error: "build produced no dist/index.html", build: String(builds[ex.id] ?? "").slice(0, 3000) }); persist(); continue; }
+      if (!existsSync(path.join(dist, ex.entry ?? "index.html"))) { report.examples.push({ id: ex.id, kind: ex.kind, error: "build produced no dist/index.html", build: String(builds[ex.id] ?? "").slice(0, 3000) }); persist(); continue; }
       // Root-only starters load /fixtures/... from the repo root exactly like
       // tests/browser/example-dev-server.ts serves them.
       const roots = ex.kind === "app" ? [path.join(workRoot, "app-sites", ex.id), ...appRoots, path.join(repoRoot, "apps", ex.dir ?? ex.id, "public")]
@@ -291,7 +292,7 @@ async function main() {
       const srv = await serve(roots, ex.kind === "app");
       const shotsDir = path.join(outDir, "shots", ex.id);
       mkdirSync(shotsDir, { recursive: true });
-      const url = ex.kind === "app" ? `${srv.origin}/apps/${ex.dir ?? ex.id}/` : `${srv.origin}/`;
+      const url = ex.kind === "app" ? `${srv.origin}/apps/${ex.dir ?? ex.id}/` : `${srv.origin}/${ex.entry ?? ""}`;
       const rec = await captureOne(browser, ex, url, shotsDir);
       srv.server.close();
       report.examples.push(rec);

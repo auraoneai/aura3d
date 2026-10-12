@@ -246,7 +246,7 @@ jobs:
               # Non-game examples audit (tools/quality-rebuild-capture/examples.json):
               # templates build from packed tarballs, apps with the vite wrapper.
               git lfs version >/dev/null 2>&1 || { echo "::error::git-lfs is not installed on this runner"; exit 1; }
-              git lfs pull --include="public/aura-assets/**,apps/*/public/**" || { echo "::error::git lfs pull for example assets failed"; exit 1; }
+              git lfs pull --include="public/aura-assets/**,apps/*/public/**,fixtures/asset-corpus/**,fixtures/environment-corpus/hdri/*_1k.hdr,fixtures/threejs-parity/**" || { echo "::error::git lfs pull for example assets failed"; exit 1; }
               if [ -n "$QRC_EXAMPLES_REF" ]; then
                 case "$QRC_EXAMPLES_REF" in -*|*[!A-Za-z0-9._/-]*) echo "::error::invalid examples_ref"; exit 2 ;; esac
                 git fetch --depth=1 origin "$QRC_EXAMPLES_REF"
@@ -255,7 +255,6 @@ jobs:
               fi
               pnpm build:raw
               export QRC_EXAMPLES="$QRC_GAMES" QRC_BUNDLE_DIAG=product-viewer
-              head -c 600 dist/engine/public/index.js; echo; grep -n "import" dist/engine/lanes/prd01.js | head -5; grep -c "" dist/engine/lanes/index.js
               node tools/quality-rebuild-capture/capture-examples.mjs --build-only
               node tools/quality-rebuild-capture/capture-examples.mjs --skip-build ;;
             *) echo "::error::unknown suite '$SUITE'"; exit 1 ;;
