@@ -699,7 +699,7 @@ export function runV2HdrStages(
       g.uniform1i(g.getUniformLocation(applyProg, "u_depthFull"), 2);
       g.uniform1i(g.getUniformLocation(applyProg, "u_depthHalf"), 3);
       g.uniform1f(g.getUniformLocation(applyProg, "u_far"), far);
-      g.uniform1f(g.getUniformLocation(applyProg, "u_aoFallbackStrength"), ao.fallbackStrength ?? 0.6);
+      g.uniform1f(g.getUniformLocation(applyProg, "u_aoFallbackStrength"), aoFallbackStrength(ao.fallbackStrength));
       g.uniform1i(g.getUniformLocation(applyProg, "u_aoMultiBounce"), ao.multiBounce === false ? 0 : 1);
     });
     hdr = applied;
@@ -1027,10 +1027,26 @@ export function runV2HdrStages(
   // stale — the next cached-state consumer would skip re-issuing real
   // state. Invalidate so nothing downstream trusts the poisoned entries.
   host.stateCache.invalidate();
-  // AO_INDIRECT_FRACTION_PENDING: the C-02 `prd03.indirectFraction` feature
-  // is registered but generateProgram (lane 01) is still pending, so the
-  // apply ran the §6.3 `u_aoFallbackStrength` path.
+  // §6.3: generated-program pixels carry the tagged f_ind (alpha = 2 + f_ind,
+  // `prd03.indirectFraction`) and the apply multiplies only that fraction.
+  // `aoPending` still reports AO_INDIRECT_FRACTION_PENDING because legacy
+  // shaderKey/custom draws carry no f_ind and take the capped fallback.
   return { target: hdr, aoPending: wantsAo, skipped };
+}
+
+/**
+ * §6.3 fallback cap. Pixels without the tagged f_ind (legacy shaderKey draws,
+ * custom shaders) cannot tell direct from indirect light, so the apply darkens
+ * them by `mix(1, ao, strength)`. The authored 0.6 darkened directly lit
+ * surfaces by 4–12% luma on the L4 games (blockfall-reactor 34.5 → 30.3);
+ * capped at 0.1 an open lit surface (GTAO ao ≈ 0.9) loses ≤ ~1% luma while
+ * creases (ao ≈ 0.3) still darken ~7%. Generated-program pixels ignore it.
+ */
+export const AO_FALLBACK_STRENGTH_MAX = 0.1;
+
+export function aoFallbackStrength(authored: number | undefined): number {
+  const v = authored ?? AO_FALLBACK_STRENGTH_MAX;
+  return Math.min(Math.max(Number.isFinite(v) ? v : 0, 0), AO_FALLBACK_STRENGTH_MAX);
 }
 
 /** True when S10b/S11/S12 need a real LDR tail after the fused present. */

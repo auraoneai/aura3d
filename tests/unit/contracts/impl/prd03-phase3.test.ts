@@ -231,7 +231,7 @@ describe("PRD-03 Phase 3 — C-02 indirectFraction chunks", () => {
     expect(built.fragment).toContain("a3dWriteIndirectFraction");
     // #1139: the body uses the C-02 generator's own forward-fragment symbols
     // (compiled for real in prd03-indirect-fraction-compile.test.ts).
-    expect(built.fragment).toContain("a3dAlpha = a3dWriteIndirectFraction(vec4(a3dColor, a3dAlpha), indirectDiffuse + indirectSpecular).a");
+    expect(built.fragment).toContain("a3dAlpha = 2.0 + a3dWriteIndirectFraction(vec4(a3dColor, a3dAlpha), indirectDiffuse + indirectSpecular).a");
   });
 
   it("feature selects forward passes, defaults on under A3D_QR_POST, and -post_ao opts out", () => {

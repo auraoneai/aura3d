@@ -22,7 +22,7 @@ on:
       suite:
         description: "benchmark | flags-bisect | games"
         type: choice
-        options: [benchmark, flags-bisect, games, promote]
+        options: [benchmark, flags-bisect, games, promote, gameplay]
         default: flags-bisect
       runner:
         description: "azure-gpu (self-hosted NVIDIA, Vulkan ANGLE) | macos-14 (Metal)"
@@ -67,6 +67,10 @@ on:
         description: "Evaluate bisect-summary.json with the §2.5 allflags-smoke gate"
         type: boolean
         default: false
+      gameplay_variants:
+        description: "suite=gameplay: ';'-separated variants (flag list | engine-default | prod = deployed old build)"
+        required: false
+        default: "none;defaults;{route};{route},defaults;prod"
       promote_flag:
         description: "suite=promote: lane flag to score against the current defaults without it (e.g. materials). Captures -flag + flag with aura3d AND three.js; scores LPIPS/FLIP vs the three.js frame."
         required: false
@@ -85,6 +89,7 @@ on:
       sourcemap: { type: boolean, required: false, default: false }
       allflags_eval: { type: boolean, required: false, default: false }
       promote_flag: { type: string, required: false, default: "" }
+      gameplay_variants: { type: string, required: false, default: "none;defaults;{route};{route},defaults;prod" }
   push:
     branches: [main]
     paths:
@@ -138,6 +143,9 @@ jobs:
       # (games.json defaults are never prepended). Takes effect with #1120.
       QRC_FLAGS_EXACT: "true"
       PROMOTE_FLAG: ${{ inputs.promote_flag || '' }}
+      # suite=gameplay + sourcemap: sourcemapped builds and a CDP CPU profile per run.
+      QRG_PROFILE: ${{ inputs.sourcemap && '1' || '' }}
+      QRG_VARIANTS: ${{ inputs.gameplay_variants || 'none;defaults;{route};{route},defaults;prod' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -217,6 +225,15 @@ jobs:
               export QRC_LOCAL_BUILD=true
               node tools/quality-rebuild-capture/capture-games.mjs --build-only
               node tools/quality-rebuild-capture/capture-games.mjs --skip-build ;;
+            gameplay)
+              # Gameplay smoke probe: drift / input response / sinking / NaN per
+              # game x variant (local build per flag list, `prod` = deployed build).
+              git lfs version >/dev/null 2>&1 || { echo "::error::git-lfs is not installed on this runner"; exit 1; }
+              git lfs pull --include="public/aura-assets/**,apps/*/public/**" || { echo "::error::git lfs pull for game assets failed"; exit 1; }
+              if [ "$QRG_VARIANTS" != "prod" ]; then
+                QRC_LOCAL_BUILD=true node tools/quality-rebuild-capture/capture-games.mjs --build-only
+              fi
+              node tools/quality-rebuild-capture/gameplay-probe.mjs ;;
             *) echo "::error::unknown suite '$SUITE'"; exit 1 ;;
           esac
 
@@ -232,6 +249,7 @@ jobs:
             benchmarks/quality-rebuild/out/**/report.json
             benchmarks/quality-rebuild/out/renderer.txt
             tools/quality-rebuild-capture/out/report.json
+            tools/quality-rebuild-capture/out-gameplay/gameplay-report.json
             tools/quality-rebuild-capture/.build/build-report.json
           retention-days: 14
           if-no-files-found: warn
@@ -279,5 +297,6 @@ jobs:
           path: |
             benchmarks/quality-rebuild/out/
             tools/quality-rebuild-capture/out/
+            tools/quality-rebuild-capture/out-gameplay/
           retention-days: 30
           if-no-files-found: error

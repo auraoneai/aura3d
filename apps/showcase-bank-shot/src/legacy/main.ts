@@ -25,6 +25,7 @@ import {
   type AuraSceneNode,
   type AuraDiagnostics
 } from "@aura3d/engine";
+import { resolveQrFlags } from "@aura3d/engine/contracts";
 import { assets } from "../../../../src/aura-assets";
 import { CueController, AIM_STEP, SPIN_STEP } from "../gameplay/cue";
 import { RulesEngine, type ShotRecord, type ShotOutcome } from "../gameplay/rules";
@@ -48,6 +49,17 @@ const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const portraitComposition = window.innerWidth <= 700 || window.innerHeight > window.innerWidth * 1.25;
 const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
+// PRD-03 §6.6 / Q-14-1: post v2 (A3D_QR_POST, default-on) has no hidden bloom
+// gain, a linear-HDR bloom threshold of 1.0 and real AO on the felt, which left
+// the hall ~9% darker than post-off. Under post v2 the aim overlays get HDR
+// emissive strength and the table key lights a modest lift; post-off is unchanged.
+const postV2 = resolveQrFlags({
+  url: location.href,
+  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+}).on("A3D_QR_POST");
+const NEON_GAIN = postV2 ? 2.6 : 1;
+const KEY_LIGHT_GAIN = postV2 ? 1.14 : 1;
+const AIM_EMISSIVE_STRENGTH = 1.35 * NEON_GAIN;
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 const APP_ID = "showcase-bank-shot";
@@ -174,10 +186,10 @@ function cueReady(name: string, gapFrames: number): boolean {
 }
 
 // ---------------------------------------------------------------- scene ------
-const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", opacity: visualReviewCapture ? 0.62 : 0.9 });
-const AIM_BANK_MATERIAL = material.emissive({ name: "aim bank", color: "#f59e0b", emissive: "#d97706", opacity: 0.85 });
-const AIM_MARKER_MATERIAL = material.emissive({ name: "aim marker", color: "#38bdf8", emissive: "#7dd3fc" });
-const GHOST_MATERIAL = material.emissive({ name: "cue ghost", color: "#38bdf8", emissive: "#0284c7", opacity: 0.55 });
+const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", emissiveIntensity: AIM_EMISSIVE_STRENGTH, opacity: visualReviewCapture ? 0.62 : 0.9 });
+const AIM_BANK_MATERIAL = material.emissive({ name: "aim bank", color: "#f59e0b", emissive: "#d97706", emissiveIntensity: AIM_EMISSIVE_STRENGTH, opacity: 0.85 });
+const AIM_MARKER_MATERIAL = material.emissive({ name: "aim marker", color: "#38bdf8", emissive: "#7dd3fc", emissiveIntensity: AIM_EMISSIVE_STRENGTH });
+const GHOST_MATERIAL = material.emissive({ name: "cue ghost", color: "#38bdf8", emissive: "#0284c7", emissiveIntensity: AIM_EMISSIVE_STRENGTH, opacity: 0.55 });
 const FELT_GUIDE_MATERIAL = material.emissive({
   name: "felt guide stitching",
   color: "#477f91",
@@ -331,7 +343,7 @@ function buildScene(): ReturnType<typeof scene> {
     .addMany(visualNodes())
     .addMany([
       // Midnight Slate / Aurora Noir billiards-hall mood:
-      effects.neonBloom({ intensity: reducedMotion ? 0.07 : 0.2, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.neonBloom({ intensity: (reducedMotion ? 0.07 : 0.2) * (postV2 ? 1.6 : 1), quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" }),
       effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.74 : 0.26 }),
@@ -345,14 +357,14 @@ function buildScene(): ReturnType<typeof scene> {
       // A restrained ambient floor preserves the lacquer highlights and the
       // ball-to-felt contact gradient.  The previous broad blue fill flattened
       // every PBR response into the same midtone.
-      lights.ambient({ name: "slate ambient", color: "#35435a", intensity: visualReviewCapture ? 0.1 : 0.24 }),
+      lights.ambient({ name: "slate ambient", color: "#35435a", intensity: (visualReviewCapture ? 0.1 : 0.24) * KEY_LIGHT_GAIN }),
       // An asymmetric three-lamp pool-room key. The offset sources create a
       // visible luminance falloff across felt, walnut bevels, and ball lacquer
       // instead of washing every surface with the same frontal value.
-      lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: visualReviewCapture ? 5.0 : 4.85 }).position(-1.2, 1.55, 0.92),
-      lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: visualReviewCapture ? 2.9 : 3.6 }).position(0.2, 1.8, -0.7),
-      lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: visualReviewCapture ? 1.9 : 3.6 }).position(1.25, 1.35, 0.35),
-      lights.rect({ name: "table overhead softbox", color: "#fff4dc", intensity: visualReviewCapture ? 1.45 : 1.8, width: 2.8, height: 1.25 })
+      lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: (visualReviewCapture ? 5.0 : 4.85) * KEY_LIGHT_GAIN }).position(-1.2, 1.55, 0.92),
+      lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: (visualReviewCapture ? 2.9 : 3.6) * KEY_LIGHT_GAIN }).position(0.2, 1.8, -0.7),
+      lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: (visualReviewCapture ? 1.9 : 3.6) * KEY_LIGHT_GAIN }).position(1.25, 1.35, 0.35),
+      lights.rect({ name: "table overhead softbox", color: "#fff4dc", intensity: (visualReviewCapture ? 1.45 : 1.8) * KEY_LIGHT_GAIN, width: 2.8, height: 1.25 })
         .position(0, 2.25, 0.15),
       // Cool fill & rim lights
       lights.directional({ name: "cool rim key", color: "#83bdff", intensity: visualReviewCapture ? 1.35 : 1.35 }).position(3.2, 4.5, 2.2),
