@@ -139,7 +139,11 @@ float a3dSceneViewZ(float depth) {
 void main() {
 #if PROCEDURAL_SOFT_DOT
   vec2 q = v_uv0 * 2.0 - 1.0;
-  vec4 t = vec4(1.0, 1.0, 1.0, smoothstep(1.0, 0.62, dot(q, q)));
+  // Premultiplied like the atlas path (rgb is multiplied by t.rgb below, not
+  // t.a): rgb = 1 drew every sprite as a full-intensity square under additive
+  // and premultiplied-over blending instead of a disc.
+  float dotA = smoothstep(1.0, 0.62, dot(q, q));
+  vec4 t = vec4(vec3(dotA), dotA);
 #else
   vec4 t = texture(u_atlas, v_uv0);
 #if FRAME_BLEND
