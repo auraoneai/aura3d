@@ -94,7 +94,9 @@ describe("PRD-01 §15 material feature derivation (C-02)", () => {
     // (physicalFeatureSet), keyed by lobe id; lobes are gated by their own flag.
     const ctxMaterials = { flags: resolveQrFlags({ env: { A3D_QR: "core,materials" } }), tier: QUALITY_TIERS.high };
     const lobesOf = (m: PBRMaterial, ctx = ctxMaterials) => m.programFeatures(ctx).extensions.map((e) => e.lobe);
-    expect(lobesOf(new PBRMaterial({ clearcoatFactor: 1 }), ctxHigh)).toEqual([]); // core only: no lobes
+    // materials is default-on: the core-only arm turns it off explicitly.
+    const ctxCoreOnly = { flags: resolveQrFlags({ env: { A3D_QR_CORE: "v2", A3D_QR_MATERIALS: "0" } }), tier: QUALITY_TIERS.high };
+    expect(lobesOf(new PBRMaterial({ clearcoatFactor: 1 }), ctxCoreOnly)).toEqual([]); // core only: no lobes
     const exts = lobesOf(new PBRMaterial({ clearcoatFactor: 1 }));
     expect(exts).toContain("clearcoat");
     expect(exts).not.toContain("emissive-strength"); // strength 1 + black emissive = absent

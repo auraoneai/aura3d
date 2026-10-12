@@ -25,7 +25,7 @@ import type { AuraModelNode } from "../../../../packages/engine/src/agent-api/in
 import type { AuraMaterialSpec } from "../../../../packages/engine/src/agent-api/nodes/types";
 
 const FLAGS_ON = resolveQrFlags({ options: { A3D_QR_MATERIALS: true } });
-const FLAGS_OFF = resolveQrFlags({ options: {} });
+const FLAGS_OFF = resolveQrFlags({ options: { A3D_QR_MATERIALS: false } }); // explicit: materials is default-on
 
 afterEach(() => setTypedGLBActorQrFlags(FLAGS_OFF));
 

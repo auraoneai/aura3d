@@ -14,7 +14,7 @@ import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags"
 import { PBRMaterial } from "../../../../packages/rendering/src/PBRMaterial";
 
 const FLAGS_ON = resolveQrFlags({ options: { A3D_QR_MATERIALS: true } });
-const FLAGS_OFF = resolveQrFlags({ options: {} });
+const FLAGS_OFF = resolveQrFlags({ options: { A3D_QR_MATERIALS: false } }); // explicit: materials is default-on
 
 afterEach(() => {
   setTypedGLBActorQrFlags(FLAGS_OFF);
