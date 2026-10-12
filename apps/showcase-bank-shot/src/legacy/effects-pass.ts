@@ -19,12 +19,12 @@ const flags = resolveQrFlags({
 export const effectsPassOn = flags.on("A3D_QR_POST");
 const vfxOn = flags.on("A3D_QR_VFX");
 
-export function bankShotEffectsPass(options: { readonly visualReviewCapture: boolean }) {
+export function bankShotEffectsPass() {
   const legacyHaze = effects.fog({
     name: "hall haze",
-    density: options.visualReviewCapture ? 0.0035 : 0.011,
+    density: 0.011,
     color: "#10182a",
-    intensity: options.visualReviewCapture ? 0.07 : 0.16
+    intensity: 0.16
   });
   if (!effectsPassOn) return [legacyHaze];
   return [

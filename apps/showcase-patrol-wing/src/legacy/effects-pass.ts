@@ -26,10 +26,9 @@ const WISPS = [
   { at: [-4, 18, -40] as const, seed: 8103 }
 ];
 
-export function patrolWingEffectsPass(options: { readonly visualReviewCapture: boolean }) {
-  const review = options.visualReviewCapture;
+export function patrolWingEffectsPass() {
   if (!effectsPassOn) {
-    return [effects.fog({ name: "coastal haze", density: review ? 0.0034 : 0.0042, color: "#42647a", intensity: review ? 0.32 : 0.42 })];
+    return [effects.fog({ name: "coastal haze", density: 0.0042, color: "#42647a", intensity: 0.42 })];
   }
   return [
     effects.contactShadows({ length: 0.5, intensity: 0.7 }),
@@ -38,7 +37,7 @@ export function patrolWingEffectsPass(options: { readonly visualReviewCapture: b
     // forward in-scatter towards the golden-hour key (S4 god rays).
     effects.volumetricFog({
       name: "coastal aerial haze",
-      density: review ? 0.006 : 0.0085,
+      density: 0.0085,
       color: "#6f8fa3",
       intensity: 0.36,
       heightFalloff: 0.05,

@@ -19,12 +19,11 @@ const flags = resolveQrFlags({
 export const effectsPassOn = flags.on("A3D_QR_POST");
 const vfxOn = flags.on("A3D_QR_VFX");
 
-export function galleryEffectsPass(options: { readonly visualReviewCapture: boolean }) {
-  const review = options.visualReviewCapture;
+export function galleryEffectsPass() {
   if (!effectsPassOn) {
     return [
       effects.fog({ name: "gallery haze", density: 0.009, color: "#243b59", intensity: 0.18 }),
-      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: review ? 0.4 : 1.05 })
+      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: 1.05 })
     ];
   }
   return [
@@ -35,7 +34,7 @@ export function galleryEffectsPass(options: { readonly visualReviewCapture: bool
       position: [4.8, 8.6, 5.2],
       target: [0, 0, 0],
       color: "#f3ecff",
-      intensity: review ? 0.6 : 1.7,
+      intensity: 1.7,
       shadow: { cascades: "auto", maxDistance: 40 }
     }),
     effects.contactShadows({ length: 0.3, intensity: 0.9 }),

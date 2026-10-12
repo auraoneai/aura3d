@@ -74,8 +74,7 @@ type PatrolWindow = Window & {
 const patrolWindow = window as PatrolWindow;
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
-document.body.dataset.capture = visualReviewCapture ? "review" : "default";
+document.body.dataset.capture = "default";
 
 const APP_ID = "showcase-patrol-wing";
 const PRIMARY_ASSET_REFS = [assets.patrolAircraftMeshy, assets.patrolWingDroneA, assets.patrolWingDroneB, assets.patrolWingPadBeacon] as const;
@@ -227,7 +226,7 @@ function heroNodes(): AuraSceneNode[] {
       name: "patrol-plane",
       role: "primaryCharacter",
       scaleMode: "fit",
-      targetMaxDimension: visualReviewCapture ? 5.6 : 4.2
+      targetMaxDimension: 4.2
     })
       .position(PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2])
       .rotate(0, PAD_HEADING_YAW, 0)
@@ -275,9 +274,7 @@ function heroNodes(): AuraSceneNode[] {
         name: `drone-slot-${slot}`,
         role: slot === 0 ? "primaryCharacter" : "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: visualReviewCapture
-          ? (slot === 0 ? 2.5 : 1.92)
-          : (slot === 0 ? 2.05 : 1.78)
+        targetMaxDimension: slot === 0 ? 2.05 : 1.78
       })
         .position(0, -60 - slot, 0)
         .runtime({ id: `drone-slot-${slot}`, tags: ["typed-asset", "drone"] })
@@ -309,7 +306,7 @@ function heroNodes(): AuraSceneNode[] {
           material: material.emissive({ name: `orb ${orb} glow`, color: "#8a3b18", emissive: "#ff9d3d", emissiveIntensity: 2.1, roughness: 0.3 })
         })
         .position(0, -70 - orb, 0)
-        .scale(visualReviewCapture ? 0.24 : 0.38)
+        .scale(0.38)
         .runtime({ id: `orb-${orb}`, tags: ["return-fire"] })
         .toJSON()
     );
@@ -325,7 +322,7 @@ function heroNodes(): AuraSceneNode[] {
         })
       })
         .position(0, -70, 0)
-        .scale([0.045, 0.045, visualReviewCapture ? 0.72 : 0.7])
+        .scale([0.045, 0.045, 0.7])
         .runtime({ id: `orb-trail-${orb}`, tags: ["return-fire", "projectile-feedback", "renderer-owned"] })
         .toJSON()
     );
@@ -437,13 +434,13 @@ const chaseCameraSpec = camera.follow({
   // The review lens is a little lower and tighter so the typed aircraft owns
   // the foreground while the island, rings, drones, and horizon still supply
   // a readable flight corridor. Public gameplay keeps the wider chase.
-  offset: (visualReviewCapture ? [1.1, 1.7, 5.8] : [0, 2.5, 7.25]) as [number, number, number],
-  targetOffset: visualReviewCapture ? [0.55, 0.42, -2.8] : [0.34, 0.6, -0.7],
-  fov: visualReviewCapture ? 50 : 47,
+  offset: [0, 2.5, 7.25] as [number, number, number],
+  targetOffset: [0.34, 0.6, -0.7],
+  fov: 47,
   // Exact review evidence captures the visible and suppressed subject at the
   // same authored camera pose. Follow smoothing would advance between those
   // two renderer submissions and turn camera motion into false subject pixels.
-  smoothing: visualReviewCapture || reducedMotion ? 0 : 0.06,
+  smoothing: reducedMotion ? 0 : 0.06,
   subjectEmphasis: 0.82
 });
 
@@ -456,7 +453,7 @@ function buildScene(): ReturnType<typeof scene> {
   // opaque and reads as layered colour bands; the accent slivers are dropped
   // entirely because at 0.08 unit scale they were invisible except as artifacts.
   const atmosphereMaterial = material.pbr({ name: "review flight atmosphere", color: "#4f8fbf", roughness: 0.92, metallic: 0 });
-  const flightAtmosphere = Array.from({ length: visualReviewCapture ? 6 : 8 }, (_, index) => {
+  const flightAtmosphere = Array.from({ length: 8 }, (_, index) => {
     const side = index % 2 === 0 ? -1 : 1;
     const lane = Math.floor(index / 2);
     const x = side * (9 + lane * 3.1);
@@ -502,7 +499,7 @@ function buildScene(): ReturnType<typeof scene> {
     material.emissive({ name: "flight streak cyan", color: "#66f5ff", emissive: "#0dd6ee", emissiveIntensity: 1.15 }),
     material.emissive({ name: "flight streak coral", color: "#ff7196", emissive: "#f43f67", emissiveIntensity: 0.9 })
   ];
-  const flightStreaks = Array.from({ length: visualReviewCapture ? 12 : 16 }, (_, index) => {
+  const flightStreaks = Array.from({ length: 16 }, (_, index) => {
     const lane = index % 8;
     const depth = Math.floor(index / 8);
     const side = lane % 2 === 0 ? -1 : 1;
@@ -513,16 +510,16 @@ function buildScene(): ReturnType<typeof scene> {
       .toJSON();
   });
   return scene()
-    .background(visualReviewCapture ? "#16364e" : "#254760")
-    .addMany(arenaNodes({ reviewCapture: visualReviewCapture }))
+    .background("#254760")
+    .addMany(arenaNodes())
     .addMany(heroNodes())
     .addMany(flightAtmosphere)
-    .addMany(visualReviewCapture ? [] : skyBandNodes)
-    .addMany(visualReviewCapture ? [] : flightStreaks)
+    .addMany(skyBandNodes)
+    .addMany(flightStreaks)
     .addMany(arenaLighting().nodes)
     .addMany([
-      ...patrolWingEffectsPass({ visualReviewCapture }),
-      effects.neonBloom({ intensity: visualReviewCapture ? 0.12 : reducedMotion ? 0.05 : 0.12, threshold: 0.84, maxIntensity: 0.34, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      ...patrolWingEffectsPass(),
+      effects.neonBloom({ intensity: reducedMotion ? 0.05 : 0.12, threshold: 0.84, maxIntensity: 0.34, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" }),
       lights.spot({ name: "lead aircraft landing spot", position: [0, 14, 12], target: [0, 8, 0], angle: 0.5, penumbra: 0.45, distance: 60, decay: 2, intensity: 3.2, color: "#fff2d8", shadow: true }),
