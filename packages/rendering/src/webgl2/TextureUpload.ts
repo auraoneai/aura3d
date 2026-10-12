@@ -286,7 +286,12 @@ export class WebGL2TextureRegistry {
    */
   private uploadTextureRevision(texture: Texture, handle: WebGLTexture): void {
     const mode = this.textureUploadModes.get(texture);
-    if (mode === "cube" || mode === "compressed" || mode === "fallback" || mode === "depth-render-target") {
+    // A texture with no CPU content (render-target attachments: the device owns
+    // their storage) has nothing to re-upload; a whole-image texImage2D(null)
+    // here wiped the attachment the first time it was sampled (#1249 GPU:
+    // the first OutputPass present read 0).
+    const noCpuContent = !texture.dynamic && !texture.data && !texture.source && texture.mipLevels.length === 0;
+    if (noCpuContent || mode === "cube" || mode === "compressed" || mode === "fallback" || mode === "depth-render-target") {
       // These modes re-upload through their own paths; only record the revision
       // so we do not re-enter every bind.
       this.textureUploadRevisions.set(texture, texture.revision);

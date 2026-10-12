@@ -145,8 +145,14 @@ layout(location = 0) out vec4 outColor;
 `;
 
 export const OUTPUT_FRAGMENT_EPILOGUE_GLSL = `vec3 a3dLinearToSRGB(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0/2.4)) - 0.055, step(vec3(0.0031308), c)); }
-float a3dTriangularNoise(vec2 p) { float r = fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
-  float s = fract(sin(dot(p + 0.37, vec2(39.3468, 11.1351))) * 24634.6345); return r + s - 1.0; }
+// PRD-01 triangular output dither (±1 LSB, §8.4 output step): the inverse triangular CDF of
+// interleaved gradient noise (Jimenez 2014). Same TPDF as two summed uniforms,
+// but low-discrepancy, so every 16-px row window spans > 1 LSB and banding
+// runs break (white sin-hash noise left 25-27 px runs, #1249 GPU).
+float a3dTriangularNoise(vec2 p) {
+  float u = fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715))));
+  return u < 0.5 ? sqrt(2.0 * u) - 1.0 : 1.0 - sqrt(2.0 - 2.0 * u);
+}
 #ifdef OUTPUT_OVERLAY
 uniform vec4 u_overlayFlash;    // rgb = linear color, a = amount 0..1 (additive)
 uniform vec4 u_overlayVignette; // rgb = linear color, a = amount 0..1
