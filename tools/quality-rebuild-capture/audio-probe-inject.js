@@ -97,8 +97,24 @@
     return own * best;
   };
 
+  // HTMLMediaElement playback (new Audio(url).play()) bypasses the Web Audio graph.
+  const media = new Set();
+  const origPlay = HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play = function (...a) {
+    media.add(this);
+    state.mediaPlays = (state.mediaPlays ?? 0) + 1;
+    return origPlay.apply(this, a);
+  };
+
   W.__AUDIO_PROBE_SNAPSHOT__ = () => {
     const now = performance.now();
+    const mediaPlaying = [...media].filter((m) => !m.paused && !m.ended).map((m) => ({
+      kind: "media",
+      loop: !!m.loop,
+      volume: +m.volume.toFixed(3),
+      muted: m.muted,
+      src: String(m.currentSrc || m.src).split("/").pop().slice(0, 60)
+    }));
     const playing = state.sources.filter((s) => s.started && !s.ended);
     const voices = playing.map((s) => {
       const n = s.node;
@@ -159,6 +175,8 @@
       totalStarts: state.starts,
       playingCount: voices.length,
       loopingCount: voices.filter((v) => v.loop).length,
+      mediaPlays: state.mediaPlays ?? 0,
+      media: mediaPlaying,
       voices
     };
   };

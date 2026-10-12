@@ -94,6 +94,7 @@ async function samplePhase(page, seconds) {
     playing: last.playingCount,
     looping: last.loopingCount,
     playingSeries: ok.map((r) => r.playingCount),
+    media: last.media,
     voices: last.voices.slice(0, 24)
   };
 }
@@ -134,7 +135,7 @@ async function probeGame(browser, origin, id) {
 }
 
 const fmt = (p) => (p && !p.error
-  ? `rms ${p.meanRmsDb}/${p.maxRmsDb} pk ${p.peakDb} hz ${p.dominantHz} hi ${p.hiShare} play ${p.playing} loop ${p.looping} starts ${p.starts}`
+  ? `rms ${p.meanRmsDb}/${p.maxRmsDb} pk ${p.peakDb} hz ${p.dominantHz} hi ${p.hiShare} play ${p.playing} loop ${p.looping} starts ${p.starts} media ${(p.media ?? []).map((m) => `${m.src}${m.loop ? "(loop)" : ""}@${m.volume}`).join(",") || 0}`
   : p?.error ?? "-");
 
 const main = async () => {
