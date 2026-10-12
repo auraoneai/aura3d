@@ -87,7 +87,7 @@ import type { AuraProbeNode } from "../agent-api/nodes/probes.js";
 
 // C-09 sources: `prd02.explicit` (400) resolves an authored environment node;
 // `prd02.neutral-room` (0) supplies the RoomEnvironment probe fallback.
-registerPrd02EnvironmentSources();
+// EXP registerPrd02EnvironmentSources();
 
 /** C-36 node handlers (flag `A3D_QR_LIGHTING`; legacy handlers keep the
  *  flag-off path). Contributions are additive `RenderSource` fields — the
