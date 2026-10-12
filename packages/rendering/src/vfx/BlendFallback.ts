@@ -41,6 +41,17 @@ const PREMULTIPLIED_STATE: RenderCommandState = {
   depthCompare: "less-equal"
 };
 
+// C-04 is real on WebGL2 (MultiDraw honours `blendMode`). The particle
+// program writes premultiplied rgb, so honoured modes must name their factors:
+// with no `blendMode` the draw fell back to straight SRC_ALPHA alpha-over and
+// the additive branch (alpha 0) drew nothing.
+const HONOURED_PREMULTIPLIED: RenderCommandState = { ...PREMULTIPLIED_STATE, blendMode: "premultiplied" };
+const HONOURED_ADDITIVE: RenderCommandState = {
+  ...PREMULTIPLIED_STATE,
+  blendMode: { kind: "custom", color: { equation: "add", src: "one", dst: "one" }, alpha: { equation: "add", src: "one", dst: "one" } }
+};
+const HONOURED_MULTIPLY: RenderCommandState = { ...PREMULTIPLIED_STATE, blendMode: "multiply" };
+
 export function resolveVfxBlend(blend: BlendMode, deviceHonoursBlendMode: boolean): VfxBlendResolution {
   if (typeof blend === "object") {
     // Custom blends have no alpha-over emulation; skip with an honest report.
@@ -56,10 +67,12 @@ export function resolveVfxBlend(blend: BlendMode, deviceHonoursBlendMode: boolea
         degraded: null
       };
     case "alpha":
-      return { renderState: PREMULTIPLIED_STATE, unpremultiplyOutput: true, additiveFallback: false, skipped: false, degraded: null };
+      return deviceHonoursBlendMode
+        ? { renderState: HONOURED_PREMULTIPLIED, unpremultiplyOutput: false, additiveFallback: false, skipped: false, degraded: null }
+        : { renderState: PREMULTIPLIED_STATE, unpremultiplyOutput: true, additiveFallback: false, skipped: false, degraded: null };
     case "premultiplied":
       return {
-        renderState: PREMULTIPLIED_STATE,
+        renderState: deviceHonoursBlendMode ? HONOURED_PREMULTIPLIED : PREMULTIPLIED_STATE,
         unpremultiplyOutput: !deviceHonoursBlendMode,
         additiveFallback: false,
         skipped: false,
@@ -67,11 +80,11 @@ export function resolveVfxBlend(blend: BlendMode, deviceHonoursBlendMode: boolea
       };
     case "additive":
       return deviceHonoursBlendMode
-        ? { renderState: PREMULTIPLIED_STATE, unpremultiplyOutput: false, additiveFallback: false, skipped: false, degraded: null }
+        ? { renderState: HONOURED_ADDITIVE, unpremultiplyOutput: false, additiveFallback: false, skipped: false, degraded: null }
         : { renderState: PREMULTIPLIED_STATE, unpremultiplyOutput: true, additiveFallback: true, skipped: false, degraded: "VFX_BLEND_FALLBACK" };
     case "multiply":
       return deviceHonoursBlendMode
-        ? { renderState: PREMULTIPLIED_STATE, unpremultiplyOutput: false, additiveFallback: false, skipped: false, degraded: null }
+        ? { renderState: HONOURED_MULTIPLY, unpremultiplyOutput: false, additiveFallback: false, skipped: false, degraded: null }
         : { renderState: PREMULTIPLIED_STATE, unpremultiplyOutput: false, additiveFallback: false, skipped: true, degraded: "VFX_BLEND_SKIPPED" };
     default:
       return { renderState: PREMULTIPLIED_STATE, unpremultiplyOutput: true, additiveFallback: false, skipped: false, degraded: "VFX_BLEND_FALLBACK" };

@@ -8,7 +8,7 @@ import { TextureBinding } from "../TextureBinding";
 import { PRD07_DEPTH_SAMPLER } from "./depthSampler";
 import { VertexFormat } from "../VertexFormat";
 import { RibbonBatch, RIBBON_VERTEX_FLOATS, type RibbonGeometry } from "./RibbonBatch";
-import { resolveSceneDepth } from "./SceneDepthAdapter";
+import { resolveOutputColorSpace, resolveSceneDepth } from "./SceneDepthAdapter";
 import { RIBBON_SHADER_MARKER, ribbonFragmentSource, ribbonProgramKey, ribbonVertexSource } from "./shaders/ribbon.glsl";
 
 export const RIBBON_VERTEX_FORMAT = new VertexFormat(
@@ -48,7 +48,8 @@ export class RibbonPass {
     const shader = this.program({ softParticles });
     const uniforms = new Map<string, import("../RenderDevice").UniformValue>([
       ["u_viewProjection", ctx.camera?.viewProjectionMatrix ?? IDENTITY_MAT4],
-      ["u_outputColorSpace", 1]
+      // §6.2.7 output contract (same as particles/beams): linear into HDR.
+      ["u_outputColorSpace", resolveOutputColorSpace(ctx) === "srgb" ? 1 : 0]
     ]);
     if (softParticles && depth) {
       uniforms.set("u_sceneDepth", new TextureBinding({ name: "u_sceneDepth", texture: depth.source.texture!, sampler: PRD07_DEPTH_SAMPLER }));

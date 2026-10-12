@@ -34,6 +34,14 @@ describe("P1-T6 blend fallback", () => {
     expect(multiply.degraded).toBe("VFX_BLEND_SKIPPED");
   });
 
+  it("honoured modes name premultiplied / ONE+ONE factors for the premultiplied particle output", () => {
+    expect(resolveVfxBlend("alpha", true).renderState.blendMode).toBe("premultiplied");
+    expect(resolveVfxBlend("alpha", true).unpremultiplyOutput).toBe(false);
+    const additive = resolveVfxBlend("additive", true).renderState.blendMode as { kind: string; color: { src: string; dst: string } };
+    expect(additive.kind).toBe("custom");
+    expect(additive.color).toMatchObject({ src: "one", dst: "one" });
+  });
+
   it("degraded reports are consumable exactly once per key", () => {
     expect(consumeBlendFallbackReport("batch.a", "VFX_BLEND_FALLBACK")).toBe("batch.a:VFX_BLEND_FALLBACK");
     expect(consumeBlendFallbackReport("batch.a", "VFX_BLEND_FALLBACK")).toBeNull();

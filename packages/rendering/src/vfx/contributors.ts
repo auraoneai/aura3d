@@ -354,11 +354,20 @@ const fogContributor: FrameContributor = {
       ? ctx.flags.on("A3D_QR_CORE_GENERATOR")
       : ctx.flags.on("A3D_QR_CORE");
     const parity = !generatorOn;
-    const packed = packV2(resolved, {
+    const resolvedPacked = packV2(resolved, {
       fogColor,
       cameraY: cam?.position[1] ?? 0,
       parity
     });
+    // No live fog node → fog off for the sky pass and the froxel density too,
+    // matching forward geometry (IC-0, setPrd07ForwardFog(null) below). The
+    // C-21 default height fog used to leak into the background pass and the
+    // froxel inject from `resolvePrd07FogSpec(null)`, fogging scenes that
+    // author none (prd07-volumetric-shafts: windows/background at 254).
+    // Fog volumes still inject into the froxel grid.
+    const packed: PackedFogUniforms = spec
+      ? resolvedPacked
+      : { ...resolvedPacked, fogA: [0, 0, 0, 0], fogMode: 0 };
     // §6.6 sun inscatter colour — sky radiance at the sun direction (clamped);
     // only multiplied by sunInscatter (default 0) so the approximation is inert.
     let sunColor: Vec3 = [1, 1, 1];
@@ -637,19 +646,33 @@ const volumetricContributor: FrameContributor = {
       : undefined;
     const sky = ((ctx.source as Prd07FrameSource).atmosphere as { sky?: Record<string, unknown> | null } | undefined)?.sky ?? null;
     let sunDirection: Vec3 = [0, 1, 0];
+    let sunColor: Vec3 = (fogEntry?.sunColor ?? [1, 1, 1]) as Vec3;
+    // Without a sky, light the froxels with the scene's own key light and
+    // ambient (the same lights the surfaces get). A fixed +Y unit sun and a
+    // hard-coded [0.2, 0.22, 0.26] ambient washed the dark hangar of
+    // prd07-volumetric-shafts to grey (promote run 38198732843).
+    const sceneLighting = resolveDecalLighting(ctx);
+    const key = sceneLighting?.lights.find((light) => light.kind === "directional");
     if (sky) {
       try {
         const frame = skyFrame(sky as Parameters<typeof skyFrame>[0]);
         sunDirection = frame.preetham?.sunDirection ?? frame.gradient?.sunDirection ?? sunDirection;
       } catch { /* keep default */ }
+    } else if (key) {
+      sunDirection = [key.vector[0], key.vector[1], key.vector[2]];
+      sunColor = [key.radiance[0], key.radiance[1], key.radiance[2]];
     }
     const input: VolumetricFogPassInput = {
       fog: fogEntry?.uniforms ?? null,
       fogColor: [0.663, 0.737, 0.812],
       volumes: fogEntry?.volumes ?? [],
       sunDirection,
-      sunColor: (fogEntry?.sunColor ?? [1, 1, 1]) as Vec3,
-      ambientColor: [0.2, 0.22, 0.26],
+      sunColor,
+      // Ambient irradiance E (colour × intensity) → uniform radiance E/π, the
+      // same 1/π convention as the forward ambient (BRDF_Lambert).
+      ambientColor: sceneLighting
+        ? [sceneLighting.ambient[0] / Math.PI, sceneLighting.ambient[1] / Math.PI, sceneLighting.ambient[2] / Math.PI]
+        : [0.2, 0.22, 0.26],
       sceneDepth: depth.source.texture,
       depthLinearize: [depth.source.linearize.near, depth.source.linearize.far, depth.source.linearize.orthographic ? 1 : 0, 0]
     };

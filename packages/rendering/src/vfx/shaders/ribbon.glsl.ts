@@ -49,7 +49,7 @@ void main() {
   float fragZ = gl_FragCoord.z / gl_FragCoord.w;
   alpha *= clamp((sceneZ - fragZ) / 0.5, 0.0, 1.0);
 #endif
-  vec3 rgb = v_color.rgb * alpha;
+  vec3 rgb = max(v_color.rgb * alpha, vec3(0.0));   // pow(x<0) is undefined (NaN on NVIDIA)
   if (u_outputColorSpace > 0.5) {
     rgb = pow(rgb, vec3(1.0 / 2.2));
   }

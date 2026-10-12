@@ -29,9 +29,9 @@ describe("decal scene lighting", () => {
     expect(lights[1]!).toMatchObject({ kind: "point", vector: [1, 2, 3], range: 14 });
   });
 
-  it("drops invisible / zero lights and caps at four", () => {
-    const many = Array.from({ length: 6 }, (_, i) => light({ intensity: i + 1 }));
-    expect(decalLightsFrom(many)).toHaveLength(4);
+  it("drops invisible / zero lights and caps at DECAL_MAX_LIGHTS", () => {
+    const many = Array.from({ length: 8 }, (_, i) => light({ intensity: i + 1 }));
+    expect(decalLightsFrom(many)).toHaveLength(5);
     expect(decalLightsFrom([light({ intensity: 0 }), light({ source: { visible: false } as never })])).toHaveLength(0);
   });
 
@@ -49,7 +49,9 @@ describe("decal scene lighting", () => {
 
   it("fragment uses the scene-light BRDF, not the fixed half-Lambert sun", () => {
     const src = decalFragmentSource({ albedoTexture: false, normalTexture: false, multiply: false, fog: true });
-    expect(src).toContain("u_lightVector[4]");
+    expect(src).toContain("u_lightVector[5]");
+    // A 16-float array binds as mat4 in the WebGL2 binder (0x502 on draw).
+    expect(packDecalLighting({ lights: [], ambient: [0, 0, 0] }).vector.length).not.toBe(16);
     expect(src).toContain("u_ambientIrradiance");
     expect(src).not.toContain("halfLambert");
   });

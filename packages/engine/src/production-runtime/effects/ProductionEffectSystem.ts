@@ -47,7 +47,9 @@ function hexToRgb(c: string): readonly [number, number, number] {
 function effectColor4(node: EffectNodeLike): readonly [number, number, number, number] {
   const c = node.color;
   if (Array.isArray(c) && c.length >= 3) return [Number(c[0]), Number(c[1]), Number(c[2]), Number(c[3] ?? 1)];
-  if (typeof c === "string") { const [r, g, b] = hexToRgb(c); return [r, g, b, 1]; }
+  // Hex is sRGB-encoded (three.js Color parity); beams, ribbons and mesh
+  // particles shade in linear HDR, so decode here like particles and decals.
+  if (typeof c === "string") { const [r, g, b] = hexToLinearRgb(c); return [r, g, b, 1]; }
   return [1, 1, 1, 1];
 }
 
@@ -152,7 +154,7 @@ function beamSpec(node: EffectNodeLike, nodeId: string): BeamDrawSpec {
   const color = effectColor4(node);
   const top = node.colorTop !== undefined
     ? (typeof node.colorTop === "string"
-        ? ([...hexToRgb(node.colorTop), 1] as readonly [number, number, number, number])
+        ? ([...hexToLinearRgb(node.colorTop), 1] as readonly [number, number, number, number])
         : ([Number(node.colorTop[0]), Number(node.colorTop[1]), Number(node.colorTop[2]), Number(node.colorTop[3] ?? 1)] as readonly [number, number, number, number]))
     : undefined;
   return {
@@ -644,8 +646,15 @@ export class ProductionEffectSystem {
       if (v) visible.add(n.id ?? n.name ?? "");
     });
     this.diagnostics.endFrame(visible);
+    // Fixed-step sim (CpuEmitter §6.3): app.step(t) hands one large dt to
+    // onFrame. Integrating it in a single Euler step launched or dropped every
+    // particle by v·dt metres — the promote fountains landed below the floor or
+    // far above the frame (runs 38196483050 / 38198732843). Substep at ≤1/60 s,
+    // capped at 30 s of simulation per frame like createEmitter's prewarm.
+    const substeps = dt > 0 ? Math.min(Math.ceil(dt * 60 - 1e-6), 1800) : 0;
+    const h = substeps > 0 ? dt / substeps : 0;
     for (const binding of this.emitters.values()) {
-      stepEmitter(binding.state, dt);
+      for (let s = 0; s < substeps; s++) stepEmitter(binding.state, h);
       this.diagnostics.track({
         nodeId: binding.lowered.nodeId,
         effect: binding.lowered.effect,

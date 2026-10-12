@@ -787,6 +787,8 @@ export class Renderer {
     // chain and bypasses OutputPass: encode stays single, and the authored
     // effects (bloom) are kept instead of dropped. The bypass is reported.
     const qrOutput = route.qrOutput;
+    // §6.2.7: lane passes encode in-shader only on the legacy LDR path.
+    frameHooks.setOutputColorSpace(postprocess || qrOutput ? "linear" : "srgb");
     this.lastPostSkipped = route.skipped;
     if (route.skipped) this.warnPostLegacyRoute(route.skipped);
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;
@@ -1128,6 +1130,8 @@ export class Renderer {
     // chain and bypasses OutputPass: encode stays single, and the authored
     // effects (bloom) are kept instead of dropped. The bypass is reported.
     const qrOutput = route.qrOutput;
+    // §6.2.7: lane passes encode in-shader only on the legacy LDR path.
+    frameHooks.setOutputColorSpace(postprocess || qrOutput ? "linear" : "srgb");
     this.lastPostSkipped = route.skipped;
     if (route.skipped) this.warnPostLegacyRoute(route.skipped);
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;

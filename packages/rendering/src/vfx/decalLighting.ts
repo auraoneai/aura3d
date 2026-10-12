@@ -2,13 +2,19 @@
 // shade like the surface they sit on (promote run 38196483050: a fixed
 // half-Lambert sun + 0.14 SH ambient + unweighted GGX lit a #0a0a0c scorch mark
 // brighter than the asphalt under it). Reads the same light list the forward
-// pass shades with (`source.collectedLights`, else the scene graph) and the
+// pass shades with (`source.collectedLights`) and the
 // ambient `environmentLighting` colour × intensity.
 
-import { LightCollector, type CollectedLight } from "../LightCollector";
+// Type-only imports: this module is reached from the lazily evaluated vfx
+// chunk; a runtime LightCollector import tripped a chunk-cycle TDZ
+// ("Cannot access 'g' before initialization", prd07-volumetric-shafts).
+import type { CollectedLight } from "../LightCollector";
 import type { FrameContributorContext } from "../contracts/frameGraph";
 import type { RenderSource } from "../contracts/renderSource";
-import { DECAL_MAX_LIGHTS, type DecalLight, type DecalLighting } from "./DecalPass";
+import type { DecalLight, DecalLighting } from "./DecalPass";
+
+/** Mirrors DECAL_MAX_LIGHTS in DecalPass.ts (kept local: no runtime import cycle). */
+const DECAL_MAX_LIGHTS = 5;
 
 function unit(v: readonly number[]): [number, number, number] | null {
   const l = Math.hypot(v[0] ?? 0, v[1] ?? 0, v[2] ?? 0);
@@ -43,9 +49,9 @@ export function decalLightsFrom(collected: Iterable<CollectedLight>): DecalLight
 /** Per-frame decal lighting from the render source; null when nothing is published. */
 export function resolveDecalLighting(ctx: FrameContributorContext): DecalLighting | null {
   const source = ctx.source as RenderSource;
-  const collected = source.collectedLights !== undefined
-    ? source.collectedLights
-    : source.scene ? new LightCollector().collect(source.scene) : null;
+  // The compiled light list the forward pass shades with; without one the
+  // pass falls back to its default rig.
+  const collected = source.collectedLights ?? null;
   const env = source.environmentLighting;
   const ambient: [number, number, number] = env
     ? [env.color[0] * env.intensity, env.color[1] * env.intensity, env.color[2] * env.intensity]
