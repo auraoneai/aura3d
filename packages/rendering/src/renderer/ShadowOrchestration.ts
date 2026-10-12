@@ -14,6 +14,7 @@ import type { RenderSource } from "../contracts/renderSource";
 import { collectItemBounds, isIterable, sceneFromSource, toMat4 } from "./RenderShared";
 import type { RendererHost } from "./RendererHost";
 import { rendererQrFlags } from "./FrameGraph";
+import { prd11LiveQualityTier } from "../quality/liveTier";
 import { executePrd02BridgedShadowMap, type Prd02BridgeFrameCamera } from "../shadows/Prd02ShadowBridge";
 import { Bounds3 as SceneBounds3, Camera, DirectionalLight, Light, type Mat4, PerspectiveCamera, PointLight, Scene, SpotLight, type Vec3, identityMat4, multiplyMat4, orthographicMat4, perspectiveMat4 } from "@aura3d/scene";
 
@@ -308,6 +309,8 @@ export class RendererShadowOrchestrator {
         items: options.items,
         camera: options.camera,
         ...(options.frameCamera ? { frameCamera: options.frameCamera } : {}),
+        // PRD 11: the app's live C-27 tier sizes the bridged cascades (undefined → high).
+        tier: prd11LiveQualityTier(rendererQrFlags(this.host.device))?.settings,
         flags: rendererQrFlags()
       });
     }
