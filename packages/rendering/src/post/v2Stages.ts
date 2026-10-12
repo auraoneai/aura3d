@@ -842,6 +842,8 @@ export function runV2HdrStages(
       gl.readPixels(Math.min(w - 1, probe[0]), Math.max(0, probe[1] - 3), 1, 7, gl.RGBA, gl.FLOAT, cur);
       const g = (a: Float32Array) => Array.from({ length: 7 }, (_, i) => a[i * 4 + 1]!.toFixed(3)).join("/");
       recordPostStage(`S5:probe-resolved-g=${g(col)}:current-g=${g(cur)}:size=${w}x${h}:hist=${temporal.history.width}x${temporal.history.height}`);
+      const log = ((globalThis as { __A3D_QR_POST_PROBE_LOG__?: string[] }).__A3D_QR_POST_PROBE_LOG__ ??= []);
+      if (log.length < 80) log.push(`f${temporal.historyFrames}:j=${(temporal.v2.jitterClip[0] * w / 2).toFixed(2)},${(temporal.v2.jitterClip[1] * h / 2).toFixed(2)}:cur=${g(cur)}:res=${g(col)}`);
     }
     if (hdr !== source) state.pool.release(hdr);
     // §8.6 TAAU: renderScale < 1 reconstructs at display resolution with the
