@@ -19,6 +19,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { VIRTUAL_CLOCK_SCRIPT, pageAdvance, pageDiag, pageFrame, pageReady } from "./page.mjs";
 import { applyEvent, buildSchedule } from "./schedule.mjs";
+import { decodeLumaGrid, pageStats } from "./pageShot.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const toolDir = path.resolve(here, "..");
@@ -36,6 +37,8 @@ const wanted = opt("--games", "FLK_GAMES", "").split(",").map((s) => s.trim()).f
 const arms = opt("--arms", "FLK_ARMS", "default;-post;-vfx;-animation;-lighting").split(";").map((s) => s.trim()).filter(Boolean);
 // timeline = play games.json inputs in virtual time; idle = no input (title / attract state).
 const mode = opt("--mode", "FLK_MODE", "timeline");
+// Composited page screenshot every frame (includes DOM overlays); costs ~2x wall time.
+const pageShots = /^(1|true)$/i.test(opt("--page-shots", "FLK_PAGE_SHOTS", "1"));
 const frames = Number(opt("--frames", "FLK_FRAMES", "120"));
 const warmup = Number(opt("--warmup", "FLK_WARMUP", "30"));
 const dtMs = Number(opt("--dt", "FLK_DT_MS", "16.6667"));
@@ -78,6 +81,18 @@ function startServer() {
 const std = (xs) => { if (xs.length < 2) return 0; const m = xs.reduce((a, b) => a + b, 0) / xs.length; return Math.sqrt(xs.reduce((a, b) => a + (b - m) ** 2, 0) / xs.length); };
 const r3 = (v) => +Number(v).toFixed(3);
 
+function pageSummary(list) {
+  const pl = list.map((f) => f.pageLuma).filter((v) => typeof v === "number");
+  if (pl.length < 3) return {};
+  const d1 = pl.slice(1).map((v, i) => v - pl[i]);
+  const pm = list.map((f) => f.pageMad).filter((v) => typeof v === "number");
+  return {
+    pageLumaMin: r3(Math.min(...pl)), pageLumaMax: r3(Math.max(...pl)), pageDeltaStd: r3(std(d1)),
+    pageMadMean: r3(pm.reduce((a, b) => a + b, 0) / Math.max(1, pm.length)), pageMadMax: r3(Math.max(0, ...pm)),
+    pageClipMean: r3(list.reduce((a, f) => a + (f.pageClip ?? 0), 0) / list.length), pageClipMax: r3(Math.max(0, ...list.map((f) => f.pageClip ?? 0)))
+  };
+}
+
 export function summarize(list) {
   const luma = list.map((f) => f.luma);
   const d1 = luma.slice(1).map((v, i) => v - luma[i]);
@@ -104,6 +119,7 @@ export function summarize(list) {
     clipMean: r3(list.reduce((a, f) => a + f.clip, 0) / list.length), clipMax: r3(Math.max(...list.map((f) => f.clip))),
     clipAnyMean: r3(list.reduce((a, f) => a + f.clipAny, 0) / list.length),
     stalled: list.filter((f) => f.waited >= 1500).length,
+    ...pageSummary(list),
     worstCells: cellHf.slice(0, 5).map((x) => ({ cell: x.c, x: x.c % 32, y: Math.floor(x.c / 32), hf: r3(x.hf), mean: r3(x.mean) }))
   };
 }
@@ -165,15 +181,18 @@ async function probeArm(browser, game, arm, origin, gameDir) {
       vt += dt;
     }
     rec.measuredFromMs = Math.round(vt);
+    let prevPage = null;
     for (let i = 0; i < frames; i++) {
       await feed();
       const keepPng = i < 3 || i === 60;
       const dt = nextDt();
       const f = await page.evaluate(pageFrame, { dtMs: dt, keepPng, grid: [32, 18] });
       vt += dt;
-      if (i === 0) {
+      if (i === 0 || pageShots) {
         const shot = await page.screenshot({ type: "png", timeout: 15_000 }).catch(() => null);
-        if (shot) writeFileSync(path.join(gameDir, `${arm.replace(/[^A-Za-z0-9_-]/g, "_")}__page000.png`), shot);
+        if (shot && (i === 0 || f.jump)) writeFileSync(path.join(gameDir, `${arm.replace(/[^A-Za-z0-9_-]/g, "_")}__page${String(i).padStart(3, "0")}.png`), shot);
+        const grid = shot ? decodeLumaGrid(shot) : null;
+        if (grid) { Object.assign(f, pageStats(grid, prevPage)); prevPage = grid; }
       }
       if (f.png) {
         writeFileSync(path.join(gameDir, `${arm.replace(/[^A-Za-z0-9_-]/g, "_")}__f${String(i).padStart(3, "0")}.png`), Buffer.from(f.png.split(",")[1], "base64"));

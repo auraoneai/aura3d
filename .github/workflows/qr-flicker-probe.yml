@@ -49,7 +49,7 @@ jobs:
     env:
       QRC_GAMES: ${{ inputs.games || matrix.games }}
       FLK_GAMES: ${{ inputs.games || matrix.games }}
-      FLK_ARMS: ${{ inputs.arms || vars.FLK_ARMS || 'default;-post;default|aura3d-quality=ultra;-post|aura3d-quality=ultra;default|jitter;default|dpr=2' }}
+      FLK_ARMS: ${{ inputs.arms || vars.FLK_ARMS || 'default;-post;-vfx;-lighting;none' }}
       FLK_MODE: ${{ inputs.mode || 'timeline' }}
       QRC_LOCAL_BUILD: "true"
       QRC_GPU_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
