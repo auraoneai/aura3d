@@ -109,7 +109,10 @@ async function captureMode(page: Page, route: string, appDir: string, param: str
     return apps.map((a: any) => {
       try {
         const d = a.diagnostics?.();
-        return { postprocess: d?.postprocess ?? null, runtimePost: d?.renderer?.runtime?.postprocess ?? null };
+        // AuraAppDiagnostics carries postprocess under `renderer.postprocess`
+        // (AuraRendererDiagnosticReport); there is no top-level section and no
+        // `renderer.runtime`, so the old paths were always null.
+        return { postprocess: d?.renderer?.postprocess ?? d?.postprocess ?? null, runtimePost: null };
       } catch {
         return null;
       }
@@ -121,7 +124,8 @@ async function captureMode(page: Page, route: string, appDir: string, param: str
   // no live app (or no postprocess section) is a failure, never `false`.
   const reported = diag.filter((d: any) => d && (d.postprocess !== null || d.runtimePost !== null));
   expect(reported.length, `${route}#${mode}: no live app reported app.diagnostics().postprocess`).toBeGreaterThan(0);
-  const passes = reported.some((d: any) => (d?.postprocess?.actualPasses ?? d?.runtimePost?.actualPasses ?? 0) > 0);
+  // actualPasses is a pass-name list: "post ran" means it is non-empty.
+  const passes = reported.some((d: any) => (d?.postprocess?.actualPasses?.length ?? 0) > 0);
   // postPass is the shipped (default url) value only; review-mode passes stay
   // in `diagnostics` for the divergence record.
   if (mode === "default") postPass[route] = passes;
