@@ -217,7 +217,10 @@ async function main() {
     for (const ex of selected) {
       const dist = distFor(ex);
       if (!existsSync(path.join(dist, "index.html"))) { report.examples.push({ id: ex.id, kind: ex.kind, error: "build produced no dist/index.html" }); persist(); continue; }
-      const roots = ex.kind === "app" ? [...appRoots, path.join(repoRoot, "apps", ex.dir ?? ex.id, "public")] : [dist];
+      // Root-only starters load /fixtures/... from the repo root exactly like
+      // tests/browser/example-dev-server.ts serves them.
+      const roots = ex.kind === "app" ? [...appRoots, path.join(repoRoot, "apps", ex.dir ?? ex.id, "public")]
+        : ex.kind === "root" ? [dist, repoRoot, path.join(repoRoot, "public")] : [dist];
       const srv = await serve(roots, ex.kind === "app");
       const shotsDir = path.join(outDir, "shots", ex.id);
       mkdirSync(shotsDir, { recursive: true });
