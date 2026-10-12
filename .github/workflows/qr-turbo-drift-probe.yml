@@ -1,0 +1,64 @@
+name: QR turbo-drift gameplay probe
+
+# Headless L4 gameplay probe for apps/showcase-turbo-drift-circuit: idle drift,
+# throttle and steering measured from the game's own evidence per qr flag arm
+# (tools/quality-rebuild-capture/probe-turbo-drift.mjs). Diagnostic only.
+
+on:
+  workflow_dispatch:
+    inputs:
+      arms:
+        description: "';'-separated arms (empty = full matrix)"
+        required: false
+        default: ""
+  push:
+    branches: ["qr/turbo-drift-*"]
+    paths:
+      - "tools/quality-rebuild-capture/probe-turbo-drift.mjs"
+      - ".github/workflows/qr-turbo-drift-probe.yml"
+      - "apps/showcase-turbo-drift-circuit/**"
+      - "packages/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qr-turbo-drift-probe-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: [self-hosted, track0, gpu-l4]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          lfs: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Game assets (LFS)
+        run: git lfs pull --include="public/aura-assets/**,apps/*/public/**,apps/showcase-turbo-drift-circuit/**"
+      - name: Probe
+        env:
+          QRC_GPU_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
+          PROBE_ARMS: ${{ inputs.arms || 'default;none;prod' }}
+        run: node tools/quality-rebuild-capture/probe-turbo-drift.mjs | tee probe.txt
+      - name: Summary
+        if: always()
+        run: test -f probe.txt && { echo '```'; cat probe.txt | grep -v '^\[' | tail -200; echo '```'; } >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qr-turbo-drift-probe-${{ github.run_id }}
+          path: |
+            tools/quality-rebuild-capture/out/probe-*
+            probe.txt
+          retention-days: 14
+          if-no-files-found: warn

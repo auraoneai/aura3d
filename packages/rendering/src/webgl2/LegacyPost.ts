@@ -372,9 +372,13 @@ export class WebGL2LegacyPostPipeline {
           );
           this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
           ldrSourceHandle = bloomResources.textures[1];
-          // The composited result lives in texture B, so subsequent passes
-          // must write texture A (index 0) to avoid sampling a bound target.
-          temporarySourceIndex = 0;
+          // `temporarySourceIndex` names the ping-pong slot that HOLDS the
+          // current source (every later pass writes the other slot). The
+          // composite lives in texture B, so the index is 1. It was 0, which
+          // made the next pass (r185 FXAA split under A3D_QR_POST, ssao, ...)
+          // write framebuffer B while sampling texture B — a WebGL feedback
+          // loop (GL_INVALID_OPERATION 0x502, WEBGL_LDR_POSTPROCESS_FAILED).
+          temporarySourceIndex = 1;
           this.recordBloomDiagnostics(bloomOptions, source.width, source.height, sourceIsHdr, plan.mipCount);
         }
       }

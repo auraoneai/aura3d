@@ -94,8 +94,14 @@ export class EffectDiagnostics {
    * Close a rendered frame. `visibleNodeIds` are the nodes the app reports as
    * visible + in-frustum this frame; a node that is tracked, particle-backed,
    * visible, yet drew nothing accrues a zero-pixel frame.
+   *
+   * `rendered` is false for a sim tick with no renderer frame since the last
+   * close (the WebGL renderer is still mounting, or a fixed-step substep):
+   * nothing could have drawn, so the tick is not evidence of zero pixels.
+   * Counters and the pending draw tally carry over to the next rendered close.
    */
-  endFrame(visibleNodeIds: ReadonlySet<string>): void {
+  endFrame(visibleNodeIds: ReadonlySet<string>, rendered = true): void {
+    if (!rendered) return;
     for (const node of this.nodes.values()) {
       const draws = this.frameDraws.get(node.nodeId);
       node.drawCalls = draws?.draws ?? 0;

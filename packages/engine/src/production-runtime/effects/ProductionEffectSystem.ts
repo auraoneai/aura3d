@@ -9,7 +9,8 @@ import type { ParticleBatchDescriptor, ParticleBatchHandle, ParticleRenderHook }
 import { QUALITY_TIERS, type AuraQualityTier } from "@aura3d/rendering/contracts";
 import type { ParticlePassDiagnostics } from "@aura3d/rendering";
 import { MeshParticleBatch, RibbonBatch, RibbonTrail, DecalBatch, DECAL_TIER_CAP, decalQuadGeometry, ribbonStripToDecalGeometry, PARTICLE_GPU_BUDGET_MS, type BeamDrawSpec, type MeshParticleFeed, type DecalVertexData, type GpuSimSpec } from "@aura3d/rendering";
-import { createEmitter, stepEmitter, writeEmitterInstances, type EmitterState } from "./CpuEmitter";
+import { createEmitter, stepEmitter, writeEmitterInstances, type EmitterDescriptor, type EmitterState } from "./CpuEmitter";
+import { proceduralFireballSheet } from "./FlipbookAtlas";
 import { lowerEffectNode, srgbChannelToLinear, type LoweredEffect, type EffectNodeLike } from "./EffectNodeLowering";
 import { EffectDiagnostics } from "./EffectDiagnostics";
 import { LiveAtmosphere } from "./LiveAtmosphere";
@@ -24,6 +25,20 @@ export function softDotTexture(): Texture {
     sharedSoftDot = new Texture({ width: 1, height: 1, label: "a3d-soft-dot", data: new Uint8Array([255, 255, 255, 255]) });
   }
   return sharedSoftDot;
+}
+
+const flipbookTextures = new Map<string, Texture>();
+
+/** Built-in `fireball` sheet texture for a flipbook emitter (sRGB, straight alpha; cached per grid + seed). */
+function flipbookTexture(fb: NonNullable<EmitterDescriptor["flipbook"]>): Texture {
+  const sheet = proceduralFireballSheet(fb.columns ?? 1, fb.rows ?? 1, fb.seed ?? 0);
+  const key = `${sheet.columns}x${sheet.rows}:${(fb.seed ?? 0) >>> 0}`;
+  let texture = flipbookTextures.get(key);
+  if (!texture) {
+    texture = new Texture({ width: sheet.width, height: sheet.height, colorSpace: "srgb", label: `a3d-flipbook-fireball-${key}`, data: sheet.data });
+    flipbookTextures.set(key, texture);
+  }
+  return texture;
 }
 
 interface EmitterBinding {
@@ -264,6 +279,10 @@ export class ProductionEffectSystem {
   private readonly decals: DecalBatch;
   /** Last hook passed to feed — lets the host push P6-T4 GPU-ms samples in. */
   private lastHook: ParticleRenderHook | null = null;
+  /** True once a canvas render bridge publishes this system to a renderer. */
+  private renderBridged = false;
+  /** A renderer frame pulled the render source since the last endFrame. */
+  private renderSincePrevFrame = false;
 
   constructor(private readonly app: AppLike, options: { readonly tier?: AuraQualityTier } = {}) {
     // Resolved C-27 tier wins over the explicit option's fallback: callers pass
@@ -280,6 +299,21 @@ export class ProductionEffectSystem {
    *  tier budget (PARTICLE_GPU_BUDGET_MS). Off until a runtime measures. */
   noteParticleGpuMs(ms: number): void {
     this.lastHook?.noteGpuMs?.(ms, PARTICLE_GPU_BUDGET_MS[this.tier] ?? PARTICLE_GPU_BUDGET_MS.default);
+  }
+
+  /**
+   * Zero-pixel accounting is per *rendered* frame. Once a canvas bridge binds
+   * this system to a renderer, sim ticks with no renderer frame in between
+   * (async WebGL mount, fixed-step substeps) are not counted; headless apps
+   * with no bridge keep counting every tick.
+   */
+  noteRenderBridgeAttached(): void {
+    this.renderBridged = true;
+  }
+
+  /** Called by the canvas bridge each time a renderer frame reads the source. */
+  noteRenderFrame(): void {
+    this.renderSincePrevFrame = true;
   }
 
   /** P6-T4 — force the half-res particle path on/off regardless of budget. */
@@ -645,7 +679,8 @@ export class ProductionEffectSystem {
     this.walkNodes((n, v) => {
       if (v) visible.add(n.id ?? n.name ?? "");
     });
-    this.diagnostics.endFrame(visible);
+    this.diagnostics.endFrame(visible, !this.renderBridged || this.renderSincePrevFrame);
+    this.renderSincePrevFrame = false;
     // Fixed-step sim (CpuEmitter §6.3): app.step(t) hands one large dt to
     // onFrame. Integrating it in a single Euler step launched or dropped every
     // particle by v·dt metres — the promote fountains landed below the floor or
@@ -732,11 +767,13 @@ export class ProductionEffectSystem {
     for (const [key, group] of groups) {
       seenKeys.add(key);
       const totalLive = group.parts.reduce((s, p) => s + p.live, 0);
+      const flipbook = group.first.lowered.emitter.flipbook;
       const desc: ParticleBatchDescriptor = {
         key,
         capacity: group.parts.reduce((s, p) => s + p.binding.lowered.emitter.capacity, 0),
         source: "cpu",
-        atlas: softDotTexture(),
+        atlas: flipbook ? flipbookTexture(flipbook) : softDotTexture(),
+        ...(flipbook ? { atlasGrid: [flipbook.columns ?? 1, flipbook.rows ?? 1] as const, atlasStraightAlpha: true } : {}),
         blend: group.first.lowered.batch.blend,
         shading: group.first.lowered.batch.shading,
         softDepth: group.first.lowered.batch.softDepth,

@@ -84,6 +84,18 @@ export function cityBuildings(blocks: number, perBlock: number, seed: number): C
   return buildings;
 }
 
+/**
+ * Convert a three.js `PointsMaterial.size` (sizeAttenuation on) into the
+ * world-space billboard size that covers the same pixels. three draws
+ * `gl_PointSize = size * (viewportHeight / 2) / viewZ`; a world quad of side S
+ * projects to `S * (viewportHeight / 2) / (viewZ * tan(fov / 2))` pixels, so
+ * S = size * tan(fov / 2). Passing the raw size drew sprites 1/tan(fov/2)
+ * (2.4x at fov 45) too large (promote run 38208531335).
+ */
+export function pointSizeToWorld(size: number, fovDeg: number): number {
+  return size * Math.tan((fovDeg * Math.PI) / 360);
+}
+
 /** Positions for a particle volume (cylinder of `radius` x `height` around center), seeded. */
 export function particlePositions(count: number, seed: number, center: Vec3, radius: number, height: number): Float32Array {
   const rng = createRng(seed);

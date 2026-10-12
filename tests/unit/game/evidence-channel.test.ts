@@ -77,3 +77,32 @@ describe("evidence channel (PRD-09 §6.5)", () => {
     expect(s.p95).toBe(191);
   });
 });
+
+describe("route-published evidence (v2 publish*Evidence)", () => {
+  it("survives past the 250 ms memo with lazy getters and shell fields layered on", () => {
+    const win: FakeWin = { __AURA3D_EVIDENCE_OPT_IN__: true };
+    installEvidenceChannel({ id: "a3g-test", builtins: { perf: () => ({ frames: 3 }) }, win });
+    let reads = 0;
+    let score = 1;
+    (win.__AURA3D_GAME_EVIDENCE__ as Record<string, unknown>)["a3g-test"] = {
+      get score() { reads += 1; return score; }
+    };
+    expect(reads).toBe(0);
+    const realNow = Date.now;
+    try {
+      const t0 = realNow();
+      Date.now = () => t0;
+      const first = win.__AURA3D_GAME_EVIDENCE__?.["a3g-test"] as { score: number; id: string; sections: { perf: { frames: number } } };
+      expect(first.score).toBe(1);
+      expect(first.id).toBe("a3g-test");
+      expect(first.sections.perf.frames).toBe(3);
+      score = 7;
+      Date.now = () => t0 + 1000;
+      const later = win.__AURA3D_GAME_EVIDENCE__?.["a3g-test"] as { score: number; collectedAt: number };
+      expect(later.score).toBe(7);
+      expect(later.collectedAt).toBe(t0 + 1000);
+    } finally {
+      Date.now = realNow;
+    }
+  });
+});

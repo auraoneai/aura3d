@@ -143,3 +143,16 @@ with these environment variables:
 
 It uploads `benchmarks/quality-rebuild/out/` as the `threejs-benchmark` artifact. Without the
 script it writes `SKIPPED.txt` instead.
+
+## Gameplay smoke probe
+
+`gameplay-probe.mjs` checks that the games play, not how they look. Per game x variant it samples
+each game's own state (every `__*EVIDENCE*__`/`__*PROOF*__`/`__*SHOWCASE*__` global, flattened,
+plus every runtime node position) for 3 s with no input, then drives each control in
+`gameplay-probe.json` with real key events, and reports no-input drift, input response, sinking,
+NaN, fps and key-event delivery (`out-gameplay/gameplay-summary.md`, `gameplay-report.json`).
+
+Run on the GPU runner: `qr-azure-gpu.yml` `suite=gameplay` with `gameplay_variants`
+(`;`-separated: a flag list, `defaults`, `{route}` = the game's route token which boots
+`src/v2/boot.ts` instead of `src/legacy/main.ts`, `engine-default`, or `prod` = the deployed
+build). `sourcemap=true` adds a sourcemapped CPU profile per run.

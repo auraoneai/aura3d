@@ -28,6 +28,20 @@ export interface EmitterDescriptor {
   readonly burst?: number;
   /** Spawn disc radius (XZ, uniform by area); default 0.05 m point-ish source. */
   readonly spawnRadius?: number;
+  /**
+   * Flipbook sprite (§6.2 `flipbook-sprite`): the frame advances with age at
+   * `frameRate` over `frames` cells (wrapping when `loop`), the sprite keeps
+   * full alpha (no life fade) and an upright billboard (no random rotation).
+   */
+  readonly flipbook?: {
+    readonly frames: number;
+    readonly frameRate: number;
+    readonly loop: boolean;
+    /** Sheet grid + seed — the feeder builds the built-in sheet from these. */
+    readonly columns?: number;
+    readonly rows?: number;
+    readonly seed?: number;
+  };
 }
 
 export interface EmitterState {
@@ -147,6 +161,12 @@ export function stepEmitter(state: EmitterState, dt: number): void {
   }
 }
 
+function flipbookFrame(fb: NonNullable<EmitterDescriptor["flipbook"]>, age: number): number {
+  const frames = Math.max(1, fb.frames);
+  const f = Math.max(0, age * fb.frameRate);
+  return fb.loop ? f % frames : Math.min(f, frames - 1);
+}
+
 /**
  * Pack live particles into the §6.2.1 16-float layout. `out` must be at least
  * state.live * 16 floats. Returns live count written.
@@ -164,16 +184,17 @@ export function writeEmitterInstances(state: EmitterState, out: Float32Array): n
     out[o + 5] = state.vy[i];
     out[o + 6] = state.vz[i];
     out[o + 7] = d.stretch;
+    const fb = d.flipbook;
     const lifeT = state.life[i] > 0 ? state.age[i] / state.life[i] : 1;
     const fadeIn = Math.min(1, lifeT * 8);
     const fadeOut = Math.min(1, (1 - lifeT) * 4);
-    const a = d.alpha * fadeIn * fadeOut;
+    const a = fb ? d.alpha : d.alpha * fadeIn * fadeOut;
     out[o + 8] = d.color[0];
     out[o + 9] = d.color[1];
     out[o + 10] = d.color[2];
     out[o + 11] = a;
-    out[o + 12] = state.seedA[i] * Math.PI * 2 + state.age[i] * d.spin; // rotation
-    out[o + 13] = 0;                                                   // frame
+    out[o + 12] = fb ? 0 : state.seedA[i] * Math.PI * 2 + state.age[i] * d.spin; // rotation
+    out[o + 13] = fb ? flipbookFrame(fb, state.age[i]) : 0;            // frame (fraction = blend)
     out[o + 14] = 1;                                                   // fog participation
     out[o + 15] = 0;                                                   // normalMix
   }

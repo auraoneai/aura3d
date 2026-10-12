@@ -699,7 +699,7 @@ export function runV2HdrStages(
       g.uniform1i(g.getUniformLocation(applyProg, "u_depthFull"), 2);
       g.uniform1i(g.getUniformLocation(applyProg, "u_depthHalf"), 3);
       g.uniform1f(g.getUniformLocation(applyProg, "u_far"), far);
-      g.uniform1f(g.getUniformLocation(applyProg, "u_aoFallbackStrength"), ao.fallbackStrength ?? 0.6);
+      g.uniform1f(g.getUniformLocation(applyProg, "u_aoFallbackStrength"), aoFallbackStrength(ao.fallbackStrength));
       g.uniform1i(g.getUniformLocation(applyProg, "u_aoMultiBounce"), ao.multiBounce === false ? 0 : 1);
     });
     hdr = applied;
@@ -1027,10 +1027,43 @@ export function runV2HdrStages(
   // stale — the next cached-state consumer would skip re-issuing real
   // state. Invalidate so nothing downstream trusts the poisoned entries.
   host.stateCache.invalidate();
-  // AO_INDIRECT_FRACTION_PENDING: the C-02 `prd03.indirectFraction` feature
-  // is registered but generateProgram (lane 01) is still pending, so the
-  // apply ran the §6.3 `u_aoFallbackStrength` path.
+  // §6.3: generated-program pixels carry the tagged f_ind (alpha = 2 + f_ind,
+  // `prd03.indirectFraction`) and the apply multiplies only that fraction.
+  // `aoPending` still reports AO_INDIRECT_FRACTION_PENDING because legacy
+  // shaderKey/custom draws carry no f_ind and take the capped fallback.
   return { target: hdr, aoPending: wantsAo, skipped };
+}
+
+/**
+ * §6.3 fallback cap. Pixels without the tagged f_ind (legacy shaderKey draws,
+ * custom shaders) cannot tell direct from indirect light, so the apply darkens
+ * them by `mix(1, ao, strength)`. The authored 0.6 darkened directly lit
+ * surfaces by 4–12% luma on the L4 games (blockfall-reactor 34.5 → 30.3);
+ * capped at 0.1 an open lit surface (GTAO ao ≈ 0.9) loses ≤ ~1% luma while
+ * creases (ao ≈ 0.3) still darken ~7%. Generated-program pixels ignore it.
+ */
+export const AO_FALLBACK_STRENGTH_MAX = 0.1;
+
+export function aoFallbackStrength(authored: number | undefined): number {
+  const v = authored ?? AO_FALLBACK_STRENGTH_MAX;
+  return Math.min(Math.max(Number.isFinite(v) ? v : 0, 0), AO_FALLBACK_STRENGTH_MAX);
+}
+
+/**
+ * Vignette colour as a finite RGB triple. The engine post bridge emits
+ * `{ r, g, b }` (rgbField) while older callers pass `[r, g, b]`; indexing the
+ * object form gave `undefined` → NaN uniforms, and `mix(1, NaN, t)` turned the
+ * whole frame black whenever a scene authored `effects.vignette()`.
+ */
+export function vignetteColorRgb(color: unknown): [number, number, number] {
+  let rgb: [unknown, unknown, unknown] = [0, 0, 0];
+  if (Array.isArray(color)) rgb = [color[0], color[1], color[2]];
+  else if (color && typeof color === "object" && "r" in color) {
+    const c = color as { r?: unknown; g?: unknown; b?: unknown };
+    rgb = [c.r, c.g, c.b];
+  }
+  const finite = (v: unknown): number => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+  return [finite(rgb[0]), finite(rgb[1]), finite(rgb[2])];
 }
 
 /** True when S10b/S11/S12 need a real LDR tail after the fused present. */
@@ -1057,7 +1090,7 @@ export function runV2LdrTail(
   const state = v2State(host);
   const ldrGl = asGlTarget(ldr);
   const w = ldr.width, h = ldr.height;
-  const vignette = pipeline.vignette as { intensity?: number; smoothness?: number; roundness?: number; color?: readonly [number, number, number] } | undefined;
+  const vignette = pipeline.vignette as { intensity?: number; smoothness?: number; roundness?: number; color?: unknown } | undefined;
   const grain = pipeline.filmGrain as { intensity?: number; size?: number; luminanceResponse?: number } | undefined;
   const aaFxaa = pipeline.antiAliasing === "fxaa";
   const aaSmaa = pipeline.antiAliasing === "smaa";
@@ -1090,8 +1123,8 @@ export function runV2LdrTail(
     gl.uniform1f(gl.getUniformLocation(prog, "u_vignetteIntensity"), vignette?.intensity ?? 0);
     gl.uniform1f(gl.getUniformLocation(prog, "u_vignetteSmoothness"), vignette?.smoothness ?? 1);
     gl.uniform1f(gl.getUniformLocation(prog, "u_vignetteRoundness"), vignette?.roundness ?? 1);
-    const vc = vignette?.color ?? [0, 0, 0];
-    gl.uniform3f(gl.getUniformLocation(prog, "u_vignetteColor"), vc[0]!, vc[1]!, vc[2]!);
+    const vc = vignetteColorRgb(vignette?.color);
+    gl.uniform3f(gl.getUniformLocation(prog, "u_vignetteColor"), vc[0], vc[1], vc[2]);
     gl.uniform2f(gl.getUniformLocation(prog, "u_resolution"), w, h);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.bindVertexArray(null);
@@ -1116,8 +1149,8 @@ export function runV2LdrTail(
       g.uniform1f(g.getUniformLocation(prog, "u_vignetteIntensity"), vignette?.intensity ?? 0);
       g.uniform1f(g.getUniformLocation(prog, "u_vignetteSmoothness"), vignette?.smoothness ?? 1);
       g.uniform1f(g.getUniformLocation(prog, "u_vignetteRoundness"), vignette?.roundness ?? 1);
-      const vc = vignette?.color ?? [0, 0, 0];
-      g.uniform3f(g.getUniformLocation(prog, "u_vignetteColor"), vc[0]!, vc[1]!, vc[2]!);
+      const vc = vignetteColorRgb(vignette?.color);
+      g.uniform3f(g.getUniformLocation(prog, "u_vignetteColor"), vc[0], vc[1], vc[2]);
       g.uniform2f(g.getUniformLocation(prog, "u_resolution"), w, h);
     });
     current = graded;

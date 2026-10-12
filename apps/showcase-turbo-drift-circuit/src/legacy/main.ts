@@ -29,6 +29,7 @@ import {
   type VehicleVec3
 } from "@aura3d/engine";
 import { assets } from "../../../../src/aura-assets";
+import { resolveQrFlags } from "@aura3d/engine/contracts";
 import { createShowcaseRapierPhysicsProof } from "../../../common/src/rapier-physics-proof";
 import { gameGeometryContract } from "../generated/game-geometry";
 import { turboAcceptanceExcursionInput } from "./acceptance-driver";
@@ -562,6 +563,12 @@ const collisionReviewCamera = new URLSearchParams(window.location.search).get("c
 // cars to thumbnail scale and let foreground barriers dominate the frame.
 // The public route remains on the closer gameplay chase camera.
 const visualCaptureCamera = new URLSearchParams(window.location.search).get("capture") === "overview";
+// PRD-03 §6.6 / Q-14-1: A3D_QR_POST (default on) bloom is linear HDR with no hidden
+// legacy gain; retune for v2 only so the `-post` legacy look is unchanged.
+const postV2Bloom = resolveQrFlags({
+  url: window.location.href,
+  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+}).on("A3D_QR_POST");
 const VISUAL_CAPTURE_CAMERA = {
   // Keep the review frame on the same proven road-facing geometry as the live
   // chase rig.  The former close/high variant targeted a separate midpoint
@@ -3363,7 +3370,9 @@ const app = createAuraApp("#app", {
       intensity: visualCaptureCamera ? 0.5 : 0.28,
       radius: visualCaptureCamera ? 0.68 : 0.54
     }))
-    .add(effects.neonBloom({ intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.neonBloom(postV2Bloom
+      ? { intensity: 1.8, threshold: 0.52, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
+      : { intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
     .add(effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.12 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     // Nonzero depth haze that grades the treeline into the sky and separates
@@ -4378,6 +4387,9 @@ app.onFrame(({ dt }) => {
 
   if (!canSimulateRace(raceSession, raceSnapshot.status === "finished")) {
     mountedEvidence.gameplay.countdownBeforeMotion = !raceSession.startLights.complete;
+    // Simulation is held (flag fallen / lights): the car is stopped, so the
+    // engine settles to idle and the wind dies instead of holding race level.
+    if (engineLoopActive) turboAudio.drive(0, false);
     if (raceSnapshot.status === "finished") {
       // Vehicle simulation stops at the flag, but the result presentation must
       // continue. Apply the session blend to the mounted camera, HUD, and proof
@@ -5015,6 +5027,8 @@ app.onFrame(({ dt }) => {
   // by raw steering input: a stationary car turning its wheels must not smoke.
   const driftAmount = Math.min(1, Math.abs(raceSnapshot.drift));
   const speedFraction = Math.min(1, Math.abs(raceSnapshot.speed) / Math.max(gameplayMaxSpeed, 0.001));
+  // Engine/wind loops follow the car instead of droning at a fixed level.
+  if (engineLoopActive) turboAudio.drive(speedFraction, resolvedThrottleHeld);
   const driftVisible = driftAmount > 0.12 && speedFraction > 0.18;
   // PART F2 drift rumble: sustained slip holds trauma while the slide lasts and
   // releases on grip, so the chase lens trembles through a real drift only.

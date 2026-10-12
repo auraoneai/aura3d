@@ -165,6 +165,15 @@ export interface GameAudio<TCue extends string = string> {
   setOcclusion(cue: TCue, amount: number): GameAudioEvidence<TCue>;
   /** Route a foot-IK plant event to its surface-tagged cue. Null when no cue is registered. */
   onFootPlant(event: GameAudioFootPlant): Promise<GameAudioCueEvent<TCue> | null>;
+  /**
+   * Drive a playing cue (typically a loop: engine, wind, thrust, ambience) from
+   * game state. `volume` is linear relative to the cue's authored volume (0 =
+   * silent, 1 = authored), `rate` is a playback-rate multiplier; both glide
+   * over `rampMs` (default 60). A no-op when the cue is not playing.
+   */
+  setCueLevel(cue: TCue, level: { readonly volume?: number; readonly rate?: number }, rampMs?: number): GameAudioEvidence<TCue>;
+  /** Stop every live voice of a cue with a short fade (default 80 ms). */
+  stopCue(cue: TCue, fadeMs?: number): GameAudioEvidence<TCue>;
   /** Duck the music bus while dialogue/voice is active. */
   setDialogueActive(active: boolean): GameAudioEvidence<TCue>;
   setMuted(muted: boolean): GameAudioEvidence<TCue>;
@@ -192,6 +201,17 @@ const ENGINE_BUS_IDS: readonly string[] = ["music", "sfx", "ui", "ambience", "vo
 const ENGINE_BUS_ALIASES: Readonly<Record<string, GameBusId>> = { ambient: "ambience", master: "sfx" };
 const engineBusOf = (id: GameAudioBusId): GameBusId =>
   ENGINE_BUS_IDS.includes(id) ? (id as GameBusId) : ENGINE_BUS_ALIASES[id] ?? "sfx";
+/**
+ * Where a route bus volume lands. Engine buses (and `ambient`) set the engine
+ * bus gain; `master` sets the master level. Every other id is route-local
+ * ("engine", "wind", "music-stem-2", ...): its cues still route through the
+ * engine `sfx` bus, but the volume scales only that bus's own voices. Writing
+ * route-local volumes onto the shared `sfx` gain (the old behaviour) let the
+ * last write win for every cue: Blockfall's stem-4 = 0 silenced all SFX,
+ * Patrol Wing's per-frame engine throttle scaled every gun shot.
+ */
+const volumeTargetOf = (id: GameAudioBusId): GameBusId | "route" =>
+  id === "master" ? "master" : ENGINE_BUS_IDS.includes(id) || id in ENGINE_BUS_ALIASES ? engineBusOf(id) : "route";
 
 const gainToDb = (volume: number): number => 20 * Math.log10(Math.max(volume, 1e-4));
 
@@ -212,6 +232,9 @@ const assetRefOf = (
 
 interface LiveVoiceHandle {
   readonly id: number;
+  /** Real engine voices report when they finished; stub handles omit it. */
+  readonly ended?: boolean;
+  setLevel?(level: { gain?: number; rate?: number }, rampMs?: number): void;
   stop(fadeMs?: number): void;
   setPosition(p: GameAudioVec3): void;
   setOcclusion(amount: number): void;
@@ -331,7 +354,10 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     if (!audioContext) return null;
     if (!engine) {
       const initialVolumes: Partial<Record<GameBusId, number>> = {};
-      for (const [busId, volume] of busVolumes) initialVolumes[engineBusOf(busId)] = volume;
+      for (const [busId, volume] of busVolumes) {
+        const target = volumeTargetOf(busId);
+        if (target !== "route") initialVolumes[target] = volume;
+      }
       // C-25: flag on resolves through the contract slot (real engine iff
       // lane prd09 provided it, else the silent stub — 09-CONF real-or-stub
       // by flag). Flag off keeps the shipped legacy path, which has always
@@ -361,16 +387,34 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     const state = getBus(bus.id);
     if (bus.volume === undefined) continue;
     busVolumes.set(state.id, bus.volume);
-    // A live engine gets the level immediately; otherwise it seeds construction.
-    getEngine()?.setBusVolume(state.engineBus, bus.volume);
+    // Engine buses get the level immediately (otherwise it seeds construction);
+    // route-local volumes apply per voice when their cues play.
+    const target = volumeTargetOf(state.id);
+    if (target !== "route") getEngine()?.setBusVolume(target, bus.volume);
   }
 
   const busVolumeOf = (bus: GameAudioBusState): number => busVolumes.get(bus.id) ?? 1;
   const busMutedOf = (bus: GameAudioBusState): boolean => mutedBuses.has(bus.id);
 
+  /** Per-cue level set by `setCueLevel` (linear, 1 = authored). */
+  const cueLevels = new Map<TCue, number>();
+  /** Linear gain a cue's voices get on top of the authored volume: route-bus volume × cue level. */
+  const voiceLevelOf = (cue: TCue): number => {
+    const busId = cueDefinitions[cue]?.bus ?? "master";
+    const routeBus = volumeTargetOf(busId) === "route" ? busVolumes.get(busId) ?? 1 : 1;
+    return routeBus * (cueLevels.get(cue) ?? 1);
+  };
   const writeBusVolume = (bus: GameAudioBusState, volume: number): void => {
     busVolumes.set(bus.id, volume);
-    getEngine()?.setBusVolume(bus.engineBus, volume);
+    const target = volumeTargetOf(bus.id);
+    if (target !== "route") {
+      getEngine()?.setBusVolume(target, volume);
+      return;
+    }
+    for (const id of cueIds) {
+      if ((cueDefinitions[id].bus ?? "master") !== bus.id) continue;
+      for (const voice of pruneEnded(id)) voice.setLevel?.({ gain: voiceLevelOf(id) }, 50);
+    }
   };
 
   const snapshot = (): GameAudioEvidence<TCue> => {
@@ -465,24 +509,29 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       suppressedCueCount += 1;
       return event;
     }
+    // A looping cue that is already playing keeps its one voice: re-cueing it
+    // (race restart, wave start, scene re-entry) used to stack another loop
+    // on top every time — the layered drones read as a permanent buzz.
+    if (definition.loop) {
+      const live = pruneEnded(cue);
+      if (live.size > 0) {
+        suppressedCueCount += 1;
+        return event;
+      }
+    }
     try {
       if (!unlocked) await audio.unlock();
       const sound = getEngine();
       const handle = sound?.play(cue, {
         position: spatial?.position ?? definition.position,
         velocity: spatial?.velocity,
-        volumeDb: 0
+        volumeDb: gainToDb(voiceLevelOf(cue))
       });
       if (!handle) {
         suppressedCueCount += 1;
         return event;
       }
-      let voices = liveVoices.get(cue);
-      if (!voices) {
-        voices = new Set();
-        liveVoices.set(cue, voices);
-      }
-      voices.add(handle);
+      pruneEnded(cue).add(handle);
       playedCueCount += 1;
       // Only actually-played cues become playing nodes — suppressed cues stay out (no silent-play claim).
       const position = spatial?.position ?? definition.position ?? listenerPosition;
@@ -496,6 +545,14 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     }
     return event;
   };
+
+  /** Drop finished voices from the live set of a cue and return it. */
+  function pruneEnded(cue: TCue): Set<LiveVoiceHandle> {
+    const voices = liveVoices.get(cue) ?? new Set<LiveVoiceHandle>();
+    for (const v of voices) if (v.ended === true) voices.delete(v);
+    liveVoices.set(cue, voices);
+    return voices;
+  }
 
   const audio: GameAudio<TCue> = {
     get evidence() {
@@ -545,6 +602,19 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       listenerUp = tuple(pose?.up, "up", true);
       listenerPosition = { x: position[0], y: position[1], z: position[2] };
       getEngine()?.setListener({ position, forward: [...listenerForward], up: [...listenerUp] });
+      return snapshot();
+    },
+    setCueLevel(cue, level, rampMs = 60) {
+      const volume = level.volume === undefined ? undefined : Math.max(0, Math.min(4, Number(level.volume) || 0));
+      const rate = level.rate === undefined ? undefined : Math.max(0.0625, Math.min(4, Number(level.rate) || 1));
+      if (volume !== undefined) cueLevels.set(cue, volume);
+      const gain = volume === undefined ? undefined : voiceLevelOf(cue);
+      for (const voice of pruneEnded(cue)) voice.setLevel?.({ gain, rate }, rampMs);
+      return snapshot();
+    },
+    stopCue(cue, fadeMs = 80) {
+      for (const voice of pruneEnded(cue)) voice.stop(fadeMs);
+      liveVoices.delete(cue);
       return snapshot();
     },
     setOcclusion(cue, amount) {

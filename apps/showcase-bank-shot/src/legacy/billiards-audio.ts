@@ -96,7 +96,7 @@ export const billiardsAudioManifest: Record<BilliardsAudioCue, BilliardsAudioCue
   "eight-win": define("eight-win", "ui", "The 8-ball drops clean; rack won.", false, 0.85),
   "rack-fail": define("rack-fail", "ui", "Rack lost (fouls, early 8, or clock).", false, 0.8),
   "combo-chime": define("combo-chime", "ui", "Combo streak extended.", false, 0.6),
-  "ambient-hall": define("ambient-hall", "ambient", "Closed billiards hall air (loop).", true, 0.3)
+  "ambient-hall": define("ambient-hall", "ambient", "Closed billiards hall air (loop).", true, 0.15)
 };
 
 export interface BilliardsAudioProof {

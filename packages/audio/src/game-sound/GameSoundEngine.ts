@@ -20,7 +20,7 @@ import { MusicControllerImpl, type MusicTrackSpec } from "./MusicController";
 import { createReverbSend, type QualityTier, type ReverbPreset } from "./ReverbSend";
 import { formatExtension, probeFormat, type EncodedFormat } from "./formatProbe";
 import { syncListener, type ListenerLike } from "./listenerSync";
-import { clamp } from "./types";
+import { clamp, dbToGain } from "./types";
 import type { SoundGraphContext, SoundNodeLike, Vec3 } from "./types";
 
 export type GameBusId = "master" | "music" | "sfx" | "ui" | "ambience" | "voice";
@@ -64,6 +64,19 @@ export interface GameSoundOptions<TCue extends string> {
   /** Override fetch for probes (testing). */
   readonly fetchProbe?: (url: string) => Promise<ArrayBuffer>;
 }
+
+export type GameSoundPlayOptions = { position?: Vec3; velocity?: Vec3; volumeDb?: number; rate?: number };
+type PlayOptions = GameSoundPlayOptions;
+/** Handle returned by `play()`: a live voice (or a loop waiting for its buffer). */
+export interface GameSoundPlayHandle {
+  readonly id: number;
+  readonly ended?: boolean;
+  setLevel?(level: { gain?: number; rate?: number }, rampMs?: number): void;
+  stop(fadeMs?: number): void;
+  setPosition(p: Vec3): void;
+  setOcclusion(a: number): void;
+}
+type PlayHandle = GameSoundPlayHandle;
 
 const VOICE_CAPS: Record<QualityTier, number> = { low: 12, medium: 24, high: 32, ultra: 48 };
 const HRTF_CAP: Record<QualityTier, number> = { low: 0, medium: 4, high: 8, ultra: 16 };
@@ -219,12 +232,78 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
 
   const handles = new Set<LoopHandleImpl>();
   let muted = false;
+  let masterVolume = 1;
   let voicesPlayed = 0;
 
-  const play = (
-    cueId: string,
-    opts: { position?: Vec3; velocity?: Vec3; volumeDb?: number; rate?: number } = {}
-  ) => {
+  const assetUrlsOf = (cue: SoundCueSpec): string[] =>
+    cue.asset ? (Array.isArray(cue.asset) ? cue.asset : [cue.asset]).map((a) => a.url) : [];
+  const hasBuffer = (url: string): boolean => buffers.has(urlAliases.get(url) ?? url);
+
+  /**
+   * A loop cued before its buffer decoded used to start a buffer-less source
+   * that stayed silent for good (Blockfall's hum and four stems): defer the
+   * start until the asset is decoded, replaying any level/stop calls made in
+   * the meantime.
+   */
+  const deferLoop = (cueId: string, cue: SoundCueSpec, opts: PlayOptions): PlayHandle => {
+    let real: PlayHandle | null = null;
+    let stopped = false;
+    let failed = false;
+    let level: { gain?: number; rate?: number } | undefined;
+    let position: Vec3 | undefined;
+    let occlusion: number | undefined;
+    void Promise.all(assetUrlsOf(cue).map((u) => loadAsset(u))).then((loaded) => {
+      if (stopped || !loaded.some(Boolean)) {
+        failed = true;
+        return;
+      }
+      real = playNow(cueId, opts);
+      if (!real) {
+        failed = true;
+        return;
+      }
+      if (level) real.setLevel?.(level, 1);
+      if (position) real.setPosition(position);
+      if (occlusion !== undefined) real.setOcclusion(occlusion);
+    });
+    return {
+      id: -2,
+      get ended() {
+        return stopped || failed || (real?.ended ?? false);
+      },
+      setLevel: (l, rampMs) => {
+        level = { ...level, ...l };
+        real?.setLevel?.(l, rampMs);
+      },
+      stop: (fadeMs) => {
+        stopped = true;
+        real?.stop(fadeMs);
+      },
+      setPosition: (p) => {
+        position = p;
+        real?.setPosition(p);
+      },
+      setOcclusion: (a) => {
+        occlusion = a;
+        real?.setOcclusion(a);
+      }
+    };
+  };
+
+  const play = (cueId: string, opts: PlayOptions = {}): PlayHandle | null => {
+    if (muted) return null;
+    const cue = options.cues[cueId as TCue];
+    if (!cue) return null;
+    const urls = assetUrlsOf(cue);
+    const assets = cue.asset ? (Array.isArray(cue.asset) ? cue.asset : [cue.asset]) : [];
+    const inline = assets.some((a) => (a as { buffer?: AudioBuffer }).buffer !== undefined);
+    if (cue.loop && urls.length > 0 && !inline && !urls.some(hasBuffer) && typeof ctx.decodeAudioData === "function") {
+      return deferLoop(cueId, cue, opts);
+    }
+    return playNow(cueId, opts);
+  };
+
+  const playNow = (cueId: string, opts: PlayOptions = {}): PlayHandle | null => {
     if (muted) return null;
     const cue = options.cues[cueId as TCue];
     if (!cue) return null;
@@ -251,9 +330,36 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     if (allocation.dropped || !allocation.record) return null;
     const record = allocation.record;
     voicesPlayed += 1;
+    // Authored level after jitter, without the per-play volumeDb: setLevel
+    // gains are relative to it (setLevel({gain:1}) = authored level).
+    const baseGain = Math.max(1e-6, record.targetGain / dbToGain(opts.volumeDb ?? 0));
+    const baseRate = record.source.playbackRate?.value ?? 1;
     record.source.start();
     return {
       id: record.id,
+      /** True once the voice finished, was stopped, stolen or evicted. */
+      get ended() {
+        return record.ended;
+      },
+      /** Ramp this voice's gain (linear) and playback rate; loops follow game state. */
+      setLevel: (level: { gain?: number; rate?: number }, rampMs = 60) => {
+        const now = ctx.currentTime;
+        const tau = Math.max(1, rampMs) / 3000;
+        const g = (record.gain as unknown as { gain: { value: number; setTargetAtTime?(v: number, t: number, tau: number): void; cancelScheduledValues?(t: number): void } }).gain;
+        if (level.gain !== undefined) {
+          const target = clamp(level.gain, 0, 4) * baseGain;
+          if (g.setTargetAtTime) {
+            g.cancelScheduledValues?.(now);
+            g.setTargetAtTime(target, now, tau);
+          } else g.value = target;
+        }
+        const r = record.source.playbackRate;
+        if (level.rate !== undefined && r) {
+          const target = Math.max(0.0625, Math.min(4, level.rate * baseRate));
+          if (r.setTargetAtTime) r.setTargetAtTime(target, now, tau);
+          else r.value = target;
+        }
+      },
       stop: (fadeMs = 0) => {
         const g = (record.gain as unknown as { gain: { value: number; setTargetAtTime?(v: number, t: number, tau: number): void } }).gain;
         if (fadeMs > 0 && g.setTargetAtTime) {
@@ -379,7 +485,8 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
 
   const setBusVolume = (bus: GameBusId, v: number) => {
     if (bus === "master") {
-      chain.setMasterGain(v);
+      masterVolume = clamp(v, 0, 1);
+      if (!muted) chain.setMasterGain(masterVolume);
       return;
     }
     const g = busGains.get(bus) as unknown as { gain: { value: number } } | undefined;
@@ -446,7 +553,8 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     recordMaster,
     setMuted(m: boolean) {
       muted = m;
-      chain.setMasterGain(m ? 0 : 1);
+      // Unmute restores the user's master level, not unity.
+      chain.setMasterGain(m ? 0 : masterVolume);
     },
     duck,
     suspend: async () => {

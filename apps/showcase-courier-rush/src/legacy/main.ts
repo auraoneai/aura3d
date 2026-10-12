@@ -24,6 +24,7 @@ import {
   type AuraRuntimeNodeHandle,
   type GameArcadeVehicle
 } from "@aura3d/engine";
+import { POST_V2_EXPOSURE, withPostV2Bloom } from "./post-v2-retune";
 import { assets } from "../../../../src/aura-assets";
 import {
   buildCityDressing,
@@ -293,8 +294,8 @@ const app = createAuraApp("#app", {
     // animation frame - a black canvas with zero console or page errors,
     // because the engine records it in `diagnostics.errors` instead of
     // rethrowing. 0.5 is the maximum legal value and the repo-wide convention.
-    .add(effects.neonBloom({ intensity: reducedMotion ? 0.26 : 0.44, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade({ exposure: 1.05, contrast: 1.1, saturation: 1.12 }))
+    .add(withPostV2Bloom(effects.neonBloom({ intensity: reducedMotion ? 0.26 : 0.44, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }), reducedMotion ? 0.26 / 0.44 : 1))
+    .add(effects.colorGrade({ exposure: 1.05 * POST_V2_EXPOSURE, contrast: 1.1, saturation: 1.12 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     // The street itself was reading as black-on-black void with a few floating
     // signs. A lifted cool ambient plus a stronger moon key gives the kit

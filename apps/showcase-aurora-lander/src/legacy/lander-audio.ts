@@ -140,6 +140,12 @@ export interface LanderAudioProof {
 export interface LanderAudioController {
   readonly cue: (name: LanderAudioCue) => Promise<void>;
   readonly unlock: () => Promise<void>;
+  /**
+   * Thrust loop level from the throttle (0..1). The loop keeps one voice once
+   * started; releasing thrust glides it to silence instead of leaving the burn
+   * playing at full level forever.
+   */
+  readonly setThrust: (throttle01: number) => void;
   readonly proof: () => LanderAudioProof;
   readonly dispose: () => Promise<void>;
 }
@@ -190,6 +196,10 @@ export function createLanderAudio(reducedMotion = false): LanderAudioController 
     async unlock() {
       await audio.unlock();
       gestureUnlocked = true;
+    },
+    setThrust(throttle01) {
+      const t = Math.max(0, Math.min(1, Number.isFinite(throttle01) ? throttle01 : 0));
+      audio.setCueLevel("thrust-loop", { volume: t, rate: 0.9 + 0.2 * t }, t > 0 ? 40 : 120);
     },
     proof() {
       const evidence = audio.evidence;

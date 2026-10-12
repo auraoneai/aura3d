@@ -45,7 +45,7 @@ describe("P1-T9 particle shader chunks", () => {
 
   it("program key is distinct per define bit", () => {
     const keys = new Set<string>();
-    const bits: (keyof ParticleProgramDefines)[] = ["stretch", "frameBlend", "softParticles", "blendAdditive", "blendAdditiveFallback", "unpremultiplyOutput", "proceduralSoftDot", "fogAnalytic"];
+    const bits: (keyof ParticleProgramDefines)[] = ["stretch", "frameBlend", "softParticles", "blendAdditive", "blendAdditiveFallback", "unpremultiplyOutput", "proceduralSoftDot", "fogAnalytic", "straightAlpha"];
     for (const bit of bits) keys.add(particleProgramKey({ ...base, [bit]: true }));
     keys.add(particleProgramKey(base));
     expect(keys.size).toBe(bits.length + 1);

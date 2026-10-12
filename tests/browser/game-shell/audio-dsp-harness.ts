@@ -106,7 +106,9 @@ async function measureMasterChain(): Promise<{ peakDbfs: number; transparencyDb:
   for (let c = 0; c < 2; c += 1) for (const v of peakOut.getChannelData(c)) peak = Math.max(peak, Math.abs(v));
 
   const tCtx = new OfflineAudioContext(2, SR, SR);
-  const tChain = createMasterChain(tCtx as never, tCtx.destination);
+  // Transparency is a property of the dynamics stages: measure them at unity
+  // headroom (the default MASTER_HEADROOM gain stage is a deliberate -4.4 dB).
+  const tChain = createMasterChain(tCtx as never, tCtx.destination, { headroom: 1 });
   const src = tCtx.createBufferSource();
   src.buffer = sineBuffer(tCtx, 1.0, 440, -12);
   src.connect(tChain.input);

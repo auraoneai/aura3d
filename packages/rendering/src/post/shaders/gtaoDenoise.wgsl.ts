@@ -2,9 +2,9 @@
  * PRD-03 §8.4 Phase 7 — S2 GTAO denoise + joint-bilateral upsample/apply
  * WGSL twins. `GTAO_DENOISE_WGSL` runs twice (H then V). `GTAO_APPLY_WGSL`
  * is the fused joint-bilateral upsample + §6.3 multiply
- * (`hdr *= mix(1, aoMB, w)`; w = `hdr.a` under `indirectFraction`, else the
- * fallback `strength · (1 − sky) · step(luma, 4)` — the AURA_AO_INDIRECT_FRACTION
- * variant is a define-level alternate compiled by the driver).
+ * (`hdr *= mix(1, aoMB, w)`; w = `clamp(hdr.a − 2, 0, 1)` on pixels tagged
+ * by `prd03.indirectFraction` (alpha = 2 + f_ind), else the conservative
+ * fallback `strength · step(luma, 4)`; both × (1 − sky); alpha → min(a, 1)).
  */
 
 const BILATERAL = /* wgsl */ `
@@ -101,15 +101,19 @@ fn fs_gtao_apply(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4<
   let ao = upsample_ao(uv_half, full_z, half_size);
   let ao_mb = select(ao, ao_multi_bounce(ao), u_params.ao_multi_bounce != 0);
 
+  let sky = step(u_params.far * 0.999, full_z);
   var w: f32;
-  if (u_params.ao_indirect_fraction != 0) {
-    w = hdr.a;
+  if (hdr.a >= 1.5) {
+    // Tagged generated-program pixel: alpha = 2 + f_ind.
+    w = clamp(hdr.a - 2.0, 0.0, 1.0);
+  } else if (u_params.ao_indirect_fraction != 0) {
+    w = clamp(hdr.a, 0.0, 1.0);
   } else {
-    let sky = step(u_params.far * 0.999, full_z);
     let luma = dot(hdr.rgb, vec3<f32>(0.2126, 0.7152, 0.0722));
-    w = u_params.ao_fallback_strength * (1.0 - sky) * step(luma, 4.0);
+    w = u_params.ao_fallback_strength * step(luma, 4.0);
   }
-  hdr = vec4<f32>(hdr.rgb * mix(1.0, ao_mb, w), hdr.a);
+  w = w * (1.0 - sky);
+  hdr = vec4<f32>(hdr.rgb * mix(1.0, ao_mb, w), min(hdr.a, 1.0));
   return hdr;
 }
 `;
