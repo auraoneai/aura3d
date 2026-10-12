@@ -31,11 +31,11 @@ export function createProductionPrimitiveResources(node: AuraPrimitiveNode, qr?:
   const levels = node.lod?.levels;
   if (!levels?.length) {
     if (sdfResource) return [sdfResource];
-    const qrMesh = qrPrimitiveMeshFor(node, qr);
+    const qrGeometry = qrPrimitiveGeometryFor(node, qr);
     const fallback = {
-      geometry: qrMesh ? createProductionGeometryFromPrimitiveMesh(qrMesh) : createProductionPrimitiveGeometry(node),
+      geometry: qrGeometry?.geometry ?? createProductionPrimitiveGeometry(node),
       material: createProductionPrimitiveMaterial(node),
-      bounds: qrMesh?.bounds ?? primitiveGeometryBounds(node),
+      bounds: qrGeometry?.bounds ?? primitiveGeometryBounds(node),
       name: node.name ?? node.primitive,
       materialSpec: node.material,
       sourceNode: node,
@@ -58,11 +58,11 @@ export function createProductionPrimitiveResources(node: AuraPrimitiveNode, qr?:
     const levelWarnings: string[] = [];
     const levelSdf = createSdfTextPrimitiveResource(levelNode, (message) => { levelWarnings.push(message); });
     if (levelSdf) return { ...levelSdf, name: level.name };
-    const levelQrMesh = qrPrimitiveMeshFor(levelNode, qr);
+    const levelQrGeometry = qrPrimitiveGeometryFor(levelNode, qr);
     const levelFallback = {
-      geometry: levelQrMesh ? createProductionGeometryFromPrimitiveMesh(levelQrMesh) : createProductionPrimitiveGeometry(levelNode),
+      geometry: levelQrGeometry?.geometry ?? createProductionPrimitiveGeometry(levelNode),
       material: createProductionPrimitiveMaterial(levelNode),
-      bounds: levelQrMesh?.bounds ?? primitiveGeometryBounds(levelNode),
+      bounds: levelQrGeometry?.bounds ?? primitiveGeometryBounds(levelNode),
       name: level.name,
       materialSpec: levelNode.material,
       sourceNode: levelNode,
@@ -217,7 +217,7 @@ import { renderer } from "../rendererDiagnostics.js";
 import { scene } from "../nodes/scene.js";
 import { colorToLinearRgb } from "../colorUtils.js";
 import type { GltfBounds } from "./gltfRuntime.js";
-import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, type QrPrimitiveGeometryOptions } from "./geometry.js";
+import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, qrPrimitiveGeometryKey, type QrPrimitiveGeometryOptions } from "./geometry.js";
 import { clamp01 } from "../sceneMath.js";
 
 /**
@@ -378,6 +378,20 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
 export function qrPrimitiveMeshFor(node: AuraPrimitiveNode, qr: QrPrimitiveGeometryOptions | undefined): ProductionPrimitiveMesh | undefined {
   if (!qr?.core || node.geometry || node.primitive === "custom") return undefined;
   return createQrPrimitiveMesh(node.primitive, primitiveSize(node), qr);
+}
+
+/** Q-15-2: flag-on geometry + bounds, pooled per mount when `qr.pool` is set (#545). */
+export function qrPrimitiveGeometryFor(node: AuraPrimitiveNode, qr: QrPrimitiveGeometryOptions | undefined): { readonly geometry: Geometry; readonly bounds: GltfBounds } | undefined {
+  if (!qr?.core || node.geometry || node.primitive === "custom") return undefined;
+  const size = primitiveSize(node);
+  if (!qr.pool) {
+    const mesh = createQrPrimitiveMesh(node.primitive, size, qr);
+    return { geometry: createProductionGeometryFromPrimitiveMesh(mesh), bounds: mesh.bounds };
+  }
+  const primitive = node.primitive;
+  const geometry = qr.pool.acquire(qrPrimitiveGeometryKey(primitive, size, qr), () =>
+    createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr)));
+  return { geometry, bounds: geometry.bounds };
 }
 
 export function createProductionPrimitiveGeometry(node: AuraPrimitiveNode): Geometry {

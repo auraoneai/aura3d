@@ -186,7 +186,7 @@ export class CompiledSceneImpl implements CompiledScene {
     const contributions = this.persistentContributions;
     const out = new SourceContributions(contributions);
     const ctx = this.mountCtx;
-    const extraPrimitive = createProductionRuntimePrimitiveEntries(flatNodes, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality));
+    const extraPrimitive = createProductionRuntimePrimitiveEntries(flatNodes, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality, ctx));
     this.primitiveEntries.push(...extraPrimitive);
 
     const newModelNodes = flatNodes.filter((candidate): candidate is AuraModelNode =>
@@ -352,7 +352,7 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
         })));
       })()
     : [];
-  const primitiveEntries = createProductionRuntimePrimitiveEntries(flattened, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality));
+  const primitiveEntries = createProductionRuntimePrimitiveEntries(flattened, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality, ctx));
 
   const handledNodes: { node: AuraSceneNode; handler: AnyNodeHandler }[] = [];
   const contributions = createContributions();
