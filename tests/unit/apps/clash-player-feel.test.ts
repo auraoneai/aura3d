@@ -42,7 +42,7 @@ describe("Aura Clash player feel", () => {
 
   it("keeps training numbers off the public playable path", () => {
     expect(readPlayableHudMode({ pathname: "/playable/", search: "" }).training).toBe(false);
-    expect(readPlayableHudMode({ pathname: "/playable/", search: "?debug=1" }).training).toBe(true);
+    expect(readPlayableHudMode({ pathname: "/playable/", search: "?debug=1" }).training).toBe(false);
     expect(readPlayableHudMode({ pathname: "/playable/", search: "?auraTestDriver=1" }).evidence).toBe(true);
     expect(readPlayableHudMode({ pathname: "/evidence/", search: "" }).training).toBe(true);
   });

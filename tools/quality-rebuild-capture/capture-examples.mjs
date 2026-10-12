@@ -68,7 +68,8 @@ function buildTemplate(ex) {
   rmSync(dir, { recursive: true, force: true });
   cpSync(source, dir, { recursive: true, filter: (src) => !/[\\/](node_modules|dist|test-results)([\\/]|$)/.test(path.relative(source, src)) });
   const hdriSource = path.join(repoRoot, "packages/create-aura3d/hdri");
-  if (ex.kind === "packaged" && existsSync(hdriSource)) cpSync(hdriSource, path.join(dir, "public", "hdri"), { recursive: true });
+  // Same rule as create-aura3d (template-hdri.ts): look-authoring sources get the HDRI set.
+  if (existsSync(hdriSource)) cpSync(hdriSource, path.join(dir, "public", "hdri"), { recursive: true });
   const pkgPath = path.join(dir, "package.json");
   const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
   const aura = [];
