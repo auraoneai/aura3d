@@ -51,9 +51,5 @@ export const PRD01_DIAGNOSTIC_ONLY_FIELDS: Readonly<Record<string, { readonly re
   "material.ior": {
     reason: "C-03 IOR feeds the Phase-3 BRDF inputs; declared now, consumed then.",
     ownerPrd: 1
-  },
-  "background.toneMapped": {
-    reason: "C-09/C-05 background tone-map coverage flag rides the Phase-4 output pass.",
-    ownerPrd: 1
   }
 };

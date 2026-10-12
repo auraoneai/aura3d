@@ -512,6 +512,10 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
   body.push("  float a3dAlpha = a3dBaseColor.a;");
   if (alphaHooks.length > 0) body.push(...alphaHooks.map((s) => indent(s)));
   body.push("  a3dAlpha = a3dApplyAlpha(a3dAlpha);");
+  // C-05 coverage: HDR alpha marks drawn pixels for OutputPass. Opaque and
+  // (non-A2C) masked surfaces are fully covering; A2C needs the real alpha.
+  if (f.alphaMode === "opaque") body.push("  a3dAlpha = 1.0;");
+  else if (f.alphaMode === "mask") body.push("#ifndef ALPHA_TO_COVERAGE\n  a3dAlpha = 1.0;\n#endif");
 
   if (lit) {
     body.push("  vec3 a3dColor = directDiffuse + directSpecular + indirectDiffuse + indirectSpecular + a3dEmissive;");
