@@ -36,6 +36,7 @@ import {
   type AuraSceneNode
 } from "@aura3d/engine";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { galleryEffectsPass } from "./effects-pass";
 import { assets } from "../../../../src/aura-assets";
 import {
   FLOOR_LAYOUTS,
@@ -1075,11 +1076,10 @@ function buildScene(): ReturnType<typeof scene> {
       // Low-lit marble hall: moonlight key, warm guard flashlights (sway gated
       // by reduced-motion below), cool exit glow, shallow fog, restrained bloom.
       effects.neonBloom({ intensity: (reducedMotion ? 0.06 : 0.22) * (postV2 ? 1.6 : 1), quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.fog({ name: "gallery haze", density: 0.009, color: "#243b59", intensity: 0.18 }),
+      ...galleryEffectsPass({ visualReviewCapture }),
       effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.08 }),
       effects.antiAlias({ mode: "fxaa" }),
       lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: visualReviewCapture ? 0.06 : 0.38 }),
-      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: visualReviewCapture ? 0.4 : 1.05 }),
       lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: visualReviewCapture ? 1.04 : 0.58 }),
       lights.spot({ name: "rotunda guard spotlight", position: [-8.5, 2.6, 4.5], target: [-4, 0, 1], angle: 0.5, penumbra: 0.6, distance: 18, decay: 2, intensity: 2.2, color: "#ffd58a", shadow: true }),
       lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(-8.5, 1.8, 4.5),

@@ -236,6 +236,7 @@ bindHeldButton("dr-dive-btn", "KeyQ");
 bindHeldButton("dr-surface-btn", "KeyE");
 
 import { createDeepOceanEnvironment } from "./environment";
+import { deepRecoveryEffectsPass, effectsPassOn as deepRecoveryEffectsPassOn } from "./effects-pass";
 
 // ---------------- Scene Construction ----------------
 const initialSonarTargets = [
@@ -258,13 +259,9 @@ const sceneDef = scene()
   // and destroyed the focal hierarchy the comment above describes. Depth cueing
   // now comes from a darker, less saturated water column so warm sub surfaces and
   // cyan sonar returns are the brightest things on screen.
-  .background("#04141c")
-  .add(effects.fog({
-    name: "deep recovery suspended-particle haze",
-    color: "#0a2e3a",
-    density: 0.02,
-    intensity: 0.42
-  }))
+  // Effects pass: a slightly lifted water column behind the in-scatter.
+  .background(deepRecoveryEffectsPassOn ? "#072a35" : "#04141c")
+  .addMany(deepRecoveryEffectsPass())
   .add(effects.neonBloom({
     name: "deep recovery sonar bloom",
     intensity: 0.16,

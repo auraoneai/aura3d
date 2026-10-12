@@ -26,6 +26,7 @@ import {
   type AuraDiagnostics
 } from "@aura3d/engine";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { bankShotEffectsPass } from "./effects-pass";
 import { assets } from "../../../../src/aura-assets";
 import { CueController, AIM_STEP, SPIN_STEP } from "../gameplay/cue";
 import { RulesEngine, type ShotRecord, type ShotOutcome } from "../gameplay/rules";
@@ -348,12 +349,7 @@ function buildScene(): ReturnType<typeof scene> {
       effects.antiAlias({ mode: "fxaa" }),
       effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.74 : 0.26 }),
       effects.contactOcclusion({ name: "ball-to-felt contact", intensity: 0.36, radius: 0.52 }),
-      effects.fog({
-        name: "hall haze",
-        density: visualReviewCapture ? 0.0035 : 0.011,
-        color: "#10182a",
-        intensity: visualReviewCapture ? 0.07 : 0.16
-      }),
+      ...bankShotEffectsPass({ visualReviewCapture }),
       // A restrained ambient floor preserves the lacquer highlights and the
       // ball-to-felt contact gradient.  The previous broad blue fill flattened
       // every PBR response into the same midtone.
