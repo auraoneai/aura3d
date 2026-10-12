@@ -18,7 +18,7 @@ export function createRooftopEffectsPass(options: { readonly reducedMotion: bool
       color: "#8a6a7c",
       intensity: 0.3
     }),
-    effects.contactShadows({ length: 0.3, thickness: 0.05, steps: 16, intensity: 0.9, lights: "shadowed" }),
+    effects.contactShadows({ length: 0.3, thickness: 0.05, steps: 8, intensity: 0.9, lights: "shadowed" }),
     environments.preset("sunset", { name: "rooftop sunset reflections", intensity: 0.5, background: false }),
     effects.vignette({ name: "rooftop vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
@@ -34,8 +34,8 @@ export function createRooftopEffectsPass(options: { readonly reducedMotion: bool
         gravity: 0,
         drag: 0,
         lifetime: [10, 14],
-        maxParticles: 900,
-        rate: 75,
+        maxParticles: 550,
+        rate: 50,
         prewarm: 14,
         size: [0.04, 0.08],
         materialMode: "additive-glow",

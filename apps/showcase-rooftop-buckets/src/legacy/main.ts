@@ -53,8 +53,8 @@ const visualReviewCapture: boolean = false;
 // animation/debug harness. The normal game/review lane uses the lighter
 // registered raised-pose counterparts, which keeps the visual pass within its
 // documented draw-call budget while the route's clip state remains observable.
-const animationDebugCapture =
-  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "animation";
+// No ?debug harness in the shipped route (PRD-09 forbidden-param probe).
+const animationDebugCapture: boolean = false;
 if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 export interface RooftopBucketsEvidence {
@@ -383,7 +383,7 @@ function buildScene() {
         color: "#fff3d6",
         intensity: visualReviewCapture ? 2.75 : 3.6,
         // Effects pass: cascaded PCSS sun shadows across the court.
-        shadow: { cascades: 2, mapSize: 2048, filter: "pcss", softness: 1.1, intensity: 0.9 }
+        shadow: { cascades: 2, mapSize: 1024, filter: "pcss", softness: 1.1, intensity: 0.9 }
       }).position(8, 20, 10),
       lights.point({ name: "scorer warm key", color: "#ffd6a0", intensity: visualReviewCapture ? 4.15 : 4.4 }).position(-4.0, 4.6, 5.4),
       lights.point({ name: "defender cool rim", color: "#79dcff", intensity: visualReviewCapture ? 3.45 : 3.4 }).position(1.5, 4.4, 3.3),

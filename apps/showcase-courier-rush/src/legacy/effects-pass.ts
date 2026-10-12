@@ -17,12 +17,12 @@ export function createCourierEffectsPass(options: {
     // van, 35-45% on towers 25-35 m out, so the skyline layers into depth.
     effects.volumetricFog({
       name: "courier night street volumetric haze",
-      density: 0.022,
+      density: 0.026,
       color: "#3d5878",
       intensity: 0.55
     }),
-    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 12, intensity: 0.85, lights: "shadowed" }),
-    environments.preset("night", { name: "courier night reflections", intensity: 0.9, background: false }),
+    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 8, intensity: 0.85, lights: "shadowed" }),
+    environments.preset("night", { name: "courier night reflections", intensity: 0.6, background: false }),
     effects.vignette({ name: "courier chase vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
   if (!options.reducedMotion) {
@@ -39,8 +39,8 @@ export function createCourierEffectsPass(options: {
         gravity: 0,
         drag: 0,
         lifetime: [12, 16],
-        maxParticles: 1800,
-        rate: 130,
+        maxParticles: 1100,
+        rate: 85,
         prewarm: 16,
         size: [0.05, 0.1],
         materialMode: "additive-glow",

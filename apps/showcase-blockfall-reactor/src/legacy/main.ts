@@ -111,7 +111,8 @@ const visualReviewCapture: boolean = false;
  * forbids. The values stay in the published evidence object for specs and
  * route-health, and only become visible on an explicit debug pass.
  */
-const evidenceOverlay = new URL(window.location.href).searchParams.get("debug") === "1";
+// No ?debug overlay in the shipped route (PRD-09 forbidden-param probe).
+const evidenceOverlay: boolean = false;
 if (evidenceOverlay) document.documentElement.dataset.evidenceMode = "blockfall";
 if (visualReviewCapture) document.documentElement.dataset.reviewCapture = "blockfall";
 const clearChargeMaterial = material.neon({ name: "single clear reactor charge", color: "#ff9f43", emissive: "#ffb35a", emissiveIntensity: 1.05, roughness: 0.2, opacity: 0.7 });
@@ -649,7 +650,7 @@ const reactorScene = scene()
       name: "overhead arcade key",
       color: "#fff5dd",
       intensity: 1.05,
-      shadow: { cascades: 2, mapSize: 2048, filter: "pcss", softness: 1.1, intensity: 0.85 }
+      shadow: { cascades: 2, mapSize: 1024, filter: "pcss", softness: 1.1, intensity: 0.85 }
     }).position(-1.2, 6.4, 4.2),
     lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.72 : 1.28 }).position(2.4, 2.1, 2.6),
     lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity: visualReviewCapture ? 1.68 : 1.18 }).position(-2.15, 3.3, 1.35),

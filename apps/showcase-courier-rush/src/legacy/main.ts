@@ -99,7 +99,8 @@ declare global {
 const urlParams = new URLSearchParams(window.location.search);
 const autopilotEnabled = urlParams.get("autopilot") === "1";
 const timerScale = Number(urlParams.get("timerScale") ?? "1") || 1;
-const debugMode = urlParams.get("debug") === "1";
+// No ?debug overlay in the shipped route (PRD-09 forbidden-param probe).
+const debugMode: boolean = false;
 // Shipped play view only: no ?capture review lens (PRD-09 capture parity).
 const visualReviewCapture: boolean = false;
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
@@ -312,7 +313,7 @@ const app = createAuraApp("#app", {
       color: "#d8f5ff",
       intensity: 2.5,
       // Effects pass: cascaded PCSS moon shadows across the chase depth.
-      shadow: { cascades: 3, mapSize: 2048, filter: "pcss", softness: 1, maxDistance: 60, intensity: 0.9 }
+      shadow: { cascades: 3, mapSize: 1024, filter: "pcss", softness: 1, maxDistance: 60, intensity: 0.9 }
     }).position(-18, 26, 8))
     .add(lights.directional({ name: "city glow fill", color: "#36bdd2", intensity: 1.35 }).position(20, 18, 16))
     // Hero practicals used to sit at 2.6/1.8 directly on the van, which is what

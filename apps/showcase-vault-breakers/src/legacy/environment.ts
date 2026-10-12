@@ -21,7 +21,7 @@ export function createVaultBreakersEnvironment(): AuraSceneNode[] {
       color: "#ffd38a",
       intensity: 3.6,
       // Effects pass: explicit cascaded PCSS key shadow for the table furniture.
-      shadow: { cascades: 2, mapSize: 2048, filter: "pcss", softness: 1.1, intensity: 0.85 }
+      shadow: { cascades: 2, mapSize: 1024, filter: "pcss", softness: 1.1, intensity: 0.85 }
     }).position(-3.2, 6.2, 3.4).toJSON(),
     lights.directional({ name: "vault cyan rim", color: "#29dff1", intensity: 2.2 }).position(3.4, 4.8, -2.2).toJSON(),
     lights.directional({ name: "vault magenta fill", color: "#ff3ac8", intensity: 1.15 }).position(0.6, 1.4, -5.4).toJSON(),

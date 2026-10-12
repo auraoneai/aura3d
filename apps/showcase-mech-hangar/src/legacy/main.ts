@@ -695,7 +695,7 @@ const app = createAuraApp("#app", {
         intensity: 1.55,
         color: "#d7ebff",
         // Effects pass: cascaded PCSS key shadows for the mechs and gantry.
-        shadow: { cascades: 3, mapSize: 2048, filter: "pcss", softness: 1.1, maxDistance: 50, intensity: 0.9 }
+        shadow: { cascades: 3, mapSize: 1024, filter: "pcss", softness: 1.1, maxDistance: 50, intensity: 0.9 }
       }),
       lights.point({ name: "warm practical left", position: [-2.6, 2.3, 1.9], intensity: 3.65, color: "#ffb454" }),
       lights.point({ name: "warm practical right", position: [2.7, 2.1, -1.4], intensity: 3.05, color: "#ff9a3d" }),

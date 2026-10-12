@@ -14,12 +14,12 @@ export function createNeonSwarmEffectsPass(options: { readonly reducedMotion: bo
     // (≈14 m), 30-40% at the district edge.
     effects.volumetricFog({
       name: "neon swarm district volumetric haze",
-      density: 0.02,
+      density: 0.017,
       color: "#26355a",
-      intensity: 0.2
+      intensity: 0.15
     }),
-    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 12, intensity: 0.85, lights: "shadowed" }),
-    environments.preset("night", { name: "neon swarm night reflections", intensity: 0.6, background: false }),
+    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 8, intensity: 0.85, lights: "shadowed" }),
+    environments.preset("night", { name: "neon swarm night reflections", intensity: 0.35, background: false }),
     effects.vignette({ name: "neon swarm vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
   if (!options.reducedMotion) {
@@ -35,8 +35,8 @@ export function createNeonSwarmEffectsPass(options: { readonly reducedMotion: bo
         gravity: 0,
         drag: 0,
         lifetime: [6, 9],
-        maxParticles: 700,
-        rate: 90,
+        maxParticles: 450,
+        rate: 60,
         prewarm: 9,
         size: [0.06, 0.12],
         materialMode: "additive-glow",
