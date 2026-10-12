@@ -114,6 +114,15 @@ function shapeNodeToAura(node: Prd01ShapeNode, log: CapabilityLog): AuraSceneNod
   return json;
 }
 
+/**
+ * C-05 tonemap ruler swatch: emission only, matching three's MeshBasicMaterial
+ * (unlit) reference. A white-albedo PBR surface also reflected the scene's
+ * ambient + default IBL, so aura tone-mapped (stop + lit) against three's stop.
+ */
+function emissionOnly(intensity: number) {
+  return material.emissive({ color: "#000000", emissive: "#ffffff", emissiveIntensity: intensity, metalness: 0, roughness: 1, envMapIntensity: 0 });
+}
+
 function lightToAura(spec: Prd01LightSpec, log: CapabilityLog): AuraSceneNode {
   if (spec.kind === "ambient") return lights.ambient({ intensity: spec.intensity, color: spec.color as AuraColor }).toJSON();
   const orbiting = spec.orbitCenter !== undefined;
@@ -147,7 +156,8 @@ function lightToAura(spec: Prd01LightSpec, log: CapabilityLog): AuraSceneNode {
 }
 
 function buildSnapshot(spec: Prd01LaneSceneSpec, log: CapabilityLog): AuraSceneSnapshot {
-  const builder = scene().background(spec.background as AuraColor).camera(
+  // three r185 never tone-maps the clear colour: the parity reference opts out (C-05).
+  const builder = scene().background(spec.background as AuraColor, { toneMapped: false }).camera(
     camera.perspective({ position: spec.camera.position as AuraVec3, target: spec.camera.target as AuraVec3, fov: spec.camera.fov })
   );
   for (const light of spec.lights) builder.add(lightToAura(light, log));
@@ -170,7 +180,7 @@ function buildSnapshot(spec: Prd01LaneSceneSpec, log: CapabilityLog): AuraSceneS
         primitives
           .box({
             name: `swatch-${index}`,
-            material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: stop }),
+            material: emissionOnly(stop),
             size: [0.55, 0.55, 0.08]
           })
           .position(x0 + index * spacing, 0.55, 0)
@@ -181,7 +191,7 @@ function buildSnapshot(spec: Prd01LaneSceneSpec, log: CapabilityLog): AuraSceneS
       primitives
         .box({
           name: "grey-18",
-          material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: content.greyLevel })
+          material: emissionOnly(content.greyLevel)
         })
         .position(0, -0.35, 0)
         .scale([0.7, 0.35, 0.1])

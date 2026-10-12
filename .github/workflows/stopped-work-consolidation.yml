@@ -1,0 +1,133 @@
+name: Stopped work consolidation
+on:
+  push:
+    branches: [integrate/stopped-20261011]
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: Rerun only repaired release/type checks or all checks
+        type: choice
+        options: [all, repair]
+        default: all
+permissions:
+  contents: read
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify preserved stopped source hashes
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,hashlib
+          root=pathlib.Path('docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11')
+          manifest=json.loads((root/'manifest.json').read_text())
+          for row in manifest['branches']:
+              directory=pathlib.Path(row['archivePath'])
+              assert hashlib.sha256((directory/'committed.patch').read_bytes()).hexdigest()==row['committedPatchSha256'],row['branch']
+              assert row['tree']==row['reconstructedTree'],row['branch']
+              for kind in ['staged','unstaged']:
+                  if kind+'PatchSha256' in row:
+                      assert hashlib.sha256((directory/(kind+'.patch')).read_bytes()).hexdigest()==row[kind+'PatchSha256'],row['branch']
+              for f in row['workingFiles']:
+                  assert hashlib.sha256(pathlib.Path(f['archivePath']).read_bytes()).hexdigest()==f['sha256'],f['path']
+              print('verified',row['branch'])
+          PY
+      - name: Spring solver and binding regressions
+        if: inputs.scope != 'repair'
+        run: pnpm exec vitest run tests/unit/animation/spring-bones-anchor.test.ts tests/unit/animation/spring-bones-binding.test.ts tests/unit/animation/spring-bones.test.ts --maxWorkers=1
+      - name: Courier batching and honest evidence reporting
+        if: ${{ !cancelled() && inputs.scope != 'repair' }}
+        run: pnpm exec vitest run --config tests/qr/prd14/vitest.config.ts tests/qr/prd14/unit/courier-static-batch.test.ts tests/qr/prd14/unit/s10-assets.test.ts tests/qr/prd14/unit/write-evidence.test.ts --maxWorkers=1
+      - name: Exact release preparation contracts
+        if: ${{ !cancelled() }}
+        run: |
+          node --check tools/release/prepare-version.mjs
+          node --check tools/release/publish-all.mjs
+          node --check tools/release/exact-release-plan.mjs
+          node --test tests/unit/release/exact-plan.test.mjs
+      - name: Types and build
+        if: ${{ !cancelled() }}
+        run: pnpm typecheck && pnpm build:raw
+  spring-browser:
+    if: inputs.scope != 'repair'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright test tests/browser/spring-bones.spec.ts --retries=0 --trace=retain-on-failure
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stopped-spring-browser
+          path: |
+            tests/reports/
+            test-results/
+  temporal:
+    if: inputs.scope != 'repair'
+    runs-on: [self-hosted, track0, gpu-l4]
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      QR_PRD01_CHROME_ARGS: --headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist
+      QR_PRD01_CHANNEL: chromium
+      QR_PRD01_GLOBAL_TIMEOUT_MS: '360000'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - run: pnpm exec vite build --config tests/qr/prd01/harness/vite.config.ts
+      - run: pnpm exec playwright test --config tests/qr/prd01/playwright.config.ts tests/qr/prd01/browser/temporal-sigma.spec.ts --retries=0 --trace=retain-on-failure
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stopped-temporal
+          path: |
+            tests/qr/prd01/out/
+            test-results/
+  asset-acceptance:
+    if: inputs.scope != 'repair'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run S10 filesystem acceptance without a browser server
+        run: |
+          cat > .stopped-acceptance.config.ts <<'CONFIG'
+          import { defineConfig } from '@playwright/test';
+          export default defineConfig({ testDir: './tests/qr/prd14/browser', testMatch: 's10-assets.spec.ts', workers: 1, retries: 0, forbidOnly: true, reporter: [['list'], ['json', { outputFile: 'tests/reports/stopped-s10.json' }]] });
+          CONFIG
+          pnpm exec playwright test --config .stopped-acceptance.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stopped-asset-acceptance
+          path: tests/reports/stopped-s10.json

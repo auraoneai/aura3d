@@ -73,7 +73,8 @@ describe("environment probe pending: the floor renders, nothing throws into the 
     const probe = await loader({ url: "studio.hdr", tier: "medium" });
     expect(probe.source).toBe("hdri");
     expect(probe.mipCount).toBeGreaterThan(1);
-  });
+    // CPU HDR decode + PMREM: ~1.2 s locally, > 5 s on a loaded CI runner.
+  }, 30_000);
 
   it("bind keeps the neutral floor, warns once, never errors, and reports a retryable failure", async () => {
     stubHdrFetch();

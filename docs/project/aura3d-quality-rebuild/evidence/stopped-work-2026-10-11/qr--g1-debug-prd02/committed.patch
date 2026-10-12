@@ -1,0 +1,73 @@
+diff --git a/.github/workflows/lighting-quality.yml b/.github/workflows/lighting-quality.yml
+index fa604b727df85595a9e180d3891368a143dd0193..b2602c442b54ca9fccc84082464b90654028cded 100644
+--- a/.github/workflows/lighting-quality.yml
++++ b/.github/workflows/lighting-quality.yml
+@@ -148,7 +148,7 @@ jobs:
+         run: pnpm exec vite build --config benchmarks/quality-rebuild/scenes/prd02/vite.lane.config.ts
+       - run: pnpm exec playwright install chromium
+       - name: prd02 browser specs
+-        run: pnpm exec playwright test tests/qr/prd02/browser --config tests/qr/prd02/playwright.prd02.config.ts
++        run: pnpm exec playwright test tests/qr/prd02/browser/zz-debug.spec.ts --config tests/qr/prd02/playwright.prd02.config.ts
+       - uses: actions/upload-artifact@v4
+         if: always()
+         with:
+@@ -266,7 +266,7 @@ jobs:
+         id: bundle
+         run: pnpm exec vite build --config benchmarks/quality-rebuild/scenes/prd02/vite.lane.config.ts
+       - name: prd02 browser specs
+-        run: pnpm exec playwright test tests/qr/prd02/browser --config tests/qr/prd02/playwright.prd02.config.ts
++        run: pnpm exec playwright test tests/qr/prd02/browser/zz-debug.spec.ts --config tests/qr/prd02/playwright.prd02.config.ts
+       # Runs after a red spec step too (the job stays red): the captures are
+       # the screenshots that go with the spec numbers.
+       - name: lane capture
+diff --git a/tests/qr/prd02/browser/zz-debug.spec.ts b/tests/qr/prd02/browser/zz-debug.spec.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..dd81d758cf1f584a45ad68d07121988081edc8d7
+--- /dev/null
++++ b/tests/qr/prd02/browser/zz-debug.spec.ts
+@@ -0,0 +1,45 @@
++// TEMP debug spec (never merged): dumps prd02-13 frames + harness page state.
++import { test } from "@playwright/test";
++import { mkdirSync, writeFileSync } from "node:fs";
++import { startLaneServer, type LaneServer } from "./lane-page";
++
++const OUT = "benchmarks/quality-rebuild/scenes/prd02/out/debug";
++let server: LaneServer;
++test.beforeAll(async () => { mkdirSync(OUT, { recursive: true }); server = await startLaneServer(); });
++test.afterAll(async () => { await server.close(); });
++
++for (const flags of ["lighting", "lighting,-core", "none"]) {
++  test(`dump prd02-13 ${flags}`, async ({ page }) => {
++    test.setTimeout(300_000);
++    const logs: string[] = [];
++    page.on("console", (m) => logs.push(`${m.type()}: ${m.text()}`));
++    page.on("pageerror", (e) => logs.push(`pageerror: ${e.message}`));
++    const q = new URLSearchParams({ engine: "aura3d", scene: "prd02-13-ibl-only", "a3d-qr": flags });
++    await page.setViewportSize({ width: 1280, height: 720 });
++    await page.goto(`${server.origin}/scenes/prd02/lane.html?${q}`, { waitUntil: "load" });
++    await page.waitForFunction("Boolean(window.__QR_READY__ || window.__QR_ERROR__)", undefined, { timeout: 120_000, polling: 250 });
++    const state = await page.evaluate("(() => { const w = window; const d = w.__QR_READY__ ?? w.__QR_ERROR__; return JSON.stringify(d, (k, v) => (typeof v === 'function' ? undefined : v)).slice(0, 200000); })()");
++    writeFileSync(`${OUT}/13-${flags}.json`, String(state));
++    writeFileSync(`${OUT}/13-${flags}.log`, logs.join("\n"));
++    await page.locator("#stage").screenshot({ path: `${OUT}/13-${flags}.png` });
++  });
++}
++
++for (const name of ["chunks", "pmrem", "sh9"]) {
++  test(`dump harness ${name}`, async ({ page }) => {
++    test.setTimeout(200_000);
++    const logs: string[] = [];
++    page.on("console", (m) => logs.push(`${m.type()}: ${m.text()}`));
++    page.on("pageerror", (e) => logs.push(`pageerror: ${e.message}`));
++    page.on("requestfailed", (r) => logs.push(`requestfailed: ${r.url()} ${r.failure()?.errorText}`));
++    page.on("response", (r) => { if (r.status() >= 400) logs.push(`http ${r.status()} ${r.url()}`); });
++    let err = "";
++    try {
++      await page.goto(`${server.origin}/scenes/prd02/${name}.html`, { waitUntil: "load", timeout: 60_000 });
++      await page.waitForTimeout(60_000);
++    } catch (e) { err = String(e); }
++    const keys = await page.evaluate("JSON.stringify(Object.keys(window).filter((k) => k.startsWith('__')))").catch((e) => String(e));
++    const st = await page.evaluate("JSON.stringify({c: window.__A3D_PRD02_CHUNKS__, p: window.__A3D_PRD02_PMREM__, s: window.__A3D_PRD02_SH9__})").catch((e) => String(e));
++    writeFileSync(`${OUT}/harness-${name}.log`, [err, String(keys), String(st).slice(0, 20000), ...logs].join("\n"));
++  });
++}

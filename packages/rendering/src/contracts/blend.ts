@@ -15,8 +15,10 @@ export type AuraBlendMode = "opaque" | "alpha" | "premultiplied" | "additive" | 
 const NAMED_BLEND_COMPONENTS: Readonly<Record<"alpha" | "premultiplied" | "additive" | "multiply", { readonly color: BlendComponent; readonly alpha: BlendComponent }>> = {
   alpha: { color: { equation: "add", src: "src-alpha", dst: "one-minus-src-alpha" }, alpha: { equation: "add", src: "one", dst: "one-minus-src-alpha" } },
   premultiplied: { color: { equation: "add", src: "one", dst: "one-minus-src-alpha" }, alpha: { equation: "add", src: "one", dst: "one-minus-src-alpha" } },
-  additive: { color: { equation: "add", src: "src-alpha", dst: "one" }, alpha: { equation: "add", src: "zero", dst: "one" } },
-  multiply: { color: { equation: "add", src: "dst-color", dst: "one-minus-src-alpha" }, alpha: { equation: "add", src: "zero", dst: "one" } }
+  // additive/multiply accumulate alpha so they mark C-05 output coverage
+  // (an additive quad over the untouched clear is tone-mapped, as in three).
+  additive: { color: { equation: "add", src: "src-alpha", dst: "one" }, alpha: { equation: "add", src: "one", dst: "one" } },
+  multiply: { color: { equation: "add", src: "dst-color", dst: "one-minus-src-alpha" }, alpha: { equation: "add", src: "one", dst: "one" } }
 };
 
 /**
