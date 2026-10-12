@@ -8,6 +8,9 @@ import { PRD07_FOG_CHUNK_GLSL } from "./shaders/fog.glsl";
 
 export const SKY_SHADER_MARKER = "aura3d.prd07.sky";
 
+/** Where skyFragmentSource splices the §8.4 fog chunk (inside `#if SKY_FOG`). */
+const SKY_FOG_CHUNK_SLOT = "// @a3d-prd07-sky-fog-chunk";
+
 const VERT = `
 // ${SKY_SHADER_MARKER} vertex
 in vec2 a_pos;
@@ -167,6 +170,7 @@ float starfield(vec3 direction) {
 uniform vec3 u_cameraPosition;
 uniform vec3 u_sunColor;
 uniform float u_fogBackgroundDistance;
+${SKY_FOG_CHUNK_SLOT}
 #endif
 
 void main() {
@@ -214,10 +218,12 @@ void main() {
 `;
 
 function defines(d: SkyProgramDefines): string {
+  // Every macro read by `#if` is defined (0/1): an undefined identifier in an
+  // ESSL 3.00 `#if` is a compile error, which broke gradient/colour skies.
   return (
-    `${d.model === "PREETHAM" ? "#define MODEL_PREETHAM 1\n" : ""}` +
-    `${d.model === "GRADIENT" ? "#define MODEL_GRADIENT 1\n" : ""}` +
-    `${d.model === "COLOR" ? "#define MODEL_COLOR 1\n" : ""}` +
+    `#define MODEL_PREETHAM ${d.model === "PREETHAM" ? 1 : 0}\n` +
+    `#define MODEL_GRADIENT ${d.model === "GRADIENT" ? 1 : 0}\n` +
+    `#define MODEL_COLOR ${d.model === "COLOR" ? 1 : 0}\n` +
     `${d.stars ? "#define SKY_STARS 1\n" : "#define SKY_STARS 0\n"}` +
     `${d.clouds ? "#define SKY_CLOUDS 1\n" : "#define SKY_CLOUDS 0\n"}` +
     `${d.moon ? "#define SKY_MOON 1\n" : "#define SKY_MOON 0\n"}` +
@@ -230,7 +236,11 @@ export function skyVertexSource(): string {
 }
 
 export function skyFragmentSource(d: SkyProgramDefines): string {
-  return `#version 300 es\n${defines(d)}${d.fog ? `${PRD07_FOG_CHUNK_GLSL}\n` : ""}${FRAG}`;
+  // The fog chunk is spliced into the SKY_FOG block, after this program's
+  // precision statement and its camera/sun uniforms: prepended before FRAG
+  // it hit "no default precision" and used u_cameraPosition before its
+  // declaration, so every fogged sky failed to compile on WebGL2.
+  return `#version 300 es\n${defines(d)}${FRAG.replace(SKY_FOG_CHUNK_SLOT, d.fog ? PRD07_FOG_CHUNK_GLSL : "")}`;
 }
 
 export const SKY_CHUNKS: readonly ShaderChunk[] = [

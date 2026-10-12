@@ -8,6 +8,7 @@ import type { RenderBuffer, RenderDevice, RenderTarget, RenderTargetDescriptor }
 import type { AuraQualityTierSettings } from "../contracts/quality";
 import { QUALITY_TIERS } from "../contracts/quality";
 import { TextureBinding } from "../TextureBinding";
+import { PRD07_DEPTH_SAMPLER } from "./depthSampler";
 import { VertexBuffer } from "../VertexBuffer";
 import { VertexFormat } from "../VertexFormat";
 import {
@@ -113,7 +114,7 @@ export class LowResParticleTarget {
       ["u_lowRes", new TextureBinding({ name: "u_lowRes", texture: this.target.colorTexture })]
     ]);
     if (bilateral && depth?.source.texture) {
-      uniforms.set("u_sceneDepth", new TextureBinding({ name: "u_sceneDepth", texture: depth.source.texture }));
+      uniforms.set("u_sceneDepth", new TextureBinding({ name: "u_sceneDepth", texture: depth.source.texture, sampler: PRD07_DEPTH_SAMPLER }));
       uniforms.set("u_depthLinearize", [depth.source.linearize.near, depth.source.linearize.far, depth.source.linearize.orthographic ? 1 : 0, 0]);
       uniforms.set("u_lowTexel", [1 / this.target.width, 1 / this.target.height]);
       uniforms.set("u_lowSize", [this.target.width, this.target.height]);

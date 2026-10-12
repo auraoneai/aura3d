@@ -5,6 +5,7 @@
 import type { RenderBuffer, RenderDevice, RenderShaderProgram } from "../RenderDevice";
 import type { FrameContributorContext, TransparentQueueItem } from "../contracts/frameGraph";
 import { TextureBinding } from "../TextureBinding";
+import { PRD07_DEPTH_SAMPLER } from "./depthSampler";
 import { VertexFormat } from "../VertexFormat";
 import { RibbonBatch, RIBBON_VERTEX_FLOATS, type RibbonGeometry } from "./RibbonBatch";
 import { resolveSceneDepth } from "./SceneDepthAdapter";
@@ -50,7 +51,7 @@ export class RibbonPass {
       ["u_outputColorSpace", 1]
     ]);
     if (softParticles && depth) {
-      uniforms.set("u_sceneDepth", new TextureBinding({ name: "u_sceneDepth", texture: depth.source.texture! }));
+      uniforms.set("u_sceneDepth", new TextureBinding({ name: "u_sceneDepth", texture: depth.source.texture!, sampler: PRD07_DEPTH_SAMPLER }));
       uniforms.set("u_depthLinearize", [depth.source.linearize.near, depth.source.linearize.far, depth.source.linearize.orthographic ? 1 : 0, 0]);
     }
     this.device.draw({

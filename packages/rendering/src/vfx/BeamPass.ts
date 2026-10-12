@@ -7,6 +7,7 @@
 import type { RenderBuffer, RenderDevice, RenderShaderProgram } from "../RenderDevice";
 import type { FrameContributorContext, TransparentQueueItem } from "../contracts/frameGraph";
 import { TextureBinding } from "../TextureBinding";
+import { PRD07_DEPTH_SAMPLER } from "./depthSampler";
 import { RIBBON_VERTEX_FORMAT } from "./RibbonPass";
 import { resolveSceneDepth } from "./SceneDepthAdapter";
 import { BEAM_SHADER_MARKER, beamFragmentSource, beamProgramKey, beamVertexSource } from "./shaders/beam.glsl";
@@ -232,7 +233,7 @@ export class BeamPass {
       ["u_shimmer", spec.shimmer ?? 0]
     ]);
     if (softParticles && depth) {
-      uniforms.set("u_sceneDepth", new TextureBinding({ name: "u_sceneDepth", texture: depth.source.texture! }));
+      uniforms.set("u_sceneDepth", new TextureBinding({ name: "u_sceneDepth", texture: depth.source.texture!, sampler: PRD07_DEPTH_SAMPLER }));
       uniforms.set("u_depthLinearize", [depth.source.linearize.near, depth.source.linearize.far, depth.source.linearize.orthographic ? 1 : 0, 0]);
     }
     this.device.draw({

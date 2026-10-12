@@ -56,9 +56,31 @@ export interface Prd07RunOptions {
   readonly qrFlags?: readonly string[];
 }
 
-function laneFlags(opts: Prd07RunOptions): readonly string[] | undefined {
+/**
+ * Harness flags for a lane scene. The harness list (`?a3d-qr=`) decides which
+ * lane flags are on; a scene's own sub-flags (`vfx.sky`, `vfx.fog`, ...) ride
+ * along whenever their lane flag is on, because the engine treats VFX
+ * sub-flags as explicit opt-ins (`DEFAULT_ON_SUB_FLAGS` lists only world).
+ * Without this, promote_flag=vfx rendered sky/fog/volumetric/decal scenes
+ * with every lane-07 contributor except particles gated off. An explicit
+ * `-vfx.fog` in the harness list still wins. Absent list or `none` stays the
+ * flags-off control.
+ */
+export function laneFlags(opts: Prd07RunOptions, specFlags: readonly string[] = []): readonly string[] | undefined {
   const list = (opts.qrFlags ?? []).filter((flag) => flag !== "" && flag !== "none");
-  return list.length > 0 ? list : undefined;
+  if (list.length === 0) return undefined;
+  const all = list.includes("all");
+  const lanesOn = new Set(list.filter((flag) => !flag.startsWith("-") && !flag.includes(".")));
+  const merged = [...list];
+  for (const sub of specFlags) {
+    const dot = sub.indexOf(".");
+    if (dot <= 0 || sub.startsWith("-")) continue;
+    const lane = sub.slice(0, dot);
+    if (!all && !lanesOn.has(lane)) continue;
+    if (list.includes(`-${lane}`) || list.includes(sub) || list.includes(`-${sub}`)) continue;
+    merged.push(sub);
+  }
+  return merged;
 }
 
 interface EffectsDiagnosticsShape {
@@ -326,7 +348,7 @@ async function nextFrame(): Promise<void> {
 export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement, opts: Prd07RunOptions = {}): Promise<ReadyPayload> {
   const started = performance.now();
   const log = new CapabilityLog();
-  const flags = laneFlags(opts);
+  const flags = laneFlags(opts, spec.qrFlags);
   // T0-10 (#416): the adapter concludes inside capture.mjs's page window.
   const runQuery = new URLSearchParams(window.location.search);
   const adapterDeadline = performance.now() + adapterBudgetMs(Number(runQuery.get("timeout")) || DEFAULT_CAPTURE_TIMEOUT_MS);

@@ -8,6 +8,7 @@ export const BEAM_SHADER_MARKER = "prd07-beam-v1";
 
 export function beamVertexSource(): string {
   return `#version 300 es
+// ${BEAM_SHADER_MARKER} vertex
 precision highp float;
 in vec3 a_position;
 in vec3 a_normal;
@@ -40,6 +41,7 @@ export function beamFragmentSource(defines: { readonly softParticles?: boolean; 
   const aurora = defines.aurora ? "#define AURORA" : "";
   const soft = defines.softParticles ? "#define SOFT_PARTICLES" : "";
   return `#version 300 es
+// ${BEAM_SHADER_MARKER} fragment
 precision highp float;
 ${aurora}
 ${soft}
@@ -72,7 +74,7 @@ void main() {
   alpha *= clamp((sceneZ - fragZ) / 0.5, 0.0, 1.0);
 #endif
   rgb *= alpha;
-  if (u_outputColorSpace == 1) {
+  if (u_outputColorSpace > 0.5) {
     rgb = pow(rgb, vec3(1.0 / 2.2));
   }
   o_color = vec4(rgb, alpha);

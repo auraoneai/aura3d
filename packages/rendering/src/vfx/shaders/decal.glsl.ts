@@ -59,11 +59,15 @@ in vec4 v_fade;
 uniform mat4 u_viewProjection;
 ${d.albedoTexture ? "uniform sampler2D u_albedo;" : ""}
 ${d.normalTexture ? "uniform sampler2D u_normalMap;" : ""}
+// Same guard as the embedded fog chunk, so fogged variants don't redeclare.
+#ifndef A3D_PRD07_FOG_ENV_UNIFORMS
+#define A3D_PRD07_FOG_ENV_UNIFORMS
+uniform vec3 u_cameraPosition;
 uniform vec3 u_sunDirection;
 uniform vec3 u_sunColor;
+#endif
 uniform float u_roughness;
 uniform vec4 u_sh9[9];      // A3DSH9 — a3dSampleIrradianceSH convention (C-02 stub: L0 only)
-uniform vec3 u_cameraPosition;
 ${d.fog ? PRD07_FOG_CHUNK_GLSL : ""}
 layout(location = 0) out vec4 o_color;
 

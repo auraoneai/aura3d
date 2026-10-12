@@ -7,6 +7,9 @@
 // closed (hard particles + C-36 note) for any unsampleable source.
 
 import { beforeEach, describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { PRD07_DEPTH_SAMPLER } from "../../../../packages/rendering/src/vfx/depthSampler";
 import { MockRenderDevice, type DrawCommand } from "../../../../packages/rendering/src/RenderDevice";
 import { Texture } from "../../../../packages/rendering/src/Texture";
 import { TextureBinding } from "../../../../packages/rendering/src/TextureBinding";
@@ -96,9 +99,29 @@ describe("#868 scene-depth copy source", () => {
       if (depth instanceof TextureBinding) {
         boundDepth = true;
         expect(depth.texture).toBe(target.depthTexture);
+        // QR-07: a LINEAR-filtered depth texture is incomplete on WebGL2 and
+        // samples 0 → soft fade 0 → zero particle pixels on the core path.
+        expect(depth.sampler.minFilter).toBe("nearest");
+        expect(depth.sampler.magFilter).toBe("nearest");
       }
     }
     expect(boundDepth).toBe(true);
     app.dispose();
+  });
+
+  // QR-07 GPU promote (run 38189250898): particles issued their draw under the
+  // default flags yet the frame matched -vfx byte for byte. Every lane-07
+  // scene-depth read must use the NEAREST depth sampler.
+  it("every lane-07 u_sceneDepth binding uses the NEAREST depth sampler", () => {
+    const root = resolve(__dirname, "../../../../packages/rendering/src");
+    const files = ["vfx/ParticleBatchPass.ts", "vfx/RibbonPass.ts", "vfx/BeamPass.ts", "vfx/LowResParticles.ts", "atmosphere/VolumetricFogPass.ts"];
+    for (const file of files) {
+      const source = readFileSync(join(root, file), "utf8");
+      const bindings = source.match(/new TextureBinding\(\{ name: "u_sceneDepth"[^}]*\}/g) ?? [];
+      expect(bindings.length, file).toBeGreaterThan(0);
+      for (const binding of bindings) expect(binding, file).toContain("sampler: PRD07_DEPTH_SAMPLER");
+    }
+    expect(PRD07_DEPTH_SAMPLER.minFilter).toBe("nearest");
+    expect(PRD07_DEPTH_SAMPLER.magFilter).toBe("nearest");
   });
 });
