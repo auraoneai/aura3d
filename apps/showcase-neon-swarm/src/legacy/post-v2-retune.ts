@@ -6,12 +6,22 @@
 // `clampLuminance` are inert on the legacy bridge, and `colorGrade.exposure`
 // only applies with the flag on. The `-post` frame is therefore unchanged.
 
+import { resolveQrFlags } from "@aura3d/engine/contracts";
+
+/** True when A3D_QR_POST resolves on (default-on; `?a3d-qr=-post` turns it off). */
+export const POST_V2_ON = resolveQrFlags({
+  url: location.href,
+  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+}).on("A3D_QR_POST");
+/** colorGrade contrast under post v2 (legacy 1.08): restores the highlight share ACES rolls off. */
+export const POST_V2_CONTRAST = 1.18;
+
 /** v2 bloom composite intensity (`hdr + bloom * intensity`, clamped to [0, 4]). */
-export const POST_V2_BLOOM_INTENSITY = 4;
+export const POST_V2_BLOOM_INTENSITY = 3;
 /** v2 prefilter knee ratio: bloom ramps in from `threshold * (1 - knee)`. */
 export const POST_V2_BLOOM_KNEE = 0;
 /** v2 exposure multiplier folded into `colorGrade.exposure`. */
-export const POST_V2_EXPOSURE = 1.15;
+export const POST_V2_EXPOSURE = 1.6;
 
 interface BloomBuilderLike {
   toJSON(): unknown;
