@@ -49,7 +49,7 @@ export function galleryEffectsPass(options: { readonly visualReviewCapture: bool
       heightFalloff: 0.18,
       heightReference: 0
     }),
-    effects.vignette({ intensity: 0.3, smoothness: 0.6 }),
+    effects.vignette({ intensity: 0.35, smoothness: 1.8 }),
     ...(vfxOn
       ? [
           // Torch beam of the rotunda guard spot, visible in the haze.

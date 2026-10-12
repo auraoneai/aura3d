@@ -45,7 +45,7 @@ export function orbitalEffectsPass() {
       color: "#1b2f4a",
       intensity: 0.34
     }),
-    effects.vignette({ intensity: 0.32, smoothness: 0.6 }),
+    effects.vignette({ intensity: 0.35, smoothness: 1.8 }),
     ...(vfxOn
       ? [
           // Debris belt: a wide spawn disc (fountain plume preset) in the

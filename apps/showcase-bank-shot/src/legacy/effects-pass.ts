@@ -51,7 +51,7 @@ export function bankShotEffectsPass(options: { readonly visualReviewCapture: boo
       heightFalloff: 0.35,
       heightReference: 0
     }),
-    effects.vignette({ intensity: 0.34, smoothness: 0.55 }),
+    effects.vignette({ intensity: 0.35, smoothness: 1.8 }),
     ...(vfxOn
       ? [
           // Dust motes rising slowly through the lamp pool over the table

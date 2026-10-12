@@ -52,7 +52,7 @@ export function deepRecoveryEffectsPass() {
       heightFalloff: 0.06,
       heightReference: 0
     }),
-    effects.vignette({ intensity: 0.36, smoothness: 0.55 }),
+    effects.vignette({ intensity: 0.35, smoothness: 1.8 }),
     ...(vfxOn
       ? [
           ...SHAFTS.map((shaft, index) =>
