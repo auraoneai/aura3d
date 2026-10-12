@@ -197,7 +197,7 @@ async function captureOne(browser, ex, url, shotsDir) {
   const page = await context.newPage();
   page.on("console", (m) => { if (m.type() === "error" && rec.consoleErrors.length < 12) rec.consoleErrors.push(m.text().slice(0, 300)); });
   page.on("pageerror", (e) => { if (rec.pageErrors.length < 20) rec.pageErrors.push(String(e?.stack ?? e).slice(0, 500)); });
-  page.on("requestfailed", (r) => { if (rec.failedRequests.length < 12) rec.failedRequests.push(r.url().slice(0, 200)); });
+  page.on("requestfailed", (r) => { if (rec.failedRequests.length < 12) rec.failedRequests.push(`${r.failure()?.errorText ?? "failed"} ${r.url().slice(0, 200)}`); });
   page.on("response", (r) => { if (r.status() >= 400 && rec.failedRequests.length < 12) rec.failedRequests.push(`${r.status()} ${r.url().slice(0, 200)}`); });
   try {
     const resp = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90_000 });
