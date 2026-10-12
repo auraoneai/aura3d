@@ -11,6 +11,7 @@ import { bakeTerrainSplat } from "../../../../packages/rendering/src/world/terra
 describe("prd10 splat bake render-target restore", () => {
   it("restores the render target bound before the bake", () => {
     const device = new MockRenderDevice();
+    device.beginFrame(64, 64);
     const scene = device.createRenderTarget({ width: 64, height: 64, label: "scene", format: "rgba16f" });
     device.setRenderTarget(scene);
     const heightTexture = new Texture({ width: 4, height: 4, format: "rgba32f", colorSpace: "linear", data: new Float32Array(64) });
@@ -26,12 +27,17 @@ describe("prd10 splat bake render-target restore", () => {
     expect(bake.splat1).not.toBeNull();
     expect(device.getRenderTarget()).toBe(scene);
     bake.dispose();
+    device.endFrame();
+    device.dispose();
   });
 
   it("leaves the canvas bound when nothing was bound before", () => {
     const device = new MockRenderDevice();
+    device.beginFrame(64, 64);
     const heightTexture = new Texture({ width: 4, height: 4, format: "rgba32f", colorSpace: "linear", data: new Float32Array(64) });
     bakeTerrainSplat(device, { heightTexture, heightTexSize: [4, 4], texelWorld: 1, heightScale: 1, resolution: 8, layerCount: 2, rules: [] }).dispose();
     expect(device.getRenderTarget()).toBeNull();
+    device.endFrame();
+    device.dispose();
   });
 });

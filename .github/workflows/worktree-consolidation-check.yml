@@ -48,6 +48,9 @@ jobs:
       - name: Rendering feature regression suite
         if: ${{ !cancelled() }}
         run: pnpm exec vitest run -c tests/qr/prd01/vitest.config.ts
+      - name: Material routing regressions
+        if: ${{ !cancelled() }}
+        run: pnpm exec vitest run -c tests/qr/prd04/vitest.config.ts tests/qr/prd04/unit/materials-lobe-route.test.ts tests/qr/prd04/unit/bench-registry-active.test.ts
       - name: Authoring regression suite
         if: ${{ !cancelled() }}
         run: pnpm exec vitest run -c tests/qr/prd13/vitest.qr-prd13.config.ts
