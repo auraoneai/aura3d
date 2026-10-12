@@ -645,10 +645,13 @@ export class PoseMixer {
     }
 
     // Aura extension: sync groups keep normalized phase aligned to the leader
-    // (first activated member) — three r185 has no phase sync.
+    // (first activated member) — three r185 has no phase sync. Only enabled
+    // members take part: a faded-out action stays `playing` (enabled=false, as
+    // in r185) and must not keep leading the group — it would slave the
+    // incoming clip to its own (restored) rate after the crossfade.
     const groups = new Map<string, PoseAction[]>();
     for (const action of allActions) {
-      if (action.syncGroupName === null || !action.playing) continue;
+      if (action.syncGroupName === null || !action.playing || !action.enabled) continue;
       const group = groups.get(action.syncGroupName) ?? [];
       group.push(action);
       groups.set(action.syncGroupName, group);

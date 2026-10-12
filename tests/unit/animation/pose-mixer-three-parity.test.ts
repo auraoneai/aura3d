@@ -383,3 +383,39 @@ function distinctClips(clips: readonly THREE.AnimationClip[]): THREE.AnimationCl
   }
   return result;
 }
+
+describe("syncGroup crossfade chain vs three r185 phase-matched crossFadeTo (prd06-crossfade-filmstrip)", () => {
+  it("Idle→Walk→Run with warp: a faded-out leader stops driving the group", async () => {
+    const { three, rig } = await freshRig(FIXTURES.soldier);
+    const { mixer, out } = makeAuraMixer(rig);
+    const byName = new Map(three.clips.map((clip) => [clip.name, clip]));
+    const threeMixer = new THREE.AnimationMixer(three.scene);
+    let current = threeMixer.clipAction(byName.get("Idle")!);
+    current.play();
+    mixer.play("Idle", { syncGroup: "locomotion" });
+    // Same schedule as the benchmark scene: transitions fire before steps 30 / 90.
+    const transitions = new Map([[30, "Walk"], [90, "Run"]]);
+    for (let step = 1; step <= 156; step += 1) {
+      const clipName = transitions.get(step);
+      if (clipName) {
+        const next = threeMixer.clipAction(byName.get(clipName)!);
+        next.enabled = true;
+        next.reset();
+        const outDur = current.getClip().duration;
+        next.time = ((current.time % outDur) / outDur) * next.getClip().duration;
+        next.play();
+        current.crossFadeTo(next, 0.25, true);
+        current = next;
+        mixer.crossFadeTo(clipName, 0.25, { warp: true, syncGroup: "locomotion" });
+      }
+      threeMixer.update(DT);
+      mixer.update(DT);
+    }
+    mixer.evaluate(out);
+    const run = mixer.activeActions().find((action) => action.clipName === "Run")!;
+    expect(run.time).toBeCloseTo(current.time, 3);
+    const diff = poseDiff(out, three.bones);
+    expect(diff.rotation, "rotation").toBeLessThanOrEqual(1e-3);
+    expect(diff.position, "position").toBeLessThanOrEqual(1e-3);
+  });
+});
