@@ -46,6 +46,8 @@ describe("prd01 C-04 resolveBlendMode", () => {
   });
 
   it("named modes resolve to the §6.8 factor table", () => {
+    // additive/multiply alpha is ADD/ONE/ONE: they accumulate C-05 output
+    // coverage alpha (b68fcf1eb; see tests/qr/prd01/unit/output-three-parity.test.ts).
     expect(resolveBlendMode({ ...BASE, blendMode: "premultiplied" })).toEqual({
       kind: "custom",
       color: { equation: "add", src: "one", dst: "one-minus-src-alpha" },
@@ -54,12 +56,12 @@ describe("prd01 C-04 resolveBlendMode", () => {
     expect(resolveBlendMode({ ...BASE, blendMode: "additive" })).toEqual({
       kind: "custom",
       color: { equation: "add", src: "src-alpha", dst: "one" },
-      alpha: { equation: "add", src: "zero", dst: "one" }
+      alpha: { equation: "add", src: "one", dst: "one" }
     });
     expect(resolveBlendMode({ ...BASE, blendMode: "multiply" })).toEqual({
       kind: "custom",
       color: { equation: "add", src: "dst-color", dst: "one-minus-src-alpha" },
-      alpha: { equation: "add", src: "zero", dst: "one" }
+      alpha: { equation: "add", src: "one", dst: "one" }
     });
     expect(resolveBlendMode({ ...BASE, blendMode: "opaque", blend: true })).toBe("opaque");
   });
