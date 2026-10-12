@@ -56,3 +56,41 @@ export function temporalSigma(frames: readonly ImageLike[], region?: MaskRect): 
     frames: frames.length
   };
 }
+
+export interface HighlightFrameSigmaResult {
+  /** RMS frame-to-frame luma change over the highlight pixels (PRD-01 S9 "frame-to-frame σ"). */
+  readonly sigma: number;
+  /** Pixels whose peak luma over the strip reaches `threshold` (the highlight region). */
+  readonly highlightPixels: number;
+  readonly frames: number;
+  readonly threshold: number;
+}
+
+/**
+ * PRD-01 §15 `prd01-specular-aa`: temporal luminance variance in highlight
+ * regions. The highlight region is every pixel whose peak luma over the strip
+ * reaches `threshold`; sigma is the RMS of consecutive-frame luma deltas there,
+ * so a still pixel scores 0 and specular sparkle (on/off between frames) dominates.
+ */
+export function highlightFrameSigma(frames: readonly ImageLike[], threshold = 96): HighlightFrameSigmaResult {
+  if (frames.length < 2) return { sigma: 0, highlightPixels: 0, frames: frames.length, threshold };
+  const { width, height } = frames[0]!;
+  let highlightPixels = 0;
+  let sumSq = 0;
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      let peak = 0;
+      for (const frame of frames) peak = Math.max(peak, lumaAt(frame, x, y));
+      if (peak < threshold) continue;
+      highlightPixels += 1;
+      let previous = lumaAt(frames[0]!, x, y);
+      for (let t = 1; t < frames.length; t += 1) {
+        const current = lumaAt(frames[t]!, x, y);
+        sumSq += (current - previous) * (current - previous);
+        previous = current;
+      }
+    }
+  }
+  const samples = highlightPixels * (frames.length - 1);
+  return { sigma: samples > 0 ? Math.sqrt(sumSq / samples) : 0, highlightPixels, frames: frames.length, threshold };
+}
