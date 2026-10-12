@@ -1,41 +1,40 @@
 /**
  * Lane-01 row 01-S9 (?tools=temporal-dolly&a3d-qr=<list>): specular-AA
- * temporal stability. The `prd01-specular-aa` content (five chrome spheres,
- * metalness 1, roughness 0.05, floor, ambient + directional key) is rendered
- * in Aura (at 0,0) and three r185 (at HALF_W,0) under the same deterministic
- * 60-frame cosine-eased camera dolly. Aura evaluates `camera.dolly` at the
- * simulated clock (`app.step`); three places its camera with the identical
- * formula (compiler/camera.ts) at the same `app.runtime.time`, so both engines
- * see the same eye per frame. The key light is static (no orbit) so the only
- * motion is the camera: per-pixel luma sigma in the spheres mask is then the
- * geometric motion (identical in both engines) plus specular shimmer.
+ * temporal stability, PRD-01 §15 `prd01-specular-aa` — "40 thin glossy tori
+ * (roughness 0.05) and wires at 20-60 m, camera dolly over 60 frames;
+ * temporal luminance variance in highlight regions (frame-to-frame σ)
+ * relative to three with MeshStandardMaterial".
  *
- * Frames are read back after each draw (drawImage of the WebGL canvas, both
- * engines with preserveDrawingBuffer), cropped to the spheres mask, and reduced in-page
- * with `metrics.temporalSigma`. Published on `window.__QR_SPEC__`.
+ * Aura (at 0,0) and three r185 (at HALF_W,0) render identical geometry —
+ * Aura's unit torus/cylinder (torus r 0.43 tube 0.045 64x16; cylinder r 0.5
+ * h 1 48 seg) mirrored by the same three geometries — lit by one static key
+ * light, no IBL on either side (three has no environment; Aura sets
+ * envMapIntensity 0), so highlights are key-light glints whose sparkle under
+ * the dolly is the specular aliasing being measured. Aura evaluates
+ * `camera.dolly` at the simulated clock (`app.step`); three places its camera
+ * with the identical formula (compiler/camera.ts) at the same runtime time.
+ * Frames are read back after each draw (both engines preserveDrawingBuffer)
+ * and reduced with `metrics.highlightFrameSigma`. Published on __QR_SPEC__.
  */
 
 import * as THREE from "three";
 import { camera, lights, material, primitives, scene } from "@aura3d/engine";
-import type { AuraApp } from "@aura3d/engine";
-import { temporalSigma, type TemporalSigmaResult } from "../metrics/temporalSigma";
+import type { AuraApp, AuraSceneNode } from "@aura3d/engine";
+import { highlightFrameSigma, type HighlightFrameSigmaResult } from "../metrics/temporalSigma";
 import type { ImageLike } from "../metrics/maskIoU";
 import { errorText, HALF_H, HALF_W, mountAura, mountThree, placeCanvas, qrFlagsParam, settleThree } from "./specKit";
 
 export interface TemporalDollyEngineResult {
-  readonly sigma: TemporalSigmaResult;
-  /** Mean mask luma over all frames. */
-  readonly meanLuma: number;
-  /** Fraction of mask pixels with alpha > 0 (sanity: an unreadable / cleared drawing buffer reads back 0). */
+  readonly highlight: HighlightFrameSigmaResult;
+  /** Fraction of pixels with alpha > 0 (sanity: an unreadable / cleared drawing buffer reads back 0). */
   readonly opaqueFraction: number;
-  /** Frames whose mask crop differs from the previous frame (sanity: the dolly moved). */
+  /** Frames that differ from the previous frame (sanity: the dolly moved). */
   readonly changedFrames: number;
 }
 
 export interface TemporalDollyReport {
   readonly flags: string;
   readonly frames: number;
-  readonly mask: { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
   readonly aura: TemporalDollyEngineResult | null;
   readonly three: TemporalDollyEngineResult | null;
   readonly errors: readonly string[];
@@ -43,16 +42,38 @@ export interface TemporalDollyReport {
 
 export const DOLLY_FRAMES = 60;
 const BACKGROUND = "#0d1015";
-const TARGET: [number, number, number] = [0, 0.5, 0];
-const FROM: [number, number, number] = [0, 1.25, 5.6];
-const TO: [number, number, number] = [0, 1.25, 4.8];
+const TARGET: [number, number, number] = [0, 1.5, -40];
+const FROM: [number, number, number] = [0, 1.5, 4];
+const TO: [number, number, number] = [0, 1.5, 0];
 const SECONDS = 4; // 60 frames @ 1/60 s = a quarter of the cosine cycle
 const FOV = 38;
-/** `prd01-specular-aa` mask "spheres" (scenes/prd01/scenes.ts). */
-const MASK = { x: 0.1, y: 0.3, w: 0.8, h: 0.42 } as const;
-const SPHERES = 5;
-const SPACING = 1.05;
-const KEY_POSITION: [number, number, number] = [4.2, 2.2, 0]; // orbit start of the scene's key
+const KEY_POSITION: [number, number, number] = [4.2, 6, 8];
+const CHROME = "#d7dce4";
+
+interface Placement { readonly kind: "torus" | "cylinder"; readonly position: [number, number, number]; readonly rotation: [number, number, number]; readonly scale: [number, number, number] }
+
+/** Deterministic layout: 40 tori and 12 wires spread over 20-60 m. */
+export function specularAaLayout(): readonly Placement[] {
+  const out: Placement[] = [];
+  for (let i = 0; i < 40; i += 1) {
+    const z = -(20 + (40 * i) / 39);
+    out.push({
+      kind: "torus",
+      position: [(((i * 7) % 9) - 4) * 2.2, 0.6 + ((i * 5) % 7) * 0.7, z],
+      rotation: [i * 0.41, i * 0.67, i * 0.23],
+      scale: [1.2, 1.2, 1.2]
+    });
+  }
+  for (let i = 0; i < 12; i += 1) {
+    out.push({
+      kind: "cylinder",
+      position: [(((i * 5) % 11) - 5) * 1.9, 2.5, -(24 + i * 3)],
+      rotation: [0, 0, (((i * 3) % 5) - 2) * 0.35],
+      scale: [0.02, 7, 0.02]
+    });
+  }
+  return out;
+}
 
 /** compiler/camera.ts `dolly` eye at simulated time `seconds`. */
 function dollyEye(seconds: number): [number, number, number] {
@@ -63,27 +84,19 @@ function dollyEye(seconds: number): [number, number, number] {
 
 function buildAuraSnapshot() {
   const builder = scene()
-    .background(BACKGROUND)
+    .background(BACKGROUND, { toneMapped: false })
     .camera(camera.dolly({ from: FROM, to: TO, target: TARGET, seconds: SECONDS, fov: FOV }));
   builder.add(lights.ambient({ intensity: 0.22, color: "#96a4bd" }).toJSON());
   builder.add(lights.directional({ position: KEY_POSITION, intensity: 2.6, color: "#ffffff" }).toJSON());
-  const x0 = (-(SPHERES - 1) * SPACING) / 2;
-  for (let i = 0; i < SPHERES; i += 1) {
-    builder.add(
-      primitives
-        .sphere({ name: `chrome-${i}`, material: material.pbr({ color: "#d7dce4", metalness: 1, roughness: 0.05 }) })
-        .position(x0 + i * SPACING, 0.55, 0)
-        .scale(0.48)
-        .toJSON()
-    );
-  }
-  builder.add(
-    primitives
-      .plane({ name: "floor", material: material.pbr({ color: "#1a2029", roughness: 0.9, metalness: 0 }) })
-      .position(0, 0, 0)
-      .scale([14, 1, 14])
-      .toJSON()
-  );
+  const glossy = material.pbr({ color: CHROME, metalness: 1, roughness: 0.05, envMapIntensity: 0 });
+  specularAaLayout().forEach((p, index) => {
+    const node: AuraSceneNode = primitives[p.kind]({ name: `aa-${p.kind}-${index}`, material: glossy })
+      .position(...p.position)
+      .rotate(...p.rotation)
+      .scale(p.scale)
+      .toJSON();
+    builder.add(node);
+  });
   return builder.toJSON();
 }
 
@@ -92,53 +105,44 @@ function populateThree(target: THREE.Scene): void {
   const key = new THREE.DirectionalLight(new THREE.Color("#ffffff"), 2.6);
   key.position.set(...KEY_POSITION);
   target.add(key);
-  const x0 = (-(SPHERES - 1) * SPACING) / 2;
-  for (let i = 0; i < SPHERES; i += 1) {
-    const sphere = new THREE.Mesh(
-      new THREE.SphereGeometry(0.48, 96, 48),
-      new THREE.MeshStandardMaterial({ color: new THREE.Color("#d7dce4"), metalness: 1, roughness: 0.05 })
-    );
-    sphere.position.set(x0 + i * SPACING, 0.55, 0);
-    target.add(sphere);
+  const glossy = new THREE.MeshStandardMaterial({ color: new THREE.Color(CHROME), metalness: 1, roughness: 0.05 });
+  const torus = new THREE.TorusGeometry(0.43, 0.045, 16, 64);
+  const cylinder = new THREE.CylinderGeometry(0.5, 0.5, 1, 48, 1);
+  for (const p of specularAaLayout()) {
+    const mesh = new THREE.Mesh(p.kind === "torus" ? torus : cylinder, glossy);
+    mesh.position.set(...p.position);
+    mesh.rotation.set(...p.rotation);
+    mesh.scale.set(...p.scale);
+    target.add(mesh);
   }
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.MeshStandardMaterial({ color: new THREE.Color("#1a2029"), roughness: 0.9 }));
-  floor.rotation.x = -Math.PI / 2;
-  target.add(floor);
 }
 
-/** Mask crop of a WebGL canvas right after its draw. */
-function makeCropper(source: HTMLCanvasElement): () => ImageLike {
-  const x = Math.floor(MASK.x * source.width);
-  const y = Math.floor(MASK.y * source.height);
-  const w = Math.ceil(MASK.w * source.width);
-  const h = Math.ceil(MASK.h * source.height);
+function makeReader(source: HTMLCanvasElement): () => ImageLike {
   const scratch = document.createElement("canvas");
-  scratch.width = w;
-  scratch.height = h;
+  scratch.width = source.width;
+  scratch.height = source.height;
   const ctx = scratch.getContext("2d", { willReadFrequently: true })!;
   return () => {
-    ctx.clearRect(0, 0, w, h);
-    ctx.drawImage(source, x, y, w, h, 0, 0, w, h);
-    const data = ctx.getImageData(0, 0, w, h);
-    return { data: data.data, width: w, height: h };
+    ctx.clearRect(0, 0, scratch.width, scratch.height);
+    ctx.drawImage(source, 0, 0);
+    const data = ctx.getImageData(0, 0, scratch.width, scratch.height);
+    return { data: data.data, width: data.width, height: data.height };
   };
 }
 
 function summarize(frames: readonly ImageLike[]): TemporalDollyEngineResult {
-  let lumaSum = 0;
-  let lumaCount = 0;
-  let changedFrames = 0;
   let opaque = 0;
+  let total = 0;
+  let changedFrames = 0;
   frames.forEach((frame, index) => {
-    for (let o = 0; o < frame.data.length; o += 4) {
-      if (frame.data[o + 3]! > 0) opaque += 1;
-      lumaSum += 0.2126 * frame.data[o]! + 0.7152 * frame.data[o + 1]! + 0.0722 * frame.data[o + 2]!;
-      lumaCount += 1;
+    for (let o = 3; o < frame.data.length; o += 4) {
+      if (frame.data[o]! > 0) opaque += 1;
+      total += 1;
     }
     const previous = frames[index - 1];
     if (previous && previous.data.some((v, i) => v !== frame.data[i])) changedFrames += 1;
   });
-  return { sigma: temporalSigma(frames), meanLuma: lumaCount ? lumaSum / lumaCount : 0, opaqueFraction: lumaCount ? opaque / lumaCount : 0, changedFrames };
+  return { highlight: highlightFrameSigma(frames), opaqueFraction: total ? opaque / total : 0, changedFrames };
 }
 
 export async function runTemporalDollyTool(stage: HTMLElement): Promise<TemporalDollyReport> {
@@ -151,14 +155,13 @@ export async function runTemporalDollyTool(stage: HTMLElement): Promise<Temporal
 
   try {
     const auraCanvas = placeCanvas(stage, 0, 0, HALF_W, HALF_H, "qr-dolly-aura");
-    // preserveDrawingBuffer (01-S11 capture-pdb debug option) keeps the per-step readback independent of compositing.
     app = await mountAura(auraCanvas, buildAuraSnapshot(), { renderer: { debug: { preserveDrawingBuffer: true } } });
-    const crop = makeCropper(auraCanvas);
+    const read = makeReader(auraCanvas);
     const frames: ImageLike[] = [];
     for (let i = 0; i < DOLLY_FRAMES; i += 1) {
       app.step(1 / 60);
       times.push(app.runtime.time);
-      frames.push(crop());
+      frames.push(read());
     }
     aura = summarize(frames);
     errors.push(...app.diagnostics().errors);
@@ -171,23 +174,22 @@ export async function runTemporalDollyTool(stage: HTMLElement): Promise<Temporal
     const mount = await mountThree(threeCanvas, { toneMapping: "aces", fov: FOV, position: dollyEye(times[0] ?? 0), target: TARGET, background: BACKGROUND });
     populateThree(mount.scene);
     await settleThree(mount);
-    const crop = makeCropper(threeCanvas);
+    const read = makeReader(threeCanvas);
     const frames: ImageLike[] = [];
     const lookAt = new THREE.Vector3(...TARGET);
-    // Same simulated times as the Aura frames (fallback: the nominal 1/60 cadence).
     const schedule = times.length === DOLLY_FRAMES ? times : Array.from({ length: DOLLY_FRAMES }, (_, i) => (i + 1) / 60);
     for (const seconds of schedule) {
       mount.camera.position.set(...dollyEye(seconds));
       mount.camera.lookAt(lookAt);
       mount.render();
-      frames.push(crop());
+      frames.push(read());
     }
     three = summarize(frames);
   } catch (error) {
     errors.push(`three: ${errorText(error)}`);
   }
 
-  const report: TemporalDollyReport = { flags, frames: DOLLY_FRAMES, mask: MASK, aura, three, errors };
+  const report: TemporalDollyReport = { flags, frames: DOLLY_FRAMES, aura, three, errors };
   window.__QR_SPEC__ = report;
   return report;
 }
