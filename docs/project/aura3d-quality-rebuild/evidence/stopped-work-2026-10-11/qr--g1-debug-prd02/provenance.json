@@ -1,0 +1,22 @@
+{
+  "branch": "qr/g1-debug-prd02",
+  "tip": "7bb5e6b09d3c23c4b04fb2542eca771a2c6950a7",
+  "base": "43e1b13a35aa0ce83056093de2f73b842aa7f45b",
+  "tree": "f9fa5ff7d1e986786943ea9043072ba3024799b0",
+  "reconstructedTree": "f9fa5ff7d1e986786943ea9043072ba3024799b0",
+  "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/qr--g1-debug-prd02",
+  "committedPatchSha256": "63a4ce015279fb90461be57a79da7c072396b712f8538e89ac05257c32875278",
+  "committedPatchBytes": 4519,
+  "changedFiles": [
+    "M\t.github/workflows/lighting-quality.yml",
+    "A\ttests/qr/prd02/browser/zz-debug.spec.ts"
+  ],
+  "uniqueCommits": [
+    "7bb5e6b09d3c23c4b04fb2542eca771a2c6950a7 TEMP debug: only zz-debug",
+    "1856624c61ffc94f7f5f8b70b3cdcd5d599a734a TEMP debug (do not merge)"
+  ],
+  "sourceWorktree": "",
+  "workingFiles": [],
+  "disposition": "Historical, negative-control or superseded proposal preserved losslessly; not installed into executable paths.",
+  "integratedPaths": []
+}

@@ -129,7 +129,10 @@ export async function runAppCaptureTool(stage: HTMLElement): Promise<AppCaptureR
 
   try {
     const snapshot = scene()
-      .background("#2255aa")
+      // Authored colour shown exactly (C-05 opt-out): under the PRD-01 default
+      // the tone-mapped #2255aa crushes red to 0 and the per-byte non-blank
+      // check (> 90 % non-zero bytes) reads a valid frame as blank.
+      .background("#2255aa", { toneMapped: false })
       .add(
         primitives
           .box({ name: "capture-cube", material: material.emissive({ color: "#ffcc00" }) })

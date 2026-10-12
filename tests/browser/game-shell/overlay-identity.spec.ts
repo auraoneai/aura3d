@@ -11,7 +11,14 @@ import { expect, test, loadHarness, stepFrames, withServer, type Page } from "./
 type Pixels = number[] | null;
 
 async function snapPixels(page: Page): Promise<Pixels> {
-  return page.evaluate(() => window.__AURA3D_SHELL__!.readPixels?.() ?? null);
+  // Render and read back in the same task: the WebGL canvas has no
+  // preserveDrawingBuffer, so a readback in a later task can see the cleared
+  // buffer (L4 run 38190367093: max diff 244 on a frozen frame).
+  // stepFrames renders synchronously before its first await.
+  return page.evaluate(() => {
+    void window.__AURA3D_GAME_TEST__!.stepFrames(1, 1 / 60);
+    return window.__AURA3D_SHELL__!.readPixels?.() ?? null;
+  });
 }
 
 function maxDiff(a: Pixels, b: Pixels): number {

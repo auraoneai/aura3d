@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// tests/qr/prd14/write-evidence.mjs — PRD-14 S1..S9 evidence per game.
+// tests/qr/prd14/write-evidence.mjs — PRD-14 S1..S11 evidence per game.
 // Joins one lane run's outputs into
 //   docs/project/aura3d-quality-rebuild/evidence/prd14/<game>/<run-id>/report.json
 // Inputs (all from the same qr-prd14-games.yml run):
 //   --capture <tools/quality-rebuild-capture/out/report.json>   (S3, readiness)
-//   --browser <tests/qr/prd14/reports/browser.json>             (Playwright JSON: S1, S2, S5-S9)
+//   --browser <tests/qr/prd14/reports/browser.json>             (Playwright JSON: S1, S2, S5-S11)
 //   --static <success|failure|skipped>                          (Static gates job: S4, S5 static half)
 //   --run-id <GITHUB_RUN_ID> --sha <GITHUB_SHA> --routes <dirs>
 // Each S row is "pass", "fail" or "missing" (no test produced it). Exit code
@@ -62,6 +62,16 @@ for (const dir of dirs) {
   });
   const byFile = (re) => mine.filter((t) => re.test(t.file ?? ""));
   const byTitle = (fileRe, titleRe) => mine.filter((t) => fileRe.test(t.file ?? "") && titleRe.test(t.title));
+  const s10Rows = mine.filter((t) => /s10-assets\.spec\.ts$/.test(t.file ?? "") && t.title.startsWith(`${appDir}:`));
+  const s10 = verdict(s10Rows);
+  const requiredS10Titles = [
+    `${appDir}: every asset role is admitted`,
+    `${appDir}: every asset role's kit file has an accept look-dev verdict`
+  ];
+  // One passing half cannot stand in for the other half's missing evidence.
+  if (s10.status === "pass" && requiredS10Titles.some((title) => !s10Rows.some((t) => t.title === title))) {
+    s10.status = "missing";
+  }
   const cap = (capture.games ?? []).find((g) => g.id === id);
   const runs = cap?.runs ?? [];
   const s3 = cap === undefined ? { status: "missing" }
@@ -77,7 +87,10 @@ for (const dir of dirs) {
     S6: verdict(byTitle(/-v2\.spec\.ts$/, /appliedLook/)),
     S7: verdict(byFile(/-framing\.spec\.ts$/)),
     S8: verdict(byFile(/budgets\.spec\.ts$/)),
-    S9: verdict(byFile(/budgets\.spec\.ts$/))
+    S9: verdict(byFile(/budgets\.spec\.ts$/)),
+    // S10: s10-assets.spec.ts has no APP_DIR; its titles start with `<appDir>:`.
+    S10: s10,
+    S11: verdict(byTitle(/-v2\.spec\.ts$/, /S11 audio/))
   };
   s.S5.status = s.S5.static.status === "pass" && s.S5.runtime.status === "pass" ? "pass"
     : [s.S5.static.status, s.S5.runtime.status].includes("fail") ? "fail" : "missing";
@@ -86,10 +99,10 @@ for (const dir of dirs) {
   const outDir = join(ROOT, "docs/project/aura3d-quality-rebuild/evidence/prd14", id, String(args["run-id"]));
   mkdirSync(outDir, { recursive: true });
   writeFileSync(join(outDir, "report.json"), JSON.stringify({
-    schema: "prd14-s1-s9/1", game: id, appDir, runId: Number(args["run-id"]), sha: args.sha,
+    schema: "prd14-s1-s11/1", game: id, appDir, runId: Number(args["run-id"]), sha: args.sha,
     provider: "github-actions macos-14", generatedAt: new Date().toISOString(),
-    summary: failing.length === 0 ? "S1-S9 pass" : `not passing: ${failing.join(", ")}`, s
+    summary: failing.length === 0 ? "S1-S11 pass" : `not passing: ${failing.join(", ")}`, s
   }, null, 2) + "\n");
-  console.log(`${id}: ${failing.length === 0 ? "S1-S9 pass" : failing.join(", ")}`);
+  console.log(`${id}: ${failing.length === 0 ? "S1-S11 pass" : failing.join(", ")}`);
 }
 process.exit(bad === 0 ? 0 : 1);

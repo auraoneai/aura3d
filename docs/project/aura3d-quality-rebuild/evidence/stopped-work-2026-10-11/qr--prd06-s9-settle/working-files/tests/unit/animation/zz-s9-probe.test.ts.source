@@ -1,0 +1,116 @@
+// TEMP probe for 06-S9 — deleted before commit.
+import { readFileSync } from "node:fs";
+import { it } from "vitest";
+import { bindSpringChainToSkeleton, createSpringChain } from "../../../packages/animation/src/SpringBones";
+import { bindSkeleton } from "../../../packages/animation/src/pose/SkeletonBinding";
+import { copyPose, createPoseBuffer } from "../../../packages/animation/src/pose/PoseBuffer";
+
+type V = [number, number, number];
+type Q = [number, number, number, number];
+const FR = "/tmp/prd06-main/prd06-gpu-38133451186-1/test-results/tests-qr-prd06-browser-cha-a8a0a--every-automated-gate-holds-chromium/character-hero-frames.json";
+const GLB = "apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.3318d671.glb";
+
+function rot(q: readonly number[], v: readonly number[]): V {
+  const [x, y, z, w] = q as Q;
+  const ix = w * v[0]! + y * v[2]! - z * v[1]!, iy = w * v[1]! + z * v[0]! - x * v[2]!, iz = w * v[2]! + x * v[1]! - y * v[0]!, iw = -x * v[0]! - y * v[1]! - z * v[2]!;
+  return [ix * w + iw * -x + iy * -z - iz * -y, iy * w + iw * -y + iz * -x - ix * -z, iz * w + iw * -z + ix * -y - iy * -x];
+}
+function mul(a: readonly number[], b: readonly number[]): Q {
+  const [ax, ay, az, aw] = a as Q, [bx, by, bz, bw] = b as Q;
+  return [ax * bw + aw * bx + ay * bz - az * by, ay * bw + aw * by + az * bx - ax * bz, az * bw + aw * bz + ax * by - ay * bx, aw * bw - ax * bx - ay * by - az * bz];
+}
+const conj = (q: readonly number[]): Q => [-q[0]!, -q[1]!, -q[2]!, q[3]!];
+function slerpish(a: readonly number[], b: readonly number[], t: number): Q {
+  let d = a[0]! * b[0]! + a[1]! * b[1]! + a[2]! * b[2]! + a[3]! * b[3]!;
+  const s = d < 0 ? -1 : 1;
+  const q = [0, 1, 2, 3].map((i) => a[i]! * (1 - t) + s * b[i]! * t);
+  const l = Math.hypot(...q);
+  return q.map((x) => x / l) as Q;
+}
+
+it("probe", () => {
+  const frames = JSON.parse(readFileSync(FR, "utf8")) as any[];
+  const b = readFileSync(GLB);
+  const j = JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString());
+  const joints: number[] = j.skins[0].joints;
+  const parentNode: Record<number, number> = {};
+  j.nodes.forEach((n: any, i: number) => (n.children ?? []).forEach((c: number) => (parentNode[c] = i)));
+  const parentIndices = joints.map((n) => joints.indexOf(parentNode[n] ?? -1));
+  const skel = bindSkeleton({
+    joints,
+    resolveNode: (i) => {
+      const n = j.nodes[i];
+      return { name: n.name, position: n.translation ?? [0, 0, 0], rotation: n.rotation ?? [0, 0, 0, 1], scale: n.scale ?? [1, 1, 1] };
+    },
+    parentIndices
+  });
+  const idx = (n: string) => skel.jointIndicesByName.get(n)![0]!;
+  const foot = idx("foot_l"), calf = idx("calf_l");
+  const S = 0.0789 / 0.0681;
+  // full rest world frame of calf (parent of foot)
+  function world(pose: any, k: number): { p: V; q: Q } {
+    const lp: V = [pose.positions[k * 3], pose.positions[k * 3 + 1], pose.positions[k * 3 + 2]];
+    const lq: Q = [pose.rotations[k * 4], pose.rotations[k * 4 + 1], pose.rotations[k * 4 + 2], pose.rotations[k * 4 + 3]];
+    const p = skel.parentIndices[k]!;
+    if (p < 0) return { p: lp, q: lq };
+    const w = world(pose, p);
+    const r = rot(w.q, lp);
+    return { p: [w.p[0] + r[0], w.p[1] + r[1], w.p[2] + r[2]], q: mul(w.q, lq) };
+  }
+  // engine fkWorldPosition (uses parent LOCAL rotation)
+  function engineFk(pose: any, k: number): V {
+    const lp: V = [pose.positions[k * 3], pose.positions[k * 3 + 1], pose.positions[k * 3 + 2]];
+    const p = skel.parentIndices[k]!;
+    if (p < 0) return lp;
+    const pp = engineFk(pose, p);
+    const r = rot([pose.rotations[p * 4], pose.rotations[p * 4 + 1], pose.rotations[p * 4 + 2], pose.rotations[p * 4 + 3]], lp);
+    return [pp[0] + r[0], pp[1] + r[1], pp[2] + r[2]];
+  }
+  const mode = process.env.S9_MODE ?? "engine";
+  const names = ["foot_l", "ball_l", "ball_leaf_l"];
+  const restWorld = names.map((n) => (mode === "engine" ? engineFk(skel.restPose, idx(n)) : world(skel.restPose, idx(n)).p));
+  const chain = createSpringChain({ bones: restWorld, stiffness: Number(process.env.S9_K ?? 60), damping: Number(process.env.S9_C ?? 10), relativeDamping: 12, gravity: [0, -9.81 * Number(process.env.S9_G ?? 0.15), 0] });
+  const bound = bindSpringChainToSkeleton(chain, skel, names);
+  const pose = createPoseBuffer(skel.boneCount);
+  const calfW = world(skel.restPose, calf);
+  // skeleton space: recorded world / S; recorded is Y-up model space.
+  const setFoot = (p: number[], q: number[]) => {
+    copyPose(pose, skel.restPose);
+    const lp = rot(conj(calfW.q), [p[0]! / S - calfW.p[0], p[1]! / S - calfW.p[1], p[2]! / S - calfW.p[2]]);
+    const lq = mul(conj(calfW.q), q);
+    pose.positions.set(lp, foot * 3);
+    pose.rotations.set(lq, foot * 4);
+    pose.positions.set([0, 0.1733, 0], idx("ball_l") * 3);
+    pose.positions.set([0, 0.0789, 0], idx("ball_leaf_l") * 3);
+    pose.rotations.set([0.0001, -0.9643, 0.2648, 0.0005], idx("ball_l") * 4);
+  };
+  const dtFrame = Number(process.env.S9_DT ?? 0.1);
+  const out: string[] = [];
+  const tips: { t: number; d: V }[] = [];
+  let fi = 0;
+  for (let t = 0; t <= 8.0001; t += dtFrame) {
+    while (fi + 1 < frames.length - 1 && frames[fi + 1].t <= t) fi += 1;
+    const a = frames[fi], c = frames[Math.min(fi + 1, frames.length - 1)];
+    const u = c.t > a.t ? Math.min(1, Math.max(0, (t - a.t) / (c.t - a.t))) : 0;
+    const fa = a.motion.bones.foot_l, fc = c.motion.bones.foot_l;
+    setFoot([0, 1, 2].map((i) => fa.position[i] * (1 - u) + fc.position[i] * u), slerpish(fa.rotation, fc.rotation, u));
+    bound.step(pose, Number(process.env.S9_SPRINGDT ?? dtFrame));
+    const ball = world(pose, idx("ball_l")), leaf = world(pose, idx("ball_leaf_l"));
+    const d: V = [leaf.p[0] - ball.p[0], leaf.p[1] - ball.p[1], leaf.p[2] - ball.p[2]];
+    const l = Math.hypot(...d);
+    tips.push({ t, d: [d[0] / l, d[1] / l, d[2] / l] });
+    const fq = slerpish(fa.rotation, fc.rotation, u);
+    const bl = skel.restPose.rotations.subarray(idx("ball_l") * 4, idx("ball_l") * 4 + 4);
+    const tg = rot(mul(fq, Array.from(bl)), [0, 1, 0]);
+    (tips[tips.length - 1] as any).tg = tg;
+  }
+  const last = tips[tips.length - 1]!.d;
+  for (const { t, d } of tips) {
+    if (t < 6.0) continue;
+    const ang = (Math.acos(Math.min(1, d[0] * last[0] + d[1] * last[1] + d[2] * last[2])) * 180) / Math.PI;
+    const tg = (tips.find((x) => x.t === t) as any).tg as V;
+    const at = (Math.acos(Math.min(1, d[0] * tg[0] + d[1] * tg[1] + d[2] * tg[2])) * 180) / Math.PI;
+    out.push(`${t.toFixed(2)} ${ang.toFixed(2)} toTarget ${at.toFixed(2)} dir ${d.map((x) => x.toFixed(3)).join(",")}`);
+  }
+  console.log(mode, out.join("\n"));
+});
