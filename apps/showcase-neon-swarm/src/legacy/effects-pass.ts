@@ -19,7 +19,7 @@ export function createNeonSwarmEffectsPass(options: { readonly reducedMotion: bo
       intensity: 0.15,
       volumetricQuality: "balanced"
     }),
-    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 4, intensity: 0.85, lights: "shadowed" }),
+    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 8, intensity: 0.85, lights: "shadowed" }),
     environments.preset("night", { name: "neon swarm night reflections", intensity: 0.35, background: false }),
     effects.vignette({ name: "neon swarm vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];

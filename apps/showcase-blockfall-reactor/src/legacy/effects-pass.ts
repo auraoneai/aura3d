@@ -30,7 +30,7 @@ export function createBlockfallEffectsPass(options: BlockfallEffectsPassOptions)
     }),
     // Screen-space contact shadows from the key: grounds the cabinet and the
     // board frame on the floor instead of letting them float.
-    effects.contactShadows({ length: 0.32, thickness: 0.06, steps: 4, intensity: 0.9, lights: "shadowed" }),
+    effects.contactShadows({ length: 0.32, thickness: 0.06, steps: 8, intensity: 0.9, lights: "shadowed" }),
     effects.vignette({ name: "blockfall arcade vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
   if (!options.reducedMotion) {

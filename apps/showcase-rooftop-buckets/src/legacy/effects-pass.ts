@@ -19,7 +19,7 @@ export function createRooftopEffectsPass(options: { readonly reducedMotion: bool
       intensity: 0.3,
       volumetricQuality: "balanced"
     }),
-    effects.contactShadows({ length: 0.3, thickness: 0.05, steps: 4, intensity: 0.9, lights: "shadowed" }),
+    effects.contactShadows({ length: 0.3, thickness: 0.05, steps: 8, intensity: 0.9, lights: "shadowed" }),
     environments.preset("sunset", { name: "rooftop sunset reflections", intensity: 0.5, background: false }),
     effects.vignette({ name: "rooftop vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
