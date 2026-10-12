@@ -1126,23 +1126,19 @@ interface RoadSurface {
  * the position array by about a third and, more importantly, makes the mesh watertight
  * enough that a downward ray cannot slip through a seam between two adjacent road quads.
  *
- * `maxTriangles` bounds the committed artifact. Decimation keeps an evenly spaced subset
- * rather than a contiguous prefix, because dropping a contiguous run would delete a whole
- * corner of the circuit and leave a hole a wheel could fall through.
+ * Every source triangle is kept. An earlier `maxTriangles = 4000` cap decimated by
+ * keeping every Nth triangle; road quads are emitted as consecutive triangle pairs, so a
+ * stride of 2 (Turbo Drift: 4052 source triangles) kept exactly one half of every quad
+ * and turned the whole circuit into a checkerboard of holes. Wheels on the missing
+ * diagonal halves reported no surface, which is the "wheels sink / car tilts" defect.
+ * A drivable mesh with holes is never an acceptable approximation, so there is no cap.
  */
 function createDrivableMesh(
-  primitives: readonly PrimitiveGeometry[],
-  maxTriangles = 4000
+  primitives: readonly PrimitiveGeometry[]
 ): ShowcaseRacingDrivableMesh | undefined {
   const triangles = primitives.flatMap((primitive) => primitive.triangles);
   if (triangles.length === 0) return undefined;
-
-  const stride = triangles.length > maxTriangles ? Math.ceil(triangles.length / maxTriangles) : 1;
-  const kept: RoadTriangle[] = [];
-  for (let index = 0; index < triangles.length; index += stride) {
-    const triangle = triangles[index];
-    if (triangle) kept.push(triangle);
-  }
+  const kept: readonly RoadTriangle[] = triangles;
 
   const positions: number[] = [];
   const indices: number[] = [];
