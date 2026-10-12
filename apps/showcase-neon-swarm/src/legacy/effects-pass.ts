@@ -4,6 +4,12 @@
 // neon embers drift up through the arena and a framing vignette pulls the eye
 // to the player pocket. Gameplay is untouched.
 import { effects, environments, type AuraNodeInput } from "@aura3d/engine";
+import { resolveQrFlags } from "@aura3d/engine/contracts";
+
+const postOn = resolveQrFlags({
+  url: location.href,
+  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+}).on("A3D_QR_POST");
 
 /** Linear HDR particle colour (array form; hex colours are capped at 1.0). */
 const hdr = (r: number, g: number, b: number): string => [r, g, b] as unknown as string;
@@ -14,13 +20,17 @@ export function createNeonSwarmEffectsPass(options: { readonly reducedMotion: bo
     // (≈14 m), 30-40% at the district edge.
     // Quality "off" + no contact shadows: the froxel march + contact pass
     // cost ~28% fps here (vol-off bisect on blockfall/vault, run 38307478359).
-    effects.volumetricFog({
-      name: "neon swarm district volumetric haze",
-      density: 0.017,
-      color: "#26355a",
-      intensity: 0.15,
-      volumetricQuality: "off"
-    }),
+    ...(postOn
+      ? [
+          effects.volumetricFog({
+            name: "neon swarm district volumetric haze",
+            density: 0.017,
+            color: "#26355a",
+            intensity: 0.15,
+            volumetricQuality: "off"
+          })
+        ]
+      : []),
     environments.preset("night", { name: "neon swarm night reflections", intensity: 0.35, background: false }),
     effects.vignette({ name: "neon swarm vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];

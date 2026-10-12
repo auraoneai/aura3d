@@ -4,6 +4,12 @@
 // into the wet road and van paint, drifting street motes catch the practicals
 // and warm steam rises off the depot dock. Gameplay is untouched.
 import { effects, environments, type AuraNodeInput } from "@aura3d/engine";
+import { resolveQrFlags } from "@aura3d/engine/contracts";
+
+const postOn = resolveQrFlags({
+  url: location.href,
+  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+}).on("A3D_QR_POST");
 
 /** Linear HDR particle colour (array form; hex colours are capped at 1.0). */
 const hdr = (r: number, g: number, b: number): string => [r, g, b] as unknown as string;
@@ -15,13 +21,17 @@ export function createCourierEffectsPass(options: {
   const nodes: AuraNodeInput[] = [
     // Replaces the old 0.0018 haze (a no-op at chase distances): ≈6% at the
     // van, 35-45% on towers 25-35 m out, so the skyline layers into depth.
-    effects.volumetricFog({
-      name: "courier night street volumetric haze",
-      density: 0.03,
-      color: "#3d5878",
-      intensity: 0.55,
-      volumetricQuality: "balanced"
-    }),
+    ...(postOn
+      ? [
+          effects.volumetricFog({
+            name: "courier night street volumetric haze",
+            density: 0.03,
+            color: "#3d5878",
+            intensity: 0.55,
+            volumetricQuality: "balanced"
+          })
+        ]
+      : []),
     effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 8, intensity: 0.85, lights: "shadowed" }),
     environments.preset("night", { name: "courier night reflections", intensity: 0.75, background: false }),
     effects.vignette({ name: "courier chase vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
