@@ -53,8 +53,9 @@ async function runHarness(page: Page, server: LaneServer, control?: string): Pro
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto(`${server.origin}/scenes/prd02/counters.html?${query.toString()}`, { waitUntil: "load", timeout: 60_000 });
   // runAuraScene (ready + settle) plus the steady and swap windows.
-  await page.waitForFunction("() => Boolean(window.__A3D_PRD02_COUNTERS__)", undefined, { timeout: READY_TIMEOUT_MS + 240_000, polling: 500 });
-  return (await page.evaluate("() => window.__A3D_PRD02_COUNTERS__")) as HarnessResult;
+  // Expression predicates (a "() => …" string is truthy at once; see chunks.spec.ts).
+  await page.waitForFunction("Boolean(window.__A3D_PRD02_COUNTERS__)", undefined, { timeout: READY_TIMEOUT_MS + 240_000, polling: 500 });
+  return (await page.evaluate("window.__A3D_PRD02_COUNTERS__")) as HarnessResult;
 }
 
 function stalls(result: WindowResult) {
