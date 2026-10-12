@@ -149,8 +149,14 @@ export class VolumetricFogPass {
     if (this.grid.note) notes.push(this.grid.note);
     const camera = ctx.camera;
     const invView = camera ? invertRigid(camera.viewMatrix) : IDENTITY_MAT4;
-    const tanY = camera ? 1 / Math.max(camera.projectionMatrix[5] ?? 1, 1e-6) : 1;
-    const tanX = camera ? 1 / Math.max(camera.projectionMatrix[0] ?? 1, 1e-6) : 1;
+    // tan(half-fov) from the renderer's view-projection (rows 0/1 of its 3×3
+    // are P[0]·R and P[5]·R with R orthonormal). FrameCamera.projectionMatrix
+    // is identity whenever the renderer resolved a non-Camera CameraLike,
+    // which reconstructed every froxel along a 90° frustum.
+    const vp = camera?.viewProjectionMatrix;
+    const rowLen = (r: number): number => (vp ? Math.hypot(vp[r] ?? 0, vp[r + 4] ?? 0, vp[r + 8] ?? 0) : 0);
+    const tanY = camera ? 1 / Math.max(rowLen(1) || (camera.projectionMatrix[5] ?? 1), 1e-6) : 1;
+    const tanX = camera ? 1 / Math.max(rowLen(0) || (camera.projectionMatrix[0] ?? 1), 1e-6) : 1;
     const packed = input.fog;
     const noiseScale = input.noiseScale ?? 0;
     const noiseSpeed = input.noiseSpeed ?? 0;

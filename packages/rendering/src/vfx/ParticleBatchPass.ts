@@ -244,7 +244,7 @@ export class ParticleBatchPass {
     const shader = this.program(defines);
     const uniforms = new Map<string, import("../RenderDevice").UniformValue>([
       ["u_view", camera?.viewMatrix ?? IDENTITY],
-      ["u_projection", camera?.projectionMatrix ?? IDENTITY],
+      ["u_viewProjection", camera?.viewProjectionMatrix ?? IDENTITY],
       ["u_atlasRect", [0, 0, 1, 1]],
       ["u_grid", [1, 1]],
       ["u_atlas", new TextureBinding({ name: "u_atlas", texture: batch.desc.atlas })],
