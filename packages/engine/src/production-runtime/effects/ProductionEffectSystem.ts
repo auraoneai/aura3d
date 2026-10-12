@@ -9,7 +9,8 @@ import type { ParticleBatchDescriptor, ParticleBatchHandle, ParticleRenderHook }
 import { QUALITY_TIERS, type AuraQualityTier } from "@aura3d/rendering/contracts";
 import type { ParticlePassDiagnostics } from "@aura3d/rendering";
 import { MeshParticleBatch, RibbonBatch, RibbonTrail, DecalBatch, DECAL_TIER_CAP, decalQuadGeometry, ribbonStripToDecalGeometry, PARTICLE_GPU_BUDGET_MS, type BeamDrawSpec, type MeshParticleFeed, type DecalVertexData, type GpuSimSpec } from "@aura3d/rendering";
-import { createEmitter, stepEmitter, writeEmitterInstances, type EmitterState } from "./CpuEmitter";
+import { createEmitter, stepEmitter, writeEmitterInstances, type EmitterDescriptor, type EmitterState } from "./CpuEmitter";
+import { proceduralFireballSheet } from "./FlipbookAtlas";
 import { lowerEffectNode, srgbChannelToLinear, type LoweredEffect, type EffectNodeLike } from "./EffectNodeLowering";
 import { EffectDiagnostics } from "./EffectDiagnostics";
 import { LiveAtmosphere } from "./LiveAtmosphere";
@@ -24,6 +25,20 @@ export function softDotTexture(): Texture {
     sharedSoftDot = new Texture({ width: 1, height: 1, label: "a3d-soft-dot", data: new Uint8Array([255, 255, 255, 255]) });
   }
   return sharedSoftDot;
+}
+
+const flipbookTextures = new Map<string, Texture>();
+
+/** Built-in `fireball` sheet texture for a flipbook emitter (sRGB, straight alpha; cached per grid + seed). */
+function flipbookTexture(fb: NonNullable<EmitterDescriptor["flipbook"]>): Texture {
+  const sheet = proceduralFireballSheet(fb.columns ?? 1, fb.rows ?? 1, fb.seed ?? 0);
+  const key = `${sheet.columns}x${sheet.rows}:${(fb.seed ?? 0) >>> 0}`;
+  let texture = flipbookTextures.get(key);
+  if (!texture) {
+    texture = new Texture({ width: sheet.width, height: sheet.height, colorSpace: "srgb", label: `a3d-flipbook-fireball-${key}`, data: sheet.data });
+    flipbookTextures.set(key, texture);
+  }
+  return texture;
 }
 
 interface EmitterBinding {
@@ -732,11 +747,13 @@ export class ProductionEffectSystem {
     for (const [key, group] of groups) {
       seenKeys.add(key);
       const totalLive = group.parts.reduce((s, p) => s + p.live, 0);
+      const flipbook = group.first.lowered.emitter.flipbook;
       const desc: ParticleBatchDescriptor = {
         key,
         capacity: group.parts.reduce((s, p) => s + p.binding.lowered.emitter.capacity, 0),
         source: "cpu",
-        atlas: softDotTexture(),
+        atlas: flipbook ? flipbookTexture(flipbook) : softDotTexture(),
+        ...(flipbook ? { atlasGrid: [flipbook.columns ?? 1, flipbook.rows ?? 1] as const, atlasStraightAlpha: true } : {}),
         blend: group.first.lowered.batch.blend,
         shading: group.first.lowered.batch.shading,
         softDepth: group.first.lowered.batch.softDepth,

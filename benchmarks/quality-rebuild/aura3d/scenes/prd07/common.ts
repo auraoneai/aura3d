@@ -230,15 +230,18 @@ function buildPrd07AuraScene(spec: Prd07SceneSpec, log: CapabilityLog): AuraScen
     } else if (object.kind === "flipbook") {
       nodes.push(effects.flipbook({
         name: object.name,
-        color: object.color ?? "#ffb347",
+        // three tints the SpriteMaterial white when the spec has no colour.
+        color: object.color ?? "#ffffff",
         spriteColumns: object.atlas.columns,
         spriteRows: object.atlas.rows,
         frameRate: object.atlas.frameRate,
         seed: object.atlas.seed,
         size: object.size,
-        blend: object.blending ?? "alpha"
+        blend: object.blending ?? "alpha",
+        // Sprite age at capture = spec.time + startAt (the three frame index).
+        ...(object.startAt !== undefined ? { prewarm: object.startAt } : {})
       }).position(...object.position));
-      log.add("flipbook", "partial", `effects.flipbook ${object.atlas.columns}x${object.atlas.rows} @ ${object.atlas.frameRate}fps — atlas sampling lands with P1-T11/T12.`);
+      log.add("flipbook", "supported", `effects.flipbook ${object.atlas.columns}x${object.atlas.rows} @ ${object.atlas.frameRate}fps, built-in seeded fireball sheet (seed ${object.atlas.seed})`);
     } else if (object.kind === "emitterSet") {
       for (const member of object.emitters) {
         nodes.push(particleNode({ ...member }, spec));

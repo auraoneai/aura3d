@@ -26,6 +26,8 @@ export interface EffectNodeLike {
   readonly spriteColumns?: number;
   readonly spriteRows?: number;
   readonly frameRate?: number;
+  /** flipbook-sprite: wrap frames (default true) or play once over life. */
+  readonly loop?: boolean;
   readonly intensity?: number;
   readonly mist?: boolean;
   readonly splashes?: boolean;
@@ -330,7 +332,21 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
       };
     }
     case "flipbook-sprite": {
+      // §6.2 flipbook-sprite: one upright sprite per instance, alive from
+      // t = 0 (burst), frame = age · frameRate over the sheet (wrapping when
+      // `loop`, the default). Atlas = built-in seeded `fireball` sheet
+      // (FlipbookAtlas.ts) on `spriteColumns × spriteRows`. The old lowering
+      // re-emitted 2 sprites/s at random rotation with frame 0 pinned and
+      // sampled the soft-dot fallback, so both flipbooks drew as plain discs.
       const count = Math.max(1, Math.min(64, Math.round(node.particleCount ?? 1)));
+      const columns = Math.max(1, Math.round(node.spriteColumns ?? 8));
+      const rows = Math.max(1, Math.round(node.spriteRows ?? 8));
+      const frames = columns * rows;
+      const frameRate = node.frameRate ?? 24;
+      const loop = node.loop !== false;
+      const blend: Blend = node.blend && VALID_BLENDS.has(node.blend) ? (node.blend as Blend) : "alpha";
+      const sheetSeed = (node.seed ?? hashSeed(nodeId)) >>> 0;
+      const atlasKey = `flipbook.${columns}x${rows}.${sheetSeed}`;
       return {
         type: "emitter",
         nodeId,
@@ -338,32 +354,36 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
         consumer: "particle-pass",
         sim: simFor(node, count),
         batch: {
-          blend: "alpha",
+          blend,
           shading: "unlit",
           softDepth: false,
           stretch: false,
           frameBlend: true,
-          atlasKey: `flipbook.${node.spriteColumns ?? 8}x${node.spriteRows ?? 8}`,
+          atlasKey,
           ...(node.lowRes === true ? { lowRes: true } : {})
         },
         emitter: {
-          key: `eff.alpha.flipbook.${node.spriteColumns ?? 8}x${node.spriteRows ?? 8}.0.0.${node.lowRes === true ? 1 : 0}`,
+          key: `eff.${blend}.${atlasKey}.0.0.${node.lowRes === true ? 1 : 0}`,
           nodeId,
           origin: position,
           capacity: count,
-          emissionRate: node.emissionRate ?? 2,
-          life: [1, 1.5],
-          speed: [0, 0.1],
+          emissionRate: 0,
+          burst: count,
+          life: loop ? [1e9, 1e9] : [frames / Math.max(frameRate, 1e-3), frames / Math.max(frameRate, 1e-3)],
+          speed: [0, 0],
           spread: 0,
           direction: [0, 1, 0],
           gravity: 0,
-          size: [1, 1],
+          size: asRange(node.size) ?? [1, 1],
           color: nodeColor(node),
           alpha: 1,
           spin: 0,
           stretch: 0,
           drag: 0,
-          seed: seedOverride ?? (node.seed ?? hashSeed(nodeId))
+          spawnRadius: 1e-6,
+          seed: seedOverride ?? sheetSeed,
+          flipbook: { frames, frameRate, loop, columns, rows, seed: sheetSeed },
+          ...(node.prewarm !== undefined ? { prewarm: node.prewarm } : {})
         }
       };
     }

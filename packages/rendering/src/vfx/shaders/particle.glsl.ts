@@ -15,10 +15,12 @@ export interface ParticleProgramDefines {
   readonly unpremultiplyOutput: boolean;
   readonly proceduralSoftDot: boolean;     // no atlas — analytic disc
   readonly fogAnalytic: boolean;
+  /** Atlas texels are straight (non-premultiplied) alpha — premultiply after the sRGB decode (procedural flipbook sheets). */
+  readonly straightAlpha?: boolean;
 }
 
 export function particleProgramKey(d: ParticleProgramDefines): string {
-  return `prd07.particle.${d.stretch ? "S" : ""}${d.frameBlend ? "F" : ""}${d.softParticles ? "O" : ""}${d.blendAdditive ? "B" : ""}${d.blendAdditiveFallback ? "A" : ""}${d.unpremultiplyOutput ? "U" : ""}${d.proceduralSoftDot ? "P" : ""}${d.fogAnalytic ? "G" : ""}`;
+  return `prd07.particle.${d.stretch ? "S" : ""}${d.frameBlend ? "F" : ""}${d.softParticles ? "O" : ""}${d.blendAdditive ? "B" : ""}${d.blendAdditiveFallback ? "A" : ""}${d.unpremultiplyOutput ? "U" : ""}${d.proceduralSoftDot ? "P" : ""}${d.fogAnalytic ? "G" : ""}${d.straightAlpha ? "T" : ""}`;
 }
 
 const VERT_BODY = `
@@ -155,6 +157,9 @@ void main() {
 #if FRAME_BLEND
   t = mix(t, texture(u_atlas, v_uv1), v_frameT);
 #endif
+#if STRAIGHT_ALPHA
+  t.rgb *= t.a;   // straight-alpha sheet: premultiply in linear after the sRGB decode
+#endif
 #endif
   float fade = v_color.a;
   fade *= clamp((v_viewZ - u_cameraNear) / u_nearFade, 0.0, 1.0);
@@ -209,7 +214,7 @@ ${define("STRETCH", d.stretch)}${VERT_BODY}`;
 export function particleFragmentSource(d: ParticleProgramDefines): string {
   return `#version 300 es
 precision highp float;
-${define("STRETCH", d.stretch)}${define("FRAME_BLEND", d.frameBlend)}${define("SOFT_PARTICLES", d.softParticles)}${define("BLEND_ADDITIVE", d.blendAdditive)}${define("BLEND_ADDITIVE_FALLBACK", d.blendAdditiveFallback)}${define("UNPREMULTIPLY_OUTPUT", d.unpremultiplyOutput)}${define("PROCEDURAL_SOFT_DOT", d.proceduralSoftDot)}${define("FOG_ANALYTIC", d.fogAnalytic)}${FRAG_BODY}`;
+${define("STRETCH", d.stretch)}${define("FRAME_BLEND", d.frameBlend)}${define("SOFT_PARTICLES", d.softParticles)}${define("BLEND_ADDITIVE", d.blendAdditive)}${define("BLEND_ADDITIVE_FALLBACK", d.blendAdditiveFallback)}${define("UNPREMULTIPLY_OUTPUT", d.unpremultiplyOutput)}${define("PROCEDURAL_SOFT_DOT", d.proceduralSoftDot)}${define("FOG_ANALYTIC", d.fogAnalytic)}${define("STRAIGHT_ALPHA", d.straightAlpha === true)}${FRAG_BODY}`;
 }
 
 /** C-02 chunk records for the particle program stages. */
