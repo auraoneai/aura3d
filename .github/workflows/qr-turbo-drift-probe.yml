@@ -48,7 +48,7 @@ jobs:
       - name: Probe
         env:
           QRC_GPU_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
-          PROBE_ARMS: ${{ inputs.arms || '' }}
+          PROBE_ARMS: ${{ inputs.arms || 'default;none;prod' }}
         run: node tools/quality-rebuild-capture/probe-turbo-drift.mjs | tee probe.txt
       - name: Summary
         if: always()
