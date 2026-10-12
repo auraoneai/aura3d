@@ -33,6 +33,7 @@ import { resolveQrFlags } from "@aura3d/engine/contracts";
 import { createShowcaseRapierPhysicsProof } from "../../../common/src/rapier-physics-proof";
 import { gameGeometryContract } from "../generated/game-geometry";
 import { turboAcceptanceExcursionInput } from "./acceptance-driver";
+import { turboEffectsPass, turboHeightHaze } from "./effects-pass";
 import { createTurboOpponentAi } from "../gameplay/opponent-ai";
 import { TURBO_AUDIO_CUE_WISHLIST } from "./audio-cues";
 import { createTurboAudio, type TurboAudioCue, type TurboAudioController } from "./turbo-audio";
@@ -412,7 +413,8 @@ const vehicleBoundaryInset = turboVehicleBoundaryInset({
 // makes the target-yaw chase camera orbit into the infield.
 const recoveryHeadingLimit = Math.PI / 90;
 
-const debugMode = new URLSearchParams(window.location.search).get("debug") === "1";
+// PRD-09: never read the forbidden `debug` URL param on the shipped route.
+const debugMode = false;
 // Query-gated deterministic driver used only to produce bounded, repeatable visual
 // acceptance frames from genuine checkpoint/lap state. Keyboard and touch remain
 // separately browser-proven and this mode is never enabled on the public route.
@@ -562,7 +564,8 @@ const collisionReviewCamera = new URLSearchParams(window.location.search).get("c
 // hierarchy.  The former 1.52x-distance / 1.95x-height overview reduced both
 // cars to thumbnail scale and let foreground barriers dominate the frame.
 // The public route remains on the closer gameplay chase camera.
-const visualCaptureCamera = new URLSearchParams(window.location.search).get("capture") === "overview";
+// Shipped play path only: the ?capture=overview lens was removed.
+const visualCaptureCamera: boolean = false;
 // PRD-03 §6.6 / Q-14-1: A3D_QR_POST (default on) bloom is linear HDR with no hidden
 // legacy gain; retune for v2 only so the `-post` legacy look is unchanged.
 const postV2Bloom = resolveQrFlags({
@@ -3373,7 +3376,7 @@ const app = createAuraApp("#app", {
     .add(effects.neonBloom(postV2Bloom
       ? { intensity: 1.8, threshold: 0.52, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
       : { intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.12 }))
+    .add(effects.colorGrade(visualCaptureCamera ? { exposure: 1.05, contrast: 1.07, saturation: 1.12 } : { exposure: 1.06, contrast: 1.16, saturation: 1.22 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     // Nonzero depth haze that grades the treeline into the sky and separates
     // near curbing from distant trackside.
@@ -3381,14 +3384,21 @@ const app = createAuraApp("#app", {
     // The previous values were tuned for a 5.4-unit scene; on this 39-unit circuit the
     // key and rim lights sat *inside* the track surface and the fog was ~7x too dense
     // for the distances involved, which is why the frame read as near-night.
-    .add(effects.fog({
+    // Visible effects pass (default boot; the overview capture lens is unchanged).
+    .addMany(visualCaptureCamera ? [] : turboEffectsPass({
+      sceneSize: SCENE_SIZE,
+      startPoint: [initialPlayerPose.position[0], initialPlayerPose.position[1], initialPlayerPose.position[2]],
+      apexPoint: [turboApexScenePoint[0], turboApexRoadY, turboApexScenePoint[2]],
+      reducedMotion
+    }))
+    .add(visualCaptureCamera ? effects.fog({
       name: "circuit distance atmosphere",
       color: visualCaptureCamera ? TURBO_REVIEW_GRADE.fog : TURBO_LATE_AFTERNOON_MOOD.fogColor,
       density: Number((TURBO_LATE_AFTERNOON_MOOD.fogReferenceDensity
         * (TURBO_LATE_AFTERNOON_MOOD.fogReferenceSceneSize / SCENE_SIZE)
         * (visualCaptureCamera ? 1.14 : 1)).toFixed(5)),
       intensity: visualCaptureCamera ? 0.44 : TURBO_LATE_AFTERNOON_MOOD.fogIntensity
-    }))
+    }) : turboHeightHaze(TURBO_LATE_AFTERNOON_MOOD.fogColor))
     .add(lights.ambient({
       name: "circuit sky fill",
       color: visualCaptureCamera ? TURBO_REVIEW_GRADE.ambient : TURBO_LATE_AFTERNOON_MOOD.ambientColor,
@@ -3397,7 +3407,8 @@ const app = createAuraApp("#app", {
     .add(lights.directional({
       name: "circuit daylight key",
       color: visualCaptureCamera ? TURBO_REVIEW_GRADE.key : TURBO_LATE_AFTERNOON_MOOD.keyColor,
-      intensity: visualCaptureCamera ? 2.35 : TURBO_LATE_AFTERNOON_MOOD.keyIntensity
+      intensity: visualCaptureCamera ? 2.35 : TURBO_LATE_AFTERNOON_MOOD.keyIntensity,
+      shadow: visualCaptureCamera ? false : { cascades: 2, mapSize: 1024, filter: "pcf", maxDistance: 30 }
     })
       .position(
         TURBO_LATE_AFTERNOON_MOOD.keyPositionFractions.x * SCENE_SIZE,

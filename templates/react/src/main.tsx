@@ -1,45 +1,17 @@
 import React, { useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
-import { Geometry, Renderer, UnlitMaterial } from "@aura3d/rendering";
+import { createAuraApp, looks } from "@aura3d/engine";
+import { LOOK_ID, starterScene } from "./scene";
 
 function App(): React.ReactElement {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    let disposed = false;
-
-    async function renderStarterScene(): Promise<void> {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      const renderer = await Renderer.create({
-        backend: "webgl2",
-        canvas,
-        width: canvas.width,
-        height: canvas.height,
-        clearColor: [0.02, 0.025, 0.03, 1],
-        preserveDrawingBuffer: true
-      });
-
-      if (disposed) {
-        renderer.dispose();
-        return;
-      }
-
-      renderer.render([
-        {
-          geometry: Geometry.triangle(),
-          material: new UnlitMaterial({ color: [1, 0.36, 0.12, 1] }),
-          label: "react-starter-triangle"
-        }
-      ]);
-    }
-
-    void renderStarterScene();
-
-    return () => {
-      disposed = true;
-    };
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    // createAuraApp owns the renderer and frame loop; dispose on unmount.
+    const app = createAuraApp(canvas, { scene: starterScene, ...looks.appOptions(LOOK_ID) });
+    return () => app.dispose();
   }, []);
 
   return <canvas ref={canvasRef} id="app" width={960} height={540} />;

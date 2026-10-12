@@ -35,8 +35,9 @@ export interface SkylineHudElements {
 }
 
 export function isSkylineDebugMode(): boolean {
-  if (typeof window === "undefined") return false;
-  return new URLSearchParams(window.location.search).get("debug") === "1";
+  // PRD-09: the shipped route never reads the forbidden `debug` URL param
+  // (the capture harness fails any read of it); the debug panel stays off.
+  return false;
 }
 
 export function setupSkylineHud(panel: HTMLElement, checkpointCount: number): SkylineHudElements {

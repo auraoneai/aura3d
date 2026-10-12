@@ -1,4 +1,6 @@
 import { AssetManager, GLTFLoader, createGLTFRenderResources, type GLTFAsset } from "@aura3d/assets";
+import { createAuraApp, looks } from "@aura3d/engine";
+import { LOOK_ID, starterScene } from "./scene";
 
 const root = document.querySelector<HTMLElement>("#app");
 if (!root) throw new Error("Missing app root.");
@@ -25,6 +27,11 @@ const input = root.querySelector<HTMLInputElement>("input");
 const status = root.querySelector<HTMLElement>("[data-status]");
 if (!canvas || !form || !input || !status) throw new Error("Template shell failed to initialize.");
 
+// createAuraApp owns the renderer and frame loop for the viewport; the
+// product-studio look supplies its HDRI IBL, shadowed key, AO, grade, bloom.
+const app = createAuraApp(canvas, { scene: starterScene, ...looks.appOptions(LOOK_ID) });
+window.addEventListener("beforeunload", () => app.dispose());
+
 const manager = new AssetManager({ retries: 1, retryDelayMs: 50 });
 manager.register(new GLTFLoader());
 input.value = createInlineTriangleGltfUrl();
@@ -46,28 +53,12 @@ async function load(url: string): Promise<void> {
     vertexCount: handle.value.meshes.reduce((sum, mesh) => sum + mesh.geometry.vertexCount, 0),
     renderGeometryCount: resources.geometryLibrary.size,
     renderMaterialCount: resources.materialLibrary.size,
-    publicRuntime: ["@aura3d/assets", "AssetManager", "GLTFLoader", "createGLTFRenderResources"],
+    look: LOOK_ID,
+    publicRuntime: ["@aura3d/assets", "AssetManager", "GLTFLoader", "createGLTFRenderResources", "@aura3d/engine", "createAuraApp", "looks.preset"],
   };
   status.textContent = JSON.stringify(result, null, 2);
-  drawSummary(canvas, result.meshCount, result.vertexCount);
   resources.dispose();
   await manager.release(handle);
-}
-
-function drawSummary(canvas: HTMLCanvasElement, meshCount: number, vertexCount: number): void {
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Asset viewer canvas 2D context is unavailable.");
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  context.fillStyle = "#101820";
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  context.fillStyle = "#8db6ff";
-  context.fillRect(canvas.width * 0.36, canvas.height * 0.25, canvas.width * 0.28, canvas.height * 0.42);
-  context.strokeStyle = "#eef2f6";
-  context.lineWidth = 2;
-  context.strokeRect(canvas.width * 0.36, canvas.height * 0.25, canvas.width * 0.28, canvas.height * 0.42);
-  context.fillStyle = "#eef2f6";
-  context.font = "20px ui-sans-serif, system-ui, sans-serif";
-  context.fillText(`${meshCount} mesh / ${vertexCount} vertices`, 32, 48);
 }
 
 function decodePlaceholderImage() {

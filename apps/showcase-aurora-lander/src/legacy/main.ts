@@ -70,6 +70,7 @@ import {
   trajectoryHash,
   type GhostSample
 } from "../gameplay/ghost";
+import { auroraLanderEffectsPass, auroraLanderValleyFog } from "./effects-pass";
 import { bindHud, showBanner, updateHud, type BannerKind, type HudBindings } from "./hud";
 import { createLanderAudio, type LanderAudioCue, type LanderAudioController } from "./lander-audio";
 
@@ -109,7 +110,8 @@ type Phase = "flying" | "landed" | "crashed" | "campaign-clear";
  */
 const routeParams = new URLSearchParams(window.location.search);
 const dropMode = routeParams.get("drop");
-const visualReviewCapture = routeParams.get("capture") === "review";
+// Shipped play path only: the ?capture= review lens was removed.
+const visualReviewCapture: boolean = false;
 // PRD-03 §6.6 / Q-14-1: A3D_QR_POST (default on) bloom is linear HDR with no hidden
 // legacy gain; retune for v2 only so the `-post` legacy look is unchanged.
 const postV2Bloom = resolveQrFlags({
@@ -913,14 +915,23 @@ function buildWorldScene() {
 
   // Shared night lighting: one neutral aurora grade that reads across all three
   // sites so no live scene swaps are ever needed.
+  // Visible effects pass (default boot; the named review lens is unchanged).
+  const firstPad = SITES[0]!.pads[0]!;
+  const firstPadY = siteFields[0]?.field.padHeights[0] ?? 0;
   builder
-    .add(effects.fog({ name: "valley haze", color: "#16283f", density: 0.0021, intensity: 0.42 }))
+    .addMany(visualReviewCapture ? [] : auroraLanderEffectsPass({
+      pad: [firstPad.x, firstPadY, firstPad.z],
+      reducedMotion: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true
+    }))
+    .add(visualReviewCapture
+      ? effects.fog({ name: "valley haze", color: "#16283f", density: 0.0021, intensity: 0.42 })
+      : auroraLanderValleyFog(firstPadY))
     .add(effects.bloom(postV2Bloom
       // v2 maps an authored maxIntensity to clampLuminance (0.6 would clamp every
       // pixel below threshold), so leave it unauthored here (clampLuminance 64).
       ? { name: "aurora sky bloom", intensity: 1.4, threshold: 0.5, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
       : { name: "aurora sky bloom", intensity: 0.22, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade({ exposure: 1.06, contrast: 1.05, saturation: 1.12 }))
+    .add(effects.colorGrade(visualReviewCapture ? { exposure: 1.06, contrast: 1.05, saturation: 1.12 } : { exposure: 1.21, contrast: 1.2, saturation: 1.35 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     // Ambient-only teal wash at 0.95 flattened the regolith into a single bright
     // silhouette and blew the typed probe out into a white disc. Drop the flat

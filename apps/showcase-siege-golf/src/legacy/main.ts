@@ -25,6 +25,7 @@ import { assets } from "../../../../src/aura-assets";
 import { SIEGE_GOLF_HOLES, type HoleDefinition } from "../gameplay/course";
 import { HoleFlow } from "../gameplay/hole-flow";
 import { createGolfAudio } from "./golf-audio";
+import { siegeGolfEffectsPass, siegeGolfHeightHaze } from "./effects-pass";
 import { ShotController, canonicalShotInput } from "../gameplay/shot";
 import { roundTotals, versusPar, type HoleScoreEntry } from "../gameplay/score";
 import { runSixtySecondReplay } from "../gameplay/replay-proof";
@@ -42,9 +43,9 @@ const siegeWindow = window as SiegeWindow;
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const compactViewport = window.innerWidth <= 720;
-const captureMode = new URLSearchParams(window.location.search).get("capture");
-const visualReviewCapture = captureMode === "review";
-const evidenceCapture = captureMode === "evidence";
+// Shipped play path only: the ?capture= review/evidence lenses were removed.
+const visualReviewCapture: boolean = false;
+const evidenceCapture: boolean = false;
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 const APP_ID = "showcase-siege-golf";
@@ -841,8 +842,12 @@ function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening
         color: "#ffe2b8"
       }),
       effects.neonBloom({ intensity: reducedMotion ? 0.02 : 0.055, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.fog({ name: "golden-hour distance haze", density: 0.016, color: "#a9d6e6", intensity: 0.42 }),
-      effects.colorGrade({ exposure: 1.02, contrast: 1.12, saturation: 1.1 }),
+      // Visible effects pass (default boot; the named review lens is unchanged).
+      ...(visualReviewCapture ? [] : siegeGolfEffectsPass({ halfLength: hole.halfLength, reducedMotion })),
+      visualReviewCapture
+        ? effects.fog({ name: "golden-hour distance haze", density: 0.016, color: "#a9d6e6", intensity: 0.42 })
+        : siegeGolfHeightHaze(),
+      effects.colorGrade(visualReviewCapture ? { exposure: 1.02, contrast: 1.12, saturation: 1.1 } : { exposure: 1.04, contrast: 1.24, saturation: 1.3 }),
       effects.antiAlias({ mode: "fxaa" }),
       // Ambient dropped from 0.7 to a thin sky fill so the key light is
       // actually doing the shaping; 0.7 washed out every contact and shadow.
