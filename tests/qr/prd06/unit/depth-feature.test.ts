@@ -107,16 +107,20 @@ describe("prd06 deform depth variant feature (T0.13)", () => {
     }
   });
 
-  it("bindUniforms does nothing for items without a stamped palette key", () => {
+  it("bindUniforms binds the bone texture for items without a stamped palette key (keyed on the binding)", () => {
+    // 06-PROMO: the deform depth/forward programs declare no u_jointMatrices, so an
+    // unstamped producer (glTF rest palette before any clip apply) must still bind.
     const cache = new SkinningPaletteTextureCache();
     const feature = createPrd06DeformDepthFeature(cache);
-    const unstamped = { geometry: {} as Geometry, skinning: { jointCount: 4, matrices: identityPalette(4) } as SkinningPaletteBinding } as RenderItem;
+    const skinning = { jointCount: 4, matrices: identityPalette(4) } as SkinningPaletteBinding;
+    const unstamped = { geometry: {} as Geometry, skinning } as RenderItem;
     const bound = new Map<string, UniformValue>();
     feature.bindUniforms!("depth", unstamped, (name, value) => {
       bound.set(name, value);
     });
-    expect(bound.size).toBe(0);
-    expect(cache.diagnostics().textures).toBe(0);
+    expect(bound.has("u_boneTexture")).toBe(true);
+    expect(cache.has(skinning)).toBe(true);
+    expect(cache.diagnostics().textures).toBe(2);
   });
 });
 

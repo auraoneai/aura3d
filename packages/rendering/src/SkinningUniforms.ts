@@ -233,8 +233,13 @@ export function bindBoneTextureForSkinning(
   cache: SkinningPaletteTextureCache,
   skinning: SkinningPaletteBinding
 ): boolean {
-  const key = paletteKeyOf(skinning);
-  if (!key) return false;
+  const stamped = paletteKeyOf(skinning);
+  // Unstamped producers (glTF loader rest palette before any clip apply,
+  // SkinnedMesh.setSkinning) still need the bone texture: the prd06.deform
+  // program declares no u_jointMatrices, so returning here left u_boneTexture
+  // unbound and the skin sampled texture unit 0 (GPU promote run 38198435735).
+  const key: object = stamped ?? skinning;
+  if (!stamped) cache.markUnstamped(key);
   // paletteUniformSet materialises the per-key entry (first bind only); upload()
   // dedupes per cache frame id, so it is a no-op when the forward bind already
   // ran this frame and a one-shot upload when depth binds first.
