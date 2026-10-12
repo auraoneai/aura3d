@@ -34,7 +34,8 @@ const MORPH_ONLY_POSE = { bones: {}, morphTargets: { blink: 1 } } as unknown as 
 const EMPTY_POSE: AnimationPose = { bones: {}, morphTargets: {} };
 
 function qrFlags(...shortNames: string[]) {
-  return resolveQrFlags({ options: shortNames, env: {} });
+  // animation is default-on: the flag-off arm turns it off explicitly.
+  return resolveQrFlags({ options: shortNames.includes("animation") ? shortNames : [...shortNames, "-animation"], env: {} });
 }
 
 function poseRecorder() {
@@ -140,7 +141,10 @@ describe("qrAnimationFlags plumbing", () => {
   it("honours the installed flags and resets cleanly", () => {
     setQrAnimationFlags(qrFlags("animation"));
     expect(qrAnimationFlags().on("A3D_QR_ANIMATION")).toBe(true);
-    resetQrAnimationFlags();
+    setQrAnimationFlags(qrFlags());
     expect(qrAnimationFlags().on("A3D_QR_ANIMATION")).toBe(false);
+    // Reset falls back to the resolved defaults — animation is default-on.
+    resetQrAnimationFlags();
+    expect(qrAnimationFlags().on("A3D_QR_ANIMATION")).toBe(true);
   });
 });

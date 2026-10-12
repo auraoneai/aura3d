@@ -23,7 +23,8 @@ import {
   resetProductionActorPoseStates
 } from "../../../../packages/engine/src/agent-api/compiler/animation";
 
-const qrFlags = (...shortNames: string[]) => resolveQrFlags({ options: shortNames, env: {} });
+// animation is default-on: the flag-off arm turns it off explicitly.
+const qrFlags = (...shortNames: string[]) => resolveQrFlags({ options: shortNames.includes("animation") ? shortNames : [...shortNames, "-animation"], env: {} });
 
 function fixture() {
   const scene = new Scene();

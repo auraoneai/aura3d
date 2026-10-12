@@ -18,7 +18,8 @@ describe("C-00 flags", () => {
     expect(flags.on("A3D_QR_CORE")).toBe(false);
   });
   it("T1.11: animation.mixer:\"pose\" aliases A3D_QR_ANIMATION_POSE_MIXER; an explicit flags value wins", () => {
-    const base = resolveQrFlags({ options: [] });
+    // explicit off: animation is default-on
+    const base = resolveQrFlags({ options: { A3D_QR_ANIMATION: false } });
     const aliased = qrFlagsWithAnimationMixer(base, "pose");
     expect(aliased.on("A3D_QR_ANIMATION_POSE_MIXER")).toBe(true);
     // the sub-flag alone does not imply the lane flag

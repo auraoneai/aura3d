@@ -42,7 +42,8 @@ const FAKE_NODE_BASE = { kind: "model", asset: { id: "a" }, animation: { clip: "
 const FAKE_NODE = FAKE_NODE_BASE as never;
 
 function qrFlags(...shortNames: string[]) {
-  return resolveQrFlags({ options: shortNames, env: {} });
+  // animation is default-on: the flag-off arm turns it off explicitly.
+  return resolveQrFlags({ options: shortNames.includes("animation") ? shortNames : [...shortNames, "-animation"], env: {} });
 }
 
 type FakePoseAction = {
