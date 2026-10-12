@@ -11,6 +11,7 @@ import {
 } from "@aura3d/engine";
 import "../styles.css";
 import { maybeWriteHud } from "./hud-diff";
+import { effectsPassOn, orbitalEffectsPass } from "./effects-pass";
 import {
   createWaveState,
   enemyIds,
@@ -68,12 +69,12 @@ const systems = [
 
 const appScene = scene()
   .background("#05080f")
-  .add(primitives.sphere({ name: "defended planet core", material: material.pbr({ color: "#1a4862", roughness: 0.62, metallic: 0.04 }) }).scale(1.03))
+  .add(primitives.sphere({ name: "defended planet core", material: effectsPassOn ? material.physical({ color: "#2f6f8f", roughness: 0.48, metallic: 0.05, clearcoat: 0.55, clearcoatRoughness: 0.22 }) : material.pbr({ color: "#1a4862", roughness: 0.62, metallic: 0.04 }) }).scale(1.03))
   .add(primitives.sphere({ name: "planet atmosphere shell", material: material.emissive({ color: "#0b2230", emissive: "#2dd4bf" }) }).scale(1.13))
   .add(primitives.torus({ name: "inner orbital ring", material: material.emissive({ color: "#122536", emissive: "#38bdf8" }) }).rotate(1.5708, 0, 0).scale([2.05, 2.05, 0.03]))
   .add(primitives.torus({ name: "outer orbital ring", material: material.emissive({ color: "#201a33", emissive: "#a78bfa" }) }).rotate(1.5708, 0, 0).scale([3.1, 3.1, 0.025]))
-  .add(primitives.box({ name: "north defense station", material: material.pbr({ color: "#d7ecff", roughness: 0.28, metallic: 0.55 }) }).position(0, 1.4, 0).scale([0.28, 0.14, 0.28]))
-  .add(primitives.box({ name: "equator defense station", material: material.pbr({ color: "#b8f7d9", roughness: 0.34, metallic: 0.46 }) }).position(1.45, 0, 0).scale([0.14, 0.28, 0.28]))
+  .add(primitives.box({ name: "north defense station", material: (effectsPassOn ? material.metal({ color: "#d7ecff", roughness: 0.22, metallic: 0.9 }) : material.pbr({ color: "#d7ecff", roughness: 0.28, metallic: 0.55 })) }).position(0, 1.4, 0).scale([0.28, 0.14, 0.28]))
+  .add(primitives.box({ name: "equator defense station", material: (effectsPassOn ? material.metal({ color: "#b8f7d9", roughness: 0.26, metallic: 0.85 }) : material.pbr({ color: "#b8f7d9", roughness: 0.34, metallic: 0.46 })) }).position(1.45, 0, 0).scale([0.14, 0.28, 0.28]))
   .add(primitives.sphere({ name: "player interceptor", material: material.emissive({ color: "#12261f", emissive: "#75f2cf" }) }).position(playerRadius, 0, 0).scale([0.18, 0.18, 0.28]).runtime(game.runtimeNode("player-interceptor")))
   .add(primitives.sphere({ name: "player aiming bead", material: material.emissive({ color: "#2b2109", emissive: "#facc15" }) }).position(playerRadius + 0.32, 0, 0).scale(0.07).runtime(game.runtimeNode("player-aim")))
   .add(lights.ambient({ intensity: 0.18 }))
@@ -81,7 +82,7 @@ const appScene = scene()
   .add(lights.point({ position: [3.2, -1.6, 2.6], color: "#facc15", intensity: 1.6 }))
   .add(lights.directional({ position: [0.6, 4.4, 5], intensity: 1.1 }))
   .add(effects.bloom({ intensity: 0.32, color: "#75f2cf" }))
-  .add(effects.fog({ density: 0.024, color: "#0d1726" }))
+  .addMany(orbitalEffectsPass())
   .add(interactions.orbit())
   .camera(camera.perspective({ position: [0, 0.42, 6.6], target: [0, 0, 0], fov: 42 }));
 

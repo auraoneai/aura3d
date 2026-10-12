@@ -1,0 +1,84 @@
+// Visible effects pass (batch C): the default (engine-default flags) look of
+// the legacy boot. Every node here is a public engine builder whose runtime
+// path is on under the default `post` / `vfx` / `lighting` flags; with those
+// flags off the pass falls back to the pre-pass fog so the flags-off arm keeps
+// its old look (and never pays the CPU volumetric-light fallback).
+//
+// Look brief (space): hard warm sun from upper-left, graphite void with a cool
+// rim, the planet as the lit subject. Families: sun key + cascaded shadows and
+// contact shadows, volumetric in-scatter / god rays, ambient orbital dust and
+// ring sparks, studio IBL reflections on the stations, grade + vignette.
+import { effects, environments, lights } from "@aura3d/engine";
+import { resolveQrFlags } from "@aura3d/engine/contracts";
+
+const flags = resolveQrFlags({
+  url: location.href,
+  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+});
+
+export const effectsPassOn = flags.on("A3D_QR_POST");
+const vfxOn = flags.on("A3D_QR_VFX");
+
+export function orbitalEffectsPass() {
+  if (!effectsPassOn) return [effects.fog({ density: 0.024, color: "#0d1726" })];
+  return [
+    // Sun key: the strongest directional drives the shadow cascades and the
+    // S4 god-ray direction. Warm, from the upper left so the terminator falls
+    // across the planet face the camera sees.
+    lights.directional({
+      name: "orbital sun key",
+      position: [-5.5, 3.6, 4.2],
+      target: [0, 0, 0],
+      color: "#ffe2b8",
+      intensity: 2.6,
+      shadow: { cascades: "auto", maxDistance: 24 }
+    }),
+    // Studio IBL for reflections on the metallic stations and planet lacquer;
+    // background stays the authored void.
+    environments.preset("studio", { intensity: 0.55, specularIntensity: 1.1, background: false }),
+    effects.contactShadows({ length: 0.3, intensity: 0.8 }),
+    // Depth-aware in-scatter: a faint cool haze that recedes the outer ring
+    // and lets the sun throw rays past the planet limb.
+    effects.volumetricFog({
+      name: "orbital in-scatter",
+      density: 0.022,
+      color: "#1b2f4a",
+      intensity: 0.34
+    }),
+    effects.vignette({ intensity: 0.32, smoothness: 0.6 }),
+    ...(vfxOn
+      ? [
+          // Slow orbital dust swirling round the defence ring.
+          effects.particles({
+            name: "orbital ring dust",
+            emitter: "swirl",
+            particleCount: 220,
+            emissionRate: 60,
+            radius: 2.6,
+            height: 0.4,
+            speed: 0.35,
+            size: [0.015, 0.04],
+            lifetime: [3, 5],
+            gravity: 0,
+            color: "#9fd8ff",
+            materialMode: "additive-glow",
+            seed: 4101
+          }),
+          // Faint warm sparks off the atmosphere shell on the sun side.
+          effects.particles({
+            name: "atmosphere sun-side sparks",
+            emitter: "ambient",
+            particleCount: 90,
+            emissionRate: 24,
+            size: [0.012, 0.03],
+            lifetime: [2, 3.5],
+            speed: 0.18,
+            gravity: 0,
+            color: "#ffd59a",
+            materialMode: "additive-glow",
+            seed: 4102
+          }).position(-0.9, 0.7, 0.6)
+        ]
+      : [])
+  ] as const;
+}
