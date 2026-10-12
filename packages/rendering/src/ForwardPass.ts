@@ -25,12 +25,12 @@ import { type VertexFormat } from "./VertexFormat";
 import { type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 import { programCacheSlot, type ProgramCacheLike, type ProgramFeatures } from "./contracts/program";
 import { normalizeProgramFeatures } from "./program/ProgramFeatures";
-import { featuresForGeometry, geometryHasSkin, materialFeatureWarning, materialUsesGeneratedProgram } from "./program/MaterialFeatures";
+import { featuresForGeometry, geometryHasSkin, materialFeatureWarning, materialRoutesToGeneratedProgram } from "./program/MaterialFeatures";
 import { bindShaderFeatureUniforms, selectShaderFeatureBits } from "./program/FeatureSelect";
 import { bindMaterialLobeUniforms } from "./materials/PhysicalFeatures";
 import { QUALITY_TIERS, type AuraQualityTierSettings } from "./contracts/quality";
 import { rendererQrFlags } from "./renderer/FrameGraph";
-import { qrCoreGeneratorOn, rendererProgramCache, rendererAuraFrame } from "./renderer/qrSubFlags";
+import { qrCoreGeneratorOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererProgramCache, rendererAuraFrame } from "./renderer/qrSubFlags";
 
 
 // PR 0b-2 re-imports for moved carve-out modules (CONTRACTS.md §3.3).
@@ -296,7 +296,7 @@ export class ForwardPass extends BaseRenderPass {
     this.beginFramePools(context.device);
     this.clusteredLighting = resolveForwardClusteredLighting(this.options.lights, context.width, context.height, this.options.cameraViewProjectionMatrix);
     const flags = rendererQrFlags(context.device);
-    if (qrCoreGeneratorOn(flags)) {
+    if (qrGeneratedProgramsOn(flags)) {
       const auraFrame = rendererAuraFrame(context.device, flags);
       if ("viewport" in auraFrame) {
         (auraFrame as { viewport: { width: number; height: number } }).viewport = { width: context.width, height: context.height };
@@ -512,7 +512,15 @@ export class ForwardPass extends BaseRenderPass {
   private getShader(material: Material, device: RenderDevice, item?: RenderItem): RenderShaderProgram | undefined {
     const flags = rendererQrFlags(device);
     this.lastProgramFeatures = undefined;
-    if (qrCoreGeneratorOn(flags) && materialUsesGeneratedProgram(material)) {
+    // PRD-04: under `materials` without the core generator, lobe-bearing
+    // materials still take the generated program (the legacy shader has no
+    // lobe code). That program writes linear HDR, so the lobe route only runs
+    // into a linear target (postprocess / OutputPass encodes).
+    const route = {
+      core: qrCoreGeneratorOn(flags),
+      lobes: qrMaterialsLobeProgramsOn(flags) && this.options.outputColorSpace === "linear"
+    };
+    if ((route.core || route.lobes) && materialRoutesToGeneratedProgram(material, route, { flags, tier: this.options.qualityTier ?? QUALITY_TIERS.high })) {
       const warning = materialFeatureWarning(material);
       if (warning) console.warn(`[prd01] ${warning}`);
       this.lastProgramFeatures = this.programFeaturesFor(material, device, item);

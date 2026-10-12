@@ -12,7 +12,7 @@ test("Aura3D character controller screenshot clears the look floor", async ({ pa
   await page.goto("/");
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 150_000 }).toBe("true");
 
-  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.1, y: 0.46, width: 0.8, height: 0.44 } });
+  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.15, y: 0.25, width: 0.7, height: 0.65 } });
   const screenshot = await page.screenshot({ fullPage: false });
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);

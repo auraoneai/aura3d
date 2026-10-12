@@ -415,7 +415,14 @@ export async function decodePngDataUrl(dataUrl: string): Promise<{ width: number
 /** Snapshot a canvas' current front buffer into a Uint8ClampedArray (browser drivers). */
 export async function canvasPixels(canvas: HTMLCanvasElement): Promise<Uint8ClampedArray> {
   const bitmap = await createImageBitmap(canvas);
-  const ctx = document.createElement("canvas").getContext("2d")!;
+  // The scratch canvas must match the source size. A default 300x150 canvas
+  // clipped every larger frame, so getImageData returned transparent zeros
+  // outside the top-left 300x150 (S6/S9/§16.2 asset probes, decoders/variants).
+  const scratch = document.createElement("canvas");
+  scratch.width = canvas.width;
+  scratch.height = canvas.height;
+  const ctx = scratch.getContext("2d")!;
   ctx.drawImage(bitmap, 0, 0);
+  bitmap.close();
   return ctx.getImageData(0, 0, canvas.width, canvas.height).data;
 }

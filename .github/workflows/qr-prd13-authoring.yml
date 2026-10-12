@@ -28,12 +28,21 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # prd02-depth-variants-glsl (#867) validates every composed depth variant
+      # with glslangValidator and fails when the binary is missing.
+      - name: Install glslang
+        run: |
+          if ! command -v glslangValidator >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq glslang-tools
+          fi
+          glslangValidator --version
       - run: pnpm typecheck:raw
       - run: pnpm exec eslint packages/engine/src/agent-api/looks packages/engine/src/agent-api/nodes/prompt packages/engine/src/lanes/prd13.ts tests/qr tests/unit/agent-api/looks.test.ts tests/unit/agent-api/look-lint.test.ts tests/unit/agent-api/prompt-plan-v2.test.ts tests/unit/agent-api/structural-qa.test.ts tests/unit/contracts/impl
       # Lane-scoped: 3 unrelated agent-api files (paused-render-clock,
       # production-bridge-boundary, canvas2d) fail on the whole stack today.
       - run: pnpm exec vitest run tests/unit/agent-api/looks.test.ts tests/unit/agent-api/look-lint.test.ts tests/unit/agent-api/prompt-plan-v2.test.ts tests/unit/agent-api/structural-qa.test.ts tests/unit/agent-api/agent-api.test.ts tests/unit/contracts
-      - name: PRD-13 delta suite (bundle delta ≤ 12 KB gz)
+      - name: PRD-13 delta suite (bundle delta ≤ 9 KB gz)
         run: pnpm exec vitest run --config tests/qr/prd13/vitest.qr-prd13.config.ts
 
   # 13-SPECS: the three §17.2 browser specs (looks-expansion,

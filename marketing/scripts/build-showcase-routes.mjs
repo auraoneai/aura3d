@@ -50,6 +50,7 @@ const showcaseRoutes = [
   "showcase-siege-golf",
   "showcase-neon-swarm",
   "showcase-courier-rush",
+  "showcase-orbital-defense",
   "showcase-pulse-tunnel",
   "showcase-mech-hangar",
   "showcase-vault-breakers",

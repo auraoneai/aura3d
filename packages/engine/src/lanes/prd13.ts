@@ -93,7 +93,8 @@ export { lookDiagnosticsSection } from "../agent-api/looks/lookDiagnostics.js";
 import { registerDiagnosticsSection, diagnosticsSectionsAll } from "../contracts/diagnostics.js";
 import { registerNodeHandler, nodeHandlerFor } from "../contracts/compiler.js";
 import { lookDiagnosticsSection as prd13LookDiagnosticsSection } from "../agent-api/looks/lookDiagnostics.js";
-import { lookNodeHandler as prd13LookNodeHandler } from "../agent-api/looks/lookNodeHandler.js";
+import { lookNodeHandler as prd13LookNodeHandler, lowerLookNodeChildren } from "../agent-api/looks/lookNodeHandler.js";
+import { setLookLowering } from "../agent-api/sceneMath.js";
 
 let prd13Provided = false;
 export function providePrd13Contracts(): void {
@@ -105,5 +106,8 @@ export function providePrd13Contracts(): void {
   if (nodeHandlerFor("look") === undefined) {
     registerNodeHandler(prd13LookNodeHandler);
   }
+  // QR-13 pixels: v1 look nodes lower to their v0 children at flatten time,
+  // so the look's env/light/fog/grade reach the renderer, not just diagnostics.
+  setLookLowering(lowerLookNodeChildren);
 }
 providePrd13Contracts();

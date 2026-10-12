@@ -91,4 +91,15 @@ describe("marketing showcase route build", () => {
     expect(buildScript).not.toContain("showcase-platformer-game-layer-proof");
   });
 
+  it("builds every showcase game route the production capture manifest expects to exist", () => {
+    // showcase-orbital-defense was captured against https://aura3d.auraone.ai but missing from
+    // showcaseRoutes, so marketing/dist never contained it and the live route 404'd.
+    const games = readFileSync("tools/quality-rebuild-capture/games.json", "utf8");
+    const routes = [...games.matchAll(/"route":\s*"\/apps\/(showcase-[^/"]+)\/"/g)].map((m) => m[1]);
+    expect(routes).toContain("showcase-orbital-defense");
+    for (const route of new Set(routes)) {
+      expect(buildScript, `${route} must be in showcaseRoutes`).toContain(`"${route}"`);
+    }
+  });
+
 });

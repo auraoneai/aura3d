@@ -72,6 +72,8 @@ export interface LaneCaptureOptions {
   readonly flags: string;
   /** Broken control from `scenes/prd02/controls.ts`. */
   readonly control?: string;
+  /** Opt in to synchronous shadow depth readback and draw diagnostics. */
+  readonly shadowDiagnostics?: boolean;
 }
 
 export interface LaneCapture {
@@ -84,6 +86,7 @@ export async function captureLaneScene(page: Page, server: LaneServer, options: 
   const engine = options.engine ?? "aura3d";
   const query = new URLSearchParams({ engine, scene: options.scene, "a3d-qr": options.flags });
   if (options.control) query.set("control", options.control);
+  if (options.shadowDiagnostics) query.set("shadowDiagnostics", "1");
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto(`${server.origin}/scenes/prd02/lane.html?${query.toString()}`, { waitUntil: "load", timeout: 60_000 });
   // String predicates: esbuild's `__name` helper must not leak into the page.

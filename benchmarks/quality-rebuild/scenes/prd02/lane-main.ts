@@ -17,6 +17,7 @@ import type { ReadyPayload } from "../../shared/types";
 import { applyBrokenControl } from "./controls";
 import { applyAuraProbes, applyThreeLightProbe, applyThreeRoomEnvironment, installReceiveShadowFixture } from "./fixtures";
 import { getPrd02Spec } from "./specs";
+import { prd02LastBridgeDevice, prd02ShadowBridgeReason, prd02ShadowDepthProbe } from "@aura3d/rendering/lanes";
 
 declare global {
   interface Window {
@@ -64,7 +65,19 @@ async function runRenderMode(): Promise<void> {
           collectExtra: async (app) => {
             window.__qrPrd02App = app;
             const probeNodes = withProbes ? await applyAuraProbes(sceneId, app as unknown as Parameters<typeof applyAuraProbes>[1]) : 0;
-            return probeNodes > 0 ? { prd02ProbeNodes: probeNodes } : {};
+            if (params.get("shadowDiagnostics") !== "1") return probeNodes > 0 ? { prd02ProbeNodes: probeNodes } : {};
+            // Shadow-pixels GPU evidence: cascade depth stats of the flag-path
+            // bridge after the ready frame (empty when the bridge did not run).
+            const laneRenderer = (app as unknown as Record<symbol, { device?: unknown } | undefined>)[Symbol.for("a3d.prd01.renderer")];
+            // Without the renderer symbol the probe falls back to the device
+            // the bridge last ran on ("never-ran" = bridge not reached).
+            const laneDevice = (laneRenderer?.device as never | undefined) ?? undefined;
+            const shadowDepth = prd02ShadowDepthProbe(laneDevice);
+            const prd02ShadowBridge = prd02ShadowBridgeReason(laneDevice);
+            // Draw tap: what the GPU forward draws of shadow receivers were
+            // handed over the next stepped frame (binding, enable, strength).
+            const prd02ShadowDraws = tapShadowReceiverDraws(laneDevice ?? (prd02LastBridgeDevice() as never), () => (app as unknown as { step(dt: number): void }).step(0));
+            return { ...(probeNodes > 0 ? { prd02ProbeNodes: probeNodes } : {}), prd02ShadowDepth: shadowDepth, prd02ShadowBridge, prd02ShadowDraws };
           }
         });
     window.__QR_READY__ = payload;
@@ -88,4 +101,36 @@ if (params.get("mode") === "metrics") {
   void runMetricsMode();
 } else {
   void runRenderMode();
+}
+
+/** Records shadow uniforms of up to 8 forward draws over one stepped frame (GPU evidence). */
+function tapShadowReceiverDraws(device: { draw?: (command: unknown) => void } | null | undefined, renderFrame: () => void): unknown[] {
+  if (!device || typeof device.draw !== "function") return [];
+  const original = device.draw;
+  const seen: unknown[] = [];
+  device.draw = function (this: unknown, command: unknown) {
+    const c = command as { label?: string; shader?: { label?: string }; uniforms?: ReadonlyMap<string, unknown> };
+    const u = c.uniforms;
+    if (seen.length < 8 && u?.get && u.has?.("u_shadowMapEnabled")) {
+      const binding = u.get("u_shadowMapTexture") as { texture?: { label?: string; format?: string } | null; sampler?: unknown } | undefined;
+      const matrix = u.get("u_shadowMapMatrix") as Float32Array | undefined;
+      seen.push({
+        label: c.label ?? null,
+        shader: c.shader?.label ?? null,
+        enabled: u.get("u_shadowMapEnabled"),
+        strength: u.get("u_shadowMapStrength"),
+        texture: binding?.texture?.label ?? null,
+        format: binding?.texture?.format ?? null,
+        sampler: binding?.sampler ?? null,
+        matrix: matrix ? Array.from(matrix).map((v) => Math.round(v * 1e4) / 1e4) : null
+      });
+    }
+    return original.call(this, command);
+  };
+  try {
+    renderFrame();
+  } finally {
+    device.draw = original;
+  }
+  return seen;
 }

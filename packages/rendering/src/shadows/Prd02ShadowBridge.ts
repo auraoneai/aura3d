@@ -174,6 +174,31 @@ export interface Prd02BridgedShadowFrame {
 }
 
 const bridgedFrames = new WeakMap<RenderDevice, Prd02BridgedShadowFrame>();
+/** Last bridge outcome per device ("rendered" or the bail-out reason) — lane-page GPU evidence. */
+const bridgeReasons = new WeakMap<RenderDevice, string>();
+
+/** Device the bridge last ran on (lane pages cannot always reach the renderer). */
+let lastBridgeDevice: RenderDevice | null = null;
+
+/** The device the bridge last ran on (lane-page GPU evidence probes). */
+export function prd02LastBridgeDevice(): RenderDevice | null {
+  return lastBridgeDevice;
+}
+
+/** Last bridge outcome for `device` (default: the last bridged device): "rendered", a bail-out reason, or "never-ran". */
+export function prd02ShadowBridgeReason(device: RenderDevice | null = lastBridgeDevice): string {
+  return device ? bridgeReasons.get(device) ?? "never-ran" : "never-ran";
+}
+
+/**
+ * GPU evidence probe for the lane page: cascade depth statistics of the
+ * bridge's shadow system on `device` (empty before the bridge first runs).
+ */
+export function prd02ShadowDepthProbe(device: RenderDevice | null = lastBridgeDevice): ReturnType<Prd02ShadowSystem["readCascadeDepthStats"]> {
+  return device ? shadowSystems.get(device)?.system.readCascadeDepthStats() ?? [] : [];
+}
+
+
 
 /** Consume (and clear) the bridged frame for `device`, if the bridge ran this frame. */
 export function takePrd02BridgedShadowFrame(device: RenderDevice): Prd02BridgedShadowFrame | null {
@@ -261,18 +286,25 @@ export function shadowFrameCamera(
 export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardShadowMapOptions | undefined {
   bridgedFrames.delete(input.device);
   const observed = takeFrameObservation(input.device);
-  if (!readPrd02KillSwitches(input.source).shadows) return undefined;
-  if (input.items.length === 0 || observed?.lookupConsumer === true || prd02LookupConsumerExists(input.items)) return undefined;
+  lastBridgeDevice = input.device;
+  const bail = (reason: string): undefined => {
+    bridgeReasons.set(input.device, reason);
+    return undefined;
+  };
+  if (!readPrd02KillSwitches(input.source).shadows) return bail("kill-switch");
+  if (input.items.length === 0) return bail("no-caster-items");
+  if (observed?.lookupConsumer === true || prd02LookupConsumerExists(input.items)) return bail("lookup-consumer");
   const capabilities = input.device.info.capabilities;
-  if (!capabilities?.includes("render-targets") || !capabilities.includes("depth-textures")) return undefined;
+  if (!capabilities?.includes("render-targets") || !capabilities.includes("depth-textures")) return bail("capabilities");
   const concrete = input.camera as (Camera & { near?: number; far?: number }) | undefined;
   const camera = concrete?.viewProjectionMatrix ? concrete : observed?.camera ?? input.frameCamera;
-  if (!camera?.viewProjectionMatrix) return undefined;
+  if (!camera?.viewProjectionMatrix) return bail("no-camera");
   const sun = prd02SunDirection(input.source);
-  if (!sun) return undefined;
+  if (!sun) return bail("no-sun");
   const tier = input.tier ?? QUALITY_TIERS.high;
   const config = prd02ShadowConfig(input.source, input.flags, tier, camera.far);
-  if (!config.enabled) return undefined;
+  if (!config.enabled) return bail("config-disabled");
+  bridgeReasons.set(input.device, "rendered");
   const system = shadowSystemForDevice(input.device, config);
   const near = camera.near ?? 0.1;
   // The fitter lerps between the VP's near/far corners, so it gets the
@@ -291,7 +323,7 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
     const texture = uniforms.cascadeTextures[fit.index] ?? null;
     return texture ? { fit, map: bridgeShadowMap(texture, fit.drawViewProjection, config) } : null;
   });
-  if (maps.length === 0 || maps.some((entry) => entry === null)) return undefined;
+  if (maps.length === 0 || maps.some((entry) => entry === null)) return bail(maps.length === 0 ? "no-cascade-fits" : "missing-cascade-texture");
   bridgedFrames.set(input.device, { uniforms, config, system });
   const resolved = maps as { fit: (typeof fits)[number]; map: Omit<ForwardShadowMapOptions, "cascades"> }[];
   const first = resolved[0]!.map;

@@ -184,7 +184,7 @@ describe("PRD-08 platformer kit flag defaults (lane 08)", () => {
     kit.step(1 / 60, { jumpPressed: true });
     const airborne = kit.snapshot();
     expect(airborne.player.vy).toBeGreaterThan(0);
-  });
+  }, 30_000); // cold dynamic import of GameGenreKits exceeded 5 s on CI (run 38167183471)
 
   it("flag-on: presentation state appears with stretch on jump", async () => {
     const { createGamePlatformerKit } = await import("../../../packages/engine/src/agent-api/GameGenreKits");

@@ -21,7 +21,8 @@ import { canvasPixels, CLEAR, deltaE00, maskedDeltaE, meanLab, subjectMask } fro
 
 declare global { interface Window { __QR_READY__?: unknown; __QR_ERROR__?: string } }
 
-const DECODER_BASE = "/fixtures/asset-corpus/decoders/";
+// C-16 per-decoder layout (`basis/`, `draco/`, `meshopt/`) from public/aura-decoders/.
+const DECODER_BASE = "/aura-decoders/";
 
 async function run(): Promise<void> {
   const canvas = document.getElementById("stage") as HTMLCanvasElement;
@@ -40,6 +41,17 @@ async function run(): Promise<void> {
     });
     const staged: ProductionStagedScene = createProductionProductionStageScene(pipeline.source, pipeline.resources.bounds, { width: canvas.width, height: canvas.height }, stageOptions);
     return { pipeline, staged };
+  };
+  // pipeline.source holds a resolved render-item snapshot, so setMaterialVariant
+  // (which swaps materials on the live scene renderables) never reached it. GPU
+  // run 38161773108 measured pairwise variant dE2000 0. Rebuild the source and
+  // re-stage after every variant switch.
+  const restage = (pipeline: Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>): ProductionStagedScene => {
+    const input = pipeline.resources.toRendererInput(
+      { width: canvas.width, height: canvas.height },
+      { environmentLighting: lighting.lighting, qualityPreset: "hdr-studio-preview", cameraPolicy: "require" }
+    );
+    return createProductionProductionStageScene(input.source, pipeline.resources.bounds, { width: canvas.width, height: canvas.height }, stageOptions);
   };
   // T2.6: `renderImportedAsset` moved to `rendererProofCapture`, which validates
   // real mesh/material counts, so pass the pipeline metadata through.
@@ -68,7 +80,7 @@ async function run(): Promise<void> {
   const variantResults: Record<string, { applied: string; meanLab: [number, number, number] }> = {};
   for (const name of variants.slice(0, 3)) {
     const applied = await shoe.pipeline.resources.setMaterialVariant(name);
-    render(shoe.staged, shoe.pipeline.metadata);
+    render(restage(shoe.pipeline), shoe.pipeline.metadata);
     const px = await canvasPixels(canvas);
     variantResults[name] = { applied, meanLab: meanLab(px, subjectMask(px)) };
   }
@@ -78,7 +90,7 @@ async function run(): Promise<void> {
   const first = variants[0];
   if (first !== undefined && variantResults[first]) {
     await shoe.pipeline.resources.setMaterialVariant(first);
-    render(shoe.staged, shoe.pipeline.metadata);
+    render(restage(shoe.pipeline), shoe.pipeline.metadata);
     const again = await canvasPixels(canvas);
     variantRoundTripDeltaE = deltaE00(variantResults[first]!.meanLab, meanLab(again, subjectMask(again)));
   }

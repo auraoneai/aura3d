@@ -14,6 +14,7 @@ import { LIGHTING_PUNCTUAL_CHUNK_GLSL } from "../shaders/chunks/lighting_punctua
 import { SHADOW_RECEIVE_CHUNK_GLSL } from "../shaders/chunks/shadow_receive.glsl.js";
 import { SHADOW_CASTER_CHUNK_GLSL } from "../shaders/chunks/shadow_caster.glsl.js";
 import { CONTACT_SHADOW_CHUNK_GLSL } from "../shaders/chunks/contact_shadow.glsl.js";
+import { PROBE_BOX_CHUNK, PROBE_BOX_CHUNK_GLSL } from "../probes/ProbeBoxProjection.js";
 
 const PRD02_CHUNKS = [
   { name: "a3d_prd02_lighting_ibl", glsl: LIGHTING_IBL_CHUNK_GLSL, stage: "fragment" as const },
@@ -21,7 +22,8 @@ const PRD02_CHUNKS = [
   { name: SHADOW_LOOKUP_CHUNK, glsl: SHADOW_RECEIVE_CHUNK_GLSL, stage: "fragment" as const },
   { name: "a3d_prd02_shadow_caster", glsl: SHADOW_CASTER_CHUNK_GLSL, stage: "fragment" as const },
   { name: SH9_CHUNK, glsl: SH9_CHUNK_GLSL, stage: "fragment" as const },
-  { name: "a3d_prd02_contact_shadow", glsl: CONTACT_SHADOW_CHUNK_GLSL, stage: "fragment" as const }
+  { name: "a3d_prd02_contact_shadow", glsl: CONTACT_SHADOW_CHUNK_GLSL, stage: "fragment" as const },
+  { name: PROBE_BOX_CHUNK, glsl: PROBE_BOX_CHUNK_GLSL, stage: "fragment" as const }
 ];
 
 for (const chunk of PRD02_CHUNKS) {
@@ -188,6 +190,8 @@ export {
   shadowBindingMaterial,
   bindShadowFrameUniforms
 } from "../shadows/ShadowFrameBinding.js";
+// Shadow-pixels GPU evidence probe (lane page diagnostics).
+export { prd02LastBridgeDevice, prd02ShadowBridgeReason, prd02ShadowDepthProbe } from "../shadows/Prd02ShadowBridge.js";
 export {
   createPrd02ShadowsContributor,
   shadowSystemConfigFromSource,
@@ -250,7 +254,12 @@ export {
   ROUGHNESS_TO_LOD_BLACKBOARD_KEY,
   createPrd02ProbesContributor,
   installPrd02ProbeRenderer,
-  probeNodesFromSource
+  probeNodesFromSource,
+  // 02-S12: frame-host pre-frame hook (#1113) + collect-phase cube override.
+  prd02BeforeFrame,
+  applyProbeEnvironmentCubes,
+  PROBE_BINDINGS_BLACKBOARD_KEY,
+  type Prd02ProbeCaptureRenderer
 } from "../probes/Prd02ProbesContributor.js";
 export {
   fetchLtcLutTextures,

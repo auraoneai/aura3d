@@ -86,7 +86,10 @@ on:
         default: false
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
+  # main + dispatch get run_id in the group: cancel-in-progress false does not
+  # stop GitHub replacing a PENDING run in a shared group (lighting-quality
+  # main runs 38184180415, 38182964974 were cancelled that way).
+  group: ${{ github.workflow }}-${{ github.ref }}${{ (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main') && format('-r-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -115,6 +118,8 @@ jobs:
           fi
           glslangValidator --version
       - name: lane unit tests
+        env:
+          A3D_REQUIRE_GLSLANG: "1"
         run: pnpm exec vitest run --config tests/qr/prd02/vitest.config.ts
       - name: scene lint (lane config)
         run: pnpm exec eslint "benchmarks/quality-rebuild/scenes/prd02/**/*.ts" "benchmarks/quality-rebuild/{aura3d,three}/scenes/prd02/**/*.ts" "tests/qr/prd02/**/*.ts"

@@ -51,14 +51,18 @@ export interface ContactShadowPassInput {
 const MASK_LABEL = "a3d.prd02.contactShadowMask";
 const OWN_DEPTH_LABEL = "a3d.prd02.contactDepth";
 
-const FULLSCREEN_VERT = /* glsl */ `
+// GLSL ES 3.00: WebGL2Device.compileShader passes sources through verbatim,
+// so without `#version 300 es` the `in`/`out`/`layout` declarations fail to
+// compile and `lighting.contact` scenes never draw (02-S11, azure-gpu run
+// 38184694289: "WebGL shader compile failed" on prd02-contact-cube).
+const FULLSCREEN_VERT = /* glsl */ `#version 300 es
 // @aura3d-shader:prd02_contact_mask
 in vec2 a_position;
 out vec2 v_uv;
 void main() { v_uv = a_position * 0.5 + 0.5; gl_Position = vec4(a_position, 0.0, 1.0); }
 `;
 
-const MASK_FRAGMENT = /* glsl */ `
+const MASK_FRAGMENT = /* glsl */ `#version 300 es
 // @aura3d-shader:prd02_contact_mask
 precision highp float;
 in vec2 v_uv;
@@ -66,6 +70,9 @@ layout(location = 0) out vec4 o_vis;
 ${CONTACT_SHADOW_CHUNK_GLSL}
 void main() { o_vis = vec4(a3d_contactShadow(v_uv)); }
 `;
+
+/** @internal Contact-mask program sources (GLSL validation in unit tests). */
+export const CONTACT_MASK_SHADER_SOURCES = { vertex: FULLSCREEN_VERT, fragment: MASK_FRAGMENT } as const;
 
 export class ContactShadowPass extends BaseRenderPass {
   private mask: RenderTarget | null = null;

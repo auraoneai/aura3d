@@ -1,4 +1,4 @@
-From 4893bcd5bbc08177152c07cfea2964d647400981 Mon Sep 17 00:00:00 2001
+From e3d9e1193f7125766a64d51db52f52a1cf4f6d84 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:02 +0000
 Subject: [PATCH] migration(showcase-aurora-lander): regenerated patch set
@@ -516,7 +516,7 @@ index 000000000..c1fb5b312
 +  }
 +];
 diff --git a/apps/showcase-aurora-lander/src/v2/boot.ts b/apps/showcase-aurora-lander/src/v2/boot.ts
-index 96af7347f..56f838f13 100644
+index 7bec24d2f..6cb3536ef 100644
 --- a/apps/showcase-aurora-lander/src/v2/boot.ts
 +++ b/apps/showcase-aurora-lander/src/v2/boot.ts
 @@ -7,8 +7,8 @@
@@ -542,10 +542,10 @@ index 96af7347f..56f838f13 100644
  import { applyAuroraScenario } from "./scenarios";
  import { createAuroraCtx } from "./state";
  import { createLanderAudioBlock, wireLanderAudioUnlock } from "./audio";
-@@ -143,6 +142,26 @@ const game = createGame({
-     // art/direction.ts sections. `route_aurora_lander` uses the engine-parseable
-     // underscore form (URL/dispatch form is `route-aurora-lander`).
-     flags: ["route_aurora_lander", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+@@ -144,6 +143,26 @@ const game = createGame({
+     // flags come from URL/env/defaults like every other route, so `none`
+     // and `-<flag>` arms actually turn them off.
+     flags: ["route_aurora_lander", "game"]
 +  },
 +  // T5.8: route evidence rides the shared createGame channel (C-24) —
 +  // only the sections games.json requiredConditions read.
@@ -569,7 +569,7 @@ index 96af7347f..56f838f13 100644
    }
  });
  
-@@ -229,66 +248,6 @@ const { spawnStateFor, setSiteGroupVisible, resetAttempt, loadSite, beginGhostFr
+@@ -230,66 +249,6 @@ const { spawnStateFor, setSiteGroupVisible, resetAttempt, loadSite, beginGhostFr
  const render = wireAuroraRender(ctx, { game, world, handle, fx, reducedMotion, rigState, loadSite });
  const { syncHud, renderUpdate } = render;
  

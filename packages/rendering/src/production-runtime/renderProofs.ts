@@ -167,11 +167,28 @@ function readCurrentRoutesNow(source: RendererTimingDiagnostics["source"]): numb
   return source === "performance-now" ? globalThis.performance.now() : Date.now();
 }
 
-export function validateProductionRendererInput(input: ProductionRendererInput): void {
-  if (input.metadata.primitiveCount <= 0 || input.metadata.meshCount <= 0) {
+/**
+ * Real renderable content outside the mesh/material input: draws a frame
+ * contributor submits itself from scene nodes (PRD-10 world terrain, water and
+ * grass carry their own geometry and programs, #1175).
+ */
+export interface ProductionContributorContent {
+  /** Scene nodes whose draws come from a registered frame contributor. */
+  readonly contributorDrawnNodes: number;
+}
+
+/**
+ * A production frame must contain real renderable content: at least one mesh
+ * primitive with a material, or contributor-drawn content (which brings its own
+ * geometry and program, so the mesh/material counts do not describe it).
+ */
+export function validateProductionRendererInput(input: ProductionRendererInput, content?: ProductionContributorContent): void {
+  const hasMeshes = input.metadata.primitiveCount > 0 && input.metadata.meshCount > 0;
+  const hasContributorContent = (content?.contributorDrawnNodes ?? 0) > 0;
+  if (!hasMeshes && !hasContributorContent) {
     throw new Error("Production render path requires at least one real mesh primitive.");
   }
-  if (input.metadata.materialCount <= 0) {
+  if (hasMeshes && input.metadata.materialCount <= 0) {
     throw new Error("Production render path requires at least one real material.");
   }
 }

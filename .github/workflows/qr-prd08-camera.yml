@@ -68,13 +68,15 @@ on:
     inputs:
       # #956 pattern: macOS GPU jobs can run on the Linux L4 pools when macOS
       # is starved. azure-gpu / track0 are Linux (Vulkan ANGLE, Chrome args
-      # from vars.QR_AZURE_GPU_CHROME_ARGS); macos-14 (Metal) stays the
-      # default. Frames compare only within one runner class.
+      # from vars.QR_AZURE_GPU_CHROME_ARGS). Default is track0 (L4): hosted
+      # macos-14 never picked up a job for this repo (2026-10-11: 81 queued,
+      # 0 completed), and queued runs held the main concurrency group so no
+      # main run ever completed. Frames compare only within one runner class.
       runner:
         description: "GPU runner for browser-gpu + motion-capture"
         type: choice
-        options: [macos-14, azure-gpu, track0]
-        default: macos-14
+        options: [track0, azure-gpu, macos-14]
+        default: track0
   workflow_call:
 
 concurrency:
@@ -85,8 +87,8 @@ permissions:
   contents: read
 
 env:
-  QRC_RUNNER: ${{ inputs.runner || 'macos-14' }}
-  QRC_GPU_ARGS: ${{ (inputs.runner || 'macos-14') == 'macos-14' && '--use-angle=metal --enable-gpu --ignore-gpu-blocklist' || (vars.QR_AZURE_GPU_CHROME_ARGS || '--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist') }}
+  QRC_RUNNER: ${{ inputs.runner || 'track0' }}
+  QRC_GPU_ARGS: ${{ (inputs.runner || 'track0') == 'macos-14' && '--use-angle=metal --enable-gpu --ignore-gpu-blocklist' || (vars.QR_AZURE_GPU_CHROME_ARGS || '--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist') }}
 
 jobs:
   unit:
@@ -131,8 +133,8 @@ jobs:
       - run: pnpm lint
 
   browser-gpu:
-    name: browser-gpu (${{ (inputs.runner || 'macos-14') == 'macos-14' && 'macos-14, ANGLE Metal' || format('{0} L4, ANGLE Vulkan', inputs.runner) }})
-    runs-on: ${{ (inputs.runner || 'macos-14') == 'azure-gpu' && fromJSON('["self-hosted","azure-gpu","gpu-l4"]') || ((inputs.runner || 'macos-14') == 'track0' && fromJSON('["self-hosted","track0","gpu-l4"]')) || 'macos-14' }}
+    name: browser-gpu (${{ (inputs.runner || 'track0') == 'macos-14' && 'macos-14, ANGLE Metal' || format('{0} L4, ANGLE Vulkan', inputs.runner || 'track0') }})
+    runs-on: ${{ (inputs.runner || 'track0') == 'azure-gpu' && fromJSON('["self-hosted","azure-gpu","gpu-l4"]') || ((inputs.runner || 'track0') == 'track0' && fromJSON('["self-hosted","track0","gpu-l4"]')) || 'macos-14' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -169,8 +171,8 @@ jobs:
           if-no-files-found: error
 
   motion-capture:
-    name: motion scenes (${{ (inputs.runner || 'macos-14') == 'macos-14' && 'macos-14, ANGLE Metal' || format('{0} L4, ANGLE Vulkan', inputs.runner) }})
-    runs-on: ${{ (inputs.runner || 'macos-14') == 'azure-gpu' && fromJSON('["self-hosted","azure-gpu","gpu-l4"]') || ((inputs.runner || 'macos-14') == 'track0' && fromJSON('["self-hosted","track0","gpu-l4"]')) || 'macos-14' }}
+    name: motion scenes (${{ (inputs.runner || 'track0') == 'macos-14' && 'macos-14, ANGLE Metal' || format('{0} L4, ANGLE Vulkan', inputs.runner || 'track0') }})
+    runs-on: ${{ (inputs.runner || 'track0') == 'azure-gpu' && fromJSON('["self-hosted","azure-gpu","gpu-l4"]') || ((inputs.runner || 'track0') == 'track0' && fromJSON('["self-hosted","track0","gpu-l4"]')) || 'macos-14' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

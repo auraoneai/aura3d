@@ -12,8 +12,10 @@
  * on main. Here each variant key × feature subset is composed exactly as the renderer
  * does (recording device captures the final sources) and validated with
  * Khronos glslangValidator — the same validator lane 01's
- * tests/qr/prd01/glsl/every-chunk-compiles.test.ts uses. A missing binary
- * fails the test (no silent skip).
+ * tests/qr/prd01/glsl/every-chunk-compiles.test.ts uses. The lane gate
+ * (lighting-quality unit) installs glslang and sets A3D_REQUIRE_GLSLANG=1, so
+ * a missing binary fails there; other repo-wide unit jobs without glslang
+ * skip, as prd03-v2-glsl-compile does.
  */
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -87,9 +89,15 @@ function* variantKeys(featureIds: readonly string[], values: Readonly<Record<str
   }
 }
 
+const glslangAvailable = !spawnSync("glslangValidator", ["--version"], { stdio: "ignore" }).error;
+const requireGlslang = process.env.A3D_REQUIRE_GLSLANG === "1";
+
 describe("#867 prd02 depth variants compile (glslangValidator)", () => {
+  it.runIf(requireGlslang)("glslangValidator is installed (A3D_REQUIRE_GLSLANG)", () => {
+    expect(glslangAvailable, "glslangValidator missing (apt-get install glslang-tools)").toBe(true);
+  });
   for (const [setName, flags] of Object.entries(FLAG_SETS)) {
-    it(`every depth variant × active-feature subset compiles under ${setName}`, () => {
+    it.runIf(glslangAvailable || requireGlslang)(`every depth variant × active-feature subset compiles under ${setName}`, () => {
       const features = activeDepthFeatures(flags);
       // Feature value used when the feature is on: the "depth" pass value
       // (prd06 deform) or `true`.

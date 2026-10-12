@@ -12,6 +12,8 @@ import { renderer } from "../rendererDiagnostics.js";
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { flattenSceneSnapshot, normalizeSceneSnapshot } from "../sceneMath.js";
 import { configureCanvas, resolveCanvas } from "./canvas.js";
+import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
+import { resolveMountQuality } from "../compiler/renderer.js";
 import { AuraRuntimeError } from "./errors.js";
 import { AuraMigrationError } from "../compiler/errors.js";
 import { startProductionRender } from "./frameLoop.js";
@@ -97,8 +99,16 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   const diagnosticsState = createInitialDiagnostics(renderSnapshot, options.renderer);
   const canvas = resolveCanvas(target);
   if (canvas) {
-    const pixelRatioOption = typeof options.pixelRatio === "number" ? options.pixelRatio : options.pixelRatio?.max ?? undefined;
-    configureCanvas(canvas, pixelRatioOption ?? rendererSelection.profile.pixelRatio ?? devicePixelRatioSafe(), options.resize ?? true);
+    // PRD-01 §6.9 (Q-15-1): under A3D_QR_CORE the ratio is min(devicePixelRatio, tier cap), not the profile's 1.5.
+    const coreDpr = qrFlags.on("A3D_QR_CORE");
+    configureCanvas(canvas, resolveAppPixelRatio({
+      flagOn: coreDpr,
+      option: options.pixelRatio,
+      profilePixelRatio: rendererSelection.profile.pixelRatio,
+      maxPixelRatio: appTierMaxPixelRatio(resolveMountQuality(options.renderer).tier),
+      devicePixelRatio: currentDevicePixelRatio(),
+      legacyDevicePixelRatio: devicePixelRatioSafe
+    }), options.resize ?? true, minimumBackingSize(coreDpr));
     initializeRootPerformanceQuality(canvas);
     // Apply a caller's device/capture budget before the production controller
     // derives its first backing size, LODs, particle pool and shadow target.

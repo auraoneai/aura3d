@@ -82,7 +82,12 @@ function applyDefaultCanvasMountLayout(target: HTMLElement): void {
   target.style.overflow ||= "hidden";
 }
 
-export function configureCanvas(canvas: HTMLCanvasElement, pixelRatio: number, resize: boolean): void {
+export function configureCanvas(
+  canvas: HTMLCanvasElement,
+  pixelRatio: number,
+  resize: boolean,
+  minimum: { readonly width: number; readonly height: number } = { width: 320, height: 220 }
+): void {
   canvas.style.width ||= "100%";
   canvas.style.height ||= "100%";
   canvas.style.display ||= "block";
@@ -92,8 +97,8 @@ export function configureCanvas(canvas: HTMLCanvasElement, pixelRatio: number, r
   const cssHeight = rect.height || canvas.clientHeight || parent?.clientHeight || (typeof window !== "undefined" ? window.innerHeight : 540) || 540;
   canvas.style.width = `${cssWidth}px`;
   canvas.style.height = `${cssHeight}px`;
-  const width = Math.max(320, Math.round(cssWidth * pixelRatio));
-  const height = Math.max(220, Math.round(cssHeight * pixelRatio));
+  const width = Math.max(minimum.width, Math.round(cssWidth * pixelRatio));
+  const height = Math.max(minimum.height, Math.round(cssHeight * pixelRatio));
   const keepAuthoredSize = !resize && hasAuthoredBackingStore(canvas);
   canvas.width = keepAuthoredSize ? canvas.width : width;
   canvas.height = keepAuthoredSize ? canvas.height : height;
