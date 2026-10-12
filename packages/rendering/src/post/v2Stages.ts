@@ -802,15 +802,6 @@ export function runV2HdrStages(
     ? `S5:${temporal.historyValid ? "history" : "seed"}:frames=${temporal.historyFrames}`
     : `S5:skip:velocity=${String(Boolean(dilatedVelocity))}`);
   if (taaActive && temporal?.v2 && dilatedVelocity) {
-    // Debug probe (benchmark harness only): read the dilated velocity at a
-    // probe pixel into the stage trace. Off unless the global is set.
-    const probe = (globalThis as { __A3D_QR_POST_PROBE__?: readonly [number, number] }).__A3D_QR_POST_PROBE__;
-    if (probe) {
-      const px = new Float32Array(4);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, asGlTarget(dilatedVelocity).framebuffer);
-      gl.readPixels(Math.min(w - 1, probe[0]), Math.min(h - 1, probe[1]), 1, 1, gl.RGBA, gl.FLOAT, px);
-      recordPostStage(`S5:probe-velocity-px=${(px[0]! * w).toExponential(2)},${(px[1]! * h).toExponential(2)}:z=${px[2]!.toFixed(3)}`);
-    }
     const taa = (pipeline.taa ?? {}) as Partial<TaaOptions>;
     const taaProg = program(state, gl, "taa-resolve", TAA_RESOLVE_GLSL);
     const resolved = temporal.historyOutput;
@@ -833,26 +824,6 @@ export function runV2HdrStages(
       g.uniform1f(g.getUniformLocation(taaProg, "u_feedbackMax"), taa.feedbackMax ?? 0.97);
       g.uniform1f(g.getUniformLocation(taaProg, "u_varianceGamma"), taa.varianceGamma ?? 1.0);
     });
-    if (probe) {
-      // Column of the resolved TAA output at the probe x, rows y-3..y+3 (GL).
-      const col = new Float32Array(4 * 7);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, asGlTarget(resolved).framebuffer);
-      gl.readPixels(Math.min(w - 1, probe[0]), Math.max(0, probe[1] - 3), 1, 7, gl.RGBA, gl.FLOAT, col);
-      const cur = new Float32Array(4 * 7);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, asGlTarget(hdr).framebuffer);
-      gl.readPixels(Math.min(w - 1, probe[0]), Math.max(0, probe[1] - 3), 1, 7, gl.RGBA, gl.FLOAT, cur);
-      const g = (a: Float32Array) => Array.from({ length: 7 }, (_, i) => `${a[i * 4]!.toFixed(4)},${a[i * 4 + 1]!.toFixed(4)},${a[i * 4 + 2]!.toFixed(4)}`).join("/");
-      recordPostStage(`S5:probe-resolved-g=${g(col)}:current-g=${g(cur)}:size=${w}x${h}:hist=${temporal.history.width}x${temporal.history.height}`);
-      const hist = new Float32Array(4 * 7);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, asGlTarget(temporal.history).framebuffer);
-      gl.readPixels(Math.min(w - 1, probe[0]), Math.max(0, probe[1] - 3), 1, 7, gl.RGBA, gl.FLOAT, hist);
-      const vel = new Float32Array(4 * 7);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, asGlTarget(dilatedVelocity).framebuffer);
-      gl.readPixels(Math.min(w - 1, probe[0]), Math.max(0, probe[1] - 3), 1, 7, gl.RGBA, gl.FLOAT, vel);
-      const vy = Array.from({ length: 7 }, (_, i) => (vel[i * 4 + 1]! * h).toFixed(3)).join("/");
-      const log = ((globalThis as { __A3D_QR_POST_PROBE_LOG__?: string[] }).__A3D_QR_POST_PROBE_LOG__ ??= []);
-      if (log.length < 80) log.push(`f${temporal.historyFrames}:v${String(temporal.historyValid)}:j=${(temporal.v2.jitterClip[0] * w / 2).toFixed(2)},${(temporal.v2.jitterClip[1] * h / 2).toFixed(2)}:cur=${g(cur)}:hist=${g(hist)}:res=${g(col)}:vypx=${vy}:err=${gl.getError()}`);
-    }
     if (hdr !== source) state.pool.release(hdr);
     // §8.6 TAAU: renderScale < 1 reconstructs at display resolution with the
     // 9-tap Blackman-Harris kernel. History stays render-res (self-consistent
