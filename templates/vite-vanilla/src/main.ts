@@ -1,27 +1,20 @@
-import { Geometry, Renderer, UnlitMaterial } from "@aura3d/rendering";
+// Vanilla starter: one createAuraApp call on a canvas. The `product-studio`
+// look supplies the studio HDRI (IBL reflections on the metal and clearcoat),
+// the shadow-casting key light, ambient occlusion, colour grade and bloom; the
+// emissive ring is what the bloom picks up. Drag to orbit.
+import { camera, createAuraApp, interactions, looks, material, primitives, scene } from "@aura3d/engine";
 
-const canvas = document.querySelector<HTMLCanvasElement>("#app");
-if (!canvas) {
-  throw new Error("Missing starter canvas.");
-}
+const LOOK_ID = "product-studio" as const;
 
-void renderStarterScene();
+const starterScene = scene()
+  .background(looks.describe(LOOK_ID).v0.background)
+  .add(looks.preset(LOOK_ID))
+  .add(primitives.plane({ name: "stage floor", size: [9, 1, 9], material: material.pbr({ color: "#4a505a", roughness: 0.5, metalness: 0.05 }), receiveShadow: true }))
+  .add(primitives.sphere({ name: "chrome sphere", material: material.metal({ color: "#e6e9ee", roughness: 0.1 }), castShadow: true }).position(-1.25, 0.62, 0.1).scale(1.2))
+  .add(primitives.sphere({ name: "clearcoat sphere", material: material.clearcoatPaint({ color: "#d9472b" }), castShadow: true }).position(1.25, 0.62, 0.1).scale(1.2))
+  .add(primitives.box({ name: "ceramic block", material: material.ceramic({ color: "#eef1f4" }), castShadow: true }).position(0, 0.42, -1.1).scale([0.84, 0.84, 0.84]).rotate(0, 0.6, 0))
+  .add(primitives.torus({ name: "emissive ring", material: material.emissive({ color: "#2a1206", emissive: "#ff7a2e", emissiveIntensity: 3.2 }) }).position(0, 0.06, 0.9).rotate(Math.PI / 2, 0, 0).scale([0.7, 0.7, 0.06]))
+  .add(interactions.orbit({ target: "chrome sphere" }))
+  .camera(camera.orbit({ target: [0, 0.55, 0], distance: 5.8, fov: 38 }));
 
-async function renderStarterScene(): Promise<void> {
-  const renderer = await Renderer.create({
-    backend: "webgl2",
-    canvas,
-    width: canvas.width,
-    height: canvas.height,
-    clearColor: [0.02, 0.025, 0.03, 1],
-    preserveDrawingBuffer: true,
-  });
-
-  renderer.render([
-    {
-      geometry: Geometry.triangle(),
-      material: new UnlitMaterial({ color: [1, 0.36, 0.12, 1] }),
-      label: "starter-triangle",
-    },
-  ]);
-}
+createAuraApp("#app", { scene: starterScene, ...looks.appOptions(LOOK_ID) });

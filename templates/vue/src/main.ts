@@ -1,34 +1,23 @@
-import { createApp, onMounted, ref } from "vue";
-import { Geometry, Renderer, UnlitMaterial } from "@aura3d/rendering";
+import { createApp, h, onBeforeUnmount, onMounted, ref } from "vue";
+import { createAuraApp, looks, type AuraApp } from "@aura3d/engine";
+import { LOOK_ID, starterScene } from "./scene";
 
 const App = {
   setup() {
     const canvas = ref<HTMLCanvasElement | null>(null);
+    let app: AuraApp | undefined;
 
-    onMounted(async () => {
+    onMounted(() => {
       if (!canvas.value) return;
-
-      const renderer = await Renderer.create({
-        backend: "webgl2",
-        canvas: canvas.value,
-        width: canvas.value.width,
-        height: canvas.value.height,
-        clearColor: [0.02, 0.025, 0.03, 1],
-        preserveDrawingBuffer: true
-      });
-
-      renderer.render([
-        {
-          geometry: Geometry.triangle(),
-          material: new UnlitMaterial({ color: [1, 0.36, 0.12, 1] }),
-          label: "vue-starter-triangle"
-        }
-      ]);
+      // createAuraApp owns the renderer and frame loop; dispose on unmount.
+      app = createAuraApp(canvas.value, { scene: starterScene, ...looks.appOptions(LOOK_ID) });
     });
+    onBeforeUnmount(() => app?.dispose());
 
-    return { canvas };
-  },
-  template: '<canvas ref="canvas" id="viewport" width="960" height="540"></canvas>'
+    // Render function, not a `template:` string: the default `vue` build is
+    // runtime-only and silently renders nothing for string templates.
+    return () => h("canvas", { ref: canvas, id: "viewport", width: 960, height: 540 });
+  }
 };
 
 createApp(App).mount("#app");
