@@ -172,7 +172,8 @@ describe("GameShell (PRD-09 1761/1762/1763)", () => {
     };
     await runTransition(driver, () => { log.push("run"); return 7; });
     expect(presentOpacity).toBe(1);
-    expect(log).toEqual(["opacity=1", "run", "present@1", "opacity=0"]);
+    // Second opacity=1 is the 0 ms snap to fully opaque right before the swap.
+    expect(log).toEqual(["opacity=1", "opacity=1", "run", "present@1", "opacity=0"]);
   });
 
 });

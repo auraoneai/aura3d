@@ -62,7 +62,7 @@ export interface SoundPannerLike extends SoundNodeLike {
 
 export interface SoundBiquadLike extends SoundNodeLike {
   type?: BiquadFilterType;
-  frequency?: { value: number; setTargetAtTime?(v: number, t: number, tau: number): void };
+  frequency?: { value: number; setTargetAtTime?(v: number, t: number, tau: number): void; setValueAtTime?(v: number, t: number): void };
   Q?: { value: number };
 }
 
