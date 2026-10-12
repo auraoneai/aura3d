@@ -91,6 +91,13 @@ export interface RendererOptions extends RenderBackendOptions {
   readonly width?: number;
   readonly height?: number;
   readonly clearColor?: readonly [number, number, number, number];
+  /**
+   * C-05 (`A3D_QR_CORE_OUTPUT`): the HDR-target clear — the linear background
+   * with alpha 0. OutputPass passes alpha-0 pixels through untouched (three
+   * r185 never tone-maps or exposes the clear colour); drawn content writes
+   * alpha 1 and is tone-mapped. Absent → `clearColor` (legacy behaviour).
+   */
+  readonly outputClearColor?: readonly [number, number, number, number];
   /** C-05 output options (`A3D_QR_CORE_OUTPUT`); see `RendererOutputOptions`. */
   readonly output?: RendererOutputOptions;
   /**
@@ -415,6 +422,7 @@ export class Renderer {
   private width: number;
   private height: number;
   private clearColor: readonly [number, number, number, number];
+  private readonly outputClearColor: readonly [number, number, number, number] | undefined;
   private disposed = false;
   private animationLoop: RendererAnimationLoopImpl | null = null;
   private readonly fusedLdrPostprocessScratch: FusedLdrPostProcessScratch = {};
@@ -468,6 +476,7 @@ export class Renderer {
     this.width = options.width ?? inferInitialCanvasDimension(options.canvas, "width");
     this.height = options.height ?? inferInitialCanvasDimension(options.canvas, "height");
     this.clearColor = options.clearColor ?? [0, 0, 0, 1];
+    this.outputClearColor = options.outputClearColor;
     this.outputOptions = options.output ?? {};
     this.shaderLibrary = options.shaderLibrary;
     this.host = {
@@ -877,7 +886,7 @@ export class Renderer {
       } else {
         this.device.setRenderTarget(explicitRenderTarget ?? null);
       }
-      this.device.clear(this.clearColor);
+      this.device.clear(qrOutput && !postprocess ? this.outputClearColor ?? this.clearColor : this.clearColor);
       if (environmentBackground) {
         this.graph.addPass(new EnvironmentBackgroundPass({
           ...environmentBackground,
@@ -1204,7 +1213,7 @@ export class Renderer {
       } else {
         this.device.setRenderTarget(explicitRenderTarget ?? null);
       }
-      this.device.clear(this.clearColor);
+      this.device.clear(qrOutput && !postprocess ? this.outputClearColor ?? this.clearColor : this.clearColor);
       if (environmentBackground) {
         this.graph.addPass(new EnvironmentBackgroundPass({
           ...environmentBackground,

@@ -94,6 +94,9 @@ export async function createProductionRuntimeSceneRenderer(
     // Background colors are display intent. Pre-invert the renderer's coupled
     // matrix-fitted ACES transform so presentation preserves that authored color.
     clearColor: colorToAcesInputClearColor(snapshot.background),
+    // C-05 (A3D_QR_CORE_OUTPUT): the HDR target clears to the linear
+    // background with alpha 0 so OutputPass leaves it untouched (three r185).
+    outputClearColor: outputClearColor(snapshot.background),
     // T0-28: the app's resolved flags bind to this renderer's device, so two
     // apps on one page never read each other's flags through FrameGraph.
     qrFlags: flags
@@ -443,4 +446,10 @@ export function resolveMountQuality(
   const tier: AuraQualityTier =
     typeof governed === "string" && governed !== "auto" && governed in QUALITY_TIERS ? (governed as AuraQualityTier) : "high";
   return { ...resolveTierSettings(tier), tier };
+}
+
+/** C-05 HDR-target clear: linear background, alpha 0 = "not drawn" (OutputPass passes it through). */
+function outputClearColor(background: AuraSceneSnapshot["background"]): readonly [number, number, number, number] {
+  const [red, green, blue] = colorToLinearRgba(background);
+  return [red, green, blue, 0];
 }

@@ -35,8 +35,16 @@ export interface OutputSceneReport {
 
 const CAMERA = { fov: 50, position: [0, 0, 3] as [number, number, number] };
 
+/**
+ * Emission only (black albedo, no IBL response), matching three's unlit
+ * MeshBasicMaterial reference: a white-albedo PBR quad also received the
+ * fallback light rig + default IBL, which AgX resolves (+3 codes at 4.0).
+ */
 function emissive(intensity: number, extra: Partial<AuraMaterialSpec> = {}): AuraMaterialSpec {
-  return { ...material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: intensity }), ...extra } as AuraMaterialSpec;
+  return {
+    ...material.emissive({ color: "#000000", emissive: "#ffffff", emissiveIntensity: intensity, metalness: 0, roughness: 1, envMapIntensity: 0 }),
+    ...extra
+  } as AuraMaterialSpec;
 }
 
 type BackgroundFn = (color: AuraColor, options?: { readonly toneMapped?: boolean }) => unknown;
