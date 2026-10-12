@@ -1,6 +1,13 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import {
+  assertNoGitLfsPointers,
+  assertNotGitLfsPointer,
+  GIT_LFS_POINTER_HEADER,
+  isGitLfsPointerFile
+} from "../../../marketing/scripts/git-lfs-pointer.mjs";
 
 const buildScript = readFileSync("marketing/scripts/build-showcase-routes.mjs", "utf8");
 const engineSource = (function agentApiSource() {
@@ -89,6 +96,26 @@ describe("marketing showcase route build", () => {
      */
     expect(buildScript).not.toContain("showcase-racing-game-layer-proof");
     expect(buildScript).not.toContain("showcase-platformer-game-layer-proof");
+  });
+
+  it("rejects unresolved Git LFS pointers instead of publishing them as game assets", () => {
+    const root = mkdtempSync(join(tmpdir(), "aura3d-lfs-pointer-"));
+    try {
+      const pointer = join(root, "model.glb");
+      const realAsset = join(root, "real.glb");
+      writeFileSync(pointer, `${GIT_LFS_POINTER_HEADER}\noid sha256:abc\nsize 123\n`);
+      writeFileSync(realAsset, Buffer.from([0x67, 0x6c, 0x54, 0x46, 0x02, 0, 0, 0]));
+
+      expect(isGitLfsPointerFile(pointer)).toBe(true);
+      expect(isGitLfsPointerFile(realAsset)).toBe(false);
+      expect(() => assertNotGitLfsPointer(realAsset)).not.toThrow();
+      expect(() => assertNotGitLfsPointer(pointer)).toThrow(/git lfs pull/);
+      expect(() => assertNoGitLfsPointers(root, "fixture assets")).toThrow(/fixture assets/);
+      expect(buildScript).toContain("assertShowcaseAssetsMaterialized");
+      expect(buildScript).toContain("assertNoGitLfsPointers(distDir, \"marketing/dist\")");
+    } finally {
+      rmSync(root, { force: true, recursive: true });
+    }
   });
 
   it("builds every showcase game route the production capture manifest expects to exist", () => {
