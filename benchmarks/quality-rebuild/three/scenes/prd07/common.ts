@@ -124,6 +124,59 @@ function lightConeMesh(options: { position: readonly number[]; direction: readon
   return mesh;
 }
 
+/**
+ * PRD-07 §6.6 integrated exponential height fog on every scene material —
+ * the S6 reference for prd07-fog-height is the shipped fog model (the
+ * HeightFog CPU mirror), not a FogExp2 stand-in. three has no height fog, and
+ * the old FogExp2(σ_d + σ_h) approximation squared the distance term: it
+ * under-fogged everything inside ~80 m by up to 10x (near ground ~0.2% vs the
+ * spec's 2-7%), so the reference disagreed with the scene's own fog spec.
+ * The FogExp2 object stays on the scene for USE_FOG + fogColor only.
+ *   τ = σ_d·d' + σ_h·e^(−b(c.y − h0))·d'·(1 − e^(−b·v.y·d'))/(b·v.y·d'),
+ *   d' = max(d − start, 0), f = min(1 − e^(−τ), maxOpacity).
+ */
+function applyHeightFogIntegral(scene: THREE.Scene, fog: NonNullable<Prd07SceneSpec["fog"]>): number {
+  const num = (v: number): string => (Number.isInteger(v) ? `${v}.0` : `${v}`);
+  const sigmaD = num(fog.density);
+  const sigmaH = num(fog.heightDensity ?? 0.008);
+  const b = num(fog.heightFalloff ?? 0.2);
+  const h0 = num(fog.heightReference ?? 0);
+  const start = num(fog.start ?? 2);
+  const maxOpacity = num(Math.min(Math.max(fog.maxOpacity ?? 1, 0), 1));
+  const fragment = `
+#ifdef USE_FOG
+  vec3 a3dRay = vA3dFogWorld - cameraPosition;
+  float a3dDist = length(a3dRay);
+  vec3 a3dV = a3dRay / max(a3dDist, 1e-5);
+  float a3dD = max(a3dDist - ${start}, 0.0);
+  float a3dK = ${b} * a3dV.y * a3dD;
+  float a3dLine = abs(a3dK) < 1e-4 ? 1.0 : (1.0 - exp(-a3dK)) / a3dK;
+  float a3dTau = ${sigmaD} * a3dD + ${sigmaH} * exp(-${b} * (cameraPosition.y - ${h0})) * a3dD * a3dLine;
+  float fogFactor = min(1.0 - exp(-a3dTau), ${maxOpacity});
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor, fogFactor);
+#endif
+`;
+  let patched = 0;
+  scene.traverse((object) => {
+    const materials = (object as THREE.Mesh).material;
+    for (const material of Array.isArray(materials) ? materials : materials ? [materials] : []) {
+      if (!material.fog || material instanceof THREE.ShaderMaterial) continue;
+      material.onBeforeCompile = (shader) => {
+        shader.vertexShader = shader.vertexShader
+          .replace("#include <fog_pars_vertex>", "#include <fog_pars_vertex>\n#ifdef USE_FOG\nvarying vec3 vA3dFogWorld;\n#endif")
+          .replace("#include <fog_vertex>", "#include <fog_vertex>\n#ifdef USE_FOG\nvA3dFogWorld = (inverse(viewMatrix) * mvPosition).xyz;\n#endif");
+        shader.fragmentShader = shader.fragmentShader
+          .replace("#include <fog_pars_fragment>", "#include <fog_pars_fragment>\n#ifdef USE_FOG\nvarying vec3 vA3dFogWorld;\n#endif")
+          .replace("#include <fog_fragment>", fragment);
+      };
+      material.customProgramCacheKey = () => "a3d-height-fog";
+      material.needsUpdate = true;
+      patched += 1;
+    }
+  });
+  return patched;
+}
+
 function createGeometry(shape: string, size: readonly [number, number, number]): THREE.BufferGeometry {
   if (shape === "box") return new THREE.BoxGeometry(1, 1, 1).scale(size[0], size[1], size[2]);
   if (shape === "sphere") return new THREE.SphereGeometry(0.5, 64, 32).scale(size[0], size[1], size[2]);
@@ -448,6 +501,11 @@ export async function runPrd07ThreeScene(spec: Prd07SceneSpec, host: HTMLElement
     // shafts have no three equivalent without a custom raymarch pass.
     scene.fog = new THREE.FogExp2(new THREE.Color(spec.volumetric.color ?? "#cfd8e6"), spec.volumetric.density * 3);
     log.add("volumetric", "partial", `FogExp2 approximation at density ${spec.volumetric.density * 3} — no froxel shafts`);
+  }
+
+  if (spec.fog?.mode === "height") {
+    const patched = applyHeightFogIntegral(scene, spec.fog);
+    log.add("fog-height-integral", "supported", `§6.6 height-fog optical depth on ${patched} materials (S6 reference model; FogExp2 supplies colour only)`);
   }
 
   for (const fb of flipbooks) setFlipbookFrame(fb.texture, fb.columns, fb.rows, fb.frame);

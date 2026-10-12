@@ -42,6 +42,10 @@ export const scenes: readonly BenchSceneRegistration[] = [
   { id: skyH09.id, spec: skyH09 },
   { id: skyH12.id, spec: skyH12 },
   { id: skyH18.id, spec: skyH18 },
+  // Not in the `suite=promote promote_flag=vfx` scene list (nor is
+  // prd07-sky-timeofday): their three.js reference frame is pure black at
+  // night (status "blank"), so metrics.promote scores them NO-REFERENCE and
+  // cannot measure the flag. They stay registered for flags-bisect / judges.
   { id: skyH21.id, spec: skyH21 },
   { id: outdoorSky.id, spec: outdoorSky },
   { id: fogHeight.id, spec: fogHeight },
