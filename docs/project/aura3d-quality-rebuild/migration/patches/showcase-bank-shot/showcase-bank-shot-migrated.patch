@@ -1,4 +1,4 @@
-From 7979cc276a7ede45dfc5675d382c26c70f382b48 Mon Sep 17 00:00:00 2001
+From 556353504ee30f39a546697149e21b94e0439931 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:04:44 +0000
 Subject: [PATCH] migration(showcase-bank-shot): regenerated patch set
@@ -1907,7 +1907,7 @@ index 000000000..92aeb0cb5
 +  };
 +}
 diff --git a/apps/showcase-bank-shot/src/v2/boot.ts b/apps/showcase-bank-shot/src/v2/boot.ts
-index e45e33613..8a393f148 100644
+index 5c92e9610..194c8f91e 100644
 --- a/apps/showcase-bank-shot/src/v2/boot.ts
 +++ b/apps/showcase-bank-shot/src/v2/boot.ts
 @@ -4,7 +4,7 @@
@@ -1942,9 +1942,9 @@ index e45e33613..8a393f148 100644
  let audioUnlocked = false;
  function pushCue(cue: Parameters<typeof audio.cue>[0]): void {
 @@ -100,6 +99,15 @@ const game = createGame({
-     // art/direction.ts sections. `route_bank_shot` uses the engine-parseable
-     // underscore form (URL/dispatch form is `route-bank-shot`).
-     flags: ["route_bank_shot", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+     // flags come from URL/env/defaults like every other route, so `none`
+     // and `-<flag>` arms actually turn them off.
+     flags: ["route_bank_shot", "game"]
 +  },
 +  // T5.8: route evidence rides the shared createGame channel (C-24) —
 +  // only the sections games.json requiredConditions read.

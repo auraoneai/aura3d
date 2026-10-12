@@ -1,4 +1,4 @@
-From d1c8952054123dc79018e25ed6a6d6ccba7e72df Mon Sep 17 00:00:00 2001
+From 75e545bfebc1f9bbd1c0bdec382ded31a0a18d0d Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:50 +0000
 Subject: [PATCH] showcase-mech-hangar: delete evidence files+blocks (T5.8)
@@ -2002,7 +2002,7 @@ index 3f64e1322..000000000
 -writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
 -console.log(JSON.stringify({ machinePass: true, parts: assetIds.length, audio: audioIds.length, matrix: matrix.matrixSize, primitiveOccurrences, performancePass: performance.pass }));
 diff --git a/apps/showcase-mech-hangar/src/legacy/main.ts b/apps/showcase-mech-hangar/src/legacy/main.ts
-index ec2a5d7a0..0e52b05d8 100644
+index c6b760a7b..b6aa97619 100644
 --- a/apps/showcase-mech-hangar/src/legacy/main.ts
 +++ b/apps/showcase-mech-hangar/src/legacy/main.ts
 @@ -1,14 +1,3 @@
