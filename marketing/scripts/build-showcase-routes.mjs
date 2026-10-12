@@ -120,11 +120,16 @@ function assertShowcaseAssetsMaterialized() {
     path.join(repoRoot, "public", "aura-assets"),
     "public/aura-assets"
   );
-  for (const route of ["aura-clash-showcase", "showcase-meshy-relic-pilot"]) {
-    assertNoGitLfsPointers(
-      path.join(repoRoot, "apps", route, "public", "aura-assets"),
-      `apps/${route}/public/aura-assets`
-    );
+  for (const collection of ["apps", "examples"]) {
+    const collectionDir = path.join(repoRoot, collection);
+    if (!existsSync(collectionDir)) continue;
+    for (const entry of readdirSync(collectionDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      assertNoGitLfsPointers(
+        path.join(collectionDir, entry.name, "public", "aura-assets"),
+        `${collection}/${entry.name}/public/aura-assets`
+      );
+    }
   }
 }
 
@@ -348,7 +353,7 @@ function copyRouteLocalAuraAssets(route) {
 }
 
 function assertBuiltRoutes() {
-  assertNoGitLfsPointers(path.join(distDir, "aura-assets"), "marketing/dist/aura-assets");
+  assertNoGitLfsPointers(distDir, "marketing/dist");
   const auraClashPlayable = path.join(distDir, "showcase", "aura-clash", "playable", "index.html");
   if (!existsSync(auraClashPlayable)) {
     throw new Error(`homepage Aura Clash playable route was not emitted: ${auraClashPlayable}`);

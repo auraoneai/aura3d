@@ -112,7 +112,7 @@ describe("marketing showcase route build", () => {
       expect(() => assertNotGitLfsPointer(pointer)).toThrow(/git lfs pull/);
       expect(() => assertNoGitLfsPointers(root, "fixture assets")).toThrow(/fixture assets/);
       expect(buildScript).toContain("assertShowcaseAssetsMaterialized");
-      expect(buildScript).toContain("assertNoGitLfsPointers(path.join(distDir, \"aura-assets\")");
+      expect(buildScript).toContain("assertNoGitLfsPointers(distDir, \"marketing/dist\")");
     } finally {
       rmSync(root, { force: true, recursive: true });
     }

@@ -2,7 +2,7 @@ import { closeSync, existsSync, openSync, readSync, readdirSync } from "node:fs"
 import path from "node:path";
 
 export const GIT_LFS_POINTER_HEADER = "version https://git-lfs.github.com/spec/v1";
-export const GIT_LFS_PULL_COMMAND = 'git lfs pull --include="public/aura-assets/**,apps/*/public/**"';
+export const GIT_LFS_PULL_COMMAND = 'git lfs pull --include="public/aura-assets/**,apps/*/public/**,examples/*/public/**"';
 
 function pointerErrorSubject(label) {
   return `Run ${GIT_LFS_PULL_COMMAND} before building the marketing site; ${label} contains unresolved Git LFS pointer file(s), which browsers cannot load as models, audio, or textures.`;
