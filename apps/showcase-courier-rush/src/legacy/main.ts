@@ -313,7 +313,7 @@ const app = createAuraApp("#app", {
       color: "#d8f5ff",
       intensity: 2.5,
       // Effects pass: cascaded PCSS moon shadows across the chase depth.
-      shadow: { cascades: 3, mapSize: 1024, filter: "pcss", softness: 1, maxDistance: 60, intensity: 0.9 }
+      shadow: { cascades: 1, mapSize: 1024, filter: "pcss", softness: 1, maxDistance: 60, intensity: 0.9 }
     }).position(-18, 26, 8))
     .add(lights.directional({ name: "city glow fill", color: "#36bdd2", intensity: 1.35 }).position(20, 18, 16))
     // Hero practicals used to sit at 2.6/1.8 directly on the van, which is what
