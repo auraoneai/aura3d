@@ -126,7 +126,7 @@ describe("post/exposure diagnostics sections", () => {
   });
 
   test("flag-off keeps the same truthful data (diagnostics plumbing is flag-neutral)", () => {
-    const flags = resolveQrFlags({ options: [] });
+    const flags = resolveQrFlags({ options: { A3D_QR_POST: false } });
     expect(flags.on("A3D_QR_POST")).toBe(false);
     createProductionRuntimePostprocess(scene().add(effects.bloom({ intensity: 0.5 })).toJSON(), [], 160, 90);
     expect(latestSubmittedPostprocess()?.authored.bloom).toBe(true);

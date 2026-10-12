@@ -5,7 +5,7 @@ import { resetTemporalHistory, type TemporalHistoryLike } from "@aura3d/renderin
 import { bindVelocityUniforms } from "@aura3d/rendering";
 
 const flagsOn = () => resolveQrFlags({ options: ["post"] });
-const flagsOff = () => resolveQrFlags({ options: [] });
+const flagsOff = () => resolveQrFlags({ options: { A3D_QR_POST: false } }); // A3D_QR_POST is default-on
 
 const identity = () => new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 

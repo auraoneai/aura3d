@@ -6,7 +6,9 @@ describe("C-00 flags", () => {
     const flags = resolveQrFlags({ options: ["core", "post.taa"] });
     expect(flags.on("A3D_QR_CORE")).toBe(true);
     expect(flags.on("A3D_QR_POST_TAA")).toBe(true);
-    expect(flags.on("A3D_QR_POST")).toBe(false);
+    // a sub-flag does not imply its lane flag (lane post is default-on, so
+    // turn it off explicitly to observe that)
+    expect(resolveQrFlags({ options: { A3D_QR_POST_TAA: true, A3D_QR_POST: false } }).on("A3D_QR_POST")).toBe(false);
   });
   it("env A3D_QR list enables flags; per-flag env overrides", () => {
     const flags = resolveQrFlags({ env: { A3D_QR: "core", A3D_QR_POST: "1" } });

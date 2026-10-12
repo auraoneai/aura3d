@@ -134,7 +134,7 @@ describe("03-S18c addPostPass → mergedCustomPasses", () => {
   });
 
   it("flag-off addPostPass is a no-op (legacy chain)", () => {
-    addAll(new Prd03PostSurface(resolveQrFlags({ options: [] })), ANCHORS);
+    addAll(new Prd03PostSurface(resolveQrFlags({ options: { A3D_QR_POST: false } })), ANCHORS);
     expect(mergedCustomPasses(PIPELINE)).toEqual([]);
   });
 });
@@ -197,7 +197,7 @@ describe("03-S18c diagnostics().post.customPasses reports what executed", () => 
 
   it("flag-off and compat.post 3.0 name the legacy chain", () => {
     register();
-    recordAuthoredPostContext({ flags: resolveQrFlags({ options: [] }), options: {} });
+    recordAuthoredPostContext({ flags: resolveQrFlags({ options: { A3D_QR_POST: false } }), options: {} });
     expect(status()).toBe("legacy-chain:A3D_QR_POST-off");
     recordAuthoredPostContext({ flags: resolveQrFlags({ options: ["post"] }), options: { compat: { post: "3.0" } } });
     expect(status()).toBe("legacy-chain:compat.post-3.0");

@@ -115,7 +115,7 @@ describe("postBridge §7.1 — field validation", () => {
   });
 
   test("flag-off: the same scene only warns option-ignored", () => {
-    recordAuthoredPostContext({ flags: resolveQrFlags({ options: [] }), options: {} });
+    recordAuthoredPostContext({ flags: resolveQrFlags({ options: { A3D_QR_POST: false } }), options: {} });
     const options = createProductionRuntimePostprocess(
       snapshotWith({ effect: "bloom", postAuthored: ["bogusField"], bogusField: 1 }),
       [], 64, 64

@@ -26,7 +26,7 @@ import { QUALITY_TIERS, Renderer, resolvePostAntiAlias } from "@aura3d/rendering
 const flagOnContext = (output?: { exposure?: number; toneMapping?: "none" | "linear" | "reinhard" | "aces" | "agx" | "neutral" }) =>
   ({ flags: resolveQrFlags({ options: ["post"] }), options: { output } });
 const flagOffContext = () =>
-  ({ flags: resolveQrFlags({ options: [] }), options: {} });
+  ({ flags: resolveQrFlags({ options: { A3D_QR_POST: false } }), options: {} });
 
 const snapshotWithEffects = () =>
   scene()

@@ -105,7 +105,9 @@ describe("T0-28 per-renderer flag isolation", () => {
       }
     });
     try {
-      const a = resolveQrFlags({ options: ["route.t028.probe", "lighting"] });
+      // post is default-on: renderer a turns it off explicitly so the two
+      // renderers' flag sets differ on it.
+      const a = resolveQrFlags({ options: ["route.t028.probe", "lighting", "-post"] });
       const b = resolveQrFlags({ options: ["route.t028.probe", "post"] });
       const r1 = await Renderer.create({ backend: "mock", width: 8, height: 8, qrFlags: a });
       const r2 = await Renderer.create({ backend: "mock", width: 8, height: 8, qrFlags: b });

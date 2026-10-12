@@ -34,7 +34,7 @@ import type { AuraSceneSnapshot } from "../../../../packages/engine/src/agent-ap
 import type { AuraEffectNode } from "../../../../packages/engine/src/agent-api/nodes/types";
 
 const POST_ON = resolveQrFlags({ options: { A3D_QR_POST: true } });
-const FLAGS_OFF = resolveQrFlags({});
+const FLAGS_OFF = resolveQrFlags({ options: { A3D_QR_POST: false } }); // A3D_QR_POST is default-on
 
 afterEach(() => {
   setRendererQrFlags(FLAGS_OFF);
