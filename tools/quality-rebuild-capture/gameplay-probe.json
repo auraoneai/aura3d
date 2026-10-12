@@ -1,0 +1,146 @@
+{
+  "$comment": "Gameplay smoke probe controls (gameplay-probe.mjs). Keys come from each game's games.json `notes`. mode: hold = key held for ms; tap = pressed every 250ms for ms; charge = held chargeMs then released, sampled to ms. setup runs after the no-input idle phase; a second idle phase (idle-after-setup) follows a non-empty setup.",
+  "idleMs": 3000,
+  "controlMs": 3000,
+  "games": {
+    "aura-clash-showcase": {
+      "setup": [{ "wait": 1500 }],
+      "controls": [
+        { "name": "move-right", "keys": ["KeyD"], "mode": "hold" },
+        { "name": "move-left", "keys": ["KeyA"], "mode": "hold" },
+        { "name": "jump", "keys": ["KeyW"], "mode": "tap" },
+        { "name": "light", "keys": ["KeyJ"], "mode": "tap" }
+      ]
+    },
+    "showcase-blockfall-reactor": {
+      "controls": [
+        { "name": "left", "keys": ["KeyA"], "mode": "tap" },
+        { "name": "right", "keys": ["KeyD"], "mode": "tap" },
+        { "name": "rotate", "keys": ["KeyW"], "mode": "tap" },
+        { "name": "soft-drop", "keys": ["KeyS"], "mode": "hold" },
+        { "name": "hard-drop", "keys": ["Space"], "mode": "tap" }
+      ]
+    },
+    "showcase-skyline-runner": {
+      "controls": [
+        { "name": "run-right", "keys": ["KeyD"], "mode": "hold" },
+        { "name": "run-left", "keys": ["KeyA"], "mode": "hold" },
+        { "name": "jump", "keys": ["Space"], "mode": "tap" },
+        { "name": "dash", "keys": ["ShiftLeft"], "mode": "tap" }
+      ]
+    },
+    "showcase-siege-golf": {
+      "controls": [
+        { "name": "aim-left", "keys": ["ArrowLeft"], "mode": "hold" },
+        { "name": "aim-right", "keys": ["ArrowRight"], "mode": "hold" },
+        { "name": "strike", "keys": ["Space"], "mode": "charge", "chargeMs": 900, "ms": 4000 }
+      ]
+    },
+    "showcase-aurora-lander": {
+      "controls": [
+        { "name": "thrust", "keys": ["KeyW"], "mode": "hold" },
+        { "name": "lateral-left", "keys": ["KeyA"], "mode": "hold" },
+        { "name": "lateral-right", "keys": ["KeyD"], "mode": "hold" }
+      ]
+    },
+    "showcase-neon-swarm": {
+      "setup": [{ "wait": 3300 }],
+      "controls": [
+        { "name": "up", "keys": ["KeyW"], "mode": "hold" },
+        { "name": "left", "keys": ["KeyA"], "mode": "hold" },
+        { "name": "down", "keys": ["KeyS"], "mode": "hold" },
+        { "name": "right", "keys": ["KeyD"], "mode": "hold" },
+        { "name": "fire", "keys": ["KeyJ"], "mode": "hold" }
+      ]
+    },
+    "showcase-gravity-post": {
+      "controls": [
+        { "name": "aim-left", "keys": ["KeyA"], "mode": "hold" },
+        { "name": "aim-right", "keys": ["KeyD"], "mode": "hold" },
+        { "name": "launch-drag", "drag": { "selector": "[data-testid='gravity-post-stage'] canvas", "by": [-4, -79], "ms": 700 }, "ms": 3000 },
+        { "name": "time-warp", "keys": ["Space"], "mode": "hold" }
+      ]
+    },
+    "showcase-courier-rush": {
+      "controls": [
+        { "name": "throttle", "keys": ["KeyW"], "mode": "hold" },
+        { "name": "steer-left", "keys": ["KeyW", "KeyA"], "mode": "hold" },
+        { "name": "steer-right", "keys": ["KeyW", "KeyD"], "mode": "hold" },
+        { "name": "brake", "keys": ["KeyS"], "mode": "hold" }
+      ]
+    },
+    "showcase-pulse-tunnel": {
+      "setup": [{ "press": "Space" }, { "wait": 800 }],
+      "controls": [
+        { "name": "lane-left", "keys": ["KeyA"], "mode": "tap" },
+        { "name": "lane-right", "keys": ["KeyD"], "mode": "tap" },
+        { "name": "jump", "keys": ["KeyW"], "mode": "tap" },
+        { "name": "slide", "keys": ["KeyS"], "mode": "tap" }
+      ]
+    },
+    "showcase-mech-hangar": {
+      "controls": [
+        { "name": "hangar-cycle", "keys": ["ArrowRight"], "mode": "tap" },
+        { "name": "enter-arena", "keys": ["Enter"], "mode": "charge", "chargeMs": 60, "ms": 3000 },
+        { "name": "move-right", "keys": ["KeyD"], "mode": "hold" },
+        { "name": "move-left", "keys": ["KeyA"], "mode": "hold" },
+        { "name": "jump", "keys": ["Space"], "mode": "tap" },
+        { "name": "light", "keys": ["KeyJ"], "mode": "tap" }
+      ]
+    },
+    "showcase-vault-breakers": {
+      "controls": [
+        { "name": "serve", "keys": ["Space"], "mode": "charge", "chargeMs": 1800, "ms": 4000 },
+        { "name": "left-flipper", "keys": ["KeyA"], "mode": "tap" },
+        { "name": "right-flipper", "keys": ["KeyD"], "mode": "tap" }
+      ]
+    },
+    "showcase-rooftop-buckets": {
+      "controls": [
+        { "name": "aim-up", "keys": ["KeyW"], "mode": "hold" },
+        { "name": "shoot", "keys": ["Space"], "mode": "charge", "chargeMs": 520, "ms": 3500 },
+        { "name": "spot-right", "keys": ["KeyD"], "mode": "tap" },
+        { "name": "spot-left", "keys": ["KeyA"], "mode": "tap" }
+      ]
+    },
+    "showcase-gallery-shift": {
+      "controls": [
+        { "name": "forward", "keys": ["KeyW"], "mode": "hold" },
+        { "name": "left", "keys": ["KeyA"], "mode": "hold" },
+        { "name": "back", "keys": ["KeyS"], "mode": "hold" },
+        { "name": "right", "keys": ["KeyD"], "mode": "hold" }
+      ]
+    },
+    "showcase-deep-recovery": {
+      "controls": [
+        { "name": "throttle", "keys": ["KeyW"], "mode": "hold" },
+        { "name": "turn-left", "keys": ["KeyA"], "mode": "hold" },
+        { "name": "turn-right", "keys": ["KeyD"], "mode": "hold" },
+        { "name": "dive", "keys": ["KeyQ"], "mode": "hold" },
+        { "name": "sonar", "keys": ["Space"], "mode": "tap" }
+      ]
+    },
+    "showcase-patrol-wing": {
+      "controls": [
+        { "name": "throttle-takeoff", "keys": ["ShiftLeft"], "mode": "hold", "ms": 4000 },
+        { "name": "pitch-up", "keys": ["KeyS"], "mode": "hold" },
+        { "name": "roll-left", "keys": ["KeyA"], "mode": "hold" },
+        { "name": "roll-right", "keys": ["KeyD"], "mode": "hold" }
+      ]
+    },
+    "showcase-bank-shot": {
+      "controls": [
+        { "name": "aim-left", "keys": ["KeyA"], "mode": "hold" },
+        { "name": "aim-right", "keys": ["KeyD"], "mode": "hold" },
+        { "name": "strike", "keys": ["Space"], "mode": "charge", "chargeMs": 850, "ms": 4000 }
+      ]
+    },
+    "showcase-orbital-defense": {
+      "controls": [
+        { "name": "rotate-left", "keys": ["KeyA"], "mode": "hold" },
+        { "name": "rotate-right", "keys": ["KeyD"], "mode": "hold" },
+        { "name": "fire", "keys": ["Space"], "mode": "tap" }
+      ]
+    }
+  }
+}
