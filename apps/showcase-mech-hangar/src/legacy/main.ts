@@ -48,6 +48,7 @@ import { createMechBout, type BoutEvent, type BoutInputs, type BoutSnapshot } fr
 // as the visible hero silhouette for both fighters. Hangar staging, the live
 // MH-2M swappable assembly, and route-local combat are unchanged.
 import { assets as rootAssets } from "../../../../src/aura-assets";
+import { createMechHangarEffectsPass } from "./effects-pass";
 
 declare global {
   interface Window {
@@ -688,7 +689,14 @@ const app = createAuraApp("#app", {
       effects.colorGrade({ exposure: 1.04 * POST_V2_EXPOSURE, contrast: 1.06, saturation: 1.08 }),
       effects.antiAlias({ mode: "fxaa" }),
       effects.contactOcclusion({ name: "fighter deck contact", intensity: 0.4, radius: 0.6 }),
-      lights.directional({ name: "workshop cool key", position: [4.2, 5.4, 3.2], intensity: 1.55, color: "#d7ebff" }),
+      lights.directional({
+        name: "workshop cool key",
+        position: [4.2, 5.4, 3.2],
+        intensity: 1.55,
+        color: "#d7ebff",
+        // Effects pass: cascaded PCSS key shadows for the mechs and gantry.
+        shadow: { cascades: 3, mapSize: 2048, filter: "pcss", softness: 1.1, maxDistance: 50, intensity: 0.9 }
+      }),
       lights.point({ name: "warm practical left", position: [-2.6, 2.3, 1.9], intensity: 3.65, color: "#ffb454" }),
       lights.point({ name: "warm practical right", position: [2.7, 2.1, -1.4], intensity: 3.05, color: "#ff9a3d" }),
       // Arena floodlights over the pit. These two directionals are the pair
@@ -739,6 +747,7 @@ const app = createAuraApp("#app", {
       ...partNodeBuilders("player"),
       ...partNodeBuilders("rival")
     ])
+    .addMany(createMechHangarEffectsPass({ reducedMotion, arenaCenterZ: ARENA_CENTER_Z }))
     .camera(camera.follow({
       targetNode: "mech-cam-anchor",
       distance: visualReviewCapture ? 5.55 : 6.55,
