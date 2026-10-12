@@ -3,8 +3,7 @@
  *  1. First present read 0: sampling a render-target colour texture the first
  *     time re-specified it with `texImage2D(null)` (no upload revision was
  *     recorded at registration), wiping what the fill pass rendered.
- *  2. `{ colorAttachments: [{ format: "rgba16f" }] }` (single attachment — and
- *     createHdrTarget's `format: "rgba8"` + that) allocated RGBA8, clamping HDR.
+ *  (The single-attachment rgba16f → RGBA8 bug is lane 01c's #1277.)
  *  3. Dither runs of 27 px (≤ 16): white sin-hash TPDF; now the inverse
  *     triangular CDF of interleaved gradient noise (still ±1 LSB TPDF).
  */
@@ -13,7 +12,6 @@ import { describe, expect, it } from "vitest";
 import { Texture } from "../../../../packages/rendering/src/Texture";
 import { WebGL2TextureRegistry } from "../../../../packages/rendering/src/webgl2/TextureUpload";
 import type { WebGL2DeviceHost } from "../../../../packages/rendering/src/webgl2/DeviceHost";
-import { renderTargetColorFormat } from "../../../../packages/rendering/src/WebGL2Device";
 import { outputFragmentGlsl } from "../../../../packages/rendering/src/output/ToneMappingOperators.glsl";
 
 function registry(): { registry: WebGL2TextureRegistry; calls: Map<string, number> } {
@@ -60,15 +58,6 @@ describe("#1249 1: sampling a render-target colour texture never re-specifies it
     (tex as unknown as { revision: number }).revision += 1;
     reg.getTextureHandle(tex);
     expect((calls.get("texImage2D") ?? 0) + (calls.get("texSubImage2D") ?? 0)).toBeGreaterThan(before);
-  });
-});
-
-describe("#1249 2: single-attachment render targets honour colorAttachments[0].format", () => {
-  it("colorAttachments wins over format; format and the rgba8 default still apply alone", () => {
-    expect(renderTargetColorFormat({ colorAttachments: [{ format: "rgba16f" }] })).toBe("rgba16f");
-    expect(renderTargetColorFormat({ format: "rgba8", colorAttachments: [{ format: "rgba16f" }] })).toBe("rgba16f"); // createHdrTarget
-    expect(renderTargetColorFormat({ format: "rgba32f" })).toBe("rgba32f");
-    expect(renderTargetColorFormat({})).toBe("rgba8");
   });
 });
 

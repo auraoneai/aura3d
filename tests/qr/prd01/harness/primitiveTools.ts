@@ -16,7 +16,7 @@
  */
 
 import * as THREE from "three";
-import { camera, instances, lights, material, primitives, scene } from "@aura3d/engine";
+import { camera, environments, instances, lights, material, primitives, scene } from "@aura3d/engine";
 import type { AuraApp, AuraMaterialSpec, AuraSceneNode, AuraTransformSpec, AuraVec3 } from "@aura3d/engine";
 import { errorText, HALF_H, HALF_W, mountAura, mountThree, param, placeCanvas, settleAura, settleThree } from "./specKit";
 
@@ -114,7 +114,9 @@ async function runPrimitive(stage: HTMLElement): Promise<PrimitiveToolReport> {
     const threeMesh = new THREE.Mesh(threeGeometry(shape), new THREE.MeshStandardMaterial({ color: new THREE.Color("#cccccc"), roughness: 1, metalness: 0 }));
     app = await mountPair(
       stage,
-      [auraPrimitive(shape, matte), lights.directional({ position: lightPos, intensity: 1, color: "#ffffff" }).toJSON()],
+      // three's reference has no environment: environments.none() drops the
+      // implicit studio IBL an unauthored aura scene gets (cap luma was 1.58x).
+      [auraPrimitive(shape, matte), lights.directional({ position: lightPos, intensity: 1, color: "#ffffff" }).toJSON(), environments.none().toJSON()],
       [threeMesh, threeLight],
       CAP_CAMERA,
       "none"
