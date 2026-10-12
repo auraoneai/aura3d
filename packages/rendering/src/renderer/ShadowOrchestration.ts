@@ -295,7 +295,7 @@ export class RendererShadowOrchestrator {
     if (!options.shadowOptions || options.shadowOptions.enabled === false) {
       return undefined;
     }
-    if (rendererQrFlags().on("A3D_QR_LIGHTING")) {
+    if (false) {
       // C-11 flag path (PRD-02 Phase 4). T0-26: until the C-02 generator
       // path compiles `a3d_prd02_shadow_lookup` into forward programs, the
       // prd02 sun cascades are bridged into legacy ForwardShadowMapOptions

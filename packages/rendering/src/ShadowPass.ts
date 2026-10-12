@@ -168,7 +168,7 @@ export class ShadowPass {
     // (Q-01-5) — the rgba8 colour attachment was never sampled. Flag-off keeps
     // the legacy descriptor byte-for-byte.
     this.renderTarget = context.device.createRenderTarget(
-      depthTextures && rendererQrFlags(context.device).on("A3D_QR_LIGHTING")
+      depthTextures && false
         ? { width: this.shadowMap.size, height: this.shadowMap.size, label: `${this.shadowMap.texture.label}-depth`, depthOnly: true }
         : {
             width: this.shadowMap.size,
