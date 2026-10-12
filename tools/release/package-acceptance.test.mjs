@@ -1,4 +1,4 @@
-import { readBudgetTargets } from './budget-continuity.mjs';
+import { BUDGET_BASELINE, BUDGET_SOURCE, readBudgetTargets } from './budget-continuity.mjs';
 import { renderBundleSizeMarkdown } from '../bundle-size/markdown.mjs';
 import { test } from 'node:test';
 import { spawnSync } from 'node:child_process';
@@ -16,7 +16,12 @@ function fixture() {
  write('pnpm-lock.yaml','lock'); const repository=fileURLToPath(new URL('../../',import.meta.url));
  const gitdir=spawnSync('git',['rev-parse','--absolute-git-dir'],{cwd:repository,encoding:'utf8'});assert.equal(gitdir.status,0,gitdir.stderr);
  write('.git',`gitdir: ${gitdir.stdout.trim()}\n`);
- write('tools/bundle-size/index.ts',readFileSync(join(repository,'tools/bundle-size/index.ts'),'utf8'));
+ // This fixture models the historical 3.0.1 release. Keep its synthetic
+ // budget report bound to that release's baseline, independently of later
+ // repository budget changes; production continuity validation still runs.
+ const budgetSource=spawnSync('git',['show',`${BUDGET_BASELINE}:${BUDGET_SOURCE}`],{cwd:repository,encoding:'utf8'});
+ assert.equal(budgetSource.status,0,budgetSource.stderr);
+ write(BUDGET_SOURCE,budgetSource.stdout);
 
  const packages=Array.from({length:29},(_,i)=>{const name=['@aura3d/engine','@aura3d/physics','@aura3d/physics-rapier'][i]??`@aura3d/p${i}`,manifest=i?`packages/p${i}/package.json`:'package.json',tarball=`packed/p${i}.tgz`,bytes=`tarball${i}`;write(manifest,{name,version:'3.0.1',...(i===0?{devDependencies:{'@aura3d/engine-runtime':'workspace:*'}}:{})});write(tarball,bytes);return{name,version:'3.0.1',tarball,sha256:hash(bytes),integrity:`sha512-${hash(bytes,'sha512')}`};});
  const names=Array.from({length:19},(_,i)=>i===0?'character-controller':`template${i}`);names.forEach(name=>write(`packages/create-aura3d/templates/${name}/package.json`,{private:true}));
@@ -114,4 +119,11 @@ test('streams subprocess output and retains running metadata before execution co
 }));
 
 test('rejects edited bundle Markdown despite green measured report',()=>run(f=>{f.write('BUNDLE_SIZES.md','# Smaller bundles than measured');assert.throws(()=>producePackageAcceptance(f.root,f.config),/Markdown differs/)}));
+test('rejects increased historical bundle budget despite passing acceptance reports',()=>run(f=>{
+ const source=readFileSync(join(f.root,BUDGET_SOURCE),'utf8');
+ const increased=source.replace(/budget:\s*(\d[\d_]*)/,(_,budget)=>`budget: ${Number(budget.replaceAll('_',''))+1}`);
+ assert.notEqual(increased,source,'fixture must increase a numeric bundle budget');
+ f.write(BUDGET_SOURCE,increased);
+ assert.throws(()=>producePackageAcceptance(f.root,f.config),/Increased bundle budget/);
+}));
 test('rejects omitted bundle report target despite passing summary',()=>run(f=>{replaceReport(f,'bundleBudgets',r=>r.targets.pop());assert.throws(()=>producePackageAcceptance(f.root,f.config),/target inventory incomplete/)}));
