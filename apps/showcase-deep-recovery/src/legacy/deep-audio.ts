@@ -64,7 +64,8 @@ export class DeepAudioController {
     if (!audio) return;
     this.ambienceElement = audio;
     audio.loop = true;
-    audio.volume = 0.35;
+    // Sub-bass bed sits well under gameplay cues (0.35 read as a constant rumble).
+    audio.volume = 0.2;
     audio.play().catch(() => {});
   }
 

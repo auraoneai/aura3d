@@ -100,7 +100,7 @@ export const heistAudioManifest: Record<HeistAudioCue, HeistAudioCueDefinition> 
   "camera-whir": define("camera-whir", "sfx", "Sweeping security camera passing nearby.", false, 0.4),
   "caught-sting": define("caught-sting", "ui", "Caught: detection meter full.", false, 0.9),
   "floor-clear": define("floor-clear", "ui", "Floor cleared at the service exit.", false, 0.85),
-  "ambient-hall": define("ambient-hall", "sfx", "Looping low-lit gallery room tone.", true, 0.3),
+  "ambient-hall": define("ambient-hall", "sfx", "Looping low-lit gallery room tone.", true, 0.15),
   "exit-win": define("exit-win", "ui", "Both floors cleared: heist complete.", false, 0.9)
 };
 

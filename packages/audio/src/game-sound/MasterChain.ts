@@ -15,9 +15,19 @@ import type { SoundGraphContext, SoundNodeLike } from "./types";
 export interface MasterChainOptions {
   /** Glue + limiter stages on by default (master.glue). */
   readonly glue?: boolean;
-  /** Limiter threshold, default −1 dBFS. */
+  /** Limiter threshold, default −6 dBFS. */
   readonly limiterCeilingDb?: number;
+  /**
+   * Fixed headroom gain in front of the dynamics stages (default
+   * MASTER_HEADROOM). Game sample libraries are normalised to ~−1 dBFS peaks;
+   * at unity, a few overlapping hits drive the limiter into audible pumping and
+   * the safety clipper into distortion. The master volume slider scales on top.
+   */
+  readonly headroom?: number;
 }
+
+/** Default master headroom: −4.4 dB (0.6 linear). */
+export const MASTER_HEADROOM = 0.6;
 
 export interface MasterChain {
   readonly input: AudioNode;
@@ -25,6 +35,7 @@ export interface MasterChain {
   readonly limiterEngaged: boolean;
   /** Human-readable stage list for `proof()`. */
   readonly stages: readonly string[];
+  /** Master volume 0..1 (scaled by the fixed headroom). */
   setMasterGain(volume01: number): void;
   dispose(): void;
 }
@@ -67,7 +78,9 @@ export function createMasterChain(
   const ceiling = options.limiterCeilingDb ?? -6;
   const glueOn = options.glue ?? true;
 
+  const headroom = Math.max(0, Math.min(1, options.headroom ?? MASTER_HEADROOM));
   const input = ctx.createGain();
+  input.gain.value = headroom;
   const stages: string[] = ["masterGain"];
   const chain: SoundNodeLike[] = [];
 
@@ -139,7 +152,7 @@ export function createMasterChain(
       return limiterEngaged || limiterActive();
     },
     setMasterGain(volume01: number) {
-      input.gain.value = Math.max(0, Math.min(1, volume01));
+      input.gain.value = Math.max(0, Math.min(1, volume01)) * headroom;
     },
     dispose() {
       for (const node of chain) {

@@ -1361,12 +1361,13 @@ function tick(dtFixed: number): void {
   }
   previousControls = effectiveControls;
   state = stepLander(state, effectiveControls, dtFixed, currentSite.gust);
-  if (controls.thrust > 0 && !thrustLoopActive) {
+  // The thrust loop starts on the first burn and then follows the throttle
+  // (silent when released) instead of playing on at full level.
+  if (controls.thrust > 0 && !thrustLoopActive && audioUnlocked) {
     thrustLoopActive = true;
     playCue("thrust-loop");
-  } else if (controls.thrust === 0 && thrustLoopActive) {
-    thrustLoopActive = false;
   }
+  if (thrustLoopActive) landerAudio.setThrust(controls.thrust);
   const rotating = Math.abs(controls.rotate) > 0.05;
   if (rotating && rcsPuffArmed) {
     rcsPuffArmed = false;
