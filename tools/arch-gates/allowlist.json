@@ -270,7 +270,7 @@
       "packages/engine/src/agent-api/nodes/prompt/promptRecipes.ts"
     ],
     "expires": "2026-10-20",
-    "reason": "promptPlan\u2194promptRecipes: pre-existing mutual coupling surfaced by the T3.1 split (untangle is owner work; see requests)",
+    "reason": "promptPlan↔promptRecipes: pre-existing mutual coupling surfaced by the T3.1 split (untangle is owner work; see requests)",
     "request": "Q-*-leaf-imports / lane PRDs"
   },
   {
@@ -377,14 +377,14 @@
     "rule": "glsl-location",
     "file": "packages/rendering/src/ShaderLibrary.ts",
     "expires": "2026-11-30",
-    "reason": "legacy shader registry holds GLSL inline; Q-01-4 says do not touch \u2014 owner migrates",
+    "reason": "legacy shader registry holds GLSL inline; Q-01-4 says do not touch — owner migrates",
     "request": "Q-01-6"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/ShaderLibraryCore.ts",
     "expires": "2026-11-30",
-    "reason": "legacy shader registry holds GLSL inline; Q-01-4 says do not touch \u2014 owner migrates",
+    "reason": "legacy shader registry holds GLSL inline; Q-01-4 says do not touch — owner migrates",
     "request": "Q-01-6"
   },
   {
@@ -785,6 +785,7 @@
     "rule": "no-cycles",
     "scc": [
       "packages/engine/src/agent-api/AnimationAssetManifest.ts",
+      "packages/engine/src/agent-api/AnimationController.ts",
       "packages/engine/src/agent-api/AnimationDirector.ts",
       "packages/engine/src/agent-api/AnimationEpisodePackage.ts",
       "packages/engine/src/agent-api/AnimationMotionQuality.ts",
@@ -858,6 +859,7 @@
       "packages/engine/src/agent-api/compiler/renderInput.ts",
       "packages/engine/src/agent-api/compiler/renderer.ts",
       "packages/engine/src/agent-api/compiler/safeBasic.ts",
+      "packages/engine/src/agent-api/compiler/sceneGraph.ts",
       "packages/engine/src/agent-api/compiler/shadows.ts",
       "packages/engine/src/agent-api/compiler/textures.ts",
       "packages/engine/src/agent-api/compiler/webglRuntime.ts",
@@ -926,6 +928,7 @@
       "packages/engine/src/agent-api/performanceEvidence.ts",
       "packages/engine/src/agent-api/platform.ts",
       "packages/engine/src/agent-api/postBridge.ts",
+      "packages/engine/src/agent-api/postPresets.ts",
       "packages/engine/src/agent-api/product-viewer-runtime.ts",
       "packages/engine/src/agent-api/public/devtools.ts",
       "packages/engine/src/agent-api/rendererDiagnostics.ts",
@@ -940,7 +943,7 @@
       "packages/engine/src/agent-api/vfx/gameEffects.ts"
     ],
     "expires": "2026-11-15",
-    "reason": "agent-api 154-file SCC: compiler/nodes/app/devtools leaf web \u2014 structural debt from T3 leaf split; snapshot refreshed at Phase-8 gate pass (+50 members merged via sibling lanes); converges via dedicated repoint work",
+    "reason": "agent-api 157-file SCC: compiler/nodes/app/devtools leaf web — structural debt from T3 leaf split; snapshot refreshed at Phase-8 gate pass (+50 members merged via sibling lanes); converges via dedicated repoint work; refreshed 2026-10-11 (+AnimationController.ts, compiler/sceneGraph.ts, postPresets.ts via sibling-lane merges)",
     "request": "Q-15-1"
   },
   {
@@ -1004,7 +1007,7 @@
     ],
     "expires": "2026-11-15",
     "request": "Q-15-3",
-    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision \u2014 see Q-15-3"
+    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3"
   },
   {
     "rule": "unique-ownership",
@@ -1015,7 +1018,7 @@
     ],
     "expires": "2026-11-15",
     "request": "Q-15-3",
-    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision \u2014 see Q-15-3"
+    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3"
   },
   {
     "rule": "unique-ownership",
@@ -1026,7 +1029,7 @@
     ],
     "expires": "2026-11-15",
     "request": "Q-15-3",
-    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision \u2014 see Q-15-3"
+    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3"
   },
   {
     "rule": "unique-ownership",
@@ -1037,7 +1040,7 @@
     ],
     "expires": "2026-11-15",
     "request": "Q-15-3",
-    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision \u2014 see Q-15-3"
+    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3"
   },
   {
     "rule": "unique-ownership",
@@ -1048,7 +1051,7 @@
     ],
     "expires": "2026-11-15",
     "request": "Q-15-3",
-    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision \u2014 see Q-15-3"
+    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3"
   },
   {
     "rule": "unique-ownership",
@@ -1059,7 +1062,7 @@
     ],
     "expires": "2026-11-15",
     "request": "Q-15-3",
-    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision \u2014 see Q-15-3"
+    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3"
   },
   {
     "rule": "no-cross-package-relative",
@@ -1116,5 +1119,110 @@
     "expires": "2026-10-31",
     "reason": "lane-15: :42 imports rendering/src EnvironmentCache",
     "request": "#962"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/engine/src/production-runtime/world/GrassRuntime.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-10 grass program GLSL inline; owner moves it under a shaders/ chunk dir",
+    "request": "Q-10-glsl"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/atmosphere/sky.glsl.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-07 sky shader module outside a shaders/ dir; owner moves it to atmosphere/shaders/",
+    "request": "Q-07-glsl"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/environment/Prd02BackgroundShaderLibrary.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-02 background shader library predates T4.9 fail mode; owner moves GLSL to shaders/chunks",
+    "request": "Q-02-glsl"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/passes/ContactShadowPass.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-02 contact-shadow pass GLSL inline; owner moves it to shaders/chunks/contact_shadow",
+    "request": "Q-02-glsl"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/program/ProgramGenerator.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-01 program generator assembles chunk GLSL; header templates move to program/chunks",
+    "request": "Q-01-6"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/renderer/SceneDepthCopyPass.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-01 depth-copy blit GLSL inline; owner moves it to program/chunks",
+    "request": "Q-01-6"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/shadows/Prd02DepthShaderLibrary.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-02 depth shader library predates T4.9 fail mode; owner moves GLSL to shaders/chunks",
+    "request": "Q-02-glsl"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/world/space/PlanetMaterial.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders",
+    "request": "Q-10-glsl"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/world/terrain/SplatBake.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders",
+    "request": "Q-10-glsl"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/world/terrain/TerrainHeightTexture.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders",
+    "request": "Q-10-glsl"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/world/vegetation/FoliageMaterial.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders",
+    "request": "Q-10-glsl"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/world/vegetation/ImpostorMaterial.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders",
+    "request": "Q-10-glsl"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/world/water/SceneCopyFallback.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders",
+    "request": "Q-10-glsl"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/world/water/WaterMaterial.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders",
+    "request": "Q-10-glsl"
+  },
+  {
+    "rule": "single-renderer",
+    "file": "packages/engine/src/lanes/prd01/outputSurface.ts",
+    "expires": "2026-11-15",
+    "reason": "lane-01 capture reads back the app canvas's existing WebGL2 context (no new context); owner routes readback through C-29 Renderer",
+    "request": "Q-01-capture"
   }
 ]
