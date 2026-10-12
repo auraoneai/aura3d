@@ -1,9 +1,10 @@
-import { Geometry, PBRMaterial, Renderer, UnlitMaterial, type RenderItem } from "@aura3d/rendering";
+import { createAuraApp, looks, type AuraApp } from "@aura3d/engine";
+import { LOOK_ID, configuratorScene, type FinishVariant } from "./scene";
 
-const variants = [
-  { name: "Graphite", color: [0.12, 0.16, 0.2, 1] as const, metallic: 0.62, roughness: 0.3 },
-  { name: "Copper", color: [0.9, 0.46, 0.22, 1] as const, metallic: 0.75, roughness: 0.24 },
-  { name: "Ceramic", color: [0.82, 0.88, 0.92, 1] as const, metallic: 0.06, roughness: 0.18 },
+const variants: readonly (FinishVariant & { readonly name: string })[] = [
+  { name: "Graphite", color: "#1f2933", metalness: 0.62, roughness: 0.3 },
+  { name: "Copper", color: "#e67538", metalness: 0.75, roughness: 0.24 },
+  { name: "Ceramic", color: "#d1e0eb", metalness: 0.06, roughness: 0.18 },
 ];
 
 const root = document.querySelector<HTMLElement>("#app");
@@ -31,7 +32,26 @@ if (!canvas || !status) throw new Error("Template shell failed to initialize.");
 
 let activeVariant = 0;
 let interactions = 0;
-let renderer: Renderer;
+let app: AuraApp | undefined;
+
+// createAuraApp owns the renderer and frame loop. A variant switch disposes
+// and remounts once (user gesture, never per frame) with the new finish; the
+// product-studio look supplies HDRI IBL, shadowed key, AO, grade and bloom.
+function mount(): void {
+  app?.dispose();
+  app = createAuraApp(canvas, { scene: configuratorScene(variants[activeVariant]), ...looks.appOptions(LOOK_ID) });
+  status.textContent = JSON.stringify(
+    {
+      template: "product-configurator",
+      activeVariant: variants[activeVariant].name,
+      interactions,
+      look: LOOK_ID,
+      publicRuntime: ["@aura3d/engine", "createAuraApp", "looks.preset"],
+    },
+    null,
+    2,
+  );
+}
 
 function setVariant(index: number): void {
   activeVariant = index;
@@ -39,87 +59,22 @@ function setVariant(index: number): void {
   for (const [buttonIndex, button] of buttons.entries()) {
     button.setAttribute("aria-pressed", String(buttonIndex === activeVariant));
   }
-  render();
-}
-
-function render(): void {
-  const variant = variants[activeVariant];
-  const diagnostics = renderer.render(createRenderItems(variant));
-  status.textContent = JSON.stringify(
-    {
-      template: "product-configurator",
-      activeVariant: variant.name,
-      interactions,
-      drawCalls: diagnostics.drawCalls,
-      publicRuntime: "@aura3d/rendering",
-    },
-    null,
-    2,
-  );
+  mount();
 }
 
 for (const [index, button] of buttons.entries()) {
   button.addEventListener("click", () => setVariant(index));
 }
 
-void boot();
-window.addEventListener("beforeunload", () => renderer?.dispose());
-
-async function boot(): Promise<void> {
-  renderer = await Renderer.create({
-    backend: "webgl2",
-    canvas,
-    width: canvas.width,
-    height: canvas.height,
-    clearColor: [0.018, 0.022, 0.03, 1],
-    preserveDrawingBuffer: true,
-  });
-  render();
-}
-
-function createRenderItems(variant: (typeof variants)[number]): RenderItem[] {
-  return [
-    {
-      geometry: Geometry.uvSphere(0.64, 32, 16),
-      material: new PBRMaterial({
-        name: `body-${variant.name.toLowerCase()}`,
-        baseColor: variant.color,
-        metallic: variant.metallic,
-        roughness: variant.roughness,
-        emissiveColor: [variant.color[0] * 0.12, variant.color[1] * 0.12, variant.color[2] * 0.12],
-        emissiveStrength: 0.7,
-        renderState: { cullMode: "none" },
-      }),
-      label: "product-body",
-    },
-    {
-      geometry: Geometry.litCube(0.86),
-      material: new PBRMaterial({
-        name: "trim",
-        baseColor: [0.92, 0.88, 0.74, 1],
-        metallic: 0.82,
-        roughness: 0.22,
-        renderState: { cullMode: "none" },
-      }),
-      label: "product-trim",
-    },
-    {
-      geometry: Geometry.lineSegments([
-        [-0.85, -0.76, 0],
-        [0.85, -0.76, 0],
-      ]),
-      material: new UnlitMaterial({ name: "baseline", color: [0.55, 0.68, 0.76, 1] }),
-      label: "baseline",
-    },
-  ];
-}
+window.addEventListener("beforeunload", () => app?.dispose());
+mount();
 
 function installStyles(): void {
   const style = document.createElement("style");
   style.textContent = `
-    html, body, #app { margin: 0; min-height: 100%; background: #11171d; color: #edf3f8; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    html, body, #app { margin: 0; min-height: 100%; background: #11171d; color: #edf3f8; font-family: ui-sans-serif, system-ui, sans-serif; }
     .shell { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) 22rem; }
-    canvas { width: 100%; height: 100vh; display: block; background: #0f141a; }
+    canvas { width: 100%; height: 100vh; display: block; }
     aside { border-left: 1px solid #28323b; background: #161d24; padding: 1.25rem; display: grid; align-content: start; gap: 1rem; }
     h1 { margin: 0; font-size: 1.3rem; }
     .swatches { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
