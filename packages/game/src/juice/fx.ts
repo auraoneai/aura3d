@@ -39,18 +39,24 @@ export interface FxPreset {
   readonly scale: readonly [number, number];
   readonly color: string;
   readonly spread: number; // cone spread about `normal`, radians-ish
+  /**
+   * Size over life. "grow" (default) swells 35% → 100% (dust, rings);
+   * "shrink" pops at full size and burns down to 35% (sparks, debris), so an
+   * impact reads on its first frame instead of starting as a subpixel dot.
+   */
+  readonly envelope?: "grow" | "shrink";
 }
 
 export const FX_PRESETS: Readonly<Record<GameFxKind, FxPreset>> = Object.freeze({
-  // Pool growth starts at 35% of this size. Keep the opening burst visible
-  // at gameplay distance; the former 2–5 cm range became subpixel at onset.
-  spark: { shape: "sphere", life: [0.2, 0.45], speed: [3, 7], gravity: 9.8, drag: 1.5, scale: [0.14, 0.35], color: "#ffd27a", spread: 1.2 },
+  // Impact kinds use the "shrink" envelope: full size on the first frame,
+  // burning down over life, so the opening burst is never subpixel.
+  spark: { shape: "sphere", life: [0.2, 0.45], speed: [3, 7], gravity: 9.8, drag: 1.5, scale: [0.14, 0.35], color: "#ffd27a", spread: 1.2, envelope: "shrink" },
   dust: { shape: "quad", life: [0.5, 0.9], speed: [0.4, 1.2], gravity: 0.4, drag: 2.5, scale: [0.15, 0.35], color: "#c8c0b4", spread: 2.2 },
-  debris: { shape: "sphere", life: [0.4, 0.8], speed: [2, 5], gravity: 12, drag: 0.8, scale: [0.03, 0.07], color: "#8a8a8a", spread: 1.6 },
+  debris: { shape: "sphere", life: [0.4, 0.8], speed: [2, 5], gravity: 12, drag: 0.8, scale: [0.03, 0.07], color: "#8a8a8a", spread: 1.6, envelope: "shrink" },
   ring: { shape: "quad", life: [0.3, 0.5], speed: [2.5, 4], gravity: 0, drag: 3, scale: [0.1, 0.2], color: "#9fd8ff", spread: 0.3 },
   streak: { shape: "quad", life: [0.15, 0.3], speed: [6, 10], gravity: 0, drag: 1, scale: [0.02, 0.05], color: "#ffffff", spread: 0.2 },
   pickup: { shape: "quad", life: [0.35, 0.6], speed: [1.5, 3], gravity: -1.5, drag: 2, scale: [0.06, 0.1], color: "#7dff9a", spread: 2.0 },
-  "explosion-small": { shape: "sphere", life: [0.35, 0.7], speed: [4, 9], gravity: 6, drag: 1.8, scale: [0.05, 0.12], color: "#ff8c3a", spread: 3.14 },
+  "explosion-small": { shape: "sphere", life: [0.35, 0.7], speed: [4, 9], gravity: 6, drag: 1.8, scale: [0.05, 0.12], color: "#ff8c3a", spread: 3.14, envelope: "shrink" },
   muzzle: { shape: "quad", life: [0.08, 0.16], speed: [5, 8], gravity: 0, drag: 4, scale: [0.04, 0.08], color: "#ffe6a3", spread: 0.5 },
   splash: { shape: "sphere", life: [0.3, 0.6], speed: [2, 4.5], gravity: 9.8, drag: 1.2, scale: [0.03, 0.07], color: "#7ec8ff", spread: 1.8 },
   bubble: { shape: "sphere", life: [0.6, 1.2], speed: [0.5, 1.2], gravity: -2, drag: 1.5, scale: [0.02, 0.05], color: "#cfefff", spread: 1.0 }
@@ -181,7 +187,8 @@ export class FxPrimitivePool {
         const damp = Math.exp(-preset.drag * dt);
         p.vx *= damp; p.vy *= damp; p.vz *= damp;
         p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
-        const grow = p.scale * (0.35 + 0.65 * (p.age / p.life));
+        const k = p.age / p.life;
+        const grow = p.scale * (preset.envelope === "shrink" ? 1 - 0.65 * k : 0.35 + 0.65 * k);
         const o = w * 16;
         matrices[o] = grow; matrices[o + 1] = 0; matrices[o + 2] = 0; matrices[o + 3] = 0;
         matrices[o + 4] = 0; matrices[o + 5] = grow; matrices[o + 6] = 0; matrices[o + 7] = 0;

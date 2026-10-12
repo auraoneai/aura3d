@@ -70,6 +70,7 @@ export function createSpatialNode(options: SpatialNodeOptions): SpatialNode {
   if (filter.Q) filter.Q.value = 0.707;
 
   const input: SoundNodeLike = panner ?? (filter as SoundNodeLike);
+  let occlusionSet = false;
   if (panner) {
     (panner as { connect(d: SoundNodeLike): unknown }).connect(filter);
   }
@@ -106,6 +107,16 @@ export function createSpatialNode(options: SpatialNodeOptions): SpatialNode {
       const hz = occlusionHz(amount01);
       const f = filter.frequency;
       if (!f) return;
+      // The first call sets the voice's starting occlusion: apply it at once.
+      // Gliding from the open 20 kHz default let a voice spawned behind a wall
+      // play its first ~90 ms unfiltered (only 15 dB high-band cut measured
+      // instead of ≥ 18 dB). Later calls glide (τ 30 ms) to avoid zipper noise.
+      if (!occlusionSet) {
+        occlusionSet = true;
+        if (f.setValueAtTime) f.setValueAtTime(hz, ctx.currentTime);
+        f.value = hz;
+        return;
+      }
       if (f.setTargetAtTime) f.setTargetAtTime(hz, ctx.currentTime, 0.03);
       else f.value = hz;
     },
