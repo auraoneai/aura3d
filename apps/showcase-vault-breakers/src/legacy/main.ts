@@ -22,6 +22,7 @@ import {
   type AuraSceneNode,
   type AuraDiagnostics
 } from "@aura3d/engine";
+import { POST_V2_EXPOSURE, withPostV2Bloom } from "./post-v2-retune";
 import { assets } from "../../../../src/aura-assets";
 import { VaultFlow, type VaultGameEvent } from "../gameplay/ball-flow";
 import { FlipperController } from "../gameplay/flippers";
@@ -353,11 +354,11 @@ function buildScene(): ReturnType<typeof scene> {
     // root safe renderer's stable draw order keeps them legible above it.
     .addMany(visualNodes())
     .addMany([
-      effects.neonBloom({ intensity: reducedMotion ? 0.15 : 0.45, threshold: 0.62, radius: 0.5, maxIntensity: 0.88, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      withPostV2Bloom(effects.neonBloom({ intensity: reducedMotion ? 0.15 : 0.45, threshold: 0.62, radius: 0.5, maxIntensity: 0.88, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }), reducedMotion ? 0.15 / 0.45 : 1),
       effects.ambientOcclusion({ name: "vault contact grounding", intensity: 0.3, radius: 0.62, density: 0.5, color: "#02020a" }),
       effects.contactOcclusion({ name: "mechanism contact", intensity: 0.36, radius: 0.52 }),
       effects.fog({ name: "vault room depth haze", density: 0.018, color: "#190e2b", intensity: 0.24 }),
-      effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
+      effects.colorGrade({ exposure: 1.05 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" })
     ])
     .camera(camera.perspective({
