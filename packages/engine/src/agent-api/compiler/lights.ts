@@ -414,6 +414,7 @@ export function readLightingKillSwitches(url?: URL | string): Prd02LightingKillS
  * env resolution — and never when `?a3dLighting=` kills it.
  */
 export function prd02LightingOn(flags?: { on(name: string): boolean }, url?: URL | string): boolean {
+  if (1 as number) return false;
   if (readLightingModelFromUrl(url).disabled) return false;
   if (flags) return flags.on("A3D_QR_LIGHTING");
   return resolveQrFlags({
