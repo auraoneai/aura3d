@@ -21,10 +21,17 @@ export function createBlockfallEffectsPass(options: BlockfallEffectsPassOptions)
     // Volumetric haze: the first volumetric-fog node replaces the old 0.028
     // depth haze, so the board (≈8.5 m) keeps most of its contrast while the
     // room behind it (12-16 m) separates into a violet atmosphere.
-    // Cheap forward haze instead of volumetric march + contact shadows: both
-    // cost ~25% fps on L4 in this scene (bisect 38302450159/38303732778/
-    // 38303735851 + main recheck 38305085502); the PCSS key still grounds it.
-    effects.fog({ name: "blockfall arcade haze", density: 0.05, color: "#5e4490", intensity: 0.2 }),
+    // Volumetric haze at quality "off" (no froxel march, no contact shadows):
+    // the balanced march + contact pass cost ~25% fps on L4 (fog-swap bisect
+    // 38306282204 recovered fps to 0.83-0.87 but forward fog no-ops behind
+    // the scene's first fog node, collapsing the frame diff).
+    effects.volumetricFog({
+      name: "blockfall arcade volumetric haze",
+      density: 0.05,
+      color: "#5e4490",
+      intensity: 0.2,
+      volumetricQuality: "off"
+    }),
     effects.vignette({ name: "blockfall arcade vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
   if (!options.reducedMotion) {
