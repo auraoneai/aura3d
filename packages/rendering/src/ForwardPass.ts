@@ -844,8 +844,10 @@ export function applyGeneratedFogUniforms(
   shader: RenderShaderProgram,
   uniforms: Map<string, UniformValue>
 ): void {
-  // `u_fogRange` is declared only by fog_default, so it marks the generated fog chunk.
-  if (!shader.reflection.uniforms.has("u_fogRange")) return;
+  // Reflection lists ACTIVE uniforms only: exp2 programs drop the unused
+  // `u_fogRange`, linear ones drop `u_fogDensity`. Either marks fog_default
+  // (forward programs declare neither otherwise; lane 07 uses u_fogA/u_fogB).
+  if (!shader.reflection.uniforms.has("u_fogRange") && !shader.reflection.uniforms.has("u_fogDensity")) return;
   const values = generatedFogUniformValues(fog);
   if (!values) return;
   for (const [name, value] of values) {

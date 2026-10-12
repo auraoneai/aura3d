@@ -51,6 +51,17 @@ describe("generated-program fog (core_generator)", () => {
     expect(exp2Factor(0, 30)).toBe(0);
   });
 
+  it("binds an exp2 program whose reflection omits the inactive u_fogRange (active uniforms only)", () => {
+    const uniforms = new Map<string, unknown>();
+    applyGeneratedFogUniforms(sceneFog as never, shaderWith("u_fogColor", "u_fogDensity"), uniforms as never);
+    expect(uniforms.get("u_fogDensity")).toBe(0.03);
+    expect(uniforms.get("u_fogColor")).toEqual([...sceneFog.color]);
+    expect(uniforms.has("u_fogRange")).toBe(false);
+    const linear = new Map<string, unknown>();
+    applyGeneratedFogUniforms({ ...sceneFog, mode: "linear", near: 5, far: 60 } as never, shaderWith("u_fogColor", "u_fogRange"), linear as never);
+    expect(linear.get("u_fogRange")).toEqual([5, 60]);
+  });
+
   it("keeps a u_fogColor lane 07's PRD-07 fog chunk already set (#880 shared uniform)", () => {
     const uniforms = new Map<string, unknown>([["u_fogColor", [1, 0, 0]]]);
     applyGeneratedFogUniforms(sceneFog as never, shaderWith(...FOG_UNIFORMS), uniforms as never);
