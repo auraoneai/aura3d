@@ -42,11 +42,15 @@ test.describe("02-S14 prd02 chunks in ChunkHarness", () => {
   let result: HarnessResult;
 
   test.beforeAll(async ({ browser }) => {
+    test.setTimeout(300_000);
     server = await startLaneServer();
     const page = await browser.newPage();
     await page.goto(`${server.origin}/scenes/prd02/chunks.html`, { waitUntil: "load", timeout: 60_000 });
-    await page.waitForFunction("() => Boolean(window.__A3D_PRD02_CHUNKS__)", undefined, { timeout: 60_000, polling: 250 });
-    result = (await page.evaluate("() => window.__A3D_PRD02_CHUNKS__")) as HarnessResult;
+    // String predicates must be expressions, not "() => …": a function-valued
+    // string is truthy (waitForFunction returned at once) and the evaluate
+    // read the global before the harness published it (GPU run 38184694289).
+    await page.waitForFunction("Boolean(window.__A3D_PRD02_CHUNKS__)", undefined, { timeout: 180_000, polling: 250 });
+    result = (await page.evaluate("window.__A3D_PRD02_CHUNKS__")) as HarnessResult;
     await page.close();
   });
 

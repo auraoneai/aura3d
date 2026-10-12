@@ -1,4 +1,4 @@
-From 3f72052cfd4d79be6af22c5474647d79206388be Mon Sep 17 00:00:00 2001
+From ca151631dd6fb64d23de7e501133c829845dbe70 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:11:00 +0000
 Subject: [PATCH] migration(showcase-vault-breakers): regenerated patch set
@@ -45,7 +45,7 @@ index 000000000..a626180b3
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
 diff --git a/apps/showcase-vault-breakers/src/legacy/main.ts b/apps/showcase-vault-breakers/src/legacy/main.ts
-index 7478c4134..939a05919 100644
+index e8b6bd403..2f7b94d65 100644
 --- a/apps/showcase-vault-breakers/src/legacy/main.ts
 +++ b/apps/showcase-vault-breakers/src/legacy/main.ts
 @@ -9,7 +9,6 @@
@@ -118,7 +118,7 @@ index 7478c4134..939a05919 100644
 +  id: "showcase-vault-breakers",
 +  target: "#app",
    diagnostics: { overlay: false, performancePanel: false },
-   renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+   renderer: { qualityProfile: "production" },
    physics: {
 @@ -408,11 +416,51 @@ const gameApp = createGameApp("#app", {
      touch: true
@@ -403,7 +403,7 @@ index 000000000..0cd0b2953
 +  stage("game-over")
 +];
 diff --git a/apps/showcase-vault-breakers/src/v2/boot.ts b/apps/showcase-vault-breakers/src/v2/boot.ts
-index 4c0f96843..d5414a752 100644
+index 6014c4e8f..e9d669c85 100644
 --- a/apps/showcase-vault-breakers/src/v2/boot.ts
 +++ b/apps/showcase-vault-breakers/src/v2/boot.ts
 @@ -4,7 +4,7 @@
@@ -421,12 +421,12 @@ index 4c0f96843..d5414a752 100644
  import { createEventConsumer } from "./flow-events";
 -import { publishVaultEvidence } from "./evidence";
  import { applyVaultScenario } from "./scenarios";
+ import { assets } from "../../../../src/aura-assets";
  
- const ROUTE_FLAG = "A3D_QR_ROUTE_VAULT_BREAKERS" as const;
-@@ -106,6 +105,16 @@ const game = createGame({
-     // art/direction.ts sections. `route_vault_breakers` uses the engine-parseable
-     // underscore form (URL/dispatch form is `route-vault-breakers`).
-     flags: ["route_vault_breakers", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+@@ -107,6 +106,16 @@ const game = createGame({
+     // flags come from URL/env/defaults like every other route, so `none`
+     // and `-<flag>` arms actually turn them off.
+     flags: ["route_vault_breakers", "game"]
 +  },
 +  // T5.8: route evidence rides the shared createGame channel (C-24) —
 +  // only the sections games.json requiredConditions read.
@@ -440,7 +440,7 @@ index 4c0f96843..d5414a752 100644
    }
  });
  
-@@ -298,30 +307,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
+@@ -299,30 +308,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
    if (frame % 6 === 0 || events.length > 0) syncLampsAndBoard();
  });
  

@@ -1,4 +1,4 @@
-From d785e30acaa86a10d45fe7ea0d3a747e4e8f5212 Mon Sep 17 00:00:00 2001
+From a1f8e37473234e1ba5c550a239080766453ba471 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:10:53 +0000
 Subject: [PATCH] migration(showcase-turbo-drift-circuit): regenerated patch
@@ -1006,7 +1006,7 @@ index 000000000..b3e7e8366
 +  }
 +];
 diff --git a/apps/showcase-turbo-drift-circuit/src/v2/boot.ts b/apps/showcase-turbo-drift-circuit/src/v2/boot.ts
-index 59842e916..e362583b2 100644
+index 919210b4d..da67c3fa7 100644
 --- a/apps/showcase-turbo-drift-circuit/src/v2/boot.ts
 +++ b/apps/showcase-turbo-drift-circuit/src/v2/boot.ts
 @@ -5,7 +5,7 @@
@@ -1027,9 +1027,9 @@ index 59842e916..e362583b2 100644
  import direction from "../../art/direction";
  import {
 @@ -113,6 +112,18 @@ const gameShell = createGame({
-     // art/direction.ts sections. `route_turbo_drift_circuit` uses the engine-parseable
-     // underscore form (URL/dispatch form is `route-turbo-drift-circuit`).
-     flags: ["route_turbo_drift_circuit", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+     // flags come from URL/env/defaults like every other route, so `none`
+     // and `-<flag>` arms actually turn them off.
+     flags: ["route_turbo_drift_circuit", "game"]
 +  },
 +  // T5.8: route evidence rides the shared createGame channel (C-24) —
 +  // only the sections games.json requiredConditions read.

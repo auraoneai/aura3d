@@ -1,4 +1,4 @@
-From 94a459bbd6b0225763689f003e7a33b3996b0c5c Mon Sep 17 00:00:00 2001
+From d3d534ddd7d6e49f066a15c58dd99c9023753520 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:10:07 +0000
 Subject: [PATCH] migration(showcase-patrol-wing): regenerated patch set
@@ -622,7 +622,7 @@ index 000000000..59445d7da
 +  { description: "Cannon exchange + real hull damage.", setup: stage("drone-hit") }
 +];
 diff --git a/apps/showcase-patrol-wing/src/v2/boot.ts b/apps/showcase-patrol-wing/src/v2/boot.ts
-index c5804eb28..c81dcd2c9 100644
+index 3e21ab087..15d754fd7 100644
 --- a/apps/showcase-patrol-wing/src/v2/boot.ts
 +++ b/apps/showcase-patrol-wing/src/v2/boot.ts
 @@ -9,7 +9,7 @@
@@ -642,10 +642,10 @@ index c5804eb28..c81dcd2c9 100644
  import { createPatrolCtx } from "./state";
  import { createPatrolAudioBlock } from "./audio";
  import { createPatrolInput, wirePatrolTouch } from "./input";
-@@ -122,6 +121,17 @@ const game = createGame({
-     // art/direction.ts sections. `route_patrol_wing` uses the engine-parseable
-     // underscore form (URL/dispatch form is `route-patrol-wing`).
-     flags: ["route_patrol_wing", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+@@ -123,6 +122,17 @@ const game = createGame({
+     // flags come from URL/env/defaults like every other route, so `none`
+     // and `-<flag>` arms actually turn them off.
+     flags: ["route_patrol_wing", "game"]
 +  },
 +  // T5.8: route evidence rides the shared createGame channel (C-24) —
 +  // only the sections games.json requiredConditions read.
@@ -660,7 +660,7 @@ index c5804eb28..c81dcd2c9 100644
    }
  });
  
-@@ -145,53 +155,6 @@ const updateWired = wirePatrolUpdate(ctx, { game, input, combat, sync, hud: hudW
+@@ -146,53 +156,6 @@ const updateWired = wirePatrolUpdate(ctx, { game, input, combat, sync, hud: hudW
  const { updateGameplay } = updateWired;
  buildCollisions();
  
@@ -714,7 +714,7 @@ index c5804eb28..c81dcd2c9 100644
  // ------------------------------------------------------------ rig + boot ----
  
  const rigState: PatrolRigState = {
-@@ -236,20 +199,6 @@ void game.ready().then(() => {
+@@ -237,20 +200,6 @@ void game.ready().then(() => {
    };
  });
  

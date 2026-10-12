@@ -1,0 +1,153 @@
+name: Remaining worktree GPU checks
+
+on:
+  push:
+    branches: [consolidate/remaining-20261011]
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Existing GPU pool or hosted Metal runner
+        type: choice
+        options: [azure-gpu, track0, macos-14]
+        default: azure-gpu
+      lane:
+        description: Focused lane to rerun
+        type: choice
+        options: [all, lighting, post, materials, game-records]
+        default: all
+      post_spec:
+        description: Optional post spec selection
+        type: choice
+        options: [all, ao-godrays]
+        default: all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: remaining-worktree-gpu-${{ github.ref }}-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  focused-gpu:
+    if: github.repository == 'auraoneai/aura3d'
+    runs-on: ${{ inputs.runner == 'macos-14' && 'macos-14' || (inputs.runner == 'track0' && fromJSON('["self-hosted","track0","gpu-l4"]')) || fromJSON('["self-hosted","azure-gpu"]') }}
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: ${{ inputs.lane && inputs.lane != 'all' && fromJSON(format('["{0}"]', inputs.lane)) || fromJSON('["lighting","post","materials","game-records"]') }}
+    env:
+      CI: 'true'
+      A3D_REQUIRE_HW_GPU: '1'
+      QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
+      PLAYWRIGHT_JSON_OUTPUT_NAME: tests/reports/remaining-${{ matrix.lane }}.json
+      A3D_DIVERGENCE_DIR: tests/qr/prd09/.out
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Configure existing Azure GPU browser conventions
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            args="--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+          else
+            args="${QR_AZURE_GPU_CHROME_ARGS:---headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist}"
+          fi
+          for key in QR_CHROMIUM_ARGS QRC_GPU_ARGS QR_PRD02_CHROME_ARGS QR_BENCH_CHROME_ARGS PRD04_CHROMIUM_ARGS; do
+            echo "$key=$args" >> "$GITHUB_ENV"
+          done
+          echo "Chromium GPU args: $args" >> "$GITHUB_STEP_SUMMARY"
+      - name: Reject software rendering
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tests/reports
+          node tools/quality-rebuild-capture/gpu-renderer.mjs | tee tests/reports/remaining-gpu-renderer.txt
+      - name: Build lighting package dist and lane bundle
+        if: matrix.lane == 'lighting'
+        run: |
+          pnpm build
+          pnpm exec vite build --config benchmarks/quality-rebuild/scenes/prd02/vite.lane.config.ts
+      - name: Neutral room, shadow chain, and actual camera dolly
+        if: matrix.lane == 'lighting'
+        run: >-
+          pnpm exec playwright test
+          --config tests/qr/prd02/playwright.prd02.config.ts
+          tests/qr/prd02/browser/production-lighting.spec.ts
+          tests/qr/prd02/browser/shadow-chain.spec.ts
+          tests/qr/prd02/browser/shadow-stability.spec.ts
+          --retries=0 --trace=retain-on-failure
+      - name: Godrays occlusion and bloom attribution
+        if: matrix.lane == 'post'
+        run: >-
+          pnpm exec playwright test
+          --config playwright.prd03-gpu.config.ts
+          ${{ inputs.post_spec == 'ao-godrays' && 'tests/browser/qr-prd03-ao-godrays.spec.ts' || 'tests/browser/qr-prd03-gpu-probe.spec.ts tests/browser/qr-prd03-ao-godrays.spec.ts tests/browser/qr-prd03-bloom-energy.spec.ts' }}
+          --retries=0 --trace=retain-on-failure
+      - name: Canvas decoder pixels and material asset paths
+        if: matrix.lane == 'materials'
+        run: >-
+          pnpm exec playwright test
+          --config tests/qr/prd04/playwright.config.ts
+          tests/qr/prd04/browser/gltf-decoders-variants.spec.ts
+          tests/qr/prd04/browser/model-material-override.spec.ts
+          tests/qr/prd04/browser/procedural-material-detail.spec.ts
+          --retries=0 --trace=retain-on-failure
+      - name: Build current-source game routes
+        if: matrix.lane == 'game-records'
+        # No migration patches are applied: absent route flags must fail honestly.
+        run: node tools/quality-rebuild-capture/capture-games.mjs --build-only --local-build
+      - name: Record game look signatures and 600-frame pilot performance
+        if: matrix.lane == 'game-records'
+        # This is evidence collection, not a claim that performance budgets pass.
+        run: >-
+          pnpm exec playwright test --config tests/qr/prd09/playwright.config.ts
+          tests/qr/prd09/look-perf.spec.ts --retries=0 --trace=retain-on-failure
+      - name: Require nonempty passing results with no skipped tests
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const lane = process.env.LANE;
+          const candidates = lane === 'lighting'
+            ? ['tests/reports/qr-prd02-browser.json']
+            : lane === 'game-records'
+              ? ['tests/qr/prd09/tests/qr/prd09/.out/playwright.json', 'tests/qr/prd09/.out/playwright.json']
+              : [process.env.PLAYWRIGHT_JSON_OUTPUT_NAME, `tests/qr/prd04/${process.env.PLAYWRIGHT_JSON_OUTPUT_NAME}`];
+          const file = candidates.find(p => fs.existsSync(p));
+          if (!file) throw new Error(`Missing Playwright JSON report: ${candidates.join(', ')}`);
+          const report = JSON.parse(fs.readFileSync(file, 'utf8'));
+          const stats = report.stats;
+          if (!stats || stats.expected < 1 || stats.skipped !== 0 || stats.unexpected !== 0 || stats.flaky !== 0)
+            throw new Error(`Non-passing or skipped tests: ${JSON.stringify(stats)}`);
+          console.log(`${lane}: ${stats.expected} passed, no skipped/flaky/unexpected tests`);
+          JS
+        env:
+          LANE: ${{ matrix.lane }}
+      - name: Preserve reports, screenshots, and failure traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: remaining-gpu-${{ matrix.lane }}-${{ github.run_id }}
+          path: |
+            tests/reports/
+            tests/qr/prd04/tests/reports/
+            tests/qr/prd09/.out/
+            tests/qr/prd09/tests/qr/prd09/.out/
+            benchmarks/quality-rebuild/scenes/prd02/out/
+            test-results/
+          retention-days: 14
+          if-no-files-found: warn

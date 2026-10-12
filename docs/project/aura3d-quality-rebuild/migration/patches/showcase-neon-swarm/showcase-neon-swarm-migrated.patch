@@ -1,4 +1,4 @@
-From d44798c0031fc59c37f4270696aff4c49414c955 Mon Sep 17 00:00:00 2001
+From 396a5fa1679f7f0ee29d75dfb308d6b74850d55a Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:09:15 +0000
 Subject: [PATCH] migration(showcase-neon-swarm): regenerated patch set
@@ -1095,7 +1095,7 @@ index 000000000..16644c73b
 +  finale
 +];
 diff --git a/apps/showcase-neon-swarm/src/v2/boot.ts b/apps/showcase-neon-swarm/src/v2/boot.ts
-index 85ee487ec..4a56f8472 100644
+index 80ef31770..c7abe2a91 100644
 --- a/apps/showcase-neon-swarm/src/v2/boot.ts
 +++ b/apps/showcase-neon-swarm/src/v2/boot.ts
 @@ -5,7 +5,7 @@
@@ -1122,11 +1122,11 @@ index 85ee487ec..4a56f8472 100644
 -import { publishSwarmEvidenceBlock } from "./evidence-block";
  import { buildSwarmScene } from "./scene-build";
  import { applyNeonScenario } from "./scenario";
- 
-@@ -121,6 +119,15 @@ const game = createGame({
-     // art/direction.ts sections. `route_neon_swarm` uses the engine-parseable
-     // underscore form (URL/dispatch form is `route-neon-swarm`).
-     flags: ["route_neon_swarm", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+ import { assets } from "../../../../src/aura-assets";
+@@ -122,6 +120,15 @@ const game = createGame({
+     // flags come from URL/env/defaults like every other route, so `none`
+     // and `-<flag>` arms actually turn them off.
+     flags: ["route_neon_swarm", "game"]
 +  },
 +  // T5.8: route evidence rides the shared createGame channel (C-24) —
 +  // only the sections games.json requiredConditions read.
@@ -1139,7 +1139,7 @@ index 85ee487ec..4a56f8472 100644
    }
  });
  
-@@ -365,13 +372,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
+@@ -366,13 +373,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
    if (ctx.frame % 6 === 0) syncHud();
  });
  

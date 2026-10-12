@@ -55,7 +55,7 @@ const targets: readonly BundleTarget[] = [
     id: "core-agent-api",
     label: "@aura3d/engine \".\" core primitive critical path",
     entryPoint: "packages/engine/src/public/index.ts",
-    // 920_000 against a 2026-10-07 honest measurement of 891,081 gzip bytes
+    // Was 920_000 against a 2026-10-07 honest measurement of 891,081 gzip bytes
     // (3,154,095 js). The lean shim entry measured 545,089 the same day —
     // it re-exported only a slice of this barrel; "." additionally carries
     // the full live union plus the kept-deprecated names, and T3's
@@ -64,7 +64,10 @@ const targets: readonly BundleTarget[] = [
     // "." is now the direct home of the identical critical path.
     // Structural PRD-15 cost, not drift; the lit-scene lane tracks the
     // user-facing bundle floor separately.
-    budget: 920_000,
+    // PRD-15 §17 cap restored (P-23 / #542, Q-11-5/7): lit-scene initial chunk
+    // ≤ 190 KB gzip. Expected red until the "." critical path shrinks; do not
+    // re-raise this to go green.
+    budget: 190_000,
     external: ["react", "three", "three/examples/jsm/loaders/GLTFLoader.js"]
   },
   {
@@ -104,34 +107,38 @@ const targets: readonly BundleTarget[] = [
     id: "template-product-viewer",
     label: "product-viewer starter app before user assets",
     entryPoint: "packages/create-aura3d/templates/product-viewer/src/main.ts",
-    // 780_000 against 739,709 gzip measured 2026-10-07 — templates inherit
+    // Was 780_000 against 739,709 gzip measured 2026-10-07 — templates inherit
     // the monolithic "." entry plus the kept-deprecated union (see
     // core-agent-api note; was 545,633 pre-T8.1).
-    budget: 780_000,
+    // PRD-15 §17 cap restored (P-23 / #542): ≤ 250,000 B. Expected red.
+    budget: 250_000,
     external: ["react"]
   },
   {
     id: "template-cinematic-scene",
     label: "cinematic-scene starter app before user assets",
     entryPoint: "packages/create-aura3d/templates/cinematic-scene/src/main.ts",
-    // 790_000 against 746,308 gzip measured 2026-10-07 (was 549,641 earlier
+    // Was 790_000 against 746,308 gzip measured 2026-10-07 (was 549,641 earlier
     // the same day, 384,326 on 2026-09-05; latest step is the T8.1 removal
     // of the lean indirection — "." now carries the kept-deprecated union —
     // see core-agent-api). Composition verified genuine: three (tree-shaken)
     // + engine barrels + cinematic presets + postprocessing addons; the
     // recast engine is absent from the critical path (lazy dynamic edge).
-    budget: 790_000,
+    // PRD-15 §17 cap restored (P-23 / #542): ≤ 400,000 B. Expected red.
+    budget: 400_000,
     external: ["react"]
   },
   {
     id: "template-mini-game",
     label: "mini-game starter app before user assets",
     entryPoint: "packages/create-aura3d/templates/mini-game/src/main.ts",
-    // 850_000 against 809,335 gzip measured 2026-10-07 (was 580,359 earlier
+    // Was 850_000 against 809,335 gzip measured 2026-10-07 (was 580,359 earlier
     // the same day; step-up is the T8.1 "." union — see core-agent-api) —
     // the game kits pull more builder surface than the viewers; same
     // monolithic-entry cause.
-    budget: 850_000,
+    // PRD-15 §17 cap restored (P-23 / #542): showcase/game route ≤ 480 KB gzip.
+    // Expected red.
+    budget: 480_000,
     external: ["react"]
   }
 ];

@@ -1,0 +1,115 @@
+name: QR PRD-10 WGSL
+
+# Lane 10 T2.4 gate: the terrain WGSL twin (TERRAIN_WGSL plus the
+# a3d_prd10_terrain_cdlod / a3d_prd10_terrain_splat chunk twins) must pass
+# naga parse + validation with 0 errors. This is the CI stand-in for WebGPU
+# getCompilationInfo() until #260 wires the WebGPU terrain path. No masks:
+# any naga diagnostic, or an emit that writes no module, reds the job.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/rendering/src/world/**"
+      - "packages/rendering/src/lanes/prd10.ts"
+      - "packages/engine/src/lanes/prd10.ts"
+      - "packages/engine/src/agent-api/world/**"
+      - "packages/engine/src/production-runtime/world/**"
+      - "benchmarks/quality-rebuild/scenes/prd10/wgsl/**"
+      - "benchmarks/quality-rebuild/scenes/prd10/bundle/**"
+      - "tests/unit/contracts/impl/prd10-terrain-wgsl.test.ts"
+      - ".github/workflows/qr-prd10-wgsl.yml"
+  push:
+    branches: [main]
+    paths:
+      - "packages/rendering/src/world/**"
+      - "packages/rendering/src/lanes/prd10.ts"
+      - "packages/engine/src/lanes/prd10.ts"
+      - "packages/engine/src/agent-api/world/**"
+      - "packages/engine/src/production-runtime/world/**"
+      - "benchmarks/quality-rebuild/scenes/prd10/wgsl/**"
+      - "benchmarks/quality-rebuild/scenes/prd10/bundle/**"
+      - "tests/unit/contracts/impl/prd10-terrain-wgsl.test.ts"
+      - ".github/workflows/qr-prd10-wgsl.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qr-prd10-wgsl-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  naga:
+    name: terrain WGSL — naga validate (ubuntu-latest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Same pin as qr-prd11-perf.yml's naga job (PRD-11 §6.2): toolchain is
+      # installed explicitly so the job never depends on the runner image.
+      - uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249 # stable
+      - name: Install naga-cli 30.0.1
+        run: cargo install naga-cli --locked --version 30.0.1
+      - name: Static terrain WGSL unit
+        run: pnpm exec vitest run tests/unit/contracts/impl/prd10-terrain-wgsl.test.ts
+      - name: Emit terrain WGSL modules
+        run: pnpm exec tsx benchmarks/quality-rebuild/scenes/prd10/wgsl/emit.ts benchmarks/quality-rebuild/scenes/prd10/wgsl/out
+      - name: Validate with naga (0 errors required)
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(benchmarks/quality-rebuild/scenes/prd10/wgsl/out/*.wgsl)
+          if [ ${#files[@]} -ne 4 ]; then
+            echo "::error::expected 4 lane-10 WGSL modules, emit wrote ${#files[@]}"
+            exit 1
+          fi
+          for f in "${files[@]}"; do
+            echo "== naga $f"
+            naga "$f" | tee "$f.naga.txt"
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qr-prd10-wgsl-${{ github.run_id }}
+          path: benchmarks/quality-rebuild/scenes/prd10/wgsl/out/
+          if-no-files-found: error
+          retention-days: 30
+
+  # §17.4 bundle numbers, measured by the tools/bundle-size method on a clean
+  # runner. This job records the numbers; it does not yet enforce the
+  # 1.5 KB root-growth budget, which the eager lane barrel misses until the
+  # lazy app-extension seam exists (the row stays unticked; see
+  # evidence/prd-10/bundle.md). The 56 KB world-chunk budget is enforced.
+  bundle:
+    name: §17.4 bundle numbers (ubuntu-latest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Measure lane-10 bundle numbers
+        run: |
+          set -euo pipefail
+          mkdir -p tests/reports/prd10-bundle
+          pnpm exec tsx --tsconfig tsconfig.base.json benchmarks/quality-rebuild/scenes/prd10/bundle/measure.ts tests/reports/prd10-bundle/prd10-bundle.json
+          node -e 'const r=require("./tests/reports/prd10-bundle/prd10-bundle.json"); if(!r.pass.worldChunkGzip){console.error("world chunk over 56 KB");process.exit(1)}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qr-prd10-bundle-${{ github.run_id }}
+          path: tests/reports/prd10-bundle/
+          if-no-files-found: error
+          retention-days: 30

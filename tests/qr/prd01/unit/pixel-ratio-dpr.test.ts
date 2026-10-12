@@ -11,6 +11,7 @@ import { QUALITY_TIERS } from "../../../../packages/rendering/src/contracts/qual
 import { resolveCanvasPixelRatio } from "../../../../packages/rendering/src/renderer/PixelRatio";
 import { appTierMaxPixelRatio, minimumBackingSize, resolveAppPixelRatio } from "../../../../packages/engine/src/agent-api/app/pixelRatio";
 import { configureCanvas } from "../../../../packages/engine/src/agent-api/app/canvas";
+import { resolveMountQuality } from "../../../../packages/engine/src/agent-api/compiler/renderer";
 
 const PRODUCTION_PROFILE_RATIO = 1.5;
 const legacy = () => 1.75;
@@ -20,7 +21,7 @@ function app(flagOn: boolean, devicePixelRatio: number, option?: number | { max?
     flagOn,
     option: option as never,
     profilePixelRatio: PRODUCTION_PROFILE_RATIO,
-    maxPixelRatio: appTierMaxPixelRatio(undefined),
+    maxPixelRatio: appTierMaxPixelRatio(resolveMountQuality(undefined).tier),
     devicePixelRatio,
     legacyDevicePixelRatio: legacy
   });
@@ -51,7 +52,7 @@ describe("§6.9 resolveCanvasPixelRatio", () => {
 
 describe("app pixel ratio (createAuraApp / frameLoop)", () => {
   it("default mount tier is High (cap 2)", () => {
-    expect(appTierMaxPixelRatio(undefined)).toBe(2);
+    expect(appTierMaxPixelRatio(resolveMountQuality(undefined).tier)).toBe(2);
   });
   it.each([[1, 1], [2, 2], [3, 2]])("core: dsf %d → %d, not the production profile 1.5", (dpr, want) => {
     expect(app(true, dpr)).toBe(want);

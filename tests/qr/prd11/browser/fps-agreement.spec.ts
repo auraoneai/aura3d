@@ -7,12 +7,13 @@
  * The Aura adapter mounts `window.__PRD11_APP__`; this spec steps the app
  * itself is NOT allowed — the adapter's rAF loop drives real frames.
  *
- * If the headless environment cannot produce a real WebGL2 context (SwiftShader
- * absence on CI Linux is possible), the agreement test skips loudly instead of
- * asserting false negatives — macos-14 workflow hardware does the asserting.
+ * Without real WebGL2 frame telemetry the tests go through `requireOrSkip`
+ * (P-22): locally they skip with the reason; on CI they fail unless the id is
+ * listed in tests/support/integrated-pending.json.
  */
 
 import { test, expect } from "@playwright/test";
+import { requireOrSkip } from "../../../support/requireOrSkip";
 import { createServer, type ViteDevServer } from "vite";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -88,7 +89,7 @@ async function measureFps(page: import("@playwright/test").Page, loadMs: number)
 test("frame.fps tracks the in-page rAF rate within 10% over >=30 frames", async ({ page }) => {
   const deltaPct = await measureFps(page, 0);
   if (deltaPct === null) {
-    test.skip(true, "no WebGL2 frame telemetry in this environment (macos-14 hardware asserts)");
+    requireOrSkip(test, false, "webgl2-frames", "runner must produce WebGL2 frame telemetry (macos-14 hardware asserts)");
     return;
   }
   expect(Math.abs(deltaPct)).toBeLessThanOrEqual(10);
@@ -118,7 +119,7 @@ test("frame telemetry is never a constant across different loads", async ({ page
   const light = await read(0);
   const heavy = await read(8);
   if (light === null || heavy === null) {
-    test.skip(true, "no WebGL2 frame telemetry in this environment (macos-14 hardware asserts)");
+    requireOrSkip(test, false, "webgl2-frames", "runner must produce WebGL2 frame telemetry (macos-14 hardware asserts)");
     return;
   }
   expect(Math.abs(heavy - light)).toBeGreaterThan(light * 0.15);

@@ -1,4 +1,4 @@
-From 0e54539a6987d0d507141e08204d9848e6eeaa64 Mon Sep 17 00:00:00 2001
+From 2ddcfe1bfa8f5c4c364cc60e97a3a44782af282a Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:53 +0000
 Subject: [PATCH] showcase-rooftop-buckets: delete evidence files+blocks (T5.8)
@@ -1922,7 +1922,7 @@ index 7ebf5f811..000000000
 -writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
 -console.log(JSON.stringify({ machinePass: true, models: modelIds.length, audio: audioIds.length, exactArtifacts: exactArtifacts.length, primitiveOccurrences, performancePass: performance.pass }));
 diff --git a/apps/showcase-rooftop-buckets/src/legacy/main.ts b/apps/showcase-rooftop-buckets/src/legacy/main.ts
-index 11f725ff7..2c41476d9 100644
+index 6dfdea8cf..28d2916d1 100644
 --- a/apps/showcase-rooftop-buckets/src/legacy/main.ts
 +++ b/apps/showcase-rooftop-buckets/src/legacy/main.ts
 @@ -1,6 +1,3 @@

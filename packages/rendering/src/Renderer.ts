@@ -39,12 +39,12 @@ import { resolveCanvasPixelRatio, watchDevicePixelRatio, type AuraResolutionOpti
 import type { AuraQualityTier, AuraQualityTierSettings } from "./contracts/quality";
 import { QUALITY_TIERS } from "./contracts/quality";
 import { MaterialInstance } from "./MaterialInstance";
-import { featuresForGeometry, materialUsesGeneratedProgram } from "./program/MaterialFeatures";
+import { featuresForGeometry, materialRoutesToGeneratedProgram } from "./program/MaterialFeatures";
 import { selectShaderFeatureBits } from "./program/FeatureSelect";
 import type { ProgramFeatures } from "./contracts/program";
 import { collectWarmupFeatures, ProgramWarmup, type WarmupInput } from "./program/ProgramWarmup";
 import { PRD03_EXPOSURE, rendererQrFlags, setRendererQrFlags, withRendererQrFlags } from "./renderer/FrameGraph";
-import { qrCoreGeneratorOn, qrCoreOutputOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
+import { qrCoreGeneratorOn, qrCoreOutputOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { forwardPassFeatureAxes, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
 import { InterleavedTransparentPass } from "./renderer/InterleavedTransparentPass";
 import { ensureSceneDepthCopyTarget, SceneDepthCopyPass } from "./renderer/SceneDepthCopyPass";
@@ -722,7 +722,7 @@ export class Renderer {
     // T0-06: reset the per-frame sync-compile bound for this render.
     {
       const flags = rendererQrFlags(this.device);
-      if (qrCoreGeneratorOn(flags)) rendererProgramCache(this.device, flags).beginFrame?.();
+      if (qrGeneratedProgramsOn(flags)) rendererProgramCache(this.device, flags).beginFrame?.();
     }
     const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
     sceneFromSource(source)?.updateWorldTransforms();
@@ -1049,7 +1049,7 @@ export class Renderer {
     // T0-06: reset the per-frame sync-compile bound for this render.
     {
       const flags = rendererQrFlags(this.device);
-      if (qrCoreGeneratorOn(flags)) rendererProgramCache(this.device, flags).beginFrame?.();
+      if (qrGeneratedProgramsOn(flags)) rendererProgramCache(this.device, flags).beginFrame?.();
     }
     const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
     sceneFromSource(source)?.updateWorldTransforms();
@@ -1395,9 +1395,10 @@ export class Renderer {
     // draw key carries `ShaderFeature.select` bits per item, so the warm list
     // must too or warmed keys never match draw keys.
     const records = new Map<string, Partial<ProgramFeatures>>();
+    const route = { core: qrCoreGeneratorOn(flags), lobes: qrMaterialsLobeProgramsOn(flags) };
     for (const item of items) {
       const m = item.material instanceof MaterialInstance ? item.material.baseMaterial : item.material;
-      if (!m || !materialUsesGeneratedProgram(m)) continue;
+      if (!m || !materialRoutesToGeneratedProgram(m, route, ctx)) continue;
       const mf = m.programFeatures(ctx);
       const selected = selectShaderFeatureBits({ item, pass: "forward", tier: ctx.tier, flags });
       // #867 (games): same geometry-driven feature mask ForwardPass applies.
@@ -1429,7 +1430,7 @@ export class Renderer {
     cameraViewProjection: Float32Array | readonly number[] | undefined
   ): Promise<void> {
     const flags = rendererQrFlags(this.device);
-    if (!qrCoreGeneratorOn(flags)) return;
+    if (!qrGeneratedProgramsOn(flags)) return;
     const tier: AuraQualityTier = this.qualityTierName ?? "high";
     const cache = rendererProgramCache(this.device, flags);
     const input = this.collectWarmupInput(items, lights, environmentLighting, environmentFog, shadowMap, cameraViewProjection, flags, tier);
@@ -1457,7 +1458,7 @@ export class Renderer {
     cameraViewProjection: Float32Array | readonly number[] | undefined
   ): void {
     const flags = rendererQrFlags(this.device);
-    if (!qrCoreGeneratorOn(flags)) return;
+    if (!qrGeneratedProgramsOn(flags)) return;
     const tier: AuraQualityTier = this.qualityTierName ?? "high";
     const cache = rendererProgramCache(this.device, flags);
     const input = this.collectWarmupInput(items, lights, environmentLighting, environmentFog, shadowMap, cameraViewProjection, flags, tier);

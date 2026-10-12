@@ -222,7 +222,8 @@ export class Prd02ShadowSystem {
     const prev = this.device.getRenderTarget?.() ?? null;
     const out: { index: number; width: number; min: number; max: number; mean: number; covered: number }[] = [];
     try {
-      for (const target of this.cascadeTargets) {
+      for (const fit of this.lastFits) {
+        const target = this.cascadeTargets[fit.index];
         if (!target || target.disposed || !target.depthTexture) continue;
         this.device.setRenderTarget(target);
         const depth = this.device.readDepthPixels(0, 0, target.width, target.height);
@@ -236,7 +237,7 @@ export class Prd02ShadowSystem {
           sum += d;
           if (d < 0.9999) covered += 1;
         }
-        out.push({ index: out.length, width: target.width, min, max, mean: sum / Math.max(1, depth.length), covered: covered / Math.max(1, depth.length) });
+        out.push({ index: fit.index, width: target.width, min, max, mean: sum / Math.max(1, depth.length), covered: covered / Math.max(1, depth.length) });
       }
     } finally {
       this.device.setRenderTarget(prev);

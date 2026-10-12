@@ -49,8 +49,8 @@ fn fs_godrays(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4<f32
     let luma = dot(hdr.rgb, vec3<f32>(0.2126, 0.7152, 0.0722));
     // Emitters: sky pixels (the "gap" through occluders) or HDR highlights.
     var src = select(vec3<f32>(0.0), hdr.rgb, sky || luma > 4.0);
-    // PRD-03 §8.5: the light-disk mask gates the occlusion source.
-    src = src * smoothstep(u_params.disk_outer, u_params.disk_inner, length(sample_uv - u_params.light_uv));
+    // The sun disk emits only where the sky is unoccluded.
+    if (sky) { src = src + vec3<f32>(smoothstep(u_params.disk_outer, u_params.disk_inner, length(sample_uv - u_params.light_uv))); }
     accum = accum + march_weight * src;
     march_weight = march_weight * u_params.decay;
   }

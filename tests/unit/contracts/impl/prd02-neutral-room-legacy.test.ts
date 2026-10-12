@@ -118,3 +118,30 @@ describe("RoomEnvironmentScene matches pinned three r185 RoomEnvironment", () =>
     expect(NEUTRAL_FLOOR_SH9[0]! / NEUTRAL_FLOOR_RADIANCE).toBeCloseTo(3.5483, 3);
   });
 });
+
+describe("legacy neutral room is directional (02-S2 follow-up)", () => {
+  it("the last cube level is SH9 irradiance / pi: brighter facing the lit ceiling than the floor", async () => {
+    const { buildNeutralRoomLegacyProbe } = await import("../../../../packages/rendering/src/environment/probeBuild");
+    const probe = buildNeutralRoomLegacyProbe();
+    expect(probe.mipCount).toBe(4);
+    const faces = probe.specularCube.cubeFaces;
+    const last = (face: number) => faces[face]!.mipLevels[3]!;
+    expect(last(2).width).toBe(16);
+    // Positive half floats order like their uint16 bit patterns.
+    const centre = (face: number) => {
+      const level = last(face);
+      const i = ((level.height / 2) * level.width + level.width / 2) * 4;
+      return (level.data as Uint16Array)[i]!;
+    };
+    // GL cube order +x, -x, +y, -y, +z, -z: +y (2) looks at the 100-intensity ceiling panel.
+    expect(centre(2)).toBeGreaterThan(centre(3));
+  });
+
+  it("collectEnvironmentLighting binds that probe's cube for a no-light scene", () => {
+    setRendererQrFlags(LIGHTING_ON);
+    const lighting = collectEnvironmentLighting({} as never)!;
+    const cube = lighting.environmentCubeMapTexture!.texture!;
+    expect(cube.cubeFaces[0]!.mipLevels).toHaveLength(4);
+    expect(cube.label).toBe("env-neutral-room-legacy");
+  });
+});

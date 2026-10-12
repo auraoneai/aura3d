@@ -65,6 +65,7 @@ async function runRenderMode(): Promise<void> {
           collectExtra: async (app) => {
             window.__qrPrd02App = app;
             const probeNodes = withProbes ? await applyAuraProbes(sceneId, app as unknown as Parameters<typeof applyAuraProbes>[1]) : 0;
+            if (params.get("shadowDiagnostics") !== "1") return probeNodes > 0 ? { prd02ProbeNodes: probeNodes } : {};
             // Shadow-pixels GPU evidence: cascade depth stats of the flag-path
             // bridge after the ready frame (empty when the bridge did not run).
             const laneRenderer = (app as unknown as Record<symbol, { device?: unknown } | undefined>)[Symbol.for("a3d.prd01.renderer")];
@@ -74,7 +75,7 @@ async function runRenderMode(): Promise<void> {
             const shadowDepth = prd02ShadowDepthProbe(laneDevice);
             const prd02ShadowBridge = prd02ShadowBridgeReason(laneDevice);
             // Draw tap: what the GPU forward draws of shadow receivers were
-            // handed over the next two frames (binding, enable, strength).
+            // handed over the next stepped frame (binding, enable, strength).
             const prd02ShadowDraws = tapShadowReceiverDraws(laneDevice ?? (prd02LastBridgeDevice() as never), () => (app as unknown as { step(dt: number): void }).step(0));
             return { ...(probeNodes > 0 ? { prd02ProbeNodes: probeNodes } : {}), prd02ShadowDepth: shadowDepth, prd02ShadowBridge, prd02ShadowDraws };
           }

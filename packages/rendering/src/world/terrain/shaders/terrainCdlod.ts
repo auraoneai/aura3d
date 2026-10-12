@@ -54,19 +54,30 @@ vec3 a3dTerrainCdlod(vec2 a_grid, vec4 a_node, out vec2 outTerrainUv) {
 }
 `;
 
-export const terrainCdlodWgsl = /* wgsl */ `
+/**
+ * WGSL twin, split into binding declarations and function bodies so the
+ * standalone chunk twin and the composed `TERRAIN_WGSL` program share the
+ * function text verbatim while the program owns one non-colliding layout.
+ * `morph` is `array<vec4f, 8>` (xy used): uniform-space arrays need a
+ * 16-byte stride, matching the std140 layout of the GLSL `u_morph[8]`.
+ */
+export const terrainCdlodWgslUniformStruct = /* wgsl */ `
 struct A3dTerrainUniforms {
   terrain : vec4f,            // originX, originZ, sizeX, sizeZ
   heightScale : f32,
-  heightTexSize : vec2f,
   gridDim : f32,
-  pad : f32,
-  morph : array<vec2f, 8>,    // per LOD: morphStart, morphEnd
+  heightTexSize : vec2f,
+  morph : array<vec4f, 8>,    // per LOD: xy = morphStart, morphEnd (distance)
 };
+`;
+
+export const terrainCdlodWgslBindings = /* wgsl */ `
 @group(0) @binding(0) var<uniform> u_terrain : A3dTerrainUniforms;
 @group(0) @binding(1) var u_height : texture_2d<f32>;
 @group(0) @binding(2) var<uniform> u_camera : vec3f;
+`;
 
+export const terrainCdlodWgslFunctions = /* wgsl */ `
 fn a3dTerrainHeightBilinear(uv : vec2f) -> f32 {
   let p = uv * (u_terrain.heightTexSize - vec2f(1.0));
   let i = vec2i(floor(p));
@@ -79,19 +90,29 @@ fn a3dTerrainHeightBilinear(uv : vec2f) -> f32 {
   return mix(mix(h00, h10, f.x), mix(h01, h11, f.x), f.y) * u_terrain.heightScale;
 }
 
-fn a3dTerrainCdlod(aGrid : vec2f, aNode : vec4f) -> vec3f {
+struct A3dTerrainVertex {
+  world : vec3f,
+  uv : vec2f,
+};
+
+// Full patch displacement for one vertex (mirrors the GLSL a3dTerrainCdlod,
+// returning the terrain UV the GLSL passes through its out parameter).
+fn a3dTerrainCdlod(aGrid : vec2f, aNode : vec4f) -> A3dTerrainVertex {
   var world = aNode.xy + aGrid * aNode.z;
   var h = a3dTerrainHeightBilinear((world - u_terrain.terrain.xy) / u_terrain.terrain.zw);
   let d = distance(u_camera, vec3f(world.x, h, world.y));
-  let lod = i32(aNode.w);
-  let morph = clamp((d - u_terrain.morph[lod].x) / (u_terrain.morph[lod].y - u_terrain.morph[lod].x), 0.0, 1.0);
+  let lod = clamp(i32(aNode.w), 0, 7);
+  let m = u_terrain.morph[lod];
+  let morph = clamp((d - m.x) / (m.y - m.x), 0.0, 1.0);
   let fracPart = fract(aGrid * u_terrain.gridDim * 0.5) * 2.0 / u_terrain.gridDim;
   world = world - fracPart * aNode.z * morph;
   let uv = (world - u_terrain.terrain.xy) / u_terrain.terrain.zw;
   h = a3dTerrainHeightBilinear(uv);
-  return vec3f(world.x, h, world.y);
+  return A3dTerrainVertex(vec3f(world.x, h, world.y), uv);
 }
 `;
+
+export const terrainCdlodWgsl = terrainCdlodWgslUniformStruct + terrainCdlodWgslBindings + terrainCdlodWgslFunctions;
 
 export const a3d_prd10_terrain_cdlod: ShaderChunk = {
   name: "a3d_prd10_terrain_cdlod",

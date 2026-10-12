@@ -692,10 +692,14 @@ describe("game runtime source gates", () => {
       },
       startProgress: 0.98,
       checkpointRadius: 0.08,
-      lapsToWin: 1
+      lapsToWin: 1,
+      model: "unicycle"
     });
 
     const initialHeading = racing.snapshot().heading;
+    // A3D_QR_CAMERA is default-on, so the default model is "bicycle" (yaw needs
+    // forward speed). This lap-logic arm pins the legacy kinematic model; the
+    // bicycle arm below checks that steering turns the car once it moves.
     const accelerated = racing.step(1 / 10, { throttle: true, steer: 1, drift: true });
     expect(accelerated.speed).toBeGreaterThan(0);
     expect(accelerated.heading).not.toBe(initialHeading);
@@ -713,6 +717,15 @@ describe("game runtime source gates", () => {
     expect([...observedEventTypes]).toEqual(expect.arrayContaining(["checkpoint", "lap", "finish"]));
     expect(snapshot.bestTime).toBeGreaterThan(0);
     expect(snapshot.status).toBe("finished");
+
+    const bicycle = game.racing({
+      route: { width: 2, points: [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 4, y: 4 }, { x: 0, y: 4 }] }
+    });
+    const bicycleStart = bicycle.snapshot().heading;
+    let turned = bicycle.step(1 / 10, { throttle: true, steer: 1 });
+    expect(turned.heading).toBe(bicycleStart); // no yaw from rest
+    for (let frame = 0; frame < 5; frame += 1) turned = bicycle.step(1 / 30, { throttle: true, steer: 1 });
+    expect(turned.heading).not.toBe(bicycleStart);
 
     const contactRace = game.racing({
       route: {

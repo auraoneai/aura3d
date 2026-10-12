@@ -9,6 +9,7 @@
  */
 
 import { test, expect } from "@playwright/test";
+import { requireOrSkip } from "../../../support/requireOrSkip";
 import { createServer, type ViteDevServer } from "vite";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -63,9 +64,10 @@ test("render scale floors before governor steps; recovery within 1500 frames", a
     await new Promise((resolve) => setTimeout(resolve, 500));
     return (app.diagnostics().frame?.frames ?? 0) > start;
   });
-  test.skip(!alive, "no WebGL2 frame progress in this environment");
+  requireOrSkip(test, alive, "webgl2-frames", "runner must make WebGL2 frame progress");
   const initial = await qualityOf(page);
-  test.skip(!initial || initial.renderScale === null, "quality section absent — adaptive controller not mounted");
+  // 11-S7: a missing quality section is a product failure, never a skip.
+  expect(initial?.renderScale ?? null, "quality section absent — adaptive controller not mounted").not.toBeNull();
 
   // Apply sustained load through the live toggle.
   await page.evaluate(() => {
@@ -92,8 +94,8 @@ test("render scale floors before governor steps; recovery within 1500 frames", a
   });
   expect(sawStepEarly.steppedBeforeFloor, "a governor feature step fired before the scale floor").toBe(false);
   if (!sawStepEarly.reachedFloor) {
-    test.skip(true, `scale never reached the floor under load (scale=${sawStepEarly.scale}) — see if load was too weak`);
-    return;
+    // 11-S7: the governor must floor the scale under sustained load; fail, never skip.
+    throw new Error(`scale never reached the floor under load (scale=${sawStepEarly.scale})`);
   }
   floorScale = sawStepEarly.scale;
   expect(floorScale).not.toBeNull();

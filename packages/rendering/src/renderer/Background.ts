@@ -8,7 +8,7 @@ import type { EnvironmentProbe } from "../contracts/environment";
 import type { Texture } from "../Texture";
 import { TextureBinding } from "../TextureBinding";
 import { Sampler } from "../Sampler";
-import { buildNeutralFloorProbe, probeToEquirectTexture } from "../environment/probeBuild";
+import { buildNeutralRoomLegacyProbe, probeToEquirectTexture } from "../environment/probeBuild";
 import { isIterable } from "./RenderShared";
 import { Scene } from "@aura3d/scene";
 import { rendererQrFlags } from "./FrameGraph";
@@ -119,7 +119,7 @@ export function isPrd02LegacyFallbackEnvironment(lighting: EnvironmentLightingOp
   return store[PRD02_LEGACY_FALLBACK_ENVIRONMENTS]?.has(lighting) ?? false;
 }
 
-/** One neutral floor per renderer process: analytic constant cube + baked SH (T0-25), no prefilter. */
+/** One directional neutral room per renderer process (analytic r185 room + SH9 irradiance last level; no GGX prefilter). */
 let prd02NeutralFloor: EnvironmentProbe | null = null;
 
 /**
@@ -130,7 +130,7 @@ let prd02NeutralFloor: EnvironmentProbe | null = null;
  * heuristics under the flag).
  */
 export function resolvePrd02NeutralRoomLighting(legacy: EnvironmentLightingOptions | undefined): EnvironmentLightingOptions {
-  prd02NeutralFloor ??= buildNeutralFloorProbe(128, { label: "env-neutral-floor-legacy" });
+  prd02NeutralFloor ??= buildNeutralRoomLegacyProbe();
   const ambientOnly = legacy && !legacy.proceduralMap && !legacy.environmentMapTexture && !legacy.environmentCubeMapTexture;
   const ambient = ambientOnly && legacy.intensity > 0
     ? { color: [legacy.color[0], legacy.color[1], legacy.color[2]] as [number, number, number], intensity: legacy.intensity }

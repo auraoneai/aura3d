@@ -105,6 +105,18 @@ void main() {
   fragColor = vec4(color, 1.0);
 }`;
 
+/**
+ * The C-02 ChunkHarness declares a stub `AuraLights { vec4 u_lightData[8]; }`
+ * block; the prd02 punctual chunk declares the flattened default-block
+ * `u_lightData[A3D_MAX_LIGHTS * 6]` itself (PRD-02 §8.1), so with both the
+ * fragment fails "'u_lightData' : redefinition" (GPU run 38186219765). Drop the
+ * stub block when the chunk brings its own declaration.
+ */
+function harnessFragment(fragment: string): string {
+  if (!/uniform\s+vec4\s+u_lightData\s*\[\s*A3D_MAX_LIGHTS/.test(fragment)) return fragment;
+  return fragment.replace(/layout\(std140\)\s*uniform\s+AuraLights\s*\{[^}]*\};\s*/, "");
+}
+
 function compileRows(gl: WebGL2RenderingContext): CompileRow[] {
   const rows: CompileRow[] = [];
   for (const name of CHUNK_NAMES) {
@@ -115,7 +127,7 @@ function compileRows(gl: WebGL2RenderingContext): CompileRow[] {
     }
     const program = buildChunkHarnessProgram([chunk]);
     const vs = compile(gl, gl.VERTEX_SHADER, program.vertex);
-    const fs = compile(gl, gl.FRAGMENT_SHADER, program.fragment);
+    const fs = compile(gl, gl.FRAGMENT_SHADER, harnessFragment(program.fragment));
     rows.push({ name, fragmentOk: fs.ok, vertexOk: vs.ok, linkOk: null, uniformVectors: null, samplers: null, log: `${vs.log}${fs.log}` });
   }
   const forward = FORWARD_SET.map((name) => shaderChunk(name)).filter((c): c is NonNullable<typeof c> => c !== undefined);
@@ -123,7 +135,7 @@ function compileRows(gl: WebGL2RenderingContext): CompileRow[] {
   // The harness main writes a constant, so the linker would strip every chunk
   // uniform; swap in a main that exercises the forward lighting path so the
   // active-uniform census reflects the real budget.
-  const fragmentSource = program.fragment
+  const fragmentSource = harnessFragment(program.fragment)
     .replace("precision highp float;", "precision highp float;\nprecision highp int;\n#define A3D_PUNCTUAL_SHADOWS 1")
     .replace("void main() { fragColor = vec4(1.0); }", FORWARD_MAIN);
   const vs = compile(gl, gl.VERTEX_SHADER, program.vertex);

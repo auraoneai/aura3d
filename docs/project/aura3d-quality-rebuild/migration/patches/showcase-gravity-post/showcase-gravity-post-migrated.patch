@@ -1,4 +1,4 @@
-From 504b3afb5c2d5c58ed116fdb19573532ff7d1292 Mon Sep 17 00:00:00 2001
+From b790814edddb35b49e7b6ba6bfea5488cb01c342 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:09:28 +0000
 Subject: [PATCH] migration(showcase-gravity-post): regenerated patch set
@@ -90,7 +90,7 @@ index 000000000..dd31f09f0
 +  coasting
 +];
 diff --git a/apps/showcase-gravity-post/src/v2/boot.ts b/apps/showcase-gravity-post/src/v2/boot.ts
-index 265061342..c8c7dd848 100644
+index afdb4ab00..3a020fa17 100644
 --- a/apps/showcase-gravity-post/src/v2/boot.ts
 +++ b/apps/showcase-gravity-post/src/v2/boot.ts
 @@ -8,7 +8,7 @@
@@ -113,10 +113,10 @@ index 265061342..c8c7dd848 100644
  import { createPostAudioBlock } from "./audio";
  import { createGravityInput, wireGravityAim } from "./input";
  import { wireGravityContracts } from "./contracts";
-@@ -155,6 +154,21 @@ const game = createGame({
-     // art/direction.ts sections. `route_gravity_post` uses the engine-parseable
-     // underscore form (URL/dispatch form is `route-gravity-post`).
-     flags: ["route_gravity_post", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+@@ -156,6 +155,21 @@ const game = createGame({
+     // flags come from URL/env/defaults like every other route, so `none`
+     // and `-<flag>` arms actually turn them off.
+     flags: ["route_gravity_post", "game"]
 +  },
 +  // T5.8: route evidence rides the shared createGame channel (C-24) —
 +  // only the sections games.json requiredConditions read.
@@ -135,7 +135,7 @@ index 265061342..c8c7dd848 100644
    }
  });
  
-@@ -246,60 +260,6 @@ const { updateGameplay } = update;
+@@ -247,60 +261,6 @@ const { updateGameplay } = update;
  // ------------------------------------------------------------- tick ----------
  
  
