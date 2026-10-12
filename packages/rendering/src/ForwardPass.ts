@@ -403,6 +403,7 @@ export class ForwardPass extends BaseRenderPass {
     applyClusteredLightingUniforms(this.clusteredLighting, shader, uniforms);
     applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms);
     if (generated) applyGeneratedEnvironmentMapUniforms(this.options.environmentLighting, item, shader, uniforms);
+    if (generated) applyGeneratedProceduralEnvironmentUniforms(this.options.environmentLighting, item, shader, uniforms);
     applyEnvironmentFogUniforms(this.options.environmentFog, item, shader, uniforms);
     if (generated) applyGeneratedFogUniforms(this.options.environmentFog, shader, uniforms);
     applyForwardShadowMapUniforms(
@@ -1298,6 +1299,41 @@ export function applyGeneratedEnvironmentMapUniforms(
   uniforms.set("u_environmentMapRotation", rotation);
   uniforms.set("u_environmentMapMaxLod", Math.max(mipCount - 1, 0));
   uniforms.set("u_environmentMapEncoding", encoding === "rgbe" ? 1 : encoding === "linear" ? 2 : 0);
+}
+
+/**
+ * Generated-program procedural environment (`indirect_default` LIGHT_HEMISPHERE
+ * block). Same validation as the frozen binder below, under the generator's
+ * own `u_a3dProcedural*` names; a program compiled for a procedural map whose
+ * environment no longer has one draws with zero procedural contribution.
+ */
+export function applyGeneratedProceduralEnvironmentUniforms(
+  environment: EnvironmentLightingOptions | undefined,
+  item: RenderItem,
+  shader: RenderShaderProgram,
+  uniforms: Map<string, UniformValue>
+): void {
+  if (!shader.reflection.uniforms.has("u_a3dProceduralIntensity")) return;
+  const proceduralMap = environment?.proceduralMap;
+  if (!proceduralMap) {
+    uniforms.set("u_a3dProceduralIntensity", 0);
+    uniforms.set("u_a3dProceduralSpecularIntensity", 0);
+    return;
+  }
+  if (!Number.isFinite(proceduralMap.intensity) || proceduralMap.intensity < 0
+    || !Number.isFinite(proceduralMap.specularIntensity) || proceduralMap.specularIntensity < 0) {
+    throw new RenderDeviceError("Procedural environment map intensities must be finite and non-negative", "ENVIRONMENT_LIGHTING_CONTRACT", {
+      label: item.label,
+      intensity: proceduralMap.intensity,
+      specularIntensity: proceduralMap.specularIntensity
+    });
+  }
+  uniforms.set("u_a3dProceduralSkyColor", toEnvironmentColor(proceduralMap.skyColor, "proceduralMap.skyColor", item.label));
+  uniforms.set("u_a3dProceduralHorizonColor", toEnvironmentColor(proceduralMap.horizonColor, "proceduralMap.horizonColor", item.label));
+  uniforms.set("u_a3dProceduralGroundColor", toEnvironmentColor(proceduralMap.groundColor, "proceduralMap.groundColor", item.label));
+  uniforms.set("u_a3dProceduralSpecularColor", toEnvironmentColor(proceduralMap.specularColor, "proceduralMap.specularColor", item.label));
+  uniforms.set("u_a3dProceduralIntensity", proceduralMap.intensity);
+  uniforms.set("u_a3dProceduralSpecularIntensity", proceduralMap.specularIntensity);
 }
 
 function applyProceduralEnvironmentMapUniforms(

@@ -127,3 +127,27 @@ describe("#1140: generated direct-light loop covers 9-16 lights and reads the re
     expect(uniforms.has("u_clusteredLightEnabled")).toBe(false);
   });
 });
+
+describe("applyGeneratedProceduralEnvironmentUniforms (LIGHT_HEMISPHERE)", () => {
+  const proc = { skyColor: [0.2, 0.24, 0.32], horizonColor: [0.22, 0.2, 0.18], groundColor: [0.03, 0.035, 0.045], specularColor: [1, 1, 1], intensity: 0.6, specularIntensity: 0.1 };
+  it("binds the procedural sky/horizon/ground terms under the generator's own names", async () => {
+    const { applyGeneratedProceduralEnvironmentUniforms } = await import("../../../../packages/rendering/src/ForwardPass");
+    const uniforms = new Map<string, unknown>();
+    applyGeneratedProceduralEnvironmentUniforms({ color: [1, 1, 1], intensity: 0, proceduralMap: proc } as never, { label: "t" } as never, shaderWith("u_a3dProceduralIntensity"), uniforms as never);
+    expect(uniforms.get("u_a3dProceduralSkyColor")).toEqual(proc.skyColor);
+    expect(uniforms.get("u_a3dProceduralGroundColor")).toEqual(proc.groundColor);
+    expect(uniforms.get("u_a3dProceduralIntensity")).toBe(0.6);
+    expect(uniforms.get("u_a3dProceduralSpecularIntensity")).toBe(0.1);
+    // The sampled map's intensity uniform is not touched.
+    expect(uniforms.has("u_environmentMapIntensity")).toBe(false);
+  });
+  it("zeroes the term when the environment has no procedural map; skips programs without it", async () => {
+    const { applyGeneratedProceduralEnvironmentUniforms } = await import("../../../../packages/rendering/src/ForwardPass");
+    const uniforms = new Map<string, unknown>();
+    applyGeneratedProceduralEnvironmentUniforms({ color: [1, 1, 1], intensity: 0 } as never, { label: "t" } as never, shaderWith("u_a3dProceduralIntensity"), uniforms as never);
+    expect(uniforms.get("u_a3dProceduralIntensity")).toBe(0);
+    const none = new Map<string, unknown>();
+    applyGeneratedProceduralEnvironmentUniforms({ color: [1, 1, 1], intensity: 0, proceduralMap: proc } as never, { label: "t" } as never, shaderWith(), none as never);
+    expect(none.size).toBe(0);
+  });
+});

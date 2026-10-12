@@ -442,6 +442,19 @@ function defaultIndirectBody(f: ProgramFeatures): string {
   lines.push("  indirectSpecular += a3dIndirectSpecular(a3dSampleEnvironment(a3dReflect, a3dRoughLod), a3dEnvIrradiance, V, N, material);");
   lines.push("  indirectDiffuse += a3dIndirectDiffuse(a3dEnvIrradiance, V, N, material);");
   lines.push("#endif");
+  // Procedural environment (flag-off parity): its diffuse lights the surface
+  // only when no sampled map does (the frozen shader mixes them on the sampled
+  // weight); its specular stripes always add. Radiance → π-scaled irradiance.
+  lines.push("#ifdef LIGHT_HEMISPHERE");
+  lines.push("  vec3 a3dProcIrradiance = PI * a3dProceduralDiffuseRadiance(N);");
+  lines.push("#ifndef A3D_ENV_SAMPLE");
+  lines.push("  indirectDiffuse += a3dIndirectDiffuse(a3dProcIrradiance, V, N, material);");
+  lines.push("#else");
+  // The sampled map already supplied the multiscatter irradiance term.
+  lines.push("  a3dProcIrradiance = vec3(0.0);");
+  lines.push("#endif");
+  lines.push("  indirectSpecular += a3dIndirectSpecular(a3dProceduralSpecularRadiance(reflect(-V, N), material.roughness), a3dProcIrradiance, V, N, material);");
+  lines.push("#endif");
   lines.push("#ifdef USE_OCCLUSION_MAP");
   lines.push(`  float a3dAo = texture(u_occlusionMap, ${uvExpr(f, "occlusion")}).r;`);
   lines.push("  indirectDiffuse *= a3dAo;");
