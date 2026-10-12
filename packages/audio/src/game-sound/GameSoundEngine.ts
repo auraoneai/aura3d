@@ -222,10 +222,85 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
   let masterVolume = 1;
   let voicesPlayed = 0;
 
-  const play = (
-    cueId: string,
-    opts: { position?: Vec3; velocity?: Vec3; volumeDb?: number; rate?: number } = {}
-  ) => {
+  type PlayOptions = { position?: Vec3; velocity?: Vec3; volumeDb?: number; rate?: number };
+  interface PlayHandle {
+    readonly id: number;
+    readonly ended?: boolean;
+    setLevel?(level: { gain?: number; rate?: number }, rampMs?: number): void;
+    stop(fadeMs?: number): void;
+    setPosition(p: Vec3): void;
+    setOcclusion(a: number): void;
+  }
+
+  const assetUrlsOf = (cue: SoundCueSpec): string[] =>
+    cue.asset ? (Array.isArray(cue.asset) ? cue.asset : [cue.asset]).map((a) => a.url) : [];
+  const hasBuffer = (url: string): boolean => buffers.has(urlAliases.get(url) ?? url);
+
+  /**
+   * A loop cued before its buffer decoded used to start a buffer-less source
+   * that stayed silent for good (Blockfall's hum and four stems): defer the
+   * start until the asset is decoded, replaying any level/stop calls made in
+   * the meantime.
+   */
+  const deferLoop = (cueId: string, cue: SoundCueSpec, opts: PlayOptions): PlayHandle => {
+    let real: PlayHandle | null = null;
+    let stopped = false;
+    let failed = false;
+    let level: { gain?: number; rate?: number } | undefined;
+    let position: Vec3 | undefined;
+    let occlusion: number | undefined;
+    void Promise.all(assetUrlsOf(cue).map((u) => loadAsset(u))).then((loaded) => {
+      if (stopped || !loaded.some(Boolean)) {
+        failed = true;
+        return;
+      }
+      real = playNow(cueId, opts);
+      if (!real) {
+        failed = true;
+        return;
+      }
+      if (level) real.setLevel?.(level, 1);
+      if (position) real.setPosition(position);
+      if (occlusion !== undefined) real.setOcclusion(occlusion);
+    });
+    return {
+      id: -2,
+      get ended() {
+        return stopped || failed || (real?.ended ?? false);
+      },
+      setLevel: (l, rampMs) => {
+        level = { ...level, ...l };
+        real?.setLevel?.(l, rampMs);
+      },
+      stop: (fadeMs) => {
+        stopped = true;
+        real?.stop(fadeMs);
+      },
+      setPosition: (p) => {
+        position = p;
+        real?.setPosition(p);
+      },
+      setOcclusion: (a) => {
+        occlusion = a;
+        real?.setOcclusion(a);
+      }
+    };
+  };
+
+  const play = (cueId: string, opts: PlayOptions = {}): PlayHandle | null => {
+    if (muted) return null;
+    const cue = options.cues[cueId as TCue];
+    if (!cue) return null;
+    const urls = assetUrlsOf(cue);
+    const assets = cue.asset ? (Array.isArray(cue.asset) ? cue.asset : [cue.asset]) : [];
+    const inline = assets.some((a) => (a as { buffer?: AudioBuffer }).buffer !== undefined);
+    if (cue.loop && urls.length > 0 && !inline && !urls.some(hasBuffer) && typeof ctx.decodeAudioData === "function") {
+      return deferLoop(cueId, cue, opts);
+    }
+    return playNow(cueId, opts);
+  };
+
+  const playNow = (cueId: string, opts: PlayOptions = {}): PlayHandle | null => {
     if (muted) return null;
     const cue = options.cues[cueId as TCue];
     if (!cue) return null;
