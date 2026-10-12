@@ -254,7 +254,8 @@ jobs:
                 git checkout FETCH_HEAD -- packages/create-aura3d/templates templates apps
               fi
               pnpm build:raw
-              export QRC_EXAMPLES="$QRC_GAMES"
+              export QRC_EXAMPLES="$QRC_GAMES" QRC_BUNDLE_DIAG=product-viewer
+              head -c 600 dist/engine/public/index.js; echo; grep -n "import" dist/engine/lanes/prd01.js | head -5; grep -c "" dist/engine/lanes/index.js
               node tools/quality-rebuild-capture/capture-examples.mjs --build-only
               node tools/quality-rebuild-capture/capture-examples.mjs --skip-build ;;
             *) echo "::error::unknown suite '$SUITE'"; exit 1 ;;

@@ -264,6 +264,10 @@ async function main() {
       const err = ex.kind === "app" ? buildApp(ex) : buildTemplate(ex);
       buildLog[ex.id] = err ?? "ok";
       if (!err) buildLog[`${ex.id}#bundle`] = bundleProbe(ex);
+      if (!err && ex.id === process.env.QRC_BUNDLE_DIAG) {
+        const diagErr = run(process.execPath, [path.join(toolDir, "bundle-diag.mjs"), path.dirname(distFor(ex)), path.join(outDir, `bundle-diag-${ex.id}.json`)], repoRoot, "bundle-diag");
+        if (diagErr) log(diagErr);
+      }
       if (err) log(`build FAILED ${ex.id}\n${err}`);
     }
     writeFileSync(path.join(outDir, "build-log.json"), JSON.stringify(buildLog, null, 2));
