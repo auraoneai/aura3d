@@ -9,7 +9,7 @@ import { particleRenderHookSlot, skyBackgroundSlot } from "@aura3d/rendering/con
 import "@aura3d/engine/lanes";
 import "@aura3d/rendering/lanes";
 
-const NO_FLAGS = resolveQrFlags({ options: [] });
+const NO_FLAGS = resolveQrFlags({ options: { A3D_QR_VFX: false } }); // A3D_QR_VFX is default-on
 
 describe("prd07 lane registration", () => {
   it("provides the C-20 particle hook and C-21 sky slot", () => {
