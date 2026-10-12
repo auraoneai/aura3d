@@ -11,10 +11,11 @@
  *   `hdr.rgb *= mix(1.0, aoMB, w)`
  *   `aoMB = max(ao, ((ao·a + b)·ao + c)·ao)`   Jimenez 2016 multi-bounce,
  *        a = 2.0404ρ−0.3324, b = −4.7951ρ+0.6417, c = 2.7552ρ+0.6903, ρ = 0.5
- *   `w = hdr.a` when feature `prd03.indirectFraction` is active
- *        (`AURA_AO_INDIRECT_FRACTION`), else
- *   `w = u_aoFallbackStrength · (1 − sky) · step(luma(hdr), 4.0)`
- *        with `sky = linZ ≥ far·0.999`.
+ *   `w = (1 − sky) · clamp(hdr.a − 2, 0, 1)` on pixels tagged by the
+ *        `prd03.indirectFraction` forward feature (`hdr.a = 2 + f_ind`), else
+ *   `w = (1 − sky) · u_aoFallbackStrength · step(luma(hdr), 4.0)`
+ *        (legacy draws; conservative strength, see v2Stages),
+ *        with `sky = linZ ≥ far·0.999`. Alpha is restored to `min(a, 1)`.
  */
 
 const HEADER = `#version 300 es
@@ -105,14 +106,19 @@ void main() {
   float ao = upsampleAo(uvHalf, fullZ, halfSize);
   float aoMB = u_aoMultiBounce ? aoMultiBounce(ao) : ao;
 
-#ifdef AURA_AO_INDIRECT_FRACTION
-  float w = hdr.a;
-#else
   float sky = step(u_far * 0.999, fullZ);
-  float luma = dot(hdr.rgb, vec3(0.2126, 0.7152, 0.0722));
-  float w = u_aoFallbackStrength * (1.0 - sky) * step(luma, 4.0);
-#endif
+  float w;
+  if (hdr.a >= 1.5) {
+    // Tagged generated-program pixel: alpha = 2 + f_ind (prd03.indirectFraction).
+    w = clamp(hdr.a - 2.0, 0.0, 1.0);
+  } else {
+    // Legacy / custom-shader pixel: no f_ind, conservative fallback.
+    float luma = dot(hdr.rgb, vec3(0.2126, 0.7152, 0.0722));
+    w = u_aoFallbackStrength * step(luma, 4.0);
+  }
+  w *= 1.0 - sky;
   hdr.rgb *= mix(1.0, aoMB, w);
+  hdr.a = min(hdr.a, 1.0);
   o_color = hdr;
 }
 `;
