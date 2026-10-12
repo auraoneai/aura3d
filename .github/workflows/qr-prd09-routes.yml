@@ -128,7 +128,10 @@ jobs:
       # must fail the job, not mask as green with an artifact upload.
       - name: Build affected routes from source
         id: build
-        run: node tools/quality-rebuild-capture/capture-games.mjs --build-only
+        # --local-build: build every route from source. Plain --build-only
+        # built only the 1 undeployed game, so 17 routes 404'd in the built
+        # site and every spec failed "no live app" (run 38190608609).
+        run: node tools/quality-rebuild-capture/capture-games.mjs --build-only --local-build
 
       - name: Record default vs capture=review views
         id: divergence

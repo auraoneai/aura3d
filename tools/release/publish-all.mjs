@@ -35,7 +35,7 @@
 //       NPM_OTP=123456 node tools/release/publish-all.mjs
 //
 //     A single OTP is accepted for a short window, which is normally long enough for
-//     all 29 packages; if it expires mid-run, re-run with a fresh code and the
+//     every public package; if it expires mid-run, re-run with a fresh code and the
 //     "already published" branch below skips whatever already landed. The OTP is read
 //     from the environment and never logged: `--otp` is appended to the argv of the
 //     child process only.
