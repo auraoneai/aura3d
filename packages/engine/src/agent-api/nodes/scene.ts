@@ -55,14 +55,17 @@ export class AuraSceneBuilder {
   private readonly nodes: AuraSceneNode[] = [];
   private backgroundColor: AuraColor = DEFAULT_SCENE_BACKGROUND;
   private backgroundExplicit = false;
+  private backgroundToneMapped = true;
   private cameraSpec: AuraCameraSpec = camera.orbit();
   private timelineSpec: AuraTimelineSpec | undefined;
   private physicsController: AuraPhysicsWorldController | undefined;
   private diagnosticsEnabled = false;
 
-  background(color: AuraColor): this {
+  /** PRD-01 C-05: tone-mapped with the scene by default; `{ toneMapped: false }` shows the authored colour exactly. */
+  background(color: AuraColor, options: { readonly toneMapped?: boolean } = {}): this {
     this.backgroundColor = color;
     this.backgroundExplicit = true;
+    this.backgroundToneMapped = options.toneMapped !== false;
     return this;
   }
 
@@ -101,6 +104,7 @@ export class AuraSceneBuilder {
     return {
       schema: "aura3d-scene-snapshot/1.0",
       background: this.backgroundExplicit ? this.backgroundColor : (looksFlagOn() ? lookBackdrop(this.nodes) : undefined) ?? this.backgroundColor,
+      ...(this.backgroundToneMapped ? {} : { backgroundToneMapped: false as const }),
       camera: this.cameraSpec,
       timeline: this.timelineSpec,
       physics: this.physicsController?.snapshot(),
