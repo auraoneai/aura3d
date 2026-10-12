@@ -27,6 +27,7 @@ export function captureFlagList(gameQrFlags, requested, exact) {
 
 /** Append `a3d-qr=<list>` to a route; an empty list leaves the route unchanged. */
 export function captureUrlWithFlags(route, flags) {
-  if (!flags.length) return route;
-  return `${route}${route.includes("?") ? "&" : "?"}a3d-qr=${encodeURIComponent(flags.join(","))}`;
+  const r = `${route}${route.includes("?") ? "&" : "?"}a3dLighting=atlas=off,csm=off`;
+  if (!flags.length) return r;
+  return `${r}&a3d-qr=${encodeURIComponent(flags.join(","))}`;
 }
