@@ -54,6 +54,10 @@ export async function runTransition<T>(
   const inMs = Math.round(outMs * 1.22); // §6.2 default 180 out / 220 in
   driver.setOverlay(1, outMs, spec?.color);
   await driver.sleep(outMs);
+  // The CSS fade can lag its timer on a loaded main thread (L4 run 38187300912
+  // swapped the scene at opacity 0.9724). Snap to fully opaque before the
+  // swap so the remount gap is never visible.
+  driver.setOverlay(1, 0, spec?.color);
   const result = await run();
   // firstPresentedFrame only resolves for `frame.source === "raf"` frames —
   // under a stepper/offscreen present it would hang forever with the overlay
