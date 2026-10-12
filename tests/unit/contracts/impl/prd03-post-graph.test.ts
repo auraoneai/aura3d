@@ -11,7 +11,7 @@ import { registerPostPass } from "@aura3d/rendering/contracts";
 import type { PostPipelineOptions } from "@aura3d/rendering/contracts";
 
 const flagsOn = () => resolveQrFlags({ options: ["post"] });
-const flagsOff = () => resolveQrFlags({ options: [] });
+const flagsOff = () => resolveQrFlags({ options: { A3D_QR_POST: false } }); // A3D_QR_POST is default-on
 
 const baseOptions: PostPipelineOptions = {
   antiAliasing: "fxaa",
