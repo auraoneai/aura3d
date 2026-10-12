@@ -378,6 +378,7 @@ function runCustomPass(
   const gl = host.gl;
   const frame = customPassFrameContext(state, host, input.width, input.height, camera, bag);
   if (pass.enabled && !pass.enabled(frame)) return input;
+  recordPostStage(`custom:${pass.id}@${pass.insertAt}`);
   const wantsDepth = pass.inputs.includes("depth");
   const wantsVelocity = pass.inputs.includes("velocity");
   const target = state.pool.acquire({
@@ -831,6 +832,17 @@ export function runV2HdrStages(
       g.uniform1f(g.getUniformLocation(taaProg, "u_feedbackMax"), taa.feedbackMax ?? 0.97);
       g.uniform1f(g.getUniformLocation(taaProg, "u_varianceGamma"), taa.varianceGamma ?? 1.0);
     });
+    if (probe) {
+      // Column of the resolved TAA output at the probe x, rows y-3..y+3 (GL).
+      const col = new Float32Array(4 * 7);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, asGlTarget(resolved).framebuffer);
+      gl.readPixels(Math.min(w - 1, probe[0]), Math.max(0, probe[1] - 3), 1, 7, gl.RGBA, gl.FLOAT, col);
+      const cur = new Float32Array(4 * 7);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, asGlTarget(hdr).framebuffer);
+      gl.readPixels(Math.min(w - 1, probe[0]), Math.max(0, probe[1] - 3), 1, 7, gl.RGBA, gl.FLOAT, cur);
+      const g = (a: Float32Array) => Array.from({ length: 7 }, (_, i) => a[i * 4 + 1]!.toFixed(3)).join("/");
+      recordPostStage(`S5:probe-resolved-g=${g(col)}:current-g=${g(cur)}:size=${w}x${h}:hist=${temporal.history.width}x${temporal.history.height}`);
+    }
     if (hdr !== source) state.pool.release(hdr);
     // §8.6 TAAU: renderScale < 1 reconstructs at display resolution with the
     // 9-tap Blackman-Harris kernel. History stays render-res (self-consistent
