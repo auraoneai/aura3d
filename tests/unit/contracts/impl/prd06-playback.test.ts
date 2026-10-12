@@ -18,7 +18,8 @@ import {
 } from "../../../../packages/engine/src/agent-api/app/actorAnimationHandle";
 
 function qrFlags(...shortNames: string[]) {
-  return resolveQrFlags({ options: shortNames, env: {} });
+  // animation is default-on: the flag-off arm turns it off explicitly.
+  return resolveQrFlags({ options: shortNames.includes("animation") ? shortNames : [...shortNames, "-animation"], env: {} });
 }
 
 function fakeRuntimeNode() {
@@ -96,7 +97,8 @@ describe("qrAnimationFlags plumbing", () => {
     expect(qrAnimationFlags().on("A3D_QR_ANIMATION")).toBe(true);
     setQrAnimationFlags(QR_EMPTY_FLAGS);
     expect(qrAnimationFlags().on("A3D_QR_ANIMATION")).toBe(false);
+    // Reset falls back to the resolved defaults — animation is default-on.
     resetQrAnimationFlags();
-    expect(qrAnimationFlags().on("A3D_QR_ANIMATION")).toBe(false);
+    expect(qrAnimationFlags().on("A3D_QR_ANIMATION")).toBe(true);
   });
 });

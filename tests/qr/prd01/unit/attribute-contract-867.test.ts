@@ -122,7 +122,8 @@ describe("#867 generated-path attribute contract ($ALL,strict)", () => {
   });
 
   it("08 with core only (no A3D_QR_ANIMATION deform feature): falls back to the legacy skinned program instead of the bind pose", async () => {
-    const coreOnly = resolveQrFlags({ env: { A3D_QR: "core,strict" } });
+    // animation is default-on: the core-only arm turns it off explicitly.
+    const coreOnly = resolveQrFlags({ env: { A3D_QR: "core,strict", A3D_QR_ANIMATION: "0" } });
     const { diagnostics, drawn } = await renderOne(skinnedItem, coreOnly);
     expect(diagnostics.drawCalls).toBeGreaterThan(0);
     expect(drawn.some((d) => d.label.startsWith("a3d-program:"))).toBe(false);

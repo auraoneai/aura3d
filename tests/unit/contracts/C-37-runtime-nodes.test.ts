@@ -78,7 +78,7 @@ describe("C-37 runtime nodes", () => {
       const added = registry.add(taggedPrimitive("late", 9)) as { timeScale?: number };
       expect(added.timeScale).toBe(1.5);
 
-      const off = resolveQrFlags({ options: [] });
+      const off = resolveQrFlags({ options: { A3D_QR_ANIMATION: false } }); // explicit: animation is default-on
       const registryOff = createAuraRuntimeNodeRegistry(bigScene(2), { flags: off });
       expect((registryOff.require("rt-node-0") as { timeScale?: number }).timeScale).toBeUndefined();
       expect(registryOff.all().every((h) => (h as { timeScale?: number }).timeScale === undefined)).toBe(true);
