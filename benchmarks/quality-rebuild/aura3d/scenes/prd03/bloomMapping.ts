@@ -6,13 +6,17 @@
  *
  * Derivation:
  *  - three `UnrealBloomPass` composites 5 fixed mips with weights
- *    `lerpBloomFactor(f) = 0.6f + 0.24` at f ∈ {1, .8, .6, .4, .2}
- *    → {0.84, 0.72, 0.60, 0.48, 0.36}, Σ = 3.0. Its separable Gaussian blurs
- *    are energy-preserving, so a uniform-E input contributes
- *    `strength × 3.0 × E` of additive halo.
- *  - Aura V2 (§6.6) sums `mips` tent mips scaled by `bloomNormalization =
- *    1/mips` then multiplies `intensity` → uniform-E contribution `intensity × E`.
- *  - Halo-energy equality ⇒ `intensity = 3.0 × strength`.
+ *    `lerpBloomFactor(f) = mix(f, 1.2 − f, radius)` at f ∈ {1, .8, .6, .4, .2}
+ *    (Σ = 3.0 for every radius), and r185's composite multiplies the sum by
+ *    a further `3.0 * bloomStrength` ("3.0 for backwards compatibility with
+ *    previous alpha-based intensity", UnrealBloomPass.js `_getCompositeMaterial`).
+ *    Its separable Gaussian blurs are energy-preserving, so a uniform-E input
+ *    contributes `strength × 9.0 × E` of additive halo.
+ *  - Aura V2 (§6.6) sums `mips` mips with weights normalised to 1, then
+ *    multiplies `intensity` → uniform-E contribution `intensity × E`.
+ *  - Halo-energy equality ⇒ `intensity = 9.0 × strength`, clamped to the
+ *    §6.6 range [0, 4]. (Correction, promote run 38200176281: the first
+ *    derivation omitted r185's 3.0 composite factor and under-mapped by 3×.)
  *  - `threshold`: three's luminosity high-pass is smoothstep(threshold,
  *    threshold + 0.01) on linear luma → Aura HDR edge `threshold` with the
  *    equivalent knee ratio `0.01 / threshold` (hard edge ≈ three's 1%-wide
@@ -34,7 +38,7 @@ export interface BloomOptionsV2 {
   readonly mips: number;
 }
 
-export const THREE_UNREAL_BLOOM_ENERGY = 3.0; // Σ lerpBloomFactor over 5 mips
+export const THREE_UNREAL_BLOOM_ENERGY = 9.0; // r185 composite 3.0 × Σ lerpBloomFactor (3.0) over 5 mips
 
 export function mapThreeUnrealBloom(strength: number, radius: number, threshold: number): BloomOptionsV2 {
   if (!(strength >= 0) || !(radius >= 0) || !(threshold >= 0)) {

@@ -41,7 +41,7 @@ import type { RenderItem } from "../ForwardPass";
 import type { Texture } from "../Texture";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { rendererQrFlags } from "../renderer/FrameGraph";
-import { recordPostSkipped } from "../renderer/postSkipped";
+import { beginPostStageTrace, recordPostSkipped, recordPostStage } from "../renderer/postSkipped";
 import { PostResources } from "./PostResources";
 import { QUALITY_TIERS } from "../contracts/quality";
 import {
@@ -531,6 +531,8 @@ export function runV2HdrStages(
   const temporalOk = Boolean(temporal?.v2);
   const taaActive = wantsTaa && temporalOk;
   const mbActive = wantsMb && temporalOk;
+  beginPostStageTrace();
+  recordPostStage(`enter:taa=${String(wantsTaa)}:mb=${String(wantsMb)}:temporal=${String(temporalOk)}`);
   if (wantsTaa && !temporalOk) { skipped.push("TAA_VELOCITY_COVERAGE"); recordPostSkipped("TAA_VELOCITY_COVERAGE:v2-hdr-stages"); }
   if (wantsMb && !temporalOk) { skipped.push("S7_VELOCITY_UNAVAILABLE"); recordPostSkipped("S7_VELOCITY_UNAVAILABLE:v2-hdr-stages"); }
   const needsLinZ = wantsAo || wantsGodRays || wantsDof || taaActive || mbActive
@@ -775,6 +777,9 @@ export function runV2HdrStages(
   }
 
   // ── S5: §8.6 TAA resolve into the history ping-pong ──────────────────────
+  if (taaActive) recordPostStage(temporal?.v2 && dilatedVelocity
+    ? `S5:${temporal.historyValid ? "history" : "seed"}:frames=${temporal.historyFrames}`
+    : `S5:skip:velocity=${String(Boolean(dilatedVelocity))}`);
   if (taaActive && temporal?.v2 && dilatedVelocity) {
     const taa = (pipeline.taa ?? {}) as Partial<TaaOptions>;
     const taaProg = program(state, gl, "taa-resolve", TAA_RESOLVE_GLSL);

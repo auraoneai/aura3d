@@ -16,6 +16,8 @@
 import {
   createRendererPostprocessPlanDiagnostics,
   postGraphV2LastOutcome,
+  postSkippedReasons,
+  postStagesRan,
   postV2ModulesReady,
   postVelocityCoverage,
   volumetricLightDirection,
@@ -226,8 +228,10 @@ export interface PostSectionReport {
    * previous-frame data. `moving/movingWithHistory` drive the TAA coverage
    * gate; `items/withVelocity` is the §7.2 contract shape. `null` pre-frame. */
   readonly velocityCoverage: { readonly items: number; readonly withVelocity: number; readonly moving: number; readonly movingWithHistory: number } | null;
-  /** Things the submit intentionally did not run (PRD §7.2 reasons + dropped passes). */
+  /** Things the submit intentionally did not run (PRD §7.2 reasons + dropped passes + §6.9 runtime skips). */
   readonly skipped: readonly string[];
+  /** C-31 stage trace (flag on): v2 HDR stages executed on the last frame. */
+  readonly stagesRan?: readonly string[];
   readonly customPasses: readonly { readonly id: string; readonly status: string }[];
   readonly warnings: readonly string[];
   readonly source: "agent-api/postBridge.ts + RendererPostprocessPlanDiagnostics";
@@ -348,8 +352,11 @@ export function collectPostSection(app: AuraApp): PostSectionReport {
       // throwing POSTPROCESS_PASS_NOT_GPU — record them here.
       ...(postProductionBuildBridge() && authoredContext?.flags.post
         ? plan.pixelBackedPassNames.map((name) => `POSTPROCESS_PASS_NOT_GPU:${name}`)
-        : [])
+        : []),
+      // §6.9: runtime record-and-skip reasons from the renderer / v2 drivers.
+      ...(authoredContext?.flags.post ? postSkippedReasons() : [])
     ],
+    ...(authoredContext?.flags.post ? { stagesRan: postStagesRan() } : {}),
     customPasses: custom,
     warnings: [
       ...plan.clarityWarnings,

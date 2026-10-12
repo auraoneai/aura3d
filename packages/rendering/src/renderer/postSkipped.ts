@@ -14,6 +14,25 @@ export function postSkippedReasons(): readonly string[] {
   return [...postSkippedReasonsSet];
 }
 
+/**
+ * C-31 stage trace: the v2 HDR stages that executed on the most recent frame
+ * (e.g. `S5:taa-history`, `S5:taa-seed`). Replaced per frame by
+ * `beginPostStageTrace`; read through `diagnostics().post.stagesRan`.
+ */
+let postStagesRanList: string[] = [];
+
+export function beginPostStageTrace(): void {
+  postStagesRanList = [];
+}
+
+export function recordPostStage(stage: string): void {
+  postStagesRanList.push(stage);
+}
+
+export function postStagesRan(): readonly string[] {
+  return [...postStagesRanList];
+}
+
 /** Test hook — clears the §6.9 skip registry. */
 export function resetPostSkipped(): void {
   postSkippedReasonsSet.clear();
