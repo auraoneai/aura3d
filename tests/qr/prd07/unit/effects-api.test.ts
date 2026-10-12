@@ -74,7 +74,42 @@ describe("P2-T1 pooled app.effects", () => {
     fx.burst("explosion-small", [0, 0, 0]);
     expect(shakeTotal).toBeCloseTo(0.7); // 0.25 super-flash + 0.45 explosion-small
     expect(configured.length).toBe(2);
-    expect(overlays).toEqual([{ flash: [9, 7, 4, 0.85] }]);
+    expect(overlays).toEqual([{ flash: [1, 0.9, 0.72, 0.3] }]);
+    system.dispose();
+  });
+
+  it("super-flash overlay is LDR, decays on frames and clears (no stuck white frame)", () => {
+    const frames: ((f: { dt: number }) => void)[] = [];
+    const system = new ProductionEffectSystem(stubAppLike([]), { tier: "high" });
+    const overlays: { flash?: number[] }[] = [];
+    const fakeApp = {
+      camera: { shake: { add: () => {}, configure: () => {} }, punch: { trigger: () => {} } },
+      onFrame: (cb: (f: { dt: number }) => void) => { frames.push(cb); return () => { frames.splice(frames.indexOf(cb), 1); }; },
+      setOutputOverlay: (o: { flash?: number[] }) => { overlays.push(o); return { applied: true }; }
+    } as unknown as AuraApp;
+    const fx = createAppEffects(fakeApp, system);
+    fx.burst("super-flash", [0, 0, 0]);
+    for (let i = 0; i < 20; i++) for (const cb of [...frames]) cb({ dt: 1 / 60 });
+    const amounts = overlays.map((o) => o.flash?.[3] ?? 0);
+    for (const o of overlays) for (const c of (o.flash ?? []).slice(0, 3)) expect(c).toBeLessThanOrEqual(1);
+    for (let i = 1; i < amounts.length; i++) expect(amounts[i]!).toBeLessThanOrEqual(amounts[i - 1]!);
+    expect(overlays.at(-1)).toEqual({});
+    expect(frames).toHaveLength(0);
+    system.dispose();
+  });
+
+  it("transient flash lights take chromaticity, not the HDR particle colour", () => {
+    const system = new ProductionEffectSystem(stubAppLike([]), { tier: "high" });
+    const lights: { color: readonly number[]; intensity: number }[] = [];
+    const flashLight = system.flashLight.bind(system);
+    system.flashLight = (f) => { lights.push(f); return flashLight(f); };
+    const fx = createAppEffects({} as AuraApp, system);
+    fx.burst("super-flash", [0, 0, 0]);
+    fx.burst("muzzle", [0, 0, 0]);
+    expect(lights).toHaveLength(2);
+    for (const l of lights) expect(Math.max(...l.color)).toBeCloseTo(1);
+    expect(lights[0]!.color).toEqual([1, 7 / 9, 4 / 9]);
+    expect(lights[0]!.intensity).toBe(20);
     system.dispose();
   });
 

@@ -49,6 +49,15 @@ const BURST_PRESETS: Record<string, BurstPreset> = {
   "aura-burst": { speed: [2, 4], life: [0.5, 1.1], gravity: 0, color: [1.5, 2.5, 6], size: [0.08, 0.2], spread: 1, additive: true, light: { intensity: 10, range: 8, duration: 0.6 } }
 };
 
+/** super-flash C-05 overlay flash: LDR warm white, 0.3 peak, 180 ms decay. */
+const SUPER_FLASH = { color: [1, 0.9, 0.72] as const, peak: 0.3, ms: 180 };
+
+/** HDR colour → chromaticity (max component 1); LDR colours pass unchanged. */
+function lightChromaticity(c: readonly number[]): [number, number, number] {
+  const m = Math.max(1, c[0] ?? 0, c[1] ?? 0, c[2] ?? 0);
+  return [(c[0] ?? 0) / m, (c[1] ?? 0) / m, (c[2] ?? 0) / m];
+}
+
 let nextInstanceId = 0;
 
 /** Concurrent transient-instance pool cap (E20's `poolSize ?? 96` default). */
@@ -109,8 +118,39 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     if (layer.shake) cam.shake.add(layer.shake);
     if (layer.punch) cam.punch?.trigger(layer.punch);
     // super-flash also flashes the C-05 output overlay (impact library spec).
-    if (kind === "super-flash") {
-      app.setOutputOverlay?.({ flash: [9, 7, 4, 0.85] });
+    if (kind === "super-flash") startOverlayFlash();
+  };
+
+  /*
+   * The overlay flash is added after tone mapping (display range), so it must
+   * be an LDR colour and it must decay. The old one-shot `[9, 7, 4, 0.85]`
+   * added ~7.6 to every pixel and was never cleared: one super-flash left the
+   * frame clipped white until some other caller replaced the overlay.
+   * Envelope: peak · exp(-5·t/ms), cleared to {} at t >= ms (same shape as the
+   * game juice overlay driver).
+   */
+  let flashAge = -1;
+  let offFlashFrame: (() => void) | null = null;
+  const writeFlash = (): void => {
+    if (flashAge < 0 || flashAge >= SUPER_FLASH.ms / 1000) {
+      flashAge = -1;
+      app.setOutputOverlay?.({});
+      offFlashFrame?.();
+      offFlashFrame = null;
+      return;
+    }
+    const amount = SUPER_FLASH.peak * Math.exp((-5 * flashAge * 1000) / SUPER_FLASH.ms);
+    app.setOutputOverlay?.({ flash: [...SUPER_FLASH.color, amount] });
+  };
+  const startOverlayFlash = (): void => {
+    flashAge = 0;
+    writeFlash();
+    if (!offFlashFrame && typeof app.onFrame === "function") {
+      offFlashFrame = app.onFrame((frame: { dt: number }) => {
+        if (flashAge < 0) return;
+        flashAge += Math.max(0, frame.dt);
+        writeFlash();
+      });
     }
   };
 
@@ -127,7 +167,10 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     if (preset.light) {
       system.flashLight({
         position: [position[0] ?? 0, position[1] ?? 0, position[2] ?? 0],
-        color: [color[0], color[1], color[2]],
+        // The particle colour is HDR (up to 9); the light takes chromaticity
+        // only so `intensity` alone sets the flash energy (9 × 20 = 180 blew
+        // every lit surface in range to white).
+        color: lightChromaticity(color),
         intensity: preset.light.intensity * (options.intensity ?? 1),
         range: preset.light.range,
         duration: preset.light.duration
