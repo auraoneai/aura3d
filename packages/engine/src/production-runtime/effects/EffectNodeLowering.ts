@@ -168,9 +168,49 @@ function nodeColor(node: EffectNodeLike): readonly [number, number, number] {
   const c = node.color;
   if (Array.isArray(c) && c.length >= 3) return [Number(c[0]), Number(c[1]), Number(c[2])];
   if (typeof c === "string" && c.startsWith("#") && c.length === 7) {
-    return [parseInt(c.slice(1, 3), 16) / 255, parseInt(c.slice(3, 5), 16) / 255, parseInt(c.slice(5, 7), 16) / 255];
+    // Hex colours are sRGB-encoded (three.js `Color` parity): the particle
+    // program shades in linear HDR, so decode before it reaches the instance.
+    return [
+      srgbChannelToLinear(parseInt(c.slice(1, 3), 16) / 255),
+      srgbChannelToLinear(parseInt(c.slice(3, 5), 16) / 255),
+      srgbChannelToLinear(parseInt(c.slice(5, 7), 16) / 255)
+    ];
   }
   return COLOR_TABLE[node.materialMode ?? "soft-alpha"] ?? [1, 1, 1];
+}
+
+/** IEC 61966-2-1 sRGB → linear for one channel in [0, 1]. */
+export function srgbChannelToLinear(c: number): number {
+  return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+
+/**
+ * §11 legacy `emitter: "fountain"` + `radius`/`height` → shape + velocity
+ * preset: launch speed whose apex (under the emitter's gravity and drag)
+ * reaches `height`, so the plume fills `[0, height]` above a `radius` disc
+ * instead of collapsing to a ~0.3 m mound at the base (speed 1 m/s against
+ * -1.2 m/s² gravity). A scalar `speed` scales the preset (default 1).
+ */
+export function fountainLaunchSpeed(height: number, gravity: number, drag: number, life: number): number {
+  const g = Math.max(0, -gravity);
+  if (!(height > 0)) return 0;
+  if (g < 0.05) return height / Math.max(life, 0.1);
+  const apex = (v0: number): number => {
+    let y = 0;
+    let v = v0;
+    for (let i = 0; i < 1200 && v > 0; i++) {
+      v = v * Math.max(0, 1 - drag / 60) - g / 60;
+      y += v / 60;
+    }
+    return y;
+  };
+  let lo = 0;
+  let hi = Math.sqrt(2 * g * height) * 3;
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    if (apex(mid) < height) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
 }
 
 /** §8.3 sim backend: "gpu" forces it, "auto"/unset picks gpu past the CPU cap. */
@@ -193,8 +233,16 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
       const additive = ADDITIVE_MODES.has(materialMode);
       const blend: Blend = node.blend && VALID_BLENDS.has(node.blend) ? (node.blend as Blend) : additive ? "additive" : "alpha";
       const count = Math.max(1, Math.min(200000, Math.round(node.maxParticles ?? node.particleCount ?? 200)));
+      const gravity = typeof node.gravity === "number" ? node.gravity : Array.isArray(node.gravity) ? node.gravity[1] ?? 0 : additive ? -1.2 : -0.6;
+      const drag = node.drag ?? 0.12;
+      const life = asRange(node.lifetime) ?? [1.2, 2.4];
+      // §11: fountain + authored height → plume preset (scalar speed scales it).
+      const plume = (node.emitter ?? "fountain") === "fountain" && typeof node.height === "number" && node.height > 0 && !Array.isArray(node.speed);
+      const plumeSpeed = plume ? fountainLaunchSpeed(node.height!, gravity, drag, life[1]) * (typeof node.speed === "number" ? node.speed : 1) : 0;
       const speedScalar = typeof node.speed === "number" ? node.speed : node.emitter === "fountain" ? 3 : 1;
-      const speedRange = asRange(node.speed) ?? [speedScalar * 0.7, speedScalar];
+      const speedRange: readonly [number, number] = plume && plumeSpeed > 0
+        ? [plumeSpeed * 0.85, plumeSpeed]
+        : asRange(node.speed) ?? [speedScalar * 0.7, speedScalar];
       return {
         type: "emitter",
         nodeId,
@@ -221,17 +269,19 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           origin: position,
           capacity: count,
           emissionRate: node.rate ?? node.emissionRate ?? (node.burst !== undefined ? 0 : count / 2.5),
-          life: asRange(node.lifetime) ?? [1.2, 2.4],
+          life,
           speed: speedRange,
-          spread: node.spread ?? (node.emitter === "ambient" ? 1 : node.emitter === "swirl" ? 0.35 : 0.18),
+          // Plume preset: tight column over the `radius` spawn disc.
+          spread: node.spread ?? (node.emitter === "ambient" ? 1 : node.emitter === "swirl" ? 0.35 : plume ? 0.06 : 0.18),
+          ...(plume && typeof node.radius === "number" && node.radius > 0 ? { spawnRadius: node.radius } : {}),
           direction: node.direction ?? (node.emitter === "ambient" ? [0.15, 0.4, 0.1] : [0, 1, 0]),
-          gravity: typeof node.gravity === "number" ? node.gravity : Array.isArray(node.gravity) ? node.gravity[1] ?? 0 : additive ? -1.2 : -0.6,
+          gravity,
           size: asRange(node.size) ?? (node.emitter === "ambient" ? [0.04, 0.1] : [0.05, 0.14]),
           color: nodeColor(node),
           alpha: materialMode === "smoke" ? 0.35 : 0.85,
           spin: node.emitter === "swirl" ? 2.4 : 0.6,
           stretch: materialMode === "spark" ? 0.02 : 0,
-          drag: node.drag ?? 0.12,
+          drag,
           seed: seedOverride ?? (node.seed ?? hashSeed(nodeId)),
           ...(node.prewarm !== undefined ? { prewarm: node.prewarm } : {}),
           ...(node.burst !== undefined ? { burst: node.burst } : {})

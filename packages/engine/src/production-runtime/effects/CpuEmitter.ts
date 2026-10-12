@@ -26,6 +26,8 @@ export interface EmitterDescriptor {
   readonly prewarm?: number;
   /** One-shot particles spawned at t=0 (effects.burst); emissionRate stays for continuous flow. */
   readonly burst?: number;
+  /** Spawn disc radius (XZ, uniform by area); default 0.05 m point-ish source. */
+  readonly spawnRadius?: number;
 }
 
 export interface EmitterState {
@@ -98,9 +100,12 @@ function spawn(state: EmitterState): void {
   const dl = Math.hypot(dx, dy, dz) || 1;
   dx /= dl; dy /= dl; dz /= dl;
   const speed = d.speed[0] + (d.speed[1] - d.speed[0]) * r;
-  state.px[i] = d.origin[0] + Math.cos(theta) * 0.05;
+  // Disc spawn: sqrt of a uniform keeps density uniform by area. The default
+  // path consumes no extra RNG so seeded streams without a disc are unchanged.
+  const spawnR = d.spawnRadius !== undefined && d.spawnRadius > 0 ? Math.sqrt(next(state)) * d.spawnRadius : 0.05;
+  state.px[i] = d.origin[0] + Math.cos(theta) * spawnR;
   state.py[i] = d.origin[1];
-  state.pz[i] = d.origin[2] + Math.sin(theta) * 0.05;
+  state.pz[i] = d.origin[2] + Math.sin(theta) * spawnR;
   state.vx[i] = dx * speed;
   state.vy[i] = dy * speed;
   state.vz[i] = dz * speed;
