@@ -56,6 +56,7 @@ import {
   type VanDriveInput
 } from "../gameplay/van";
 import { clearanceLift, createChaseClearance } from "../gameplay/camera-clearance";
+import { createCourierEffectsPass } from "./effects-pass";
 import { createCourierAudio, type CourierAudioController } from "./courier-audio";
 import {
   decayHudEffects,
@@ -300,11 +301,18 @@ const app = createAuraApp("#app", {
     .add(withPostV2Bloom(effects.neonBloom({ intensity: reducedMotion ? 0.26 : 0.44, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }), reducedMotion ? 0.26 / 0.44 : 1))
     .add(effects.colorGrade({ exposure: 1.05 * POST_V2_EXPOSURE, contrast: 1.1, saturation: 1.12 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
+    .addMany(createCourierEffectsPass({ reducedMotion, depot: START_SITE }))
     // The street itself was reading as black-on-black void with a few floating
     // signs. A lifted cool ambient plus a stronger moon key gives the kit
     // towers, kerbs and lane paint actual form between the practicals.
     .add(lights.ambient({ name: "night city fill", color: "#7f9cb5", intensity: 1.25 }))
-    .add(lights.directional({ name: "moonlight key", color: "#d8f5ff", intensity: 2.5, shadow: true }).position(-18, 26, 8))
+    .add(lights.directional({
+      name: "moonlight key",
+      color: "#d8f5ff",
+      intensity: 2.5,
+      // Effects pass: cascaded PCSS moon shadows across the chase depth.
+      shadow: { cascades: 3, mapSize: 2048, filter: "pcss", softness: 1, maxDistance: 60, intensity: 0.9 }
+    }).position(-18, 26, 8))
     .add(lights.directional({ name: "city glow fill", color: "#36bdd2", intensity: 1.35 }).position(20, 18, 16))
     // Hero practicals used to sit at 2.6/1.8 directly on the van, which is what
     // turned the typed Meshy livery into a featureless white slab.
