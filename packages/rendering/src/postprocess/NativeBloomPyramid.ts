@@ -132,3 +132,37 @@ export function bloomNormalization(mips: number, scatter: number): number {
   }
   return 1 / mips;
 }
+
+/** PRD-03 §6.6 flag-on: per-mip Gaussian kernel radii of the UnrealBloomPass-class halo (three r185 `kernelSizeArray`). */
+export const BLOOM_V2_BLUR_RADII: readonly number[] = [6, 10, 14, 18, 22];
+/** PRD-03 §6.6 flag-on: base per-mip factors mirrored by `spread` (three r185 `bloomFactors`). */
+const BLOOM_V2_MIP_FACTORS: readonly number[] = [1, 0.8, 0.6, 0.4, 0.2];
+
+/**
+ * PRD-03 §6.6 flag-on pyramid response for the native (fused) bloom.
+ *
+ * The legacy cinematic weights `[0.4, 0.25, 0.16, 0.11, 0.08]` concentrate the
+ * energy in the two finest mips and its kernels scale with the integer
+ * radius, which only looked right behind the ×17 response gain. Flag-on has
+ * no hidden gain, so the halo shape has to come from the pyramid itself:
+ * fixed widening kernels and per-mip weights `mix(f, 1.2 − f, spread)`
+ * normalised to sum to 1 — a constant above-threshold excess E still blooms
+ * exactly E · intensity (`bloomNormalization`), while `spread` (the authored
+ * 0..1 radius) moves energy from the fine mips to the wide ones.
+ */
+export function resolveBloomPyramidV2Response(plan: BloomPyramidPlan, spread: number): { readonly weights: readonly number[]; readonly blurRadii: readonly number[] } {
+  if (!(spread >= 0) || spread > 1) {
+    throw new Error(`Bloom spread must be finite and in [0, 1], received ${String(spread)}.`);
+  }
+  if (plan.quality === "performance") return { weights: [1], blurRadii: [BLOOM_V2_BLUR_RADII[0]!] };
+  const count = plan.mips.length;
+  const raw = Array.from({ length: count }, (_, index) => {
+    const factor = BLOOM_V2_MIP_FACTORS[Math.min(index, BLOOM_V2_MIP_FACTORS.length - 1)]!;
+    return factor + (1.2 - 2 * factor) * spread;
+  });
+  const total = raw.reduce((sum, weight) => sum + weight, 0);
+  return {
+    weights: raw.map((weight) => weight / total),
+    blurRadii: Array.from({ length: count }, (_, index) => BLOOM_V2_BLUR_RADII[Math.min(index, BLOOM_V2_BLUR_RADII.length - 1)]!)
+  };
+}

@@ -29,7 +29,7 @@
 
 import type { WebGL2DeviceHost } from "../webgl2/DeviceHost";
 import { RenderDeviceError, type RenderTarget } from "../RenderDevice";
-import { invertMat4, type Mat4 } from "@aura3d/scene";
+import { invertMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import {
   registeredPostPasses,
   validatePostPassSpace,
@@ -41,7 +41,7 @@ import type { RenderItem } from "../ForwardPass";
 import type { Texture } from "../Texture";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { rendererQrFlags } from "../renderer/FrameGraph";
-import { recordPostSkipped } from "../renderer/postSkipped";
+import { beginPostStageTrace, markTaaHistoryWritten, recordPostSkipped, recordPostStage } from "../renderer/postSkipped";
 import { PostResources } from "./PostResources";
 import { QUALITY_TIERS } from "../contracts/quality";
 import {
@@ -63,6 +63,9 @@ import { EXPOSURE_ADAPT_GLSL, EXPOSURE_LUMA_LOG_GLSL, EXPOSURE_MUL_GLSL, EXPOSUR
 import { SMAA_BLEND_GLSL, SMAA_EDGES_GLSL, SMAA_WEIGHTS_GLSL } from "./shaders/smaa.glsl.js";
 import { FXAA_185_FRAGMENT_GLSL } from "./shaders/fxaa.glsl.js";
 import { POST_INSERT_ANCHORS, type AutoExposureOptionsV2, type DofOptions, type GtaoOptions, type GodRayOptions, type MotionBlurOptions, type TaaOptions } from "./PostGraph";
+
+/** Identity for the folded camera-velocity reprojection (S1-C). */
+const IDENTITY_MAT4_F32 = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 
 const VERTEX = `#version 300 es
 out vec2 v_uv;
@@ -375,6 +378,7 @@ function runCustomPass(
   const gl = host.gl;
   const frame = customPassFrameContext(state, host, input.width, input.height, camera, bag);
   if (pass.enabled && !pass.enabled(frame)) return input;
+  recordPostStage(`custom:${pass.id}@${pass.insertAt}`);
   const wantsDepth = pass.inputs.includes("depth");
   const wantsVelocity = pass.inputs.includes("velocity");
   const target = state.pool.acquire({
@@ -531,8 +535,10 @@ export function runV2HdrStages(
   const temporalOk = Boolean(temporal?.v2);
   const taaActive = wantsTaa && temporalOk;
   const mbActive = wantsMb && temporalOk;
-  if (wantsTaa && !temporalOk) skipped.push("TAA_VELOCITY_COVERAGE");
-  if (wantsMb && !temporalOk) skipped.push("S7_VELOCITY_UNAVAILABLE");
+  beginPostStageTrace();
+  recordPostStage(`enter:taa=${String(wantsTaa)}:mb=${String(wantsMb)}:temporal=${String(temporalOk)}`);
+  if (wantsTaa && !temporalOk) { skipped.push("TAA_VELOCITY_COVERAGE"); recordPostSkipped("TAA_VELOCITY_COVERAGE:v2-hdr-stages"); }
+  if (wantsMb && !temporalOk) { skipped.push("S7_VELOCITY_UNAVAILABLE"); recordPostSkipped("S7_VELOCITY_UNAVAILABLE:v2-hdr-stages"); }
   const needsLinZ = wantsAo || wantsGodRays || wantsDof || taaActive || mbActive
     || hdrCustoms.some((pass) => pass.inputs.includes("depth"));
   const needsVelocity = ((taaActive || mbActive) && temporalOk)
@@ -597,14 +603,31 @@ export function runV2HdrStages(
   let dilatedVelocity: RenderTarget | null = null;
   if (needsVelocity && temporal?.v2) {
     const camVelProg = program(state, gl, "camera-velocity", CAMERA_VELOCITY_GLSL);
+    // The reprojection prevVP · inv(unjitteredVP) is folded in float64 here
+    // and handed to the shader as `u_prevViewProjection` with an identity
+    // `u_invUnjitteredViewProjection` (projectively the same transform). Two
+    // float32 matrix products on the GPU left a static camera with a
+    // ~0.03 px residual velocity; TAA re-sampled history by it every frame,
+    // so with 0.97 feedback a 1-px line drifted ~1 px and smeared over five
+    // rows (prd03-taa, promote run 38201709795). Folded, a static camera is
+    // the identity to ~1e-12 and reprojects in place.
     const invUnjittered = invertMat4(Array.from(temporal.v2.unjittered) as unknown as Mat4);
+    const reprojection = Float32Array.from(multiplyMat4(Array.from(temporal.v2.previous) as unknown as Mat4, invUnjittered));
+    {
+      // C-31 stage trace: how far the camera reprojection is from identity
+      // (static camera → 0) and this frame's sub-pixel jitter.
+      let dev = 0;
+      for (let i = 0; i < 16; i += 1) dev = Math.max(dev, Math.abs(reprojection[i]! - IDENTITY_MAT4_F32[i]!));
+      const jx = temporal.v2.jitterClip[0] * w / 2, jy = temporal.v2.jitterClip[1] * h / 2;
+      recordPostStage(`S1C:reproj-dev=${dev.toExponential(2)}:jitter-px=${jx.toFixed(3)},${jy.toFixed(3)}`);
+    }
     draw(host, state, camVelProg, asGlTarget(temporal.velocity), [src.depthTextureHandle!], (g) => {
       g.uniform1i(g.getUniformLocation(camVelProg, "u_depth"), 0);
       g.uniform1f(g.getUniformLocation(camVelProg, "u_near"), near);
       g.uniform1f(g.getUniformLocation(camVelProg, "u_far"), far);
       g.uniform1i(g.getUniformLocation(camVelProg, "u_ortho"), ortho ? 1 : 0);
-      g.uniformMatrix4fv(g.getUniformLocation(camVelProg, "u_prevViewProjection"), false, temporal.v2!.previous);
-      g.uniformMatrix4fv(g.getUniformLocation(camVelProg, "u_invUnjitteredViewProjection"), false, Float32Array.from(invUnjittered));
+      g.uniformMatrix4fv(g.getUniformLocation(camVelProg, "u_prevViewProjection"), false, reprojection);
+      g.uniformMatrix4fv(g.getUniformLocation(camVelProg, "u_invUnjitteredViewProjection"), false, IDENTITY_MAT4_F32);
     });
     // §8.6: closest-depth 3×3 velocity for the silhouette-correct reprojection.
     dilatedVelocity = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
@@ -775,10 +798,14 @@ export function runV2HdrStages(
   }
 
   // ── S5: §8.6 TAA resolve into the history ping-pong ──────────────────────
+  if (taaActive) recordPostStage(temporal?.v2 && dilatedVelocity
+    ? `S5:${temporal.historyValid ? "history" : "seed"}:frames=${temporal.historyFrames}`
+    : `S5:skip:velocity=${String(Boolean(dilatedVelocity))}`);
   if (taaActive && temporal?.v2 && dilatedVelocity) {
     const taa = (pipeline.taa ?? {}) as Partial<TaaOptions>;
     const taaProg = program(state, gl, "taa-resolve", TAA_RESOLVE_GLSL);
     const resolved = temporal.historyOutput;
+    markTaaHistoryWritten();
     draw(host, state, taaProg, asGlTarget(resolved), [
       asGlTarget(hdr).colorHandle,
       asGlTarget(temporal.history).colorHandle,

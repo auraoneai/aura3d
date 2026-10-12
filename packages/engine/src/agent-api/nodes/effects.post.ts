@@ -24,13 +24,17 @@ export const postEffectBuilders = {
   bloom: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) => {
     const antiBlowout = options.antiBlowout ?? true;
     const maxIntensity = options.maxIntensity ?? 0.92;
+    const authoredIntensity = options.intensity ?? 0.35;
     const intensity = antiBlowout
-      ? Math.min(maxIntensity, Math.max(0.05, options.intensity ?? 0.35))
-      : options.intensity ?? 0.35;
+      ? Math.min(maxIntensity, Math.max(0.05, authoredIntensity))
+      : authoredIntensity;
     return new AuraNodeBuilder<AuraEffectNode>({
       kind: "effect",
       effect: "bloom",
       intensity,
+      // §7.1: the v2 chain does not cap intensity (antiBlowout/maxIntensity
+      // map to clampLuminance), so keep the authored value when capped.
+      ...(intensity !== authoredIntensity && Number.isFinite(authoredIntensity) ? { postIntensity: authoredIntensity } : {}),
       color: options.color ?? "#ffffff",
       radius: options.radius ?? 0.38,
       threshold: options.threshold ?? 0.7,

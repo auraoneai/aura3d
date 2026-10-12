@@ -16,6 +16,8 @@
 import {
   createRendererPostprocessPlanDiagnostics,
   postGraphV2LastOutcome,
+  postSkippedReasons,
+  postStagesRan,
   postV2ModulesReady,
   postVelocityCoverage,
   volumetricLightDirection,
@@ -226,8 +228,10 @@ export interface PostSectionReport {
    * previous-frame data. `moving/movingWithHistory` drive the TAA coverage
    * gate; `items/withVelocity` is the §7.2 contract shape. `null` pre-frame. */
   readonly velocityCoverage: { readonly items: number; readonly withVelocity: number; readonly moving: number; readonly movingWithHistory: number } | null;
-  /** Things the submit intentionally did not run (PRD §7.2 reasons + dropped passes). */
+  /** Things the submit intentionally did not run (PRD §7.2 reasons + dropped passes + §6.9 runtime skips). */
   readonly skipped: readonly string[];
+  /** C-31 stage trace (flag on): v2 HDR stages executed on the last frame. */
+  readonly stagesRan?: readonly string[];
   readonly customPasses: readonly { readonly id: string; readonly status: string }[];
   readonly warnings: readonly string[];
   readonly source: "agent-api/postBridge.ts + RendererPostprocessPlanDiagnostics";
@@ -348,8 +352,11 @@ export function collectPostSection(app: AuraApp): PostSectionReport {
       // throwing POSTPROCESS_PASS_NOT_GPU — record them here.
       ...(postProductionBuildBridge() && authoredContext?.flags.post
         ? plan.pixelBackedPassNames.map((name) => `POSTPROCESS_PASS_NOT_GPU:${name}`)
-        : [])
+        : []),
+      // §6.9: runtime record-and-skip reasons from the renderer / v2 drivers.
+      ...(authoredContext?.flags.post ? postSkippedReasons() : [])
     ],
+    ...(authoredContext?.flags.post ? { stagesRan: postStagesRan() } : {}),
     customPasses: custom,
     warnings: [
       ...plan.clarityWarnings,
@@ -488,7 +495,7 @@ export function createPrd03PostSurface(app: AuraApp, ctx: { readonly flags: QrFl
  * bookkeeping field `postAuthored` (CCR-03-3).
  */
 export const POST_EFFECT_COMMON_FIELDS: readonly string[] = [
-  "kind", "effect", "name", "id", "intensity", "enabled", "animation", "postAuthored",
+  "kind", "effect", "name", "id", "intensity", "enabled", "animation", "postAuthored", "postIntensity",
   "position", "rotation", "scale", "lookAt", "rotationOrder", "quaternion"
 ];
 
@@ -634,7 +641,10 @@ export function mapBloomOptionsV2(node: AuraEffectNode, mipLevels: 3 | 5 | 6): {
     options: {
       threshold: Math.min(64, Math.max(0, threshold)),
       knee: Math.min(1, Math.max(0, authoredNumber(node, "knee", V2_BLOOM_DEFAULTS.knee))),
-      intensity: Math.min(4, Math.max(0, authoredNumber(node, "intensity", V2_BLOOM_DEFAULTS.intensity))),
+      // `postIntensity` is the authored value before the legacy antiBlowout cap.
+      intensity: Math.min(4, Math.max(0, isAuthored(node, "intensity") && typeof node.postIntensity === "number" && Number.isFinite(node.postIntensity)
+        ? node.postIntensity
+        : authoredNumber(node, "intensity", V2_BLOOM_DEFAULTS.intensity))),
       scatter: Math.min(1, Math.max(0, Number.isFinite(scatterAuthored) ? scatterAuthored : Number.isFinite(radiusAlias) ? radiusAlias : V2_BLOOM_DEFAULTS.scatter)),
       tint: [tint.r, tint.g, tint.b] as const,
       clampLuminance,
@@ -774,7 +784,13 @@ export function createRootPostPipeline(
       far: camera?.far ?? 1000,
       projection: camera?.mode === "orthographic" || camera?.mode === "isometric" ? "orthographic" : "perspective"
     },
-    renderScale: tierSettings.minRenderScale,
+    // The scale the post chain's input was rendered at, not the governor's
+    // floor: the renderer's postprocess forward target is full-size, so
+    // this is 1. Passing `minRenderScale` (0.5–0.75) made S5 run the §8.6
+    // TAAU upsample on a full-res frame (enlarging and re-filtering it: the
+    // prd03-taa 1-px line moved ~1 px and spread over five rows, promote run
+    // 38203056326) and armed the S12 RCAS sharpen on every frame.
+    renderScale: 1,
     ...(bloom ? { bloom: bloom.options } : {}),
     exposure,
     toneMapping: toneMapping as PostPipelineOptions["toneMapping"],

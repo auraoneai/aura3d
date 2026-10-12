@@ -792,6 +792,14 @@ export interface AuraEffectNode extends AuraTransformSpec {
    */
   readonly postAuthored?: readonly string[];
   /**
+   * PRD-03 §7.1 (additive): the authored bloom `intensity` before the legacy
+   * `antiBlowout`/`maxIntensity` cap. Present only when the cap changed the
+   * value. Inert on the legacy bridge; the v2 chain (flag `A3D_QR_POST`)
+   * maps `antiBlowout`/`maxIntensity` to `clampLuminance` instead of capping
+   * intensity, so it composites this value.
+   */
+  readonly postIntensity?: number;
+  /**
    * CCR-03-11 (additive, PRD-03 §8.8): motion-blur v2 fields. `shutter` is the
    * exposure fraction override (falls back to `intensity`); `samples` is the
    * 8|12|16 set, `tileSize` 16|20, `timeScale` the C-23 per-node scale. The

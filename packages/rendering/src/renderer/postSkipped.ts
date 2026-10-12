@@ -14,6 +14,41 @@ export function postSkippedReasons(): readonly string[] {
   return [...postSkippedReasonsSet];
 }
 
+/**
+ * C-31 stage trace: the v2 HDR stages that executed on the most recent frame
+ * (e.g. `S5:taa-history`, `S5:taa-seed`). Replaced per frame by
+ * `beginPostStageTrace`; read through `diagnostics().post.stagesRan`.
+ */
+let postStagesRanList: string[] = [];
+
+export function beginPostStageTrace(): void {
+  postStagesRanList = [];
+}
+
+export function recordPostStage(stage: string): void {
+  postStagesRanList.push(stage);
+}
+
+export function postStagesRan(): readonly string[] {
+  return [...postStagesRanList];
+}
+
+/**
+ * PRD-03 §8.6: set by S5 when it resolved into the TAA history target this
+ * frame; the Renderer consumes it before promoting the history ping-pong.
+ */
+let taaHistoryWritten = false;
+
+export function markTaaHistoryWritten(): void {
+  taaHistoryWritten = true;
+}
+
+export function consumeTaaHistoryWritten(): boolean {
+  const written = taaHistoryWritten;
+  taaHistoryWritten = false;
+  return written;
+}
+
 /** Test hook — clears the §6.9 skip registry. */
 export function resetPostSkipped(): void {
   postSkippedReasonsSet.clear();
