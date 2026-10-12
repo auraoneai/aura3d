@@ -563,7 +563,8 @@ const collisionReviewCamera = new URLSearchParams(window.location.search).get("c
 // hierarchy.  The former 1.52x-distance / 1.95x-height overview reduced both
 // cars to thumbnail scale and let foreground barriers dominate the frame.
 // The public route remains on the closer gameplay chase camera.
-const visualCaptureCamera = new URLSearchParams(window.location.search).get("capture") === "overview";
+// Shipped play path only: the ?capture=overview lens was removed.
+const visualCaptureCamera: boolean = false;
 // PRD-03 §6.6 / Q-14-1: A3D_QR_POST (default on) bloom is linear HDR with no hidden
 // legacy gain; retune for v2 only so the `-post` legacy look is unchanged.
 const postV2Bloom = resolveQrFlags({

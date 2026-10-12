@@ -43,9 +43,9 @@ const siegeWindow = window as SiegeWindow;
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const compactViewport = window.innerWidth <= 720;
-const captureMode = new URLSearchParams(window.location.search).get("capture");
-const visualReviewCapture = captureMode === "review";
-const evidenceCapture = captureMode === "evidence";
+// Shipped play path only: the ?capture= review/evidence lenses were removed.
+const visualReviewCapture: boolean = false;
+const evidenceCapture: boolean = false;
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 const APP_ID = "showcase-siege-golf";

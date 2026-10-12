@@ -118,8 +118,8 @@ import {
 
 const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const visualReviewCapture = typeof window !== "undefined"
-  && new URLSearchParams(window.location.search).get("capture") === "review";
+// Shipped play path only: the ?capture= review lens was removed.
+const visualReviewCapture: boolean = false;
 // PRD-03 §6.6 / Q-14-1: with A3D_QR_POST on (default), bloom is linear-HDR with no
 // hidden legacy gain, so the legacy 0.1 neon bloom no longer glows. Retune for v2 only;
 // the `-post` legacy path keeps its original values.

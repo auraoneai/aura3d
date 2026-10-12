@@ -74,7 +74,8 @@ const REVIEW_COURIER_LATERAL = 0.35;
 // it keeps the live typed pod, destination hardware, and flown path large
 // enough to judge at the same scale as an action reference without changing
 // gameplay coordinates or the public camera.
-const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
+// Shipped play path only: the ?capture= review lens was removed.
+const visualReviewCapture: boolean = false;
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 // The board is a wide solar-system composition; the catalog pod needs enough
 // screen coverage to remain legible while it is in flight, not only at a dock.

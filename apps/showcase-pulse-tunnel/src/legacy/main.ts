@@ -55,8 +55,8 @@ const reducedMotion =
 // Screenshot-only presentation mode keeps the gameplay/HUD contract intact while
 // giving visual review a clean renderer-first frame. The normal route remains
 // unchanged for players and for the interaction/evidence specs.
-const visualReviewCapture =
-  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("capture") === "review";
+// Shipped play path only: the ?capture= review lens was removed.
+const visualReviewCapture: boolean = false;
 // Candidate Meshy reactor-deck arena shell. Opt-in only via ?arena=candidate so
 // the release-validated V11 shell stays the default for players, specs, and
 // the review capture. Non-colliding presentation; lanes, chart, collisions,

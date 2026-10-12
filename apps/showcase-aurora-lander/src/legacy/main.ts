@@ -110,7 +110,8 @@ type Phase = "flying" | "landed" | "crashed" | "campaign-clear";
  */
 const routeParams = new URLSearchParams(window.location.search);
 const dropMode = routeParams.get("drop");
-const visualReviewCapture = routeParams.get("capture") === "review";
+// Shipped play path only: the ?capture= review lens was removed.
+const visualReviewCapture: boolean = false;
 // PRD-03 §6.6 / Q-14-1: A3D_QR_POST (default on) bloom is linear HDR with no hidden
 // legacy gain; retune for v2 only so the `-post` legacy look is unchanged.
 const postV2Bloom = resolveQrFlags({
