@@ -94,6 +94,28 @@ function buildTemplate(ex) {
   return run("npm", ["run", "build"], dir, "npm run build");
 }
 
+// Which emitted chunks carry the lane-01 generator ("a3d-generated-program")
+// and the missing-provider report: a generator only in a lazy chunk means the
+// renderer mounts on the stub cache (#1140).
+function bundleProbe(ex) {
+  const dist = ex.kind === "app" ? path.join(workRoot, "app-sites", ex.id) : distFor(ex);
+  const out = {};
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const file = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(file);
+      else if (entry.name.endsWith(".js")) {
+        const text = readFileSync(file, "utf8");
+        const marks = ["a3d-generated-program", "program-generator-missing"].filter((m) => text.includes(m));
+        if (marks.length) out[path.relative(dist, file)] = { marks, kb: Math.round(text.length / 1024) };
+      }
+    }
+  };
+  if (existsSync(dist)) walk(dist);
+  const html = existsSync(path.join(distFor(ex), "index.html")) ? readFileSync(path.join(distFor(ex), "index.html"), "utf8") : "";
+  return { chunks: out, entry: [...html.matchAll(/src="([^"]+\.js)"/g)].map((m) => m[1]) };
+}
+
 function buildApp(ex) {
   const dir = ex.dir ?? ex.id;
   const appDir = path.join(repoRoot, "apps", dir);
@@ -241,6 +263,7 @@ async function main() {
     for (const ex of selected) {
       const err = ex.kind === "app" ? buildApp(ex) : buildTemplate(ex);
       buildLog[ex.id] = err ?? "ok";
+      if (!err) buildLog[`${ex.id}#bundle`] = bundleProbe(ex);
       if (err) log(`build FAILED ${ex.id}\n${err}`);
     }
     writeFileSync(path.join(outDir, "build-log.json"), JSON.stringify(buildLog, null, 2));
