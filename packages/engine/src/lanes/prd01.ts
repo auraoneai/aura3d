@@ -6,6 +6,12 @@
  * "PRD 15 index merges" hook does not exist yet — the merge happens here).
  */
 
+// 01-HANG / #1140: rendering's lane providers (C-02 real ProgramCache, C-07,
+// C-08, generator install) must be in createAuraApp's static import graph.
+// Reached only through the side-effect-free `@aura3d/rendering` index, Rollup
+// moved them into a lazy chunk (prd06's `import("@aura3d/rendering")`), so a
+// production bundle mounted on the stub cache and compiled per draw per frame.
+import "@aura3d/rendering/lanes";
 import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
 import { registerAppExtension } from "../contracts/app.js";
 import { DIAGNOSTIC_ONLY_FIELDS, registerOptionCoverage } from "../contracts/compiler.js";
