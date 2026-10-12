@@ -52,7 +52,10 @@ async function renderFrame(built: ReturnType<typeof scene>, flags: readonly stri
     pixelRatio: 1,
     resize: false,
     autoStart: false,
-    qualityRebuild: { flags: [...flags] }
+    // This lane-only probe predates registry default-on promotion: enable only
+    // its requested lanes. An explicit URL flag list still overrides these
+    // options, so all-flags runs continue to expose cross-lane failures.
+    qualityRebuild: { flags: ["none", ...flags] }
   });
   try {
     await app.ready();

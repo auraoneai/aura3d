@@ -4,6 +4,16 @@ on:
   push:
     branches: [consolidate/remaining-20261011]
   workflow_dispatch:
+    inputs:
+      lane:
+        description: Focused lane to rerun
+        type: choice
+        options: [all, lighting, post, materials, game-records]
+        default: all
+      post_spec:
+        description: Optional post spec selection
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -20,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lane: [lighting, post, materials, game-records]
+        lane: ${{ inputs.lane && inputs.lane != 'all' && fromJSON(format('["{0}"]', inputs.lane)) || fromJSON('["lighting","post","materials","game-records"]') }}
     env:
       CI: 'true'
       A3D_REQUIRE_HW_GPU: '1'
@@ -75,9 +85,7 @@ jobs:
         run: >-
           pnpm exec playwright test
           --config playwright.prd03-gpu.config.ts
-          tests/browser/qr-prd03-gpu-probe.spec.ts
-          tests/browser/qr-prd03-ao-godrays.spec.ts
-          tests/browser/qr-prd03-bloom-energy.spec.ts
+          ${{ inputs.post_spec || 'tests/browser/qr-prd03-gpu-probe.spec.ts tests/browser/qr-prd03-ao-godrays.spec.ts tests/browser/qr-prd03-bloom-energy.spec.ts' }}
           --retries=0 --trace=retain-on-failure
       - name: Canvas decoder pixels and material asset paths
         if: matrix.lane == 'materials'
