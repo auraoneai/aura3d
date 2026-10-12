@@ -19,9 +19,10 @@ export function createCourierEffectsPass(options: {
       name: "courier night street volumetric haze",
       density: 0.026,
       color: "#3d5878",
-      intensity: 0.55
+      intensity: 0.55,
+      volumetricQuality: "balanced"
     }),
-    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 8, intensity: 0.85, lights: "shadowed" }),
+    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 4, intensity: 0.85, lights: "shadowed" }),
     environments.preset("night", { name: "courier night reflections", intensity: 0.6, background: false }),
     effects.vignette({ name: "courier chase vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
@@ -39,8 +40,8 @@ export function createCourierEffectsPass(options: {
         gravity: 0,
         drag: 0,
         lifetime: [12, 16],
-        maxParticles: 1100,
-        rate: 85,
+        maxParticles: 550,
+        rate: 42,
         prewarm: 16,
         size: [0.05, 0.1],
         materialMode: "additive-glow",
@@ -57,8 +58,8 @@ export function createCourierEffectsPass(options: {
         gravity: 0,
         drag: 0,
         lifetime: [2.4, 3.6],
-        maxParticles: 240,
-        rate: 70,
+        maxParticles: 120,
+        rate: 35,
         prewarm: 4,
         size: [0.16, 0.32],
         materialMode: "smoke",

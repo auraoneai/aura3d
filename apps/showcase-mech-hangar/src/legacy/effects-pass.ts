@@ -18,10 +18,10 @@ export function createMechHangarEffectsPass(options: {
       name: "hangar volumetric haze",
       density: 0.04,
       color: "#6a88a6",
-      intensity: 0.35
+      intensity: 0.35,
+      volumetricQuality: "balanced"
     }),
-    effects.ambientOcclusion({ name: "hangar deck occlusion", intensity: 0.35, radius: 0.62, density: 0.55, color: "#03060b" }),
-    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 8, intensity: 0.9, lights: "shadowed" }),
+    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 4, intensity: 0.9, lights: "shadowed" }),
     environments.preset("studio", { name: "hangar armour reflections", intensity: 0.65, background: false }),
     effects.vignette({ name: "hangar vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
@@ -38,8 +38,8 @@ export function createMechHangarEffectsPass(options: {
         gravity: 0,
         drag: 0,
         lifetime: [10, 14],
-        maxParticles: 420,
-        rate: 38,
+        maxParticles: 210,
+        rate: 19,
         prewarm: 14,
         size: [0.03, 0.06],
         materialMode: "additive-glow",
@@ -57,8 +57,8 @@ export function createMechHangarEffectsPass(options: {
         gravity: 0,
         drag: 0,
         lifetime: [0.6, 1.1],
-        maxParticles: 150,
-        rate: 120,
+        maxParticles: 100,
+        rate: 80,
         prewarm: 2,
         size: [0.02, 0.04],
         materialMode: "spark",
