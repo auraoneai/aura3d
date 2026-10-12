@@ -6,12 +6,14 @@ import { nonFavicon, openTool } from "./specHelpers";
 // (?tools=temporal-dolly). Per-pixel luma sigma in the "spheres" mask:
 //   sigma(core) <= 1.2 x sigma(three r185)
 //   sigma(core) <= 0.5 x sigma(flag-off, a3d-qr=none)
-// Sanity: every engine drew a lit frame (mean luma > 8/255) and the dolly
-// changed the mask on most frames, so a black or frozen canvas cannot pass.
+// Sanity: every engine's readback is opaque (a cleared / unreadable drawing
+// buffer reads back alpha 0) and not black, and the dolly changed the mask on
+// most frames, so a blank or frozen canvas cannot pass.
 
 interface EngineResult {
   readonly sigma: { readonly meanSigma: number; readonly p95Sigma: number; readonly maxSigma: number; readonly pixels: number; readonly frames: number };
   readonly meanLuma: number;
+  readonly opaqueFraction: number;
   readonly changedFrames: number;
 }
 
@@ -31,6 +33,7 @@ function assertDrawn(label: string, result: EngineResult | null, frames: number)
   const r = result!;
   expect(r.sigma.frames, `${label} frame count`).toBe(frames);
   expect(r.sigma.pixels, `${label} mask pixels`).toBeGreaterThan(0);
+  expect(r.opaqueFraction, `${label} readback is not opaque`).toBeGreaterThan(0.99);
   expect(r.meanLuma, `${label} mask is black`).toBeGreaterThan(8);
   expect(r.changedFrames, `${label} dolly did not move the image`).toBeGreaterThanOrEqual(Math.floor(frames / 2));
   return r;
@@ -41,8 +44,10 @@ test("01-S9 specular AA temporal sigma: core <= 1.2x three and <= 0.5x flag-off"
   const pageErrors: string[] = [];
 
   const core = await openTool<TemporalDollyReport>(page, "tools=temporal-dolly&a3d-qr=core", pageErrors);
-  expect(core.errors).toEqual([]);
   const off = await openTool<TemporalDollyReport>(page, "tools=temporal-dolly&a3d-qr=none", pageErrors);
+  const raw = { core: core.aura, none: off.aura, three: core.three, errors: [...core.errors, ...off.errors] };
+  console.log(`[01-S9] raw ${JSON.stringify(raw)}`);
+  expect(core.errors).toEqual([]);
   expect(off.errors).toEqual([]);
 
   const auraCore = assertDrawn("aura core", core.aura, core.frames);

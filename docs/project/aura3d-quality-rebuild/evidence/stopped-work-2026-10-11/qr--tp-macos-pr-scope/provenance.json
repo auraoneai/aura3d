@@ -1,0 +1,39 @@
+{
+  "branch": "qr/tp-macos-pr-scope",
+  "tip": "122a6ffafae49d6a1b348d352d3ac507a62d8e8b",
+  "base": "503624cf27d3a0c6b7162bb3df1db71e611e5249",
+  "tree": "c9a072512b1333b1af8cb94fef669bacfb6c2967",
+  "reconstructedTree": "c9a072512b1333b1af8cb94fef669bacfb6c2967",
+  "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/qr--tp-macos-pr-scope",
+  "committedPatchSha256": "61891fe61d7c335a54fa8d4a78e6f29144b4691575e8d2b44215158d2d56624e",
+  "committedPatchBytes": 14053,
+  "changedFiles": [
+    "M\t.github/workflows/asset-optimize.yml",
+    "M\t.github/workflows/lighting-quality.yml",
+    "M\t.github/workflows/qr-contracts.yml",
+    "M\t.github/workflows/qr-prd01-core.yml",
+    "M\t.github/workflows/qr-prd04-materials.yml",
+    "M\t.github/workflows/qr-prd05-assets-browser.yml",
+    "M\t.github/workflows/qr-prd05-gates.yml",
+    "M\t.github/workflows/qr-prd06-animation-browser.yml",
+    "M\t.github/workflows/qr-prd08-camera.yml",
+    "M\t.github/workflows/qr-prd09-game.yml",
+    "M\t.github/workflows/qr-prd10-world.yml",
+    "M\t.github/workflows/qr-prd13-authoring.yml",
+    "M\t.github/workflows/qr-prd14-games.yml",
+    "M\t.github/workflows/qr-prd15-arch-gates.yml",
+    "M\t.github/workflows/qr-prd15-bundle-size.yml",
+    "M\t.github/workflows/qr-prd15-pack-check.yml",
+    "M\t.github/workflows/qr-prd15-specs.yml",
+    "M\t.github/workflows/quality-gate.yml",
+    "M\t.github/workflows/quality-rebuild-capture.yml",
+    "M\t.github/workflows/test.yml"
+  ],
+  "uniqueCommits": [
+    "122a6ffafae49d6a1b348d352d3ac507a62d8e8b ci: drop qr/** and aura3d-quality-rebuild/** branch push triggers (runs doubled per PR push)",
+    "01643221a1ed68b63df053f6e230a0de426ad5e5 ci(qr-contracts): macOS browser job on PRs only for contract changes; drop duplicate qr/** push runs",
+    "d472ee09c44387eefcff053bd47e8d498a6c2573 ci: run heavy macOS workflows on PRs only when their paths change (throughput)"
+  ],
+  "sourceWorktree": "",
+  "workingFiles": []
+}

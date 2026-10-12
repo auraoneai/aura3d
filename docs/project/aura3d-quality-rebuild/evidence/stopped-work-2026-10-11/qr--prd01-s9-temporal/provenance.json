@@ -1,0 +1,19 @@
+{
+  "branch": "qr/prd01-s9-temporal",
+  "tip": "e5df8116509eba9ae6271562dfda68e7d95248b7",
+  "base": "0cd1a22ca75f4d28480a0786b338bc2a850e044b",
+  "tree": "fe0542a93e4e297d783f60fe1f090905356ea583",
+  "reconstructedTree": "fe0542a93e4e297d783f60fe1f090905356ea583",
+  "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/qr--prd01-s9-temporal",
+  "committedPatchSha256": "1f0e54ee442e898625ebdf29a8afbb802846459b947f2e2727a6230f568ee1c1",
+  "committedPatchBytes": 6026,
+  "changedFiles": [
+    "M\ttests/qr/prd01/browser/temporal-sigma.spec.ts",
+    "M\ttests/qr/prd01/harness/temporalDollyTools.ts"
+  ],
+  "uniqueCommits": [
+    "e5df8116509eba9ae6271562dfda68e7d95248b7 test(qr/prd01): 01-S9 readback with preserveDrawingBuffer; opaque sanity; log raw before asserts"
+  ],
+  "sourceWorktree": "",
+  "workingFiles": []
+}

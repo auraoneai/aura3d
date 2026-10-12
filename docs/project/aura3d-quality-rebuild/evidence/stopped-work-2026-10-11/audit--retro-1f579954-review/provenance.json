@@ -1,0 +1,18 @@
+{
+  "branch": "audit/retro-1f579954-review",
+  "tip": "b42790ba116f1215ec304bb7494888c6c649c7be",
+  "base": "1f5799548c97aaa23e10127ef9682b12cd3f5553",
+  "tree": "bc2ad632f295fbea1c3d9e2bc10c6fddb9068e80",
+  "reconstructedTree": "bc2ad632f295fbea1c3d9e2bc10c6fddb9068e80",
+  "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/audit--retro-1f579954-review",
+  "committedPatchSha256": "ce0514e2c6c5c821687598b7eafb9c028024890cb54bffb82851304cf53c6548",
+  "committedPatchBytes": 2715,
+  "changedFiles": [
+    "A\tdocs/project/aura3d-quality-rebuild/process-audit/retro-1f579954.README.md"
+  ],
+  "uniqueCommits": [
+    "b42790ba116f1215ec304bb7494888c6c649c7be docs(qr/tp): P-60 retro-review scope for direct push 1f579954"
+  ],
+  "sourceWorktree": "",
+  "workingFiles": []
+}

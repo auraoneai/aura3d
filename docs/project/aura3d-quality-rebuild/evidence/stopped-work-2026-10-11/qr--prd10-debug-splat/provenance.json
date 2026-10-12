@@ -1,0 +1,22 @@
+{
+  "branch": "qr/prd10-debug-splat",
+  "tip": "f85c56639dd1c33b5385ae61a4f09e5ca083f522",
+  "base": "18d3db920cf0759f9c993e6a0b7b1659ab509936",
+  "tree": "5b43e20fc34c8e17d78a6ffc273ee17e0a5559e5",
+  "reconstructedTree": "5b43e20fc34c8e17d78a6ffc273ee17e0a5559e5",
+  "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/qr--prd10-debug-splat",
+  "committedPatchSha256": "08c3ec757526162579650307991d5537210d2fcea7c3dfc7fd8541ad9f342915",
+  "committedPatchBytes": 631,
+  "changedFiles": [
+    "M\tpackages/rendering/src/world/terrain/shaders/terrain.vert.glsl.ts"
+  ],
+  "uniqueCommits": [
+    "f85c56639dd1c33b5385ae61a4f09e5ca083f522 debug(prd10): terrain outputs splat weights (DO NOT MERGE)"
+  ],
+  "sourceWorktree": "/Users/gurbakshchahal/platforms/aura3d-wt-prd10-dbg",
+  "workingFiles": [],
+  "status": "",
+  "unstagedPatchSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stagedPatchSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "ignoredPaths": []
+}

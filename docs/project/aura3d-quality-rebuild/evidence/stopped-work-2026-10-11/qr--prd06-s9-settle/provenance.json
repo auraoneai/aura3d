@@ -1,0 +1,55 @@
+{
+  "branch": "qr/prd06-s9-settle",
+  "tip": "3a1b3954b29c0338e71ccefebe1e2a7437925767",
+  "base": "3a1b3954b29c0338e71ccefebe1e2a7437925767",
+  "tree": "9ccc99d2781275b0a9fa67893ea426755e87a175",
+  "reconstructedTree": "9ccc99d2781275b0a9fa67893ea426755e87a175",
+  "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/qr--prd06-s9-settle",
+  "committedPatchSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "committedPatchBytes": 0,
+  "changedFiles": [],
+  "uniqueCommits": [],
+  "sourceWorktree": "/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-a4a8e8423b6eacaeb",
+  "workingFiles": [
+    {
+      "path": "packages/animation/src/SpringBones.ts",
+      "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/qr--prd06-s9-settle/working-files/packages/animation/src/SpringBones.ts.source",
+      "sha256": "70de5bb84122a830e447146da298fdce5b485ef7e3a73c28e6fdfcb7877676e1",
+      "bytes": 38354
+    },
+    {
+      "path": "tests/unit/animation/zz-s9-probe.test.ts",
+      "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/qr--prd06-s9-settle/working-files/tests/unit/animation/zz-s9-probe.test.ts.source",
+      "sha256": "312834ad388e619c7fcc26779e5364d465c8e48b5654c4cf78e67956b32e2396",
+      "bytes": 6639
+    }
+  ],
+  "status": "M packages/animation/src/SpringBones.ts\n?? tests/unit/animation/zz-s9-probe.test.ts",
+  "unstagedPatchSha256": "94cfb50a8a5dffd20e8064b5bfb8a6ddc0001db12960ac2a32a1010dacabcc3e",
+  "stagedPatchSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "ignoredPaths": [
+    "node_modules/",
+    "packages/animation/node_modules/",
+    "packages/apps/node_modules/",
+    "packages/assets/node_modules/",
+    "packages/audio/node_modules/",
+    "packages/aura3d-cli/node_modules/",
+    "packages/controls/node_modules/",
+    "packages/create-aura3d/node_modules/",
+    "packages/debug/node_modules/",
+    "packages/ecs/node_modules/",
+    "packages/editor-runtime/node_modules/",
+    "packages/engine/node_modules/",
+    "packages/game/node_modules/",
+    "packages/input/node_modules/",
+    "packages/navigation-recast/node_modules/",
+    "packages/physics-rapier/node_modules/",
+    "packages/physics/node_modules/",
+    "packages/product-studio/node_modules/",
+    "packages/react/node_modules/",
+    "packages/rendering/node_modules/",
+    "packages/scene/node_modules/",
+    "packages/workflows/node_modules/",
+    "workers/asset-index-cron/node_modules/"
+  ]
+}

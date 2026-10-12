@@ -1,0 +1,65 @@
+diff --git a/docs/project/aura3d-quality-rebuild/process-audit/retro-1f579954.README.md b/docs/project/aura3d-quality-rebuild/process-audit/retro-1f579954.README.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..aebee6ef65d69bdc4866f601af2f1bee3e817bab
+--- /dev/null
++++ b/docs/project/aura3d-quality-rebuild/process-audit/retro-1f579954.README.md
+@@ -0,0 +1,59 @@
++# P-60 retro-review: direct push 1f579954
++
++Track P row P-60 (PRD-16 §3.5). This draft PR exists only to give the direct
++push a reviewable diff and a CI run. Never merge it.
++
++## Scope
++
++- Commit: `1f5799548c97aaa23e10127ef9682b12cd3f5553`, "merge(origin/main):
++  second wave — lanes 07/11/12/14 + typecheck repairs", Gurbaksh Chahal,
++  2026-10-07 02:45 UTC. Pushed to main with no PR.
++- Parents: `2ed5c16e` (first, the PR base `audit/retro-1f579954`; itself under
++  review in the `audit/retro-2ed5c16e` draft) and `ebe028b7` (merged side).
++- Diff vs first parent: 444 files, +55,979 / -34,989.
++- Files per owning lane (longest prefix in `.github/QR_OWNERSHIP.json` at
++  origin/main 00c56b1b; "15 default" = paths with no rule):
++
++| Lane | Files |
++| --- | --- |
++| 09 | 1 |
++| 12 | 39 |
++| 13 | 2 |
++| 14 | 340 |
++| 15 | 7 |
++| 15 default | 55 |
++
++The commit title names lanes 07 and 11, but no file maps to them; their files
++fall in the 55 unowned paths. Lane 07 and 11 still review those paths, and
++any that belong to them get a `QR_OWNERSHIP.json` rule (P-61).
++
++## Lane matrix to run
++
++Run each on this PR head and on the base, flags `none` and `$ALL`
++(GitLab captures through `qr-gitlab-ci.yml`, never locally):
++
++| Lane | Workflow / suite |
++| --- | --- |
++| 07 | `prd07-vfx.yml` |
++| 09 | `qr-prd09-game.yml`, `qr-prd09-routes.yml` |
++| 11 | `qr-prd11-perf.yml` |
++| 12 | `quality-gate.yml`, `quality-rebuild-capture.yml`, GitLab `suite=benchmark` |
++| 13 | `qr-prd13-authoring.yml` |
++| 14 | `qr-prd14-games.yml`, GitLab `suite=games` with `local_build=true` (all 18 games) |
++| 15 | `ci.yml` (Type Check, unit), `qr-prd15-arch-gates.yml`, `qr-prd15-bundle-size.yml` |
++| all | `qr-contracts.yml`, `qr-required.yml` (allflags-smoke, ownership) |
++
++## Report
++
++Each owning lane comments on this PR with either an acceptance of its files or
++the list of hunks it reverts in its own PR. Cross-lane hunks need the owner's
++recorded acceptance (P-61 rule). The "typecheck repairs" hunks are reviewed by
++lane 15 against `CI / Type Check` on the head.
++
++## Done when
++
++Every lane in the table has a run id (head and base, `none` and `$ALL`) and a
++recorded accept/revert comment here; then this draft is closed unmerged and
++the result is recorded in `process/TRACK-P-STATUS.md`.
++
++Refs #376 #839

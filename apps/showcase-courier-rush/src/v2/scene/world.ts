@@ -5,6 +5,7 @@
 // courier van + 8 lane-loop traffic bodies, movable pickup/drop zone rigs,
 // and the impact feedback nodes. No emissive fill.
 import { game, model, primitives, type AuraNodeInput } from "@aura3d/engine";
+import { batchStaticPrimitives } from "./batch";
 import { assets } from "../../../../../src/aura-assets";
 import { buildCityDressing } from "../../legacy/city";
 import {
@@ -19,7 +20,8 @@ export interface CourierWorldNodes {
 /** Whole static + runtime world: kit dressing, zone rigs, van, traffic, fx nodes. */
 export function courierWorldNodes(): CourierWorldNodes {
   const dressing = buildCityDressing(assets, false, "day");
-  const nodes: AuraNodeInput[] = [...dressing.staticNodes, ...dressing.pickupZone, ...dressing.dropZone];
+  const staticDressing = batchStaticPrimitives(dressing.staticNodes, "courier static");
+  const nodes: AuraNodeInput[] = [...staticDressing.nodes, ...dressing.pickupZone, ...dressing.dropZone];
 
   // Hero van: typed Meshy body fit to the delivery footprint; the sim pose
   // drives it every frame. Livery trim + bumper accents attach to the pose.

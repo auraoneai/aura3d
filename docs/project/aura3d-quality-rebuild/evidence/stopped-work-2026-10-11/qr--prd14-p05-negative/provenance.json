@@ -1,0 +1,18 @@
+{
+  "branch": "qr/prd14-p05-negative",
+  "tip": "44c949d3bc6d1e0f9192bd7544fe798980932c8c",
+  "base": "e3e41eda84a5d9e591273231f835eb1ad862fb30",
+  "tree": "c04a12656ce233ad2e6b86f73a982f25df8362a4",
+  "reconstructedTree": "c04a12656ce233ad2e6b86f73a982f25df8362a4",
+  "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/qr--prd14-p05-negative",
+  "committedPatchSha256": "643866a854f1812c761b68852719afef59e9bd9353a83efc1ece81a0a7b0616d",
+  "committedPatchBytes": 628,
+  "changedFiles": [
+    "M\tapps/showcase-bank-shot/src/v2/scene/lighting.ts"
+  ],
+  "uniqueCommits": [
+    "44c949d3bc6d1e0f9192bd7544fe798980932c8c [QR-14] P-05 NEGATIVE PROBE \u2014 do not merge: capture=review branch in bank-shot v2"
+  ],
+  "sourceWorktree": "",
+  "workingFiles": []
+}

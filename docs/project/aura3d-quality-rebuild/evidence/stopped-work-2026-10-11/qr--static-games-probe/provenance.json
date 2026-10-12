@@ -1,0 +1,18 @@
+{
+  "branch": "qr/static-games-probe",
+  "tip": "2e1124ed4abd0071e357fe727d4a1b509da51874",
+  "base": "ff9d618a7e0d6feeea60376c6c141806285fbfff",
+  "tree": "29e13fce4dbf72b33c009fe671223fb7b71f809b",
+  "reconstructedTree": "29e13fce4dbf72b33c009fe671223fb7b71f809b",
+  "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/qr--static-games-probe",
+  "committedPatchSha256": "f839c036ee599c814030cb58e96d7685d1d001980b66b4e1f745a207f585f458",
+  "committedPatchBytes": 3827,
+  "changedFiles": [
+    "A\t.github/workflows/qr-static-games-probe.yml"
+  ],
+  "uniqueCommits": [
+    "2e1124ed4abd0071e357fe727d4a1b509da51874 ci(probe): re-capture 3 static showcase games with real start input"
+  ],
+  "sourceWorktree": "",
+  "workingFiles": []
+}

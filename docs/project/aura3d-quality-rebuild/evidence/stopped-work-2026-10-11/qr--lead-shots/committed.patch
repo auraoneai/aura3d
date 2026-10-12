@@ -1,0 +1,106 @@
+diff --git a/.github/workflows/lead-game-shots.yml b/.github/workflows/lead-game-shots.yml
+new file mode 100644
+index 0000000000000000000000000000000000000000..8e5acc543c44064c1919fb0f7812d628a5fbea7b
+--- /dev/null
++++ b/.github/workflows/lead-game-shots.yml
+@@ -0,0 +1,100 @@
++name: Lead game shots (before/after, L4)
++
++# Program-lead before/after evidence: all 18 showcase games built from source at
++# a given ref, captured at 1280x720 on an NVIDIA L4 self-hosted runner with
++# Vulkan ANGLE. Push to qr/lead-shots runs the fixed A/B/C matrix; dispatch runs
++# one set. The job fails if the runner is not an L4 (never mix GPU classes).
++
++on:
++  workflow_dispatch:
++    inputs:
++      ref: { description: "Commit/ref to build and capture", required: true }
++      flags: { description: "none | all | comma list", required: false, default: "none" }
++      label: { description: "Artifact label (before|after|...)", required: true }
++  push:
++    branches: ["qr/lead-shots"]
++    paths: [".github/workflows/lead-game-shots.yml"]
++
++permissions:
++  contents: read
++
++jobs:
++  shots:
++    name: "shots ${{ matrix.label }} (${{ matrix.flags }})"
++    runs-on: [self-hosted, azure-gpu, gpu-l4]
++    timeout-minutes: 90
++    strategy:
++      fail-fast: false
++      matrix:
++        include: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('[{{"ref":"{0}","flags":"{1}","label":"{2}"}}]', inputs.ref, inputs.flags, inputs.label) || '[{"ref":"322d78b1391f1c8293cc8e714c7d8a6ba7541343","flags":"none","label":"B-after-lane-s1","strip":"false","games":"aura-clash-showcase,showcase-turbo-drift-circuit,showcase-neon-swarm,showcase-pulse-tunnel,showcase-rooftop-buckets,showcase-patrol-wing"},{"ref":"322d78b1391f1c8293cc8e714c7d8a6ba7541343","flags":"none","label":"B-after-lane-s2","strip":"false","games":"showcase-blockfall-reactor,showcase-siege-golf,showcase-gravity-post,showcase-mech-hangar,showcase-gallery-shift,showcase-bank-shot"},{"ref":"322d78b1391f1c8293cc8e714c7d8a6ba7541343","flags":"none","label":"B-after-lane-s3","strip":"false","games":"showcase-skyline-runner,showcase-aurora-lander,showcase-courier-rush,showcase-vault-breakers,showcase-deep-recovery,showcase-orbital-defense"}]') }}
++    env:
++      QRC_LOCAL_BUILD: "true"
++      QRC_NO_MOBILE: "true"
++      QRC_VIEWPORTS: "1280x720"
++      QRC_FLAGS: ${{ matrix.flags }}
++      QRC_GAMES: ${{ matrix.games || '' }}
++      QRC_RUN_TIMEOUT_MS: "420000"
++      QRC_GAME_TIMEOUT_MS: "480000"
++      QRC_GPU_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
++    steps:
++      - name: Require NVIDIA L4
++        run: |
++          set -euo pipefail
++          gpu="$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)"
++          echo "runner=$RUNNER_NAME gpu=$gpu" | tee -a "$GITHUB_STEP_SUMMARY"
++          case "$gpu" in *L4*) ;; *) echo "::error::not an L4 runner ($gpu)"; exit 1 ;; esac
++      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
++        with:
++          ref: ${{ matrix.ref }}
++          lfs: true
++      - uses: pnpm/action-setup@v4
++        with:
++          version: 11.1.3
++      - uses: actions/setup-node@v4
++        with:
++          node-version: '22'
++          cache: 'pnpm'
++      - run: pnpm install --frozen-lockfile
++      - run: pnpm exec playwright install chromium
++      - name: Renderer probe (same launch args)
++        run: |
++          cat > /tmp/probe.mjs <<'JS'
++          import { chromium } from "@playwright/test";
++          const args = process.env.QRC_GPU_ARGS.split(/\s+/).filter(Boolean);
++          const b = await chromium.launch({ channel: "chromium", headless: true, args });
++          const p = await b.newPage();
++          await p.setContent("<canvas id=c></canvas>");
++          const r = await p.evaluate(() => { const gl = document.getElementById("c").getContext("webgl2");
++            const i = gl && gl.getExtension("WEBGL_debug_renderer_info");
++            return { webgl2: !!gl, renderer: i ? gl.getParameter(i.UNMASKED_RENDERER_WEBGL) : null, webgpu: !!navigator.gpu }; });
++          await p.goto("chrome://gpu"); await p.waitForTimeout(2000);
++          const t = (await p.evaluate(() => document.body.innerText)).split("\n").filter((l) => /Vulkan|ANGLE|GL_RENDERER|WebGL|Rasterization|SwiftShader/i.test(l)).slice(0, 25);
++          console.log(JSON.stringify({ version: b.version(), ...r }, null, 1)); console.log(t.join("\n"));
++          await b.close();
++          JS
++          cp /tmp/probe.mjs ./qr-lead-probe.mjs && node ./qr-lead-probe.mjs | tee -a "$GITHUB_STEP_SUMMARY"; rm -f ./qr-lead-probe.mjs
++      - name: Strip per-game games.json qrFlags (true flags-off; workflow branch only, #626)
++        if: ${{ matrix.strip == 'true' }}
++        run: |
++          node -e 'const f="tools/quality-rebuild-capture/games.json";const fs=require("fs");const d=JSON.parse(fs.readFileSync(f));for(const g of d.games)delete g.qrFlags;if(d.defaults)delete d.defaults.qrFlags;fs.writeFileSync(f,JSON.stringify(d,null,2));console.log("stripped qrFlags from",d.games.length,"games")'
++      - name: Build all 18 games from source
++        run: node tools/quality-rebuild-capture/capture-games.mjs --build-only --no-alt-routes
++      - name: Capture
++        run: |
++          set -uo pipefail
++          node tools/quality-rebuild-capture/capture-games.mjs --skip-build --no-alt-routes
++          echo "capture exit $?" | tee -a "$GITHUB_STEP_SUMMARY"
++          { echo "ref=${{ matrix.ref }}"; echo "sha=$(git rev-parse HEAD)"; echo "flags=$QRC_FLAGS";
++            echo "runner=$RUNNER_NAME"; nvidia-smi --query-gpu=name,driver_version --format=csv,noheader; } \
++            > tools/quality-rebuild-capture/out/run-meta.txt
++      - name: Upload
++        if: always()
++        uses: actions/upload-artifact@v4
++        with:
++          name: lead-shots-${{ matrix.label }}
++          path: |
++            tools/quality-rebuild-capture/out/**/*.png
++            tools/quality-rebuild-capture/out/report.json
++            tools/quality-rebuild-capture/out/run-meta.txt
++          retention-days: 14
++          if-no-files-found: warn

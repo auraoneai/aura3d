@@ -1,0 +1,23 @@
+{
+  "branch": "qr/lead-site-build",
+  "tip": "abf593d47349f7e4690b01cf4ecf3166c6a74f34",
+  "base": "f12c58e78b328b3f5649256d356f50352c5c1026",
+  "tree": "b69664ca28fbb6af234ed64948a295a3475362f9",
+  "reconstructedTree": "b69664ca28fbb6af234ed64948a295a3475362f9",
+  "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/qr--lead-site-build",
+  "committedPatchSha256": "f51bc793619ca9b33ab7c6ad2e6a983465a9dce1f1af9cc675fb0dd838093e30",
+  "committedPatchBytes": 3612,
+  "changedFiles": [
+    "A\t.github/workflows/lead-site-build.yml",
+    "M\tmarketing/scripts/build-showcase-routes.mjs",
+    "M\tpackages/engine/src/public/renderer.ts"
+  ],
+  "uniqueCommits": [
+    "abf593d47349f7e4690b01cf4ecf3166c6a74f34 ci(lead-site-build): build packages (dist) before the marketing build",
+    "e166be0ab3cb41c7446d9155bd4f56c6ac8948e9 fix(marketing): showcase route build reads game helpers from agent-api/nodes/game",
+    "62c48863cb3e907056c40a9e40c2eb474924b94a fix(engine): export a3dRenderFrame(Async) from @aura3d/engine/renderer",
+    "bf71d6e4066f849662b3845b4e30f24bd73cb6fb ci: lead-site-build (remote marketing build for release)"
+  ],
+  "sourceWorktree": "",
+  "workingFiles": []
+}

@@ -1,0 +1,108 @@
+diff --git a/tests/qr/prd01/browser/temporal-sigma.spec.ts b/tests/qr/prd01/browser/temporal-sigma.spec.ts
+index ed6ed6efbc77d77f1842a7255a88958230eb5ebf..620b0b1c959f9ceac20c8b2e8b56552ef8434e29 100644
+--- a/tests/qr/prd01/browser/temporal-sigma.spec.ts
++++ b/tests/qr/prd01/browser/temporal-sigma.spec.ts
+@@ -6,12 +6,14 @@ import { nonFavicon, openTool } from "./specHelpers";
+ // (?tools=temporal-dolly). Per-pixel luma sigma in the "spheres" mask:
+ //   sigma(core) <= 1.2 x sigma(three r185)
+ //   sigma(core) <= 0.5 x sigma(flag-off, a3d-qr=none)
+-// Sanity: every engine drew a lit frame (mean luma > 8/255) and the dolly
+-// changed the mask on most frames, so a black or frozen canvas cannot pass.
++// Sanity: every engine's readback is opaque (a cleared / unreadable drawing
++// buffer reads back alpha 0) and not black, and the dolly changed the mask on
++// most frames, so a blank or frozen canvas cannot pass.
+ 
+ interface EngineResult {
+   readonly sigma: { readonly meanSigma: number; readonly p95Sigma: number; readonly maxSigma: number; readonly pixels: number; readonly frames: number };
+   readonly meanLuma: number;
++  readonly opaqueFraction: number;
+   readonly changedFrames: number;
+ }
+ 
+@@ -31,7 +33,8 @@ function assertDrawn(label: string, result: EngineResult | null, frames: number)
+   const r = result!;
+   expect(r.sigma.frames, `${label} frame count`).toBe(frames);
+   expect(r.sigma.pixels, `${label} mask pixels`).toBeGreaterThan(0);
+-  expect(r.meanLuma, `${label} mask is black`).toBeGreaterThan(8);
++  expect(r.opaqueFraction, `${label} readback is not opaque`).toBeGreaterThan(0.99);
++  expect(r.meanLuma, `${label} mask is black`).toBeGreaterThan(2);
+   expect(r.changedFrames, `${label} dolly did not move the image`).toBeGreaterThanOrEqual(Math.floor(frames / 2));
+   return r;
+ }
+@@ -41,8 +44,10 @@ test("01-S9 specular AA temporal sigma: core <= 1.2x three and <= 0.5x flag-off"
+   const pageErrors: string[] = [];
+ 
+   const core = await openTool<TemporalDollyReport>(page, "tools=temporal-dolly&a3d-qr=core", pageErrors);
+-  expect(core.errors).toEqual([]);
+   const off = await openTool<TemporalDollyReport>(page, "tools=temporal-dolly&a3d-qr=none", pageErrors);
++  const raw = { core: core.aura, none: off.aura, three: core.three, errors: [...core.errors, ...off.errors] };
++  console.log(`[01-S9] raw ${JSON.stringify(raw)}`);
++  expect(core.errors).toEqual([]);
+   expect(off.errors).toEqual([]);
+ 
+   const auraCore = assertDrawn("aura core", core.aura, core.frames);
+diff --git a/tests/qr/prd01/harness/temporalDollyTools.ts b/tests/qr/prd01/harness/temporalDollyTools.ts
+index 3b041fe021fb8267bbbacc0bd4736cf279e174d1..a915d3151a3633794b4cf88cc951e6645e5e46ae 100644
+--- a/tests/qr/prd01/harness/temporalDollyTools.ts
++++ b/tests/qr/prd01/harness/temporalDollyTools.ts
+@@ -10,8 +10,8 @@
+  * motion is the camera: per-pixel luma sigma in the spheres mask is then the
+  * geometric motion (identical in both engines) plus specular shimmer.
+  *
+- * Frames are read back synchronously after each draw (drawImage of the WebGL
+- * canvas in the same task), cropped to the spheres mask, and reduced in-page
++ * Frames are read back after each draw (drawImage of the WebGL canvas, both
++ * engines with preserveDrawingBuffer), cropped to the spheres mask, and reduced in-page
+  * with `metrics.temporalSigma`. Published on `window.__QR_SPEC__`.
+  */
+ 
+@@ -24,8 +24,10 @@ import { errorText, HALF_H, HALF_W, mountAura, mountThree, placeCanvas, qrFlagsP
+ 
+ export interface TemporalDollyEngineResult {
+   readonly sigma: TemporalSigmaResult;
+-  /** Mean mask luma over all frames (sanity: a black frame has sigma 0). */
++  /** Mean mask luma over all frames. */
+   readonly meanLuma: number;
++  /** Fraction of mask pixels with alpha > 0 (sanity: an unreadable / cleared drawing buffer reads back 0). */
++  readonly opaqueFraction: number;
+   /** Frames whose mask crop differs from the previous frame (sanity: the dolly moved). */
+   readonly changedFrames: number;
+ }
+@@ -104,7 +106,7 @@ function populateThree(target: THREE.Scene): void {
+   target.add(floor);
+ }
+ 
+-/** Synchronous mask crop of a WebGL canvas right after its draw (no preserveDrawingBuffer needed). */
++/** Mask crop of a WebGL canvas right after its draw. */
+ function makeCropper(source: HTMLCanvasElement): () => ImageLike {
+   const x = Math.floor(MASK.x * source.width);
+   const y = Math.floor(MASK.y * source.height);
+@@ -126,15 +128,17 @@ function summarize(frames: readonly ImageLike[]): TemporalDollyEngineResult {
+   let lumaSum = 0;
+   let lumaCount = 0;
+   let changedFrames = 0;
++  let opaque = 0;
+   frames.forEach((frame, index) => {
+     for (let o = 0; o < frame.data.length; o += 4) {
++      if (frame.data[o + 3]! > 0) opaque += 1;
+       lumaSum += 0.2126 * frame.data[o]! + 0.7152 * frame.data[o + 1]! + 0.0722 * frame.data[o + 2]!;
+       lumaCount += 1;
+     }
+     const previous = frames[index - 1];
+     if (previous && previous.data.some((v, i) => v !== frame.data[i])) changedFrames += 1;
+   });
+-  return { sigma: temporalSigma(frames), meanLuma: lumaCount ? lumaSum / lumaCount : 0, changedFrames };
++  return { sigma: temporalSigma(frames), meanLuma: lumaCount ? lumaSum / lumaCount : 0, opaqueFraction: lumaCount ? opaque / lumaCount : 0, changedFrames };
+ }
+ 
+ export async function runTemporalDollyTool(stage: HTMLElement): Promise<TemporalDollyReport> {
+@@ -147,7 +151,8 @@ export async function runTemporalDollyTool(stage: HTMLElement): Promise<Temporal
+ 
+   try {
+     const auraCanvas = placeCanvas(stage, 0, 0, HALF_W, HALF_H, "qr-dolly-aura");
+-    app = await mountAura(auraCanvas, buildAuraSnapshot());
++    // preserveDrawingBuffer (01-S11 capture-pdb debug option) keeps the per-step readback independent of compositing.
++    app = await mountAura(auraCanvas, buildAuraSnapshot(), { renderer: { debug: { preserveDrawingBuffer: true } } });
+     const crop = makeCropper(auraCanvas);
+     const frames: ImageLike[] = [];
+     for (let i = 0; i < DOLLY_FRAMES; i += 1) {
