@@ -31,7 +31,10 @@ export function domTransitionDriver(
 ): TransitionDriver {
   return {
     setOverlay(opacity, ms, color) {
-      overlay.style.transition = `opacity ${ms}ms linear`;
+      // ms 0 must cancel a running fade: a 0 ms duration with the same end
+      // value leaves the running CSS transition untouched (CSS Transitions
+      // §3), while `none` cancels it and applies the value at once.
+      overlay.style.transition = ms > 0 ? `opacity ${ms}ms linear` : "none";
       overlay.style.opacity = String(opacity);
       if (color) overlay.style.background = color;
       overlay.classList.toggle("a3g-overlay-opaque", opacity > 0);
@@ -54,6 +57,13 @@ export async function runTransition<T>(
   const inMs = Math.round(outMs * 1.22); // §6.2 default 180 out / 220 in
   driver.setOverlay(1, outMs, spec?.color);
   await driver.sleep(outMs);
+  // The CSS fade can lag its timer on a loaded main thread (L4 run 38187300912
+  // swapped the scene at opacity 0.9724). Snap to fully opaque before the
+  // swap so the remount gap is never visible.
+  driver.setOverlay(1, 0, spec?.color);
+  // Present one more old-scene frame under the snapped, fully opaque overlay:
+  // the frame that ran in the same tick as the timer was composed before it.
+  await driver.sleep(0);
   const result = await run();
   // firstPresentedFrame only resolves for `frame.source === "raf"` frames —
   // under a stepper/offscreen present it would hang forever with the overlay

@@ -32,8 +32,7 @@ export const assets = defineAuraAssets({
       sourcePage: "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-034/2fc89fcd8c034bc9ba05eac24c9bf537.glb",
       thumbnailUrl: "/aura-assets/showcaseReadableKartCircuit.thumb.svg"
     }
-  }
-} as const);,
+  },
   "uiClickKenney": {
     "type": "audio",
     "format": "ogg",
@@ -112,3 +111,4 @@ export const assets = defineAuraAssets({
       "thumbnailUrl": "/aura-assets/uiToggleKenney.thumb.svg"
     }
   }
+} as const);

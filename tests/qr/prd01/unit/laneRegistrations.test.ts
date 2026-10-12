@@ -34,8 +34,7 @@ describe("prd01 lane registrations (Phase 0)", () => {
       "primitive.tessellation",
       "material.blend",
       "material.depthWrite",
-      "material.ior",
-      "background.toneMapped"
+      "material.ior"
     ]) {
       expect(DIAGNOSTIC_ONLY_FIELDS[key], `missing ${key}`).toBeDefined();
       expect(DIAGNOSTIC_ONLY_FIELDS[key]!.ownerPrd).toBe(1);
