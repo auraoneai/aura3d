@@ -17,7 +17,8 @@ import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeF
 import { createServer } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { VIRTUAL_CLOCK_SCRIPT, pageFrame, pageDiag } from "./page.mjs";
+import { VIRTUAL_CLOCK_SCRIPT, pageAdvance, pageDiag, pageFrame, pageReady } from "./page.mjs";
+import { applyEvent, buildSchedule } from "./schedule.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const toolDir = path.resolve(here, "..");
@@ -32,7 +33,9 @@ const opt = (name, env, fallback) => {
 const outDir = path.resolve(repoRoot, opt("--out", "FLK_OUT", "tools/quality-rebuild-capture/out/flicker"));
 const buildRoot = path.resolve(repoRoot, opt("--build-dir", "QRC_BUILD_DIR", "tools/quality-rebuild-capture/.build"));
 const wanted = opt("--games", "FLK_GAMES", "").split(",").map((s) => s.trim()).filter(Boolean);
-const arms = opt("--arms", "FLK_ARMS", "default;-post;-vfx;-animation;-lighting;none").split(";").map((s) => s.trim()).filter(Boolean);
+const arms = opt("--arms", "FLK_ARMS", "default;-post;-vfx;-animation;-lighting").split(";").map((s) => s.trim()).filter(Boolean);
+// timeline = play games.json inputs in virtual time; idle = no input (title / attract state).
+const mode = opt("--mode", "FLK_MODE", "timeline");
 const frames = Number(opt("--frames", "FLK_FRAMES", "120"));
 const warmup = Number(opt("--warmup", "FLK_WARMUP", "30"));
 const dtMs = Number(opt("--dt", "FLK_DT_MS", "16.6667"));
@@ -116,20 +119,43 @@ async function probeArm(browser, game, arm, origin, gameDir) {
   try {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90_000 });
     const start = Date.now();
-    let state = null;
+    let ready = null;
     while (Date.now() - start < 60_000) {
-      state = await page.evaluate(() => window.__AURA3D_GAME__?.state ?? null).catch(() => null);
-      if (state === "playing") break;
+      ready = await page.evaluate(pageReady).catch(() => null);
+      if (ready?.state === "playing") break;
+      if ((ready?.drawCalls ?? 0) > 0 && Date.now() - start > 4000) break;
       await sleep(200);
     }
-    rec.ready = state;
-    await sleep(1500);
+    rec.ready = ready ? `${ready.state}/${ready.drawCalls}` : null;
+    if (game.focus?.selector) {
+      const loc = page.locator(game.focus.selector).first();
+      await (game.focus.method === "click" ? loc.click({ timeout: 5000 }) : loc.focus({ timeout: 5000 })).catch(() => undefined);
+    }
+    await sleep(1000);
     await page.evaluate(() => window.__FLK__.enter());
     await sleep(300);
-    for (let i = 0; i < warmup; i++) await page.evaluate(pageFrame, { dtMs, keepPng: false, grid: [32, 18] });
+    // Play the game's own timeline in virtual time up to its 02-opening shot, then keep feeding the
+    // remaining inputs while the 120 measured frames render (same inputs on the same frame per arm).
+    const { events, markAt } = buildSchedule(mode === "timeline" ? game.timeline : []);
+    const ctx = { held: new Set(), vw, vh, origin: [0, 0] };
+    let vt = 0; let next = 0;
+    const feed = async () => { while (next < events.length && events[next].t <= vt) await applyEvent(page, events[next++], ctx).catch(() => undefined); };
+    const warmTicks = Math.max(warmup, Math.ceil(markAt / dtMs));
+    for (let i = 0; i < warmTicks; i++) {
+      await feed();
+      await page.evaluate(pageAdvance, { dtMs, count: 1 });
+      vt += dtMs;
+    }
+    rec.measuredFromMs = Math.round(vt);
     for (let i = 0; i < frames; i++) {
+      await feed();
       const keepPng = i < 3 || i === 60;
       const f = await page.evaluate(pageFrame, { dtMs, keepPng, grid: [32, 18] });
+      vt += dtMs;
+      if (i === 0) {
+        const shot = await page.screenshot({ type: "png", timeout: 15_000 }).catch(() => null);
+        if (shot) writeFileSync(path.join(gameDir, `${arm.replace(/[^A-Za-z0-9_-]/g, "_")}__page000.png`), shot);
+      }
       if (f.png) {
         writeFileSync(path.join(gameDir, `${arm.replace(/[^A-Za-z0-9_-]/g, "_")}__f${String(i).padStart(3, "0")}.png`), Buffer.from(f.png.split(",")[1], "base64"));
         delete f.png;
@@ -151,7 +177,7 @@ async function main() {
   const { chromium } = await import("@playwright/test");
   mkdirSync(outDir, { recursive: true });
   const { server, origin } = await startServer();
-  const summary = { generatedAt: new Date().toISOString(), dtMs, frames, warmup, viewport: [vw, vh], arms, games: {} };
+  const summary = { generatedAt: new Date().toISOString(), mode, dtMs, frames, warmup, viewport: [vw, vh], arms, games: {} };
   for (const game of selected) {
     const gameDir = path.join(outDir, game.id);
     mkdirSync(gameDir, { recursive: true });

@@ -102,6 +102,29 @@ export async function pageFrame({ dtMs, keepPng, grid }) {
   return out;
 }
 
+/** Evaluated in page: advance `count` virtual frames without readback (input warm-up / timeline). */
+export async function pageAdvance({ dtMs, count }) {
+  const st = window.__FLK__;
+  const realWait = (ms) => new Promise((r) => setTimeout(r, ms));
+  let ran = 0;
+  for (let k = 0; k < count; k++) {
+    ran += st.tick(dtMs);
+    let waited = 0;
+    while (st.pending() === 0 && waited < 1500) { await realWait(5); waited += 5; }
+    await realWait(0); // let input events queued between ticks dispatch
+  }
+  return ran;
+}
+
+/** Evaluated in page: readiness = beacon `playing`, or a live app that has drawn. */
+export function pageReady() {
+  let drawCalls = 0;
+  try { for (const app of globalThis.__AURA3D_LIVE_APPS__?.all?.() ?? []) drawCalls = Math.max(drawCalls, Number(app.diagnostics()?.drawCalls ?? 0)); } catch { /* ignore */ }
+  let state = null;
+  try { state = window.__AURA3D_GAME__?.state ?? null; } catch { /* ignore */ }
+  return { state: state === null ? null : String(state), drawCalls };
+}
+
 /** Evaluated in page: numeric renderer/diagnostic fields worth tracking per frame (exposure, tiers...). */
 export function pageDiag() {
   const out = {};

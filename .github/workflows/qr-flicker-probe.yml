@@ -5,7 +5,8 @@ name: QR flicker probe
 on:
   workflow_dispatch:
     inputs:
-      arms: { description: "';'-separated arms (default | none | -flag | comma list)", required: false, default: "default;-post;-vfx;-animation;-lighting;none" }
+      arms: { description: "';'-separated arms (default | none | -flag | comma list)", required: false, default: "default;-post;-vfx;-animation;-lighting" }
+      mode: { description: "timeline | idle", required: false, default: "timeline" }
       games: { description: "Comma-separated game ids (empty = shard all 18)", required: false, default: "" }
   push:
     branches: ["qr/flicker-probe-*"]
@@ -27,15 +28,22 @@ jobs:
       matrix:
         include:
           - shard: a
-            games: "aura-clash-showcase,showcase-blockfall-reactor,showcase-skyline-runner,showcase-turbo-drift-circuit,showcase-siege-golf,showcase-aurora-lander"
+            games: "aura-clash-showcase,showcase-blockfall-reactor,showcase-skyline-runner"
           - shard: b
-            games: "showcase-neon-swarm,showcase-gravity-post,showcase-courier-rush,showcase-pulse-tunnel,showcase-mech-hangar,showcase-vault-breakers"
+            games: "showcase-turbo-drift-circuit,showcase-siege-golf,showcase-aurora-lander"
           - shard: c
-            games: "showcase-rooftop-buckets,showcase-gallery-shift,showcase-deep-recovery,showcase-patrol-wing,showcase-bank-shot,showcase-orbital-defense"
+            games: "showcase-neon-swarm,showcase-gravity-post,showcase-courier-rush"
+          - shard: d
+            games: "showcase-pulse-tunnel,showcase-mech-hangar,showcase-vault-breakers"
+          - shard: e
+            games: "showcase-rooftop-buckets,showcase-gallery-shift,showcase-deep-recovery"
+          - shard: f
+            games: "showcase-patrol-wing,showcase-bank-shot,showcase-orbital-defense"
     env:
       QRC_GAMES: ${{ inputs.games || matrix.games }}
       FLK_GAMES: ${{ inputs.games || matrix.games }}
-      FLK_ARMS: ${{ inputs.arms || vars.FLK_ARMS || 'default;-post;-vfx;-animation;-lighting;none' }}
+      FLK_ARMS: ${{ inputs.arms || 'default;-post;-vfx;-animation;-lighting' }}
+      FLK_MODE: ${{ inputs.mode || 'timeline' }}
       QRC_LOCAL_BUILD: "true"
       QRC_GPU_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
     steps:
