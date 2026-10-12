@@ -40,8 +40,15 @@ test.describe("02-S5 shadow stability", () => {
   test("prd02-17: 60-frame 0.01 m dolly keeps the shadow edges stable (<= 1.5/255)", async ({ page }, testInfo) => {
     const spec = getPrd02Spec(CITY);
     const off = (await captureLaneScene(page, server, { scene: CITY, flags: "lighting", control: "no-shadows" })).pixels;
-    await captureLaneScene(page, server, { scene: CITY, flags: "lighting" });
+    const on = (await captureLaneScene(page, server, { scene: CITY, flags: "lighting" })).pixels;
     await requireLaneApp(page);
+    const probeBefore = maskPixelCount(boundaryRing(shadowMask(on, off), on, 1));
+    const staged0 = await stagePixels(page);
+    const probeStaged = maskPixelCount(boundaryRing(shadowMask(staged0, off), staged0, 1));
+    const probeMount = await page.evaluate(`(async () => { const app = window.__qrPrd02App; const s = app.scene; app.setScene({ ...s }); const t0 = performance.now(); let readyMs = -1; if (typeof app.ready === "function") { await app.ready(); readyMs = performance.now() - t0; } app.step(1/60); await new Promise((r) => requestAnimationFrame(() => r(undefined))); return { readyMs }; })()`);
+    const stagedAfterReady = await stagePixels(page);
+    const probeAfterReady = maskPixelCount(boundaryRing(shadowMask(stagedAfterReady, off), stagedAfterReady, 1));
+    console.log("[prd02c-17-probe]", JSON.stringify({ probeBefore, probeStaged, probeMount, probeAfterReady, w: on.width, sw: staged0.width }));
     const { position, target } = spec.camera;
     const forward: Vec3 = [target[0] - position[0], target[1] - position[1], target[2] - position[2]];
     const len = Math.hypot(...forward);
