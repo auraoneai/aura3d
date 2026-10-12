@@ -32,7 +32,7 @@ const FOG_TRANSITION_SECONDS = 0.14;
 export function pulseTunnelEffectsPass(options: { readonly reducedMotion: boolean; readonly playerZ: number }): readonly AuraNodeInput[] {
   const { reducedMotion, playerZ } = options;
   return [
-    effects.vignette({ intensity: 0.45, smoothness: 2.4, roundness: 1 }),
+    effects.vignette({ intensity: 0.38, smoothness: 2.4, roundness: 1 }),
     // Neon dust streaming toward the camera from the tunnel throat.
     effects.particles({
       name: "tunnel neon dust stream",
@@ -71,13 +71,13 @@ export function pulseTunnelBaseHaze(): AuraNodeInput {
   return effects.fog({
     name: "tunnel violet floor haze",
     // heightDensity selects the C-21 height mode.
-    color: "#3b1a7a",
-    density: 0.011,
-    heightDensity: 0.034,
+    color: "#5230a0",
+    density: 0.013,
+    heightDensity: 0.042,
     heightFalloff: 1.4,
     heightReference: -0.1,
     start: 1.2,
-    maxOpacity: 0.62,
+    maxOpacity: 0.7,
     affectsBackground: false,
     transitionSeconds: FOG_TRANSITION_SECONDS
   });

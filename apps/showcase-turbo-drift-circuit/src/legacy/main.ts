@@ -413,7 +413,8 @@ const vehicleBoundaryInset = turboVehicleBoundaryInset({
 // makes the target-yaw chase camera orbit into the infield.
 const recoveryHeadingLimit = Math.PI / 90;
 
-const debugMode = new URLSearchParams(window.location.search).get("debug") === "1";
+// PRD-09: never read the forbidden `debug` URL param on the shipped route.
+const debugMode = false;
 // Query-gated deterministic driver used only to produce bounded, repeatable visual
 // acceptance frames from genuine checkpoint/lap state. Keyboard and touch remain
 // separately browser-proven and this mode is never enabled on the public route.
