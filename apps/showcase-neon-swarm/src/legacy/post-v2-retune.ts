@@ -7,11 +7,11 @@
 // only applies with the flag on. The `-post` frame is therefore unchanged.
 
 /** v2 bloom composite intensity (`hdr + bloom * intensity`, clamped to [0, 4]). */
-export const POST_V2_BLOOM_INTENSITY = 1.0;
+export const POST_V2_BLOOM_INTENSITY = 4;
 /** v2 prefilter knee ratio: bloom ramps in from `threshold * (1 - knee)`. */
-export const POST_V2_BLOOM_KNEE = 0.5;
+export const POST_V2_BLOOM_KNEE = 0;
 /** v2 exposure multiplier folded into `colorGrade.exposure`. */
-export const POST_V2_EXPOSURE = 1.5;
+export const POST_V2_EXPOSURE = 1.15;
 
 interface BloomBuilderLike {
   toJSON(): unknown;
