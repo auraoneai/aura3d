@@ -3371,7 +3371,7 @@ const app = createAuraApp("#app", {
       radius: visualCaptureCamera ? 0.68 : 0.54
     }))
     .add(effects.neonBloom(postV2Bloom
-      ? { intensity: 2.2, threshold: 0.8, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
+      ? { intensity: 1.6, threshold: 0.55, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
       : { intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
     .add(effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.12 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
