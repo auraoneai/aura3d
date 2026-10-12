@@ -14,14 +14,7 @@ export function createMechHangarEffectsPass(options: {
   readonly arenaCenterZ: number;
 }): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [
-    effects.volumetricFog({
-      name: "hangar volumetric haze",
-      density: 0.04,
-      color: "#6a88a6",
-      intensity: 0.35,
-      volumetricQuality: "balanced"
-    }),
-    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 8, intensity: 0.9, lights: "shadowed" }),
+    effects.fog({ name: "hangar haze", density: 0.04, color: "#6a88a6", intensity: 0.35 }),
     environments.preset("studio", { name: "hangar armour reflections", intensity: 0.65, background: false }),
     effects.vignette({ name: "hangar vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];

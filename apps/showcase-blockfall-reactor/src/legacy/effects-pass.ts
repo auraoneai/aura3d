@@ -21,16 +21,10 @@ export function createBlockfallEffectsPass(options: BlockfallEffectsPassOptions)
     // Volumetric haze: the first volumetric-fog node replaces the old 0.028
     // depth haze, so the board (≈8.5 m) keeps most of its contrast while the
     // room behind it (12-16 m) separates into a violet atmosphere.
-    effects.volumetricFog({
-      name: "blockfall arcade volumetric haze",
-      density: 0.05,
-      color: "#5e4490",
-      intensity: 0.2,
-      volumetricQuality: "balanced"
-    }),
-    // Screen-space contact shadows from the key: grounds the cabinet and the
-    // board frame on the floor instead of letting them float.
-    effects.contactShadows({ length: 0.32, thickness: 0.06, steps: 8, intensity: 0.9, lights: "shadowed" }),
+    // Cheap forward haze instead of volumetric march + contact shadows: both
+    // cost ~25% fps on L4 in this scene (bisect 38302450159/38303732778/
+    // 38303735851 + main recheck 38305085502); the PCSS key still grounds it.
+    effects.fog({ name: "blockfall arcade haze", density: 0.05, color: "#5e4490", intensity: 0.2 }),
     effects.vignette({ name: "blockfall arcade vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
   if (!options.reducedMotion) {

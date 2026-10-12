@@ -10,14 +10,7 @@ const hdr = (r: number, g: number, b: number): string => [r, g, b] as unknown as
 
 export function createVaultEffectsPass(options: { readonly reducedMotion: boolean }): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [
-    effects.volumetricFog({
-      name: "vault arcade volumetric haze",
-      density: 0.055,
-      color: "#5a4380",
-      intensity: 0.22,
-      volumetricQuality: "balanced"
-    }),
-    effects.contactShadows({ length: 0.28, thickness: 0.05, steps: 8, intensity: 0.9, lights: "shadowed" }),
+    effects.fog({ name: "vault arcade haze", density: 0.055, color: "#5a4380", intensity: 0.22 }),
     // Studio IBL (background off) gives the steel rails, flippers and floor a
     // real reflection source instead of the dim implicit room probe.
     environments.preset("studio", { name: "vault reflection environment", intensity: 0.5, background: false }),
