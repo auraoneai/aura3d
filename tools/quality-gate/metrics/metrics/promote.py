@@ -31,9 +31,9 @@ from .metrics import flip, load_rgb, lpips_alex
 EPS = 0.005  # LPIPS noise floor between two captures of the same frame
 
 
-def _status(arm_dir: Path) -> dict[str, str]:
+def _status(arm_dir: Path, engine: str = "aura3d") -> dict[str, str]:
     report = json.loads((arm_dir / "report.json").read_text())
-    return {s["scene"]: s["engines"].get("aura3d", {}).get("status", "missing") for s in report["scenes"]}
+    return {s["scene"]: s["engines"].get(engine, {}).get("status", "missing") for s in report["scenes"]}
 
 
 def _digest(path: Path) -> str:
@@ -43,6 +43,10 @@ def _digest(path: Path) -> str:
 def score(out_dir: Path, flag_arm: str, none_arm: str = "none") -> dict[str, Any]:
     none_dir, flag_dir = out_dir / none_arm, out_dir / flag_arm
     none_status, flag_status = _status(none_dir), _status(flag_dir)
+    # The three.js frame is only a target when it rendered: a renderer-error
+    # capture still writes three.png (a fallback frame), and scoring against it
+    # is meaningless (prd04-tiled-ground, run 38186742120: three 404'd its GLB).
+    ref_status = _status(none_dir, "three")
     rows: list[dict[str, Any]] = []
     for scene in sorted(none_status):
         row: dict[str, Any] = {"scene": scene, "none": none_status[scene], "flag": flag_status.get(scene, "missing")}
@@ -50,8 +54,9 @@ def score(out_dir: Path, flag_arm: str, none_arm: str = "none") -> dict[str, Any
         a_none, a_flag = none_dir / scene / "aura3d.png", flag_dir / scene / "aura3d.png"
         if row["flag"] != "ready" or not a_flag.exists():
             row["verdict"] = "BROKEN"
-        elif not ref.exists() or not a_none.exists():
+        elif ref_status.get(scene) != "ready" or not ref.exists() or not a_none.exists():
             row["verdict"] = "NO-REFERENCE"
+            row["reference"] = ref_status.get(scene, "missing")
         else:
             row["identical"] = _digest(a_none) == _digest(a_flag)
             r, n, f = load_rgb(str(ref)), load_rgb(str(a_none)), load_rgb(str(a_flag))

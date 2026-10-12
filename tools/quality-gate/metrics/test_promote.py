@@ -21,7 +21,7 @@ def fake_lpips(ref, test):
     return float(np.abs(ref - test).mean())
 
 
-def write(out: Path, arm: str, scenes: dict):
+def write(out: Path, arm: str, scenes: dict, three_status: str = "ready"):
     (out / arm).mkdir(parents=True, exist_ok=True)
     report = {"scenes": []}
     for scene, (status, aura, three) in scenes.items():
@@ -31,7 +31,10 @@ def write(out: Path, arm: str, scenes: dict):
             Image.fromarray(np.full((8, 8, 3), aura, np.uint8)).save(d / "aura3d.png")
         if three is not None:
             Image.fromarray(np.full((8, 8, 3), three, np.uint8)).save(d / "three.png")
-        report["scenes"].append({"scene": scene, "engines": {"aura3d": {"status": status}}})
+        engines = {"aura3d": {"status": status}}
+        if three is not None:
+            engines["three"] = {"status": three_status}
+        report["scenes"].append({"scene": scene, "engines": engines})
     (out / arm / "report.json").write_text(json.dumps(report))
 
 
@@ -59,6 +62,16 @@ class PromoteTests(unittest.TestCase):
         s = self.run_case({"a": ("ready", 50, 100)}, {"a": ("renderer-error", None, None)})
         self.assertEqual(s["verdict"], "FAIL")
         self.assertEqual(s["broken"], ["a"])
+
+    def test_broken_three_reference_is_unscorable_never_pass(self):
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(promote, "lpips_alex", fake_lpips), \
+                mock.patch.object(promote, "flip", lambda r, t, m: 0.0):
+            out = Path(tmp)
+            write(out, "none", {"a": ("ready", 50, 100)}, three_status="renderer-error")
+            write(out, "x", {"a": ("ready", 90, None)})
+            s = promote.score(out, "x")["summary"]
+        self.assertEqual(s["verdict"], "FAIL")
+        self.assertEqual(s["unscorable"], ["a"])
 
     def test_identical_frames_are_no_effect_not_pass(self):
         s = self.run_case({"a": ("ready", 50, 100)}, {"a": ("ready", 50, None)})
