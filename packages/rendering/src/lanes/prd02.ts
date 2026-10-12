@@ -49,7 +49,7 @@ registerFrameContributor(createPrd02ContactShadowsContributor());
 registerFrameContributor(createPrd02ProbesContributor());
 ensurePrd02DepthFeatures();
 // 02-T1945: tier shadow filter → A3D_SHADOW_FILTER for the lookup chunk.
-registerShaderFeature(PRD02_SHADOW_FILTER_FEATURE);
+// EXP registerShaderFeature(PRD02_SHADOW_FILTER_FEATURE);
 
 // Named re-exports (not `export *`): the root barrel merges contracts/index
 // and lanes/index, and contract names like `projectCubeToSH9` /
