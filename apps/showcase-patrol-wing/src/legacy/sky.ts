@@ -12,6 +12,7 @@
  * and the return-fire orb pool. Sensor events fire once per entry exactly like
  * the vault-breakers reference (armed-pair bookkeeping).
  */
+import { effectsPassOn } from "./effects-pass";
 import {
   geometry,
   lights,
@@ -233,7 +234,13 @@ export function arenaLighting(): ArenaLighting {
     nodes: [
       lights.ambient({ name: "sky fill", color: "#b8ced5", intensity: 0.56 }).toJSON(),
       lights
-        .directional({ name: "golden-hour key", color: "#ffd0a0", intensity: 2.15 })
+        .directional({
+          name: "golden-hour key",
+          color: "#ffd0a0",
+          intensity: 2.15,
+          // Effects pass: explicit cascaded sun shadows over the island.
+          ...(effectsPassOn ? { shadow: { cascades: "auto" as const, maxDistance: 90 } } : {})
+        })
         .position(-30, 26, 18)
         .runtime({ id: "light-day", tags: ["arena-light"] })
         .toJSON(),
