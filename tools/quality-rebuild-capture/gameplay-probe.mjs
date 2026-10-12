@@ -137,6 +137,10 @@ async function probeGame(browser, game, variant, origin) {
       if (game.focus.method === "click") await loc.click({ timeout: 5000 }).catch(() => undefined); else await loc.focus({ timeout: 5000 }).catch(() => undefined);
     }
     await sleep(500);
+    // Clean frame-rate window: two cheap reads, no state sampling (sampling costs main-thread time).
+    const rafAt = () => page.evaluate(() => [performance.now(), window.__GPK__?.raf ?? 0]).catch(() => [0, 0]);
+    const [ta, ra] = await rafAt(); await sleep(3000); const [tb, rb] = await rafAt();
+    run.fpsClean = tb > ta ? +(((rb - ra) * 1000) / (tb - ta)).toFixed(1) : null;
     const idleMs = cfg.idleMs ?? probe.idleMs; const ctlMs = probe.controlMs;
     const phases = [{ name: "idle", samples: await sampled(page, idleMs) }];
     await page.screenshot({ path: path.join(gameDir, `${game.id}__idle.jpg`), type: "jpeg", quality: 55 }).catch(() => undefined);

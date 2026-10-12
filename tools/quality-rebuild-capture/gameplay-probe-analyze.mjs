@@ -137,5 +137,5 @@ export function summaryRow(gameId, variant, run) {
   const a = run.analysis;
   const drift = a.drift.map((d) => `${d.phase}: nodes ${d.movingNodes}${d.playerLeaves.length ? `; ${d.playerLeaves.slice(0, 3).join("; ")}` : ""}`).join("<br>");
   const ctl = a.controls.map((c) => `${c.name}: ${c.responseLeaves}L/${c.movedNodes}N k${c.keyEvents.capture}/${c.keyEvents.bubble}${c.keyEvents.untrusted ? ` U${c.keyEvents.untrusted}` : ""}`).join("<br>");
-  return `| ${gameId} | ${variant} | ${a.fpsIdle} | ${drift.replace(/\|/g, "/")} | ${ctl} | ${a.sinking.slice(0, 3).join("<br>") || "-"} | ${a.nan.slice(0, 3).join(", ") || "-"} |`;
+  return `| ${gameId} | ${variant} | ${run.fpsClean ?? "?"} (${a.fpsIdle} sampled) | ${drift.replace(/\|/g, "/")} | ${ctl} | ${a.sinking.slice(0, 3).join("<br>") || "-"} | ${a.nan.slice(0, 3).join(", ") || "-"} |`;
 }
