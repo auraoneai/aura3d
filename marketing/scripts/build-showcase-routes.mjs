@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { removeLocalAuraAssets, rewriteBuiltAuraAssetUrls } from "./showcase-cdn-assets.mjs";
+import { assertNoGitLfsPointers, assertNotGitLfsPointer } from "./git-lfs-pointer.mjs";
 
 /*
  * Engine version is derived from the repository, not restated here.
@@ -112,6 +113,19 @@ function assertEngineBuildContract() {
   }
 
   assertRequiredEngineSourceHelpers();
+}
+
+function assertShowcaseAssetsMaterialized() {
+  assertNoGitLfsPointers(
+    path.join(repoRoot, "public", "aura-assets"),
+    "public/aura-assets"
+  );
+  for (const route of ["aura-clash-showcase", "showcase-meshy-relic-pilot"]) {
+    assertNoGitLfsPointers(
+      path.join(repoRoot, "apps", route, "public", "aura-assets"),
+      `apps/${route}/public/aura-assets`
+    );
+  }
 }
 
 function assertRequiredEngineSourceHelpers() {
@@ -237,6 +251,7 @@ function copyAuraAssets() {
    */
   const companionTextures = path.join(repoRoot, "public", "aura-assets", "Textures");
   if (existsSync(companionTextures)) {
+    assertNoGitLfsPointers(companionTextures, "public/aura-assets/Textures");
     const target = path.join(distDir, "aura-assets", "Textures");
     mkdirSync(target, { recursive: true });
     cpSync(companionTextures, target, { recursive: true });
@@ -318,6 +333,7 @@ function copyAuraAssetFile(assetUrl) {
   if (!existsSync(source)) {
     throw new Error(`Website showcase asset file is missing: ${source}`);
   }
+  assertNotGitLfsPointer(source, `Website showcase asset ${assetUrl}`);
   mkdirSync(path.dirname(target), { recursive: true });
   copyFileSync(source, target);
 }
@@ -326,11 +342,13 @@ function copyRouteLocalAuraAssets(route) {
   const source = path.join(repoRoot, "apps", route, "public", "aura-assets");
   const target = path.join(distDir, "aura-assets");
   if (!existsSync(source)) throw new Error(`route-local Aura assets are missing: ${source}`);
+  assertNoGitLfsPointers(source, `apps/${route}/public/aura-assets`);
   mkdirSync(target, { recursive: true });
   cpSync(source, target, { recursive: true });
 }
 
 function assertBuiltRoutes() {
+  assertNoGitLfsPointers(path.join(distDir, "aura-assets"), "marketing/dist/aura-assets");
   const auraClashPlayable = path.join(distDir, "showcase", "aura-clash", "playable", "index.html");
   if (!existsSync(auraClashPlayable)) {
     throw new Error(`homepage Aura Clash playable route was not emitted: ${auraClashPlayable}`);
@@ -388,6 +406,7 @@ function assertBuiltRoutes() {
 function main() {
   assertEngineBuildContract();
   const showcaseAssetBaseUrl = resolveShowcaseAssetBaseUrl();
+  if (!showcaseAssetBaseUrl) assertShowcaseAssetsMaterialized();
   const tempDir = mkdtempSync(path.join(tmpdir(), "aura3d-marketing-showcase-"));
   try {
     const configPath = writeViteConfig(tempDir);
