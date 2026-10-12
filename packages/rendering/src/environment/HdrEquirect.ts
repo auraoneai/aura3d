@@ -105,7 +105,10 @@ function writeRgbe(data: Float32Array, width: number, _h: number, y: number, x: 
   const r = src[off]!, g = src[off + 1]!, bl = src[off + 2]!, e = src[off + 3]!;
   const i = (y * width + x) * 3;
   if (e === 0) { data[i] = 0; data[i + 1] = 0; data[i + 2] = 0; return; }
-  const scale = Math.pow(2, e - 136) / 256; // ldexp(1, e - (128 + 8))
+  // Radiance RGBE: value = mantissa · 2^(e − 128) / 256 = mantissa · 2^(e − 136)
+  // (three.js RGBELoader). The extra `/ 256` here made every C-09 HDRI probe
+  // 256× too dark (azure-gpu run 38187586433: PMREM mean luma 0.0039× three).
+  const scale = Math.pow(2, e - 136); // ldexp(1, e - (128 + 8))
   data[i] = r * scale;
   data[i + 1] = g * scale;
   data[i + 2] = bl * scale;
