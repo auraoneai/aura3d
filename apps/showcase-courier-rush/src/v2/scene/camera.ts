@@ -38,11 +38,12 @@ export function createCourierRig(state: CourierRigState): AuraCameraRig {
       const offset = chaseOffsetForBlend(lookback);
       const rightX = -fz;
       const rightZ = fx;
-      const clearZ = clearance.update(van.x, van.z, -fx, -fz, offset.offsetZ, ctx.dt);
+      const clear = clearance.update(van.x, van.z, -fx, -fz, offset.offsetZ, offset.offsetY, ctx.dt);
+      const clearZ = clear.distance;
       const pull = clearZ / offset.offsetZ;
       const want: AuraVec3 = [
         van.x - fx * clearZ + rightX * offset.offsetX * pull,
-        offset.offsetY + clearanceLift(offset.offsetZ, clearZ),
+        Math.max(offset.offsetY + clearanceLift(offset.offsetZ, clearZ), clear.minOffsetY + 0.2),
         van.z - fz * clearZ + rightZ * offset.offsetX * pull
       ];
       const wantTarget: AuraVec3 = [
@@ -56,7 +57,7 @@ export function createCourierRig(state: CourierRigState): AuraCameraRig {
       }
       // A smoothed eye can still cut a corner through a block: snap it onto
       // the clear sight line when the lagged position is not open street.
-      if (!cameraPointClear(eye[0], eye[2])) {
+      if (!cameraPointClear(eye[0], eye[2], eye[1])) {
         eye[0] = want[0]; eye[1] = Math.max(eye[1], want[1]); eye[2] = want[2];
       }
       for (let i = 0; i < 3; i += 1) {

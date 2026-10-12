@@ -1,79 +1,146 @@
 /**
- * Chase-camera clearance (flash fix): the trailing eye used to swing through
- * tower blocks at corners, so the near plane sat inside a facade and the frame
- * went near-black for a couple of frames. The street graph is the free space:
- * the eye may only sit over a street (plus its sidewalk) and never inside a
- * skyline tower footprint. When the full trailing distance is blocked the
- * camera pulls in toward the van (never closer than MIN_DISTANCE) and rises,
- * so the van stays framed from above instead of from inside a wall.
+ * Chase-camera clearance (flash fix). The flicker probe caught two kinds of
+ * black frames on the chase lens:
+ *  - a 2-frame blackout when the eye (≈3.2 m up) passed straight through the
+ *    pressure-gate crossbar (y 3.11-3.33) over the main road at z = 10.6;
+ *  - a slow fade to black when the van drove into a kit tower block (only lamp
+ *    poles collide) and the trailing eye followed it inside the box.
+ * The fix keeps the eye out of every solid box the route places: when the
+ * sight line from the van back to the eye enters a tower footprint the camera
+ * pulls in (never closer than CHASE_MIN_DISTANCE) and rises; near an overhead
+ * span it lifts above the span; if the van itself is inside a block the eye
+ * goes above that roof. Gameplay and the van are untouched.
  */
-import { SKYLINE_TOWER_FOOTPRINTS, pointOnStreet } from "../legacy/city";
+import { CITY_SCALE, SKYLINE_TOWER_FOOTPRINTS } from "../legacy/city";
 
 /** Closest the eye may get to the van (metres, horizontal). */
 export const CHASE_MIN_DISTANCE = 2.6;
-/** Sidewalk margin beyond the drivable half-width that still counts as open. */
-const STREET_OPEN_MARGIN = 1.9;
 /** Padding kept between the eye and a tower face. */
-const TOWER_PADDING = 0.7;
-const SAMPLES = 14;
+const TOWER_PADDING = 0.8;
+/** Height of the follow target above the road (camera target node y). */
+const TARGET_Y = 0.2;
+const SAMPLES = 16;
 
-/** True when a camera eye at (x, z) is in open street space. */
-export function cameraPointClear(x: number, z: number): boolean {
-  if (!pointOnStreet(x, z, STREET_OPEN_MARGIN)) return false;
-  for (const tower of SKYLINE_TOWER_FOOTPRINTS) {
-    if (
-      Math.abs(x - tower.x) <= tower.width / 2 + TOWER_PADDING &&
-      Math.abs(z - tower.z) <= tower.depth / 2 + TOWER_PADDING
-    ) return false;
+interface SolidBox {
+  readonly minX: number; readonly maxX: number;
+  readonly minZ: number; readonly maxZ: number;
+  readonly bottom: number; readonly top: number;
+}
+
+function kitTowerBoxes(): SolidBox[] {
+  // Mirrors prefabs/cityBlock.ts slots (blocks: 20) scaled by CITY_SCALE.
+  const xSlots = [-4.25, -2.58, -0.95, 1.45, 3.3];
+  const zSlots = [-4, -1.45, 1.3, 3.65];
+  const boxes: SolidBox[] = [];
+  for (let index = 0; index < 20; index += 1) {
+    const col = index % 5;
+    const row = Math.floor(index / 5);
+    const height = 1.15 + ((index * 7) % 6) * 0.45 + (col === 0 || col === 4 ? 0.25 : 0);
+    const x = xSlots[col]! * CITY_SCALE;
+    const z = zSlots[row]! * CITY_SCALE;
+    const half = (1.08 * CITY_SCALE) / 2;
+    boxes.push({ minX: x - half, maxX: x + half, minZ: z - half, maxZ: z + half, bottom: 0, top: height * CITY_SCALE });
+  }
+  return boxes;
+}
+
+/** Every solid volume the chase eye must stay out of (world space). */
+export const CAMERA_SOLIDS: readonly SolidBox[] = [
+  ...kitTowerBoxes(),
+  ...SKYLINE_TOWER_FOOTPRINTS.map((t) => ({
+    minX: t.x - t.width / 2, maxX: t.x + t.width / 2,
+    minZ: t.z - t.depth / 2, maxZ: t.z + t.depth / 2,
+    bottom: 0, top: 9
+  })),
+  // Pressure-gate crossbar over the main road (city.ts pressureMomentNodes,
+  // origin x 0, z 10.6): 4.6 x 0.22 x 0.22 at y 3.22.
+  { minX: -2.3, maxX: 2.3, minZ: 10.49, maxZ: 10.71, bottom: 3.11, top: 3.33 }
+];
+
+const inside = (box: SolidBox, x: number, z: number, pad: number): boolean =>
+  x >= box.minX - pad && x <= box.maxX + pad && z >= box.minZ - pad && z <= box.maxZ + pad;
+
+/** True when an eye at (x, eyeY, z) is outside every padded solid. */
+export function cameraPointClear(x: number, z: number, eyeY = TARGET_Y + 3): boolean {
+  for (const box of CAMERA_SOLIDS) {
+    const vPad = box.top - box.bottom < 1 ? 0.7 : 0;
+    if (eyeY < box.bottom - vPad || eyeY > box.top + vPad) continue;
+    if (inside(box, x, z, box.top - box.bottom < 1 ? 1.4 : TOWER_PADDING)) return false;
   }
   return true;
 }
 
-/**
- * Largest trailing distance <= `desired` whose whole sight line from the van
- * back to the eye stays in open space. `dirX/dirZ` is the unit direction from
- * the van toward the eye (usually -forward).
- */
-export function clearTrailingDistance(
-  vanX: number,
-  vanZ: number,
-  dirX: number,
-  dirZ: number,
-  desired: number
-): number {
-  const length = Math.hypot(dirX, dirZ) || 1;
-  const ux = dirX / length;
-  const uz = dirZ / length;
-  let clear = desired;
-  for (let i = 1; i <= SAMPLES; i += 1) {
-    const d = (desired * i) / SAMPLES;
-    if (d < CHASE_MIN_DISTANCE) continue;
-    if (!cameraPointClear(vanX + ux * d, vanZ + uz * d)) {
-      clear = Math.max(CHASE_MIN_DISTANCE, (desired * (i - 1)) / SAMPLES);
-      break;
-    }
-  }
-  return clear;
+export interface ChaseClearance {
+  /** Trailing distance actually used (<= desired). */
+  readonly distance: number;
+  /** Minimum offset height above the target node for the eye. */
+  readonly minOffsetY: number;
 }
 
 /**
- * Stateful filter: pulls in immediately when blocked (a late pull-in is the
- * black frame), eases back out slowly so the lens does not pump.
+ * Clearance for a chase eye trailing `desired` metres from the van along the
+ * unit direction (dirX, dirZ), at offset height `offsetY` above the target.
+ */
+export function chaseClearance(
+  vanX: number, vanZ: number, dirX: number, dirZ: number, desired: number, offsetY: number
+): ChaseClearance {
+  const length = Math.hypot(dirX, dirZ) || 1;
+  const ux = dirX / length;
+  const uz = dirZ / length;
+  let minOffsetY = 0;
+  // Van inside a block (it can drive through kit towers): look down from
+  // above that roof instead of from inside the box.
+  for (const box of CAMERA_SOLIDS) {
+    if (box.top - box.bottom >= 1 && inside(box, vanX, vanZ, 0.2)) {
+      minOffsetY = Math.max(minOffsetY, box.top + 1.6 - TARGET_Y);
+    }
+  }
+  if (minOffsetY > 0) return { distance: CHASE_MIN_DISTANCE, minOffsetY };
+  let distance = desired;
+  for (let i = 1; i <= SAMPLES; i += 1) {
+    const d = (desired * i) / SAMPLES;
+    if (d < CHASE_MIN_DISTANCE) continue;
+    const y = TARGET_Y + offsetY * (d / desired);
+    if (!cameraPointClear(vanX + ux * d, vanZ + uz * d, y)) {
+      distance = Math.max(CHASE_MIN_DISTANCE, (desired * (i - 1)) / SAMPLES);
+      break;
+    }
+  }
+  // Overhead spans: lift the eye over a span it would otherwise cross.
+  const eyeX = vanX + ux * distance;
+  const eyeZ = vanZ + uz * distance;
+  for (const box of CAMERA_SOLIDS) {
+    if (box.top - box.bottom >= 1) continue;
+    if (inside(box, eyeX, eyeZ, 2.2) || inside(box, vanX, vanZ, 1.2)) {
+      minOffsetY = Math.max(minOffsetY, box.top + 0.75 - TARGET_Y);
+    }
+  }
+  return { distance, minOffsetY };
+}
+
+/**
+ * Stateful filter: pulls in / rises immediately when blocked (a late reaction
+ * is the black frame), eases back out slowly so the lens does not pump.
  */
 export function createChaseClearance(): {
-  update(vanX: number, vanZ: number, dirX: number, dirZ: number, desired: number, dt: number): number;
+  update(vanX: number, vanZ: number, dirX: number, dirZ: number, desired: number, offsetY: number, dt: number): ChaseClearance;
   reset(): void;
 } {
-  let current: number | null = null;
+  let distance: number | null = null;
+  let minY = 0;
   return {
-    update(vanX, vanZ, dirX, dirZ, desired, dt) {
-      const target = clearTrailingDistance(vanX, vanZ, dirX, dirZ, desired);
-      if (current === null || target < current) current = target;
-      else current = Math.min(target, current + Math.max(0, dt) * 2.4);
-      return current;
+    update(vanX, vanZ, dirX, dirZ, desired, offsetY, dt) {
+      const target = chaseClearance(vanX, vanZ, dirX, dirZ, desired, offsetY);
+      const step = Math.max(0, dt);
+      if (distance === null || target.distance < distance) distance = target.distance;
+      else distance = Math.min(target.distance, distance + step * 2.4);
+      if (target.minOffsetY > minY) minY = target.minOffsetY;
+      else minY = Math.max(target.minOffsetY, minY - step * 3);
+      return { distance, minOffsetY: minY };
     },
     reset() {
-      current = null;
+      distance = null;
+      minY = 0;
     }
   };
 }

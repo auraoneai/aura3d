@@ -1405,20 +1405,22 @@ app.onFrame(({ dt }) => {
   const offset = chaseOffsetForBlend(chaseBlend, visualReviewCapture ? 11.4 : undefined);
   // Flash fix: keep the trailing eye out of tower blocks (see camera-clearance).
   const clearanceSnap = vanVehicle.snapshot();
-  const clearZ = visualReviewCapture
-    ? offset.offsetZ
+  const clear = visualReviewCapture
+    ? { distance: offset.offsetZ, minOffsetY: 0 }
     : chaseClearance.update(
       clearanceSnap.x,
       clearanceSnap.z,
       -Math.cos(clearanceSnap.heading),
       -Math.sin(clearanceSnap.heading),
       offset.offsetZ,
+      offset.offsetY,
       stepSeconds
     );
+  const clearZ = clear.distance;
   Object.assign(chaseCamera as unknown as MutableChaseCamera, {
     offset: [
       visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : offset.offsetX * (clearZ / offset.offsetZ),
-      visualReviewCapture ? 3.28 : offset.offsetY + clearanceLift(offset.offsetZ, clearZ),
+      visualReviewCapture ? 3.28 : Math.max(offset.offsetY + clearanceLift(offset.offsetZ, clearZ), clear.minOffsetY),
       clearZ
     ] as const
   });
