@@ -220,3 +220,26 @@ describe("Texture.update sub-image upload (T0.10a)", () => {
     expect(() => texture.update(data, { x: 0, y: 0, width: 4, height: 4 })).toThrow(/region/);
   });
 });
+
+describe("disposed-handle sweep runs only after a disposal", () => {
+  it("binds do not rescan the registry; a dispose still frees its handle on the next bind", () => {
+    const { gl, calls } = mockGl();
+    const registry = registryFor(gl);
+    let scans = 0;
+    const textures = registry.textures;
+    const iterate = textures[Symbol.iterator].bind(textures);
+    textures[Symbol.iterator] = () => { scans += 1; return iterate(); };
+    const a = new Texture({ width: 4, height: 4, format: "rgba32f", colorSpace: "linear", dynamic: true });
+    const b = new Texture({ width: 4, height: 4, format: "rgba32f", colorSpace: "linear", dynamic: true });
+    registry.getTextureHandle(a);
+    registry.getTextureHandle(b);
+    const before = scans;
+    for (let i = 0; i < 500; i += 1) registry.getTextureHandle(i % 2 ? a : b);
+    expect(scans - before).toBe(0);
+    a.dispose();
+    registry.getTextureHandle(b);
+    expect(calls.get("deleteTexture") ?? 0).toBe(1);
+    expect(registry.textures.has(a)).toBe(false);
+    expect(() => registry.getTextureHandle(a)).toThrow(/disposed/);
+  });
+});

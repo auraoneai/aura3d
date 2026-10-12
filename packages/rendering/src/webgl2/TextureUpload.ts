@@ -4,7 +4,7 @@
 // (`uploadTextureRevision`). All other paths are unchanged.
 
 import { RenderDeviceError } from "../RenderDevice";
-import { Texture, bytesPerPixel, isCompressedTextureFormat, isFloatColorTextureFormat, type TexturePixelData, type TextureUpdateRegion } from "../Texture";
+import { Texture, bytesPerPixel, currentTextureDisposeEpoch, isCompressedTextureFormat, isFloatColorTextureFormat, type TexturePixelData, type TextureUpdateRegion } from "../Texture";
 import { WEBGL_CUBE_FACES } from "../WebGL2Device";
 import { applyTextureBudget, DEFAULT_TEXTURE_BUDGET_POLICY } from "../textures/TextureBudget";
 import { resolveCompressedTextureFormatSlot } from "../contracts/textureFormats";
@@ -406,7 +406,14 @@ export class WebGL2TextureRegistry {
     this.host.gl.texParameteri(this.host.gl.TEXTURE_2D, this.host.gl.TEXTURE_MAX_LEVEL, fallbackLevels.length - 1);
   }
 
+  /** `currentTextureDisposeEpoch()` at the last full sweep (-1 = never swept). */
+  private sweptDisposeEpoch = -1;
+
   releaseDisposedTextureHandles(): void {
+    // Nothing was disposed since the last sweep: no handle can be stale.
+    const epoch = currentTextureDisposeEpoch();
+    if (epoch === this.sweptDisposeEpoch) return;
+    this.sweptDisposeEpoch = epoch;
     for (const [texture, handle] of [...this.textures]) {
       if (texture.disposed) {
         this.host.gl.deleteTexture(handle);
