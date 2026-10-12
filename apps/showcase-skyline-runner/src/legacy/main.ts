@@ -1,3 +1,4 @@
+import { resolveQrFlags } from "@aura3d/engine/contracts";
 import {
   createAuraApp,
   blendSkyBandColor,
@@ -118,6 +119,13 @@ const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const visualReviewCapture = typeof window !== "undefined"
   && new URLSearchParams(window.location.search).get("capture") === "review";
+// PRD-03 §6.6 / Q-14-1: with A3D_QR_POST on (default), bloom is linear-HDR with no
+// hidden legacy gain, so the legacy 0.1 neon bloom no longer glows. Retune for v2 only;
+// the `-post` legacy path keeps its original values.
+const postV2Bloom = resolveQrFlags({
+  url: typeof location === "undefined" ? undefined : location.href,
+  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+}).on("A3D_QR_POST");
 // PART F2/F3 adoption probe: `?juiceProbe=1` fires the root-kit juice chain once
 // (trauma + punch-in + node-backed feel effects) for the adoption spec. Review
 // captures never set the flag, so certified framing stays exact.
@@ -2092,7 +2100,9 @@ const app = createAuraApp("#app", {
     }).position(...initialPlayerPose.position).rotate(0, 0, Math.PI / 2).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode(`skyline-ember-volley-${index}`, {
       tags: ["projectile", "ember", "capsule-bolt", "shape-plus-color", "renderer-owned"]
     }))))
-    .add(effects.neonBloom({ intensity: visualReviewCapture ? 0 : 0.1, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.neonBloom(postV2Bloom
+      ? { intensity: visualReviewCapture ? 0 : 0.8, threshold: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
+      : { intensity: visualReviewCapture ? 0 : 0.1, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
     .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     .add(effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.34 : 0.2 }))

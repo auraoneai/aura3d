@@ -34,6 +34,7 @@ import {
   type SurfaceSample
 } from "@aura3d/engine";
 import { assets } from "../../../../src/aura-assets";
+import { resolveQrFlags } from "@aura3d/engine/contracts";
 import {
   SITES,
   TERRAIN_CELL_SIZE,
@@ -109,6 +110,12 @@ type Phase = "flying" | "landed" | "crashed" | "campaign-clear";
 const routeParams = new URLSearchParams(window.location.search);
 const dropMode = routeParams.get("drop");
 const visualReviewCapture = routeParams.get("capture") === "review";
+// PRD-03 §6.6 / Q-14-1: A3D_QR_POST (default on) bloom is linear HDR with no hidden
+// legacy gain; retune for v2 only so the `-post` legacy look is unchanged.
+const postV2Bloom = resolveQrFlags({
+  url: window.location.href,
+  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+}).on("A3D_QR_POST");
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 const dropEvidenceMode = dropMode === "1" || dropMode === "hard";
 const hardDropEvidenceMode = dropMode === "hard";
@@ -908,7 +915,9 @@ function buildWorldScene() {
   // sites so no live scene swaps are ever needed.
   builder
     .add(effects.fog({ name: "valley haze", color: "#16283f", density: 0.0021, intensity: 0.42 }))
-    .add(effects.bloom({ name: "aurora sky bloom", intensity: 0.22, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.bloom(postV2Bloom
+      ? { name: "aurora sky bloom", intensity: 0.8, threshold: 0.6, maxIntensity: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
+      : { name: "aurora sky bloom", intensity: 0.22, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
     .add(effects.colorGrade({ exposure: 1.06, contrast: 1.05, saturation: 1.12 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     // Ambient-only teal wash at 0.95 flattened the regolith into a single bright
