@@ -70,7 +70,7 @@ on:
       gameplay_variants:
         description: "suite=gameplay: ';'-separated variants (flag list | engine-default | prod = deployed old build)"
         required: false
-        default: "none;core,lighting,camera,materials,assets,animation,post,vfx;prod"
+        default: "none;defaults;{route};{route},defaults;prod"
       promote_flag:
         description: "suite=promote: lane flag to score against the current defaults without it (e.g. materials). Captures -flag + flag with aura3d AND three.js; scores LPIPS/FLIP vs the three.js frame."
         required: false
@@ -89,7 +89,7 @@ on:
       sourcemap: { type: boolean, required: false, default: false }
       allflags_eval: { type: boolean, required: false, default: false }
       promote_flag: { type: string, required: false, default: "" }
-      gameplay_variants: { type: string, required: false, default: "none;core,lighting,camera,materials,assets,animation,post,vfx;prod" }
+      gameplay_variants: { type: string, required: false, default: "none;defaults;{route};{route},defaults;prod" }
   push:
     branches: [main]
     paths:
@@ -143,7 +143,7 @@ jobs:
       # (games.json defaults are never prepended). Takes effect with #1120.
       QRC_FLAGS_EXACT: "true"
       PROMOTE_FLAG: ${{ inputs.promote_flag || '' }}
-      QRG_VARIANTS: ${{ inputs.gameplay_variants || 'none;core,lighting,camera,materials,assets,animation,post,vfx;prod' }}
+      QRG_VARIANTS: ${{ inputs.gameplay_variants || 'none;defaults;{route};{route},defaults;prod' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:

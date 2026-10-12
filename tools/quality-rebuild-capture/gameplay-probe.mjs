@@ -26,7 +26,7 @@ const games = JSON.parse(readFileSync(path.join(toolDir, "games.json"), "utf8"))
 const probe = JSON.parse(readFileSync(path.join(toolDir, "gameplay-probe.json"), "utf8"));
 const env = (k, d) => (process.env[k] !== undefined && process.env[k] !== "" ? process.env[k] : d);
 const DEFAULTS = "core,lighting,camera,materials,assets,animation,post,vfx";
-const variants = env("QRG_VARIANTS", `none;${DEFAULTS};prod`).split(";").map((v) => v.trim()).filter(Boolean);
+const variants = env("QRG_VARIANTS", "none;defaults;{route};{route},defaults;prod").split(";").map((v) => v.trim()).filter(Boolean);
 const requested = env("QRC_GAMES", "").split(",").map((s) => s.trim()).filter(Boolean);
 const exclude = new Set(env("QRG_EXCLUDE", "").split(",").map((s) => s.trim()).filter(Boolean));
 const selected = games.games.filter((g) => (!requested.length || requested.includes(g.id)) && !exclude.has(g.id) && probe.games[g.id]);
@@ -37,7 +37,7 @@ const gpuArgs = env("QRC_GPU_ARGS", env("QR_CHROMIUM_ARGS", "--headless=new --us
 const SAMPLE_MS = 200;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = (...p) => process.stderr.write(`[qrg ${new Date().toISOString().slice(11, 19)}] ${p.join(" ")}\n`);
-const variantLabel = (v) => (v === DEFAULTS ? "defaults" : v);
+const variantLabel = (v) => (v === DEFAULTS ? "defaults" : v.replace(DEFAULTS, "defaults"));
 
 function startServer() {
   const roots = [siteRoot, path.join(repoRoot, "public"), path.join(repoRoot, "apps", "aura-clash-showcase", "public"), path.join(repoRoot, "marketing", "public")];

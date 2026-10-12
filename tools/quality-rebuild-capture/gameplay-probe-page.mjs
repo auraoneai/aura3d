@@ -6,6 +6,8 @@
 /** Init script: key-event accounting + rAF counter, installed before any app script. */
 export const PROBE_INIT_SCRIPT = `(() => {
   if (window.__GPK__) return;
+  // C-24 evidence sections only collect for opted-in readers (packages/game/src/evidence/channel.ts).
+  window.__AURA3D_EVIDENCE_OPT_IN__ = true;
   const k = window.__GPK__ = { capture: 0, bubble: 0, untrusted: 0, prevented: 0, raf: 0, synthetic: [] };
   const onCap = (e) => {
     k.capture++;
