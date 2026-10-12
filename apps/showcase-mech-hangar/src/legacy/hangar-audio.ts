@@ -61,7 +61,7 @@ export const hangarAudioManifest: Readonly<Record<HangarAudioCue, HangarAudioCue
   mechGuardBreakSfx: { cue: "mechGuardBreakSfx", bus: "combat", volume: 0.95, get asset() { return typedAsset("mechGuardBreakSfx"); } },
   mechSpecialFireSfx: { cue: "mechSpecialFireSfx", bus: "combat", volume: 0.85, get asset() { return typedAsset("mechSpecialFireSfx"); } },
   mechKoStingSfx: { cue: "mechKoStingSfx", bus: "combat", volume: 1, get asset() { return typedAsset("mechKoStingSfx"); } },
-  mechAmbientHangarSfx: { cue: "mechAmbientHangarSfx", bus: "ambient", volume: 0.4, get asset() { return typedAsset("mechAmbientHangarSfx"); } }
+  mechAmbientHangarSfx: { cue: "mechAmbientHangarSfx", bus: "ambient", volume: 0.15, get asset() { return typedAsset("mechAmbientHangarSfx"); } }
 };
 
 export interface HangarAudioProof {
