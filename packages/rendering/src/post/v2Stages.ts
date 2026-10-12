@@ -531,8 +531,8 @@ export function runV2HdrStages(
   const temporalOk = Boolean(temporal?.v2);
   const taaActive = wantsTaa && temporalOk;
   const mbActive = wantsMb && temporalOk;
-  if (wantsTaa && !temporalOk) skipped.push("TAA_VELOCITY_COVERAGE");
-  if (wantsMb && !temporalOk) skipped.push("S7_VELOCITY_UNAVAILABLE");
+  if (wantsTaa && !temporalOk) { skipped.push("TAA_VELOCITY_COVERAGE"); recordPostSkipped("TAA_VELOCITY_COVERAGE:v2-hdr-stages"); }
+  if (wantsMb && !temporalOk) { skipped.push("S7_VELOCITY_UNAVAILABLE"); recordPostSkipped("S7_VELOCITY_UNAVAILABLE:v2-hdr-stages"); }
   const needsLinZ = wantsAo || wantsGodRays || wantsDof || taaActive || mbActive
     || hdrCustoms.some((pass) => pass.inputs.includes("depth"));
   const needsVelocity = ((taaActive || mbActive) && temporalOk)
