@@ -5,7 +5,7 @@ import { copyPose, createPoseBuffer } from "../../../packages/animation/src/pose
 
 const turn = [0, 0, Math.SQRT1_2, Math.SQRT1_2] as const;
 const bones = [[0, 0, 0], [1, 0, 0], [2, 0, 0]] as const;
-function expectPoint(actual: readonly number[], expected: readonly number[]) {
+function expectPoint(actual: ArrayLike<number>, expected: readonly number[]) {
   expected.forEach((value, i) => expect(actual[i]).toBeCloseTo(value, 5));
 }
 function anchor() {

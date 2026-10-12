@@ -15,7 +15,7 @@
 //     over a file that can silently drop a final line without trailing newline,
 //     which left @aura3d/workflows unpublished in 1.3.0).
 //  4. registry verification     — after publishing, every package is checked against
-//     the registry; the expected count is asserted (29).
+//     the registry; the version-specific package count is asserted.
 //
 // Usage:
 //   node tools/release/publish-all.mjs --pack-only
@@ -40,6 +40,7 @@
 //     from the environment and never logged: `--otp` is appended to the argv of the
 //     child process only.
 
+import { expectedPublicPackageCount } from './release-inventory.mjs';
 import { execFileSync, execSync } from "node:child_process";
 import { sourceIdentity, assertCommittedReleaseSource } from "./source-identity.mjs";
 import { createHash } from "node:crypto";
@@ -60,7 +61,6 @@ if (DRY_RUN && PACK_ONLY) {
 const NPM_OTP = process.env.NPM_OTP?.trim() ?? "";
 const OTP_ARG = NPM_OTP ? ` --otp ${JSON.stringify(NPM_OTP)}` : "";
 const PACK_DIR = join(ROOT, "tests", "reports", "release-tarballs");
-const EXPECTED_PUBLIC_COUNT = 24; // PRD-15 lean package set (was 29)
 
 function sh(command, options = {}) {
   // 64MB buffer: `pnpm pack` of the engine prints thousands of npm-notice lines,
@@ -144,6 +144,7 @@ function publishedRegistryVersion(name, version) {
 }
 
 const packages = dependencyOrder(collectPublishablePackages());
+const EXPECTED_PUBLIC_COUNT = expectedPublicPackageCount(JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version);
 if (packages.length !== EXPECTED_PUBLIC_COUNT) {
   console.error(`Expected exactly ${EXPECTED_PUBLIC_COUNT} publishable packages, found ${packages.length}:`);
   for (const { manifest } of packages) console.error(`  - ${manifest.name}@${manifest.version}`);

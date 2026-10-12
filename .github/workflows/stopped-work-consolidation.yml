@@ -3,6 +3,12 @@ on:
   push:
     branches: [integrate/stopped-20261011]
   workflow_dispatch:
+    inputs:
+      scope:
+        description: Rerun only repaired release/type checks or all checks
+        type: choice
+        options: [all, repair]
+        default: all
 permissions:
   contents: read
 jobs:
@@ -35,9 +41,10 @@ jobs:
               print('verified',row['branch'])
           PY
       - name: Spring solver and binding regressions
+        if: inputs.scope != 'repair'
         run: pnpm exec vitest run tests/unit/animation/spring-bones-anchor.test.ts tests/unit/animation/spring-bones-binding.test.ts tests/unit/animation/spring-bones.test.ts --maxWorkers=1
       - name: Courier batching and honest evidence reporting
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && inputs.scope != 'repair' }}
         run: pnpm exec vitest run --config tests/qr/prd14/vitest.config.ts tests/qr/prd14/unit/courier-static-batch.test.ts tests/qr/prd14/unit/s10-assets.test.ts tests/qr/prd14/unit/write-evidence.test.ts --maxWorkers=1
       - name: Exact release preparation contracts
         if: ${{ !cancelled() }}
@@ -50,6 +57,7 @@ jobs:
         if: ${{ !cancelled() }}
         run: pnpm typecheck && pnpm build:raw
   spring-browser:
+    if: inputs.scope != 'repair'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -70,6 +78,7 @@ jobs:
             tests/reports/
             test-results/
   temporal:
+    if: inputs.scope != 'repair'
     runs-on: [self-hosted, track0, gpu-l4]
     timeout-minutes: 25
     env:
@@ -99,6 +108,7 @@ jobs:
             tests/qr/prd01/out/
             test-results/
   asset-acceptance:
+    if: inputs.scope != 'repair'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
