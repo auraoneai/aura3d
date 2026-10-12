@@ -279,6 +279,10 @@ export class ProductionEffectSystem {
   private readonly decals: DecalBatch;
   /** Last hook passed to feed — lets the host push P6-T4 GPU-ms samples in. */
   private lastHook: ParticleRenderHook | null = null;
+  /** True once a canvas render bridge publishes this system to a renderer. */
+  private renderBridged = false;
+  /** A renderer frame pulled the render source since the last endFrame. */
+  private renderSincePrevFrame = false;
 
   constructor(private readonly app: AppLike, options: { readonly tier?: AuraQualityTier } = {}) {
     // Resolved C-27 tier wins over the explicit option's fallback: callers pass
@@ -295,6 +299,21 @@ export class ProductionEffectSystem {
    *  tier budget (PARTICLE_GPU_BUDGET_MS). Off until a runtime measures. */
   noteParticleGpuMs(ms: number): void {
     this.lastHook?.noteGpuMs?.(ms, PARTICLE_GPU_BUDGET_MS[this.tier] ?? PARTICLE_GPU_BUDGET_MS.default);
+  }
+
+  /**
+   * Zero-pixel accounting is per *rendered* frame. Once a canvas bridge binds
+   * this system to a renderer, sim ticks with no renderer frame in between
+   * (async WebGL mount, fixed-step substeps) are not counted; headless apps
+   * with no bridge keep counting every tick.
+   */
+  noteRenderBridgeAttached(): void {
+    this.renderBridged = true;
+  }
+
+  /** Called by the canvas bridge each time a renderer frame reads the source. */
+  noteRenderFrame(): void {
+    this.renderSincePrevFrame = true;
   }
 
   /** P6-T4 — force the half-res particle path on/off regardless of budget. */
@@ -660,7 +679,8 @@ export class ProductionEffectSystem {
     this.walkNodes((n, v) => {
       if (v) visible.add(n.id ?? n.name ?? "");
     });
-    this.diagnostics.endFrame(visible);
+    this.diagnostics.endFrame(visible, !this.renderBridged || this.renderSincePrevFrame);
+    this.renderSincePrevFrame = false;
     // Fixed-step sim (CpuEmitter §6.3): app.step(t) hands one large dt to
     // onFrame. Integrating it in a single Euler step launched or dropped every
     // particle by v·dt metres — the promote fountains landed below the floor or

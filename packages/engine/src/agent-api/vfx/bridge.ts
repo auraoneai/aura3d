@@ -22,6 +22,8 @@ export interface VfxBridge {
 export function attachVfxBridge(canvas: HTMLCanvasElement, system: ProductionEffectSystem): VfxBridge {
   const source = {
     get vfx() {
+      // Read once per renderer frame (the frame's render-input spread).
+      system.noteRenderFrame();
       return {
         feed: (hook: Parameters<ProductionEffectSystem["feed"]>[0]) => system.feed(hook),
         afterDraw: (diag: Parameters<ProductionEffectSystem["afterDraw"]>[0]) => system.afterDraw(diag),
@@ -55,6 +57,7 @@ export function attachVfxBridge(canvas: HTMLCanvasElement, system: ProductionEff
   };
   try {
     const detach = attachRootRenderSourceOverlay(canvas, source);
+    system.noteRenderBridgeAttached();
     return { detach, attached: true };
   } catch {
     system.diagnostics.note(
