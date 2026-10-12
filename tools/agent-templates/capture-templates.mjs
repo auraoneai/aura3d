@@ -40,7 +40,10 @@ import { fileURLToPath } from "node:url";
 
 const toolDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(toolDir, "..", "..");
-const templateRoot = path.join(repoRoot, "packages", "create-aura3d", "templates");
+// --template-root templates: build the root-only starters (react, vue, production-*)
+// with the same packed-tarball flow; default is the create-aura3d package tree.
+const templateRootArgIndex = process.argv.indexOf("--template-root");
+const templateRoot = path.resolve(repoRoot, (templateRootArgIndex >= 0 ? process.argv[templateRootArgIndex + 1] : process.env.QRC_TEMPLATE_ROOT) || path.join("packages", "create-aura3d", "templates"));
 const hdriSource = path.join(repoRoot, "packages", "create-aura3d", "hdri");
 const packDir = path.join(repoRoot, "tests", "reports", "release-tarballs");
 
@@ -63,6 +66,9 @@ const log = (m) => console.log(`[capture-templates] ${m}`);
 const outDir = path.resolve(repoRoot, opt("--out", "QRC_OUT", "tools/agent-templates/out/template-lookdev"));
 const skipPack = flag("--skip-pack") || truthy(process.env.QRC_SKIP_PACK);
 const skipBuild = flag("--skip-build") || truthy(process.env.QRC_SKIP_BUILD);
+// --build-only: scaffold + install + build every selected template, no browser
+// (tools/quality-rebuild-capture/capture-examples.mjs captures the dist trees).
+const buildOnly = flag("--build-only");
 const channelOpt = opt("--channel", "QRC_CHANNEL", "chromium");
 const channel = channelOpt === "headless-shell" ? "" : channelOpt;
 const executablePath = opt("--executable", "QRC_EXECUTABLE", "");
@@ -468,7 +474,7 @@ async function main() {
   persist();
 
   const { chromium } = await import("@playwright/test");
-  const browser = await chromium.launch({
+  const browser = buildOnly ? { version: () => "build-only", close: async () => undefined } : await chromium.launch({
     headless: !flag("--headed"),
     args: [...gpuArgs, "--autoplay-policy=no-user-gesture-required", "--disable-background-timer-throttling", "--disable-renderer-backgrounding", "--disable-backgrounding-occluded-windows"],
     ...(executablePath ? { executablePath } : channel ? { channel } : {})
@@ -501,6 +507,14 @@ async function main() {
           entry.reusedBuild = true;
         }
         const serveDir = distDir ?? scaffoldDir;
+        if (buildOnly) {
+          if (!existsSync(path.join(serveDir, "dist", "index.html"))) throw new Error("build produced no dist/index.html");
+          entry.shotsExpected = 0;
+          entry.shotsCaptured = 0;
+          log(`${id}: built (build-only)`);
+          persist();
+          continue;
+        }
         if (!existsSync(path.join(serveDir, "dist", "index.html")) && !existsSync(path.join(serveDir, "index.html"))) throw new Error("build produced no dist/index.html");
         preview = await startPreview(serveDir, distDir !== null);
         for (const run of VIEWPORTS) {
