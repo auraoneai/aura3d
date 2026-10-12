@@ -39,7 +39,6 @@ export function bankShotEffectsPass(options: { readonly visualReviewCapture: boo
       intensity: 2.4,
       shadow: { cascades: "auto", maxDistance: 12 }
     }),
-    effects.contactShadows({ length: 0.12, thickness: 0.03, intensity: 0.9 }),
     // Indoor IBL: reflections on ball lacquer, rails and the cue ferrule.
     environments.preset("indoor", { intensity: 0.5, specularIntensity: 1.2, background: false }),
     // Smoky lamp haze with forward in-scatter from the key.

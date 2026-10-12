@@ -33,7 +33,6 @@ export function auraClashRootEffects(options: { readonly reducedMotion: boolean 
       intensity: 1.7,
       shadow: { cascades: "auto", maxDistance: 20 }
     }),
-    effects.contactShadows({ length: 0.3, intensity: 0.9 }),
     // Drives the S4 god rays from the moon key; the fog colour itself comes
     // from the compatibility source's environmentFog.
     effects.volumetricFog({ name: "Aura Clash stage haze rays", density: 0.02, color: "#3b4a6a", intensity: 0.32 }),

@@ -36,7 +36,7 @@ export function patrolWingEffectsPass(options: { readonly visualReviewCapture: b
     environments.preset("sunset", { intensity: 0.6, specularIntensity: 1.1, background: false }),
     // Aerial perspective: denser near the sea, thinning with altitude, with
     // forward in-scatter towards the golden-hour key (S4 god rays).
-    effects.volumetricFog({
+    effects.fog({
       name: "coastal aerial haze",
       density: review ? 0.006 : 0.0085,
       color: "#6f8fa3",

@@ -36,7 +36,6 @@ export function galleryEffectsPass(options: { readonly visualReviewCapture: bool
       target: [0, 0, 0],
       color: "#f3ecff",
       intensity: review ? 0.6 : 1.7,
-      shadow: { cascades: "auto", maxDistance: 40 }
     }),
     effects.contactShadows({ length: 0.3, intensity: 0.9 }),
     environments.preset("indoor", { intensity: 0.8, specularIntensity: 1.25, background: false }),

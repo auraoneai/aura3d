@@ -43,7 +43,6 @@ export function deepRecoveryEffectsPass() {
       shadow: { cascades: "auto", maxDistance: 60 }
     }),
     effects.contactShadows({ length: 0.4, intensity: 0.8 }),
-    environments.preset("night", { intensity: 0.95, specularIntensity: 1.2, background: false }),
     // Water column: denser with depth below the surface reference, forward
     // in-scatter towards the sun.
     effects.volumetricFog({
