@@ -54,20 +54,21 @@ export function bankShotEffectsPass(options: { readonly visualReviewCapture: boo
     effects.vignette({ intensity: 0.34, smoothness: 0.55 }),
     ...(vfxOn
       ? [
-          // Dust motes drifting through the lamp pool above the table.
+          // Dust motes rising slowly through the lamp pool over the table
+          // (fountain plume preset: a wide spawn disc, low column).
           effects.particles({
             name: "lamp pool dust motes",
-            emitter: "ambient",
-            particleCount: 160,
-            emissionRate: 40,
+            emitter: "fountain",
+            particleCount: 150,
+            emissionRate: 32,
+            radius: 1.3,
+            height: 1.1,
             size: [0.008, 0.02],
-            lifetime: [3, 5],
-            speed: 0.06,
-            gravity: 0,
+            lifetime: [4, 5.5],
             color: "#ffe2b0",
             materialMode: "soft-alpha",
             seed: 5201
-          }).position(-0.2, 1.0, 0.2)
+          }).position(0, 0.05, 0)
         ]
       : [])
   ] as const;

@@ -236,6 +236,7 @@ bindHeldButton("dr-dive-btn", "KeyQ");
 bindHeldButton("dr-surface-btn", "KeyE");
 
 import { createDeepOceanEnvironment } from "./environment";
+import { deepRecoveryEffectsPass } from "./effects-pass";
 
 // ---------------- Scene Construction ----------------
 const initialSonarTargets = [
@@ -259,12 +260,7 @@ const sceneDef = scene()
   // now comes from a darker, less saturated water column so warm sub surfaces and
   // cyan sonar returns are the brightest things on screen.
   .background("#04141c")
-  .add(effects.fog({
-    name: "deep recovery suspended-particle haze",
-    color: "#0a2e3a",
-    density: 0.02,
-    intensity: 0.42
-  }))
+  .addMany(deepRecoveryEffectsPass())
   .add(effects.neonBloom({
     name: "deep recovery sonar bloom",
     intensity: 0.16,

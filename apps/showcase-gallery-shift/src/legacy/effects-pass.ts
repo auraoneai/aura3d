@@ -74,19 +74,21 @@ export function galleryEffectsPass(options: { readonly visualReviewCapture: bool
             color: "#cfe0ff",
             intensity: 0.35
           }),
+          // Dust rising through the skylight shaft (fountain plume preset:
+          // a wide spawn disc on the hall floor).
           effects.particles({
             name: "gallery skylight dust",
-            emitter: "ambient",
-            particleCount: 200,
-            emissionRate: 50,
+            emitter: "fountain",
+            particleCount: 220,
+            emissionRate: 45,
+            radius: 3,
+            height: 2.6,
             size: [0.02, 0.05],
-            lifetime: [3, 5],
-            speed: 0.08,
-            gravity: 0,
+            lifetime: [4, 5.5],
             color: "#dfe8ff",
             materialMode: "soft-alpha",
             seed: 6301
-          }).position(0, 2.2, -0.6)
+          }).position(0, 0.1, -0.6)
         ]
       : [])
   ];

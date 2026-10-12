@@ -48,23 +48,22 @@ export function orbitalEffectsPass() {
     effects.vignette({ intensity: 0.32, smoothness: 0.6 }),
     ...(vfxOn
       ? [
-          // Slow orbital dust swirling round the defence ring.
+          // Debris belt: a wide spawn disc (fountain plume preset) in the
+          // orbital plane, drifting slowly up through the defence ring.
           effects.particles({
-            name: "orbital ring dust",
-            emitter: "swirl",
-            particleCount: 220,
+            name: "orbital debris belt",
+            emitter: "fountain",
+            particleCount: 260,
             emissionRate: 60,
-            radius: 2.6,
-            height: 0.4,
-            speed: 0.35,
-            size: [0.015, 0.04],
-            lifetime: [3, 5],
-            gravity: 0,
+            radius: 2.7,
+            height: 0.5,
+            size: [0.014, 0.036],
+            lifetime: [3.5, 4.5],
             color: "#9fd8ff",
             materialMode: "additive-glow",
             seed: 4101
-          }),
-          // Faint warm sparks off the atmosphere shell on the sun side.
+          }).position(0, -0.25, 0),
+          // Faint warm sparks scattering off the atmosphere on the sun side.
           effects.particles({
             name: "atmosphere sun-side sparks",
             emitter: "ambient",
@@ -72,12 +71,12 @@ export function orbitalEffectsPass() {
             emissionRate: 24,
             size: [0.012, 0.03],
             lifetime: [2, 3.5],
-            speed: 0.18,
+            speed: 0.45,
             gravity: 0,
             color: "#ffd59a",
             materialMode: "additive-glow",
             seed: 4102
-          }).position(-0.9, 0.7, 0.6)
+          }).position(-1.05, 0.75, 0.7)
         ]
       : [])
   ] as const;
