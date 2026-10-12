@@ -848,7 +848,7 @@ function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening
         color: "#ffe2b8"
       }),
       effects.neonBloom(postV2Bloom
-        ? { intensity: reducedMotion ? 0.5 : 1.8, threshold: 0.45, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
+        ? { intensity: reducedMotion ? 0.8 : 2.6, threshold: 0.55, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
         : { intensity: reducedMotion ? 0.02 : 0.055, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.fog({ name: "golden-hour distance haze", density: 0.016, color: "#a9d6e6", intensity: 0.42 }),
       effects.colorGrade({ exposure: 1.02, contrast: 1.12, saturation: 1.1 }),

@@ -2101,7 +2101,7 @@ const app = createAuraApp("#app", {
       tags: ["projectile", "ember", "capsule-bolt", "shape-plus-color", "renderer-owned"]
     }))))
     .add(effects.neonBloom(postV2Bloom
-      ? { intensity: visualReviewCapture ? 0 : 1.6, threshold: 0.5, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
+      ? { intensity: visualReviewCapture ? 0 : 1.15, threshold: 0.55, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
       : { intensity: visualReviewCapture ? 0 : 0.1, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
     .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
