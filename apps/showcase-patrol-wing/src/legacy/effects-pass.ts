@@ -13,7 +13,7 @@ import { effects, environments } from "@aura3d/engine";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
 
 const flags = resolveQrFlags({
-  url: location.href,
+  url: typeof location === "undefined" ? undefined : location.href,
   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
 });
 

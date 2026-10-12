@@ -22,7 +22,7 @@ jobs:
         run: node --test tools/release/package-acceptance.test.mjs
       - name: Chase eye regression tests
         if: ${{ !cancelled() }}
-        run: pnpm exec vitest run tests/unit/apps/courier-rush-camera-clearance.test.ts --maxWorkers=1 --reporter=verbose
+        run: pnpm exec vitest run tests/unit/apps/courier-rush-camera-clearance.test.ts tests/unit/apps/patrol-wing-combat.test.ts tests/unit/apps/patrol-wing-flight.test.ts --maxWorkers=1 --reporter=verbose
       - name: Typecheck final camera correction
         if: ${{ !cancelled() }}
         run: pnpm typecheck
