@@ -40,7 +40,11 @@ export const PULSE_SECTION_BUSES: Record<string, readonly PulseStemBusId[]> = {
   finale: ["drums", "bass", "lead", "air"]
 };
 
-const STEM_LEVEL = 0.28;
+// Stems are mastered hot (-1.1 dBFS peaks, -9.8 dB RMS bass). With route bus
+// volumes applied per stem (they used to fold onto one shared gain that the
+// "air" stem zeroed), 0.28 measured -15 dB RMS at the destination on L4;
+// 0.2 lands near -18 dB, under the SFX.
+const STEM_LEVEL = 0.2;
 const SFX_LEVEL = 0.45;
 /** Shared lookahead between "start run" and the moment buffers actually sound. */
 const START_LEAD_SECONDS = 0.12;
