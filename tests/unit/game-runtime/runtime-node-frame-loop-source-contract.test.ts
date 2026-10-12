@@ -6,7 +6,7 @@ import { createAuraApp, defineAuraAssets, game, lights, model, scene } from "../
 type RootPackageJson = {
   readonly name?: string;
   readonly type?: string;
-  readonly sideEffects?: boolean;
+  readonly sideEffects?: boolean | readonly string[];
   readonly exports?: {
     readonly "."?: {
       readonly types?: string;
@@ -41,11 +41,14 @@ describe("game runtime frame-loop and package source contracts", () => {
 
     expect(publicRootImport).toContain("@aura3d/engine");
     expect(Object.keys(publicApiSource).sort()).toEqual(["createAuraApp", "game", "model", "scene"]);
-    expect(rootPackage).toMatchObject({
-      name: "@aura3d/engine",
-      type: "module",
-      sideEffects: false
-    });
+    expect(rootPackage).toMatchObject({ name: "@aura3d/engine", type: "module" });
+    // Tree-shakable except the lane barrels (import-time provide() calls) and
+    // the public entry that imports them (#1140): a narrow glob list, never `true`.
+    expect(Array.isArray(rootPackage.sideEffects)).toBe(true);
+    expect(rootPackage.sideEffects).toEqual(expect.arrayContaining(["./dist/engine/lanes/**/*.js", "./dist/engine/public/index.js"]));
+    for (const glob of rootPackage.sideEffects as readonly string[]) {
+      expect(glob, glob).toMatch(/^(\*\.css|\.\/dist\/[a-z-]+\/(lanes\/\*\*\/\*\.js|public\/index\.js|program\/ProgramGenerator\.js|agent-api\/.+\.js))$/);
+    }
     // PRD-15 §6.1: "." resolves to the explicit public surface entry.
     expect(publicRoot).toMatchObject({
       types: "./dist/engine/public/index.d.ts",

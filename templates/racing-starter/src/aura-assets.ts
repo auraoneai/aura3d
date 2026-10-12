@@ -32,5 +32,83 @@ export const assets = defineAuraAssets({
       sourcePage: "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-034/2fc89fcd8c034bc9ba05eac24c9bf537.glb",
       thumbnailUrl: "/aura-assets/showcaseReadableKartCircuit.thumb.svg"
     }
+  },
+  "uiClickKenney": {
+    "type": "audio",
+    "format": "ogg",
+    "url": "/aura-assets/uiClickKenney.ccfb7fa0.ogg",
+    "hash": "sha256-ccfb7fa0cccdd9faec0eb16033c732b1e308d139d80f799161495d58f7adcdb9",
+    "sizeBytes": 4876,
+    "metadata": {
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "sourcePage": "https://kenney.nl/assets/interface-sounds",
+      "thumbnailUrl": "/aura-assets/uiClickKenney.thumb.svg"
+    }
+  },
+  "uiConfirmKenney": {
+    "type": "audio",
+    "format": "ogg",
+    "url": "/aura-assets/uiConfirmKenney.06356470.ogg",
+    "hash": "sha256-063564703b6094d70718a3e787a55cc9141611e4ecd6b6637f8828f79b4a8c3a",
+    "sizeBytes": 8968,
+    "metadata": {
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "sourcePage": "https://kenney.nl/assets/interface-sounds",
+      "thumbnailUrl": "/aura-assets/uiConfirmKenney.thumb.svg"
+    }
+  },
+  "uiErrorKenney": {
+    "type": "audio",
+    "format": "ogg",
+    "url": "/aura-assets/uiErrorKenney.46e67425.ogg",
+    "hash": "sha256-46e67425d16339772e8d328fb36a49426c9467418686e11beeb71ff84b0f6433",
+    "sizeBytes": 7373,
+    "metadata": {
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "sourcePage": "https://kenney.nl/assets/interface-sounds",
+      "thumbnailUrl": "/aura-assets/uiErrorKenney.thumb.svg"
+    }
+  },
+  "uiSelectKenney": {
+    "type": "audio",
+    "format": "ogg",
+    "url": "/aura-assets/uiSelectKenney.aec0c31e.ogg",
+    "hash": "sha256-aec0c31ea934a35936ae0d2ab8fac8123c93aa5647f935853a58dbaf90278b7a",
+    "sizeBytes": 5468,
+    "metadata": {
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "sourcePage": "https://kenney.nl/assets/interface-sounds",
+      "thumbnailUrl": "/aura-assets/uiSelectKenney.thumb.svg"
+    }
+  },
+  "uiSwitchKenney": {
+    "type": "audio",
+    "format": "ogg",
+    "url": "/aura-assets/uiSwitchKenney.3b74efad.ogg",
+    "hash": "sha256-3b74efad87f1e69dbd1d05c5ad952ab90859b5a3d11da6ec5bd79b4f03b42afa",
+    "sizeBytes": 6753,
+    "metadata": {
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "sourcePage": "https://kenney.nl/assets/interface-sounds",
+      "thumbnailUrl": "/aura-assets/uiSwitchKenney.thumb.svg"
+    }
+  },
+  "uiToggleKenney": {
+    "type": "audio",
+    "format": "ogg",
+    "url": "/aura-assets/uiToggleKenney.ca1d2dde.ogg",
+    "hash": "sha256-ca1d2dde5f0b286abac4f070e23edab8f30927c8a533665cdf2ac6492a415e49",
+    "sizeBytes": 7369,
+    "metadata": {
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "sourcePage": "https://kenney.nl/assets/interface-sounds",
+      "thumbnailUrl": "/aura-assets/uiToggleKenney.thumb.svg"
+    }
   }
 } as const);
