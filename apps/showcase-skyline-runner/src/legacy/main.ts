@@ -59,6 +59,7 @@ import {
   skylineSparkleNodeId,
   skylineSparkleTint
 } from "./foliage";
+import { skylineActHazeOptions, skylineEffectsPass } from "./effects-pass";
 import { createSkylineAudio, type SkylineAudioController, type SkylineAudioProof } from "./skyline-audio";
 import { skylineAudioManifest, type SkylineAudioCue } from "./skyline-audio-manifest";
 import {
@@ -1389,7 +1390,10 @@ function createActFogNode(actIndex: number) {
     // compete at the same contrast. Foreground gameplay nodes remain in front
     // of the depth falloff.
     density: reviewNocturne ? 0.021 : palette.fogDensity,
-    intensity: reviewNocturne ? 0.3 : palette.fogIntensity
+    intensity: reviewNocturne ? 0.3 : palette.fogIntensity,
+    // Visible effects pass: the default boot renders each act's haze as
+    // ground-hugging height fog (the review lens keeps the flat exp2 haze).
+    ...(visualReviewCapture ? {} : skylineActHazeOptions(palette, platformerScene.toScenePoint({ x: 0, y: 0 })[1]))
   }).runtime(game.runtimeNode(`skyline-act-${actIndex}-fog`, {
     tags: ["backdrop", "fog", `act-${actIndex}`]
   }));
@@ -1402,7 +1406,7 @@ const actPaletteLights = [0, 1, 2, 3, 4].map((actIndex) => {
   const reviewNocturne = visualReviewCapture && actIndex === 0;
   return {
     ambient: lights.ambient({ name: `skyline act-${actIndex} fill`, color: reviewNocturne ? "#7185a8" : palette.ambientLightColor, intensity: reviewNocturne ? 0.08 : palette.ambientLightIntensity }),
-    key: lights.directional({ name: `skyline act-${actIndex} key`, color: reviewNocturne ? "#ffb08e" : palette.keyLightColor, intensity: reviewNocturne ? 0.16 : palette.keyLightIntensity }).position(-3, 5, 4),
+    key: lights.directional({ name: `skyline act-${actIndex} key`, color: reviewNocturne ? "#ffb08e" : palette.keyLightColor, intensity: reviewNocturne ? 0.16 : palette.keyLightIntensity, shadow: visualReviewCapture ? false : { cascades: 2, mapSize: 1024, filter: "pcf", maxDistance: 14 } }).position(-3, 5, 4),
     checkpoint: lights.point({
       name: `skyline act-${actIndex} relay`,
       color: palette.checkpointLightColor,
@@ -1912,6 +1916,11 @@ const app = createAuraApp("#app", {
      */
     .addMany(actSkyBackdropNodeBuilders)
     .addMany(actFogNodeBuilders)
+    .addMany(visualReviewCapture ? [] : skylineEffectsPass({
+      districts: SKYLINE_DISTRICT_ANCHORS.map((anchor) => platformerScene.toScenePoint({ x: anchor.centerX, y: anchor.elevation })),
+      depth: GAMEPLAY_ACTOR_DEPTH,
+      reducedMotion
+    }))
     .addMany(skylineWinterBackdropNodes)
     .addMany(visualReviewCapture ? [] : [skylineStarfieldNode, skylineMoonNode])
     .addMany(skylineReviewCaptureNodes)
@@ -2103,7 +2112,7 @@ const app = createAuraApp("#app", {
     .add(effects.neonBloom(postV2Bloom
       ? { intensity: visualReviewCapture ? 0 : 1.15, threshold: 0.55, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
       : { intensity: visualReviewCapture ? 0 : 0.1, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }))
+    .add(effects.colorGrade(visualReviewCapture ? { exposure: 1.04, contrast: 1.06, saturation: 1.1 } : { exposure: 1.18, contrast: 1.12, saturation: 1.2 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     .add(effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.34 : 0.2 }))
     .add(effects.contactOcclusion({ name: "platform landing contact", intensity: 0.32, radius: 0.5 }))
