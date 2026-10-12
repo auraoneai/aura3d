@@ -27,6 +27,12 @@ type RenderSourceWithProbe = RenderSource & {
   readonly environmentProbe?: EnvironmentProbe | null;
   /** Optional blur for cubemap backgrounds (0..1 → roughnessToLod). */
   readonly backgroundBlurriness?: number;
+  /**
+   * C-09 resolution `background` visibility. `false` = the bound probe lights
+   * the scene but must not replace the authored background (the neutral-room
+   * floor and `background: false` resolutions).
+   */
+  readonly environmentProbeBackground?: boolean;
   /** Resolution intensities for the probe's IBL terms (defaults 1). */
   readonly environmentProbeDiffuseIntensity?: number;
   readonly environmentProbeSpecularIntensity?: number;
@@ -57,6 +63,9 @@ export function resolvePrd02EnvironmentBackground(
 ): EnvironmentBackgroundOptions | undefined {
   const probe = (source as RenderSourceWithProbe).environmentProbe;
   if (!probe) return undefined;
+  // A probe bound only for IBL (neutral-room floor, `background: false`)
+  // keeps the authored solid/sky background instead of painting the room.
+  if ((source as RenderSourceWithProbe).environmentProbeBackground === false) return undefined;
   const explicit = source.environmentBackground;
   const blurriness = (source as RenderSourceWithProbe).backgroundBlurriness
     ?? (typeof explicit === "object" ? explicit.blurriness : 0)

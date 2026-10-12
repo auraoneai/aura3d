@@ -508,11 +508,16 @@ function updateCompiledSceneReal(
           environmentProbeDiffuseIntensity?: number;
           environmentProbeSpecularIntensity?: number;
           environmentProbeAmbient?: { readonly color: readonly [number, number, number]; readonly intensity: number } | null;
+          environmentProbeBackground?: boolean;
         };
         // Flag-on the C-09 probe owns environment lighting — the legacy studio
         // procedural object would early-return `collectEnvironmentLighting`.
         probed.environmentLighting = undefined;
         probed.environmentProbe = impl.environmentProbe;
+        // The resolution decides whether the probe is also the background: the
+        // neutral-room floor (`background: false`) lights the scene but must not
+        // paint a grey room over the authored `scene().background(colour)`.
+        probed.environmentProbeBackground = resolution.background !== false && resolution.background.visible;
         probed.environmentProbeDiffuseIntensity = resolution.diffuseIntensity;
         probed.environmentProbeSpecularIntensity = resolution.specularIntensity;
         probed.environmentProbeAmbient = resolution.ambient

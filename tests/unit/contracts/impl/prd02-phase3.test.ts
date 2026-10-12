@@ -155,6 +155,12 @@ describe("prd02.background contributor (PRD-02 §9)", () => {
       expect(collectEnvironmentBackground(source)).toBeUndefined();
     });
   });
+  it("environmentProbeBackground:false (neutral-room floor) keeps the authored background", () => {
+    // The neutral-room resolution has `background: false`: the probe lights the
+    // scene but must not paint a grey room over `scene().background("#050810")`.
+    expect(resolvePrd02EnvironmentBackground(src({ environmentProbeBackground: false }))).toBeUndefined();
+    expect(resolvePrd02EnvironmentBackground(src({ environmentProbeBackground: true }))?.projection).toBe("cubemap");
+  });
 });
 
 describe("compiler light → AuraLightData (rect/softbox)", () => {
