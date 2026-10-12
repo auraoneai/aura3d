@@ -21,19 +21,19 @@ export function auroraLanderEffectsPass(options: AuroraLanderEffectsPassOptions)
   const [padX, padY, padZ] = options.pad;
   const calm = options.reducedMotion;
   return [
-    effects.vignette({ intensity: 0.3, smoothness: 2.4, roundness: 1 }),
+    effects.vignette({ intensity: 0.42, smoothness: 2.4, roundness: 1 }),
     // Regolith dust lifting off the first landing pad (thruster wash read).
     effects.particles({
       name: "regolith pad dust",
       emitter: "ambient",
       materialMode: "dust",
-      rate: calm ? 10 : 15,
-      maxParticles: 132,
+      rate: calm ? 14 : 22,
+      maxParticles: 180,
       prewarm: 6,
       seed: 3301,
       lifetime: [4, 7],
       speed: 1.6,
-      size: [0.18, 0.42],
+      size: [0.24, 0.55],
       gravity: -0.05,
       drag: 0.2,
       color: "#9fb6c8"
@@ -63,12 +63,12 @@ export function auroraLanderValleyFog(padY: number): AuraNodeInput {
     name: "valley height fog",
     // heightDensity selects the C-21 height mode.
     color: "#183150",
-    density: 0.005,
-    heightDensity: 0.035,
+    density: 0.007,
+    heightDensity: 0.05,
     heightFalloff: 0.09,
     heightReference: padY,
     start: 3,
-    maxOpacity: 0.55,
+    maxOpacity: 0.68,
     sunInscatter: 0.35,
     anisotropy: 0.5,
     affectsBackground: false

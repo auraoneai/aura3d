@@ -847,7 +847,7 @@ function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening
       visualReviewCapture
         ? effects.fog({ name: "golden-hour distance haze", density: 0.016, color: "#a9d6e6", intensity: 0.42 })
         : siegeGolfHeightHaze(),
-      effects.colorGrade(visualReviewCapture ? { exposure: 1.02, contrast: 1.12, saturation: 1.1 } : { exposure: 1.04, contrast: 1.18, saturation: 1.2 }),
+      effects.colorGrade(visualReviewCapture ? { exposure: 1.02, contrast: 1.12, saturation: 1.1 } : { exposure: 1.04, contrast: 1.24, saturation: 1.3 }),
       effects.antiAlias({ mode: "fxaa" }),
       // Ambient dropped from 0.7 to a thin sky fill so the key light is
       // actually doing the shaping; 0.7 washed out every contact and shadow.

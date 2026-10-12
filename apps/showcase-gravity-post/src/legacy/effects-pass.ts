@@ -25,8 +25,8 @@ export function gravityPostEffectsPass(options: GravityPostEffectsPassOptions): 
     // God rays: driven by the strongest directional light (the warm solar key).
     effects.volumetricFog({
       name: "solar key inscatter",
-      density: 0.32,
-      intensity: 0.42,
+      density: 0.2,
+      intensity: 0.22,
       color: "#ffbe7a",
       heightFalloff: 0.9,
       heightReference: playPlaneY
@@ -78,8 +78,8 @@ export function gravityPostHeightHaze(playPlaneY: number): AuraNodeInput {
     heightFalloff: 1.1,
     heightReference: playPlaneY - 0.4,
     start: 1.5,
-    maxOpacity: 0.5,
-    sunInscatter: 0.45,
+    maxOpacity: 0.4,
+    sunInscatter: 0.25,
     anisotropy: 0.55,
     affectsBackground: false
   });

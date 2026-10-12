@@ -65,7 +65,7 @@ export function siegeGolfHeightHaze(): AuraNodeInput {
     heightFalloff: 0.45,
     heightReference: -0.5,
     start: 3,
-    maxOpacity: 0.6,
+    maxOpacity: 0.68,
     sunInscatter: 0.55,
     anisotropy: 0.6,
     // The sky stays as authored: fogging it clipped the opening frame.
