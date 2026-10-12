@@ -51,9 +51,9 @@ export function deepRecoveryEffectsPass() {
     // in-scatter towards the sun.
     effects.volumetricFog({
       name: "deep recovery water column",
-      density: 0.009,
-      color: "#0d3a44",
-      intensity: 0.2,
+      density: 0.012,
+      color: "#12485a",
+      intensity: 0.3,
       volumetricQuality: "balanced",
       heightFalloff: 0.06,
       heightReference: 0

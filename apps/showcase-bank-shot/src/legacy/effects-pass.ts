@@ -45,9 +45,9 @@ export function bankShotEffectsPass() {
     // Smoky lamp haze with forward in-scatter from the key.
     effects.volumetricFog({
       name: "pool hall lamp haze",
-      density: 0.02,
-      color: "#3a3326",
-      intensity: 0.14,
+      density: 0.026,
+      color: "#6a5a34",
+      intensity: 0.2,
       volumetricQuality: "off",
       heightFalloff: 0.35,
       heightReference: 0

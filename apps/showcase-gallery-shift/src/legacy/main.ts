@@ -259,9 +259,10 @@ addActorBox(guardDetailMesh, [0, 2.34, 0.24], [0.86, 0.1, 0.08]);
 addActorBox(guardDetailMesh, [-0.5, 1.52, 0], [0.08, 0.3, 0.24]);
 addActorBox(guardDetailMesh, [0.5, 1.52, 0], [0.08, 0.3, 0.24]);
 const GUARD_DETAIL_GEOMETRY = defineActorDetail(guardDetailMesh);
-const debugValue = new URLSearchParams(window.location.search).get("debug");
-const debugMode = debugValue !== null;
-const showDebugOverlay = debugValue === "visual";
+// PRD-09: never read the forbidden `debug` URL param on the shipped route;
+// the debug overlay and teleport stay off in the public build.
+const debugMode = false;
+const showDebugOverlay = false;
 
 const APP_ID = "showcase-gallery-shift";
 // The route-primary composition probe isolates the typed museum world only.

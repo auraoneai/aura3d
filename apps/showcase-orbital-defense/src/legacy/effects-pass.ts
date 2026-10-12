@@ -41,9 +41,9 @@ export function orbitalEffectsPass() {
     // and lets the sun throw rays past the planet limb.
     effects.volumetricFog({
       name: "orbital in-scatter",
-      density: 0.045,
-      color: "#2a4a6e",
-      intensity: 0.62,
+      density: 0.055,
+      color: "#33587e",
+      intensity: 0.75,
       volumetricQuality: "balanced"
     }),
     effects.colorGrade({ exposure: 1.5, contrast: 1.02, saturation: 1.45 }),

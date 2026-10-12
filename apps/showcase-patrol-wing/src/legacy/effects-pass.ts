@@ -31,7 +31,7 @@ export function patrolWingEffectsPass() {
     return [effects.fog({ name: "coastal haze", density: 0.0042, color: "#42647a", intensity: 0.42 })];
   }
   return [
-    effects.contactShadows({ length: 0.5, intensity: 0.7 }),
+    effects.contactShadows({ length: 0.5, steps: 4, intensity: 0.7 }),
     environments.preset("sunset", { intensity: 0.75, specularIntensity: 1.1, background: false }),
     // Aerial perspective: denser near the sea, thinning with altitude, with
     // forward in-scatter towards the golden-hour key (S4 god rays).
