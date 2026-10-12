@@ -238,6 +238,11 @@ export class RendererFrameHooks {
     const contributors = frameContributors(this.flags);
     if (contributors.length === 0) return;
     const ctx = this.context(items);
+    // Every contributor's transparent queue rides ONE graph pass: pass names
+    // and resource writers are unique per graph, so a pass per contributor
+    // threw "Render pass already exists" (failing the mount) as soon as two
+    // contributors queued transparents in one frame (particles + beams).
+    const transparentQueue: TransparentQueueItem[] = [];
     for (const contributor of contributors) {
       if (!contributor.phases.includes(phase)) continue;
       for (const pass of contributor.passes?.(phase, ctx) ?? []) {
@@ -246,11 +251,10 @@ export class RendererFrameHooks {
       }
       if (phase === "transparent") {
         const queue = contributor.transparentItems?.(ctx);
-        if (queue && queue.length > 0) {
-          graph.addPass(new ContributorTransparentPass(queue, ctx));
-        }
+        if (queue && queue.length > 0) transparentQueue.push(...queue);
       }
     }
+    if (transparentQueue.length > 0) graph.addPass(new ContributorTransparentPass(transparentQueue, ctx));
   }
 
   /**
