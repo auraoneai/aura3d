@@ -69,7 +69,30 @@ export class SkinningPaletteTextureCache implements SkinningPaletteTextureCacheL
       this.swap(key);
     }
     this.keysUsedLastFrame.clear();
+    // Unstamped fallback keys have no owner to release them: evict once idle.
+    for (const key of this.unstampedKeys) {
+      const entry = this.entries.get(key);
+      if (!entry) {
+        this.unstampedKeys.delete(key);
+      } else if (this.frameId - entry.uploadedFrame > SkinningPaletteTextureCache.unstampedIdleFrames) {
+        this.release(key);
+        this.unstampedKeys.delete(key);
+      }
+    }
   }
+
+  /**
+   * Producers that never stamp a `paletteKey` (glTF loader rest palette before
+   * any clip apply, `SkinnedMesh.setSkinning`) key on their binding object. No
+   * dispose path releases those, and `setSkinning` allocates a fresh binding per
+   * call, so such keys are evicted after `unstampedIdleFrames` without an upload.
+   */
+  markUnstamped(key: object): void {
+    this.unstampedKeys.add(key);
+  }
+
+  static unstampedIdleFrames = 240;
+  private readonly unstampedKeys = new Set<object>();
 
   /**
    * C-18 `acquire`: returns the key's texture pair, creating both on first use.
