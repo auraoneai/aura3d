@@ -140,6 +140,19 @@ describe("01-S1 RendererFrameHooks: transparent interleave + reserved phases", (
     expect(drawn).toEqual([5, 3, 1]);
   });
 
+  it("two contributors queueing transparents in one frame share one graph pass", () => {
+    const { frame } = hooks();
+    const drawn: string[] = [];
+    register({ id: "prd01.s1TPa", phases: ["transparent"], transparentItems: () => [{ sortDepth: 1, draw: () => drawn.push("a") }] });
+    register({ id: "prd01.s1TPb", phases: ["transparent"], transparentItems: () => [{ sortDepth: 2, draw: () => drawn.push("b") }] });
+    const graph = new RenderGraph();
+    expect(() => frame.addPasses(graph, "transparent", [])).not.toThrow();
+    const passes = graph.compile().filter((pass) => pass.name === "qr.contributor.transparents");
+    expect(passes).toHaveLength(1);
+    passes[0]!.execute({} as RenderPassContext);
+    expect(drawn.sort()).toEqual(["a", "b"]);
+  });
+
   it("only prd01 may register the reserved opaque/output phases", () => {
     expect(() => registerFrameContributor({ id: "prd07.s1Opaque", owner: "prd07", flag: "A3D_QR_VFX", phases: ["opaque"] })).toThrow(/^FRAME_PHASE_RESERVED:opaque:prd07\.s1Opaque$/);
     expect(() => registerFrameContributor({ id: "prd03.s1Output", owner: "prd03", flag: "A3D_QR_POST", phases: ["output"] })).toThrow(/FRAME_PHASE_RESERVED:output/);
