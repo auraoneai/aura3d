@@ -18,12 +18,12 @@ export function createCourierEffectsPass(options: {
     effects.volumetricFog({
       name: "courier night street volumetric haze",
       density: 0.022,
-      color: "#1c2a46",
+      color: "#3d5878",
       intensity: 0.55
     }),
     effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 12, intensity: 0.85, lights: "shadowed" }),
     environments.preset("night", { name: "courier night reflections", intensity: 0.9, background: false }),
-    effects.vignette({ name: "courier chase vignette", intensity: 0.32, smoothness: 0.62, roundness: 0.75 })
+    effects.vignette({ name: "courier chase vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
   if (!options.reducedMotion) {
     nodes.push(

@@ -15,12 +15,12 @@ export function createNeonSwarmEffectsPass(options: { readonly reducedMotion: bo
     effects.volumetricFog({
       name: "neon swarm district volumetric haze",
       density: 0.03,
-      color: "#16213f",
+      color: "#33456e",
       intensity: 0.55
     }),
     effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 12, intensity: 0.85, lights: "shadowed" }),
     environments.preset("night", { name: "neon swarm night reflections", intensity: 0.85, background: false }),
-    effects.vignette({ name: "neon swarm vignette", intensity: 0.34, smoothness: 0.6, roundness: 0.8 })
+    effects.vignette({ name: "neon swarm vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
   if (!options.reducedMotion) {
     nodes.push(

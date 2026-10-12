@@ -15,12 +15,12 @@ export function createRooftopEffectsPass(options: { readonly reducedMotion: bool
     effects.volumetricFog({
       name: "rooftop dusk volumetric haze",
       density: 0.03,
-      color: "#6a4a78",
+      color: "#a07a8c",
       intensity: 0.5
     }),
     effects.contactShadows({ length: 0.3, thickness: 0.05, steps: 16, intensity: 0.9, lights: "shadowed" }),
     environments.preset("sunset", { name: "rooftop sunset reflections", intensity: 0.7, background: false }),
-    effects.vignette({ name: "rooftop vignette", intensity: 0.3, smoothness: 0.65, roundness: 0.8 })
+    effects.vignette({ name: "rooftop vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
   if (!options.reducedMotion) {
     nodes.push(

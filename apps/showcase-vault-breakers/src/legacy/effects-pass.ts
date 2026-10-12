@@ -13,14 +13,14 @@ export function createVaultEffectsPass(options: { readonly reducedMotion: boolea
     effects.volumetricFog({
       name: "vault arcade volumetric haze",
       density: 0.055,
-      color: "#2c1a4a",
+      color: "#5a4380",
       intensity: 0.5
     }),
     effects.contactShadows({ length: 0.28, thickness: 0.05, steps: 16, intensity: 0.9, lights: "shadowed" }),
     // Studio IBL (background off) gives the steel rails, flippers and floor a
     // real reflection source instead of the dim implicit room probe.
     environments.preset("studio", { name: "vault reflection environment", intensity: 0.75, background: false }),
-    effects.vignette({ name: "vault arcade vignette", intensity: 0.36, smoothness: 0.6, roundness: 0.8 })
+    effects.vignette({ name: "vault arcade vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
   if (!options.reducedMotion) {
     nodes.push(

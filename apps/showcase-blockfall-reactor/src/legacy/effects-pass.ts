@@ -24,13 +24,13 @@ export function createBlockfallEffectsPass(options: BlockfallEffectsPassOptions)
     effects.volumetricFog({
       name: "blockfall arcade volumetric haze",
       density: 0.05,
-      color: "#3a2160",
+      color: "#6b4c9a",
       intensity: 0.5
     }),
     // Screen-space contact shadows from the key: grounds the cabinet and the
     // board frame on the floor instead of letting them float.
     effects.contactShadows({ length: 0.32, thickness: 0.06, steps: 16, intensity: 0.9, lights: "shadowed" }),
-    effects.vignette({ name: "blockfall arcade vignette", intensity: 0.34, smoothness: 0.6, roundness: 0.8 })
+    effects.vignette({ name: "blockfall arcade vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
   if (!options.reducedMotion) {
     nodes.push(
