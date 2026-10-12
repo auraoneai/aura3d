@@ -23,6 +23,7 @@ import { PRD07_VOLUMETRIC_MARKER, volumetricInjectFragmentSource, volumetricInje
 import { volumetricIntegrateFragmentSource, volumetricIntegrateVertexSource } from "../../../../packages/rendering/src/atmosphere/shaders/volumetric-integrate.glsl";
 import { volumetricApplyFragmentSource, volumetricApplyVertexSource } from "../../../../packages/rendering/src/atmosphere/shaders/volumetric-apply.glsl";
 import { MockRenderDevice } from "../../../../packages/rendering/src/RenderDevice";
+import { SKY_SHADER_MARKER, skyFragmentSource, skyVertexSource } from "../../../../packages/rendering/src/atmosphere/sky.glsl";
 
 interface Program { readonly label: string; readonly marker: string; readonly vertex: string; readonly fragment: string }
 
@@ -41,7 +42,14 @@ const programs: Program[] = [
   ...bits(1).map(([bilateral]) => ({ label: `lowres.${bilateral ? 1 : 0}`, marker: LOWRES_COMPOSITE_SHADER_MARKER, vertex: lowResCompositeVertexSource(), fragment: lowResCompositeFragmentSource({ bilateral }) })),
   { label: "volumetric.inject", marker: PRD07_VOLUMETRIC_MARKER, vertex: volumetricInjectVertexSource(), fragment: volumetricInjectFragmentSource() },
   { label: "volumetric.integrate", marker: PRD07_VOLUMETRIC_MARKER, vertex: volumetricIntegrateVertexSource(), fragment: volumetricIntegrateFragmentSource() },
-  { label: "volumetric.apply", marker: PRD07_VOLUMETRIC_MARKER, vertex: volumetricApplyVertexSource(), fragment: volumetricApplyFragmentSource() }
+  { label: "volumetric.apply", marker: PRD07_VOLUMETRIC_MARKER, vertex: volumetricApplyVertexSource(), fragment: volumetricApplyFragmentSource() },
+  // Fogged sky only became reachable once prd07.fog ran in collect.
+  ...(["PREETHAM", "GRADIENT", "COLOR"] as const).flatMap((model) => bits(5).map(([stars, clouds, sunDisc, moon, fog]) => ({
+    label: `sky.${model}.${[stars, clouds, sunDisc, moon, fog].map((b) => (b ? 1 : 0)).join("")}`,
+    marker: SKY_SHADER_MARKER,
+    vertex: skyVertexSource(),
+    fragment: skyFragmentSource({ model, stars, clouds, sunDisc, moon, fog })
+  })))
 ];
 
 function hasGlslang(): boolean {
