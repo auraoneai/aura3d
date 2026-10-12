@@ -21,8 +21,8 @@ export interface GravityPostEffectsPassOptions {
 export function gravityPostEffectsPass(options: GravityPostEffectsPassOptions): readonly AuraNodeInput[] {
   const { playPlaneY, reducedMotion } = options;
   return [
-    effects.contactShadows({ length: 0.22, thickness: 0.05, intensity: 0.85 }),
-    effects.vignette({ intensity: 0.34, smoothness: 0.62, roundness: 0.9 }),
+    effects.contactShadows({ length: 0.22, thickness: 0.05, steps: 8, intensity: 0.85 }),
+    effects.vignette({ intensity: 0.3, smoothness: 2.4, roundness: 1 }),
     // God rays: driven by the strongest directional light (the warm solar key).
     effects.volumetricFog({
       name: "solar key inscatter",

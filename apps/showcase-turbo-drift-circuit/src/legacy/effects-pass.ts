@@ -4,7 +4,6 @@
  * Presentation only: vehicle physics, laps and drift scoring are untouched.
  * Families wired for the late-afternoon circuit:
  *   - low sun key with cascaded shadows (enabled in main.ts) + contact shadows
- *   - volumetric inscatter / god rays from the low sun key
  *   - warm ground-hugging height haze for treeline depth separation
  *   - trackside dust drifting over the start straight and the hairpin
  *   - grade + vignette (bloom values are unchanged; see main.ts)
@@ -37,16 +36,8 @@ export function turboEffectsPass(options: TurboEffectsPassOptions): readonly Aur
       color: "#e8b79a"
     }).position(at[0], at[1] + 0.6, at[2]);
   return [
-    effects.contactShadows({ length: 0.35, thickness: 0.06, intensity: 0.9 }),
-    effects.vignette({ intensity: 0.3, smoothness: 0.65, roundness: 0.9 }),
-    effects.volumetricFog({
-      name: "low sun inscatter",
-      density: 0.3,
-      intensity: 0.38,
-      color: "#ffb88a",
-      heightFalloff: 0.12,
-      heightReference: 0
-    }),
+    effects.contactShadows({ length: 0.35, thickness: 0.06, steps: 8, intensity: 0.9 }),
+    effects.vignette({ intensity: 0.3, smoothness: 2.4, roundness: 1 }),
     dust("start straight dust", 8101, startPoint),
     dust("hairpin dust", 8102, apexPoint),
     // Sun motes: a broad, slow glitter of warm specks over the infield.

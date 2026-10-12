@@ -3406,7 +3406,7 @@ const app = createAuraApp("#app", {
       name: "circuit daylight key",
       color: visualCaptureCamera ? TURBO_REVIEW_GRADE.key : TURBO_LATE_AFTERNOON_MOOD.keyColor,
       intensity: visualCaptureCamera ? 2.35 : TURBO_LATE_AFTERNOON_MOOD.keyIntensity,
-      shadow: !visualCaptureCamera
+      shadow: visualCaptureCamera ? false : { cascades: 2, mapSize: 1024, filter: "pcf", maxDistance: 30 }
     })
       .position(
         TURBO_LATE_AFTERNOON_MOOD.keyPositionFractions.x * SCENE_SIZE,

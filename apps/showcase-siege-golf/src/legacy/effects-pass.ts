@@ -6,7 +6,8 @@
  *   - low golden sun cascaded shadow (already authored) + contact shadows
  *   - golden-hour height haze: settles in the valley, keeps the fairway crisp
  *   - drifting pollen / chaff particles over the fairway and the keep
- *   - grade + vignette (bloom and the studio IBL stay as authored)
+ *   - grade (no vignette: the phase-camera scene rebuilds rendered black
+ *     through the LDR vignette tail on L4; bloom and IBL stay as authored)
  */
 import { effects, type AuraNodeInput } from "@aura3d/engine";
 
@@ -18,8 +19,7 @@ export interface SiegeGolfEffectsPassOptions {
 export function siegeGolfEffectsPass(options: SiegeGolfEffectsPassOptions): readonly AuraNodeInput[] {
   const { halfLength, reducedMotion } = options;
   return [
-    effects.contactShadows({ length: 0.3, thickness: 0.06, intensity: 0.9 }),
-    effects.vignette({ intensity: 0.3, smoothness: 0.65, roundness: 0.9 }),
+    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 8, intensity: 0.9 }),
     // Pollen and chaff drifting through the low sun over the mid fairway.
     effects.particles({
       name: "golden-hour fairway pollen",

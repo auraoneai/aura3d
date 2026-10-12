@@ -1187,13 +1187,13 @@ for (let index = 0; index < FLYBY_DRONES; index += 1) {
 
 sceneBuilder = sceneBuilder
   .add(effects.neonBloom({ name: "gravity route glow", intensity: 0.18, threshold: 0.62, maxIntensity: 0.9, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-  .add(effects.colorGrade(visualReviewCapture ? { exposure: 1.04, contrast: 1.06, saturation: 1.1 } : { exposure: 1.1, contrast: 1.14, saturation: 1.2 }))
+  .add(effects.colorGrade(visualReviewCapture ? { exposure: 1.04, contrast: 1.06, saturation: 1.1 } : { exposure: 1.16, contrast: 1.14, saturation: 1.2 }))
   .add(effects.antiAlias({ mode: "fxaa" }))
   // Keep enough cool fill for the board while allowing the freight district's
   // graphite/alloy/rust material groups to retain real value separation in the
   // review lens. A warm opposing directional reveals bevels and parcel edges.
   .add(lights.ambient({ intensity: visualReviewCapture ? 0.85 : 0.64, color: "#e0f4ff" }))
-  .add(lights.directional({ name: "board solar key", position: [2.4, 6.2, 3.2], intensity: visualReviewCapture ? 3.0 : 1.48, color: "#e9f7ff", shadow: !visualReviewCapture }))
+  .add(lights.directional({ name: "board solar key", position: [2.4, 6.2, 3.2], intensity: visualReviewCapture ? 3.0 : 1.48, color: "#e9f7ff", shadow: visualReviewCapture ? false : { cascades: 2, mapSize: 1024, filter: "pcf", maxDistance: 16 } }))
   .add(lights.directional({ name: "freight material warm rake", position: [-4.2, 3.6, -3.8], intensity: visualReviewCapture ? 2.0 : 0.42, color: "#ffc58d" }))
   .add(lights.point({ name: "solar rim", color: "#fb923c", intensity: 1.8 }).position(-2.5, 2.6, 1.5))
   .add(lights.point({ name: "route cyan practical", color: "#38d6ff", intensity: 1.4 }).position(-2.2, 1.15, -1.5))

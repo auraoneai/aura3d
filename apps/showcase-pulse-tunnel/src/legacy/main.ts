@@ -1482,7 +1482,7 @@ const app = createAuraApp("#app", {
       // front key on the player, warm terminal key, and a cooler crown/rim on
       // the deck and ribs. This is all renderer lighting—not an overlay—and
       // preserves the same world/material language in the playable route.
-      lights.directional({ name: "corridor sun", color: visualReviewCapture ? "#c0e1f2" : "#38bdf8", intensity: visualReviewCapture ? 0.88 : 1.6, shadow: !visualReviewCapture }).position(-5, 10, 6),
+      lights.directional({ name: "corridor sun", color: visualReviewCapture ? "#c0e1f2" : "#38bdf8", intensity: visualReviewCapture ? 0.88 : 1.6, shadow: visualReviewCapture ? false : { cascades: 2, mapSize: 1024, filter: "pcf", maxDistance: 14 } }).position(-5, 10, 6),
       lights.directional({ name: "terminal warm edge", color: "#ffc08a", intensity: visualReviewCapture ? 0.72 : 0.34 }).position(4.5, 5.8, -3.6),
       lights.ambient({ name: "corridor ambient", color: visualReviewCapture ? "#5a537b" : "#1e1b4b", intensity: visualReviewCapture ? 0.72 : 1.2 }),
       // The V11 hulls use real dark panel materials; broad practicals keep

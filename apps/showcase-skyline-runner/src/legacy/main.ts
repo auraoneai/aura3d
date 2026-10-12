@@ -1406,7 +1406,7 @@ const actPaletteLights = [0, 1, 2, 3, 4].map((actIndex) => {
   const reviewNocturne = visualReviewCapture && actIndex === 0;
   return {
     ambient: lights.ambient({ name: `skyline act-${actIndex} fill`, color: reviewNocturne ? "#7185a8" : palette.ambientLightColor, intensity: reviewNocturne ? 0.08 : palette.ambientLightIntensity }),
-    key: lights.directional({ name: `skyline act-${actIndex} key`, color: reviewNocturne ? "#ffb08e" : palette.keyLightColor, intensity: reviewNocturne ? 0.16 : palette.keyLightIntensity, shadow: !visualReviewCapture }).position(-3, 5, 4),
+    key: lights.directional({ name: `skyline act-${actIndex} key`, color: reviewNocturne ? "#ffb08e" : palette.keyLightColor, intensity: reviewNocturne ? 0.16 : palette.keyLightIntensity, shadow: visualReviewCapture ? false : { cascades: 2, mapSize: 1024, filter: "pcf", maxDistance: 14 } }).position(-3, 5, 4),
     checkpoint: lights.point({
       name: `skyline act-${actIndex} relay`,
       color: palette.checkpointLightColor,

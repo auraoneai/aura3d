@@ -38,8 +38,8 @@ export function skylineEffectsPass(options: SkylineEffectsPassOptions): readonly
     }).position(x, y + 0.6, depth - 0.4)
   );
   return [
-    effects.contactShadows({ length: 0.12, thickness: 0.03, intensity: 0.85 }),
-    effects.vignette({ intensity: 0.32, smoothness: 0.62, roundness: 0.9 }),
+    effects.contactShadows({ length: 0.12, thickness: 0.03, steps: 8, intensity: 0.85 }),
+    effects.vignette({ intensity: 0.3, smoothness: 2.4, roundness: 1 }),
     ...motes
   ];
 }
@@ -48,12 +48,12 @@ export function skylineEffectsPass(options: SkylineEffectsPassOptions): readonly
 export function skylineActHazeOptions(palette: { readonly fogDensity: number }, groundY: number) {
   return {
     // heightDensity selects the C-21 height mode.
-    density: palette.fogDensity * 1.4,
-    heightDensity: 0.06 + palette.fogDensity * 1.5,
-    heightFalloff: 0.45,
+    density: palette.fogDensity * 1.1,
+    heightDensity: 0.012 + palette.fogDensity * 0.6,
+    heightFalloff: 0.3,
     heightReference: groundY,
     start: 2,
-    maxOpacity: 0.6,
+    maxOpacity: 0.45,
     affectsBackground: false,
     transitionSeconds: 0.6
   } as const;
