@@ -65,6 +65,19 @@ export interface GameSoundOptions<TCue extends string> {
   readonly fetchProbe?: (url: string) => Promise<ArrayBuffer>;
 }
 
+export type GameSoundPlayOptions = { position?: Vec3; velocity?: Vec3; volumeDb?: number; rate?: number };
+type PlayOptions = GameSoundPlayOptions;
+/** Handle returned by `play()`: a live voice (or a loop waiting for its buffer). */
+export interface GameSoundPlayHandle {
+  readonly id: number;
+  readonly ended?: boolean;
+  setLevel?(level: { gain?: number; rate?: number }, rampMs?: number): void;
+  stop(fadeMs?: number): void;
+  setPosition(p: Vec3): void;
+  setOcclusion(a: number): void;
+}
+type PlayHandle = GameSoundPlayHandle;
+
 const VOICE_CAPS: Record<QualityTier, number> = { low: 12, medium: 24, high: 32, ultra: 48 };
 const HRTF_CAP: Record<QualityTier, number> = { low: 0, medium: 4, high: 8, ultra: 16 };
 
@@ -221,16 +234,6 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
   let muted = false;
   let masterVolume = 1;
   let voicesPlayed = 0;
-
-  type PlayOptions = { position?: Vec3; velocity?: Vec3; volumeDb?: number; rate?: number };
-  interface PlayHandle {
-    readonly id: number;
-    readonly ended?: boolean;
-    setLevel?(level: { gain?: number; rate?: number }, rampMs?: number): void;
-    stop(fadeMs?: number): void;
-    setPosition(p: Vec3): void;
-    setOcclusion(a: number): void;
-  }
 
   const assetUrlsOf = (cue: SoundCueSpec): string[] =>
     cue.asset ? (Array.isArray(cue.asset) ? cue.asset : [cue.asset]).map((a) => a.url) : [];
