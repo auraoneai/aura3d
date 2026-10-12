@@ -31,6 +31,7 @@ import { createTableSimulation, quatToEuler, type PropVisual } from "../gameplay
 import { createVaultAudio } from "./pinball-audio";
 import { createScoreboardNodes, scoreboardVisibility, MISSION_LINES } from "./scoreboard";
 import { createVaultBreakersEnvironment } from "./environment";
+import { createVaultEffectsPass } from "./effects-pass";
 import "./styles.css";
 
 type VaultWindow = Window & {
@@ -361,6 +362,7 @@ function buildScene(): ReturnType<typeof scene> {
       effects.colorGrade({ exposure: 1.05 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" })
     ])
+    .addMany(createVaultEffectsPass({ reducedMotion }))
     .camera(camera.perspective({
       // Give the typed mechanism assembly a small safety margin on every edge
       // of the review viewport.  The previous close pinball angle clipped the
