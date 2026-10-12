@@ -46,10 +46,12 @@ const LOOKS_ENV = "A3D_QR_LOOKS";
 const STRICT_ENV = "A3D_QR_LOOKS_PROMPT_STRICT";
 const STRICT_ALIAS_ENV = "A3D_PROMPT_PLAN_STRICT";
 const A3D_QR_ENV = "A3D_QR";
+// A3D_QR_VFX is default-on; the rain-rejected cases pin it off explicitly.
+const VFX_ENV = "A3D_QR_VFX";
 
 let savedEnv: Record<string, string | undefined> = {};
 afterEach(() => {
-  for (const key of [LOOKS_ENV, STRICT_ENV, STRICT_ALIAS_ENV, A3D_QR_ENV]) {
+  for (const key of [LOOKS_ENV, STRICT_ENV, STRICT_ALIAS_ENV, A3D_QR_ENV, VFX_ENV]) {
     if (savedEnv[key] === undefined) delete process.env[key];
     else process.env[key] = savedEnv[key];
   }
@@ -72,6 +74,7 @@ function basePlan(overrides: Partial<AuraPromptPlanV2> = {}): AuraPromptPlanV2 {
 
 describe("compilePromptPlanV2 (§6.3)", () => {
   test("(a) warn mode: fog applies, stubbed rain lands in rejected, census is honest", () => {
+    setEnv(VFX_ENV, "0");
     const compiled = compilePromptPlanV2(basePlan({
       effects: ["rain", "fog"],
       environment: "white turntable plinth and studio sweep"
@@ -97,6 +100,7 @@ describe("compilePromptPlanV2 (§6.3)", () => {
   });
 
   test("(b) reject mode throws AuraPromptPlanError for unappliable effects", () => {
+    setEnv(VFX_ENV, "0");
     const options: AuraCompilePromptPlanOptions = { unsupported: "reject" };
     expect(() => compilePromptPlanV2(basePlan({ effects: ["rain"] }), options))
       .toThrowError(AuraPromptPlanError);
@@ -335,6 +339,7 @@ describe("flag-on compilePromptPlan (§7.3)", () => {
   test("flag on → compilePromptPlan runs the v2 pipeline narrowed to 1.0", () => {
     setEnv(A3D_QR_ENV, undefined);
     setEnv(LOOKS_ENV, "1");
+    setEnv(VFX_ENV, "0");
     const compiled = compilePromptPlan(basePlan({ effects: ["rain", "fog"] }) as AuraPromptPlan);
     expect(compiled.report.schema).toBe("aura3d-prompt-plan-report/1.0");
     // honest effects: fog applied, rain dropped (rejected inside v2)
