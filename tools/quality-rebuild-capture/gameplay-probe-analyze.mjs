@@ -53,16 +53,36 @@ function phaseStats(phase, idle) {
     if (!(lr.range > 1e-4) && !lr.changed) continue;
     changed.push({ key, ...lr });
   }
-  const idleRange = new Map((idle?.changed ?? []).map((c) => [c.key, c.range]));
-  const response = changed.filter((c) => !NOISE.test(c.key) && (!idleRange.has(c.key) || c.range > 2 * idleRange.get(c.key) + 1e-3));
+  const idleBy = new Map((idle?.changed ?? []).map((c) => [c.key, c]));
+  // Response = differs from the no-input trend: a leaf idle never touched, or one whose net change
+  // departs from the idle slope (x phase seconds) by more than idle's oscillation (range - |net|).
+  const netOf = (c) => (typeof c.first === "number" && typeof c.last === "number" ? c.last - c.first : null);
+  const response = changed.filter((c) => {
+    if (NOISE.test(c.key)) return false;
+    const ic = idleBy.get(c.key);
+    if (!ic) return true;
+    const net = netOf(c); const inet = netOf(ic);
+    if (net === null || inet === null) return false;
+    const expected = (inet / idle.seconds) * seconds;
+    const wobble = Math.max(0, ic.range - Math.abs(inet));
+    return Math.abs(net - expected) > 2 * wobble + 0.05 * Math.abs(expected) + 1e-3;
+  });
   const nodeIds = new Set(s.flatMap((x) => Object.keys(x.nodes)));
   const moved = [];
   for (const id of nodeIds) {
     const d = nodeDisp(s, id);
     if (d.disp > 0.02) moved.push({ id, ...d });
   }
-  const idleMoved = new Map((idle?.moved ?? []).map((m) => [m.id, m.disp]));
-  const movedResponse = moved.filter((m) => !idleMoved.has(m.id) || m.disp > 1.5 * idleMoved.get(m.id) + 0.05);
+  const idleMovedBy = new Map((idle?.moved ?? []).map((m) => [m.id, m]));
+  const movedResponse = moved.filter((m) => {
+    const im = idleMovedBy.get(m.id);
+    if (!im) return true;
+    const k = seconds / idle.seconds;
+    const net = m.to.map((v, i) => v - m.from[i]); const inet = im.to.map((v, i) => (v - im.from[i]) * k);
+    const resid = Math.hypot(net[0] - inet[0], net[1] - inet[1], net[2] - inet[2]);
+    const wobble = Math.max(0, im.disp - Math.hypot(...im.to.map((v, i) => v - im.from[i])));
+    return resid > 2 * wobble + 0.05 * Math.hypot(...inet) + 0.05;
+  });
   const nan = [...keys].filter((k) => /^(NaN|Infinity|-Infinity)$/.test(String(last.leaves[k])));
   for (const id of nodeIds) if (last.nodes[id] && last.nodes[id].some((v) => !Number.isFinite(v))) nan.push(`node:${id}`);
   const k0 = first.keys; const k1 = last.keys;
@@ -126,7 +146,8 @@ export function analyseRun(phases) {
     ...rest, changedLeaves: changed.length, movedNodes: moved.length,
     changedTop: top(changed.filter((c) => !NOISE.test(c.key)), 40, (c) => (PLAYERISH.test(c.key) ? 1e6 : 0) + c.range).map(leafBrief),
     responseTop: top(response, 40, (c) => (PLAYERISH.test(c.key) ? 1e6 : 0) + c.range).map(leafBrief),
-    movedTop: top(moved, 12, (m) => m.disp).map(nodeBrief)
+    movedTop: top(moved, 12, (m) => m.disp).map(nodeBrief),
+    movedResponseTop: top(movedResponse, 12, (m) => m.disp).map(nodeBrief)
   }));
   return out;
 }
