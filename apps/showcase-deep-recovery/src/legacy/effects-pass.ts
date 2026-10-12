@@ -22,9 +22,9 @@ const vfxOn = flags.on("A3D_QR_VFX");
 const SHAFTS = [
   // In front of the default follow camera (sub at 0,-6,0; camera at about
   // 6.4,3.2,-15.4 looking +z and down towards -2,-9,-5).
-  { position: [-5, 3, 2] as const, angle: 0.24, intensity: 0.85 },
-  { position: [2.5, 3, 7] as const, angle: 0.3, intensity: 0.95 },
-  { position: [-1, 3, -3] as const, angle: 0.2, intensity: 0.7 }
+  { position: [-5, 3, 2] as const, angle: 0.24, intensity: 0.45 },
+  { position: [2.5, 3, 7] as const, angle: 0.3, intensity: 0.5 },
+  { position: [-1, 3, -3] as const, angle: 0.2, intensity: 0.38 }
 ];
 
 export function deepRecoveryEffectsPass() {
@@ -39,11 +39,11 @@ export function deepRecoveryEffectsPass() {
       position: [12, 30, 8],
       target: [0, -10, -6],
       color: "#a8e6df",
-      intensity: 2.3,
+      intensity: 1.0,
       shadow: { cascades: "auto", maxDistance: 60 }
     }),
     effects.contactShadows({ length: 0.4, intensity: 0.8 }),
-    environments.preset("night", { intensity: 0.55, specularIntensity: 1.2, background: false }),
+    environments.preset("night", { intensity: 0.4, specularIntensity: 1.2, background: false }),
     // Water column: denser with depth below the surface reference, forward
     // in-scatter towards the sun.
     effects.volumetricFog({
@@ -51,6 +51,7 @@ export function deepRecoveryEffectsPass() {
       density: 0.009,
       color: "#0d3a44",
       intensity: 0.2,
+      volumetricQuality: "balanced",
       heightFalloff: 0.06,
       heightReference: 0
     }),

@@ -40,6 +40,7 @@ export function patrolWingEffectsPass() {
       density: 0.013,
       color: "#6f8fa3",
       intensity: 0.44,
+      volumetricQuality: "balanced",
       heightFalloff: 0.05,
       heightReference: 0
     }),
@@ -50,8 +51,8 @@ export function patrolWingEffectsPass() {
             effects.particles({
               name: `flight corridor cloud wisp ${index + 1}`,
               emitter: "ambient",
-              particleCount: 80,
-              emissionRate: 16,
+              particleCount: 60,
+              emissionRate: 12,
               speed: 1.6,
               drag: 0.7,
               gravity: 0,
@@ -66,8 +67,8 @@ export function patrolWingEffectsPass() {
           effects.particles({
             name: "surf line sea spray",
             emitter: "fountain",
-            particleCount: 120,
-            emissionRate: 30,
+            particleCount: 100,
+            emissionRate: 25,
             radius: 6,
             height: 1.4,
             size: [0.08, 0.2],

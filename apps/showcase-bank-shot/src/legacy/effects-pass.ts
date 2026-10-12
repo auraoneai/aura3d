@@ -47,11 +47,12 @@ export function bankShotEffectsPass() {
       name: "pool hall lamp haze",
       density: 0.02,
       color: "#3a3326",
-      intensity: 0.18,
+      intensity: 0.14,
+      volumetricQuality: "balanced",
       heightFalloff: 0.35,
       heightReference: 0
     }),
-    effects.vignette({ intensity: 0.3, smoothness: 1.8 }),
+    effects.vignette({ intensity: 0.42, smoothness: 1.8 }),
     ...(vfxOn
       ? [
           // Dust motes rising slowly through the lamp pool over the table

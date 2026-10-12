@@ -30,7 +30,7 @@ export function orbitalEffectsPass() {
       position: [-5.5, 3.6, 4.2],
       target: [0, 0, 0],
       color: "#ffe2b8",
-      intensity: 4.2,
+      intensity: 5.0,
       shadow: { cascades: "auto", maxDistance: 24 }
     }),
     // Studio IBL for reflections on the metallic stations and planet lacquer;
@@ -42,11 +42,11 @@ export function orbitalEffectsPass() {
     effects.volumetricFog({
       name: "orbital in-scatter",
       density: 0.045,
-      color: "#223c5c",
-      intensity: 0.5
+      color: "#2a4a6e",
+      intensity: 0.62,
+      volumetricQuality: "balanced"
     }),
-    effects.colorGrade({ exposure: 1.18, contrast: 1.05, saturation: 1.2 }),
-    effects.vignette({ intensity: 0.3, smoothness: 1.6 }),
+    effects.colorGrade({ exposure: 1.38, contrast: 1.02, saturation: 1.25 }),
     ...(vfxOn
       ? [
           // Debris belt: a wide spawn disc (fountain plume preset) in the
