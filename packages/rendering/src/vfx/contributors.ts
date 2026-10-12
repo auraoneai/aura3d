@@ -354,11 +354,20 @@ const fogContributor: FrameContributor = {
       ? ctx.flags.on("A3D_QR_CORE_GENERATOR")
       : ctx.flags.on("A3D_QR_CORE");
     const parity = !generatorOn;
-    const packed = packV2(resolved, {
+    const resolvedPacked = packV2(resolved, {
       fogColor,
       cameraY: cam?.position[1] ?? 0,
       parity
     });
+    // No live fog node → fog off for the sky pass and the froxel density too,
+    // matching forward geometry (IC-0, setPrd07ForwardFog(null) below). The
+    // C-21 default height fog used to leak into the background pass and the
+    // froxel inject from `resolvePrd07FogSpec(null)`, fogging scenes that
+    // author none (prd07-volumetric-shafts: windows/background at 254).
+    // Fog volumes still inject into the froxel grid.
+    const packed: PackedFogUniforms = spec
+      ? resolvedPacked
+      : { ...resolvedPacked, fogA: [0, 0, 0, 0], fogMode: 0 };
     // §6.6 sun inscatter colour — sky radiance at the sun direction (clamped);
     // only multiplied by sunInscatter (default 0) so the approximation is inert.
     let sunColor: Vec3 = [1, 1, 1];
