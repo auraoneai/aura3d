@@ -1,10 +1,11 @@
 /**
  * C-05 output parity with three r185 (follow-up to #1253's GPU run, where
  * aura first rendered the requested operator/exposure):
- *  - background: three never tone-maps or exposes the clear colour (a raw
- *    glClear; tone mapping is per material). Under A3D_QR_CORE_OUTPUT the HDR
- *    target clears to the linear background with alpha 0, drawn content
- *    writes alpha 1, and OutputPass mixes the untouched clear back in by that
+ *  - background (PRD-01 §6.5): tone-mapped with the scene by default;
+ *    `background(c, { toneMapped: false })` shows the authored colour exactly
+ *    (three r185's raw clear). Under A3D_QR_CORE_OUTPUT the HDR target clears
+ *    to the linear background with alpha = 1 / 0 for those cases, drawn content
+ *    writes alpha 1, and OutputPass mixes the untouched value back in by that
  *    coverage. Additive/multiply accumulate alpha so they mark coverage.
  *  - operators/exposure: aura's bodies are r185's with the exposure line
  *    lifted out to a single `hdr * u_exposure` (ACES keeps its `/ 0.6`).
@@ -21,6 +22,10 @@ import { setRendererQrFlags } from "../../../../packages/rendering/src/renderer/
 import { normalizeProgramFeatures } from "../../../../packages/rendering/src/program/ProgramFeatures";
 import { generateProgramImpl } from "../../../../packages/rendering/src/program/ProgramGenerator";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
+import { scene } from "../../../../packages/engine/src/agent-api/nodes/scene";
+import { outputClearColor } from "../../../../packages/engine/src/agent-api/compiler/renderer";
+import { DIAGNOSTIC_ONLY_FIELDS } from "../../../../packages/engine/src/contracts/compiler";
+import "../../../../packages/engine/src/lanes/prd01";
 
 const V2 = resolveQrFlags({ env: { A3D_QR_CORE: "v2" } });
 const OFF = resolveQrFlags({ options: ["none"] });
@@ -93,5 +98,28 @@ describe("C-05 background passthrough (three r185 clear semantics)", () => {
     expect(fragment("opaque")).toContain("a3dAlpha = 1.0;");
     expect(fragment("mask")).toMatch(/#ifndef ALPHA_TO_COVERAGE\n\s+a3dAlpha = 1\.0;\n#endif/);
     expect(fragment("blend")).not.toContain("a3dAlpha = 1.0;");
+  });
+});
+
+describe("C-05 scene().background(color, { toneMapped }) (PRD-01: tone-mapped by default)", () => {
+  it("the snapshot carries only the opt-out", () => {
+    expect(scene().background("#336699").toJSON()).not.toHaveProperty("backgroundToneMapped");
+    expect(scene().background("#336699", { toneMapped: true }).toJSON()).not.toHaveProperty("backgroundToneMapped");
+    expect(scene().background("#336699", { toneMapped: false }).toJSON().backgroundToneMapped).toBe(false);
+  });
+
+  it("the HDR clear is the linear background; alpha 1 = tone-mapped (default), 0 = toneMapped:false", () => {
+    const linear = (code: number) => { const v = code / 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    const expected = [0x33, 0x66, 0x99].map(linear);
+    const tm = outputClearColor(scene().background("#336699").toJSON());
+    const passthrough = outputClearColor(scene().background("#336699", { toneMapped: false }).toJSON());
+    tm.slice(0, 3).forEach((c, i) => expect(c).toBeCloseTo(expected[i]!, 4));
+    expect(tm[3]).toBe(1);
+    expect(passthrough.slice(0, 3)).toEqual(tm.slice(0, 3));
+    expect(passthrough[3]).toBe(0);
+  });
+
+  it("background.toneMapped is consumed, no longer diagnostic-only", () => {
+    expect(DIAGNOSTIC_ONLY_FIELDS["background.toneMapped"]).toBeUndefined();
   });
 });

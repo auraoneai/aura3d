@@ -156,7 +156,8 @@ function lightToAura(spec: Prd01LightSpec, log: CapabilityLog): AuraSceneNode {
 }
 
 function buildSnapshot(spec: Prd01LaneSceneSpec, log: CapabilityLog): AuraSceneSnapshot {
-  const builder = scene().background(spec.background as AuraColor).camera(
+  // three r185 never tone-maps the clear colour: the parity reference opts out (C-05).
+  const builder = scene().background(spec.background as AuraColor, { toneMapped: false }).camera(
     camera.perspective({ position: spec.camera.position as AuraVec3, target: spec.camera.target as AuraVec3, fov: spec.camera.fov })
   );
   for (const light of spec.lights) builder.add(lightToAura(light, log));
