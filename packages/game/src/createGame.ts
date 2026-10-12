@@ -167,9 +167,20 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
     ) as unknown as Hud)
     : new GameHudImpl();
 
-  const touch: TouchControls | null = hasDom && options.touch && runtime.input
+  // §6.11: touch controls need an input sink. No route passes `input` (all 18
+  // v2 boots set `touch` only), so without this the controls never mounted
+  // and mobile players got no on-screen controls. Declare each bound action
+  // with no keys; the controls drive them through `setAction`.
+  const touchInput: RuntimeInput | undefined = runtime.input
+    ?? (hasDom && options.touch
+      ? runtime.inputController({
+        actions: Object.fromEntries(Object.values(options.touch.bindings).map((action) => [action, []]))
+      })
+      : undefined);
+
+  const touch: TouchControls | null = hasDom && options.touch && touchInput
     ? mountTouchControls(
-      runtime.input,
+      touchInput,
       { preset: options.touch.preset, bindings: options.touch.bindings },
       { doc: document as unknown as HudDocument, root: (targetEl ?? document.body) as unknown as HudElement }
     )
@@ -347,7 +358,7 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
     id: options.id,
     app,
     runtime,
-    input: runtime.input,
+    input: touchInput as RuntimeInput,
     session,
     sessionImpl: session,
     shell,

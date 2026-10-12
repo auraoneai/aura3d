@@ -169,11 +169,17 @@ vec3 a3dApplyOutputOverlay(vec3 encoded, vec2 uv) {
 }
 #endif
 void main() {
-  vec3 hdr = texture(u_scene, v_uv).rgb;
-  vec3 display = TONE_MAP(hdr * u_exposure);
+  vec4 scene = texture(u_scene, v_uv);
+  vec3 hdr = scene.rgb;
+  // Coverage: drawn content is tone-mapped, the clear colour is not (three
+  // r185: the clear is a raw glClear, tone mapping is per material). Without
+  // the coverage attachment, HDR alpha carries it — cleared alpha 0, drawn 1.
 #ifdef BACKGROUND_COVERAGE
-  display = mix(clamp(hdr, 0.0, 1.0), display, texture(u_coverage, v_uv).r);
+  float a3dCoverage = texture(u_coverage, v_uv).r;
+#else
+  float a3dCoverage = clamp(scene.a, 0.0, 1.0);
 #endif
+  vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);
   vec3 encoded = a3dLinearToSRGB(clamp(display, 0.0, 1.0));
   if (u_dither > 0.5) encoded += a3dTriangularNoise(gl_FragCoord.xy) / 255.0;
 #ifdef OUTPUT_OVERLAY

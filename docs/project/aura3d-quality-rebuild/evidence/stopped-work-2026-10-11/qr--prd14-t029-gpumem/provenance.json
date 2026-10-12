@@ -1,0 +1,61 @@
+{
+  "branch": "qr/prd14-t029-gpumem",
+  "tip": "9ca09af09bf80845b259f5acf20d14bd0ac1b4b9",
+  "base": "9ca09af09bf80845b259f5acf20d14bd0ac1b4b9",
+  "tree": "0096ea4504f54aeb3cb5f850b7a7127b5ed49138",
+  "reconstructedTree": "0096ea4504f54aeb3cb5f850b7a7127b5ed49138",
+  "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/qr--prd14-t029-gpumem",
+  "committedPatchSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "committedPatchBytes": 0,
+  "changedFiles": [],
+  "uniqueCommits": [],
+  "sourceWorktree": "/Users/gurbakshchahal/platforms/aura3d-final-prd14-gpumem",
+  "workingFiles": [
+    {
+      "path": "apps/showcase-courier-rush/src/v2/scene/batch.ts",
+      "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/qr--prd14-t029-gpumem/working-files/apps/showcase-courier-rush/src/v2/scene/batch.ts.source",
+      "sha256": "34b17ee8dbcc35d0231a763de602f97fb0207fa4cda61855e40aea61659effcc",
+      "bytes": 5266
+    },
+    {
+      "path": "tests/qr/prd14/unit/zz-t029-count.test.ts",
+      "archivePath": "docs/project/aura3d-quality-rebuild/evidence/stopped-work-2026-10-11/qr--prd14-t029-gpumem/working-files/tests/qr/prd14/unit/zz-t029-count.test.ts.source",
+      "sha256": "c7293a89ca94f86a4d812f08d9d1d3b2f1e8751348cb49e7b24a656a939ee8ce",
+      "bytes": 1274
+    }
+  ],
+  "status": "?? apps/showcase-courier-rush/src/v2/scene/batch.ts\n?? tests/qr/prd14/unit/zz-t029-count.test.ts",
+  "unstagedPatchSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stagedPatchSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "ignoredPaths": [
+    "node_modules/",
+    "packages/animation/node_modules/",
+    "packages/apps/node_modules/",
+    "packages/assets/node_modules/",
+    "packages/audio/node_modules/",
+    "packages/aura3d-cli/node_modules/",
+    "packages/controls/node_modules/",
+    "packages/create-aura3d/node_modules/",
+    "packages/debug/node_modules/",
+    "packages/ecs/node_modules/",
+    "packages/editor-runtime/node_modules/",
+    "packages/engine/node_modules/",
+    "packages/game/node_modules/",
+    "packages/input/node_modules/",
+    "packages/navigation-recast/node_modules/",
+    "packages/physics-rapier/node_modules/",
+    "packages/physics/node_modules/",
+    "packages/product-studio/node_modules/",
+    "packages/react/node_modules/",
+    "packages/rendering/node_modules/",
+    "packages/scene/node_modules/",
+    "packages/workflows/node_modules/",
+    "workers/asset-index-cron/node_modules/"
+  ],
+  "disposition": "Conservative static batching wired into courier world; counting prototype replaced by regression tests.",
+  "integratedPaths": [
+    "apps/showcase-courier-rush/src/v2/scene/batch.ts",
+    "apps/showcase-courier-rush/src/v2/scene/world.ts",
+    "tests/qr/prd14/unit/courier-static-batch.test.ts"
+  ]
+}

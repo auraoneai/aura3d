@@ -1,0 +1,828 @@
+diff --git a/.github/workflows/lead-live-shots.yml b/.github/workflows/lead-live-shots.yml
+new file mode 100644
+index 0000000000000000000000000000000000000000..f33fb813c74cf2f360364e3915d0ad78a226872d
+--- /dev/null
++++ b/.github/workflows/lead-live-shots.yml
+@@ -0,0 +1,47 @@
++name: lead-live-shots
++on:
++  push:
++    branches: ['qr/lead-live-shots']
++jobs:
++  shots:
++    runs-on: [self-hosted, linux, gpu-l4, track0]
++    timeout-minutes: 45
++    steps:
++      - run: |
++          set -eu
++          mkdir -p shots && cd shots
++          npm init -y >/dev/null && npm i -s playwright-core@1.59.1 >/dev/null
++          cat > s.mjs <<'JS'
++          import { chromium } from 'playwright-core';
++          import { writeFileSync } from 'node:fs';
++          const args = (process.env.ARGS || '').split(' ').filter(Boolean);
++          const games = ['aura-clash-showcase','showcase-aurora-lander','showcase-bank-shot','showcase-blockfall-reactor','showcase-courier-rush','showcase-deep-recovery','showcase-gallery-shift','showcase-gravity-post','showcase-mech-hangar','showcase-neon-swarm','showcase-orbital-defense','showcase-patrol-wing','showcase-pulse-tunnel','showcase-rooftop-buckets','showcase-siege-golf','showcase-skyline-runner','showcase-turbo-drift-circuit','showcase-vault-breakers'];
++          const out = [];
++          const b = await chromium.launch({ channel: 'chrome', headless: true, args });
++          for (const g of games) {
++            const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
++            const errs = []; p.on('pageerror', e => errs.push(String(e).slice(0, 200)));
++            const cons = []; p.on('console', m => { if (m.type() === 'error') cons.push(m.text().slice(0, 200)); });
++            let status = 0;
++            try { const r = await p.goto(`https://aura3d.auraone.ai/apps/${g}/`, { waitUntil: 'load', timeout: 60000 }); status = r ? r.status() : 0; } catch (e) { errs.push('goto: ' + String(e).slice(0, 120)); }
++            await p.waitForTimeout(10000);
++            await p.screenshot({ path: `${g}-a.png` }).catch(() => {});
++            await p.keyboard.press('Space').catch(() => {}); await p.keyboard.down('ArrowRight').catch(() => {});
++            await p.waitForTimeout(4000);
++            await p.keyboard.up('ArrowRight').catch(() => {});
++            await p.screenshot({ path: `${g}-b.png` }).catch(() => {});
++            out.push({ g, status, errs, cons: cons.slice(0, 5) });
++            console.log(JSON.stringify(out[out.length - 1]));
++            await p.close();
++          }
++          await b.close();
++          writeFileSync('report.json', JSON.stringify(out, null, 2));
++          JS
++          ARGS="${{ vars.QR_AZURE_GPU_CHROME_ARGS }}" node s.mjs
++      - uses: actions/upload-artifact@v4
++        if: always()
++        with:
++          name: live-games
++          path: |
++            shots/*.png
++            shots/report.json
+diff --git a/marketing/package.json b/marketing/package.json
+index 00ea41f70e7fa401e8095091ec1d7f4ac9245deb..406377b845cd0986594c12c61219fc762963b924 100644
+--- a/marketing/package.json
++++ b/marketing/package.json
+@@ -10,7 +10,7 @@
+     "preview": "vite preview --host 127.0.0.1 --port 7782 --strictPort"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1"
++    "@aura3d/engine": "4.0.0"
+   },
+   "devDependencies": {
+     "typescript": "^5.5.4",
+diff --git a/package.json b/package.json
+index b61aa97eea4feb9b7a67cf789d5a5d26b1c6c285..7e556ab550a3124cfb127edd68624a576fd8b6e8 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/engine",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "packageManager": "pnpm@11.1.3",
+   "private": false,
+   "type": "module",
+diff --git a/packages/animation/package.json b/packages/animation/package.json
+index e0a175d34930b1b49832672f6eb2da18726297cb..eb4a40a0bacbf162342e6c3878ed971b3734ac87 100644
+--- a/packages/animation/package.json
++++ b/packages/animation/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/animation",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "main": "./dist/index.js",
+   "types": "./dist/index.d.ts",
+diff --git a/packages/apps/package.json b/packages/apps/package.json
+index 549e83189399f0f0abd72833af876c72d4d5e925..0ee45e2e6f8bba2cfe9f6c994f86e4fc5212a05c 100644
+--- a/packages/apps/package.json
++++ b/packages/apps/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/apps",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "exports": {
+     ".": {
+diff --git a/packages/asset-index/package.json b/packages/asset-index/package.json
+index e82b25e62361766fdae0370312b3e43240696e77..ddf3decb27a0ecc462f6dcc8936676ff7697cf33 100644
+--- a/packages/asset-index/package.json
++++ b/packages/asset-index/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/asset-index",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "main": "./dist/index.js",
+   "types": "./dist/index.d.ts",
+diff --git a/packages/assets/package.json b/packages/assets/package.json
+index 8570ba2c14d239de48c3bfc8173494abcad766a0..347e31ed48a56f1181f9934d27192413d36a8cd0 100644
+--- a/packages/assets/package.json
++++ b/packages/assets/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/assets",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "exports": {
+     ".": {
+diff --git a/packages/audio/package.json b/packages/audio/package.json
+index 53e98b14eaa9a16acd444a8041cc1c4a78e130ac..2984fc3e99974648994fc37ff6e1b62f482974fe 100644
+--- a/packages/audio/package.json
++++ b/packages/audio/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/audio",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "exports": {
+     ".": {
+diff --git a/packages/aura3d-cli/package.json b/packages/aura3d-cli/package.json
+index 71efdb98e9774266718731706d46877f1a914af5..e7599dde25324723c7e26bbef8c877fcdab4f90b 100644
+--- a/packages/aura3d-cli/package.json
++++ b/packages/aura3d-cli/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/cli",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "bin": {
+     "aura3d": "dist/cli.js",
+diff --git a/packages/controls/package.json b/packages/controls/package.json
+index e41b82449f7674147675cb37a52a45ca62087a59..cb769114213cc35c05d47dbfccdad2b2e63fda6e 100644
+--- a/packages/controls/package.json
++++ b/packages/controls/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/controls",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "main": "./dist/index.js",
+   "types": "./dist/index.d.ts",
+diff --git a/packages/core/package.json b/packages/core/package.json
+index 0bfd8e6e6d624a4d50646ffbda766dd19f45029f..c73f34485016892a79abf685be80000e6c0e3b85 100644
+--- a/packages/core/package.json
++++ b/packages/core/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/core",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "main": "./dist/index.js",
+   "types": "./dist/index.d.ts",
+diff --git a/packages/create-aura3d/package.json b/packages/create-aura3d/package.json
+index e419939b97f2b07767a677d6393f6f4c386613fc..9ed92ee0cadcc1a3b98cf4a8f2d5fd9d0a02e38c 100644
+--- a/packages/create-aura3d/package.json
++++ b/packages/create-aura3d/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "create-aura3d",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "bin": {
+     "create-aura3d": "dist/cli.js"
+diff --git a/packages/create-aura3d/src/index.ts b/packages/create-aura3d/src/index.ts
+index 50481205ae06ffc6941fda0c6952d6da963258a9..6069bb5ac1dd9c9c5539f2d049c6ba5b741aa538 100644
+--- a/packages/create-aura3d/src/index.ts
++++ b/packages/create-aura3d/src/index.ts
+@@ -96,7 +96,7 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
+   const dependencies = { ...(packageJson.dependencies ?? {}) };
+   const auraDependencies = Object.keys(dependencies).filter((name) => name.startsWith("@aura3d/"));
+   if (auraDependencies.length === 0) {
+-    dependencies["@aura3d/engine"] = options.packageVersion ?? "3.0.1";
++    dependencies["@aura3d/engine"] = options.packageVersion ?? "4.0.0";
+   } else if (options.packageVersion) {
+     for (const dependency of auraDependencies) dependencies[dependency] = options.packageVersion;
+   }
+diff --git a/packages/create-aura3d/templates/animation-channel/package.json b/packages/create-aura3d/templates/animation-channel/package.json
+index 1b074237bf3c234710bc909919867eef99ba6732..ef5b25b9fb8fac1d339141159b8200e9f39f0cda 100644
+--- a/packages/create-aura3d/templates/animation-channel/package.json
++++ b/packages/create-aura3d/templates/animation-channel/package.json
+@@ -12,8 +12,8 @@
+     "test:negative-failed-puppets": "playwright test tests/concept-2-5d.spec.ts tests/puppet-2d.spec.ts tests/image-puppet.spec.ts tests/concept-2-5d-animation.spec.ts tests/puppet-2d-animation.spec.ts tests/image-puppet-animation.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/animation-studio/package.json b/packages/create-aura3d/templates/animation-studio/package.json
+index 9b256cfea2bc09ec5cc3f1c94464141e86bf86ae..28a280715920f4132f25073780ecd4464c2b3baf 100644
+--- a/packages/create-aura3d/templates/animation-studio/package.json
++++ b/packages/create-aura3d/templates/animation-studio/package.json
+@@ -16,10 +16,10 @@
+     "preview": "vite preview --host 0.0.0.0"
+   },
+   "dependencies": {
+-    "@aura3d/animation": "3.0.1",
+-    "@aura3d/assets": "3.0.1",
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1",
++    "@aura3d/animation": "4.0.0",
++    "@aura3d/assets": "4.0.0",
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0",
+     "react": "^18.3.1",
+     "react-dom": "^18.3.1",
+     "sharp": "^0.33.5"
+diff --git a/packages/create-aura3d/templates/arena-shooter/package.json b/packages/create-aura3d/templates/arena-shooter/package.json
+index 474dd8fd60bc265e8fd5c805d358b30211b56f64..3d1f4ee7ae5558743065798cc61637bde0dce0b9 100644
+--- a/packages/create-aura3d/templates/arena-shooter/package.json
++++ b/packages/create-aura3d/templates/arena-shooter/package.json
+@@ -5,14 +5,14 @@
+   "type": "module",
+   "scripts": {
+     "dev": "vite --host 127.0.0.1",
+-    "enable:physics": "npm install @aura3d/physics@3.0.1 @aura3d/physics-rapier@3.0.1",
++    "enable:physics": "npm install @aura3d/physics@4.0.0 @aura3d/physics-rapier@4.0.0",
+     "typecheck": "tsc --noEmit",
+     "build": "npm run typecheck && vite build",
+     "preview": "vite preview --host 127.0.0.1",
+     "test": "playwright test tests/route-health.spec.ts tests/playable.spec.ts tests/screenshot.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1"
++    "@aura3d/engine": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/character-controller/package.json b/packages/create-aura3d/templates/character-controller/package.json
+index eb745302702cb14910b8be78de0272372a3248b4..352e63dee42280ff710b7e79241e9e9ad78d1063 100644
+--- a/packages/create-aura3d/templates/character-controller/package.json
++++ b/packages/create-aura3d/templates/character-controller/package.json
+@@ -5,16 +5,16 @@
+   "type": "module",
+   "scripts": {
+     "dev": "vite --host 127.0.0.1",
+-    "enable:physics": "npm install @aura3d/physics@3.0.1 @aura3d/physics-rapier@3.0.1",
++    "enable:physics": "npm install @aura3d/physics@4.0.0 @aura3d/physics-rapier@4.0.0",
+     "typecheck": "tsc --noEmit",
+     "build": "npm run typecheck && vite build",
+     "preview": "vite preview --host 127.0.0.1",
+     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts tests/certified-rig.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/animation": "3.0.1",
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/animation": "4.0.0",
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/cinematic-scene/package.json b/packages/create-aura3d/templates/cinematic-scene/package.json
+index 027487b38bd233e290da9159e79f9142bb8898ce..3948df4ef14e6da4d64da4cc02d34b4da5fd2156 100644
+--- a/packages/create-aura3d/templates/cinematic-scene/package.json
++++ b/packages/create-aura3d/templates/cinematic-scene/package.json
+@@ -11,7 +11,7 @@
+     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1"
++    "@aura3d/engine": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/episode-builder/package.json b/packages/create-aura3d/templates/episode-builder/package.json
+index b1e764436b179c485a380ec638bc0fec2a8bd060..81eca5651a022f1c063baec0fe2fbda0c847f371 100644
+--- a/packages/create-aura3d/templates/episode-builder/package.json
++++ b/packages/create-aura3d/templates/episode-builder/package.json
+@@ -11,8 +11,8 @@
+     "test": "playwright test tests/route-health.spec.ts tests/storyboard-playback.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/falling-blocks-starter/package.json b/packages/create-aura3d/templates/falling-blocks-starter/package.json
+index 10db620da3cecead92f69d2bfcf15c4d3ec478c9..b309ab044937886e7502d9cd43f0dad7e7c6d9e6 100644
+--- a/packages/create-aura3d/templates/falling-blocks-starter/package.json
++++ b/packages/create-aura3d/templates/falling-blocks-starter/package.json
+@@ -11,8 +11,8 @@
+     "test": "playwright test tests/playable.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@types/node": "^22.15.30",
+diff --git a/packages/create-aura3d/templates/fighting-game/package.json b/packages/create-aura3d/templates/fighting-game/package.json
+index fed3d1943192107168e4a2f90a25c9c7370462e3..ee22e164c88011880f13e2ff3c9b45deca8e3156 100644
+--- a/packages/create-aura3d/templates/fighting-game/package.json
++++ b/packages/create-aura3d/templates/fighting-game/package.json
+@@ -11,8 +11,8 @@
+     "test": "playwright test tests/route-health.spec.ts tests/gameplay-smoke.spec.ts tests/certified-rig.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/mini-game/package.json b/packages/create-aura3d/templates/mini-game/package.json
+index 6943918e1375a37c7cd51677d6c0ee20e9767e40..b4e374638d4c6b515b72aea68e5a110f75578522 100644
+--- a/packages/create-aura3d/templates/mini-game/package.json
++++ b/packages/create-aura3d/templates/mini-game/package.json
+@@ -11,7 +11,7 @@
+     "test": "playwright test tests/route-health.spec.ts tests/playable.spec.ts tests/screenshot.spec.ts tests/certified-rig.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1"
++    "@aura3d/engine": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/product-viewer/package.json b/packages/create-aura3d/templates/product-viewer/package.json
+index 1d7b4e6cc3888eb029d8eacb7d5cd74716fa5a96..617e9cc8b15af71029138324493c122fc3f0d712 100644
+--- a/packages/create-aura3d/templates/product-viewer/package.json
++++ b/packages/create-aura3d/templates/product-viewer/package.json
+@@ -11,7 +11,7 @@
+     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1"
++    "@aura3d/engine": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/prompt-animation-channel/package.json b/packages/create-aura3d/templates/prompt-animation-channel/package.json
+index 0c563f55e187013ab25458282f8f77fada816a01..324065545c4d8d23bd987e93ff77510a25141454 100644
+--- a/packages/create-aura3d/templates/prompt-animation-channel/package.json
++++ b/packages/create-aura3d/templates/prompt-animation-channel/package.json
+@@ -11,8 +11,8 @@
+     "test": "playwright test tests/route-health.spec.ts tests/storyboard-playback.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/racing-starter/package.json b/packages/create-aura3d/templates/racing-starter/package.json
+index f70f249359622f3348be3bf393feadfe65f23c56..ccf9a7a967af321ab6e31728937e5aca2820f174 100644
+--- a/packages/create-aura3d/templates/racing-starter/package.json
++++ b/packages/create-aura3d/templates/racing-starter/package.json
+@@ -11,8 +11,8 @@
+     "test": "playwright test tests/playable.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@types/node": "^22.15.30",
+diff --git a/packages/create-aura3d/templates/three-compat-architecture-interior/package.json b/packages/create-aura3d/templates/three-compat-architecture-interior/package.json
+index 8487b033b7cc8e7bf42826bc90de2c1363b5df9b..c863a7d2425578bbba6dc0412dc0845d5eb77b3f 100644
+--- a/packages/create-aura3d/templates/three-compat-architecture-interior/package.json
++++ b/packages/create-aura3d/templates/three-compat-architecture-interior/package.json
+@@ -11,8 +11,8 @@
+     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/three-compat-asset-inspector/package.json b/packages/create-aura3d/templates/three-compat-asset-inspector/package.json
+index 3049610ac4e31c264cf50aab7bd97c77a4cea3bb..fa12334567e85f67d1da04de69cfb82fe0b1b694 100644
+--- a/packages/create-aura3d/templates/three-compat-asset-inspector/package.json
++++ b/packages/create-aura3d/templates/three-compat-asset-inspector/package.json
+@@ -11,8 +11,8 @@
+     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/three-compat-character-viewer/package.json b/packages/create-aura3d/templates/three-compat-character-viewer/package.json
+index cf90beef21f682ad59008146e609b7b36998a637..da9c956a57a340ac40acc1677dd34f5102aff84a 100644
+--- a/packages/create-aura3d/templates/three-compat-character-viewer/package.json
++++ b/packages/create-aura3d/templates/three-compat-character-viewer/package.json
+@@ -11,8 +11,8 @@
+     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/three-compat-custom-threejs-migration/package.json b/packages/create-aura3d/templates/three-compat-custom-threejs-migration/package.json
+index 482dbfcad6bf06d9c7fb1e52ba7b43d7d4739ace..6b9990736fa6f4be024698be7fca7f313b1295f7 100644
+--- a/packages/create-aura3d/templates/three-compat-custom-threejs-migration/package.json
++++ b/packages/create-aura3d/templates/three-compat-custom-threejs-migration/package.json
+@@ -11,8 +11,8 @@
+     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/three-compat-large-scene/package.json b/packages/create-aura3d/templates/three-compat-large-scene/package.json
+index 3a90e6a4d6ea7052e4a7fb2f73c3d11eed0b1a3e..585b9a93f8cffbfb9b58856ef60817685460071e 100644
+--- a/packages/create-aura3d/templates/three-compat-large-scene/package.json
++++ b/packages/create-aura3d/templates/three-compat-large-scene/package.json
+@@ -11,8 +11,8 @@
+     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/three-compat-material-authoring/package.json b/packages/create-aura3d/templates/three-compat-material-authoring/package.json
+index 2b3ae32b1a9d61bf1ca528ebc273e5dd9645cb01..19917408211a533a654a65bdcd67420a47f01d6b 100644
+--- a/packages/create-aura3d/templates/three-compat-material-authoring/package.json
++++ b/packages/create-aura3d/templates/three-compat-material-authoring/package.json
+@@ -11,8 +11,8 @@
+     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/three-compat-postprocess-scene/package.json b/packages/create-aura3d/templates/three-compat-postprocess-scene/package.json
+index 15f50db83b308a941a21fcdd10195b9076ade5f1..d6cbaac42091f60950e5ec871ef60905800ba791 100644
+--- a/packages/create-aura3d/templates/three-compat-postprocess-scene/package.json
++++ b/packages/create-aura3d/templates/three-compat-postprocess-scene/package.json
+@@ -11,8 +11,8 @@
+     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/create-aura3d/templates/three-compat-premium-product-viewer/package.json b/packages/create-aura3d/templates/three-compat-premium-product-viewer/package.json
+index bc4545e150b5371df83ea53f73ac871dc05dd845..522c10933e844fe94886abdf7b9ace1769bc91b8 100644
+--- a/packages/create-aura3d/templates/three-compat-premium-product-viewer/package.json
++++ b/packages/create-aura3d/templates/three-compat-premium-product-viewer/package.json
+@@ -11,8 +11,8 @@
+     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1",
+-    "@aura3d/navigation-recast": "3.0.1"
++    "@aura3d/engine": "4.0.0",
++    "@aura3d/navigation-recast": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/packages/debug/package.json b/packages/debug/package.json
+index 9d0c1d97cde16244a86235c1685c8a18f51bf5bb..6ff80f97534ee42c0d2080777082e4691bd0b2ae 100644
+--- a/packages/debug/package.json
++++ b/packages/debug/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/debug",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "dependencies": {
+     "@aura3d/animation": "workspace:*",
+diff --git a/packages/ecs/package.json b/packages/ecs/package.json
+index 42f78e81264f782d7bcefd3b2a84fc4dafe9f520..4ca52ca7f6911479ea7ec58fece85b64e1a17dd8 100644
+--- a/packages/ecs/package.json
++++ b/packages/ecs/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/ecs",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "main": "./dist/index.js",
+   "types": "./dist/index.d.ts",
+diff --git a/packages/editor-runtime/package.json b/packages/editor-runtime/package.json
+index 522416c8436bebc8eedc2992b2e66bf5b63deea6..939f12cd76d3e1369a4c357fb7571cdd2f4fe2f6 100644
+--- a/packages/editor-runtime/package.json
++++ b/packages/editor-runtime/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/editor-runtime",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "exports": {
+     ".": {
+diff --git a/packages/input/package.json b/packages/input/package.json
+index fbab351e3dc7affe2813f1c9123f2035676103c3..576d1eea6062882775ce7e96f0bb4c3912e73b4d 100644
+--- a/packages/input/package.json
++++ b/packages/input/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/input",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "exports": {
+     ".": {
+diff --git a/packages/math/package.json b/packages/math/package.json
+index 4bee454013171c2878459544c3d3cd9ba726e83e..f14b895d242548e2322ccfa0407a4a5a5add1af3 100644
+--- a/packages/math/package.json
++++ b/packages/math/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/math",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "main": "./dist/index.js",
+   "types": "./dist/index.d.ts",
+diff --git a/packages/navigation-recast/package.json b/packages/navigation-recast/package.json
+index cfcfaa8ce31f8bb5a79ea95e7f230c15f1c149e4..476ff6a6160020760fdd0d29d257d4b23159d526 100644
+--- a/packages/navigation-recast/package.json
++++ b/packages/navigation-recast/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/navigation-recast",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "main": "./dist/index.js",
+   "types": "./dist/index.d.ts",
+diff --git a/packages/physics-rapier/package.json b/packages/physics-rapier/package.json
+index 81318c3516d9d65576868f750334f6dd9dc29579..24e21eb49c27df06f908ce807df907c49f798a46 100644
+--- a/packages/physics-rapier/package.json
++++ b/packages/physics-rapier/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/physics-rapier",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "main": "./dist/index.js",
+   "types": "./dist/index.d.ts",
+diff --git a/packages/physics/package.json b/packages/physics/package.json
+index ab5e0b940dbee855187ec60502dc12b25927b610..7374de18a1dd98fe18a4a59c8b1ca586097c26a7 100644
+--- a/packages/physics/package.json
++++ b/packages/physics/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/physics",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "main": "./dist/index.js",
+   "types": "./dist/index.d.ts",
+diff --git a/packages/product-studio/package.json b/packages/product-studio/package.json
+index c94d592d4f1908dfeb46e85e25b371b216fdbf4b..72ac07c922a5716b58b27f8b8ef8d660a1fec5b5 100644
+--- a/packages/product-studio/package.json
++++ b/packages/product-studio/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/product-studio",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "exports": {
+     ".": {
+diff --git a/packages/react/package.json b/packages/react/package.json
+index 737b83b46f457328be4644d5cf19548679aee301..421e4479fe4e885795e936208550acf167f44e00 100644
+--- a/packages/react/package.json
++++ b/packages/react/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/react",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "exports": {
+     ".": {
+@@ -11,7 +11,7 @@
+   "main": "./dist/index.js",
+   "types": "./dist/index.d.ts",
+   "peerDependencies": {
+-    "@aura3d/engine": "^3.0.1",
++    "@aura3d/engine": "^4.0.0",
+     "react": "^19.0.0 || ^18.0.0"
+   },
+   "devDependencies": {
+diff --git a/packages/rendering/package.json b/packages/rendering/package.json
+index 968e41255d09bfda6e549ce78e018db2052e455d..2b3d37e7d9df66f834358db85e0162e2fa39a9c7 100644
+--- a/packages/rendering/package.json
++++ b/packages/rendering/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/rendering",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "exports": {
+     ".": {
+diff --git a/packages/scene/package.json b/packages/scene/package.json
+index 600c995c7cbdfcc4f85c0e6a2515f68b169d3a3b..00f79e4afad059abd626fefec6972fd315fcd55c 100644
+--- a/packages/scene/package.json
++++ b/packages/scene/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/scene",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "main": "./dist/index.js",
+   "types": "./dist/index.d.ts",
+diff --git a/packages/scripting/package.json b/packages/scripting/package.json
+index 384fda78bd111d0ec8c5a6faf837221c50cc7e9f..e22a3560dc493ac65bd8ef289ca38f10fd362827 100644
+--- a/packages/scripting/package.json
++++ b/packages/scripting/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/scripting",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "exports": {
+     ".": {
+diff --git a/packages/workflows/package.json b/packages/workflows/package.json
+index 889187437c944e23805b844b097a16fec47c5524..5c8ed05bad27a9db32aef7810be7976d1a117796 100644
+--- a/packages/workflows/package.json
++++ b/packages/workflows/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@aura3d/workflows",
+-  "version": "3.0.1",
++  "version": "4.0.0",
+   "type": "module",
+   "exports": {
+     ".": {
+diff --git a/templates/cinematic-scene/package.json b/templates/cinematic-scene/package.json
+index 027487b38bd233e290da9159e79f9142bb8898ce..3948df4ef14e6da4d64da4cc02d34b4da5fd2156 100644
+--- a/templates/cinematic-scene/package.json
++++ b/templates/cinematic-scene/package.json
+@@ -11,7 +11,7 @@
+     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1"
++    "@aura3d/engine": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/templates/mini-game/package.json b/templates/mini-game/package.json
+index 6943918e1375a37c7cd51677d6c0ee20e9767e40..b4e374638d4c6b515b72aea68e5a110f75578522 100644
+--- a/templates/mini-game/package.json
++++ b/templates/mini-game/package.json
+@@ -11,7 +11,7 @@
+     "test": "playwright test tests/route-health.spec.ts tests/playable.spec.ts tests/screenshot.spec.ts tests/certified-rig.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1"
++    "@aura3d/engine": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/templates/product-viewer/package.json b/templates/product-viewer/package.json
+index 1d7b4e6cc3888eb029d8eacb7d5cd74716fa5a96..617e9cc8b15af71029138324493c122fc3f0d712 100644
+--- a/templates/product-viewer/package.json
++++ b/templates/product-viewer/package.json
+@@ -11,7 +11,7 @@
+     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1"
++    "@aura3d/engine": "4.0.0"
+   },
+   "devDependencies": {
+     "@playwright/test": "1.59.1",
+diff --git a/templates/production-asset-inspector/package.json b/templates/production-asset-inspector/package.json
+index f1f77cfdbaf43e7d48d8b608215f7be00f57c001..a803761100379b6d6452f34a4486473bbc7bf78e 100644
+--- a/templates/production-asset-inspector/package.json
++++ b/templates/production-asset-inspector/package.json
+@@ -8,7 +8,7 @@
+     "preview": "vite preview --host 127.0.0.1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1"
++    "@aura3d/engine": "4.0.0"
+   },
+   "devDependencies": {
+     "typescript": "^5.9.3",
+diff --git a/templates/production-material-studio/package.json b/templates/production-material-studio/package.json
+index f4dc4890181bdb737c682754ec155f19873bf39d..14d68803fe7dac3579e32e353d82ed890ffd2cea 100644
+--- a/templates/production-material-studio/package.json
++++ b/templates/production-material-studio/package.json
+@@ -8,7 +8,7 @@
+     "preview": "vite preview --host 127.0.0.1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1"
++    "@aura3d/engine": "4.0.0"
+   },
+   "devDependencies": {
+     "typescript": "^5.9.3",
+diff --git a/templates/production-product-configurator/package.json b/templates/production-product-configurator/package.json
+index 3451af3d3f6268ca9e5827e96e05e894221c4a75..08f995a69a8cdc3b9bc772ae2844cc063bb993eb 100644
+--- a/templates/production-product-configurator/package.json
++++ b/templates/production-product-configurator/package.json
+@@ -8,7 +8,7 @@
+     "preview": "vite preview --host 127.0.0.1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1"
++    "@aura3d/engine": "4.0.0"
+   },
+   "devDependencies": {
+     "typescript": "^5.9.3",
+diff --git a/templates/production-product-viewer/package.json b/templates/production-product-viewer/package.json
+index 78cd33ab5a89c01292599585b68602f30ef9aaf7..84db5ff0cb240949e83c2e8d0fb4cf82d932d9f1 100644
+--- a/templates/production-product-viewer/package.json
++++ b/templates/production-product-viewer/package.json
+@@ -8,7 +8,7 @@
+     "preview": "vite preview --host 127.0.0.1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "3.0.1"
++    "@aura3d/engine": "4.0.0"
+   },
+   "devDependencies": {
+     "typescript": "^5.9.3",
+diff --git a/tools/release/exact-release-plan.mjs b/tools/release/exact-release-plan.mjs
+index 0eb42b1d786191f0867219e39b0d429f3d72fe67..aeec79cc4098e1cb43d01825e552328afb752b60 100644
+--- a/tools/release/exact-release-plan.mjs
++++ b/tools/release/exact-release-plan.mjs
+@@ -9,7 +9,7 @@ export function loadValidatedReleasePlan(root=process.cwd(), path=process.env.A3
+  if(!plan.source||Object.keys(source).some(k=>plan.source[k]!==source[k]))throw new Error('Exact release source mismatch');
+  const manifestPaths=['package.json',...readdirSync(resolve(root,'packages')).map(n=>`packages/${n}/package.json`).filter(p=>existsSync(resolve(root,p)))];
+  const manifests=manifestPaths.map(p=>JSON.parse(readFileSync(resolve(root,p),'utf8'))).filter(p=>p.private!==true);
+- if(manifests.length!==29||plan.packages?.length!==29||new Set(plan.packages.map(p=>p.name)).size!==29)throw new Error('Exact release requires29publicpackages');
++ if(manifests.length!==24||plan.packages?.length!==24||new Set(plan.packages.map(p=>p.name)).size!==24)throw new Error('Exact release requires 24 public packages (PRD-15 lean set)');
+  for(const manifest of manifests){const p=plan.packages.find(p=>p.name===manifest.name);if(!p||p.version!==manifest.version||p.version!==plan.version)throw new Error(`Exact release version mismatch ${manifest.name}`);const data=readFileSync(resolve(root,p.tarball));if(hash(data)!==p.sha256||`sha512-${createHash('sha512').update(data).digest('base64')}`!==p.integrity)throw new Error(`Exact archive mismatch ${p.name}`);}
+  return {...plan,reference:{path:relative(root,absolute),sha256:hash(bytes)}};
+ }
+diff --git a/tools/release/prepare-version.mjs b/tools/release/prepare-version.mjs
+index 3905264e10f226921e1fc316b5459018c8186069..6244f0cd4ce19ffc8e9ccefb77747c438ebbea52 100644
+--- a/tools/release/prepare-version.mjs
++++ b/tools/release/prepare-version.mjs
+@@ -7,14 +7,14 @@ if (!/^\d+\.\d+\.\d+$/.test(version ?? '')) throw new Error('Usage: node tools/r
+ const check = process.argv.includes('--check');
+ const read = p => JSON.parse(readFileSync(resolve(root, p), 'utf8'));
+ const packages = ['package.json', ...readdirSync(resolve(root, 'packages')).map(n => `packages/${n}/package.json`).filter(p => existsSync(resolve(root,p)) && read(p).private !== true)];
+-if (packages.length !== 29) throw new Error(`Public package inventory changed: ${packages.length}, expected 29`);
++if (packages.length !== 24) throw new Error(`Public package inventory changed: ${packages.length}, expected 24 (PRD-15 lean package set)`);
+ const names = new Set(packages.map(p => read(p).name));
+ const generatorPath = 'packages/create-aura3d/src/index.ts';
+ const generator = readFileSync(resolve(root,generatorPath),'utf8');
+ const templateBlock = generator.match(/CREATE_AURA3D_TEMPLATES = \[([\s\S]*?)\] as const/);
+ if (!templateBlock) throw new Error('Missing canonical scaffold inventory');
+ const templates = [...templateBlock[1].matchAll(/"([^"]+)"/g)].map(m=>m[1]);
+-if (new Set(templates).size !== 19) throw new Error('Expected 19 canonical scaffolds');
++if (new Set(templates).size !== templates.length || templates.length === 0) throw new Error('Canonical scaffold inventory must be non-empty and unique');
+ const manifests = new Set([...packages, ...templates.map(n=>`packages/create-aura3d/templates/${n}/package.json`)]);
+ // Include only root templates actually selected for publication, not archived compatibility surfaces.
+ const selectedRootFiles=new Set();
+diff --git a/tools/release/publish-all.mjs b/tools/release/publish-all.mjs
+index 6c8c93be560416f7f236de78e2fb55b5d4383875..9edbcf2c315148426727e9e3276c6019e72c2907 100644
+--- a/tools/release/publish-all.mjs
++++ b/tools/release/publish-all.mjs
+@@ -60,7 +60,7 @@ if (DRY_RUN && PACK_ONLY) {
+ const NPM_OTP = process.env.NPM_OTP?.trim() ?? "";
+ const OTP_ARG = NPM_OTP ? ` --otp ${JSON.stringify(NPM_OTP)}` : "";
+ const PACK_DIR = join(ROOT, "tests", "reports", "release-tarballs");
+-const EXPECTED_PUBLIC_COUNT = 29;
++const EXPECTED_PUBLIC_COUNT = 24; // PRD-15 lean package set (was 29)
+ 
+ function sh(command, options = {}) {
+   // 64MB buffer: `pnpm pack` of the engine prints thousands of npm-notice lines,
