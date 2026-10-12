@@ -55,6 +55,8 @@ import {
   VAN_TUNE,
   type VanDriveInput
 } from "../gameplay/van";
+import { clearanceLift, createChaseClearance } from "../gameplay/camera-clearance";
+import { createCourierEffectsPass } from "./effects-pass";
 import { createCourierAudio, type CourierAudioController } from "./courier-audio";
 import {
   decayHudEffects,
@@ -229,7 +231,9 @@ const observed = {
 /** Shift start: on the free southbound lane, nose north toward the first dock. */
 const SPAWN_POSE = { x: -0.45, z: 18.6, heading: -Math.PI / 2 };
 
+const chaseClearance = createChaseClearance();
 function resetVan(): void {
+  chaseClearance.reset();
   vanVehicle.reset({ x: SPAWN_POSE.x, z: SPAWN_POSE.z, heading: SPAWN_POSE.heading, speed: 0, drift: 0 });
 }
 resetVan();
@@ -297,11 +301,18 @@ const app = createAuraApp("#app", {
     .add(withPostV2Bloom(effects.neonBloom({ intensity: reducedMotion ? 0.26 : 0.44, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }), reducedMotion ? 0.26 / 0.44 : 1))
     .add(effects.colorGrade({ exposure: 1.05 * POST_V2_EXPOSURE, contrast: 1.1, saturation: 1.12 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
+    .addMany(createCourierEffectsPass({ reducedMotion, depot: START_SITE }))
     // The street itself was reading as black-on-black void with a few floating
     // signs. A lifted cool ambient plus a stronger moon key gives the kit
     // towers, kerbs and lane paint actual form between the practicals.
     .add(lights.ambient({ name: "night city fill", color: "#7f9cb5", intensity: 1.25 }))
-    .add(lights.directional({ name: "moonlight key", color: "#d8f5ff", intensity: 2.5, shadow: true }).position(-18, 26, 8))
+    .add(lights.directional({
+      name: "moonlight key",
+      color: "#d8f5ff",
+      intensity: 2.5,
+      // Effects pass: cascaded PCSS moon shadows across the chase depth.
+      shadow: { cascades: 3, mapSize: 2048, filter: "pcss", softness: 1, maxDistance: 60, intensity: 0.9 }
+    }).position(-18, 26, 8))
     .add(lights.directional({ name: "city glow fill", color: "#36bdd2", intensity: 1.35 }).position(20, 18, 16))
     // Hero practicals used to sit at 2.6/1.8 directly on the van, which is what
     // turned the typed Meshy livery into a featureless white slab.
@@ -1392,11 +1403,25 @@ app.onFrame(({ dt }) => {
     ? Math.sin((1 - dropLookbackRemainingSeconds / DROP_LOOKBACK_SECONDS) * Math.PI)
     : 0;
   const offset = chaseOffsetForBlend(chaseBlend, visualReviewCapture ? 11.4 : undefined);
+  // Flash fix: keep the trailing eye out of tower blocks (see camera-clearance).
+  const clearanceSnap = vanVehicle.snapshot();
+  const clear = visualReviewCapture
+    ? { distance: offset.offsetZ, minOffsetY: 0 }
+    : chaseClearance.update(
+      clearanceSnap.x,
+      clearanceSnap.z,
+      -Math.cos(clearanceSnap.heading),
+      -Math.sin(clearanceSnap.heading),
+      offset.offsetZ,
+      offset.offsetY,
+      stepSeconds
+    );
+  const clearZ = clear.distance;
   Object.assign(chaseCamera as unknown as MutableChaseCamera, {
     offset: [
-      visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : offset.offsetX,
-      visualReviewCapture ? 3.28 : offset.offsetY,
-      offset.offsetZ
+      visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : offset.offsetX * (clearZ / offset.offsetZ),
+      visualReviewCapture ? 3.28 : Math.max(offset.offsetY + clearanceLift(offset.offsetZ, clearZ), clear.minOffsetY),
+      clearZ
     ] as const
   });
 

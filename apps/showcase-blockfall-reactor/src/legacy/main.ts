@@ -15,6 +15,7 @@ import {
   type GameFallingBlocksEvent,
   type GameFallingBlocksSnapshot
 } from "@aura3d/engine";
+import { createBlockfallEffectsPass } from "./effects-pass";
 import { POST_V2_EXPOSURE, withPostV2Bloom } from "./post-v2-retune";
 import { assets } from "../../../../src/aura-assets";
 import {
@@ -640,16 +641,22 @@ const reactorScene = scene()
     effects.ambientOcclusion({ intensity: 0.46, radius: 0.68 }),
     effects.contactOcclusion({ name: "cabinet floor contact", intensity: 0.34, radius: 0.5 }),
     effects.fog({ name: "arcade room depth haze", density: 0.028, color: "#0d0514", intensity: 0.3 }),
-    effects.colorGrade({ exposure: 1.05 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
+    effects.colorGrade({ exposure: 1.08 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
     effects.antiAlias({ mode: "fxaa" }),
     lights.ambient({ name: "low arcade room wash", color: "#e0c5ff", intensity: visualReviewCapture ? 0.82 : 0.58 }),
-    lights.directional({ name: "overhead arcade key", color: "#fff5dd", intensity: 1.05 }).position(-1.2, 6.4, 4.2),
+    lights.directional({
+      name: "overhead arcade key",
+      color: "#fff5dd",
+      intensity: 1.05,
+      shadow: { cascades: 2, mapSize: 2048, filter: "pcss", softness: 1.1, intensity: 0.85 }
+    }).position(-1.2, 6.4, 4.2),
     lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.72 : 1.28 }).position(2.4, 2.1, 2.6),
     lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity: visualReviewCapture ? 1.68 : 1.18 }).position(-2.15, 3.3, 1.35),
     lights.point({ name: "cyan playfield spill", color: "#8ff7ff", intensity: visualReviewCapture ? 1.82 : 1.42 }).position(0, 2.5, 1.55),
     lights.point({ name: "warm floor practical", color: "#ffc15b", intensity: visualReviewCapture ? 0.76 : 0.42 }).position(0, -0.45, 0.9),
     lights.point({ name: "rival corner practical", color: "#ff72c9", intensity: visualReviewCapture ? 1.34 : 0.68 }).position(3.35, 1.35, 1.15)
   ])
+  .addMany(createBlockfallEffectsPass({ reducedMotion: reducedFlash }))
   .camera(reactorCamera);
 
 const gameApp = createGameApp("#app", {
