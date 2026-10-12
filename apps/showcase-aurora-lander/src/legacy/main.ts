@@ -918,7 +918,7 @@ function buildWorldScene() {
     .add(effects.bloom(postV2Bloom
       // v2 maps an authored maxIntensity to clampLuminance (0.6 would clamp every
       // pixel below threshold), so leave it unauthored here (clampLuminance 64).
-      ? { name: "aurora sky bloom", intensity: 0.8, threshold: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
+      ? { name: "aurora sky bloom", intensity: 1.4, threshold: 0.5, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
       : { name: "aurora sky bloom", intensity: 0.22, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
     .add(effects.colorGrade({ exposure: 1.06, contrast: 1.05, saturation: 1.12 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
