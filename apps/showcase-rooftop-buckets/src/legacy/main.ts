@@ -13,6 +13,7 @@ import {
   effects,
   type AuraRuntimeNodeHandle
 } from "@aura3d/engine";
+import { POST_V2_EXPOSURE, withPostV2Bloom } from "./post-v2-retune";
 import { assets } from "../../../../src/aura-assets";
 import {
   COURT_SPOTS,
@@ -371,8 +372,8 @@ function buildScene() {
     .addMany([
       // Atmospheric & Lighting Setup
       effects.fog({ name: "dusk haze", density: 0.005, color: "#24173f", intensity: 0.14 }),
-      effects.neonBloom({ intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }),
+      withPostV2Bloom(effects.neonBloom({ intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 })),
+      effects.colorGrade({ exposure: 1.04 * POST_V2_EXPOSURE, contrast: 1.06, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" }),
       // A restrained arena rig leaves real surface gradients on the court and
       // typed characters instead of flattening every material into emissive UI.

@@ -23,6 +23,7 @@ import {
   text3D,
   type RuntimeNodeHandleLike
 } from "@aura3d/engine";
+import { POST_V2_EXPOSURE, withPostV2Bloom } from "./post-v2-retune";
 import { AGGRESSION_PRESETS, RIVAL_LOADOUTS, aggregateStats, presetForBout } from "../gameplay/stats";
 import { createHangarAudio, AMBIENT_LOOP_SECONDS, HANGAR_AUDIO_CUES } from "./hangar-audio";
 import { createHangarController } from "./hangar";
@@ -683,8 +684,8 @@ const app = createAuraApp("#app", {
     .background("#081522")
     .addMany([
       // Hangar lighting: cool workshop key + warm practicals (PRD section 6).
-      effects.bloom({ name: "hangar workshop bloom", intensity: 0.2, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", radius: 0.38, softKnee: 0.5, shoulder: 0.6 }),
-      effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.08 }),
+      withPostV2Bloom(effects.bloom({ name: "hangar workshop bloom", intensity: 0.2, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", radius: 0.38, softKnee: 0.5, shoulder: 0.6 })),
+      effects.colorGrade({ exposure: 1.04 * POST_V2_EXPOSURE, contrast: 1.06, saturation: 1.08 }),
       effects.antiAlias({ mode: "fxaa" }),
       effects.contactOcclusion({ name: "fighter deck contact", intensity: 0.4, radius: 0.6 }),
       lights.directional({ name: "workshop cool key", position: [4.2, 5.4, 3.2], intensity: 1.55, color: "#d7ebff" }),

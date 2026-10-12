@@ -27,6 +27,7 @@ import {
   primitives,
   scene
 } from "@aura3d/engine";
+import { POST_V2_EXPOSURE, withPostV2Bloom } from "./post-v2-retune";
 import { assets } from "../../../../src/aura-assets";
 import { createArenaLayout, playRect, spawnPointOnEdge } from "../gameplay/arena";
 import { createNeonSwarmDistrictDressing } from "./environment";
@@ -908,9 +909,9 @@ appScene.add(effects.ambientOcclusion({
 }));
 appScene.add(effects.contactOcclusion({ name: "courier horde contact", intensity: 0.34, radius: 0.5 }));
 if (!reducedMotion) {
-  appScene.add(effects.bloom({ intensity: 0.42, color: "#35e6ff", quality: "balanced", softKnee: 0.5, shoulder: 0.6 }));
+  appScene.add(withPostV2Bloom(effects.bloom({ intensity: 0.42, color: "#35e6ff", quality: "balanced", softKnee: 0.5, shoulder: 0.6 })));
 }
-appScene.add(effects.colorGrade({ exposure: 1.05, contrast: 1.08, saturation: 1.12 }));
+appScene.add(effects.colorGrade({ exposure: 1.05 * POST_V2_EXPOSURE, contrast: 1.08, saturation: 1.12 }));
 appScene.add(effects.antiAlias({ mode: "fxaa" }));
 
 appScene.camera(
