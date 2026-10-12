@@ -12,14 +12,15 @@ export function createNeonSwarmEffectsPass(options: { readonly reducedMotion: bo
   const nodes: AuraNodeInput[] = [
     // Replaces the plain 0.02 fog: ≈10% on the deck under the top-down lens
     // (≈14 m), 30-40% at the district edge.
+    // Quality "off" + no contact shadows: the froxel march + contact pass
+    // cost ~28% fps here (vol-off bisect on blockfall/vault, run 38307478359).
     effects.volumetricFog({
       name: "neon swarm district volumetric haze",
       density: 0.017,
       color: "#26355a",
       intensity: 0.15,
-      volumetricQuality: "balanced"
+      volumetricQuality: "off"
     }),
-    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 8, intensity: 0.85, lights: "shadowed" }),
     environments.preset("night", { name: "neon swarm night reflections", intensity: 0.35, background: false }),
     effects.vignette({ name: "neon swarm vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
