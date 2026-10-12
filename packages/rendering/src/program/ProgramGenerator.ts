@@ -49,6 +49,7 @@ import { NORMAL_CHUNK_GLSL } from "./chunks/normal.glsl";
 import { INSTANCING_VERTEX_PARS_GLSL, INSTANCING_VERTEX_BODY_GLSL } from "./chunks/instancing.glsl";
 import { ALPHA_CHUNK_GLSL } from "./chunks/alpha.glsl";
 import { LIGHTS_LEGACY_CHUNK_GLSL } from "./chunks/lights_legacy.glsl";
+import { SHADOW_FORWARD_CHUNK_GLSL } from "./chunks/shadow_forward.glsl";
 import { INDIRECT_DEFAULT_CHUNK_GLSL } from "./chunks/indirect_default.glsl";
 import { FOG_DEFAULT_CHUNK_GLSL } from "./chunks/fog_default.glsl";
 import { DEPTH_CHUNK_GLSL, DISTANCE_CHUNK_PARS_GLSL } from "./chunks/depth.glsl";
@@ -377,11 +378,19 @@ function directLightLoopBound(f: ProgramFeatures): number {
   return total <= 4 ? total : MAX_PACKED_DIRECT_LIGHTS;
 }
 
+/** #1225: the draw carries a forward shadow map (`ForwardPass` sets cascades > 0). */
+function forwardShadowReceive(f: ProgramFeatures): boolean {
+  return f.lighting === "lit" && f.pass === "forward" && f.shadows.cascades > 0;
+}
+
 /** Default `fragment:lights` body: `u_lightData` kind-discriminated loop.
  * `a3dLegacyLightRadiance` switches on directionKind.w, so packing order is
  * irrelevant. Clustered (cluster resources bound), only the cluster path runs. */
 function defaultLightsBody(f: ProgramFeatures, lobeDirect: readonly string[] = []): string {
   const lines = ["  vec3 L;"];
+  // #1225: a draw with a bound forward shadow map (cascades > 0) scales the
+  // shadow-casting light by the legacy forward shadow factor.
+  const shadowed = forwardShadowReceive(f);
   // C-03 per-light lobe hook (04-LOBES): each active lobe's `direct` call chunk
   // runs inside every light iteration (bucketed AND clustered) with L, radiance,
   // V, N, material and the direct accumulators in scope.
@@ -391,6 +400,7 @@ function defaultLightsBody(f: ProgramFeatures, lobeDirect: readonly string[] = [
     lines.push(`  for (int i = 0; i < ${bound}; ++i) {  // bucketed light count (bound; breaks at u_lightCount)`);
     lines.push("    if (i >= int(u_lightCount)) break;");
     lines.push("    vec3 radiance = a3dLegacyLightRadiance(i * 6, v_worldPosition, L);");
+    if (shadowed) lines.push("    radiance *= a3dForwardLightShadow(u_lightData[i * 6 + 2].w, u_lightData[i * 6 + 3].z, v_worldPosition, N, L);");
     lines.push("    a3dDirectLight(L, radiance, V, N, material, directDiffuse, directSpecular);");
     lines.push(...direct);
     lines.push("  }");
@@ -405,6 +415,7 @@ function defaultLightsBody(f: ProgramFeatures, lobeDirect: readonly string[] = [
   lines.push("    if (j >= a3dClusterCount) break;");
   lines.push("    int lightIndex = int(texelFetch(u_clusterLightIndices, ivec2(j, a3dCluster), 0).r);");
   lines.push("    vec3 radiance = a3dClusteredLightRadiance(lightIndex, v_worldPosition, L);");
+  if (shadowed) lines.push("    radiance *= a3dForwardLightShadow(texelFetch(u_clusterLightData, ivec2(2, lightIndex), 0).w, texelFetch(u_clusterLightData, ivec2(3, lightIndex), 0).z, v_worldPosition, N, L);");
   lines.push("    a3dDirectLight(L, radiance, V, N, material, directDiffuse, directSpecular);");
   lines.push(...direct);
   lines.push("  }");
@@ -542,6 +553,7 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
     ...(lit || f.maps.normal ? [NORMAL_CHUNK_GLSL] : []),
     ALPHA_CHUNK_GLSL,
     ...(lit ? [LIGHTS_LEGACY_CHUNK_GLSL, INDIRECT_DEFAULT_CHUNK_GLSL] : []),
+    ...(forwardShadowReceive(f) ? [SHADOW_FORWARD_CHUNK_GLSL] : []),
     ...(f.fog !== "none" ? [FOG_DEFAULT_CHUNK_GLSL] : []),
     // Lobe pars + feature declarations + every call chunk's requires, in
     // requires-first order (T0-05).

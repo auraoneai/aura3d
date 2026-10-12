@@ -17,6 +17,8 @@
  */
 import { describe, expect, it } from "vitest";
 import "../../../../packages/rendering/src/lanes/prd02";
+// Installs the C-02 program generator, as every app does via the lanes barrel.
+import "../../../../packages/rendering/src/lanes/prd01";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import { identityMat4 } from "@aura3d/scene";
 import { Renderer } from "../../../../packages/rendering/src/Renderer";
@@ -129,6 +131,12 @@ async function floorShadowUniforms(): Promise<ShadowUniforms> {
     const draws = (renderer.device as unknown as { drawCommands: DrawCommand[] }).drawCommands;
     const floor = draws.filter((d) => (d.label ?? "").includes("floor")).at(-1)!;
     const u = floor.uniforms as ReadonlyMap<string, unknown>;
+    // A3D_QR_CORE is default-on: the floor draws on the generated program,
+    // which must declare (and so reflect) the forward shadow uniforms or
+    // forward/Lighting.ts never binds the map.
+    const shader = floor.shader as { label?: string; reflection: { uniforms: ReadonlyMap<string, unknown> } };
+    expect(shader.label ?? "").toMatch(/^a3d-program:/);
+    expect(shader.reflection.uniforms.has("u_shadowMapMatrix")).toBe(true);
     expect(u.get("u_shadowMapEnabled")).toBe(1);
     const binding = u.get("u_shadowMapTexture") as { texture?: { label?: string; width?: number } };
     expect(binding.texture?.label).toMatch(/^prd02-cascade-0-depth$/);
