@@ -304,7 +304,10 @@ export class ParticleBatchPass {
       // probe for a backend where named blends are real — extend it when C-04
       // lands an explicit capability. Until then the §6.2.7 fallback table
       // applies everywhere (honest degradation, reported once per key).
-      this.honoursBlendMode = this.device.info.capabilities?.includes("native-render-pipeline") === true;
+      // WebGL2: C-04 landed — MultiDraw resolves `blendMode` (named + custom
+      // factors), so the alpha-over emulation (×1.6 "additive", saturating to
+      // the sprite colour) no longer applies there.
+      this.honoursBlendMode = this.device.kind === "webgl2" || this.device.info.capabilities?.includes("native-render-pipeline") === true;
     }
     return this.honoursBlendMode;
   }
