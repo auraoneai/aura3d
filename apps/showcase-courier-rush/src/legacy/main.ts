@@ -55,6 +55,7 @@ import {
   VAN_TUNE,
   type VanDriveInput
 } from "../gameplay/van";
+import { clearanceLift, createChaseClearance } from "../gameplay/camera-clearance";
 import { createCourierAudio, type CourierAudioController } from "./courier-audio";
 import {
   decayHudEffects,
@@ -229,7 +230,9 @@ const observed = {
 /** Shift start: on the free southbound lane, nose north toward the first dock. */
 const SPAWN_POSE = { x: -0.45, z: 18.6, heading: -Math.PI / 2 };
 
+const chaseClearance = createChaseClearance();
 function resetVan(): void {
+  chaseClearance.reset();
   vanVehicle.reset({ x: SPAWN_POSE.x, z: SPAWN_POSE.z, heading: SPAWN_POSE.heading, speed: 0, drift: 0 });
 }
 resetVan();
@@ -1392,11 +1395,23 @@ app.onFrame(({ dt }) => {
     ? Math.sin((1 - dropLookbackRemainingSeconds / DROP_LOOKBACK_SECONDS) * Math.PI)
     : 0;
   const offset = chaseOffsetForBlend(chaseBlend, visualReviewCapture ? 11.4 : undefined);
+  // Flash fix: keep the trailing eye out of tower blocks (see camera-clearance).
+  const clearanceSnap = vanVehicle.snapshot();
+  const clearZ = visualReviewCapture
+    ? offset.offsetZ
+    : chaseClearance.update(
+      clearanceSnap.x,
+      clearanceSnap.z,
+      -Math.cos(clearanceSnap.heading),
+      -Math.sin(clearanceSnap.heading),
+      offset.offsetZ,
+      stepSeconds
+    );
   Object.assign(chaseCamera as unknown as MutableChaseCamera, {
     offset: [
-      visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : offset.offsetX,
-      visualReviewCapture ? 3.28 : offset.offsetY,
-      offset.offsetZ
+      visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : offset.offsetX * (clearZ / offset.offsetZ),
+      visualReviewCapture ? 3.28 : offset.offsetY + clearanceLift(offset.offsetZ, clearZ),
+      clearZ
     ] as const
   });
 
