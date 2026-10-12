@@ -73,6 +73,11 @@ export const WEBGL_CUBE_FACES: readonly TextureCubeFace[] = ["px", "nx", "py", "
  * framebuffers come out incomplete (GPU run 38143556299: "array: WebGL render
  * target framebuffer status is invalid"). Float formats are already sized.
  */
+/** Colour format of a single-attachment render target: `colorAttachments[0]` wins over `format`. */
+export function renderTargetColorFormat(descriptor: Pick<RenderTargetDescriptor, "format" | "colorAttachments">): NonNullable<RenderTargetDescriptor["format"]> {
+  return descriptor.colorAttachments?.[0]?.format ?? descriptor.format ?? "rgba8";
+}
+
 export function renderTargetStorageFormat(gl: Pick<WebGL2RenderingContext, "RGBA" | "RGBA8">, internalFormat: GLenum): GLenum {
   return internalFormat === gl.RGBA ? gl.RGBA8 : internalFormat;
 }
@@ -876,7 +881,10 @@ export class WebGL2Device implements RenderDevice {
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-    const format = descriptor.format ?? "rgba8";
+    // A single `colorAttachments[0]` routes here (the feature path is > 1
+    // attachments); its format wins. `format: "rgba8"` + `[{ format: "rgba16f" }]`
+    // (createHdrTarget) allocated RGBA8 and clamped HDR to 1 (#1249 GPU).
+    const format = renderTargetColorFormat(descriptor);
     const textureFormat = resolveRenderTargetFormat(this.gl, format);
     this.gl.texImage2D(
       this.gl.TEXTURE_2D,
@@ -972,7 +980,7 @@ export class WebGL2Device implements RenderDevice {
     // Count their actual allocation too, including the first shadow frame.
     if (/shadow|(?:^|-)csm(?:-|$)/i.test(descriptor.label ?? "")) this.host.counters.shadowRenderTargetsAllocated += 1;
     this.host.textureRegistry.textures.set(target.colorTexture, colorHandle);
-    this.host.textureRegistry.textureUploadModes.set(target.colorTexture, "rgba8");
+    this.host.textureRegistry.textureUploadModes.set(target.colorTexture, format === "rgba16f" || format === "rgba32f" ? format : "rgba8");
     if (depthTexture && depthTextureHandle) {
       this.host.textureRegistry.textures.set(depthTexture, depthTextureHandle);
       this.host.textureRegistry.textureUploadModes.set(depthTexture, "depth-render-target");
