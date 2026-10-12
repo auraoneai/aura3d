@@ -14,5 +14,7 @@
     "44c949d3bc6d1e0f9192bd7544fe798980932c8c [QR-14] P-05 NEGATIVE PROBE \u2014 do not merge: capture=review branch in bank-shot v2"
   ],
   "sourceWorktree": "",
-  "workingFiles": []
+  "workingFiles": [],
+  "disposition": "Historical, negative-control or superseded proposal preserved losslessly; not installed into executable paths.",
+  "integratedPaths": []
 }

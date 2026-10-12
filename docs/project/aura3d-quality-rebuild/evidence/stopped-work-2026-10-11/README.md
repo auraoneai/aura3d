@@ -6,7 +6,7 @@ The committed patches are binary-capable diffs from each recorded `base` to `tip
 
 ## Runtime and validation integration
 
-The temporal readback diagnostics retain the existing luma >8 requirement. The stopped spring design is completed with reset/anchor transport regressions. Courier static batching is wired only for supported immutable dressing. Release helpers use the current 24-package inventory without selecting or publishing a version. S10 acceptance and S1–S11 reporting retain missing/failed states honestly.
+The temporal readback diagnostics retain the existing luma >8 requirement. The stopped spring design is completed with reset/anchor transport regressions. Courier static batching is wired only for supported immutable dressing. Release helpers preserve the historical 29-package inventory and use the lean 24-package inventory for major-version-4 candidates, without selecting or publishing a version. S10 acceptance and S1–S11 reporting retain missing/failed states honestly.
 
 ## Historical proposals, not executable integration
 

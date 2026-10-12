@@ -51,5 +51,10 @@
     "packages/scene/node_modules/",
     "packages/workflows/node_modules/",
     "workers/asset-index-cron/node_modules/"
+  ],
+  "disposition": "Stopped opt-in spring design completed and tested; original unfinished source and scratch probe preserved as history.",
+  "integratedPaths": [
+    "packages/animation/src/SpringBones.ts",
+    "tests/unit/animation/spring-bones-anchor.test.ts"
   ]
 }

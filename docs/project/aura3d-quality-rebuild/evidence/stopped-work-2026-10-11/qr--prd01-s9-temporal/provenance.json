@@ -15,5 +15,10 @@
     "e5df8116509eba9ae6271562dfda68e7d95248b7 test(qr/prd01): 01-S9 readback with preserveDrawingBuffer; opaque sanity; log raw before asserts"
   ],
   "sourceWorktree": "",
-  "workingFiles": []
+  "workingFiles": [],
+  "disposition": "Readback diagnostics integrated with original >8 luma threshold; original lower threshold preserved only as history.",
+  "integratedPaths": [
+    "tests/qr/prd01/browser/temporal-sigma.spec.ts",
+    "tests/qr/prd01/harness/temporalDollyTools.ts"
+  ]
 }

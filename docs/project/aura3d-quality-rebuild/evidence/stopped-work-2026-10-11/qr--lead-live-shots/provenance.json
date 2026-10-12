@@ -75,5 +75,13 @@
   "status": "",
   "unstagedPatchSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "stagedPatchSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-  "ignoredPaths": []
+  "ignoredPaths": [],
+  "disposition": "Version-aware release inventory helpers integrated; unselected4.0 manifests and live capture workflow preserved as history.",
+  "integratedPaths": [
+    "tools/release/release-inventory.mjs",
+    "tools/release/exact-release-plan.mjs",
+    "tools/release/prepare-version.mjs",
+    "tools/release/publish-all.mjs",
+    "tests/unit/release/exact-plan.test.mjs"
+  ]
 }

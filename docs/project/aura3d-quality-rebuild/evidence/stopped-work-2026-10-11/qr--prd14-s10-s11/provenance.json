@@ -120,5 +120,11 @@
     "test-results/",
     "tests/qr/prd14/reports/",
     "workers/asset-index-cron/node_modules/"
+  ],
+  "disposition": "S10 acceptance and honest S1-S11 reporting integrated; flawed playback instrumentation remains historical source, not a working audio proof.",
+  "integratedPaths": [
+    "tests/qr/prd14/browser/s10-assets.spec.ts",
+    "tests/qr/prd14/write-evidence.mjs",
+    "tests/qr/prd14/unit/write-evidence.test.ts"
   ]
 }

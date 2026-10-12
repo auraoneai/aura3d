@@ -18,5 +18,7 @@
     "7811ea84d0885534c7a4dbb46869e98231abba74 ci(qr/lead): before/after L4 game shots workflow (push-triggered A/B/C matrix)"
   ],
   "sourceWorktree": "",
-  "workingFiles": []
+  "workingFiles": [],
+  "disposition": "Historical, negative-control or superseded proposal preserved losslessly; not installed into executable paths.",
+  "integratedPaths": []
 }

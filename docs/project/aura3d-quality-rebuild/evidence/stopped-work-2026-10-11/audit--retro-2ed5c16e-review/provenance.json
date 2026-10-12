@@ -14,5 +14,7 @@
     "f2d0cccc7d947415a77aee6f576cf21679a0904a docs(qr/tp): P-60 retro-review scope for direct push 2ed5c16e"
   ],
   "sourceWorktree": "",
-  "workingFiles": []
+  "workingFiles": [],
+  "disposition": "Historical, negative-control or superseded proposal preserved losslessly; not installed into executable paths.",
+  "integratedPaths": []
 }

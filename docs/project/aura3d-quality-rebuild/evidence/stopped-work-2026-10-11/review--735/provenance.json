@@ -59,5 +59,7 @@
     "de9dc0956c8b087498f0cac08447be6fecea759c feat(assets): template-scoped optimize + stylized-flat artDirection (05-S10)"
   ],
   "sourceWorktree": "",
-  "workingFiles": []
+  "workingFiles": [],
+  "disposition": "Flipbook assets and optimizer support already integrated; unapproved derived GLBs/metadata preserved losslessly as candidate history.",
+  "integratedPaths": []
 }

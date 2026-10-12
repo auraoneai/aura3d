@@ -51,5 +51,11 @@
     "packages/scene/node_modules/",
     "packages/workflows/node_modules/",
     "workers/asset-index-cron/node_modules/"
+  ],
+  "disposition": "Conservative static batching wired into courier world; counting prototype replaced by regression tests.",
+  "integratedPaths": [
+    "apps/showcase-courier-rush/src/v2/scene/batch.ts",
+    "apps/showcase-courier-rush/src/v2/scene/world.ts",
+    "tests/qr/prd14/unit/courier-static-batch.test.ts"
   ]
 }

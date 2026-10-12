@@ -35,5 +35,7 @@
     "d472ee09c44387eefcff053bd47e8d498a6c2573 ci: run heavy macOS workflows on PRs only when their paths change (throughput)"
   ],
   "sourceWorktree": "",
-  "workingFiles": []
+  "workingFiles": [],
+  "disposition": "Historical, negative-control or superseded proposal preserved losslessly; not installed into executable paths.",
+  "integratedPaths": []
 }

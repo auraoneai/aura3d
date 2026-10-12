@@ -14,5 +14,7 @@
     "2e1124ed4abd0071e357fe727d4a1b509da51874 ci(probe): re-capture 3 static showcase games with real start input"
   ],
   "sourceWorktree": "",
-  "workingFiles": []
+  "workingFiles": [],
+  "disposition": "Historical, negative-control or superseded proposal preserved losslessly; not installed into executable paths.",
+  "integratedPaths": []
 }

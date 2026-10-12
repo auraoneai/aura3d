@@ -19,5 +19,7 @@
     "bf71d6e4066f849662b3845b4e30f24bd73cb6fb ci: lead-site-build (remote marketing build for release)"
   ],
   "sourceWorktree": "",
-  "workingFiles": []
+  "workingFiles": [],
+  "disposition": "Runtime fixes already integrated; historical branch-only build workflow preserved.",
+  "integratedPaths": []
 }

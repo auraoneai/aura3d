@@ -16,5 +16,7 @@
     "1856624c61ffc94f7f5f8b70b3cdcd5d599a734a TEMP debug (do not merge)"
   ],
   "sourceWorktree": "",
-  "workingFiles": []
+  "workingFiles": [],
+  "disposition": "Historical, negative-control or superseded proposal preserved losslessly; not installed into executable paths.",
+  "integratedPaths": []
 }
