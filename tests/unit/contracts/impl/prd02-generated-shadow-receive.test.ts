@@ -22,7 +22,7 @@ import { SHADOW_FORWARD_FACTOR_GLSL } from "../../../../packages/rendering/src/p
 
 const FLAGS = resolveQrFlags({ options: { A3D_QR_CORE: true, A3D_QR_LIGHTING: true } });
 const ONE_DIR = { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } as const;
-const CLUSTERED = { dir: 2, point: 16, spot: 0, rect: 0, clustered: true, hemisphere: false } as const;
+const CLUSTERED = { dir: 2, point: 8, spot: 0, rect: 0, clustered: true, hemisphere: false } as const;
 const SHADOWED = { cascades: 1, pcfTaps: 4, localShadows: 0, contact: false } as const;
 const UNSHADOWED = { cascades: 0, pcfTaps: 4, localShadows: 0, contact: false } as const;
 

@@ -135,7 +135,7 @@ async function floorShadowUniforms(): Promise<ShadowUniforms> {
     // A3D_QR_CORE is default-on: the floor draws on the generated program,
     // which must declare (and so reflect) the forward shadow uniforms or
     // forward/Lighting.ts never binds the map.
-    const shader = floor.shader as { label?: string; reflection: { uniforms: ReadonlyMap<string, unknown> } };
+    const shader = floor.shader as unknown as { label?: string; reflection: { uniforms: ReadonlyMap<string, unknown> } };
     expect(shader.label ?? "").toMatch(/^a3d-program:/);
     expect(shader.reflection.uniforms.has("u_shadowMapMatrix")).toBe(true);
     expect(u.get("u_shadowMapEnabled")).toBe(1);

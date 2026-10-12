@@ -59,7 +59,6 @@ function source() {
 function camera() {
   const cam = new PerspectiveCamera({ fovYRadians: (50 * Math.PI) / 180, aspect: 16 / 9, near: 0.1, far: 80 });
   cam.transform.setPosition(0, 1.6, 6);
-  cam.transform.lookAt?.([0, 0.4, -4]);
   cam.updateCameraMatrices();
   return cam;
 }
