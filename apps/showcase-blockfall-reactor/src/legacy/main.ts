@@ -641,7 +641,7 @@ const reactorScene = scene()
     effects.ambientOcclusion({ intensity: 0.46, radius: 0.68 }),
     effects.contactOcclusion({ name: "cabinet floor contact", intensity: 0.34, radius: 0.5 }),
     effects.fog({ name: "arcade room depth haze", density: 0.028, color: "#0d0514", intensity: 0.3 }),
-    effects.colorGrade({ exposure: 1.05 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
+    effects.colorGrade({ exposure: 1.08 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
     effects.antiAlias({ mode: "fxaa" }),
     lights.ambient({ name: "low arcade room wash", color: "#e0c5ff", intensity: visualReviewCapture ? 0.82 : 0.58 }),
     lights.directional({

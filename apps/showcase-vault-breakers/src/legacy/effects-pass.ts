@@ -14,7 +14,7 @@ export function createVaultEffectsPass(options: { readonly reducedMotion: boolea
       name: "vault arcade volumetric haze",
       density: 0.055,
       color: "#5a4380",
-      intensity: 0.5
+      intensity: 0.3
     }),
     effects.contactShadows({ length: 0.28, thickness: 0.05, steps: 16, intensity: 0.9, lights: "shadowed" }),
     // Studio IBL (background off) gives the steel rails, flippers and floor a

@@ -17,12 +17,12 @@ export function createMechHangarEffectsPass(options: {
     effects.volumetricFog({
       name: "hangar volumetric haze",
       density: 0.045,
-      color: "#4e6a86",
+      color: "#6a88a6",
       intensity: 0.5
     }),
-    effects.ambientOcclusion({ name: "hangar deck occlusion", intensity: 0.38, radius: 0.62, density: 0.55, color: "#03060b" }),
+    effects.ambientOcclusion({ name: "hangar deck occlusion", intensity: 0.25, radius: 0.62, density: 0.55, color: "#03060b" }),
     effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 16, intensity: 0.9, lights: "shadowed" }),
-    environments.preset("studio", { name: "hangar armour reflections", intensity: 0.7, background: false }),
+    environments.preset("studio", { name: "hangar armour reflections", intensity: 1.0, background: false }),
     effects.vignette({ name: "hangar vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
   if (!options.reducedMotion) {

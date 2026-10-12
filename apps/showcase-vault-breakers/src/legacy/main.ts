@@ -359,7 +359,7 @@ function buildScene(): ReturnType<typeof scene> {
       effects.ambientOcclusion({ name: "vault contact grounding", intensity: 0.3, radius: 0.62, density: 0.5, color: "#02020a" }),
       effects.contactOcclusion({ name: "mechanism contact", intensity: 0.36, radius: 0.52 }),
       effects.fog({ name: "vault room depth haze", density: 0.018, color: "#190e2b", intensity: 0.24 }),
-      effects.colorGrade({ exposure: 1.05 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
+      effects.colorGrade({ exposure: 1.08 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" })
     ])
     .addMany(createVaultEffectsPass({ reducedMotion }))

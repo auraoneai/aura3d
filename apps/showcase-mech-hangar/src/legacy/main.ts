@@ -686,7 +686,7 @@ const app = createAuraApp("#app", {
     .addMany([
       // Hangar lighting: cool workshop key + warm practicals (PRD section 6).
       withPostV2Bloom(effects.bloom({ name: "hangar workshop bloom", intensity: 0.2, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", radius: 0.38, softKnee: 0.5, shoulder: 0.6 })),
-      effects.colorGrade({ exposure: 1.04 * POST_V2_EXPOSURE, contrast: 1.06, saturation: 1.08 }),
+      effects.colorGrade({ exposure: 1.12 * POST_V2_EXPOSURE, contrast: 1.06, saturation: 1.08 }),
       effects.antiAlias({ mode: "fxaa" }),
       effects.contactOcclusion({ name: "fighter deck contact", intensity: 0.4, radius: 0.6 }),
       lights.directional({

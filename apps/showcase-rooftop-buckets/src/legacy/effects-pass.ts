@@ -14,12 +14,12 @@ export function createRooftopEffectsPass(options: { readonly reducedMotion: bool
     // athletes at ≈10 m, 30%+ on the skyline behind the pavilion.
     effects.volumetricFog({
       name: "rooftop dusk volumetric haze",
-      density: 0.03,
-      color: "#a07a8c",
-      intensity: 0.5
+      density: 0.022,
+      color: "#8a6a7c",
+      intensity: 0.3
     }),
     effects.contactShadows({ length: 0.3, thickness: 0.05, steps: 16, intensity: 0.9, lights: "shadowed" }),
-    environments.preset("sunset", { name: "rooftop sunset reflections", intensity: 0.7, background: false }),
+    environments.preset("sunset", { name: "rooftop sunset reflections", intensity: 0.5, background: false }),
     effects.vignette({ name: "rooftop vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
   if (!options.reducedMotion) {

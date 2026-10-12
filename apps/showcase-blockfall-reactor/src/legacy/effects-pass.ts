@@ -24,8 +24,8 @@ export function createBlockfallEffectsPass(options: BlockfallEffectsPassOptions)
     effects.volumetricFog({
       name: "blockfall arcade volumetric haze",
       density: 0.05,
-      color: "#6b4c9a",
-      intensity: 0.5
+      color: "#5e4490",
+      intensity: 0.2
     }),
     // Screen-space contact shadows from the key: grounds the cabinet and the
     // board frame on the floor instead of letting them float.
