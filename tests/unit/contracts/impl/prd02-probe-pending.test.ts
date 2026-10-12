@@ -26,8 +26,9 @@ import {
 
 const HDR = "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr";
 // Lighting off: the slot always hands out the pending stub, whether or not
-// the lane has provided it.
-const LIGHTING_OFF = resolveQrFlags({});
+// the lane has provided it. A3D_QR_LIGHTING is default-on since #1238, so
+// flag-off must be explicit.
+const LIGHTING_OFF = resolveQrFlags({ options: { A3D_QR_LIGHTING: false } });
 const HDRI_RESOLUTION = {
   kind: "neutral-room" as const, probe: { hdri: "studio.hdr" },
   intensity: 1, diffuseIntensity: 1, specularIntensity: 1, rotation: 0,
