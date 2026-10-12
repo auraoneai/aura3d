@@ -55,4 +55,34 @@ describe("GameAudio loops follow game state (no stacked drones)", () => {
     await audio.cue("engine");
     expect(sources().filter((s) => s.loop && s.started.length > 0)).toHaveLength(2);
   });
+
+  it("route-local bus volumes scale only their own cues (no last-write-wins on sfx)", async () => {
+    const ctx = new FakeContext();
+    const audio = createGameAudio({
+      createContext: () => ctx as unknown as GameAudioContextLike,
+      buses: [{ id: "engine", volume: 0.5 }, { id: "stem", volume: 0 }],
+      cues: {
+        engine: { id: "engine", asset: "e.wav", loop: true, bus: "engine" },
+        stem: { id: "stem", asset: "s.wav", loop: true, bus: "stem" },
+        shot: { id: "shot", asset: "x.wav", bus: "sfx" }
+      }
+    });
+    await audio.unlock();
+    await audio.cue("engine");
+    await audio.cue("stem");
+    await audio.cue("shot");
+    const voiceGain = (i: number) => (ctx.ofKind<FakeSource>("source")[i].connectedTo[0] as unknown as FakeGain).gain.value;
+    const [engine, stem, shot] = [voiceGain(0), voiceGain(1), voiceGain(2)];
+    expect(engine).toBeGreaterThan(0.5 * 0.84);
+    expect(engine).toBeLessThan(0.5 * 1.19);
+    expect(stem).toBeLessThan(0.001);
+    expect(shot).toBeGreaterThan(0.84); // sfx bus untouched by the "stem" = 0 write
+    // A per-frame write to a route bus moves only that bus's voices.
+    audio.setBusVolume("stem", 1);
+    expect(voiceGain(1)).toBeGreaterThan(0.84);
+    expect(voiceGain(2)).toBe(shot);
+    // The shared engine sfx bus gain was never written by route-local ids.
+    const sfxBusGains = ctx.ofKind<FakeGain>("gain").map((g) => g.gain.value);
+    expect(sfxBusGains).not.toContain(0);
+  });
 });

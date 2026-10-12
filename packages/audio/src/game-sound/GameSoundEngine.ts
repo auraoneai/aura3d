@@ -20,7 +20,7 @@ import { MusicControllerImpl, type MusicTrackSpec } from "./MusicController";
 import { createReverbSend, type QualityTier, type ReverbPreset } from "./ReverbSend";
 import { formatExtension, probeFormat, type EncodedFormat } from "./formatProbe";
 import { syncListener, type ListenerLike } from "./listenerSync";
-import { clamp } from "./types";
+import { clamp, dbToGain } from "./types";
 import type { SoundGraphContext, SoundNodeLike, Vec3 } from "./types";
 
 export type GameBusId = "master" | "music" | "sfx" | "ui" | "ambience" | "voice";
@@ -252,8 +252,9 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     if (allocation.dropped || !allocation.record) return null;
     const record = allocation.record;
     voicesPlayed += 1;
-    // Authored level after jitter: setLevel scales relative to it.
-    const baseGain = Math.max(1e-6, record.targetGain);
+    // Authored level after jitter, without the per-play volumeDb: setLevel
+    // gains are relative to it (setLevel({gain:1}) = authored level).
+    const baseGain = Math.max(1e-6, record.targetGain / dbToGain(opts.volumeDb ?? 0));
     const baseRate = record.source.playbackRate?.value ?? 1;
     record.source.start();
     return {

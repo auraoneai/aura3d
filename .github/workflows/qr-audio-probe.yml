@@ -57,11 +57,11 @@ jobs:
       - name: Build games
         run: QRC_LOCAL_BUILD=true node tools/quality-rebuild-capture/capture-games.mjs --build-only
       - name: Probe local build
-        run: node tools/quality-rebuild-capture/audio-buzz-probe.mjs --base local --games "$QRC_GAMES" --query "$IN_QUERY" --out out-audio/local | tee -a "$GITHUB_STEP_SUMMARY"
+        run: set -o pipefail; node tools/quality-rebuild-capture/audio-buzz-probe.mjs --base local --games "$QRC_GAMES" --query "$IN_QUERY" --out out-audio/local | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Probe baseline
         if: ${{ env.IN_BASELINE != '' }}
         continue-on-error: true
-        run: node tools/quality-rebuild-capture/audio-buzz-probe.mjs --base "$IN_BASELINE" --games "$QRC_GAMES" --out out-audio/baseline | tee -a "$GITHUB_STEP_SUMMARY"
+        run: set -o pipefail; node tools/quality-rebuild-capture/audio-buzz-probe.mjs --base "$IN_BASELINE" --games "$QRC_GAMES" --out out-audio/baseline | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

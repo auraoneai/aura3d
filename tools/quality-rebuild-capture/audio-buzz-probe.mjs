@@ -9,7 +9,6 @@
 // Per game: idle (no input) after an F9 keydown gesture, then 5 s of held
 // gameplay input. Each phase samples the destination tap ~20x and reports
 // mean/max RMS, peak, dominant frequency, >4 kHz share, and the playing voices.
-import { chromium } from "playwright";
 import { createServer } from "node:http";
 import { createReadStream, readFileSync, statSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -139,6 +138,7 @@ const fmt = (p) => (p && !p.error
   : p?.error ?? "-");
 
 const main = async () => {
+  const { chromium } = await import("@playwright/test");
   mkdirSync(outDir, { recursive: true });
   const served = base === "local" ? await serveLocal() : null;
   const origin = served ? served.origin : base.replace(/\/$/, "");
