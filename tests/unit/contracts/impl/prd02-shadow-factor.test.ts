@@ -117,6 +117,7 @@ interface ShadowUniforms {
   readonly matrix: Float32Array;
   readonly bias: number;
   readonly slopeBias: number;
+  readonly normalBias: number;
   readonly strength: number;
   readonly texel: readonly [number, number];
   readonly samples: Float32Array;
@@ -145,6 +146,7 @@ async function floorShadowUniforms(): Promise<ShadowUniforms> {
       matrix: Float32Array.from(u.get("u_shadowMapMatrix") as ArrayLike<number>),
       bias: u.get("u_shadowMapBias") as number,
       slopeBias: u.get("u_shadowMapSlopeBias") as number,
+      normalBias: u.get("u_shadowMapNormalBias") as number,
       strength: u.get("u_shadowMapStrength") as number,
       texel: [texel[0], texel[1]],
       samples: u.get("u_shadowPcfSamples") as Float32Array,
@@ -186,8 +188,13 @@ function storedDepth(u: ShadowUniforms, uv: readonly [number, number]): number {
   return zEnter <= zExit ? zEnter * 0.5 + 0.5 : 1;
 }
 
-/** Port of GLSL `a3dForwardShadowFactor` (ShaderLibraryCore.ts). */
-function shadowFactor(u: ShadowUniforms, worldPosition: V3, normal: V3, lightDirection: V3): number {
+/**
+ * Port of GLSL `a3dForwardLightShadow` → `a3dForwardShadowFactor`
+ * (program/chunks/shadow_forward.glsl.ts): normal offset, then the legacy factor.
+ */
+function shadowFactor(u: ShadowUniforms, receiver: V3, normal: V3, lightDirection: V3): number {
+  const nn = Math.hypot(...normal);
+  const worldPosition: V3 = [0, 1, 2].map((k) => receiver[k]! + (normal[k]! / nn) * u.normalBias) as V3;
   const lp = transform(u.matrix, worldPosition);
   const w = Math.max(lp[3], 0.0001);
   const projected = [lp[0] / w, lp[1] / w, lp[2] / w];
@@ -242,6 +249,9 @@ describe("prd02 bridged sun shadow: shader factor for a known shadowed point", (
   it("a floor point behind the caster is fully shadowed; open floor and the lit caster top are not", async () => {
     const u = await floorShadowUniforms();
     expect(u.strength).toBe(1);
+    // C-11 normalBias 1.5 texels → a small positive world offset.
+    expect(u.normalBias).toBeGreaterThan(0);
+    expect(u.normalBias).toBeLessThan(0.1);
     expect(shadowFactor(u, shadowedFloorPoint(), UP, TO_LIGHT)).toBeLessThan(0.05);
     expect(shadowFactor(u, [3, 0, 3], UP, TO_LIGHT)).toBeGreaterThan(0.95);
     const top: V3 = [CASTER_CENTER[0], CASTER_CENTER[1] + CASTER_HALF, CASTER_CENTER[2]];

@@ -211,6 +211,13 @@ export interface ForwardShadowMapOptions {
   readonly strength?: number;
   readonly bias?: number;
   readonly slopeBias?: number;
+  /**
+   * World-space receiver offset along the surface normal before projection
+   * (three.js `shadow.normalBias`). Bound only to programs that declare
+   * `u_shadowMapNormalBias` (the generated `shadow_forward` chunk); the
+   * legacy shader ignores it.
+   */
+  readonly normalBias?: number;
   readonly texelSize?: readonly [number, number];
   readonly filterKernel?: ShadowFilterKernel;
   readonly pointLight?: ForwardPointShadowMapOptions;
