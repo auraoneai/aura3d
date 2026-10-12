@@ -49,7 +49,8 @@ describe("P2-T9 non-emitter node wiring", () => {
     expect(cone.coneAngle).toBeCloseTo(0.32);
     const aurora = specs.find((s) => s.kind === "auroraRibbon")!;
     expect(aurora.width).toBeCloseTo(18);
-    expect(aurora.colorTop?.[0]).toBeCloseTo(0x5a / 255, 2);
+    // Hex colours decode sRGB → linear (beams shade in linear HDR).
+    expect(aurora.colorTop?.[0]).toBeCloseTo(Math.pow((0x5a / 255 + 0.055) / 1.055, 2.4), 3);
     app.dispose();
   });
 
