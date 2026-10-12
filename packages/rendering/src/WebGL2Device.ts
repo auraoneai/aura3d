@@ -77,6 +77,14 @@ export function renderTargetStorageFormat(gl: Pick<WebGL2RenderingContext, "RGBA
   return internalFormat === gl.RGBA ? gl.RGBA8 : internalFormat;
 }
 
+/**
+ * Attachment-0 color format of a single-attachment 2d target: an explicit
+ * `colorAttachments[0].format` wins over the legacy `format` field.
+ */
+export function renderTargetColorFormat(descriptor: Pick<RenderTargetDescriptor, "format" | "colorAttachments">): Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f"> {
+  return descriptor.colorAttachments?.[0]?.format ?? descriptor.format ?? "rgba8";
+}
+
 /** C-08 named uniform-block → binding-point assignment applied post-link (T0-02). */
 const NAMED_UNIFORM_BLOCK_BINDINGS: ReadonlyArray<readonly [blockName: string, binding: number]> = [
   ["AuraFrame", AURA_FRAME_BINDING],
@@ -876,7 +884,14 @@ export class WebGL2Device implements RenderDevice {
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-    const format = descriptor.format ?? "rgba8";
+    // A single `colorAttachments` entry is the attachment-0 format (CONTRACTS
+    // §3.4) and wins over the legacy `format` field. Before this, the 2d path
+    // ignored it, so `createHdrTarget` ({ format: "rgba8", colorAttachments:
+    // [{ format: "rgba16f" }] }) without coverage allocated an RGBA8 "HDR"
+    // scene target: linear radiance clamped at 1.0 and 8-bit dark banding
+    // before tone mapping (GPU run 38190015020: device ACES of 4.0 = 226 vs
+    // three 250; tonemap-ramp dark swatches ΔE2000 13-30).
+    const format = renderTargetColorFormat(descriptor);
     const textureFormat = resolveRenderTargetFormat(this.gl, format);
     this.gl.texImage2D(
       this.gl.TEXTURE_2D,
