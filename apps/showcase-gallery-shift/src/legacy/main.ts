@@ -35,6 +35,7 @@ import {
   type AuraRuntimeNodeHandle,
   type AuraSceneNode
 } from "@aura3d/engine";
+import { resolveQrFlags } from "@aura3d/engine/contracts";
 import { assets } from "../../../../src/aura-assets";
 import {
   FLOOR_LAYOUTS,
@@ -82,33 +83,42 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_GALLERY_SHIFT__", {
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
+// PRD-03 §6.6 / Q-14-1: post v2 (A3D_QR_POST, default-on) composites bloom with no
+// hidden gain and a linear-HDR threshold of 1.0, so neon practicals need real HDR
+// emissive strength (3-8) to glow. Post-off keeps the legacy authoring untouched.
+const postV2 = resolveQrFlags({
+  url: location.href,
+  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+}).on("A3D_QR_POST");
+const NEON_GAIN = postV2 ? 2.6 : 1;
+const DEFAULT_EMISSIVE_STRENGTH = 1.35;
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 const THIEF_FOCUS_MATERIAL = material.emissive({
   name: "thief tactical focus ring",
   color: "#123b3a",
   emissive: "#55f3d1",
-  emissiveIntensity: 1.18,
+  emissiveIntensity: 1.18 * NEON_GAIN,
   opacity: 0.9
 });
 const LIVE_PLAYER_MATERIAL = material.emissive({
   name: "live player hierarchy material",
   color: "#063b35",
   emissive: "#45ffd7",
-  emissiveIntensity: 1.25,
+  emissiveIntensity: 1.25 * NEON_GAIN,
   opacity: 1
 });
 const LIVE_GUARD_MATERIAL = material.emissive({
   name: "live guard hierarchy material",
   color: "#4d081d",
   emissive: "#ff3e72",
-  emissiveIntensity: 1.2,
+  emissiveIntensity: 1.2 * NEON_GAIN,
   opacity: 1
 });
 const LIVE_OBJECTIVE_MATERIAL = material.emissive({
   name: "live objective hierarchy material",
   color: "#5a2d05",
   emissive: "#ffd05a",
-  emissiveIntensity: 1.48,
+  emissiveIntensity: 1.48 * NEON_GAIN,
   opacity: 1
 });
 const THIEF_DETAIL_MATERIAL = material.metal({
@@ -134,7 +144,7 @@ const THIEF_VISOR_MATERIAL = material.emissive({
   name: "infiltrator visor signal",
   color: "#0b4b4d",
   emissive: "#73fff0",
-  emissiveIntensity: 1.65,
+  emissiveIntensity: 1.65 * NEON_GAIN,
   opacity: 0.95
 });
 const ALERT_WEDGE_GEOMETRY = geometry.define({
@@ -720,7 +730,7 @@ function floor2WallNodes(): AuraSceneNode[] {
     nodes.push(
       primitives.box({
         name: `laser-${laser.id}`,
-        material: material.emissive({ name: `laser ${laser.id} material`, color: "#3d0f14", emissive: "#ff3b4e", opacity: 0.85 })
+        material: material.emissive({ name: `laser ${laser.id} material`, color: "#3d0f14", emissive: "#ff3b4e", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.85 })
       })
         .position(laser.x, 0.9, laser.z)
         .scale([Math.max(0.05, laser.halfX * 2), 0.05, Math.max(0.05, laser.halfZ * 2)])
@@ -778,7 +788,7 @@ function exitNodes(): AuraSceneNode[] {
   return [
     primitives.box({
       name: "exit-pad",
-      material: material.emissive({ name: "exit pad material", color: "#0d2417", emissive: "#3dfc9a", opacity: 0.85 })
+      material: material.emissive({ name: "exit pad material", color: "#0d2417", emissive: "#3dfc9a", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.85 })
     })
       .position(0, 0.02, -6.3)
       .scale([1.6, 0.03, 1.0])
@@ -786,7 +796,7 @@ function exitNodes(): AuraSceneNode[] {
       .toJSON(),
     primitives.box({
       name: "exit-sign",
-      material: material.emissive({ name: "exit sign material", color: "#0d2417", emissive: "#7ef8ff", opacity: 0.95 })
+      material: material.emissive({ name: "exit sign material", color: "#0d2417", emissive: "#7ef8ff", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.95 })
     })
       .position(0, 2.6, -6.9)
       .scale([1.4, 0.4, 0.08])
@@ -795,10 +805,10 @@ function exitNodes(): AuraSceneNode[] {
 }
 
 function threatFeedbackNodes(): AuraSceneNode[] {
-  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#7d173c", emissive: "#ff477b", emissiveIntensity: 1.9, opacity: 0.8 });
-  const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#c43765", emissive: "#ffd0dc", emissiveIntensity: 2.35, opacity: 0.99 });
-  const lineMaterial = material.emissive({ name: "release real LOS floor rail", color: "#8d234a", emissive: "#ff5e8e", emissiveIntensity: 2.1, opacity: 0.94 });
-  const targetMaterial = material.emissive({ name: "release real LOS target reticle", color: "#54132f", emissive: "#ff78a4", emissiveIntensity: 2.05, opacity: 0.94 });
+  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#7d173c", emissive: "#ff477b", emissiveIntensity: 1.9 * NEON_GAIN, opacity: 0.8 });
+  const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#c43765", emissive: "#ffd0dc", emissiveIntensity: 2.35 * NEON_GAIN, opacity: 0.99 });
+  const lineMaterial = material.emissive({ name: "release real LOS floor rail", color: "#8d234a", emissive: "#ff5e8e", emissiveIntensity: 2.1 * NEON_GAIN, opacity: 0.94 });
+  const targetMaterial = material.emissive({ name: "release real LOS target reticle", color: "#54132f", emissive: "#ff78a4", emissiveIntensity: 2.05 * NEON_GAIN, opacity: 0.94 });
   return ["guard-1", "guard-2"].flatMap((id) => [
     geometry.custom(ALERT_WEDGE_GEOMETRY, { name: `${id} real LOS alert wedge`, material: wedgeMaterial })
       .position(0, 0.16, 0)
@@ -1050,7 +1060,7 @@ function buildScene(): ReturnType<typeof scene> {
     .add(
       primitives.cylinder({
         name: "alarm-beacon",
-        material: material.emissive({ name: "alarm beacon material", color: "#3b070c", emissive: "#ff334d", opacity: 0.95 })
+        material: material.emissive({ name: "alarm beacon material", color: "#3b070c", emissive: "#ff334d", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.95 })
       })
         .position(0, 3.2, -5.8)
         .scale([0.34, 0.18, 0.34])
@@ -1064,7 +1074,7 @@ function buildScene(): ReturnType<typeof scene> {
     .addMany([
       // Low-lit marble hall: moonlight key, warm guard flashlights (sway gated
       // by reduced-motion below), cool exit glow, shallow fog, restrained bloom.
-      effects.neonBloom({ intensity: reducedMotion ? 0.06 : 0.22, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.neonBloom({ intensity: (reducedMotion ? 0.06 : 0.22) * (postV2 ? 1.6 : 1), quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.fog({ name: "gallery haze", density: 0.009, color: "#243b59", intensity: 0.18 }),
       effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.08 }),
       effects.antiAlias({ mode: "fxaa" }),
