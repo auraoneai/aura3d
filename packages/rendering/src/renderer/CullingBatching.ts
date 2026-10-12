@@ -32,7 +32,9 @@ export function explicitCullingFrustum(
 export function cullExplicitRenderItems(
   items: readonly RenderItem[],
   frustum: Frustum | undefined,
-  diagnostics: RenderCollectionDiagnostics
+  diagnostics: RenderCollectionDiagnostics,
+  /** 02-S5: receives culled items with `castShadow !== false`. */
+  culledShadowCasters?: RenderItem[]
 ): readonly RenderItem[] {
   if (!frustum) {
     diagnostics.submittedObjects += items.length;
@@ -59,6 +61,7 @@ export function cullExplicitRenderItems(
     box[3] = bounds.max[0]; box[4] = bounds.max[1]; box[5] = bounds.max[2];
     if (cull(box, 1, planes, verdict) === 0) {
       diagnostics.culledObjects += 1;
+      if (culledShadowCasters && item.castShadow !== false) culledShadowCasters.push(item);
       continue;
     }
     diagnostics.visibleObjects += 1;
@@ -71,6 +74,44 @@ function isFrustumCullableRenderItem(item: RenderItem): boolean {
   if (item.drawRange !== undefined) return false;
   if (item.morphTargets !== undefined || item.morphWeights !== undefined) return false;
   return true;
+}
+
+/**
+ * 02-S5: of the frustum-culled casters, keep those whose sun shadow can land
+ * in view. Each caster box is swept along the light's travel until its top
+ * reaches the lowest receiver (the ground footprint of its shadow); a sweep
+ * that intersects the view frustum keeps the caster. Casters whose shadow
+ * stays off-screen are dropped, so a large city does not inflate the cascade
+ * fit with buildings behind the camera.
+ */
+export function culledCastersReachingView(
+  culled: readonly RenderItem[],
+  receivers: readonly RenderItem[],
+  frustum: Frustum | undefined,
+  travel: readonly [number, number, number] | undefined
+): readonly RenderItem[] {
+  if (culled.length === 0 || !frustum || !travel) return [];
+  const length = Math.hypot(travel[0], travel[1], travel[2]);
+  if (!Number.isFinite(length) || length === 0 || travel[1] / length > -1e-3) return [];
+  const dir = [travel[0] / length, travel[1] / length, travel[2] / length] as const;
+  let floorY = Infinity;
+  for (const item of receivers) floorY = Math.min(floorY, explicitRenderItemWorldBounds(item).min[1]);
+  const planes = packFrustumPlanes(frustum.planes);
+  const box = new Float64Array(6);
+  const verdict = new Uint8Array(1);
+  const kept: RenderItem[] = [];
+  for (const item of culled) {
+    const b = explicitRenderItemWorldBounds(item);
+    const reachY = Number.isFinite(floorY) ? Math.min(floorY, b.min[1]) : b.min[1];
+    const t = Math.max(0, (b.max[1] - reachY) / -dir[1]);
+    for (let axis = 0; axis < 3; axis += 1) {
+      const shift = dir[axis]! * t;
+      box[axis] = Math.min(b.min[axis]!, b.min[axis]! + shift);
+      box[axis + 3] = Math.max(b.max[axis]!, b.max[axis]! + shift);
+    }
+    if (cull(box, 1, planes, verdict) > 0) kept.push(item);
+  }
+  return kept;
 }
 
 function explicitRenderItemWorldBounds(item: RenderItem): SceneBounds3 {

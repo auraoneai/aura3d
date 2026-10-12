@@ -9,6 +9,8 @@
 
 import { CascadedShadowMaps } from "../CascadedShadowMaps";
 import type { RenderItem } from "../contracts/renderItem";
+import type { Geometry } from "../Geometry";
+import { skinnedItemLocalBounds } from "../renderer/SkinnedBounds";
 
 export interface CascadeFitterCamera {
   readonly viewProjectionMatrix: Float32Array | readonly number[];
@@ -123,10 +125,18 @@ function normalize(v: V3): V3 { const l = Math.hypot(v[0], v[1], v[2]) || 1; ret
 function cross(a: V3, b: V3): V3 { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
 function lerp3(a: V3, b: V3, t: number): V3 { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
 
+/**
+ * World AABB of a caster for the cascade fit. 02-S4: instanced casters cover
+ * every instance (model × instance), and skinned casters use the posed
+ * envelope — the base-geometry box alone let the caster-rect clamp crop most
+ * instances out of the ortho (prd02-16b IoU 0.34, 6 of 16 instance shadows).
+ */
 function itemWorldBounds(item: RenderItem): { min: V3; max: V3 } | null {
-  const b = item.geometry?.bounds;
+  const b = item.skinning && item.geometry
+    ? skinnedItemLocalBounds(item.geometry as Geometry, item.skinning)
+    : item.geometry?.bounds;
   if (!b) return null;
-  const m = item.modelMatrix;
+  const m = item.modelMatrix && item.modelMatrix.length >= 16 ? item.modelMatrix : null;
   const pts = [
     [b.min[0], b.min[1], b.min[2]], [b.max[0], b.min[1], b.min[2]],
     [b.min[0], b.max[1], b.min[2]], [b.max[0], b.max[1], b.min[2]],
@@ -134,13 +144,22 @@ function itemWorldBounds(item: RenderItem): { min: V3; max: V3 } | null {
     [b.min[0], b.max[1], b.max[2]], [b.max[0], b.max[1], b.max[2]]
   ] as const;
   const out = { min: [Infinity, Infinity, Infinity] as number[], max: [-Infinity, -Infinity, -Infinity] as number[] };
-  for (const p of pts) {
-    const w: V3 = m && m.length >= 16
-      ? [m[0]! * p[0] + m[4]! * p[1] + m[8]! * p[2] + m[12]!, m[1]! * p[0] + m[5]! * p[1] + m[9]! * p[2] + m[13]!, m[2]! * p[0] + m[6]! * p[1] + m[10]! * p[2] + m[14]!]
-      : p;
-    for (let i = 0; i < 3; i += 1) {
-      out.min[i] = Math.min(out.min[i]!, w[i]!);
-      out.max[i] = Math.max(out.max[i]!, w[i]!);
+  const apply = (t: ArrayLike<number>, p: readonly number[]): V3 => [
+    t[0]! * p[0]! + t[4]! * p[1]! + t[8]! * p[2]! + t[12]!,
+    t[1]! * p[0]! + t[5]! * p[1]! + t[9]! * p[2]! + t[13]!,
+    t[2]! * p[0]! + t[6]! * p[1]! + t[10]! * p[2]! + t[14]!
+  ];
+  const instances = item.instanceTransforms && item.instanceTransforms.length >= 16 ? item.instanceTransforms : null;
+  const instanceCount = instances ? Math.floor(instances.length / 16) : 1;
+  for (let k = 0; k < instanceCount; k += 1) {
+    for (const p of pts) {
+      // Instance matrices are model-local (gl_Position = VP · model · instance · p).
+      const local = instances ? apply(Array.prototype.slice.call(instances, k * 16, k * 16 + 16) as number[], p) : p;
+      const w: V3 = m ? apply(m, local) : [local[0]!, local[1]!, local[2]!];
+      for (let i = 0; i < 3; i += 1) {
+        out.min[i] = Math.min(out.min[i]!, w[i]!);
+        out.max[i] = Math.max(out.max[i]!, w[i]!);
+      }
     }
   }
   if (!out.min.every(Number.isFinite) || !out.max.every(Number.isFinite)) return null;

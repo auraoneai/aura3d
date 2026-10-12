@@ -1,6 +1,6 @@
 import type { TemporalHistory } from "./TemporalHistory";
 import { collectEnvironmentBackground, collectEnvironmentFog, collectEnvironmentLighting } from "./renderer/Background";
-import { applyRendererOwnedStaticBatching, applyRendererOwnedStaticMeshConsolidation, cullExplicitRenderItems, explicitCullingFrustum } from "./renderer/CullingBatching";
+import { applyRendererOwnedStaticBatching, applyRendererOwnedStaticMeshConsolidation, cullExplicitRenderItems, culledCastersReachingView, explicitCullingFrustum } from "./renderer/CullingBatching";
 import { rendererDeviceIsLost, subscribeRendererDeviceLost, subscribeRendererDeviceRestored } from "./renderer/DeviceLifecycle";
 import { createRendererFrameHooks, toFrameCamera } from "./renderer/FrameGraph";
 import type { FrameCamera } from "./contracts/frameGraph";
@@ -737,7 +737,7 @@ export class Renderer {
       throw new RenderDeviceError("RenderSource requires an explicit camera but none was supplied or found in the scene.", "CAMERA_REQUIRED");
     }
     let cameraViewProjection = resolvedCamera?.viewProjectionMatrix;
-    const collectedItems = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera);
+    const collectedItems = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera, rendererQrFlags().on("A3D_QR_LIGHTING"));
     const collectionDiagnostics = collectedItems.diagnostics;
     let items = collectedItems.items;
     const lights = collectRenderLights(source);
@@ -839,11 +839,19 @@ export class Renderer {
       this.lastShadowEvidence = null;
       items = frameHooks.collect(items);
       // C-28 (#90): scope the shadow-phase CPU submission for frameStats.
+      // 02-S5: under A3D_QR_LIGHTING casters come from the pre-cull set
+      // (frustum-culled casters rejoin); flag-off keeps the visible items only.
+      const shadowCasterItems = rendererQrFlags().on("A3D_QR_LIGHTING")
+        ? [
+            ...items,
+            ...culledCastersReachingView(collectedItems.culledShadowCasters, items, collectedItems.cullingFrustum, shadowSunTravel(lights))
+          ].filter((item) => item.castShadow !== false)
+        : items.filter((item) => item.castShadow !== false);
       const rendererShadowMap = this.frameStatsMonitor?.scope("shadow", () =>
         explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
           source,
-          items: items.filter((item) => item.castShadow !== false),
+          items: shadowCasterItems,
           lights,
           ownedTargets,
           ownedShadowPasses,
@@ -852,7 +860,7 @@ export class Renderer {
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
           source,
-          items: items.filter((item) => item.castShadow !== false),
+          items: shadowCasterItems,
           lights,
           ownedTargets,
           ownedShadowPasses,
@@ -1067,7 +1075,7 @@ export class Renderer {
       throw new RenderDeviceError("RenderSource requires an explicit camera but none was supplied or found in the scene.", "CAMERA_REQUIRED");
     }
     let cameraViewProjection = resolvedCamera?.viewProjectionMatrix;
-    const collectedItems = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera);
+    const collectedItems = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera, rendererQrFlags().on("A3D_QR_LIGHTING"));
     const collectionDiagnostics = collectedItems.diagnostics;
     let items = collectedItems.items;
     const lights = collectRenderLights(source);
@@ -1169,11 +1177,19 @@ export class Renderer {
       this.lastShadowEvidence = null;
       items = frameHooks.collect(items);
       // C-28 (#90): scope the shadow-phase CPU submission for frameStats.
+      // 02-S5: under A3D_QR_LIGHTING casters come from the pre-cull set
+      // (frustum-culled casters rejoin); flag-off keeps the visible items only.
+      const shadowCasterItems = rendererQrFlags().on("A3D_QR_LIGHTING")
+        ? [
+            ...items,
+            ...culledCastersReachingView(collectedItems.culledShadowCasters, items, collectedItems.cullingFrustum, shadowSunTravel(lights))
+          ].filter((item) => item.castShadow !== false)
+        : items.filter((item) => item.castShadow !== false);
       const rendererShadowMap = this.frameStatsMonitor?.scope("shadow", () =>
         explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
           source,
-          items: items.filter((item) => item.castShadow !== false),
+          items: shadowCasterItems,
           lights,
           ownedTargets,
           ownedShadowPasses,
@@ -1182,7 +1198,7 @@ export class Renderer {
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
           source,
-          items: items.filter((item) => item.castShadow !== false),
+          items: shadowCasterItems,
           lights,
           ownedTargets,
           ownedShadowPasses,
@@ -1886,22 +1902,29 @@ export function collectRenderItems(
 function collectRenderItemsWithDiagnostics(
   source: RenderSource | Iterable<RenderItem> | Scene,
   cameraViewProjection?: Mat4,
-  camera?: Camera
-): { readonly items: readonly RenderItem[]; readonly diagnostics: RenderCollectionDiagnostics } {
+  camera?: Camera,
+  keepCulledShadowCasters = false
+): { readonly items: readonly RenderItem[]; readonly diagnostics: RenderCollectionDiagnostics; readonly culledShadowCasters: readonly RenderItem[]; readonly cullingFrustum?: Frustum } {
   const diagnostics = createRenderCollectionDiagnostics();
+  // 02-S5 (A3D_QR_LIGHTING): frustum-culled items that still cast. A caster
+  // outside the view (a pole behind the camera under a low sun) must reach
+  // the shadow pass. Flag-off collects nothing extra.
+  const culledShadowCasters: RenderItem[] | undefined = keepCulledShadowCasters ? [] : undefined;
   if (isIterable(source)) {
     const items = applyViewProjection([...source], cameraViewProjection);
     diagnostics.submittedObjects += items.length;
     diagnostics.visibleObjects += items.length;
-    return { items, diagnostics };
+    return { items, diagnostics, culledShadowCasters: culledShadowCasters ?? [] };
   }
   if (source instanceof Scene) {
-    const items = collectSceneRenderItems(source, {}, cameraViewProjection, camera, diagnostics);
-    return { items, diagnostics };
+    const items = collectSceneRenderItems(source, {}, cameraViewProjection, camera, diagnostics, culledShadowCasters);
+    return { items, diagnostics, culledShadowCasters: culledShadowCasters ?? [], ...(camera ? { cullingFrustum: camera.frustum } : {}) };
   }
   const items: RenderItem[] = [];
+  let cullingFrustum: Frustum | undefined;
   if (source.scene) {
-    items.push(...collectSceneRenderItems(source.scene, source, cameraViewProjection, source.frustumCulling === false ? undefined : camera, diagnostics));
+    if (source.frustumCulling !== false && camera) cullingFrustum = camera.frustum;
+    items.push(...collectSceneRenderItems(source.scene, source, cameraViewProjection, source.frustumCulling === false ? undefined : camera, diagnostics, culledShadowCasters));
   }
   const explicitItems: RenderItem[] = [];
   if (source.collectRenderItems) {
@@ -1911,20 +1934,22 @@ function collectRenderItemsWithDiagnostics(
     explicitItems.push(...source.renderItems);
   }
   if (explicitItems.length > 0) {
-    const cullingFrustum = explicitCullingFrustum(source, cameraViewProjection, camera);
-    const visibleItems = cullExplicitRenderItems(explicitItems, cullingFrustum, diagnostics);
+    const explicitFrustum = explicitCullingFrustum(source, cameraViewProjection, camera);
+    cullingFrustum ??= explicitFrustum;
+    const visibleItems = cullExplicitRenderItems(explicitItems, explicitFrustum, diagnostics, culledShadowCasters);
     const optimizedItems = applyRendererOwnedStaticBatching(source, applyRendererOwnedStaticMeshConsolidation(source, visibleItems));
     const projectedItems = applyViewProjection(optimizedItems, cameraViewProjection);
     items.push(...projectedItems);
   }
-  return { items, diagnostics };
+  return { items, diagnostics, culledShadowCasters: culledShadowCasters ?? [], ...(cullingFrustum ? { cullingFrustum } : {}) };
 }
 function collectSceneRenderItems(
   scene: Scene,
   source: Pick<RenderSource, "geometryLibrary" | "materialLibrary" | "morphTargetLibrary">,
   cameraViewProjection?: Mat4,
   camera?: Camera,
-  diagnostics?: RenderCollectionDiagnostics
+  diagnostics?: RenderCollectionDiagnostics,
+  culledShadowCasters?: RenderItem[]
 ): readonly RenderItem[] {
   scene.updateWorldTransforms();
   const renderables = scene.collectRenderables();
@@ -1966,12 +1991,11 @@ function collectSceneRenderItems(
       diagnostics.submittedObjects += 1;
       if (camera) diagnostics.frustumTestedObjects += 1;
     }
-    if (camera && !camera.frustum.intersectsBox(bounds.toMathBox())) {
-      if (diagnostics) diagnostics.culledObjects += 1;
-      continue;
-    }
-    if (diagnostics) diagnostics.visibleObjects += 1;
-    items.push({
+    const culled = camera !== undefined && !camera.frustum.intersectsBox(bounds.toMathBox());
+    if (culled && diagnostics) diagnostics.culledObjects += 1;
+    if (culled && !culledShadowCasters) continue;
+    if (!culled && diagnostics) diagnostics.visibleObjects += 1;
+    (culled ? culledShadowCasters! : items).push({
       geometry,
       material,
       label: node.name,
@@ -1985,6 +2009,11 @@ function collectSceneRenderItems(
     });
   }
   return items;
+}
+/** Travel direction of the first shadow-casting directional light (02-S5). */
+function shadowSunTravel(lights: readonly CollectedLight[]): readonly [number, number, number] | undefined {
+  const sun = lights.find((light) => light.kind === "directional" && light.castsShadow);
+  return sun ? [sun.direction[0], sun.direction[1], sun.direction[2]] : undefined;
 }
 export function createRenderCollectionDiagnostics(): RenderCollectionDiagnostics {
   return {
