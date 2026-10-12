@@ -7,8 +7,8 @@
   "specular": "sunset.specular.ktx2",
   "sh9": "sunset.sh9.f32",
   "sha256": {
-    "specular": "6867ee06f4ab2c25462e6529a6f6ae885e721df7bfeeae2ab0cd4762dd37aed4",
-    "sh9": "ffac6765180a490e920df1f51cb5b87aee8461a2dde75ffc2b95aec9ee0cb505"
+    "specular": "e15a1c36bb4e88ab4d432cad2db20dcee3c8f337c1ef89869a7bd9e1fbe1d1fe",
+    "sh9": "132294e863a11ce8587e7f3a50d6da6588abc6dcaae109315504d5c5db578717"
   },
   "license": "CC0",
   "tags": [

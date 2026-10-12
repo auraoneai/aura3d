@@ -32,4 +32,15 @@ describe("prd02 RGBE decode scale", () => {
     expect(mean).toBeGreaterThan(0.05);
     expect(mean).toBeLessThan(5);
   });
+
+  it("prebaked HDR presets carry real radiance (SH9 DC band, not the 1/256 bake)", () => {
+    // DC coefficient rgb per preset; the 1/256 decode baked studio at ~0.011.
+    const floors = { studio: 1, outdoor: 1, sunset: 1, night: 0.05 } as const;
+    for (const [name, floor] of Object.entries(floors)) {
+      const bytes = readFileSync(`public/aura-environments/${name}.sh9.f32`);
+      const sh = new Float32Array(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
+      expect(sh.length, name).toBe(27);
+      expect(Math.min(sh[0]!, sh[1]!, sh[2]!), name).toBeGreaterThan(floor);
+    }
+  });
 });

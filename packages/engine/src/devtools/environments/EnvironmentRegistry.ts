@@ -97,8 +97,8 @@ export const AURA_ENVIRONMENT_PRESETS: readonly AuraEnvironmentPresetEntry[] = [
     license: "CC0",
     sourceFile: "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
     sha256: {
-      specular: "5082ddb4c9823aa8fd5d7a4071aae53490dc27f50a6db58fc218bb535fc6128c",
-      sh9: "92e70a87d78dd13c3c4cc650a3d9fffb3418e572f2b8a1b25b7fcb9f5f017f60"
+      specular: "c60b29e2299e25cc89705406a758c706aec3f6aaa3fa7bff4e71f3e3467a1ceb",
+      sh9: "fc7e474869a947cb4aa36fbf48d7d048889c4c8b380838525407fb89b352d94b"
     },
     tags: ["stand-in"]
   },
@@ -110,8 +110,8 @@ export const AURA_ENVIRONMENT_PRESETS: readonly AuraEnvironmentPresetEntry[] = [
     license: "CC0",
     sourceFile: "fixtures/environment-corpus/hdri/autumn_field_puresky_1k.hdr",
     sha256: {
-      specular: "cc11e7135b72879ab5f1469a9b9e17d9dc7c08352f94602939101c5c212b9edc",
-      sh9: "5290f84b2737f64fb2916731460b94ed7c8d691b57d087616deb8f7ecf401252"
+      specular: "736aba1e65b292134547555de516adbc94be874eace1805f3163a8db58ac50a5",
+      sh9: "17b746696ff2ced235531119271acae4dd70310183cbae50f8e06b384e8c626b"
     },
     tags: ["stand-in"]
   },
@@ -123,8 +123,8 @@ export const AURA_ENVIRONMENT_PRESETS: readonly AuraEnvironmentPresetEntry[] = [
     license: "CC0",
     sourceFile: "fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr",
     sha256: {
-      specular: "6867ee06f4ab2c25462e6529a6f6ae885e721df7bfeeae2ab0cd4762dd37aed4",
-      sh9: "ffac6765180a490e920df1f51cb5b87aee8461a2dde75ffc2b95aec9ee0cb505"
+      specular: "e15a1c36bb4e88ab4d432cad2db20dcee3c8f337c1ef89869a7bd9e1fbe1d1fe",
+      sh9: "132294e863a11ce8587e7f3a50d6da6588abc6dcaae109315504d5c5db578717"
     },
     tags: ["stand-in"]
   },
@@ -136,8 +136,8 @@ export const AURA_ENVIRONMENT_PRESETS: readonly AuraEnvironmentPresetEntry[] = [
     license: "CC0",
     sourceFile: "fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr (intensity 0.05, yaw 140°)",
     sha256: {
-      specular: "01e7b0c9593db261196d2d74df1d5b0247bbbc4a5ffb869fd016e2d833612967",
-      sh9: "8ef9560f155db7e30661ae9cb15a31e6b89d6beb14f17ee16a721e1eba9bbdd1"
+      specular: "43d4aae24e2e38f619818e37cf29e03ac7003f788a7cf90b346d5668953bd3fd",
+      sh9: "9ee0cf72c3ee4c8f413bfbe974d1b9760b4a3006b7418b65bb1e30f1666718f2"
     },
     tags: ["stand-in"]
   },
