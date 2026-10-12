@@ -100,6 +100,21 @@ export function crossfadeSchedule(spec: CrossfadeFilmstripSpec): CrossfadeSchedu
   return { dt, steps, stripSteps, transitionSteps };
 }
 
+/** Bones whose world positions both adapters publish per strip tile (`extra.probes`) for pose parity. */
+export const CROSSFADE_PROBE_BONES: readonly string[] = [
+  "mixamorig:Hips", "mixamorig:Head", "mixamorig:LeftHand", "mixamorig:RightHand",
+  "mixamorig:LeftToeBase", "mixamorig:RightToeBase"
+];
+
+export interface CrossfadeProbe {
+  readonly at: number;
+  readonly bones: Readonly<Record<string, readonly number[]>>;
+  readonly actions: readonly { readonly clip: string; readonly time: number; readonly weight: number }[];
+}
+
+const r4 = (x: number): number => Math.round(x * 1e4) / 1e4;
+export const roundProbe = (v: ArrayLike<number>): number[] => Array.from(v, r4);
+
 export const prd06CrossfadeFilmstrip: CrossfadeFilmstripSpec = {
   id: "prd06-crossfade-filmstrip",
   index: 107,

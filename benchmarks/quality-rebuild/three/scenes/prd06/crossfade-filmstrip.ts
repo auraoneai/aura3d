@@ -16,7 +16,7 @@ import { CSM } from "three/addons/csm/CSM.js";
 import { hdriAssets, modelAssets } from "../../../shared/assets";
 import { fetchOnce } from "../../../shared/fetch-once";
 import type { CapabilityEntry, ReadyPayload } from "../../../shared/types";
-import { crossfadeSchedule, prd06CrossfadeFilmstrip } from "../../../scenes/prd06/crossfade-filmstrip";
+import { CROSSFADE_PROBE_BONES, crossfadeSchedule, prd06CrossfadeFilmstrip, roundProbe, type CrossfadeProbe } from "../../../scenes/prd06/crossfade-filmstrip";
 
 declare const __THREE_VERSION__: string;
 
@@ -152,9 +152,20 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
   let sim = 0;
   const stripFrames: { readonly at: number; readonly dataUrl: string }[] = [];
   (window as { __PRD06_CROSSFADE_THREE_FRAMES__?: unknown }).__PRD06_CROSSFADE_THREE_FRAMES__ = stripFrames;
+  const probes: CrossfadeProbe[] = [];
+  const probeWorld = new THREE.Vector3();
   const renderStripTile = (): Promise<void> => new Promise<void>((resolve) => requestAnimationFrame(() => {
     renderer.render(scene3, camera3);
     stripFrames.push({ at: sim, dataUrl: renderer.domElement.toDataURL("image/png") });
+    const bones: Record<string, number[]> = {};
+    for (const bone of CROSSFADE_PROBE_BONES) {
+      const node = skinned.getObjectByName(THREE.PropertyBinding.sanitizeNodeName(bone));
+      if (node) { node.getWorldPosition(probeWorld); bones[bone] = roundProbe([probeWorld.x, probeWorld.y, probeWorld.z]); }
+    }
+    const actionStates = [...actions.entries()]
+      .filter(([, a]) => a.isRunning() && a.getEffectiveWeight() > 0)
+      .map(([clip, a]) => ({ clip, time: roundProbe([a.time])[0]!, weight: roundProbe([a.getEffectiveWeight()])[0]! }));
+    probes.push({ at: roundProbe([sim])[0]!, bones, actions: actionStates });
     resolve();
   }));
   try {
@@ -207,6 +218,6 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
     fallbackLightsActive: null,
     assetHashes: { soldier: modelAssets.soldier.sha256 },
     qrFlags: opts?.qrFlags ?? [],
-    extra: { filmstrip: true, choreography: motion.transitions.map((t) => `${t.at}s→${t.clip}@${t.fadeSeconds}s`), captureSimSeconds: sim, stripTimes: stripFrames.map((f) => f.at) }
+    extra: { filmstrip: true, choreography: motion.transitions.map((t) => `${t.at}s→${t.clip}@${t.fadeSeconds}s`), captureSimSeconds: sim, stripTimes: stripFrames.map((f) => f.at), probes }
   };
 }

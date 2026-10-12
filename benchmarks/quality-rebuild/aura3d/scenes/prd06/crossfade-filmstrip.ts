@@ -36,7 +36,7 @@ import {
 } from "@aura3d/animation/lanes";
 import { hdriAssets, modelAssets } from "../../../shared/assets";
 import type { CapabilityEntry, ReadyPayload } from "../../../shared/types";
-import { crossfadeSchedule, prd06CrossfadeFilmstrip } from "../../../scenes/prd06/crossfade-filmstrip";
+import { CROSSFADE_PROBE_BONES, crossfadeSchedule, prd06CrossfadeFilmstrip, roundProbe, type CrossfadeProbe } from "../../../scenes/prd06/crossfade-filmstrip";
 
 const auraAssets = defineAuraAssets({
   soldier: {
@@ -237,10 +237,18 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
       });
     }
   };
+  const probes: CrossfadeProbe[] = [];
   const renderStripTile = (): Promise<void> => new Promise<void>((resolve) => requestAnimationFrame(() => {
     app.step(0);
     const canvas = presentedCanvas();
     if (canvas) stripFrames.push({ at: sim, dataUrl: canvas.toDataURL("image/png") });
+    const bones: Record<string, number[]> = {};
+    for (const bone of CROSSFADE_PROBE_BONES) {
+      const socket = api?.socket(bone);
+      if (socket?.valid) { const m = socket.worldMatrix(); bones[bone] = roundProbe([m[12]!, m[13]!, m[14]!]); }
+    }
+    const actions = (api?.animationState()?.activeActions ?? []).map((a) => ({ clip: a.clip, time: roundProbe([a.time])[0]!, weight: roundProbe([a.weight])[0]! }));
+    probes.push({ at: roundProbe([sim])[0]!, bones, actions });
     resolve();
   }));
 
@@ -280,5 +288,5 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
     reportMut.error = error instanceof Error ? `${error.message}\n${error.stack ?? ""}` : String(error);
   }
 
-  return { ...payload, extra: { ...payload.extra, captureSimSeconds: sim, stripTimes: stripFrames.map((f) => f.at) } };
+  return { ...payload, extra: { ...payload.extra, captureSimSeconds: sim, stripTimes: stripFrames.map((f) => f.at), probes } };
 }
