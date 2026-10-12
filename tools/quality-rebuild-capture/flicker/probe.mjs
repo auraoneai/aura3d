@@ -1,0 +1,243 @@
+#!/usr/bin/env node
+/*
+ * Temporal-stability (flicker / over-exposure) probe for the 18 showcase games.
+ *
+ * Each game is loaded once per qr-flag arm. After the C-24 beacon reports `playing`, the page switches
+ * to a virtual clock (flicker/page.mjs): every rAF callback runs on an explicit 16.667 ms tick, so the
+ * probe renders the exact frame sequence a 60 Hz display would see even on a 1-25 fps headless runner.
+ * Per frame it logs mean luma, clipped fraction (luma >= 250), and mean absolute RGB difference vs the
+ * previous frame, plus a 32x18 block-luma grid.
+ *
+ *   node tools/quality-rebuild-capture/capture-games.mjs --build-only   # builds .build/site
+ *   node tools/quality-rebuild-capture/flicker/probe.mjs [--games a,b] [--arms "default;-post"]
+ *
+ * Remote GPU runner only (launches Chromium); see .github/workflows/qr-flicker-probe.yml.
+ */
+import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { createServer } from "node:http";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { VIRTUAL_CLOCK_SCRIPT, pageAdvance, pageDiag, pageFrame, pageReady } from "./page.mjs";
+import { applyEvent, buildSchedule } from "./schedule.mjs";
+import { decodeLumaGrid, pageStats } from "./pageShot.mjs";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const toolDir = path.resolve(here, "..");
+const repoRoot = path.resolve(toolDir, "..", "..");
+const games = JSON.parse(readFileSync(path.join(toolDir, "games.json"), "utf8")).games;
+const argv = process.argv.slice(2);
+const opt = (name, env, fallback) => {
+  const i = argv.indexOf(name);
+  if (i >= 0 && argv[i + 1] !== undefined) return argv[i + 1];
+  return process.env[env] || fallback;
+};
+const outDir = path.resolve(repoRoot, opt("--out", "FLK_OUT", "tools/quality-rebuild-capture/out/flicker"));
+const buildRoot = path.resolve(repoRoot, opt("--build-dir", "QRC_BUILD_DIR", "tools/quality-rebuild-capture/.build"));
+const wanted = opt("--games", "FLK_GAMES", "").split(",").map((s) => s.trim()).filter(Boolean);
+const arms = opt("--arms", "FLK_ARMS", "default;-post;-vfx;-animation;-lighting").split(";").map((s) => s.trim()).filter(Boolean);
+// timeline = play games.json inputs in virtual time; idle = no input (title / attract state).
+const mode = opt("--mode", "FLK_MODE", "timeline");
+// Composited page screenshot every frame (includes DOM overlays); costs ~2x wall time.
+const pageShots = /^(1|true)$/i.test(opt("--page-shots", "FLK_PAGE_SHOTS", "1"));
+const frames = Number(opt("--frames", "FLK_FRAMES", "120"));
+const warmup = Number(opt("--warmup", "FLK_WARMUP", "30"));
+const dtMs = Number(opt("--dt", "FLK_DT_MS", "16.6667"));
+const [vw, vh] = opt("--viewport", "FLK_VIEWPORT", "1280x720").split("x").map(Number);
+const gpuArgs = (process.env.QRC_GPU_ARGS || process.env.QR_CHROMIUM_ARGS || "--use-angle=metal --enable-gpu --ignore-gpu-blocklist").split(/\s+/).filter(Boolean);
+for (const arm of arms) if (!/^(default|none|[-A-Za-z0-9_.,]+)(\|[A-Za-z0-9_.-]+(=[A-Za-z0-9_.-]+)?)*$/.test(arm)) throw new Error(`bad arm ${arm}`);
+const selected = games.filter((g) => !wanted.length || wanted.includes(g.id));
+const log = (...p) => process.stderr.write(`[flk ${new Date().toISOString().slice(11, 19)}] ${p.join(" ")}\n`);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function startServer() {
+  const roots = [path.join(buildRoot, "site"), path.join(repoRoot, "public"),
+    path.join(repoRoot, "apps", "aura-clash-showcase", "public"), path.join(repoRoot, "marketing", "public")];
+  const MIME = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css", ".json": "application/json",
+    ".wasm": "application/wasm", ".glb": "model/gltf-binary", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp",
+    ".svg": "image/svg+xml", ".ktx2": "image/ktx2", ".ogg": "audio/ogg", ".mp3": "audio/mpeg", ".woff2": "font/woff2" };
+  const tryFile = (root, rel) => {
+    const full = path.resolve(root, `.${rel}`);
+    if (!full.startsWith(path.resolve(root) + path.sep)) return null;
+    try {
+      const st = statSync(full);
+      if (st.isFile()) return full;
+      if (st.isDirectory() && existsSync(path.join(full, "index.html"))) return path.join(full, "index.html");
+    } catch { /* missing */ }
+    return null;
+  };
+  const server = createServer((req, res) => {
+    let p;
+    try { p = decodeURIComponent(new URL(req.url ?? "/", "http://x").pathname); } catch { res.writeHead(400).end(); return; }
+    const appRel = /^\/apps\/[^/]+(\/.*)$/.exec(p)?.[1];
+    let file = null;
+    for (const root of roots) { file = tryFile(root, p) ?? (appRel && root !== roots[0] ? tryFile(root, appRel) : null); if (file) break; }
+    if (!file) { res.writeHead(404).end("not found"); return; }
+    res.writeHead(200, { "content-type": MIME[path.extname(file).toLowerCase()] ?? "application/octet-stream", "cache-control": "no-store" });
+    createReadStream(file).pipe(res);
+  });
+  return new Promise((resolve) => server.listen(0, "127.0.0.1", () => resolve({ server, origin: `http://127.0.0.1:${server.address().port}` })));
+}
+
+const std = (xs) => { if (xs.length < 2) return 0; const m = xs.reduce((a, b) => a + b, 0) / xs.length; return Math.sqrt(xs.reduce((a, b) => a + (b - m) ** 2, 0) / xs.length); };
+const r3 = (v) => +Number(v).toFixed(3);
+
+function pageSummary(list) {
+  const pl = list.map((f) => f.pageLuma).filter((v) => typeof v === "number");
+  if (pl.length < 3) return {};
+  const d1 = pl.slice(1).map((v, i) => v - pl[i]);
+  const pm = list.map((f) => f.pageMad).filter((v) => typeof v === "number");
+  return {
+    pageLumaMin: r3(Math.min(...pl)), pageLumaMax: r3(Math.max(...pl)), pageDeltaStd: r3(std(d1)),
+    pageMadMean: r3(pm.reduce((a, b) => a + b, 0) / Math.max(1, pm.length)), pageMadMax: r3(Math.max(0, ...pm)),
+    pageClipMean: r3(list.reduce((a, f) => a + (f.pageClip ?? 0), 0) / list.length), pageClipMax: r3(Math.max(0, ...list.map((f) => f.pageClip ?? 0)))
+  };
+}
+
+export function summarize(list) {
+  const luma = list.map((f) => f.luma);
+  const d1 = luma.slice(1).map((v, i) => v - luma[i]);
+  const d2 = d1.slice(1).map((v, i) => v - d1[i]);
+  const mad = list.map((f) => f.mad).filter((v) => v !== null);
+  // Sign flips of the luma delta (above a 0.05 noise floor): strobing alternates, motion drifts.
+  let flips = 0;
+  for (let i = 1; i < d1.length; i++) if (Math.abs(d1[i]) > 0.05 && Math.abs(d1[i - 1]) > 0.05 && Math.sign(d1[i]) !== Math.sign(d1[i - 1])) flips++;
+  // Grid-level flicker: per cell, std of the second temporal difference; report the worst cells.
+  const cells = list[0]?.grid?.length ?? 0;
+  const cellHf = [];
+  for (let c = 0; c < cells; c++) {
+    const s = list.map((f) => f.grid[c]);
+    const e1 = s.slice(1).map((v, i) => v - s[i]);
+    cellHf.push({ c, hf: std(e1.slice(1).map((v, i) => v - e1[i])), mean: s.reduce((a, b) => a + b, 0) / s.length });
+  }
+  cellHf.sort((a, b) => b.hf - a.hf);
+  return {
+    frames: list.length,
+    lumaMin: r3(Math.min(...luma)), lumaMax: r3(Math.max(...luma)), lumaMean: r3(luma.reduce((a, b) => a + b, 0) / luma.length),
+    deltaStd: r3(std(d1)), deltaMaxAbs: r3(Math.max(0, ...d1.map(Math.abs))), hfStd: r3(std(d2)), signFlips: flips,
+    madMean: r3(mad.reduce((a, b) => a + b, 0) / Math.max(1, mad.length)), madMax: r3(Math.max(0, ...mad)),
+    bigDiffMean: r3(list.reduce((a, f) => a + (f.bigDiff ?? 0), 0) / list.length),
+    clipMean: r3(list.reduce((a, f) => a + f.clip, 0) / list.length), clipMax: r3(Math.max(...list.map((f) => f.clip))),
+    clipAnyMean: r3(list.reduce((a, f) => a + f.clipAny, 0) / list.length),
+    stalled: list.filter((f) => f.waited >= 1500).length,
+    ...pageSummary(list),
+    worstCells: cellHf.slice(0, 5).map((x) => ({ cell: x.c, x: x.c % 32, y: Math.floor(x.c / 32), hf: r3(x.hf), mean: r3(x.mean) }))
+  };
+}
+
+async function probeArm(browser, game, arm, origin, gameDir) {
+  // Arm grammar: <flags>[|dpr=N][|jitter][|key=value URL param] e.g. "default|aura3d-quality=ultra|dpr=2".
+  const [flagPart, ...mods] = arm.split("|");
+  const params = new URLSearchParams();
+  if (flagPart !== "default") params.set("a3d-qr", flagPart);
+  let dpr = 1; let jitter = false;
+  for (const m of mods) {
+    const [k, v] = m.split("=");
+    if (k === "dpr") dpr = Number(v) || 1;
+    else if (k === "jitter") jitter = true;
+    else if (k && v !== undefined) params.set(k, v);
+  }
+  // jitter: vsync-like timestamps, uniform +/-0.5 ms around the 60 Hz period (seeded, zero-mean pairs).
+  let seed = 12345;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+  let carry = 0;
+  const nextDt = () => { if (!jitter) return dtMs; const e = (rnd() - 0.5); const d = dtMs + e - carry; carry = e; return d; };
+  const query = params.toString();
+  const url = `${origin}${game.route}${query ? `?${query}` : ""}`;
+  const rec = { arm, url, frames: [], diag: [], pageErrors: [], consoleErrors: [] };
+  const context = await browser.newContext({ viewport: { width: vw, height: vh }, deviceScaleFactor: dpr, serviceWorkers: "block" });
+  await context.addInitScript(VIRTUAL_CLOCK_SCRIPT);
+  const page = await context.newPage();
+  page.on("pageerror", (e) => rec.pageErrors.length < 20 && rec.pageErrors.push(String(e?.message ?? e).slice(0, 300)));
+  page.on("console", (m) => m.type() === "error" && rec.consoleErrors.length < 20 && rec.consoleErrors.push(m.text().slice(0, 300)));
+  try {
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90_000 });
+    const start = Date.now();
+    let ready = null;
+    while (Date.now() - start < 60_000) {
+      ready = await page.evaluate(pageReady).catch(() => null);
+      if (ready?.state === "playing") break;
+      if ((ready?.drawCalls ?? 0) > 0 && Date.now() - start > 4000) break;
+      await sleep(200);
+    }
+    rec.ready = ready ? `${ready.state}/${ready.drawCalls}` : null;
+    if (game.focus?.selector) {
+      const loc = page.locator(game.focus.selector).first();
+      await (game.focus.method === "click" ? loc.click({ timeout: 5000 }) : loc.focus({ timeout: 5000 })).catch(() => undefined);
+    }
+    await sleep(1000);
+    await page.evaluate(() => window.__FLK__.enter());
+    await sleep(300);
+    // Play the game's own timeline in virtual time up to its 02-opening shot, then keep feeding the
+    // remaining inputs while the 120 measured frames render (same inputs on the same frame per arm).
+    const { events, markAt } = buildSchedule(mode === "timeline" ? game.timeline : []);
+    const ctx = { held: new Set(), vw, vh, origin: [0, 0] };
+    let vt = 0; let next = 0;
+    const feed = async () => { while (next < events.length && events[next].t <= vt) await applyEvent(page, events[next++], ctx).catch(() => undefined); };
+    const warmTicks = Math.max(warmup, Math.ceil(markAt / dtMs));
+    for (let i = 0; i < warmTicks; i++) {
+      await feed();
+      const dt = nextDt();
+      await page.evaluate(pageAdvance, { dtMs: dt, count: 1 });
+      vt += dt;
+    }
+    rec.measuredFromMs = Math.round(vt);
+    let prevPage = null;
+    for (let i = 0; i < frames; i++) {
+      await feed();
+      const keepPng = i < 3 || i === 60;
+      const dt = nextDt();
+      const f = await page.evaluate(pageFrame, { dtMs: dt, keepPng, grid: [32, 18] });
+      vt += dt;
+      if (i === 0 || pageShots) {
+        const shot = await page.screenshot({ type: "png", timeout: 15_000 }).catch(() => null);
+        if (shot && (i === 0 || f.jump)) writeFileSync(path.join(gameDir, `${arm.replace(/[^A-Za-z0-9_-]/g, "_")}__page${String(i).padStart(3, "0")}.png`), shot);
+        const grid = shot ? decodeLumaGrid(shot) : null;
+        if (grid) { Object.assign(f, pageStats(grid, prevPage)); prevPage = grid; }
+      }
+      if (f.png) {
+        writeFileSync(path.join(gameDir, `${arm.replace(/[^A-Za-z0-9_-]/g, "_")}__f${String(i).padStart(3, "0")}.png`), Buffer.from(f.png.split(",")[1], "base64"));
+        delete f.png;
+      }
+      rec.frames.push(f);
+      if (i % 10 === 0) rec.diag.push({ i, ...(await page.evaluate(pageDiag).catch(() => null)) });
+    }
+    rec.clockErrors = await page.evaluate(() => window.__FLK__.errors).catch(() => null);
+    rec.summary = summarize(rec.frames.filter((f) => !f.error));
+  } catch (e) {
+    rec.error = String(e?.message ?? e).slice(0, 400);
+  } finally {
+    await context.close().catch(() => undefined);
+  }
+  return rec;
+}
+
+async function main() {
+  const { chromium } = await import("@playwright/test");
+  mkdirSync(outDir, { recursive: true });
+  const { server, origin } = await startServer();
+  const summary = { generatedAt: new Date().toISOString(), mode, dtMs, frames, warmup, viewport: [vw, vh], arms, games: {} };
+  for (const game of selected) {
+    const gameDir = path.join(outDir, game.id);
+    mkdirSync(gameDir, { recursive: true });
+    const browser = await chromium.launch({ headless: true, args: [...gpuArgs, "--disable-background-timer-throttling", "--disable-renderer-backgrounding", "--autoplay-policy=no-user-gesture-required"] });
+    summary.games[game.id] = {};
+    try {
+      for (const arm of arms) {
+        const t = Date.now();
+        const rec = await probeArm(browser, game, arm, origin, gameDir);
+        writeFileSync(path.join(gameDir, `${arm.replace(/[^A-Za-z0-9_-]/g, "_")}.json`), JSON.stringify(rec));
+        summary.games[game.id][arm] = rec.summary ? { ready: rec.ready, ...rec.summary, pageErrors: rec.pageErrors.length } : { ready: rec.ready, error: rec.error ?? "no frames" };
+        const s = rec.summary;
+        log(`${game.id} ${arm}: ${s ? `luma ${s.lumaMin}-${s.lumaMax} dStd ${s.deltaStd} hf ${s.hfStd} flips ${s.signFlips} mad ${s.madMean} clip ${s.clipMean}` : rec.error} (${Math.round((Date.now() - t) / 1000)}s)`);
+      }
+    } finally {
+      await browser.close().catch(() => undefined);
+    }
+    writeFileSync(path.join(outDir, "summary.json"), JSON.stringify(summary, null, 2));
+  }
+  server.close();
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  main().catch((e) => { console.error(e?.stack ?? e); process.exit(1); });
+}
