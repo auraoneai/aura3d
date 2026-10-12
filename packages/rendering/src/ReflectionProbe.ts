@@ -163,7 +163,7 @@ export class CubeCameraReflectionCapture {
       sampler: new Sampler({
         // PRD-02/C-12: probe bindings go mip-mapped under the flag; single-level
         // captures still downgrade to LINEAR in the sampler registry.
-        minFilter: rendererQrFlags().on("A3D_QR_LIGHTING") ? "linear-mipmap-linear" : "linear",
+        minFilter: false ? "linear-mipmap-linear" : "linear",
         magFilter: "linear",
         addressU: "clamp-to-edge",
         addressV: "clamp-to-edge"

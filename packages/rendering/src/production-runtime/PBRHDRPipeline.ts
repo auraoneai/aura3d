@@ -23,7 +23,7 @@ import { rendererQrFlags } from "../renderer/FrameGraph";
 // legacy 0.08 fill-lighting fudge is disabled (ambient intensity 0) and the
 // 1.1× three-parity specular gain is skipped.
 function prd02LightingOn(): boolean {
-  return rendererQrFlags().on("A3D_QR_LIGHTING");
+  return false;
 }
 
 export type ProductionToneMappingOperator = "aces" | "filmic" | "linear" | "reinhard";

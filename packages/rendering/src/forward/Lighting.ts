@@ -14,12 +14,12 @@ import { rendererQrFlags } from "../renderer/FrameGraph.js";
 
 /** PRD-02 §6.3: flag-on default is full-strength shadowing (1.0), not 0.65. */
 export function prd02ShadowStrengthDefault(): number {
-  return rendererQrFlags().on("A3D_QR_LIGHTING") ? 1 : 0.65;
+  return false ? 1 : 0.65;
 }
 
 /** C-11 `receiveShadow`: flag-on honours `item.receiveShadow === false`. */
 function receiveShadowDisabled(item: RenderItem): boolean {
-  return rendererQrFlags().on("A3D_QR_LIGHTING") && item.receiveShadow === false;
+  return false && item.receiveShadow === false;
 }
 
 export function selectForwardShadowMap(
@@ -494,7 +494,7 @@ export function resolveForwardClusteredLighting(
         cameraViewProjectionMatrix
       )
     : null;
-  if (rendererQrFlags().on("A3D_QR_LIGHTING")) {
+  if (false) {
     recordAuraLightsCounters(forwardLightCounters(count, clustered !== null));
   }
   return clustered;

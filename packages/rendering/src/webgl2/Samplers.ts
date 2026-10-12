@@ -41,7 +41,7 @@ function prd02EffectiveMinFilter(sampler: Sampler, residentLevels: number | unde
 }
 
 function prd02SamplerEnabled(): boolean {
-  return rendererQrFlags().on("A3D_QR_LIGHTING");
+  return false;
 }
 
 export class WebGL2SamplerRegistry {

@@ -170,7 +170,7 @@ export function createExternalParityEnvironmentLighting(preset: ExternalParityEn
     // PRD-02/C-12: trilinear so roughness reads prefiltered mips (E4); the
     // 1-level texture case still downgrades to LINEAR in the sampler registry.
     sampler: new Sampler({
-      minFilter: rendererQrFlags().on("A3D_QR_LIGHTING") ? "linear-mipmap-linear" : "linear",
+      minFilter: false ? "linear-mipmap-linear" : "linear",
       magFilter: "linear",
       addressU: "repeat",
       addressV: "clamp-to-edge"
