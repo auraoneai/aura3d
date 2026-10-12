@@ -223,6 +223,22 @@ export function materialUsesGeneratedProgram(material: Material): boolean {
 }
 
 /**
+ * Draw-time route. `core` (A3D_QR_CORE generator): every allow-listed material
+ * is generated. `lobes` (PRD-04 `qrMaterialsLobeProgramsOn`): only
+ * allow-listed materials whose record carries an r185 lobe extension are —
+ * otherwise those lobes never reach the GPU under `materials` alone.
+ */
+export function materialRoutesToGeneratedProgram(
+  material: Material,
+  route: { readonly core: boolean; readonly lobes: boolean },
+  ctx: MaterialFeatureContext
+): boolean {
+  if (!materialUsesGeneratedProgram(material)) return false;
+  if (route.core) return true;
+  return route.lobes && material.programFeatures(ctx).extensions.length > 0;
+}
+
+/**
  * §15: "nearest superset" warning when an allow-listed material carries state
  * the feature derivation cannot see. A `shaderVariant` override is the one
  * such state today (variants are legacy-library axes the generator does not

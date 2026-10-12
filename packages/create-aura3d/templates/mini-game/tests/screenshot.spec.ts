@@ -26,7 +26,7 @@ test("Aura3D mini game screenshot clears the look floor", async ({ page }) => {
   );
   expect(state?.player?.x ?? 0).toBeGreaterThan(0.8);
   expect(state?.look?.id).toBe("outdoor-day");
-  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.36, y: 0.22, width: 0.54, height: 0.34 } });
+  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.05, y: 0.35, width: 0.9, height: 0.55 } });
   // class-(b) readback: capture through the app (C-05) instead of the
   // compositor screenshot path — the output surface owns the frame.
   // `__AURA3D_LIVE_APPS__` is the live-app registry (not an array); `output`

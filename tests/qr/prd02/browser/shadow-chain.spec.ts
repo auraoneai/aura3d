@@ -50,7 +50,7 @@ test.afterAll(async () => {
 
 test("prd02 shadow chain: cascade depth is written and shadowed texels are darker", async ({ page }, testInfo) => {
   test.setTimeout(240_000);
-  const auraOn = await captureLaneScene(page, server, { scene: SCENE, flags: "lighting" });
+  const auraOn = await captureLaneScene(page, server, { scene: SCENE, flags: "lighting", shadowDiagnostics: true });
   const auraOff = await captureLaneScene(page, server, { scene: SCENE, flags: "lighting", control: "no-shadows" });
   const threeOn = await captureLaneScene(page, server, { scene: SCENE, engine: "three", flags: "lighting" });
   const threeOff = await captureLaneScene(page, server, { scene: SCENE, engine: "three", flags: "lighting", control: "no-shadows" });

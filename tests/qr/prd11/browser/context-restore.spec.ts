@@ -15,6 +15,7 @@
  */
 
 import { test, expect } from "@playwright/test";
+import { requireOrSkip } from "../../../support/requireOrSkip";
 import { createServer, type ViteDevServer } from "vite";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -62,7 +63,7 @@ test("context loss + restore resumes rendering within 2s and repaints pixels", a
     return (app.diagnostics().frame?.frames ?? 0) - start;
   });
   if (framesBefore <= 10) {
-    test.skip(true, `scene produced ${framesBefore} frames — no real WebGL2 context on this host`);
+    requireOrSkip(test, false, "webgl2-frames", `scene produced ${framesBefore} frames — runner must expose a real WebGL2 context`);
     return;
   }
 
@@ -77,7 +78,7 @@ test("context loss + restore resumes rendering within 2s and repaints pixels", a
   });
   expect(probe.hasContext, "scene canvas must expose a WebGL2 context").toBe(true);
   if (!probe.extensionAvailable) {
-    test.skip(true, "WEBGL_lose_context unavailable — cannot script a real loss");
+    requireOrSkip(test, false, "webgl-lose-context", "runner must expose WEBGL_lose_context to script a real loss");
     return;
   }
 

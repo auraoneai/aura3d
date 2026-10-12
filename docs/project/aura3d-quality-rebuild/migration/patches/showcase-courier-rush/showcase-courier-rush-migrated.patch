@@ -1,4 +1,4 @@
-From b4e33e64a1ea855e2604132f34eabe8a29f085b3 Mon Sep 17 00:00:00 2001
+From 0eedecddf84dfdf4a7783932fdd019b744d71014 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:31 +0000
 Subject: [PATCH] migration(showcase-courier-rush): regenerated patch set
@@ -2091,7 +2091,7 @@ index 000000000..584aeb9a0
 +  };
 +}
 diff --git a/apps/showcase-courier-rush/src/v2/boot.ts b/apps/showcase-courier-rush/src/v2/boot.ts
-index dcfe53e74..3374fb112 100644
+index d663ed729..e05a7bec5 100644
 --- a/apps/showcase-courier-rush/src/v2/boot.ts
 +++ b/apps/showcase-courier-rush/src/v2/boot.ts
 @@ -7,7 +7,7 @@
@@ -2132,9 +2132,9 @@ index dcfe53e74..3374fb112 100644
    if (audioCueLog.length > 64) audioCueLog.shift();
    void audio.cue(cue).catch(() => undefined);
 @@ -139,6 +138,14 @@ const game = createGame({
-     // art/direction.ts sections. `route_courier_rush` uses the engine-parseable
-     // underscore form (URL/dispatch form is `route-courier-rush`).
-     flags: ["route_courier_rush", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+     // flags come from URL/env/defaults like every other route, so `none`
+     // and `-<flag>` arms actually turn them off.
+     flags: ["route_courier_rush", "game"]
 +  },
 +  // T5.8: route evidence rides the shared createGame channel (C-24) —
 +  // only the sections games.json requiredConditions read.

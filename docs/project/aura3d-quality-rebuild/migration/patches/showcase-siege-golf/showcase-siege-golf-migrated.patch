@@ -1,4 +1,4 @@
-From 647a82213e302c1ac4c9ea25f3da7e3bde495909 Mon Sep 17 00:00:00 2001
+From 27521fefd793ff142d8f36b5fed9a0e21e00776f Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:10:29 +0000
 Subject: [PATCH] migration(showcase-siege-golf): regenerated patch set
@@ -551,7 +551,7 @@ index 000000000..1563f5a63
 +  }
 +];
 diff --git a/apps/showcase-siege-golf/src/v2/boot.ts b/apps/showcase-siege-golf/src/v2/boot.ts
-index 163dacdbc..86a6c1c1f 100644
+index 28397e286..7d4310dd6 100644
 --- a/apps/showcase-siege-golf/src/v2/boot.ts
 +++ b/apps/showcase-siege-golf/src/v2/boot.ts
 @@ -8,7 +8,7 @@
@@ -570,11 +570,11 @@ index 163dacdbc..86a6c1c1f 100644
 -import { publishSiegeEvidence } from "./evidence";
  import { applySiegeScenario } from "./scenarios";
  import { createSiegeFlowState, wireSiegeHoleFlow } from "./hole-flow";
- 
-@@ -107,6 +106,17 @@ const game = createGame({
-     // art/direction.ts sections. `route_siege_golf` uses the engine-parseable
-     // underscore form (URL/dispatch form is `route-siege-golf`).
-     flags: ["route_siege_golf", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+ import { assets } from "../../../../src/aura-assets";
+@@ -108,6 +107,17 @@ const game = createGame({
+     // flags come from URL/env/defaults like every other route, so `none`
+     // and `-<flag>` arms actually turn them off.
+     flags: ["route_siege_golf", "game"]
 +  },
 +  // T5.8: route evidence rides the shared createGame channel (C-24) —
 +  // only the sections games.json requiredConditions read. One scene holds
@@ -589,7 +589,7 @@ index 163dacdbc..86a6c1c1f 100644
    }
  });
  
-@@ -285,39 +295,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
+@@ -286,39 +296,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
    if (frame % 6 === 0) syncHud();
  });
  

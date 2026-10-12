@@ -1,14 +1,34 @@
-// PRD-13 T1.13 — the C-36 `"look"` NodeHandler (CONTRACTS §13.1). With the
-// required contracts real, a v1 look compiles through the C-09 environment,
-// C-13 post and C-26 biome contributions the child nodes route to; with stubs
-// it records `capability-degraded` and falls back to emitting the v0 children
-// (`expandLookChildren` — the same list the `aura-look:<id>` group carries).
-// Feature tag `look.<id>` always lands in `CompiledScene.features`.
+// PRD-13 T1.13 — the C-36 `"look"` NodeHandler (CONTRACTS §13.1). The look's
+// env/light/fog/grade/bloom children reach pixels through the flatten-time
+// lowering (`setLookLowering`, registered by the prd13 barrel): flatten keeps
+// this node and splices `expandLookChildren` after it, so each child compiles
+// through its own kind's handler and the legacy bridge draws it. This handler
+// only tags `look.<id>`, records the applied look for diagnostics, and reports
+// `capability-degraded` when v1 contracts are stubbed.
+//
+// QR-13 pixels fix: the handler used to re-dispatch the children to their
+// lane handlers itself, but those handlers only record features (prd02's
+// light handler defers to the authored-node light path), so a v1 look's key
+// light, HDRI, fog and grade existed only as diagnostics.
 
 import type { NodeHandler, SceneCompileContext } from "../../contracts/compiler.js";
-import { nodeHandlerFor } from "../../contracts/compiler.js";
 import type { AuraLookNode } from "../../contracts/looks.js";
-import { expandLookChildren, resolveLookExpansion } from "./looks.js";
+import type { AuraSceneNode } from "../nodes/types.js";
+import { AuraNodeBuilder } from "../nodes/builder.js";
+import { looks, resolveLookExpansion } from "./looks.js";
+
+/** Flatten-time lowering of a v1 look node into the v0 `aura-look:<id>`
+ *  group (children + horizon backdrop) the flag-off path authors. */
+export function lowerLookNodeChildren(node: AuraSceneNode): readonly AuraSceneNode[] | undefined {
+  const look = node as unknown as Partial<AuraLookNode>;
+  if (look.kind !== "look" || typeof look.look !== "string") return undefined;
+  try {
+    const group = looks.preset(look.look, look.overrides, { expansion: "v0" });
+    return [group instanceof AuraNodeBuilder ? group.toJSON() : (group as unknown as AuraSceneNode)];
+  } catch {
+    return undefined; // unknown id: leave the node for the compiler's degrade path
+  }
+}
 
 export const lookNodeHandler: NodeHandler<AuraLookNode> = {
   kind: "look",
@@ -23,26 +43,10 @@ export const lookNodeHandler: NodeHandler<AuraLookNode> = {
       expansion,
       missingContracts: [...missingContracts]
     });
-
-    // The look lowers to scene children; each child routes through its own
-    // kind's handler when one exists (environment → C-09 contributions, post →
-    // C-13, biome-driven lighting → C-26). Child kinds without a registered
-    // handler are skipped — the stub compiler keeps them in the source.
-    const children = expandLookChildren(node.look, node.overrides, ctx.flags);
-    let dispatched = 0;
-    for (const child of children) {
-      const handler = nodeHandlerFor(child.kind);
-      if (handler !== undefined) {
-        void handler.compile(child as never, ctx, out);
-        dispatched += 1;
-      }
-    }
-    if (missingContracts.length > 0 || dispatched < children.length) {
+    if (missingContracts.length > 0) {
       ctx.degrade({
         code: "capability-degraded",
-        message:
-          `look "${node.look}" compiled ${dispatched}/${children.length} children` +
-          (missingContracts.length > 0 ? `; v1 contracts missing: ${missingContracts.join(", ")}` : " (v0 fallback)"),
+        message: `look "${node.look}" lowered to v0 children; v1 contracts missing: ${missingContracts.join(", ")}`,
         ownerPrd: 13
       });
     }

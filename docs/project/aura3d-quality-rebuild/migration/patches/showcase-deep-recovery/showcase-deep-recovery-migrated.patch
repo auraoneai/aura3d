@@ -1,4 +1,4 @@
-From 97ef8d8bf9430c12ce8223a175906cd3ad340780 Mon Sep 17 00:00:00 2001
+From e81a6c4aa318242a73a79e60f3defe0abaf51278 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:07:51 +0000
 Subject: [PATCH] migration(showcase-deep-recovery): regenerated patch set
@@ -1322,7 +1322,7 @@ index 000000000..9141ee321
 +  }
 +];
 diff --git a/apps/showcase-deep-recovery/src/v2/boot.ts b/apps/showcase-deep-recovery/src/v2/boot.ts
-index 3ca2f6010..cb1d1a793 100644
+index 3182a2c09..a4d6a287b 100644
 --- a/apps/showcase-deep-recovery/src/v2/boot.ts
 +++ b/apps/showcase-deep-recovery/src/v2/boot.ts
 @@ -7,7 +7,7 @@
@@ -1343,9 +1343,9 @@ index 3ca2f6010..cb1d1a793 100644
  import { createDeepCtx } from "./state";
  import { createDeepAudioBlock } from "./audio";
 @@ -151,6 +150,16 @@ const game = createGame({
-     // art/direction.ts sections. `route_deep_recovery` uses the engine-parseable
-     // underscore form (URL/dispatch form is `route-deep-recovery`).
-     flags: ["route_deep_recovery", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+     // flags come from URL/env/defaults like every other route, so `none`
+     // and `-<flag>` arms actually turn them off.
+     flags: ["route_deep_recovery", "game"]
 +  },
 +  // T5.8: route evidence rides the shared createGame channel (C-24) —
 +  // only the sections games.json requiredConditions read. The v2 shell

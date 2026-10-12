@@ -7,6 +7,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./lanes": {
+      "types": "./dist/lanes/index.d.ts",
+      "import": "./dist/lanes/index.js"
+    },
     "./webgpu": {
       "types": "./dist/webgpu.d.ts",
       "import": "./dist/webgpu.js"

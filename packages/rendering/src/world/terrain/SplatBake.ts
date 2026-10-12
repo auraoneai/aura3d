@@ -337,6 +337,10 @@ export function bakeTerrainSplat(device: RenderDevice, spec: SplatBakeSpec): Spl
 
   const targets: RenderTarget[] = [];
   const textures: Texture[] = [];
+  // The bake runs lazily inside the terrain pass, with the scene target bound.
+  // Restore that target afterwards; `setRenderTarget(null)` sent the rest of
+  // the pass (the terrain draw itself) to the canvas framebuffer.
+  const previousTarget = device.getRenderTarget?.() ?? null;
   for (let group = 0; group < groupCount; group += 1) {
     const rt = device.createRenderTarget({ width: res, height: res, label: `prd10-splat-${group}`, format: "rgba8", depth: false });
     device.setRenderTarget(rt);
@@ -361,7 +365,7 @@ export function bakeTerrainSplat(device: RenderDevice, spec: SplatBakeSpec): Spl
         ["u_ruleNoise", rules.ruleNoise]
       ])
     });
-    device.setRenderTarget(null);
+    device.setRenderTarget(previousTarget);
     targets.push(rt);
     textures.push(rt.colorTexture);
   }

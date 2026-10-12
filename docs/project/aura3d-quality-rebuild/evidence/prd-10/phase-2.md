@@ -57,3 +57,21 @@ browser specs are NOT RUN here; they produce real numbers on the
 - `terrain-cracks` border-pixel spec
 - `terrain-splat-bake` GPU==CPU ±1/255 spec
 - S1.x terrain acceptance renders (G-PANEL checkpoint with I1–I7)
+
+## T2.4 WGSL twin (P2, 2026-10-11, PR #1006)
+
+`TERRAIN_WGSL` (`terrain.vert.glsl.ts`) was a placeholder. It is now the WGSL twin of the Path S program and is composed
+from the same chunk function bodies.
+
+- Defects fixed:
+  - colliding `@group(0)` bindings, with `u_terrain` and `u_height` each declared twice;
+  - clip position set to world position, and uv set to 0;
+  - uniform `array<vec2f, 8>`, which is illegal because uniform arrays need a 16-byte stride;
+  - implicit-derivative `textureSample` in non-uniform control flow.
+- Layout: `@group(0)` is vertex (`u_terrain`, `u_height`, `u_camera`, `u_view`) and `@group(1)` is fragment (splat,
+  holes, layer arrays, macro, sampler, `u_terrainFrag`). Every derivative is taken first, `discard` comes last, and the
+  layer loop uses `textureSampleGrad`.
+- Gate: `qr-prd10-wgsl.yml` runs naga-cli 30.0.1 over the program, both chunk twins and the underwater twin on macos-14.
+  It requires 0 errors. Static unit: `tests/unit/contracts/impl/prd10-terrain-wgsl.test.ts`.
+- Still open: the WebGPU terrain frame (not flat colour) needs #260 (Q-11-1, `WebGPUDevice` consuming the twins). T2.4
+  stays unticked until a main run id is cited.

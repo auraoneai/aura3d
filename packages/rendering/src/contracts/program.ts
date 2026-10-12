@@ -155,6 +155,8 @@ function shaderNameFor(features: ProgramFeatures): string {
 
 class StubProgramCache implements ProgramCacheLike {
   private library: ShaderLibrary | null = null;
+  /** 01-HANG: one program per key — the stub used to compile on every acquire (per draw, per frame). */
+  private readonly entries = new Map<string, ProgramHandle>();
   private compiled = 0;
   private failed = 0;
   private compileMsTotal = 0;
@@ -167,16 +169,21 @@ class StubProgramCache implements ProgramCacheLike {
 
   acquire(features: ProgramFeatures): ProgramHandle {
     const key = computeProgramKey(features);
+    const cached = this.entries.get(key);
+    if (cached) return cached;
+    let handle: ProgramHandle;
     try {
       const started = Date.now();
       const program = this.device.createShaderProgram(this.getLibrary().compileSource(shaderNameFor(features)));
       this.compiled += 1;
       this.compileMsTotal += Date.now() - started;
-      return { key, status: "ready", program };
+      handle = { key, status: "ready", program };
     } catch (error) {
       this.failed += 1;
-      return { key, status: "failed", error: error instanceof Error ? error.message : String(error) };
+      handle = { key, status: "failed", error: error instanceof Error ? error.message : String(error) };
     }
+    this.entries.set(key, handle);
+    return handle;
   }
 
   async precompile(list: readonly ProgramFeatures[]): Promise<void> {
@@ -190,6 +197,8 @@ class StubProgramCache implements ProgramCacheLike {
   }
 
   dispose(): void {
+    for (const handle of this.entries.values()) handle.program?.dispose?.();
+    this.entries.clear();
     this.library = null;
   }
 }

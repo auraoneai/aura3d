@@ -13,6 +13,7 @@ import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { flattenSceneSnapshot, normalizeSceneSnapshot } from "../sceneMath.js";
 import { configureCanvas, resolveCanvas } from "./canvas.js";
 import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
+import { resolveMountQuality } from "../compiler/renderer.js";
 import { AuraRuntimeError } from "./errors.js";
 import { AuraMigrationError } from "../compiler/errors.js";
 import { startProductionRender } from "./frameLoop.js";
@@ -104,7 +105,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       flagOn: coreDpr,
       option: options.pixelRatio,
       profilePixelRatio: rendererSelection.profile.pixelRatio,
-      maxPixelRatio: appTierMaxPixelRatio(options.renderer),
+      maxPixelRatio: appTierMaxPixelRatio(resolveMountQuality(options.renderer).tier),
       devicePixelRatio: currentDevicePixelRatio(),
       legacyDevicePixelRatio: devicePixelRatioSafe
     }), options.resize ?? true, minimumBackingSize(coreDpr));

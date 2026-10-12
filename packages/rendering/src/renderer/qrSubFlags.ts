@@ -20,9 +20,40 @@ export function qrCoreGeneratorOn(flags: QrFlags): boolean {
   return subFlagOn(flags, "A3D_QR_CORE_GENERATOR", "A3D_QR_CORE");
 }
 
+/**
+ * PRD-04 lobe route: the r185 lobes (sheen, iridescence, anisotropy, specular,
+ * dispersion, …) exist only as generated-program chunks — the legacy
+ * pbr-direct shader has no code for them. Gating every generated draw on
+ * `A3D_QR_CORE` meant `materials` alone selected lobes no program ever
+ * consumed (byte-identical frames). With `A3D_QR_MATERIALS` on, lobe-bearing
+ * materials route through the generator unless the generator is explicitly
+ * excluded (`-core_generator`); lobe-free materials stay legacy.
+ */
+export function qrMaterialsLobeProgramsOn(flags: QrFlags): boolean {
+  return flags.values.A3D_QR_CORE_GENERATOR === undefined && flags.on("A3D_QR_MATERIALS");
+}
+
+/** Any draw may use a generated program this frame (UBO, warmup, cache frame bounds). */
+export function qrGeneratedProgramsOn(flags: QrFlags): boolean {
+  return qrCoreGeneratorOn(flags) || qrMaterialsLobeProgramsOn(flags);
+}
+
 /** HDR offscreen target + OutputPass present+encode path (C-23). */
 export function qrCoreOutputOn(flags: QrFlags): boolean {
   return subFlagOn(flags, "A3D_QR_CORE_OUTPUT", "A3D_QR_CORE");
+}
+
+/**
+ * Select the shared generator's providers for the materials-only route.
+ * This view is used only by C-02/C-08 provider lookup: the cache receives
+ * the original flags, so no core feature, output pass or other lane is enabled.
+ */
+function generatedProviderFlags(flags: QrFlags): QrFlags {
+  if (!qrMaterialsLobeProgramsOn(flags) || flags.on("A3D_QR_CORE")) return flags;
+  return {
+    values: flags.values,
+    on: (name) => name === "A3D_QR_CORE" || flags.on(name)
+  };
 }
 
 // ── Device-scoped singletons (C-02/C-08) ─────────────────────────────────
@@ -54,7 +85,7 @@ export function rendererProgramCache(device: RenderDevice, flags: QrFlags): Prog
     // #1140: if the lane-01 barrel was tree-shaken out of the bundle, the slot
     // silently hands back the PR-0a stub (legacy pbr-direct for every lit
     // record: no maps, no instancing → flat frames). Report it loudly.
-    if (!programCacheSlot.provided && qrCoreGeneratorOn(flags)) {
+    if (!programCacheSlot.provided && qrGeneratedProgramsOn(flags)) {
       const degradation = {
         code: "program-generator-missing",
         message: "A3D_QR_CORE generator is on but the C-02 real program cache was never provided (lanes/prd01 not loaded — tree-shaken?); using the stub legacy-PBR cache",
@@ -63,7 +94,7 @@ export function rendererProgramCache(device: RenderDevice, flags: QrFlags): Prog
       console.error(`[prd01] ${degradation.message}`);
       degradationSinks.get(device)?.(degradation);
     }
-    cache = programCacheSlot.get(flags)(device, {
+    cache = programCacheSlot.get(generatedProviderFlags(flags))(device, {
       flags,
       onDegradation: (degradation) => degradationSinks.get(device)?.(degradation)
     });
@@ -83,7 +114,7 @@ export function rendererProgramCachePeek(device: RenderDevice): ProgramCacheLike
 export function rendererAuraFrame(device: RenderDevice, flags: QrFlags): FrameUniformsLike {
   let fu = auraFrames.get(device);
   if (!fu) {
-    fu = frameUniformsSlot.get(flags)(device);
+    fu = frameUniformsSlot.get(generatedProviderFlags(flags))(device);
     auraFrames.set(device, fu);
   }
   return fu;

@@ -29,6 +29,7 @@ const packageEntryPoints = new Map<string, string>([
   // contracts/world subpaths used by QR lane code (prd07 flagged the gap when
   // browser specs timed out with unresolved bare specifiers).
   ["@aura3d/rendering/contracts/flags.state", "/packages/rendering/src/contracts/flags.state.ts"],
+  ["@aura3d/rendering/lanes", "/packages/rendering/src/lanes/index.ts"],
   ["@aura3d/rendering/contracts", "/packages/rendering/src/contracts/index.ts"],
   ["@aura3d/rendering/world", "/packages/rendering/src/world/index.ts"],
   ["@aura3d/rendering/production-runtime", "/packages/rendering/src/production-runtime/index.ts"],

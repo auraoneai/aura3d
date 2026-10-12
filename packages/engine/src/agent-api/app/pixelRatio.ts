@@ -9,16 +9,15 @@
  */
 
 import { resolveCanvasPixelRatio } from "@aura3d/rendering";
-import { resolveTierSettings } from "@aura3d/rendering/contracts";
+import { resolveTierSettings, type AuraQualityTier } from "@aura3d/rendering/contracts";
 import type { AuraCreateAppOptions } from "../nodes/types.js";
-import { resolveMountQuality } from "../compiler/renderer.js";
 
 export interface AppPixelRatioInput {
   readonly flagOn: boolean;
   readonly option: AuraCreateAppOptions["pixelRatio"];
   /** Quality-profile pixel ratio (legacy value; ignored under the flag). */
   readonly profilePixelRatio: number | undefined;
-  /** Tier cap (`appTierMaxPixelRatio(renderer)`). */
+  /** Tier cap (`appTierMaxPixelRatio(tier)`). */
   readonly maxPixelRatio: number;
   readonly devicePixelRatio: number;
   /** Legacy fallback when neither an explicit nor a profile ratio exists. */
@@ -40,9 +39,13 @@ export function minimumBackingSize(flagOn: boolean): { readonly width: number; r
   return flagOn ? { width: 1, height: 1 } : { width: 320, height: 220 };
 }
 
-/** The mount tier's DPR cap (default tier High → 2), same tier the compile ctx uses. */
-export function appTierMaxPixelRatio(renderer: AuraCreateAppOptions["renderer"]): number {
-  return resolveTierSettings(resolveMountQuality(renderer).tier).maxPixelRatio;
+/**
+ * DPR cap of the mount tier — callers pass `resolveMountQuality(renderer).tier`
+ * (default High → 2), the same tier the compile ctx uses. Takes the tier, not
+ * the renderer options, so this module stays out of the compiler import cycle.
+ */
+export function appTierMaxPixelRatio(tier: AuraQualityTier): number {
+  return resolveTierSettings(tier).maxPixelRatio;
 }
 
 export function currentDevicePixelRatio(): number {

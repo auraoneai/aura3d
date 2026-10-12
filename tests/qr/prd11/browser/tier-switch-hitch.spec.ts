@@ -7,6 +7,7 @@
  */
 
 import { test, expect } from "@playwright/test";
+import { requireOrSkip } from "../../../support/requireOrSkip";
 import { createServer, type ViteDevServer } from "vite";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -73,11 +74,10 @@ test("High↔Low tier switch produces no frame over 50ms", async ({ page }) => {
   });
 
   if ("skipped" in result && result.skipped) {
-    test.skip(true, result.skipped);
-    return;
+    throw new Error(`lane scene not ready: ${result.skipped}`);
   }
   if (!("frames" in result) || result.frames < 10) {
-    test.skip(true, "too few measured frames — no real rAF loop on this host");
+    requireOrSkip(test, false, "webgl2-frames", "too few measured frames — runner must run a real rAF loop");
     return;
   }
   expect(result.over50, `${result.over50} frame(s) exceeded 50ms (max ${result.maxMs.toFixed(1)}ms)`).toBe(0);

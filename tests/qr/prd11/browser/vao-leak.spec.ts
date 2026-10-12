@@ -9,6 +9,7 @@
  */
 
 import { test, expect } from "@playwright/test";
+import { requireOrSkip } from "../../../support/requireOrSkip";
 import { createServer, type ViteDevServer } from "vite";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -54,14 +55,14 @@ test("liveBuffers identical at frame ~60 and ~10,000", async ({ page }) => {
     await new Promise((resolve) => setTimeout(resolve, 500));
     return (app.diagnostics().frame?.frames ?? 0) > start;
   });
-  test.skip(!alive, "no WebGL2 frame progress in this environment");
+  requireOrSkip(test, alive, "webgl2-frames", "runner must make WebGL2 frame progress");
 
   const early = await page.evaluate(() => {
     const app = (window as unknown as { __PRD11_APP__?: Prd11App }).__PRD11_APP__!;
     const f = app.diagnostics().frame;
     return { liveBuffers: f?.liveBuffers ?? -1, liveVertexArrays: f?.liveVertexArrays ?? null };
   });
-  test.skip(early.liveBuffers < 0, "liveBuffers counter absent — frame section not reporting counters");
+  expect(early.liveBuffers, "liveBuffers counter absent — frame section not reporting counters").toBeGreaterThanOrEqual(0);
 
   // 10,000 frames at 60fps ≈ 167s; poll until reached (cap the wait at 6 min).
   const late = await page.evaluate(async () => {
@@ -80,7 +81,7 @@ test("liveBuffers identical at frame ~60 and ~10,000", async ({ page }) => {
   });
 
   if (!late.reached) {
-    test.skip(true, `scene reached only ${late.frames} frames inside the wait budget`);
+    requireOrSkip(test, false, "prd11-10k-frames", `scene reached only ${late.frames} frames inside the wait budget — runner too slow for 10,000 frames`);
     return;
   }
   expect(late.liveBuffers, `liveBuffers grew ${early.liveBuffers} → ${late.liveBuffers} over ${late.frames} frames`).toBe(early.liveBuffers);

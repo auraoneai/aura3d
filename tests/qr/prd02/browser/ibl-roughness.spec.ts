@@ -105,11 +105,15 @@ test.describe("02-S10 IBL roughness sweep pixels (prd02-06)", () => {
     expect(ratio, `HF by roughness: ${JSON.stringify(rows)}`).toBeGreaterThanOrEqual(4);
   });
 
-  test("flag off (control): the legacy render does not meet the sweep criterion", async ({ page }) => {
+  // Control: the same scene without its environment (`no-ibl`) must fail, so
+  // the HF metric measures the prefiltered IBL. The flag-off legacy render is
+  // no longer a failing control: since the cube/PMREM IBL (#1197) it meets the
+  // sweep too (azure-gpu run 38184694289: mirror/r0.8 = 7.2, monotone).
+  test("no-ibl (control): without the environment the sweep criterion fails", async ({ page }) => {
     test.setTimeout(300_000);
-    const { pixels } = await captureLaneScene(page, server, { scene: SWEEP_SCENE, flags: "none" });
+    const { pixels } = await captureLaneScene(page, server, { scene: SWEEP_SCENE, flags: "lighting", control: "no-ibl" });
     const rows = metalSphereHf(pixels);
     const { monotonic, ratio } = sweepCriterion(rows);
-    expect(monotonic && ratio >= 4, `flag-off HF by roughness: ${JSON.stringify(rows)}`).toBe(false);
+    expect(monotonic && ratio >= 4, `no-ibl HF by roughness: ${JSON.stringify(rows)}`).toBe(false);
   });
 });
