@@ -32,7 +32,9 @@ export function explicitCullingFrustum(
 export function cullExplicitRenderItems(
   items: readonly RenderItem[],
   frustum: Frustum | undefined,
-  diagnostics: RenderCollectionDiagnostics
+  diagnostics: RenderCollectionDiagnostics,
+  /** 02-S5: receives culled items with `castShadow !== false`. */
+  culledShadowCasters?: RenderItem[]
 ): readonly RenderItem[] {
   if (!frustum) {
     diagnostics.submittedObjects += items.length;
@@ -59,6 +61,7 @@ export function cullExplicitRenderItems(
     box[3] = bounds.max[0]; box[4] = bounds.max[1]; box[5] = bounds.max[2];
     if (cull(box, 1, planes, verdict) === 0) {
       diagnostics.culledObjects += 1;
+      if (culledShadowCasters && item.castShadow !== false) culledShadowCasters.push(item);
       continue;
     }
     diagnostics.visibleObjects += 1;
