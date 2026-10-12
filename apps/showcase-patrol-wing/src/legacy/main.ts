@@ -60,6 +60,7 @@ import { createDroneSwarm, ORB_DAMAGE } from "../gameplay/drones";
 import { Cannon, encodeControlFrame } from "../gameplay/weapons";
 import { GhostPlayer, GhostRecorder } from "../gameplay/ghost";
 import { createWingAudio, type WingAudioCue } from "./wing-audio";
+import { patrolWingEffectsPass } from "./effects-pass";
 import "./styles.css";
 
 type PatrolWindow = Window & {
@@ -520,7 +521,7 @@ function buildScene(): ReturnType<typeof scene> {
     .addMany(visualReviewCapture ? [] : flightStreaks)
     .addMany(arenaLighting().nodes)
     .addMany([
-      effects.fog({ name: "coastal haze", density: visualReviewCapture ? 0.0034 : 0.0042, color: "#42647a", intensity: visualReviewCapture ? 0.32 : 0.42 }),
+      ...patrolWingEffectsPass({ visualReviewCapture }),
       effects.neonBloom({ intensity: visualReviewCapture ? 0.12 : reducedMotion ? 0.05 : 0.12, threshold: 0.84, maxIntensity: 0.34, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" }),
