@@ -7,6 +7,8 @@ import { createAuraApp, effects, scene } from "../../../../packages/engine/src";
 import { prd07SystemFor } from "../../../../packages/engine/src/agent-api/vfx/effects-api";
 import { attachVfxBridge } from "../../../../packages/engine/src/agent-api/vfx/bridge";
 import { attachRootRenderSource, getRootRenderSource } from "../../../../packages/engine/src/agent-api/RootRuntimeSupport";
+import { createAtmosphereExtension } from "../../../../packages/engine/src/agent-api/vfx/atmosphere-api";
+import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 
 describe("P1-T14 effect-system binding", () => {
   it("creates one system per app (headless included)", () => {
@@ -18,6 +20,23 @@ describe("P1-T14 effect-system binding", () => {
     const system = prd07SystemFor(app);
     expect(system).toBeTruthy();
     expect(system!.emitterIds()).toContain("fx");
+    app.dispose();
+  });
+
+  // QR-07 GPU promote (run 38192268239): every vfx app on a canvas logged
+  // VFX_APP_BINDING_AMBIGUOUS because the atmosphere extension re-attached
+  // the system the effects extension had already bridged.
+  it("the atmosphere extension reuses the effects bridge (no spurious ambiguity)", () => {
+    const flags = resolveQrFlags({ options: ["vfx", "vfx.sky"] });
+    const app = createAuraApp(null, { autoStart: false, scene: scene(), qualityRebuild: { flags: ["vfx", "vfx.sky"] } });
+    const system = prd07SystemFor(app)!;
+    const canvas = {} as HTMLCanvasElement;
+    const effectsBridge = attachVfxBridge(canvas, system); // what createEffectsExtension does on a canvas
+    (app as { canvas?: HTMLCanvasElement }).canvas = canvas;
+    createAtmosphereExtension(app, { flags });
+    expect(system.diagnostics.report().errors.map((e) => e.code)).not.toContain("VFX_APP_BINDING_AMBIGUOUS");
+    expect((getRootRenderSource(canvas)!.source as unknown as { atmosphere?: unknown }).atmosphere).toBeTruthy();
+    effectsBridge.detach();
     app.dispose();
   });
 

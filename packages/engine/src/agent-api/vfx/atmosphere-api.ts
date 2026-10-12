@@ -15,7 +15,8 @@ export function createAtmosphereExtension(app: AuraApp, ctx: { flags: QrFlags })
   if (!ctx.flags.on("A3D_QR_VFX_SKY") && !ctx.flags.on("A3D_QR_VFX") && !ctx.flags.on("A3D_QR_VFX_FOG")) {
     return new StubAppAtmosphere();
   }
-  const system = prd07SystemFor(app) ?? new ProductionEffectSystem(app as unknown as AppLike);
+  const existing = prd07SystemFor(app);
+  const system = existing ?? new ProductionEffectSystem(app as unknown as AppLike);
   // §6.5 — flag-on hides the tagged prd07.legacySky.* primitives.
   system.setSkyFlagOn(ctx.flags.on("A3D_QR_VFX_SKY"));
   // §8.6 — flag-on hides the tagged prd07.legacyWeather.* primitives.
@@ -23,7 +24,9 @@ export function createAtmosphereExtension(app: AuraApp, ctx: { flags: QrFlags })
   system.setDecalFlagOn(ctx.flags.on("A3D_QR_VFX_DECALS"));
   // §6.6 — flag-on makes the carved compiler/fog.ts read this app's live fog.
   bindPrd07FogRuntime({ flags: ctx.flags, atmosphere: system.atmosphere });
-  if (app.canvas) attachVfxBridge(app.canvas, system);
+  // The effects extension already bridged this app's system; a second attach
+  // of the same system only recorded a spurious VFX_APP_BINDING_AMBIGUOUS.
+  if (app.canvas && !existing) attachVfxBridge(app.canvas, system);
   const atmosphere = system.atmosphere;
   return {
     setFog: (spec: AuraHeightFogSpec | null, o?: { transitionSeconds?: number }) => atmosphere.setFog(spec, o),
