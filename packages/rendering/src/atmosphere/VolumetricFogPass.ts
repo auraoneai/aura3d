@@ -17,6 +17,7 @@ import type { RenderDevice, RenderShaderProgram, RenderTarget, UniformValue } fr
 import type { FrameContributorContext } from "../contracts/frameGraph";
 import type { Texture } from "../Texture";
 import { TextureBinding } from "../TextureBinding";
+import { PRD07_DEPTH_SAMPLER } from "../vfx/depthSampler";
 import { volumetricInjectFragmentSource, volumetricInjectVertexSource, PRD07_VOLUMETRIC_MARKER } from "./shaders/volumetric-inject.glsl";
 import { volumetricIntegrateFragmentSource, volumetricIntegrateVertexSource } from "./shaders/volumetric-integrate.glsl";
 import { volumetricApplyFragmentSource, volumetricApplyVertexSource } from "./shaders/volumetric-apply.glsl";
@@ -241,7 +242,7 @@ export class VolumetricFogPass {
     const apply = (target: RenderTarget | null): void => {
       const au = new Map<string, UniformValue>();
       au.set("u_integrateAtlas", new TextureBinding({ name: "u_integrateAtlas", texture: integrateAtlas.colorTexture }));
-      au.set("u_sceneDepth", new TextureBinding({ name: "u_sceneDepth", texture: sceneDepth, required: true }));
+      au.set("u_sceneDepth", new TextureBinding({ name: "u_sceneDepth", texture: sceneDepth, sampler: PRD07_DEPTH_SAMPLER, required: true }));
       au.set("u_depthLinearize", [...depthLinearize]);
       au.set("u_atlasSize", [this.grid.atlasWidth, this.grid.atlasHeight]);
       au.set("u_tileSize", [this.grid.tileWidth, this.grid.tileHeight]);
