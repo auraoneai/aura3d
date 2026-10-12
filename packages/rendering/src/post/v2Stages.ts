@@ -29,7 +29,7 @@
 
 import type { WebGL2DeviceHost } from "../webgl2/DeviceHost";
 import { RenderDeviceError, type RenderTarget } from "../RenderDevice";
-import { invertMat4, type Mat4 } from "@aura3d/scene";
+import { invertMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import {
   registeredPostPasses,
   validatePostPassSpace,
@@ -63,6 +63,9 @@ import { EXPOSURE_ADAPT_GLSL, EXPOSURE_LUMA_LOG_GLSL, EXPOSURE_MUL_GLSL, EXPOSUR
 import { SMAA_BLEND_GLSL, SMAA_EDGES_GLSL, SMAA_WEIGHTS_GLSL } from "./shaders/smaa.glsl.js";
 import { FXAA_185_FRAGMENT_GLSL } from "./shaders/fxaa.glsl.js";
 import { POST_INSERT_ANCHORS, type AutoExposureOptionsV2, type DofOptions, type GtaoOptions, type GodRayOptions, type MotionBlurOptions, type TaaOptions } from "./PostGraph";
+
+/** Identity for the folded camera-velocity reprojection (S1-C). */
+const IDENTITY_MAT4_F32 = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 
 const VERTEX = `#version 300 es
 out vec2 v_uv;
@@ -599,14 +602,23 @@ export function runV2HdrStages(
   let dilatedVelocity: RenderTarget | null = null;
   if (needsVelocity && temporal?.v2) {
     const camVelProg = program(state, gl, "camera-velocity", CAMERA_VELOCITY_GLSL);
+    // The reprojection prevVP · inv(unjitteredVP) is folded in float64 here
+    // and handed to the shader as `u_prevViewProjection` with an identity
+    // `u_invUnjitteredViewProjection` (projectively the same transform). Two
+    // float32 matrix products on the GPU left a static camera with a
+    // ~0.03 px residual velocity; TAA re-sampled history by it every frame,
+    // so with 0.97 feedback a 1-px line drifted ~1 px and smeared over five
+    // rows (prd03-taa, promote run 38201709795). Folded, a static camera is
+    // the identity to ~1e-12 and reprojects in place.
     const invUnjittered = invertMat4(Array.from(temporal.v2.unjittered) as unknown as Mat4);
+    const reprojection = Float32Array.from(multiplyMat4(Array.from(temporal.v2.previous) as unknown as Mat4, invUnjittered));
     draw(host, state, camVelProg, asGlTarget(temporal.velocity), [src.depthTextureHandle!], (g) => {
       g.uniform1i(g.getUniformLocation(camVelProg, "u_depth"), 0);
       g.uniform1f(g.getUniformLocation(camVelProg, "u_near"), near);
       g.uniform1f(g.getUniformLocation(camVelProg, "u_far"), far);
       g.uniform1i(g.getUniformLocation(camVelProg, "u_ortho"), ortho ? 1 : 0);
-      g.uniformMatrix4fv(g.getUniformLocation(camVelProg, "u_prevViewProjection"), false, temporal.v2!.previous);
-      g.uniformMatrix4fv(g.getUniformLocation(camVelProg, "u_invUnjitteredViewProjection"), false, Float32Array.from(invUnjittered));
+      g.uniformMatrix4fv(g.getUniformLocation(camVelProg, "u_prevViewProjection"), false, reprojection);
+      g.uniformMatrix4fv(g.getUniformLocation(camVelProg, "u_invUnjitteredViewProjection"), false, IDENTITY_MAT4_F32);
     });
     // §8.6: closest-depth 3×3 velocity for the silhouette-correct reprojection.
     dilatedVelocity = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
