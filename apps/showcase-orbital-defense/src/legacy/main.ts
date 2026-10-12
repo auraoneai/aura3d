@@ -142,6 +142,10 @@ let lastTime = 0;
 
 const hud = document.querySelector<HTMLElement>("#hud");
 if (!hud) throw new Error("Orbital Defense requires #hud.");
+// Declared before the first renderHud() call: a `const` read before its
+// declaration line throws a TDZ ReferenceError and aborts the whole boot
+// (no onFrame loop, static first frame).
+const lastHudHtml = { value: undefined as string | undefined };
 renderHud();
 
 function update(dt: number): void {
@@ -190,8 +194,6 @@ function syncRuntimeNodes(): void {
     app.nodes.require(shieldIds[index]!).setPosition(pos[0], pos[1], pos[2]).setScale([scale, scale, 0.02]);
   }
 }
-
-const lastHudHtml = { value: undefined as string | undefined };
 
 function renderHud(): void {
   const html = `
