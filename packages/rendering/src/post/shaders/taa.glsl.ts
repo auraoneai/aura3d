@@ -87,7 +87,13 @@ void main() {
     return;
   }
 
-  vec3 history = historyAt(uvPrev).rgb;
+  // A static texel reprojects onto itself: read it directly. Resampling it
+  // through the Catmull-Rom kernel every frame was measured (promote-run
+  // probes on prd03-taa) to pull history ~0.09 px per frame, so at 0.97
+  // feedback a static 1-px line drifted a full pixel and rang below it.
+  vec3 history = length(velocity * vec2(size)) < 1e-3
+    ? texelFetch(u_history, clamp(pixel, ivec2(0), textureSize(u_history, 0) - 1), 0).rgb
+    : historyAt(uvPrev).rgb;
   vec3 historyYc = rgbToYCoCg(history);
 
   // Motion-scaled variance: fast pixels trust the box more (γ→0.5).

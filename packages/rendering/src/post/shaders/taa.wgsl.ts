@@ -92,7 +92,11 @@ fn fs_taa_resolve(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4
     return vec4<f32>(current, 1.0);
   }
 
-  let history = history_at(uv_prev).rgb;
+  // Static texel: direct read (GLSL twin — no per-frame resample drift).
+  let hist_size = vec2<i32>(textureDimensions(u_history_tex));
+  let history = select(history_at(uv_prev).rgb,
+    textureLoad(u_history_tex, clamp(pixel, vec2<i32>(0), hist_size - vec2<i32>(1)), 0).rgb,
+    length(velocity * vec2<f32>(size)) < 1e-3);
   var history_yc = rgb_to_ycocg(history);
 
   // Motion-scaled variance: fast pixels trust the box more (γ→0.5).

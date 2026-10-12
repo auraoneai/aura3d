@@ -5,7 +5,7 @@ import { rendererDeviceIsLost, subscribeRendererDeviceLost, subscribeRendererDev
 import { createRendererFrameHooks, toFrameCamera } from "./renderer/FrameGraph";
 import type { FrameCamera } from "./contracts/frameGraph";
 import type { QrFlags } from "./contracts/core";
-import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postprocessRequiresDepthTexture } from "./renderer/PostprocessExecution";
+import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postGraphV2LastOutcome, postprocessRequiresDepthTexture } from "./renderer/PostprocessExecution";
 import type { RendererHost } from "./renderer/RendererHost";
 import { createRenderer } from "./renderer/RendererFactory";
 import { collectItemBounds, isIterable, renderableWorldBounds, sceneFromSource, toMat4 } from "./renderer/RenderShared";
@@ -707,6 +707,20 @@ export class Renderer {
   private lastTemporalCameraPosition?: [number, number, number];
   private readonly unsubscribeTemporalDeviceLoss?: () => void;
 
+  /**
+   * PRD-03 §8.6 (flag-on): the v2 S5/S7 stages own the history ping-pong.
+   * When a frame was served by another chain (v2 modules still loading, an
+   * unfusable pass list), the legacy native TAA wrote its own bytes (alpha =
+   * depth, presentation-tuned) into the history target; promoting that seeded
+   * the v2 resolve with garbage. Such frames reset the history instead.
+   */
+  private commitTemporalHistory(): void {
+    if (rendererQrFlags(this.device).on("A3D_QR_POST") && postGraphV2LastOutcome() !== "v2") {
+      this.temporalHistory.reset();
+      return;
+    }
+    this.temporalHistory.commit();
+  }
   resetTemporalHistory(_reason = "explicit-reset"): void { this.temporalHistory.reset(); this.lastTemporalCameraPosition = undefined; }
   render(input: RendererInput): RenderDeviceDiagnostics;
   render(source: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
@@ -902,6 +916,7 @@ export class Renderer {
       // PRD-03 Phase 4 (flag-on): >5 m of camera translation within one frame
       // is a cut — reprojection would smear everything, so seed fresh history.
       let temporalPrevVp: Float32Array | undefined;
+      let rasterViewProjection: Float32Array | readonly number[] | undefined = cameraViewProjection;
       let temporalAutoReset = false;
       if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa) && cameraPosition && rendererQrFlags(this.device).on("A3D_QR_POST")) {
         const prev = this.lastTemporalCameraPosition;
@@ -917,6 +932,11 @@ export class Renderer {
         if (postprocess.execution === "cpu-deterministic" || !this.device.presentLdrPostprocess) throw new RenderDeviceError("Renderer temporal effects require native GPU presentation", "TEMPORAL_NATIVE_REQUIRED");
         const temporal = this.temporalHistory.prepare(this.device, this.width, this.height, items, cameraViewProjection, { ...postprocess.temporal, jitter: Boolean(postprocess.taa), ...(temporalAutoReset ? { reset: true } : {}) });
         temporalPrevVp = temporal.v2?.previous;
+        // PRD-03 §8.6 (flag-on): generated programs project through the
+        // AuraFrame `u_viewProjection`, not the per-item MVP, so the TAA
+        // sub-pixel jitter has to ride the camera matrix too — otherwise the
+        // raster never moves and S5 has nothing to resolve.
+        if (temporal.v2) rasterViewProjection = temporal.v2.jittered;
         items = this.temporalHistory.renderItems;
         postprocess = { ...postprocess, ...(postprocess.motionBlur ? {motionBlur: { ...postprocess.motionBlur, temporal }} : {}), ...(postprocess.taa ? {taa: { ...postprocess.taa, temporal }} : {}) };
         this.device.setRenderTarget(ownedTargets[0]!);
@@ -938,7 +958,7 @@ export class Renderer {
           shadowMap: rendererShadowMap,
           cameraPosition,
           cameraViewMatrix: resolvedCamera?.viewMatrix,
-          cameraViewProjectionMatrix: cameraViewProjection,
+          cameraViewProjectionMatrix: rasterViewProjection,
           outputColorSpace: "linear",
           shaderLibrary: this.shaderLibrary,
           backgroundCoverage: coverage
@@ -977,7 +997,7 @@ export class Renderer {
           shadowMap: rendererShadowMap,
           cameraPosition,
           cameraViewMatrix: resolvedCamera?.viewMatrix,
-          cameraViewProjectionMatrix: cameraViewProjection,
+          cameraViewProjectionMatrix: rasterViewProjection,
           outputColorSpace: postprocess ? "linear" : "srgb",
           shaderLibrary: this.shaderLibrary
         }));
@@ -1019,7 +1039,7 @@ export class Renderer {
           frameHooks.runPhase("post-hdr", items, postprocess !== undefined);
           this.executePostprocess(postprocess!, ownedTargets, explicitRenderTarget);
         });
-        if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();
+        if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.commitTemporalHistory();
       } else if (qrOutput) {
         this.scopePost(() => frameHooks.runPhase("post-hdr", items, true));
         this.executeOutputPass(frameHooks, items, ownedTargets[0] ?? null, explicitRenderTarget);
@@ -1240,6 +1260,7 @@ export class Renderer {
       // PRD-03 Phase 4 (flag-on): >5 m of camera translation within one frame
       // is a cut — reprojection would smear everything, so seed fresh history.
       let temporalPrevVp: Float32Array | undefined;
+      let rasterViewProjection: Float32Array | readonly number[] | undefined = cameraViewProjection;
       let temporalAutoReset = false;
       if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa) && cameraPosition && rendererQrFlags(this.device).on("A3D_QR_POST")) {
         const prev = this.lastTemporalCameraPosition;
@@ -1255,6 +1276,11 @@ export class Renderer {
         if (postprocess.execution === "cpu-deterministic" || !this.device.presentLdrPostprocess) throw new RenderDeviceError("Renderer temporal effects require native GPU presentation", "TEMPORAL_NATIVE_REQUIRED");
         const temporal = this.temporalHistory.prepare(this.device, this.width, this.height, items, cameraViewProjection, { ...postprocess.temporal, jitter: Boolean(postprocess.taa), ...(temporalAutoReset ? { reset: true } : {}) });
         temporalPrevVp = temporal.v2?.previous;
+        // PRD-03 §8.6 (flag-on): generated programs project through the
+        // AuraFrame `u_viewProjection`, not the per-item MVP, so the TAA
+        // sub-pixel jitter has to ride the camera matrix too — otherwise the
+        // raster never moves and S5 has nothing to resolve.
+        if (temporal.v2) rasterViewProjection = temporal.v2.jittered;
         items = this.temporalHistory.renderItems;
         postprocess = { ...postprocess, ...(postprocess.motionBlur ? {motionBlur: { ...postprocess.motionBlur, temporal }} : {}), ...(postprocess.taa ? {taa: { ...postprocess.taa, temporal }} : {}) };
         this.device.setRenderTarget(ownedTargets[0]!);
@@ -1276,7 +1302,7 @@ export class Renderer {
           shadowMap: rendererShadowMap,
           cameraPosition,
           cameraViewMatrix: resolvedCamera?.viewMatrix,
-          cameraViewProjectionMatrix: cameraViewProjection,
+          cameraViewProjectionMatrix: rasterViewProjection,
           outputColorSpace: "linear",
           shaderLibrary: this.shaderLibrary,
           backgroundCoverage: coverage
@@ -1315,7 +1341,7 @@ export class Renderer {
           shadowMap: rendererShadowMap,
           cameraPosition,
           cameraViewMatrix: resolvedCamera?.viewMatrix,
-          cameraViewProjectionMatrix: cameraViewProjection,
+          cameraViewProjectionMatrix: rasterViewProjection,
           outputColorSpace: postprocess ? "linear" : "srgb",
           shaderLibrary: this.shaderLibrary
         }));
@@ -1357,7 +1383,7 @@ export class Renderer {
           await frameHooks.runPhaseAsync("post-hdr", items, postprocess !== undefined);
           await this.executePostprocessAsync(postprocess!, ownedTargets, explicitRenderTarget);
         });
-        if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();
+        if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.commitTemporalHistory();
       } else if (qrOutput) {
         await this.scopePost(() => frameHooks.runPhaseAsync("post-hdr", items, true));
         this.executeOutputPass(frameHooks, items, ownedTargets[0] ?? null, explicitRenderTarget);
