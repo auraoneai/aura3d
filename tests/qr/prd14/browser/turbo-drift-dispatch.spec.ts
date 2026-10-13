@@ -47,7 +47,7 @@ async function bootFramed(page: import("@playwright/test").Page, url: string): P
 }
 
 test.describe("turbo-drift single-path boot (S1)", () => {
-  test("boots framed with a sized canvas and no console errors", async ({ page }) => {
+  test("boots framed with a sized canvas, S11 audio, and no console errors", async ({ page }) => {
     const root = builtDist(APP_DIR);
     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
     const errors = watchConsole(page);
