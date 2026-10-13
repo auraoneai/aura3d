@@ -7,9 +7,23 @@
 //   --browser <tests/qr/prd14/reports/browser.json>             (Playwright JSON: S1, S2, S5-S11)
 //   --static <success|failure|skipped>                          (Static gates job: S4, S5 static half)
 //   --run-id <GITHUB_RUN_ID> --sha <GITHUB_SHA> --routes <dirs>
+//   --apps-root <dir> (optional; default <repo>/apps — route-shape derivation)
 // Each S row is "pass", "fail" or "missing" (no test produced it). Exit code
 // is 1 if any selected game has a "fail" or "missing" row, so the run that
 // writes the evidence is the gate.
+//
+// Route shape is derived from the filesystem per route (same rule as
+// scripts/check-art-direction.mjs): a route with no `src/v2` tree but with
+// `art/direction.ts` and `src/main.ts` is single-path (its one entry boots
+// every URL); otherwise it is dual-path (T1.10 dispatcher + `src/v2`).
+// Dual-path rows keep their original producers: S2/S6/S11 from titled tests
+// in `*-v2.spec.ts`, S7 from `*-framing.spec.ts`. Single-path routes have no
+// v2 or framing spec, so S2/S6/S7 come from titled tests in the retained
+// `*-dispatch.spec.ts` (`boots to playing`, `appliedLook`, `framing`), each
+// backed by a real assertion in that spec. S11 has no single-path producer:
+// the row's claim (synthCues 0, every `audio[]` event played) needs audio
+// playback evidence no single-path route publishes yet, so it stays
+// "missing" instead of being mapped to a weaker assertion.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -23,6 +37,7 @@ for (const k of ["capture", "browser", "static", "run-id", "sha", "routes"]) {
   if (!args[k]) { console.error(`write-evidence: --${k} is required`); process.exit(2); }
 }
 
+const APPS_ROOT = args["apps-root"] ?? join(ROOT, "apps");
 const games = JSON.parse(readFileSync(join(ROOT, "tools/quality-rebuild-capture/games.json"), "utf8")).games;
 const dirs = args.routes.split(",").map((s) => s.trim()).filter(Boolean);
 const capture = existsSync(args.capture) ? JSON.parse(readFileSync(args.capture, "utf8")) : { games: [] };
@@ -62,6 +77,12 @@ for (const dir of dirs) {
   });
   const byFile = (re) => mine.filter((t) => re.test(t.file ?? ""));
   const byTitle = (fileRe, titleRe) => mine.filter((t) => fileRe.test(t.file ?? "") && titleRe.test(t.title));
+  // Single-path derivation (see header): no `src/v2`, adopted art direction,
+  // and a `src/main.ts` entry that boots every URL.
+  const singlePath = !existsSync(join(APPS_ROOT, appDir, "src/v2"))
+    && existsSync(join(APPS_ROOT, appDir, "art/direction.ts"))
+    && existsSync(join(APPS_ROOT, appDir, "src/main.ts"));
+  const playSpec = singlePath ? /-dispatch\.spec\.ts$/ : /-v2\.spec\.ts$/;
   const s10Rows = mine.filter((t) => /s10-assets\.spec\.ts$/.test(t.file ?? "") && t.title.startsWith(`${appDir}:`));
   const s10 = verdict(s10Rows);
   const requiredS10Titles = [
@@ -80,17 +101,20 @@ for (const dir of dirs) {
   const staticRow = { status: args.static === "success" ? "pass" : args.static === "failure" ? "fail" : "missing", job: args.static };
   const s = {
     S1: verdict(byFile(/-dispatch\.spec\.ts$/)),
-    S2: verdict(byTitle(/-v2\.spec\.ts$/, /boots to playing/)),
+    S2: verdict(byTitle(playSpec, /boots to playing/)),
     S3: s3,
     S4: staticRow,
     S5: { static: staticRow, runtime: verdict(byFile(/art-direction-audit\.spec\.ts$/)) },
-    S6: verdict(byTitle(/-v2\.spec\.ts$/, /appliedLook/)),
-    S7: verdict(byFile(/-framing\.spec\.ts$/)),
+    S6: verdict(byTitle(playSpec, /appliedLook/)),
+    S7: singlePath
+      ? verdict(byTitle(/-dispatch\.spec\.ts$/, /framing/))
+      : verdict(byFile(/-framing\.spec\.ts$/)),
     S8: verdict(byFile(/budgets\.spec\.ts$/)),
     S9: verdict(byFile(/budgets\.spec\.ts$/)),
     // S10: s10-assets.spec.ts has no APP_DIR; its titles start with `<appDir>:`.
     S10: s10,
-    S11: verdict(byTitle(/-v2\.spec\.ts$/, /S11 audio/))
+    // S11: dual-path only (see header) — single-path stays "missing".
+    S11: singlePath ? verdict([]) : verdict(byTitle(/-v2\.spec\.ts$/, /S11 audio/))
   };
   s.S5.status = s.S5.static.status === "pass" && s.S5.runtime.status === "pass" ? "pass"
     : [s.S5.static.status, s.S5.runtime.status].includes("fail") ? "fail" : "missing";
