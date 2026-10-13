@@ -43,7 +43,7 @@ export default defineArtDirection({
   },
   framing: { rig: "chase", subjectHeightFraction: [0.15, 0.3], fovDeg: [55, 75], mobile: "landscape" },
   assets: [
-    { role: "hero", assetKey: "pulseRunnerCraft", maxTriangles: 150000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
+    { role: "hero", assetKey: "pulseRunnerCraft", minTriangles: 2000, maxTriangles: 150000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
     { role: "world", assetKey: "pulseReactorEncounterWorld", maxTriangles: 250000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 },
     { role: "prop", assetKey: "pulseTerminalSentry", maxTriangles: 150000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 }
   ],
