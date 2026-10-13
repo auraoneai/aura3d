@@ -32,6 +32,7 @@ type ReactorSnapshot = {
   gameOver: boolean;
   look: { id: string; category: string };
   board: { filledCells: number; drawCalls: number };
+  framing: { rig: string; subjectScreenHeightFraction: number | null };
 };
 
 /** The evidence snapshot `publishEvidence` in src/main.ts assigns to
@@ -132,7 +133,15 @@ test.describe("blockfall-reactor single-path boot (S1)", () => {
   // S7 (single-path): ported from apps/showcase-blockfall-reactor/tests/
   // playable.spec.ts — the fixed orthographic rig reaches `framed` with
   // settled cells submitted at both viewports the retired framing spec
-  // sampled.
+  // sampled. The snapshot also publishes a measured
+  // `framing.subjectScreenHeightFraction` (board subject bounds projected
+  // through the C-22 camera evidence's view-projection) — but only when
+  // that evidence carries a real matrix; this spec's plain boot mounts
+  // the stub camera controller (empty matrix), so the fraction is null
+  // here and the [0.55, 0.75] band is asserted only when measured, the
+  // same conditional pattern as the sibling framing specs. The rig's
+  // orthographicSize is derived from the subject height so the measured
+  // value centres the band (~0.65) whenever a matrix is available.
   test("framing holds at desktop and mobile viewports", async ({ page }) => {
     const root = builtDist(APP_DIR);
     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
@@ -146,6 +155,10 @@ test.describe("blockfall-reactor single-path boot (S1)", () => {
         expect(snapshot.framed).toBe(true);
         expect(snapshot.board.filledCells).toBeGreaterThan(0);
         expect(snapshot.board.drawCalls).toBeGreaterThan(0);
+        if (snapshot.framing.subjectScreenHeightFraction !== null) {
+          expect(snapshot.framing.subjectScreenHeightFraction).toBeGreaterThanOrEqual(0.55);
+          expect(snapshot.framing.subjectScreenHeightFraction).toBeLessThanOrEqual(0.75);
+        }
       }
       expect(errors).toEqual([]);
     } finally {

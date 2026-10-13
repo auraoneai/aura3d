@@ -3,7 +3,7 @@
 import { createReadStream, existsSync } from "node:fs";
 import type { Page } from "@playwright/test";
 import { createServer, type Server } from "node:http";
-import { basename, extname, join } from "node:path";
+import { basename, dirname, extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // lib/ is five levels below the repo root (tests/qr/prd14/browser/lib).
@@ -20,14 +20,30 @@ const MIME: Record<string, string> = {
 };
 
 export function serve(dir: string): Promise<{ server: Server; url: string }> {
+  // The lane build uses `publicDir: false`, so route-local `public/` assets
+  // (template-layout apps keep their GLBs in apps/<appDir>/public/) never
+  // land in the built dist and /aura-assets/*.glb would 404 in every spec.
+  // After the dist lookup misses, fall back to the app's own public/ and
+  // then the repo-root public/ — dist-first order keeps routes whose assets
+  // already resolve from dist byte-identical. `dir` is either
+  // `.build/site/apps/<appDir>` (capture layout) or `apps/<appDir>/dist`
+  // (builtDist's last candidate), so a `dist` basename steps up one level.
+  const distRoot = resolve(dir);
+  const appDir = basename(distRoot) === "dist" ? basename(dirname(distRoot)) : basename(distRoot);
+  const roots = [distRoot, join(APPS, appDir, "public"), join(ROOT, "public")];
   const server = createServer((req, res) => {
     const raw = new URL(req.url ?? "/", "http://x").pathname;
     // capture-games builds with `base: /apps/<dir>/`; serve those URLs from
     // the dist root so the built index.html resolves its assets.
-    const base = `/apps/${basename(dir)}/`;
+    const base = `/apps/${appDir}/`;
     const path = raw.startsWith(base) ? `/${raw.slice(base.length)}` : raw;
-    const file = join(dir, path === "/" ? "index.html" : path);
-    if (!existsSync(file) || !file.startsWith(dir)) {
+    const rel = path === "/" ? "index.html" : path;
+    const file = roots
+      .map((root) => ({ root, file: join(root, rel) }))
+      // Traversal guard, per root: the candidate must stay under the root
+      // it resolved from.
+      .find(({ root, file }) => (file === root || file.startsWith(root + sep)) && existsSync(file))?.file;
+    if (file === undefined) {
       res.writeHead(404); res.end("not found"); return;
     }
     res.writeHead(200, { "content-type": MIME[extname(file)] ?? "application/octet-stream" });

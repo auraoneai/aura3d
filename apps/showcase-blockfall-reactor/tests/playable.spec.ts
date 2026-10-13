@@ -68,10 +68,13 @@ test("blockfall reactor boots framed, moves on ArrowLeft, and pieces fall", asyn
 
 // Single-path successor to the retired T2.3 v2 framing spec
 // (tests/qr/prd14/browser/showcase-blockfall-reactor-framing.spec.ts): the
-// v2 rig published `subjectScreenHeightFraction` for the [0.55, 0.75] band,
-// which the rebuilt route does not measure. The portable core is that the
+// v2 rig published `subjectScreenHeightFraction` for the [0.55, 0.75] band.
+// The rebuilt route publishes that fraction only when the C-22 camera
+// evidence carries a real view-projection matrix (null on this plain
+// boot's stub controller), so the portable core kept here is that the
 // fixed orthographic rig reaches `framed` with settled cells submitted at
-// both the desktop and mobile viewports the v2 spec sampled.
+// both the desktop and mobile viewports the v2 spec sampled; the prd14
+// dispatch spec asserts the band whenever the fraction is measured.
 test("blockfall reactor stays framed at desktop and mobile viewports", async ({ page }) => {
   test.setTimeout(420_000);
   for (const viewport of [{ width: 1920, height: 1080 }, { width: 390, height: 844 }]) {

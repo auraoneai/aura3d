@@ -53,6 +53,12 @@ interface BlockfallReactorEvidence {
     readonly drawCalls: number;
   };
   readonly flash: { readonly modelBased: boolean; readonly activeRows: readonly number[] };
+  // Measured framing: the board subject's (well + rails bounds) projected
+  // height as a fraction of screen height, from the C-22 camera
+  // evidence's real view-projection matrix. Null when that evidence
+  // carries no matrix (default boot mounts the stub camera controller,
+  // whose viewProjection is empty) — never re-derived in the app.
+  readonly framing: { readonly rig: string; readonly subjectScreenHeightFraction: number | null };
   // S11 audio evidence, read from the real GameAudio object every frame:
   // `requestedEvents` are the art/direction.ts audio[] events this route has
   // cued; `playedEvents` are those the sound object's own evidence reports
@@ -79,15 +85,38 @@ const cellSize = 0.24;
 const boardOrigin = { x: -1.2, y: -2.18 };
 const boardTop = boardOrigin.y + visibleRows * cellSize;
 const boardCenterY = (boardOrigin.y + boardTop) / 2;
+const wellWidth = boardWidth * cellSize;
+const wellHeight = visibleRows * cellSize;
+const railSize = 0.09; // world-metre rail thickness around the 2.4 × 4.8 m well
+const subjectWidth = wellWidth + 2 * railSize;
+const subjectHeight = wellHeight + 2 * railSize;
+// Orthographic half-height so the framed subject (well + rails, 4.98 m)
+// fills ~0.65 of screen height — the centre of the retired framing
+// spec's [0.55, 0.75] band — at any viewport aspect (orthographic height
+// is aspect-independent; the starter's fixed 2.9 put the well at 0.83
+// while its rendered surfaces covered far less, see below).
+const ORTHOGRAPHIC_SIZE = subjectHeight / (2 * 0.65);
 
-// quaternius-cube-crate is a 2.021 m cube vs the retired 1.082 m block; the
-// scale literals below were authored against the old cube, so RENORM keeps
-// every rendered size identical. CELL_SCALE brings the crate to one
-// 0.24 m board cell; the slight fill reduction keeps a visible bevel gap.
+// Board surfaces (backplate, rails, cells, flash) are sized in world
+// metres with `scaleMode: "world"`: the engine then renders
+// scale × asset-bounds on each axis, so `worldScale*` converts a desired
+// metre size into the node scale for the cubic crate. The starter's
+// RENORM literals instead went through the default normalize-to-unit fit
+// (rendered size = scale × 1.55 m regardless of asset size), which left
+// the backplate and rails spanning only ~43% of the 4.8 m well and the
+// settled practice rows as a ~5%-of-screen strip (lane 38422405739
+// contact sheet: a tiny board in a black void). bs() now serves only the
+// hold-preview stand-in, which keeps its authored starter size.
 const RENORM = 1.082 / assets.quaterniusCubeCrate.bounds[1];
 const bs = (n: number) => n * RENORM;
-const CELL_SCALE = (cellSize / 2) * RENORM;
-const CELL_FILL_SCALE = 0.112 * RENORM;
+const CRATE_BOUNDS = assets.quaterniusCubeCrate.bounds;
+const worldScale = (metres: number) => metres / CRATE_BOUNDS[1];
+const worldScale3 = (x: number, y: number, z: number): [number, number, number] =>
+  [x / CRATE_BOUNDS[0], y / CRATE_BOUNDS[1], z / CRATE_BOUNDS[2]];
+// Active cells render at 96% of a 0.24 m board cell, settled cells at
+// 92% — the slight fill reduction keeps a visible bevel gap.
+const CELL_SCALE = worldScale(cellSize * 0.96);
+const CELL_FILL_SCALE = worldScale(cellSize * 0.92);
 const FLASH_MS = 280;
 
 // Per-piece colours stay inside the neon-arcade palette family: the cyan
@@ -282,7 +311,7 @@ app.camera?.use(
   camera.rigs.static({
     position: [0.35, boardCenterY + 0.81, 4.6],
     target: [0, boardCenterY, 0],
-    orthographicSize: 2.9
+    orthographicSize: ORTHOGRAPHIC_SIZE
   })
 );
 const feel = gameFeel.create({ app, time: app.time });
@@ -380,10 +409,11 @@ function buildScene(board: Board) {
     model(assets.quaterniusWallModular, { name: "typed arcade cabinet", castShadow: true })
       .position(1.9, 0.2, -0.7)
       .scale(0.2),
-    // Dark glossy board backing sourced from the same typed block GLB.
-    model(assets.quaterniusCubeCrate, { name: "board glossy backplate", material: material.pbr({ color: "#0b0e18", roughness: 0.18, metalness: 0.55 }) })
+    // Dark glossy board backing sourced from the same typed block GLB,
+    // sized in world metres to the full subject (well + rails).
+    model(assets.quaterniusCubeCrate, { name: "board glossy backplate", material: material.pbr({ color: "#0b0e18", roughness: 0.18, metalness: 0.55 }), scaleMode: "world" })
       .position(0, boardCenterY, -0.16)
-      .scale([bs(1.42), bs(2.5), bs(0.03)]),
+      .scale(worldScale3(subjectWidth, subjectHeight, 0.06)),
     ...boardFrameNodes(),
     ...settledCellsNode(board),
     ...activeCellNodes(),
@@ -399,26 +429,26 @@ function buildScene(board: Board) {
   return scene()
     .add(looks.preset(LOOK_ID))
     .addMany(nodes)
-    .camera(camera.orthographic({ position: [0.35, 0.75, 4.6], target: [0, boardCenterY, 0], orthographicSize: 2.9 }));
+    .camera(camera.orthographic({ position: [0.35, 0.75, 4.6], target: [0, boardCenterY, 0], orthographicSize: ORTHOGRAPHIC_SIZE }));
 }
 
 function boardFrameNodes(): AuraNodeInput[] {
   const rail = material.pbr({ color: FRAME_COLOR, roughness: 0.3, metalness: 0.5, emissive: FRAME_ACCENT, emissiveIntensity: 0.22 });
-  const railThickness = 0.045; // 0.09 m rails around the 2.4 × 4.8 m well
-  const railHeight = (visibleRows * cellSize) / 2 + railThickness;
+  const railDepth = 0.18;
+  const halfRail = railSize / 2;
   return [
-    model(assets.quaterniusCubeCrate, { name: "board frame left rail", material: rail })
-      .position(boardOrigin.x - railThickness, boardCenterY, 0)
-      .scale([bs(railThickness), bs(railHeight), bs(0.09)]),
-    model(assets.quaterniusCubeCrate, { name: "board frame right rail", material: rail })
-      .position(-boardOrigin.x + railThickness, boardCenterY, 0)
-      .scale([bs(railThickness), bs(railHeight), bs(0.09)]),
-    model(assets.quaterniusCubeCrate, { name: "board frame bottom rail", material: rail })
-      .position(0, boardOrigin.y - railThickness, 0)
-      .scale([bs(0.69), bs(railThickness), bs(0.09)]),
-    model(assets.quaterniusCubeCrate, { name: "board frame top rail", material: rail })
-      .position(0, boardTop + railThickness, 0)
-      .scale([bs(0.69), bs(railThickness), bs(0.09)])
+    model(assets.quaterniusCubeCrate, { name: "board frame left rail", material: rail, scaleMode: "world" })
+      .position(boardOrigin.x - halfRail, boardCenterY, 0)
+      .scale(worldScale3(railSize, subjectHeight, railDepth)),
+    model(assets.quaterniusCubeCrate, { name: "board frame right rail", material: rail, scaleMode: "world" })
+      .position(-boardOrigin.x + halfRail, boardCenterY, 0)
+      .scale(worldScale3(railSize, subjectHeight, railDepth)),
+    model(assets.quaterniusCubeCrate, { name: "board frame bottom rail", material: rail, scaleMode: "world" })
+      .position(0, boardOrigin.y - halfRail, 0)
+      .scale(worldScale3(subjectWidth, railSize, railDepth)),
+    model(assets.quaterniusCubeCrate, { name: "board frame top rail", material: rail, scaleMode: "world" })
+      .position(0, boardTop + halfRail, 0)
+      .scale(worldScale3(subjectWidth, railSize, railDepth))
   ];
 }
 
@@ -447,6 +477,7 @@ function settledCellsNode(board: Board): AuraNodeInput[] {
       transforms,
       colors,
       material: material.pbr({ color: "#ffffff", roughness: 0.22, metalness: 0.3 }),
+      scaleMode: "world",
       instancingAware: true
     })
   ];
@@ -454,7 +485,7 @@ function settledCellsNode(board: Board): AuraNodeInput[] {
 
 function activeCellNodes(): AuraNodeInput[] {
   return Array.from({ length: 4 }, (_, index) =>
-    model(assets.quaterniusCubeCrate, { name: `active piece cell ${index}`, material: material.neon({ color: "#4de8ff", emissive: "#4de8ff", emissiveIntensity: 0.45 }) })
+    model(assets.quaterniusCubeCrate, { name: `active piece cell ${index}`, material: material.neon({ color: "#4de8ff", emissive: "#4de8ff", emissiveIntensity: 0.45 }), scaleMode: "world" })
       .position(0, -50, 0.14)
       .scale(CELL_SCALE)
       .runtime(game.runtimeNode(`active-cell-${index}`, { tags: ["active-cell", "runtime"] }))
@@ -465,9 +496,9 @@ function activeCellNodes(): AuraNodeInput[] {
 // bars stretch across the board and pulse emissive while a clear animates.
 function flashRowNodes(): AuraNodeInput[] {
   return Array.from({ length: 4 }, (_, index) =>
-    model(assets.quaterniusCubeCrate, { name: `line clear flash ${index}`, material: material.neon({ color: FRAME_ACCENT, emissive: FRAME_ACCENT, emissiveIntensity: 1.6 }) })
+    model(assets.quaterniusCubeCrate, { name: `line clear flash ${index}`, material: material.neon({ color: FRAME_ACCENT, emissive: FRAME_ACCENT, emissiveIntensity: 1.6 }), scaleMode: "world" })
       .position(0, -50, 0.16)
-      .scale([bs(0.66), CELL_FILL_SCALE, bs(0.05)])
+      .scale(worldScale3(wellWidth, cellSize * 0.92, 0.1))
       .runtime(game.runtimeNode(`flash-row-${index}`, { tags: ["flash", "runtime"] }))
   );
 }
@@ -653,11 +684,46 @@ function publishEvidence(state: KitState): void {
       drawCalls: diagnostics.drawCalls
     },
     flash: { modelBased: true, activeRows: performance.now() < flashRows.until ? flashRows.rows : [] },
+    framing: framingEvidence(),
     audio: audioEvidence(),
     evidence
   };
   latestSnapshot = snapshot;
   window.__aura3dGameSnapshot = snapshot;
+}
+
+// Projects the board subject bounds (well + rails, backplate back to rail
+// front in z) through the camera evidence's view-projection matrix and
+// reports the NDC height as a screen-height fraction. The default boot
+// mounts the stub camera controller whose evidence carries an empty
+// matrix, so the fraction is null there — measuring it would mean
+// re-deriving the engine's projection in the app, which could drift from
+// the matrix the renderer actually drew with.
+function framingEvidence(): BlockfallReactorEvidence["framing"] {
+  const cam = app.camera?.evidence?.();
+  const vp = cam?.viewProjection;
+  if (!cam || !vp || vp.length !== 16) {
+    return { rig: cam?.rig ?? "unavailable", subjectScreenHeightFraction: null };
+  }
+  const min: readonly [number, number, number] = [boardOrigin.x - railSize, boardOrigin.y - railSize, -0.19];
+  const max: readonly [number, number, number] = [-boardOrigin.x + railSize, boardTop + railSize, 0.09];
+  let ndcMin = Infinity;
+  let ndcMax = -Infinity;
+  for (const x of [min[0], max[0]]) {
+    for (const y of [min[1], max[1]]) {
+      for (const z of [min[2], max[2]]) {
+        const clipY = vp[1]! * x + vp[5]! * y + vp[9]! * z + vp[13]!;
+        const clipW = vp[3]! * x + vp[7]! * y + vp[11]! * z + vp[15]!;
+        if (!Number.isFinite(clipY) || !Number.isFinite(clipW) || clipW === 0) {
+          return { rig: cam.rig, subjectScreenHeightFraction: null };
+        }
+        const ndcY = clipY / clipW;
+        ndcMin = Math.min(ndcMin, ndcY);
+        ndcMax = Math.max(ndcMax, ndcY);
+      }
+    }
+  }
+  return { rig: cam.rig, subjectScreenHeightFraction: (ndcMax - ndcMin) / 2 };
 }
 
 function audioEvidence(): BlockfallReactorEvidence["audio"] {
