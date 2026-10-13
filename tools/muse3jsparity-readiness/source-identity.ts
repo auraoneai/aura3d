@@ -2,7 +2,7 @@
  * Browser test collection must not initialize unrelated publication tooling. */
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { lstatSync, readFileSync, readlinkSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 
 export interface SourceIdentity { commit: string; tree: string; lockfileSha256: string; fingerprint: string }
@@ -43,6 +43,17 @@ export const isSourceInput = (path: string): boolean => !!path
   // product source identity of the artifacts being reviewed.
   && path !== 'docs/project/reviews/muse3jsparity-301-combined-source-dispositions.json'
   && path !== 'benchmark/context/muse3jsparity-r185-matrix.json';
+/** Bytes that identify one listed path: tracked symlinks (e.g. `public/packs`)
+ * hash by link target exactly as git stores them, and gitlink directories by
+ * marker; following a symlink to a directory crashes with EISDIR. */
+function sourceBytes(root: string, path: string): string | Uint8Array {
+  const absolute = resolve(root, path);
+  let stat;
+  try { stat = lstatSync(absolute); } catch { return '<deleted>'; }
+  if (stat.isSymbolicLink()) return `<symlink:${readlinkSync(absolute)}>`;
+  if (stat.isDirectory()) return '<directory>';
+  return readFileSync(absolute);
+}
 /** Hash tracked source and untracked source; exclude only generated outputs, not dirty source. */
 export function sourceIdentity(root: string): SourceIdentity {
   const git = (...args: string[]) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
@@ -51,7 +62,7 @@ export function sourceIdentity(root: string): SourceIdentity {
   const hash = createHash('sha256');
   for (const path of [...new Set(paths)].sort()) {
     hash.update(path).update('\0');
-    hash.update(existsSync(resolve(root, path)) ? readFileSync(resolve(root, path)) : '<deleted>');
+    hash.update(sourceBytes(root, path));
     hash.update('\0');
   }
   return { commit: git('rev-parse', 'HEAD'), tree: git('rev-parse', 'HEAD^{tree}'),
