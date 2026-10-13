@@ -275,7 +275,7 @@ const app = createAuraApp("#app", {
     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
   },
   scene: scene()
-  .background("#101f33")
+  .background("#0b1728")
     .addMany(dressing.staticNodes)
     .addMany(dressing.pickupZone)
     .addMany(dressing.dropZone)
@@ -285,7 +285,7 @@ const app = createAuraApp("#app", {
     // 1.72 over emissive city dressing and blew the whole frame - including the
     // player's own van - into a white core. Art direction is now a single set of
     // values so evidence and gameplay cannot drift apart again.
-    .add(effects.fog({ name: "night city haze", color: "#38536d", density: 0.0045, intensity: 0.48 }))
+    .add(effects.fog({ name: "night city haze", color: "#38536d", density: 0.0038, intensity: 0.46 }))
     // Bloom was authored at 0.5, which is a screenshot-kernel value, not a
     // gameplay one. At that strength the typed van's white livery, its own
     // headlight cones and every rain trace merged into one white mass: the
@@ -301,17 +301,17 @@ const app = createAuraApp("#app", {
     // because the engine records it in `diagnostics.errors` instead of
     // rethrowing. 0.5 is the maximum legal value and the repo-wide convention.
     .add(withPostV2Bloom(effects.neonBloom({ intensity: reducedMotion ? 0.26 : 0.44, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }), reducedMotion ? 0.26 / 0.44 : 1))
-    .add(effects.colorGrade({ exposure: 1.05 * POST_V2_EXPOSURE, contrast: 1.06, saturation: 1.22 }))
+    .add(effects.colorGrade({ exposure: 0.93 * POST_V2_EXPOSURE, contrast: 1.06, saturation: 1.22 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     .addMany(createCourierEffectsPass({ reducedMotion, depot: START_SITE }))
     // The street itself was reading as black-on-black void with a few floating
     // signs. A lifted cool ambient plus a stronger moon key gives the kit
     // towers, kerbs and lane paint actual form between the practicals.
-    .add(lights.ambient({ name: "night city fill", color: "#93b7d4", intensity: 1.3 }))
+    .add(lights.ambient({ name: "night city fill", color: "#93b7d4", intensity: 1.25 }))
     .add(lights.directional({
       name: "moonlight key",
       color: "#ffd2a0",
-      intensity: 2.6,
+      intensity: 2.5,
       // Effects pass: cascaded PCSS moon shadows across the chase depth.
       shadow: { cascades: 1, mapSize: 1024, filter: "pcss", softness: 1, maxDistance: 60, intensity: 0.9 }
     }).position(-18, 26, 8))
