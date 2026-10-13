@@ -42,7 +42,12 @@ describe("resolvePostAntiAlias (§7.2)", () => {
   test("explicit modes", () => {
     const base = { renderPixels: 1_920 * 1_080, velocity };
     expect(resolvePostAntiAlias({ settings: QUALITY_TIERS.high, tier: "high", authored: "off", ...base }).mode).toBe("off");
-    expect(resolvePostAntiAlias({ settings: QUALITY_TIERS.high, tier: "high", authored: "fxaa", ...base })).toEqual({ mode: "fxaa", sampleCount: 1 });
+    // E4: authored FXAA on an MSAA-capable tier is overridden by MSAA, reported.
+    expect(resolvePostAntiAlias({ settings: QUALITY_TIERS.high, tier: "high", authored: "fxaa", ...base })).toEqual({ mode: "msaa", sampleCount: 4, reason: "FXAA_OVERRIDDEN_BY_MSAA" });
+    // FXAA stays available where MSAA cannot run: the no-MSAA low tier, and
+    // an MSAA tier blocked by the pixel guard.
+    expect(resolvePostAntiAlias({ settings: QUALITY_TIERS.low, tier: "low", authored: "fxaa", ...base })).toEqual({ mode: "fxaa", sampleCount: 1 });
+    expect(resolvePostAntiAlias({ settings: QUALITY_TIERS.high, tier: "high", authored: "fxaa", renderPixels: 3840 * 2160, velocity })).toEqual({ mode: "fxaa", sampleCount: 1 });
     expect(resolvePostAntiAlias({ settings: QUALITY_TIERS.high, tier: "high", authored: "smaa", ...base })).toEqual({ mode: "smaa", sampleCount: 1 });
     expect(resolvePostAntiAlias({ settings: QUALITY_TIERS.high, tier: "high", authored: "msaa", ...base })).toEqual({ mode: "msaa", sampleCount: 4 });
     // Static frame: every mover (none) has history → TAA allowed.
@@ -127,12 +132,29 @@ describe("compiler Phase-1 wiring (flag A3D_QR_POST)", () => {
     expect(options.fxaa).toEqual({});
   });
 
-  test("flag on: authored fxaa submits the r185 variant (present split + dither)", () => {
+  test("flag on: authored fxaa on the default high tier is overridden by MSAA (E4)", () => {
     recordAuthoredPostContext(flagOnContext());
     const options = createProductionRuntimePostprocess(snapshotWithEffects(), [], 320, 200);
-    expect(options.fxaa).toEqual({ variant: "r185" });
-    expect(options.sampleCount).toBe(1);
-    expect(latestSubmittedPostprocess()?.authored.resolvedAntiAlias?.mode).toBe("fxaa");
+    expect(options.fxaa).toBeUndefined();
+    expect(options.sampleCount).toBe(4);
+    expect(latestSubmittedPostprocess()?.authored.resolvedAntiAlias).toMatchObject({
+      mode: "msaa",
+      sampleCount: 4,
+      reason: "FXAA_OVERRIDDEN_BY_MSAA"
+    });
+  });
+
+  test("flag on: no antiAlias node still resolves the tier AA (E4 auto-resolve)", () => {
+    recordAuthoredPostContext(flagOnContext());
+    const options = createProductionRuntimePostprocess(
+      scene().add(effects.bloom({ intensity: 0.5 })).toJSON(),
+      [],
+      1280,
+      720
+    );
+    expect(options.sampleCount).toBe(4);
+    expect(options.fxaa).toBeUndefined();
+    expect(latestSubmittedPostprocess()?.authored.resolvedAntiAlias).toMatchObject({ mode: "msaa", sampleCount: 4 });
   });
 
   test("flag on: antiAlias node without authored mode resolves via the tier row (high → msaa 4x, no fxaa)", () => {
@@ -178,7 +200,7 @@ describe("compiler Phase-1 wiring (flag A3D_QR_POST)", () => {
     recordAuthoredPostContext(flagOnContext());
     createProductionRuntimePostprocess(snapshotWithEffects(), [], 320, 200);
     const post = collectPostSection({} as AuraApp);
-    expect(post.antiAlias).toMatchObject({ mode: "fxaa", sampleCount: 1, tier: "high" });
+    expect(post.antiAlias).toMatchObject({ mode: "msaa", sampleCount: 4, tier: "high" });
   });
 });
 
