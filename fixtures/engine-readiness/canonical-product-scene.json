@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "a3d-engine-readiness-canonical-product-scene",
+  "kind": "canonical-product-scene",
+  "sourceFixture": "createCanonicalProductSceneRenderKit",
+  "blockedClaims": [
+    "Unity replacement",
+    "Unreal replacement",
+    "broad Three.js replacement",
+    "Babylon.js replacement",
+    "production game engine"
+  ]
+}
