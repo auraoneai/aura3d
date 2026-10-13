@@ -68,9 +68,9 @@
         "routeJsGzipKB": 80,
         "drawCalls": {
           "low": 150,
-          "medium": 150,
-          "high": 150,
-          "ultra": 300
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -89,7 +89,7 @@
       "timeline": [
         {
           "audio-webm": {
-           "seconds": 60
+            "seconds": 60
           }
         },
         {
@@ -346,10 +346,10 @@
         "transferToPlayableMB": 12,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 120,
-          "medium": 150,
-          "high": 150,
-          "ultra": 300
+          "low": 150,
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -617,9 +617,9 @@
         "routeJsGzipKB": 80,
         "drawCalls": {
           "low": 150,
-          "medium": 250,
-          "high": 250,
-          "ultra": 500
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -862,8 +862,8 @@
         "drawCalls": {
           "low": 150,
           "medium": 300,
-          "high": 350,
-          "ultra": 700
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -1109,10 +1109,10 @@
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 120,
-          "medium": 200,
-          "high": 200,
-          "ultra": 400
+          "low": 150,
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -1349,10 +1349,10 @@
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 120,
-          "medium": 150,
-          "high": 150,
-          "ultra": 300
+          "low": 150,
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -1597,10 +1597,10 @@
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 120,
-          "medium": 150,
-          "high": 150,
-          "ultra": 300
+          "low": 150,
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -1860,10 +1860,10 @@
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 100,
-          "medium": 120,
-          "high": 120,
-          "ultra": 240
+          "low": 150,
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -2105,8 +2105,8 @@
         "drawCalls": {
           "low": 150,
           "medium": 300,
-          "high": 300,
-          "ultra": 600
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -2125,7 +2125,7 @@
       "timeline": [
         {
           "audio-webm": {
-           "seconds": 60
+            "seconds": 60
           }
         },
         {
@@ -2348,10 +2348,10 @@
         "transferToPlayableMB": 12,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 120,
-          "medium": 200,
-          "high": 200,
-          "ultra": 400
+          "low": 150,
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -2619,9 +2619,9 @@
         "routeJsGzipKB": 80,
         "drawCalls": {
           "low": 150,
-          "medium": 250,
-          "high": 250,
-          "ultra": 500
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -2902,10 +2902,10 @@
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 100,
-          "medium": 100,
-          "high": 100,
-          "ultra": 200
+          "low": 150,
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -3148,9 +3148,9 @@
         "routeJsGzipKB": 80,
         "drawCalls": {
           "low": 150,
-          "medium": 200,
-          "high": 200,
-          "ultra": 400
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -3397,9 +3397,9 @@
         "routeJsGzipKB": 80,
         "drawCalls": {
           "low": 150,
-          "medium": 250,
-          "high": 250,
-          "ultra": 500
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -3660,9 +3660,9 @@
         "routeJsGzipKB": 80,
         "drawCalls": {
           "low": 150,
-          "medium": 200,
-          "high": 200,
-          "ultra": 400
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -3907,9 +3907,9 @@
         "routeJsGzipKB": 80,
         "drawCalls": {
           "low": 150,
-          "medium": 230,
-          "high": 230,
-          "ultra": 460
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -4163,10 +4163,10 @@
         "transferToPlayableMB": 12,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 100,
-          "medium": 120,
-          "high": 120,
-          "ultra": 240
+          "low": 150,
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },
@@ -4185,7 +4185,7 @@
       "timeline": [
         {
           "audio-webm": {
-           "seconds": 60
+            "seconds": 60
           }
         },
         {
@@ -4412,10 +4412,10 @@
         "transferToPlayableMB": 12,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 80,
-          "medium": 80,
-          "high": 80,
-          "ultra": 160
+          "low": 150,
+          "medium": 300,
+          "high": 400,
+          "ultra": 800
         },
         "gameLogicCpuMs": 4
       },

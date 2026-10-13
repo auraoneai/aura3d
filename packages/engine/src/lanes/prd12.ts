@@ -29,8 +29,17 @@ function collectAppliedLook(app: AuraApp): AppliedLookReport | null {
   if (assembling.has(app)) return null;
   assembling.add(app);
   try {
-    const renderer = app.diagnostics().renderer;
+    const diag = app.diagnostics();
+    const renderer = diag.renderer;
     if (!renderer) return null;
+    const outputSection = (diag as { output?: { exposure?: { applied?: unknown } | null } }).output;
+    const outputState = (app as {
+      output?: { [key: symbol]: { snapshot?: () => { applied?: { exposure?: unknown }; requested?: { exposure?: unknown } } } };
+    }).output?.[Symbol.for("a3d.prd01.output-state")]?.snapshot?.();
+    const rawExposure = outputSection?.exposure?.applied ?? outputState?.applied?.exposure ?? outputState?.requested?.exposure;
+    const resolvedExposure = typeof rawExposure === "number" && Number.isFinite(rawExposure)
+      ? rawExposure
+      : (renderer.exposure?.exposure ?? Number.NaN);
     const env = renderer.environment;
     const intensity = env?.intensity ?? Number.NaN;
     const shadows = renderer.shadows;
@@ -47,7 +56,7 @@ function collectAppliedLook(app: AuraApp): AppliedLookReport | null {
     const fallbackActive = lights.length > 0
       && lights.every((light) => (light.source.userData as Record<string, unknown>).aura3dAuthoredLight === "fallback");
     return {
-      exposure: renderer.exposure?.exposure ?? Number.NaN,
+      exposure: resolvedExposure,
       toneMapping: renderer.toneMapping ?? "none",
       environment: {
         specularIntensity: intensity,

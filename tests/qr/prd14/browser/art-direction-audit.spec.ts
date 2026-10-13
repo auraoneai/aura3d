@@ -39,7 +39,8 @@ function serve(dir: string): Promise<{ server: Server; url: string }> {
   const roots = [
     root,
     join(APPS, basename(root), "public"),
-    join(ROOT, "public")
+    join(ROOT, "public"),
+    join(ROOT, "packages", "create-aura3d")
   ].filter((d) => existsSync(d)).map((d) => realpathSync(resolve(d)));
   const server = createServer((req, res) => {
     const raw = new URL(req.url ?? "/", "http://x").pathname;
@@ -60,6 +61,7 @@ function serve(dir: string): Promise<{ server: Server; url: string }> {
         continue;
       }
     }
+    if (path === "/favicon.ico") { res.writeHead(204); res.end(); return; }
     res.writeHead(404); res.end("not found");
   });
   return new Promise((resolve) => {

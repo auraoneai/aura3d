@@ -4096,11 +4096,27 @@ function validateSceneGraph(json: GLTFJson, sceneIndex = resolveDefaultSceneInde
     visit(nodeIndex);
   }
 
-  for (const [rootListIndex, rootNodeIndex] of (json.scenes?.[sceneIndex]?.nodes ?? []).entries()) {
+  const sceneRoots = json.scenes?.[sceneIndex]?.nodes ?? [];
+  const sceneReachable = new Set<number>();
+  const markReachable = (nodeIndex: number): void => {
+    if (sceneReachable.has(nodeIndex) || !nodeDefinitions[nodeIndex]) return;
+    sceneReachable.add(nodeIndex);
+    for (const childIndex of nodeDefinitions[nodeIndex]?.children ?? []) {
+      markReachable(childIndex);
+    }
+  };
+  for (const rootNodeIndex of sceneRoots) {
+    if (Number.isInteger(rootNodeIndex) && rootNodeIndex >= 0) {
+      markReachable(rootNodeIndex);
+    }
+  }
+
+  for (const [rootListIndex, rootNodeIndex] of sceneRoots.entries()) {
     if (!Number.isInteger(rootNodeIndex) || rootNodeIndex < 0 || !nodeDefinitions[rootNodeIndex]) {
       throw new Error(`glTF scene ${sceneIndex} root ${rootListIndex} references missing node ${rootNodeIndex}`);
     }
-    if (parentByNode.has(rootNodeIndex)) {
+    const parentIndex = parentByNode.get(rootNodeIndex);
+    if (parentIndex !== undefined && sceneReachable.has(parentIndex)) {
       throw new Error(`glTF scene ${sceneIndex} root ${rootNodeIndex} is also a child node`);
     }
   }

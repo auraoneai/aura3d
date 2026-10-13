@@ -30,7 +30,7 @@ export function serve(dir: string): Promise<{ server: Server; url: string }> {
   // (builtDist's last candidate), so a `dist` basename steps up one level.
   const distRoot = resolve(dir);
   const appDir = basename(distRoot) === "dist" ? basename(dirname(distRoot)) : basename(distRoot);
-  const roots = [distRoot, join(APPS, appDir, "public"), join(ROOT, "public")];
+  const roots = [distRoot, join(APPS, appDir, "public"), join(ROOT, "public"), join(ROOT, "packages", "create-aura3d")];
   const server = createServer((req, res) => {
     const raw = new URL(req.url ?? "/", "http://x").pathname;
     // capture-games builds with `base: /apps/<dir>/`; serve those URLs from
@@ -44,6 +44,7 @@ export function serve(dir: string): Promise<{ server: Server; url: string }> {
       // it resolved from.
       .find(({ root, file }) => (file === root || file.startsWith(root + sep)) && existsSync(file))?.file;
     if (file === undefined) {
+      if (path === "/favicon.ico") { res.writeHead(204); res.end(); return; }
       res.writeHead(404); res.end("not found"); return;
     }
     res.writeHead(200, { "content-type": MIME[extname(file)] ?? "application/octet-stream" });

@@ -287,7 +287,8 @@ function startStaticServer() {
   const fallbackRoots = [
     path.join(repoRoot, "public"),
     ...appPublicRoots,
-    path.join(repoRoot, "marketing", "public")
+    path.join(repoRoot, "marketing", "public"),
+    path.join(repoRoot, "packages", "create-aura3d")
   ];
   const tryFile = (root, rel) => {
     const full = path.resolve(root, `.${rel}`);
@@ -310,7 +311,10 @@ function startStaticServer() {
       if (appPrefix) candidates.push(tryFile(root, appPrefix));
     }
     const file = candidates.find(Boolean);
-    if (!file) { res.writeHead(404, { "content-type": "text/plain" }).end("not found"); return; }
+    if (!file) {
+      if (pathname.endsWith("/favicon.ico")) { res.writeHead(204).end(); return; }
+      res.writeHead(404, { "content-type": "text/plain" }).end("not found"); return;
+    }
     res.writeHead(200, {
       "content-type": MIME[path.extname(file).toLowerCase()] ?? "application/octet-stream",
       "cache-control": "no-store",
