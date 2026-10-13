@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   AssetManager,
   computeAutoFitTransform,
+  fetchGltfBytesShared,
   GLTFLoader,
   normalizeSkinWeights,
   OBJLoader,
@@ -502,3 +503,69 @@ function pad4(buffer: Buffer, fill: number): Buffer {
   if (remainder === 0) return buffer;
   return Buffer.concat([buffer, Buffer.alloc(4 - remainder, fill)]);
 }
+
+// Production regression (2026-10-13): scenes instantiate the same prop GLB
+// many times; concurrent same-URL fetches abort in Chromium with
+// net::ERR_CACHE_WRITE_FAILURE. fetchGltfBytesShared must issue exactly one
+// network fetch per in-flight URL.
+test("fetchGltfBytesShared shares one fetch across concurrent same-URL loads", async () => {
+  const realFetch = globalThis.fetch;
+  let calls = 0;
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => { release = resolve; });
+  globalThis.fetch = (async () => {
+    calls += 1;
+    await gate;
+    return {
+      ok: true,
+      status: 200,
+      headers: { get: () => "4" },
+      body: null,
+      arrayBuffer: async () => new Uint8Array([1, 2, 3, 4]).buffer
+    } as unknown as Response;
+  }) as typeof fetch;
+  try {
+    const request = { url: "https://example.test/prop.glb" };
+    const pending = Array.from({ length: 5 }, () =>
+      fetchGltfBytesShared("https://example.test/prop.glb", "document", request, (status) => `failed ${status}`));
+    release();
+    const results = await Promise.all(pending);
+    assert.equal(calls, 1);
+    for (const bytes of results) assert.deepEqual([...new Uint8Array(bytes)], [1, 2, 3, 4]);
+    new Uint8Array(results[0])[0] = 99;
+    assert.equal(new Uint8Array(results[1])[0], 1);
+    // After settle the next load fetches again (HTTP cache serves it).
+    await fetchGltfBytesShared("https://example.test/prop.glb", "document", request, (status) => `failed ${status}`);
+    assert.equal(calls, 2);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test("fetchGltfBytesShared propagates HTTP failures with the caller's message", async () => {
+  const realFetch = globalThis.fetch;
+  let calls = 0;
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => { release = resolve; });
+  globalThis.fetch = (async () => {
+    calls += 1;
+    await gate;
+    return { ok: false, status: 404, headers: { get: () => null }, body: null } as unknown as Response;
+  }) as typeof fetch;
+  try {
+    const request = { url: "https://example.test/missing.glb" };
+    const pending = [
+      fetchGltfBytesShared("https://example.test/missing.glb", "document", request, (status) => `glTF request failed with ${status}`),
+      fetchGltfBytesShared("https://example.test/missing.glb", "document", request, (status) => `glTF request failed with ${status}`)
+    ];
+    release();
+    const settled = await Promise.allSettled(pending);
+    assert.equal(calls, 1);
+    for (const result of settled) {
+      assert.equal(result.status, "rejected");
+      if (result.status === "rejected") assert.match(String(result.reason), /glTF request failed with 404/);
+    }
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});

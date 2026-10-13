@@ -3103,6 +3103,42 @@ interface GLTFDocument {
   readonly jsonChunkBytes: number;
 }
 
+// Concurrent loads of the same URL share one network fetch. Scenes
+// instantiate the same multi-MB prop GLB many times; without dedupe every
+// instance downloads it in parallel and Chromium aborts those same-key
+// cache writes with net::ERR_CACHE_WRITE_FAILURE over the network
+// (localhost loads finish too fast to collide). The first caller's signal
+// and progress drive the shared read; later callers parse their own copy
+// of the bytes and emit a synthetic complete progress event.
+const inFlightGltfFetches = new Map<string, Promise<ArrayBuffer>>();
+
+export function fetchGltfBytesShared(
+  url: string,
+  phase: AssetLoadProgress["phase"],
+  request: AssetLoadRequest,
+  describeFailure: (status: number) => string
+): Promise<ArrayBuffer> {
+  const pending = inFlightGltfFetches.get(url) ?? (async () => {
+    const response = await fetch(url, { signal: request.signal });
+    if (!response.ok) {
+      throw new Error(describeFailure(response.status));
+    }
+    return readResponseBytes(response, url, phase, request);
+  })();
+  if (!inFlightGltfFetches.has(url)) {
+    inFlightGltfFetches.set(url, pending);
+    const clear = () => {
+      if (inFlightGltfFetches.get(url) === pending) inFlightGltfFetches.delete(url);
+    };
+    pending.then(clear, clear);
+    return pending.then((bytes) => bytes.slice(0));
+  }
+  return pending.then((bytes) => {
+    request.onProgress?.({ url, phase: "complete", loadedBytes: bytes.byteLength, totalBytes: bytes.byteLength });
+    return bytes.slice(0);
+  });
+}
+
 async function loadDocument(request: AssetLoadRequest): Promise<GLTFDocument> {
   const binary = request.url.startsWith("data:model/gltf-binary") || /\.glb(?:\?.*)?$/i.test(request.url);
 
@@ -3119,16 +3155,11 @@ async function loadDocument(request: AssetLoadRequest): Promise<GLTFDocument> {
     throw new Error("GLTFLoader requires fetch for non-data URLs");
   }
 
-  const response = await fetch(request.url, { signal: request.signal });
-  if (!response.ok) {
-    throw new Error(`glTF request failed with ${response.status}`);
-  }
+  const bytes = await fetchGltfBytesShared(request.url, "document", request, (status) => `glTF request failed with ${status}`);
 
   if (binary) {
-    return parseGLB(await readResponseBytes(response, request.url, "document", request), request.url);
+    return parseGLB(bytes, request.url);
   }
-
-  const bytes = await readResponseBytes(response, request.url, "document", request);
   return { json: JSON.parse(new TextDecoder().decode(bytes)) as GLTFJson, url: request.url, byteLength: bytes.byteLength, version: 0, jsonChunkBytes: 0 };
 }
 
@@ -3171,11 +3202,8 @@ async function loadBuffer(
   }
 
   const url = new URL(buffer.uri, resolveAbsoluteDocumentUrl(document.url)).toString();
-  const response = await fetch(url, { signal: request.signal });
-  if (!response.ok) {
-    throw new Error(`glTF buffer request failed with ${response.status}`);
-  }
-  return validateLoadedBufferLength(index, buffer, await readResponseBytes(response, url, "buffer", request));
+  const bytes = await fetchGltfBytesShared(url, "buffer", request, (status) => `glTF buffer request failed with ${status}`);
+  return validateLoadedBufferLength(index, buffer, bytes);
 }
 
 /**
