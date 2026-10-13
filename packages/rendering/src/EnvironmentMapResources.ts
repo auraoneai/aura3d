@@ -7,7 +7,7 @@ import {
 
 export type EnvironmentColorSpace = "linear" | "srgb";
 export type EnvironmentInputEncoding = "rgba8-linear" | "rgba8-srgb" | "rgbe";
-export type EnvironmentTextureEncoding = "rgba8-linear" | "rgba8-srgb" | "rgbe";
+export type EnvironmentTextureEncoding = "rgba8-linear" | "rgba8-srgb" | "rgbe" | "rgba16f";
 export type EnvironmentToneMappingOperator = "linear" | "reinhard";
 
 const A3D_EPSILON_NUMBER = 0.00001;
@@ -522,14 +522,25 @@ export function createEnvironmentMapResourceSet(
   const linearForTexture = textureEncoding === "rgbe"
     ? scaleLinearHdrEnvironment(linear, 1)
     : scaleLinearHdrEnvironment(linear, options.exposure ?? 1);
+  // E3 stage-2b half-float: the uploaded chain is `specularMipLevels`
+  // (explicit Uint16 levels from the GGX prefilter, so float sampling never
+  // hits the one-mip pin in webgl2/Samplers). `base`/`diffuseIrradiance`
+  // stay Rgba8 CPU representations (linear, untonemapped on this path) for
+  // the existing typed consumers; GPU consumers bind the mip chain.
+  const halfFloat = textureEncoding === "rgba16f";
   const base = textureEncoding === "rgbe"
     ? encodeLinearHdrEnvironmentToRgbe(linearForTexture)
     : encodeLinearHdrEnvironmentToRgba8(linear, {
       exposure: options.exposure ?? 1,
-      toneMapping: options.toneMapping ?? (inputEncoding === "rgba8-linear" || inputEncoding === "rgba8-srgb" ? "linear" : "reinhard"),
-      outputColorSpace: textureEncoding === "rgba8-linear" ? "linear" : "srgb"
+      toneMapping: options.toneMapping ?? (halfFloat || inputEncoding === "rgba8-linear" || inputEncoding === "rgba8-srgb" ? "linear" : "reinhard"),
+      outputColorSpace: halfFloat || textureEncoding === "rgba8-linear" ? "linear" : "srgb"
     });
-  const specularMipLevels = textureEncoding === "rgbe"
+  const specularMipLevels = halfFloat
+    ? generateRgba16fSpecularPrefilterMipLevels(linearForTexture, {
+      levels: options.specularLevels,
+      ...(options.specularSampleCount === undefined ? {} : { sampleCount: options.specularSampleCount })
+    })
+    : textureEncoding === "rgbe"
     ? generateRgbeSpecularPrefilterMipLevels(linearForTexture, {
       levels: options.specularLevels,
       ...(options.specularSampleCount === undefined ? {} : { sampleCount: options.specularSampleCount })

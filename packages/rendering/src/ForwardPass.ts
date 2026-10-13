@@ -30,7 +30,11 @@ import { bindShaderFeatureUniforms, selectShaderFeatureBits } from "./program/Fe
 import { bindMaterialLobeUniforms } from "./materials/PhysicalFeatures";
 import { QUALITY_TIERS, type AuraQualityTierSettings } from "./contracts/quality";
 import { rendererQrFlags } from "./renderer/FrameGraph";
-import { qrCoreGeneratorOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererProgramCache, rendererAuraFrame } from "./renderer/qrSubFlags";
+import { qrCoreGeneratorOn, qrE3CompilerLightingOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererProgramCache, rendererAuraFrame } from "./renderer/qrSubFlags";
+import type { QrFlags } from "./contracts/core";
+import { PRD02_IBL_FEATURE, type EnvironmentProbe } from "./contracts/environment";
+import { packA3DEnvironmentUniforms } from "./environment/EnvUniforms";
+import { dfgLutBinding, dfgLutTexture } from "./program/DFGLut";
 
 
 // PR 0b-2 re-imports for moved carve-out modules (CONTRACTS.md §3.3).
@@ -171,6 +175,12 @@ export interface EnvironmentLightingOptions {
   readonly environmentMapMipCount?: number;
   readonly environmentMapEncoding?: "srgb" | "rgbe" | "linear";
   readonly environmentBrdfLutTexture?: TextureBinding;
+  /**
+   * E3 stage-2b: the bound C-09 probe (cube + SH9) for the PRD-02 IBL
+   * uniform pack. Set by `renderer/Background` only under the E3
+   * conjunction; absent/null everywhere else, where no code reads it.
+   */
+  readonly environmentProbe?: EnvironmentProbe | null;
 }
 
 export interface ProceduralEnvironmentMapLightingOptions {
@@ -401,9 +411,17 @@ export class ForwardPass extends BaseRenderPass {
     }
     if (!generated) for (const [k, v] of binding.uniforms) uniforms.set(k, v);
     applyClusteredLightingUniforms(this.clusteredLighting, shader, uniforms);
-    applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms);
-    if (generated) applyGeneratedEnvironmentMapUniforms(this.options.environmentLighting, item, shader, uniforms);
-    if (generated) applyGeneratedProceduralEnvironmentUniforms(this.options.environmentLighting, item, shader, uniforms);
+    // E3 stage-2b: under the conjunction a generated draw that selected
+    // `prd02.ibl` shades indirect from the C-09 probe pack below (single
+    // knob), so its other environment binds stop competing for the same
+    // intensity names. Frozen draws (`generated === false`) never take
+    // these branches — see the frozen-family scoping note at the pack site.
+    const drawFlags = rendererQrFlags(device);
+    const e3Conjunction = qrE3CompilerLightingOn(drawFlags);
+    const prd02Ibl = generated && e3Conjunction && this.lastProgramFeatures?.features[PRD02_IBL_FEATURE] !== undefined;
+    applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms, generated && e3Conjunction);
+    if (generated) applyGeneratedEnvironmentMapUniforms(this.options.environmentLighting, item, shader, uniforms, drawFlags);
+    if (generated) applyGeneratedProceduralEnvironmentUniforms(this.options.environmentLighting, item, shader, uniforms, prd02Ibl);
     applyEnvironmentFogUniforms(this.options.environmentFog, item, shader, uniforms);
     if (generated) applyGeneratedFogUniforms(this.options.environmentFog, shader, uniforms);
     applyForwardShadowMapUniforms(
@@ -421,6 +439,10 @@ export class ForwardPass extends BaseRenderPass {
     if (generated && this.lastProgramFeatures) {
       // C-02 `ShaderFeature.bindUniforms` for the features this draw selected.
       bindShaderFeatureUniforms(this.lastProgramFeatures.features, rendererQrFlags(device), item, (name, value) => uniforms.set(name, value));
+      // E3 stage-2b bind site: `prd02.ibl` has no feature-local bind (the
+      // probe, knob and ambient are pass state, not item state), so the
+      // PRD-02 environment pack is bound here, in the feature-bind slot.
+      if (prd02Ibl) applyPrd02EnvironmentUniforms(this.options.environmentLighting, item, baseMaterial, uniforms);
       // C-03 `lobe.bind` (04-LOBES): descriptor factors and lobe textures for the
       // lobes this record carries. Material parameters stay authoritative.
       bindMaterialLobeUniforms(this.lastProgramFeatures.extensions, baseMaterial, rendererQrFlags(device), (name, value) => {
@@ -592,6 +614,11 @@ export class ForwardPass extends BaseRenderPass {
     // T0-05: registered ShaderFeatures select their bits per draw (C-02 §A.2:
     // at acquire time); the warmup applies the same selection per item.
     const selected = item ? selectShaderFeatureBits({ item, pass: "forward", tier, flags }) : {};
+    // E3 stage-2b: `prd02.ibl` shades from a C-09 probe cube; without one
+    // (bare preset/procedural lighting) the default indirect body stays.
+    if (selected[PRD02_IBL_FEATURE] !== undefined && !prd02IblEnvironmentAvailable(this.options.environmentLighting, item)) {
+      delete selected[PRD02_IBL_FEATURE];
+    }
     // #867 (games): the feature set follows what the geometry carries
     // (three.js semantics): no uv → no uv maps, no joints/weights → no skin.
     const record = item ? featuresForGeometry({ ...mf, features: { ...mf.features, ...selected } }, (a) => geometryHasAttribute(item.geometry, a)) : { ...mf, features: { ...mf.features, ...selected } };
@@ -1215,7 +1242,8 @@ function applyEnvironmentLightingUniforms(
   environment: EnvironmentLightingOptions | undefined,
   item: RenderItem,
   shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
+  uniforms: Map<string, UniformValue>,
+  generatedE3Conjunction = false
 ): void {
   if (!environment) {
     clearProceduralEnvironmentMapUniforms(shader, uniforms);
@@ -1241,7 +1269,7 @@ function applyEnvironmentLightingUniforms(
   }
   uniforms.set("u_environmentColor", color);
   uniforms.set("u_environmentIntensity", environment.intensity);
-  applyProceduralEnvironmentMapUniforms(environment.proceduralMap, item, shader, uniforms);
+  applyProceduralEnvironmentMapUniforms(environment.proceduralMap, item, shader, uniforms, generatedE3Conjunction);
   applySampledEnvironmentMapUniforms(withItemEnvironmentCube(environment, item), item, shader, uniforms);
 }
 
@@ -1259,7 +1287,8 @@ export function applyGeneratedEnvironmentMapUniforms(
   environment: EnvironmentLightingOptions | undefined,
   item: RenderItem,
   shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
+  uniforms: Map<string, UniformValue>,
+  flags?: QrFlags
 ): void {
   const cube = shader.reflection.uniforms.has("u_environmentCubeMap");
   if (!cube && !shader.reflection.uniforms.has("u_environmentMap")) return;
@@ -1273,7 +1302,12 @@ export function applyGeneratedEnvironmentMapUniforms(
   }
   const dimension = cube ? "cube" : "2d";
   validateEnvironmentTextureBinding(cube ? "Environment cube map texture" : "Environment map texture", binding, dimension, item);
-  const intensity = env.environmentMapIntensity ?? 1;
+  // E3 stage-2b (step 3): under the conjunction the stage-2a knob is the
+  // only IBL intensity source — an absent field means zero, never the
+  // legacy absent-field default of 1. Conjunction-off keeps `?? 1`.
+  const intensity = flags !== undefined && qrE3CompilerLightingOn(flags)
+    ? env.environmentMapIntensity ?? 0
+    : env.environmentMapIntensity ?? 1;
   const rotation = env.environmentMapRotation ?? 0;
   const mipCount = env.environmentMapMipCount ?? 1;
   const encoding = env.environmentMapEncoding ?? "srgb";
@@ -1311,9 +1345,18 @@ export function applyGeneratedProceduralEnvironmentUniforms(
   environment: EnvironmentLightingOptions | undefined,
   item: RenderItem,
   shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
+  uniforms: Map<string, UniformValue>,
+  suppressProcedural = false
 ): void {
   if (!shader.reflection.uniforms.has("u_a3dProceduralIntensity")) return;
+  // E3 stage-2b: a PRD-02-IBL draw takes no procedural term at all (the
+  // stage-2a knob already zeroed it in the bundle; bare-path bundles are
+  // zeroed here so the sampled/probe term can never double-count).
+  if (suppressProcedural) {
+    uniforms.set("u_a3dProceduralIntensity", 0);
+    uniforms.set("u_a3dProceduralSpecularIntensity", 0);
+    return;
+  }
   const proceduralMap = environment?.proceduralMap;
   if (!proceduralMap) {
     uniforms.set("u_a3dProceduralIntensity", 0);
@@ -1336,11 +1379,103 @@ export function applyGeneratedProceduralEnvironmentUniforms(
   uniforms.set("u_a3dProceduralSpecularIntensity", proceduralMap.specularIntensity);
 }
 
+/**
+ * E3 stage-2b: `prd02.ibl` can only shade when a probe cube exists — the
+ * pass-level C-09 probe, a scene cube binding, or a per-item probe cube.
+ * Shared by the draw path and the Renderer warmup so their program keys
+ * agree on the feature bit.
+ */
+export function prd02IblEnvironmentAvailable(
+  environment: EnvironmentLightingOptions | undefined,
+  item?: RenderItem
+): boolean {
+  if (item?.environmentCube?.texture?.dimension === "cube") return true;
+  if (environment?.environmentProbe) return true;
+  return environment?.environmentCubeMapTexture?.texture?.dimension === "cube";
+}
+
+/**
+ * E3 stage-2b bind site for the PRD-02 IBL chunk: packs
+ * `packA3DEnvironmentUniforms` (previously zero production callers) from the
+ * pass environment and writes it into the draw's uniform packet.
+ *
+ * Single intensity source (step 3): diffuse/specular intensities are the
+ * stage-2a knob (`environmentMapIntensity` /
+ * `environmentMapSpecularIntensity`, authored-equal under the conjunction;
+ * an absent field is 0, never a legacy default), multiplied ONCE by the
+ * per-material `envMapIntensity` (`u_materialEnvironmentIntensity`, kept as
+ * a multiplier pending the owner decision). No preset scalar stack is read
+ * here. Ambient rides `color`/`intensity` (under the probe path these are
+ * the authored-ambient term, additive outside IBL per F-02-01); hemisphere
+ * is not passed — the probe SH already carries sky/ground, and the
+ * procedural map is suppressed on this path.
+ *
+ * Frozen-family scoping (step 1): this bind runs only for generated draws
+ * that selected `prd02.ibl`. The frozen shader family (ShaderLibraryCore
+ * lean PBR + ShaderLibrary duplicates) is deliberately untouched in
+ * stage-2b — under the default-on CORE/MATERIALS route generated programs
+ * serve production PBR draws, and frozen shaders are fallback-only
+ * (unskinnable skinned items, compile failure, binding failure). Those
+ * fallback draws keep their legacy stacked terms under the conjunction
+ * until step 4 collapses the frozen family; conjunction-off every draw is
+ * byte-identical to before this change.
+ */
+export function applyPrd02EnvironmentUniforms(
+  environment: EnvironmentLightingOptions | undefined,
+  item: RenderItem,
+  baseMaterial: Material,
+  uniforms: Map<string, UniformValue>
+): void {
+  const env = environment ? withItemEnvironmentCube(environment, item) : undefined;
+  const cubeTexture = env?.environmentCubeMapTexture?.texture ?? undefined;
+  const probe = env?.environmentProbe
+    ?? (cubeTexture
+      ? {
+          specularCube: cubeTexture,
+          mipCount: env?.environmentMapMipCount ?? Math.max(1, cubeTexture.cubeFaces[0]?.mipLevels.length ?? 1),
+          sh9: new Float32Array(0)
+        }
+      : null);
+  const knobDiffuse = env?.environmentMapIntensity ?? 0;
+  const knobSpecular = env?.environmentMapSpecularIntensity ?? knobDiffuse;
+  const materialMultiplierRaw = baseMaterial.getParameter?.("u_materialEnvironmentIntensity");
+  const materialMultiplier = typeof materialMultiplierRaw === "number" && Number.isFinite(materialMultiplierRaw) && materialMultiplierRaw >= 0
+    ? materialMultiplierRaw
+    : 1;
+  if (!Number.isFinite(knobDiffuse) || knobDiffuse < 0 || !Number.isFinite(knobSpecular) || knobSpecular < 0) {
+    throw new RenderDeviceError("PRD-02 IBL knob intensities must be finite and non-negative", "ENVIRONMENT_LIGHTING_CONTRACT", {
+      label: item.label,
+      knobDiffuse,
+      knobSpecular
+    });
+  }
+  const packed = packA3DEnvironmentUniforms({
+    probe,
+    ...(env ? { ambient: { color: env.color, intensity: env.intensity } } : {}),
+    // EnvironmentLightingOptions rotation is in turns (indirect_default);
+    // the PRD-02 chunk's u_envRotation is radians.
+    rotation: (env?.environmentMapRotation ?? 0) * Math.PI * 2,
+    diffuseIntensity: knobDiffuse * materialMultiplier,
+    specularIntensity: knobSpecular * materialMultiplier
+  });
+  for (const [name, value] of packed.uniforms) uniforms.set(name, value);
+  // The chunk declares `u_envDfgLut` (its own split-sum entry, unused by the
+  // stage-2b call body, which routes through the r185 multiscatter helpers);
+  // bind the renderer DFG LUT so the sampler never reads a stale unit.
+  uniforms.set("u_envDfgLut", new TextureBinding({
+    name: "u_envDfgLut",
+    texture: dfgLutTexture(),
+    sampler: dfgLutBinding().sampler,
+    expectedColorSpace: "linear"
+  }));
+}
+
 function applyProceduralEnvironmentMapUniforms(
   proceduralMap: ProceduralEnvironmentMapLightingOptions | undefined,
   item: RenderItem,
   shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
+  uniforms: Map<string, UniformValue>,
+  generatedE3Conjunction = false
 ): void {
   if (!proceduralMap) {
     clearProceduralEnvironmentMapUniforms(shader, uniforms);
@@ -1377,7 +1512,14 @@ function applyProceduralEnvironmentMapUniforms(
   uniforms.set("u_environmentHorizonColor", horizonColor);
   uniforms.set("u_environmentGroundColor", groundColor);
   uniforms.set("u_environmentSpecularColor", specularColor);
-  uniforms.set("u_environmentMapIntensity", proceduralMap.intensity);
+  // E3 stage-2b (step 3): `u_environmentMapIntensity` is the generated
+  // program's SAMPLED-map (knob) uniform; the frozen namespace reuses the
+  // same name for its procedural diffuse. On a generated conjunction draw
+  // the procedural write is dropped so the knob owns the name outright.
+  // Frozen draws never pass the flag and keep the legacy write (step 4).
+  if (!generatedE3Conjunction) {
+    uniforms.set("u_environmentMapIntensity", proceduralMap.intensity);
+  }
   uniforms.set("u_environmentSpecularIntensity", proceduralMap.specularIntensity);
 }
 

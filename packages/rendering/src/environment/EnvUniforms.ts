@@ -25,8 +25,12 @@ const ENV_SPECULAR_SAMPLER = new Sampler({
 });
 
 export interface A3DEnvironmentUniformInput {
-  /** Bound probe; null → env terms zeroed, ambient/hemisphere still bound. */
-  readonly probe: EnvironmentProbe | null;
+  /**
+   * Bound probe; null → env terms zeroed, ambient/hemisphere still bound.
+   * Only the cube/mip/SH fields are read, so a bare cube binding can be
+   * packed without fabricating a full `EnvironmentProbe` (E3 stage-2b).
+   */
+  readonly probe: Pick<EnvironmentProbe, "specularCube" | "mipCount" | "sh9"> | null;
   readonly ambient?: { readonly color: readonly [number, number, number]; readonly intensity: number };
   readonly hemisphere?: {
     readonly sky: readonly [number, number, number];

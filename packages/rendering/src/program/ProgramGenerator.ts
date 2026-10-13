@@ -21,7 +21,9 @@
  *     `program-compile-failed`. Missing chunks are never skipped silently.
  *   - `fragment:indirect` contributions are appended after the default
  *     indirect body (ambient + env); every other body hook that a feature
- *     claims replaces that hook's default.
+ *     claims replaces that hook's default. One exception (E3 stage-2b):
+ *     under A3D_QR_COMPILER ∧ A3D_QR_LIGHTING the `prd02.ibl` contribution
+ *     REPLACES the default indirect body instead of appending to it.
  * The `vertex:deform` call is canonical: the generator emits
  * `a3dDeform(pos, nrm, tan)` when a registered feature claims the hook and
  * the C-18 passthrough otherwise (CONTRACTS §8.5).
@@ -55,6 +57,7 @@ import { FOG_DEFAULT_CHUNK_GLSL } from "./chunks/fog_default.glsl";
 import { DEPTH_CHUNK_GLSL, DISTANCE_CHUNK_PARS_GLSL } from "./chunks/depth.glsl";
 import { normalizeProgramFeatures, totalLightCount, MAP_DEFINES } from "./ProgramFeatures";
 import { programKey } from "./ProgramKey";
+import { PRD02_IBL_FEATURE } from "../contracts/environment";
 
 export const GENERATED_PROGRAM_MARKER = "a3d-generated-program";
 
@@ -85,11 +88,22 @@ interface Contribution {
   readonly value: FeatureValue;
 }
 
+/**
+ * E3 conjunction (stages 1/2a/2b): `A3D_QR_COMPILER` ∧ `A3D_QR_LIGHTING`.
+ * The generator is the last enforcement point for the stage-2b indirect-body
+ * replacement — a `prd02.ibl` bit in a record must never splice (or replace)
+ * anything conjunction-off, however the record was built.
+ */
+function e3CompilerLightingOn(flags: QrFlags | undefined): boolean {
+  return flags !== undefined && flags.on("A3D_QR_COMPILER") && flags.on("A3D_QR_LIGHTING");
+}
+
 /** Resolve contributing features from the record's `features` bits, in (order, id) order. */
 function contributingFeatures(f: ProgramFeatures, flags: QrFlags | undefined): Contribution[] {
   const out: Contribution[] = [];
   if (!flags) return out;
   for (const feature of shaderFeaturesFor(flags)) {
+    if (feature.id === PRD02_IBL_FEATURE && !e3CompilerLightingOn(flags)) continue;
     const value = f.features[feature.id];
     if (value !== undefined) out.push({ feature, value });
   }
@@ -455,15 +469,22 @@ function defaultIndirectBody(f: ProgramFeatures): string {
   lines.push("#endif");
   lines.push("  indirectSpecular += a3dIndirectSpecular(a3dProceduralSpecularRadiance(reflect(-V, N), material.roughness), a3dProcIrradiance, V, N, material);");
   lines.push("#endif");
-  lines.push("#ifdef USE_OCCLUSION_MAP");
-  lines.push(`  float a3dAo = texture(u_occlusionMap, ${uvExpr(f, "occlusion")}).r;`);
-  lines.push("  indirectDiffuse *= a3dAo;");
-  lines.push("  indirectSpecular *= a3dAo;");
-  lines.push("#endif");
+  lines.push(occlusionIndirectSnippet(f));
   return lines.join("\n");
 }
 
-function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contribution[], defines: Record<string, string | number | true>, marker: string, state: SpliceState, lobeChunks: LobeCalls): string {
+/** Occlusion-map scaling shared by the default body and its PRD-02 replacement. */
+function occlusionIndirectSnippet(f: ProgramFeatures): string {
+  return [
+    "#ifdef USE_OCCLUSION_MAP",
+    `  float a3dAo = texture(u_occlusionMap, ${uvExpr(f, "occlusion")}).r;`,
+    "  indirectDiffuse *= a3dAo;",
+    "  indirectSpecular *= a3dAo;",
+    "#endif"
+  ].join("\n");
+}
+
+function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contribution[], defines: Record<string, string | number | true>, marker: string, state: SpliceState, lobeChunks: LobeCalls, prd02IblReplacesIndirect: boolean): string {
   hookSplice(contributions, "fragment:pars", state);
   const alphaHooks = hookSplice(contributions, "fragment:alpha", state);
   const normalHooks = hookSplice(contributions, "fragment:normal", state);
@@ -520,10 +541,24 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
   body.push("  vec3 indirectSpecular = vec3(0.0);");
   if (lit) {
     body.push(lightsHooks.length > 0 ? lightsHooks.map((s) => indent(s)).join("\n") : defaultLightsBody(f, lobeChunks.direct));
-    // fragment:indirect appends to the default ambient + env body (T0-05);
-    // lobe `ibl` calls run last, over the final direct + indirect accumulators.
-    body.push(defaultIndirectBody(f));
-    if (indirectHooks.length > 0) body.push(...indirectHooks.map((s) => indent(s)));
+    if (prd02IblReplacesIndirect) {
+      // E3 stage-2b: the PRD-02 IBL call REPLACES the default indirect body
+      // (never appends to it), so its SH diffuse + probe-cube specular cannot
+      // stack on the default ambient + sampled + procedural terms. This
+      // branch is also the procedural-specular double-count fix: the
+      // default body's always-add procedural specular (LIGHT_HEMISPHERE
+      // block) is not emitted on the PRD-02 path at all. The occlusion
+      // snippet is generator-owned (uv-set aware) and shared with the
+      // default body. `indirect_default` declarations stay included above:
+      // C-03 lobe IBL calls still sample through `a3dSampleEnvironment`.
+      if (indirectHooks.length > 0) body.push(...indirectHooks.map((s) => indent(s)));
+      body.push(occlusionIndirectSnippet(f));
+    } else {
+      // fragment:indirect appends to the default ambient + env body (T0-05);
+      // lobe `ibl` calls run last, over the final direct + indirect accumulators.
+      body.push(defaultIndirectBody(f));
+      if (indirectHooks.length > 0) body.push(...indirectHooks.map((s) => indent(s)));
+    }
     if (lobeChunks.ibl.length > 0) body.push(...lobeChunks.ibl.map((s) => indent(s)));
   }
 
@@ -709,9 +744,11 @@ export function generateProgramImpl(features: ProgramFeatures, options: Generate
   const fragmentState = newSpliceState();
   const lobes = extensionLobeChunks(f, options.flags, fragmentState, defines, report);
   const vertex = vertexSource(f, contributions, defines, marker);
+  const prd02IblReplacesIndirect = e3CompilerLightingOn(options.flags)
+    && contributions.some(({ feature }) => feature.id === PRD02_IBL_FEATURE);
   const fragment =
     f.pass === "forward"
-      ? forwardFragmentSource(f, contributions, defines, marker, fragmentState, lobes)
+      ? forwardFragmentSource(f, contributions, defines, marker, fragmentState, lobes, prd02IblReplacesIndirect)
       : depthFragmentSource(f, defines, marker);
   return { key, vertex, fragment, defines };
 }

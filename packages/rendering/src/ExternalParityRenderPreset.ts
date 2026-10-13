@@ -118,7 +118,12 @@ export interface ExternalParityReadbackDevice {
   readPixels(x: number, y: number, width: number, height: number): Uint8Array;
 }
 
-const externalParityEnvironmentLightingCache = new Map<ExternalParityEnvironmentPreset, ExternalParityEnvironmentLightingBundle>();
+/**
+ * Cache key carries the encoding mode: the half-float (E3-conjunction) and
+ * legacy bundles for one preset must coexist — whichever a caller asks for
+ * first must never poison the other mode's callers.
+ */
+const externalParityEnvironmentLightingCache = new Map<string, ExternalParityEnvironmentLightingBundle>();
 
 export interface ExternalParityRenderPresetEvidenceOptions {
   readonly exampleId: string;
@@ -131,15 +136,45 @@ export interface ExternalParityRenderPresetEvidenceOptions {
   readonly features: readonly ExternalParityRenderPresetFeatureStatus[];
 }
 
-export function createExternalParityEnvironmentLighting(preset: ExternalParityEnvironmentPreset): ExternalParityEnvironmentLightingBundle {
-  const cached = externalParityEnvironmentLightingCache.get(preset);
+/**
+ * @param flags  E3 stage-2b: under the conjunction
+ * (`A3D_QR_COMPILER` ∧ `A3D_QR_LIGHTING` — explicit `flags` when the caller
+ * has them, else the renderer's ambient flags) the bundle's environment
+ * texture is rgba16f/linear with explicit half-float mips and
+ * `environmentMapEncoding: "linear"`. Conjunction-off the bundle is the
+ * legacy RGBA8/Reinhard/sRGB one, byte-identical. The other bundle
+ * consumers (`LightingDefaults`, `GLTFRenderResources`, `ProductTurntable`)
+ * pass no flags and only consume `lighting`, so flag-off they keep the
+ * legacy bundle and flag-on they share the half-float one with the
+ * compiler path — one texture per preset per mode.
+ */
+export function createExternalParityEnvironmentLighting(
+  preset: ExternalParityEnvironmentPreset,
+  flags?: { on(name: string): boolean }
+): ExternalParityEnvironmentLightingBundle {
+  const halfFloat = flags
+    ? flags.on("A3D_QR_COMPILER") && flags.on("A3D_QR_LIGHTING")
+    : rendererQrFlags().on("A3D_QR_COMPILER") && rendererQrFlags().on("A3D_QR_LIGHTING");
+  const cacheKey = `${preset}:${halfFloat ? "rgba16f" : "rgba8"}`;
+  const cached = externalParityEnvironmentLightingCache.get(cacheKey);
   if (cached) return cached;
   const descriptor = externalParityEnvironmentDescriptor(preset);
   const source = createExternalParityGeneratedHdrEnvironmentMapSource(preset, 128, 64);
   const resources = createEnvironmentMapResourceSet({
     ...source,
     encoding: "linear-hdr"
-  }, {
+  }, halfFloat ? {
+    textureEncoding: "rgba16f",
+    outputColorSpace: "linear",
+    exposure: descriptor.hdrExposure,
+    toneMapping: "linear",
+    specularLevels: 5,
+    specularBlurRadius: 3,
+    irradianceWidth: 16,
+    irradianceHeight: 8,
+    irradianceBlurRadius: 8,
+    brdfLutSize: 32
+  } : {
     outputColorSpace: "srgb",
     exposure: descriptor.hdrExposure,
     toneMapping: "reinhard",
@@ -150,10 +185,14 @@ export function createExternalParityEnvironmentLighting(preset: ExternalParityEn
     irradianceBlurRadius: 8,
     brdfLutSize: 32
   });
+  // Float uploads must be linear (webgl2/TextureFormats throws on srgb
+  // float); the explicit specular mip chain keeps the float texture from
+  // sampling as an incomplete one-mip texture (webgl2/Samplers).
   const environmentTexture = new Texture({
     width: resources.base.width,
     height: resources.base.height,
-    colorSpace: "srgb",
+    ...(halfFloat ? { format: "rgba16f" as const } : {}),
+    colorSpace: halfFloat ? "linear" : "srgb",
     label: `external-parity-${preset}-generated-environment-map`,
     mipLevels: resources.specularMipLevels
   });
@@ -170,12 +209,12 @@ export function createExternalParityEnvironmentLighting(preset: ExternalParityEn
     // PRD-02/C-12: trilinear so roughness reads prefiltered mips (E4); the
     // 1-level texture case still downgrades to LINEAR in the sampler registry.
     sampler: new Sampler({
-      minFilter: rendererQrFlags().on("A3D_QR_LIGHTING") ? "linear-mipmap-linear" : "linear",
+      minFilter: halfFloat || rendererQrFlags().on("A3D_QR_LIGHTING") ? "linear-mipmap-linear" : "linear",
       magFilter: "linear",
       addressU: "repeat",
       addressV: "clamp-to-edge"
     }),
-    expectedColorSpace: "srgb",
+    expectedColorSpace: halfFloat ? "linear" : "srgb",
     required: true
   });
   const environmentBrdfLutTexture = new TextureBinding({
@@ -207,6 +246,7 @@ export function createExternalParityEnvironmentLighting(preset: ExternalParityEn
       environmentMapSpecularIntensity: descriptor.environmentTextureSpecularIntensity,
       environmentMapRotation: descriptor.rotation,
       environmentMapMipCount: resources.specularMipLevels.length,
+      ...(halfFloat ? { environmentMapEncoding: "linear" as const } : {}),
       environmentBrdfLutTexture
     },
     resources: {
@@ -224,7 +264,7 @@ export function createExternalParityEnvironmentLighting(preset: ExternalParityEn
       }
     }
   };
-  externalParityEnvironmentLightingCache.set(preset, bundle);
+  externalParityEnvironmentLightingCache.set(cacheKey, bundle);
   return bundle;
 }
 

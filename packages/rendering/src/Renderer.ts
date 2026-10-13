@@ -48,7 +48,8 @@ import { PRD03_EXPOSURE, rendererQrFlags, setRendererQrFlags, withRendererQrFlag
 import { consumeTaaHistoryWritten } from "./renderer/postSkipped";
 import { qrCoreGeneratorOn, qrCoreOutputOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { resolveCoreOutputPostRoute, withCoreOutputOff, type CoreOutputPostSkipped } from "./renderer/coreOutputPostRoute";
-import { forwardPassFeatureAxes, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
+import { forwardPassFeatureAxes, prd02IblEnvironmentAvailable, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
+import { PRD02_IBL_FEATURE } from "./contracts/environment";
 import { InterleavedTransparentPass } from "./renderer/InterleavedTransparentPass";
 import { ensureSceneDepthCopyTarget, SceneDepthCopyPass } from "./renderer/SceneDepthCopyPass";
 import { probeHdrTargetFormat, DEFAULT_TONE_MAPPING, type AuraToneMappingOperatorLike, type OutputOverlayUniforms } from "./contracts/output";
@@ -1465,6 +1466,11 @@ export class Renderer {
       if (!m || !materialRoutesToGeneratedProgram(m, route, ctx)) continue;
       const mf = m.programFeatures(ctx);
       const selected = selectShaderFeatureBits({ item, pass: "forward", tier: ctx.tier, flags });
+      // E3 stage-2b: same probe-availability gate ForwardPass applies, so
+      // warmed keys match draw keys for the `prd02.ibl` bit.
+      if (selected[PRD02_IBL_FEATURE] !== undefined && !prd02IblEnvironmentAvailable(environmentLighting, item)) {
+        delete selected[PRD02_IBL_FEATURE];
+      }
       // #867 (games): same geometry-driven feature mask ForwardPass applies.
       const attrs = item.geometry.vertexBuffer.format.attributes;
       const has = (name: string) => attrs.some((a) => a.semantic === name || a.shaderName === name);

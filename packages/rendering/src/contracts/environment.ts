@@ -136,3 +136,11 @@ export function evaluateSH9Irradiance(sh9: Float32Array, normal: readonly [numbe
 
 /** GLSL entry points every consumer may call (chunk "a3d_prd02_sh9"): vec3 a3dSampleIrradianceSH(vec3 N); uniform block A3DSH9 { vec4 u_sh9[9]; } */
 export const SH9_CHUNK: "a3d_prd02_sh9" = "a3d_prd02_sh9";
+
+/**
+ * E3 stage-2b: ShaderFeature id of the PRD-02 IBL indirect-body replacement.
+ * The feature is registered by lane prd02 under `A3D_QR_LIGHTING`; its
+ * `select` (and the C-02 generator) additionally require `A3D_QR_COMPILER`,
+ * so the bit only ever reaches a program under the E3 conjunction.
+ */
+export const PRD02_IBL_FEATURE: "prd02.ibl" = "prd02.ibl";

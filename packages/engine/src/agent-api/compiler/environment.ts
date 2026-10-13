@@ -66,7 +66,7 @@ export function createProductionRuntimeEnvironment(
       };
     }
     const preset = presetByEnvironment[authoredEnvironment.environment];
-    const bundle = createExternalParityEnvironmentLighting(preset);
+    const bundle = createExternalParityEnvironmentLighting(preset, flags);
     const intensity = nonNegativeFinite(authoredEnvironment.intensity);
     // E3 stage-2a (Live Fix): under A3D_QR_COMPILER the five stacked preset
     // scalars (ambient/procedural/sampled × diffuse/specular) collapse to
@@ -139,7 +139,7 @@ export function createProductionRuntimeEnvironment(
         : category === "game" ? "gameplay"
           : category === "material" ? "inspection"
             : "studio";
-  const bundle = createExternalParityEnvironmentLighting(preset);
+  const bundle = createExternalParityEnvironmentLighting(preset, flags);
   return {
     preset,
     intensity: bundle.lighting.environmentMapIntensity ?? bundle.lighting.intensity,
@@ -254,6 +254,29 @@ export function explicitEnvironmentResolution(
       return { ...base, probe: { preset }, background: resolveBackgroundOption(node, false) };
     }
   }
+}
+
+/**
+ * E3 stage-2b (step 3): intensities the C-09 probe bind carries to the
+ * renderer. Under the conjunction with an explicit (authored-environment)
+ * resolution, the stage-2a knob object is the single source — both terms
+ * equal the knob, even when a V2 node authored separate diffuse/specular
+ * intensities into the resolution. Neutral-room resolutions and every
+ * conjunction-off bind keep the resolution intensities verbatim (the
+ * pre-stage-2b behavior compileScene had when it discarded the knob).
+ */
+export function prd02ProbeBindIntensities(
+  knobLighting: EnvironmentLightingOptions | false | undefined,
+  resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity">,
+  conjunction: boolean
+): { readonly diffuseIntensity: number; readonly specularIntensity: number } {
+  if (conjunction && resolution.kind === "explicit" && knobLighting) {
+    const knob = knobLighting.environmentMapIntensity ?? knobLighting.intensity;
+    if (Number.isFinite(knob) && knob >= 0) {
+      return { diffuseIntensity: knob, specularIntensity: knob };
+    }
+  }
+  return { diffuseIntensity: resolution.diffuseIntensity, specularIntensity: resolution.specularIntensity };
 }
 
 // ---------- PRD-02 Phase 3 — probe binding (neutral floor + async upgrade) ----------
