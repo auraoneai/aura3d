@@ -389,8 +389,7 @@ app = createAuraApp("#aura-stage", {
   pixelRatio: compositionProbePixelRatio,
   renderer: {
     mode: "production",
-    qualityProfile: "production",
-    fallback: "safe-basic"
+    qualityProfile: "production"
   },
   scene: activeBuild.snapshot
 });

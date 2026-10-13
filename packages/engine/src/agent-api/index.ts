@@ -213,7 +213,6 @@ export { createSceneLabelOcclusionTest } from "./compiler/labels.js";
 export { isRenderableModelNode, isWebGLRenderableNode, resolveNativeBloomRadius, resolveProductionRuntimeShadowTuning, createProductionRuntimeShadowObservation, createProductionTexturesObservation, createProductionRuntimePostprocessObservation, createProductionRuntimeCollectedLights, resolveProductionShadowCasterIndex, productionRuntimeLightDirection, quaternionFromForwardDirection, normalizedDirection, nonNegativeFinite, clampNumber, productionRenderErrorMessage } from "./compiler/observations.js";
 export { normalizeSceneSnapshot } from "./sceneMath.js";
 export { createProductionTextObservation } from "./compiler/text.js";
-export { createBuffer } from "./compiler/webglRuntime.js";
 export { renderDiagnosticPreviewToCanvas, shouldRenderOverlay, createDiagnosticsOverlay } from "./public/devtools.js";
 export { validateSceneAssets, createAssetProvenance, createInitialDiagnostics, snapshotDiagnostics } from "./diagnostics.js";
 export { lazySystems } from "./public/devtools.js";
