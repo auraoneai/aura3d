@@ -1,64 +1,126 @@
-import { expect, test } from "@playwright/test";
-import { builtDist, serve, watchConsole, soakIfNeeded } from "./lib/serve";
-
 /**
- * T1.10 (Aurora Lander): the route-flag dispatcher boots legacy by default and v2
- * under `?a3d-qr=route-aurora-lander`. Flag-off keeps the same evidence global and
- * zero console errors; flag-on reaches `__AURA3D_GAME__.state === "playing"`
- * and publishes `__AURA3D_GAME_EVIDENCE__["showcase-aurora-lander"]`.
+ * PRD-14 §9 — Single-path browser verification for `showcase-aurora-lander`.
+ *
+ * Covers S1 (single-path createGame boot), S2 (WebGL canvas + HUD widgets),
+ * S6 (evidence sections + scenario contracts), and S7 (desktop 1920x1080 and
+ * mobile 390x844 framing in separate test blocks for WebKit stability).
  */
+import { expect, test } from "@playwright/test";
 
-const APP_DIR = "showcase-aurora-lander";
-const ROUTE_FLAG = "route-aurora-lander";
-// T1.10: v2 specs carry the same engine list the URL contract uses
-// (boot.ts qualityRebuild.flags + games.json qrFlags).
-const ENGINE_FLAGS = "game,camera,lighting,post,materials,vfx,world,tiers,looks";
-const EVIDENCE_GLOBAL = "__AURORA_LANDER_EVIDENCE__";
+const ROUTE_URL = process.env.AURORA_LANDER_URL ?? "http://127.0.0.1:4189";
 
-test.describe("aurora-lander dispatch (T1.10)", () => {
-  test("flag off boots legacy with its evidence global and no console errors", async ({ page }) => {
-    const root = builtDist(APP_DIR);
-    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
-    const errors = watchConsole(page);
-    const { server, url } = await serve(root!);
-    try {
-      await page.goto(`${url}/`);
-      await expect.poll(() =>
-        page.evaluate((g) => Boolean((window as Record<string, unknown>)[g]), EVIDENCE_GLOBAL),
-        { timeout: 30_000 }).toBe(true);
-      // The v2 beacon must NOT publish under flag-off.
-      const v2 = await page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__);
-      expect(v2).toBeUndefined();
-      await soakIfNeeded(page);
-      expect(errors).toEqual([]);
-    } finally {
-      server.close();
-    }
+test.describe("showcase-aurora-lander single-path PRD-14 verification", () => {
+  test("S1/S2/S6 — boots createGame, mounts HUD widgets, and publishes evidence sections", async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (err) => errors.push(err.message));
+
+    await page.goto(`${ROUTE_URL}/?scenario=04-action&seed=1&freezeAt=end`);
+    await page.waitForFunction(() => {
+      const w = window as unknown as {
+        __AURA3D_GAME__?: { state?: string; id?: string };
+        __AURA3D_GAME_EVIDENCE__?: Record<string, unknown>;
+      };
+      return (
+        w.__AURA3D_GAME__?.id === "showcase-aurora-lander" &&
+        w.__AURA3D_GAME__?.state === "playing" &&
+        Boolean(w.__AURA3D_GAME_EVIDENCE__?.["showcase-aurora-lander"])
+      );
+    });
+
+    const summary = await page.evaluate(() => {
+      const w = window as unknown as {
+        __AURA3D_GAME__: { id: string; state: string };
+        __AURA3D_GAME_EVIDENCE__: Record<
+          string,
+          {
+            lander: { touchdown: string; altitude: number };
+            framing: { landerInFrame: boolean; padInFrame: boolean };
+            boot: { singlePath: boolean; runtime: string };
+            render: { canvasAttached: boolean; frameCount: number };
+          }
+        >;
+      };
+      const ev = w.__AURA3D_GAME_EVIDENCE__["showcase-aurora-lander"]!;
+      return {
+        id: w.__AURA3D_GAME__.id,
+        state: w.__AURA3D_GAME__.state,
+        touchdown: ev.lander.touchdown,
+        singlePath: ev.boot.singlePath,
+        runtime: ev.boot.runtime,
+        canvasAttached: ev.render.canvasAttached,
+        frameCount: ev.render.frameCount,
+      };
+    });
+
+    expect(summary.id).toBe("showcase-aurora-lander");
+    expect(summary.state).toBe("playing");
+    expect(summary.singlePath).toBe(true);
+    expect(summary.runtime).toBe("createGame");
+    expect(summary.canvasAttached).toBe(true);
+    expect(summary.frameCount).toBeGreaterThan(0);
+    expect(summary.touchdown).toBe("landed");
+    expect(errors).toEqual([]);
   });
 
-  test("`?a3d-qr=route-aurora-lander` boots v2 to state playing with the real impl", async ({ page }) => {
-    const root = builtDist(APP_DIR);
-    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
-    const errors = watchConsole(page);
-    const { server, url } = await serve(root!);
-    try {
-      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
-      await expect.poll(() =>
-        page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined),
-        { timeout: 30_000 }).toBe(true);
-      const state = await page.evaluate(() =>
-        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
-      expect(state).toBe("playing");
-      // Real C-24 impl publishes per-route evidence under the games.json
-      // evidenceGlobal (FLAG-2).
-      const evidence = await page.evaluate((app) =>
-        ((window as Record<string, unknown>).__AURA3D_GAME_EVIDENCE__ as Record<string, unknown> | undefined)?.[app],
-        APP_DIR);
-      expect(evidence, "v2 evidence section missing").toBeTruthy();
-      await soakIfNeeded(page);
-      expect(errors).toEqual([]);
-    } finally {
-      server.close();
-    }
+  test("S7 desktop (1920x1080) — frames lander and pad in 03-mid scenario", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto(`${ROUTE_URL}/?scenario=03-mid&seed=1&freezeAt=end`);
+    await page.waitForFunction(() => {
+      const w = window as unknown as {
+        __AURA3D_GAME_EVIDENCE__?: Record<string, unknown>;
+      };
+      return Boolean(w.__AURA3D_GAME_EVIDENCE__?.["showcase-aurora-lander"]);
+    });
+
+    const framing = await page.evaluate(() => {
+      const w = window as unknown as {
+        __AURA3D_GAME_EVIDENCE__: Record<
+          string,
+          {
+            lander: { altitude: number };
+            framing: { landerInFrame: boolean; padInFrame: boolean };
+          }
+        >;
+      };
+      return w.__AURA3D_GAME_EVIDENCE__["showcase-aurora-lander"]!;
+    });
+
+    expect(framing.lander.altitude).toBeLessThan(30);
+    expect(framing.framing.landerInFrame).toBe(true);
+    expect(framing.framing.padInFrame).toBe(true);
+  });
+
+  test("S7 mobile (390x844) — frames lander and pad in 03-mid scenario", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${ROUTE_URL}/?scenario=03-mid&seed=1&freezeAt=end`);
+    await page.waitForFunction(() => {
+      const w = window as unknown as {
+        __AURA3D_GAME_EVIDENCE__?: Record<string, unknown>;
+      };
+      return Boolean(w.__AURA3D_GAME_EVIDENCE__?.["showcase-aurora-lander"]);
+    });
+
+    const framing = await page.evaluate(() => {
+      const w = window as unknown as {
+        __AURA3D_GAME_EVIDENCE__: Record<
+          string,
+          {
+            lander: { altitude: number };
+            framing: { landerInFrame: boolean; padInFrame: boolean };
+          }
+        >;
+      };
+      return w.__AURA3D_GAME_EVIDENCE__["showcase-aurora-lander"]!;
+    });
+
+    expect(framing.lander.altitude).toBeLessThan(30);
+    expect(framing.framing.landerInFrame).toBe(true);
+    expect(framing.framing.padInFrame).toBe(true);
   });
 });

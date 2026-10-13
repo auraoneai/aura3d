@@ -64,10 +64,10 @@ export default defineArtDirection({
   ],
   signatureEffect: "Aurora ribbons drifting over a starfield night sky while the nozzle exhaust casts a moving light across icy regolith.",
   standIns: [
-    { feature: "K1 starfield + aurora ribbon layer", file: "src/v2/scene/world.ts", request: "R-14-13", removeWhen: "starfield sky + aurora preset admitted" },
-    { feature: "K3 regolith splat + far rings", file: "src/v2/scene/world.ts", request: "R-14-13", removeWhen: "K3 terrain splat admitted" },
-    { feature: "panel-lined lander + pad beacons", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K7 lander craft admitted" },
-    { feature: "K8 thruster loop set", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K8 thruster clips admitted" }
+    { feature: "K1 starfield + aurora ribbon layer", file: "src/main.ts", request: "R-14-13", removeWhen: "starfield sky + aurora preset admitted" },
+    { feature: "K3 regolith splat + far rings", file: "src/main.ts", request: "R-14-13", removeWhen: "K3 terrain splat admitted" },
+    { feature: "panel-lined lander + pad beacons", file: "src/main.ts", request: "R-14-07", removeWhen: "K7 lander craft admitted" },
+    { feature: "K8 thruster loop set", file: "src/main.ts", request: "R-14-09", removeWhen: "K8 thruster clips admitted" }
   ],
   criticalCategories: ["environment_world", "atmospheric_effects", "vfx"],
   tiers: {
