@@ -391,6 +391,12 @@ export interface GameInputAxisBinding extends GameInputAxisSettings {
   readonly positive?: string;
   readonly gamepadAxis?: number;
   readonly gamepadIndex?: number;
+  /**
+   * Feed this axis from the pointer delta, normalized as `delta / 96` and
+   * clamped to [-1, 1] — right for steering-style axes. FPS-style look must
+   * NOT use this: read raw pixels from `snapshot().pointer.dx/dy` and apply
+   * a per-pixel sensitivity (e.g. 0.0024 rad/px) directly.
+   */
   readonly pointerDelta?: "x" | "y";
 }
 
@@ -431,6 +437,11 @@ export interface GamePointerSnapshot {
   readonly active: boolean;
   readonly x: number;
   readonly y: number;
+  /**
+   * Raw pixels moved this frame (movementX/movementY under pointer lock,
+   * client delta otherwise), reset to 0 by the next `update()`. This is
+   * the FPS look surface: `yaw -= dx * sensitivity`.
+   */
   readonly dx: number;
   readonly dy: number;
   readonly buttons: readonly number[];
@@ -1742,6 +1753,9 @@ export function createGameInput(options: GameInputOptions): GameInputController 
   let frame = 0;
   let time = 0;
   let pointer: GamePointerSnapshot = { active: false, x: 0, y: 0, dx: 0, dy: 0, buttons: [] };
+  // E5: previous event's pointer-lock state, so the first unlocked move
+  // after exiting lock re-origins instead of spiking from a stale clientX.
+  let wasPointerLocked = false;
   let latestGamepads: GamepadSnapshot[] = [];
   let latestSnapshot: GameInputSnapshot = {
     kind: "aura-game-input-snapshot",
@@ -1913,6 +1927,23 @@ export function createGameInput(options: GameInputOptions): GameInputController 
     if (keyboard.code) releaseBinding(keyboard.code);
     if (keyboard.key && keyboard.key !== keyboard.code) releaseBinding(keyboard.key);
   };
+  // E5: under pointer lock, clientX/clientY freeze at the lock point and
+  // only movementX/movementY carry the delta — the old clientX-diff math
+  // accumulated exactly zero, so pointer-locked look could not turn.
+  const accumulatePointerDelta = (next: PointerEvent): void => {
+    const locked = typeof document !== "undefined" && document.pointerLockElement !== null;
+    let dx = pointer.dx;
+    let dy = pointer.dy;
+    if (locked) {
+      dx += Number.isFinite(next.movementX) ? next.movementX : 0;
+      dy += Number.isFinite(next.movementY) ? next.movementY : 0;
+    } else if (!wasPointerLocked) {
+      dx += next.clientX - pointer.x;
+      dy += next.clientY - pointer.y;
+    }
+    wasPointerLocked = locked;
+    pointer = { ...pointer, x: next.clientX, y: next.clientY, dx, dy };
+  };
   const onPointerDown = (event: Event) => {
     if (options.pointer === false) return;
     const next = event as PointerEvent;
@@ -1923,36 +1954,25 @@ export function createGameInput(options: GameInputOptions): GameInputController 
       active: true,
       x: next.clientX,
       y: next.clientY,
-      dx: 0,
-      dy: 0,
+      // Preserve this frame's accumulated delta: a click mid-flick must not
+      // wipe the look movement already earned in the same frame.
+      dx: pointer.dx,
+      dy: pointer.dy,
       buttons: [...new Set([...pointer.buttons, next.button])].sort()
     };
   };
   const onPointerMove = (event: Event) => {
     if (options.pointer === false) return;
-    const next = event as PointerEvent;
-    pointer = {
-      ...pointer,
-      x: next.clientX,
-      y: next.clientY,
-      dx: pointer.dx + next.clientX - pointer.x,
-      dy: pointer.dy + next.clientY - pointer.y
-    };
+    accumulatePointerDelta(event as PointerEvent);
   };
   const onPointerUp = (event: Event) => {
     if (options.pointer === false) return;
     const next = event as PointerEvent;
     releaseBinding(next.button === 2 ? "PointerSecondary" : "PointerPrimary");
     releaseBinding(`PointerButton${next.button}`);
+    accumulatePointerDelta(next);
     const buttons = pointer.buttons.filter((button) => button !== next.button);
-    pointer = {
-      active: buttons.length > 0,
-      x: next.clientX,
-      y: next.clientY,
-      dx: pointer.dx + next.clientX - pointer.x,
-      dy: pointer.dy + next.clientY - pointer.y,
-      buttons
-    };
+    pointer = { ...pointer, active: buttons.length > 0, buttons };
   };
   const onTouchStart = (event: Event) => {
     if (options.touch === false) return;
