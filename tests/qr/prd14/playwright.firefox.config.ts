@@ -18,7 +18,13 @@ export default defineConfig({
     launchOptions: {
       firefoxUserPrefs: {
         "webgl.force-enabled": true,
-        "webgl.disabled": false
+        "webgl.disabled": false,
+        "webgl.forbid-software": false,
+        "webgl.enable-webgl2": true,
+        "layers.acceleration.disabled": false,
+        "gfx.webrender.all": true,
+        "gfx.webrender.software": true,
+        "gfx.x11-egl.force-enabled": true
       }
     }
   },

@@ -130,7 +130,11 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
   app: TApp,
   options: GameAppRuntimeOptions = {}
 ): GameAppRuntime<TApp> {
-  const loop = createFrameLoop({ ...options.loop, autoStart: false });
+  const resolvedFlags = resolveQrFlags({
+    options: options.qualityRebuild?.flags,
+    url: typeof location !== "undefined" ? location.href : undefined
+  });
+  const loop = createFrameLoop({ ...options.loop, autoStart: false, flags: resolvedFlags });
   const ownedInputs = new Set<GameInputController>();
   const frameCallbacks = new Set<AuraAppFrameCallback>();
   let status: GameAppRuntimeStatus = "idle";
@@ -194,7 +198,7 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
   // C-23 (R15, #212): under A3D_QR_CAMERA_LOOP the loop frame advances the
   // app and exactly one render runs per tick; flag off keeps the legacy
   // step-per-frame path.
-  const cameraLoopOn = resolveQrFlags({ options: options.qualityRebuild?.flags }).on("A3D_QR_CAMERA_LOOP");
+  const cameraLoopOn = resolvedFlags.on("A3D_QR_CAMERA_LOOP");
   const advance = app.advance?.bind(app);
   if (cameraLoopOn && !advance) {
     throw new Error("A3D_QR_CAMERA_LOOP requires an app with advance(dt) (createAuraApp); this handle has none.");
@@ -203,6 +207,10 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
     cameraLoopOn && advance
       ? (frame) => { advance(frame.dt); }
       : (frame) => {
+        if (advance && frame.source === "raf" && frame.substep < frame.substeps) {
+          advance(frame.dt);
+          return;
+        }
         app.step(frame.dt);
         if (presentedWaiters.size > 0) resolvePresented(app.runtime.frame);
       }

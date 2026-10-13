@@ -201,6 +201,8 @@ export type MutableAuraRuntimeSceneNode = AuraSceneNode & {
   visible?: boolean;
   material?: AuraMaterialSpec;
   animation?: AuraAnimationSpec;
+  instances?: readonly import("../nodes/types.js").AuraTransformSpec[];
+  instanceColors?: readonly import("../nodes/types.js").AuraColor[];
 };
 
 export interface MutableAuraRuntimeNodeRegistry extends AuraRuntimeNodeRegistry {
@@ -308,6 +310,16 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       bumpVersion();
       return this;
     },
+    setInstances(transforms: readonly import("../nodes/types.js").AuraTransformSpec[], colors?: readonly import("../nodes/types.js").AuraColor[]) {
+      node.instances = transforms.map((transform) => ({
+        ...(transform.position ? { position: [...transform.position] as AuraVec3 } : {}),
+        ...(transform.rotation ? { rotation: [...transform.rotation] as AuraVec3 } : {}),
+        ...(transform.scale !== undefined ? { scale: transform.scale } : {})
+      }));
+      node.instanceColors = colors ? [...colors] : undefined;
+      bumpVersion();
+      return this;
+    },
     play(clip, options = {}) {
       node.animation = { ...options, clip };
       bumpVersion();
@@ -404,6 +416,8 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
         scale: node.scale ?? 1,
         visible: getVisible(),
         animation: node.animation,
+        ...(node.instances ? { instances: node.instances } : {}),
+        ...(node.instanceColors ? { instanceColors: node.instanceColors } : {}),
         animationBinding,
         animationPose: animationPose ? cloneRuntimeAnimationPose(animationPose) : undefined,
         animationPoseBinding,

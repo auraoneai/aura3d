@@ -457,9 +457,7 @@ function boardFrameNodes(): AuraNodeInput[] {
   ];
 }
 
-// The settled board renders as ONE instanced bevelled-cube mesh: every filled
-// cell is an instance of the typed block GLB tinted to its piece colour.
-function settledCellsNode(board: Board): AuraNodeInput[] {
+function settledCellsTransformsAndColors(board: Board): { transforms: AuraTransformSpec[]; colors: AuraColor[] } {
   const transforms: AuraTransformSpec[] = [];
   const colors: AuraColor[] = [];
   for (let y = hiddenRows; y < boardHeight; y += 1) {
@@ -476,6 +474,13 @@ function settledCellsNode(board: Board): AuraNodeInput[] {
     transforms.push({ position: [0, -50, 0], scale: 0 });
     colors.push("#141828");
   }
+  return { transforms, colors };
+}
+
+// The settled board renders as ONE instanced bevelled-cube mesh: every filled
+// cell is an instance of the typed block GLB tinted to its piece colour.
+function settledCellsNode(board: Board): AuraNodeInput[] {
+  const { transforms, colors } = settledCellsTransformsAndColors(board);
   return [
     instances.model(assets.quaterniusCubeCrate, {
       name: "settled board cells",
@@ -484,7 +489,7 @@ function settledCellsNode(board: Board): AuraNodeInput[] {
       material: material.pbr({ color: "#ffffff", roughness: 0.22, metalness: 0.3 }),
       scaleMode: "world",
       instancingAware: true
-    })
+    }).runtime(game.runtimeNode("settled-board-cells", { tags: ["settled", "runtime"] }))
   ];
 }
 
@@ -514,12 +519,21 @@ function mountRuntimeHandles(): void {
   holdNode = app.nodes.require("hold-preview");
 }
 
-// The instanced settled mesh is mount-time data: rebuild the scene only when
-// the settled board signature changes (lock, line clear, reset) — never on
-// per-frame motion of the active piece.
+// Update the settled board instanced mesh in-place when the settled board
+// signature changes (lock, line clear, reset) so the WebGL2 renderer is never
+// torn down mid-play.
 function rebuildSettledCells(state: KitState): void {
   const signature = settledCellsSignature(state.board);
   if (signature === settledSignature) return;
+  const settledHandle = app.nodes.get("settled-board-cells") as (AuraRuntimeNodeHandle & {
+    setInstances?: (transforms: readonly AuraTransformSpec[], colors?: readonly AuraColor[]) => void;
+  }) | undefined;
+  if (settledHandle?.setInstances) {
+    const { transforms, colors } = settledCellsTransformsAndColors(state.board);
+    settledHandle.setInstances(transforms, colors);
+    settledSignature = signature;
+    return;
+  }
   try {
     app.setScene(buildScene(state.board));
   } catch {

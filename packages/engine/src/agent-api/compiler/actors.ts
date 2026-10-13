@@ -30,18 +30,34 @@ export function resolveProductionActorRuntimeState(
 ): ProductionRuntimeActorState {
   const runtimeId = entry.node.runtime?.id;
   if (!runtimeId) return { node: entry.node };
-  const runtimeSnapshot = runtimeNodes?.get(runtimeId)?.snapshot();
+  const runtimeSnapshot = runtimeNodes?.get(runtimeId)?.snapshot() as (ReturnType<NonNullable<ReturnType<AuraRuntimeNodeRegistry["get"]>>["snapshot"]> & {
+    readonly instances?: AuraModelNode["instances"];
+    readonly instanceColors?: AuraModelNode["instanceColors"];
+  }) | undefined;
   if (!runtimeSnapshot) return { node: entry.node };
   const morphTargets = runtimeSnapshot.morphTargets ?? {};
+  const nextAnimation = runtimeSnapshot.animation ?? entry.node.animation;
+  const sameInPlace =
+    (entry.node.position === runtimeSnapshot.position || (entry.node.position === undefined && runtimeSnapshot.position[0] === 0 && runtimeSnapshot.position[1] === 0 && runtimeSnapshot.position[2] === 0)) &&
+    (entry.node.rotation === runtimeSnapshot.rotation || (entry.node.rotation === undefined && runtimeSnapshot.rotation[0] === 0 && runtimeSnapshot.rotation[1] === 0 && runtimeSnapshot.rotation[2] === 0)) &&
+    (entry.node.scale === runtimeSnapshot.scale || (entry.node.scale === undefined && runtimeSnapshot.scale === 1)) &&
+    (entry.node.visible !== false) === runtimeSnapshot.visible &&
+    entry.node.animation === nextAnimation &&
+    (runtimeSnapshot.instances === undefined || entry.node.instances === runtimeSnapshot.instances) &&
+    (runtimeSnapshot.instanceColors === undefined || entry.node.instanceColors === runtimeSnapshot.instanceColors);
   return {
-    node: {
-      ...entry.node,
-      position: runtimeSnapshot.position,
-      rotation: runtimeSnapshot.rotation,
-      scale: runtimeSnapshot.scale,
-      visible: runtimeSnapshot.visible,
-      animation: runtimeSnapshot.animation ?? entry.node.animation
-    },
+    node: sameInPlace
+      ? entry.node
+      : {
+          ...entry.node,
+          position: runtimeSnapshot.position,
+          rotation: runtimeSnapshot.rotation,
+          scale: runtimeSnapshot.scale,
+          visible: runtimeSnapshot.visible,
+          animation: nextAnimation,
+          ...(runtimeSnapshot.instances ? { instances: runtimeSnapshot.instances } : {}),
+          ...(runtimeSnapshot.instanceColors ? { instanceColors: runtimeSnapshot.instanceColors } : {})
+        },
     animationBinding: runtimeSnapshot.animationBinding,
     animationPose: runtimeSnapshot.animationPose,
     animationPoseTime: runtimeSnapshot.animationPoseBinding?.localTime ?? runtimeSnapshot.animationPoseBinding?.captureTime,

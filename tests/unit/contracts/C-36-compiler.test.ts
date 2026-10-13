@@ -40,7 +40,7 @@ const litScene = (): AuraSceneSnapshot =>
 
 describe("C-36 compiler", () => {
   it("compileScene stub resolves a compilable shape", async () => {
-    const scene = await compileScene({} as never, {} as never);
+    const scene = await compileScene({} as never, { flags: resolveQrFlags({ options: "none" }) } as never);
     expect(typeof scene.snapshotVersion).toBe("number");
     expect(Array.isArray(scene.actors)).toBe(true);
     expect(typeof scene.dispose).toBe("function");
@@ -51,7 +51,7 @@ describe("C-36 compiler", () => {
   });
 
   it("flag off: contract stub returns source:null and no real compiled", async () => {
-    const compiled = await compileScene(litScene(), mountCtx(resolveQrFlags({})));
+    const compiled = await compileScene(litScene(), mountCtx(resolveQrFlags({ options: "none" })));
     expect(compiled.source).toBeNull();
     expect(compiled.actors).toEqual([]);
     expect(compiled.degradations[0]?.code).toBe("capability-degraded");
@@ -76,7 +76,7 @@ describe("C-36 compiler", () => {
   });
 
   it("real update is a no-op on stub-compiled scenes (mixed flag states)", async () => {
-    const stubCompiled = await compileScene({} as never, {} as never);
+    const stubCompiled = await compileScene({} as never, { flags: resolveQrFlags({ options: "none" }) } as never);
     const out = updateCompiledScene(stubCompiled, {} as never, {} as never, 1);
     expect(out).toBe(stubCompiled.source);
   });
