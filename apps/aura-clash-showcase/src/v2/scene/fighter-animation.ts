@@ -22,9 +22,12 @@
 import {
   AnimationController,
   type AuraAnimationAssetLike,
-  type FightingActorState,
   type FightingGameSnapshot
 } from "@aura3d/engine";
+
+// The public engine surface exports FightingGameSnapshot but not the
+// FightingActorState alias, so derive the identical union from the snapshot.
+type FightingActorState = FightingGameSnapshot["states"]["player"];
 import { assets } from "../../aura-assets";
 import {
   auraClashPlayerClips,
