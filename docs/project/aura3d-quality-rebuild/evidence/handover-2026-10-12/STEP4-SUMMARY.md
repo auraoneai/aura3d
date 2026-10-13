@@ -208,3 +208,34 @@ local `--from-plan` publish from a fingerprint-identical checkout
 npm `EOTP` — the account enforces 2FA on publish, so the remaining step
 needs the owner's one-time code (`NPM_OTP`), then tag `v4.0.0`, GitHub
 release, and production verification. npm still serves 3.0.1.
+
+**Production deploy + the real "games don't load" root cause.** The first
+production deploy from merged main passed every HTTP check (18/18 routes,
+202/202 GLBs byte-exact) but the L4 prod gameplay probe (38353643711)
+showed 5 games never becoming draw-ready. Root cause, proven across
+captures 38355793391 → 38366515609 → 38371673706 → 38381413415: scenes
+instantiate the same multi-MB prop GLB many times, and every loader stack
+fetched it concurrently — Chromium aborts parallel same-key cache writes
+with `net::ERR_CACHE_WRITE_FAILURE`, so required models never loaded
+over the network (localhost captures finish too fast to collide, which
+is why every pre-deploy gate stayed green while the deployed games were
+broken). Fixes, each verified by a fresh production capture:
+#1346 (compiler-path in-flight dedupe), #1347 (GLTFLoader dedupe),
+#1348 (one shared `globalThis` registry across both stacks),
+#1349 (one `cache: "no-store"` retry on network/cache failure), and
+#1350 (the per-actor `scanGLTFExtensionsUsed` full-GLB download routed
+through the shared fetch). Post-deploy captures could run at all only
+after #1345 exposed `source=production` in `qr-azure-gpu.yml`.
+
+Final production state: deployment `dpl_Fn9VBD2nu6m8WHdXtcbNUcmW12cr`
+(site build 38380474115 at main `0d9cbb383`) aliased to
+aura3d.auraone.ai; public verification ALL OK; prod capture 38381413415
+shows all previously failing games drawing with **zero failed GLB
+fetches**; prod gameplay probe 38384514257 is **17/17 LIVE** (boot,
+draw, input-to-state response, zero page/console errors; turbo-drift is
+not in the probe config and is verified drawing by the captures).
+Known leftovers unchanged: gallery-shift first frame is slow on L4
+(~49 s ready, 0.6 fps in probe — pre-existing absolute perf), and three
+heavy games' capture timelines can still lose later shots to tab
+closure under prod latency in the capture harness (title frames and
+gameplay state prove the games themselves load and run).
