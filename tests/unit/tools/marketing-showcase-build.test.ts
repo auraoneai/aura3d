@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -18,9 +18,11 @@ const engineSource = (function agentApiSource() {
 // deleted in 1.5.0 as superseded by Turbo Drift Circuit and Skyline Runner, so the retained public game
 // routes are the two current ones.
 const publicGameRouteSources = [
-  readFileSync("apps/showcase-turbo-drift-circuit/src/main.ts", "utf8"),
-  readFileSync("apps/showcase-skyline-runner/src/main.ts", "utf8")
-].join("\n");
+  "apps/showcase-turbo-drift-circuit/src/main.ts",
+  "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+  "apps/showcase-skyline-runner/src/main.ts",
+  "apps/showcase-skyline-runner/src/legacy/main.ts"
+].filter((file) => existsSync(file)).map((file) => readFileSync(file, "utf8")).join("\n");
 
 /*
  * Helpers the **retained** public game routes actually call.

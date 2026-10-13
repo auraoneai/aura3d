@@ -129,15 +129,13 @@ jobs:
           )"
           IFS='|' read -r IDS APPDIRS FLAGS <<< "$RESOLVED"
           echo "ids=$IDS" >> "$GITHUB_OUTPUT"
-          echo "dirs=${APPDIRS:-$DIRS}" >> "$GITHUB_OUTPUT"
+          echo "dirs=${APPDIRS}" >> "$GITHUB_OUTPUT"
           echo "flags=$FLAGS" >> "$GITHUB_OUTPUT"
-          echo "count=$(tr ',' '\n' <<< "$DIRS" | awk 'NF' | wc -l | tr -d ' ')" >> "$GITHUB_OUTPUT"
-          # CI-1: downstream jobs may only skip when nothing under apps/**
-          # changed and no explicit games input was given. An empty route set
-          # on a code-touching PR fails the routes job above instead of
-          # silently skipping static+capture.
+          echo "count=$(tr ',' '\n' <<< "$APPDIRS" | awk 'NF' | wc -l | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          # CI-1: downstream jobs may only skip when no game in games.json
+          # under apps/** changed and no explicit games input was given.
           SKIP_OK="false"
-          if [ "${APPS_TOUCHED:-0}" -eq 0 ] && [ -z "${GAMES_INPUT:-}" ]; then SKIP_OK="true"; fi
+          if [ -z "${APPDIRS:-}" ] && [ -z "${GAMES_INPUT:-}" ]; then SKIP_OK="true"; fi
           echo "skip_ok=${SKIP_OK}" >> "$GITHUB_OUTPUT"
   static:
     name: Static gates (route-health + art-direction)

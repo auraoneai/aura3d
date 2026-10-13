@@ -33,6 +33,7 @@ declare global { interface Window { __MESHY_RELIC_PILOT__?: MeshyRelicPilotEvide
 
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
+  pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
   scene: scene()
     .background("#090d12")
     .add(primitives.box({ name: "arena floor", material: material.pbr({ color: "#182027", roughness: 0.88, metallic: 0.04 }) }).position(0, -0.08, 0).scale([5.8, 0.12, 4.1]))
