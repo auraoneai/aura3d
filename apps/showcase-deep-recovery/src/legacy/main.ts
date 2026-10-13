@@ -230,7 +230,7 @@ bindHeldButton("dr-dive-btn", "KeyQ");
 bindHeldButton("dr-surface-btn", "KeyE");
 
 import { createDeepOceanEnvironment } from "./environment";
-import { deepRecoveryEffectsPass } from "./effects-pass";
+import { deepRecoveryEffectsPass, effectsPassOn } from "./effects-pass";
 
 // ---------------- Scene Construction ----------------
 const initialSonarTargets = [
@@ -253,8 +253,9 @@ const sceneDef = scene()
   // and destroyed the focal hierarchy the comment above describes. Depth cueing
   // now comes from a darker, less saturated water column so warm sub surfaces and
   // cyan sonar returns are the brightest things on screen.
-  // Effects pass: a slightly lifted water column behind the in-scatter.
-  .background("#04141c")
+  // Effects pass: indigo twilight-zone water behind the in-scatter, matching
+  // the pass's fog and abyss shelf; flags-off keeps the pre-pass near-black.
+  .background(effectsPassOn ? "#1a1446" : "#04141c")
   .addMany(deepRecoveryEffectsPass())
   .add(effects.neonBloom({
     name: "deep recovery sonar bloom",
