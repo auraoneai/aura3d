@@ -138,8 +138,8 @@ export function setCompilerImpl(
 export async function compileScene(snapshot: AuraSceneSnapshot, ctx: SceneCompileContext): Promise<CompiledScene> {
   const flags = ctx?.flags ?? resolveQrFlags({});
   const impl = compilerSlot.get(flags);
-  if (impl !== stubCompilerImpl) return impl.compile(snapshot, ctx);
-  if (compileSceneImpl) return compileSceneImpl(snapshot, ctx);
+  if (impl !== stubCompilerImpl && Array.isArray(snapshot?.nodes)) return impl.compile(snapshot, ctx);
+  if (compileSceneImpl && Array.isArray(snapshot?.nodes)) return compileSceneImpl(snapshot, ctx);
   return stubCompilerImpl.compile(snapshot, ctx);
 }
 
