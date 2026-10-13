@@ -22,7 +22,7 @@ export default defineConfig({
   plugins: rootConfig.plugins ?? [],
   resolve: { ...rootConfig.resolve, alias: [...gameAlias, ...baseAlias] },
   optimizeDeps: rootConfig.optimizeDeps,
-  publicDir: path.resolve(appDir, "public"),
+  publicDir: path.resolve(appDir, "../../public"),
   server: {
     host: "127.0.0.1",
     port: 5196,
