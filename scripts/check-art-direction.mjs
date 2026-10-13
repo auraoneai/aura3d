@@ -2,9 +2,14 @@
 /**
  * scripts/check-art-direction.mjs — PRD-14 T1.9 (§7.1 `capture-branch` rule).
  *
- * Static half: scans `apps/<dir>/src/v2/**` for capture branches — source that
+ * Static half: scans route source for capture branches — source that
  * behaves differently under a capture/review query — and for mounted-scene
- * ambient lights, which the §7.1 validator forbids. Exits 1 on any violation.
+ * ambient lights, which the §7.1 validator forbids. The scanned tree is
+ * derived from the route's shape on disk: dual-path routes are scanned
+ * under `apps/<dir>/src/v2/**` (the T1.10 dispatcher boots `src/v2/boot.ts`
+ * under the route flag), while single-path rebuilt routes — no `src/v2`
+ * tree, `src/main.ts` boots every URL — are scanned under
+ * `apps/<dir>/src/**` with the same patterns. Exits 1 on any violation.
  *
  * Runtime half (`--runtime`, executed by the lane workflow's Playwright job,
  * tests/qr/prd14/browser/art-direction-audit.spec.ts): builds the route,
@@ -25,7 +30,7 @@ const PATTERNS = [
   { re: /capture=review/, rule: "capture-branch", why: "`capture=review` query branch (capture mode may change camera, clock, seed and scenario only)" },
   { re: /visualReviewCapture/, rule: "capture-branch", why: "`visualReviewCapture` branch" },
   { re: /window\.__([A-Z0-9_]+)__/g, rule: "capture-branch", why: "non-beacon `window.__*__` evidence global", globalCheck: true },
-  { re: /lights\.ambient|type:\s*["']ambient["']|ambientLight\s*\(|new\s+AmbientLight/, rule: "ambient-light", why: "ambient light in src/v2 (§7.1 forbids it)" }
+  { re: /lights\.ambient|type:\s*["']ambient["']|ambientLight\s*\(|new\s+AmbientLight/, rule: "ambient-light", why: "ambient light in route source (§7.1 forbids it)" }
 ];
 
 function* walk(dir) {
@@ -67,12 +72,24 @@ export function checkArtDirection(appsRoot, routeIds) {
     if (!existsSync(v2)) {
       // A route with no v2 tree and no adopted art direction is unmigrated —
       // lane scope only gates routes that have begun the §10 rebuild.
-      // A direction without a v2 shell is an incomplete T1.10 and fails.
       if (!existsSync(join(appsRoot, id, "art", "direction.ts"))) {
         scanned.push(`${id} (unmigrated: no src/v2 or art/direction.ts — skipped)`);
-      } else {
-        violations.push(`${id}: art/direction.ts present but no src/v2 tree (T1.10 dispatcher missing)`);
+        continue;
       }
+      // Single-path rebuilt route: the dispatcher is deleted and
+      // `src/main.ts` boots every URL, so the whole `src/**` tree is the
+      // route source the §7.1 scan gates (same patterns as `src/v2/**`).
+      const srcRoot = join(appsRoot, id, "src");
+      if (existsSync(join(srcRoot, "main.ts"))) {
+        let count = 0;
+        for (const f of walk(srcRoot)) { scanV2Source(f, violations); count++; }
+        if (count === 0) violations.push(`${id}: src is empty (single-path route with no source)`);
+        else scanned.push(`${id} (${count} files, single-path)`);
+        continue;
+      }
+      // A direction with neither a v2 shell nor a single-path entry is an
+      // incomplete T1.10 and fails.
+      violations.push(`${id}: art/direction.ts present but no src/v2 tree (T1.10 dispatcher missing)`);
       continue;
     }
     let count = 0;

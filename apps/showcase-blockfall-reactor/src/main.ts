@@ -23,7 +23,6 @@ import { assets } from "./aura-assets";
 
 declare global {
   interface Window {
-    __AURA3D_BLOCKFALL_REACTOR__?: BlockfallReactorEvidence;
     __aura3dGameSnapshot?: BlockfallReactorEvidence;
   }
 }
@@ -171,6 +170,10 @@ const hudBindings = [
   { kind: "aura-game-hud-binding", owner: "app", binding: "event-log", id: "hud:event-log", label: "event log", source: "app-state", valuePath: "appState.events", format: "text", a11yLabel: "game event log", debugOnly: true }
 ] as const;
 
+// Latest published snapshot, read by the createGame evidence section below.
+// `window.__aura3dGameSnapshot` stays the sole evidence global.
+let latestSnapshot: BlockfallReactorEvidence | undefined;
+
 setupPracticeBoard();
 
 const blockfallGame = createGame({
@@ -179,7 +182,14 @@ const blockfallGame = createGame({
   diagnostics: { overlay: true, performancePanel: true },
   scene: () => buildScene(falling.snapshot().board),
   input: inputOptions,
-  hud: { theme: "arcade-neon", widgets: [] },
+  hud: {
+    theme: "arcade-neon",
+    widgets: [
+      { id: "score", kind: "score", anchor: "top-left", label: "SCORE" },
+      { id: "lines", kind: "score", anchor: "top-right", label: "LINES" },
+      { id: "objective", kind: "objective", anchor: "bottom", label: "OBJECTIVE" }
+    ]
+  },
   touch: {
     preset: "dpad-2btn",
     bindings: { left: "left", right: "right", dash: "softDrop", jump: "rotateRight", attack: "hardDrop" }
@@ -201,7 +211,7 @@ const blockfallGame = createGame({
   qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
-    sections: { blockfallReactor: () => window.__AURA3D_BLOCKFALL_REACTOR__ ?? { status: "unbound" } }
+    sections: { blockfallReactor: () => latestSnapshot ?? { status: "unbound" } }
   }
 });
 const app = blockfallGame.app;
@@ -537,6 +547,11 @@ function createHud(): HTMLElement {
 }
 
 function renderHud(state: KitState): void {
+  // C-24 kit widgets (declared in the createGame `hud` option) mirror the
+  // same state the route-local panel below renders.
+  blockfallGame.hud.set("score", state.score);
+  blockfallGame.hud.set("lines", state.lines);
+  blockfallGame.hud.set("objective", objective);
   hudRoot.innerHTML = [
     `<strong>Blockfall Reactor</strong>`,
     `<div>Score ${state.score} | Lines ${state.lines} | Level ${state.level}</div>`,
@@ -588,6 +603,6 @@ function publishEvidence(state: KitState): void {
     flash: { modelBased: true, activeRows: performance.now() < flashRows.until ? flashRows.rows : [] },
     evidence
   };
-  window.__AURA3D_BLOCKFALL_REACTOR__ = snapshot;
+  latestSnapshot = snapshot;
   window.__aura3dGameSnapshot = snapshot;
 }

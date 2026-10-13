@@ -12,8 +12,7 @@ including `?scene=default`; the former legacy/v2 dispatcher is deleted.
   well. Typed assets live in `src/aura-assets.ts` / `aura.assets.json`, GLBs
   in `public/aura-assets/`.
 - Controls: arrows/A-D move, W/Q rotate, Down soft-drop, Space hard-drop,
-  C hold, R reset. Evidence is published as `window.__aura3dGameSnapshot`
-  (also `window.__AURA3D_BLOCKFALL_REACTOR__`).
+  C hold, R reset. Evidence is published as `window.__aura3dGameSnapshot`.
 
 Run `npm run dev` (vite, port 5187), `npm run build`, or `npm run preview`.
 Specs in `tests/` run against the app-local `playwright.config.ts`.

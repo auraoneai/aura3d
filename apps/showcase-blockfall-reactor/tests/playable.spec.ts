@@ -66,6 +66,30 @@ test("blockfall reactor boots framed, moves on ArrowLeft, and pieces fall", asyn
   expect(fallen.frame).toBeGreaterThan(fallStart.frame);
 });
 
+// Single-path successor to the retired T2.3 v2 framing spec
+// (tests/qr/prd14/browser/showcase-blockfall-reactor-framing.spec.ts): the
+// v2 rig published `subjectScreenHeightFraction` for the [0.55, 0.75] band,
+// which the rebuilt route does not measure. The portable core is that the
+// fixed orthographic rig reaches `framed` with settled cells submitted at
+// both the desktop and mobile viewports the v2 spec sampled.
+test("blockfall reactor stays framed at desktop and mobile viewports", async ({ page }) => {
+  test.setTimeout(420_000);
+  for (const viewport of [{ width: 1920, height: 1080 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/?scene=default");
+    await page.waitForFunction(() => document.body.dataset.aura3dReady === "true", undefined, { timeout: 150_000 });
+    await page.waitForFunction(
+      () => (window as unknown as { __aura3dGameSnapshot?: { readonly framed?: boolean } }).__aura3dGameSnapshot?.framed === true,
+      undefined,
+      { timeout: 60_000 }
+    );
+    const state = await reactorState(page);
+    expect(state.framed).toBe(true);
+    expect(state.board.filledCells).toBeGreaterThan(0);
+    expect(state.board.drawCalls).toBeGreaterThan(0);
+  }
+});
+
 async function reactorState(page: import("@playwright/test").Page): Promise<{
   readonly framed: boolean;
   readonly frame: number;
