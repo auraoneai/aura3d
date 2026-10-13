@@ -36,7 +36,7 @@ export const TURBO_LATE_AFTERNOON_MOOD = {
   // The former blue-gray grade flattened the scene into a near-night test frame.
   // Keep a muted sunset sky so the typed cars and green verge separate from the
   // warm rally-road reference without turning the route into a color filter.
-  background: "#ef9d7a",
+  background: "#f2926e",
   environmentName: "circuit late afternoon reflections",
   environmentColor: "#ffd0a4",
   environmentIntensity: 1.37,
