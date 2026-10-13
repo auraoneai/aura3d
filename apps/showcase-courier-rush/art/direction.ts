@@ -54,10 +54,10 @@ export default defineArtDirection({
   // a human look-dev review accepts a staged kit file (verdicts are never
   // authored here).
   assets: [
-    { role: "vehicle", assetKey: "courierVanMeshyV2Decimated", maxTriangles: 600000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "vehicle", assetKey: "courierVanMeshyV2Decimated", minTriangles: 2000, maxTriangles: 600000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "prop", assetKey: "courierParcel", maxTriangles: 100000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "vehicle", assetKey: "deliveryCar", maxTriangles: 50000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "vehicle", assetKey: "showcaseCityVehicle", maxTriangles: 200000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "vehicle", assetKey: "deliveryCar", minTriangles: 2000, maxTriangles: 50000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "showcaseCityVehicle", minTriangles: 2000, maxTriangles: 200000, textureSet: "BC+N", maxTextureSize: 2048 },
     { role: "prop", assetKey: "courierZoneBollard", maxTriangles: 200000, textureSet: "BC+N", maxTextureSize: 1024 },
     { role: "prop", assetKey: "courierZoneAwning", maxTriangles: 300000, textureSet: "BC+N", maxTextureSize: 1024 }
   ],
