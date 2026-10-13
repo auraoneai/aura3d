@@ -114,15 +114,21 @@ describe("post/exposure diagnostics sections", () => {
     createPrd03PostSurface(appB, { flags: resolveQrFlags({ options: ["post"] }), options: {} });
     // B's mount resolves first — the wrong ordering for a global `latest`.
     createProductionRuntimePostprocess(
-      scene().add(effects.antiAlias({ mode: "fxaa" })).toJSON(), [], 320, 200, true, { canvas: canvasB });
+      scene()
+        .add(effects.antiAlias({ mode: "fxaa" }))
+        .add(effects.colorGrade({ contrast: 1.1 }))
+        .toJSON(), [], 320, 200, true, { canvas: canvasB });
     createProductionRuntimePostprocess(
       scene().add(effects.bloom({ intensity: 0.5 })).toJSON(), [], 320, 200, true, { canvas: canvasA });
     const postA = collectPostSection(appA);
     const postB = collectPostSection(appB);
     expect(postA.submittedPasses).toContain("bloom");
-    expect(postA.submittedPasses).not.toContain("fxaa");
-    expect(postB.submittedPasses).toContain("fxaa");
+    expect(postA.submittedPasses).not.toContain("color-grade");
+    expect(postB.submittedPasses).toContain("color-grade");
     expect(postB.submittedPasses).not.toContain("bloom");
+    // E4: B's authored fxaa resolves to MSAA on the high tier — no fxaa pass.
+    expect(postB.submittedPasses).not.toContain("fxaa");
+    expect(postB.antiAlias).toMatchObject({ mode: "msaa", sampleCount: 4 });
   });
 
   test("flag-off keeps the same truthful data (diagnostics plumbing is flag-neutral)", () => {
