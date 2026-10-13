@@ -640,9 +640,8 @@ const reactorScene = scene()
     // AO for grounding, and a nonzero depth haze that separates the hero cabinet
     // from the room behind it.
     bloomEffect,
-    effects.ambientOcclusion({ intensity: 0.46, radius: 0.68 }),
     effects.fog({ name: "arcade room depth haze", density: 0.028, color: "#0d0514", intensity: 0.3 }),
-    effects.colorGrade({ exposure: 1.04 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
+    effects.colorGrade({ exposure: 1.0 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
     effects.antiAlias({ mode: "fxaa" }),
     lights.ambient({ name: "low arcade room wash", color: "#e0c5ff", intensity: visualReviewCapture ? 0.82 : 0.58 }),
     lights.directional({

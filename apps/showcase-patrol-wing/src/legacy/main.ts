@@ -510,7 +510,7 @@ function buildScene(): ReturnType<typeof scene> {
       .toJSON();
   });
   return scene()
-    .background("#254760")
+    .background("#2e5f74")
     .addMany(arenaNodes())
     .addMany(heroNodes())
     .addMany(flightAtmosphere)
