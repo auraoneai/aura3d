@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
-import { createTableSimulation } from "../src/table";
+import { createTableSimulation } from "../src/gameplay/table";
 
 const repoRoot = resolve(import.meta.dirname, "../../..");
 const appDir = resolve(import.meta.dirname, "..");
