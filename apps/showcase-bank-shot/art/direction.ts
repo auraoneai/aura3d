@@ -41,17 +41,10 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "orbit", subjectHeightFraction: [0.2, 0.4], fovDeg: [35, 50], mobile: "landscape" },
-  // The rebuilt single-path scene (src/main.ts) renders engine primitives at
-  // true physics scale (the salvaged table sim is physics.sphere-based), so
-  // no typed asset is admitted for these roles yet: S10 admitted = 0 until a
-  // human look-dev review admits a table/ball/cue set. No `kit` is claimed
-  // and no kit accept verdict is fabricated here.
   assets: [
-    { role: "hero", assetKey: "bank-table", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "ball-atlas", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "cue", maxTriangles: 8000, minTriangles: 3000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "pool-hall-set", maxTriangles: 120000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "bar-props", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 }
+    { role: "hero", assetKey: "bankShotTable", kit: "K4", maxTriangles: 40000, minTriangles: 1000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "bankShotBall00", kit: "K4", maxTriangles: 32000, minTriangles: 200, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "bankShotCue", kit: "K4", maxTriangles: 8000, minTriangles: 200, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "cue-strike", kind: "burst", flipbook: "k9-dust" },

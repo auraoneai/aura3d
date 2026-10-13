@@ -9,6 +9,7 @@ import {
   camera,
   game,
   lights,
+  looks,
   material,
   primitives,
   scene,
@@ -190,6 +191,7 @@ const app = bankShotGame.app;
 const input = bankShotGame.input;
 if (!input) throw new Error("bank-shot failed to create runtime-owned input.");
 bankShotGame.start();
+app.setOutput?.({ preset: "interior-warm", exposure: 1 });
 requestedAudioEvents.add("bed");
 void bankShotGame.sound?.cue("bed");
 
@@ -249,6 +251,7 @@ function buildScene() {
     position: [0, 2.3, 0], target: [0, 0, 0], angle: 0.75, penumbra: 0.5, decay: 1.6, shadow: true
   }).toJSON());
   return scene().background("#0a0f14")
+    .add(looks.preset("club-noir"))
     .camera(camera.perspective({ position: [-0.35, 2.5, 2.3], target: [0.3, 0, 0], fov: 48 }))
     .addMany(nodes);
 }
