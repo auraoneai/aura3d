@@ -11,8 +11,12 @@
  *    static scenes (moving === 0) always qualify.
  *  - SMAA 1x fills the gap: MSAA blocked by the pixel guard while TAA is not
  *    allowed.
- *  - FXAA is the C-27 Low default and an explicit opt-in. It never runs on a
- *    multisampled target — resolved `fxaa` always returns `sampleCount: 1`.
+ *  - FXAA is the C-27 Low default. An explicit FXAA request is honored only
+ *    when MSAA cannot run (tier has no MSAA samples, or the pixel guard
+ *    blocks it): on an MSAA-capable tier MSAA wins instead
+ *    (`FXAA_OVERRIDDEN_BY_MSAA`, 4.0 Live Fix E4) so authored FXAA can never
+ *    silently discard the tier's multisampled target. Resolved `fxaa`
+ *    always returns `sampleCount: 1`.
  *  - `off` is explicit only.
  *  - Moving High to TAA is CCR-03-4 and is *not* assumed: a `postAntiAlias:
  *    "none"` tier never resolves to `taa` in `auto` mode.
@@ -53,7 +57,13 @@ export function resolvePostAntiAlias(input: PostAntiAliasInput): PostAntiAliasRe
   const taaAllowed = velocity.movingWithHistory >= velocity.moving;
 
   if (authored === "off") return { mode: "off", sampleCount: 1 };
-  if (authored === "fxaa") return { mode: "fxaa", sampleCount: 1 };
+  if (authored === "fxaa") {
+    // E4: FXAA is a no-MSAA-tier opt-in, not a downgrade switch. When the
+    // tier can multisample within the pixel guard, MSAA wins and the
+    // substitution is reported, never silent.
+    if (msaaCapable) return { mode: "msaa", sampleCount: 4, reason: "FXAA_OVERRIDDEN_BY_MSAA" };
+    return { mode: "fxaa", sampleCount: 1 };
+  }
   if (authored === "smaa") return { mode: "smaa", sampleCount: 1 };
   if (authored === "taa") {
     if (taaAllowed) return { mode: "taa", sampleCount: 1 };

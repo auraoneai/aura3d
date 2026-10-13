@@ -96,7 +96,10 @@ export function createProductionRuntimePostprocess(
         : "auto"
       : ((authoredAntiAlias.mode ?? "auto") as AuraAntiAliasMode)
     : "auto";
-  const resolvedAa = postFlagOn && authoredAntiAlias
+  // E4: resolve even without an authored AA node (authoredAaMode is then
+  // "auto") so the tier's sampleCount reaches the forward target instead of
+  // falling through to a renderer-internal default with no diagnostics.
+  const resolvedAa = postFlagOn
     ? resolvePostAntiAlias({
       settings: QUALITY_TIERS[resolvedTier],
       tier: resolvedTier,
@@ -216,7 +219,9 @@ export function createProductionRuntimePostprocess(
     // legacy chain (Phase 3); the honest no-AA frame is reported via the
     // resolution reason in the submitted record.
     ...(resolvedAa ? { sampleCount: resolvedAa.sampleCount } : {}),
-    ...(fxaaRequested && authoredAntiAlias ? { fxaa: resolvedAa ? { variant: "r185" as const } : {} } : {}),
+    // E4: a tier-resolved fxaa (low tier, no authored node) must actually
+    // submit its pass; flag-off legacy still requires an authored node.
+    ...(fxaaRequested && (authoredAntiAlias || resolvedAa) ? { fxaa: resolvedAa ? { variant: "r185" as const } : {} } : {}),
     ...(authoredSsr ? {
       ssr: {
         intensity: clampNumber(authoredSsr.intensity ?? 0.9, 0, 2),
