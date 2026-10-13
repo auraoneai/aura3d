@@ -35,7 +35,7 @@ export function bankShotEffectsPass() {
       name: "pendant bank shadow key",
       position: [-0.6, 5.2, 1.4],
       target: [0, 0, 0],
-      color: "#ffd9a3",
+      color: "#ffbe78",
       intensity: 2.0,
       shadow: { cascades: 1, mapSize: 1024, filter: "pcf", maxDistance: 12 }
     }),
@@ -49,8 +49,8 @@ export function bankShotEffectsPass() {
       color: "#0d0f16",
       intensity: 0.18
     }),
-    effects.colorGrade({ saturation: 1.22, contrast: 1.14 }),
-    effects.vignette({ intensity: 0.48, smoothness: 1.8 }),
+    effects.colorGrade({ saturation: 1.3, contrast: 1.18 }),
+    effects.vignette({ intensity: 0.52, smoothness: 1.8 }),
     ...(vfxOn
       ? [
           // Dust motes rising slowly through the lamp pool over the table

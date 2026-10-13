@@ -43,7 +43,7 @@ export const TURBO_LATE_AFTERNOON_MOOD = {
   ambientColor: "#ffe0c5",
   ambientIntensity: 1.38,
   keyColor: "#ffc18e",
-  keyIntensity: 3.15,
+  keyIntensity: 3.05,
   /** Key-light position as fractions of SCENE_SIZE (x, y, z). */
   keyPositionFractions: { x: -0.92, y: 0.38, z: 0.58 },
   rimColor: "#c6d9e8",
