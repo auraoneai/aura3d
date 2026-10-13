@@ -117,7 +117,7 @@ export function buildVaultScene(sim: TableSimulation) {
         .scale([0.28, 0.16, 0.12])
         .runtime(game.runtimeNode(`bank-status-${index}`, { tags: ["mission-progress", "bank-lamp"] }))
     ),
-    // The one shadowed key: 3800 K-class spot over the playfield. No fills.
+    // Playfield practical spot (looks.preset(LOOK_ID) provides the 1 shadowed key).
     lights.spot({
       name: "playfield key spot",
       color: "#ffe2b8",
@@ -127,7 +127,7 @@ export function buildVaultScene(sim: TableSimulation) {
       angle: 0.82,
       penumbra: 0.55,
       decay: 1.7,
-      shadow: true
+      shadow: false
     }).toJSON()
   ];
   return scene()

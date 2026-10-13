@@ -89,7 +89,7 @@ let latestSnapshot: VaultBreakersEvidence | undefined;
 const vaultGame = createGame({
   id: "showcase-vault-breakers",
   target: "#app",
-  diagnostics: { overlay: true, performancePanel: true },
+  diagnostics: { overlay: false, performancePanel: false },
   scene: () => buildVaultScene(sim),
   input: {
     actions: {
