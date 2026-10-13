@@ -246,6 +246,18 @@ const DISABLED_RENDERER_ENVIRONMENT_LIGHTING: EnvironmentLightingOptions = {
   environmentMapSpecularIntensity: 0
 };
 
+/**
+ * E3 step 4 verdict: this renderer default (ambient 0.42 + procedural
+ * 0.5/0.82) is already deleted on the conjunction path — and on every
+ * LIGHTING path — because `collectEnvironmentLighting` intercepts
+ * no-environment and legacy-fallback sources with the neutral room above
+ * before the default clone at its tail can run, and the conjunction
+ * requires LIGHTING. The constant itself is public API and stays
+ * byte-identical for flag-off callers; passed explicitly as authored
+ * lighting under the conjunction, its procedural terms are zeroed at the
+ * ForwardPass bind layer (frozen suppression) and its ambient remains the
+ * sole diffuse term (no sampled map).
+ */
 export const DEFAULT_RENDERER_ENVIRONMENT_LIGHTING: EnvironmentLightingOptions = {
   color: [0.78, 0.8, 0.84],
   intensity: 0.42,

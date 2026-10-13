@@ -140,9 +140,29 @@ export function createProductionRuntimeEnvironment(
           : category === "material" ? "inspection"
             : "studio";
   const bundle = createExternalParityEnvironmentLighting(preset, flags);
+  const knob = bundle.lighting.environmentMapIntensity ?? bundle.lighting.intensity;
+  // E3 step 4: under the conjunction the category fallback collapses to the
+  // same single knob as the authored branch (intensity =
+  // environmentMapIntensity = environmentMapSpecularIntensity = knob,
+  // procedural zeroed) instead of stacking the preset's five scalars. The
+  // gate is the conjunction, not COMPILER alone: the stage-2a
+  // COMPILER-only collapse above stays authored-only, so every
+  // conjunction-off bundle (including COMPILER-only) is byte-identical.
+  const conjunction = flags?.on("A3D_QR_COMPILER") === true && flags?.on("A3D_QR_LIGHTING") === true;
+  const categoryLighting: EnvironmentLightingOptions = conjunction
+    ? {
+        ...bundle.lighting,
+        intensity: knob,
+        ...(bundle.lighting.proceduralMap
+          ? { proceduralMap: { ...bundle.lighting.proceduralMap, intensity: 0, specularIntensity: 0 } }
+          : {}),
+        environmentMapIntensity: knob,
+        environmentMapSpecularIntensity: knob
+      }
+    : bundle.lighting;
   return {
     preset,
-    intensity: bundle.lighting.environmentMapIntensity ?? bundle.lighting.intensity,
+    intensity: knob,
     evidence: `production bridge submitted generated HDR ${preset} environment lighting through RenderSource.environmentLighting`,
     // Only a scene with no environment *and no lights at all* is a fallback
     // the neutral room replaces under the flag (PRD-02 §6.2 / migration table:
@@ -152,7 +172,7 @@ export function createProductionRuntimeEnvironment(
     // went 128 → 187 median with the neutral room added under authored lights).
     // The bundle object can be shared across scenes with the same preset, so
     // the marked value is a shallow copy (deep-equal: flag-off output unchanged).
-    lighting: nodes.some((node) => node.kind === "light") ? bundle.lighting : markLegacyFallbackEnvironment({ ...bundle.lighting })
+    lighting: nodes.some((node) => node.kind === "light") ? categoryLighting : markLegacyFallbackEnvironment({ ...categoryLighting })
   };
 }
 

@@ -443,8 +443,14 @@ function uvExpr(f: ProgramFeatures, slot: keyof ProgramFeatures["maps"]): string
 }
 
 /** Default `fragment:indirect` body: ambient 1/pi + single env sample.
- * Accumulators are declared by the caller so replacing hooks see them too. */
-function defaultIndirectBody(f: ProgramFeatures): string {
+ * Accumulators are declared by the caller so replacing hooks see them too.
+ * E3 step 4: under the conjunction the always-add procedural specular is
+ * guarded to the unsampled case (mirroring the procedural diffuse above it),
+ * so a bundle carrying both a sampled map and a procedural map no longer
+ * double-counts specular on conjunction draws that did not select
+ * `prd02.ibl` (on the PRD-02 path this body is not emitted at all, step 1).
+ * Conjunction-off the emitted lines are byte-identical. */
+function defaultIndirectBody(f: ProgramFeatures, e3Conjunction = false): string {
   const lines: string[] = [];
   lines.push("  indirectDiffuse += a3dAmbientDiffuse(material.diffuseContribution);");
   lines.push("#ifdef A3D_ENV_SAMPLE");
@@ -467,7 +473,9 @@ function defaultIndirectBody(f: ProgramFeatures): string {
   // The sampled map already supplied the multiscatter irradiance term.
   lines.push("  a3dProcIrradiance = vec3(0.0);");
   lines.push("#endif");
+  if (e3Conjunction) lines.push("#ifndef A3D_ENV_SAMPLE");
   lines.push("  indirectSpecular += a3dIndirectSpecular(a3dProceduralSpecularRadiance(reflect(-V, N), material.roughness), a3dProcIrradiance, V, N, material);");
+  if (e3Conjunction) lines.push("#endif");
   lines.push("#endif");
   lines.push(occlusionIndirectSnippet(f));
   return lines.join("\n");
@@ -484,7 +492,7 @@ function occlusionIndirectSnippet(f: ProgramFeatures): string {
   ].join("\n");
 }
 
-function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contribution[], defines: Record<string, string | number | true>, marker: string, state: SpliceState, lobeChunks: LobeCalls, prd02IblReplacesIndirect: boolean): string {
+function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contribution[], defines: Record<string, string | number | true>, marker: string, state: SpliceState, lobeChunks: LobeCalls, prd02IblReplacesIndirect: boolean, e3Conjunction = false): string {
   hookSplice(contributions, "fragment:pars", state);
   const alphaHooks = hookSplice(contributions, "fragment:alpha", state);
   const normalHooks = hookSplice(contributions, "fragment:normal", state);
@@ -556,7 +564,7 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
     } else {
       // fragment:indirect appends to the default ambient + env body (T0-05);
       // lobe `ibl` calls run last, over the final direct + indirect accumulators.
-      body.push(defaultIndirectBody(f));
+      body.push(defaultIndirectBody(f, e3Conjunction));
       if (indirectHooks.length > 0) body.push(...indirectHooks.map((s) => indent(s)));
     }
     if (lobeChunks.ibl.length > 0) body.push(...lobeChunks.ibl.map((s) => indent(s)));
@@ -744,11 +752,12 @@ export function generateProgramImpl(features: ProgramFeatures, options: Generate
   const fragmentState = newSpliceState();
   const lobes = extensionLobeChunks(f, options.flags, fragmentState, defines, report);
   const vertex = vertexSource(f, contributions, defines, marker);
-  const prd02IblReplacesIndirect = e3CompilerLightingOn(options.flags)
+  const e3Conjunction = e3CompilerLightingOn(options.flags);
+  const prd02IblReplacesIndirect = e3Conjunction
     && contributions.some(({ feature }) => feature.id === PRD02_IBL_FEATURE);
   const fragment =
     f.pass === "forward"
-      ? forwardFragmentSource(f, contributions, defines, marker, fragmentState, lobes, prd02IblReplacesIndirect)
+      ? forwardFragmentSource(f, contributions, defines, marker, fragmentState, lobes, prd02IblReplacesIndirect, e3Conjunction)
       : depthFragmentSource(f, defines, marker);
   return { key, vertex, fragment, defines };
 }
