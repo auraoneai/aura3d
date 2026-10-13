@@ -52,7 +52,7 @@ export default defineArtDirection({
   // Triangle budgets bound the measured GLBs (car 8,494 tris, circuit
   // 24,493 tris).
   assets: [
-    { role: "hero", assetKey: "carModel", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "hero", assetKey: "carModel", minTriangles: 2000, maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "world", assetKey: "trackModel", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 2048 }
   ],
   vfx: [

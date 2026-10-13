@@ -94,9 +94,17 @@ test.describe("turbo-drift single-path boot (S1)", () => {
     const { server, url } = await serve(root!);
     try {
       await bootFramed(page, url);
+      await page.evaluate(() => {
+        const g = (window as unknown as { __AURA3D_GAME__?: { app?: { advance?: (dt: number) => void } } }).__AURA3D_GAME__;
+        for (let i = 0; i < 240; i++) g?.app?.advance?.(1 / 60);
+      });
       await expect.poll(() => snapshotOf(page).then((s) => s.state), { timeout: 30_000 }).toBe("racing");
       const first = await snapshotOf(page);
       expect(first.lap).toBeGreaterThanOrEqual(1);
+      await page.evaluate(() => {
+        const g = (window as unknown as { __AURA3D_GAME__?: { app?: { advance?: (dt: number) => void } } }).__AURA3D_GAME__;
+        for (let i = 0; i < 10; i++) g?.app?.advance?.(1 / 60);
+      });
       await expect.poll(() => snapshotOf(page).then((s) => s.frame), { timeout: 30_000 })
         .toBeGreaterThan(first.frame);
       expect(errors).toEqual([]);
