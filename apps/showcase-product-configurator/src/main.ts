@@ -264,7 +264,8 @@ app = createAuraApp("#aura-stage", {
   pixelRatio: Math.min(1.5, window.devicePixelRatio || 1),
   renderer: {
     mode: "production",
-    qualityProfile: "production"
+    qualityProfile: "production",
+    fallback: "safe-basic"
   },
   scene: initialScene
 });
