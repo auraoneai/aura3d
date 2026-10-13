@@ -131,7 +131,7 @@ let latestSnapshot: GalleryShiftEvidence | undefined;
 const galleryGame = createGame({
   id: "gallery-shift",
   target: "#app",
-  diagnostics: { overlay: true, performancePanel: true },
+  diagnostics: { overlay: false, performancePanel: false },
   scene: () => buildScene(),
   input: inputOptions,
   hud: {
