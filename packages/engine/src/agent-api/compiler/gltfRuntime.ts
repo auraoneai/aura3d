@@ -167,15 +167,27 @@ const SHARED_IN_FLIGHT_KEY = "__aura3dInFlightByteFetches";
 type SharedInFlightGlobal = typeof globalThis & { [SHARED_IN_FLIGHT_KEY]?: Map<string, Promise<ArrayBuffer>> };
 const inFlightByteFetches = ((globalThis as SharedInFlightGlobal)[SHARED_IN_FLIGHT_KEY] ??= new Map<string, Promise<ArrayBuffer>>());
 
+async function fetchBytesOnce(url: string, cache?: RequestCache): Promise<ArrayBuffer> {
+  const response = await fetch(url, cache ? { cache } : undefined);
+  if (!response.ok) {
+    const error = new Error(`fetch failed with ${response.status}`) as Error & { status?: number };
+    error.status = response.status;
+    throw error;
+  }
+  return response.arrayBuffer();
+}
+
 export function fetchBytesShared(url: string): Promise<ArrayBuffer> {
   const pending = inFlightByteFetches.get(url) ?? (async () => {
-    const response = await fetch(url);
-    if (!response.ok) {
-      const error = new Error(`fetch failed with ${response.status}`) as Error & { status?: number };
-      error.status = response.status;
-      throw error;
+    try {
+      return await fetchBytesOnce(url);
+    } catch (error) {
+      // HTTP failures are deterministic; network/cache failures (Chromium
+      // ERR_CACHE_WRITE_FAILURE on multi-MB GLBs under disk-cache pressure)
+      // get one retry that bypasses the HTTP cache entirely.
+      if (httpStatusOf(error) !== undefined) throw error;
+      return fetchBytesOnce(url, "no-store");
     }
-    return response.arrayBuffer();
   })();
   if (!inFlightByteFetches.has(url)) {
     inFlightByteFetches.set(url, pending);

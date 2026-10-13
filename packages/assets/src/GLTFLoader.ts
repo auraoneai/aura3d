@@ -3122,12 +3122,25 @@ export function fetchGltfBytesShared(
   request: AssetLoadRequest,
   describeFailure: (status: number) => string
 ): Promise<ArrayBuffer> {
-  const pending = inFlightGltfFetches.get(url) ?? (async () => {
-    const response = await fetch(url, { signal: request.signal });
+  const attempt = async (cache?: RequestCache): Promise<ArrayBuffer> => {
+    const response = await fetch(url, { signal: request.signal, ...(cache ? { cache } : {}) });
     if (!response.ok) {
-      throw new Error(describeFailure(response.status));
+      const error = new Error(describeFailure(response.status)) as Error & { status?: number };
+      error.status = response.status;
+      throw error;
     }
     return readResponseBytes(response, url, phase, request);
+  };
+  const pending = inFlightGltfFetches.get(url) ?? (async () => {
+    try {
+      return await attempt();
+    } catch (error) {
+      // HTTP failures are deterministic; network/cache failures (Chromium
+      // ERR_CACHE_WRITE_FAILURE on multi-MB GLBs under disk-cache pressure)
+      // get one retry that bypasses the HTTP cache entirely.
+      if (request.signal?.aborted || (error as { status?: number } | null)?.status !== undefined) throw error;
+      return attempt("no-store");
+    }
   })();
   if (!inFlightGltfFetches.has(url)) {
     inFlightGltfFetches.set(url, pending);

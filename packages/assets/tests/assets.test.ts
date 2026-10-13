@@ -542,6 +542,35 @@ test("fetchGltfBytesShared shares one fetch across concurrent same-URL loads", a
   }
 });
 
+test("fetchGltfBytesShared retries a cache/network failure once with cache bypass", async () => {
+  const realFetch = globalThis.fetch;
+  const seenInit: unknown[] = [];
+  let attempt = 0;
+  globalThis.fetch = (async (_url: string, init?: RequestInit) => {
+    seenInit.push(init);
+    attempt += 1;
+    if (attempt === 1) throw new TypeError("Failed to fetch");
+    return {
+      ok: true,
+      status: 200,
+      headers: { get: () => "1" },
+      body: null,
+      arrayBuffer: async () => new Uint8Array([9]).buffer
+    } as unknown as Response;
+  }) as typeof fetch;
+  try {
+    const bytes = await fetchGltfBytesShared(
+      "https://example.test/flaky.glb", "document",
+      { url: "https://example.test/flaky.glb" },
+      (status) => `glTF request failed with ${status}`);
+    assert.deepEqual([...new Uint8Array(bytes)], [9]);
+    assert.equal(attempt, 2);
+    assert.equal((seenInit[1] as RequestInit).cache, "no-store");
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
 test("fetchGltfBytesShared propagates HTTP failures with the caller's message", async () => {
   const realFetch = globalThis.fetch;
   let calls = 0;
