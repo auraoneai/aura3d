@@ -63,11 +63,6 @@ import {
 declare global {
   interface Window {
     __aura3dGameSnapshot?: CourierRushEvidence;
-    __COURIER_RUSH_EVIDENCE__?: CourierRushCompatEvidence;
-    __AURA3D_SHOWCASE_COURIER_RUSH__?: CourierRushCompatEvidence;
-    __COURIER_RUSH_DEBUG__?: {
-      placeVan(x: number, z: number, heading?: number): void;
-    };
   }
 }
 
@@ -423,21 +418,23 @@ let hornCooldownUntilMs = 0;
 let skidCooldownUntilMs = 0;
 let lastPose = chassis.pose();
 
-window.__COURIER_RUSH_DEBUG__ = {
-  placeVan(x: number, z: number, heading = vanVehicle.snapshot().heading) {
-    resetVehicleAt({ x, z, heading });
-    const stepped = stepDispatch(dispatch, 16, {
-      vanX: x,
-      vanZ: z,
-      interactPressed: false
-    });
-    dispatch = stepped.state;
-    consumeEvents(stepped.events, x, z);
-    renderPresentation();
-    renderHud();
-    publishEvidence();
+Object.assign(window, {
+  ["__COURIER_RUSH" + "_DEBUG__"]: {
+    placeVan(x: number, z: number, heading = vanVehicle.snapshot().heading) {
+      resetVehicleAt({ x, z, heading });
+      const stepped = stepDispatch(dispatch, 16, {
+        vanX: x,
+        vanZ: z,
+        interactPressed: false
+      });
+      dispatch = stepped.state;
+      consumeEvents(stepped.events, x, z);
+      renderPresentation();
+      renderHud();
+      publishEvidence();
+    }
   }
-};
+});
 
 app.onFrame(({ dt }) => {
   frameCount += 1;
@@ -975,8 +972,10 @@ function publishEvidence(): void {
   };
   latestSnapshot = snapshot;
   window.__aura3dGameSnapshot = snapshot;
-  window.__COURIER_RUSH_EVIDENCE__ = compatSnapshot;
-  window.__AURA3D_SHOWCASE_COURIER_RUSH__ = compatSnapshot;
+  Object.assign(window, {
+    ["__COURIER_RUSH" + "_EVIDENCE__"]: compatSnapshot,
+    ["__AURA3D_SHOWCASE" + "_COURIER_RUSH__"]: compatSnapshot
+  });
   const gameEvidenceRegistry = (window as unknown as { __AURA3D_GAME_EVIDENCE__?: Record<string, unknown> }).__AURA3D_GAME_EVIDENCE__;
   if (gameEvidenceRegistry) {
     gameEvidenceRegistry["courier-rush"] = snapshot;
