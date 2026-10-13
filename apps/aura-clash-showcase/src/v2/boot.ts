@@ -37,7 +37,6 @@ const kit = createFightingGameKit({
 });
 
 const fighterAnimations = createAuraClashFighterAnimations();
-const lastHitDamage: Partial<Record<"p1" | "p2", number>> = {};
 
 const round = { number: 1, timeLeft: ROUND_SECONDS };
 let latestSnapshot: FightingGameSnapshot = kit.snapshot();
@@ -147,18 +146,26 @@ game.app.onFrame?.(({ dt }) => {
     app: game.app,
     hitFlash: game.app.nodes.get(HIT_FLASH_NODE)
   }, events);
+  // Frame-local reaction signals (consume-on-use): hit/blocked events and
+  // the stun they cause land in the same kit update, so damage/blocked are
+  // built fresh per frame and can never leak stale severity into a later hit.
+  const frameHitDamage: Partial<Record<"p1" | "p2", number>> = {};
+  const frameBlocked: Partial<Record<"p1" | "p2", boolean>> = {};
   if (events.length > 0) {
     for (const ev of events) {
       if (ev.type === "hit") {
         pushCue("hit");
         if (ev.targetId === "p1" || ev.targetId === "p2") {
-          lastHitDamage[ev.targetId] = ev.damage ?? 0;
+          frameHitDamage[ev.targetId] = ev.damage ?? 0;
         }
         hitStopUntilMs = performance.now() + 95;
       } else if (ev.type === "whiff") {
         pushCue("whoosh");
       } else if (ev.type === "blocked") {
         pushCue("blocked");
+        if (ev.targetId === "p1" || ev.targetId === "p2") {
+          frameBlocked[ev.targetId] = true;
+        }
       } else if (ev.type === "knockout" && !koPlayed) {
         koPlayed = true;
         pushCue("announcer");
@@ -173,7 +180,8 @@ game.app.onFrame?.(({ dt }) => {
   // Clip drive: kit actor states + health → embedded GLB clips on both rigs.
   fighterAnimations.update(sdt, latestSnapshot, {
     playerCrouch: kit.input.held("crouch"),
-    lastHitDamage
+    lastHitDamage: frameHitDamage,
+    blocked: frameBlocked
   });
 
   round.timeLeft = Math.max(0, round.timeLeft - sdt);

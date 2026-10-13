@@ -65,6 +65,13 @@ export interface AuraClashFighterAnimInput {
   readonly crouch?: boolean;
   /** Damage of the most recent hit taken (combat event), for hurt severity. */
   readonly lastHitDamage?: number;
+  /**
+   * True when the stun this frame came from a blocked attack. The kit maps
+   * blockStun to the same "hitstun" actor state as a clean hit, so boot must
+   * pass the combat event's blocked signal separately; blocked reactions
+   * keep the guard clip and ignore `lastHitDamage`.
+   */
+  readonly blocked?: boolean;
 }
 
 export interface AuraClashFighterAnimSnapshot {
@@ -112,6 +119,8 @@ export class AuraClashFighterAnimation {
   private active: ActiveClip | null = null;
   private prevKitState: FightingActorState | null = null;
   private dead = false;
+  private deathHeld = false;
+  private guardStun = false;
   private lastError: string | null = null;
 
   constructor(
@@ -165,6 +174,28 @@ export class AuraClashFighterAnimation {
     }
   }
 
+  // A completed loop:"once" state drops out of the runtime binding's
+  // playing/paused selection and the binding falls back to its default
+  // (idle) clip. `scrub(clip, duration)` revives the state as paused at the
+  // clamped final frame (completed=false), and paused states stay selected
+  // by the binding while `update` skips them — the KO pose holds until the
+  // health>0 edge below clears `dead`.
+  private holdDeathPoseIfDone(): void {
+    if (this.deathHeld) return;
+    const clip = this.clips.ko;
+    const state = this.controller.snapshot().clips.find((c) => c.clipId === clip);
+    const driverDuration = this.durations[clip] ?? state?.duration ?? 0.4;
+    const done = state?.completed === true || state?.status === "completed"
+      || (this.active?.elapsed ?? 0) >= driverDuration;
+    if (!done) return;
+    try {
+      this.controller.scrub(clip, state?.duration ?? driverDuration);
+      this.deathHeld = true;
+    } catch (err) {
+      this.lastError = err instanceof Error ? err.message : String(err);
+    }
+  }
+
   private oneShotDone(): boolean {
     if (!this.active || LOOPING_STATES.has(this.active.state)) return true;
     return this.active.elapsed >= (this.durations[this.active.clip] ?? 0.4);
@@ -178,15 +209,32 @@ export class AuraClashFighterAnimation {
     const entered = (s: FightingActorState) =>
       input.state === s && prevKitState !== s;
 
-    // Death latches above everything and plays exactly once.
+    // Death latches above everything, plays exactly once, then holds the
+    // final pose until health rises above 0 (round reset restores health).
     if (input.health <= 0) {
-      if (!this.dead) { this.dead = true; this.start("death", this.clips.ko, 0.15); }
+      if (!this.dead) {
+        this.dead = true;
+        this.deathHeld = false;
+        this.start("death", this.clips.ko, 0.15);
+      } else {
+        this.holdDeathPoseIfDone();
+      }
       return;
     }
     this.dead = false;
+    this.deathHeld = false;
+
+    if (input.state !== "hitstun") this.guardStun = false;
+    else if (input.blocked === true) this.guardStun = true;
 
     // Hit reaction on entering hitstun (severity from damage + grounded).
+    // Blocked attacks also enter hitstun (blockStun), but keep the guard
+    // clip and never consume `lastHitDamage`.
     if (entered("hitstun")) {
+      if (this.guardStun) {
+        this.start("guard", this.clips.guard, 0.05);
+        return;
+      }
       const variant = selectAuraClashHurtVariant(input.lastHitDamage ?? 0, input.grounded);
       this.start("hit", resolveAuraClashHurtClip(this.clips, variant, false), 0.05);
       return;
@@ -201,7 +249,8 @@ export class AuraClashFighterAnimation {
     if (!this.oneShotDone()) return; // let attack/hit clips finish
 
     const desired: { state: AuraClashFighterAnimState; clip: string } =
-      input.state === "guard" ? { state: "guard", clip: this.clips.guard }
+      input.state === "hitstun" && this.guardStun ? { state: "guard", clip: this.clips.guard }
+      : input.state === "guard" ? { state: "guard", clip: this.clips.guard }
       : input.state === "jump" ? { state: "air", clip: this.clips.air }
       : input.state === "dash" ? { state: "run", clip: this.clips.run }
       : input.crouch === true && input.grounded ? { state: "down", clip: this.clips.down }
@@ -240,6 +289,7 @@ export interface AuraClashFighterAnimations {
   update(dt: number, snapshot: FightingGameSnapshot, extras?: {
     readonly playerCrouch?: boolean;
     readonly lastHitDamage?: Readonly<Partial<Record<"p1" | "p2", number>>>;
+    readonly blocked?: Readonly<Partial<Record<"p1" | "p2", boolean>>>;
   }): void;
   snapshot(): { readonly p1: AuraClashFighterAnimSnapshot; readonly p2: AuraClashFighterAnimSnapshot; readonly readinessOk: boolean };
 }
@@ -265,12 +315,14 @@ export function createAuraClashFighterAnimations(): AuraClashFighterAnimations {
       player.update(dt, {
         state: snapshot.states.player, health: healthOf("p1"),
         grounded: snapshot.player.grounded, crouch: extras.playerCrouch,
-        lastHitDamage: extras.lastHitDamage?.p1
+        lastHitDamage: extras.lastHitDamage?.p1,
+        blocked: extras.blocked?.p1
       });
       rival.update(dt, {
         state: snapshot.states.opponent, health: healthOf("p2"),
         grounded: snapshot.opponent.grounded,
-        lastHitDamage: extras.lastHitDamage?.p2
+        lastHitDamage: extras.lastHitDamage?.p2,
+        blocked: extras.blocked?.p2
       });
     },
     snapshot() {
