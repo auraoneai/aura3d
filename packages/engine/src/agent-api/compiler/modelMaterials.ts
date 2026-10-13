@@ -1,12 +1,12 @@
-// PR 0b-1 carve-out (CONTRACTS.md §3.2) — C-15 model-material tint bridge, verbatim from the
-// TypedGLBActor options inside createProductionRuntimeSceneRenderer; 0 changed logic lines.
-// PRD-04 P2-3: `A3D_QR_MATERIALS` on lowers `node.material`/`node.materialOverrides` to C-15
-// overrides instead of the legacy `tint` object; flag off is byte-identical.
+// C-15 model-material bridge (PRD-04 P2-3).
+// 4.0 Live Fix E2: the A3D_QR_MATERIALS flag-off branch (legacy `tint`
+// object with replaceSurfaceTextures:true, which disabled baseColor+MR
+// textures and forced uniform plastic values in TypedGLBActor) is deleted.
+// `node.material`/`node.materialOverrides` always lower to C-15 overrides,
+// independent of flag resolution order or whether setTypedGLBActorQrFlags
+// has run yet.
 import type { AuraModelNode } from "../nodes/types.js";
 import type { AuraModelMaterialOverride } from "../../contracts/materials.js";
-import { colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
-import { clamp01 } from "../sceneMath.js";
-import { typedGLBActorQrFlags } from "../../production-runtime/actor/extensions.js";
 import { lowerModelMaterialOverrides } from "../../production-runtime/ModelMaterialOverrides.js";
 
 // C-15 seam fields: declared on `AuraModelOptions` (PR 0a) but not yet forwarded onto the
@@ -18,27 +18,11 @@ type ModelNodeMaterialSeams = AuraModelNode & {
 };
 
 export function applyModelTintBridge(node: AuraModelNode): Record<string, unknown> {
-  if (typedGLBActorQrFlags().on("A3D_QR_MATERIALS")) {
-    const seams = node as ModelNodeMaterialSeams;
-    const materialOverrides = lowerModelMaterialOverrides(node.material, seams.materialOverrides);
-    return {
-      ...(materialOverrides.length > 0 ? { materialOverrides } : {}),
-      // C-15: `node.variant` selects a declared KHR_materials_variants material at load (R11).
-      ...(seams.variant !== undefined ? { materialVariant: seams.variant } : {})
-    };
-  }
-  return node.material?.color ? {
-    tint: {
-      baseColor: colorToLinearRgba(node.material.color),
-      replaceSurfaceTextures: true,
-      ...(node.material.emissive ? { emissiveColor: colorToLinearRgb(node.material.emissive) } : {}),
-      ...(node.material.emissiveIntensity === undefined ? {} : { emissiveStrength: node.material.emissiveIntensity }),
-      ...(node.material.roughness === undefined ? {} : { roughness: clamp01(node.material.roughness) }),
-      ...(node.material.metallic === undefined && node.material.metalness === undefined
-        ? {}
-        : { metallic: clamp01(node.material.metallic ?? node.material.metalness ?? 0) }),
-      ...(node.material.clearcoat === undefined ? {} : { clearcoat: clamp01(node.material.clearcoat) }),
-      ...(node.material.clearcoatRoughness === undefined ? {} : { clearcoatRoughness: clamp01(node.material.clearcoatRoughness) })
-    }
-  } : {};
+  const seams = node as ModelNodeMaterialSeams;
+  const materialOverrides = lowerModelMaterialOverrides(node.material, seams.materialOverrides);
+  return {
+    ...(materialOverrides.length > 0 ? { materialOverrides } : {}),
+    // C-15: `node.variant` selects a declared KHR_materials_variants material at load (R11).
+    ...(seams.variant !== undefined ? { materialVariant: seams.variant } : {})
+  };
 }

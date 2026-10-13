@@ -11,8 +11,9 @@
  *     (string/RegExp targets, AuraColor) onto `TypedGLBActorMaterialOverride`
  *     (predicate targets, linear tuples). `spec.color` lowers first so array
  *     overrides outrank it.
- * No /joint/i heuristic, no 0.28 constants, no emissive=baseColor fallback —
- * those live in the flag-off path (applyMaterialTint) only.
+ * No /joint/i heuristic, no 0.28 constants, no emissive=baseColor fallback.
+ * 4.0 Live Fix E2: this lowering is the ONLY model-material path — the
+ * former flag-off legacy tint object (applyMaterialTint) was deleted.
  */
 
 import type { Material, UniformValue } from "@aura3d/rendering";
@@ -206,6 +207,22 @@ export function lowerModelMaterialOverrides(
         : { emissiveStrength: 1.0 })
     });
   }
+  // 4.0 Live Fix E2: spec surface scalars lower too. The deleted legacy
+  // tint path forwarded roughness/metallic/clearcoat whenever a color was
+  // present; the override path silently dropped them without a color.
+  // Authored (non-preset-defaulted) scalars now lower unconditionally so
+  // `model(asset, { material: { roughness } })` survives to the actor.
+  const authored = (key: string) => presetDefaulted?.has(key) !== true;
+  const metallic = spec?.metallic ?? spec?.metalness;
+  const surface: TypedGLBActorMaterialOverride = {
+    ...(spec?.roughness !== undefined && authored("roughness") ? { roughness: spec.roughness } : {}),
+    ...(metallic !== undefined && authored("metallic") && authored("metalness") ? { metallic } : {}),
+    ...(spec?.clearcoat !== undefined && authored("clearcoat") ? { clearcoat: spec.clearcoat } : {}),
+    ...(spec?.clearcoatRoughness !== undefined && authored("clearcoatRoughness")
+      ? { clearcoatRoughness: spec.clearcoatRoughness }
+      : {})
+  };
+  if (Object.keys(surface).length > 0) lowered.push(surface);
   for (const override of overrides ?? []) {
     lowered.push({
       ...(override.target !== undefined ? { target: targetPredicate(override.target) } : {}),

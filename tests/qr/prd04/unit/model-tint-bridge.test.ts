@@ -1,25 +1,22 @@
 /**
  * model-tint-bridge.test.ts — PRD-04 P2-3 (C-15 compiler bridge).
  *
- * `applyModelTintBridge(node)` in compiler/modelMaterials.ts:
- *  - flag OFF returns the legacy `tint` object unchanged (byte-equivalent shape: only the
- *    fields the legacy code wrote);
- *  - flag ON lowers `node.material` + `node.materialOverrides` to C-15 overrides and
- *    forwards `node.variant` as `materialVariant`, never emitting `tint`;
- *  - overrides honoured on a two-material fixture: `target: "Body"` changes Body only.
+ * `applyModelTintBridge(node)` in compiler/modelMaterials.ts lowers
+ * `node.material` + `node.materialOverrides` to C-15 overrides and forwards
+ * `node.variant` as `materialVariant`, never emitting the legacy `tint`
+ * object. 4.0 Live Fix E2 deleted the A3D_QR_MATERIALS flag-off branch
+ * (legacy tint with replaceSurfaceTextures:true): lowering is now
+ * unconditional, and spec surface scalars (roughness/metallic/clearcoat)
+ * lower even without a color. Overrides honoured on a two-material
+ * fixture: `target: "Body"` changes Body only.
  */
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { applyModelTintBridge } from "../../../../packages/engine/src/agent-api/compiler/modelMaterials";
 import { setTypedGLBActorQrFlags } from "../../../../packages/engine/src/production-runtime/actor/extensions";
 import { applyMaterialOverrides, snapshotMaterials } from "../../../../packages/engine/src/production-runtime/ModelMaterialOverrides";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import type { AuraModelNode } from "../../../../packages/engine/src/agent-api/index";
 import { Material } from "../../../../packages/rendering/src/Material";
-
-const FLAGS_ON = resolveQrFlags({ options: { A3D_QR_MATERIALS: true } });
-const FLAGS_OFF = resolveQrFlags({ options: { A3D_QR_MATERIALS: false } }); // explicit: materials is default-on
-
-afterEach(() => setTypedGLBActorQrFlags(FLAGS_OFF));
 
 const modelNode = (extra: Record<string, unknown> = {}): AuraModelNode =>
   ({ kind: "model", url: "asset://duck", ...extra }) as unknown as AuraModelNode;
@@ -32,54 +29,8 @@ function fixtureMaterials(): Material[] {
   ];
 }
 
-describe("flag off — legacy tint shape is unchanged", () => {
-  it("emits the verbatim legacy tint object for a colored material", () => {
-    setTypedGLBActorQrFlags(FLAGS_OFF);
-    const out = applyModelTintBridge(modelNode({
-      material: {
-        color: "#ff0000",
-        emissive: "#00ff00",
-        emissiveIntensity: 2,
-        roughness: 0.5,
-        metallic: 0.1,
-        clearcoat: 0.25,
-        clearcoatRoughness: 0.4
-      }
-    }));
-    expect(out).toEqual({
-      tint: {
-        baseColor: [1, 0, 0, 1],
-        replaceSurfaceTextures: true,
-        emissiveColor: [0, 1, 0],
-        emissiveStrength: 2,
-        roughness: 0.5,
-        metallic: 0.1,
-        clearcoat: 0.25,
-        clearcoatRoughness: 0.4
-      }
-    });
-  });
-
-  it("emits nothing when material.color is absent", () => {
-    setTypedGLBActorQrFlags(FLAGS_OFF);
-    expect(applyModelTintBridge(modelNode())).toEqual({});
-    expect(applyModelTintBridge(modelNode({ material: { roughness: 0.4 } }))).toEqual({});
-  });
-
-  it("ignores the new seam fields entirely when the flag is off", () => {
-    setTypedGLBActorQrFlags(FLAGS_OFF);
-    const out = applyModelTintBridge(modelNode({
-      material: { color: "#0000ff" },
-      materialOverrides: [{ target: "Body", roughness: 0.2 }],
-      variant: "beige"
-    }));
-    expect(out).toEqual({ tint: { baseColor: [0, 0, 1, 1], replaceSurfaceTextures: true } });
-  });
-});
-
-describe("flag on — lowers to C-15 overrides + materialVariant", () => {
+describe("bridge lowers to C-15 overrides + materialVariant", () => {
   it("lowers spec.color to baseColorMultiply and forwards variant", () => {
-    setTypedGLBActorQrFlags(FLAGS_ON);
     const out = applyModelTintBridge(modelNode({
       material: { color: "#ff0000", emissive: "#00ff00", emissiveIntensity: 2 },
       variant: "street"
@@ -94,8 +45,25 @@ describe("flag on — lowers to C-15 overrides + materialVariant", () => {
     expect(overrides[1].emissiveStrength).toBe(2);
   });
 
+  it("lowers even when actor QR flags resolve materials-off (flag state is irrelevant)", () => {
+    setTypedGLBActorQrFlags(resolveQrFlags({ options: { A3D_QR_MATERIALS: false } }));
+    const out = applyModelTintBridge(modelNode({ material: { color: "#0000ff" } }));
+    expect(out).not.toHaveProperty("tint");
+    const overrides = out.materialOverrides as { baseColorMultiply?: number[] }[];
+    expect(overrides).toHaveLength(1);
+    expect(overrides[0].baseColorMultiply).toEqual([0, 0, 1, 1]);
+  });
+
+  it("lowers authored spec surface scalars without a color (roughness-only survives)", () => {
+    const out = applyModelTintBridge(modelNode({
+      material: { roughness: 0.4, metallic: 0.9, clearcoat: 0.5, clearcoatRoughness: 0.25 }
+    }));
+    const overrides = out.materialOverrides as { roughness?: number; metallic?: number; clearcoat?: number; clearcoatRoughness?: number }[];
+    expect(overrides).toHaveLength(1);
+    expect(overrides[0]).toEqual({ roughness: 0.4, metallic: 0.9, clearcoat: 0.5, clearcoatRoughness: 0.25 });
+  });
+
   it("preserves array overrides after the spec-derived override", () => {
-    setTypedGLBActorQrFlags(FLAGS_ON);
     const out = applyModelTintBridge(modelNode({
       material: { color: "#ffffff" },
       materialOverrides: [{ target: "Body", roughness: 0.2 }]
@@ -108,7 +76,6 @@ describe("flag on — lowers to C-15 overrides + materialVariant", () => {
   });
 
   it("applies lowered overrides to a two-material fixture — target 'Body' changes only Body", () => {
-    setTypedGLBActorQrFlags(FLAGS_ON);
     const out = applyModelTintBridge(modelNode({
       materialOverrides: [{ target: "Body", roughness: 0.2 }]
     }));
@@ -121,7 +88,6 @@ describe("flag on — lowers to C-15 overrides + materialVariant", () => {
   });
 
   it("skips preset-defaulted fields — defaults are not re-asserted over authored glTF values", () => {
-    setTypedGLBActorQrFlags(FLAGS_ON);
     const defaults: Record<string, unknown> = { color: "#ffffff" };
     const material = {
       color: "#ffffff",
@@ -137,8 +103,7 @@ describe("flag on — lowers to C-15 overrides + materialVariant", () => {
   });
 
   it("emits nothing for an empty spec and no seams", () => {
-    setTypedGLBActorQrFlags(FLAGS_ON);
     expect(applyModelTintBridge(modelNode())).toEqual({});
-    expect(applyModelTintBridge(modelNode({ material: { roughness: 0.5 } }))).toEqual({});
+    expect(applyModelTintBridge(modelNode({ material: {} }))).toEqual({});
   });
 });

@@ -5,13 +5,14 @@
  * (agent-api/nodes/material.ts):
  *  - the marker records exactly the keys the preset defaulted, never the
  *    caller-supplied ones;
- *  - flag OFF: preset specs and the legacy tint bridge are unchanged (legacy
- *    preset values such as neon `emissiveIntensity: 2.8` pass through);
- *  - flag ON: the C-15 lowering substitutes R15's r185-corrected defaults for
- *    preset-defaulted values (neon 2.8 -> 2.0, defaulted colour dropped) while
- *    authored values pass through untouched.
+ *  - preset specs keep their authored legacy values (neon
+ *    `emissiveIntensity: 2.8` stays on the spec);
+ *  - the C-15 lowering — the only bridge since 4.0 Live Fix E2 deleted the
+ *    legacy tint path — substitutes R15's r185-corrected defaults for
+ *    preset-defaulted values (neon 2.8 -> 2.0, defaulted colour dropped)
+ *    while authored values pass through untouched.
  */
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   AURA_PRESET_DEFAULTS,
   material,
@@ -19,15 +20,8 @@ import {
 } from "../../../../packages/engine/src/agent-api/nodes/material";
 import { applyModelTintBridge } from "../../../../packages/engine/src/agent-api/compiler/modelMaterials";
 import { lowerModelMaterialOverrides } from "../../../../packages/engine/src/production-runtime/ModelMaterialOverrides";
-import { setTypedGLBActorQrFlags } from "../../../../packages/engine/src/production-runtime/actor/extensions";
-import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import type { AuraModelNode } from "../../../../packages/engine/src/agent-api/index";
 import type { AuraMaterialSpec } from "../../../../packages/engine/src/agent-api/nodes/types";
-
-const FLAGS_ON = resolveQrFlags({ options: { A3D_QR_MATERIALS: true } });
-const FLAGS_OFF = resolveQrFlags({ options: { A3D_QR_MATERIALS: false } }); // explicit: materials is default-on
-
-afterEach(() => setTypedGLBActorQrFlags(FLAGS_OFF));
 
 const defaultedKeys = (spec: AuraMaterialSpec): ReadonlySet<string> | undefined =>
   (spec as { [AURA_PRESET_DEFAULTS]?: ReadonlySet<string> })[AURA_PRESET_DEFAULTS];
@@ -71,25 +65,17 @@ describe("resolveMaterialSpecDefaults marks preset-defaulted keys", () => {
   });
 });
 
-describe("flag off — presets and legacy bridge unchanged", () => {
+describe("preset specs keep their authored values", () => {
   it("neon keeps its legacy preset values", () => {
     const neon = material.neon();
     expect(neon.emissiveIntensity).toBe(2.8);
     expect(neon.color).toBe("#0a1020");
     expect(neon.roughness).toBe(0.18);
   });
-
-  it("legacy tint forwards the preset emissiveIntensity verbatim (no R15 substitution)", () => {
-    setTypedGLBActorQrFlags(FLAGS_OFF);
-    const out = applyModelTintBridge(modelNode(material.neon())) as { tint?: { emissiveStrength?: number } };
-    expect(out.tint?.emissiveStrength).toBe(2.8);
-    expect(out).not.toHaveProperty("materialOverrides");
-  });
 });
 
-describe("flag on — R15 defaults for preset-defaulted values only", () => {
+describe("bridge always lowers — R15 defaults for preset-defaulted values only", () => {
   it("preset-defaulted neon emissiveIntensity 2.8 lowers to the r185 default 2.0", () => {
-    setTypedGLBActorQrFlags(FLAGS_ON);
     const out = applyModelTintBridge(modelNode(material.neon())) as { materialOverrides?: Lowered[]; tint?: unknown };
     expect(out.tint).toBeUndefined();
     const emissive = (out.materialOverrides ?? []).find((o) => o.emissiveStrength !== undefined);
