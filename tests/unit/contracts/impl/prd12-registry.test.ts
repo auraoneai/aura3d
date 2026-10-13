@@ -11,8 +11,8 @@ import {
 import { sceneIds } from "../../../../benchmarks/quality-rebuild/shared/scenes";
 
 describe("PRD-12 T1.2 registry (C-30)", () => {
-  it("wraps all 18 base scenes as active entries", () => {
-    expect(sceneIds.length).toBe(18);
+  it("wraps all 19 base scenes as active entries", () => {
+    expect(sceneIds.length).toBe(19);
     for (const id of sceneIds) {
       const entry = getRegisteredScene(id);
       expect(entry, id).toBeDefined();

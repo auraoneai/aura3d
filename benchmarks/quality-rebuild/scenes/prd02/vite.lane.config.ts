@@ -24,7 +24,8 @@ export default mergeConfig(baseConfig, {
         chunks: resolve(laneDir, "chunks.html"),
         pmrem: resolve(laneDir, "pmrem.html"),
         sh9: resolve(laneDir, "sh9.html"),
-        counters: resolve(laneDir, "counters.html")
+        counters: resolve(laneDir, "counters.html"),
+        roomParity: resolve(laneDir, "room-parity.html")
       }
     }
   }
