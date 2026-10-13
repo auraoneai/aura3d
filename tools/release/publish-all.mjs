@@ -106,23 +106,30 @@ function dependencyOrder(unorderedPackages) {
     .filter((name) => pendingDependencies.get(name).size === 0)
     .sort();
   const ordered = [];
-  while (ready.length > 0) {
+  const orderedNames = new Set();
+  while (ordered.length < unorderedPackages.length) {
+    if (ready.length === 0) {
+      // Genuine dependency cycle (e.g. @aura3d/controls <-> @aura3d/input via
+      // deprecated re-export shims). npm tolerates cyclic dependencies and
+      // every tarball is packed before anything publishes, so break the
+      // cycle deterministically instead of refusing the release.
+      const remaining = [...packageNames].filter((name) => !orderedNames.has(name)).sort();
+      const blocked = remaining.map((name) => `${name} <- ${[...pendingDependencies.get(name)].sort().join(", ")}`);
+      console.warn(`Internal package dependency cycle; breaking at ${remaining[0]}: ${blocked.join("; ")}`);
+      ready.push(remaining[0]);
+    }
     const name = ready.shift();
+    if (orderedNames.has(name)) continue;
     ordered.push(byName.get(name));
+    orderedNames.add(name);
     for (const dependent of dependents.get(name).sort()) {
       const pending = pendingDependencies.get(dependent);
       pending.delete(name);
-      if (pending.size === 0 && !ordered.some((entry) => entry.manifest.name === dependent) && !ready.includes(dependent)) {
+      if (pending.size === 0 && !orderedNames.has(dependent) && !ready.includes(dependent)) {
         ready.push(dependent);
         ready.sort();
       }
     }
-  }
-  if (ordered.length !== unorderedPackages.length) {
-    const blocked = [...pendingDependencies]
-      .filter(([, dependencies]) => dependencies.size > 0)
-      .map(([name, dependencies]) => `${name} <- ${[...dependencies].join(", ")}`);
-    throw new Error(`Internal package dependency cycle: ${blocked.join("; ")}`);
   }
   return ordered;
 }
