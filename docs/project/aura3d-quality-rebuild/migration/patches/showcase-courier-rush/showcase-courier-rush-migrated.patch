@@ -1,4 +1,4 @@
-From 0eedecddf84dfdf4a7783932fdd019b744d71014 Mon Sep 17 00:00:00 2001
+From e51b90440baf39eb8747ff88289ae2f37dc6b1ad Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:31 +0000
 Subject: [PATCH] migration(showcase-courier-rush): regenerated patch set
@@ -25,13 +25,13 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  apps/showcase-courier-rush/src/legacy/city.ts |  185 +--
  .../src/legacy/courier-audio.ts               |  217 ---
  apps/showcase-courier-rush/src/legacy/hud.ts  |  215 ---
- apps/showcase-courier-rush/src/legacy/main.ts |  323 +++--
+ apps/showcase-courier-rush/src/legacy/main.ts |  389 +++---
  .../src/legacy/styles.css                     |    4 +
  .../src/scenario-drive.ts                     |   11 +
  .../src/scenarios/index.ts                    |   13 +
  apps/showcase-courier-rush/src/sound.ts       |  144 ++
- apps/showcase-courier-rush/src/v2/boot.ts     |   40 +-
- .../src/v2/scene/world.ts                     |    2 +-
+ apps/showcase-courier-rush/src/v2/boot.ts     |   62 +-
+ .../src/v2/scene/world.ts                     |   19 +-
  .../src/v2/strike-zone.ts                     |    4 +-
  .../courierAmbientCitySfx.995b1230.wav        |    3 -
  .../courierAmbientCitySfx.thumb.svg           |    1 -
@@ -55,7 +55,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../courierStrikeHitSfx.c75e32f0.wav          |    3 -
  .../aura-assets/courierStrikeHitSfx.thumb.svg |    1 -
  src/aura-assets.ts                            | 1224 +++--------------
- 49 files changed, 603 insertions(+), 2215 deletions(-)
+ 49 files changed, 616 insertions(+), 2307 deletions(-)
  delete mode 100644 apps/showcase-courier-rush/assets/sfx/ambientCity.wav
  delete mode 100644 apps/showcase-courier-rush/assets/sfx/dispatchBlip.wav
  delete mode 100644 apps/showcase-courier-rush/assets/sfx/earlyBonus.wav
@@ -606,7 +606,7 @@ index 000000000..e53e7357e
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
 diff --git a/apps/showcase-courier-rush/src/legacy/city.ts b/apps/showcase-courier-rush/src/legacy/city.ts
-index 2ca1c883b..a45a4ba0d 100644
+index d66f9c175..1e0680d59 100644
 --- a/apps/showcase-courier-rush/src/legacy/city.ts
 +++ b/apps/showcase-courier-rush/src/legacy/city.ts
 @@ -90,168 +90,6 @@ function roadGuidanceNodes(): AuraNodeInput[] {
@@ -778,7 +778,7 @@ index 2ca1c883b..a45a4ba0d 100644
  
  /**
   * A small authored skyline layer makes the chase frame read as a lived-in
-@@ -758,31 +596,24 @@ export interface CityZoneDressing {
+@@ -772,31 +610,24 @@ export interface CityZoneDressing {
   */
  export function buildCityDressing(
    assets: CityAssetRefs,
@@ -1263,7 +1263,7 @@ index 53bb8d434..000000000
 -  hud.summaryOverlay.dataset.visible = "false";
 -}
 diff --git a/apps/showcase-courier-rush/src/legacy/main.ts b/apps/showcase-courier-rush/src/legacy/main.ts
-index fa4e955df..f71bf706a 100644
+index ce9d378b2..f71bf706a 100644
 --- a/apps/showcase-courier-rush/src/legacy/main.ts
 +++ b/apps/showcase-courier-rush/src/legacy/main.ts
 @@ -10,7 +10,6 @@
@@ -1274,10 +1274,11 @@ index fa4e955df..f71bf706a 100644
    createGameArcadeVehicle,
    camera,
    effects,
-@@ -24,6 +23,19 @@ import {
+@@ -24,7 +23,19 @@ import {
    type AuraRuntimeNodeHandle,
    type GameArcadeVehicle
  } from "@aura3d/engine";
+-import { POST_V2_EXPOSURE, withPostV2Bloom } from "./post-v2-retune";
 +import {
 +  createFxParticlePass,
 +  createGame,
@@ -1294,10 +1295,12 @@ index fa4e955df..f71bf706a 100644
  import { assets } from "../../../../src/aura-assets";
  import {
    buildCityDressing,
-@@ -54,16 +66,7 @@ import {
+@@ -55,18 +66,7 @@ import {
    VAN_TUNE,
    type VanDriveInput
  } from "../gameplay/van";
+-import { CAMERA_SOLIDS, clearanceLift, createChaseClearance } from "../gameplay/camera-clearance";
+-import { createCourierEffectsPass } from "./effects-pass";
 -import { createCourierAudio, type CourierAudioController } from "./courier-audio";
 -import {
 -  decayHudEffects,
@@ -1312,17 +1315,21 @@ index fa4e955df..f71bf706a 100644
  
  interface CourierRouteReadyFlag {
    readonly ready: boolean;
-@@ -97,8 +100,7 @@ const urlParams = new URLSearchParams(window.location.search);
+@@ -99,11 +99,8 @@ declare global {
+ const urlParams = new URLSearchParams(window.location.search);
  const autopilotEnabled = urlParams.get("autopilot") === "1";
  const timerScale = Number(urlParams.get("timerScale") ?? "1") || 1;
- const debugMode = urlParams.get("debug") === "1";
--const visualReviewCapture = urlParams.get("capture") === "review";
+-// No ?debug overlay in the shipped route (PRD-09 forbidden-param probe).
+-const debugMode: boolean = false;
+-// Shipped play view only: no ?capture review lens (PRD-09 capture parity).
+-const visualReviewCapture: boolean = false;
 -document.body.dataset.capture = visualReviewCapture ? "review" : "default";
++const debugMode = urlParams.get("debug") === "1";
 +document.body.dataset.capture = "default";
  
  /** Deterministic shift seed (drives traffic line variation). */
  const SHIFT_SEED = 20260821;
-@@ -110,17 +112,16 @@ const accessibilitySettings = game.accessibility.settings([
+@@ -115,17 +112,16 @@ const accessibilitySettings = game.accessibility.settings([
    game.accessibility.reducedMotion({ enabled: prefersReducedMotion })
  ]);
  const reducedMotion = accessibilitySettings.reducedMotion;
@@ -1343,7 +1350,7 @@ index fa4e955df..f71bf706a 100644
    if (!audioUnlocked) return;
    void courierAudio.cue(cue);
  };
-@@ -150,7 +151,7 @@ window.addEventListener("pointerdown", unlockAudio, { once: true });
+@@ -155,7 +151,7 @@ window.addEventListener("pointerdown", unlockAudio, { once: true });
  // east-avenue world road as the selected live traffic. It changes lens and
  // exposure only; dynamic cars, collision, cargo, and delivery state remain
  // the normal route simulation.
@@ -1352,7 +1359,7 @@ index fa4e955df..f71bf706a 100644
  const propColliders: readonly PropCollider[] = buildPropColliders();
  const trafficSim = createTrafficSimulation({ seed: SHIFT_SEED });
  
-@@ -182,7 +183,7 @@ const vanVehicle: GameArcadeVehicle = createGameArcadeVehicle({
+@@ -187,7 +183,7 @@ const vanVehicle: GameArcadeVehicle = createGameArcadeVehicle({
  
  // ---- simulation state ---------------------------------------------------------
  let dispatch: DispatchState = createDispatchState();
@@ -1361,7 +1368,17 @@ index fa4e955df..f71bf706a 100644
  let frameCount = 0;
  let dropLookbackRemainingSeconds = 0;
  let lastVanSpeed = 0;
-@@ -247,27 +248,27 @@ const chaseCamera = camera.follow({
+@@ -233,9 +229,7 @@ const observed = {
+ /** Shift start: on the free southbound lane, nose north toward the first dock. */
+ const SPAWN_POSE = { x: -0.45, z: 18.6, heading: -Math.PI / 2 };
+ 
+-const chaseClearance = createChaseClearance();
+ function resetVan(): void {
+-  chaseClearance.reset();
+   vanVehicle.reset({ x: SPAWN_POSE.x, z: SPAWN_POSE.z, heading: SPAWN_POSE.heading, speed: 0, drift: 0 });
+ }
+ resetVan();
+@@ -254,28 +248,28 @@ const chaseCamera = camera.follow({
    // desktop frame, which hid the cargo identity and made the scene read like
    // an empty road board. This is still the same follow rig and simulation
    // heading; only the visual composition is corrected.
@@ -1393,11 +1410,59 @@ index fa4e955df..f71bf706a 100644
      continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
    },
 -  scene: scene()
+-  .background("#0b1728")
 +  scene: () => scene()
-   .background("#030711")
++  .background("#030711")
      .addMany(dressing.staticNodes)
      .addMany(dressing.pickupZone)
-@@ -321,7 +322,7 @@ const app = createAuraApp("#app", {
+     .addMany(dressing.dropZone)
+@@ -285,7 +279,7 @@ const app = createAuraApp("#app", {
+     // 1.72 over emissive city dressing and blew the whole frame - including the
+     // player's own van - into a white core. Art direction is now a single set of
+     // values so evidence and gameplay cannot drift apart again.
+-    .add(effects.fog({ name: "night city haze", color: "#38536d", density: 0.0038, intensity: 0.46 }))
++    .add(effects.fog({ name: "night city haze", color: "#090714", density: 0.0018, intensity: 0.44 }))
+     // Bloom was authored at 0.5, which is a screenshot-kernel value, not a
+     // gameplay one. At that strength the typed van's white livery, its own
+     // headlight cones and every rain trace merged into one white mass: the
+@@ -300,22 +294,15 @@ const app = createAuraApp("#app", {
+     // animation frame - a black canvas with zero console or page errors,
+     // because the engine records it in `diagnostics.errors` instead of
+     // rethrowing. 0.5 is the maximum legal value and the repo-wide convention.
+-    .add(withPostV2Bloom(effects.neonBloom({ intensity: reducedMotion ? 0.26 : 0.44, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }), reducedMotion ? 0.26 / 0.44 : 1))
+-    .add(effects.colorGrade({ exposure: 0.93 * POST_V2_EXPOSURE, contrast: 1.06, saturation: 1.22 }))
++    .add(effects.neonBloom({ intensity: reducedMotion ? 0.26 : 0.44, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
++    .add(effects.colorGrade({ exposure: 1.05, contrast: 1.1, saturation: 1.12 }))
+     .add(effects.antiAlias({ mode: "fxaa" }))
+-    .addMany(createCourierEffectsPass({ reducedMotion, depot: START_SITE }))
+     // The street itself was reading as black-on-black void with a few floating
+     // signs. A lifted cool ambient plus a stronger moon key gives the kit
+     // towers, kerbs and lane paint actual form between the practicals.
+-    .add(lights.ambient({ name: "night city fill", color: "#93b7d4", intensity: 1.25 }))
+-    .add(lights.directional({
+-      name: "moonlight key",
+-      color: "#ffd2a0",
+-      intensity: 2.5,
+-      // Effects pass: cascaded PCSS moon shadows across the chase depth.
+-      shadow: { cascades: 1, mapSize: 1024, filter: "pcss", softness: 1, maxDistance: 60, intensity: 0.9 }
+-    }).position(-18, 26, 8))
+-    .add(lights.directional({ name: "city glow fill", color: "#4fd8ff", intensity: 1.42 }).position(20, 18, 16))
++    .add(lights.ambient({ name: "night city fill", color: "#7f9cb5", intensity: 1.25 }))
++    .add(lights.directional({ name: "moonlight key", color: "#d8f5ff", intensity: 2.5, shadow: true }).position(-18, 26, 8))
++    .add(lights.directional({ name: "city glow fill", color: "#36bdd2", intensity: 1.35 }).position(20, 18, 16))
+     // Hero practicals used to sit at 2.6/1.8 directly on the van, which is what
+     // turned the typed Meshy livery into a featureless white slab.
+     .add(lights.point({ name: "courier hero key", color: "#e8fbff", intensity: 1.9 }).position(-1.6, 2.4, 6.5))
+@@ -323,7 +310,7 @@ const app = createAuraApp("#app", {
+      .add(lights.point({ name: "courier intersection practical", color: "#ff9d66", intensity: 1.9 }).position(0, 3.8, 0))
+      .add(lights.point({ name: "courier forward cyan practical", color: "#22d3ee", intensity: 2.1 }).position(0, 3.4, 8.5))
+      .add(lights.point({ name: "courier forward warning practical", color: "#fb7185", intensity: 1.7 }).position(0, 2.6, 12.8))
+-    .add(lights.point({ name: "depot dock warm light", color: "#fbbf24", intensity: 1.45 })
++    .add(lights.point({ name: "depot dock warm light", color: "#fbbf24", intensity: 1.25 })
+       .position(START_SITE.x + 4.5, 5.0, START_SITE.z))
+     // Van fleet: every moving part is a top-level runtime node (the mutable
+     // registry covers model/primitive/group/label nodes, so nothing rides in a
+@@ -335,7 +322,7 @@ const app = createAuraApp("#app", {
          scaleMode: "fit",
          // Give the typed vehicle a modest presentation lift in the named
          // review frame without changing its arcade collider or route physics.
@@ -1406,7 +1471,7 @@ index fa4e955df..f71bf706a 100644
          // The V2 Meshy van carries its own livery (white body, orange side
          // stripe, dark glasshouse, black tires) in the authored base-color
          // texture. Mount it un-overridden: the former single-material
-@@ -338,7 +339,7 @@ const app = createAuraApp("#app", {
+@@ -352,7 +339,7 @@ const app = createAuraApp("#app", {
      // like the kit towers: no collider, no delivery rule reads it. Kept out
      // of the review canyon slice, which stages only the avenue, hero, live
      // traffic, and pressure gate.
@@ -1415,7 +1480,7 @@ index fa4e955df..f71bf706a 100644
        model(assets.courierVan, {
          name: "courier-depot-fleet-van",
          role: "setDressing",
-@@ -364,7 +365,7 @@ const app = createAuraApp("#app", {
+@@ -378,7 +365,7 @@ const app = createAuraApp("#app", {
          name: "courier-parcel",
          role: "setDressing",
          scaleMode: "fit",
@@ -1424,7 +1489,7 @@ index fa4e955df..f71bf706a 100644
          material: material.pbr({ name: "parcel safety-orange finish", color: "#f5ad4f", roughness: 0.38, metallic: 0.08, clearcoat: 0.2, emissive: "#6b2f10", emissiveIntensity: 0.13 }),
          castShadow: true
        }).position(-999, 0.86, -999).scale(0.001)
-@@ -400,7 +401,36 @@ const app = createAuraApp("#app", {
+@@ -414,7 +401,36 @@ const app = createAuraApp("#app", {
          receiveShadow: true
        }).runtime({ id: car.id, tags: ["traffic", "typed-secondary-asset", "route-local-ai"] })
      ))
@@ -1462,7 +1527,7 @@ index fa4e955df..f71bf706a 100644
  });
  
  /** Two warm emissive pools ahead of the van: readable headlight practicals. */
-@@ -597,7 +627,6 @@ for (const car of trafficSim.cars()) {
+@@ -611,7 +627,6 @@ for (const car of trafficSim.cars()) {
    trafficNodes.set(car.id, app.nodes.require(car.id));
    trafficHeadlights.set(car.id, app.nodes.require(car.id + "-headlight"));
  }
@@ -1470,7 +1535,7 @@ index fa4e955df..f71bf706a 100644
  
  
  // ---- evidence ------------------------------------------------------------------
-@@ -655,12 +684,12 @@ const mountedEvidence = {
+@@ -669,12 +684,12 @@ const mountedEvidence = {
    reducedMotion,
    autopilot: autopilotEnabled,
    timerScale,
@@ -1485,7 +1550,7 @@ index fa4e955df..f71bf706a 100644
      cueCount: 10,
      gestureUnlocked: false,
      sfxReady: false,
-@@ -674,7 +703,7 @@ const mountedEvidence = {
+@@ -688,7 +703,7 @@ const mountedEvidence = {
      vehicle: "engine.createGameArcadeVehicle",
      driverAi: "engine.createVehicleDriverAi",
      cityKit: "city.cityBlock night preset",
@@ -1494,7 +1559,7 @@ index fa4e955df..f71bf706a 100644
      input: "game.input"
    },
    diagnostics: undefined as unknown
-@@ -682,12 +711,12 @@ const mountedEvidence = {
+@@ -696,12 +711,12 @@ const mountedEvidence = {
  
  function refreshAudioEvidence(): void {
    const proof = courierAudio.proof();
@@ -1511,7 +1576,7 @@ index fa4e955df..f71bf706a 100644
  }
  
  Object.defineProperty(window, "__COURIER_RUSH_EVIDENCE__", {
-@@ -700,42 +729,21 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_COURIER_RUSH__", {
+@@ -714,42 +729,21 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_COURIER_RUSH__", {
    configurable: true,
    writable: true
  });
@@ -1564,7 +1629,7 @@ index fa4e955df..f71bf706a 100644
  Object.defineProperty(window, "__COURIER_RUSH_DEBUG__", {
    value: {
      placeVan(x: number, z: number, heading = START_HEADING): void {
-@@ -777,7 +785,107 @@ Object.defineProperty(window, "__COURIER_RUSH_DEBUG__", {
+@@ -791,7 +785,107 @@ Object.defineProperty(window, "__COURIER_RUSH_DEBUG__", {
  });
  
  // ---- HUD ------------------------------------------------------------------------
@@ -1673,7 +1738,7 @@ index fa4e955df..f71bf706a 100644
  
  function objectiveText(state: DispatchState): string {
    const plan = currentDelivery(state);
-@@ -814,8 +922,8 @@ function handleCourierEvents(
+@@ -828,8 +922,8 @@ function handleCourierEvents(
      switch (event.type) {
        case "dispatch":
          playCue("dispatch");
@@ -1684,7 +1749,7 @@ index fa4e955df..f71bf706a 100644
          }
          break;
        case "pickup": {
-@@ -828,7 +936,7 @@ function handleCourierEvents(
+@@ -842,7 +936,7 @@ function handleCourierEvents(
          });
          observed.pickupFired = true;
          playCue("pickup");
@@ -1693,7 +1758,7 @@ index fa4e955df..f71bf706a 100644
          break;
        }
        case "drop": {
-@@ -843,23 +951,18 @@ function handleCourierEvents(
+@@ -857,23 +951,18 @@ function handleCourierEvents(
          playCue("drop");
          if (event.early) playCue("early-bonus");
          if (!reducedMotion) {
@@ -1721,7 +1786,7 @@ index fa4e955df..f71bf706a 100644
          break;
        case "strike":
          observed.strikeObserved = true;
-@@ -870,24 +973,24 @@ function handleCourierEvents(
+@@ -884,24 +973,24 @@ function handleCourierEvents(
            timerMs: Math.round(dispatch.timerMs)
          });
          playCue("strike");
@@ -1752,7 +1817,7 @@ index fa4e955df..f71bf706a 100644
          break;
        default:
          break;
-@@ -1087,11 +1190,11 @@ function pushOut(vanX: number, vanZ: number, collider: PropCollider): { x: numbe
+@@ -1101,11 +1190,11 @@ function pushOut(vanX: number, vanZ: number, collider: PropCollider): { x: numbe
  app.onFrame(({ dt }) => {
    const stepSeconds = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
    frameCount += 1;
@@ -1766,7 +1831,7 @@ index fa4e955df..f71bf706a 100644
      playCue("dispatch");
    }
  
-@@ -1107,18 +1210,18 @@ app.onFrame(({ dt }) => {
+@@ -1121,18 +1210,18 @@ app.onFrame(({ dt }) => {
      impactPose = null;
      legWaypoints = [];
      legKey = "";
@@ -1789,7 +1854,32 @@ index fa4e955df..f71bf706a 100644
      refreshAudioEvidence();
      return;
    }
-@@ -1188,7 +1291,7 @@ app.onFrame(({ dt }) => {
+@@ -1173,24 +1262,6 @@ app.onFrame(({ dt }) => {
+     vanAfter = vanVehicle.constrain({ speedMultiplier: handbrakeSpeedMultiplier(stepSeconds) });
+   }
+ 
+-  // Tower blocks are solid: only lamp poles carried colliders, so the van
+-  // could drive into a kit tower and the chase frame collapsed to a black
+-  // void. Push it back to the nearest street face, scrubbing speed.
+-  for (const box of CAMERA_SOLIDS) {
+-    if (box.top - box.bottom < 1) continue;
+-    const pad = VAN_COLLIDER_RADIUS;
+-    if (vanAfter.x <= box.minX - pad || vanAfter.x >= box.maxX + pad ||
+-        vanAfter.z <= box.minZ - pad || vanAfter.z >= box.maxZ + pad) continue;
+-    const exits = [
+-      { x: box.minX - pad, z: vanAfter.z, d: vanAfter.x - (box.minX - pad) },
+-      { x: box.maxX + pad, z: vanAfter.z, d: box.maxX + pad - vanAfter.x },
+-      { x: vanAfter.x, z: box.minZ - pad, d: vanAfter.z - (box.minZ - pad) },
+-      { x: vanAfter.x, z: box.maxZ + pad, d: box.maxZ + pad - vanAfter.z }
+-    ];
+-    exits.sort((a, b) => a.d - b.d);
+-    vanAfter = vanVehicle.constrain({ x: exits[0]!.x, z: exits[0]!.z, speedMultiplier: 0.35 });
+-  }
+-
+   // Strike detection against static props and live traffic footprints.
+   const hits = collisionHits(vanAfter.x, vanAfter.z, vanAfter.speed);
+   if (hits.length > 0) {
+@@ -1220,7 +1291,7 @@ app.onFrame(({ dt }) => {
        vanAfter = vanVehicle.constrain({ x: pushed.x, z: pushed.z, speedMultiplier: 0.35 });
        impactFeedbackRemainingSeconds = reducedMotion ? 0.12 : IMPACT_FEEDBACK_SECONDS;
        if (!reducedMotion) {
@@ -1798,7 +1888,7 @@ index fa4e955df..f71bf706a 100644
        }
        (mountedEvidence as unknown as { lastImpact: unknown }).lastImpact = {
          source: hit.id,
-@@ -1201,6 +1304,8 @@ app.onFrame(({ dt }) => {
+@@ -1233,6 +1304,8 @@ app.onFrame(({ dt }) => {
    }
  
    // Traffic steps with the van position so nearby courtesy horns can fire.
@@ -1807,7 +1897,7 @@ index fa4e955df..f71bf706a 100644
    const trafficEvents = trafficSim.step(stepSeconds, vanAfter.x, vanAfter.z);
    if (trafficEvents.length > 0) playCue("horn");
  
-@@ -1254,11 +1359,11 @@ app.onFrame(({ dt }) => {
+@@ -1286,11 +1359,11 @@ app.onFrame(({ dt }) => {
      .setVisible(!reducedMotion);
    const parcelBeaconVisible = dispatch.phase === "carrying" && !reducedMotion;
    parcelBeaconNode
@@ -1821,7 +1911,7 @@ index fa4e955df..f71bf706a 100644
      .setRotation(0, vanRenderHeading, 0)
      .setVisible(!reducedMotion);
  
-@@ -1298,7 +1403,7 @@ app.onFrame(({ dt }) => {
+@@ -1330,7 +1403,7 @@ app.onFrame(({ dt }) => {
        .setScale(1)
        .setVisible(true);
    } else {
@@ -1830,7 +1920,7 @@ index fa4e955df..f71bf706a 100644
        .setRotation(0, -vanAfter.heading, 0)
        .setScale(parcelAttachedVisible ? 1 : 0.001)
        .setVisible(parcelAttachedVisible);
-@@ -1362,7 +1467,7 @@ app.onFrame(({ dt }) => {
+@@ -1394,7 +1467,7 @@ app.onFrame(({ dt }) => {
            .setPosition(car.x + carFx * 0.92, 0.2, car.z + carFz * 0.92)
            .setRotation(0, -car.heading, 0)
            .setScale([0.26, 0.08, 0.045])
@@ -1839,19 +1929,34 @@ index fa4e955df..f71bf706a 100644
        }
      }
    }
-@@ -1390,20 +1495,20 @@ app.onFrame(({ dt }) => {
+@@ -1422,34 +1495,20 @@ app.onFrame(({ dt }) => {
    const chaseBlend = dropLookbackRemainingSeconds > 0
      ? Math.sin((1 - dropLookbackRemainingSeconds / DROP_LOOKBACK_SECONDS) * Math.PI)
      : 0;
 -  const offset = chaseOffsetForBlend(chaseBlend, visualReviewCapture ? 11.4 : undefined);
+-  // Flash fix: keep the trailing eye out of tower blocks (see camera-clearance).
+-  const clearanceSnap = vanVehicle.snapshot();
+-  const clear = visualReviewCapture
+-    ? { distance: offset.offsetZ, minOffsetY: 0 }
+-    : chaseClearance.update(
+-      clearanceSnap.x,
+-      clearanceSnap.z,
+-      -Math.cos(clearanceSnap.heading),
+-      -Math.sin(clearanceSnap.heading),
+-      offset.offsetZ,
+-      offset.offsetY,
+-      stepSeconds
+-    );
+-  const clearZ = clear.distance;
 +  const offset = chaseOffsetForBlend(chaseBlend, undefined);
    Object.assign(chaseCamera as unknown as MutableChaseCamera, {
      offset: [
--      visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : offset.offsetX,
--      visualReviewCapture ? 3.28 : offset.offsetY,
+-      visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : offset.offsetX * (clearZ / offset.offsetZ),
+-      visualReviewCapture ? 3.28 : Math.max(offset.offsetY + clearanceLift(offset.offsetZ, clearZ), clear.minOffsetY),
+-      clearZ
 +      offset.offsetX,
 +      offset.offsetY,
-       offset.offsetZ
++      offset.offsetZ
      ] as const
    });
  
@@ -1865,7 +1970,7 @@ index fa4e955df..f71bf706a 100644
    refreshAudioEvidence();
  });
  
-@@ -1451,7 +1556,7 @@ function updateMountedEvidence(): void {
+@@ -1497,7 +1556,7 @@ function updateMountedEvidence(): void {
    mountedEvidence.strikes = dispatch.strikes;
    mountedEvidence.combo = dispatch.combo;
    mountedEvidence.score = dispatch.score;
@@ -1874,7 +1979,7 @@ index fa4e955df..f71bf706a 100644
    mountedEvidence.frameCount = frameCount;
    mountedEvidence.van = {
      x: round3(vanSnap.x),
-@@ -1477,8 +1582,8 @@ function round3(value: number): number {
+@@ -1523,8 +1582,8 @@ function round3(value: number): number {
    return Math.round(value * 1000) / 1000;
  }
  
@@ -1885,7 +1990,7 @@ index fa4e955df..f71bf706a 100644
  
  void app.ready().then(() => {
    const diagnostics = app.diagnostics();
-@@ -1489,4 +1594,4 @@ void app.ready().then(() => {
+@@ -1535,4 +1594,4 @@ void app.ready().then(() => {
    window.__AURA3D_ROUTE_READY__ = { ready: true, diagnostics };
  }).catch((error: unknown) => {
    document.body.dataset.aura3dError = error instanceof Error ? error.message : String(error);
@@ -2091,7 +2196,7 @@ index 000000000..584aeb9a0
 +  };
 +}
 diff --git a/apps/showcase-courier-rush/src/v2/boot.ts b/apps/showcase-courier-rush/src/v2/boot.ts
-index d663ed729..e05a7bec5 100644
+index 2fe91e7b5..e05a7bec5 100644
 --- a/apps/showcase-courier-rush/src/v2/boot.ts
 +++ b/apps/showcase-courier-rush/src/v2/boot.ts
 @@ -7,7 +7,7 @@
@@ -2103,7 +2208,12 @@ index d663ed729..e05a7bec5 100644
  import { assets } from "../../../../src/aura-assets";
  import { buildPropColliders, type PropCollider, type ZoneSite } from "../legacy/city";
  import {
-@@ -19,13 +19,12 @@ import {
+@@ -15,18 +15,16 @@ import {
+   stepDispatch, type CourierEvent, type DispatchState
+ } from "../gameplay/dispatch";
+ import { createTrafficSimulation } from "../gameplay/traffic";
+-import { CAMERA_SOLIDS } from "../gameplay/camera-clearance";
+ import {
    handbrakeSpeedMultiplier, toArcadeVehicleInput, VAN_TUNE, type VanDriveInput
  } from "../gameplay/van";
  import direction from "../../art/direction";
@@ -2118,7 +2228,16 @@ index d663ed729..e05a7bec5 100644
  import { applyCourierScenario } from "./scenarios";
  import { createStrikeZoneTools } from "./strike-zone";
  import { wireCourierTouch } from "./touch-input";
-@@ -77,10 +76,10 @@ function buildScene() {
+@@ -70,7 +68,7 @@ const world = courierWorldNodes();
+ 
+ function buildScene() {
+   return scene()
+-    .background("#24344a")
++    .background("#1c2733")
+     .camera(fallbackCameraNode())
+     .addMany(world.nodes)
+     .addMany(lightingNodes());
+@@ -78,10 +76,10 @@ function buildScene() {
  
  // ----------------------------------------------------------------- audio -----
  
@@ -2131,7 +2250,7 @@ index d663ed729..e05a7bec5 100644
    audioCueLog.push(cue);
    if (audioCueLog.length > 64) audioCueLog.shift();
    void audio.cue(cue).catch(() => undefined);
-@@ -139,6 +138,14 @@ const game = createGame({
+@@ -140,6 +138,14 @@ const game = createGame({
      // flags come from URL/env/defaults like every other route, so `none`
      // and `-<flag>` arms actually turn them off.
      flags: ["route_courier_rush", "game"]
@@ -2146,7 +2265,33 @@ index d663ed729..e05a7bec5 100644
    }
  });
  
-@@ -331,29 +338,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
+@@ -267,25 +273,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
+     vanAfter = vanVehicle.constrain({ speedMultiplier: handbrakeSpeedMultiplier(stepSeconds) });
+   }
+ 
+-  // Tower blocks are solid: only lamp poles carried colliders, so the van
+-  // could drive straight into a kit tower and the chase eye followed it
+-  // inside (the near-black 04-action frame). Push the van back to the
+-  // nearest street face of any tall block it enters, scrubbing speed.
+-  for (const box of CAMERA_SOLIDS) {
+-    if (box.top - box.bottom < 1) continue;
+-    const pad = VAN_COLLIDER_RADIUS;
+-    if (vanAfter.x <= box.minX - pad || vanAfter.x >= box.maxX + pad ||
+-        vanAfter.z <= box.minZ - pad || vanAfter.z >= box.maxZ + pad) continue;
+-    const exits = [
+-      { x: box.minX - pad, z: vanAfter.z, d: vanAfter.x - (box.minX - pad) },
+-      { x: box.maxX + pad, z: vanAfter.z, d: box.maxX + pad - vanAfter.x },
+-      { x: vanAfter.x, z: box.minZ - pad, d: vanAfter.z - (box.minZ - pad) },
+-      { x: vanAfter.x, z: box.maxZ + pad, d: box.maxZ + pad - vanAfter.z }
+-    ];
+-    exits.sort((a, b) => a.d - b.d);
+-    vanAfter = vanVehicle.constrain({ x: exits[0]!.x, z: exits[0]!.z, speedMultiplier: 0.35 });
+-  }
+-
+   // Strikes: lamp poles + slow-mover traffic contacts push the van out.
+   for (const hit of collisionHits(vanAfter.x, vanAfter.z, Math.abs(vanAfter.speed))) {
+     const pushed = pushOut(vanAfter.x, vanAfter.z, hit);
+@@ -351,29 +338,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
    if (frame % 6 === 0) syncHud();
  });
  
@@ -2177,18 +2322,42 @@ index d663ed729..e05a7bec5 100644
  if (new URL(location.href).searchParams.get("autopilot") === "1") autopilotEnabled = true;
  if (scenario) {
 diff --git a/apps/showcase-courier-rush/src/v2/scene/world.ts b/apps/showcase-courier-rush/src/v2/scene/world.ts
-index 164ad6f2e..58d14560e 100644
+index a82ba1cc7..58d14560e 100644
 --- a/apps/showcase-courier-rush/src/v2/scene/world.ts
 +++ b/apps/showcase-courier-rush/src/v2/scene/world.ts
-@@ -18,7 +18,7 @@ export interface CourierWorldNodes {
+@@ -4,8 +4,7 @@
+ // our dawn light — parked-car boxes stripped for live traffic), the typed
+ // courier van + 8 lane-loop traffic bodies, movable pickup/drop zone rigs,
+ // and the impact feedback nodes. No emissive fill.
+-import { effects, game, model, primitives, type AuraNodeInput } from "@aura3d/engine";
+-import { batchStaticPrimitives } from "./batch";
++import { game, model, primitives, type AuraNodeInput } from "@aura3d/engine";
+ import { assets } from "../../../../../src/aura-assets";
+ import { buildCityDressing } from "../../legacy/city";
+ import {
+@@ -19,20 +18,8 @@ export interface CourierWorldNodes {
  
  /** Whole static + runtime world: kit dressing, zone rigs, van, traffic, fx nodes. */
  export function courierWorldNodes(): CourierWorldNodes {
 -  const dressing = buildCityDressing(assets, false, "day");
+-  const staticDressing = batchStaticPrimitives(dressing.staticNodes, "courier static");
+-  const nodes: AuraNodeInput[] = [...staticDressing.nodes, ...dressing.pickupZone, ...dressing.dropZone];
+-
+-  // Wet-dawn distance haze: cool blue-grey air between the towers so depth
+-  // reads at chase distance and the warm key separates from the skyline.
+-  nodes.push(
+-    effects.fog({
+-      name: "courier dawn distance haze",
+-      color: "#7e97ab",
+-      density: 0.016,
+-      intensity: 0.55
+-    }).toJSON()
+-  );
 +  const dressing = buildCityDressing(assets, "day");
-   const nodes: AuraNodeInput[] = [...dressing.staticNodes, ...dressing.pickupZone, ...dressing.dropZone];
++  const nodes: AuraNodeInput[] = [...dressing.staticNodes, ...dressing.pickupZone, ...dressing.dropZone];
  
    // Hero van: typed Meshy body fit to the delivery footprint; the sim pose
+   // drives it every frame. Livery trim + bumper accents attach to the pose.
 diff --git a/apps/showcase-courier-rush/src/v2/strike-zone.ts b/apps/showcase-courier-rush/src/v2/strike-zone.ts
 index 8a282eed6..8ba709a5d 100644
 --- a/apps/showcase-courier-rush/src/v2/strike-zone.ts

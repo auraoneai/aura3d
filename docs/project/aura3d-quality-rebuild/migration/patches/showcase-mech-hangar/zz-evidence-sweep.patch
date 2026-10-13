@@ -1,4 +1,4 @@
-From 75e545bfebc1f9bbd1c0bdec382ded31a0a18d0d Mon Sep 17 00:00:00 2001
+From 20715b9bc0200058fca127bd1a35ab1f30e5f1a6 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:50 +0000
 Subject: [PATCH] showcase-mech-hangar: delete evidence files+blocks (T5.8)

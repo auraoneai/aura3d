@@ -1,4 +1,4 @@
-From d3d534ddd7d6e49f066a15c58dd99c9023753520 Mon Sep 17 00:00:00 2001
+From ae23bceca43e8cde9d3609996a732f1659228010 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:10:07 +0000
 Subject: [PATCH] migration(showcase-patrol-wing): regenerated patch set
@@ -7,14 +7,14 @@ Subject: [PATCH] migration(showcase-patrol-wing): regenerated patch set
 ---
  apps/showcase-patrol-wing/package.json        |   4 +-
  apps/showcase-patrol-wing/src/evidence.ts     |   8 +
- apps/showcase-patrol-wing/src/legacy/main.ts  | 167 +++++++++++-------
- apps/showcase-patrol-wing/src/legacy/sky.ts   |  35 +---
+ apps/showcase-patrol-wing/src/legacy/main.ts  | 147 +++++++++++-------
+ apps/showcase-patrol-wing/src/legacy/sky.ts   |  46 +-----
  .../src/legacy/wing-audio.ts                  |  33 +++-
  .../src/scenario-drive.ts                     |  11 ++
  .../src/scenarios/index.ts                    |  11 ++
- apps/showcase-patrol-wing/src/v2/boot.ts      |  75 ++------
+ apps/showcase-patrol-wing/src/v2/boot.ts      |  75 ++-------
  apps/showcase-patrol-wing/src/v2/state.ts     |  10 +-
- 9 files changed, 194 insertions(+), 160 deletions(-)
+ 9 files changed, 186 insertions(+), 159 deletions(-)
  create mode 100644 apps/showcase-patrol-wing/src/evidence.ts
  create mode 100644 apps/showcase-patrol-wing/src/scenario-drive.ts
  create mode 100644 apps/showcase-patrol-wing/src/scenarios/index.ts
@@ -49,7 +49,7 @@ index 000000000..049095dc5
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
 diff --git a/apps/showcase-patrol-wing/src/legacy/main.ts b/apps/showcase-patrol-wing/src/legacy/main.ts
-index 322cfeaf0..ba7584ccb 100644
+index 22f34586e..ba7584ccb 100644
 --- a/apps/showcase-patrol-wing/src/legacy/main.ts
 +++ b/apps/showcase-patrol-wing/src/legacy/main.ts
 @@ -14,7 +14,6 @@
@@ -77,16 +77,14 @@ index 322cfeaf0..ba7584ccb 100644
  import { assets } from "../../../../src/aura-assets";
  import { FlightModel, FLIGHT_DT, type FlightInput, type FlightOutcome, type Vec3 } from "../gameplay/flight";
  import {
-@@ -73,8 +82,7 @@ type PatrolWindow = Window & {
- const patrolWindow = window as PatrolWindow;
- const reducedMotion = typeof window.matchMedia === "function"
-   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
--const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
--document.body.dataset.capture = visualReviewCapture ? "review" : "default";
-+document.body.dataset.capture = "default";
+@@ -60,7 +69,6 @@ import { createDroneSwarm, ORB_DAMAGE } from "../gameplay/drones";
+ import { Cannon, encodeControlFrame } from "../gameplay/weapons";
+ import { GhostPlayer, GhostRecorder } from "../gameplay/ghost";
+ import { createWingAudio, type WingAudioCue } from "./wing-audio";
+-import { patrolWingEffectsPass } from "./effects-pass";
+ import "./styles.css";
  
- const APP_ID = "showcase-patrol-wing";
- const PRIMARY_ASSET_REFS = [assets.patrolAircraftMeshy, assets.patrolWingDroneA, assets.patrolWingDroneB, assets.patrolWingPadBeacon] as const;
+ type PatrolWindow = Window & {
 @@ -176,7 +184,7 @@ let frameCount = 0;
  let timeInPatrolValue = 0;
  let failTimer = 0;
@@ -100,102 +98,71 @@ index 322cfeaf0..ba7584ccb 100644
        name: "patrol-plane",
        role: "primaryCharacter",
        scaleMode: "fit",
--      targetMaxDimension: visualReviewCapture ? 5.6 : 4.2
+-      targetMaxDimension: 4.2
 -    })
 +      targetMaxDimension: 4.2})
        .position(PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2])
        .rotate(0, PAD_HEADING_YAW, 0)
        .runtime({ id: "plane", tags: ["typed-asset", "hero"] })
-@@ -274,10 +281,7 @@ function heroNodes(): AuraSceneNode[] {
+@@ -274,8 +281,7 @@ function heroNodes(): AuraSceneNode[] {
          name: `drone-slot-${slot}`,
          role: slot === 0 ? "primaryCharacter" : "setDressing",
          scaleMode: "fit",
--        targetMaxDimension: visualReviewCapture
--          ? (slot === 0 ? 2.5 : 1.92)
--          : (slot === 0 ? 2.05 : 1.78)
+-        targetMaxDimension: slot === 0 ? 2.05 : 1.78
 -      })
 +        targetMaxDimension: (slot === 0 ? 2.05 : 1.78)})
          .position(0, -60 - slot, 0)
          .runtime({ id: `drone-slot-${slot}`, tags: ["typed-asset", "drone"] })
          .toJSON()
-@@ -308,7 +312,7 @@ function heroNodes(): AuraSceneNode[] {
-           material: material.emissive({ name: `orb ${orb} glow`, color: "#8a3b18", emissive: "#ff9d3d", emissiveIntensity: 2.1, roughness: 0.3 })
-         })
-         .position(0, -70 - orb, 0)
--        .scale(visualReviewCapture ? 0.24 : 0.38)
-+        .scale(0.38)
-         .runtime({ id: `orb-${orb}`, tags: ["return-fire"] })
-         .toJSON()
-     );
-@@ -324,7 +328,7 @@ function heroNodes(): AuraSceneNode[] {
-         })
-       })
-         .position(0, -70, 0)
--        .scale([0.045, 0.045, visualReviewCapture ? 0.72 : 0.7])
-+        .scale([0.045, 0.045, 0.7])
-         .runtime({ id: `orb-trail-${orb}`, tags: ["return-fire", "projectile-feedback", "renderer-owned"] })
-         .toJSON()
-     );
-@@ -436,13 +440,13 @@ const chaseCameraSpec = camera.follow({
+@@ -434,7 +440,7 @@ const chaseCameraSpec = camera.follow({
    // The review lens is a little lower and tighter so the typed aircraft owns
    // the foreground while the island, rings, drones, and horizon still supply
    // a readable flight corridor. Public gameplay keeps the wider chase.
--  offset: (visualReviewCapture ? [1.1, 1.7, 5.8] : [0, 2.5, 7.25]) as [number, number, number],
--  targetOffset: visualReviewCapture ? [0.55, 0.42, -2.8] : [0.34, 0.6, -0.7],
--  fov: visualReviewCapture ? 50 : 47,
+-  offset: [0, 2.5, 7.25] as [number, number, number],
 +  offset: ([0, 2.5, 7.25]) as [number, number, number],
-+  targetOffset: [0.34, 0.6, -0.7],
-+  fov: 47,
+   targetOffset: [0.34, 0.6, -0.7],
+   fov: 47,
    // Exact review evidence captures the visible and suppressed subject at the
-   // same authored camera pose. Follow smoothing would advance between those
-   // two renderer submissions and turn camera motion into false subject pixels.
--  smoothing: visualReviewCapture || reducedMotion ? 0 : 0.06,
-+  smoothing: reducedMotion ? 0 : 0.06,
-   subjectEmphasis: 0.82
- });
- 
-@@ -455,7 +459,7 @@ function buildScene(): ReturnType<typeof scene> {
+@@ -453,7 +459,7 @@ function buildScene(): ReturnType<typeof scene> {
    // opaque and reads as layered colour bands; the accent slivers are dropped
    // entirely because at 0.08 unit scale they were invisible except as artifacts.
    const atmosphereMaterial = material.pbr({ name: "review flight atmosphere", color: "#4f8fbf", roughness: 0.92, metallic: 0 });
--  const flightAtmosphere = Array.from({ length: visualReviewCapture ? 6 : 8 }, (_, index) => {
+-  const flightAtmosphere = Array.from({ length: 8 }, (_, index) => {
 +  const flightAtmosphere = Array.from({ length: 8}, (_, index) => {
      const side = index % 2 === 0 ? -1 : 1;
      const lane = Math.floor(index / 2);
      const x = side * (9 + lane * 3.1);
-@@ -501,7 +505,7 @@ function buildScene(): ReturnType<typeof scene> {
+@@ -499,7 +505,7 @@ function buildScene(): ReturnType<typeof scene> {
      material.emissive({ name: "flight streak cyan", color: "#66f5ff", emissive: "#0dd6ee", emissiveIntensity: 1.15 }),
      material.emissive({ name: "flight streak coral", color: "#ff7196", emissive: "#f43f67", emissiveIntensity: 0.9 })
    ];
--  const flightStreaks = Array.from({ length: visualReviewCapture ? 12 : 16 }, (_, index) => {
+-  const flightStreaks = Array.from({ length: 16 }, (_, index) => {
 +  const flightStreaks = Array.from({ length: 16}, (_, index) => {
      const lane = index % 8;
      const depth = Math.floor(index / 8);
      const side = lane % 2 === 0 ? -1 : 1;
-@@ -512,16 +516,16 @@ function buildScene(): ReturnType<typeof scene> {
+@@ -510,7 +516,7 @@ function buildScene(): ReturnType<typeof scene> {
        .toJSON();
    });
    return scene()
--    .background(visualReviewCapture ? "#16364e" : "#254760")
--    .addMany(arenaNodes({ reviewCapture: visualReviewCapture }))
+-    .background("#2c5a6e")
 +    .background("#254760")
-+    .addMany(arenaNodes())
+     .addMany(arenaNodes())
      .addMany(heroNodes())
      .addMany(flightAtmosphere)
--    .addMany(visualReviewCapture ? [] : skyBandNodes)
--    .addMany(visualReviewCapture ? [] : flightStreaks)
-+    .addMany(skyBandNodes)
-+    .addMany(flightStreaks)
+@@ -518,9 +524,9 @@ function buildScene(): ReturnType<typeof scene> {
+     .addMany(flightStreaks)
      .addMany(arenaLighting().nodes)
      .addMany([
--      effects.fog({ name: "coastal haze", density: visualReviewCapture ? 0.0034 : 0.0042, color: "#42647a", intensity: visualReviewCapture ? 0.32 : 0.42 }),
--      effects.neonBloom({ intensity: visualReviewCapture ? 0.12 : reducedMotion ? 0.05 : 0.12, threshold: 0.84, maxIntensity: 0.34, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+-      ...patrolWingEffectsPass(),
 +      effects.fog({ name: "coastal haze", density: 0.0042, color: "#42647a", intensity: 0.42}),
-+      effects.neonBloom({ intensity: reducedMotion ? 0.05 : 0.12, threshold: 0.84, maxIntensity: 0.34, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-       effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }),
+       effects.neonBloom({ intensity: reducedMotion ? 0.05 : 0.12, threshold: 0.84, maxIntensity: 0.34, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+-      effects.colorGrade({ exposure: 1.04, contrast: 1.13, saturation: 1.45 }),
++      effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }),
        effects.antiAlias({ mode: "fxaa" }),
        lights.spot({ name: "lead aircraft landing spot", position: [0, 14, 12], target: [0, 8, 0], angle: 0.5, penumbra: 0.45, distance: 60, decay: 2, intensity: 3.2, color: "#fff2d8", shadow: true }),
-@@ -533,7 +537,9 @@ function buildScene(): ReturnType<typeof scene> {
+       lights.point({ name: "sun warm catch", color: "#ffd4a1", intensity: 2.2 }).position(20, 24, 30),
+@@ -531,7 +537,9 @@ function buildScene(): ReturnType<typeof scene> {
  }
  
  // ---------------------------------------------------------------- mount -------
@@ -206,7 +173,7 @@ index 322cfeaf0..ba7584ccb 100644
    diagnostics: { overlay: false, performancePanel: false },
    physics: {
      seed: 20260917,
-@@ -559,10 +565,49 @@ const gameApp = createGameApp("#app", {
+@@ -557,10 +565,49 @@ const gameApp = createGameApp("#app", {
      touch: true
    },
    loop: { fixedDt: FLIGHT_DT, maxSubSteps: 4 },
@@ -259,7 +226,7 @@ index 322cfeaf0..ba7584ccb 100644
  if (!input) throw new Error("Patrol Wing failed to create Aura3D input.");
  
  const planeHandle = app.nodes.require("plane") as AuraRuntimeNodeHandle;
-@@ -666,7 +711,11 @@ function syncHud(): void {
+@@ -664,7 +711,11 @@ function syncHud(): void {
    reviewWave.textContent = currentWave < 0 ? "STANDBY" : `WAVE ${currentWave + 1} / ${WAVES_PER_PATROL}`;
    reviewMode.textContent = cameraMode === "cockpit" ? "COCKPIT / AUTHORED" : "CHASE / AUTHORED";
    ui.setText("#pw-mission", missionLine());
@@ -272,7 +239,7 @@ index 322cfeaf0..ba7584ccb 100644
      ? "PAUSED - P TO RESUME"
      : stateValue === "preflight"
        ? "PATROL WING - SHIFT THROTTLE UP, TAKE OFF"
-@@ -833,10 +882,11 @@ function resetToPad(nextPatrol?: number): void {
+@@ -831,10 +882,11 @@ function resetToPad(nextPatrol?: number): void {
  }
  
  function togglePause(): void {
@@ -286,7 +253,7 @@ index 322cfeaf0..ba7584ccb 100644
    else app.resume();
  }
  
-@@ -854,7 +904,7 @@ function handleFlightOutcome(frame: { readonly outcome: FlightOutcome }): void {
+@@ -852,7 +904,7 @@ function handleFlightOutcome(frame: { readonly outcome: FlightOutcome }): void {
    if (outcome === "none") return;
    if (outcome === "pad-bounce") {
      hullValue = Math.max(0, hullValue - 6);
@@ -295,7 +262,7 @@ index 322cfeaf0..ba7584ccb 100644
      if (hullValue <= 0) beginFail("shot-down");
      return;
    }
-@@ -864,6 +914,8 @@ function handleFlightOutcome(frame: { readonly outcome: FlightOutcome }): void {
+@@ -862,6 +914,8 @@ function handleFlightOutcome(frame: { readonly outcome: FlightOutcome }): void {
        lastGrade = breakdown.grade;
        pushCue("touchdown");
        pushCue("patrol-clear");
@@ -304,7 +271,7 @@ index 322cfeaf0..ba7584ccb 100644
        const script = ghostRecorder.end();
        if (!bestRun || gradeRank(breakdown.grade) > gradeRank(bestRun.grade)) {
          bestRun = { grade: breakdown.grade, script, trajectoryHash: flight.trajectoryHash() };
-@@ -884,6 +936,7 @@ function handleFlightOutcome(frame: { readonly outcome: FlightOutcome }): void {
+@@ -882,6 +936,7 @@ function handleFlightOutcome(frame: { readonly outcome: FlightOutcome }): void {
    }
    // Terrain or ocean impact.
    pushCue("crash-thud");
@@ -312,7 +279,7 @@ index 322cfeaf0..ba7584ccb 100644
    ghostRecorder.end();
    stateValue = "crashed";
    failTimer = 2;
-@@ -891,6 +944,7 @@ function handleFlightOutcome(frame: { readonly outcome: FlightOutcome }): void {
+@@ -889,6 +944,7 @@ function handleFlightOutcome(frame: { readonly outcome: FlightOutcome }): void {
  
  function beginFail(reason: "shot-down"): void {
    pushCue("shot-down");
@@ -320,7 +287,7 @@ index 322cfeaf0..ba7584ccb 100644
    ghostRecorder.end();
    stateValue = reason;
    failTimer = 2.5;
-@@ -909,13 +963,13 @@ function spawnWave(wave: number): void {
+@@ -907,13 +963,13 @@ function spawnWave(wave: number): void {
  }
  
  // ------------------------------------------------------------- evidence -------
@@ -336,7 +303,7 @@ index 322cfeaf0..ba7584ccb 100644
      hull: Math.round(hullValue),
      ringIndex: rings.nextRing,
      ringValidity: rings.validity,
-@@ -980,6 +1034,11 @@ function publishEvidence(): void {
+@@ -978,6 +1034,11 @@ function publishEvidence(): void {
      mountedAtEpochMs: Date.now()
    };
    patrolWindow.__PATROL_WING_EVIDENCE__ = evidence;
@@ -348,7 +315,7 @@ index 322cfeaf0..ba7584ccb 100644
  }
  
  // Renderer-owned capture used by specs and probes (no compositor dependency).
-@@ -1013,6 +1072,7 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
+@@ -1011,6 +1072,7 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
    } else if (scenario === "ring-run") {
      stateValue = "patrol";
      flight = new FlightModel({ position: [-16, 10, 7], headingYaw: -2.35, grounded: "airborne", throttle: 0.78, speed: 13 });
@@ -356,7 +323,7 @@ index 322cfeaf0..ba7584ccb 100644
      rings.registerEntry(0);
      applyRingMaterials();
    } else if (scenario === "drone-pass" || scenario === "drone-hit") {
-@@ -1108,11 +1168,13 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
+@@ -1106,11 +1168,13 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
        if (cannon.tryFire(true, 1)) {
          swarm.beginCannonAttack([lead[0] - flight.position[0], lead[1] - flight.position[1], lead[2] - flight.position[2]]);
          pushCue("cannon-fire");
@@ -370,7 +337,7 @@ index 322cfeaf0..ba7584ccb 100644
              stageCombatExchange(flight.position, lead);
            }
          }
-@@ -1132,11 +1194,13 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
+@@ -1130,11 +1194,13 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
          if (!cannon.tryFire(true, 1)) continue;
          swarm.beginCannonAttack(targetOffset);
          pushCue("cannon-fire");
@@ -384,7 +351,7 @@ index 322cfeaf0..ba7584ccb 100644
              // Keep impact feedback in the authored chase-camera volume while
              // retaining the real combat event as its source of truth.
              stageCombatExchange(flight.position, leadPosition);
-@@ -1152,6 +1216,7 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
+@@ -1150,6 +1216,7 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
                freeDroneSlots.push(slot);
              }
              pushCue("drone-down");
@@ -392,7 +359,7 @@ index 322cfeaf0..ba7584ccb 100644
              stageCombatExchange(flight.position, leadPosition);
            }
            }
-@@ -1448,11 +1513,12 @@ function syncOrbVisuals(): void {
+@@ -1446,11 +1513,12 @@ function syncOrbVisuals(): void {
  }
  
  // ------------------------------------------------------------- frame loop -----
@@ -407,7 +374,7 @@ index 322cfeaf0..ba7584ccb 100644
      manualAdvanceFrame();
      return;
    }
-@@ -1574,7 +1640,7 @@ gameApp.onFrame(({ dt }) => {
+@@ -1572,7 +1640,7 @@ gameApp.onFrame(({ dt }) => {
    if (stateValue === "patrol" && cannon.tryFire(fireHeld, dt)) {
      const forward = flight.forward;
      swarm.beginCannonAttack([forward[0] * 3.2, forward[1] * 3.2, forward[2] * 3.2]);
@@ -416,7 +383,7 @@ index 322cfeaf0..ba7584ccb 100644
    }
  
    // Hull regen out of combat (no live drone within 35 m for ~4 s).
-@@ -1615,29 +1681,4 @@ syncPlaneVisual();
+@@ -1613,29 +1681,4 @@ syncPlaneVisual();
  syncHud();
  publishEvidence();
  
@@ -448,10 +415,35 @@ index 322cfeaf0..ba7584ccb 100644
 -});
 +
 diff --git a/apps/showcase-patrol-wing/src/legacy/sky.ts b/apps/showcase-patrol-wing/src/legacy/sky.ts
-index a5f71443a..4bd4de542 100644
+index 9bcbc3c98..4bd4de542 100644
 --- a/apps/showcase-patrol-wing/src/legacy/sky.ts
 +++ b/apps/showcase-patrol-wing/src/legacy/sky.ts
-@@ -265,9 +265,9 @@ export function setArenaTimeOfDay(nodes: { get(id: string): { setVisible(visible
+@@ -12,7 +12,6 @@
+  * and the return-fire orb pool. Sensor events fire once per entry exactly like
+  * the vault-breakers reference (armed-pair bookkeeping).
+  */
+-import { effectsPassOn } from "./effects-pass";
+ import {
+   geometry,
+   lights,
+@@ -234,15 +233,7 @@ export function arenaLighting(): ArenaLighting {
+     nodes: [
+       lights.ambient({ name: "sky fill", color: "#b8ced5", intensity: 0.56 }).toJSON(),
+       lights
+-        .directional({
+-          name: "golden-hour key",
+-          color: "#ffc890",
+-          intensity: 2.3,
+-          // Effects pass: cascaded sun shadows over the island. Perf pass:
+-          // "auto" resolved to 4 cascades; 2 PCF cascades over 55 m cover the
+-          // island + chase volume at half the shadow-render cost.
+-          ...(effectsPassOn ? { shadow: { cascades: 2 as const, mapSize: 1024 as const, filter: "pcf" as const, maxDistance: 55, intensity: 0.85 } } : {})
+-        })
++        .directional({ name: "golden-hour key", color: "#ffd0a0", intensity: 2.15 })
+         .position(-30, 26, 18)
+         .runtime({ id: "light-day", tags: ["arena-light"] })
+         .toJSON(),
+@@ -274,9 +265,9 @@ export function setArenaTimeOfDay(nodes: { get(id: string): { setVisible(visible
  }
  
  /** Static arena scene nodes: terrain, ocean, pad, gates, props. */
@@ -463,7 +455,7 @@ index a5f71443a..4bd4de542 100644
  
    const mesh = islandTerrainMesh();
    nodes.push(
-@@ -305,11 +305,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}):
+@@ -314,11 +305,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}):
    // The review lens keeps three far banks so the judged chase frame retains a
    // horizon and flight-scale cue; the full seven-bank set stays default-only
    // to bound review-capture overdraw.
@@ -476,7 +468,7 @@ index a5f71443a..4bd4de542 100644
      [-18, 10.5, -30, 5.2, 0.72, 2.4],
      [3, 12.5, -38, 6.0, 0.82, 2.9],
      [22, 9.5, -27, 4.2, 0.64, 2.0],
-@@ -461,7 +457,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}):
+@@ -470,7 +457,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}):
    // Coastal Island Radar / Communications Tower on Peak (0, 9.6, 0). The
    // close combat review lens omits this distant silhouette: at that angle the
    // dish collapsed into a detached black disc behind the real drone target.
@@ -485,7 +477,7 @@ index a5f71443a..4bd4de542 100644
      // Tower lattice base
      primitives
        .cylinder({
-@@ -571,7 +567,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}):
+@@ -580,7 +567,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}):
    // The compact combat lens keeps enough typed rocks and trees to establish
    // scale and a flight canyon, but each placement remains snapped to the same
    // heightfield that defines the visible island and the crash surface.
@@ -494,7 +486,7 @@ index a5f71443a..4bd4de542 100644
      // Preserve a layered typed island in the close combat lens. The previous
      // conifer-only/z<4 filter left the dogfight suspended over a single flat
      // green wedge; retaining rocks plus conifers at three depth bands gives
-@@ -584,26 +580,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}):
+@@ -593,26 +580,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}):
      nodes.push(modelNode(`prop-${prop.asset}-${prop.position[0].toFixed(1)}`, prop.asset, prop.position, prop.scale, prop.yaw, "setDressing", undefined));
    }
  

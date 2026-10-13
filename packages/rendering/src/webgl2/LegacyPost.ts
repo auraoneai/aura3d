@@ -1533,10 +1533,12 @@ export class WebGL2LegacyPostPipeline {
     else this.host.gl.disable(this.host.gl.STENCIL_TEST);
     if (snapshot.polygonOffsetFillEnabled) this.host.gl.enable(this.host.gl.POLYGON_OFFSET_FILL);
     else this.host.gl.disable(this.host.gl.POLYGON_OFFSET_FILL);
-    this.host.gl.colorMask(snapshot.colorMask[0] ?? true, snapshot.colorMask[1] ?? true, snapshot.colorMask[2] ?? true, snapshot.colorMask[3] ?? true);
+    const colorMask = snapshot.colorMask ?? [true, true, true, true];
+    this.host.gl.colorMask(colorMask[0] ?? true, colorMask[1] ?? true, colorMask[2] ?? true, colorMask[3] ?? true);
     this.host.gl.depthMask(snapshot.depthMask);
     this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, snapshot.framebuffer);
-    this.host.gl.viewport(snapshot.viewport[0] ?? 0, snapshot.viewport[1] ?? 0, snapshot.viewport[2] ?? fallbackWidth, snapshot.viewport[3] ?? fallbackHeight);
+    const viewport = snapshot.viewport ?? [0, 0, fallbackWidth, fallbackHeight];
+    this.host.gl.viewport(viewport[0] ?? 0, viewport[1] ?? 0, viewport[2] ?? fallbackWidth, viewport[3] ?? fallbackHeight);
     this.host.stateCache.invalidate();
   }
 

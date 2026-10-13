@@ -1,4 +1,4 @@
-From 27521fefd793ff142d8f36b5fed9a0e21e00776f Mon Sep 17 00:00:00 2001
+From 256e8d33b8ce630d978b2ef3e7decca99194c447 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:10:29 +0000
 Subject: [PATCH] migration(showcase-siege-golf): regenerated patch set
@@ -7,11 +7,11 @@ Subject: [PATCH] migration(showcase-siege-golf): regenerated patch set
 ---
  apps/showcase-siege-golf/package.json         |   3 +-
  apps/showcase-siege-golf/src/evidence.ts      |   8 +
- apps/showcase-siege-golf/src/legacy/main.ts   | 218 +++++++-----------
+ apps/showcase-siege-golf/src/legacy/main.ts   | 227 +++++++-----------
  .../showcase-siege-golf/src/scenario-drive.ts |  10 +
  .../src/scenarios/index.ts                    |  12 +
  apps/showcase-siege-golf/src/v2/boot.ts       |  47 +---
- 6 files changed, 133 insertions(+), 165 deletions(-)
+ 6 files changed, 135 insertions(+), 172 deletions(-)
  create mode 100644 apps/showcase-siege-golf/src/evidence.ts
  create mode 100644 apps/showcase-siege-golf/src/scenario-drive.ts
  create mode 100644 apps/showcase-siege-golf/src/scenarios/index.ts
@@ -45,7 +45,7 @@ index 000000000..040815b38
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
 diff --git a/apps/showcase-siege-golf/src/legacy/main.ts b/apps/showcase-siege-golf/src/legacy/main.ts
-index 2a58cfb90..7187ceaa6 100644
+index c5d078df2..7187ceaa6 100644
 --- a/apps/showcase-siege-golf/src/legacy/main.ts
 +++ b/apps/showcase-siege-golf/src/legacy/main.ts
 @@ -8,7 +8,6 @@
@@ -56,7 +56,7 @@ index 2a58cfb90..7187ceaa6 100644
    effects,
    environments,
    game,
-@@ -21,6 +20,16 @@ import {
+@@ -21,11 +20,20 @@ import {
    type AuraRuntimeNodeHandle,
    type AuraSceneNode
  } from "@aura3d/engine";
@@ -73,7 +73,12 @@ index 2a58cfb90..7187ceaa6 100644
  import { assets } from "../../../../src/aura-assets";
  import { SIEGE_GOLF_HOLES, type HoleDefinition } from "../gameplay/course";
  import { HoleFlow } from "../gameplay/hole-flow";
-@@ -35,17 +44,13 @@ import "./styles.css";
+ import { createGolfAudio } from "./golf-audio";
+-import { siegeGolfEffectsPass, siegeGolfHeightHaze } from "./effects-pass";
+ import { ShotController, canonicalShotInput } from "../gameplay/shot";
+ import { roundTotals, versusPar, type HoleScoreEntry } from "../gameplay/score";
+ import { runSixtySecondReplay } from "../gameplay/replay-proof";
+@@ -36,17 +44,13 @@ import "./styles.css";
  type SiegeWindow = Window & {
    __SIEGE_GOLF_EVIDENCE__?: unknown;
    __AURA3D_SHOWCASE_SIEGE_GOLF__?: unknown;
@@ -84,15 +89,15 @@ index 2a58cfb90..7187ceaa6 100644
  const reducedMotion = typeof window.matchMedia === "function"
    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
  const compactViewport = window.innerWidth <= 720;
--const captureMode = new URLSearchParams(window.location.search).get("capture");
--const visualReviewCapture = captureMode === "review";
--const evidenceCapture = captureMode === "evidence";
+-// Shipped play path only: the ?capture= review/evidence lenses were removed.
+-const visualReviewCapture: boolean = false;
+-const evidenceCapture: boolean = false;
 -document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 +document.body.dataset.capture = "default";
  
  const APP_ID = "showcase-siege-golf";
  const SIEGE_MODEL_ASSETS = {
-@@ -60,7 +65,6 @@ const SIEGE_MODEL_ASSETS = {
+@@ -61,7 +65,6 @@ const SIEGE_MODEL_ASSETS = {
  // Rapier (`BALL_RADIUS` in structures.ts); this bounded presentation multiplier
  // only enlarges the renderer node during the probe so its pixels clear the
  // 96x72 minimum without changing collision, aim, or scoring geometry.
@@ -100,7 +105,7 @@ index 2a58cfb90..7187ceaa6 100644
  const paintedTimberMaterial = material.pbr({
    name: "painted arcade timber",
    color: "#f26b4f",
-@@ -148,7 +152,6 @@ let flow = new HoleFlow(SIEGE_GOLF_HOLES[0]!);
+@@ -149,7 +152,6 @@ let flow = new HoleFlow(SIEGE_GOLF_HOLES[0]!);
  const shot = new ShotController({});
  shot.loadHole(SIEGE_GOLF_HOLES[0]!.aim);
  let roundEntries: HoleScoreEntry[] = [];
@@ -108,7 +113,7 @@ index 2a58cfb90..7187ceaa6 100644
  let spaceHeld = false;
  let pointerChargeHeld = false;
  let frameCount = 0;
-@@ -166,7 +169,7 @@ interface PendingResultReveal {
+@@ -167,7 +169,7 @@ interface PendingResultReveal {
  }
  let pendingResultReveal: PendingResultReveal | null = null;
  type SiegeCameraPhase = "opening" | "aim" | "flight" | "settle";
@@ -117,7 +122,7 @@ index 2a58cfb90..7187ceaa6 100644
  let settleCameraFrames = 0;
  let mobileAimDirection: -1 | 0 | 1 = 0;
  interface RecordedShotInput {
-@@ -242,7 +245,6 @@ interface DustPuff { frames: number; age: number; node: AuraRuntimeNodeHandle; v
+@@ -243,7 +245,6 @@ interface DustPuff { frames: number; age: number; node: AuraRuntimeNodeHandle; v
  const dustPuffs: DustPuff[] = [];
  let dustIndex = 0;
  let dustBurstCount = 0;
@@ -125,7 +130,7 @@ index 2a58cfb90..7187ceaa6 100644
  
  function primitiveNode(
    name: string,
-@@ -323,9 +325,7 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
+@@ -324,9 +325,7 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
          // stack shadows of their neighbours.
          castShadow: true,
          receiveShadow: true,
@@ -136,7 +141,7 @@ index 2a58cfb90..7187ceaa6 100644
          ...(v.typedAsset === "siegeWoodenCrate" ? { material: paintedTimberMaterial } : {})
        })
          .position(...v.position)
-@@ -532,21 +532,7 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
+@@ -533,21 +532,7 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
    // close subject probe intentionally suppresses distant ornaments so none can
    // clip the inspection frame. These are presentation-only; `structures.ts`
    // remains the sole owner of every collision and scoring event.
@@ -159,7 +164,7 @@ index 2a58cfb90..7187ceaa6 100644
    // A pair of painted, typed planks flank the first real obstacle like a tiny
    // launch gate. They do not add physics; they make the intended bank/strike
    // moment obvious in the hero frame while retaining typed prop provenance.
-@@ -688,23 +674,6 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
+@@ -689,23 +674,6 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
      });
    }
    if (phase === "aim") {
@@ -183,7 +188,7 @@ index 2a58cfb90..7187ceaa6 100644
      return camera.follow({
        targetNode: "golf-ball",
        offset: compactViewport ? [0, 3.5, 6.7] : [3.4, 2.9, 5.8],
-@@ -721,11 +690,9 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
+@@ -722,11 +690,9 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
        // route retains the wider gameplay chase that shows the whole lane.
        offset: compactViewport
          ? [0, 2.7, 5.4]
@@ -198,7 +203,22 @@ index 2a58cfb90..7187ceaa6 100644
        smoothing: reducedMotion ? 0 : 0.22
      });
    }
-@@ -861,7 +828,9 @@ function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening
+@@ -842,12 +808,8 @@ function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening
+         color: "#ffe2b8"
+       }),
+       effects.neonBloom({ intensity: reducedMotion ? 0.02 : 0.055, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+-      // Visible effects pass (default boot; the named review lens is unchanged).
+-      ...(visualReviewCapture ? [] : siegeGolfEffectsPass({ halfLength: hole.halfLength, reducedMotion })),
+-      visualReviewCapture
+-        ? effects.fog({ name: "golden-hour distance haze", density: 0.016, color: "#a9d6e6", intensity: 0.42 })
+-        : siegeGolfHeightHaze(),
+-      effects.colorGrade(visualReviewCapture ? { exposure: 1.02, contrast: 1.12, saturation: 1.1 } : { exposure: 1.04, contrast: 1.24, saturation: 1.3 }),
++      effects.fog({ name: "golden-hour distance haze", density: 0.016, color: "#a9d6e6", intensity: 0.42 }),
++      effects.colorGrade({ exposure: 1.02, contrast: 1.12, saturation: 1.1 }),
+       effects.antiAlias({ mode: "fxaa" }),
+       // Ambient dropped from 0.7 to a thin sky fill so the key light is
+       // actually doing the shaping; 0.7 washed out every contact and shadow.
+@@ -866,7 +828,9 @@ function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening
  }
  
  // ---------------------------------------------------------------- mount ------
@@ -209,7 +229,7 @@ index 2a58cfb90..7187ceaa6 100644
    diagnostics: { overlay: false, performancePanel: false },
    physics: {
      seed: 20260908,
-@@ -882,11 +851,47 @@ const gameApp = createGameApp("#app", {
+@@ -887,11 +851,47 @@ const gameApp = createGameApp("#app", {
      touch: true
    },
    loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
@@ -260,7 +280,7 @@ index 2a58cfb90..7187ceaa6 100644
  
  function resolveHandles(): void {
    dynamicHandles = new Map();
-@@ -920,58 +925,6 @@ function resolveHandles(): void {
+@@ -925,58 +925,6 @@ function resolveHandles(): void {
  }
  resolveHandles();
  
@@ -319,7 +339,7 @@ index 2a58cfb90..7187ceaa6 100644
  function applyCameraPhase(next: SiegeCameraPhase): void {
    if (cameraPhase === next) return;
    cameraPhase = next;
-@@ -992,7 +945,7 @@ const resultDetail = document.getElementById("sg-result-detail")!;
+@@ -997,7 +945,7 @@ const resultDetail = document.getElementById("sg-result-detail")!;
  const resultStars = document.getElementById("sg-result-stars")!;
  const nextButton = document.getElementById("sg-next-button") as HTMLButtonElement;
  const panel = document.getElementById("panel")!;
@@ -328,7 +348,7 @@ index 2a58cfb90..7187ceaa6 100644
  const powerFill = document.getElementById("sg-power-fill")!;
  const powerLabel = document.getElementById("sg-power-label")!;
  // T1.12: mobile HUD elements were re-fetched by getElementById every frame.
-@@ -1048,7 +1001,7 @@ function queueResultCard(title: string, detail: string, stars: string, nextLabel
+@@ -1053,7 +1001,7 @@ function queueResultCard(title: string, detail: string, stars: string, nextLabel
      // normal play and the close review-impact producer retain the short UX
      // beat.  The extra query mode makes the two evidence views deterministic
      // without delaying the public result card for several seconds.
@@ -337,7 +357,7 @@ index 2a58cfb90..7187ceaa6 100644
    };
  }
  
-@@ -1080,7 +1033,7 @@ function syncHud(): void {
+@@ -1085,7 +1033,7 @@ function syncHud(): void {
    if (powerFill.style.width !== widthText) powerFill.style.width = widthText;
    if (mobilePowerFill.style.width !== widthText) mobilePowerFill.style.width = widthText;
    if (mobilePowerLabel.textContent !== widthText) mobilePowerLabel.textContent = widthText;
@@ -346,7 +366,7 @@ index 2a58cfb90..7187ceaa6 100644
      ? "Paused"
      : flow.phase === "simulating"
        ? "Ball in flight"
-@@ -1097,7 +1050,7 @@ function syncHud(): void {
+@@ -1102,7 +1050,7 @@ function syncHud(): void {
    hudText("#sg-ev-sensors", String(flow.snapshot().sensorEventCount));
    hudText("#sg-ev-hash", flow.lastShotHash || "pending");
    hudText("#sg-ev-resetmatch", flow.resetHashMatch === null ? "n/a" : flow.resetHashMatch ? "match" : "MISMATCH");
@@ -355,7 +375,7 @@ index 2a58cfb90..7187ceaa6 100644
      ? hole.name + " · Par " + hole.par + " · Paused"
      : flow.phase === "hole-complete"
        ? hole.name + " · Par " + hole.par + " · Complete"
-@@ -1119,7 +1072,7 @@ function loadHole(index: number): void {
+@@ -1124,7 +1072,7 @@ function loadHole(index: number): void {
    shot.loadHole(hole.aim);
    currentShotInputs = [];
    currentTrajectory = [];
@@ -364,7 +384,7 @@ index 2a58cfb90..7187ceaa6 100644
    settleCameraFrames = 0;
    app.setScene(buildHoleScene(hole, cameraPhase));
    resolveHandles();
-@@ -1152,6 +1105,7 @@ function applyStrike(result: NonNullable<ReturnType<ShotController["strike"]>>):
+@@ -1157,6 +1105,7 @@ function applyStrike(result: NonNullable<ReturnType<ShotController["strike"]>>):
      recordAppliedShot(result.input);
      applyCameraPhase("flight");
      pushCue("drive-hit");
@@ -372,7 +392,7 @@ index 2a58cfb90..7187ceaa6 100644
      trailArmed = !reducedMotion && result.input.power >= 1.5;
    } else {
      shot.armNextShot();
-@@ -1206,13 +1160,13 @@ function advanceAction(): void {
+@@ -1211,13 +1160,13 @@ function advanceAction(): void {
  }
  
  function togglePause(): void {
@@ -389,7 +409,7 @@ index 2a58cfb90..7187ceaa6 100644
      app.pause();
    } else {
      app.resume();
-@@ -1229,20 +1183,24 @@ function consumeEvents(events: readonly import("../gameplay/hole-flow").SiegeGam
+@@ -1234,20 +1183,24 @@ function consumeEvents(events: readonly import("../gameplay/hole-flow").SiegeGam
          if (event.speed > 0.65 && cueReady("wood-dust", 6)) spawnImpactDust("wood");
          if (event.speed > 1.6 && cueReady("wood-crack", 8)) {
            pushCue("wood-crack");
@@ -414,7 +434,7 @@ index 2a58cfb90..7187ceaa6 100644
          break;
        case "complete": {
          commitBestSolution();
-@@ -1250,7 +1208,7 @@ function consumeEvents(events: readonly import("../gameplay/hole-flow").SiegeGam
+@@ -1255,7 +1208,7 @@ function consumeEvents(events: readonly import("../gameplay/hole-flow").SiegeGam
          const strokes = flow.strokes;
          const finalHole = holeIndex >= SIEGE_GOLF_HOLES.length - 1;
          const completedRound = roundTotals([...roundEntries, { holeIndex, par, strokes }]);
@@ -423,7 +443,7 @@ index 2a58cfb90..7187ceaa6 100644
          queueResultCard(
            finalHole ? "Course complete" : "Hole complete",
            finalHole
-@@ -1381,7 +1339,7 @@ function previewPowerFraction(): number {
+@@ -1386,7 +1339,7 @@ function previewPowerFraction(): number {
  }
  
  function syncAim(): void {
@@ -432,7 +452,7 @@ index 2a58cfb90..7187ceaa6 100644
    const dirX = Math.sin(shot.state.angle);
    const dirZ = -Math.cos(shot.state.angle);
    const base = flow.sim.ball.position;
-@@ -1440,8 +1398,7 @@ function syncAim(): void {
+@@ -1445,8 +1398,7 @@ function syncAim(): void {
    for (let i = 0; i < AIM_NODE_COUNT; i += 1) {
      const handle = aimHandles[i]!;
      const fade = 1 - (i / AIM_NODE_COUNT) * 0.62;
@@ -442,7 +462,7 @@ index 2a58cfb90..7187ceaa6 100644
        continue;
      }
      const reach = 0.5 + i * guideSpread;
-@@ -1468,17 +1425,14 @@ function spawnImpactDust(kind: "wood" | "metal"): void {
+@@ -1473,17 +1425,14 @@ function spawnImpactDust(kind: "wood" | "metal"): void {
      // renderer-owned dust readable for a short, bounded beat so the evidence
      // condition cannot miss a legitimate Rapier collision between polls;
      // normal gameplay keeps the tighter transient.
@@ -462,7 +482,7 @@ index 2a58cfb90..7187ceaa6 100644
  }
  
  function syncDust(dt: number): void {
-@@ -1499,17 +1453,17 @@ function syncDust(dt: number): void {
+@@ -1504,17 +1453,17 @@ function syncDust(dt: number): void {
  }
  
  // ------------------------------------------------------------- evidence ------
@@ -483,7 +503,7 @@ index 2a58cfb90..7187ceaa6 100644
      targetsDown: snap.targetsDown,
      targetsSunk: snap.targetsSunk,
      physicsBodyCount: snap.physicsBodyCount,
-@@ -1595,6 +1549,11 @@ function publishEvidence(): void {
+@@ -1600,6 +1549,11 @@ function publishEvidence(): void {
      configurable: true,
      writable: true
    });
@@ -495,7 +515,7 @@ index 2a58cfb90..7187ceaa6 100644
  }
  
  let mountedAtMs = Date.now();
-@@ -1779,7 +1738,8 @@ stage.addEventListener("pointerup", (event) => {
+@@ -1784,7 +1738,8 @@ stage.addEventListener("pointerup", (event) => {
  }, { passive: true });
  
  // ------------------------------------------------------------- frame loop ----
@@ -505,7 +525,7 @@ index 2a58cfb90..7187ceaa6 100644
    input.update(dt);
    frameCount += 1;
    const physicsWallMs = performance.now();
-@@ -1787,8 +1747,8 @@ gameApp.onFrame(({ dt }) => {
+@@ -1792,8 +1747,8 @@ gameApp.onFrame(({ dt }) => {
    lastPhysicsWallMs = physicsWallMs;
  
    // Keyboard: edge actions fire from event listeners; the loop only samples

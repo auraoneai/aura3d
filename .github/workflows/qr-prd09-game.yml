@@ -124,10 +124,17 @@ jobs:
           cd "$RUNNER_TEMP/all-shadow"
           base="$(git rev-parse --short HEAD)"
           for dir in "$GITHUB_WORKSPACE"/docs/project/aura3d-quality-rebuild/migration/patches/*/; do
+            route="$(basename "$dir")"
+            # Routes already cut over to single-path on main (no src/v2, adopted art/direction.ts)
+            # no longer have the dual-path legacy/v2 tree these shadow patches target.
+            if [ "$route" != "common" ] && [ ! -d "apps/$route/src/v2" ] && [ -f "apps/$route/art/direction.ts" ]; then
+              echo "Skipping shadow patch for already-cut-over single-path route: $route"
+              continue
+            fi
             # A patch that no longer applies means main moved under the route
             # (usually a lane-14 apps/** change): fail with an actionable message.
-            if ! git am "$dir"*.patch; then
-              echo "::error title=Migration patches stale::patches stale vs main ${base}: $(basename "$dir") no longer applies with git am. Regenerate docs/project/aura3d-quality-rebuild/migration/patches/$(basename "$dir")/ onto ${base} (lane 09)."
+            if ! git am --3way "$dir"*.patch; then
+              echo "::error title=Migration patches stale::patches stale vs main ${base}: ${route} no longer applies with git am. Regenerate docs/project/aura3d-quality-rebuild/migration/patches/${route}/ onto ${base} (lane 09)."
               exit 1
             fi
           done

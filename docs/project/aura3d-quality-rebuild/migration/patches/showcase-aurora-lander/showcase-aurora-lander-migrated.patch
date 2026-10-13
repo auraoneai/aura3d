@@ -1,4 +1,4 @@
-From e3d9e1193f7125766a64d51db52f52a1cf4f6d84 Mon Sep 17 00:00:00 2001
+From 92a186f2d83c751a6335c8981d5ac1eece82a9b5 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:02 +0000
 Subject: [PATCH] migration(showcase-aurora-lander): regenerated patch set
@@ -7,12 +7,12 @@ Subject: [PATCH] migration(showcase-aurora-lander): regenerated patch set
 ---
  apps/showcase-aurora-lander/package.json      |   4 +-
  apps/showcase-aurora-lander/src/evidence.ts   |   8 +
- .../src/legacy/lander-audio.ts                |  53 ++++++
- .../showcase-aurora-lander/src/legacy/main.ts | 155 +++++++++++-------
+ .../src/legacy/lander-audio.ts                |  63 +++++-
+ .../showcase-aurora-lander/src/legacy/main.ts | 184 +++++++++---------
  .../src/scenario-drive.ts                     |  11 ++
  .../src/scenarios/index.ts                    |  13 ++
- apps/showcase-aurora-lander/src/v2/boot.ts    |  87 +++-------
- 7 files changed, 205 insertions(+), 126 deletions(-)
+ apps/showcase-aurora-lander/src/v2/boot.ts    |  87 +++------
+ 7 files changed, 208 insertions(+), 162 deletions(-)
  create mode 100644 apps/showcase-aurora-lander/src/evidence.ts
  create mode 100644 apps/showcase-aurora-lander/src/scenario-drive.ts
  create mode 100644 apps/showcase-aurora-lander/src/scenarios/index.ts
@@ -47,7 +47,7 @@ index 000000000..af1232122
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
 diff --git a/apps/showcase-aurora-lander/src/legacy/lander-audio.ts b/apps/showcase-aurora-lander/src/legacy/lander-audio.ts
-index 85f144652..3919603de 100644
+index bd5a6cf87..3919603de 100644
 --- a/apps/showcase-aurora-lander/src/legacy/lander-audio.ts
 +++ b/apps/showcase-aurora-lander/src/legacy/lander-audio.ts
 @@ -7,6 +7,7 @@
@@ -58,7 +58,7 @@ index 85f144652..3919603de 100644
  import { assets } from "../../../../src/aura-assets";
  
  /** Logical gameplay cue identifiers used by the route (PRD §7 manifest). */
-@@ -137,9 +138,20 @@ export interface LanderAudioProof {
+@@ -137,15 +138,20 @@ export interface LanderAudioProof {
    readonly gestureUnlocked: boolean;
  }
  
@@ -74,12 +74,18 @@ index 85f144652..3919603de 100644
  export interface LanderAudioController {
    readonly cue: (name: LanderAudioCue) => Promise<void>;
    readonly unlock: () => Promise<void>;
+-  /**
+-   * Thrust loop level from the throttle (0..1). The loop keeps one voice once
+-   * started; releasing thrust glides it to silence instead of leaving the burn
+-   * playing at full level forever.
+-   */
+-  readonly setThrust: (throttle01: number) => void;
 +  /** `sound.engine` thruster loop — live rpm pitch while the burn is active. */
 +  readonly thruster: LanderThrusterLoop;
    readonly proof: () => LanderAudioProof;
    readonly dispose: () => Promise<void>;
  }
-@@ -177,6 +189,46 @@ export function createLanderAudio(reducedMotion = false): LanderAudioController
+@@ -183,6 +189,46 @@ export function createLanderAudio(reducedMotion = false): LanderAudioController
    }
    const audio = cachedAudio;
  
@@ -126,7 +132,7 @@ index 85f144652..3919603de 100644
    async function cue(name: LanderAudioCue): Promise<void> {
      recentCues.push(name);
      if (recentCues.length > 24) recentCues.shift();
-@@ -184,6 +236,7 @@ export function createLanderAudio(reducedMotion = false): LanderAudioController
+@@ -190,6 +236,7 @@ export function createLanderAudio(reducedMotion = false): LanderAudioController
    }
  
    return {
@@ -134,11 +140,22 @@ index 85f144652..3919603de 100644
      async cue(name) {
        await cue(name);
      },
+@@ -197,10 +244,6 @@ export function createLanderAudio(reducedMotion = false): LanderAudioController
+       await audio.unlock();
+       gestureUnlocked = true;
+     },
+-    setThrust(throttle01) {
+-      const t = Math.max(0, Math.min(1, Number.isFinite(throttle01) ? throttle01 : 0));
+-      audio.setCueLevel("thrust-loop", { volume: t, rate: 0.9 + 0.2 * t }, t > 0 ? 40 : 120);
+-    },
+     proof() {
+       const evidence = audio.evidence;
+       const ready = evidence.enabled
 diff --git a/apps/showcase-aurora-lander/src/legacy/main.ts b/apps/showcase-aurora-lander/src/legacy/main.ts
-index f50746657..3268b8579 100644
+index 824b6f029..3268b8579 100644
 --- a/apps/showcase-aurora-lander/src/legacy/main.ts
 +++ b/apps/showcase-aurora-lander/src/legacy/main.ts
-@@ -33,6 +33,16 @@ import {
+@@ -33,8 +33,17 @@ import {
    type MeshSurfaceQuery,
    type SurfaceSample
  } from "@aura3d/engine";
@@ -153,19 +170,36 @@ index f50746657..3268b8579 100644
 +import { bindAuroraEvidence } from "../evidence";
 +import { bindAuroraDrive } from "../scenario-drive";
  import { assets } from "../../../../src/aura-assets";
+-import { resolveQrFlags } from "@aura3d/engine/contracts";
  import {
    SITES,
-@@ -108,8 +118,7 @@ type Phase = "flying" | "landed" | "crashed" | "campaign-clear";
+   TERRAIN_CELL_SIZE,
+@@ -70,7 +79,6 @@ import {
+   trajectoryHash,
+   type GhostSample
+ } from "../gameplay/ghost";
+-import { auroraLanderEffectsPass, auroraLanderValleyFog } from "./effects-pass";
+ import { bindHud, showBanner, updateHud, type BannerKind, type HudBindings } from "./hud";
+ import { createLanderAudio, type LanderAudioCue, type LanderAudioController } from "./lander-audio";
+ 
+@@ -110,15 +118,7 @@ type Phase = "flying" | "landed" | "crashed" | "campaign-clear";
   */
  const routeParams = new URLSearchParams(window.location.search);
  const dropMode = routeParams.get("drop");
--const visualReviewCapture = routeParams.get("capture") === "review";
+-// Shipped play path only: the ?capture= review lens was removed.
+-const visualReviewCapture: boolean = false;
+-// PRD-03 §6.6 / Q-14-1: A3D_QR_POST (default on) bloom is linear HDR with no hidden
+-// legacy gain; retune for v2 only so the `-post` legacy look is unchanged.
+-const postV2Bloom = resolveQrFlags({
+-  url: window.location.href,
+-  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+-}).on("A3D_QR_POST");
 -document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 +document.body.dataset.capture = "default";
  const dropEvidenceMode = dropMode === "1" || dropMode === "hard";
  const hardDropEvidenceMode = dropMode === "hard";
  // A human-playable close approach for mobile/touch evidence. Unlike `drop=1`,
-@@ -208,7 +217,7 @@ window.addEventListener("keyup", (event) => {
+@@ -217,7 +217,7 @@ window.addEventListener("keyup", (event) => {
  // ---- mutable route state -----------------------------------------------------
  let siteIndex = 0;
  let phase: Phase = "flying";
@@ -174,7 +208,7 @@ index f50746657..3268b8579 100644
  let state: LanderState = createLanderState(SITES[0]!.spawn, SITES[0]!.fuelBudget);
  let previousControls: Controls = { thrust: 0, rotate: 0 };
  let siteScores: number[] = [];
-@@ -229,7 +238,7 @@ let contactQueryAgreement: boolean | null = null;
+@@ -238,7 +238,7 @@ let contactQueryAgreement: boolean | null = null;
  let padSensorArmed = false;
  let fuelLowCueFired = false;
  let gustWarnCueFiredForCycle = false;
@@ -183,7 +217,7 @@ index f50746657..3268b8579 100644
  let rcsPuffArmed = true;
  let bannerTimer = 0;
  let advanceTimer = -1;
-@@ -643,10 +652,9 @@ function buildWorldScene() {
+@@ -652,10 +652,9 @@ function buildWorldScene() {
          .position(pad.x, padHeight + 0.09, pad.z)
          .rotate(Math.PI / 2, 0, 0)
          .scale([
@@ -197,7 +231,7 @@ index f50746657..3268b8579 100644
          .runtime(game.runtimeNode(`${prefix}-pad-ring`, { tags: ["pad", "zone-marker", "renderer-owned"] }))
      );
  
-@@ -749,7 +757,7 @@ function buildWorldScene() {
+@@ -758,7 +757,7 @@ function buildWorldScene() {
        role: "primaryVehicle",
        scaleMode: "fit",
        targetMaxDimension: 2.8,
@@ -206,7 +240,7 @@ index f50746657..3268b8579 100644
        castShadow: false,
        receiveShadow: false
      })
-@@ -839,9 +847,9 @@ function buildWorldScene() {
+@@ -848,9 +847,9 @@ function buildWorldScene() {
    }
  
    builder.add(
@@ -219,7 +253,7 @@ index f50746657..3268b8579 100644
        backend: "sdf"
      })
        .position(0, -50, 0)
-@@ -854,7 +862,7 @@ function buildWorldScene() {
+@@ -863,7 +862,7 @@ function buildWorldScene() {
      })
        .position(0, -50, 0)
        .rotate(Math.PI / 2, 0, 0)
@@ -228,7 +262,34 @@ index f50746657..3268b8579 100644
        .runtime(game.runtimeNode("extraction-halo", { tags: ["campaign-clear", "extraction-tableau", "renderer-owned"] }))
    );
  
-@@ -921,16 +929,14 @@ function buildWorldScene() {
+@@ -915,23 +914,10 @@ function buildWorldScene() {
+ 
+   // Shared night lighting: one neutral aurora grade that reads across all three
+   // sites so no live scene swaps are ever needed.
+-  // Visible effects pass (default boot; the named review lens is unchanged).
+-  const firstPad = SITES[0]!.pads[0]!;
+-  const firstPadY = siteFields[0]?.field.padHeights[0] ?? 0;
+   builder
+-    .addMany(visualReviewCapture ? [] : auroraLanderEffectsPass({
+-      pad: [firstPad.x, firstPadY, firstPad.z],
+-      reducedMotion: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true
+-    }))
+-    .add(visualReviewCapture
+-      ? effects.fog({ name: "valley haze", color: "#16283f", density: 0.0021, intensity: 0.42 })
+-      : auroraLanderValleyFog(firstPadY))
+-    .add(effects.bloom(postV2Bloom
+-      // v2 maps an authored maxIntensity to clampLuminance (0.6 would clamp every
+-      // pixel below threshold), so leave it unauthored here (clampLuminance 64).
+-      ? { name: "aurora sky bloom", intensity: 1.4, threshold: 0.5, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
+-      : { name: "aurora sky bloom", intensity: 0.22, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+-    .add(effects.colorGrade(visualReviewCapture ? { exposure: 1.06, contrast: 1.05, saturation: 1.12 } : { exposure: 1.21, contrast: 1.2, saturation: 1.35 }))
++    .add(effects.fog({ name: "valley haze", color: "#16283f", density: 0.0021, intensity: 0.42 }))
++    .add(effects.bloom({ name: "aurora sky bloom", intensity: 0.22, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
++    .add(effects.colorGrade({ exposure: 1.06, contrast: 1.05, saturation: 1.12 }))
+     .add(effects.antiAlias({ mode: "fxaa" }))
+     // Ambient-only teal wash at 0.95 flattened the regolith into a single bright
+     // silhouette and blew the typed probe out into a white disc. Drop the flat
+@@ -943,16 +929,14 @@ function buildWorldScene() {
      .add(lights.point({
        name: "final extraction warm practical",
        color: "#ffb454",
@@ -248,7 +309,7 @@ index f50746657..3268b8579 100644
        // The opening approach is still a wide three-quarter chase, but the
        // previous 17m default left the typed probe at roughly 100px in the
        // route-primary frame.  Bring the eye in one measured step so the
-@@ -942,25 +948,57 @@ function buildWorldScene() {
+@@ -964,25 +948,57 @@ function buildWorldScene() {
        // the world horizon and clipped the sky band out of shot. A slightly shallower
        // 23deg pitch inside a 58deg cone admits the sky without the 64deg version's
        // side effect of shrinking the typed probe to a dot at spawn altitude.
@@ -314,7 +375,7 @@ index f50746657..3268b8579 100644
  
  function requireNode(name: string): AuraRuntimeNodeHandle {
    return app.nodes.require(name) as AuraRuntimeNodeHandle;
-@@ -1046,7 +1084,7 @@ function rebuildCollisions(): void {
+@@ -1068,7 +1084,7 @@ function rebuildCollisions(): void {
  // ---- attempt lifecycle ---------------------------------------------------------
  function resetAttempt(recordGhostStart = true): void {
    phase = "flying";
@@ -323,7 +384,7 @@ index f50746657..3268b8579 100644
    lastGrade = null;
    state = spawnStateFor(currentSite);
    previousControls = { thrust: 0, rotate: 0 };
-@@ -1265,6 +1303,8 @@ function gradeFromContact(context: GradingContext): void {
+@@ -1287,6 +1303,8 @@ function gradeFromContact(context: GradingContext): void {
  
    if (graded.grade === "crash") {
      phase = "crashed";
@@ -332,7 +393,7 @@ index f50746657..3268b8579 100644
      playCue("crash");
      showBanner(hud, "grade-crash", `CRASH — ${graded.crashReason}. Press R to restart expedition.`);
      bannerTimer = 4;
-@@ -1281,6 +1321,9 @@ function gradeFromContact(context: GradingContext): void {
+@@ -1303,6 +1321,9 @@ function gradeFromContact(context: GradingContext): void {
    });
    siteScores[siteIndex] = Math.max(siteScores[siteIndex] ?? 0, breakdown.total);
    mountedEvidence.campaignScore = campaignScore(SITES.map((_, index) => siteScores[index] ?? 0));
@@ -342,7 +403,7 @@ index f50746657..3268b8579 100644
    playCue(graded.grade === "soft" ? "touch-soft" : "touch-hard");
    void landerAudio.cue("site-clear");
    recentAudioCues = ["site-clear", ...recentAudioCues].slice(0, 12);
-@@ -1328,7 +1371,7 @@ let dustCursor = 0;
+@@ -1350,7 +1371,7 @@ let dustCursor = 0;
  
  function tick(dtFixed: number): void {
    frameCount += 1;
@@ -351,15 +412,15 @@ index f50746657..3268b8579 100644
    simSeconds += dtFixed;
  
    // Edge-driven audio before integration.
-@@ -1361,11 +1404,12 @@ function tick(dtFixed: number): void {
+@@ -1383,13 +1404,13 @@ function tick(dtFixed: number): void {
    }
    previousControls = effectiveControls;
    state = stepLander(state, effectiveControls, dtFixed, currentSite.gust);
--  if (controls.thrust > 0 && !thrustLoopActive) {
+-  // The thrust loop starts on the first burn and then follows the throttle
+-  // (silent when released) instead of playing on at full level.
+-  if (controls.thrust > 0 && !thrustLoopActive && audioUnlocked) {
 -    thrustLoopActive = true;
 -    playCue("thrust-loop");
--  } else if (controls.thrust === 0 && thrustLoopActive) {
--    thrustLoopActive = false;
 +  auroraTween.tick(dtFixed);
 +  if (controls.thrust > 0) {
 +    landerAudio.thruster.start();
@@ -367,9 +428,11 @@ index f50746657..3268b8579 100644
 +  } else {
 +    landerAudio.thruster.stop();
    }
+-  if (thrustLoopActive) landerAudio.setThrust(controls.thrust);
    const rotating = Math.abs(controls.rotate) > 0.05;
    if (rotating && rcsPuffArmed) {
-@@ -1489,8 +1533,8 @@ function toggleGhost(): void {
+     rcsPuffArmed = false;
+@@ -1512,8 +1533,8 @@ function toggleGhost(): void {
  }
  
  function togglePause(): void {
@@ -380,7 +443,7 @@ index f50746657..3268b8579 100644
  }
  
  function handleControlEdges(): void {
-@@ -1527,7 +1571,7 @@ function renderUpdate(dtFrame: number): void {
+@@ -1550,7 +1571,7 @@ function renderUpdate(dtFrame: number): void {
    // Plume: visible thrust flame scaled by throttle while the engine burns.
    const groundHere = sampleGridHeight(field, state.x, state.z);
    const altitudeAboveGround = state.y - FOOT_DROP - groundHere;
@@ -389,7 +452,7 @@ index f50746657..3268b8579 100644
    const plumeScale = burning ? 0.5 + previousControls.thrust * 0.7 : 0.001;
    plumeNode.setPosition(state.x - Math.sin(state.yaw) * 0.1, state.y - FOOT_DROP * 1.35, state.z - Math.cos(state.yaw) * 0.1);
    plumeNode.setScale([plumeScale * 0.45, plumeScale * 2.4, plumeScale * 0.45]);
-@@ -1572,7 +1616,7 @@ function renderUpdate(dtFrame: number): void {
+@@ -1595,7 +1616,7 @@ function renderUpdate(dtFrame: number): void {
    const extractionVisible = phase === "campaign-clear";
    const extractionPad = currentSite.pads[0]!;
    const extractionGround = field.padHeights[0] ?? groundHere;
@@ -398,7 +461,7 @@ index f50746657..3268b8579 100644
      && phase === "flying"
      && altitudeAboveGround > APPROACH_SCAFFOLD_MIN_AGL;
    // The campaign-clear bay is a complete renderer-owned deck laid over the
-@@ -1580,34 +1624,23 @@ function renderUpdate(dtFrame: number): void {
+@@ -1603,34 +1624,23 @@ function renderUpdate(dtFrame: number): void {
    // mesh so nearby ridges cannot protrude through the deck and occlude the
    // already-landed typed vehicle. The Rapier contact and mesh-query evidence
    // has already run and remains published; runtime flight keeps terrain shown.
@@ -441,7 +504,7 @@ index f50746657..3268b8579 100644
        node.setPosition(
          extractionPad.x + part.offset[0],
          extractionGround + part.offset[1],
-@@ -1625,8 +1658,8 @@ function renderUpdate(dtFrame: number): void {
+@@ -1648,8 +1658,8 @@ function renderUpdate(dtFrame: number): void {
        );
      }
    });
@@ -452,7 +515,7 @@ index f50746657..3268b8579 100644
      extractionBackdropNode
        .setPosition(
          extractionPad.x - 3.5,
-@@ -1661,7 +1694,7 @@ function renderUpdate(dtFrame: number): void {
+@@ -1684,7 +1694,7 @@ function renderUpdate(dtFrame: number): void {
      const emphasized = index === pulsePhase ? 1.9 : 1;
      node.setScale(0.22 * emphasized);
    });
@@ -461,7 +524,7 @@ index f50746657..3268b8579 100644
      siteGroups[siteIndex]?.nodes.forEach((node) => node.setVisible(false));
    }
  
-@@ -1766,7 +1799,7 @@ function publishEvidence(): void {
+@@ -1789,7 +1799,7 @@ function publishEvidence(): void {
    mountedEvidence.vspeed = Number(state.vy.toFixed(3));
    mountedEvidence.hspeed = Number(hspeedOf(state).toFixed(3));
    mountedEvidence.attitudeDeg = Number(Math.abs(state.tiltDeg).toFixed(2));
@@ -470,7 +533,7 @@ index f50746657..3268b8579 100644
    mountedEvidence.lastGrade = lastGrade;
    mountedEvidence.ghostActive = ghostActive;
    mountedEvidence.terrainQueryFps = terrainQueryFps;
-@@ -1832,7 +1865,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+@@ -1855,7 +1865,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
        landerNode.setVisible(!suppressed);
      },
      settleSubjectPose() {

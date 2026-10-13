@@ -67,6 +67,7 @@
       "required": ["id", "kind", "path", "source", "licence", "sha256", "bytes", "triangles", "textures", "lookdev"],
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "assetKey": { "type": "string", "minLength": 1 },
         "kind": { "type": "string", "enum": ["model", "texture", "environment", "flipbook"] },
         "path": { "type": "string", "minLength": 1 },
         "source": { "type": "string", "pattern": "^https://" },

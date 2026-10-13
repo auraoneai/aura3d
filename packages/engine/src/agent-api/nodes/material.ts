@@ -126,7 +126,8 @@ export const material = lazyNamespace(() => ({
     emissiveIntensity: options.emissiveIntensity ?? 2.8,
     roughness: options.roughness ?? 0.18,
     metallic: options.metallic ?? options.metalness ?? 0.04,
-    metalness: options.metalness ?? options.metallic ?? 0.04
+    metalness: options.metalness ?? options.metallic ?? 0.04,
+    practical: options.practical ?? true
   }, options),
   reflectiveFloor: (options: AuraMaterialSpec = {}): AuraMaterialSpec => resolveMaterialSpecDefaults({
     color: options.color ?? "#05070d",

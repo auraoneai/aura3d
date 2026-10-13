@@ -55,6 +55,7 @@ interface Prd01OutputRenderer {
   }): void;
   setOutputOverlay(overlay: AuraOutputOverlay | null): void;
   readonly appliedOutput?: unknown;
+  readonly postSkipped?: unknown;
 }
 
 function laneRenderer(app: AuraApp): Prd01OutputRenderer | undefined {
@@ -186,7 +187,9 @@ export function createPrd01OutputSurface(
     setOutputOverlay(overlay: AuraOutputOverlay): { readonly applied: boolean; readonly reason?: "no-post-pass" | "disposed" | "dom-fallback" } {
       if (disposed) return { applied: false, reason: "disposed" };
       // Phase 4 (C-05): the in-shader OutputPass overlay is the real path under
-      // A3D_QR_CORE_OUTPUT; DOM overlay remains the flag-off/other-backend fallback.
+      // A3D_QR_CORE_OUTPUT; DOM overlay remains the flag-off/other-backend fallback,
+      // and is also used when OutputPass was bypassed by the scene's LegacyPost chain
+      // (`renderer.postSkipped` truthy).
       const renderer = outputPath ? laneRenderer(app) : undefined;
       if (renderer) {
         flushPendingOutput();
@@ -196,20 +199,30 @@ export function createPrd01OutputSurface(
           shape: overlay.shape ?? [0.7, 0.3],
           fade: overlay.fade ?? [0, 0, 0, 0]
         });
-        return { applied: true };
+        if (!renderer.postSkipped) {
+          overlayEl?.remove();
+          overlayEl = null;
+          return { applied: true };
+        }
       }
       const canvas = findAppCanvas(app);
-      if (!canvas) return { applied: false, reason: "dom-fallback" };
+      if (!canvas) return { applied: Boolean(renderer), reason: "dom-fallback" };
+      const flash = overlay.flash ?? [0, 0, 0, 0];
+      const vignette = overlay.vignette ?? [0, 0, 0, 0];
+      const fade = overlay.fade ?? [0, 0, 0, 0];
+      if (flash[3] === 0 && vignette[3] === 0 && fade[3] === 0) {
+        overlayEl?.remove();
+        overlayEl = null;
+        return { applied: true, ...(renderer ? {} : { reason: "dom-fallback" as const }) };
+      }
       overlayEl ??= document.createElement("div");
       overlayEl.className = "a3d-output-overlay";
       const rect = canvas.getBoundingClientRect();
       overlayEl.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;pointer-events:none;z-index:2;`;
-      const flash = overlay.flash ?? [0, 0, 0, 0];
-      const vignette = overlay.vignette ?? [0, 0, 0, 0];
       overlayEl.style.background = `rgba(${Math.round(flash[0] * 255)},${Math.round(flash[1] * 255)},${Math.round(flash[2] * 255)},${flash[3]})`;
       overlayEl.style.boxShadow = vignette[3] > 0 ? `inset 0 0 ${Math.round(rect.width * vignette[2] * 100)}px rgba(0,0,0,${vignette[3]})` : "";
       if (overlayEl.parentElement !== document.body) document.body.appendChild(overlayEl);
-      return { applied: true, reason: "dom-fallback" };
+      return { applied: true, ...(renderer ? {} : { reason: "dom-fallback" as const }) };
     },
     async capture(options?: { readonly type?: "image-bitmap" | "png-blob" }): Promise<ImageBitmap | Blob> {
       // §6.9/C-05 real readback: render one frame synchronously (app.step) and

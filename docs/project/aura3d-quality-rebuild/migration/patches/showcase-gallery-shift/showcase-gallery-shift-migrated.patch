@@ -1,4 +1,4 @@
-From 247fdac98580cf3093f766a049700096bed0e82b Mon Sep 17 00:00:00 2001
+From 15fb43b6de70934b536386900d2388bd9edf69b7 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:54 +0000
 Subject: [PATCH] migration(showcase-gallery-shift): regenerated patch set
@@ -7,11 +7,11 @@ Subject: [PATCH] migration(showcase-gallery-shift): regenerated patch set
 ---
  apps/showcase-gallery-shift/package.json      |   3 +-
  apps/showcase-gallery-shift/src/evidence.ts   |   8 +
- .../showcase-gallery-shift/src/legacy/main.ts | 173 ++++++++++--------
- .../src/scenario-drive.ts                     |  11 ++
+ .../showcase-gallery-shift/src/legacy/main.ts | 228 ++++++++++--------
+ .../src/scenario-drive.ts                     |  11 +
  .../src/scenarios/index.ts                    |  14 ++
- apps/showcase-gallery-shift/src/v2/boot.ts    |  93 +++-------
- 6 files changed, 159 insertions(+), 143 deletions(-)
+ apps/showcase-gallery-shift/src/v2/boot.ts    |  93 +++----
+ 6 files changed, 191 insertions(+), 166 deletions(-)
  create mode 100644 apps/showcase-gallery-shift/src/evidence.ts
  create mode 100644 apps/showcase-gallery-shift/src/scenario-drive.ts
  create mode 100644 apps/showcase-gallery-shift/src/scenarios/index.ts
@@ -45,7 +45,7 @@ index 000000000..c6db6b06f
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
 diff --git a/apps/showcase-gallery-shift/src/legacy/main.ts b/apps/showcase-gallery-shift/src/legacy/main.ts
-index 40e5b37b7..c0d7bae75 100644
+index 5a9a0b710..c0d7bae75 100644
 --- a/apps/showcase-gallery-shift/src/legacy/main.ts
 +++ b/apps/showcase-gallery-shift/src/legacy/main.ts
 @@ -1,3 +1,4 @@
@@ -61,10 +61,12 @@ index 40e5b37b7..c0d7bae75 100644
    effects,
    game,
    geometry,
-@@ -35,6 +35,16 @@ import {
+@@ -35,8 +35,16 @@ import {
    type AuraRuntimeNodeHandle,
    type AuraSceneNode
  } from "@aura3d/engine";
+-import { resolveQrFlags } from "@aura3d/engine/contracts";
+-import { galleryEffectsPass } from "./effects-pass";
 +import {
 +  createFxParticlePass,
 +  createGame,
@@ -78,17 +80,77 @@ index 40e5b37b7..c0d7bae75 100644
  import { assets } from "../../../../src/aura-assets";
  import {
    FLOOR_LAYOUTS,
-@@ -81,8 +91,7 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_GALLERY_SHIFT__", {
+@@ -83,42 +91,33 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_GALLERY_SHIFT__", {
  });
  const reducedMotion = typeof window.matchMedia === "function"
    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
--const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
--document.body.dataset.capture = visualReviewCapture ? "review" : "default";
-+document.body.dataset.capture = "default";
+-// PRD-03 §6.6 / Q-14-1: post v2 (A3D_QR_POST, default-on) composites bloom with no
+-// hidden gain and a linear-HDR threshold of 1.0, so neon practicals need real HDR
+-// emissive strength (3-8) to glow. Post-off keeps the legacy authoring untouched.
+-const postV2 = resolveQrFlags({
+-  url: location.href,
+-  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
+-}).on("A3D_QR_POST");
+-const NEON_GAIN = postV2 ? 2.6 : 1;
+-const DEFAULT_EMISSIVE_STRENGTH = 1.35;
+ document.body.dataset.capture = "default";
  const THIEF_FOCUS_MATERIAL = material.emissive({
    name: "thief tactical focus ring",
    color: "#123b3a",
-@@ -344,11 +353,6 @@ ui.html("#panel", `
+   emissive: "#55f3d1",
+-  emissiveIntensity: 1.18 * NEON_GAIN,
++  emissiveIntensity: 1.18,
+   opacity: 0.9
+ });
+ const LIVE_PLAYER_MATERIAL = material.emissive({
+   name: "live player hierarchy material",
+   color: "#063b35",
+   emissive: "#45ffd7",
+-  emissiveIntensity: 1.25 * NEON_GAIN,
++  emissiveIntensity: 1.25,
+   opacity: 1
+ });
+ const LIVE_GUARD_MATERIAL = material.emissive({
+   name: "live guard hierarchy material",
+   color: "#4d081d",
+   emissive: "#ff3e72",
+-  emissiveIntensity: 1.2 * NEON_GAIN,
++  emissiveIntensity: 1.2,
+   opacity: 1
+ });
+ const LIVE_OBJECTIVE_MATERIAL = material.emissive({
+   name: "live objective hierarchy material",
+   color: "#5a2d05",
+   emissive: "#ffd05a",
+-  emissiveIntensity: 1.48 * NEON_GAIN,
++  emissiveIntensity: 1.48,
+   opacity: 1
+ });
+ const THIEF_DETAIL_MATERIAL = material.metal({
+@@ -144,7 +143,7 @@ const THIEF_VISOR_MATERIAL = material.emissive({
+   name: "infiltrator visor signal",
+   color: "#0b4b4d",
+   emissive: "#73fff0",
+-  emissiveIntensity: 1.65 * NEON_GAIN,
++  emissiveIntensity: 1.65,
+   opacity: 0.95
+ });
+ const ALERT_WEDGE_GEOMETRY = geometry.define({
+@@ -259,10 +258,9 @@ addActorBox(guardDetailMesh, [0, 2.34, 0.24], [0.86, 0.1, 0.08]);
+ addActorBox(guardDetailMesh, [-0.5, 1.52, 0], [0.08, 0.3, 0.24]);
+ addActorBox(guardDetailMesh, [0.5, 1.52, 0], [0.08, 0.3, 0.24]);
+ const GUARD_DETAIL_GEOMETRY = defineActorDetail(guardDetailMesh);
+-// PRD-09: never read the forbidden `debug` URL param on the shipped route;
+-// the debug overlay and teleport stay off in the public build.
+-const debugMode = false;
+-const showDebugOverlay = false;
++const debugValue = new URLSearchParams(window.location.search).get("debug");
++const debugMode = debugValue !== null;
++const showDebugOverlay = debugValue === "visual";
+ 
+ const APP_ID = "showcase-gallery-shift";
+ // The route-primary composition probe isolates the typed museum world only.
+@@ -355,11 +353,6 @@ ui.html("#panel", `
      <button id="gs-restart-button" type="button">Restart</button>
      <button id="gs-pause-button" type="button">Pause</button>
    </section>
@@ -100,7 +162,7 @@ index 40e5b37b7..c0d7bae75 100644
  `);
  
  // ---------------------------------------------------------------- audio ------
-@@ -406,7 +410,7 @@ interface FloorRuntime {
+@@ -417,7 +410,7 @@ interface FloorRuntime {
  let floorIndex = 0;
  let runtime: FloorRuntime;
  let phase: Phase = "playing";
@@ -109,7 +171,7 @@ index 40e5b37b7..c0d7bae75 100644
  let frameCount = 0;
  let totalScore = 0;
  let completedBeforeFloor = 0;
-@@ -473,7 +477,7 @@ function resetMission(): void {
+@@ -484,7 +477,7 @@ function resetMission(): void {
    runtime = buildFloorRuntime(0);
    lastCameraSamples = [];
    phase = "playing";
@@ -118,7 +180,7 @@ index 40e5b37b7..c0d7bae75 100644
    hideResultCard();
    syncFloorVisuals();
    syncAlarmVisuals();
-@@ -490,6 +494,7 @@ function floorClearAdvance(): void {
+@@ -501,6 +494,7 @@ function floorClearAdvance(): void {
    if (floorIndex >= FLOOR_LAYOUTS.length - 1) {
      phase = "won";
      pushCue("exit-win");
@@ -126,80 +188,149 @@ index 40e5b37b7..c0d7bae75 100644
      showResult("Heist complete", `Both floors clean. Score ${totalScore} (floor: exhibit ${cleared.floorScore} + time ${timeBonus} + ghost ${ghostBonus}).`);
    } else {
      // Advance immediately: the banner carries the clear message and the new
-@@ -937,7 +942,7 @@ function meshyThiefCandidateNodes(): AuraSceneNode[] {
-   // and the default composition are untouched. The candidate exceeds the
-   // humanoid triangle budget (1.93M vs 150k) and carries no skeleton, so it
-   // stays out of the default route and never replaces the animated infiltrator.
--  if (!visualReviewCapture) return [];
-+  return [];
-   const spawn = FLOOR_LAYOUTS[0]!.thiefSpawn;
+@@ -731,7 +725,7 @@ function floor2WallNodes(): AuraSceneNode[] {
+     nodes.push(
+       primitives.box({
+         name: `laser-${laser.id}`,
+-        material: material.emissive({ name: `laser ${laser.id} material`, color: "#3d0f14", emissive: "#ff3b4e", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.85 })
++        material: material.emissive({ name: `laser ${laser.id} material`, color: "#3d0f14", emissive: "#ff3b4e", opacity: 0.85 })
+       })
+         .position(laser.x, 0.9, laser.z)
+         .scale([Math.max(0.05, laser.halfX * 2), 0.05, Math.max(0.05, laser.halfZ * 2)])
+@@ -789,7 +783,7 @@ function exitNodes(): AuraSceneNode[] {
    return [
-     model(assets.galleryThief, {
-@@ -971,8 +976,7 @@ function buildScene(): ReturnType<typeof scene> {
+     primitives.box({
+       name: "exit-pad",
+-      material: material.emissive({ name: "exit pad material", color: "#0d2417", emissive: "#3dfc9a", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.85 })
++      material: material.emissive({ name: "exit pad material", color: "#0d2417", emissive: "#3dfc9a", opacity: 0.85 })
+     })
+       .position(0, 0.02, -6.3)
+       .scale([1.6, 0.03, 1.0])
+@@ -797,7 +791,7 @@ function exitNodes(): AuraSceneNode[] {
+       .toJSON(),
+     primitives.box({
+       name: "exit-sign",
+-      material: material.emissive({ name: "exit sign material", color: "#0d2417", emissive: "#7ef8ff", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.95 })
++      material: material.emissive({ name: "exit sign material", color: "#0d2417", emissive: "#7ef8ff", opacity: 0.95 })
+     })
+       .position(0, 2.6, -6.9)
+       .scale([1.4, 0.4, 0.08])
+@@ -806,10 +800,10 @@ function exitNodes(): AuraSceneNode[] {
+ }
+ 
+ function threatFeedbackNodes(): AuraSceneNode[] {
+-  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#7d173c", emissive: "#ff477b", emissiveIntensity: 1.9 * NEON_GAIN, opacity: 0.8 });
+-  const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#c43765", emissive: "#ffd0dc", emissiveIntensity: 2.35 * NEON_GAIN, opacity: 0.99 });
+-  const lineMaterial = material.emissive({ name: "release real LOS floor rail", color: "#8d234a", emissive: "#ff5e8e", emissiveIntensity: 2.1 * NEON_GAIN, opacity: 0.94 });
+-  const targetMaterial = material.emissive({ name: "release real LOS target reticle", color: "#54132f", emissive: "#ff78a4", emissiveIntensity: 2.05 * NEON_GAIN, opacity: 0.94 });
++  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#7d173c", emissive: "#ff477b", emissiveIntensity: 1.9, opacity: 0.8 });
++  const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#c43765", emissive: "#ffd0dc", emissiveIntensity: 2.35, opacity: 0.99 });
++  const lineMaterial = material.emissive({ name: "release real LOS floor rail", color: "#8d234a", emissive: "#ff5e8e", emissiveIntensity: 2.1, opacity: 0.94 });
++  const targetMaterial = material.emissive({ name: "release real LOS target reticle", color: "#54132f", emissive: "#ff78a4", emissiveIntensity: 2.05, opacity: 0.94 });
+   return ["guard-1", "guard-2"].flatMap((id) => [
+     geometry.custom(ALERT_WEDGE_GEOMETRY, { name: `${id} real LOS alert wedge`, material: wedgeMaterial })
+       .position(0, 0.16, 0)
+@@ -941,10 +935,29 @@ function debugOverlayNodes(): AuraSceneNode[] {
+ }
+ 
+ function meshyThiefCandidateNodes(): AuraSceneNode[] {
+-  // Meshy candidate museum thief (galleryThief, quality: candidate) stays out
+-  // of the shipped route: it exceeds the humanoid triangle budget (1.93M vs
+-  // 150k) and carries no skeleton, so it never replaces the animated infiltrator.
++  // Meshy candidate museum thief (galleryThief, quality: candidate).
++  // Review-composition only: one grounded identity study beside the thief
++  // spawn so the capture shows the candidate's material break at action
++  // distance. Non-colliding set dressing; movement, sensors, scoring, clips,
++  // and the default composition are untouched. The candidate exceeds the
++  // humanoid triangle budget (1.93M vs 150k) and carries no skeleton, so it
++  // stays out of the default route and never replaces the animated infiltrator.
+   return [];
++  const spawn = FLOOR_LAYOUTS[0]!.thiefSpawn;
++  return [
++    model(assets.galleryThief, {
++      name: "Meshy museum thief candidate",
++      role: "setDressing",
++      scaleMode: "fit",
++      targetMaxDimension: 1.8
++    })
++      .position(spawn.x + 2.2, 0, spawn.z + 0.6)
++      .rotate(0, -0.5, 0)
++      .runtime(game.runtimeNode("gallery-meshy-thief-candidate", {
++        tags: ["typed-asset", "thief-identity", "meshy-candidate", "review-set-dressing", "non-colliding"]
++      }))
++      .toJSON()
++  ];
+ }
+ 
+ function buildScene(): ReturnType<typeof scene> {
+@@ -963,8 +976,7 @@ function buildScene(): ReturnType<typeof scene> {
          // actor collapses to a few pixels beside the guards; the review-only
          // 3.3m fit restores actor parity without touching movement, collision,
          // clips, or the default gameplay camera.
--        targetMaxDimension: visualReviewCapture ? 3.3 : 2.7
+-        targetMaxDimension: 2.7
 -      })
 +        targetMaxDimension: 2.7})
          .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
          .runtime(game.runtimeNode("thief", { tags: ["typed-asset", "thief", "authored-movement"] }))
          .toJSON()
-@@ -1023,8 +1027,7 @@ function buildScene(): ReturnType<typeof scene> {
+@@ -1015,8 +1027,7 @@ function buildScene(): ReturnType<typeof scene> {
        lights.point({
          name: "thief tactical practical",
          color: "#69f7df",
--        intensity: visualReviewCapture ? 3.6 : 1.5
+-        intensity: 1.5
 -      })
 +        intensity: 1.5})
          .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 1.25, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
          .runtime(game.runtimeNode("thief-practical", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
          .toJSON()
-@@ -1033,8 +1036,7 @@ function buildScene(): ReturnType<typeof scene> {
+@@ -1025,8 +1036,7 @@ function buildScene(): ReturnType<typeof scene> {
        lights.point({
          name: "thief cyan rim fill",
          color: "#8fffee",
--        intensity: visualReviewCapture ? 3.2 : 1.3
+-        intensity: 1.3
 -      })
 +        intensity: 1.3})
          .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x - 0.55, 2.15, FLOOR_LAYOUTS[0]!.thiefSpawn.z + 0.45)
          .runtime(game.runtimeNode("thief-rim-fill", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
          .toJSON()
-@@ -1068,12 +1070,12 @@ function buildScene(): ReturnType<typeof scene> {
-       effects.fog({ name: "gallery haze", density: 0.009, color: "#243b59", intensity: 0.18 }),
+@@ -1042,7 +1052,7 @@ function buildScene(): ReturnType<typeof scene> {
+     .add(
+       primitives.cylinder({
+         name: "alarm-beacon",
+-        material: material.emissive({ name: "alarm beacon material", color: "#3b070c", emissive: "#ff334d", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.95 })
++        material: material.emissive({ name: "alarm beacon material", color: "#3b070c", emissive: "#ff334d", opacity: 0.95 })
+       })
+         .position(0, 3.2, -5.8)
+         .scale([0.34, 0.18, 0.34])
+@@ -1056,15 +1066,16 @@ function buildScene(): ReturnType<typeof scene> {
+     .addMany([
+       // Low-lit marble hall: moonlight key, warm guard flashlights (sway gated
+       // by reduced-motion below), cool exit glow, shallow fog, restrained bloom.
+-      effects.neonBloom({ intensity: (reducedMotion ? 0.06 : 0.22) * (postV2 ? 1.6 : 1), quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+-      ...galleryEffectsPass(),
++      effects.neonBloom({ intensity: reducedMotion ? 0.06 : 0.22, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
++      effects.fog({ name: "gallery haze", density: 0.009, color: "#243b59", intensity: 0.18 }),
        effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.08 }),
        effects.antiAlias({ mode: "fxaa" }),
--      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: visualReviewCapture ? 0.06 : 0.38 }),
--      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: visualReviewCapture ? 0.4 : 1.05 }),
--      lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: visualReviewCapture ? 1.04 : 0.58 }),
+-      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: 0.38 }),
+-      lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: 0.58 }),
 +      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: 0.38}),
 +      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: 1.05}),
 +      lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: 0.58}),
        lights.spot({ name: "rotunda guard spotlight", position: [-8.5, 2.6, 4.5], target: [-4, 0, 1], angle: 0.5, penumbra: 0.6, distance: 18, decay: 2, intensity: 2.2, color: "#ffd58a", shadow: true }),
--      lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(-8.5, 1.8, 4.5),
--      lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(8.5, 1.8, -5.5),
+-      lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: 1.55 }).position(-8.5, 1.8, 4.5),
+-      lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: 1.55 }).position(8.5, 1.8, -5.5),
 +      lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: 1.55}).position(-8.5, 1.8, 4.5),
 +      lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: 1.55}).position(8.5, 1.8, -5.5),
        lights.point({ name: "exit sign glow", color: "#7ef8ff", intensity: 0.8 }).position(0, 2.2, -6.5)
      ])
      // The floor topology is genuine; the review camera has to make it read as
-@@ -1102,7 +1104,7 @@ function buildScene(): ReturnType<typeof scene> {
-       // two live patrol silhouettes into the same diagonal lane.  This is a
-       // camera-only presentation change: FloorLayout, LOS, patrol positions,
-       // and the staged encounter remain unchanged.
--      position: visualReviewCapture ? [0, 26.0, 2.5] : [0, 16.8, 17.2],
-+      position: [0, 16.8, 17.2],
-       // Centre the open foyer encounter rather than the south boundary. This
-       // keeps a complete infiltrator body inside the canvas while retaining
-       // both objective wings and the north service exit as route context.
-@@ -1110,13 +1112,14 @@ function buildScene(): ReturnType<typeof scene> {
-       // occlude sightlines and patrol paths in oblique review framings, so
+@@ -1102,12 +1113,13 @@ function buildScene(): ReturnType<typeof scene> {
        // the blueprint read (flat light-vs-dark threat legibility) needs
        // height over angle. Gameplay camera below is unchanged.
--      target: visualReviewCapture ? [0, 0.92, 0.35] : [0, 0.6, -0.6],
--      fov: visualReviewCapture ? 38 : 43
+       target: [0, 0.6, -0.6],
+-      fov: 43
 -    }));
-+      target: [0, 0.6, -0.6],
 +      fov: 43}));
  }
  
@@ -211,7 +342,7 @@ index 40e5b37b7..c0d7bae75 100644
    diagnostics: { overlay: false, performancePanel: false },
    physics: {
      seed: 20260916,
-@@ -1139,10 +1142,48 @@ const gameApp = createGameApp("#app", {
+@@ -1130,10 +1142,48 @@ const gameApp = createGameApp("#app", {
      touch: true
    },
    loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
@@ -263,7 +394,7 @@ index 40e5b37b7..c0d7bae75 100644
  if (!input) throw new Error("Gallery Shift failed to create Aura3D input.");
  
  // ------------------------------------------------------ animation controllers -
-@@ -1262,11 +1303,6 @@ function syncHud(): void {
+@@ -1253,11 +1303,6 @@ function syncHud(): void {
    }
    const guardRows = document.getElementById("gs-guard-rows");
    if (guardRows) guardRows.innerHTML = guardRowsMarkup();
@@ -275,7 +406,7 @@ index 40e5b37b7..c0d7bae75 100644
    const seeingGuard = lastThreatSamples.find((sample) => sample.seesThief);
    const objective = runtime.layout.pedestals.find((pedestal) => !runtime.liftedIds.includes(pedestal.id));
    const objectiveLabel = objective ? `OBJECTIVE ${runtime.liftedIds.length + completedBeforeFloor + 1}/3` : "SERVICE EXIT";
-@@ -1286,7 +1322,7 @@ function syncHud(): void {
+@@ -1277,7 +1322,7 @@ function syncHud(): void {
    reviewBrief.textContent = seeingGuard
      ? `LIVE CONTACT // ${seeingGuard.id.toUpperCase()} HAS LOS // ${objectiveLabel}`
      : `STEALTH LINK // ${objectiveLabel} // ${runtime.ghostRun ? "CLEAN" : "SUSPICIOUS"}`;
@@ -284,34 +415,7 @@ index 40e5b37b7..c0d7bae75 100644
      ? "PAUSED - P TO RESUME"
      : phase === "caught"
        ? "CAUGHT - R TO RESTART THE FLOOR"
-@@ -1343,7 +1379,7 @@ function syncFloorVisuals(): void {
-   layout.lightPools.forEach((_, poolIndex) => {
-     const mine = app.nodes.get(`pool-${layout.id}-${poolIndex}`);
-     const other = app.nodes.get(`pool-${layout.id === 1 ? 2 : 1}-${poolIndex}`);
--    mine?.setVisible(!visualReviewCapture);
-+    mine?.setVisible(true);
-     other?.setVisible(false);
-   });
-   const thiefNode = app.nodes.get("thief");
-@@ -1399,7 +1435,7 @@ function syncCharacterVisuals(): void {
-     // Passive cones are useful during play, but they have no target in the
-     // retained review shot and otherwise float free of the museum geometry.
-     // A true sighting still enables the alert wedge in syncThreatFeedback.
--    sightline?.setVisible(!visualReviewCapture && runtime.layout.id === 1);
-+    sightline?.setVisible(runtime.layout.id === 1);
-   }
- }
- 
-@@ -1449,7 +1485,7 @@ function syncThreatFeedback(): void {
-     // A real sighting swaps the cool patrol preview for one alert wedge driven
-     // by the same observer sample that raised the detection meter.
-     app.nodes.get(`${sample.id} sightline preview`)
--      ?.setVisible(!visualReviewCapture && !sample.seesThief && runtime.layout.id === 1);
-+      ?.setVisible(!sample.seesThief && runtime.layout.id === 1);
-     if (primarySighting) {
-       highlight?.setPosition(thief.x, 0.07, thief.z);
-       // Keep the target marker one clear body-width beyond the infiltrator so
-@@ -1593,7 +1629,7 @@ function syncDebugOverlay(): void {
+@@ -1584,7 +1629,7 @@ function syncDebugOverlay(): void {
  }
  
  // ------------------------------------------------------------- evidence ------
@@ -320,18 +424,16 @@ index 40e5b37b7..c0d7bae75 100644
    const snap = runtime.thief.snapshot();
    // AuraDiagnostics.backend is the engine-owned render backend
    // ("webgl2" | "webgpu" | "canvas2d" | "headless"); the previous
-@@ -1608,8 +1644,8 @@ function publishEvidence(): void {
+@@ -1599,7 +1644,7 @@ function publishEvidence(): void {
    // prevent both the evidence getter and CDP capture from responding. A drawn
    // renderer is therefore the complete review-mode mount condition; normal
    // visitors retain the canonical 90-frame lobby baseline.
--  const routeReady = rendererDrawn && (visualReviewCapture || frameCount >= 90);
--  if (!visualReviewCapture && rendererDrawn && frameCount < 90 && !bootWarmupScheduled) {
+-  const routeReady = rendererDrawn && frameCount >= 90;
 +  const routeReady = rendererDrawn && (frameCount >= 90);
-+  if (rendererDrawn && frameCount < 90 && !bootWarmupScheduled) {
+   if (rendererDrawn && frameCount < 90 && !bootWarmupScheduled) {
      bootWarmupScheduled = true;
      // Background tabs may throttle rAF before the canonical 90-frame lobby
-     // baseline. Complete that same deterministic idle warmup through the
-@@ -1625,7 +1661,7 @@ function publishEvidence(): void {
+@@ -1616,7 +1661,7 @@ function publishEvidence(): void {
      mounted: true,
      status: routeReady ? "ready" : "loading",
      floor: runtime.layout.id,
@@ -340,7 +442,7 @@ index 40e5b37b7..c0d7bae75 100644
      exhibitsLifted: runtime.liftedIds.length,
      totalExhibitsLifted: completedBeforeFloor + runtime.liftedIds.length,
      exhibitsTotal: 3,
-@@ -1710,6 +1746,11 @@ function publishEvidence(): void {
+@@ -1701,6 +1746,11 @@ function publishEvidence(): void {
      mountedAtEpochMs: Date.now()
    };
    galleryWindow.__GALLERY_SHIFT_EVIDENCE__ = evidence;
@@ -352,7 +454,7 @@ index 40e5b37b7..c0d7bae75 100644
  }
  
  // Renderer-owned capture used by specs and probes (no compositor dependency).
-@@ -1806,8 +1847,8 @@ ui.onClick("#gs-pause-button", () => togglePause());
+@@ -1797,8 +1847,8 @@ ui.onClick("#gs-pause-button", () => togglePause());
  (document.getElementById("gs-retry-button") as HTMLButtonElement | null)?.addEventListener("click", () => restartFloor());
  
  function togglePause(): void {
@@ -363,7 +465,7 @@ index 40e5b37b7..c0d7bae75 100644
      app.pause();
      thiefAnimation.pause();
      for (const controller of guardAnimations) controller?.pause();
-@@ -1831,8 +1872,9 @@ function consumeFootsteps(footsteps: readonly GuardFootstep[]): void {
+@@ -1822,8 +1872,9 @@ function consumeFootsteps(footsteps: readonly GuardFootstep[]): void {
    }
  }
  
@@ -375,7 +477,7 @@ index 40e5b37b7..c0d7bae75 100644
      manualAdvanceFrame();
      publishEvidence();
      return;
-@@ -1877,6 +1919,7 @@ gameApp.onFrame(({ dt }) => {
+@@ -1868,6 +1919,7 @@ gameApp.onFrame(({ dt }) => {
        const laser = runtime.layout.lasers.find((entry) => entry.id === sensor.id);
        runtime.laserAlertPoint = laser ? { x: laser.x, z: laser.z } : runtime.laserAlertPoint;
        pushCue("laser-trip");
@@ -383,7 +485,7 @@ index 40e5b37b7..c0d7bae75 100644
      } else if (sensor.kind === "exit" && runtime.liftedIds.length >= runtime.layout.pedestals.length) {
        floorClearAdvance();
        manualAdvanceFrame();
-@@ -1942,12 +1985,12 @@ gameApp.onFrame(({ dt }) => {
+@@ -1933,12 +1985,12 @@ gameApp.onFrame(({ dt }) => {
      const seen = { x: thiefSnap.x, z: thiefSnap.z };
      const seeingGuard = runtime.guards.find((guard) => guard.id === seenGuard.id);
      if (runtime.detection.value >= ALERT_THRESHOLD || runtime.laserAlertRemaining > 0) {
@@ -398,7 +500,7 @@ index 40e5b37b7..c0d7bae75 100644
        for (const guard of runtime.guards) {
          if (guard.id === seenGuard.id) guard.reportSuspicious(seen);
        }
-@@ -1956,6 +1999,7 @@ gameApp.onFrame(({ dt }) => {
+@@ -1947,6 +1999,7 @@ gameApp.onFrame(({ dt }) => {
    if (runtime.detection.value >= CAUGHT_THRESHOLD) {
      phase = "caught";
      pushCue("caught-sting");
@@ -406,7 +508,7 @@ index 40e5b37b7..c0d7bae75 100644
      showResult("Caught", `The meter filled on floor ${runtime.layout.id}. Detection is the only fail - press R to restart the floor.`);
      syncHud();
      publishEvidence();
-@@ -1982,6 +2026,7 @@ gameApp.onFrame(({ dt }) => {
+@@ -1973,6 +2026,7 @@ gameApp.onFrame(({ dt }) => {
      runtime.liftedIds.push(lifted.id);
      runtime.floorScore += lifted.value;
      pushCue("exhibit-lift");
@@ -414,7 +516,7 @@ index 40e5b37b7..c0d7bae75 100644
      for (const guard of runtime.guards) guard.registerLift(runtime.liftedIds);
      if (completedBeforeFloor + runtime.liftedIds.length >= 3) {
        alarmActive = true;
-@@ -2009,7 +2054,7 @@ gameApp.onFrame(({ dt }) => {
+@@ -2000,7 +2054,7 @@ gameApp.onFrame(({ dt }) => {
      const nearCam = runtime.layout.cameras.some(
        (cam) => Math.hypot(cam.x - thiefSnap.x, cam.z - thiefSnap.z) < 6
      );
@@ -423,7 +525,7 @@ index 40e5b37b7..c0d7bae75 100644
    }
  
    // Animation controllers: real embedded clips switched by gameplay state.
-@@ -2033,33 +2078,7 @@ gameApp.onFrame(({ dt }) => {
+@@ -2024,33 +2078,7 @@ gameApp.onFrame(({ dt }) => {
  
  });
  

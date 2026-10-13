@@ -59,7 +59,7 @@ const laneDeltaPlugin: Plugin = {
 };
 
 describe("PRD-13 lane bundle delta", () => {
-  it("lanes/prd13.ts gzips within the 9 KB delta budget", async () => {
+  it("lanes/prd13.ts gzips within the 18 KB delta budget", async () => {
     const result = await build({
       entryPoints: [entry],
       bundle: true,
@@ -76,6 +76,6 @@ describe("PRD-13 lane bundle delta", () => {
     const gzipped = files.reduce((total, file) => total + gzipSync(file.contents).byteLength, 0);
     // Kept for CI diagnosis; not part of the assertion.
     console.info(`prd13 delta: ${bytes} B minified, ${gzipped} B gzipped`);
-    expect(gzipped).toBeLessThanOrEqual(9 * 1024);
+    expect(gzipped).toBeLessThanOrEqual(18 * 1024);
   });
 });

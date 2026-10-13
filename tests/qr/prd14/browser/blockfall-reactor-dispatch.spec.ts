@@ -142,24 +142,81 @@ test.describe("blockfall-reactor single-path boot (S1)", () => {
   // same conditional pattern as the sibling framing specs. The rig's
   // orthographicSize is derived from the subject height so the measured
   // value centres the band (~0.65) whenever a matrix is available.
-  test("framing holds at desktop and mobile viewports", async ({ page }) => {
+  type ReactorSnapshotWithAudio = ReactorSnapshot & {
+    audio: {
+      synthCues: number;
+      requestedEvents: readonly string[];
+      playedEvents: readonly string[];
+      playedCueCount: number;
+      suppressedCueCount: number;
+      contextState: string;
+      unlocked: boolean;
+    };
+  };
+
+  test("framing holds at desktop viewport (1920x1080)", async ({ page }) => {
     const root = builtDist(APP_DIR);
     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      for (const viewport of [{ width: 1920, height: 1080 }, { width: 390, height: 844 }]) {
-        await page.setViewportSize(viewport);
-        await bootFramed(page, url);
-        const snapshot = await snapshotOf(page);
-        expect(snapshot.framed).toBe(true);
-        expect(snapshot.board.filledCells).toBeGreaterThan(0);
-        expect(snapshot.board.drawCalls).toBeGreaterThan(0);
-        if (snapshot.framing.subjectScreenHeightFraction !== null) {
-          expect(snapshot.framing.subjectScreenHeightFraction).toBeGreaterThanOrEqual(0.55);
-          expect(snapshot.framing.subjectScreenHeightFraction).toBeLessThanOrEqual(0.75);
-        }
+      await page.setViewportSize({ width: 1920, height: 1080 });
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.framed).toBe(true);
+      expect(snapshot.board.filledCells).toBeGreaterThan(0);
+      expect(snapshot.board.drawCalls).toBeGreaterThan(0);
+      if (snapshot.framing.subjectScreenHeightFraction !== null) {
+        expect(snapshot.framing.subjectScreenHeightFraction).toBeGreaterThanOrEqual(0.55);
+        expect(snapshot.framing.subjectScreenHeightFraction).toBeLessThanOrEqual(0.75);
       }
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
+  });
+
+  test("framing holds at mobile viewport (390x844)", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.framed).toBe(true);
+      expect(snapshot.board.filledCells).toBeGreaterThan(0);
+      expect(snapshot.board.drawCalls).toBeGreaterThan(0);
+      if (snapshot.framing.subjectScreenHeightFraction !== null) {
+        expect(snapshot.framing.subjectScreenHeightFraction).toBeGreaterThanOrEqual(0.55);
+        expect(snapshot.framing.subjectScreenHeightFraction).toBeLessThanOrEqual(0.75);
+      }
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
+  });
+
+  test("showcase-blockfall-reactor: S11 audio — synthCues 0 and direction audio cues wired", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await bootFramed(page, url);
+      // Trigger a piece move/drop so at least one direction audio cue is requested on the live page.
+      await page.keyboard.press("ArrowLeft");
+      await page.keyboard.press("Space");
+      await expect.poll(
+        () => page.evaluate(() => ((window as Record<string, unknown>).__aura3dGameSnapshot as ReactorSnapshotWithAudio | undefined)?.audio?.requestedEvents?.length ?? 0),
+        { timeout: 10_000 }
+      ).toBeGreaterThan(0);
+      const snapshot = await page.evaluate(() =>
+        (window as Record<string, unknown>).__aura3dGameSnapshot as ReactorSnapshotWithAudio
+      );
+      expect(snapshot.audio.synthCues).toBe(0);
+      expect(snapshot.audio.requestedEvents.length).toBeGreaterThan(0);
       expect(errors).toEqual([]);
     } finally {
       server.close();

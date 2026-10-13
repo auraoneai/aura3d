@@ -66,6 +66,7 @@ interface BlockfallReactorEvidence {
   // and context fields are the sound object's, verbatim. GameAudio evidence
   // exposes no synth/asset cue split, so none is published.
   readonly audio: {
+    readonly synthCues: number;
     readonly requestedEvents: readonly string[];
     readonly playedEvents: readonly string[];
     readonly playedCueCount: number;
@@ -433,7 +434,7 @@ function buildScene(board: Board) {
 }
 
 function boardFrameNodes(): AuraNodeInput[] {
-  const rail = material.pbr({ color: FRAME_COLOR, roughness: 0.3, metalness: 0.5, emissive: FRAME_ACCENT, emissiveIntensity: 0.22 });
+  const rail = material.pbr({ color: FRAME_COLOR, roughness: 0.3, metalness: 0.5, emissive: FRAME_ACCENT, emissiveIntensity: 0.22, practical: true });
   const railDepth = 0.18;
   const halfRail = railSize / 2;
   return [
@@ -734,6 +735,7 @@ function audioEvidence(): BlockfallReactorEvidence["audio"] {
     if (DIRECTION_AUDIO_EVENTS.has(node.cue)) playedAudioEvents.add(node.cue);
   }
   return {
+    synthCues: sound?.synthCues ?? 0,
     requestedEvents: [...requestedAudioEvents].sort(),
     playedEvents: [...playedAudioEvents].sort(),
     playedCueCount: sound?.playedCueCount ?? 0,

@@ -33,28 +33,34 @@ const MIME: Record<string, string> = {
 };
 
 function serve(dir: string): Promise<{ server: Server; url: string }> {
-  // Rooted at `dir`: resolve+realpath the request so `..` segments and sibling
-  // prefixes ("/apps/foo" vs "/apps/foo-bar") cannot escape the build dir.
+  // Rooted at `dir` with fallback to the route's public/ and repo public/
+  // (matching lib/serve.ts) so `/aura-assets/*` and `/assets/packs/*` resolve.
   const root = realpathSync(resolve(dir));
+  const roots = [
+    root,
+    join(APPS, basename(root), "public"),
+    join(ROOT, "public")
+  ].filter((d) => existsSync(d)).map((d) => realpathSync(resolve(d)));
   const server = createServer((req, res) => {
     const raw = new URL(req.url ?? "/", "http://x").pathname;
     // capture-games builds with `base: /apps/<dir>/` (see lib/serve.ts).
     const base = `/apps/${basename(root)}/`;
     const path = raw.startsWith(base) ? `/${raw.slice(base.length)}` : raw;
-    const file = resolve(root, "." + (path === "/" ? "/index.html" : path));
-    if ((!file.startsWith(root + sep) && file !== root) || !existsSync(file)) {
-      res.writeHead(404); res.end("not found"); return;
-    }
-    try {
-      const real = realpathSync(file);
-      if (!real.startsWith(root + sep) && real !== root) {
-        res.writeHead(404); res.end("not found"); return;
+    const rel = "." + (path === "/" ? "/index.html" : path);
+    for (const r of roots) {
+      const file = resolve(r, rel);
+      if ((!file.startsWith(r + sep) && file !== r) || !existsSync(file)) continue;
+      try {
+        const real = realpathSync(file);
+        if (!real.startsWith(r + sep) && real !== r) continue;
+        res.writeHead(200, { "content-type": MIME[extname(real)] ?? "application/octet-stream" });
+        createReadStream(real).pipe(res);
+        return;
+      } catch {
+        continue;
       }
-    } catch {
-      res.writeHead(404); res.end("not found"); return;
     }
-    res.writeHead(200, { "content-type": MIME[extname(file)] ?? "application/octet-stream" });
-    createReadStream(file).pipe(res);
+    res.writeHead(404); res.end("not found");
   });
   return new Promise((resolve) => {
     server.listen(0, "127.0.0.1", () => {
@@ -67,22 +73,30 @@ function serve(dir: string): Promise<{ server: Server; url: string }> {
 
 interface GamesEntry {
   readonly id: string;
+  readonly appDir?: string;
   readonly dir?: string;
   readonly qrFlags?: readonly string[];
   readonly artDirection?: string;
   readonly budgets?: { readonly drawCalls?: Record<string, number> };
 }
 
-function routeEntries(): readonly { appDir: string; entry: GamesEntry }[] {
+function routeEntries(): readonly { appDir: string; entry: GamesEntry; singlePath: boolean }[] {
   const games = (JSON.parse(readFileSync(GAMES_JSON, "utf8")) as { games: GamesEntry[] }).games;
   const wanted = (process.env.A3D_QR_ROUTES ?? "").split(",").map((s) => s.trim()).filter(Boolean);
   return games
     .filter((g) => {
-      const dir = g.dir ?? g.id;
+      const dir = g.appDir ?? g.dir ?? g.id;
       const hasV2 = existsSync(join(APPS, dir, "src", "v2"));
-      return hasV2 && (wanted.length === 0 || wanted.includes(dir) || wanted.includes(g.id));
+      const singlePath = !hasV2
+        && existsSync(join(APPS, dir, "art", "direction.ts"))
+        && existsSync(join(APPS, dir, "src", "main.ts"));
+      return (hasV2 || singlePath) && (wanted.length === 0 || wanted.includes(dir) || wanted.includes(g.id));
     })
-    .map((entry) => ({ appDir: entry.dir ?? entry.id, entry }));
+    .map((entry) => {
+      const appDir = entry.appDir ?? entry.dir ?? entry.id;
+      const singlePath = !existsSync(join(APPS, appDir, "src", "v2"));
+      return { appDir, entry, singlePath };
+    });
 }
 
 /** Serializes beacon.app.scene + diagnostics out of the mounted page. */
@@ -104,11 +118,11 @@ async function importDirection(file: string): Promise<GameArtDirection | undefin
 }
 
 test.describe("art-direction runtime audit (T1.9)", () => {
-  // Empty when no apps/*/src/v2 tree exists (wave ports not landed): the
+  // Empty when no apps/*/src/v2 or single-path tree exists: the
   // describe registers no tests and the suite stays green until T2.x.
   const routes = routeEntries();
 
-  for (const { appDir, entry } of routes) {
+  for (const { appDir, entry, singlePath } of routes) {
     test(`route ${appDir}: no auditArtDirection/lookLint violations`, async ({ page }) => {
       const buildDirs = [
         join(ROOT, "tools", "quality-rebuild-capture", ".build", "site", "apps", appDir),
@@ -120,12 +134,20 @@ test.describe("art-direction runtime audit (T1.9)", () => {
 
       const { server, url } = await serve(root!);
       try {
-        // games.json qrFlags is the URL contract (route-<id> + engine short
-        // flags); falling back to "all" never selected the v2 route.
-        const flags = (entry.qrFlags ?? []).join(",");
-        expect(flags, `${appDir}: games.json has no qrFlags`).not.toBe("");
-        await page.goto(`${url}/?a3d-qr=${flags}`);
-        await expect.poll(async () => page.evaluate(() => Boolean((window as { __AURA3D_GAME__?: unknown }).__AURA3D_GAME__))).toBe(true);
+        if (singlePath) {
+          await page.goto(`${url}/`);
+          await expect.poll(
+            async () => page.evaluate(() => ((window as { __AURA3D_GAME__?: { state?: string } }).__AURA3D_GAME__?.state) === "playing"),
+            { timeout: 30_000 }
+          ).toBe(true);
+        } else {
+          // games.json qrFlags is the URL contract (route-<id> + engine short
+          // flags); falling back to "all" never selected the v2 route.
+          const flags = (entry.qrFlags ?? []).join(",");
+          expect(flags, `${appDir}: games.json has no qrFlags`).not.toBe("");
+          await page.goto(`${url}/?a3d-qr=${flags}`);
+          await expect.poll(async () => page.evaluate(() => Boolean((window as { __AURA3D_GAME__?: unknown }).__AURA3D_GAME__))).toBe(true);
+        }
 
         const mounted = (await readMountedSnapshot(page)) as {
           scene: AuraSceneSnapshot | null;

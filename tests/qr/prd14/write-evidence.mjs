@@ -113,8 +113,8 @@ for (const dir of dirs) {
     S9: verdict(byFile(/budgets\.spec\.ts$/)),
     // S10: s10-assets.spec.ts has no APP_DIR; its titles start with `<appDir>:`.
     S10: s10,
-    // S11: dual-path only (see header) — single-path stays "missing".
-    S11: singlePath ? verdict([]) : verdict(byTitle(/-v2\.spec\.ts$/, /S11 audio/))
+    // S11: single-path routes assert S11 audio in `*-dispatch.spec.ts`; dual-path in `*-v2.spec.ts`.
+    S11: singlePath ? verdict(byTitle(playSpec, /S11 audio/)) : verdict(byTitle(/-v2\.spec\.ts$/, /S11 audio/))
   };
   s.S5.status = s.S5.static.status === "pass" && s.S5.runtime.status === "pass" ? "pass"
     : [s.S5.static.status, s.S5.runtime.status].includes("fail") ? "fail" : "missing";

@@ -60,7 +60,8 @@ const SP_TITLES = {
   boot: "boots framed with a sized canvas and no console errors",
   s2: "boots to playing: framed snapshot with an active falling piece",
   s6: "appliedLook resolves to neon-arcade on the live page",
-  s7: "framing holds at desktop and mobile viewports"
+  s7: "framing holds at desktop viewport (1920x1080)",
+  s11: "showcase-blockfall-reactor: S11 audio — synthCues 0 and direction audio cues wired"
 };
 function singlePathBrowserReport(overrides: Record<string, string> = {}) {
   const spec = (file: string, titles: string[]) => ({
@@ -69,7 +70,7 @@ function singlePathBrowserReport(overrides: Record<string, string> = {}) {
   });
   return {
     suites: [
-      spec("blockfall-reactor-dispatch.spec.ts", [SP_TITLES.boot, SP_TITLES.s2, SP_TITLES.s6, SP_TITLES.s7]),
+      spec("blockfall-reactor-dispatch.spec.ts", [SP_TITLES.boot, SP_TITLES.s2, SP_TITLES.s6, SP_TITLES.s7, SP_TITLES.s11]),
       spec("art-direction-audit.spec.ts", ["route showcase-blockfall-reactor: no auditArtDirection/lookLint violations"]),
       spec("budgets.spec.ts", ["showcase-blockfall-reactor: S8 Medium draws ≤ budget, 0 readbacks; S9 p95 rAF ≤ 50 ms"]),
       spec("s10-assets.spec.ts", [
@@ -171,16 +172,20 @@ describe("write-evidence.mjs (14-S1..S11)", () => {
 });
 
 describe("write-evidence.mjs single-path route shape", () => {
-  it("maps S2/S6/S7 from dispatch-spec titles; S11 stays missing (no honest producer)", () => {
+  it("maps S2/S6/S7/S11 from dispatch-spec titles and exits 0 when all pass", () => {
     const { code, report } = runSinglePath(singlePathBrowserReport());
-    expect(report.s.S2?.status).toBe("pass");
-    expect(report.s.S6?.status).toBe("pass");
-    expect(report.s.S7?.status).toBe("pass");
-    for (const row of ["S1", "S3", "S4", "S5", "S8", "S9", "S10"]) {
+    expect(report.summary).toBe("S1-S11 pass");
+    for (const row of ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11"]) {
       expect(report.s[row]?.status, row).toBe("pass");
     }
-    // S11's claim (synthCues 0, every audio[] event played) has no
-    // single-path playback evidence; the row must not be silently passed.
+    expect(code).toBe(0);
+  });
+
+  it("reports S11 missing when no single-path S11 audio test is present", () => {
+    const browser = singlePathBrowserReport();
+    const suite = browser.suites.find((s) => s.file === "blockfall-reactor-dispatch.spec.ts")!;
+    suite.specs = suite.specs.filter((s) => !s.title.includes("S11 audio"));
+    const { code, report } = runSinglePath(browser);
     expect(report.s.S11?.status).toBe("missing");
     expect(code).toBe(1);
   });
@@ -197,6 +202,7 @@ describe("write-evidence.mjs single-path route shape", () => {
     expect(report.s.S2?.status).toBe("missing");
     expect(report.s.S6?.status).toBe("missing");
     expect(report.s.S7?.status).toBe("missing");
+    expect(report.s.S11?.status).toBe("missing");
     expect(code).toBe(1);
   });
 });
