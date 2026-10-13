@@ -500,6 +500,25 @@ describe("E3 step 4: frozen-family stacked terms suppressed at the bind layer", 
     expect(uniforms.get("u_environmentIntensity")).toBe(0.7);
   });
 
+  it("frozen conjunction, procedural-only (no sampled map): procedural diffuse and specular stay active (> 0) and clear when sampled map is bound", () => {
+    const unsampledUniforms = new Map<string, unknown>();
+    applyEnvironmentLightingUniforms(
+      bundleEnv({ environmentMapTexture: undefined }) as never,
+      item, frozenShader, unsampledUniforms as never, { conjunction: true, generated: false }
+    );
+    expect(unsampledUniforms.get("u_environmentIntensity")).toBe(0.36);
+    expect(unsampledUniforms.get("u_environmentMapIntensity")).toBe(0.5);
+    expect(unsampledUniforms.get("u_environmentSpecularIntensity")).toBe(0.86);
+
+    const sampledUniforms = new Map<string, unknown>();
+    applyEnvironmentLightingUniforms(
+      bundleEnv() as never,
+      item, frozenShader, sampledUniforms as never, { conjunction: true, generated: false }
+    );
+    expect(sampledUniforms.get("u_environmentMapIntensity")).toBe(0);
+    expect(sampledUniforms.get("u_environmentSpecularIntensity")).toBe(0);
+  });
+
   it("frozen conjunction: absent sampled intensities bind 0, never the legacy 1 / 0.5 defaults", () => {
     const env = bundleEnv();
     delete (env as Record<string, unknown>).environmentMapIntensity;

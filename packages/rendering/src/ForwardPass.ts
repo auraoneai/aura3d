@@ -1319,17 +1319,20 @@ export function applyEnvironmentLightingUniforms(
   const sampledEnvironment = withItemEnvironmentCube(environment, item);
   applySampledEnvironmentMapUniforms(sampledEnvironment, item, shader, uniforms, frozenE3Conjunction);
   if (frozenE3Conjunction) {
-    // E3 step 4 frozen suppression (see header note): procedural terms
-    // zeroed after their validating bind, so conjunction-off packets and
+    // E3 step 4 frozen suppression (see header note): when a sampled
+    // environment is present, procedural terms are zeroed after their
+    // validating bind (matching `#ifndef A3D_ENV_SAMPLE` in the generated
+    // shader), so conjunction-off packets, procedural-only fallbacks, and
     // error behavior are unchanged. The ambient scalar is a stacked
     // duplicate of the sampled knob only for non-probe bundles with a
     // sampled term: probe-path lighting carries the authored ambient in
     // `intensity` (additive outside IBL, F-02-01), and with no sampled
-    // term the ambient is the sole diffuse term (authored-ambient and
-    // renderer-default lighting) — both keep it.
-    clearProceduralEnvironmentMapUniforms(shader, uniforms);
+    // term the ambient and procedural terms remain active.
     const sampledPresent = sampledEnvironment.environmentMapTexture !== undefined
       || sampledEnvironment.environmentCubeMapTexture !== undefined;
+    if (sampledPresent) {
+      clearProceduralEnvironmentMapUniforms(shader, uniforms);
+    }
     if (sampledPresent && !environment.environmentProbe) {
       uniforms.set("u_environmentIntensity", 0);
     }
