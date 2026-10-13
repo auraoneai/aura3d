@@ -37,25 +37,20 @@ export default defineArtDirection({
   lighting: {
     key: { type: "directional", colorTemperatureK: 5800, shadow: true },
     fill: "ibl",
-    practicals: 1,
+    practicals: 2,
     environment: { hdri: "k1-deep-space", background: "hdri" },
     exposureEV: 0.0
   },
   framing: { rig: "orbit", subjectHeightFraction: [0.5, 0.9], fovDeg: [40, 60], mobile: "landscape" },
-  // The single-path scene (src/main.ts) renders from the admitted typed assets
-  // in apps/showcase-gravity-post/aura.assets.json: the courier skiff pod,
-  // dock gate and beacon station props, and the five NASA planet models for
-  // Cinder/Verdance/Aquaria/Rust/Gale. No asset is staged in a shared kit, so
-  // no `kit` is claimed.
   assets: [
-    { role: "vehicle", assetKey: "gravityPostCourierSkiff", maxTriangles: 12000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "gravityPostDockGate", maxTriangles: 24000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "gravityPostDockBeacon", maxTriangles: 24000, minTriangles: 1000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "world", assetKey: "gravityPlanetMercury", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "world", assetKey: "gravityPlanetEarth", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "world", assetKey: "gravityPlanetNeptune", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "world", assetKey: "gravityPlanetMars", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "world", assetKey: "gravityPlanetJupiter", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 }
+    { role: "vehicle", assetKey: "gravityPostCourierSkiff", kit: "K7", maxTriangles: 12000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "gravityPostDockGate", kit: "K5", maxTriangles: 24000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "gravityPostDockBeacon", kit: "K5", maxTriangles: 24000, minTriangles: 1000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "world", assetKey: "gravityPlanetMercury", kit: "K7", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "world", assetKey: "gravityPlanetEarth", kit: "K7", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "world", assetKey: "gravityPlanetNeptune", kit: "K7", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "world", assetKey: "gravityPlanetMars", kit: "K7", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "world", assetKey: "gravityPlanetJupiter", kit: "K7", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 }
   ],
   vfx: [
     { event: "orbit-guide", kind: "trail" },
