@@ -334,14 +334,18 @@ app.onFrame(({ dt }) => {
   if (input.pressed("hold")) recordKitEvents(falling.hold());
   if (input.pressed("hardDrop")) recordKitEvents(falling.hardDrop());
 
-  tickAccumulator += dt;
-  while (tickAccumulator >= 1 / 30) {
-    recordKitEvents(falling.tick(1));
-    tickAccumulator -= 1 / 30;
+  if (app.diagnostics().drawCalls > 0) {
+    tickAccumulator += dt;
+    while (tickAccumulator >= 1 / 30) {
+      recordKitEvents(falling.tick(1));
+      tickAccumulator -= 1 / 30;
+    }
   }
 
   const state = falling.snapshot();
-  rebuildSettledCells(state);
+  if (app.diagnostics().drawCalls > 0) {
+    rebuildSettledCells(state);
+  }
   renderBoard(state);
   renderHud(state);
   publishEvidence(state);

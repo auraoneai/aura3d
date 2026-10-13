@@ -30,7 +30,7 @@ export function fxPoolSnapshotNodes(tier: FxQualityTier = "high"): AuraSceneSnap
     const preset = FX_PRESETS[kind];
     const options = {
       name: fxPoolNodeName(kind),
-      material: material.emissive({ name: `a3g fx ${kind}`, color: preset.color, emissive: preset.color, emissiveIntensity: 1.6 }),
+      material: material.emissive({ name: `a3g fx ${kind}`, color: preset.color, emissive: preset.color, emissiveIntensity: 1.6, practical: true }),
       castShadow: false,
       receiveShadow: false,
       transforms: Array.from({ length: cap }, () => ({ position: [0, 0, 0] as const, scale: 0 })),

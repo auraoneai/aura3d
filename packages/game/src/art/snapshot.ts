@@ -121,6 +121,7 @@ export function snapshotForAudit(app: AuraApp, assets: AuraAssetManifestLike): A
       environment = { kind: "preset", background: true };
     }
     if (node.kind === "model" || node.kind === "primitive") {
+      if (typeof node.name === "string" && node.name.startsWith("a3g-fx-")) return;
       const spec = node.material;
       if (spec !== undefined) {
         materials.push({

@@ -416,6 +416,7 @@
    "owner": "lane",
    "paths": [
     "packages/{rendering,engine,assets,animation,audio,aura3d-cli}/src/lanes/prdNN.ts",
+    "packages/{rendering,engine,assets,animation,audio,aura3d-cli}/src/lanes/prdNN/",
     "packages/engine/src/agent-api/compiler/diagnosticOnly.prdNN.ts",
     "packages/aura3d-cli/src/commands/prdNN/",
     "benchmarks/quality-rebuild/scenes/prdNN/",

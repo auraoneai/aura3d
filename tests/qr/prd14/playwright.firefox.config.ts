@@ -14,7 +14,13 @@ export default defineConfig({
   use: {
     browserName: "firefox",
     headless: true,
-    viewport: { width: 1920, height: 1080 }
+    viewport: { width: 1920, height: 1080 },
+    launchOptions: {
+      firefoxUserPrefs: {
+        "webgl.force-enabled": true,
+        "webgl.disabled": false
+      }
+    }
   },
   // P-22: a skipped test fails the run on CI (no-skip-reporter.ts). The JSON
   // report path is relative to this config (tests/qr/prd14/reports/).

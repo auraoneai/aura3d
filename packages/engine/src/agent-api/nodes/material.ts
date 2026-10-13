@@ -79,7 +79,8 @@ export const material = lazyNamespace(() => ({
     emissive: options.emissive ?? options.color ?? "#38d6ff",
     roughness: options.roughness ?? 0.35,
     metallic: options.metallic ?? options.metalness ?? 0,
-    metalness: options.metalness ?? options.metallic ?? 0
+    metalness: options.metalness ?? options.metallic ?? 0,
+    practical: options.practical ?? true
   }, options),
   metal: (options: AuraMaterialSpec = {}): AuraMaterialSpec => resolveMaterialSpecDefaults({
     color: options.color ?? "#dce6ee",
