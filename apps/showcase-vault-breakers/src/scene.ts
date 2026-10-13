@@ -32,36 +32,152 @@ export const CAMERA_POSITION: readonly [number, number, number] = [0, 5.15, 7.35
 export const CAMERA_TARGET: readonly [number, number, number] = [0, -0.05, -0.38];
 export const CAMERA_FOV = 50;
 
-const FELT = material.pbr({ color: "#12241c", roughness: 0.42, metalness: 0.08 });
-const SHELL = material.pbr({ color: "#171120", roughness: 0.5, metalness: 0.25 });
-const RAIL = material.pbr({ color: "#2a2030", roughness: 0.35, metalness: 0.5, emissive: "#ffd24d", emissiveIntensity: 0.08 });
-const FLOOR = material.pbr({ color: "#0b0a0e", roughness: 0.55, metalness: 0.1 });
-export const TARGET_ON = material.emissive({ name: "target insert lit", color: "#ffb830", emissive: "#ff6a00", emissiveIntensity: 1.4 });
-export const TARGET_DOWN = material.emissive({ name: "target insert down", color: "#1e1824", emissive: "#28f5cc", emissiveIntensity: 0.35 });
-export const BANK_LAMP_ON = material.emissive({ name: "bank lamp on", color: "#087d77", emissive: "#28f5cc", emissiveIntensity: 2.2 });
-export const BANK_LAMP_OFF = material.emissive({ name: "bank lamp off", color: "#1e1824", emissive: "#805030", emissiveIntensity: 0.22 });
+export const PLAYFIELD_BED = material.reflectiveFloor({
+  name: "playfield lacquered bed",
+  color: "#0b1120",
+  roughness: 0.1,
+  metallic: 0.42,
+  clearcoat: 0.9,
+  clearcoatRoughness: 0.04
+});
+export const CABINET_LACQUER = material.lacquer({
+  name: "cabinet lacquer",
+  color: "#1e1b4b",
+  roughness: 0.22,
+  clearcoat: 1
+});
+export const VAULT_BRASS_RAIL = material.brushedMetal({
+  name: "vault brass rail",
+  color: "#eab308",
+  roughness: 0.22,
+  anisotropy: 0.85
+});
+export const PINBALL_CHROME = material.chrome({
+  name: "pinball mirror steel",
+  color: "#f8fafc",
+  roughness: 0.02
+});
+export const FLIPPER_CAR_PAINT = material.carPaint({
+  name: "flipper car paint",
+  color: "#ef4444",
+  clearcoat: 1
+});
+export const FLIPPER_TIP_RUBBER = material.blackRubber({
+  name: "flipper tip rubber",
+  color: "#111827",
+  roughness: 0.92
+});
+export const GUIDE_RAMP_GLASS = material.frostedGlass({
+  name: "guide ramp frosted glass",
+  color: "#38bdf8",
+  opacity: 0.42
+});
+const FELT = PLAYFIELD_BED;
+const SHELL = CABINET_LACQUER;
+const RAIL = VAULT_BRASS_RAIL;
+const FLOOR = material.reflectiveFloor({
+  name: "arcade floor",
+  color: "#060913",
+  roughness: 0.18,
+  metallic: 0.3,
+  clearcoat: 0.72,
+  clearcoatRoughness: 0.06
+});
+const BUMPER_NEON_RING = material.neon({
+  name: "bumper neon ring",
+  color: "#1e1b4b",
+  emissive: "#ffd24d",
+  emissiveIntensity: 2.4
+});
+const SLING_NEON_ACCENT = material.neon({
+  name: "slingshot neon accent",
+  color: "#1e1b4b",
+  emissive: "#ff6a00",
+  emissiveIntensity: 2.1
+});
+const VAULT_PORTAL_NEON = material.neon({
+  name: "vault portal neon",
+  color: "#0b1120",
+  emissive: "#38bdf8",
+  emissiveIntensity: 2.3
+});
+export const TARGET_ON = material.emissive({ name: "target insert lit", color: "#ffb830", emissive: "#ff6a00", emissiveIntensity: 1.8 });
+export const TARGET_DOWN = material.emissive({ name: "target insert down", color: "#1e1824", emissive: "#28f5cc", emissiveIntensity: 0.45 });
+export const BANK_LAMP_ON = material.emissive({ name: "bank lamp on", color: "#087d77", emissive: "#28f5cc", emissiveIntensity: 2.5 });
+export const BANK_LAMP_OFF = material.emissive({ name: "bank lamp off", color: "#1e1824", emissive: "#805030", emissiveIntensity: 0.28 });
 
-function box(name: string, mat: AuraMaterialSpec, at: readonly [number, number, number], size: readonly [number, number, number]): AuraNodeInput {
-  return primitives.box({ name, material: mat, castShadow: false, receiveShadow: true })
+function box(
+  name: string,
+  mat: AuraMaterialSpec,
+  at: readonly [number, number, number],
+  size: readonly [number, number, number],
+  rotY = 0
+): AuraNodeInput {
+  return primitives.box({ name, material: mat, castShadow: true, receiveShadow: true })
+    .position(at[0], at[1], at[2])
+    .rotate(0, rotY, 0)
+    .scale([size[0], size[1], size[2]]);
+}
+
+function cylinder(
+  name: string,
+  mat: AuraMaterialSpec,
+  at: readonly [number, number, number],
+  size: readonly [number, number, number]
+): AuraNodeInput {
+  return primitives.cylinder({ name, material: mat, castShadow: true, receiveShadow: true })
     .position(at[0], at[1], at[2])
     .scale([size[0], size[1], size[2]]);
 }
 
-/** Cabinet shell + felt fitted to the salvaged physics box. */
+/** Cabinet shell + lacquered reflective playfield bed + brass rails + frosted-glass guide ramps. */
 function shellNodes(): AuraNodeInput[] {
+  const y = VISUAL_Y_OFFSET;
   return [
-    box("arcade-floor", FLOOR, [0, -1.15, 0], [16, 0.1, 16]),
-    // Felt: physics half-extents [2.85, 0.1, 4.15] at y=-0.1 -> top at sim 0.
-    box("playfield-felt", FELT, [0, VISUAL_Y_OFFSET - 0.06, 0], [5.7, 0.12, 8.3]),
-    box("cabinet-left-rail", RAIL, [-2.85, VISUAL_Y_OFFSET + 0.2, 0], [0.3, 0.4, 8.6]),
-    box("cabinet-right-rail", RAIL, [2.85, VISUAL_Y_OFFSET + 0.2, 0], [0.3, 0.4, 8.6]),
-    box("cabinet-back-rail", RAIL, [0, VISUAL_Y_OFFSET + 0.2, -4.15], [6.0, 0.4, 0.3]),
-    // Apron segments leave the physics drain gap (x in [-0.7, 0.7]) open.
-    box("cabinet-apron-left", SHELL, [-1.8, VISUAL_Y_OFFSET + 0.1, 4.15], [2.2, 0.2, 0.3]),
-    box("cabinet-apron-right", SHELL, [1.8, VISUAL_Y_OFFSET + 0.1, 4.15], [2.2, 0.2, 0.3]),
-    box("cabinet-body-left", SHELL, [-3.1, -0.5, 0], [0.5, 1.4, 8.8]),
-    box("cabinet-body-right", SHELL, [3.1, -0.5, 0], [0.5, 1.4, 8.8]),
-    box("cabinet-backbox", SHELL, [0, 0.9, -4.45], [6.2, 2.2, 0.4])
+    primitives.box({ name: "arcade-floor", material: FLOOR, castShadow: false, receiveShadow: true })
+      .position(0, -1.15, 0)
+      .scale([16, 0.1, 16]),
+    // Playfield bed: lacquered reflective surface under the mechanisms assembly.
+    primitives.box({ name: "playfield-felt", material: FELT, castShadow: false, receiveShadow: true })
+      .position(0, y - 0.06, 0)
+      .scale([5.7, 0.12, 8.3]),
+    // Brushed gold/brass cabinet rails & vault trim.
+    box("cabinet-left-rail", RAIL, [-2.85, y + 0.22, 0], [0.3, 0.42, 8.6]),
+    box("cabinet-right-rail", RAIL, [2.85, y + 0.22, 0], [0.3, 0.42, 8.6]),
+    box("cabinet-back-rail", RAIL, [0, y + 0.24, -4.15], [6.0, 0.45, 0.32]),
+    box("shooter-lane-rail", RAIL, [2.2, y + 0.16, 0.7], [0.14, 0.28, 6.5]),
+    box("vault-arch-left", RAIL, [-0.85, y + 0.28, -3.55], [0.16, 0.52, 0.68]),
+    box("vault-arch-right", RAIL, [0.85, y + 0.28, -3.55], [0.16, 0.52, 0.68]),
+    box("vault-arch-crown", RAIL, [0, y + 0.58, -3.32], [1.86, 0.16, 0.28]),
+    box("vault-portal-trim", VAULT_PORTAL_NEON, [0, y + 0.48, -3.28], [1.45, 0.08, 0.12]),
+    // High-gloss lacquered cabinet walls, apron & backbox.
+    box("cabinet-apron-left", SHELL, [-1.8, y + 0.12, 4.15], [2.2, 0.24, 0.34]),
+    box("cabinet-apron-right", SHELL, [1.8, y + 0.12, 4.15], [2.2, 0.24, 0.34]),
+    box("cabinet-body-left", SHELL, [-3.1, -0.48, 0], [0.52, 1.44, 8.8]),
+    box("cabinet-body-right", SHELL, [3.1, -0.48, 0], [0.52, 1.44, 8.8]),
+    box("cabinet-backbox", SHELL, [0, 0.92, -4.45], [6.2, 2.24, 0.42]),
+    // Translucent frosted-glass habitrail & orbit/inlane guide ramps.
+    box("guide-ramp-habitrail", GUIDE_RAMP_GLASS, [2.35, y + 0.22, -3.15], [1.5, 0.34, 0.18], -0.785),
+    box("guide-ramp-orbit-left", GUIDE_RAMP_GLASS, [-1.85, y + 0.22, -2.8], [1.78, 0.34, 0.16], -2.03),
+    box("guide-ramp-inlane-left", GUIDE_RAMP_GLASS, [-1.65, y + 0.2, 3.72], [1.62, 0.3, 0.14], -0.245),
+    box("guide-ramp-inlane-right", GUIDE_RAMP_GLASS, [1.65, y + 0.2, 3.72], [1.62, 0.3, 0.14], 0.245),
+    // Pop-bumper chrome crowns + neon bumper rings.
+    cylinder("bumper-crown-left", PINBALL_CHROME, [-0.9, y + 0.18, -1.7], [0.52, 0.24, 0.52]),
+    cylinder("bumper-ring-left", BUMPER_NEON_RING, [-0.9, y + 0.31, -1.7], [0.58, 0.06, 0.58]),
+    cylinder("bumper-crown-right", PINBALL_CHROME, [0.9, y + 0.18, -1.7], [0.52, 0.24, 0.52]),
+    cylinder("bumper-ring-right", BUMPER_NEON_RING, [0.9, y + 0.31, -1.7], [0.58, 0.06, 0.58]),
+    cylinder("bumper-crown-center", PINBALL_CHROME, [0, y + 0.18, -0.7], [0.52, 0.24, 0.52]),
+    cylinder("bumper-ring-center", BUMPER_NEON_RING, [0, y + 0.31, -0.7], [0.58, 0.06, 0.58]),
+    // Slingshot black-rubber rebound cushions + neon accent strips.
+    box("sling-rubber-left", FLIPPER_TIP_RUBBER, [-1.2, y + 0.14, 2.1], [1.28, 0.22, 0.16], -0.67),
+    box("sling-neon-left", SLING_NEON_ACCENT, [-1.2, y + 0.27, 2.1], [1.22, 0.06, 0.12], -0.67),
+    box("sling-rubber-right", FLIPPER_TIP_RUBBER, [1.2, y + 0.14, 2.1], [1.28, 0.22, 0.16], 0.67),
+    box("sling-neon-right", SLING_NEON_ACCENT, [1.2, y + 0.27, 2.1], [1.22, 0.06, 0.12], 0.67),
+    // Black-rubber flipper tip cushions synced with left/right flipper bats.
+    cylinder("flipper-left-tip", FLIPPER_TIP_RUBBER, [-0.2, y + 0.16, 2.68], [0.18, 0.2, 0.18])
+      .runtime(game.runtimeNode("flipper-left-tip", { tags: ["flipper-tip", "physics-synced"] })),
+    cylinder("flipper-right-tip", FLIPPER_TIP_RUBBER, [0.2, y + 0.16, 2.68], [0.18, 0.2, 0.18])
+      .runtime(game.runtimeNode("flipper-right-tip", { tags: ["flipper-tip", "physics-synced"] }))
   ];
 }
 
@@ -71,17 +187,26 @@ function shellNodes(): AuraNodeInput[] {
 function visualNode(v: PropVisual): AuraNodeInput {
   const y = v.position[1] + VISUAL_Y_OFFSET;
   if (v.source === "model") {
-    const asset = v.typedAsset === "vaultBreakersFlipper"
+    const isFlipper = v.typedAsset === "vaultBreakersFlipper";
+    const isVaultDoor = v.typedAsset === "vaultBreakersVaultDoor";
+    const asset = isFlipper
       ? assets.vaultBreakersFlipperReal
-      : v.typedAsset === "vaultBreakersVaultDoor"
+      : isVaultDoor
         ? assets.vaultBreakersVaultDoor
         : assets.vaultBreakersBall;
+    const mat = isFlipper
+      ? FLIPPER_CAR_PAINT
+      : isVaultDoor
+        ? undefined
+        : PINBALL_CHROME;
     return model(asset, {
       name: v.name,
       role: v.typedAsset === "vaultBreakersBall" ? "primaryCharacter" : "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: v.targetMaxDimension ?? 1,
-      castShadow: true
+      targetMaxDimension: isVaultDoor ? 0.72 : (v.targetMaxDimension ?? 1),
+      ...(mat ? { material: mat } : {}),
+      castShadow: true,
+      receiveShadow: true
     })
       .position(v.position[0], y, v.position[2])
       .rotate(v.rotation.x, v.rotation.y, v.rotation.z)
@@ -90,10 +215,10 @@ function visualNode(v: PropVisual): AuraNodeInput {
   // The sim registers target inserts as 0.01 m handle placeholders (the
   // mechanisms GLB carries their faces); the fresh scene authors a visible
   // insert at the same sim position so target-down state reads in-world.
-  return primitives.box({ name: v.name, material: TARGET_ON })
+  return primitives.box({ name: v.name, material: TARGET_ON, castShadow: true, receiveShadow: true })
     .position(v.position[0], y, v.position[2])
     .rotate(v.rotation.x, v.rotation.y, v.rotation.z)
-    .scale([0.24, 0.32, 0.05])
+    .scale([0.26, 0.34, 0.07])
     .runtime(game.runtimeNode(v.name, { tags: ["target-insert"] }));
 }
 
@@ -107,17 +232,30 @@ export function buildVaultScene(sim: TableSimulation) {
       role: "primaryWorld",
       scaleMode: "fit",
       targetMaxDimension: 5.05,
+      castShadow: true,
       receiveShadow: true
     }).position(0, 0.34, 0),
+    // Plunger-lane captive mirror-steel ball so the chrome pinball reads on the
+    // shooter lane even before the first serve.
+    model(assets.vaultBreakersBall, {
+      name: "plunger-captive-ball",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.3,
+      material: PINBALL_CHROME,
+      castShadow: true,
+      receiveShadow: true
+    }).position(2.44, VISUAL_Y_OFFSET + 0.15, 3.25),
     ...sim.visuals.map(visualNode),
     // Five bank lamps over the backbox rail (runtime: banksDown swaps them).
     ...Array.from({ length: 5 }, (_, index) =>
       primitives.box({ name: `bank-status-${index}`, material: BANK_LAMP_OFF })
         .position(-1.4 + index * 0.7, 1.5, -4.2)
-        .scale([0.28, 0.16, 0.12])
+        .scale([0.3, 0.18, 0.14])
         .runtime(game.runtimeNode(`bank-status-${index}`, { tags: ["mission-progress", "bank-lamp"] }))
     ),
-    // Playfield practical spot (looks.preset(LOOK_ID) provides the 1 shadowed key).
+    // Playfield practical lights (looks.preset(LOOK_ID) provides the 1 shadowed key;
+    // these 3 unshadowed practicals stay within art/direction.ts practicals: 4).
     lights.spot({
       name: "playfield key spot",
       color: "#ffe2b8",
@@ -127,6 +265,24 @@ export function buildVaultScene(sim: TableSimulation) {
       angle: 0.82,
       penumbra: 0.55,
       decay: 1.7,
+      shadow: false
+    }).toJSON(),
+    lights.point({
+      name: "vault chamber practical",
+      color: "#38bdf8",
+      intensity: 26,
+      position: [0, 1.4, -2.9],
+      distance: 5.5,
+      decay: 1.6,
+      shadow: false
+    }).toJSON(),
+    lights.point({
+      name: "flipper deck practical",
+      color: "#ffd24d",
+      intensity: 22,
+      position: [0, 1.3, 2.75],
+      distance: 5.0,
+      decay: 1.6,
       shadow: false
     }).toJSON()
   ];
@@ -155,12 +311,23 @@ export function vaultPoseTransforms(sim: TableSimulation): VaultPoseTransform[] 
   const out: VaultPoseTransform[] = [];
   for (const pose of sim.poses()) {
     if (pose.name.startsWith("ball-")) continue; // balls come from kinematics below
+    const euler = quatToEuler(pose.rotation);
     out.push({
       name: pose.name,
       position: [pose.position[0], pose.position[1] + VISUAL_Y_OFFSET, pose.position[2]],
-      rotation: quatToEuler(pose.rotation),
+      rotation: euler,
       visible: true
     });
+    if (pose.name === "flipper-left" || pose.name === "flipper-right") {
+      const tipX = pose.position[0] + Math.cos(euler.y) * 0.38;
+      const tipZ = pose.position[2] - Math.sin(euler.y) * 0.38;
+      out.push({
+        name: `${pose.name}-tip`,
+        position: [tipX, pose.position[1] + VISUAL_Y_OFFSET, tipZ],
+        rotation: euler,
+        visible: true
+      });
+    }
   }
   // All eight pre-registered ball nodes get a transform every frame: solver
   // balls pose from kinematics(), and indices the sim has not created yet

@@ -12,7 +12,32 @@ import { createTableSimulation } from "./gameplay/table";
 import { VaultFlow, type VaultGameEvent } from "./gameplay/ball-flow";
 import { FlipperController } from "./gameplay/flippers";
 import { PlungerController } from "./gameplay/plunger";
-import { BANK_LAMP_OFF, BANK_LAMP_ON, buildVaultScene, LOOK_ID, TARGET_DOWN, TARGET_ON, vaultPoseTransforms } from "./scene";
+import {
+  BANK_LAMP_OFF,
+  BANK_LAMP_ON,
+  buildVaultScene,
+  CABINET_LACQUER,
+  FLIPPER_CAR_PAINT,
+  FLIPPER_TIP_RUBBER,
+  GUIDE_RAMP_GLASS,
+  LOOK_ID,
+  PINBALL_CHROME,
+  PLAYFIELD_BED,
+  TARGET_DOWN,
+  TARGET_ON,
+  VAULT_BRASS_RAIL,
+  vaultPoseTransforms
+} from "./scene";
+
+export {
+  CABINET_LACQUER,
+  FLIPPER_CAR_PAINT,
+  FLIPPER_TIP_RUBBER,
+  GUIDE_RAMP_GLASS,
+  PINBALL_CHROME,
+  PLAYFIELD_BED,
+  VAULT_BRASS_RAIL
+};
 
 declare global {
   interface Window {

@@ -62,4 +62,24 @@ describe("vault breakers fresh scene builder (B4 port)", () => {
     };
     expect(run()).toBe(run());
   });
+
+  it("authors physical pinball materials and passes auditArtDirection with 1 shadowed light", async () => {
+    const { auditArtDirection } = await import("../../../../packages/game/src/art/audit");
+    const { snapshotForAudit, assetManifestLike } = await import("../../../../packages/game/src/art/snapshot");
+    const { readFileSync } = await import("node:fs");
+    const { fileURLToPath } = await import("node:url");
+    const direction = (await import("../../../../apps/showcase-vault-breakers/art/direction")).default;
+    const manifestPath = fileURLToPath(new URL("../../../../apps/showcase-vault-breakers/aura.assets.json", import.meta.url));
+    const manifest = assetManifestLike(JSON.parse(readFileSync(manifestPath, "utf8")));
+
+    const sim = createTableSimulation();
+    const sceneSnapshot = buildVaultScene(sim).toJSON();
+    const auditSnap = snapshotForAudit(
+      { scene: sceneSnapshot, diagnostics: () => ({ drawCalls: 42 }) } as unknown as Parameters<typeof snapshotForAudit>[0],
+      manifest
+    );
+    const violations = auditArtDirection(direction, auditSnap, { drawCallsBudget: 400 });
+    expect(violations).toEqual([]);
+    expect(auditSnap.lights.filter((l) => l.shadow)).toHaveLength(1);
+  });
 });
