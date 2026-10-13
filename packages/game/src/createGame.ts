@@ -430,7 +430,9 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
     route: currentRoute(options.id),
     getState: () => session.state,
     getFrame: () => runtime.evidence.frame,
-    getFirstFrameAt: () => firstFrameAt
+    getFirstFrameAt: () => firstFrameAt,
+    getApp: () => app as unknown as { scene?: unknown; diagnostics?: () => Record<string, unknown> },
+    getSession: () => session
   });
   session.on("state", () => beacon.refresh());
 
