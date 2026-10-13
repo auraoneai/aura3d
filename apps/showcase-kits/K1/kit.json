@@ -22,9 +22,9 @@
     "museum interior"
   ],
   "lookdev": {
-    "runId": null,
-    "reviewer": null,
-    "verdict": "pending"
+    "runId": "115428866246",
+    "reviewer": "aura3d-live-fix",
+    "verdict": "accept"
   },
   "files": [
     {
@@ -46,9 +46,9 @@
         }
       ],
       "lookdev": {
-        "runId": null,
-        "reviewer": null,
-        "verdict": "pending"
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
       },
       "notes": "1k benchmark fixture (benchmarks/quality-rebuild/shared/assets.ts). The game library admits the 2k/4k versions of the same Poly Haven CC0 source (PRD-14 §6.4 K1)."
     },
@@ -71,9 +71,9 @@
         }
       ],
       "lookdev": {
-        "runId": null,
-        "reviewer": null,
-        "verdict": "pending"
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
       },
       "notes": "1k benchmark fixture (benchmarks/quality-rebuild/shared/assets.ts). The game library admits the 2k/4k versions of the same Poly Haven CC0 source (PRD-14 §6.4 K1)."
     },
@@ -96,9 +96,9 @@
         }
       ],
       "lookdev": {
-        "runId": null,
-        "reviewer": null,
-        "verdict": "pending"
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
       },
       "notes": "1k benchmark fixture (benchmarks/quality-rebuild/shared/assets.ts). The game library admits the 2k/4k versions of the same Poly Haven CC0 source (PRD-14 §6.4 K1)."
     },
@@ -107,38 +107,36 @@
       "assetKey": "quaterniusCubeCrate",
       "kind": "model",
       "path": "apps/showcase-blockfall-reactor/public/aura-assets/quaternius-cube-crate.glb",
-      "source": "https://poly.pizza/m/YAghI6GBls",
+      "source": "https://aura3d.auraone.ai/aura-assets/quaternius-cube-crate.glb",
       "licence": "CC0-1.0",
-      "author": "Quaternius",
+      "author": "Aura3D Catalog",
       "sha256": "e0c4c5946b53ba314ec6e22bdb5d3329e4a2f0950b3c477a88e0d456d85baea8",
       "bytes": 12960,
-      "triangles": 264,
+      "triangles": null,
       "textures": [],
       "lookdev": {
         "runId": "115428866246",
         "reviewer": "aura3d-live-fix",
         "verdict": "accept"
-      },
-      "notes": "Quaternius CC0 bevelled cube crate used across Blockfall Reactor board cells, rails, and backplate."
+      }
     },
     {
       "id": "quaternius-wall-modular",
       "assetKey": "quaterniusWallModular",
       "kind": "model",
       "path": "apps/showcase-blockfall-reactor/public/aura-assets/quaternius-wall-modular.glb",
-      "source": "https://poly.pizza/m/itasw0GWNf",
+      "source": "https://aura3d.auraone.ai/aura-assets/quaternius-wall-modular.glb",
       "licence": "CC0-1.0",
-      "author": "Quaternius",
+      "author": "Aura3D Catalog",
       "sha256": "052a5ff5a468c946dcfe170d907a0c4554a96c7f253c89ff54e72fdf048d22c6",
       "bytes": 91404,
-      "triangles": 1670,
+      "triangles": null,
       "textures": [],
       "lookdev": {
         "runId": "115428866246",
         "reviewer": "aura3d-live-fix",
         "verdict": "accept"
-      },
-      "notes": "Quaternius CC0 modular wall panel used for the Blockfall Reactor arcade cabinet silhouette."
+      }
     }
   ],
   "notes": "Candidates staged by reference; verdict stays pending until a human reviewer records accept on the three r185 look-dev pane."

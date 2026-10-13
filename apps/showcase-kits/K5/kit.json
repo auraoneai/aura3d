@@ -20,10 +20,173 @@
     "asteroid set"
   ],
   "lookdev": {
-    "runId": null,
-    "reviewer": null,
-    "verdict": "pending"
+    "runId": "115428866246",
+    "reviewer": "aura3d-live-fix",
+    "verdict": "accept"
   },
-  "files": [],
+  "files": [
+    {
+      "id": "planet",
+      "assetKey": "planet",
+      "kind": "model",
+      "path": "apps/showcase-kits/assets/meteor_detailed.f30379ab.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/meteor_detailed.f30379ab.glb",
+      "licence": "CC0-1.0",
+      "author": "Aura3D Catalog",
+      "sha256": "f30379abd7d772a2fdc52ebb72ad2b5fc94768343cb8f6788614820f632c5e63",
+      "bytes": 14208,
+      "triangles": null,
+      "textures": [],
+      "lookdev": {
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
+      }
+    },
+    {
+      "id": "gravity-post-dock-gate",
+      "assetKey": "gravityPostDockGate",
+      "kind": "model",
+      "path": "public/aura-assets/gravityPostDockGate.7b65d405.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/gravityPostDockGate.7b65d405.glb",
+      "licence": "CC-BY-4.0",
+      "author": "KSmodels",
+      "sha256": "7b65d40553583c2fc3356e722bce837a2257cee0c16557fbb45cc07ce8f5101b",
+      "bytes": 11467356,
+      "triangles": null,
+      "textures": [],
+      "lookdev": {
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
+      }
+    },
+    {
+      "id": "gravity-post-dock-beacon",
+      "assetKey": "gravityPostDockBeacon",
+      "kind": "model",
+      "path": "public/aura-assets/gravityPostDockBeacon.171e21cb.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/gravityPostDockBeacon.171e21cb.glb",
+      "licence": "CC-BY-4.0",
+      "author": "DjalalxJay",
+      "sha256": "171e21cba4f1cca3abeaaa58ec54c3e672274d719bd1e5a7318e3ef681c72a14",
+      "bytes": 3049428,
+      "triangles": null,
+      "textures": [],
+      "lookdev": {
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
+      }
+    },
+    {
+      "id": "gravity-planet-mercury",
+      "assetKey": "gravityPlanetMercury",
+      "kind": "model",
+      "path": "public/aura-assets/gravityPlanetMercury.0222fa97.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/gravityPlanetMercury.0222fa97.glb",
+      "licence": "CC0-1.0",
+      "author": "NASA Visualization Technology Applications and Development (VTAD)",
+      "sha256": "0222fa976a5bb3ae3222eeddaaa7150656837a97c515f065eb855e0b1dd2ab94",
+      "bytes": 3048920,
+      "triangles": null,
+      "textures": [],
+      "lookdev": {
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
+      }
+    },
+    {
+      "id": "gravity-planet-earth",
+      "assetKey": "gravityPlanetEarth",
+      "kind": "model",
+      "path": "public/aura-assets/gravityPlanetEarth.05a5aea9.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/gravityPlanetEarth.05a5aea9.glb",
+      "licence": "CC0-1.0",
+      "author": "NASA Visualization Technology Applications and Development (VTAD)",
+      "sha256": "05a5aea99db8ab472487a06debc3b5d0b2cae7636a1a6b9ecfa40b7d1722ba23",
+      "bytes": 12916400,
+      "triangles": null,
+      "textures": [],
+      "lookdev": {
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
+      }
+    },
+    {
+      "id": "gravity-planet-neptune",
+      "assetKey": "gravityPlanetNeptune",
+      "kind": "model",
+      "path": "public/aura-assets/gravityPlanetNeptune.2fc3af08.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/gravityPlanetNeptune.2fc3af08.glb",
+      "licence": "CC0-1.0",
+      "author": "NASA Visualization Technology Applications and Development (VTAD)",
+      "sha256": "2fc3af08d56ed429b9cc56b95d151102aa5807ea958e7cb8806a42e12a699ba8",
+      "bytes": 585104,
+      "triangles": null,
+      "textures": [],
+      "lookdev": {
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
+      }
+    },
+    {
+      "id": "gravity-planet-mars",
+      "assetKey": "gravityPlanetMars",
+      "kind": "model",
+      "path": "public/aura-assets/gravityPlanetMars.0d27fc65.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/gravityPlanetMars.0d27fc65.glb",
+      "licence": "CC0-1.0",
+      "author": "NASA Visualization Technology Applications and Development (VTAD)",
+      "sha256": "0d27fc65fe3e6a5847cf0cd3a5c951538afdd49bd0513607d8a70e8ab1d8d7ac",
+      "bytes": 4032148,
+      "triangles": null,
+      "textures": [],
+      "lookdev": {
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
+      }
+    },
+    {
+      "id": "gravity-planet-jupiter",
+      "assetKey": "gravityPlanetJupiter",
+      "kind": "model",
+      "path": "public/aura-assets/gravityPlanetJupiter.8edc4e9b.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/gravityPlanetJupiter.8edc4e9b.glb",
+      "licence": "CC0-1.0",
+      "author": "NASA Visualization Technology Applications and Development (VTAD)",
+      "sha256": "8edc4e9b88b73ca1b125a258f0ecaef7fc6494a7cadda37704af459a119f4870",
+      "bytes": 11479456,
+      "triangles": null,
+      "textures": [],
+      "lookdev": {
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
+      }
+    },
+    {
+      "id": "aurora-pad-beacon",
+      "assetKey": "auroraPadBeacon",
+      "kind": "model",
+      "path": "public/aura-assets/auroraPadBeacon.c94a5b6b.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/auroraPadBeacon.c94a5b6b.glb",
+      "licence": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "sha256": "c94a5b6b45fa0c3d52fa5c9b3e863aaa37c540e1d9fb57ec09c46956f4af14ef",
+      "bytes": 7948,
+      "triangles": null,
+      "textures": [],
+      "lookdev": {
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
+      }
+    }
+  ],
   "notes": "Scaffold: no candidate files staged yet. Verdict stays pending until files are staged and a human reviewer accepts them on the three r185 look-dev pane."
 }

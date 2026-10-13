@@ -53,7 +53,20 @@ interface Cues {
 }
 
 const readJson = <T>(path: string): T => JSON.parse(readFileSync(path, "utf8")) as T;
-const sha256 = (repoPath: string): string => createHash("sha256").update(readFileSync(resolve(ROOT, repoPath))).digest("hex");
+const lfsMeta = (repoPath: string): { sha256: string; bytes: number } | null => {
+  const full = resolve(ROOT, repoPath);
+  const sz = statSync(full).size;
+  if (sz > 256) return null;
+  const text = readFileSync(full, "utf8");
+  if (!text.startsWith("version https://git-lfs.github.com/spec/")) return null;
+  const oid = /^oid sha256:([0-9a-f]{64})$/m.exec(text);
+  const size = /^size (\d+)$/m.exec(text);
+  return oid && size ? { sha256: oid[1]!, bytes: Number(size[1]!) } : null;
+};
+const sha256 = (repoPath: string): string =>
+  lfsMeta(repoPath)?.sha256 ?? createHash("sha256").update(readFileSync(resolve(ROOT, repoPath))).digest("hex");
+const fileBytes = (repoPath: string): number =>
+  lfsMeta(repoPath)?.bytes ?? statSync(resolve(ROOT, repoPath)).size;
 
 const schema = readJson<Schema>(join(KITS_DIR, "kit.schema.json"));
 const defs = schema.$defs as Record<string, Schema>;
@@ -160,7 +173,7 @@ describe("showcase kits (PRD-14 T3.2)", () => {
         expect(new Set(ids).size).toBe(ids.length);
         for (const f of kit.files) {
           expect(LICENCES, `${id}/${f.id} licence`).toContain(f.licence);
-          expect(statSync(resolve(ROOT, f.path)).size, `${id}/${f.id} bytes`).toBe(f.bytes);
+          expect(fileBytes(f.path), `${id}/${f.id} bytes`).toBe(f.bytes);
           expect(sha256(f.path), `${id}/${f.id} sha256`).toBe(f.sha256);
         }
       });
@@ -185,7 +198,7 @@ describe("showcase kits K8 cues (PRD-14 T3.3)", () => {
     for (const s of k8.samples) {
       expect(s.provenance, `${s.id} provenance`).toBe("sample");
       expect(LICENCES, `${s.id} licence`).toContain(s.licence);
-      expect(statSync(resolve(ROOT, s.path)).size, `${s.id} bytes`).toBe(s.bytes);
+      expect(fileBytes(s.path), `${s.id} bytes`).toBe(s.bytes);
       expect(sha256(s.path), `${s.id} sha256`).toBe(s.sha256);
     }
   });

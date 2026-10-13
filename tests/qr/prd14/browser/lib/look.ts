@@ -4,7 +4,7 @@
 // boot, resolved through the PRD-03 post-preset table, at the exposure its
 // `art/direction.ts` authors (2^lighting.exposureEV).
 import { expect } from "@playwright/test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { prd03PostPresets } from "../../../../../packages/engine/src/agent-api/postPresets";
 import { APPS } from "./serve";
@@ -21,9 +21,12 @@ function normalizeToneMapping(name: string): string {
 }
 
 export async function declaredLook(appDir: string): Promise<DeclaredLook> {
-  const boot = readFileSync(join(APPS, appDir, "src", "v2", "boot.ts"), "utf8");
+  const v2BootPath = join(APPS, appDir, "src", "v2", "boot.ts");
+  const mainPath = join(APPS, appDir, "src", "main.ts");
+  const bootPath = existsSync(v2BootPath) ? v2BootPath : mainPath;
+  const boot = readFileSync(bootPath, "utf8");
   const call = /setOutput\?\.\(\{\s*preset:\s*"([a-z-]+)"(?:,\s*toneMapping:\s*"([a-z-]+)")?/.exec(boot);
-  expect(call, `${appDir}: v2/boot.ts has no setOutput({ preset }) call`).not.toBeNull();
+  expect(call, `${appDir}: ${existsSync(v2BootPath) ? "v2/boot.ts" : "main.ts"} has no setOutput({ preset }) call`).not.toBeNull();
   const preset = call![1]!;
   const table = prd03PostPresets as unknown as Record<string, { output: { toneMapping: string } } | undefined>;
   expect(table[preset], `${appDir}: unknown post preset "${preset}"`).toBeDefined();
