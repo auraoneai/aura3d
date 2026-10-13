@@ -51,6 +51,7 @@ import {
 declare global {
   interface Window {
     __aura3dGameSnapshot?: PatrolWingEvidence;
+    __AURA3D_SHOWCASE_PATROL_WING__?: PatrolWingEvidence;
   }
 }
 
@@ -126,8 +127,12 @@ const hudBindings = [
 ] as const;
 
 // Latest published snapshot, read by the createGame evidence section below.
-// `window.__aura3dGameSnapshot` stays the sole evidence global.
 let latestSnapshot: PatrolWingEvidence | undefined;
+
+Object.defineProperty(window, "__AURA3D_SHOWCASE_PATROL_WING__", {
+  configurable: true,
+  get: () => latestSnapshot
+});
 
 const patrolGame = createGame({
   id: "showcase-patrol-wing",
@@ -233,8 +238,6 @@ let paused = false;
 let objective = "Hold Shift to spool up and take off west. Thread the amber ring.";
 const spawnedWaves = new Set<number>();
 
-ghostRecorder.begin();
-
 function handle(name: string): AuraRuntimeNodeHandle | undefined {
   if (!handles.has(name)) {
     try {
@@ -276,7 +279,8 @@ function applyHullDamage(amount: number): void {
   hull = Math.max(0, hull - Math.max(0, amount));
   if (hull <= 0 && (state === "patrol" || state === "preflight")) {
     state = "shot-down";
-    lastScript = ghostRecorder.end();
+    const script = ghostRecorder.end();
+    if (script.length > 0) lastScript = script;
     objective = "Shot down — hull failed. Press R to retry the patrol.";
     pushEvent("shot-down", "shot-down", "warning");
     patrolGame.juice.fire("crashed");
@@ -296,7 +300,7 @@ function handleFlightOutcome(outcome: FlightOutcome): void {
     if (objectiveComplete()) {
       lastGrade = gradePatrol(timeInPatrol, cannon.accuracy, hull / HULL_MAX);
       const script = ghostRecorder.end();
-      lastScript = script;
+      if (script.length > 0) lastScript = script;
       if (!bestRun || gradeRank(lastGrade.grade) > gradeRank(bestRun.grade)) {
         bestRun = { grade: lastGrade.grade, script };
       }
@@ -306,7 +310,8 @@ function handleFlightOutcome(outcome: FlightOutcome): void {
       pushEvent("graded", `graded:${lastGrade.grade}`, "success");
       patrolGame.fx.burst("ring", [p[0], p[1], p[2]], { count: 14, color: "#39d7a8" });
     } else {
-      lastScript = ghostRecorder.end();
+      const script = ghostRecorder.end();
+      if (script.length > 0) lastScript = script;
       state = "incomplete";
       objective = "Landed with the patrol incomplete. Press R to retry.";
       pushEvent("incomplete", "incomplete", "warning");
@@ -314,7 +319,8 @@ function handleFlightOutcome(outcome: FlightOutcome): void {
     return;
   }
   // crash-terrain | crash-ocean
-  lastScript = ghostRecorder.end();
+  const script = ghostRecorder.end();
+  if (script.length > 0) lastScript = script;
   state = "crashed";
   objective = outcome === "crash-ocean" ? "Down in the sea. Press R to retry the patrol." : "Terrain impact. Press R to retry the patrol.";
   pushEvent(outcome, outcome, "warning");
@@ -335,11 +341,8 @@ function resetToPad(nextPatrol: number): void {
   spawnedWaves.clear();
   state = "preflight";
   objective = `Patrol ${patrol} of ${PATROL_COUNT}. Hold Shift to take off, thread the amber ring.`;
-  ghostRecorder.begin();
-  // Ghost: replay the best graded sortie (or the last attempt) alongside.
-  const script = bestRun?.script ?? lastScript;
-  ghostPlayer = script.length > 0 ? new GhostPlayer(script, SPAWN) : null;
-  ghostPlayer?.start();
+  ghostRecorder.end();
+  ghostPlayer = null;
   syncRingMaterials();
   pushEvent("reset", `reset:patrol-${patrol}`);
 }
@@ -361,17 +364,25 @@ function syncRingMaterials(): void {
 function fixedStep(): void {
   const controls = flightInput();
   const fireHeld = input.held("fire");
-  ghostRecorder.record(encodeControlFrame(controls, fireHeld));
-  ghostPlayer?.step(terrainSurface, LANDING);
 
   const wasGrounded = flight.grounded;
   const result = flight.step(controls, FLIGHT_DT, terrainSurface, LANDING);
   if (state === "preflight" && wasGrounded === "preflight" && flight.grounded === "airborne") {
     state = "patrol";
+    timeInPatrol = 0;
+    ghostRecorder.begin();
+    // Ghost: replay the best graded sortie (or the last attempt) alongside.
+    const script = bestRun?.script ?? lastScript;
+    ghostPlayer = script.length > 0 ? new GhostPlayer(script, SPAWN) : null;
+    ghostPlayer?.start();
     objective = "Airborne. Thread the rings in order — amber is next.";
     pushEvent("takeoff", "takeoff", "success");
   }
-  if (state === "patrol" || state === "preflight") timeInPatrol += FLIGHT_DT;
+  if (state === "patrol") {
+    timeInPatrol += FLIGHT_DT;
+    ghostRecorder.record(encodeControlFrame(controls, fireHeld));
+    ghostPlayer?.step(terrainSurface, LANDING);
+  }
   handleFlightOutcome(result.outcome);
   if (state !== "patrol" && state !== "preflight") return;
 
@@ -434,6 +445,7 @@ function fixedStep(): void {
 // ---------------------------------------------------------------- frame loop -
 app.onFrame(({ dt }) => {
   frame += 1;
+  input.update(dt);
   if (input.pressed("pause")) paused = !paused;
   if (paused) {
     publishEvidence();
