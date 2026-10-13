@@ -1,6 +1,8 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraVec3 } from "../nodes/types.js";
+import type { GltfBounds } from "../nodes/types/runtime.js";
+export type { GltfBounds };
 import { AuraRuntimeError } from "./errors.js";
 import { animation } from "../nodes/animation.js";
 import { material } from "../nodes/material.js";
@@ -62,11 +64,6 @@ export interface GltfAnimationClip {
   readonly name: string;
   readonly duration: number;
   readonly channels: readonly GltfAnimationChannel[];
-}
-
-export interface GltfBounds {
-  readonly min: AuraVec3;
-  readonly max: AuraVec3;
 }
 
 interface GltfJson {

@@ -1,6 +1,8 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraVec3, AuraAnimationSpec, AuraModelNode, AuraPrimitiveNode, AuraEffectNode, AuraCreateAppRendererOptions, AuraSceneSnapshot, AuraRuntimeNodeRegistry, WebGLSceneRenderer, WebGLModel } from "../nodes/types.js";
+import type { WebGLPrimitive } from "../nodes/types/runtime.js";
+export type { WebGLPrimitive };
 import type { GltfPrimitive, GltfModel, GltfAnimationClip } from "./gltfRuntime.js";
 import { AuraRuntimeError } from "./errors.js";
 import { animation } from "../nodes/animation.js";
@@ -15,48 +17,6 @@ import { loadGltfForWebGL, gltfTrsMatrix, sampleGltfVec3Channel, sampleGltfQuate
 import { material } from "../nodes/material.js";
 import { model } from "../nodes/model.js";
 import { primitive, primitives } from "../nodes/primitives.js";
-
-export interface WebGLPrimitive {
-  readonly position: WebGLBuffer;
-  readonly normal: WebGLBuffer;
-  readonly uv?: WebGLBuffer;
-  readonly vertexColor?: WebGLBuffer;
-  readonly index?: WebGLBuffer;
-  readonly count: number;
-  readonly mode: number;
-  readonly indexType?: number;
-  readonly color?: readonly [number, number, number];
-  readonly texture?: WebGLTexture;
-  readonly metallicRoughnessTexture?: WebGLTexture;
-  readonly occlusionTexture?: WebGLTexture;
-  readonly emissiveTexture?: WebGLTexture;
-  readonly metallic?: number;
-  readonly roughness?: number;
-  readonly emissive?: readonly [number, number, number];
-  /*
-   * WS-2.1a — the extended material surface, which this renderer previously had no way to receive.
-   *
-   * AuraMaterialSpec has accepted anisotropy, sheen, iridescence, clearcoat and transmission
-   * for a long time, and this shader had no uniform for any of them, so every one was
-   * silently discarded for primitives. Measured before the fix: `sheen: 1` and `sheen: 0` produced a
-   * byte-identical frame.
-   */
-  readonly anisotropy?: number;
-  readonly anisotropyRotation?: number;
-  readonly sheen?: number;
-  readonly sheenRoughness?: number;
-  readonly sheenColor?: readonly [number, number, number];
-  readonly iridescence?: number;
-  readonly iridescenceIor?: number;
-  readonly iridescenceThickness?: readonly [number, number];
-  readonly clearcoat?: number;
-  readonly clearcoatRoughness?: number;
-  readonly modelMatrix?: (time: number) => Float32Array;
-}
-
-export function webGL2MaxTextureSize(canvas: HTMLCanvasElement): number {
-  return Number(canvas.getContext("webgl2")?.getParameter(WebGL2RenderingContext.MAX_TEXTURE_SIZE) ?? 4096);
-}
 
 export async function createWebGLSceneRenderer(
   canvas: HTMLCanvasElement,

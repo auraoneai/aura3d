@@ -1,7 +1,7 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines
 // above the Q-15-2 section (flag-gated `createQrPrimitiveMesh`, appended).
 
-import type { GltfBounds } from "./gltfRuntime.js";
+import type { GltfBounds } from "../nodes/types/runtime.js";
 import type { ProductionPrimitiveMesh } from "./primitives.js";
 import { tilingSecondUnwrap } from "./primitives.js";
 import { createPrimitiveGeometry, Geometry } from "@aura3d/rendering";

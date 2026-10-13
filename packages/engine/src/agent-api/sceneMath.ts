@@ -1,7 +1,7 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraVec3, AuraColor, AuraTransformSpec, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraEffectNode, AuraLabelNode, AuraSceneSnapshot, AuraRuntimeNodeRegistry } from "./nodes/types.js";
-import type { GltfBounds } from "./compiler/gltfRuntime.js";
+import type { GltfBounds } from "./nodes/types/runtime.js";
 import { AURA_NORMALIZED_MODEL_MAX_DIMENSION } from "./SceneGroundingUtils.js";
 import { AuraSceneBuilder } from "./nodes/scene.js";
 import { animation } from "./nodes/animation.js";

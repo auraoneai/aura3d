@@ -41,11 +41,6 @@ vi.mock("@aura3d/rendering", async (importOriginal) => {
   return actual;
 });
 
-const FAKE_WEBGL_RENDERER = { kind: "legacy-webgl-fallback", dispose: () => undefined };
-vi.mock("../../../../packages/engine/src/agent-api/compiler/webglRuntime", () => ({
-  createWebGLSceneRenderer: async () => FAKE_WEBGL_RENDERER
-}));
-
 const snapshot = (): AuraSceneSnapshot =>
   ({ schema: "aura3d-scene-snapshot/1.0", background: "#000000", diagnostics: { enabled: false }, nodes: [primitives.box({ size: 1 }).toJSON()], camera: { mode: "orbit", position: [0, 0, 5], target: [0, 0, 0] } });
 const canvas = () => ({ width: 64, height: 64, getContext: () => null }) as unknown as HTMLCanvasElement;

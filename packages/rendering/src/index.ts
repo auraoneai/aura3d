@@ -28,7 +28,7 @@ export {
 export type { GpuTargetInventory, GpuTargetInventoryEntry, GpuTargetKind, GpuTargetOwner } from "./RenderDevice";
 export { createRenderDevice } from "./RenderBackend";
 export type { RenderBackendOptions } from "./RenderBackend";
-export { WebGL2Device } from "./WebGL2Device";
+export { WebGL2Device, webGL2MaxTextureSize } from "./WebGL2Device";
 export type { WebGL2BloomDiagnostics, WebGL2DeviceOptions } from "./WebGL2Device";
 export { WebGL2StateCache } from "./WebGL2StateCache";
 export type { WebGL2StateCacheDescriptor, WebGL2StateCacheSnapshot, WebGL2StateCacheStats } from "./WebGL2StateCache";
