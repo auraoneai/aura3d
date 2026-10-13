@@ -18,6 +18,8 @@ export interface AuraClashEvidenceBindings {
   readonly snapshot: () => FightingGameSnapshot;
   // T2.2-post: appliedLook is the C-31 runtime look manifest — a varying shape.
   readonly appliedLook: Record<string, unknown>;
+  /** Fighter clip-drive probe (active clip + clip-local time per rig). */
+  readonly animation?: () => unknown;
   readonly audioCueLog: () => readonly string[];
   readonly hitStopActive: () => boolean;
   readonly roundInfo: () => { readonly round: number; readonly timeLeft: number };
@@ -84,6 +86,9 @@ export function publishAuraClashEvidence(b: AuraClashEvidenceBindings): void {
         round: round.round,
         timeLeft: round.timeLeft
       };
+    },
+    get animation() {
+      return b.animation?.() ?? null;
     },
     get audio() {
       return { cueLog: b.audioCueLog() };

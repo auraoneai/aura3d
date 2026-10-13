@@ -2,9 +2,9 @@
 // §6.9.3 S-presentation: the fighting sim is the engine's
 // createFightingGameKit (kinematic bodies + combat world + opponent AI +
 // camera director); the route owns the arena, lighting, fighting rig, VFX
-// glue, HUD and evidence. The kept src/gameplay/** modules (combat data,
-// clip maps, secondary motion, replay) back the content wave; the shell
-// keeps positions/facing on the UBC rigs until clip playback lands.
+// glue, HUD and evidence. Positions/facing sync from kit bodies each frame
+// and embedded GLB clips are driven from kit actor states via
+// scene/fighter-animation.ts (kept src/gameplay clip maps, exact clip names).
 import { createGame, lookManifest } from "@aura3d/game";
 import { camera, createFightingGameKit, scene } from "@aura3d/engine";
 import type { FightingGameSnapshot } from "@aura3d/engine";
@@ -12,6 +12,7 @@ import { auraClashEnvironment, auraClashLights } from "./scene/lighting";
 import { auraClashWorldNodes, P1_NODE, P2_NODE, HIT_FLASH_NODE } from "./scene/world";
 import { createAuraClashFightingRig } from "./scene/camera";
 import { auraClashFxFrame } from "./scene/fx";
+import { createAuraClashFighterAnimations, fighterYawForFacing } from "./scene/fighter-animation";
 import { publishAuraClashEvidence } from "./evidence";
 import { applyAuraClashScenario } from "./scenarios";
 
@@ -34,6 +35,8 @@ const kit = createFightingGameKit({
   target: window,
   stage: { width: 6.8 }
 });
+
+const fighterAnimations = createAuraClashFighterAnimations();
 
 const round = { number: 1, timeLeft: ROUND_SECONDS };
 let latestSnapshot: FightingGameSnapshot = kit.snapshot();
@@ -121,19 +124,18 @@ game.app.onFrame?.(({ dt }) => {
   if (sdt <= 0 || game.session.paused) return;
   latestSnapshot = kit.update(sdt);
 
-  // Fighter pose sync: kit bodies → runtime nodes (UBC rigs stay at their
-  // authored facing until clip playback lands in the content wave).
+  // Fighter pose sync: kit bodies → runtime nodes; clip selection below.
   const p1 = game.app.nodes.get(P1_NODE);
   if (p1) {
     const pos = latestSnapshot.player.position;
     p1.setPosition(pos[0], pos[1], pos[2]);
-    p1.setRotation(0, (latestSnapshot.player.facing ?? 1) * Math.PI / 2, 0);
+    p1.setRotation(0, fighterYawForFacing(latestSnapshot.player.facing ?? 1), 0);
   }
   const p2 = game.app.nodes.get(P2_NODE);
   if (p2) {
     const pos = latestSnapshot.opponent.position;
     p2.setPosition(pos[0], pos[1], pos[2]);
-    p2.setRotation(0, (latestSnapshot.opponent.facing ?? -1) * -Math.PI / 2, 0);
+    p2.setRotation(0, fighterYawForFacing(latestSnapshot.opponent.facing ?? -1), 0);
   }
 
   // Combat events → fx + juice + audio intents. The frame call runs even
@@ -144,15 +146,26 @@ game.app.onFrame?.(({ dt }) => {
     app: game.app,
     hitFlash: game.app.nodes.get(HIT_FLASH_NODE)
   }, events);
+  // Frame-local reaction signals (consume-on-use): hit/blocked events and
+  // the stun they cause land in the same kit update, so damage/blocked are
+  // built fresh per frame and can never leak stale severity into a later hit.
+  const frameHitDamage: Partial<Record<"p1" | "p2", number>> = {};
+  const frameBlocked: Partial<Record<"p1" | "p2", boolean>> = {};
   if (events.length > 0) {
     for (const ev of events) {
       if (ev.type === "hit") {
         pushCue("hit");
+        if (ev.targetId === "p1" || ev.targetId === "p2") {
+          frameHitDamage[ev.targetId] = ev.damage ?? 0;
+        }
         hitStopUntilMs = performance.now() + 95;
       } else if (ev.type === "whiff") {
         pushCue("whoosh");
       } else if (ev.type === "blocked") {
         pushCue("blocked");
+        if (ev.targetId === "p1" || ev.targetId === "p2") {
+          frameBlocked[ev.targetId] = true;
+        }
       } else if (ev.type === "knockout" && !koPlayed) {
         koPlayed = true;
         pushCue("announcer");
@@ -164,6 +177,13 @@ game.app.onFrame?.(({ dt }) => {
       }
     }
   }
+  // Clip drive: kit actor states + health → embedded GLB clips on both rigs.
+  fighterAnimations.update(sdt, latestSnapshot, {
+    playerCrouch: kit.input.held("crouch"),
+    lastHitDamage: frameHitDamage,
+    blocked: frameBlocked
+  });
+
   round.timeLeft = Math.max(0, round.timeLeft - sdt);
   if (koPlayed && round.timeLeft <= 0) { /* next round handled by round-reset */ }
 
@@ -182,6 +202,7 @@ let frame = 0;
 game.app.onRender?.(() => { frame += 1; });
 game.start();
 void game.ready().then(() => {
+  fighterAnimations.bindNodes(game.app.nodes.get(P1_NODE), game.app.nodes.get(P2_NODE));
   game.app.camera?.use?.(rig, { blend: 0.4 });
     game.app.setOutput?.({ preset: "arena-fight",  toneMapping: "aces", exposure: 2 ** EXPOSURE_EV });
 
@@ -203,6 +224,7 @@ void game.ready().then(() => {
     snapshot: () => latestSnapshot,
     // T2.2-post: appliedLook derives from the C-31 runtime manifest, not literals.
     appliedLook: { preset: "arena-fight", ...lookManifest(game.lookSource()) },
+    animation: () => fighterAnimations.snapshot(),
     audioCueLog: () => audioCueLog,
     hitStopActive: () => performance.now() < hitStopUntilMs,
     roundInfo: () => ({ round: round.number, timeLeft: round.timeLeft }),
