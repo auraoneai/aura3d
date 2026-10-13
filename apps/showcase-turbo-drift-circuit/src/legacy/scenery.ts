@@ -40,9 +40,9 @@ export const TURBO_LATE_AFTERNOON_MOOD = {
   environmentName: "circuit late afternoon reflections",
   environmentColor: "#ffd0a4",
   environmentIntensity: 1.37,
-  ambientColor: "#ffe0c5",
+  ambientColor: "#ffd2ac",
   ambientIntensity: 1.27,
-  keyColor: "#ffb37d",
+  keyColor: "#ffa25e",
   keyIntensity: 2.9,
   /** Key-light position as fractions of SCENE_SIZE (x, y, z). */
   keyPositionFractions: { x: -0.92, y: 0.38, z: 0.58 },
