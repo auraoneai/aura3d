@@ -241,7 +241,7 @@ describe("audio characterization: engine GameAudio", () => {
         cues: {
           hit: {
             id: "hit", bus: "sfx",
-            asset: { url: "/packs/game-sfx-core/ui.toggle.00.{format}", hash: "x", license: "CC0", provenance: "sample" }
+            asset: "/packs/game-sfx-core/ui.toggle.00.{format}"
           }
         }
       });
