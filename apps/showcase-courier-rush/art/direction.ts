@@ -55,11 +55,11 @@ export default defineArtDirection({
   // authored here).
   assets: [
     { role: "vehicle", assetKey: "courierVanMeshyV2Decimated", minTriangles: 2000, maxTriangles: 600000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "courierParcel", maxTriangles: 100000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "courierParcel", kit: "K2", maxTriangles: 100000, textureSet: "BC+N", maxTextureSize: 1024 },
     { role: "vehicle", assetKey: "deliveryCar", minTriangles: 2000, maxTriangles: 50000, textureSet: "BC+N", maxTextureSize: 1024 },
     { role: "vehicle", assetKey: "showcaseCityVehicle", minTriangles: 2000, maxTriangles: 200000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "courierZoneBollard", maxTriangles: 200000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "courierZoneAwning", maxTriangles: 300000, textureSet: "BC+N", maxTextureSize: 1024 }
+    { role: "prop", assetKey: "courierZoneBollard", kit: "K2", maxTriangles: 200000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "courierZoneAwning", kit: "K2", maxTriangles: 300000, textureSet: "BC+N", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "rain", kind: "particles" },

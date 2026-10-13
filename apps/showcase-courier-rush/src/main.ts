@@ -284,6 +284,37 @@ const gameplayFlags = {
 
 let dispatch: DispatchState = scaledDispatchState(createDispatchState());
 let spawnPose: { x: number; z: number; heading: number } = { ...SPAWN_POSE };
+let impactUntilMs = 0;
+let hornCooldownUntilMs = 0;
+let skidCooldownUntilMs = 0;
+let lastPose = chassis.pose();
+const DIRECTION_AUDIO_EVENTS = new Set(["engine", "skid", "horn", "pickup", "bed"]);
+const requestedAudioEvents = new Set<string>(["engine", "bed"]);
+const playedAudioEvents = new Set<string>();
+
+const KIT_PARKED_CAR_PATTERN = /(red northbound|blue southbound|yellow crosstown|white crosstown).*(car body|windshield|headlight pair)/;
+const KIT_DEBUG_ARTIFACT_PATTERN =
+  /(visible dark night road evidence|foreground day night state board|large day sun state marker|large night moon state marker|foreground active night state bar|day night toggle pedestal|gold sun icon on day night toggle|silver moon icon on day night toggle|active night state toggle knob|night streetlight glow proof strip)/;
+const KIT_ROAD_PATTERN = /(main .* road|city avenue|cross street)/;
+const KIT_CURB_PATTERN = /(sidewalk|intersection curb)/;
+const KIT_BUILDING_METAL_PATTERN = /(city tower|window frame|ledge band|mechanical cap|facade reveal)/;
+const KIT_BALCONY_GLASS_PATTERN = /(balcony slab)/;
+const KIT_AWNING_PAINT_PATTERN = /(storefront awning)/;
+
+const KIT_WET_ROAD_MATERIAL = material.reflectiveFloor({
+  color: "#0d1320",
+  roughness: 0.18,
+  metallic: 0.3,
+  clearcoat: 0.65,
+  clearcoatRoughness: 0.08
+});
+const KIT_STREET_GRID_MATERIAL = material.blackRubber({ color: "#0b101b", roughness: 0.72 });
+const KIT_CURB_MATERIAL = material.blackRubber({ color: "#1e293b", roughness: 0.78 });
+const KIT_TOWER_INSTANCED_MATERIAL = material.brushedMetal({ color: "#cbd5e1", roughness: 0.34, metallic: 0.78 });
+const KIT_BUILDING_METAL_MATERIAL = material.brushedMetal({ color: "#334155", roughness: 0.32, metallic: 0.82 });
+const KIT_BUILDING_GLASS_MATERIAL = material.frostedGlass({ color: "#38bdf8", opacity: 0.65 });
+const KIT_AWNING_PAINT_MATERIAL = material.clearcoatPaint({ color: "#2563eb", roughness: 0.12 });
+
 applyScenario(urlParams.get("scenario"));
 resetVehicleAt(spawnPose);
 
@@ -322,16 +353,16 @@ function activateScenario(id: string): void {
 const courierGame = createGame({
   id: "courier-rush",
   target: "#app",
-  diagnostics: { overlay: true, performancePanel: true },
+  diagnostics: { overlay: false, performancePanel: false },
   scene: buildScene,
   input: inputOptions,
   scenarios: {
-    "02-opening": { setup: () => activateScenario("02-opening") },
-    "03-mid": { setup: () => activateScenario("03-mid") },
-    "04-action": { setup: () => activateScenario("04-action") },
-    carrying: { setup: () => activateScenario("carrying") },
-    "final-delivery": { setup: () => activateScenario("final-delivery") },
-    "low-time": { setup: () => activateScenario("low-time") }
+    "02-opening": { description: "Standard shift opening on the north avenue approaching pickup.", setup: () => activateScenario("02-opening") },
+    "03-mid": { description: "Mid-shift carrying a parcel one short leg from the drop dock.", setup: () => activateScenario("03-mid") },
+    "04-action": { description: "Second leg carrying a parcel toward the west plaza drop dock with active combo/score.", setup: () => activateScenario("04-action") },
+    carrying: { description: "Carrying a parcel one short leg from the drop dock.", setup: () => activateScenario("carrying") },
+    "final-delivery": { description: "Carrying the final parcel of the shift.", setup: () => activateScenario("final-delivery") },
+    "low-time": { description: "Low-timer pressure test with 2.5 seconds remaining.", setup: () => activateScenario("low-time") }
   },
   hud: {
     theme: "motorsport",
@@ -386,9 +417,6 @@ if (!input) throw new Error("courier-rush failed to create runtime-owned input."
 // Narrowed alias for the hoisted simulation functions below.
 const driveInput = input;
 courierGame.start();
-const DIRECTION_AUDIO_EVENTS = new Set(["engine", "skid", "horn", "pickup", "bed"]);
-const requestedAudioEvents = new Set<string>(["engine", "bed"]);
-const playedAudioEvents = new Set<string>();
 void courierGame.sound?.cue("engine");
 void courierGame.sound?.cue("bed");
 
@@ -412,11 +440,6 @@ app.camera?.use(
 );
 const feel = gameFeel.create({ app, time: app.time });
 app.feel?.preset("racing");
-
-let impactUntilMs = 0;
-let hornCooldownUntilMs = 0;
-let skidCooldownUntilMs = 0;
-let lastPose = chassis.pose();
 
 Object.assign(window, {
   ["__COURIER_RUSH" + "_DEBUG__"]: {
@@ -1000,15 +1023,41 @@ function audioEvidence(): CourierRushEvidence["audio"] {
 
 // --- scene --------------------------------------------------------------------
 
-const KIT_PARKED_CAR_PATTERN = /(red northbound|blue southbound|yellow crosstown|white crosstown).*(car body|windshield|headlight pair)/;
-
 function stripKitParkedCars(nodes: readonly AuraSceneNode[]): AuraSceneNode[] {
   // The kit's decorative parked cars sit inside lanes the typed traffic
-  // drives; remove them by the kit's own node naming.
-  return nodes.filter((node) => {
-    const name = "name" in node && typeof node.name === "string" ? node.name : "";
-    return !KIT_PARKED_CAR_PATTERN.test(name);
-  });
+  // drives, and its day/night debug state-board slabs sit across the road;
+  // remove them by the kit's node naming and upgrade road/curb/tower PBR materials.
+  return nodes
+    .filter((node) => {
+      const name = "name" in node && typeof node.name === "string" ? node.name : "";
+      return !KIT_PARKED_CAR_PATTERN.test(name) && !KIT_DEBUG_ARTIFACT_PATTERN.test(name);
+    })
+    .map((node) => {
+      if (node.kind !== "primitive") return node;
+      const name = typeof node.name === "string" ? node.name : "";
+      if (KIT_ROAD_PATTERN.test(name)) {
+        return { ...node, material: KIT_WET_ROAD_MATERIAL, receiveShadow: true };
+      }
+      if (name === "asphalt street grid") {
+        return { ...node, material: KIT_STREET_GRID_MATERIAL, receiveShadow: true };
+      }
+      if (KIT_CURB_PATTERN.test(name)) {
+        return { ...node, material: KIT_CURB_MATERIAL, receiveShadow: true };
+      }
+      if (name === "city tower native instanced family") {
+        return { ...node, material: KIT_TOWER_INSTANCED_MATERIAL, castShadow: true, receiveShadow: true };
+      }
+      if (KIT_BUILDING_METAL_PATTERN.test(name)) {
+        return { ...node, material: KIT_BUILDING_METAL_MATERIAL, receiveShadow: true };
+      }
+      if (KIT_BALCONY_GLASS_PATTERN.test(name)) {
+        return { ...node, material: KIT_BUILDING_GLASS_MATERIAL };
+      }
+      if (KIT_AWNING_PAINT_PATTERN.test(name)) {
+        return { ...node, material: KIT_AWNING_PAINT_MATERIAL };
+      }
+      return node;
+    });
 }
 
 function buildScene() {
