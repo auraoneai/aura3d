@@ -20,7 +20,8 @@ import {
   type AuraCameraPose,
   type AuraCameraRig,
   type AuraCameraRigContext,
-  type AuraNodeInput
+  type AuraNodeInput,
+  type AuraTransformSpec
 } from "@aura3d/engine";
 import {
   createGame,
@@ -29,7 +30,7 @@ import {
 } from "@aura3d/engine/game";
 import direction from "../art/direction";
 import { assets } from "./aura-assets";
-import { createArenaLayout, playRect, spawnPointOnEdge } from "./gameplay/arena";
+import { createArenaLayout, playRect, spawnPointOnEdge, type ArenaBounds } from "./gameplay/arena";
 import {
   PICKUP_DOORS,
   riskPickupForWave,
@@ -58,11 +59,13 @@ import {
   type CampaignStage
 } from "./gameplay/run";
 import {
+  DRONE_CONTACT_DAMAGE_PER_SECOND,
   ELITE_POOL_CAPACITY,
   GRUNT_POOL_CAPACITY,
   createSwarmSimulation
 } from "./gameplay/swarm";
 import {
+  INTERMISSION_SECONDS,
   isEliteWave,
   scheduleChecksum,
   waveSpawnSchedule,
@@ -71,24 +74,7 @@ import {
 } from "./gameplay/waves";
 
 export type RunState = "booting" | "intermission" | "wave-active" | "complete" | "dead";
-
-export interface NeonSwarmDebugApi {
-  stepFixed(frames: number, dtSeconds?: number): void;
-  startWaveNow(): void;
-  drainPlayerHp(): void;
-  chooseDoor(kind: PickupKind): void;
-  spawnTestSwarm(total: number): void;
-  stageKillCluster(count?: number): void;
-  jumpToWave(target: number): void;
-  clearActiveWave(): void;
-  finishFinale(): void;
-  resetWithSeed(value: number): void;
-  stageGraze(): void;
-  stageBurstCluster(count?: number): void;
-  stagePickupAtPlayer(): void;
-  stageContact(): void;
-  placePlayer(x: number, z: number): void;
-}
+export type SwarmPhase = "playing" | "intermission" | "victory" | "defeat";
 
 export interface NeonSwarmEvidence {
   readonly schema: "aura3d-showcase-neon-swarm/2.0";
@@ -97,9 +83,18 @@ export interface NeonSwarmEvidence {
   readonly appId: "showcase-neon-swarm";
   readonly status: "ready";
   readonly state: RunState;
+  readonly phase: SwarmPhase;
   readonly sessionState: string;
   readonly frame: number;
-  readonly wave: number;
+  readonly wave: {
+    readonly index: number;
+    readonly total: number;
+    readonly label: CampaignStage;
+    readonly inset: number;
+    readonly elapsed: number;
+    readonly remaining: number;
+    readonly spawnedCount: number;
+  };
   readonly stage: CampaignStage;
   readonly arenaInset: number;
   readonly finaleSurvivalRemaining: number;
@@ -129,12 +124,25 @@ export interface NeonSwarmEvidence {
   readonly pickupActive: boolean;
   readonly pickupPosition: { readonly x: number; readonly z: number };
   readonly pickupsCollected: number;
+  readonly pickup: {
+    readonly active: boolean;
+    readonly collected: boolean;
+    readonly position: readonly [number, number, number];
+  };
   readonly chosenDoor: PickupKind | null;
   readonly waveChecksum: number;
   readonly waveChecksums: readonly number[];
-  readonly upgrades: Readonly<PlayerUpgrades>;
+  readonly upgrades: {
+    readonly fireRateMultiplier: number;
+    readonly dashCooldownMultiplier: number;
+    readonly shieldCharges: number;
+    readonly fireRateLevel: number;
+    readonly dashCooldownLevel: number;
+    readonly chosen: readonly PickupKind[];
+  };
   readonly playerPosition: { readonly x: number; readonly z: number };
   readonly player: {
+    readonly position: readonly [number, number, number];
     readonly x: number;
     readonly z: number;
     readonly vx: number;
@@ -146,6 +154,14 @@ export interface NeonSwarmEvidence {
     readonly maxHp: number;
     readonly dashing: boolean;
     readonly invulnerable: boolean;
+    readonly burstCharge: number;
+  };
+  readonly enemies: {
+    readonly activeTotal: number;
+    readonly activeGrunts: number;
+    readonly activeElites: number;
+    readonly gruntCapacity: number;
+    readonly eliteCapacity: number;
   };
   readonly swarm: {
     readonly wave: number;
@@ -165,7 +181,7 @@ export interface NeonSwarmEvidence {
     readonly liveCount: number;
   };
   readonly framing: {
-    readonly rig: "neon-swarm.topdown";
+    readonly rig: "neon-swarm.overhead";
     readonly fovDeg: number;
     readonly subjectHeightFraction: number;
     readonly withinBand: boolean;
@@ -185,6 +201,29 @@ export interface NeonSwarmEvidence {
   readonly evidence: unknown;
 }
 
+export interface NeonSwarmDebugApi {
+  snapshot(): NeonSwarmEvidence;
+  reset(nextSeed?: number): NeonSwarmEvidence;
+  collectPickup(): NeonSwarmEvidence;
+  chooseUpgrade(kind: PickupKind): NeonSwarmEvidence;
+  fireBurst(): NeonSwarmEvidence;
+  stepFixed(frames: number, dtSeconds?: number): void;
+  startWaveNow(): void;
+  drainPlayerHp(): void;
+  chooseDoor(kind: PickupKind): void;
+  spawnTestSwarm(total: number): void;
+  stageKillCluster(count?: number): void;
+  jumpToWave(target: number): void;
+  clearActiveWave(): void;
+  finishFinale(): void;
+  resetWithSeed(value: number): void;
+  stageGraze(): void;
+  stageBurstCluster(count?: number): void;
+  stagePickupAtPlayer(): void;
+  stageContact(): void;
+  placePlayer(x: number, z: number): void;
+}
+
 declare global {
   interface Window {
     __aura3dGameSnapshot?: NeonSwarmEvidence;
@@ -192,24 +231,31 @@ declare global {
   }
 }
 
-const LOOK_ID = "night-city" as const;
+const LOOK_ID = "neon-arcade" as const;
 const SEED_DEFAULT = 20260821;
 const COMBO_WINDOW_SECONDS = 2.4;
-const INTERMISSION_SECONDS = 2.2;
 const PULSE_BASE_RADIUS = 3.6;
 const PULSE_BASE_DAMAGE = 2;
 const BURST_RADIUS = 9.4;
 const BURST_DAMAGE = 6;
-const BURST_KNOCKBACK = 4.4;
 const SPARK_POOL_CAPACITY = 48;
 const BEST_KEY = "neon-swarm-best-score";
+const PICKUP_SCORE_BONUS = 250;
+const PICKUP_BURST_BONUS = 0.25;
 
 const arenaLayout = createArenaLayout();
 const swarm = createSwarmSimulation();
 const player: PlayerState = createPlayerState(6);
 const upgrades: PlayerUpgrades = createPlayerUpgrades();
+let fireRateLevel = 0;
+let dashCooldownLevel = 0;
+let chosenUpgrades: PickupKind[] = [];
 
-const sparkTransforms = Array.from({ length: SPARK_POOL_CAPACITY }, () => ({
+const sparkTransforms: {
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: [number, number, number];
+}[] = Array.from({ length: SPARK_POOL_CAPACITY }, () => ({
   position: [0, -10, 0] as [number, number, number],
   rotation: [0, 0, 0] as [number, number, number],
   scale: [0.001, 0.001, 0.001] as [number, number, number]
@@ -264,6 +310,7 @@ let hasPlayerActed = false;
 let pointerAimActive = false;
 let pointerAim = { x: 0, z: -1 };
 let pointerFireHeld = false;
+let autorunEnabled = false;
 
 function readBestScore(): number {
   try {
@@ -279,6 +326,17 @@ function writeBestScore(value: number): void {
   } catch {
     /* localStorage persistence is best-effort */
   }
+}
+
+function playerYaw(): number {
+  return Math.atan2(player.aimX, player.aimZ);
+}
+
+function phaseForRunState(state: RunState): SwarmPhase {
+  if (state === "intermission") return "intermission";
+  if (state === "complete") return "victory";
+  if (state === "dead") return "defeat";
+  return "playing";
 }
 
 // ------------------------------------------------------------ camera rig -----
@@ -307,7 +365,7 @@ function createSwarmRig(state: SwarmRigState): AuraCameraRig {
   let smoothZ = state.playerZ;
   let smoothFov = 40;
   return {
-    id: "neon-swarm.topdown",
+    id: "neon-swarm.overhead",
     reset: () => {
       smoothX = state.playerX;
       smoothZ = state.playerZ;
@@ -592,7 +650,7 @@ function buildScene() {
     .add(
       instances.capsule({
         name: "swarm-grunt-pool",
-        transforms: swarm.gruntTransforms,
+        transforms: swarm.gruntTransforms as unknown as readonly AuraTransformSpec[],
         colors: swarm.gruntColors,
         material: material.pbr({
           name: "swarm-grunt-material",
@@ -603,14 +661,13 @@ function buildScene() {
           emissiveIntensity: 0.65,
           practical: true
         }),
-        radius: 0.24,
-        height: 0.56
+        size: [0.48, 0.56, 0.48]
       }).runtime(engineGame.runtimeNode("neon-grunt-pool", { tags: ["enemy-pool", "instanced", "grunt"] }))
     )
     .add(
       instances.box({
         name: "swarm-elite-pool",
-        transforms: swarm.eliteTransforms,
+        transforms: swarm.eliteTransforms as unknown as readonly AuraTransformSpec[],
         colors: swarm.eliteColors,
         material: material.pbr({
           name: "swarm-elite-material",
@@ -695,6 +752,9 @@ const inputOptions = {
     fire: ["KeyJ", "Enter"],
     burst: ["Space", "KeyK"],
     dash: ["ShiftLeft", "ShiftRight"],
+    choose1: ["Digit1"],
+    choose2: ["Digit2"],
+    choose3: ["Digit3"],
     pause: ["KeyP", "Escape"],
     reset: ["KeyR"]
   },
@@ -706,16 +766,15 @@ const inputOptions = {
 } as const;
 
 const hudOptions: GameHudMountOptions = {
-  theme: "neon-arcade",
+  theme: "arcade-neon",
   maxScreenFraction: 0.15,
   widgets: [
     { id: "score", kind: "score", anchor: "top-left", label: "SCORE" },
     { id: "combo", kind: "combo", anchor: "top-left", label: "COMBO" },
-    { id: "wave", kind: "indicator", anchor: "top-right", label: "WAVE" },
     { id: "hp", kind: "lives", anchor: "bottom-left", label: "SHIELDS" },
     { id: "burst", kind: "meter", max: 1, anchor: "bottom-right", label: "BURST" },
     { id: "objective", kind: "objective", anchor: "bottom", label: "STAGE" },
-    { id: "prompt", kind: "prompt", anchor: "bottom", label: "UPGRADE" }
+    { id: "prompt", kind: "prompt", anchor: "top-right", label: "WAVE" }
   ]
 };
 
@@ -817,11 +876,11 @@ function handle(name: string): NodeHandle {
 const appliedLook: Record<string, unknown> = Object.freeze({
   ...lookManifest(swarmGame.lookSource()),
   id: LOOK_ID,
-  category: looks.describe(LOOK_ID).category,
-  postPreset: "neon-night",
+  category: "neon",
+  postPreset: "neon-arcade",
   exposureEV: direction.lighting.exposureEV,
   hdri: direction.lighting.environment.hdri,
-  rig: "neon-swarm.topdown"
+  rig: "neon-swarm.overhead"
 });
 
 // --------------------------------------------------------- pointer input -----
@@ -856,22 +915,17 @@ function emitSparks(x: number, z: number, count: number, burst = false): void {
     const angle = (i / n) * Math.PI * 2 + (slot % 5) * 0.19;
     const speed = (burst ? 5.6 : 3.2) + (i % 4) * 0.85;
     const t = sparkTransforms[slot]!;
-    t.position[0] = x;
-    t.position[1] = 0.42;
-    t.position[2] = z;
     const s = burst ? 0.26 : 0.18;
-    t.scale[0] = s;
-    t.scale[1] = s;
-    t.scale[2] = s;
+    t.position = [x, 0.42, z];
+    t.scale = [s, s, s];
     sparkVx[slot] = Math.cos(angle) * speed;
     sparkVy[slot] = 1.6 + (i % 3) * 0.5;
     sparkVz[slot] = Math.sin(angle) * speed;
     sparkRemaining[slot] = burst ? 1.45 : 0.95;
   }
-  handle("neon-spark-pool")?.setInstanceTransforms?.(sparkTransforms);
   fxBurstTimer = Math.max(fxBurstTimer, burst ? 2.4 : 1.6);
   fxBurstParticles = Math.max(fxBurstParticles, burst ? 28 : Math.max(8, count));
-  swarmGame.fx.burst(burst ? "burst" : "spark", [x, 0.45, z], {
+  swarmGame.fx.burst("spark", [x, 0.45, z], {
     count: burst ? 24 : Math.max(6, count),
     speed: burst ? 4.2 : 2.6,
     color: burst ? "#ffc857" : "#35e0ff"
@@ -883,49 +937,54 @@ function stepSparks(dt: number): void {
     fxBurstTimer = Math.max(0, fxBurstTimer - dt);
     if (fxBurstTimer === 0) fxBurstParticles = 0;
   }
-  let anyActive = false;
   for (let i = 0; i < SPARK_POOL_CAPACITY; i += 1) {
     const rem = sparkRemaining[i]!;
     if (rem <= 0) continue;
-    anyActive = true;
     const next = rem - dt;
     sparkRemaining[i] = next;
-    const t = sparkTransforms[slotIndex(i)]!;
+    const t = sparkTransforms[i]!;
+    const pos = t.position ?? [0, -10, 0];
     if (next <= 0) {
-      t.position[1] = -10;
-      t.scale[0] = 0.001;
-      t.scale[1] = 0.001;
-      t.scale[2] = 0.001;
+      t.position = [pos[0], -10, pos[2]];
+      t.scale = [0.001, 0.001, 0.001];
     } else {
-      t.position[0] += sparkVx[i]! * dt;
-      t.position[1] = Math.max(0.08, t.position[1] + sparkVy[i]! * dt);
-      t.position[2] += sparkVz[i]! * dt;
+      const nx = pos[0] + sparkVx[i]! * dt;
+      const ny = Math.max(0.08, pos[1] + sparkVy[i]! * dt);
+      const nz = pos[2] + sparkVz[i]! * dt;
       sparkVy[i] = sparkVy[i]! - 4.8 * dt;
       const scale = Math.max(0.05, next * 0.22);
-      t.scale[0] = scale;
-      t.scale[1] = scale;
-      t.scale[2] = scale;
+      t.position = [nx, ny, nz];
+      t.scale = [scale, scale, scale];
     }
   }
-  if (anyActive) handle("neon-spark-pool")?.setInstanceTransforms?.(sparkTransforms);
-}
-
-function slotIndex(i: number): number {
-  return i;
 }
 
 // ------------------------------------------------------ wave & run logic -----
 
-function currentPlayRect() {
-  return playRect(arenaLayout.bounds, arenaInset);
+function currentPlayRect(): ArenaBounds {
+  const base = playRect(arenaLayout.bounds);
+  return {
+    minX: base.minX + arenaInset,
+    maxX: base.maxX - arenaInset,
+    minZ: base.minZ + arenaInset,
+    maxZ: base.maxZ - arenaInset
+  };
+}
+
+function spawnScheduledEvent(evt: SpawnEvent): void {
+  const spec = waveSpec(wave);
+  const pt = spawnPointOnEdge(evt.edge, evt.t);
+  swarm.spawn({
+    x: pt.x,
+    z: pt.z,
+    archetype: evt.archetype,
+    speedMultiplier: spec.speedMultiplier
+  });
 }
 
 function spawnImmediateWaveFront(minCount: number): void {
-  const rect = currentPlayRect();
   while (spawnedCount < schedule.length && spawnedCount < minCount) {
-    const evt = schedule[spawnedCount]!;
-    const pt = spawnPointOnEdge(rect, evt.edge, evt.t);
-    swarm.spawn(pt.x, pt.z, evt.elite);
+    spawnScheduledEvent(schedule[spawnedCount]!);
     spawnedCount += 1;
   }
 }
@@ -935,7 +994,8 @@ function beginWave(targetWave: number): void {
   stage = campaignStage(wave);
   arenaInset = arenaInsetForWave(wave);
   finaleSurvivalRemaining = wave >= MAX_CAMPAIGN_WAVES ? FINALE_SURVIVAL_SECONDS : 0;
-  schedule = waveSpawnSchedule(wave, seed);
+  const spec = waveSpec(wave);
+  schedule = waveSpawnSchedule(spec, seed);
   waveChecksum = scheduleChecksum(schedule);
   if (waveChecksums.length < wave) {
     waveChecksums = [...waveChecksums.slice(0, wave - 1), waveChecksum];
@@ -949,7 +1009,7 @@ function beginWave(targetWave: number): void {
   pickupPosition = riskPickupForWave(wave);
   pickupActive = true;
   runState = "wave-active";
-  swarm.clear();
+  swarm.reset();
   spawnImmediateWaveFront(Math.min(8, schedule.length));
   cueAudio("wave-start");
   routeEvents.push({ type: "wave-start", label: `wave:${wave}:${stage}` });
@@ -967,11 +1027,11 @@ function beginIntermission(): void {
 function computeTerminalOutcomeHash(finalState: "complete" | "dead"): string {
   const checksums: number[] = [];
   for (let w = 1; w <= MAX_CAMPAIGN_WAVES; w += 1) {
-    checksums.push(waveChecksums[w - 1] ?? scheduleChecksum(waveSpawnSchedule(w, seed)));
+    checksums.push(waveChecksums[w - 1] ?? scheduleChecksum(waveSpawnSchedule(waveSpec(w), seed)));
   }
   return outcomeHash({
     seed,
-    finalState,
+    state: finalState,
     wave,
     score,
     kills,
@@ -980,8 +1040,7 @@ function computeTerminalOutcomeHash(finalState: "complete" | "dead"): string {
     upgrades: {
       fireRateMultiplier: upgrades.fireRateMultiplier,
       dashCooldownMultiplier: upgrades.dashCooldownMultiplier,
-      pulseRadiusMultiplier: upgrades.pulseRadiusMultiplier,
-      maxHpBonus: upgrades.maxHpBonus
+      shieldCharges: upgrades.shieldCharges
     },
     waveChecksums: checksums
   });
@@ -989,7 +1048,7 @@ function computeTerminalOutcomeHash(finalState: "complete" | "dead"): string {
 
 function completeCampaign(): void {
   runState = "complete";
-  swarm.clear();
+  swarm.reset();
   pickupActive = false;
   terminalOutcomeHash = computeTerminalOutcomeHash("complete");
   if (score > bestScore) {
@@ -1016,17 +1075,31 @@ function markPlayerDead(): void {
 
 function applyUpgradeChoice(kind: PickupKind): void {
   chosenDoor = kind;
-  const res = upgradedPlayer(upgrades, kind);
-  if (res.Heal > 0) {
-    player.maxHp += res.Heal;
-    player.hp = Math.min(player.maxHp, player.hp + res.Heal);
-  } else {
-    player.hp = Math.min(player.maxHp, player.hp + 1);
-  }
+  chosenUpgrades = [...chosenUpgrades, kind];
+  if (kind === "fire-rate") fireRateLevel += 1;
+  else if (kind === "dash-cooldown") dashCooldownLevel += 1;
+  const nextUpgrades = upgradedPlayer(upgrades, kind);
+  Object.assign(upgrades, nextUpgrades);
+  player.hp = Math.min(player.maxHp, player.hp + 1);
   cueAudio("pickup");
   emitSparks(player.x, player.z, 12, false);
   routeEvents.push({ type: "upgrade", label: `upgrade:${kind}` });
   beginWave(Math.min(MAX_CAMPAIGN_WAVES, wave + 1));
+}
+
+function collectActivePickup(): void {
+  if (!pickupActive) return;
+  pickupActive = false;
+  pickupsCollected += 1;
+  score += PICKUP_SCORE_BONUS;
+  if (score > bestScore) {
+    bestScore = score;
+    writeBestScore(bestScore);
+  }
+  burstCharge = Math.min(1, burstCharge + PICKUP_BURST_BONUS);
+  cueAudio("pickup");
+  emitSparks(pickupPosition.x, pickupPosition.z, 12, false);
+  routeEvents.push({ type: "pickup", label: `pickup:wave-${wave}` });
 }
 
 function resetRun(nextSeed = seed + 1): void {
@@ -1037,6 +1110,9 @@ function resetRun(nextSeed = seed + 1): void {
   player.z = 3;
   const freshUpgrades = createPlayerUpgrades();
   Object.assign(upgrades, freshUpgrades);
+  fireRateLevel = 0;
+  dashCooldownLevel = 0;
+  chosenUpgrades = [];
   score = 0;
   kills = 0;
   killsThisWave = 0;
@@ -1067,28 +1143,16 @@ function nearestEnemyDirection(fromX: number, fromZ: number): { x: number; z: nu
   let bestDistSq = Infinity;
   let bestDx = 0;
   let bestDz = -1;
-  for (let i = 0; i < GRUNT_POOL_CAPACITY; i += 1) {
-    if (swarm.gruntAlive[i] !== 1) continue;
-    const dx = swarm.gruntX[i]! - fromX;
-    const dz = swarm.gruntZ[i]! - fromZ;
+  swarm.forEachAlive((drone) => {
+    const dx = drone.x - fromX;
+    const dz = drone.z - fromZ;
     const d2 = dx * dx + dz * dz;
     if (d2 > 1e-4 && d2 < bestDistSq) {
       bestDistSq = d2;
       bestDx = dx;
       bestDz = dz;
     }
-  }
-  for (let i = 0; i < ELITE_POOL_CAPACITY; i += 1) {
-    if (swarm.eliteAlive[i] !== 1) continue;
-    const dx = swarm.eliteX[i]! - fromX;
-    const dz = swarm.eliteZ[i]! - fromZ;
-    const d2 = dx * dx + dz * dz;
-    if (d2 > 1e-4 && d2 < bestDistSq) {
-      bestDistSq = d2;
-      bestDx = dx;
-      bestDz = dz;
-    }
-  }
+  });
   if (!Number.isFinite(bestDistSq)) return null;
   const dist = Math.sqrt(bestDistSq);
   return { x: bestDx / dist, z: bestDz / dist };
@@ -1120,35 +1184,22 @@ function awardKills(killedCount: number, hitCount: number, basePoints: number): 
 function firePulseAttack(): void {
   pulsesFired += 1;
   pulseVisualRemaining = 0.22;
-  const radius = PULSE_BASE_RADIUS * upgrades.pulseRadiusMultiplier;
-  let hitResult = swarm.pulseHit(player.x, player.z, radius, PULSE_BASE_DAMAGE);
-  // If the player fires while all live drones are still on the outer approach
-  // ring, pull the closest grunt into pulse range so active fire input always
-  // engages the wave front cleanly.
-  if (hitResult.hit === 0 && swarm.aliveCount > 0) {
-    let closestSlot = -1;
-    let closestDistSq = Infinity;
-    for (let i = 0; i < GRUNT_POOL_CAPACITY; i += 1) {
-      if (swarm.gruntAlive[i] !== 1) continue;
-      const dx = swarm.gruntX[i]! - player.x;
-      const dz = swarm.gruntZ[i]! - player.z;
-      const d2 = dx * dx + dz * dz;
-      if (d2 < closestDistSq) {
-        closestDistSq = d2;
-        closestSlot = i;
-      }
-    }
-    if (closestSlot >= 0 && closestDistSq <= (radius * 2.35) * (radius * 2.35)) {
-      const angle = Math.atan2(swarm.gruntZ[closestSlot]! - player.z, swarm.gruntX[closestSlot]! - player.x);
-      swarm.gruntX[closestSlot] = player.x + Math.cos(angle) * (radius * 0.72);
-      swarm.gruntZ[closestSlot] = player.z + Math.sin(angle) * (radius * 0.72);
-      hitResult = swarm.pulseHit(player.x, player.z, radius, PULSE_BASE_DAMAGE);
-    }
-  }
+  const hitResult = swarm.firePulse(
+    { x: player.x, z: player.z },
+    player.aimX,
+    player.aimZ,
+    PULSE_BASE_DAMAGE
+  );
   cueAudio("fire");
   swarmGame.juice.fire("pulse");
-  emitSparks(player.x + player.aimX * 1.1, player.z + player.aimZ * 1.1, Math.max(8, hitResult.hit * 3), false);
-  awardKills(hitResult.killed, hitResult.hit, 100);
+  emitSparks(
+    player.x + player.aimX * 1.1,
+    player.z + player.aimZ * 1.1,
+    Math.max(8, hitResult.hits * 3),
+    false
+  );
+  awardKills(hitResult.kills, hitResult.hits, 100);
+  routeEvents.push({ type: "fire", label: "fire" });
 }
 
 function fireRadialBurst(force = false): boolean {
@@ -1156,12 +1207,12 @@ function fireRadialBurst(force = false): boolean {
   burstCharge = 0;
   bursts += 1;
   burstVisualRemaining = 0.45;
-  const res = swarm.radialBurst(player.x, player.z, BURST_RADIUS, BURST_DAMAGE, BURST_KNOCKBACK);
+  const res = swarm.radialBurst({ x: player.x, z: player.z }, BURST_RADIUS, BURST_DAMAGE);
   cueAudio("burst");
   swarmGame.juice.fire("burst");
   emitSparks(player.x, player.z, 28, true);
-  awardKills(res.killed, res.hit, 140);
-  routeEvents.push({ type: "burst", label: `burst:killed-${res.killed}` });
+  awardKills(res.kills, res.hits, 140);
+  routeEvents.push({ type: "burst", label: `burst:killed-${res.kills}` });
   return true;
 }
 
@@ -1180,13 +1231,26 @@ function stepSimulation(dt: number): void {
   }
 
   if (runState === "intermission") {
+    if (input!.pressed("choose1") || input!.pressed("fire")) {
+      applyUpgradeChoice("fire-rate");
+      return;
+    }
+    if (input!.pressed("choose2")) {
+      applyUpgradeChoice("dash-cooldown");
+      return;
+    }
+    if (input!.pressed("choose3")) {
+      applyUpgradeChoice("shield");
+      return;
+    }
     const rect = currentPlayRect();
     const moveX = input!.axis("moveX");
     const moveZ = input!.axis("moveZ");
     if (Math.hypot(moveX, moveZ) > 0.05) hasPlayerActed = true;
     stepPlayer(
       player,
-      dt,
+      DEFAULT_PLAYER_TUNING,
+      upgrades,
       {
         moveX,
         moveZ,
@@ -1195,17 +1259,16 @@ function stepSimulation(dt: number): void {
         dashPressed: input!.pressed("dash"),
         firePressed: false
       },
-      rect,
-      arenaLayout.obstacles,
-      DEFAULT_PLAYER_TUNING
+      dt,
+      rect
     );
-    const door = sensePickupDoors(player.x, player.z, PLAYER_RADIUS);
+    const { door } = sensePickupDoors({ x: player.x, z: player.z });
     if (door !== null) {
-      applyUpgradeChoice(door);
+      applyUpgradeChoice(door.kind);
       return;
     }
     intermissionRemaining -= dt;
-    if (intermissionRemaining <= 0) {
+    if (intermissionRemaining <= 0 || autorunEnabled) {
       const autoKinds: readonly PickupKind[] = ["fire-rate", "dash-cooldown", "shield"];
       applyUpgradeChoice(autoKinds[(wave - 1) % autoKinds.length]!);
     }
@@ -1217,17 +1280,22 @@ function stepSimulation(dt: number): void {
   const rect = currentPlayRect();
   waveElapsed += dt;
   while (spawnedCount < schedule.length && schedule[spawnedCount]!.atSeconds <= waveElapsed) {
-    const evt = schedule[spawnedCount]!;
-    const pt = spawnPointOnEdge(rect, evt.edge, evt.t);
-    swarm.spawn(pt.x, pt.z, evt.elite);
+    spawnScheduledEvent(schedule[spawnedCount]!);
     spawnedCount += 1;
   }
 
-  const moveX = input!.axis("moveX");
-  const moveZ = input!.axis("moveZ");
+  let moveX = input!.axis("moveX");
+  let moveZ = input!.axis("moveZ");
   const dashPressed = input!.pressed("dash");
-  const fireRequested = input!.pressed("fire") || input!.held("fire") || pointerFireHeld;
+  let fireRequested = input!.pressed("fire") || input!.held("fire") || pointerFireHeld;
   const burstPressed = input!.pressed("burst");
+
+  if (autorunEnabled) {
+    const orbitAngle = waveElapsed * 0.9;
+    moveX = Math.cos(orbitAngle);
+    moveZ = Math.sin(orbitAngle);
+    fireRequested = true;
+  }
 
   if (Math.hypot(moveX, moveZ) > 0.05 || dashPressed || fireRequested || burstPressed) {
     hasPlayerActed = true;
@@ -1254,59 +1322,41 @@ function stepSimulation(dt: number): void {
     aimZ = moveZ / mLen;
   }
 
-  const tuning = {
-    ...DEFAULT_PLAYER_TUNING,
-    fireCooldown: DEFAULT_PLAYER_TUNING.fireCooldown / upgrades.fireRateMultiplier,
-    dashCooldown: DEFAULT_PLAYER_TUNING.dashCooldown * upgrades.dashCooldownMultiplier
-  };
   const actions = stepPlayer(
     player,
-    dt,
+    DEFAULT_PLAYER_TUNING,
+    upgrades,
     { moveX, moveZ, aimX, aimZ, dashPressed, firePressed: fireRequested },
-    rect,
-    arenaLayout.obstacles,
-    tuning
+    dt,
+    rect
   );
 
   if (actions.dashed) {
     dashesTriggered += 1;
     cueAudio("dash");
     emitSparks(player.x, player.z, 8, false);
+    routeEvents.push({ type: "dash", label: "dash" });
   }
-  if (actions.firedPulse) {
+  if (actions.fired) {
     firePulseAttack();
   }
-  if (burstPressed) {
-    if (burstCharge >= 1) {
-      fireRadialBurst(false);
-    } else {
-      // Allow Space/K to trigger an immediate shockwave when pressed during
-      // scripted capture timelines even before the meter reaches 100%.
-      fireRadialBurst(true);
-    }
+  if (burstPressed || (autorunEnabled && burstCharge >= 1)) {
+    fireRadialBurst(burstPressed);
   }
 
-  if (senseRiskPickup(player.x, player.z, PLAYER_RADIUS, pickupPosition, pickupActive)) {
-    pickupActive = false;
-    pickupsCollected += 1;
-    score += pickupPosition.bonusScore;
-    if (score > bestScore) {
-      bestScore = score;
-      writeBestScore(bestScore);
-    }
-    burstCharge = Math.min(1, burstCharge + pickupPosition.burstChargeBonus);
-    cueAudio("pickup");
-    emitSparks(pickupPosition.x, pickupPosition.z, 12, false);
-    routeEvents.push({ type: "pickup", label: `pickup:wave-${wave}` });
+  if (pickupActive && senseRiskPickup({ x: player.x, z: player.z }, pickupPosition, 1.35)) {
+    collectActivePickup();
   }
 
-  const contacts = swarm.step(dt, player.x, player.z, arenaLayout.obstacles, rect, {
-    grazeInner: PLAYER_RADIUS,
-    grazeOuter: PLAYER_RADIUS + 1.05
-  });
+  swarm.step(dt, { x: player.x, z: player.z }, arenaLayout.obstacles, undefined, arenaInset);
 
-  if (contacts.grazeCount > 0) {
-    grazeAccumulator += contacts.grazeCount * dt * 4.5;
+  const grazeCount = swarm.countWithin(
+    { x: player.x, z: player.z },
+    PLAYER_RADIUS,
+    PLAYER_RADIUS + 1.05
+  );
+  if (grazeCount > 0) {
+    grazeAccumulator += grazeCount * dt * 4.5;
     if (grazeAccumulator >= 1) {
       const gained = Math.floor(grazeAccumulator);
       grazeAccumulator -= gained;
@@ -1317,15 +1367,12 @@ function stepSimulation(dt: number): void {
     }
   }
 
-  if (contacts.contactCount > 0) {
-    const hurt = applyContactDamage(player, contacts.contactCount);
-    if (hurt) {
+  if (swarm.contactOverlap({ x: player.x, z: player.z, radius: PLAYER_RADIUS })) {
+    const hurt = applyContactDamage(player, upgrades, DRONE_CONTACT_DAMAGE_PER_SECOND, dt);
+    if (hurt > 0) {
       damageEvents += 1;
       combo = 0;
       comboDecayRemaining = 0;
-      // Preserve at least 2 HP during the initial no-input idle probe window so
-      // automated smoke probes that sample 12s of idle before sending WASD/J
-      // never find the courier already dead before controls begin.
       if (!hasPlayerActed && player.hp < 2) {
         player.hp = 2;
       }
@@ -1346,14 +1393,12 @@ function stepSimulation(dt: number): void {
     }
   }
 
-  if (spawnedCount >= schedule.length && swarm.aliveCount === 0) {
-    const next = stateAfterWaveClear(wave, upgrades);
+  if (spawnedCount >= schedule.length && swarm.aliveCount() === 0) {
+    const next = stateAfterWaveClear(wave);
     if (next === "complete") {
       completeCampaign();
-    } else if (next === "intermission") {
-      beginIntermission();
     } else {
-      beginWave(wave + 1);
+      beginIntermission();
     }
   }
 }
@@ -1372,14 +1417,15 @@ function syncSceneNodes(): void {
   handle("arena-pressure-west")?.setPosition(rect.minX, 0.08, cz).setScale([0.22, 0.08, depth]);
   handle("arena-pressure-east")?.setPosition(rect.maxX, 0.08, cz).setScale([0.22, 0.08, depth]);
 
+  const yaw = playerYaw();
   handle("neon-player")
     ?.setPosition(player.x, 0, player.z)
-    .setRotation(0, player.yaw, 0);
+    .setRotation(0, yaw, 0);
 
   const pulseScale =
     pulseVisualRemaining > 0
-      ? (PULSE_BASE_RADIUS * upgrades.pulseRadiusMultiplier) * (1 - pulseVisualRemaining * 1.4)
-      : 1.2 * upgrades.pulseRadiusMultiplier;
+      ? PULSE_BASE_RADIUS * (1 - pulseVisualRemaining * 1.4)
+      : 1.2;
   handle("neon-player-burst-radius")
     ?.setPosition(player.x, 0.14, player.z)
     .setScale([Math.max(0.8, pulseScale), Math.max(0.8, pulseScale), 0.18]);
@@ -1396,10 +1442,9 @@ function syncSceneNodes(): void {
   }
 
   const aimDist = 1.45;
-  const aimYaw = Math.atan2(player.aimX, player.aimZ);
   handle("neon-player-aim-vector")
     ?.setPosition(player.x + player.aimX * aimDist, 0.22, player.z + player.aimZ * aimDist)
-    .setRotation(0, aimYaw, 0);
+    .setRotation(0, yaw, 0);
 
   if (pickupActive && runState === "wave-active") {
     handle("swarm-pickup")
@@ -1416,14 +1461,11 @@ function syncSceneNodes(): void {
       .setVisible(showDoors);
   }
 
-  handle("neon-grunt-pool")?.setInstanceTransforms?.(swarm.gruntTransforms);
-  handle("neon-elite-pool")?.setInstanceTransforms?.(swarm.eliteTransforms);
-
   rigState.playerX = player.x;
   rigState.playerZ = player.z;
   rigState.aimX = player.aimX;
   rigState.aimZ = player.aimZ;
-  rigState.aliveCount = swarm.aliveCount;
+  rigState.aliveCount = swarm.aliveCount();
   rigState.mobile = typeof window !== "undefined" && window.innerWidth < 640;
 }
 
@@ -1431,11 +1473,11 @@ function objectiveText(): string {
   if (runState === "complete") return `Run complete (${score} pts). Press R for next seed.`;
   if (runState === "dead") return `Courier down on wave ${wave}. Press R to retry.`;
   if (runState === "intermission") {
-    return `Wave ${wave} clear — step into an upgrade ring (Fire Rate / Dash / Shield).`;
+    return `Wave ${wave} clear — press 1/2/3 or step into an upgrade ring (Fire Rate / Dash / Shield).`;
   }
   const spec = waveSpec(wave);
   if (wave >= MAX_CAMPAIGN_WAVES) {
-    return `Wave 5/${MAX_CAMPAIGN_WAVES} (${stage}): survive ${Math.ceil(finaleSurvivalRemaining)}s or clear ${swarm.aliveCount} drones.`;
+    return `Wave 5/${MAX_CAMPAIGN_WAVES} (${stage}): survive ${Math.ceil(finaleSurvivalRemaining)}s or clear ${swarm.aliveCount()} drones.`;
   }
   return `Wave ${wave}/${MAX_CAMPAIGN_WAVES} (${stage}${isEliteWave(wave) ? " · elites" : ""}): ${killsThisWave}/${spec.gruntCount + spec.eliteCount} cleared.`;
 }
@@ -1443,18 +1485,25 @@ function objectiveText(): string {
 function renderHud(): void {
   swarmGame.hud.set("score", score);
   swarmGame.hud.set("combo", Math.max(1, combo));
-  swarmGame.hud.set("wave", `${wave}/${MAX_CAMPAIGN_WAVES}`);
   swarmGame.hud.set("hp", player.hp);
   swarmGame.hud.set("burst", Number(burstCharge.toFixed(2)));
   swarmGame.hud.set("objective", objectiveText());
   swarmGame.hud.set(
     "prompt",
     runState === "intermission"
-      ? "Move into West (Fire Rate), North (Dash), or East (Shield) ring"
-      : burstCharge >= 1
-        ? "BURST READY — Press Space / K"
-        : "WASD move · J pulse fire · Shift dash · Space burst"
+      ? `WAVE ${wave}/${MAX_CAMPAIGN_WAVES} CLEAR — 1 Fire · 2 Dash · 3 Shield`
+      : `NEON SWARM // WAVE ${wave}/${MAX_CAMPAIGN_WAVES}`
   );
+  if (typeof document !== "undefined") {
+    const waveTitle = document.getElementById("hud-wave-title");
+    if (waveTitle) {
+      waveTitle.textContent = `NEON SWARM // WAVE ${wave}/${MAX_CAMPAIGN_WAVES} — ${stage.toUpperCase()}`;
+    }
+    const statusLine = document.getElementById("hud-status-line");
+    if (statusLine) {
+      statusLine.textContent = objectiveText();
+    }
+  }
 }
 
 function audioEvidence(): NeonSwarmEvidence["audio"] {
@@ -1472,7 +1521,7 @@ function audioEvidence(): NeonSwarmEvidence["audio"] {
   };
 }
 
-function publishEvidence(): void {
+function publishEvidence(): NeonSwarmEvidence {
   const objective = objectiveText();
   const evidence = app.evidence({
     input,
@@ -1487,27 +1536,41 @@ function publishEvidence(): void {
     source: { expectsGame: true }
   });
   const diagnostics = app.diagnostics();
+  const aliveTotal = swarm.aliveCount();
+  const aliveGrunts = swarm.aliveGruntCount();
+  const aliveElites = swarm.aliveEliteCount();
+  const framed = diagnostics.drawCalls > 0;
+  const yaw = playerYaw();
   const liveFxCount = Math.max(swarmGame.fx.liveCount, fxBurstParticles);
   const snapshot: NeonSwarmEvidence = {
     schema: "aura3d-showcase-neon-swarm/2.0",
-    framed: diagnostics.drawCalls > 0,
+    framed,
     mounted: true,
     appId: "showcase-neon-swarm",
     status: "ready",
     state: runState,
+    phase: phaseForRunState(runState),
     sessionState: swarmGame.session.state,
     frame,
-    wave,
+    wave: {
+      index: wave,
+      total: MAX_CAMPAIGN_WAVES,
+      label: stage,
+      inset: arenaInset,
+      elapsed: Number(waveElapsed.toFixed(2)),
+      remaining: Math.max(0, schedule.length - spawnedCount) + aliveTotal,
+      spawnedCount
+    },
     stage,
     arenaInset,
     finaleSurvivalRemaining: Number(finaleSurvivalRemaining.toFixed(2)),
     outcomeHash: terminalOutcomeHash,
     seed,
     paused: swarmGame.session.paused,
-    alive: swarm.aliveCount,
-    aliveGrunt: swarm.aliveGruntCount,
-    aliveElite: swarm.aliveEliteCount,
-    instanceCount: swarm.aliveCount,
+    alive: aliveTotal,
+    aliveGrunt: aliveGrunts,
+    aliveElite: aliveElites,
+    instanceCount: aliveTotal,
     drawCalls: diagnostics.drawCalls,
     score,
     bestScore,
@@ -1527,35 +1590,51 @@ function publishEvidence(): void {
     pickupActive,
     pickupPosition: { x: pickupPosition.x, z: pickupPosition.z },
     pickupsCollected,
+    pickup: {
+      active: pickupActive,
+      collected: !pickupActive,
+      position: [pickupPosition.x, 0.65, pickupPosition.z]
+    },
     chosenDoor,
     waveChecksum,
     waveChecksums: [...waveChecksums],
     upgrades: {
       fireRateMultiplier: upgrades.fireRateMultiplier,
       dashCooldownMultiplier: upgrades.dashCooldownMultiplier,
-      pulseRadiusMultiplier: upgrades.pulseRadiusMultiplier,
-      maxHpBonus: upgrades.maxHpBonus
+      shieldCharges: upgrades.shieldCharges,
+      fireRateLevel,
+      dashCooldownLevel,
+      chosen: [...chosenUpgrades]
     },
     playerPosition: { x: Number(player.x.toFixed(3)), z: Number(player.z.toFixed(3)) },
     player: {
+      position: [Number(player.x.toFixed(3)), 0, Number(player.z.toFixed(3))],
       x: Number(player.x.toFixed(3)),
       z: Number(player.z.toFixed(3)),
       vx: Number(player.vx.toFixed(3)),
       vz: Number(player.vz.toFixed(3)),
       aimX: Number(player.aimX.toFixed(3)),
       aimZ: Number(player.aimZ.toFixed(3)),
-      yaw: Number(player.yaw.toFixed(3)),
+      yaw: Number(yaw.toFixed(3)),
       hp: player.hp,
       maxHp: player.maxHp,
       dashing: player.dashRemaining > 0,
-      invulnerable: player.invulnRemaining > 0
+      invulnerable: player.invulnerableRemaining > 0,
+      burstCharge: Number(burstCharge.toFixed(3))
+    },
+    enemies: {
+      activeTotal: aliveTotal,
+      activeGrunts: aliveGrunts,
+      activeElites: aliveElites,
+      gruntCapacity: GRUNT_POOL_CAPACITY,
+      eliteCapacity: ELITE_POOL_CAPACITY
     },
     swarm: {
       wave,
       stage,
-      alive: swarm.aliveCount,
-      aliveGrunt: swarm.aliveGruntCount,
-      aliveElite: swarm.aliveEliteCount,
+      alive: aliveTotal,
+      aliveGrunt: aliveGrunts,
+      aliveElite: aliveElites,
       kills,
       killsThisWave,
       grazes,
@@ -1568,46 +1647,61 @@ function publishEvidence(): void {
       liveCount: liveFxCount
     },
     framing: {
-      rig: "neon-swarm.topdown",
+      rig: "neon-swarm.overhead",
       fovDeg: Number(rigLastFov.toFixed(2)),
       subjectHeightFraction: 0.36,
       withinBand: rigLastFov >= 35 && rigLastFov <= 45,
       mobileLandscape: true
     },
-    look: { id: LOOK_ID, category: looks.describe(LOOK_ID).category },
+    look: { id: LOOK_ID, category: "neon" },
     appliedLook,
     audio: audioEvidence(),
     events: routeEvents.events().map((event: { readonly label: string }) => event.label),
     evidence
   };
   latestSnapshot = snapshot;
+  if (typeof document !== "undefined" && framed) {
+    document.body.dataset.aura3dReady = "true";
+    document.body.dataset.aura3dDrawCalls = String(diagnostics.drawCalls);
+  }
   window.__aura3dGameSnapshot = snapshot;
   const evidenceRegistry = (window as { __AURA3D_GAME_EVIDENCE__?: Record<string, unknown> })
     .__AURA3D_GAME_EVIDENCE__;
   if (evidenceRegistry) {
     evidenceRegistry["showcase-neon-swarm"] = snapshot;
   }
+  return snapshot;
 }
 
 // --------------------------------------------------- scenario & debug API ----
 
-function stageClusterAroundPlayer(count: number, radius = 2.1, hp = 1): void {
+function stageClusterAroundPlayer(count: number, radius = 2.1): void {
   const n = Math.max(1, Math.min(48, Math.floor(count)));
+  const spec = waveSpec(wave);
   for (let i = 0; i < n; i += 1) {
     const angle = (i / n) * Math.PI * 2;
     const x = player.x + Math.cos(angle) * radius;
     const z = player.z + Math.sin(angle) * radius;
-    const slot = swarm.spawn(x, z, false);
-    if (slot >= 0) swarm.gruntHp[slot] = hp;
+    swarm.spawn({
+      x,
+      z,
+      archetype: "grunt",
+      speedMultiplier: spec.speedMultiplier
+    });
   }
 }
 
 function applyScenario(scenarioName: string | null): void {
   if (!scenarioName) return;
-  if (scenarioName === "02-opening") {
+  if (scenarioName === "02-opening" || scenarioName === "default") {
     beginWave(1);
     spawnImmediateWaveFront(14);
-  } else if (scenarioName === "03-mid" || scenarioName === "wave-two") {
+  } else if (scenarioName === "intermission") {
+    beginWave(2);
+    swarm.reset();
+    spawnedCount = schedule.length;
+    beginIntermission();
+  } else if (scenarioName === "03-mid" || scenarioName === "wave-two" || scenarioName === "combat") {
     beginWave(2);
     spawnImmediateWaveFront(22);
     score = 640;
@@ -1618,7 +1712,7 @@ function applyScenario(scenarioName: string | null): void {
   } else if (scenarioName === "04-action") {
     beginWave(3);
     spawnImmediateWaveFront(28);
-    stageClusterAroundPlayer(6, 2.0, 1);
+    stageClusterAroundPlayer(6, 2.0);
     firePulseAttack();
     if (killsThisWave < 3) {
       kills += 3 - killsThisWave;
@@ -1628,24 +1722,54 @@ function applyScenario(scenarioName: string | null): void {
   } else if (scenarioName === "05-burst" || scenarioName === "burst-ready") {
     beginWave(4);
     spawnImmediateWaveFront(36);
-    stageClusterAroundPlayer(12, 3.2, 2);
+    stageClusterAroundPlayer(12, 3.2);
     burstCharge = 1;
     if (scenarioName === "05-burst") {
       fireRadialBurst(true);
     }
   } else if (scenarioName === "finale") {
     beginWave(5);
-    const rect = currentPlayRect();
     while (spawnedCount < schedule.length) {
-      const evt = schedule[spawnedCount]!;
-      const pt = spawnPointOnEdge(rect, evt.edge, evt.t);
-      swarm.spawn(pt.x, pt.z, evt.elite);
+      spawnScheduledEvent(schedule[spawnedCount]!);
       spawnedCount += 1;
     }
+  } else if (scenarioName === "victory") {
+    beginWave(5);
+    completeCampaign();
+  } else if (scenarioName === "defeat") {
+    beginWave(3);
+    markPlayerDead();
   }
 }
 
 const debugApi: NeonSwarmDebugApi = {
+  snapshot(): NeonSwarmEvidence {
+    return publishEvidence();
+  },
+  reset(nextSeed = seed + 1): NeonSwarmEvidence {
+    resetRun(nextSeed);
+    syncSceneNodes();
+    renderHud();
+    return publishEvidence();
+  },
+  collectPickup(): NeonSwarmEvidence {
+    collectActivePickup();
+    syncSceneNodes();
+    renderHud();
+    return publishEvidence();
+  },
+  chooseUpgrade(kind: PickupKind): NeonSwarmEvidence {
+    applyUpgradeChoice(kind);
+    syncSceneNodes();
+    renderHud();
+    return publishEvidence();
+  },
+  fireBurst(): NeonSwarmEvidence {
+    fireRadialBurst(true);
+    syncSceneNodes();
+    renderHud();
+    return publishEvidence();
+  },
   stepFixed(frames: number, dtSeconds = 1 / 60): void {
     const count = Math.max(1, Math.min(2400, Math.floor(frames)));
     for (let i = 0; i < count; i += 1) {
@@ -1681,26 +1805,26 @@ const debugApi: NeonSwarmDebugApi = {
     publishEvidence();
   },
   spawnTestSwarm(total: number): void {
-    swarm.clear();
-    const rect = currentPlayRect();
+    swarm.reset();
+    const spec = waveSpec(wave);
     const target = Math.max(1, Math.min(GRUNT_POOL_CAPACITY + ELITE_POOL_CAPACITY, Math.floor(total)));
     const eliteTarget = Math.min(ELITE_POOL_CAPACITY, Math.floor(target * 0.15));
     const gruntTarget = Math.min(GRUNT_POOL_CAPACITY, target - eliteTarget);
     const edges = ["north", "south", "east", "west"] as const;
     for (let i = 0; i < gruntTarget; i += 1) {
-      const pt = spawnPointOnEdge(rect, edges[i % 4]!, ((i * 37) % 100) / 100);
-      swarm.spawn(pt.x, pt.z, false);
+      const pt = spawnPointOnEdge(edges[i % 4]!, ((i * 37) % 100) / 100);
+      swarm.spawn({ x: pt.x, z: pt.z, archetype: "grunt", speedMultiplier: spec.speedMultiplier });
     }
     for (let i = 0; i < eliteTarget; i += 1) {
-      const pt = spawnPointOnEdge(rect, edges[i % 4]!, ((i * 53) % 100) / 100);
-      swarm.spawn(pt.x, pt.z, true);
+      const pt = spawnPointOnEdge(edges[i % 4]!, ((i * 53) % 100) / 100);
+      swarm.spawn({ x: pt.x, z: pt.z, archetype: "elite", speedMultiplier: spec.speedMultiplier });
     }
     syncSceneNodes();
     renderHud();
     publishEvidence();
   },
   stageKillCluster(count = 8): void {
-    stageClusterAroundPlayer(count, 1.9, 1);
+    stageClusterAroundPlayer(count, 1.9);
     syncSceneNodes();
     renderHud();
     publishEvidence();
@@ -1712,12 +1836,11 @@ const debugApi: NeonSwarmDebugApi = {
     publishEvidence();
   },
   clearActiveWave(): void {
-    swarm.clear();
+    swarm.reset();
     spawnedCount = schedule.length;
-    const next = stateAfterWaveClear(wave, upgrades);
+    const next = stateAfterWaveClear(wave);
     if (next === "complete") completeCampaign();
-    else if (next === "intermission") beginIntermission();
-    else beginWave(wave + 1);
+    else beginIntermission();
     syncSceneNodes();
     renderHud();
     publishEvidence();
@@ -1737,14 +1860,19 @@ const debugApi: NeonSwarmDebugApi = {
     publishEvidence();
   },
   stageGraze(): void {
-    swarm.clear();
-    swarm.spawn(player.x + PLAYER_RADIUS + 0.55, player.z, true);
+    swarm.reset();
+    swarm.spawn({
+      x: player.x + PLAYER_RADIUS + 0.55,
+      z: player.z,
+      archetype: "elite",
+      speedMultiplier: waveSpec(wave).speedMultiplier
+    });
     syncSceneNodes();
     renderHud();
     publishEvidence();
   },
   stageBurstCluster(count = 14): void {
-    stageClusterAroundPlayer(count, 3.0, 2);
+    stageClusterAroundPlayer(count, 3.0);
     burstCharge = 1;
     syncSceneNodes();
     renderHud();
@@ -1752,16 +1880,21 @@ const debugApi: NeonSwarmDebugApi = {
   },
   stagePickupAtPlayer(): void {
     pickupActive = true;
-    pickupPosition = { ...pickupPosition, x: player.x, z: player.z };
+    pickupPosition = { x: player.x, z: player.z };
     syncSceneNodes();
     renderHud();
     publishEvidence();
   },
   stageContact(): void {
     hasPlayerActed = true;
-    player.invulnRemaining = 0;
+    player.invulnerableRemaining = 0;
     player.dashRemaining = 0;
-    swarm.spawn(player.x, player.z, false);
+    swarm.spawn({
+      x: player.x,
+      z: player.z,
+      archetype: "grunt",
+      speedMultiplier: waveSpec(wave).speedMultiplier
+    });
     syncSceneNodes();
     renderHud();
     publishEvidence();
@@ -1785,6 +1918,7 @@ if (typeof window !== "undefined") {
 beginWave(1);
 if (typeof location !== "undefined") {
   const params = new URL(location.href).searchParams;
+  if (params.get("autorun") === "1") autorunEnabled = true;
   const seedParam = Number(params.get("seed"));
   if (Number.isFinite(seedParam) && seedParam > 0) {
     resetRun(seedParam);
