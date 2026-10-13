@@ -139,6 +139,13 @@ export interface GameAudioOptions<TCue extends string = string> {
   readonly footsteps?: GameAudioFootstepOptions<TCue>;
   /** Flag input for `A3D_QR_GAME` (C-25 throw-on-invalid-cue); env/URL apply when absent. */
   readonly qualityRebuild?: { readonly flags?: QrFlagInput };
+  /**
+   * Base URL of the 20 ms format probes. Default "/probes/" — root-absolute
+   * like SFX_PACK_BASE, because routes are served from subpaths
+   * (/apps/<dir>/, /examples/<game>/) while probes live in the root public
+   * tree; the formatProbe relative default 404s under any subpath.
+   */
+  readonly probeBase?: string;
 }
 
 export interface GameAudioListenerPose {
@@ -367,7 +374,8 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       engine = factory({
         context: audioContext as unknown as SoundGraphContext,
         cues: engineCues,
-        buses: initialVolumes
+        buses: initialVolumes,
+        probeBase: options.probeBase ?? "/probes/"
       });
       if (muted) engine.setMuted(true);
     }

@@ -81,7 +81,10 @@ export async function soakIfNeeded(page: { waitForTimeout: (ms: number) => Promi
 export function watchConsole(page: Page): string[] {
   const errors: string[] = [];
   page.on("console", (msg) => {
-    if (msg.type() === "error") errors.push(msg.text());
+    if (msg.type() === "error") {
+      const url = msg.location().url;
+      errors.push(url ? `${msg.text()} (${url})` : msg.text());
+    }
   });
   page.on("pageerror", (err) => errors.push(String(err)));
   return errors;
