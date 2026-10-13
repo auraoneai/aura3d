@@ -2,21 +2,44 @@ import { expect, test } from "@playwright/test";
 import { builtDist, serve, watchConsole, soakIfNeeded } from "./lib/serve";
 
 /**
- * T1.10 (Pulse Tunnel): the route-flag dispatcher boots legacy by default and v2
- * under `?a3d-qr=route-pulse-tunnel`. Flag-off keeps the same evidence global and
- * zero console errors; flag-on reaches `__AURA3D_GAME__.state === "playing"`
- * and publishes `__AURA3D_GAME_EVIDENCE__["showcase-pulse-tunnel"]`.
+ * S1 boot/framed row for the single-path Pulse Tunnel, plus the single-path
+ * S2/S6/S7 rows write-evidence.mjs maps to this spec's titled tests
+ * (`boots to playing`, `appliedLook`, `framing`). The route is rebuilt
+ * single-path on its salvaged gameplay core (beat-clock, gates, patterns,
+ * player, style, conveyor) and the legacy/v2 dispatcher is deleted, so
+ * every URL boots apps/showcase-pulse-tunnel/src/main.ts.
  */
 
 const APP_DIR = "showcase-pulse-tunnel";
-const ROUTE_FLAG = "route-pulse-tunnel";
-// T1.10: v2 specs carry the same engine list the URL contract uses
-// (boot.ts qualityRebuild.flags + games.json qrFlags).
-const ENGINE_FLAGS = "game,camera,lighting,post,materials,vfx,world,tiers,looks";
-const EVIDENCE_GLOBAL = "__PULSE_TUNNEL_EVIDENCE__";
 
-test.describe("pulse-tunnel dispatch (T1.10)", () => {
-  test("flag off boots legacy with its evidence global and no console errors", async ({ page }) => {
+type PulseSnapshot = {
+  framed: boolean;
+  frame: number;
+  state: string;
+  run: {
+    state: string;
+    sectionId: string;
+    shields: number;
+    passed: number;
+    passedOnBeat: number;
+  };
+  player: { lane: number; x: number; y: number };
+  look: { id: string; category: string };
+  appliedLook: Record<string, unknown>;
+};
+
+async function snapshotOf(page: import("@playwright/test").Page): Promise<PulseSnapshot> {
+  return page.evaluate(() =>
+    (window as Record<string, unknown>).__aura3dGameSnapshot as PulseSnapshot);
+}
+
+async function bootFramed(page: import("@playwright/test").Page, url: string): Promise<void> {
+  await page.goto(`${url}/`);
+  await expect.poll(() => snapshotOf(page).then((s) => s?.framed), { timeout: 30_000 }).toBe(true);
+}
+
+test.describe("pulse-tunnel single-path boot (S1)", () => {
+  test("boots framed with a sized canvas and no console errors", async ({ page }) => {
     const root = builtDist(APP_DIR);
     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
     const errors = watchConsole(page);
@@ -24,11 +47,23 @@ test.describe("pulse-tunnel dispatch (T1.10)", () => {
     try {
       await page.goto(`${url}/`);
       await expect.poll(() =>
-        page.evaluate((g) => Boolean((window as Record<string, unknown>)[g]), EVIDENCE_GLOBAL),
+        page.evaluate(() => Boolean((window as Record<string, unknown>).__aura3dGameSnapshot)),
         { timeout: 30_000 }).toBe(true);
-      // The v2 beacon must NOT publish under flag-off.
-      const v2 = await page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__);
-      expect(v2).toBeUndefined();
+      await expect.poll(() =>
+        page.evaluate(() =>
+          ((window as Record<string, unknown>).__aura3dGameSnapshot as { framed?: boolean }).framed),
+        { timeout: 30_000 }).toBe(true);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.framed).toBe(true);
+      expect(snapshot.run.shields).toBe(3);
+      expect(snapshot.player.lane).toBe(1);
+      const canvas = await page.evaluate(() => {
+        const el = document.querySelector("canvas");
+        return el === null ? null : { width: el.clientWidth, height: el.clientHeight };
+      });
+      expect(canvas, "no canvas element mounted").not.toBeNull();
+      expect(canvas!.width).toBeGreaterThan(0);
+      expect(canvas!.height).toBeGreaterThan(0);
       await soakIfNeeded(page);
       expect(errors).toEqual([]);
     } finally {
@@ -36,26 +71,76 @@ test.describe("pulse-tunnel dispatch (T1.10)", () => {
     }
   });
 
-  test("`?a3d-qr=route-pulse-tunnel` boots v2 to state playing with the real impl", async ({ page }) => {
+  // S2 (single-path): main.ts drives createGame start() (booting -> loading
+  // -> playing after the first presented draw) and advances the frame loop.
+  test("boots to playing: framed snapshot with 3 shields and advancing frames", async ({ page }) => {
     const root = builtDist(APP_DIR);
     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
-      await expect.poll(() =>
-        page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined),
-        { timeout: 30_000 }).toBe(true);
-      const state = await page.evaluate(() =>
-        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
-      expect(state).toBe("playing");
-      // Real C-24 impl publishes per-route evidence under the games.json
-      // evidenceGlobal (FLAG-2).
-      const evidence = await page.evaluate((app) =>
-        ((window as Record<string, unknown>).__AURA3D_GAME_EVIDENCE__ as Record<string, unknown> | undefined)?.[app],
-        APP_DIR);
-      expect(evidence, "v2 evidence section missing").toBeTruthy();
-      await soakIfNeeded(page);
+      await bootFramed(page, url);
+      const first = await snapshotOf(page);
+      expect(first.run.shields).toBe(3);
+      expect(first.player.lane).toBe(1);
+      await expect.poll(() => snapshotOf(page).then((s) => s.frame), { timeout: 30_000 })
+        .toBeGreaterThan(first.frame);
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
+  });
+
+  // S6 (single-path): asserts the C-31 look manifest and neon-night output
+  // preset applied on the live page.
+  test("appliedLook resolves to neon-night on the live page", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.look.id).toBe("neon-night");
+      expect(snapshot.appliedLook.postPreset).toBe("neon-night");
+      expect(snapshot.appliedLook.rig).toBe("pulse-tunnel.chase");
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
+  });
+
+  // S7 (single-path): split into separate desktop and mobile tests so WebKit
+  // gets a fresh page/WebGL context per viewport instead of crashing on a
+  // second page.goto.
+  test("framing holds at desktop viewport", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await page.setViewportSize({ width: 1920, height: 1080 });
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.framed).toBe(true);
+      expect(snapshot.run.shields).toBe(3);
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
+  });
+
+  test("framing holds at mobile viewport", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.framed).toBe(true);
+      expect(snapshot.run.shields).toBe(3);
       expect(errors).toEqual([]);
     } finally {
       server.close();

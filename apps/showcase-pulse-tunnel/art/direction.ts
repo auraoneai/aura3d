@@ -43,11 +43,9 @@ export default defineArtDirection({
   },
   framing: { rig: "chase", subjectHeightFraction: [0.15, 0.3], fovDeg: [55, 75], mobile: "landscape" },
   assets: [
-    { role: "hero", assetKey: "beam-drone", maxTriangles: 15000, minTriangles: 4000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
-    { role: "hero", assetKey: "beam-karn", maxTriangles: 30000, minTriangles: 8000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
-    { role: "world", assetKey: "pulse-tunnel-segments", kit: "K4", maxTriangles: 80000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "gate-frames", kit: "K4", maxTriangles: 12000, textureSet: "BC+N+ORM+E", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "gradient-sky", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 1024 }
+    { role: "hero", assetKey: "pulseRunnerCraft", maxTriangles: 150000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
+    { role: "world", assetKey: "pulseReactorEncounterWorld", maxTriangles: 250000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "pulseTerminalSentry", maxTriangles: 150000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "perfect", kind: "burst", flipbook: "k9-flash" },
@@ -63,14 +61,7 @@ export default defineArtDirection({
     { event: "bed", cue: "tunnel-wind-bed", variants: 1 }
   ],
   signatureEffect: "Beat-synced emissive ribbons on a synthwave dome; drone trails and camera FOV kick land the rhythm.",
-  standIns: [
-    { feature: "curve/ribbon geometry (PRD 01 curve)", file: "src/v2/scene/world.ts", request: "R-14-14", removeWhen: "C-23 curve/ribbon real" },
-    { feature: "drive-scale tunnel textures", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "authored 1-2k mipped maps" },
-    { feature: "section lighting sync", file: "src/v2/scene/lighting.ts", request: "R-14-14", removeWhen: "PRD 09 event lighting real" },
-    { feature: "K9 flipbook atlas", file: "src/v2/scene/fx.ts", request: "R-14-07", removeWhen: "K9 flipbooks admitted" },
-    { feature: "flag-off ambient dust particles (EFFECT_ZERO_PIXELS on capture)", file: "src/legacy/main.ts", request: "R-14-16", removeWhen: "EffectDiagnostics only tracks mounted consumer passes (#807)" },
-    { feature: "legacy stem-bus tunnel audio", file: "src/legacy/tunnel-audio.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" }
-  ],
+  standIns: [],
   criticalCategories: ["environment_world", "vfx", "atmospheric_effects"],
   tiers: {
     low: { particles: 200, shadowMap: 512, cascades: 1, textureMax: 1024 },
