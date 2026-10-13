@@ -41,13 +41,22 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "topDown", subjectHeightFraction: [0.65, 0.75], fovDeg: [35, 50], mobile: "landscape" },
+  // The rebuilt single-path scene (src/main.ts) renders from exactly three
+  // admitted typed assets (apps/showcase-orbital-defense/aura.assets.json):
+  // the Kenney Space Kit craft_racer interceptor, craft_miner drone pool and
+  // meteor_detailed core planet copied from the arena-shooter template. The
+  // former wishlist roles (station-turret / interceptor / drone-a / drone-b /
+  // asteroid-belt) were never admitted and are gone with the old scene.
+  // Neither craft is staged in a shared kit yet, so no `kit` is claimed:
+  // S10's kit half stays failing until a human look-dev review accepts a
+  // staged kit file (verdicts are never authored here). The craft are
+  // low-poly props (ship 280 tris, drone 384, planet 196, untextured), so
+  // they carry `prop`/`world` roles — hero/enemy roles would claim a
+  // triangle floor these GLBs do not meet. Budgets bound the measured GLBs.
   assets: [
-    { role: "world", assetKey: "planet", kit: "K5", maxTriangles: 32768, minTriangles: 16384, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "hero", assetKey: "station-turret", kit: "K7", maxTriangles: 12000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "interceptor", kit: "K7", maxTriangles: 8000, minTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "drone-a", kit: "K7", maxTriangles: 8000, minTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "drone-b", kit: "K7", maxTriangles: 8000, minTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "asteroid-belt", kit: "K5", maxTriangles: 60000, textureSet: "BC+N", maxTextureSize: 1024 }
+    { role: "prop", assetKey: "ship", maxTriangles: 1000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "drone", maxTriangles: 1000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "world", assetKey: "planet", maxTriangles: 1000, textureSet: "BC+N", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "bolt-fire", kind: "trail", flipbook: "k9-streak" },
@@ -63,13 +72,11 @@ export default defineArtDirection({
     { event: "music", cue: "orbital-music", variants: 1 }
   ],
   signatureEffect: "Planet at terminator with city-light night side; every drone kill is an HDR additive explosion + flash.",
-  standIns: [
-    { feature: "orbital camera 25-35° above plane + slow drift", file: "src/v2/scene/camera.ts", request: "R-14-10", removeWhen: "C-22 rigs.orbit/topDown real" },
-    { feature: "planet day/night terminator + atmosphere rim", file: "src/v2/scene/materials.ts", request: "R-14-14", removeWhen: "PRD 04 material.planet/atmosphere real (§8.1)" },
-    { feature: "shield additive Fresnel + hex mask", file: "src/v2/scene/fx.ts", request: "R-14-14", removeWhen: "PRD 04 §8.1 shield variant real" },
-    { feature: "laser/explosion/shield cues + hum bed", file: "src/v2/boot.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" },
-    { feature: "K1 deep-space starfield IBL (nightCinematic stand-in)", file: "src/v2/scene/lighting.ts", request: "R-14-13", removeWhen: "K1 starfield .hdr admitted" }
-  ],
+  // The five former stand-ins lived in the deleted src/v2 tree (orbit rig,
+  // terminator planet, shield fresnel, cue strings, night IBL); the rebuilt
+  // single-path scene uses the template's real rig/look/effects instead, so
+  // no route-local stand-ins remain to track.
+  standIns: [],
   criticalCategories: ["environment_world", "modeling_assets", "vfx"],
   tiers: {
     low: { particles: 300, shadowMap: 1024, cascades: 1, textureMax: 1024 },

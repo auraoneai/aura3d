@@ -1,41 +1,59 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-06-18",
+  "generatedAt": "2026-10-13",
   "appId": "showcase-orbital-defense",
   "route": "/apps/showcase-orbital-defense/",
-  "classification": "blocked",
+  "classification": "prototype-blocked",
   "publicShowcase": false,
-  "promotionStatus": "remove-from-public-showcase-until-rebuilt-with-typed-assets",
+  "promotionStatus": "typed-asset-backed-candidate-pending-review",
   "renderer": {
-    "path": "createAuraApp root safe API",
+    "path": "createGame @aura3d/engine/game shell",
     "mode": "safe-basic",
     "nativeWebGPU": false,
     "productionRuntime": false
   },
-  "primaryAssets": [],
+  "primaryAssets": [
+    {
+      "typedRef": "assets.ship",
+      "role": "playerInterceptor",
+      "status": "typed-primary-asset",
+      "quality": "candidate"
+    },
+    {
+      "typedRef": "assets.drone",
+      "role": "enemyDronePool",
+      "status": "typed-primary-asset",
+      "quality": "candidate"
+    },
+    {
+      "typedRef": "assets.planet",
+      "role": "defenseCore",
+      "status": "typed-primary-asset",
+      "quality": "candidate"
+    }
+  ],
   "primitiveStatus": {
-    "role": "planet, stations, player, enemies, projectiles, and shields",
-    "status": "blocked-primitive-primary"
+    "role": "bolts, deck plate, station-ring ticks, and instanced starfield around the typed interceptor, drone, and core planet",
+    "status": "gameplay-geometry-with-typed-primary-assets"
   },
   "claimStatus": {
-    "status": "blocked",
+    "status": "bounded",
     "allowed": [
-      "internal primitive-only gameplay sketch",
-      "route-local runtime-node experiment"
+      "internal typed-asset defense game rebuilt on the arena-shooter scaffold",
+      "win/lose wave-defense gameplay proof"
     ],
     "notAllowed": [
       "public showcase",
       "public release candidate",
-      "asset-backed defense game",
       "launch-ready game claim"
     ]
   },
   "evidence": {
-    "global": "window.__AURA3D_SHOWCASE_ORBITAL_DEFENSE__",
+    "global": "window.__aura3dGameSnapshot",
     "desktopScreenshot": null,
     "mobileScreenshot": null,
     "sourceReview": "apps/showcase-orbital-defense/src/main.ts",
-    "notes": "Route is not included in the showcase index or launch evidence slate."
+    "notes": "Single-path rebuild on the arena-shooter template shape; independent exact-artifact review pending."
   },
   "qualityGate": {
     "status": "in-rebuild"
