@@ -1,24 +1,29 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#05080f">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#040612" />
     <meta
       name="description"
-      content="Aura3D Gravity Post, an authored arcade gravity-well courier prototype: slingshot mail pods between orbit stations using non-physical route-local gravity wells, station dock sensors, and live prediction lines."
-    >
-    <title>Aura3D - Gravity Post</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="./src/legacy/styles.css">
+      content="Aura3D Gravity Post: slingshot courier pods between lit planets using fixed-step gravity wells, live trajectory prediction, bounded course corrections, and Rapier dock sensors across four contracts."
+    />
+    <title>Gravity Post</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #040612;
+      }
+    </style>
   </head>
   <body>
-    <main class="gp-shell" aria-label="Gravity Post">
-      <section class="gp-viewport">
-        <div id="app" class="gp-stage" data-testid="gravity-post-stage"></div>
-      </section>
-      <aside id="hud" class="gp-hud" aria-label="Gravity Post game HUD"></aside>
-    </main>
+    <div id="app" data-testid="gravity-post-stage" aria-label="Gravity Post 3D system board"></div>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>
