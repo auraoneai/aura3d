@@ -290,10 +290,19 @@ export function prd02ProbeBindIntensities(
   resolution: Pick<AuraEnvironmentSourceResolution, "kind" | "diffuseIntensity" | "specularIntensity">,
   conjunction: boolean
 ): { readonly diffuseIntensity: number; readonly specularIntensity: number } {
-  if (conjunction && resolution.kind === "explicit" && knobLighting) {
-    const knob = knobLighting.environmentMapIntensity ?? knobLighting.intensity;
-    if (Number.isFinite(knob) && knob >= 0) {
-      return { diffuseIntensity: knob, specularIntensity: knob };
+  if (conjunction && knobLighting) {
+    if (resolution.kind === "explicit") {
+      const knob = knobLighting.environmentMapIntensity ?? knobLighting.intensity;
+      if (Number.isFinite(knob) && knob >= 0) {
+        return { diffuseIntensity: knob, specularIntensity: knob };
+      }
+    }
+    if (
+      resolution.kind === "neutral-room" &&
+      knobLighting.environmentMapIntensity === 0 &&
+      knobLighting.environmentMapSpecularIntensity === 0
+    ) {
+      return { diffuseIntensity: 0, specularIntensity: 0 };
     }
   }
   return { diffuseIntensity: resolution.diffuseIntensity, specularIntensity: resolution.specularIntensity };

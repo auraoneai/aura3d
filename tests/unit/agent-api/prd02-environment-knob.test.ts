@@ -197,6 +197,10 @@ describe("E3 stage-2b step 3: the knob survives the C-09 probe bind", () => {
     expect(
       prd02ProbeBindIntensities(lighting, { kind: "neutral-room" as const, diffuseIntensity: 1, specularIntensity: 1 }, true)
     ).toEqual({ diffuseIntensity: 1, specularIntensity: 1 });
+    const { lighting: ambientOnlyLighting } = createProductionRuntimeEnvironment(snapshot([ambientLight]), CONJUNCTION_ON);
+    expect(
+      prd02ProbeBindIntensities(ambientOnlyLighting, { kind: "neutral-room" as const, diffuseIntensity: 1, specularIntensity: 1 }, true)
+    ).toEqual({ diffuseIntensity: 0, specularIntensity: 0 });
   });
 
   it("bound knob reaches the renderer lighting, with the probe attached only under the conjunction", () => {
