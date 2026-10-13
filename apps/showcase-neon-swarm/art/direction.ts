@@ -48,7 +48,7 @@ export default defineArtDirection({
   // lamps. Drones are native instanced capsule/box pools so 320+ threats
   // submit in two instanced draw calls.
   assets: [
-    { role: "character", assetKey: "neonCourierAvatar", maxTriangles: 30000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 },
+    { role: "character", assetKey: "neonCourierAvatar", minTriangles: 2000, maxTriangles: 30000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 },
     { role: "prop", assetKey: "neonBarricadeProp", maxTriangles: 15000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
     { role: "prop", assetKey: "neonStreetLampProp", maxTriangles: 25000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 }
   ],
