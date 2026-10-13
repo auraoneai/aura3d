@@ -1,6 +1,6 @@
 import type { CameraLike, RenderSource } from "@aura3d/rendering";
 import type { CompressedTextureCapabilities } from "@aura3d/rendering/contracts";
-import type { GLTFAsset, GLTFDracoDecoder, GLTFLoaderDiagnostics, GLTFMeshoptDecoder } from "../GLTFLoader";
+import { fetchGltfBytesShared, type GLTFAsset, type GLTFDracoDecoder, type GLTFLoaderDiagnostics, type GLTFMeshoptDecoder } from "../GLTFLoader";
 import { createGLTFRenderResources, type GLTFImageDecoder, type GLTFRenderResourceOptions, type GLTFRenderResources, type GLTFRendererInputOptions } from "../GLTFRenderResources";
 import { acquireParsedGLTFAsset } from "../GLTFAssetParseCache";
 import { AssetDecoderUnavailable, createAssetDecoderRegistry } from "../contracts/decoders";
@@ -128,9 +128,15 @@ const NO_COMPRESSED_CAPABILITIES: CompressedTextureCapabilities = {
  * the JSON chunk after the 12-byte header + 8-byte chunk header; `.gltf` is plain JSON.
  */
 export async function scanGLTFExtensionsUsed(url: string): Promise<readonly string[]> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`glTF extension scan failed for ${url}: HTTP ${response.status}`);
-  const bytes = new Uint8Array(await response.arrayBuffer());
+  // Through the shared in-flight fetch: typed actors scan per instance, and
+  // a raw fetch here raced the parse fetch for the same multi-MB GLB,
+  // aborting both with Chromium ERR_CACHE_WRITE_FAILURE on production.
+  const bytes = new Uint8Array(await fetchGltfBytesShared(
+    url,
+    "document",
+    { url },
+    (status) => `glTF extension scan failed for ${url}: HTTP ${status}`
+  ));
   const GLB_MAGIC = 0x46546c67;
   let jsonText: string;
   if (bytes.length >= 20 && new DataView(bytes.buffer, bytes.byteOffset, 4).getUint32(0, true) === GLB_MAGIC) {
