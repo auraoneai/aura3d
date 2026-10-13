@@ -105,10 +105,26 @@ const templateIds = readdirSync(templateRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory() && existsSync(path.join(templateRoot, entry.name, "package.json")))
   .map((entry) => entry.name)
   .sort();
-const requested = opt("--templates", "QRC_TEMPLATES", "").split(",").map((s) => s.trim()).filter(Boolean);
+const LEGACY_TEMPLATE_ALIASES = {
+  "three-compat-architecture-interior": "architecture-interior",
+  "three-compat-asset-inspector": "asset-inspector",
+  "three-compat-character-viewer": "character-viewer",
+  "three-compat-custom-threejs-migration": "custom-scene",
+  "three-compat-large-scene": "large-scene",
+  "three-compat-material-authoring": "material-authoring",
+  "three-compat-postprocess-scene": "postprocess-scene",
+  "three-compat-premium-product-viewer": "premium-product-viewer"
+};
+const normalizeTemplateId = (id) => LEGACY_TEMPLATE_ALIASES[id] ?? id;
+const requested = opt("--templates", "QRC_TEMPLATES", "").split(",").map((s) => normalizeTemplateId(s.trim())).filter(Boolean);
 // --source: pre-built dirs (agent-eval cells). Each entry names the dir and
 // either is or contains a dist/ with index.html.
-const sourceDirs = opt("--source", "QRC_SOURCE", "").split(",").map((s) => s.trim()).filter(Boolean).map((dir) => {
+const sourceOpt = opt("--source", "QRC_SOURCE", "");
+if (flag("--source") && !sourceOpt.trim()) {
+  console.error("--source requires at least one built template directory");
+  process.exit(2);
+}
+const sourceDirs = sourceOpt.split(",").map((s) => s.trim()).filter(Boolean).map((dir) => {
   const abs = path.resolve(dir);
   const distDir = existsSync(path.join(abs, "index.html")) ? abs : existsSync(path.join(abs, "dist", "index.html")) ? path.join(abs, "dist") : null;
   if (!distDir) { console.error(`--source: no index.html under ${abs} or its dist/`); process.exit(2); }
@@ -134,6 +150,17 @@ if (!selected.length) {
 // -------------------------------------------------------------------------
 // Packed tarballs -> install set
 // -------------------------------------------------------------------------
+function ensureWorkspaceDistBuilt() {
+  const requiredArtifacts = [
+    path.join(repoRoot, "dist", "engine", "public", "index.d.ts"),
+    path.join(repoRoot, "dist", "game", "index.d.ts"),
+    path.join(repoRoot, "packages", "assets", "dist", "vite", "auraDecoders.js")
+  ];
+  if (requiredArtifacts.every((artifact) => existsSync(artifact))) return;
+  log("building workspace packages (pnpm build:raw) before packing tarballs");
+  execFileSync("pnpm", ["build:raw"], { cwd: repoRoot, stdio: "inherit" });
+}
+
 function packTarballs() {
   if (sourceDirs.length) {
     log("--source: skipping release pack");
@@ -142,6 +169,7 @@ function packTarballs() {
   if (skipPack) {
     log("--skip-pack: reusing tests/reports/release-tarballs");
   } else {
+    ensureWorkspaceDistBuilt();
     log("packing release tarballs (tools/release/publish-all.mjs --pack-only)");
     execFileSync(process.execPath, [path.join(repoRoot, "tools", "release", "publish-all.mjs"), "--pack-only"], { cwd: repoRoot, stdio: "inherit" });
   }
