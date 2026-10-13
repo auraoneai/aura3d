@@ -153,13 +153,49 @@ interface GltfJson {
   }[];
 }
 
+// Scenes routinely instantiate the same prop asset many times (street
+// lamps, traffic cars, dock gates). Without dedupe every node starts its
+// own concurrent download of the identical multi-MB GLB, and Chromium
+// aborts those parallel same-key cache writes with
+// net::ERR_CACHE_WRITE_FAILURE, so the model never loads over the network
+// (localhost captures complete too fast to collide). Share one in-flight
+// fetch per URL; each caller still parses its own copy of the bytes.
+const inFlightByteFetches = new Map<string, Promise<ArrayBuffer>>();
+
+export function fetchBytesShared(url: string): Promise<ArrayBuffer> {
+  const pending = inFlightByteFetches.get(url) ?? (async () => {
+    const response = await fetch(url);
+    if (!response.ok) {
+      const error = new Error(`fetch failed with ${response.status}`) as Error & { status?: number };
+      error.status = response.status;
+      throw error;
+    }
+    return response.arrayBuffer();
+  })();
+  if (!inFlightByteFetches.has(url)) {
+    inFlightByteFetches.set(url, pending);
+    const clear = () => {
+      if (inFlightByteFetches.get(url) === pending) inFlightByteFetches.delete(url);
+    };
+    pending.then(clear, clear);
+  }
+  return pending.then((bytes) => bytes.slice(0));
+}
+
+function httpStatusOf(error: unknown): number | undefined {
+  return (error as { status?: number } | null)?.status;
+}
+
 export async function loadGltfForWebGL(url: string): Promise<GltfModel> {
   const absoluteUrl = new URL(url, document.baseURI).href;
-  const response = await fetch(absoluteUrl);
-  if (!response.ok) {
-    throw new AuraRuntimeError("failed-glb-load", `Aura3D failed to fetch model "${url}" (${response.status}). Suggested fix: confirm the asset is in public/aura-assets and run aura3d assets validate.`);
+  let bytes: ArrayBuffer;
+  try {
+    bytes = await fetchBytesShared(absoluteUrl);
+  } catch (error) {
+    const status = httpStatusOf(error);
+    if (status === undefined) throw error;
+    throw new AuraRuntimeError("failed-glb-load", `Aura3D failed to fetch model "${url}" (${status}). Suggested fix: confirm the asset is in public/aura-assets and run aura3d assets validate.`);
   }
-  const bytes = await response.arrayBuffer();
   const loaded = isGlb(bytes) ? parseGlb(bytes) : { json: JSON.parse(new TextDecoder().decode(bytes)) as GltfJson, buffers: [] as ArrayBuffer[] };
   const buffers = loaded.buffers.length > 0 ? loaded.buffers : await loadExternalGltfBuffers(loaded.json, absoluteUrl);
   return await createGltfModel(loaded.json, buffers, absoluteUrl);
@@ -193,9 +229,13 @@ async function loadExternalGltfBuffers(json: GltfJson, modelUrl: string): Promis
   return await Promise.all((json.buffers ?? []).map(async (buffer) => {
     if (!buffer.uri) return new ArrayBuffer(0);
     if (buffer.uri.startsWith("data:")) return dataUriToArrayBuffer(buffer.uri);
-    const response = await fetch(new URL(buffer.uri, modelUrl).href);
-    if (!response.ok) throw new AuraRuntimeError("failed-glb-load", `Aura3D failed to fetch glTF buffer "${buffer.uri}" (${response.status}).`);
-    return await response.arrayBuffer();
+    try {
+      return await fetchBytesShared(new URL(buffer.uri, modelUrl).href);
+    } catch (error) {
+      const status = httpStatusOf(error);
+      if (status === undefined) throw error;
+      throw new AuraRuntimeError("failed-glb-load", `Aura3D failed to fetch glTF buffer "${buffer.uri}" (${status}).`);
+    }
   }));
 }
 
