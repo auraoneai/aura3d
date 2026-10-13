@@ -647,8 +647,13 @@ const reactorScene = scene()
     // occlusion pair and the key goes back to unshadowed.
     effects.ambientOcclusion({ intensity: 0.46, radius: 0.68 }),
     effects.contactOcclusion({ name: "cabinet floor contact", intensity: 0.34, radius: 0.5 }),
-    effects.fog({ name: "arcade room depth haze", density: 0.028, color: "#0d0514", intensity: 0.3 }),
-    effects.colorGrade({ exposure: 1.04 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
+    // Perf pass: the violet room haze now rides this standard forward fog
+    // (the volumetric-fog node kept the route on the CPU readback path,
+    // fps 0.84 -> 0.98 when removed in run 38335452473, but it was also the
+    // broad look change). Violet + denser restores the room separation on
+    // the cheap path.
+    effects.fog({ name: "arcade room depth haze", density: 0.04, color: "#4a3578", intensity: 0.55 }),
+    effects.colorGrade({ exposure: 1.04 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.2 }),
     effects.antiAlias({ mode: "fxaa" }),
     lights.ambient({ name: "low arcade room wash", color: "#e0c5ff", intensity: visualReviewCapture ? 0.82 : 0.58 }),
     lights.directional({
