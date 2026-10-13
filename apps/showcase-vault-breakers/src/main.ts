@@ -17,6 +17,9 @@ import { BANK_LAMP_OFF, BANK_LAMP_ON, buildVaultScene, LOOK_ID, TARGET_DOWN, TAR
 declare global {
   interface Window {
     __aura3dGameSnapshot?: VaultBreakersEvidence;
+    __VAULT_BREAKERS_EVIDENCE__?: VaultBreakersEvidence;
+    __AURA3D_SHOWCASE_VAULT_BREAKERS__?: VaultBreakersEvidence;
+    __AURA3D_GAME_EVIDENCE__?: Record<string, unknown>;
   }
 }
 
@@ -81,8 +84,8 @@ const hudBindings = [
   { kind: "aura-game-hud-binding", owner: "app", binding: "event-log", id: "hud:event-log", label: "event log", source: "app-state", valuePath: "appState.events", format: "text", a11yLabel: "game event log", debugOnly: true }
 ] as const;
 
-// Latest published snapshot, read by the createGame evidence section below.
-// `window.__aura3dGameSnapshot` stays the sole evidence global.
+// Latest published snapshot, read by the createGame evidence section and
+// compatibility globals (`__aura3dGameSnapshot`, `__VAULT_BREAKERS_EVIDENCE__`).
 let latestSnapshot: VaultBreakersEvidence | undefined;
 
 const vaultGame = createGame({
@@ -135,7 +138,12 @@ const vaultGame = createGame({
   qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
-    sections: { vaultBreakers: () => latestSnapshot ?? { status: "unbound" } }
+    sections: {
+      vaultBreakers: () => latestSnapshot ?? { status: "unbound" },
+      ball: () => latestSnapshot?.ball ?? null,
+      table: () => latestSnapshot?.table ?? null,
+      fx: () => latestSnapshot?.fx ?? null
+    }
   }
 });
 const app = vaultGame.app;
@@ -157,7 +165,6 @@ let drains = 0;
 let bumperHits = 0;
 let bumperHitsThisBall = 0;
 let nudgeFlip = false;
-let paused = false;
 let objective = "Hold Space to charge the plunger, release to serve.";
 
 function handle(name: string): AuraRuntimeNodeHandle | undefined {
@@ -258,6 +265,7 @@ function fastestBallPosition(): readonly [number, number, number] | undefined {
 }
 
 function resetTable(): void {
+  plunger.cancelCharge();
   flow.reset();
   recordEvents(flow.drainEvents());
   drains = 0;
@@ -268,10 +276,10 @@ function resetTable(): void {
 }
 
 // ---------------------------------------------------------------- frame loop -
-app.onFrame(({ dt }) => {
+app.onFrame(({ dt: rawDt }) => {
+  const dt = vaultGame.session.scaledDt(rawDt);
   frame += 1;
-  if (input.pressed("pause")) paused = !paused;
-  if (paused) {
+  if (dt <= 0 || vaultGame.session.paused) {
     publishEvidence();
     return;
   }
@@ -415,6 +423,11 @@ function publishEvidence(): void {
   };
   latestSnapshot = snapshot;
   window.__aura3dGameSnapshot = snapshot;
+  window.__VAULT_BREAKERS_EVIDENCE__ = snapshot;
+  window.__AURA3D_SHOWCASE_VAULT_BREAKERS__ = snapshot;
+  if (window.__AURA3D_GAME_EVIDENCE__) {
+    window.__AURA3D_GAME_EVIDENCE__["showcase-vault-breakers"] = snapshot;
+  }
 }
 
 function audioEvidence(): VaultBreakersEvidence["audio"] {
