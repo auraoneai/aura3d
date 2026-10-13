@@ -11,19 +11,20 @@
 import {
   camera,
   createGameAudio,
+  effects,
   environments,
   game as engineGame,
   instances,
   lights,
   material,
   model,
-  prefabs,
   primitives,
   scene,
   type AuraCameraPose,
   type AuraCameraRig,
   type AuraCameraRigContext,
   type AuraNodeInput,
+  type AuraTransformSpec,
   type GameAudio,
   type GameAudioContextLike
 } from "@aura3d/engine";
@@ -153,41 +154,76 @@ declare global {
 
 // ---------------------------------------------------------------- materials --
 
-const LANE_GUIDE = material.emissive({
-  color: "#3ff2ff",
-  emissive: "#3ff2ff",
-  emissiveIntensity: 1.65,
-  opacity: 0.78
+const TUNNEL_DECK = material.reflectiveFloor({
+  color: "#070b18",
+  roughness: 0.1,
+  metallic: 0.5,
+  clearcoat: 0.85
 });
-const CONVEYOR_CYAN = material.emissive({
+const TUNNEL_BRUSHED_ARCH = material.brushedMetal({
+  color: "#1e293b",
+  roughness: 0.24,
+  anisotropy: 0.85
+});
+const TUNNEL_CHROME_TRIM = material.chrome({
+  color: "#e2e8f0",
+  roughness: 0.03,
+  clearcoat: 0.35
+});
+const NEON_PINK_BAR = material.neon({
+  color: "#ec4899",
+  emissive: "#ec4899",
+  emissiveIntensity: 2.1,
+  practical: true
+});
+const NEON_CYAN_BAR = material.neon({
   color: "#38bdf8",
   emissive: "#38bdf8",
-  emissiveIntensity: 1.55
+  emissiveIntensity: 2.1,
+  practical: true
 });
-const CONVEYOR_MAGENTA = material.emissive({
-  color: "#ff5bd7",
+const LANE_GUIDE = material.neon({
+  color: "#38bdf8",
+  emissive: "#3ff2ff",
+  emissiveIntensity: 1.75,
+  opacity: 0.82,
+  practical: true
+});
+const CONVEYOR_CYAN = material.neon({
+  color: "#38bdf8",
+  emissive: "#38bdf8",
+  emissiveIntensity: 1.65,
+  practical: true
+});
+const CONVEYOR_MAGENTA = material.neon({
+  color: "#ec4899",
   emissive: "#ff5bd7",
-  emissiveIntensity: 1.5
+  emissiveIntensity: 1.6,
+  practical: true
 });
-const GATE_WALL = material.emissive({
-  color: "#ff4fd8",
+const GATE_WALL = material.neon({
+  color: "#ec4899",
   emissive: "#ff4fd8",
-  emissiveIntensity: 1.15
+  emissiveIntensity: 1.55,
+  practical: true
 });
-const GATE_LOW = material.emissive({
+const GATE_LOW = material.neon({
   color: "#ffb454",
   emissive: "#ff9a3d",
-  emissiveIntensity: 1.5
+  emissiveIntensity: 1.6,
+  practical: true
 });
-const GATE_HIGH = material.emissive({
+const GATE_HIGH = material.neon({
   color: "#8b5cf6",
   emissive: "#a78bfa",
-  emissiveIntensity: 1.05
+  emissiveIntensity: 1.4,
+  practical: true
 });
-const GATE_PYLON = material.emissive({
-  color: "#22d3ee",
+const GATE_PYLON = material.neon({
+  color: "#38bdf8",
   emissive: "#67e8f9",
-  emissiveIntensity: 1.1
+  emissiveIntensity: 1.55,
+  practical: true
 });
 const GATE_MATERIALS = {
   wall: GATE_WALL,
@@ -195,48 +231,166 @@ const GATE_MATERIALS = {
   high: GATE_HIGH,
   pylon: GATE_PYLON
 } as const;
-const CRAFT_ACCENT = material.emissive({
-  color: "#3ff2ff",
+const CRAFT_ACCENT = material.neon({
+  color: "#38bdf8",
   emissive: "#3ff2ff",
-  emissiveIntensity: 1.3
+  emissiveIntensity: 1.65,
+  practical: true
 });
 const SHIELD_PLANE = material.emissive({
   color: "#3ff2ff",
   emissive: "#67e8f9",
-  emissiveIntensity: 0.8,
+  emissiveIntensity: 0.85,
   opacity: 0.55
 });
-const GRAZE_FLASH = material.emissive({
+const GRAZE_FLASH = material.neon({
   color: "#ffd166",
   emissive: "#ffd166",
-  emissiveIntensity: 1.4
+  emissiveIntensity: 1.6,
+  practical: true
 });
-const BEAT_RING = material.emissive({
-  color: "#ff4fd8",
+const BEAT_RING = material.neon({
+  color: "#ec4899",
   emissive: "#ff4fd8",
-  emissiveIntensity: 0.9,
-  opacity: 0.6
+  emissiveIntensity: 1.25,
+  opacity: 0.65,
+  practical: true
 });
-const HULL_DARK = material.pbr({
-  color: "#2a1850",
-  roughness: 0.32,
-  metallic: 0.72
+const HULL_DARK = material.brushedMetal({
+  color: "#1e293b",
+  roughness: 0.24,
+  anisotropy: 0.85
 });
 
 // -------------------------------------------------------------------- world --
 
 function tunnelBackdropNodes(): AuraNodeInput[] {
-  return [...prefabs.neonTunnel({ rings: 8, palette: "cyan-magenta" })].filter((node) => {
-    const name = "name" in node ? String((node as { name?: string }).name ?? "") : "";
-    return !name.includes("true circular neon tunnel tube ring");
-  });
+  const archTransforms: AuraTransformSpec[] = [];
+  const chromeTransforms: AuraTransformSpec[] = [];
+  const cyanEqTransforms: AuraTransformSpec[] = [];
+  const pinkEqTransforms: AuraTransformSpec[] = [];
+  const ringCount = 8;
+
+  for (let index = 0; index < ringCount; index += 1) {
+    const progress = index / (ringCount - 1);
+    const z = 0.8 - index * 1.65;
+    const scale = 1.32 - progress * 0.36;
+    const halfSpan = 1.62 * scale;
+    const pillarH = 1.58 * scale;
+    const eqH = (0.48 + ((index * 3) % 5) * 0.16) * scale;
+
+    archTransforms.push(
+      { position: [-halfSpan, TUNNEL_FLOOR_Y + pillarH * 0.5, z], rotation: [0, 0, -0.1], scale: [0.12 * scale, pillarH, 0.22] },
+      { position: [halfSpan, TUNNEL_FLOOR_Y + pillarH * 0.5, z], rotation: [0, 0, 0.1], scale: [0.12 * scale, pillarH, 0.22] },
+      { position: [0, TUNNEL_FLOOR_Y + pillarH + 0.08 * scale, z], scale: [halfSpan * 2.06, 0.1 * scale, 0.24] }
+    );
+    chromeTransforms.push(
+      { position: [-halfSpan + 0.08 * scale, TUNNEL_FLOOR_Y + pillarH * 0.5, z + 0.04], scale: [0.035 * scale, pillarH * 0.92, 0.08] },
+      { position: [halfSpan - 0.08 * scale, TUNNEL_FLOOR_Y + pillarH * 0.5, z + 0.04], scale: [0.035 * scale, pillarH * 0.92, 0.08] }
+    );
+    const eqLeft: AuraTransformSpec = {
+      position: [-halfSpan + 0.22 * scale, TUNNEL_FLOOR_Y + eqH * 0.5, z - 0.35],
+      scale: [0.07 * scale, eqH, 0.12]
+    };
+    const eqRight: AuraTransformSpec = {
+      position: [halfSpan - 0.22 * scale, TUNNEL_FLOOR_Y + eqH * 0.5, z - 0.35],
+      scale: [0.07 * scale, eqH, 0.12]
+    };
+    if (index % 2 === 0) {
+      cyanEqTransforms.push(eqLeft);
+      pinkEqTransforms.push(eqRight);
+    } else {
+      pinkEqTransforms.push(eqLeft);
+      cyanEqTransforms.push(eqRight);
+    }
+  }
+
+  return [
+    primitives.plane({
+      name: "glossy black neon tunnel floor",
+      material: TUNNEL_DECK,
+      castShadow: false,
+      receiveShadow: true
+    })
+      .position(0, TUNNEL_FLOOR_Y, -5.2)
+      .scale([5.4, 1, 13.6])
+      .toJSON(),
+    primitives.box({
+      name: "left brushed metal side rail",
+      material: TUNNEL_BRUSHED_ARCH,
+      castShadow: false
+    })
+      .position(-1.42, TUNNEL_FLOOR_Y + 0.08, -5.0)
+      .scale([0.16, 0.14, 13.2])
+      .toJSON(),
+    primitives.box({
+      name: "right brushed metal side rail",
+      material: TUNNEL_BRUSHED_ARCH,
+      castShadow: false
+    })
+      .position(1.42, TUNNEL_FLOOR_Y + 0.08, -5.0)
+      .scale([0.16, 0.14, 13.2])
+      .toJSON(),
+    primitives.box({
+      name: "left vanishing light rail",
+      material: NEON_CYAN_BAR,
+      castShadow: false
+    })
+      .position(-1.28, TUNNEL_FLOOR_Y + 0.15, -5.0)
+      .scale([0.055, 0.045, 13.0])
+      .toJSON(),
+    primitives.box({
+      name: "right vanishing light rail",
+      material: NEON_PINK_BAR,
+      castShadow: false
+    })
+      .position(1.28, TUNNEL_FLOOR_Y + 0.15, -5.0)
+      .scale([0.055, 0.045, 13.0])
+      .toJSON(),
+    primitives.box({
+      name: "center flythrough camera path glow",
+      material: LANE_GUIDE,
+      castShadow: false
+    })
+      .position(0, TUNNEL_FLOOR_Y + 0.015, -5.0)
+      .scale([0.045, 0.02, 12.6])
+      .toJSON(),
+    instances.box({
+      name: "brushed metal tunnel arches",
+      material: TUNNEL_BRUSHED_ARCH,
+      castShadow: false,
+      transforms: archTransforms
+    }).toJSON(),
+    instances.box({
+      name: "chrome tunnel arch accents",
+      material: TUNNEL_CHROME_TRIM,
+      castShadow: false,
+      transforms: chromeTransforms
+    }).toJSON(),
+    instances.box({
+      name: "cyan neon equalizer pillars",
+      material: NEON_CYAN_BAR,
+      castShadow: false,
+      transforms: cyanEqTransforms
+    }).toJSON(),
+    instances.box({
+      name: "magenta neon equalizer pillars",
+      material: NEON_PINK_BAR,
+      castShadow: false,
+      transforms: pinkEqTransforms
+    }).toJSON(),
+    effects.fog({ density: 0.058, color: "#1e1b4b" }).toJSON(),
+    effects.contactOcclusion({ intensity: 0.24, radius: 0.58 }).toJSON(),
+    effects.bloom({ intensity: 0.22, color: "#ec4899", threshold: 0.86, radius: 0.22, maxIntensity: 0.28 }).toJSON()
+  ];
 }
 
 function laneRailNodes(): AuraNodeInput[] {
   return PULSE_LANE_X.map((x, index) =>
     primitives.box({
       name: `pulse lane guide ${index + 1}`,
-      material: LANE_GUIDE
+      material: LANE_GUIDE,
+      castShadow: false
     })
       .position(x, TUNNEL_FLOOR_Y + 0.02, (PULSE_PLAYER_Z - 13.5) / 2)
       .scale([0.1, 0.025, 8.0])
@@ -254,7 +408,8 @@ function gatePoolNodes(): AuraNodeInput[] {
     nodes.push(
       primitives.box({
         name: `pulse gate frame ${index + 1}`,
-        material: GATE_MATERIALS[kinds[index % kinds.length]!]
+        material: GATE_MATERIALS[kinds[index % kinds.length]!],
+        castShadow: false
       })
         .position(0, -30, -30)
         .scale([0.1, 0.1, 0.1])
@@ -275,7 +430,9 @@ function buildPulseWorld(conveyor: PulseConveyor): {
     ...tunnelBackdropNodes(),
     model(assets.pulseReactorEncounterWorld, {
       name: "pulse reactor encounter world",
-      targetMaxDimension: 18
+      targetMaxDimension: 18,
+      role: "primaryWorld",
+      castShadow: false
     })
       .position(0, 0.2, -6.5)
       .runtime(engineGame.runtimeNode("pulse-reactor-world", {
@@ -283,7 +440,9 @@ function buildPulseWorld(conveyor: PulseConveyor): {
       })),
     model(assets.pulseTerminalSentry, {
       name: "pulse terminal sentry",
-      targetMaxDimension: 3.6
+      targetMaxDimension: 3.6,
+      role: "primaryWorld",
+      castShadow: false
     })
       .position(0, 0.85, -12.6)
       .runtime(engineGame.runtimeNode("pulse-terminal-sentry", {
@@ -292,49 +451,52 @@ function buildPulseWorld(conveyor: PulseConveyor): {
     instances.torus({
       name: "tunnel conveyor hoops cyan",
       material: CONVEYOR_CYAN,
+      castShadow: false,
       transforms: conveyor.segments.filter((_, index) => index % 2 === 0)
     }),
     instances.torus({
       name: "tunnel conveyor hoops magenta",
       material: CONVEYOR_MAGENTA,
+      castShadow: false,
       transforms: conveyor.segments.filter((_, index) => index % 2 === 1)
     }),
     ...laneRailNodes(),
     model(assets.pulseRunnerCraft, {
       name: "pulse runner craft",
-      targetMaxDimension: 2.4
+      targetMaxDimension: 2.4,
+      castShadow: true
     })
       .position(0, 0.08, PULSE_PLAYER_Z)
       .scale(0.8)
       .runtime(engineGame.runtimeNode("pulse-runner-craft", {
         tags: ["player", "craft", "typed-primary"]
       })),
-    primitives.sphere({ name: "pulse craft engine glow", material: CRAFT_ACCENT })
+    primitives.sphere({ name: "pulse craft engine glow", material: CRAFT_ACCENT, castShadow: false })
       .position(0, 0.2, PULSE_PLAYER_Z + 0.32)
       .scale([0.2, 0.2, 0.2])
       .runtime(engineGame.runtimeNode("pulse-craft-glow", {
         tags: ["player", "craft", "renderer-owned"]
       })),
-    primitives.torus({ name: "pulse shield impact plane", material: SHIELD_PLANE })
+    primitives.torus({ name: "pulse shield impact plane", material: SHIELD_PLANE, castShadow: false })
       .position(0, 0.35, PULSE_PLAYER_Z + 0.15)
       .scale([0.85, 0.62, 1])
       .runtime(engineGame.runtimeNode("pulse-shield-plane", {
         tags: ["player", "shield", "renderer-owned"]
       })),
-    primitives.box({ name: "pulse runner hull plate", material: HULL_DARK })
+    primitives.box({ name: "pulse runner hull plate", material: HULL_DARK, castShadow: false, receiveShadow: true })
       .position(0, TUNNEL_FLOOR_Y - 0.02, PULSE_PLAYER_Z)
       .scale([2.6, 0.02, 2.0])
       .runtime(engineGame.runtimeNode("pulse-hull-plate", {
         tags: ["set-dressing", "renderer-owned"]
       })),
     ...gatePoolNodes(),
-    primitives.sphere({ name: "pulse graze flash", material: GRAZE_FLASH })
+    primitives.sphere({ name: "pulse graze flash", material: GRAZE_FLASH, castShadow: false })
       .position(0, -20, -20)
       .scale([0.22, 0.22, 0.22])
       .runtime(engineGame.runtimeNode("pulse-graze-flash", {
         tags: ["event-feedback", "renderer-owned"]
       })),
-    primitives.torus({ name: "pulse beat ring", material: BEAT_RING })
+    primitives.torus({ name: "pulse beat ring", material: BEAT_RING, castShadow: false })
       .position(0, 0.35, PULSE_PLAYER_Z + 0.15)
       .scale([0.9, 0.66, 1])
       .runtime(engineGame.runtimeNode("pulse-beat-ring", {
@@ -342,12 +504,14 @@ function buildPulseWorld(conveyor: PulseConveyor): {
       })),
     primitives.box({
       name: "pulse section far glow",
-      material: material.emissive({
+      material: material.neon({
         color: "#8b5cf6",
         emissive: "#b18cff",
-        emissiveIntensity: 1.15,
-        opacity: 0.62
-      })
+        emissiveIntensity: 1.35,
+        opacity: 0.62,
+        practical: true
+      }),
+      castShadow: false
     })
       .position(0, 0.9, -13.2)
       .scale([4.8, 2.9, 0.05])
@@ -660,6 +824,10 @@ const pulseGame = createGame({
   target,
   layout: "full-bleed",
   scene: buildScene,
+  diagnostics: {
+    overlay: false,
+    performancePanel: false
+  },
   hud: {
     theme: "sci-fi-telemetry",
     maxScreenFraction: 0.15,
@@ -885,16 +1053,43 @@ function resetToReady(): void {
 // ------------------------------------------------------------- gate visuals --
 
 const gateSlots = new Map<string, number>();
+interface GateSlotCache {
+  visible: boolean;
+  kind: string;
+  x: number;
+  y: number;
+  z: number;
+  w: number;
+  h: number;
+}
+const gateSlotCache: GateSlotCache[] = Array.from({ length: GATE_POOL_SIZE }, () => ({
+  visible: true,
+  kind: "",
+  x: 0,
+  y: -30,
+  z: -30,
+  w: 0.1,
+  h: 0.1
+}));
 
 function syncGates(): void {
   const active = gateSystem.activeGates();
+  if (active.length === 0 && gateSlots.size === 0) return;
   const liveIds = new Set(active.map((g) => g.id));
   for (const [id, slot] of gateSlots) {
     if (!liveIds.has(id)) {
       gateSlots.delete(id);
-      handle(world.gateNodeNames[slot]!)?.setPosition(0, -30, -30).setVisible(false);
+      const cached = gateSlotCache[slot]!;
+      if (cached.visible || cached.y !== -30 || cached.z !== -30) {
+        cached.visible = false;
+        cached.x = 0;
+        cached.y = -30;
+        cached.z = -30;
+        handle(world.gateNodeNames[slot]!)?.setPosition(0, -30, -30).setVisible(false);
+      }
     }
   }
+  const nowTime = clock.time();
   for (const gate of active) {
     let slot = gateSlots.get(gate.id);
     if (slot === undefined) {
@@ -902,14 +1097,39 @@ function syncGates(): void {
       slot = [0, 1, 2, 3].find((i) => !used.has(i));
       if (slot === undefined) continue;
       gateSlots.set(gate.id, slot);
-      const mat = GATE_MATERIALS[gate.entry.kind as PulseGateKind] ?? GATE_MATERIALS.wall;
-      handle(world.gateNodeNames[slot]!)?.setMaterial(mat).setVisible(true);
+      const cached = gateSlotCache[slot]!;
+      const kind = gate.entry.kind as PulseGateKind;
+      const nodeHandle = handle(world.gateNodeNames[slot]!);
+      if (cached.kind !== kind) {
+        cached.kind = kind;
+        nodeHandle?.setMaterial(GATE_MATERIALS[kind] ?? GATE_MATERIALS.wall);
+      }
+      if (!cached.visible) {
+        cached.visible = true;
+        nodeHandle?.setVisible(true);
+      }
     }
-    const geometry = pulseGateGeometry(gate.entry, clock.time());
+    const geometry = pulseGateGeometry(gate.entry, nowTime);
     const centerY = (geometry.bottomY + geometry.topY) / 2;
-    handle(world.gateNodeNames[slot]!)
-      ?.setPosition(geometry.centerX, centerY, gate.z)
-      .setScale([geometry.halfWidth * 2, Math.max(0.08, geometry.topY - geometry.bottomY), 0.12]);
+    const width = geometry.halfWidth * 2;
+    const height = Math.max(0.08, geometry.topY - geometry.bottomY);
+    const cached = gateSlotCache[slot]!;
+    const nodeHandle = handle(world.gateNodeNames[slot]!);
+    if (
+      Math.abs(cached.x - geometry.centerX) > 1e-4 ||
+      Math.abs(cached.y - centerY) > 1e-4 ||
+      Math.abs(cached.z - gate.z) > 1e-4
+    ) {
+      cached.x = geometry.centerX;
+      cached.y = centerY;
+      cached.z = gate.z;
+      nodeHandle?.setPosition(geometry.centerX, centerY, gate.z);
+    }
+    if (Math.abs(cached.w - width) > 1e-4 || Math.abs(cached.h - height) > 1e-4) {
+      cached.w = width;
+      cached.h = height;
+      nodeHandle?.setScale([width, height, 0.12]);
+    }
   }
 }
 
@@ -1095,20 +1315,26 @@ function buildRunSnapshot(): PulseRunSnapshot {
   };
 }
 
+let hasPresentedDraw = false;
+const typedAssetCount = Object.keys(assets).length;
+
+function isCanvasMatchingViewport(): boolean {
+  const canvas = pulseGame.app.canvas;
+  if (!canvas) return false;
+  const dpr = window.devicePixelRatio || 1;
+  return (
+    Math.abs(canvas.width - window.innerWidth * dpr) <= 2 &&
+    Math.abs(canvas.height - window.innerHeight * dpr) <= 2
+  );
+}
+
 function buildFramingSnapshot() {
   const ev = pulseGame.app.camera?.evidence?.();
-  const canvas = pulseGame.app.canvas;
-  const renderSize = pulseGame.app.diagnostics().renderSize;
-  const dpr = window.devicePixelRatio || 1;
   return {
     rig: ev?.rig ?? "pulse-tunnel.chase",
     subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
     pose: ev?.pose ?? null,
-    canvasMatchesViewport:
-      canvas !== undefined &&
-      renderSize !== undefined &&
-      Math.abs(renderSize[0] - window.innerWidth * dpr) <= 2 &&
-      Math.abs(renderSize[1] - window.innerHeight * dpr) <= 2
+    canvasMatchesViewport: isCanvasMatchingViewport()
   };
 }
 
@@ -1204,21 +1430,13 @@ function publishSnapshot(): void {
   const p = player.snapshot();
   const c = clock.sample();
   const runSnap = buildRunSnapshot();
-  const framingSnap = buildFramingSnapshot();
-  const diagnostics = pulseGame.app.diagnostics();
-  const evidence = pulseGame.app.evidence({
-    input,
-    events: routeEvents,
-    hud: hudBindings,
-    appState: {
-      score: Math.round(s.score),
-      objective: `Section ${rs.lastSection.toUpperCase()} — ${rs.shields} shields`
-    },
-    assets: { typedAssets: Object.keys(assets).length, missingAssets: [] },
-    source: { expectsGame: true }
-  });
+  if (!hasPresentedDraw && pulseGame.app.diagnostics().drawCalls > 0) {
+    hasPresentedDraw = true;
+  }
+  let cachedFraming: PulseTunnelSnapshot["framing"] | undefined;
+  let cachedEvidence: unknown;
   const snapshot: PulseTunnelSnapshot = {
-    framed: diagnostics.drawCalls > 0 && framingSnap.canvasMatchesViewport,
+    framed: hasPresentedDraw && isCanvasMatchingViewport(),
     state: pulseGame.session.state,
     frame,
     run: runSnap,
@@ -1248,11 +1466,27 @@ function publishSnapshot(): void {
       flipped: c.flippedAtTime !== null
     },
     fx: { liveCount: pulseGame.fx.liveCount, backend: pulseGame.fx.backend },
-    framing: framingSnap,
+    get framing() {
+      cachedFraming ??= buildFramingSnapshot();
+      return cachedFraming;
+    },
     look: { id: "neon-night", category: "stylized" },
     appliedLook,
     audio: { cues: [...audioCueLog] },
-    evidence
+    get evidence() {
+      cachedEvidence ??= pulseGame.app.evidence({
+        input,
+        events: routeEvents,
+        hud: hudBindings,
+        appState: {
+          score: Math.round(s.score),
+          objective: `Section ${rs.lastSection.toUpperCase()} — ${rs.shields} shields`
+        },
+        assets: { typedAssets: typedAssetCount, missingAssets: [] },
+        source: { expectsGame: true }
+      });
+      return cachedEvidence;
+    }
   };
   latestSnapshot = snapshot;
   window.__aura3dGameSnapshot = snapshot;
@@ -1319,6 +1553,41 @@ if (scenario === "02-opening") {
 
 // --------------------------------------------------------------- frame loop --
 
+let lastCraftX = Number.NaN;
+let lastCraftY = Number.NaN;
+let lastCraftVy = Number.NaN;
+let lastCraftSliding: boolean | undefined;
+
+function syncCraftVisuals(x: number, y: number, vy: number, sliding: boolean): void {
+  const posChanged = Math.abs(x - lastCraftX) > 1e-4 || Math.abs(y - lastCraftY) > 1e-4;
+  const slideChanged = sliding !== lastCraftSliding;
+  const vyChanged = Math.abs(vy - lastCraftVy) > 1e-4;
+  if (!posChanged && !slideChanged && !vyChanged) return;
+
+  lastCraftX = x;
+  lastCraftY = y;
+  lastCraftVy = vy;
+  lastCraftSliding = sliding;
+
+  const craftHandle = handle("pulse-runner-craft");
+  if (posChanged) {
+    craftHandle?.setPosition(x, 0.08 + y, PULSE_PLAYER_Z);
+    handle("pulse-shield-plane")?.setPosition(x, 0.35 + y, PULSE_PLAYER_Z + 0.15);
+    handle("pulse-beat-ring")?.setPosition(x, 0.35 + y, PULSE_PLAYER_Z + 0.15);
+  }
+  if (slideChanged) {
+    craftHandle?.setRotation(0, 0, sliding ? 0.18 : 0);
+  }
+  const glowHandle = handle("pulse-craft-glow");
+  if (posChanged) {
+    glowHandle?.setPosition(x, 0.2 + y, PULSE_PLAYER_Z + 0.32);
+  }
+  if (vyChanged) {
+    const glowScale = 0.2 * (1 + vy * 0.4);
+    glowHandle?.setScale([glowScale, glowScale, 0.2]);
+  }
+}
+
 pulseGame.app.onFrame?.(({ dt: rawDt }) => {
   const baseDt = Number.isFinite(rawDt) && rawDt > 0 ? rawDt : 1 / 60;
   const scaledDt = pulseGame.session.scaledDt(baseDt);
@@ -1331,6 +1600,8 @@ pulseGame.app.onFrame?.(({ dt: rawDt }) => {
   }
   if (input.pressed("reset")) {
     resetToReady();
+    syncCraftVisuals(0, 0, 0, false);
+    syncGates();
     syncHud();
     publishSnapshot();
     return;
@@ -1359,6 +1630,7 @@ pulseGame.app.onFrame?.(({ dt: rawDt }) => {
     if (wantsStart || rs.pendingStart) startRun();
     rigState.x = 0;
     rigState.y = 0;
+    syncCraftVisuals(0, 0, 0, false);
     syncGates();
     fx.step(stepSeconds);
     syncHud();
@@ -1424,14 +1696,7 @@ pulseGame.app.onFrame?.(({ dt: rawDt }) => {
 
   rigState.x = playerState.x;
   rigState.y = playerState.y;
-  handle("pulse-runner-craft")
-    ?.setPosition(playerState.x, 0.08 + playerState.y, PULSE_PLAYER_Z)
-    .setRotation(0, 0, playerState.sliding ? 0.18 : 0);
-  handle("pulse-craft-glow")
-    ?.setPosition(playerState.x, 0.2 + playerState.y, PULSE_PLAYER_Z + 0.32)
-    .setScale([0.2 * (1 + playerState.vy * 0.4), 0.2 * (1 + playerState.vy * 0.4), 0.2]);
-  handle("pulse-shield-plane")?.setPosition(playerState.x, 0.35 + playerState.y, PULSE_PLAYER_Z + 0.15);
-  handle("pulse-beat-ring")?.setPosition(playerState.x, 0.35 + playerState.y, PULSE_PLAYER_Z + 0.15);
+  syncCraftVisuals(playerState.x, playerState.y, playerState.vy, playerState.sliding);
 
   syncGates();
   fx.step(stepSeconds);
@@ -1439,6 +1704,7 @@ pulseGame.app.onFrame?.(({ dt: rawDt }) => {
   publishSnapshot();
 });
 
+syncCraftVisuals(0, 0, 0, false);
 syncGates();
 syncHud();
 publishSnapshot();
