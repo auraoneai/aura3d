@@ -27,7 +27,7 @@ import { applyEnvironmentLightingUniforms, applyPrd02EnvironmentUniforms, prd02I
 import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
 import { PBRMaterial } from "../../../packages/rendering/src/PBRMaterial";
 import { MaterialInstance } from "../../../packages/rendering/src/MaterialInstance";
-import { collectEnvironmentLighting, DEFAULT_RENDERER_ENVIRONMENT_LIGHTING } from "../../../packages/rendering/src/renderer/Background";
+import { collectEnvironmentLighting, DEFAULT_RENDERER_ENVIRONMENT_LIGHTING, resolvePrd02EnvironmentBackground } from "../../../packages/rendering/src/renderer/Background";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY } from "../../../packages/rendering/src/PBRLightingDefaults";
 import { setRendererQrFlags } from "../../../packages/rendering/src/renderer/FrameGraph";
 import { buildNeutralRoomLegacyProbe } from "../../../packages/rendering/src/environment/probeBuild";
@@ -617,6 +617,117 @@ describe("E3 step 5: the 0.18 constructor default never survives a conjunction d
         item, shader, uniforms as never, { conjunction, generated: false }
       );
       expect(uniforms.get("u_environmentIntensity")).toBe(0.7);
+    }
+  });
+});
+
+describe("E3 parity gap: numeric binds per environment kind + probe background filterability", () => {
+  // L4 runs 38429097048/38429102473 decomposed by three's object-id mask:
+  // conjunction OBJECT luma already matched three (06: 144.0 vs 141.3;
+  // 13: 153.8 vs 150.5; 19: 157.1 vs 156.0) — the full-frame gap was the
+  // background term (06/13 bound a non-filterable rgba32f equirect and
+  // sampled black). These tests pin the numeric intensity chain per
+  // environment kind and the background bind that replaced it.
+  const hdriEnv = {
+    kind: "environment", environment: "hdri", intensity: 1, background: true,
+    texture: { kind: "aura-asset-ref", url: "/studio_small_08_1k.hdr" }
+  };
+
+  it("hdri (06/13 class): knob -> resolution -> probe bind -> pack are all exactly 1", () => {
+    const { lighting } = createProductionRuntimeEnvironment(snapshot([hdriEnv]), CONJUNCTION_ON);
+    expect(lighting.intensity).toBe(1);
+    expect(lighting.environmentMapIntensity).toBe(1);
+    expect(lighting.environmentMapSpecularIntensity).toBe(1);
+    expect(lighting.proceduralMap?.intensity).toBe(0);
+    expect(lighting.proceduralMap?.specularIntensity).toBe(0);
+
+    const resolution = explicitEnvironmentResolution(hdriEnv as never, null)!;
+    expect(resolution.diffuseIntensity).toBe(1);
+    expect(resolution.specularIntensity).toBe(1);
+    expect(resolution.background).toEqual({ visible: true, blurriness: 0, intensity: 1, rotation: 0 });
+    expect(prd02ProbeBindIntensities(lighting, resolution, true)).toEqual({ diffuseIntensity: 1, specularIntensity: 1 });
+
+    const probe = buildNeutralRoomLegacyProbe();
+    try {
+      setRendererQrFlags(CONJUNCTION_ON);
+      const bound = collectEnvironmentLighting({
+        environmentProbe: probe, environmentProbeDiffuseIntensity: 1, environmentProbeSpecularIntensity: 1
+      } as never)!;
+      expect(bound.environmentMapIntensity).toBe(1);
+      expect(bound.environmentMapSpecularIntensity).toBe(1);
+      expect(bound.intensity).toBe(0); // no authored ambient on the probe path
+      const uniforms = new Map<string, unknown>();
+      applyPrd02EnvironmentUniforms(bound as never, { label: "t" } as never, { getParameter: () => 1 } as never, uniforms as never);
+      expect(uniforms.get("u_envDiffuseIntensity")).toBe(1);
+      expect(uniforms.get("u_envSpecularIntensity")).toBe(1);
+      expect(uniforms.get("u_ambientIrradiance")).toEqual([0, 0, 0]);
+    } finally {
+      setRendererQrFlags(FLAGS_OFF);
+    }
+  });
+
+  it("neutral-room (19 class): the bind is the resolution 1/1, never the category bundle's 0.44", () => {
+    // No authored environment and no lights: the category fallback bundle
+    // still carries the legacy sampled scalar (studio 0.44), but the
+    // neutral-room resolution is not `explicit`, so the bind keeps 1/1.
+    const { lighting } = createProductionRuntimeEnvironment(snapshot([]), CONJUNCTION_ON);
+    expect(lighting.environmentMapIntensity).toBeCloseTo(0.44);
+    expect(
+      prd02ProbeBindIntensities(lighting, { kind: "neutral-room" as const, diffuseIntensity: 1, specularIntensity: 1 }, true)
+    ).toEqual({ diffuseIntensity: 1, specularIntensity: 1 });
+  });
+
+  it("authored ambient reaches the pack as exit radiance (color x intensity / pi)", () => {
+    const probe = buildNeutralRoomLegacyProbe();
+    const uniforms = new Map<string, unknown>();
+    applyPrd02EnvironmentUniforms(
+      {
+        color: [1, 0.5, 0.25], intensity: Math.PI, environmentProbe: probe,
+        environmentMapIntensity: 1, environmentMapSpecularIntensity: 1, environmentMapMipCount: probe.mipCount
+      } as never,
+      { label: "t" } as never,
+      { getParameter: () => 1 } as never,
+      uniforms as never
+    );
+    const ambient = uniforms.get("u_ambientIrradiance") as readonly number[];
+    expect(ambient[0]).toBeCloseTo(1);
+    expect(ambient[1]).toBeCloseTo(0.5);
+    expect(ambient[2]).toBeCloseTo(0.25);
+  });
+
+  const makeCube = (label: string) => new Texture({
+    width: 2, height: 2, format: "rgba16f", label,
+    cubeFaces: (["px", "nx", "py", "ny", "pz", "nz"] as const).map((face) => ({
+      face, mipLevels: [{ width: 2, height: 2, data: new Uint16Array(16) }]
+    }))
+  });
+
+  it("rgba32f probe background falls back to the filterable cube only under the conjunction", () => {
+    const specularCube = makeCube("bg-cube");
+    const bg32 = new Texture({ width: 4, height: 2, format: "rgba32f", data: new Float32Array(4 * 2 * 4), label: "env-src" });
+    const probe = { specularCube, mipCount: 1, background: bg32, sh9: new Float32Array(27) };
+    const src = { environmentProbe: probe, environmentProbeBackground: true } as never;
+    try {
+      setRendererQrFlags(CONJUNCTION_ON);
+      const on = resolvePrd02EnvironmentBackground(src);
+      expect(on?.projection).toBe("cubemap");
+      expect(on?.texture.texture).toBe(specularCube);
+      expect(on?.texture.texture?.format).toBe("rgba16f");
+      expect(on?.texture.sampler.minFilter).toBe("linear-mipmap-linear");
+
+      // A filterable (rgba16f) equirect background is kept as equirect.
+      const bg16 = new Texture({ width: 4, height: 2, format: "rgba16f", label: "bg16", mipLevels: [{ width: 4, height: 2, data: new Uint16Array(4 * 2 * 4) }] });
+      const on16 = resolvePrd02EnvironmentBackground({ environmentProbe: { ...probe, background: bg16 }, environmentProbeBackground: true } as never);
+      expect(on16?.projection).toBe("equirect");
+      expect(on16?.texture.texture).toBe(bg16);
+
+      // Conjunction-off: the legacy equirect bind is byte-identical.
+      setRendererQrFlags(LIGHTING_ONLY);
+      const off = resolvePrd02EnvironmentBackground(src);
+      expect(off?.projection).toBe("equirect");
+      expect(off?.texture.texture).toBe(bg32);
+    } finally {
+      setRendererQrFlags(FLAGS_OFF);
     }
   });
 });
