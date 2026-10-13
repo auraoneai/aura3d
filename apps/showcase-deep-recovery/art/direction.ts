@@ -329,7 +329,7 @@ export default defineArtDirection({
   },
   framing: { rig: "chase", subjectHeightFraction: [0.15, 0.3], fovDeg: [50, 70], mobile: "landscape" },
   assets: [
-    { role: "vehicle", assetKey: "deepRecoverySub", kit: "K2", maxTriangles: 20000, minTriangles: 1000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "deepRecoverySub", kit: "K2", maxTriangles: 20000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "world", assetKey: "deepRecoveryWreckHull", kit: "K6", maxTriangles: 90000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "prop", assetKey: "deepRecoveryCrateStandard", kit: "K6", maxTriangles: 16000, minTriangles: 500, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "prop", assetKey: "deepRecoveryCrateHeavy", kit: "K6", maxTriangles: 16000, minTriangles: 500, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
