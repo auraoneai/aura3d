@@ -37,7 +37,7 @@ interface SphereWindow {
   readonly hf: number;
   readonly pixels: number;
 }
-interface Measured {
+interface ProbeMeasure {
   readonly source: string;
   readonly mipCount: number;
   readonly faceSize: number;
