@@ -65,7 +65,7 @@ export function deepRecoveryEffectsPass() {
       target: [0, -10, -6],
       color: "#a8e6df",
       intensity: 1.35,
-      shadow: { cascades: 1, mapSize: 1024, maxDistance: 60 }
+      shadow: { cascades: 1, mapSize: 512, maxDistance: 60 }
     }),
     // The pre-pass suspended-particle exp2 haze stays, recoloured to the
     // indigo twilight-zone water the effects-pass background uses: it is
@@ -93,19 +93,19 @@ export function deepRecoveryEffectsPass() {
     }).position(0, -17.6, -8).scale([95, 1.4, 75]),
     primitives.sphere({
       name: "biolume glow pool teal west",
-      material: material.emissive({ color: "#062b33", emissive: "#155e63", emissiveIntensity: 0.4, opacity: 0.24 })
+      material: material.emissive({ color: "#062b33", emissive: "#155e63", emissiveIntensity: 0.36, opacity: 0.2 })
     }).position(-16, -16.85, -18).scale([13, 0.3, 9]),
     primitives.sphere({
       name: "biolume glow pool violet east",
-      material: material.emissive({ color: "#160b33", emissive: "#3b2a7a", emissiveIntensity: 0.4, opacity: 0.24 })
+      material: material.emissive({ color: "#160b33", emissive: "#3b2a7a", emissiveIntensity: 0.36, opacity: 0.2 })
     }).position(15, -16.85, -24).scale([11, 0.3, 8]),
     primitives.sphere({
       name: "biolume glow pool indigo north",
-      material: material.emissive({ color: "#0a1033", emissive: "#1d3a8a", emissiveIntensity: 0.36, opacity: 0.22 })
+      material: material.emissive({ color: "#0a1033", emissive: "#1d3a8a", emissiveIntensity: 0.32, opacity: 0.19 })
     }).position(-4, -16.85, 10).scale([14, 0.3, 9]),
     primitives.sphere({
       name: "biolume glow pool teal far",
-      material: material.emissive({ color: "#062b33", emissive: "#0f766e", emissiveIntensity: 0.36, opacity: 0.21 })
+      material: material.emissive({ color: "#062b33", emissive: "#0f766e", emissiveIntensity: 0.32, opacity: 0.18 })
     }).position(20, -16.85, 14).scale([10, 0.3, 7]),
     instances.sphere({
       name: "bioluminescent seabed field",
@@ -133,8 +133,8 @@ export function deepRecoveryEffectsPass() {
           effects.particles({
             name: "marine snow",
             emitter: "ambient",
-            particleCount: 160,
-            emissionRate: 40,
+            particleCount: 110,
+            emissionRate: 28,
             speed: 2.6,
             drag: 0.55,
             gravity: -0.25,
@@ -148,8 +148,8 @@ export function deepRecoveryEffectsPass() {
           effects.particles({
             name: "wreck vent bubbles",
             emitter: "fountain",
-            particleCount: 60,
-            emissionRate: 16,
+            particleCount: 45,
+            emissionRate: 12,
             radius: 0.5,
             height: 6,
             size: [0.08, 0.18],
