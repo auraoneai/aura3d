@@ -1,598 +1,623 @@
+// Neon Corridor Strike — rebuilt single-path pointer-lock FPS.
+// Every URL boots this module. Pure run rules live in ./rules (headless
+// fire-kill-win sim); this file owns the scene, E5 raw-pointer look,
+// pointer lock, HUD, and evidence. There is no game.fps kit: the hitscan
+// is the rules module's ray-vs-target-spheres test.
 import {
-  createAuraApp,
+  camera,
   game,
   groundedRenderedAssetPlacement,
-  type AuraBodyHandle
+  lights,
+  looks,
+  material,
+  model,
+  primitives,
+  scene,
+  type AuraNodeInput,
+  type AuraRuntimeNodeHandle
 } from "@aura3d/engine";
+// PRD-09 shared runtime (Blockfall pilot pattern): createGame owns
+// mount/lifecycle, the arcade-neon HUD theme, game-sfx-core cues, juice.
+import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { assets } from "./aura-assets";
-import { ENEMIES, ENEMY_VISUAL_Y, damageEnemy, enemyLosBlockedIds, registerHitReaction, resetEnemies, updateEnemies } from "./game/enemies";
-import { createHud, renderHud } from "./game/hud";
-import { createCorridorAudio } from "./game/audio";
-import { collectPickupByName, collectPickupsNearPlayer } from "./game/pickups";
-import { bindFireKeys, fireBus } from "./game/fire-bus";
-import { bindPointerLock, createFpsInput } from "./game/input";
-import { buildScene, createLevelBodies, layers, PICKUPS } from "./game/level";
-import { applyLampSupport, createPropWorld, resetPropEvidence, resetProps, scatterEvents, scatterPropsAt, syncPropNodes } from "./game/props";
-import { applyTouchLook, lookTargetPoint, playerEye, resetPlayer, updateLook, updatePlayer } from "./game/player";
-import { MAG_SIZE, MAX_HP, START_RESERVE, WALK_Y, createInitialState, lookDirection, rightDirection, type FpsRunState } from "./game/state";
-import { createShotClock, hideShotFx, shotFxDebug, showShot, updateShotFx } from "./game/shot-fx";
-import { createWeaponClock, fireHitscan, updateWeapon, type ShotTrace } from "./game/weapons";
-import { createCorridorTouchControls } from "./game/touch";
+import {
+  EYE_HEIGHT,
+  MAG_SIZE,
+  TARGETS,
+  applyLook,
+  applyMove,
+  createRun,
+  eyePosition,
+  lookDirection,
+  resetRun,
+  targetsAlive,
+  tickRun,
+  tryFire,
+  type RunState
+} from "./rules";
 
 declare global {
   interface Window {
-    __AURA3D_ROUTE_READY__?: { readonly ready: boolean; readonly diagnostics?: unknown };
-    __AURA3D_FPS_SHOOT__?: () => void;
-    __AURA3D_FPS_CAPTURE__?: {
-      setWeaponVisible(visible: boolean): void;
-    };
+    __aura3dGameSnapshot?: NeonCorridorEvidence;
   }
 }
 
-interface FpsEvidence {
+interface NeonCorridorEvidence {
+  readonly framed: boolean;
+  readonly frame: number;
   readonly status: string;
   readonly claimLabel: "prototype";
-  readonly hp: number;
-  readonly ammo: number;
-  readonly reserve: number;
-  readonly score: number;
-  readonly kills: number;
+  readonly player: { readonly x: number; readonly y: number; readonly z: number; readonly yaw: number; readonly pitch: number };
   readonly shotsFired: number;
   readonly hits: number;
-  readonly pickups: number;
+  readonly targetsHit: number;
+  readonly kills: number;
+  readonly targetsAlive: number;
+  readonly targetsTotal: number;
+  readonly targets: readonly {
+    readonly id: string;
+    readonly alive: boolean;
+    readonly hp: number;
+    readonly position: readonly [number, number, number];
+  }[];
+  readonly ammo: number;
+  readonly reloading: boolean;
+  readonly score: number;
+  readonly won: boolean;
   readonly resets: number;
-  readonly paused: boolean;
   readonly pointerLockRequested: number;
   readonly pointerLockActive: boolean;
-  readonly yaw: number;
-  readonly pitch: number;
-  readonly x: number;
-  readonly y: number;
-  readonly z: number;
-  readonly grounded: boolean;
-  readonly sprinting: boolean;
   readonly objective: string;
-  readonly killed: readonly string[];
-  readonly collected: readonly string[];
-  readonly exitReached: boolean;
-  readonly lastHitName: string;
-  readonly shotFxVisible: boolean;
-  readonly shotFxNodeCount: number;
-  readonly reloading: boolean;
-  readonly hitMarkerActive: boolean;
-  readonly audioUnlocked: boolean;
-  readonly audioCuesPlayed: number;
-  readonly dryFireActive: boolean;
-  readonly shotBolt0: readonly number[];
-  readonly shotBolt1: readonly number[];
-  readonly enemyVisualY: number;
-  readonly bulletOnBulletContacts: number;
-  readonly usedKit: false;
+  readonly events: readonly string[];
+  readonly look: { readonly id: string; readonly category: string };
   readonly typedAssets: readonly string[];
-  readonly primitiveCount: number;
-  readonly rendererMode: string;
-  readonly rendererFallback: string;
-  readonly knownLimits: readonly string[];
-  readonly frame: number;
-}
-
-const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
-const reducedFlash = reducedMotion || new URLSearchParams(window.location.search).get("reducedFlash") === "1";
-const input = createFpsInput();
-const reducedMotionSource = game.accessibility.reducedMotion({ enabled: reducedMotion });
-const reducedFlashSource = game.accessibility.reducedFlash({ enabled: reducedFlash });
-const pauseControls = game.accessibility.pauseControls({ actions: ["pause", "KeyP"] });
-const effects = game.effects({ poolSize: 48, reducedMotion, reducedFlash });
-const director = game.cameraDirector({ reducedMotion, mode: "follow" });
-const hud = createHud();
-const weaponClock = createWeaponClock();
-const shotClock = createShotClock();
-const state = createInitialState();
-const audio = createCorridorAudio(state);
-const mountId = `neon-corridor-strike-${performance.timeOrigin}`;
-let lastWarnAmmo = MAG_SIZE;
-let lastStatus: string = "playing";
-let pausedAtMs: number | undefined;
-const rifleScale = groundedRenderedAssetPlacement(assets.neonContainmentPulseRifle, { targetMaxDimension: 0.85, floorY: 0 }).scale;
-
-const app = createAuraApp("#app", {
-  diagnostics: { overlay: false },
-  // Full backing-store resolution for the dense full-screen FPS view. The old
-  // 0.5 cap kept a software-rendered evidence runner inside budget, but it
-  // shipped every frame as a half-res upscale: blurriness in all captures and
-  // on any real display. Box-heavy corridor geometry holds full rate at 1.0
-  // on hardware GL; CSS/HUD dimensions and all game state remain unchanged.
-  pixelRatio: 1,
-  physics: {
-    layers,
-    gravity: [0, -24, 0],
-    seed: 20260919,
-    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
-  },
-  scene: buildScene()
-});
-
-createLevelBodies(app.physics);
-const physics = app.physics;
-// NC-A1/NC-A4: dynamic debris bodies + spring-lamp joints live on the same
-// runtime; their visuals were declared in buildScene and are synced per frame.
-createPropWorld(physics);
-// Shared collection effects for both the trigger path and the NC-A2 sweep.
-const pickupHooks = {
-  removeBody: (name: string) => physics.removeBody(name),
-  hideNode: (name: string) => app.nodes.get(name)?.setVisible(false),
-  onCollected: () => audio.play("pickup")
-};
-const playerBody = physics.bodies.require("player") as AuraBodyHandle;
-const lookNode = app.nodes.require("look-target");
-const rifleNode = app.nodes.require("pulse-rifle");
-hideShotFx(app.nodes);
-bindPointerLock(app.canvas, state);
-resetEnemies(physics);
-for (const enemy of ENEMIES) {
-  app.nodes.get(`enemy-${enemy.id}`)?.setPosition(enemy.x, ENEMY_VISUAL_Y, enemy.z);
-}
-
-function reachExit(): void {
-  if (state.status !== "playing") return;
-  state.exitReached = true;
-  state.status = "won";
-  state.score += 250;
-  state.objective = "Exit reached. Press R to reset";
-}
-
-physics.onTriggerEnter((event) => {
-  const names = [event.nodeA, event.nodeB];
-  const pickup = names.find((name) => name?.startsWith("pickup-"));
-  if (pickup) {
-    // Collection effects live in pickups.ts so the NC-A2 overlap sweep and this
-    // trigger path cannot drift apart. The sensor stays authoritative first.
-    collectPickupByName(state, pickupHooks, pickup);
-  }
-  if (names.includes("exit")) reachExit();
-});
-
-function resetRun(): void {
-  state.hp = MAX_HP;
-  state.ammo = MAG_SIZE;
-  state.reserve = START_RESERVE;
-  state.score = 0;
-  state.kills = 0;
-  state.shotsFired = 0;
-  state.hits = 0;
-  state.reloads = 0;
-  state.pickups = 0;
-  state.paused = false;
-  pausedAtMs = undefined;
-  audio.reset();
-  state.yaw = 0;
-  state.pitch = 0;
-  state.ignoreFireUntil = 0;
-  state.lmbHeld = false;
-  state.fireHeld = false;
-  state.fireQueued = false;
-  state.spawnGuard = 8;
-  state.status = "playing";
-  state.objective = "Clear the corridor or reach the exit";
-  state.killed = [];
-  state.collected = [];
-  state.exitReached = false;
-  state.lastHitName = "";
-  state.reloadClock = 0;
-  state.reloadJustFinished = false;
-  state.hitMarker = 0;
-  state.damageFlash = 0;
-  state.dryFirePulse = 0;
-  state.audioCues = [];
-  state.overlapPickupChecks = 0;
-  fireBus().held = false;
-  fireBus().queued = false;
-  weaponClock.cooldown = 0;
-  weaponClock.recoil = 0;
-  state.resets += 1;
-  resetProps(physics);
-  resetPropEvidence();
-  lastWarnAmmo = MAG_SIZE;
-  lastStatus = "playing";
-  resetPlayer(playerBody);
-  resetEnemies(physics);
-  app.nodes.get("shot-light")?.setPosition(0, -8, 0);
-  for (const enemy of ENEMIES) {
-    const node = app.nodes.get(`enemy-${enemy.id}`);
-    const collar = app.nodes.get(`enemy-${enemy.id}-threat-collar`);
-    node?.setVisible(true);
-    node?.setRotation(0, 0, 0);
-    node?.setPosition(enemy.x, ENEMY_VISUAL_Y, enemy.z);
-    collar?.setVisible(false);
-  }
-  for (const pickup of PICKUPS) {
-    const id = `pickup-${pickup.id}`;
-    if (!physics.bodies.has(id)) {
-      physics.createBody({
-        name: id,
-        type: "static",
-        shape: "sphere",
-        radius: 0.45,
-        position: [pickup.x, 0.45, pickup.z],
-        layer: "pickup",
-        sensor: true
-      });
-    }
-    app.nodes.get(id)?.setVisible(true);
-  }
-  hideShotFx(app.nodes);
-  // Kill any live wall-clock presentation window so a pre-reset bolt cannot
-  // resurrect on the next frame.
-  shotClock.visible = 0;
-  shotClock.pose = null;
-  shotClock.expiresAt = undefined;
-  lastShotWallMs = -1;
-  effects.update(60);
-  app.resume();
-}
-
-function muzzleBarrel(): readonly [number, number, number] {
-  const eye = playerEye(playerBody);
-  const forward = lookDirection(state.yaw, state.pitch);
-  const right = rightDirection(state.yaw);
-  return [
-    eye[0] + forward[0] * 0.8 + right[0] * 0.2,
-    eye[1] + forward[1] * 0.8 - 0.11,
-    eye[2] + forward[2] * 0.8 + right[2] * 0.2
-  ];
-}
-
-let lastShotWallMs = -1;
-function nowMs(): number {
-  return typeof performance !== "undefined" ? performance.now() : Date.now();
-}
-
-function presentShot(shot: ShotTrace): void {
-  const barrel = muzzleBarrel();
-  const dir = lookDirection(shot.yaw, shot.pitch);
-  const reach = Math.max(2.4, Math.hypot(
-    shot.end[0] - barrel[0],
-    shot.end[1] - barrel[1],
-    shot.end[2] - barrel[2]
-  ));
-  const end: readonly [number, number, number] = [
-    barrel[0] + dir[0] * reach,
-    barrel[1] + dir[1] * reach,
-    barrel[2] + dir[2] * reach
-  ];
-  try {
-    showShot(app.nodes, shot.origin, dir, barrel, end, shot.yaw, shot.pitch, shotClock);
-    lastShotWallMs = nowMs();
-    // Reduced-flash clamps brightness, not feedback truth. Hold the subdued
-    // muzzle event for a few frames longer so a low-refresh evidence/browser
-    // frame cannot miss the entire safe feedback window.
-    effects.impactFlash(barrel, { color: "#ff9d3c", intensity: 0.9, duration: reducedFlash ? 0.18 : 0.06, radius: 0.035, ownerId: "muzzle" });
-    // Enemy hits already spark via effects.hitSpark; wall hits get an end flash.
-    if (!state.lastHitName.startsWith("enemy-")) {
-      effects.impactFlash(end, { color: "#7ef8ff", intensity: 1.05, duration: 0.12, radius: 0.14, ownerId: "shot-end" });
-    }
-    app.nodes.get("shot-light")?.setPosition(barrel[0], barrel[1], barrel[2]);
-  } catch {
-    // Never leave a half-presented shot resumable by the wall-clock hold.
-    shotClock.visible = 0;
-    shotClock.pose = null;
-    shotClock.expiresAt = undefined;
-  }
-}
-
-function applyHit(enemyId: string, point: readonly [number, number, number]): void {
-  const killed = damageEnemy(enemyId, 34, state);
-  registerHitReaction(enemyId, killed);
-  if (killed) {
-    // Capsule goes immediately (shots pass through the corpse); the visual node
-    // crumples with weight in enemies.ts before hiding.
-    physics.removeBody(enemyId);
-    audio.play("kill");
-    state.objective = `${state.kills}/${ENEMIES.length} down`;
-  } else {
-    audio.play("hit");
-    void point;
-  }
-}
-
-function shootNow(): void {
-  if (state.status !== "playing") resetRun();
-  if (state.paused) return;
-  if (weaponClock.cooldown > 0 || state.reloadClock > 0) return;
-  if (state.ammo <= 0) {
-    // Empty mag is a deny click, not silence.
-    state.dryFirePulse = 0.22;
-    audio.play("dry-fire");
-    weaponClock.cooldown = 0.16;
-    renderHud(hud, state, reducedFlash);
-    publishEvidence();
-    return;
-  }
-  const shot = fireHitscan(state, physics, playerBody, effects, applyHit, (point) => scatterPropsAt(physics, point));
-  if (shot) {
-    presentShot(shot);
-    audio.play("fire");
-  }
-  weaponClock.cooldown = 0.16;
-  weaponClock.recoil = 1;
-  renderHud(hud, state, reducedFlash);
-  publishEvidence();
-}
-
-bindFireKeys(shootNow);
-window.__AURA3D_FPS_SHOOT__ = shootNow;
-const touchControls = createCorridorTouchControls({
-  input,
-  onLook: (dx, dy) => applyTouchLook(state, dx, dy, reducedMotion)
-});
-window.__AURA3D_FPS_CAPTURE__ = {
-  setWeaponVisible(visible: boolean): void {
-    rifleNode.setVisible(visible);
-  }
-};
-
-// Readback of the mounted route for typed-world visibility evidence.
-if (new URLSearchParams(location.search).has("worldProbe")) {
-  (window as unknown as Record<string, unknown>).__AURA3D_CORRIDOR_WORLD_PROBE__ = {
-    async capture(visible: boolean) {
-      app.pause();
-      await app.ready();
-      const worldNode = app.nodes.get("containment-world");
-      if (!worldNode) throw new Error("Typed containment world is missing.");
-      worldNode.setVisible(visible);
-      await app.stepAsync(0);
-      const canvas = app.canvas;
-      const gl = canvas?.getContext("webgl2");
-      if (!canvas || !gl) throw new Error("World proof requires the mounted WebGL2 canvas.");
-      const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-      gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-      return { pixels: Array.from(pixels), width: canvas.width, height: canvas.height,
-        imported: worldNode.importedAssetEvidence(), diagnostics: app.diagnostics() };
-    }
+  readonly drawCalls: number;
+  readonly audio: {
+    readonly requestedEvents: readonly string[];
+    readonly playedEvents: readonly string[];
+    readonly playedCueCount: number;
+    readonly suppressedCueCount: number;
+    readonly contextState: string;
+    readonly unlocked: boolean;
   };
+  readonly evidence: unknown;
 }
 
-function syncWeaponViewmodel(): void {
-  const eye = playerEye(playerBody);
-  const forward = lookDirection(state.yaw, state.pitch);
-  const right = rightDirection(state.yaw);
-  const recoil = weaponClock.recoil;
-  const compact = window.innerWidth <= 600;
-  const forwardOffset = compact ? 0.42 : 0.46;
-  const rightOffset = compact ? 0.08 : 0.22;
-  // The containment rifle is a deliberately compact lower-right viewmodel.
-  // Its old catalog-era transform lifted the larger replacement into the
-  // center sight lane; keep the muzzle clear of the reticle on both desktop
-  // and touch layouts without touching the hitscan origin.
-  const verticalOffset = compact ? 0.16 : 0.20;
-  // Keep the typed weapon silhouette legible in the review frame.  The
-  // previous scale read as a thin diagonal accent beside the combat lane;
-  // this modest lift gives the authored rifle a clear barrel/receiver read
-  // while remaining below/right of the reticle.  It is a viewmodel-only
-  // presentation change and does not affect hitscan origin or gameplay reach.
-  const viewmodelScale = rifleScale * (compact ? 0.30 : 0.34);
-  rifleNode
+const LOOK_ID = "neon-arcade" as const;
+const run: RunState = createRun();
+
+const wallScale = groundedRenderedAssetPlacement(assets.quaterniusWallModular, { targetHeight: 3, floorY: 0 }).scale;
+const crateScale = groundedRenderedAssetPlacement(assets.quaterniusCubeCrate, { targetMaxDimension: 0.9, floorY: 0 }).scale;
+const droneScale = groundedRenderedAssetPlacement(assets.kenneyCraftMiner, { targetMaxDimension: 1.1, floorY: 0 }).scale;
+
+const inputOptions = {
+  actions: {
+    forward: ["KeyW", "ArrowUp"],
+    back: ["KeyS", "ArrowDown"],
+    left: ["KeyA", "ArrowLeft"],
+    right: ["KeyD", "ArrowRight"],
+    sprint: ["ShiftLeft", "ShiftRight"],
+    // PointerPrimary is emitted by GameRuntime on pointerdown (LMB fire);
+    // KeyJ/KeyF keep fire reachable without pointer lock (headless specs).
+    fire: ["PointerPrimary", "KeyJ", "KeyF"],
+    reset: ["KeyR"]
+  },
+  bufferMs: 100
+} as const;
+
+const routeEvents = game.eventLog({ label: "neon corridor events", maxEvents: 18 });
+const hudBindings = [
+  { kind: "aura-game-hud-binding", owner: "app", binding: "score", id: "hud:score", label: "score", source: "app-state", valuePath: "appState.score", format: "number", a11yLabel: "score" },
+  { kind: "aura-game-hud-binding", owner: "app", binding: "objective", id: "hud:objective", label: "objective", source: "app-state", valuePath: "appState.objective", format: "text", a11yLabel: "current objective" },
+  { kind: "aura-game-hud-binding", owner: "app", binding: "event-log", id: "hud:event-log", label: "event log", source: "app-state", valuePath: "appState.events", format: "text", a11yLabel: "game event log", debugOnly: true }
+] as const;
+
+let latestSnapshot: NeonCorridorEvidence | undefined;
+let objective = "Drop all five sentry drones. Click to lock aim.";
+let pointerLockRequested = 0;
+let pointerLockActive = false;
+// The click that acquires pointer lock must not also fire: suppress fire
+// until that press is released.
+let suppressFireUntilRelease = false;
+let muzzleUntil = 0;
+let sparkUntil = 0;
+let sparkPoint: readonly [number, number, number] = [0, -50, 0];
+let hitMarkerUntil = 0;
+let recoil = 0;
+let elapsed = 0;
+const flashUntil = new Map<string, number>();
+const AUDIO_EVENTS = new Set(["fire", "hit", "kill", "win", "corridor-hum"]);
+const requestedAudioEvents = new Set<string>(["corridor-hum"]);
+const playedAudioEvents = new Set<string>();
+
+const neonGame = createGame({
+  id: "neon-corridor-strike",
+  target: "#app",
+  diagnostics: { overlay: true, performancePanel: true },
+  scene: () => buildScene(),
+  input: inputOptions,
+  hud: {
+    theme: "arcade-neon",
+    widgets: [
+      { id: "score", kind: "score", anchor: "top-left", label: "SCORE" },
+      { id: "targets", kind: "score", anchor: "top-right", label: "SENTRIES LEFT" },
+      { id: "objective", kind: "objective", anchor: "bottom", label: "OBJECTIVE" }
+    ]
+  },
+  sound: {
+    cues: {
+      fire: { id: "fire", asset: { url: sfxUrl("explosion.laser.00") }, volume: 0.5 },
+      hit: { id: "hit", asset: { url: sfxUrl("impact.energy.light.00") }, volume: 0.55 },
+      kill: { id: "kill", asset: { url: sfxUrl("explosion.small.00") }, volume: 0.7 },
+      win: { id: "win", asset: { url: sfxUrl("stinger.win.00") }, volume: 0.8 },
+      "corridor-hum": { id: "corridor-hum", asset: { url: sfxUrl("ambience.interior-hum") }, volume: 0.22, loop: true }
+    }
+  },
+  juice: {
+    hit: { flash: { color: "#4de8ff", peak: 0.14, ms: 160 }, rumble: { weak: 0.35, ms: 90 } },
+    kill: { hitStop: 0.02, shake: 0.18, flash: { color: "#ff9d12", peak: 0.2, ms: 220 } },
+    win: { flash: { color: "#70f7c0", peak: 0.26, ms: 420 }, punch: { fovDeg: 2, ms: 300 } }
+  },
+  qualityRebuild: { flags: ["game"] },
+  evidence: {
+    schema: 1,
+    sections: { neonCorridor: () => latestSnapshot ?? { status: "unbound" } }
+  }
+});
+const app = neonGame.app;
+const input = neonGame.input;
+if (!input) throw new Error("neon-corridor-strike failed to create runtime-owned input.");
+// Blockfall template lesson: start() drives booting -> loading -> playing;
+// without it the session beacon never leaves "booting".
+neonGame.start();
+void neonGame.sound?.cue("corridor-hum");
+
+const targetNodes = new Map<string, AuraRuntimeNodeHandle>(
+  TARGETS.map((def) => [def.id, app.nodes.require(def.id)])
+);
+const weaponNode = app.nodes.require("weapon-viewmodel");
+const muzzleNode = app.nodes.require("muzzle-flash");
+const sparkNode = app.nodes.require("hit-spark");
+const hudRoot = createHud();
+const crosshair = createCrosshair();
+const lockOverlay = createLockOverlay();
+bindPointerLock();
+
+// First-person eye: fromSpec pins the spawn pose; per-frame setPose below
+// tracks the rules-owned player position and look direction.
+app.camera?.use(
+  camera.rigs.fromSpec({
+    position: [run.x, EYE_HEIGHT, run.z],
+    target: [run.x, 1.5, 2],
+    fov: 60
+  })
+);
+
+app.onFrame(({ dt }) => {
+  const step = Math.min(dt, 0.05);
+  elapsed += step;
+
+  // E5 raw-pointer look (never the 96x-dampened pointerDelta axes): the
+  // runtime has already updated owned inputs for this frame, so snapshot
+  // pointer dx/dy are this frame's raw pixels (movementX/Y under lock,
+  // client delta otherwise — drag-look works unlocked too).
+  const pointer = input.snapshot().pointer;
+  applyLook(run, pointer.dx, pointer.dy);
+
+  applyMove(
+    run,
+    {
+      forward: (input.held("forward") ? 1 : 0) - (input.held("back") ? 1 : 0),
+      strafe: (input.held("right") ? 1 : 0) - (input.held("left") ? 1 : 0),
+      sprint: input.held("sprint")
+    },
+    step
+  );
+  tickRun(run, step);
+
+  if (input.pressed("reset")) {
+    resetRun(run);
+    objective = "Drop all five sentry drones. Click to lock aim.";
+    routeEvents.push({ type: "reset", label: "reset" });
+  }
+
+  if (suppressFireUntilRelease) {
+    if (!input.held("fire")) suppressFireUntilRelease = false;
+  } else if (input.held("fire")) {
+    fireOnce();
+  }
+
+  recoil = Math.max(0, recoil - step * 6);
+  renderWorld();
+  renderHud();
+  publishEvidence();
+});
+
+renderWorld();
+renderHud();
+publishEvidence();
+
+function cueAudio(event: "fire" | "hit" | "kill" | "win"): void {
+  requestedAudioEvents.add(event);
+  void neonGame.sound?.cue(event);
+}
+
+function fireOnce(): void {
+  const result = tryFire(run);
+  if (!result.fired) return;
+  const now = performance.now();
+  muzzleUntil = now + 60;
+  recoil = 1;
+  cueAudio("fire");
+  routeEvents.push({ type: "fire", label: `fire:${run.shotsFired}` });
+  if (result.hitTargetId) {
+    sparkPoint = result.hitPoint ?? sparkPoint;
+    sparkUntil = now + 150;
+    hitMarkerUntil = now + 160;
+    flashUntil.set(result.hitTargetId, now + 140);
+    cueAudio("hit");
+    neonGame.juice.fire("hit");
+    routeEvents.push({ type: "hit", label: `hit:${result.hitTargetId}`, severity: "success" });
+  }
+  if (result.killedTargetId) {
+    targetNodes.get(result.killedTargetId)?.setVisible(false);
+    cueAudio("kill");
+    neonGame.juice.fire("kill");
+    objective = `${targetsAlive(run)} sentries left.`;
+    routeEvents.push({ type: "kill", label: `kill:${result.killedTargetId}`, severity: "success" });
+  }
+  if (result.won) {
+    objective = "Corridor clear. Press R to run it again.";
+    cueAudio("win");
+    neonGame.juice.fire("win");
+    routeEvents.push({ type: "win", label: "win", severity: "success" });
+    document.exitPointerLock?.();
+  }
+}
+
+function buildScene() {
+  const nodes: AuraNodeInput[] = [
+    // Corridor shell: dark deck + ceiling slabs, modular wall panels down
+    // both sides, emissive guide strips, crate cover along the lane.
+    primitives.box({
+      name: "corridor deck",
+      size: [6.4, 0.1, 27],
+      position: [0, -0.05, -2],
+      material: material.pbr({ color: "#11182c", roughness: 0.35, metalness: 0.55 }),
+      receiveShadow: true
+    }),
+    primitives.box({
+      name: "corridor ceiling",
+      size: [6.4, 0.1, 27],
+      position: [0, 3.05, -2],
+      material: material.pbr({ color: "#0b0e18", roughness: 0.5, metalness: 0.4 })
+    }),
+    ...wallPanelNodes(),
+    primitives.box({
+      name: "guide strip west",
+      size: [0.08, 0.08, 26],
+      position: [-2.55, 2.55, -2],
+      material: material.emissive({ color: "#4de8ff", emissive: "#4de8ff", emissiveIntensity: 1.5 })
+    }),
+    primitives.box({
+      name: "guide strip east",
+      size: [0.08, 0.08, 26],
+      position: [2.55, 2.55, -2],
+      material: material.emissive({ color: "#ff5d7d", emissive: "#ff5d7d", emissiveIntensity: 1.3 })
+    }),
+    ...crateNodes(),
+    ...targetSceneNodes(),
+    // Primitive pulse-rifle viewmodel + shot feedback (real nodes, not
+    // effects-only): parked under the deck until the frame loop poses them.
+    primitives.box({
+      name: "pulse rifle viewmodel",
+      size: [0.09, 0.15, 0.55],
+      position: [0, -50, 0],
+      material: material.pbr({ color: "#2a3454", roughness: 0.3, metalness: 0.6, emissive: "#4de8ff", emissiveIntensity: 0.35 })
+    }).runtime(game.runtimeNode("weapon-viewmodel", { tags: ["weapon", "runtime"] })),
+    primitives.box({
+      name: "muzzle flash",
+      size: [0.16, 0.16, 0.16],
+      position: [0, -50, 0],
+      material: material.emissive({ color: "#ff9d12", emissive: "#ff9d12", emissiveIntensity: 2.2 })
+    }).runtime(game.runtimeNode("muzzle-flash", { tags: ["fx", "runtime"] })),
+    primitives.box({
+      name: "hit spark",
+      size: [0.22, 0.22, 0.22],
+      position: [0, -50, 0],
+      material: material.emissive({ color: "#4de8ff", emissive: "#4de8ff", emissiveIntensity: 2 })
+    }).runtime(game.runtimeNode("hit-spark", { tags: ["fx", "runtime"] }))
+  ];
+
+  // The neon-arcade look supplies the night-interior grade, key light and
+  // fog (replacing the trashed scene's outdoor-day TODO); three practicals
+  // stage spawn / mid / deep bays in cyan, amber and green.
+  return scene()
+    .add(looks.preset(LOOK_ID))
+    .addMany(nodes)
+    .add(lights.point({ name: "spawn practical", position: [0, 2.4, 7], color: "#77d8e5", intensity: 1.6 }))
+    .add(lights.point({ name: "mid bay practical", position: [0, 2.4, -2], color: "#ffad63", intensity: 2 }))
+    .add(lights.point({ name: "deep bay practical", position: [0, 2.4, -11], color: "#70f7c0", intensity: 1.6 }))
+    .camera(camera.perspective({ position: [0, EYE_HEIGHT, 9], target: [0, 1.5, 2], fov: 60 }));
+}
+
+function wallPanelNodes(): AuraNodeInput[] {
+  const nodes: AuraNodeInput[] = [];
+  // Side walls: 3 m panels rotated to face the lane, z from spawn to exit.
+  for (let i = 0; i < 9; i += 1) {
+    const z = 9.5 - i * 3;
+    nodes.push(
+      model(assets.quaterniusWallModular, { name: `west wall ${i}`, castShadow: true })
+        .position(-2.9, 0, z)
+        .rotate(0, Math.PI / 2, 0)
+        .scale(wallScale)
+    );
+    nodes.push(
+      model(assets.quaterniusWallModular, { name: `east wall ${i}`, castShadow: true })
+        .position(2.9, 0, z)
+        .rotate(0, -Math.PI / 2, 0)
+        .scale(wallScale)
+    );
+  }
+  // End walls close the lane behind spawn and past the last sentry.
+  for (const x of [-2, 0, 2]) {
+    nodes.push(
+      model(assets.quaterniusWallModular, { name: `exit wall ${x}`, castShadow: true })
+        .position(x, 0, -15.2)
+        .scale(wallScale)
+    );
+    nodes.push(
+      model(assets.quaterniusWallModular, { name: `spawn wall ${x}`, castShadow: true })
+        .position(x, 0, 11.2)
+        .rotate(0, Math.PI, 0)
+        .scale(wallScale)
+    );
+  }
+  return nodes;
+}
+
+function crateNodes(): AuraNodeInput[] {
+  const spots: readonly (readonly [number, number])[] = [
+    [-1.9, 5], [1.9, 1], [-1.9, -3.5], [1.9, -7], [-1.9, -10.5], [1.9, -13]
+  ];
+  return spots.map(([x, z], index) =>
+    model(assets.quaterniusCubeCrate, { name: `cover crate ${index}`, castShadow: true })
+      .position(x, 0, z)
+      .scale(crateScale)
+  );
+}
+
+function targetSceneNodes(): AuraNodeInput[] {
+  return TARGETS.map((def) =>
+    model(assets.kenneyCraftMiner, { name: `sentry drone ${def.id}`, castShadow: true })
+      .position(def.center[0], def.center[1] - 0.15, def.center[2])
+      .rotate(0, Math.PI, 0)
+      .scale(droneScale)
+      .runtime(game.runtimeNode(def.id, { tags: ["target", "runtime"] }))
+  );
+}
+
+function renderWorld(): void {
+  const now = performance.now();
+  const eye = eyePosition(run);
+  const dir = lookDirection(run.yaw, run.pitch);
+  const target: [number, number, number] = [eye[0] + dir[0], eye[1] + dir[1], eye[2] + dir[2]];
+  app.camera?.setPose({ position: [eye[0], eye[1], eye[2]], target, fov: 60 }, { cut: true });
+
+  for (const state of run.targets) {
+    const node = targetNodes.get(state.id);
+    if (!node) continue;
+    if (!state.alive) {
+      node.setVisible(false);
+      continue;
+    }
+    const bob = Math.sin(elapsed * 1.4 + state.center[2]) * 0.08;
+    const flashing = now < (flashUntil.get(state.id) ?? 0);
+    node
+      .setVisible(true)
+      .setPosition(state.center[0], state.center[1] - 0.15 + bob, state.center[2])
+      .setScale(droneScale * (flashing ? 1.22 : 1));
+  }
+
+  // Viewmodel rides the eye: forward + right + down, kicking back on fire.
+  const right: [number, number, number] = [Math.cos(run.yaw), 0, -Math.sin(run.yaw)];
+  const reach = 0.55 - recoil * 0.07;
+  weaponNode
+    .setVisible(true)
     .setPosition(
-      eye[0] + forward[0] * (forwardOffset - 0.05 * recoil) + right[0] * rightOffset,
-      eye[1] + forward[1] * (forwardOffset - 0.05 * recoil) - verticalOffset - 0.02 * recoil,
-      eye[2] + forward[2] * (forwardOffset - 0.05 * recoil) + right[2] * rightOffset
+      eye[0] + dir[0] * reach + right[0] * 0.22,
+      eye[1] + dir[1] * reach - 0.18,
+      eye[2] + dir[2] * reach + right[2] * 0.22
     )
-    .setRotation(state.pitch, state.yaw, 0)
-    .setScale(viewmodelScale);
+    .setRotation(-run.pitch, run.yaw, 0);
+  const muzzleLive = now < muzzleUntil;
+  muzzleNode
+    .setVisible(muzzleLive)
+    .setPosition(
+      eye[0] + dir[0] * 0.85 + right[0] * 0.22,
+      eye[1] + dir[1] * 0.85 - 0.13,
+      eye[2] + dir[2] * 0.85 + right[2] * 0.22
+    );
+  const sparkLive = now < sparkUntil;
+  sparkNode.setVisible(sparkLive).setPosition(sparkPoint[0], sparkPoint[1], sparkPoint[2]);
+}
+
+function bindPointerLock(): void {
+  const canvas = document.querySelector<HTMLCanvasElement>("#app canvas");
+  if (!canvas) return;
+  canvas.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+    canvas.focus();
+    if (document.pointerLockElement === canvas) return;
+    pointerLockRequested += 1;
+    suppressFireUntilRelease = true;
+    routeEvents.push({ type: "pointer-lock", label: "pointer-lock:requested" });
+    try {
+      canvas.requestPointerLock();
+    } catch {
+      // Headless runners may refuse lock synchronously; drag-look and
+      // KeyJ fire remain live, and evidence reports the request honestly.
+    }
+  });
+  document.addEventListener("pointerlockchange", () => {
+    pointerLockActive = document.pointerLockElement === canvas;
+  });
+  document.addEventListener("pointerlockerror", () => {
+    pointerLockActive = false;
+  });
+}
+
+function createHud(): HTMLElement {
+  const root = document.createElement("aside");
+  root.id = "neon-corridor-hud";
+  root.style.cssText = [
+    "position:absolute",
+    "left:16px",
+    "top:16px",
+    "z-index:5",
+    "min-width:300px",
+    "font:600 13px/1.35 Inter, system-ui, sans-serif",
+    "color:#f5fbff",
+    "background:rgba(8,10,22,0.72)",
+    "border:1px solid rgba(77,232,255,0.34)",
+    "border-radius:8px",
+    "padding:12px",
+    "pointer-events:none"
+  ].join(";");
+  document.body.append(root);
+  return root;
+}
+
+function createCrosshair(): HTMLElement {
+  const el = document.createElement("div");
+  el.id = "neon-crosshair";
+  el.textContent = "+";
+  el.style.cssText = [
+    "position:absolute",
+    "left:50%",
+    "top:50%",
+    "transform:translate(-50%,-50%)",
+    "z-index:5",
+    "font:300 26px/1 monospace",
+    "color:#4de8ff",
+    "text-shadow:0 0 6px rgba(77,232,255,0.8)",
+    "pointer-events:none"
+  ].join(";");
+  document.body.append(el);
+  return el;
+}
+
+function createLockOverlay(): HTMLElement {
+  const el = document.createElement("div");
+  el.id = "neon-lock-overlay";
+  el.style.cssText = [
+    "position:absolute",
+    "left:50%",
+    "bottom:28px",
+    "transform:translateX(-50%)",
+    "z-index:5",
+    "font:600 14px/1.3 Inter, system-ui, sans-serif",
+    "color:#f5fbff",
+    "background:rgba(8,10,22,0.66)",
+    "border:1px solid rgba(77,232,255,0.4)",
+    "border-radius:8px",
+    "padding:10px 16px",
+    "pointer-events:none"
+  ].join(";");
+  document.body.append(el);
+  return el;
+}
+
+function renderHud(): void {
+  neonGame.hud.set("score", run.score);
+  neonGame.hud.set("targets", targetsAlive(run));
+  neonGame.hud.set("objective", objective);
+  hudRoot.innerHTML = [
+    `<strong>Neon Corridor Strike</strong>`,
+    `<div>Score ${run.score} | Sentries ${targetsAlive(run)}/${run.targets.length} | Ammo ${run.reloading ? "…" : run.ammo}/${MAG_SIZE}</div>`,
+    `<div>Shots ${run.shotsFired} | Hits ${run.hits} | Status ${run.status}</div>`,
+    `<div>${objective}</div>`,
+    `<div>Click canvas to lock aim. WASD move. Mouse look. LMB/J fire. R reset.</div>`
+  ].join("");
+  const hitLive = performance.now() < hitMarkerUntil;
+  crosshair.textContent = hitLive ? "×" : "+";
+  crosshair.style.color = hitLive ? "#ff9d12" : "#4de8ff";
+  lockOverlay.textContent =
+    run.status === "won"
+      ? "Corridor clear — press R to run it again."
+      : pointerLockActive
+        ? "Aim locked — Esc releases the mouse."
+        : "Click the corridor to lock aim (drag-look + J fire work unlocked).";
+  lockOverlay.style.display = pointerLockActive && run.status !== "won" ? "none" : "block";
 }
 
 function publishEvidence(): void {
-  const at = playerBody.position();
-  const evidenceNow = state.paused && pausedAtMs !== undefined ? pausedAtMs : nowMs();
-  const lookTarget = app.nodes.get("look-target")?.position ?? [0, 0, 0];
-  const firstEnemyBody = physics.bodies.get("enemy-e1")?.position() ?? [0, 0, 0];
-  const diagnostics = app.diagnostics() as { readonly renderer?: { readonly mode?: string; readonly fallback?: string }; readonly backend?: string };
-  window.__AURA3D_FPS_EVIDENCE__ = {
-    status: state.status,
+  const evidence = app.evidence({
+    input,
+    events: routeEvents,
+    hud: hudBindings,
+    appState: {
+      score: run.score,
+      objective,
+      events: routeEvents.events().map((event: { readonly label: string }) => event.label)
+    },
+    assets: {
+      typedAssets: Object.keys(assets).length,
+      missingAssets: []
+    },
+    source: { expectsGame: true }
+  });
+  const diagnostics = app.diagnostics();
+  const snapshot: NeonCorridorEvidence = {
+    // Framed once the renderer submits draw calls for the corridor scene.
+    framed: diagnostics.drawCalls > 0,
+    frame: run.frame,
+    status: run.status,
     claimLabel: "prototype",
-    hp: state.hp,
-    ammo: state.ammo,
-    reserve: state.reserve,
-    score: state.score,
-    kills: state.kills,
-    shotsFired: state.shotsFired,
-    hits: state.hits,
-    pickups: state.pickups,
-    resets: state.resets,
-    paused: state.paused,
-    mountId,
-    touch: touchControls.snapshot(),
-    reducedMotion,
-    reducedFlash,
-    pointerLockRequested: state.pointerLockRequested,
-    pointerLockActive: state.pointerLockActive,
-    yaw: state.yaw,
-    pitch: state.pitch,
-    lookTarget: [...lookTarget],
-    x: at[0],
-    y: at[1],
-    z: at[2],
-    grounded: state.grounded,
-    sprinting: state.sprinting,
-    objective: state.objective,
-    killed: [...state.killed],
-    collected: [...state.collected],
-    exitReached: state.exitReached,
-    lastHitName: state.lastHitName,
-    shotFxVisible: shotClock.visible > 0,
-    shotClock: shotClock.visible,
-    shotExpiresInMs: shotClock.expiresAt === undefined ? -1 : Math.max(0, Math.round(shotClock.expiresAt - evidenceNow)),
-    reloading: state.reloadClock > 0,
-    reloadClock: state.reloadClock,
-    spawnGuard: state.spawnGuard,
-    weaponCooldown: weaponClock.cooldown,
-    weaponRecoil: weaponClock.recoil,
-    hitMarkerActive: state.hitMarker > 0,
-    audioUnlocked: audio.unlocked(),
-    audioCuesPlayed: audio.cuesPlayed().length,
-    droneActive: audio.ambientBus().active,
-    droneDucked: audio.ambientBus().ducked,
-    audioPaused: audio.ambientBus().paused,
-    shotAgeMs: lastShotWallMs < 0 ? -1 : Math.round(evidenceNow - lastShotWallMs),
-    fxHideCount: shotFxDebug.hideCount,
-    fxLastReason: shotFxDebug.lastReason,
-    fxLastAliveAgoMs: shotFxDebug.lastAliveMs < 0 ? -1 : Math.round(nowMs() - shotFxDebug.lastAliveMs),
-    dryFireActive: state.dryFirePulse > 0,
-    shotBolt0: [...(app.nodes.get("muzzle-0")?.position ?? [0, 0, 0])],
-    shotBolt1: [...(app.nodes.get("muzzle-1")?.position ?? [0, 0, 0])],
-    enemyVisualY: app.nodes.get("enemy-e1")?.position[1] ?? -1,
-    enemyBodyY: firstEnemyBody[1],
-    enemyBodyPositions: ENEMIES.map((enemy) => [...(physics.bodies.get(`enemy-${enemy.id}`)?.position() ?? [Number.NaN, Number.NaN, Number.NaN])]),
-    propBodyPositions: [
-      ...["barrel-1", "barrel-2", "barrel-3", "crate-1", "crate-2", "crate-3"].map((id) => [...(physics.bodies.get(`prop-${id}`)?.position() ?? [Number.NaN, Number.NaN, Number.NaN])]),
-      ...["lamp-near", "lamp-far"].map((id) => [...(physics.bodies.get(id)?.position() ?? [Number.NaN, Number.NaN, Number.NaN])])
-    ],
-    shotFxNodeCount: ["shot-impact", ...Array.from({ length: 3 }, (_, i) => `muzzle-${i}`)].filter((id) => app.nodes.has(id)).length,
-    cameraShake: director.snapshot().shake,
-    effectFlashIntensity: Math.max(0, ...effects.snapshot().effects.filter((effect) => effect.kind === "impact-flash" || effect.kind === "super-flash").map((effect) => effect.intensity)),
-    bulletOnBulletContacts: 0,
-    usedKit: false,
+    player: { x: run.x, y: EYE_HEIGHT, z: run.z, yaw: run.yaw, pitch: run.pitch },
+    shotsFired: run.shotsFired,
+    hits: run.hits,
+    targetsHit: run.hits,
+    kills: run.kills,
+    targetsAlive: targetsAlive(run),
+    targetsTotal: run.targets.length,
+    targets: run.targets.map((state) => ({
+      id: state.id,
+      alive: state.alive,
+      hp: state.hp,
+      position: state.center
+    })),
+    ammo: run.ammo,
+    reloading: run.reloading,
+    score: run.score,
+    won: run.status === "won",
+    resets: run.resets,
+    pointerLockRequested,
+    pointerLockActive,
+    objective,
+    events: routeEvents.events().map((event: { readonly label: string }) => event.label),
+    look: { id: LOOK_ID, category: "studio" },
     typedAssets: Object.keys(assets),
-    // 26 authored base prims + 4 typed-enemy threat collars + 6 debris props
-    // + 4 lamp parts + 2 greeble pools + 3 text3D signs. Greeble instances and
-    // collar runtime transforms are additional instanced/runtime details.
-    primitiveCount: 45,
-    propsScatteredEvents: scatterEvents(),
-    overlapPickupChecks: state.overlapPickupChecks,
-    losBlockedEnemies: [...enemyLosBlockedIds()],
-    rendererMode: diagnostics.renderer?.mode ?? diagnostics.backend ?? "unknown",
-    rendererFallback: diagnostics.renderer?.fallback ?? "none",
-    knownLimits: [
-      "prototype label until route-health, screenshots, and playable gates are retained",
-      "follow-camera pitch is approximated; hitscan uses full yaw/pitch",
-      "no nav mesh; hostiles rush by proximity after the corridor alarm",
-      "hostiles are solid to hitscan but not to the player capsule; touch damage is proximity-authored",
-      "medkit catalog match is a medical gurney prop, not a packed first-aid box",
-      "audio cues are in-repo CC0 synthesis registered through the asset CLI, not a music score",
-      "debris scatter and lamp sway are cosmetic physics; no damage model reads prop poses",
-      "enemy aggro sight lines use public sphereCast against the wall hull, not a nav mesh",
-      "greebles are two instanced LOD pools of set dressing; signage glyphs are uppercase/digits only"
-    ],
-    frame: app.runtime.frame
+    drawCalls: diagnostics.drawCalls,
+    audio: audioEvidence(),
+    evidence
+  };
+  latestSnapshot = snapshot;
+  window.__aura3dGameSnapshot = snapshot;
+}
+
+function audioEvidence(): NeonCorridorEvidence["audio"] {
+  const sound = neonGame.sound?.evidence;
+  for (const node of sound?.playingNodes ?? []) {
+    if (AUDIO_EVENTS.has(node.cue)) playedAudioEvents.add(node.cue);
+  }
+  return {
+    requestedEvents: [...requestedAudioEvents].sort(),
+    playedEvents: [...playedAudioEvents].sort(),
+    playedCueCount: sound?.playedCueCount ?? 0,
+    suppressedCueCount: sound?.suppressedCueCount ?? 0,
+    contextState: sound?.contextState ?? "none",
+    unlocked: sound?.unlocked ?? false
   };
 }
 
-app.onFrame(({ dt }) => {
-  const elapsedStep = Math.min(0.1, Math.max(1 / 240, dt || 1 / 60));
-  const step = Math.min(0.05, elapsedStep);
-  const playerMotionCatchup = elapsedStep / step;
-  input.update(step);
-  if (input.pressed("pause") && state.status === "playing") {
-    state.paused = !state.paused;
-    if (state.paused) {
-      pausedAtMs = nowMs();
-    } else if (pausedAtMs !== undefined) {
-      const pausedFor = nowMs() - pausedAtMs;
-      if (shotClock.expiresAt !== undefined) shotClock.expiresAt += pausedFor;
-      if (lastShotWallMs >= 0) lastShotWallMs += pausedFor;
-      pausedAtMs = undefined;
-    }
-    audio.setPaused(state.paused);
-  }
-  if (input.pressed("reset") || (state.status !== "playing" && input.pressed("reload"))) {
-    resetRun();
-  }
-  if (state.paused) {
-    renderHud(hud, state, reducedFlash);
-    publishEvidence();
-    return;
-  }
-
-  state.spawnGuard = Math.max(0, state.spawnGuard - step);
-
-  updateLook(state, input, reducedMotion);
-  updatePlayer(state, input, physics, playerBody, step, playerMotionCatchup);
-  updateWeapon(state, input, physics, playerBody, effects, weaponClock, step, applyHit, presentShot, {
-    onReloadStart: () => audio.play("reload-start"),
-    onReloadComplete: () => audio.play("reload-done"),
-    onDryFire: () => audio.play("dry-fire"),
-    onImpactPoint: (point) => scatterPropsAt(physics, point)
-  });
-
-  // NC-A4: keep the spring-carried practicals neutrally supported while the
-  // solver advances, so sway is the only thing the spring has to do.
-  applyLampSupport(physics);
-  physics.step(step);
-  const stepped = playerBody.position();
-  playerBody.teleport([stepped[0], WALK_Y, stepped[2]]);
-  updateEnemies(state, physics, playerBody.position(), app.nodes, step, {
-    onPlayerDamaged: () => audio.play("hurt"),
-    onAlarm: () => audio.play("alarm")
-  });
-  // NC-A1/NC-A4 set dressing follows its bodies; NC-A2 overlap-sweep backup
-  // runs every frame but can only ever agree with the authoritative sensor.
-  syncPropNodes(app.nodes, step);
-  collectPickupsNearPlayer(state, physics, playerBody.position(), pickupHooks);
-  // Trigger-enter remains the primary exit signal. Confirm the authored exit
-  // overlap after stepping as a fixed-clock robustness path, matching the
-  // pickup query backup and preventing a throttled frame from missing the win.
-  const exitOverlap = physics.queries.overlapSphere(playerBody.position(), 0.6, { layers: ["pickup"] });
-  if (exitOverlap.some((body) => body.nodeName === "exit")) reachExit();
-
-  const look = lookTargetPoint(playerBody, state);
-  lookNode.setPosition(look[0], look[1], look[2]).setRotation(0, state.yaw, 0);
-  syncWeaponViewmodel();
-  if (shotClock.visible > 0 && shotClock.pose) {
-    shotClock.pose = {
-      barrel: muzzleBarrel(),
-      end: shotClock.pose.end,
-      yaw: state.yaw,
-      pitch: state.pitch
-    };
-  }
-  const at = playerBody.position();
-  director.update(step, [{ id: "player", position: [at[0], WALK_Y, at[2]] }]);
-  effects.update(step);
-  updateShotFx(app.nodes, shotClock, step);
-  if (shotClock.visible <= 0) {
-    app.nodes.get("shot-light")?.setPosition(0, -8, 0);
-  }
-
-  state.hitMarker = Math.max(0, state.hitMarker - step);
-  state.damageFlash = Math.max(0, state.damageFlash - step);
-  state.dryFirePulse = Math.max(0, state.dryFirePulse - step);
-  state.reloadJustFinished = false;
-
-  if (state.status === "playing" && state.killed.length === ENEMIES.length) {
-    state.status = "won";
-    state.score += 400;
-    state.objective = "Corridor cleared. Press R to reset";
-  }
-  if (state.status !== lastStatus) {
-    if (state.status === "won") audio.play("win");
-    if (state.status === "lost") audio.play("lose");
-    lastStatus = state.status;
-  }
-  if (state.status === "playing" && state.ammo > 0 && state.ammo <= 3 && lastWarnAmmo > 3) {
-    audio.play("warn");
-  }
-  lastWarnAmmo = state.ammo;
-
-  renderHud(hud, state, reducedFlash);
-  publishEvidence();
-  game.evidence(app, {
-    input,
-    effects,
-    camera: director,
-    accessibility: [reducedMotionSource, reducedFlashSource, pauseControls],
-    assets: { typedAssets: Object.keys(assets).length }
-  });
-});
-
-publishEvidence();
-renderHud(hud, state, reducedFlash);
-
-void app.ready().then(() => {
-  const diagnostics = app.diagnostics();
-  document.body.dataset.aura3dReady = "true";
-  document.body.dataset.aura3dRuntimeBackend = String((diagnostics as { runtimeBackend?: string }).runtimeBackend ?? (diagnostics as { backend?: string }).backend ?? "");
-  document.body.dataset.aura3dDrawCalls = String((diagnostics as { drawCalls?: number }).drawCalls ?? 0);
-  window.__AURA3D_ROUTE_READY__ = { ready: true, diagnostics };
-}).catch((error: unknown) => {
-  document.body.dataset.aura3dError = error instanceof Error ? error.message : String(error);
-});
