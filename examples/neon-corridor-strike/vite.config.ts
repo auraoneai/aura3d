@@ -22,16 +22,35 @@ const gameAlias = [
 ];
 const baseAlias = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.alias : [];
 
+const rewriteExampleAssetPath = (
+  request: { url?: string },
+  _response: unknown,
+  next: () => void
+): void => {
+  const url = request.url ?? "";
+  if (url.startsWith("/examples/neon-corridor-strike/public/")) {
+    request.url = url.replace("/examples/neon-corridor-strike/public", "");
+  }
+  next();
+};
+
 export default defineConfig({
   root: appDir,
   base: "./",
-  plugins: rootConfig.plugins ?? [],
+  plugins: [
+    ...(rootConfig.plugins ?? []),
+    {
+      name: "example-asset-path",
+      configureServer(server) {
+        server.middlewares.use(rewriteExampleAssetPath);
+      },
+      configurePreviewServer(server) {
+        server.middlewares.use(rewriteExampleAssetPath);
+      }
+    }
+  ],
   resolve: { ...rootConfig.resolve, alias: [...gameAlias, ...baseAlias] },
   optimizeDeps: rootConfig.optimizeDeps,
-  // App-local public dir: aura.assets.json emits the typed GLBs to
-  // public/aura-assets relative to this app (the Blockfall pilot layout).
-  // The trashed example-asset-path middleware that rewrote
-  // /examples/neon-corridor-strike/public/* URLs is gone with it.
   publicDir: path.resolve(appDir, "public"),
   server: {
     host: "127.0.0.1",

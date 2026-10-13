@@ -8,6 +8,7 @@ import {
   applyMove,
   createRun,
   resetRun,
+  shouldApplyLook,
   targetsAlive,
   tickRun,
   tryFire,
@@ -42,6 +43,16 @@ describe("neon corridor rules — look and move", () => {
     applyLook(run, 125, 0);
     expect(Math.abs(run.yaw)).toBeCloseTo(125 * LOOK_SENS, 9);
     expect(Math.abs(run.yaw)).toBeGreaterThanOrEqual(0.3);
+  });
+
+  it("gates unlocked look updates on pointer lock or an active pointer drag", () => {
+    const run = createRun();
+    expect(shouldApplyLook(false, false)).toBe(false);
+    expect(shouldApplyLook(true, false)).toBe(true);
+    expect(shouldApplyLook(false, true)).toBe(true);
+    if (shouldApplyLook(false, false)) applyLook(run, 640, 400);
+    expect(run.yaw).toBe(0);
+    expect(run.pitch).toBe(0);
   });
 
   it("clamps pitch to the authored limit", () => {

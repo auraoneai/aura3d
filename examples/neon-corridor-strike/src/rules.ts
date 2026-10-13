@@ -114,6 +114,15 @@ export function resetRun(run: RunState): RunState {
   return run;
 }
 
+/**
+ * Gate raw-pointer look updates on active pointer lock or an active
+ * unlocked pointer drag so passive cursor motion onto the canvas never
+ * rotates the camera away from the spawn target.
+ */
+export function shouldApplyLook(pointerLockActive: boolean, pointerDragActive: boolean): boolean {
+  return pointerLockActive || pointerDragActive;
+}
+
 /** E5 raw-pointer look: pixels this frame at LOOK_SENS rad/px. */
 export function applyLook(run: RunState, dx: number, dy: number): void {
   run.yaw -= dx * LOOK_SENS;

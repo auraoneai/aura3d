@@ -36,13 +36,17 @@ test("neon corridor boots framed, looks, moves, fires, clears, and resets", asyn
   await expect(hud).toContainText("Neon Corridor Strike");
   await expect(page.locator("#neon-crosshair")).toBeVisible();
 
-  // Mouse-look turns at full E5 sensitivity: a 200 px sweep must clear
-  // 0.3 rad (the trashed 96x-dampened pipeline capped at ~0.0024 rad).
+  // Mouse-look turns at full E5 sensitivity: moving the cursor onto the
+  // canvas unlocked without dragging must keep yaw at 0, while a 200 px
+  // active drag sweep must clear 0.3 rad.
   const yawBefore = (await corridorState(page)).player.yaw;
   await page.mouse.move(640, 400);
   await page.waitForTimeout(120);
   const yawSettled = (await corridorState(page)).player.yaw;
+  expect(yawSettled).toBeCloseTo(yawBefore, 6);
+  await page.mouse.down();
   await page.mouse.move(840, 400);
+  await page.mouse.up();
   await page.waitForFunction(
     (yaw) =>
       Math.abs(
@@ -128,7 +132,9 @@ async function aimAtFirstAlive(page: Page): Promise<void> {
     const settled = await corridorState(page);
     const moveX = 640 + (settled.player.yaw - yawNeeded) / LOOK_SENS;
     const moveY = 400 + (settled.player.pitch - pitchNeeded) / LOOK_SENS;
+    await page.mouse.down();
     await page.mouse.move(moveX, moveY);
+    await page.mouse.up();
     await page.waitForTimeout(90);
   }
 }

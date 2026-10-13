@@ -30,6 +30,7 @@ import {
   eyePosition,
   lookDirection,
   resetRun,
+  shouldApplyLook,
   targetsAlive,
   tickRun,
   tryFire,
@@ -116,6 +117,11 @@ let latestSnapshot: NeonCorridorEvidence | undefined;
 let objective = "Drop all five sentry drones. Click to lock aim.";
 let pointerLockRequested = 0;
 let pointerLockActive = false;
+let pointerDragActive = false;
+let dragLastX = 0;
+let dragLastY = 0;
+let dragDeltaX = 0;
+let dragDeltaY = 0;
 // The click that acquires pointer lock must not also fire: suppress fire
 // until that press is released.
 let suppressFireUntilRelease = false;
@@ -197,12 +203,19 @@ app.onFrame(({ dt }) => {
   const step = Math.min(dt, 0.05);
   elapsed += step;
 
-  // E5 raw-pointer look (never the 96x-dampened pointerDelta axes): the
-  // runtime has already updated owned inputs for this frame, so snapshot
-  // pointer dx/dy are this frame's raw pixels (movementX/Y under lock,
-  // client delta otherwise — drag-look works unlocked too).
+  // E5 raw-pointer look (never the 96x-dampened pointerDelta axes): under
+  // pointer lock use runtime movementX/Y; when unlocked, only active drag
+  // deltas accumulated after pointerdown rotate the camera so passive
+  // cursor motion onto the canvas never disturbs the spawn aim.
   const pointer = input.snapshot().pointer;
-  applyLook(run, pointer.dx, pointer.dy);
+  const hasUnlockedDrag = (pointerDragActive && pointer.active) || dragDeltaX !== 0 || dragDeltaY !== 0;
+  if (shouldApplyLook(pointerLockActive, hasUnlockedDrag)) {
+    const lookDx = pointerLockActive ? pointer.dx : dragDeltaX;
+    const lookDy = pointerLockActive ? pointer.dy : dragDeltaY;
+    dragDeltaX = 0;
+    dragDeltaY = 0;
+    applyLook(run, lookDx, lookDy);
+  }
 
   applyMove(
     run,
@@ -448,6 +461,9 @@ function bindPointerLock(): void {
   canvas.addEventListener("pointerdown", (event) => {
     if (event.button !== 0) return;
     canvas.focus();
+    pointerDragActive = true;
+    dragLastX = event.clientX;
+    dragLastY = event.clientY;
     if (document.pointerLockElement === canvas) return;
     pointerLockRequested += 1;
     suppressFireUntilRelease = true;
@@ -459,8 +475,27 @@ function bindPointerLock(): void {
       // KeyJ fire remain live, and evidence reports the request honestly.
     }
   });
+  window.addEventListener("pointermove", (event) => {
+    if (!pointerLockActive && pointerDragActive) {
+      dragDeltaX += event.clientX - dragLastX;
+      dragDeltaY += event.clientY - dragLastY;
+      dragLastX = event.clientX;
+      dragLastY = event.clientY;
+    }
+  });
+  const endPointerDrag = (): void => {
+    pointerDragActive = false;
+  };
+  window.addEventListener("pointerup", endPointerDrag);
+  window.addEventListener("pointercancel", endPointerDrag);
+  window.addEventListener("blur", endPointerDrag);
   document.addEventListener("pointerlockchange", () => {
     pointerLockActive = document.pointerLockElement === canvas;
+    if (pointerLockActive) {
+      pointerDragActive = false;
+      dragDeltaX = 0;
+      dragDeltaY = 0;
+    }
   });
   document.addEventListener("pointerlockerror", () => {
     pointerLockActive = false;

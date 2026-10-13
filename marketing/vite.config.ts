@@ -314,6 +314,18 @@ function resolveDracoDir(): string | undefined {
   return undefined;
 }
 
+const gameAlias = [
+  { find: "@aura3d/engine/game/capture", replacement: resolve(repoRoot, "packages/game/src/capture/index.ts") },
+  { find: "@aura3d/engine/game/art", replacement: resolve(repoRoot, "packages/game/src/art/index.ts") },
+  { find: "@aura3d/engine/game/util", replacement: resolve(repoRoot, "packages/game/src/util/index.ts") },
+  { find: "@aura3d/engine/game", replacement: resolve(repoRoot, "packages/game/src/index.ts") },
+  { find: "@aura3d/game/capture", replacement: resolve(repoRoot, "packages/game/src/capture/index.ts") },
+  { find: "@aura3d/game/art", replacement: resolve(repoRoot, "packages/game/src/art/index.ts") },
+  { find: "@aura3d/game/util", replacement: resolve(repoRoot, "packages/game/src/util/index.ts") },
+  { find: "@aura3d/game", replacement: resolve(repoRoot, "packages/game/src/index.ts") }
+];
+const baseAlias = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.alias : [];
+
 export default defineConfig({
   root: repoRoot,
   publicDir: resolve(marketingDir, "public"),
@@ -322,7 +334,10 @@ export default defineConfig({
     serveRootAuraAssets(),
     copyMarketingPublicFiles()
   ],
-  resolve: rootConfig.resolve,
+  resolve: {
+    ...rootConfig.resolve,
+    alias: [...gameAlias, ...baseAlias]
+  },
   optimizeDeps: rootConfig.optimizeDeps,
   server: {
     ...rootServer,
