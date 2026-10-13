@@ -79,6 +79,15 @@ on:
         description: "suite=promote: lane flag to score against the current defaults without it (e.g. materials). Captures -flag + flag with aura3d AND three.js; scores LPIPS/FLIP vs the three.js frame."
         required: false
         default: ""
+      source:
+        description: "suite=games: local = build from this commit; production = capture the deployed site (post-deploy verification, no local build)"
+        type: choice
+        options: [local, production]
+        default: local
+      base_url:
+        description: "suite=games + source=production: origin to capture (empty = games.json productionOrigin)"
+        required: false
+        default: ""
   workflow_call:
     inputs:
       suite: { type: string, required: false, default: flags-bisect }
@@ -95,6 +104,8 @@ on:
       promote_flag: { type: string, required: false, default: "" }
       examples_ref: { type: string, required: false, default: "" }
       gameplay_variants: { type: string, required: false, default: "none;defaults;{route};{route},defaults;prod" }
+      source: { type: string, required: false, default: local }
+      base_url: { type: string, required: false, default: "" }
   push:
     branches: [main]
     paths:
@@ -154,6 +165,8 @@ jobs:
       # Drill-down: bench_scenes=raw keeps per-sample player/state leaves for every selected game.
       QRG_RAW: ${{ inputs.bench_scenes == 'raw' && inputs.games || '' }}
       QRG_VARIANTS: ${{ inputs.gameplay_variants || 'none;defaults;{route};{route},defaults;prod' }}
+      QRC_SOURCE: ${{ inputs.source || 'local' }}
+      QRC_BASE_URL: ${{ inputs.base_url || '' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -225,14 +238,24 @@ jobs:
               export QR_BENCH_ENGINES="aura3d,three" QR_BENCH_FLAG_SETS="${base_set};${flag_set}"
               bash benchmarks/quality-rebuild/ci.sh ;;
             games)
-              # Checkout is lfs:false; the games load GLB/texture blobs from
-              # public/aura-assets and apps/*/public, which would otherwise be
-              # served as LFS pointer files. Fatal on failure, never silent.
-              git lfs version >/dev/null 2>&1 || { echo "::error::git-lfs is not installed on this runner"; exit 1; }
-              git lfs pull --include="public/aura-assets/**,apps/*/public/**" || { echo "::error::git lfs pull for game assets failed"; exit 1; }
-              export QRC_LOCAL_BUILD=true
-              node tools/quality-rebuild-capture/capture-games.mjs --build-only
-              node tools/quality-rebuild-capture/capture-games.mjs --skip-build ;;
+              if [ "$QRC_SOURCE" = "production" ]; then
+                # Post-deploy verification: capture the deployed origin
+                # (QRC_BASE_URL, default games.json productionOrigin).
+                # No local build and no LFS pull: nothing is served locally.
+                if [ -n "$QRC_BASE_URL" ]; then
+                  case "$QRC_BASE_URL" in https://*|http://*) ;; *) echo "::error::invalid base_url '$QRC_BASE_URL'"; exit 2 ;; esac
+                fi
+                node tools/quality-rebuild-capture/capture-games.mjs --source production
+              else
+                # Checkout is lfs:false; the games load GLB/texture blobs from
+                # public/aura-assets and apps/*/public, which would otherwise be
+                # served as LFS pointer files. Fatal on failure, never silent.
+                git lfs version >/dev/null 2>&1 || { echo "::error::git-lfs is not installed on this runner"; exit 1; }
+                git lfs pull --include="public/aura-assets/**,apps/*/public/**" || { echo "::error::git lfs pull for game assets failed"; exit 1; }
+                export QRC_LOCAL_BUILD=true
+                node tools/quality-rebuild-capture/capture-games.mjs --build-only
+                node tools/quality-rebuild-capture/capture-games.mjs --skip-build
+              fi ;;
             gameplay)
               # Gameplay smoke probe: drift / input response / sinking / NaN per
               # game x variant (local build per flag list, `prod` = deployed build).
