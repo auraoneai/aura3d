@@ -18,15 +18,15 @@ export default defineArtDirection({
     },
     {
       file: "references/drone-swarm.json",
-      source: "admitted neonSwarmInterceptFleet / neonSwarmEngineHiveFleet GLBs (45k tris)",
+      source: "instanced grunt capsule + elite box swarm pools (360 + 96 capacity)",
       licence: "reference-only",
-      why: "Two rigged+skinned drone families already admitted — silhouette and emissive budget"
+      why: "Two instanced drone pools with deterministic seek/separation/orbit/flee/telegraph steering"
     },
     {
       file: "references/mech-hero.json",
-      source: "admitted neonSwarmMechHero GLB (28.7k tris, 124 joints, 37 clips)",
+      source: "admitted neonCourierAvatar GLB (Daniel Darko, CC-BY-4.0)",
       licence: "reference-only",
-      why: "The hero mech — clip list defines run/strafe/fire/staff states to wire"
+      why: "High-value cyan/white courier silhouette readable from overhead against the swarm"
     }
   ],
   palette: {
@@ -38,16 +38,19 @@ export default defineArtDirection({
     key: { type: "directional", colorTemperatureK: 3200, shadow: true },
     fill: "ibl",
     practicals: 3,
-    environment: { hdri: "k1-night-city", background: "hdri" },
+    environment: { hdri: "night-city", background: "enclosed" },
     exposureEV: 0.0
   },
   framing: { rig: "topDown", subjectHeightFraction: [0.3, 0.45], fovDeg: [35, 45], mobile: "landscape" },
+  // The rebuilt single-path scene (src/main.ts) mounts the three admitted
+  // typed model assets below (all present by id in aura.assets.json): the
+  // courier avatar, the street barricade obstacles, and the perimeter street
+  // lamps. Drones are native instanced capsule/box pools so 320+ threats
+  // submit in two instanced draw calls.
   assets: [
-    { role: "character", assetKey: "mech-hero", maxTriangles: 30000, minTriangles: 10000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048, animated: { clips: ["run", "strafe", "fire", "staff"] } },
-    { role: "enemy", assetKey: "intercept-drone", maxTriangles: 30000, minTriangles: 3000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024, animated: { clips: ["fly", "attack"] } },
-    { role: "enemy", assetKey: "hive-drone", maxTriangles: 30000, minTriangles: 3000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024, animated: { clips: ["fly", "attack"] } },
-    { role: "world", assetKey: "night-plaza-arena", kit: "K2", maxTriangles: 120000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "plaza-lamps", kit: "K2", maxTriangles: 5000, textureSet: "BC+N+ORM+E", maxTextureSize: 512 }
+    { role: "character", assetKey: "neonCourierAvatar", maxTriangles: 30000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "neonBarricadeProp", maxTriangles: 15000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "neonStreetLampProp", maxTriangles: 25000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "muzzle", kind: "burst", flipbook: "k9-muzzle" },
@@ -64,13 +67,7 @@ export default defineArtDirection({
     { event: "bed", cue: "neon-night-bed", variants: 1 }
   ],
   signatureEffect: "Baked emissive grid under drifting night atmosphere; drone explosions light the swarm while the hero stays silhouette-crisp from overhead.",
-  standIns: [
-    { feature: "K2 plaza architecture", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K2 kit admitted" },
-    { feature: "drone material authenticity (multi-UV/ORM)", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "admitted drone materials inspected" },
-    { feature: "mech walk/strafe staff clips", file: "src/v2/boot.ts", request: "R-14-14", removeWhen: "C-19 clip controller real" },
-    { feature: "drone-death flipbook", file: "src/v2/scene/fx.ts", request: "R-14-07", removeWhen: "K9 flipbook clips admitted" },
-    { feature: "legacy swarm cue controller", file: "src/legacy/swarm-audio.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" }
-  ],
+  standIns: [],
   criticalCategories: ["environment_world", "lighting", "vfx"],
   tiers: {
     low: { particles: 300, shadowMap: 1024, cascades: 1, textureMax: 1024 },
