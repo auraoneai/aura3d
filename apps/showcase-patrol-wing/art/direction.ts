@@ -53,9 +53,9 @@ export default defineArtDirection({
   // kit file (verdicts are never authored here). Triangle budgets bound the
   // measured GLBs (plane 220 tris, drones 108 each, pad beacon 88).
   assets: [
-    { role: "vehicle", assetKey: "patrolWingPlane", maxTriangles: 500, textureSet: "BC", maxTextureSize: 512 },
-    { role: "enemy", assetKey: "patrolWingDroneA", maxTriangles: 300, textureSet: "BC", maxTextureSize: 512 },
-    { role: "enemy", assetKey: "patrolWingDroneB", maxTriangles: 300, textureSet: "BC", maxTextureSize: 512 },
+    { role: "vehicle", assetKey: "patrolWingPlane", minTriangles: 2000, maxTriangles: 5000, textureSet: "BC+N", maxTextureSize: 512 },
+    { role: "enemy", assetKey: "patrolWingDroneA", minTriangles: 2000, maxTriangles: 5000, textureSet: "BC+N", maxTextureSize: 512 },
+    { role: "enemy", assetKey: "patrolWingDroneB", minTriangles: 2000, maxTriangles: 5000, textureSet: "BC+N", maxTextureSize: 512 },
     { role: "prop", assetKey: "patrolWingPadBeacon", maxTriangles: 300, textureSet: "BC", maxTextureSize: 512 }
   ],
   vfx: [
