@@ -118,7 +118,9 @@ export function normalizeCreateAppRendererOptions(options: AuraCreateAppRenderer
   const mode = options?.mode ?? profile.rendererMode;
   return {
     mode,
-    fallback: options?.fallback ?? "safe-basic",
+    // 4.0 Live Fix E1: no fallback renderer exists; the deprecated field is
+    // only echoed into diagnostics when a caller still passes it.
+    fallback: options?.fallback,
     qualityProfile: profile.id,
     textureBudgetBytes: normalizeTextureBudgetBytes(options?.textureBudgetBytes),
     profile: profile

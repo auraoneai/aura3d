@@ -1,11 +1,11 @@
-// PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
+// PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) from agent-api/index.ts.
+// 4.0 Live Fix E1: the safe-basic fallback branch was removed (see below).
 
 import type { AuraCreateAppRendererOptions, AuraSceneSnapshot, AuraRuntimeNodeRegistry, WebGLSceneRenderer } from "../nodes/types.js";
 import type { AuraDegradation } from "../../contracts/compiler.js";
 import { AuraRuntimeError } from "./errors.js";
 import { analyzeProductionBridgeEligibility } from "../compiler/observations.js";
 import { createProductionRuntimeSceneRenderer } from "../compiler/renderer.js";
-import { createWebGLSceneRenderer } from "../compiler/webglRuntime.js";
 import { groups } from "../nodes/groups.js";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
 import { productionRenderErrorMessage } from "../compiler/observations.js";
@@ -26,12 +26,16 @@ export async function createProductionSceneRenderer(
   degradation?: AuraSceneDegradationOptions
 ): Promise<WebGLSceneRenderer> {
   const rendererSelection = normalizeCreateAppRendererOptions(rendererOptions);
-  const strict = degradation?.strict ?? qrFlags?.on("A3D_QR_STRICT") ?? false;
-  // T4.2: under A3D_QR_STRICT (or an explicit options.strict) there is no
-  // non-production branch — an unmountable renderer is an error, not a
-  // fallback.
-  if (!strict && rendererSelection.mode !== "production") {
-    return await createWebGLSceneRenderer(canvas, snapshot, rendererOptions, [], runtimeNodes);
+  // 4.0 Live Fix E1: there is no fallback renderer. The former non-strict
+  // safe-basic branch silently swapped in the degraded webglRuntime
+  // (non-sRGB texture uploads, Blinn lighting, dropped glTF features),
+  // which shipped washed-out scenes that still reported as mounted. A
+  // non-production mode request or a failed production mount is an error.
+  if (rendererSelection.mode !== "production") {
+    throw new AuraRuntimeError(
+      "backend-fallback",
+      `Aura3D renderer mode "${rendererSelection.mode}" no longer exists: the safe-basic fallback renderer was removed in 4.0. Use mode "production" (the default) with renderer.quality for feature levels.`
+    );
   }
 
   const flattened = groups.flatten(snapshot.nodes);
@@ -46,15 +50,10 @@ export async function createProductionSceneRenderer(
   try {
     return await createProductionRuntimeSceneRenderer(canvas, snapshot, rendererOptions, runtimeNodes, qrFlags, degradation);
   } catch (error) {
-    if (strict) {
-      throw new AuraRuntimeError(
-        "renderer-mount-failed",
-        `Aura3D production renderer failed to mount: ${productionRenderErrorMessage(error)}`,
-        { cause: error }
-      );
-    }
-    return await createWebGLSceneRenderer(canvas, snapshot, rendererOptions, [
-      `Production bridge failed and safe-basic fallback rendered instead: ${productionRenderErrorMessage(error)}`
-    ], runtimeNodes);
+    throw new AuraRuntimeError(
+      "renderer-mount-failed",
+      `Aura3D production renderer failed to mount: ${productionRenderErrorMessage(error)}`,
+      { cause: error }
+    );
   }
 }
