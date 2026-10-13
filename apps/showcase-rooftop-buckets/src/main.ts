@@ -154,7 +154,7 @@ const bucketsGame = createGame({
       { id: "score", kind: "score", anchor: "top-left", label: "SCORE" },
       { id: "clock", kind: "timer", anchor: "top-right", label: "SHOT CLOCK" },
       { id: "heat", kind: "prompt", anchor: "top", label: "HEAT" },
-      { id: "charge", kind: "meter", max: 100, anchor: "bottom", label: "CHARGE" },
+      { id: "charge", kind: "meter", anchor: "bottom", label: "CHARGE" },
       { id: "objective", kind: "objective", anchor: "bottom", label: "OBJECTIVE" }
     ]
   },
@@ -185,8 +185,8 @@ const bucketsGame = createGame({
   }
 });
 const app = bucketsGame.app;
+if (!bucketsGame.input) throw new Error("rooftop-buckets failed to create runtime-owned input.");
 const input = bucketsGame.input;
-if (!input) throw new Error("rooftop-buckets failed to create runtime-owned input.");
 // Drive the createGame lifecycle the way Blockfall does: start() transitions
 // the session booting -> loading, starts the runtime, and ready() lands it
 // in "playing" after the first presented draw.
