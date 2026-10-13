@@ -81,6 +81,94 @@ export function faceUvToDir(face: number, u: number, v: number): [number, number
   return [dx / len, dy / len, dz / len];
 }
 
+/**
+ * E3 parity gap — filtered importance sampling needs a footprint, not
+ * pointwise mip-0 texels: with nearest sampling, a 64-sample Hammersley set
+ * over a wide GGX kernel hits or misses small bright panels (room panels
+ * reach ~100x the mean radiance) independently per output texel, so the
+ * roughest mip's mean texel-to-texel delta measured 43% of its mean
+ * radiance (the high-roughness speckle in L4 captures; three's PMREM
+ * prefilters its fetches by solid angle instead). The prefilter therefore
+ * samples a box-filtered pyramid of the source (within-face 2x2 means,
+ * which preserve per-face mean radiance exactly) at the pyramid level
+ * matching the output mip's roughness, with bilinear interpolation.
+ * `sampleCube` below stays the nearest-texel inverse of `faceUvToDir`
+ * (round-trip contract + probeToEquirect); only the FIS integrator
+ * changes. Flag-off production never builds probes, so no legacy pixels
+ * move; baked presets pick this up on their next `environments bake`.
+ */
+interface CubePyramidLevel { readonly faceSize: number; readonly faces: readonly Float32Array[] }
+const sourcePyramids = new WeakMap<PrefilterCubeSource, readonly CubePyramidLevel[]>();
+
+function downsampleFace2x2(face: Float32Array, size: number): Float32Array {
+  const half = size >> 1;
+  const out = new Float32Array(half * half * 4);
+  for (let y = 0; y < half; y += 1) {
+    for (let x = 0; x < half; x += 1) {
+      const i00 = ((2 * y) * size + 2 * x) * 4;
+      const o = (y * half + x) * 4;
+      for (let c = 0; c < 4; c += 1) {
+        out[o + c] = 0.25 * (face[i00 + c]! + face[i00 + 4 + c]! + face[i00 + size * 4 + c]! + face[i00 + size * 4 + 4 + c]!);
+      }
+    }
+  }
+  return out;
+}
+
+function sourcePyramid(source: PrefilterCubeSource): readonly CubePyramidLevel[] {
+  const cached = sourcePyramids.get(source);
+  if (cached) return cached;
+  const levels: CubePyramidLevel[] = [{ faceSize: source.faceSize, faces: source.faces }];
+  let current = levels[0]!;
+  // One octave below the output mip floor: the roughest output level
+  // samples one level coarser than its own scale (see prefilterLevelGGX).
+  while ((current.faceSize >> 1) >= PREFILTER_MIP_FLOOR / 2) {
+    const size = current.faceSize >> 1;
+    current = { faceSize: size, faces: current.faces.map((face) => downsampleFace2x2(face, size * 2)) };
+    levels.push(current);
+  }
+  sourcePyramids.set(source, levels);
+  return levels;
+}
+
+/** Bilinear cube sample on one pyramid level (same face/uv convention as `sampleCube`, edges clamped within the face). */
+function sampleCubeBilinear(level: CubePyramidLevel, dir: readonly [number, number, number]): [number, number, number] {
+  const ax = Math.abs(dir[0]);
+  const ay = Math.abs(dir[1]);
+  const az = Math.abs(dir[2]);
+  let face = 0;
+  let u = 0;
+  let v = 0;
+  if (ax >= ay && ax >= az) {
+    face = dir[0] > 0 ? 0 : 1;
+    u = dir[0] > 0 ? -dir[2] / ax : dir[2] / ax;
+    v = -dir[1] / ax;
+  } else if (ay >= ax && ay >= az) {
+    face = dir[1] > 0 ? 2 : 3;
+    u = dir[0] / ay;
+    v = dir[1] > 0 ? dir[2] / ay : -dir[2] / ay;
+  } else {
+    face = dir[2] > 0 ? 4 : 5;
+    u = dir[2] > 0 ? dir[0] / az : -dir[0] / az;
+    v = -dir[1] / az;
+  }
+  const size = level.faceSize;
+  const px = Math.min(size - 1, Math.max(0, (u * 0.5 + 0.5) * size - 0.5));
+  const py = Math.min(size - 1, Math.max(0, (v * 0.5 + 0.5) * size - 0.5));
+  const x0 = Math.floor(px), y0 = Math.floor(py);
+  const x1 = Math.min(size - 1, x0 + 1), y1 = Math.min(size - 1, y0 + 1);
+  const fx = px - x0, fy = py - y0;
+  const data = level.faces[face]!;
+  const at = (x: number, y: number, c: number) => data[(y * size + x) * 4 + c]!;
+  const out: [number, number, number] = [0, 0, 0];
+  for (let c = 0; c < 3; c += 1) {
+    const top = at(x0, y0, c) * (1 - fx) + at(x1, y0, c) * fx;
+    const bottom = at(x0, y1, c) * (1 - fx) + at(x1, y1, c) * fx;
+    out[c] = top * (1 - fy) + bottom * fy;
+  }
+  return out;
+}
+
 /** Nearest-texel cube sample (FIS evaluates the source kernel pointwise). */
 export function sampleCube(source: PrefilterCubeSource, dir: readonly [number, number, number]): [number, number, number] {
   const ax = Math.abs(dir[0]);
@@ -170,7 +258,9 @@ export function prefilterCubeGGX(source: PrefilterCubeSource, options: Prefilter
   return { faceSize: source.faceSize, mipCount, levels };
 }
 
-/** One mip level: GGX FIS around each output direction, sampling mip 0 only. */
+/** One mip level: GGX FIS around each output direction, sampling the
+ * source pyramid level whose texel footprint matches this roughness
+ * (E3 parity gap; previously pointwise mip-0 nearest — see above). */
 export function prefilterLevelGGX(
   source: PrefilterCubeSource,
   size: number,
@@ -180,6 +270,16 @@ export function prefilterLevelGGX(
 ): Float32Array[] {
   const faces: Float32Array[] = [];
   const effectiveRoughness = Math.max(1e-3, roughness);
+  const pyramid = sourcePyramid(source);
+  // Footprint one octave coarser than the output mip's own scale (the
+  // lod curve over the *output* chain, +1 into the pyramid): a GGX kernel
+  // at this roughness integrates over a solid angle wider than one output
+  // texel, and three's PMREM blur likewise fetches above the output level.
+  // Sampling at the output scale alone left the roughest level's neighbor
+  // delta at 26% of mean (measured); the extra octave pre-averages the
+  // bright panels that dominate the Monte Carlo variance.
+  const outputLod = Math.round(roughnessToLod(effectiveRoughness, mipCountForFaceSize(source.faceSize)));
+  const footprint = pyramid[Math.min(pyramid.length - 1, outputLod + 1)]!;
   for (let face = 0; face < 6; face += 1) {
     onFace?.(face);
     const out = new Float32Array(size * size * 4);
@@ -208,7 +308,7 @@ export function prefilterLevelGGX(
           ];
           const ndl = Math.max(0, n[0] * l[0] + n[1] * l[1] + n[2] * l[2]);
           if (ndl <= 0) continue;
-          const [sr, sg, sb] = sampleCube(source, l);
+          const [sr, sg, sb] = sampleCubeBilinear(footprint, l);
           r += sr * ndl;
           g += sg * ndl;
           bl += sb * ndl;

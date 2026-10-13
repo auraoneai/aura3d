@@ -56,3 +56,55 @@ describe("prd02 cpu GGX prefilter (PRD-02 §7.2)", () => {
     expect(result.levels[0]!.faces[0]).toEqual(src.faces[0]);
   });
 });
+
+describe("E3 parity gap: footprint sampling kills high-roughness speckle", () => {
+  // One bright panel (100x the base radiance, like the RoomEnvironment
+  // panels) per face — symmetric, so the roughest level's mean must stay
+  // at the source mean (a one-sided panel legitimately biases a
+  // kernel-weighted average). Pointwise mip-0 nearest sampling measured a
+  // roughest-level mean texel-to-texel delta of 43% of mean radiance on
+  // the analytic room (L4 speckle); pyramid footprint sampling must keep
+  // it a small fraction of the mean while preserving that mean.
+  const panelCube = (faceSize: number) => {
+    const mk = (panel: boolean) => {
+      const f = new Float32Array(faceSize * faceSize * 4);
+      for (let y = 0; y < faceSize; y++) for (let x = 0; x < faceSize; x++) {
+        const inPanel = panel && x >= faceSize / 4 && x < (3 * faceSize) / 4 && y >= faceSize / 4 && y < (3 * faceSize) / 4;
+        const v = inPanel ? 50 : 0.5;
+        const i = (y * faceSize + x) * 4;
+        f[i] = v; f[i + 1] = v; f[i + 2] = v; f[i + 3] = 1;
+      }
+      return f;
+    };
+    return { faceSize, faces: [mk(true), mk(true), mk(true), mk(true), mk(true), mk(true)] };
+  };
+  const stats = (faces: readonly Float32Array[], size: number) => {
+    let mean = 0, wSum = 0, delta = 0, n = 0;
+    const step = 2 / size;
+    for (const f of faces) {
+      for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+        const u = (x + 0.5) * step - 1;
+        const v = (y + 0.5) * step - 1;
+        const w = (1 + u * u + v * v) ** -1.5;
+        mean += f[(y * size + x) * 4]! * w;
+        wSum += w;
+      }
+      for (let y = 0; y < size; y++) for (let x = 0; x + 1 < size; x++) {
+        delta += Math.abs(f[(y * size + x) * 4]! - f[(y * size + x + 1) * 4]!); n++;
+      }
+    }
+    mean /= wSum;
+    return { mean, deltaRatio: (delta / n) / mean };
+  };
+
+  it("roughest level is smooth (neighbor delta << mean) and energy-preserving", () => {
+    const src = panelCube(64);
+    const srcStats = stats(src.faces, 64);
+    const result = prefilterCubeGGX(src, { samples: 64 });
+    const last = result.levels[result.levels.length - 1]!;
+    const s = stats(last.faces, last.faceSize);
+    expect(s.deltaRatio).toBeLessThan(0.25);
+    // Box pyramid + ndl-weighted FIS preserve the spherical (solid-angle) mean within MC error.
+    expect(Math.abs(s.mean / srcStats.mean - 1)).toBeLessThan(0.25);
+  });
+});

@@ -187,7 +187,17 @@ function buildAuraScene(spec: SceneSpec, log: CapabilityLog, extraNodes: readonl
     nodes.push(environments.hdri({
       texture: auraHdriAssets[spec.environment.hdri],
       intensity: spec.environment.intensity,
-      rotation: spec.environment.rotation
+      rotation: spec.environment.rotation,
+      // E3 parity gap: the spec's background and environment are independent
+      // (three sets scene.background and scene.environment separately), but
+      // environments.hdri() defaults background:true — under the
+      // compiler+lighting conjunction the probe then paints the HDRI over
+      // the authored solid background (06: studio sky ~140 luma vs the
+      // spec's #24272d at 38.8). Express the spec faithfully: the HDRI is
+      // the background only when the spec says so with the same asset.
+      // Flag-off this node field is inert (no probe bind), so flag-off
+      // frames stay byte-identical (authored/fallback colour above).
+      background: spec.background.kind === "hdri" && spec.background.hdri === spec.environment.hdri
     }));
   }
 

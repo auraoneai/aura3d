@@ -70,7 +70,20 @@ export function resolvePrd02EnvironmentBackground(
   const blurriness = (source as RenderSourceWithProbe).backgroundBlurriness
     ?? (typeof explicit === "object" ? explicit.blurriness : 0)
     ?? 0;
-  if (probe.background && blurriness === 0) {
+  // E3 parity gap (conjunction only): an HDRI probe's `background` is the
+  // raw rgba32f decode intermediate (GPUPMREMGenerator.fromEquirect). RGBA32F
+  // is not linear-filterable in core WebGL2 (OES_texture_float_linear), and
+  // the binding below carries the default LINEAR sampler — a sampler object
+  // overrides the upload path's NEAREST pin, so the texture is incomplete
+  // and samples (0,0,0,1): L4 runs 38429097048/38429102473 measured pure
+  // black backgrounds on the HDRI scenes while the rgba16f specular cube
+  // shaded the objects correctly in the same frames. Under the conjunction,
+  // fall through to that filterable mipmapped cube instead of binding the
+  // 32f equirect. Conjunction-off binds stay byte-identical; follow-up:
+  // give the factory a half-float equirect background and drop this gate.
+  const equirectFilterable = probe.background?.format !== "rgba32f";
+  const e3Conjunction = rendererQrFlags().on("A3D_QR_COMPILER") && rendererQrFlags().on("A3D_QR_LIGHTING");
+  if (probe.background && blurriness === 0 && !(e3Conjunction && !equirectFilterable)) {
     return {
       projection: "equirect",
       texture: new TextureBinding({ name: "u_environmentBackgroundTexture", texture: probe.background, required: true }),
