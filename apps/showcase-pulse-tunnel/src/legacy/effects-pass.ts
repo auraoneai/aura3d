@@ -21,8 +21,8 @@ import { effects, type AuraNodeInput } from "@aura3d/engine";
  * gameplay gate keeps its own z and resolution).
  */
 export const PULSE_GATE_FLASH = {
-  bodyIntensity: 1.0,
-  flashIntensity: 1.55,
+  bodyIntensity: 1.18,
+  flashIntensity: 1.7,
   /** Gates further than this past the player plane are not drawn (camera at +2.4). */
   hidePastPlayer: 0.3
 } as const;
@@ -32,7 +32,7 @@ const FOG_TRANSITION_SECONDS = 0.14;
 export function pulseTunnelEffectsPass(options: { readonly reducedMotion: boolean; readonly playerZ: number }): readonly AuraNodeInput[] {
   const { reducedMotion, playerZ } = options;
   return [
-    effects.vignette({ intensity: 0.38, smoothness: 2.4, roundness: 1 }),
+    effects.vignette({ intensity: 0.3, smoothness: 2.4, roundness: 1 }),
     // Neon dust streaming toward the camera from the tunnel throat.
     effects.particles({
       name: "tunnel neon dust stream",
@@ -44,7 +44,7 @@ export function pulseTunnelEffectsPass(options: { readonly reducedMotion: boolea
       seed: 7101,
       lifetime: [3, 5],
       speed: 1.6,
-      size: [0.05, 0.1],
+      size: [0.06, 0.13],
       gravity: 0,
       drag: 0.02,
       color: "#c084fc"
@@ -59,7 +59,7 @@ export function pulseTunnelEffectsPass(options: { readonly reducedMotion: boolea
       seed: 7102,
       lifetime: [1.6, 2.6],
       speed: 1.2,
-      size: [0.02, 0.04],
+      size: [0.025, 0.05],
       gravity: -0.2,
       color: "#22d3ee"
     }).position(0, 0.15, playerZ - 4)
@@ -71,13 +71,13 @@ export function pulseTunnelBaseHaze(): AuraNodeInput {
   return effects.fog({
     name: "tunnel violet floor haze",
     // heightDensity selects the C-21 height mode.
-    color: "#5230a0",
-    density: 0.013,
-    heightDensity: 0.042,
+    color: "#6a3ce0",
+    density: 0.016,
+    heightDensity: 0.05,
     heightFalloff: 1.4,
     heightReference: -0.1,
     start: 1.2,
-    maxOpacity: 0.7,
+    maxOpacity: 0.78,
     affectsBackground: false,
     transitionSeconds: FOG_TRANSITION_SECONDS
   });
@@ -87,13 +87,13 @@ export function pulseTunnelBaseHaze(): AuraNodeInput {
 export function pulseTunnelDownbeatFog(): ReturnType<typeof effects.fog> {
   return effects.fog({
     name: "pulse downbeat fog pulse",
-    color: "#341a66",
-    density: 0.012,
-    heightDensity: 0.035,
+    color: "#4a2596",
+    density: 0.014,
+    heightDensity: 0.042,
     heightFalloff: 1.4,
     heightReference: -0.1,
     start: 1.2,
-    maxOpacity: 0.68,
+    maxOpacity: 0.74,
     affectsBackground: false,
     transitionSeconds: FOG_TRANSITION_SECONDS
   });

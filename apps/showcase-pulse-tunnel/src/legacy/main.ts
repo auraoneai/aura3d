@@ -305,10 +305,10 @@ const depthTrackBuilders = Array.from({ length: 7 }, (_, index) => {
   const z = -5 - index * 5.2;
   const scale = Math.max(0.42, 1 - index * 0.07);
   return [
-    primitives.box({ name: 'pulse depth pylon left ' + (index + 1), material: material.emissive({ color: '#0ea5e9', emissive: '#22d3ee', emissiveIntensity: 0.9 }) })
+    primitives.box({ name: 'pulse depth pylon left ' + (index + 1), material: material.emissive({ color: '#0ea5e9', emissive: '#22d3ee', emissiveIntensity: 1.35 }) })
       .position(-2.7, 0.5, z).scale([0.12 * scale, 1.15 * scale, 0.12 * scale])
       .runtime(game.runtimeNode('pulse-depth-pylon-left-' + index, { tags: ['depth-landmark', 'set-dressing'] })),
-    primitives.box({ name: 'pulse depth pylon right ' + (index + 1), material: material.emissive({ color: '#e879f9', emissive: '#f0abfc', emissiveIntensity: 0.9 }) })
+    primitives.box({ name: 'pulse depth pylon right ' + (index + 1), material: material.emissive({ color: '#e879f9', emissive: '#f0abfc', emissiveIntensity: 1.35 }) })
       .position(2.7, 0.5, z).scale([0.12 * scale, 1.15 * scale, 0.12 * scale])
       .runtime(game.runtimeNode('pulse-depth-pylon-right-' + index, { tags: ['depth-landmark', 'set-dressing'] }))
   ];
@@ -1371,7 +1371,7 @@ const tunnelBackdrop = prefabs.neonTunnel({ rings: 8 }).filter((node) => {
 
 const app = createAuraApp("#app", {
   scene: scene()
-    .background(visualReviewCapture ? "#171a38" : "#180b28")
+    .background(visualReviewCapture ? "#171a38" : "#241243")
     .addMany([
       ...(visualReviewCapture ? [] : tunnelBackdrop),
       ...hueBuilders,
@@ -1469,8 +1469,8 @@ const app = createAuraApp("#app", {
             alphaOverLife: [0.08, 0.28, 0.03]
           })]
         : []),
-      effects.neonBloom({ intensity: visualReviewCapture ? 0.16 : reducedMotion ? 0.2 : 0.82, threshold: visualReviewCapture ? 0.84 : 0.74, maxIntensity: visualReviewCapture ? 0.42 : 0.72, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.colorGrade(visualReviewCapture ? { exposure: 1.05, contrast: 1.07, saturation: 1.12 } : { exposure: 1.34, contrast: 1.2, saturation: 1.45 }),
+      effects.neonBloom({ intensity: visualReviewCapture ? 0.16 : reducedMotion ? 0.2 : 0.92, threshold: visualReviewCapture ? 0.84 : 0.74, maxIntensity: visualReviewCapture ? 0.42 : 0.8, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.colorGrade(visualReviewCapture ? { exposure: 1.05, contrast: 1.07, saturation: 1.12 } : { exposure: 1.43, contrast: 1.14, saturation: 1.58 }),
       effects.antiAlias({ mode: "fxaa" }),
       // Visible effects pass (default boot; the named review lens is unchanged).
       ...(visualReviewCapture ? [] : [...pulseTunnelEffectsPass({ reducedMotion, playerZ: PULSE_PLAYER_Z }), pulseTunnelBaseHaze()]),
@@ -1482,9 +1482,9 @@ const app = createAuraApp("#app", {
       // front key on the player, warm terminal key, and a cooler crown/rim on
       // the deck and ribs. This is all renderer lighting—not an overlay—and
       // preserves the same world/material language in the playable route.
-      lights.directional({ name: "corridor sun", color: visualReviewCapture ? "#c0e1f2" : "#38bdf8", intensity: visualReviewCapture ? 0.88 : 1.6, shadow: visualReviewCapture ? false : { cascades: 2, mapSize: 1024, filter: "pcf", maxDistance: 14 } }).position(-5, 10, 6),
-      lights.directional({ name: "terminal warm edge", color: "#ffc08a", intensity: visualReviewCapture ? 0.72 : 0.34 }).position(4.5, 5.8, -3.6),
-      lights.ambient({ name: "corridor ambient", color: visualReviewCapture ? "#5a537b" : "#1e1b4b", intensity: visualReviewCapture ? 0.72 : 1.2 }),
+      lights.directional({ name: "corridor sun", color: visualReviewCapture ? "#c0e1f2" : "#63d8ff", intensity: visualReviewCapture ? 0.88 : 1.95, shadow: visualReviewCapture ? false : { cascades: 2, mapSize: 1024, filter: "pcf", maxDistance: 14 } }).position(-5, 10, 6),
+      lights.directional({ name: "terminal warm edge", color: "#ffc08a", intensity: visualReviewCapture ? 0.72 : 0.5 }).position(4.5, 5.8, -3.6),
+      lights.ambient({ name: "corridor ambient", color: visualReviewCapture ? "#5a537b" : "#35247a", intensity: visualReviewCapture ? 0.72 : 1.35 }),
       // The V11 hulls use real dark panel materials; broad practicals keep
       // those authored values visible instead of reducing both actors to
       // black silhouettes under the reactor roof. These are local scene lights
@@ -1498,9 +1498,9 @@ const app = createAuraApp("#app", {
       lights.point({ name: "terminal magenta rim", color: "#ff72ac", intensity: visualReviewCapture ? 0.94 : 0 }).position(-1.2, 1.62, -4.0),
       lights.point({ name: "deck cyan depth practical", color: "#39d9f2", intensity: visualReviewCapture ? 0.88 : 0 }).position(-2.85, 1.8, -1.85),
       lights.point({ name: "exchange impact key", color: "#ffb46b", intensity: visualReviewCapture ? 0.66 : 0 }).position(0.04, 1.1, -2.18),
-      lights.point({ name: "cavern cyan practical", color: "#22d3ee", intensity: 1.35 }).position(-2.8, 1.1, -5),
-      lights.point({ name: "cavern magenta practical", color: "#d946ef", intensity: 1.25 }).position(2.8, 1.4, -9),
-      lights.point({ name: "cavern ember practical", color: "#fb7185", intensity: 1.1 }).position(0.3, 0.9, -14),
+      lights.point({ name: "cavern cyan practical", color: "#22d3ee", intensity: 1.8 }).position(-2.8, 1.1, -5),
+      lights.point({ name: "cavern magenta practical", color: "#d946ef", intensity: 1.7 }).position(2.8, 1.4, -9),
+      lights.point({ name: "cavern ember practical", color: "#fb7185", intensity: 1.45 }).position(0.3, 0.9, -14),
       lights.point({ name: "finale core rose key", color: "#fb7185", intensity: visualReviewCapture ? 1.5 : 3.4 }).position(0, 2.4, -4.4),
       lights.point({ name: "finale arena cyan rim", color: "#22d3ee", intensity: visualReviewCapture ? 1.65 : 2.2 }).position(-3.2, 1.4, -2.8),
       lights.point({ name: "finale arena warm edge", color: "#ff9b72", intensity: visualReviewCapture ? 1.4 : 0 }).position(4.2, 2.2, -1.1),
@@ -1531,7 +1531,7 @@ const app = createAuraApp("#app", {
       // Left Lane Divider Neon Line
       primitives.plane({
         name: "track lane line left",
-        material: material.emissive({ name: "lane line cyan", color: "#06b6d4", emissive: "#22d3ee", emissiveIntensity: 1.2 })
+        material: material.emissive({ name: "lane line cyan", color: "#06b6d4", emissive: "#22d3ee", emissiveIntensity: 1.65 })
       })
         .position(-0.6, -0.04, -8)
         .scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [0.04, 1, 28])
@@ -1540,7 +1540,7 @@ const app = createAuraApp("#app", {
       // Right Lane Divider Neon Line
       primitives.plane({
         name: "track lane line right",
-        material: material.emissive({ name: "lane line cyan", color: "#06b6d4", emissive: "#22d3ee", emissiveIntensity: 1.2 })
+        material: material.emissive({ name: "lane line cyan", color: "#06b6d4", emissive: "#22d3ee", emissiveIntensity: 1.65 })
       })
         .position(0.6, -0.04, -8)
         .scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [0.04, 1, 28])
