@@ -520,7 +520,7 @@ function buildScene(): ReturnType<typeof scene> {
     .addMany([
       ...patrolWingEffectsPass(),
       effects.neonBloom({ intensity: reducedMotion ? 0.05 : 0.12, threshold: 0.84, maxIntensity: 0.34, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.colorGrade({ exposure: 1.04, contrast: 1.1, saturation: 1.36 }),
+      effects.colorGrade({ exposure: 1.01, contrast: 1.13, saturation: 1.45 }),
       effects.antiAlias({ mode: "fxaa" }),
       lights.spot({ name: "lead aircraft landing spot", position: [0, 14, 12], target: [0, 8, 0], angle: 0.5, penumbra: 0.45, distance: 60, decay: 2, intensity: 3.2, color: "#fff2d8", shadow: true }),
       lights.point({ name: "sun warm catch", color: "#ffd4a1", intensity: 2.2 }).position(20, 24, 30),

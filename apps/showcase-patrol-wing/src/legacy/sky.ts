@@ -236,8 +236,8 @@ export function arenaLighting(): ArenaLighting {
       lights
         .directional({
           name: "golden-hour key",
-          color: "#ffd0a0",
-          intensity: 2.15,
+          color: "#ffc890",
+          intensity: 2.3,
           // Effects pass: cascaded sun shadows over the island. Perf pass:
           // "auto" resolved to 4 cascades; 2 PCF cascades over 55 m cover the
           // island + chase volume at half the shadow-render cost.

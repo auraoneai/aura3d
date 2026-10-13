@@ -48,7 +48,7 @@ export function patrolWingEffectsPass() {
       heightFalloff: 0.05,
       heightReference: 0
     }),
-    effects.vignette({ intensity: 0.26, smoothness: 1.7 }),
+    effects.vignette({ intensity: 0.32, smoothness: 1.7 }),
     ...(vfxOn
       ? [
           ...WISPS.map((wisp, index) =>
