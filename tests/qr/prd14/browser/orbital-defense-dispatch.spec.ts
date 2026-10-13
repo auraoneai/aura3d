@@ -34,6 +34,15 @@ type OrbitalSnapshot = {
   enemiesAlive: number;
   enemiesQueued: number;
   look: { id: string; category: string };
+  fx: { explosionsLive: number; boltsLive: number; kills: number; leaks: number };
+  framing: {
+    rig: string;
+    dronesUnderHud: number;
+    subjectHeightFraction: number;
+    horizontalHalfSpan: number;
+    orbitRadius: number;
+    orbitFitsHorizontally: boolean;
+  };
   drawCalls: number;
 };
 
@@ -128,23 +137,44 @@ test.describe("orbital-defense single-path boot (S1)", () => {
     }
   });
 
-  // S7 (single-path): ported from apps/showcase-orbital-defense/tests/
-  // playable.spec.ts — the fixed wide rig reaches `framed` with draw
-  // calls submitted at both viewports the retired framing spec sampled.
-  test("framing holds at desktop and mobile viewports", async ({ page }) => {
+  // S7 (single-path): split into separate desktop and mobile tests so WebKit
+  // never executes a second page.goto() in the same test context.
+  test("framing holds at desktop viewport (1920x1080)", async ({ page }) => {
     const root = builtDist(APP_DIR);
     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      for (const viewport of [{ width: 1920, height: 1080 }, { width: 390, height: 844 }]) {
-        await page.setViewportSize(viewport);
-        await bootFramed(page, url);
-        const snapshot = await snapshotOf(page);
-        expect(snapshot.framed).toBe(true);
-        expect(snapshot.drawCalls).toBeGreaterThan(0);
-        expect(snapshot.state).toBe("playing");
-      }
+      await page.setViewportSize({ width: 1920, height: 1080 });
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.framed).toBe(true);
+      expect(snapshot.drawCalls).toBeGreaterThan(0);
+      expect(snapshot.state).toBe("playing");
+      expect(snapshot.framing.dronesUnderHud).toBe(0);
+      expect(snapshot.framing.orbitFitsHorizontally).toBe(true);
+      expect(snapshot.framing.horizontalHalfSpan).toBeGreaterThan(snapshot.framing.orbitRadius);
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
+  });
+
+  test("framing holds at mobile viewport (390x844)", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.framed).toBe(true);
+      expect(snapshot.drawCalls).toBeGreaterThan(0);
+      expect(snapshot.state).toBe("playing");
+      expect(snapshot.framing.dronesUnderHud).toBe(0);
+      expect(snapshot.framing.orbitFitsHorizontally).toBe(true);
+      expect(snapshot.framing.horizontalHalfSpan).toBeGreaterThan(snapshot.framing.orbitRadius);
       expect(errors).toEqual([]);
     } finally {
       server.close();

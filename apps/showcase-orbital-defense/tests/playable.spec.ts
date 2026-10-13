@@ -153,13 +153,20 @@ test("orbital defense loses at integrity 0 and wins by clearing the final wave",
   expect(won.events).toEqual(expect.arrayContaining([expect.stringContaining("victory")]));
 });
 
-test("orbital defense stays framed at desktop and mobile viewports", async ({ page }) => {
+test("orbital defense stays framed at desktop viewport (1920x1080)", async ({ page }) => {
   test.setTimeout(420_000);
-  for (const viewport of [{ width: 1920, height: 1080 }, { width: 390, height: 844 }]) {
-    await page.setViewportSize(viewport);
-    const state = await bootFramed(page, "/");
-    expect(state.framed).toBe(true);
-    expect(state.drawCalls).toBeGreaterThan(0);
-    expect(state.state).toBe("playing");
-  }
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  const state = await bootFramed(page, "/");
+  expect(state.framed).toBe(true);
+  expect(state.drawCalls).toBeGreaterThan(0);
+  expect(state.state).toBe("playing");
+});
+
+test("orbital defense stays framed at mobile viewport (390x844)", async ({ page }) => {
+  test.setTimeout(420_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const state = await bootFramed(page, "/");
+  expect(state.framed).toBe(true);
+  expect(state.drawCalls).toBeGreaterThan(0);
+  expect(state.state).toBe("playing");
 });

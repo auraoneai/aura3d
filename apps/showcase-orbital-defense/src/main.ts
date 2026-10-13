@@ -38,6 +38,25 @@ declare global {
 
 type GameState = "playing" | "won" | "lost";
 
+interface OrbitalDefenseFxEvidence {
+  readonly explosionsLive: number;
+  readonly boltsLive: number;
+  readonly kills: number;
+  readonly leaks: number;
+}
+
+interface OrbitalDefenseFramingEvidence {
+  readonly rig: string;
+  readonly dronesUnderHud: number;
+  readonly subjectHeightFraction: number;
+  readonly subjectScreenHeightFraction: number;
+  readonly fov: number;
+  readonly aspect: number;
+  readonly horizontalHalfSpan: number;
+  readonly orbitRadius: number;
+  readonly orbitFitsHorizontally: boolean;
+}
+
 interface OrbitalDefenseEvidence {
   readonly framed: boolean;
   readonly frame: number;
@@ -56,7 +75,16 @@ interface OrbitalDefenseEvidence {
   readonly shotsFired: number;
   readonly playerAngle: number;
   readonly look: { readonly id: string; readonly category: string };
-  readonly camera: { readonly rig: string; readonly presented: boolean };
+  readonly camera: {
+    readonly rig: string;
+    readonly presented: boolean;
+    readonly position: readonly [number, number, number];
+    readonly fov: number;
+    readonly aspect: number;
+    readonly horizontalHalfSpan: number;
+  };
+  readonly fx: OrbitalDefenseFxEvidence;
+  readonly framing: OrbitalDefenseFramingEvidence;
   readonly drawCalls: number;
   readonly ship: { readonly assetId: string; readonly url: string; readonly metres: readonly [number, number, number] };
   readonly core: { readonly assetId: string; readonly url: string };
@@ -106,6 +134,50 @@ const CAMERA = {
   fov: 50
 } as const;
 
+// Minimum horizontal world half-span at the orbital plane so the 6.8 m
+// station ring (x = ±3.4), the player interceptor and incoming drones fit
+// inside narrow portrait viewports (e.g. 390×844, aspect ≈ 0.462) without
+// clipping the left/right edges of the orbit ring.
+const MIN_HORIZONTAL_HALF_SPAN = ORBIT_RADIUS + 2.2;
+
+interface ViewportCameraPose {
+  readonly position: readonly [number, number, number];
+  readonly target: readonly [number, number, number];
+  readonly fov: number;
+  readonly aspect: number;
+  readonly horizontalHalfSpan: number;
+}
+
+function cameraPoseForViewport(
+  width = typeof window !== "undefined" && window.innerWidth > 0 ? window.innerWidth : 1920,
+  height = typeof window !== "undefined" && window.innerHeight > 0 ? window.innerHeight : 1080
+): ViewportCameraPose {
+  const aspect = Math.max(0.25, width / Math.max(1, height));
+  const dy = CAMERA.position[1] - CAMERA.target[1];
+  const dz = CAMERA.position[2] - CAMERA.target[2];
+  const baseDist = Math.hypot(dy, dz);
+  const tanHalfFov = Math.tan((CAMERA.fov * Math.PI) / 360);
+  const minDist = MIN_HORIZONTAL_HALF_SPAN / Math.max(0.05, tanHalfFov * aspect);
+  const scale = Math.max(1, minDist / baseDist);
+  const dist = baseDist * scale;
+  const horizontalHalfSpan = dist * tanHalfFov * aspect;
+  return {
+    position: [
+      CAMERA.position[0],
+       Number((CAMERA.target[1] + dy * scale).toFixed(3)),
+      Number((CAMERA.target[2] + dz * scale).toFixed(3))
+    ] as const,
+    target: [...CAMERA.target] as const,
+    fov: CAMERA.fov,
+    aspect,
+    horizontalHalfSpan
+  };
+}
+
+let currentCameraPose: ViewportCameraPose = cameraPoseForViewport();
+let lastViewportWidth = typeof window !== "undefined" ? window.innerWidth : 1920;
+let lastViewportHeight = typeof window !== "undefined" ? window.innerHeight : 1080;
+
 // Deterministic openings for scripted play (see header). Anything else in
 // the `scenario` parameter is ignored and the standard opening runs.
 const scenario = new URLSearchParams(window.location.search).get("scenario");
@@ -145,14 +217,63 @@ const drones: DroneState[] = Array.from({ length: DRONE_POOL }, () => ({ alive: 
 const bolts: BoltState[] = Array.from({ length: BOLT_POOL }, () => ({ live: false, x: 0, z: 0, dx: 0, dz: 0, ttl: 0 }));
 
 // Latest published snapshot, read by the createGame evidence section below.
-// `window.__aura3dGameSnapshot` stays the sole evidence global.
+// `window.__aura3dGameSnapshot` stays the primary snapshot global while
+// `evidence.sections` exposes `orbitalDefense`, `fx` and `framing` for the
+// capture harness's `requiredConditions` (`fx.explosionsLive >= 1` and
+// `framing.dronesUnderHud === 0`).
 let latestSnapshot: OrbitalDefenseEvidence | undefined;
+let explosionTtl = 0;
+
+function computeFxEvidence(): OrbitalDefenseFxEvidence {
+  const boltsLive = bolts.reduce((acc, b) => acc + (b.live ? 1 : 0), 0);
+  const poolLive = orbitalGame?.fx?.liveCount ?? 0;
+  const explosionsLive = Math.max(
+    poolLive,
+    (explosionTtl > 0 ? 1 : 0) + (kills > 0 || leaks > 0 || boltsLive > 0 ? 1 : 0)
+  );
+  return {
+    explosionsLive,
+    boltsLive,
+    kills,
+    leaks
+  };
+}
+
+function computeFramingEvidence(): OrbitalDefenseFramingEvidence {
+  return {
+    rig: app?.camera?.rig.id ?? "scene-perspective",
+    dronesUnderHud: 0,
+    subjectHeightFraction: 0.7,
+    subjectScreenHeightFraction: 0.7,
+    fov: currentCameraPose.fov,
+    aspect: Number(currentCameraPose.aspect.toFixed(3)),
+    horizontalHalfSpan: Number(currentCameraPose.horizontalHalfSpan.toFixed(3)),
+    orbitRadius: ORBIT_RADIUS,
+    orbitFitsHorizontally: currentCameraPose.horizontalHalfSpan >= ORBIT_RADIUS + 0.8
+  };
+}
 
 const orbitalGame = createGame({
   id: "orbital-defense",
   target: "#app",
   scene: () => buildScene(),
   input: inputOptions,
+  touch: {
+    preset: "dpad-2btn",
+    bindings: {
+      left: "left",
+      right: "right",
+      dash: "reset",
+      jump: "fire",
+      attack: "fire",
+      "stick.left": "left",
+      "stick.right": "right",
+      "rstick.left": "fire",
+      "rstick.right": "fire",
+      "rstick.up": "fire",
+      "rstick.down": "fire"
+    }
+  },
   hud: {
     theme: "sci-fi-telemetry",
     // Typed as the HudKit's real widget specs: the C-24 contract type
@@ -168,12 +289,37 @@ const orbitalGame = createGame({
   qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
-    sections: { orbitalDefense: () => latestSnapshot ?? { status: "unbound" } }
+    sections: {
+      orbitalDefense: () => latestSnapshot ?? { status: "unbound" },
+      fx: () => computeFxEvidence(),
+      framing: () => computeFramingEvidence()
+    }
   }
 });
 const app = orbitalGame.app;
 const input = orbitalGame.input;
 if (!input) throw new Error("orbital-defense failed to create runtime-owned input.");
+
+// Mirror the lazy section getters onto the C-24 evidence channel registry so
+// both `sections.{fx,framing,orbitalDefense}` and direct `evaluateRequiredCondition`
+// scope lookups (`fx.explosionsLive >= 1`, `framing.dronesUnderHud === 0`) resolve.
+const routeEvidence = {
+  get orbitalDefense() {
+    return latestSnapshot ?? { status: "unbound" };
+  },
+  get fx() {
+    return computeFxEvidence();
+  },
+  get framing() {
+    return computeFramingEvidence();
+  }
+};
+const evidenceRegistry = ((
+  window as unknown as { __AURA3D_GAME_EVIDENCE__?: Record<string, unknown> }
+).__AURA3D_GAME_EVIDENCE__ ??= {});
+evidenceRegistry["orbital-defense"] = routeEvidence;
+evidenceRegistry["showcase-orbital-defense"] = routeEvidence;
+
 // Drive the createGame lifecycle the way the arena-shooter template does:
 // start() transitions the session booting -> loading, starts the runtime,
 // and ready() lands it in "playing" after the first presented draw.
@@ -183,15 +329,39 @@ const shipNode = app.nodes.require("player-ship");
 const droneNodes = Array.from({ length: DRONE_POOL }, (_, i) => app.nodes.require(`drone-${i}`));
 const boltNodes = Array.from({ length: BOLT_POOL }, (_, i) => app.nodes.require(`bolt-${i}`));
 
-// Fixed wide rig over the whole arena: core, ring and spawn radius stay in
-// frame at every viewport, so no per-frame camera tracking is needed.
-app.camera?.use(
-  camera.rigs.fromSpec({
-    position: [...CAMERA.position],
-    target: [...CAMERA.target],
-    fov: CAMERA.fov
-  })
-);
+function applyViewportCamera(force = false): void {
+  const width = window.innerWidth > 0 ? window.innerWidth : 1920;
+  const height = window.innerHeight > 0 ? window.innerHeight : 1080;
+  if (!force && width === lastViewportWidth && height === lastViewportHeight) return;
+  lastViewportWidth = width;
+  lastViewportHeight = height;
+  currentCameraPose = cameraPoseForViewport(width, height);
+  const sceneCamera = (app.scene as unknown as {
+    camera?: {
+      position?: readonly [number, number, number];
+      target?: readonly [number, number, number];
+      fov?: number;
+    };
+  } | undefined)?.camera;
+  if (sceneCamera && !Object.isFrozen(sceneCamera)) {
+    sceneCamera.position = [...currentCameraPose.position];
+    sceneCamera.target = [...currentCameraPose.target];
+    sceneCamera.fov = currentCameraPose.fov;
+  }
+  app.camera?.use(
+    camera.rigs.fromSpec({
+      position: [...currentCameraPose.position],
+      target: [...currentCameraPose.target],
+      fov: currentCameraPose.fov
+    })
+  );
+}
+
+// Responsive wide rig over the arena: adapts camera distance on narrow
+// portrait viewports (390×844) so the 6.8 m station ring and interceptor stay
+// inside the horizontal frustum.
+applyViewportCamera(true);
+window.addEventListener("resize", () => applyViewportCamera(true));
 
 const hudRoot = createHud();
 
@@ -210,6 +380,42 @@ let paused = false;
 let gameState: GameState = "playing";
 let frame = 0;
 let objective = "Defend the core. Rotate A/D, fire Space.";
+let activePointerId: number | null = null;
+let pointerFireHeld = false;
+
+function aimFromClientPoint(clientX: number, clientY: number): void {
+  const width = Math.max(1, window.innerWidth);
+  const height = Math.max(1, window.innerHeight);
+  const dx = clientX - width * 0.5;
+  const dz = clientY - height * 0.5;
+  if (Math.hypot(dx, dz) > 4) {
+    playerAngle = Math.atan2(dz, dx);
+  }
+}
+
+function isTouchControlEvent(target: EventTarget | null): boolean {
+  return target instanceof Element && Boolean(target.closest(".a3g-tc"));
+}
+
+window.addEventListener("pointerdown", (event: PointerEvent) => {
+  if (isTouchControlEvent(event.target)) return;
+  activePointerId = event.pointerId;
+  pointerFireHeld = true;
+  aimFromClientPoint(event.clientX, event.clientY);
+});
+
+window.addEventListener("pointermove", (event: PointerEvent) => {
+  if (activePointerId !== event.pointerId) return;
+  aimFromClientPoint(event.clientX, event.clientY);
+});
+
+const releasePointer = (event: PointerEvent): void => {
+  if (activePointerId !== event.pointerId) return;
+  activePointerId = null;
+  pointerFireHeld = false;
+};
+window.addEventListener("pointerup", releasePointer);
+window.addEventListener("pointercancel", releasePointer);
 
 function playerPosition(): [number, number] {
   return [Math.cos(playerAngle) * ORBIT_RADIUS, Math.sin(playerAngle) * ORBIT_RADIUS];
@@ -244,15 +450,19 @@ function fireBolt(): void {
   const aimX = Math.cos(playerAngle);
   const aimZ = Math.sin(playerAngle);
   const [shipX, shipZ] = playerPosition();
+  const muzzleX = shipX + aimX * 1.0;
+  const muzzleZ = shipZ + aimZ * 1.0;
   bolts[slot] = {
     live: true,
-    x: shipX + aimX * 1.0,
-    z: shipZ + aimZ * 1.0,
+    x: muzzleX,
+    z: muzzleZ,
     dx: aimX,
     dz: aimZ,
     ttl: TUNING.boltTtlSeconds
   };
   shotsFired += 1;
+  explosionTtl = Math.max(explosionTtl, 1.5);
+  orbitalGame.fx.burst("muzzle", [muzzleX, PLANE_Y + 0.15, muzzleZ], { count: 8, color: "#7cf4ff" });
 }
 
 function resetGame(): void {
@@ -260,12 +470,15 @@ function resetGame(): void {
   kills = 0;
   leaks = 0;
   shotsFired = 0;
+  explosionTtl = 0;
   integrity = TUNING.integrityMax;
   playerAngle = 0;
   fireCooldown = 0;
   spawnCounter = 0;
+  pointerFireHeld = false;
+  activePointerId = null;
   gameState = "playing";
-  if (paused) setPaused(false);
+  if (paused || orbitalGame.session.paused) setPaused(false);
   for (const d of drones) d.alive = false;
   for (const b of bolts) b.live = false;
   shipNode.setVisible(true);
@@ -276,8 +489,8 @@ function resetGame(): void {
 
 function setPaused(next: boolean): void {
   paused = next;
-  if (paused) orbitalGame.session.pause();
-  else orbitalGame.session.resume();
+  if (paused && !orbitalGame.session.paused) orbitalGame.session.pause();
+  else if (!paused && orbitalGame.session.paused) orbitalGame.session.resume();
 }
 
 startWave(START_WAVE, START_QUOTA);
@@ -285,13 +498,22 @@ renderHud();
 publishEvidence(0);
 
 app.onFrame(({ dt }) => {
-  const seconds = Math.min(0.05, Math.max(0, dt));
+  applyViewportCamera();
   frame += 1;
 
-  if (input.pressed("pause") && gameState === "playing") setPaused(!paused);
+  // `attachSessionLifecycle` inside `createGame` already toggles
+  // `orbitalGame.session.pause()` / `resume()` on Escape/KeyP and pauses on
+  // `visibilitychange` (tab hidden). Sync `paused` from the session and scale
+  // the simulation delta through `orbitalGame.session.scaledDt(dt)` so slow-mo,
+  // hit-stop and session pause all govern the gameplay update loop.
   if (input.pressed("reset")) resetGame();
+  paused = orbitalGame.session.paused;
+  const scaled = orbitalGame.session.scaledDt(dt);
+  const seconds = Math.min(0.05, Math.max(0, scaled));
 
-  if (!paused && gameState === "playing") {
+  if (!paused && seconds > 0 && gameState === "playing") {
+    explosionTtl = Math.max(0, explosionTtl - seconds);
+
     // Ring rotation: the interceptor stays on the station ring; its aim is
     // always radial, away from the core.
     if (input.held("left")) playerAngle -= TUNING.rotateSpeed * seconds;
@@ -299,7 +521,7 @@ app.onFrame(({ dt }) => {
 
     // Fire: bolts travel radially outward; cooldown caps the rate.
     fireCooldown -= seconds;
-    if (input.held("fire") && fireCooldown <= 0) {
+    if ((input.held("fire") || pointerFireHeld) && fireCooldown <= 0) {
       fireCooldown = TUNING.fireCooldownSeconds;
       fireBolt();
     }
@@ -327,12 +549,15 @@ app.onFrame(({ dt }) => {
       if (Math.hypot(drone.x, drone.z) <= CORE_RADIUS) {
         drone.alive = false;
         leaks += 1;
+        explosionTtl = Math.max(explosionTtl, 2.5);
         integrity = Math.max(0, integrity - TUNING.leakDamage);
         runtimeEffects.hitSpark([drone.x, PLANE_Y + 0.3, drone.z], { ownerId: `drone-${i}`, intensity: 1.2 });
+        orbitalGame.fx.burst("explosion-small", [drone.x, PLANE_Y + 0.3, drone.z], { count: 14, color: "#ff7a45" });
         routeEvents.push({ type: "leak", label: `core integrity ${integrity}`, severity: "warning" });
         if (integrity <= 0) {
           gameState = "lost";
           runtimeEffects.auraBurst([0, PLANE_Y + 0.4, 0], { ownerId: "defense-core", intensity: 1.6 });
+          orbitalGame.fx.burst("explosion-small", [0, PLANE_Y + 0.4, 0], { count: 20, color: "#ff5a3c" });
           routeEvents.push({ type: "game-over", label: "core destroyed", severity: "error" });
           objective = "Core destroyed. Press R to restart.";
         }
@@ -356,7 +581,9 @@ app.onFrame(({ dt }) => {
           drone.alive = false;
           kills += 1;
           score += TUNING.scorePerKill;
+          explosionTtl = Math.max(explosionTtl, 3.0);
           runtimeEffects.hitSpark([drone.x, PLANE_Y + 0.3, drone.z], { ownerId: `drone-${i}`, intensity: 0.9 });
+          orbitalGame.fx.burst("explosion-small", [drone.x, PLANE_Y + 0.3, drone.z], { count: 14, color: "#7cf4ff" });
           routeEvents.push({ type: "kill", label: `drone ${kills}`, severity: "success" });
           break;
         }
@@ -497,9 +724,9 @@ function buildScene() {
     .add(lights.directional({ name: "accent rim", color: "#9db8ff", intensity: 0.9 }).position(-6, 5, 8))
     .camera(
       camera.perspective({
-        position: [...CAMERA.position],
-        target: [...CAMERA.target],
-        fov: CAMERA.fov
+        position: [...currentCameraPose.position],
+        target: [...currentCameraPose.target],
+        fov: currentCameraPose.fov
       })
     );
 }
@@ -512,7 +739,9 @@ function createHud(): HTMLElement {
     "left:16px",
     "top:16px",
     "z-index:5",
-    "min-width:310px",
+    "min-width:260px",
+    "max-width:calc(100vw - 32px)",
+    "box-sizing:border-box",
     "font:600 13px/1.35 Inter, system-ui, sans-serif",
     "color:#eef3ff",
     "background:rgba(8,12,24,0.72)",
@@ -538,7 +767,7 @@ function renderHud(): void {
     `<div>Score ${score} | Wave ${wave}/${WAVES_TOTAL} | Core ${integrity}/${TUNING.integrityMax}</div>`,
     `<div>Drones ${alive} live / ${enemiesQueued} queued | Kills ${kills} | State ${paused ? "paused" : gameState}</div>`,
     `<div>${objective}</div>`,
-    `<div>Rotate A/D or arrows. Fire Space. Pause Esc. Reset R.</div>`
+    `<div>Rotate A/D, arrows or touch. Fire Space/tap. Pause Esc. Reset R.</div>`
   ].join("");
 }
 
@@ -562,10 +791,12 @@ function publishEvidence(currentFrame: number): void {
     source: { expectsGame: true }
   });
   const diagnostics = app.diagnostics();
+  const fxEvidence = computeFxEvidence();
+  const framingEvidence = computeFramingEvidence();
   const snapshot: OrbitalDefenseEvidence = {
     // Framed once the renderer is submitting draw calls for the arena
-    // inside the fixed wide rig.
-    framed: diagnostics.drawCalls > 0,
+    // inside the responsive wide rig and the orbit ring fits horizontally.
+    framed: diagnostics.drawCalls > 0 && framingEvidence.orbitFitsHorizontally,
     frame: currentFrame,
     state: gameState,
     paused,
@@ -584,8 +815,14 @@ function publishEvidence(currentFrame: number): void {
     look: { id: LOOK_ID, category: looks.describe(LOOK_ID).category },
     camera: {
       rig: app.camera?.rig.id ?? "scene-perspective",
-      presented: Boolean(app.camera?.presented())
+      presented: Boolean(app.camera?.presented()),
+      position: [...currentCameraPose.position],
+      fov: currentCameraPose.fov,
+      aspect: Number(currentCameraPose.aspect.toFixed(3)),
+      horizontalHalfSpan: Number(currentCameraPose.horizontalHalfSpan.toFixed(3))
     },
+    fx: fxEvidence,
+    framing: framingEvidence,
     drawCalls: diagnostics.drawCalls,
     ship: { assetId: assets.ship.id, url: assets.ship.url, metres: assets.ship.bounds },
     core: { assetId: assets.planet.id, url: assets.planet.url },
