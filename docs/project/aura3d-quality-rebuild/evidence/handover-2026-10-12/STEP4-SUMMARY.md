@@ -110,3 +110,101 @@ whole fleet irreversibly).
 5. Known leftovers: gravity-post 3 fps and courier 2.6 fps absolutes
    (pre-existing), turbo headlight glow stronger than main, #1067 audio
    re-port, asset-lookdev still reads `?debug` (not a game route).
+
+---
+
+## Pass 2 — 2026-10-13 (owner reopened completion; partials closed)
+
+The owner rejected the 12 PASS / 6 PARTIAL verdict above and reported the
+games did not fully load on the Vercel instance. Two workstreams followed.
+
+**Vercel load blocker (root cause).** The deployed `/aura-assets/*.glb`
+files were 131-byte Git LFS pointers, not binaries. Fixed by #1336
+(merged `59126080e`): the site build now fails closed on LFS pointers and
+the deploy uses a remote LFS-materialized `marketing-dist` artifact
+(`lead-site-build.yml`). Corrected build 38323321262: 0 pointers, 202/202
+real `glTF` GLBs.
+
+**Per-game acceptance closure.** The 7 PARTIAL games above, plus
+margin hardening for turbo-drift-circuit and neon-swarm, were fixed in
+four isolated batches, each verified at its exact branch head (legacy
+boot path, L4, same acceptance rules and baseline 38288741937 as above),
+then merged one at a time:
+
+| PR | Head | Games | Final-head L4 run |
+|---|---|---|---|
+| #1337 | `4c7a5499a` | courier-rush, pulse-tunnel | 38329194983 |
+| #1338 | `95f81be47` | bank-shot, turbo-drift-circuit | 38342179366 |
+| #1339 | `9e7328969` | deep-recovery, orbital-defense | 38341196894 |
+| #1340 | `345966025` | blockfall-reactor, neon-swarm, patrol-wing | 38339647019 |
+
+Courier's near-black action frame was a real tower-collision defect, not a
+grade problem; its +995% action-shot luma is that bug fix against a
+near-black baseline frame. No acceptance threshold was lowered.
+
+**Merged-main re-verification** (main `e1233b78a`, L4, defaults run
+38343225261 vs baseline 38288741937; `-post` 38343227242 and `none`
+38343229676 both SUCCESS — the none arm's only console output is 70
+`EFFECT_ZERO_PIXELS` watchdog notes, expected with vfx off, zero page
+errors):
+
+| Game | fps ratio | MAD shots | verdict |
+|---|---|---|---|
+| aura-clash-showcase | 0.94 | 5/5 | PASS |
+| blockfall-reactor | 0.99 | 4/4 | PASS |
+| skyline-runner | 0.97 | 3/4 | PASS |
+| turbo-drift-circuit | 0.92 | 3/4 | PASS |
+| siege-golf | 1.03 | 4/5 | PASS |
+| aurora-lander | 0.99 | 4/4 | PASS |
+| neon-swarm | 0.99 | 4/5 | PASS |
+| gravity-post | 0.89 | 6/6 | PASS |
+| courier-rush | 1.00 | 4/4 | PASS |
+| pulse-tunnel | 0.97 | 4/4 | PASS |
+| mech-hangar | 0.92 | 5/6 | PASS |
+| vault-breakers | 0.87 | 4/4 | PASS |
+| rooftop-buckets | 0.90 | 5/5 | PASS |
+| gallery-shift | 0.89 | 4/4 | PASS |
+| deep-recovery | 0.86 | 5/5 | PASS |
+| patrol-wing | 0.94 | 3/5 | PASS |
+| bank-shot | 0.95 | 5/5 | PASS |
+| orbital-defense | 0.97 | 5/5 | PASS |
+
+**18/18 PASS.** Thin margins, stated plainly: deep-recovery fps 0.86;
+patrol-wing and skyline-runner pass on exactly 3 shots; turbo passes on
+opening/mid/action (title 9.94) with one shot at luma −12.7%.
+
+- Gameplay 38343232348 SUCCESS: zero page/console errors under defaults in
+  all 17 probed games (turbo-drift is not in the probe config); input
+  changes state in every probed game; defaults-vs-prod movedNodes/
+  changedLeaves parity in 16/17. Orbital-defense's prod variant is
+  unobservable in both this and the previous run (draws 0, canvases 0,
+  45 s ready timeout on the old production build) while the local build
+  responds to rotate/fire — a probe blind spot, not a local regression.
+- Flicker 38343234969 SUCCESS: per-game delta-std table matches run
+  38311220091 closely (courier 13.84 vs 13.85, skyline 0.861 vs 0.863;
+  mech-hangar improved 4.56 vs 5.36). Static games ≤0.48.
+- Audio 38343237764 SUCCESS: no local clipping (loudest local peak
+  pulse-tunnel −8.0 dB); every game sounding in both builds is quieter
+  locally than on production; blockfall/pulse patterns identical to run
+  38311223186.
+- Preview from merged main (site build 38347827037, prebuilt deploy):
+  https://aura3d-90eej6133-veerone.vercel.app — landing + 18/18 game
+  routes serve 200 HTML and 202/202 GLBs are byte-exact `glTF` via
+  authenticated `vercel curl`. Runtime load proof for the production
+  alias follows the production deploy (preview SSO blocks L4 runners).
+
+Release: #1334 refreshed onto `e1233b78a` (`76b452748`) and merged at
+`fb280dedd`; exact-commit dry-run helper merged as #1341
+(`release-plan-dryrun.yml`). The first dry run exposed two latent
+release-tooling defects, both fixed before publishing: a genuine
+`@aura3d/controls <-> @aura3d/input` dependency cycle that
+`publish-all.mjs` refused to order (#1342, deterministic cycle break),
+and `sourceIdentity` crashing with EISDIR on the tracked symlink
+`public/packs` (#1343, hash symlinks by target in both copies). Dry run
+38352157252 at main `5ef9e98a3` then succeeded: 24 tarballs, all
+sha256-verified against `release-plan.json`, all unpublished 4.0.0. The
+local `--from-plan` publish from a fingerprint-identical checkout
+(source fingerprint `8e87a300…`) stopped on the first package with
+npm `EOTP` — the account enforces 2FA on publish, so the remaining step
+needs the owner's one-time code (`NPM_OTP`), then tag `v4.0.0`, GitHub
+release, and production verification. npm still serves 3.0.1.
