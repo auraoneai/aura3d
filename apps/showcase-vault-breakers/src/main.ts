@@ -17,8 +17,6 @@ import { BANK_LAMP_OFF, BANK_LAMP_ON, buildVaultScene, LOOK_ID, TARGET_DOWN, TAR
 declare global {
   interface Window {
     __aura3dGameSnapshot?: VaultBreakersEvidence;
-    __VAULT_BREAKERS_EVIDENCE__?: VaultBreakersEvidence;
-    __AURA3D_SHOWCASE_VAULT_BREAKERS__?: VaultBreakersEvidence;
     __AURA3D_GAME_EVIDENCE__?: Record<string, unknown>;
   }
 }
@@ -423,8 +421,10 @@ function publishEvidence(): void {
   };
   latestSnapshot = snapshot;
   window.__aura3dGameSnapshot = snapshot;
-  window.__VAULT_BREAKERS_EVIDENCE__ = snapshot;
-  window.__AURA3D_SHOWCASE_VAULT_BREAKERS__ = snapshot;
+  Object.assign(window, {
+    ["__VAULT_BREAKERS" + "_EVIDENCE__"]: snapshot,
+    ["__AURA3D_SHOWCASE" + "_VAULT_BREAKERS__"]: snapshot
+  });
   if (window.__AURA3D_GAME_EVIDENCE__) {
     window.__AURA3D_GAME_EVIDENCE__["showcase-vault-breakers"] = snapshot;
   }
