@@ -3367,16 +3367,16 @@ const app = createAuraApp("#app", {
     // Keep contact definition without crushing the Formula car's red palette into black.
     // The former 0.42 AO pass was appropriate for the pale untextured car and visibly
     // over-occluded the textured cockpit, sidepods and rear wing of the new hero.
-    .add(effects.ambientOcclusion({ intensity: visualCaptureCamera ? 0.28 : 0.18, radius: visualCaptureCamera ? 0.62 : 0.48 }))
+    .add(effects.ambientOcclusion({ intensity: visualCaptureCamera ? 0.28 : 0.1, radius: visualCaptureCamera ? 0.62 : 0.48 }))
     .add(effects.contactOcclusion({
       name: "vehicle-road contact occlusion",
-      intensity: visualCaptureCamera ? 0.5 : 0.28,
+      intensity: visualCaptureCamera ? 0.5 : 0.16,
       radius: visualCaptureCamera ? 0.68 : 0.54
     }))
     .add(effects.neonBloom(postV2Bloom
       ? { intensity: 1.8, threshold: 0.52, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
       : { intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade(visualCaptureCamera ? { exposure: 1.05, contrast: 1.07, saturation: 1.12 } : { exposure: 1.06, contrast: 1.16, saturation: 1.22 }))
+    .add(effects.colorGrade(visualCaptureCamera ? { exposure: 1.05, contrast: 1.07, saturation: 1.12 } : { exposure: 1.2, contrast: 1.09, saturation: 1.18 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     // Nonzero depth haze that grades the treeline into the sky and separates
     // near curbing from distant trackside.
@@ -3425,18 +3425,18 @@ const app = createAuraApp("#app", {
         TURBO_LATE_AFTERNOON_MOOD.rimPositionFractions.y * SCENE_SIZE,
         TURBO_LATE_AFTERNOON_MOOD.rimPositionFractions.z * SCENE_SIZE
       ))
-    .add(lights.point({ name: "pit lane warm fill", color: TURBO_LATE_AFTERNOON_MOOD.pitFillColor, intensity: 0.42 })
+    .add(lights.point({ name: "pit lane warm fill", color: TURBO_LATE_AFTERNOON_MOOD.pitFillColor, intensity: 0.55 })
       .position(0.44 * SCENE_SIZE, 0.15 * SCENE_SIZE, -0.33 * SCENE_SIZE))
-    .add(lights.point({ name: "start line red glow", color: "#ff6b5a", intensity: 0.18 })
+    .add(lights.point({ name: "start line red glow", color: "#ff6b5a", intensity: 0.24 })
       .position(-0.33 * SCENE_SIZE, 0.16 * SCENE_SIZE, 0.3 * SCENE_SIZE))
-    .add(lights.point({ name: "start line green glow", color: "#8dffb8", intensity: 0.12 })
+    .add(lights.point({ name: "start line green glow", color: "#8dffb8", intensity: 0.16 })
       .position(-0.28 * SCENE_SIZE, 0.16 * SCENE_SIZE, 0.34 * SCENE_SIZE))
     // Route-bound practicals pick up the apex and exit with different hues so
     // the banked road does not collapse into one uniformly lit grey plane.
     // Their positions follow live centreline samples and own no gameplay state.
-    .add(lights.point({ name: "hairpin cyan apex practical", color: "#85e7ff", intensity: visualCaptureCamera ? 0 : 0.34 })
+    .add(lights.point({ name: "hairpin cyan apex practical", color: "#85e7ff", intensity: visualCaptureCamera ? 0 : 0.42 })
       .position(turboApexScenePoint[0] - 0.62, turboApexRoadY + 0.86, turboApexScenePoint[2] + 0.24))
-    .add(lights.point({ name: "hairpin amber exit practical", color: "#ffc27f", intensity: visualCaptureCamera ? 0.58 : 0.42 })
+    .add(lights.point({ name: "hairpin amber exit practical", color: "#ffc27f", intensity: visualCaptureCamera ? 0.58 : 0.5 })
       .position(turboExitScenePoint[0] + 0.58, turboExitRoadY + 0.72, turboExitScenePoint[2] - 0.18))
     .add(instances.sphere({
       name: "left drift smoke",

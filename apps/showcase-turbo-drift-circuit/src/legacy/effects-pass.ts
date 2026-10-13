@@ -36,7 +36,7 @@ export function turboEffectsPass(options: TurboEffectsPassOptions): readonly Aur
       color: "#e8b79a"
     }).position(at[0], at[1] + 0.6, at[2]);
   return [
-    effects.vignette({ intensity: 0.3, smoothness: 2.4, roundness: 1 }),
+    effects.vignette({ intensity: 0.18, smoothness: 2.4, roundness: 1 }),
     dust("start straight dust", 8101, startPoint),
     dust("hairpin dust", 8102, apexPoint),
     // Sun motes: a broad, slow glitter of warm specks over the infield.
@@ -64,13 +64,13 @@ export function turboHeightHaze(color: string): AuraNodeInput {
     name: "circuit height haze",
     // heightDensity selects the C-21 height mode.
     color,
-    density: 0.004,
-    heightDensity: 0.03,
+    density: 0.0032,
+    heightDensity: 0.024,
     heightFalloff: 0.16,
     heightReference: 0,
     start: 6,
-    maxOpacity: 0.62,
-    sunInscatter: 0.5,
+    maxOpacity: 0.5,
+    sunInscatter: 0.65,
     anisotropy: 0.6,
     affectsBackground: false
   });

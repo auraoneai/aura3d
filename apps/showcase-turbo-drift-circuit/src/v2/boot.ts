@@ -60,7 +60,7 @@ const worldBuilders = turboDriftWorldNodes({
 
 function buildScene() {
   return scene()
-    .background("#2a2030")
+    .background("#3d2b3a")
     .camera(fallbackTurboCameraNode())
     .add(turboDriftEnvironment())
     .addMany(worldBuilders as never[])
@@ -291,7 +291,7 @@ void gameShell.ready().then(() => {
   gameShell.app.camera?.use?.(rig, { blend: 0.4 });
   // C-05 output: exposureEV 0 → linear 1; postPresets output stubs are {} —
   // post settles when the preset registry ships real output profiles.
-  gameShell.app.setOutput?.({ preset: "daylight-outdoor", exposure: 1 });
+  gameShell.app.setOutput?.({ preset: "daylight-outdoor", exposure: 1.12 });
 
   publishTurboDriftEvidence({
     game: { session: gameShell.session, fx: gameShell.fx },

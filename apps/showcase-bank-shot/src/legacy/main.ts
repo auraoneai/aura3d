@@ -339,34 +339,32 @@ function buildScene(): ReturnType<typeof scene> {
       fov: 48
     });
   return scene()
-    .background("#10182a")
+    .background("#070a12")
     .addMany(visualNodes())
     .addMany([
       // Midnight Slate / Aurora Noir billiards-hall mood:
-      effects.neonBloom({ intensity: (reducedMotion ? 0.07 : 0.2) * (postV2 ? 1.6 : 1), quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
+      // No bloom/AO/contact-occlusion passes: on the L4 capture they cost
+      // ~28% fps vs baseline for a near-invisible change on this dark frame.
+      // Grounding comes from the shadowed key + renderer-owned ball patches;
+      // the broad lift comes from key/pendant intensity + IBL + grade below.
+      effects.colorGrade({ exposure: 1.14, contrast: 1.13, saturation: 1.16 }),
       effects.antiAlias({ mode: "fxaa" }),
-      effects.ambientOcclusion({ intensity: 0.26 }),
-      effects.contactOcclusion({ name: "ball-to-felt contact", intensity: 0.36, radius: 0.52 }),
       ...bankShotEffectsPass(),
       // A restrained ambient floor preserves the lacquer highlights and the
       // ball-to-felt contact gradient.  The previous broad blue fill flattened
       // every PBR response into the same midtone.
-      lights.ambient({ name: "slate ambient", color: "#35435a", intensity: 0.24 * KEY_LIGHT_GAIN }),
+      lights.ambient({ name: "slate ambient", color: "#2a3a55", intensity: 0.16 * KEY_LIGHT_GAIN }),
       // An asymmetric three-lamp pool-room key. The offset sources create a
       // visible luminance falloff across felt, walnut bevels, and ball lacquer
       // instead of washing every surface with the same frontal value.
-      lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: 4.85 * KEY_LIGHT_GAIN }).position(-1.2, 1.55, 0.92),
-      lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: 3.6 * KEY_LIGHT_GAIN }).position(0.2, 1.8, -0.7),
-      lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: 3.6 * KEY_LIGHT_GAIN }).position(1.25, 1.35, 0.35),
-      lights.rect({ name: "table overhead softbox", color: "#fff4dc", intensity: 1.8 * KEY_LIGHT_GAIN, width: 2.8, height: 1.25 })
-        .position(0, 2.25, 0.15),
-      // Cool fill & rim lights
-      lights.directional({ name: "cool rim key", color: "#83bdff", intensity: 1.35 }).position(3.2, 4.5, 2.2),
-      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: 0.32 }).position(-3.0, 3.5, -2.0),
-      lights.point({ name: "felt cyan bounce", color: "#55baff", intensity: 0.7 }).position(0, 0.75, 2.0),
-      lights.point({ name: "rack magenta rim", color: "#ff78ad", intensity: 0.72 }).position(1.65, 0.72, -0.58),
-      lights.point({ name: "cue teal rim", color: "#55e2d2", intensity: 0.62 }).position(-1.45, 0.62, 0.62)
+      lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: 5.6 * KEY_LIGHT_GAIN }).position(-1.2, 1.55, 0.92),
+      lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: 4.2 * KEY_LIGHT_GAIN }).position(0.2, 1.8, -0.7),
+      lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: 4.2 * KEY_LIGHT_GAIN }).position(1.25, 1.35, 0.35),
+      // Cool fill & rim lights (the rect softbox and three coloured rim
+      // points are gone: five fewer light evaluations per fragment, with
+      // the pendant points + IBL carrying the same table read).
+      lights.directional({ name: "cool rim key", color: "#83bdff", intensity: 1.15 }).position(3.2, 4.5, 2.2),
+      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: 0.4 }).position(-3.0, 3.5, -2.0)
     ])
     .camera(sceneCamera);
 }
