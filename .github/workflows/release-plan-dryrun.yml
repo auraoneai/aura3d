@@ -1,0 +1,71 @@
+name: Release plan dry-run
+
+# One-purpose helper for the 4.0.0 release (handover section 7, step 1):
+# at an exact commit, clean checkout -> pnpm install --frozen-lockfile ->
+# pnpm build -> publish-all.mjs --dry-run, uploading the resulting
+# tests/reports/release-tarballs (release-plan.json + tarballs) as an
+# artifact. Publishing itself never runs here.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_sha:
+        description: "Exact commit SHA to check out and dry-run"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-plan-dryrun-${{ inputs.target_sha }}
+  cancel-in-progress: false
+
+jobs:
+  dryrun:
+    name: Build + publish-all --dry-run at exact commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_sha }}
+          lfs: false
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Materialize game assets from Git LFS
+        run: |
+          set -euo pipefail
+          git lfs version >/dev/null 2>&1 || { echo "::error::git-lfs is not installed on this runner"; exit 1; }
+          git lfs pull --include="public/aura-assets/**,apps/*/public/**,examples/*/public/**"
+
+      - name: Verify exact clean commit
+        run: |
+          set -euo pipefail
+          echo "HEAD: $(git rev-parse HEAD)"
+          test "$(git rev-parse HEAD)" = "${{ inputs.target_sha }}"
+          test -z "$(git status --porcelain)"
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build
+
+      - name: Release plan dry-run
+        run: node tools/release/publish-all.mjs --dry-run
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-tarballs-${{ inputs.target_sha }}
+          path: tests/reports/release-tarballs
+          retention-days: 14
+          if-no-files-found: error
