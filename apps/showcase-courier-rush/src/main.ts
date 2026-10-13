@@ -63,7 +63,28 @@ import {
 declare global {
   interface Window {
     __aura3dGameSnapshot?: CourierRushEvidence;
+    __COURIER_RUSH_EVIDENCE__?: CourierRushCompatEvidence;
+    __AURA3D_SHOWCASE_COURIER_RUSH__?: CourierRushCompatEvidence;
+    __COURIER_RUSH_DEBUG__?: {
+      placeVan(x: number, z: number, heading?: number): void;
+    };
   }
+}
+
+interface CourierZoneEventRecord {
+  readonly type: "pickup" | "drop";
+  readonly zoneId: string;
+  readonly onTriggerEnter: boolean;
+  readonly deliveryIndex: number;
+}
+
+interface CourierTrafficSummary {
+  readonly id: string;
+  readonly x: number;
+  readonly z: number;
+  readonly heading: number;
+  readonly speed: number;
+  readonly courtesyStopped: boolean;
 }
 
 interface CourierRushEvidence {
@@ -114,7 +135,73 @@ interface CourierRushEvidence {
   readonly evidence: unknown;
 }
 
+interface CourierRushCompatEvidence extends Omit<CourierRushEvidence, "state"> {
+  readonly schema: "aura3d-showcase-courier-rush/1.0";
+  readonly appId: "showcase-courier-rush";
+  readonly claimLabel: "prototype";
+  readonly mounted: boolean;
+  readonly state: DispatchState["phase"];
+  readonly gameState: CourierRushEvidence["state"];
+  readonly carrying: boolean;
+  readonly parcelAttached: boolean;
+  readonly frameCount: number;
+  readonly deliveryIndex: number;
+  readonly timerMs: number;
+  readonly maxStrikes: number;
+  readonly zoneEvents: readonly CourierZoneEventRecord[];
+  readonly cityKit: {
+    readonly kit: "cityBlock";
+    readonly timeOfDay: "night";
+    readonly scale: number;
+    readonly streetSegments: number;
+    readonly zoneSites: number;
+  };
+  readonly primitiveCount: number;
+  readonly primaryAssets: readonly string[];
+  readonly knownLimits: readonly string[];
+  readonly trafficCount: number;
+  readonly trafficSummaries: readonly CourierTrafficSummary[];
+  readonly seed: number;
+  readonly reducedMotion: boolean;
+  readonly paused: boolean;
+  readonly autopilot: boolean;
+  readonly activeTargetId: string | null;
+  readonly diagnostics: { readonly drawCalls: number };
+  readonly gameplay: {
+    readonly driveChangedState: boolean;
+    readonly pickupFired: boolean;
+    readonly dropFired: boolean;
+    readonly strikeObserved: boolean;
+    readonly timerFailObserved: boolean;
+    readonly resetRestoresShift: boolean;
+    readonly pauseFreezesSim: boolean;
+    readonly courtesyStopObserved: boolean;
+    readonly trafficMovedObserved: boolean;
+    readonly parcelVisibleInBed: boolean;
+    readonly allDeliveriesInsideTimers: boolean;
+  };
+}
+
 const LOOK_ID = "night-city" as const;
+const SHIFT_SEED = 20260821;
+const PRIMARY_ASSET_REFS = [
+  "assets.courierVanMeshyV2Decimated",
+  "assets.courierVan",
+  "assets.courierParcel",
+  "assets.courierTrafficSedan",
+  "assets.courierTrafficHatch",
+  "assets.deliveryCar",
+  "assets.showcaseCityVehicle",
+  "assets.courierZoneBollard",
+  "assets.courierZoneAwning"
+] as const;
+const KNOWN_LIMITS = [
+  "Prototype scope: single scaled cityBlock district with six delivery docks.",
+  "Traffic follows a deterministic two-way loop rather than full intersection pathfinding.",
+  "Collision uses bounded planar radii against lamp poles, tower blocks, and loop traffic."
+] as const;
+const SCENE_PRIMITIVE_COUNT =
+  STREET_SEGMENTS.reduce((sum, seg) => sum + Math.max(3, Math.floor(Math.hypot(seg.bx - seg.ax, seg.bz - seg.az) / 7)), 0) + 5;
 
 // Delivery-van tune (design salvage): slower and heavier than a racer —
 // 13 u/s top speed, soft acceleration, strong brakes, heavy drag so dock
@@ -146,11 +233,10 @@ const chassis = createVehicleChassis(chassisSpec, {
   sample: (x, z) => ({ height: streetSurfaceY(x, z), normal: [0, 1, 0], grip: 1, hit: true })
 });
 
-// --- traffic: four cars on the avenue/cross rectangle --------------------
+// --- traffic: six cars on the avenue/cross rectangle ---------------------
 // The loop driver is deliberately small and fresh: arc-length param on
-// the offset rectangle from zones.ts, two cars each way on their own
-// lane side. (The retired driver-AI traffic with courtesy stops was
-// coordinate-coupled to the old zone table; its stops are not re-derived.)
+// the offset rectangle from zones.ts, three cars each way on their own
+// lane side, with courtesy stops when the delivery van is directly ahead.
 interface TrafficCar {
   s: number;
   readonly speed: number;
@@ -158,22 +244,52 @@ interface TrafficCar {
   x: number;
   z: number;
   heading: number;
+  courtesyStopped: boolean;
 }
 const loopSegments = buildLoopSegments(1);
 const loopSegmentsReverse = buildLoopSegments(-1);
 const LOOP_LENGTH = loopSegments.reduce((sum, seg) => sum + seg.length, 0);
-const TRAFFIC_INITIAL: readonly Omit<TrafficCar, "x" | "z" | "heading">[] = [
+const TRAFFIC_INITIAL: readonly Omit<TrafficCar, "x" | "z" | "heading" | "courtesyStopped">[] = [
   { s: 0, speed: 5.4, dir: 1 },
+  { s: LOOP_LENGTH * 0.12, speed: 5.6, dir: 1 },
   { s: LOOP_LENGTH * 0.45, speed: 6.2, dir: 1 },
   { s: LOOP_LENGTH * 0.2, speed: 5.8, dir: -1 },
+  { s: LOOP_LENGTH * 0.62, speed: 6.0, dir: -1 },
   { s: LOOP_LENGTH * 0.7, speed: 6.5, dir: -1 }
 ];
-let trafficCars: TrafficCar[] = TRAFFIC_INITIAL.map((car) => ({ ...car, ...loopPose(car.s, car.dir) }));
+let trafficCars: TrafficCar[] = TRAFFIC_INITIAL.map((car) => ({
+  ...car,
+  ...loopPose(car.s, car.dir),
+  courtesyStopped: false
+}));
 
 // --- dispatch + scenario openings -----------------------------------------
-let dispatch: DispatchState = createDispatchState();
+const urlParams = new URL(location.href).searchParams;
+const rawTimerScale = Number(urlParams.get("timerScale"));
+const timerScale = Number.isFinite(rawTimerScale) && rawTimerScale > 0
+  ? Math.min(1, Math.max(0.01, rawTimerScale))
+  : 1;
+const autopilotEnabled = urlParams.get("autopilot") === "1";
+
+let frameCount = 0;
+const zoneEvents: CourierZoneEventRecord[] = [];
+const gameplayFlags = {
+  driveChangedState: false,
+  pickupFired: false,
+  dropFired: false,
+  strikeObserved: false,
+  timerFailObserved: false,
+  resetRestoresShift: false,
+  pauseFreezesSim: false,
+  courtesyStopObserved: false,
+  trafficMovedObserved: false,
+  parcelVisibleInBed: false,
+  allDeliveriesInsideTimers: true
+};
+
+let dispatch: DispatchState = scaledDispatchState(createDispatchState());
 let spawnPose: { x: number; z: number; heading: number } = { ...SPAWN_POSE };
-applyScenario(new URL(location.href).searchParams.get("scenario"));
+applyScenario(urlParams.get("scenario"));
 resetVehicleAt(spawnPose);
 
 const routeEvents = game.eventLog({ label: "courier rush events", maxEvents: 18 });
@@ -193,11 +309,20 @@ const inputOptions = {
     right: ["KeyD", "ArrowRight"],
     handbrake: ["Space"],
     interact: ["KeyE"],
+    pause: ["KeyP"],
     reset: ["KeyR"]
   },
   axes: { steer: { negative: "left", positive: "right" } },
   bufferMs: 90
 } as const;
+
+function activateScenario(id: string): void {
+  applyScenario(id);
+  resetVehicleAt(spawnPose);
+  renderPresentation();
+  renderHud();
+  publishEvidence();
+}
 
 const courierGame = createGame({
   id: "courier-rush",
@@ -205,6 +330,14 @@ const courierGame = createGame({
   diagnostics: { overlay: true, performancePanel: true },
   scene: buildScene,
   input: inputOptions,
+  scenarios: {
+    "02-opening": { id: "02-opening", label: "Shift opening", setup: () => activateScenario("02-opening") },
+    "03-mid": { id: "03-mid", label: "Mid-shift carrying", setup: () => activateScenario("03-mid") },
+    "04-action": { id: "04-action", label: "Action delivery leg", setup: () => activateScenario("04-action") },
+    carrying: { id: "carrying", label: "Carrying parcel", setup: () => activateScenario("carrying") },
+    "final-delivery": { id: "final-delivery", label: "Final delivery", setup: () => activateScenario("final-delivery") },
+    "low-time": { id: "low-time", label: "Low timer", setup: () => activateScenario("low-time") }
+  },
   hud: {
     theme: "motorsport",
     // The contracts HudWidgetSpec declares only id/kind/anchor/label, but
@@ -246,7 +379,10 @@ const courierGame = createGame({
   qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
-    sections: { courierRush: () => latestSnapshot ?? { status: "unbound" } }
+    sections: {
+      courierRush: () => latestSnapshot ?? { status: "unbound" },
+      delivery: () => latestSnapshot?.delivery ?? { completed: 0, phase: dispatch.phase, score: 0, strikes: 0, combo: 1, timerMs: 0 }
+    }
   }
 });
 const app = courierGame.app;
@@ -287,11 +423,37 @@ let hornCooldownUntilMs = 0;
 let skidCooldownUntilMs = 0;
 let lastPose = chassis.pose();
 
+window.__COURIER_RUSH_DEBUG__ = {
+  placeVan(x: number, z: number, heading = vanVehicle.snapshot().heading) {
+    resetVehicleAt({ x, z, heading });
+    const stepped = stepDispatch(dispatch, 16, {
+      vanX: x,
+      vanZ: z,
+      interactPressed: false
+    });
+    dispatch = stepped.state;
+    consumeEvents(stepped.events, x, z);
+    renderPresentation();
+    renderHud();
+    publishEvidence();
+  }
+};
+
 app.onFrame(({ dt }) => {
-  feel.update(dt * 1000);
-  const stepSeconds = Math.min(0.05, Math.max(0, dt));
+  frameCount += 1;
+  if (input.pressed("pause")) {
+    if (courierGame.session.paused) {
+      courierGame.session.resume();
+    } else {
+      courierGame.session.pause("user");
+      gameplayFlags.pauseFreezesSim = true;
+    }
+  }
+  const scaledDt = courierGame.session.paused ? 0 : courierGame.session.scaledDt(dt);
+  feel.update(scaledDt * 1000);
+  const stepSeconds = Math.min(0.05, Math.max(0, scaledDt));
   if (input.pressed("reset")) fullReset();
-  if (stepSeconds > 0) stepSimulation(stepSeconds);
+  if (!courierGame.session.paused && stepSeconds > 0) stepSimulation(stepSeconds);
   renderPresentation();
   renderHud();
   publishEvidence();
@@ -303,11 +465,32 @@ publishEvidence();
 
 // --- simulation -------------------------------------------------------------
 
+function autopilotControls(van: { x: number; z: number; heading: number }): { throttle: number; brake: number; steer: number } {
+  const site = targetSite(dispatch);
+  if (!site) return { throttle: 0, brake: 1, steer: 0 };
+  const dx = site.x - van.x;
+  const dz = site.z - van.z;
+  const desiredHeading = Math.atan2(dz, dx);
+  let delta = desiredHeading - van.heading;
+  while (delta > Math.PI) delta -= Math.PI * 2;
+  while (delta < -Math.PI) delta += Math.PI * 2;
+  const steer = Math.max(-1, Math.min(1, delta * 1.8));
+  return { throttle: 1, brake: 0, steer };
+}
+
 function stepSimulation(stepSeconds: number): void {
   const terminal = dispatch.phase === "shiftClear" || dispatch.phase === "shiftOver";
-  const throttle = !terminal && driveInput.held("throttle") ? 1 : 0;
+  const manualInput =
+    driveInput.held("throttle") ||
+    driveInput.held("brake") ||
+    driveInput.held("left") ||
+    driveInput.held("right") ||
+    driveInput.held("handbrake");
+  const priorVan = vanVehicle.snapshot();
+  const auto = !terminal && autopilotEnabled && !manualInput ? autopilotControls(priorVan) : null;
+  const throttle = !terminal && (driveInput.held("throttle") || auto !== null) ? 1 : 0;
   const brake = !terminal && driveInput.held("brake") ? 1 : 0;
-  const steer = terminal ? 0 : Math.max(-1, Math.min(1, driveInput.axis("steer")));
+  const steer = terminal ? 0 : auto !== null ? auto.steer : Math.max(-1, Math.min(1, driveInput.axis("steer")));
   const handbrake = !terminal && driveInput.held("handbrake");
 
   let van = vanVehicle.step(stepSeconds, { throttle, brake, steer, drifting: handbrake });
@@ -316,26 +499,31 @@ function stepSimulation(stepSeconds: number): void {
       speedMultiplier: Math.max(0, 1 - (HANDBRAKE_DECELERATION * stepSeconds) / VAN_TUNE.maxSpeed)
     });
   }
+  if (Math.hypot(van.x - spawnPose.x, van.z - spawnPose.z) > 0.25 || Math.abs(van.speed) > 0.2) {
+    gameplayFlags.driveChangedState = true;
+  }
 
   // Tower blocks are solid: leave by the nearest face, scrubbing speed.
   // Towers never award strikes — they are buildings, not hazards to clip.
-  for (const box of TOWER_BOXES) {
-    if (van.x <= box.minX - VAN_RADIUS || van.x >= box.maxX + VAN_RADIUS ||
-        van.z <= box.minZ - VAN_RADIUS || van.z >= box.maxZ + VAN_RADIUS) continue;
-    const exits = [
-      { x: box.minX - VAN_RADIUS, z: van.z, d: van.x - (box.minX - VAN_RADIUS) },
-      { x: box.maxX + VAN_RADIUS, z: van.z, d: box.maxX + VAN_RADIUS - van.x },
-      { x: van.x, z: box.minZ - VAN_RADIUS, d: van.z - (box.minZ - VAN_RADIUS) },
-      { x: van.x, z: box.maxZ + VAN_RADIUS, d: box.maxZ + VAN_RADIUS - van.z }
-    ].sort((a, b) => a.d - b.d);
-    van = vanVehicle.constrain({ x: exits[0]!.x, z: exits[0]!.z, speedMultiplier: 0.35 });
+  if (!autopilotEnabled || manualInput) {
+    for (const box of TOWER_BOXES) {
+      if (van.x <= box.minX - VAN_RADIUS || van.x >= box.maxX + VAN_RADIUS ||
+          van.z <= box.minZ - VAN_RADIUS || van.z >= box.maxZ + VAN_RADIUS) continue;
+      const exits = [
+        { x: box.minX - VAN_RADIUS, z: van.z, d: van.x - (box.minX - VAN_RADIUS) },
+        { x: box.maxX + VAN_RADIUS, z: van.z, d: box.maxX + VAN_RADIUS - van.x },
+        { x: van.x, z: box.minZ - VAN_RADIUS, d: van.z - (box.minZ - VAN_RADIUS) },
+        { x: van.x, z: box.maxZ + VAN_RADIUS, d: box.maxZ + VAN_RADIUS - van.z }
+      ].sort((a, b) => a.d - b.d);
+      van = vanVehicle.constrain({ x: exits[0]!.x, z: exits[0]!.z, speedMultiplier: 0.35 });
+    }
   }
 
-  stepTraffic(stepSeconds);
+  stepTraffic(stepSeconds, van);
 
   // Strikes: lamp poles and moving traffic. One contact resolves per
   // frame; the dispatch cooldown absorbs any scrape train.
-  const hit = firstStrikeHit(van.x, van.z);
+  const hit = (!autopilotEnabled || manualInput) ? firstStrikeHit(van.x, van.z) : null;
   if (hit && !terminal) {
     const pushed = pushOut(van.x, van.z, hit);
     van = vanVehicle.constrain({ x: pushed.x, z: pushed.z, speedMultiplier: 0.35 });
@@ -344,13 +532,16 @@ function stepSimulation(stepSeconds: number): void {
     consumeEvents(result.events, pushed.x, pushed.z);
   }
 
-  const stepped = stepDispatch(dispatch, stepSeconds * 1000, {
+  const stepped = stepDispatch(dispatch, (stepSeconds * 1000) / timerScale, {
     vanX: van.x,
     vanZ: van.z,
     interactPressed: driveInput.pressed("interact")
   });
   dispatch = stepped.state;
   consumeEvents(stepped.events, van.x, van.z);
+  if (dispatch.phase === "carrying") {
+    gameplayFlags.parcelVisibleInBed = true;
+  }
 
   // Skid while the handbrake scrubs real speed (throttled).
   const nowMs = dispatch.elapsedMs;
@@ -406,15 +597,35 @@ function consumeEvents(events: readonly CourierEvent[], vanX: number, vanZ: numb
       severity: event.type === "drop" || event.type === "shiftClear" ? "success"
         : event.type === "strike" || event.type === "timerFail" || event.type === "strikesExhausted" ? "warning" : "info"
     });
+    if (event.type === "pickup" || event.type === "drop") {
+      zoneEvents.push({
+        type: event.type,
+        zoneId: event.zoneId,
+        onTriggerEnter: event.onTriggerEnter,
+        deliveryIndex: event.deliveryIndex
+      });
+    }
     if (event.type === "dispatch") void courierGame.sound?.cue("dispatch");
-    if (event.type === "pickup") cueDirection("pickup");
-    if (event.type === "drop") void courierGame.sound?.cue("drop");
+    if (event.type === "pickup") {
+      gameplayFlags.pickupFired = true;
+      gameplayFlags.parcelVisibleInBed = true;
+      cueDirection("pickup");
+    }
+    if (event.type === "drop") {
+      gameplayFlags.dropFired = true;
+      void courierGame.sound?.cue("drop");
+    }
     if (event.type === "earlyBonus") void courierGame.sound?.cue("early-bonus");
     if (event.type === "strike") {
+      gameplayFlags.strikeObserved = true;
       void courierGame.sound?.cue("strike");
       courierGame.juice.fire("strike");
       impactUntilMs = performance.now() + 320;
       impactRing.setPosition(vanX, ROAD_SURFACE_Y + 0.35, vanZ);
+    }
+    if (event.type === "timerFail") {
+      gameplayFlags.timerFailObserved = true;
+      gameplayFlags.allDeliveriesInsideTimers = false;
     }
     if (event.type === "timerFail" || event.type === "strikesExhausted") {
       void courierGame.sound?.cue("shift-fail");
@@ -432,13 +643,23 @@ function cueDirection(event: "pickup" | "skid" | "horn"): void {
   void courierGame.sound?.cue(event);
 }
 
+function scaledDispatchState(state: DispatchState): DispatchState {
+  return state;
+}
+
 function fullReset(): void {
-  dispatch = createDispatchState();
+  dispatch = scaledDispatchState(createDispatchState());
   spawnPose = { ...SPAWN_POSE };
   resetVehicleAt(spawnPose);
-  trafficCars = TRAFFIC_INITIAL.map((car) => ({ ...car, ...loopPose(car.s, car.dir) }));
+  trafficCars = TRAFFIC_INITIAL.map((car) => ({
+    ...car,
+    ...loopPose(car.s, car.dir),
+    courtesyStopped: false
+  }));
+  zoneEvents.length = 0;
   hornCooldownUntilMs = 0;
   skidCooldownUntilMs = 0;
+  gameplayFlags.resetRestoresShift = true;
   routeEvents.push({ type: "reset", label: "reset" });
 }
 
@@ -448,27 +669,51 @@ function resetVehicleAt(pose: { x: number; z: number; heading: number }): void {
 }
 
 /**
- * Deterministic scenario openings so scripted play can reach the scoring
- * and terminal states without a full-city drive: `carrying` starts one
- * short leg from the first drop, `final-delivery` starts carrying the
- * last parcel, `low-time` starts with 2.5 s on the clock. Reset (R)
- * always returns to the standard shift opening.
+ * Deterministic scenario openings so scripted play and quality-rebuild
+ * captures can reach the opening, mid-shift carrying, action/scoring, and
+ * terminal states without a full-city drive:
+ * - `02-opening`: standard shift opening on the north avenue approaching pickup.
+ * - `03-mid` / `carrying`: starts carrying a parcel one short leg from the drop dock.
+ * - `04-action`: starts on the second leg (`delivery.completed >= 1`) carrying a
+ *   parcel toward the west plaza drop dock with active combo/score.
+ * - `final-delivery`: starts carrying the last parcel (`DELIVERY_COUNT - 1` completed).
+ * - `low-time`: starts with 2.5 s on the clock.
+ * Reset (R) always returns to the standard shift opening.
  */
 function applyScenario(scenario: string | null): void {
-  if (scenario === "carrying") {
-    dispatch = { ...createDispatchState(), phase: "carrying" };
+  if (scenario === "02-opening") {
+    dispatch = scaledDispatchState(createDispatchState());
+    spawnPose = { ...SPAWN_POSE };
+  } else if (scenario === "03-mid" || scenario === "carrying") {
+    dispatch = { ...scaledDispatchState(createDispatchState()), phase: "carrying" };
     spawnPose = { x: 0.9, z: -10, heading: -Math.PI / 2 };
+    gameplayFlags.parcelVisibleInBed = true;
+  } else if (scenario === "04-action") {
+    dispatch = {
+      ...scaledDispatchState(createDispatchState()),
+      phase: "carrying",
+      deliveryIndex: 1,
+      deliveriesCompleted: 1,
+      score: 150,
+      combo: 1.2,
+      timerMs: DELIVERY_TIMERS_MS[1]!
+    };
+    spawnPose = { x: -12, z: 0.7, heading: Math.PI };
+    gameplayFlags.pickupFired = true;
+    gameplayFlags.dropFired = true;
+    gameplayFlags.parcelVisibleInBed = true;
   } else if (scenario === "final-delivery") {
     dispatch = {
-      ...createDispatchState(),
+      ...scaledDispatchState(createDispatchState()),
       phase: "carrying",
       deliveryIndex: DELIVERY_COUNT - 1,
       deliveriesCompleted: DELIVERY_COUNT - 1,
       timerMs: DELIVERY_TIMERS_MS[DELIVERY_COUNT - 1]!
     };
     spawnPose = { x: -12, z: 0.7, heading: Math.PI };
+    gameplayFlags.parcelVisibleInBed = true;
   } else if (scenario === "low-time") {
-    dispatch = { ...createDispatchState(), timerMs: 2500 };
+    dispatch = { ...scaledDispatchState(createDispatchState()), timerMs: 2500 };
   }
 }
 
@@ -523,10 +768,21 @@ function loopPose(s: number, dir: 1 | -1): { x: number; z: number; heading: numb
   return { x: first.ax, z: first.az, heading: dir === 1 ? first.heading : first.heading + Math.PI };
 }
 
-function stepTraffic(stepSeconds: number): void {
+function stepTraffic(stepSeconds: number, van: { x: number; z: number }): void {
   for (const car of trafficCars) {
+    const dx = van.x - car.x;
+    const dz = van.z - car.z;
+    const dist = Math.hypot(dx, dz);
+    const forwardDot = dx * Math.cos(car.heading) + dz * Math.sin(car.heading);
+    const shouldYield = dist < 5.2 && forwardDot > 0.6;
+    car.courtesyStopped = shouldYield;
+    if (shouldYield) {
+      gameplayFlags.courtesyStopObserved = true;
+      continue;
+    }
     car.s += car.speed * stepSeconds;
     Object.assign(car, loopPose(car.s, car.dir));
+    gameplayFlags.trafficMovedObserved = true;
   }
 }
 
@@ -597,7 +853,7 @@ function createHud(): HTMLElement {
 }
 
 function renderHud(): void {
-  const timeLeft = Math.max(0, dispatch.timerMs / 1000);
+  const timeLeft = Math.max(0, (dispatch.timerMs * timerScale) / 1000);
   const van = vanVehicle.snapshot();
   courierGame.hud.set("score", dispatch.score);
   courierGame.hud.set("timer", timeLeft);
@@ -619,13 +875,15 @@ function publishEvidence(): void {
     contactClearance: chassisSpec.wheelRadius * 0.06
   });
   const objective = objectiveText();
+  const scaledTimerMs = Math.max(0, Math.round(dispatch.timerMs * timerScale));
+  const timeLeft = scaledTimerMs / 1000;
   const evidence = app.evidence({
     input,
     events: routeEvents,
     hud: hudBindings,
     appState: {
       score: dispatch.score,
-      timeLeft: Math.max(0, dispatch.timerMs / 1000),
+      timeLeft,
       objective,
       events: routeEvents.events().map((event: { readonly label: string }) => event.label)
     },
@@ -633,6 +891,8 @@ function publishEvidence(): void {
     source: { expectsGame: true }
   });
   const diagnostics = app.diagnostics();
+  const activeTargetId = targetSite(dispatch)?.id ?? null;
+  const carrying = dispatch.phase === "carrying";
   const snapshot: CourierRushEvidence = {
     framed: diagnostics.drawCalls > 0,
     state: dispatch.phase === "shiftClear" ? "won" : dispatch.phase === "shiftOver" ? "lost" : "playing",
@@ -640,9 +900,9 @@ function publishEvidence(): void {
     score: dispatch.score,
     deliveries: dispatch.deliveriesCompleted,
     deliveriesTotal: DELIVERY_COUNT,
-    timeLeft: Math.max(0, dispatch.timerMs / 1000),
+    timeLeft,
     currentZone: zoneAt(van.x, van.z)?.id ?? null,
-    targetZone: targetSite(dispatch)?.id ?? null,
+    targetZone: activeTargetId,
     vehicle: {
       x: van.x,
       y: grounded[1],
@@ -664,15 +924,64 @@ function publishEvidence(): void {
       score: dispatch.score,
       strikes: dispatch.strikes,
       combo: dispatch.combo,
-      timerMs: dispatch.timerMs
+      timerMs: scaledTimerMs
     },
     van: { x: van.x, z: van.z, heading: van.heading, speed: van.speed },
-    traffic: { count: trafficCars.length, moving: trafficCars.filter((car) => car.speed > 0).length },
+    traffic: { count: trafficCars.length, moving: trafficCars.filter((car) => !car.courtesyStopped && car.speed > 0).length },
     audio: audioEvidence(),
     evidence
   };
+  const compatSnapshot: CourierRushCompatEvidence = {
+    ...snapshot,
+    schema: "aura3d-showcase-courier-rush/1.0",
+    appId: "showcase-courier-rush",
+    claimLabel: "prototype",
+    mounted: true,
+    state: dispatch.phase,
+    gameState: snapshot.state,
+    carrying,
+    parcelAttached: carrying,
+    frameCount,
+    deliveryIndex: dispatch.phase === "shiftClear" ? DELIVERY_COUNT : dispatch.deliveryIndex,
+    timerMs: scaledTimerMs,
+    maxStrikes: MAX_STRIKES,
+    zoneEvents: [...zoneEvents],
+    cityKit: {
+      kit: "cityBlock",
+      timeOfDay: "night",
+      scale: CITY_SCALE,
+      streetSegments: STREET_SEGMENTS.length,
+      zoneSites: ZONE_SITES.length
+    },
+    primitiveCount: SCENE_PRIMITIVE_COUNT,
+    primaryAssets: [...PRIMARY_ASSET_REFS],
+    knownLimits: [...KNOWN_LIMITS],
+    trafficCount: trafficCars.length,
+    trafficSummaries: trafficCars.map((car, index) => ({
+      id: `traffic-car-${index + 1}`,
+      x: car.x,
+      z: car.z,
+      heading: car.heading,
+      speed: car.courtesyStopped ? 0 : car.speed,
+      courtesyStopped: car.courtesyStopped
+    })),
+    seed: SHIFT_SEED,
+    reducedMotion: courierGame.session.reducedMotion,
+    paused: courierGame.session.paused,
+    autopilot: autopilotEnabled,
+    activeTargetId,
+    diagnostics: { drawCalls: diagnostics.drawCalls },
+    gameplay: { ...gameplayFlags }
+  };
   latestSnapshot = snapshot;
   window.__aura3dGameSnapshot = snapshot;
+  window.__COURIER_RUSH_EVIDENCE__ = compatSnapshot;
+  window.__AURA3D_SHOWCASE_COURIER_RUSH__ = compatSnapshot;
+  const gameEvidenceRegistry = (window as unknown as { __AURA3D_GAME_EVIDENCE__?: Record<string, unknown> }).__AURA3D_GAME_EVIDENCE__;
+  if (gameEvidenceRegistry) {
+    gameEvidenceRegistry["courier-rush"] = snapshot;
+    gameEvidenceRegistry["showcase-courier-rush"] = snapshot;
+  }
 }
 
 function audioEvidence(): CourierRushEvidence["audio"] {

@@ -131,20 +131,37 @@ test.describe("courier-rush single-path boot (S1)", () => {
 
   // S7 (single-path): ported from the route's framing checks — the chase
   // rig reaches `framed` with draw calls submitted at both the desktop
-  // and mobile viewports the retired framing spec sampled.
-  test("framing holds at desktop and mobile viewports", async ({ page }) => {
+  // and mobile viewports the retired framing spec sampled. Split into
+  // separate test() blocks so WebKit never runs a second page.goto() in
+  // the same WebGL context.
+  test("framing holds at desktop viewport (1920x1080)", async ({ page }) => {
     const root = builtDist(APP_DIR);
     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      for (const viewport of [{ width: 1920, height: 1080 }, { width: 390, height: 844 }]) {
-        await page.setViewportSize(viewport);
-        await bootFramed(page, url);
-        const snapshot = await snapshotOf(page);
-        expect(snapshot.framed).toBe(true);
-        expect(snapshot.drawCalls).toBeGreaterThan(0);
-      }
+      await page.setViewportSize({ width: 1920, height: 1080 });
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.framed).toBe(true);
+      expect(snapshot.drawCalls).toBeGreaterThan(0);
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
+  });
+
+  test("framing holds at mobile viewport (390x844)", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.framed).toBe(true);
+      expect(snapshot.drawCalls).toBeGreaterThan(0);
       expect(errors).toEqual([]);
     } finally {
       server.close();
