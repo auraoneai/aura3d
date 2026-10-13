@@ -1,13 +1,13 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-10-13T18:14:39.920Z",
+  "generatedAt": "2026-10-13T23:55:32.676Z",
   "appId": "showcase-gallery-shift",
   "route": "/apps/showcase-gallery-shift/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
   "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
   "machinePass": true,
-  "routeSourceSha256": "4b5b8c7bd6d546c3978e3a7bef85e52b789991a9ad250a79baf3d8b40deeefd5",
+  "routeSourceSha256": "569b4bc95bb438986f9a89351f75d0e104f6b5492ac6bf4b9dffcacb200b766b",
   "renderer": {
     "path": "createGame root safe API",
     "mode": "production with safe-basic fallback",
