@@ -255,7 +255,7 @@ const sceneDef = scene()
   // cyan sonar returns are the brightest things on screen.
   // Effects pass: indigo twilight-zone water behind the in-scatter, matching
   // the pass's fog and abyss shelf; flags-off keeps the pre-pass near-black.
-  .background(effectsPassOn ? "#1a1446" : "#04141c")
+  .background(effectsPassOn ? "#0d1740" : "#04141c")
   .addMany(deepRecoveryEffectsPass())
   .add(effects.neonBloom({
     name: "deep recovery sonar bloom",

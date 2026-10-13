@@ -61,34 +61,27 @@ export function orbitalEffectsPass() {
     // Studio IBL for reflections on the metallic stations and planet lacquer;
     // background stays the authored void.
     environments.preset("studio", { intensity: 0.7, specularIntensity: 1.25, background: false }),
-    // Authored deep-space backdrop: a dark indigo void wall far behind the
-    // defence ring, soft nebula discs, a sun-lit distant moon, and a fixed
-    // starfield. All set dressing at z <= -8, well behind gameplay (z ~ 0),
-    // so the planet and intercept lanes stay the brightest read.
-    primitives.box({
-      name: "deep space backdrop wall",
-      material: material.emissive({ color: "#070a1c", emissive: "#17245e", emissiveIntensity: 0.45 })
-    }).position(0, 0, -16).scale([90, 50, 0.5]),
+    // Authored deep-space backdrop: very dark nebula discs and a fixed
+    // starfield behind the defence ring. No backdrop wall: a full-frame
+    // surface catches the in-scatter fog and turns the void bright blue.
+    // The discs add broad hue at low luma so the authored black stays black
+    // and the planet/intercept lanes remain the brightest read.
     primitives.sphere({
       name: "violet nebula disc west",
-      material: material.emissive({ color: "#150a2e", emissive: "#4c2a85", emissiveIntensity: 0.5, opacity: 0.5 })
-    }).position(-7.5, 2.8, -11).scale([7.5, 4.6, 0.4]),
+      material: material.emissive({ color: "#0d061e", emissive: "#2a1452", emissiveIntensity: 0.22, opacity: 0.28 })
+    }).position(-7.5, 2.8, -11).scale([6.4, 3.9, 0.4]),
     primitives.sphere({
       name: "teal nebula disc east",
-      material: material.emissive({ color: "#06222b", emissive: "#134e5e", emissiveIntensity: 0.55, opacity: 0.5 })
-    }).position(8.2, -2.4, -10).scale([6.8, 4.2, 0.4]),
+      material: material.emissive({ color: "#04161c", emissive: "#0a2f3a", emissiveIntensity: 0.24, opacity: 0.28 })
+    }).position(8.2, -2.4, -10).scale([5.8, 3.6, 0.4]),
     primitives.sphere({
       name: "magenta nebula disc north",
-      material: material.emissive({ color: "#220a1e", emissive: "#5e2450", emissiveIntensity: 0.45, opacity: 0.45 })
-    }).position(3.4, 5.6, -12).scale([6.2, 3.6, 0.4]),
+      material: material.emissive({ color: "#170713", emissive: "#35142e", emissiveIntensity: 0.2, opacity: 0.25 })
+    }).position(3.4, 5.6, -12).scale([5.3, 3.1, 0.4]),
     primitives.sphere({
       name: "indigo nebula disc south",
-      material: material.emissive({ color: "#0a1030", emissive: "#1d3a8a", emissiveIntensity: 0.5, opacity: 0.5 })
-    }).position(-4.6, -5.4, -10.5).scale([7, 3.8, 0.4]),
-    primitives.sphere({
-      name: "distant grey moon",
-      material: material.pbr({ color: "#9aa7b8", roughness: 0.85, metallic: 0.05 })
-    }).position(-6.9, 3.6, -9).scale(1.05),
+      material: material.emissive({ color: "#05081e", emissive: "#101f52", emissiveIntensity: 0.22, opacity: 0.28 })
+    }).position(-4.6, -5.4, -10.5).scale([6, 3.3, 0.4]),
     instances.sphere({
       name: "backdrop starfield",
       transforms: STAR_TRANSFORMS,
@@ -100,12 +93,12 @@ export function orbitalEffectsPass() {
     // and lets the sun throw rays past the planet limb.
     effects.volumetricFog({
       name: "orbital in-scatter",
-      density: 0.055,
-      color: "#33587e",
-      intensity: 0.75,
+      density: 0.03,
+      color: "#24405e",
+      intensity: 0.45,
       volumetricQuality: "balanced"
     }),
-    effects.colorGrade({ exposure: 1.5, contrast: 1.02, saturation: 1.45 }),
+    effects.colorGrade({ exposure: 1.28, contrast: 1.04, saturation: 1.35 }),
     effects.vignette({ intensity: 0.22, smoothness: 1.6 }),
     effects.neonBloom({ intensity: 0.45, threshold: 0.62, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
     ...(vfxOn
