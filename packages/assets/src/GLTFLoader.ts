@@ -3110,7 +3110,11 @@ interface GLTFDocument {
 // (localhost loads finish too fast to collide). The first caller's signal
 // and progress drive the shared read; later callers parse their own copy
 // of the bytes and emit a synthetic complete progress event.
-const inFlightGltfFetches = new Map<string, Promise<ArrayBuffer>>();
+// Shared with the engine compiler's gltfRuntime byte fetches via globalThis:
+// two module-local registries still race each other on the same URL.
+const SHARED_IN_FLIGHT_KEY = "__aura3dInFlightByteFetches";
+type SharedInFlightGlobal = typeof globalThis & { [SHARED_IN_FLIGHT_KEY]?: Map<string, Promise<ArrayBuffer>> };
+const inFlightGltfFetches = ((globalThis as SharedInFlightGlobal)[SHARED_IN_FLIGHT_KEY] ??= new Map<string, Promise<ArrayBuffer>>());
 
 export function fetchGltfBytesShared(
   url: string,

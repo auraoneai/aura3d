@@ -160,7 +160,12 @@ interface GltfJson {
 // net::ERR_CACHE_WRITE_FAILURE, so the model never loads over the network
 // (localhost captures complete too fast to collide). Share one in-flight
 // fetch per URL; each caller still parses its own copy of the bytes.
-const inFlightByteFetches = new Map<string, Promise<ArrayBuffer>>();
+// The registry lives on globalThis so the @aura3d/assets GLTFLoader path
+// (fetchGltfBytesShared) dedupes against this compiler path too — two
+// module-local maps still race each other on the same URL.
+const SHARED_IN_FLIGHT_KEY = "__aura3dInFlightByteFetches";
+type SharedInFlightGlobal = typeof globalThis & { [SHARED_IN_FLIGHT_KEY]?: Map<string, Promise<ArrayBuffer>> };
+const inFlightByteFetches = ((globalThis as SharedInFlightGlobal)[SHARED_IN_FLIGHT_KEY] ??= new Map<string, Promise<ArrayBuffer>>());
 
 export function fetchBytesShared(url: string): Promise<ArrayBuffer> {
   const pending = inFlightByteFetches.get(url) ?? (async () => {
