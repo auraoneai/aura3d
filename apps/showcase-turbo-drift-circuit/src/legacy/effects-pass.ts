@@ -36,7 +36,7 @@ export function turboEffectsPass(options: TurboEffectsPassOptions): readonly Aur
       color: "#e8b79a"
     }).position(at[0], at[1] + 0.6, at[2]);
   return [
-    effects.vignette({ intensity: 0.18, smoothness: 2.4, roundness: 1 }),
+    effects.vignette({ intensity: 0.24, smoothness: 2.4, roundness: 1 }),
     dust("start straight dust", 8101, startPoint),
     dust("hairpin dust", 8102, apexPoint),
     // Sun motes: a broad, slow glitter of warm specks over the infield.

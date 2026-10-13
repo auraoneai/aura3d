@@ -3367,16 +3367,16 @@ const app = createAuraApp("#app", {
     // Keep contact definition without crushing the Formula car's red palette into black.
     // The former 0.42 AO pass was appropriate for the pale untextured car and visibly
     // over-occluded the textured cockpit, sidepods and rear wing of the new hero.
-    .add(effects.ambientOcclusion({ intensity: visualCaptureCamera ? 0.28 : 0.1, radius: visualCaptureCamera ? 0.62 : 0.48 }))
+    .add(effects.ambientOcclusion({ intensity: visualCaptureCamera ? 0.28 : 0.14, radius: visualCaptureCamera ? 0.62 : 0.48 }))
     .add(effects.contactOcclusion({
       name: "vehicle-road contact occlusion",
-      intensity: visualCaptureCamera ? 0.5 : 0.16,
+      intensity: visualCaptureCamera ? 0.5 : 0.22,
       radius: visualCaptureCamera ? 0.68 : 0.54
     }))
     .add(effects.neonBloom(postV2Bloom
       ? { intensity: 1.8, threshold: 0.52, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
       : { intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade(visualCaptureCamera ? { exposure: 1.05, contrast: 1.07, saturation: 1.12 } : { exposure: 1.15, contrast: 1.09, saturation: 1.18 }))
+    .add(effects.colorGrade(visualCaptureCamera ? { exposure: 1.05, contrast: 1.07, saturation: 1.12 } : { exposure: 1.1, contrast: 1.12, saturation: 1.2 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     // Nonzero depth haze that grades the treeline into the sky and separates
     // near curbing from distant trackside.
