@@ -347,7 +347,7 @@ function buildScene(): ReturnType<typeof scene> {
       // ~28% fps vs baseline for a near-invisible change on this dark frame.
       // Grounding comes from the shadowed key + renderer-owned ball patches;
       // the broad lift comes from key/pendant intensity + IBL + grade below.
-      effects.colorGrade({ exposure: 1.1, contrast: 1.18, saturation: 1.26 }),
+      effects.colorGrade({ exposure: 1.12, contrast: 1.18, saturation: 1.26 }),
       effects.antiAlias({ mode: "fxaa" }),
       ...bankShotEffectsPass(),
       // A restrained ambient floor preserves the lacquer highlights and the
@@ -357,9 +357,9 @@ function buildScene(): ReturnType<typeof scene> {
       // An asymmetric three-lamp pool-room key. The offset sources create a
       // visible luminance falloff across felt, walnut bevels, and ball lacquer
       // instead of washing every surface with the same frontal value.
-      lights.point({ name: "pendant-light-mid", color: "#fff3da", intensity: 5.2 * KEY_LIGHT_GAIN }).position(-1.2, 1.55, 0.92),
-      lights.point({ name: "pendant-light-head", color: "#ffe3b2", intensity: 4.0 * KEY_LIGHT_GAIN }).position(0.2, 1.8, -0.7),
-      lights.point({ name: "pendant-light-foot", color: "#ffdc9e", intensity: 4.0 * KEY_LIGHT_GAIN }).position(1.25, 1.35, 0.35),
+      lights.point({ name: "pendant-light-mid", color: "#fff3da", intensity: 5.4 * KEY_LIGHT_GAIN }).position(-1.2, 1.55, 0.92),
+      lights.point({ name: "pendant-light-head", color: "#ffe3b2", intensity: 4.15 * KEY_LIGHT_GAIN }).position(0.2, 1.8, -0.7),
+      lights.point({ name: "pendant-light-foot", color: "#ffdc9e", intensity: 4.15 * KEY_LIGHT_GAIN }).position(1.25, 1.35, 0.35),
       // Cool fill & rim lights (the rect softbox and three coloured rim
       // points are gone: five fewer light evaluations per fragment, with
       // the pendant points + IBL carrying the same table read).
