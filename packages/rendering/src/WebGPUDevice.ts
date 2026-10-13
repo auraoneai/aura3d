@@ -3119,8 +3119,8 @@ fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worl
         let toLight = positionRange.xyz - worldPosition;
         let distanceToLight = length(toLight);
         clusteredDirection = select(clusteredDirection, toLight / max(distanceToLight, 0.0001), distanceToLight > 0.0001);
-        let range = max(positionRange.w, 0.0001);
-        let rangeFalloff = clamp(1.0 - pow(distanceToLight / range, 4.0), 0.0, 1.0);
+        // range <= 0 means infinite (physical descriptors, PRD-02 §6.3).
+        let rangeFalloff = select(clamp(1.0 - pow(distanceToLight / max(positionRange.w, 0.0001), 4.0), 0.0, 1.0), 1.0, positionRange.w <= 0.0);
         attenuation = rangeFalloff * rangeFalloff / max(distanceToLight * distanceToLight, 1.0);
       }
       let clusteredNdotL = max(dot(normal, clusteredDirection), 0.0);

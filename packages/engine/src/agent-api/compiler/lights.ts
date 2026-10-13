@@ -8,7 +8,7 @@ import { clampNumber, normalizedDirection, productionRuntimeLightDirection, quat
 import { normalize3 } from "../sceneMath.js";
 import { groups } from "../nodes/groups.js";
 import type { CollectedLight } from "@aura3d/rendering";
-import { DirectionalLight, PointLight, SpotLight, type Light } from "@aura3d/scene";
+import { DirectionalLight, PointLight, RectAreaLight, SpotLight, type Light } from "@aura3d/scene";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 // Deep import (lane-15 package export map untouched; FlagshipFoundation pattern).
 import type { AuraLightData } from "../../../../rendering/src/LightUniforms.js";
@@ -138,14 +138,17 @@ export function createProductionRuntimeStudioLightDescriptors(
 }
 
 export function createProductionRuntimeCollectedLight(
-  descriptor: ProductionRuntimeLightDescriptor,
+  descriptor: ProductionRuntimeLightDescriptor & { readonly decay?: number },
   castsShadow: boolean
 ): CollectedLight {
+  const rect = descriptor.kind === "rect-area";
   const source: Light = descriptor.kind === "directional"
     ? new DirectionalLight(descriptor.name)
     : descriptor.kind === "point"
       ? new PointLight(descriptor.name)
-      : new SpotLight(descriptor.name);
+      : rect
+        ? new RectAreaLight(descriptor.name)
+        : new SpotLight(descriptor.name);
   source.color = [...descriptor.color];
   source.intensity = descriptor.intensity;
   source.castsShadow = castsShadow;
@@ -157,6 +160,11 @@ export function createProductionRuntimeCollectedLight(
   if (source instanceof PointLight || source instanceof SpotLight) {
     source.range = Math.max(0.001, descriptor.range);
   }
+  if (source instanceof RectAreaLight) {
+    source.width = descriptor.authoredWidth ?? 1;
+    source.height = descriptor.authoredHeight ?? 1;
+    if (descriptor.range > 0) source.range = descriptor.range;
+  }
   if (source instanceof SpotLight) {
     source.angle = clampNumber(descriptor.spotAngle, 0.001, Math.PI / 2 - 0.001);
     source.penumbra = clampNumber(descriptor.penumbra, 0, 1);
@@ -166,15 +174,21 @@ export function createProductionRuntimeCollectedLight(
     source.transform.setRotation(rotation[0], rotation[1], rotation[2], rotation[3]);
   }
   source.updateWorldTransform(true);
+  // E3: rect-area descriptors (physical path) carry their basis + size into
+  // the collected light so the legacy packer's rect slots stop defaulting.
+  const basis = rect ? rectBasisFromDirection(descriptor.direction) : undefined;
   return {
     kind: descriptor.kind,
     color: descriptor.color,
     intensity: descriptor.intensity,
     position: descriptor.position,
     direction: normalize3(descriptor.direction),
+    ...(basis ? { right: basis.right, up: basis.up } : {}),
     range: descriptor.range,
+    ...(rect ? { width: descriptor.authoredWidth ?? 1, height: descriptor.authoredHeight ?? 1 } : {}),
     spotAngle: descriptor.spotAngle,
     penumbra: descriptor.penumbra,
+    ...(descriptor.decay !== undefined ? { decay: descriptor.decay } : {}),
     castsShadow,
     layerMask: 0xffffffff,
     source
@@ -197,7 +211,9 @@ export interface PhysicalLightDescriptor extends ProductionRuntimeLightDescripto
 const FOUR_PI = 4 * Math.PI;
 
 export function physicalLightDescriptor(node: AuraLightNode, name: string): PhysicalLightDescriptor | null {
-  const color = (node.color ?? [1, 1, 1]) as readonly [number, number, number];
+  // E3: node.color is an AuraColor (usually "#hex"), not a linear tuple —
+  // the raw cast shipped strings into shader color slots.
+  const color = colorToLinearRgb(node.color ?? "#ffffff");
   const position = (node.position ?? [0, 0, 0]) as AuraVec3;
   const direction = productionRuntimeLightDirection(node, position);
   const shadowRequested = node.shadow === true || (typeof node.shadow === "object" && node.shadow !== null);

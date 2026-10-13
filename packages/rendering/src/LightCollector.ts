@@ -15,6 +15,13 @@ export interface CollectedLight {
   readonly height?: number;
   readonly spotAngle: number;
   readonly penumbra: number;
+  /**
+   * Physical inverse-power exponent (PRD-02 §6.3) when the descriptor came
+   * from the physical path; undefined = legacy (shader's hardcoded decay 2).
+   * Recorded now (Live Fix E3 stage 1); the legacy packer/shader twins do
+   * not read it yet — stage 2 packs it and the chunks apply it.
+   */
+  readonly decay?: number;
   readonly castsShadow: boolean;
   readonly layerMask: number;
   readonly source: Light;

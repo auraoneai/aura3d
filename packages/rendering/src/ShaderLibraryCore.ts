@@ -729,8 +729,9 @@ void main() {
       vec3 toLight = positionRange.xyz - v_worldPosition;
       float distanceToLight = length(toLight);
       lightDirection = distanceToLight > 0.0001 ? toLight / distanceToLight : -directionKind.xyz;
-      float range = max(positionRange.w, 0.0001);
-      float rangeFalloff = clamp(1.0 - pow(distanceToLight / range, 4.0), 0.0, 1.0);
+      // range <= 0 means infinite (physical descriptors, PRD-02 §6.3): no
+      // range window, decay-only attenuation. Legacy ranges are always > 0.
+      float rangeFalloff = positionRange.w <= 0.0 ? 1.0 : clamp(1.0 - pow(distanceToLight / max(positionRange.w, 0.0001), 4.0), 0.0, 1.0);
       rangeFalloff *= rangeFalloff;
       attenuation = rangeFalloff / max(distanceToLight * distanceToLight, 1.0);
     }
