@@ -20,7 +20,6 @@ import {
   camera,
   game,
   instances,
-  lights,
   looks,
   material,
   model,
@@ -97,7 +96,7 @@ interface OrbitalDefenseEvidence {
 }
 
 // The look supplies the space backdrop, hard key light and contrast grade;
-// the scene adds deck, ring, core, actors and an accent rim. Genre row
+// the scene adds deck, ring, core and actors. Genre row
 // (aura3d-browser-game): arena-shooter → space.
 const LOOK_ID = "space" as const;
 
@@ -286,6 +285,7 @@ const orbitalGame = createGame({
       { id: "objective", kind: "objective", anchor: "bottom", label: "OBJECTIVE" }
     ] as readonly GameHudWidgetSpec[]
   },
+  diagnostics: { overlay: false, performancePanel: false },
   qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
@@ -721,7 +721,6 @@ function buildScene() {
         }).runtime(game.runtimeNode(`bolt-${i}`, { tags: ["bolt", "projectile"] }))
       )
     )
-    .add(lights.directional({ name: "accent rim", color: "#9db8ff", intensity: 0.9 }).position(-6, 5, 8))
     .camera(
       camera.perspective({
         position: [...currentCameraPose.position],
