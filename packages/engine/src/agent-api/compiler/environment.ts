@@ -25,7 +25,10 @@ function markLegacyFallbackEnvironment<T extends object>(lighting: T): T {
   return lighting;
 }
 
-export function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot): {
+export function createProductionRuntimeEnvironment(
+  snapshot: AuraSceneSnapshot,
+  flags?: { on(name: string): boolean }
+): {
   readonly preset: string;
   readonly intensity: number;
   readonly evidence: string;
@@ -65,6 +68,15 @@ export function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot):
     const preset = presetByEnvironment[authoredEnvironment.environment];
     const bundle = createExternalParityEnvironmentLighting(preset);
     const intensity = nonNegativeFinite(authoredEnvironment.intensity);
+    // E3 stage-2a (Live Fix): under A3D_QR_COMPILER the five stacked preset
+    // scalars (ambient/procedural/sampled × diffuse/specular) collapse to
+    // ONE authored knob — intensity = environmentMapIntensity =
+    // environmentMapSpecularIntensity = authored intensity, procedural
+    // contribution zeroed (Three.js scene.environmentIntensity shape).
+    // Flag-off keeps the legacy scalar stack byte-identical. Authored
+    // ambient is NOT part of the knob: it stays additive via
+    // prd02AmbientTerm (F-02-01 / C-09 contract).
+    const singleKnob = flags?.on("A3D_QR_COMPILER") === true;
     const proceduralMap = bundle.lighting.proceduralMap;
     const hdriUrl = authoredEnvironment.environment === "hdri"
       && typeof authoredEnvironment.texture === "object"
@@ -91,16 +103,16 @@ export function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot):
       lighting: {
         ...bundle.lighting,
         color: authoredEnvironment.color ? colorToLinearRgb(authoredEnvironment.color) : bundle.lighting.color,
-        intensity: bundle.lighting.intensity * intensity,
+        intensity: singleKnob ? intensity : bundle.lighting.intensity * intensity,
         ...(proceduralMap ? {
           proceduralMap: {
             ...proceduralMap,
-            intensity: proceduralMap.intensity * intensity,
-            specularIntensity: proceduralMap.specularIntensity * intensity
+            intensity: singleKnob ? 0 : proceduralMap.intensity * intensity,
+            specularIntensity: singleKnob ? 0 : proceduralMap.specularIntensity * intensity
           }
         } : {}),
-        environmentMapIntensity: (bundle.lighting.environmentMapIntensity ?? 0) * intensity,
-        environmentMapSpecularIntensity: (bundle.lighting.environmentMapSpecularIntensity ?? 0) * intensity
+        environmentMapIntensity: singleKnob ? intensity : (bundle.lighting.environmentMapIntensity ?? 0) * intensity,
+        environmentMapSpecularIntensity: singleKnob ? intensity : (bundle.lighting.environmentMapSpecularIntensity ?? 0) * intensity
       }
     };
   }

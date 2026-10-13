@@ -120,7 +120,7 @@ export async function createProductionRuntimeSceneRenderer(
     }, webGL2MaxTextureSize(canvas)).catch((error) => {
       textureUpgradeWarnings.add(`textured upgrade pass failed (${error instanceof Error ? error.message : String(error)}); scalar materials retained`);
     });
-    const productionEnvironment = createProductionRuntimeEnvironment(snapshot);
+    const productionEnvironment = createProductionRuntimeEnvironment(snapshot, flags);
     // B3 HDRI upgrade: fire-and-forget after mount. First frames render the
     // studio procedural fallback; the HDR chain swaps the lighting object the
     // render closure reads every frame. Outcomes land in hdriWarnings, which
