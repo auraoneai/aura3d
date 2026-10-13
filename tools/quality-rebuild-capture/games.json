@@ -28,7 +28,7 @@
       "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
       "focus": {
-        "selector": ".aca",
+        "selector": "canvas",
         "method": "focus"
       },
       "notes": "Round auto-starts (1.35s ROUND intro). Controls from src/playable/AuraClashArenaApp.ts actionKeys: A/D move, W jump, S down, Space dash, Shift/Q guard, J light, K heavy, L special (meter-gated), P pause, R reset. Action shot waits for proof.totalHits to increase.",
@@ -88,7 +88,7 @@
       "timeline": [
         {
           "audio-webm": {
-            "seconds": 60
+            "seconds": 10
           }
         },
         {
@@ -155,10 +155,14 @@
           "up": "KeyD"
         },
         {
-          "until": "(window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0) > s",
-          "capture": "window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0",
+          "until": "(window.__AURA3D_GAME_EVIDENCE__?.['aura-clash-showcase']?.combat?.hitStopActive === true && (window.__AURA3D_GAME_EVIDENCE__?.['aura-clash-showcase']?.fx?.liveCount ?? 0) > 0)",
+          "capture": "0",
           "timeout": 6000,
           "loop": [
+            {
+              "hold": "KeyD",
+              "ms": 80
+            },
             {
               "press": "KeyJ"
             },
@@ -174,13 +178,13 @@
           ]
         },
         {
+          "shot": "04-action"
+        },
+        {
           "strip": {
             "frames": 12,
             "intervalMs": 100
           }
-        },
-        {
-          "shot": "04-action"
         },
         {
           "webm": {

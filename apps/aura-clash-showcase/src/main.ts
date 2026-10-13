@@ -18,6 +18,7 @@ import { auraClashFxFrame } from "./scene/fx";
 import { createAuraClashFighterAnimations, fighterYawForFacing } from "./scene/fighter-animation";
 import { publishAuraClashEvidence } from "./evidence";
 import { applyAuraClashScenario } from "./scenarios";
+import { assets } from "./aura-assets";
 
 const EXPOSURE_EV = -0.3;
 const ROUND_SECONDS = 60;
@@ -25,6 +26,7 @@ const audioCueLog: string[] = [];
 const pushCue = (cue: string) => {
   audioCueLog.push(cue);
   if (audioCueLog.length > 64) audioCueLog.shift();
+  void game?.sound?.cue(cue as never);
 };
 
 const target = document.getElementById("app") ?? document.body;
@@ -96,14 +98,14 @@ const game = createGame({
   },
   sound: {
     cues: {
-      hit: { asset: "auraClashHitSfx", variants: 6 },
-      whoosh: { asset: "auraClashDashSfx", variants: 3 },
-      blocked: { asset: "auraClashGuardSfx", variants: 2 },
-      special: { asset: "auraClashSpecialSfx", variants: 2 },
-      jump: { asset: "auraClashJumpSfx", variants: 2 },
-      announcer: { asset: "auraClashKoSfx", variants: 2 },
-      "round-start": { asset: "auraClashDrawSfx", variants: 1 },
-      win: { asset: "auraClashWinSfx", variants: 1 }
+      hit: { asset: assets.auraClashHitSfx, variants: 6 },
+      whoosh: { asset: assets.auraClashDashSfx, variants: 3 },
+      blocked: { asset: assets.auraClashGuardSfx, variants: 2 },
+      special: { asset: assets.auraClashSpecialSfx, variants: 2 },
+      jump: { asset: assets.auraClashJumpSfx, variants: 2 },
+      announcer: { asset: assets.auraClashKoSfx, variants: 2 },
+      "round-start": { asset: assets.auraClashDrawSfx, variants: 1 },
+      win: { asset: assets.auraClashWinSfx, variants: 1 }
     }
   },
   juice: {
@@ -172,7 +174,7 @@ game.app.onFrame?.(({ dt }) => {
         if (ev.targetId === "p1" || ev.targetId === "p2") {
           frameHitDamage[ev.targetId] = ev.damage ?? 0;
         }
-        hitStopUntilMs = performance.now() + 95;
+        hitStopUntilMs = performance.now() + 650;
       } else if (ev.type === "whiff") {
         pushCue("whoosh");
       } else if (ev.type === "blocked") {
