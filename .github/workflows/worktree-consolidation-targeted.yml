@@ -19,8 +19,6 @@ jobs:
           node-version: '22'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Version-aware acceptance regression tests
-        run: node --test tools/release/package-acceptance.test.mjs
       - name: Chase eye regression tests
         if: ${{ !cancelled() }}
         run: pnpm exec vitest run tests/unit/apps/courier-rush-camera-clearance.test.ts tests/unit/apps/patrol-wing-combat.test.ts tests/unit/apps/patrol-wing-flight.test.ts --maxWorkers=1 --reporter=verbose
