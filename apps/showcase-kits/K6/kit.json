@@ -227,14 +227,21 @@
       }
     },
     {
-      "id": "auraClashSpectatorCard",
+      "id": "aura-clash-spectator-card",
       "assetKey": "auraClashSpectatorCard",
-      "path": "public/aura-assets/auraClashSpectatorCard.glb",
-      "license": "CC0-1.0",
+      "kind": "model",
+      "path": "public/aura-assets/auraClashSpectatorCard.a5b562b8.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/auraClashSpectatorCard.a5b562b8.glb",
+      "licence": "CC0-1.0",
+      "author": "Aura3D art pipeline",
+      "sha256": "a5b562b8a8880185033397fd751c5919801abe8dc4146ad166d02206eeac9a68",
+      "bytes": 121356,
+      "triangles": null,
+      "textures": [],
       "lookdev": {
-        "verdict": "accept",
-        "pane": "three-r185",
-        "reviewedAt": "2026-10-13T21:00:00Z"
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
       }
     }
   ],

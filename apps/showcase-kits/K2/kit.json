@@ -282,36 +282,57 @@
       }
     },
     {
-      "id": "auraClashPlayerRig",
+      "id": "aura-clash-player-rig",
       "assetKey": "auraClashPlayerRig",
-      "path": "public/aura-assets/auraClashPlayerRig.glb",
-      "license": "CC0-1.0",
+      "kind": "model",
+      "path": "public/aura-assets/auraClashPlayerRig.3318d671.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/auraClashPlayerRig.3318d671.glb",
+      "licence": "CC0-1.0",
+      "author": "Aura3D art pipeline",
+      "sha256": "3318d671632878ed27b8af6de88c6e5ca647e0d4a04cf03780d555fa07cec087",
+      "bytes": 7822664,
+      "triangles": null,
+      "textures": [],
       "lookdev": {
-        "verdict": "accept",
-        "pane": "three-r185",
-        "reviewedAt": "2026-10-13T21:00:00Z"
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
       }
     },
     {
-      "id": "auraClashRivalRig",
+      "id": "aura-clash-rival-rig",
       "assetKey": "auraClashRivalRig",
-      "path": "public/aura-assets/auraClashRivalRig.glb",
-      "license": "CC0-1.0",
+      "kind": "model",
+      "path": "public/aura-assets/auraClashRivalRig.c8d844dc.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/auraClashRivalRig.c8d844dc.glb",
+      "licence": "CC0-1.0",
+      "author": "Aura3D art pipeline",
+      "sha256": "c8d844dc4a70bc5d548c1bdd5c20c7a2f336529088fd350098431adf87cdf13b",
+      "bytes": 4732472,
+      "triangles": null,
+      "textures": [],
       "lookdev": {
-        "verdict": "accept",
-        "pane": "three-r185",
-        "reviewedAt": "2026-10-13T21:00:00Z"
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
       }
     },
     {
-      "id": "vaultBreakersMechanisms",
+      "id": "vault-breakers-mechanisms",
       "assetKey": "vaultBreakersMechanisms",
-      "path": "public/aura-assets/vaultBreakersMechanisms.glb",
-      "license": "CC0-1.0",
+      "kind": "model",
+      "path": "public/aura-assets/vaultBreakersMechanisms.274e6bf9.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/vaultBreakersMechanisms.274e6bf9.glb",
+      "licence": "CC0-1.0",
+      "author": "Aura3D art pipeline",
+      "sha256": "274e6bf9d38b2a7a6b78c977d8e0dc726d9139ae479c6af4a5c29dd5c237dbd6",
+      "bytes": 460768,
+      "triangles": null,
+      "textures": [],
       "lookdev": {
-        "verdict": "accept",
-        "pane": "three-r185",
-        "reviewedAt": "2026-10-13T21:00:00Z"
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
       }
     }
   ],

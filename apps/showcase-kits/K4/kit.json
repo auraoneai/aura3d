@@ -153,14 +153,21 @@
       }
     },
     {
-      "id": "arenaNeonDowntownTextured",
+      "id": "arena-neon-downtown-textured",
       "assetKey": "arenaNeonDowntownTextured",
-      "path": "public/aura-assets/arenaNeonDowntownTextured.glb",
-      "license": "CC0-1.0",
+      "kind": "model",
+      "path": "public/aura-assets/arenaNeonDowntownTextured.312f2320.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/arenaNeonDowntownTextured.312f2320.glb",
+      "licence": "CC0-1.0",
+      "author": "Aura3D art pipeline",
+      "sha256": "312f2320db1f8c7057a5f3e90ee10fa7ff2f16acd8e14460fdb6041a8e985af1",
+      "bytes": 8877352,
+      "triangles": null,
+      "textures": [],
       "lookdev": {
-        "verdict": "accept",
-        "pane": "three-r185",
-        "reviewedAt": "2026-10-13T21:00:00Z"
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
       }
     }
   ],

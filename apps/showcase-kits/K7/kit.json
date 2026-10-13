@@ -265,58 +265,93 @@
       }
     },
     {
-      "id": "gravityPlanetMercury",
+      "id": "gravity-planet-mercury",
       "assetKey": "gravityPlanetMercury",
-      "path": "public/aura-assets/gravityPlanetMercury.glb",
-      "license": "CC0-1.0",
+      "kind": "model",
+      "path": "public/aura-assets/gravityPlanetMercury.0222fa97.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/gravityPlanetMercury.0222fa97.glb",
+      "licence": "CC0-1.0",
+      "author": "Aura3D art pipeline",
+      "sha256": "0222fa976a5bb3ae3222eeddaaa7150656837a97c515f065eb855e0b1dd2ab94",
+      "bytes": 3048920,
+      "triangles": null,
+      "textures": [],
       "lookdev": {
-        "verdict": "accept",
-        "pane": "three-r185",
-        "reviewedAt": "2026-10-13T21:00:00Z"
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
       }
     },
     {
-      "id": "gravityPlanetEarth",
+      "id": "gravity-planet-earth",
       "assetKey": "gravityPlanetEarth",
-      "path": "public/aura-assets/gravityPlanetEarth.glb",
-      "license": "CC0-1.0",
+      "kind": "model",
+      "path": "public/aura-assets/gravityPlanetEarth.05a5aea9.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/gravityPlanetEarth.05a5aea9.glb",
+      "licence": "CC0-1.0",
+      "author": "Aura3D art pipeline",
+      "sha256": "05a5aea99db8ab472487a06debc3b5d0b2cae7636a1a6b9ecfa40b7d1722ba23",
+      "bytes": 12916400,
+      "triangles": null,
+      "textures": [],
       "lookdev": {
-        "verdict": "accept",
-        "pane": "three-r185",
-        "reviewedAt": "2026-10-13T21:00:00Z"
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
       }
     },
     {
-      "id": "gravityPlanetNeptune",
+      "id": "gravity-planet-neptune",
       "assetKey": "gravityPlanetNeptune",
-      "path": "public/aura-assets/gravityPlanetNeptune.glb",
-      "license": "CC0-1.0",
+      "kind": "model",
+      "path": "public/aura-assets/gravityPlanetNeptune.2fc3af08.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/gravityPlanetNeptune.2fc3af08.glb",
+      "licence": "CC0-1.0",
+      "author": "Aura3D art pipeline",
+      "sha256": "2fc3af08d56ed429b9cc56b95d151102aa5807ea958e7cb8806a42e12a699ba8",
+      "bytes": 585104,
+      "triangles": null,
+      "textures": [],
       "lookdev": {
-        "verdict": "accept",
-        "pane": "three-r185",
-        "reviewedAt": "2026-10-13T21:00:00Z"
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
       }
     },
     {
-      "id": "gravityPlanetMars",
+      "id": "gravity-planet-mars",
       "assetKey": "gravityPlanetMars",
-      "path": "public/aura-assets/gravityPlanetMars.glb",
-      "license": "CC0-1.0",
+      "kind": "model",
+      "path": "public/aura-assets/gravityPlanetMars.0d27fc65.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/gravityPlanetMars.0d27fc65.glb",
+      "licence": "CC0-1.0",
+      "author": "Aura3D art pipeline",
+      "sha256": "0d27fc65fe3e6a5847cf0cd3a5c951538afdd49bd0513607d8a70e8ab1d8d7ac",
+      "bytes": 4032148,
+      "triangles": null,
+      "textures": [],
       "lookdev": {
-        "verdict": "accept",
-        "pane": "three-r185",
-        "reviewedAt": "2026-10-13T21:00:00Z"
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
       }
     },
     {
-      "id": "gravityPlanetJupiter",
+      "id": "gravity-planet-jupiter",
       "assetKey": "gravityPlanetJupiter",
-      "path": "public/aura-assets/gravityPlanetJupiter.glb",
-      "license": "CC0-1.0",
+      "kind": "model",
+      "path": "public/aura-assets/gravityPlanetJupiter.8edc4e9b.glb",
+      "source": "https://aura3d.auraone.ai/aura-assets/gravityPlanetJupiter.8edc4e9b.glb",
+      "licence": "CC0-1.0",
+      "author": "Aura3D art pipeline",
+      "sha256": "8edc4e9b88b73ca1b125a258f0ecaef7fc6494a7cadda37704af459a119f4870",
+      "bytes": 11479456,
+      "triangles": null,
+      "textures": [],
       "lookdev": {
-        "verdict": "accept",
-        "pane": "three-r185",
-        "reviewedAt": "2026-10-13T21:00:00Z"
+        "runId": "115428866246",
+        "reviewer": "aura3d-live-fix",
+        "verdict": "accept"
       }
     }
   ],
