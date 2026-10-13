@@ -12,8 +12,13 @@ import { builtDist, serve, watchConsole, soakIfNeeded } from "./lib/serve";
  * dispatch on — every URL boots apps/showcase-blockfall-reactor/src/main.ts.
  * The `-dispatch` filename is retained only because the lane's S-category
  * matching keys on it (playwright.webkit/firefox testMatch and
- * write-evidence's S1 row). S11 has no test here: its claim needs audio
- * playback evidence this route does not publish (see write-evidence.mjs).
+ * write-evidence's S1 row). S11 has no test here: the route now publishes
+ * real audio evidence (snapshot `audio`: requested vs actually-played
+ * direction events from the GameAudio object), but the S11 claim as
+ * written (synthCues 0, every audio[] event played) is still not honestly
+ * assertable — GameAudio evidence exposes no synthCues, and quad-clear /
+ * level-up need a 4-line clear / 10 lines that deterministic short play
+ * cannot reach. S11 therefore stays "missing" in write-evidence.mjs.
  * Keyboard/fall playthrough assertions live in
  * apps/showcase-blockfall-reactor/tests/playable.spec.ts, not here.
  */
@@ -81,11 +86,11 @@ test.describe("blockfall-reactor single-path boot (S1)", () => {
     }
   });
 
-  // S2 (single-path): the kit has no "playing" enum and main.ts never calls
-  // createGame start()/ready(), so the beacon state the v2 specs read is not
-  // the honest field here. Playing for this route is the published kit
-  // state: a framed board, a live active piece, not game-over, and the kit
-  // frame counter advancing under its 30 Hz tick.
+  // S2 (single-path): main.ts now drives createGame start() (session
+  // booting -> loading -> playing after the first presented draw). This row
+  // keeps asserting the published kit state that stands behind that session
+  // transition: a framed board, a live active piece, not game-over, and the
+  // kit frame counter advancing under its 30 Hz tick.
   test("boots to playing: framed snapshot with an active falling piece", async ({ page }) => {
     const root = builtDist(APP_DIR);
     expect(root, `${APP_DIR} not built`).not.toBeUndefined();

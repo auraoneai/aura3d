@@ -42,11 +42,18 @@ export default defineArtDirection({
     exposureEV: 0.1
   },
   framing: { rig: "static", subjectHeightFraction: [0.55, 0.75], fovDeg: [40, 50], mobile: "landscape" },
+  // The rebuilt single-path scene (src/main.ts) renders from exactly two
+  // admitted typed assets (apps/showcase-blockfall-reactor/aura.assets.json):
+  // the crate GLB instanced per board cell / active piece / frame / flash,
+  // and the modular wall panel as the cabinet-silhouette world piece. The
+  // trashed scene's cabinet/room/mascot roles are gone. Neither asset is
+  // staged in a shared kit yet, so no `kit` is claimed: S10's kit half
+  // stays failing until a human look-dev review accepts a staged kit file
+  // (verdicts are never authored here). Triangle budgets bound the measured
+  // GLBs (crate 264 tris, wall 1,670 tris, both untextured).
   assets: [
-    { role: "hero", assetKey: "arcade-cabinet", maxTriangles: 45000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "world", assetKey: "arcade-room", kit: "K4", maxTriangles: 120000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "neighbouring-cabinets", kit: "K2", maxTriangles: 90000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "mascot-figures", kit: "K6", maxTriangles: 30000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+    { role: "prop", assetKey: "quaterniusCubeCrate", maxTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "world", assetKey: "quaterniusWallModular", maxTriangles: 5000, textureSet: "BC+N", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "lock-flash", kind: "burst" },

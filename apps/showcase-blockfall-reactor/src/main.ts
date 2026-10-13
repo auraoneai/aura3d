@@ -53,6 +53,20 @@ interface BlockfallReactorEvidence {
     readonly drawCalls: number;
   };
   readonly flash: { readonly modelBased: boolean; readonly activeRows: readonly number[] };
+  // S11 audio evidence, read from the real GameAudio object every frame:
+  // `requestedEvents` are the art/direction.ts audio[] events this route has
+  // cued; `playedEvents` are those the sound object's own evidence reports
+  // as actually-played nodes (suppressed cues never land there); the counts
+  // and context fields are the sound object's, verbatim. GameAudio evidence
+  // exposes no synth/asset cue split, so none is published.
+  readonly audio: {
+    readonly requestedEvents: readonly string[];
+    readonly playedEvents: readonly string[];
+    readonly playedCueCount: number;
+    readonly suppressedCueCount: number;
+    readonly contextState: string;
+    readonly unlocked: boolean;
+  };
   readonly evidence: unknown;
 }
 
@@ -200,7 +214,13 @@ const blockfallGame = createGame({
       rotate: { id: "rotate", asset: { url: sfxUrl("ui.toggle.01") }, volume: 0.35 },
       "hard-drop": { id: "hard-drop", asset: { url: sfxUrl("impact.wood.medium.00") }, volume: 0.6 },
       "line-clear": { id: "line-clear", asset: { url: sfxUrl("pickup.coin.00") }, volume: 0.8 },
-      "game-over": { id: "game-over", asset: { url: sfxUrl("stinger.lose.00") }, volume: 0.8 }
+      "game-over": { id: "game-over", asset: { url: sfxUrl("stinger.lose.00") }, volume: 0.8 },
+      // art/direction.ts audio[] events (tile-lock / quad-clear / level-up /
+      // reactor-hum) on the same sfx-pack asset mechanism as the cues above.
+      "tile-lock": { id: "tile-lock", asset: { url: sfxUrl("impact.wood.light.00") }, volume: 0.5 },
+      "quad-clear": { id: "quad-clear", asset: { url: sfxUrl("stinger.win.00") }, volume: 0.85 },
+      "level-up": { id: "level-up", asset: { url: sfxUrl("stinger.level-start.00") }, volume: 0.7 },
+      "reactor-hum": { id: "reactor-hum", asset: { url: sfxUrl("ambience.interior-hum") }, volume: 0.25, loop: true }
     }
   },
   juice: {
@@ -217,6 +237,16 @@ const blockfallGame = createGame({
 const app = blockfallGame.app;
 const input = blockfallGame.input;
 if (!input) throw new Error("blockfall-reactor failed to create runtime-owned input.");
+// Drive the createGame lifecycle the way the arena-shooter template does:
+// start() transitions the session booting -> loading, starts the runtime,
+// and ready() lands it in "playing" after the first presented draw. Without
+// this the beacon state never leaves "booting" (the falling-blocks-starter
+// template this route was rebuilt from omits the call too).
+blockfallGame.start();
+// Direction reactor-hum: the looping ambience bed, cued once at start. Pre-
+// gesture it may be suppressed by the locked AudioContext; the published
+// audio evidence reports that honestly (requested vs played).
+void blockfallGame.sound?.cue("reactor-hum");
 
 // Runtime handles are re-required after every setScene rebuild because the
 // instanced settled board is mount-time data, not a mutable runtime spec.
@@ -232,6 +262,18 @@ let previousBoard: Board = falling.snapshot().board;
 let flashRows: { readonly rows: readonly number[]; readonly until: number } = { rows: [], until: 0 };
 let activeKind: Piece | null = null;
 let holdKind: Piece | null = null;
+// Direction audio[] events this route has cued, and the subset the sound
+// object's evidence has reported as actually-played nodes (merged in
+// publishEvidence from GameAudioEvidence.playingNodes).
+const DIRECTION_AUDIO_EVENTS = new Set(["tile-lock", "line-clear", "quad-clear", "level-up", "reactor-hum"]);
+const requestedAudioEvents = new Set<string>(["reactor-hum"]);
+const playedAudioEvents = new Set<string>();
+let previousLevel = 1;
+
+function cueDirectionEvent(event: "tile-lock" | "quad-clear" | "level-up"): void {
+  requestedAudioEvents.add(event);
+  void blockfallGame.sound?.cue(event);
+}
 
 // F-08-1: a static rig presents the board framing, pitched ~10° about X off
 // the authored spec (flag-off mounts the no-op stub controller; that spec
@@ -304,7 +346,17 @@ function recordKitEvents(state: KitState): void {
       blockfallGame.juice.fire(event.type);
       void blockfallGame.sound?.cue(event.type);
     }
+    // Direction audio[] mapping from real kit events: a placed piece locks,
+    // a 4-line clear is the quad, and the kit level (lines / 10 + 1) rising
+    // is the level-up. line-clear itself is cued just above.
+    if (event.type === "lock") cueDirectionEvent("tile-lock");
+    if (event.type === "line-clear") {
+      requestedAudioEvents.add("line-clear");
+      if (event.lines === 4) cueDirectionEvent("quad-clear");
+    }
   }
+  if (state.level > previousLevel) cueDirectionEvent("level-up");
+  previousLevel = state.level;
 }
 
 function setupPracticeBoard(): void {
@@ -601,8 +653,26 @@ function publishEvidence(state: KitState): void {
       drawCalls: diagnostics.drawCalls
     },
     flash: { modelBased: true, activeRows: performance.now() < flashRows.until ? flashRows.rows : [] },
+    audio: audioEvidence(),
     evidence
   };
   latestSnapshot = snapshot;
   window.__aura3dGameSnapshot = snapshot;
+}
+
+function audioEvidence(): BlockfallReactorEvidence["audio"] {
+  const sound = blockfallGame.sound?.evidence;
+  // Actually-played nodes only: GameAudio keeps suppressed cues out of
+  // playingNodes, so merging its cue ids can never claim a silent play.
+  for (const node of sound?.playingNodes ?? []) {
+    if (DIRECTION_AUDIO_EVENTS.has(node.cue)) playedAudioEvents.add(node.cue);
+  }
+  return {
+    requestedEvents: [...requestedAudioEvents].sort(),
+    playedEvents: [...playedAudioEvents].sort(),
+    playedCueCount: sound?.playedCueCount ?? 0,
+    suppressedCueCount: sound?.suppressedCueCount ?? 0,
+    contextState: sound?.contextState ?? "none",
+    unlocked: sound?.unlocked ?? false
+  };
 }

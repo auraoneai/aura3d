@@ -5,7 +5,7 @@
  * fallbacks that capture-games uses. Mirrors startStaticServer() in
  * tools/quality-rebuild-capture/capture-games.mjs — keep in sync.
  */
-import { createReadStream, existsSync, statSync } from "node:fs";
+import { createReadStream, existsSync, readdirSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -23,9 +23,17 @@ const MIME = {
 
 export function startBuiltSiteServer(buildRoot = process.env.QRC_BUILD_DIR ?? path.join(repoRoot, "tools/quality-rebuild-capture/.build")) {
   const siteRoot = path.join(buildRoot, "site");
+  // Every app's own public/ tree is a fallback root, not just one hardcoded
+  // app: route-local typed assets (apps/<dir>/public/aura-assets/*.glb, the
+  // template layout vite serves via the app's publicDir) must resolve here
+  // too, since the capture build sets publicDir: false.
+  const appPublicRoots = readdirSync(path.join(repoRoot, "apps"), { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => path.join(repoRoot, "apps", d.name, "public"))
+    .filter((p) => existsSync(p));
   const fallbackRoots = [
     path.join(repoRoot, "public"),
-    path.join(repoRoot, "apps", "aura-clash-showcase", "public"),
+    ...appPublicRoots,
     path.join(repoRoot, "marketing", "public")
   ];
   const tryFile = (root, rel) => {
