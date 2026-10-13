@@ -215,7 +215,14 @@ describe("both game routes consume the reusable binding", () => {
   ])("%s declares controls instead of wiring them", async (path) => {
     const { readFileSync } = await import("node:fs");
     const source = readFileSync(path, "utf8");
-    expect(source).toContain("bindGameTouchControls({");
+    // Turbo's single-path rebuild declares touch through the createGame
+    // runtime preset (the same shared binding, owned by the runtime)
+    // instead of calling bindGameTouchControls in route code.
+    if (path.includes("turbo")) {
+      expect(source).toContain('preset: "steer-pedals"');
+    } else {
+      expect(source).toContain("bindGameTouchControls({");
+    }
     expect(source, "local bindHoldControl must be removed").not.toContain("function bindHoldControl");
     expect(source, "local pulseKey must be removed").not.toContain("function pulseKey");
   });

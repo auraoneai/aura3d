@@ -34,7 +34,11 @@ const publicGameRouteSources = [
  * rather than a list that happens to pass.
  */
 const requiredPublicGameHelpers = [
-  "racingPresentationTrack",
+  // Turbo's single-path rebuild (Live Fix B2) calls the public racing kit
+  // directly; the composed `racingPresentationTrack` surface belonged to
+  // the trashed dual-path presentation layer and remains guarded as an
+  // engine export below.
+  "racing",
   "platformerPresentationSurfaces"
 ] as const;
 

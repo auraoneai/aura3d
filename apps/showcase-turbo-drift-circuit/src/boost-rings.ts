@@ -1,16 +1,16 @@
 /**
- * Turbo Drift Circuit sensor boost rings (PRD TDC-A6 / C3) - OPTIONAL, flag-gated.
+ * Turbo Drift Circuit sensor boost rings (PRD TDC-A6 / C3).
  *
- * Emissive rings stand on the fastest straights; driving through one grants a short
- * speed burst via the same kit contact-resolution path nitro already uses. The mode
- * only exists behind `?boost=1`: default OFF keeps every retained lap-time evidence
- * artifact valid, and ON-mode lap times are documented separately in the README.
+ * Emissive pads stand on the fastest straights; driving over one grants a short
+ * speed burst through the kit boost input. In the single-path rebuild the pads
+ * are always live: the old `?boost=1` gate protected retained dual-path
+ * lap-time evidence that no longer exists.
  *
- * Placement is pure and deterministic: straights are found by curvature sampling of
- * the certified centreline, spaced along progress, always on the racing line so a
- * ring is passed *through* rather than beside. Ring sensors live in the route's own
- * planar collision world as sensor-only bodies tagged `turbo-boost-sensor`; they never
- * resolve penetration and never touch the vehicle-contact evidence path.
+ * Placement is pure and deterministic: straights are found by curvature sampling
+ * of the racing line, spaced along progress, always on the racing line so a
+ * pad is driven *over* rather than beside. Pad credit is progress-window
+ * based in src/main.ts; pads never resolve penetration and never touch the
+ * vehicle-contact evidence path.
  */
 
 export interface TurboBoostRing {
