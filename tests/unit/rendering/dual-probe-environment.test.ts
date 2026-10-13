@@ -5,6 +5,8 @@ import {
   createProductionPbrHdrPipelineFromRadiance,
   type ProductionPbrHdrPipeline
 } from "../../../packages/rendering/src/production-runtime/index.js";
+import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
+import { rendererQrFlags, setRendererQrFlags } from "../../../packages/rendering/src/renderer/FrameGraph";
 
 /**
  * muse3jsparity-PRD B3 dual-probe: the composed pyramid carries the
@@ -65,6 +67,25 @@ describe("B3 dual-probe environment composition", () => {
       expect(dual.lighting.environmentMapSpecularIntensity).toBeCloseTo(1.3 * 1.1, 6);
     } finally {
       dual.dispose();
+    }
+  }, 30_000);
+
+  it("E3 step 4: under the conjunction the 0.08 fill and 1.1x specular fudges are off (LIGHTING gate)", () => {
+    const previous = rendererQrFlags();
+    try {
+      setRendererQrFlags(resolveQrFlags({ options: { A3D_QR_COMPILER: true, A3D_QR_LIGHTING: true } }));
+      const dual = createDualProbeEnvironmentLightingResources({ illumination, reflection });
+      try {
+        expect(dual.lighting.intensity).toBe(0);
+        expect(dual.lighting.proceduralMap?.intensity).toBe(0);
+        expect(dual.lighting.proceduralMap?.specularIntensity).toBe(0);
+        expect(dual.lighting.environmentMapIntensity).toBeCloseTo(0.7, 6);
+        expect(dual.lighting.environmentMapSpecularIntensity).toBeCloseTo(1.3, 6);
+      } finally {
+        dual.dispose();
+      }
+    } finally {
+      setRendererQrFlags(previous);
     }
   }, 30_000);
 

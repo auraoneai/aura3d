@@ -22,6 +22,10 @@ import { rendererQrFlags } from "../renderer/FrameGraph";
 // PRD-02 §phase-3: under A3D_QR_LIGHTING the C-09 probe supplies the IBL — the
 // legacy 0.08 fill-lighting fudge is disabled (ambient intensity 0) and the
 // 1.1× three-parity specular gain is skipped.
+// E3 step 4 verdict: no further deletion here. The LIGHTING gate is a
+// superset of the E3 conjunction, so both fudges are already gone on the
+// conjunction path; narrowing the gate to the conjunction would resurrect
+// them on the shipped LIGHTING-only path and break flag-off identity.
 function prd02LightingOn(): boolean {
   return rendererQrFlags().on("A3D_QR_LIGHTING");
 }

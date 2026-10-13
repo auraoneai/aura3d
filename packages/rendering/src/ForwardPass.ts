@@ -414,12 +414,14 @@ export class ForwardPass extends BaseRenderPass {
     // E3 stage-2b: under the conjunction a generated draw that selected
     // `prd02.ibl` shades indirect from the C-09 probe pack below (single
     // knob), so its other environment binds stop competing for the same
-    // intensity names. Frozen draws (`generated === false`) never take
-    // these branches — see the frozen-family scoping note at the pack site.
+    // intensity names. E3 step 4/5: frozen draws under the conjunction get
+    // bind-level suppression of their stacked terms (and of the stale 0.18
+    // material default on no-environment draws) inside
+    // applyEnvironmentLightingUniforms — see its header note.
     const drawFlags = rendererQrFlags(device);
     const e3Conjunction = qrE3CompilerLightingOn(drawFlags);
     const prd02Ibl = generated && e3Conjunction && this.lastProgramFeatures?.features[PRD02_IBL_FEATURE] !== undefined;
-    applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms, generated && e3Conjunction);
+    applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms, { conjunction: e3Conjunction, generated });
     if (generated) applyGeneratedEnvironmentMapUniforms(this.options.environmentLighting, item, shader, uniforms, drawFlags);
     if (generated) applyGeneratedProceduralEnvironmentUniforms(this.options.environmentLighting, item, shader, uniforms, prd02Ibl);
     applyEnvironmentFogUniforms(this.options.environmentFog, item, shader, uniforms);
@@ -1238,17 +1240,61 @@ export { applyForwardSpotShadowMapUniforms } from "./forward/Lighting.js";
 
 
 
-function applyEnvironmentLightingUniforms(
+/**
+ * Frozen-namespace environment binds (`u_environmentColor` /
+ * `u_environmentIntensity` / procedural / sampled), shared by both program
+ * families.
+ *
+ * E3 step 4 (frozen family, bind-level by design): the frozen shaders
+ * (ShaderLibraryCore lean PBR + ShaderLibrary duplicates) are fallback-only
+ * and their sources must stay byte-identical flag-off, so under the
+ * conjunction a frozen draw's stacked terms are suppressed here instead of
+ * by shader-body surgery: the procedural diffuse+specular are zeroed, the
+ * duplicated ambient is zeroed when a sampled term shades from a
+ * non-probe bundle, and absent sampled intensities read 0 (step-3 parity
+ * with the generated binder). The sampled term — the single knob under the
+ * conjunction — is kept. NOT bind-removable, so deliberately left and
+ * UNVERIFIED until the L4 capture: the shader-constant sampled-specular
+ * fudges (ShaderLibraryCore `mix(1.1, 0.65, roughness)`, ShaderLibrary
+ * `mix(0.84, 0.58, …)` variants) and the extension environment re-add
+ * (`a3dPbrExtensionEnvironmentLight` reuses the sampled radiance for its
+ * lobes; zeroing it at the bind layer would mean zeroing the material
+ * extension factors that also drive direct extension light). Its input is
+ * de-stacked (procedural removed) by the zeroing above.
+ *
+ * E3 step 5 (0.18 at the bind layer): `DEFAULT_PBR_ENVIRONMENT_INTENSITY`
+ * (PBRLightingDefaults, public API at index.ts) is a material-constructor
+ * default for `u_environmentIntensity`. With an environment present this
+ * function overwrites it per draw — always the case on production engine
+ * paths, where compileScene's RenderSource resolves through
+ * `collectEnvironmentLighting`, which never returns undefined for a
+ * RenderSource. It otherwise survives only when the pass has no
+ * environment at all: Renderer `Scene`/iterable sources and direct
+ * ForwardPass use (both public `@aura3d/rendering` surfaces, not
+ * production engine paths). Under the conjunction that branch now binds
+ * `u_environmentIntensity = 0` (absent knob means zero, step-3 rule), so
+ * the stale constructor default never reaches a conjunction draw; the
+ * public constant and every conjunction-off packet are unchanged.
+ */
+export function applyEnvironmentLightingUniforms(
   environment: EnvironmentLightingOptions | undefined,
   item: RenderItem,
   shader: RenderShaderProgram,
   uniforms: Map<string, UniformValue>,
-  generatedE3Conjunction = false
+  e3: { readonly conjunction?: boolean; readonly generated?: boolean } = {}
 ): void {
+  const generatedE3Conjunction = e3.conjunction === true && e3.generated === true;
+  const frozenE3Conjunction = e3.conjunction === true && e3.generated !== true;
   if (!environment) {
     clearProceduralEnvironmentMapUniforms(shader, uniforms);
     clearSampledEnvironmentMapUniforms(shader, uniforms);
     clearEnvironmentBrdfLutUniforms(shader, uniforms);
+    // E3 step 5: see header note — never let the 0.18 constructor default
+    // (or any material-side ambient scalar) survive a no-environment
+    // conjunction draw. Conjunction-off the packet is untouched.
+    if (e3.conjunction === true && shader.reflection.uniforms.has("u_environmentIntensity")) {
+      uniforms.set("u_environmentIntensity", 0);
+    }
     return;
   }
   if (!shader.reflection.uniforms.has("u_environmentColor") || !shader.reflection.uniforms.has("u_environmentIntensity")) {
@@ -1270,7 +1316,24 @@ function applyEnvironmentLightingUniforms(
   uniforms.set("u_environmentColor", color);
   uniforms.set("u_environmentIntensity", environment.intensity);
   applyProceduralEnvironmentMapUniforms(environment.proceduralMap, item, shader, uniforms, generatedE3Conjunction);
-  applySampledEnvironmentMapUniforms(withItemEnvironmentCube(environment, item), item, shader, uniforms);
+  const sampledEnvironment = withItemEnvironmentCube(environment, item);
+  applySampledEnvironmentMapUniforms(sampledEnvironment, item, shader, uniforms, frozenE3Conjunction);
+  if (frozenE3Conjunction) {
+    // E3 step 4 frozen suppression (see header note): procedural terms
+    // zeroed after their validating bind, so conjunction-off packets and
+    // error behavior are unchanged. The ambient scalar is a stacked
+    // duplicate of the sampled knob only for non-probe bundles with a
+    // sampled term: probe-path lighting carries the authored ambient in
+    // `intensity` (additive outside IBL, F-02-01), and with no sampled
+    // term the ambient is the sole diffuse term (authored-ambient and
+    // renderer-default lighting) — both keep it.
+    clearProceduralEnvironmentMapUniforms(shader, uniforms);
+    const sampledPresent = sampledEnvironment.environmentMapTexture !== undefined
+      || sampledEnvironment.environmentCubeMapTexture !== undefined;
+    if (sampledPresent && !environment.environmentProbe) {
+      uniforms.set("u_environmentIntensity", 0);
+    }
+  }
 }
 
 /**
@@ -1417,13 +1480,11 @@ export function prd02IblEnvironmentAvailable(
  *
  * Frozen-family scoping (step 1): this bind runs only for generated draws
  * that selected `prd02.ibl`. The frozen shader family (ShaderLibraryCore
- * lean PBR + ShaderLibrary duplicates) is deliberately untouched in
- * stage-2b — under the default-on CORE/MATERIALS route generated programs
- * serve production PBR draws, and frozen shaders are fallback-only
- * (unskinnable skinned items, compile failure, binding failure). Those
- * fallback draws keep their legacy stacked terms under the conjunction
- * until step 4 collapses the frozen family; conjunction-off every draw is
- * byte-identical to before this change.
+ * lean PBR + ShaderLibrary duplicates) serves fallback-only draws
+ * (unskinnable skinned items, compile failure, binding failure); since
+ * step 4 those draws get bind-level suppression of their stacked terms in
+ * `applyEnvironmentLightingUniforms` under the conjunction, while
+ * conjunction-off every draw stays byte-identical.
  */
 export function applyPrd02EnvironmentUniforms(
   environment: EnvironmentLightingOptions | undefined,
@@ -1545,7 +1606,8 @@ function applyProceduralEnvironmentMapUniforms(
   // program's SAMPLED-map (knob) uniform; the frozen namespace reuses the
   // same name for its procedural diffuse. On a generated conjunction draw
   // the procedural write is dropped so the knob owns the name outright.
-  // Frozen draws never pass the flag and keep the legacy write (step 4).
+  // Frozen draws keep this legacy write here; step 4 zeroes it afterwards
+  // in applyEnvironmentLightingUniforms on frozen conjunction draws.
   if (!generatedE3Conjunction) {
     uniforms.set("u_environmentMapIntensity", proceduralMap.intensity);
   }
@@ -1582,7 +1644,8 @@ function applySampledEnvironmentMapUniforms(
   environment: EnvironmentLightingOptions,
   item: RenderItem,
   shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
+  uniforms: Map<string, UniformValue>,
+  frozenE3Conjunction = false
 ): void {
   const environmentMapTexture = environment.environmentMapTexture;
   const environmentCubeMapTexture = environment.environmentCubeMapTexture;
@@ -1608,8 +1671,11 @@ function applySampledEnvironmentMapUniforms(
   if (environmentCubeMapTexture) {
     validateEnvironmentTextureBinding("Environment cube map texture", environmentCubeMapTexture, "cube", item);
   }
-  const intensity = environment.environmentMapIntensity ?? 1;
-  const specularIntensity = environment.environmentMapSpecularIntensity ?? 0.5;
+  // E3 step 4: on a frozen conjunction draw an absent sampled intensity
+  // is zero (single-knob rule, step-3 parity with the generated binder),
+  // never the legacy absent-field defaults of 1 / 0.5.
+  const intensity = frozenE3Conjunction ? environment.environmentMapIntensity ?? 0 : environment.environmentMapIntensity ?? 1;
+  const specularIntensity = frozenE3Conjunction ? environment.environmentMapSpecularIntensity ?? 0 : environment.environmentMapSpecularIntensity ?? 0.5;
   const rotation = environment.environmentMapRotation ?? 0;
   const mipCount = environment.environmentMapMipCount ?? 1;
   const encoding = environment.environmentMapEncoding ?? "srgb";
