@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createDroneSwarm, CANNON_DAMAGE, DRONE_HEALTH } from "../../../apps/showcase-patrol-wing/src/drones";
+import { createDroneSwarm, CANNON_DAMAGE, DRONE_HEALTH } from "../../../apps/showcase-patrol-wing/src/gameplay/drones";
 import {
   dronesPerWave,
   droneSpeed,
@@ -8,9 +8,9 @@ import {
   waveSpawns,
   WAVE_TRIGGERS,
   WAVES_PER_PATROL
-} from "../../../apps/showcase-patrol-wing/src/patrol";
-import { Cannon } from "../../../apps/showcase-patrol-wing/src/weapons";
-import { FLIGHT_DT } from "../../../apps/showcase-patrol-wing/src/flight";
+} from "../../../apps/showcase-patrol-wing/src/gameplay/patrol";
+import { Cannon } from "../../../apps/showcase-patrol-wing/src/gameplay/weapons";
+import { FLIGHT_DT } from "../../../apps/showcase-patrol-wing/src/gameplay/flight";
 
 /**
  * PRD definition-of-done pins for Patrol Wing combat (PW-13):

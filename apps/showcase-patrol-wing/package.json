@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Aura3D Patrol Wing prototype: authored six-axis flight over an island arena, ordered ring sensors, aerial combatWorld dogfights, and an input-replay ghost.",
+  "description": "Aura3D Patrol Wing: authored arcade flight over an island arena rebuilt single-path on the salvaged flight core (createGame shell, ordered Rapier ring sensors, combatWorld drone dogfights, input-replay ghost, typed route-local GLBs).",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",
