@@ -275,7 +275,7 @@ const app = createAuraApp("#app", {
     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
   },
   scene: scene()
-  .background("#16283f")
+  .background("#101f33")
     .addMany(dressing.staticNodes)
     .addMany(dressing.pickupZone)
     .addMany(dressing.dropZone)
@@ -285,7 +285,7 @@ const app = createAuraApp("#app", {
     // 1.72 over emissive city dressing and blew the whole frame - including the
     // player's own van - into a white core. Art direction is now a single set of
     // values so evidence and gameplay cannot drift apart again.
-    .add(effects.fog({ name: "night city haze", color: "#496985", density: 0.006, intensity: 0.5 }))
+    .add(effects.fog({ name: "night city haze", color: "#38536d", density: 0.0045, intensity: 0.48 }))
     // Bloom was authored at 0.5, which is a screenshot-kernel value, not a
     // gameplay one. At that strength the typed van's white livery, its own
     // headlight cones and every rain trace merged into one white mass: the
@@ -307,15 +307,15 @@ const app = createAuraApp("#app", {
     // The street itself was reading as black-on-black void with a few floating
     // signs. A lifted cool ambient plus a stronger moon key gives the kit
     // towers, kerbs and lane paint actual form between the practicals.
-    .add(lights.ambient({ name: "night city fill", color: "#93b7d4", intensity: 1.38 }))
+    .add(lights.ambient({ name: "night city fill", color: "#93b7d4", intensity: 1.3 }))
     .add(lights.directional({
       name: "moonlight key",
       color: "#ffd2a0",
-      intensity: 2.75,
+      intensity: 2.6,
       // Effects pass: cascaded PCSS moon shadows across the chase depth.
       shadow: { cascades: 1, mapSize: 1024, filter: "pcss", softness: 1, maxDistance: 60, intensity: 0.9 }
     }).position(-18, 26, 8))
-    .add(lights.directional({ name: "city glow fill", color: "#4fd8ff", intensity: 1.5 }).position(20, 18, 16))
+    .add(lights.directional({ name: "city glow fill", color: "#4fd8ff", intensity: 1.42 }).position(20, 18, 16))
     // Hero practicals used to sit at 2.6/1.8 directly on the van, which is what
     // turned the typed Meshy livery into a featureless white slab.
     .add(lights.point({ name: "courier hero key", color: "#e8fbff", intensity: 1.9 }).position(-1.6, 2.4, 6.5))
@@ -323,7 +323,7 @@ const app = createAuraApp("#app", {
      .add(lights.point({ name: "courier intersection practical", color: "#ff9d66", intensity: 1.9 }).position(0, 3.8, 0))
      .add(lights.point({ name: "courier forward cyan practical", color: "#22d3ee", intensity: 2.1 }).position(0, 3.4, 8.5))
      .add(lights.point({ name: "courier forward warning practical", color: "#fb7185", intensity: 1.7 }).position(0, 2.6, 12.8))
-    .add(lights.point({ name: "depot dock warm light", color: "#fbbf24", intensity: 1.7 })
+    .add(lights.point({ name: "depot dock warm light", color: "#fbbf24", intensity: 1.45 })
       .position(START_SITE.x + 4.5, 5.0, START_SITE.z))
     // Van fleet: every moving part is a top-level runtime node (the mutable
     // registry covers model/primitive/group/label nodes, so nothing rides in a

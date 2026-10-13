@@ -71,13 +71,13 @@ export function pulseTunnelBaseHaze(): AuraNodeInput {
   return effects.fog({
     name: "tunnel violet floor haze",
     // heightDensity selects the C-21 height mode.
-    color: "#6a3ce0",
-    density: 0.016,
-    heightDensity: 0.05,
+    color: "#5d34c4",
+    density: 0.015,
+    heightDensity: 0.047,
     heightFalloff: 1.4,
     heightReference: -0.1,
     start: 1.2,
-    maxOpacity: 0.78,
+    maxOpacity: 0.74,
     affectsBackground: false,
     transitionSeconds: FOG_TRANSITION_SECONDS
   });
