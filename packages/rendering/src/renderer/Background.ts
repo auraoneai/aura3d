@@ -188,7 +188,13 @@ export function resolvePrd02EnvironmentLighting(source: RenderSource): Environme
     environmentMapIntensity: diffuse,
     environmentMapSpecularIntensity: specular,
     environmentMapMipCount: equirect.mipLevels.length,
-    environmentMapEncoding: "linear"
+    environmentMapEncoding: "linear",
+    // E3 stage-2b: carry the probe itself (cube + SH9) to ForwardPass for
+    // the PRD-02 IBL pack. Attached only under the conjunction so the
+    // LIGHTING-only lighting object stays byte-identical.
+    ...(rendererQrFlags().on("A3D_QR_COMPILER") && rendererQrFlags().on("A3D_QR_LIGHTING")
+      ? { environmentProbe: probe }
+      : {})
   };
 }
 
@@ -220,7 +226,8 @@ function cloneEnvironmentLighting(environment: EnvironmentLightingOptions): Envi
     ...(environment.environmentMapRotation !== undefined ? { environmentMapRotation: environment.environmentMapRotation } : {}),
     ...(environment.environmentMapMipCount !== undefined ? { environmentMapMipCount: environment.environmentMapMipCount } : {}),
     ...(environment.environmentMapEncoding ? { environmentMapEncoding: environment.environmentMapEncoding } : {}),
-    ...(environment.environmentBrdfLutTexture ? { environmentBrdfLutTexture: environment.environmentBrdfLutTexture } : {})
+    ...(environment.environmentBrdfLutTexture ? { environmentBrdfLutTexture: environment.environmentBrdfLutTexture } : {}),
+    ...(environment.environmentProbe ? { environmentProbe: environment.environmentProbe } : {})
   };
 }
 

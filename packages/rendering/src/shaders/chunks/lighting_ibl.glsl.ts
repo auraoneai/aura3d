@@ -96,3 +96,27 @@ vec3 a3d_iblDiffuseFresnel(vec3 f0, float roughness, float ndv) {
   return f0 + fr * pow(1.0 - ndv, 5.0);
 }
 `;
+
+/**
+ * a3d_prd02_lighting_ibl_call — the E3 stage-2b replacement
+ * `fragment:indirect` body (statements only; spliced inside `main` where
+ * `V`, `N`, `material`, `indirectDiffuse` and `indirectSpecular` exist).
+ * The C-02 generator emits this INSTEAD of its default indirect body under
+ * the E3 conjunction — never in addition to it — so ambient, sampled and
+ * procedural terms cannot stack.
+ *
+ * Units: `a3dIndirectDiffuseIrradiance` sums the SH9/hemisphere irradiance
+ * with `u_ambientIrradiance`, which the packer stores as exit radiance
+ * (already x1/pi, `ambientToExitRadiance`). The ambient term is therefore
+ * split back out of the irradiance fed to the r185 multiscatter helpers
+ * (which divide by pi) and applied once as exit radiance. `a3dEnvIrradiance`
+ * keeps the name/scale the C-03 lobe IBL calls read from the default body
+ * (true irradiance, cf. `PI * a3dSampleEnvironment(N, 8.0)` there).
+ */
+export const LIGHTING_IBL_CALL_GLSL = /* glsl */ `
+vec3 a3dPrd02Irradiance = a3dIndirectDiffuseIrradiance(N);
+vec3 a3dEnvIrradiance = max(a3dPrd02Irradiance - u_ambientIrradiance, vec3(0.0));
+indirectDiffuse += a3dIndirectDiffuse(a3dEnvIrradiance, V, N, material);
+indirectDiffuse += u_ambientIrradiance * material.diffuseContribution;
+indirectSpecular += a3dIndirectSpecular(a3dEnvSpecularRadiance(N, V, material.roughness), a3dEnvIrradiance, V, N, material);
+`;

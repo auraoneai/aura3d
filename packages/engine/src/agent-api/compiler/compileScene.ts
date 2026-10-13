@@ -41,7 +41,7 @@ import type { CollectedLight, EnvironmentLightingOptions, ProductionRendererInpu
 import type { EnvironmentProbe } from "@aura3d/rendering/contracts";
 import { environmentProbeFactorySlot, isEnvironmentProbeFactoryPending } from "@aura3d/rendering/contracts";
 import { EnvironmentCache, defaultProbeLoader } from "../../../../rendering/src/environment/EnvironmentCache.js";
-import { bindPrd02EnvironmentProbe } from "./environment.js";
+import { bindPrd02EnvironmentProbe, prd02ProbeBindIntensities } from "./environment.js";
 import { resolveEnvironment } from "../../contracts/environment.js";
 import { prd02LightingOn } from "./lights.js";
 import { colorToLinearRgb } from "../colorUtils.js";
@@ -510,6 +510,12 @@ function updateCompiledSceneReal(
           environmentProbeAmbient?: { readonly color: readonly [number, number, number]; readonly intensity: number } | null;
           environmentProbeBackground?: boolean;
         };
+        // E3 stage-2b (step 3): capture the stage-2a knob object BEFORE it
+        // is discarded below — under the conjunction it, not the resolution,
+        // is the single IBL intensity source the probe bind carries (see
+        // prd02ProbeBindIntensities). This block already runs only under
+        // prd02LightingOn, so COMPILER completes the conjunction.
+        const knobLighting = probed.environmentLighting;
         // Flag-on the C-09 probe owns environment lighting — the legacy studio
         // procedural object would early-return `collectEnvironmentLighting`.
         probed.environmentLighting = undefined;
@@ -518,8 +524,9 @@ function updateCompiledSceneReal(
         // neutral-room floor (`background: false`) lights the scene but must not
         // paint a grey room over the authored `scene().background(colour)`.
         probed.environmentProbeBackground = resolution.background !== false && resolution.background.visible;
-        probed.environmentProbeDiffuseIntensity = resolution.diffuseIntensity;
-        probed.environmentProbeSpecularIntensity = resolution.specularIntensity;
+        const probeIntensities = prd02ProbeBindIntensities(knobLighting, resolution, ctx.flags.on("A3D_QR_COMPILER"));
+        probed.environmentProbeDiffuseIntensity = probeIntensities.diffuseIntensity;
+        probed.environmentProbeSpecularIntensity = probeIntensities.specularIntensity;
         probed.environmentProbeAmbient = resolution.ambient
           ? { color: colorToLinearRgb(resolution.ambient.color), intensity: resolution.ambient.intensity }
           : null;

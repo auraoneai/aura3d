@@ -15,6 +15,16 @@ function subFlagOn(flags: QrFlags, sub: QrFlagName, lane: QrFlagName): boolean {
   return explicit !== undefined ? flags.on(sub) : flags.on(lane);
 }
 
+/**
+ * E3 conjunction (Live Fix stages 1/2a/2b): the physical-lighting data path
+ * is live only when the compiler lane AND the lighting lane are both on.
+ * `A3D_QR_LIGHTING` is default-on while `A3D_QR_COMPILER` is dev, so every
+ * shipped scene is conjunction-off today and must stay byte-identical.
+ */
+export function qrE3CompilerLightingOn(flags: QrFlags): boolean {
+  return flags.on("A3D_QR_COMPILER") && flags.on("A3D_QR_LIGHTING");
+}
+
 /** Generated-program path (C-02) vs. frozen legacy shaderKey path. */
 export function qrCoreGeneratorOn(flags: QrFlags): boolean {
   return subFlagOn(flags, "A3D_QR_CORE_GENERATOR", "A3D_QR_CORE");
