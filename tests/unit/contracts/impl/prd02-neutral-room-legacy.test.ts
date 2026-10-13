@@ -24,7 +24,7 @@ import {
 import { NEUTRAL_FLOOR_RADIANCE, NEUTRAL_FLOOR_SH9 } from "../../../../packages/rendering/src/environment/probeBuild";
 import { createProductionRuntimeEnvironment } from "../../../../packages/engine/src/agent-api/compiler/environment";
 
-const LIGHTING_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
+const LIGHTING_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true, A3D_QR_COMPILER: false } });
 const BASE = resolveQrFlags({ options: ["none"] });
 afterEach(() => setRendererQrFlags(BASE));
 

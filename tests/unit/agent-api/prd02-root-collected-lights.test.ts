@@ -13,7 +13,7 @@ import type { AuraLightNode, AuraSceneSnapshot } from "@aura3d/engine";
 import { createProductionRuntimeCollectedLights } from "../../../packages/engine/src/agent-api/compiler/observations";
 
 const PHYSICAL = resolveQrFlags({ options: { A3D_QR_COMPILER: true, A3D_QR_LIGHTING: true } });
-const LIGHTING_ONLY = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
+const LIGHTING_ONLY = resolveQrFlags({ options: { A3D_QR_COMPILER: false, A3D_QR_LIGHTING: true } });
 const ALL_OFF = resolveQrFlags({ options: { A3D_QR_COMPILER: false, A3D_QR_LIGHTING: false } });
 
 const snapshot = (nodes: readonly AuraLightNode[]): AuraSceneSnapshot => ({
