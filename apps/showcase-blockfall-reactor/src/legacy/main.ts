@@ -640,17 +640,26 @@ const reactorScene = scene()
     // AO for grounding, and a nonzero depth haze that separates the hero cabinet
     // from the room behind it.
     bloomEffect,
+    // Perf pass (L4 runs 38331934535/38332937731/38333709789): removing the
+    // occlusion nodes moved fps 0.84 -> 0.83 -> 0.84 (noise), so they are not
+    // the frame cost in the v2 chain; the effects-pass key shadow is the one
+    // full-scene extra render. Grounding returns to the shipped AO + contact
+    // occlusion pair and the key goes back to unshadowed.
     effects.ambientOcclusion({ intensity: 0.46, radius: 0.68 }),
     effects.contactOcclusion({ name: "cabinet floor contact", intensity: 0.34, radius: 0.5 }),
-    effects.fog({ name: "arcade room depth haze", density: 0.028, color: "#0d0514", intensity: 0.3 }),
-    effects.colorGrade({ exposure: 1.08 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
+    // Perf pass: the violet room haze now rides this standard forward fog
+    // (the volumetric-fog node kept the route on the CPU readback path,
+    // fps 0.84 -> 0.98 when removed in run 38335452473, but it was also the
+    // broad look change). Violet + denser restores the room separation on
+    // the cheap path.
+    effects.fog({ name: "arcade room depth haze", density: 0.046, color: "#4a3578", intensity: 0.62 }),
+    effects.colorGrade({ exposure: 1.04 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.2 }),
     effects.antiAlias({ mode: "fxaa" }),
     lights.ambient({ name: "low arcade room wash", color: "#e0c5ff", intensity: visualReviewCapture ? 0.82 : 0.58 }),
     lights.directional({
       name: "overhead arcade key",
       color: "#fff5dd",
-      intensity: 1.05,
-      shadow: { cascades: 1, mapSize: 1024, filter: "pcss", softness: 1.1, intensity: 0.85 }
+      intensity: 1.05
     }).position(-1.2, 6.4, 4.2),
     lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.72 : 1.28 }).position(2.4, 2.1, 2.6),
     lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity: visualReviewCapture ? 1.68 : 1.18 }).position(-2.15, 3.3, 1.35),

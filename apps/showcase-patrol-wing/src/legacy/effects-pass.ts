@@ -5,8 +5,8 @@
 //
 // Look brief (outdoor, golden hour): low warm sun over a teal coast, aerial
 // perspective pushing the far islands back, cloud wisps in the flight
-// corridor. Families: sun key (golden-hour directional, cascaded shadows) +
-// contact shadows, volumetric aerial haze with height falloff (god rays),
+// corridor. Families: sun key (golden-hour directional, cascaded shadows),
+// volumetric aerial haze with height falloff (god rays),
 // cloud-wisp smoke and sea-spray particles, sunset IBL on the airframes,
 // grade + vignette.
 import { effects, environments } from "@aura3d/engine";
@@ -31,32 +31,36 @@ export function patrolWingEffectsPass() {
     return [effects.fog({ name: "coastal haze", density: 0.0042, color: "#42647a", intensity: 0.42 })];
   }
   return [
-    effects.contactShadows({ length: 0.5, steps: 8, intensity: 0.7 }),
-    environments.preset("sunset", { intensity: 0.75, specularIntensity: 1.1, background: false }),
+    // Perf pass: no screen-space contact-shadow march. The route is airborne
+    // outside the preflight pad, where the cascaded key shadow (sky.ts)
+    // already grounds the airframe; the march cost ~a full post pass.
+    environments.preset("sunset", { intensity: 1.0, specularIntensity: 1.1, background: false }),
     // Aerial perspective: denser near the sea, thinning with altitude, with
-    // forward in-scatter towards the golden-hour key (S4 god rays).
+    // forward in-scatter towards the golden-hour key (S4 god rays). Density
+    // restored toward the original pass values for broad frame separation
+    // (run 38336010758: fps/luma pass, title/opening/banked diff ~7.3).
     effects.volumetricFog({
       name: "coastal aerial haze",
-      density: 0.013,
+      density: 0.015,
       color: "#6f8fa3",
-      intensity: 0.44,
+      intensity: 0.46,
       volumetricQuality: "off",
       heightFalloff: 0.05,
       heightReference: 0
     }),
-    effects.vignette({ intensity: 0.26, smoothness: 1.7 }),
+    effects.vignette({ intensity: 0.32, smoothness: 1.7 }),
     ...(vfxOn
       ? [
           ...WISPS.map((wisp, index) =>
             effects.particles({
               name: `flight corridor cloud wisp ${index + 1}`,
               emitter: "ambient",
-              particleCount: 60,
-              emissionRate: 12,
+              particleCount: 36,
+              emissionRate: 8,
               speed: 1.6,
               drag: 0.7,
               gravity: 0,
-              size: [1.8, 3.4],
+              size: [1.4, 2.6],
               lifetime: [4, 6],
               color: "#f4ede4",
               materialMode: "smoke",
@@ -67,8 +71,8 @@ export function patrolWingEffectsPass() {
           effects.particles({
             name: "surf line sea spray",
             emitter: "fountain",
-            particleCount: 100,
-            emissionRate: 25,
+            particleCount: 60,
+            emissionRate: 16,
             radius: 6,
             height: 1.4,
             size: [0.08, 0.2],

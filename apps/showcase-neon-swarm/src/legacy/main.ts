@@ -902,7 +902,7 @@ appScene.add(
   })
 );
 
-appScene.add(effects.fog({ density: 0.02, color: "#070a14" }));
+appScene.add(effects.fog({ density: 0.022, color: "#1c2a4a", intensity: 0.5 }));
 appScene.add(effects.ambientOcclusion({
   name: "district contact occlusion",
   intensity: visualReviewCapture ? 0.52 : 0.34,
