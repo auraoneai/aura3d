@@ -1,4 +1,13 @@
-import { game, type GameInputController, type GameInputReplayEvent } from "@aura3d/engine";
+import {
+  camera as auraCamera,
+  environments,
+  game,
+  lights,
+  model,
+  scene as auraScene,
+  type GameInputController,
+  type GameInputReplayEvent,
+} from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -1475,8 +1484,51 @@ export function bootAuroraLander() {
   const resolveSfxUrl = (file: string): string =>
     sfxUrl(import.meta.url, `../assets/sfx/${file}`);
 
+  const buildAuroraEngineScene = () =>
+    auraScene()
+      .background("#050a18")
+      .add(environments.preset("ocean-dusk"))
+      .camera(auraCamera.perspective({ position: [0, 14, 24], target: [0, 2, 0], fov: 42 }))
+      .addMany([
+        lights.directional({
+          name: "polar key light",
+          color: "#dbeeff",
+          intensity: 2.2,
+          position: [18, 32, 16],
+          shadow: true,
+        }).toJSON(),
+        lights.point({
+          name: "pad beacon practical",
+          color: "#46e0a0",
+          intensity: 1.4,
+          position: [0, 2, 0],
+        }).toJSON(),
+        lights.point({
+          name: "exhaust plume practical",
+          color: "#9fd8ff",
+          intensity: 1.8,
+          position: [0, 8, 0],
+        }).toJSON(),
+        model(assets.auroraLanderProbe, {
+          name: "lander-probe",
+          role: "primaryCharacter",
+          scaleMode: "fit",
+          targetMaxDimension: 2.4,
+          castShadow: true,
+        }).position(0, 8, 0).toJSON(),
+        model(assets.auroraPadBeacon, {
+          name: "pad-beacon",
+          role: "setDressing",
+          scaleMode: "fit",
+          targetMaxDimension: 1.8,
+          receiveShadow: true,
+        }).position(0, 0, 0).toJSON(),
+      ]);
+
   const landerGame = createGame({
     id: "showcase-aurora-lander",
+    target: "#app",
+    scene: () => buildAuroraEngineScene(),
     title: "Aurora Lander",
     qualityRebuild: { flags: ["game"] },
     artDirection: direction,
@@ -1513,6 +1565,7 @@ export function bootAuroraLander() {
 
   // Start the session immediately so window.__AURA3D_GAME__.state === "playing"
   landerGame.start();
+  landerGame.app.setOutput?.({ preset: "space", exposure: Math.pow(2, direction.lighting.exposureEV) });
 
   const container =
     (typeof document !== "undefined" ? document.getElementById("app") : null) ??
@@ -1534,8 +1587,11 @@ export function bootAuroraLander() {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = Math.pow(2, direction.lighting.exposureEV);
   renderer.domElement.style.display = "block";
+  renderer.domElement.style.position = "absolute";
+  renderer.domElement.style.inset = "0";
   renderer.domElement.style.width = "100%";
   renderer.domElement.style.height = "100%";
+  renderer.domElement.style.pointerEvents = "none";
 
   let canvasAttached = false;
   if (container) {

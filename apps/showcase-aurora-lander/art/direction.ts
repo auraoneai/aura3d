@@ -43,10 +43,8 @@ export default defineArtDirection({
   },
   framing: { rig: "altitude", subjectHeightFraction: [0.08, 0.12], fovDeg: [35, 50], mobile: "landscape" },
   assets: [
-    { role: "vehicle", assetKey: "descent-lander", maxTriangles: 5000, minTriangles: 3000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "world", assetKey: "moon-regolith", kit: "K3", maxTriangles: 240000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "pad-beacon", maxTriangles: 4000, minTriangles: 500, textureSet: "BC+N", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "aurora-ribbons", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 }
+    { role: "vehicle", assetKey: "auroraLanderProbe", kit: "K7", maxTriangles: 5000, minTriangles: 200, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "auroraPadBeacon", kit: "K5", maxTriangles: 4000, minTriangles: 100, textureSet: "BC+N", maxTextureSize: 512 }
   ],
   vfx: [
     { event: "thrust-plume", kind: "cone" },
