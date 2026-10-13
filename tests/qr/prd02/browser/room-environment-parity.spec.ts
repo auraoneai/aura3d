@@ -47,8 +47,8 @@ interface HarnessResult {
   readonly status: "ready" | "error";
   readonly error?: string;
   readonly analyticMeanLuma?: number;
-  readonly production?: Measure;
-  readonly prefiltered?: Measure;
+  readonly production?: ProbeMeasure;
+  readonly prefiltered?: ProbeMeasure;
   readonly three?: { readonly windows: readonly SphereWindow[]; readonly cubeUvHeight: number };
 }
 
