@@ -3,15 +3,6 @@
 // dust plus reactor plasma motes, and a framing vignette. Every effect here is
 // default-on in the engine (lighting / post / vfx lanes); gameplay is untouched.
 import { effects, type AuraNodeInput } from "@aura3d/engine";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
-
-// Under a3d-qr=none the volumetric node falls back to a CPU march that can
-// stall heavy routes (none-arm capture timeouts); only add it when the post
-// lane that accelerates it is on. The scene's own fog node covers flags-off.
-const postOn = resolveQrFlags({
-  url: location.href,
-  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
-}).on("A3D_QR_POST");
 
 /**
  * Particle colours as raw linear HDR triples: the emitter lowering treats an
@@ -27,24 +18,9 @@ export interface BlockfallEffectsPassOptions {
 
 export function createBlockfallEffectsPass(options: BlockfallEffectsPassOptions): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [
-    // Volumetric haze: the first volumetric-fog node replaces the old 0.028
-    // depth haze, so the board (≈8.5 m) keeps most of its contrast while the
-    // room behind it (12-16 m) separates into a violet atmosphere.
-    // Volumetric haze at quality "off" (no froxel march, no contact shadows):
-    // the balanced march + contact pass cost ~25% fps on L4 (fog-swap bisect
-    // 38306282204 recovered fps to 0.83-0.87 but forward fog no-ops behind
-    // the scene's first fog node, collapsing the frame diff).
-    ...(postOn
-      ? [
-          effects.volumetricFog({
-            name: "blockfall arcade volumetric haze",
-            density: 0.05,
-            color: "#5e4490",
-            intensity: 0.15,
-            volumetricQuality: "off"
-          })
-        ]
-      : []),
+    // No volumetric-fog node: even at quality "off" it kept this route on
+    // the CPU readback path (~18% fps vs the pre-pass frame on L4). The
+    // scene's own standard fog node carries the room depth haze.
     effects.vignette({ name: "blockfall arcade vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
   if (!options.reducedMotion) {
