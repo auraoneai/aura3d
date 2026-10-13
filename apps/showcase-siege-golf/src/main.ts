@@ -111,7 +111,7 @@ let toppledThisShot = 0;
 let autoplayWait = AUTOPLAY_DELAY_SECONDS;
 let autoplayEnabled = false;
 let pendingAdvance: "next-hole" | "retry-hole" | "new-round" | null = null;
-let currentVisualNames = new Set(flow.sim.visuals.map((v) => v.name));
+let currentVisualKeyByName = new Map<string, string>();
 let scoreEntries: HoleScoreEntry[] = [];
 let frame = 0;
 let objective = "Topple every pin into its cup. A/D aim, hold Space to charge, release to drive.";
@@ -132,20 +132,28 @@ let latestSnapshot: SiegeGolfEvidence | undefined;
 
 // ------------------------------------------------------------------ scene ----
 
-function nodeForVisual(v: PropVisual): AuraNodeInput {
+function visualKey(v: PropVisual): string {
+  if (v.source === "model") {
+    return `${v.name}@model:${v.typedAsset ?? ""}:${v.targetMaxDimension ?? 1}`;
+  }
+  const p = v.primitive!;
+  return `${v.name}@${p.shape}:${p.size.join("x")}:${p.color}:${p.emissive ?? ""}:${p.opacity ?? ""}`;
+}
+
+function nodeForVisual(v: PropVisual, key = visualKey(v)): AuraNodeInput {
   if (v.source === "model") {
     return model(MODEL_ASSETS[v.typedAsset!], {
-      name: v.name,
+      name: key,
       targetMaxDimension: v.targetMaxDimension ?? 1
     })
       .position(...v.position)
       .rotate(v.rotation.x, v.rotation.y, v.rotation.z)
-      .runtime(engineGame.runtimeNode(v.name, { tags: ["typed-asset", "physics-synced"] }))
+      .runtime(engineGame.runtimeNode(key, { tags: ["typed-asset", "physics-synced"] }))
       .toJSON();
   }
   const p = v.primitive!;
   const spec = {
-    name: v.name,
+    name: key,
     material: material.emissive({
       color: p.color,
       emissive: p.emissive ?? p.color,
@@ -161,25 +169,28 @@ function nodeForVisual(v: PropVisual): AuraNodeInput {
     .position(...v.position)
     .rotate(v.rotation.x, v.rotation.y, v.rotation.z)
     .scale([p.size[0], p.size[1], p.size[2]])
-    .runtime(engineGame.runtimeNode(v.name, { tags: ["primitive", "physics-synced"] }))
+    .runtime(engineGame.runtimeNode(key, { tags: ["primitive", "physics-synced"] }))
     .toJSON();
 }
 
 /**
  * Union over all nine holes: instantiate each sim once to enumerate its
  * visual specs (Rapier worlds are dropped immediately), then emit one
- * runtime node per unique name. Hole transitions re-pose/hide the same
- * nodes, so the scene is built once and never swapped.
+ * runtime node per unique (name, dimensions) key. Hole transitions
+ * re-pose/scale/hide the matching nodes, so the scene is built once and
+ * never swapped while preserving each hole's exact visual dimensions.
  */
-function buildWorldNodes(): { nodes: AuraNodeInput[]; visualNames: readonly string[] } {
-  const byName = new Map<string, PropVisual>();
+function buildWorldNodes(): { nodes: AuraNodeInput[]; visualKeys: readonly string[] } {
+  const byKey = new Map<string, PropVisual>();
   for (const hole of SIEGE_GOLF_HOLES) {
     const sim = createHoleSimulation(hole);
     for (const v of sim.visuals) {
-      if (!byName.has(v.name) && !HIDDEN_BODIES.has(v.name)) byName.set(v.name, v);
+      if (HIDDEN_BODIES.has(v.name)) continue;
+      const key = visualKey(v);
+      if (!byKey.has(key)) byKey.set(key, v);
     }
   }
-  const visualNames = [...byName.keys()];
+  const visualKeys = [...byKey.keys()];
   const aimGuideMat = material.emissive({ color: "#59d7ff", emissive: "#59d7ff", emissiveIntensity: 1.1, opacity: 0.85 });
   const chargeRingMat = material.emissive({ color: "#ffcf5c", emissive: "#ffcf5c", emissiveIntensity: 1.2, opacity: 0.9 });
   const strikeFlashMat = material.emissive({ color: "#fff3d6", emissive: "#ffd166", emissiveIntensity: 1.5 });
@@ -210,9 +221,9 @@ function buildWorldNodes(): { nodes: AuraNodeInput[]; visualNames: readonly stri
       .rotate(Math.PI / 2, 0, 0)
       .scale([0.8, 0.8, 0.8])
       .runtime(engineGame.runtimeNode("siege-cup-flash", { tags: ["event-feedback", "renderer-owned"] })),
-    ...visualNames.map((name) => nodeForVisual(byName.get(name)!))
+    ...visualKeys.map((key) => nodeForVisual(byKey.get(key)!, key))
   ];
-  return { nodes, visualNames };
+  return { nodes, visualKeys };
 }
 
 const world = buildWorldNodes();
@@ -397,15 +408,21 @@ function captureAuthoredPoses(): void {
   );
 }
 
-/** Pose + show the active hole's visuals; hide union names it doesn't own. */
+/** Pose + show the active hole's visuals; hide union keys it doesn't own. */
 function layoutHole(): void {
-  const specs = new Map(flow.sim.visuals.map((v) => [v.name, v]));
-  currentVisualNames = new Set(specs.keys());
+  const activeByKey = new Map<string, PropVisual>();
+  currentVisualKeyByName = new Map();
+  for (const v of flow.sim.visuals) {
+    if (HIDDEN_BODIES.has(v.name)) continue;
+    const key = visualKey(v);
+    activeByKey.set(key, v);
+    currentVisualKeyByName.set(v.name, key);
+  }
   captureAuthoredPoses();
-  for (const name of world.visualNames) {
-    const h = handle(name);
+  for (const key of world.visualKeys) {
+    const h = handle(key);
     if (!h) continue;
-    const spec = specs.get(name);
+    const spec = activeByKey.get(key);
     if (!spec) {
       h.setVisible(false);
       continue;
@@ -413,6 +430,9 @@ function layoutHole(): void {
     h.setVisible(true)
       .setPosition(spec.position[0], spec.position[1], spec.position[2])
       .setRotation(spec.rotation.x, spec.rotation.y, spec.rotation.z);
+    if (spec.source === "primitive" && spec.primitive) {
+      h.setScale([spec.primitive.size[0], spec.primitive.size[1], spec.primitive.size[2]]);
+    }
   }
 }
 
@@ -550,7 +570,7 @@ target.addEventListener("pointercancel", () => { dragStart = null; });
 
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) siegeGame.session.pause("visibility");
-  else siegeGame.session.resume();
+  else siegeGame.sessionImpl.releasePause("visibility");
 });
 
 // --------------------------------------------------------------------- HUD ---
@@ -703,9 +723,11 @@ function publishEvidence(): void {
 // -------------------------------------------------------------- frame loop ---
 
 app.onFrame(({ dt: rawDt }) => {
-  const stepSeconds = Math.min(0.05, Math.max(1 / 240, siegeGame.session.scaledDt(rawDt) || 1 / 60));
+  const baseDt = Number.isFinite(rawDt) && rawDt > 0 ? rawDt : 1 / 60;
+  const scaledDt = siegeGame.session.scaledDt(baseDt);
   frame += 1;
-  if (siegeGame.session.paused || stepSeconds <= 0) return;
+  if (siegeGame.session.paused || scaledDt <= 0) return;
+  const stepSeconds = Math.min(0.05, Math.max(1 / 240, scaledDt));
 
   const aim = shot.state;
   if (flow.phase === "aiming") {
@@ -762,9 +784,10 @@ app.onFrame(({ dt: rawDt }) => {
   rigState.ballInFlight = flow.phase === "simulating";
 
   for (const pose of flow.sim.poses()) {
-    if (!currentVisualNames.has(pose.name)) continue;
+    const key = currentVisualKeyByName.get(pose.name);
+    if (!key) continue;
     const e = quatToEuler(pose.rotation);
-    handle(pose.name)?.setPosition(pose.position[0], pose.position[1], pose.position[2])
+    handle(key)?.setPosition(pose.position[0], pose.position[1], pose.position[2])
       .setRotation(e.x, e.y, e.z);
   }
 

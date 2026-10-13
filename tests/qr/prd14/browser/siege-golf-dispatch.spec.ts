@@ -129,19 +129,36 @@ test.describe("siege-golf single-path boot (S1)", () => {
   // S7 (single-path): ported from apps/showcase-siege-golf/tests/
   // playable.spec.ts — the altitude rig reaches `framed` with the hole's
   // structures standing at both viewports the retired framing spec sampled.
-  test("framing holds at desktop and mobile viewports", async ({ page }) => {
+  // Split into separate tests so WebKit gets a fresh page/WebGL context per
+  // viewport instead of crashing on a second page.goto.
+  test("framing holds at desktop viewport", async ({ page }) => {
     const root = builtDist(APP_DIR);
     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      for (const viewport of [{ width: 1920, height: 1080 }, { width: 390, height: 844 }]) {
-        await page.setViewportSize(viewport);
-        await bootFramed(page, url);
-        const snapshot = await snapshotOf(page);
-        expect(snapshot.framed).toBe(true);
-        expect(snapshot.structures.total).toBeGreaterThan(0);
-      }
+      await page.setViewportSize({ width: 1920, height: 1080 });
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.framed).toBe(true);
+      expect(snapshot.structures.total).toBeGreaterThan(0);
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
+  });
+
+  test("framing holds at mobile viewport", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.framed).toBe(true);
+      expect(snapshot.structures.total).toBeGreaterThan(0);
       expect(errors).toEqual([]);
     } finally {
       server.close();
