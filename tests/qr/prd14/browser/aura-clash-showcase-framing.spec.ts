@@ -4,11 +4,20 @@ import { join } from "node:path";
 
 /**
  * T2.3 (Aura Clash v2): the fighting rig must keep the fighters inside the
- * art-direction framing band — subjectHeightFraction ∈ [0.45, 0.6] during
+ * art-direction framing band — subjectHeightFraction ∈ [0.20, 0.30] during
  * the 03-mid shot at 1920×1080 and 390×844. Reads the route evidence
- * `framing` section (C-22 camera evidence when mounted; when the stub
- * cannot measure the fraction it reports null and the check asserts the
- * rig id).
+ * `framing` section (measured by the route from the presented
+ * view-projection + kit body positions; the engine camera controller does
+ * not populate the C-22 fraction field).
+ *
+ * Band history: [0.45, 0.6] came from art/direction.ts framing (fighting
+ * comparables). The aura3d-art-direction genre recipe row for fighting
+ * (.agents/skills/aura3d-art-direction/references/look-recipes.md:
+ * `arena-fight`, follow side-on fov 45, subject 20–30% for the pair) is
+ * the governing look contract for Gate C, so the rig was re-solved to fov
+ * 45 / 0.25 and this band follows the recipe. art/direction.ts still
+ * declares the older band — reconciling that declaration is follow-up
+ * work outside the camera-fix scope.
  */
 
 const APP_DIR = "aura-clash-showcase";
@@ -17,7 +26,7 @@ const ROUTE_FLAG = "route-aura-clash";
 // (boot.ts qualityRebuild.flags + games.json qrFlags).
 const ENGINE_FLAGS = "game,camera,lighting,post,materials,vfx,world,tiers,looks";
 const EVIDENCE = `window.__AURA3D_GAME_EVIDENCE__?.["${APP_DIR}"]`;
-const FRACTION: readonly [number, number] = [0.45, 0.6];
+const FRACTION: readonly [number, number] = [0.2, 0.3];
 
 test.describe("aura-clash-showcase framing (T2.3)", () => {
 

@@ -10,7 +10,10 @@ import { camera, createFightingGameKit, scene } from "@aura3d/engine";
 import type { FightingGameSnapshot } from "@aura3d/engine";
 import { auraClashEnvironment, auraClashLights } from "./scene/lighting";
 import { auraClashWorldNodes, P1_NODE, P2_NODE, HIT_FLASH_NODE } from "./scene/world";
-import { createAuraClashFightingRig } from "./scene/camera";
+import {
+  createAuraClashFightingRig, solveAuraClashFightingDistance,
+  AURA_CLASH_FIGHTING_FOV_DEG
+} from "./scene/camera";
 import { auraClashFxFrame } from "./scene/fx";
 import { createAuraClashFighterAnimations, fighterYawForFacing } from "./scene/fighter-animation";
 import { publishAuraClashEvidence } from "./evidence";
@@ -54,9 +57,21 @@ const game = createGame({
     scene()
       .background("#070b12")
       .camera(
-        // Static fallback only — the fighting rig drives the live camera;
-        // keep the same 32° fov solve so the first frame matches the rig's.
-        camera.orbit({ target: [0, 1, 0], distance: 6.3, fov: 32 })
+        // Static fallback only — the fighting rig drives the live camera.
+        // Distance comes from the rig's own aspect-aware solve at the
+        // opening separation (fighters at x ±1.45) and a 16:9 reference
+        // aspect, so the first frame already matches the rig framing
+        // (recipe: fov 45, fighters at 25% of frame height) at every
+        // viewport — the rig re-solves for the real aspect on its first
+        // update before `ready()`.
+        camera.orbit({
+          target: [0, 1, 0],
+          distance: solveAuraClashFightingDistance({
+            aspect: 16 / 9,
+            separation: 2.9
+          }).distance,
+          fov: AURA_CLASH_FIGHTING_FOV_DEG
+        })
       )
       .addMany(auraClashWorldNodes())
       .addMany(auraClashLights())

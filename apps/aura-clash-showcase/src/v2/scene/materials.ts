@@ -1,10 +1,16 @@
 // apps/aura-clash-showcase/src/v2/scene/materials.ts — authored materials (T2.2).
 // §6.9.3: rain-soaked rooftop — the deck is a dark clearcoat slab (SSR wet
-// stand-in R-14-14), neon sign props are emissive practicals (§6.9.3 wants
-// HDR emissive 4–8 on signs; these ARE light-representing nodes so the ≤0.1
-// non-light-material cap does not apply). No baseColor/MR/emissive fighter
-// overrides (§6.9.3 deletes collectFighterFlashMaterials); team identity is
-// the rim/practical lighting, not tints.
+// stand-in R-14-14), neon sign props are emissive practicals (light-
+// representing nodes, so the ≤0.1 non-light-material cap does not apply).
+// No baseColor/MR/emissive fighter overrides (§6.9.3 deletes
+// collectFighterFlashMaterials); team identity is the rim/practical
+// lighting, not tints.
+// Emissive levels (lane run 38414884637 blown-white-bar defect): at 5.2/4.4
+// the sign boxes clipped to featureless white under the arena-fight post
+// (ACES + bloom threshold 1.2, emissiveStrengthRange [1.5, 6]) — pixels at
+// every viewport show a white vertical bar with no hue. 1.9/1.7 sits at the
+// low end of the post range: just over the bloom threshold for a gentle
+// neon glow while magenta/cyan hue survives tonemapping.
 import { material, type AuraMaterialSpec } from "@aura3d/engine";
 
 export const ROOFTOP_DECK_MATERIAL: AuraMaterialSpec = material.physical({
@@ -25,15 +31,17 @@ export const ROOFTOP_TRIM_MATERIAL: AuraMaterialSpec = material.pbr({
 export const NEON_PINK_MATERIAL: AuraMaterialSpec = material.emissive({
   color: "#2a0a1c",
   emissive: "#ff2d78",
-  emissiveIntensity: 5.2,
-  roughness: 0.3
+  emissiveIntensity: 1.9,
+  roughness: 0.3,
+  practical: true
 });
 
 export const NEON_CYAN_MATERIAL: AuraMaterialSpec = material.emissive({
   color: "#06232b",
   emissive: "#39d6ff",
-  emissiveIntensity: 4.4,
-  roughness: 0.3
+  emissiveIntensity: 1.7,
+  roughness: 0.3,
+  practical: true
 });
 
 // Hit flash: a light-representing node (the ≤0.1 non-light cap does not

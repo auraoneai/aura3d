@@ -4,43 +4,16 @@
 // sign props (emissive practicals), wet clearcoat deck. The four root
 // "shadow evidence" boxes and the spectator card are deleted; no parked
 // nodes, no ambient fill — visibility comes from the rig in lighting.ts.
+// Look brief (aura3d-art-direction, fighting row `arena-fight`):
+//   time of day — night, after rain, under a single warm overhead spot;
+//   palette — dark blue-grey arena + wet slate deck, magenta/cyan neon accents;
+//   mood — spotlit rooftop ring in a dark crowdless city, hard key, deep shadow.
 import { game, instances, model, primitives, type AuraNodeInput } from "@aura3d/engine";
 import { assets } from "../../aura-assets";
 import {
   FOG_CARD_MATERIAL, HIT_FLASH_MATERIAL, NEON_CYAN_MATERIAL, NEON_PINK_MATERIAL,
   ROOFTOP_DECK_MATERIAL, ROOFTOP_TRIM_MATERIAL, SKYLINE_MATERIAL
 } from "./materials";
-
-/** glTF node names suppressed on the foreground props instance (every node
- *  except Prop_ACUnit_* / Prop_Bollard_* — the §14.4 restore list). */
-const FOREGROUND_HIDDEN_NODES: readonly string[] = [
-  "Floor_4x4_Floor_4x4", "Floor_4x4_Floor_4x4.001", "Floor_4x4_Floor_4x4.002",
-  "Roof_4x4_Roof_4x4", "Roof_2x2_Roof_2x2", "Roof_2x2_Roof_2x2.001",
-  "Sidewalk_Straight_3m_Sidewalk_Straight_3m",
-  "Sidewalk_Straight_3m_Sidewalk_Straight_3m.001",
-  "Sidewalk_Corner_Flat_3m_Sidewalk_Corner_Flat_3m",
-  "Sidewalk_Corner_Flat_3m_Sidewalk_Corner_Flat_3m.001",
-  "Street_2Lane_Street_2Lane", "Street_4Lane_Street_4Lane",
-  "Decal_Crosswalk_Decal_Crosswalk", "Decal_Stop_Decal_Stop",
-  "Building_Large_2_Building_Large_2", "Building_Large_2_Building_Large_2.001",
-  "Building_Medium_2_001_Building_Medium_2.001",
-  "Building_Medium_2_001_Building_Medium_2.002",
-  "Building_Small_1_Building_Small_1", "Building_Small_1_Building_Small_1.001",
-  "Metal_FullWindow_Metal_FullWindow", "Metal_Window_Metal_Window",
-  "Brick_Window_CurvedDouble_Brick_Window_CurvedDouble",
-  "Brick_Window_Square_Single_Brick_Window_Square_Single",
-  "Prop_ManholeCover_Prop_ManholeCover",
-  "Prop_Planter_Single_Prop_Planter_Single",
-  "Prop_Planter_Single_Prop_Planter_Single.001",
-  "Door_1_Door_1", "Door_2_Door_2",
-  "AuraClash_Emerald_FloorRail", "AuraClash_Emerald_FloorRail.001",
-  "AuraClash_Emerald_FloorRail.002", "AuraClash_Emerald_FloorRail.003",
-  "AuraClash_Emerald_FloorRail.004",
-  "AuraClash_Sign_AURA CLASH", "AuraClash_Sign_NEON ROOFTOP",
-  "AuraClash_Sign_FIGHT READY",
-  "AuraClash_Arena_KeyLight", "AuraClash_Cyan_RimLight",
-  "AuraClash_Amber_RimLight", "Camera"
-];
 
 export const FIGHT_PLANE_Y = 0;
 export const FIGHTER_TARGET_HEIGHT = 1.8;
@@ -124,18 +97,18 @@ export function auraClashWorldNodes(o: AuraClashWorldOptions = {}): readonly Aur
         "AuraClash_Sign_FIGHT READY"
       ]
     }).position(0, -0.4, -13).rotate(0, Math.PI, 0),
-    // §14.4: Prop_ACUnit_*/Prop_Bollard_* restored as a foreground layer — a
-    // second small instance of the same GLB with every non-prop node hidden,
-    // planted low between camera and fight plane.
-    model(assets.arenaNeonDowntownTextured, {
-      name: "clash foreground props",
-      role: "setDressing",
-      scaleMode: "fit",
-      targetMaxDimension: 3.4,
-      castShadow: false,
-      receiveShadow: false,
-      hiddenNodeNames: FOREGROUND_HIDDEN_NODES
-    }).position(-0.6, -0.35, 2.1).rotate(0, Math.PI, 0),
+    // DELETED (lane run 38414884637 brick-wall defect): the former §14.4
+    // "foreground props" second instance of this GLB at (-0.6,-0.35,2.1),
+    // fit 3.4. Under the fit scale its building nodes occupy
+    // x[-2.36,1.04] y[-0.35,2.59] z[2.50,4.43] — directly between the
+    // fighting camera and the fight plane — and lane pixels prove the
+    // hiddenNodeNames suppression did not remove them (full-frame brick
+    // at 1920x1080, brick-dominated openings at every viewport, building
+    // facade at frame-left in 03-mid). The nodes it meant to keep
+    // (Prop_ACUnit_*/Prop_Bollard_*) are ~0.07 m at that scale — no
+    // readable dressing — so the instance is removed by construction
+    // rather than relocated. Nothing authored may sit in the camera
+    // corridor z in (0, camera distance) across the stage width again.
     model(assets.arenaRooftopBuilding, {
       name: "clash rooftop flank east",
       role: "setDressing",

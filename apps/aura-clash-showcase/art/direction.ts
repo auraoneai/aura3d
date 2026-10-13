@@ -1,5 +1,9 @@
 // apps/aura-clash-showcase/art/direction.ts — C-35 art direction (PRD-14 §6.9.3).
 // Fantasy: rain-soaked neon rooftop street fight, 2.5D.
+// Look brief (aura3d-art-direction, fighting row `arena-fight`):
+//   time of day — night, after rain, under a single warm overhead spot;
+//   palette — dark blue-grey arena + wet slate deck, magenta/cyan neon accents;
+//   mood — spotlit rooftop ring in a dark crowdless city, hard key, deep shadow.
 import { defineArtDirection } from "@aura3d/game/art";
 
 export default defineArtDirection({

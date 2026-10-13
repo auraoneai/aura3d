@@ -6,6 +6,7 @@
 import type {
   AuraApp, FightingGameSnapshot, GameSession
 } from "@aura3d/engine";
+import { projectedSubjectHeightFraction } from "../scene/camera";
 
 export const AURA_CLASH_EVIDENCE_ID = "aura-clash-showcase";
 
@@ -45,10 +46,25 @@ export function publishAuraClashEvidence(b: AuraClashEvidenceBindings): void {
     },
     get framing() {
       const ev = b.app()?.camera?.evidence?.();
+      // The engine camera controller never populates
+      // subjectScreenHeightFraction (CameraController.evidence()), so
+      // measure it here from real state: project each fighter's feet→head
+      // segment (kit body position + authored fighter height) through the
+      // presented view-projection and publish the larger share. Falls back
+      // to the controller field if it ever starts reporting one.
+      let measured: number | null = null;
+      const vp = ev?.viewProjection;
+      if (vp && vp.length >= 16) {
+        const snap = b.snapshot();
+        const p1 = projectedSubjectHeightFraction(vp, snap.player.position);
+        const p2 = projectedSubjectHeightFraction(vp, snap.opponent.position);
+        measured = p1 === null ? p2 : p2 === null ? p1 : Math.max(p1, p2);
+      }
+      const fraction = measured ?? ev?.subjectScreenHeightFraction ?? null;
       return {
         rig: ev?.rig ?? null,
-        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
-        subjectHeightFraction: ev?.subjectScreenHeightFraction ?? null
+        subjectScreenHeightFraction: fraction,
+        subjectHeightFraction: fraction
       };
     },
     get render() {
