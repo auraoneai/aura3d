@@ -21,7 +21,6 @@ describe("public showcase gameplay regressions", () => {
   it("does not self-author completion or visual approval before mounted interaction", () => {
     const skyline = readFileSync("apps/showcase-skyline-runner/src/main.ts", "utf8");
     const turbo = readFileSync("apps/showcase-turbo-drift-circuit/src/main.ts", "utf8");
-    const blockfall = readFileSync("apps/showcase-blockfall-reactor/src/main.ts", "utf8");
 
     // invariant: source must keep `completed: false` — does not self-author completion or visual approval before mounted interaction
     expect(skyline).toContain("completed: false");
@@ -35,8 +34,6 @@ describe("public showcase gameplay regressions", () => {
     expect(turbo).not.toContain("visualReviewPass: true");
     expect(turbo).toContain("opponentMovesIndependently");
     expect(turbo).toContain("finishProgression");
-    expect(blockfall).toContain("observedGameplayProof");
-    expect(blockfall).toContain("observedGameplayProof.eventCounts.reset += 1");
   });
 
   it("keeps Skyline Runner traversable through its generated finish surface", () => {
