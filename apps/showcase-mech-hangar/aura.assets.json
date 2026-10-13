@@ -1,0 +1,169 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "quaterniusMech",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/quaternius-mech.glb",
+      "outputPath": "public/aura-assets/quaternius-mech.glb",
+      "url": "/aura-assets/quaternius-mech.glb",
+      "hash": "sha256-d61427def92c18148eaa9cebbc0dbd26b8e55ea5d048293840165077180bd181",
+      "sizeBytes": 672456,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "libraryId": "quaternius-mech",
+      "libraryKit": "characters/robots-mechs",
+      "license": "CC0",
+      "attribution": "Quaternius",
+      "sourcePage": "https://poly.pizza/m/o3Ps8z8ByP",
+      "bounds": [
+        1.8,
+        2.6,
+        1.0
+      ]
+    },
+    {
+      "id": "quaterniusRobotEnemy",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/quaternius-robot-enemy.glb",
+      "outputPath": "public/aura-assets/quaternius-robot-enemy.glb",
+      "url": "/aura-assets/quaternius-robot-enemy.glb",
+      "hash": "sha256-d5d1de1481560415c9006dd1989c2dd09ee1b59955c43bcd8d331445a5e69cb7",
+      "sizeBytes": 563656,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "libraryId": "quaternius-robot-enemy",
+      "libraryKit": "characters/robots-mechs",
+      "license": "CC0",
+      "attribution": "Quaternius",
+      "sourcePage": "https://poly.pizza/m/1gNo5ezvmr",
+      "bounds": [
+        1.1,
+        1.2,
+        0.7
+      ]
+    },
+    {
+      "id": "quaterniusRobotEnemyLarge",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/quaternius-robot-enemy-large.glb",
+      "outputPath": "public/aura-assets/quaternius-robot-enemy-large.glb",
+      "url": "/aura-assets/quaternius-robot-enemy-large.glb",
+      "hash": "sha256-1d21ee204a8080897623171baadcd3b4b10fd24c9c959eae2a94c0042a5462d7",
+      "sizeBytes": 430964,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "libraryId": "quaternius-robot-enemy-large",
+      "libraryKit": "characters/robots-mechs",
+      "license": "CC0",
+      "attribution": "Quaternius",
+      "sourcePage": "https://poly.pizza/m/mPDR0L5uKx",
+      "bounds": [
+        1.3,
+        1.3,
+        0.8
+      ]
+    },
+    {
+      "id": "quaterniusRobotEnemyLargeGun",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/quaternius-robot-enemy-large-gun.glb",
+      "outputPath": "public/aura-assets/quaternius-robot-enemy-large-gun.glb",
+      "url": "/aura-assets/quaternius-robot-enemy-large-gun.glb",
+      "hash": "sha256-5c5f5b28c002592f590b23503c2cb98bf230293b165e56496d650bd6eeaafd9e",
+      "sizeBytes": 711592,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "libraryId": "quaternius-robot-enemy-large-gun",
+      "libraryKit": "characters/robots-mechs",
+      "license": "CC0",
+      "attribution": "Quaternius",
+      "sourcePage": "https://poly.pizza/m/mWojM4i2IH",
+      "bounds": [
+        1.3,
+        1.3,
+        0.8
+      ]
+    },
+    {
+      "id": "quaterniusFlyingGunDrone",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/quaternius-flying-gun-drone.glb",
+      "outputPath": "public/aura-assets/quaternius-flying-gun-drone.glb",
+      "url": "/aura-assets/quaternius-flying-gun-drone.glb",
+      "hash": "sha256-af82b5b458530b31ce9694cf0461649839e1e822a922203faa16f4c32c21e595",
+      "sizeBytes": 324204,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "libraryId": "quaternius-flying-gun-drone",
+      "libraryKit": "vehicles/air-space-sea",
+      "license": "CC0",
+      "attribution": "Quaternius",
+      "sourcePage": "https://poly.pizza/m/UDTM6X1y9a",
+      "bounds": [
+        1.6,
+        0.7,
+        0.9
+      ]
+    },
+    {
+      "id": "quaterniusCubeCrate",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/quaternius-cube-crate.glb",
+      "outputPath": "public/aura-assets/quaternius-cube-crate.glb",
+      "url": "/aura-assets/quaternius-cube-crate.glb",
+      "hash": "sha256-e0c4c5946b53ba314ec6e22bdb5d3329e4a2f0950b3c477a88e0d456d85baea8",
+      "sizeBytes": 12960,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "libraryId": "quaternius-cube-crate",
+      "libraryKit": "props/industrial-urban",
+      "license": "CC0",
+      "attribution": "Quaternius",
+      "sourcePage": "https://poly.pizza/m/YAghI6GBls",
+      "bounds": [
+        2.021,
+        2.021,
+        2.021
+      ]
+    },
+    {
+      "id": "quaterniusWallModular",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/quaternius-wall-modular.glb",
+      "outputPath": "public/aura-assets/quaternius-wall-modular.glb",
+      "url": "/aura-assets/quaternius-wall-modular.glb",
+      "hash": "sha256-052a5ff5a468c946dcfe170d907a0c4554a96c7f253c89ff54e72fdf048d22c6",
+      "sizeBytes": 91404,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "libraryId": "quaternius-wall-modular",
+      "libraryKit": "environments/modular",
+      "license": "CC0",
+      "attribution": "Quaternius",
+      "sourcePage": "https://poly.pizza/m/itasw0GWNf",
+      "bounds": [
+        2.001,
+        2.005,
+        0.438
+      ]
+    }
+  ]
+}
