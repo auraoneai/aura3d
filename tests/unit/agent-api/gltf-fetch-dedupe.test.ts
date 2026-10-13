@@ -53,6 +53,25 @@ describe("fetchBytesShared in-flight dedupe", () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
+  it("retries a network/cache failure once with cache bypass, but never an HTTP status", async () => {
+    const seenInit: unknown[] = [];
+    let attempt = 0;
+    globalThis.fetch = (async (_url: string, init?: RequestInit) => {
+      seenInit.push(init);
+      attempt += 1;
+      if (attempt === 1) throw new TypeError("Failed to fetch");
+      return {
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => new Uint8Array([9]).buffer
+      } as Response;
+    }) as unknown as typeof fetch;
+    const bytes = await fetchBytesShared("https://example.test/flaky.glb");
+    expect([...new Uint8Array(bytes)]).toEqual([9]);
+    expect(attempt).toBe(2);
+    expect((seenInit[1] as RequestInit).cache).toBe("no-store");
+  });
+
   it("propagates the HTTP status to every concurrent waiter", async () => {
     const { fetchMock, release } = deferredFetch(new Uint8Array(), 404);
     const calls = [
