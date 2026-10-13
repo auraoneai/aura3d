@@ -10,10 +10,8 @@ import type { AuraSceneBuilder, scene } from "../scene.js";
 import type { PhysicsContinuousCollisionDescriptor } from "@aura3d/physics";
 import type { GameAppRuntimeOptions } from "../../GameAppRuntime";
 import type { createGameInput, GameInputOptions } from "../../GameRuntime";
-import type { GltfBounds } from "../../compiler/gltfRuntime.js";
 import type { SdfTextOcclusionPolicy, Geometry, InstancedPBRMaterial, PBRMaterial, TexturedPBRMaterial, CollectedLight } from "@aura3d/rendering";
 import type { TypedGLBActor, TypedGLBActorEvidence } from "../../../production-runtime/TypedGLBActor.js";
-import type { WebGLPrimitive } from "../../compiler/webglRuntime.js";
 import type { animation } from "../animation.js";
 import type { effects } from "../effects.composite.js";
 import type { geometry } from "../geometry.js";
@@ -638,6 +636,55 @@ export interface WebGLSceneRenderer {
    */
   readonly auraRenderer?: unknown;
   dispose(): void;
+}
+
+/**
+ * Axis-aligned bounds in model space (Live Fix E6: moved here from
+ * compiler/gltfRuntime — shared types live with the runtime types, not in
+ * the fallback loader scheduled for deletion).
+ */
+export interface GltfBounds {
+  readonly min: AuraVec3;
+  readonly max: AuraVec3;
+}
+
+/** GPU buffers for one primitive of the legacy WebGL fallback model. */
+export interface WebGLPrimitive {
+  readonly position: WebGLBuffer;
+  readonly normal: WebGLBuffer;
+  readonly uv?: WebGLBuffer;
+  readonly vertexColor?: WebGLBuffer;
+  readonly index?: WebGLBuffer;
+  readonly count: number;
+  readonly mode: number;
+  readonly indexType?: number;
+  readonly color?: readonly [number, number, number];
+  readonly texture?: WebGLTexture;
+  readonly metallicRoughnessTexture?: WebGLTexture;
+  readonly occlusionTexture?: WebGLTexture;
+  readonly emissiveTexture?: WebGLTexture;
+  readonly metallic?: number;
+  readonly roughness?: number;
+  readonly emissive?: readonly [number, number, number];
+  /*
+   * WS-2.1a — the extended material surface, which this renderer previously had no way to receive.
+   *
+   * AuraMaterialSpec has accepted anisotropy, sheen, iridescence, clearcoat and transmission
+   * for a long time, and this shader had no uniform for any of them, so every one was
+   * silently discarded for primitives. Measured before the fix: `sheen: 1` and `sheen: 0` produced a
+   * byte-identical frame.
+   */
+  readonly anisotropy?: number;
+  readonly anisotropyRotation?: number;
+  readonly sheen?: number;
+  readonly sheenRoughness?: number;
+  readonly sheenColor?: readonly [number, number, number];
+  readonly iridescence?: number;
+  readonly iridescenceIor?: number;
+  readonly iridescenceThickness?: readonly [number, number];
+  readonly clearcoat?: number;
+  readonly clearcoatRoughness?: number;
+  readonly modelMatrix?: (time: number) => Float32Array;
 }
 
 export interface WebGLModel {

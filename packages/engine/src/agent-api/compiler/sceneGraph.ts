@@ -29,7 +29,7 @@
  */
 
 import type { AuraEffectNode, AuraModelNode, AuraPrimitiveNode, AuraSceneNode, AuraSceneSnapshot, AuraTransformSpec, AuraVec3 } from "../nodes/types.js";
-import type { GltfBounds } from "./gltfRuntime.js";
+import type { GltfBounds } from "../nodes/types/runtime.js";
 import type { AuraEulerOrder, AuraQuat, AuraWorldTransform } from "../../contracts/sceneGraph.js";
 import { SCENE_GRAPH_SHEAR, composeTRSInto, decomposeMatrix, eulerToQuaternion, localMatrixOf, multiplyMat4Into, quaternionMultiply } from "../sceneGraph.js";
 import { animatedPosition, animatedRotation, flattenSceneNodes as legacyFlattenSceneNodes, createModelMatrix as legacyCreateModelMatrix, lowerLookNode, markLookNodeLowered, primitiveSize, resolveModelFitScale } from "../sceneMath.js";

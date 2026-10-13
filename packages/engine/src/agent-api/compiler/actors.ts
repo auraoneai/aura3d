@@ -4,7 +4,7 @@ import type { AnimationPose } from "@aura3d/animation";
 import type { AuraRuntimeNodeAnimationBindingMetadata, RuntimeNodeMorphTargetWeights } from "../RuntimeNodeHandle";
 import type { AuraVec3, AuraAnimationSpec, AuraModelNode, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeRegistry, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry } from "../nodes/types.js";
 import type { GLTFootPlantingConfig } from "@aura3d/assets/browser";
-import type { GltfBounds } from "./gltfRuntime.js";
+import type { GltfBounds } from "../nodes/types/runtime.js";
 import type { Mat4 } from "@aura3d/scene";
 import type { ProductionImportedAssetRenderMetadata, RenderItem } from "@aura3d/rendering";
 import type { TypedGLBActor, TypedGLBActorEvidence } from "../../production-runtime/TypedGLBActor.js";

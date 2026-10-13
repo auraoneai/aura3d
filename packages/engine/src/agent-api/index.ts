@@ -32,7 +32,7 @@ import { resolveAnimationSeconds } from "./compiler/animation.js";
 import { orbitAnimatedAngle } from "./compiler/actors.js";
 import { resolveCameraFrame } from "./compiler/camera.js";
 import { colorToClearColor } from "./colorUtils.js";
-import type { GltfBounds } from "./compiler/gltfRuntime.js";
+import type { GltfBounds } from "./nodes/types/runtime.js";
 import { animatedPosition, flattenSceneNodes, isPositiveFinite, multiply4, primitiveSize, rotationXYZ, scaling, translation } from "./sceneMath.js";
 import type { AuraCameraMode, AuraColor, AuraEffectNode, AuraLabelNode, AuraModelNode, AuraPrimitiveNode, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraVec3 } from "./nodes/types.js";
 

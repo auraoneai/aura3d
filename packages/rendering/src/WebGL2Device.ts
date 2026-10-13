@@ -85,6 +85,16 @@ export function renderTargetColorFormat(descriptor: Pick<RenderTargetDescriptor,
   return descriptor.colorAttachments?.[0]?.format ?? descriptor.format ?? "rgba8";
 }
 
+/**
+ * MAX_TEXTURE_SIZE of the canvas's WebGL2 context (4096 when unavailable).
+ * Lives in the device owner file so callers never touch getContext
+ * themselves (single-renderer gate). Moved from the engine's deleted
+ * safe-basic webglRuntime in Live Fix E6.
+ */
+export function webGL2MaxTextureSize(canvas: HTMLCanvasElement): number {
+  return Number(canvas.getContext("webgl2")?.getParameter(WebGL2RenderingContext.MAX_TEXTURE_SIZE) ?? 4096);
+}
+
 /** C-08 named uniform-block → binding-point assignment applied post-link (T0-02). */
 const NAMED_UNIFORM_BLOCK_BINDINGS: ReadonlyArray<readonly [blockName: string, binding: number]> = [
   ["AuraFrame", AURA_FRAME_BINDING],

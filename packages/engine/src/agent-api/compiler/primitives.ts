@@ -216,7 +216,7 @@ import type { AuraMaterialSpec, AuraBuiltinPrimitive } from "../nodes/types.js";
 import { renderer } from "../rendererDiagnostics.js";
 import { scene } from "../nodes/scene.js";
 import { colorToLinearRgb } from "../colorUtils.js";
-import type { GltfBounds } from "./gltfRuntime.js";
+import type { GltfBounds } from "../nodes/types/runtime.js";
 import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, qrPrimitiveGeometryKey, type QrPrimitiveGeometryOptions } from "./geometry.js";
 import { clamp01 } from "../sceneMath.js";
 
