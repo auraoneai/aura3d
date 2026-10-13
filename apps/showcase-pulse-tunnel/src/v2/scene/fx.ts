@@ -36,7 +36,7 @@ export function wirePulseFx(game: Game): PulseFx {
 
   return {
     laneSwitch(x, y, z) {
-      game.fx.burst("streak", [x, Math.max(y, 0.1), z], { count: 3, speed: 2.4, color: "#3ff2ff" });
+      game.fx.burst("streak", [x, Math.max(y, 0.1), z], { count: 7, speed: 2.4, color: "#3ff2ff" });
     },
     jump(x, y, z) {
       game.fx.burst("dust", [x, 0.05, z], { count: 4, speed: 1.6, color: "#bae6fd" });
@@ -58,7 +58,7 @@ export function wirePulseFx(game: Game): PulseFx {
       game.session.hitStop(final ? 0.08 : 0.05);
     },
     gatePassed(x, z) {
-      game.fx.burst("spark", [x, 0.5, z], { count: 2, speed: 1.4 });
+      game.fx.burst("spark", [x, 0.5, z], { count: 9, speed: 1.8, color: "#7df3ff" });
     },
     beat(beat) {
       // Beat ring breathes every quarter note; a small kick every bar.
