@@ -290,33 +290,34 @@ function fireOnce(): void {
 
 function buildScene() {
   const nodes: AuraNodeInput[] = [
-    // Corridor shell: dark deck + ceiling slabs, modular wall panels down
-    // both sides, emissive guide strips, crate cover along the lane.
+    // Corridor shell: high-gloss clearcoated reflective deck + anisotropic
+    // brushed-metal ceiling slab, modular wall panels down both sides,
+    // emissive guide strips, crate cover along the lane.
     primitives.box({
       name: "corridor deck",
       size: [6.4, 0.1, 27],
       position: [0, -0.05, -2],
-      material: material.pbr({ color: "#11182c", roughness: 0.35, metalness: 0.55 }),
+      material: material.reflectiveFloor({ color: "#091022", roughness: 0.12, metallic: 0.48, clearcoat: 0.88, clearcoatRoughness: 0.04 }),
       receiveShadow: true
     }),
     primitives.box({
       name: "corridor ceiling",
       size: [6.4, 0.1, 27],
       position: [0, 3.05, -2],
-      material: material.pbr({ color: "#0b0e18", roughness: 0.5, metalness: 0.4 })
+      material: material.brushedMetal({ color: "#141d30", roughness: 0.26, anisotropy: 0.85 })
     }),
     ...wallPanelNodes(),
     primitives.box({
       name: "guide strip west",
       size: [0.08, 0.08, 26],
       position: [-2.55, 2.55, -2],
-      material: material.emissive({ color: "#4de8ff", emissive: "#4de8ff", emissiveIntensity: 1.5 })
+      material: material.emissive({ color: "#4de8ff", emissive: "#4de8ff", emissiveIntensity: 1.5, practical: true })
     }),
     primitives.box({
       name: "guide strip east",
       size: [0.08, 0.08, 26],
       position: [2.55, 2.55, -2],
-      material: material.emissive({ color: "#ff5d7d", emissive: "#ff5d7d", emissiveIntensity: 1.3 })
+      material: material.emissive({ color: "#ff5d7d", emissive: "#ff5d7d", emissiveIntensity: 1.3, practical: true })
     }),
     ...crateNodes(),
     ...targetSceneNodes(),
@@ -326,19 +327,19 @@ function buildScene() {
       name: "pulse rifle viewmodel",
       size: [0.09, 0.15, 0.55],
       position: [0, -50, 0],
-      material: material.pbr({ color: "#2a3454", roughness: 0.3, metalness: 0.6, emissive: "#4de8ff", emissiveIntensity: 0.35 })
+      material: material.brushedMetal({ color: "#2a3454", roughness: 0.22, anisotropy: 0.88, emissive: "#4de8ff", emissiveIntensity: 0.35, practical: true })
     }).runtime(game.runtimeNode("weapon-viewmodel", { tags: ["weapon", "runtime"] })),
     primitives.box({
       name: "muzzle flash",
       size: [0.16, 0.16, 0.16],
       position: [0, -50, 0],
-      material: material.emissive({ color: "#ff9d12", emissive: "#ff9d12", emissiveIntensity: 2.2 })
+      material: material.emissive({ color: "#ff9d12", emissive: "#ff9d12", emissiveIntensity: 2.2, practical: true })
     }).runtime(game.runtimeNode("muzzle-flash", { tags: ["fx", "runtime"] })),
     primitives.box({
       name: "hit spark",
       size: [0.22, 0.22, 0.22],
       position: [0, -50, 0],
-      material: material.emissive({ color: "#4de8ff", emissive: "#4de8ff", emissiveIntensity: 2 })
+      material: material.emissive({ color: "#4de8ff", emissive: "#4de8ff", emissiveIntensity: 2, practical: true })
     }).runtime(game.runtimeNode("hit-spark", { tags: ["fx", "runtime"] }))
   ];
 
@@ -508,15 +509,15 @@ function createHud(): HTMLElement {
   root.style.cssText = [
     "position:absolute",
     "left:16px",
-    "top:16px",
+    "top:88px",
     "z-index:5",
-    "min-width:300px",
-    "font:600 13px/1.35 Inter, system-ui, sans-serif",
+    "min-width:290px",
+    "font:500 13px/1.4 'Whitney', 'DIN Pro', system-ui, sans-serif",
     "color:#f5fbff",
-    "background:rgba(8,10,22,0.72)",
+    "background:rgba(8,10,22,0.78)",
     "border:1px solid rgba(77,232,255,0.34)",
     "border-radius:8px",
-    "padding:12px",
+    "padding:10px 12px",
     "pointer-events:none"
   ].join(";");
   document.body.append(root);

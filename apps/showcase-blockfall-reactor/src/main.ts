@@ -409,14 +409,32 @@ function createPracticeBoard(): Cell[][] {
 
 function buildScene(board: Board) {
   const nodes: AuraNodeInput[] = [
-    // Modular wall panel stands in for the arcade cabinet silhouette
-    // (library approximation, #481 mapping); scale keeps the old height.
-    model(assets.quaterniusWallModular, { name: "typed arcade cabinet", castShadow: true })
-      .position(1.9, 0.2, -0.7)
-      .scale(0.2),
-    // Dark glossy board backing sourced from the same typed block GLB,
+    // Symmetrical modular reactor bay pillars flank the board well,
+    // grounding the cabinet inside a 3D containment bay.
+    model(assets.quaterniusWallModular, { name: "typed arcade cabinet right", castShadow: true })
+      .position(2.05, 0.2, -0.55)
+      .rotate(0, -0.28, 0)
+      .scale(0.22),
+    model(assets.quaterniusWallModular, { name: "typed arcade cabinet left", castShadow: true })
+      .position(-2.05, 0.2, -0.55)
+      .rotate(0, 0.28, 0)
+      .scale(0.22),
+    // Reflective reactor chamber floor deck beneath the well so the neon
+    // frame and falling blocks cast crisp specular reflections.
+    model(assets.quaterniusCubeCrate, {
+      name: "reactor chamber floor deck",
+      material: material.reflectiveFloor({ color: "#060b16", roughness: 0.1, metallic: 0.45, clearcoat: 0.88, clearcoatRoughness: 0.04 }),
+      scaleMode: "world"
+    })
+      .position(0, boardOrigin.y - railSize - 0.05, 0.35)
+      .scale(worldScale3(subjectWidth + 3.8, 0.08, 2.2)),
+    // Dark clearcoated glossy board backing sourced from the typed block GLB,
     // sized in world metres to the full subject (well + rails).
-    model(assets.quaterniusCubeCrate, { name: "board glossy backplate", material: material.pbr({ color: "#0b0e18", roughness: 0.18, metalness: 0.55 }), scaleMode: "world" })
+    model(assets.quaterniusCubeCrate, {
+      name: "board glossy backplate",
+      material: material.reflectiveFloor({ color: "#090e1c", roughness: 0.1, metallic: 0.48, clearcoat: 0.9, clearcoatRoughness: 0.03 }),
+      scaleMode: "world"
+    })
       .position(0, boardCenterY, -0.16)
       .scale(worldScale3(subjectWidth, subjectHeight, 0.06)),
     ...boardFrameNodes(),
@@ -438,7 +456,14 @@ function buildScene(board: Board) {
 }
 
 function boardFrameNodes(): AuraNodeInput[] {
-  const rail = material.pbr({ color: FRAME_COLOR, roughness: 0.3, metalness: 0.5, emissive: FRAME_ACCENT, emissiveIntensity: 0.22, practical: true });
+  const rail = material.brushedMetal({
+    color: FRAME_COLOR,
+    roughness: 0.22,
+    anisotropy: 0.88,
+    emissive: FRAME_ACCENT,
+    emissiveIntensity: 0.22,
+    practical: true
+  });
   const railDepth = 0.18;
   const halfRail = railSize / 2;
   return [
@@ -486,7 +511,7 @@ function settledCellsNode(board: Board): AuraNodeInput[] {
       name: "settled board cells",
       transforms,
       colors,
-      material: material.pbr({ color: "#ffffff", roughness: 0.22, metalness: 0.3 }),
+      material: material.clearcoatPaint({ color: "#ffffff", roughness: 0.12, metallic: 0.28, clearcoat: 1, clearcoatRoughness: 0.025 }),
       scaleMode: "world",
       instancingAware: true
     }).runtime(game.runtimeNode("settled-board-cells", { tags: ["settled", "runtime"] }))
@@ -633,15 +658,15 @@ function createHud(): HTMLElement {
   root.style.cssText = [
     "position:absolute",
     "left:16px",
-    "top:16px",
+    "top:88px",
     "z-index:5",
-    "min-width:310px",
-    "font:600 13px/1.35 Inter, system-ui, sans-serif",
+    "min-width:290px",
+    "font:500 13px/1.4 'Whitney', 'DIN Pro', system-ui, sans-serif",
     "color:#f5fbff",
-    "background:rgba(8,10,22,0.72)",
+    "background:rgba(8,10,22,0.78)",
     "border:1px solid rgba(77,232,255,0.34)",
     "border-radius:8px",
-    "padding:12px",
+    "padding:10px 12px",
     "pointer-events:none"
   ].join(";");
   document.body.append(root);
