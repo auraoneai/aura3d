@@ -101,6 +101,8 @@ const inputOptions = {
   actions: {
     aimLeft: ["KeyA", "ArrowLeft"],
     aimRight: ["KeyD", "ArrowRight"],
+    aimFineLeft: ["KeyQ"],
+    aimFineRight: ["KeyE"],
     spinUp: ["KeyW", "ArrowUp"],
     spinDown: ["KeyS", "ArrowDown"],
     strike: ["Space"],
@@ -151,7 +153,19 @@ const bankShotGame = createGame({
   },
   touch: {
     preset: "aim-drag",
-    bindings: { aim: "aim-drag", strike: "strike-button", spinTop: "spin-up", spinDraw: "spin-down", pause: "menu" }
+    bindings: {
+      charge: "strike",
+      confirm: "strike",
+      cancel: "reset",
+      "stick.left": "aimLeft",
+      "stick.right": "aimRight",
+      "stick.up": "spinUp",
+      "stick.down": "spinDown",
+      "rstick.left": "aimFineLeft",
+      "rstick.right": "aimFineRight",
+      "rstick.up": "spinUp",
+      "rstick.down": "spinDown"
+    }
   },
   sound: {
     cues: {
@@ -469,24 +483,24 @@ function publishEvidence(): void {
 // ---- frame loop ------------------------------------------------------------------
 app.onFrame(({ dt }) => {
   frame += 1;
+  (bankShotGame.touch as { update?: () => void } | null)?.update?.();
   const paused = bankShotGame.session.paused;
-  if (input.pressed("pause")) {
-    if (paused) bankShotGame.session.resume(); else bankShotGame.session.pause();
-  }
   if (!paused) {
     if (input.pressed("reset")) resetSession();
     cueController.updateCharge(dt);
     if (rules.phase === "aiming") {
       if (input.held("aimLeft")) cueController.aimBy(-AIM_STEP);
       if (input.held("aimRight")) cueController.aimBy(AIM_STEP);
+      if (input.held("aimFineLeft")) cueController.aimBy(-AIM_STEP * 0.25);
+      if (input.held("aimFineRight")) cueController.aimBy(AIM_STEP * 0.25);
       if (input.held("spinUp")) cueController.spinBy(SPIN_STEP);
       if (input.held("spinDown")) cueController.spinBy(-SPIN_STEP);
       if (input.pressed("strike") && !cueController.charging && sim.cueAtRest()) cueController.beginCharge();
       if (input.released("strike") && cueController.charging) doStrike();
     } else if (rules.phase === "ball-in-hand") {
       const step = 0.03, m = BALL_RADIUS + 0.02;
-      if (input.held("aimLeft")) ghost.x = Math.max(-PLAY_HALF_X + m, ghost.x - step);
-      if (input.held("aimRight")) ghost.x = Math.min(PLAY_HALF_X - m, ghost.x + step);
+      if (input.held("aimLeft") || input.held("aimFineLeft")) ghost.x = Math.max(-PLAY_HALF_X + m, ghost.x - step);
+      if (input.held("aimRight") || input.held("aimFineRight")) ghost.x = Math.min(PLAY_HALF_X - m, ghost.x + step);
       if (input.held("spinUp")) ghost.z = Math.max(-PLAY_HALF_Z + m, ghost.z - step);
       if (input.held("spinDown")) ghost.z = Math.min(PLAY_HALF_Z - m, ghost.z + step);
       if (input.pressed("strike") && sim.canPlaceCue(ghost.x, ghost.z)) {
