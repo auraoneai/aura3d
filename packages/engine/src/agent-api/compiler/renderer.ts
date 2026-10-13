@@ -157,7 +157,7 @@ export async function createProductionRuntimeSceneRenderer(
           hdriWarnings.add(`HDRI upgrade failed for ${hdriUrl} (${error instanceof Error ? error.message : String(error)}); studio procedural fallback retained`);
         });
     }
-    const productionRuntimeLights = createProductionRuntimeCollectedLights(snapshot);
+    const productionRuntimeLights = createProductionRuntimeCollectedLights(snapshot, flags);
 
     // T3.11 (C-36): compile once at mount. With A3D_QR_COMPILER off the contract
     // stub returns `source: null` and every call below keeps the legacy path

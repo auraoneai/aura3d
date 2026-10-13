@@ -1,4 +1,6 @@
-// PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
+// PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) from agent-api/index.ts.
+// 4.0 Live Fix E3: createProductionRuntimeCollectedLights gained the
+// flag-gated physical-descriptor path (see below).
 
 import type { AuraVec3, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraRendererRuntimeObservation, ProductionRuntimePrimitiveEntry } from "../nodes/types.js";
 import type { CollectedLight, RenderDeviceDiagnostics, RendererShadowOptions } from "@aura3d/rendering";
@@ -12,7 +14,7 @@ import { groups } from "../nodes/groups.js";
 import { primitive } from "../nodes/primitives.js";
 import type { AuraLightNode, AuraSceneSnapshot, ProductionRuntimeLightDescriptor } from "../nodes/types.js";
 import { normalize3 } from "../sceneMath.js";
-import { createProductionRuntimeCollectedLight, createProductionRuntimeFallbackLights, createProductionRuntimeStudioLightDescriptors } from "./lights.js";
+import { collectPrd02Lights, createProductionRuntimeCollectedLight, createProductionRuntimeFallbackLights, createProductionRuntimeStudioLightDescriptors, prd02LightingOn } from "./lights.js";
 import { describeTextureStreamingResidency } from "./primitives.js";
 
 interface AuraProductionBridgeEligibility {
@@ -212,10 +214,26 @@ export function createProductionRuntimePostprocessObservation(
   };
 }
 
-export function createProductionRuntimeCollectedLights(snapshot: AuraSceneSnapshot): readonly CollectedLight[] {
+export function createProductionRuntimeCollectedLights(
+  snapshot: AuraSceneSnapshot,
+  flags?: { on(name: string): boolean }
+): readonly CollectedLight[] {
+  // E3 stage 1: physical (PRD-02 §6.3) descriptors reach the root renderer
+  // only when BOTH lanes are on. A3D_QR_LIGHTING is default-on while
+  // A3D_QR_COMPILER is dev, so shipped scenes keep the legacy descriptors
+  // byte-identical until captures promote the conjunction away. Ambient and
+  // hemisphere resolve through the environment path in both modes.
+  if (flags !== undefined && flags.on("A3D_QR_COMPILER") && prd02LightingOn(flags)) {
+    const physical = collectPrd02Lights(snapshot).descriptors;
+    if (physical.length === 0) return createProductionRuntimeFallbackLights(flags);
+    const shadowCasterIndex = resolveProductionShadowCasterIndex(physical);
+    return physical.map((descriptor, index) =>
+      createProductionRuntimeCollectedLight(descriptor, index === shadowCasterIndex)
+    );
+  }
   const authoredLights = groups.flatten(snapshot.nodes).filter((node): node is AuraLightNode => node.kind === "light");
   const descriptors = authoredLights.flatMap((node, index) => createProductionRuntimeLightDescriptors(node, index));
-  if (descriptors.length === 0) return createProductionRuntimeFallbackLights();
+  if (descriptors.length === 0) return createProductionRuntimeFallbackLights(flags);
 
   const shadowCasterIndex = resolveProductionShadowCasterIndex(descriptors);
   return descriptors.map((descriptor, index) =>
