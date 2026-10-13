@@ -1,11 +1,11 @@
 // apps/showcase-courier-rush/art/direction.ts — C-35 art direction (PRD-14 §6.9.7).
-// Fantasy: early-rain delivery run through a wet dawn city.
+// Fantasy: night-shift delivery run through a wet neon city.
 import { defineArtDirection } from "@aura3d/game/art";
 
 export default defineArtDirection({
   id: "showcase-courier-rush",
   genre: "vehicle-delivery",
-  fantasy: "Early-rain delivery run through a wet dawn city.",
+  fantasy: "Night-shift delivery run through a wet neon city.",
   rebuildTier: "S-world",
   wave: 2,
   references: [
@@ -37,16 +37,29 @@ export default defineArtDirection({
     key: { type: "directional", colorTemperatureK: 4300, shadow: true },
     fill: "ibl",
     practicals: 4,
-    environment: { hdri: "k1-dawn-overcast", background: "hdri" },
+    // The single-path scene applies the engine `night-city` look preset
+    // (no HDRI; cool moon key over the kit's lit windows). The former
+    // "k1-dawn-overcast" HDRI claim was a mislabelled sunset file.
+    environment: { hdri: "night-city", background: "enclosed" },
     exposureEV: 0.1
   },
   framing: { rig: "chase", subjectHeightFraction: [0.25, 0.4], fovDeg: [45, 58], mobile: "portrait" },
+  // The rebuilt single-path scene (src/main.ts) renders from exactly the
+  // six admitted typed model assets below (all present by id in the
+  // repo-root aura.assets.json; see src/aura-assets.ts): the hero van, the
+  // carried parcel, two metre-scale traffic bodies, and the dock bollard
+  // and awning props. The city itself is the engine city-block kit, not a
+  // typed asset, so no world role is claimed. No asset is staged in a
+  // shared kit, so no `kit` is claimed: S10's kit half stays failing until
+  // a human look-dev review accepts a staged kit file (verdicts are never
+  // authored here).
   assets: [
-    { role: "vehicle", assetKey: "delivery-van", maxTriangles: 35000, minTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "world", assetKey: "k2-city-blocks", kit: "K2", maxTriangles: 400000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "street-props", kit: "K2", maxTriangles: 60000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "vehicle", assetKey: "traffic-cars", kit: "K2", maxTriangles: 20000, minTriangles: 3000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "pickup-dropoff-markers", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 512 }
+    { role: "vehicle", assetKey: "courierVanMeshyV2Decimated", maxTriangles: 600000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "courierParcel", maxTriangles: 100000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "deliveryCar", maxTriangles: 50000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "showcaseCityVehicle", maxTriangles: 200000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "courierZoneBollard", maxTriangles: 200000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "courierZoneAwning", maxTriangles: 300000, textureSet: "BC+N", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "rain", kind: "particles" },
@@ -55,6 +68,11 @@ export default defineArtDirection({
     { event: "headlight", kind: "projector-decal" },
     { event: "pickup", kind: "ring", flipbook: "k9-ring" }
   ],
+  // Direction events src/main.ts cues from real gameplay (engine/bed
+  // loops at start; pickup from the dispatch sensor; horn from traffic
+  // proximity; skid from handbrake scrubs at speed), on the route's typed
+  // WAV assets plus the game-sfx tyre-skid. Cue names stay aligned with
+  // the K8 kit sample map (tests/qr/prd14/unit/kits.test.ts).
   audio: [
     { event: "engine", cue: "van-engine-loop", variants: 1 },
     { event: "skid", cue: "wet-skid", variants: 3 },
@@ -62,14 +80,11 @@ export default defineArtDirection({
     { event: "pickup", cue: "pickup-chime", variants: 2 },
     { event: "bed", cue: "rain-city-bed", variants: 1 }
   ],
-  signatureEffect: "Wet dawn asphalt, amber marker glow and headlight pools on a real K2 street grid in rain.",
-  standIns: [
-    { feature: "K2 modular city geometry", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K2 kit admitted + tile-assembling builder" },
-    { feature: "van GLB (separate wheels)", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "admitted van asset (van + wheels separate)" },
-    { feature: "3-point-perspective skyscraper tilt", file: "src/v2/scene/camera.ts", request: "R-14-07", removeWhen: "K2 city geometry + camera rung real" },
-    { feature: "rain via engine effects", file: "src/v2/scene/fx.ts", request: "R-14-14", removeWhen: "PRD 09 particle/headlight projectors real" },
-    { feature: "legacy courier cue map (engine, horn, delivery)", file: "src/legacy/courier-audio.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" }
-  ],
+  signatureEffect: "Wet night asphalt, amber marker glow and headlight pools on a real city-block street grid.",
+  // The v2 stand-ins (K2 geometry, separate-wheel van, rain effects,
+  // legacy cue map) retired with the deleted src/v2 and src/legacy trees;
+  // the single-path scene claims none of those features.
+  standIns: [],
   criticalCategories: ["environment_world", "atmospheric_effects", "material_quality"],
   tiers: {
     low: { particles: 300, shadowMap: 1024, cascades: 1, textureMax: 1024 },
