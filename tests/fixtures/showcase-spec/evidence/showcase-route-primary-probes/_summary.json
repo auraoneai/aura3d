@@ -1,26 +1,490 @@
 {
-  "schema": "aura3d-route-primary-probe-summary/1.0",
-  "generatedAt": "2026-07-20T06:12:31.143Z",
+  "schema": "aura3d-route-primary-probe-summary/2.0",
+  "generatedAt": "2026-09-08T04:49:32.920Z",
+  "runScope": "full",
+  "evidenceLabel": "structural/image QA pass",
+  "humanVisualApproval": false,
+  "humanVisualApprovalNote": "Structural/image QA only. A passing route-primary summary is never human visual approval.",
+  "summaryPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/_summary.json",
   "routeGateConfig": {
     "path": "tools/showcase-library/route-gates.json",
     "schema": "aura3d-showcase-route-gates/1.0",
-    "hash": "50834c20f1ad1fb9761f5555da93cb35f864f69fea6585cca56a2aff0824c96d"
+    "hash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c"
   },
+  "selectedRouteIds": [
+    "showcase-product-configurator",
+    "showcase-material-asset-inspector",
+    "showcase-smart-city-control",
+    "showcase-cinematic-architecture",
+    "showcase-digital-twin-ops",
+    "showcase-blockfall-reactor",
+    "showcase-skyline-runner",
+    "showcase-turbo-drift-circuit",
+    "showcase-siege-golf",
+    "showcase-aurora-lander",
+    "showcase-neon-swarm",
+    "showcase-gravity-post",
+    "showcase-courier-rush",
+    "showcase-mech-hangar",
+    "showcase-vault-breakers",
+    "showcase-rooftop-buckets",
+    "showcase-gallery-shift",
+    "showcase-deep-recovery",
+    "showcase-patrol-wing",
+    "showcase-bank-shot"
+  ],
+  "expectedRouteIds": [
+    "showcase-product-configurator",
+    "showcase-material-asset-inspector",
+    "showcase-smart-city-control",
+    "showcase-cinematic-architecture",
+    "showcase-digital-twin-ops",
+    "showcase-blockfall-reactor",
+    "showcase-skyline-runner",
+    "showcase-turbo-drift-circuit",
+    "showcase-siege-golf",
+    "showcase-aurora-lander",
+    "showcase-neon-swarm",
+    "showcase-gravity-post",
+    "showcase-courier-rush",
+    "showcase-mech-hangar",
+    "showcase-vault-breakers",
+    "showcase-rooftop-buckets",
+    "showcase-gallery-shift",
+    "showcase-deep-recovery",
+    "showcase-patrol-wing",
+    "showcase-bank-shot"
+  ],
+  "expectedRouteCount": 20,
+  "executedRouteIds": [
+    "showcase-product-configurator",
+    "showcase-material-asset-inspector",
+    "showcase-smart-city-control",
+    "showcase-cinematic-architecture",
+    "showcase-digital-twin-ops",
+    "showcase-blockfall-reactor",
+    "showcase-skyline-runner",
+    "showcase-turbo-drift-circuit",
+    "showcase-siege-golf",
+    "showcase-aurora-lander",
+    "showcase-neon-swarm",
+    "showcase-gravity-post",
+    "showcase-courier-rush",
+    "showcase-mech-hangar",
+    "showcase-vault-breakers",
+    "showcase-rooftop-buckets",
+    "showcase-gallery-shift",
+    "showcase-deep-recovery",
+    "showcase-patrol-wing",
+    "showcase-bank-shot"
+  ],
+  "executedRouteCount": 20,
+  "missingRouteIds": [],
+  "failingRouteIds": [],
+  "blockingRouteIds": [],
   "pass": true,
-  "routes": [
+  "routeVerdicts": [
+    {
+      "routeId": "showcase-product-configurator",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": false,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.png"
+    },
+    {
+      "routeId": "showcase-material-asset-inspector",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-material-asset-inspector.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-material-asset-inspector.png"
+    },
+    {
+      "routeId": "showcase-smart-city-control",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": false,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-smart-city-control.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-smart-city-control.png"
+    },
+    {
+      "routeId": "showcase-cinematic-architecture",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": false,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-cinematic-architecture.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-cinematic-architecture.png"
+    },
+    {
+      "routeId": "showcase-digital-twin-ops",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": false,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-digital-twin-ops.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-digital-twin-ops.png"
+    },
+    {
+      "routeId": "showcase-blockfall-reactor",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-blockfall-reactor.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-blockfall-reactor.png"
+    },
     {
       "routeId": "showcase-skyline-runner",
       "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
       "failures": [],
-      "evidencePath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-      "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png"
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png"
     },
     {
       "routeId": "showcase-turbo-drift-circuit",
       "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
       "failures": [],
-      "evidencePath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-      "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png"
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png"
+    },
+    {
+      "routeId": "showcase-siege-golf",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-siege-golf.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-siege-golf.png"
+    },
+    {
+      "routeId": "showcase-aurora-lander",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-aurora-lander.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-aurora-lander.png"
+    },
+    {
+      "routeId": "showcase-neon-swarm",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-neon-swarm.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-neon-swarm.png"
+    },
+    {
+      "routeId": "showcase-gravity-post",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-gravity-post.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-gravity-post.png"
+    },
+    {
+      "routeId": "showcase-courier-rush",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-courier-rush.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-courier-rush.png"
+    },
+    {
+      "routeId": "showcase-mech-hangar",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-mech-hangar.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-mech-hangar.png"
+    },
+    {
+      "routeId": "showcase-vault-breakers",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-vault-breakers.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-vault-breakers.png"
+    },
+    {
+      "routeId": "showcase-rooftop-buckets",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-rooftop-buckets.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-rooftop-buckets.png"
+    },
+    {
+      "routeId": "showcase-gallery-shift",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-gallery-shift.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-gallery-shift.png"
+    },
+    {
+      "routeId": "showcase-deep-recovery",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-deep-recovery.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-deep-recovery.png"
+    },
+    {
+      "routeId": "showcase-patrol-wing",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-patrol-wing.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-patrol-wing.png"
+    },
+    {
+      "routeId": "showcase-bank-shot",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-bank-shot.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-bank-shot.png"
+    }
+  ],
+  "routes": [
+    {
+      "routeId": "showcase-product-configurator",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": false,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.png"
+    },
+    {
+      "routeId": "showcase-material-asset-inspector",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-material-asset-inspector.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-material-asset-inspector.png"
+    },
+    {
+      "routeId": "showcase-smart-city-control",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": false,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-smart-city-control.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-smart-city-control.png"
+    },
+    {
+      "routeId": "showcase-cinematic-architecture",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": false,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-cinematic-architecture.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-cinematic-architecture.png"
+    },
+    {
+      "routeId": "showcase-digital-twin-ops",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": false,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-digital-twin-ops.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-digital-twin-ops.png"
+    },
+    {
+      "routeId": "showcase-blockfall-reactor",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-blockfall-reactor.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-blockfall-reactor.png"
+    },
+    {
+      "routeId": "showcase-skyline-runner",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png"
+    },
+    {
+      "routeId": "showcase-turbo-drift-circuit",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png"
+    },
+    {
+      "routeId": "showcase-siege-golf",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-siege-golf.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-siege-golf.png"
+    },
+    {
+      "routeId": "showcase-aurora-lander",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-aurora-lander.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-aurora-lander.png"
+    },
+    {
+      "routeId": "showcase-neon-swarm",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-neon-swarm.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-neon-swarm.png"
+    },
+    {
+      "routeId": "showcase-gravity-post",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-gravity-post.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-gravity-post.png"
+    },
+    {
+      "routeId": "showcase-courier-rush",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-courier-rush.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-courier-rush.png"
+    },
+    {
+      "routeId": "showcase-mech-hangar",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-mech-hangar.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-mech-hangar.png"
+    },
+    {
+      "routeId": "showcase-vault-breakers",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-vault-breakers.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-vault-breakers.png"
+    },
+    {
+      "routeId": "showcase-rooftop-buckets",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-rooftop-buckets.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-rooftop-buckets.png"
+    },
+    {
+      "routeId": "showcase-gallery-shift",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-gallery-shift.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-gallery-shift.png"
+    },
+    {
+      "routeId": "showcase-deep-recovery",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-deep-recovery.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-deep-recovery.png"
+    },
+    {
+      "routeId": "showcase-patrol-wing",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-patrol-wing.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-patrol-wing.png"
+    },
+    {
+      "routeId": "showcase-bank-shot",
+      "pass": true,
+      "verdict": "pass",
+      "allowedToFail": true,
+      "blocking": false,
+      "failures": [],
+      "evidencePath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-bank-shot.json",
+      "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-bank-shot.png"
     }
   ]
 }

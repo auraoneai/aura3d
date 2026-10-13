@@ -4,7 +4,7 @@
   "gateConfig": {
     "path": "tools/showcase-library/route-gates.json",
     "schema": "aura3d-showcase-route-gates/1.0",
-    "hash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b"
+    "hash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c"
   },
   "visualReview": {
     "path": "docs/project/showcase-visual-review.json",
@@ -68,34 +68,17 @@
   "publicVisualReviewOk": false,
   "allRoutesOk": false,
   "classificationOk": true,
-  "routeCount": 24,
-  "appCount": 23,
+  "routeCount": 22,
+  "appCount": 21,
   "releaseCandidateCount": 4,
   "releaseCandidatePassed": 0,
-  "internalDiagnosticCount": 1,
+  "internalDiagnosticCount": 0,
   "gameLayerDiagnosticCount": 0,
-  "diagnosticRouteCount": 1,
+  "diagnosticRouteCount": 0,
   "prototypeBlockedCount": 16,
   "indexRouteCount": 1,
-  "removedFromPublicShowcaseCount": 2,
-  "diagnostics": [
-    {
-      "id": "showcase-webgpu-particle-lab",
-      "classification": "internal-diagnostic",
-      "publicReleaseCounted": false,
-      "ok": false,
-      "blockers": [
-        "static:native-webgpu-overclaim",
-        "deploy:Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
-        "deploy:Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe nonblank pixel count is stale.",
-        "deploy:Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe color bucket count is stale.",
-        "deploy-warning:showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
-        "deploy-warning:showcaseParticleCore: release primary model renderedProbe nonblank pixel count is stale.",
-        "deploy-warning:showcaseParticleCore: release primary model renderedProbe color bucket count is stale.",
-        "capability:native-webgpu-proof-absent"
-      ]
-    }
-  ],
+  "removedFromPublicShowcaseCount": 1,
+  "diagnostics": [],
   "gameLayerDiagnostics": [],
   "commands": {
     "build": "A3D_SHOWCASE_APP=<route> pnpm exec vite build --config tools/showcase-library/vite.config.ts",
@@ -338,8 +321,8 @@
           "routeId": "showcase-product-configurator",
           "routePath": "/apps/showcase-product-configurator/",
           "appId": "showcase-product-configurator",
-          "sourceHash": "sha256-1796c5ed5222aaf47d57c86f333bb22efc179dc0733001da64ee9425e31b1ea1",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-58f28e037d7421891533b9ece870fd3c9318e641004ac9e1d0d7d234fe930957",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "showcaseHeadphones",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-0f136f567b6439a8f124dc2b994b14629ceb4f5adced20487c08da05f40be566",
@@ -618,7 +601,7 @@
           "routePath": "/apps/showcase-material-asset-inspector/",
           "appId": "showcase-material-asset-inspector",
           "sourceHash": "sha256-b8b294bf4be9556bf5ccf1d90b7bdc6cc6c90290fe8308b06c5883549289222d",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "showcaseHeadphones",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-ba706ea64feb9b5dded7028fd7eb59d8f07d2bff6d1b9847935d73ee7da70af8",
@@ -795,308 +778,6 @@
       "deployFailures": []
     },
     {
-      "id": "showcase-data-galaxy",
-      "label": "Data Galaxy Explorer",
-      "path": "/apps/showcase-data-galaxy/",
-      "globalName": "__AURA3D_SHOWCASE_DATA_GALAXY__",
-      "releaseClass": "removed-from-public-showcase",
-      "publicReleaseCounted": false,
-      "publicReleaseOk": true,
-      "classificationOk": true,
-      "classificationFailures": [],
-      "diagnosticBlockers": [],
-      "finalStatus": "removed-from-public-showcase",
-      "source": "apps/showcase-data-galaxy/index.html",
-      "distDir": "apps/showcase-data-galaxy/dist",
-      "gate": {
-        "releaseClass": "removed-from-public-showcase",
-        "primaryAssets": [
-          "showcaseParticleCore"
-        ],
-        "primaryAssetRoles": {
-          "showcaseParticleCore": "abstract"
-        },
-        "routePrimaryHeroAsset": "showcaseParticleCore",
-        "secondaryPrimaryAssets": [],
-        "primitiveBudget": 30,
-        "requiresTypedPrimaryAssets": true,
-        "requiresRoutePrimaryProbe": false,
-        "requiresKeyboardDelta": false,
-        "requiresAnimationSubjectDelta": false,
-        "gameTemplateStatus": null,
-        "requiresAuraParticles": true,
-        "nativeWebGpuAllowed": null
-      },
-      "ok": false,
-      "staticGateOk": true,
-      "staticGateFailures": [],
-      "visualReview": {
-        "required": false,
-        "ok": true,
-        "path": "docs/project/showcase-visual-review.json",
-        "verdict": "skipped",
-        "failures": []
-      },
-      "gameVisualQa": {
-        "schema": "aura3d-game-visual-qa/1.0",
-        "routeId": "showcase-data-galaxy",
-        "category": null,
-        "verdict": "skipped",
-        "pass": true,
-        "checks": [],
-        "blockers": []
-      },
-      "primaryAssetEvidence": [
-        {
-          "id": "showcaseParticleCore",
-          "presentInManifest": true,
-          "presentInTypegen": true,
-          "typedAssetUsedInSource": true,
-          "url": "/aura-assets/showcaseParticleCore.5443d9a9.glb",
-          "hash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
-          "source": "public/aura-assets/showcaseParticleCore.5443d9a9.glb",
-          "outputPath": "public/aura-assets/showcaseParticleCore.5443d9a9.glb",
-          "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-          "licenseName": "CC-BY-4.0",
-          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
-          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
-          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
-          "sourceFamily": "objaverse",
-          "author": "Yewon Kim (https://sketchfab.com/yewonkim0621)",
-          "attribution": "Yewon Kim",
-          "retrievedAt": "2026-06-17T21:19:42.916Z",
-          "thumbnailUrl": "/aura-assets/showcaseParticleCore.thumb.svg"
-        }
-      ],
-      "routeHealth": {
-        "ok": true,
-        "path": "apps/showcase-data-galaxy/route-health.json",
-        "failures": [],
-        "appId": "showcase-data-galaxy",
-        "route": "/apps/showcase-data-galaxy/",
-        "classification": "removed-from-public-showcase",
-        "publicShowcase": false,
-        "primaryAssets": [
-          "showcaseParticleCore"
-        ],
-        "evidenceGlobal": "window.__AURA3D_SHOWCASE_DATA_GALAXY__",
-        "gameAssetPairEvidence": null
-      },
-      "routePrimaryProbe": {
-        "ok": true,
-        "required": true,
-        "path": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.json",
-        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
-        "failures": [],
-        "evidence": {
-          "schema": "aura3d-route-primary-probe/1.0",
-          "routeId": "showcase-data-galaxy",
-          "routePath": "/apps/showcase-data-galaxy/",
-          "appId": "showcase-data-galaxy",
-          "sourceHash": "sha256-f46a020b4d6203451fd008a2141be2ac56e70207120bcaa6e2401b219bb4e5ad",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
-          "routePrimaryHeroAsset": "showcaseParticleCore",
-          "secondaryPrimaryAssets": [],
-          "routeHealthHash": "sha256-fe30162ec12fcff842812829e240608b33605d6f2bc2dd64f0ff1d70fb8c4536",
-          "freshness": {
-            "schema": "aura3d-evidence-freshness/1.0",
-            "artifact": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.json",
-            "producer": {
-              "id": "route-primary-probes",
-              "version": "1.1",
-              "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
-            },
-            "generatedAt": "2026-09-08T03:55:54.184Z",
-            "dependencies": [
-              {
-                "kind": "primary-asset",
-                "id": "showcaseParticleCore",
-                "hash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b"
-              },
-              {
-                "kind": "producer-version",
-                "id": "route-primary-probes",
-                "hash": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
-              },
-              {
-                "kind": "renderer-fingerprint",
-                "id": "agent-api+assets",
-                "hash": "sha256-8213d6df8a4ca21e7ca530f0d08e41cbd3f9ee01a9f44d904aab7b410d631cd4"
-              },
-              {
-                "kind": "route-gate-config",
-                "id": "route-gates.json",
-                "hash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b"
-              },
-              {
-                "kind": "route-health",
-                "id": "showcase-data-galaxy/route-health.json",
-                "hash": "sha256-fe30162ec12fcff842812829e240608b33605d6f2bc2dd64f0ff1d70fb8c4536"
-              },
-              {
-                "kind": "route-source",
-                "id": "showcase-data-galaxy",
-                "hash": "sha256-f46a020b4d6203451fd008a2141be2ac56e70207120bcaa6e2401b219bb4e5ad"
-              },
-              {
-                "kind": "viewport-contract",
-                "id": "showcase-data-galaxy",
-                "hash": "sha256-90ad7da245d73082ab66525828f95b666a6c0ffe254e336e9618a52503fec355"
-              }
-            ]
-          },
-          "generatedAt": "2026-09-08T03:55:54.184Z",
-          "viewport": {
-            "width": 1440,
-            "height": 900,
-            "deviceScaleFactor": 1
-          },
-          "mountedEvidence": {
-            "present": true,
-            "status": "ready",
-            "evidenceKeys": [
-              "appId",
-              "assets",
-              "claimBoundary",
-              "controls",
-              "diagnostics",
-              "frameCount",
-              "interactionState",
-              "status",
-              "systems",
-              "telemetry",
-              "updatedAt"
-            ],
-            "primaryAssets": [
-              "showcaseParticleCore"
-            ],
-            "missingPrimaryAssets": [],
-            "hasRendererDiagnostics": true
-          },
-          "renderer": {
-            "backend": "webgl2",
-            "drawCalls": 175,
-            "renderSize": [
-              1440,
-              900
-            ]
-          },
-          "renderedProbe": {
-            "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
-            "sha256": "sha256-0a4c25baf7380b3cc99de0d62af1672f8c9c8e7a9674ca4dc1fcc8942e311536",
-            "width": 1440,
-            "height": 900,
-            "analysisCrop": {
-              "x": 0,
-              "y": 0,
-              "width": 1440,
-              "height": 900,
-              "area": 1296000
-            },
-            "nonBlankPixels": 39574,
-            "colorBuckets": 250,
-            "foregroundBounds": {
-              "x": 569,
-              "y": 141,
-              "width": 572,
-              "height": 634
-            },
-            "visible": true,
-            "clipped": false,
-            "occludedByUi": false,
-            "controlsInViewport": true,
-            "readabilityScore": 86,
-            "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-e7014bfa8832e07483ca186a3ae4ee0ff5302801ea99ad25b9778da8c1cf3db5",
-            "evidenceMethod": "runtime-bound-subject-pixel-difference",
-            "failures": []
-          },
-          "compositionProbe": {
-            "category": "application",
-            "subjectBounds": {
-              "x": 569,
-              "y": 141,
-              "width": 572,
-              "height": 634
-            },
-            "subjectPixels": 39574,
-            "subjectColorBuckets": 250,
-            "subjectClipped": false,
-            "subjectReadabilityScore": 86,
-            "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-e7014bfa8832e07483ca186a3ae4ee0ff5302801ea99ad25b9778da8c1cf3db5",
-            "subjectTargetSize": 2.05,
-            "cameraMode": "unprojected"
-          },
-          "primaryAssets": [
-            {
-              "id": "showcaseParticleCore",
-              "role": "abstract",
-              "expectedTypedRef": "assets.showcaseParticleCore",
-              "routePrimaryEvidenceTarget": true,
-              "evidenceMode": "route-primary-foreground",
-              "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
-              "renderedProbe": {
-                "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
-                "sha256": "sha256-0a4c25baf7380b3cc99de0d62af1672f8c9c8e7a9674ca4dc1fcc8942e311536",
-                "width": 1440,
-                "height": 900,
-                "analysisCrop": {
-                  "x": 0,
-                  "y": 0,
-                  "width": 1440,
-                  "height": 900,
-                  "area": 1296000
-                },
-                "nonBlankPixels": 39574,
-                "colorBuckets": 250,
-                "foregroundBounds": {
-                  "x": 569,
-                  "y": 141,
-                  "width": 572,
-                  "height": 634
-                },
-                "visible": true,
-                "clipped": false,
-                "occludedByUi": false,
-                "controlsInViewport": true,
-                "readabilityScore": 86,
-                "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-e7014bfa8832e07483ca186a3ae4ee0ff5302801ea99ad25b9778da8c1cf3db5",
-                "evidenceMethod": "runtime-bound-subject-pixel-difference",
-                "failures": []
-              }
-            }
-          ],
-          "primitivePrimaryCandidates": [],
-          "pass": true,
-          "failures": []
-        }
-      },
-      "buildOk": true,
-      "deployCheckOk": false,
-      "dist": {
-        "exists": true,
-        "fileCount": 1441,
-        "totalBytes": 1783379255,
-        "hasIndexHtml": true,
-        "hasAuraAssets": true
-      },
-      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
-      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-data-galaxy/dist --release --source apps/showcase-data-galaxy/src --asset showcaseParticleCore",
-      "deployWarnings": [
-        "showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
-        "showcaseParticleCore: release primary model renderedProbe nonblank pixel count is stale.",
-        "showcaseParticleCore: release primary model renderedProbe color bucket count is stale."
-      ],
-      "deployFailures": [
-        "Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
-        "Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe nonblank pixel count is stale.",
-        "Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe color bucket count is stale."
-      ]
-    },
-    {
       "id": "showcase-smart-city-control",
       "label": "Smart City Control Room",
       "path": "/apps/showcase-smart-city-control/",
@@ -1249,8 +930,8 @@
           "routeId": "showcase-smart-city-control",
           "routePath": "/apps/showcase-smart-city-control/",
           "appId": "showcase-smart-city-control",
-          "sourceHash": "sha256-e66425ff668052a29f11dcb65170994486fa69f35e5b955558c31c52cc7ad170",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-9730724d32de0c758b0009ed6500a3463d3dae1ab38a9f1e61c527e1e0468c65",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "showcaseCityVehicle",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-9672d0edd187dde0136d95c3d2f2e5bf967e1d8f8b3ac381e43cd6c52ff83eb7",
@@ -1595,8 +1276,8 @@
           "routeId": "showcase-cinematic-architecture",
           "routePath": "/apps/showcase-cinematic-architecture/",
           "appId": "showcase-cinematic-architecture",
-          "sourceHash": "sha256-1de66b789317f1c926054d15ffcf02be2c9b039e2b4f24af9abcd396de5da311",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-cacaa323596e0d07d5f2d0024a7ad1f2b982959c9cdc7e358f48ff6788b90e0b",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "showcaseSkylineCity",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-d6a80071152ee36378a0f34f2f3003d96b8ec8a4ce82c9aeb32206f9681ac0b6",
@@ -1919,8 +1600,8 @@
           "routeId": "showcase-digital-twin-ops",
           "routePath": "/apps/showcase-digital-twin-ops/",
           "appId": "showcase-digital-twin-ops",
-          "sourceHash": "sha256-8f55f61a641555141cc55e48fc6abbc01ddc51bda1df454887c4a13e4a09dff4",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-341a90ea76804afd028af50dc82495a7f682bfac4da5853df85796c5ca536307",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "showcaseRoboticWeldingWorkcell",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-2c8696ebdceb8040f0ca024385a51dc1b9460b7d920034136bbf5be220ecf3a6",
@@ -2127,317 +1808,6 @@
       "deployFailures": []
     },
     {
-      "id": "showcase-webgpu-particle-lab",
-      "label": "WebGPU Particle Lab",
-      "path": "/apps/showcase-webgpu-particle-lab/",
-      "globalName": "__AURA3D_SHOWCASE_WEBGPU_PARTICLE_LAB__",
-      "releaseClass": "internal-diagnostic",
-      "publicReleaseCounted": false,
-      "publicReleaseOk": true,
-      "classificationOk": true,
-      "classificationFailures": [],
-      "diagnosticBlockers": [
-        "static:native-webgpu-overclaim",
-        "deploy:Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
-        "deploy:Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe nonblank pixel count is stale.",
-        "deploy:Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe color bucket count is stale.",
-        "deploy-warning:showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
-        "deploy-warning:showcaseParticleCore: release primary model renderedProbe nonblank pixel count is stale.",
-        "deploy-warning:showcaseParticleCore: release primary model renderedProbe color bucket count is stale.",
-        "capability:native-webgpu-proof-absent"
-      ],
-      "finalStatus": "internal-diagnostic-retained",
-      "source": "apps/showcase-webgpu-particle-lab/index.html",
-      "distDir": "apps/showcase-webgpu-particle-lab/dist",
-      "gate": {
-        "releaseClass": "internal-diagnostic",
-        "primaryAssets": [
-          "showcaseParticleCore"
-        ],
-        "primaryAssetRoles": {
-          "showcaseParticleCore": "effect-core"
-        },
-        "routePrimaryHeroAsset": "showcaseParticleCore",
-        "secondaryPrimaryAssets": [],
-        "primitiveBudget": 14,
-        "requiresTypedPrimaryAssets": true,
-        "requiresRoutePrimaryProbe": false,
-        "requiresKeyboardDelta": false,
-        "requiresAnimationSubjectDelta": false,
-        "gameTemplateStatus": null,
-        "requiresAuraParticles": true,
-        "nativeWebGpuAllowed": false
-      },
-      "ok": false,
-      "staticGateOk": false,
-      "staticGateFailures": [
-        "native-webgpu-overclaim"
-      ],
-      "visualReview": {
-        "required": false,
-        "ok": true,
-        "path": "docs/project/showcase-visual-review.json",
-        "verdict": "skipped",
-        "failures": []
-      },
-      "gameVisualQa": {
-        "schema": "aura3d-game-visual-qa/1.0",
-        "routeId": "showcase-webgpu-particle-lab",
-        "category": null,
-        "verdict": "skipped",
-        "pass": true,
-        "checks": [],
-        "blockers": []
-      },
-      "primaryAssetEvidence": [
-        {
-          "id": "showcaseParticleCore",
-          "presentInManifest": true,
-          "presentInTypegen": true,
-          "typedAssetUsedInSource": true,
-          "url": "/aura-assets/showcaseParticleCore.5443d9a9.glb",
-          "hash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
-          "source": "public/aura-assets/showcaseParticleCore.5443d9a9.glb",
-          "outputPath": "public/aura-assets/showcaseParticleCore.5443d9a9.glb",
-          "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-          "licenseName": "CC-BY-4.0",
-          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
-          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
-          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
-          "sourceFamily": "objaverse",
-          "author": "Yewon Kim (https://sketchfab.com/yewonkim0621)",
-          "attribution": "Yewon Kim",
-          "retrievedAt": "2026-06-17T21:19:42.916Z",
-          "thumbnailUrl": "/aura-assets/showcaseParticleCore.thumb.svg"
-        }
-      ],
-      "routeHealth": {
-        "ok": true,
-        "path": "apps/showcase-webgpu-particle-lab/route-health.json",
-        "failures": [],
-        "appId": "showcase-webgpu-particle-lab",
-        "route": "/apps/showcase-webgpu-particle-lab/",
-        "classification": "internal-diagnostic",
-        "publicShowcase": false,
-        "primaryAssets": [
-          "showcaseParticleCore"
-        ],
-        "evidenceGlobal": "window.__AURA3D_SHOWCASE_WEBGPU_PARTICLE_LAB__",
-        "gameAssetPairEvidence": null
-      },
-      "routePrimaryProbe": {
-        "ok": true,
-        "required": true,
-        "path": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.json",
-        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
-        "failures": [],
-        "evidence": {
-          "schema": "aura3d-route-primary-probe/1.0",
-          "routeId": "showcase-webgpu-particle-lab",
-          "routePath": "/apps/showcase-webgpu-particle-lab/",
-          "appId": "showcase-webgpu-particle-lab",
-          "sourceHash": "sha256-61bae340a52883a3503c2cb593a7acaf7a4d4577a2e3b6a3dd83f5ee52ae3b5e",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
-          "routePrimaryHeroAsset": "showcaseParticleCore",
-          "secondaryPrimaryAssets": [],
-          "routeHealthHash": "sha256-d754445a90d660480f5fe52284652e211840f2a7e23243626f14e4b845343a34",
-          "freshness": {
-            "schema": "aura3d-evidence-freshness/1.0",
-            "artifact": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.json",
-            "producer": {
-              "id": "route-primary-probes",
-              "version": "1.1",
-              "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
-            },
-            "generatedAt": "2026-09-08T03:55:44.725Z",
-            "dependencies": [
-              {
-                "kind": "primary-asset",
-                "id": "showcaseParticleCore",
-                "hash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b"
-              },
-              {
-                "kind": "producer-version",
-                "id": "route-primary-probes",
-                "hash": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
-              },
-              {
-                "kind": "renderer-fingerprint",
-                "id": "agent-api+assets",
-                "hash": "sha256-8213d6df8a4ca21e7ca530f0d08e41cbd3f9ee01a9f44d904aab7b410d631cd4"
-              },
-              {
-                "kind": "route-gate-config",
-                "id": "route-gates.json",
-                "hash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b"
-              },
-              {
-                "kind": "route-health",
-                "id": "showcase-webgpu-particle-lab/route-health.json",
-                "hash": "sha256-d754445a90d660480f5fe52284652e211840f2a7e23243626f14e4b845343a34"
-              },
-              {
-                "kind": "route-source",
-                "id": "showcase-webgpu-particle-lab",
-                "hash": "sha256-61bae340a52883a3503c2cb593a7acaf7a4d4577a2e3b6a3dd83f5ee52ae3b5e"
-              },
-              {
-                "kind": "viewport-contract",
-                "id": "showcase-webgpu-particle-lab",
-                "hash": "sha256-90ad7da245d73082ab66525828f95b666a6c0ffe254e336e9618a52503fec355"
-              }
-            ]
-          },
-          "generatedAt": "2026-09-08T03:55:44.726Z",
-          "viewport": {
-            "width": 1440,
-            "height": 900,
-            "deviceScaleFactor": 1
-          },
-          "mountedEvidence": {
-            "present": true,
-            "status": "running",
-            "evidenceKeys": [
-              "appId",
-              "capabilityState",
-              "claimBoundary",
-              "controls",
-              "frameCount",
-              "labSet",
-              "performance",
-              "status",
-              "systems"
-            ],
-            "primaryAssets": [
-              "showcaseParticleCore"
-            ],
-            "missingPrimaryAssets": [],
-            "hasRendererDiagnostics": true
-          },
-          "renderer": {
-            "backend": "webgl2",
-            "drawCalls": 18,
-            "renderSize": [
-              1066,
-              900
-            ]
-          },
-          "renderedProbe": {
-            "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
-            "sha256": "sha256-4ede8de704ad834925ca9554112b8c59118ca4e1393214fa7865962ee606db79",
-            "width": 1440,
-            "height": 900,
-            "analysisCrop": {
-              "x": 0,
-              "y": 0,
-              "width": 1065,
-              "height": 900,
-              "area": 959048.4375
-            },
-            "nonBlankPixels": 36726,
-            "colorBuckets": 101,
-            "foregroundBounds": {
-              "x": 276,
-              "y": 108,
-              "width": 515,
-              "height": 487
-            },
-            "visible": true,
-            "clipped": false,
-            "occludedByUi": false,
-            "controlsInViewport": true,
-            "readabilityScore": 92,
-            "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-04ee15160f9d5d9dda76325b04bedd416d8097cadff98bbc051e390805267ae5",
-            "evidenceMethod": "runtime-bound-subject-pixel-difference",
-            "failures": []
-          },
-          "compositionProbe": {
-            "category": "application",
-            "subjectBounds": {
-              "x": 276,
-              "y": 108,
-              "width": 515,
-              "height": 487
-            },
-            "subjectPixels": 36726,
-            "subjectColorBuckets": 101,
-            "subjectClipped": false,
-            "subjectReadabilityScore": 92,
-            "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-04ee15160f9d5d9dda76325b04bedd416d8097cadff98bbc051e390805267ae5",
-            "subjectTargetSize": 0.9072,
-            "cameraMode": "unprojected"
-          },
-          "primaryAssets": [
-            {
-              "id": "showcaseParticleCore",
-              "role": "effect-core",
-              "expectedTypedRef": "assets.showcaseParticleCore",
-              "routePrimaryEvidenceTarget": true,
-              "evidenceMode": "route-primary-foreground",
-              "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
-              "renderedProbe": {
-                "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
-                "sha256": "sha256-4ede8de704ad834925ca9554112b8c59118ca4e1393214fa7865962ee606db79",
-                "width": 1440,
-                "height": 900,
-                "analysisCrop": {
-                  "x": 0,
-                  "y": 0,
-                  "width": 1065,
-                  "height": 900,
-                  "area": 959048.4375
-                },
-                "nonBlankPixels": 36726,
-                "colorBuckets": 101,
-                "foregroundBounds": {
-                  "x": 276,
-                  "y": 108,
-                  "width": 515,
-                  "height": 487
-                },
-                "visible": true,
-                "clipped": false,
-                "occludedByUi": false,
-                "controlsInViewport": true,
-                "readabilityScore": 92,
-                "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-04ee15160f9d5d9dda76325b04bedd416d8097cadff98bbc051e390805267ae5",
-                "evidenceMethod": "runtime-bound-subject-pixel-difference",
-                "failures": []
-              }
-            }
-          ],
-          "primitivePrimaryCandidates": [],
-          "pass": true,
-          "failures": []
-        }
-      },
-      "buildOk": true,
-      "deployCheckOk": false,
-      "dist": {
-        "exists": true,
-        "fileCount": 1441,
-        "totalBytes": 1783143281,
-        "hasIndexHtml": true,
-        "hasAuraAssets": true
-      },
-      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
-      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-webgpu-particle-lab/dist --release --source apps/showcase-webgpu-particle-lab/src --asset showcaseParticleCore",
-      "deployWarnings": [
-        "showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
-        "showcaseParticleCore: release primary model renderedProbe nonblank pixel count is stale.",
-        "showcaseParticleCore: release primary model renderedProbe color bucket count is stale."
-      ],
-      "deployFailures": [
-        "Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
-        "Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe nonblank pixel count is stale.",
-        "Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe color bucket count is stale."
-      ]
-    },
-    {
       "id": "showcase-blockfall-reactor",
       "label": "Blockfall Reactor",
       "path": "/apps/showcase-blockfall-reactor/",
@@ -2568,8 +1938,8 @@
           "routeId": "showcase-blockfall-reactor",
           "routePath": "/apps/showcase-blockfall-reactor/",
           "appId": "showcase-blockfall-reactor",
-          "sourceHash": "sha256-aff22eab2dc6eeed0be786dd0452a98cada091fadd8f9aeee3db3e105e4f15a7",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-b35df64199b5dd0621ddc5d15f02d2fccab7c8a36c5fd94f19837089c741eb8d",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "blockfallReactorArenaBackdrop",
           "secondaryPrimaryAssets": [
             "showcaseBlockfallCabinet"
@@ -3022,8 +2392,8 @@
           "routeId": "showcase-skyline-runner",
           "routePath": "/apps/showcase-skyline-runner/",
           "appId": "showcase-skyline-runner",
-          "sourceHash": "sha256-ae3e7324f498290483b8ab92150c8165e5e0ab6fa1008bda10cc120086e85ac0",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-d1ff3bd36ec4a6bf5d7303b9c06a02642d1ac325ac1bc7a1279b495cae91ee46",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "skylineArcticRunnerHero",
           "secondaryPrimaryAssets": [
             "showcaseKenneyVerdantPlatformerWorld"
@@ -3518,8 +2888,8 @@
           "routeId": "showcase-turbo-drift-circuit",
           "routePath": "/apps/showcase-turbo-drift-circuit/",
           "appId": "showcase-turbo-drift-circuit",
-          "sourceHash": "sha256-85ddd0f0b7ca7f1e07a99f5383eb1e64c759d8ad7165965a0e17928633dd9806",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-64bba8700cc132a63350b4615ae8bca73a1644c740b0633bbe122539384c51ba",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "showcaseCc0FormulaRaceCar",
           "secondaryPrimaryAssets": [
             "showcaseCcByFormulaOpponent",
@@ -4002,8 +3372,8 @@
           "routeId": "showcase-siege-golf",
           "routePath": "/apps/showcase-siege-golf/",
           "appId": "showcase-siege-golf",
-          "sourceHash": "sha256-7e4fe73c54380ebec6ba198ad32035e585bd029c2b3f018c5f632d9c0e4bb365",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-3e600f11e604bb55aa44bb4fee5b21b349bd18e526ad7217bbf6cc65013efcf6",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "siegeGolfBall",
           "secondaryPrimaryAssets": [
             "siegeGolfCourseWorld",
@@ -4434,8 +3804,8 @@
           "routeId": "showcase-aurora-lander",
           "routePath": "/apps/showcase-aurora-lander/",
           "appId": "showcase-aurora-lander",
-          "sourceHash": "sha256-8fde271583310bf40c787dfd0a67716e69ddc2368a98e0fba34e5ad317ae0a47",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-64dd047947c30a339d194fb6ee5be3244caae1261982c9ed5235b66379d6c3d7",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "auroraLanderProbe",
           "secondaryPrimaryAssets": [
             "auroraPadBeacon"
@@ -4841,8 +4211,8 @@
           "routeId": "showcase-neon-swarm",
           "routePath": "/apps/showcase-neon-swarm/",
           "appId": "showcase-neon-swarm",
-          "sourceHash": "sha256-c0c69e97fc94b32745e7f814638e506104bc5b395bbc213f3acfe25d37a00479",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-3b2d4c4a6c23b03f1aecf1ea753ba9a9f6cdca49ffe0023fceaf3fec946be716",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "neonCourierAvatar",
           "secondaryPrimaryAssets": [
             "neonBarricadeProp",
@@ -5245,8 +4615,8 @@
           "routeId": "showcase-gravity-post",
           "routePath": "/apps/showcase-gravity-post/",
           "appId": "showcase-gravity-post",
-          "sourceHash": "sha256-0ed74127903f77f6d884710d397bf46256f7b1253d0bfa81dab85caccafbeba5",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-d0daad34aae62fb607c980d688c02f49d86380f58481aa2d8182e55aed54fb53",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "gravityPostCourierSkiff",
           "secondaryPrimaryAssets": [
             "gravityPostDockBeacon"
@@ -5650,8 +5020,8 @@
           "routeId": "showcase-courier-rush",
           "routePath": "/apps/showcase-courier-rush/",
           "appId": "showcase-courier-rush",
-          "sourceHash": "sha256-59d6890a9eef72090d5a0fd0e133831a427bbd093c7fca583730dbdaceaa9e96",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-9e877dc752de53353baf7840bab91ec70868dea72f24e922e67849753e0d2998",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "courierVan",
           "secondaryPrimaryAssets": [
             "courierParcel"
@@ -6170,8 +5540,8 @@
           "routeId": "showcase-mech-hangar",
           "routePath": "/apps/showcase-mech-hangar/",
           "appId": "showcase-mech-hangar",
-          "sourceHash": "sha256-9845822543769ac41c043a8d45ce79a766c172d62a1ef80c8563202cb449b5e5",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-8d742808809929f239437e24db1b9b8458a6de6c65e990de1a1bf670c0fe3436",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "mechChassisA",
           "secondaryPrimaryAssets": [
             "mechArmsA",
@@ -6639,8 +6009,8 @@
           "routeId": "showcase-vault-breakers",
           "routePath": "/apps/showcase-vault-breakers/",
           "appId": "showcase-vault-breakers",
-          "sourceHash": "sha256-cdb1b6e286ca1636077901353a66344a7c676ac77ed97e809c8b96886ea305b6",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-7e014b0ccbb7c8692057588045a4f0eb368853289fc3828810daef3a948a8e92",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "vaultBreakersMechanisms",
           "secondaryPrimaryAssets": [
             "vaultBreakersTable",
@@ -7188,8 +6558,8 @@
           "routeId": "showcase-rooftop-buckets",
           "routePath": "/apps/showcase-rooftop-buckets/",
           "appId": "showcase-rooftop-buckets",
-          "sourceHash": "sha256-9575176d426ad8db6550657fd33c1971828070324e6b3ecb634e7483dadff802",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-a25c1463a1acbac96e4e8af0096bdeb51fe1b3fa6f7f0cf1816c7837d1fe9591",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "rooftopBackboard",
           "secondaryPrimaryAssets": [
             "rooftopCourt",
@@ -7750,8 +7120,8 @@
           "routeId": "showcase-gallery-shift",
           "routePath": "/apps/showcase-gallery-shift/",
           "appId": "showcase-gallery-shift",
-          "sourceHash": "sha256-ecf7ddaf6d487552ac8939edc725ee9314d9d8eb4efd8eec2f11f4cabe9ab872",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-207654772bec06ba546f1f9e97620c68eb7d84c6524ce0f4c160cfee445e4a8e",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "galleryShiftCutawayMuseumWorld",
           "secondaryPrimaryAssets": [
             "galleryShiftPedestal",
@@ -8269,8 +7639,8 @@
           "routeId": "showcase-deep-recovery",
           "routePath": "/apps/showcase-deep-recovery/",
           "appId": "showcase-deep-recovery",
-          "sourceHash": "sha256-55e924983198c13bec3f43c49d48b0f8a0e067f8851bb8ddde7b24da2c2e95a8",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-eed6c5602d15b08099f2d52039572dafdfe9fa665e9fccb55b373cea53251188",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "deepRecoverySub",
           "secondaryPrimaryAssets": [
             "deepRecoveryWreckHull",
@@ -8760,8 +8130,8 @@
           "routeId": "showcase-patrol-wing",
           "routePath": "/apps/showcase-patrol-wing/",
           "appId": "showcase-patrol-wing",
-          "sourceHash": "sha256-3586718c1a385bd1ce9182bda9397fd29343a3c43964242d11350a2650b7a229",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-47bc8bee2c115215a40f7a82c061bc3df4956fcb3dd00e4be6e523dbac55cd6d",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "patrolAircraftMeshy",
           "secondaryPrimaryAssets": [
             "patrolWingDroneA",
@@ -9241,8 +8611,8 @@
           "routeId": "showcase-bank-shot",
           "routePath": "/apps/showcase-bank-shot/",
           "appId": "showcase-bank-shot",
-          "sourceHash": "sha256-8d2ebb5d4b9fe8ae317f2ada8863433fc372446358c84443bb6824092c7370be",
-          "routeGateHash": "629c99d5a9f65396f2266a5c3eaf0c4d49871ae11e3558e9dbb2904a9ce9e77b",
+          "sourceHash": "sha256-8092963505ccf75780ed961e068a220bf2e4c7408eeef800f4660828bc3c0a86",
+          "routeGateHash": "816d4da010219a0aa2bed9200227f6f28ce3c34272faa2a9b7b9e805f4bd257c",
           "routePrimaryHeroAsset": "bankShotTable",
           "secondaryPrimaryAssets": [
             "bankShotCue",

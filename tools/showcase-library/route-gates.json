@@ -49,25 +49,6 @@
       "requiresTypedPrimaryAssets": true
     },
     {
-      "id": "showcase-data-galaxy",
-      "label": "Data Galaxy Explorer",
-      "path": "/apps/showcase-data-galaxy/",
-      "globalName": "__AURA3D_SHOWCASE_DATA_GALAXY__",
-      "published": true,
-      "releaseClass": "removed-from-public-showcase",
-      "primaryAssets": [
-        "showcaseParticleCore"
-      ],
-      "primaryAssetRoles": {
-        "showcaseParticleCore": "abstract"
-      },
-      "routePrimaryHeroAsset": "showcaseParticleCore",
-      "secondaryPrimaryAssets": [],
-      "primitiveBudget": 30,
-      "requiresTypedPrimaryAssets": true,
-      "requiresAuraParticles": true
-    },
-    {
       "id": "showcase-smart-city-control",
       "label": "Smart City Control Room",
       "path": "/apps/showcase-smart-city-control/",
@@ -120,26 +101,6 @@
       "secondaryPrimaryAssets": [],
       "primitiveBudget": 30,
       "requiresTypedPrimaryAssets": true
-    },
-    {
-      "id": "showcase-webgpu-particle-lab",
-      "label": "WebGPU Particle Lab",
-      "path": "/apps/showcase-webgpu-particle-lab/",
-      "globalName": "__AURA3D_SHOWCASE_WEBGPU_PARTICLE_LAB__",
-      "published": true,
-      "releaseClass": "internal-diagnostic",
-      "primaryAssets": [
-        "showcaseParticleCore"
-      ],
-      "primaryAssetRoles": {
-        "showcaseParticleCore": "effect-core"
-      },
-      "routePrimaryHeroAsset": "showcaseParticleCore",
-      "secondaryPrimaryAssets": [],
-      "primitiveBudget": 14,
-      "requiresTypedPrimaryAssets": true,
-      "requiresAuraParticles": true,
-      "nativeWebGpuAllowed": false
     },
     {
       "id": "showcase-blockfall-reactor",

@@ -210,7 +210,7 @@ const publicReleaseCandidateIds = new Set([
   "showcase-cinematic-architecture",
   "showcase-digital-twin-ops"
 ]);
-const internalDiagnosticIds = new Set(["showcase-webgpu-particle-lab"]);
+const internalDiagnosticIds = new Set<string>();
 /*
  * The `game-layer-diagnostic` class currently has no routes.
  *
@@ -226,10 +226,7 @@ const prototypeBlockedIds = new Set([
   "showcase-turbo-drift-circuit"
 ]);
 const removedFromPublicShowcaseIds = new Set([
-  "showcase-material-asset-inspector",
-  // Reclassified once its route-primary anchor became readable; see the rationale at
-  // the data-galaxy assertions below.
-  "showcase-data-galaxy"
+  "showcase-material-asset-inspector"
 ]);
 const gameLayerDiagnosticExpectations = new Map<string, {
   readonly category: string;
@@ -845,7 +842,13 @@ describe("showcase route gate registry", () => {
       .filter((entry) => entry.health);
 
     for (const entry of unpublishedHealthFiles) {
-      const expectedClassification = prototypeBlockedIds.has(entry.id) ? "prototype" : "blocked";
+      const expectedClassification = prototypeBlockedIds.has(entry.id)
+        ? "prototype"
+        : entry.id === "showcase-data-galaxy"
+          ? "removed-from-public-showcase"
+          : entry.id === "showcase-webgpu-particle-lab"
+            ? "internal-diagnostic"
+            : "blocked";
       expect(entry.health?.classification, `${entry.id} unpublished route classification`).toBe(expectedClassification);
       expect(entry.health?.publicShowcase, `${entry.id} unpublished route publicShowcase`).toBe(false);
     }
@@ -1039,29 +1042,10 @@ describe("showcase route gate registry", () => {
       expect(launchRoute?.diagnosticBlockers?.length ?? 0, `${routeId} has retained blockers`).toBeGreaterThan(0);
     }
 
-    /*
-     * data-galaxy is no longer an internal diagnostic.
-     *
-     * Its only diagnostic reason was `internal-diagnostic-route-primary-anchor-too-small`,
-     * and its own claimStatus said release-ready route-primary evidence was barred *until
-     * the ParticleCore anchor is readable*. The anchor is now readable (581x639 hero,
-     * readability 92, measured by subject-difference rather than by guessing which blob is
-     * the subject), so that reason is resolved and no honest blocker remains --
-     * `internal-diagnostic` requires at least one, which it could only satisfy by
-     * manufacturing a defect.
-     *
-     * It is deliberately NOT promoted to `release-ready candidate`: claimStatus still bars
-     * "flagship public showcase" and "meaningful real data exploration", and it carries no
-     * independent human visual approval. `removed-from-public-showcase` is the class its
-     * evidence actually supports, matching showcase-material-asset-inspector.
-     */
     const dataGalaxy = launchRoutes.find((route) => route.id === "showcase-data-galaxy");
-    expect(dataGalaxy?.releaseClass, "data-galaxy release class").toBe("removed-from-public-showcase");
-    expect(dataGalaxy?.classificationOk, "data-galaxy classification ok").toBe(true);
-    expect(dataGalaxy?.publicReleaseCounted, "data-galaxy not counted for public release").toBe(false);
-    expect(dataGalaxy?.routeHealth?.publicShowcase, "data-galaxy is not a public showcase").toBe(false);
+    expect(dataGalaxy, "data-galaxy removed from published launch routes").toBeUndefined();
     const webGpuLab = launchRoutes.find((route) => route.id === "showcase-webgpu-particle-lab");
-    expect(webGpuLab?.diagnosticBlockers?.join("\n"), "webgpu diagnostic blocker").toMatch(/webgpu|foreground|clipped/i);
+    expect(webGpuLab, "webgpu-particle-lab removed from published launch routes").toBeUndefined();
   });
 
   it("validates route-primary probe freshness and primary asset roles", async () => {
@@ -1222,7 +1206,21 @@ describe("showcase route gate registry", () => {
 
   it("rejects forged pass records for retained failing route screenshots", async () => {
     const module = await loadRoutePrimaryProbeModule();
-    const route = publishedTypedRoute("showcase-data-galaxy");
+    const route: ShowcaseRouteGate = {
+      id: "showcase-data-galaxy",
+      label: "Data Galaxy Explorer",
+      path: "/apps/showcase-data-galaxy/",
+      globalName: "__AURA3D_SHOWCASE_DATA_GALAXY__",
+      published: false,
+      releaseClass: "removed-from-public-showcase",
+      primaryAssets: ["showcaseParticleCore"],
+      primaryAssetRoles: { showcaseParticleCore: "abstract" },
+      routePrimaryHeroAsset: "showcaseParticleCore",
+      secondaryPrimaryAssets: [],
+      primitiveBudget: 30,
+      requiresTypedPrimaryAssets: true,
+      requiresAuraParticles: true
+    };
     /*
      * Deliberately reads the *fixture*, not the live retained report.
      *

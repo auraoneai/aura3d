@@ -59,10 +59,7 @@ const showcaseRoutes = [
   "showcase-patrol-wing",
   "showcase-gallery-shift",
   "showcase-deep-recovery",
-  "showcase-rooftop-buckets",
-  "showcase-data-galaxy",
-  "showcase-webgpu-particle-lab",
-  "showcase-meshy-relic-pilot"
+  "showcase-rooftop-buckets"
 ];
 
 const evidenceRoutes = [
@@ -371,7 +368,9 @@ function assertBuiltRoutes() {
   const supersededPublicRoutes = [
     "showcase-material-asset-inspector",
     "showcase-public-racing-presentation-proof",
-    "showcase-public-platformer-presentation-proof"
+    "showcase-public-platformer-presentation-proof",
+    "showcase-data-galaxy",
+    "showcase-webgpu-particle-lab"
   ];
   for (const route of supersededPublicRoutes) {
     const staleRoute = path.join(distDir, "apps", route);

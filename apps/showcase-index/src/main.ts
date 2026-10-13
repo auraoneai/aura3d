@@ -69,17 +69,6 @@ const apps = [
     notes: "Retained typed-asset inspection tool. It is accessible but no longer promoted because Product Configurator already uses the same headphone hero."
   },
   {
-    id: "showcase-data-galaxy",
-    route: "/apps/showcase-data-galaxy/",
-    routeHealth: "/apps/showcase-data-galaxy/route-health.json",
-    classification: "internal-diagnostic",
-    publicShowcase: false,
-    primaryAssetStatus: "compiler-selected-diagnostic-anchor",
-    primitiveStatus: "heavy-set-dressing",
-    claimStatus: "demoted",
-    notes: "Compiler-selected ParticleCore anchor replaces rejected DataStation; deploy passes, but route-primary still fails as too small and low-readability, so this remains internal diagnostic."
-  },
-  {
     id: "showcase-smart-city-control",
     route: "/apps/showcase-smart-city-control/",
     routeHealth: "/apps/showcase-smart-city-control/route-health.json",
@@ -111,17 +100,6 @@ const apps = [
     primitiveStatus: "supporting-workcell-set-dressing",
     claimStatus: "bounded",
     notes: "Compiler-selected OrangeIndustrialRobot replaces rejected AssemblyLine and is staged in a restrained workcell with live route-primary plus deploy evidence; telemetry remains deterministic sample state, not real facility integration."
-  },
-  {
-    id: "showcase-webgpu-particle-lab",
-    route: "/apps/showcase-webgpu-particle-lab/",
-    routeHealth: "/apps/showcase-webgpu-particle-lab/route-health.json",
-    classification: "internal-diagnostic",
-    publicShowcase: false,
-    primaryAssetStatus: "typed-primary-assets",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "demoted",
-    notes: "Deploy passes for ParticleCore, but route-primary remains clipped and native WebGPU adapter, compute dispatch, backend, and pixel proof are absent; treat as internal Aura particle diagnostic."
   },
   {
     id: "showcase-blockfall-reactor",

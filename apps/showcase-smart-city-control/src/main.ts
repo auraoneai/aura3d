@@ -380,7 +380,7 @@ let app: ReturnType<typeof createAuraApp> | undefined;
 let sceneSubmissionTail: Promise<void> = Promise.resolve();
 
 publishEvidence("booting");
-const compositionProbePixelRatio = new URLSearchParams(location.search).has("compositionProbe") ? 0.25 : 1;
+const compositionProbePixelRatio = new URLSearchParams(location.search).has("compositionProbe") ? 0.25 : Math.min(window.devicePixelRatio || 1, 2);
 app = createAuraApp("#aura-stage", {
   diagnostics: { overlay: false, performancePanel: false },
   // Composition evidence retains the real CSS viewport and UI geometry while
@@ -389,8 +389,7 @@ app = createAuraApp("#aura-stage", {
   pixelRatio: compositionProbePixelRatio,
   renderer: {
     mode: "production",
-    qualityProfile: "production",
-    fallback: "safe-basic"
+    qualityProfile: "production"
   },
   scene: activeBuild.snapshot
 });
