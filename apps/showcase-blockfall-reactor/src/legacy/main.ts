@@ -641,7 +641,6 @@ const reactorScene = scene()
     // from the room behind it.
     bloomEffect,
     effects.ambientOcclusion({ intensity: 0.46, radius: 0.68 }),
-    effects.contactOcclusion({ name: "cabinet floor contact", intensity: 0.34, radius: 0.5 }),
     effects.fog({ name: "arcade room depth haze", density: 0.028, color: "#0d0514", intensity: 0.3 }),
     effects.colorGrade({ exposure: 1.04 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
     effects.antiAlias({ mode: "fxaa" }),

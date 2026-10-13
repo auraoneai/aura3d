@@ -34,7 +34,7 @@ export function patrolWingEffectsPass() {
     // Perf pass: no screen-space contact-shadow march. The route is airborne
     // outside the preflight pad, where the cascaded key shadow (sky.ts)
     // already grounds the airframe; the march cost ~a full post pass.
-    environments.preset("sunset", { intensity: 0.85, specularIntensity: 1.1, background: false }),
+    environments.preset("sunset", { intensity: 0.95, specularIntensity: 1.1, background: false }),
     // Aerial perspective: denser near the sea, thinning with altitude, with
     // forward in-scatter towards the golden-hour key (S4 god rays).
     effects.volumetricFog({
@@ -46,7 +46,7 @@ export function patrolWingEffectsPass() {
       heightFalloff: 0.05,
       heightReference: 0
     }),
-    effects.vignette({ intensity: 0.3, smoothness: 1.7 }),
+    effects.vignette({ intensity: 0.26, smoothness: 1.7 }),
     ...(vfxOn
       ? [
           ...WISPS.map((wisp, index) =>
