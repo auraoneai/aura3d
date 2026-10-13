@@ -3,19 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Aura3D Gallery Shift prototype: top-down stealth heist with line-of-sight guard vision, camera sweeps, and sensor lasers." />
-    <title>Aura3D - Gallery Shift</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="./src/legacy/styles.css" />
+    <meta name="theme-color" content="#07090d" />
+    <meta
+      name="description"
+      content="Aura3D Gallery Shift: top-down stealth heist with line-of-sight guard vision cones, hold-to-lift exhibits, and a service-exit escape."
+    />
+    <title>Gallery Shift</title>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #05070a;
+      }
+    </style>
   </head>
   <body>
-    <main class="shell" aria-label="Gallery Shift stealth heist">
-      <section class="viewport">
-        <div id="app" class="stage" data-testid="gallery-shift-stage"></div>
-        <div id="hud" aria-label="Gallery Shift HUD"></div>
-      </section>
-      <aside id="panel" class="panel" aria-label="Gallery Shift controls and status"></aside>
-    </main>
-    <script type="module" src="./src/main.ts"></script>
+    <div id="app" aria-label="Gallery Shift stealth heist"></div>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

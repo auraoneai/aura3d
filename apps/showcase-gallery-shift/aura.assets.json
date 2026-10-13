@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "quaterniusCubeCrate",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/quaternius-cube-crate.glb",
+      "outputPath": "public/aura-assets/quaternius-cube-crate.glb",
+      "url": "/aura-assets/quaternius-cube-crate.glb",
+      "hash": "sha256-e0c4c5946b53ba314ec6e22bdb5d3329e4a2f0950b3c477a88e0d456d85baea8",
+      "sizeBytes": 12960,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "libraryId": "quaternius-cube-crate",
+      "libraryKit": "props/industrial-urban",
+      "license": "CC0",
+      "attribution": "Quaternius",
+      "sourcePage": "https://poly.pizza/m/YAghI6GBls",
+      "bounds": [
+        2.021,
+        2.021,
+        2.021
+      ]
+    },
+    {
+      "id": "quaterniusWallModular",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/quaternius-wall-modular.glb",
+      "outputPath": "public/aura-assets/quaternius-wall-modular.glb",
+      "url": "/aura-assets/quaternius-wall-modular.glb",
+      "hash": "sha256-052a5ff5a468c946dcfe170d907a0c4554a96c7f253c89ff54e72fdf048d22c6",
+      "sizeBytes": 91404,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "libraryId": "quaternius-wall-modular",
+      "libraryKit": "environments/modular",
+      "license": "CC0",
+      "attribution": "Quaternius",
+      "sourcePage": "https://poly.pizza/m/itasw0GWNf",
+      "bounds": [
+        2.001,
+        2.005,
+        0.438
+      ]
+    }
+  ]
+}
