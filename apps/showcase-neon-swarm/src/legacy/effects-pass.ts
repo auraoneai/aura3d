@@ -26,18 +26,18 @@ export function createNeonSwarmEffectsPass(options: { readonly reducedMotion: bo
             name: "neon swarm district volumetric haze",
             density: 0.017,
             color: "#26355a",
-            intensity: 0.15,
+            intensity: 0.11,
             volumetricQuality: "off"
           })
         ]
       : []),
-    environments.preset("night", { name: "neon swarm night reflections", intensity: 0.35, background: false }),
+    environments.preset("night", { name: "neon swarm night reflections", intensity: 0.2, background: false }),
     effects.vignette({ name: "neon swarm vignette", intensity: 0.3, smoothness: 2.2, roundness: 0.8 })
   ];
   if (!options.reducedMotion) {
     nodes.push(
       // Two interleaved ember columns (cyan + magenta) over the whole arena.
-      ...[hdr(0.35, 1.6, 2.2), hdr(2.0, 0.4, 1.6)].map((color, index) => effects.particles({
+      ...[hdr(0.26, 1.2, 1.65), hdr(1.5, 0.3, 1.2)].map((color, index) => effects.particles({
         name: `neon swarm arena embers ${index + 1}`,
         seed: 7101 + index,
         emitter: "fountain",
@@ -47,8 +47,8 @@ export function createNeonSwarmEffectsPass(options: { readonly reducedMotion: bo
         gravity: 0,
         drag: 0,
         lifetime: [6, 9],
-        maxParticles: 225,
-        rate: 30,
+        maxParticles: 140,
+        rate: 20,
         prewarm: 9,
         size: [0.06, 0.12],
         materialMode: "additive-glow",

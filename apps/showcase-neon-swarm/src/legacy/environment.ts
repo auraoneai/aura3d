@@ -22,8 +22,9 @@ export function createNeonSwarmDistrictDressing(reviewCapture = false): AuraScen
       name: "cyber-key-light",
       color: "#e0f2fe",
       intensity: reviewCapture ? 1.72 : 2.0,
-      // Effects pass: cascaded PCSS key shadows under the swarm.
-      shadow: { cascades: 1, mapSize: 1024, filter: "pcss", softness: 1, intensity: 0.85 }
+      // Effects pass: key shadows under the swarm. PCF at 512 (perf pass):
+      // the top-down lens reads the contact pool, not PCSS penumbra detail.
+      shadow: { cascades: 1, mapSize: 512, filter: "pcf", softness: 1, intensity: 0.85 }
     }).position(8, 20, 8).toJSON(),
     lights.directional({
       name: "cyber-rim-light",

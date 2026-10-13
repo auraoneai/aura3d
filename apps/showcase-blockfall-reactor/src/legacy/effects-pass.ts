@@ -40,7 +40,7 @@ export function createBlockfallEffectsPass(options: BlockfallEffectsPassOptions)
             name: "blockfall arcade volumetric haze",
             density: 0.05,
             color: "#5e4490",
-            intensity: 0.18,
+            intensity: 0.15,
             volumetricQuality: "off"
           })
         ]
@@ -61,8 +61,8 @@ export function createBlockfallEffectsPass(options: BlockfallEffectsPassOptions)
         gravity: 0,
         drag: 0,
         lifetime: [9, 13],
-        maxParticles: 120,
-        rate: 12,
+        maxParticles: 70,
+        rate: 8,
         prewarm: 13,
         size: [0.03, 0.06],
         materialMode: "additive-glow",
@@ -80,8 +80,8 @@ export function createBlockfallEffectsPass(options: BlockfallEffectsPassOptions)
         gravity: 0,
         drag: 0,
         lifetime: [2.2, 3.4],
-        maxParticles: 45,
-        rate: 14,
+        maxParticles: 28,
+        rate: 10,
         prewarm: 4,
         size: [0.03, 0.055],
         materialMode: "spark",

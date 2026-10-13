@@ -238,8 +238,10 @@ export function arenaLighting(): ArenaLighting {
           name: "golden-hour key",
           color: "#ffd0a0",
           intensity: 2.15,
-          // Effects pass: explicit cascaded sun shadows over the island.
-          ...(effectsPassOn ? { shadow: { cascades: "auto" as const, maxDistance: 90 } } : {})
+          // Effects pass: cascaded sun shadows over the island. Perf pass:
+          // "auto" resolved to 4 cascades; 2 PCF cascades over 55 m cover the
+          // island + chase volume at half the shadow-render cost.
+          ...(effectsPassOn ? { shadow: { cascades: 2 as const, mapSize: 1024 as const, filter: "pcf" as const, maxDistance: 55, intensity: 0.85 } } : {})
         })
         .position(-30, 26, 18)
         .runtime({ id: "light-day", tags: ["arena-light"] })

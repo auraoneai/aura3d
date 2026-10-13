@@ -643,14 +643,16 @@ const reactorScene = scene()
     effects.ambientOcclusion({ intensity: 0.46, radius: 0.68 }),
     effects.contactOcclusion({ name: "cabinet floor contact", intensity: 0.34, radius: 0.5 }),
     effects.fog({ name: "arcade room depth haze", density: 0.028, color: "#0d0514", intensity: 0.3 }),
-    effects.colorGrade({ exposure: 1.08 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
+    effects.colorGrade({ exposure: 1.04 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
     effects.antiAlias({ mode: "fxaa" }),
     lights.ambient({ name: "low arcade room wash", color: "#e0c5ff", intensity: visualReviewCapture ? 0.82 : 0.58 }),
     lights.directional({
       name: "overhead arcade key",
       color: "#fff5dd",
       intensity: 1.05,
-      shadow: { cascades: 1, mapSize: 1024, filter: "pcss", softness: 1.1, intensity: 0.85 }
+      // Perf pass: PCF at 512 keeps the cabinet grounding shadow; the PCSS
+      // blocker search at 1024 was the priciest single node in the pass.
+      shadow: { cascades: 1, mapSize: 512, filter: "pcf", softness: 1.1, intensity: 0.85 }
     }).position(-1.2, 6.4, 4.2),
     lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.72 : 1.28 }).position(2.4, 2.1, 2.6),
     lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity: visualReviewCapture ? 1.68 : 1.18 }).position(-2.15, 3.3, 1.35),
