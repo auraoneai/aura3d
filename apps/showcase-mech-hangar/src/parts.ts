@@ -54,7 +54,7 @@ export const PART_OPTIONS: Readonly<Record<MechSlot, readonly PartDef[]>> = {
       displayName: "Mech (Quaternius)",
       stats: { speed: 5, power: 5 },
       clips: MECH_CLIPS,
-      scale: 0.72
+      scale: 1.48
     },
     {
       assetKey: "quaterniusRobotEnemyLarge",
@@ -63,7 +63,7 @@ export const PART_OPTIONS: Readonly<Record<MechSlot, readonly PartDef[]>> = {
       displayName: "Robot Enemy Large (Quaternius)",
       stats: { speed: 3, power: 7 },
       clips: ROBOT_CLIPS,
-      scale: 1.45
+      scale: 1.48
     },
     {
       assetKey: "quaterniusRobotEnemy",
@@ -92,7 +92,7 @@ export const PART_OPTIONS: Readonly<Record<MechSlot, readonly PartDef[]>> = {
       displayName: "Flying Gun Drone (Quaternius)",
       stats: { speed: 0, power: 3 },
       clips: ROBOT_CLIPS,
-      scale: 0.55
+      scale: 0.72
     }
   ]
 };

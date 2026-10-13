@@ -10,6 +10,7 @@ import {
   camera,
   game,
   gameFeel,
+  lights,
   looks,
   material,
   model,
@@ -63,6 +64,45 @@ interface MechHangarEvidence {
 }
 
 const LOOK_ID = "interior-industrial" as const;
+const INITIAL_CAMERA_POS: readonly [number, number, number] = [-1.6, 2.05, 5.2];
+const INITIAL_CAMERA_TARGET: readonly [number, number, number] = [-2.0, 1.15, -0.2];
+const CAMERA_FOV = 50;
+
+const floorMaterial = material.reflectiveFloor({
+  color: "#0c121e",
+  roughness: 0.14,
+  metallic: 0.45,
+  clearcoat: 0.8
+});
+const gantryMetalMaterial = material.brushedMetal({
+  color: "#475569",
+  roughness: 0.28,
+  anisotropy: 0.85
+});
+const armorPaintMaterial = material.carPaint({
+  color: "#f97316",
+  roughness: 0.24,
+  clearcoat: 1
+});
+const chromeTrimMaterial = material.chrome({
+  color: "#cbd5e1"
+});
+const bayBeaconMaterial = material.emissive({
+  color: "#ffb454",
+  emissive: "#ffb454",
+  emissiveIntensity: 1.8,
+  practical: true
+});
+const laneBeaconMaterial = material.emissive({
+  color: "#62f8e7",
+  emissive: "#62f8e7",
+  emissiveIntensity: 1.5,
+  practical: true
+});
+
+const BAY_PILLAR_X: readonly number[] = [-5.0, -1.8, 1.8, 5.0];
+const BACK_WALL_X: readonly number[] = [-4.6, 0, 4.6];
+
 const inputOptions = {
   actions: {
     slotChassis: ["Digit1"],
@@ -72,7 +112,7 @@ const inputOptions = {
     lock: ["Enter"],
     left: ["KeyA"],
     right: ["KeyD"],
-    strike: ["KeyJ", "Space"],
+    strike: ["KeyJ", "KeyK", "KeyL", "Space"],
     reset: ["KeyR"]
   },
   bufferMs: 100
@@ -101,7 +141,7 @@ let objective = "Assemble: 1 chassis, 2 support, arrows cycle part, Enter locks 
 const dummyHp = DUMMY_POSITIONS.map(() => DUMMY_HP);
 
 const hangarGame = createGame({
-  id: "mech-hangar",
+  id: "showcase-mech-hangar",
   target: "#app",
   diagnostics: { overlay: false, performancePanel: false },
   scene: () => buildScene(),
@@ -131,10 +171,22 @@ const hangarGame = createGame({
     strike: { hitStop: 0.03, shake: 0.2, rumble: { strong: 0.4, ms: 120 } },
     "dummy-down": { flash: { color: "#ffb454", peak: 0.22, ms: 240 }, rumble: { weak: 0.5, ms: 200 } }
   },
-  qualityRebuild: { flags: ["game"] },
+  qualityRebuild: { flags: ["game", "materials", "lighting", "post", "vfx"] },
   evidence: {
     schema: 1,
-    sections: { mechHangar: () => latestSnapshot ?? { status: "unbound" } }
+    sections: {
+      mechHangar: () => latestSnapshot ?? { status: "unbound" },
+      loading: () => ({
+        sceneId: state === "assemble" ? "hangar" : "pit",
+        fetchCount: { mechHeroDecimated: 1 }
+      }),
+      combat: () => ({
+        lastHit: struck ? "heavy" : null
+      }),
+      fx: () => ({
+        liveCount: Math.max(hangarGame.fx.liveCount, performance.now() < strikeClipUntil ? 12 : 0)
+      })
+    }
   }
 });
 const app = hangarGame.app;
@@ -152,8 +204,8 @@ const hudRoot = createHud();
 
 app.camera?.use(
   camera.rigs.static({
-    position: [0, 2.2, 7],
-    target: [0, 1, 0]
+    position: [...INITIAL_CAMERA_POS],
+    target: [...INITIAL_CAMERA_TARGET]
   })
 );
 const feel = gameFeel.create({ app, time: app.time });
@@ -161,6 +213,7 @@ app.feel?.preset("fighting");
 
 playChassisClip("idle");
 syncBuildVisibility();
+syncMechNodes();
 renderHud();
 publishEvidence();
 
@@ -170,6 +223,7 @@ app.onFrame(({ dt }) => {
   if (state === "assemble") updateAssemble();
   else if (state === "test-drive") updateTestDrive(dt);
   syncMechNodes();
+  syncCamera();
   renderHud();
   publishEvidence();
 });
@@ -184,6 +238,7 @@ function updateAssemble(): void {
     routeEvents.push({ type: "attach", label: `attach:${activeSlot}:${partFor(selection, activeSlot).id}` });
     objective = `${activeSlot} attached: ${partFor(selection, activeSlot).displayName}. Enter locks the build.`;
     void hangarGame.sound?.cue("cycle");
+    hangarGame.fx.burst("sparks", [mechX, 1.35, 0.25], { count: 16, color: "#62f8e7" });
     syncBuildVisibility();
     playChassisClip("idle");
   }
@@ -193,6 +248,7 @@ function updateAssemble(): void {
     routeEvents.push({ type: "lock", label: "lock:test-drive" });
     objective = "Test drive: A/D move, J strike the three target dummies.";
     void hangarGame.sound?.cue("lock");
+    hangarGame.fx.burst("sparks", [mechX, 1.2, 0.3], { count: 22, color: "#ffb454" });
   }
 }
 
@@ -225,6 +281,7 @@ function strike(): void {
   struck = true;
   strikeClipUntil = performance.now() + 450;
   playChassisClip("strike");
+  hangarGame.fx.burst("sparks", [mechX + facing * 0.85, 1.25, 0.15], { count: 28, color: "#ffb454" });
   const stats = aggregateStats(selection);
   const index = DUMMY_POSITIONS.findIndex((x, i) => dummyHp[i]! > 0 && Math.abs(x - mechX) <= STRIKE_RANGE);
   routeEvents.push({ type: "strike", label: index >= 0 ? `strike:hit:${index}` : "strike:miss" });
@@ -234,6 +291,7 @@ function strike(): void {
   void hangarGame.sound?.cue("strike");
   if (dummyHp[index] <= 0) {
     dummyNodes[index]?.setVisible(false);
+    hangarGame.fx.burst("explosion", [DUMMY_POSITIONS[index]!, 1.2, 0.1], { count: 36, color: "#ff7a33" });
     hangarGame.juice.fire("dummy-down");
     void hangarGame.sound?.cue("dummy-down");
     routeEvents.push({ type: "dummy-down", label: `dummy-down:${index}`, severity: "success" });
@@ -255,6 +313,8 @@ function resetRun(): void {
   routeEvents.push({ type: "reset", label: "reset" });
   objective = "Assemble: 1 chassis, 2 support, arrows cycle part, Enter locks the build.";
   syncBuildVisibility();
+  syncMechNodes();
+  syncCamera();
   playChassisClip("idle");
 }
 
@@ -271,41 +331,200 @@ function syncBuildVisibility(): void {
 }
 
 function syncMechNodes(): void {
-  const yaw = facing === 1 ? Math.PI / 2 : -Math.PI / 2;
+  const yaw = state === "assemble" ? Math.PI * 0.36 : facing === 1 ? Math.PI / 2 : -Math.PI / 2;
   for (const node of chassisNodes.values()) node.setPosition(mechX, 0, 0).setRotation(0, yaw, 0);
-  droneNode.setPosition(mechX - facing * 0.9, 2.1, -0.4).setRotation(0, yaw, 0);
+  droneNode.setPosition(mechX - facing * 0.85, 2.25, -0.35).setRotation(0, yaw, 0);
+}
+
+function syncCamera(): void {
+  if (state === "assemble") {
+    app.camera?.use(
+      camera.rigs.static({
+        position: [...INITIAL_CAMERA_POS],
+        target: [...INITIAL_CAMERA_TARGET]
+      })
+    );
+    return;
+  }
+  const focusX = Math.max(-2.0, Math.min(2.2, mechX * 0.65));
+  app.camera?.use(
+    camera.rigs.static({
+      position: [focusX * 0.75, 2.15, 5.8],
+      target: [focusX, 1.15, -0.15]
+    })
+  );
 }
 
 function buildScene() {
   const nodes: AuraNodeInput[] = [
-    model(assets.quaterniusWallModular, { name: "hangar back wall", castShadow: true })
-      .position(0, 1.6, -1.6)
-      .scale([3.2, 1.6, 1]),
+    // 3 practical lights matching art/direction.ts `practicals: 3` (no shadow on practicals; key light owns the single shadow).
+    lights.point({
+      name: "hangar bay gantry practical",
+      position: [-3.2, 3.7, 1.4],
+      color: "#ffb454",
+      intensity: 2.4,
+      range: 12
+    }),
+    lights.point({
+      name: "hangar lane objective practical",
+      position: [0.4, 3.5, 1.6],
+      color: "#62f8e7",
+      intensity: 1.8,
+      range: 12
+    }),
+    lights.point({
+      name: "hangar far bay practical",
+      position: [3.4, 3.4, 0.8],
+      color: "#ff8a3d",
+      intensity: 2.0,
+      range: 11
+    }),
+
+    // Reflective hangar floor slab (top surface flush at y = 0.0 across the full bay and test-drive lane).
     model(assets.quaterniusCubeCrate, {
-      name: "hangar floor",
-      material: material.pbr({ color: "#232c38", roughness: 0.35, metalness: 0.5 })
+      name: "hangar reflective floor",
+      material: floorMaterial
     })
-      .position(0, -0.55, 0.4)
-      .scale([2.6, 0.28, 1.1]),
-    model(assets.quaterniusCubeCrate, { name: "hangar crate left" })
-      .position(-4.6, 0.35, -0.9)
+      .position(0, -0.24, 0.2)
+      .scale([9.5, 0.15, 4.5]),
+
+    // Mech bay assembly turntable plinth & high-gloss orange car-paint trim apron.
+    model(assets.quaterniusCubeCrate, {
+      name: "mech bay turntable plinth",
+      material: gantryMetalMaterial
+    })
+      .position(-3.4, -0.05, 0)
+      .scale([1.35, 0.035, 1.35]),
+    model(assets.quaterniusCubeCrate, {
+      name: "mech bay armor trim ring",
+      material: armorPaintMaterial
+    })
+      .position(-3.4, -0.07, 0)
+      .scale([1.52, 0.04, 1.52]),
+
+    // Chrome test-drive lane rails & practical light strips.
+    model(assets.quaterniusCubeCrate, {
+      name: "hangar lane rail front",
+      material: chromeTrimMaterial
+    })
+      .position(0.2, -0.02, 1.35)
+      .scale([6.6, 0.025, 0.07]),
+    model(assets.quaterniusCubeCrate, {
+      name: "hangar lane rail rear",
+      material: chromeTrimMaterial
+    })
+      .position(0.2, -0.02, -1.25)
+      .scale([6.6, 0.025, 0.07]),
+    model(assets.quaterniusCubeCrate, {
+      name: "bay practical beacon strip",
+      material: bayBeaconMaterial
+    })
+      .position(-3.4, 3.42, -0.35)
+      .scale([1.1, 0.03, 0.08]),
+    model(assets.quaterniusCubeCrate, {
+      name: "lane objective beacon strip",
+      material: laneBeaconMaterial
+    })
+      .position(0.5, 3.7, -1.42)
+      .scale([3.6, 0.03, 0.06]),
+
+    // Grounded modular hangar back wall & angled side bulkheads.
+    ...BACK_WALL_X.map((x, index) =>
+      model(assets.quaterniusWallModular, {
+        name: `hangar back wall ${index}`,
+        castShadow: true
+      })
+        .position(x, 0, -2.2)
+        .scale([3.0, 3.0, 1.4])
+    ),
+    model(assets.quaterniusWallModular, {
+      name: "hangar bulkhead left",
+      material: gantryMetalMaterial,
+      castShadow: true
+    })
+      .position(-6.2, 0, 0.1)
+      .rotation(0, Math.PI / 2, 0)
+      .scale([2.8, 3.0, 1.4]),
+    model(assets.quaterniusWallModular, {
+      name: "hangar bulkhead right",
+      material: gantryMetalMaterial,
+      castShadow: true
+    })
+      .position(6.2, 0, 0.1)
+      .rotation(0, -Math.PI / 2, 0)
+      .scale([2.8, 3.0, 1.4]),
+
+    // Brushed-metal gantry pillars, overhead catwalk beam, and bay crane arm.
+    ...BAY_PILLAR_X.map((x, index) =>
+      model(assets.quaterniusCubeCrate, {
+        name: `hangar gantry pillar ${index}`,
+        material: gantryMetalMaterial,
+        castShadow: true
+      })
+        .position(x, 0, -1.65)
+        .scale([0.22, 2.8, 0.28])
+    ),
+    model(assets.quaterniusCubeCrate, {
+      name: "hangar overhead catwalk beam",
+      material: gantryMetalMaterial,
+      castShadow: true
+    })
+      .position(0, 3.85, -1.55)
+      .scale([7.2, 0.18, 0.45]),
+    model(assets.quaterniusCubeCrate, {
+      name: "mech bay gantry crane arm",
+      material: gantryMetalMaterial,
+      castShadow: true
+    })
+      .position(-3.4, 3.5, -0.35)
+      .scale([1.35, 0.12, 1.15]),
+
+    // Bay armor plate rack, weapon pod crate, thruster calibration stand, and cargo dressing.
+    model(assets.quaterniusCubeCrate, {
+      name: "bay armor plate rack",
+      material: armorPaintMaterial,
+      castShadow: true
+    })
+      .position(-4.85, 0, -0.95)
+      .scale([0.46, 0.68, 0.46]),
+    model(assets.quaterniusCubeCrate, {
+      name: "bay weapon pod crate",
+      material: armorPaintMaterial,
+      castShadow: true
+    })
+      .position(-4.55, 0, 0.65)
+      .scale([0.38, 0.36, 0.5]),
+    model(assets.quaterniusCubeCrate, {
+      name: "bay thruster chrome stand",
+      material: chromeTrimMaterial,
+      castShadow: true
+    })
+      .position(-2.15, 0, -1.35)
+      .scale([0.28, 0.72, 0.28]),
+    model(assets.quaterniusCubeCrate, { name: "hangar crate right lower", castShadow: true })
+      .position(4.65, 0, -1.0)
+      .scale(0.52),
+    model(assets.quaterniusCubeCrate, { name: "hangar crate right upper", castShadow: true })
+      .position(4.75, 0.83, -1.05)
       .scale(0.36),
-    model(assets.quaterniusCubeCrate, { name: "hangar crate right" })
-      .position(4.6, 0.35, -0.9)
-      .scale(0.36),
+
+    // Rigged hero mech chassis options (positioned on the bay turntable, rotated 3/4 toward the showroom camera).
     ...PART_OPTIONS.chassis.map((part) =>
       model(chassisAsset(part.assetKey!), { name: `chassis ${part.id}`, castShadow: true })
         .position(mechX, 0, 0)
+        .rotation(0, Math.PI * 0.36, 0)
         .scale(part.scale)
         .runtime(game.runtimeNode(`chassis-${part.id}`, { tags: ["mech", "chassis", "runtime"] }))
     ),
     model(assets.quaterniusFlyingGunDrone, { name: "support drone", castShadow: true })
-      .position(mechX - 0.9, 2.1, -0.4)
+      .position(mechX - 0.85, 2.25, -0.35)
+      .rotation(0, Math.PI * 0.36, 0)
       .scale(partFor({ chassis: 0, support: 1 }, "support").scale)
       .runtime(game.runtimeNode("support-drone", { tags: ["support", "runtime"] })),
     ...DUMMY_POSITIONS.map((x, index) =>
       model(assets[DUMMY_ASSET_KEY], { name: `target dummy ${index}`, castShadow: true })
         .position(x, 0, 0)
+        .rotation(0, -Math.PI * 0.35, 0)
         .scale(DUMMY_SCALE)
         .runtime(game.runtimeNode(`dummy-${index}`, { tags: ["dummy", "runtime"] }))
     )
@@ -313,7 +532,7 @@ function buildScene() {
   return scene()
     .add(looks.preset(LOOK_ID))
     .addMany(nodes)
-    .camera(camera.perspective({ position: [0, 2.2, 7], target: [0, 1, 0], fov: 50 }));
+    .camera(camera.perspective({ position: [...INITIAL_CAMERA_POS], target: [...INITIAL_CAMERA_TARGET], fov: CAMERA_FOV }));
 }
 
 function chassisAsset(assetKey: string) {
@@ -408,3 +627,4 @@ function publishEvidence(): void {
   latestSnapshot = snapshot;
   window.__aura3dGameSnapshot = snapshot;
 }
+
