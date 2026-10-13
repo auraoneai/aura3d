@@ -34,14 +34,16 @@ export function patrolWingEffectsPass() {
     // Perf pass: no screen-space contact-shadow march. The route is airborne
     // outside the preflight pad, where the cascaded key shadow (sky.ts)
     // already grounds the airframe; the march cost ~a full post pass.
-    environments.preset("sunset", { intensity: 0.95, specularIntensity: 1.1, background: false }),
+    environments.preset("sunset", { intensity: 1.0, specularIntensity: 1.1, background: false }),
     // Aerial perspective: denser near the sea, thinning with altitude, with
-    // forward in-scatter towards the golden-hour key (S4 god rays).
+    // forward in-scatter towards the golden-hour key (S4 god rays). Density
+    // restored toward the original pass values for broad frame separation
+    // (run 38336010758: fps/luma pass, title/opening/banked diff ~7.3).
     effects.volumetricFog({
       name: "coastal aerial haze",
-      density: 0.011,
+      density: 0.015,
       color: "#6f8fa3",
-      intensity: 0.38,
+      intensity: 0.46,
       volumetricQuality: "off",
       heightFalloff: 0.05,
       heightReference: 0
