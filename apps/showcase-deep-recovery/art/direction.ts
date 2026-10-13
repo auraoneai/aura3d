@@ -287,4 +287,77 @@ export const artDirection: ArtDirectionBrief = {
   ],
 };
 
-export default artDirection;
+import { defineArtDirection } from "@aura3d/game/art";
+
+export default defineArtDirection({
+  id: "showcase-deep-recovery",
+  genre: "underwater-salvage",
+  fantasy: "Salvage dive from turquoise shallows into a dark wreck basin; the sub's searchlight cuts the murk.",
+  rebuildTier: "S-world",
+  wave: 3,
+  references: [
+    {
+      file: "references/underwater-depth.json",
+      source: "shipped comparable: turquoise-to-abyss dives (ABZÛ basin runs / Subnautica depths)",
+      licence: "reference-only",
+      why: "Depth-keyed absorption from turquoise shallows to wreck-dark basin reads the §8.3 underwater stack"
+    },
+    {
+      file: "references/wreck-basin.json",
+      source: "shipped comparable: barnacled wreck sites (Soma wreck decks / dive-sim wrecks)",
+      licence: "reference-only",
+      why: "Rusted hull plates, barnacle decals and sand-claimed debris the salvage field is built from"
+    },
+    {
+      file: "references/searchlight-sub.json",
+      source: "admitted sub GLBs + the searchlight signature (spot attached to the hull)",
+      licence: "reference-only",
+      why: "A moving shadowed searchlight beam cutting suspended particulate is the signature look"
+    }
+  ],
+  palette: {
+    primary: ["#03171f", "#0a3542", "#0f6b74", "#38c8b4"],
+    accent: "#4fd8c8",
+    reservedObjective: "#59d7ff"
+  },
+  lighting: {
+    key: { type: "directional", colorTemperatureK: 5600, shadow: true },
+    fill: "ibl",
+    practicals: 1,
+    environment: { hdri: "k1-turquoise-shallows", background: "enclosed" },
+    exposureEV: -0.1
+  },
+  framing: { rig: "chase", subjectHeightFraction: [0.15, 0.3], fovDeg: [50, 70], mobile: "landscape" },
+  assets: [
+    { role: "vehicle", assetKey: "deepRecoverySub", kit: "K2", maxTriangles: 20000, minTriangles: 1000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "world", assetKey: "deepRecoveryWreckHull", kit: "K6", maxTriangles: 90000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "deepRecoveryCrateStandard", kit: "K6", maxTriangles: 16000, minTriangles: 500, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "deepRecoveryCrateHeavy", kit: "K6", maxTriangles: 16000, minTriangles: 500, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "deepRecoveryBuoyBeacon", kit: "K6", maxTriangles: 16000, minTriangles: 500, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+  ],
+  vfx: [
+    { event: "thrust-bubbles", kind: "burst" },
+    { event: "silt-kick", kind: "burst" },
+    { event: "sonar-ping", kind: "ring" },
+    { event: "breach-flicker", kind: "strobe" },
+    { event: "marine-snow", kind: "ambient" }
+  ],
+  audio: [
+    { event: "thruster", cue: "prop-wash", variants: 2 },
+    { event: "sonar", cue: "sonar-ping-return", variants: 2 },
+    { event: "grapple", cue: "grapple-clamp", variants: 2 },
+    { event: "lift", cue: "winch-strain", variants: 2 },
+    { event: "bed", cue: "abyss-drone-bed", variants: 1 }
+  ],
+  signatureEffect: "The sub's shadowed searchlight cuts turquoise murk into a dark wreck basin — depth-keyed absorption swallows the shallows behind you.",
+  standIns: [
+    { feature: "Continuous terraced reef/trench/abyss bathymetry and dynamic spring-tether ribbons", file: "src/main.ts", request: "R-14-13", removeWhen: "underwater shader stack admitted" }
+  ],
+  criticalCategories: ["lighting", "atmospheric_effects", "environment_world"],
+  tiers: {
+    low: { particles: 400, shadowMap: 1024, cascades: 2, textureMax: 1024 },
+    medium: { particles: 800, shadowMap: 2048, cascades: 3, textureMax: 2048 },
+    high: { particles: 1400, shadowMap: 2048, cascades: 3, textureMax: 2048 },
+    ultra: { particles: 2400, shadowMap: 4096, cascades: 4, textureMax: 4096 }
+  }
+});

@@ -8,6 +8,7 @@
 
 import {
   camera,
+  environments,
   game as engineGame,
   lights,
   material,
@@ -446,11 +447,13 @@ function buildSeabedAndTrench(): AuraNodeInput[] {
     color: "#ff6b2b",
     emissive: "#ff6b2b",
     emissiveIntensity: 1.4,
+    practical: true,
   });
   const cyanCoralMat = material.emissive({
     color: "#38f2e4",
     emissive: "#38f2e4",
     emissiveIntensity: 1.2,
+    practical: true,
   });
 
   return [
@@ -507,17 +510,20 @@ function buildDeepRecoveryScene() {
     color: "#38f2e4",
     emissive: "#38f2e4",
     emissiveIntensity: 1.35,
+    practical: true,
   });
   const amberBeaconMat = material.emissive({
     color: "#ff6b2b",
     emissive: "#ff6b2b",
     emissiveIntensity: 1.45,
+    practical: true,
   });
   const tetherMat = material.emissive({
     color: "#38f2e4",
     emissive: "#38f2e4",
     emissiveIntensity: 1.1,
     opacity: 0.88,
+    practical: true,
   });
 
   const nodes: AuraNodeInput[] = [
@@ -625,6 +631,7 @@ function buildDeepRecoveryScene() {
 
   return scene()
     .background(artDirection.lighting.fog.reefColor)
+    .add(environments.preset("ocean-dusk"))
     .camera(
       camera.perspective({
         position: store.cameraPosition,
@@ -1081,6 +1088,7 @@ function publishEvidenceMirror(): void {
 applyScenarioPreset();
 computeChasePose();
 deepGame.start();
+app.setOutput?.({ preset: "underwater", toneMapping: "aces", exposure: artDirection.lighting.post.exposure });
 void deepGame.sound?.cue("pelagic-bed");
 app.camera?.use?.(createDeepChaseRig());
 

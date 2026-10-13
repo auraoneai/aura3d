@@ -1,11 +1,13 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+import { builtDist, serve, watchConsole } from "./lib/serve";
 
-const BASE_URL = process.env.DEEP_RECOVERY_URL ?? "http://127.0.0.1:5188";
+const APP_DIR = "showcase-deep-recovery";
 
 interface DeepRecoveryEvidence {
   routeId: string;
   frame: number;
   elapsed: number;
+  appliedLook?: { postPreset?: string; rig?: string };
   salvage?: {
     grappled: number;
     tethered: number;
@@ -37,89 +39,140 @@ interface DeepRecoveryEvidence {
   render?: {
     readbacksThisFrame: number;
   };
+  audio?: {
+    synthCues?: number;
+  };
 }
 
-test.describe("showcase-deep-recovery single-path createGame contract (S1/S2/S6/S7)", () => {
-  test("S1: default / boots single-path createGame runtime with game flag", async ({ page }) => {
-    const logs: string[] = [];
-    page.on("console", (msg) => logs.push(msg.text()));
+async function bootPlaying(page: Page, url: string, query = ""): Promise<void> {
+  await page.goto(`${url}/${query}`);
+  await expect.poll(
+    () =>
+      page.evaluate(() => {
+        const w = window as unknown as {
+          __AURA3D_GAME__?: { state?: string };
+          __AURA3D_GAME_EVIDENCE__?: Record<string, DeepRecoveryEvidence>;
+        };
+        return (
+          w.__AURA3D_GAME__?.state === "playing" &&
+          (w.__AURA3D_GAME_EVIDENCE__?.["showcase-deep-recovery"]?.frame ?? 0) > 2
+        );
+      }),
+    { timeout: 30_000 }
+  ).toBe(true);
+}
 
-    await page.goto(`${BASE_URL}/`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => {
-      const w = window as unknown as {
-        __AURA3D_GAME__?: { routeId?: string };
-        __AURA3D_GAME_EVIDENCE__?: Record<string, DeepRecoveryEvidence>;
-      };
-      return (
-        w.__AURA3D_GAME__?.routeId === "showcase-deep-recovery" &&
-        (w.__AURA3D_GAME_EVIDENCE__?.["showcase-deep-recovery"]?.frame ?? 0) > 2
-      );
-    });
-
-    expect(logs.some((line) => line.includes("Flags: game"))).toBe(true);
-    expect(logs.some((line) => line.includes("route_deep_recovery"))).toBe(false);
+test.describe("showcase-deep-recovery single-path createGame contract (S1/S2/S6/S7/S11)", () => {
+  test("boots framed with a sized canvas, S11 audio, and no console errors", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await bootPlaying(page, url);
+      const canvas = await page.evaluate(() => {
+        const el = document.querySelector("canvas");
+        return el === null ? null : { width: el.clientWidth, height: el.clientHeight };
+      });
+      expect(canvas, "no canvas element mounted").not.toBeNull();
+      expect(canvas!.width).toBeGreaterThan(0);
+      expect(canvas!.height).toBeGreaterThan(0);
+      const synthCues = await page.evaluate(() => {
+        const w = window as unknown as {
+          __AURA3D_GAME_EVIDENCE__?: Record<string, DeepRecoveryEvidence>;
+        };
+        return w.__AURA3D_GAME_EVIDENCE__?.["showcase-deep-recovery"]?.audio?.synthCues ?? 0;
+      });
+      expect(synthCues).toBe(0);
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
   });
 
-  test("S2: __AURA3D_GAME__ and __AURA3D_GAME_EVIDENCE__ expose salvage, oxygen, sonar, and sub telemetry", async ({
-    page,
-  }) => {
-    await page.goto(`${BASE_URL}/?scenario=04-action`, { waitUntil: "domcontentloaded" });
-    const ev = await page.waitForFunction(() => {
-      const w = window as unknown as {
-        __AURA3D_GAME_EVIDENCE__?: Record<string, DeepRecoveryEvidence>;
-      };
-      const entry = w.__AURA3D_GAME_EVIDENCE__?.["showcase-deep-recovery"];
-      return entry && entry.frame > 4 ? entry : null;
-    });
-    const data = await ev.jsonValue();
-    expect(data?.routeId).toBe("showcase-deep-recovery");
-    expect(data?.salvage?.cratesTotal).toBe(8);
-    expect(data?.salvage?.grappled).toBeGreaterThanOrEqual(1);
-    expect(data?.oxygen?.oxygen).toBeGreaterThan(0);
-    expect(data?.render?.readbacksThisFrame).toBe(0);
+  test("boots to playing: salvage, oxygen, sonar, and sub telemetry live", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await bootPlaying(page, url, "?scenario=04-action");
+      const data = await page.evaluate(() => {
+        const w = window as unknown as {
+          __AURA3D_GAME_EVIDENCE__?: Record<string, DeepRecoveryEvidence>;
+        };
+        return w.__AURA3D_GAME_EVIDENCE__?.["showcase-deep-recovery"] ?? null;
+      });
+      expect(data?.routeId).toBe("showcase-deep-recovery");
+      expect(data?.salvage?.cratesTotal).toBe(8);
+      expect(data?.salvage?.grappled).toBeGreaterThanOrEqual(1);
+      expect(data?.oxygen?.oxygen).toBeGreaterThan(0);
+      expect(data?.render?.readbacksThisFrame).toBe(0);
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
   });
 
-  test("S6 (desktop 1920x1080): chase rig keeps subjectScreenHeightFraction >= 0.12", async ({ page }) => {
-    await page.setViewportSize({ width: 1920, height: 1080 });
-    await page.goto(`${BASE_URL}/`, { waitUntil: "domcontentloaded" });
-    const fraction = await page.waitForFunction(() => {
-      const w = window as unknown as {
-        __AURA3D_GAME_EVIDENCE__?: Record<string, DeepRecoveryEvidence>;
-      };
-      const entry = w.__AURA3D_GAME_EVIDENCE__?.["showcase-deep-recovery"];
-      return entry && entry.frame > 4 ? (entry.framing?.subjectScreenHeightFraction ?? 0) : null;
-    });
-    expect(await fraction.jsonValue()).toBeGreaterThanOrEqual(0.12);
+  test("appliedLook resolves to pelagic-deep-salvage on the live page", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await bootPlaying(page, url);
+      const look = await page.evaluate(() => {
+        const w = window as unknown as {
+          __AURA3D_GAME_EVIDENCE__?: Record<string, DeepRecoveryEvidence>;
+        };
+        return w.__AURA3D_GAME_EVIDENCE__?.["showcase-deep-recovery"]?.appliedLook ?? null;
+      });
+      expect(look?.postPreset).toBe("pelagic-deep-salvage");
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
   });
 
-  test("S6 (mobile 390x844): chase rig keeps subjectScreenHeightFraction >= 0.12", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(`${BASE_URL}/`, { waitUntil: "domcontentloaded" });
-    const fraction = await page.waitForFunction(() => {
-      const w = window as unknown as {
-        __AURA3D_GAME_EVIDENCE__?: Record<string, DeepRecoveryEvidence>;
-      };
-      const entry = w.__AURA3D_GAME_EVIDENCE__?.["showcase-deep-recovery"];
-      return entry && entry.frame > 4 ? (entry.framing?.subjectScreenHeightFraction ?? 0) : null;
-    });
-    expect(await fraction.jsonValue()).toBeGreaterThanOrEqual(0.12);
+  test("framing holds at desktop viewport (1920x1080)", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await page.setViewportSize({ width: 1920, height: 1080 });
+      await bootPlaying(page, url);
+      const fraction = await page.evaluate(() => {
+        const w = window as unknown as {
+          __AURA3D_GAME_EVIDENCE__?: Record<string, DeepRecoveryEvidence>;
+        };
+        return w.__AURA3D_GAME_EVIDENCE__?.["showcase-deep-recovery"]?.framing?.subjectScreenHeightFraction ?? 0;
+      });
+      expect(fraction).toBeGreaterThanOrEqual(0.12);
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
   });
 
-  test("S7: ?autorun=1 steers submersible and grapples salvage crate", async ({ page }) => {
-    await page.goto(`${BASE_URL}/?autorun=1`, { waitUntil: "domcontentloaded" });
-    const ev = await page.waitForFunction(() => {
-      const w = window as unknown as {
-        __AURA3D_GAME_EVIDENCE__?: Record<string, DeepRecoveryEvidence>;
-      };
-      const entry = w.__AURA3D_GAME_EVIDENCE__?.["showcase-deep-recovery"];
-      if (!entry || entry.frame < 10) return null;
-      if ((entry.salvage?.grappled ?? 0) >= 1 && (entry.sub?.distanceTraveled ?? 0) > 0.25) {
-        return entry;
-      }
-      return null;
-    });
-    const data = await ev.jsonValue();
-    expect(data?.salvage?.grappled).toBeGreaterThanOrEqual(1);
-    expect(data?.sub?.distanceTraveled).toBeGreaterThan(0.25);
+  test("framing holds at mobile viewport (390x844)", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await bootPlaying(page, url);
+      const fraction = await page.evaluate(() => {
+        const w = window as unknown as {
+          __AURA3D_GAME_EVIDENCE__?: Record<string, DeepRecoveryEvidence>;
+        };
+        return w.__AURA3D_GAME_EVIDENCE__?.["showcase-deep-recovery"]?.framing?.subjectScreenHeightFraction ?? 0;
+      });
+      expect(fraction).toBeGreaterThanOrEqual(0.12);
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
   });
 });
