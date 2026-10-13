@@ -603,7 +603,12 @@ function isVolatileItem(item: RenderItem): boolean {
 
 /** Same geometry and material objects → the cached item is still current. */
 function sameItemResources(cached: RenderItem, fresh: RenderItem): boolean {
-  return cached.geometry === fresh.geometry && cached.material === fresh.material;
+  return (
+    cached.geometry === fresh.geometry &&
+    cached.material === fresh.material &&
+    cached.instanceTransforms === fresh.instanceTransforms &&
+    cached.instanceColors === fresh.instanceColors
+  );
 }
 
 /** @internal test seam for the T3.12 reuse rules (#1142). */

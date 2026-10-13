@@ -140,12 +140,15 @@ export function stubSetInstanceTransforms(
     next[i] = hidden;
   }
   node.instances = next;
+  let nextColors: string[] | undefined;
   if (colors !== undefined) {
     const prev = node.instanceColors ?? [];
-    node.instanceColors = Array.from({ length: next.length }, (_, i) =>
+    nextColors = Array.from({ length: next.length }, (_, i) =>
       i < count ? rgbToHex(colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2]) : prev[i] ?? "#000000"
     );
+    node.instanceColors = nextColors;
   }
+  handle.setInstances?.(next, nextColors ?? node.instanceColors);
   return handle;
 }
 

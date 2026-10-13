@@ -119,7 +119,10 @@ export function resolveProductionPrimitiveRuntimeState(
 ): ProductionRuntimePrimitiveState {
   const runtimeId = entry.node.runtime?.id;
   if (!runtimeId) return { node: entry.node, visible: true };
-  const runtimeSnapshot = runtimeNodes?.get(runtimeId)?.snapshot();
+  const runtimeSnapshot = runtimeNodes?.get(runtimeId)?.snapshot() as (ReturnType<NonNullable<ReturnType<AuraRuntimeNodeRegistry["get"]>>["snapshot"]> & {
+    readonly instances?: AuraPrimitiveNode["instances"];
+    readonly instanceColors?: AuraPrimitiveNode["instanceColors"];
+  }) | undefined;
   if (!runtimeSnapshot) return { node: entry.node, visible: true };
   return {
     node: {
@@ -127,7 +130,9 @@ export function resolveProductionPrimitiveRuntimeState(
       position: runtimeSnapshot.position,
       rotation: runtimeSnapshot.rotation,
       scale: runtimeSnapshot.scale,
-      animation: runtimeSnapshot.animation ?? entry.node.animation
+      animation: runtimeSnapshot.animation ?? entry.node.animation,
+      ...(runtimeSnapshot.instances ? { instances: runtimeSnapshot.instances } : {}),
+      ...(runtimeSnapshot.instanceColors ? { instanceColors: runtimeSnapshot.instanceColors } : {})
     },
     visible: runtimeSnapshot.visible
   };
