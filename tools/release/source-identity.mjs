@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { lstatSync, readFileSync, readlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 // Keep identical to readiness/evidence-lineage.ts: includes dirty and untracked source.
@@ -27,11 +27,24 @@ export const isSourceInput = path => !!path
   && !/^tests\/tooling-calibration\//.test(path)
   && path !== 'benchmark/context/muse3jsparity-r185-matrix.json';
 
+// Bytes that identify one listed path: tracked symlinks (e.g. `public/packs`)
+// hash by link target exactly as git stores them, and gitlink directories by
+// marker; following a symlink to a directory crashes with EISDIR.
+// Keep identical to readiness/source-identity.ts.
+function sourceBytes(root, path) {
+  const absolute = resolve(root, path);
+  let stat;
+  try { stat = lstatSync(absolute); } catch { return '<deleted>'; }
+  if (stat.isSymbolicLink()) return `<symlink:${readlinkSync(absolute)}>`;
+  if (stat.isDirectory()) return '<directory>';
+  return readFileSync(absolute);
+}
+
 export function sourceIdentity(root) {
   const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
   const paths = git('ls-files', '-z', '--cached', '--others', '--exclude-standard').split('\0').filter(isSourceInput);
   const hash = createHash('sha256');
-  for (const path of [...new Set(paths)].sort()) hash.update(path).update('\0').update(existsSync(resolve(root, path)) ? readFileSync(resolve(root, path)) : '<deleted>').update('\0');
+  for (const path of [...new Set(paths)].sort()) hash.update(path).update('\0').update(sourceBytes(root, path)).update('\0');
   return { commit: git('rev-parse', 'HEAD'), tree: git('rev-parse', 'HEAD^{tree}'), lockfileSha256: createHash('sha256').update(readFileSync(resolve(root, 'pnpm-lock.yaml'))).digest('hex'), fingerprint: hash.digest('hex') };
 }
 
