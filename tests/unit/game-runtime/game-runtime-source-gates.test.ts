@@ -1543,6 +1543,31 @@ describe("game runtime source gates", () => {
     }
     expect(releaseRaw.indexOf("pnpm game-runtime:package")).toBeGreaterThan(releaseRaw.indexOf("pnpm game-runtime:docs"));
   });
+
+  it("starts the createGame lifecycle in every createGame template main", () => {
+    // createGame() leaves the session in "booting"; only start() flips it
+    // (booting -> loading, then ready() -> playing after the first presented
+    // draw — packages/game/src/createGame.ts). A template main that never
+    // calls start() hangs every scaffolded app in "booting" forever, so both
+    // template trees must call it (arena-shooter is the reference shape).
+    const templateRoots = ["templates", "packages/create-aura3d/templates"];
+    const createGameMains: string[] = [];
+    for (const root of templateRoots) {
+      for (const entry of readdirSync(resolve(process.cwd(), root), { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        const main = join(root, entry.name, "src", "main.ts");
+        if (!existsSync(resolve(process.cwd(), main))) continue;
+        const source = readSource(main);
+        const created = source.match(/const\s+(\w+)(?::[^=]+)?\s*=\s*createGame\(/);
+        if (!created) continue;
+        createGameMains.push(main);
+        expect(source, `${main} calls ${created[1]}.start()`).toContain(`${created[1]}.start()`);
+      }
+    }
+    // arena-shooter, character-controller, falling-blocks-starter,
+    // fighting-game, mini-game, racing-starter — in both template trees.
+    expect(createGameMains).toHaveLength(12);
+  });
 });
 
 function readSource(file: string): string {

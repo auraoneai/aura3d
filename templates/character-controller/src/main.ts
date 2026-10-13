@@ -121,6 +121,7 @@ const controllerGame = createGame({
     .camera(camera.perspective({ position: [0.55, 1.75, -2.8], target: [0, 1.35, 1.1], fov: 55 }))
 });
 const app = controllerGame.app;
+controllerGame.start();
 
 const heroNode: AuraRuntimeNodeHandle = app.nodes.require("hero");
 // F-08-1/C-10: the shoulder rig owns the presented camera and damps through
