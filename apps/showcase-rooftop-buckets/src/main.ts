@@ -154,7 +154,7 @@ const bucketsGame = createGame({
       { id: "score", kind: "score", anchor: "top-left", label: "SCORE" },
       { id: "clock", kind: "timer", anchor: "top-right", label: "SHOT CLOCK" },
       { id: "heat", kind: "prompt", anchor: "top", label: "HEAT" },
-      { id: "charge", kind: "meter", anchor: "bottom", label: "CHARGE" },
+      { id: "charge", kind: "meter", max: 100, anchor: "bottom", label: "CHARGE" },
       { id: "objective", kind: "objective", anchor: "bottom", label: "OBJECTIVE" }
     ]
   },
