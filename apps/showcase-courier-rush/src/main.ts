@@ -331,12 +331,12 @@ const courierGame = createGame({
   scene: buildScene,
   input: inputOptions,
   scenarios: {
-    "02-opening": { id: "02-opening", label: "Shift opening", setup: () => activateScenario("02-opening") },
-    "03-mid": { id: "03-mid", label: "Mid-shift carrying", setup: () => activateScenario("03-mid") },
-    "04-action": { id: "04-action", label: "Action delivery leg", setup: () => activateScenario("04-action") },
-    carrying: { id: "carrying", label: "Carrying parcel", setup: () => activateScenario("carrying") },
-    "final-delivery": { id: "final-delivery", label: "Final delivery", setup: () => activateScenario("final-delivery") },
-    "low-time": { id: "low-time", label: "Low timer", setup: () => activateScenario("low-time") }
+    "02-opening": { setup: () => activateScenario("02-opening") },
+    "03-mid": { setup: () => activateScenario("03-mid") },
+    "04-action": { setup: () => activateScenario("04-action") },
+    carrying: { setup: () => activateScenario("carrying") },
+    "final-delivery": { setup: () => activateScenario("final-delivery") },
+    "low-time": { setup: () => activateScenario("low-time") }
   },
   hud: {
     theme: "motorsport",
@@ -602,7 +602,7 @@ function consumeEvents(events: readonly CourierEvent[], vanX: number, vanZ: numb
         type: event.type,
         zoneId: event.zoneId,
         onTriggerEnter: event.onTriggerEnter,
-        deliveryIndex: event.deliveryIndex
+        deliveryIndex: event.type === "pickup" ? dispatch.deliveryIndex : Math.max(0, dispatch.deliveriesCompleted - 1)
       });
     }
     if (event.type === "dispatch") void courierGame.sound?.cue("dispatch");
