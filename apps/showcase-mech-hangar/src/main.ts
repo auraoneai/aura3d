@@ -86,11 +86,24 @@ const hudBindings = [
 ] as const;
 
 let latestSnapshot: MechHangarEvidence | undefined;
+let state: HangarState = "assemble";
+let selection: BuildSelection = { ...DEFAULT_BUILD };
+let activeSlot: MechSlot = "chassis";
+let mechX = -3.4;
+let facing = 1;
+let moved = false;
+let struck = false;
+let driveStartedAt: number | null = null;
+let elapsedSeconds = 0;
+let rating: Rating | null = null;
+let strikeClipUntil = 0;
+let objective = "Assemble: 1 chassis, 2 support, arrows cycle part, Enter locks the build.";
+const dummyHp = DUMMY_POSITIONS.map(() => DUMMY_HP);
 
 const hangarGame = createGame({
   id: "mech-hangar",
   target: "#app",
-  diagnostics: { overlay: true, performancePanel: true },
+  diagnostics: { overlay: false, performancePanel: false },
   scene: () => buildScene(),
   input: inputOptions,
   hud: {
@@ -129,20 +142,6 @@ const maybeInput = hangarGame.input;
 if (!maybeInput) throw new Error("mech-hangar failed to create runtime-owned input.");
 const input = maybeInput;
 hangarGame.start();
-
-let state: HangarState = "assemble";
-let selection: BuildSelection = { ...DEFAULT_BUILD };
-let activeSlot: MechSlot = "chassis";
-let mechX = -3.4;
-let facing = 1;
-let moved = false;
-let struck = false;
-let driveStartedAt: number | null = null;
-let elapsedSeconds = 0;
-let rating: Rating | null = null;
-let strikeClipUntil = 0;
-let objective = "Assemble: 1 chassis, 2 support, arrows cycle part, Enter locks the build.";
-const dummyHp = DUMMY_POSITIONS.map(() => DUMMY_HP);
 
 const chassisNodes = new Map<string, AuraRuntimeNodeHandle>(
   PART_OPTIONS.chassis.map((part) => [part.id, app.nodes.require(`chassis-${part.id}`)])
