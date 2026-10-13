@@ -12,7 +12,7 @@ import { game, instances, model, primitives, type AuraNodeInput } from "@aura3d/
 import { assets } from "../aura-assets";
 import {
   FOG_CARD_MATERIAL, HIT_FLASH_MATERIAL, NEON_CYAN_MATERIAL, NEON_PINK_MATERIAL,
-  ROOFTOP_DECK_MATERIAL, ROOFTOP_TRIM_MATERIAL, SKYLINE_MATERIAL
+  ROOFTOP_DECK_MATERIAL, ROOFTOP_TRIM_MATERIAL, SKYLINE_MATERIAL, STAGE_BORDER_MATERIAL
 } from "./materials";
 
 export const FIGHT_PLANE_Y = 0;
@@ -33,7 +33,7 @@ export function auraClashWorldNodes(o: AuraClashWorldOptions = {}): readonly Aur
   const p2 = o.opponentStart ?? [1.45, FIGHT_PLANE_Y, 0];
   const nodes: AuraNodeInput[] = [];
 
-  // Wet rooftop deck + parapet trim (backdrop: castShadow false).
+  // Reflective center ring floor + lacquered stage border + brushed-metal parapet/pillars.
   nodes.push(
     instances.box({
       name: "clash rooftop deck",
@@ -43,6 +43,18 @@ export function auraClashWorldNodes(o: AuraClashWorldOptions = {}): readonly Aur
       transforms: [{ position: [0, -0.06, 0], scale: [9.2, 0.12, 3.2] }]
     }),
     instances.box({
+      name: "clash stage border",
+      material: STAGE_BORDER_MATERIAL,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: [
+        { position: [0, 0.02, -1.48], scale: [7.36, 0.04, 0.16] },
+        { position: [0, 0.02, 1.48], scale: [7.36, 0.04, 0.16] },
+        { position: [-3.6, 0.02, 0], scale: [0.16, 0.04, 2.8] },
+        { position: [3.6, 0.02, 0], scale: [0.16, 0.04, 2.8] }
+      ]
+    }),
+    instances.box({
       name: "clash parapet trim",
       material: ROOFTOP_TRIM_MATERIAL,
       castShadow: false,
@@ -50,26 +62,34 @@ export function auraClashWorldNodes(o: AuraClashWorldOptions = {}): readonly Aur
       transforms: [
         { position: [0, 0.24, -1.62], scale: [9.2, 0.48, 0.12] },
         { position: [-4.54, 0.24, 0], scale: [0.12, 0.48, 3.2] },
-        { position: [4.54, 0.24, 0], scale: [0.12, 0.48, 3.2] }
+        { position: [4.54, 0.24, 0], scale: [0.12, 0.48, 3.2] },
+        { position: [-3.6, 0.55, -1.56], scale: [0.22, 1.1, 0.22] },
+        { position: [3.6, 0.55, -1.56], scale: [0.22, 1.1, 0.22] }
       ]
     })
   );
 
-  // Neon sign practicals at x ±2.85 (emissive — they represent lit signs).
+  // Grounded neon floor-edge trim strips at y = 0.04 (emissive practicals — nothing floating in mid-air).
   nodes.push(
     instances.box({
       name: "clash neon sign pink",
       material: NEON_PINK_MATERIAL,
       castShadow: false,
       receiveShadow: false,
-      transforms: [{ position: [-2.85, 1.9, -1.58], scale: [0.16, 1.5, 0.1] }]
+      transforms: [
+        { position: [-2.1, 0.04, -1.36], scale: [2.6, 0.04, 0.08] },
+        { position: [-3.48, 0.04, 0], scale: [0.08, 0.04, 2.6] }
+      ]
     }),
     instances.box({
       name: "clash neon sign cyan",
       material: NEON_CYAN_MATERIAL,
       castShadow: false,
       receiveShadow: false,
-      transforms: [{ position: [2.85, 1.9, -1.58], scale: [0.16, 1.35, 0.1] }]
+      transforms: [
+        { position: [2.1, 0.04, -1.36], scale: [2.6, 0.04, 0.08] },
+        { position: [3.48, 0.04, 0], scale: [0.08, 0.04, 2.6] }
+      ]
     })
   );
 

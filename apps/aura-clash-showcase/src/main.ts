@@ -47,10 +47,32 @@ let latestSnapshot: FightingGameSnapshot = kit.snapshot();
 let hitStopUntilMs = 0;
 let koPlayed = false;
 
+const HUD_STYLE_ID = "aura-clash-hud-style";
+if (typeof document !== "undefined" && !document.getElementById(HUD_STYLE_ID)) {
+  const styleEl = document.createElement("style");
+  styleEl.id = HUD_STYLE_ID;
+  styleEl.textContent = `
+    .a3g-hud { position: absolute; inset: 0; pointer-events: none; z-index: 40; font-family: var(--a3g-font, "Russo One", system-ui, sans-serif); color: var(--a3g-fg, #fff6e8); }
+    .a3g-hud.a3g-theme-fighting { --a3g-fg: #fff6e8; --a3g-fg-dim: #9ad9e6; --a3g-bg: rgba(11, 16, 32, 0.84); --a3g-edge: rgba(57, 214, 255, 0.55); --a3g-glow: 0 4px 14px rgba(0, 0, 0, 0.6); --a3g-radius: 4px; }
+    .a3g-hud.a3g-hidden, .a3g-w.a3g-hidden, .a3g-banner.a3g-hidden { display: none !important; }
+    .a3g-hud-slot { position: absolute; display: flex; flex-direction: column; gap: 6px; min-width: 0; min-height: 0; }
+    .a3g-a-top-left { top: 14px; left: 16px; align-items: flex-start; }
+    .a3g-a-top { top: 14px; left: 50%; transform: translateX(-50%); align-items: center; }
+    .a3g-a-top-right { top: 14px; right: 16px; align-items: flex-end; }
+    .a3g-w { background: var(--a3g-bg, rgba(11, 16, 32, 0.84)); border: 1px solid var(--a3g-edge, rgba(57, 214, 255, 0.55)); border-radius: var(--a3g-radius, 4px); padding: 5px 12px; box-shadow: var(--a3g-glow, 0 4px 14px rgba(0, 0, 0, 0.6)); font-size: 14px; line-height: 1.25; white-space: nowrap; }
+    .a3g-a-top-left .a3g-w { border-left: 3px solid #ff2d78; }
+    .a3g-a-top-right .a3g-w { border-right: 3px solid #39d6ff; text-align: right; }
+    .a3g-w-label { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--a3g-fg-dim, #9ad9e6); }
+    .a3g-w-value { display: block; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--a3g-fg, #fff6e8); }
+  `;
+  document.head.appendChild(styleEl);
+}
+
 const game = createGame({
   id: "aura-clash-showcase",
   target,
   layout: "full-bleed",
+  diagnostics: { overlay: false, performancePanel: false },
   // FLAG-3: a bare {nodes:[...]} object is not an AuraSceneSnapshot — the real
   // impl normalizes via the scene() builder (schema/background/camera/…), so
   // build the snapshot the same way every other v2 route does.
@@ -81,11 +103,9 @@ const game = createGame({
     theme: "fighting",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "health-p1", kind: "prompt", anchor: "top-left", label: "MARA VOLT" },
-      { id: "timer", kind: "prompt", anchor: "top" },
-      { id: "health-p2", kind: "prompt", anchor: "top-right", label: "ROOK ATLAS" },
-      { id: "round", kind: "prompt", anchor: "bottom-left" },
-      { id: "meter", kind: "prompt", anchor: "bottom-right" }
+      { id: "health-p1", kind: "prompt", anchor: "top-left", label: "P1 HEALTH" },
+      { id: "health-p2", kind: "prompt", anchor: "top-right", label: "P2 HEALTH" },
+      { id: "timer", kind: "prompt", anchor: "top-right", label: "ROUND TIMER" }
     ]
   },
   touch: {
@@ -206,16 +226,24 @@ game.app.onFrame?.(({ dt }) => {
   round.timeLeft = Math.max(0, round.timeLeft - sdt);
   if (koPlayed && round.timeLeft <= 0) { /* next round handled by round-reset */ }
 
-  // HUD (fight theme: slanted bars read health; meter reads stock).
+  // HUD (compact top-left P1 health and top-right P2 health / round timer).
+  syncHud();
+});
+
+function syncHud(): void {
   const snap = latestSnapshot;
   const a1 = snap.combat.actors.find((a) => a.id === "p1");
   const a2 = snap.combat.actors.find((a) => a.id === "p2");
-  game.hud.set("health-p1", `${Math.max(0, Math.round(a1?.health ?? 100))}`);
-  game.hud.set("health-p2", `${Math.max(0, Math.round(a2?.health ?? 100))}`);
-  game.hud.set("timer", `${Math.ceil(round.timeLeft)}`);
-  game.hud.set("round", `ROUND ${round.number}`);
-  game.hud.set("meter", `${Math.round((a1?.meter ?? 0) * 100)}%`);
-});
+  const p1Hp = Math.max(0, Math.round(a1?.health ?? 100));
+  const p2Hp = Math.max(0, Math.round(a2?.health ?? 100));
+  const p1Meter = Math.round((a1?.meter ?? 0) * 100);
+  const p2Meter = Math.round((a2?.meter ?? 0) * 100);
+  game.hud.set("health-p1", `${p1Hp} HP · ${p1Meter}% EX`);
+  game.hud.set("health-p2", `${p2Hp} HP · ${p2Meter}% EX`);
+  game.hud.set("timer", `R${round.number} · ${Math.ceil(round.timeLeft)}s`);
+}
+
+syncHud();
 
 game.app.camera?.use?.(rig, { blend: 0.4 });
 game.app.setOutput?.({ preset: "arena-fight", toneMapping: "aces", exposure: 2 ** EXPOSURE_EV });
@@ -248,6 +276,8 @@ void game.ready().then(() => {
       },
       setRound: (n, t) => { round.number = n; round.timeLeft = t; }
     });
+    latestSnapshot = kit.update(0);
+    syncHud();
   }
 
   // C-24 beacon: live getters so audits/specs read the mounted app + session.

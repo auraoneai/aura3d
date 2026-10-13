@@ -41,18 +41,18 @@ export function auraClashLights(): AuraNodeInput[] {
       intensity: 1.6,
       position: [-4.5, 3.2, -6.5]
     }),
-    // Neon practicals at the sign positions (x ±2.85).
+    // Neon practicals above the grounded floor-edge trim strips (x ±2.45).
     lights.point({
       name: "clash neon pink practical",
       color: "#ff2d78",
       intensity: 1.35,
-      position: [-2.85, 1.9, -1.4]
+      position: [-2.45, 0.48, -1.2]
     }),
     lights.point({
       name: "clash neon cyan practical",
       color: "#39d6ff",
       intensity: 1.25,
-      position: [2.85, 1.9, -1.4]
+      position: [2.45, 0.48, -1.2]
     })
   ];
 }

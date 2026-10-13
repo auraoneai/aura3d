@@ -13,19 +13,27 @@
 // neon glow while magenta/cyan hue survives tonemapping.
 import { material, type AuraMaterialSpec } from "@aura3d/engine";
 
-export const ROOFTOP_DECK_MATERIAL: AuraMaterialSpec = material.physical({
-  color: "#15181d",
-  roughness: 0.34,
-  metallic: 0.05,
-  clearcoat: 0.9,
-  clearcoatRoughness: 0.12,
-  envMapIntensity: 1.3
+export const ROOFTOP_DECK_MATERIAL: AuraMaterialSpec = material.reflectiveFloor({
+  color: "#0b1020",
+  roughness: 0.14,
+  metallic: 0.32,
+  clearcoat: 0.88,
+  clearcoatRoughness: 0.08,
+  envMapIntensity: 1.45
 });
 
-export const ROOFTOP_TRIM_MATERIAL: AuraMaterialSpec = material.pbr({
+export const ROOFTOP_TRIM_MATERIAL: AuraMaterialSpec = material.brushedMetal({
+  color: "#35414f",
+  roughness: 0.26,
+  envMapIntensity: 1.4
+});
+
+export const STAGE_BORDER_MATERIAL: AuraMaterialSpec = material.lacquer({
   color: "#1d2b3a",
-  roughness: 0.6,
-  metallic: 0.15
+  roughness: 0.28,
+  clearcoat: 1,
+  clearcoatRoughness: 0.04,
+  envMapIntensity: 1.35
 });
 
 export const NEON_PINK_MATERIAL: AuraMaterialSpec = material.emissive({
