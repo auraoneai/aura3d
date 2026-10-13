@@ -40,7 +40,7 @@ export default defineArtDirection({
   lighting: {
     key: { type: "spot", colorTemperatureK: 4000, shadow: true },
     fill: "ibl",
-    practicals: 2,
+    practicals: 3,
     environment: { hdri: "k1-night-city", background: "enclosed" },
     exposureEV: -0.3
   },
@@ -48,7 +48,7 @@ export default defineArtDirection({
   assets: [
     { role: "hero", assetKey: "auraClashPlayerRig", kit: "K2", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "hero", assetKey: "auraClashRivalRig", kit: "K2", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "world", assetKey: "arenaNeonDowntownTextured", kit: "K4", maxTriangles: 90000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "world", assetKey: "arenaNeonDowntownTextured", kit: "K4", maxTriangles: 100000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "world", assetKey: "arenaRooftopBuilding", kit: "K2", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "prop", assetKey: "auraClashSpectatorCard", kit: "K6", maxTriangles: 15000, textureSet: "BC", maxTextureSize: 1024 }
   ],

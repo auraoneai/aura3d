@@ -85,7 +85,7 @@ export function auraClashWorldNodes(o: AuraClashWorldOptions = {}): readonly Aur
     }),
     model(assets.arenaNeonDowntownTextured, {
       name: "clash downtown skyline",
-      role: "setDressing",
+      role: "primaryWorld",
       scaleMode: "fit",
       targetMaxDimension: 14,
       castShadow: false,

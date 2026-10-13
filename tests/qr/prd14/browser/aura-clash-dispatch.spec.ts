@@ -118,4 +118,23 @@ test.describe("aura-clash single-path boot (S1/S2/S6/S7)", () => {
       }
     });
   }
+
+  test("S11 audio: real sound cues wired and zero synth fallbacks", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await bootPlaying(page, url);
+      const audio = await page.evaluate((expr) =>
+        JSON.parse(JSON.stringify(eval(expr + ".audio") ?? {})) as {
+          cues?: string[];
+          synthCues?: number;
+        }, EVIDENCE);
+      expect(audio.synthCues ?? 0).toBe(0);
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
+  });
 });

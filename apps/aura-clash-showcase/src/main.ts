@@ -135,7 +135,10 @@ window.addEventListener("keydown", (ev) => {
 
 const rig = createAuraClashFightingRig();
 
+let frame = 0;
+
 game.app.onFrame?.(({ dt }) => {
+  frame += 1;
   const sdt = game.session.scaledDt(dt);
   if (sdt <= 0 || game.session.paused) return;
   latestSnapshot = kit.update(sdt);
@@ -214,8 +217,6 @@ game.app.onFrame?.(({ dt }) => {
   game.hud.set("meter", `${Math.round((a1?.meter ?? 0) * 100)}%`);
 });
 
-let frame = 0;
-game.app.onRender?.(() => { frame += 1; });
 game.start();
 void game.ready().then(() => {
   fighterAnimations.bindNodes(game.app.nodes.get(P1_NODE), game.app.nodes.get(P2_NODE));
