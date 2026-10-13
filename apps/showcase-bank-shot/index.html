@@ -3,19 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Aura3D Bank Shot prototype: arcade 8-ball billiards with 16 simultaneous dynamic spheres, pocket sensors, fouls, and clocked racks." />
-    <title>Aura3D - Bank Shot</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="./src/legacy/styles.css" />
+    <meta name="theme-color" content="#070707" />
+    <meta
+      name="description"
+      content="Aura3D Bank Shot: arcade 8-ball with 16 dynamic physics spheres, pocket sensors, fouls, and three clocked racks."
+    />
+    <title>Bank Shot</title>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #05070a;
+      }
+    </style>
   </head>
   <body>
-    <main class="shell" aria-label="Bank Shot 8-ball">
-      <section class="viewport">
-        <div id="app" class="stage" data-testid="bank-shot-stage"></div>
-        <div id="hud" aria-label="Bank Shot HUD"></div>
-      </section>
-      <aside id="panel" class="panel" aria-label="Bank Shot controls and score"></aside>
-    </main>
-    <script type="module" src="./src/main.ts"></script>
+    <div id="app" aria-label="Bank Shot pool table"></div>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

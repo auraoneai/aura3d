@@ -1,70 +1,130 @@
 import { expect, test } from "@playwright/test";
-import { builtDist, serve, watchConsole } from "./lib/serve";
-import { join } from "node:path";
+import { builtDist, serve, watchConsole, soakIfNeeded } from "./lib/serve";
 
 /**
- * T1.10 (Bank Shot): the route-flag dispatcher boots legacy by default and v2
- * under `?a3d-qr=route-bank-shot`. Flag-off keeps the same evidence global and
- * zero console errors; flag-on reaches `__AURA3D_GAME__.state === "playing"`.
+ * S1 boot/framed row for the single-path Bank Shot, plus the single-path
+ * S2/S6/S7 rows write-evidence.mjs maps to this spec's titled tests
+ * (`boots to playing`, `appliedLook`, `framing`). Successor of the retired
+ * bank-shot-dispatch (T1.10 flag arms), showcase-bank-shot-framing and
+ * showcase-bank-shot-v2 specs — those were the gate-surgery control group
+ * proving the dual-path rows; the B4 PORT rebuilt the route single-path
+ * (src/main.ts boots every URL, salvaged src/gameplay rules/table verbatim)
+ * and deleted the legacy/v2 dispatcher they exercised, so there are no
+ * flags to dispatch on. The `-dispatch` filename is retained only because
+ * the lane's S-category matching keys on it. The 16-ball Rapier browser
+ * assertions from the retired specs (rapier backend, 16 live balls, aim,
+ * strike, resolve, hash-identical reset) live in
+ * apps/showcase-bank-shot/tests/playable.spec.ts. S11 has no test here:
+ * single-path S11 stays "missing" in write-evidence.mjs by design.
  */
 
 const APP_DIR = "showcase-bank-shot";
-const ROUTE_FLAG = "route-bank-shot";
-// T1.10: v2 specs carry the same engine list the URL contract uses
-// (boot.ts qualityRebuild.flags + games.json qrFlags).
-const ENGINE_FLAGS = "game,camera,lighting,post,materials,vfx,world,tiers,looks";
-const EVIDENCE_GLOBAL = "__BANK_SHOT_EVIDENCE__";
-// Top-level keys the legacy route published before the T1.10 tree move.
-const LEGACY_EVIDENCE_KEYS = [
-  "aimAngle", "appId", "audioCues", "backend", "ballsRemaining", "charging",
-  "charge", "claimBoundary", "clockMs", "comboStreak", "controls",
-  "evidenceScenario", "frameCount", "lastShot", "lastShotObject",
-  "liveBallCount", "mountedAtEpochMs", "physicsBodyCount",
-  "physicsLiveBallCount", "potted", "rackClockLimitMs", "renderer",
-  "resetHashMatch", "resolvedNodeHandles", "sensorEventCount",
-  "sessionComplete", "shotCount", "shotHash", "spin", "suitCleared",
-  "ballsRemainingInSuit", "systems"
-] as const;
 
-test.describe("bank-shot dispatch (T1.10)", () => {
+type BankSnapshot = {
+  framed: boolean;
+  frame: number;
+  state: string;
+  look: { id: string };
+  table: { backend: string; ballsRemaining: number };
+  balls: { liveCount: number };
+  drawCalls: number;
+};
 
-  test("flag off boots legacy with the same evidence keys and no console errors", async ({ page }) => {
+async function snapshotOf(page: import("@playwright/test").Page): Promise<BankSnapshot> {
+  return page.evaluate(() =>
+    (window as Record<string, unknown>).__aura3dGameSnapshot as BankSnapshot);
+}
+
+async function bootFramed(page: import("@playwright/test").Page, url: string): Promise<void> {
+  await page.goto(`${url}/`);
+  await expect.poll(() => snapshotOf(page).then((s) => s?.framed), { timeout: 30_000 }).toBe(true);
+}
+
+test.describe("bank-shot single-path boot (S1)", () => {
+  test("boots framed with a sized canvas and no console errors", async ({ page }) => {
     const root = builtDist(APP_DIR);
     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      await page.goto(`${url}/`);
-      await expect.poll(() =>
-        page.evaluate((g) => Boolean((window as Record<string, unknown>)[g]), EVIDENCE_GLOBAL),
-        { timeout: 30_000 }).toBe(true);
-      const keys = await page.evaluate(
-        (g) => Object.keys((window as Record<string, unknown>)[g] as object), EVIDENCE_GLOBAL);
-      for (const key of LEGACY_EVIDENCE_KEYS) {
-        expect(keys, `legacy evidence key "${key}" missing after the move`).toContain(key);
-      }
-      // The v2 beacon must NOT publish under flag-off.
-      const v2 = await page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__);
-      expect(v2).toBeUndefined();
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.framed).toBe(true);
+      expect(snapshot.balls.liveCount).toBe(16);
+      expect(snapshot.drawCalls).toBeGreaterThan(0);
+      const canvas = await page.evaluate(() => {
+        const el = document.querySelector("canvas");
+        return el === null ? null : { width: el.clientWidth, height: el.clientHeight };
+      });
+      expect(canvas, "no canvas element mounted").not.toBeNull();
+      expect(canvas!.width).toBeGreaterThan(0);
+      expect(canvas!.height).toBeGreaterThan(0);
+      await soakIfNeeded(page);
       expect(errors).toEqual([]);
     } finally {
       server.close();
     }
   });
 
-  test("`?a3d-qr=route-bank-shot` boots v2 to state playing", async ({ page }) => {
+  // S2 (single-path): createGame start() drives booting -> playing; the
+  // published state behind it is a framed rapier table in `aiming` with
+  // 16 live balls and an advancing frame counter.
+  test("boots to playing: framed rapier table aiming with 16 live balls", async ({ page }) => {
     const root = builtDist(APP_DIR);
     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
-      await expect.poll(() =>
-        page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined),
-        { timeout: 30_000 }).toBe(true);
-      const state = await page.evaluate(() =>
-        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
-      expect(state).toBe("playing");
+      await bootFramed(page, url);
+      const first = await snapshotOf(page);
+      expect(first.table.backend).toBe("rapier");
+      expect(first.state).toBe("aiming");
+      expect(first.balls.liveCount).toBe(16);
+      expect(first.table.ballsRemaining).toBe(15);
+      await expect.poll(() => snapshotOf(page).then((s) => s.frame), { timeout: 30_000 })
+        .toBeGreaterThan(first.frame);
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
+  });
+
+  // S6 (single-path): no scenario URLs to parity-check; the one boot path
+  // publishes its authored look recipe id in every snapshot while frames
+  // are being submitted. (No engine look preset is applied — the pendant
+  // spot recipe is route-authored in src/main.ts.)
+  test("appliedLook resolves to bank-shot-pendant on the live page", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.look.id).toBe("bank-shot-pendant");
+      expect(snapshot.drawCalls).toBeGreaterThan(0);
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
+  });
+
+  // S7 (single-path): the fixed overhead rig reaches `framed` with all
+  // 16 balls live at both viewports the retired framing spec sampled.
+  test("framing holds at desktop and mobile viewports", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      for (const viewport of [{ width: 1920, height: 1080 }, { width: 390, height: 844 }]) {
+        await page.setViewportSize(viewport);
+        await bootFramed(page, url);
+        const snapshot = await snapshotOf(page);
+        expect(snapshot.framed).toBe(true);
+        expect(snapshot.balls.liveCount).toBe(16);
+        expect(snapshot.drawCalls).toBeGreaterThan(0);
+      }
       expect(errors).toEqual([]);
     } finally {
       server.close();

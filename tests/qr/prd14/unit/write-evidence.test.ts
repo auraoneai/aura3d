@@ -14,6 +14,10 @@ const RUN_ID = "990000001";
 const EVIDENCE = join(ROOT, "docs/project/aura3d-quality-rebuild/evidence/prd14/showcase-bank-shot", RUN_ID);
 
 const passed = (title: string) => ({ title, tests: [{ results: [{ status: "passed" }] }] });
+// B4 PORT: fixture titles carry the `showcase-bank-shot:` prefix because
+// write-evidence's per-route filter also matches on that prefix — the real
+// showcase-bank-shot-v2/framing spec files were retired with the route, so
+// the APP_DIR file-content match can no longer find them.
 function browserReport(overrides: Record<string, string> = {}) {
   const spec = (file: string, titles: string[]) => ({
     file,
@@ -21,13 +25,13 @@ function browserReport(overrides: Record<string, string> = {}) {
   });
   return {
     suites: [
-      spec("bank-shot-dispatch.spec.ts", ["flag off boots legacy with its evidence global and no console errors"]),
+      spec("bank-shot-dispatch.spec.ts", ["showcase-bank-shot: flag off boots legacy with its evidence global and no console errors"]),
       spec("showcase-bank-shot-v2.spec.ts", [
-        "boots to playing, scripted timeline clean, conditions met, look parity",
-        "appliedLook identical between play URL and every scenario URL",
+        "showcase-bank-shot: boots to playing, scripted timeline clean, conditions met, look parity",
+        "showcase-bank-shot: appliedLook identical between play URL and every scenario URL",
         "showcase-bank-shot: S11 audio — synthCues 0, every audio[] event played"
       ]),
-      spec("showcase-bank-shot-framing.spec.ts", ["subjectHeightFraction within band at 1920x1080"]),
+      spec("showcase-bank-shot-framing.spec.ts", ["showcase-bank-shot: subjectHeightFraction within band at 1920x1080"]),
       spec("art-direction-audit.spec.ts", ["route showcase-bank-shot: no auditArtDirection/lookLint violations"]),
       spec("budgets.spec.ts", ["showcase-bank-shot: S8 Medium draws ≤ budget, 0 readbacks; S9 p95 rAF ≤ 50 ms"]),
       spec("s10-assets.spec.ts", [
@@ -42,12 +46,18 @@ const capture = { games: [{ id: "showcase-bank-shot", runs: [{ run: "desktop", b
 
 function run(browser: unknown, staticOutcome = "success"): { code: number; report: { summary: string; s: Record<string, { status: string }> } } {
   const dir = mkdtempSync(join(tmpdir(), "prd14-ev-"));
+  // B4 PORT: showcase-bank-shot is single-path in the real tree now, so the
+  // dual-path control group below pins its shape with a fixture apps root
+  // (src/v2 present) instead of deriving it from the real route.
+  const route = join(dir, "apps/showcase-bank-shot");
+  mkdirSync(join(route, "src/v2"), { recursive: true });
   writeFileSync(join(dir, "capture.json"), JSON.stringify(capture));
   writeFileSync(join(dir, "browser.json"), JSON.stringify(browser));
   let code = 0;
   try {
     execFileSync("node", [SCRIPT, "--capture", join(dir, "capture.json"), "--browser", join(dir, "browser.json"),
-      "--static", staticOutcome, "--run-id", RUN_ID, "--sha", "deadbeef", "--routes", "showcase-bank-shot"], { stdio: "pipe" });
+      "--static", staticOutcome, "--run-id", RUN_ID, "--sha", "deadbeef", "--routes", "showcase-bank-shot",
+      "--apps-root", join(dir, "apps")], { stdio: "pipe" });
   } catch (e) {
     code = (e as { status?: number }).status ?? -1;
   }
@@ -158,7 +168,7 @@ describe("write-evidence.mjs (14-S1..S11)", () => {
   });
 
   it("marks the failing row and exits 1", () => {
-    const { code, report } = run(browserReport({ "subjectHeightFraction within band at 1920x1080": "failed" }));
+    const { code, report } = run(browserReport({ "showcase-bank-shot: subjectHeightFraction within band at 1920x1080": "failed" }));
     expect(report.s.S7?.status).toBe("fail");
     expect(code).toBe(1);
   });

@@ -1,10 +1,10 @@
-// apps/showcase-bank-shot/src/v2/scenarios/index.ts — deterministic fixtures (T2.1).
+// apps/showcase-bank-shot/src/scenarios.ts — deterministic fixtures (T2.1).
 // Scenarios set state only: they resolve fixed ShotRecords through the same
 // RulesEngine + outcome path as live play — no ?capture= reads, no DOM/HTML,
 // no renderer pokes. `?scenario=<name>` selects one at boot; the same state is
 // reachable from the play URL, so appliedLook stays identical (T2.6).
-import type { ShotOutcome, ShotRecord } from "../../gameplay/rules";
-import { RACK_COUNT } from "../../gameplay/racks";
+import type { ShotOutcome, ShotRecord } from "./gameplay/rules";
+import { RACK_COUNT } from "./gameplay/racks";
 
 export interface BankShotScenarioContext {
   readonly rules: {
