@@ -36,11 +36,11 @@ export function bankShotEffectsPass() {
       position: [-0.6, 5.2, 1.4],
       target: [0, 0, 0],
       color: "#dff3e6",
-      intensity: 2.15,
+      intensity: 1.95,
       shadow: { cascades: 1, mapSize: 1024, filter: "pcf", maxDistance: 12 }
     }),
     // Indoor IBL: reflections on ball lacquer, rails and the cue ferrule.
-    environments.preset("indoor", { intensity: 0.65, specularIntensity: 1.15, background: false, color: "#cfe8d8" }),
+    environments.preset("indoor", { intensity: 0.6, specularIntensity: 1.15, background: false, color: "#cfe8d8" }),
     // Plain distance haze (cheap) — the volumetric pass cost a full-screen
     // raymarch for a barely visible cone; the room simply falls to dark.
     effects.fog({
