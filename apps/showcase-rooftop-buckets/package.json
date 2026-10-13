@@ -1,25 +1,20 @@
 {
   "name": "@aura3d/showcase-rooftop-buckets",
-  "version": "2.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
+  "description": "Aura3D Rooftop Buckets: five-heat rooftop shooting session ported onto the salvaged deterministic scoring/shot/hoop core (createGame single-path scene, typed court/hoop/ball/athlete assets).",
   "scripts": {
-    "dev": "vite",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "vite --host 127.0.0.1",
     "build": "vite build",
-    "preview": "vite preview --port 4189",
-    "build:sfx": "node scripts/build-sfx.mjs",
-    "build:models": "node scripts/build-models.mjs",
-    "register:assets": "node scripts/register-assets.mjs",
-    "evidence:performance": "pnpm exec tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
-    "evidence:deploy": "node scripts/write-deploy-report.mjs",
-    "write-route-health": "node scripts/write-route-health.mjs"
+    "preview": "vite preview --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@aura3d/engine": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.8.2",
-    "vite": "^6.2.0"
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
   }
 }
