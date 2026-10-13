@@ -21,10 +21,11 @@ export function createNeonSwarmDistrictDressing(reviewCapture = false): AuraScen
     lights.directional({
       name: "cyber-key-light",
       color: "#e0f2fe",
-      intensity: reviewCapture ? 1.72 : 2.0,
-      // Effects pass: key shadows under the swarm. PCF at 512 (perf pass):
-      // the top-down lens reads the contact pool, not PCSS penumbra detail.
-      shadow: { cascades: 1, mapSize: 512, filter: "pcf", softness: 1, intensity: 0.85 }
+      intensity: reviewCapture ? 1.72 : 2.0
+      // Perf pass: no key shadow. With the volumetric node gone the fps
+      // still sat on the 0.85 gate (runs 38336941211/38338782607); the
+      // shadow is the last full-scene extra render vs the pre-pass frame.
+      // Grounding stays on the shipped AO + contact occlusion in main.ts.
     }).position(8, 20, 8).toJSON(),
     lights.directional({
       name: "cyber-rim-light",
