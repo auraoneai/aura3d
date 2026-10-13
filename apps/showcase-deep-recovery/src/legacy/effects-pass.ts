@@ -65,7 +65,10 @@ export function deepRecoveryEffectsPass() {
       target: [0, -10, -6],
       color: "#a8e6df",
       intensity: 1.35,
-      shadow: { cascades: 1, mapSize: 512, maxDistance: 60 }
+      // No shadow render: the twilight-zone key is diffuse through the water
+      // column, and the full-scene shadow pass cost more than the contact
+      // read it bought at this depth.
+      shadow: false
     }),
     // The pre-pass suspended-particle exp2 haze stays, recoloured to the
     // indigo twilight-zone water the effects-pass background uses: it is
@@ -133,8 +136,8 @@ export function deepRecoveryEffectsPass() {
           effects.particles({
             name: "marine snow",
             emitter: "ambient",
-            particleCount: 110,
-            emissionRate: 28,
+            particleCount: 70,
+            emissionRate: 18,
             speed: 2.6,
             drag: 0.55,
             gravity: -0.25,
@@ -148,8 +151,8 @@ export function deepRecoveryEffectsPass() {
           effects.particles({
             name: "wreck vent bubbles",
             emitter: "fountain",
-            particleCount: 45,
-            emissionRate: 12,
+            particleCount: 30,
+            emissionRate: 8,
             radius: 0.5,
             height: 6,
             size: [0.08, 0.18],

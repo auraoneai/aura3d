@@ -255,7 +255,7 @@ const sceneDef = scene()
   // cyan sonar returns are the brightest things on screen.
   // Effects pass: indigo twilight-zone water behind the in-scatter, matching
   // the pass's fog and abyss shelf; flags-off keeps the pre-pass near-black.
-  .background(effectsPassOn ? "#0e1944" : "#04141c")
+  .background(effectsPassOn ? "#0c173e" : "#04141c")
   .addMany(deepRecoveryEffectsPass())
   .add(effects.neonBloom({
     name: "deep recovery sonar bloom",
@@ -267,7 +267,7 @@ const sceneDef = scene()
     softKnee: 0.5,
     shoulder: 0.6
   }))
-  .add(effects.colorGrade({ exposure: 1.04, contrast: 1.1, saturation: 1.06 }))
+  .add(effects.colorGrade({ exposure: 1.02, contrast: 1.1, saturation: 1.06 }))
   .add(effects.antiAlias({ mode: "fxaa" }))
   // §6.9.14 P0: effects.volumetricFog deleted — it ran a CPU 8-bit readback
   // every frame (0.5 fps at 1920). The in-shader underwater fog (§8.3)
