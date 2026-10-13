@@ -12,7 +12,7 @@ import { auraClashEnvironment, auraClashLights } from "./scene/lighting";
 import { auraClashWorldNodes, P1_NODE, P2_NODE, HIT_FLASH_NODE } from "./scene/world";
 import { createAuraClashFightingRig } from "./scene/camera";
 import { auraClashFxFrame } from "./scene/fx";
-import { createAuraClashFighterAnimations } from "./scene/fighter-animation";
+import { createAuraClashFighterAnimations, fighterYawForFacing } from "./scene/fighter-animation";
 import { publishAuraClashEvidence } from "./evidence";
 import { applyAuraClashScenario } from "./scenarios";
 
@@ -129,13 +129,13 @@ game.app.onFrame?.(({ dt }) => {
   if (p1) {
     const pos = latestSnapshot.player.position;
     p1.setPosition(pos[0], pos[1], pos[2]);
-    p1.setRotation(0, (latestSnapshot.player.facing ?? 1) * Math.PI / 2, 0);
+    p1.setRotation(0, fighterYawForFacing(latestSnapshot.player.facing ?? 1), 0);
   }
   const p2 = game.app.nodes.get(P2_NODE);
   if (p2) {
     const pos = latestSnapshot.opponent.position;
     p2.setPosition(pos[0], pos[1], pos[2]);
-    p2.setRotation(0, (latestSnapshot.opponent.facing ?? -1) * -Math.PI / 2, 0);
+    p2.setRotation(0, fighterYawForFacing(latestSnapshot.opponent.facing ?? -1), 0);
   }
 
   // Combat events → fx + juice + audio intents. The frame call runs even

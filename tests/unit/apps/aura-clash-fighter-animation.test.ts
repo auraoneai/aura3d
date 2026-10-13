@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   AURA_CLASH_PLAYER_CLIP_DURATIONS,
   AuraClashFighterAnimation,
+  fighterYawForFacing,
   type AuraClashFighterAnimInput
 } from "../../../apps/aura-clash-showcase/src/v2/scene/fighter-animation";
 import { auraClashPlayerClips } from "../../../apps/aura-clash-showcase/src/playable/animation/auraClashClipMaps";
@@ -104,5 +105,14 @@ describe("Aura Clash v2 fighter animation driver", () => {
     step(driver, 0.6, idle(76));
     step(driver, 0.1, { state: "hitstun", health: 70, grounded: true });
     expect(driver.snapshot().activeClip).toBe(auraClashPlayerClips.hurt);
+  });
+});
+
+describe("fighterYawForFacing", () => {
+  it("turns opposite kit facings into opposite yaws so fighters face each other", () => {
+    // Kit convention (fighting.ts): player facing +1, opponent facing -1.
+    expect(fighterYawForFacing(1)).toBe(Math.PI / 2);
+    expect(fighterYawForFacing(-1)).toBe(-Math.PI / 2);
+    expect(fighterYawForFacing(1) - fighterYawForFacing(-1)).toBe(Math.PI);
   });
 });

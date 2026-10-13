@@ -53,6 +53,15 @@ export const AURA_CLASH_RIVAL_CLIP_DURATIONS: Readonly<Record<string, number>> =
   Zombie_Walk_Fwd_Loop: 1.3333
 };
 
+/**
+ * Node yaw for a kit facing value (+1 right / -1 left). Both rigs share the
+ * same authored forward, so ONE formula serves both fighters — opposite
+ * facings must produce opposite yaws or the pair faces the same way.
+ */
+export function fighterYawForFacing(facing: number): number {
+  return facing * Math.PI / 2;
+}
+
 /** Driver states: kit actor states plus hit/death presentation states. */
 export type AuraClashFighterAnimState =
   | "idle" | "walk" | "run" | "air" | "down" | "guard" | "attack" | "hit" | "death";
