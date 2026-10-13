@@ -49,27 +49,9 @@ export function createBlockfallEffectsPass(options: BlockfallEffectsPassOptions)
   ];
   if (!options.reducedMotion) {
     nodes.push(
-      // Room dust: a wide slow column (radius 6 m, 4.5 m tall) drifting
-      // through the key light across the whole frame.
-      effects.particles({
-        name: "blockfall room dust motes",
-        seed: 4101,
-        emitter: "fountain",
-        radius: 6,
-        height: 4.5,
-        speed: 1,
-        gravity: 0,
-        drag: 0,
-        lifetime: [9, 13],
-        maxParticles: 70,
-        rate: 8,
-        prewarm: 13,
-        size: [0.03, 0.06],
-        materialMode: "additive-glow",
-        blend: "additive",
-        color: hdr(0.62, 0.5, 0.86)
-      }).position(0, -0.6, 1.2),
-      // Reactor plasma motes rising either side of the board.
+      // Reactor plasma motes rising either side of the board. (The wide
+      // room-dust column was dropped in the perf pass: three CPU-updated
+      // emitters cost more frame than the motes read at board scale.)
       ...[-2.15, 2.15].map((x, index) => effects.particles({
         name: `blockfall reactor plasma motes ${index + 1}`,
         seed: 4111 + index,
@@ -80,8 +62,8 @@ export function createBlockfallEffectsPass(options: BlockfallEffectsPassOptions)
         gravity: 0,
         drag: 0,
         lifetime: [2.2, 3.4],
-        maxParticles: 28,
-        rate: 10,
+        maxParticles: 18,
+        rate: 7,
         prewarm: 4,
         size: [0.03, 0.055],
         materialMode: "spark",
