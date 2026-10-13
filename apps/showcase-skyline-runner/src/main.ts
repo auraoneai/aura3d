@@ -9,12 +9,16 @@
 import {
   AnimationController,
   camera,
+  effects,
   game,
   gameFeel,
+  lights,
   looks,
   material,
   model,
+  primitives,
   scene,
+  sky,
   solvePlatformerMotion,
   type AuraNodeBuilder,
   type AuraSceneNode,
@@ -160,6 +164,7 @@ const skylineGame = createGame({
   autoStart: true,
   scene: buildScene,
   input: inputOptions,
+  diagnostics: { overlay: false, performancePanel: false },
   hud: {
     theme: "tabletop",
     widgets: [
@@ -326,21 +331,214 @@ void skylineGame.ready().then(() => {
   document.body.dataset.aura3dError = error instanceof Error ? error.message : String(error);
 });
 
+const DISTANT_CITADEL_TOWERS = [
+  { id: "west-01", x: -12.0, width: 5.4, height: 22.0, z: -26.0, tone: "slate" as const },
+  { id: "west-02", x: -5.5, width: 4.6, height: 27.5, z: -22.0, tone: "indigo" as const },
+  { id: "launch-spire", x: 1.0, width: 5.8, height: 32.0, z: -29.0, tone: "slate" as const },
+  { id: "step-tower", x: 7.4, width: 4.8, height: 25.0, z: -19.5, tone: "indigo" as const },
+  { id: "mid-plaza-west", x: 13.5, width: 6.2, height: 35.0, z: -31.5, tone: "slate" as const },
+  { id: "mid-plaza-east", x: 19.2, width: 4.5, height: 26.5, z: -21.0, tone: "indigo" as const },
+  { id: "high-arch", x: 25.0, width: 5.6, height: 33.5, z: -27.5, tone: "slate" as const },
+  { id: "drop-citadel", x: 31.2, width: 5.0, height: 28.0, z: -20.0, tone: "indigo" as const },
+  { id: "finish-monolith", x: 37.5, width: 6.4, height: 36.0, z: -33.0, tone: "slate" as const },
+  { id: "east-01", x: 44.0, width: 5.2, height: 24.5, z: -24.0, tone: "indigo" as const }
+] as const;
+
 function buildScene() {
   // Platform geometry comes from the library crate scaled to each authored
   // collision rect (mini-game pattern); the crate bounds drive the scale.
   const block = assets.quaterniusCubeCrate.bounds;
   const blockScale = (width: number, height: number, depth: number) =>
     [width / block[0], height / block[1], depth / block[2]] as const;
+
+  const wetDeckMaterial = material.reflectiveFloor({
+    color: "#1e293b",
+    roughness: 0.14,
+    metallic: 0.42,
+    clearcoat: 0.82,
+    clearcoatRoughness: 0.06,
+    emissive: "#283548",
+    emissiveIntensity: 0.06,
+    texture: material.proceduralTextures.plastic()
+  });
+  const runningPadMaterial = material.blackRubber({
+    color: "#141c2b",
+    roughness: 0.84,
+    emissive: "#1e293b",
+    emissiveIntensity: 0.03,
+    texture: material.proceduralTextures.rubber()
+  });
+  const safetyRailMaterial = material.brushedMetal({
+    color: "#94a3b8",
+    roughness: 0.24,
+    emissive: "#38bdf8",
+    emissiveIntensity: 0.05,
+    texture: material.proceduralTextures.brushedMetal()
+  });
+  const runnerTrimMaterial = material.clearcoatPaint({
+    color: "#f08a4b",
+    roughness: 0.12,
+    clearcoat: 1,
+    clearcoatRoughness: 0.03,
+    emissive: "#f08a4b",
+    emissiveIntensity: 0.08,
+    texture: material.proceduralTextures.plastic()
+  });
+  const curtainWallSlateMaterial = material.frostedGlass({
+    color: "#1e293b",
+    roughness: 0.28,
+    opacity: 0.92,
+    transmission: 0.24,
+    emissive: "#38bdf8",
+    emissiveIntensity: 0.07,
+    texture: material.proceduralTextures.plastic()
+  });
+  const curtainWallIndigoMaterial = material.frostedGlass({
+    color: "#283548",
+    roughness: 0.24,
+    opacity: 0.9,
+    transmission: 0.28,
+    emissive: "#f08a4b",
+    emissiveIntensity: 0.08,
+    texture: material.proceduralTextures.plastic()
+  });
+
+  const rooftopDeckNodes: AuraNodeBuilder<AuraSceneNode>[] = (level.platforms ?? []).flatMap((platform) => {
+    const centerX = platform.x + platform.width / 2;
+    const topY = platform.y + platform.height;
+    const deckWidth = platform.width + 0.64;
+    return [
+      primitives.box({
+        name: `${platform.id}-running-pad`,
+        position: [centerX, topY - 0.03, -0.02],
+        size: [platform.width + 0.14, 0.08, 1.38],
+        material: runningPadMaterial
+      }),
+      primitives.box({
+        name: `${platform.id}-rooftop-deck-slab`,
+        position: [centerX, platform.y - 0.18, -0.08],
+        size: [deckWidth, 0.38, 2.15],
+        material: wetDeckMaterial
+      }),
+      primitives.box({
+        name: `${platform.id}-runner-edge-trim`,
+        position: [centerX, topY - 0.06, 0.66],
+        size: [platform.width + 0.24, 0.1, 0.12],
+        material: runnerTrimMaterial
+      }),
+      primitives.box({
+        name: `${platform.id}-safety-rail-bar`,
+        position: [centerX, topY + 0.56, -0.78],
+        size: [platform.width + 0.28, 0.08, 0.08],
+        material: safetyRailMaterial
+      }),
+      primitives.box({
+        name: `${platform.id}-girder-beam`,
+        position: [centerX, platform.y - 0.46, -0.12],
+        size: [deckWidth + 0.2, 0.2, 2.28],
+        material: safetyRailMaterial
+      }),
+      primitives.box({
+        name: `${platform.id}-curtain-riser`,
+        position: [centerX, platform.y - 5.2, -0.42],
+        size: [platform.width + 0.36, 9.2, 1.85],
+        material: curtainWallSlateMaterial
+      })
+    ];
+  });
+
+  const distantTowerNodes: AuraNodeBuilder<AuraSceneNode>[] = DISTANT_CITADEL_TOWERS.flatMap((tower) => {
+    const baseY = -12.0;
+    const centerY = baseY + tower.height / 2;
+    const topY = baseY + tower.height;
+    return [
+      primitives.box({
+        name: `citadel-tower-${tower.id}`,
+        position: [tower.x, centerY, tower.z],
+        size: [tower.width, tower.height, 4.2],
+        material: tower.tone === "slate" ? curtainWallSlateMaterial : curtainWallIndigoMaterial,
+        castShadow: false,
+        receiveShadow: false
+      }),
+      primitives.box({
+        name: `citadel-crown-${tower.id}`,
+        position: [tower.x, topY + 0.24, tower.z + 0.2],
+        size: [tower.width + 0.36, 0.45, 4.4],
+        material: tower.tone === "slate" ? runnerTrimMaterial : safetyRailMaterial,
+        castShadow: false,
+        receiveShadow: false
+      })
+    ];
+  });
+
+  const horizonBackdropNodes: AuraNodeBuilder<AuraSceneNode>[] = [
+    primitives.box({
+      name: "horizon-dusk-band-amber",
+      position: [16, -2.2, -34.5],
+      size: [140, 9.5, 0.6],
+      material: material.reflectiveFloor({
+        color: "#f08a4b",
+        roughness: 0.32,
+        metallic: 0.12,
+        emissive: "#f08a4b",
+        emissiveIntensity: 0.08,
+        texture: material.proceduralTextures.plastic()
+      }),
+      castShadow: false,
+      receiveShadow: false
+    }),
+    primitives.box({
+      name: "horizon-dusk-band-twilight",
+      position: [16, 6.8, -34.8],
+      size: [140, 10.5, 0.6],
+      material: material.reflectiveFloor({
+        color: "#283548",
+        roughness: 0.36,
+        metallic: 0.15,
+        emissive: "#3b5bdb",
+        emissiveIntensity: 0.08,
+        texture: material.proceduralTextures.plastic()
+      }),
+      castShadow: false,
+      receiveShadow: false
+    }),
+    primitives.box({
+      name: "horizon-dusk-band-zenith",
+      position: [16, 17.5, -35.0],
+      size: [140, 14.0, 0.6],
+      material: material.reflectiveFloor({
+        color: "#1a2f5a",
+        roughness: 0.4,
+        metallic: 0.12,
+        emissive: "#1a2f5a",
+        emissiveIntensity: 0.08,
+        texture: material.proceduralTextures.plastic()
+      }),
+      castShadow: false,
+      receiveShadow: false
+    })
+  ];
+
   const nodes: AuraNodeBuilder<AuraSceneNode>[] = [
+    ...horizonBackdropNodes,
+    ...distantTowerNodes,
+    ...rooftopDeckNodes,
     ...(level.platforms ?? []).map((platform) =>
-      model(assets.quaterniusCubeCrate, { name: `${platform.id} platform` })
+      model(assets.quaterniusCubeCrate, {
+        name: `${platform.id} platform`,
+        scaleMode: "world",
+        material: wetDeckMaterial
+      })
         .position(platform.x + platform.width / 2, platform.y + platform.height / 2, -0.05)
         .scale(blockScale(platform.width, platform.height, 1.24))),
     ...(level.movingPlatforms ?? []).map((platform) =>
-      model(assets.quaterniusCubeCrate, { name: `${platform.id} moving platform` })
+      model(assets.quaterniusCubeCrate, {
+        name: `${platform.id} moving platform`,
+        scaleMode: "world",
+        material: runnerTrimMaterial
+      })
         .position(movingPlatformCenterX(0), platform.y + platform.height / 2, 0)
-        .scale(blockScale(platform.width, platform.height, 0.7))
+        .scale(blockScale(platform.width, platform.height, 0.92))
         .runtime(game.runtimeNode(`platform-${platform.id}`, { tags: ["platform", "moving"] }))),
     ...(level.collectibles ?? []).map((coin) =>
       model(assets.kenneyPlatformerKitStar, {
@@ -353,6 +551,7 @@ function buildScene() {
     ...(level.hazards ?? []).map((hazard) =>
       model(assets.quaterniusCubeCrate, {
         name: `${hazard.id} hazard`,
+        scaleMode: "world",
         material: material.emissive({ color: "#e5484d", emissive: "#e5484d", emissiveIntensity: 0.9, roughness: 0.4 })
       })
         .position(hazard.x + hazard.width / 2, hazard.y + hazard.height / 2, 0.05)
@@ -369,10 +568,44 @@ function buildScene() {
       .scale(3.4)
       .runtime(game.runtimeNode("goal", { tags: ["finish"] }))
   ];
+  const winterDuskSky = {
+    name: "winter-dusk-backdrop",
+    zenith: "#1a2f5a",
+    horizon: "#f08a4b",
+    ground: "#141d33",
+    zenithColor: "#1a2f5a",
+    horizonColor: "#f08a4b",
+    groundColor: "#141d33",
+    horizonGlow: 0.42,
+    sun: { elevationDeg: 18, azimuthDeg: 324, intensity: 1.9, color: "#ffd59e" }
+  };
   return scene()
-    .add(looks.preset(LOOK_ID))
+    .background("#1a2f5a", { toneMapped: false })
+    .add(looks.preset(LOOK_ID, { background: "#1a2f5a", sun: { elevationDeg: 34, azimuthDeg: 330 }, exposureEv: 0.28 }))
+    .add(sky.gradient(winterDuskSky))
+    .add(effects.fog({ name: "winter-dusk-atmosphere", color: "#2b4570", density: 0.016, intensity: 0.48 }))
     .add(
-      model(assets.showcaseKenneyOobiPlatformerHero, { name: "skyline hero" })
+      lights.directional({
+        name: "sunset-horizon-fill",
+        position: [-14, 7.5, 9],
+        target: [12, 1.5, 0],
+        color: "#ffb478",
+        intensity: 1.15,
+        shadow: false
+      })
+    )
+    .add(
+      model(assets.showcaseKenneyOobiPlatformerHero, {
+        name: "skyline hero",
+        material: material.clearcoatPaint({
+          color: "#38bdf8",
+          roughness: 0.16,
+          clearcoat: 1,
+          clearcoatRoughness: 0.04,
+          emissive: "#0284c7",
+          emissiveIntensity: 0.06
+        })
+      })
         .position(SKYLINE_START.x, SKYLINE_START.y + 0.01, 0)
         .scale(SKYLINE_PLAYER_HEIGHT / assets.showcaseKenneyOobiPlatformerHero.bounds[1])
         .runtime(game.runtimeNode("skyline-player", { tags: ["player"] }))
