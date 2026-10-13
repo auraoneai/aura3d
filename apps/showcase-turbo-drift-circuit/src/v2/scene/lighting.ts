@@ -11,7 +11,7 @@ export function turboDriftLights() {
     lights.directional({
       name: "turbo sun key",
       color: "#ffb36b",
-      intensity: 3.1,
+      intensity: 3.5,
       // Low sunset azimuth; directional lights aim at the origin (no `target`
       // option on the builder).
       position: [-14, 4.2, 9],
@@ -25,6 +25,6 @@ export function turboDriftEnvironment() {
   return environments.hdri({
     name: "turbo sunset hdri",
     texture: envAssets.sunsetHdr,
-    intensity: 0.55
+    intensity: 0.85
   });
 }

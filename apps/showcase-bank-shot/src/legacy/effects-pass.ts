@@ -5,7 +5,7 @@
 //
 // Look brief (sports/table, interior-warm): late-night pool room, warm lamp
 // pools over a saturated felt, slate shadows. Families: shadowed lamp key +
-// contact shadows, volumetric lamp haze (god rays through the smoke), dust
+// renderer-owned ball contact patches, cheap distance haze, dust
 // motes in the lamp cone, indoor IBL on the lacquered balls and walnut rails,
 // grade + vignette.
 import { effects, environments, lights } from "@aura3d/engine";
@@ -35,25 +35,22 @@ export function bankShotEffectsPass() {
       name: "pendant bank shadow key",
       position: [-0.6, 5.2, 1.4],
       target: [0, 0, 0],
-      color: "#ffe6bf",
-      intensity: 1.35,
-      shadow: { cascades: "auto", maxDistance: 12 }
+      color: "#dff3e6",
+      intensity: 2.05,
+      shadow: { cascades: 1, mapSize: 1024, filter: "pcf", maxDistance: 12 }
     }),
-    effects.contactShadows({ length: 0.12, thickness: 0.03, intensity: 0.9 }),
     // Indoor IBL: reflections on ball lacquer, rails and the cue ferrule.
-    environments.preset("indoor", { intensity: 0.32, specularIntensity: 1.0, background: false }),
-    // Smoky lamp haze with forward in-scatter from the key.
-    effects.volumetricFog({
+    environments.preset("indoor", { intensity: 0.62, specularIntensity: 1.15, background: false, color: "#cfe8d8" }),
+    // Plain distance haze (cheap) — the volumetric pass cost a full-screen
+    // raymarch for a barely visible cone; the room simply falls to dark.
+    effects.fog({
       name: "pool hall lamp haze",
-      density: 0.026,
-      color: "#6a5a34",
-      intensity: 0.2,
-      volumetricQuality: "off",
-      heightFalloff: 0.35,
-      heightReference: 0
+      density: 0.014,
+      color: "#0d0f16",
+      intensity: 0.18
     }),
-    effects.colorGrade({ saturation: 1.28, contrast: 1.06 }),
-    effects.vignette({ intensity: 0.36, smoothness: 1.8 }),
+    effects.colorGrade({ saturation: 1.3, contrast: 1.18 }),
+    effects.vignette({ intensity: 0.52, smoothness: 1.8 }),
     ...(vfxOn
       ? [
           // Dust motes rising slowly through the lamp pool over the table
@@ -61,8 +58,8 @@ export function bankShotEffectsPass() {
           effects.particles({
             name: "lamp pool dust motes",
             emitter: "fountain",
-            particleCount: 90,
-            emissionRate: 20,
+            particleCount: 36,
+            emissionRate: 8,
             radius: 1.3,
             height: 1.1,
             size: [0.008, 0.02],
