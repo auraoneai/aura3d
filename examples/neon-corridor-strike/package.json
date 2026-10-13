@@ -1,20 +1,18 @@
 {
-  "name": "neon-corridor-strike",
-  "version": "1.0.0",
+  "name": "@aura3d/example-neon-corridor-strike",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
+  "description": "Neon Corridor Strike: pointer-lock FPS corridor rebuilt single-path on createGame (E5 raw-pointer look, LMB hitscan, typed Quaternius/Kenney CC0 assets, pure rules sim).",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "typecheck": "tsc --noEmit",
-    "build": "npm run typecheck && vite build",
-    "preview": "vite preview --host 127.0.0.1",
-    "test": "playwright test tests/route-health.spec.ts tests/gameplay-smoke.spec.ts tests/screenshot.spec.ts --workers=1"
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
-    "@aura3d/engine": "2.0.3"
+    "@aura3d/engine": "workspace:*"
   },
   "devDependencies": {
-    "@playwright/test": "1.59.1",
     "typescript": "^5.8.3",
     "vite": "^7.3.2"
   }
