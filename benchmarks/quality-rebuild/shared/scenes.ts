@@ -104,6 +104,7 @@ const CRITERIA: Record<string, { readonly primaryCriterion: string; readonly pri
   "11-multiple-lights": { primaryCriterion: "Ten colored point lights tint glossy subjects distinctly around the ring", primaryRegion: "subject" },
   "12-shadows": { primaryCriterion: "Directional and spot shadows attach to their casters with believable penumbra", primaryRegion: "shadow-receiver" },
   "13-ibl-only": { primaryCriterion: "IBL alone differentiates chrome, gold and plastic through reflections", primaryRegion: "sky" },
+  "19-room-environment-parity": { primaryCriterion: "Neutral RoomEnvironment alone lights the metal/dielectric roughness sweep identically in both engines", primaryRegion: "subject" },
   "14-particles": { primaryCriterion: "Additive fountain particles are present, lit and distributed in the volume", primaryRegion: "subject" },
   "15-animation-skinning": { primaryCriterion: "Walk clips sample correctly at t=1.25s with skinned shadows under the feet", primaryRegion: "subject" },
   "16-instancing": { primaryCriterion: "10,000 instanced boxes render once with per-instance color", primaryRegion: "subject" },
@@ -404,6 +405,29 @@ const baseSpecs = {
     shadows: defaultShadows(14),
     bloom: { strength: 0.7, radius: 0.4, threshold: 0.85 },
     fog: { color: "#8fa3b8", density: 0.03 }
+  }
+,
+  "19-room-environment-parity": {
+    // E3 step 6 (E3-STAGE2B-TRACE.md §5): the smallest decisive neutral-room
+    // parity capture. No lights and NO environment node: the Aura side hits
+    // the marked-fallback neutral room (renderer/Background.ts, analytic r185
+    // room via buildNeutralRoomLegacyProbe; under qr_flags=compiler,lighting
+    // the PRD-02 single-knob path), so adding `environment` here would defeat
+    // the test — 13-ibl-only already covers the authored-HDRI arm. The three
+    // side gets the same room through the only existing stand-in mechanism,
+    // showcase.environmentStandIn (three/lib/showcase.ts: PMREMGenerator
+    // .fromScene(new RoomEnvironment(), 0.04), environmentIntensity 1), which
+    // is why the three adapter runs runThreeShowcase while the Aura adapter
+    // stays on runAuraScene exactly like 13-ibl-only. Geometry is 06's
+    // metal/dielectric roughness sweep verbatim (sweepObjects) so per-sphere
+    // luma windows line up with the float-readback oracle in
+    // tests/qr/prd02/browser/room-environment-parity.spec.ts.
+    ...base("19-room-environment-parity", 19, "RoomEnvironment parity", "No lights, no authored environment; neutral r185 room only, on the 06 roughness sweep"),
+    camera: { position: [0, 1, 6.2], target: [0, 1, 0], fov: 40, near: 0.1, far: 50 },
+    background: { kind: "color", color: "#24272d" },
+    lights: [],
+    objects: sweepObjects,
+    showcase: { environmentStandIn: "room-environment", aa: "msaa4", assetTier: "admitted" }
   }
 } as const satisfies Record<string, SceneSpec>;
 
