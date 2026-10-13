@@ -52,8 +52,8 @@ jobs:
         shard:
           - { id: 1, templates: "product-viewer,cinematic-scene,mini-game,racing-starter,falling-blocks-starter" }
           - { id: 2, templates: "fighting-game,arena-shooter,character-controller,animation-channel,prompt-animation-channel" }
-          - { id: 3, templates: "animation-studio,episode-builder,three-compat-premium-product-viewer,three-compat-architecture-interior,three-compat-material-authoring" }
-          - { id: 4, templates: "three-compat-asset-inspector,three-compat-character-viewer,three-compat-postprocess-scene,three-compat-custom-threejs-migration,three-compat-large-scene" }
+          - { id: 3, templates: "animation-studio,episode-builder,premium-product-viewer,architecture-interior,material-authoring" }
+          - { id: 4, templates: "asset-inspector,character-viewer,postprocess-scene,custom-scene,large-scene" }
     env:
       QRC_TEMPLATES: ${{ github.event_name == 'workflow_dispatch' && inputs.templates || matrix.shard.templates }}
       QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
@@ -74,6 +74,7 @@ jobs:
       - name: Build templates against workspace sources
         id: build
         run: |
+          set -o pipefail
           pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-templates/build-templates-workspace.ts \
             --out tools/agent-templates/out/workspace-build | tee build.log
           echo "sources=$(tail -n 1 build.log)" >> "$GITHUB_OUTPUT"
@@ -108,8 +109,8 @@ jobs:
         shard:
           - { id: 1, templates: "product-viewer,cinematic-scene,mini-game,racing-starter,falling-blocks-starter" }
           - { id: 2, templates: "fighting-game,arena-shooter,character-controller,animation-channel,prompt-animation-channel" }
-          - { id: 3, templates: "animation-studio,episode-builder,three-compat-premium-product-viewer,three-compat-architecture-interior,three-compat-material-authoring" }
-          - { id: 4, templates: "three-compat-asset-inspector,three-compat-character-viewer,three-compat-postprocess-scene,three-compat-custom-threejs-migration,three-compat-large-scene" }
+          - { id: 3, templates: "animation-studio,episode-builder,premium-product-viewer,architecture-interior,material-authoring" }
+          - { id: 4, templates: "asset-inspector,character-viewer,postprocess-scene,custom-scene,large-scene" }
     env:
       QRC_TEMPLATES: ${{ github.event_name == 'workflow_dispatch' && inputs.templates || matrix.shard.templates }}
       QRC_GPU_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
@@ -130,6 +131,7 @@ jobs:
       - name: Build templates against workspace sources
         id: build
         run: |
+          set -o pipefail
           pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-templates/build-templates-workspace.ts \
             --out tools/agent-templates/out/workspace-build | tee build.log
           echo "sources=$(tail -n 1 build.log)" >> "$GITHUB_OUTPUT"

@@ -128,6 +128,7 @@ const miniGame = createGame({
   }
 });
 const app = miniGame.app;
+miniGame.start();
 const input = miniGame.input;
 if (!input) throw new Error("create-aura3d mini-game failed to create runtime-owned input.");
 

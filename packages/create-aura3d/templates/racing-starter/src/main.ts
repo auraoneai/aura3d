@@ -173,6 +173,7 @@ const racingGame = createGame({
   }
 });
 const app = racingGame.app;
+racingGame.start();
 const input = racingGame.input;
 if (!input) throw new Error("create-aura3d racing-starter failed to create runtime-owned input.");
 

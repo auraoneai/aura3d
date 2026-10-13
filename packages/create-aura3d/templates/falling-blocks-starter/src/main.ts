@@ -195,6 +195,7 @@ const blockfallGame = createGame({
   }
 });
 const app = blockfallGame.app;
+blockfallGame.start();
 const input = blockfallGame.input;
 if (!input) throw new Error("create-aura3d falling-blocks-starter failed to create runtime-owned input.");
 

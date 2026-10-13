@@ -206,6 +206,7 @@ const fightingGame = createGame({
   }
 });
 const app = fightingGame.app;
+fightingGame.start();
 const input = fightingGame.input;
 if (!input) throw new Error("create-aura3d fighting-game template failed to create runtime-owned input.");
 const replayInput = game.input({ ...inputOptions, autoListen: false, gamepad: false });

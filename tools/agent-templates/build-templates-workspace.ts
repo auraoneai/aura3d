@@ -24,6 +24,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "vite";
 import { aliasEntries } from "../../vite.aliases.generated";
+import { auraDecodersPlugin } from "../../packages/assets/src/vite/auraDecoders";
 import { copyTemplateHdris, TEMPLATE_HDRI_DIR, templateAuthorsLook } from "../../packages/create-aura3d/src/template-hdri";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -31,6 +32,18 @@ const templateRoot = path.join(repoRoot, "packages", "create-aura3d", "templates
 // The look HDRIs (looks.ts HDRI_ASSET, incl. the A3D_QR_LOOKS night-2k):
 // Poly Haven CC0 originals shipped by create-aura3d (hdri/ATTRIBUTION.md).
 const hdriSource = path.join(repoRoot, "packages", "create-aura3d", TEMPLATE_HDRI_DIR);
+
+const LEGACY_TEMPLATE_ALIASES: Readonly<Record<string, string>> = {
+  "three-compat-architecture-interior": "architecture-interior",
+  "three-compat-asset-inspector": "asset-inspector",
+  "three-compat-character-viewer": "character-viewer",
+  "three-compat-custom-threejs-migration": "custom-scene",
+  "three-compat-large-scene": "large-scene",
+  "three-compat-material-authoring": "material-authoring",
+  "three-compat-postprocess-scene": "postprocess-scene",
+  "three-compat-premium-product-viewer": "premium-product-viewer"
+};
+const normalizeTemplateId = (id: string): string => LEGACY_TEMPLATE_ALIASES[id] ?? id;
 
 const argv = process.argv.slice(2);
 const opt = (name: string, fallback: string): string => {
@@ -41,7 +54,10 @@ const opt = (name: string, fallback: string): string => {
 // (macOS /tmp -> /private/tmp) as a "relative" emitted file name.
 mkdirSync(path.resolve(repoRoot, opt("--out", "tools/agent-templates/out/workspace-build")), { recursive: true });
 const outDir = realpathSync(path.resolve(repoRoot, opt("--out", "tools/agent-templates/out/workspace-build")));
-const requested = opt("--templates", process.env.QRC_TEMPLATES ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+const requested = opt("--templates", process.env.QRC_TEMPLATES ?? "")
+  .split(",")
+  .map((s) => normalizeTemplateId(s.trim()))
+  .filter(Boolean);
 
 const allTemplates = readdirSync(templateRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory() && existsSync(path.join(templateRoot, entry.name, "index.html")))
@@ -54,14 +70,24 @@ const selected = requested.length ? allTemplates.filter((id) => requested.includ
 
 // Exact-specifier entries from tsconfig.base.json `paths` come first (it maps
 // subpaths the generated vite map lacks, e.g. `@aura3d/engine/game`), then the
-// generated prefix map for everything else.
+// generated prefix map for everything else. Browser-entry packages (`@aura3d/assets`,
+// `@aura3d/animation`) must resolve to `browser-index.ts` rather than their Node
+// `index.ts` entry.
+const BROWSER_SAFE_TARGETS: Readonly<Record<string, string>> = {
+  "@aura3d/animation": "packages/animation/src/browser-index.ts",
+  "@aura3d/assets": "packages/assets/src/browser-index.ts",
+  "@aura3d/engine": "packages/engine/src/public/index.ts"
+};
 const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const tsPaths = (JSON.parse(readFileSync(path.join(repoRoot, "tsconfig.base.json"), "utf8")) as {
   compilerOptions?: { paths?: Record<string, readonly string[]> };
 }).compilerOptions?.paths ?? {};
 const exactAliases = Object.entries(tsPaths)
   .filter(([key, targets]) => key.startsWith("@aura3d/") && !key.includes("*") && targets.length > 0)
-  .map(([key, targets]) => ({ find: new RegExp(`^${escapeRegExp(key)}$`), replacement: path.join(repoRoot, targets[0]) }));
+  .map(([key, targets]) => ({
+    find: new RegExp(`^${escapeRegExp(key)}$`),
+    replacement: path.join(repoRoot, BROWSER_SAFE_TARGETS[key] ?? targets[0])
+  }));
 const alias = [
   ...exactAliases,
   ...aliasEntries.map(([find, replacement]) => ({ find, replacement: path.join(repoRoot, replacement) }))
@@ -98,10 +124,23 @@ for (const id of selected) {
   try {
     await build({
       root: dir,
-      configFile: existsSync(path.join(dir, "vite.config.ts")) ? path.join(dir, "vite.config.ts") : false,
+      configFile: false,
+      plugins: [auraDecodersPlugin()],
       logLevel: "warn",
       resolve: { alias },
-      build: { outDir: distDir, emptyOutDir: true, sourcemap: false }
+      build: {
+        target: "esnext",
+        outDir: distDir,
+        emptyOutDir: true,
+        sourcemap: false,
+        rollupOptions: {
+          output: {
+            manualChunks(chunkId: string) {
+              if (chunkId.includes("/packages/")) return "aura3d-vendor";
+            }
+          }
+        }
+      }
     });
     rows.push({ id, ok: existsSync(path.join(distDir, "index.html")), distDir, hdri });
   } catch (error) {
