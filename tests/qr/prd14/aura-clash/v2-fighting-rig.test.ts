@@ -9,8 +9,8 @@ import {
   createAuraClashFightingRig, projectedSubjectHeightFraction,
   solveAuraClashFightingDistance,
   AURA_CLASH_FIGHTING_FOV_DEG, AURA_CLASH_SUBJECT_HEIGHT_FRACTION
-} from "../../../../apps/aura-clash-showcase/src/v2/scene/camera";
-import { FIGHTER_TARGET_HEIGHT, P1_NODE, P2_NODE, STAGE_HALF_WIDTH } from "../../../../apps/aura-clash-showcase/src/v2/scene/world";
+} from "../../../../apps/aura-clash-showcase/src/scene/camera";
+import { FIGHTER_TARGET_HEIGHT, P1_NODE, P2_NODE, STAGE_HALF_WIDTH } from "../../../../apps/aura-clash-showcase/src/scene/world";
 import type { AuraCameraRigContext, AuraVec3 } from "@aura3d/engine";
 
 function ctx(subjects: Record<string, { position: AuraVec3 }>, aspect = 16 / 9): AuraCameraRigContext {

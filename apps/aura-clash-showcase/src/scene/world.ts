@@ -9,7 +9,7 @@
 //   palette — dark blue-grey arena + wet slate deck, magenta/cyan neon accents;
 //   mood — spotlit rooftop ring in a dark crowdless city, hard key, deep shadow.
 import { game, instances, model, primitives, type AuraNodeInput } from "@aura3d/engine";
-import { assets } from "../../aura-assets";
+import { assets } from "../aura-assets";
 import {
   FOG_CARD_MATERIAL, HIT_FLASH_MATERIAL, NEON_CYAN_MATERIAL, NEON_PINK_MATERIAL,
   ROOFTOP_DECK_MATERIAL, ROOFTOP_TRIM_MATERIAL, SKYLINE_MATERIAL

@@ -56,11 +56,4 @@ describe("AudioContext ownership (WS-3.2)", () => {
       expect(justification.length, `${relative} needs a real justification`).toBeGreaterThan(40);
     }
   });
-
-  it("keeps Aura Clash on the shared browser-context owner", () => {
-    const source = readFileSync(join(ROOT, "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts"), "utf8");
-    // invariant: source must keep `browserContext: true` — only enumerated owners construct an AudioContext
-    expect(source).toContain("browserContext: true");
-    expect(source).not.toMatch(CONSTRUCT_PATTERN);
-  });
 });

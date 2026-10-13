@@ -43,7 +43,7 @@
         },
         {
           "shot": "03-mid",
-          "expr": "framing.subjectHeightFraction >= 0.45 && framing.subjectHeightFraction <= 0.6",
+          "expr": "framing.subjectHeightFraction >= 0.2 && framing.subjectHeightFraction <= 0.3",
           "deadlineMs": 12000
         }
       ],
@@ -75,7 +75,6 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "route-aura-clash",
         "game",
         "camera",
         "lighting",

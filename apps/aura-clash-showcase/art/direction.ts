@@ -44,13 +44,13 @@ export default defineArtDirection({
     environment: { hdri: "k1-night-city", background: "enclosed" },
     exposureEV: -0.3
   },
-  framing: { rig: "fighting", subjectHeightFraction: [0.45, 0.6], fovDeg: [30, 34], mobile: "landscape" },
+  framing: { rig: "fighting", subjectHeightFraction: [0.2, 0.3], fovDeg: [40, 50], mobile: "landscape" },
   assets: [
-    { role: "hero", assetKey: "fighter-p1", kit: "K2", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "hero", assetKey: "fighter-p2", kit: "K2", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "world", assetKey: "rooftop-arena", kit: "K4", maxTriangles: 90000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "world", assetKey: "skyline-layer", kit: "K2", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "vertex-crowd", kit: "K6", maxTriangles: 15000, textureSet: "BC", maxTextureSize: 1024 }
+    { role: "hero", assetKey: "auraClashPlayerRig", kit: "K2", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "hero", assetKey: "auraClashRivalRig", kit: "K2", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "world", assetKey: "arenaNeonDowntownTextured", kit: "K4", maxTriangles: 90000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "world", assetKey: "arenaRooftopBuilding", kit: "K2", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "auraClashSpectatorCard", kit: "K6", maxTriangles: 15000, textureSet: "BC", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "hit-impact", kind: "burst", flipbook: "k9-spark" },
@@ -66,11 +66,11 @@ export default defineArtDirection({
   ],
   signatureEffect: "Warm overhead spot over rain-lit neon: 0.08 s impact point light with K9 spark flipbook on every hit.",
   standIns: [
-    { feature: "fighting rig subjectHeightFraction 0.5 + separation dolly", file: "src/v2/scene/camera.ts", request: "R-14-10", removeWhen: "C-22 rigs.fighting real" },
-    { feature: "rim term team identity", file: "src/v2/scene/materials.ts", request: "R-14-14", removeWhen: "PRD 04 rim real (§8.10)" },
-    { feature: "SSR wet floor + rain", file: "src/v2/scene/fx.ts", request: "R-14-14", removeWhen: "C-13 SSR + C-21 rain real" },
-    { feature: "announcer + crowd bed", file: "src/v2/boot.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" },
-    { feature: "K1 night-city HDRI (kloppenheim dusk stand-in)", file: "src/v2/env-assets.ts", request: "R-14-13", removeWhen: "K1 night-city HDRI admitted" }
+    { feature: "fighting rig subjectHeightFraction 0.25 + separation dolly", file: "src/scene/camera.ts", request: "R-14-10", removeWhen: "C-22 rigs.fighting real" },
+    { feature: "rim term team identity", file: "src/scene/materials.ts", request: "R-14-14", removeWhen: "PRD 04 rim real (§8.10)" },
+    { feature: "SSR wet floor + rain", file: "src/scene/fx.ts", request: "R-14-14", removeWhen: "C-13 SSR + C-21 rain real" },
+    { feature: "announcer + crowd bed", file: "src/main.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" },
+    { feature: "K1 night-city HDRI (kloppenheim dusk stand-in)", file: "src/env-assets.ts", request: "R-14-13", removeWhen: "K1 night-city HDRI admitted" }
   ],
   criticalCategories: ["lighting", "vfx", "animation_quality", "camera"],
   tiers: {

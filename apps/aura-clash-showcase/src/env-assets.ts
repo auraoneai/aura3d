@@ -1,8 +1,8 @@
-// apps/aura-clash-showcase/src/v2/env-assets.ts — vendored environment map.
+// apps/aura-clash-showcase/src/env-assets.ts — vendored environment map.
 // Vendored so the ?url emits a hashed dist asset (hash-pinned for integrity,
 // like the hero GLBs). K1 night-city HDRI stand-in (direction.standIns[]
 // R-14-13): kloppenheim dusk reads as neon-rooftop dusk at low intensity.
-import hdriUrl from "../../assets/env/kloppenheim_06_puresky_1k.hdr?url";
+import hdriUrl from "../assets/env/kloppenheim_06_puresky_1k.hdr?url";
 import { defineAuraAssets } from "@aura3d/engine";
 
 export const envAssets = defineAuraAssets({
