@@ -267,7 +267,7 @@ const sceneDef = scene()
     softKnee: 0.5,
     shoulder: 0.6
   }))
-  .add(effects.colorGrade({ exposure: 1.02, contrast: 1.1, saturation: 1.06 }))
+  .add(effects.colorGrade({ exposure: 1.02, contrast: 1.1, saturation: 1.14 }))
   .add(effects.antiAlias({ mode: "fxaa" }))
   // §6.9.14 P0: effects.volumetricFog deleted — it ran a CPU 8-bit readback
   // every frame (0.5 fps at 1920). The in-shader underwater fog (§8.3)
