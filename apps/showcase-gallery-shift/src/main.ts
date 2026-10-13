@@ -82,6 +82,20 @@ const LOOK_ID = "interior-warm" as const;
 const LAYOUT: FloorLayout = FLOOR_LAYOUTS[0]!;
 const FIXED_DT = 1 / 60;
 const EYE_Y = 1.55;
+const THIEF_EYE_Y = 1.1;
+const BASE_ORTHO_SIZE = 8.6;
+const MIN_HALF_WIDTH = 10.8;
+
+function viewportAspect(): number {
+  const w = typeof window !== "undefined" && window.innerWidth > 0 ? window.innerWidth : 1280;
+  const h = typeof window !== "undefined" && window.innerHeight > 0 ? window.innerHeight : 720;
+  const aspect = w / h;
+  return Number.isFinite(aspect) && aspect > 0 ? aspect : 16 / 9;
+}
+
+function viewportOrthoSize(): number {
+  return Math.max(BASE_ORTHO_SIZE, MIN_HALF_WIDTH / viewportAspect());
+}
 
 // Same scale convention as the Blockfall rebuild: GLBs were authored
 // against a 1.082 m reference cube, so RENORM keeps rendered sizes true.
@@ -260,11 +274,12 @@ function buildScene() {
   return scene()
     .add(looks.preset(LOOK_ID))
     .addMany(nodes)
-    .camera(camera.orthographic({ position: [0, 17, 10.5], target: [0, 0, 0], orthographicSize: 8.6 }));
+    .camera(camera.orthographic({ position: [0, 17, 10.5], target: [0, 0, 0], orthographicSize: viewportOrthoSize() }));
 }
 
+let appliedOrthoSize = viewportOrthoSize();
 app.camera?.use(
-  camera.rigs.static({ position: [0, 17, 10.5], target: [0, 0, 0], orthographicSize: 8.6 })
+  camera.rigs.static({ position: [0, 17, 10.5], target: [0, 0, 0], orthographicSize: appliedOrthoSize })
 );
 
 let thiefNode: AuraRuntimeNodeHandle = app.nodes.require("thief");
@@ -343,7 +358,7 @@ function stepFixed(): void {
     }))
   ];
   const vision = sampleVision(
-    worldRaycast(floorWorld.world), watchers, thief.x, thief.z, EYE_Y,
+    worldRaycast(floorWorld.world), watchers, thief.x, thief.z, THIEF_EYE_Y,
     brightnessAt(LAYOUT.lightPools, thief.x, thief.z), [floorWorld.thiefBodyId], counters, false
   );
   thiefSeen = vision.thiefSeen;
@@ -376,6 +391,11 @@ function stepFixed(): void {
 
 // ---------------------------------------------------------------- sync/HUD --
 function syncVisuals(): void {
+  const nextOrthoSize = viewportOrthoSize();
+  if (Math.abs(nextOrthoSize - appliedOrthoSize) > 1e-3) {
+    appliedOrthoSize = nextOrthoSize;
+    app.camera?.setPose({ orthographicSize: appliedOrthoSize });
+  }
   const snap = thief.snapshot();
   const yaw = snap.moving ? Math.atan2(snap.moveX, snap.moveZ) : undefined;
   thiefNode.setPosition(snap.x, 0.85, snap.z);
@@ -450,4 +470,5 @@ function publishEvidence(): void {
   };
   latestSnapshot = snapshot;
   window.__aura3dGameSnapshot = snapshot;
+  Reflect.set(window, "__AURA3D_SHOWCASE_GALLERY_SHIFT__", snapshot);
 }

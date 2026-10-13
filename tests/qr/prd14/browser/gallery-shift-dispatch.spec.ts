@@ -105,21 +105,36 @@ test.describe("gallery-shift single-path boot (S1)", () => {
     }
   });
 
-  // S7 (single-path): the fixed orthographic rig reaches `framed` at
-  // both sampled viewports.
-  test("framing holds at desktop and mobile viewports", async ({ page }) => {
+  // S7 (single-path): the orthographic rig reaches `framed` at desktop
+  // and mobile viewports (split into separate tests to avoid WebKit 2nd-goto crashes).
+  test("framing holds at desktop viewport (1920x1080)", async ({ page }) => {
     const root = builtDist(APP_DIR);
     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      for (const viewport of [{ width: 1920, height: 1080 }, { width: 390, height: 844 }]) {
-        await page.setViewportSize(viewport);
-        await bootFramed(page, url);
-        const snapshot = await snapshotOf(page);
-        expect(snapshot.framed).toBe(true);
-        expect(snapshot.drawCalls).toBeGreaterThan(0);
-      }
+      await page.setViewportSize({ width: 1920, height: 1080 });
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.framed).toBe(true);
+      expect(snapshot.drawCalls).toBeGreaterThan(0);
+      expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
+  });
+
+  test("framing holds at mobile viewport (390x844)", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await bootFramed(page, url);
+      const snapshot = await snapshotOf(page);
+      expect(snapshot.framed).toBe(true);
+      expect(snapshot.drawCalls).toBeGreaterThan(0);
       expect(errors).toEqual([]);
     } finally {
       server.close();
