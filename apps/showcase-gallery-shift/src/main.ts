@@ -199,7 +199,7 @@ function resetRound(): void {
   routeEvents.push({ type: "reset", label: "reset" });
 }
 
-if (new URL(location.href).searchParams.get("debug") === "1") {
+if (typeof location !== "undefined" && /(?:^\?|&)debug=1(?:&|$)/.test(location.search)) {
   window.__aura3dGalleryDebug = { teleport: (x, z) => thief.teleport(x, z) };
 }
 
