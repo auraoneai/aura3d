@@ -68,19 +68,19 @@ export function orbitalEffectsPass() {
     // and the planet/intercept lanes remain the brightest read.
     primitives.sphere({
       name: "violet nebula disc west",
-      material: material.emissive({ color: "#0d061e", emissive: "#3a1c6e", emissiveIntensity: 0.38, opacity: 0.42 })
+      material: material.emissive({ color: "#0d061e", emissive: "#3a1c6e", emissiveIntensity: 0.35, opacity: 0.4 })
     }).position(-7.5, 2.8, -11).scale([6.4, 3.9, 0.4]),
     primitives.sphere({
       name: "teal nebula disc east",
-      material: material.emissive({ color: "#04161c", emissive: "#0d4252", emissiveIntensity: 0.4, opacity: 0.42 })
+      material: material.emissive({ color: "#04161c", emissive: "#0d4252", emissiveIntensity: 0.37, opacity: 0.4 })
     }).position(8.2, -2.4, -10).scale([5.8, 3.6, 0.4]),
     primitives.sphere({
       name: "magenta nebula disc north",
-      material: material.emissive({ color: "#170713", emissive: "#4a1d40", emissiveIntensity: 0.36, opacity: 0.4 })
+      material: material.emissive({ color: "#170713", emissive: "#4a1d40", emissiveIntensity: 0.33, opacity: 0.38 })
     }).position(3.4, 5.6, -12).scale([5.3, 3.1, 0.4]),
     primitives.sphere({
       name: "indigo nebula disc south",
-      material: material.emissive({ color: "#05081e", emissive: "#162a6e", emissiveIntensity: 0.38, opacity: 0.42 })
+      material: material.emissive({ color: "#05081e", emissive: "#162a6e", emissiveIntensity: 0.35, opacity: 0.4 })
     }).position(-4.6, -5.4, -10.5).scale([6, 3.3, 0.4]),
     instances.sphere({
       name: "backdrop starfield",
@@ -97,7 +97,7 @@ export function orbitalEffectsPass() {
       intensity: 0.45,
       volumetricQuality: "off"
     }),
-    effects.colorGrade({ exposure: 1.28, contrast: 1.04, saturation: 1.35 }),
+    effects.colorGrade({ exposure: 1.24, contrast: 1.04, saturation: 1.35 }),
     effects.vignette({ intensity: 0.22, smoothness: 1.6 }),
     effects.neonBloom({ intensity: 0.45, threshold: 0.62, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
     ...(vfxOn
