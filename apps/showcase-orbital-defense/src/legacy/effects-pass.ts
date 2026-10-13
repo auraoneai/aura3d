@@ -56,7 +56,7 @@ export function orbitalEffectsPass() {
       target: [0, 0, 0],
       color: "#ffe2b8",
       intensity: 5.0,
-      shadow: { cascades: "auto", maxDistance: 24 }
+      shadow: { cascades: 1, mapSize: 1024, maxDistance: 24 }
     }),
     // Studio IBL for reflections on the metallic stations and planet lacquer;
     // background stays the authored void.
@@ -68,19 +68,19 @@ export function orbitalEffectsPass() {
     // and the planet/intercept lanes remain the brightest read.
     primitives.sphere({
       name: "violet nebula disc west",
-      material: material.emissive({ color: "#0d061e", emissive: "#2a1452", emissiveIntensity: 0.22, opacity: 0.28 })
+      material: material.emissive({ color: "#0d061e", emissive: "#3a1c6e", emissiveIntensity: 0.38, opacity: 0.42 })
     }).position(-7.5, 2.8, -11).scale([6.4, 3.9, 0.4]),
     primitives.sphere({
       name: "teal nebula disc east",
-      material: material.emissive({ color: "#04161c", emissive: "#0a2f3a", emissiveIntensity: 0.24, opacity: 0.28 })
+      material: material.emissive({ color: "#04161c", emissive: "#0d4252", emissiveIntensity: 0.4, opacity: 0.42 })
     }).position(8.2, -2.4, -10).scale([5.8, 3.6, 0.4]),
     primitives.sphere({
       name: "magenta nebula disc north",
-      material: material.emissive({ color: "#170713", emissive: "#35142e", emissiveIntensity: 0.2, opacity: 0.25 })
+      material: material.emissive({ color: "#170713", emissive: "#4a1d40", emissiveIntensity: 0.36, opacity: 0.4 })
     }).position(3.4, 5.6, -12).scale([5.3, 3.1, 0.4]),
     primitives.sphere({
       name: "indigo nebula disc south",
-      material: material.emissive({ color: "#05081e", emissive: "#101f52", emissiveIntensity: 0.22, opacity: 0.28 })
+      material: material.emissive({ color: "#05081e", emissive: "#162a6e", emissiveIntensity: 0.38, opacity: 0.42 })
     }).position(-4.6, -5.4, -10.5).scale([6, 3.3, 0.4]),
     instances.sphere({
       name: "backdrop starfield",
@@ -88,7 +88,6 @@ export function orbitalEffectsPass() {
       colors: STAR_COLORS,
       material: material.emissive({ color: "#dbeafe", emissive: "#e2e8f0", emissiveIntensity: 1.15 })
     }),
-    effects.contactShadows({ length: 0.3, intensity: 0.8 }),
     // Depth-aware in-scatter: a cool haze that recedes the outer ring
     // and lets the sun throw rays past the planet limb.
     effects.volumetricFog({
@@ -96,7 +95,7 @@ export function orbitalEffectsPass() {
       density: 0.03,
       color: "#24405e",
       intensity: 0.45,
-      volumetricQuality: "balanced"
+      volumetricQuality: "off"
     }),
     effects.colorGrade({ exposure: 1.28, contrast: 1.04, saturation: 1.35 }),
     effects.vignette({ intensity: 0.22, smoothness: 1.6 }),
