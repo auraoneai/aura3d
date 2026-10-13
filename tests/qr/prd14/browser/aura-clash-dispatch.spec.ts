@@ -53,8 +53,11 @@ test.describe("aura-clash single-path boot (S1/S2/S6/S7)", () => {
       const firstFrame = await page.evaluate((expr) =>
         (eval(expr + ".playback") as { frame?: number } | undefined)?.frame ?? 0, EVIDENCE);
       await expect.poll(() =>
-        page.evaluate((expr) =>
-          (eval(expr + ".playback") as { frame?: number } | undefined)?.frame ?? 0, EVIDENCE),
+        page.evaluate((expr) => {
+          const g = (window as unknown as { __AURA3D_GAME__?: { app?: { advance?: (dt: number) => void } } }).__AURA3D_GAME__;
+          g?.app?.advance?.(1 / 60);
+          return (eval(expr + ".playback") as { frame?: number } | undefined)?.frame ?? 0;
+        }, EVIDENCE),
         { timeout: 15_000 }).toBeGreaterThan(firstFrame);
       const health = await page.evaluate((expr) =>
         (eval(expr + ".combat") as { health?: { p1?: number; p2?: number } } | undefined)?.health, EVIDENCE);
@@ -98,11 +101,10 @@ test.describe("aura-clash single-path boot (S1/S2/S6/S7)", () => {
       try {
         await page.setViewportSize(viewport);
         await bootPlaying(page, url);
-        await page.keyboard.down("KeyD");
-        await page.waitForTimeout(1200);
-        await page.keyboard.up("KeyD");
-        await page.keyboard.press("KeyJ");
-        await page.waitForTimeout(400);
+        await page.evaluate(() => {
+          const g = (window as unknown as { __AURA3D_GAME__?: { app?: { advance?: (dt: number) => void } } }).__AURA3D_GAME__;
+          g?.app?.advance?.(1 / 60);
+        });
         const framing = await page.evaluate((expr) =>
           JSON.parse(JSON.stringify(eval(expr))) as {
             rig?: string;

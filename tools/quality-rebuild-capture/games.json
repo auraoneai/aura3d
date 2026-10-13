@@ -75,6 +75,7 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
+        "route-aura-clash",
         "game",
         "camera",
         "lighting",

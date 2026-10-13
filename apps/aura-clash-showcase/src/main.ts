@@ -217,11 +217,26 @@ game.app.onFrame?.(({ dt }) => {
   game.hud.set("meter", `${Math.round((a1?.meter ?? 0) * 100)}%`);
 });
 
+game.app.camera?.use?.(rig, { blend: 0.4 });
+game.app.setOutput?.({ preset: "arena-fight", toneMapping: "aces", exposure: 2 ** EXPOSURE_EV });
+
+publishAuraClashEvidence({
+  game,
+  app: () => game.app,
+  snapshot: () => latestSnapshot,
+  // T2.2-post: appliedLook derives from the C-31 runtime manifest, not literals.
+  appliedLook: { preset: "arena-fight", ...lookManifest(game.lookSource()) },
+  animation: () => fighterAnimations.snapshot(),
+  audioCueLog: () => audioCueLog,
+  hitStopActive: () => performance.now() < hitStopUntilMs,
+  roundInfo: () => ({ round: round.number, timeLeft: round.timeLeft }),
+  bootedAtMs: performance.now(),
+  frameCount: () => frame
+});
+
 game.start();
 void game.ready().then(() => {
   fighterAnimations.bindNodes(game.app.nodes.get(P1_NODE), game.app.nodes.get(P2_NODE));
-  game.app.camera?.use?.(rig, { blend: 0.4 });
-    game.app.setOutput?.({ preset: "arena-fight",  toneMapping: "aces", exposure: 2 ** EXPOSURE_EV });
 
   const scenario = new URL(location.href).searchParams.get("scenario");
   if (scenario) {
@@ -234,20 +249,6 @@ void game.ready().then(() => {
       setRound: (n, t) => { round.number = n; round.timeLeft = t; }
     });
   }
-
-  publishAuraClashEvidence({
-    game,
-    app: () => game.app,
-    snapshot: () => latestSnapshot,
-    // T2.2-post: appliedLook derives from the C-31 runtime manifest, not literals.
-    appliedLook: { preset: "arena-fight", ...lookManifest(game.lookSource()) },
-    animation: () => fighterAnimations.snapshot(),
-    audioCueLog: () => audioCueLog,
-    hitStopActive: () => performance.now() < hitStopUntilMs,
-    roundInfo: () => ({ round: round.number, timeLeft: round.timeLeft }),
-    bootedAtMs: performance.now(),
-    frameCount: () => frame
-  });
 
   // C-24 beacon: live getters so audits/specs read the mounted app + session.
   (window as unknown as Record<string, unknown>).__AURA3D_GAME__ = {
