@@ -1,9 +1,11 @@
 /* T4.2 (PRD-15 Phase 4) — mountRenderer strict behaviour.
+ * 4.0 Live Fix E1 supersedes the flag-off expectation: there is no
+ * fallback renderer at any flag state.
  *
- *   strict on  → a C-29 `Renderer.create` that rejects surfaces as
- *                AuraRuntimeError("renderer-mount-failed") with the original
- *                error as `cause`; the non-production mode branch is skipped.
- *   strict off → the legacy safe-basic fallback still runs.
+ *   always → a C-29 `Renderer.create` that rejects surfaces as
+ *            AuraRuntimeError("renderer-mount-failed") with the original
+ *            error as `cause`; a non-production mode request is
+ *            AuraRuntimeError("backend-fallback") naming the removed mode.
  *
  * T4.3 (errorOverlay) — the overlay's details contract and DOM attach are
  * covered here against a minimal document double; the browser-level axe /
@@ -32,11 +34,6 @@ vi.mock("@aura3d/rendering", async (importOriginal) => {
   };
 });
 
-const FAKE_WEBGL_RENDERER = { kind: "legacy-webgl-fallback", dispose: () => undefined };
-vi.mock("../../../../packages/engine/src/agent-api/compiler/webglRuntime", () => ({
-  createWebGLSceneRenderer: async () => FAKE_WEBGL_RENDERER
-}));
-
 const eligibleSnapshot = (): AuraSceneSnapshot =>
   ({ schema: "aura3d-scene-snapshot/1.0", background: "#000000", diagnostics: { enabled: false }, nodes: [primitives.box({ size: 1 }).toJSON()], camera: { mode: "orbit", position: [0, 0, 5], target: [0, 0, 0] } });
 const canvas = () => ({ width: 800, height: 600, getContext: () => null }) as unknown as HTMLCanvasElement;
@@ -54,7 +51,7 @@ describe("T4.2 strict renderer mount", () => {
     expect((thrown as AuraRuntimeError).cause).toBe(MOUNT_FAILURE);
   });
 
-  it("strict: the non-production mode branch is skipped", async () => {
+  it("strict: a non-production mode request is rejected before mount", async () => {
     let thrown: unknown;
     try {
       await createProductionSceneRenderer(
@@ -69,17 +66,31 @@ describe("T4.2 strict renderer mount", () => {
       thrown = error;
     }
     expect(thrown).toBeInstanceOf(AuraRuntimeError);
+    expect((thrown as AuraRuntimeError).code).toBe("backend-fallback");
+  });
+
+  it("flag off: mount failure still throws — no safe-basic fallback remains", async () => {
+    let thrown: unknown;
+    try {
+      await createProductionSceneRenderer(canvas(), eligibleSnapshot(), undefined, undefined, resolveQrFlags({}));
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toBeInstanceOf(AuraRuntimeError);
     expect((thrown as AuraRuntimeError).code).toBe("renderer-mount-failed");
+    expect((thrown as AuraRuntimeError).cause).toBe(MOUNT_FAILURE);
   });
 
-  it("flag off: the legacy safe-basic fallback still runs", async () => {
-    const renderer = await createProductionSceneRenderer(canvas(), eligibleSnapshot(), undefined, undefined, resolveQrFlags({}));
-    expect(renderer).toBe(FAKE_WEBGL_RENDERER);
-  });
-
-  it("flag off: explicit non-production mode still takes the legacy branch", async () => {
-    const renderer = await createProductionSceneRenderer(canvas(), eligibleSnapshot(), { mode: "webgl" } as never, undefined, resolveQrFlags({}));
-    expect(renderer).toBe(FAKE_WEBGL_RENDERER);
+  it("flag off: explicit non-production mode is rejected, not silently rendered", async () => {
+    let thrown: unknown;
+    try {
+      await createProductionSceneRenderer(canvas(), eligibleSnapshot(), { mode: "webgl" } as never, undefined, resolveQrFlags({}));
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toBeInstanceOf(AuraRuntimeError);
+    expect((thrown as AuraRuntimeError).code).toBe("backend-fallback");
+    expect((thrown as AuraRuntimeError).message).toContain("safe-basic fallback renderer was removed");
   });
 });
 

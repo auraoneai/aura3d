@@ -51,7 +51,8 @@ describe("createAuraApp production bridge boundary", () => {
     expect(sceneRenderer).toContain("analyzeProductionBridgeEligibility");
     expect(sceneRenderer).toContain("createProductionRuntimeSceneRenderer");
     expect(sceneRenderer).toContain("production renderer rejected this scene");
-    expect(sceneRenderer).toContain("Production bridge failed and safe-basic fallback rendered instead:");
+    expect(sceneRenderer).toContain("production renderer failed to mount");
+    expect(sceneRenderer).not.toContain("safe-basic fallback rendered instead");
 
     expect(runtimeRenderer).toContain("createTypedGLBActor");
     expect(runtimeRenderer).toContain('node.role === "primaryWorld" ? { consolidateStaticMeshes: true }');
