@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   AudioContextManager,
   AudioMixer,
@@ -227,6 +227,32 @@ describe("audio characterization: engine GameAudio", () => {
     const evidence = await audio.unlock();
     expect(evidence).toBeTruthy();
     await audio.dispose();
+  });
+
+  it("probes audio formats from the root-absolute /probes/ base by default", async () => {
+    const fetched: string[] = [];
+    vi.stubGlobal("fetch", async (url: unknown) => {
+      fetched.push(String(url));
+      return { ok: true, arrayBuffer: async () => new ArrayBuffer(4) } as Response;
+    });
+    try {
+      const audio = createGameAudio({
+        context: gameContext(),
+        cues: {
+          hit: {
+            id: "hit", bus: "sfx",
+            asset: "/packs/game-sfx-core/ui.toggle.00.{format}"
+          }
+        }
+      });
+      await audio.unlock();
+      await audio.cue("hit").catch(() => undefined);
+      expect(fetched.length).toBeGreaterThan(0);
+      expect(fetched[0]).toBe("/probes/probe-20ms.opus.webm");
+      await audio.dispose();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it("reports cue playback through a subscribable callback", async () => {

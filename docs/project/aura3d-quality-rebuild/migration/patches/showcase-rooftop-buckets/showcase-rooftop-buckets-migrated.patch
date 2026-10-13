@@ -1,4 +1,4 @@
-From 6a54d6db17ba926ed4cae265001a81b30f845bad Mon Sep 17 00:00:00 2001
+From c24e9dfb877f5a35b0da1c187272728eedf9cb42 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:10:21 +0000
 Subject: [PATCH] migration(showcase-rooftop-buckets): regenerated patch set
@@ -19,9 +19,9 @@ Subject: [PATCH] migration(showcase-rooftop-buckets): regenerated patch set
  .../scripts/build-sfx.mjs                     | 236 -----
  .../scripts/write-performance-report.ts       | 112 ---
  apps/showcase-rooftop-buckets/src/evidence.ts |  17 +
- .../src/legacy/buckets-audio.ts               |  78 --
+ .../src/legacy/buckets-audio.ts               |  79 --
  .../src/legacy/environment.ts                 | 346 ++-----
- .../src/legacy/main.ts                        | 495 +++-------
+ .../src/legacy/main.ts                        | 509 ++++------
  .../src/scenario-drive.ts                     |  43 +
  .../src/scenarios/buzzer.ts                   |  13 +
  .../src/scenarios/fire.ts                     |  15 +
@@ -61,7 +61,7 @@ Subject: [PATCH] migration(showcase-rooftop-buckets): regenerated patch set
  .../rooftopBucketsSwishSfx.cc849aa5.wav       |   3 -
  .../rooftopBucketsSwishSfx.thumb.svg          |   1 -
  src/aura-assets.ts                            | 920 ------------------
- 56 files changed, 537 insertions(+), 2102 deletions(-)
+ 56 files changed, 539 insertions(+), 2115 deletions(-)
  delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/ambientRooftop.wav
  delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/boardThud.wav
  delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/brickMiss.wav
@@ -611,10 +611,10 @@ index 000000000..22630e2e1
 +};
 diff --git a/apps/showcase-rooftop-buckets/src/legacy/buckets-audio.ts b/apps/showcase-rooftop-buckets/src/legacy/buckets-audio.ts
 deleted file mode 100644
-index b5d13f936..000000000
+index 7cdc9bcca..000000000
 --- a/apps/showcase-rooftop-buckets/src/legacy/buckets-audio.ts
 +++ /dev/null
-@@ -1,78 +0,0 @@
+@@ -1,79 +0,0 @@
 -/**
 - * Audio controller for Rooftop Buckets.
 - */
@@ -683,7 +683,8 @@ index b5d13f936..000000000
 -    if (!audio) return;
 -    this.ambienceElement = audio;
 -    audio.loop = true;
--    audio.volume = 0.35;
+-    // Bed sits well under gameplay cues (the D-minor pad at 0.35 read as a drone).
+-    audio.volume = 0.15;
 -    audio.play().catch(() => {});
 -  }
 -
@@ -1243,7 +1244,7 @@ index 66e12be17..60320066a 100644
      instances.box({
        name: "night league glass bay",
 diff --git a/apps/showcase-rooftop-buckets/src/legacy/main.ts b/apps/showcase-rooftop-buckets/src/legacy/main.ts
-index a6e10a628..6dfdea8cf 100644
+index 24bfc1196..6dfdea8cf 100644
 --- a/apps/showcase-rooftop-buckets/src/legacy/main.ts
 +++ b/apps/showcase-rooftop-buckets/src/legacy/main.ts
 @@ -2,7 +2,6 @@
@@ -1254,20 +1255,29 @@ index a6e10a628..6dfdea8cf 100644
    scene,
    camera,
    lights,
-@@ -43,17 +42,19 @@ import {
+@@ -13,7 +12,6 @@ import {
+   effects,
+   type AuraRuntimeNodeHandle
+ } from "@aura3d/engine";
+-import { POST_V2_EXPOSURE, withPostV2Bloom } from "./post-v2-retune";
+ import { assets } from "../../../../src/aura-assets";
+ import {
+   COURT_SPOTS,
+@@ -44,18 +42,19 @@ import {
    type GameScoreState
  } from "../gameplay/scoring";
  import { createRooftopDressing } from "./environment";
+-import { createRooftopEffectsPass } from "./effects-pass";
 -import { BucketsAudioController } from "./buckets-audio";
 -
--const visualReviewCapture =
--  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("capture") === "review";
+-// Shipped play view only: no ?capture review lens (PRD-09 capture parity).
+-const visualReviewCapture: boolean = false;
 -// Keep the heavyweight 191-joint clip actors opt-in for the standalone
 -// animation/debug harness. The normal game/review lane uses the lighter
 -// registered raised-pose counterparts, which keeps the visual pass within its
 -// documented draw-call budget while the route's clip state remains observable.
--const animationDebugCapture =
--  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "animation";
+-// No ?debug harness in the shipped route (PRD-09 forbidden-param probe).
+-const animationDebugCapture: boolean = false;
 -if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 +import {
 +  createFxParticlePass,
@@ -1285,7 +1295,7 @@ index a6e10a628..6dfdea8cf 100644
  
  export interface RooftopBucketsEvidence {
    status: string;
-@@ -134,7 +135,7 @@ const ATHLETE_MODEL_SCALE = 1.18;
+@@ -136,7 +135,7 @@ const ATHLETE_MODEL_SCALE = 1.18;
  // contest partner visually subordinate to the venue slab; a modestly larger
  // scale keeps feet grounded while giving the players the screen weight of a
  // sports broadcast without changing collision regions or shot math.
@@ -1294,7 +1304,7 @@ index a6e10a628..6dfdea8cf 100644
  // The release GLBs report a raw minimum Y of -1.016.  Account for the
  // route's authored model scale so the feet stay on the 16x14 court slab.
  const ATHLETE_FLOOR_OFFSET = 1.016 * ATHLETE_MODEL_SCALE;
-@@ -189,7 +190,7 @@ const COURT_REVIEW_HIDDEN_NODES = [
+@@ -191,7 +190,7 @@ const COURT_REVIEW_HIDDEN_NODES = [
  ] as const;
  
  // ---------------- Game State ----------------
@@ -1303,7 +1313,7 @@ index a6e10a628..6dfdea8cf 100644
  
  let scoreState: GameScoreState = initialScoreState(1);
  let currentSpotIndex = 0;
-@@ -217,7 +218,7 @@ let touchShootHeld = false;
+@@ -219,7 +218,7 @@ let touchShootHeld = false;
  // These are actual embedded GLB clip names.  The route still exposes the
  // deterministic state machine separately so evidence can distinguish clip
  // sampling from root translation and ballistic ownership.
@@ -1312,7 +1322,7 @@ index a6e10a628..6dfdea8cf 100644
  let defenderAnimationState = "hidden";
  let shooterMotionPhase = "ready";
  let defenderMotionPhase = "hidden";
-@@ -249,6 +250,7 @@ const elModalBtn = document.getElementById("rb-modal-btn")!;
+@@ -251,6 +250,7 @@ const elModalBtn = document.getElementById("rb-modal-btn")!;
  elModalBtn.addEventListener("click", () => {
    if (scoreState.state === "heat-cleared") {
      scoreState = advanceHeat(scoreState);
@@ -1320,7 +1330,7 @@ index a6e10a628..6dfdea8cf 100644
      currentSpotIndex = scoreState.heat === 2 ? 0 : currentSpotIndex;
      hoopState = initialHoopState(scoreState.heat);
      audio.playCue("heatAdvance", 0.9);
-@@ -319,9 +321,9 @@ const flightMaterial = material.emissive({
+@@ -321,9 +321,9 @@ const flightMaterial = material.emissive({
    // The review tracer is a deliberate broadcast accent: warm gold/orange
    // separates the genuine typed ball from the cool venue while retaining the
    // same bounded samples used by the gameplay guide.
@@ -1333,7 +1343,7 @@ index a6e10a628..6dfdea8cf 100644
  });
  const goldMaterial = material.emissive({ name: "gold-ball-live", color: "#fbbf24", emissive: "#d97706" });
  const orangeMaterial = material.pbr({
-@@ -344,7 +346,7 @@ const rimGlowMaterial = material.emissive({
+@@ -346,7 +346,7 @@ const rimGlowMaterial = material.emissive({
    name: "readable-rim-contact halo",
    color: "#ffd166",
    emissive: "#f97316",
@@ -1342,7 +1352,7 @@ index a6e10a628..6dfdea8cf 100644
    opacity: 0.82
  });
  const fireHaloMaterial = material.emissive({ name: "fire-streak-halo", color: "#fbbf24", emissive: "#f97316" });
-@@ -362,7 +364,7 @@ const contestSparkMaterial = material.emissive({
+@@ -364,7 +364,7 @@ const contestSparkMaterial = material.emissive({
    name: "contest hand sparks",
    color: "#f5d0fe",
    emissive: "#c026d3",
@@ -1351,12 +1361,24 @@ index a6e10a628..6dfdea8cf 100644
    opacity: 0.84
  });
  function buildScene() {
-@@ -376,20 +378,20 @@ function buildScene() {
+@@ -373,30 +373,25 @@ function buildScene() {
+     .addMany([
+       // Atmospheric & Lighting Setup
+       effects.fog({ name: "dusk haze", density: 0.005, color: "#24173f", intensity: 0.14 }),
+-      withPostV2Bloom(effects.neonBloom({ intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 })),
+-      effects.colorGrade({ exposure: 1.04 * POST_V2_EXPOSURE, contrast: 1.06, saturation: 1.1 }),
++      effects.neonBloom({ intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
++      effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }),
        effects.antiAlias({ mode: "fxaa" }),
        // A restrained arena rig leaves real surface gradients on the court and
        // typed characters instead of flattening every material into emissive UI.
 -      lights.ambient({ color: "#8098c8", intensity: visualReviewCapture ? 0.72 : 1.32 }),
--      lights.directional({ color: "#fff3d6", intensity: visualReviewCapture ? 2.75 : 3.6 }).position(8, 20, 10),
+-      lights.directional({
+-        color: "#fff3d6",
+-        intensity: visualReviewCapture ? 2.75 : 3.6,
+-        // Effects pass: cascaded PCSS sun shadows across the court.
+-        shadow: { cascades: 1, mapSize: 1024, filter: "pcss", softness: 1.1, intensity: 0.9 }
+-      }).position(8, 20, 10),
 -      lights.point({ name: "scorer warm key", color: "#ffd6a0", intensity: visualReviewCapture ? 4.15 : 4.4 }).position(-4.0, 4.6, 5.4),
 -      lights.point({ name: "defender cool rim", color: "#79dcff", intensity: visualReviewCapture ? 3.45 : 3.4 }).position(1.5, 4.4, 3.3),
 -      lights.point({ name: "hoop amber practical", color: "#ffad58", intensity: visualReviewCapture ? 2.55 : 3.4 }).position(0.8, 4.8, -0.1),
@@ -1382,7 +1404,7 @@ index a6e10a628..6dfdea8cf 100644
        // A broad two-source stage rig keeps the actual textured athletes from
        // reading as flat silhouettes against the pavilion.  The cool front
        // softbox resolves jersey folds, skin, and shoes; the warm side card
-@@ -399,20 +401,20 @@ function buildScene() {
+@@ -406,20 +401,20 @@ function buildScene() {
        lights.rect({
          name: "review athlete front softbox",
          color: "#fff4e5",
@@ -1406,7 +1428,7 @@ index a6e10a628..6dfdea8cf 100644
  
        // The V2 venue is a registered, release-probed authored environment
        // package (service towers, stepped bleachers, handrails, banners, and
-@@ -451,7 +453,7 @@ function buildScene() {
+@@ -458,7 +453,7 @@ function buildScene() {
          // bleacher materials in the review frame. A modest review-only scale
          // gives the athletes and hoop the focal weight instead of letting the
          // rear seating geometry swallow the action.
@@ -1415,7 +1437,7 @@ index a6e10a628..6dfdea8cf 100644
          .position(0, -0.1, 4),
  
        // Hoop Backboard
-@@ -483,7 +485,7 @@ function buildScene() {
+@@ -490,7 +485,7 @@ function buildScene() {
        primitives.torus({ name: "rim target contact halo", material: rimGlowMaterial })
          .position(HOOP_BASE_POSITION.x, HOOP_BASE_POSITION.y, HOOP_BASE_POSITION.z + 0.12)
          .rotate(-Math.PI / 2, 0, 0)
@@ -1424,7 +1446,7 @@ index a6e10a628..6dfdea8cf 100644
          .runtime(rimReadabilityHandle),
        // The authored venue owns the target box and open net assembly. Keep a
        // single lower gather ring here so the goal reads as one constructed
-@@ -494,46 +496,6 @@ function buildScene() {
+@@ -501,46 +496,6 @@ function buildScene() {
          .scale([0.19, 0.19, 0.024])
          .runtime(netPulseHandle),
  
@@ -1471,7 +1493,7 @@ index a6e10a628..6dfdea8cf 100644
        // Presentation athletes are registered CC-BY-4.0 derivatives with
        // continuous textured meshes and authored raised-shot/contest poses.
        // They are visual counterparts to the hidden skinned clip actors above;
-@@ -604,14 +566,14 @@ function buildScene() {
+@@ -611,14 +566,14 @@ function buildScene() {
          // The generated sphere has unit diameter.  The slightly enlarged
          // broadcast ball keeps release/contact causality legible at the
          // sideline camera while the route-owned collider remains 0.12m.
@@ -1488,7 +1510,7 @@ index a6e10a628..6dfdea8cf 100644
          primitives
            .cylinder({
              name: `spot-marker-${s.id}`,
-@@ -622,12 +584,12 @@ function buildScene() {
+@@ -629,12 +584,12 @@ function buildScene() {
              })
            })
            .position(s.x, 0.05, s.z)
@@ -1504,7 +1526,7 @@ index a6e10a628..6dfdea8cf 100644
            .runtime(game.runtimeNode(`aim-point-${index}`, { tags: ["aim-guide", "bounded-first-flight"] }))
        ),
        // Closely connected renderer-owned segments turn the same bounded
-@@ -644,18 +606,8 @@ function buildScene() {
+@@ -651,18 +606,8 @@ function buildScene() {
        primitives.torus({ name: "live ball flight halo", material: flightMaterial })
          .position(0, -20, 0)
          .rotate(-Math.PI / 2, 0, 0)
@@ -1524,7 +1546,16 @@ index a6e10a628..6dfdea8cf 100644
        primitives.torus({ name: "rim contact burst", material: contactMakeMaterial })
          .position(0, -20, 0)
          .scale([0.64, 0.64, 0.05])
-@@ -712,7 +664,7 @@ function buildScene() {
+@@ -713,16 +658,13 @@ function buildScene() {
+         .scale([1.05, 1.05, 0.075])
+         .runtime(outcomeHaloHandle)
+     ])
+-    .addMany(createRooftopEffectsPass({
+-      reducedMotion: typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+-    }))
+     .camera(
+       camera.perspective({
+         // The review lens is a sideline action camera: shooter, live arc,
          // airborne defender, and rim share one readable diagonal. It is close
          // enough for the verified athletes to read as characters while still
          // retaining court grounding and the complete ballistic chain.
@@ -1533,7 +1564,7 @@ index a6e10a628..6dfdea8cf 100644
          // Pan the sideline lens toward the shooter while keeping the hoop and
          // airborne defender in the same broadcast frame. The larger typed
          // athletes now occupy the action center instead of clipping against
-@@ -721,21 +673,24 @@ function buildScene() {
+@@ -731,21 +673,24 @@ function buildScene() {
          // grounded shooter fully in frame while retaining the backboard/rim as
          // the hero anchor. This is a framing correction paired with the
          // presentation-asset pass above, not a camera-only substitute for art.
@@ -1562,7 +1593,7 @@ index a6e10a628..6dfdea8cf 100644
    // Keep the exact capture on the same production GLB path as the standalone
    // asset probes.  The game runtime remains the gameplay owner, while the
    // renderer setting makes the route's typed athletes/court use the audited
-@@ -752,32 +707,66 @@ const gameApp = createGameApp("#canvas-host", {
+@@ -762,32 +707,66 @@ const gameApp = createGameApp("#canvas-host", {
        aimUp: ["KeyW", "ArrowUp"],
        aimDown: ["KeyS", "ArrowDown"],
        shoot: ["Space"],
@@ -1641,7 +1672,7 @@ index a6e10a628..6dfdea8cf 100644
      event.preventDefault();
      changeSpot(-1);
    } else if (!event.repeat && (event.code === "KeyD" || event.code === "ArrowRight")) {
-@@ -795,7 +784,6 @@ function changeSpot(delta: number): void {
+@@ -805,7 +784,6 @@ function changeSpot(delta: number): void {
    resetBallToSpot();
    updateHUD();
    syncTransforms();
@@ -1649,7 +1680,7 @@ index a6e10a628..6dfdea8cf 100644
  }
  
  document.getElementById("rb-touch-spot-left")?.addEventListener("click", () => changeSpot(-1));
-@@ -828,7 +816,6 @@ function fullReset(): void {
+@@ -838,7 +816,6 @@ function fullReset(): void {
    hoopState = initialHoopState(1);
    resetBallToSpot();
    updateHUD();
@@ -1657,7 +1688,7 @@ index a6e10a628..6dfdea8cf 100644
  }
  
  function releaseShot(powerOverride?: number, pitchOverride?: number): void {
-@@ -923,17 +910,20 @@ function triggerContactFx(
+@@ -933,17 +910,20 @@ function triggerContactFx(
    // score, sensor, or heat state.
    contactFxTimer = 0.82;
    contactFxPosition = { ...position };
@@ -1679,7 +1710,7 @@ index a6e10a628..6dfdea8cf 100644
      return;
    }
  
-@@ -1015,9 +1005,14 @@ function stepGame(dt: number): void {
+@@ -1025,9 +1005,14 @@ function stepGame(dt: number): void {
  
        if (scoreEvent.isFireIgnited) {
          audio.playCue("fireIgnite", 0.9);
@@ -1694,7 +1725,7 @@ index a6e10a628..6dfdea8cf 100644
  
        if (scoreState.state === "playing") {
          resetBallToSpot();
-@@ -1037,12 +1032,12 @@ function stepGame(dt: number): void {
+@@ -1047,12 +1032,12 @@ function stepGame(dt: number): void {
  
    if (clockEvent.isGameOver) {
      audio.playCue("buzzerFail", 0.95);
@@ -1708,7 +1739,7 @@ index a6e10a628..6dfdea8cf 100644
  }
  
  function syncTransforms(): void {
-@@ -1078,9 +1073,7 @@ function syncTransforms(): void {
+@@ -1088,9 +1073,7 @@ function syncTransforms(): void {
      : isCharging
        ? "compression"
        : "ready";
@@ -1719,7 +1750,7 @@ index a6e10a628..6dfdea8cf 100644
    const hoopDx = hoopState.x - currentSpot.x;
    const hoopDz = hoopState.z - currentSpot.z;
    const hoopDistance = Math.max(0.001, Math.hypot(hoopDx, hoopDz));
-@@ -1088,9 +1081,7 @@ function syncTransforms(): void {
+@@ -1098,9 +1081,7 @@ function syncTransforms(): void {
    // compresses behind the spot, rises through release, and lands slightly
        // toward the hoop. It complements the continuous pose-authored athlete
        // meshes rather than presenting an ungrounded label-only animation state.
@@ -1730,7 +1761,7 @@ index a6e10a628..6dfdea8cf 100644
    const shooterX = currentSpot.x + (hoopDx / hoopDistance) * releaseDrive;
    const shooterZ = currentSpot.z + (hoopDz / hoopDistance) * releaseDrive;
    // The registered athlete GLB has authored bounds below the origin. Keep its
-@@ -1116,61 +1107,8 @@ function syncTransforms(): void {
+@@ -1126,61 +1107,8 @@ function syncTransforms(): void {
        PRESENTATION_ATHLETE_SCALE + releaseExtension * 0.06 - shooterBodyCompression * 0.045,
        PRESENTATION_ATHLETE_SCALE + shooterBodyCompression * 0.018
      ]);
@@ -1792,7 +1823,7 @@ index a6e10a628..6dfdea8cf 100644
  
    const ballNode = app.nodes.get("ball-hero") as AuraRuntimeNodeHandle | undefined;
    ballNode?.setPosition(ballState.x, ballState.y, ballState.z);
-@@ -1225,7 +1163,7 @@ function syncTransforms(): void {
+@@ -1235,7 +1163,7 @@ function syncTransforms(): void {
    rimReadabilityNode
      ?.setPosition(hoopState.x, hoopState.y, hoopState.z + 0.12)
      .setMaterial(rimGlowMaterial)
@@ -1801,7 +1832,7 @@ index a6e10a628..6dfdea8cf 100644
  
    const backboardNode = app.nodes.get("backboard-assembly") as AuraRuntimeNodeHandle | undefined;
    backboardNode?.setPosition(hoopState.x, BACKBOARD_POSITION.y, BACKBOARD_POSITION.z);
-@@ -1247,11 +1185,10 @@ function syncTransforms(): void {
+@@ -1257,11 +1185,10 @@ function syncTransforms(): void {
      // the visible typed presentation athlete's airborne root.
      const contestLift = Math.max(0, hoopState.defenderY - 0.9);
      const airborne = Math.min(1, contestLift / 1.2);
@@ -1814,7 +1845,7 @@ index a6e10a628..6dfdea8cf 100644
      const defenderX = hoopState.defenderX + (ballDx / ballPlanarDistance) * defenderReach;
      const defenderZ = hoopState.defenderZ + (ballDz / ballPlanarDistance) * defenderReach;
      defenderNode?.setPosition(defenderX, ATHLETE_FLOOR_OFFSET + contestLift, defenderZ);
-@@ -1267,41 +1204,6 @@ function syncTransforms(): void {
+@@ -1277,41 +1204,6 @@ function syncTransforms(): void {
          PRESENTATION_ATHLETE_SCALE + airborne * 0.08,
          PRESENTATION_ATHLETE_SCALE - airborne * 0.015
        ]);
@@ -1856,7 +1887,7 @@ index a6e10a628..6dfdea8cf 100644
    } else if (warmupPartnerVisible) {
      // The inactive partner is placed on the weak side of the key in a
      // grounded, defensive-ready stance.  It is still the registered typed
-@@ -1316,10 +1218,6 @@ function syncTransforms(): void {
+@@ -1326,10 +1218,6 @@ function syncTransforms(): void {
        ?.setPosition(warmupX, warmupY, warmupZ)
        .setRotation(-0.04 + warmupSway, 0.42, -0.06)
        .setScale([PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE * 1.02, PRESENTATION_ATHLETE_SCALE]);
@@ -1867,7 +1898,7 @@ index a6e10a628..6dfdea8cf 100644
    }
    const defenderShadow = app.nodes.get("defender-contact-shadow") as AuraRuntimeNodeHandle | undefined;
    defenderShadow?.setVisible(hoopState.defenderActive);
-@@ -1332,10 +1230,6 @@ function syncTransforms(): void {
+@@ -1342,10 +1230,6 @@ function syncTransforms(): void {
        0.026,
        hoopState.defenderZ + (ballDz / ballPlanarDistance) * defenderReach
      );
@@ -1878,7 +1909,7 @@ index a6e10a628..6dfdea8cf 100644
    }
    const defenderPressureVisible = hoopState.defenderActive && hoopState.mode === "pressure";
    const pressureAura = app.nodes.get("defender-pressure-aura") as AuraRuntimeNodeHandle | undefined;
-@@ -1376,7 +1270,7 @@ function syncTransforms(): void {
+@@ -1386,7 +1270,7 @@ function syncTransforms(): void {
        : contactMakeMaterial;
    contactBurst?.setVisible(contactFxActive);
    if (contactFxActive) {
@@ -1887,7 +1918,7 @@ index a6e10a628..6dfdea8cf 100644
      contactBurst
        ?.setPosition(contactFxPosition.x, contactFxPosition.y, contactFxPosition.z)
        .setMaterial(contactMaterial)
-@@ -1404,7 +1298,7 @@ function syncTransforms(): void {
+@@ -1414,7 +1298,7 @@ function syncTransforms(): void {
      if (!contactFxActive) continue;
      const angle = (index / contactRayHandles.length) * Math.PI * 2 + contactProgress * 0.26;
      const radius = 0.18 + contactProgress * 0.52;
@@ -1896,7 +1927,7 @@ index a6e10a628..6dfdea8cf 100644
      ray
        ?.setPosition(
          contactFxPosition.x + Math.cos(angle) * radius,
-@@ -1412,7 +1306,7 @@ function syncTransforms(): void {
+@@ -1422,7 +1306,7 @@ function syncTransforms(): void {
          contactFxPosition.z + 0.015
        )
        .setRotation(0, 0, angle)
@@ -1905,7 +1936,7 @@ index a6e10a628..6dfdea8cf 100644
        .setMaterial(contactMaterial);
    }
  
-@@ -1436,9 +1330,9 @@ function syncTransforms(): void {
+@@ -1446,9 +1330,9 @@ function syncTransforms(): void {
        )
        .setRotation(0, 0, angle)
        .setScale([
@@ -1918,7 +1949,7 @@ index a6e10a628..6dfdea8cf 100644
        ]);
    }
  
-@@ -1453,7 +1347,7 @@ function syncTransforms(): void {
+@@ -1463,7 +1347,7 @@ function syncTransforms(): void {
    const contestDz = ballState.z - defenderHand.z;
    const contestDistance = Math.max(0.001, Math.hypot(contestDx, contestDy, contestDz));
    contestReactionActive = Boolean(
@@ -1927,7 +1958,7 @@ index a6e10a628..6dfdea8cf 100644
      hoopState.defenderActive &&
      hoopState.defenderTelegraph === "contest" &&
      ballState.inFlight &&
-@@ -1530,9 +1424,9 @@ function syncTransforms(): void {
+@@ -1540,9 +1424,9 @@ function syncTransforms(): void {
        // preserve the full truthful prediction while avoiding a thick tube that
        // visually competes with the typed ball and athlete silhouettes.
        .setScale([
@@ -1940,7 +1971,7 @@ index a6e10a628..6dfdea8cf 100644
        ]);
    }
  }
-@@ -1541,18 +1435,17 @@ function syncTransforms(): void {
+@@ -1551,18 +1435,17 @@ function syncTransforms(): void {
  app.onFrame((frame) => {
    const dt = typeof frame === "number" ? frame : (frame?.dt ?? 1 / 60);
    stepGame(Math.min(dt, 0.05));
@@ -1961,7 +1992,7 @@ index a6e10a628..6dfdea8cf 100644
      currentSpotId: COURT_SPOTS[currentSpotIndex]!.id,
      score: scoreState.score,
      target: scoreState.target,
-@@ -1603,15 +1496,14 @@ function publishEvidence(): RooftopBucketsEvidence {
+@@ -1613,15 +1496,14 @@ function publishEvidence(): RooftopBucketsEvidence {
      ballPos: { x: ballState.x, y: ballState.y, z: ballState.z },
      hoopPos: { x: hoopState.x, y: hoopState.y, z: hoopState.z }
    };
@@ -1979,7 +2010,7 @@ index a6e10a628..6dfdea8cf 100644
  }).__RB_PUMP__ = (frames: number) => {
    for (let i = 0; i < frames; i++) {
      stepGame(1 / 60);
-@@ -1632,43 +1524,13 @@ function publishEvidence(): RooftopBucketsEvidence {
+@@ -1642,43 +1524,13 @@ function publishEvidence(): RooftopBucketsEvidence {
  // opening mannequin/charge pose.  All state comes from the same route-owned
  // updateHoop/stepBall functions used by normal play; there is no alternate
  // capture-only trajectory or scoring shortcut.
@@ -2028,7 +2059,7 @@ index a6e10a628..6dfdea8cf 100644
      const spot = COURT_SPOTS[spotIndex]!;
      scoreState = recordShotOutcome(scoreState, outcome, spot.points, gold, spot.id).state;
      if (outcome === "swish") {
-@@ -1682,71 +1544,41 @@ function stageActiveReviewShot(): void {
+@@ -1692,71 +1544,41 @@ function stageActiveReviewShot(): void {
        audio.playCue("brickMiss", 0.7);
        triggerContactFx("rim", { x: hoopState.x, y: hoopState.y, z: hoopState.z });
      }
@@ -2132,7 +2163,7 @@ index a6e10a628..6dfdea8cf 100644
  
  Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
    configurable: true,
-@@ -1766,7 +1598,6 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+@@ -1776,7 +1598,6 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
        gameApp.pause();
        app.pause();
        await app.stepAsync(0);
@@ -2140,7 +2171,7 @@ index a6e10a628..6dfdea8cf 100644
      },
      async setSubjectSuppressed(suppressed: boolean) {
        gameApp.pause();
-@@ -1788,5 +1619,3 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+@@ -1798,5 +1619,3 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
      }
    }
  });

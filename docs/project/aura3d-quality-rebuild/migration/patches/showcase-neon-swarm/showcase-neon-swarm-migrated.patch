@@ -1,4 +1,4 @@
-From 396a5fa1679f7f0ee29d75dfb308d6b74850d55a Mon Sep 17 00:00:00 2001
+From 0b173dda6dbf59addd4d829c3f2a5954582fa38c Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:09:15 +0000
 Subject: [PATCH] migration(showcase-neon-swarm): regenerated patch set
@@ -8,12 +8,12 @@ Subject: [PATCH] migration(showcase-neon-swarm): regenerated patch set
  apps/showcase-neon-swarm/package.json         |   3 +-
  apps/showcase-neon-swarm/src/evidence.ts      |  16 +
  .../showcase-neon-swarm/src/gameplay/swarm.ts |   3 +-
- .../src/legacy/environment.ts                 |  60 +--
- apps/showcase-neon-swarm/src/legacy/main.ts   | 408 +++++++++---------
+ .../src/legacy/environment.ts                 |  64 +--
+ apps/showcase-neon-swarm/src/legacy/main.ts   | 417 ++++++++----------
  .../showcase-neon-swarm/src/scenario-drive.ts |  22 +
  .../src/scenarios/index.ts                    |  17 +
  apps/showcase-neon-swarm/src/v2/boot.ts       |  20 +-
- 8 files changed, 264 insertions(+), 285 deletions(-)
+ 8 files changed, 267 insertions(+), 295 deletions(-)
  create mode 100644 apps/showcase-neon-swarm/src/evidence.ts
  create mode 100644 apps/showcase-neon-swarm/src/scenario-drive.ts
  create mode 100644 apps/showcase-neon-swarm/src/scenarios/index.ts
@@ -76,10 +76,10 @@ index abe156c4d..c2ceeb083 100644
        if (isElite && drone.burstRemaining > 0) scale *= 1.12;
        const profile = i % 6;
 diff --git a/apps/showcase-neon-swarm/src/legacy/environment.ts b/apps/showcase-neon-swarm/src/legacy/environment.ts
-index df7c0dcfe..fcb2c6921 100644
+index 8b865bc21..fcb2c6921 100644
 --- a/apps/showcase-neon-swarm/src/legacy/environment.ts
 +++ b/apps/showcase-neon-swarm/src/legacy/environment.ts
-@@ -9,24 +9,24 @@
+@@ -9,28 +9,24 @@
   */
  import { primitives, material, lights, type AuraSceneNode } from "@aura3d/engine";
  
@@ -98,6 +98,10 @@ index df7c0dcfe..fcb2c6921 100644
        name: "cyber-key-light",
        color: "#e0f2fe",
 -      intensity: reviewCapture ? 1.72 : 2.0
+-      // Perf pass: no key shadow. With the volumetric node gone the fps
+-      // still sat on the 0.85 gate (runs 38336941211/38338782607); the
+-      // shadow is the last full-scene extra render vs the pre-pass frame.
+-      // Grounding stays on the shipped AO + contact occlusion in main.ts.
 +      intensity:  2.0
      }).position(8, 20, 8).toJSON(),
      lights.directional({
@@ -108,7 +112,7 @@ index df7c0dcfe..fcb2c6921 100644
      }).position(-8, 16, -12).toJSON(),
      lights.point({
        name: "cyber-core-glow",
-@@ -35,58 +35,6 @@ export function createNeonSwarmDistrictDressing(reviewCapture = false): AuraScen
+@@ -39,58 +35,6 @@ export function createNeonSwarmDistrictDressing(reviewCapture = false): AuraScen
      }).position(0, 4.0, 0).toJSON()
    );
  
@@ -168,7 +172,7 @@ index df7c0dcfe..fcb2c6921 100644
    // props and instanced swarm. Keeping these rails in one small branch leaves
    // negative space for individual threat silhouettes and keeps the route's
 diff --git a/apps/showcase-neon-swarm/src/legacy/main.ts b/apps/showcase-neon-swarm/src/legacy/main.ts
-index 67b502753..f93118064 100644
+index 1dac90490..f93118064 100644
 --- a/apps/showcase-neon-swarm/src/legacy/main.ts
 +++ b/apps/showcase-neon-swarm/src/legacy/main.ts
 @@ -13,9 +13,19 @@
@@ -192,7 +196,23 @@ index 67b502753..f93118064 100644
    distanceLod,
    effects,
    game,
-@@ -122,16 +132,6 @@ declare global {
+@@ -27,7 +37,6 @@ import {
+   primitives,
+   scene
+ } from "@aura3d/engine";
+-import { POST_V2_CONTRAST, POST_V2_EXPOSURE, POST_V2_ON, withPostV2Bloom } from "./post-v2-retune";
+ import { assets } from "../../../../src/aura-assets";
+ import { createArenaLayout, playRect, spawnPointOnEdge } from "../gameplay/arena";
+ import { createNeonSwarmDistrictDressing } from "./environment";
+@@ -53,7 +62,6 @@ import { PICKUP_DOORS, riskPickupForWave, sensePickupDoors, senseRiskPickup } fr
+ import { createCombatFeel } from "./combat-feel";
+ import { createSwarmAudio, type SwarmAudioController, type SwarmAudioProof } from "./swarm-audio";
+ import { setupHud, type HudController } from "./hud";
+-import { createNeonSwarmEffectsPass } from "./effects-pass";
+ import {
+   FINALE_SURVIVAL_SECONDS,
+   MAX_CAMPAIGN_WAVES,
+@@ -124,16 +132,6 @@ declare global {
      __NEON_SWARM_EVIDENCE__?: NeonSwarmEvidence;
      __AURA3D_SHOWCASE_NEON_SWARM__?: NeonSwarmEvidence;
      __NEON_SWARM_DEBUG__?: NeonSwarmDebugHooks;
@@ -209,17 +229,17 @@ index 67b502753..f93118064 100644
    }
  }
  
-@@ -173,8 +173,7 @@ const INTERMISSION_FIRST_SECONDS = 3.2;
+@@ -175,8 +173,7 @@ const INTERMISSION_FIRST_SECONDS = 3.2;
  
  const reducedMotion = typeof window !== "undefined"
    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
--const visualReviewCapture = typeof window !== "undefined"
--  && new URLSearchParams(window.location.search).get("capture") === "review";
+-// Shipped play view only: no ?capture review lens (PRD-09 capture parity).
+-const visualReviewCapture: boolean = false;
 +
  // The retained desktop probe is a 1440x900 frame. Keep its camera language
  // closer to the actual horde-survival reference (player hierarchy first,
  // threats readable around a broad play pocket) without changing the gameplay
-@@ -186,8 +185,7 @@ const desktopComposition = typeof window !== "undefined"
+@@ -188,8 +185,7 @@ const desktopComposition = typeof window !== "undefined"
  // Normal play uses a compact authored lane so the instanced swarm remains the
  // visual subject and the route can prove its bounded draw contract. The full
  // dressing remains available to the dedicated art/provenance mode below.
@@ -229,7 +249,7 @@ index 67b502753..f93118064 100644
  
  const controls = [
    "WASD / arrows move",
-@@ -213,7 +211,7 @@ const claimBoundary =
+@@ -215,7 +211,7 @@ const claimBoundary =
  const arenaLayout = createArenaLayout();
  const rect = playRect(arenaLayout.bounds);
  
@@ -238,7 +258,7 @@ index 67b502753..f93118064 100644
  const combatFeel = createCombatFeel({ reducedMotion, reducedFlash: reducedMotion });
  
  function buildLaneStrips(): Array<{ position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }> {
-@@ -250,19 +248,19 @@ const canopyColors = canopyTransforms.map((_, index) =>
+@@ -252,19 +248,19 @@ const canopyColors = canopyTransforms.map((_, index) =>
  );
  
  const appScene = scene()
@@ -262,7 +282,7 @@ index 67b502753..f93118064 100644
      position: [0, -0.26, 0],
      // A lifted blue-gray base preserves the wet-street value structure under
      // emissive lanes and gives the typed courier a grounded shadow plane.
-@@ -276,7 +274,7 @@ const appScene = scene()
+@@ -278,7 +274,7 @@ const appScene = scene()
      transforms: laneStripTransforms,
      colors: laneStripTransforms.map((_, index) => (index % 2 === 0 ? "#ff4fd8" : "#35e6ff")),
      material: material.emissive({ color: "#101527", emissive: "#35e6ff" }),
@@ -271,7 +291,7 @@ index 67b502753..f93118064 100644
    }))
    .add(instances.sphere({
      name: "rain-garden canopy frame",
-@@ -288,7 +286,7 @@ const appScene = scene()
+@@ -290,7 +286,7 @@ const appScene = scene()
        roughness: 0.92,
        metallic: 0.02
      }),
@@ -280,7 +300,7 @@ index 67b502753..f93118064 100644
    }).runtime(game.runtimeNode("rain-garden-canopy-frame", {
      tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "organic-silhouette"]
    })));
-@@ -297,10 +295,10 @@ const appScene = scene()
+@@ -299,10 +295,10 @@ const appScene = scene()
  // shape, material rhythm, and near/mid depth. It is permanent arena geometry,
  // never a stand-in for an attack or simulation effect. The dark blades sit
  // below actors and deliberately leave the typed courier's footprint clear.
@@ -295,7 +315,7 @@ index 67b502753..f93118064 100644
    return primitives.box({
      name: `central rain-garden blade ${index}`,
      material: material.pbr({
-@@ -318,9 +316,9 @@ const rainGardenBlades = Array.from({ length: visualReviewCapture ? 0 : compactD
+@@ -320,9 +316,9 @@ const rainGardenBlades = Array.from({ length: visualReviewCapture ? 0 : compactD
      .position(Math.sin(angle) * radius, 0.035, 3 + Math.cos(angle) * radius)
      .rotate(0, angle, 0)
      .scale([
@@ -307,7 +327,7 @@ index 67b502753..f93118064 100644
      ])
      .runtime(game.runtimeNode(`neon-rain-garden-blade-${index}`, {
        tags: ["arena-language", "renderer-owned", "non-colliding", "material-depth"]
-@@ -336,7 +334,7 @@ appScene.addMany(rainGardenBlades);
+@@ -338,7 +334,7 @@ appScene.addMany(rainGardenBlades);
  // The compact default frame had the same black-horizon problem this block exists to
  // solve, but was switched off entirely. It now renders a reduced ring so the arena sits
  // in a place rather than floating in a void.
@@ -316,7 +336,7 @@ index 67b502753..f93118064 100644
    const side = index % 2 === 0 ? -1 : 1;
    const lane = Math.floor(index / 2);
    const z = -14 + lane * 4.35;
-@@ -395,8 +393,7 @@ appScene.add(
+@@ -397,8 +393,7 @@ appScene.add(
      transforms: skylineWindowTransforms,
      colors: skylineWindowColors,
      material: material.emissive({ name: "district window lattice material", color: "#35e6ff", emissive: "#35e6ff", emissiveIntensity: 0.34, opacity: 0.78 }),
@@ -326,7 +346,7 @@ index 67b502753..f93118064 100644
      tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "district-frame"]
    }))
  );
-@@ -423,15 +420,14 @@ appScene.add(
+@@ -425,15 +420,14 @@ appScene.add(
      transforms: districtCanopyTransforms,
      colors: districtCanopyColors,
      material: material.pbr({ name: "district canopy cluster material", color: "#1e4752", roughness: 0.88, metallic: 0.04 }),
@@ -344,7 +364,7 @@ index 67b502753..f93118064 100644
    const side = index % 2 === 0 ? -1 : 1;
    const lane = Math.floor(index / 2);
    const tint = index % 3 === 0 ? "#ffc857" : side < 0 ? "#35e6ff" : "#ff4fd8";
-@@ -589,41 +585,37 @@ const courierCoreRingNode = primitives.torus({
+@@ -591,41 +585,37 @@ const courierCoreRingNode = primitives.torus({
    tags: ["primary-actor-accent", "renderer-owned", "non-colliding"]
  }));
  appScene.add(courierCoreRingNode);
@@ -413,7 +433,7 @@ index 67b502753..f93118064 100644
    lampIndex += 1;
  }
  
-@@ -637,25 +629,6 @@ appScene.add(lights.point({ position: [-1.5, 4.5, 0], color: "#35e6ff", intensit
+@@ -639,25 +629,6 @@ appScene.add(lights.point({ position: [-1.5, 4.5, 0], color: "#35e6ff", intensit
  // The finale camera looks down the central street. These shallow median
  // islands add a near/mid/far rhythm to the frame without occupying the
  // courier's playable lane or changing any simulation bounds.
@@ -439,7 +459,7 @@ index 67b502753..f93118064 100644
  
  // distanceLod relay beacon: near reads as a glowing sphere, far collapses to a
  // compact box - the documented root-safe LOD helper used as set dressing.
-@@ -685,7 +658,7 @@ for (const door of PICKUP_DOORS) {
+@@ -687,7 +658,7 @@ for (const door of PICKUP_DOORS) {
  }
  
  appScene.add(
@@ -448,7 +468,7 @@ index 67b502753..f93118064 100644
      name: "courier avatar",
      role: "primaryCharacter",
      material: material.pbr({
-@@ -693,19 +666,19 @@ appScene.add(
+@@ -695,19 +666,19 @@ appScene.add(
        // The courier is the only pale value in the finale palette. That value
        // separation keeps the typed actor readable through 320 darker threats,
        // while cyan visor and magenta core accents retain its route identity.
@@ -476,7 +496,7 @@ index 67b502753..f93118064 100644
      .runtime(game.runtimeNode("neon-player", { tags: ["primary-actor", "typed-primary-asset"] }))
  );
  
-@@ -746,7 +719,7 @@ appScene.add(
+@@ -748,7 +719,7 @@ appScene.add(
  appScene.addMany([
    primitives.box({
      name: "courier pulse shot ray",
@@ -485,7 +505,7 @@ index 67b502753..f93118064 100644
      material: material.emissive({ color: "#8cf8ff", emissive: "#35e6ff", emissiveIntensity: 2.1 })
    }).position(0, -8, 0).runtime(game.runtimeNode("neon-pulse-shot-ray", { tags: ["actual-event-feedback", "pulse-fire"] })),
    primitives.torus({
-@@ -775,17 +748,16 @@ appScene.addMany(Array.from({ length: 6 }, (_, index) =>
+@@ -777,17 +748,16 @@ appScene.addMany(Array.from({ length: 6 }, (_, index) =>
  // the courier's movement/aim relationship legible even when the 320-drone
  // pool is active. It is scene geometry, not a DOM overlay or a simulation
  // shortcut; the ring never owns damage, collision, or scoring.
@@ -513,7 +533,7 @@ index 67b502753..f93118064 100644
  
  // Real burst readability: radial spokes are scene geometry, hidden until
  // fireBurst() runs the public burst transition. Damage and scoring still belong
-@@ -875,20 +847,6 @@ appScene.add(
+@@ -877,20 +847,6 @@ appScene.add(
  // instantiate 48 hidden GLB actors in normal play: hidden assets still consume
  // renderer/shadow bookkeeping and were pushing the default instancing producer
  // past its honest draw/memory budget before the first input was processed.
@@ -534,8 +554,12 @@ index 67b502753..f93118064 100644
  
  appScene.add(
    instances.sphere({
-@@ -903,8 +861,8 @@ appScene.add(
- appScene.add(effects.fog({ density: 0.02, color: "#070a14" }));
+@@ -902,19 +858,18 @@ appScene.add(
+   })
+ );
+ 
+-appScene.add(effects.fog({ density: 0.022, color: "#1c2a4a", intensity: 0.5 }));
++appScene.add(effects.fog({ density: 0.02, color: "#070a14" }));
  appScene.add(effects.ambientOcclusion({
    name: "district contact occlusion",
 -  intensity: visualReviewCapture ? 0.52 : 0.34,
@@ -545,7 +569,17 @@ index 67b502753..f93118064 100644
  }));
  appScene.add(effects.contactOcclusion({ name: "courier horde contact", intensity: 0.34, radius: 0.5 }));
  if (!reducedMotion) {
-@@ -920,10 +878,10 @@ appScene.camera(
+-  appScene.add(withPostV2Bloom(effects.bloom({ intensity: 0.42, color: "#35e6ff", quality: "balanced", softKnee: 0.5, shoulder: 0.6 })));
++  appScene.add(effects.bloom({ intensity: 0.42, color: "#35e6ff", quality: "balanced", softKnee: 0.5, shoulder: 0.6 }));
+ }
+-appScene.add(effects.colorGrade({ exposure: 1.05 * POST_V2_EXPOSURE, contrast: POST_V2_ON ? POST_V2_CONTRAST : 1.08, saturation: 1.12 }));
++appScene.add(effects.colorGrade({ exposure: 1.05, contrast: 1.08, saturation: 1.12 }));
+ appScene.add(effects.antiAlias({ mode: "fxaa" }));
+-appScene.addMany(createNeonSwarmEffectsPass({ reducedMotion }));
+ 
+ appScene.camera(
+   camera.follow({
+@@ -923,10 +878,10 @@ appScene.camera(
      // problem the player is solving: courier in a readable center pocket,
      // threats pressing from every edge, and the live pulse aimed through it.
      // Runtime play keeps the lower chase-biased camera below.
@@ -560,7 +594,7 @@ index 67b502753..f93118064 100644
    })
  );
  
-@@ -931,12 +889,47 @@ appScene.camera(
+@@ -934,12 +889,47 @@ appScene.camera(
  // App + systems
  // ---------------------------------------------------------------------------
  
@@ -610,7 +644,7 @@ index 67b502753..f93118064 100644
    }
  });
  
-@@ -974,6 +967,31 @@ const hud: HudController = setupHud(
+@@ -977,6 +967,31 @@ const hud: HudController = setupHud(
  );
  
  const audio: SwarmAudioController = createSwarmAudio();
@@ -642,7 +676,7 @@ index 67b502753..f93118064 100644
  const cameraDirector = game.cameraDirector({ baseFov: 41, distance: 19, reducedMotion });
  const gameEffects = game.effects({ poolSize: 48, reducedMotion, reducedFlash: reducedMotion });
  
-@@ -992,7 +1010,6 @@ let combo = 0;
+@@ -995,7 +1010,6 @@ let combo = 0;
  let maxCombo = 0;
  let comboDecayRemaining = 0;
  let seed = SEED_DEFAULT;
@@ -650,7 +684,7 @@ index 67b502753..f93118064 100644
  // Evidence-only finale hash excludes wall-clock combat drift.
  let debugFinaleHash: string | null = null;
  let intermissionRemaining = 0;
-@@ -1019,7 +1036,6 @@ let damageEvents = 0;
+@@ -1022,7 +1036,6 @@ let damageEvents = 0;
  let pickupActive = false;
  let pickupPosition = riskPickupForWave(1);
  let pickupsCollected = 0;
@@ -658,7 +692,7 @@ index 67b502753..f93118064 100644
  let burstFxRemaining = 0;
  let pulseFxRemaining = 0;
  let burstFxOrigin = { x: 0, z: 3 };
-@@ -1053,6 +1069,8 @@ function beginIntermission(seconds: number): void {
+@@ -1056,6 +1069,8 @@ function beginIntermission(seconds: number): void {
    if (wave > 0) {
      hud.showDoors();
      audio.cue("wave-clear").catch(() => undefined);
@@ -667,7 +701,7 @@ index 67b502753..f93118064 100644
      hud.showBanner("Wave " + wave + " clear", "Choose an upgrade door before the next wave");
    } else {
      hud.hideDoors();
-@@ -1077,6 +1095,7 @@ function startWave(next: number): void {
+@@ -1080,6 +1095,7 @@ function startWave(next: number): void {
    hud.hideDoors();
    hud.hideBanner();
    audio.cue("wave-start").catch(() => undefined);
@@ -675,7 +709,7 @@ index 67b502753..f93118064 100644
    hud.showBanner(
      wave === MAX_CAMPAIGN_WAVES
        ? "Finale - vector panic"
-@@ -1128,7 +1147,7 @@ function resetRun(newSeed?: number): void {
+@@ -1131,7 +1147,7 @@ function resetRun(newSeed?: number): void {
    app.nodes.get("neon-courier-pulse-muzzle-flash")?.setVisible(false);
    for (let index = 0; index < 8; index += 1) app.nodes.get("neon-burst-spoke-" + index)?.setVisible(false);
    burstRequested = false;
@@ -684,7 +718,7 @@ index 67b502753..f93118064 100644
    debugFinaleHash = null;
    beginIntermission(INTERMISSION_FIRST_SECONDS);
    hud.showBanner("Neon Swarm", "Five escalating waves. Read the opening, choose upgrades, survive the 320-drone finale.");
-@@ -1145,6 +1164,7 @@ function chooseDoor(kind: string): void {
+@@ -1148,6 +1164,7 @@ function chooseDoor(kind: string): void {
    upgrades.shieldCharges = next.shieldCharges;
    hud.markDoorChosen(kind);
    audio.cue("pickup").catch(() => undefined);
@@ -692,7 +726,7 @@ index 67b502753..f93118064 100644
    gameEffects.spawn("ring-shockwave", [door.x, 0.6, door.z], { color: "#ffc857", intensity: 0.8, duration: 0.5, radius: 2.2 });
    // An intermission choice can arrive from a HUD button click instead of the fixed
    // simulation step. Evidence is normally republished at the end of update(), so without
-@@ -1152,7 +1172,7 @@ function chooseDoor(kind: string): void {
+@@ -1155,7 +1172,7 @@ function chooseDoor(kind: string): void {
    // gameplay truth until the next frame, and not at all while rAF is suspended in a
    // backgrounded tab. Re-publish here so the projection can never contradict gameplay
    // state, exactly as the staged evidence paths below already do.
@@ -701,7 +735,7 @@ index 67b502753..f93118064 100644
  }
  
  function collectRiskPickup(): void {
-@@ -1167,6 +1187,7 @@ function collectRiskPickup(): void {
+@@ -1170,6 +1187,7 @@ function collectRiskPickup(): void {
    });
    combatFeel.spawnSparks({ x: pickupPosition.x, z: pickupPosition.z, count: 14, strength: 0.8 });
    audio.cue("pickup").catch(() => undefined);
@@ -709,7 +743,7 @@ index 67b502753..f93118064 100644
  }
  
  function firePulse(): void {
-@@ -1177,6 +1198,7 @@ function firePulse(): void {
+@@ -1180,6 +1198,7 @@ function firePulse(): void {
    if (result.hits > 0) {
      combatFeel.spawnSparks({ x: player.x + aim.x * 1.4, z: player.z + aim.z * 1.4, count: 4, strength: 0.55 });
      audio.cue("drone-hit").catch(() => undefined);
@@ -717,7 +751,7 @@ index 67b502753..f93118064 100644
    }
    gameEffects.spawn("shockwave", [player.x + aim.x * 2.2, 0.5, player.z + aim.z * 2.2], {
      color: "#35e6ff",
-@@ -1186,11 +1208,11 @@ function firePulse(): void {
+@@ -1189,11 +1208,11 @@ function firePulse(): void {
    });
    const pulseYaw = Math.atan2(aim.x, aim.z);
    app.nodes.get("neon-pulse-shot-ray")
@@ -731,7 +765,7 @@ index 67b502753..f93118064 100644
      .setRotation(Math.PI / 2, 0, 0)
      .setVisible(true);
    // Keep the event marker anchored to the carbine's +Z-facing basis so the
-@@ -1201,25 +1223,26 @@ function firePulse(): void {
+@@ -1204,25 +1223,26 @@ function firePulse(): void {
    app.nodes.get("neon-courier-pulse-muzzle-flash")
      ?.setPosition(
        player.x + aim.x * 1.14 + pulseRightX * 0.24,
@@ -762,7 +796,7 @@ index 67b502753..f93118064 100644
  }
  
  function handleDroneKilled(drone: { readonly x: number; readonly z: number }): void {
-@@ -1231,10 +1254,11 @@ function handleDroneKilled(drone: { readonly x: number; readonly z: number }): v
+@@ -1234,10 +1254,11 @@ function handleDroneKilled(drone: { readonly x: number; readonly z: number }): v
    burstCharge = Math.min(100, burstCharge + 10);
    combatFeel.spawnSparks({ x: drone.x, z: drone.z, count: 10, strength: 1 });
    audio.cue("drone-die").catch(() => undefined);
@@ -775,7 +809,7 @@ index 67b502753..f93118064 100644
    burstCharge = 0;
    bursts += 1;
    burstFxRemaining = 0.55;
-@@ -1258,6 +1282,7 @@ function fireBurst(): void {
+@@ -1261,6 +1282,7 @@ function fireBurst(): void {
    combatFeel.spawnSparks({ x: player.x, z: player.z, count: 24, strength: 1 });
    cameraDirector.impact(1.2, 0.22);
    audio.cue("burst").catch(() => undefined);
@@ -783,7 +817,7 @@ index 67b502753..f93118064 100644
  }
  
  function resolveAim(): { x: number; z: number } {
-@@ -1269,6 +1294,7 @@ function killPlayer(): void {
+@@ -1272,6 +1294,7 @@ function killPlayer(): void {
    runState = "dead";
    combo = 0;
    audio.cue("death-sting").catch(() => undefined);
@@ -791,7 +825,7 @@ index 67b502753..f93118064 100644
    if (score > bestScore) {
      bestScore = score;
      writeBestScore(bestScore);
-@@ -1278,7 +1304,7 @@ function killPlayer(): void {
+@@ -1281,7 +1304,7 @@ function killPlayer(): void {
  
  function completeRun(): void {
    runState = "complete";
@@ -800,7 +834,7 @@ index 67b502753..f93118064 100644
    combo = 0;
    audio.cue("wave-clear").catch(() => undefined);
    if (score > bestScore) {
-@@ -1317,7 +1343,7 @@ window.addEventListener("pointerdown", unlockAudioOnce);
+@@ -1320,7 +1343,7 @@ window.addEventListener("pointerdown", unlockAudioOnce);
  window.addEventListener("keydown", unlockAudioOnce);
  
  window.addEventListener("mousedown", (event) => {
@@ -809,7 +843,7 @@ index 67b502753..f93118064 100644
      firePulse();
      player.fireCooldownRemaining = DEFAULT_PLAYER_TUNING.fireCooldownSeconds * upgrades.fireRateMultiplier;
    }
-@@ -1392,8 +1418,12 @@ bindTouchStick(touchLayout.controls[1]?.id ?? "fire-stick", (dx, dz, active) =>
+@@ -1395,8 +1418,12 @@ bindTouchStick(touchLayout.controls[1]?.id ?? "fire-stick", (dx, dz, active) =>
  
  function update(dt: number): void {
    input.update(dt);
@@ -823,7 +857,7 @@ index 67b502753..f93118064 100644
    if (input.pressed("reset")) {
      seed = (seed * 1664525 + 1013904223) >>> 0;
      resetRun(seed);
-@@ -1403,8 +1433,8 @@ function update(dt: number): void {
+@@ -1406,8 +1433,8 @@ function update(dt: number): void {
      fireBurst();
    }
  
@@ -834,7 +868,7 @@ index 67b502753..f93118064 100644
      return;
    }
  
-@@ -1487,6 +1517,7 @@ function update(dt: number): void {
+@@ -1490,6 +1517,7 @@ function update(dt: number): void {
    }, dt, runRect);
    if (stepResult.dashed) {
      audio.cue("dash").catch(() => undefined);
@@ -842,7 +876,7 @@ index 67b502753..f93118064 100644
      cameraDirector.impact(0.5, 0.14);
      if (!reducedMotion) hud.flashVignette();
      gameEffects.spawn("dash-trail", [player.x, 0.5, player.z], { color: "#35e6ff", duration: 0.3, ownerId: "courier" });
-@@ -1516,19 +1547,19 @@ function update(dt: number): void {
+@@ -1519,19 +1547,19 @@ function update(dt: number): void {
      app.nodes.get("neon-courier-visor-accent")
        ?.setPosition(player.x + forwardX * 0.34, 2.22 + bob, player.z + forwardZ * 0.34)
        .setRotation(0, playerYaw, 0)
@@ -866,7 +900,7 @@ index 67b502753..f93118064 100644
  
      // Weapon attachment: slight right-hand offset plus forward reach keeps the
      // receiver distinct from the typed torso while preserving a clean player
-@@ -1596,23 +1627,7 @@ function update(dt: number): void {
+@@ -1599,23 +1627,7 @@ function update(dt: number): void {
      }
  
      swarm.step(dt, player, arenaLayout.obstacles, undefined, inset);
@@ -891,7 +925,7 @@ index 67b502753..f93118064 100644
  
      if (pickupActive && senseRiskPickup(player, pickupPosition)) collectRiskPickup();
  
-@@ -1628,6 +1643,7 @@ function update(dt: number): void {
+@@ -1631,6 +1643,7 @@ function update(dt: number): void {
            color: "#ffc857", intensity: 0.45, duration: 0.18, radius: 1.25
          });
          audio.cue("graze").catch(() => undefined);
@@ -899,7 +933,7 @@ index 67b502753..f93118064 100644
        }
      } else {
        grazeAccumulator = 0;
-@@ -1638,6 +1654,7 @@ function update(dt: number): void {
+@@ -1641,6 +1654,7 @@ function update(dt: number): void {
        if (dealt > 0) {
          damageEvents += 1;
          audio.cue("player-hurt").catch(() => undefined);
@@ -907,7 +941,7 @@ index 67b502753..f93118064 100644
          cameraDirector.impact(1, 0.2);
          if (!reducedMotion) hud.flashVignette();
          combatFeel.spawnSparks({ x: player.x, z: player.z, count: 6, strength: 0.6 });
-@@ -1668,7 +1685,7 @@ function update(dt: number): void {
+@@ -1671,7 +1685,7 @@ function update(dt: number): void {
      id: "courier",
      position: [player.x, 0.6, player.z] as const
    }]);
@@ -916,7 +950,7 @@ index 67b502753..f93118064 100644
  
    hud.update({
      state: runState,
-@@ -1685,14 +1702,14 @@ function update(dt: number): void {
+@@ -1688,14 +1702,14 @@ function update(dt: number): void {
      shieldCharges: upgrades.shieldCharges,
      dashReadyFraction: 1 - player.dashCooldownRemaining /
        Math.max(0.001, DEFAULT_PLAYER_TUNING.dashCooldownSeconds * upgrades.dashCooldownMultiplier),
@@ -934,7 +968,7 @@ index 67b502753..f93118064 100644
    const diagnostics = safeDiagnostics();
    const audioProof = audio.proof();
    const aliveGrunt = swarm.aliveGruntCount();
-@@ -1730,7 +1747,7 @@ function publishEvidence(): void {
+@@ -1733,7 +1747,7 @@ function publishEvidence(): void {
      maxHp: player.maxHp,
      kills,
      seed,
@@ -943,7 +977,7 @@ index 67b502753..f93118064 100644
      reducedMotion,
      audioCues: audioProof.recentCues,
      audioCueCount: audioProof.cueCount,
-@@ -1781,9 +1798,8 @@ function publishEvidence(): void {
+@@ -1784,9 +1798,8 @@ function publishEvidence(): void {
      physics: "none (intentionally non-physical deterministic game: authored kinematic swarm steering plus deterministic typed-array overlap queries for pulse hits, grazes, contact damage and pickup doors; no solver surface is imported, no rigid-body simulation or physical-parity claim)",
      claimBoundary
    };
@@ -954,7 +988,7 @@ index 67b502753..f93118064 100644
  }
  
  interface SafeDiagnostics {
-@@ -1946,7 +1962,7 @@ window.__NEON_SWARM_DEBUG__ = {
+@@ -1949,7 +1962,7 @@ window.__NEON_SWARM_DEBUG__ = {
      // 35-frame browser fixture, which would make the graze award depend on
      // frame timing rather than the simulation-owned countWithin query.
      swarm.spawn({ x: player.x + 2.05, z: player.z, archetype: "elite", speedMultiplier: 0 });
@@ -963,7 +997,7 @@ index 67b502753..f93118064 100644
    },
    stageBurstCluster(count = 10) {
      if (runState !== "wave-active") return;
-@@ -1968,7 +1984,7 @@ window.__NEON_SWARM_DEBUG__ = {
+@@ -1971,7 +1984,7 @@ window.__NEON_SWARM_DEBUG__ = {
          speedMultiplier: i === count - 1 ? 0 : 1
        });
      }
@@ -972,7 +1006,7 @@ index 67b502753..f93118064 100644
    },
    stagePickupAtPlayer() {
      if (runState !== "wave-active") return;
-@@ -1977,7 +1993,7 @@ window.__NEON_SWARM_DEBUG__ = {
+@@ -1980,7 +1993,7 @@ window.__NEON_SWARM_DEBUG__ = {
      app.nodes.get("swarm-pickup")
        ?.setPosition(pickupPosition.x, 1.1, pickupPosition.z)
        .setVisible(true);
@@ -981,7 +1015,7 @@ index 67b502753..f93118064 100644
    },
    stageContact() {
      if (runState !== "wave-active") return;
-@@ -1986,7 +2002,7 @@ window.__NEON_SWARM_DEBUG__ = {
+@@ -1989,7 +2002,7 @@ window.__NEON_SWARM_DEBUG__ = {
      player.invulnerableRemaining = 0;
      player.contactDebt = 0;
      swarm.spawn({ x: player.x, z: player.z, archetype: "grunt", speedMultiplier: 0 });
@@ -990,7 +1024,7 @@ index 67b502753..f93118064 100644
    },
    dumpDiagnostics() {
      try {
-@@ -1997,46 +2013,6 @@ window.__NEON_SWARM_DEBUG__ = {
+@@ -2000,46 +2013,6 @@ window.__NEON_SWARM_DEBUG__ = {
    }
  };
  
@@ -1037,7 +1071,7 @@ index 67b502753..f93118064 100644
  
  function requireHudElement(): HTMLElement {
    const el = document.querySelector("#hud");
-@@ -2051,4 +2027,4 @@ app.onFrame(({ time }) => {
+@@ -2054,4 +2027,4 @@ app.onFrame(({ time }) => {
  });
  
  resetRun(SEED_DEFAULT);

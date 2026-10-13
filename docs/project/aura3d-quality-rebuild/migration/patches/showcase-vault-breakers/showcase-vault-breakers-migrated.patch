@@ -1,4 +1,4 @@
-From ca151631dd6fb64d23de7e501133c829845dbe70 Mon Sep 17 00:00:00 2001
+From a6d98f9a9aebfced11d5547dd4cc2d3c27bb510f Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:11:00 +0000
 Subject: [PATCH] migration(showcase-vault-breakers): regenerated patch set
@@ -6,12 +6,12 @@ Subject: [PATCH] migration(showcase-vault-breakers): regenerated patch set
 
 ---
  apps/showcase-vault-breakers/package.json     |   3 +-
- apps/showcase-vault-breakers/src/evidence.ts  |   8 ++
- .../src/legacy/main.ts                        | 132 +++++++++++-------
+ apps/showcase-vault-breakers/src/evidence.ts  |   8 +
+ .../src/legacy/main.ts                        | 140 +++++++++++-------
  .../src/scenario-drive.ts                     |  11 ++
- .../src/scenarios/index.ts                    |  16 +++
+ .../src/scenarios/index.ts                    |  16 ++
  apps/showcase-vault-breakers/src/v2/boot.ts   |  37 ++---
- 6 files changed, 133 insertions(+), 74 deletions(-)
+ 6 files changed, 135 insertions(+), 80 deletions(-)
  create mode 100644 apps/showcase-vault-breakers/src/evidence.ts
  create mode 100644 apps/showcase-vault-breakers/src/scenario-drive.ts
  create mode 100644 apps/showcase-vault-breakers/src/scenarios/index.ts
@@ -45,7 +45,7 @@ index 000000000..a626180b3
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
 diff --git a/apps/showcase-vault-breakers/src/legacy/main.ts b/apps/showcase-vault-breakers/src/legacy/main.ts
-index e8b6bd403..2f7b94d65 100644
+index e43bf6900..2f7b94d65 100644
 --- a/apps/showcase-vault-breakers/src/legacy/main.ts
 +++ b/apps/showcase-vault-breakers/src/legacy/main.ts
 @@ -9,7 +9,6 @@
@@ -56,10 +56,11 @@ index e8b6bd403..2f7b94d65 100644
    effects,
    game,
    lights,
-@@ -22,6 +21,16 @@ import {
+@@ -22,7 +21,16 @@ import {
    type AuraSceneNode,
    type AuraDiagnostics
  } from "@aura3d/engine";
+-import { POST_V2_EXPOSURE, withPostV2Bloom } from "./post-v2-retune";
 +import {
 +  createFxParticlePass,
 +  createGame,
@@ -73,7 +74,15 @@ index e8b6bd403..2f7b94d65 100644
  import { assets } from "../../../../src/aura-assets";
  import { VaultFlow, type VaultGameEvent } from "../gameplay/ball-flow";
  import { FlipperController } from "../gameplay/flippers";
-@@ -38,7 +47,6 @@ type VaultWindow = Window & {
+@@ -31,7 +39,6 @@ import { createTableSimulation, quatToEuler, type PropVisual } from "../gameplay
+ import { createVaultAudio } from "./pinball-audio";
+ import { createScoreboardNodes, scoreboardVisibility, MISSION_LINES } from "./scoreboard";
+ import { createVaultBreakersEnvironment } from "./environment";
+-import { createVaultEffectsPass } from "./effects-pass";
+ import "./styles.css";
+ 
+ type VaultWindow = Window & {
+@@ -40,7 +47,6 @@ type VaultWindow = Window & {
    __VB_SHOT__?: () => string;
    __VB_PUMP__?: (frames: number) => number;
    __VB_SCENARIO__?: (scenario: string) => string;
@@ -81,17 +90,18 @@ index e8b6bd403..2f7b94d65 100644
  };
  const vaultWindow = window as VaultWindow;
  Object.defineProperty(window, "__AURA3D_SHOWCASE_VAULT_BREAKERS__", {
-@@ -47,8 +55,7 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_VAULT_BREAKERS__", {
+@@ -49,9 +55,7 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_VAULT_BREAKERS__", {
  });
  const reducedMotion = typeof window.matchMedia === "function"
    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
--const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
+-// Shipped play view only: no ?capture review lens (PRD-09 capture parity).
+-const visualReviewCapture: boolean = false;
 -document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 +document.body.dataset.capture = "default";
  // Physics identity (backend / flipper mode / sensor + joint counts) is evidence a
  // reviewer asks for, not HUD a player receives. Opt in with `?evidence=1`.
  document.body.dataset.evidence =
-@@ -115,7 +122,6 @@ const tableSim = createTableSimulation();
+@@ -118,7 +122,6 @@ const tableSim = createTableSimulation();
  const flippers = new FlipperController(tableSim.flippers);
  const flow = new VaultFlow(flippers, tableSim);
  const plunger = new PlungerController();
@@ -99,7 +109,24 @@ index e8b6bd403..2f7b94d65 100644
  let frameCount = 0;
  let nudgeFlip = false;
  const downTargets = new Set<string>();
-@@ -380,14 +386,16 @@ function buildScene(): ReturnType<typeof scene> {
+@@ -356,14 +359,13 @@ function buildScene(): ReturnType<typeof scene> {
+     // root safe renderer's stable draw order keeps them legible above it.
+     .addMany(visualNodes())
+     .addMany([
+-      withPostV2Bloom(effects.neonBloom({ intensity: reducedMotion ? 0.15 : 0.45, threshold: 0.62, radius: 0.5, maxIntensity: 0.88, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }), reducedMotion ? 0.15 / 0.45 : 1),
++      effects.neonBloom({ intensity: reducedMotion ? 0.15 : 0.45, threshold: 0.62, radius: 0.5, maxIntensity: 0.88, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+       effects.ambientOcclusion({ name: "vault contact grounding", intensity: 0.3, radius: 0.62, density: 0.5, color: "#02020a" }),
+       effects.contactOcclusion({ name: "mechanism contact", intensity: 0.36, radius: 0.52 }),
+       effects.fog({ name: "vault room depth haze", density: 0.018, color: "#190e2b", intensity: 0.24 }),
+-      effects.colorGrade({ exposure: 1.08 * POST_V2_EXPOSURE, contrast: 1.07, saturation: 1.1 }),
++      effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
+       effects.antiAlias({ mode: "fxaa" })
+     ])
+-    .addMany(createVaultEffectsPass({ reducedMotion }))
+     .camera(camera.perspective({
+       // Give the typed mechanism assembly a small safety margin on every edge
+       // of the review viewport.  The previous close pinball angle clipped the
+@@ -384,14 +386,16 @@ function buildScene(): ReturnType<typeof scene> {
        // so the ball left frame exactly where a player most needs to track it. The
        // framing below is the tightest lens that still keeps the whole playable surface
        // - backbox to drain gap - inside the canvas.
@@ -120,7 +147,7 @@ index e8b6bd403..2f7b94d65 100644
    diagnostics: { overlay: false, performancePanel: false },
    renderer: { qualityProfile: "production" },
    physics: {
-@@ -408,11 +416,51 @@ const gameApp = createGameApp("#app", {
+@@ -412,11 +416,51 @@ const gameApp = createGameApp("#app", {
      touch: true
    },
    loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
@@ -174,7 +201,7 @@ index e8b6bd403..2f7b94d65 100644
  
  let dynamicHandles = new Map<string, AuraRuntimeNodeHandle>();
  const scoreboardHandles = new Map<string, AuraRuntimeNodeHandle>();
-@@ -525,7 +573,7 @@ function syncHud(): void {
+@@ -529,7 +573,7 @@ function syncHud(): void {
    hudText("#vb-ev-flipper", "joint");
    hudText("#vb-ev-sensors", String(snap.sensorEventCount));
    hudText("#vb-ev-joints", String(snap.jointCount));
@@ -183,7 +210,7 @@ index e8b6bd403..2f7b94d65 100644
      ? "PAUSED - P TO RESUME"
      : snap.phase === "attract"
        ? "VAULT BREAKERS - HOLD SPACE, RELEASE TO SERVE"
-@@ -546,11 +594,11 @@ function doServe(charge: number): void {
+@@ -550,11 +594,11 @@ function doServe(charge: number): void {
  }
  
  function togglePause(): void {
@@ -197,7 +224,7 @@ index e8b6bd403..2f7b94d65 100644
    else app.resume();
  }
  
-@@ -581,9 +629,10 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
+@@ -585,9 +629,10 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
      switch (event.type) {
        case "serve":
          pushCue("plunger-release");
@@ -209,7 +236,7 @@ index e8b6bd403..2f7b94d65 100644
          {
            const [x, z] = BUMPER_IMPACT_POSITIONS[bumperImpactIndex % 3]!;
            bumperImpactIndex += 1;
-@@ -591,7 +640,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
+@@ -595,7 +640,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
          }
          break;
        case "sling":
@@ -218,7 +245,7 @@ index e8b6bd403..2f7b94d65 100644
          {
            const [x, z] = slingImpactIndex++ % 2 === 0 ? [-1.2, 2.1] : [1.2, 2.1];
            triggerImpact([x, 0.55, z], "amber", 0.24);
-@@ -601,6 +650,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
+@@ -605,6 +650,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
          if (!downTargets.has(event.id)) {
            downTargets.add(event.id);
            pushCue("target-down");
@@ -226,7 +253,7 @@ index e8b6bd403..2f7b94d65 100644
          }
          const handle = targetHandles.get(`target:${event.id}`);
          if (handle) {
-@@ -612,16 +662,19 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
+@@ -616,16 +662,19 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
        }
        case "bank-clear":
          pushCue("bank-clear");
@@ -246,7 +273,7 @@ index e8b6bd403..2f7b94d65 100644
          break;
        case "jackpot":
          if (cueReady("vault-open", 30)) pushCue("vault-open");
-@@ -632,6 +685,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
+@@ -636,6 +685,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
          break;
        case "ball-drain":
          pushCue("ball-drain");
@@ -254,7 +281,7 @@ index e8b6bd403..2f7b94d65 100644
          break;
        case "ball-end":
          resolveHandles();
-@@ -639,6 +693,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
+@@ -643,6 +693,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
        case "tilt-strike":
        case "tilt-lock":
          pushCue("tilt-warn");
@@ -262,7 +289,7 @@ index e8b6bd403..2f7b94d65 100644
          break;
        case "game-over":
          pushCue("ball-drain");
-@@ -721,7 +776,7 @@ function syncDoor(dt: number): void {
+@@ -725,7 +776,7 @@ function syncDoor(dt: number): void {
  }
  
  // ------------------------------------------------------------- evidence ------
@@ -271,7 +298,7 @@ index e8b6bd403..2f7b94d65 100644
    const snap = flow.snapshot();
    const flipperSnap = flippers.snapshot();
    const diagnostics: AuraDiagnostics = app.diagnostics();
-@@ -737,7 +792,7 @@ function publishEvidence(): void {
+@@ -741,7 +792,7 @@ function publishEvidence(): void {
      vaultOpen: snap.vaultOpen,
      multiball: snap.multiball,
      tiltStrikes: snap.tiltStrikes,
@@ -280,7 +307,7 @@ index e8b6bd403..2f7b94d65 100644
      flipperMode: flipperSnap.mode,
      flipperEvents: flipperSnap.activationCount,
      sensorEventCount: snap.sensorEventCount,
-@@ -793,6 +848,11 @@ function publishEvidence(): void {
+@@ -797,6 +848,11 @@ function publishEvidence(): void {
      mountedAtEpochMs: Date.now()
    };
    vaultWindow.__VAULT_BREAKERS_EVIDENCE__ = evidence;
@@ -292,7 +319,7 @@ index e8b6bd403..2f7b94d65 100644
  }
  
  // Renderer-owned capture used by specs and probes (no compositor dependency).
-@@ -811,7 +871,9 @@ vaultWindow.__VB_PUMP__ = (frames: number): number => {
+@@ -815,7 +871,9 @@ vaultWindow.__VB_PUMP__ = (frames: number): number => {
    return app.runtime.frame;
  };
  
@@ -303,7 +330,7 @@ index e8b6bd403..2f7b94d65 100644
    resetGame();
    let events: readonly VaultGameEvent[] = [];
    if (scenario === "bank-near-complete") events = flow.evidenceClearBanks(4);
-@@ -833,7 +895,7 @@ vaultWindow.__VB_SCENARIO__ = (scenario: string): string => {
+@@ -837,7 +895,7 @@ vaultWindow.__VB_SCENARIO__ = (scenario: string): string => {
    syncHud();
    publishEvidence();
    return `${scenario}:${flow.snapshot().phase}:${flow.snapshot().banksDown}:${flow.snapshot().activeBalls}`;
@@ -312,7 +339,7 @@ index e8b6bd403..2f7b94d65 100644
  
  // ---------------------------------------------------------------- input -------
  /*
-@@ -934,6 +996,7 @@ againButton.addEventListener("click", () => resetGame());
+@@ -938,6 +996,7 @@ againButton.addEventListener("click", () => resetGame());
  
  // ------------------------------------------------------------- frame loop ----
  gameApp.onFrame(({ dt }) => {
@@ -320,7 +347,7 @@ index e8b6bd403..2f7b94d65 100644
    input.update(dt);
    frameCount += 1;
  
-@@ -941,7 +1004,7 @@ gameApp.onFrame(({ dt }) => {
+@@ -945,7 +1004,7 @@ gameApp.onFrame(({ dt }) => {
      resolveHandles();
    }
  
@@ -329,7 +356,7 @@ index e8b6bd403..2f7b94d65 100644
      manualAdvanceFrame();
      return;
    }
-@@ -973,32 +1036,7 @@ gameApp.onFrame(({ dt }) => {
+@@ -977,32 +1036,7 @@ gameApp.onFrame(({ dt }) => {
    publishEvidence();
  });
  

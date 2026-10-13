@@ -296,4 +296,6 @@ jobs:
       - name: Firefox — S1 boot + 60 s timeline
         env:
           A3D_DISPATCH_SOAK_MS: "60000"
-        run: xargs pnpm exec playwright test -c tests/qr/prd14/playwright.firefox.config.ts < "$RUNNER_TEMP/prd14-specs.txt"
+          LIBGL_ALWAYS_SOFTWARE: "1"
+          MOZ_WEBRENDER: "1"
+        run: xvfb-run -a --server-args="-screen 0 1920x1080x24" xargs pnpm exec playwright test -c tests/qr/prd14/playwright.firefox.config.ts < "$RUNNER_TEMP/prd14-specs.txt"

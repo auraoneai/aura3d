@@ -113,7 +113,15 @@ export function snapshotForAudit(app: AuraApp, assets: AuraAssetManifestLike): A
       };
       return;
     }
+    if (
+      environment.kind === "none" &&
+      ((node as { kind?: string }).kind === "look" ||
+        (node.kind === "group" && typeof node.name === "string" && node.name.startsWith("aura-look:")))
+    ) {
+      environment = { kind: "preset", background: true };
+    }
     if (node.kind === "model" || node.kind === "primitive") {
+      if (typeof node.name === "string" && node.name.startsWith("a3g-fx-")) return;
       const spec = node.material;
       if (spec !== undefined) {
         materials.push({

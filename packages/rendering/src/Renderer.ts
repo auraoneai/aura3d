@@ -1639,6 +1639,7 @@ export class Renderer {
     const format = probeHdrTargetFormat(this.device);
     const targetFormat: "rgba16f" | "rgba8" = format === "rgba8" ? "rgba8" : "rgba16f";
     const coverage = o.backgroundCoverage === true;
+    this.device.setRenderTarget(explicitRenderTarget ?? null);
     rendererOutputPass(this.device).execute(hdrTarget, coverage ? hdrTarget : null, {
       toneMapping: o.toneMapping ?? DEFAULT_TONE_MAPPING,
       exposure: appliedExposure,

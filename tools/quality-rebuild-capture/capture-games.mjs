@@ -276,9 +276,17 @@ function startStaticServer() {
   const siteRoot = path.join(buildRoot, "site");
   // Absolute /aura-assets/, /assets/draco/ etc. resolve against the same public trees the dev
   // server and marketing build use. Order matters: built output wins.
+  // Every app's own public/ tree is a fallback root, not just one hardcoded
+  // app: route-local typed assets (apps/<dir>/public/aura-assets/*.glb, the
+  // template layout vite serves via the app's publicDir) must resolve here
+  // too, since the capture build sets publicDir: false.
+  const appPublicRoots = readdirSync(path.join(repoRoot, "apps"), { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => path.join(repoRoot, "apps", d.name, "public"))
+    .filter((p) => existsSync(p));
   const fallbackRoots = [
     path.join(repoRoot, "public"),
-    path.join(repoRoot, "apps", "aura-clash-showcase", "public"),
+    ...appPublicRoots,
     path.join(repoRoot, "marketing", "public")
   ];
   const tryFile = (root, rel) => {

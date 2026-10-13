@@ -13,6 +13,9 @@ export interface BeaconOptions {
   readonly getState: () => GameSessionState;
   readonly getFrame: () => number;
   readonly getFirstFrameAt: () => number | null;
+  /** Live mounted app for audit lanes (beacon.app.scene / app.diagnostics()). */
+  readonly getApp?: () => GameBeacon["app"] | undefined;
+  readonly getSession?: () => unknown;
   readonly win?: { __AURA3D_GAME__?: GameBeacon };
 }
 
@@ -36,12 +39,15 @@ export function installGameBeacon(options: BeaconOptions): { refresh(): void; di
   let timer: ReturnType<typeof setInterval> | null = null;
 
   const publish = () => {
+    const app = options.getApp?.();
     win.__AURA3D_GAME__ = Object.freeze({
       route: options.route,
       state,
       frame,
       firstFrameAt,
-      sessionStartedAt
+      sessionStartedAt,
+      ...(app !== undefined ? { app, scene: app.scene } : {}),
+      ...(options.getSession !== undefined ? { session: options.getSession() } : {})
     });
   };
 

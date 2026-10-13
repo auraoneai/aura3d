@@ -1,4 +1,4 @@
-From 632d11f687ce86f4b999491e20fe71e9caa855c6 Mon Sep 17 00:00:00 2001
+From ed085d07df8a71b961810cd5a1ee2ccae5bce78c Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:54 +0000
 Subject: [PATCH] showcase-siege-golf: delete evidence files+blocks (T5.8)

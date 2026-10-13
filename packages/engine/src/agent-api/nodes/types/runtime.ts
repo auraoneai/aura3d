@@ -30,6 +30,7 @@ import type {
   AuraAssetProvenance,
   AuraBackend,
   AuraCameraMode,
+  AuraColor,
   AuraCreateAppRendererOptions,
   AuraDiagnostics,
   AuraEffectNode,
@@ -44,6 +45,7 @@ import type {
   AuraRendererDiagnosticReport,
   AuraSceneNode,
   AuraSceneSnapshot,
+  AuraTransformSpec,
   AuraVec3
 } from "../types.js";
 
@@ -143,6 +145,7 @@ export interface AuraRuntimeNodeHandle {
   setScale(scale: number | AuraVec3): this;
   setVisible(visible: boolean): this;
   setMaterial(material: AuraMaterialSpec): this;
+  setInstances(transforms: readonly AuraTransformSpec[], colors?: readonly AuraColor[]): this;
   play(clip: string, options?: Omit<AuraAnimationSpec, "clip">): this;
   setAnimation(animation: AuraAnimationSpec | undefined): this;
   setAnimationBinding(binding: AuraRuntimeNodeAnimationBindingMetadata | undefined): this;

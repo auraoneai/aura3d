@@ -20,7 +20,6 @@ import { describe, expect, it } from "vitest";
 
 import { landerAudioManifest } from "../../../apps/showcase-aurora-lander/src/lander-audio";
 import { billiardsAudioManifest } from "../../../apps/showcase-bank-shot/src/legacy/billiards-audio";
-import { blockfallAudioManifest } from "../../../apps/showcase-blockfall-reactor/src/blockfall-audio-manifest";
 import { courierAudioManifest } from "../../../apps/showcase-courier-rush/src/legacy/courier-audio";
 import { heistAudioManifest } from "../../../apps/showcase-gallery-shift/src/heist-audio";
 import { GRAVITY_POST_AUDIO_MANIFEST } from "../../../apps/showcase-gravity-post/src/post-audio";
@@ -44,7 +43,6 @@ interface CueLike {
 const ROUTE_MANIFESTS: Readonly<Record<string, Readonly<Record<string, CueLike>>>> = {
   "showcase-aurora-lander": landerAudioManifest,
   "showcase-bank-shot": billiardsAudioManifest,
-  "showcase-blockfall-reactor": blockfallAudioManifest,
   "showcase-courier-rush": courierAudioManifest,
   "showcase-gallery-shift": heistAudioManifest,
   "showcase-gravity-post": GRAVITY_POST_AUDIO_MANIFEST,

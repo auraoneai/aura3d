@@ -1442,16 +1442,11 @@ describe("game runtime source gates", () => {
     const turboBoot = readSource("apps/showcase-turbo-drift-circuit/src/v2/boot.ts");
     const turboGhost = readSource("apps/showcase-turbo-drift-circuit/src/gameplay/ghost.ts");
     const turboOpponent = readSource("apps/showcase-turbo-drift-circuit/src/gameplay/opponent-ai.ts");
-    const blockfallMain = readSource("apps/showcase-blockfall-reactor/src/main.ts");
-    const blockfallBoot = readSource("apps/showcase-blockfall-reactor/src/v2/boot.ts");
-    const blockfallBoard = readSource("apps/showcase-blockfall-reactor/src/gameplay/board-view.ts");
-    const blockfallReadme = readSource("apps/showcase-blockfall-reactor/README.md");
 
     // Dispatchers resolve the route flag and defer to legacy or v2 — nothing more.
     expect(skylineMain).toContain("resolveQrFlags");
     expect(skylineMain).toContain('ROUTE_FLAG = "A3D_QR_ROUTE_SKYLINE_RUNNER"');
     expect(turboMain).toContain('ROUTE_FLAG = "A3D_QR_ROUTE_TURBO_DRIFT_CIRCUIT"');
-    expect(blockfallMain).toContain('ROUTE_FLAG = "A3D_QR_ROUTE_BLOCKFALL_REACTOR"');
 
     /*
      * Skyline runner: the level is built by `src/gameplay/level.ts` (shared with
@@ -1517,13 +1512,6 @@ describe("game runtime source gates", () => {
     expect(turboMain).not.toMatch(/function\s+(updateCar|updateRaceProgress|projectToTrack|sampleTrackAt|createRacePathMetrics)\b/);
     expect(turboMain).not.toContain("racePathMetrics");
     expect(turboMain).not.toContain("playerCar.setPosition(raceSnapshot.position.x");
-
-    // Blockfall reactor: public falling-blocks kit drives the gameplay evidence.
-    expect(blockfallBoot).toContain("createGame");
-    expect(blockfallBoard).toContain('gameplayPieceSource: "game.fallingBlocks"');
-    expect(blockfallMain).not.toContain('deterministicModule: "src/rules.ts"');
-    expect(blockfallReadme).toContain("the public `game.fallingBlocks` kit");
-    expect(blockfallReadme).not.toContain("route-local deterministic rules");
   });
 
   it("keeps package-smoke and release-gate scripts wired into game runtime readiness", () => {

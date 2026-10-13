@@ -110,6 +110,8 @@ export interface GameAudioEvidence<TCue extends string = string> {
   readonly busCount: number;
   readonly playedCueCount: number;
   readonly suppressedCueCount: number;
+  /** Number of procedural (`play` callback without `asset`) cues played; 0 when all played cues are sample-backed. */
+  readonly synthCues: number;
   readonly lastCue: TCue | null;
   readonly errors: readonly string[];
   readonly buses: readonly { readonly id: GameAudioBusId; readonly volume: number; readonly muted: boolean }[];
@@ -139,6 +141,13 @@ export interface GameAudioOptions<TCue extends string = string> {
   readonly footsteps?: GameAudioFootstepOptions<TCue>;
   /** Flag input for `A3D_QR_GAME` (C-25 throw-on-invalid-cue); env/URL apply when absent. */
   readonly qualityRebuild?: { readonly flags?: QrFlagInput };
+  /**
+   * Base URL of the 20 ms format probes. Default "/probes/" — root-absolute
+   * like SFX_PACK_BASE, because routes are served from subpaths
+   * (/apps/<dir>/, /examples/<game>/) while probes live in the root public
+   * tree; the formatProbe relative default 404s under any subpath.
+   */
+  readonly probeBase?: string;
 }
 
 export interface GameAudioListenerPose {
@@ -266,6 +275,7 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
   let disposed = false;
   let playedCueCount = 0;
   let suppressedCueCount = 0;
+  let synthCues = 0;
   let lastCue: TCue | null = null;
   const errors: string[] = [];
   const listeners = new Set<(event: GameAudioCueEvent<TCue>) => void>();
@@ -367,7 +377,8 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       engine = factory({
         context: audioContext as unknown as SoundGraphContext,
         cues: engineCues,
-        buses: initialVolumes
+        buses: initialVolumes,
+        probeBase: options.probeBase ?? "/probes/"
       });
       if (muted) engine.setMuted(true);
     }
@@ -429,6 +440,7 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       busCount: buses.size,
       playedCueCount,
       suppressedCueCount,
+      synthCues,
       lastCue,
       errors,
       buses: [...buses.values()].map((bus) => ({
@@ -533,6 +545,9 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       }
       pruneEnded(cue).add(handle);
       playedCueCount += 1;
+      if (definition.asset === undefined && definition.play !== undefined) {
+        synthCues += 1;
+      }
       // Only actually-played cues become playing nodes — suppressed cues stay out (no silent-play claim).
       const position = spatial?.position ?? definition.position ?? listenerPosition;
       const occlusion = spatial?.occlusion ?? definition.occlusion ?? 0;

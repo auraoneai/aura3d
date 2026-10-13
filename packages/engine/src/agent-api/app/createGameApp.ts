@@ -11,6 +11,7 @@ export function createGameApp(target: AuraAppTarget, options: AuraCreateGameAppO
     autoStart: options.autoStart,
     loop,
     input,
-    evidence: runtimeEvidence
+    evidence: runtimeEvidence,
+    qualityRebuild: options.qualityRebuild
   });
 }

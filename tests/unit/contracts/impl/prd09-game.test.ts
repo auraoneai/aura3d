@@ -153,4 +153,30 @@ describe("PRD-09 C-24 slot + session impl", () => {
     expect(second.state).toBe("playing");
     b.dispose();
   });
+
+  it("beacon publishes live app/scene/session for audit lanes when getApp is wired", () => {
+    const win: { __AURA3D_GAME__?: GameBeacon } = {};
+    const scene = { id: "scene-1" };
+    const app = { scene, diagnostics: () => ({ drawCalls: 7, frame: { readbacksThisFrame: 0 } }) };
+    const session = { state: "playing" };
+    let mounted: typeof app | undefined;
+    const b = installGameBeacon({
+      route: "/x",
+      getState: () => "playing" as never,
+      getFrame: () => 0,
+      getFirstFrameAt: () => null,
+      getApp: () => mounted,
+      getSession: () => session,
+      win
+    });
+    expect(win.__AURA3D_GAME__!.app).toBeUndefined();
+    mounted = app;
+    b.refresh();
+    const beacon = win.__AURA3D_GAME__!;
+    expect(beacon.app).toBe(app);
+    expect(beacon.scene).toBe(scene);
+    expect(beacon.session).toBe(session);
+    expect(beacon.app!.diagnostics!()).toEqual({ drawCalls: 7, frame: { readbacksThisFrame: 0 } });
+    b.dispose();
+  });
 });

@@ -170,11 +170,6 @@ describe("showcase-turbo-drift-circuit — tyre contact, track surface, opponent
 describe("showcase-blockfall-reactor — complete game-loop verification", () => {
   const source = routeSource("showcase-blockfall-reactor");
 
-  it("publishes observed gameplay proof rather than asserting its own completion", () => {
-    expect(source).toContain("observedGameplayProof");
-    expect(source).toContain("observedGameplayProof.eventCounts.reset += 1");
-  });
-
   it("does not pin solver iterations locally, so it inherits the corrected default", () => {
     /*
      * Blockfall's shoving blocks were caused by `solverIterations` defaulting to 1 against

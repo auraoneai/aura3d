@@ -1,4 +1,4 @@
-From fb8ce3e145e64b4c0db648d6919d1160820367a2 Mon Sep 17 00:00:00 2001
+From cb81e24bcb9d43d6aa69ccff821d09f6a7118f64 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:45 +0000
 Subject: [PATCH] aura-clash-showcase: delete evidence files+blocks (T5.8)
@@ -48,7 +48,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../src/legacy/seo/index.ts                   |   29 -
  .../src/legacy/showcaseProofBoot.ts           |  280 --
  apps/aura-clash-showcase/src/main.ts          |    7 -
- .../src/v2/evidence/index.ts                  |   92 -
+ .../src/v2/evidence/index.ts                  |   97 -
  .../tests/accessibility.spec.ts               |   20 -
  .../tests/asset-quality.spec.ts               |   59 -
  apps/aura-clash-showcase/tests/audio.spec.ts  |  106 -
@@ -69,7 +69,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../tests/route-health.spec.ts                |   14 -
  .../tests/screenshot.spec.ts                  |  129 -
  .../tests/visual-regression.spec.ts           |  212 --
- 64 files changed, 1 insertion(+), 15007 deletions(-)
+ 64 files changed, 1 insertion(+), 15012 deletions(-)
  delete mode 100644 apps/aura-clash-showcase/evidence/index.html
  delete mode 100644 apps/aura-clash-showcase/launch-evidence.command-plan.json
  delete mode 100644 apps/aura-clash-showcase/launch-evidence.coverage.json
@@ -11993,10 +11993,10 @@ index 7628422b1..a02b85d73 100644
  void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/aura-clash-showcase/src/v2/evidence/index.ts b/apps/aura-clash-showcase/src/v2/evidence/index.ts
 deleted file mode 100644
-index 609afe94b..000000000
+index 59003a051..000000000
 --- a/apps/aura-clash-showcase/src/v2/evidence/index.ts
 +++ /dev/null
-@@ -1,92 +0,0 @@
+@@ -1,97 +0,0 @@
 -// apps/aura-clash-showcase/src/v2/evidence/index.ts — T2.5 evidence.
 -// §7.2.1 sections for aura-clash-showcase under
 -// window.__AURA3D_GAME_EVIDENCE__["aura-clash-showcase"], lazily computed,
@@ -12017,6 +12017,8 @@ index 609afe94b..000000000
 -  readonly snapshot: () => FightingGameSnapshot;
 -  // T2.2-post: appliedLook is the C-31 runtime look manifest — a varying shape.
 -  readonly appliedLook: Record<string, unknown>;
+-  /** Fighter clip-drive probe (active clip + clip-local time per rig). */
+-  readonly animation?: () => unknown;
 -  readonly audioCueLog: () => readonly string[];
 -  readonly hitStopActive: () => boolean;
 -  readonly roundInfo: () => { readonly round: number; readonly timeLeft: number };
@@ -12083,6 +12085,9 @@ index 609afe94b..000000000
 -        round: round.round,
 -        timeLeft: round.timeLeft
 -      };
+-    },
+-    get animation() {
+-      return b.animation?.() ?? null;
 -    },
 -    get audio() {
 -      return { cueLog: b.audioCueLog() };

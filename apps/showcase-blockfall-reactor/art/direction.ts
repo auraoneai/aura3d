@@ -42,11 +42,18 @@ export default defineArtDirection({
     exposureEV: 0.1
   },
   framing: { rig: "static", subjectHeightFraction: [0.55, 0.75], fovDeg: [40, 50], mobile: "landscape" },
+  // The rebuilt single-path scene (src/main.ts) renders from exactly two
+  // admitted typed assets (apps/showcase-blockfall-reactor/aura.assets.json):
+  // the crate GLB instanced per board cell / active piece / frame / flash,
+  // and the modular wall panel as the cabinet-silhouette world piece. The
+  // trashed scene's cabinet/room/mascot roles are gone. Neither asset is
+  // staged in a shared kit yet, so no `kit` is claimed: S10's kit half
+  // stays failing until a human look-dev review accepts a staged kit file
+  // (verdicts are never authored here). Triangle budgets bound the measured
+  // GLBs (crate 264 tris, wall 1,670 tris, both untextured).
   assets: [
-    { role: "hero", assetKey: "arcade-cabinet", maxTriangles: 45000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "world", assetKey: "arcade-room", kit: "K4", maxTriangles: 120000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "neighbouring-cabinets", kit: "K2", maxTriangles: 90000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "mascot-figures", kit: "K6", maxTriangles: 30000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+    { role: "prop", assetKey: "quaterniusCubeCrate", maxTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "world", assetKey: "quaterniusWallModular", maxTriangles: 5000, textureSet: "BC+N", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "lock-flash", kind: "burst" },
@@ -63,12 +70,7 @@ export default defineArtDirection({
     { event: "reactor-hum", cue: "arcade-ambience-bed", variants: 1 }
   ],
   signatureEffect: "Instanced jewel tiles bevel-catching a warm arcade key while line clears detonate through GPU bursts and the cabinet breathes inside a living room.",
-  standIns: [
-    { feature: "k2-arcade-interior HDRI + room ambience", file: "src/v2/scene/lighting.ts", request: "R-14-13", removeWhen: "arcade interior HDRI admitted" },
-    { feature: "K4 arcade room + K2 neighbouring cabinets", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "arcade kit GLBs admitted" },
-    { feature: "K9 clear/shockwave flipbooks", file: "src/v2/scene/fx.ts", request: "R-14-07", removeWhen: "K9 flipbooks admitted" },
-    { feature: "K8 sampled stem set", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K8 stem library admitted" }
-  ],
+  standIns: [],
   criticalCategories: ["vfx", "camera", "polish_juice"],
   tiers: {
     low: { particles: 300, shadowMap: 1024, cascades: 2, textureMax: 1024 },

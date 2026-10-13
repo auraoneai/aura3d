@@ -34,6 +34,10 @@ interface Route { route: string; appDir: string; flag: string | null }
 
 const baseline = JSON.parse(readFileSync(baselinePath, "utf8")) as { routes: Record<string, { route: string; appDir: string }> };
 const routes: Route[] = Object.values(baseline.routes)
+  .filter((r) => {
+    const appDir = r.appDir.replace(/^apps\//, "");
+    return existsSync(join(repoRoot, "apps", appDir, "src", "v2"));
+  })
   .map((r) => {
     // baseline.json appDir is repo-relative ("apps/<dir>"); strip it so the
     // main.ts path and the /apps/<dir>/ URL are not doubled.
