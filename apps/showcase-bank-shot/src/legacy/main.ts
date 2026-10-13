@@ -347,19 +347,19 @@ function buildScene(): ReturnType<typeof scene> {
       // ~28% fps vs baseline for a near-invisible change on this dark frame.
       // Grounding comes from the shadowed key + renderer-owned ball patches;
       // the broad lift comes from key/pendant intensity + IBL + grade below.
-      effects.colorGrade({ exposure: 1.14, contrast: 1.18, saturation: 1.26 }),
+      effects.colorGrade({ exposure: 1.18, contrast: 1.18, saturation: 1.26 }),
       effects.antiAlias({ mode: "fxaa" }),
       ...bankShotEffectsPass(),
       // A restrained ambient floor preserves the lacquer highlights and the
       // ball-to-felt contact gradient.  The previous broad blue fill flattened
       // every PBR response into the same midtone.
-      lights.ambient({ name: "slate ambient", color: "#26334a", intensity: 0.12 * KEY_LIGHT_GAIN }),
+      lights.ambient({ name: "slate ambient", color: "#2a3a55", intensity: 0.14 * KEY_LIGHT_GAIN }),
       // An asymmetric three-lamp pool-room key. The offset sources create a
       // visible luminance falloff across felt, walnut bevels, and ball lacquer
       // instead of washing every surface with the same frontal value.
-      lights.point({ name: "pendant-light-mid", color: "#ffe2ae", intensity: 5.6 * KEY_LIGHT_GAIN }).position(-1.2, 1.55, 0.92),
-      lights.point({ name: "pendant-light-head", color: "#ffd9a0", intensity: 4.2 * KEY_LIGHT_GAIN }).position(0.2, 1.8, -0.7),
-      lights.point({ name: "pendant-light-foot", color: "#ffca85", intensity: 4.2 * KEY_LIGHT_GAIN }).position(1.25, 1.35, 0.35),
+      lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: 6.2 * KEY_LIGHT_GAIN }).position(-1.2, 1.55, 0.92),
+      lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: 4.6 * KEY_LIGHT_GAIN }).position(0.2, 1.8, -0.7),
+      lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: 4.6 * KEY_LIGHT_GAIN }).position(1.25, 1.35, 0.35),
       // Cool fill & rim lights (the rect softbox and three coloured rim
       // points are gone: five fewer light evaluations per fragment, with
       // the pendant points + IBL carrying the same table read).
