@@ -55,3 +55,9 @@ export const assets = defineAuraAssets({
     }
   }
 } as const);
+
+export const orbitalTurret = assets.ship;
+export const orbitalShieldGenerator = assets.drone;
+export const orbitalAsteroid = assets.planet;
+export const orbitalCommandCore = assets.planet;
+

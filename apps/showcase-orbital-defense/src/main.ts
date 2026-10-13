@@ -18,16 +18,24 @@
 // wave-1 opening.
 import {
   camera,
+  effects,
   game,
   instances,
   looks,
   material,
   model,
   primitives,
-  scene
+  scene,
+  sky
 } from "@aura3d/engine";
 import { createGame, type GameHudWidgetSpec } from "@aura3d/engine/game";
-import { assets } from "./aura-assets";
+import {
+  assets,
+  orbitalAsteroid,
+  orbitalCommandCore,
+  orbitalShieldGenerator,
+  orbitalTurret
+} from "./aura-assets";
 
 declare global {
   interface Window {
@@ -327,6 +335,7 @@ orbitalGame.start();
 
 const shipNode = app.nodes.require("player-ship");
 const droneNodes = Array.from({ length: DRONE_POOL }, (_, i) => app.nodes.require(`drone-${i}`));
+const asteroidNodes = Array.from({ length: DRONE_POOL }, (_, i) => app.nodes.require(`asteroid-${i}`));
 const boltNodes = Array.from({ length: BOLT_POOL }, (_, i) => app.nodes.require(`bolt-${i}`));
 
 function applyViewportCamera(force = false): void {
@@ -482,6 +491,7 @@ function resetGame(): void {
   for (const d of drones) d.alive = false;
   for (const b of bolts) b.live = false;
   shipNode.setVisible(true);
+  for (const a of asteroidNodes) a.setVisible(false).setScale(0);
   routeEvents.push({ type: "reset", label: "route reset" });
   objective = "Defend the core. Rotate A/D, fire Space.";
   startWave(1);
@@ -612,9 +622,15 @@ app.onFrame(({ dt }) => {
   for (let i = 0; i < drones.length; i += 1) {
     const drone = drones[i];
     const node = droneNodes[i];
+    const asteroidNode = asteroidNodes[i];
     node.setVisible(drone.alive);
+    asteroidNode.setVisible(drone.alive).setScale(drone.alive ? 1 : 0);
     if (drone.alive) {
-      node.setPosition(drone.x, PLANE_Y, drone.z).setRotation(0, Math.atan2(-drone.x, -drone.z), 0);
+      const yaw = Math.atan2(-drone.x, -drone.z);
+      node.setPosition(drone.x, PLANE_Y, drone.z).setRotation(0, yaw, 0);
+      asteroidNode
+        .setPosition(drone.x * 1.04, PLANE_Y - 0.14, drone.z * 1.04)
+        .setRotation(frame * 0.015 + i * 0.4, yaw + frame * 0.02, i * 0.3);
     }
   }
   for (let i = 0; i < bolts.length; i += 1) {
@@ -640,7 +656,7 @@ void orbitalGame.ready().then(() => {
 
 function buildScene() {
   // Stars: one instanced sphere draw — tiny emissive points on a backdrop
-  // behind the arena (the space look keeps a solid dark background).
+  // behind the arena (paired with a deep-space nebula sky gradient + fog).
   const starTransforms = Array.from({ length: STAR_COUNT }, (_, i) => {
     const a = i * 2.39996;
     const r = 18 + (i % 9) * 2.4;
@@ -652,31 +668,157 @@ function buildScene() {
   const starColors = Array.from({ length: STAR_COUNT }, (_, i) =>
     ["#dfe8ff", "#9db8ff", "#fff3d6", "#ffd6ec"][i % 4]
   );
-  // Station ring: emissive ticks marking the interceptor's orbit.
+
+  // Orbital defense station struts, chrome turret plinths, brushedMetal
+  // segments, and admitted turret/shield-generator GLB batteries.
+  const TURRET_COUNT = 6;
+  const stationStruts = Array.from({ length: TURRET_COUNT }, (_, i) => {
+    const a = (i / TURRET_COUNT) * Math.PI * 2;
+    const midR = (CORE_RADIUS + ORBIT_RADIUS) * 0.52;
+    return primitives.box({
+      name: `station strut ${i}`,
+      size: [0.16, 0.08, ORBIT_RADIUS - CORE_RADIUS - 0.3],
+      position: [Math.cos(a) * midR, PLANE_Y - 0.22, Math.sin(a) * midR],
+      rotation: [0, -a, 0],
+      material: material.brushedMetal({ color: "#94a3b8", roughness: 0.24, anisotropy: 0.85 }),
+      castShadow: true,
+      receiveShadow: true
+    });
+  });
+
+  const turretPlinths = Array.from({ length: TURRET_COUNT }, (_, i) => {
+    const a = (i / TURRET_COUNT) * Math.PI * 2;
+    return primitives.cylinder({
+      name: `turret plinth ${i}`,
+      radius: 0.26,
+      height: 0.14,
+      position: [Math.cos(a) * ORBIT_RADIUS, PLANE_Y - 0.18, Math.sin(a) * ORBIT_RADIUS],
+      material: material.chrome({ color: "#e2e8f0", roughness: 0.08 }),
+      castShadow: true,
+      receiveShadow: true
+    });
+  });
+
+  const turretBatteries = Array.from({ length: TURRET_COUNT }, (_, i) => {
+    const a = (i / TURRET_COUNT) * Math.PI * 2;
+    return model(orbitalTurret, { name: `orbital turret ${i}`, castShadow: true, receiveShadow: true })
+      .position(Math.cos(a) * (ORBIT_RADIUS + 0.32), PLANE_Y - 0.1, Math.sin(a) * (ORBIT_RADIUS + 0.32))
+      .rotation(0, Math.atan2(Math.cos(a), Math.sin(a)), 0)
+      .scale(0.52);
+  });
+
+  const shieldGenerators = Array.from({ length: 4 }, (_, i) => {
+    const a = ((i + 0.5) / 4) * Math.PI * 2;
+    const shieldR = CORE_RADIUS + 0.68;
+    return model(orbitalShieldGenerator, { name: `orbital generator ${i}`, castShadow: true, receiveShadow: true })
+      .position(Math.cos(a) * shieldR, PLANE_Y - 0.08, Math.sin(a) * shieldR)
+      .rotation(0, Math.atan2(Math.cos(a), Math.sin(a)), 0)
+      .scale(0.58);
+  });
+
+  // Outer asteroid belt: rocky/molten planet-shaded boulders + admitted GLBs.
+  const ASTEROID_BELT_COUNT = 10;
+  const outerAsteroids = Array.from({ length: ASTEROID_BELT_COUNT }, (_, i) => {
+    const a = (i / ASTEROID_BELT_COUNT) * Math.PI * 2 + 0.19;
+    const r = SPAWN_RADIUS + 1.0 + (i % 3) * 0.55;
+    const isLava = i % 3 === 0;
+    return primitives.sphere({
+      name: `asteroid belt ${i}`,
+      size: 0.38 + (i % 3) * 0.12,
+      position: [Math.cos(a) * r, PLANE_Y - 0.12 + ((i % 3) - 1) * 0.18, Math.sin(a) * r],
+      rotation: [i * 0.5, i * 0.9, i * 0.3],
+      material: isLava
+        ? material.planet("lava" as never, {
+            color: "#b91c1c",
+            roughness: 0.65,
+            emissive: "#ea580c",
+            emissiveIntensity: 0.08,
+            practical: true
+          })
+        : material.planet("rocky", {
+            color: "#78716c",
+            roughness: 0.82
+          }),
+      castShadow: true,
+      receiveShadow: true
+    });
+  });
+
+  const outerAsteroidModels = Array.from({ length: 4 }, (_, i) => {
+    const a = (i / 4) * Math.PI * 2 + 0.42;
+    const r = SPAWN_RADIUS + 1.45;
+    return model(orbitalAsteroid, { name: `orbital asteroid ${i}`, castShadow: true, receiveShadow: true })
+      .position(Math.cos(a) * r, PLANE_Y - 0.16, Math.sin(a) * r)
+      .rotation(i * 0.4, i * 1.1, i * 0.25)
+      .scale(0.55);
+  });
+
+  // Station ring: emissive + chrome ticks marking the interceptor's orbit.
   const ringTicks = Array.from({ length: RING_TICKS }, (_, i) => {
     const a = (i / RING_TICKS) * Math.PI * 2;
+    const isMajor = i % 4 === 0;
     return primitives.box({
       name: `ring tick ${i}`,
-      size: [0.34, 0.06, 0.1],
+      size: isMajor ? [0.42, 0.08, 0.14] : [0.34, 0.06, 0.1],
       position: [Math.cos(a) * ORBIT_RADIUS, 0.02, Math.sin(a) * ORBIT_RADIUS],
       rotation: [0, -a, 0],
-      material: material.emissive({ color: "#7cf4ff", emissive: "#7cf4ff", emissiveIntensity: 1.2, roughness: 0.4 })
+      material: isMajor
+        ? material.chrome({ color: "#e2e8f0", roughness: 0.06 })
+        : material.emissive({ color: "#7cf4ff", emissive: "#7cf4ff", emissiveIntensity: 1.2, roughness: 0.4 })
     });
   });
 
   return scene()
+    .background("#030712")
     .add(looks.preset(LOOK_ID))
-    // Deck plate: dark gloss so the key light and emissive bolts read.
+    // Deep-space nebula sky gradient (#030712 -> #0c1938 -> #1e1b4b) + matching fog
+    .add(
+      sky.gradient({
+        name: "deep-space nebula sky",
+        zenith: "#030712",
+        horizon: "#0c1938",
+        ground: "#1e1b4b",
+        curve: 1.35,
+        exposure: 0.95
+      })
+    )
+    .add(
+      effects.fog({
+        color: "#0c1938",
+        density: 0.018,
+        intensity: 0.35
+      })
+    )
+    // Deck plate: dark brushed metallic arena plane so the key light and emissive bolts read.
     .add(
       primitives.box({
         name: "orbital deck",
         size: [(SPAWN_RADIUS + 2) * 2, 0.1, (SPAWN_RADIUS + 2) * 2],
         position: [0, -0.06, 0],
-        material: material.pbr({ color: "#101524", roughness: 0.38, metalness: 0.55 }),
+        material: material.pbr({ color: "#0b1120", roughness: 0.32, metalness: 0.68 }),
         receiveShadow: true
       })
     )
+    // Main orbital defense ring track in brushedMetal
+    .add(
+      primitives.torus({
+        name: "orbital defense ring",
+        radius: ORBIT_RADIUS,
+        tube: 0.09,
+        position: [0, PLANE_Y - 0.2, 0],
+        rotation: [Math.PI / 2, 0, 0],
+        material: material.brushedMetal({ color: "#94a3b8", roughness: 0.24, anisotropy: 0.85 }),
+        castShadow: true,
+        receiveShadow: true
+      })
+    )
+    .addMany(stationStruts)
+    .addMany(turretPlinths)
+    .addMany(turretBatteries)
+    .addMany(shieldGenerators)
     .addMany(ringTicks)
+    .addMany(outerAsteroids)
+    .addMany(outerAsteroidModels)
     .add(
       instances.sphere({
         name: "starfield",
@@ -685,6 +827,55 @@ function buildScene() {
         colors: starColors,
         material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.1 })
       })
+    )
+    // Protected planet core: ocean planet sphere + translucent atmosphere shell + frostedGlass planetary ring + GLB core
+    .add(
+      primitives.sphere({
+        name: "protected planet ocean",
+        size: 1.24,
+        position: [0, PLANE_Y, 0],
+        material: material.planet("ocean" as never, {
+          color: "#1d4ed8",
+          roughness: 0.35,
+          clearcoat: 0.65,
+          clearcoatRoughness: 0.14,
+          envMapIntensity: 1.35
+        }),
+        castShadow: true,
+        receiveShadow: true
+      })
+    )
+    .add(
+      primitives.sphere({
+        name: "planet atmosphere shell",
+        size: 1.42,
+        position: [0, PLANE_Y, 0],
+        material: material.atmosphere({
+          color: "#38bdf8",
+          opacity: 0.28,
+          emissiveIntensity: 0.09,
+          practical: true
+        })
+      })
+    )
+    .add(
+      primitives.torus({
+        name: "planetary ring",
+        radius: 1.95,
+        tube: 0.13,
+        position: [0, PLANE_Y + 0.04, 0],
+        rotation: [Math.PI / 2.35, 0.22, 0],
+        material: material.frostedGlass({
+          color: "#93c5fd",
+          opacity: 0.35
+        }),
+        receiveShadow: true
+      })
+    )
+    .add(
+      model(orbitalCommandCore, { name: "orbital command core", castShadow: true, receiveShadow: true })
+        .position(0, PLANE_Y, 0)
+        .scale(2.85)
     )
     // Defense core: the cratered planet GLB at the arena centre; its
     // scaled radius (~1.4 m) is the leak boundary drones must not reach.
@@ -700,13 +891,40 @@ function buildScene() {
         .scale(1)
         .runtime(game.runtimeNode("player-ship", { tags: ["player", "ship"] }))
     )
-    // Drone + bolt pools (visibility-toggled at runtime).
+    // Drone + incoming rocky/lava asteroid + bolt pools (visibility-toggled at runtime).
     .addMany(
       drones.map((_, i) =>
         model(assets.drone, { name: `drone ${i}`, castShadow: true, visible: false })
           .position(0, PLANE_Y, 0)
           .runtime(game.runtimeNode(`drone-${i}`, { tags: ["drone", "enemy"] }))
       )
+    )
+    .addMany(
+      drones.map((_, i) => {
+        const isLava = i % 2 === 1;
+        return primitives
+          .sphere({
+            name: `incoming asteroid ${i}`,
+            size: 0.34,
+            position: [0, PLANE_Y - 0.14, 0],
+            scale: 0,
+            material: isLava
+              ? material.planet("lava" as never, {
+                  color: "#b91c1c",
+                  roughness: 0.65,
+                  emissive: "#ea580c",
+                  emissiveIntensity: 0.08,
+                  practical: true
+                })
+              : material.planet("rocky", {
+                  color: "#78716c",
+                  roughness: 0.82
+                }),
+            castShadow: true,
+            receiveShadow: true
+          })
+          .runtime(game.runtimeNode(`asteroid-${i}`, { tags: ["asteroid", "enemy"] }));
+      })
     )
     .addMany(
       bolts.map((_, i) =>
