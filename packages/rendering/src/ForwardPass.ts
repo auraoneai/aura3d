@@ -442,7 +442,7 @@ export class ForwardPass extends BaseRenderPass {
       // E3 stage-2b bind site: `prd02.ibl` has no feature-local bind (the
       // probe, knob and ambient are pass state, not item state), so the
       // PRD-02 environment pack is bound here, in the feature-bind slot.
-      if (prd02Ibl) applyPrd02EnvironmentUniforms(this.options.environmentLighting, item, baseMaterial, uniforms);
+      if (prd02Ibl) applyPrd02EnvironmentUniforms(this.options.environmentLighting, item, material, uniforms);
       // C-03 `lobe.bind` (04-LOBES): descriptor factors and lobe textures for the
       // lobes this record carries. Material parameters stay authoritative.
       bindMaterialLobeUniforms(this.lastProgramFeatures.extensions, baseMaterial, rendererQrFlags(device), (name, value) => {
@@ -1380,18 +1380,23 @@ export function applyGeneratedProceduralEnvironmentUniforms(
 }
 
 /**
- * E3 stage-2b: `prd02.ibl` can only shade when a probe cube exists — the
- * pass-level C-09 probe, a scene cube binding, or a per-item probe cube.
- * Shared by the draw path and the Renderer warmup so their program keys
- * agree on the feature bit.
+ * E3 stage-2b: `prd02.ibl` can only shade when a real SH-bearing C-09
+ * probe exists (27-float `sh9`, the probe contract length). A cube-only
+ * source — a scene `environmentCubeMapTexture` or a per-item
+ * `environmentCube` with no SH — must NOT select the replacement body:
+ * the pack would bind zeroed SH and diffuse IBL would vanish, where the
+ * default indirect body samples that cube for diffuse. Such draws keep
+ * the default body (which already honours the selected cube via
+ * `withItemEnvironmentCube`). A per-item cube still wins for specular
+ * when a scene SH probe exists (see the pack below); `_item` is kept in
+ * the signature so the draw path and the Renderer warmup share one gate
+ * and their program keys agree on the feature bit.
  */
 export function prd02IblEnvironmentAvailable(
   environment: EnvironmentLightingOptions | undefined,
-  item?: RenderItem
+  _item?: RenderItem
 ): boolean {
-  if (item?.environmentCube?.texture?.dimension === "cube") return true;
-  if (environment?.environmentProbe) return true;
-  return environment?.environmentCubeMapTexture?.texture?.dimension === "cube";
+  return environment?.environmentProbe?.sh9?.length === 27;
 }
 
 /**
@@ -1423,22 +1428,46 @@ export function prd02IblEnvironmentAvailable(
 export function applyPrd02EnvironmentUniforms(
   environment: EnvironmentLightingOptions | undefined,
   item: RenderItem,
-  baseMaterial: Material,
+  material: Material | MaterialInstance,
   uniforms: Map<string, UniformValue>
 ): void {
   const env = environment ? withItemEnvironmentCube(environment, item) : undefined;
   const cubeTexture = env?.environmentCubeMapTexture?.texture ?? undefined;
-  const probe = env?.environmentProbe
-    ?? (cubeTexture
-      ? {
-          specularCube: cubeTexture,
-          mipCount: env?.environmentMapMipCount ?? Math.max(1, cubeTexture.cubeFaces[0]?.mipLevels.length ?? 1),
-          sh9: new Float32Array(0)
-        }
-      : null);
+  const sceneProbe = env?.environmentProbe ?? null;
+  // A selected per-item cube (`withItemEnvironmentCube` already folded it
+  // into `env.environmentCubeMapTexture`, e.g. from
+  // `applyProbeEnvironmentCubes`) wins for specular; diffuse SH still
+  // comes from the scene probe — the item cube carries no SH of its own.
+  const selectedCubeMips = cubeTexture?.cubeFaces[0]?.mipLevels.length;
+  const probe = sceneProbe && cubeTexture && cubeTexture.dimension === "cube" && cubeTexture !== sceneProbe.specularCube
+    ? {
+        specularCube: cubeTexture,
+        mipCount: item.environmentCubeMip
+          ?? (selectedCubeMips !== undefined && selectedCubeMips > 0
+            ? selectedCubeMips
+            : env?.environmentMapMipCount ?? sceneProbe.mipCount),
+        sh9: sceneProbe.sh9
+      }
+    : sceneProbe
+      ?? (cubeTexture
+        ? {
+            specularCube: cubeTexture,
+            mipCount: env?.environmentMapMipCount ?? Math.max(1, cubeTexture.cubeFaces[0]?.mipLevels.length ?? 1),
+            sh9: new Float32Array(0)
+          }
+        : null);
   const knobDiffuse = env?.environmentMapIntensity ?? 0;
   const knobSpecular = env?.environmentMapSpecularIntensity ?? knobDiffuse;
-  const materialMultiplierRaw = baseMaterial.getParameter?.("u_materialEnvironmentIntensity");
+  // Effective (instance-overridden) multiplier, resolved the way the
+  // generated binding resolved it: `MaterialBinding.bindGenerated` fills
+  // this packet from `materialLike.getParameters()`, and
+  // `MaterialInstance.getParameter` is override-first. Prefer the value
+  // already bound into the packet; fall back to asking the material
+  // itself (never the stripped base material) for direct callers.
+  const boundMultiplier = uniforms.get("u_materialEnvironmentIntensity");
+  const materialMultiplierRaw = typeof boundMultiplier === "number"
+    ? boundMultiplier
+    : material.getParameter?.("u_materialEnvironmentIntensity");
   const materialMultiplier = typeof materialMultiplierRaw === "number" && Number.isFinite(materialMultiplierRaw) && materialMultiplierRaw >= 0
     ? materialMultiplierRaw
     : 1;

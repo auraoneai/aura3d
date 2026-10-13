@@ -22,10 +22,14 @@ import "../../../packages/rendering/src/lanes/prd02";
 import { generateProgramImpl } from "../../../packages/rendering/src/program/ProgramGenerator";
 import { normalizeProgramFeatures } from "../../../packages/rendering/src/program/ProgramFeatures";
 import { createExternalParityEnvironmentLighting } from "../../../packages/rendering/src/ExternalParityRenderPreset";
-import { applyPrd02EnvironmentUniforms } from "../../../packages/rendering/src/ForwardPass";
+import { applyPrd02EnvironmentUniforms, prd02IblEnvironmentAvailable } from "../../../packages/rendering/src/ForwardPass";
+import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
+import { PBRMaterial } from "../../../packages/rendering/src/PBRMaterial";
+import { MaterialInstance } from "../../../packages/rendering/src/MaterialInstance";
 import { collectEnvironmentLighting } from "../../../packages/rendering/src/renderer/Background";
 import { setRendererQrFlags } from "../../../packages/rendering/src/renderer/FrameGraph";
 import { buildNeutralRoomLegacyProbe } from "../../../packages/rendering/src/environment/probeBuild";
+import { Texture } from "../../../packages/rendering/src/Texture";
 
 const COMPILER_ON = resolveQrFlags({ options: { A3D_QR_COMPILER: true } });
 const COMPILER_OFF = resolveQrFlags({ options: { A3D_QR_COMPILER: false } });
@@ -238,5 +242,147 @@ describe("E3 stage-2b step 3: the knob survives the C-09 probe bind", () => {
     expect((uniforms.get("u_envSH") as Float32Array).length).toBe(28);
     expect(uniforms.has("u_envSpecular")).toBe(true);
     expect(uniforms.has("u_envDfgLut")).toBe(true);
+  });
+});
+
+describe("E3 stage-2b PR review fixes: item cube, cube-only gate, instance multiplier", () => {
+  // Cheap pack/gate fixtures: the pack reads only specularCube/mipCount/sh9
+  // (EnvUniforms Pick) and the gate only texture dimension + sh9 length, so
+  // a 2px cube + known SH9 exercises the seam without a room-probe build.
+  const makeCubeTexture = (label: string) =>
+    new Texture({
+      width: 2,
+      height: 2,
+      format: "rgba16f",
+      label,
+      cubeFaces: (["px", "nx", "py", "ny", "pz", "nz"] as const).map((face) => ({
+        face,
+        mipLevels: [
+          { width: 2, height: 2, data: new Uint16Array(16) },
+          { width: 1, height: 1, data: new Uint16Array(4) }
+        ]
+      }))
+    });
+  const makeProbe = (label: string, shSeed = 1) => {
+    const sh9 = new Float32Array(27);
+    sh9[0] = shSeed;
+    sh9[1] = shSeed * 2;
+    sh9[2] = shSeed * 3;
+    return { specularCube: makeCubeTexture(label), mipCount: 2, sh9 };
+  };
+
+  it("per-item reflection cube wins for u_envSpecular while scene probe SH is retained", () => {
+    const sceneProbe = makeProbe("scene-cube");
+    const itemProbe = makeProbe("item-cube", 7);
+    expect(itemProbe.specularCube).not.toBe(sceneProbe.specularCube);
+    const env = {
+      color: [1, 1, 1],
+      intensity: 0,
+      environmentProbe: sceneProbe,
+      environmentCubeMapTexture: new TextureBinding({
+        name: "u_environmentCubeMapTexture",
+        texture: sceneProbe.specularCube,
+        required: false
+      }),
+      environmentMapIntensity: 1,
+      environmentMapSpecularIntensity: 1,
+      environmentMapMipCount: sceneProbe.mipCount
+    };
+    const material = { getParameter: () => 1 } as never;
+
+    const baseline = new Map<string, unknown>();
+    applyPrd02EnvironmentUniforms(env as never, { label: "t" } as never, material, baseline as never);
+    expect((baseline.get("u_envSpecular") as TextureBinding).texture).toBe(sceneProbe.specularCube);
+
+    const uniforms = new Map<string, unknown>();
+    applyPrd02EnvironmentUniforms(
+      env as never,
+      {
+        label: "t",
+        environmentCube: new TextureBinding({
+          name: "u_environmentCubeMapTexture",
+          texture: itemProbe.specularCube,
+          required: false
+        }),
+        environmentCubeMip: 5
+      } as never,
+      material,
+      uniforms as never
+    );
+    expect((uniforms.get("u_envSpecular") as TextureBinding).texture).toBe(itemProbe.specularCube);
+    expect(uniforms.get("u_envMipCount")).toBe(5);
+    // Diffuse SH still comes from the scene (SH-bearing) probe.
+    expect(Array.from(uniforms.get("u_envSH") as Float32Array)).toEqual(
+      Array.from(baseline.get("u_envSH") as Float32Array)
+    );
+  });
+
+  it("cube-only environments do not select prd02.ibl (no SH -> default body fallback)", () => {
+    const probe = makeProbe("gate-cube");
+    const cube = new TextureBinding({
+      name: "u_environmentCubeMapTexture",
+      texture: probe.specularCube,
+      required: false
+    });
+    const bareItem = { label: "t" } as never;
+    const itemCubeItem = { label: "t", environmentCube: cube, environmentCubeMip: probe.mipCount } as never;
+
+    // Scene cube binding only, no SH-bearing probe.
+    expect(
+      prd02IblEnvironmentAvailable(
+        { color: [1, 1, 1], intensity: 0, environmentCubeMapTexture: cube } as never,
+        bareItem
+      )
+    ).toBe(false);
+    // Per-item cube only, no SH-bearing probe.
+    expect(
+      prd02IblEnvironmentAvailable({ color: [1, 1, 1], intensity: 0 } as never, itemCubeItem)
+    ).toBe(false);
+    // Probe object without a real 27-float SH9 is not SH-bearing.
+    expect(
+      prd02IblEnvironmentAvailable(
+        {
+          color: [1, 1, 1],
+          intensity: 0,
+          environmentProbe: { specularCube: probe.specularCube, mipCount: probe.mipCount, sh9: new Float32Array(0) }
+        } as never,
+        bareItem
+      )
+    ).toBe(false);
+    // Real SH-bearing probe selects, with or without a per-item cube.
+    const withProbe = { color: [1, 1, 1], intensity: 0, environmentProbe: probe } as never;
+    expect(prd02IblEnvironmentAvailable(withProbe, bareItem)).toBe(true);
+    expect(prd02IblEnvironmentAvailable(withProbe, itemCubeItem)).toBe(true);
+  });
+
+  it("MaterialInstance override of u_materialEnvironmentIntensity drives the pack multiplier", () => {
+    const probe = makeProbe("instance-cube");
+    const base = new PBRMaterial({ envMapIntensity: 1 });
+    const instance = new MaterialInstance(base);
+    instance.setOverride("u_materialEnvironmentIntensity", 0.25);
+    const env = {
+      color: [1, 1, 1],
+      intensity: 0,
+      environmentProbe: probe,
+      environmentMapIntensity: 2,
+      environmentMapSpecularIntensity: 2,
+      environmentMapMipCount: probe.mipCount
+    };
+
+    // Production packet seam: bindGenerated has already written the
+    // instance-effective value into the packet (MaterialBinding uses
+    // materialLike.getParameters()); the pack must not overwrite it with
+    // the base value even when handed the base material.
+    const packet = new Map<string, unknown>();
+    packet.set("u_materialEnvironmentIntensity", instance.getParameters().get("u_materialEnvironmentIntensity"));
+    applyPrd02EnvironmentUniforms(env as never, { label: "t" } as never, base, packet as never);
+    expect(packet.get("u_envDiffuseIntensity")).toBe(0.5);
+    expect(packet.get("u_envSpecularIntensity")).toBe(0.5);
+
+    // Direct seam: the instance itself resolves override-first.
+    const direct = new Map<string, unknown>();
+    applyPrd02EnvironmentUniforms(env as never, { label: "t" } as never, instance, direct as never);
+    expect(direct.get("u_envDiffuseIntensity")).toBe(0.5);
+    expect(direct.get("u_envSpecularIntensity")).toBe(0.5);
   });
 });
