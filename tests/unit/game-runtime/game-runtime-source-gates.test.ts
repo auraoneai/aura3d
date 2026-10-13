@@ -1433,63 +1433,35 @@ describe("game runtime source gates", () => {
      * the dispatcher itself must stay a thin dispatcher (no gameplay tokens).
      */
     const skylineMain = readSource("apps/showcase-skyline-runner/src/main.ts");
-    const skylineBoot = readSource("apps/showcase-skyline-runner/src/v2/boot.ts");
-    const skylineBinding = readSource("apps/showcase-skyline-runner/src/v2/scene/binding.ts");
-    const skylineLevel = readSource("apps/showcase-skyline-runner/src/gameplay/level.ts");
-    const skylineProof = readSource("apps/showcase-skyline-runner/src/gameplay/level-proof.ts");
+    const skylineLevel = readSource("apps/showcase-skyline-runner/src/level.ts");
     const turboMain = readSource("apps/showcase-turbo-drift-circuit/src/main.ts");
     const turboGhost = readSource("apps/showcase-turbo-drift-circuit/src/ghost.ts");
     const turboOpponent = readSource("apps/showcase-turbo-drift-circuit/src/opponent-ai.ts");
 
-    // Skyline's dispatcher resolves the route flag and defers to legacy or
-    // v2 — nothing more. Turbo's dispatcher was deleted in the Live Fix B2
-    // single-path rebuild: src/main.ts IS the route, with no flag fork.
-    expect(skylineMain).toContain("resolveQrFlags");
-    expect(skylineMain).toContain('ROUTE_FLAG = "A3D_QR_ROUTE_SKYLINE_RUNNER"');
+    // Skyline and Turbo dispatchers were deleted in the Live Fix B2/B3
+    // single-path rebuilds: src/main.ts IS the route, with no flag fork.
+    expect(skylineMain).not.toContain("A3D_QR_ROUTE_SKYLINE_RUNNER");
+    expect(existsSync("apps/showcase-skyline-runner/src/v2")).toBe(false);
+    expect(existsSync("apps/showcase-skyline-runner/src/legacy")).toBe(false);
+    expect(existsSync("apps/showcase-skyline-runner/src/generated/game-geometry.ts")).toBe(false);
     expect(turboMain).not.toContain("A3D_QR_ROUTE_TURBO_DRIFT_CIRCUIT");
     expect(existsSync("apps/showcase-turbo-drift-circuit/src/v2")).toBe(false);
     expect(existsSync("apps/showcase-turbo-drift-circuit/src/legacy")).toBe(false);
 
     /*
-     * Skyline runner: the level is built by `src/gameplay/level.ts` (shared with
-     * `level-proof.ts`) on the public asset-bound level builder, the scene
-     * binding lives in `src/v2/scene/binding.ts`, and `v2/boot.ts` drives the
-     * public `game.platformer` kit through it.
+     * Skyline runner (single-path rebuild): motion is solved from the authored
+     * rects in `src/level.ts` via `solvePlatformerMotion`, `buildSkylineLevel`
+     * assembles the kit level, and `src/main.ts` drives `game.platformer(level)`.
      */
-    expect(skylineLevel).toContain("game.assetBoundPlatformerLevel({");
-    expect(skylineLevel).toContain("solvePlatformerMotion(");
-    expect(skylineLevel).toContain('import { gameGeometryContract } from "../generated/game-geometry"');
-    expect(skylineLevel).toContain("skylinePlayableSurfaceMap");
-    expect(skylineBinding).toContain("engineGame.platformerSceneBinding({");
-    expect(skylineBinding).toContain("createSkylineLevel()");
-    expect(skylineBoot).toContain("engineGame.platformer(level)");
-    expect(skylineBoot).toContain("platformerScene");
-    expect(readSource("apps/showcase-skyline-runner/src/v2/sync.ts")).toContain("platformerScene.toScenePlayer");
-    expect(skylineProof).toContain("createSkylineLevel");
-    const skylineGeometry = readFileSync("apps/showcase-skyline-runner/src/generated/game-geometry.ts", "utf8");
-    expect(skylineGeometry).toContain('"source": "asset-mesh-extracted"');
-    expect(skylineGeometry).toContain('"worldAssetHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd"');
-    // The dispatcher carries no gameplay or route-local motion tokens.
+    expect(skylineMain).toContain("solvePlatformerMotion(SKYLINE_PLATFORMS");
+    expect(skylineMain).toContain("buildSkylineLevel(motion)");
+    expect(skylineMain).toContain("game.platformer(level)");
+    expect(skylineLevel).toContain("export function buildSkylineLevel");
     expect(skylineMain).not.toContain('"source": "asset-mesh-extracted"');
     expect(skylineMain).not.toContain("sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4");
-    expect(skylineMain).not.toContain("camera.follow(");
-    expect(skylineMain).not.toContain("import { camera,");
     expect(skylineMain).not.toContain("stepSkylineRunner(");
     expect(skylineMain).not.toContain("createInitialSkylineState(");
     expect(skylineMain).not.toContain("(state.player.x - 18) * 0.08");
-    /*
-     * `runner-rules.ts` is gone, so assert it stays gone.
-     *
-     * It was a 252-line orphan with **zero importers** that still declared `gravity: -20.2` and
-     * `jumpVelocity: 8.75` — the route-local motion constants PRD rule 1 bans, and the same stale
-     * tuning WS-4.2 removed from `main.ts`. The old gate only checked what the file must *not*
-     * contain (`stepSkylineRunner`, `resolvePlatformLanding`, `advanceFrame`), which let the dead
-     * constants sit there indefinitely: it policed a route-local *engine* while ignoring route-local
-     * *tuning*.
-     *
-     * Deleting it is the fix. Checking for its absence is what stops it coming back, and is strictly
-     * stronger than the three negative assertions it replaces.
-     */
     expect(existsSync("apps/showcase-skyline-runner/src/runner-rules.ts")).toBe(false);
 
     // Turbo drift circuit (single-path rebuild): public racing kit +

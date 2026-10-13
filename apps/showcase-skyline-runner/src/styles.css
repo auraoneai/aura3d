@@ -1,0 +1,42 @@
+:root {
+  color-scheme: dark;
+  background: #071015;
+  color: #f5fbff;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+.runner-shell {
+  position: relative;
+  min-height: 100vh;
+}
+
+.runner-viewport,
+.runner-stage {
+  position: absolute;
+  inset: 0;
+}
+
+.runner-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.runner-panel {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  z-index: 5;
+  min-width: 280px;
+  font-size: 13px;
+  line-height: 1.35;
+  background: rgba(6, 18, 26, 0.66);
+  border: 1px solid rgba(160, 210, 240, 0.34);
+  border-radius: 8px;
+  padding: 12px;
+  pointer-events: none;
+}

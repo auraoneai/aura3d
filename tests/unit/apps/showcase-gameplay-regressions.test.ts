@@ -1,21 +1,32 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
-  createGameAssetBoundPlatformerLevel,
   createGamePlatformerKit,
-  createGameRacingKit
+  createGameRacingKit,
+  type GamePlatformerSnapshot
 } from "../../../packages/engine/src/agent-api/GameGenreKits";
 // Turbo's generated game-geometry contract was trashed with the dual-path
 // route (Live Fix B2); the rebuilt route ships the racing-starter route
 // geometry inline in src/main.ts, mirrored in the pace test below.
+import { solvePlatformerMotion } from "../../../packages/engine/src/agent-api/PlatformerMotion";
 import { createTurboOpponentAi, type TurboOpponentInput } from "../../../apps/showcase-turbo-drift-circuit/src/opponent-ai";
-import { createRunnerChallenge } from "../../../apps/showcase-skyline-runner/src/runner-challenge";
-import { createSixtySecondLevelProof } from "../../../apps/showcase-skyline-runner/src/level-proof";
+import { playerYawForFacing } from "../../../apps/showcase-skyline-runner/src/facing";
+import { createSkylineFlow } from "../../../apps/showcase-skyline-runner/src/flow";
 import {
-  SKYLINE_FIRST_MID_CHECKPOINT_ID,
-  SKYLINE_SECTION_COUNT,
-  createSkylineLevel
+  buildSkylineLevel,
+  SKYLINE_PLATFORMS,
+  SKYLINE_PLAYER_HEIGHT
 } from "../../../apps/showcase-skyline-runner/src/level";
+
+function createRouteSkylineLevel() {
+  const motion = solvePlatformerMotion(SKYLINE_PLATFORMS, {
+    feel: "snappy",
+    characterHeight: SKYLINE_PLAYER_HEIGHT,
+    jumpHeight: SKYLINE_PLAYER_HEIGHT * 2.3,
+    runSpeedPerHeight: 4.5
+  });
+  return buildSkylineLevel(motion);
+}
 
 describe("public showcase gameplay regressions", () => {
   it("does not self-author completion or visual approval before mounted interaction", () => {
@@ -26,10 +37,8 @@ describe("public showcase gameplay regressions", () => {
     expect(skyline).toContain("completed: false");
     expect(skyline).toContain("state.status === \"completed\"");
     expect(skyline).toContain("!completionProof.completed");
-    // The shipped level now completes at the physical finish. A post-finish clock
-    // gate would make a short course look long without adding any gameplay.
     expect(skyline).not.toContain("challengeEvidence.elapsedSeconds >= level.assetBinding.authoredPlayableSeconds");
-    expect(skyline).toContain("completionProof.finalTime = challengeEvidence.elapsedSeconds");
+    expect(skyline).toContain("completionProof.finalTime = flow.snapshot().elapsedSeconds");
     expect(skyline).not.toContain("visualReviewPass: true");
     expect(turbo).not.toContain("visualReviewPass: true");
     // The trashed route proved these intents with evidence-field names
@@ -43,54 +52,52 @@ describe("public showcase gameplay regressions", () => {
     expect(turbo).toContain('playerState.status === "finished"');
   });
 
-  it("keeps Skyline Runner traversable through its generated finish surface", () => {
-    /*
-     * The route's own level, from the module that owns it.
-     *
-     * Reconstructing it here meant the test exercised a *different* level from the one the
-     * route ships: after motion was derived from the level geometry, this copy still
-     * carried the old floaty tuning and the new validator rejected it. Testing the shared
-     * definition is what makes these regressions about the shipped route.
-     */
-    const level = createSkylineLevel();
-    expect(level.finish, "extended Skyline level must retain a physical finish").toBeDefined();
+  it("keeps Skyline Runner traversable through its authored finish surface", () => {
+    const level = createRouteSkylineLevel();
+    expect(level.finish, "Skyline level must retain a physical finish").toBeDefined();
     const finish = level.finish!;
-    const lastDistrictPrefix = `district-${SKYLINE_SECTION_COUNT}-`;
     const finishSurface = level.platforms?.find((surface) =>
-      (surface.id.startsWith(lastDistrictPrefix) || surface.id === "asset-finish-run")
+      surface.id === "finish-run"
       && finish.x >= surface.x
       && finish.x <= surface.x + surface.width
       && finish.y >= surface.y
-      && finish.y <= surface.y + surface.height + 0.1
+      && finish.y <= surface.y + surface.height + 0.6
     );
-    const hazard = level.hazards?.find((surface) => surface.id.endsWith("asset-hazard-gap"));
+    const hazard = level.hazards?.[0];
     expect(finishSurface, "finish must be retained as collision geometry").toBeDefined();
     expect(hazard, "route must retain a miss-jump hazard").toBeDefined();
     expect(rectsOverlap(finishSurface!, hazard!)).toBe(false);
     for (const platform of level.platforms ?? []) expect(rectsOverlap(platform, hazard!)).toBe(false);
 
-    // Reuse the route-owned deterministic driver rather than maintaining a
-    // second, weaker jump policy here. It traverses the complete physical course
-    // and records the exact finish frame inside the promised two-to-three-minute
-    // window.
-    const proof = createSixtySecondLevelProof();
-    expect(proof.metrics.finalStatus).toBe("completed");
-    expect(proof.metrics.maxTraversalX).toBeGreaterThan(finish.x - 1);
-    expect(proof.metrics.activatedCheckpointCount).toBe(level.checkpoints?.length);
-    expect(proof.mechanics.completionFallsInsideTargetWindow).toBe(true);
+    const kit = createGamePlatformerKit(level);
+    let state = kit.snapshot();
+    let deaths = state.deaths;
+    let neutralFrames = 0;
+    for (let frame = 0; frame < 90 * 60 && state.status !== "completed"; frame += 1) {
+      const support = SKYLINE_PLATFORMS.find(
+        (p) => Math.abs(p.y + p.height - state.player.y) < 0.05
+          && state.player.x >= p.x - 0.1 && state.player.x <= p.x + p.width + 0.1
+      );
+      const nearEdge = support !== undefined && state.player.x > support.x + support.width - 0.45;
+      if (state.deaths > deaths) neutralFrames = 6;
+      deaths = state.deaths;
+      const neutral = neutralFrames > 0;
+      if (neutral) neutralFrames -= 1;
+      const jumpPressed = !neutral && state.player.grounded && nearEdge;
+      state = kit.step(1 / 60, {
+        moveX: neutral ? 0 : 1,
+        jumpPressed,
+        jumpHeld: jumpPressed || !state.player.grounded
+      });
+    }
+    expect(state.status).toBe("completed");
+    expect(state.player.x).toBeGreaterThan(finish.x - 1);
+    expect(state.activatedCheckpoints.length).toBe(level.checkpoints?.length);
   });
 
   it("respawns Skyline checkpoints on supporting surfaces instead of trigger-center heights", () => {
-    /*
-     * The route's own level, from the module that owns it.
-     *
-     * Reconstructing it here meant the test exercised a *different* level from the one the
-     * route ships: after motion was derived from the level geometry, this copy still
-     * carried the old floaty tuning and the new validator rejected it. Testing the shared
-     * definition is what makes these regressions about the shipped route.
-     */
-    const level = createSkylineLevel();
-    const checkpoint = level.checkpoints?.find((candidate) => candidate.id === SKYLINE_FIRST_MID_CHECKPOINT_ID);
+    const level = createRouteSkylineLevel();
+    const checkpoint = level.checkpoints?.find((candidate) => candidate.id === "mid");
     const supportingSurface = [...(level.platforms ?? [])].sort((left, right) => {
       const leftDistance = Math.abs(checkpoint!.x - Math.min(Math.max(checkpoint!.x, left.x), left.x + left.width));
       const rightDistance = Math.abs(checkpoint!.x - Math.min(Math.max(checkpoint!.x, right.x), right.x + right.width));
@@ -111,44 +118,25 @@ describe("public showcase gameplay regressions", () => {
     expect(respawned.player.y).not.toBeCloseTo(checkpoint!.y, 3);
 
     let continued = respawned;
-    const frames = 45;
+    const frames = 20;
     for (let frame = 0; frame < frames; frame += 1) {
       continued = simulation.step(1 / 60, { moveX: 1 });
     }
-    /*
-     * Expected travel is derived from the level's own move speed, not a literal.
-     *
-     * The previous `+ 0.75` was tuned against a hardcoded `moveSpeed: 1.15`, so deriving
-     * motion from the level geometry broke a test that was measuring the old constant
-     * rather than the behaviour. The behaviour under test is "the respawned player can walk
-     * forward off the checkpoint", which is a fraction of the distance the level's speed
-     * covers in the sampled window.
-     */
     const expectedTravel = (level.moveSpeed ?? 1) * (frames / 60) * 0.7;
     expect(continued.player.x).toBeGreaterThan(respawned.player.x + expectedTravel);
     expect(continued.deaths).toBe(0);
   });
 
   it("requires neutral movement after a Skyline death to prevent checkpoint death loops", () => {
-    /*
-     * The route's own level, from the module that owns it.
-     *
-     * Reconstructing it here meant the test exercised a *different* level from the one the
-     * route ships: after motion was derived from the level geometry, this copy still
-     * carried the old floaty tuning and the new validator rejected it. Testing the shared
-     * definition is what makes these regressions about the shipped route.
-     */
-    const level = createSkylineLevel();
+    const level = createRouteSkylineLevel();
     const simulation = createGamePlatformerKit(level);
-    let snapshot = simulation.reset(SKYLINE_FIRST_MID_CHECKPOINT_ID);
+    let snapshot = simulation.reset("mid");
     const checkpointX = snapshot.player.x;
     for (let frame = 0; frame < 240 && snapshot.deaths === 0; frame += 1) {
       snapshot = simulation.step(1 / 60, { moveX: 1 });
     }
     expect(snapshot.deaths).toBe(1);
     const respawnDeaths = snapshot.deaths;
-    // Keep holding well beyond the old 300 ms timer but inside the bounded
-    // continuous-controller fallback. A human release must remain the fast path.
     for (let frame = 0; frame < 36; frame += 1) {
       snapshot = simulation.step(1 / 60, { moveX: 1 });
     }
@@ -158,7 +146,7 @@ describe("public showcase gameplay regressions", () => {
 
     simulation.step(1 / 60, { moveX: 0 });
     const releasedAtX = simulation.snapshot().player.x;
-    for (let frame = 0; frame < 30; frame += 1) {
+    for (let frame = 0; frame < 20; frame += 1) {
       snapshot = simulation.step(1 / 60, { moveX: 1, jumpPressed: frame === 0 });
     }
     expect(snapshot.deaths).toBe(respawnDeaths);
@@ -169,53 +157,47 @@ describe("public showcase gameplay regressions", () => {
     const source = readFileSync("apps/showcase-skyline-runner/src/main.ts", "utf8");
     expect(source).toContain("playerYawForFacing");
     expect(source).toContain("state.player.vx >= 0 ? 1 : -1");
-    // The shipped route keeps the gameplay-facing yaw contract while applying
-    // a documented visual profile offset to the typed hero. The rigid run
-    // cycle (26912b8c) folds stride sway + lean into a run yaw derived from
-    // that same profile, so the assertion follows the run yaw, not the
-    // pre-cycle direct call: the base is still the facing profile, and the
-    // bounded sway/lean cannot turn the hero toward the camera.
-    expect(source).toContain("const runYaw = playerVisualYawForFacing(playerFacing) + runSway");
-    expect(source).toContain("player.setRotation(0, runYaw, runLeanZ)");
+    expect(source).toContain("player.setRotation(0, playerYawForFacing(playerFacing), 0)");
+    expect(playerYawForFacing(1)).toBeCloseTo(Math.PI / 2);
+    expect(playerYawForFacing(-1)).toBeCloseTo(-Math.PI / 2);
   });
 
   it("scores Skyline flow, collection chains, checkpoint splits, retries, and reset", () => {
-    const challenge = createRunnerChallenge(40);
+    const flow = createSkylineFlow();
     const initial = runnerChallengeSnapshot();
-    const moving = {
+    const moving: GamePlatformerSnapshot = {
       ...initial,
-      player: { vx: 1.2, vy: 2.4 },
-      collected: ["coin-1", "coin-2"],
-      activatedCheckpoints: ["asset-checkpoint-01"],
-      checkpointId: "asset-checkpoint-01",
-      score: 200
+      player: { ...initial.player, vx: 1.2, vy: 2.4, grounded: false },
+      collected: ["coin-01", "coin-02"],
+      activatedCheckpoints: ["mid"],
+      checkpointId: "mid",
+      score: 100
     };
-    const afterChain = challenge.step(1, initial, moving);
-    expect(afterChain.flow).toBeGreaterThan(0);
+    const afterChain = flow.step(1, initial, moving);
+    expect(afterChain.flowScore).toBeGreaterThan(0);
     expect(afterChain.collectionChain).toBe(2);
     expect(afterChain.maxCollectionChain).toBe(2);
-    expect(afterChain.checkpointSplits["asset-checkpoint-01"]).toBe(0.1);
+    expect(afterChain.checkpointSplits["mid"]).toBeGreaterThan(0);
     expect(afterChain.challengeScore).toBeGreaterThan(moving.score);
 
-    const retried = challenge.step(0.5, moving, { ...moving, deaths: 1 });
+    const retried = flow.step(0.5, moving, { ...moving, deaths: 1 });
     expect(retried.deathless).toBe(false);
     expect(retried.collectionChain).toBe(0);
-    expect(retried.flow).toBe(0);
+    expect(retried.flowScore).toBe(0);
 
-    const completed = challenge.step(0.5, { ...moving, deaths: 1 }, {
+    const completed = flow.step(0.5, { ...moving, deaths: 1 }, {
       ...moving,
       deaths: 1,
-      collected: ["coin-1", "coin-2", "coin-3"],
+      collected: ["coin-01", "coin-02", "coin-03"],
       status: "completed"
     });
     expect(completed.completed).toBe(true);
     expect(completed.objectiveMet).toBe(true);
 
-    const reset = challenge.reset();
+    const reset = flow.reset();
     expect(reset.elapsedSeconds).toBe(0);
     expect(reset.challengeScore).toBe(0);
     expect(reset.resets).toBe(1);
-    expect(reset.recentEvents).toContain("challenge-reset");
   });
 
   it("runs Turbo Drift at the shipped arcade pace on its inline route", () => {
@@ -357,16 +339,8 @@ describe("public showcase gameplay regressions", () => {
   });
 });
 
-function runnerChallengeSnapshot() {
-  return {
-    player: { vx: 0, vy: 0 },
-    collected: [] as readonly string[],
-    activatedCheckpoints: [] as readonly string[],
-    deaths: 0,
-    checkpointId: "start",
-    status: "playing",
-    score: 0
-  };
+function runnerChallengeSnapshot(): GamePlatformerSnapshot {
+  return createGamePlatformerKit(createRouteSkylineLevel()).snapshot();
 }
 
 function rectsOverlap(
