@@ -16,10 +16,10 @@ import { CITY_SCALE, SKYLINE_TOWER_FOOTPRINTS } from "../legacy/city";
 /** Closest the eye may get to the van (metres, horizontal). */
 export const CHASE_MIN_DISTANCE = 2.6;
 /** Padding kept between the eye and a tower face. */
-const TOWER_PADDING = 0.8;
+const TOWER_PADDING = 1.5;
 /** Height of the follow target above the road (camera target node y). */
 const TARGET_Y = 0.2;
-const SAMPLES = 16;
+const SAMPLES = 24;
 
 interface SolidBox {
   readonly minX: number; readonly maxX: number;
