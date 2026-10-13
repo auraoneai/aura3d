@@ -139,7 +139,7 @@ const playedAudioEvents = new Set<string>();
 const neonGame = createGame({
   id: "neon-corridor-strike",
   target: "#app",
-  diagnostics: { overlay: true, performancePanel: true },
+  diagnostics: { overlay: false, performancePanel: false },
   scene: () => buildScene(),
   input: inputOptions,
   hud: {

@@ -223,7 +223,7 @@ setupPracticeBoard();
 const blockfallGame = createGame({
   id: "blockfall-reactor",
   target: "#app",
-  diagnostics: { overlay: true, performancePanel: true },
+  diagnostics: { overlay: false, performancePanel: false },
   scene: () => buildScene(falling.snapshot().board),
   input: inputOptions,
   hud: {

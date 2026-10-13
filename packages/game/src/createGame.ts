@@ -109,6 +109,7 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
   } = options;
   const runtime = createGameApp(options.target, {
     ...appOptions,
+    diagnostics: { overlay: false, performancePanel: false },
     scene: authoredScene,
     qualityRebuild: options.qualityRebuild as { flags?: readonly string[] }
   });
