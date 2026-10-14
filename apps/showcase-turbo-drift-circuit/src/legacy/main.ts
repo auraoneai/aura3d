@@ -1025,11 +1025,10 @@ function buildTurboSceneryNodes() {
     // over the bottom edge; the typed V2 stands already provide the visible
     // grandstand identity, so keep these route-owned shelves out of the exact
     // capture while retaining them for normal gameplay/parallax.
-    scale: visualCaptureCamera
-      ? [0.001, 0.001, 0.001] as [number, number, number]
-      : [stand.sizeScene[0], stand.sizeScene[1], stand.sizeScene[2]] as [number, number, number]
+    scale: [0.001, 0.001, 0.001] as [number, number, number]
   }));
-  const trunkTransforms = sceneryPlan.trees.map((tree) => ({
+  const safeTrees = sceneryPlan.trees.filter((tree) => Math.abs(tree.signedOffsetGame) >= visualAsphaltHalfWidthGame + 1.6 && tree.progress > 0.08 && tree.progress < 0.92);
+  const trunkTransforms = safeTrees.map((tree) => ({
     position: (() => {
       const p = gamePointToScene(tree.point);
       return [p[0], TRACK_REFERENCE_Y + tree.sizeScene[1] * 0.22, p[2]] as [number, number, number];
@@ -1037,7 +1036,7 @@ function buildTurboSceneryNodes() {
     rotation: [0, 0, 0] as [number, number, number],
     scale: [tree.sizeScene[0] * 0.34, tree.sizeScene[1] * 0.44, tree.sizeScene[0] * 0.34] as [number, number, number]
   }));
-  const canopyTransforms = sceneryPlan.trees.map((tree) => ({
+  const canopyTransforms = safeTrees.map((tree) => ({
     position: (() => {
       const p = gamePointToScene(tree.point);
       return [p[0], TRACK_REFERENCE_Y + tree.sizeScene[1] * 0.58, p[2]] as [number, number, number];
@@ -1048,7 +1047,7 @@ function buildTurboSceneryNodes() {
     // visible from the chase camera.
     scale: [tree.sizeScene[0] * 1.32, tree.sizeScene[1] * 0.54, tree.sizeScene[0] * 1.32] as [number, number, number]
   }));
-  const canopyAccentTransforms = sceneryPlan.trees.map((tree, index) => ({
+  const canopyAccentTransforms = safeTrees.map((tree, index) => ({
     position: (() => {
       const p = gamePointToScene(tree.point);
       const side = index % 2 === 0 ? 1 : -1;
@@ -1062,7 +1061,7 @@ function buildTurboSceneryNodes() {
   // empty stadium apron. These are renderer-owned set-dressing transforms derived
   // from the same centreline and placed one full car-width beyond the asphalt;
   // they never enter the track-props or Rapier worlds.
-  const roadsideTreeProgresses = [0.018, 0.052, 0.087, 0.121, 0.158, 0.196, 0.234, 0.272] as const;
+  const roadsideTreeProgresses = [] as const;
   const roadsideTreeTransforms = roadsideTreeProgresses.flatMap((progress, index) => {
     const sample = sampleCentreline(progress);
     const side = index % 2 === 0 ? 1 : -1;
@@ -1209,7 +1208,7 @@ function buildTurboSceneryNodes() {
       name: "scenery tree canopies (instanced)",
       castShadow: false,
       material: material.pbr({ name: "tree canopy", color: "#3f6b3a", roughness: 0.9 }),
-      instanceColors: sceneryPlan.trees.map((_, index) => {
+      instanceColors: safeTrees.map((_, index) => {
         const palette = ["#5f8f49", "#4b7b42", "#769b4f", "#3f6b3a"] as const;
         return palette[index % palette.length]!;
       }),
@@ -1219,7 +1218,7 @@ function buildTurboSceneryNodes() {
       name: "scenery tree warm foliage accents (instanced)",
       castShadow: false,
       material: material.pbr({ name: "tree warm foliage accents", color: "#a55c43", roughness: 0.88 }),
-      instanceColors: sceneryPlan.trees.map((_, index) => {
+      instanceColors: safeTrees.map((_, index) => {
         const palette = ["#b76645", "#d17a4c", "#8f5141", "#c16b3f"] as const;
         return palette[index % palette.length]!;
       }),
@@ -1996,10 +1995,9 @@ function buildTurboRoadDetailNodes() {
       material: material.pbr({
         name: "layered asphalt shoulder",
         color: visualCaptureCamera ? TURBO_REVIEW_GRADE.shoulder : "#30393b",
-        roughness: 0.76,
-        metallic: 0.015,
-        clearcoat: 0.12,
-        clearcoatRoughness: 0.42,
+        roughness: 0.88,
+        metallic: 0.01,
+        clearcoat: 0,
         normal: material.proceduralTexture("plastic-micro-scratch", { scale: 30, strength: 0.18, contrast: 0.54 }),
         roughnessMap: material.proceduralTexture("rubber-roughness", { scale: 16, strength: 0.34, contrast: 0.62 })
       }),
@@ -2037,16 +2035,15 @@ function buildTurboRoadDetailNodes() {
       material: material.pbr({
         name: "layered asphalt",
         color: visualCaptureCamera ? TURBO_REVIEW_GRADE.asphalt : "#3e474d",
-        roughness: visualCaptureCamera ? 0.58 : 0.64,
-        metallic: 0.02,
-        clearcoat: 0.2,
-        clearcoatRoughness: 0.3,
+        roughness: 0.86,
+        metallic: 0.01,
+        clearcoat: 0,
         // A restrained procedural micro-normal and roughness response breaks
         // up the broad ribbon under the key light without inventing a second
         // road or changing the certified contact mesh.
         normal: material.proceduralTexture("plastic-micro-scratch", { scale: 34, strength: 0.24, contrast: 0.58 }),
         roughnessMap: material.proceduralTexture("rubber-roughness", { scale: 18, strength: 0.46, contrast: 0.64 }),
-        envMapIntensity: visualCaptureCamera ? 0.58 : 0.46
+        envMapIntensity: 0.32
       }),
       castShadow: false,
       receiveShadow: true

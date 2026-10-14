@@ -107,7 +107,7 @@ const app = createAuraApp("#app", {
     layers,
     gravity: [0, -24, 0],
     seed: 20260919,
-    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 16 }
   },
   scene: buildScene()
 });
