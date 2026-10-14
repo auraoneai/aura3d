@@ -25,8 +25,7 @@ import {
   material,
   model,
   primitives,
-  scene,
-  sky
+  scene
 } from "@aura3d/engine";
 import { createGame, type GameHudWidgetSpec } from "@aura3d/engine/game";
 import {
@@ -769,19 +768,8 @@ function buildScene() {
   });
 
   return scene()
-    .background("#030712")
+    .background("#0c1938")
     .add(looks.preset(LOOK_ID))
-    // Deep-space nebula sky gradient (#030712 -> #0c1938 -> #1e1b4b) + matching fog
-    .add(
-      sky.gradient({
-        name: "deep-space nebula sky",
-        zenith: "#030712",
-        horizon: "#0c1938",
-        ground: "#1e1b4b",
-        curve: 1.35,
-        exposure: 0.95
-      })
-    )
     .add(
       effects.fog({
         color: "#0c1938",
