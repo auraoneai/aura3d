@@ -314,34 +314,20 @@ function buildScene() {
   // Gallery walls with mahogany wainscoting & cutaway south parapet for the 3/4 view.
   for (const wall of LAYOUT.walls) {
     const isSouthCutaway = wall.id === "wall-south";
-    const isNorthFeature = wall.id === "wall-north";
     const visualHeight = isSouthCutaway ? 0.48 : wall.height;
     const wainscotHeight = isSouthCutaway ? 0.48 : 0.92;
     const wallWidthX = wall.halfX * 2;
     const wallWidthZ = wall.halfZ * 2;
-    if (isNorthFeature) {
-      nodes.push(
-        model(assets.quaterniusWallModular, {
-          name: `wall ${wall.id}`,
-          material: galleryWallMat,
-          castShadow: true,
-          receiveShadow: true
-        })
-          .position(wall.x, visualHeight / 2, wall.z)
-          .scale([wallWidthX / 2 * WALL_RENORM_X * 2, (visualHeight / 2) * WALL_RENORM_Y * 2, wallWidthZ / 2 * WALL_RENORM_Z * 2])
-      );
-    } else {
-      nodes.push(
-        primitives.box({
-          name: `wall ${wall.id}`,
-          material: isSouthCutaway ? mahoganyWainscotMat : galleryWallMat,
-          castShadow: !isSouthCutaway,
-          receiveShadow: true
-        })
-          .position(wall.x, visualHeight / 2, wall.z)
-          .scale([wallWidthX, visualHeight, wallWidthZ])
-      );
-    }
+    nodes.push(
+      primitives.box({
+        name: `wall ${wall.id}`,
+        material: isSouthCutaway ? mahoganyWainscotMat : galleryWallMat,
+        castShadow: !isSouthCutaway,
+        receiveShadow: true
+      })
+        .position(wall.x, visualHeight / 2, wall.z)
+        .scale([wallWidthX, visualHeight, wallWidthZ])
+    );
     if (!isSouthCutaway) {
       nodes.push(
         primitives.box({
@@ -355,6 +341,17 @@ function buildScene() {
       );
     }
   }
+  // Carved modular stone vault pediment over the north extraction exit.
+  nodes.push(
+    model(assets.quaterniusWallModular, {
+      name: "vault arch pediment",
+      material: galleryWallMat,
+      castShadow: false,
+      receiveShadow: true
+    })
+      .position(LAYOUT.exit.x, 2.55, LAYOUT.exit.z - 0.14)
+      .scale([WALL_RENORM_X * 1.8, WALL_RENORM_Y * 0.65, WALL_RENORM_Z * 0.45])
+  );
 
   // Fluted ceramic partition pillars with brass capitals at doorway jambs & alcove corners.
   const pillarCoords: readonly [string, number, number][] = [
@@ -395,11 +392,18 @@ function buildScene() {
     { id: "painting-wing-west", x: -9.95, y: 2.15, z: -2.2, sx: 0.08, sy: 1.3, sz: 2.2, warm: true },
     { id: "painting-wing-east", x: 9.95, y: 2.15, z: 2.2, sx: 0.08, sy: 1.3, sz: 2.2, warm: false }
   ];
+  nodes.push(
+    instances.box({
+      name: "gallery brass picture frames",
+      material: brassFrameMat,
+      transforms: paintings.map((art) => ({
+        position: [art.x, art.y, art.z] as [number, number, number],
+        scale: [art.sx, art.sy, art.sz] as [number, number, number]
+      }))
+    })
+  );
   for (const art of paintings) {
     nodes.push(
-      primitives.box({ name: `brass frame ${art.id}`, material: brassFrameMat })
-        .position(art.x, art.y, art.z)
-        .scale([art.sx, art.sy, art.sz]),
       primitives.box({ name: `canvas ${art.id}`, material: art.warm ? canvasArtWarmMat : canvasArtTealMat })
         .position(art.x, art.y, art.z)
         .scale([Math.max(0.1, art.sx - 0.18), art.sy - 0.18, Math.max(0.1, art.sz - 0.18)])
@@ -407,6 +411,8 @@ function buildScene() {
   }
 
   // Artifact display pedestals: lacquer bases, frosted-glass vitrines, golden galleryArtifactBust sculptures, and felt velvet stanchions.
+  const stanchionPostTransforms: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+  const stanchionRopeTransforms: { position: [number, number, number]; scale: [number, number, number] }[] = [];
   for (const pedestal of LAYOUT.pedestals) {
     nodes.push(
       primitives.box({ name: `pedestal ${pedestal.id}`, material: pedestalBaseMat, castShadow: true, receiveShadow: true })
@@ -415,7 +421,7 @@ function buildScene() {
       primitives.box({ name: `pedestal brass collar ${pedestal.id}`, material: brassFrameMat })
         .position(pedestal.x, 0.99, pedestal.z)
         .scale([0.82, 0.07, 0.82]),
-      model(assets.quaterniusCubeCrate, { name: `galleryArtifactBust ${pedestal.id}`, material: goldSculptureMat, castShadow: true })
+      model(assets.quaterniusCubeCrate, { name: `galleryArtifactBust ${pedestal.id}`, material: goldSculptureMat, castShadow: false })
         .position(pedestal.x, 1.24, pedestal.z)
         .scale([bs(0.38), bs(0.42), bs(0.32)])
         .runtime(game.runtimeNode(`exhibit-${pedestal.id}`, { tags: ["exhibit", "runtime"] })),
@@ -430,38 +436,33 @@ function buildScene() {
     );
 
     const ropeOffset = 0.86;
-    for (const [ cornerId, cx, cz ] of [
+    for (const [, cx, cz] of [
       ["nw", -ropeOffset, -ropeOffset],
       ["ne", ropeOffset, -ropeOffset],
       ["sw", -ropeOffset, ropeOffset],
       ["se", ropeOffset, ropeOffset]
     ] as const) {
-      nodes.push(
-        primitives.box({ name: `stanchion post ${pedestal.id} ${cornerId}`, material: brassFrameMat })
-          .position(pedestal.x + cx, 0.42, pedestal.z + cz)
-          .scale([0.08, 0.84, 0.08])
-      );
+      stanchionPostTransforms.push({
+        position: [pedestal.x + cx, 0.42, pedestal.z + cz],
+        scale: [0.08, 0.84, 0.08]
+      });
     }
-    nodes.push(
-      primitives.box({ name: `stanchion rope north ${pedestal.id}`, material: velvetRopeMat })
-        .position(pedestal.x, 0.68, pedestal.z - ropeOffset)
-        .scale([ropeOffset * 2, 0.05, 0.05]),
-      primitives.box({ name: `stanchion rope south ${pedestal.id}`, material: velvetRopeMat })
-        .position(pedestal.x, 0.68, pedestal.z + ropeOffset)
-        .scale([ropeOffset * 2, 0.05, 0.05]),
-      primitives.box({ name: `stanchion rope west ${pedestal.id}`, material: velvetRopeMat })
-        .position(pedestal.x - ropeOffset, 0.68, pedestal.z)
-        .scale([0.05, 0.05, ropeOffset * 2]),
-      primitives.box({ name: `stanchion rope east ${pedestal.id}`, material: velvetRopeMat })
-        .position(pedestal.x + ropeOffset, 0.68, pedestal.z)
-        .scale([0.05, 0.05, ropeOffset * 2])
+    stanchionRopeTransforms.push(
+      { position: [pedestal.x, 0.68, pedestal.z - ropeOffset], scale: [ropeOffset * 2, 0.05, 0.05] },
+      { position: [pedestal.x, 0.68, pedestal.z + ropeOffset], scale: [ropeOffset * 2, 0.05, 0.05] },
+      { position: [pedestal.x - ropeOffset, 0.68, pedestal.z], scale: [0.05, 0.05, ropeOffset * 2] },
+      { position: [pedestal.x + ropeOffset, 0.68, pedestal.z], scale: [0.05, 0.05, ropeOffset * 2] }
     );
   }
+  nodes.push(
+    instances.box({ name: "stanchion brass posts", material: brassFrameMat, transforms: stanchionPostTransforms }),
+    instances.box({ name: "stanchion velvet ropes", material: velvetRopeMat, transforms: stanchionRopeTransforms })
+  );
 
   // Wing display cases: lacquer base, Golden galleryArtifactBust sculpture, and frosted-glass vitrine hood.
   for (const displayCase of LAYOUT.cases) {
     nodes.push(
-      primitives.box({ name: `case base ${displayCase.id}`, material: pedestalBaseMat, castShadow: true, receiveShadow: true })
+      primitives.box({ name: `case base ${displayCase.id}`, material: pedestalBaseMat, castShadow: false, receiveShadow: true })
         .position(displayCase.x, 0.42, displayCase.z)
         .scale([1.12, 0.84, 1.12]),
       primitives.box({ name: `case relic galleryArtifactBust ${displayCase.id}`, material: goldSculptureMat, castShadow: false })
@@ -545,7 +546,7 @@ function buildScene() {
     );
   });
 
-  // Architectural gallery lighting: 6 practicals (2 shadowed spot pools + 1 spot + 3 point washes)
+  // Architectural gallery lighting: 6 practicals (3 spot pools + 3 point washes)
   // within art/direction.ts's `practicals: 6` and `maxShadowed: 3` stealth contract.
   return scene()
     .add(looks.preset(LOOK_ID))
@@ -560,7 +561,7 @@ function buildScene() {
         angle: Math.PI / 4,
         penumbra: 0.55,
         distance: 16,
-        shadow: true
+        shadow: false
       })
     )
     .add(
@@ -573,7 +574,7 @@ function buildScene() {
         angle: Math.PI / 5,
         penumbra: 0.5,
         distance: 12,
-        shadow: true
+        shadow: false
       })
     )
     .add(
@@ -781,32 +782,41 @@ function createHud(): HTMLElement {
   return root;
 }
 
+let lastHudHtml = "";
 function renderHud(): void {
   galleryGame.hud.set("score", score);
   galleryGame.hud.set("alert", detection.value);
   galleryGame.hud.set("objective", objective);
-  hudRoot.innerHTML = [
+  const nextHtml = [
     `<strong>Gallery Shift</strong>`,
     `<div>Loot ${score} | Detection ${Math.round(detection.value * 100)}% | ${phase}</div>`,
     `<div>${objective}</div>`,
     `<div>Move WASD/arrows. Sneak C. Sprint Shift. Lift hold E. Reset R.</div>`
   ].join("");
+  if (nextHtml !== lastHudHtml) {
+    lastHudHtml = nextHtml;
+    hudRoot.innerHTML = nextHtml;
+  }
 }
 
+let cachedEvidence: unknown = null;
 function publishEvidence(): void {
   const snap = thief.snapshot();
-  const evidence = app.evidence({
-    input,
-    events: routeEvents,
-    hud: hudBindings,
-    appState: {
-      score,
-      objective,
-      events: routeEvents.events().map((event: { readonly label: string }) => event.label)
-    },
-    assets: { typedAssets: Object.keys(assets).length, missingAssets: [] },
-    source: { expectsGame: true }
-  });
+  if (cachedEvidence === null || frame <= 5 || frame % 6 === 0) {
+    cachedEvidence = app.evidence({
+      input,
+      events: routeEvents,
+      hud: hudBindings,
+      appState: {
+        score,
+        objective,
+        events: routeEvents.events().map((event: { readonly label: string }) => event.label)
+      },
+      assets: { typedAssets: Object.keys(assets).length, missingAssets: [] },
+      source: { expectsGame: true }
+    });
+  }
+  const evidence = cachedEvidence;
   const diagnostics = app.diagnostics();
   const snapshot: GalleryShiftEvidence = {
     framed: diagnostics.drawCalls > 0,
