@@ -296,6 +296,8 @@ const playedAudioEvents = new Set<string>();
 const KIT_PARKED_CAR_PATTERN = /(red northbound|blue southbound|yellow crosstown|white crosstown).*(car body|windshield|headlight pair)/;
 const KIT_DEBUG_ARTIFACT_PATTERN =
   /(visible dark night road evidence|foreground day night state board|large day sun state marker|large night moon state marker|foreground active night state bar|day night toggle pedestal|gold sun icon on day night toggle|silver moon icon on day night toggle|active night state toggle knob|night streetlight glow proof strip)/;
+const KIT_SUBPROP_CULL_PATTERN =
+  /(window frame|ledge band|mechanical cap|facade reveal|balcony slab|storefront awning|crosswalk|curb corner|traffic signal|street lamp|streetlight|lamp post|lamp head|bench|planter|hydrant|trash|bollard)/i;
 const KIT_ROAD_PATTERN = /(main .* road|city avenue|cross street)/;
 const KIT_CURB_PATTERN = /(sidewalk|intersection curb)/;
 const KIT_BUILDING_METAL_PATTERN = /(city tower|window frame|ledge band|mechanical cap|facade reveal)/;
@@ -876,6 +878,7 @@ function createHud(): HTMLElement {
   return root;
 }
 
+let lastHudHtml = "";
 function renderHud(): void {
   const timeLeft = Math.max(0, (dispatch.timerMs * timerScale) / 1000);
   const van = vanVehicle.snapshot();
@@ -884,15 +887,20 @@ function renderHud(): void {
   courierGame.hud.set("objective", objectiveText());
   courierGame.hud.set("speed", Math.round(Math.abs(van.speed) * 3.6));
   courierGame.hud.set("minimap", [van.x, van.z]);
-  hudRoot.innerHTML = [
+  const nextHtml = [
     `<strong>Courier Rush</strong>`,
     `<div>Score ${dispatch.score} | Deliveries ${dispatch.deliveriesCompleted}/${DELIVERY_COUNT} | Timer ${Math.ceil(timeLeft)}s</div>`,
     `<div>Combo x${dispatch.combo.toFixed(1)} | Strikes ${dispatch.strikes}/${MAX_STRIKES}</div>`,
     `<div>${objectiveText()}</div>`,
     `<div>Drive W/S + A/D. Handbrake Space. Interact E. Reset R.</div>`
   ].join("");
+  if (nextHtml !== lastHudHtml) {
+    lastHudHtml = nextHtml;
+    hudRoot.innerHTML = nextHtml;
+  }
 }
 
+let cachedEvidenceObj: unknown = null;
 function publishEvidence(): void {
   const van = vanVehicle.snapshot();
   const grounded = groundedFittedModelPosition(lastPose, VAN_FITTED_SIZE, {
@@ -901,19 +909,22 @@ function publishEvidence(): void {
   const objective = objectiveText();
   const scaledTimerMs = Math.max(0, Math.round(dispatch.timerMs * timerScale));
   const timeLeft = scaledTimerMs / 1000;
-  const evidence = app.evidence({
-    input,
-    events: routeEvents,
-    hud: hudBindings,
-    appState: {
-      score: dispatch.score,
-      timeLeft,
-      objective,
-      events: routeEvents.events().map((event: { readonly label: string }) => event.label)
-    },
-    assets: { typedAssets: Object.keys(assets).length, missingAssets: [] },
-    source: { expectsGame: true }
-  });
+  if (cachedEvidenceObj === null || frameCount <= 5 || frameCount % 6 === 0) {
+    cachedEvidenceObj = app.evidence({
+      input,
+      events: routeEvents,
+      hud: hudBindings,
+      appState: {
+        score: dispatch.score,
+        timeLeft,
+        objective,
+        events: routeEvents.events().map((event: { readonly label: string }) => event.label)
+      },
+      assets: { typedAssets: Object.keys(assets).length, missingAssets: [] },
+      source: { expectsGame: true }
+    });
+  }
+  const evidence = cachedEvidenceObj;
   const diagnostics = app.diagnostics();
   const activeTargetId = targetSite(dispatch)?.id ?? null;
   const carrying = dispatch.phase === "carrying";
@@ -1026,9 +1037,6 @@ function audioEvidence(): CourierRushEvidence["audio"] {
 }
 
 // --- scene --------------------------------------------------------------------
-
-const KIT_SUBPROP_CULL_PATTERN =
-  /(window frame|ledge band|mechanical cap|facade reveal|balcony slab|storefront awning|crosswalk|curb corner|traffic signal|street lamp|streetlight|lamp post|lamp head|bench|planter|hydrant|trash|bollard)/i;
 
 function stripKitParkedCars(nodes: readonly AuraSceneNode[]): AuraSceneNode[] {
   // The kit's decorative parked cars sit inside lanes the typed traffic
