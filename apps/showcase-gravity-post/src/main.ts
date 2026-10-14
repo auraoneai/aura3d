@@ -15,6 +15,7 @@ import {
   effects,
   environments,
   game as engineGame,
+  instances,
   labels,
   lights,
   material,
@@ -487,7 +488,34 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
       environments.hdri({
         name: "gravity-deep-space-hdri",
         texture: assets.deepSpaceDomeHdr,
-        intensity: 0.88
+        intensity: 0.88,
+        background: false
+      })
+    )
+    .add(
+      instances.sphere({
+        name: "gravity-starfield",
+        size: 1,
+        transforms: Array.from({ length: 96 }, (_, i) => {
+          const angle = i * 2.3999632;
+          const radius = 1.6 + (i % 12) * 0.42;
+          const x = Math.cos(angle) * radius * 1.35;
+          const z = Math.sin(angle) * radius;
+          const y = PLAY_PLANE_Y - 0.55 - (i % 5) * 0.18;
+          return {
+            position: [x, y, z] as [number, number, number],
+            scale: 0.014 + (i % 4) * 0.005
+          };
+        }),
+        colors: Array.from({ length: 96 }, (_, i) =>
+          ["#e2e8f0", "#93c5fd", "#fde68a", "#c4b5fd"][i % 4]!
+        ),
+        material: material.emissive({
+          color: "#ffffff",
+          emissive: "#e2e8f0",
+          emissiveIntensity: 1.35,
+          practical: true
+        })
       })
     )
     .add(
@@ -516,8 +544,8 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
         color: "#59d7ff",
         intensity: 1.35,
         width: 0.12,
-        maxPoints: 48,
-        minVertexDistance: 0.03
+        maxPoints: 32,
+        minVertexDistance: 0.04
       })
     );
 
@@ -555,7 +583,7 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
           model(planetAsset, {
             name: `body-${body.id}`,
             targetMaxDimension: body.visualRadius * 2.05,
-            castShadow: true,
+            castShadow: false,
             receiveShadow: true,
             ...(planetSurface ? { material: planetSurface } : {})
           }).position(bx, PLAY_PLANE_Y, bz)
@@ -1044,9 +1072,19 @@ function applyFlightCorrection(directionSign: -1 | 1): void {
   }
 }
 
+const nodeHandleCache = new Map<string, ReturnType<typeof app.nodes.get>>();
 function handle(name: string) {
-  return app.nodes.get(name);
+  let cached = nodeHandleCache.get(name);
+  if (cached === undefined) {
+    cached = app.nodes.get(name);
+    if (cached) nodeHandleCache.set(name, cached);
+  }
+  return cached;
 }
+
+let lastPredBeadSignature = "";
+let lastActualBeadLen = -1;
+let lastHudHtmlSignature = "";
 
 function syncGravityWorld(): void {
   const [px, pz] = state.pod.kinematic.position;
@@ -1081,33 +1119,40 @@ function syncGravityWorld(): void {
     }
   }
 
-  const beads = buildPredictionBeads({ samples: state.predictionSamples, maxBeads: PREDICTION_BEADS });
-  for (let i = 0; i < PREDICTION_BEADS; i += 1) {
-    const node = handle(`gp-pred-${i}`);
-    if (!node) continue;
-    const sample = beads[i];
-    if (sample && state.pod.state === "ready" && state.aimDragging) {
-      node.setPosition(sample.x, PLAY_PLANE_Y + 0.03, sample.z);
-      node.setScale(0.032);
-    } else {
-      node.setPosition(px, PLAY_PLANE_Y - 2, pz);
-      node.setScale(0.001);
+  const predSig = `${state.pod.state}|${state.aimDragging}|${state.predictionSamples.length}|${state.aimYaw.toFixed(3)}|${state.aimPower.toFixed(3)}`;
+  if (predSig !== lastPredBeadSignature) {
+    lastPredBeadSignature = predSig;
+    const beads = buildPredictionBeads({ samples: state.predictionSamples, maxBeads: PREDICTION_BEADS });
+    for (let i = 0; i < PREDICTION_BEADS; i += 1) {
+      const node = handle(`gp-pred-${i}`);
+      if (!node) continue;
+      const sample = beads[i];
+      if (sample && state.pod.state === "ready" && state.aimDragging) {
+        node.setPosition(sample.x, PLAY_PLANE_Y + 0.03, sample.z);
+        node.setScale(0.032);
+      } else {
+        node.setPosition(px, PLAY_PLANE_Y - 2, pz);
+        node.setScale(0.001);
+      }
     }
   }
 
   const pathLen = state.actualPath.length;
-  const stride = Math.max(1, Math.floor(pathLen / ACTUAL_PATH_BEADS));
-  for (let i = 0; i < ACTUAL_PATH_BEADS; i += 1) {
-    const node = handle(`gp-path-${i}`);
-    if (!node) continue;
-    const sampleIdx = i * stride;
-    const pt = sampleIdx < pathLen ? state.actualPath[sampleIdx] : undefined;
-    if (pt && pathLen > 1) {
-      node.setPosition(pt[0], PLAY_PLANE_Y + 0.015, pt[1]);
-      node.setScale(0.025);
-    } else {
-      node.setPosition(px, PLAY_PLANE_Y - 2, pz);
-      node.setScale(0.001);
+  if (pathLen !== lastActualBeadLen) {
+    lastActualBeadLen = pathLen;
+    const stride = Math.max(1, Math.floor(pathLen / ACTUAL_PATH_BEADS));
+    for (let i = 0; i < ACTUAL_PATH_BEADS; i += 1) {
+      const node = handle(`gp-path-${i}`);
+      if (!node) continue;
+      const sampleIdx = i * stride;
+      const pt = sampleIdx < pathLen ? state.actualPath[sampleIdx] : undefined;
+      if (pt && pathLen > 1) {
+        node.setPosition(pt[0], PLAY_PLANE_Y + 0.015, pt[1]);
+        node.setScale(0.025);
+      } else {
+        node.setPosition(px, PLAY_PLANE_Y - 2, pz);
+        node.setScale(0.001);
+      }
     }
   }
 
@@ -1291,9 +1336,14 @@ const hudRoot = createHudOverlay();
 function renderHud(): void {
   const contract = currentContract(state);
   const hullsRemaining = Math.max(0, SHIFT_FAIL_LIMIT - state.failedContracts);
+  const fuelPct = Math.round(state.pod.propellant);
+  const hudSig = `${state.contractIndex}|${state.score}|${fuelPct}|${hullsRemaining}|${state.pod.state}|${state.pod.correctionTokensRemaining}|${state.campaignComplete}|${state.shiftOver}|${state.lastScoreBreakdown?.total ?? -1}`;
+  if (hudSig === lastHudHtmlSignature) return;
+  lastHudHtmlSignature = hudSig;
+
   gravityGame.hud.set("score", state.score);
   gravityGame.hud.set("contract", `${state.contractIndex + 1}/${CONTRACTS.length} · ${contract.title}`);
-  gravityGame.hud.set("propellant", Math.round(state.pod.propellant));
+  gravityGame.hud.set("propellant", fuelPct);
   gravityGame.hud.set("hulls", hullsRemaining);
 
   const promptText = state.campaignComplete
@@ -1315,7 +1365,7 @@ function renderHud(): void {
   hudRoot.innerHTML = [
     `<strong>Gravity Post</strong>`,
     `<div class="gp-status">Contract ${state.contractIndex + 1}/${CONTRACTS.length}: ${contract.title} | Score ${state.score}</div>`,
-    `<div class="gp-fuel">Propellant ${Math.round(state.pod.propellant)}% | Hulls ${hullsRemaining}/${SHIFT_FAIL_LIMIT} | Tokens ${state.pod.correctionTokensRemaining}</div>`,
+    `<div class="gp-fuel">Propellant ${fuelPct}% | Hulls ${hullsRemaining}/${SHIFT_FAIL_LIMIT} | Tokens ${state.pod.correctionTokensRemaining}</div>`,
     `<div>${promptText}</div>`,
     scoreCardHtml,
     `<div class="controls-strip" data-hud="keyboard-hints">Drag/Space launch · W/S burn token · Hold Space warp · N next · P pause · R reset</div>`
