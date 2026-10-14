@@ -183,6 +183,9 @@ let frame = 0;
 let simTime = 0;
 let thiefSeen = false;
 let objective = "Lift both exhibits (hold E by a pedestal), then reach the north exit. Avoid the guard cones.";
+let thiefYaw = Math.PI;
+let lastHudHtml = "";
+let cachedEvidence: unknown = null;
 
 function makeThief(): ThiefPlayer {
   return new ThiefPlayer(LAYOUT, layoutRects(LAYOUT), layoutCircles(LAYOUT), floorWorld.thiefBody, LAYOUT.thiefSpawn);
@@ -586,7 +589,8 @@ function buildScene() {
         intensity: 28,
         angle: Math.PI / 5,
         penumbra: 0.5,
-        distance: 12
+        distance: 12,
+        shadow: false
       })
     )
     .add(
@@ -739,7 +743,6 @@ function stepFixed(): void {
 }
 
 // ---------------------------------------------------------------- sync/HUD --
-let thiefYaw = Math.PI;
 
 function syncVisuals(): void {
   const nextOrthoSize = viewportOrthoSize();
@@ -782,7 +785,6 @@ function createHud(): HTMLElement {
   return root;
 }
 
-let lastHudHtml = "";
 function renderHud(): void {
   galleryGame.hud.set("score", score);
   galleryGame.hud.set("alert", detection.value);
@@ -799,7 +801,6 @@ function renderHud(): void {
   }
 }
 
-let cachedEvidence: unknown = null;
 function publishEvidence(): void {
   const snap = thief.snapshot();
   if (cachedEvidence === null || frame <= 5 || frame % 6 === 0) {
