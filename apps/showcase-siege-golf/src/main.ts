@@ -132,6 +132,28 @@ let latestSnapshot: SiegeGolfEvidence | undefined;
 
 // ------------------------------------------------------------------ scene ----
 
+const FAIRWAY_FELT_MAT = material.felt({ color: "#15803d", roughness: 0.86, sheen: 0.8, sheenColor: "#4ade80" });
+const ROUGH_BANK_MAT = material.felt({ color: "#166534", roughness: 0.92, sheen: 0.55 });
+const CASTLE_STONE_MAT = material.planet("rocky", { color: "#78716c", roughness: 0.78 });
+const MOAT_WATER_MAT = material.reflectiveFloor({
+  color: "#0369a1",
+  roughness: 0.08,
+  metallic: 0.45,
+  clearcoat: 0.92,
+  clearcoatRoughness: 0.03
+});
+const TIMBER_RAIL_MAT = material.lacquer({ color: "#78350f", roughness: 0.28, clearcoat: 0.95 });
+const IRON_TRIM_MAT = material.brushedMetal({ color: "#94a3b8", roughness: 0.25 });
+const SAND_BUNKER_MAT = material.fabric({ color: "#fde68a", roughness: 0.9, sheen: 0.3 });
+const GOLF_BALL_MAT = material.ceramic({
+  color: "#ffffff",
+  roughness: 0.14,
+  clearcoat: 1,
+  normal: material.proceduralTextures.rubber({ scale: 48, strength: 0.35 })
+});
+const SPRING_CAP_MAT = material.ceramic({ color: "#fbbf24", roughness: 0.18, clearcoat: 0.9 });
+const AIM_ARC_INDICES = [0, 1, 2, 3] as const;
+
 function visualKey(v: PropVisual): string {
   if (v.source === "model") {
     return `${v.name}@model:${v.typedAsset ?? ""}:${v.targetMaxDimension ?? 1}`;
@@ -144,7 +166,8 @@ function nodeForVisual(v: PropVisual, key = visualKey(v)): AuraNodeInput {
   if (v.source === "model") {
     return model(MODEL_ASSETS[v.typedAsset!], {
       name: key,
-      targetMaxDimension: v.targetMaxDimension ?? 1
+      targetMaxDimension: v.targetMaxDimension ?? 1,
+      ...(v.typedAsset === "siegeGolfBall" ? { material: GOLF_BALL_MAT } : {})
     })
       .position(...v.position)
       .rotate(v.rotation.x, v.rotation.y, v.rotation.z)
@@ -152,14 +175,25 @@ function nodeForVisual(v: PropVisual, key = visualKey(v)): AuraNodeInput {
       .toJSON();
   }
   const p = v.primitive!;
+  const isPracticalGlow = v.name.startsWith("cup:") || v.name.endsWith("-lamp");
+  const isIronHardware = v.name.endsWith("-pedestal") || v.name.endsWith("-base");
+  const isSpringTop = v.name.endsWith("-top");
+  const primitiveMaterial = isPracticalGlow
+    ? material.emissive({
+        color: p.color,
+        emissive: p.emissive ?? p.color,
+        emissiveIntensity: 0.9,
+        practical: true,
+        ...(p.opacity !== undefined ? { opacity: p.opacity } : {})
+      })
+    : isIronHardware
+      ? IRON_TRIM_MAT
+      : isSpringTop
+        ? SPRING_CAP_MAT
+        : TIMBER_RAIL_MAT;
   const spec = {
     name: key,
-    material: material.emissive({
-      color: p.color,
-      emissive: p.emissive ?? p.color,
-      emissiveIntensity: p.emissive ? 0.9 : 0.4,
-      ...(p.opacity !== undefined ? { opacity: p.opacity } : {})
-    })
+    material: primitiveMaterial
   };
   const builder =
     p.shape === "sphere" ? primitives.sphere(spec)
@@ -191,22 +225,153 @@ function buildWorldNodes(): { nodes: AuraNodeInput[]; visualKeys: readonly strin
     }
   }
   const visualKeys = [...byKey.keys()];
-  const aimGuideMat = material.emissive({ color: "#59d7ff", emissive: "#59d7ff", emissiveIntensity: 1.1, opacity: 0.85 });
-  const chargeRingMat = material.emissive({ color: "#ffcf5c", emissive: "#ffcf5c", emissiveIntensity: 1.2, opacity: 0.9 });
-  const strikeFlashMat = material.emissive({ color: "#fff3d6", emissive: "#ffd166", emissiveIntensity: 1.5 });
-  const cupHaloMat = material.emissive({ color: "#ff9d3c", emissive: "#ff9d3c", emissiveIntensity: 0.9, opacity: 0.75 });
+  const aimGuideMat = material.emissive({ color: "#59d7ff", emissive: "#59d7ff", emissiveIntensity: 1.1, opacity: 0.85, practical: true });
+  const chargeRingMat = material.emissive({ color: "#ffcf5c", emissive: "#ffcf5c", emissiveIntensity: 1.2, opacity: 0.9, practical: true });
+  const strikeFlashMat = material.emissive({ color: "#fff3d6", emissive: "#ffd166", emissiveIntensity: 1.5, practical: true });
+  const cupHaloMat = material.emissive({ color: "#ff9d3c", emissive: "#ff9d3c", emissiveIntensity: 0.9, opacity: 0.75, practical: true });
+  const cupBeaconMat = material.emissive({ color: "#38bdf8", emissive: "#59d7ff", emissiveIntensity: 1.25, opacity: 0.82, practical: true });
   const nodes: AuraNodeInput[] = [
-    model(assets.siegeGolfCourseWorld, { name: "siege-golf-course-world", targetMaxDimension: 17 })
-      .position(0, -0.11, 0)
+    model(assets.siegeGolfCourseWorld, {
+      name: "siege-golf-course-world",
+      scaleMode: "world",
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(0, -0.14, 0)
       .toJSON(),
-    primitives.box({ name: "siege range earth skirt", material: material.pbr({ color: "#33401f", roughness: 0.9, metallic: 0.02 }) })
-      .position(0, -0.95, -3)
-      .scale([14, 0.7, 22])
+    // Fairway & putting green: woven felt normal + sheen lobe.
+    primitives.box({
+      name: "siege-fairway-putting-green",
+      material: FAIRWAY_FELT_MAT,
+      instances: [
+        { position: [0, -0.008, -1.8], scale: [6.7, 0.024, 10.6] },
+        { position: [0, 0.006, 3.2], scale: [3.2, 0.02, 1.8] },
+        { position: [0, 0.004, -8.8], scale: [5.4, 0.028, 3.6] }
+      ]
+    }).toJSON(),
+    // Rough & terraced hillside banks flanking the valley lane.
+    primitives.box({
+      name: "siege-rough-terraced-banks",
+      material: ROUGH_BANK_MAT,
+      instances: [
+        { position: [0, -0.48, -3.5], scale: [18, 0.72, 24] },
+        { position: [-5.6, 0.22, -3.4], scale: [3.4, 0.65, 19.5] },
+        { position: [5.6, 0.22, -3.4], scale: [3.4, 0.65, 19.5] },
+        { position: [-8.2, 0.78, -4.0], scale: [3.6, 1.15, 21.0] },
+        { position: [8.2, 0.78, -4.0], scale: [3.6, 1.15, 21.0] },
+        { position: [0, 0.55, -13.8], scale: [20.0, 1.2, 3.8] }
+      ]
+    }).toJSON(),
+    // Reflective castle moat water plane encircling the target green & keep.
+    primitives.box({ name: "siege-castle-moat-water", material: MOAT_WATER_MAT })
+      .position(0, -0.003, -8.8)
+      .scale([10.4, 0.012, 5.8])
       .toJSON(),
+    // Sculpted sand bunkers guarding the fairway waist and green approaches.
+    primitives.cylinder({
+      name: "siege-sand-bunkers",
+      material: SAND_BUNKER_MAT,
+      instances: [
+        { position: [-2.45, 0.004, -2.1], scale: [1.55, 0.022, 2.2] },
+        { position: [2.45, 0.004, -4.2], scale: [1.45, 0.022, 2.1] },
+        { position: [-2.55, 0.008, -7.8], scale: [1.35, 0.022, 1.65] },
+        { position: [2.55, 0.008, -7.8], scale: [1.35, 0.022, 1.65] }
+      ]
+    }).toJSON(),
+    // Castle stone keep, twin towers, battlements, moat walls & windmill base.
+    primitives.box({
+      name: "siege-keep-stonework",
+      material: CASTLE_STONE_MAT,
+      instances: [
+        // Main keep curtain wall & gatehouse arch behind the hole
+        { position: [0, 1.45, -11.2], scale: [7.6, 2.9, 1.1] },
+        // Twin flanking keep towers (siegeKeepTower bastions)
+        { position: [-3.9, 1.95, -10.8], scale: [1.85, 3.9, 1.85] },
+        { position: [3.9, 1.95, -10.8], scale: [1.85, 3.9, 1.85] },
+        // Keep battlements / merlons
+        { position: [-2.4, 3.12, -10.85], scale: [0.62, 0.48, 0.52] },
+        { position: [-1.2, 3.12, -10.85], scale: [0.62, 0.48, 0.52] },
+        { position: [0, 3.12, -10.85], scale: [0.62, 0.48, 0.52] },
+        { position: [1.2, 3.12, -10.85], scale: [0.62, 0.48, 0.52] },
+        { position: [2.4, 3.12, -10.85], scale: [0.62, 0.48, 0.52] },
+        // Stone moat coping & bridge abutments
+        { position: [-3.85, 0.28, -2.8], scale: [0.46, 0.56, 15.8] },
+        { position: [3.85, 0.28, -2.8], scale: [0.46, 0.56, 15.8] },
+        // Windmill stone bastion on the left flank (siegeWindmillObstacle base)
+        { position: [-3.55, 1.25, -4.8], scale: [1.35, 2.5, 1.35] }
+      ]
+    }).toJSON(),
+    // Course timber rails & moat drawbridge deck (lacquered siege timber).
+    primitives.box({
+      name: "siege-timber-rails-drawbridge",
+      material: TIMBER_RAIL_MAT,
+      instances: [
+        { position: [-3.52, 0.34, -1.6], scale: [0.22, 0.44, 12.6] },
+        { position: [3.52, 0.34, -1.6], scale: [0.22, 0.44, 12.6] },
+        // Moat drawbridge spanning onto the putting green island
+        { position: [0, 0.03, -6.45], scale: [2.35, 0.07, 1.65] },
+        { position: [-1.18, 0.28, -6.45], scale: [0.14, 0.45, 1.65] },
+        { position: [1.18, 0.28, -6.45], scale: [0.14, 0.45, 1.65] }
+      ]
+    }).toJSON(),
+    // Brushed-metal iron siege trim, bumper posts & portcullis hardware.
+    primitives.cylinder({
+      name: "siege-iron-bumper-trim",
+      material: IRON_TRIM_MAT,
+      instances: [
+        // Siege bumper posts flanking the lane
+        { position: [-3.15, 0.36, -1.5], scale: [0.34, 0.72, 0.34] },
+        { position: [3.15, 0.36, -1.5], scale: [0.34, 0.72, 0.34] },
+        { position: [-3.15, 0.36, -5.8], scale: [0.34, 0.72, 0.34] },
+        { position: [3.15, 0.36, -5.8], scale: [0.34, 0.72, 0.34] },
+        // Windmill rotor iron hub
+        { position: [-2.82, 2.05, -4.8], rotation: [0, 0, Math.PI / 2], scale: [0.32, 0.28, 0.32] }
+      ]
+    }).toJSON(),
+    // Admitted GLB siege props staged on the drawbridge and keep bastions.
+    model(assets.siegePlankSet, { name: "siege-moat-ramp-bridge-glb", targetMaxDimension: 2.3 })
+      .position(0, 0.04, -6.45)
+      .rotate(0, Math.PI / 2, 0)
+      .toJSON(),
+    model(assets.siegeWoodenBarrel, { name: "siege-bumper-post-left-glb", targetMaxDimension: 0.88 })
+      .position(-3.1, 0.44, -3.4)
+      .toJSON(),
+    model(assets.siegeWoodenBarrel, { name: "siege-bumper-post-right-glb", targetMaxDimension: 0.88 })
+      .position(3.1, 0.44, -3.4)
+      .toJSON(),
+    model(assets.siegeWoodenCrate, { name: "siege-keep-supply-crate-glb", targetMaxDimension: 0.92 })
+      .position(3.05, 0.46, -9.4)
+      .rotate(0, 0.35, 0)
+      .toJSON(),
+    // Rotating windmill obstacle blades (driven in app.onFrame).
+    primitives.box({ name: "siege-windmill-blade-a", material: TIMBER_RAIL_MAT })
+      .position(-2.72, 2.05, -4.8)
+      .scale([0.09, 2.35, 0.28])
+      .runtime(engineGame.runtimeNode("siege-windmill-blade-a", { tags: ["windmill", "renderer-owned"] })),
+    primitives.box({ name: "siege-windmill-blade-b", material: TIMBER_RAIL_MAT })
+      .position(-2.72, 2.05, -4.8)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.09, 2.35, 0.28])
+      .runtime(engineGame.runtimeNode("siege-windmill-blade-b", { tags: ["windmill", "renderer-owned"] })),
+    // Flag pin & glowing hole cup beacon (posed over the active hole's primary cup).
+    primitives.cylinder({ name: "siege-flag-pin-pole", material: IRON_TRIM_MAT })
+      .position(0, 0.95, -8.4)
+      .scale([0.06, 1.9, 0.06])
+      .runtime(engineGame.runtimeNode("siege-flag-pin-pole", { tags: ["flag-pin", "renderer-owned"] })),
+    primitives.cylinder({ name: "siege-cup-beacon", material: cupBeaconMat })
+      .position(0, 0.18, -8.4)
+      .scale([0.42, 0.32, 0.42])
+      .runtime(engineGame.runtimeNode("siege-cup-beacon", { tags: ["cup-beacon", "renderer-owned"] })),
     primitives.box({ name: "siege aim guide", material: aimGuideMat })
       .position(0, 0.06, 2)
       .scale([0.07, 0.02, 1.6])
       .runtime(engineGame.runtimeNode("siege-aim-guide", { tags: ["aim-indicator", "renderer-owned"] })),
+    ...AIM_ARC_INDICES.map((idx) =>
+      primitives.sphere({ name: `siege-aim-arc-${idx}`, material: aimGuideMat })
+        .position(0, 0.08, 2 - (idx + 1) * 0.65)
+        .scale([0.11, 0.05, 0.11])
+        .runtime(engineGame.runtimeNode(`siege-aim-arc-${idx}`, { tags: ["aim-indicator", "renderer-owned"] }))
+    ),
     primitives.torus({ name: "siege charge ring", material: chargeRingMat })
       .position(0, 0.05, 2)
       .rotate(Math.PI / 2, 0, 0)
@@ -274,7 +439,7 @@ function buildScene() {
     .addMany([
       lights.directional({ name: "golden valley sun key", color: "#ffcf9a", intensity: 2.8, position: [-7, 10, 5], shadow: true }).toJSON(),
       lights.point({ name: "keep rim practical", color: "#59d7ff", intensity: 0.9, position: [0, 2.4, -10.5] }).toJSON(),
-      environments.hdri({ name: "golden field dome reflections", texture: assets.goldenValleyHdr, intensity: 0.4 }).toJSON()
+      environments.hdri({ name: "golden field dome reflections", texture: assets.goldenValleyHdr, intensity: 0.55 }).toJSON()
     ]);
 }
 
@@ -311,6 +476,7 @@ const siegeGame = createGame({
   target,
   layout: "full-bleed",
   scene: buildScene,
+  diagnostics: { overlay: false, performancePanel: false },
   input: inputOptions,
   hud: hudOptions,
   touch: {
@@ -433,6 +599,11 @@ function layoutHole(): void {
     if (spec.source === "primitive" && spec.primitive) {
       h.setScale([spec.primitive.size[0], spec.primitive.size[1], spec.primitive.size[2]]);
     }
+  }
+  const primaryCup = flow.hole.cups[0];
+  if (primaryCup) {
+    handle("siege-flag-pin-pole")?.setPosition(primaryCup.x, 0.95, primaryCup.z - 0.32).setVisible(true);
+    handle("siege-cup-beacon")?.setPosition(primaryCup.x, 0.18, primaryCup.z).setVisible(true);
   }
 }
 
@@ -797,11 +968,24 @@ app.onFrame(({ dt: rawDt }) => {
   const baseDir: readonly [number, number] = [holeAim[0] / aimLen, holeAim[1] / aimLen];
   const dirX = baseDir[0] * Math.cos(aim.angle) - baseDir[1] * Math.sin(aim.angle);
   const dirZ = baseDir[1] * Math.cos(aim.angle) + baseDir[0] * Math.sin(aim.angle);
+  const aimYaw = Math.atan2(dirX, -dirZ) + Math.PI;
   handle("siege-aim-guide")
     ?.setPosition(ball[0] + dirX * 0.9, 0.06, ball[2] + dirZ * 0.9)
-    .setRotation(0, Math.atan2(dirX, -dirZ) + Math.PI, 0)
+    .setRotation(0, aimYaw, 0)
     .setVisible(aiming);
   const charge = aim.phase === "charging" ? aim.charge : 0;
+  const arcReach = 1.9 + charge * 2.4;
+  for (const idx of AIM_ARC_INDICES) {
+    const t = (idx + 1) / (AIM_ARC_INDICES.length + 1);
+    const dist = t * arcReach;
+    const arcY = 0.08 + Math.sin(t * Math.PI) * (0.14 + charge * 0.22);
+    handle(`siege-aim-arc-${idx}`)
+      ?.setPosition(ball[0] + dirX * dist, arcY, ball[2] + dirZ * dist)
+      .setVisible(aiming);
+  }
+  const windmillAngle = frame * 0.022;
+  handle("siege-windmill-blade-a")?.setRotation(windmillAngle, 0, 0);
+  handle("siege-windmill-blade-b")?.setRotation(windmillAngle + Math.PI / 2, 0, 0);
   handle("siege-charge-ring")
     ?.setPosition(ball[0], 0.05, ball[2])
     .setScale([0.5 + charge * 0.7, 0.5 + charge * 0.7, 0.5])
