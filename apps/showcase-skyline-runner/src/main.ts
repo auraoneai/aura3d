@@ -358,22 +358,19 @@ function buildScene() {
     clearcoat: 0.82,
     clearcoatRoughness: 0.06,
     emissive: "#283548",
-    emissiveIntensity: 0.06,
-    texture: material.proceduralTextures.plastic()
+    emissiveIntensity: 0.06
   });
   const runningPadMaterial = material.blackRubber({
     color: "#141c2b",
     roughness: 0.84,
     emissive: "#1e293b",
-    emissiveIntensity: 0.03,
-    texture: material.proceduralTextures.rubber()
+    emissiveIntensity: 0.03
   });
   const safetyRailMaterial = material.brushedMetal({
     color: "#94a3b8",
     roughness: 0.24,
     emissive: "#38bdf8",
-    emissiveIntensity: 0.05,
-    texture: material.proceduralTextures.brushedMetal()
+    emissiveIntensity: 0.05
   });
   const runnerTrimMaterial = material.clearcoatPaint({
     color: "#f08a4b",
@@ -381,8 +378,7 @@ function buildScene() {
     clearcoat: 1,
     clearcoatRoughness: 0.03,
     emissive: "#f08a4b",
-    emissiveIntensity: 0.08,
-    texture: material.proceduralTextures.plastic()
+    emissiveIntensity: 0.08
   });
   const curtainWallSlateMaterial = material.frostedGlass({
     color: "#1e293b",
@@ -390,8 +386,7 @@ function buildScene() {
     opacity: 0.92,
     transmission: 0.24,
     emissive: "#38bdf8",
-    emissiveIntensity: 0.07,
-    texture: material.proceduralTextures.plastic()
+    emissiveIntensity: 0.07
   });
   const curtainWallIndigoMaterial = material.frostedGlass({
     color: "#283548",
@@ -399,8 +394,7 @@ function buildScene() {
     opacity: 0.9,
     transmission: 0.28,
     emissive: "#f08a4b",
-    emissiveIntensity: 0.08,
-    texture: material.proceduralTextures.plastic()
+    emissiveIntensity: 0.08
   });
 
   const rooftopDeckNodes: AuraNodeBuilder<AuraSceneNode>[] = (level.platforms ?? []).flatMap((platform) => {
@@ -481,8 +475,7 @@ function buildScene() {
         roughness: 0.32,
         metallic: 0.12,
         emissive: "#f08a4b",
-        emissiveIntensity: 0.08,
-        texture: material.proceduralTextures.plastic()
+        emissiveIntensity: 0.08
       }),
       castShadow: false,
       receiveShadow: false
@@ -496,8 +489,7 @@ function buildScene() {
         roughness: 0.36,
         metallic: 0.15,
         emissive: "#3b5bdb",
-        emissiveIntensity: 0.08,
-        texture: material.proceduralTextures.plastic()
+        emissiveIntensity: 0.08
       }),
       castShadow: false,
       receiveShadow: false
@@ -511,8 +503,7 @@ function buildScene() {
         roughness: 0.4,
         metallic: 0.12,
         emissive: "#1a2f5a",
-        emissiveIntensity: 0.08,
-        texture: material.proceduralTextures.plastic()
+        emissiveIntensity: 0.08
       }),
       castShadow: false,
       receiveShadow: false
