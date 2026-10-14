@@ -259,6 +259,16 @@ function copyAuraAssets() {
     cpSync(companionTextures, target, { recursive: true });
     console.log(`Mirrored GLB companion textures to aura-assets/Textures/.`);
   }
+
+  for (const sharedPublicSubdir of ["aura-environments", "aura-decoders"]) {
+    const sourceSubdir = path.join(repoRoot, "public", sharedPublicSubdir);
+    if (existsSync(sourceSubdir)) {
+      const targetSubdir = path.join(distDir, sharedPublicSubdir);
+      mkdirSync(targetSubdir, { recursive: true });
+      cpSync(sourceSubdir, targetSubdir, { recursive: true });
+      console.log(`Mirrored public/${sharedPublicSubdir} to ${sharedPublicSubdir}/.`);
+    }
+  }
 }
 
 function resolveShowcaseAssetBaseUrl() {

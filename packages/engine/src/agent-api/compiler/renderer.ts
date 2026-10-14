@@ -24,7 +24,7 @@ import { upgradeProductionPrimitiveTextures } from "./textures.js";
 import { camera } from "../nodes/camera.js";
 import { geometry } from "../nodes/geometry.js";
 import { material } from "../nodes/material.js";
-import { asRuntimeCompiled, compileScene, updateCompiledScene } from "../../contracts/compiler.js";
+import { asRuntimeCompiled, compileScene, compilerSlot, updateCompiledScene } from "../../contracts/compiler.js";
 import type { MountSceneCompileContext } from "./compileScene.js";
 import { createDegradationSink } from "./degradation.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
@@ -49,7 +49,7 @@ export async function createProductionRuntimeSceneRenderer(
    * Loaded here rather than imported at module scope (WS-2.2). This function is only reached when the
    * scene contains a typed GLB, so the glTF loader is downloaded exactly when it is needed.
    */
-  const flagsOn = flags.on("A3D_QR_COMPILER");
+  const flagsOn = flags.on("A3D_QR_COMPILER") && compilerSlot.provided;
   let actorEntries: ProductionRuntimeActorEntry[] = flagsOn
     ? [] // flag-on: the C-36 compile owns entry assembly (see below)
     : modelNodes.length > 0

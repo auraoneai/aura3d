@@ -162,7 +162,11 @@ export interface BakedEnvironmentManifest {
 }
 
 async function fetchBytes(url: string): Promise<Uint8Array> {
-  const res = await fetch(url);
+  let res = await fetch(url);
+  if (!res.ok && !url.startsWith("/") && !/^https?:\/\//.test(url)) {
+    const rootRes = await fetch(`/${url}`);
+    if (rootRes.ok) res = rootRes;
+  }
   if (!res.ok) throw new Error(`ENV_FETCH_FAILED:${url}:${res.status}`);
   return new Uint8Array(await res.arrayBuffer());
 }

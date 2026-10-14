@@ -5,6 +5,7 @@
 // carry @deprecated JSDoc naming their §6.6 destination subpath or "deleted in 4.0.0".
 
 // ── Contract surface (intended "." members per PRD-15 T5.1; not deprecated) ──
+import "../lanes/index.js";
 export { StubActorAnimationApi } from "../contracts/animation.js";
 export type { AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraAnimationDiagnostics, AuraBoneMaskSpec, AuraBoneSocket, AuraCreateAppAnimationOptions, AuraResolvedClipInfo, AuraRootMotionSpec } from "../contracts/animation.js";
 export { appExtensionsAll, registerAppExtension } from "../contracts/app.js";
