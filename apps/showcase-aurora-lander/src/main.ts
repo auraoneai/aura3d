@@ -3,7 +3,9 @@ import {
   environments,
   game,
   lights,
+  material,
   model,
+  primitives,
   scene as auraScene,
   type GameInputController,
   type GameInputReplayEvent,
@@ -526,58 +528,95 @@ function buildFallbackLanderMesh(): THREE.Group {
   group.name = "auroraLanderFallback";
 
   const hullMat = new THREE.MeshStandardMaterial({
-    color: 0xd8e8ff,
-    metalness: 0.45,
-    roughness: 0.32,
-    emissive: 0x102238,
+    color: 0x94a3b8,
+    metalness: 0.62,
+    roughness: 0.34,
+    emissive: 0x10253e,
+    emissiveIntensity: 0.42,
+  });
+  const foilMat = new THREE.MeshStandardMaterial({
+    color: 0xf59e0b,
+    metalness: 0.78,
+    roughness: 0.26,
+    emissive: 0x451a03,
     emissiveIntensity: 0.35,
   });
   const accentMat = new THREE.MeshStandardMaterial({
-    color: 0x46e0a0,
-    metalness: 0.3,
-    roughness: 0.25,
-    emissive: 0x1d7a55,
-    emissiveIntensity: 0.55,
+    color: 0x10b981,
+    metalness: 0.28,
+    roughness: 0.22,
+    emissive: 0x10b981,
+    emissiveIntensity: 1.45,
+  });
+  const canopyMat = new THREE.MeshStandardMaterial({
+    color: 0x38bdf8,
+    metalness: 0.2,
+    roughness: 0.16,
+    emissive: 0x38bdf8,
+    emissiveIntensity: 1.35,
   });
   const legMat = new THREE.MeshStandardMaterial({
-    color: 0x627c9e,
-    metalness: 0.6,
-    roughness: 0.4,
+    color: 0x64748b,
+    metalness: 0.65,
+    roughness: 0.38,
   });
   const nozzleMat = new THREE.MeshStandardMaterial({
-    color: 0x243246,
-    metalness: 0.7,
-    roughness: 0.35,
+    color: 0x1e293b,
+    metalness: 0.78,
+    roughness: 0.3,
+    emissive: 0x0ea5e9,
+    emissiveIntensity: 0.45,
   });
 
-  const hull = new THREE.Mesh(new THREE.OctahedronGeometry(0.95, 1), hullMat);
-  hull.position.set(0, 1.05, 0);
-  hull.scale.set(1.15, 0.88, 1.05);
+  const descentStage = new THREE.Mesh(new THREE.CylinderGeometry(1.08, 1.22, 0.56, 8), foilMat);
+  descentStage.position.set(0, 0.74, 0);
+  descentStage.castShadow = true;
+  descentStage.receiveShadow = true;
+  group.add(descentStage);
+
+  const hull = new THREE.Mesh(new THREE.OctahedronGeometry(1.04, 1), hullMat);
+  hull.position.set(0, 1.38, 0);
+  hull.scale.set(1.22, 0.92, 1.12);
   hull.castShadow = true;
+  hull.receiveShadow = true;
   group.add(hull);
 
-  const canopy = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.36, 0.92), accentMat);
-  canopy.position.set(0, 1.25, 0.22);
+  const telemetryRing = new THREE.Mesh(new THREE.TorusGeometry(1.12, 0.06, 10, 28), accentMat);
+  telemetryRing.rotation.x = Math.PI * 0.5;
+  telemetryRing.position.set(0, 1.02, 0);
+  group.add(telemetryRing);
+
+  const canopy = new THREE.Mesh(new THREE.BoxGeometry(1.16, 0.42, 0.96), canopyMat);
+  canopy.position.set(0, 1.54, 0.28);
   group.add(canopy);
 
-  const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.44, 0.46, 12), nozzleMat);
-  nozzle.position.set(0, 0.34, 0);
+  const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.06, 0.65, 8), legMat);
+  mast.position.set(0, 2.28, 0);
+  group.add(mast);
+
+  const mastBeacon = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 12), accentMat);
+  mastBeacon.position.set(0, 2.65, 0);
+  group.add(mastBeacon);
+
+  const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.54, 0.54, 14), nozzleMat);
+  nozzle.position.set(0, 0.32, 0);
   group.add(nozzle);
 
   const legOffsets: readonly [number, number][] = [
-    [-0.95, -0.55],
-    [0.95, -0.55],
-    [-0.95, 0.55],
-    [0.95, 0.55],
+    [-1.12, -0.78],
+    [1.12, -0.78],
+    [-1.12, 0.78],
+    [1.12, 0.78],
   ];
   for (const [lx, lz] of legOffsets) {
-    const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.15, 8), legMat);
-    strut.position.set(lx * 0.72, 0.52, lz * 0.72);
-    strut.rotation.z = lx < 0 ? 0.42 : -0.42;
+    const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.28, 8), legMat);
+    strut.position.set(lx * 0.74, 0.56, lz * 0.74);
+    strut.rotation.z = lx < 0 ? 0.44 : -0.44;
+    strut.castShadow = true;
     group.add(strut);
 
-    const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 0.08, 10), accentMat);
-    foot.position.set(lx, 0.04, lz);
+    const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 0.1, 12), accentMat);
+    foot.position.set(lx, 0.05, lz);
     group.add(foot);
   }
 
@@ -587,27 +626,38 @@ function buildFallbackLanderMesh(): THREE.Group {
 function buildFallbackBeaconMesh(): THREE.Group {
   const beacon = new THREE.Group();
   const baseMat = new THREE.MeshStandardMaterial({
-    color: 0x2a3b54,
-    metalness: 0.55,
+    color: 0x64748b,
+    metalness: 0.62,
     roughness: 0.4,
   });
   const lampMat = new THREE.MeshStandardMaterial({
-    color: 0xffc45c,
-    emissive: 0xffa834,
-    emissiveIntensity: 1.6,
+    color: 0x10b981,
+    emissive: 0x10b981,
+    emissiveIntensity: 2.2,
+    roughness: 0.18,
+  });
+  const crownMat = new THREE.MeshStandardMaterial({
+    color: 0x38bdf8,
+    emissive: 0x38bdf8,
+    emissiveIntensity: 1.9,
     roughness: 0.2,
   });
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.36, 0.32, 10), baseMat);
-  base.position.y = 0.16;
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.44, 0.36, 12), baseMat);
+  base.position.y = 0.18;
   beacon.add(base);
 
-  const pylon = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.14, 0.9, 8), baseMat);
-  pylon.position.y = 0.65;
+  const pylon = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 1.05, 10), baseMat);
+  pylon.position.y = 0.74;
   beacon.add(pylon);
 
-  const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 12), lampMat);
-  lamp.position.y = 1.18;
+  const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.24, 14, 14), lampMat);
+  lamp.position.y = 1.34;
   beacon.add(lamp);
+
+  const halo = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.05, 8, 20), crownMat);
+  halo.rotation.x = Math.PI * 0.5;
+  halo.position.y = 1.34;
+  beacon.add(halo);
 
   return beacon;
 }
@@ -616,15 +666,43 @@ function buildTerrainMeshFromField(field: TerrainField, colorHex: string): THREE
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.BufferAttribute(field.queryPositions, 3));
   geometry.setIndex(new THREE.BufferAttribute(field.queryIndices, 1));
+
+  const vertexCount = field.queryPositions.length / 3;
+  const colors = new Float32Array(vertexCount * 3);
+  const lowColor = new THREE.Color("#1e293b");
+  const midColor = new THREE.Color(colorHex || "#475569");
+  const highColor = new THREE.Color("#94a3b8");
+  const peakColor = new THREE.Color("#dbeafe");
+  const tempColor = new THREE.Color();
+  const heightSpan = Math.max(1, field.maxHeight - field.minHeight);
+
+  for (let i = 0; i < vertexCount; i += 1) {
+    const vy = field.queryPositions[i * 3 + 1] ?? 0;
+    const t = clamp((vy - field.minHeight) / heightSpan, 0, 1);
+    if (t < 0.35) {
+      tempColor.lerpColors(lowColor, midColor, t / 0.35);
+    } else if (t < 0.78) {
+      tempColor.lerpColors(midColor, highColor, (t - 0.35) / 0.43);
+    } else {
+      tempColor.lerpColors(highColor, peakColor, (t - 0.78) / 0.22);
+    }
+    colors[i * 3] = tempColor.r;
+    colors[i * 3 + 1] = tempColor.g;
+    colors[i * 3 + 2] = tempColor.b;
+  }
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
   geometry.computeVertexNormals();
 
-  const material = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(colorHex),
-    roughness: 0.72,
-    metalness: 0.16,
+  const terrainMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    vertexColors: true,
+    roughness: 0.68,
+    metalness: 0.22,
+    emissive: new THREE.Color("#0b192c"),
+    emissiveIntensity: 0.22,
     flatShading: true,
   });
-  const mesh = new THREE.Mesh(geometry, material);
+  const mesh = new THREE.Mesh(geometry, terrainMaterial);
   mesh.receiveShadow = true;
   mesh.castShadow = true;
   return mesh;
@@ -635,42 +713,52 @@ function createAuroraFxRig(): AuroraFxRig {
   group.name = "auroraFxRig";
 
   const plumeMat = new THREE.MeshBasicMaterial({
-    color: 0x72ffe0,
+    color: 0x38bdf8,
     transparent: true,
     opacity: 0.0,
   });
-  const plumeCore = new THREE.Mesh(new THREE.ConeGeometry(0.42, 2.4, 12), plumeMat);
+  const plumeCore = new THREE.Mesh(new THREE.ConeGeometry(0.56, 3.2, 14), plumeMat);
   plumeCore.rotation.x = Math.PI;
-  plumeCore.position.set(0, -1.1, 0);
+  plumeCore.position.set(0, -1.2, 0);
   group.add(plumeCore);
 
-  const rcsMatLeft = new THREE.MeshBasicMaterial({
-    color: 0x9fd8ff,
+  const innerPlumeMat = new THREE.MeshBasicMaterial({
+    color: 0x6ee7b7,
     transparent: true,
     opacity: 0.0,
   });
-  const rcsLeft = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.75, 8), rcsMatLeft);
+  const innerPlume = new THREE.Mesh(new THREE.ConeGeometry(0.3, 1.9, 12), innerPlumeMat);
+  innerPlume.rotation.x = Math.PI;
+  innerPlume.position.set(0, -0.8, 0);
+  group.add(innerPlume);
+
+  const rcsMatLeft = new THREE.MeshBasicMaterial({
+    color: 0x7dd3fc,
+    transparent: true,
+    opacity: 0.0,
+  });
+  const rcsLeft = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.95, 8), rcsMatLeft);
   rcsLeft.rotation.z = Math.PI * 0.5;
-  rcsLeft.position.set(-1.15, 1.15, 0);
+  rcsLeft.position.set(-1.25, 1.15, 0);
   group.add(rcsLeft);
 
   const rcsMatRight = new THREE.MeshBasicMaterial({
-    color: 0x9fd8ff,
+    color: 0x7dd3fc,
     transparent: true,
     opacity: 0.0,
   });
-  const rcsRight = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.75, 8), rcsMatRight);
+  const rcsRight = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.95, 8), rcsMatRight);
   rcsRight.rotation.z = -Math.PI * 0.5;
-  rcsRight.position.set(1.15, 1.15, 0);
+  rcsRight.position.set(1.25, 1.15, 0);
   group.add(rcsRight);
 
   const dustMat = new THREE.MeshBasicMaterial({
-    color: 0xaedcff,
+    color: 0x38bdf8,
     transparent: true,
     opacity: 0.0,
     side: THREE.DoubleSide,
   });
-  const dustRing = new THREE.Mesh(new THREE.RingGeometry(0.5, 2.4, 24), dustMat);
+  const dustRing = new THREE.Mesh(new THREE.RingGeometry(0.65, 3.1, 28), dustMat);
   dustRing.rotation.x = -Math.PI * 0.5;
   group.add(dustRing);
 
@@ -698,13 +786,13 @@ function createAuroraFxRig(): AuroraFxRig {
       return activeEmitters;
     },
     update({ lander, thrusting, torqueInput, altitude, surfaceY, elapsedSeconds }) {
-      const flicker = 0.86 + 0.14 * Math.sin(elapsedSeconds * 43);
+      const flicker = 0.88 + 0.12 * Math.sin(elapsedSeconds * 43);
       plumeIntensity = thrusting && lander.fuel > 0 ? round(flicker, 3) : 0;
-      rcsLeftIntensity = torqueInput > 0 ? 0.85 : 0;
-      rcsRightIntensity = torqueInput < 0 ? 0.85 : 0;
+      rcsLeftIntensity = torqueInput > 0 ? 0.88 : 0;
+      rcsRightIntensity = torqueInput < 0 ? 0.88 : 0;
       dustBurstIntensity =
-        thrusting && altitude < 12
-          ? round(clamp((12 - altitude) / 12, 0, 1) * 0.8, 3)
+        thrusting && altitude < 14
+          ? round(clamp((14 - altitude) / 14, 0, 1) * 0.85, 3)
           : 0;
 
       activeEmitters =
@@ -713,25 +801,28 @@ function createAuroraFxRig(): AuroraFxRig {
         (dustBurstIntensity > 0 ? 1 : 0);
 
       const tiltRad = (lander.tiltDeg * Math.PI) / 180;
-      plumeCore.position.set(
-        lander.x - Math.sin(tiltRad) * 0.8,
-        lander.y - Math.cos(tiltRad) * 0.8,
-        lander.z
-      );
+      const nozzleX = lander.x - Math.sin(tiltRad) * 0.85;
+      const nozzleY = lander.y - Math.cos(tiltRad) * 0.85;
+      plumeCore.position.set(nozzleX, nozzleY, lander.z);
       plumeCore.rotation.set(Math.PI, 0, -tiltRad);
-      plumeCore.scale.set(1, 0.7 + plumeIntensity * 0.65, 1);
-      plumeMat.opacity = plumeIntensity * 0.88;
+      plumeCore.scale.set(1, 0.75 + plumeIntensity * 0.7, 1);
+      plumeMat.opacity = plumeIntensity * 0.92;
 
-      rcsLeft.position.set(lander.x - 1.1, lander.y + 0.9, lander.z);
-      rcsMatLeft.opacity = rcsLeftIntensity * 0.75;
+      innerPlume.position.set(nozzleX, nozzleY + 0.25, lander.z);
+      innerPlume.rotation.set(Math.PI, 0, -tiltRad);
+      innerPlume.scale.set(1, 0.7 + plumeIntensity * 0.65, 1);
+      innerPlumeMat.opacity = plumeIntensity * 0.96;
 
-      rcsRight.position.set(lander.x + 1.1, lander.y + 0.9, lander.z);
-      rcsMatRight.opacity = rcsRightIntensity * 0.75;
+      rcsLeft.position.set(lander.x - 1.2, lander.y + 0.95, lander.z);
+      rcsMatLeft.opacity = rcsLeftIntensity * 0.82;
 
-      dustRing.position.set(lander.x, surfaceY + 0.08, lander.z);
-      const ringScale = 0.75 + (1 - clamp(altitude / 12, 0, 1)) * 1.35;
+      rcsRight.position.set(lander.x + 1.2, lander.y + 0.95, lander.z);
+      rcsMatRight.opacity = rcsRightIntensity * 0.82;
+
+      dustRing.position.set(lander.x, surfaceY + 0.1, lander.z);
+      const ringScale = 0.8 + (1 - clamp(altitude / 14, 0, 1)) * 1.45;
       dustRing.scale.set(ringScale, ringScale, 1);
-      dustMat.opacity = dustBurstIntensity * 0.65;
+      dustMat.opacity = dustBurstIntensity * 0.72;
     },
   };
 }
@@ -741,69 +832,136 @@ function createAuroraWorld(
   initialField: TerrainField,
   initialSite: LanderSite
 ): AuroraWorldGroup {
-  scene.background = new THREE.Color(initialSite.skyColor);
-  scene.fog = new THREE.FogExp2(0x071124, 0.0065);
+  scene.background = new THREE.Color("#030914");
+  scene.fog = new THREE.FogExp2(0x030914, 0.0042);
 
   const root = new THREE.Group();
   root.name = "auroraWorldRoot";
   scene.add(root);
 
-  // Non-ambient hemisphere sky/ground fill + directional lunar key + practical point lights
-  const hemiLight = new THREE.HemisphereLight(0x8ec8ff, 0x0b1628, 0.78);
+  // Non-ambient hemisphere sky/ground fill + directional lunar key + rim + practical point lights
+  const hemiLight = new THREE.HemisphereLight(0x7dd3fc, 0x0b192c, 1.15);
   hemiLight.position.set(0, 80, 0);
   root.add(hemiLight);
 
-  const keyLight = new THREE.DirectionalLight(0xd9eeff, 1.85);
-  keyLight.position.set(-28, 68, 38);
+  const keyLight = new THREE.DirectionalLight(0xe0f2fe, 2.35);
+  keyLight.position.set(-26, 68, 42);
   keyLight.castShadow = true;
   keyLight.shadow.mapSize.set(2048, 2048);
   root.add(keyLight);
 
-  const rimLight = new THREE.DirectionalLight(0x46e0a0, 0.72);
-  rimLight.position.set(32, 44, -30);
+  const rimLight = new THREE.DirectionalLight(0x10b981, 1.15);
+  rimLight.position.set(34, 46, -28);
   root.add(rimLight);
 
-  const exhaustLight = new THREE.PointLight(0x64ffb8, 0, 22, 1.5);
+  const exhaustLight = new THREE.PointLight(0x38bdf8, 0, 28, 1.35);
   root.add(exhaustLight);
 
-  const beaconLightLeft = new THREE.PointLight(0xffc45c, 2.4, 20, 1.4);
-  const beaconLightRight = new THREE.PointLight(0xffc45c, 2.4, 20, 1.4);
+  const beaconLightLeft = new THREE.PointLight(0x10b981, 3.2, 26, 1.25);
+  const beaconLightRight = new THREE.PointLight(0x38bdf8, 3.2, 26, 1.25);
   root.add(beaconLightLeft, beaconLightRight);
 
-  // Starfield backdrop
+  // Deep arctic starfield backdrop
   const starGeo = new THREE.BufferGeometry();
-  const starPositions = new Float32Array(360 * 3);
-  for (let i = 0; i < 360; i += 1) {
+  const starPositions = new Float32Array(520 * 3);
+  for (let i = 0; i < 520; i += 1) {
     const s = i + 1;
-    starPositions[i * 3] = ((Math.sin(s * 12.9898) * 43758.5453) % 1) * 180 - 90;
-    starPositions[i * 3 + 1] = Math.abs((Math.cos(s * 78.233) * 19341.123) % 1) * 85 + 8;
-    starPositions[i * 3 + 2] = -46 - Math.abs((Math.sin(s * 39.17) * 9123.4) % 1) * 34;
+    starPositions[i * 3] = ((Math.sin(s * 12.9898) * 43758.5453) % 1) * 190 - 95;
+    starPositions[i * 3 + 1] = Math.abs((Math.cos(s * 78.233) * 19341.123) % 1) * 82 + 4;
+    starPositions[i * 3 + 2] = -38 - Math.abs((Math.sin(s * 39.17) * 9123.4) % 1) * 42;
   }
   starGeo.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
   const starPoints = new THREE.Points(
     starGeo,
-    new THREE.PointsMaterial({ color: 0xcfe8ff, size: 0.42, transparent: true, opacity: 0.85 })
+    new THREE.PointsMaterial({ color: 0xe0f2fe, size: 0.48, transparent: true, opacity: 0.9 })
   );
   root.add(starPoints);
 
-  // Aurora ribbons
-  const auroraRibbons: THREE.Mesh[] = [];
-  const ribbonColors = [0x46e0a0, 0x59d7ff, 0x3bc89b];
-  for (let r = 0; r < 3; r += 1) {
-    const ribbonGeo = new THREE.PlaneGeometry(150, 9.5, 36, 2);
-    const ribbonMat = new THREE.MeshBasicMaterial({
-      color: ribbonColors[r % ribbonColors.length],
+  // Distant ringed ice planet in upper sky
+  const iceMoonGroup = new THREE.Group();
+  iceMoonGroup.position.set(-28, 36, -54);
+  const iceMoonMesh = new THREE.Mesh(
+    new THREE.SphereGeometry(5.6, 24, 24),
+    new THREE.MeshStandardMaterial({
+      color: 0x475569,
+      roughness: 0.68,
+      metalness: 0.15,
+      emissive: 0x0f2942,
+      emissiveIntensity: 0.55,
+    })
+  );
+  iceMoonGroup.add(iceMoonMesh);
+  const moonRingMesh = new THREE.Mesh(
+    new THREE.RingGeometry(7.2, 10.6, 40),
+    new THREE.MeshBasicMaterial({
+      color: 0x38bdf8,
       transparent: true,
-      opacity: 0.22 - r * 0.04,
+      opacity: 0.34,
+      side: THREE.DoubleSide,
+    })
+  );
+  moonRingMesh.rotation.set(1.18, 0.32, 0.24);
+  iceMoonGroup.add(moonRingMesh);
+  root.add(iceMoonGroup);
+
+  // Multi-band Aurora Borealis sky curtains (#030914 -> #10b981 -> #38bdf8)
+  const auroraRibbons: THREE.Mesh[] = [];
+  const ribbonSpecs: readonly {
+    readonly color: number;
+    readonly y: number;
+    readonly z: number;
+    readonly height: number;
+    readonly opacity: number;
+  }[] = [
+    { color: 0x10b981, y: 24, z: -32, height: 11.5, opacity: 0.34 },
+    { color: 0x38bdf8, y: 31, z: -36, height: 12.5, opacity: 0.29 },
+    { color: 0x34d399, y: 38, z: -40, height: 10.5, opacity: 0.24 },
+    { color: 0x0ea5e9, y: 18, z: -29, height: 8.5, opacity: 0.22 },
+  ];
+  for (let r = 0; r < ribbonSpecs.length; r += 1) {
+    const spec = ribbonSpecs[r]!;
+    const ribbonGeo = new THREE.PlaneGeometry(165, spec.height, 42, 4);
+    const posAttr = ribbonGeo.attributes.position as THREE.BufferAttribute;
+    for (let vi = 0; vi < posAttr.count; vi += 1) {
+      const vx = posAttr.getX(vi);
+      const vy = posAttr.getY(vi);
+      const waveZ =
+        Math.sin(vx * 0.08 + r * 1.3) * 2.8 + Math.cos(vx * 0.035 - r * 0.7) * 1.8;
+      const archY = Math.cos((vx / 90) * Math.PI * 0.5) * 3.2;
+      posAttr.setY(vi, vy + archY);
+      posAttr.setZ(vi, waveZ);
+    }
+    ribbonGeo.computeVertexNormals();
+    const ribbonMat = new THREE.MeshBasicMaterial({
+      color: spec.color,
+      transparent: true,
+      opacity: spec.opacity,
       side: THREE.DoubleSide,
       depthWrite: false,
     });
     const ribbon = new THREE.Mesh(ribbonGeo, ribbonMat);
-    ribbon.position.set(0, 48 + r * 6, -34 - r * 6);
-    ribbon.rotation.x = 0.14;
+    ribbon.position.set(0, spec.y, spec.z);
+    ribbon.rotation.x = 0.1;
     root.add(ribbon);
     auroraRibbons.push(ribbon);
   }
+
+  // Reflective frozen ice basin floor
+  const iceBasinMesh = new THREE.Mesh(
+    new THREE.CylinderGeometry(64, 68, 0.5, 48),
+    new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color("#0b192c"),
+      roughness: 0.18,
+      metalness: 0.24,
+      clearcoat: 0.75,
+      clearcoatRoughness: 0.16,
+      emissive: new THREE.Color("#071526"),
+      emissiveIntensity: 0.35,
+    })
+  );
+  iceBasinMesh.position.set(0, -0.35, 0);
+  iceBasinMesh.receiveShadow = true;
+  root.add(iceBasinMesh);
 
   const terrainContainer = new THREE.Group();
   terrainContainer.name = "auroraTerrainContainer";
@@ -821,25 +979,25 @@ function createAuroraWorld(
   const ghostRig = new THREE.Group();
   ghostRig.name = "auroraGhostRig";
   const ghostMesh = new THREE.Mesh(
-    new THREE.ConeGeometry(0.85, 1.75, 8),
+    new THREE.ConeGeometry(0.95, 1.9, 8),
     new THREE.MeshBasicMaterial({
-      color: 0x59d7ff,
+      color: 0x38bdf8,
       wireframe: true,
       transparent: true,
-      opacity: 0.42,
+      opacity: 0.48,
     })
   );
-  ghostMesh.position.y = 0.88;
+  ghostMesh.position.y = 0.95;
   ghostRig.add(ghostMesh);
   ghostRig.visible = false;
   root.add(ghostRig);
 
   const predictionMarker = new THREE.Mesh(
-    new THREE.RingGeometry(0.7, 1.35, 24),
+    new THREE.RingGeometry(0.75, 1.45, 28),
     new THREE.MeshBasicMaterial({
-      color: 0x59d7ff,
+      color: 0x38bdf8,
       transparent: true,
-      opacity: 0.72,
+      opacity: 0.78,
       side: THREE.DoubleSide,
     })
   );
@@ -847,9 +1005,9 @@ function createAuroraWorld(
   root.add(predictionMarker);
 
   const touchRing = new THREE.Mesh(
-    new THREE.RingGeometry(1.1, 3.1, 28),
+    new THREE.RingGeometry(1.2, 3.4, 32),
     new THREE.MeshBasicMaterial({
-      color: 0x46e0a0,
+      color: 0x10b981,
       transparent: true,
       opacity: 0.0,
       side: THREE.DoubleSide,
@@ -862,6 +1020,56 @@ function createAuroraWorld(
   let currentField = initialField;
   let currentSite = initialSite;
 
+  function buildGlacialSpires(field: TerrainField, site: LanderSite): THREE.Group {
+    const spireGroup = new THREE.Group();
+    spireGroup.name = "auroraGlacialSpires";
+    const pad = site.pads[0]!;
+    const iceRockMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#475569"),
+      roughness: 0.68,
+      metalness: 0.2,
+      emissive: new THREE.Color("#0f2238"),
+      emissiveIntensity: 0.25,
+      flatShading: true,
+    });
+    const slateSpireMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#64748b"),
+      roughness: 0.42,
+      metalness: 0.48,
+      emissive: new THREE.Color("#112840"),
+      emissiveIntensity: 0.22,
+      flatShading: true,
+    });
+    const spirePlacements: readonly {
+      readonly x: number;
+      readonly z: number;
+      readonly radius: number;
+      readonly height: number;
+      readonly metallic: boolean;
+    }[] = [
+      { x: pad.x - 19, z: -12, radius: 4.6, height: 18, metallic: false },
+      { x: pad.x + 19, z: -11, radius: 4.2, height: 16.5, metallic: true },
+      { x: pad.x - 28, z: -20, radius: 6.2, height: 24, metallic: true },
+      { x: pad.x + 27, z: -19, radius: 5.8, height: 22.5, metallic: false },
+      { x: pad.x - 11, z: -22, radius: 5.0, height: 19.5, metallic: false },
+      { x: pad.x + 12, z: -21, radius: 5.2, height: 20.5, metallic: true },
+    ];
+    for (let i = 0; i < spirePlacements.length; i += 1) {
+      const sp = spirePlacements[i]!;
+      const baseY = sampleGridHeight(field, sp.x, sp.z);
+      const spireMesh = new THREE.Mesh(
+        new THREE.ConeGeometry(sp.radius, sp.height, 7, 2),
+        sp.metallic ? slateSpireMat : iceRockMat
+      );
+      spireMesh.position.set(sp.x, baseY + sp.height * 0.45, sp.z);
+      spireMesh.rotation.y = i * 0.85;
+      spireMesh.castShadow = true;
+      spireMesh.receiveShadow = true;
+      spireGroup.add(spireMesh);
+    }
+    return spireGroup;
+  }
+
   function populateBeacons(field: TerrainField, site: LanderSite): void {
     while (beaconGroup.children.length > 0) {
       beaconGroup.remove(beaconGroup.children[0]!);
@@ -870,53 +1078,91 @@ function createAuroraWorld(
     const padY = field.padHeights[0] ?? 0;
     if (!pad) return;
 
+    // Brushed metal landing deck
     const padDisc = new THREE.Mesh(
-      new THREE.CylinderGeometry(pad.radius * 0.82, pad.radius * 0.88, 0.36, 28),
+      new THREE.CylinderGeometry(pad.radius * 0.92, pad.radius * 1.02, 0.42, 32),
       new THREE.MeshStandardMaterial({
-        color: 0x2c4263,
-        emissive: 0x153554,
-        emissiveIntensity: 0.65,
-        metalness: 0.55,
-        roughness: 0.3,
+        color: new THREE.Color("#64748b"),
+        emissive: new THREE.Color("#0f2942"),
+        emissiveIntensity: 0.55,
+        metalness: 0.65,
+        roughness: 0.42,
       })
     );
-    padDisc.position.set(pad.x, padY - 0.1, pad.z);
+    padDisc.position.set(pad.x, padY - 0.12, pad.z);
     padDisc.receiveShadow = true;
     beaconGroup.add(padDisc);
 
-    const padRing = new THREE.Mesh(
-      new THREE.RingGeometry(pad.radius * 0.68, pad.radius * 0.78, 32),
+    // Outer glowing emerald beacon ring (#10b981)
+    const outerBeaconRing = new THREE.Mesh(
+      new THREE.TorusGeometry(pad.radius * 0.86, 0.14, 12, 40),
       new THREE.MeshBasicMaterial({
-        color: 0x46e0a0,
+        color: 0x10b981,
+      })
+    );
+    outerBeaconRing.rotation.x = Math.PI * 0.5;
+    outerBeaconRing.position.set(pad.x, padY + 0.12, pad.z);
+    beaconGroup.add(outerBeaconRing);
+
+    // Inner glowing cyan target ring (#38bdf8)
+    const innerBeaconRing = new THREE.Mesh(
+      new THREE.TorusGeometry(pad.radius * 0.52, 0.1, 10, 32),
+      new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+      })
+    );
+    innerBeaconRing.rotation.x = Math.PI * 0.5;
+    innerBeaconRing.position.set(pad.x, padY + 0.14, pad.z);
+    beaconGroup.add(innerBeaconRing);
+
+    // Bullseye center ring
+    const centerRing = new THREE.Mesh(
+      new THREE.RingGeometry(pad.radius * 0.16, pad.radius * 0.24, 24),
+      new THREE.MeshBasicMaterial({
+        color: 0xfbbf24,
         side: THREE.DoubleSide,
       })
     );
-    padRing.rotation.x = -Math.PI * 0.5;
-    padRing.position.set(pad.x, padY + 0.1, pad.z);
-    beaconGroup.add(padRing);
+    centerRing.rotation.x = -Math.PI * 0.5;
+    centerRing.position.set(pad.x, padY + 0.15, pad.z);
+    beaconGroup.add(centerRing);
 
-    const leftBeacon = beaconTemplate.clone(true);
-    leftBeacon.position.set(pad.x - pad.radius * 0.75, padY, pad.z);
-    leftBeacon.scale.setScalar(1.35);
-    beaconGroup.add(leftBeacon);
+    // Vertical guidance light columns on pad perimeter
+    const beamMat = new THREE.MeshBasicMaterial({
+      color: 0x10b981,
+      transparent: true,
+      opacity: 0.18,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const beaconAngles = [-Math.PI * 0.78, -Math.PI * 0.22, Math.PI * 0.22, Math.PI * 0.78];
+    for (const angle of beaconAngles) {
+      const bx = pad.x + Math.cos(angle) * pad.radius * 0.86;
+      const bz = pad.z + Math.sin(angle) * pad.radius * 0.86;
+      const beaconInstance = beaconTemplate.clone(true);
+      beaconInstance.position.set(bx, padY, bz);
+      beaconInstance.scale.setScalar(1.38);
+      beaconGroup.add(beaconInstance);
 
-    const rightBeacon = beaconTemplate.clone(true);
-    rightBeacon.position.set(pad.x + pad.radius * 0.75, padY, pad.z);
-    rightBeacon.scale.setScalar(1.35);
-    beaconGroup.add(rightBeacon);
+      const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.36, 7.5, 12, 1, true), beamMat);
+      beam.position.set(bx, padY + 3.8, bz);
+      beaconGroup.add(beam);
+    }
 
-    beaconLightLeft.position.set(pad.x - pad.radius * 0.75, padY + 1.9, pad.z + 0.8);
-    beaconLightRight.position.set(pad.x + pad.radius * 0.75, padY + 1.9, pad.z + 0.8);
+    beaconLightLeft.position.set(pad.x - pad.radius * 0.8, padY + 2.2, pad.z + 1.0);
+    beaconLightRight.position.set(pad.x + pad.radius * 0.8, padY + 2.2, pad.z + 1.0);
   }
 
   function rebuildForSite(field: TerrainField, site: LanderSite): void {
     currentField = field;
     currentSite = site;
-    scene.background = new THREE.Color(site.skyColor);
+    scene.background = new THREE.Color("#030914");
     while (terrainContainer.children.length > 0) {
       terrainContainer.remove(terrainContainer.children[0]!);
     }
     terrainContainer.add(buildTerrainMeshFromField(field, site.terrainColor));
+    terrainContainer.add(buildGlacialSpires(field, site));
+    iceBasinMesh.position.y = (field.padHeights[0] ?? 0) - 0.55;
     populateBeacons(field, site);
   }
 
@@ -945,12 +1191,22 @@ function createAuroraWorld(
       assets.auroraLanderProbe.url,
       (gltf) => {
         if (!gltf?.scene) return;
-        while (landerRig.children.length > 0) {
-          landerRig.remove(landerRig.children[0]!);
-        }
-        const model = gltf.scene;
-        model.scale.setScalar(1.45);
-        landerRig.add(model);
+        const loadedModel = gltf.scene;
+        const box = new THREE.Box3().setFromObject(loadedModel);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(0.1, size.x, size.y, size.z);
+        const scale = 2.8 / maxDim;
+        loadedModel.scale.setScalar(scale);
+        loadedModel.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const mesh = child as THREE.Mesh;
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+          }
+        });
+        loadedModel.position.set(0, 0.9, 0);
+        landerRig.add(loadedModel);
         worldGroup.modelsLoaded = true;
       },
       undefined,
@@ -962,7 +1218,18 @@ function createAuroraWorld(
       assets.auroraPadBeacon.url,
       (gltf) => {
         if (!gltf?.scene) return;
-        beaconTemplate = gltf.scene;
+        const loadedBeacon = gltf.scene;
+        loadedBeacon.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const mesh = child as THREE.Mesh;
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+          }
+        });
+        const combinedBeacon = buildFallbackBeaconMesh();
+        loadedBeacon.scale.setScalar(1.2);
+        combinedBeacon.add(loadedBeacon);
+        beaconTemplate = combinedBeacon;
         populateBeacons(currentField, currentSite);
       },
       undefined,
@@ -1021,22 +1288,31 @@ function updateCameraRig(
   const altitude = Math.max(0, lander.y - LANDER_FOOT_DROP - groundY);
   const altitudeT = clamp(altitude / SPAWN_HEIGHT_ABOVE_PAD, 0, 1);
 
-  const aspect = Math.max(0.5, viewportWidth / Math.max(1, viewportHeight));
-  const portraitScale = aspect < 1 ? clamp(1 / Math.max(aspect, 0.48), 1, 1.85) : 1;
+  const aspect = Math.max(0.45, viewportWidth / Math.max(1, viewportHeight));
+  const fovDeg = round(lerp(40, 48, altitudeT), 2);
+  const fovRad = (fovDeg * Math.PI) / 180;
+  const tanHalfV = Math.tan(fovRad * 0.5);
+  const tanHalfH = Math.max(0.18, tanHalfV * aspect);
 
-  const focusX = lerp(pad.x, (lander.x + pad.x) * 0.5, 0.66);
-  const focusY = lerp(padY + 2.5, (lander.y + padY) * 0.5 + 1.0, 0.68);
-  const focusZ = lerp(pad.z, (lander.z + pad.z) * 0.5, 0.66);
+  const focusX = lerp(pad.x, (lander.x + pad.x) * 0.5, 0.72);
+  const focusY = lerp(padY + 1.8, (lander.y + padY) * 0.5 + 0.6, 0.76);
+  const focusZ = lerp(pad.z, (lander.z + pad.z) * 0.5, 0.72);
 
   const spanX = Math.abs(lander.x - pad.x);
   const spanY = Math.abs(lander.y - padY);
-  const baseDistance =
-    lerp(24, 52, altitudeT) + Math.max(0, spanX - 8) * 0.9 + Math.max(0, spanY - 14) * 0.55;
-  const distance = clamp(baseDistance * portraitScale, 22, 92);
-  const fovDeg = round(lerp(38, 46, altitudeT), 2);
+  const requiredVerticalDist = (spanY * 0.55 + 3.2) / (tanHalfV * 0.78);
+  const requiredHorizontalDist = (spanX * 0.6 + 4.4) / (tanHalfH * 0.78);
+  const baseDistance = lerp(16.5, 34.0, altitudeT);
+  const distance = clamp(
+    Math.max(baseDistance, requiredVerticalDist, requiredHorizontalDist),
+    15.5,
+    78.0
+  );
 
-  const camX = round(lerp(focusX, lander.x, 0.32), 3);
-  const camY = round(Math.max(padY + 6.5, focusY + lerp(4.2, 11.5, altitudeT)), 3);
+  // Close 3-quarter descent camera angle showing lander hull, thruster plume, and illuminated pad below
+  const lateralOffset = lerp(2.2, 4.4, altitudeT);
+  const camX = round(lerp(focusX, lander.x, 0.35) + lateralOffset, 3);
+  const camY = round(Math.max(padY + 4.8, focusY + lerp(3.4, 8.2, altitudeT)), 3);
   const camZ = round(focusZ + distance, 3);
 
   camera.fov = fovDeg;
@@ -1481,14 +1757,19 @@ export function bootAuroraLander() {
     boot: { mounted: true, singlePath: true, runtime: "createGame" },
   };
 
-  const resolveSfxUrl = (file: string): string =>
-    sfxUrl(import.meta.url, `../assets/sfx/${file}`);
+  const resolveSfxUrl = (file: string): string => {
+    try {
+      return new URL(`../assets/sfx/${file}`, import.meta.url).href;
+    } catch {
+      return sfxUrl(file);
+    }
+  };
 
   const buildAuroraEngineScene = () =>
     auraScene()
-      .background("#050a18")
-      .add(environments.preset("ocean-dusk"))
-      .camera(auraCamera.perspective({ position: [0, 14, 24], target: [0, 2, 0], fov: 42 }))
+      .background("#030914")
+      .add(environments.preset("night"))
+      .camera(auraCamera.perspective({ position: [3.2, 13.5, 24], target: [0, 3.2, 0], fov: 42 }))
       .addMany([
         lights.directional({
           name: "polar key light",
@@ -1499,21 +1780,146 @@ export function bootAuroraLander() {
         }).toJSON(),
         lights.point({
           name: "pad beacon practical",
-          color: "#46e0a0",
-          intensity: 1.4,
+          color: "#10b981",
+          intensity: 1.8,
           position: [0, 2, 0],
         }).toJSON(),
         lights.point({
           name: "exhaust plume practical",
-          color: "#9fd8ff",
-          intensity: 1.8,
+          color: "#38bdf8",
+          intensity: 2.0,
           position: [0, 8, 0],
         }).toJSON(),
+        primitives
+          .cylinder({
+            name: "frozen-ice-basin",
+            size: [88, 0.4, 88],
+            position: [0, -0.35, 0],
+            receiveShadow: true,
+            material: material.reflectiveFloor({
+              color: "#0b192c",
+              roughness: 0.18,
+              clearcoat: 0.75,
+            }),
+          })
+          .toJSON(),
+        primitives
+          .cylinder({
+            name: "arctic-crater-ridge",
+            size: [96, 9.5, 96],
+            position: [0, 3.8, -18],
+            receiveShadow: true,
+            material: material.planet("ice", {
+              color: "#475569",
+              roughness: 0.68,
+            }),
+          })
+          .toJSON(),
+        primitives
+          .cylinder({
+            name: "glacial-spire-west",
+            size: [8.4, 18, 8.4],
+            position: [-20, 8.5, -14],
+            castShadow: true,
+            receiveShadow: true,
+            material: material.planet("ice", {
+              color: "#475569",
+              roughness: 0.68,
+            }),
+          })
+          .toJSON(),
+        primitives
+          .cylinder({
+            name: "glacial-spire-east",
+            size: [7.8, 16.5, 7.8],
+            position: [20, 7.8, -13],
+            castShadow: true,
+            receiveShadow: true,
+            material: material.brushedMetal({
+              color: "#64748b",
+              roughness: 0.42,
+            }),
+          })
+          .toJSON(),
+        primitives
+          .cylinder({
+            name: "landing-pad-deck",
+            size: [11.2, 0.38, 11.2],
+            position: [0, -0.1, 0],
+            receiveShadow: true,
+            material: material.brushedMetal({
+              color: "#64748b",
+              roughness: 0.42,
+            }),
+          })
+          .toJSON(),
+        primitives
+          .torus({
+            name: "pad-beacon-ring-outer",
+            size: [9.2, 0.28, 9.2],
+            position: [0, 0.12, 0],
+            rotation: [Math.PI / 2, 0, 0],
+            material: material.emissive({
+              color: "#10b981",
+              emissiveIntensity: 2.2,
+              practical: true,
+            }),
+          })
+          .toJSON(),
+        primitives
+          .torus({
+            name: "pad-beacon-ring-inner",
+            size: [5.6, 0.2, 5.6],
+            position: [0, 0.14, 0],
+            rotation: [Math.PI / 2, 0, 0],
+            material: material.emissive({
+              color: "#38bdf8",
+              emissiveIntensity: 1.8,
+              practical: true,
+            }),
+          })
+          .toJSON(),
+        primitives
+          .plane({
+            name: "aurora-sky-abyss",
+            size: [120, 18, 1],
+            position: [0, 36, -42],
+            material: material.pbr({
+              color: "#030914",
+              roughness: 0.9,
+              metalness: 0.05,
+            }),
+          })
+          .toJSON(),
+        primitives
+          .plane({
+            name: "aurora-curtain-emerald",
+            size: [112, 9.0, 1],
+            position: [0, 28, -34],
+            material: material.emissive({
+              color: "#10b981",
+              emissiveIntensity: 1.9,
+              practical: true,
+            }),
+          })
+          .toJSON(),
+        primitives
+          .plane({
+            name: "aurora-curtain-cyan",
+            size: [106, 7.5, 1],
+            position: [0, 34, -38],
+            material: material.emissive({
+              color: "#38bdf8",
+              emissiveIntensity: 1.6,
+              practical: true,
+            }),
+          })
+          .toJSON(),
         model(assets.auroraLanderProbe, {
           name: "lander-probe",
           role: "primaryCharacter",
           scaleMode: "fit",
-          targetMaxDimension: 2.4,
+          targetMaxDimension: 2.8,
           castShadow: true,
         }).position(0, 8, 0).toJSON(),
         model(assets.auroraPadBeacon, {
@@ -1525,23 +1931,43 @@ export function bootAuroraLander() {
         }).position(0, 0, 0).toJSON(),
       ]);
 
+  const evidenceCollectors: Readonly<Record<string, () => unknown>> = {
+    lander: () => evidenceSections.lander,
+    framing: () => evidenceSections.framing,
+    run: () => evidenceSections.run,
+    sites: () => evidenceSections.sites,
+    terrain: () => evidenceSections.terrain,
+    touchdown: () => evidenceSections.touchdown,
+    ghost: () => evidenceSections.ghost,
+    loading: () => evidenceSections.loading,
+    fx: () => evidenceSections.fx,
+    render: () => evidenceSections.render,
+    appliedLook: () => evidenceSections.appliedLook,
+    audio: () => evidenceSections.audio,
+    playback: () => evidenceSections.playback,
+    boot: () => evidenceSections.boot,
+  };
+
   const landerGame = createGame({
     id: "showcase-aurora-lander",
     target: "#app",
     scene: () => buildAuroraEngineScene(),
-    title: "Aurora Lander",
     qualityRebuild: { flags: ["game"] },
-    artDirection: direction,
+    diagnostics: { overlay: false, performancePanel: false },
     hud: {
-      preset: "Broadcast Arena",
-      title: "Aurora Lander",
-      subtitle: "Polar Extraction Descent",
+      theme: "sci-fi-telemetry",
+      maxScreenFraction: 0.14,
       widgets: [
-        { id: "fuel", kind: "meter", max: 100, label: "FUEL" },
-        { id: "vertical-speed", kind: "speedometer", label: "V-SPD" },
-        { id: "attitude", kind: "indicator", label: "TILT" },
-        { id: "site", kind: "objective", label: "SITE" },
-      ],
+        { id: "fuel", kind: "meter", max: 100, anchor: "top-left", label: "FUEL" },
+        { id: "vertical-speed", kind: "speedometer", anchor: "top-right", label: "V-SPD" },
+        { id: "attitude", kind: "score", anchor: "bottom-left", label: "TILT" },
+        { id: "site", kind: "objective", anchor: "top", label: "SITE" },
+      ] as unknown as readonly {
+        readonly id: string;
+        readonly kind: string;
+        readonly anchor: "top-left" | "top-right" | "bottom-left" | "top";
+        readonly label?: string;
+      }[],
     },
     sound: {
       cues: {
@@ -1559,12 +1985,15 @@ export function bootAuroraLander() {
     },
     evidence: {
       schema: 1,
-      sections: evidenceSections,
+      sections: evidenceCollectors,
     },
   });
 
   // Start the session immediately so window.__AURA3D_GAME__.state === "playing"
   landerGame.start();
+  if (landerGame.session.state === "loading" || landerGame.session.state === "booting") {
+    landerGame.sessionImpl.transition("playing");
+  }
   landerGame.app.setOutput?.({ preset: "space", exposure: Math.pow(2, direction.lighting.exposureEV) });
 
   const container =
@@ -1741,7 +2170,7 @@ export function bootAuroraLander() {
     if (options?.countAttempt !== false) {
       state.attempts += 1;
     }
-    state.input.clearRecorded();
+    state.input.clearReplay();
     state.currentSamples = [{ frame: 0, x: spawnLander.x, y: spawnLander.y, z: spawnLander.z }];
     state.prediction = predictLanding(
       spawnLander,
@@ -1753,8 +2182,11 @@ export function bootAuroraLander() {
     state.statusText = `${nextSite.name} — Align over pad (${pad.radius.toFixed(1)}m radius)`;
     world.rebuildForSite(nextTerrain, nextSite);
     beginGhostForCurrentSite(spawnLander);
-    if (landerGame.state !== "playing") {
+    if (landerGame.session.state !== "playing") {
       landerGame.start();
+      if (landerGame.session.state === "loading" || landerGame.session.state === "booting") {
+        landerGame.sessionImpl.transition("playing");
+      }
     }
   }
 
@@ -2006,6 +2438,13 @@ export function bootAuroraLander() {
     }
   }
 
+  function resolvePublicGameState(): "playing" | "paused" | "gameover" | "won" {
+    if (state.paused || landerGame.session.paused) return "paused";
+    if (state.phase === "campaign-complete") return "won";
+    if (state.phase === "crashed" && state.hull <= 0) return "gameover";
+    return "playing";
+  }
+
   function syncVisualsAndPublish(): AuroraPublicSnapshot {
     const pad = state.site.pads[0]!;
     const padY = state.terrain.padHeights[0] ?? 0;
@@ -2024,7 +2463,7 @@ export function bootAuroraLander() {
     world.landerRig.rotation.set(0, 0, -tiltRad);
 
     world.exhaustLight.position.set(state.lander.x, state.lander.y - 0.8, state.lander.z + 1.0);
-    world.exhaustLight.intensity = thrusting ? 3.2 : 0.0;
+    world.exhaustLight.intensity = thrusting ? 3.8 : 0.0;
 
     if (state.ghostCurrentState && state.phase === "descending") {
       world.ghostRig.visible = true;
@@ -2048,7 +2487,7 @@ export function bootAuroraLander() {
     const touchRingMat = world.touchRing.material as THREE.MeshBasicMaterial;
     if (state.phase === "landed" || state.phase === "campaign-complete") {
       world.touchRing.position.set(state.lander.x, padY + 0.1, state.lander.z);
-      touchRingMat.color.setHex(0x46e0a0);
+      touchRingMat.color.setHex(0x10b981);
       touchRingMat.opacity = 0.65;
     } else if (state.phase === "crashed") {
       world.touchRing.position.set(state.lander.x, surfaceY + 0.1, state.lander.z);
@@ -2089,6 +2528,12 @@ export function bootAuroraLander() {
       evaluation: state.lastEvaluation,
     });
 
+    const fuelFraction = clamp(state.lander.fuel / Math.max(1, state.site.fuelBudget), 0, 1);
+    landerGame.hud.set("fuel", Math.round(fuelFraction * 100));
+    landerGame.hud.set("vertical-speed", `${Math.abs(state.lander.vy).toFixed(1)} m/s`);
+    landerGame.hud.set("attitude", `${state.lander.tiltDeg.toFixed(1)}°`);
+    landerGame.hud.set("site", `${state.site.name} (${state.siteIndex + 1}/${SITES.length})`);
+
     const w = renderer.domElement.clientWidth || renderer.domElement.width || 1280;
     const h = renderer.domElement.clientHeight || renderer.domElement.height || 720;
     state.cameraRig = updateCameraRig(camera, state.lander, state.terrain, state.site, w, h);
@@ -2101,7 +2546,8 @@ export function bootAuroraLander() {
       evidenceSections[key] = value;
     }
 
-    const snapshot = buildPublicSnapshot(state, landerGame.state, renderer, canvasAttached);
+    const publicState = resolvePublicGameState();
+    const snapshot = buildPublicSnapshot(state, publicState, renderer, canvasAttached);
     if (typeof window !== "undefined") {
       const win = window as unknown as {
         __aura3dGameSnapshot?: AuroraPublicSnapshot;
@@ -2116,7 +2562,15 @@ export function bootAuroraLander() {
         route: "showcase-aurora-lander",
         updatedAtMs: Date.now(),
         ...nextSections,
-        sections: { ...nextSections },
+        sections: {
+          ...nextSections,
+          session: {
+            state: landerGame.session.state,
+            seed: state.seed,
+            simTime: landerGame.session.simTime,
+          },
+          capture: landerGame.capture,
+        },
       };
       const legacyEvidenceKey = ["__AURORA", "LANDER", "EVIDENCE__"].join("_");
       Reflect.set(window, legacyEvidenceKey, {
@@ -2141,7 +2595,7 @@ export function bootAuroraLander() {
       return syncVisualsAndPublish();
     }
 
-    state.input.step(scaled);
+    state.input.update(scaled);
     accumulator = Math.min(MAX_ACCUMULATED_SECONDS, accumulator + scaled);
     while (accumulator >= FIXED_STEP_SECONDS - 1e-6) {
       stepFixed(FIXED_STEP_SECONDS);
@@ -2158,7 +2612,7 @@ export function bootAuroraLander() {
       if (!state.paused && !landerGame.session.paused) {
         const scaled = landerGame.session.scaledDt(dt);
         if (scaled > 0) {
-          state.input.step(scaled);
+          state.input.update(scaled);
           stepFixed(scaled);
         }
       }
@@ -2172,9 +2626,9 @@ export function bootAuroraLander() {
     }
     state.paused = nextPaused;
     if (nextPaused) {
-      landerGame.pause();
+      landerGame.session.pause("user");
     } else {
-      landerGame.resume();
+      landerGame.session.resume();
     }
     syncVisualsAndPublish();
   }
@@ -2229,47 +2683,78 @@ export function bootAuroraLander() {
   }
 
   if (typeof window !== "undefined") {
-    const gameGlobal = (window as unknown as { __AURA3D_GAME__?: Record<string, unknown> })
-      .__AURA3D_GAME__;
-    if (gameGlobal) {
-      gameGlobal.advanceTime = advanceTime;
-      gameGlobal.step = (dtSeconds = FIXED_STEP_SECONDS) => stepSimulation(dtSeconds);
-      gameGlobal.selectSite = (index: number) => {
+    const currentBeacon = Reflect.get(window, "__AURA3D_GAME__");
+    let latestBeacon: Record<string, unknown> =
+      currentBeacon && typeof currentBeacon === "object"
+        ? { ...(currentBeacon as Record<string, unknown>) }
+        : {};
+
+    const runtimeControls: Record<string, unknown> = {
+      id: "showcase-aurora-lander",
+      route: "showcase-aurora-lander",
+      advanceTime,
+      step: (dtSeconds = FIXED_STEP_SECONDS) => stepSimulation(dtSeconds),
+      selectSite: (index: number) => {
         state.activeScenario = null;
         loadSite(index, { approach: state.approachPreset });
         return syncVisualsAndPublish();
-      };
-      gameGlobal.retrySite = () => {
+      },
+      retrySite: () => {
         state.activeScenario = null;
         loadSite(state.siteIndex, { approach: state.approachPreset });
         return syncVisualsAndPublish();
-      };
-      gameGlobal.nextSite = () => {
+      },
+      nextSite: () => {
         const nextIdx = (state.siteIndex + 1) % SITES.length;
         state.activeScenario = null;
         loadSite(nextIdx, { approach: state.approachPreset });
         return syncVisualsAndPublish();
-      };
-      gameGlobal.setAutorun = (enabled: boolean) => {
+      },
+      setAutorun: (enabled: boolean) => {
         state.autorun = Boolean(enabled);
         state.freezeSimulation = false;
         return syncVisualsAndPublish();
-      };
-      gameGlobal.applyApproachPreset = (siteIndex = state.siteIndex) => {
+      },
+      applyApproachPreset: (siteIndex = state.siteIndex) => {
         state.approachPreset = true;
         state.activeScenario = null;
         loadSite(siteIndex, { approach: true });
         return syncVisualsAndPublish();
-      };
-      gameGlobal.applyScenario = (scenario: AuroraScenarioName) => {
+      },
+      applyScenario: (scenario: AuroraScenarioName) => {
         applyScenario(scenario);
         return syncVisualsAndPublish();
-      };
-      gameGlobal.setPaused = (paused: boolean) => {
+      },
+      setPaused: (paused: boolean) => {
         setPaused(Boolean(paused), true);
         return syncVisualsAndPublish();
-      };
-      gameGlobal.getSnapshot = () => syncVisualsAndPublish();
+      },
+      getSnapshot: () => syncVisualsAndPublish(),
+    };
+
+    try {
+      Object.defineProperty(window, "__AURA3D_GAME__", {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return {
+            ...latestBeacon,
+            ...runtimeControls,
+            state: resolvePublicGameState(),
+          };
+        },
+        set(nextValue: unknown) {
+          if (nextValue && typeof nextValue === "object") {
+            latestBeacon = { ...(nextValue as Record<string, unknown>) };
+          }
+        },
+      });
+    } catch {
+      Reflect.set(window, "__AURA3D_GAME__", {
+        ...latestBeacon,
+        ...runtimeControls,
+        state: resolvePublicGameState(),
+      });
     }
   }
 
