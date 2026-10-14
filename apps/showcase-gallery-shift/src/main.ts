@@ -12,10 +12,12 @@
 import {
   camera,
   game,
+  instances,
   lights,
   looks,
   material,
   model,
+  primitives,
   scene,
   type AuraNodeInput,
   type AuraRuntimeNodeHandle
@@ -278,12 +280,12 @@ function buildScene() {
 
   // Polished dark marble floor slab + central rotunda inlaid medallion.
   nodes.push(
-    model(assets.quaterniusCubeCrate, { name: "gallery floor slab", material: marbleFloorMat, receiveShadow: true })
+    primitives.box({ name: "gallery floor slab", material: marbleFloorMat, receiveShadow: true })
       .position(0, -0.06, 0)
-      .scale([bs(21.4), bs(0.12), bs(15.4)]),
-    model(assets.quaterniusCubeCrate, { name: "rotunda marble medallion", material: rotundaInlayMat, receiveShadow: true })
+      .scale([21.4, 0.12, 15.4]),
+    primitives.box({ name: "rotunda marble medallion", material: rotundaInlayMat, receiveShadow: true })
       .position(0, 0.008, 0.1)
-      .scale([bs(8.8), bs(0.016), bs(5.6)])
+      .scale([8.8, 0.016, 5.6])
   );
 
   // Brushed-metal inlay trim strips across the rotunda, foyer aisle, and wing thresholds.
@@ -297,41 +299,59 @@ function buildScene() {
     { name: "inlay trim archive wing", x: -7.5, z: -1.3, sx: 4.6, sz: 0.07 },
     { name: "inlay trim treasury wing", x: 7.5, z: 0.8, sx: 4.6, sz: 0.07 }
   ];
-  for (const strip of trimStrips) {
-    nodes.push(
-      model(assets.quaterniusCubeCrate, { name: strip.name, material: inlayTrimMat, receiveShadow: true })
-        .position(strip.x, 0.018, strip.z)
-        .scale([bs(strip.sx), bs(0.018), bs(strip.sz)])
-    );
-  }
+  nodes.push(
+    instances.box({
+      name: "rotunda and wing inlay trim strips",
+      material: inlayTrimMat,
+      receiveShadow: true,
+      transforms: trimStrips.map((strip) => ({
+        position: [strip.x, 0.018, strip.z] as [number, number, number],
+        scale: [strip.sx, 0.018, strip.sz] as [number, number, number]
+      }))
+    })
+  );
 
   // Gallery walls with mahogany wainscoting & cutaway south parapet for the 3/4 view.
   for (const wall of LAYOUT.walls) {
     const isSouthCutaway = wall.id === "wall-south";
+    const isNorthFeature = wall.id === "wall-north";
     const visualHeight = isSouthCutaway ? 0.48 : wall.height;
     const wainscotHeight = isSouthCutaway ? 0.48 : 0.92;
     const wallWidthX = wall.halfX * 2;
     const wallWidthZ = wall.halfZ * 2;
-    nodes.push(
-      model(assets.quaterniusWallModular, {
-        name: `wall ${wall.id}`,
-        material: isSouthCutaway ? mahoganyWainscotMat : galleryWallMat,
-        castShadow: true,
-        receiveShadow: true
-      })
-        .position(wall.x, visualHeight / 2, wall.z)
-        .scale([wallWidthX / 2 * WALL_RENORM_X * 2, (visualHeight / 2) * WALL_RENORM_Y * 2, wallWidthZ / 2 * WALL_RENORM_Z * 2])
-    );
-    if (!isSouthCutaway) {
+    if (isNorthFeature) {
       nodes.push(
-        model(assets.quaterniusCubeCrate, {
-          name: `wainscot ${wall.id}`,
-          material: mahoganyWainscotMat,
+        model(assets.quaterniusWallModular, {
+          name: `wall ${wall.id}`,
+          material: galleryWallMat,
           castShadow: true,
           receiveShadow: true
         })
+          .position(wall.x, visualHeight / 2, wall.z)
+          .scale([wallWidthX / 2 * WALL_RENORM_X * 2, (visualHeight / 2) * WALL_RENORM_Y * 2, wallWidthZ / 2 * WALL_RENORM_Z * 2])
+      );
+    } else {
+      nodes.push(
+        primitives.box({
+          name: `wall ${wall.id}`,
+          material: isSouthCutaway ? mahoganyWainscotMat : galleryWallMat,
+          castShadow: !isSouthCutaway,
+          receiveShadow: true
+        })
+          .position(wall.x, visualHeight / 2, wall.z)
+          .scale([wallWidthX, visualHeight, wallWidthZ])
+      );
+    }
+    if (!isSouthCutaway) {
+      nodes.push(
+        primitives.box({
+          name: `wainscot ${wall.id}`,
+          material: mahoganyWainscotMat,
+          castShadow: false,
+          receiveShadow: true
+        })
           .position(wall.x, wainscotHeight / 2, wall.z)
-          .scale([bs(wallWidthX + 0.06), bs(wainscotHeight), bs(wallWidthZ + 0.06)])
+          .scale([wallWidthX + 0.06, wainscotHeight, wallWidthZ + 0.06])
       );
     }
   }
@@ -345,16 +365,26 @@ function buildScene() {
     ["pillar-treasury-north", 5.0, 0.1],
     ["pillar-treasury-south", 5.0, 1.5]
   ];
-  for (const [id, px, pz] of pillarCoords) {
-    nodes.push(
-      model(assets.quaterniusCubeCrate, { name: id, material: galleryWallMat, castShadow: true, receiveShadow: true })
-        .position(px, 1.85, pz)
-        .scale([bs(0.46), bs(3.7), bs(0.46)]),
-      model(assets.quaterniusCubeCrate, { name: `${id} brass capital`, material: brassFrameMat })
-        .position(px, 3.68, pz)
-        .scale([bs(0.56), bs(0.12), bs(0.56)])
-    );
-  }
+  nodes.push(
+    instances.box({
+      name: "gallery partition pillars",
+      material: galleryWallMat,
+      castShadow: true,
+      receiveShadow: true,
+      transforms: pillarCoords.map(([, px, pz]) => ({
+        position: [px, 1.85, pz] as [number, number, number],
+        scale: [0.46, 3.7, 0.46] as [number, number, number]
+      }))
+    }),
+    instances.box({
+      name: "gallery pillar brass capitals",
+      material: brassFrameMat,
+      transforms: pillarCoords.map(([, px, pz]) => ({
+        position: [px, 3.68, pz] as [number, number, number],
+        scale: [0.56, 0.12, 0.56] as [number, number, number]
+      }))
+    })
+  );
 
   // Brass picture frames with gallery paintings along the north and partition walls.
   const paintings: readonly { readonly id: string; readonly x: number; readonly y: number; readonly z: number; readonly sx: number; readonly sy: number; readonly sz: number; readonly warm: boolean }[] = [
@@ -367,36 +397,36 @@ function buildScene() {
   ];
   for (const art of paintings) {
     nodes.push(
-      model(assets.quaterniusCubeCrate, { name: `brass frame ${art.id}`, material: brassFrameMat })
+      primitives.box({ name: `brass frame ${art.id}`, material: brassFrameMat })
         .position(art.x, art.y, art.z)
-        .scale([bs(art.sx), bs(art.sy), bs(art.sz)]),
-      model(assets.quaterniusCubeCrate, { name: `canvas ${art.id}`, material: art.warm ? canvasArtWarmMat : canvasArtTealMat })
+        .scale([art.sx, art.sy, art.sz]),
+      primitives.box({ name: `canvas ${art.id}`, material: art.warm ? canvasArtWarmMat : canvasArtTealMat })
         .position(art.x, art.y, art.z)
-        .scale([bs(Math.max(0.1, art.sx - 0.18)), bs(art.sy - 0.18), bs(Math.max(0.1, art.sz - 0.18))])
+        .scale([Math.max(0.1, art.sx - 0.18), art.sy - 0.18, Math.max(0.1, art.sz - 0.18)])
     );
   }
 
   // Artifact display pedestals: lacquer bases, frosted-glass vitrines, golden galleryArtifactBust sculptures, and felt velvet stanchions.
   for (const pedestal of LAYOUT.pedestals) {
     nodes.push(
-      model(assets.quaterniusCubeCrate, { name: `pedestal ${pedestal.id}`, material: pedestalBaseMat, castShadow: true, receiveShadow: true })
+      primitives.box({ name: `pedestal ${pedestal.id}`, material: pedestalBaseMat, castShadow: true, receiveShadow: true })
         .position(pedestal.x, 0.48, pedestal.z)
-        .scale([bs(0.76), bs(0.96), bs(0.76)]),
-      model(assets.quaterniusCubeCrate, { name: `pedestal brass collar ${pedestal.id}`, material: brassFrameMat })
+        .scale([0.76, 0.96, 0.76]),
+      primitives.box({ name: `pedestal brass collar ${pedestal.id}`, material: brassFrameMat })
         .position(pedestal.x, 0.99, pedestal.z)
-        .scale([bs(0.82), bs(0.07), bs(0.82)]),
+        .scale([0.82, 0.07, 0.82]),
       model(assets.quaterniusCubeCrate, { name: `galleryArtifactBust ${pedestal.id}`, material: goldSculptureMat, castShadow: true })
         .position(pedestal.x, 1.24, pedestal.z)
         .scale([bs(0.38), bs(0.42), bs(0.32)])
         .runtime(game.runtimeNode(`exhibit-${pedestal.id}`, { tags: ["exhibit", "runtime"] })),
-      model(assets.quaterniusCubeCrate, { name: `galleryArtifactBust head ${pedestal.id}`, material: goldSculptureMat, castShadow: true })
+      primitives.box({ name: `galleryArtifactBust head ${pedestal.id}`, material: goldSculptureMat, castShadow: false })
         .position(pedestal.x, 1.56, pedestal.z)
         .rotate(0, Math.PI / 4, 0)
-        .scale([bs(0.24), bs(0.28), bs(0.24)])
+        .scale([0.24, 0.28, 0.24])
         .runtime(game.runtimeNode(`exhibit-crown-${pedestal.id}`, { tags: ["exhibit", "runtime"] })),
-      model(assets.quaterniusCubeCrate, { name: `vitrine glass ${pedestal.id}`, material: vitrineGlassMat })
+      primitives.box({ name: `vitrine glass ${pedestal.id}`, material: vitrineGlassMat })
         .position(pedestal.x, 1.38, pedestal.z)
-        .scale([bs(0.72), bs(0.76), bs(0.72)])
+        .scale([0.72, 0.76, 0.72])
     );
 
     const ropeOffset = 0.86;
@@ -407,51 +437,51 @@ function buildScene() {
       ["se", ropeOffset, ropeOffset]
     ] as const) {
       nodes.push(
-        model(assets.quaterniusCubeCrate, { name: `stanchion post ${pedestal.id} ${cornerId}`, material: brassFrameMat })
+        primitives.box({ name: `stanchion post ${pedestal.id} ${cornerId}`, material: brassFrameMat })
           .position(pedestal.x + cx, 0.42, pedestal.z + cz)
-          .scale([bs(0.08), bs(0.84), bs(0.08)])
+          .scale([0.08, 0.84, 0.08])
       );
     }
     nodes.push(
-      model(assets.quaterniusCubeCrate, { name: `stanchion rope north ${pedestal.id}`, material: velvetRopeMat })
+      primitives.box({ name: `stanchion rope north ${pedestal.id}`, material: velvetRopeMat })
         .position(pedestal.x, 0.68, pedestal.z - ropeOffset)
-        .scale([bs(ropeOffset * 2), bs(0.05), bs(0.05)]),
-      model(assets.quaterniusCubeCrate, { name: `stanchion rope south ${pedestal.id}`, material: velvetRopeMat })
+        .scale([ropeOffset * 2, 0.05, 0.05]),
+      primitives.box({ name: `stanchion rope south ${pedestal.id}`, material: velvetRopeMat })
         .position(pedestal.x, 0.68, pedestal.z + ropeOffset)
-        .scale([bs(ropeOffset * 2), bs(0.05), bs(0.05)]),
-      model(assets.quaterniusCubeCrate, { name: `stanchion rope west ${pedestal.id}`, material: velvetRopeMat })
+        .scale([ropeOffset * 2, 0.05, 0.05]),
+      primitives.box({ name: `stanchion rope west ${pedestal.id}`, material: velvetRopeMat })
         .position(pedestal.x - ropeOffset, 0.68, pedestal.z)
-        .scale([bs(0.05), bs(0.05), bs(ropeOffset * 2)]),
-      model(assets.quaterniusCubeCrate, { name: `stanchion rope east ${pedestal.id}`, material: velvetRopeMat })
+        .scale([0.05, 0.05, ropeOffset * 2]),
+      primitives.box({ name: `stanchion rope east ${pedestal.id}`, material: velvetRopeMat })
         .position(pedestal.x + ropeOffset, 0.68, pedestal.z)
-        .scale([bs(0.05), bs(0.05), bs(ropeOffset * 2)])
+        .scale([0.05, 0.05, ropeOffset * 2])
     );
   }
 
   // Wing display cases: lacquer base, Golden galleryArtifactBust sculpture, and frosted-glass vitrine hood.
   for (const displayCase of LAYOUT.cases) {
     nodes.push(
-      model(assets.quaterniusCubeCrate, { name: `case base ${displayCase.id}`, material: pedestalBaseMat, castShadow: true, receiveShadow: true })
+      primitives.box({ name: `case base ${displayCase.id}`, material: pedestalBaseMat, castShadow: true, receiveShadow: true })
         .position(displayCase.x, 0.42, displayCase.z)
-        .scale([bs(1.12), bs(0.84), bs(1.12)]),
-      model(assets.quaterniusCubeCrate, { name: `case relic galleryArtifactBust ${displayCase.id}`, material: goldSculptureMat, castShadow: true })
+        .scale([1.12, 0.84, 1.12]),
+      primitives.box({ name: `case relic galleryArtifactBust ${displayCase.id}`, material: goldSculptureMat, castShadow: false })
         .position(displayCase.x, 1.06, displayCase.z)
         .rotate(0, Math.PI / 4, 0)
-        .scale([bs(0.36), bs(0.44), bs(0.36)]),
-      model(assets.quaterniusCubeCrate, { name: `case vitrine ${displayCase.id}`, material: vitrineGlassMat })
+        .scale([0.36, 0.44, 0.36]),
+      primitives.box({ name: `case vitrine ${displayCase.id}`, material: vitrineGlassMat })
         .position(displayCase.x, 1.14, displayCase.z)
-        .scale([bs(1.06), bs(0.68), bs(1.06)])
+        .scale([1.06, 0.68, 1.06])
     );
   }
 
   // North service extraction pad + brass threshold frame.
   nodes.push(
-    model(assets.quaterniusCubeCrate, { name: "service exit frame", material: brassFrameMat })
+    primitives.box({ name: "service exit frame", material: brassFrameMat })
       .position(LAYOUT.exit.x, 0.02, LAYOUT.exit.z)
-      .scale([bs(1.88), bs(0.04), bs(1.24)]),
-    model(assets.quaterniusCubeCrate, { name: "service exit pad", material: serviceExitMat })
+      .scale([1.88, 0.04, 1.24]),
+    primitives.box({ name: "service exit pad", material: serviceExitMat })
       .position(LAYOUT.exit.x, 0.05, LAYOUT.exit.z)
-      .scale([bs(1.6), bs(0.06), bs(0.98)])
+      .scale([1.6, 0.06, 0.98])
   );
 
   // Red security laser beams (practical: true) across the north vault throat and wing portals.
@@ -465,52 +495,52 @@ function buildScene() {
   ];
   for (const beam of laserBeams) {
     nodes.push(
-      model(assets.quaterniusCubeCrate, { name: `security laser ${beam.id}`, material: securityLaserMat })
+      primitives.box({ name: `security laser ${beam.id}`, material: securityLaserMat })
         .position(beam.x, beam.y, beam.z)
-        .scale([bs(beam.sx), bs(0.04), bs(beam.sz)])
+        .scale([beam.sx, 0.04, beam.sz])
     );
   }
 
   // Thief (`galleryThief`) multi-part stealth character + patrolling guards (`galleryGuard`).
   nodes.push(
-    model(assets.quaterniusCubeCrate, { name: "galleryThief", material: thiefSuitMat, castShadow: true })
+    primitives.box({ name: "galleryThief", material: thiefSuitMat, castShadow: true })
       .position(LAYOUT.thiefSpawn.x, 0.68, LAYOUT.thiefSpawn.z)
-      .scale([bs(0.48), bs(1.12), bs(0.36)])
+      .scale([0.48, 1.12, 0.36])
       .runtime(game.runtimeNode("thief", { tags: ["thief", "runtime"] })),
-    model(assets.quaterniusCubeCrate, { name: "galleryThief hood", material: thiefHoodMat, castShadow: true })
+    primitives.box({ name: "galleryThief hood", material: thiefHoodMat, castShadow: false })
       .position(LAYOUT.thiefSpawn.x, 1.42, LAYOUT.thiefSpawn.z)
-      .scale([bs(0.34), bs(0.36), bs(0.34)])
+      .scale([0.34, 0.36, 0.34])
       .runtime(game.runtimeNode("thief-head", { tags: ["thief", "runtime"] })),
-    model(assets.quaterniusCubeCrate, { name: "galleryThief visor", material: thiefVisorMat })
+    primitives.box({ name: "galleryThief visor", material: thiefVisorMat })
       .position(LAYOUT.thiefSpawn.x, 1.44, LAYOUT.thiefSpawn.z + 0.16)
-      .scale([bs(0.28), bs(0.09), bs(0.08)])
+      .scale([0.28, 0.09, 0.08])
       .runtime(game.runtimeNode("thief-visor", { tags: ["thief", "runtime"] })),
-    model(assets.quaterniusCubeCrate, { name: "galleryThief pack", material: mahoganyWainscotMat, castShadow: true })
+    primitives.box({ name: "galleryThief pack", material: mahoganyWainscotMat, castShadow: false })
       .position(LAYOUT.thiefSpawn.x, 0.82, LAYOUT.thiefSpawn.z - 0.22)
-      .scale([bs(0.34), bs(0.48), bs(0.2)])
+      .scale([0.34, 0.48, 0.2])
       .runtime(game.runtimeNode("thief-pack", { tags: ["thief", "runtime"] }))
   );
 
   LAYOUT.guards.forEach((spawn, index) => {
     nodes.push(
-      model(assets.quaterniusCubeCrate, { name: `galleryGuard ${spawn.id}`, material: guardUniformMat, castShadow: true })
+      primitives.box({ name: `galleryGuard ${spawn.id}`, material: guardUniformMat, castShadow: true })
         .position(spawn.x, 0.74, spawn.z)
-        .scale([bs(0.56), bs(1.24), bs(0.42)])
+        .scale([0.56, 1.24, 0.42])
         .runtime(game.runtimeNode(`guard-${index}`, { tags: ["guard", "runtime"] })),
-      model(assets.quaterniusCubeCrate, { name: `galleryGuard cap ${spawn.id}`, material: brassFrameMat, castShadow: true })
+      primitives.box({ name: `galleryGuard cap ${spawn.id}`, material: brassFrameMat, castShadow: false })
         .position(spawn.x, 1.54, spawn.z)
-        .scale([bs(0.38), bs(0.36), bs(0.38)])
+        .scale([0.38, 0.36, 0.38])
         .runtime(game.runtimeNode(`guard-head-${index}`, { tags: ["guard", "runtime"] })),
-      model(assets.quaterniusCubeCrate, { name: `galleryGuard torch ${spawn.id}`, material: guardTorchMat })
+      primitives.box({ name: `galleryGuard torch ${spawn.id}`, material: guardTorchMat })
         .position(spawn.x, 0.96, spawn.z + 0.34)
-        .scale([bs(0.14), bs(0.14), bs(0.26)])
+        .scale([0.14, 0.14, 0.26])
         .runtime(game.runtimeNode(`guard-torch-${index}`, { tags: ["guard", "runtime"] })),
       // Authored vision-cone volume: a flattened, elongated translucent
       // wedge laid along the guard's facing. Detection itself is the
       // salvaged cone+raycast math (vision.ts); this mesh only reads it.
-      model(assets.quaterniusCubeCrate, { name: `vision cone ${spawn.id}`, material: visionConeMat })
+      primitives.box({ name: `vision cone ${spawn.id}`, material: visionConeMat })
         .position(spawn.x, 0.08, spawn.z)
-        .scale([bs(3.2), bs(0.05), bs(6)])
+        .scale([3.2, 0.05, 6])
         .runtime(game.runtimeNode(`cone-${index}`, { tags: ["cone", "runtime"] }))
     );
   });
@@ -742,7 +772,7 @@ function createHud(): HTMLElement {
   const root = document.createElement("aside");
   root.id = "gallery-shift-hud";
   root.style.cssText = [
-    "position:absolute", "left:16px", "top:16px", "z-index:5", "min-width:320px",
+    "position:absolute", "left:16px", "top:56px", "z-index:5", "min-width:320px",
     "font:600 13px/1.35 system-ui, sans-serif", "color:#f5fbff",
     "background:rgba(7,9,13,0.74)", "border:1px solid rgba(255,180,84,0.4)",
     "border-radius:8px", "padding:12px", "pointer-events:none"
