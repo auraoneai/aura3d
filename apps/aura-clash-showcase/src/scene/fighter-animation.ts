@@ -28,7 +28,7 @@ import {
 // The public engine surface exports FightingGameSnapshot but not the
 // FightingActorState alias, so derive the identical union from the snapshot.
 type FightingActorState = FightingGameSnapshot["states"]["player"];
-import { assets } from "../../aura-assets";
+import { assets } from "../aura-assets";
 import {
   auraClashPlayerClips,
   auraClashRivalClips,
@@ -38,7 +38,7 @@ import {
   validateAuraClashClipReadiness,
   type AuraClashClipReadiness,
   type AuraClashFighterClipMap
-} from "../../gameplay/animation/auraClashClipMaps";
+} from "../gameplay/animation/auraClashClipMaps";
 
 /** Inspected clip durations (seconds), keyed by exact embedded clip name. */
 export const AURA_CLASH_PLAYER_CLIP_DURATIONS: Readonly<Record<string, number>> = {
