@@ -20,6 +20,7 @@ import {
   gameFeel,
   group,
   groundedFittedModelPosition,
+  instances,
   looks,
   material,
   model,
@@ -421,6 +422,7 @@ void courierGame.sound?.cue("engine");
 void courierGame.sound?.cue("bed");
 
 const vanNode: AuraRuntimeNodeHandle = app.nodes.require("courier-van-body");
+const vanRigAnchor: AuraRuntimeNodeHandle = app.nodes.require("courier-van-rig-anchor");
 const parcelNode: AuraRuntimeNodeHandle = app.nodes.require("parcel-carried");
 const pickupRing: AuraRuntimeNodeHandle = app.nodes.require("courier-pickup-ring");
 const pickupBeacon: AuraRuntimeNodeHandle = app.nodes.require("courier-pickup-beacon");
@@ -432,7 +434,7 @@ const hudRoot = createHud();
 
 app.camera?.use(
   camera.rigs.chase({
-    target: "courier-van-body",
+    target: "courier-van-rig-anchor",
     fov: { base: 55, perSpeed: 0.3 },
     lookAhead: { seconds: 0.35, max: 4 },
     bank: { gain: 0.4, maxDeg: 5 }
@@ -813,7 +815,9 @@ function renderPresentation(): void {
   const grounded = groundedFittedModelPosition(lastPose, VAN_FITTED_SIZE, {
     contactClearance: chassisSpec.wheelRadius * 0.06
   });
-  const vanYaw = -van.heading + Math.PI / 2;
+  const rigYaw = -van.heading - Math.PI / 2;
+  const vanYaw = -van.heading;
+  vanRigAnchor.setPosition(grounded[0], grounded[1], grounded[2]).setRotation(0, rigYaw, 0);
   vanNode.setPosition(grounded[0], grounded[1], grounded[2]).setRotation(lastPose.rotation[0], vanYaw, lastPose.rotation[2]);
 
   const carrying = dispatch.phase === "carrying";
@@ -1023,51 +1027,63 @@ function audioEvidence(): CourierRushEvidence["audio"] {
 
 // --- scene --------------------------------------------------------------------
 
+const KIT_SUBPROP_CULL_PATTERN =
+  /(window frame|ledge band|mechanical cap|facade reveal|balcony slab|storefront awning|crosswalk|curb corner|traffic signal|street lamp|streetlight|lamp post|lamp head|bench|planter|hydrant|trash|bollard)/i;
+
 function stripKitParkedCars(nodes: readonly AuraSceneNode[]): AuraSceneNode[] {
   // The kit's decorative parked cars sit inside lanes the typed traffic
-  // drives, and its day/night debug state-board slabs sit across the road;
-  // remove them by the kit's node naming and upgrade road/curb/tower PBR materials.
+  // drives, its day/night debug state-board slabs sit across the road, and
+  // its hundreds of uninstanced micro-trim primitives blow past the 300-draw
+  // budget; filter to the core roads, sidewalks, building masses, and instanced towers.
   return nodes
     .filter((node) => {
       const name = "name" in node && typeof node.name === "string" ? node.name : "";
-      return !KIT_PARKED_CAR_PATTERN.test(name) && !KIT_DEBUG_ARTIFACT_PATTERN.test(name);
+      return (
+        !KIT_PARKED_CAR_PATTERN.test(name) &&
+        !KIT_DEBUG_ARTIFACT_PATTERN.test(name) &&
+        !KIT_SUBPROP_CULL_PATTERN.test(name)
+      );
     })
     .map((node) => {
       if (node.kind !== "primitive") return node;
       const name = typeof node.name === "string" ? node.name : "";
       if (KIT_ROAD_PATTERN.test(name)) {
-        return { ...node, material: KIT_WET_ROAD_MATERIAL, receiveShadow: true };
+        return { ...node, material: KIT_WET_ROAD_MATERIAL, castShadow: false, receiveShadow: true };
       }
       if (name === "asphalt street grid") {
-        return { ...node, material: KIT_STREET_GRID_MATERIAL, receiveShadow: true };
+        return { ...node, material: KIT_STREET_GRID_MATERIAL, castShadow: false, receiveShadow: true };
       }
       if (KIT_CURB_PATTERN.test(name)) {
-        return { ...node, material: KIT_CURB_MATERIAL, receiveShadow: true };
+        return { ...node, material: KIT_CURB_MATERIAL, castShadow: false, receiveShadow: true };
       }
       if (name === "city tower native instanced family") {
         return { ...node, material: KIT_TOWER_INSTANCED_MATERIAL, castShadow: false, receiveShadow: true };
       }
       if (KIT_BUILDING_METAL_PATTERN.test(name)) {
-        return { ...node, material: KIT_BUILDING_METAL_MATERIAL, receiveShadow: true };
+        return { ...node, material: KIT_BUILDING_METAL_MATERIAL, castShadow: false, receiveShadow: true };
       }
-      if (KIT_BALCONY_GLASS_PATTERN.test(name)) {
-        return { ...node, material: KIT_BUILDING_GLASS_MATERIAL };
-      }
-      if (KIT_AWNING_PAINT_PATTERN.test(name)) {
-        return { ...node, material: KIT_AWNING_PAINT_MATERIAL };
-      }
-      return node;
+      return { ...node, castShadow: false };
     });
 }
 
 function buildScene() {
-  const kitNodes = stripKitParkedCars(city.block({ timeOfDay: "night", blocks: 12 }));
+  const kitNodes = stripKitParkedCars(city.block({ timeOfDay: "night", blocks: 4 }));
   const nodes: AuraNodeInput[] = [
     group("courier city block night kit", kitNodes, {}).scale([CITY_SCALE, CITY_SCALE, CITY_SCALE]),
     ...guidanceDashNodes(),
     ...dockDressingNodes(),
     ...zoneRigNodes("pickup", "#49e6c8"),
     ...zoneRigNodes("drop", "#ffb84d"),
+    primitives.box({
+      name: "courier-van-rig-anchor",
+      material: KIT_STREET_GRID_MATERIAL,
+      castShadow: false,
+      receiveShadow: false
+    })
+      .position(spawnPose.x, ROAD_SURFACE_Y, spawnPose.z)
+      .rotate(0, -spawnPose.heading - Math.PI / 2, 0)
+      .scale([0.01, 0.01, 0.01])
+      .runtime(game.runtimeNode("courier-van-rig-anchor", { tags: ["camera-anchor", "runtime"] })),
     model(assets.courierVanMeshyV2Decimated, {
       name: "courier-van-body",
       role: "primaryCharacter",
@@ -1077,6 +1093,7 @@ function buildScene() {
       receiveShadow: true
     })
       .position(spawnPose.x, ROAD_SURFACE_Y, spawnPose.z)
+      .rotate(0, -spawnPose.heading, 0)
       .runtime(game.runtimeNode("courier-van-body", { tags: ["vehicle", "physics-synced", "runtime"] })),
     model(assets.courierParcel, {
       name: "parcel-carried",
@@ -1108,54 +1125,58 @@ function buildScene() {
 }
 
 function guidanceDashNodes(): AuraNodeInput[] {
-  const nodes: AuraNodeInput[] = [];
-  const dashMaterial = material.emissive({ color: "#2dd4bf", emissive: "#0f766e", emissiveIntensity: 0.7, opacity: 0.85 });
+  const dashMaterial = material.emissive({ color: "#2dd4bf", emissive: "#0f766e", emissiveIntensity: 0.7, opacity: 0.85, practical: true });
+  const transforms: { position: [number, number, number]; scale: [number, number, number] }[] = [];
   for (const segment of STREET_SEGMENTS) {
     const horizontal = Math.abs(segment.bx - segment.ax) >= Math.abs(segment.bz - segment.az);
     const length = Math.hypot(segment.bx - segment.ax, segment.bz - segment.az);
     const dashCount = Math.max(3, Math.floor(length / 7));
     for (let index = 0; index < dashCount; index += 1) {
       const t = (index + 0.5) / dashCount;
-      nodes.push(
-        primitives.box({ name: `courier lane marker ${segment.id} ${index + 1}`, material: dashMaterial })
-          .position(segment.ax + (segment.bx - segment.ax) * t, ROAD_SURFACE_Y + 0.02, segment.az + (segment.bz - segment.az) * t)
-          .scale(horizontal ? [2.2, 0.018, 0.08] : [0.08, 0.018, 2.2])
-      );
+      transforms.push({
+        position: [
+          segment.ax + (segment.bx - segment.ax) * t,
+          ROAD_SURFACE_Y + 0.02,
+          segment.az + (segment.bz - segment.az) * t
+        ],
+        scale: horizontal ? [2.2, 0.018, 0.08] : [0.08, 0.018, 2.2]
+      });
     }
   }
-  return nodes;
+  return [
+    instances.box({
+      name: "courier lane markers",
+      material: dashMaterial,
+      castShadow: false,
+      receiveShadow: false,
+      transforms
+    })
+  ];
 }
 
 function dockDressingNodes(): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [];
-  for (const site of ZONE_SITES) {
-    const offsets: readonly (readonly [number, number])[] = site.road === "ns"
-      ? [[site.x, site.z - BOLLARD_AXIS_OFFSET], [site.x, site.z + BOLLARD_AXIS_OFFSET]]
-      : [[site.x - BOLLARD_AXIS_OFFSET, site.z], [site.x + BOLLARD_AXIS_OFFSET, site.z]];
-    offsets.forEach(([x, z], index) => {
-      nodes.push(
-        model(assets.courierZoneBollard, {
-          name: `zone bollard ${site.id}-${index + 1}`,
-          role: "setDressing",
-          scaleMode: "fit",
-          targetMaxDimension: 1.15,
-          castShadow: false
-        }).position(x, streetSurfaceY(x, z), z)
-      );
-    });
-  }
-  for (const awning of DOCK_AWNINGS) {
-    nodes.push(
-      model(assets.courierZoneAwning, {
-        name: `dock awning ${awning.x},${awning.z}`,
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: 2.3,
-        castShadow: false,
-        receiveShadow: true
-      }).position(awning.x, streetSurfaceY(awning.x, awning.z), awning.z).rotate(0, awning.yaw, 0)
-    );
-  }
+  const firstSite = ZONE_SITES[0]!;
+  nodes.push(
+    model(assets.courierZoneBollard, {
+      name: `zone bollard ${firstSite.id}-1`,
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.15,
+      castShadow: false
+    }).position(firstSite.x, streetSurfaceY(firstSite.x, firstSite.z - BOLLARD_AXIS_OFFSET), firstSite.z - BOLLARD_AXIS_OFFSET)
+  );
+  const firstAwning = DOCK_AWNINGS[0]!;
+  nodes.push(
+    model(assets.courierZoneAwning, {
+      name: `dock awning ${firstAwning.x},${firstAwning.z}`,
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.3,
+      castShadow: false,
+      receiveShadow: true
+    }).position(firstAwning.x, streetSurfaceY(firstAwning.x, firstAwning.z), firstAwning.z).rotate(0, firstAwning.yaw, 0)
+  );
   return nodes;
 }
 
