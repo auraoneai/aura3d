@@ -171,7 +171,7 @@ const hangarGame = createGame({
     strike: { hitStop: 0.03, shake: 0.2, rumble: { strong: 0.4, ms: 120 } },
     "dummy-down": { flash: { color: "#ffb454", peak: 0.22, ms: 240 }, rumble: { weak: 0.5, ms: 200 } }
   },
-  qualityRebuild: { flags: ["game", "materials", "lighting", "post", "vfx"] },
+  qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
     sections: {
