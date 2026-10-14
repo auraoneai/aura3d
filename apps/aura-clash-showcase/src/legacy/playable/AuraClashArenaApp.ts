@@ -834,7 +834,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    * rails, signage and building bases at the scale they were modelled for.
    */
   const arenaRailSpan = 13;
-  const arenaFightAreaWidth = (stage.maxX - stage.minX) * 1.34;
+  const arenaFightAreaWidth = (stage.maxX - stage.minX) * 1.68;
   const arenaScale = Number((arenaFightAreaWidth / arenaRailSpan).toFixed(4));
   arenaActor.pipeline.resources.scene.root.transform
     // The asset's floor sits at y=0, the same plane as the rendered combat floor, so it is dropped
@@ -871,6 +871,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         .filter((item) => ![
           "AuraClash_Sign_NEON ROOFTOP",
           "AuraClash_Sign_FIGHT READY",
+          "AuraClash_Sign_AURA CLASH",
           "Prop_ACUnit_",
           "Prop_Bollard_"
         ].some((token) => item.label?.includes(token)))

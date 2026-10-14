@@ -618,7 +618,7 @@ const supplementalHairpinVenueEnabled = true;
 // one 1440x900 frame could complete. The V2 circuit remains the authoritative
 // visible world; this single kit is supporting context, not gameplay geometry.
 const supplementalHairpinVenueCopies = 1;
-const supplementalTsukubaReliefEnabled = false;
+const supplementalTsukubaReliefEnabled = true;
 const VISUAL_DRIFT_PLUME_COUNT = 16;
 let visualCaptureHeld = false;
 // The collision proof route holds the exact solved first-contact pose until the
@@ -3021,7 +3021,7 @@ const app = createAuraApp("#app", {
     // rejected panorama, every tree, tent, spectator, rail, and rock has real
     // depth and responds to the route lights. It owns no collision and cannot
     // alter racing state.
-    .addMany(visualCaptureCamera && supplementalHairpinVenueEnabled ? [
+    .addMany(supplementalHairpinVenueEnabled ? [
       model(assets.turboHairpinVenueKit, {
         name: "turbo hairpin festival venue",
         role: "setDressing",
@@ -3044,7 +3044,7 @@ const app = createAuraApp("#app", {
     // route's topology, contact plane, or road materials. Only the six
     // mountain/forest meshes remain visible; every road, barrier, fence and
     // venue mesh is hidden by its exact GLB node name.
-    .addMany(visualCaptureCamera && supplementalTsukubaReliefEnabled ? [
+    .addMany(supplementalTsukubaReliefEnabled ? [
       model(assets.showcaseTsukubaCircuit, {
         name: "turbo release tsukuba scenic relief",
         role: "setDressing",
@@ -3115,21 +3115,7 @@ const app = createAuraApp("#app", {
       // hairpin kit provide the same authored vegetation at measured roadside
       // offsets without occluding either car.
       hiddenNodeNames: [
-        "TDCE pine shadow",
-        "TDCE pine sun",
-        "TDCE tree bark",
-        // The V2 horizontal tyre wall is authored for a distant spectator
-        // view; at the held chase angle its stacked black wheels become a
-        // giant foreground silhouette instead of readable safety detail. The
-        // typed hairpin kit and route-owned barrier/stand meshes retain the
-        // venue depth after this material group is suppressed.
-        "TDCE horizontal tyre walls",
-        // The V2 autumn foliage mass crosses the start/finish vista exactly on
-        // the chase vanishing point, where its single orange slab reads as a
-        // giant trackside pyramid over the hero frame. The route-owned
-        // roadside forest and warm accents retain the autumn venue identity
-        // at measured offsets without blocking either car.
-        "TDCE autumn foliage"
+        "TDCE horizontal tyre walls"
       ]
     }).position(...racingScene.trackModel.position).rotate(...racingScene.trackModel.rotation).runtime(game.runtimeNode("racing-bound-circuit-environment-v2", {
       tags: ["track-visual", "typed-supporting-asset", "renderer-owned-venue", "non-colliding"]
@@ -3363,8 +3349,8 @@ const app = createAuraApp("#app", {
       intensity: visualCaptureCamera ? 0.5 : 0.28,
       radius: visualCaptureCamera ? 0.68 : 0.54
     }))
-    .add(effects.neonBloom({ intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.12 }))
+    .add(effects.neonBloom({ intensity: 0.14, threshold: 0.92, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.colorGrade({ exposure: 0.96, contrast: 1.05, saturation: 1.08 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     // Nonzero depth haze that grades the treeline into the sky and separates
     // near curbing from distant trackside.
@@ -3493,7 +3479,7 @@ const opponentWheelContactPads = app.nodes.require("racing-opponent-wheel-contac
 const reviewVenueNode = reviewVenuePlate
   ? app.nodes.require("turbo-alpine-venue-review")
   : null;
-const reviewFestivalNode = visualCaptureCamera && supplementalHairpinVenueEnabled
+const reviewFestivalNode = supplementalHairpinVenueEnabled
   ? app.nodes.require("turbo-hairpin-festival-venue")
   : null;
 const reviewInsideGroveNode = null;
@@ -4951,7 +4937,7 @@ app.onFrame(({ dt }) => {
       )
       .setRotation(0, Math.atan2(-forwardX, -forwardZ), 0);
   }
-  if (visualCaptureCamera) {
+  {
     // Keep the typed venue pockets bound to the live route rather than to the
     // camera's forward vector.  This makes the context a property of the bend:
     // each kit follows a distinct progress sample, sits outside the measured
@@ -5059,8 +5045,8 @@ app.onFrame(({ dt }) => {
         // Rotate partway into the measured visual slip so paired marks sweep
         // through the bend instead of reading as rigid parallel rails.
         .setRotation(0, playerPose.rotation[1] + reviewSlipYaw * 0.42, 0)
-        .setScale(driftVisible ? [ribbonWidth * (1 - segment * 0.09), visualCaptureCamera ? 0.002 : 0.008, segmentLength] : [0.001, 0.001, 0.001])
-        .setVisible(driftVisible);
+        .setScale([0.001, 0.001, 0.001])
+        .setVisible(false);
     });
   }
   const playerAsphalt = asphaltAlignment(raceSnapshot.signedTrackOffset, playerBodyHalfWidth);

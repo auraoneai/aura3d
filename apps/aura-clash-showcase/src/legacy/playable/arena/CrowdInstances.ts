@@ -136,6 +136,7 @@ export function createPublicCrowdNodes(asset: AuraAssetRef<"model">, mode: "nati
   const node = instances.model(asset, {
     name: "aura clash typed spectator crowd",
     targetMaxDimension: 0.28,
+    visible: false,
     castShadow: false,
     receiveShadow: true,
     transforms: FANS.map((fan, index) => ({
@@ -143,12 +144,12 @@ export function createPublicCrowdNodes(asset: AuraAssetRef<"model">, mode: "nati
       position: [Math.abs(fan.x) >= 2.85 ? Math.sign(fan.x) * Math.max(3.02, Math.abs(fan.x)) : fan.x,
         0.15 + Math.sin(index * 0.735) * 0.008, fan.z] as [number, number, number],
       rotation: [0, 0, 0] as [number, number, number],
-      scale: fan.scale / 0.55
+      scale: 0.0001
     }))
   }).runtime(game.runtimeNode("aura-clash-public-spectator-pool", { tags: ["crowd", "static-typed-instances"] }));
   const snapshot = node.toJSON();
   const nodes = mode === "hidden" ? [] : mode === "native" ? [node] : snapshot.instances!.map((transform, index) =>
-    model(asset, { name: `aura clash typed spectator crowd copy ${index}`, targetMaxDimension: 0.28, castShadow: false, receiveShadow: true })
+    model(asset, { name: `aura clash typed spectator crowd copy ${index}`, targetMaxDimension: 0.28, visible: false, castShadow: false, receiveShadow: true })
       .position(...(transform.position ?? [0, 0, 0]))
       .rotate(...(transform.rotation ?? [0, 0, 0]))
       .scale(transform.scale ?? 1)
