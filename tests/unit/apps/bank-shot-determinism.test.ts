@@ -9,7 +9,7 @@ import {
   createTableSimulation,
   rackSpotFor,
   type TableSimulation
-} from "../../../apps/showcase-bank-shot/src/gameplay/table";
+} from "../../../apps/showcase-bank-shot/src/table";
 
 /**
  * PRD definition-of-done pins for Bank Shot determinism (BS-04/13):

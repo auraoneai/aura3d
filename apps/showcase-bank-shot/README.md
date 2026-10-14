@@ -10,25 +10,29 @@ The player aims with `A`/`D` or the arrow keys, optionally changes the authored 
 
 The aim guide is deliberately bounded to the first ball or cushion contact. It does not promise a multi-contact solution. Ball translation and contact come from the public Rapier path; the small top/draw velocity nudge is explicitly authored and does not claim angular ball simulation.
 
-## Scene surface
+## Typed asset family
 
-The B4 PORT rebuild renders engine primitives at true physics scale: the
-salvaged table simulation (`src/gameplay/table.ts`) is primitive-based
-(`physics.sphere` bodies), so `src/main.ts` draws a primitive felt/rail
-table, sixteen primitive ball spheres coloured by ball number, a primitive
-cue, aim/bank guide lines, and one 3000K pendant spot. No typed GLB asset
-is admitted for this route yet — `art/direction.ts` keeps the table/ball/
-cue/hall roles with S10 admitted = 0 until a human look-dev review admits
-a set; no kit accept verdict is claimed. The former route GLBs remain on
-disk under `assets/models/` as the re-admission pool, unreferenced by the
-scene.
+All primary subjects are deterministic original CC0 assets generated in-repository and registered through the Aura3D CLI:
+
+- `assets.bankShotTable`: metre-scale blue-felt/walnut table with integrated cloth marks,
+  layered pocket wells, and six renderer-owned mouth materials; the route adds only
+  low-profile metallic catch-light accents around those typed mouths for the oblique
+  review camera.
+- `assets.bankShotCue`: tapered cue with a declared local strike-tip orientation.
+- `assets.bankShotBall00` through `assets.bankShotBall15`: regulation-scale cue/object balls. Solids and stripes differ geometrically by material regions, and balls 1–15 carry renderer-owned high-contrast number marks so identity is not hue-only.
+- Ten `assets.bankShot*Sfx` members: deterministic synthesized CC0 contact, pocket, foul, combo, rack, win/fail, and hall cues.
+
+The root manifest retains durable source/download URLs, license, author, hashes, roles, suitability, and hash-bound release render probes for all eighteen models. Audio remains candidate-quality and is validated separately because model-oriented release-bounds checks do not apply to WAV files.
 
 ## Evidence boundary
 
-- `tests/unit/apps/bank-shot-determinism.test.ts` proves public-Rapier construction (16 live balls, six pocket sensors), repeatable shot pose hashes, scatter/settle, pocket capture, once-per-entry sensors, reset, and bounded authored spin.
-- `tests/unit/apps/bank-shot-rules.test.ts` proves all three clocks, rack progression, legal/foul/combo/eight-ball rules, session completion, cue charge, and bounded first-contact prediction math, fed hand-built `ShotRecord`s.
-- `apps/showcase-bank-shot/tests/playable.spec.ts` drives keyboard aim, charge/strike, Rapier motion, rules resolution, scenario fixtures, and full reset against the `__aura3dGameSnapshot` evidence surface (framed, rack, ballsPocketed, currentShot, lastShotRecord hash).
-- `tests/qr/prd14/browser/bank-shot-dispatch.spec.ts` carries the single-path S1/S2/S6/S7 rows; S11 stays missing by design for single-path routes.
+Current machine evidence is generated rather than hand-authored:
+
+- `tests/unit/apps/bank-shot-determinism.test.ts` proves public-Rapier construction, repeatable shot hashes, scatter/settle, pocket capture, once-per-entry sensors, reset, and bounded authored spin.
+- `tests/unit/apps/bank-shot-rules.test.ts` proves all three clocks, rack progression, legal/foul/combo/eight-ball rules, session completion, cue charge, and bounded first-contact prediction math.
+- `tests/browser/bank-shot-playable.spec.ts` naturally drives keyboard aim, charge/strike, public-Rapier motion, settle lock, a second shot, pause/resume, and full reset.
+- `tests/browser/bank-shot-shot-visual.spec.ts` captures attract, aim, cue contact, motion, pocket, foul, rack fail, three-rack/eight finish, separately mounted mobile touch play, and reduced-motion aim. Its deterministic outcome fixtures drive the same live RulesEngine, HUD/audio mapping, typed handles, and scene synchronization; they do not replace the separate physical contact tests.
+- `performance-report.json`, `deploy-report.json`, and `route-health.json` bind their producers and current route source before reporting a pass.
 
 ## Reproduce
 

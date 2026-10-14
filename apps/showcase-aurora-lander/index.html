@@ -3,32 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="dark" />
-    <title>Aurora Lander — Aura3D Showcase</title>
-    <style>
-      html,
-      body {
-        margin: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background: #04060b;
-        color: #f4f7fb;
-        font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
-        user-select: none;
-      }
-
-      #app {
-        position: relative;
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-        background: radial-gradient(circle at 50% 24%, #101b2d 0%, #090d16 58%, #04060b 100%);
-      }
-    </style>
+    <meta name="description" content="Aura3D Aurora Lander prototype: manage thrust, fuel, hull and attitude to touch down gently on three aurora-lit research pads through gusts and whiteout." />
+    <title>Aura3D - Aurora Lander</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="./src/legacy/styles.css" />
   </head>
   <body>
-    <div id="app" aria-label="Aurora Lander viewport"></div>
+    <main class="shell" aria-label="Aurora Lander">
+      <section class="viewport">
+        <div id="app" class="stage" data-testid="aurora-lander-stage"></div>
+        <div id="hud" class="hud" aria-label="Flight telemetry"></div>
+      </section>
+      <aside id="panel" class="panel" aria-label="Lander controls and site briefing"></aside>
+    </main>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>

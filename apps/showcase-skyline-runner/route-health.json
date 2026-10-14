@@ -4,22 +4,22 @@
   "route": "/apps/showcase-skyline-runner/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
-  "promotionStatus": "rebuilt-single-path-on-game-platformer-prototype",
+  "promotionStatus": "blocked-by-showcase-spec-compiler",
   "renderer": {
-    "path": "createGame (@aura3d/engine/game) + game.platformer kit",
-    "mode": "tier-auto",
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
     "nativeWebGPU": false,
     "productionRuntime": false
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.showcaseKenneyOobiPlatformerHero",
+      "typedRef": "assets.skylineArcticRunnerHero",
       "role": "character",
       "status": "typed-primary-asset",
       "quality": "candidate"
     },
     {
-      "typedRef": "assets.quaterniusCubeCrate",
+      "typedRef": "assets.showcaseKenneyVerdantPlatformerWorld",
       "role": "world",
       "status": "typed-primary-asset",
       "quality": "candidate"
@@ -46,12 +46,30 @@
     ]
   },
   "blockers": [
-    "browser look/playthrough unverified in this lane (prototype label)",
-    "independent exact-artifact review pending"
+    "evidence:gameplay-proof:platformer:visual-review-verdict-not-pass:needs-work",
+    "evidence:gameplay-proof:platformer:visual-review-screenshot-mismatch",
+    "evidence:deploy-artifact:not-passing",
+    "evidence:deploy-artifact:has-warnings",
+    "evidence:deploy-artifact:has-failures"
   ],
   "evidence": {
-    "global": "window.__aura3dGameSnapshot",
-    "sourceReview": "apps/showcase-skyline-runner/src/main.ts"
+    "global": "window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
+    "sourceReview": "apps/showcase-skyline-runner/src/main.ts",
+    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
+    "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+    "desktopScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+    "mobileScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-skyline-runner/dist --release --source apps/showcase-skyline-runner/src --asset skylineArcticRunnerHero --asset showcaseKenneyVerdantPlatformerWorld",
+    "deployPassed": true,
+    "routePrimaryPassed": true,
+    "gameplayProof": "tests/reports/showcase-gameplay/showcase-skyline-runner.json",
+    "gameplayPassed": true,
+    "visualReviewPassed": true,
+    "releaseAssetProbes": {
+      "skylineArcticRunnerHero": "tests/reports/showcase-release-asset-probes/skylineArcticRunnerHero.json",
+      "showcaseKenneyVerdantPlatformerWorld": "tests/reports/showcase-release-asset-probes/showcaseKenneyVerdantPlatformerWorld.json",
+      "showcaseSideScrollerWorld": "tests/reports/showcase-release-asset-probes/showcaseSideScrollerWorld.json"
+    }
   },
   "gameAssetPairEvidence": {
     "category": "platformer",

@@ -57,7 +57,6 @@ function codeOf(source) {
 }
 
 const TURBO = "apps/showcase-turbo-drift-circuit/src/main.ts";
-const TURBO_SURFACE = "apps/showcase-turbo-drift-circuit/src/track-surface.ts";
 const SKYLINE_MAIN = "apps/showcase-skyline-runner/src/main.ts";
 const SKYLINE_LEVEL = "apps/showcase-skyline-runner/src/level.ts";
 const CONTRACT = "apps/showcase-turbo-drift-circuit/src/generated/game-geometry.ts";
@@ -72,21 +71,16 @@ const CONTRACT = "apps/showcase-turbo-drift-circuit/src/generated/game-geometry.
  */
 function penetrationGate(against) {
   const source = readSource(TURBO, against);
-  const surfaceSource = readSource(TURBO_SURFACE, against);
   const contract = readSource(CONTRACT, against);
   const blockers = [];
   if (!source) return { id: "penetration", verdict: "fail", blockers: ["turbo-route-missing"], measured: {} };
   const code = codeOf(source);
-  const surfaceCode = surfaceSource ? codeOf(surfaceSource) : "";
   const banned = ["TRACK_SURFACE_Y", "CAR_GROUND_Y", "CAR_TYRE_CONTACT_Y", "VERGE_DROP", "SHOULDER_WIDTH"];
   const present = banned.filter((name) => code.includes(name));
   for (const name of present) blockers.push(`route-local-surface-constant:${name}`);
-  const usesMeshSurface =
-    /meshVehicleSurface\(\s*trackMeshQuery/.test(code) || /racingScene\.vehicleSurface\(/.test(code);
+  const usesMeshSurface = /racingScene\.vehicleSurface\(/.test(code);
   if (!usesMeshSurface) blockers.push("route-does-not-consume-mesh-vehicle-surface");
-  const hasDrivableMesh =
-    (/createMeshSurfaceQuery\(/.test(surfaceCode) && /\btrackMeshQuery\b/.test(surfaceCode)) ||
-    Boolean(contract && contract.includes("drivableMesh"));
+  const hasDrivableMesh = Boolean(contract && contract.includes("drivableMesh"));
   if (!hasDrivableMesh) blockers.push("geometry-contract-has-no-drivable-mesh");
   return {
     id: "penetration",
@@ -106,13 +100,12 @@ function penetrationGate(against) {
 function motionFeelGate(against) {
   const main = readSource(SKYLINE_MAIN, against);
   const level = readSource(SKYLINE_LEVEL, against);
-  const gameplayLevel = against ? undefined : readSource("apps/showcase-skyline-runner/src/gameplay/level.ts");
   const blockers = [];
   if (!main) return { id: "motion-feel", verdict: "fail", blockers: ["skyline-route-missing"], measured: {} };
-  const skylineCode = [against ? undefined : main, level, gameplayLevel].filter(Boolean).map(codeOf).join("\n");
-  const declaresIntent = /\bfeel:\s*"(snappy|responsive|floaty)"/.test(skylineCode) || /\bjumpHeight:/.test(skylineCode);
+  const levelCode = level ? codeOf(level) : "";
+  const declaresIntent = /\bfeel:\s*"(snappy|responsive|floaty)"/.test(levelCode) || /\bjumpHeight:/.test(levelCode);
   if (!declaresIntent) blockers.push("apex-not-derived-from-declared-intent");
-  const scalesToCharacter = /characterHeight:/.test(skylineCode);
+  const scalesToCharacter = /characterHeight:/.test(levelCode);
   if (!scalesToCharacter) blockers.push("apex-not-scaled-to-character-height");
   // Literal gravity/jumpVelocity assignments are route tuning; reads of solver output are not.
   const literals = [];
@@ -145,16 +138,8 @@ function telemetryGate(against) {
   const blockers = [];
   if (!source) return { id: "telemetry-coherence", verdict: "fail", blockers: ["turbo-route-missing"], measured: {} };
   const code = [source, hudSource, feelSource].filter(Boolean).map(codeOf).join("\n");
-  const stepsRaceState =
-    /playerState\s*=\s*playerKit\.step\(/.test(code) ||
-    /raceState\.step\(/.test(code) ||
-    /raceSnapshot\s*=\s*[\s\S]{0,200}?racingState\.step\(/.test(code) ||
-    /snapshot:\s*raceSnapshot/.test(code);
-  const updatesHudSpeed =
-    (/speedKph\s*=\s*Math\.round\(Math\.abs\(player\.speed\)/.test(code) &&
-      /turboGame\.hud\.set\(\s*"speed"\s*,\s*speedKph\s*\)/.test(code)) ||
-    /hud\.speed\.textContent\s*=\s*String\(Math\.round\(Math\.abs\((?:raceSnapshot|input\.snapshot)\.speed\)/.test(code);
-  const readsSteppedSnapshot = stepsRaceState && updatesHudSpeed;
+  const readsSteppedSnapshot = (/raceSnapshot\s*=\s*[\s\S]{0,200}?racingState\.step\(/.test(code) || /snapshot:\s*raceSnapshot/.test(code))
+    && (/hud\.speed\.textContent\s*=\s*String\(Math\.round\(Math\.abs\(raceSnapshot\.speed\)/.test(code) || /hud\.speed\.textContent\s*=\s*String\(Math\.round\(Math\.abs\(input\.snapshot\.speed\)/.test(code));
   if (!readsSteppedSnapshot) blockers.push("hud-speed-not-derived-from-stepped-snapshot");
   const printsRawEnum = /hud\.status\.textContent\s*=\s*raceSnapshot\.status/.test(code);
   if (printsRawEnum) blockers.push("hud-labels-idle-car-as-running");

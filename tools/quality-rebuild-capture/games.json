@@ -28,7 +28,7 @@
       "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
       "focus": {
-        "selector": "canvas",
+        "selector": ".aca",
         "method": "focus"
       },
       "notes": "Round auto-starts (1.35s ROUND intro). Controls from src/playable/AuraClashArenaApp.ts actionKeys: A/D move, W jump, S down, Space dash, Shift/Q guard, J light, K heavy, L special (meter-gated), P pause, R reset. Action shot waits for proof.totalHits to increase.",
@@ -43,7 +43,7 @@
         },
         {
           "shot": "03-mid",
-          "expr": "framing.subjectHeightFraction >= 0.2 && framing.subjectHeightFraction <= 0.3",
+          "expr": "framing.subjectHeightFraction >= 0.45 && framing.subjectHeightFraction <= 0.6",
           "deadlineMs": 12000
         }
       ],
@@ -68,9 +68,9 @@
         "routeJsGzipKB": 80,
         "drawCalls": {
           "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "medium": 150,
+          "high": 150,
+          "ultra": 300
         },
         "gameLogicCpuMs": 4
       },
@@ -89,7 +89,7 @@
       "timeline": [
         {
           "audio-webm": {
-            "seconds": 10
+           "seconds": 60
           }
         },
         {
@@ -156,14 +156,10 @@
           "up": "KeyD"
         },
         {
-          "until": "(window.__AURA3D_GAME_EVIDENCE__?.['aura-clash-showcase']?.combat?.hitStopActive === true && (window.__AURA3D_GAME_EVIDENCE__?.['aura-clash-showcase']?.fx?.liveCount ?? 0) > 0)",
-          "capture": "0",
+          "until": "(window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0) > s",
+          "capture": "window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0",
           "timeout": 6000,
           "loop": [
-            {
-              "hold": "KeyD",
-              "ms": 80
-            },
             {
               "press": "KeyJ"
             },
@@ -179,13 +175,13 @@
           ]
         },
         {
-          "shot": "04-action"
-        },
-        {
           "strip": {
             "frames": 12,
             "intervalMs": 100
           }
+        },
+        {
+          "shot": "04-action"
         },
         {
           "webm": {
@@ -350,10 +346,10 @@
         "transferToPlayableMB": 12,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "low": 120,
+          "medium": 150,
+          "high": 150,
+          "ultra": 300
         },
         "gameLogicCpuMs": 4
       },
@@ -621,9 +617,9 @@
         "routeJsGzipKB": 80,
         "drawCalls": {
           "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "medium": 250,
+          "high": 250,
+          "ultra": 500
         },
         "gameLogicCpuMs": 4
       },
@@ -866,8 +862,8 @@
         "drawCalls": {
           "low": 150,
           "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "high": 350,
+          "ultra": 700
         },
         "gameLogicCpuMs": 4
       },
@@ -1113,10 +1109,10 @@
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "low": 120,
+          "medium": 200,
+          "high": 200,
+          "ultra": 400
         },
         "gameLogicCpuMs": 4
       },
@@ -1353,10 +1349,10 @@
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "low": 120,
+          "medium": 150,
+          "high": 150,
+          "ultra": 300
         },
         "gameLogicCpuMs": 4
       },
@@ -1601,10 +1597,10 @@
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "low": 120,
+          "medium": 150,
+          "high": 150,
+          "ultra": 300
         },
         "gameLogicCpuMs": 4
       },
@@ -1864,10 +1860,10 @@
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "low": 100,
+          "medium": 120,
+          "high": 120,
+          "ultra": 240
         },
         "gameLogicCpuMs": 4
       },
@@ -2109,8 +2105,8 @@
         "drawCalls": {
           "low": 150,
           "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "high": 300,
+          "ultra": 600
         },
         "gameLogicCpuMs": 4
       },
@@ -2129,7 +2125,7 @@
       "timeline": [
         {
           "audio-webm": {
-            "seconds": 60
+           "seconds": 60
           }
         },
         {
@@ -2352,10 +2348,10 @@
         "transferToPlayableMB": 12,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "low": 120,
+          "medium": 200,
+          "high": 200,
+          "ultra": 400
         },
         "gameLogicCpuMs": 4
       },
@@ -2623,9 +2619,9 @@
         "routeJsGzipKB": 80,
         "drawCalls": {
           "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "medium": 250,
+          "high": 250,
+          "ultra": 500
         },
         "gameLogicCpuMs": 4
       },
@@ -2906,10 +2902,10 @@
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "low": 100,
+          "medium": 100,
+          "high": 100,
+          "ultra": 200
         },
         "gameLogicCpuMs": 4
       },
@@ -3152,9 +3148,9 @@
         "routeJsGzipKB": 80,
         "drawCalls": {
           "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "medium": 200,
+          "high": 200,
+          "ultra": 400
         },
         "gameLogicCpuMs": 4
       },
@@ -3401,9 +3397,9 @@
         "routeJsGzipKB": 80,
         "drawCalls": {
           "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "medium": 250,
+          "high": 250,
+          "ultra": 500
         },
         "gameLogicCpuMs": 4
       },
@@ -3664,9 +3660,9 @@
         "routeJsGzipKB": 80,
         "drawCalls": {
           "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "medium": 200,
+          "high": 200,
+          "ultra": 400
         },
         "gameLogicCpuMs": 4
       },
@@ -3911,9 +3907,9 @@
         "routeJsGzipKB": 80,
         "drawCalls": {
           "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "medium": 230,
+          "high": 230,
+          "ultra": 460
         },
         "gameLogicCpuMs": 4
       },
@@ -4167,10 +4163,10 @@
         "transferToPlayableMB": 12,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "low": 100,
+          "medium": 120,
+          "high": 120,
+          "ultra": 240
         },
         "gameLogicCpuMs": 4
       },
@@ -4189,7 +4185,7 @@
       "timeline": [
         {
           "audio-webm": {
-            "seconds": 60
+           "seconds": 60
           }
         },
         {
@@ -4416,10 +4412,10 @@
         "transferToPlayableMB": 12,
         "routeJsGzipKB": 80,
         "drawCalls": {
-          "low": 150,
-          "medium": 300,
-          "high": 400,
-          "ultra": 800
+          "low": 80,
+          "medium": 80,
+          "high": 80,
+          "ultra": 160
         },
         "gameLogicCpuMs": 4
       },

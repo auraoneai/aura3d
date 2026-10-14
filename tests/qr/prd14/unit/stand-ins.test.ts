@@ -64,12 +64,10 @@ describe("S12 stand-ins tracked (PRD-14 §16.1)", () => {
       expect(problems).toEqual([]);
     });
 
-    it(`${appDir}: every R-14-NN cited in route source is listed in standIns[]`, () => {
+    it(`${appDir}: every R-14-NN cited in src/v2 is listed in standIns[]`, () => {
       const listed = new Set(standIns.map((s) => s.request));
       const unlisted = new Set<string>();
-      const v2Dir = join(APPS, appDir, "src", "v2");
-      const scanDir = existsSync(v2Dir) ? v2Dir : join(APPS, appDir, "src");
-      for (const file of tsFiles(scanDir)) {
+      for (const file of tsFiles(join(APPS, appDir, "src", "v2"))) {
         for (const code of readFileSync(file, "utf8").match(/R-14-\d{2}/g) ?? []) {
           if (!NON_STAND_IN.has(code) && !listed.has(code)) unlisted.add(`${code} (${file.slice(APPS.length + 1)})`);
         }

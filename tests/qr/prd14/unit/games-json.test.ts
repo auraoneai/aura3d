@@ -122,10 +122,7 @@ describe("T1.13 games.json V2", () => {
       expect(v2.budgets.drawCalls.ultra).toBeLessThanOrEqual(1000);
       expect(v2.budgets.transferToPlayableMB).toBeGreaterThan(0);
       expect(v2.budgets.transferToPlayableMB).toBeLessThanOrEqual(15);
-      expect(
-        [[routeUrlFlagFor(String(entry.id)), ...ENGINE_QR_FLAGS], [...ENGINE_QR_FLAGS]],
-        `${label} qrFlags`
-      ).toContainEqual(v2.qrFlags);
+      expect(v2.qrFlags, `${label} qrFlags`).toEqual([routeUrlFlagFor(String(entry.id)), ...ENGINE_QR_FLAGS]);
     }
   });
 

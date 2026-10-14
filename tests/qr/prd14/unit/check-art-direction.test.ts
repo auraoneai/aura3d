@@ -34,20 +34,6 @@ describe("check-art-direction.mjs static scan (T1.9)", () => {
     expect(r.code).toBe(0);
   });
 
-  it("single-path-route fixture (direction + src/main.ts, no src/v2) is scanned as single-path and passes", () => {
-    const r = run("--apps-root", FIXTURES, "--routes", "single-path-route");
-    expect(r.code).toBe(0);
-    expect(r.out).toContain("single-path");
-  });
-
-  it("single-path-bad-route fixture fails with the same patterns as a v2 route", () => {
-    const r = run("--apps-root", FIXTURES, "--routes", "single-path-bad-route");
-    expect(r.code).toBe(1);
-    expect(r.out).toContain("capture-branch");
-    expect(r.out).toContain("ambient-light");
-    expect(r.out).toContain("__MY_OWN_EVIDENCE__");
-  });
-
   it("a route with art/direction.ts but no src/v2 fails (T1.10 dispatcher missing)", () => {
     const r = run("--apps-root", FIXTURES, "--routes", "direction-only-route");
     expect(r.code).toBe(1);

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Aura3D Vault Breakers: heist pinball rebuilt single-path on the salvaged Rapier table sim (createGame shell, motorised flipper joints, five target banks, tilt, vault multiball, typed route-local GLBs).",
+  "description": "Aura3D Vault Breakers prototype: neon pinball with player-actuated motorised flipper joints, five target banks, a vault multiball, and an in-world extruded-text scoreboard.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",

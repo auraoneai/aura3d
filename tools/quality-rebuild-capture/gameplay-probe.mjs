@@ -13,7 +13,7 @@
  * Local variants need `capture-games.mjs --build-only` (QRC_LOCAL_BUILD=true) first.
  * Runs on the remote GPU runner (qr-azure-gpu.yml suite=gameplay), never on a developer Mac.
  */
-import { createReadStream, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync, appendFileSync } from "node:fs";
+import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync, appendFileSync } from "node:fs";
 import { createServer } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -43,15 +43,7 @@ const log = (...p) => process.stderr.write(`[qrg ${new Date().toISOString().slic
 const variantLabel = (v) => (v === DEFAULTS ? "defaults" : v.replace(DEFAULTS, "defaults"));
 
 function startServer() {
-  // Every app's own public/ tree is a fallback root, not just one hardcoded
-  // app: route-local typed assets (apps/<dir>/public/aura-assets/*.glb, the
-  // template layout vite serves via the app's publicDir) must resolve here
-  // too, since the capture build sets publicDir: false.
-  const appPublicRoots = readdirSync(path.join(repoRoot, "apps"), { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .map((d) => path.join(repoRoot, "apps", d.name, "public"))
-    .filter((p) => existsSync(p));
-  const roots = [siteRoot, path.join(repoRoot, "public"), ...appPublicRoots, path.join(repoRoot, "marketing", "public")];
+  const roots = [siteRoot, path.join(repoRoot, "public"), path.join(repoRoot, "apps", "aura-clash-showcase", "public"), path.join(repoRoot, "marketing", "public")];
   const tryFile = (root, rel) => {
     const full = path.resolve(root, `.${rel}`);
     if (!full.startsWith(path.resolve(root) + path.sep)) return null;

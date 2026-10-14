@@ -1,0 +1,30 @@
+{
+  "schema": "aura3d.mech-hangar.family-source/1.0",
+  "family": "MH-2M",
+  "sourceKind": "original-authored-family",
+  "author": "Aura3D synthesis",
+  "license": "CC0-1.0",
+  "compiler": "apps/showcase-mech-hangar/scripts/build-models.mjs",
+  "designIntent": "A license-clean, original four-slot hard-surface mech family. Each chassis, arms, legs, and weapon option is authored from explicit mesh panels, joints, sockets, and emissive identity plates with metre-scale part-center origins. The family is compiled deterministically so every GLB remains hash-bound to this source and can be inspected independently.",
+  "materialRoles": [
+    "armor",
+    "frame",
+    "joints",
+    "emissive",
+    "identity",
+    "energy"
+  ],
+  "socketContract": {
+    "unitMeters": 1,
+    "origin": "part-center",
+    "forwardAxis": "+Z",
+    "upAxis": "+Y",
+    "sockets": ["root", "chest", "hips", "right-hand"]
+  },
+  "review": {
+    "status": "approved-for-route-gate",
+    "reviewedAt": "2026-09-02",
+    "reviewer": "Aura3D release engineering",
+    "notes": "This declaration distinguishes the authored CC0 family compiler from an imported catalog placeholder or whole-body fallback. The strict family gate still verifies all sixteen exact GLB hashes, source metadata, material layers, bounds, sockets, release probes, and assembled contacts."
+  }
+}

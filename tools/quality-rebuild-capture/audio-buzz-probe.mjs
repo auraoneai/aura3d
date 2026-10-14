@@ -10,7 +10,7 @@
 // gameplay input. Each phase samples the destination tap ~20x and reports
 // mean/max RMS, peak, dominant frequency, >4 kHz share, and the playing voices.
 import { createServer } from "node:http";
-import { createReadStream, readFileSync, readdirSync, statSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { createReadStream, readFileSync, statSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -36,16 +36,8 @@ const MIME = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/jav
   ".ogg": "audio/ogg", ".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".webm": "audio/webm", ".woff2": "font/woff2" };
 
 function serveLocal() {
-  // Every app's own public/ tree is a fallback root, not just one hardcoded
-  // app: route-local typed assets (apps/<dir>/public/aura-assets/*.glb, the
-  // template layout vite serves via the app's publicDir) must resolve here
-  // too, since the capture build sets publicDir: false.
-  const appPublicRoots = readdirSync(path.join(repoRoot, "apps"), { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .map((d) => path.join(repoRoot, "apps", d.name, "public"))
-    .filter((p) => existsSync(p));
   const roots = [path.join(here, ".build", "site"), path.join(repoRoot, "public"),
-    ...appPublicRoots, path.join(repoRoot, "marketing", "public")];
+    path.join(repoRoot, "apps", "aura-clash-showcase", "public"), path.join(repoRoot, "marketing", "public")];
   const tryFile = (root, rel) => {
     const full = path.resolve(root, `.${rel}`);
     if (!full.startsWith(path.resolve(root))) return null;

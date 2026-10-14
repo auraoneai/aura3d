@@ -3,30 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Aura3D flagship route: Deep Recovery — pelagic salvage submersible on the single-path createGame runtime with admitted GLB hulls, crates, wrecks, and surface recovery buoy.",
+  "description": "Aura3D Deep Recovery prototype: 6-DOF submarine salvage simulation with sonar overlap queries, depth-band oxygen economy, wreck obstacles, tether towing, and contract progression.",
   "scripts": {
-    "dev": "vite --port 5188",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --port 4173 --strictPort",
-    "typecheck": "tsc --noEmit",
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "build:sfx": "node scripts/build-sfx.mjs",
+    "build:models": "node scripts/build-models.mjs",
     "register:assets": "node scripts/register-assets.mjs",
-    "assets:validate": "aura3d assets validate",
-    "assets:typegen": "aura3d assets typegen",
-    "check:deploy": "aura3d check-deploy",
-    "test:route": "playwright test tests/route-health.spec.ts",
-    "test:game": "playwright test tests/playable.spec.ts",
-    "test:smoke": "pnpm run test:route && pnpm run test:game"
+    "write:performance": "pnpm exec tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
+    "write:deploy": "node scripts/write-deploy-report.mjs",
+    "write:route-health": "node scripts/write-route-health.mjs"
   },
   "dependencies": {
-    "@aura3d/assets": "workspace:*",
-    "@aura3d/core": "workspace:*",
-    "@aura3d/engine": "workspace:*",
-    "@aura3d/physics": "workspace:*"
+    "@aura3d/engine": "workspace:*"
   },
   "devDependencies": {
-    "@aura3d/cli": "workspace:*",
-    "@playwright/test": "^1.52.0",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.0"
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
   }
 }

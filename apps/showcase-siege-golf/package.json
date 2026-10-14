@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Aura3D Siege Golf: rigid-body physics as gameplay \u2014 golf shots topple jointed destructible structures into sensor cups across nine authored holes. Single-path scene on the salvaged gameplay core (createGame + mini-golf kit shot oracle + Rapier structures/hole-flow), typed ball/crate/barrel/plank assets.",
+  "description": "Aura3D Siege Golf prototype: rigid-body physics as gameplay - golf shots topple jointed structures into sensor cup zones across nine authored holes.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",

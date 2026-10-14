@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Aura3D Neon Swarm: single-path five-wave top-down horde-survival run on the salvaged gameplay core (arena, swarm, waves, player, pickups, run) with createGame, instanced grunt/elite drone pools, and typed courier/barricade/lamp assets.",
+  "description": "Aura3D root-safe prototype: a finite five-wave horde-survival run with typed assets, risky pickups, deterministic outcome hashes, and a real 320-drone instanced finale.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",

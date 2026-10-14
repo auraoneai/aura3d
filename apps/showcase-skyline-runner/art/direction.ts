@@ -42,19 +42,11 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "follow2d", subjectHeightFraction: [0.1, 0.22], fovDeg: [42, 50], mobile: "landscape" },
-  // The rebuilt single-path scene (src/main.ts) renders from the four typed
-  // assets in apps/showcase-skyline-runner/aura.assets.json: the rigged
-  // Kenney Oobi hero (idle/walk/sprint/jump/fall embedded clips), the crate
-  // GLB scaled to every authored platform/hazard rect, and the star/key
-  // pickup models. The trashed flat-card hero, world GLB, sentry and
-  // parallax roles are gone. No asset is staged in a shared kit yet, so no
-  // `kit` is claimed: S10's kit half stays failing until a human look-dev
-  // review accepts a staged kit file (verdicts are never authored here).
   assets: [
-    { role: "character", assetKey: "showcaseKenneyOobiPlatformerHero", maxTriangles: 48000, minTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 2048, animated: { clips: ["run", "jump", "fall", "land"] } },
-    { role: "world", assetKey: "quaterniusCubeCrate", maxTriangles: 160000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "kenneyPlatformerKitStar", maxTriangles: 5000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "kenneyPlatformerKitKey", maxTriangles: 5000, textureSet: "BC", maxTextureSize: 1024 }
+    { role: "character", assetKey: "skyline-hero-runner", maxTriangles: 48000, minTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 2048, animated: { clips: ["run", "jump", "fall", "land"] } },
+    { role: "world", assetKey: "snow-platform-kit", kit: "K3", maxTriangles: 160000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "enemy", assetKey: "sentry-patrols", kit: "K7", maxTriangles: 20000, minTriangles: 3000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "parallax-act-backdrops", kit: "K1", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 2048 }
   ],
   vfx: [
     { event: "landing-puff", kind: "burst" },
@@ -72,10 +64,10 @@ export default defineArtDirection({
   ],
   signatureEffect: "Five acts of lit snow-kit rooftops sliding over a matched-fog parallax dusk painting, snowfall and landing puffs tying the two depth layers together.",
   standIns: [
-    { feature: "polar-night look preset for k1-winter-dusk HDRI + per-act fog", file: "src/main.ts", request: "R-14-13", removeWhen: "winter-dusk HDRI admitted" },
-    { feature: "crate GLB scaled to authored rects for K3 snow platform kit + parallax backdrops", file: "src/main.ts", request: "R-14-07", removeWhen: "platform kit + backdrop layers admitted" },
-    { feature: "land state plays the rig crouch clip (no dedicated land clip)", file: "src/main.ts", request: "R-14-07", removeWhen: "rigged hero with land clip admitted" },
-    { feature: "shared sfx-pack cues for K8 footstep/ambience sample set", file: "src/main.ts", request: "R-14-09", removeWhen: "K8 snow-metal steps admitted" }
+    { feature: "k1-winter-dusk HDRI + per-act fog", file: "src/v2/scene/lighting.ts", request: "R-14-13", removeWhen: "winter-dusk HDRI admitted" },
+    { feature: "K3 snow platform kit + parallax backdrops", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "platform kit + backdrop layers admitted" },
+    { feature: "rigged skylineHeroRunner clips", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "rigged hero admitted" },
+    { feature: "K8 footstep/ambience sample set", file: "src/legacy/skyline-audio.ts", request: "R-14-09", removeWhen: "K8 snow-metal steps admitted" }
   ],
   criticalCategories: ["animation_quality"],
   tiers: {

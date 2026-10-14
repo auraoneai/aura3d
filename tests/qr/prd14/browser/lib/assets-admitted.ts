@@ -45,13 +45,8 @@ export function kitManifestPath(repoRoot: string, kit: string): string {
   return join(repoRoot, "apps", "showcase-kits", kit, "kit.json");
 }
 
-function matchesAssetKey(f: KitFileLike, assetKey: string): boolean {
-  const kebab = assetKey.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-  return f.id === assetKey || f.id === kebab || f.assetKey === assetKey;
-}
-
 function verdictOf(kitName: string, kit: KitLike, assetKey: string): string | null {
-  const file = (kit.files ?? []).find((f) => matchesAssetKey(f, assetKey));
+  const file = (kit.files ?? []).find((f) => f.id === assetKey || f.assetKey === assetKey);
   if (file === undefined) return `kit ${kitName} lists no file for "${assetKey}"`;
   const verdict = file.lookdev?.verdict;
   return verdict === "accept" ? null : `kit ${kitName} file "${assetKey}" look-dev verdict is ${verdict ?? "missing"}, not accept`;
@@ -67,7 +62,7 @@ function kitViolation(repoRoot: string, r: DirectionAssetRole): string | null {
   if (!existsSync(kitsRoot)) return "apps/showcase-kits/ does not exist (no kit manifest lists it)";
   for (const name of readdirSync(kitsRoot).sort()) {
     const kit = readJson<KitLike>(join(kitsRoot, name, "kit.json"));
-    if (kit !== null && (kit.files ?? []).some((f) => matchesAssetKey(f, r.assetKey))) {
+    if (kit !== null && (kit.files ?? []).some((f) => f.id === r.assetKey || f.assetKey === r.assetKey)) {
       return verdictOf(name, kit, r.assetKey);
     }
   }

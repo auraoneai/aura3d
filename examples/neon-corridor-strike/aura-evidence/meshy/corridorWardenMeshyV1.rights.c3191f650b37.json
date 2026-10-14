@@ -1,0 +1,8 @@
+{
+  "schema": "aura3d.meshy-rights/1.0",
+  "rights": {
+    "licenseName": "Meshy paid private generation terms",
+    "licenseUrl": "https://www.meshy.ai/terms",
+    "licenseRaw": "Generated through the authenticated paid Meshy API account for candidate use as the Neon Corridor warden in the current Meshy terms; this does not certify release-ready geometry or broader commercial rights."
+  }
+}

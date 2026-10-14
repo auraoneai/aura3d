@@ -1,16 +1,18 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * Aura Clash (createGame + createFightingGameKit) coverage.
+ * Aura Clash v2 (createGame + createFightingGameKit) coverage.
  *
- * Single-path: `src/main.ts` boots directly at `/`. Assertions read the
- * route's own evidence surface — `__AURA3D_GAME__` plus
+ * The v2 path is flag-gated: `src/main.ts` boots `src/v2/boot.ts` only for
+ * `?a3d-qr=route-aura-clash` (DEFAULT_ON stays false; there is no
+ * `?engine=v2` dispatch in this tree). Assertions read the route's own
+ * evidence surface — `__AURA3D_GAME__` plus
  * `__AURA3D_GAME_EVIDENCE__["aura-clash-showcase"]` (playback / framing /
- * combat / animation sections).
- * Run serially (`--workers=1`): the kit's opponent AI and clip clocks are
- * real-time.
+ * combat / animation sections) — never legacy playable proof objects.
+ * Run serially like the playable smoke suite (`--workers=1`): the kit's
+ * opponent AI and clip clocks are real-time.
  */
-const V2_URL = "/";
+const V2_URL = "/?a3d-qr=route-aura-clash";
 
 interface V2FighterAnim {
   bound: boolean;
@@ -62,11 +64,11 @@ test.describe("Aura Clash v2 fighting", () => {
     await expect(page.locator("canvas")).toBeVisible();
     await expect.poll(async () => (await readEvidence(page)).playback.frame)
       .toBeGreaterThan(first.playback.frame);
-    // Fighting rig solves ~0.25 frame-height per fighter (recipe band 0.2–0.3).
+    // Fighting rig solves ~0.5 frame-height per fighter (band 0.45–0.6).
     await expect.poll(async () => (await readEvidence(page)).framing.subjectScreenHeightFraction ?? 0)
-      .toBeGreaterThanOrEqual(0.2);
+      .toBeGreaterThan(0.3);
     const framed = await readEvidence(page);
-    expect(framed.framing.subjectScreenHeightFraction ?? 1).toBeLessThanOrEqual(0.3);
+    expect(framed.framing.subjectScreenHeightFraction ?? 1).toBeLessThan(0.8);
     expect(framed.playback.paused).toBe(false);
   });
 

@@ -160,14 +160,6 @@ export default {
   resolve: {
     alias: [
       { find: /^@aura3d\\/engine$/, replacement: ${JSON.stringify(engineSourceEntry)} },
-      { find: "@aura3d/engine/game/capture", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "capture", "index.ts"))} },
-      { find: "@aura3d/engine/game/art", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "art", "index.ts"))} },
-      { find: "@aura3d/engine/game/util", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "util", "index.ts"))} },
-      { find: "@aura3d/engine/game", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "index.ts"))} },
-      { find: "@aura3d/game/capture", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "capture", "index.ts"))} },
-      { find: "@aura3d/game/art", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "art", "index.ts"))} },
-      { find: "@aura3d/game/util", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "util", "index.ts"))} },
-      { find: "@aura3d/game", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "index.ts"))} },
       ...rootAliases.filter((entry) => entry.find !== "@aura3d/engine")
     ],
     dedupe: ["@aura3d/engine"]
@@ -351,12 +343,7 @@ function copyAuraAssetFile(assetUrl) {
 function copyRouteLocalAuraAssets(route) {
   const source = path.join(repoRoot, "apps", route, "public", "aura-assets");
   const target = path.join(distDir, "aura-assets");
-  // Route-local typed assets (the template layout: apps/<route>/public/
-  // aura-assets, admitted by the route's own aura.assets.json) are not in
-  // the root manifest copyAuraAssets() copies, so mirror every public
-  // route's tree that exists — not one hardcoded route. A route with no
-  // route-local tree simply contributes nothing.
-  if (!existsSync(source)) return;
+  if (!existsSync(source)) throw new Error(`route-local Aura assets are missing: ${source}`);
   assertNoGitLfsPointers(source, `apps/${route}/public/aura-assets`);
   mkdirSync(target, { recursive: true });
   cpSync(source, target, { recursive: true });
@@ -433,7 +420,7 @@ function main() {
     } else {
       copyAuraAssets();
     }
-    for (const route of publicRoutes) copyRouteLocalAuraAssets(route);
+    copyRouteLocalAuraAssets("showcase-meshy-relic-pilot");
     assertBuiltRoutes();
     console.log(`Built ${showcaseRoutes.length} showcase routes and ${evidenceRoutes.length} evidence routes with local @aura3d/engine agent-api source for package version ${expectedEngineVersion}.`);
   } finally {

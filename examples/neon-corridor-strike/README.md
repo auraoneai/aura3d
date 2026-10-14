@@ -2,13 +2,10 @@
 
 Capability label: **`prototype`**
 
-A browser first-person corridor shooter rebuilt single-path on the Aura3D
-shared game runtime (`createGame` from `@aura3d/engine/game`, the Blockfall
-pilot pattern). There is no `game.fps()` kit: look, locomotion, and hitscan
-are decided by the pure, headless rules module in `src/rules.ts` (analytic
-ray-vs-target-spheres), and `src/main.ts` renders that state with typed GLB
-assets. The former `createAuraApp` orchestrator and its 14-file `src/game/`
-tree are deleted; every URL boots `src/main.ts`.
+A browser first-person shooter inspired by DOOM: a dark sci-fi corridor, hitscan
+combat, ammo scarcity, enemy pressure, pointer-lock look, and a DOM HUD. Built
+on the public `@aura3d/engine` surface (`createAuraApp`, `app.physics`,
+`game.input`). There is no `game.shooter()` kit.
 
 This is not DOOM parity, not a commercial FPS engine, and not a Unity/Unreal
 replacement.
@@ -17,64 +14,87 @@ replacement.
 
 | Input | Action |
 | --- | --- |
-| Click canvas | Request pointer lock (the locking click never fires) |
-| Mouse | Look — E5 raw `snapshot().pointer.dx/dy` at 0.0024 rad/px; drag-look also works unlocked |
-| WASD / arrows | Move (yaw-relative, clamped to the corridor) |
+| Click canvas | Pointer lock / start |
+| WASD | Move |
+| Mouse | Look |
 | Shift | Sprint |
-| LMB (locked) or J / F | Fire pulse rifle (hitscan, 12-round mag, auto-reload) |
-| R | Reset run |
-| Esc | Release pointer lock (browser) |
+| J or F | Fire (hitscan). Mouse not required. |
+| R | Reload while playing (timed, blocks fire); reset after win/lose |
+| T | Reset run |
+| P / Esc | Pause |
+| Touch D-pad / look pad | Move and look on coarse-pointer/mobile layouts |
+| Touch FIRE / RELOAD / PAUSE / RESET | Combat and lifecycle controls on mobile |
 
 ## Objective
 
-Drop all five hovering sentry drones down the corridor (two hits each).
-Clearing the last sentry wins the run; R always restores the baseline.
+Clear all four hostiles or reach the exit sensor. Lose when HP reaches 0.
+Reset always restores the baseline run.
+
+## Thumbnail
+
+`thumbnail.webp` is a live canvas capture of the corridor from the first-person
+view. It is the examples-gallery poster, not renderer-quality proof.
 
 ## Typed assets
 
-Fresh coherent CC0 set in `aura.assets.json` / `src/aura-assets.ts`
-(~131 KB total, replacing the trashed ~55 MB mixed-generation set):
+CLI-resolved, license-verified GLB assets in `aura.assets.json`:
 
-- `quaterniusWallModular` — corridor wall panels (Quaternius, CC0)
-- `quaterniusCubeCrate` — lane cover crates (Quaternius, CC0)
-- `kenneyCraftMiner` — sentry drone targets (Kenney Space Kit, CC0-1.0)
+- `arena` — Sci-fi Spaceship Corridor (J4747, CC-BY-4.0)
+- `impA` — Horror Creature (Emi De Vogelaere, CC-BY-4.0)
+- `impB` — Pig Demon (Lexington Dath, CC-BY-4.0)
+- `pulseRifle` — Sci Fi Weapon / Rifle (gbarzu, CC-BY-4.0)
+- `ammoCrate` — Old Ammo Crate (Geoffroy.Sainte.Catherine, CC-BY-4.0)
+- `medkit` — medical gurney prop stand-in (Ellie, CC-BY-4.0)
 
-The pulse-rifle viewmodel, muzzle flash, and hit spark are emissive
-primitive nodes posed per frame; no coherent CC0 rifle GLB is admitted in
-the repo yet, so no viewmodel asset is claimed.
+## What feels modern vs what stays prototype
 
-## What is real vs prototype
+Modern-feeling: pointer-lock look, sprint, hitscan with muzzle/impact
+effects, telegraphed hostile swipes with flinch and death weight, timed
+reload with dry-fire deny, in-repo CC0 SFX, low-ammo HUD, pause, reset, and
+a compact touch surface, plus a dark corridor with typed GLB subjects. Jump is not a supported mechanic;
+walk height stays locked.
 
-Real: pointer-lock request + raw-pixel mouse-look, WASD locomotion, LMB/J
-hitscan with per-target HP, hit feedback (spark node, target pulse,
-hitmarker, sfx-pack cues, juice), kill-all win, R reset, crosshair +
-arcade-neon HUD widgets, and `window.__aura3dGameSnapshot` evidence with
-only measured values (player pose, shots/hits/kills, lock counters).
+Capability incorporations (all route-local, label stays `prototype`):
+dynamic debris props that scatter cosmetically on confirmed impacts (NC-A1),
+an overlap-sphere backup for pickup collection (NC-A2), sphereCast enemy
+line-of-sight so imps cannot aggro through corridor corners (NC-A3),
+spring-joint hanging practicals that sway when shots land nearby (NC-A4),
+two instanced LOD'd greeble pools along the walls (NC-A5), text3D sector
+signage at the junctions (NC-A6), and an ambient-drone audio bus that ducks
+on low-ammo/low-HP warnings (NC-A7).
 
-Prototype limits: kinematic player with corridor-bounds clamping (no
-physics body, crates are visual cover outside the walk lane), static
-hovering targets with no skeletal animation or return fire (no HP/lose
-state), straight corridor so hitscan needs no wall-occlusion test, and a
-primitive viewmodel. Pointer-lock *engagement* in headless runners is
-unverified; the playable spec asserts the request counter and drives look
-and fire through the lock-independent paths.
+Still prototype: yaw-led follow camera (pitch is hitscan-accurate),
+proximity-rush enemy AI with an authored alarm (no nav mesh), hostiles pass
+through the player capsule (touch damage is proximity-authored), no
+bloom/SSAO/WebGPU claim, and catalog medkit is a gurney rather than a packed
+aid kit. Audio cues are synthesized in-repo (CC0) by
+`scripts/build-sfx.mjs` and registered through the asset CLI.
 
 ## Verify
 
-App-local specs (vite dev server on port 4173):
+The playable evidence gate is the monorepo spec (uses `example-dev-server`):
 
 ```bash
-npm run dev
-npx playwright test tests/playable.spec.ts tests/route-health.spec.ts --workers=1
+pnpm exec playwright test tests/browser/neon-corridor-strike.spec.ts --reporter=line
+pnpm exec playwright test tests/browser/neon-corridor-strike-{modes,pause-reset,quality,touch}.spec.ts --workers=1
+pnpm exec playwright test tests/browser/neon-corridor-strike-endurance.spec.ts --workers=1
 ```
 
-Headless rules sim from the repo root:
+These specs write desktop/mobile first-load, shot, pickup, alarm/damage,
+win/fail, reduced-mode, touch, pause/reset, pixel-diversity, frame-pacing, and
+route-health evidence under `tests/reports/neon-corridor-strike*/`. The
+endurance spec drives real input for at least 60 seconds and writes the
+before/after interaction recording to
+`tests/reports/neon-corridor-strike-endurance/ui-composition-before-after.webm`;
+its exact duration, gameplay counters, and video SHA-256 are bound in the
+adjacent `endurance.json`.
+
+From this folder, asset and deploy checks:
 
 ```bash
-vitest run tests/unit/apps/neon-corridor-rules.test.ts
+node ../../packages/aura3d-cli/dist/cli.js assets validate
+node ../../packages/aura3d-cli/dist/cli.js check-deploy --dist dist
 ```
 
-The monorepo smoke spec `tests/browser/neon-corridor-strike.spec.ts` boots
-this app's vite server and asserts framed boot, lock request, and fire.
-The examples-gallery poster (`thumbnail.webp`) was retired with the trash
-and awaits a lane recapture of the rebuilt corridor.
+Project-local `npm run test` starts Vite against the same specs. First compile
+of the corridor GLBs is slow; prefer the monorepo spec above.

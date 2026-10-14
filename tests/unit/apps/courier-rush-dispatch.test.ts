@@ -12,7 +12,7 @@ import {
   MAX_STRIKES,
   stepDispatch
 } from "../../../apps/showcase-courier-rush/src/dispatch";
-import { ZONE_SITES } from "../../../apps/showcase-courier-rush/src/zones";
+import { ZONE_SITES } from "../../../apps/showcase-courier-rush/src/city";
 
 const STEP_MS = 100;
 

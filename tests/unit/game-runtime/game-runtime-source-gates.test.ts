@@ -1433,57 +1433,97 @@ describe("game runtime source gates", () => {
      * the dispatcher itself must stay a thin dispatcher (no gameplay tokens).
      */
     const skylineMain = readSource("apps/showcase-skyline-runner/src/main.ts");
-    const skylineLevel = readSource("apps/showcase-skyline-runner/src/level.ts");
+    const skylineBoot = readSource("apps/showcase-skyline-runner/src/v2/boot.ts");
+    const skylineBinding = readSource("apps/showcase-skyline-runner/src/v2/scene/binding.ts");
+    const skylineLevel = readSource("apps/showcase-skyline-runner/src/gameplay/level.ts");
+    const skylineProof = readSource("apps/showcase-skyline-runner/src/gameplay/level-proof.ts");
     const turboMain = readSource("apps/showcase-turbo-drift-circuit/src/main.ts");
-    const turboGhost = readSource("apps/showcase-turbo-drift-circuit/src/ghost.ts");
-    const turboOpponent = readSource("apps/showcase-turbo-drift-circuit/src/opponent-ai.ts");
+    const turboSetup = readSource("apps/showcase-turbo-drift-circuit/src/v2/race-setup.ts");
+    const turboBoot = readSource("apps/showcase-turbo-drift-circuit/src/v2/boot.ts");
+    const turboGhost = readSource("apps/showcase-turbo-drift-circuit/src/gameplay/ghost.ts");
+    const turboOpponent = readSource("apps/showcase-turbo-drift-circuit/src/gameplay/opponent-ai.ts");
+    const blockfallMain = readSource("apps/showcase-blockfall-reactor/src/main.ts");
+    const blockfallBoot = readSource("apps/showcase-blockfall-reactor/src/v2/boot.ts");
+    const blockfallBoard = readSource("apps/showcase-blockfall-reactor/src/gameplay/board-view.ts");
+    const blockfallReadme = readSource("apps/showcase-blockfall-reactor/README.md");
 
-    // Skyline and Turbo dispatchers were deleted in the Live Fix B2/B3
-    // single-path rebuilds: src/main.ts IS the route, with no flag fork.
-    expect(skylineMain).not.toContain("A3D_QR_ROUTE_SKYLINE_RUNNER");
-    expect(existsSync("apps/showcase-skyline-runner/src/v2")).toBe(false);
-    expect(existsSync("apps/showcase-skyline-runner/src/legacy")).toBe(false);
-    expect(existsSync("apps/showcase-skyline-runner/src/generated/game-geometry.ts")).toBe(false);
-    expect(turboMain).not.toContain("A3D_QR_ROUTE_TURBO_DRIFT_CIRCUIT");
-    expect(existsSync("apps/showcase-turbo-drift-circuit/src/v2")).toBe(false);
-    expect(existsSync("apps/showcase-turbo-drift-circuit/src/legacy")).toBe(false);
+    // Dispatchers resolve the route flag and defer to legacy or v2 — nothing more.
+    expect(skylineMain).toContain("resolveQrFlags");
+    expect(skylineMain).toContain('ROUTE_FLAG = "A3D_QR_ROUTE_SKYLINE_RUNNER"');
+    expect(turboMain).toContain('ROUTE_FLAG = "A3D_QR_ROUTE_TURBO_DRIFT_CIRCUIT"');
+    expect(blockfallMain).toContain('ROUTE_FLAG = "A3D_QR_ROUTE_BLOCKFALL_REACTOR"');
 
     /*
-     * Skyline runner (single-path rebuild): motion is solved from the authored
-     * rects in `src/level.ts` via `solvePlatformerMotion`, `buildSkylineLevel`
-     * assembles the kit level, and `src/main.ts` drives `game.platformer(level)`.
+     * Skyline runner: the level is built by `src/gameplay/level.ts` (shared with
+     * `level-proof.ts`) on the public asset-bound level builder, the scene
+     * binding lives in `src/v2/scene/binding.ts`, and `v2/boot.ts` drives the
+     * public `game.platformer` kit through it.
      */
-    expect(skylineMain).toContain("solvePlatformerMotion(SKYLINE_PLATFORMS");
-    expect(skylineMain).toContain("buildSkylineLevel(motion)");
-    expect(skylineMain).toContain("game.platformer(level)");
-    expect(skylineLevel).toContain("export function buildSkylineLevel");
+    expect(skylineLevel).toContain("game.assetBoundPlatformerLevel({");
+    expect(skylineLevel).toContain("solvePlatformerMotion(");
+    expect(skylineLevel).toContain('import { gameGeometryContract } from "../generated/game-geometry"');
+    expect(skylineLevel).toContain("skylinePlayableSurfaceMap");
+    expect(skylineBinding).toContain("engineGame.platformerSceneBinding({");
+    expect(skylineBinding).toContain("createSkylineLevel()");
+    expect(skylineBoot).toContain("engineGame.platformer(level)");
+    expect(skylineBoot).toContain("platformerScene");
+    expect(readSource("apps/showcase-skyline-runner/src/v2/sync.ts")).toContain("platformerScene.toScenePlayer");
+    expect(skylineProof).toContain("createSkylineLevel");
+    const skylineGeometry = readFileSync("apps/showcase-skyline-runner/src/generated/game-geometry.ts", "utf8");
+    expect(skylineGeometry).toContain('"source": "asset-mesh-extracted"');
+    expect(skylineGeometry).toContain('"worldAssetHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd"');
+    // The dispatcher carries no gameplay or route-local motion tokens.
     expect(skylineMain).not.toContain('"source": "asset-mesh-extracted"');
     expect(skylineMain).not.toContain("sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4");
+    expect(skylineMain).not.toContain("camera.follow(");
+    expect(skylineMain).not.toContain("import { camera,");
     expect(skylineMain).not.toContain("stepSkylineRunner(");
     expect(skylineMain).not.toContain("createInitialSkylineState(");
     expect(skylineMain).not.toContain("(state.player.x - 18) * 0.08");
+    /*
+     * `runner-rules.ts` is gone, so assert it stays gone.
+     *
+     * It was a 252-line orphan with **zero importers** that still declared `gravity: -20.2` and
+     * `jumpVelocity: 8.75` — the route-local motion constants PRD rule 1 bans, and the same stale
+     * tuning WS-4.2 removed from `main.ts`. The old gate only checked what the file must *not*
+     * contain (`stepSkylineRunner`, `resolvePlatformLanding`, `advanceFrame`), which let the dead
+     * constants sit there indefinitely: it policed a route-local *engine* while ignoring route-local
+     * *tuning*.
+     *
+     * Deleting it is the fix. Checking for its absence is what stops it coming back, and is strictly
+     * stronger than the three negative assertions it replaces.
+     */
     expect(existsSync("apps/showcase-skyline-runner/src/runner-rules.ts")).toBe(false);
 
-    // Turbo drift circuit (single-path rebuild): public racing kit +
-    // shared chassis/driver in src/main.ts, ground truth extracted from
-    // the rendered GLB into src/track-surface.ts. The certified-topology
-    // generated contract and its inlined track hash stay deleted.
-    expect(turboMain).toContain("game.racing({");
-    expect(turboMain).toContain("createVehicleChassis(chassisSpec, trackSurface)");
-    expect(turboMain).toContain("meshVehicleSurface(trackMeshQuery");
-    expect(turboMain).toContain("createVehicleDriverAi(");
-    expect(turboMain).not.toContain("gameGeometryContract");
-    expect(existsSync("apps/showcase-turbo-drift-circuit/src/generated/game-geometry.ts")).toBe(false);
-    expect(turboMain).not.toContain("sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a");
-    const turboSurface = readSource("apps/showcase-turbo-drift-circuit/src/track-surface.ts");
-    expect(turboSurface).toContain("createMeshSurfaceQuery(");
+    // Turbo drift circuit: certified topology + public racing kits in v2/race-setup.
+    expect(turboSetup).toContain("const trackTopology =");
+    expect(turboSetup).toContain("const route = game.assetBoundRacingRoute(");
+    expect(turboSetup).toContain("const racingScene = game.racingSceneBinding({");
+    expect(turboSetup).toContain("const racingState = game.racing({");
+    expect(turboSetup).toContain('import { gameGeometryContract } from "../generated/game-geometry"');
     expect(turboGhost).toContain("planarCollisionWorld");
     expect(turboOpponent).toContain("resolveContact");
+    expect(turboBoot).toContain("racingScene.toScenePose");
+    expect(turboBoot).not.toContain("collisionless visual");
+    const turboGeometry = readFileSync("apps/showcase-turbo-drift-circuit/src/generated/game-geometry.ts", "utf8");
+    expect(turboGeometry).toContain('"source": "asset-mesh-extracted"');
+    // The certified track hash belongs in the generated contract, never inlined in route
+    // source. Turbo now binds turboFormulaCircuit.
+    expect(turboGeometry).toContain("sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a");
+    expect(turboSetup).not.toContain("sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a");
     expect(turboMain).not.toContain("trackModelSceneOffset");
     expect(turboMain).not.toContain("camera.follow(");
-    expect(turboMain).not.toMatch(/function\s+(updateCar|updateRaceProgress|projectToTrack|createRacePathMetrics)\b/);
+    expect(turboMain).not.toContain("import { camera,");
+    expect(turboMain).not.toMatch(/function\s+(updateCar|updateRaceProgress|projectToTrack|sampleTrackAt|createRacePathMetrics)\b/);
     expect(turboMain).not.toContain("racePathMetrics");
     expect(turboMain).not.toContain("playerCar.setPosition(raceSnapshot.position.x");
+
+    // Blockfall reactor: public falling-blocks kit drives the gameplay evidence.
+    expect(blockfallBoot).toContain("createGame");
+    expect(blockfallBoard).toContain('gameplayPieceSource: "game.fallingBlocks"');
+    expect(blockfallMain).not.toContain('deterministicModule: "src/rules.ts"');
+    expect(blockfallReadme).toContain("the public `game.fallingBlocks` kit");
+    expect(blockfallReadme).not.toContain("route-local deterministic rules");
   });
 
   it("keeps package-smoke and release-gate scripts wired into game runtime readiness", () => {

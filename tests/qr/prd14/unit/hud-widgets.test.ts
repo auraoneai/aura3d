@@ -5,12 +5,7 @@
 // `Cannot read properties of undefined (reading 'el')` at boot on every v2
 // route with the real game impl (lane run 38087557283: 15/15 routes, all
 // three viewports). A "meter" also needs a numeric `max`.
-//
-// Route shape is derived from the filesystem: dual-path routes declare
-// their widgets in `src/v2/boot.ts`; single-path rebuilt routes (no v2
-// tree) declare them in `src/main.ts`, the entry that boots every URL.
-// Both shapes get the same extractor and the same assertions.
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -24,16 +19,7 @@ const games = (JSON.parse(readFileSync(join(ROOT, "tools/quality-rebuild-capture
   games: { id: string; appDir?: string }[];
 }).games.map((g) => g.appDir ?? g.id);
 
-/** The route's createGame boot source: `src/v2/boot.ts` when the route
- * keeps the dual-path dispatcher, else the single-path `src/main.ts`. */
-function routeBoot(appDir: string): { dir: string; file: string; label: string } {
-  const v2Dir = join(APPS(), appDir, "src", "v2");
-  if (existsSync(join(v2Dir, "boot.ts"))) return { dir: v2Dir, file: join(v2Dir, "boot.ts"), label: "v2/boot.ts" };
-  const srcDir = join(APPS(), appDir, "src");
-  return { dir: srcDir, file: join(srcDir, "main.ts"), label: "src/main.ts" };
-}
-
-/** The `hud: { ... widgets: [ ... ] }` specs in a route boot source. */
+/** The `hud: { ... widgets: [ ... ] }` specs in a v2 boot. */
 function hudWidgets(boot: string): { id: string; kind: string; max?: number }[] {
   const at = boot.indexOf("widgets: [");
   if (at < 0) return [];
@@ -51,10 +37,10 @@ describe("route HUD widgets are buildable by the C-24 HudKit (T0-29)", () => {
 
   for (const appDir of games) {
     it(`${appDir}: every hud widget kind is supported; meters carry max`, () => {
-      const { dir, file, label } = routeBoot(appDir);
-      const boot = readFileSync(file, "utf8");
+      const dir = join(APPS(), appDir, "src", "v2");
+      const boot = readFileSync(join(dir, "boot.ts"), "utf8");
       const widgets = hudWidgets(boot);
-      expect(widgets.length, `${appDir}: no hud widgets parsed from ${label}`).toBeGreaterThan(0);
+      expect(widgets.length, `${appDir}: no hud widgets parsed from v2/boot.ts`).toBeGreaterThan(0);
       const bad = widgets.filter((w) => !SUPPORTED.has(w.kind) || (w.kind === "meter" && !(w.max! > 0)));
       expect(bad).toEqual([]);
       expect(readdirSync(dir).length).toBeGreaterThan(0);

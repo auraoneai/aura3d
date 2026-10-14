@@ -1,74 +1,43 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import { defineConfig } from "vite";
-import rootConfig from "../../vite.config";
-
-const appDir = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(appDir, "..", "..");
-
-// `@aura3d/engine/game` (imported by src/main.ts) has no root vite alias:
-// the generated root alias maps the bare `@aura3d/engine` specifier to a
-// file, and vite string aliases match by prefix, so without these entries
-// `@aura3d/engine/game` would rewrite to `<public/index.ts>/game`. Resolve
-// it to the same packages/game sources the Blockfall pilot aliases
-// (subpaths before the bare specifier, deepest first).
-const gameAlias = [
-  { find: "@aura3d/engine/game/capture", replacement: path.join(repoRoot, "packages/game/src/capture/index.ts") },
-  { find: "@aura3d/engine/game/art", replacement: path.join(repoRoot, "packages/game/src/art/index.ts") },
-  { find: "@aura3d/engine/game/util", replacement: path.join(repoRoot, "packages/game/src/util/index.ts") },
-  { find: "@aura3d/engine/game", replacement: path.join(repoRoot, "packages/game/src/index.ts") },
-  { find: "@aura3d/game/art", replacement: path.join(repoRoot, "packages/game/src/art/index.ts") },
-  { find: "@aura3d/game", replacement: path.join(repoRoot, "packages/game/src/index.ts") }
-];
-const baseAlias = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.alias : [];
-
-const rewriteExampleAssetPath = (
-  request: { url?: string },
-  _response: unknown,
-  next: () => void
-): void => {
-  const url = request.url ?? "";
-  if (url.startsWith("/examples/neon-corridor-strike/public/")) {
-    request.url = url.replace("/examples/neon-corridor-strike/public", "");
-  }
-  next();
-};
 
 export default defineConfig({
-  root: appDir,
-  base: "./",
-  plugins: [
-    ...(rootConfig.plugins ?? []),
-    {
-      name: "example-asset-path",
-      configureServer(server) {
-        server.middlewares.use(rewriteExampleAssetPath);
-      },
-      configurePreviewServer(server) {
-        server.middlewares.use(rewriteExampleAssetPath);
-      }
+  resolve: {
+    alias: {
+      "@aura3d/engine": resolve(__dirname, "../../packages/engine/src/index.ts")
     }
-  ],
-  resolve: { ...rootConfig.resolve, alias: [...gameAlias, ...baseAlias] },
-  optimizeDeps: rootConfig.optimizeDeps,
-  publicDir: path.resolve(appDir, "public"),
+  },
   server: {
     host: "127.0.0.1",
     port: 4173,
     strictPort: false,
-    fs: { allow: [repoRoot] }
+    fs: { allow: ["../.."] }
   },
   preview: {
     host: "127.0.0.1",
-    port: 4173,
-    strictPort: false
+    port: 4173
   },
-  build: {
-    target: "es2022",
-    outDir: "dist",
-    emptyOutDir: true,
-    rollupOptions: {
-      input: path.resolve(appDir, "index.html")
+  plugins: [
+    {
+      name: "example-asset-path",
+      configureServer(server) {
+        server.middlewares.use((request, _response, next) => {
+          const url = request.url ?? "";
+          if (url.startsWith("/examples/neon-corridor-strike/public/")) {
+            request.url = url.replace("/examples/neon-corridor-strike/public", "");
+          }
+          next();
+        });
+      },
+      configurePreview(server) {
+        server.middlewares.use((request, _response, next) => {
+          const url = request.url ?? "";
+          if (url.startsWith("/examples/neon-corridor-strike/public/")) {
+            request.url = url.replace("/examples/neon-corridor-strike/public", "");
+          }
+          next();
+        });
+      }
     }
-  }
+  ]
 });

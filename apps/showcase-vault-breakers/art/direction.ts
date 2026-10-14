@@ -24,9 +24,9 @@ export default defineArtDirection({
     },
     {
       file: "references/vault-breakers-cabinet.json",
-      source: "route-local CC0 mechanism assembly (vaultBreakersMechanisms) staged in aura.assets.json",
+      source: "admitted Sketchfab cabinet (vaultBreakersCabinet, 12 PBR maps) already in corpus",
       licence: "reference-only",
-      why: "The mechanism/bumper/lane language the fresh single-path scene renders over the physics box"
+      why: "The cabinet to promote — its map set defines the shell material budget"
     }
   ],
   palette: {
@@ -42,21 +42,13 @@ export default defineArtDirection({
     exposureEV: -0.2
   },
   framing: { rig: "static", subjectHeightFraction: [0.55, 0.75], fovDeg: [38, 48], mobile: "landscape" },
-  // The rebuilt single-path scene (src/scene.ts) renders from exactly the
-  // four admitted typed assets in apps/showcase-vault-breakers/aura.assets.json:
-  // the mechanism assembly over the physics box, the chrome ball, the real
-  // flipper bats, and the vault door. The trashed scene's cabinet/room/
-  // playfield-art roles are gone (the shell is authored geometry in
-  // src/scene.ts). No asset is staged in a shared kit yet, so no `kit` is
-  // claimed: S10's kit half stays failing until a human look-dev review
-  // accepts a staged kit file (verdicts are never authored here). Triangle
-  // budgets bound the measured GLBs (mechanisms 5,436 tris, flipper 1,084,
-  // ball 960, vault door 386).
   assets: [
-    { role: "world", assetKey: "vaultBreakersMechanisms", maxTriangles: 8000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "vaultBreakersFlipperReal", maxTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "vaultBreakersBall", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "prop", assetKey: "vaultBreakersVaultDoor", maxTriangles: 1000, textureSet: "BC+N", maxTextureSize: 512 }
+    { role: "hero", assetKey: "vault-cabinet", kit: "K2", maxTriangles: 90000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "world", assetKey: "playfield-art", kit: "K4", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 4096 },
+    { role: "prop", assetKey: "flippers-real", maxTriangles: 12000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "chrome-ball", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 512 },
+    { role: "set-dressing", assetKey: "dark-arcade-room", kit: "K4", maxTriangles: 60000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "vault-door", kit: "K2", maxTriangles: 15000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "bumper-hit", kind: "ring", flipbook: "k9-flash" },
@@ -75,11 +67,11 @@ export default defineArtDirection({
   ],
   signatureEffect: "Chrome ball on a printed clearcoat playfield under one soft key; lit inserts chase missions through a dark-arcade room.",
   standIns: [
-    { feature: "rect area key over playfield (single spot key stands in)", file: "src/scene.ts", request: "R-14-14", removeWhen: "PRD 02 area-light integrator real" },
-    { feature: "plastics transmission (opaque PBR inserts stand in)", file: "src/scene.ts", request: "R-14-14", removeWhen: "PRD 04 transmission real" },
-    { feature: "4k playfield art (mechanisms GLB + authored felt stand in)", file: "src/scene.ts", request: "R-14-07", removeWhen: "K4 playfield texture authored + admitted" },
-    { feature: "DMD backglass (HUD score/objective widgets stand in)", file: "src/main.ts", request: "R-14-15", removeWhen: "text3D dot-matrix material (§6.9.5 HUD) real" },
-    { feature: "recorded pinball cue set (sfx-pack cues stand in)", file: "src/main.ts", request: "R-14-09", removeWhen: "route-recorded pinball cues admitted as typed audio assets" }
+    { feature: "rect area key over playfield", file: "src/v2/scene/lighting.ts", request: "R-14-14", removeWhen: "PRD 02 area-light integrator real" },
+    { feature: "plastics transmission", file: "src/v2/scene/materials.ts", request: "R-14-14", removeWhen: "PRD 04 transmission real" },
+    { feature: "4k playfield art", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K4 playfield texture authored + admitted" },
+    { feature: "DMD backglass", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "text3D dot-matrix material (§6.9.5 HUD) real" },
+    { feature: "legacy pinball cue map (bumpers, flippers, drain, bed)", file: "src/legacy/pinball-audio.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" }
   ],
   criticalCategories: ["material_quality", "lighting", "modeling_assets"],
   tiers: {

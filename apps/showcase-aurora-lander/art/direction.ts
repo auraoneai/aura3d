@@ -43,8 +43,10 @@ export default defineArtDirection({
   },
   framing: { rig: "altitude", subjectHeightFraction: [0.08, 0.12], fovDeg: [35, 50], mobile: "landscape" },
   assets: [
-    { role: "vehicle", assetKey: "auroraLanderProbe", kit: "K7", maxTriangles: 5000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "auroraPadBeacon", kit: "K5", maxTriangles: 4000, minTriangles: 100, textureSet: "BC+N", maxTextureSize: 512 }
+    { role: "vehicle", assetKey: "descent-lander", maxTriangles: 5000, minTriangles: 3000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "world", assetKey: "moon-regolith", kit: "K3", maxTriangles: 240000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "pad-beacon", maxTriangles: 4000, minTriangles: 500, textureSet: "BC+N", maxTextureSize: 512 },
+    { role: "backdrop", assetKey: "aurora-ribbons", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "thrust-plume", kind: "cone" },
@@ -62,10 +64,10 @@ export default defineArtDirection({
   ],
   signatureEffect: "Aurora ribbons drifting over a starfield night sky while the nozzle exhaust casts a moving light across icy regolith.",
   standIns: [
-    { feature: "K1 starfield + aurora ribbon layer", file: "src/main.ts", request: "R-14-13", removeWhen: "starfield sky + aurora preset admitted" },
-    { feature: "K3 regolith splat + far rings", file: "src/main.ts", request: "R-14-13", removeWhen: "K3 terrain splat admitted" },
-    { feature: "panel-lined lander + pad beacons", file: "src/main.ts", request: "R-14-07", removeWhen: "K7 lander craft admitted" },
-    { feature: "K8 thruster loop set", file: "src/main.ts", request: "R-14-09", removeWhen: "K8 thruster clips admitted" }
+    { feature: "K1 starfield + aurora ribbon layer", file: "src/v2/scene/world.ts", request: "R-14-13", removeWhen: "starfield sky + aurora preset admitted" },
+    { feature: "K3 regolith splat + far rings", file: "src/v2/scene/world.ts", request: "R-14-13", removeWhen: "K3 terrain splat admitted" },
+    { feature: "panel-lined lander + pad beacons", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K7 lander craft admitted" },
+    { feature: "K8 thruster loop set", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K8 thruster clips admitted" }
   ],
   criticalCategories: ["environment_world", "atmospheric_effects", "vfx"],
   tiers: {

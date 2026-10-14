@@ -41,23 +41,13 @@ export default defineArtDirection({
     exposureEV: -0.1
   },
   framing: { rig: "shoulder", subjectHeightFraction: [0.4, 0.6], fovDeg: [40, 55], mobile: "landscape" },
-  // The ported single-path scene (src/main.ts) renders from exactly six
-  // admitted typed assets (route aura.assets.json mirroring the root
-  // admissions): the rooftop court set, backboard and rim props at the
-  // salvaged court constants, the solver-synced ball, and the two athlete
-  // figures (shooter re-spotted per shot spot; defender shown only in the
-  // pressure heat, driven by the salvaged hoop telegraph). The trashed
-  // scene's skyline/venue-v2 roles are gone. None of these assets is staged
-  // in a shared kit yet, so no `kit` is claimed: S10's kit half stays
-  // failing until a human look-dev review accepts a staged kit file
-  // (verdicts are never authored here).
   assets: [
-    { role: "character", assetKey: "rooftopLayupScorer", maxTriangles: 45000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048, animated: { clips: ["Ready", "Load", "Release", "FollowThrough"] } },
-    { role: "character", assetKey: "rooftopDefender", maxTriangles: 45000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048, animated: { clips: ["Plant", "Telegraph", "Jump", "Contest"] } },
-    { role: "world", assetKey: "rooftopCourt", maxTriangles: 80000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "rooftopBackboard", maxTriangles: 15000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "rooftopRim", maxTriangles: 15000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "rooftopBall", maxTriangles: 6000, textureSet: "BC+N", maxTextureSize: 512 }
+    { role: "character", assetKey: "rooftop-layup-scorer", maxTriangles: 45000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048, animated: { clips: ["ready", "release", "celebrate"] } },
+    { role: "character", assetKey: "rooftop-defender", maxTriangles: 45000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048, animated: { clips: ["contest", "idle"] } },
+    { role: "world", assetKey: "rooftop-court", kit: "K2", maxTriangles: 80000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "hoop-set", kit: "K4", maxTriangles: 15000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "k2-skyline", kit: "K2", maxTriangles: 120000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "basketball", maxTriangles: 6000, textureSet: "BC+N", maxTextureSize: 512 }
   ],
   vfx: [
     { event: "shot-arc", kind: "trail" },
@@ -73,12 +63,12 @@ export default defineArtDirection({
     { event: "bed", cue: "city-dusk-bed", variants: 1 }
   ],
   signatureEffect: "Skinned athletes under dusk sky against a live skyline; tapered arc ribbon and net ripple sell every release.",
-  // The ported scene claims only what it renders: a fixed broadcast rig
-  // (real camera.rigs.static), the athletes' authored loop clips assigned
-  // in the scene spec, and solver-synced ball/aim-guide nodes from the
-  // typed ball GLB. No route-local substitute stands in for a missing
-  // engine feature, so there are no stand-ins to track.
-  standIns: [],
+  standIns: [
+    { feature: "shoulder rig (PRD 08 rigs.shoulder)", file: "src/v2/scene/camera.ts", request: "R-14-10", removeWhen: "C-22 shoulder rig real" },
+    { feature: "open dusk skyline (K2 buildings)", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K2 window-atlas buildings admitted" },
+    { feature: "vertex-animated cloth net", file: "src/v2/scene/world.ts", request: "R-14-14", removeWhen: "PRD 04 vertex anim / K9 net real" },
+    { feature: "crossFadeTo shot clips", file: "src/v2/actors.ts", request: "R-14-14", removeWhen: "C-19 clip controller real" }
+  ],
   criticalCategories: ["character_presentation", "animation_quality", "environment_world"],
   tiers: {
     low: { particles: 200, shadowMap: 1024, cascades: 1, textureMax: 1024 },

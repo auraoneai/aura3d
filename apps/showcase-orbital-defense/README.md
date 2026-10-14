@@ -1,24 +1,53 @@
 # Orbital Defense
 
-Aura3D ring-defense arena shooter, rebuilt on the `arena-shooter`
-template scaffold. A single code path (`src/main.ts`) boots at every URL;
-the former legacy/v2 dispatcher is deleted.
+Creative arcade defense game sketch for internal Aura3D route experiments.
 
-- Gameplay: the interceptor rides a station ring around the defense-core
-  planet and fires radially outward. Drones spawn in finite waves
-  (3 waves) and converge on the core; each leak costs 10 of 100 core
-  integrity. Integrity 0 loses, clearing the final wave wins, `R`
-  resets. Mounted through `createGame` from `@aura3d/engine/game` with
-  live HUD widgets (score, wave, core-integrity meter, objective).
-- Rendering: typed Kenney Space Kit GLBs (CC0) — `ship` interceptor,
-  `drone` enemy pool, `planet` core — in `src/aura-assets.ts` /
-  `aura.assets.json`, GLBs in `public/aura-assets/`. Bolts, deck, ring
-  ticks and starfield stay procedural, as in the template.
-- Controls: A/D or arrows rotate on the ring, Space fires, Esc/P
-  pauses, R resets. Deterministic openings for scripted play:
-  `?scenario=low-integrity` (core at one leak from loss) and
-  `?scenario=final-wave` (final wave, one drone). Evidence is published
-  as `window.__aura3dGameSnapshot`.
+## Remediation Status
 
-Run `npm run dev` (vite, port 5189), `npm run build`, or `npm run preview`.
-Specs in `tests/` run against the app-local `playwright.config.ts`.
+- Classification: blocked; remove from public showcase lists until rebuilt.
+- Route health: `apps/showcase-orbital-defense/route-health.json`.
+- Asset status: no typed primary assets.
+- Primitive status: planet, stations, player, enemies, projectiles, and shields
+  are all procedural primitives, including the primary subject.
+- Claim status: bounded to an internal primitive-only gameplay sketch. It must
+  not be described as a public showcase, public release candidate, or
+  asset-backed defense game.
+
+This route uses one mounted Aura app, runtime nodes, deterministic wave state,
+keyboard input, HUD state, and route evidence. It intentionally uses procedural
+game assets for the first pass instead of invented model URLs, which is why it
+is blocked from public showcase promotion under the current PRD.
+
+## Route
+
+```text
+/apps/showcase-orbital-defense/
+```
+
+## Controls
+
+- `A` / `ArrowLeft`: rotate counter-clockwise
+- `D` / `ArrowRight`: rotate clockwise
+- `Space`: fire interceptor
+- `Q`: emit shield pulse
+- `R`: reset deterministic wave
+- `P`: pause or resume
+
+## Evidence
+
+The route publishes:
+
+```ts
+window.__AURA3D_SHOWCASE_ORBITAL_DEFENSE__
+```
+
+The evidence object includes app id, status, frame count, score, wave, planet
+integrity, heat, active enemies/projectiles, replay checksum, controls, systems,
+and claim boundary.
+
+## Claim Boundary
+
+This is an internal browser-native Aura3D runtime sketch using procedural
+assets. It can be used to inspect route-local game-loop, input, mutable
+runtime-node, HUD, deterministic wave, and route-evidence behavior. It is not a
+public showcase game and is not final commercial game art.

@@ -4,7 +4,7 @@ import {
   AuraClashFighterAnimation,
   fighterYawForFacing,
   type AuraClashFighterAnimInput
-} from "../../../apps/aura-clash-showcase/src/scene/fighter-animation";
+} from "../../../apps/aura-clash-showcase/src/v2/scene/fighter-animation";
 import { auraClashPlayerClips } from "../../../apps/aura-clash-showcase/src/playable/animation/auraClashClipMaps";
 
 const DT = 1 / 60;

@@ -1,9 +1,15 @@
 {
   "extends": "./tsconfig.json",
   "include": [
-    "src/**/*.ts"
+    "src/aura-assets.ts",
+    "src/main.ts",
+    "src/playable/**/*.ts",
+    "tests/playable-smoke.spec.ts",
+    "vite.config.ts"
   ],
   "exclude": [
-    "archive/**"
+    "archive/**",
+    "src/game/**",
+    "src/rendering/**"
   ]
 }

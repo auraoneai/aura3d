@@ -1,6 +1,6 @@
 // tests/qr/prd14/bank-shot/audio-map.test.ts — §14.4 strike cue map.
 import { describe, expect, it } from "vitest";
-import { strikeAudioMap } from "../../../../apps/showcase-bank-shot/src/audio-map";
+import { strikeAudioMap } from "../../../../apps/showcase-bank-shot/src/v2/audio-map";
 
 describe("bank-shot strikeAudioMap", () => {
   it("maps 1 m/s and 4 m/s strikes ≥ 6 dB apart", () => {

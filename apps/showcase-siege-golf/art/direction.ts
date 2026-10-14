@@ -42,20 +42,12 @@ export default defineArtDirection({
     exposureEV: 0.2
   },
   framing: { rig: "altitude", subjectHeightFraction: [0.45, 0.7], fovDeg: [45, 60], mobile: "landscape" },
-  // The single-path scene (src/main.ts) renders from exactly the five
-  // admitted typed assets in apps/showcase-siege-golf/aura.assets.json: the
-  // course-world lane plus the ball/crate/barrel/plank family the salvaged
-  // structures module poses (`PropVisual.typedAsset`). The trashed scene's
-  // K3 terrain/castle/trebuchet roles are gone. No asset is staged in a
-  // shared kit, so no `kit` is claimed: S10's kit half stays failing until a
-  // human look-dev review accepts a staged kit file (verdicts are never
-  // authored here).
   assets: [
-    { role: "world", assetKey: "siegeGolfCourseWorld", maxTriangles: 250000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "siegeGolfBall", maxTriangles: 120000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "siegeWoodenCrate", maxTriangles: 120000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "siegeWoodenBarrel", maxTriangles: 120000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "siegePlankSet", maxTriangles: 120000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+    { role: "world", assetKey: "valley-terrain", kit: "K3", maxTriangles: 250000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "siege-castle-set", kit: "K3", maxTriangles: 180000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "ammo-crate", maxTriangles: 16000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "trebuchet", kit: "K3", maxTriangles: 30000, minTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "golf-ball", maxTriangles: 4000, textureSet: "BC+N", maxTextureSize: 512 }
   ],
   vfx: [
     { event: "structure-break", kind: "burst", flipbook: "k9-debris" },
@@ -71,7 +63,12 @@ export default defineArtDirection({
     { event: "bed", cue: "valley-wind-bed", variants: 1 }
   ],
   signatureEffect: "Golden-hour sun raking across a K3 terrain with castle silhouettes; wooden structures splinter under cannon fire.",
-  standIns: [],
+  standIns: [
+    { feature: "K3 valley terrain + castle kit", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K3 terrain/castle admitted" },
+    { feature: "crate maps (siegeGolfAmmo textures)", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "crate maps restored" },
+    { feature: "K9 debris/dust clips", file: "src/v2/scene/fx.ts", request: "R-14-07", removeWhen: "K9 flipbooks admitted" },
+    { feature: "sampled stone/wood audio", file: "src/legacy/golf-audio.ts", request: "R-14-09", removeWhen: "K9 sound clips admitted" }
+  ],
   criticalCategories: ["environment_world", "lighting", "material_quality"],
   tiers: {
     low: { particles: 300, shadowMap: 1024, cascades: 2, textureMax: 1024 },

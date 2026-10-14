@@ -4,7 +4,7 @@
  *
  * Pure state — unit-tested directly by tests/unit/apps/patrol-wing-flight.test.ts.
  */
-import { RING_COUNT, RING_GATES } from "./course-data";
+import { RING_COUNT, RING_GATES } from "../legacy/sky";
 
 // ---- ring ordering / validation ----------------------------------------------
 

@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { BALLS_PER_GAME, ScoreKeeper, multiplierForBanks, SCORE_TABLE } from "../../../apps/showcase-vault-breakers/src/gameplay/scoring";
-import { MissionTracker, ORBIT_TARGET } from "../../../apps/showcase-vault-breakers/src/gameplay/missions";
-import { BANK_IDS, TARGETS_PER_BANK } from "../../../apps/showcase-vault-breakers/src/gameplay/table";
+import { BALLS_PER_GAME, ScoreKeeper, multiplierForBanks, SCORE_TABLE } from "../../../apps/showcase-vault-breakers/src/scoring";
+import { MissionTracker, ORBIT_TARGET } from "../../../apps/showcase-vault-breakers/src/missions";
+import { MISSION_LINES, SCORE_DIGITS, scoreboardVisibility } from "../../../apps/showcase-vault-breakers/src/scoreboard";
+import { BANK_IDS, TARGETS_PER_BANK } from "../../../apps/showcase-vault-breakers/src/table";
 
 /**
  * PRD definition-of-done pins for Vault Breakers scoring/missions (VB-13):
- * multiplier ladder, points math, ball accounting, bank progression to vault.
- * (The score-reel visibility block retired with the trashed legacy scoreboard
- * at the B4 port; the fresh route renders score through HUD widgets.)
+ * multiplier ladder, points math, ball accounting, bank progression to vault,
+ * and the score-reel visibility mapping used by the in-world text3D scoreboard.
  */
 
 describe("vault breakers scoring", () => {
@@ -88,5 +88,43 @@ describe("vault breakers missions", () => {
     expect(missions.registerOrbitLoop().some((event) => event.type === "orbit-complete")).toBe(false);
     missions.newBall();
     expect(missions.orbitLoops).toBe(0);
+  });
+});
+
+describe("vault breakers scoreboard mapping", () => {
+  it("every mission line the tracker can emit has a prebuilt text3D node", () => {
+    const missions = new MissionTracker();
+    expect(MISSION_LINES).toContain(missions.missionLine());
+    missions.registerTargetDown(`${BANK_IDS[0]!}:t0`);
+    missions.registerTargetDown(`${BANK_IDS[0]!}:t1`);
+    missions.registerTargetDown(`${BANK_IDS[0]!}:t2`);
+    expect(MISSION_LINES).toContain(missions.missionLine());
+    for (let loop = 1; loop <= ORBIT_TARGET; loop += 1) missions.registerOrbitLoop();
+    expect(MISSION_LINES).toContain(missions.missionLine());
+    expect(MISSION_LINES).toContain("VAULT IS OPEN");
+  });
+
+  it("shows exactly one digit per reel slot and one mission line", () => {
+    const visibility = scoreboardVisibility({
+      score: 12345,
+      ball: 2,
+      multiplier: 2,
+      banksDown: 1,
+      missionLine: MISSION_LINES[1]!
+    });
+    for (let slot = 0; slot < SCORE_DIGITS; slot += 1) {
+      const shown = [...visibility.entries()].filter(([id, visible]) => id.startsWith(`sb-score-${slot}-`) && visible);
+      expect(shown).toHaveLength(1);
+    }
+    const scoreShown = [...visibility.entries()]
+      .filter(([id, visible]) => /^sb-score-\d-\d$/.test(id) && visible)
+      .map(([id]) => id.split("-")[3]!)
+      .join("");
+    expect(scoreShown).toBe("012345");
+    expect(visibility.get("sb-ball-2")).toBe(true);
+    expect(visibility.get("sb-mult-2")).toBe(true);
+    expect(visibility.get("sb-banks-1")).toBe(true);
+    const missionsShown = [...visibility.keys()].filter((id) => id.startsWith("sb-mission-") && visibility.get(id));
+    expect(missionsShown).toHaveLength(1);
   });
 });

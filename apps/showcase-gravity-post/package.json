@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Aura3D Gravity Post: slingshot courier pods between lit planets using fixed-step gravity wells, live trajectory prediction, bounded course corrections, and Rapier dock sensors across four contracts. Single-path scene on the salvaged gameplay core (createGame + wells/pod/contracts/scoring/prediction/stations).",
+  "description": "Aura3D Gravity Post prototype: authored arcade gravity-well slingshot courier gameplay on a solar kit backdrop, with station dock sensors, live prediction lines, assist chaining, and route-local evidence.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",

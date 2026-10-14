@@ -34,11 +34,8 @@ const publicGameRouteSources = [
  * rather than a list that happens to pass.
  */
 const requiredPublicGameHelpers = [
-  // Turbo and Skyline single-path rebuilds call the public racing and
-  // platformer kits directly; the composed presentation surfaces remain
-  // guarded as engine exports below.
-  "racing",
-  "platformer"
+  "racingPresentationTrack",
+  "platformerPresentationSurfaces"
 ] as const;
 
 /** Granular helpers that must remain exported for template and downstream use, even if unused here. */

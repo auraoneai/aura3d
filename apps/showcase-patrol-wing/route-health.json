@@ -1,13 +1,13 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-10-13T18:14:57.103Z",
+  "generatedAt": "2026-09-02T08:57:19.071Z",
   "appId": "showcase-patrol-wing",
   "route": "/apps/showcase-patrol-wing/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
   "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
   "machinePass": true,
-  "routeSourceSha256": "d7d46f103f085b4a429220ed0c6dafc36d38867dd3717b394fc16122d4b62404",
+  "routeSourceSha256": "fe2839eb4854bb8e91676170d12b349a899c3a4fa434df89a009d9bda0810749",
   "renderer": {
     "path": "createGameApp root safe API",
     "mode": "production with safe-basic fallback",
@@ -19,7 +19,7 @@
       "typedRef": "assets.patrolAircraftMeshy",
       "hash": "sha256-183e83f818cc35b68d0a5f0b1dcb2d11485abaf977c7cbefd4c3a538554d3428",
       "quality": "candidate",
-      "role": "character"
+      "role": "vehicle"
     },
     {
       "typedRef": "assets.patrolWingDroneA",

@@ -3,26 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#1d2a14" />
-    <meta
-      name="description"
-      content="Aura3D Siege Golf: launch a physics ball at jointed destructible structures and sink knock-down targets inside sensor cups across nine holes."
-    />
-    <title>Siege Golf</title>
-    <style>
-      html,
-      body,
-      #app {
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        overflow: hidden;
-        background: #1d2a14;
-      }
-    </style>
+    <meta name="description" content="Aura3D Siege Golf prototype: launch a physics ball at jointed structures and sink knock-down targets inside sensor cups across nine holes." />
+    <title>Aura3D - Siege Golf: Wrecking Green</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="./src/legacy/styles.css" />
   </head>
   <body>
-    <div id="app" aria-label="Siege Golf 3D course"></div>
+    <main class="shell" aria-label="Siege Golf Wrecking Green">
+      <section class="viewport">
+        <div id="app" class="stage" data-testid="siege-golf-stage"></div>
+        <div id="hud" aria-label="Siege Golf HUD"></div>
+      </section>
+      <aside id="panel" class="panel" aria-label="Siege Golf controls and round status"></aside>
+    </main>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>

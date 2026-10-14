@@ -80,10 +80,6 @@ const packageEntryPoints = new Map<string, string>([
   // package exports point at dist/, which the browser job does not build, so
   // unmapped these fail the harness bundle and 404 in the fixture routes.
   ["@aura3d/engine/lanes", "/packages/engine/src/lanes/index.ts"],
-  ["@aura3d/engine/game/capture", "/packages/game/src/capture/index.ts"],
-  ["@aura3d/engine/game/art", "/packages/game/src/art/index.ts"],
-  ["@aura3d/engine/game/util", "/packages/game/src/util/index.ts"],
-  ["@aura3d/engine/game", "/packages/game/src/index.ts"],
   ["@aura3d/game/capture", "/packages/game/src/capture/index.ts"],
   ["@aura3d/game/art", "/packages/game/src/art/index.ts"],
   ["@aura3d/game/util", "/packages/game/src/util/index.ts"],

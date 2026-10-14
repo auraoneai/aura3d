@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createTableSimulation } from "../../../apps/showcase-vault-breakers/src/gameplay/table";
-import { VaultFlow } from "../../../apps/showcase-vault-breakers/src/gameplay/ball-flow";
-import { FlipperController } from "../../../apps/showcase-vault-breakers/src/gameplay/flippers";
-import { BANK_IDS, TARGETS_PER_BANK, FLIPPER_UP_YAW, RIGHT_UP_YAW } from "../../../apps/showcase-vault-breakers/src/gameplay/table";
+import { createTableSimulation } from "../../../apps/showcase-vault-breakers/src/table";
+import { VaultFlow } from "../../../apps/showcase-vault-breakers/src/ball-flow";
+import { FlipperController } from "../../../apps/showcase-vault-breakers/src/flippers";
+import { BANK_IDS, TARGETS_PER_BANK, FLIPPER_UP_YAW, RIGHT_UP_YAW } from "../../../apps/showcase-vault-breakers/src/table";
 
 /**
  * PRD definition-of-done pins for the Vault Breakers table (VB-13):

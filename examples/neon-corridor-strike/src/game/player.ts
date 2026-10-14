@@ -1,0 +1,91 @@
+import type { AuraBodyHandle, AuraPhysicsRuntime, GameInputController } from "@aura3d/engine";
+import {
+  EYE_HEIGHT,
+  LOOK_AHEAD,
+  PLAYER_START,
+  WALK_Y,
+  lookDirection,
+  rightDirection,
+  type FpsRunState
+} from "./state";
+
+const WALK_SPEED = 4.6;
+const SPRINT_SPEED = 7.4;
+const LOOK_SENS = 0.0024;
+const PITCH_LIMIT = 1.15;
+
+export function applyTouchLook(state: FpsRunState, dx: number, dy: number, reducedMotion: boolean): void {
+  const scale = reducedMotion ? 0.45 : 1;
+  state.yaw -= dx * 0.006 * scale;
+  state.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, state.pitch - dy * 0.006 * scale));
+}
+
+export function updateLook(state: FpsRunState, input: GameInputController, reducedMotion: boolean): void {
+  const scale = reducedMotion ? 0.45 : 1;
+  const pointer = input.snapshot().pointer as { readonly dx?: number; readonly dy?: number; readonly deltaX?: number; readonly deltaY?: number } | undefined;
+  const rawDx = pointer?.dx ?? pointer?.deltaX ?? 0;
+  const rawDy = pointer?.dy ?? pointer?.deltaY ?? 0;
+  const dx = rawDx !== 0 ? rawDx : input.axis("lookX");
+  const dy = rawDy !== 0 ? rawDy : input.axis("lookY");
+  state.yaw -= dx * LOOK_SENS * scale;
+  state.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, state.pitch - dy * LOOK_SENS * scale));
+}
+
+export function updatePlayer(
+  state: FpsRunState,
+  input: GameInputController,
+  physics: AuraPhysicsRuntime,
+  playerBody: AuraBodyHandle,
+  dt: number,
+  motionCatchup = 1
+): void {
+  const grounded = physics.queries.raycast(
+    [playerBody.position()[0], playerBody.position()[1], playerBody.position()[2]],
+    [0, -1, 0],
+    { maxDistance: 1.15, ignore: [playerBody.id] }
+  );
+  state.grounded = Boolean(grounded);
+  state.sprinting = input.held("sprint");
+
+  const forward = lookDirection(state.yaw, 0);
+  const right = rightDirection(state.yaw);
+  const wishX = right[0] * input.axis("moveX") + forward[0] * input.axis("moveZ");
+  const wishZ = right[2] * input.axis("moveX") + forward[2] * input.axis("moveZ");
+  const length = Math.hypot(wishX, wishZ);
+  // The route keeps Rapier on a bounded 50 ms step for stability. Under a
+  // cold software-rendered frame, however, one render can represent more than
+  // one of those steps. Compensate player velocity for at most one missed step
+  // so keyboard travel remains tied to elapsed time without allowing a large
+  // tab-resume delta to tunnel through the corridor hull.
+  const speed = (state.sprinting ? SPRINT_SPEED : WALK_SPEED) * Math.max(1, Math.min(2, motionCatchup));
+  const vx = length > 0.001 ? (wishX / length) * speed : 0;
+  const vz = length > 0.001 ? (wishZ / length) * speed : 0;
+  const at = playerBody.position();
+  playerBody.teleport([at[0], WALK_Y, at[2]]);
+  playerBody.setVelocity([vx, 0, vz]);
+
+  if (state.hp <= 0 && state.status === "playing") {
+    state.status = "lost";
+    state.objective = "Down. Press R to reset";
+  }
+
+  void dt;
+}
+
+export function playerEye(playerBody: AuraBodyHandle): readonly [number, number, number] {
+  const at = playerBody.position();
+  return [at[0], EYE_HEIGHT, at[2]];
+}
+
+export function lookTargetPoint(playerBody: AuraBodyHandle, state: FpsRunState): readonly [number, number, number] {
+  const eye = playerEye(playerBody);
+  // The runtime follow target owns both axes. Keeping pitch out of this point
+  // left hitscan truth correct but let the authored camera target overwrite the
+  // vertical mouse-look result every frame.
+  const dir = lookDirection(state.yaw, state.pitch);
+  return [eye[0] + dir[0] * LOOK_AHEAD, eye[1] + dir[1] * LOOK_AHEAD, eye[2] + dir[2] * LOOK_AHEAD];
+}
+
+export function resetPlayer(playerBody: AuraBodyHandle): void {
+  playerBody.teleport([...PLAYER_START]);
+}

@@ -16,11 +16,11 @@ const lint = (code: string, filename: string) =>
   linter.verify(code, [{ languageOptions }, ...ruleset], filename);
 
 describe("eslint/qr/no-route-capture-flags", () => {
-  it("reports zero capture-flag hits on apps/showcase-bank-shot/src/main.ts (single-path)", () => {
-    // Bank-shot's single-path route (B4 PORT deleted src/legacy) does not
-    // read ?capture: the shipped play branch is unconditional.
-    const main = readFileSync(join(repoRoot, "apps/showcase-bank-shot/src/main.ts"), "utf8");
-    const messages = lint(main, "apps/showcase-bank-shot/src/main.ts");
+  it("reports zero capture-flag hits on apps/showcase-bank-shot/src/legacy/main.ts (migrated)", () => {
+    // Bank-shot's legacy route no longer reads ?capture: the divergent review
+    // branches were deleted and the shipped play branch is unconditional.
+    const main = readFileSync(join(repoRoot, "apps/showcase-bank-shot/src/legacy/main.ts"), "utf8");
+    const messages = lint(main, "apps/showcase-bank-shot/src/legacy/main.ts");
     const hits = messages.filter((m) => m.message.includes("aura3d/no-route-capture-flags"));
     expect(hits).toEqual([]);
   });

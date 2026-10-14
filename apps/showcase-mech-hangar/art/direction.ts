@@ -1,12 +1,12 @@
 // apps/showcase-mech-hangar/art/direction.ts — C-35 art direction (PRD-14 §6.9.17).
-// Fantasy: workshop hangar where you configure a mech, then test-drive it
-// down the hangar lane against target dummies.
+// Fantasy: workshop hangar where you configure a mech, then a floodlit pit
+// where two mechs fight with weight.
 import { defineArtDirection } from "@aura3d/game/art";
 
 export default defineArtDirection({
   id: "showcase-mech-hangar",
   genre: "fighting",
-  fantasy: "Workshop hangar where you configure a mech, then test-drive it down the hangar lane against target dummies.",
+  fantasy: "Workshop hangar where you configure a mech, then a floodlit pit where two mechs fight with weight.",
   rebuildTier: "S-world",
   wave: 4,
   references: [
@@ -20,13 +20,13 @@ export default defineArtDirection({
       file: "references/fight-pit.json",
       source: "shipped comparable: floodlit fighting arena (Pacific Rim shatterdome floor / Real Steel ring pit)",
       licence: "reference-only",
-      why: "Floodlit lane framing a heavy mech — the arena read the test-drive lane targets"
+      why: "Floodlit pit with overhead practicals framing two heavy fighters — the arena read the fighting rig protects"
     },
     {
       file: "references/rigged-mechs.json",
       source: "shipped comparable: rigged modular mechs (ZOIDS articulated kits / Armored Core VI assemblies)",
       licence: "reference-only",
-      why: "Rigged robot bodies with walk/strike clips — the read the admitted Quaternius rigs stand in for until modular socketed parts exist"
+      why: "5–20k-tri textured modular parts rigged at sockets, walk/strike/recoil/KO clips — replaces rigid-yaw MH-2M"
     }
   ],
   palette: {
@@ -42,23 +42,11 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "fighting", subjectHeightFraction: [0.28, 0.42], fovDeg: [45, 55], mobile: "landscape" },
-  // The rebuilt single-path scene (src/main.ts) renders from the admitted
-  // typed assets in apps/showcase-mech-hangar/aura.assets.json: three
-  // rigged Quaternius chassis options, the gun-drone support attachment,
-  // the large-gun robot as target dummies, and crate/wall hangar dressing.
-  // The trashed MH-2M modular-part roles are gone — no separable socketed
-  // part GLBs exist in the repo, so no part role is claimed. None of these
-  // assets is staged in a shared kit yet, so no `kit` is claimed: S10's
-  // kit half stays failing until a human look-dev review accepts a staged
-  // kit file (verdicts are never authored here).
   assets: [
-    { role: "character", assetKey: "quaterniusMech", maxTriangles: 20000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "character", assetKey: "quaterniusRobotEnemy", maxTriangles: 20000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "character", assetKey: "quaterniusRobotEnemyLarge", maxTriangles: 20000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "character", assetKey: "quaterniusRobotEnemyLargeGun", maxTriangles: 20000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "quaterniusFlyingGunDrone", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "quaterniusCubeCrate", maxTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "world", assetKey: "quaterniusWallModular", maxTriangles: 5000, textureSet: "BC+N", maxTextureSize: 1024 }
+    { role: "character", assetKey: "mech-hero-rigged", kit: "K6", maxTriangles: 48000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 2048, animated: { clips: ["walk", "strike-light", "strike-heavy", "strike-special", "recoil", "hit", "ko"] } },
+    { role: "character", assetKey: "rival-mech-rigged", kit: "K6", maxTriangles: 48000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 2048, animated: { clips: ["walk", "strike-light", "strike-heavy", "recoil", "hit", "ko"] } },
+    { role: "world", assetKey: "hangar-kit", kit: "K4", maxTriangles: 160000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "pit-dressing", kit: "K2", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 2048 }
   ],
   vfx: [
     { event: "impact-sparks", kind: "burst" },
@@ -75,8 +63,13 @@ export default defineArtDirection({
     { event: "hangar-bed", cue: "hangar-ambience", variants: 1 },
     { event: "pit-music", cue: "pit-fight-loop", variants: 1 }
   ],
-  signatureEffect: "A hangar bay where whole rigged chassis swap on the turntable lane, then the locked build test-drives past crate dressing striking target dummies under the industrial key.",
-  standIns: [],
+  signatureEffect: "A hangar/pit scene split via game.setScene: an orbit-configurable workshop then a floodlit arena where two rigged mechs trade strikes under contact sparks and impact light.",
+  standIns: [
+    { feature: "k1-hangar HDRI", file: "src/v2/scene/lighting.ts", request: "R-14-13", removeWhen: "hangar HDRI admitted" },
+    { feature: "K4 hangar kit + K2 pit dressing", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "hangar kit admitted" },
+    { feature: "rigged mech + clip set", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K6 mech rig admitted" },
+    { feature: "K8 impact/servo samples", file: "src/legacy/hangar-audio.ts", request: "R-14-09", removeWhen: "K8 sample set admitted" }
+  ],
   criticalCategories: ["animation_quality", "environment_world"],
   tiers: {
     low: { particles: 300, shadowMap: 1024, cascades: 2, textureMax: 1024 },

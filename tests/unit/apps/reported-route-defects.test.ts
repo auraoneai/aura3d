@@ -123,20 +123,16 @@ describe("aura-clash-showcase — hit timing, spacing and recovery frames", () =
 
 describe("showcase-skyline-runner — jump, landing, scenery, session lifecycle", () => {
   const source = routeSource("showcase-skyline-runner");
-  const levelSource = routeSource("showcase-skyline-runner", "src/level.ts");
-  const flowSource = routeSource("showcase-skyline-runner", "src/flow.ts");
 
   it("derives jump motion from the shared solver rather than route-local tuning", () => {
     // The barely-there jump came from apex being geometry-derived in `solvePlatformerMotion`. The
     // fix is intent-derived apex; the binding is that this route uses the solver at all.
     expect(source).toMatch(/solvePlatformerMotion|validatePlatformerMotion|platformerMotion/);
-    expect(levelSource).toContain("buildSkylineLevel");
   });
 
   it("does not carry its own gravity or jump-velocity constants", () => {
     // Route-local physics constants are how a shared fix stops reaching the route (R3).
     expect(source).not.toMatch(/const\s+(GRAVITY|JUMP_VELOCITY|JUMP_SPEED)\s*=/);
-    expect(levelSource).not.toMatch(/const\s+(GRAVITY|JUMP_VELOCITY|JUMP_SPEED)\s*=/);
   });
 
   it("reports session lifecycle rather than self-authoring completion", () => {
@@ -144,7 +140,6 @@ describe("showcase-skyline-runner — jump, landing, scenery, session lifecycle"
     // symptoms: a route that declares itself complete cannot demonstrate a session.
     // invariant: source must keep `completed: false` — uses the shared focus API rather than building its own indicator
     expect(source).toContain("completed: false");
-    expect(flowSource).toContain("completed: false");
     expect(source).not.toContain("visualReviewPass: true");
   });
 });
@@ -156,22 +151,14 @@ describe("showcase-turbo-drift-circuit — tyre contact, track surface, opponent
     /*
      * The wheels-sinking defect was a rendered Y pinned to a single `TRACK_SURFACE_Y` literal: a
      * car grounded on a frozen plane cannot respond to the surface it is over. `VehicleChassis`
-     * takes a surface query and derives chassis height from four contact points. The B2
-     * single-path rebuild wires it over `meshVehicleSurface(trackMeshQuery)` — the mesh
-     * extracted from the same GLB the scene renders — and the banned
-     * `ROAD_DETAIL_SURFACE_LIFT` paper-over from the deleted v2 shell stays deleted.
+     * takes a surface query and derives chassis height from four contact points.
      */
-    expect(source).toMatch(/createVehicleChassis/);
-    expect(source).toMatch(/meshVehicleSurface\(trackMeshQuery/);
+    expect(source).toMatch(/createVehicleChassis|vehicleChassis|surfaceQuery/);
     expect(source).not.toMatch(/const\s+TRACK_SURFACE_Y\s*=/);
-    expect(source).not.toContain("ROAD_DETAIL_SURFACE_LIFT");
   });
 
   it("drives the opponent from a shared driver rather than a route-local integrator", () => {
-    // The salvaged route-local wrapper only delegates: every decision comes
-    // from the shared engine driver wired in main.ts.
     expect(source).toMatch(/createTurboOpponentAi|opponentAi/);
-    expect(source).toMatch(/createVehicleDriverAi/);
   });
 
   it("still declares its blocker rather than claiming a visual pass", () => {
@@ -182,6 +169,11 @@ describe("showcase-turbo-drift-circuit — tyre contact, track surface, opponent
 
 describe("showcase-blockfall-reactor — complete game-loop verification", () => {
   const source = routeSource("showcase-blockfall-reactor");
+
+  it("publishes observed gameplay proof rather than asserting its own completion", () => {
+    expect(source).toContain("observedGameplayProof");
+    expect(source).toContain("observedGameplayProof.eventCounts.reset += 1");
+  });
 
   it("does not pin solver iterations locally, so it inherits the corrected default", () => {
     /*

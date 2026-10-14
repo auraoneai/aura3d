@@ -18,15 +18,15 @@ export default defineArtDirection({
     },
     {
       file: "references/patrol-aircraft.json",
-      source: "route-local CC0 patrolWingPlane / drone family (scripts/build-models.mjs) staged in aura.assets.json",
+      source: "admitted patrolAircraftMeshy GLB (60k tris, BC+N+MR) + K7 drone/vehicle kit",
       licence: "reference-only",
-      why: "The authored +X-forward stunt plane and quad-rotor drone silhouettes the fresh single-path scene flies"
+      why: "The Meshy hero aircraft silhouette and the PBR drone family the intercept wave is built from"
     },
     {
       file: "references/ring-gates.json",
-      source: "extracted ring course in src/gameplay/course-data.ts (RING_GATES) + racing-style slalom gate language",
+      source: "existing ring/sensor layer in src/sky.ts (RING_GATES) + racing-style slalom gate language",
       licence: "reference-only",
-      why: "Emissive torus gates the patrol route threads — objective ring treatment across the sortie"
+      why: "Emissive-gradient torus gates the patrol route threads — objective ring treatment across the sortie"
     }
   ],
   palette: {
@@ -42,21 +42,11 @@ export default defineArtDirection({
     exposureEV: 0.1
   },
   framing: { rig: "flight", subjectHeightFraction: [0.12, 0.3], fovDeg: [65, 73], mobile: "landscape" },
-  // The rebuilt single-path scene (src/scene.ts) renders from exactly the
-  // four admitted typed assets in apps/showcase-patrol-wing/aura.assets.json:
-  // the authored stunt plane (player + ghost shell), the two pursuit-drone
-  // variants, and the landing-pad beacon. Island terrain, ocean, and ring
-  // gates are authored geometry over the extracted course data, not GLBs,
-  // and the 19.8 MB Meshy hero the trashed scene flew is not re-admitted.
-  // No asset is staged in a shared kit yet, so no `kit` is claimed: S10's
-  // kit half stays failing until a human look-dev review accepts a staged
-  // kit file (verdicts are never authored here). Triangle budgets bound the
-  // measured GLBs (plane 220 tris, drones 108 each, pad beacon 88).
   assets: [
-    { role: "vehicle", assetKey: "patrolWingPlane", minTriangles: 2000, maxTriangles: 5000, textureSet: "BC+N", maxTextureSize: 512 },
-    { role: "enemy", assetKey: "patrolWingDroneA", minTriangles: 2000, maxTriangles: 5000, textureSet: "BC+N", maxTextureSize: 512 },
-    { role: "enemy", assetKey: "patrolWingDroneB", minTriangles: 2000, maxTriangles: 5000, textureSet: "BC+N", maxTextureSize: 512 },
-    { role: "prop", assetKey: "patrolWingPadBeacon", maxTriangles: 300, textureSet: "BC", maxTextureSize: 512 }
+    { role: "vehicle", assetKey: "patrol-aircraft", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "world", assetKey: "ocean-islands", kit: "K3", maxTriangles: 260000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "enemy", assetKey: "intercept-drone", kit: "K7", maxTriangles: 30000, minTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "radar-tower-props", kit: "K3", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "wingtip-contrail", kind: "trail" },
@@ -72,12 +62,12 @@ export default defineArtDirection({
     { event: "drone-destroyed", cue: "air-burst", variants: 2 },
     { event: "ring-clear", cue: "gate-chime", variants: 2 }
   ],
-  signatureEffect: "Golden-hour look over a real ocean plane to the horizon, an authored island heightfield, and emissive ring gates threading the sortie.",
+  signatureEffect: "Sunset-ocean HDRI sky with a real ocean plane to the horizon, cliff island splats, and emissive ring gates threading the sortie.",
   standIns: [
-    { feature: "K1 sunset-ocean HDRI + PRD 10 ocean (golden-hour look + PBR ocean plane stand in)", file: "src/scene.ts", request: "R-14-13", removeWhen: "ocean preset + sunset HDRI admitted" },
-    { feature: "K3 island splat terrain (authored heightfield triangulation stands in)", file: "src/scene.ts", request: "R-14-13", removeWhen: "K3 terrain splat admitted" },
-    { feature: "K9 explosion clips (pool fx bursts stand in)", file: "src/main.ts", request: "R-14-07", removeWhen: "K9 flipbooks admitted" },
-    { feature: "K8 prop-plane RPM set (sfx-pack ambience loop stands in)", file: "src/main.ts", request: "R-14-09", removeWhen: "K8 engine loops admitted" }
+    { feature: "K1 sunset-ocean HDRI + PRD 10 ocean", file: "src/v2/scene/world.ts", request: "R-14-13", removeWhen: "ocean preset + sunset HDRI admitted" },
+    { feature: "K3 island splat + runway terrain", file: "src/v2/scene/world.ts", request: "R-14-13", removeWhen: "K3 terrain splat admitted" },
+    { feature: "K9 explosion clips", file: "src/v2/scene/fx.ts", request: "R-14-07", removeWhen: "K9 flipbooks admitted" },
+    { feature: "K8 prop-plane RPM set", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K8 engine loops admitted" }
   ],
   criticalCategories: ["environment_world", "camera", "atmospheric_effects"],
   tiers: {

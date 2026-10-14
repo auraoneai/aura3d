@@ -41,19 +41,13 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "chase", subjectHeightFraction: [0.2, 0.28], fovDeg: [55, 68], mobile: "landscape" },
-  // The rebuilt single-path scene (src/main.ts) renders from exactly two
-  // admitted typed assets (apps/showcase-turbo-drift-circuit/
-  // aura.assets.json): the sports-car GLB (player, rival and ghost) and
-  // the kart-circuit GLB the ground query in src/track-surface.ts is
-  // extracted from. The trashed scene's formula-circuit/venue/crowd roles
-  // are gone. Neither asset is staged in a shared kit yet, so no `kit` is
-  // claimed: S10's kit half stays failing until a human look-dev review
-  // accepts a staged kit file (verdicts are never authored here).
-  // Triangle budgets bound the measured GLBs (car 8,494 tris, circuit
-  // 24,493 tris).
   assets: [
-    { role: "hero", assetKey: "carModel", minTriangles: 2000, maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "world", assetKey: "trackModel", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 2048 }
+    { role: "hero", assetKey: "hero-car", kit: "K2", maxTriangles: 60000, minTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "world", assetKey: "turbo-road", kit: "K3", maxTriangles: 90000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "world", assetKey: "splat-terrain", kit: "K3", maxTriangles: 120000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "set-dressing", assetKey: "trackside-mods", kit: "K3", maxTriangles: 80000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "ai-cars", kit: "K2", maxTriangles: 40000, minTriangles: 15000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "grandstand-crowd", kit: "K6", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "tyre-slip", kind: "trail", flipbook: "k9-smoke-lit" },
@@ -68,7 +62,13 @@ export default defineArtDirection({
     { event: "music", cue: "turbo-music", variants: 1 }
   ],
   signatureEffect: "Golden-hour sun with 3-cascade CSM over a textured alpine circuit; lit tyre smoke reads slip.",
-  standIns: [],
+  standIns: [
+    { feature: "chase rig subjectHeightFraction + fov perSpeed", file: "src/v2/scene/camera.ts", request: "R-14-10", removeWhen: "C-22 rigs.chase real" },
+    { feature: "spline-extruded road + splat terrain", file: "src/v2/scene/world.ts", request: "R-14-13", removeWhen: "PRD 10 road/terrain/scatter real" },
+    { feature: "clearcoat car paint + flake normal", file: "src/v2/scene/materials.ts", request: "R-14-14", removeWhen: "PRD 04 clearcoat real (§8.6)" },
+    { feature: "3-cascade CSM sun shadows", file: "src/v2/scene/lighting.ts", request: "R-14-14", removeWhen: "C-10 CSM real" },
+    { feature: "car-sport RPM engine layer", file: "src/v2/boot.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" }
+  ],
   criticalCategories: ["environment_world", "shadows", "vfx"],
   tiers: {
     low: { particles: 400, shadowMap: 1024, cascades: 2, textureMax: 1024 },

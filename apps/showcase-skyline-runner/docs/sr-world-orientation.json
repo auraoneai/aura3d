@@ -1,0 +1,8 @@
+{
+  "source": "manifest-override",
+  "view": "side-scroller-world-view",
+  "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts production-runtime side-on world probe",
+  "messages": [
+    "The authored side-scroller plane and +Y-up presentation are visually readable in the current hash-bound standalone production-runtime probe. This world-role view makes no character, vehicle, or weapon forward-axis claim and does not replace independent final route review."
+  ]
+}
