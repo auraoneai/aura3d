@@ -132,7 +132,7 @@ const liveBallMaterial = material.metal({
   name: "neon chrome ball state accent",
   color: "#dcecf5",
   emissive: "#39dfff",
-  emissiveIntensity: 0.42,
+  emissiveIntensity: 0.15,
   roughness: 0.12,
   metallic: 0.96,
   clearcoat: 0.78,
@@ -142,7 +142,7 @@ const liveTargetArmedMaterial = material.clearcoat({
   name: "target armed amber state accent",
   color: "#f2a83b",
   emissive: "#ff7a22",
-  emissiveIntensity: 0.8,
+  emissiveIntensity: 0.28,
   roughness: 0.24,
   clearcoat: 0.58
 });
@@ -150,22 +150,22 @@ const liveTargetHitMaterial = material.neon({
   name: "target hit cyan state accent",
   color: "#0b5662",
   emissive: "#36f1ff",
-  emissiveIntensity: 2.1,
+  emissiveIntensity: 0.72,
   roughness: 0.2,
   metallic: 0.22
 });
-const bankLampOffMaterial = material.emissive({ name: "bank lamp off", color: "#1e1824", emissive: "#805030", emissiveIntensity: 0.22 });
-const bankLampOnMaterial = material.neon({ name: "bank lamp on", color: "#087d77", emissive: "#28f5cc", emissiveIntensity: 2.2, roughness: 0.18 });
-const impactAmberMaterial = material.neon({ name: "impact amber ring", color: "#653415", emissive: "#ff9f43", emissiveIntensity: 3.4, roughness: 0.13 });
-const impactCyanMaterial = material.neon({ name: "impact cyan ring", color: "#0e5661", emissive: "#55f4ff", emissiveIntensity: 3.4, roughness: 0.13 });
-const impactPinkMaterial = material.neon({ name: "impact vault ring", color: "#5a1647", emissive: "#ff4bd8", emissiveIntensity: 3.6, roughness: 0.12 });
+const bankLampOffMaterial = material.emissive({ name: "bank lamp off", color: "#1e1824", emissive: "#805030", emissiveIntensity: 0.1 });
+const bankLampOnMaterial = material.neon({ name: "bank lamp on", color: "#087d77", emissive: "#28f5cc", emissiveIntensity: 0.78, roughness: 0.18 });
+const impactAmberMaterial = material.neon({ name: "impact amber ring", color: "#653415", emissive: "#ff9f43", emissiveIntensity: 1.1, roughness: 0.13 });
+const impactCyanMaterial = material.neon({ name: "impact cyan ring", color: "#0e5661", emissive: "#55f4ff", emissiveIntensity: 1.1, roughness: 0.13 });
+const impactPinkMaterial = material.neon({ name: "impact vault ring", color: "#5a1647", emissive: "#ff4bd8", emissiveIntensity: 1.15, roughness: 0.12 });
 const mechanismStateMaterials = {
-  guarded: material.emissive({ name: "neon guarded", color: "#d4a017", emissive: "#8b6914" }),
-  progress: material.emissive({ name: "neon progress", color: "#00ff88", emissive: "#00cc66" }),
-  vault: material.emissive({ name: "neon vault open", color: "#ff6a00", emissive: "#ff4500" }),
-  multiball: material.emissive({ name: "neon multiball", color: "#00e5ff", emissive: "#00b8d4" }),
-  tilt: material.emissive({ name: "neon tilt", color: "#ff0044", emissive: "#cc0033" }),
-  gameOver: material.emissive({ name: "neon game over", color: "#333333", emissive: "#1a1a1a" })
+  guarded: material.emissive({ name: "neon guarded", color: "#d4a017", emissive: "#8b6914", emissiveIntensity: 0.35 }),
+  progress: material.emissive({ name: "neon progress", color: "#00ff88", emissive: "#00cc66", emissiveIntensity: 0.35 }),
+  vault: material.emissive({ name: "neon vault open", color: "#ff6a00", emissive: "#ff4500", emissiveIntensity: 0.35 }),
+  multiball: material.emissive({ name: "neon multiball", color: "#00e5ff", emissive: "#00b8d4", emissiveIntensity: 0.35 }),
+  tilt: material.emissive({ name: "neon tilt", color: "#ff0044", emissive: "#cc0033", emissiveIntensity: 0.35 }),
+  gameOver: material.emissive({ name: "neon game over", color: "#333333", emissive: "#1a1a1a", emissiveIntensity: 0.2 })
 } as const;
 
 function pushCue(cue: Parameters<typeof audio.cue>[0]): void {
@@ -212,34 +212,41 @@ function syncImpact(dt: number): void {
 function primitiveNode(visual: PropVisual): AuraSceneNode {
   const p = visual.primitive!;
   const visualY = visual.name === "felt" ? visual.position[1] : visual.position[1] + 0.28;
+  const isBumperPrimitive = visual.name.startsWith("bumper");
+  const size: readonly [number, number, number] = isBumperPrimitive ? [0.005, 0.005, 0.005] : p.size;
   const mat = p.emissive
-    ? material.emissive({ name: visual.name + " material", color: p.color, emissive: p.emissive, opacity: p.opacity ?? 1 })
-    : material.pbr({ name: visual.name + " material", color: p.color, roughness: 0.8, metallic: 0.1, opacity: p.opacity ?? 1 });
+    ? material.emissive({ name: visual.name + " material", color: p.color, emissive: p.emissive, emissiveIntensity: 0.35, opacity: isBumperPrimitive ? 0 : (p.opacity ?? 1) })
+    : material.pbr({ name: visual.name + " material", color: p.color, roughness: 0.8, metallic: 0.1, opacity: isBumperPrimitive ? 0 : (p.opacity ?? 1) });
   if (p.shape === "sphere") {
-    return primitives.sphere({ name: visual.name, material: mat }).position(visual.position[0], visualY, visual.position[2]).scale(p.size[0]).toJSON();
+    return primitives.sphere({ name: visual.name, material: mat }).position(visual.position[0], visualY, visual.position[2]).scale(size[0]).toJSON();
   }
   if (p.shape === "cylinder") {
     return primitives.cylinder({ name: visual.name, material: mat })
       .position(visual.position[0], visualY, visual.position[2])
-      .scale([p.size[0], p.size[1], p.size[2]])
+      .scale([size[0], size[1], size[2]])
       .toJSON();
   }
   if (p.shape === "torus") {
     return primitives.torus({ name: visual.name, material: mat })
       .position(visual.position[0], visualY, visual.position[2])
       .rotate(visual.rotation.x, visual.rotation.y, visual.rotation.z)
-      .scale([p.size[0], p.size[1], Math.max(0.02, p.size[2])])
+      .scale([size[0], size[1], Math.max(0.02, size[2])])
       .toJSON();
   }
   return primitives.box({ name: visual.name, material: mat })
     .position(visual.position[0], visualY, visual.position[2])
     .rotate(visual.rotation.x, visual.rotation.y, visual.rotation.z)
-    .scale([p.size[0], p.size[1], p.size[2]])
+    .scale([size[0], size[1], size[2]])
     .toJSON();
 }
 
 /** Static physics landmarks used as origins for the renderer-owned impact cue. */
 const BUMPER_IMPACT_POSITIONS = [[-0.9, -1.7], [0.9, -1.7], [0, -0.7]] as const;
+const POP_BUMPER_TURRET_SPECS = [
+  { id: "left", x: -0.9, z: -1.7 },
+  { id: "right", x: 0.9, z: -1.7 },
+  { id: "center", x: 0, z: -0.7 }
+] as const;
 const TARGET_BANK_POSITIONS: Record<string, readonly (readonly [number, number])[]> = {
   "bank-left-top": [[-2.32, -2.4], [-2.32, -2.8], [-2.32, -3.2]],
   "bank-left-mid": [[-2.42, -0.6], [-2.42, -0.2], [-2.42, 0.2]],
@@ -280,6 +287,7 @@ function visualNodes(): AuraSceneNode[] {
             name: v.name + " material",
             color: v.primitive!.color,
             emissive: v.primitive!.emissive,
+            emissiveIntensity: 0.32,
             opacity: v.primitive!.opacity ?? 1
           })
         })
@@ -314,6 +322,19 @@ function visualNodes(): AuraSceneNode[] {
       .runtime(game.runtimeNode("typed-vault-breakers-mechanisms", { tags: ["typed-asset", "mission-state"] }))
       .toJSON()
   );
+  for (const bumper of POP_BUMPER_TURRET_SPECS) {
+    nodes.push(
+      model(assets.vaultPopBumperCapMeshy, {
+        name: `vault-pop-bumper-3d-${bumper.id}`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 0.52
+      })
+        .position(bumper.x, 0.28, bumper.z)
+        .runtime(game.runtimeNode(`vault-pop-bumper-3d-${bumper.id}`, { tags: ["typed-asset", "pop-bumper-turret"] }))
+        .toJSON()
+    );
+  }
   nodes.push(
     primitives.torus({ name: "vault live impact ring", material: impactAmberMaterial })
       .position(0, -5, 0)
@@ -340,24 +361,54 @@ function visualNodes(): AuraSceneNode[] {
     );
   }
   for (const node of createScoreboardNodes().nodes) {
-    nodes.push(node);
+    const scoreNode = { ...node } as Record<string, unknown>;
+    if (scoreNode.material && typeof scoreNode.material === "object") {
+      scoreNode.material = { ...(scoreNode.material as Record<string, unknown>), emissiveIntensity: 0.34 };
+    }
+    nodes.push(scoreNode as unknown as AuraSceneNode);
   }
   return nodes;
+}
+
+function tuneVaultEnvironmentNodes(rawNodes: AuraSceneNode[]): AuraSceneNode[] {
+  return rawNodes.map((raw) => {
+    const node = { ...(raw as unknown as Record<string, unknown>) };
+    if (node.name === "typed-vault-breakers-cabinet") {
+      node.hiddenNodeNames = ["neon"];
+      node.materialOverrides = [
+        { match: "neonCyan", material: { emissiveIntensity: 0.26 } },
+        { match: "neonPink", material: { emissiveIntensity: 0.26 } }
+      ];
+    }
+    if (node.material && typeof node.material === "object") {
+      const mat = { ...(node.material as Record<string, unknown>) };
+      if (typeof mat.emissiveIntensity === "number") {
+        mat.emissiveIntensity = Number((mat.emissiveIntensity * 0.36).toFixed(3));
+      }
+      node.material = mat;
+    }
+    if (typeof node.intensity === "number" && typeof node.name === "string" && node.name.includes("vault ")) {
+      node.intensity = Number((node.intensity * 0.55).toFixed(3));
+    }
+    return node as unknown as AuraSceneNode;
+  });
 }
 
 function buildScene(): ReturnType<typeof scene> {
   return scene()
     .background("#030308")
-    .addMany(createVaultBreakersEnvironment())
+    .addMany(tuneVaultEnvironmentNodes(createVaultBreakersEnvironment()))
     // Submit the playable mechanisms after the bounded cabinet shell so the
     // root safe renderer's stable draw order keeps them legible above it.
     .addMany(visualNodes())
     .addMany([
-      effects.neonBloom({ intensity: reducedMotion ? 0.15 : 0.45, threshold: 0.62, radius: 0.5, maxIntensity: 0.88, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      lights.directional({ name: "playfield warm key", position: [2.4, 6.8, 3.6], color: "#fff3df", intensity: 1.45 }),
+      lights.point({ name: "playfield mid fill", color: "#d8ecff", intensity: 1.35 }).position(0, 3.4, 0.4),
+      effects.neonBloom({ intensity: reducedMotion ? 0.08 : 0.18, threshold: 0.82, radius: 0.36, maxIntensity: 0.52, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.ambientOcclusion({ name: "vault contact grounding", intensity: 0.3, radius: 0.62, density: 0.5, color: "#02020a" }),
       effects.contactOcclusion({ name: "mechanism contact", intensity: 0.36, radius: 0.52 }),
       effects.fog({ name: "vault room depth haze", density: 0.018, color: "#190e2b", intensity: 0.24 }),
-      effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
+      effects.colorGrade({ exposure: 1.0, contrast: 1.06, saturation: 1.05 }),
       effects.antiAlias({ mode: "fxaa" })
     ])
     .camera(camera.perspective({
@@ -793,6 +844,7 @@ function publishEvidence(): void {
     mountedAtEpochMs: Date.now()
   };
   vaultWindow.__VAULT_BREAKERS_EVIDENCE__ = evidence;
+  (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
 }
 
 // Renderer-owned capture used by specs and probes (no compositor dependency).

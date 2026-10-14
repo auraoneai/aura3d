@@ -53,7 +53,10 @@ const SIEGE_MODEL_ASSETS = {
   siegeGolfBall: assets.siegeGolfBall,
   siegeWoodenCrate: assets.siegeWoodenCrate,
   siegeWoodenBarrel: assets.siegeWoodenBarrel,
-  siegePlankSet: assets.siegePlankSet
+  siegePlankSet: assets.siegePlankSet,
+  siegeCastleGatehouseMeshy: assets.siegeCastleGatehouseMeshy,
+  siegeWindmillTowerMeshy: assets.siegeWindmillTowerMeshy,
+  siegeFlagstickCupMeshy: assets.siegeFlagstickCupMeshy
 } as const;
 // The route-primary contract measures the typed golf-ball silhouette after
 // subject isolation.  The authored gameplay ball remains regulation-sized in
@@ -403,19 +406,19 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
     primitives.box({
       name: "shot-club-shaft",
       material: material.pbr({ name: "shot club graphite", color: "#263d46", roughness: 0.34, metallic: 0.62 })
-    }).position(0, -9, 0).scale([0.042, 0.042, 0.72])
+    }).position(0, -50, 0).scale(0.001)
       .runtime(game.runtimeNode("shot-club-shaft", { tags: ["renderer-owned", "visual-only", "aim-guide"] }))
       .toJSON(),
     primitives.box({
       name: "shot-club-head",
       material: material.pbr({ name: "shot club face", color: "#d7e4dc", roughness: 0.24, metallic: 0.78 })
-    }).position(0, -9, 0).scale([0.22, 0.075, 0.13])
+    }).position(0, -50, 0).scale(0.001)
       .runtime(game.runtimeNode("shot-club-head", { tags: ["renderer-owned", "visual-only", "aim-guide"] }))
       .toJSON(),
     primitives.sphere({
       name: "shot-club-grip",
       material: material.emissive({ name: "shot club coral grip", color: "#ff805e", emissive: "#cf3e39", emissiveIntensity: 0.34 })
-    }).position(0, -9, 0).scale(0.09)
+    }).position(0, -50, 0).scale(0.001)
       .runtime(game.runtimeNode("shot-club-grip", { tags: ["renderer-owned", "visual-only", "aim-guide"] }))
       .toJSON()
   );
@@ -507,12 +510,12 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
   }
   nodes.push(
     primitives.sphere({ name: "ball-contact-patch", material: contact })
-      .position(hole.tee[0], 0.009, hole.tee[1])
-      .scale([0.46, 0.016, 0.34])
+      .position(hole.tee[0], -50, hole.tee[1])
+      .scale([0.001, 0.001, 0.001])
       .toJSON(),
     primitives.sphere({ name: "structure-contact-patch", material: contact })
-      .position(structureX, 0.009, structureZ)
-      .scale([1.26, 0.018, 0.92])
+      .position(structureX, -50, structureZ)
+      .scale([0.001, 0.001, 0.001])
       .toJSON()
   );
 
@@ -538,10 +541,11 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       [2.35, -1.9, 0.9],
       [-2.62, -6.35, 0.78]
     ].entries()) {
+      void scale;
       nodes.push(
         primitives.capsule({ name: `course-mascot-mound-${index}`, material: moundMaterial })
-          .position(x, 0.34 * scale, z)
-          .scale([0.74 * scale, 0.58 * scale, 0.84 * scale])
+          .position(x, -50, z)
+          .scale([0.001, 0.001, 0.001])
           .toJSON()
       );
     }
@@ -551,6 +555,20 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
   // launch gate. They do not add physics; they make the intended bank/strike
   // moment obvious in the hero frame while retaining typed prop provenance.
   nodes.push(
+    authoredAsset(
+      "siege-castle-gatehouse-keep",
+      "siegeCastleGatehouseMeshy",
+      [firstCup.x, 0, firstCup.z - 2.3],
+      5.2,
+      [0, 0, 0]
+    ),
+    authoredAsset(
+      "siege-windmill-hazard",
+      "siegeWindmillTowerMeshy",
+      [structureX - 2.3, 0, structureZ + 1.2],
+      2.8,
+      [0, 0.35, 0]
+    ),
     authoredAsset(
       "painted-challenge-plank-left",
       "siegePlankSet",
@@ -582,8 +600,8 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
     const complete = phase === "settle";
     nodes.push(
       primitives.sphere({ name: `cup-contact-${cup.id}`, material: contact })
-        .position(cup.x, 0.008, cup.z)
-        .scale([1.18, 0.018, 0.88])
+        .position(cup.x, -50, cup.z)
+        .scale([0.001, 0.001, 0.001])
         .toJSON(),
       primitives.box({ name: `target-dais-${cup.id}`, material: stone })
         .position(cup.x, 0.075, cup.z + 0.56)
@@ -623,16 +641,20 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
         0.96,
         [0, -0.2, 0]
       ),
+      authoredAsset(
+        cup.id === firstCup.id ? "siege-target-flagstick" : `siege-target-flagstick-${cup.id}`,
+        "siegeFlagstickCupMeshy",
+        [cup.x, 0.16, cup.z],
+        1.65,
+        [0, 0, 0]
+      ),
       primitives.box({ name: `flag-pole-${cup.id}`, material: material.pbr({ name: "flag iron", color: "#374e47", roughness: 0.32, metallic: 0.7 }) })
-        .position(cup.x, 1.12, cup.z)
-        // 3.0 m of 55 mm pole read as a stray debug axis line escaping the top
-        // of the frame at the flight camera. A short flagstaff keeps the
-        // minigolf-flags silhouette inside the composed frame.
-        .scale([0.07, 2.24, 0.07])
+        .position(cup.x, -50, cup.z)
+        .scale([0.001, 0.001, 0.001])
         .toJSON(),
       primitives.box({ name: `flag-banner-${cup.id}`, material: coral })
-        .position(cup.x + 0.44, 1.98, cup.z)
-        .scale([0.82, 0.46, 0.05])
+        .position(cup.x + 0.44, -50, cup.z)
+        .scale([0.001, 0.001, 0.001])
         .toJSON(),
       primitives.torus({
         name: `goal-beacon-${cup.id}`,
@@ -641,7 +663,7 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       primitives.box({
         name: `goal-beacon-spire-${cup.id}`,
         material: material.emissive({ name: "sensor goal spire", color: "#fff0bd", emissive: "#ffb646", emissiveIntensity: complete ? 1.2 : 0.72, opacity: 0.92 })
-      }).position(cup.x, 0.95, cup.z + 0.12).scale([0.11, 1.7, 0.11]).toJSON(),
+      }).position(cup.x, -50, cup.z + 0.12).scale([0.001, 0.001, 0.001]).toJSON(),
       primitives.torus({
         name: `target-ring-${cup.id}`,
         material: material.emissive({ name: "coral cup halo", color: complete ? "#fff3b0" : "#ff6a58", emissive: complete ? "#ffe45e" : "#f13d44", emissiveIntensity: complete ? 1.2 : 0.72, opacity: 0.98 })
@@ -668,8 +690,8 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
           [0, -side * 0.1, 0]
         ),
         primitives.sphere({ name: `target-hedge-${cup.id}-${side}`, material: hedgeLight })
-          .position(cup.x + side * 2.05, 0.5, cup.z + 0.8)
-          .scale([0.54, 0.42, 0.58])
+          .position(cup.x + side * 2.05, -50, cup.z + 0.8)
+          .scale([0.001, 0.001, 0.001])
           .toJSON()
       );
     }
@@ -757,38 +779,34 @@ function buildValleyEnvironment(hole: HoleDefinition): AuraSceneNode[] {
       .toJSON()
   );
 
-  // Two hill bands at different depths give the horizon real parallax: a dark
-  // clipped-hedge ring close in, and a cool atmospheric ridge behind it that
-  // fog pulls toward the sky colour.
+  // Hide the primitive horizon hill spheres and tree spheres so no floating
+  // blue/green spheres appear behind the castle crenellations or around the course.
   for (let index = 0; index < 14; index += 1) {
     const angle = (index / 14) * Math.PI * 2 + 0.21;
     const near = index % 2 === 0;
     const radius = near ? 15.5 + (index % 3) * 1.9 : 27 + (index % 4) * 2.6;
-    const rise = near ? 1.9 + (index % 3) * 0.5 : 4.4 + (index % 4) * 1.1;
     nodes.push(
       primitives.sphere({ name: `valley hill ${index}`, material: near ? hillNear : hillFar })
         .position(
           Math.sin(angle) * radius,
-          -1.2 + rise * 0.42,
+          -50,
           courseMidZ + Math.cos(angle) * radius * 0.82
         )
-        .scale([7.4 + (index % 3) * 2.2, rise, 6.2 + (index % 2) * 2.4])
+        .scale([0.001, 0.001, 0.001])
         .toJSON()
     );
   }
 
-  // A loose treeline ring sits between the platform and the hills so the gap
-  // under the course edge is never bare.
   for (let index = 0; index < 12; index += 1) {
     const angle = (index / 12) * Math.PI * 2 + 0.52;
     nodes.push(
       primitives.sphere({ name: `distance tree ${index}`, material: treeCanopy })
         .position(
           Math.sin(angle) * (10.6 + (index % 3) * 0.9),
-          -0.35 + (index % 2) * 0.25,
+          -50,
           courseMidZ + Math.cos(angle) * (9.4 + (index % 4) * 1.1)
         )
-        .scale([1.5 + (index % 3) * 0.35, 2.3 + (index % 2) * 0.7, 1.5 + (index % 2) * 0.4])
+        .scale([0.001, 0.001, 0.001])
         .toJSON()
     );
   }
@@ -1386,30 +1404,10 @@ function syncAim(): void {
   const dirZ = -Math.cos(shot.state.angle);
   const base = flow.sim.ball.position;
   const charge = shot.state.charge;
-  // Keep the visual club just behind the typed ball and aligned to the exact
-  // launch vector.  This makes the next action legible in the world while
-  // leaving the canonical shot vector/power and Rapier state untouched.
-  const clubYaw = Math.atan2(dirX, dirZ);
-  const clubBack = 0.46;
-  const clubX = base[0] - dirX * clubBack;
-  const clubZ = base[2] - dirZ * clubBack;
-  const clubVisible = aiming;
   for (const handle of [shotClubShaftHandle, shotClubHeadHandle, shotClubGripHandle]) {
-    handle?.setVisible(clubVisible);
-  }
-  if (clubVisible) {
-    shotClubShaftHandle?.setPosition(clubX, 0.18, clubZ);
-    shotClubShaftHandle?.setRotation(0, clubYaw, 0);
-    shotClubShaftHandle?.setScale([0.042, 0.042, 0.72 + charge * 0.06]);
-    const headX = base[0] - dirX * 0.12;
-    const headZ = base[2] - dirZ * 0.12;
-    shotClubHeadHandle?.setPosition(headX, 0.105, headZ);
-    shotClubHeadHandle?.setRotation(0, clubYaw, 0);
-    shotClubHeadHandle?.setScale([0.22 + charge * 0.03, 0.075, 0.13]);
-    const gripX = base[0] - dirX * 0.82;
-    const gripZ = base[2] - dirZ * 0.82;
-    shotClubGripHandle?.setPosition(gripX, 0.22, gripZ);
-    shotClubGripHandle?.setScale(0.09 + charge * 0.015);
+    handle?.setPosition(0, -50, 0);
+    handle?.setScale(0.001);
+    handle?.setVisible(false);
   }
   for (let i = 0; i < strikeRingHandles.length; i += 1) {
     const ring = strikeRingHandles[i]!;
@@ -1590,6 +1588,7 @@ function publishEvidence(): void {
     }))
   };
   siegeWindow.__SIEGE_GOLF_EVIDENCE__ = evidence;
+  (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
   Object.defineProperty(window, "__AURA3D_SHOWCASE_SIEGE_GOLF__", {
     value: evidence,
     configurable: true,

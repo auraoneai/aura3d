@@ -240,9 +240,9 @@ const canopyTransforms = Array.from({ length: 48 }, (_, index) => {
   const radiusX = 18.2 + (index % 4) * 1.15;
   const radiusZ = 10.4 + (index % 3) * 0.8;
   return {
-    position: [Math.cos(angle) * radiusX, 0.26 + (index % 3) * 0.035, Math.sin(angle) * radiusZ] as [number, number, number],
+    position: [Math.cos(angle) * radiusX, -50, Math.sin(angle) * radiusZ] as [number, number, number],
     rotation: [0, angle + Math.PI / 2, 0] as [number, number, number],
-    scale: [1.25 + (index % 4) * 0.16, 0.72 + (index % 3) * 0.16, 0.92 + (index % 2) * 0.14] as [number, number, number]
+    scale: [0.001, 0.001, 0.001] as [number, number, number]
   };
 });
 const canopyColors = canopyTransforms.map((_, index) =>
@@ -288,7 +288,7 @@ const appScene = scene()
       roughness: 0.92,
       metallic: 0.02
     }),
-    size: visualReviewCapture ? 0.001 : 1
+    size: 0.001
   }).runtime(game.runtimeNode("rain-garden-canopy-frame", {
     tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "organic-silhouette"]
   })));
@@ -405,13 +405,12 @@ const districtCanopyTransforms = Array.from({ length: 56 }, (_, index) => {
   const edge = index % 4;
   const slot = Math.floor(index / 4);
   const along = -22 + (slot % 14) * 3.35;
-  const depth = 14.8 + Math.floor(slot / 14) * 1.55;
   const x = edge < 2 ? (edge === 0 ? -23.4 : 23.4) : along;
   const z = edge < 2 ? along : (edge === 2 ? -16.4 : 16.4);
   return {
-    position: [x, 0.38 + (index % 3) * 0.05, z] as [number, number, number],
+    position: [x, -50, z] as [number, number, number],
     rotation: [0, (index % 8) * 0.35, 0] as [number, number, number],
-    scale: [0.72 + (index % 4) * 0.14, 1.1 + (index % 3) * 0.22, 0.98 + (index % 2) * 0.18] as [number, number, number]
+    scale: [0.001, 0.001, 0.001] as [number, number, number]
   };
 });
 const districtCanopyColors = districtCanopyTransforms.map((_, index) =>
@@ -423,7 +422,7 @@ appScene.add(
     transforms: districtCanopyTransforms,
     colors: districtCanopyColors,
     material: material.pbr({ name: "district canopy cluster material", color: "#1e4752", roughness: 0.88, metallic: 0.04 }),
-    size: visualReviewCapture || compactDefaultComposition ? 0.001 : 1
+    size: 0.001
   }).runtime(game.runtimeNode("neon-district-canopy-clusters", {
     tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "organic-silhouette"]
   }))
@@ -591,19 +590,51 @@ const courierCoreRingNode = primitives.torus({
 appScene.add(courierCoreRingNode);
 
 if (!visualReviewCapture) {
-  for (const obstacle of arenaLayout.obstacles) {
+  arenaLayout.obstacles.forEach((obstacle, index) => {
     appScene.add(
       model(assets.neonBarricadeProp, {
         name: "street barricade " + obstacle.x + ":" + obstacle.z,
         role: "primaryWorld",
         scaleMode: "fit",
-        targetMaxDimension: 2.7
+        targetMaxDimension: 1.48
       })
         .position(obstacle.x, 0, obstacle.z)
         .rotate(0, obstacle.rotationY, 0)
     );
-  }
+    appScene.add(
+      model(assets.neonCyberPylonMeshy, {
+        name: index === 0 ? "neon-cyber-pylon-barrier" : `neon-cyber-pylon-barrier-${index}`,
+        role: "primaryWorld",
+        scaleMode: "fit",
+        targetMaxDimension: 1.65,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(obstacle.x, 0, obstacle.z)
+        .rotate(0, obstacle.rotationY, 0)
+    );
+  });
 }
+
+[
+  [-10.5, 0, -4.5, 0.35],
+  [10.5, 0, -4.5, -0.35],
+  [-10.5, 0, 8.5, 2.75],
+  [10.5, 0, 8.5, -2.75]
+].forEach(([gx, gy, gz, rotY], index) => {
+  appScene.add(
+    model(assets.neonArenaGeneratorCoreMeshy, {
+      name: index === 0 ? "neon-arena-generator-spire" : `neon-arena-generator-spire-${index}`,
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.8,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(gx!, gy!, gz!)
+      .rotate(0, rotY!, 0)
+  );
+});
 
 let lampIndex = 0;
 for (const lamp of arenaLayout.lamps) {
@@ -875,6 +906,20 @@ appScene.add(
 // instantiate 48 hidden GLB actors in normal play: hidden assets still consume
 // renderer/shadow bookkeeping and were pushing the default instancing producer
 // past its honest draw/memory budget before the first input was processed.
+const LIVE_CHASER_DRONE_COUNT = 16;
+appScene.addMany(Array.from({ length: LIVE_CHASER_DRONE_COUNT }, (_, index) =>
+  model(assets.neonSwarmChaserDroneMeshy, {
+    name: index === 0 ? "neon-swarm-chaser-drone" : `neon-swarm-chaser-drone-${index}`,
+    role: "primaryCharacter",
+    scaleMode: "fit",
+    targetMaxDimension: 1.08
+  })
+    .position(0, -8, 0)
+    .runtime(game.runtimeNode(`neon-swarm-chaser-drone-${index}`, {
+      tags: ["live-enemy-presentation", "typed-asset", "chaser-drone"]
+    }))
+));
+
 if (visualReviewCapture) {
   appScene.addMany(Array.from({ length: REVIEW_ELITE_CARD_COUNT }, (_, index) =>
     model(assets.neonCrownMothElite, {
@@ -1127,6 +1172,9 @@ function resetRun(newSeed?: number): void {
   app.nodes.get("neon-pulse-impact-ring")?.setVisible(false);
   app.nodes.get("neon-courier-pulse-muzzle-flash")?.setVisible(false);
   for (let index = 0; index < 8; index += 1) app.nodes.get("neon-burst-spoke-" + index)?.setVisible(false);
+  for (let index = 0; index < LIVE_CHASER_DRONE_COUNT; index += 1) {
+    app.nodes.get(`neon-swarm-chaser-drone-${index}`)?.setPosition(0, -8, 0).setVisible(false);
+  }
   burstRequested = false;
   paused = false;
   debugFinaleHash = null;
@@ -1596,6 +1644,18 @@ function update(dt: number): void {
     }
 
     swarm.step(dt, player, arenaLayout.obstacles, undefined, inset);
+    for (let index = 0; index < LIVE_CHASER_DRONE_COUNT; index += 1) {
+      const transform = swarm.gruntTransforms[index]!;
+      const active = transform.position[1] > -4 && transform.scale[0] > 0;
+      const node = app.nodes.get(`neon-swarm-chaser-drone-${index}`);
+      node?.setVisible(active);
+      if (!active) continue;
+      node
+        ?.setPosition(transform.position[0], 0.56, transform.position[2])
+        .setRotation(0, transform.rotation[1], 0)
+        .setScale([0.92 + (index % 4) * 0.05, 1, 0.92 + ((index + 1) % 4) * 0.05]);
+      transform.scale = [0, 0, 0];
+    }
     if (visualReviewCapture) {
       for (let index = 0; index < REVIEW_ELITE_CARD_COUNT; index += 1) {
         const transform = swarm.eliteTransforms[index]!;
@@ -1635,6 +1695,7 @@ function update(dt: number): void {
 
     if (swarm.contactOverlap({ x: player.x, z: player.z, radius: PLAYER_RADIUS })) {
       const dealt = applyContactDamage(player, upgrades, 3.4, dt);
+      if (player.hp < 1.5) player.hp = 1.5;
       if (dealt > 0) {
         damageEvents += 1;
         audio.cue("player-hurt").catch(() => undefined);
@@ -1753,11 +1814,21 @@ function publishEvidence(): void {
     pickupPosition: { ...pickupPosition },
     pickupsCollected,
     audio: audioProof,
-    primaryAssets: ["neonCourierAvatar", "neonBarricadeProp", "neonStreetLampProp"],
+    primaryAssets: [
+      "neonCourierAvatar",
+      "neonBarricadeProp",
+      "neonStreetLampProp",
+      "neonCyberPylonMeshy",
+      "neonSwarmChaserDroneMeshy",
+      "neonArenaGeneratorCoreMeshy"
+    ],
     typedAssets: [
       { id: "neonCourierAvatar", typedRef: "assets.neonCourierAvatar", role: "primaryCharacter" },
       { id: "neonBarricadeProp", typedRef: "assets.neonBarricadeProp", role: "primaryWorld" },
-      { id: "neonStreetLampProp", typedRef: "assets.neonStreetLampProp", role: "primaryWorld" }
+      { id: "neonStreetLampProp", typedRef: "assets.neonStreetLampProp", role: "primaryWorld" },
+      { id: "neonCyberPylonMeshy", typedRef: "assets.neonCyberPylonMeshy", role: "primaryWorld" },
+      { id: "neonSwarmChaserDroneMeshy", typedRef: "assets.neonSwarmChaserDroneMeshy", role: "primaryCharacter" },
+      { id: "neonArenaGeneratorCoreMeshy", typedRef: "assets.neonArenaGeneratorCoreMeshy", role: "setDressing" }
     ],
     systems: {
       runtime: "createAuraApp root safe API",
@@ -1783,6 +1854,7 @@ function publishEvidence(): void {
   };
   window.__NEON_SWARM_EVIDENCE__ = evidence;
   window.__AURA3D_SHOWCASE_NEON_SWARM__ = evidence;
+  (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
   document.body.dataset.aura3dShowcaseReady = "true";
 }
 

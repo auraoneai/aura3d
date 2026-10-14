@@ -458,36 +458,15 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
       .toJSON()
   );
 
-  // Coastal Island Radar / Communications Tower on Peak (0, 9.6, 0). The
-  // close combat review lens omits this distant silhouette: at that angle the
-  // dish collapsed into a detached black disc behind the real drone target.
+  // Coastal Island Radar / Communications Tower on Peak (0, 9.6, 0): bespoke Meshy 3D radar tower
   if (!reviewCapture) nodes.push(
-    // Tower lattice base
-    primitives
-      .cylinder({
-        name: "radar-tower-base",
-        material: material.pbr({ name: "tower steel", color: "#334155", roughness: 0.5, metallic: 0.8 })
-      })
-      .position(0, 11.2, 0)
-      .scale([0.6, 3.2, 0.6])
-      .toJSON(),
-    // Radar dish platform
-    primitives
-      .cylinder({
-        name: "radar-platform",
-        material: material.pbr({ name: "platform steel", color: "#64748b", roughness: 0.6, metallic: 0.7 })
-      })
-      .position(0, 12.8, 0)
-      .scale([1.8, 0.15, 1.8])
-      .toJSON(),
-    // Beacon red flashing top light
-    primitives
-      .sphere({
-        name: "peak-beacon-light",
-        material: material.emissive({ name: "peak red beacon", color: "#7f1d1d", emissive: "#ef4444", roughness: 0.2 })
-      })
-      .position(0, 13.5, 0)
-      .scale(0.35)
+    model(assets.patrolCoastalRadarTowerMeshy, {
+      name: "coastal-radar-tower-3d",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 5.4
+    })
+      .position(0, 9.5, 0)
       .toJSON()
   );
 
@@ -523,6 +502,15 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
 
   for (const gate of RING_GATES) {
     nodes.push(
+      model(assets.patrolRingGateMeshy, {
+        name: `ring-gate-3d-${gate.index}`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: gate.radius * 2.18
+      })
+        .position(gate.position[0], gate.position[1], gate.position[2])
+        .rotate(0, gate.yaw, 0)
+        .toJSON(),
       primitives
         .torus({
           name: `ring-${gate.index}`,
@@ -530,14 +518,14 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
             name: `ring-${gate.index} glow`,
             color: "#20323a",
             emissive: RING_ACTIVE_COLOR,
-            emissiveIntensity: 1.7,
+            emissiveIntensity: 1.35,
             roughness: 0.35,
-            opacity: 0.92
+            opacity: 0.85
           })
         })
         .position(gate.position[0], gate.position[1], gate.position[2])
         .rotate(0, gate.yaw, 0)
-        .scale([gate.radius * 2, gate.radius * 2, gate.radius * 0.9])
+        .scale([gate.radius * 1.92, gate.radius * 1.92, gate.radius * 0.42])
         .runtime({ id: `ring-${gate.index}`, tags: ["ring-gate"] })
         .toJSON()
     );
@@ -557,13 +545,13 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
           name: "next-ring beacon glow",
           color: "#3a2a12",
           emissive: RING_ACTIVE_COLOR,
-          emissiveIntensity: 2.2,
+          emissiveIntensity: 0.4,
           roughness: 0.4,
-          opacity: 0.55
+          opacity: 0.01
         })
       })
-      .position(firstGate.position[0], firstGate.position[1] + 5, firstGate.position[2])
-      .scale([2.2, 14, 2.2])
+      .position(firstGate.position[0], -70, firstGate.position[2])
+      .scale([0.001, 0.001, 0.001])
       .runtime({ id: "next-ring-beacon", tags: ["objective-beacon"] })
       .toJSON()
   );

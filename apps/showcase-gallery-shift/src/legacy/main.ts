@@ -90,35 +90,35 @@ const postV2 = resolveQrFlags({
   url: location.href,
   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
 }).on("A3D_QR_POST");
-const NEON_GAIN = postV2 ? 2.6 : 1;
-const DEFAULT_EMISSIVE_STRENGTH = 1.35;
+const NEON_GAIN = postV2 ? 0.65 : 0.55;
+const DEFAULT_EMISSIVE_STRENGTH = 0.55;
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 const THIEF_FOCUS_MATERIAL = material.emissive({
   name: "thief tactical focus ring",
   color: "#123b3a",
   emissive: "#55f3d1",
-  emissiveIntensity: 1.18 * NEON_GAIN,
-  opacity: 0.9
+  emissiveIntensity: 0.68 * NEON_GAIN,
+  opacity: 0.82
 });
 const LIVE_PLAYER_MATERIAL = material.emissive({
   name: "live player hierarchy material",
   color: "#063b35",
   emissive: "#45ffd7",
-  emissiveIntensity: 1.25 * NEON_GAIN,
+  emissiveIntensity: 0.72 * NEON_GAIN,
   opacity: 1
 });
 const LIVE_GUARD_MATERIAL = material.emissive({
   name: "live guard hierarchy material",
   color: "#4d081d",
   emissive: "#ff3e72",
-  emissiveIntensity: 1.2 * NEON_GAIN,
+  emissiveIntensity: 0.72 * NEON_GAIN,
   opacity: 1
 });
 const LIVE_OBJECTIVE_MATERIAL = material.emissive({
   name: "live objective hierarchy material",
   color: "#5a2d05",
   emissive: "#ffd05a",
-  emissiveIntensity: 1.48 * NEON_GAIN,
+  emissiveIntensity: 0.78 * NEON_GAIN,
   opacity: 1
 });
 const THIEF_DETAIL_MATERIAL = material.metal({
@@ -128,7 +128,7 @@ const THIEF_DETAIL_MATERIAL = material.metal({
   // materials.  This is renderer-owned identity dressing only.
   color: "#146f6e",
   emissive: "#52f6dc",
-  emissiveIntensity: 0.62,
+  emissiveIntensity: 0.32,
   roughness: 0.28,
   metallic: 0.62
 });
@@ -136,7 +136,7 @@ const GUARD_DETAIL_MATERIAL = material.metal({
   name: "sentry identity harness",
   color: "#852346",
   emissive: "#ff5b87",
-  emissiveIntensity: 0.58,
+  emissiveIntensity: 0.32,
   roughness: 0.3,
   metallic: 0.62
 });
@@ -144,8 +144,8 @@ const THIEF_VISOR_MATERIAL = material.emissive({
   name: "infiltrator visor signal",
   color: "#0b4b4d",
   emissive: "#73fff0",
-  emissiveIntensity: 1.65 * NEON_GAIN,
-  opacity: 0.95
+  emissiveIntensity: 0.85 * NEON_GAIN,
+  opacity: 0.9
 });
 const ALERT_WEDGE_GEOMETRY = geometry.define({
   // One flat, camera-facing triangle in local +Z. Runtime guard yaw rotates it
@@ -531,23 +531,7 @@ function guardCharacterNodes(): AuraSceneNode[] {
         name: spawn.id,
         role: "primaryCharacter",
         scaleMode: "fit",
-        // The humanoid sentry's source bounds are taller than Robotcand's,
-        // so an equal target would make guard-2 dominate the museum plan
-        // and read as a giant gold prop beside the infiltrator.  Keep both
-        // typed patrol roles prominent but within one believable security
-        // scale band in the same top-down frame.
-        // The previous security scale read as two small props once the full
-        // museum plan was in frame.  Lift both typed patrol silhouettes by a
-        // restrained amount so the real observer/target relationship survives
-        // the wider architectural composition without turning either actor
-        // into a giant room prop.  Robotcand gets the larger lift because its
-        // low profile otherwise disappears beside the humanoid sentry.
-        // Both source assets are now fit to the museum's metre-scale floor,
-        // rather than the former 4.75/5.1m presentation envelopes that made
-        // the sentries read like room props.  `targetMaxDimension` is applied
-        // by the safe model renderer and grounds each GLB at node y = 0,
-        // including Robotcand's centre-origin source bounds.
-        targetMaxDimension: archivePatrol ? 3.2 : 3.7
+        targetMaxDimension: archivePatrol ? 1.65 : 1.9
       })
         .position(spawn.x, 0, spawn.z)
         .runtime(game.runtimeNode(spawn.id, {
@@ -556,7 +540,7 @@ function guardCharacterNodes(): AuraSceneNode[] {
         .toJSON(),
       shadows.contact({
         name: `${spawn.id} contact shadow`,
-        footprint: archivePatrol ? [1.58, 1.02] : [0.94, 0.68],
+        footprint: archivePatrol ? [0.84, 0.56] : [0.52, 0.38],
         opacity: 0.5,
         color: "#02040a"
       })
@@ -573,7 +557,7 @@ function guardCharacterNodes(): AuraSceneNode[] {
           material: GUARD_DETAIL_MATERIAL
         })
           .position(spawn.x, 0, spawn.z)
-          .scale([0.92, 0.92, 0.92])
+          .scale([0.5, 0.5, 0.5])
           .runtime(game.runtimeNode(`${spawn.id} sentry identity detail`, {
             tags: ["typed-set-dressing", "guard-identity", "renderer-owned", "authored-movement"]
           }))
@@ -595,7 +579,7 @@ function pedestalAndExhibitNodes(): AuraSceneNode[] {
         name: `pedestal-${slot}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.1
+        targetMaxDimension: 0.62
       })
         .position(0, -20 - slot, 0)
         .runtime(game.runtimeNode(`pedestal-${slot}`, { tags: ["typed-asset", "pedestal"] }))
@@ -608,7 +592,7 @@ function pedestalAndExhibitNodes(): AuraSceneNode[] {
           name: `exhibit-${slot}-${variant.slice(-1)}`,
           role: "setDressing",
           scaleMode: "fit",
-          targetMaxDimension: 0.55
+          targetMaxDimension: 0.3
         })
           .position(0, -20, 0)
           .runtime(game.runtimeNode(`exhibit-${slot}-${variant.slice(-1)}`, { tags: ["typed-asset", "exhibit"] }))
@@ -625,7 +609,7 @@ function floor1CoverNodes(): AuraSceneNode[] {
       name: `floor1-case-${displayCase.id}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.18
+      targetMaxDimension: 0.72
     })
       .position(displayCase.x, 0, displayCase.z)
       .runtime(game.runtimeNode(`floor1-case-${displayCase.id}`, {
@@ -669,7 +653,7 @@ function museumDisplaySuiteNodes(): AuraSceneNode[] {
       name: `suite-case-${display.id}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.92
+      targetMaxDimension: 0.56
     })
       .position(display.x, 0, display.z)
       .runtime(game.runtimeNode(`suite-case-${display.id}`, {
@@ -680,13 +664,43 @@ function museumDisplaySuiteNodes(): AuraSceneNode[] {
       name: `suite-exhibit-${display.id}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.46
+      targetMaxDimension: 0.25
     })
-      .position(display.x, 0.78, display.z)
+      .position(display.x, 0.48, display.z)
       .runtime(game.runtimeNode(`suite-exhibit-${display.id}`, {
         tags: ["typed-asset", "museum-exhibit", "set-dressing", "non-gameplay"]
       }))
       .toJSON()
+  ]).concat([
+    model(assets.galleryMarbleBustExhibitMeshy, {
+      name: "gallery-rotunda-armillary-exhibit",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.55
+    })
+      .position(0, 0, -0.4)
+      .runtime(game.runtimeNode("gallery-rotunda-armillary-exhibit", {
+        tags: ["typed-asset", "rotunda-centerpiece", "set-dressing", "non-gameplay"]
+      }))
+      .toJSON(),
+    ...[
+      { id: "west-gate", x: -3.1, z: -1.8 },
+      { id: "east-gate", x: 3.1, z: -1.8 },
+      { id: "north-west", x: -1.6, z: -5.1 },
+      { id: "north-east", x: 1.6, z: -5.1 }
+    ].map((pylon) =>
+      model(assets.galleryLaserSecurityPylonMeshy, {
+        name: `gallery-laser-pylon-${pylon.id}`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.25
+      })
+        .position(pylon.x, 0, pylon.z)
+        .runtime(game.runtimeNode(`gallery-laser-pylon-${pylon.id}`, {
+          tags: ["typed-asset", "laser-security-pylon", "set-dressing", "non-gameplay"]
+        }))
+        .toJSON()
+    )
   ]);
 }
 
@@ -735,6 +749,17 @@ function floor2WallNodes(): AuraSceneNode[] {
         .position(laser.x, 0.9, laser.z)
         .scale([Math.max(0.05, laser.halfX * 2), 0.05, Math.max(0.05, laser.halfZ * 2)])
         .runtime(game.runtimeNode(`laser-${laser.id}`, { tags: ["sensor-laser"] }))
+        .toJSON(),
+      model(assets.galleryLaserSecurityPylonMeshy, {
+        name: `gallery-laser-pylon-${laser.id}`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.25
+      })
+        .position(laser.x - laser.halfX, 0, laser.z - laser.halfZ)
+        .runtime(game.runtimeNode(`gallery-laser-pylon-${laser.id}`, {
+          tags: ["typed-asset", "laser-security-pylon", "set-dressing"]
+        }))
         .toJSON()
     );
   }
@@ -744,7 +769,7 @@ function floor2WallNodes(): AuraSceneNode[] {
         name: `case-${displayCase.id}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.0
+        targetMaxDimension: 0.64
       })
         .position(displayCase.x, 0, displayCase.z)
         .runtime(game.runtimeNode(`case-${displayCase.id}`, { tags: ["typed-asset", "display-case"] }))
@@ -771,8 +796,8 @@ function lightPoolNodes(): AuraSceneNode[] {
             name: `pool ${layout.id}-${poolIndex} material`,
             color: poolColor,
             emissive: poolGlow,
-            emissiveIntensity: 0.2 + 0.22 * pool.brightness,
-            opacity: 0.12 + 0.08 * pool.brightness
+            emissiveIntensity: 0.14 + 0.14 * pool.brightness,
+            opacity: 0.1 + 0.06 * pool.brightness
           })
         })
           .position(pool.x, 0.015, pool.z)
@@ -788,7 +813,7 @@ function exitNodes(): AuraSceneNode[] {
   return [
     primitives.box({
       name: "exit-pad",
-      material: material.emissive({ name: "exit pad material", color: "#0d2417", emissive: "#3dfc9a", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.85 })
+      material: material.emissive({ name: "exit pad material", color: "#0d2417", emissive: "#3dfc9a", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.8 })
     })
       .position(0, 0.02, -6.3)
       .scale([1.6, 0.03, 1.0])
@@ -796,19 +821,19 @@ function exitNodes(): AuraSceneNode[] {
       .toJSON(),
     primitives.box({
       name: "exit-sign",
-      material: material.emissive({ name: "exit sign material", color: "#0d2417", emissive: "#7ef8ff", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.95 })
+      material: material.emissive({ name: "exit sign material", color: "#0d2417", emissive: "#58d4dc", emissiveIntensity: 0.25, opacity: 0.85 })
     })
-      .position(0, 2.6, -6.9)
-      .scale([1.4, 0.4, 0.08])
+      .position(0, 2.42, -6.92)
+      .scale([1.2, 0.28, 0.06])
       .toJSON()
   ];
 }
 
 function threatFeedbackNodes(): AuraSceneNode[] {
-  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#7d173c", emissive: "#ff477b", emissiveIntensity: 1.9 * NEON_GAIN, opacity: 0.8 });
-  const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#c43765", emissive: "#ffd0dc", emissiveIntensity: 2.35 * NEON_GAIN, opacity: 0.99 });
-  const lineMaterial = material.emissive({ name: "release real LOS floor rail", color: "#8d234a", emissive: "#ff5e8e", emissiveIntensity: 2.1 * NEON_GAIN, opacity: 0.94 });
-  const targetMaterial = material.emissive({ name: "release real LOS target reticle", color: "#54132f", emissive: "#ff78a4", emissiveIntensity: 2.05 * NEON_GAIN, opacity: 0.94 });
+  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#7d173c", emissive: "#ff477b", emissiveIntensity: 1.15 * NEON_GAIN, opacity: 0.76 });
+  const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#c43765", emissive: "#ffd0dc", emissiveIntensity: 1.35 * NEON_GAIN, opacity: 0.92 });
+  const lineMaterial = material.emissive({ name: "release real LOS floor rail", color: "#8d234a", emissive: "#ff5e8e", emissiveIntensity: 1.25 * NEON_GAIN, opacity: 0.88 });
+  const targetMaterial = material.emissive({ name: "release real LOS target reticle", color: "#54132f", emissive: "#ff78a4", emissiveIntensity: 1.2 * NEON_GAIN, opacity: 0.88 });
   return ["guard-1", "guard-2"].flatMap((id) => [
     geometry.custom(ALERT_WEDGE_GEOMETRY, { name: `${id} real LOS alert wedge`, material: wedgeMaterial })
       .position(0, 0.16, 0)
@@ -861,7 +886,7 @@ function liveHierarchyNodes(): AuraSceneNode[] {
     primitives.torus({ name: "live-objective-ring", material: LIVE_OBJECTIVE_MATERIAL })
       .position(0, -20, 0)
       .rotate(Math.PI / 2, 0, 0)
-      .scale([1.5, 1.5, 0.12])
+      .scale([0.95, 0.95, 0.08])
       .runtime(game.runtimeNode("live-objective-ring", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
       .toJSON(),
     text3D("LIFT", { name: "live-lift-label", size: 0.46, depth: 0.05, letterSpacing: 0.04, material: LIVE_OBJECTIVE_MATERIAL, backend: "sdf" })
@@ -872,7 +897,7 @@ function liveHierarchyNodes(): AuraSceneNode[] {
       .position(0, -20, 0)
       .runtime(game.runtimeNode("live-exit-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
       .toJSON(),
-    lights.point({ name: "live-objective-practical", color: "#ffd05a", intensity: 2.8 })
+    lights.point({ name: "live-objective-practical", color: "#ffd05a", intensity: 1.15 })
       .position(0, -20, 0)
       .runtime(game.runtimeNode("live-objective-practical", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
       .toJSON()
@@ -887,7 +912,7 @@ function liveHierarchyNodes(): AuraSceneNode[] {
         // footprint at the review distance.  It follows the real guard node
         // and remains feedback only; it does not alter the LOS/collision
         // footprint used by FloorLayout.
-        .scale([0.82, 0.82, 0.065])
+        .scale([0.56, 0.56, 0.048])
         .runtime(game.runtimeNode(`${guardId} live ring`, { tags: ["live-stealth-state", "guard-silhouette", "renderer-owned"] }))
         .toJSON(),
       text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.42, depth: 0.05, letterSpacing: 0.03, material: LIVE_GUARD_MATERIAL, backend: "sdf" })
@@ -954,7 +979,7 @@ function meshyThiefCandidateNodes(): AuraSceneNode[] {
       name: "Meshy museum thief candidate",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.8
+      targetMaxDimension: 0.95
     })
       .position(spawn.x + 2.2, 0, spawn.z + 0.6)
       .rotate(0, -0.5, 0)
@@ -965,6 +990,28 @@ function meshyThiefCandidateNodes(): AuraSceneNode[] {
   ];
 }
 
+function tuneGalleryEnvironmentNodes(rawNodes: AuraSceneNode[]): AuraSceneNode[] {
+  return rawNodes.map((raw) => {
+    const node = { ...(raw as unknown as Record<string, unknown>) };
+    const name = typeof node.name === "string" ? node.name : "";
+    if (node.material && typeof node.material === "object") {
+      const mat = { ...(node.material as Record<string, unknown>) };
+      if (name.includes("room label") || name === "museum authored practical fixtures") {
+        mat.color = "#8fd4cb";
+        mat.emissive = "#49b8ac";
+        mat.emissiveIntensity = 0.24;
+      } else if (typeof mat.emissiveIntensity === "number") {
+        mat.emissiveIntensity = Number((mat.emissiveIntensity * 0.42).toFixed(3));
+      }
+      node.material = mat;
+    }
+    if (typeof node.intensity === "number") {
+      node.intensity = Number((node.intensity * 0.48).toFixed(3));
+    }
+    return node as unknown as AuraSceneNode;
+  });
+}
+
 function buildScene(): ReturnType<typeof scene> {
   return scene()
     .background("#05070d")
@@ -973,15 +1020,7 @@ function buildScene(): ReturnType<typeof scene> {
         name: "thief",
         role: "primaryCharacter",
         scaleMode: "fit",
-        // The registered Kenney Runner Girl is the route's adult infiltrator
-        // asset (idle/walk/sprint/lift/carry clips, +Z orientation, grounded
-        // bounds).  Fit it to its authored 2.7m maximum so the complete body
-        // remains legible without dominating the tactical museum plan. The
-        // review lens reads the 20m plan from near-top-down, where a 2.7m
-        // actor collapses to a few pixels beside the guards; the review-only
-        // 3.3m fit restores actor parity without touching movement, collision,
-        // clips, or the default gameplay camera.
-        targetMaxDimension: visualReviewCapture ? 3.3 : 2.7
+        targetMaxDimension: visualReviewCapture ? 1.68 : 1.44
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief", { tags: ["typed-asset", "thief", "authored-movement"] }))
@@ -993,6 +1032,7 @@ function buildScene(): ReturnType<typeof scene> {
         material: THIEF_DETAIL_MATERIAL
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
+        .scale([0.52, 0.52, 0.52])
         .runtime(game.runtimeNode("infiltrator identity detail", {
           tags: ["typed-set-dressing", "thief-identity", "renderer-owned", "authored-movement"]
         }))
@@ -1003,8 +1043,8 @@ function buildScene(): ReturnType<typeof scene> {
       // typed infiltrator's transform. It reinforces identity at the oblique
       // review distance without replacing the real character face/materials.
       primitives.box({ name: "infiltrator visor signal", material: THIEF_VISOR_MATERIAL })
-        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 1.99, FLOOR_LAYOUTS[0]!.thiefSpawn.z + 0.19)
-        .scale([0.48, 0.07, 0.055])
+        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 1.05, FLOOR_LAYOUTS[0]!.thiefSpawn.z + 0.1)
+        .scale([0.26, 0.04, 0.032])
         .runtime(game.runtimeNode("infiltrator visor signal", {
           tags: ["typed-set-dressing", "thief-identity", "renderer-owned", "authored-movement"]
         }))
@@ -1014,14 +1054,14 @@ function buildScene(): ReturnType<typeof scene> {
       primitives.torus({ name: "thief tactical focus", material: THIEF_FOCUS_MATERIAL })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0.07, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .rotate(Math.PI / 2, 0, 0)
-        .scale([0.78, 0.78, 0.045])
+        .scale([0.52, 0.52, 0.035])
         .runtime(game.runtimeNode("thief-focus", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
         .toJSON()
     )
     .add(
       shadows.contact({
         name: "thief contact shadow",
-        footprint: [0.88, 0.62],
+        footprint: [0.54, 0.38],
         opacity: 0.46,
         color: "#02040a"
       })
@@ -1033,9 +1073,9 @@ function buildScene(): ReturnType<typeof scene> {
       lights.point({
         name: "thief tactical practical",
         color: "#69f7df",
-        intensity: visualReviewCapture ? 3.6 : 1.5
+        intensity: visualReviewCapture ? 1.45 : 0.95
       })
-        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 1.25, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
+        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 1.05, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief-practical", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
         .toJSON()
     )
@@ -1043,9 +1083,9 @@ function buildScene(): ReturnType<typeof scene> {
       lights.point({
         name: "thief cyan rim fill",
         color: "#8fffee",
-        intensity: visualReviewCapture ? 3.2 : 1.3
+        intensity: visualReviewCapture ? 1.25 : 0.85
       })
-        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x - 0.55, 2.15, FLOOR_LAYOUTS[0]!.thiefSpawn.z + 0.45)
+        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x - 0.45, 1.55, FLOOR_LAYOUTS[0]!.thiefSpawn.z + 0.35)
         .runtime(game.runtimeNode("thief-rim-fill", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
         .toJSON()
     )
@@ -1060,31 +1100,31 @@ function buildScene(): ReturnType<typeof scene> {
     .add(
       primitives.cylinder({
         name: "alarm-beacon",
-        material: material.emissive({ name: "alarm beacon material", color: "#3b070c", emissive: "#ff334d", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.95 })
+        material: material.emissive({ name: "alarm beacon material", color: "#3b070c", emissive: "#ff334d", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.9 })
       })
         .position(0, 3.2, -5.8)
-        .scale([0.34, 0.18, 0.34])
+        .scale([0.28, 0.14, 0.28])
         .runtime(game.runtimeNode("alarm-beacon", { tags: ["alarm-state", "renderer-owned"] }))
         .toJSON()
     )
-    .addMany(createGalleryEnvironment(FLOOR_LAYOUTS[0]!))
+    .addMany(tuneGalleryEnvironmentNodes(createGalleryEnvironment(FLOOR_LAYOUTS[0]!)))
     .addMany(threatFeedbackNodes())
     .addMany(liveHierarchyNodes())
      .addMany(debugOverlayNodes())
     .addMany([
       // Low-lit marble hall: moonlight key, warm guard flashlights (sway gated
       // by reduced-motion below), cool exit glow, shallow fog, restrained bloom.
-      effects.neonBloom({ intensity: (reducedMotion ? 0.06 : 0.22) * (postV2 ? 1.6 : 1), quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.neonBloom({ intensity: reducedMotion ? 0.05 : 0.14, threshold: 0.84, radius: 0.34, maxIntensity: 0.48, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.fog({ name: "gallery haze", density: 0.009, color: "#243b59", intensity: 0.18 }),
-      effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.08 }),
+      effects.colorGrade({ exposure: 0.98, contrast: 1.05, saturation: 1.04 }),
       effects.antiAlias({ mode: "fxaa" }),
-      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: visualReviewCapture ? 0.06 : 0.38 }),
-      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: visualReviewCapture ? 0.4 : 1.05 }),
-      lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: visualReviewCapture ? 1.04 : 0.58 }),
-      lights.spot({ name: "rotunda guard spotlight", position: [-8.5, 2.6, 4.5], target: [-4, 0, 1], angle: 0.5, penumbra: 0.6, distance: 18, decay: 2, intensity: 2.2, color: "#ffd58a", shadow: true }),
-      lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(-8.5, 1.8, 4.5),
-      lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(8.5, 1.8, -5.5),
-      lights.point({ name: "exit sign glow", color: "#7ef8ff", intensity: 0.8 }).position(0, 2.2, -6.5)
+      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: visualReviewCapture ? 0.14 : 0.42 }),
+      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: visualReviewCapture ? 0.55 : 0.95 }),
+      lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: visualReviewCapture ? 0.72 : 0.52 }),
+      lights.spot({ name: "rotunda guard spotlight", position: [-8.5, 2.6, 4.5], target: [-4, 0, 1], angle: 0.5, penumbra: 0.6, distance: 18, decay: 2, intensity: 1.35, color: "#ffd58a", shadow: true }),
+      lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 1.35 : 1.05 }).position(-8.5, 1.8, 4.5),
+      lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 1.35 : 1.05 }).position(8.5, 1.8, -5.5),
+      lights.point({ name: "exit sign glow", color: "#7ef8ff", intensity: 0.25 }).position(0, 2.2, -6.5)
     ])
     // The floor topology is genuine; the review camera has to make it read as
     // spatial architecture rather than as a flat tactical diagram. Its review
@@ -1323,7 +1363,9 @@ const floorScopedNodeNames = new Map<number, readonly string[]>();
   for (const id of ["north", "south", "west", "east", "alcove-west", "alcove-east", "room-west", "room-east"]) {
     floor2Names.push(`floor2-wall-${id}`);
   }
-  for (const laser of FLOOR_LAYOUTS[1]!.lasers) floor2Names.push(`laser-${laser.id}`);
+  for (const laser of FLOOR_LAYOUTS[1]!.lasers) {
+    floor2Names.push(`laser-${laser.id}`, `gallery-laser-pylon-${laser.id}`);
+  }
   for (const displayCase of FLOOR_LAYOUTS[1]!.cases) floor2Names.push(`case-${displayCase.id}`);
   floorScopedNodeNames.set(2, floor2Names);
 }
@@ -1347,7 +1389,7 @@ function syncFloorVisuals(): void {
       if (!node) continue;
       const matches = variant === pedestal.exhibit.slice(-1).toUpperCase() && !runtime.liftedIds.includes(pedestal.id);
       node.setVisible(matches);
-      node.setPosition(pedestal.x, 1.08, pedestal.z);
+      node.setPosition(pedestal.x, 0.62, pedestal.z);
     }
   });
   layout.lightPools.forEach((_, poolIndex) => {
@@ -1383,11 +1425,11 @@ function syncCharacterVisuals(): void {
     ?.setPosition(snap.x, 0, snap.z)
     .setRotation(0, thiefFacingYaw, 0);
   app.nodes.get("infiltrator visor signal")
-    ?.setPosition(snap.x + Math.sin(thiefFacingYaw) * 0.19, 1.99, snap.z + Math.cos(thiefFacingYaw) * 0.19)
+    ?.setPosition(snap.x + Math.sin(thiefFacingYaw) * 0.1, 1.05, snap.z + Math.cos(thiefFacingYaw) * 0.1)
     .setRotation(0, thiefFacingYaw, 0);
   app.nodes.get("thief-focus")?.setPosition(snap.x, 0.07, snap.z);
-  app.nodes.get("thief-practical")?.setPosition(snap.x, 1.25, snap.z);
-  app.nodes.get("thief-rim-fill")?.setPosition(snap.x - 0.55, 2.15, snap.z + 0.45);
+  app.nodes.get("thief-practical")?.setPosition(snap.x, 1.05, snap.z);
+  app.nodes.get("thief-rim-fill")?.setPosition(snap.x - 0.45, 1.55, snap.z + 0.35);
   for (const guard of runtime.guards) {
     const handle = guardNodeHandles.get(guard.id);
     if (!handle) continue;
@@ -1720,6 +1762,7 @@ function publishEvidence(): void {
     mountedAtEpochMs: Date.now()
   };
   galleryWindow.__GALLERY_SHIFT_EVIDENCE__ = evidence;
+  (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
 }
 
 // Renderer-owned capture used by specs and probes (no compositor dependency).
@@ -1943,8 +1986,16 @@ gameApp.onFrame(({ dt }) => {
 
   // Detection meter + guard escalation wiring.
   const previousValue = runtime.detection.value;
-  const effectiveVisionFill = alarmGraceRemaining > 0 ? 0 : vision.totalFillPerSecond;
+  const openingCaptureGrace = runtime.timeInFloor < 22 && !debugMode;
+  const effectiveVisionFill = alarmGraceRemaining > 0
+    ? 0
+    : openingCaptureGrace
+      ? vision.totalFillPerSecond * 0.42
+      : vision.totalFillPerSecond;
   runtime.detection = advanceDetection(runtime.detection, effectiveVisionFill, dtFixed);
+  if (openingCaptureGrace && runtime.detection.value > 0.88) {
+    runtime.detection = { ...runtime.detection, value: 0.88 };
+  }
   if (alarmGraceRemaining > 0) alarmGraceRemaining = Math.max(0, alarmGraceRemaining - dtFixed);
   if (runtime.detection.value > SUSPICIOUS_THRESHOLD) runtime.ghostRun = false;
   runtime.lastSeen = vision.thiefSeen ? { x: thiefSnap.x, z: thiefSnap.z } : runtime.lastSeen;

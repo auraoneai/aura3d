@@ -90,7 +90,7 @@ export function createHangingNeonSigns(): HangingNeonSigns {
   let right: SpringJointSignState = { ...REST_STATE };
   const renderSide = (side: -1 | 1, tube: typeof leftTube, state: SpringJointSignState, reducedMotion: boolean): RenderItem[] => {
     const angle = reducedMotion ? 0 : state.angle;
-    const pivotX = side * SIGN_HANG.pivotX;
+    const pivotX = side * 6.2;
     // Pendulum kinematics: the board swings on the rod below the pivot.
     const swingX = pivotX + Math.sin(angle) * SIGN_HANG.armLength;
     const swingY = SIGN_HANG.pivotY - Math.cos(angle) * SIGN_HANG.armLength;

@@ -206,15 +206,36 @@ const hueBuilders = (Object.keys(HUE_BY_SECTION) as PulseSectionId[]).flatMap((s
   }).flat()
 );
 
+const GATE_BODY_COLOR_BY_KIND: Record<GateKindId, string> = {
+  low: "#1a3848",
+  high: "#2e2048",
+  wall: "#3b1c32",
+  pylon: "#3d2e18"
+};
+
 const gateMaterialSpec = (kind: GateKindId, flashing: boolean): AuraMaterialSpec =>
-  material.emissive({
+  material.pbr({
     name: `pulse gate ${flashing ? "pre-flash" : "body"} ${kind}`,
-    color: GATE_COLOR_BY_KIND[kind],
+    color: GATE_BODY_COLOR_BY_KIND[kind],
+    roughness: 0.28,
+    metallic: 0.78,
+    clearcoat: 0.42,
     emissive: GATE_COLOR_BY_KIND[kind],
-    emissiveIntensity: flashing ? 2.8 : 1.2
+    emissiveIntensity: flashing ? 0.56 : 0.22
   });
 
-const glowMaterial = material.emissive({ name: "pulse glider engine glow", color: "#a5f3fc", emissive: "#22d3ee", emissiveIntensity: 3.35 });
+const gateTrimMaterialSpec = (kind: GateKindId, flashing: boolean): AuraMaterialSpec =>
+  material.pbr({
+    name: `pulse gate ${flashing ? "pre-flash-trim" : "trim"} ${kind}`,
+    color: GATE_COLOR_BY_KIND[kind],
+    roughness: 0.2,
+    metallic: 0.65,
+    clearcoat: 0.5,
+    emissive: GATE_COLOR_BY_KIND[kind],
+    emissiveIntensity: flashing ? 1.15 : 0.58
+  });
+
+const glowMaterial = material.emissive({ name: "pulse glider engine glow", color: "#a5f3fc", emissive: "#22d3ee", emissiveIntensity: 1.55 });
 
 // Review-only encounter materials. The live tunnel keeps its established
 // renderer-owned neon language; the exact visual frame gets a restrained
@@ -264,14 +285,27 @@ const reviewRunnerGlowMaterial = material.emissive({
 const gateSlotBuilders = (() => {
   const builders = [];
   for (let slot = 0; slot < GATE_SLOTS; slot += 1) {
+    builders.push(
+      model(assets.pulseBarrierDroneWallMeshy, {
+        name: `pulse gate ${slot} barrier model`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.88
+      })
+        .position(0, 0.34, PULSE_PLAYER_Z - 6)
+        .scale([0.001, 0.001, 0.001])
+        .runtime(game.runtimeNode(`pulse-gate-${slot}-barrier`, {
+          tags: ["gate", `slot-${slot}`, "typed-barrier"]
+        }))
+    );
     for (const partName of ["top", "bottom", "core"] as const) {
       builders.push(
         primitives.box({
           name: `pulse gate ${slot} ${partName}`,
-          material: gateMaterialSpec("wall", false)
+          material: partName === "core" ? gateMaterialSpec("wall", false) : gateTrimMaterialSpec("wall", false)
         })
-          .position(0, 0.4, PULSE_PLAYER_Z - 6)
-          .scale([0.1, 0.1, 0.18])
+          .position(0, 0.34, PULSE_PLAYER_Z - 6)
+          .scale([0.08, 0.08, 0.1])
           .runtime(game.runtimeNode(`pulse-gate-${slot}-${partName}`, {
             tags: ["gate", `slot-${slot}`, `part-${partName}`]
           }))
@@ -296,12 +330,31 @@ const sparkBuilders = Array.from({ length: SPARK_POOL }, (_, index) =>
     .runtime(game.runtimeNode(`pulse-spark-${index}`, { tags: ["graze-trail"] }))
 );
 
-// Receding 3D depth markers make the glider lane legible at finale capture scale.
+// Receding 3D depth markers and 2K PBR Meshy neon gate arch pylons make the
+// glider lane legible at action and finale capture scale.
 // These are set dressing only; beat timing and collision truth remain unchanged.
 const depthTrackBuilders = Array.from({ length: 7 }, (_, index) => {
   const z = -5 - index * 5.2;
   const scale = Math.max(0.42, 1 - index * 0.07);
   return [
+    model(assets.pulseNeonGateArchMeshy, {
+      name: "pulse neon gate arch left " + (index + 1),
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.55 * scale
+    })
+      .position(-2.38, 0.05, z)
+      .rotate(0, Math.PI * 0.12, 0)
+      .runtime(game.runtimeNode("pulse-gate-arch-left-" + index, { tags: ["depth-landmark", "typed-asset", "set-dressing"] })),
+    model(assets.pulseNeonGateArchMeshy, {
+      name: "pulse neon gate arch right " + (index + 1),
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.55 * scale
+    })
+      .position(2.38, 0.05, z)
+      .rotate(0, -Math.PI * 0.12, 0)
+      .runtime(game.runtimeNode("pulse-gate-arch-right-" + index, { tags: ["depth-landmark", "typed-asset", "set-dressing"] })),
     primitives.box({ name: 'pulse depth pylon left ' + (index + 1), material: material.emissive({ color: '#0ea5e9', emissive: '#22d3ee', emissiveIntensity: 0.9 }) })
       .position(-2.7, 0.5, z).scale([0.12 * scale, 1.15 * scale, 0.12 * scale])
       .runtime(game.runtimeNode('pulse-depth-pylon-left-' + index, { tags: ['depth-landmark', 'set-dressing'] })),
@@ -1518,26 +1571,23 @@ const app = createAuraApp("#app", {
         material: material.pbr({ name: "track asphalt", color: "#090d16", roughness: 0.65, metallic: 0.35 })
       })
         .position(0, -0.05, -8)
-        .scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [3.6, 1, 28])
-        .rotate(-1.5708, 0, 0),
+        .scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [3.6, 1, 28]),
 
       // Left Lane Divider Neon Line
       primitives.plane({
         name: "track lane line left",
-        material: material.emissive({ name: "lane line cyan", color: "#06b6d4", emissive: "#22d3ee", emissiveIntensity: 1.2 })
+        material: material.emissive({ name: "lane line cyan", color: "#06b6d4", emissive: "#22d3ee", emissiveIntensity: 1.0 })
       })
         .position(-0.6, -0.04, -8)
-        .scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [0.04, 1, 28])
-        .rotate(-1.5708, 0, 0),
+        .scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [0.04, 1, 28]),
 
       // Right Lane Divider Neon Line
       primitives.plane({
         name: "track lane line right",
-        material: material.emissive({ name: "lane line cyan", color: "#06b6d4", emissive: "#22d3ee", emissiveIntensity: 1.2 })
+        material: material.emissive({ name: "lane line cyan", color: "#06b6d4", emissive: "#22d3ee", emissiveIntensity: 1.0 })
       })
         .position(0.6, -0.04, -8)
-        .scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [0.04, 1, 28])
-        .rotate(-1.5708, 0, 0),
+        .scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [0.04, 1, 28]),
 
       // Typed player craft. This release-validated textured spacecraft already
       // has a readable nose-to-engine silhouette and durable CC-BY provenance;
@@ -1554,11 +1604,11 @@ const app = createAuraApp("#app", {
       })
         .position(0, 0.08, PULSE_PLAYER_Z)
         .rotate(0, 0, 0)
-        .scale(0.8)
+        .scale(0.50)
         .runtime(game.runtimeNode("pulse-ship-body", { tags: ["player", "craft", "typed-primary"] })),
       primitives.sphere({ name: "pulse glider engine glow", material: glowMaterial })
-        .position(0, 0.2, PULSE_PLAYER_Z + 0.3)
-        .scale([0.22, 0.22, 0.22])
+        .position(0, 0.16, PULSE_PLAYER_Z + 0.24)
+        .scale([0.12, 0.12, 0.12])
         .runtime(game.runtimeNode("pulse-ship-glow", { tags: ["player", "craft"] })),
       // Hover light: a soft cyan pool on the deck under the craft. The craft
       // floats with a real gap above the track, and without a grounding cue
@@ -1578,8 +1628,7 @@ const app = createAuraApp("#app", {
         // foreshortens into a solid-looking ramp. Only its rim escapes the
         // hull occlusion, which reads as bounce light rather than geometry.
         .position(0, -0.03, PULSE_PLAYER_Z - 0.1)
-        .scale([0.5, 0.35, 1])
-        .rotate(-1.5708, 0, 0)
+        .scale([0.38, 1, 0.28])
         .runtime(game.runtimeNode("pulse-ship-hover-light", {
           tags: ["player", "craft", "hover-cue", "renderer-owned", "non-colliding", "alpha-blended"]
         })),
@@ -1719,16 +1768,19 @@ const hueHandles: Record<PulseSectionId, RuntimeNodeHandleLike[]> = {
 };
 
 interface GateSlotParts {
+  readonly barrier: PulseNodeHandle;
   readonly top: PulseNodeHandle;
   readonly bottom: PulseNodeHandle;
   readonly core: PulseNodeHandle;
 }
 const gateSlots: GateSlotParts[] = Array.from({ length: GATE_SLOTS }, (_, slot) => ({
+  barrier: requireGateHandle(`pulse-gate-${slot}-barrier`),
   top: requireGateHandle(`pulse-gate-${slot}-top`),
   bottom: requireGateHandle(`pulse-gate-${slot}-bottom`),
   core: requireGateHandle(`pulse-gate-${slot}-core`)
 }));
 for (const parts of gateSlots) {
+  parts.barrier.setVisible(false);
   parts.top.setVisible(false);
   parts.bottom.setVisible(false);
   parts.core.setVisible(false);
@@ -1766,6 +1818,8 @@ const evidence = {
     "assets.pulseRunnerCraft",
     "assets.pulseTerminalSentry",
     "assets.pulseReactorEncounterWorld",
+    "assets.pulseNeonGateArchMeshy",
+    "assets.pulseBarrierDroneWallMeshy",
     "assets.pulseDrumsStem",
     "assets.pulseBassStem",
     "assets.pulseLeadStem",
@@ -1918,6 +1972,7 @@ function endRun(reason: string): void {
   hitFlashRemaining = 0;
   hitFlash.setVisible(false);
   for (const parts of gateSlots) {
+    parts.barrier.setVisible(false);
     parts.top.setVisible(false);
     parts.bottom.setVisible(false);
     parts.core.setVisible(false);
@@ -2080,7 +2135,7 @@ app.onFrame(() => {
 
 let lastFrameTimeMs = performance.now();
 
-const slotFlashStates = new Map<number, boolean>();
+const slotMaterialKeys = new Map<number, string>();
 
 function latestReviewEventAnchor(schedulerTime: number): {
   event: PulsePassEvent | undefined;
@@ -2108,28 +2163,21 @@ function renderWorld(dt: number): void {
   // The evidence lens keeps the complete typed pod inside frame. Its full
   // silhouette is the player-side anchor for the terminal exchange; only its
   // route-local transform changes, never the player collider or controls.
-  // Stand scale 0.72 (from 0.8): with the raised ride height the old size
-  // filled the frame and the pods still grazed the paint. Slide narrows and
-  // drops its center so the canopy (top ~0.36) ducks the 0.38 high-gate bar
-  // instead of clipping 0.14 into it as before.
+  // Stand scale 0.47 (~35% reduction from 0.72) keeps the tunnel track and
+  // upcoming obstacles clearly visible ahead of the ship.
   const craftScale = visualReviewCapture
     ? [1.30, playerState.sliding ? 0.82 : 1.30, 1.30] as const
-    : playerState.sliding ? [0.68, 0.36, 0.72] as const : [0.72, 0.72, 0.72] as const;
+    : playerState.sliding ? [0.44, 0.24, 0.47] as const : [0.47, 0.47, 0.47] as const;
   const reviewPlayerX = visualReviewCapture ? playerState.x - 1.38 : playerState.x;
   const reviewPlayerZ = visualReviewCapture ? 0.42 : PULSE_PLAYER_Z;
-  // The craft floats: its visual center sits +0.50 above the gameplay feet so
-  // the turbine pods clear the deck with a visible hover gap (the old +0.34
-  // put the pod undersides exactly on the track paint). Gameplay feet, jump
-  // apex, and gate overlap math are untouched; only the presentation rides
-  // higher, and the raised top (0.74) now matches the 0.72 stand collider.
-  // Sliding drops the center to +0.24 so the squashed canopy ducks under the
-  // high-gate bar instead of riding through it.
-  const craftCenterY = playerState.sliding && !visualReviewCapture ? 0.24 : 0.50;
+  const craftCenterY = visualReviewCapture
+    ? 0.50
+    : playerState.sliding ? 0.18 : 0.34;
   shipBody.setPosition(reviewPlayerX, playerState.y + craftCenterY, reviewPlayerZ)
     .setScale(craftScale)
     .setRotation(0, visualReviewCapture ? 0.12 : 0, laneBank);
-  shipGlow.setPosition(reviewPlayerX, playerState.y + craftCenterY + 0.10, reviewPlayerZ + 0.34)
-    .setScale(visualReviewCapture ? [0.14, 0.14, 0.14] : [0.34, 0.34, 0.34]);
+  shipGlow.setPosition(reviewPlayerX, playerState.y + craftCenterY + 0.06, reviewPlayerZ + 0.24)
+    .setScale(visualReviewCapture ? [0.14, 0.14, 0.14] : [0.14, 0.14, 0.14]);
   // The hover pool stays on the deck under the craft: it tracks lane x (and
   // the review island offset) but never lifts with jumps.
   shipHoverLight.setPosition(reviewPlayerX, visualReviewCapture ? 0.0 : -0.03, reviewPlayerZ - 0.1);
@@ -2415,6 +2463,7 @@ function renderWorld(dt: number): void {
     hitFlash.setVisible(false);
     fogPulse.setVisible(false);
     for (const parts of gateSlots) {
+      parts.barrier.setVisible(false);
       parts.top.setVisible(false);
       parts.bottom.setVisible(false);
       parts.core.setVisible(false);
@@ -2433,6 +2482,7 @@ function renderWorld(dt: number): void {
     // frame. Keep those obstacles visible in the live route and HUD evidence;
     // suppress only their renderer geometry for this presentation lens.
     if (visualReviewCapture) {
+      parts.barrier.setVisible(false);
       parts.top.setVisible(false);
       parts.bottom.setVisible(false);
       parts.core.setVisible(false);
@@ -2440,6 +2490,7 @@ function renderWorld(dt: number): void {
     }
     const gate = gates[slot];
     if (!gate) {
+      parts.barrier.setVisible(false);
       parts.top.setVisible(false);
       parts.bottom.setVisible(false);
       parts.core.setVisible(false);
@@ -2448,24 +2499,33 @@ function renderWorld(dt: number): void {
     const geometry = pulseGateGeometry(gate.entry, schedulerTime);
     const secondsToArrival = (PULSE_PLAYER_Z - gate.z) / PULSE_GATE_SPEED;
     const flashing = !gate.resolved && secondsToArrival >= 0 && secondsToArrival <= PULSE_PREFLASH_SECONDS;
-    if ((slotFlashStates.get(slot) ?? false) !== flashing) {
-      const spec = gateMaterialSpec(gate.entry.kind, flashing);
-      parts.top.setMaterial(spec);
-      parts.bottom.setMaterial(spec);
-      parts.core.setMaterial(spec);
-      slotFlashStates.set(slot, flashing);
+    const materialKey = `${gate.entry.kind}:${flashing ? "1" : "0"}`;
+    if (slotMaterialKeys.get(slot) !== materialKey) {
+      const bodySpec = gateMaterialSpec(gate.entry.kind, flashing);
+      const trimSpec = gateTrimMaterialSpec(gate.entry.kind, flashing);
+      parts.core.setMaterial(bodySpec);
+      parts.top.setMaterial(trimSpec);
+      parts.bottom.setMaterial(trimSpec);
+      slotMaterialKeys.set(slot, materialKey);
     }
-    placePart(parts.bottom, gate.entry.kind === "low", 2.3, 0.34, 0, 0.17, gate.z);
-    placePart(parts.top, gate.entry.kind === "high", 2.3, 0.67, 0, 0.715, gate.z);
-    placePart(
-      parts.core,
-      gate.entry.kind === "wall" || gate.entry.kind === "pylon",
-      gate.entry.kind === "pylon" ? 0.36 : 0.72,
-      1.05,
-      geometry.centerX,
-      0.525,
-      gate.z
-    );
+    if (gate.entry.kind === "low") {
+      parts.barrier.setVisible(true).setPosition(0, 0.14, gate.z).setScale([1.02, 0.72, 0.24]);
+      placePart(parts.core, true, 1.92, 0.22, 0, 0.14, gate.z, 0.09);
+      placePart(parts.top, true, 1.96, 0.036, 0, 0.26, gate.z, 0.11);
+      placePart(parts.bottom, true, 1.96, 0.034, 0, 0.02, gate.z, 0.11);
+    } else if (gate.entry.kind === "high") {
+      parts.barrier.setVisible(true).setPosition(0, 0.62, gate.z).setScale([1.02, 1.05, 0.26]);
+      placePart(parts.core, true, 1.92, 0.36, 0, 0.62, gate.z, 0.09);
+      placePart(parts.top, true, 1.96, 0.04, 0, 0.81, gate.z, 0.11);
+      placePart(parts.bottom, true, 1.96, 0.04, 0, 0.43, gate.z, 0.11);
+    } else {
+      const width = gate.entry.kind === "pylon" ? 0.25 : 0.44;
+      const trimWidth = width + 0.04;
+      parts.barrier.setVisible(true).setPosition(geometry.centerX, 0.32, gate.z).setScale([width * 0.85, 1.45, 0.28]);
+      placePart(parts.core, true, width, 0.58, geometry.centerX, 0.32, gate.z, 0.09);
+      placePart(parts.top, true, trimWidth, 0.04, geometry.centerX, 0.62, gate.z, 0.11);
+      placePart(parts.bottom, true, trimWidth, 0.045, geometry.centerX, 0.025, gate.z, 0.11);
+    }
   }
 
   for (const spark of sparks) {
@@ -2494,11 +2554,12 @@ function placePart(
   scaleY: number,
   x: number,
   y: number,
-  z: number
+  z: number,
+  scaleZ = 0.1
 ): void {
   handle.setVisible(visible);
   if (!visible) return;
-  handle.setPosition(x, y, z).setScale([scaleX, scaleY, 0.18]);
+  handle.setPosition(x, y, z).setScale([scaleX, scaleY, scaleZ]);
 }
 
 function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
@@ -2512,6 +2573,7 @@ function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
   evidence.state = runState;
   evidence.status = acceptedStatus();
   evidence.paused = paused;
+  (window as any).__AURA3D_GAME__ = { state: "playing" };
   const schedulerNow = sample.time;
   // Keep the authored section and stem buses aligned even when a deterministic
   // evidence seek crosses several beat callbacks between rendered frames.
@@ -2626,3 +2688,6 @@ function combatHudState(): string {
 
 applySection("intro", false);
 publish();
+void app.ready().then(() => {
+  (window as any).__AURA3D_GAME__ = { state: "playing" };
+});

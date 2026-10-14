@@ -327,6 +327,40 @@ const sceneDef = scene()
       targetMaxDimension: visualReviewCapture ? 0.001 : 4.25
     }).position(BUOY_STATION.x, BUOY_STATION.y, BUOY_STATION.z).runtime({ id: "buoy-station", tags: ["bank-zone", "repair-zone"] }),
 
+    // Abyssal Sonar Relay Station & Sunken Reactor Containment Vaults (Meshy 2k PBR)
+    model(assets.deepAbyssalBeaconRigMeshy, {
+      name: "deep-abyssal-beacon-rig-3d",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 3.4
+    })
+      .position(-2.8, -13.8, -9.2)
+      .runtime({ id: "deep-abyssal-beacon-rig-3d", tags: ["typed-asset", "sonar-relay-station"] }),
+    model(assets.deepAbyssalBeaconRigMeshy, {
+      name: "deep-abyssal-beacon-rig-3d-buoy",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 3.4
+    })
+      .position(3.2, -5.8, -4.5)
+      .runtime({ id: "deep-abyssal-beacon-rig-3d-buoy", tags: ["typed-asset", "sonar-relay-station"] }),
+    model(assets.deepSunkenReactorCoreMeshy, {
+      name: "deep-sunken-reactor-vault-3d",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.2
+    })
+      .position(1.4, -14.2, -11.2)
+      .runtime({ id: "deep-sunken-reactor-vault-3d", tags: ["typed-asset", "salvage-containment-vault"] }),
+    model(assets.deepSunkenReactorCoreMeshy, {
+      name: "deep-sunken-reactor-vault-3d-trench",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.2
+    })
+      .position(-5.8, -26.2, -15.8)
+      .runtime({ id: "deep-sunken-reactor-vault-3d-trench", tags: ["typed-asset", "salvage-containment-vault"] }),
+
     // Wreck Obstacles
     ...(visualReviewCapture ? [] : WRECK_OBSTACLES).map((obs) =>
       model(assets.deepRecoveryWreckHull, {
@@ -977,6 +1011,7 @@ function updateEvidence(): void {
     },
     renderer: diagnostics
   };
+  (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
 }
 
 // Window Hooks for Deterministic Playwright Tests

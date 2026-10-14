@@ -206,11 +206,11 @@ export function defaultProbeLoader(factory: EnvironmentProbeFactory | (() => Env
   const resolveFactory = (): EnvironmentProbeFactory => (typeof factory === "function" ? factory() : factory);
   return async (key) => {
     if (key.preset) {
-      const manifestBytes = await fetchBytes(`aura-environments/${key.preset}.manifest.json`);
+      const manifestBytes = await fetchBytes(`/aura-environments/${key.preset}.manifest.json`);
       const manifest = JSON.parse(new TextDecoder().decode(manifestBytes)) as BakedEnvironmentManifest;
       const [ktx2, sh9Bytes] = await Promise.all([
-        fetchBytes(`aura-environments/${manifest.specular}`),
-        fetchBytes(`aura-environments/${manifest.sh9}`)
+        fetchBytes(`/aura-environments/${manifest.specular}`),
+        fetchBytes(`/aura-environments/${manifest.sh9}`)
       ]);
       const cube = readRgb9e5Cube(ktx2);
       const sh9 = new Float32Array(sh9Bytes.buffer.slice(sh9Bytes.byteOffset, sh9Bytes.byteOffset + sh9Bytes.byteLength));

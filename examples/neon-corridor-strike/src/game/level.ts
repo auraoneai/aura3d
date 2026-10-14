@@ -15,6 +15,7 @@ import {
   text3D
 } from "@aura3d/engine";
 import { assets } from "../aura-assets";
+import { assets as rootAssets } from "../../../../src/aura-assets";
 import { ENEMIES, ENEMY_BODY_Y, ENEMY_VISUAL_Y } from "./enemies";
 import { LAMPS, PROPS } from "./props";
 import { EYE_HEIGHT, LOOK_AHEAD, PLAYER_START } from "./state";
@@ -50,9 +51,9 @@ export const PICKUPS = [
 export function buildScene() {
   const world = groundedRenderedAssetPlacement(assets.neonCorridorContainmentWorld, { targetMaxDimension: 22.2, floorY: 0, x: 0, z: -1 });
   const rifle = groundedRenderedAssetPlacement(assets.neonContainmentPulseRifle, { targetMaxDimension: 0.55, floorY: 0 });
-  const crate = groundedRenderedAssetPlacement(assets.ammoCrate, { targetHeight: 0.27, floorY: 0.2 });
-  const coverCrate = groundedRenderedAssetPlacement(assets.ammoCrate, { targetHeight: 0.34, floorY: 0 });
-  const kit = groundedRenderedAssetPlacement(assets.medkit, { targetHeight: 0.42, floorY: 0.2 });
+  const crate = groundedRenderedAssetPlacement(rootAssets.fpsEnergyCorePickupMeshy, { targetHeight: 0.36, floorY: 0.2 });
+  const coverCrate = groundedRenderedAssetPlacement(rootAssets.fpsSciFiCoverCrateMeshy, { targetHeight: 0.44, floorY: 0 });
+  const kit = groundedRenderedAssetPlacement(rootAssets.fpsEnergyCorePickupMeshy, { targetHeight: 0.42, floorY: 0.2 });
   // Meshy neon-arena corridor module (decimated 1934094 -> 249999 tris, PBR
   // preserved). Visual-only wall dressing; the authored hull, sight lines,
   // hitscan, and player collision remain authoritative and unchanged.
@@ -174,23 +175,21 @@ export function buildScene() {
         .runtime(game.runtimeNode(`enemy-${enemy.id}-threat-collar`, { tags: ["enemy", "telegraph", "fx"] }));
     }))
     .addMany(PICKUPS.map((pickup) => {
-      const asset = pickup.kind === "ammo" ? assets.ammoCrate : assets.medkit;
+      const asset = pickup.kind === "ammo" ? rootAssets.fpsEnergyCorePickupMeshy : assets.medkit;
       const placed = pickup.kind === "ammo" ? crate : kit;
       return model(asset, { name: `${pickup.kind} pickup ${pickup.id}` })
         .position(pickup.x, placed.position[1], pickup.z)
         .scale(placed.scale)
         .runtime(game.runtimeNode(`pickup-${pickup.id}`, { tags: ["pickup", pickup.kind] }));
     }))
-    // Grounded, textured typed crates replace the imported corridor's pale
-    // blockout-rubble read in the opening encounter. They are visual cover only:
-    // the existing wall hull, sight lines, hitscan, and player collision remain
-    // authoritative and unchanged.
+    // Grounded, textured typed Meshy sci-fi tactical cover crates replace the
+    // imported corridor's pale blockout-rubble read in the opening encounter.
     .addMany([
-      [-2.42, -1.6, -0.08],
-      [2.34, -3.05, 0.14],
-      [-2.28, -5.45, -0.18]
+      [-2.12, -1.6, -0.08],
+      [2.08, -3.05, 0.14],
+      [-2.05, -5.45, -0.18]
     ].map(([x, z, yaw], index) =>
-      model(assets.ammoCrate, {
+      model(rootAssets.fpsSciFiCoverCrateMeshy, {
         name: `typed corridor cover ${index + 1}`,
         role: "setDressing",
         castShadow: true,

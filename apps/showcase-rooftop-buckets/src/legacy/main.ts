@@ -164,6 +164,8 @@ const VENUE_REVIEW_HIDDEN_NODES = [
   "tower illuminated band", "tower illuminated band.001", "tower illuminated band.002",
   "tower illuminated band.003", "tower illuminated band.004",
   "venue flood bar", "venue flood bar.001", "venue flood bar.002", "venue flood bar.003",
+  "streetlight banner", "streetlight banner.001", "streetlight banner.002",
+  "streetlight banner.003", "streetlight banner.004",
   // The V2 package also carries a generic cylindrical roof prop at
   // (3.8, 2.75, -4.65).  At the sideline camera its silhouette becomes a
   // giant near-black orb that reads as an accidental placeholder.  It is
@@ -178,15 +180,30 @@ const VENUE_REVIEW_HIDDEN_NODES = [
   "service tower.004"
 ] as const;
 
-// The authored court package includes five rear sponsor banners. The center
-// amber banner is a venue accent, not a gameplay surface, and its projection
-// lands directly below the typed hoop in the fixed sideline lens. Keep the
-// surrounding sponsor rhythm while hiding only this occluding panel (and its
-// slim rail) so the rim/net remain readable in both composition captures.
-const COURT_REVIEW_HIDDEN_NODES = [
+// Hide the unshaded cyan sponsor banners and primitive peg-doll spectator
+// crowd (sphere heads + box torsos) baked into rooftopCourt so the bleachers
+// read as clean dark-slate stadium seating.
+const COURT_CROWD_TORSO_NODES: readonly string[] = [1, 2, 3, 4].flatMap((row) =>
+  [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6].map((col) => `crowd torso ${row}-${col}`)
+);
+const COURT_CROWD_HEAD_NODES: readonly string[] = [
+  "Sphere",
+  ...Array.from({ length: 51 }, (_, index) => `Sphere.${String(index + 1).padStart(3, "0")}`)
+];
+const COURT_REVIEW_HIDDEN_NODES: readonly string[] = [
+  "rear sponsor banner -5.6",
+  "rear sponsor banner -2.8",
   "rear sponsor banner 0",
-  "rear sponsor bar 0"
-] as const;
+  "rear sponsor banner 2.8",
+  "rear sponsor banner 5.6",
+  "rear sponsor bar -5.6",
+  "rear sponsor bar -2.8",
+  "rear sponsor bar 0",
+  "rear sponsor bar 2.8",
+  "rear sponsor bar 5.6",
+  ...COURT_CROWD_TORSO_NODES,
+  ...COURT_CROWD_HEAD_NODES
+];
 
 // ---------------- Game State ----------------
 const audio = new BucketsAudioController();
@@ -313,7 +330,7 @@ const contestReactionHandles = [0, 1].map((index) =>
 );
 const AIM_POINT_COUNT = 25;
 const AIM_SEGMENT_COUNT = AIM_POINT_COUNT - 1;
-const aimMaterial = material.emissive({ name: "predicted-first-flight", color: "#38bdf8", emissive: "#0284c7" });
+const aimMaterial = material.emissive({ name: "predicted-first-flight", color: "#38bdf8", emissive: "#0284c7", emissiveIntensity: 0.36, opacity: 0.78 });
 const flightMaterial = material.emissive({
   name: "live-flight-guide",
   // The review tracer is a deliberate broadcast accent: warm gold/orange
@@ -321,9 +338,9 @@ const flightMaterial = material.emissive({
   // same bounded samples used by the gameplay guide.
   color: visualReviewCapture ? "#ffe0a3" : "#ffe08a",
   emissive: visualReviewCapture ? "#f97316" : "#ff6a00",
-  emissiveIntensity: visualReviewCapture ? 3.05 : 1.4
+  emissiveIntensity: visualReviewCapture ? 0.65 : 0.45
 });
-const goldMaterial = material.emissive({ name: "gold-ball-live", color: "#fbbf24", emissive: "#d97706" });
+const goldMaterial = material.emissive({ name: "gold-ball-live", color: "#fbbf24", emissive: "#d97706", emissiveIntensity: 0.45 });
 const orangeMaterial = material.pbr({
   name: "orange-ball-live",
   color: "#f97316",
@@ -339,31 +356,43 @@ const backboardMaterial = material.pbr({
   clearcoat: 0.72,
   opacity: 0.92
 });
-const rimMaterial = material.emissive({ name: "readable-rim", color: "#fb923c", emissive: "#ea580c" });
+const rimMaterial = material.emissive({ name: "readable-rim", color: "#fb923c", emissive: "#ea580c", emissiveIntensity: 0.48 });
 const rimGlowMaterial = material.emissive({
   name: "readable-rim-contact halo",
   color: "#ffd166",
   emissive: "#f97316",
-  emissiveIntensity: visualReviewCapture ? 1.65 : 1.15,
-  opacity: 0.82
+  emissiveIntensity: visualReviewCapture ? 0.58 : 0.48,
+  opacity: 0.78
 });
-const fireHaloMaterial = material.emissive({ name: "fire-streak-halo", color: "#fbbf24", emissive: "#f97316" });
-const victoryHaloMaterial = material.emissive({ name: "gold-victory-halo", color: "#fde68a", emissive: "#f59e0b" });
-const failureHaloMaterial = material.emissive({ name: "buzzer-failure-halo", color: "#fb7185", emissive: "#e11d48" });
-const netMaterial = material.emissive({ name: "rim net strands", color: "#dbeafe", emissive: "#93c5fd", emissiveIntensity: 0.56, opacity: 0.84 });
+const fireHaloMaterial = material.emissive({ name: "fire-streak-halo", color: "#fbbf24", emissive: "#f97316", emissiveIntensity: 0.65 });
+const victoryHaloMaterial = material.emissive({ name: "gold-victory-halo", color: "#fde68a", emissive: "#f59e0b", emissiveIntensity: 0.65 });
+const failureHaloMaterial = material.emissive({ name: "buzzer-failure-halo", color: "#fb7185", emissive: "#e11d48", emissiveIntensity: 0.65 });
+const netMaterial = material.emissive({ name: "rim net strands", color: "#dbeafe", emissive: "#93c5fd", emissiveIntensity: 0.38, opacity: 0.84 });
 const contactShadowMaterial = material.pbr({ name: "player contact shadow", color: "#120f1f", roughness: 1, metallic: 0, opacity: 0.5 });
-const pressureAuraMaterial = material.emissive({ name: "defender pressure floor ring", color: "#a21caf", emissive: "#f472d0", emissiveIntensity: 1.08, opacity: 0.68 });
-const contactMakeMaterial = material.emissive({ name: "swish contact burst", color: "#fef08a", emissive: "#f97316", emissiveIntensity: 2.2, opacity: 0.82 });
-const contactMissMaterial = material.emissive({ name: "miss contact burst", color: "#fda4af", emissive: "#e11d48", emissiveIntensity: 1.8, opacity: 0.76 });
-const blockContactMaterial = material.emissive({ name: "defender block burst", color: "#f0abfc", emissive: "#c026d3", emissiveIntensity: 2.35, opacity: 0.88 });
-const releaseBurstMaterial = material.emissive({ name: "ball release burst", color: "#fde68a", emissive: "#fb923c", emissiveIntensity: 2.15, opacity: 0.82 });
-const contestReactionMaterial = material.emissive({ name: "live contest reaction", color: "#e879f9", emissive: "#a21caf", emissiveIntensity: 1.9, opacity: 0.76 });
+const pressureAuraMaterial = material.emissive({ name: "defender pressure floor ring", color: "#a21caf", emissive: "#f472d0", emissiveIntensity: 0.52, opacity: 0.62 });
+const contactMakeMaterial = material.emissive({ name: "swish contact burst", color: "#fef08a", emissive: "#f97316", emissiveIntensity: 0.82, opacity: 0.8 });
+const contactMissMaterial = material.emissive({ name: "miss contact burst", color: "#fda4af", emissive: "#e11d48", emissiveIntensity: 0.72, opacity: 0.74 });
+const blockContactMaterial = material.emissive({ name: "defender block burst", color: "#f0abfc", emissive: "#c026d3", emissiveIntensity: 0.88, opacity: 0.82 });
+const releaseBurstMaterial = material.emissive({ name: "ball release burst", color: "#fde68a", emissive: "#fb923c", emissiveIntensity: 0.62, opacity: 0.76 });
+const contestReactionMaterial = material.emissive({ name: "live contest reaction", color: "#e879f9", emissive: "#a21caf", emissiveIntensity: 0.72, opacity: 0.72 });
 const contestSparkMaterial = material.emissive({
   name: "contest hand sparks",
   color: "#f5d0fe",
   emissive: "#c026d3",
-  emissiveIntensity: visualReviewCapture ? 2.75 : 2.2,
-  opacity: 0.84
+  emissiveIntensity: visualReviewCapture ? 0.92 : 0.78,
+  opacity: 0.8
+});
+const rearSponsorBoardMaterial = material.pbr({
+  name: "rooftop dark stadium sponsor board",
+  color: "#101a2d",
+  roughness: 0.34,
+  metallic: 0.46
+});
+const rearSponsorTrimMaterial = material.pbr({
+  name: "rooftop dark stadium sponsor trim",
+  color: "#1c2c48",
+  roughness: 0.28,
+  metallic: 0.58
 });
 function buildScene() {
   return scene()
@@ -371,8 +400,8 @@ function buildScene() {
     .addMany([
       // Atmospheric & Lighting Setup
       effects.fog({ name: "dusk haze", density: 0.005, color: "#24173f", intensity: 0.14 }),
-      effects.neonBloom({ intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }),
+      effects.neonBloom({ intensity: 0.16, threshold: 0.82, radius: 0.35, maxIntensity: 0.52, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.colorGrade({ exposure: 1.02, contrast: 1.06, saturation: 1.06 }),
       effects.antiAlias({ mode: "fxaa" }),
       // A restrained arena rig leaves real surface gradients on the court and
       // typed characters instead of flattening every material into emissive UI.
@@ -412,7 +441,54 @@ function buildScene() {
       }).position(4.2, 3.8, 1.4),
 
       // 10/10 Surrounding Skyscraper Skyline, Court Lines & Stanchion
-      ...createRooftopDressing({ reviewCapture: visualReviewCapture }),
+      ...createRooftopDressing({ reviewCapture: visualReviewCapture }).map((raw) => {
+        const node = typeof (raw as { toJSON?: () => unknown }).toJSON === "function"
+          ? ((raw as { toJSON: () => Record<string, unknown> }).toJSON())
+          : { ...(raw as unknown as Record<string, unknown>) };
+        if (node.material && typeof node.material === "object") {
+          const mat = { ...(node.material as Record<string, unknown>) };
+          if (typeof mat.emissiveIntensity === "number") {
+            mat.emissiveIntensity = Number((mat.emissiveIntensity * 0.42).toFixed(3));
+          }
+          node.material = mat;
+        }
+        return node as unknown as ReturnType<typeof createRooftopDressing>[number];
+      }),
+      // Clean dark-slate (#101a2d) metallic PBR stadium boards replacing the
+      // unshaded cyan banners along the top of the bleachers.
+      ...[-5.6, -2.8, 2.8, 5.6].flatMap((bx) => [
+        primitives.box({ name: `rooftop-slate-sponsor-board-${bx}`, material: rearSponsorBoardMaterial })
+          .position(bx, 3.92, -1.85)
+          .scale([1.62, 0.88, 0.07]),
+        primitives.box({ name: `rooftop-slate-sponsor-trim-${bx}`, material: rearSponsorTrimMaterial })
+          .position(bx, 4.38, -1.81)
+          .scale([1.66, 0.06, 0.09])
+      ]),
+
+      // Authored 2k PBR rooftop scoreboard gantry behind the backboard/bleachers
+      // and rolling basketball rack carts flanking the 3-point arc stations.
+      model(assets.rooftopScoreboardRigMeshy, {
+        name: "rooftop-scoreboard-gantry-3d",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 4.8
+      }).position(0, 4.45, -2.35),
+      model(assets.rooftopBallRackCartMeshy, {
+        name: "rooftop-ball-rack-cart-3d-left",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.25
+      })
+        .position(-5.45, 0, 3.25)
+        .rotate(0, 0.42, 0),
+      model(assets.rooftopBallRackCartMeshy, {
+        name: "rooftop-ball-rack-cart-3d-right",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.25
+      })
+        .position(5.45, 0, 3.25)
+        .rotate(0, -0.42, 0),
 
       // The V2 venue is a registered, release-probed authored environment
       // package (service towers, stepped bleachers, handrails, banners, and
@@ -618,16 +694,18 @@ function buildScene() {
             material: material.emissive({
               name: `spot-mat-${s.id}`,
               color: s.points === 3 ? "#f59e0b" : "#38bdf8",
-              emissive: s.points === 3 ? "#b45309" : "#0284c7"
+              emissive: s.points === 3 ? "#b45309" : "#0284c7",
+              emissiveIntensity: 0.26,
+              opacity: 0.76
             })
           })
           .position(s.x, 0.05, s.z)
-          .scale(visualReviewCapture ? [0.38, 0.018, 0.38] : [0.7, 0.02, 0.7])
+          .scale(visualReviewCapture ? [0.32, 0.016, 0.32] : [0.46, 0.016, 0.46])
       ),
       ...Array.from({ length: visualReviewCapture ? AIM_POINT_COUNT - 4 : AIM_POINT_COUNT }, (_, index) =>
         primitives.sphere({ name: `aim-point-${index}`, material: aimMaterial })
           .position(0, -20, 0)
-          .scale(visualReviewCapture ? [0.145, 0.145, 0.145] : [0.095, 0.095, 0.095])
+          .scale(visualReviewCapture ? [0.068, 0.068, 0.068] : [0.052, 0.052, 0.052])
           .runtime(game.runtimeNode(`aim-point-${index}`, { tags: ["aim-guide", "bounded-first-flight"] }))
       ),
       // Closely connected renderer-owned segments turn the same bounded
@@ -636,7 +714,7 @@ function buildScene() {
       ...Array.from({ length: AIM_SEGMENT_COUNT }, (_, index) =>
         primitives.box({ name: `aim-segment-${index}`, material: flightMaterial })
           .position(0, -20, 0)
-          .scale([0.055, 0.055, 0.001])
+          .scale([0.028, 0.028, 0.001])
           .runtime(game.runtimeNode(`aim-segment-${index}`, { tags: ["aim-guide", "flight-ribbon"] }))
       ),
       // A small renderer-owned halo travels with the ball during a live shot;
@@ -1530,9 +1608,9 @@ function syncTransforms(): void {
       // preserve the full truthful prediction while avoiding a thick tube that
       // visually competes with the typed ball and athlete silhouettes.
       .setScale([
-        visualReviewCapture ? 0.044 : 0.055,
-        visualReviewCapture ? 0.044 : 0.055,
-        length * (visualReviewCapture ? 0.78 : 1.02)
+        0.028,
+        0.028,
+        length * (visualReviewCapture ? 0.78 : 0.92)
       ]);
   }
 }
@@ -1605,6 +1683,7 @@ function publishEvidence(): RooftopBucketsEvidence {
   };
   (window as unknown as { __ROOFTOP_BUCKETS_EVIDENCE__?: RooftopBucketsEvidence }).__ROOFTOP_BUCKETS_EVIDENCE__ = ev;
   Object.defineProperty(window, "__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__", { value: ev, configurable: true, writable: true });
+  (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
   return ev;
 }
 

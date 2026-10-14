@@ -129,12 +129,12 @@ export function createRenderedArenaStage(): RenderedArenaStage {
   const barrierItemsByPalette = Object.fromEntries(
     Object.entries(paletteMaterials).map(([paletteId, palette]) => {
       const sourceItems = [
-        item("front-barrier-lower", barrierBeam, barrierMetal, [0, 0.22, 0.74], [0.045, 2.9, 0.045], [0, 0, Math.PI / 2]),
-        item("front-barrier-upper", barrierBeam, barrierMetal, [0, 0.43, 0.74], [0.032, 2.9, 0.032], [0, 0, Math.PI / 2]),
-        item("front-barrier-post-left", barrierPost, barrierMetal, [-2.72, 0.28, 0.74], [0.075, 0.56, 0.075]),
-        item("front-barrier-post-right", barrierPost, barrierMetal, [2.72, 0.28, 0.74], [0.075, 0.56, 0.075]),
-        item("barrier-edge-left", cube, palette.rim, [-1.42, 0.43, 0.77], [1.22, 0.022, 0.018]),
-        item("barrier-edge-right", cube, palette.accent, [1.42, 0.43, 0.77], [1.22, 0.022, 0.018])
+        item("front-barrier-lower", barrierBeam, barrierMetal, [0, -0.08, 0.66], [0.028, 2.9, 0.028], [0, 0, Math.PI / 2]),
+        item("front-barrier-upper", barrierBeam, barrierMetal, [0, -0.02, 0.66], [0.022, 2.9, 0.022], [0, 0, Math.PI / 2]),
+        item("front-barrier-post-left", barrierPost, barrierMetal, [-2.72, -0.04, 0.66], [0.045, 0.12, 0.045]),
+        item("front-barrier-post-right", barrierPost, barrierMetal, [2.72, -0.04, 0.66], [0.045, 0.12, 0.045]),
+        item("barrier-edge-left", cube, palette.rim, [-1.42, 0.025, 0.64], [1.22, 0.014, 0.014]),
+        item("barrier-edge-right", cube, palette.accent, [1.42, 0.025, 0.64], [1.22, 0.014, 0.014])
       ];
       const merged = consolidateStaticMeshes(
         sourceItems.flatMap((entry) => entry.material
@@ -173,18 +173,18 @@ export function createRenderedArenaStage(): RenderedArenaStage {
         // built edge where it meets the arena's ground plane.
         item("stage-riser", cube, riser, [0, -0.135, 0], [6.05, 0.14, 1.34]),
         item("combat-floor", cube, floor, [0, -0.055, 0], [5.8, 0.075, 1.16]),
-        item("front-rim", cube, palette.rim, [0, 0.04, 0.61], [5.75, 0.026, 0.026]),
-        item("back-rim", cube, palette.accent, [0, 0.04, -0.54], [5.55, 0.018, 0.022]),
-        item("center-line", cube, palette.rim, [0, 0.045, 0], [0.025, 0.024, 1.12]),
+        item("front-rim", cube, palette.rim, [0, 0.02, 0.61], [5.75, 0.016, 0.018]),
+        item("back-rim", cube, palette.accent, [0, 0.02, -0.54], [5.55, 0.014, 0.018]),
+        item("center-line", cube, palette.rim, [0, 0.022, 0], [0.022, 0.012, 1.12]),
         // Lane markers sit exactly on the clamp the fighters cannot cross, so the boundary the
         // simulation enforces is the boundary the player can see. `stage.minX`/`maxX` is +/-2.85.
-        item("lane-marker-left", cube, palette.accent, [-2.85, 0.042, 0], [0.022, 0.022, 1.1]),
-        item("lane-marker-right", cube, palette.accent, [2.85, 0.042, 0], [0.022, 0.022, 1.1])
+        item("lane-marker-left", cube, palette.accent, [-2.85, 0.022, 0], [0.02, 0.014, 1.1]),
+        item("lane-marker-right", cube, palette.accent, [2.85, 0.022, 0], [0.02, 0.014, 1.1])
       ];
       items.push(...barrierItemsByPalette[tweaks.palette]);
 
       if (tweaks.reflections) {
-        items.push(item("floor-sheen", cube, palette.rim, [0, -0.004, 0.18], [2.8, 0.008, 0.38]));
+        items.push(item("floor-sheen", cube, floor, [0, -0.014, 0.18], [2.8, 0.004, 0.38]));
       }
 
       // Grounded stage practicals replace the former floating banner slabs and portal ring. Each is a

@@ -1,9 +1,11 @@
 import {
   game,
+  model,
   primitives,
   material,
   type AuraSceneNode
 } from "@aura3d/engine";
+import { assets } from "../../../../src/aura-assets";
 import { PLAY_HALF_X, PLAY_HALF_Z, POCKET_CENTERS } from "../gameplay/table";
 
 /**
@@ -59,13 +61,6 @@ export function createPoolHallSetDressing(options: { readonly portrait?: boolean
     color: "#d97706",
     roughness: 0.25,
     metallic: 0.9
-  });
-
-  const lampShadeMat = material.pbr({
-    name: "emerald-lamp-shade",
-    color: "#064e3b",
-    roughness: 0.3,
-    metallic: 0.5
   });
 
   const bulbGlowMat = material.emissive({
@@ -196,46 +191,24 @@ export function createPoolHallSetDressing(options: { readonly portrait?: boolean
     primitives.box({ name: "poster-art-2", material: posterMat2 }).position(1.8, 2.4, -2.74).scale([1.2, 1.6, 0.02]).toJSON()
   );
 
-  // 4. Overhead billiards pendant. The light sources remain active in portrait,
-  // but the literal hanging fixture is omitted because the required high mobile
-  // tactical camera would otherwise put opaque shades over the rack and cue ball.
+  // 4. Overhead billiards pendant: bespoke Meshy 3D triple-shade brass/emerald stained-glass lamp
   if (!options.portrait) {
-    const lampXOffsets = [-0.75, 0, 0.75];
     nodes.push(
-      primitives
-        .cylinder({ name: "pendant-brass-rod", material: brassMat })
-        .position(0, 2.2, 0)
-        .rotate(0, 0, Math.PI / 2)
-        .scale([0.02, 1.8, 0.02])
-        .toJSON(),
-      primitives
-        .cylinder({ name: "pendant-chain-left", material: brassMat })
-        .position(-0.75, 3.2, 0)
-        .scale([0.012, 2.0, 0.012])
-        .toJSON(),
-      primitives
-        .cylinder({ name: "pendant-chain-right", material: brassMat })
-        .position(0.75, 3.2, 0)
-        .scale([0.012, 2.0, 0.012])
+      model(assets.bankShotBilliardLampMeshy, {
+        name: "billiard-hall-pendant-lamp-3d",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 2.15
+      })
+        .position(0, 2.18, 0)
         .toJSON()
     );
-    lampXOffsets.forEach((lx, idx) => {
+    [-0.75, 0, 0.75].forEach((lx, idx) => {
       nodes.push(
-        primitives
-          .cylinder({ name: `pendant-shade-${idx}`, material: lampShadeMat })
-          .position(lx, 2.08, 0)
-          .scale([0.28, 0.18, 0.28])
-          .toJSON(),
-        primitives
-          .torus({ name: `pendant-rim-${idx}`, material: brassMat })
-          .position(lx, 1.99, 0)
-          .rotate(Math.PI / 2, 0, 0)
-          .scale([0.28, 0.28, 0.018])
-          .toJSON(),
         primitives
           .sphere({ name: `pendant-bulb-${idx}`, material: bulbGlowMat })
           .position(lx, 2.02, 0)
-          .scale([0.06, 0.06, 0.06])
+          .scale([0.045, 0.045, 0.045])
           .toJSON()
       );
     });

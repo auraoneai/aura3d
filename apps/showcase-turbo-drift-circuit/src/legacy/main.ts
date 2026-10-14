@@ -1028,15 +1028,22 @@ function buildTurboSceneryNodes() {
     scale: [0.001, 0.001, 0.001] as [number, number, number]
   }));
   const safeTrees = sceneryPlan.trees.filter((tree) => Math.abs(tree.signedOffsetGame) >= visualAsphaltHalfWidthGame + 1.6 && tree.progress > 0.08 && tree.progress < 0.92);
-  const trunkTransforms = safeTrees.map((tree) => ({
+  const hiddenTreeFallbackTransform = [
+    {
+      position: [0, TRACK_REFERENCE_Y - 12, 0] as [number, number, number],
+      rotation: [0, 0, 0] as [number, number, number],
+      scale: [0.001, 0.001, 0.001] as [number, number, number]
+    }
+  ];
+  const trunkTransforms = safeTrees.length > 0 ? safeTrees.map((tree) => ({
     position: (() => {
       const p = gamePointToScene(tree.point);
       return [p[0], TRACK_REFERENCE_Y + tree.sizeScene[1] * 0.22, p[2]] as [number, number, number];
     })(),
     rotation: [0, 0, 0] as [number, number, number],
     scale: [tree.sizeScene[0] * 0.34, tree.sizeScene[1] * 0.44, tree.sizeScene[0] * 0.34] as [number, number, number]
-  }));
-  const canopyTransforms = safeTrees.map((tree) => ({
+  })) : hiddenTreeFallbackTransform;
+  const canopyTransforms = safeTrees.length > 0 ? safeTrees.map((tree) => ({
     position: (() => {
       const p = gamePointToScene(tree.point);
       return [p[0], TRACK_REFERENCE_Y + tree.sizeScene[1] * 0.58, p[2]] as [number, number, number];
@@ -1046,8 +1053,8 @@ function buildTurboSceneryNodes() {
     // build a treeline while leaving the racing line and the foreground cars
     // visible from the chase camera.
     scale: [tree.sizeScene[0] * 1.32, tree.sizeScene[1] * 0.54, tree.sizeScene[0] * 1.32] as [number, number, number]
-  }));
-  const canopyAccentTransforms = safeTrees.map((tree, index) => ({
+  })) : hiddenTreeFallbackTransform;
+  const canopyAccentTransforms = safeTrees.length > 0 ? safeTrees.map((tree, index) => ({
     position: (() => {
       const p = gamePointToScene(tree.point);
       const side = index % 2 === 0 ? 1 : -1;
@@ -1056,7 +1063,7 @@ function buildTurboSceneryNodes() {
     })(),
     rotation: [0, 0, 0] as [number, number, number],
     scale: [tree.sizeScene[0] * 0.82, tree.sizeScene[1] * 0.36, tree.sizeScene[0] * 0.82] as [number, number, number]
-  }));
+  })) : hiddenTreeFallbackTransform;
   // A short roadside row keeps the certified chase capture from reading as an
   // empty stadium apron. These are renderer-owned set-dressing transforms derived
   // from the same centreline and placed one full car-width beyond the asphalt;
@@ -1498,7 +1505,31 @@ function buildTurboTracksideIdentityNodes() {
     }),
     gantryPosts,
     gantryCrossbar,
-    gantryBoard
+    gantryBoard,
+    model(assets.turboStartFinishGantryMeshy, {
+      name: "turbo-meshy-approach-gantry-3d",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: gantryHalfSpan * 2.15
+    })
+      .position(gantryCenter[0], gantryRoadY + 0.85, gantryCenter[2])
+      .rotate(0, gantryPose.rotation[1], 0),
+    model(assets.turboTireBarrierWallMeshy, {
+      name: "turbo-meshy-tire-barrier-left",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.92
+    })
+      .position(gantryCenter[0] + gantryLeftX * 1.05, gantryRoadY, gantryCenter[2] + gantryLeftZ * 1.05)
+      .rotate(0, gantryPose.rotation[1], 0),
+    model(assets.turboTireBarrierWallMeshy, {
+      name: "turbo-meshy-tire-barrier-right",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.92
+    })
+      .position(gantryCenter[0] - gantryLeftX * 1.05, gantryRoadY, gantryCenter[2] - gantryLeftZ * 1.05)
+      .rotate(0, gantryPose.rotation[1], 0)
   ];
 }
 

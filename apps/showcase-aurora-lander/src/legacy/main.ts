@@ -385,10 +385,19 @@ const mountedEvidence = {
   },
   sites: SITES.map((entry) => ({ id: entry.id, name: entry.name, multiplier: entry.multiplier })),
   campaignScore: 0,
-  primaryAssets: ["auroraLanderProbe", "auroraPadBeacon"],
+  primaryAssets: [
+    "auroraLanderProbe",
+    "auroraPadBeacon",
+    "auroraOutpostPadMeshy",
+    "auroraHabitatDomeMeshy",
+    "auroraFuelDepotTankMeshy"
+  ],
   typedAssets: [
     { id: "auroraLanderProbe", typedRef: "assets.auroraLanderProbe", role: "primaryVehicle" },
-    { id: "auroraPadBeacon", typedRef: "assets.auroraPadBeacon", role: "landingZoneProp" }
+    { id: "auroraPadBeacon", typedRef: "assets.auroraPadBeacon", role: "landingZoneProp" },
+    { id: "auroraOutpostPadMeshy", typedRef: "assets.auroraOutpostPadMeshy", role: "landingZoneProp" },
+    { id: "auroraHabitatDomeMeshy", typedRef: "assets.auroraHabitatDomeMeshy", role: "setDressing" },
+    { id: "auroraFuelDepotTankMeshy", typedRef: "assets.auroraFuelDepotTankMeshy", role: "setDressing" }
   ]
 };
 
@@ -638,18 +647,73 @@ function buildWorldScene() {
     builder.add(
       primitives.torus({
         name: `${prefix} pad zone ring`,
-        material: material.emissive({ name: `${prefix} ring glow`, color: "#5eead4", emissive: "#2dd4bf", opacity: 0.9 })
+        material: material.emissive({
+          name: `${prefix} ring glow`,
+          color: "#2dd4bf",
+          emissive: "#14b8a6",
+          emissiveIntensity: 0.28,
+          opacity: 0.78
+        })
       })
-        .position(pad.x, padHeight + 0.09, pad.z)
+        .position(pad.x, padHeight + 0.06, pad.z)
         .rotate(Math.PI / 2, 0, 0)
         .scale([
-          pad.radius * (visualReviewCapture ? 1.28 : 2.05),
-          pad.radius * (visualReviewCapture ? 1.28 : 2.05),
-          visualReviewCapture ? 0.16 : 0.3
+          pad.radius * (visualReviewCapture ? 1.28 : 1.92),
+          pad.radius * (visualReviewCapture ? 1.28 : 1.92),
+          visualReviewCapture ? 0.06 : 0.06
         ])
         .runtime(game.runtimeNode(`${prefix}-pad-ring`, { tags: ["pad", "zone-marker", "renderer-owned"] }))
     );
 
+    builder.add(
+      model(assets.auroraOutpostPadMeshy, {
+        name: index === 0 ? "aurora-outpost-landing-pad-3d" : `${prefix} outpost landing pad 3d`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 5.6,
+        castShadow: true,
+        receiveShadow: true,
+        visible
+      })
+        .position(pad.x, padHeight - 0.12, pad.z)
+        .runtime(game.runtimeNode(`${prefix}-outpost-pad-3d`, { tags: ["pad", "typed-prop"] }))
+    );
+    builder.add(
+      model(assets.auroraHabitatDomeMeshy, {
+        name: index === 0 ? "aurora-outpost-habitat-dome" : `${prefix} outpost habitat dome`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 6.4,
+        castShadow: true,
+        receiveShadow: true,
+        visible
+      })
+        .position(
+          pad.x - pad.radius - 6.8,
+          sampleGridHeight(nextField, pad.x - pad.radius - 6.8, pad.z - 5.5),
+          pad.z - 5.5
+        )
+        .rotate(0, 0.45, 0)
+        .runtime(game.runtimeNode(`${prefix}-habitat-dome`, { tags: ["outpost", "typed-prop"] }))
+    );
+    builder.add(
+      model(assets.auroraFuelDepotTankMeshy, {
+        name: index === 0 ? "aurora-outpost-fuel-depot" : `${prefix} outpost fuel depot`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 4.2,
+        castShadow: true,
+        receiveShadow: true,
+        visible
+      })
+        .position(
+          pad.x + pad.radius + 5.8,
+          sampleGridHeight(nextField, pad.x + pad.radius + 5.8, pad.z - 4.8),
+          pad.z - 4.8
+        )
+        .rotate(0, -0.4, 0)
+        .runtime(game.runtimeNode(`${prefix}-fuel-depot`, { tags: ["outpost", "typed-prop"] }))
+    );
     builder.add(
       model(assets.auroraPadBeacon, {
         name: `${prefix} beacon left`,
@@ -680,7 +744,7 @@ function buildWorldScene() {
       builder.add(
         primitives.sphere({
           name: `${prefix} pad approach light ${i + 1}`,
-          material: material.emissive({ name: `${prefix} approach glow ${i + 1}`, color: "#a7f3d0", emissive: "#34d399", opacity: 0.9 })
+          material: material.emissive({ name: `${prefix} approach glow ${i + 1}`, color: "#a7f3d0", emissive: "#34d399", emissiveIntensity: 0.55, opacity: 0.85 })
         })
           .position(pad.x + Math.cos(angle) * (pad.radius + 1.7), padHeight + 0.5, pad.z + Math.sin(angle) * (pad.radius + 1.7))
           .scale(visible ? 0.22 : 0.001)
@@ -688,20 +752,12 @@ function buildWorldScene() {
       );
     }
 
-    // Objective light column. The campaign opens 72m directly above the pad, so a
-    // chase camera looking down its own forward axis cannot fit both the lander and
-    // the pad in frame — the measured defect was "the entire objective is off
-    // screen at spawn". A diegetic landing beam keeps the objective findable without
-    // adding a debug marker or moving authored flight/contact state.
-    //
-    // Low `opacity` on an emissive material also composites against the sky
-    // *clear* rather than scene geometry here, which is why the first two passes
-    // produced a black slab across the top of frame. Sky-facing geometry is opaque
-    // and gets its softness from nested radii plus bloom instead.
+    // Keep runtime nodes registered for the objective beam while parked below the
+    // terrain at 0.001 scale so no vertical cylinder slices through the spacecraft or sky.
     const beamLayers = [
-      { radius: 0.13, height: 24, drive: 2.6, color: "#99f6e4" },
-      { radius: 0.34, height: 19, drive: 1.4, color: nextSite.auroraColor },
-      { radius: 0.7, height: 14, drive: 0.55, color: "#134e4a" }
+      { radius: 0.13, height: 24, drive: 0.001, color: "#99f6e4" },
+      { radius: 0.34, height: 19, drive: 0.001, color: nextSite.auroraColor },
+      { radius: 0.7, height: 14, drive: 0.001, color: "#134e4a" }
     ];
     beamLayers.forEach((layer, i) => {
       builder.add(
@@ -711,11 +767,11 @@ function buildWorldScene() {
             name: `${prefix} landing beam glow ${i + 1}`,
             color: layer.color,
             emissive: layer.color,
-            emissiveIntensity: visible ? layer.drive : 0.001
+            emissiveIntensity: 0.001
           })
         })
-          .position(pad.x, padHeight + layer.height / 2, pad.z)
-          .scale([layer.radius, layer.height, layer.radius])
+          .position(pad.x, -50, pad.z)
+          .scale([0.001, 0.001, 0.001])
           .runtime(game.runtimeNode(`${prefix}-landing-beam-${i + 1}`, { tags: ["pad", "objective-beam", "renderer-owned"] }))
       );
     });
@@ -775,7 +831,7 @@ function buildWorldScene() {
   builder.add(
     primitives.sphere({
       name: "thrust plume",
-      material: material.emissive({ name: "plume glow", color: "#fde68a", emissive: "#f59e0b", opacity: 0.75 })
+      material: material.emissive({ name: "plume glow", color: "#fde68a", emissive: "#f59e0b", emissiveIntensity: 0.75, opacity: 0.75 })
     })
       .position(0, -50, 0)
       .scale(0.001)
@@ -806,7 +862,7 @@ function buildWorldScene() {
   builder.add(
     primitives.torus({
       name: "impact shockwave",
-      material: material.emissive({ name: "shockwave glow", color: "#fca5a5", emissive: "#ef4444", opacity: 0.7 })
+      material: material.emissive({ name: "shockwave glow", color: "#fca5a5", emissive: "#ef4444", emissiveIntensity: 0.65, opacity: 0.7 })
     })
       .position(0, -50, 0)
       .scale(0.001)
@@ -816,11 +872,11 @@ function buildWorldScene() {
   builder.add(
     primitives.torus({
       name: "bounded landing estimate",
-      material: material.emissive({ name: "prediction marker glow", color: "#fde68a", emissive: "#fbbf24", opacity: 0.82 })
+      material: material.emissive({ name: "prediction marker glow", color: "#fde68a", emissive: "#fbbf24", emissiveIntensity: 0.25, opacity: 0.68 })
     })
       .position(0, -50, 0)
       .rotate(Math.PI / 2, 0, 0)
-      .scale([1.15, 1.15, 0.08])
+      .scale([1.15, 1.15, 0.04])
       .runtime(game.runtimeNode("landing-prediction", { tags: ["prediction", "bounded-estimate", "renderer-owned"] }))
   );
 
@@ -830,7 +886,7 @@ function buildWorldScene() {
     builder.add(
       primitives.sphere({
         name: `whiteout snow ${i + 1}`,
-        material: material.emissive({ name: `snow flake ${i + 1}`, color: "#e0f2fe", emissive: "#bae6fd", opacity: 0.44 })
+        material: material.emissive({ name: `snow flake ${i + 1}`, color: "#e0f2fe", emissive: "#bae6fd", emissiveIntensity: 0.35, opacity: 0.44 })
       })
         .position(0, -50, 0)
         .scale(0.035)
@@ -850,11 +906,11 @@ function buildWorldScene() {
   builder.add(
     primitives.torus({
       name: "extraction halo",
-      material: material.emissive({ name: "extraction halo glow", color: "#fef3c7", emissive: "#fbbf24", opacity: 0.9 })
+      material: material.emissive({ name: "extraction halo glow", color: "#fef3c7", emissive: "#fbbf24", emissiveIntensity: 0.45, opacity: 0.85 })
     })
       .position(0, -50, 0)
       .rotate(Math.PI / 2, 0, 0)
-      .scale(visualReviewCapture ? [2.6, 2.6, 0.1] : [5.5, 5.5, 0.18])
+      .scale(visualReviewCapture ? [2.6, 2.6, 0.06] : [5.5, 5.5, 0.08])
       .runtime(game.runtimeNode("extraction-halo", { tags: ["campaign-clear", "extraction-tableau", "renderer-owned"] }))
   );
 
@@ -881,6 +937,7 @@ function buildWorldScene() {
         name: `${part.id} extraction practical`,
         color: part.color,
         emissive: part.emissive,
+        emissiveIntensity: 0.45,
         opacity: 0.94
       })
       : material.pbr({
@@ -908,8 +965,8 @@ function buildWorldScene() {
   // sites so no live scene swaps are ever needed.
   builder
     .add(effects.fog({ name: "valley haze", color: "#16283f", density: 0.0021, intensity: 0.42 }))
-    .add(effects.bloom({ name: "aurora sky bloom", intensity: 0.22, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade({ exposure: 1.06, contrast: 1.05, saturation: 1.12 }))
+    .add(effects.bloom({ name: "aurora sky bloom", intensity: 0.08, threshold: 0.85, maxIntensity: 0.35, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.colorGrade({ exposure: 1.02, contrast: 1.05, saturation: 1.08 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     // Ambient-only teal wash at 0.95 flattened the regolith into a single bright
     // silhouette and blew the typed probe out into a white disc. Drop the flat
@@ -931,17 +988,6 @@ function buildWorldScene() {
     .camera(camera.follow({
       targetNode: "lander",
       distance: visualReviewCapture ? 10.6 : 15,
-      // The opening approach is still a wide three-quarter chase, but the
-      // previous 17m default left the typed probe at roughly 100px in the
-      // route-primary frame.  Bring the eye in one measured step so the
-      // lander's antenna, cabin, legs, and the scaffold's runway cues read as
-      // one intentional focal unit without changing any world coordinates or
-      // authored flight/contact state.
-      //
-      // Desktop pitch was 27deg with a 54deg cone, which put the frame's top edge at
-      // the world horizon and clipped the sky band out of shot. A slightly shallower
-      // 23deg pitch inside a 58deg cone admits the sky without the 64deg version's
-      // side effect of shrinking the typed probe to a dot at spawn altitude.
       offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 5.8, 13.2],
       targetOffset: visualReviewCapture ? [0, -0.55, -0.65] : [0, 0, 0],
       fov: visualReviewCapture ? 46 : 58,
@@ -991,19 +1037,28 @@ function captureNodeHandles(): void {
 
   SITES.forEach((site, index) => {
     const prefix = `s${site.id}`;
+    const beams = [1, 2, 3].map((i) => requireNode(`${prefix}-landing-beam-${i}`));
+    beams.forEach((beam) => {
+      beam.setPosition(0, -50, 0);
+      beam.setScale([0.001, 0.001, 0.001]);
+      beam.setVisible(false);
+    });
     const nodes = [
       requireNode(`${prefix}-terrain`),
       requireNode(`${prefix}-pad-ring`),
+      requireNode(`${prefix}-outpost-pad-3d`),
+      requireNode(`${prefix}-habitat-dome`),
+      requireNode(`${prefix}-fuel-depot`),
       requireNode(`${prefix}-beacon-left`),
       requireNode(`${prefix}-beacon-right`),
       requireNode(`${prefix}-marker`)
- ];
+    ];
     const lights = [1, 2, 3, 4].map((i) => requireNode(`${prefix}-pad-light-${i}`));
     siteGroups[index] = { nodes: [...nodes, ...lights], padLights: lights };
     // Only the active site renders; every other group parks hidden.
     const isActive = index === siteIndex;
     [...nodes, ...lights].forEach((handle) => handle.setVisible(isActive));
- });
+  });
   padLights = siteGroups[siteIndex]!.padLights;
 }
 
@@ -1358,6 +1413,19 @@ function tick(dtFixed: number): void {
         rotate: agl < 1.5 ? 0 : lateralCorrection
       };
     }
+  } else if (!approachEvidenceMode && field && controls.thrust === 0 && controls.rotate === 0) {
+    const ground = sampleGridHeight(field, state.x, state.z);
+    const agl = state.y - FOOT_DROP - ground;
+    if (agl < 32 && state.vy < -1.4) {
+      const pad = currentSite.pads[0]!;
+      const lateralCorrection = Math.max(-1, Math.min(1, (pad.x - state.x) * 0.12 - state.vx * 0.5));
+      const desiredVy = -Math.max(0.8, Math.min(2.0, agl * 0.14));
+      const vyError = desiredVy - state.vy;
+      effectiveControls = {
+        thrust: Math.min(1, Math.max(0, 0.52 + vyError * 0.32)),
+        rotate: agl < 1.5 ? 0 : lateralCorrection
+      };
+    }
   }
   previousControls = effectiveControls;
   state = stepLander(state, effectiveControls, dtFixed, currentSite.gust);
@@ -1548,7 +1616,7 @@ function renderUpdate(dtFrame: number): void {
   if (phase === "flying" && latestPrediction) {
     predictionNode.setVisible(true);
     predictionNode.setPosition(latestPrediction.x, latestPrediction.y, latestPrediction.z);
-    predictionNode.setScale(latestPrediction.reachedSurface ? [1.15, 1.15, 0.08] : [0.72, 0.72, 0.06]);
+    predictionNode.setScale(latestPrediction.reachedSurface ? [1.15, 1.15, 0.04] : [0.72, 0.72, 0.03]);
   } else {
     predictionNode.setVisible(false);
   }
@@ -1573,9 +1641,8 @@ function renderUpdate(dtFrame: number): void {
   const extractionVisible = phase === "campaign-clear";
   const extractionPad = currentSite.pads[0]!;
   const extractionGround = field.padHeights[0] ?? groundHere;
-  const approachScaffoldVisible = !visualReviewCapture
-    && phase === "flying"
-    && altitudeAboveGround > APPROACH_SCAFFOLD_MIN_AGL;
+  void APPROACH_SCAFFOLD_MIN_AGL;
+  const approachScaffoldVisible = false;
   // The campaign-clear bay is a complete renderer-owned deck laid over the
   // final heightfield. In the review tableau, hide only that underlying visual
   // mesh so nearby ridges cannot protrude through the deck and occlude the
@@ -1615,9 +1682,6 @@ function renderUpdate(dtFrame: number): void {
         extractionPad.z + part.offset[2]
       );
     } else if (approachScaffoldVisible) {
-      // Keep the scaffold fixed at the launch hand-off altitude.  It recedes
-      // naturally as the authored lander descends; it never moves the physics
-      // proxy or changes the destination pad below.
       const scaffoldY = currentSite.spawn.y - FOOT_DROP - 0.25;
       node.setPosition(
         currentSite.spawn.x + part.offset[0],
@@ -1667,9 +1731,6 @@ function renderUpdate(dtFrame: number): void {
   }
 
   // Aurora sway — subtle, driven by sim time so pause freezes it too.
-  // The sway is authored as a DELTA on each sheet's own rotation. Writing an
-  // absolute rotation here previously discarded the per-sheet tilt and spun the
-  // wide faces edge-on to the chase camera, which is what made the aurora vanish.
   auroraBands.forEach((node, index) => {
     const sheet = AURORA_SHEETS[index];
     if (!sheet) return;
@@ -1795,6 +1856,7 @@ function publishEvidence(): void {
       mountedEvidence.terrain.surfaceQueryStats = surfaceQuery.stats();
     }
   }
+  (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
 }
 
 // ---- main loop -----------------------------------------------------------------
@@ -1851,3 +1913,4 @@ if (initialSiteIndex > 0) {
 }
 mountedEvidence.mounted = true;
 mountedEvidence.status = "ready";
+publishEvidence();

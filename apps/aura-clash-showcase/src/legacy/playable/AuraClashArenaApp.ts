@@ -1,5 +1,5 @@
 import { summarizePublicCrowdDraws } from "./arena/CrowdDrawEvidence";
-import { camera, createAuraApp, lights, material, primitives, createGameApp, createGameAudio, game, scene, type GameAudio, type GameCombatEvent, type GameCombatMove, type GameCombatWorldSnapshot } from "@aura3d/engine";
+import { camera, createAuraApp, lights, material, model, primitives, createGameApp, createGameAudio, game, scene, type GameAudio, type GameCombatEvent, type GameCombatMove, type GameCombatWorldSnapshot } from "@aura3d/engine";
 import {
   attachRootRenderSource,
   createSideViewGameRenderPreset,
@@ -28,6 +28,7 @@ import {
   type SecondaryMotionResult
 } from "../../gameplay/animation/fighterSecondaryMotion";
 import { assets } from "../../aura-assets";
+import { assets as rootAssets } from "../../../../src/aura-assets";
 import {
   assertAuraClashClipReadiness,
   auraClashPlayerClips as playerClips,
@@ -1459,7 +1460,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     primitives.box({
       name: "Aura Clash public arena-edge pylon caster",
       size: [0.34, 1.1, 0.34],
-      position: [-4.98, 1.68, -0.95],
+      position: [-6.4, 1.68, -0.95],
       // Saturated crimson read as a debug marker against the dusk palette; this is a shadow
       // caster, so it belongs in the stage's own metal range.
       material: material.pbr({ color: "#3a3f4d", roughness: 0.42, metallic: 0.55 }),
@@ -1469,11 +1470,41 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     primitives.box({
       name: "Aura Clash public overhead truss caster",
       size: [4.8, 0.16, 0.18],
-      position: [0, 2.85, -0.75],
+      position: [0, 5.4, -0.75],
       material: material.pbr({ color: "#303849", roughness: 0.38, metallic: 0.62 }),
       castShadow: true,
       receiveShadow: true
+    }),
+    model(rootAssets.auraClashStageSpeakerTowerMeshy, {
+      name: "Aura Clash stage speaker tower left",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.95
     })
+      .position(-3.16, 0, -0.44)
+      .rotate(0, 0.28, 0),
+    model(rootAssets.auraClashStageSpeakerTowerMeshy, {
+      name: "Aura Clash stage speaker tower right",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.95
+    })
+      .position(3.16, 0, -0.44)
+      .rotate(0, -0.28, 0),
+    model(rootAssets.auraClashCornerBrazierPylonMeshy, {
+      name: "Aura Clash corner pylon left",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.96
+    })
+      .position(-2.86, 0, 0.48),
+    model(rootAssets.auraClashCornerBrazierPylonMeshy, {
+      name: "Aura Clash corner pylon right",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.96
+    })
+      .position(2.86, 0, 0.48)
   ];
   // I03 owns the 28-instance spectator workload and proves it independently.
   // The I04 spotlight oracle omits those unrelated crowd GLBs so each four-state

@@ -61,8 +61,12 @@ export function updatePlayer(
   const vx = length > 0.001 ? (wishX / length) * speed : 0;
   const vz = length > 0.001 ? (wishZ / length) * speed : 0;
   const at = playerBody.position();
-  playerBody.teleport([at[0], WALK_Y, at[2]]);
-  playerBody.setVelocity([vx, 0, vz]);
+  const clampedX = Math.max(-2.15, Math.min(2.15, at[0]));
+  const clampedZ = Math.max(-8.2, Math.min(9.2, at[2]));
+  const clampedVx = (clampedX <= -2.14 && vx < 0) || (clampedX >= 2.14 && vx > 0) ? 0 : vx;
+  const clampedVz = (clampedZ <= -8.19 && vz < 0) || (clampedZ >= 9.19 && vz > 0) ? 0 : vz;
+  playerBody.teleport([clampedX, WALK_Y, clampedZ]);
+  playerBody.setVelocity([clampedVx, 0, clampedVz]);
 
   if (state.hp <= 0 && state.status === "playing") {
     state.status = "lost";

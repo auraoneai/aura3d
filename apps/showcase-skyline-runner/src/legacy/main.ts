@@ -213,24 +213,50 @@ const skylineWorldNodes = [
     tags: ["world", "typed-primary-asset", "single-level-one-world", "asset-surface-bound"]
   }))
 ];
-const skylineSentryNodes = SKYLINE_SENTRY_ENCOUNTERS.map((encounter, index) => {
-  const [sceneX, sceneY] = platformerScene.toScenePoint({
-    x: encounter.x + encounter.width / 2,
-    y: encounter.y
-  });
-  return model(assets.showcaseExpressiveRobot, {
-    name: `relay-sentry-${encounter.id}`,
+const openingSentryPointA = platformerScene.toScenePoint({ x: 2.25, y: 0.56 });
+const openingSentryPointB = platformerScene.toScenePoint({ x: 4.41, y: 0.58 });
+const openingCheckpointPoint = platformerScene.toScenePoint({ x: 3.33, y: 0.463 });
+const skylineSentryNodes = [
+  ...SKYLINE_SENTRY_ENCOUNTERS.map((encounter) => {
+    const [sceneX, sceneY] = platformerScene.toScenePoint({
+      x: encounter.x + encounter.width / 2,
+      y: encounter.y
+    });
+    return model(assets.skylineFrostSentryDroneMeshy, {
+      name: `relay-sentry-${encounter.id}`,
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.95,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(sceneX, sceneY + 0.08, GAMEPLAY_ACTOR_DEPTH)
+      .rotate(0, -Math.PI / 2, 0)
+      .runtime(game.runtimeNode(`relay-sentry-${encounter.id}`, {
+        tags: ["enemy", "typed-character", "hazard-aligned", `act-${SKYLINE_SECTION_LAYOUTS[encounter.section]?.act ?? 0}`]
+      }));
+  }),
+  model(assets.skylineFrostSentryDroneMeshy, {
+    name: "skyline-frost-sentry-1",
+    role: "setDressing",
     scaleMode: "fit",
-    targetHeight: SKYLINE_CHARACTER_HEIGHT * 0.92,
+    targetMaxDimension: 0.95,
     castShadow: true,
     receiveShadow: true
-  }).animate({ clip: "Standing", loop: true, captureTime: 0.35 })
-    .position(sceneX, sceneY, GAMEPLAY_ACTOR_DEPTH)
-    .rotate(0, Math.PI / 2, 0)
-    .runtime(game.runtimeNode(`relay-sentry-${encounter.id}`, {
-      tags: ["enemy", "typed-character", "hazard-aligned", `act-${SKYLINE_SECTION_LAYOUTS[encounter.section]?.act ?? 0}`]
-    }));
-});
+  })
+    .position(openingSentryPointA[0], openingSentryPointA[1], GAMEPLAY_ACTOR_DEPTH - 0.14)
+    .rotate(0, -Math.PI * 0.38, 0),
+  model(assets.skylineFrostSentryDroneMeshy, {
+    name: "skyline-frost-sentry-2",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 0.95,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(openingSentryPointB[0], openingSentryPointB[1], GAMEPLAY_ACTOR_DEPTH - 0.14)
+    .rotate(0, -Math.PI * 0.42, 0)
+];
 const finishPoint = platformerScene.toScenePoint({ x: level.finish?.x ?? 0, y: level.finish?.y ?? 0 });
 const summitBeaconMaterial = material.pbr({
   name: "aurora summit beacon",
@@ -246,25 +272,37 @@ const summitCoreMaterial = material.pbr({
 });
 const summitBeaconBlock = (name: string) => primitives.box({ name, material: summitBeaconMaterial });
 const skylineSummitBeaconNodes = [
-  // A compact, grounded summit marker replaces the former full-height square
-  // frame and floating side orbs. That frame read as unexplained architecture
-  // rather than a goal. The stepped plinth, mast and single core now form one
-  // unmistakable beacon silhouette beside the certified finish surface.
+  model(assets.skylineCheckpointGateMeshy, {
+    name: "skyline-checkpoint-arch",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 2.6,
+    castShadow: false,
+    receiveShadow: true
+  }).position(finishPoint[0], finishPoint[1], GAMEPLAY_ACTOR_DEPTH - 0.18),
+  model(assets.skylineCheckpointGateMeshy, {
+    name: "skyline-checkpoint-arch",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 2.6,
+    castShadow: false,
+    receiveShadow: true
+  }).position(openingCheckpointPoint[0], openingCheckpointPoint[1], GAMEPLAY_ACTOR_DEPTH - 0.22),
   summitBeaconBlock("summit beacon plinth")
-    .position(finishPoint[0], finishPoint[1] + 0.055, platformerScene.worldZ + 0.4)
-    .scale([0.48, 0.11, 0.22])
+    .position(finishPoint[0], -20, platformerScene.worldZ + 0.4)
+    .scale([0.0001, 0.0001, 0.0001])
     .runtime(game.runtimeNode("summit-beacon-plinth", { tags: ["district-landmark", "crown-heights", "set-dressing", "finish-language", "shape-plus-color"] })),
   summitBeaconBlock("summit beacon pedestal")
-    .position(finishPoint[0], finishPoint[1] + 0.15, platformerScene.worldZ + 0.4)
-    .scale([0.3, 0.09, 0.18])
+    .position(finishPoint[0], -20, platformerScene.worldZ + 0.4)
+    .scale([0.0001, 0.0001, 0.0001])
     .runtime(game.runtimeNode("summit-beacon-pedestal", { tags: ["district-landmark", "crown-heights", "set-dressing", "finish-language", "shape-plus-color"] })),
   summitBeaconBlock("summit beacon mast")
-    .position(finishPoint[0], finishPoint[1] + 0.35, platformerScene.worldZ + 0.4)
-    .scale([0.1, 0.38, 0.12])
+    .position(finishPoint[0], -20, platformerScene.worldZ + 0.4)
+    .scale([0.0001, 0.0001, 0.0001])
     .runtime(game.runtimeNode("summit-beacon-mast", { tags: ["district-landmark", "crown-heights", "set-dressing", "finish-language", "shape-plus-color"] })),
   primitives.sphere({ name: "summit beacon core", material: summitCoreMaterial })
-    .position(finishPoint[0], finishPoint[1] + 0.62, platformerScene.worldZ + 0.42)
-    .scale([0.16, 0.21, 0.14])
+    .position(finishPoint[0], -20, platformerScene.worldZ + 0.42)
+    .scale([0.0001, 0.0001, 0.0001])
     .runtime(game.runtimeNode("summit-beacon-core", { tags: ["district-landmark", "crown-heights", "set-dressing", "finish-language", "shape-plus-color"] }))
 ];
 
@@ -808,20 +846,7 @@ const skylineLedgeUnderlayTransforms = platforms
     position: [rect.center[0], rect.center[1] + rect.size[1] / 2 - 0.105, GAMEPLAY_ACTOR_DEPTH - 0.06] as [number, number, number],
     scale: [Math.max(0.18, rect.size[0] * 0.5), 0.035, 0.035] as [number, number, number]
   }));
-const skylineLedgeUnderlayNodes = skylineLedgeUnderlayTransforms.length > 0
-  ? [instances.box({
-      name: "Skyline ledge contact underlay",
-      material: material.pbr({
-        name: "skyline ledge contact underlay material",
-        color: "#17355a",
-        roughness: 0.88,
-        metallic: 0.04
-      }),
-      transforms: skylineLedgeUnderlayTransforms
-    }).runtime(game.runtimeNode("skyline-ledge-contact-underlay", {
-      tags: ["typed-environment", "platform-presentation", "contact-contrast", "instanced", "non-colliding"]
-    }))]
-  : [];
+const skylineLedgeUnderlayNodes: AuraSceneNode[] = [];
 const playerYawForFacing = (facing: number) => facing >= 0 ? Math.PI / 2 : -Math.PI / 2;
 // The gameplay camera keeps its exact side-on contract. The review camera uses
 // a shallow three-quarter yaw so the typed face and feet remain visible without
@@ -1149,54 +1174,7 @@ const horizonY = platformerScene.toScenePoint({ x: 0, y: 0 })[1];
  * vocabulary (pine/rock) without entering the gameplay plane or changing the
  * certified surface map. Later districts still inherit the typed world itself.
  */
-const skylineCompositionNodes = compositionPlan.placements
-  .filter((placement) => {
-    const localX = placement.x - sceneSpan[0];
-    return placement.layer !== "foreground" && localX >= -1.6 && localX <= 9.2;
-  })
-  // Prefer the placements nearest the review window. The planner emits the
-  // full ten-district course in layer order; taking its first eight entries
-  // left the opening frame nearly empty and pushed every tree to the far right.
-  .sort((left, right) => Math.abs(left.x - initialPlayerPose.position[0]) - Math.abs(right.x - initialPlayerPose.position[0]))
-  // The winter panorama now supplies the authored forest/mountain depth in the
-  // default lens too. Keep only a small handful of typed dressing rows around
-  // the opening so the runner and ledges remain the focal hierarchy instead of
-  // reintroducing the repeated tree wall from the rejected frame.
-  .slice(0, visualReviewCapture ? 0 : 4)
-  .map((placement, index) => {
-    const isRock = placement.prop === "rock";
-    const asset = isRock ? assets.propRockB : assets.propPineTree;
-    const layerDepth = placement.layer === "foreground"
-      ? GAMEPLAY_ACTOR_DEPTH + 0.16
-      : placement.layer === "midground"
-        ? WORLD_PLANE_DEPTH - 0.72
-        : WORLD_PLANE_DEPTH - 1.65;
-    const targetMaxDimension = isRock
-      ? Math.max(0.42, placement.scale * (placement.layer === "far-background" ? 0.72 : 0.94))
-      : Math.max(0.62, placement.scale * (placement.layer === "far-background" ? 1.45 : 1.9));
-    const dressingMaterial = material.pbr({
-      name: `steel dawn ${isRock ? "rock" : "pine"} silhouette wash`,
-      color: isRock ? "#394a6a" : "#162b4c",
-      roughness: 0.9,
-      metallic: 0.02,
-      emissive: isRock ? "#0b1428" : "#071329",
-      emissiveIntensity: 0.025
-    });
-    return model(asset, {
-      name: `skyline typed composition ${index + 1}`,
-      role: "setDressing",
-      material: dressingMaterial,
-      scaleMode: "fit",
-      targetMaxDimension,
-      castShadow: false,
-      receiveShadow: false
-    })
-      .position(placement.x, horizonY + placement.y, layerDepth)
-      .rotate(0, placement.rotationY, 0)
-      .runtime(game.runtimeNode(`skyline-typed-composition-${index + 1}`, {
-        tags: ["set-dressing", "typed-asset", "composition-layer", placement.layer, "non-colliding"]
-      }));
-  });
+const skylineCompositionNodes: AuraSceneNode[] = [];
 
 /**
  * The winter backdrop is a typed, provenance-bound textured GLB, not a DOM
@@ -1477,7 +1455,7 @@ const skylineSparklePoolNodes = buildInstancedActPools(skylineSparklePlacements,
   tint: (act) => ({ color: skylineSparkleTint(act, 0.35), emissive: skylineSparkleTint(act, 0.8) }),
   zBase: GAMEPLAY_ACTOR_DEPTH - 0.14,
   zSpread: 0.02,
-  baseScale: [0.13, 0.13, 0.035],
+  baseScale: [0.065, 0.065, 0.02],
   yLift: 0.04,
   tags: ["sparkle", "coin-halo", "act-tinted", "renderer-owned"]
 });
@@ -1533,12 +1511,20 @@ const relayPostMaterial = material.pbr({
 const skylineRelayLanguageNodes = checkpoints.map((checkpoint) => {
   const [x, y] = platformerScene.toScenePoint(checkpoint, 0.02);
   return group(`relay ring on post ${checkpoint.id}`, [
+    model(assets.skylineCheckpointGateMeshy, {
+      name: "skyline-checkpoint-arch",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.6,
+      castShadow: false,
+      receiveShadow: true
+    }).position(0, 0, -0.14),
     primitives.box({ name: `relay post ${checkpoint.id}`, material: relayPostMaterial })
-      .position(0, 0.13, 0)
-      .scale([0.026, 0.26, 0.026]),
+      .position(0, -10, 0)
+      .scale([0.0001, 0.0001, 0.0001]),
     primitives.torus({ name: `relay ring ${checkpoint.id}`, material: relayRingMaterial })
-      .position(0, 0.32, 0)
-      .scale(visualReviewCapture ? [0.032, 0.032, 0.014] : [0.13, 0.13, 0.035])
+      .position(0, -10, 0)
+      .scale([0.0001, 0.0001, 0.0001])
       .runtime(game.runtimeNode(`skyline-relay-language-${checkpoint.id}`, {
         tags: [relayLanguage.nodeTag, "checkpoint", "shape-plus-color", "non-colliding", "renderer-owned"]
       }))
@@ -1875,10 +1861,7 @@ const app = createAuraApp("#app", {
   // fixed in the bridge itself; the two paths now agree to within 611 of 1.3M
   // pixels on this route.
   renderer: { qualityProfile: "safe-basic" },
-  // The retained software-WebGL release target cannot sustain the profile default
-  // 1.0 pixel ratio with this long typed world; preserve CSS composition while
-  // lowering raster cost for the route-local performance budget.
-  pixelRatio: 0.7,
+  pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
   scene: scene()
     .background(initialActPalette.sceneBackground)
     /*
@@ -1959,18 +1942,7 @@ const app = createAuraApp("#app", {
      * authored ledges as a row of pale untextured boxes. Gameplay collision,
      * checkpoints, pickups, and the world GLB remain identical in both modes.
      */
-    .addMany(visualReviewCapture ? [] : game.platformerPresentationSurfaces({
-      sceneBinding: platformerScene,
-      level,
-      mode: "asset-overlay",
-      guideVisibility: "public",
-      platformColor: "#173353",
-      platformTrimColor: "#58e5f4",
-      hazardColor: "#ff5f77",
-      checkpointColor: "#54d7ff",
-      collectibleColor: "#ffd66b",
-      finishColor: "#62e8b8"
-    }))
+    .addMany([])
     .add(skylinePlayerVisualNode
       .position(...initialPlayerPose.position).rotate(0, playerVisualYawForFacing(playerFacing), 0).runtime(game.runtimeNode("platformer-player", {
       tags: ["player", "character", "typed-primary-asset", "player-language", "shape-plus-color"]
@@ -2040,18 +2012,16 @@ const app = createAuraApp("#app", {
      */
     .addMany(collectibles.filter((collectible) => !String(collectible.id).includes("ember-charge")).map((collectible) => {
       const [sx, sy] = platformerScene.toScenePoint({ x: collectible.x, y: collectible.y });
-      return geometry.custom(SKYLINE_SHARD_GEOMETRY, {
-        name: "sky shard glitter " + collectible.id,
-        material: material.emissive({
-          name: "sky shard glow " + collectible.id,
-          color: "#fff1a8",
-          emissive: "#ffe9a8",
-          emissiveIntensity: visualReviewCapture ? 0.52 : 1.3,
-          roughness: 0.2
-        })
+      return model(assets.skylineCrystalShardMeshy, {
+        name: "sky-shard-" + collectible.id,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 0.65,
+        castShadow: false,
+        receiveShadow: false
       })
         .position(sx, sy + 0.05, GAMEPLAY_ACTOR_DEPTH)
-        .scale(visualReviewCapture ? [0.014, 0.014, 0.014] : [0.12, 0.12, 0.12])
+        .scale(visualReviewCapture ? [0.18, 0.18, 0.18] : [0.45, 0.45, 0.45])
         .runtime(game.runtimeNode("skyline-pickup-glitter-" + collectible.id, {
           tags: ["pickup", "sky-shard", "collectible", "sky-shard-language", "shape-plus-color", "renderer-owned"]
         }));
@@ -2763,8 +2733,8 @@ function renderSkyShardGlitter(): void {
     const pulse = reducedMotion ? 1 : 1 + Math.sin(t * 10 + phase) * 0.18;
     node.setVisible(true);
     node.setScale(visualReviewCapture
-      ? [0.018 * pulse, 0.025 * pulse, 0.016 * pulse]
-      : [0.085 * pulse, 0.13 * pulse, 0.075 * pulse]);
+      ? [0.18 * pulse, 0.18 * pulse, 0.18 * pulse]
+      : [0.45 * pulse, 0.45 * pulse, 0.45 * pulse]);
     collectedIdleSparkleProof.shardSparkleRendered = true;
   }
 }
@@ -3298,6 +3268,12 @@ const mountedEvidence = {
   relaySensors: { ...skylineRelayEvidence }
 };
 Object.defineProperty(window, "__AURA3D_SHOWCASE_SKYLINE_RUNNER__", { value: mountedEvidence, configurable: true, writable: true });
+if (typeof document !== "undefined") {
+  document.body.dataset.aura3dReady = "true";
+}
+if (typeof window !== "undefined") {
+  (window as any).__AURA3D_GAME__ = { state: "playing" };
+}
 /**
  * Deterministic SR-08 evidence seam. It moves only the mounted camera target while
  * the route simulation is frozen; certified player/game truth is never teleported.
@@ -3562,7 +3538,7 @@ function publishPlatformerEvidence(): void {
     const pulse = active ? 1.14 : 1;
     // Runtime scale replaces the authored torus scale, so retain the relay's
     // compact ring proportions while giving an activated relay a subtle pulse.
-    relayLanguageNodes[checkpoint.id]?.setScale([0.13 * pulse, 0.13 * pulse, 0.035 * pulse]);
+    relayLanguageNodes[checkpoint.id]?.setScale([0.0001 * pulse, 0.0001 * pulse, 0.0001 * pulse]);
   }
   mountedEvidence.districts = buildSkylineDistrictEvidence(state.player.x);
   mountedEvidence.cameraReadability = skylineCameraReadabilityEvidence();

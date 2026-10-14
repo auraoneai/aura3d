@@ -247,18 +247,56 @@ const chaseCamera = camera.follow({
   // desktop frame, which hid the cargo identity and made the scene read like
   // an empty road board. This is still the same follow rig and simulation
   // heading; only the visual composition is corrected.
-  targetOffset: visualReviewCapture ? [0, 1.16, -0.05] : [0, 1.22, -1.05],
+  targetOffset: visualReviewCapture ? [0, 1.16, -0.05] : [0, 1.05, -1.35],
   offsetMode: "target-yaw",
   offset: visualReviewCapture
     ? [0.55, 2.7, 8.6]
-    : [0.22, CHASE_CAMERA.height + 1.45, CHASE_CAMERA.distance + 4.2] as [number, number, number],
-  fov: visualReviewCapture ? 55 : 56,
+    : [0, 2.35, 3.85] as [number, number, number],
+  fov: visualReviewCapture ? 55 : 46,
   // Review retains the normal follow rig but removes its long residual pan so
   // a real collision is framed where the simulation says it occurred.
   smoothing: visualReviewCapture ? 0.1 : CHASE_CAMERA.smoothing
 });
 
 type MutableChaseCamera = { offset?: readonly [number, number, number] };
+
+function sanitizeCityNodes(nodes: readonly unknown[]): Parameters<ReturnType<typeof scene>["addMany"]>[0] {
+  return nodes.map((rawNode) => {
+    const unwrapped =
+      rawNode && typeof (rawNode as { toJSON?: () => unknown }).toJSON === "function"
+        ? (rawNode as { toJSON: () => Record<string, unknown> }).toJSON()
+        : (rawNode as Record<string, unknown>);
+    if (!unwrapped || typeof unwrapped !== "object") return rawNode as never;
+    const next: Record<string, unknown> = { ...unwrapped };
+    if (next.kind === "group" && Array.isArray(next.children)) {
+      next.children = sanitizeCityNodes(next.children);
+    }
+    if (next.kind === "light" && typeof next.intensity === "number") {
+      next.intensity = Math.min(next.intensity, 0.85);
+    }
+    if (next.material && typeof next.material === "object") {
+      const mat = { ...(next.material as Record<string, unknown>) };
+      if (typeof mat.emissiveIntensity === "number" && mat.emissiveIntensity > 0.42) {
+        mat.emissiveIntensity = 0.42;
+      }
+      next.material = mat;
+    }
+    if (typeof next.name === "string" && Array.isArray(next.position) && next.position.length === 3) {
+      const pos = [...(next.position as [number, number, number])] as [number, number, number];
+      if (
+        (next.name.startsWith("courier skyline tower ") || next.name.startsWith("courier skyline window ")) &&
+        Math.abs(pos[0]) < 9.5
+      ) {
+        pos[0] += (pos[0] < 0 ? -1 : 1) * 3.8;
+        next.position = pos;
+      } else if (next.name.startsWith("courier eastbound portal ") && pos[0] < 4.5) {
+        pos[0] += 3.6;
+        next.position = pos;
+      }
+    }
+    return next as never;
+  });
+}
 
 // ---- scene --------------------------------------------------------------------
 const app = createAuraApp("#app", {
@@ -269,9 +307,9 @@ const app = createAuraApp("#app", {
   },
   scene: scene()
   .background("#030711")
-    .addMany(dressing.staticNodes)
-    .addMany(dressing.pickupZone)
-    .addMany(dressing.dropZone)
+    .addMany(sanitizeCityNodes(dressing.staticNodes))
+    .addMany(sanitizeCityNodes(dressing.pickupZone))
+    .addMany(sanitizeCityNodes(dressing.dropZone))
     // Aurora Noir / Midnight Slate city night lighting.
     // These values used to differ between play and `?capture=review`, which meant
     // the reviewed screenshots were not the game: the live path ran ambient at
@@ -293,24 +331,85 @@ const app = createAuraApp("#app", {
     // animation frame - a black canvas with zero console or page errors,
     // because the engine records it in `diagnostics.errors` instead of
     // rethrowing. 0.5 is the maximum legal value and the repo-wide convention.
-    .add(effects.neonBloom({ intensity: reducedMotion ? 0.26 : 0.44, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade({ exposure: 1.05, contrast: 1.1, saturation: 1.12 }))
+    .add(effects.neonBloom({
+      intensity: reducedMotion ? 0.12 : 0.16,
+      threshold: 0.84,
+      maxIntensity: 0.42,
+      antiBlowout: true,
+      quality: "balanced",
+      softKnee: 0.5,
+      shoulder: 0.6
+    }))
+    .add(effects.colorGrade({ exposure: 0.88, contrast: 1.06, saturation: 1.04 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     // The street itself was reading as black-on-black void with a few floating
     // signs. A lifted cool ambient plus a stronger moon key gives the kit
     // towers, kerbs and lane paint actual form between the practicals.
-    .add(lights.ambient({ name: "night city fill", color: "#7f9cb5", intensity: 1.25 }))
-    .add(lights.directional({ name: "moonlight key", color: "#d8f5ff", intensity: 2.5, shadow: true }).position(-18, 26, 8))
-    .add(lights.directional({ name: "city glow fill", color: "#36bdd2", intensity: 1.35 }).position(20, 18, 16))
+    .add(lights.ambient({ name: "night city fill", color: "#7f9cb5", intensity: 0.82 }))
+    .add(lights.directional({ name: "moonlight key", color: "#d8f5ff", intensity: 1.35, shadow: true }).position(-18, 26, 8))
+    .add(lights.directional({ name: "city glow fill", color: "#36bdd2", intensity: 0.78 }).position(20, 18, 16))
     // Hero practicals used to sit at 2.6/1.8 directly on the van, which is what
     // turned the typed Meshy livery into a featureless white slab.
-    .add(lights.point({ name: "courier hero key", color: "#e8fbff", intensity: 1.9 }).position(-1.6, 2.4, 6.5))
-    .add(lights.point({ name: "courier hero rim", color: "#ff557f", intensity: 1.1 }).position(2.2, 1.8, 3.5))
-     .add(lights.point({ name: "courier intersection practical", color: "#ff9d66", intensity: 1.9 }).position(0, 3.8, 0))
-     .add(lights.point({ name: "courier forward cyan practical", color: "#22d3ee", intensity: 2.1 }).position(0, 3.4, 8.5))
-     .add(lights.point({ name: "courier forward warning practical", color: "#fb7185", intensity: 1.7 }).position(0, 2.6, 12.8))
-    .add(lights.point({ name: "depot dock warm light", color: "#fbbf24", intensity: 1.25 })
+    .add(lights.point({ name: "courier hero key", color: "#e8fbff", intensity: 0.85 }).position(-1.6, 2.4, 6.5))
+    .add(lights.point({ name: "courier hero rim", color: "#ff557f", intensity: 0.58 }).position(2.2, 1.8, 3.5))
+    .add(lights.point({ name: "courier intersection practical", color: "#ff9d66", intensity: 0.75 }).position(0, 3.8, 0))
+    .add(lights.point({ name: "courier forward cyan practical", color: "#22d3ee", intensity: 0.82 }).position(0, 3.4, 8.5))
+    .add(lights.point({ name: "courier forward warning practical", color: "#fb7185", intensity: 0.72 }).position(0, 2.6, 12.8))
+    .add(lights.point({ name: "depot dock warm light", color: "#fbbf24", intensity: 0.68 })
       .position(START_SITE.x + 4.5, 5.0, START_SITE.z))
+    // Curbside express parcel locker kiosks at pickup/drop-off stop locations
+    // and along the opening street corridor (2K PBR Meshy GLB, no material override).
+    .addMany(
+      ZONE_SITES.map((site, index) => {
+        const curbSign = site.x < 0 ? -1 : 1;
+        const kioskX = site.x + curbSign * 2.35;
+        const kioskZ = site.z + (index % 2 === 0 ? 1.8 : -1.8);
+        const yaw = curbSign < 0 ? Math.PI * 0.5 : -Math.PI * 0.5;
+        return model(assets.courierDeliveryKioskMeshy, {
+          name: "courier-curbside-kiosk-" + site.id,
+          role: "setDressing",
+          scaleMode: "fit",
+          targetMaxDimension: 2.8,
+          castShadow: true,
+          receiveShadow: true
+        })
+          .position(kioskX, 0, kioskZ)
+          .rotate(0, yaw, 0)
+          .runtime(game.runtimeNode("courier-curbside-kiosk-" + site.id, {
+            tags: ["typed-asset", "delivery-kiosk", "set-dressing"]
+          }));
+      })
+    )
+    .add(
+      model(assets.courierDeliveryKioskMeshy, {
+        name: "courier-corridor-kiosk-west",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 2.8,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(-3.55, 0, 12.2)
+        .rotate(0, Math.PI * 0.5, 0)
+        .runtime(game.runtimeNode("courier-corridor-kiosk-west", {
+          tags: ["typed-asset", "delivery-kiosk", "set-dressing"]
+        }))
+    )
+    .add(
+      model(assets.courierDeliveryKioskMeshy, {
+        name: "courier-corridor-kiosk-east",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 2.8,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(3.55, 0, 5.4)
+        .rotate(0, -Math.PI * 0.5, 0)
+        .runtime(game.runtimeNode("courier-corridor-kiosk-east", {
+          tags: ["typed-asset", "delivery-kiosk", "set-dressing"]
+        }))
+    )
     // Van fleet: every moving part is a top-level runtime node (the mutable
     // registry covers model/primitive/group/label nodes, so nothing rides in a
     // group hierarchy here).
@@ -346,7 +445,7 @@ const app = createAuraApp("#app", {
         targetMaxDimension: VAN_TARGET_LENGTH,
         castShadow: true,
         receiveShadow: true
-      }).position(3.0, 0, 10.5).rotate(0, Math.PI / 2, 0)
+      }).position(6.8, 0, 10.5).rotate(0, Math.PI / 2, 0)
         .runtime({ id: "courier-depot-fleet-van", tags: ["depot-fleet", "typed-secondary-asset"] })
     ])
     .add(
@@ -364,7 +463,7 @@ const app = createAuraApp("#app", {
         name: "courier-parcel",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: visualReviewCapture ? 0.58 : 0.76,
+        targetMaxDimension: visualReviewCapture ? 0.42 : 0.38,
         material: material.pbr({ name: "parcel safety-orange finish", color: "#f5ad4f", roughness: 0.38, metallic: 0.08, clearcoat: 0.2, emissive: "#6b2f10", emissiveIntensity: 0.13 }),
         castShadow: true
       }).position(-999, 0.86, -999).scale(0.001)
@@ -408,15 +507,8 @@ function vanHeadlightPools() {
   return ["left", "right"].map((side) =>
     primitives.box({
       name: "van headlight pool " + side,
-      // These sat at emissiveIntensity 1.05 on a 2.3 x 0.72 slab, two abreast,
-      // directly down the centre of the chase lens. The route's bloom threshold
-      // is 0.68, so both pools clipped straight through it and merged into one
-      // white mass that swallowed the van, the lane paint and the road ahead -
-      // exactly the "giant white bloom blob" failure this route keeps hitting.
-      // Held below the threshold and narrowed to a real beam footprint, so they
-      // read as two separate pools raking the wet asphalt instead of a flare.
-      material: material.emissive({ color: "#ffe9b8", emissive: "#ffd98a", emissiveIntensity: 0.5, opacity: 0.6 })
-    }).position(-999, 0.055, -999).scale([1.9, 0.02, 0.34])
+      material: material.emissive({ color: "#ffe9b8", emissive: "#ffd98a", emissiveIntensity: 0.26, opacity: 0.42 })
+    }).position(-999, 0.055, -999).scale([1.45, 0.015, 0.26])
       .runtime({ id: "courier-headlight-" + side, tags: ["headlight", "renderer-owned"] })
   );
 }
@@ -424,7 +516,7 @@ function vanHeadlightPools() {
 /** Renderer-owned ground streaks that make the van's live forward motion read
  * in a still capture without pretending that CSS or a HUD is the road. */
 function vanSpeedStreaks() {
-  const streakMaterial = material.emissive({ name: "van speed streak", color: "#5eead4", emissive: "#14b8a6", emissiveIntensity: 1.35, opacity: 0.86 });
+  const streakMaterial = material.emissive({ name: "van speed streak", color: "#5eead4", emissive: "#14b8a6", emissiveIntensity: 0.45, opacity: 0.68 });
   return ["left", "right", "center"].map((side) =>
     primitives.box({
       name: "van speed streak " + side,
@@ -445,8 +537,8 @@ function vanTireContactPatches() {
     name: "courier wet tyre contact reflection",
     color: "#bdf7ff",
     emissive: "#167e98",
-    emissiveIntensity: 0.72,
-    opacity: 0.5
+    emissiveIntensity: 0.36,
+    opacity: 0.38
   });
   return ["front-left", "front-right", "rear-left", "rear-right"].map((corner) =>
     primitives.box({ name: "courier tyre contact " + corner, material: contactMaterial })
@@ -466,13 +558,13 @@ function vanLiveryTrimNodes() {
     name: "courier van cyan service trim",
     color: "#b8f7ff",
     emissive: "#22d3ee",
-    emissiveIntensity: 1.2,
-    opacity: 0.9
+    emissiveIntensity: 0.42,
+    opacity: 0.78
   });
   return ["left", "right"].map((side) =>
     primitives.box({ name: "courier van service trim " + side, material: trimMaterial })
       .position(-999, 0.72, -999)
-      .scale([0.065, 0.16, 1.06])
+      .scale([0.05, 0.12, 0.92])
       .runtime({ id: "courier-van-trim-" + side, tags: ["vehicle-identity", "renderer-owned"] })
   );
 }
@@ -488,11 +580,11 @@ function vanRearBumperNode() {
       metallic: 0.72,
       clearcoat: 0.48,
       clearcoatRoughness: 0.12,
-      envMapIntensity: 1.08
+      envMapIntensity: 0.85
     })
   })
     .position(-999, 0.4, -999)
-    .scale([1.42, 0.1, 0.1])
+    .scale([1.18, 0.08, 0.08])
     .runtime({ id: "courier-van-rear-bumper", tags: ["vehicle-contact", "renderer-owned"] });
 }
 
@@ -500,15 +592,17 @@ function vanRearBumperNode() {
 function vanParcelBeaconNode() {
   return primitives.cylinder({
     name: "courier parcel status beacon",
-    material: material.emissive({
+    material: material.pbr({
       name: "courier parcel amber beacon",
-      color: "#ffd166",
-      emissive: "#f59e0b",
-      emissiveIntensity: 1.45
+      color: "#f59e0b",
+      roughness: 0.32,
+      metallic: 0.45,
+      emissive: "#d97706",
+      emissiveIntensity: 0.32
     })
   })
-    .position(-999, 1.6, -999)
-    .scale([0.14, 0.12, 0.14])
+    .position(-999, 1.08, -999)
+    .scale([0.09, 0.035, 0.09])
     .runtime({ id: "courier-parcel-beacon", tags: ["cargo-state", "renderer-owned"] });
 }
 
@@ -516,16 +610,17 @@ function vanParcelBeaconNode() {
 function vanRoofBeaconNode() {
   return primitives.cylinder({
     name: "courier van roof beacon",
-    material: material.emissive({
+    material: material.pbr({
       name: "courier van roof beacon cyan",
-      color: "#d9fbff",
-      emissive: "#22d3ee",
-      emissiveIntensity: 1.62,
-      opacity: 0.94
+      color: "#67e8f9",
+      roughness: 0.28,
+      metallic: 0.42,
+      emissive: "#06b6d4",
+      emissiveIntensity: 0.38
     })
   })
-    .position(-999, 1.82, -999)
-    .scale([0.16, 0.1, 0.16])
+    .position(-999, 1.22, -999)
+    .scale([0.11, 0.04, 0.11])
     .runtime({ id: "courier-van-roof-beacon", tags: ["vehicle-identity", "renderer-owned"] });
 }
 
@@ -540,8 +635,8 @@ function impactFeedbackNodes() {
     name: "courier traffic impact ember",
     color: "#ffd6a0",
     emissive: "#ff7043",
-    emissiveIntensity: 1.85,
-    opacity: 0.92
+    emissiveIntensity: 0.72,
+    opacity: 0.85
   });
   return [
     primitives.torus({ name: "courier traffic impact ring", material: impactMaterial })
@@ -562,8 +657,8 @@ function trafficHeadlightNodes() {
     name: "courier traffic headlight wash",
     color: "#dffcff",
     emissive: "#67e8f9",
-    emissiveIntensity: 1.35,
-    opacity: 0.82
+    emissiveIntensity: 0.48,
+    opacity: 0.68
   });
   return trafficSim.cars().map((car) =>
     primitives.box({ name: car.id + " headlight wash", material: headlightMaterial })
@@ -638,6 +733,7 @@ const mountedEvidence = {
   },
   primaryAssets: [
     "assets.courierVanMeshyV2Decimated",
+    "assets.courierDeliveryKioskMeshy",
     "assets.courierVan",
     "assets.courierParcel",
     "assets.courierTrafficSedan",
@@ -1254,11 +1350,11 @@ app.onFrame(({ dt }) => {
     .setVisible(!reducedMotion);
   const parcelBeaconVisible = dispatch.phase === "carrying" && !reducedMotion;
   parcelBeaconNode
-    .setPosition(vanAfter.x + fx * 0.08, visualReviewCapture ? 1.7 : 1.56, vanAfter.z + fz * 0.08)
-    .setScale(parcelBeaconVisible ? 1 : 0.001)
+    .setPosition(vanAfter.x - fx * 0.18, visualReviewCapture ? 1.18 : 1.08, vanAfter.z - fz * 0.18)
+    .setScale(parcelBeaconVisible ? [0.09, 0.035, 0.09] : [0.001, 0.001, 0.001])
     .setVisible(parcelBeaconVisible);
   vanRoofBeacon
-    .setPosition(vanAfter.x + fx * 0.08, visualReviewCapture ? 1.92 : 1.82, vanAfter.z + fz * 0.08)
+    .setPosition(vanAfter.x + fx * 0.08, visualReviewCapture ? 1.38 : 1.22, vanAfter.z + fz * 0.08)
     .setRotation(0, vanRenderHeading, 0)
     .setVisible(!reducedMotion);
 
@@ -1293,12 +1389,12 @@ app.onFrame(({ dt }) => {
   const parcelAtPickup = Boolean(planNow && !carrying);
   if (parcelAtPickup && planNow) {
     parcelNode
-      .setPosition(planNow.pickup.x, 0.72, planNow.pickup.z)
+      .setPosition(planNow.pickup.x, 0.52, planNow.pickup.z)
       .setRotation(0, 0, 0)
       .setScale(1)
       .setVisible(true);
   } else {
-    parcelNode.setPosition(vanAfter.x - fx * 0.08, visualReviewCapture ? 1.5 : 1.36, vanAfter.z - fz * 0.3)
+    parcelNode.setPosition(vanAfter.x - fx * 0.22, visualReviewCapture ? 0.96 : 0.88, vanAfter.z - fz * 0.22)
       .setRotation(0, -vanAfter.heading, 0)
       .setScale(parcelAttachedVisible ? 1 : 0.001)
       .setVisible(parcelAttachedVisible);
@@ -1372,16 +1468,17 @@ app.onFrame(({ dt }) => {
   const ringPulse = reducedMotion ? 1 : 1 + Math.sin(frameCount * 0.09) * 0.05;
   if (pickupSite) {
     pickupRingNode.setPosition(pickupSite.x, 0.06, pickupSite.z);
-    pickupBeaconNode.setPosition(pickupSite.x, 2.6, pickupSite.z);
+    pickupBeaconNode.setPosition(pickupSite.x, 1.4, pickupSite.z);
   }
   if (dropSite) {
     dropRingNode.setPosition(dropSite.x, 0.06, dropSite.z);
-    dropBeaconNode.setPosition(dropSite.x, 2.6, dropSite.z);
+    dropBeaconNode.setPosition(dropSite.x, 1.4, dropSite.z);
   }
-  pickupRingNode.setScale(pickupSite ? ringPulse : 0.0001);
-  pickupBeaconNode.setScale(pickupSite ? 1 : 0.0001);
-  dropRingNode.setScale(dropSite ? ringPulse : 0.0001);
-  dropBeaconNode.setScale(dropSite ? 1 : 0.0001);
+  const ringDiameter = 3.1 * 1.05 * ringPulse;
+  pickupRingNode.setScale(pickupSite ? [ringDiameter, ringDiameter, 0.28] : [0.0001, 0.0001, 0.0001]);
+  pickupBeaconNode.setScale(pickupSite ? [0.12, 1.8, 0.12] : [0.0001, 0.0001, 0.0001]);
+  dropRingNode.setScale(dropSite ? [ringDiameter, ringDiameter, 0.28] : [0.0001, 0.0001, 0.0001]);
+  dropBeaconNode.setScale(dropSite ? [0.12, 1.8, 0.12] : [0.0001, 0.0001, 0.0001]);
 
   // Drop look-back camera blend (skipped under reduced motion).
   if (dropLookbackRemainingSeconds > 0) {
@@ -1390,12 +1487,12 @@ app.onFrame(({ dt }) => {
   const chaseBlend = dropLookbackRemainingSeconds > 0
     ? Math.sin((1 - dropLookbackRemainingSeconds / DROP_LOOKBACK_SECONDS) * Math.PI)
     : 0;
-  const offset = chaseOffsetForBlend(chaseBlend, visualReviewCapture ? 11.4 : undefined);
+  const offset = chaseOffsetForBlend(chaseBlend, visualReviewCapture ? 11.4 : 3.85);
   Object.assign(chaseCamera as unknown as MutableChaseCamera, {
     offset: [
-      visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : offset.offsetX,
-      visualReviewCapture ? 3.28 : offset.offsetY,
-      offset.offsetZ
+      visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : (offset.offsetX - 0.3) * 0.35,
+      visualReviewCapture ? 3.28 : 2.35 + (offset.offsetY - CHASE_CAMERA.height) * 0.45,
+      visualReviewCapture ? offset.offsetZ : 3.85 + (offset.offsetZ - 3.85) * 0.45
     ] as const
   });
 
@@ -1471,6 +1568,7 @@ function updateMountedEvidence(): void {
   }));
   mountedEvidence.gameplay = { ...observed };
   (mountedEvidence as unknown as { strikeLog: unknown }).strikeLog = strikeLog.slice(-12);
+  (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
 }
 
 function round3(value: number): number {
@@ -1487,6 +1585,7 @@ void app.ready().then(() => {
     (diagnostics as { runtimeBackend?: string }).runtimeBackend ?? (diagnostics as { backend?: string }).backend ?? ""
   );
   window.__AURA3D_ROUTE_READY__ = { ready: true, diagnostics };
+  (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
 }).catch((error: unknown) => {
   document.body.dataset.aura3dError = error instanceof Error ? error.message : String(error);
 });

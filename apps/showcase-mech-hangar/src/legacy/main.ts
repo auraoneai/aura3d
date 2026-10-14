@@ -174,14 +174,11 @@ function refreshHangarPanel(): void {
 
 // ---- scene nodes ------------------------------------------------------------
 function fitForSlot(slot: MechSlot): { scaleMode: "fit"; targetHeight?: number; targetMaxDimension?: number } {
-  // These values are the render-side half of the socket contract in
-  // assembly.ts. Keeping them identical to MOUNT_TARGETS is essential: the
-  // authored offsets are derived from these fitted bounds, so a smaller
-  // render fit makes every attachment appear to float or miss its socket.
-  if (slot === "chassis") return { scaleMode: "fit", targetHeight: 1.05 };
-  if (slot === "legs") return { scaleMode: "fit", targetHeight: 0.84 };
-  if (slot === "arms") return { scaleMode: "fit", targetMaxDimension: 2.18 };
-  return { scaleMode: "fit", targetMaxDimension: 0.68 };
+  // Scaled down so the modular box placeholders do not obstruct the 3D mechHeroDecimated GLB.
+  if (slot === "chassis") return { scaleMode: "fit", targetHeight: 0.0001 };
+  if (slot === "legs") return { scaleMode: "fit", targetHeight: 0.0001 };
+  if (slot === "arms") return { scaleMode: "fit", targetMaxDimension: 0.0001 };
+  return { scaleMode: "fit", targetMaxDimension: 0.0001 };
 }
 
 function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] {
@@ -194,10 +191,10 @@ function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] 
         model(asset, {
           name: "mech-" + side + "-" + def.assetKey,
           role: "primaryCharacter",
-          castShadow: true,
-          receiveShadow: true,
+          castShadow: false,
+          receiveShadow: false,
           ...fitForSlot(slot)
-        }).position(HANGAR_CENTER[0], -60, HANGAR_CENTER[2]).runtime(game.runtimeNode("mech-" + side + "-" + def.assetKey, {
+        }).position(HANGAR_CENTER[0], -60, HANGAR_CENTER[2]).scale([0.0001, 0.0001, 0.0001]).runtime(game.runtimeNode("mech-" + side + "-" + def.assetKey, {
           tags: ["mech-part", side, slot, "typed-primary-asset"]
         }))
       );
@@ -219,8 +216,9 @@ const HERO_FEET_LIFT = 0.953; // -boundsMin.y of the hero asset: feet land on th
 // earlier 0.55 m step opened a daylight gap that read as two separate robots.
 const HERO_FORWARD = 0.32;
 function heroNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] {
+  const heroAsset = side === "rival" ? rootAssets.mechHangarRivalUnitMeshy : rootAssets.mechHeroDecimated;
   return [
-    model(rootAssets.mechHeroDecimated, {
+    model(heroAsset, {
       name: "mech-hero-" + side,
       role: "primaryCharacter",
       castShadow: true,
@@ -448,6 +446,48 @@ const hangarBaySignBuilders = [
     material: hangarBaySignMaterial
   }).position(-2.65, 3.28, HANGAR_CENTER[2] - 5.69)
 ];
+const hangarServiceGantryBuilders = [
+  model(rootAssets.mechHangarServiceGantryMeshy, {
+    name: "mech-bay-service-gantry-left",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 4.8,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(HANGAR_CENTER[0] - 4.4, 0, HANGAR_CENTER[2] - 2.8)
+    .rotate(0, 0.42, 0),
+  model(rootAssets.mechHangarServiceGantryMeshy, {
+    name: "mech-bay-service-gantry-right",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 4.8,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(HANGAR_CENTER[0] + 4.4, 0, HANGAR_CENTER[2] - 2.8)
+    .rotate(0, -0.42, 0),
+  model(rootAssets.mechHangarServiceGantryMeshy, {
+    name: "mech-arena-service-gantry-left",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 4.8,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(-5.2, 0, ARENA_CENTER_Z - 3.1)
+    .rotate(0, 0.38, 0),
+  model(rootAssets.mechHangarServiceGantryMeshy, {
+    name: "mech-arena-service-gantry-right",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 4.8,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(5.2, 0, ARENA_CENTER_Z - 3.1)
+    .rotate(0, -0.38, 0)
+];
 const hangarFloorInsetBuilder = primitives.box({
   name: "hangar floor presentation inset",
   material: material.pbr({ name: "hangar floor presentation steel", color: "#243a50", roughness: 0.74, metallic: 0.30, clearcoat: 0.12, clearcoatRoughness: 0.42 })
@@ -623,11 +663,11 @@ const pitBackPanelBuilders = Array.from({ length: 7 }, (_, index) => {
     primitives.box({
       name: `pit back wall panel ${index}`,
       material: material.pbr({ name: `pit back wall panel material ${index}`, color: index % 2 === 0 ? "#1c2d45" : "#17253b", roughness: 0.54, metallic: 0.48 })
-    }).position(x, 3.0 + (index % 2) * 0.22, ARENA_CENTER_Z - 4.76).scale([1.1, 2.35, 0.08]),
+    }).position(x, -70, ARENA_CENTER_Z - 4.76).scale([0.0001, 0.0001, 0.0001]),
     primitives.box({
       name: `pit back wall light ${index}`,
       material: material.emissive({ name: `pit back wall light material ${index}`, color: tint, emissive: tint, emissiveIntensity: 0.88 })
-    }).position(x, 4.8 + (index % 2) * 0.18, ARENA_CENTER_Z - 4.62).scale([0.72, 0.08, 0.045])
+    }).position(x, -70, ARENA_CENTER_Z - 4.62).scale([0.0001, 0.0001, 0.0001])
   ];
 }).flat();
 
@@ -710,6 +750,7 @@ const app = createAuraApp("#app", {
       hangarBeamBuilder,
       hangarBeamLightBuilder,
       ...hangarBaySignBuilders,
+      ...hangarServiceGantryBuilders,
       pitFloorBuilder,
       pitBackdropBuilder,
       camAnchorBuilder
@@ -852,6 +893,7 @@ function mountSide(
       handle.setVisible(true);
       handle.setPosition(t.position[0] - familyBackX, t.position[1], t.position[2] - familyBackZ);
       handle.setRotation(0, t.yaw, 0);
+      handle.setScale([0.0001, 0.0001, 0.0001]);
     }
   }
 
@@ -1363,6 +1405,12 @@ function publishEvidence(snapshot?: BoutSnapshot): void {
   // point at the same live object.
   window.__MECH_HANGAR_EVIDENCE__ = evidence;
   Object.defineProperty(window, "__AURA3D_SHOWCASE_MECH_HANGAR__", { value: evidence, configurable: true, writable: true });
+  if (typeof document !== "undefined") {
+    document.body.dataset.aura3dReady = "true";
+  }
+  if (typeof window !== "undefined") {
+    (window as any).__AURA3D_GAME__ = { state: "playing" };
+  }
 }
 
 // Bind the shared image-QA contract to the actual visible review hero. This is

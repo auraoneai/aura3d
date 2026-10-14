@@ -620,6 +620,46 @@ const reactorScene = scene()
         tags: ["typed-supporting-asset", "quad-event-presentation", "review-only", "release-probed"]
       }))
   )
+  .add(
+    model(assets.blockfallReactorContainmentPylonMeshy, {
+      name: "blockfall-containment-pylon-left",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 3.6
+    })
+      .position(-2.95, 0.9, -1.65)
+      .rotate(0, 0.25, 0)
+  )
+  .add(
+    model(assets.blockfallReactorContainmentPylonMeshy, {
+      name: "blockfall-containment-pylon-right",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 3.6
+    })
+      .position(2.95, 0.9, -1.65)
+      .rotate(0, -0.25, 0)
+  )
+  .add(
+    model(assets.blockfallEnergyCapacitorBankMeshy, {
+      name: "blockfall-capacitor-bank-left",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.65
+    })
+      .position(-2.15, -0.05, -0.95)
+      .rotate(0, 0.35, 0)
+  )
+  .add(
+    model(assets.blockfallEnergyCapacitorBankMeshy, {
+      name: "blockfall-capacitor-bank-right",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.65
+    })
+      .position(2.15, -0.05, -0.95)
+      .rotate(0, -0.35, 0)
+  )
   .addMany(visualReviewCapture ? [] : createArcadeRoomNodes())
   .addMany(createBoardShell(visualReviewCapture))
   .addMany(createGhostNodes())

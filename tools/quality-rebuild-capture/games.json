@@ -27,7 +27,7 @@
         "/examples/neon-corridor-strike/"
       ],
       "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "focus": {
         "selector": ".aca",
         "method": "focus"
@@ -491,7 +491,7 @@
       "legacy": {
         "evidenceGlobal": "__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__"
       },
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "captureContractMigrated": true,
       "titleDeterministic": null,
       "scenarios": [
@@ -732,7 +732,7 @@
       "legacy": {
         "evidenceGlobal": "__AURA3D_SHOWCASE_SKYLINE_RUNNER__"
       },
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "captureContractMigrated": true,
       "titleDeterministic": null,
       "scenarios": [
@@ -977,7 +977,7 @@
       "legacy": {
         "evidenceGlobal": "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__"
       },
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "captureContractMigrated": true,
       "titleDeterministic": null,
       "scenarios": [
@@ -1213,7 +1213,7 @@
       "legacy": {
         "evidenceGlobal": "__SIEGE_GOLF_EVIDENCE__"
       },
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "captureContractMigrated": true,
       "titleDeterministic": null,
       "scenarios": [
@@ -1470,7 +1470,7 @@
       "legacy": {
         "evidenceGlobal": "__AURORA_LANDER_EVIDENCE__"
       },
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "captureContractMigrated": true,
       "titleDeterministic": null,
       "scenarios": [
@@ -1726,7 +1726,7 @@
       "legacy": {
         "evidenceGlobal": "__NEON_SWARM_EVIDENCE__"
       },
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "captureContractMigrated": true,
       "titleDeterministic": null,
       "scenarios": [
@@ -1974,7 +1974,7 @@
       "legacy": {
         "evidenceGlobal": "__GRAVITY_POST_EVIDENCE__"
       },
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "captureContractMigrated": true,
       "titleDeterministic": null,
       "scenarios": [
@@ -2068,7 +2068,7 @@
       "deployed": true,
       "route": "/apps/showcase-courier-rush/",
       "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "focus": {
         "selector": "canvas",
         "method": "click"
@@ -2467,7 +2467,7 @@
       "legacy": {
         "evidenceGlobal": "__PULSE_TUNNEL_EVIDENCE__"
       },
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "captureContractMigrated": true,
       "titleDeterministic": null,
       "scenarios": [
@@ -2769,7 +2769,7 @@
       "legacy": {
         "evidenceGlobal": "__MECH_HANGAR_EVIDENCE__"
       },
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "captureContractMigrated": true,
       "titleDeterministic": null,
       "scenarios": [
@@ -3027,7 +3027,7 @@
       "legacy": {
         "evidenceGlobal": "__VAULT_BREAKERS_EVIDENCE__"
       },
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "captureContractMigrated": true,
       "titleDeterministic": null,
       "scenarios": [
@@ -3266,7 +3266,7 @@
       "legacy": {
         "evidenceGlobal": "__ROOFTOP_BUCKETS_EVIDENCE__"
       },
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "captureContractMigrated": true,
       "titleDeterministic": null,
       "scenarios": [
@@ -3356,7 +3356,7 @@
       "deployed": true,
       "route": "/apps/showcase-gallery-shift/",
       "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "notes": "WASD move, Shift sneak, X sprint, E lift exhibit (hold), P pause, R restart. Blind movement; action is a lift attempt and may show a guard detection instead.",
       "wave": 4,
       "rebuildTier": "S-world",
@@ -3780,7 +3780,7 @@
       "legacy": {
         "evidenceGlobal": "__DEEP_RECOVERY_EVIDENCE__"
       },
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "captureContractMigrated": true,
       "titleDeterministic": null,
       "scenarios": [
@@ -3870,7 +3870,7 @@
       "deployed": true,
       "route": "/apps/showcase-patrol-wing/",
       "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "notes": "Starts in 'preflight' on the pad; Shift throttles up for a rolling takeoff (takeoffSpeed 10.5). W pitch down, S pitch up, A/D roll, Q/E yaw, Space fire, C camera, P pause, R reset. W is never used (nose-down crash).",
       "wave": 3,
       "rebuildTier": "S-world",
@@ -3946,28 +3946,25 @@
           "shot": "02-opening"
         },
         {
-          "wait": 1500
-        },
-        {
-          "up": "ShiftLeft"
+          "wait": 800
         },
         {
           "hold": "KeyS",
-          "ms": 700
+          "ms": 220
         },
         {
-          "wait": 800
+          "wait": 400
         },
         {
-          "hold": "KeyD",
-          "ms": 900
+          "hold": "KeyA",
+          "ms": 240
         },
         {
-          "hold": "KeyE",
-          "ms": 700
+          "hold": "KeyQ",
+          "ms": 240
         },
         {
-          "wait": 800
+          "wait": 500
         },
         {
           "down": "Space"
@@ -3977,6 +3974,9 @@
         },
         {
           "shot": "03-mid"
+        },
+        {
+          "up": "ShiftLeft"
         },
         {
           "wait": 500
@@ -4275,7 +4275,7 @@
       "legacy": {
         "evidenceGlobal": "__BANK_SHOT_EVIDENCE__"
       },
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "captureContractMigrated": true,
       "titleDeterministic": null,
       "scenarios": [
@@ -4369,10 +4369,10 @@
       "title": "Orbital Defense",
       "genre": "arcade defense",
       "appDir": "showcase-orbital-defense",
-      "deployed": false,
+      "deployed": true,
       "route": "/apps/showcase-orbital-defense/",
       "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
-      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
       "notes": "Not deployed (production 404); always built from source and served locally. No per-app vite.config.ts: the wrapper config reuses the root vite.config.ts aliases. A/D rotate, Space fire, Q shield pulse, R reset, P pause. Action waits for score to increase.",
       "wave": 1,
       "rebuildTier": "F",

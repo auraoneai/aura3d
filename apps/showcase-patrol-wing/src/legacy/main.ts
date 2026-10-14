@@ -516,8 +516,6 @@ function buildScene(): ReturnType<typeof scene> {
     .addMany(arenaNodes({ reviewCapture: visualReviewCapture }))
     .addMany(heroNodes())
     .addMany(flightAtmosphere)
-    .addMany(visualReviewCapture ? [] : skyBandNodes)
-    .addMany(visualReviewCapture ? [] : flightStreaks)
     .addMany(arenaLighting().nodes)
     .addMany([
       effects.fog({ name: "coastal haze", density: visualReviewCapture ? 0.0034 : 0.0042, color: "#42647a", intensity: visualReviewCapture ? 0.32 : 0.42 }),
@@ -710,22 +708,14 @@ function applyRingMaterials(): void {
     const isNext = gate.index === rings.nextRing && stateValue !== "preflight";
     handle.setMaterial(
       passed
-        ? material.emissive({ name: `ring-${gate.index} passed`, color: "#0f3a30", emissive: RING_PASSED_COLOR, emissiveIntensity: 0.9, roughness: 0.35, opacity: 0.9 })
-        : material.emissive({ name: `ring-${gate.index} active`, color: "#20323a", emissive: RING_ACTIVE_COLOR, emissiveIntensity: isNext ? 2.4 : 1.1, roughness: 0.35, opacity: 0.92 })
+        ? material.emissive({ name: `ring-${gate.index} passed`, color: "#0f3a30", emissive: RING_PASSED_COLOR, emissiveIntensity: 0.75, roughness: 0.35, opacity: 0.9 })
+        : material.emissive({ name: `ring-${gate.index} active`, color: "#20323a", emissive: RING_ACTIVE_COLOR, emissiveIntensity: isNext ? 1.15 : 0.75, roughness: 0.35, opacity: 0.92 })
     );
-    const s = isNext ? 1.25 : 1;
+    const s = isNext ? 1.12 : 1;
     handle.setScale([gate.radius * 2 * s, gate.radius * 2 * s, gate.radius * 0.9]);
   }
-  // The beacon shaft always marks the next gate once airborne, and hides
-  // with the course (and on the preflight pad).
-  const nextGate = stateValue === "preflight" ? undefined : RING_GATES[rings.nextRing];
   if (nextRingBeaconHandle) {
-    if (nextGate) {
-      nextRingBeaconHandle.setPosition(nextGate.position[0], nextGate.position[1] + 5, nextGate.position[2]);
-      nextRingBeaconHandle.setVisible(true);
-    } else {
-      nextRingBeaconHandle.setVisible(false);
-    }
+    nextRingBeaconHandle.setVisible(false);
   }
 }
 
