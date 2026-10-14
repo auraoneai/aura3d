@@ -430,7 +430,6 @@ function main() {
     } else {
       copyAuraAssets();
     }
-    copyRouteLocalAuraAssets("showcase-meshy-relic-pilot");
     assertBuiltRoutes();
     console.log(`Built ${showcaseRoutes.length} showcase routes and ${evidenceRoutes.length} evidence routes with local @aura3d/engine agent-api source for package version ${expectedEngineVersion}.`);
   } finally {
