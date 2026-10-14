@@ -1,0 +1,19 @@
+{
+  "name": "night",
+  "source": "hdr",
+  "faceSize": 256,
+  "mipCount": 5,
+  "format": "E5B9G9R9_UFLOAT_PACK32",
+  "specular": "night.specular.ktx2",
+  "sh9": "night.sh9.f32",
+  "sha256": {
+    "specular": "8e334407d8fa2cda74f0f64f895d194b7aefdc84bcd765ee6995a64691e93235",
+    "sh9": "d6c05ec24b8df34da790f92b41901bf94ed67457c1dbb1f3c81670ee15e5a9c2"
+  },
+  "license": "CC0",
+  "tags": [
+    "stand-in"
+  ],
+  "bakedBy": "aura3d environments bake",
+  "samplesPerTexel": 128
+}

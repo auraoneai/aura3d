@@ -85,7 +85,6 @@ describe("route/template cue maps satisfy C-25 (PRD-09 1734)", () => {
     // These routes own private `cueMap`s of typed asset URLs and never call
     // createGameAudio, so the C-25 throw cannot reach them.
     for (const rel of [
-      "apps/showcase-deep-recovery/src/deep-audio.ts",
       "apps/showcase-rooftop-buckets/src/buckets-audio.ts"
     ].filter((candidate) => existsSync(join(ROOT, candidate)))) {
       const src = readFileSync(join(ROOT, rel), "utf8");

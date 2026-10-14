@@ -1,0 +1,134 @@
+{
+  "schemaVersion": "1.0",
+  "packs": [
+    "kenney-watercraft",
+    "meshy-scifi-vehicles"
+  ],
+  "assets": [
+    {
+      "id": "deepRecoverySub",
+      "kind": "model",
+      "path": "/aura-assets/deepRecoverySub.d579451f.glb",
+      "sourcePath": "assets/models/sub-yellow.glb",
+      "hash": "sha256-d579451ffaa346ad54d57aa25e4c8732bf2bc93ca9a2c95ac436080358867bba",
+      "sizeBytes": 177608,
+      "mimeType": "model/gltf-binary",
+      "license": "Aura3D Proprietary (Generated via Meshy)",
+      "attribution": "Aura3D Showcase",
+      "tags": [
+        "meshy-scifi-vehicles",
+        "submarine",
+        "yellow",
+        "deep-sea",
+        "salvage",
+        "meshy",
+        "player"
+      ],
+      "bounds": {
+        "width": 2.12,
+        "height": 1.88,
+        "depth": 3.14
+      }
+    },
+    {
+      "id": "deepRecoveryWreckHull",
+      "kind": "model",
+      "path": "/aura-assets/deepRecoveryWreckHull.3942c3ce.glb",
+      "sourcePath": "assets/models/wreck-hull.glb",
+      "hash": "sha256-3942c3ce993f28394d6c79227ee48329e1e566a35fdba602bf1319e1048ceb3b",
+      "sizeBytes": 103304,
+      "mimeType": "model/gltf-binary",
+      "license": "Aura3D Proprietary (Generated via Meshy)",
+      "attribution": "Aura3D Showcase",
+      "tags": [
+        "kenney-watercraft",
+        "wreck",
+        "hull",
+        "shipwreck",
+        "deep-sea",
+        "obstacle",
+        "meshy"
+      ],
+      "bounds": {
+        "width": 3.5,
+        "height": 1.54,
+        "depth": 6.36
+      }
+    },
+    {
+      "id": "deepRecoveryCrateStandard",
+      "kind": "model",
+      "path": "/aura-assets/deepRecoveryCrateStandard.778ab9b9.glb",
+      "sourcePath": "assets/models/salvage-crate-standard.glb",
+      "hash": "sha256-778ab9b98a48b26ef4ca24761f90dec58a3b11bb2f2d21944db7ad6465c72bac",
+      "sizeBytes": 21920,
+      "mimeType": "model/gltf-binary",
+      "license": "Aura3D Proprietary (Generated via Meshy)",
+      "attribution": "Aura3D Showcase",
+      "tags": [
+        "kenney-watercraft",
+        "crate",
+        "salvage",
+        "standard",
+        "cargo",
+        "collectible",
+        "meshy"
+      ],
+      "bounds": {
+        "width": 0.9,
+        "height": 1.05,
+        "depth": 0.9
+      }
+    },
+    {
+      "id": "deepRecoveryCrateHeavy",
+      "kind": "model",
+      "path": "/aura-assets/deepRecoveryCrateHeavy.b4848ad9.glb",
+      "sourcePath": "assets/models/salvage-crate-heavy.glb",
+      "hash": "sha256-b4848ad9a23be8b8b9064f84a820bf5dc9fc1fe70e8c30a8de7dd055c2aed7c5",
+      "sizeBytes": 22608,
+      "mimeType": "model/gltf-binary",
+      "license": "Aura3D Proprietary (Generated via Meshy)",
+      "attribution": "Aura3D Showcase",
+      "tags": [
+        "kenney-watercraft",
+        "crate",
+        "salvage",
+        "heavy",
+        "reinforced",
+        "collectible",
+        "meshy"
+      ],
+      "bounds": {
+        "width": 1.28,
+        "height": 1.32,
+        "depth": 1.28
+      }
+    },
+    {
+      "id": "deepRecoveryBuoyBeacon",
+      "kind": "model",
+      "path": "/aura-assets/deepRecoveryBuoyBeacon.446c27b5.glb",
+      "sourcePath": "assets/models/buoy-beacon.glb",
+      "hash": "sha256-446c27b5c46c47f4abdb01c183469b37e7b9042eab3435a0c85e63f79293e337",
+      "sizeBytes": 40728,
+      "mimeType": "model/gltf-binary",
+      "license": "Aura3D Proprietary (Generated via Meshy)",
+      "attribution": "Aura3D Showcase",
+      "tags": [
+        "kenney-watercraft",
+        "buoy",
+        "beacon",
+        "surface",
+        "recovery",
+        "station",
+        "meshy"
+      ],
+      "bounds": {
+        "width": 5.2,
+        "height": 4.3,
+        "depth": 5.121
+      }
+    }
+  ]
+}
