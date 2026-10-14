@@ -21,6 +21,7 @@ import {
   model,
   primitives,
   scene,
+  sky,
   type AuraApp,
   type AuraCameraPose,
   type AuraCameraRig,
@@ -487,7 +488,16 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
       environments.hdri({
         name: "gravity-deep-space-hdri",
         texture: assets.deepSpaceDomeHdr,
-        intensity: 0.88
+        intensity: 0.88,
+        background: false
+      })
+    )
+    .add(
+      sky.gradient({
+        name: "gravity-space-sky",
+        zenithColor: "#020617",
+        horizonColor: "#0a122c",
+        groundColor: "#020617"
       })
     )
     .add(
@@ -528,7 +538,9 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
         primitives
           .sphere({
             name: "body-sol",
-            material: mats.sunSurface
+            material: mats.sunSurface,
+            castShadow: false,
+            receiveShadow: false
           })
           .position(bx, PLAY_PLANE_Y, bz)
           .scale(body.visualRadius)
@@ -537,7 +549,9 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
         primitives
           .torus({
             name: "body-sol-corona",
-            material: mats.sunCorona
+            material: mats.sunCorona,
+            castShadow: false,
+            receiveShadow: false
           })
           .position(bx, PLAY_PLANE_Y, bz)
           .rotate(Math.PI / 2, 0, 0)
@@ -551,6 +565,8 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
           model(planetAsset, {
             name: `body-${body.id}`,
             targetMaxDimension: body.visualRadius * 2.05,
+            castShadow: false,
+            receiveShadow: false,
             ...(planetSurface ? { material: planetSurface } : {})
           }).position(bx, PLAY_PLANE_Y, bz)
         );
@@ -561,7 +577,9 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
           primitives
             .sphere({
               name: `body-${body.id}-atmo`,
-              material: atmo
+              material: atmo,
+              castShadow: false,
+              receiveShadow: false
             })
             .position(bx, PLAY_PLANE_Y, bz)
             .scale(body.visualRadius * 1.12)
@@ -573,7 +591,9 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
       primitives
         .torus({
           name: `well-ring-${body.id}`,
-          material: body.id === "sol" ? mats.hazardRing : mats.wellRing
+          material: body.id === "sol" ? mats.hazardRing : mats.wellRing,
+          castShadow: false,
+          receiveShadow: false
         })
         .position(bx, PLAY_PLANE_Y - 0.04, bz)
         .rotate(Math.PI / 2, 0, 0)
@@ -597,27 +617,37 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
     const ringMat = isDest ? mats.destStationRing : isOrigin ? mats.originStationRing : mats.idleStationRing;
     const stationAngle = Math.atan2(station.offset[1], station.offset[0]);
 
-    builder.add(
-      model(assets.gravityPostDockGate, {
-        name: `station-gate-${station.id}`,
-        targetMaxDimension: 0.42,
-        material: mats.stationGate
-      })
-        .position(sx, PLAY_PLANE_Y, sz)
-        .rotate(0, stationAngle, 0)
-    );
-    builder.add(
-      model(assets.gravityPostDockBeacon, {
-        name: `station-beacon-${station.id}`,
-        targetMaxDimension: 0.28,
-        material: mats.stationBeacon
-      }).position(sx + 0.14, PLAY_PLANE_Y + 0.12, sz - 0.12)
-    );
+    if (isOrigin) {
+      builder.add(
+        model(assets.gravityPostDockGate, {
+          name: `station-gate-${station.id}`,
+          targetMaxDimension: 0.42,
+          material: mats.stationGate,
+          castShadow: false,
+          receiveShadow: false
+        })
+          .position(sx, PLAY_PLANE_Y, sz)
+          .rotate(0, stationAngle, 0)
+      );
+    }
+    if (isDest) {
+      builder.add(
+        model(assets.gravityPostDockBeacon, {
+          name: `station-beacon-${station.id}`,
+          targetMaxDimension: 0.34,
+          material: mats.stationBeacon,
+          castShadow: false,
+          receiveShadow: false
+        }).position(sx + 0.14, PLAY_PLANE_Y + 0.12, sz - 0.12)
+      );
+    }
     builder.add(
       primitives
         .torus({
           name: `station-ring-${station.id}`,
-          material: ringMat
+          material: ringMat,
+          castShadow: false,
+          receiveShadow: false
         })
         .position(sx, PLAY_PLANE_Y - 0.02, sz)
         .rotate(Math.PI / 2, 0, 0)
@@ -638,7 +668,9 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
     model(assets.gravityPostCourierSkiff, {
       name: "courier-pod",
       targetMaxDimension: 0.56,
-      material: mats.courierPod
+      material: mats.courierPod,
+      castShadow: false,
+      receiveShadow: false
     })
       .position(px, PLAY_PLANE_Y + 0.04, pz)
       .rotate(0, state.aimYaw, 0)
@@ -648,7 +680,9 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
     primitives
       .cylinder({
         name: "pod-thruster-cone",
-        material: mats.thrusterCone
+        material: mats.thrusterCone,
+        castShadow: false,
+        receiveShadow: false
       })
       .position(px, PLAY_PLANE_Y + 0.04, pz)
       .scale(0.001)
@@ -658,7 +692,9 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
     primitives
       .torus({
         name: "dock-flash-ring",
-        material: mats.dockFlash
+        material: mats.dockFlash,
+        castShadow: false,
+        receiveShadow: false
       })
       .position(px, PLAY_PLANE_Y + 0.02, pz)
       .rotate(Math.PI / 2, 0, 0)
@@ -671,7 +707,9 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
       primitives
         .sphere({
           name: `gp-pred-${i}`,
-          material: mats.predictionBead
+          material: mats.predictionBead,
+          castShadow: false,
+          receiveShadow: false
         })
         .position(px, PLAY_PLANE_Y - 2, pz)
         .scale(0.001)
@@ -684,7 +722,9 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
       primitives
         .sphere({
           name: `gp-path-${i}`,
-          material: mats.actualBead
+          material: mats.actualBead,
+          castShadow: false,
+          receiveShadow: false
         })
         .position(px, PLAY_PLANE_Y - 2, pz)
         .scale(0.001)
@@ -1241,7 +1281,7 @@ function createHudOverlay(): HTMLElement {
   root.style.cssText = [
     "position:absolute",
     "left:16px",
-    "top:16px",
+    "top:56px",
     "z-index:5",
     "max-width:340px",
     "font:500 13px/1.4 system-ui, sans-serif",
