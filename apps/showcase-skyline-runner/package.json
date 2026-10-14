@@ -6,9 +6,11 @@
   "description": "Aura3D certified-surface platformer with typed character/world assets, checkpoint progression, collection chains, flow scoring, retries, and finish evidence.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "typegen": "aura3d assets typegen",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "vite build",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1",
+    "test:browser": "playwright test tests/route-health.spec.ts tests/playable.spec.ts --workers=1"
   },
   "dependencies": {
     "@aura3d/engine": "workspace:*"

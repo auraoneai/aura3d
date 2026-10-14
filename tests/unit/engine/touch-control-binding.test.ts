@@ -215,11 +215,13 @@ describe("both game routes consume the reusable binding", () => {
   ])("%s declares controls instead of wiring them", async (path) => {
     const { readFileSync } = await import("node:fs");
     const source = readFileSync(path, "utf8");
-    // Turbo's single-path rebuild declares touch through the createGame
+    // Turbo and Skyline single-path rebuilds declare touch through the createGame
     // runtime preset (the same shared binding, owned by the runtime)
     // instead of calling bindGameTouchControls in route code.
     if (path.includes("turbo")) {
       expect(source).toContain('preset: "steer-pedals"');
+    } else if (path.includes("skyline")) {
+      expect(source).toContain('preset: "dpad-2btn"');
     } else {
       expect(source).toContain("bindGameTouchControls({");
     }

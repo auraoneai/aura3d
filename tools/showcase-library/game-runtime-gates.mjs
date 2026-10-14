@@ -109,10 +109,10 @@ function motionFeelGate(against) {
   const gameplayLevel = against ? undefined : readSource("apps/showcase-skyline-runner/src/gameplay/level.ts");
   const blockers = [];
   if (!main) return { id: "motion-feel", verdict: "fail", blockers: ["skyline-route-missing"], measured: {} };
-  const levelCode = [against ? undefined : main, level, gameplayLevel].filter(Boolean).map(codeOf).join("\n");
-  const declaresIntent = /\bfeel:\s*"(snappy|responsive|floaty)"/.test(levelCode) || /\bjumpHeight:/.test(levelCode);
+  const skylineCode = [against ? undefined : main, level, gameplayLevel].filter(Boolean).map(codeOf).join("\n");
+  const declaresIntent = /\bfeel:\s*"(snappy|responsive|floaty)"/.test(skylineCode) || /\bjumpHeight:/.test(skylineCode);
   if (!declaresIntent) blockers.push("apex-not-derived-from-declared-intent");
-  const scalesToCharacter = /characterHeight:/.test(levelCode);
+  const scalesToCharacter = /characterHeight:/.test(skylineCode);
   if (!scalesToCharacter) blockers.push("apex-not-scaled-to-character-height");
   // Literal gravity/jumpVelocity assignments are route tuning; reads of solver output are not.
   const literals = [];
