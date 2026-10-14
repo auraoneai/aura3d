@@ -9,11 +9,10 @@
  *   - prediction.ts (prediction beads + divergence tolerance check)
  *   - scoring.ts (scoreContract breakdown + 3-hull shift limit)
  *   - stations.ts (dock sensor specs + play-plane geometry)
- *
- * Runtime physics (`app.physics`) owns dock-sensor trigger entry (`onTriggerEnter`).
  */
 import {
   camera,
+  effects,
   environments,
   game as engineGame,
   labels,
@@ -23,7 +22,6 @@ import {
   primitives,
   scene,
   type AuraApp,
-  type AuraBodyHandle,
   type AuraCameraPose,
   type AuraCameraRig,
   type AuraCameraRigContext,
@@ -67,9 +65,7 @@ import {
 import { SHIFT_FAIL_LIMIT, scoreContract, type ScoreBreakdown } from "./gameplay/scoring";
 import {
   PLAY_PLANE_Y,
-  POD_BODY_SPEC,
   buildStations,
-  dockSensorBodySpec,
   type StationWorld
 } from "./gameplay/stations";
 import { FIXED_DT, dockPointHash, integratePath, type TrajectorySample, type Vec2 } from "./gameplay/wells";
@@ -148,8 +144,8 @@ export interface GravityPostSnapshot {
 export const MAX_LAUNCH_SPEED = 2.85;
 export const MIN_LAUNCH_POWER = 0.18;
 export const AIM_DRAG_PIXEL_RANGE = 190;
-export const PREDICTION_BEADS = 30;
-export const ACTUAL_PATH_BEADS = 48;
+export const PREDICTION_BEADS = 3;
+export const ACTUAL_PATH_BEADS = 3;
 
 // Verified canonical integer drag vectors for the 4 contracts (GP-CON-1..4).
 const CANONICAL_DRAGS: readonly { readonly dx: number; readonly dy: number }[] = [
@@ -269,17 +265,24 @@ function currentContract(state: GravityPostState): ContractSpec {
 
 function createGravityMaterials() {
   return {
-    sunSurface: material.emissive({
+    sunSurface: material.solarSun({
       color: "#ffd166",
+      coreColor: "#fff7ad",
+      rimColor: "#f97316",
       emissive: "#ffb703",
-      emissiveIntensity: 2.4,
-      roughness: 0.2
+      emissiveIntensity: 2.6,
+      roughness: 0.16,
+      practical: true
     }),
-    sunCorona: material.emissive({
+    sunCorona: material.solarCorona({
       color: "#ff9f1c",
+      coreColor: "#ffd166",
+      rimColor: "#f97316",
       emissive: "#ffd166",
-      emissiveIntensity: 1.35,
-      opacity: 0.32
+      emissiveIntensity: 1.55,
+      opacity: 0.36,
+      falloff: 2.5,
+      practical: true
     }),
     wellRing: material.emissive({
       color: "#274472",
@@ -313,10 +316,31 @@ function createGravityMaterials() {
       emissive: "#59d7ff",
       emissiveIntensity: 1.65
     }),
-    idleStationRing: material.pbr({
-      color: "#3b5278",
-      roughness: 0.45,
-      metallic: 0.6
+    idleStationRing: material.chrome({
+      color: "#4b6b94",
+      roughness: 0.12,
+      metallic: 0.95,
+      clearcoat: 0.6,
+      envMapIntensity: 1.75
+    }),
+    stationGate: material.brushedMetal({
+      roughness: 0.24,
+      metallic: 0.94,
+      clearcoat: 0.38,
+      envMapIntensity: 1.65
+    }),
+    stationBeacon: material.chrome({
+      roughness: 0.08,
+      metallic: 1,
+      clearcoat: 0.48,
+      envMapIntensity: 1.9
+    }),
+    courierPod: material.brushedMetal({
+      roughness: 0.2,
+      metallic: 0.92,
+      clearcoat: 0.58,
+      clearcoatRoughness: 0.08,
+      envMapIntensity: 1.85
     }),
     dockFlash: material.emissive({
       color: "#59d7ff",
@@ -329,13 +353,20 @@ function createGravityMaterials() {
       emissive: "#ff8c42",
       emissiveIntensity: 1.9
     }),
+    planetSurfaces: {
+      cinder: material.planet("lava-venus", { roughness: 0.36, emissive: "#ff6b35", emissiveIntensity: 0.45, practical: true }),
+      verdance: material.planet("ice", { roughness: 0.26, clearcoat: 0.72, clearcoatRoughness: 0.1, envMapIntensity: 1.35 }),
+      aquaria: material.planet("ice", { roughness: 0.16, clearcoat: 0.94, clearcoatRoughness: 0.05, envMapIntensity: 1.6 }),
+      rust: material.planet("rocky", { roughness: 0.58, clearcoat: 0.22, envMapIntensity: 1.15 }),
+      gale: material.planet("gas-giant", { roughness: 0.2, clearcoat: 0.86, clearcoatRoughness: 0.08, envMapIntensity: 1.45 })
+    } as Readonly<Record<string, ReturnType<typeof material.pbr>>>,
     planetAtmospheres: {
-      cinder: material.emissive({ color: "#e07a5f", emissive: "#e07a5f", emissiveIntensity: 0.35, opacity: 0.2 }),
-      verdance: material.emissive({ color: "#52b788", emissive: "#74c69d", emissiveIntensity: 0.45, opacity: 0.24 }),
-      aquaria: material.emissive({ color: "#48cae4", emissive: "#59d7ff", emissiveIntensity: 0.5, opacity: 0.26 }),
-      rust: material.emissive({ color: "#d96b43", emissive: "#e76f51", emissiveIntensity: 0.38, opacity: 0.22 }),
-      gale: material.emissive({ color: "#e8b04a", emissive: "#ffd166", emissiveIntensity: 0.42, opacity: 0.24 })
-    } as Readonly<Record<string, ReturnType<typeof material.emissive>>>
+      cinder: material.atmosphere({ color: "#e07a5f", emissive: "#ff6b35", emissiveIntensity: 0.48, opacity: 0.22 }),
+      verdance: material.atmosphere({ color: "#52b788", emissive: "#74c69d", emissiveIntensity: 0.55, opacity: 0.25 }),
+      aquaria: material.atmosphere({ color: "#38bdf8", emissive: "#59d7ff", emissiveIntensity: 0.65, opacity: 0.26 }),
+      rust: material.atmosphere({ color: "#d96b43", emissive: "#e76f51", emissiveIntensity: 0.44, opacity: 0.22 }),
+      gale: material.atmosphere({ color: "#e8b04a", emissive: "#ffd166", emissiveIntensity: 0.52, opacity: 0.25 })
+    } as Readonly<Record<string, ReturnType<typeof material.atmosphere>>>
   };
 }
 
@@ -456,7 +487,37 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
       environments.hdri({
         name: "gravity-deep-space-hdri",
         texture: assets.deepSpaceDomeHdr,
-        intensity: 0.72
+        intensity: 0.88
+      })
+    )
+    .add(
+      effects.fog({
+        name: "gravity-space-fog",
+        color: "#040612",
+        density: 0.004,
+        intensity: 0.32
+      })
+    )
+    .add(
+      effects.bloom({
+        name: "gravity-solar-bloom",
+        intensity: 0.42,
+        color: "#ffd166",
+        threshold: 0.76,
+        radius: 0.32,
+        antiBlowout: true,
+        maxIntensity: 0.68
+      })
+    )
+    .add(
+      effects.trail({
+        name: "courier-flight-ribbon",
+        target: "courier-pod",
+        color: "#59d7ff",
+        intensity: 1.35,
+        width: 0.12,
+        maxPoints: 48,
+        minVertexDistance: 0.03
       })
     );
 
@@ -484,11 +545,13 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
       );
     } else {
       const planetAsset = PLANET_ASSET_BY_BODY_ID[body.id as keyof typeof PLANET_ASSET_BY_BODY_ID];
+      const planetSurface = mats.planetSurfaces[body.id];
       if (planetAsset) {
         builder.add(
           model(planetAsset, {
             name: `body-${body.id}`,
-            targetMaxDimension: body.visualRadius * 2.05
+            targetMaxDimension: body.visualRadius * 2.05,
+            ...(planetSurface ? { material: planetSurface } : {})
           }).position(bx, PLAY_PLANE_Y, bz)
         );
       }
@@ -537,7 +600,8 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
     builder.add(
       model(assets.gravityPostDockGate, {
         name: `station-gate-${station.id}`,
-        targetMaxDimension: 0.42
+        targetMaxDimension: 0.42,
+        material: mats.stationGate
       })
         .position(sx, PLAY_PLANE_Y, sz)
         .rotate(0, stationAngle, 0)
@@ -545,7 +609,8 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
     builder.add(
       model(assets.gravityPostDockBeacon, {
         name: `station-beacon-${station.id}`,
-        targetMaxDimension: 0.28
+        targetMaxDimension: 0.28,
+        material: mats.stationBeacon
       }).position(sx + 0.14, PLAY_PLANE_Y + 0.12, sz - 0.12)
     );
     builder.add(
@@ -572,7 +637,8 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
   builder.add(
     model(assets.gravityPostCourierSkiff, {
       name: "courier-pod",
-      targetMaxDimension: 0.56
+      targetMaxDimension: 0.56,
+      material: mats.courierPod
     })
       .position(px, PLAY_PLANE_Y + 0.04, pz)
       .rotate(0, state.aimYaw, 0)
@@ -673,6 +739,7 @@ const gravityGame = createGame({
   id: "showcase-gravity-post",
   target,
   layout: "full-bleed",
+  diagnostics: { overlay: false, performancePanel: false },
   qualityRebuild: { flags: ["game"] },
   scene: () => buildGravityWorld(state),
   hud: hudOptions,
@@ -703,15 +770,6 @@ const gravityGame = createGame({
 
 const app: AuraApp = gravityGame.app;
 gravityGame.start();
-
-const originPos = stationPosition(stationById(CONTRACTS[0]!.originStationId));
-const podBody: AuraBodyHandle = app.physics.addBody({
-  ...POD_BODY_SPEC,
-  position: [originPos[0], PLAY_PLANE_Y, originPos[1]]
-});
-for (const station of state.stations) {
-  app.physics.addBody(dockSensorBodySpec(station));
-}
 
 function fireAudioCue(cue: GravityAudioCue): void {
   const legacyName = LEGACY_CUE_NAMES[cue];
@@ -787,23 +845,6 @@ function onStationDockTrigger(stationId: string): void {
   }
 }
 
-app.physics.onTriggerEnter((event) => {
-  const station = state.stations.find(
-    (entry) => entry.sensorBodyName === event.a || entry.sensorBodyName === event.b
-  );
-  if (station) {
-    onStationDockTrigger(station.id);
-  }
-});
-
-function syncPodPhysicsBody(): void {
-  podBody.setPosition([
-    state.pod.kinematic.position[0],
-    PLAY_PLANE_Y,
-    state.pod.kinematic.position[1]
-  ]);
-}
-
 function stepSimulation(dt: number): void {
   state.frame += 1;
   if (state.dockFlashTimer > 0) {
@@ -822,7 +863,6 @@ function stepSimulation(dt: number): void {
       if (state.autoRetryTimer === 0 && !state.shiftOver) {
         resetPodForContract(state.pod, contract);
         state.actualPath = [[state.pod.kinematic.position[0], state.pod.kinematic.position[1]]];
-        syncPodPhysicsBody();
       }
     }
     return;
@@ -830,7 +870,6 @@ function stepSimulation(dt: number): void {
 
   if (state.pod.state !== "coasting") {
     state.warping = false;
-    syncPodPhysicsBody();
     return;
   }
 
@@ -838,8 +877,8 @@ function stepSimulation(dt: number): void {
     fireAudioCue("warp");
   }
 
-  // Step coasting in FIXED_DT increments while syncing podBody at every fixed
-  // step so time-warp or batched sim steps never tunnel through a dock sensor.
+  // Step coasting in FIXED_DT increments while checking dock proximity at every
+  // fixed step so time-warp or batched sim steps never tunnel through a dock sensor.
   const destPos = stationPosition(stationById(contract.destinationStationId));
   let remainingDt = Math.min(0.25, Math.max(0, dt));
   const stepQuantum = state.warping ? FIXED_DT / TIME_WARP_MULTIPLIER : FIXED_DT;
@@ -879,8 +918,6 @@ function stepSimulation(dt: number): void {
       }
     }
 
-    syncPodPhysicsBody();
-
     if (state.pod.state === "coasting") {
       const distToDest = Math.hypot(
         state.pod.kinematic.position[0] - destPos[0],
@@ -909,7 +946,6 @@ function advanceToNextContract(): void {
   state.predictionSamples = [];
   state.predictionAtLaunch = [];
   state.actualPath = [[state.pod.kinematic.position[0], state.pod.kinematic.position[1]]];
-  syncPodPhysicsBody();
 }
 
 function retryOrResetCampaign(): void {
@@ -931,7 +967,6 @@ function retryOrResetCampaign(): void {
   state.actualPath = [[state.pod.kinematic.position[0], state.pod.kinematic.position[1]]];
   state.warping = false;
   state.paused = false;
-  syncPodPhysicsBody();
 }
 
 function launchPodWithDragVector(dx: number, dy: number, source: "drag" | "keyboard"): void {
@@ -1172,9 +1207,7 @@ function attachInputHandlers(): void {
           launchFromKeyboard();
         }
       } else if (state.pod.state === "ready") {
-        state.aimPower = Math.min(1, state.aimPower + 0.06);
-        state.aimDragging = true;
-        refreshGravityPrediction();
+        launchFromKeyboard();
       }
       return;
     }
