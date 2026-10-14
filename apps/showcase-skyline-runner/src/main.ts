@@ -154,6 +154,19 @@ const inputOptions = {
   bufferMs: 140
 } as const;
 
+const DISTANT_CITADEL_TOWERS = [
+  { id: "west-01", x: -12.0, width: 5.4, height: 22.0, z: -26.0, tone: "slate" as const },
+  { id: "west-02", x: -5.5, width: 4.6, height: 27.5, z: -22.0, tone: "indigo" as const },
+  { id: "launch-spire", x: 1.0, width: 5.8, height: 32.0, z: -29.0, tone: "slate" as const },
+  { id: "step-tower", x: 7.4, width: 4.8, height: 25.0, z: -19.5, tone: "indigo" as const },
+  { id: "mid-plaza-west", x: 13.5, width: 6.2, height: 35.0, z: -31.5, tone: "slate" as const },
+  { id: "mid-plaza-east", x: 19.2, width: 4.5, height: 26.5, z: -21.0, tone: "indigo" as const },
+  { id: "high-arch", x: 25.0, width: 5.6, height: 33.5, z: -27.5, tone: "slate" as const },
+  { id: "drop-citadel", x: 31.2, width: 5.0, height: 28.0, z: -20.0, tone: "indigo" as const },
+  { id: "finish-monolith", x: 37.5, width: 6.4, height: 36.0, z: -33.0, tone: "slate" as const },
+  { id: "east-01", x: 44.0, width: 5.2, height: 24.5, z: -24.0, tone: "indigo" as const }
+] as const;
+
 // Latest published snapshot, read by the createGame evidence section below.
 // `window.__aura3dGameSnapshot` stays the sole evidence global.
 let latestSnapshot: SkylineRunnerEvidence | undefined;
@@ -330,19 +343,6 @@ void skylineGame.ready().then(() => {
 }).catch((error: unknown) => {
   document.body.dataset.aura3dError = error instanceof Error ? error.message : String(error);
 });
-
-const DISTANT_CITADEL_TOWERS = [
-  { id: "west-01", x: -12.0, width: 5.4, height: 22.0, z: -26.0, tone: "slate" as const },
-  { id: "west-02", x: -5.5, width: 4.6, height: 27.5, z: -22.0, tone: "indigo" as const },
-  { id: "launch-spire", x: 1.0, width: 5.8, height: 32.0, z: -29.0, tone: "slate" as const },
-  { id: "step-tower", x: 7.4, width: 4.8, height: 25.0, z: -19.5, tone: "indigo" as const },
-  { id: "mid-plaza-west", x: 13.5, width: 6.2, height: 35.0, z: -31.5, tone: "slate" as const },
-  { id: "mid-plaza-east", x: 19.2, width: 4.5, height: 26.5, z: -21.0, tone: "indigo" as const },
-  { id: "high-arch", x: 25.0, width: 5.6, height: 33.5, z: -27.5, tone: "slate" as const },
-  { id: "drop-citadel", x: 31.2, width: 5.0, height: 28.0, z: -20.0, tone: "indigo" as const },
-  { id: "finish-monolith", x: 37.5, width: 6.4, height: 36.0, z: -33.0, tone: "slate" as const },
-  { id: "east-01", x: 44.0, width: 5.2, height: 24.5, z: -24.0, tone: "indigo" as const }
-] as const;
 
 function buildScene() {
   // Platform geometry comes from the library crate scaled to each authored
