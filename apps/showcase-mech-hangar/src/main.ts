@@ -733,7 +733,7 @@ function publishEvidence(): void {
     elapsedSeconds,
     events: routeEvents.events().map((event: { readonly label: string }) => event.label),
     look: { id: LOOK_ID, category: "interior" },
-    drawCalls: diagnostics.drawCalls,
+    drawCalls: cachedDrawCalls,
     evidence
   };
   latestSnapshot = snapshot;

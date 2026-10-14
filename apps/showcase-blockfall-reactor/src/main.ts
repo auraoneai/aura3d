@@ -910,7 +910,7 @@ function publishEvidence(state: KitState): void {
       filledCells: filledCellCount(state.board),
       rendering: "instanced-model",
       cellAsset: { id: "quaterniusCubeCrate", url: assets.quaterniusCubeCrate.url, metres: assets.quaterniusCubeCrate.bounds },
-      drawCalls: diagnostics.drawCalls
+      drawCalls: cachedDrawCalls
     },
     flash: { modelBased: true, activeRows: performance.now() < flashRows.until ? flashRows.rows : [] },
     framing: framingEvidence(),
