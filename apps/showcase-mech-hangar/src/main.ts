@@ -443,7 +443,7 @@ function buildScene() {
       castShadow: true
     })
       .position(-6.2, 0, 0.1)
-      .rotation(0, Math.PI / 2, 0)
+      .rotate(0, Math.PI / 2, 0)
       .scale([2.8, 3.0, 1.4]),
     model(assets.quaterniusWallModular, {
       name: "hangar bulkhead right",
@@ -451,7 +451,7 @@ function buildScene() {
       castShadow: true
     })
       .position(6.2, 0, 0.1)
-      .rotation(0, -Math.PI / 2, 0)
+      .rotate(0, -Math.PI / 2, 0)
       .scale([2.8, 3.0, 1.4]),
 
     // Brushed-metal gantry pillars, overhead catwalk beam, and bay crane arm.
@@ -512,19 +512,19 @@ function buildScene() {
     ...PART_OPTIONS.chassis.map((part) =>
       model(chassisAsset(part.assetKey!), { name: `chassis ${part.id}`, castShadow: true })
         .position(mechX, 0, 0)
-        .rotation(0, Math.PI * 0.36, 0)
+        .rotate(0, Math.PI * 0.36, 0)
         .scale(part.scale)
         .runtime(game.runtimeNode(`chassis-${part.id}`, { tags: ["mech", "chassis", "runtime"] }))
     ),
     model(assets.quaterniusFlyingGunDrone, { name: "support drone", castShadow: true })
       .position(mechX - 0.85, 2.25, -0.35)
-      .rotation(0, Math.PI * 0.36, 0)
+      .rotate(0, Math.PI * 0.36, 0)
       .scale(partFor({ chassis: 0, support: 1 }, "support").scale)
       .runtime(game.runtimeNode("support-drone", { tags: ["support", "runtime"] })),
     ...DUMMY_POSITIONS.map((x, index) =>
       model(assets[DUMMY_ASSET_KEY], { name: `target dummy ${index}`, castShadow: true })
         .position(x, 0, 0)
-        .rotation(0, -Math.PI * 0.35, 0)
+        .rotate(0, -Math.PI * 0.35, 0)
         .scale(DUMMY_SCALE)
         .runtime(game.runtimeNode(`dummy-${index}`, { tags: ["dummy", "runtime"] }))
     )
@@ -554,7 +554,7 @@ function createHud(): HTMLElement {
   root.style.cssText = [
     "position:absolute",
     "left:16px",
-    "top:16px",
+    "top:56px",
     "z-index:5",
     "min-width:330px",
     "font:600 13px/1.35 Inter, system-ui, sans-serif",
