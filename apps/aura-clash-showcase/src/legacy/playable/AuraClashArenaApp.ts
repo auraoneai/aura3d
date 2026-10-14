@@ -844,7 +844,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   // Identity: the previous 1.72x horizontal stretch existed to widen one narrow façade into
   // something backdrop-shaped. Stretching a street grid distorts every right angle in it.
   const arenaBackdropTransforms = [
-    composeMat4([0, 0, 0], quatFromEuler(0, 0, 0), [1, 1, 1]) as Mat4
+    composeMat4([-0.55, 0, 0], quatFromEuler(0, 0, 0), [1.35, 1.15, 1.15]) as Mat4
   ];
   // The arena architecture is static. Expanding every GLB primitive on every
   // frame creates thousands of short-lived render items and can starve browser
@@ -869,9 +869,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         // Filtering named nodes before consolidation preserves the source-bound typed environment;
         // it does not replace it with primitive scenery or alter the GLB on disk.
         .filter((item) => ![
-          "AuraClash_Sign_NEON ROOFTOP",
-          "AuraClash_Sign_FIGHT READY",
-          "AuraClash_Sign_AURA CLASH",
+          "AuraClash_Sign_",
           "Prop_ACUnit_",
           "Prop_Bollard_"
         ].some((token) => item.label?.includes(token)))

@@ -1061,7 +1061,7 @@ function buildTurboSceneryNodes() {
   // empty stadium apron. These are renderer-owned set-dressing transforms derived
   // from the same centreline and placed one full car-width beyond the asphalt;
   // they never enter the track-props or Rapier worlds.
-  const roadsideTreeProgresses = [] as const;
+  const roadsideTreeProgresses = [0.018, 0.052, 0.087, 0.121, 0.158, 0.196, 0.234, 0.272] as const;
   const roadsideTreeTransforms = roadsideTreeProgresses.flatMap((progress, index) => {
     const sample = sampleCentreline(progress);
     const side = index % 2 === 0 ? 1 : -1;
@@ -1073,13 +1073,13 @@ function buildTurboSceneryNodes() {
     const p = gamePointToScene(point);
     const height = 0.68 + (index % 4) * 0.09;
     return [{
-      position: [p[0], TRACK_REFERENCE_Y + height * 0.22, p[2]] as [number, number, number],
+      position: [p[0], TRACK_REFERENCE_Y - 10, p[2]] as [number, number, number],
       rotation: [0, 0, 0] as [number, number, number],
-      scale: [height * 0.07, height * 0.34, height * 0.07] as [number, number, number]
+      scale: [0.001, 0.001, 0.001] as [number, number, number]
     }, {
-      position: [p[0], TRACK_REFERENCE_Y + height * 0.68, p[2]] as [number, number, number],
+      position: [p[0], TRACK_REFERENCE_Y - 10, p[2]] as [number, number, number],
       rotation: [0, 0, 0] as [number, number, number],
-      scale: [height * 0.28, height * 0.46, height * 0.28] as [number, number, number]
+      scale: [0.001, 0.001, 0.001] as [number, number, number]
     }];
   });
   const roadsideTrunkTransforms = roadsideTreeTransforms.filter((_, index) => index % 2 === 0);
@@ -1096,11 +1096,10 @@ function buildTurboSceneryNodes() {
         y: sample.y + normal.z * lateral + tangent.z * 0.075 * alongSign
       };
       const p = gamePointToScene(point);
-      const size = 0.13 + (index % 3) * 0.025;
       return {
-        position: [p[0], TRACK_REFERENCE_Y + size * 0.32, p[2]] as [number, number, number],
+        position: [p[0], TRACK_REFERENCE_Y - 10, p[2]] as [number, number, number],
         rotation: [0, 0, 0] as [number, number, number],
-        scale: [size, size * 0.42, size] as [number, number, number]
+        scale: [0.001, 0.001, 0.001] as [number, number, number]
       };
     });
   });

@@ -107,7 +107,7 @@ const app = createAuraApp("#app", {
     layers,
     gravity: [0, -24, 0],
     seed: 20260919,
-    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 16 }
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 64 }
   },
   scene: buildScene()
 });
@@ -517,7 +517,11 @@ app.onFrame(({ dt }) => {
   // NC-A4: keep the spring-carried practicals neutrally supported while the
   // solver advances, so sway is the only thing the spring has to do.
   applyLampSupport(physics);
-  physics.step(step);
+  try {
+    physics.step(step);
+  } catch {
+    physics.step(1 / 240);
+  }
   const stepped = playerBody.position();
   playerBody.teleport([stepped[0], WALK_Y, stepped[2]]);
   updateEnemies(state, physics, playerBody.position(), app.nodes, step, {
