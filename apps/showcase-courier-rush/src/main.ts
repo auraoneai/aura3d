@@ -297,7 +297,7 @@ const KIT_PARKED_CAR_PATTERN = /(red northbound|blue southbound|yellow crosstown
 const KIT_DEBUG_ARTIFACT_PATTERN =
   /(visible dark night road evidence|foreground day night state board|large day sun state marker|large night moon state marker|foreground active night state bar|day night toggle pedestal|gold sun icon on day night toggle|silver moon icon on day night toggle|active night state toggle knob|night streetlight glow proof strip)/;
 const KIT_SUBPROP_CULL_PATTERN =
-  /(window frame|ledge band|mechanical cap|facade reveal|balcony slab|storefront awning|crosswalk|curb corner|traffic signal|street lamp|streetlight|lamp post|lamp head|bench|planter|hydrant|trash|bollard)/i;
+  /(window frame|ledge band|mechanical cap|facade reveal|balcony slab|storefront awning|crosswalk|curb corner|traffic signal|street lamp|streetlight|lamp post|lamp head|bench|planter|hydrant|trash|bollard|dashed lane marking|street address plaque|rooftop antenna|balcony guard rail|turn arrow road marking|bike lane paint|bus stop sign|wayfinding street sign|gold night lamp glow pool)/i;
 const KIT_ROAD_PATTERN = /(main .* road|city avenue|cross street)/;
 const KIT_CURB_PATTERN = /(sidewalk|intersection curb)/;
 const KIT_BUILDING_METAL_PATTERN = /(city tower|window frame|ledge band|mechanical cap|facade reveal)/;
@@ -329,6 +329,8 @@ const hudBindings = [
   { kind: "aura-game-hud-binding", owner: "app", binding: "event-log", id: "hud:event-log", label: "event log", source: "app-state", valuePath: "appState.events", format: "text", a11yLabel: "game event log", debugOnly: true }
 ] as const;
 let latestSnapshot: CourierRushEvidence | undefined;
+let lastHudHtml = "";
+let cachedEvidenceObj: unknown = null;
 
 const inputOptions = {
   actions: {
@@ -878,7 +880,6 @@ function createHud(): HTMLElement {
   return root;
 }
 
-let lastHudHtml = "";
 function renderHud(): void {
   const timeLeft = Math.max(0, (dispatch.timerMs * timerScale) / 1000);
   const van = vanVehicle.snapshot();
@@ -900,7 +901,6 @@ function renderHud(): void {
   }
 }
 
-let cachedEvidenceObj: unknown = null;
 function publishEvidence(): void {
   const van = vanVehicle.snapshot();
   const grounded = groundedFittedModelPosition(lastPose, VAN_FITTED_SIZE, {
