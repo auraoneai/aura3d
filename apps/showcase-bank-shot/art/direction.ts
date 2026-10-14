@@ -42,11 +42,9 @@ export default defineArtDirection({
   },
   framing: { rig: "orbit", subjectHeightFraction: [0.2, 0.4], fovDeg: [35, 50], mobile: "landscape" },
   assets: [
-    { role: "hero", assetKey: "bank-table", kit: "K4", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "ball-atlas", kit: "K4", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "cue", kit: "K4", maxTriangles: 8000, minTriangles: 3000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "pool-hall-set", kit: "K4", maxTriangles: 120000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "bar-props", kit: "K4", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 }
+    { role: "hero", assetKey: "bankShotTable", kit: "K4", maxTriangles: 40000, minTriangles: 1000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "bankShotBall00", kit: "K4", maxTriangles: 32000, minTriangles: 200, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "bankShotCue", kit: "K4", maxTriangles: 8000, minTriangles: 200, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "cue-strike", kind: "burst", flipbook: "k9-dust" },
@@ -61,10 +59,9 @@ export default defineArtDirection({
   ],
   signatureEffect: "One pendant spot as the only shadow caster; room luminance falls below 5% of table luminance beyond 3 m.",
   standIns: [
-    { feature: "aim-orbit + overhead roll camera rig", file: "src/v2/scene/camera.ts", request: "R-14-10", removeWhen: "C-22 rigs.orbit/static real" },
-    { feature: "sheen felt + clearcoat balls/rails", file: "src/v2/scene/materials.ts", request: "R-14-14", removeWhen: "PRD 04 sheen/clearcoat real (§8.6)" },
-    { feature: "spot-cone haze (High/Ultra)", file: "src/v2/scene/fx.ts", request: "R-14-14", removeWhen: "C-21 volumetric spot real" },
-    { feature: "sampled billiards cues", file: "src/v2/audio-map.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" }
+    { feature: "fixed overhead camera (aim-orbit rig retired with v2)", file: "src/main.ts", request: "R-14-10", removeWhen: "C-22 rigs.orbit/static real" },
+    { feature: "primitive felt/balls/rails (no sheen/clearcoat)", file: "src/main.ts", request: "R-14-14", removeWhen: "PRD 04 sheen/clearcoat real (§8.6)" },
+    { feature: "strike gain/pitch audio map", file: "src/audio-map.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" }
   ],
   criticalCategories: ["material_quality", "lighting", "shadows"],
   tiers: {

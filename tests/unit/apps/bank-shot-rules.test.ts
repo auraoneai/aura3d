@@ -3,7 +3,7 @@ import {
   FOUL_LIMIT,
   RulesEngine,
   suitOf
-} from "../../../apps/showcase-bank-shot/src/rules";
+} from "../../../apps/showcase-bank-shot/src/gameplay/rules";
 import {
   COMBO_CAP,
   RACKS,
@@ -12,7 +12,7 @@ import {
   nextComboStreak,
   rackConfigFor,
   timeBonusFor
-} from "../../../apps/showcase-bank-shot/src/racks";
+} from "../../../apps/showcase-bank-shot/src/gameplay/racks";
 import {
   CueController,
   MIN_POWER,
@@ -20,8 +20,8 @@ import {
   STRIKE_MIN_SPEED,
   strikeSpeedFor,
   sweepPreviewGeometric
-} from "../../../apps/showcase-bank-shot/src/cue";
-import { BALL_RADIUS } from "../../../apps/showcase-bank-shot/src/table";
+} from "../../../apps/showcase-bank-shot/src/gameplay/cue";
+import { BALL_RADIUS } from "../../../apps/showcase-bank-shot/src/gameplay/table";
 
 /**
  * PRD definition-of-done pins for Bank Shot (BS-13): the route-local 8-ball

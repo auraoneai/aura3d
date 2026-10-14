@@ -1,4 +1,4 @@
-// apps/showcase-bank-shot/src/v2/audio-map.ts — §14.4 cue gain/pitch map.
+// apps/showcase-bank-shot/src/audio-map.ts — §14.4 cue gain/pitch map.
 // C-25's mixer owns the applied gain/pitch when it lands; the map is pure so
 // the unit test can prove the ≥6 dB spread between soft and hard strikes.
 // Speed domain mirrors the CueController strike law (power 0.12 → 1.2 m/s,
