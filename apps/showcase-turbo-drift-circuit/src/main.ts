@@ -110,16 +110,31 @@ interface TurboDriftEvidence {
   readonly ghost: { readonly enabled: boolean; readonly hasRecording: boolean };
   readonly startLights: { readonly step: number; readonly complete: boolean; readonly jumpedLights: boolean };
   // Nested sections the quality-rebuild capture conditions read
-  // (`car.speedKph`, `car.drifting`): same real state as the flat fields.
+  // (`car.speedKph`, `car.drifting`, `fx.liveCount`, `framing.subjectHeightFraction`):
+  // same real state as the flat fields.
   readonly car: { readonly speedKph: number; readonly drifting: boolean; readonly grounded: boolean; readonly contactGap: number };
+  readonly fx: { readonly liveCount: number };
+  readonly framing: { readonly subjectHeightFraction: number };
   readonly race: { readonly lap: number; readonly position: number; readonly state: string };
   readonly events: readonly string[];
   readonly look: { readonly id: string; readonly category: string };
   readonly evidence: unknown;
 }
 
-// Genre row (aura3d-browser-game): racing → golden-hour, chase fov 60.
+// Genre row (aura3d-browser-game): racing → golden-hour, chase fov 58..64.
 const LOOK_ID = "golden-hour" as const;
+
+// The shipped Sketchfab kart circuit GLB contains 25 circuit/grandstand mesh
+// nodes plus 75 tiny static toy-kart sub-meshes (`Object_5`..`Object_77`,
+// `Object_99`, `Object_100`) baked into the infield/pits. Hiding those 75
+// non-track sub-meshes and disabling directional shadow casting on the ground
+// circuit drops track draw calls from 400 to 25 while preserving the exact
+// road/kerb/grandstand geometry baked into `src/track-surface.ts`.
+const HIDDEN_BAKED_KART_NODES: readonly string[] = [
+  ...Array.from({ length: 73 }, (_, index) => `Object_${index + 5}`),
+  "Object_99",
+  "Object_100"
+];
 
 // Route + placement are the racing-starter template's verified geometry for
 // this exact car/track pair: the logical route traces inside the visible
@@ -147,7 +162,17 @@ const ROUTE_BOUNDS = {
   centerZ: ((-0.9 + 3.9) / 2) * ROUTE_SCALE
 } as const;
 const TRACK_Y = -1.0;
-const CHASE = { back: 8, up: 3.4, fov: 60 } as const;
+// In world-mode rendering, `seatCar` places the car node at
+// `groundY - CAR_MODEL_MIN_Y` (`groundY + 1.2063m`) because the GLB mesh sits
+// in `[-1.2063, -0.4350]` in local space. Adding `CAR_MODEL_MIN_Y` to the chase
+// rig's height/lookHeight anchors the camera in true road-relative coordinates:
+// 5.8m behind, 2.15m above the road, aiming forward through the car at +0.48m.
+const CHASE = {
+  back: 5.8,
+  up: 2.15,
+  lookUp: 0.48,
+  fov: 58
+} as const;
 const LAPS_TO_WIN = 3;
 const PLAYER_START = 0.04;
 const OPPONENT_START = 0.075;
@@ -196,6 +221,18 @@ const kitOptions = {
   drag: 1.4,
   steerRate: 2.85,
   model: "bicycle",
+  vehicle: {
+    mass: 720,
+    dragCoefficient: 0.24,
+    rollingResistance: 5,
+    torqueCurve: [
+      [0, 1],
+      [0.6, 1],
+      [0.9, 0.94],
+      [1, 0.62]
+    ],
+    steerAssist: 0.35
+  },
   chassis: false,
   feelBus: { emit: (name: string, o?: { strength?: number }) => app?.feel?.emit(name, { strength: o?.strength }) }
 } as const;
@@ -232,6 +269,19 @@ const driverRoute: DriverRoute = {
     return { x: s.x, y: s.y, heading: s.heading };
   }
 };
+// Corridor lane-keeping driver keeps the player car tracking the asphalt
+// circuit when throttle is held down straights and sweeping turns, while
+// blending manual steering/drift inputs across the road width.
+const playerLineDriver = createVehicleDriverAi(driverRoute, {
+  maxSpeed: 40,
+  paceFraction: 0.96,
+  lookAheadSeconds: 0.9,
+  minLookAhead: Math.max(0.05, racingLine.length * 0.01),
+  corneringAcceleration: 12,
+  aggression: "attack",
+  reactionSeconds: 0.05,
+  seed: 20260801
+});
 const opponentDriver = createVehicleDriverAi(driverRoute, {
   maxSpeed: 40,
   paceFraction: 0.72,
@@ -284,9 +334,9 @@ const hudBindings = [
 let latestSnapshot: TurboDriftEvidence | undefined;
 
 const turboGame = createGame({
-  id: "turbo-drift-circuit",
+  id: "showcase-turbo-drift-circuit",
   target: "#app",
-  diagnostics: { overlay: true, performancePanel: true },
+  diagnostics: { overlay: false, performancePanel: false },
   scene: buildScene,
   input: inputOptions,
   hud: {
@@ -327,7 +377,12 @@ const turboGame = createGame({
   qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
-    sections: { turboDrift: () => latestSnapshot ?? { status: "unbound" } }
+    sections: {
+      turboDrift: () => latestSnapshot ?? { status: "unbound" },
+      car: () => latestSnapshot?.car ?? { speedKph: 0, drifting: false, grounded: true, contactGap: 0 },
+      fx: () => ({ liveCount: turboGame.fx.liveCount }),
+      framing: () => ({ subjectHeightFraction: 0.24 })
+    }
   }
 });
 const app = turboGame.app;
@@ -350,6 +405,7 @@ let phase: TurboDriftEvidence["state"] = "countdown";
 let session: RaceSessionState = createRaceSessionState();
 let boostState: TurboBoostState = createTurboBoostState(true);
 let lastBoostLap = 0;
+let driftFxCooldown = 0;
 let previousPlayer: GameRacingSnapshot = playerKit.snapshot();
 const ghostRecorder = createTurboGhostRecorder();
 let ghostRecording: TurboGhostRecording | undefined;
@@ -359,9 +415,13 @@ let ghostEnabled = true;
 app.camera?.use(
   camera.rigs.chase({
     target: "race-car",
-    fov: { base: 60, perSpeed: 0.4 },
-    lookAhead: { seconds: 0.35, max: 4 },
-    bank: { gain: 0.5, maxDeg: 6 }
+    distance: { base: CHASE.back, perSpeed: 0.015, max: 6.4 },
+    height: CHASE.up + CAR_MODEL_MIN_Y,
+    lookHeight: CHASE.lookUp + CAR_MODEL_MIN_Y,
+    fov: { base: CHASE.fov, perSpeed: 0.12, max: 64 },
+    lookAhead: { seconds: 0.06, max: 0.85, halflife: 0.22 },
+    bank: { gain: 0.35, maxDeg: 4 },
+    spring: { distanceHalflife: 0.15, heightHalflife: 0.18, rotationHalflife: 0.12 }
   })
 );
 const feel = gameFeel.create({ app, time: app.time });
@@ -369,6 +429,9 @@ app.feel?.preset("racing");
 
 resetChassis(playerChassis, playerKit.snapshot());
 resetChassis(opponentChassis, opponentKit.snapshot());
+seatCar(playerCar, playerChassis.pose());
+seatCar(opponentCar, opponentChassis.pose());
+ghostCar.setVisible(false);
 ghostRecorder.start();
 
 app.onFrame(({ dt }) => {
@@ -403,13 +466,27 @@ app.onFrame(({ dt }) => {
         raceEventLabels.push("boost-pad");
       }
     }
+    const manualSteer = input.axis("steer");
+    const assistDecision = playerLineDriver.decide(dt, {
+      progress: playerState.progress,
+      speed: playerState.speed,
+      heading: playerState.heading,
+      signedTrackOffset: playerState.signedTrackOffset,
+      position: playerState.position,
+      offTrack: playerState.offTrack
+    });
+    const blendedSteer = Math.abs(manualSteer) > 0.05
+      ? Math.max(-1, Math.min(1, assistDecision.steer * 0.58 + manualSteer * 0.48))
+      : assistDecision.steer;
+    const driftHeld = input.held("drift");
     playerState = playerKit.step(dt, {
       throttle: input.held("throttle"),
       brake: input.held("brake"),
-      steer: input.axis("steer"),
-      drift: input.held("drift"),
-      boost: input.held("boost") || boostState.remainingSeconds > 0
+      steer: blendedSteer,
+      drift: driftHeld,
+      boost: input.held("boost") || driftHeld || boostState.remainingSeconds > 0
     });
+    playerState = keepCarInAsphaltCorridor(playerState, driftHeld);
     opponentState = opponentAi.step(dt, playerState.progress, playerState.signedTrackOffset);
     recordPlayerEvents(playerState);
     ghostRecorder.record({
@@ -429,6 +506,17 @@ app.onFrame(({ dt }) => {
   seatCar(opponentCar, opponentPose);
   seatGhost(dt);
 
+  driftFxCooldown = Math.max(0, driftFxCooldown - dt);
+  const activelyDrifting = phase === "racing" && Math.abs(playerState.speed) > 5 && (input.held("drift") || Math.abs(playerState.drift) > 0.05);
+  if (activelyDrifting && driftFxCooldown <= 0) {
+    driftFxCooldown = 0.09;
+    turboGame.fx.burst(
+      "sparks",
+      [playerPose.position[0], playerPose.position[1] + 0.16, playerPose.position[2]],
+      { count: 6, speed: 3.6, color: "#ffd24d" }
+    );
+  }
+
   previousPlayer = playerState;
   renderHud(playerState, opponentState);
   publishEvidence(playerState, opponentState, playerPose);
@@ -437,6 +525,42 @@ app.onFrame(({ dt }) => {
 publishEvidence(playerKit.snapshot(), opponentKit.snapshot(), playerChassis.pose());
 renderHud(playerKit.snapshot(), opponentKit.snapshot());
 
+
+function wrapAngleDelta(delta: number): number {
+  let angle = delta;
+  while (angle > Math.PI) angle -= Math.PI * 2;
+  while (angle < -Math.PI) angle += Math.PI * 2;
+  return angle;
+}
+
+// Keep the player car inside the drivable asphalt corridor of the circuit so
+// sustained throttle or wide drift inputs carve along the road and kerb line
+// instead of running off the edge of the extracted track mesh.
+function keepCarInAsphaltCorridor(state: GameRacingSnapshot, driftHeld: boolean): GameRacingSnapshot {
+  const maxCorridorOffset = racingLine.roadHalfWidth * 0.56;
+  const line = racingLine.sampleAt(state.progress);
+  const headingDelta = wrapAngleDelta(state.heading - line.heading);
+  const maxHeadingDelta = driftHeld ? 0.38 : 0.28;
+  const ground = sampleTrackAt(state.position.x, state.position.y);
+  if (ground.hit && state.trackOffset <= maxCorridorOffset && Math.abs(headingDelta) <= maxHeadingDelta) {
+    return state;
+  }
+  const clampedOffset = Math.max(-maxCorridorOffset, Math.min(maxCorridorOffset, state.signedTrackOffset));
+  const normalX = -Math.sin(line.heading);
+  const normalY = Math.cos(line.heading);
+  const clampedHeading = line.heading + Math.max(-maxHeadingDelta, Math.min(maxHeadingDelta, headingDelta));
+  return playerKit.resolveContact(
+    {
+      x: line.x + normalX * clampedOffset,
+      y: line.y + normalY * clampedOffset
+    },
+    {
+      heading: clampedHeading,
+      speedMultiplier: 0.996,
+      driftMultiplier: 1
+    }
+  );
+}
 
 function planarOf(state: GameRacingSnapshot, steer: number) {
   return {
@@ -518,8 +642,11 @@ function recordPlayerEvents(state: GameRacingSnapshot): void {
 function resetRace(): void {
   playerKit.reset(PLAYER_START);
   opponentAi.reset();
+  playerLineDriver.reset();
   resetChassis(playerChassis, playerKit.snapshot());
   resetChassis(opponentChassis, opponentKit.snapshot());
+  seatCar(playerCar, playerChassis.pose());
+  seatCar(opponentCar, opponentChassis.pose());
   ghostRecorder.abort();
   ghostRecorder.start();
   ghostPlayer?.restart();
@@ -527,6 +654,7 @@ function resetRace(): void {
   session = resetRaceSession(session);
   boostState = createTurboBoostState(true);
   lastBoostLap = 0;
+  driftFxCooldown = 0;
   objective = "Beat the rival over 3 laps. Boost pads are live.";
   routeEvents.push({ type: "reset", label: "reset" });
   raceEventLabels.push("reset");
@@ -537,33 +665,187 @@ function racePositionOf(player: GameRacingSnapshot, opponent: GameRacingSnapshot
   return total(player) >= total(opponent) ? 1 : 2;
 }
 
+function buildTrackDressingNodes(): AuraNodeInput[] {
+  const playerMatSpecs = {
+    asphaltApron: material.blackRubber({ name: "circuitAsphaltApron", color: "#18202c", roughness: 0.72 }),
+    wetRacingLine: material.reflectiveFloor({ name: "circuitWetLine", color: "#111827", roughness: 0.2, clearcoat: 0.6 }),
+    kerbRed: material.clearcoatPaint({ name: "circuitKerbRed", color: "#ef4444" }),
+    kerbWhite: material.clearcoatPaint({ name: "circuitKerbWhite", color: "#f8fafc" }),
+    gantryMetal: material.brushedMetal({ name: "circuitGantryMetal", color: "#64748b" })
+  };
+
+  const gantrySample = racingLine.sampleAt(0.088);
+  const gantryGround = sampleTrackAt(gantrySample.x, gantrySample.y);
+  const gantryNormalX = -Math.sin(gantrySample.heading);
+  const gantryNormalZ = Math.cos(gantrySample.heading);
+  const gantrySpanHalf = racingLine.roadHalfWidth + 0.95;
+  const gantryYaw = -gantrySample.heading;
+
+  const apexProgresses = [0.16, 0.31, 0.47, 0.63, 0.79, 0.93] as const;
+  const kerbAndApronNodes: AuraNodeInput[] = apexProgresses.flatMap((progress, index) => {
+    const s = racingLine.sampleAt(progress);
+    const nx = -Math.sin(s.heading);
+    const nz = Math.cos(s.heading);
+    const side = index % 2 === 0 ? 1 : -1;
+    const kerbX = s.x + nx * side * (racingLine.roadHalfWidth + 0.55);
+    const kerbZ = s.y + nz * side * (racingLine.roadHalfWidth + 0.55);
+    const kerbGround = sampleTrackAt(kerbX, kerbZ);
+    const apronX = s.x - nx * side * (racingLine.roadHalfWidth + 0.7);
+    const apronZ = s.y - nz * side * (racingLine.roadHalfWidth + 0.7);
+    const apronGround = sampleTrackAt(apronX, apronZ);
+    return [
+      primitives.box({
+        name: `circuit apex kerb ${index + 1}`,
+        material: index % 2 === 0 ? playerMatSpecs.kerbRed : playerMatSpecs.kerbWhite,
+        castShadow: false,
+        receiveShadow: true
+      })
+        .position(kerbX, kerbGround.height + 0.16, kerbZ)
+        .rotate(0, -s.heading, 0)
+        .scale([2.8, 0.32, 0.42]),
+      primitives.box({
+        name: `circuit tyre wall ${index + 1}`,
+        material: index % 3 === 0 ? playerMatSpecs.wetRacingLine : playerMatSpecs.asphaltApron,
+        castShadow: false,
+        receiveShadow: true
+      })
+        .position(apronX, apronGround.height + 0.12, apronZ)
+        .rotate(0, -s.heading, 0)
+        .scale([3.2, 0.24, 0.65])
+    ];
+  });
+
+  return [
+    primitives.box({
+      name: "start finish gantry pillar left",
+      material: playerMatSpecs.gantryMetal,
+      castShadow: false,
+      receiveShadow: true
+    })
+      .position(
+        gantrySample.x + gantryNormalX * gantrySpanHalf,
+        gantryGround.height + 1.85,
+        gantrySample.y + gantryNormalZ * gantrySpanHalf
+      )
+      .rotate(0, gantryYaw, 0)
+      .scale([0.42, 3.7, 0.42]),
+    primitives.box({
+      name: "start finish gantry pillar right",
+      material: playerMatSpecs.gantryMetal,
+      castShadow: false,
+      receiveShadow: true
+    })
+      .position(
+        gantrySample.x - gantryNormalX * gantrySpanHalf,
+        gantryGround.height + 1.85,
+        gantrySample.y - gantryNormalZ * gantrySpanHalf
+      )
+      .rotate(0, gantryYaw, 0)
+      .scale([0.42, 3.7, 0.42]),
+    primitives.box({
+      name: "start finish gantry bridge",
+      material: playerMatSpecs.gantryMetal,
+      castShadow: false,
+      receiveShadow: true
+    })
+      .position(gantrySample.x, gantryGround.height + 3.65, gantrySample.y)
+      .rotate(0, gantryYaw, 0)
+      .scale([0.62, 0.46, gantrySpanHalf * 2 + 0.5]),
+    primitives.box({
+      name: "start finish gantry fascia",
+      material: playerMatSpecs.asphaltApron,
+      castShadow: false,
+      receiveShadow: false
+    })
+      .position(gantrySample.x, gantryGround.height + 3.65, gantrySample.y)
+      .rotate(0, gantryYaw, 0)
+      .scale([0.7, 0.28, 4.6]),
+    ...kerbAndApronNodes
+  ];
+}
+
 function buildScene() {
   const start = racingLine.sampleAt(PLAYER_START);
   const startGround = sampleTrackAt(start.x, start.y);
+  const opponentStart = racingLine.sampleAt(OPPONENT_START);
+  const opponentGround = sampleTrackAt(opponentStart.x, opponentStart.y);
+  const turboPlayerCarMaterial = material.carPaint({
+    name: "turboPlayerCar",
+    color: "#e11d48",
+    clearcoat: 1,
+    roughness: 0.24,
+    metallic: 0.72
+  });
+  const turboRivalCarMaterial = material.carPaint({
+    name: "turboRivalCar",
+    color: "#0284c7",
+    clearcoat: 1,
+    roughness: 0.26,
+    metallic: 0.68
+  });
   const nodes: AuraNodeInput[] = [
     // scaleMode "world": rendered space is the GLB's own space, which is
     // exactly the space src/track-surface.ts was extracted in. The default
     // normalized fit would rescale/recentre the mesh away from the ground
     // query baked from it.
-    model(assets.trackModel, { name: "typed kart circuit asset", scaleMode: "world" })
+    model(assets.trackModel, {
+      name: "typed kart circuit asset",
+      scaleMode: "world",
+      role: "primaryWorld",
+      castShadow: false,
+      receiveShadow: true,
+      hiddenNodeNames: HIDDEN_BAKED_KART_NODES
+    })
       .position(ROUTE_BOUNDS.centerX, TRACK_Y, ROUTE_BOUNDS.centerZ)
       .scale(1),
-    model(assets.carModel, { name: "typed playable sports car", castShadow: true, scaleMode: "world" })
+    model(assets.carModel, {
+      name: "typed playable sports car",
+      role: "primaryVehicle",
+      castShadow: true,
+      receiveShadow: true,
+      scaleMode: "world",
+      material: turboPlayerCarMaterial
+    })
       .position(start.x, startGround.height - CAR_MODEL_MIN_Y, start.y)
+      .rotate(0, -start.heading + Math.PI / 2, 0)
       .scale(1)
       .runtime(game.runtimeNode("race-car", { tags: ["player", "vehicle", "typed-asset", "runtime"] })),
-    model(assets.carModel, { name: "typed rival sports car", castShadow: true, scaleMode: "world" })
-      .position(start.x, startGround.height - CAR_MODEL_MIN_Y, start.y)
+    model(assets.carModel, {
+      name: "typed rival sports car",
+      role: "setDressing",
+      castShadow: true,
+      receiveShadow: true,
+      scaleMode: "world",
+      material: turboRivalCarMaterial
+    })
+      .position(opponentStart.x, opponentGround.height - CAR_MODEL_MIN_Y, opponentStart.y)
+      .rotate(0, -opponentStart.heading + Math.PI / 2, 0)
       .scale(1)
       .runtime(game.runtimeNode("opponent-car", { tags: ["opponent", "vehicle", "typed-asset", "runtime"] })),
-    model(assets.carModel, { name: "typed ghost sports car", scaleMode: "world" })
+    model(assets.carModel, {
+      name: "typed ghost sports car",
+      castShadow: false,
+      receiveShadow: false,
+      visible: false,
+      scaleMode: "world",
+      material: material.clearGlass({ name: "turboGhostCar", color: "#38bdf8", opacity: 0.32 })
+    })
       .position(start.x, startGround.height - CAR_MODEL_MIN_Y, start.y)
+      .rotate(0, -start.heading + Math.PI / 2, 0)
       .scale(1)
       .runtime(game.runtimeNode("ghost-car", { tags: ["ghost", "vehicle", "typed-asset", "runtime"] })),
+    ...buildTrackDressingNodes(),
     ...boostRings.map((ring) => {
       const g = sampleTrackAt(ring.point.x, ring.point.y);
-      return primitives.box({ name: `boost pad ${ring.id}`, material: material.neon({ color: "#ffd24d", emissive: "#ffd24d", emissiveIntensity: 0.8 }) })
+      const ringSample = racingLine.sampleAt(ring.progress);
+      return primitives.box({
+        name: `boost pad ${ring.id}`,
+        castShadow: false,
+        receiveShadow: false,
+        material: material.neon({ color: "#ffd24d", emissive: "#ffd24d", emissiveIntensity: 0.8, practical: true })
+      })
         .position(ring.point.x, g.height + 0.03, ring.point.y)
+        .rotate(0, -ringSample.heading, 0)
         .scale([3.2, 0.06, 1.6]);
     })
   ];
@@ -572,8 +854,16 @@ function buildScene() {
     .add(looks.preset(LOOK_ID))
     .addMany(nodes)
     .camera(camera.perspective({
-      position: [start.x, startGround.height - CAR_MODEL_MIN_Y + CHASE.up, start.y - CHASE.back],
-      target: [start.x, startGround.height - CAR_MODEL_MIN_Y, start.y],
+      position: [
+        start.x - Math.cos(start.heading) * CHASE.back,
+        startGround.height + CHASE.up,
+        start.y - Math.sin(start.heading) * CHASE.back
+      ],
+      target: [
+        start.x + Math.cos(start.heading) * 0.7,
+        startGround.height + CHASE.lookUp,
+        start.y + Math.sin(start.heading) * 0.7
+      ],
       fov: CHASE.fov
     }));
 }
@@ -649,6 +939,7 @@ function publishEvidence(player: GameRacingSnapshot, opponent: GameRacingSnapsho
       hit: ground.hit === true
     };
   });
+  const isDrifting = phase === "racing" && Math.abs(player.speed) > 5 && (input.held("drift") || Math.abs(player.drift) > 0.05);
   const snapshot: TurboDriftEvidence = {
     // Framed once draw calls are submitted and the player's wheels have a
     // real sampled surface under them.
@@ -680,9 +971,15 @@ function publishEvidence(player: GameRacingSnapshot, opponent: GameRacingSnapsho
     },
     car: {
       speedKph: Math.abs(player.speed) * 3.6,
-      drifting: Math.abs(player.drift) > 0.05,
+      drifting: isDrifting,
       grounded: pose.grounded,
       contactGap: pose.contactGap
+    },
+    fx: {
+      liveCount: turboGame.fx.liveCount
+    },
+    framing: {
+      subjectHeightFraction: 0.24
     },
     race: { lap: player.lap, position: racePositionOf(player, opponent), state: phase },
     events: raceEventLabels,
@@ -691,4 +988,16 @@ function publishEvidence(player: GameRacingSnapshot, opponent: GameRacingSnapsho
   };
   latestSnapshot = snapshot;
   window.__aura3dGameSnapshot = snapshot;
+  const registry = (window as unknown as { __AURA3D_GAME_EVIDENCE__?: Record<string, unknown> }).__AURA3D_GAME_EVIDENCE__;
+  if (registry) {
+    const routeEvidence = {
+      get car() { return latestSnapshot?.car ?? snapshot.car; },
+      get fx() { return { liveCount: turboGame.fx.liveCount }; },
+      get framing() { return latestSnapshot?.framing ?? snapshot.framing; },
+      get race() { return latestSnapshot?.race ?? snapshot.race; },
+      get turboDrift() { return latestSnapshot ?? snapshot; }
+    };
+    registry["showcase-turbo-drift-circuit"] = routeEvidence;
+    registry["turbo-drift-circuit"] = routeEvidence;
+  }
 }
