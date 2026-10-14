@@ -705,7 +705,7 @@ function buildScene() {
 
   const doorNodes: AuraNodeInput[] = PICKUP_DOORS.map((door) =>
     primitives.torus({
-      name: `pickup-gate-${door.kind}`,
+      name: `pickup-portal-${door.kind === "fire-rate" ? "cadence" : door.kind}`,
       material: doorMat
     })
       .position(door.x, -8, door.z)
@@ -878,7 +878,7 @@ function buildScene() {
           clearcoat: 1,
           clearcoatRoughness: 0.02
         }),
-        size: [1.32, 0.84, 1.52]
+        size: [0.92, 1.95, 0.92]
       }).runtime(engineGame.runtimeNode("neon-grunt-pool", { tags: ["enemy-pool", "instanced", "grunt"] }))
     )
     .add(
@@ -926,7 +926,7 @@ function buildScene() {
     )
     .add(
       instances.sphere({
-        name: "swarm-spark-pool",
+        name: "swarm-debris-pool",
         transforms: sparkTransforms,
         colors: sparkColors,
         material: material.neon({
