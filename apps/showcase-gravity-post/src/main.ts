@@ -433,14 +433,6 @@ function createGravityCameraRig(state: GravityPostState): AuraCameraRig {
 
 // ------------------------------------------------------------------ world ----
 
-const PLANET_ASSET_BY_BODY_ID = {
-  cinder: assets.gravityPlanetMercury,
-  verdance: assets.gravityPlanetEarth,
-  aquaria: assets.gravityPlanetNeptune,
-  rust: assets.gravityPlanetMars,
-  gale: assets.gravityPlanetJupiter
-} as const;
-
 function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
   const mats = createGravityMaterials();
   const camPose = computeGravityCameraPose(state);
@@ -519,14 +511,6 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
       })
     )
     .add(
-      effects.fog({
-        name: "gravity-space-fog",
-        color: "#040612",
-        density: 0.004,
-        intensity: 0.32
-      })
-    )
-    .add(
       effects.bloom({
         name: "gravity-solar-bloom",
         intensity: 0.42,
@@ -535,17 +519,6 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
         radius: 0.32,
         antiBlowout: true,
         maxIntensity: 0.68
-      })
-    )
-    .add(
-      effects.trail({
-        name: "courier-flight-ribbon",
-        target: "courier-pod",
-        color: "#59d7ff",
-        intensity: 1.35,
-        width: 0.12,
-        maxPoints: 32,
-        minVertexDistance: 0.04
       })
     );
 
@@ -558,8 +531,8 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
           .sphere({
             name: "body-sol",
             material: mats.sunSurface,
-            castShadow: true,
-            receiveShadow: true
+            castShadow: false,
+            receiveShadow: false
           })
           .position(bx, PLAY_PLANE_Y, bz)
           .scale(body.visualRadius)
@@ -589,17 +562,18 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
           .scale(body.wellRadius * 0.45)
       );
     } else {
-      const planetAsset = PLANET_ASSET_BY_BODY_ID[body.id as keyof typeof PLANET_ASSET_BY_BODY_ID];
       const planetSurface = mats.planetSurfaces[body.id];
-      if (planetAsset) {
+      if (planetSurface) {
         builder.add(
-          model(planetAsset, {
-            name: `body-${body.id}`,
-            targetMaxDimension: body.visualRadius * 2.05,
-            castShadow: false,
-            receiveShadow: true,
-            ...(planetSurface ? { material: planetSurface } : {})
-          }).position(bx, PLAY_PLANE_Y, bz)
+          primitives
+            .sphere({
+              name: `body-${body.id}`,
+              material: planetSurface,
+              castShadow: false,
+              receiveShadow: true
+            })
+            .position(bx, PLAY_PLANE_Y, bz)
+            .scale(body.visualRadius)
         );
       }
       const atmo = mats.planetAtmospheres[body.id];
@@ -643,6 +617,7 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
       builder.add(
         model(assets.gravityPostDockGate, {
           name: `station-gate-${station.id}`,
+          role: "primaryWorld",
           targetMaxDimension: 0.42,
           material: mats.stationGate,
           castShadow: false,
@@ -675,6 +650,7 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
       builder.add(
         model(assets.gravityPostDockBeacon, {
           name: `station-beacon-${station.id}`,
+          role: "primaryWorld",
           targetMaxDimension: 0.34,
           material: mats.stationBeacon,
           castShadow: false,
@@ -1141,40 +1117,44 @@ function handle(name: string) {
 let lastPredBeadSignature = "";
 let lastActualBeadLen = -1;
 let lastHudHtmlSignature = "";
+let lastPodSyncSig = "";
 
 function syncGravityWorld(): void {
   const [px, pz] = state.pod.kinematic.position;
   const [vx, vz] = state.pod.kinematic.velocity;
   const speed = Math.hypot(vx, vz);
   const yaw = speed > 1e-4 ? Math.atan2(vz, vx) : state.aimYaw;
-
-  const podNode = handle("courier-pod");
-  if (podNode) {
-    podNode.setPosition(px, PLAY_PLANE_Y + 0.04, pz);
-    podNode.setRotation(0, -yaw, 0);
-  }
-
-  const thrusterNode = handle("pod-thruster-cone");
-  if (thrusterNode) {
-    const active = state.pod.state === "coasting" && (state.warping || state.pod.correctionsUsed > 0);
-    thrusterNode.setVisible(active);
-    if (active) {
-      const backX = px - Math.cos(yaw) * 0.22;
-      const backZ = pz - Math.sin(yaw) * 0.22;
-      thrusterNode.setPosition(backX, PLAY_PLANE_Y + 0.04, backZ);
-      thrusterNode.setRotation(0, -yaw, Math.PI / 2);
-      thrusterNode.setScale([0.055, 0.18, 0.055]);
+  const active = state.pod.state === "coasting" && (state.warping || state.pod.correctionsUsed > 0);
+  const showFlash = state.dockFlashTimer > 0;
+  const podSig = `${px.toFixed(4)}|${pz.toFixed(4)}|${yaw.toFixed(4)}|${active}|${showFlash}|${state.dockFlashTimer.toFixed(3)}`;
+  if (podSig !== lastPodSyncSig) {
+    lastPodSyncSig = podSig;
+    const podNode = handle("courier-pod");
+    if (podNode) {
+      podNode.setPosition(px, PLAY_PLANE_Y + 0.04, pz);
+      podNode.setRotation(0, -yaw, 0);
     }
-  }
 
-  const flashNode = handle("dock-flash-ring");
-  if (flashNode) {
-    const showFlash = state.dockFlashTimer > 0;
-    flashNode.setVisible(showFlash);
-    if (showFlash) {
-      const t = 1 - state.dockFlashTimer / 0.85;
-      flashNode.setPosition(px, PLAY_PLANE_Y + 0.03, pz);
-      flashNode.setScale(0.34 * (0.8 + t * 1.4));
+    const thrusterNode = handle("pod-thruster-cone");
+    if (thrusterNode) {
+      thrusterNode.setVisible(active);
+      if (active) {
+        const backX = px - Math.cos(yaw) * 0.22;
+        const backZ = pz - Math.sin(yaw) * 0.22;
+        thrusterNode.setPosition(backX, PLAY_PLANE_Y + 0.04, backZ);
+        thrusterNode.setRotation(0, -yaw, Math.PI / 2);
+        thrusterNode.setScale([0.055, 0.18, 0.055]);
+      }
+    }
+
+    const flashNode = handle("dock-flash-ring");
+    if (flashNode) {
+      flashNode.setVisible(showFlash);
+      if (showFlash) {
+        const t = 1 - state.dockFlashTimer / 0.85;
+        flashNode.setPosition(px, PLAY_PLANE_Y + 0.03, pz);
+        flashNode.setScale(0.34 * (0.8 + t * 1.4));
+      }
     }
   }
 
@@ -1501,10 +1481,12 @@ const appliedLook: Record<string, unknown> = Object.freeze({
 });
 
 function publishEvidence(): void {
-  const diagnostics = app.diagnostics();
-  state.drawCalls = diagnostics.drawCalls;
-  if (diagnostics.drawCalls > 0) {
-    state.rendererMounted = true;
+  if (state.drawCalls === 0 || state.frame <= 5 || state.frame % 30 === 0) {
+    const diagnostics = app.diagnostics();
+    state.drawCalls = diagnostics.drawCalls;
+    if (diagnostics.drawCalls > 0) {
+      state.rendererMounted = true;
+    }
   }
   const contract = currentContract(state);
   const destPos = stationPosition(stationById(contract.destinationStationId));
