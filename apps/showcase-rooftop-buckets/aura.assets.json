@@ -1,0 +1,68 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "../../public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "rooftopCourt",
+      "type": "model",
+      "format": "glb",
+      "source": "assets/models/rooftopCourt.glb",
+      "url": "/aura-assets/rooftopCourt.33262736.glb",
+      "hash": "sha256-332627363b17a85fdb6f34aa1f397c2451cd3844f14856186873bfeff34b7bf8",
+      "sizeBytes": 891848,
+      "bounds": [19.26, 8.15, 17.21]
+    },
+    {
+      "id": "rooftopBackboard",
+      "type": "model",
+      "format": "glb",
+      "source": "assets/models/rooftopBackboard.glb",
+      "url": "/aura-assets/rooftopBackboard.d2d48af6.glb",
+      "hash": "sha256-d2d48af6e4ea2e6274c968a19873565f1445bceeadbb35540d29bcd4a17c529e",
+      "sizeBytes": 1752,
+      "bounds": [1.8, 1.05, 0.05]
+    },
+    {
+      "id": "rooftopRim",
+      "type": "model",
+      "format": "glb",
+      "source": "assets/models/rooftopRim.glb",
+      "url": "/aura-assets/rooftopRim.6ebed2bc.glb",
+      "hash": "sha256-6ebed2bc98fa62f4750afd35707a7be6fbb1dac770b7c89fa7310d867c774023",
+      "sizeBytes": 8300,
+      "bounds": [0.48, 0.029, 0.473]
+    },
+    {
+      "id": "rooftopBall",
+      "type": "model",
+      "format": "glb",
+      "source": "assets/models/rooftopBall.glb",
+      "url": "/aura-assets/rooftopBall.0254c7b9.glb",
+      "hash": "sha256-0254c7b974d15d377597c7b59552eeb53bcac228e73ded83bc850a063fb07739",
+      "sizeBytes": 10924,
+      "bounds": [1, 1, 0.985]
+    },
+    {
+      "id": "rooftopLayupScorer",
+      "type": "model",
+      "format": "glb",
+      "source": "assets/models/rooftopLayupScorer.glb",
+      "url": "/aura-assets/rooftopLayupScorer.03a093f2.glb",
+      "hash": "sha256-03a093f24ef11e534a39278710db5a56111eaf2bb093264683cd1c44a6d0ed4a",
+      "sizeBytes": 9925052,
+      "bounds": [1.808, 1.863, 0.399]
+    },
+    {
+      "id": "rooftopDefender",
+      "type": "model",
+      "format": "glb",
+      "source": "assets/models/rooftopDefender.glb",
+      "url": "/aura-assets/rooftopDefender.6c43f9e1.glb",
+      "hash": "sha256-6c43f9e1c341b0aaa0dee159fa70cac33828aad4c9b57b9c78f9ef84bc5e0e6b",
+      "sizeBytes": 9925052,
+      "bounds": [1.808, 1.863, 0.399]
+    }
+  ]
+}
