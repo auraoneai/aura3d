@@ -21,7 +21,6 @@ import {
   model,
   primitives,
   scene,
-  sky,
   type AuraApp,
   type AuraCameraPose,
   type AuraCameraRig,
@@ -488,16 +487,7 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
       environments.hdri({
         name: "gravity-deep-space-hdri",
         texture: assets.deepSpaceDomeHdr,
-        intensity: 0.88,
-        background: false
-      })
-    )
-    .add(
-      sky.gradient({
-        name: "gravity-space-sky",
-        zenithColor: "#020617",
-        horizonColor: "#0a122c",
-        groundColor: "#020617"
+        intensity: 0.88
       })
     )
     .add(
@@ -539,8 +529,8 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
           .sphere({
             name: "body-sol",
             material: mats.sunSurface,
-            castShadow: false,
-            receiveShadow: false
+            castShadow: true,
+            receiveShadow: true
           })
           .position(bx, PLAY_PLANE_Y, bz)
           .scale(body.visualRadius)
@@ -565,8 +555,8 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
           model(planetAsset, {
             name: `body-${body.id}`,
             targetMaxDimension: body.visualRadius * 2.05,
-            castShadow: false,
-            receiveShadow: false,
+            castShadow: true,
+            receiveShadow: true,
             ...(planetSurface ? { material: planetSurface } : {})
           }).position(bx, PLAY_PLANE_Y, bz)
         );
@@ -669,8 +659,8 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
       name: "courier-pod",
       targetMaxDimension: 0.56,
       material: mats.courierPod,
-      castShadow: false,
-      receiveShadow: false
+      castShadow: true,
+      receiveShadow: true
     })
       .position(px, PLAY_PLANE_Y + 0.04, pz)
       .rotate(0, state.aimYaw, 0)
