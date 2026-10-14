@@ -72,7 +72,9 @@ export interface Euler {
 export interface PropVisual {
   readonly name: string;
   readonly source: "model" | "primitive";
-  readonly typedAsset?: "vaultBreakersTable" | "vaultBreakersFlipper" | "vaultBreakersBall" | "vaultBreakersVaultDoor";
+  // Widened from the trashed asset set's closed union at the B4 port cut:
+  // the fresh scene maps these ids onto its own typed assets.
+  readonly typedAsset?: string;
   readonly targetMaxDimension?: number;
   readonly primitive?: {
     readonly shape: "box" | "sphere" | "cylinder" | "torus";
