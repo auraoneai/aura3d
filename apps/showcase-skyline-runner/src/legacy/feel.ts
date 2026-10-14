@@ -584,7 +584,7 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
         node.setVisible(true)
           .setPosition(sceneX, sceneY, 0.42)
           .setRotation(0, faceYaw, 0)
-          .setScale(0.19 * telegraphPulse);
+          .setScale(0.95 * telegraphPulse);
         for (const accent of input.sentryAccentNodes[encounter.id] ?? []) {
           accent
             .setVisible(true)

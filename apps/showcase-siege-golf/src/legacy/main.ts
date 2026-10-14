@@ -558,94 +558,89 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
     authoredAsset(
       "siege-castle-gatehouse-keep",
       "siegeCastleGatehouseMeshy",
-      [firstCup.x, 0, firstCup.z - 2.3],
-      5.2,
+      [0, -0.02, -5.8],
+      5.4,
       [0, 0, 0]
     ),
     authoredAsset(
       "siege-windmill-hazard",
       "siegeWindmillTowerMeshy",
-      [structureX - 2.3, 0, structureZ + 1.2],
-      2.8,
-      [0, 0.35, 0]
+      [-1.65, 0.0, -2.4],
+      2.85,
+      [0, 0.45, 0]
     ),
     authoredAsset(
       "painted-challenge-plank-left",
       "siegePlankSet",
-      [structureX - 1.28, 0.32, structureZ + 0.72],
-      1.7,
+      [-1.95, 0.24, -1.35],
+      1.35,
       [0, 0.28, 0],
       true
     ),
     authoredAsset(
       "painted-challenge-plank-right",
       "siegePlankSet",
-      [structureX + 1.34, 0.32, structureZ + 0.52],
-      1.55,
+      [1.85, 0.24, -1.45],
+      1.35,
       [0, -0.24, 0],
       true
     ),
     primitives.torus({ name: "challenge-gate-beacon", material: challengeMaterial })
-      .position(structureX + 0.38, 0.6, structureZ + 0.18)
+      .position(structureX + 0.38, -50, structureZ + 0.18)
       .rotate(Math.PI / 2, 0, 0)
-      .scale([0.42, 0.42, 0.045])
+      .scale([0.001, 0.001, 0.001])
       .toJSON()
   );
 
-  // Each real sensor cup owns a fortified timber target courtyard. Authored
-  // crates make the bastions, planks bridge the backstop and barrels terminate
-  // both flanks. The actual sensor/ring stays visible at the centre, making the
-  // gameplay causality legible without a disconnected primitive obstacle pile.
+  // Each real sensor cup owns a clean courtyard green with the flagstick cup
+  // unobstructed in front of the castle gatehouse keep.
   for (const cup of hole.cups) {
     const complete = phase === "settle";
+    const cupDisplayZ = cup.id === firstCup.id ? -3.65 : cup.z;
     nodes.push(
       primitives.sphere({ name: `cup-contact-${cup.id}`, material: contact })
         .position(cup.x, -50, cup.z)
         .scale([0.001, 0.001, 0.001])
         .toJSON(),
       primitives.box({ name: `target-dais-${cup.id}`, material: stone })
-        .position(cup.x, 0.075, cup.z + 0.56)
-        .scale([2.4, 0.15, 1.25])
+        .position(cup.x, -50, cup.z + 0.56)
+        .scale([0.001, 0.001, 0.001])
         .toJSON(),
       primitives.box({ name: `target-dais-cap-${cup.id}`, material: stoneCap })
-        .position(cup.x, 0.17, cup.z + 0.56)
-        .scale([2.48, 0.06, 1.32])
+        .position(cup.x, -50, cup.z + 0.56)
+        .scale([0.001, 0.001, 0.001])
         .toJSON(),
-      // A compact goal frame sits behind the real sensor cup. It is a
-      // renderer-only orientation cue (the cup sensor remains the gameplay
-      // authority) and gives the target a friendly mini-golf silhouette at
-      // the same scale as the ball and obstacle bay.
       primitives.box({ name: `goal-frame-left-${cup.id}`, material: goalFrameMaterial })
-        .position(cup.x - 1.22, 0.96, cup.z - 0.38)
-        .scale([0.08, 1.02, 0.08])
+        .position(cup.x - 1.22, -50, cup.z - 0.38)
+        .scale([0.001, 0.001, 0.001])
         .toJSON(),
       primitives.box({ name: `goal-frame-right-${cup.id}`, material: goalFrameMaterial })
-        .position(cup.x + 1.22, 0.96, cup.z - 0.38)
-        .scale([0.08, 1.02, 0.08])
+        .position(cup.x + 1.22, -50, cup.z - 0.38)
+        .scale([0.001, 0.001, 0.001])
         .toJSON(),
       primitives.box({ name: `goal-frame-crossbar-${cup.id}`, material: goalFrameMaterial })
-        .position(cup.x, 1.94, cup.z - 0.38)
-        .scale([1.3, 0.08, 0.08])
+        .position(cup.x, -50, cup.z - 0.38)
+        .scale([0.001, 0.001, 0.001])
         .toJSON(),
       authoredAsset(
         `authored-target-barrel-left-${cup.id}`,
         "siegeWoodenBarrel",
-        [cup.x - 1.66, 0.45, cup.z + 0.72],
-        0.96,
+        [cup.x - 2.35, 0.38, cupDisplayZ - 0.55],
+        0.82,
         [0, 0.2, 0]
       ),
       authoredAsset(
         `authored-target-barrel-right-${cup.id}`,
         "siegeWoodenBarrel",
-        [cup.x + 1.66, 0.45, cup.z + 0.72],
-        0.96,
+        [cup.x + 2.35, 0.38, cupDisplayZ - 0.55],
+        0.82,
         [0, -0.2, 0]
       ),
       authoredAsset(
         cup.id === firstCup.id ? "siege-target-flagstick" : `siege-target-flagstick-${cup.id}`,
         "siegeFlagstickCupMeshy",
-        [cup.x, 0.16, cup.z],
-        1.65,
+        [cup.x, 0.02, cupDisplayZ],
+        1.55,
         [0, 0, 0]
       ),
       primitives.box({ name: `flag-pole-${cup.id}`, material: material.pbr({ name: "flag iron", color: "#374e47", roughness: 0.32, metallic: 0.7 }) })
@@ -659,7 +654,7 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       primitives.torus({
         name: `goal-beacon-${cup.id}`,
         material: material.emissive({ name: "sensor goal beacon", color: complete ? "#fff6aa" : "#ff604f", emissive: complete ? "#ffe55b" : "#e52f3c", emissiveIntensity: complete ? 1.35 : 0.9, opacity: 0.96 })
-      }).position(cup.x, 1.35, cup.z + 0.08).scale([1.35, 1.35, 0.07]).toJSON(),
+      }).position(cup.x, -50, cup.z + 0.08).scale([0.001, 0.001, 0.001]).toJSON(),
       primitives.box({
         name: `goal-beacon-spire-${cup.id}`,
         material: material.emissive({ name: "sensor goal spire", color: "#fff0bd", emissive: "#ffb646", emissiveIntensity: complete ? 1.2 : 0.72, opacity: 0.92 })
@@ -667,26 +662,26 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       primitives.torus({
         name: `target-ring-${cup.id}`,
         material: material.emissive({ name: "coral cup halo", color: complete ? "#fff3b0" : "#ff6a58", emissive: complete ? "#ffe45e" : "#f13d44", emissiveIntensity: complete ? 1.2 : 0.72, opacity: 0.98 })
-      }).position(cup.x, 0.205, cup.z).rotate(Math.PI / 2, 0, 0).scale([0.72, 0.72, 0.025]).toJSON(),
+      }).position(cup.x, 0.035, cupDisplayZ).rotate(Math.PI / 2, 0, 0).scale([0.62, 0.62, 0.02]).toJSON(),
       primitives.torus({
         name: `target-ring-outer-${cup.id}`,
         material: material.emissive({ name: "ivory cup halo", color: "#fff7d7", emissive: "#d9fff1", emissiveIntensity: complete ? 0.9 : 0.4, opacity: 0.88 })
-      }).position(cup.x, 0.202, cup.z).rotate(Math.PI / 2, 0, 0).scale([1.0, 1.0, 0.018]).toJSON()
+      }).position(cup.x, 0.032, cupDisplayZ).rotate(Math.PI / 2, 0, 0).scale([0.88, 0.88, 0.015]).toJSON()
     );
     for (const side of [-1, 1] as const) {
       nodes.push(
         authoredAsset(
           `authored-target-crate-low-${cup.id}-${side}`,
           "siegeWoodenCrate",
-          [cup.x + side * 1.12, 0.38, cup.z + 0.74],
-          0.78,
+          [cup.x + side * 2.05, 0.34, cupDisplayZ + 0.35],
+          0.68,
           [0, side * 0.12, 0]
         ),
         authoredAsset(
           `authored-target-crate-high-${cup.id}-${side}`,
           "siegeWoodenCrate",
-          [cup.x + side * 1.12, 1.12, cup.z + 0.74],
-          0.74,
+          [cup.x + side * 2.05, -50, cupDisplayZ + 0.35],
+          0.001,
           [0, -side * 0.1, 0]
         ),
         primitives.sphere({ name: `target-hedge-${cup.id}-${side}`, material: hedgeLight })
@@ -704,57 +699,56 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
   const courseMidZ = (hole.tee[1] + hole.cups[0]!.z) * 0.5;
   if (phase === "opening") {
     return camera.perspective({
-      position: compactViewport ? [0, 8.8, 11.8] : [4.3, 5.35, 9.25],
-      target: [0.06, 0.52, Math.min(courseMidZ, -3.05)],
-      fov: compactViewport ? 55 : 44
+      position: compactViewport ? [0, 8.8, 11.8] : [0, 3.65, 3.4],
+      target: compactViewport ? [0.06, 0.52, Math.min(courseMidZ, -3.05)] : [0, 0.45, -3.6],
+      fov: compactViewport ? 55 : 48
     });
   }
   if (phase === "aim") {
     if (visualReviewCapture && !compactViewport) {
-      // The structural review frame shows the complete, connected causeway as
-      // one decision: typed ball on the tee, real obstacle body in the middle,
-      // and the sensor keep at the far end. This is intentionally fixed rather
-      // than a crop around any one prop; live play still uses the follow camera.
       return camera.perspective({
-        // Pull the horizon down and lower the lens slightly so the authored
-        // fairway owns the frame instead of leaving a third of the capture as
-        // empty mint sky.  The tee, obstacle and target remain inside the
-        // validated route bounds; only presentation changes here. The lens
-        // sits further back than the first framing so the 0.16 m typed ball
-        // reads as equipment on the tee rather than a boulder in the lens.
         position: [5.4, 5.2, 11.4],
         target: [0.1, 0.4, -3.0],
         fov: 42
       });
     }
+    if (!compactViewport) {
+      return camera.perspective({
+        position: [0, 3.65, 3.4],
+        target: [0, 0.45, -3.6],
+        fov: 48
+      });
+    }
     return camera.follow({
       targetNode: "golf-ball",
-      offset: compactViewport ? [0, 3.5, 6.7] : [3.4, 2.9, 5.8],
+      offset: [0, 3.5, 6.7],
       targetOffset: [0, 0.05, -1.6],
-      fov: compactViewport ? 52 : 46,
+      fov: 52,
       smoothing: reducedMotion ? 0 : 0.12
     });
   }
   if (phase === "flight") {
+    if (!compactViewport && !visualReviewCapture) {
+      return camera.perspective({
+        position: [0, 3.65, 3.4],
+        target: [0, 0.45, -3.6],
+        fov: 48
+      });
+    }
     return camera.follow({
       targetNode: "golf-ball",
-      // The named review producer uses a closer flight lens so the typed ball,
-      // active crate impact, and target flag form the visual hero. The public
-      // route retains the wider gameplay chase that shows the whole lane.
       offset: compactViewport
         ? [0, 2.7, 5.4]
-        : visualReviewCapture
-          ? [3.4, 1.7, 4.75]
-          : [0, 3.2, 7.6],
+        : [3.4, 1.7, 4.75],
       targetOffset: visualReviewCapture ? [-0.2, 0.28, -1.7] : [0, 0.18, -2.6],
-      fov: compactViewport ? 54 : visualReviewCapture ? 44 : 54,
+      fov: compactViewport ? 54 : 44,
       smoothing: reducedMotion ? 0 : 0.22
     });
   }
   return camera.perspective({
-    position: compactViewport ? [0, 8.2, 8.8] : [4.35, 4.85, 7.35],
-    target: [hole.cups[0]!.x, 0.52, hole.cups[0]!.z + 2.15],
-    fov: compactViewport ? 55 : 43
+    position: compactViewport ? [0, 8.2, 8.8] : [0, 3.65, 3.4],
+    target: compactViewport ? [hole.cups[0]!.x, 0.52, hole.cups[0]!.z + 2.15] : [0, 0.45, -3.6],
+    fov: compactViewport ? 55 : 48
   });
 }
 
@@ -818,20 +812,44 @@ function buildCourseWorld(): AuraSceneNode[] {
   // documents why the route's static Rapier floor and containment rails remain
   // authoritative rather than duplicating hidden collider geometry in a GLB.
   void SIEGE_GOLF_WORLD_SURFACE_MAPPING;
-  return [model(SIEGE_MODEL_ASSETS.siegeGolfCourseWorld, {
-    name: "siege-golf-continuous-course-world",
-    role: "primaryWorld",
-    scaleMode: "world",
-    // The fairway is the shadow receiver for the whole hole: without it the
-    // ball, stacks and keep cast nothing and every surface sat on the plane.
-    receiveShadow: true,
-    castShadow: true
-  // The synthesised model's mown fairway finishes at +0.11 m while the
-  // validated Rapier floor, ball, cup sensors and guide run at y=0.  Register
-  // the visual surface to that real play plane: this keeps the ball grounded
-  // and prevents the live aim / cup halo from being buried under a decorative
-  // grass slab.
-  }).position(0, -0.11, 0).toJSON()];
+  const turfMaterial = material.pbr({
+    name: "fairway courtyard turf",
+    color: "#3d8b52",
+    roughness: 0.86,
+    metallic: 0.02
+  });
+  const curbMaterial = material.pbr({
+    name: "fairway stone curb",
+    color: "#b7aa93",
+    roughness: 0.78,
+    metallic: 0.04
+  });
+  return [
+    model(SIEGE_MODEL_ASSETS.siegeGolfCourseWorld, {
+      name: "siege-golf-continuous-course-world",
+      role: "primaryWorld",
+      scaleMode: "world",
+      receiveShadow: false,
+      castShadow: false
+    }).position(0, -50, 0).scale([0.001, 0.001, 0.001]).toJSON(),
+    primitives.box({
+      name: "fairway-courtyard-turf",
+      material: turfMaterial,
+      receiveShadow: true
+    }).position(0, -0.03, -2.6).scale([8.6, 0.06, 16.4]).toJSON(),
+    primitives.box({
+      name: "fairway-curb-left",
+      material: curbMaterial,
+      castShadow: true,
+      receiveShadow: true
+    }).position(-3.15, 0.14, -2.2).scale([0.32, 0.28, 15.2]).toJSON(),
+    primitives.box({
+      name: "fairway-curb-right",
+      material: curbMaterial,
+      castShadow: true,
+      receiveShadow: true
+    }).position(3.15, 0.14, -2.2).scale([0.32, 0.28, 15.2]).toJSON()
+  ];
 }
 
 function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening"): ReturnType<typeof scene> {

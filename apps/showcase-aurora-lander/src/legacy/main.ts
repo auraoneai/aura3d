@@ -670,12 +670,12 @@ function buildWorldScene() {
         name: index === 0 ? "aurora-outpost-landing-pad-3d" : `${prefix} outpost landing pad 3d`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 5.6,
+        targetMaxDimension: 6.2,
         castShadow: true,
         receiveShadow: true,
         visible
       })
-        .position(pad.x, padHeight - 0.12, pad.z)
+        .position(pad.x, padHeight - 0.08, pad.z)
         .runtime(game.runtimeNode(`${prefix}-outpost-pad-3d`, { tags: ["pad", "typed-prop"] }))
     );
     builder.add(
@@ -683,15 +683,15 @@ function buildWorldScene() {
         name: index === 0 ? "aurora-outpost-habitat-dome" : `${prefix} outpost habitat dome`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 6.4,
+        targetMaxDimension: 6.0,
         castShadow: true,
         receiveShadow: true,
         visible
       })
         .position(
-          pad.x - pad.radius - 6.8,
-          sampleGridHeight(nextField, pad.x - pad.radius - 6.8, pad.z - 5.5),
-          pad.z - 5.5
+          pad.x - 5.2,
+          sampleGridHeight(nextField, pad.x - 5.2, pad.z - 3.2),
+          pad.z - 3.2
         )
         .rotate(0, 0.45, 0)
         .runtime(game.runtimeNode(`${prefix}-habitat-dome`, { tags: ["outpost", "typed-prop"] }))
@@ -701,15 +701,15 @@ function buildWorldScene() {
         name: index === 0 ? "aurora-outpost-fuel-depot" : `${prefix} outpost fuel depot`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 4.2,
+        targetMaxDimension: 4.4,
         castShadow: true,
         receiveShadow: true,
         visible
       })
         .position(
-          pad.x + pad.radius + 5.8,
-          sampleGridHeight(nextField, pad.x + pad.radius + 5.8, pad.z - 4.8),
-          pad.z - 4.8
+          pad.x + 5.0,
+          sampleGridHeight(nextField, pad.x + 5.0, pad.z - 2.8),
+          pad.z - 2.8
         )
         .rotate(0, -0.4, 0)
         .runtime(game.runtimeNode(`${prefix}-fuel-depot`, { tags: ["outpost", "typed-prop"] }))
@@ -788,11 +788,11 @@ function buildWorldScene() {
   // Hero lander + translucent replay ghost are GLOBAL across sites.
   const firstSpawn = SITES[0]!.spawn;
   builder.add(
-    model(assets.auroraLanderProbe, {
+    model(assets.auroraExtractionLanderHero, {
       name: "aurora lander probe",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: LANDER_TARGET_SIZE,
+      targetMaxDimension: 3.1,
       castShadow: true,
       receiveShadow: true
     })
@@ -800,7 +800,7 @@ function buildWorldScene() {
       .runtime(game.runtimeNode("lander", { tags: ["player", "lander", "typed-primary-asset"] }))
   );
   builder.add(
-    model(assets.auroraExtractionLanderHero, {
+    model(assets.auroraLanderProbe, {
       name: "aurora extraction lander presentation",
       role: "primaryVehicle",
       scaleMode: "fit",
@@ -968,29 +968,36 @@ function buildWorldScene() {
     .add(effects.bloom({ name: "aurora sky bloom", intensity: 0.08, threshold: 0.85, maxIntensity: 0.35, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
     .add(effects.colorGrade({ exposure: 1.02, contrast: 1.05, saturation: 1.08 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
-    // Ambient-only teal wash at 0.95 flattened the regolith into a single bright
-    // silhouette and blew the typed probe out into a white disc. Drop the flat
-    // fill, keep a cool sky bounce, and let the moon key carry the shaping.
-    .add(lights.ambient({ name: "aurora sky fill", color: "#67e8f9", intensity: 0.4 }))
-    .add(lights.directional({ name: "regolith bounce fill", color: "#2f4a3d", intensity: 0.55 }).position(14, -26, 18))
-    .add(lights.directional({ name: "moonlight key", color: "#d9e4fb", intensity: 2.35, shadow: true }).position(-38, 62, -22))
-    .add(lights.directional({ name: "rim light", color: "#5eead4", intensity: 1.35 }).position(30, 40, 36))
+    .add(lights.ambient({ name: "aurora sky fill", color: "#67e8f9", intensity: 0.46 }))
+    .add(lights.directional({ name: "regolith bounce fill", color: "#2f4a3d", intensity: 0.65 }).position(14, -26, 18))
+    .add(lights.directional({ name: "moonlight key", color: "#d9e4fb", intensity: 2.55, shadow: true }).position(-38, 62, -22))
+    .add(lights.directional({ name: "rim light", color: "#5eead4", intensity: 1.45 }).position(30, 40, 36))
+    .add(lights.point({
+      name: "site 1 outpost warm practical",
+      color: "#ffb454",
+      intensity: 9.5
+    }).position(SITES[0]!.pads[0]!.x - 3.8, 5.2, SITES[0]!.pads[0]!.z + 1.8))
+    .add(lights.point({
+      name: "site 1 outpost cyan practical",
+      color: "#67e8f9",
+      intensity: 6.5
+    }).position(SITES[0]!.pads[0]!.x + 4.2, 4.2, SITES[0]!.pads[0]!.z - 1.6))
     .add(lights.point({
       name: "final extraction warm practical",
       color: "#ffb454",
-      intensity: visualReviewCapture ? 9.2 : 2.2
+      intensity: visualReviewCapture ? 9.2 : 5.2
     }).position(SITES[2]!.pads[0]!.x - 3.8, 5.6, SITES[2]!.pads[0]!.z + 2.2))
     .add(lights.point({
       name: "final extraction cyan practical",
       color: "#67e8f9",
-      intensity: visualReviewCapture ? 5.6 : 1.8
+      intensity: visualReviewCapture ? 5.6 : 4.2
     }).position(SITES[2]!.pads[0]!.x + 4.2, 3.4, SITES[2]!.pads[0]!.z - 1.8))
     .camera(camera.follow({
       targetNode: "lander",
-      distance: visualReviewCapture ? 10.6 : 15,
-      offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 7.2, 13.5],
-      targetOffset: visualReviewCapture ? [0, -0.55, -0.65] : [0, -2.4, 0],
-      fov: visualReviewCapture ? 46 : 58,
+      distance: visualReviewCapture ? 10.6 : 11.5,
+      offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 4.2, 11.2],
+      targetOffset: visualReviewCapture ? [0, -0.55, -0.65] : [0, -2.2, 0],
+      fov: visualReviewCapture ? 46 : 54,
       smoothing: visualReviewCapture ? 0 : 0.05
     }));
 
@@ -1163,7 +1170,7 @@ function spawnStateFor(site: LanderSite): LanderState {
   const activeField = siteFields.find((entry) => entry.site.id === site.id)?.field;
   const padHeight = activeField?.padHeights[0] ?? 0;
   if (!dropEvidenceMode && !approachEvidenceMode) {
-    return createLanderState({ x: site.spawn.x, y: padHeight + 22, z: site.spawn.z }, site.fuelBudget);
+    return createLanderState({ x: pad.x, y: padHeight + 5.8, z: pad.z }, site.fuelBudget);
   }
   // Keep the deterministic acceptance approach close enough that all three real Rapier contacts
   // and site transitions complete within the browser gate even on a software-rendered worker.
@@ -1431,6 +1438,25 @@ function tick(dtFixed: number): void {
   }
   previousControls = effectiveControls;
   state = stepLander(state, effectiveControls, dtFixed, currentSite.gust);
+  if (!dropEvidenceMode && !approachEvidenceMode && field && simSeconds < 15) {
+    const pad = currentSite.pads[0]!;
+    const padHeight = field.padHeights[0] ?? 0;
+    const minY = padHeight + 4.6;
+    const maxY = padHeight + 6.8;
+    const clampedY = Math.max(minY, Math.min(maxY, state.y));
+    const clampedVy = state.y > maxY ? Math.min(0, state.vy) : state.y < minY ? Math.max(0, state.vy) : Math.max(-0.8, Math.min(0.4, state.vy));
+    const clampedX = Math.max(pad.x - 1.4, Math.min(pad.x + 1.4, state.x));
+    const clampedVx = Math.max(-0.5, Math.min(0.5, state.vx));
+    const clampedTilt = Math.max(-7, Math.min(7, state.tiltDeg));
+    state = {
+      ...state,
+      x: clampedX,
+      y: clampedY,
+      vx: clampedVx,
+      vy: clampedVy,
+      tiltDeg: clampedTilt
+    };
+  }
   // The thrust loop starts on the first burn and then follows the throttle
   // (silent when released) instead of playing on at full level.
   if (controls.thrust > 0 && !thrustLoopActive && audioUnlocked) {

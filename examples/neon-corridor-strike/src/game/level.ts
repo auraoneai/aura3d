@@ -131,12 +131,20 @@ export function buildScene() {
       // textured gunmetal combatant (glowing orange core, joint lights).
       // Capsules, patrols, collars, and runtimes are unchanged: this is a
       // visual-model swap on the same combat slots.
-      const asset = enemy.asset === "neonContainmentWardenB" ? assets.neonContainmentWardenB : enemy.asset === "corridorWardenMeshyV1" ? assets.corridorWardenMeshyV1 : assets.neonContainmentWardenA;
+      if (enemy.asset === "corridorWardenMeshyV1") {
+        return model(assets.corridorWardenMeshyV1, {
+          name: `containment warden ${enemy.id}`,
+          role: "enemy",
+          scaleMode: "fit",
+          targetMaxDimension: 2.05,
+          castShadow: true,
+          receiveShadow: true
+        })
+          .position(enemy.x, 0.25, enemy.z)
+          .runtime(game.runtimeNode(`enemy-${enemy.id}`, { tags: ["enemy"] }));
+      }
+      const asset = enemy.asset === "neonContainmentWardenB" ? assets.neonContainmentWardenB : assets.neonContainmentWardenA;
       const placed = groundedRenderedAssetPlacement(asset, {
-        // Give the typed combatants a little more screen presence at the real
-        // review distance. Their physics capsules stay unchanged; this is a
-        // visual-scale correction so armour/wing details survive the full
-        // 1280x800 gameplay frame instead of collapsing into orange dots.
         targetHeight: enemy.asset === "neonContainmentWardenB" ? 2.2 : 2.08,
         floorY: ENEMY_VISUAL_Y,
         x: enemy.x,
@@ -147,6 +155,31 @@ export function buildScene() {
         .scale(placed.scale)
         .runtime(game.runtimeNode(`enemy-${enemy.id}`, { tags: ["enemy"] }));
     }))
+    // Foreground staged Meshy breach wardens flanking the near containment bay
+    .add(
+      model(assets.corridorWardenMeshyV1, {
+        name: "near bay sentinel left",
+        role: "enemy",
+        scaleMode: "fit",
+        targetMaxDimension: 1.95,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(-1.28, 0.25, 3.85)
+        .rotate(0, 0.28, 0)
+    )
+    .add(
+      model(assets.corridorWardenMeshyV1, {
+        name: "near bay sentinel right",
+        role: "enemy",
+        scaleMode: "fit",
+        targetMaxDimension: 1.95,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(1.32, 0.25, 2.75)
+        .rotate(0, -0.32, 0)
+    )
     // A renderer-owned hostile collar keeps each typed warden legible against
     // the dark bay at gameplay scale. It is deliberately a restrained vertical
     // ring behind the model (not a DOM reticle or a replacement body), and the
@@ -176,28 +209,41 @@ export function buildScene() {
     }))
     .addMany(PICKUPS.map((pickup) => {
       const asset = pickup.kind === "ammo" ? rootAssets.fpsEnergyCorePickupMeshy : assets.medkit;
-      const placed = pickup.kind === "ammo" ? crate : kit;
-      return model(asset, { name: `${pickup.kind} pickup ${pickup.id}` })
-        .position(pickup.x, placed.position[1], pickup.z)
-        .scale(placed.scale)
+      return model(asset, {
+        name: `${pickup.kind} pickup ${pickup.id}`,
+        scaleMode: "fit",
+        targetMaxDimension: pickup.kind === "ammo" ? 0.58 : 0.52
+      })
+        .position(pickup.x, 0.26, pickup.z)
         .runtime(game.runtimeNode(`pickup-${pickup.id}`, { tags: ["pickup", pickup.kind] }));
     }))
+    .add(
+      model(rootAssets.fpsEnergyCorePickupMeshy, {
+        name: "foreground energy core cell",
+        role: "collectible",
+        scaleMode: "fit",
+        targetMaxDimension: 0.56
+      })
+        .position(-0.78, 0.26, 5.45)
+    )
     // Grounded, textured typed Meshy sci-fi tactical cover crates replace the
     // imported corridor's pale blockout-rubble read in the opening encounter.
     .addMany([
-      [-2.12, -1.6, -0.08],
-      [2.08, -3.05, 0.14],
-      [-2.05, -5.45, -0.18]
+      [-1.52, 5.15, 0.18],
+      [1.54, 4.35, -0.22],
+      [-1.68, 1.95, 0.12],
+      [1.68, -1.65, -0.14]
     ].map(([x, z, yaw], index) =>
       model(rootAssets.fpsSciFiCoverCrateMeshy, {
         name: `typed corridor cover ${index + 1}`,
         role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.05,
         castShadow: true,
         receiveShadow: true
       })
-        .position(x, coverCrate.position[1], z)
+        .position(x, 0.25, z)
         .rotate(0, yaw, 0)
-        .scale(coverCrate.scale)
         .runtime(game.runtimeNode(`typed-corridor-cover-${index + 1}`, {
           tags: ["typed-cover", "set-dressing", "non-colliding"]
         }))

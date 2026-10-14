@@ -198,17 +198,35 @@ export function createPoolHallSetDressing(options: { readonly portrait?: boolean
         name: "billiard-hall-pendant-lamp-3d",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 2.15
+        targetMaxDimension: 1.95
       })
-        .position(0, 2.18, 0)
+        .position(0, 1.06, -0.16)
+        .toJSON(),
+      model(assets.galleryMarbleBustExhibitMeshy, {
+        name: "billiard-hall-trophy-pedestal-left",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.55
+      })
+        .position(-1.85, -0.82, -2.15)
+        .rotate(0, 0.35, 0)
+        .toJSON(),
+      model(assets.galleryMarbleBustExhibitMeshy, {
+        name: "billiard-hall-trophy-pedestal-right",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.55
+      })
+        .position(1.85, -0.82, -2.15)
+        .rotate(0, -0.35, 0)
         .toJSON()
     );
-    [-0.75, 0, 0.75].forEach((lx, idx) => {
+    [-0.65, 0, 0.65].forEach((lx, idx) => {
       nodes.push(
         primitives
           .sphere({ name: `pendant-bulb-${idx}`, material: bulbGlowMat })
-          .position(lx, 2.02, 0)
-          .scale([0.045, 0.045, 0.045])
+          .position(lx, 1.02, -0.16)
+          .scale([0.038, 0.038, 0.038])
           .toJSON()
       );
     });

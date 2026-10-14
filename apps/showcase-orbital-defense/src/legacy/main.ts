@@ -83,27 +83,38 @@ const appScene = scene()
       name: "defended planet globe",
       role: "primaryWorld",
       scaleMode: "fit",
-      targetMaxDimension: 2.15
-    }).position(0, 0, 0)
+      targetMaxDimension: 2.35
+    }).position(0, -1.175, 0)
   )
-  .add(primitives.sphere({ name: "planet atmosphere shell", material: material.emissive({ color: "#0b2230", emissive: "#2dd4bf", emissiveIntensity: 0.22, opacity: 0.2 }) }).scale(1.14))
   .add(
-    instances.sphere({
-      name: "orbital-city-lights",
-      material: material.emissive({ color: "#fde68a", emissive: "#f59e0b", emissiveIntensity: 0.85 }),
-      castShadow: false,
-      receiveShadow: false,
-      transforms: Array.from({ length: 28 }, (_, i) => {
-        const az = 2.0 + orbitalHash(i) * 2.5;
-        const el = (orbitalHash(i + 40) - 0.5) * 1.15;
-        const r = 1.07;
-        return {
-          position: [Math.cos(az) * Math.cos(el) * r, Math.sin(el) * r, Math.sin(az) * Math.cos(el) * r] as [number, number, number],
-          rotation: [0, 0, 0] as [number, number, number],
-          scale: [0.016, 0.016, 0.016] as [number, number, number]
-        };
-      })
+    model(assets.gravityOrbitalRelayMeshy, {
+      name: "orbital defense relay alpha",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.78
     })
+      .position(-2.35, 0.85, 0.25)
+      .rotate(0.2, 0.6, -0.15)
+  )
+  .add(
+    model(assets.gravityOrbitalRelayMeshy, {
+      name: "orbital defense relay beta",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.78
+    })
+      .position(2.35, -1.05, 0.25)
+      .rotate(-0.2, -0.5, 0.18)
+  )
+  .add(
+    model(assets.gravityCargoContainerPodMeshy, {
+      name: "orbital defense supply pod",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.58
+    })
+      .position(-1.85, -1.55, 0.32)
+      .rotate(0.15, 0.8, 0.25)
   )
   .add(
     instances.sphere({
@@ -130,10 +141,10 @@ const appScene = scene()
       material: material.pbr({ color: "#475569", roughness: 0.88, metallic: 0.14 }),
       castShadow: false,
       receiveShadow: true,
-      transforms: Array.from({ length: 180 }, (_, i) => {
-        const a = (i / 180) * Math.PI * 2 + orbitalHash(i + 500) * 0.2;
+      transforms: Array.from({ length: 120 }, (_, i) => {
+        const a = (i / 120) * Math.PI * 2 + orbitalHash(i + 500) * 0.2;
         const r = 4.6 + orbitalHash(i + 600) * 2.2;
-        const s = 0.04 + orbitalHash(i + 700) * 0.09;
+        const s = 0.035 + orbitalHash(i + 700) * 0.065;
         return {
           position: [Math.cos(a) * r, Math.sin(a) * r, -0.45 + (orbitalHash(i + 800) - 0.5) * 0.7] as [number, number, number],
           rotation: [orbitalHash(i + 1000) * 3, orbitalHash(i + 1100) * 3, 0] as [number, number, number],
@@ -142,36 +153,36 @@ const appScene = scene()
       })
     })
   )
-  .add(primitives.torus({ name: "inner orbital ring", material: material.emissive({ color: "#122536", emissive: "#38bdf8", emissiveIntensity: 0.55 }) }).rotate(1.15, 0.18, 0).scale([1.95, 1.95, 0.018]))
-  .add(primitives.torus({ name: "outer orbital ring", material: material.emissive({ color: "#201a33", emissive: "#a78bfa", emissiveIntensity: 0.45 }) }).rotate(1.15, -0.14, 0).scale([2.85, 2.85, 0.014]))
   .add(
     model(assets.orbitalDefenseTurretMeshy, {
       name: "player interceptor",
       role: "primaryCharacter",
       scaleMode: "fit",
-      targetMaxDimension: 0.68
+      targetMaxDimension: 0.88
     })
-      .position(playerRadius, 0, 0.18)
+      .position(playerRadius, -0.32, 0.28)
       .runtime(game.runtimeNode("player-interceptor"))
   )
-  .add(primitives.sphere({ name: "player aiming bead", material: material.emissive({ color: "#2b2109", emissive: "#facc15", emissiveIntensity: 0.9 }) }).position(playerRadius + 0.32, 0, 0.18).scale(0.055).runtime(game.runtimeNode("player-aim")))
-  .add(lights.ambient({ intensity: 0.42, color: "#93c5fd" }))
-  .add(lights.point({ position: [-2.8, 3.2, 3.4], color: "#75f2cf", intensity: 2.4 }))
-  .add(lights.point({ position: [3.2, -1.6, 2.6], color: "#facc15", intensity: 1.5 }))
-  .add(lights.directional({ position: [2.2, 4.4, 5.2], intensity: 1.65, color: "#e0f2fe" }))
-  .add(effects.bloom({ intensity: 0.2, color: "#75f2cf" }))
-  .add(effects.fog({ density: 0.012, color: "#091220" }))
+  .add(primitives.sphere({ name: "player aiming bead", material: material.emissive({ color: "#2b2109", emissive: "#facc15", emissiveIntensity: 0.85 }) }).position(playerRadius + 0.38, 0, 0.24).scale(0.045).runtime(game.runtimeNode("player-aim")))
+  .add(lights.ambient({ intensity: 0.78, color: "#bae6fd" }))
+  .add(lights.point({ position: [-2.4, 2.6, 3.8], color: "#38bdf8", intensity: 4.2 }))
+  .add(lights.point({ position: [2.8, -1.4, 3.6], color: "#fbbf24", intensity: 3.6 }))
+  .add(lights.point({ position: [0, 0.4, 4.2], color: "#ffffff", intensity: 3.2 }))
+  .add(lights.directional({ position: [2.2, 4.4, 5.8], intensity: 2.45, color: "#f0f9ff" }))
+  .add(lights.directional({ position: [-3.2, -2.4, 4.2], intensity: 1.35, color: "#7dd3fc" }))
+  .add(effects.bloom({ intensity: 0.14, color: "#38bdf8" }))
+  .add(effects.fog({ density: 0.006, color: "#091220" }))
   .add(interactions.orbit())
-  .camera(camera.perspective({ position: [0, -0.35, 6.4], target: [0, 0, 0], fov: 42 }));
+  .camera(camera.perspective({ position: [0, -0.15, 5.85], target: [0, 0, 0], fov: 44 }));
 
 let builtScene = appScene;
 for (const [index, id] of enemyIds.entries()) {
   builtScene = builtScene.add(
-    model(index % 2 === 0 ? assets.orbitalStrikeDroneMeshy : assets.patrolWingDroneB, {
+    model(index % 3 === 2 ? assets.patrolWingDroneB : assets.orbitalStrikeDroneMeshy, {
       name: `${id} wave drone`,
       role: "enemy",
       scaleMode: "fit",
-      targetMaxDimension: 0.52
+      targetMaxDimension: 0.68
     })
       .position(8, 8, 0)
       .runtime(game.runtimeNode(id))
@@ -255,16 +266,16 @@ function update(dt: number): void {
 }
 
 function syncRuntimeNodes(): void {
-  const playerPosition = polar(player.angle, playerRadius, 0.18);
+  const playerPosition = polar(player.angle, playerRadius, 0.28);
   app.nodes.require("player-interceptor")
-    .setPosition(playerPosition[0], playerPosition[1], playerPosition[2])
+    .setPosition(playerPosition[0], playerPosition[1] - 0.32, playerPosition[2])
     .setRotation(0, 0, player.angle + Math.PI / 2);
-  const aimPosition = polar(player.angle, playerRadius + 0.38, 0.18);
+  const aimPosition = polar(player.angle, playerRadius + 0.42, 0.24);
   app.nodes.require("player-aim").setPosition(aimPosition[0], aimPosition[1], aimPosition[2]);
 
   for (const enemy of state.enemies) {
-    const pos = enemy.active ? polar(enemy.angle, enemy.radius, 0.06 + enemy.lane * 0.06) : ([8, 8, 0] as const);
-    app.nodes.require(enemy.id).setPosition(pos[0], pos[1], pos[2]).setRotation(0, 0, -enemy.angle);
+    const pos = enemy.active ? polar(enemy.angle, enemy.radius, 0.14 + enemy.lane * 0.06) : ([8, 8, 0] as const);
+    app.nodes.require(enemy.id).setPosition(pos[0], enemy.active ? pos[1] - 0.24 : pos[1], pos[2]).setRotation(0, 0, -enemy.angle);
   }
   for (const projectile of state.projectiles) {
     const pos = projectile.active ? polar(projectile.angle, projectile.radius, 0.24) : ([8, 8, 0] as const);

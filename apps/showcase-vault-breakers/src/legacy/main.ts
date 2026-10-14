@@ -212,31 +212,29 @@ function syncImpact(dt: number): void {
 function primitiveNode(visual: PropVisual): AuraSceneNode {
   const p = visual.primitive!;
   const visualY = visual.name === "felt" ? visual.position[1] : visual.position[1] + 0.28;
-  const isBumperPrimitive = visual.name.startsWith("bumper");
-  const size: readonly [number, number, number] = isBumperPrimitive ? [0.005, 0.005, 0.005] : p.size;
   const mat = p.emissive
-    ? material.emissive({ name: visual.name + " material", color: p.color, emissive: p.emissive, emissiveIntensity: 0.35, opacity: isBumperPrimitive ? 0 : (p.opacity ?? 1) })
-    : material.pbr({ name: visual.name + " material", color: p.color, roughness: 0.8, metallic: 0.1, opacity: isBumperPrimitive ? 0 : (p.opacity ?? 1) });
+    ? material.emissive({ name: visual.name + " material", color: p.color, emissive: p.emissive, emissiveIntensity: 0.05, opacity: 0 })
+    : material.pbr({ name: visual.name + " material", color: p.color, roughness: 0.8, metallic: 0.1, opacity: 0 });
   if (p.shape === "sphere") {
-    return primitives.sphere({ name: visual.name, material: mat }).position(visual.position[0], visualY, visual.position[2]).scale(size[0]).toJSON();
+    return primitives.sphere({ name: visual.name, material: mat }).position(visual.position[0], visualY, visual.position[2]).scale([0.001, 0.001, 0.001]).toJSON();
   }
   if (p.shape === "cylinder") {
     return primitives.cylinder({ name: visual.name, material: mat })
       .position(visual.position[0], visualY, visual.position[2])
-      .scale([size[0], size[1], size[2]])
+      .scale([0.001, 0.001, 0.001])
       .toJSON();
   }
   if (p.shape === "torus") {
     return primitives.torus({ name: visual.name, material: mat })
       .position(visual.position[0], visualY, visual.position[2])
       .rotate(visual.rotation.x, visual.rotation.y, visual.rotation.z)
-      .scale([size[0], size[1], Math.max(0.02, size[2])])
+      .scale([0.001, 0.001, 0.001])
       .toJSON();
   }
   return primitives.box({ name: visual.name, material: mat })
     .position(visual.position[0], visualY, visual.position[2])
     .rotate(visual.rotation.x, visual.rotation.y, visual.rotation.z)
-    .scale([size[0], size[1], size[2]])
+    .scale([0.001, 0.001, 0.001])
     .toJSON();
 }
 
@@ -267,12 +265,28 @@ function visualNodes(): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [];
   for (const v of flow.sim.visuals) {
     if (v.source === "model") {
+      if (v.name === "vault-door-visual") {
+        nodes.push(
+          model(assets.vaultBreakersVaultDoor, {
+            name: "vault-door-visual",
+            role: "setDressing",
+            scaleMode: "fit",
+            targetMaxDimension: 0.95
+          })
+            .position(0, 0.62, -3.12)
+            .runtime(game.runtimeNode("vault-door-visual", { tags: ["vault-door"] }))
+            .toJSON()
+        );
+        continue;
+      }
+      const isFlipper = v.typedAsset === "vaultBreakersFlipper";
+      const modelAsset = isFlipper ? assets.vaultBreakersFlipperReal : assets[v.typedAsset!];
       nodes.push(
-        model(assets[v.typedAsset!], {
+        model(modelAsset, {
           name: v.name,
           role: v.typedAsset === "vaultBreakersBall" ? "primaryCharacter" : "setDressing",
           scaleMode: "fit",
-          targetMaxDimension: v.targetMaxDimension ?? 1
+          targetMaxDimension: isFlipper ? 1.05 : (v.targetMaxDimension ?? 1)
         })
           .position(v.position[0], v.position[1] + 0.28, v.position[2])
           .rotate(v.rotation.x, v.rotation.y, v.rotation.z)
@@ -287,25 +301,13 @@ function visualNodes(): AuraSceneNode[] {
             name: v.name + " material",
             color: v.primitive!.color,
             emissive: v.primitive!.emissive,
-            emissiveIntensity: 0.32,
-            opacity: v.primitive!.opacity ?? 1
+            emissiveIntensity: 0.05,
+            opacity: 0
           })
         })
           .position(v.position[0], v.position[1] + 0.28, v.position[2])
-          .scale([...v.primitive!.size])
+          .scale([0.001, 0.001, 0.001])
           .runtime(game.runtimeNode(v.name, { tags: ["standup-target"] }))
-          .toJSON()
-      );
-    } else if (v.name === "vault-door-visual") {
-      nodes.push(
-        model(assets.vaultBreakersVaultDoor, {
-          name: "vault-door-visual",
-          role: "setDressing",
-          scaleMode: "fit",
-          targetMaxDimension: 0.52
-        })
-          .position(...v.position)
-          .runtime(game.runtimeNode("vault-door-visual", { tags: ["vault-door"] }))
           .toJSON()
       );
     } else {
@@ -317,8 +319,10 @@ function visualNodes(): AuraSceneNode[] {
       name: "typed-vault-breakers-mechanisms",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 5.05
-    }).position(0, 0.34, 0)
+      targetMaxDimension: 0.001
+    })
+      .position(0, -5, 0)
+      .scale([0.001, 0.001, 0.001])
       .runtime(game.runtimeNode("typed-vault-breakers-mechanisms", { tags: ["typed-asset", "mission-state"] }))
       .toJSON()
   );
@@ -328,9 +332,10 @@ function visualNodes(): AuraSceneNode[] {
         name: `vault-pop-bumper-3d-${bumper.id}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.52
+        targetMaxDimension: 0.85
       })
-        .position(bumper.x, 0.28, bumper.z)
+        .scale(0.85)
+        .position(bumper.x, 0.36, bumper.z)
         .runtime(game.runtimeNode(`vault-pop-bumper-3d-${bumper.id}`, { tags: ["typed-asset", "pop-bumper-turret"] }))
         .toJSON()
     );
@@ -346,7 +351,7 @@ function visualNodes(): AuraSceneNode[] {
   for (const [state, stateMaterial] of Object.entries(mechanismStateMaterials)) {
     nodes.push(
       primitives.box({ name: `mission-state-beacon-${state}`, material: stateMaterial })
-        .position(0, 0.72, 1.05).scale([1.35, 0.12, 0.22])
+        .position(0, -5, 1.05).scale([0.001, 0.001, 0.001])
         .runtime(game.runtimeNode(`mission-state-beacon-${state}`, { tags: ["mission-state", "non-color-redundant-with-scoreboard"] }))
         .toJSON()
     );
@@ -354,8 +359,8 @@ function visualNodes(): AuraSceneNode[] {
   for (let index = 0; index < 5; index += 1) {
     nodes.push(
       primitives.box({ name: `bank-status-${index}`, material: bankLampOffMaterial })
-        .position(-1.4 + index * 0.7, 1.5, -2.72)
-        .scale([0.28, 0.16, 0.28])
+        .position(-1.4 + index * 0.7, -5, -2.72)
+        .scale([0.001, 0.001, 0.001])
         .runtime(game.runtimeNode(`bank-status-${index}`, { tags: ["mission-progress", "bank-lamp"] }))
         .toJSON()
     );
@@ -402,8 +407,12 @@ function buildScene(): ReturnType<typeof scene> {
     // root safe renderer's stable draw order keeps them legible above it.
     .addMany(visualNodes())
     .addMany([
-      lights.directional({ name: "playfield warm key", position: [2.4, 6.8, 3.6], color: "#fff3df", intensity: 1.45 }),
-      lights.point({ name: "playfield mid fill", color: "#d8ecff", intensity: 1.35 }).position(0, 3.4, 0.4),
+      lights.directional({ name: "playfield warm key", position: [2.4, 6.8, 3.6], color: "#fff3df", intensity: 1.85 }),
+      lights.point({ name: "playfield mid fill", color: "#d8ecff", intensity: 1.65 }).position(0, 3.4, 0.4),
+      lights.point({ name: "bumper turret warm key", color: "#ffbd69", intensity: 2.4 }).position(0, 1.45, -1.25),
+      lights.point({ name: "bumper turret cyan rim", color: "#39f0ff", intensity: 2.1 }).position(0, 1.35, -1.85),
+      lights.point({ name: "vault door hero spot", color: "#ffd88a", intensity: 2.3 }).position(0, 1.55, -2.85),
+      lights.point({ name: "flipper deck fill", color: "#79e8ff", intensity: 1.85 }).position(0, 1.4, 2.95),
       effects.neonBloom({ intensity: reducedMotion ? 0.08 : 0.18, threshold: 0.82, radius: 0.36, maxIntensity: 0.52, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.ambientOcclusion({ name: "vault contact grounding", intensity: 0.3, radius: 0.62, density: 0.5, color: "#02020a" }),
       effects.contactOcclusion({ name: "mechanism contact", intensity: 0.36, radius: 0.52 }),

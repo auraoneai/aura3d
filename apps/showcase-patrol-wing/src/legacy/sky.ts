@@ -458,15 +458,62 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
       .toJSON()
   );
 
-  // Coastal Island Radar / Communications Tower on Peak (0, 9.6, 0): bespoke Meshy 3D radar tower
-  if (!reviewCapture) nodes.push(
+  // Coastal Island Radar / Communications Towers: bespoke Meshy 3D radar towers on the island peak, west ridge, and sea stack
+  nodes.push(
     model(assets.patrolCoastalRadarTowerMeshy, {
       name: "coastal-radar-tower-3d",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 5.4
+      targetMaxDimension: 6.4
     })
       .position(0, 9.5, 0)
+      .toJSON(),
+    model(assets.patrolCoastalRadarTowerMeshy, {
+      name: "coastal-radar-tower-west-outpost",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 6.2
+    })
+      .position(-16.5, 3.8, 11.5)
+      .rotate(0, 0.45, 0)
+      .toJSON(),
+    model(assets.patrolCoastalRadarTowerMeshy, {
+      name: "coastal-radar-tower-sea-platform",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 6.8
+    })
+      .position(-36.5, 2.2, 12.5)
+      .rotate(0, 0.62, 0)
+      .toJSON(),
+    modelNode("sea-stack-rock-a", "propRockA", [-36.5, 0.4, 12.5], 7.5, 0.4, "setDressing", undefined),
+    modelNode("sea-stack-rock-b", "propRockB", [-27.5, 0.3, 11.2], 5.8, 1.1, "setDressing", undefined),
+    model(assets.patrolRingGateMeshy, {
+      name: "ring-gate-takeoff-corridor",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 5.4
+    })
+      .position(-8.5, 4.2, 16.5)
+      .rotate(0, Math.PI / 2 - 0.12, 0)
+      .toJSON(),
+    model(assets.patrolRingGateMeshy, {
+      name: "ring-gate-mid-corridor-1",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 5.8
+    })
+      .position(-22.5, 4.5, 15.8)
+      .rotate(0, Math.PI / 2 - 0.15, 0)
+      .toJSON(),
+    model(assets.patrolRingGateMeshy, {
+      name: "ring-gate-mid-corridor-2",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 6.2
+    })
+      .position(-34.5, 4.6, 15.2)
+      .rotate(0, Math.PI / 2 - 0.18, 0)
       .toJSON()
   );
 
@@ -506,10 +553,10 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
         name: `ring-gate-3d-${gate.index}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: gate.radius * 2.18
+        targetMaxDimension: gate.radius * 2.35
       })
         .position(gate.position[0], gate.position[1], gate.position[2])
-        .rotate(0, gate.yaw, 0)
+        .rotate(0, gate.yaw + Math.PI / 2, 0)
         .toJSON(),
       primitives
         .torus({

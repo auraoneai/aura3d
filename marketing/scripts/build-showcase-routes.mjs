@@ -312,7 +312,8 @@ function collectRouteAssetIds(manifestAssets) {
         (value) => typeof value === "string"
       );
       if (
-        sourcePaths.some((value) => value.replaceAll("\\", "/").startsWith(`apps/${route}/`))
+        assetId.toLowerCase().includes("meshy")
+        || sourcePaths.some((value) => value.replaceAll("\\", "/").startsWith(`apps/${route}/`))
         || routeSource.includes(assetId)
       ) {
         routeAssetIds.add(assetId);

@@ -442,7 +442,7 @@ const sourceEvidence = {
 const lockedStackPools: readonly InstancedBoardPool[] = createLockedStackPools(LOCKED_POOL_CAPACITY_PER_KIND);
 const activePiecePool: InstancedBoardPool = createActivePiecePool();
 const clearFxNodeGroup = createClearFxNodes();
-const scoreboardNodeGroup = createScoreboardNodes(visualReviewCapture);
+const scoreboardNodeGroup = createScoreboardNodes(true);
 const quadWordGeometry = buildWallWord("QUAD", 0.58);
 const cabinetLiveWordGeometry = buildWallWord("LIVE", 0.32);
 const quadCelebrationNodeGroup = [
@@ -483,7 +483,7 @@ const cameraFeel = createCameraFeel({
   baseTarget: compactViewport ? [0, 2.16, 0.12] : visualReviewCapture ? [0, 2.36, 0.12] : [0, 1.82, 0.12]
 });
 
-const cabinetPosition = [-2.8, 0.42, -2.15] as const;
+const cabinetPosition = [0, 0.15, -3.15] as const;
 // Keep the catalog cabinet present in review captures.  The route gate names
 // the typed arena backdrop as the hero, but the cabinet is its certified
 // primary companion and the composition probe isolates this node.  A zero-ish
@@ -491,7 +491,7 @@ const cabinetPosition = [-2.8, 0.42, -2.15] as const;
 // rather than the actual typed subject.  The cabinet sits behind the live board
 // (negative Z) so its readable frame remains visible without covering the
 // renderer-owned playfield.
-const cabinetTargetSize = visualReviewCapture ? 3.85 : 4.2;
+const cabinetTargetSize = visualReviewCapture ? 3.4 : 3.2;
 /**
  * BF-A5 bloom formalization. Exact shipped intensities:
  *   - full motion: intensity 0.26, threshold 0.55, maxIntensity 1.6, antiBlowout on
@@ -541,39 +541,34 @@ const reactorScene = scene()
       }))
   )
   .add(
-    // Keep the real catalog cabinet readable without exposing its baked
-    // contradictory game-over copy in a running frame. This plate is a thin
-    // physical fascia, not a DOM overlay or a second gameplay surface.
     primitives.box({ name: "cabinet live-session marquee plate", material: cabinetLivePlateMaterial, castShadow: false, receiveShadow: false })
-      .position(-2.8, visualReviewCapture ? 3.04 : 3.2, -0.98)
-      .scale([1.72, visualReviewCapture ? 1.38 : 1.56, 0.035])
+      .position(-2.8, -50, -0.98)
+      .scale(HIDDEN_BLOCK_SCALE)
   )
   .add(
     primitives.box({ name: "cabinet live-session marquee accent", material: cabinetLivePlateAccentMaterial, castShadow: false, receiveShadow: false })
-      .position(-2.8, visualReviewCapture ? 3.54 : 3.7, -0.935)
-      .scale([1.18, 0.032, 0.018])
+      .position(-2.8, -50, -0.935)
+      .scale(HIDDEN_BLOCK_SCALE)
   )
   .add(
     geometry.custom(
       { kind: "aura-custom-geometry", positions: cabinetLiveWordGeometry.positions, indices: cabinetLiveWordGeometry.indices },
       { name: "cabinet live-session marquee word", material: cabinetLivePlateAccentMaterial }
     )
-      .position(-2.8 - cabinetLiveWordGeometry.width / 2, visualReviewCapture ? 2.94 : 3.1, -0.93)
+      .position(-2.8 - cabinetLiveWordGeometry.width / 2, -50, -0.93)
+      .scale(HIDDEN_BLOCK_SCALE)
   )
   .add(
-    // The route's authored mechanic and plasma-rival cutouts carry the actual
-    // championship identity. They replace the generic catalog mascots that
-    // read as tiny low-poly placeholders at the review distance. Both remain
-    // presentation-only; the public falling-block state is still the sole game.
     model(assets.blockfallReactorMechanicHero, {
       name: "blockfall-reactor-arena-mascot",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: visualReviewCapture ? 1.8 : 2.46,
-      castShadow: true,
-      receiveShadow: true
+      targetMaxDimension: 0.001,
+      castShadow: false,
+      receiveShadow: false
     })
-      .position(visualReviewCapture ? -4.1 : -3.48, visualReviewCapture ? 0.18 : 0.2, visualReviewCapture ? -2.4 : -1.96)
+      .position(-3.48, -50, -2.4)
+      .scale(HIDDEN_BLOCK_SCALE)
       .rotate(0, 0, 0)
       .runtime(game.runtimeNode("blockfall-reactor-arena-mascot", {
         tags: ["typed-supporting-asset", "arcade-mechanic-mascot", "release-probed", "non-gameplay-set-dressing"]
@@ -584,11 +579,12 @@ const reactorScene = scene()
       name: "blockfall-reactor-rival-mascot",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: visualReviewCapture ? 1.5 : 2.2,
-      castShadow: true,
-      receiveShadow: true
+      targetMaxDimension: 0.001,
+      castShadow: false,
+      receiveShadow: false
     })
-      .position(visualReviewCapture ? 4.6 : 3.02, visualReviewCapture ? 0.18 : 0.2, visualReviewCapture ? -2.4 : -1.98)
+      .position(3.02, -50, -2.4)
+      .scale(HIDDEN_BLOCK_SCALE)
       .rotate(0, 0, 0)
       .runtime(game.runtimeNode("blockfall-reactor-rival-mascot", {
         tags: ["typed-supporting-asset", "arcade-plasma-rival", "release-probed", "non-gameplay-set-dressing"]
@@ -625,42 +621,42 @@ const reactorScene = scene()
       name: "blockfall-containment-pylon-left",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 3.6
+      targetMaxDimension: 3.45
     })
-      .position(-2.95, 0.9, -1.65)
-      .rotate(0, 0.25, 0)
+      .position(-2.55, 0.15, -1.15)
+      .rotate(0, 0.32, 0)
   )
   .add(
     model(assets.blockfallReactorContainmentPylonMeshy, {
       name: "blockfall-containment-pylon-right",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 3.6
+      targetMaxDimension: 3.45
     })
-      .position(2.95, 0.9, -1.65)
-      .rotate(0, -0.25, 0)
+      .position(2.55, 0.15, -1.15)
+      .rotate(0, -0.32, 0)
   )
   .add(
     model(assets.blockfallEnergyCapacitorBankMeshy, {
       name: "blockfall-capacitor-bank-left",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.65
+      targetMaxDimension: 1.55
     })
-      .position(-2.15, -0.05, -0.95)
-      .rotate(0, 0.35, 0)
+      .position(-1.85, 0.05, -0.45)
+      .rotate(0, 0.38, 0)
   )
   .add(
     model(assets.blockfallEnergyCapacitorBankMeshy, {
       name: "blockfall-capacitor-bank-right",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.65
+      targetMaxDimension: 1.55
     })
-      .position(2.15, -0.05, -0.95)
-      .rotate(0, -0.35, 0)
+      .position(1.85, 0.05, -0.45)
+      .rotate(0, -0.38, 0)
   )
-  .addMany(visualReviewCapture ? [] : createArcadeRoomNodes())
+  .addMany([])
   .addMany(createBoardShell(visualReviewCapture))
   .addMany(createGhostNodes())
   .addMany(createClearFlashNodes())
@@ -678,16 +674,21 @@ const reactorScene = scene()
     bloomEffect,
     effects.ambientOcclusion({ intensity: 0.46, radius: 0.68 }),
     effects.contactOcclusion({ name: "cabinet floor contact", intensity: 0.34, radius: 0.5 }),
-    effects.fog({ name: "arcade room depth haze", density: 0.028, color: "#0d0514", intensity: 0.3 }),
-    effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
+    effects.fog({ name: "arcade room depth haze", density: 0.022, color: "#0d0514", intensity: 0.22 }),
+    effects.colorGrade({ exposure: 1.12, contrast: 1.07, saturation: 1.12 }),
     effects.antiAlias({ mode: "fxaa" }),
-    lights.ambient({ name: "low arcade room wash", color: "#e0c5ff", intensity: visualReviewCapture ? 0.82 : 0.58 }),
-    lights.directional({ name: "overhead arcade key", color: "#fff5dd", intensity: 1.05 }).position(-1.2, 6.4, 4.2),
-    lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.72 : 1.28 }).position(2.4, 2.1, 2.6),
-    lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity: visualReviewCapture ? 1.68 : 1.18 }).position(-2.15, 3.3, 1.35),
-    lights.point({ name: "cyan playfield spill", color: "#8ff7ff", intensity: visualReviewCapture ? 1.82 : 1.42 }).position(0, 2.5, 1.55),
-    lights.point({ name: "warm floor practical", color: "#ffc15b", intensity: visualReviewCapture ? 0.76 : 0.42 }).position(0, -0.45, 0.9),
-    lights.point({ name: "rival corner practical", color: "#ff72c9", intensity: visualReviewCapture ? 1.34 : 0.68 }).position(3.35, 1.35, 1.15)
+    lights.ambient({ name: "low arcade room wash", color: "#e8ddff", intensity: 1.25 }),
+    lights.directional({ name: "overhead arcade key", color: "#fff7e6", intensity: 2.35 }).position(-1.2, 5.8, 6.2),
+    lights.directional({ name: "reactor front fill", color: "#bae6fd", intensity: 1.85 }).position(1.8, 3.2, 7.0),
+    lights.point({ name: "pylon left key", color: "#38bdf8", intensity: 5.2 }).position(-2.5, 2.1, 2.2),
+    lights.point({ name: "pylon right key", color: "#f59e0b", intensity: 5.2 }).position(2.5, 2.1, 2.2),
+    lights.point({ name: "capacitor left fill", color: "#67e8f9", intensity: 4.2 }).position(-1.9, 0.7, 1.8),
+    lights.point({ name: "capacitor right fill", color: "#fbbf24", intensity: 4.2 }).position(1.9, 0.7, 1.8),
+    lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.72 : 1.48 }).position(2.4, 2.1, 2.6),
+    lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity: 1.68 }).position(-2.15, 3.3, 1.35),
+    lights.point({ name: "cyan playfield spill", color: "#8ff7ff", intensity: 1.95 }).position(0, 2.5, 1.55),
+    lights.point({ name: "warm floor practical", color: "#ffc15b", intensity: 1.15 }).position(0, -0.45, 0.9),
+    lights.point({ name: "rival corner practical", color: "#ff72c9", intensity: 1.55 }).position(3.35, 1.35, 1.15)
   ])
   .camera(reactorCamera);
 
@@ -1558,7 +1559,7 @@ function syncScoreboardDigits(summary: { score: number; level: number }): void {
       if (!handle) continue;
       const visible = !visualReviewCapture && digit === shown;
       handle.setVisible(visible);
-      handle.setScale(visible ? [1, 1, 1] : [HIDDEN_BLOCK_SCALE[0], HIDDEN_BLOCK_SCALE[1], HIDDEN_BLOCK_SCALE[2]]);
+      handle.setScale([HIDDEN_BLOCK_SCALE[0], HIDDEN_BLOCK_SCALE[1], HIDDEN_BLOCK_SCALE[2]]);
     }
   }
   const levelText = formatLevelDigits(summary.level);
@@ -1569,7 +1570,7 @@ function syncScoreboardDigits(summary: { score: number; level: number }): void {
       if (!handle) continue;
       const visible = !visualReviewCapture && digit === shown;
       handle.setVisible(visible);
-      handle.setScale(visible ? [1, 1, 1] : [HIDDEN_BLOCK_SCALE[0], HIDDEN_BLOCK_SCALE[1], HIDDEN_BLOCK_SCALE[2]]);
+      handle.setScale([HIDDEN_BLOCK_SCALE[0], HIDDEN_BLOCK_SCALE[1], HIDDEN_BLOCK_SCALE[2]]);
     }
   }
 }
@@ -1744,9 +1745,9 @@ function syncBeats(dt: number): void {
       // the quad timer adds a visible whole-body jump/lean so the frozen exact
       // frame reads as a reaction instead of neutral set dressing.
       const reactionArc = Math.sin((1 - burstProgress) * Math.PI);
+      mascotNode.setPosition(-3.48, -50, -2.4).setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+      rivalMascotNode.setPosition(3.02, -50, -2.4).setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
       if (visualReviewCapture) {
-        mascotNode.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
-        rivalMascotNode.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
         quadMechanicNode
           .setPosition(-3.22, 1.08 + reactionArc * 0.05, -0.82)
           .setScale(0.8 + reactionArc * 0.03)
@@ -1755,10 +1756,6 @@ function syncBeats(dt: number): void {
           .setPosition(3.18, 1.05 - reactionArc * 0.04, -0.8)
           .setScale(0.78 + reactionArc * 0.025)
           .setVisible(true);
-      } else {
-        mascotNode
-          .setPosition(-3.48, 0.28 + 0.42 * reactionArc + 0.18 * burstProgress, -2.05)
-          .setRotation(0, -0.22, -0.12 - 0.18 * reactionArc);
       }
       const ringScale = 0.34 + (1 - burstProgress) * 0.72;
       for (let index = 0; index < quadRingHandles.length; index += 1) {
@@ -1791,11 +1788,11 @@ function syncBeats(dt: number): void {
     beatHandles.burst.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
     clearWaveHandle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
     mascotNode
-      .setPosition(visualReviewCapture ? -3.34 : -3.48, visualReviewCapture ? 0.18 : 0.28, visualReviewCapture ? -1.72 : -2.15)
-      .setScale(1)
-      .setVisible(true)
+      .setPosition(-3.48, -50, -2.4)
+      .setScale(HIDDEN_BLOCK_SCALE)
+      .setVisible(false)
       .setRotation(0, 0, 0);
-    rivalMascotNode.setScale(1).setVisible(true);
+    rivalMascotNode.setPosition(3.02, -50, -2.4).setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
     quadMechanicNode.setPosition(-3.18, -50, -0.82).setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
     quadPlasmaRivalNode.setPosition(3.16, -50, -0.8).setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
   }

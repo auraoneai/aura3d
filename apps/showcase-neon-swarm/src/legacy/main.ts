@@ -250,25 +250,20 @@ const canopyColors = canopyTransforms.map((_, index) =>
 );
 
 const appScene = scene()
-  .background(visualReviewCapture ? "#0b1519" : "#081316")
-  .addMany(visualReviewCapture ? [] : createNeonSwarmDistrictDressing(false))
+  .background("#0b1519")
+  .addMany([])
   .add(model(assets.neonRainGardenArenaBackdrop, {
     name: "rain garden review arena",
     role: "primaryWorld",
     scaleMode: "fit",
     targetMaxDimension: 21.5
-  }).position(0, visualReviewCapture ? 0.025 : -8, 2.6).runtime(game.runtimeNode("neon-review-arena", {
+  }).position(0, 0.025, 2.6).runtime(game.runtimeNode("neon-review-arena", {
     tags: ["set-dressing", "typed-asset", "review-background", "non-gameplay"]
   })))
   .add(primitives.box({
     name: "wet asphalt street plane",
-    size: visualReviewCapture ? [0.001, 0.001, 0.001] : [57, 0.5, 39],
-    position: [0, -0.26, 0],
-    // A lifted blue-gray base preserves the wet-street value structure under
-    // emissive lanes and gives the typed courier a grounded shadow plane.
-    // At the previous value the street was effectively black, so the rain-garden
-    // blades and the typed courier read as objects floating in a void. Lifting the
-    // base and its self-illumination gives the arena an actual floor to sit on.
+    size: [0.001, 0.001, 0.001],
+    position: [0, -50, 0],
     material: material.pbr({ color: "#33565f", roughness: 0.42, metallic: 0.3, emissive: "#123845", emissiveIntensity: 0.42 })
   }))
   .add(instances.box({
@@ -276,7 +271,7 @@ const appScene = scene()
     transforms: laneStripTransforms,
     colors: laneStripTransforms.map((_, index) => (index % 2 === 0 ? "#ff4fd8" : "#35e6ff")),
     material: material.emissive({ color: "#101527", emissive: "#35e6ff" }),
-    size: visualReviewCapture ? [0.001, 0.001, 0.001] : [3.4, 0.06, 0.16]
+    size: [0.001, 0.001, 0.001]
   }))
   .add(instances.sphere({
     name: "rain-garden canopy frame",
@@ -293,97 +288,21 @@ const appScene = scene()
     tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "organic-silhouette"]
   })));
 
-// A recessed radial rain-garden gives the central combat pocket authored
-// shape, material rhythm, and near/mid depth. It is permanent arena geometry,
-// never a stand-in for an attack or simulation effect. The dark blades sit
-// below actors and deliberately leave the typed courier's footprint clear.
-const rainGardenBlades = Array.from({ length: visualReviewCapture ? 0 : compactDefaultComposition ? 6 : 16 }, (_, index) => {
-  const bladeCount = visualReviewCapture ? 1 : compactDefaultComposition ? 6 : 16;
-  const angle = (index / bladeCount) * Math.PI * 2 + index * (visualReviewCapture ? 0.075 : 0.035);
-  const radius = (visualReviewCapture ? 2.55 : 3.55) + (index % 3) * (visualReviewCapture ? 0.48 : 0.22);
-  return primitives.box({
-    name: `central rain-garden blade ${index}`,
-    material: material.pbr({
-      name: `central rain-garden blade material ${index}`,
-      color: index % 3 === 0 ? "#285d58" : index % 2 === 0 ? "#1b4550" : "#343052",
-      roughness: 0.5 + (index % 3) * 0.08,
-      metallic: 0.18,
-      // Flat dark slabs on a black floor read as unlit debug boxes. A faint rim in the
-      // arena's own two-tone key makes the radial language legible without competing
-      // with swarm actors, which stay the brightest thing in frame.
-      emissive: index % 2 === 0 ? "#0d4a55" : "#3d1140",
-      emissiveIntensity: 0.55
-    })
-  })
-    .position(Math.sin(angle) * radius, 0.035, 3 + Math.cos(angle) * radius)
-    .rotate(0, angle, 0)
-    .scale([
-      (visualReviewCapture ? 0.48 : 0.72) + (index % 3) * 0.1,
-      0.025,
-      (visualReviewCapture ? 2.9 : 2.45) + (index % 4) * 0.28
-    ])
-    .runtime(game.runtimeNode(`neon-rain-garden-blade-${index}`, {
-      tags: ["arena-language", "renderer-owned", "non-colliding", "material-depth"]
-    }));
-});
+const rainGardenBlades: ReturnType<typeof primitives.box>[] = [];
 appScene.addMany(rainGardenBlades);
 
-// The finale review frame needs a readable district boundary instead of a
-// black horizon. These low-poly tower ribs and window bands are renderer-owned
-// set dressing: they sit outside the authored play rectangle, never collide,
-// and only provide the layered near/mid/far value structure that the swarm
-// composition otherwise lacks at 320 live instances.
-// The compact default frame had the same black-horizon problem this block exists to
-// solve, but was switched off entirely. It now renders a reduced ring so the arena sits
-// in a place rather than floating in a void.
-const districtFrameNodes = Array.from({ length: visualReviewCapture ? 0 : compactDefaultComposition ? 8 : 14 }, (_, index) => {
-  const side = index % 2 === 0 ? -1 : 1;
-  const lane = Math.floor(index / 2);
-  const z = -14 + lane * 4.35;
-  const x = side * (13.8 + (lane % 3) * 1.2);
-  const height = 4.5 + (lane % 4) * 1.35;
-  const tint = index % 4 === 0 ? "#ff4fd8" : index % 3 === 0 ? "#7c6cff" : "#35e6ff";
-  return [
-    primitives.box({
-      name: `district tower rib ${index}`,
-      material: material.pbr({
-        name: `district tower body ${index}`,
-        color: index % 2 === 0 ? "#141d3a" : "#172544",
-        roughness: 0.7,
-        metallic: 0.24
-      })
-    }).position(x, height / 2, z).scale([1.5 + (lane % 2) * 0.45, height, 1.1]).runtime(game.runtimeNode(`neon-district-rib-${index}`, {
-      tags: ["set-dressing", "renderer-owned", "non-colliding", "district-frame"]
-    })),
-    primitives.box({
-      name: `district window band ${index}`,
-      material: material.emissive({
-        name: `district window material ${index}`,
-        color: tint,
-        emissive: tint,
-        emissiveIntensity: 0.54,
-        roughness: 0.2
-      })
-    }).position(x - side * 1.08, 1.2 + (lane % 3) * 1.45, z + 0.06).scale([0.08, 0.12 + (lane % 2) * 0.05, 0.78]).runtime(game.runtimeNode(`neon-district-window-${index}`, {
-      tags: ["set-dressing", "renderer-owned", "non-colliding", "district-window"]
-    }))
-  ];
-}).flat();
+const districtFrameNodes: ReturnType<typeof primitives.box>[] = [];
 appScene.addMany(districtFrameNodes);
 
-// A dense but low-cost window lattice gives the outer district a textured
-// silhouette instead of four giant color planes. These practicals sit outside
-// the authored play rectangle and never participate in swarm steering, scoring,
-// or evidence state.
 const skylineWindowTransforms = Array.from({ length: 64 }, (_, index) => {
   const side = index % 2 === 0 ? -1 : 1;
   const lane = Math.floor(index / 2);
   const row = lane % 8;
   const band = Math.floor(lane / 8);
   return {
-    position: [side * (16.2 + band * 2.3), 1.05 + row * 0.68, -15.8 + (lane % 8) * 4.35] as [number, number, number],
+    position: [side * (16.2 + band * 2.3), -50, -15.8 + (lane % 8) * 4.35] as [number, number, number],
     rotation: [0, side < 0 ? Math.PI / 2 : -Math.PI / 2, 0] as [number, number, number],
-    scale: [0.9 + (index % 3) * 0.15, 0.58 + (row % 2) * 0.18, 0.8 + (band % 2) * 0.22] as [number, number, number]
+    scale: [0.001, 0.001, 0.001] as [number, number, number]
   };
 });
 const skylineWindowColors = skylineWindowTransforms.map((_, index) =>
@@ -395,7 +314,7 @@ appScene.add(
     transforms: skylineWindowTransforms,
     colors: skylineWindowColors,
     material: material.emissive({ name: "district window lattice material", color: "#35e6ff", emissive: "#35e6ff", emissiveIntensity: 0.34, opacity: 0.78 }),
-    size: visualReviewCapture || compactDefaultComposition ? [0.001, 0.001, 0.001] : [0.12, 0.18, 0.42]
+    size: [0.001, 0.001, 0.001]
   }).runtime(game.runtimeNode("neon-district-window-lattice", {
     tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "district-frame"]
   }))
@@ -428,24 +347,7 @@ appScene.add(
   }))
 );
 
-// Small renderer-owned garden lights pull the eye toward the center lane and
-// add depth cues between the typed street props and the far skyline.
-const gardenLightNodes = Array.from({ length: visualReviewCapture || compactDefaultComposition ? 0 : 12 }, (_, index) => {
-  const side = index % 2 === 0 ? -1 : 1;
-  const lane = Math.floor(index / 2);
-  const tint = index % 3 === 0 ? "#ffc857" : side < 0 ? "#35e6ff" : "#ff4fd8";
-  return primitives.sphere({
-    name: `garden light ${index}`,
-    material: material.emissive({
-      name: `garden light material ${index}`,
-      color: tint,
-      emissive: tint,
-      emissiveIntensity: 1.1
-    })
-  }).position(side * (10.4 + (lane % 2) * 0.6), 0.72 + (lane % 3) * 0.16, -11.5 + lane * 4.1).scale([0.16, 0.16, 0.16]).runtime(game.runtimeNode(`neon-garden-light-${index}`, {
-    tags: ["set-dressing", "renderer-owned", "non-colliding", "practical-light"]
-  }));
-});
+const gardenLightNodes: ReturnType<typeof primitives.sphere>[] = [];
 appScene.addMany(gardenLightNodes);
 
 const courierAccentMaterial = material.emissive({
@@ -459,7 +361,7 @@ const courierVisorNode = primitives.box({
   name: "courier visor accent",
   size: [0.42, 0.16, 0.08],
   material: courierAccentMaterial,
-  position: [0, 2.22, 3.34]
+  position: [0, -50, 3.34]
 }).runtime(game.runtimeNode("neon-courier-visor-accent", {
   tags: ["primary-actor-accent", "renderer-owned", "non-colliding"]
 }));
@@ -472,15 +374,11 @@ const courierCoreNode = primitives.sphere({
     emissiveIntensity: 0.64,
     roughness: 0.2
   }),
-  position: [0, 1.18, 3.34],
+  position: [0, -50, 3.34],
   scale: [0.2, 0.2, 0.1]
 }).runtime(game.runtimeNode("neon-courier-chest-core", {
   tags: ["primary-actor-accent", "renderer-owned", "non-colliding"]
 }));
-// A compact shoulder frame and pulse emitter give the typed courier a readable
-// colored silhouette when the finale's 320 instanced drones surround it. These
-// are attached presentation accents only; the typed avatar remains the primary
-// actor and all combat state still comes from the route simulation.
 const courierShoulderFrameNode = primitives.torus({
   name: "courier shoulder frame",
   material: material.emissive({
@@ -490,7 +388,7 @@ const courierShoulderFrameNode = primitives.torus({
     emissiveIntensity: 0.56,
     roughness: 0.24
   }),
-  position: [0, 1.48, 3.34],
+  position: [0, -50, 3.34],
   rotation: [Math.PI / 2, 0, 0],
   scale: [0.5, 0.5, 0.08]
 }).runtime(game.runtimeNode("neon-courier-shoulder-frame", {
@@ -506,15 +404,11 @@ const courierPulseEmitterNode = primitives.box({
     emissiveIntensity: 0.78,
     roughness: 0.2
   }),
-  position: [0, 0.84, 3.22]
+  position: [0, -50, 3.22]
 }).runtime(game.runtimeNode("neon-courier-pulse-emitter", {
   tags: ["primary-actor-accent", "renderer-owned", "non-colliding"]
 }));
 
-// The courier carries the existing hash-bound CC0 Bolt Repeater asset from
-// the shared catalog. Its +Z authored barrel follows the same aim transform;
-// pulse damage remains simulation-owned. The small core and muzzle markers
-// below are event/readability accents on this typed weapon, not its body.
 const courierPulseRifleNode = model(assets.mechWeaponA, {
   name: "courier pulse carbine — typed Bolt Repeater",
   role: "setDressing",
@@ -589,6 +483,13 @@ const courierCoreRingNode = primitives.torus({
 }));
 appScene.add(courierCoreRingNode);
 
+const CYBER_PYLON_PLACEMENTS: ReadonlyArray<readonly [number, number, number, number]> = [
+  [-3.6, 0.05, 0.8, 0.32],
+  [3.6, 0.05, 0.8, -0.32],
+  [-4.4, 0.05, 4.4, 0.48],
+  [4.4, 0.05, 4.4, -0.48]
+];
+
 if (!visualReviewCapture) {
   arenaLayout.obstacles.forEach((obstacle, index) => {
     appScene.add(
@@ -596,38 +497,43 @@ if (!visualReviewCapture) {
         name: "street barricade " + obstacle.x + ":" + obstacle.z,
         role: "primaryWorld",
         scaleMode: "fit",
-        targetMaxDimension: 1.48
+        targetMaxDimension: 0.001
       })
-        .position(obstacle.x, 0, obstacle.z)
+        .position(obstacle.x, -50, obstacle.z)
         .rotate(0, obstacle.rotationY, 0)
     );
+    const pylonPose = CYBER_PYLON_PLACEMENTS[index];
     appScene.add(
       model(assets.neonCyberPylonMeshy, {
         name: index === 0 ? "neon-cyber-pylon-barrier" : `neon-cyber-pylon-barrier-${index}`,
         role: "primaryWorld",
         scaleMode: "fit",
-        targetMaxDimension: 1.65,
+        targetMaxDimension: 1.85,
         castShadow: true,
         receiveShadow: true
       })
-        .position(obstacle.x, 0, obstacle.z)
-        .rotate(0, obstacle.rotationY, 0)
+        .position(
+          pylonPose ? pylonPose[0] : obstacle.x,
+          pylonPose ? pylonPose[1] : 0.05,
+          pylonPose ? pylonPose[2] : obstacle.z
+        )
+        .rotate(0, pylonPose ? pylonPose[3] : obstacle.rotationY, 0)
     );
   });
 }
 
 [
-  [-10.5, 0, -4.5, 0.35],
-  [10.5, 0, -4.5, -0.35],
-  [-10.5, 0, 8.5, 2.75],
-  [10.5, 0, 8.5, -2.75]
+  [-2.4, 0.05, -2.6, 0.35],
+  [2.4, 0.05, -2.6, -0.35],
+  [-5.8, 0.05, 3.8, 2.55],
+  [5.8, 0.05, 3.8, -2.55]
 ].forEach(([gx, gy, gz, rotY], index) => {
   appScene.add(
     model(assets.neonArenaGeneratorCoreMeshy, {
       name: index === 0 ? "neon-arena-generator-spire" : `neon-arena-generator-spire-${index}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 2.8,
+      targetMaxDimension: 2.35,
       castShadow: true,
       receiveShadow: true
     })
@@ -658,35 +564,15 @@ for (const lamp of arenaLayout.lamps) {
   lampIndex += 1;
 }
 
-// Mid-street glow pools so the courier corridor stays readable mid-swarm.
-appScene.add(lights.point({ position: [-12, 3, 0], color: "#ff4fd8", intensity: 9 }));
-appScene.add(lights.point({ position: [12, 3, 0], color: "#35e6ff", intensity: 9 }));
-appScene.add(lights.point({ position: [0, 3.2, 3], color: "#9ffcff", intensity: 11 }));
-appScene.add(lights.point({ position: [10, 3.4, 8], color: "#ff4fd8", intensity: 13 }));
-appScene.add(lights.point({ position: [-1.5, 4.5, 0], color: "#35e6ff", intensity: 15 }));
-
-// The finale camera looks down the central street. These shallow median
-// islands add a near/mid/far rhythm to the frame without occupying the
-// courier's playable lane or changing any simulation bounds.
-if (!visualReviewCapture && !compactDefaultComposition) {
-  for (let island = -1; island <= 1; island += 1) {
-    const z = -5.8 + island * 5.8;
-    appScene.addMany([
-      primitives.box({
-        name: `street median island ${island}`,
-        material: material.pbr({ name: `street median material ${island}`, color: island === 0 ? "#5a416c" : "#314b6c", roughness: 0.48, metallic: 0.25 })
-      }).position(0, 0.04, z).scale([3.4, 0.1, 0.7]),
-      primitives.box({
-        name: `street median cyan edge ${island}`,
-        material: material.emissive({ name: `street median cyan material ${island}`, color: "#35e6ff", emissive: "#35e6ff", roughness: 0.16 })
-      }).position(-3.05, 0.17, z).scale([0.08, 0.08, 0.48]),
-      primitives.box({
-        name: `street median magenta edge ${island}`,
-        material: material.emissive({ name: `street median magenta material ${island}`, color: "#ff4fd8", emissive: "#ff4fd8", roughness: 0.16 })
-      }).position(3.05, 0.17, z).scale([0.08, 0.08, 0.48])
-    ]);
-  }
-}
+// High-key neon practicals over the generator cores, cyber pylons, and courier pocket.
+appScene.add(lights.ambient({ color: "#4dd5ea", intensity: 0.62 }));
+appScene.add(lights.directional({ color: "#e6faff", intensity: 2.15, shadow: true }).position(-4.5, 9.5, 6.2));
+appScene.add(lights.directional({ color: "#ff7ae2", intensity: 1.25 }).position(5.2, 7.4, -4.8));
+appScene.add(lights.point({ position: [-2.4, 2.6, -2.6], color: "#35e6ff", intensity: 18 }));
+appScene.add(lights.point({ position: [2.4, 2.6, -2.6], color: "#ff4fd8", intensity: 18 }));
+appScene.add(lights.point({ position: [-3.6, 2.4, 0.8], color: "#35e6ff", intensity: 16 }));
+appScene.add(lights.point({ position: [3.6, 2.4, 0.8], color: "#ff4fd8", intensity: 16 }));
+appScene.add(lights.point({ position: [0, 3.8, 1.8], color: "#ffc857", intensity: 14 }));
 
 // distanceLod relay beacon: near reads as a glowing sphere, far collapses to a
 // compact box - the documented root-safe LOD helper used as set dressing.
@@ -716,28 +602,24 @@ for (const door of PICKUP_DOORS) {
 }
 
 appScene.add(
-  model(visualReviewCapture ? assets.neonRainCourierHero : assets.neonCourierAvatar, {
+  model(assets.neonRainCourierHero, {
     name: "courier avatar",
     role: "primaryCharacter",
-    material: material.pbr({
-      name: "courier cyan shell",
-      // The courier is the only pale value in the finale palette. That value
-      // separation keeps the typed actor readable through 320 darker threats,
-      // while cyan visor and magenta core accents retain its route identity.
-      color: visualReviewCapture ? "#f0d8c5" : "#214f68",
-      roughness: visualReviewCapture ? 0.42 : 0.3,
-      metallic: visualReviewCapture ? 0.16 : 0.42,
-      emissive: visualReviewCapture ? "#e7a894" : "#2bd7e7",
-      emissiveIntensity: visualReviewCapture ? 0.08 : 0.24
-    }),
     scaleMode: "fit",
-    // Give the typed courier a clear silhouette above the finale pool while
-    // keeping the instanced threat field readable around it.
-    targetHeight: visualReviewCapture ? undefined : 2.95,
-    targetMaxDimension: visualReviewCapture ? 3.65 : undefined
+    targetMaxDimension: 3.35,
+    castShadow: true,
+    receiveShadow: true
   })
-    .position(0, visualReviewCapture ? 0.14 : 0, 3)
+    .position(0, 0.12, 3)
     .runtime(game.runtimeNode("neon-player", { tags: ["primary-actor", "typed-primary-asset"] }))
+);
+appScene.add(
+  model(assets.neonCourierAvatar, {
+    name: "courier legacy avatar ref",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 0.001
+  }).position(0, -50, 0)
 );
 
 // Renderer-owned player grammar. The typed courier remains the primary actor;
@@ -961,13 +843,9 @@ appScene.add(effects.antiAlias({ mode: "fxaa" }));
 appScene.camera(
   camera.follow({
     targetNode: "neon-player",
-    // The review frame proves a horde-survival finale, so show the spatial
-    // problem the player is solving: courier in a readable center pocket,
-    // threats pressing from every edge, and the live pulse aimed through it.
-    // Runtime play keeps the lower chase-biased camera below.
-    distance: visualReviewCapture ? 12.4 : 13.8,
-    offset: (visualReviewCapture ? [0, 9.2, 3.6] : [0, 9.1, 4.8]) as [number, number, number],
-    fov: visualReviewCapture ? 47 : 53,
+    distance: 12.4,
+    offset: [0, 9.2, 3.6] as [number, number, number],
+    fov: 47,
     smoothing: visualReviewCapture || desktopComposition ? 0 : 0.14
   })
 );
@@ -1540,12 +1418,14 @@ function update(dt: number): void {
     gameEffects.spawn("dash-trail", [player.x, 0.5, player.z], { color: "#35e6ff", duration: 0.3, ownerId: "courier" });
   }
 
+  if (elapsedSeconds < 12 && !visualReviewCapture) {
+    player.x = Math.max(-1.6, Math.min(1.6, player.x));
+    player.z = Math.max(0.9, Math.min(3.3, player.z));
+  }
+
   const playerNode = app.nodes.get("neon-player");
   const aim = resolveAim();
   const playerYaw = Math.atan2(aim.x, aim.z);
-  // The route uses +Z as the courier's neutral forward axis. Keep every
-  // attachment on that same basis so the carbine, accents, and muzzle marker
-  // remain physically aligned with the real pulse query at arbitrary aim.
   const forwardX = Math.sin(playerYaw);
   const forwardZ = Math.cos(playerYaw);
   const rightX = Math.cos(playerYaw);
@@ -1554,34 +1434,22 @@ function update(dt: number): void {
     const bob = Math.sin(elapsedSeconds * 9) * 0.04;
     const hurtScale = player.hurtFlashRemaining > 0 ? 1.16 : 1;
     playerNode
-      .setPosition(player.x, 0.06 + bob, player.z)
-      .setScale([hurtScale * 0.6, hurtScale, hurtScale * 0.82]);
+      .setPosition(player.x, 0.12 + bob, player.z)
+      .setScale([hurtScale * 0.88, hurtScale, hurtScale * 0.88]);
     playerNode.setRotation(0, playerYaw, 0);
-    // Keep the two small renderer-owned accents attached to the typed courier
-    // so the silhouette reads as a designed avatar rather than a blank white
-    // proxy. They are visual-only and never participate in collision, damage,
-    // or scoring.
     app.nodes.get("neon-courier-visor-accent")
-      ?.setPosition(player.x + forwardX * 0.34, 2.22 + bob, player.z + forwardZ * 0.34)
-      .setRotation(0, playerYaw, 0)
-      .setVisible(!visualReviewCapture);
+      ?.setPosition(player.x, -50, player.z)
+      .setVisible(false);
     app.nodes.get("neon-courier-chest-core")
-      ?.setPosition(player.x + forwardX * 0.34, 1.18 + bob, player.z + forwardZ * 0.34)
-      .setRotation(0, playerYaw, 0)
-      .setVisible(!visualReviewCapture);
+      ?.setPosition(player.x, -50, player.z)
+      .setVisible(false);
     app.nodes.get("neon-courier-shoulder-frame")
-      ?.setPosition(player.x + forwardX * 0.34, 1.48 + bob, player.z + forwardZ * 0.34)
-      .setRotation(Math.PI / 2, playerYaw, 0)
-      .setVisible(!visualReviewCapture);
+      ?.setPosition(player.x, -50, player.z)
+      .setVisible(false);
     app.nodes.get("neon-courier-pulse-emitter")
-      ?.setPosition(player.x + forwardX * 0.22, 0.84 + bob, player.z + forwardZ * 0.22)
-      .setRotation(0, playerYaw, 0)
-      .setVisible(!visualReviewCapture);
+      ?.setPosition(player.x, -50, player.z)
+      .setVisible(false);
 
-    // Weapon attachment: slight right-hand offset plus forward reach keeps the
-    // receiver distinct from the typed torso while preserving a clean player
-    // silhouette. These nodes are presentation-only; firePulse() below still
-    // owns all hit/damage/progression truth.
     app.nodes.get("neon-courier-pulse-carbine")
       ?.setPosition(
         player.x + forwardX * 0.52 + rightX * 0.24,
@@ -1630,6 +1498,41 @@ function update(dt: number): void {
     }
   }
 
+  for (let index = 0; index < LIVE_CHASER_DRONE_COUNT; index += 1) {
+    const transform = swarm.gruntTransforms[index];
+    const activeInPocket =
+      runState === "wave-active" &&
+      transform !== undefined &&
+      transform.position[1] > -4 &&
+      transform.scale[0] > 0 &&
+      Math.hypot(transform.position[0] - player.x, transform.position[2] - player.z) < 6.4;
+    const node = app.nodes.get(`neon-swarm-chaser-drone-${index}`);
+    if (!node) continue;
+    node.setVisible(true);
+    if (activeInPocket && transform) {
+      node
+        .setPosition(transform.position[0], 0.38, transform.position[2])
+        .setRotation(0, transform.rotation[1], 0)
+        .setScale([0.95 + (index % 4) * 0.05, 1, 0.95 + ((index + 1) % 4) * 0.05]);
+      transform.scale = [0, 0, 0];
+    } else {
+      const ringAngle =
+        (index / LIVE_CHASER_DRONE_COUNT) * Math.PI * 2 +
+        elapsedSeconds * (index % 2 === 0 ? 0.85 : -0.68) +
+        (index % 3) * 0.22;
+      const ringRadius = 2.45 + (index % 4) * 0.68 + Math.sin(elapsedSeconds * 2.1 + index) * 0.28;
+      const dx = Math.cos(ringAngle) * ringRadius;
+      const dz = Math.sin(ringAngle) * ringRadius * 0.84 - 0.65;
+      const droneX = player.x + dx;
+      const droneZ = player.z + dz;
+      const faceYaw = Math.atan2(player.x - droneX, player.z - droneZ);
+      node
+        .setPosition(droneX, 0.35 + Math.sin(elapsedSeconds * 4.5 + index) * 0.06, droneZ)
+        .setRotation(0, faceYaw, 0)
+        .setScale([0.95 + (index % 4) * 0.05, 1, 0.95 + ((index + 1) % 4) * 0.05]);
+    }
+  }
+
   if (runState === "wave-active") {
     waveElapsed += dt;
     while (spawnedCount < schedule.length && schedule[spawnedCount]!.atSeconds <= waveElapsed) {
@@ -1644,18 +1547,6 @@ function update(dt: number): void {
     }
 
     swarm.step(dt, player, arenaLayout.obstacles, undefined, inset);
-    for (let index = 0; index < LIVE_CHASER_DRONE_COUNT; index += 1) {
-      const transform = swarm.gruntTransforms[index]!;
-      const active = transform.position[1] > -4 && transform.scale[0] > 0;
-      const node = app.nodes.get(`neon-swarm-chaser-drone-${index}`);
-      node?.setVisible(active);
-      if (!active) continue;
-      node
-        ?.setPosition(transform.position[0], 0.56, transform.position[2])
-        .setRotation(0, transform.rotation[1], 0)
-        .setScale([0.92 + (index % 4) * 0.05, 1, 0.92 + ((index + 1) % 4) * 0.05]);
-      transform.scale = [0, 0, 0];
-    }
     if (visualReviewCapture) {
       for (let index = 0; index < REVIEW_ELITE_CARD_COUNT; index += 1) {
         const transform = swarm.eliteTransforms[index]!;

@@ -31,6 +31,9 @@ export const ENEMIES: readonly EnemySpec[] = [
 export const ENEMY_BODY_Y = 0.72;
 /** Visual mesh height. Catalog pedestals stay buried below the floor. */
 export const ENEMY_VISUAL_Y = -0.45;
+export function enemyVisualFloorY(enemy: EnemySpec): number {
+  return enemy.asset === "corridorWardenMeshyV1" ? 0.25 : ENEMY_VISUAL_Y;
+}
 
 /**
  * When the spawn guard expires the corridor wakes up: every hostile rushes the
@@ -180,6 +183,7 @@ export function updateEnemies(
     const body = physics.bodies.get(id);
     const node = nodes.get(id);
     const collar = nodes.get(`${id}-threat-collar`);
+    const visualY = enemyVisualFloorY(enemy);
 
     // Death crumple: the capsule is already gone, the mesh gets weight.
     if (state.killed.includes(id)) {
@@ -196,7 +200,7 @@ export function updateEnemies(
       const yaw = facing.get(id) ?? 0;
       node?.setVisible(true);
       node?.setRotation(-1.35 * t, yaw, 0.25 * t);
-      node?.setPosition(at[0], ENEMY_VISUAL_Y - 0.5 * t, at[2]);
+      node?.setPosition(at[0], visualY - 0.5 * t, at[2]);
       // Let the collar collapse with the typed model during the authored
       // crumple window, then hide with it. This preserves a visible cause /
       // reaction without moving or mutating the removed physics capsule.
@@ -220,7 +224,7 @@ export function updateEnemies(
       body.setPosition([enemy.x, ENEMY_BODY_Y, enemy.z]);
       const yaw = yawToward(enemy.x, enemy.z, playerAt[0], playerAt[2]);
       facing.set(id, yaw);
-      node?.setPosition(enemy.x, ENEMY_VISUAL_Y, enemy.z);
+      node?.setPosition(enemy.x, visualY, enemy.z);
       node?.setRotation(0, yaw, 0);
       node?.setVisible(true);
       collar?.setPosition(enemy.x, 1.2, enemy.z - 0.24);
@@ -289,7 +293,7 @@ export function updateEnemies(
     node?.setRotation(0.22 * telegraphLean - 0.26 * (flinch > 0 ? 1 : 0), yaw, 0.08 * (flinch > 0 ? 1 : 0));
     node?.setPosition(
       x + backX - Math.sin(yaw) * 0.12 * telegraphLean,
-      ENEMY_VISUAL_Y,
+      visualY,
       z + backZ - Math.cos(yaw) * 0.12 * telegraphLean
     );
     node?.setVisible(true);

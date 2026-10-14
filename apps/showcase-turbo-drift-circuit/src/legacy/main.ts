@@ -1450,6 +1450,73 @@ function buildTurboTracksideIdentityNodes() {
     }))
   });
 
+  const gantryProgresses = [0.018, 0.055, 0.095, 0.135, 0.175, 0.215, 0.255, 0.28, 0.32] as const;
+  const meshyCorridorNodes = gantryProgresses.flatMap((progress, idx) => {
+    const sample = sampleCentreline(progress);
+    const center = gamePointToScene(sample);
+    const pose = racingScene.toScenePose({
+      position: { x: sample.x, y: sample.y },
+      heading: sample.heading
+    });
+    const roadY = sampleTurboRoadHeight(center[0], center[2]);
+    const leftX = Math.sin(sample.heading) * gantryHalfSpan;
+    const leftZ = -Math.cos(sample.heading) * gantryHalfSpan;
+    const isGantryStop = idx % 2 === 0 || progress === 0.28;
+    const accentColor = idx % 2 === 0 ? "#22d3ee" : "#ff6b4a";
+    return [
+      ...(isGantryStop
+        ? [
+            model(assets.turboStartFinishGantryMeshy, {
+              name: `turbo-meshy-approach-gantry-3d-${idx}`,
+              role: "setDressing",
+              scaleMode: "fit",
+              targetMaxDimension: Math.max(2.6, gantryHalfSpan * 2.35)
+            })
+              .position(center[0], roadY + 0.92, center[2])
+              .rotate(0, pose.rotation[1], 0)
+              .scale(1.18),
+            lights.point({
+              name: `turbo-gantry-key-light-${idx}`,
+              color: accentColor,
+              intensity: 2.2
+            }).position(center[0], roadY + 1.65, center[2])
+          ]
+        : []),
+      model(assets.turboTireBarrierWallMeshy, {
+        name: `turbo-meshy-tire-barrier-left-${idx}`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.28
+      })
+        .position(center[0] + leftX * 1.06, roadY + 0.02, center[2] + leftZ * 1.06)
+        .rotate(0, pose.rotation[1], 0)
+        .scale(1.18),
+      model(assets.turboTireBarrierWallMeshy, {
+        name: `turbo-meshy-tire-barrier-right-${idx}`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.28
+      })
+        .position(center[0] - leftX * 1.06, roadY + 0.02, center[2] - leftZ * 1.06)
+        .rotate(0, pose.rotation[1], 0)
+        .scale(1.18),
+      // Glowing boost chevron pad on the asphalt centerline
+      primitives.box({
+        name: `turbo-boost-chevron-pad-${idx}`,
+        material: material.emissive({
+          name: `turbo-boost-pad-mat-${idx}`,
+          color: accentColor,
+          emissive: accentColor,
+          emissiveIntensity: 1.35,
+          roughness: 0.28
+        })
+      })
+        .position(center[0], roadY + ROAD_DETAIL_SURFACE_LIFT + 0.018, center[2])
+        .rotate(0, pose.rotation[1], 0)
+        .scale([gantryHalfSpan * 0.62, 0.016, 0.34])
+    ];
+  });
+
   return [
     instances.box({
       name: "circuit marshal control pods (instanced)",
@@ -1506,30 +1573,7 @@ function buildTurboTracksideIdentityNodes() {
     gantryPosts,
     gantryCrossbar,
     gantryBoard,
-    model(assets.turboStartFinishGantryMeshy, {
-      name: "turbo-meshy-approach-gantry-3d",
-      role: "setDressing",
-      scaleMode: "fit",
-      targetMaxDimension: gantryHalfSpan * 2.15
-    })
-      .position(gantryCenter[0], gantryRoadY + 0.85, gantryCenter[2])
-      .rotate(0, gantryPose.rotation[1], 0),
-    model(assets.turboTireBarrierWallMeshy, {
-      name: "turbo-meshy-tire-barrier-left",
-      role: "setDressing",
-      scaleMode: "fit",
-      targetMaxDimension: 0.92
-    })
-      .position(gantryCenter[0] + gantryLeftX * 1.05, gantryRoadY, gantryCenter[2] + gantryLeftZ * 1.05)
-      .rotate(0, gantryPose.rotation[1], 0),
-    model(assets.turboTireBarrierWallMeshy, {
-      name: "turbo-meshy-tire-barrier-right",
-      role: "setDressing",
-      scaleMode: "fit",
-      targetMaxDimension: 0.92
-    })
-      .position(gantryCenter[0] - gantryLeftX * 1.05, gantryRoadY, gantryCenter[2] - gantryLeftZ * 1.05)
-      .rotate(0, gantryPose.rotation[1], 0)
+    ...meshyCorridorNodes
   ];
 }
 

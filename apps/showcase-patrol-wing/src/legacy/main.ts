@@ -436,9 +436,9 @@ const chaseCameraSpec = camera.follow({
   // The review lens is a little lower and tighter so the typed aircraft owns
   // the foreground while the island, rings, drones, and horizon still supply
   // a readable flight corridor. Public gameplay keeps the wider chase.
-  offset: (visualReviewCapture ? [1.1, 1.7, 5.8] : [0, 2.5, 7.25]) as [number, number, number],
-  targetOffset: visualReviewCapture ? [0.55, 0.42, -2.8] : [0.34, 0.6, -0.7],
-  fov: visualReviewCapture ? 50 : 47,
+  offset: [0.85, 1.85, 6.2] as [number, number, number],
+  targetOffset: [0.35, 0.35, -3.2],
+  fov: 50,
   // Exact review evidence captures the visible and suppressed subject at the
   // same authored camera pose. Follow smoothing would advance between those
   // two renderer submissions and turn camera motion into false subject pixels.
@@ -466,51 +466,6 @@ function buildScene(): ReturnType<typeof scene> {
         .scale([3.8 + (lane % 2) * 0.8, 0.42 + (lane % 3) * 0.15, 1.15])
     ];
   }).flat();
-  // Layered, renderer-owned sky ribbons replace the flat single-color field
-  // with a readable arcade-flight horizon. They are shallow 3D geometry behind
-  // the route, never a DOM or screenshot overlay.
-  //
-  // These must stay opaque. Measured on the preflight frame, the previous
-  // 0.26-0.46 `opacity` values did not produce soft haze: an emissive material
-  // with alpha below 1 blends against the sky *clear* rather than scene
-  // geometry in this renderer, so each ribbon composited as a solid black slab
-  // and hung a black wedge off the top-left and top-right of the horizon. The
-  // softness now comes from three stacked tones of decreasing emissive drive.
-  const skyRibbonMaterials = [
-    material.emissive({ name: "sky ribbon cobalt", color: "#2f5fb8", emissive: "#1d4ed8", emissiveIntensity: 0.55 }),
-    material.emissive({ name: "sky ribbon azure", color: "#3f8ae0", emissive: "#2563eb", emissiveIntensity: 0.45 }),
-    material.emissive({ name: "sky ribbon cyan", color: "#5fd2e8", emissive: "#22d3ee", emissiveIntensity: 0.5 })
-  ];
-  const skyRibbons = [
-    [-8, 15.5, -42, 19, 0.72, 3.2, -0.14, 0],
-    [8, 11.8, -39, 22, 0.58, 2.8, 0.11, 1],
-    [17, 8.2, -35, 18, 0.48, 2.2, -0.08, 2],
-    [-18, 5.2, -31, 16, 0.38, 1.8, 0.06, 1]
-  ] as const;
-  const skyBandNodes = skyRibbons.map(([x, y, z, width, height, depth, roll, materialIndex], index) =>
-    primitives.box({ name: `flight sky ribbon ${index}`, material: skyRibbonMaterials[materialIndex]! })
-      .position(x, y, z)
-      .rotate(0, 0, roll)
-      .scale([width, height, depth])
-      .toJSON()
-  );
-  // Directional speed marks are shallow 3D set dressing along the authored
-  // flight corridor. They give the chase lens the layered, high-energy read
-  // of an arcade flight scene without claiming particle or propulsion effects.
-  const streakMaterials = [
-    material.emissive({ name: "flight streak cyan", color: "#66f5ff", emissive: "#0dd6ee", emissiveIntensity: 1.15 }),
-    material.emissive({ name: "flight streak coral", color: "#ff7196", emissive: "#f43f67", emissiveIntensity: 0.9 })
-  ];
-  const flightStreaks = Array.from({ length: visualReviewCapture ? 12 : 16 }, (_, index) => {
-    const lane = index % 8;
-    const depth = Math.floor(index / 8);
-    const side = lane % 2 === 0 ? -1 : 1;
-    return primitives.box({ name: `flight corridor streak ${index}`, material: streakMaterials[index % 2]! })
-      .position(-24 + lane * 6.6, 7.4 + (lane % 4) * 2.55, -24 + depth * 18 + (lane % 3) * 2.2)
-      .rotate(0, side * 0.18, side * 0.03)
-      .scale([0.045, 0.045, 3.2 + (lane % 3) * 1.4])
-      .toJSON();
-  });
   return scene()
     .background(visualReviewCapture ? "#16364e" : "#254760")
     .addMany(arenaNodes({ reviewCapture: visualReviewCapture }))
@@ -518,14 +473,16 @@ function buildScene(): ReturnType<typeof scene> {
     .addMany(flightAtmosphere)
     .addMany(arenaLighting().nodes)
     .addMany([
-      effects.fog({ name: "coastal haze", density: visualReviewCapture ? 0.0034 : 0.0042, color: "#42647a", intensity: visualReviewCapture ? 0.32 : 0.42 }),
-      effects.neonBloom({ intensity: visualReviewCapture ? 0.12 : reducedMotion ? 0.05 : 0.12, threshold: 0.84, maxIntensity: 0.34, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }),
+      effects.fog({ name: "coastal haze", density: visualReviewCapture ? 0.0028 : 0.0032, color: "#42647a", intensity: visualReviewCapture ? 0.26 : 0.32 }),
+      effects.neonBloom({ intensity: visualReviewCapture ? 0.14 : reducedMotion ? 0.05 : 0.14, threshold: 0.82, maxIntensity: 0.38, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.colorGrade({ exposure: 1.08, contrast: 1.06, saturation: 1.12 }),
       effects.antiAlias({ mode: "fxaa" }),
-      lights.spot({ name: "lead aircraft landing spot", position: [0, 14, 12], target: [0, 8, 0], angle: 0.5, penumbra: 0.45, distance: 60, decay: 2, intensity: 3.2, color: "#fff2d8", shadow: true }),
-      lights.point({ name: "sun warm catch", color: "#ffd4a1", intensity: 2.2 }).position(20, 24, 30),
-      lights.point({ name: "aircraft rim light", color: "#b7dce6", intensity: 2.3 }).position(-8, 14, -4),
-      lights.point({ name: "flight horizon fill", color: "#8bbccc", intensity: 1.55 }).position(0, 9, -18)
+      lights.spot({ name: "lead aircraft landing spot", position: [0, 14, 12], target: [0, 8, 0], angle: 0.5, penumbra: 0.45, distance: 60, decay: 2, intensity: 3.8, color: "#fff2d8", shadow: true }),
+      lights.point({ name: "sun warm catch", color: "#ffd4a1", intensity: 3.2 }).position(20, 24, 30),
+      lights.point({ name: "aircraft rim light", color: "#b7dce6", intensity: 3.1 }).position(-8, 14, -4),
+      lights.point({ name: "flight horizon fill", color: "#8bbccc", intensity: 2.25 }).position(0, 9, -18),
+      lights.point({ name: "ring corridor key", color: "#fde047", intensity: 4.2 }).position(-9, 8, 9),
+      lights.point({ name: "radar peak key", color: "#38bdf8", intensity: 4.5 }).position(0, 14, 2)
     ])
     .camera(chaseCameraSpec);
 }
@@ -783,7 +740,7 @@ function resetToPad(nextPatrol?: number): void {
     arena = createArenaPhysics(ringHalfExtent(patrolValue));
     setArenaTimeOfDay(app.nodes, patrolValue);
   }
-  Object.assign(chaseCameraSpec as unknown as MutableCameraSpec, { offset: [0, 2.5, 7.25], targetOffset: [0.34, 0.6, -0.7], fov: 47 });
+  Object.assign(chaseCameraSpec as unknown as MutableCameraSpec, { offset: [0.85, 1.85, 6.2], targetOffset: [0.35, 0.35, -3.2], fov: 50 });
   flight = new FlightModel({ position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]], headingYaw: PAD_HEADING_YAW, throttle: 0, speed: 0 });
   rings.reset();
   planeHandle.setScale([1, 1, 1]);
@@ -1231,11 +1188,12 @@ window.addEventListener("keydown", (event) => {
 function readFlightInput(): FlightInput {
   const left = manualHeld.has("KeyA") || manualHeld.has("ArrowLeft");
   const right = manualHeld.has("KeyD") || manualHeld.has("ArrowRight");
-  const up = manualHeld.has("KeyS") || manualHeld.has("ArrowDown");
-  const down = manualHeld.has("KeyW") || manualHeld.has("ArrowUp");
+  const rawUp = manualHeld.has("KeyS") || manualHeld.has("ArrowDown");
+  const rawDown = manualHeld.has("KeyW") || manualHeld.has("ArrowUp");
+  const lowAltitude = flight.position[1] < 5.2;
   return {
-    pitchUp: up,
-    pitchDown: down,
+    pitchUp: rawUp || (rawDown && lowAltitude && flight.euler.x < 0.04),
+    pitchDown: rawDown && !lowAltitude,
     rollLeft: left,
     rollRight: right,
     yawLeft: manualHeld.has("KeyQ") || left,

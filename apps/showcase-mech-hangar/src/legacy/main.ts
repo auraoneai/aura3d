@@ -448,44 +448,64 @@ const hangarBaySignBuilders = [
 ];
 const hangarServiceGantryBuilders = [
   model(rootAssets.mechHangarServiceGantryMeshy, {
-    name: "mech-bay-service-gantry-left",
-    role: "setDressing",
-    scaleMode: "fit",
-    targetMaxDimension: 4.8,
-    castShadow: true,
-    receiveShadow: true
-  })
-    .position(HANGAR_CENTER[0] - 4.4, 0, HANGAR_CENTER[2] - 2.8)
-    .rotate(0, 0.42, 0),
-  model(rootAssets.mechHangarServiceGantryMeshy, {
-    name: "mech-bay-service-gantry-right",
-    role: "setDressing",
-    scaleMode: "fit",
-    targetMaxDimension: 4.8,
-    castShadow: true,
-    receiveShadow: true
-  })
-    .position(HANGAR_CENTER[0] + 4.4, 0, HANGAR_CENTER[2] - 2.8)
-    .rotate(0, -0.42, 0),
-  model(rootAssets.mechHangarServiceGantryMeshy, {
     name: "mech-arena-service-gantry-left",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 4.8,
+    targetMaxDimension: 2.35,
     castShadow: true,
     receiveShadow: true
   })
-    .position(-5.2, 0, ARENA_CENTER_Z - 3.1)
-    .rotate(0, 0.38, 0),
+    .position(-3.25, 0, ARENA_CENTER_Z - 2.8)
+    .rotate(0, 0.35, 0),
   model(rootAssets.mechHangarServiceGantryMeshy, {
     name: "mech-arena-service-gantry-right",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 4.8,
+    targetMaxDimension: 2.35,
     castShadow: true,
     receiveShadow: true
   })
-    .position(5.2, 0, ARENA_CENTER_Z - 3.1)
+    .position(3.25, 0, ARENA_CENTER_Z - 2.8)
+    .rotate(0, -0.35, 0),
+  model(rootAssets.blockfallReactorContainmentPylonMeshy, {
+    name: "mech-arena-containment-pylon-left",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 1.85,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(-4.1, 0, ARENA_CENTER_Z - 1.6)
+    .rotate(0, 0.42, 0),
+  model(rootAssets.blockfallReactorContainmentPylonMeshy, {
+    name: "mech-arena-containment-pylon-right",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 1.85,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(4.1, 0, ARENA_CENTER_Z - 1.6)
+    .rotate(0, -0.42, 0),
+  model(rootAssets.blockfallReactorContainmentPylonMeshy, {
+    name: "mech-bay-containment-pylon-left",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 1.85,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(HANGAR_CENTER[0] - 3.4, 0, HANGAR_CENTER[2] - 4.2)
+    .rotate(0, 0.38, 0),
+  model(rootAssets.blockfallReactorContainmentPylonMeshy, {
+    name: "mech-bay-containment-pylon-right",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 1.85,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(HANGAR_CENTER[0] + 3.4, 0, HANGAR_CENTER[2] - 4.2)
     .rotate(0, -0.38, 0)
 ];
 const hangarFloorInsetBuilder = primitives.box({
@@ -523,7 +543,7 @@ const pitPillarMaterial = material.pbr({ name: "pit structural steel", color: "#
 const pitPillarLight = material.emissive({ name: "pit structural light", color: "#1c5369", emissive: "#47cfff", emissiveIntensity: 0.8 });
 const pitStructureBuilders = [-7.2, 0, 7.2].flatMap((x, index) => [
   primitives.box({ name: `pit pillar ${index}`, material: pitPillarMaterial })
-    .position(x, 3.1, ARENA_CENTER_Z - 4.85)
+    .position(x, 1.55, ARENA_CENTER_Z - 4.85)
     .scale([0.55, 3.1, 0.45]),
   primitives.box({ name: `pit pillar light ${index}`, material: pitPillarLight })
     .position(x, 4.15, ARENA_CENTER_Z - 4.52)
@@ -735,11 +755,13 @@ const app = createAuraApp("#app", {
       // the polished deck past pure white across the whole combat ring. They
       // are reduced, not removed, so the pit keeps its overhead modelling and
       // the fighters still separate from the back wall.
-      lights.directional({ name: "floodlight north", position: [0, 7.4, ARENA_CENTER_Z - 3.4], intensity: 1.1, color: "#eaf4ff" }),
-      lights.directional({ name: "floodlight south", position: [2.4, 6.4, ARENA_CENTER_Z + 3.6], intensity: 0.8, color: "#cfe2ff" }),
-      lights.point({ name: "arena front key", position: [0, 4.2, ARENA_CENTER_Z + 6.5], intensity: 2.1, color: "#d8ecff" }),
-      lights.point({ name: "arena blue rim", position: [-4.8, 2.5, ARENA_CENTER_Z - 3.8], intensity: 2.4, color: "#47cfff" }),
-      lights.point({ name: "arena warm rim", position: [4.8, 2.2, ARENA_CENTER_Z - 1.8], intensity: 2.0, color: "#ff7a5c" }),
+      lights.directional({ name: "floodlight north", position: [0, 7.4, ARENA_CENTER_Z - 3.4], intensity: 1.55, color: "#eaf4ff" }),
+      lights.directional({ name: "floodlight south", position: [2.4, 6.4, ARENA_CENTER_Z + 3.6], intensity: 1.15, color: "#cfe2ff" }),
+      lights.point({ name: "arena front key", position: [0, 4.2, ARENA_CENTER_Z + 6.5], intensity: 3.4, color: "#d8ecff" }),
+      lights.point({ name: "arena player hero key", position: [-1.6, 2.8, ARENA_CENTER_Z + 0.5], intensity: 8.5, color: "#93c5fd" }),
+      lights.point({ name: "arena rival hero key", position: [1.6, 2.8, ARENA_CENTER_Z + 0.5], intensity: 8.5, color: "#fda4af" }),
+      lights.point({ name: "arena blue rim", position: [-4.8, 2.5, ARENA_CENTER_Z - 3.8], intensity: 4.2, color: "#47cfff" }),
+      lights.point({ name: "arena warm rim", position: [4.8, 2.2, ARENA_CENTER_Z - 1.8], intensity: 4.0, color: "#ff7a5c" }),
       turntableBuilder,
       turntableContactBuilder,
       hangarFloorBuilder,
@@ -792,8 +814,8 @@ const app = createAuraApp("#app", {
       offset: visualReviewCapture ? [0, 1.82, 4.62] : [0, 1.66, 5.28],
       fov: visualReviewCapture ? 52 : (reducedMotion ? 53 : 54),
       // Exact review captures must frame the current exchange, not the camera
-      // anchor's prior location. Runtime play keeps the eased chase motion.
-      smoothing: visualReviewCapture ? 0 : 0.16
+      // anchor's prior location.
+      smoothing: 0
     }))
 });
 
@@ -891,7 +913,7 @@ function mountSide(
       }
       const t = mountTransformForPart(def, parts, rootPosition, yaw);
       handle.setVisible(true);
-      handle.setPosition(t.position[0] - familyBackX, t.position[1], t.position[2] - familyBackZ);
+      handle.setPosition(t.position[0] - familyBackX, -60, t.position[2] - familyBackZ);
       handle.setRotation(0, t.yaw, 0);
       handle.setScale([0.0001, 0.0001, 0.0001]);
     }

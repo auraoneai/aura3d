@@ -223,13 +223,12 @@ const skylineSentryNodes = [
       name: `relay-sentry-${encounter.id}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.36,
+      targetMaxDimension: 0.62,
       castShadow: true,
       receiveShadow: true
     })
       .position(sceneX, sceneY + 0.08, GAMEPLAY_ACTOR_DEPTH)
       .rotate(0, -Math.PI / 2, 0)
-      .scale([0.19, 0.19, 0.19])
       .runtime(game.runtimeNode(`relay-sentry-${encounter.id}`, {
         tags: ["enemy", "typed-character", "hazard-aligned", `act-${SKYLINE_SECTION_LAYOUTS[encounter.section]?.act ?? 0}`]
       }));
@@ -254,12 +253,11 @@ const skylineSummitBeaconNodes = [
     name: "skyline-checkpoint-arch",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 0.82,
+    targetMaxDimension: 1.55,
     castShadow: false,
     receiveShadow: true
   })
-    .position(finishPoint[0], finishPoint[1], GAMEPLAY_ACTOR_DEPTH - 0.18)
-    .scale([0.42, 0.42, 0.42]),
+    .position(finishPoint[0], finishPoint[1], GAMEPLAY_ACTOR_DEPTH - 0.18),
   summitBeaconBlock("summit beacon plinth")
     .position(finishPoint[0], -20, platformerScene.worldZ + 0.4)
     .scale([0.0001, 0.0001, 0.0001])
@@ -1480,31 +1478,40 @@ const relayPostMaterial = material.pbr({
   roughness: 0.58
 });
 /** Explicit ring-on-post relays; collision remains exclusively in game.platformer. */
-const skylineRelayLanguageNodes = checkpoints.map((checkpoint) => {
-  const [x, y] = platformerScene.toScenePoint(checkpoint, 0.02);
-  return group(`relay ring on post ${checkpoint.id}`, [
-    model(assets.skylineCheckpointGateMeshy, {
-      name: "skyline-checkpoint-arch",
-      role: "setDressing",
-      scaleMode: "fit",
-      targetMaxDimension: 0.82,
-      castShadow: false,
-      receiveShadow: true
-    })
-      .position(0, 0, -0.14)
-      .scale([0.42, 0.42, 0.42]),
-    primitives.box({ name: `relay post ${checkpoint.id}`, material: relayPostMaterial })
-      .position(0, -10, 0)
-      .scale([0.0001, 0.0001, 0.0001]),
-    primitives.torus({ name: `relay ring ${checkpoint.id}`, material: relayRingMaterial })
-      .position(0, -10, 0)
-      .scale([0.0001, 0.0001, 0.0001])
-      .runtime(game.runtimeNode(`skyline-relay-language-${checkpoint.id}`, {
-        tags: [relayLanguage.nodeTag, "checkpoint", "shape-plus-color", "non-colliding", "renderer-owned"]
-      }))
-  ])
-    .position(x, y, GAMEPLAY_ACTOR_DEPTH - 0.08);
-});
+const skylineRelayLanguageNodes = [
+  model(assets.skylineCheckpointGateMeshy, {
+    name: "skyline-opening-checkpoint-arch",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 1.45,
+    castShadow: false,
+    receiveShadow: true
+  }).position(initialPlayerPose.position[0] + 1.05, initialPlayerPose.position[1] - 0.18, GAMEPLAY_ACTOR_DEPTH - 0.22),
+  ...checkpoints.map((checkpoint) => {
+    const [x, y] = platformerScene.toScenePoint(checkpoint, 0.02);
+    return group(`relay ring on post ${checkpoint.id}`, [
+      model(assets.skylineCheckpointGateMeshy, {
+        name: "skyline-checkpoint-arch",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.45,
+        castShadow: false,
+        receiveShadow: true
+      })
+        .position(0, -0.12, -0.14),
+      primitives.box({ name: `relay post ${checkpoint.id}`, material: relayPostMaterial })
+        .position(0, -10, 0)
+        .scale([0.0001, 0.0001, 0.0001]),
+      primitives.torus({ name: `relay ring ${checkpoint.id}`, material: relayRingMaterial })
+        .position(0, -10, 0)
+        .scale([0.0001, 0.0001, 0.0001])
+        .runtime(game.runtimeNode(`skyline-relay-language-${checkpoint.id}`, {
+          tags: [relayLanguage.nodeTag, "checkpoint", "shape-plus-color", "non-colliding", "renderer-owned"]
+        }))
+    ])
+      .position(x, y, GAMEPLAY_ACTOR_DEPTH - 0.08);
+  })
+];
 
 /**
  * SR-A1 ghost echo: a second, visual-only hero shell driven by input replay of the
@@ -1743,12 +1750,12 @@ setupSkylineGameHud();
 // typed hero across gameplay/review keeps the visual contract honest and gives
 // the actual route a readable runner silhouette.
 const skylinePlayerVisualNode = model(
-  assets.skylineArcticRunnerHero,
+  assets.skylineHeroMeshyV2,
   {
     name: "platformer-readable-character",
     role: "primaryCharacter",
     scaleMode: "fit",
-    targetHeight: SKYLINE_RENDERED_CHARACTER_HEIGHT,
+    targetHeight: SKYLINE_RENDERED_CHARACTER_HEIGHT * 1.18,
     castShadow: !visualReviewCapture,
     receiveShadow: !visualReviewCapture
   }
@@ -1990,12 +1997,12 @@ const app = createAuraApp("#app", {
         name: "sky-shard-" + collectible.id,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.65,
+        targetMaxDimension: 0.42,
         castShadow: false,
         receiveShadow: false
       })
         .position(sx, sy + 0.05, GAMEPLAY_ACTOR_DEPTH)
-        .scale(visualReviewCapture ? [0.12, 0.12, 0.12] : [0.14, 0.14, 0.14])
+        .scale([0.85, 0.85, 0.85])
         .runtime(game.runtimeNode("skyline-pickup-glitter-" + collectible.id, {
           tags: ["pickup", "sky-shard", "collectible", "sky-shard-language", "shape-plus-color", "renderer-owned"]
         }));
@@ -2704,11 +2711,9 @@ function renderSkyShardGlitter(): void {
     // Gentle 1.6 Hz pulse with a small phase offset per shard so neighbours do not flicker in lockstep.
     const phase = collectible.id.length * 0.7;
     // Keep pickup truth visible while removing only its non-essential shimmer.
-    const pulse = reducedMotion ? 1 : 1 + Math.sin(t * 10 + phase) * 0.18;
+    const pulse = reducedMotion ? 1 : 1 + Math.sin(t * 10 + phase) * 0.12;
     node.setVisible(true);
-    node.setScale(visualReviewCapture
-      ? [0.12 * pulse, 0.12 * pulse, 0.12 * pulse]
-      : [0.14 * pulse, 0.14 * pulse, 0.14 * pulse]);
+    node.setScale([0.85 * pulse, 0.85 * pulse, 0.85 * pulse]);
     collectedIdleSparkleProof.shardSparkleRendered = true;
   }
 }

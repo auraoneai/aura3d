@@ -1479,32 +1479,32 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       name: "Aura Clash stage speaker tower left",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.95
+      targetMaxDimension: 2.05
     })
-      .position(-3.16, 0, -0.44)
-      .rotate(0, 0.28, 0),
+      .position(-1.92, -0.04, -0.52)
+      .rotate(0, 0.34, 0),
     model(rootAssets.auraClashStageSpeakerTowerMeshy, {
       name: "Aura Clash stage speaker tower right",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.95
+      targetMaxDimension: 2.05
     })
-      .position(3.16, 0, -0.44)
-      .rotate(0, -0.28, 0),
+      .position(1.92, -0.04, -0.52)
+      .rotate(0, -0.34, 0),
     model(rootAssets.auraClashCornerBrazierPylonMeshy, {
       name: "Aura Clash corner pylon left",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.96
+      targetMaxDimension: 1.18
     })
-      .position(-2.86, 0, 0.48),
+      .position(-1.46, -0.04, -0.38),
     model(rootAssets.auraClashCornerBrazierPylonMeshy, {
       name: "Aura Clash corner pylon right",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.96
+      targetMaxDimension: 1.18
     })
-      .position(2.86, 0, 0.48)
+      .position(1.46, -0.04, -0.38)
   ];
   // I03 owns the 28-instance spectator workload and proves it independently.
   // The I04 spotlight oracle omits those unrelated crowd GLBs so each four-state
@@ -1520,6 +1520,18 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       target: [0, 0.2, 0], angle: 0.65, penumbra: 0.4, distance: 14,
       intensity: stageSpotEnabled ? 24 : 0, color: "#ffe0be",
       shadow: stageSpotShadow
+    }))
+    .add(lights.point({
+      name: "Aura Clash stage speaker accent left",
+      position: [-1.75, 1.35, 0.55],
+      color: "#38bdf8",
+      intensity: 5.2
+    }))
+    .add(lights.point({
+      name: "Aura Clash stage speaker accent right",
+      position: [1.75, 1.35, 0.55],
+      color: "#fb923c",
+      intensity: 5.2
     }));
   const detachRootSource = attachRootRenderSource(canvas, {
     source, onFrame: (frameDiagnostics, submittedItems) => {

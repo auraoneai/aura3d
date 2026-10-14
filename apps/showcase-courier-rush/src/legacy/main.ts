@@ -362,20 +362,19 @@ const app = createAuraApp("#app", {
     .addMany(
       ZONE_SITES.map((site, index) => {
         const curbSign = site.x < 0 ? -1 : 1;
-        const kioskX = curbSign * 6.8;
-        const kioskZ = site.z + (index % 2 === 0 ? 2.4 : -2.4);
+        const kioskX = curbSign * 4.65;
+        const kioskZ = site.z + (index % 2 === 0 ? 2.2 : -2.2);
         const yaw = curbSign < 0 ? Math.PI * 0.5 : -Math.PI * 0.5;
         return model(assets.courierDeliveryKioskMeshy, {
           name: "courier-curbside-kiosk-" + site.id,
           role: "setDressing",
           scaleMode: "fit",
-          targetMaxDimension: 1.35,
+          targetMaxDimension: 2.25,
           castShadow: true,
           receiveShadow: true
         })
           .position(kioskX, 0, kioskZ)
           .rotate(0, yaw, 0)
-          .scale([0.55, 0.55, 0.55])
           .runtime(game.runtimeNode("courier-curbside-kiosk-" + site.id, {
             tags: ["typed-asset", "delivery-kiosk", "set-dressing"]
           }));
@@ -386,13 +385,12 @@ const app = createAuraApp("#app", {
         name: "courier-corridor-kiosk-west",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.35,
+        targetMaxDimension: 2.35,
         castShadow: true,
         receiveShadow: true
       })
-        .position(-6.8, 0, 12.2)
-        .rotate(0, Math.PI * 0.5, 0)
-        .scale([0.55, 0.55, 0.55])
+        .position(-4.35, 0, 14.2)
+        .rotate(0, Math.PI * 0.42, 0)
         .runtime(game.runtimeNode("courier-corridor-kiosk-west", {
           tags: ["typed-asset", "delivery-kiosk", "set-dressing"]
         }))
@@ -402,17 +400,18 @@ const app = createAuraApp("#app", {
         name: "courier-corridor-kiosk-east",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.35,
+        targetMaxDimension: 2.35,
         castShadow: true,
         receiveShadow: true
       })
-        .position(6.8, 0, 5.4)
-        .rotate(0, -Math.PI * 0.5, 0)
-        .scale([0.55, 0.55, 0.55])
+        .position(4.35, 0, 10.8)
+        .rotate(0, -Math.PI * 0.42, 0)
         .runtime(game.runtimeNode("courier-corridor-kiosk-east", {
           tags: ["typed-asset", "delivery-kiosk", "set-dressing"]
         }))
     )
+    .add(lights.point({ name: "courier kiosk west key", color: "#38bdf8", intensity: 2.8 }).position(-3.4, 2.2, 14.2))
+    .add(lights.point({ name: "courier kiosk east key", color: "#fbbf24", intensity: 2.8 }).position(3.4, 2.2, 10.8))
     // Van fleet: every moving part is a top-level runtime node (the mutable
     // registry covers model/primitive/group/label nodes, so nothing rides in a
     // group hierarchy here).
@@ -433,22 +432,16 @@ const app = createAuraApp("#app", {
         receiveShadow: true
       }).runtime({ id: "courier-van", tags: ["player", "vehicle", "typed-primary-asset"] })
     )
-    // Depot fleet mate: the release-catalog typed van parked clear of every
-    // lane and sensor approach in the full kit city. It keeps the provenanced
-    // catalog asset live in this route (and its release-quality evidence
-    // green) now that the Meshy decimated van drives the shift. Dressing only,
-    // like the kit towers: no collider, no delivery rule reads it. Kept out
-    // of the review canyon slice, which stages only the avenue, hero, live
-    // traffic, and pressure gate.
+    // Depot fleet mate: parked clear of every lane and sensor approach.
     .addMany(visualReviewCapture ? [] : [
-      model(assets.courierVan, {
+      model(assets.courierVanMeshyV1Decimated, {
         name: "courier-depot-fleet-van",
         role: "setDressing",
         scaleMode: "fit",
         targetMaxDimension: VAN_TARGET_LENGTH,
         castShadow: true,
         receiveShadow: true
-      }).position(6.8, 0, 10.5).rotate(0, Math.PI / 2, 0)
+      }).position(4.65, 0, 13.4).rotate(0, Math.PI, 0)
         .runtime({ id: "courier-depot-fleet-van", tags: ["depot-fleet", "typed-secondary-asset"] })
     ])
     .add(

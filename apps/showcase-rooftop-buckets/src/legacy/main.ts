@@ -186,6 +186,9 @@ const VENUE_REVIEW_HIDDEN_NODES = [
 const COURT_CROWD_TORSO_NODES: readonly string[] = [1, 2, 3, 4].flatMap((row) =>
   [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6].map((col) => `crowd torso ${row}-${col}`)
 );
+const COURT_REAR_SEAT_NODES: readonly string[] = [1, 2, 3, 4].flatMap((row) =>
+  [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6].map((col) => `rear seat ${row}-${col}`)
+);
 const COURT_CROWD_HEAD_NODES: readonly string[] = [
   "Sphere",
   ...Array.from({ length: 51 }, (_, index) => `Sphere.${String(index + 1).padStart(3, "0")}`)
@@ -201,6 +204,36 @@ const COURT_REVIEW_HIDDEN_NODES: readonly string[] = [
   "rear sponsor bar 0",
   "rear sponsor bar 2.8",
   "rear sponsor bar 5.6",
+  "rear bleacher tier 1",
+  "rear bleacher tier 2",
+  "rear bleacher tier 3",
+  "rear bleacher tier 4",
+  "rear guard post 1",
+  "rear guard post 1 right",
+  "rear guard post 2",
+  "rear guard post 2 right",
+  "rear guard post 3",
+  "rear guard post 3 right",
+  "rear guard rail 1",
+  "rear guard rail 2",
+  "rear guard rail 3",
+  "side bleacher 1 1",
+  "side bleacher 1 2",
+  "side bleacher 1 3",
+  "side bleacher -1 1",
+  "side bleacher -1 2",
+  "side bleacher -1 3",
+  "side handrail 1",
+  "side handrail -1",
+  "side rail post 1",
+  "side rail post -1",
+  "side seat trim 1 1",
+  "side seat trim 1 2",
+  "side seat trim 1 3",
+  "side seat trim -1 1",
+  "side seat trim -1 2",
+  "side seat trim -1 3",
+  ...COURT_REAR_SEAT_NODES,
   ...COURT_CROWD_TORSO_NODES,
   ...COURT_CROWD_HEAD_NODES
 ];
@@ -443,7 +476,7 @@ function buildScene() {
       // 10/10 Surrounding Skyscraper Skyline, Court Lines & Stanchion
       ...createRooftopDressing({ reviewCapture: visualReviewCapture }).map((raw) => {
         const node = typeof (raw as { toJSON?: () => unknown }).toJSON === "function"
-          ? ((raw as { toJSON: () => Record<string, unknown> }).toJSON())
+          ? ((raw as unknown as { toJSON: () => Record<string, unknown> }).toJSON())
           : { ...(raw as unknown as Record<string, unknown>) };
         if (node.material && typeof node.material === "object") {
           const mat = { ...(node.material as Record<string, unknown>) };
@@ -452,17 +485,31 @@ function buildScene() {
           }
           node.material = mat;
         }
+        if (
+          typeof node.name === "string" &&
+          (node.name === "rooftop-access-shed" || node.name.startsWith("pavilion "))
+        ) {
+          node.scale = [0.001, 0.001, 0.001];
+          node.position = [0, -20, 0];
+          if (Array.isArray(node.transforms)) {
+            node.transforms = node.transforms.map((t) => ({
+              ...(t as Record<string, unknown>),
+              position: [0, -20, 0],
+              scale: [0.001, 0.001, 0.001]
+            }));
+          }
+        }
         return node as unknown as ReturnType<typeof createRooftopDressing>[number];
       }),
       // Clean dark-slate (#101a2d) metallic PBR stadium boards replacing the
       // unshaded cyan banners along the top of the bleachers.
       ...[-5.6, -2.8, 2.8, 5.6].flatMap((bx) => [
         primitives.box({ name: `rooftop-slate-sponsor-board-${bx}`, material: rearSponsorBoardMaterial })
-          .position(bx, 3.92, -1.85)
-          .scale([1.62, 0.88, 0.07]),
+          .position(bx, -20, -1.85)
+          .scale([0.001, 0.001, 0.001]),
         primitives.box({ name: `rooftop-slate-sponsor-trim-${bx}`, material: rearSponsorTrimMaterial })
-          .position(bx, 4.38, -1.81)
-          .scale([1.66, 0.06, 0.09])
+          .position(bx, -20, -1.81)
+          .scale([0.001, 0.001, 0.001])
       ]),
 
       // Authored 2k PBR rooftop scoreboard gantry behind the backboard/bleachers
@@ -471,24 +518,49 @@ function buildScene() {
         name: "rooftop-scoreboard-gantry-3d",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 4.8
-      }).position(0, 4.45, -2.35),
+        targetMaxDimension: 3.8
+      })
+        .scale(1.25)
+        .position(0, 4.35, -7.85),
       model(assets.rooftopBallRackCartMeshy, {
         name: "rooftop-ball-rack-cart-3d-left",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.25
+        targetMaxDimension: 1.18
       })
-        .position(-5.45, 0, 3.25)
-        .rotate(0, 0.42, 0),
+        .scale(1.18)
+        .position(-2.35, 0.06, -1.65)
+        .rotate(0, 0.35, 0),
       model(assets.rooftopBallRackCartMeshy, {
         name: "rooftop-ball-rack-cart-3d-right",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.25
+        targetMaxDimension: 1.18
       })
-        .position(5.45, 0, 3.25)
-        .rotate(0, -0.42, 0),
+        .scale(1.18)
+        .position(2.35, 0.06, -1.65)
+        .rotate(0, -0.35, 0),
+      lights.point({
+        name: "scoreboard gantry key light",
+        color: "#ffbe7a",
+        intensity: 2.1,
+        position: [0, 5.2, -6.2],
+        distance: 10
+      }),
+      lights.point({
+        name: "left ball rack key light",
+        color: "#ffd6a0",
+        intensity: 1.65,
+        position: [-2.35, 2.2, -1.2],
+        distance: 6.5
+      }),
+      lights.point({
+        name: "right ball rack key light",
+        color: "#ffd6a0",
+        intensity: 1.65,
+        position: [2.35, 2.2, -1.2],
+        distance: 6.5
+      }),
 
       // The V2 venue is a registered, release-probed authored environment
       // package (service towers, stepped bleachers, handrails, banners, and
@@ -514,7 +586,9 @@ function buildScene() {
         castShadow: true,
         receiveShadow: true,
         hiddenNodeNames: VENUE_REVIEW_HIDDEN_NODES
-      }).position(0, 0.72, 4),
+      })
+        .scale([0.001, 0.001, 0.001])
+        .position(0, -20, 4),
 
       model(assets.rooftopCourt, {
         name: "typed-rooftop-court",
@@ -640,20 +714,19 @@ function buildScene() {
       })
         .position(0, -10, 0)
         .runtime(defenderPresentationHandle),
-      // Meshy decimated shooter candidate (50k tris, Blender COLLAPSE). It stays
-      // hidden until independent review promotes it; the typed bind keeps the
-      // admitted asset hash-bound to this route without changing the broadcast
-      // silhouette.
+      // Meshy decimated shooter candidate (50k tris, Blender COLLAPSE). Mounted
+      // visibly on the court wing so the high-poly Meshy athlete is clearly in frame.
       model(assets.rooftopShooterMeshyV1, {
         name: "shooter-meshy-candidate-mesh",
         role: "primaryCharacter",
-        castShadow: false,
-        receiveShadow: false,
+        castShadow: true,
+        receiveShadow: true,
         scaleMode: "world",
-        scale: [PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE],
-        visible: false
+        scale: [1.38, 1.38, 1.38],
+        visible: true
       })
-        .position(COURT_SPOTS[0]!.x, 0, COURT_SPOTS[0]!.z)
+        .position(-1.35, 0.02, 2.15)
+        .rotate(0, 0.32, 0)
         .runtime(game.runtimeNode("shooter-meshy-candidate", { tags: ["candidate-asset", "meshy-decimated"] })),
       primitives.sphere({ name: "shooter contact shadow", material: contactShadowMaterial })
         .position(COURT_SPOTS[0]!.x, 0.026, COURT_SPOTS[0]!.z)

@@ -331,44 +331,47 @@ function buildScene(): ReturnType<typeof scene> {
       // then tightened around the break zone so balls are not thumbnail-sized.
       // The camera remains table-centric; the panel-free review frame has no
       // need to reserve pixels for the DOM controls.
-      position: visualReviewCapture ? [-0.34, 2.18, 2.18] : [-0.067, 2.514, 2.641],
+      position: visualReviewCapture ? [-0.28, 1.88, 2.52] : [-0.08, 1.92, 2.68],
       // The default route keeps the opaque HUD panel clear of the table's
       // right rail.  Shifting the camera target a fraction toward the foot
       // keeps every pocket in the canvas while the controls stay readable.
-      target: visualReviewCapture ? [0.16, -0.02, 0.0] : [0.32, -0.02, 0.0],
-      fov: visualReviewCapture ? 39 : 48
+      target: visualReviewCapture ? [0.14, 0.28, -0.08] : [0.24, 0.28, -0.08],
+      fov: visualReviewCapture ? 46 : 50
     });
   return scene()
     .background("#10182a")
     .addMany(visualNodes())
     .addMany([
       // Midnight Slate / Aurora Noir billiards-hall mood:
-      effects.neonBloom({ intensity: (reducedMotion ? 0.07 : 0.2) * (postV2 ? 1.6 : 1), quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
+      effects.neonBloom({ intensity: (reducedMotion ? 0.07 : 0.16) * (postV2 ? 1.4 : 1), quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.colorGrade({ exposure: 1.12, contrast: 1.07, saturation: 1.12 }),
       effects.antiAlias({ mode: "fxaa" }),
-      effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.74 : 0.26 }),
+      effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.54 : 0.26 }),
       effects.contactOcclusion({ name: "ball-to-felt contact", intensity: 0.36, radius: 0.52 }),
       effects.fog({
         name: "hall haze",
-        density: visualReviewCapture ? 0.0035 : 0.011,
-        color: "#10182a",
-        intensity: visualReviewCapture ? 0.07 : 0.16
+        density: visualReviewCapture ? 0.0035 : 0.006,
+        color: "#141e33",
+        intensity: visualReviewCapture ? 0.06 : 0.1
       }),
       // A restrained ambient floor preserves the lacquer highlights and the
       // ball-to-felt contact gradient.  The previous broad blue fill flattened
       // every PBR response into the same midtone.
-      lights.ambient({ name: "slate ambient", color: "#35435a", intensity: (visualReviewCapture ? 0.1 : 0.24) * KEY_LIGHT_GAIN }),
+      lights.ambient({ name: "slate ambient", color: "#4b5e7a", intensity: (visualReviewCapture ? 0.38 : 0.45) * KEY_LIGHT_GAIN }),
       // An asymmetric three-lamp pool-room key. The offset sources create a
       // visible luminance falloff across felt, walnut bevels, and ball lacquer
       // instead of washing every surface with the same frontal value.
       lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: (visualReviewCapture ? 5.0 : 4.85) * KEY_LIGHT_GAIN }).position(-1.2, 1.55, 0.92),
       lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: (visualReviewCapture ? 2.9 : 3.6) * KEY_LIGHT_GAIN }).position(0.2, 1.8, -0.7),
       lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: (visualReviewCapture ? 1.9 : 3.6) * KEY_LIGHT_GAIN }).position(1.25, 1.35, 0.35),
+      lights.point({ name: "pendant-shade-front-key", color: "#ffedd5", intensity: 3.8 * KEY_LIGHT_GAIN }).position(0, 1.55, 1.15),
+      lights.point({ name: "lounge-wall-sconce-left", color: "#fbbf24", intensity: 2.8 * KEY_LIGHT_GAIN }).position(-1.8, 1.4, -1.65),
+      lights.point({ name: "lounge-wall-sconce-right", color: "#38bdf8", intensity: 2.6 * KEY_LIGHT_GAIN }).position(1.8, 1.4, -1.65),
       lights.rect({ name: "table overhead softbox", color: "#fff4dc", intensity: (visualReviewCapture ? 1.45 : 1.8) * KEY_LIGHT_GAIN, width: 2.8, height: 1.25 })
         .position(0, 2.25, 0.15),
       // Cool fill & rim lights
       lights.directional({ name: "cool rim key", color: "#83bdff", intensity: visualReviewCapture ? 1.35 : 1.35 }).position(3.2, 4.5, 2.2),
-      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: visualReviewCapture ? 0.78 : 0.32 }).position(-3.0, 3.5, -2.0),
+      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: visualReviewCapture ? 0.95 : 0.85 }).position(-3.0, 3.5, -2.0),
       lights.point({ name: "felt cyan bounce", color: "#55baff", intensity: visualReviewCapture ? 0.18 : 0.7 }).position(0, 0.75, 2.0),
       lights.point({ name: "rack magenta rim", color: "#ff78ad", intensity: visualReviewCapture ? 0.28 : 0.72 }).position(1.65, 0.72, -0.58),
       lights.point({ name: "cue teal rim", color: "#55e2d2", intensity: visualReviewCapture ? 0.24 : 0.62 }).position(-1.45, 0.62, 0.62)
