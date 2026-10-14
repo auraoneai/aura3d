@@ -18,7 +18,6 @@ import {
   model,
   primitives,
   scene,
-  sky,
   type AuraCameraPose,
   type AuraCameraRig,
   type AuraCameraRigContext,
@@ -733,19 +732,6 @@ function buildScene() {
         position: [0, 13.5, 11.5],
         target: [0, 0.45, 0.8],
         fov: 40
-      })
-    )
-    .add(
-      sky.gradient({
-        name: "cyber-noir-sky",
-        zenith: "#040711",
-        horizon: "#0f172a",
-        ground: "#1e1b4b",
-        horizonGlow: 0.48,
-        bands: [
-          { elevationDeg: 10, widthDeg: 16, color: "#1e1b4b", intensity: 0.75 },
-          { elevationDeg: 3, widthDeg: 7, color: "#38bdf8", intensity: 0.34 }
-        ]
       })
     )
     .add(
