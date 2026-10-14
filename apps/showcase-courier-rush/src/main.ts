@@ -310,8 +310,8 @@ const KIT_WET_ROAD_MATERIAL = material.reflectiveFloor({
 });
 const KIT_STREET_GRID_MATERIAL = material.blackRubber({ color: "#0b101b", roughness: 0.72 });
 const KIT_CURB_MATERIAL = material.blackRubber({ color: "#1e293b", roughness: 0.78 });
-const KIT_TOWER_INSTANCED_MATERIAL = material.brushedMetal({ color: "#cbd5e1", roughness: 0.34, metallic: 0.78 });
-const KIT_BUILDING_METAL_MATERIAL = material.brushedMetal({ color: "#334155", roughness: 0.32, metallic: 0.82 });
+const KIT_TOWER_INSTANCED_MATERIAL = material.clearcoatPaint({ color: "#111827", roughness: 0.24, clearcoat: 0.75 });
+const KIT_BUILDING_METAL_MATERIAL = material.reflectiveFloor({ color: "#1e293b", roughness: 0.22, metallic: 0.55, clearcoat: 0.65 });
 const KIT_BUILDING_GLASS_MATERIAL = material.frostedGlass({ color: "#38bdf8", opacity: 0.65 });
 const KIT_AWNING_PAINT_MATERIAL = material.clearcoatPaint({ color: "#2563eb", roughness: 0.12 });
 
@@ -813,7 +813,7 @@ function renderPresentation(): void {
   const grounded = groundedFittedModelPosition(lastPose, VAN_FITTED_SIZE, {
     contactClearance: chassisSpec.wheelRadius * 0.06
   });
-  const vanYaw = -van.heading + Math.PI;
+  const vanYaw = -van.heading + Math.PI / 2;
   vanNode.setPosition(grounded[0], grounded[1], grounded[2]).setRotation(lastPose.rotation[0], vanYaw, lastPose.rotation[2]);
 
   const carrying = dispatch.phase === "carrying";
@@ -834,7 +834,7 @@ function renderPresentation(): void {
     const car = trafficCars[i]!;
     trafficNodes[i]!
       .setPosition(car.x, streetSurfaceY(car.x, car.z), car.z)
-      .setRotation(0, -car.heading + Math.PI, 0)
+      .setRotation(0, -car.heading + Math.PI / 2, 0)
       .setVisible(true);
   }
 
@@ -857,7 +857,7 @@ function createHud(): HTMLElement {
   root.style.cssText = [
     "position:absolute",
     "left:16px",
-    "top:16px",
+    "top:56px",
     "z-index:5",
     "min-width:330px",
     "font:600 13px/1.35 Inter, system-ui, sans-serif",
@@ -1045,7 +1045,7 @@ function stripKitParkedCars(nodes: readonly AuraSceneNode[]): AuraSceneNode[] {
         return { ...node, material: KIT_CURB_MATERIAL, receiveShadow: true };
       }
       if (name === "city tower native instanced family") {
-        return { ...node, material: KIT_TOWER_INSTANCED_MATERIAL, castShadow: true, receiveShadow: true };
+        return { ...node, material: KIT_TOWER_INSTANCED_MATERIAL, castShadow: false, receiveShadow: true };
       }
       if (KIT_BUILDING_METAL_PATTERN.test(name)) {
         return { ...node, material: KIT_BUILDING_METAL_MATERIAL, receiveShadow: true };
@@ -1061,7 +1061,7 @@ function stripKitParkedCars(nodes: readonly AuraSceneNode[]): AuraSceneNode[] {
 }
 
 function buildScene() {
-  const kitNodes = stripKitParkedCars(city.block({ timeOfDay: "night", blocks: 20 }));
+  const kitNodes = stripKitParkedCars(city.block({ timeOfDay: "night", blocks: 12 }));
   const nodes: AuraNodeInput[] = [
     group("courier city block night kit", kitNodes, {}).scale([CITY_SCALE, CITY_SCALE, CITY_SCALE]),
     ...guidanceDashNodes(),
@@ -1186,7 +1186,7 @@ function trafficCarNodes(): AuraNodeInput[] {
       role: "setDressing",
       scaleMode: "fit",
       targetMaxDimension: 2.6,
-      castShadow: true
+      castShadow: false
     })
       .position(car.x, streetSurfaceY(car.x, car.z), car.z)
       .runtime(game.runtimeNode(`traffic-car-${index + 1}`, { tags: ["traffic", "physics-synced", "runtime"] }))
