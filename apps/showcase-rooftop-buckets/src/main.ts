@@ -8,8 +8,11 @@
 import {
   camera,
   game,
+  instances,
   looks,
+  material,
   model,
+  primitives,
   scene,
   type AuraNodeInput,
   type AuraRuntimeNodeHandle
@@ -71,10 +74,6 @@ interface RooftopBucketsEvidence {
   readonly events: readonly string[];
   readonly look: { readonly id: string; readonly category: string };
   readonly drawCalls: number;
-  // Audio evidence, read from the real GameAudio object every frame (the
-  // Blockfall pattern): requested direction events vs the subset the sound
-  // object's own evidence reports as actually-played nodes. GameAudio
-  // evidence exposes no synth/asset cue split, so none is published.
   readonly audio: {
     readonly requestedEvents: readonly string[];
     readonly playedEvents: readonly string[];
@@ -87,15 +86,122 @@ interface RooftopBucketsEvidence {
 }
 
 const LOOK_ID = "golden-hour" as const;
-// The athlete GLBs report a raw minimum Y of -1.016 at this scale, so the
-// floor offset keeps their feet on the court plane (y = 0).
-const ATHLETE_SCALE = 1.18;
+// At scaleMode: "world" and scale 1.0, the athlete GLBs stand 1.863 m tall
+// with raw minimum Y = -1.016, so ATHLETE_FLOOR_OFFSET plants their shoes on
+// the court deck (y = 0).
+const ATHLETE_SCALE = 1.0;
 const ATHLETE_FLOOR_OFFSET = 1.016 * ATHLETE_SCALE;
-// rooftopBall is unit-normalized (~1 m bounds); 0.24 renders the regulation
-// 0.24 m diameter the solver's BALL_RADIUS (0.12 m) describes.
+// Hide internal mouth/cornea/nail submeshes that add skinned draw calls
+// without contributing visible pixels at broadcast distance.
+const ATHLETE_HIDDEN_SUBMESHES = [
+  "Object_7",
+  "Object_13",
+  "Object_14",
+  "Object_17",
+  "Object_19",
+  "Object_21",
+  "Object_22"
+] as const;
+// rooftopBall has unit bounds [-0.5..0.5]; 0.24 renders the regulation 0.24 m
+// diameter the solver's BALL_RADIUS (0.12 m) describes.
 const BALL_SCALE = 0.24;
 const AIM_DOTS = 6;
 const CHARGE_RATE = 1.6; // power units per second, ping-pong while held
+const CAMERA_POSITION: readonly [number, number, number] = [2.6, 2.9, 9.2];
+const CAMERA_TARGET: readonly [number, number, number] = [0, 2.0, -0.4];
+const CAMERA_FOV = 48;
+
+// Three.js-grade PBR materials for the streetball rooftop venue.
+const COURT_DECK_MAT = material.reflectiveFloor({
+  name: "rooftop acrylic court deck",
+  color: "#1e293b",
+  roughness: 0.22,
+  clearcoat: 0.65
+});
+const COURT_LINE_MAT = material.clearcoatPaint({
+  name: "rooftop court markings",
+  color: "#ea580c",
+  roughness: 0.18
+});
+const BACKBOARD_GLASS_MAT = material.frostedGlass({
+  name: "tempered glass backboard",
+  color: "#e2e8f0",
+  opacity: 0.55
+});
+const STANCHION_METAL_MAT = material.brushedMetal({
+  name: "hoop stanchion and rooftop steel",
+  color: "#cbd5e1",
+  roughness: 0.28
+});
+const RIM_PAINT_MAT = material.carPaint({
+  name: "breakaway orange rim",
+  color: "#f97316",
+  roughness: 0.24
+});
+const BASKETBALL_RUBBER_MAT = material.blackRubber({
+  name: "pebbled streetball leather",
+  color: "#ea580c",
+  roughness: 0.78
+});
+const SKYLINE_LACQUER_MAT = material.lacquer({
+  name: "dusk skyline and water tower",
+  color: "#2e3b52",
+  roughness: 0.36
+});
+const AIM_DOT_MAT = material.clearcoatPaint({
+  name: "shot arc guide dot",
+  color: "#ffd24d",
+  roughness: 0.2
+});
+
+// Authored basketball poses applied over the CC_Base humanoid rig so the
+// athletes hold/load/follow-through the ball and guard the paint rather than
+// remaining in bind T-pose.
+const SHOOTER_POSES: Record<"ready" | "load" | "follow", { bones: Record<string, { rotation: [number, number, number, number] }> }> = {
+  ready: {
+    bones: {
+      CC_Base_L_Upperarm_050: { rotation: [0.4082, -0.1269, -0.5207, 0.739] },
+      CC_Base_R_Upperarm_074: { rotation: [0.4081, 0.1269, 0.5207, 0.739] },
+      CC_Base_L_Forearm_051: { rotation: [0.5896, 0.1376, -0.1638, 0.7788] },
+      CC_Base_R_Forearm_077: { rotation: [0.5896, -0.1376, 0.1638, 0.7788] }
+    }
+  },
+  load: {
+    bones: {
+      CC_Base_L_Upperarm_050: { rotation: [0.6123, -0.1399, -0.2923, 0.7212] },
+      CC_Base_R_Upperarm_074: { rotation: [0.6309, 0.1475, 0.2886, 0.7049] },
+      CC_Base_L_Forearm_051: { rotation: [0.7073, 0.1979, -0.1685, 0.6574] },
+      CC_Base_R_Forearm_077: { rotation: [0.7242, -0.2026, 0.1637, 0.6386] }
+    }
+  },
+  follow: {
+    bones: {
+      CC_Base_L_Upperarm_050: { rotation: [0.6967, -0.1023, -0.1693, 0.6896] },
+      CC_Base_R_Upperarm_074: { rotation: [0.7377, -0.1543, -0.2303, 0.6156] },
+      CC_Base_L_Forearm_051: { rotation: [0.4535, 0.0648, -0.1064, 0.8825] },
+      CC_Base_R_Forearm_077: { rotation: [0.1001, -0.0082, 0.0585, 0.9932] }
+    }
+  }
+};
+
+const DEFENDER_POSES: Record<"stance" | "contest", { bones: Record<string, { rotation: [number, number, number, number] }> }> = {
+  stance: {
+    bones: {
+      CC_Base_L_Upperarm_050: { rotation: [0.3582, -0.0336, -0.2636, 0.895] },
+      CC_Base_R_Upperarm_074: { rotation: [0.3582, 0.0336, 0.2636, 0.895] },
+      CC_Base_L_Forearm_051: { rotation: [0.4029, 0.0045, 0.01, 0.9152] },
+      CC_Base_R_Forearm_077: { rotation: [0.4029, -0.0045, -0.01, 0.9152] }
+    }
+  },
+  contest: {
+    bones: {
+      CC_Base_L_Upperarm_050: { rotation: [0.6967, -0.1023, -0.1693, 0.6896] },
+      CC_Base_R_Upperarm_074: { rotation: [0.7377, -0.1543, -0.2303, 0.6156] },
+      CC_Base_L_Forearm_051: { rotation: [0.18, 0.02, -0.05, 0.982] },
+      CC_Base_R_Forearm_077: { rotation: [0.1001, -0.0082, 0.0585, 0.9932] }
+    }
+  }
+};
 
 const inputOptions = {
   actions: {
@@ -111,21 +217,15 @@ const inputOptions = {
 } as const;
 
 const routeEvents = game.eventLog({ label: "rooftop buckets events", maxEvents: 18 });
-// HUD bindings as descriptor literals (mirrored by the createGame `hud`
-// widgets below, which hud.set drives from the same state every frame).
 const hudBindings = [
   { kind: "aura-game-hud-binding", owner: "app", binding: "score", id: "hud:score", label: "score", source: "app-state", valuePath: "appState.score", format: "number", a11yLabel: "score" },
   { kind: "aura-game-hud-binding", owner: "app", binding: "objective", id: "hud:objective", label: "objective", source: "app-state", valuePath: "appState.objective", format: "text", a11yLabel: "current objective" },
   { kind: "aura-game-hud-binding", owner: "app", binding: "event-log", id: "hud:event-log", label: "event log", source: "app-state", valuePath: "appState.events", format: "text", a11yLabel: "game event log", debugOnly: true }
 ] as const;
 
-// Latest published snapshot, read by the createGame evidence section below.
-// `window.__aura3dGameSnapshot` stays the sole evidence global.
 let latestSnapshot: RooftopBucketsEvidence | undefined;
 
 // ------------------------------------------------------------ game state ----
-// Default spot is the free-throw spot (index 1): the deterministic sweet-power
-// make the salvaged rapier-hoop suite proves headless starts here.
 let scoreState: GameScoreState = initialScoreState(1);
 let hoopState: HoopState = initialHoopState(1);
 let spotIndex = 1;
@@ -133,9 +233,16 @@ let ballState: BallState = createBallAtSpot(COURT_SPOTS[spotIndex]!, false);
 let charge = { power: 0, pitch: 0, charging: false, direction: 1 };
 let paused = false;
 let elapsed = 0;
+let frameCounter = 0;
 let objective = heatObjective();
 let aimCacheKey = "";
 let aimPoints: readonly { readonly x: number; readonly y: number; readonly z: number }[] = [];
+let lastShooterPoseKey: keyof typeof SHOOTER_POSES | "" = "";
+let lastDefenderPoseKey: keyof typeof DEFENDER_POSES | "" = "";
+let lastHudSignature = "";
+let cachedDrawCalls = 0;
+let cachedEvidenceKey = "";
+let cachedRuntimeEvidence: unknown = null;
 
 function heatObjective(): string {
   const config = heatConfig(scoreState.heat);
@@ -145,7 +252,7 @@ function heatObjective(): string {
 const bucketsGame = createGame({
   id: "rooftop-buckets",
   target: "#app",
-  diagnostics: { overlay: true, performancePanel: true },
+  diagnostics: { overlay: false, performancePanel: false },
   scene: () => buildScene(),
   input: inputOptions,
   hud: {
@@ -164,8 +271,6 @@ const bucketsGame = createGame({
   },
   sound: {
     cues: {
-      // art/direction.ts audio[] events (bounce / rim / swish / crowd / bed)
-      // on the same sfx-pack asset mechanism Blockfall uses.
       bounce: { id: "bounce", asset: { url: sfxUrl("impact.wood.light.00") }, volume: 0.5 },
       rim: { id: "rim", asset: { url: sfxUrl("impact.wood.medium.00") }, volume: 0.6 },
       swish: { id: "swish", asset: { url: sfxUrl("pickup.coin.00") }, volume: 0.8 },
@@ -187,14 +292,7 @@ const bucketsGame = createGame({
 const app = bucketsGame.app;
 if (!bucketsGame.input) throw new Error("rooftop-buckets failed to create runtime-owned input.");
 const input = bucketsGame.input;
-// Drive the createGame lifecycle the way Blockfall does: start() transitions
-// the session booting -> loading, starts the runtime, and ready() lands it
-// in "playing" after the first presented draw.
 bucketsGame.start();
-// Direction bed: the looping city-dusk ambience, cued once at start. This
-// base predates the GameAudio /probes/ fix, so pre-gesture the cue may be
-// suppressed (or 404 in lane captures until the stack merge); the published
-// audio evidence reports requested vs played honestly either way.
 void bucketsGame.sound?.cue("bed");
 
 const ballNode: AuraRuntimeNodeHandle = app.nodes.require("ball");
@@ -203,8 +301,6 @@ const defenderNode: AuraRuntimeNodeHandle = app.nodes.require("defender");
 const aimNodes: AuraRuntimeNodeHandle[] = Array.from({ length: AIM_DOTS }, (_, i) => app.nodes.require(`aim-dot-${i}`));
 const hudRoot = createHud();
 
-// Direction audio[] events this route has cued, and the subset the sound
-// object's evidence has reported as actually-played nodes.
 const DIRECTION_AUDIO_EVENTS = new Set(["bounce", "rim", "swish", "crowd", "bed"]);
 const requestedAudioEvents = new Set<string>(["bed"]);
 const playedAudioEvents = new Set<string>();
@@ -214,18 +310,16 @@ function cueDirectionEvent(event: "bounce" | "rim" | "swish" | "crowd"): void {
   void bucketsGame.sound?.cue(event);
 }
 
-// Fixed broadcast framing: the whole shooting lane (spots at z 4.2-6.8, rim
-// at the origin) stays in frame from one static rig; the scene camera spec
-// below carries the same pose as the compiled fallback.
 app.camera?.use(
   camera.rigs.static({
-    position: [8.5, 5.2, 11.5],
-    target: [0, 1.6, 2.2],
-    fov: 50
+    position: [...CAMERA_POSITION],
+    target: [...CAMERA_TARGET],
+    fov: CAMERA_FOV
   })
 );
 
 app.onFrame(({ dt: rawDt }) => {
+  frameCounter += 1;
   const dt = Math.min(Math.max(rawDt, 0), 0.1);
   if (input.pressed("reset")) fullReset();
   if (input.pressed("pause")) {
@@ -248,8 +342,6 @@ function stepGame(dt: number): void {
   elapsed += dt;
   const spot = COURT_SPOTS[spotIndex]!;
 
-  // Spot + aim adjust only between possessions; the ball is solver-owned in
-  // flight and the salvaged launch vector is fixed at release.
   if (!ballState.inFlight && scoreState.state === "playing") {
     if (input.pressed("spotLeft")) changeSpot(-1);
     if (input.pressed("spotRight")) changeSpot(1);
@@ -270,8 +362,6 @@ function stepGame(dt: number): void {
     }
   }
 
-  // Heat-clear advance: the salvaged loop owns the transition; the shell
-  // only re-spots for the three-spot heat and re-parks the ball.
   if (scoreState.state === "heat-cleared") {
     scoreState = advanceHeat(scoreState);
     if (scoreState.heat === 2) spotIndex = 0;
@@ -347,14 +437,12 @@ function settleShot(): void {
     objective = `${ballState.result} — +${event.pointsEarned}. ${heatObjective()}`;
     if (event.isFireIgnited) objective = `On fire! Makes pay double. ${heatObjective()}`;
   } else {
-    // A settled miss bounced out on the asphalt: the direction bounce cue.
     cueDirectionEvent("bounce");
     objective = `Miss (${ballState.result ?? "brick"}). ${heatObjective()}`;
   }
   if (event.isGoldWin) onTerminal(true);
   else if (event.isGameOver) onTerminal(false);
   else if (scoreState.state === "playing") resetBallToSpot();
-  // heat-cleared is advanced at the top of the next stepGame tick.
 }
 
 function onTerminal(won: boolean): void {
@@ -386,63 +474,244 @@ function fullReset(): void {
 
 // ------------------------------------------------------------------ scene ----
 
+function buildCourtMarkingsTransforms() {
+  // Key / paint lane, free-throw line, baseline, sidelines, and 8-segment 3pt arc
+  const lines: { position: [number, number, number]; rotation?: [number, number, number]; scale: [number, number, number] }[] = [
+    // Baseline & sidelines
+    { position: [0, 0.008, -0.9], scale: [14.4, 0.012, 0.09] },
+    { position: [-7.2, 0.008, 4.4], scale: [0.09, 0.012, 10.6] },
+    { position: [7.2, 0.008, 4.4], scale: [0.09, 0.012, 10.6] },
+    // Paint / key lane (width 3.6m,baseline z=-0.9 to free-throw line z=4.6)
+    { position: [-1.8, 0.008, 1.85], scale: [0.08, 0.012, 5.5] },
+    { position: [1.8, 0.008, 1.85], scale: [0.08, 0.012, 5.5] },
+    { position: [0, 0.008, 4.6], scale: [3.68, 0.012, 0.08] },
+    // Backboard shooter's square (white/orange target box on glass)
+    { position: [0, 3.24, -0.31], scale: [0.62, 0.04, 0.02] },
+    { position: [0, 2.86, -0.31], scale: [0.62, 0.04, 0.02] },
+    { position: [-0.3, 3.05, -0.31], scale: [0.04, 0.42, 0.02] },
+    { position: [0.3, 3.05, -0.31], scale: [0.04, 0.42, 0.02] }
+  ];
+  // 3-point arc segments (radius 6.6m around hoop [0, 0])
+  const arcSegments = 9;
+  const radius = 6.55;
+  for (let i = 0; i < arcSegments; i += 1) {
+    const a0 = -Math.PI * 0.4 + (i / arcSegments) * (Math.PI * 0.8);
+    const a1 = -Math.PI * 0.4 + ((i + 1) / arcSegments) * (Math.PI * 0.8);
+    const mid = (a0 + a1) * 0.5;
+    const segLen = radius * (a1 - a0);
+    lines.push({
+      position: [Math.sin(mid) * radius, 0.008, Math.cos(mid) * radius],
+      rotation: [0, mid + Math.PI * 0.5, 0],
+      scale: [segLen, 0.012, 0.08]
+    });
+  }
+  return lines;
+}
+
+function buildStanchionAndParapetTransforms() {
+  return [
+    // Hoop stanchion post, angled neck, and base counterweight
+    { position: [0, 1.65, -1.18] as [number, number, number], scale: [0.22, 3.3, 0.22] as [number, number, number] },
+    { position: [0, 3.2, -0.76] as [number, number, number], scale: [0.18, 0.18, 0.86] as [number, number, number] },
+    { position: [0, 0.35, -1.55] as [number, number, number], scale: [0.85, 0.7, 1.1] as [number, number, number] },
+    // Rooftop perimeter parapet coping & water-tower steel legs
+    { position: [0, 0.45, -4.2] as [number, number, number], scale: [17.2, 0.9, 0.45] as [number, number, number] },
+    { position: [-8.4, 0.45, 4.0] as [number, number, number], scale: [0.45, 0.9, 16.4] as [number, number, number] },
+    { position: [8.4, 0.45, 4.0] as [number, number, number], scale: [0.45, 0.9, 16.4] as [number, number, number] },
+    { position: [-10.5, 2.2, -9.5] as [number, number, number], scale: [0.22, 4.4, 0.22] as [number, number, number] },
+    { position: [-8.5, 2.2, -9.5] as [number, number, number], scale: [0.22, 4.4, 0.22] as [number, number, number] },
+    { position: [-9.5, 2.2, -10.8] as [number, number, number], scale: [0.22, 4.4, 0.22] as [number, number, number] }
+  ];
+}
+
+function buildSkylineAndWaterTowerTransforms() {
+  return [
+    // Rooftop water tower barrel + cap at (-9.5, 5.4, -10.0)
+    { position: [-9.5, 5.4, -10.0] as [number, number, number], scale: [2.6, 2.8, 2.6] as [number, number, number] },
+    { position: [-9.5, 7.1, -10.0] as [number, number, number], scale: [1.8, 0.7, 1.8] as [number, number, number] },
+    // Sunset skyline high-rise silhouettes across the horizon
+    ...Array.from({ length: 8 }, (_, i) => ({
+      position: [-30 + i * 8.6, 5.5 + ((i * 5) % 4) * 2.8, -32 - (i % 3) * 5] as [number, number, number],
+      scale: [4.6, 12 + ((i * 3) % 5) * 3.6, 4.6] as [number, number, number]
+    }))
+  ];
+}
+
 function buildScene() {
   const spot = COURT_SPOTS[spotIndex]!;
   const nodes: AuraNodeInput[] = [
-    model(assets.rooftopCourt, { name: "rooftop court", castShadow: false })
-      .position(0, -0.1, 4),
-    model(assets.rooftopBackboard, { name: "backboard", castShadow: true })
-      .position(BACKBOARD_POSITION.x, BACKBOARD_POSITION.y, BACKBOARD_POSITION.z),
-    model(assets.rooftopRim, { name: "rim", castShadow: true })
-      .position(HOOP_BASE_POSITION.x, HOOP_BASE_POSITION.y, HOOP_BASE_POSITION.z),
-    model(assets.rooftopBall, { name: "basketball", castShadow: true })
-      .position(spot.x, 1.8, spot.z)
+    // Consolidated rooftop venue & bleachers (role: primaryWorld merges 203 static meshes -> 10 draw calls;
+    // scaleMode: world preserves true 19.26m x 17.21m dimensions with internal court slab at z=[ -3..11 ], y=0).
+    model(assets.rooftopCourt, {
+      name: "rooftop court",
+      role: "primaryWorld",
+      scaleMode: "world",
+      castShadow: false,
+      receiveShadow: true
+    }).position(0, 0, 0),
+    // Reflective hardwood/acrylic rooftop playing surface + clearcoat painted key & 3pt arc
+    primitives.box({
+      name: "rooftop court surface deck",
+      material: COURT_DECK_MAT,
+      castShadow: false,
+      receiveShadow: true
+    })
+      .position(0, -0.008, 4.2)
+      .scale([15.6, 0.016, 11.6]),
+    instances.box({
+      name: "court key and three-point markings",
+      material: COURT_LINE_MAT,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: buildCourtMarkingsTransforms()
+    }),
+    // Tempered frosted-glass backboard + brushed-metal stanchion + car-paint orange rim
+    model(assets.rooftopBackboard, {
+      name: "backboard",
+      role: "primaryWorld",
+      scaleMode: "world",
+      material: BACKBOARD_GLASS_MAT,
+      castShadow: true,
+      receiveShadow: true
+    }).position(BACKBOARD_POSITION.x, BACKBOARD_POSITION.y, BACKBOARD_POSITION.z),
+    primitives.box({
+      name: "tempered glass backboard panel",
+      material: BACKBOARD_GLASS_MAT,
+      castShadow: false,
+      receiveShadow: true
+    })
+      .position(BACKBOARD_POSITION.x, BACKBOARD_POSITION.y, BACKBOARD_POSITION.z + 0.02)
+      .scale([BACKBOARD_POSITION.width, BACKBOARD_POSITION.height, 0.03]),
+    instances.box({
+      name: "hoop stanchion and rooftop parapet",
+      material: STANCHION_METAL_MAT,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: buildStanchionAndParapetTransforms()
+    }),
+    instances.box({
+      name: "rooftop water tower and sunset skyline",
+      material: SKYLINE_LACQUER_MAT,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: buildSkylineAndWaterTowerTransforms()
+    }),
+    model(assets.rooftopRim, {
+      name: "rim",
+      role: "primaryWorld",
+      scaleMode: "world",
+      material: RIM_PAINT_MAT,
+      castShadow: true,
+      receiveShadow: false
+    }).position(HOOP_BASE_POSITION.x, HOOP_BASE_POSITION.y, HOOP_BASE_POSITION.z),
+    // Pebbled rubber streetball (0.24 m regulation diameter)
+    model(assets.rooftopBall, {
+      name: "basketball",
+      role: "primaryCharacter",
+      scaleMode: "world",
+      material: BASKETBALL_RUBBER_MAT,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(spot.x, 1.42, spot.z - 0.34)
       .scale(BALL_SCALE)
       .runtime(game.runtimeNode("ball", { tags: ["basketball", "runtime"] })),
-    model(assets.rooftopLayupScorer, { name: "shooter", castShadow: true })
+    // Grounded 1.86 m shooter & defender in world scale
+    model(assets.rooftopLayupScorer, {
+      name: "shooter",
+      role: "primaryCharacter",
+      scaleMode: "world",
+      hiddenNodeNames: ATHLETE_HIDDEN_SUBMESHES,
+      castShadow: false,
+      receiveShadow: true
+    })
       .position(spot.x, ATHLETE_FLOOR_OFFSET, spot.z)
       .scale(ATHLETE_SCALE)
+      .rotate(0, Math.PI, 0)
       .animate({ clip: "Ready", loop: true, speed: 1 })
       .runtime(game.runtimeNode("shooter", { tags: ["shooter", "runtime"] })),
-    model(assets.rooftopDefender, { name: "defender", castShadow: true })
-      .position(0, ATHLETE_FLOOR_OFFSET, 2.2)
+    model(assets.rooftopDefender, {
+      name: "defender",
+      role: "primaryCharacter",
+      scaleMode: "world",
+      hiddenNodeNames: ATHLETE_HIDDEN_SUBMESHES,
+      castShadow: false,
+      receiveShadow: true
+    })
+      .position(-1.55, ATHLETE_FLOOR_OFFSET, 2.1)
       .scale(ATHLETE_SCALE)
       .animate({ clip: "Plant", loop: true, speed: 1 })
       .runtime(game.runtimeNode("defender", { tags: ["defender", "runtime"] })),
     ...Array.from({ length: AIM_DOTS }, (_, i) =>
-      model(assets.rooftopBall, { name: `aim guide dot ${i}` })
+      model(assets.rooftopBall, {
+        name: `aim guide dot ${i}`,
+        scaleMode: "world",
+        material: AIM_DOT_MAT,
+        castShadow: false,
+        receiveShadow: false
+      })
         .position(0, -50, 0)
-        .scale(0.06)
+        .scale(0.055)
         .runtime(game.runtimeNode(`aim-dot-${i}`, { tags: ["aim-guide", "runtime"] }))
     )
   ];
 
-  // The golden-hour look supplies the dusk sky, warm key light, fog and
-  // grade — no ambient fill, background override or debug overlay.
   return scene()
     .add(looks.preset(LOOK_ID))
     .addMany(nodes)
-    .camera(camera.perspective({ position: [8.5, 5.2, 11.5], target: [0, 1.6, 2.2], fov: 50 }));
+    .camera(camera.perspective({ position: [...CAMERA_POSITION], target: [...CAMERA_TARGET], fov: CAMERA_FOV }));
 }
 
 function syncNodes(): void {
-  ballNode.setPosition(ballState.x, ballState.y, ballState.z);
   const spot = COURT_SPOTS[spotIndex]!;
-  const yaw = Math.atan2(-(HOOP_BASE_POSITION.x - spot.x), -(HOOP_BASE_POSITION.z - spot.z));
+  const dx = HOOP_BASE_POSITION.x - spot.x;
+  const dz = HOOP_BASE_POSITION.z - spot.z;
+  const dist = Math.hypot(dx, dz) || 1;
+  const nx = dx / dist;
+  const nz = dz / dist;
+  // Local +Z is the character's forward axis; Math.atan2(dx, dz) rotates +Z
+  // to face the hoop (Math.PI at the free-throw line).
+  const yaw = Math.atan2(dx, dz);
   shooterNode.setPosition(spot.x, ATHLETE_FLOOR_OFFSET, spot.z).setRotation(0, yaw, 0);
-  if (hoopState.defenderActive) {
-    defenderNode
-      .setVisible(true)
-      .setPosition(hoopState.defenderX, ATHLETE_FLOOR_OFFSET + Math.max(0, hoopState.defenderY - 0.9), hoopState.defenderZ);
-  } else {
-    defenderNode.setVisible(false);
+
+  const shooterPoseKey: keyof typeof SHOOTER_POSES = ballState.inFlight
+    ? "follow"
+    : charge.charging
+      ? "load"
+      : "ready";
+  if (shooterPoseKey !== lastShooterPoseKey) {
+    lastShooterPoseKey = shooterPoseKey;
+    shooterNode.setAnimationPose?.(SHOOTER_POSES[shooterPoseKey]);
   }
+
+  // While parked, place the visual basketball directly in the shooter's hands;
+  // once launched, follow the Rapier solver trajectory.
+  if (ballState.inFlight) {
+    ballNode.setPosition(ballState.x, ballState.y, ballState.z);
+  } else {
+    const handLift = charge.charging ? 0.14 + charge.power * 0.22 : 0;
+    const handForward = charge.charging ? 0.26 : 0.33;
+    ballNode.setPosition(spot.x + nx * handForward, 1.38 + handLift, spot.z + nz * handForward);
+  }
+
+  // Keep the perimeter defender grounded on the court in an athletic stance
+  // (patrolling the left lane edge in open heats, actively contesting in Heat 3).
+  const defX = hoopState.defenderActive ? hoopState.defenderX : -1.55;
+  const defY = hoopState.defenderActive ? ATHLETE_FLOOR_OFFSET + Math.max(0, hoopState.defenderY - 0.9) : ATHLETE_FLOOR_OFFSET;
+  const defZ = hoopState.defenderActive ? hoopState.defenderZ : 2.1;
+  const defYaw = Math.atan2(spot.x - defX, spot.z - defZ);
+  defenderNode.setVisible(true).setPosition(defX, defY, defZ).setRotation(0, defYaw, 0);
+
+  const defenderPoseKey: keyof typeof DEFENDER_POSES =
+    hoopState.defenderActive && hoopState.defenderTelegraph === "contest" ? "contest" : "stance";
+  if (defenderPoseKey !== lastDefenderPoseKey) {
+    lastDefenderPoseKey = defenderPoseKey;
+    defenderNode.setAnimationPose?.(DEFENDER_POSES[defenderPoseKey]);
+  }
+
   syncAimGuide();
 }
 
-// The guide is the salvaged solver's own first-flight prediction (the same
-// predictFirstFlight the heats suite pins to real flight), recomputed only
-// when spot, power or pitch materially change.
 function syncAimGuide(): void {
   if (ballState.inFlight || scoreState.state !== "playing") {
     aimNodes.forEach((node) => node.setVisible(false));
@@ -490,17 +759,23 @@ function createHud(): HTMLElement {
 
 function renderHud(): void {
   const spot = COURT_SPOTS[spotIndex]!;
-  // The createGame kit widgets (declared in the `hud` option) mirror the
-  // same state the route-local panel below renders.
+  const clockCeil = Math.max(0, Math.ceil(scoreState.shotClock));
+  const clockTenth = Math.max(0, Math.round(scoreState.shotClock * 5) / 5).toFixed(1);
+  const heatCeil = Math.max(0, Math.ceil(scoreState.heatTimer));
+  const chargePct = Math.round(charge.power * 100);
+  const sig = `${scoreState.heat}|${scoreState.score}|${scoreState.target}|${scoreState.streak}|${scoreState.onFire}|${spot.id}|${scoreState.makes}|${scoreState.misses}|${clockTenth}|${heatCeil}|${chargePct}|${paused}|${objective}`;
+  if (sig === lastHudSignature) return;
+  lastHudSignature = sig;
+
   bucketsGame.hud.set("score", scoreState.score);
-  bucketsGame.hud.set("clock", Math.max(0, Math.ceil(scoreState.shotClock)));
+  bucketsGame.hud.set("clock", clockCeil);
   bucketsGame.hud.set("heat", `HEAT ${scoreState.heat}`);
-  bucketsGame.hud.set("charge", Math.round(charge.power * 100));
+  bucketsGame.hud.set("charge", chargePct);
   bucketsGame.hud.set("objective", objective);
   hudRoot.innerHTML = [
     `<strong>Rooftop Buckets</strong>`,
     `<div>Heat ${scoreState.heat} ${heatConfig(scoreState.heat).name} | Score ${scoreState.score}/${scoreState.target} | Streak ${scoreState.streak}${scoreState.onFire ? " ON FIRE" : ""}</div>`,
-    `<div>${spot.name} | Makes ${scoreState.makes} Misses ${scoreState.misses} | Clock ${Math.max(0, scoreState.shotClock).toFixed(1)}s | Heat ${Math.max(0, Math.ceil(scoreState.heatTimer))}s</div>`,
+    `<div>${spot.name} | Makes ${scoreState.makes} Misses ${scoreState.misses} | Clock ${clockTenth}s | Heat ${heatCeil}s</div>`,
     `<div>${paused ? "Paused. " : ""}${objective}</div>`,
     `<div>A/D spot. W/S arc. Hold+release Space shoot. P pause. R reset.</div>`
   ].join("");
@@ -510,26 +785,31 @@ function renderHud(): void {
 
 function publishEvidence(): void {
   const spot = COURT_SPOTS[spotIndex]!;
-  const evidence = app.evidence({
-    input,
-    events: routeEvents,
-    hud: hudBindings,
-    appState: {
-      score: scoreState.score,
-      objective,
-      events: routeEvents.events().map((event: { readonly label: string }) => event.label)
-    },
-    assets: {
-      typedAssets: Object.keys(assets).length,
-      missingAssets: []
-    },
-    source: { expectsGame: true }
-  });
-  const diagnostics = app.diagnostics();
+  const eventLabels = routeEvents.events().map((event: { readonly label: string }) => event.label);
+  const evKey = `${scoreState.score}|${objective}|${eventLabels.length}|${eventLabels[eventLabels.length - 1] ?? ""}`;
+  if (evKey !== cachedEvidenceKey || cachedRuntimeEvidence === null) {
+    cachedEvidenceKey = evKey;
+    cachedRuntimeEvidence = app.evidence({
+      input,
+      events: routeEvents,
+      hud: hudBindings,
+      appState: {
+        score: scoreState.score,
+        objective,
+        events: eventLabels
+      },
+      assets: {
+        typedAssets: Object.keys(assets).length,
+        missingAssets: []
+      },
+      source: { expectsGame: true }
+    });
+  }
+  if (cachedDrawCalls === 0 || frameCounter % 15 === 0) {
+    cachedDrawCalls = app.diagnostics().drawCalls;
+  }
   const snapshot: RooftopBucketsEvidence = {
-    // Framed once the renderer is submitting draw calls for the court under
-    // the fixed broadcast rig.
-    framed: diagnostics.drawCalls > 0,
+    framed: cachedDrawCalls > 0,
     state: paused ? "paused-local" : scoreState.state,
     heat: scoreState.heat,
     heatName: heatConfig(scoreState.heat).name,
@@ -553,11 +833,11 @@ function publishEvidence(): void {
       position: [ballState.x, ballState.y, ballState.z]
     },
     lastResult: scoreState.lastShotResult,
-    events: routeEvents.events().map((event: { readonly label: string }) => event.label),
+    events: eventLabels,
     look: { id: LOOK_ID, category: "outdoor" },
-    drawCalls: diagnostics.drawCalls,
+    drawCalls: cachedDrawCalls,
     audio: audioEvidence(),
-    evidence
+    evidence: cachedRuntimeEvidence
   };
   latestSnapshot = snapshot;
   window.__aura3dGameSnapshot = snapshot;
@@ -565,8 +845,6 @@ function publishEvidence(): void {
 
 function audioEvidence(): RooftopBucketsEvidence["audio"] {
   const sound = bucketsGame.sound?.evidence;
-  // Actually-played nodes only: GameAudio keeps suppressed cues out of
-  // playingNodes, so merging its cue ids can never claim a silent play.
   for (const node of sound?.playingNodes ?? []) {
     if (DIRECTION_AUDIO_EVENTS.has(node.cue)) playedAudioEvents.add(node.cue);
   }
@@ -579,3 +857,4 @@ function audioEvidence(): RooftopBucketsEvidence["audio"] {
     unlocked: sound?.unlocked ?? false
   };
 }
+
