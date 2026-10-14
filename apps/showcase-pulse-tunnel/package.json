@@ -3,19 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Aura3D Pulse Tunnel prototype: beat-synced on-rails tunnel runner driven by the 4-stem mixer and a measured audio-clock tolerance with an authored pattern fallback.",
+  "description": "Aura3D Pulse Tunnel: beat-synced on-rails rhythm tunnel runner on the salvaged gameplay core (beat-clock, gates, player, patterns, style, conveyor) + createGame.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "build:music": "node scripts/build-music.mjs",
-    "build:sfx": "node scripts/build-sfx.mjs",
-    "build:models": "/Applications/Blender.app/Contents/MacOS/Blender --background --python scripts/build-encounter-finish-v11.py",
-    "register:audio": "node scripts/register-audio.mjs",
-    "register:models": "node scripts/register-models.mjs",
-    "evidence:performance": "tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
-    "evidence:route-health": "node scripts/write-route-health.mjs"
+    "build:music": "node scripts/build-music.mjs"
   },
   "dependencies": {
     "@aura3d/engine": "workspace:*"
