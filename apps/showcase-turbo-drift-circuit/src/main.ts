@@ -278,7 +278,7 @@ const playerLineDriver = createVehicleDriverAi(driverRoute, {
   lookAheadSeconds: 0.9,
   minLookAhead: Math.max(0.05, racingLine.length * 0.01),
   corneringAcceleration: 12,
-  aggression: "attack",
+  aggression: "aggressive",
   reactionSeconds: 0.05,
   seed: 20260801
 });
@@ -874,7 +874,7 @@ function createHud(): HTMLElement {
   root.style.cssText = [
     "position:absolute",
     "left:16px",
-    "top:16px",
+    "top:56px",
     "z-index:5",
     "min-width:300px",
     "font:600 13px/1.35 Inter, system-ui, sans-serif",
