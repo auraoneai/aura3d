@@ -42,11 +42,19 @@ export default defineArtDirection({
     exposureEV: -0.2
   },
   framing: { rig: "chase", subjectHeightFraction: [0.15, 0.3], fovDeg: [50, 62], mobile: "landscape" },
+  // B5 PORT rebuild: the fresh single-path scene (src/main.ts) renders the
+  // museum interior from the salvaged FloorLayout rects using exactly two
+  // admitted typed assets (aura.assets.json): the crate GLB per floor /
+  // pedestal / case / exit / figure role and the modular wall panel per
+  // wall rect. The trashed route's rigged-character and marble-kit roles
+  // are gone; the GLB-interior candidate binding was deleted with them.
+  // Neither asset is staged in a shared kit yet, so no `kit` is claimed:
+  // S10's kit half stays failing until a human look-dev review accepts a
+  // staged kit file (verdicts are never authored here). Triangle budgets
+  // bound the measured GLBs (crate 264 tris, wall 1,670 tris, untextured).
   assets: [
-    { role: "character", assetKey: "thief-rigged", kit: "K6", maxTriangles: 24000, minTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 2048, animated: { clips: ["idle", "walk", "sneak", "sprint", "pick-up", "holding-both"] } },
-    { role: "character", assetKey: "guard-family", kit: "K6", maxTriangles: 24000, minTriangles: 5000, textureSet: "BC+N+ORM", maxTextureSize: 2048, animated: { clips: ["walk", "run", "search"] } },
-    { role: "world", assetKey: "marble-gallery-kit", kit: "K4", maxTriangles: 180000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "licensed-exhibits", kit: "K2", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 2048 }
+    { role: "prop", assetKey: "quaterniusCubeCrate", maxTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "world", assetKey: "quaterniusWallModular", maxTriangles: 5000, textureSet: "BC+N", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "vision-cones", kind: "ambient" },
@@ -63,10 +71,10 @@ export default defineArtDirection({
   ],
   signatureEffect: "Warm exhibit spot-pools on dark marble, two shadowed guard flashlights sweeping real vision cones, and a facing thief threading between them under glass glints.",
   standIns: [
-    { feature: "k1-gallery-interior HDRI", file: "src/v2/scene/lighting.ts", request: "R-14-13", removeWhen: "gallery interior HDRI admitted" },
-    { feature: "K4 marble kit + licensed exhibits", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "museum kit + exhibits admitted" },
-    { feature: "rigged thief + guard clips", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K6 humanoid rigs admitted" },
-    { feature: "K8 surface footsteps + barks", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K8 set admitted" }
+    { feature: "k1-gallery-interior HDRI (interior-warm look preset stands in)", file: "src/main.ts", request: "R-14-13", removeWhen: "gallery interior HDRI admitted" },
+    { feature: "K4 marble kit + licensed exhibits (typed crate/wall props stand in)", file: "src/main.ts", request: "R-14-07", removeWhen: "museum kit + exhibits admitted" },
+    { feature: "rigged thief + guard clips (tinted crate figures stand in; salvaged clip-name constants wait for matching rigs)", file: "src/main.ts", request: "R-14-07", removeWhen: "K6 humanoid rigs admitted" },
+    { feature: "K8 surface footsteps + barks (no route audio in the fresh scene)", file: "src/main.ts", request: "R-14-09", removeWhen: "K8 set admitted" }
   ],
   criticalCategories: ["animation_quality", "lighting"],
   tiers: {
