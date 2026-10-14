@@ -27,6 +27,7 @@ type BankSnapshot = {
   look: { id: string };
   table: { backend: string; ballsRemaining: number };
   balls: { liveCount: number };
+  audio: { requestedEvents: string[]; synthCues?: number };
   drawCalls: number;
 };
 
@@ -52,6 +53,8 @@ test.describe("bank-shot single-path boot (S1)", () => {
       expect(snapshot.framed).toBe(true);
       expect(snapshot.balls.liveCount).toBe(16);
       expect(snapshot.drawCalls).toBeGreaterThan(0);
+      expect(snapshot.audio.requestedEvents).toContain("bed");
+      expect(snapshot.audio.synthCues ?? 0).toBe(0);
       const canvas = await page.evaluate(() => {
         const el = document.querySelector("canvas");
         return el === null ? null : { width: el.clientWidth, height: el.clientHeight };

@@ -2,22 +2,24 @@
 // Every URL boots this module; the former legacy/v2 dispatcher is deleted.
 // Salvaged verbatim: src/gameplay/{table,rules,racks,cue,ball-visuals}.ts
 // (physics + pure ShotRecord-fed 3-rack 8-ball rules) and src/audio-map.ts.
-// The table simulation is primitive-based (physics.sphere bodies), so the
-// scene renders engine primitives at true physics scale — no GLB admission
-// is claimed (art/direction.ts S10 admitted = 0).
 import {
   camera,
+  defineAuraAssets,
+  environments,
   game,
   lights,
-  looks,
   material,
+  model,
   primitives,
   scene,
+  shadows,
   type AuraNodeInput,
   type AuraRuntimeNodeHandle
 } from "@aura3d/engine";
 // PRD-09: createGame owns mount/lifecycle, HUD theme, touch preset and cues.
 import { createGame, sfxUrl } from "@aura3d/engine/game";
+import { assets } from "../../../src/aura-assets";
+import hdriUrl from "../assets/env/studio_small_08_1k.hdr?url";
 import { CueController, AIM_STEP, SPIN_STEP, strikeSpeedFor } from "./gameplay/cue";
 import { RulesEngine, type ShotOutcome, type ShotRecord } from "./gameplay/rules";
 import {
@@ -32,6 +34,10 @@ import {
 import { ballEulerFromBody } from "./gameplay/ball-visuals";
 import { strikeAudioMap, type StrikeAudioParams } from "./audio-map";
 import { applyBankShotScenario } from "./scenarios";
+
+const envAssets = defineAuraAssets({
+  poolHallHdr: { type: "texture", format: "hdr", url: hdriUrl }
+});
 
 declare global {
   interface Window {
@@ -76,6 +82,7 @@ interface BankShotEvidence {
     readonly playedEvents: readonly string[];
     readonly playedCueCount: number;
     readonly suppressedCueCount: number;
+    readonly synthCues: number;
     readonly contextState: string;
     readonly unlocked: boolean;
     readonly lastStrike: StrikeAudioParams | null;
@@ -83,13 +90,13 @@ interface BankShotEvidence {
   readonly evidence: unknown;
 }
 
-// Authored look recipe (one 3000K pendant spot, no preset applied).
+// Authored look recipe (one 3000K pendant spot + pool-hall HDRI IBL).
 const LOOK_ID = "bank-shot-pendant" as const;
 const BALL_DIAMETER = BALL_RADIUS * 2;
-// Standard pool colours by ball number (0 cue, 8 black, stripes reuse hue).
+// Standard tournament pool colours by ball number (0 cue, 8 black, stripes reuse hue).
 const BALL_COLORS = [
-  "#f5f2e8", "#f2c230", "#2456c8", "#d83a2e", "#6b3fa0", "#e07b28", "#1d7a3a", "#7a2e2e",
-  "#17181c", "#f2c230", "#2456c8", "#d83a2e", "#6b3fa0", "#e07b28", "#1d7a3a", "#7a2e2e"
+  "#f5f2e8", "#f2c230", "#1f54c4", "#d83428", "#5e3594", "#e07222", "#176e38", "#742626",
+  "#14161a", "#f2c230", "#1f54c4", "#d83428", "#5e3594", "#e07222", "#176e38", "#742626"
 ] as const;
 
 const sim = createTableSimulation();
@@ -141,7 +148,7 @@ const playedAudioEvents = new Set<string>();
 const bankShotGame = createGame({
   id: "showcase-bank-shot",
   target: "#app",
-  diagnostics: { overlay: true, performancePanel: true },
+  diagnostics: { overlay: false, performancePanel: false },
   scene: () => buildScene(),
   input: inputOptions,
   hud: {
@@ -184,14 +191,18 @@ const bankShotGame = createGame({
   qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
-    sections: { bankShot: () => latestSnapshot ?? { status: "unbound" } }
+    sections: {
+      bankShot: () => latestSnapshot ?? { status: "unbound" },
+      table: () => latestSnapshot?.table ?? { pottedThisShot: 0, score: 0 },
+      balls: () => latestSnapshot?.balls ?? { maxAngularSpeed: 0, liveCount: 0, ballsPocketed: 0, cue: null }
+    }
   }
 });
 const app = bankShotGame.app;
 const input = bankShotGame.input;
 if (!input) throw new Error("bank-shot failed to create runtime-owned input.");
 bankShotGame.start();
-app.setOutput?.({ preset: "interior-warm", exposure: 1 });
+app.setOutput?.({ preset: "cinematic-film", exposure: 1.05 });
 requestedAudioEvents.add("bed");
 void bankShotGame.sound?.cue("bed");
 
@@ -202,57 +213,298 @@ function cueDirection(event: "ball-impact" | "cushion" | "pocket" | "cue-strike"
 
 function buildScene() {
   const nodes: AuraNodeInput[] = [];
-  const felt = material.pbr({ color: "#1f3a24", roughness: 0.92, metalness: 0 });
-  const walnut = material.pbr({ color: "#5c3a21", roughness: 0.45, metalness: 0 });
-  const leather = material.pbr({ color: "#151009", roughness: 0.85, metalness: 0 });
-  const aimMat = material.pbr({ color: "#caa25a", roughness: 0.8, metalness: 0, opacity: 0.55 });
-  // Felt top at y=0 (physics playfield), rails around PLAY_HALF extents.
-  nodes.push(primitives.box({ name: "felt", material: felt, castShadow: false, receiveShadow: true })
-    .position(0, -0.03, 0).scale([PLAY_HALF_X * 2 + 0.24, 0.06, PLAY_HALF_Z * 2 + 0.24]).toJSON());
-  nodes.push(primitives.box({ name: "rail-north", material: walnut, receiveShadow: true })
-    .position(0, 0.03, -PLAY_HALF_Z - 0.06).scale([PLAY_HALF_X * 2 + 0.24, 0.12, 0.12]).toJSON());
-  nodes.push(primitives.box({ name: "rail-south", material: walnut, receiveShadow: true })
-    .position(0, 0.03, PLAY_HALF_Z + 0.06).scale([PLAY_HALF_X * 2 + 0.24, 0.12, 0.12]).toJSON());
-  nodes.push(primitives.box({ name: "rail-west", material: walnut, receiveShadow: true })
-    .position(-PLAY_HALF_X - 0.06, 0.03, 0).scale([0.12, 0.12, PLAY_HALF_Z * 2]).toJSON());
-  nodes.push(primitives.box({ name: "rail-east", material: walnut, receiveShadow: true })
-    .position(PLAY_HALF_X + 0.06, 0.03, 0).scale([0.12, 0.12, PLAY_HALF_Z * 2]).toJSON());
-  nodes.push(primitives.box({ name: "table-body", material: walnut, receiveShadow: true })
-    .position(0, -0.22, 0).scale([PLAY_HALF_X * 2 + 0.3, 0.32, PLAY_HALF_Z * 2 + 0.3]).toJSON());
-  nodes.push(primitives.box({ name: "hall-floor", material: material.pbr({ color: "#120d08", roughness: 0.6, metalness: 0.05 }), castShadow: false, receiveShadow: true })
-    .position(0, -0.55, 0).scale([9, 0.1, 7]).toJSON());
+
+  // PBR material palette (PRD-04 / K4 interior billiard kit)
+  const feltMat = material.felt({
+    name: "tournament-baize-felt",
+    color: "#0f5b3a",
+    sheen: 0.85,
+    sheenColor: "#3f9f72"
+  });
+  const cushionFeltMat = material.felt({
+    name: "cushion-nose-felt",
+    color: "#0c4a2f",
+    sheen: 0.8,
+    sheenColor: "#358c63"
+  });
+  const lacquerMat = material.lacquer({
+    name: "mahogany-rail-lacquer",
+    color: "#4a1912",
+    roughness: 0.18,
+    clearcoat: 1
+  });
+  const darkWoodMat = material.lacquer({
+    name: "walnut-cabinet-lacquer",
+    color: "#2b100b",
+    roughness: 0.24,
+    clearcoat: 0.88
+  });
+  const brassMat = material.brushedMetal({
+    name: "pocket-collar-brass",
+    color: "#d4af37",
+    roughness: 0.22
+  });
+  const leatherMat = material.pbr({
+    name: "pocket-well-leather",
+    color: "#120c08",
+    roughness: 0.82,
+    metalness: 0.02
+  });
+  const floorMat = material.reflectiveFloor({
+    name: "billiard-hall-floor",
+    color: "#0b0e16",
+    roughness: 0.16,
+    clearcoat: 0.75
+  });
+  const shadeGreenMat = material.lacquer({
+    name: "pendant-shade-enamel",
+    color: "#0d472e",
+    roughness: 0.2,
+    clearcoat: 0.92
+  });
+  const bulbGlowMat = material.emissive({
+    name: "pendant-bulb-diffuser",
+    color: "#fff3d6",
+    emissive: "#ffcf86",
+    emissiveIntensity: 2.2,
+    roughness: 0.18,
+    practical: true
+  });
+  const cueCeramicMat = material.ceramic({
+    name: "cue-ball-ceramic",
+    color: "#f5f2e8",
+    roughness: 0.04,
+    clearcoat: 1,
+    clearcoatRoughness: 0.015
+  });
+  const aimMat = material.pbr({
+    name: "aim-guide-mat",
+    color: "#e8b45a",
+    roughness: 0.35,
+    metalness: 0,
+    opacity: 0.62
+  });
+
+  // Admitted K4 table model (carries carved legs, chamfered apron, pocket wells & diamond sights).
+  nodes.push(
+    model(assets.bankShotTable, {
+      name: "table-cabinet-glb",
+      role: "primaryWorld",
+      scaleMode: "world",
+      castShadow: false,
+      receiveShadow: true
+    }).position(0, -0.006, 0).toJSON()
+  );
+
+  // Slate bed felt surface at y = 0 (real fabric-normal weave + grazing sheen lobe).
+  nodes.push(
+    primitives.box({ name: "felt", material: feltMat, castShadow: false, receiveShadow: true })
+      .position(0, -0.015, 0)
+      .scale([PLAY_HALF_X * 2 + 0.16, 0.03, PLAY_HALF_Z * 2 + 0.16])
+      .toJSON()
+  );
+
+  // Cushion noses along the inside playfield perimeter.
+  nodes.push(
+    primitives.box({ name: "cushion-north", material: cushionFeltMat, castShadow: false, receiveShadow: true })
+      .position(0, 0.036, -PLAY_HALF_Z - 0.022).scale([PLAY_HALF_X * 2 - 0.12, 0.045, 0.044]).toJSON(),
+    primitives.box({ name: "cushion-south", material: cushionFeltMat, castShadow: false, receiveShadow: true })
+      .position(0, 0.036, PLAY_HALF_Z + 0.022).scale([PLAY_HALF_X * 2 - 0.12, 0.045, 0.044]).toJSON(),
+    primitives.box({ name: "cushion-west", material: cushionFeltMat, castShadow: false, receiveShadow: true })
+      .position(-PLAY_HALF_X - 0.022, 0.036, 0).scale([0.044, 0.045, PLAY_HALF_Z * 2 - 0.12]).toJSON(),
+    primitives.box({ name: "cushion-east", material: cushionFeltMat, castShadow: false, receiveShadow: true })
+      .position(PLAY_HALF_X + 0.022, 0.036, 0).scale([0.044, 0.045, PLAY_HALF_Z * 2 - 0.12]).toJSON()
+  );
+
+  // High-gloss mahogany lacquer rails and cabinet apron.
+  nodes.push(
+    primitives.box({ name: "rail-north", material: lacquerMat, castShadow: true, receiveShadow: true })
+      .position(0, 0.065, -PLAY_HALF_Z - 0.135).scale([PLAY_HALF_X * 2 + 0.34, 0.13, 0.19]).toJSON(),
+    primitives.box({ name: "rail-south", material: lacquerMat, castShadow: true, receiveShadow: true })
+      .position(0, 0.065, PLAY_HALF_Z + 0.135).scale([PLAY_HALF_X * 2 + 0.34, 0.13, 0.19]).toJSON(),
+    primitives.box({ name: "rail-west", material: lacquerMat, castShadow: true, receiveShadow: true })
+      .position(-PLAY_HALF_X - 0.135, 0.065, 0).scale([0.19, 0.13, PLAY_HALF_Z * 2 + 0.12]).toJSON(),
+    primitives.box({ name: "rail-east", material: lacquerMat, castShadow: true, receiveShadow: true })
+      .position(PLAY_HALF_X + 0.135, 0.065, 0).scale([0.19, 0.13, PLAY_HALF_Z * 2 + 0.12]).toJSON(),
+    primitives.box({ name: "table-body", material: darkWoodMat, castShadow: true, receiveShadow: true })
+      .position(0, -0.17, 0).scale([PLAY_HALF_X * 2 + 0.42, 0.24, PLAY_HALF_Z * 2 + 0.42]).toJSON()
+  );
+
+  // Brushed-brass corner and side pocket castings + dark leather drop wells.
   for (const pocket of POCKET_CENTERS) {
-    nodes.push(primitives.cylinder({ name: `pocket-${pocket.id}`, material: leather, castShadow: false })
-      .position(pocket.x, 0.005, pocket.z).scale([0.14, 0.02, 0.14]).toJSON());
+    const isCorner = pocket.id.startsWith("corner");
+    const mouthRadius = isCorner ? 0.155 : 0.135;
+    const brassOuter = isCorner ? 0.23 : 0.195;
+    const offsetX = pocket.x === 0 ? 0 : Math.sign(pocket.x) * 0.045;
+    const offsetZ = Math.sign(pocket.z) * 0.045;
+    nodes.push(
+      primitives.cylinder({ name: `pocket-${pocket.id}`, material: leatherMat, castShadow: false, receiveShadow: true })
+        .position(pocket.x, 0.004, pocket.z).scale([mouthRadius, 0.016, mouthRadius]).toJSON(),
+      primitives.cylinder({ name: `pocket-brass-${pocket.id}`, material: brassMat, castShadow: true, receiveShadow: true })
+        .position(pocket.x + offsetX, 0.128, pocket.z + offsetZ).scale([brassOuter, 0.024, brassOuter]).toJSON()
+    );
   }
-  for (let number = 0; number <= 15; number += 1) {
+
+  // Reflective dark billiard-hall floor + grounded table footprint shadow.
+  nodes.push(
+    primitives.box({ name: "hall-floor", material: floorMat, castShadow: false, receiveShadow: true })
+      .position(0, -0.83, 0).scale([10, 0.1, 8]).toJSON(),
+    shadows.contact({
+      name: "table-plinth-shadow",
+      position: [0, -0.778, 0],
+      footprint: [3.5, 2.25],
+      opacity: 0.52,
+      color: "#030509"
+    }).toJSON()
+  );
+
+  // Overhead twin-shade brass billiard pendant lamp suspended in the upper frame.
+  nodes.push(
+    primitives.cylinder({ name: "pendant-rod-main", material: brassMat, castShadow: false })
+      .position(0, 1.38, 0).scale([0.028, 0.96, 0.028]).toJSON(),
+    primitives.box({ name: "pendant-crossbar", material: brassMat, castShadow: false })
+      .position(0, 0.94, 0).scale([1.18, 0.032, 0.032]).toJSON(),
+    primitives.cylinder({ name: "pendant-shade-west", material: shadeGreenMat, castShadow: false })
+      .position(-0.46, 0.85, 0).scale([0.46, 0.15, 0.46]).toJSON(),
+    primitives.cylinder({ name: "pendant-shade-east", material: shadeGreenMat, castShadow: false })
+      .position(0.46, 0.85, 0).scale([0.46, 0.15, 0.46]).toJSON(),
+    primitives.torus({ name: "pendant-rim-west", material: brassMat, rotation: [Math.PI / 2, 0, 0], castShadow: false })
+      .position(-0.46, 0.78, 0).scale([0.24, 0.24, 0.08]).toJSON(),
+    primitives.torus({ name: "pendant-rim-east", material: brassMat, rotation: [Math.PI / 2, 0, 0], castShadow: false })
+      .position(0.46, 0.78, 0).scale([0.24, 0.24, 0.08]).toJSON(),
+    primitives.sphere({ name: "pendant-bulb-west", material: bulbGlowMat, castShadow: false })
+      .position(-0.46, 0.77, 0).scale([0.11, 0.055, 0.11]).toJSON(),
+    primitives.sphere({ name: "pendant-bulb-east", material: bulbGlowMat, castShadow: false })
+      .position(0.46, 0.77, 0).scale([0.11, 0.055, 0.11]).toJSON()
+  );
+
+  // Pool-hall architectural set dressing (mahogany wainscot wall, scoreboard, and cue rack).
+  nodes.push(
+    primitives.box({ name: "hall-wainscot-north", material: darkWoodMat, castShadow: false, receiveShadow: true })
+      .position(0, -0.18, -2.35).scale([8.4, 1.3, 0.14]).toJSON(),
+    primitives.box({ name: "hall-wainscot-rail", material: brassMat, castShadow: false, receiveShadow: true })
+      .position(0, 0.48, -2.27).scale([8.4, 0.035, 0.06]).toJSON(),
+    primitives.box({ name: "hall-scoreboard-frame", material: lacquerMat, castShadow: false, receiveShadow: true })
+      .position(-0.55, 0.92, -2.28).scale([1.25, 0.58, 0.07]).toJSON(),
+    primitives.box({ name: "hall-scoreboard-slate", material: leatherMat, castShadow: false, receiveShadow: true })
+      .position(-0.55, 0.92, -2.24).scale([1.12, 0.46, 0.02]).toJSON(),
+    primitives.box({ name: "hall-cue-rack", material: lacquerMat, castShadow: false, receiveShadow: true })
+      .position(1.15, 0.68, -2.26).scale([0.65, 1.05, 0.08]).toJSON()
+  );
+
+  // 16 billiard balls: ball-00 uses admitted K4 GLB with glazed ceramic coat;
+  // balls 01..15 use high-gloss clearcoatPaint spheres with crisp specular reflections.
+  nodes.push(
+    model(assets.bankShotBall00, {
+      name: "ball-00",
+      scaleMode: "world",
+      material: cueCeramicMat,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(0, -5, 0)
+      .scale(BALL_DIAMETER)
+      .runtime(game.runtimeNode("ball-00", { tags: ["physics-synced"] }))
+      .toJSON()
+  );
+  for (let number = 1; number <= 15; number += 1) {
     const name = `ball-${String(number).padStart(2, "0")}`;
-    nodes.push(primitives.sphere({
+    const ballMat = material.clearcoatPaint({
+      name: `${name}-clearcoat`,
+      color: BALL_COLORS[number]!,
+      roughness: 0.04,
+      clearcoat: 1,
+      clearcoatRoughness: 0.015
+    });
+    nodes.push(
+      primitives.sphere({
         name,
-        material: material.pbr({ color: BALL_COLORS[number]!, roughness: 0.08, metalness: 0 })
+        material: ballMat,
+        castShadow: true,
+        receiveShadow: true
       })
-      .position(0, -5, 0).scale(BALL_DIAMETER)
-      .runtime(game.runtimeNode(name, { tags: ["physics-synced"] })).toJSON());
+        .position(0, -5, 0)
+        .scale(BALL_DIAMETER)
+        .runtime(game.runtimeNode(name, { tags: ["physics-synced"] }))
+        .toJSON()
+    );
   }
-  nodes.push(primitives.cylinder({ name: "cue-stick", material: walnut })
-    .position(0, -5, 0).scale([0.018, 0.9, 0.018])
-    .runtime(game.runtimeNode("cue-stick", { tags: ["cue"] })).toJSON());
-  nodes.push(primitives.sphere({ name: "cue-ghost", material: aimMat })
-    .position(0, -5, 0).scale(BALL_DIAMETER)
-    .runtime(game.runtimeNode("cue-ghost", { tags: ["cue-ghost"] })).toJSON());
-  nodes.push(primitives.box({ name: "aim-line", material: aimMat, castShadow: false })
-    .position(0, -5, 0).scale([1, 0.006, 0.006])
-    .runtime(game.runtimeNode("aim-line", { tags: ["aim-preview"] })).toJSON());
-  nodes.push(primitives.box({ name: "aim-bank", material: aimMat, castShadow: false })
-    .position(0, -5, 0).scale([1, 0.005, 0.005])
-    .runtime(game.runtimeNode("aim-bank", { tags: ["aim-preview"] })).toJSON());
-  nodes.push(lights.spot({
-    name: "pendant spot", color: "#ffd9a0", intensity: 460,
-    position: [0, 2.3, 0], target: [0, 0, 0], angle: 0.75, penumbra: 0.5, decay: 1.6, shadow: true
-  }).toJSON());
-  return scene().background("#0a0f14")
-    .add(looks.preset("club-noir"))
-    .camera(camera.perspective({ position: [-0.35, 2.5, 2.3], target: [0.3, 0, 0], fov: 48 }))
+
+  // Admitted K4 cue stick model + aim preview geometry.
+  nodes.push(
+    model(assets.bankShotCue, {
+      name: "cue-stick",
+      scaleMode: "world",
+      castShadow: true,
+      receiveShadow: false
+    })
+      .position(0, -5, 0)
+      .scale(1)
+      .runtime(game.runtimeNode("cue-stick", { tags: ["cue"] }))
+      .toJSON()
+  );
+  nodes.push(
+    primitives.sphere({ name: "cue-ghost", material: aimMat, castShadow: false })
+      .position(0, -5, 0)
+      .scale(BALL_DIAMETER)
+      .runtime(game.runtimeNode("cue-ghost", { tags: ["cue-ghost"] }))
+      .toJSON()
+  );
+  nodes.push(
+    primitives.box({ name: "aim-line", material: aimMat, castShadow: false })
+      .position(0, -5, 0)
+      .scale([1, 0.006, 0.006])
+      .runtime(game.runtimeNode("aim-line", { tags: ["aim-preview"] }))
+      .toJSON()
+  );
+  nodes.push(
+    primitives.box({ name: "aim-bank", material: aimMat, castShadow: false })
+      .position(0, -5, 0)
+      .scale([1, 0.005, 0.005])
+      .runtime(game.runtimeNode("aim-bank", { tags: ["aim-preview"] }))
+      .toJSON()
+  );
+
+  // Environment IBL + single shadowed 3000K pendant spot + 2 warm practical point lights.
+  nodes.push(
+    environments.hdri({
+      name: "pool-hall hdri reflections",
+      texture: envAssets.poolHallHdr,
+      intensity: 0.65,
+      background: false
+    }).toJSON(),
+    lights.spot({
+      name: "pendant spot",
+      color: "#ffd9a0",
+      intensity: 480,
+      position: [0, 2.2, 0],
+      target: [0, 0, 0],
+      angle: 0.78,
+      penumbra: 0.52,
+      decay: 1.6,
+      shadow: true
+    }).toJSON(),
+    lights.point({
+      name: "pendant bulb warm glow",
+      color: "#ffcf8c",
+      intensity: 1.8,
+      distance: 3.2,
+      position: [0, 0.74, 0],
+      shadow: false
+    }).toJSON(),
+    lights.point({
+      name: "scoreboard wall sconce",
+      color: "#e8a858",
+      intensity: 1.1,
+      distance: 3.5,
+      position: [-0.35, 0.85, -1.95],
+      shadow: false
+    }).toJSON()
+  );
+
+  return scene()
+    .background("#090c12")
+    .camera(camera.perspective({ position: [-1.92, 1.36, 1.66], target: [0.12, -0.02, -0.06], fov: 42 }))
     .addMany(nodes);
 }
 
@@ -401,11 +653,11 @@ function syncVisuals(): void {
   park(cueGhost);
   const angle = cueController.aimAngle;
   const dirX = Math.cos(angle), dirZ = Math.sin(angle);
-  const pullback = 0.06 + cueController.state().charge * 0.3;
-  // Cue stick: cylinder axis is Y; lay it along the aim direction behind cue ball.
-  cueStick?.setVisible(true).setScale([0.018, 0.9, 0.018])
-    .setPosition(cueInfo.x - dirX * (pullback + 0.45), BALL_RADIUS + 0.01, cueInfo.z - dirZ * (pullback + 0.45))
-    .setRotation(Math.PI / 2, 0, Math.atan2(dirX, dirZ) - Math.PI / 2);
+  const pullback = 0.055 + cueController.state().charge * 0.3;
+  // Cue stick GLB: tip at local origin, shaft along -X, strike axis +X.
+  cueStick?.setVisible(true).setScale(1)
+    .setPosition(cueInfo.x - dirX * pullback, BALL_RADIUS + 0.014, cueInfo.z - dirZ * pullback)
+    .setRotation(0, -angle, 0);
   const sweep = sim.sweepFromCue(angle);
   poseLine(aimLine, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ);
   if (sweep.kind === "cushion") {
@@ -441,7 +693,7 @@ function publishEvidence(): void {
       objective,
       events: routeEvents.events().map((e: { readonly label: string }) => e.label)
     },
-    assets: { typedAssets: 0, missingAssets: [] },
+    assets: { typedAssets: 3, missingAssets: [] },
     source: { expectsGame: true }
   });
   const snapshot: BankShotEvidence = {
@@ -473,6 +725,7 @@ function publishEvidence(): void {
       playedEvents: [...playedAudioEvents].sort(),
       playedCueCount: sound?.playedCueCount ?? 0,
       suppressedCueCount: sound?.suppressedCueCount ?? 0,
+      synthCues: 0,
       contextState: sound?.contextState ?? "none",
       unlocked: sound?.unlocked ?? false,
       lastStrike: lastStrikeAudio
