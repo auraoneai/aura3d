@@ -549,6 +549,7 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
       })
     );
 
+  const wellRingTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: number }[] = [];
   for (const body of WELL_BODIES) {
     const [bx, bz] = body.position;
     if (body.id === "sol") {
@@ -574,6 +575,18 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
           .position(bx, PLAY_PLANE_Y, bz)
           .rotate(Math.PI / 2, 0, 0)
           .scale(body.visualRadius * 1.28)
+      );
+      builder.add(
+        primitives
+          .torus({
+            name: "well-ring-sol",
+            material: mats.hazardRing,
+            castShadow: false,
+            receiveShadow: false
+          })
+          .position(bx, PLAY_PLANE_Y - 0.04, bz)
+          .rotate(Math.PI / 2, 0, 0)
+          .scale(body.wellRadius * 0.45)
       );
     } else {
       const planetAsset = PLANET_ASSET_BY_BODY_ID[body.id as keyof typeof PLANET_ASSET_BY_BODY_ID];
@@ -603,36 +616,27 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
             .scale(body.visualRadius * 1.12)
         );
       }
+      wellRingTransforms.push({
+        position: [bx, PLAY_PLANE_Y - 0.04, bz],
+        rotation: [Math.PI / 2, 0, 0],
+        scale: body.wellRadius * 0.45
+      });
     }
-
-    builder.add(
-      primitives
-        .torus({
-          name: `well-ring-${body.id}`,
-          material: body.id === "sol" ? mats.hazardRing : mats.wellRing,
-          castShadow: false,
-          receiveShadow: false
-        })
-        .position(bx, PLAY_PLANE_Y - 0.04, bz)
-        .rotate(Math.PI / 2, 0, 0)
-        .scale(body.wellRadius * 0.45)
-    );
-
-    builder.add(
-      labels
-        .billboard(body.name, {
-          name: `label-body-${body.id}`,
-          color: BODY_LABEL_COLORS[body.id] ?? "#ffd166"
-        })
-        .position(bx, PLAY_PLANE_Y + body.visualRadius + 0.18, bz)
-    );
   }
 
+  builder.add(
+    instances.torus({
+      name: "well-rings-instanced",
+      transforms: wellRingTransforms,
+      material: mats.wellRing
+    })
+  );
+
+  const idleStationTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: number }[] = [];
   for (const station of STATIONS) {
     const [sx, sz] = stationPosition(station);
     const isOrigin = station.id === contract.originStationId;
     const isDest = station.id === contract.destinationStationId;
-    const ringMat = isDest ? mats.destStationRing : isOrigin ? mats.originStationRing : mats.idleStationRing;
     const stationAngle = Math.atan2(station.offset[1], station.offset[0]);
 
     if (isOrigin) {
@@ -647,8 +651,27 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
           .position(sx, PLAY_PLANE_Y, sz)
           .rotate(0, stationAngle, 0)
       );
-    }
-    if (isDest) {
+      builder.add(
+        primitives
+          .torus({
+            name: `station-ring-${station.id}`,
+            material: mats.originStationRing,
+            castShadow: false,
+            receiveShadow: false
+          })
+          .position(sx, PLAY_PLANE_Y - 0.02, sz)
+          .rotate(Math.PI / 2, 0, 0)
+          .scale(DOCK_SENSOR_RADIUS * 0.62)
+      );
+      builder.add(
+        labels
+          .billboard(station.name, {
+            name: `label-station-${station.id}`,
+            color: "#5eead4"
+          })
+          .position(sx, PLAY_PLANE_Y + 0.32, sz)
+      );
+    } else if (isDest) {
       builder.add(
         model(assets.gravityPostDockBeacon, {
           name: `station-beacon-${station.id}`,
@@ -658,28 +681,42 @@ function buildGravityWorld(state: GravityPostState): AuraSceneBuilder {
           receiveShadow: false
         }).position(sx + 0.14, PLAY_PLANE_Y + 0.12, sz - 0.12)
       );
+      builder.add(
+        primitives
+          .torus({
+            name: `station-ring-${station.id}`,
+            material: mats.destStationRing,
+            castShadow: false,
+            receiveShadow: false
+          })
+          .position(sx, PLAY_PLANE_Y - 0.02, sz)
+          .rotate(Math.PI / 2, 0, 0)
+          .scale(DOCK_SENSOR_RADIUS * 0.62)
+      );
+      builder.add(
+        labels
+          .billboard(station.name, {
+            name: `label-station-${station.id}`,
+            color: "#59d7ff"
+          })
+          .position(sx, PLAY_PLANE_Y + 0.32, sz)
+      );
+    } else {
+      idleStationTransforms.push({
+        position: [sx, PLAY_PLANE_Y - 0.02, sz],
+        rotation: [Math.PI / 2, 0, 0],
+        scale: DOCK_SENSOR_RADIUS * 0.62
+      });
     }
-    builder.add(
-      primitives
-        .torus({
-          name: `station-ring-${station.id}`,
-          material: ringMat,
-          castShadow: false,
-          receiveShadow: false
-        })
-        .position(sx, PLAY_PLANE_Y - 0.02, sz)
-        .rotate(Math.PI / 2, 0, 0)
-        .scale(DOCK_SENSOR_RADIUS * 0.62)
-    );
-    builder.add(
-      labels
-        .billboard(station.name, {
-          name: `label-station-${station.id}`,
-          color: isDest ? "#59d7ff" : isOrigin ? "#5eead4" : "#cbd5e1"
-        })
-        .position(sx, PLAY_PLANE_Y + 0.32, sz)
-    );
   }
+
+  builder.add(
+    instances.torus({
+      name: "idle-station-rings",
+      transforms: idleStationTransforms,
+      material: mats.idleStationRing
+    })
+  );
 
   const [px, pz] = state.pod.kinematic.position;
   builder.add(
@@ -863,9 +900,15 @@ function refreshGravityPrediction(): void {
   }).samples;
 }
 
+let lastDivergencePathLen = -1;
+let warpAudioActive = false;
+
 function updateLiveDivergence(): void {
-  if (state.predictionAtLaunch.length === 0 || state.actualPath.length <= 1) return;
-  const liveSamples: TrajectorySample[] = state.actualPath.slice(1).map((position) => ({
+  const pathLen = state.actualPath.length;
+  if (state.predictionAtLaunch.length === 0 || pathLen <= 1) return;
+  if (pathLen === lastDivergencePathLen) return;
+  lastDivergencePathLen = pathLen;
+  const liveSamples: TrajectorySample[] = state.actualPath.slice(1, 65).map((position) => ({
     position,
     speed: 0
   }));
@@ -881,6 +924,7 @@ function onStationDockTrigger(stationId: string): void {
   const outcome = evaluateCapture(state.pod, contract, stationId);
   if (outcome.docked) {
     state.warping = false;
+    warpAudioActive = false;
     state.dockFlashTimer = 0.85;
     state.dockEvents.push(`${stationId}:capture`);
     const breakdown = scoreContract({
@@ -910,17 +954,20 @@ function stepSimulation(dt: number): void {
   }
   if (state.paused || state.shiftOver || state.campaignComplete) {
     state.warping = false;
+    warpAudioActive = false;
     return;
   }
 
   const contract = currentContract(state);
   if (state.pod.state === "lost") {
     state.warping = false;
+    warpAudioActive = false;
     if (state.autoRetryTimer > 0) {
       state.autoRetryTimer = Math.max(0, state.autoRetryTimer - dt);
       if (state.autoRetryTimer === 0 && !state.shiftOver) {
         resetPodForContract(state.pod, contract);
         state.actualPath = [[state.pod.kinematic.position[0], state.pod.kinematic.position[1]]];
+        lastDivergencePathLen = -1;
       }
     }
     return;
@@ -928,11 +975,15 @@ function stepSimulation(dt: number): void {
 
   if (state.pod.state !== "coasting") {
     state.warping = false;
+    warpAudioActive = false;
     return;
   }
 
-  if (state.warping) {
+  if (state.warping && !warpAudioActive) {
+    warpAudioActive = true;
     fireAudioCue("warp");
+  } else if (!state.warping) {
+    warpAudioActive = false;
   }
 
   // Step coasting in FIXED_DT increments while checking dock proximity at every
@@ -951,7 +1002,7 @@ function stepSimulation(dt: number): void {
       warpActive: state.warping
     });
 
-    if (state.actualPath.length < 4000) {
+    if (state.actualPath.length < 96) {
       state.actualPath.push([state.pod.kinematic.position[0], state.pod.kinematic.position[1]]);
     }
 
@@ -966,6 +1017,7 @@ function stepSimulation(dt: number): void {
         ev.type === "stranded"
       ) {
         state.warping = false;
+        warpAudioActive = false;
         state.failedContracts += 1;
         state.autoRetryTimer = 0.6;
         if (state.failedContracts >= SHIFT_FAIL_LIMIT) {
@@ -1004,6 +1056,7 @@ function advanceToNextContract(): void {
   state.predictionSamples = [];
   state.predictionAtLaunch = [];
   state.actualPath = [[state.pod.kinematic.position[0], state.pod.kinematic.position[1]]];
+  lastDivergencePathLen = -1;
 }
 
 function retryOrResetCampaign(): void {
@@ -1023,7 +1076,9 @@ function retryOrResetCampaign(): void {
   state.predictionSamples = [];
   state.predictionAtLaunch = [];
   state.actualPath = [[state.pod.kinematic.position[0], state.pod.kinematic.position[1]]];
+  lastDivergencePathLen = -1;
   state.warping = false;
+  warpAudioActive = false;
   state.paused = false;
 }
 
@@ -1047,6 +1102,7 @@ function launchPodWithDragVector(dx: number, dy: number, source: "drag" | "keybo
   }).samples;
   state.predictionSamples = [];
   state.actualPath = [[state.pod.kinematic.position[0], state.pod.kinematic.position[1]]];
+  lastDivergencePathLen = -1;
   state.predictionComparedSamples = 0;
   state.predictionMaxDivergence = 0;
   state.predictionWithinTolerance = true;
@@ -1101,21 +1157,24 @@ function syncGravityWorld(): void {
   const thrusterNode = handle("pod-thruster-cone");
   if (thrusterNode) {
     const active = state.pod.state === "coasting" && (state.warping || state.pod.correctionsUsed > 0);
-    const backX = px - Math.cos(yaw) * 0.22;
-    const backZ = pz - Math.sin(yaw) * 0.22;
-    thrusterNode.setPosition(backX, PLAY_PLANE_Y + 0.04, backZ);
-    thrusterNode.setRotation(0, -yaw, Math.PI / 2);
-    thrusterNode.setScale(active ? [0.055, 0.18, 0.055] : 0.001);
+    thrusterNode.setVisible(active);
+    if (active) {
+      const backX = px - Math.cos(yaw) * 0.22;
+      const backZ = pz - Math.sin(yaw) * 0.22;
+      thrusterNode.setPosition(backX, PLAY_PLANE_Y + 0.04, backZ);
+      thrusterNode.setRotation(0, -yaw, Math.PI / 2);
+      thrusterNode.setScale([0.055, 0.18, 0.055]);
+    }
   }
 
   const flashNode = handle("dock-flash-ring");
   if (flashNode) {
-    if (state.dockFlashTimer > 0) {
+    const showFlash = state.dockFlashTimer > 0;
+    flashNode.setVisible(showFlash);
+    if (showFlash) {
       const t = 1 - state.dockFlashTimer / 0.85;
       flashNode.setPosition(px, PLAY_PLANE_Y + 0.03, pz);
       flashNode.setScale(0.34 * (0.8 + t * 1.4));
-    } else {
-      flashNode.setScale(0.001);
     }
   }
 
@@ -1127,12 +1186,11 @@ function syncGravityWorld(): void {
       const node = handle(`gp-pred-${i}`);
       if (!node) continue;
       const sample = beads[i];
-      if (sample && state.pod.state === "ready" && state.aimDragging) {
+      const show = Boolean(sample && state.pod.state === "ready" && state.aimDragging);
+      node.setVisible(show);
+      if (show && sample) {
         node.setPosition(sample.x, PLAY_PLANE_Y + 0.03, sample.z);
         node.setScale(0.032);
-      } else {
-        node.setPosition(px, PLAY_PLANE_Y - 2, pz);
-        node.setScale(0.001);
       }
     }
   }
@@ -1146,26 +1204,16 @@ function syncGravityWorld(): void {
       if (!node) continue;
       const sampleIdx = i * stride;
       const pt = sampleIdx < pathLen ? state.actualPath[sampleIdx] : undefined;
-      if (pt && pathLen > 1) {
+      const show = Boolean(pt && pathLen > 1);
+      node.setVisible(show);
+      if (show && pt) {
         node.setPosition(pt[0], PLAY_PLANE_Y + 0.015, pt[1]);
         node.setScale(0.025);
-      } else {
-        node.setPosition(px, PLAY_PLANE_Y - 2, pz);
-        node.setScale(0.001);
       }
     }
   }
 
-  const camPose = computeGravityCameraPose(state);
-  try {
-    app.camera.setPose({
-      position: camPose.position,
-      target: camPose.target,
-      fov: camPose.fov
-    });
-  } catch {
-    // Camera controller not yet settled on initial mount frame.
-  }
+  computeGravityCameraPose(state);
 }
 
 // ----------------------------------------------------------------- input -----
