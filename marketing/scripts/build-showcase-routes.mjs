@@ -160,6 +160,14 @@ export default {
   resolve: {
     alias: [
       { find: /^@aura3d\\/engine$/, replacement: ${JSON.stringify(engineSourceEntry)} },
+      { find: "@aura3d/engine/game/capture", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "capture", "index.ts"))} },
+      { find: "@aura3d/engine/game/art", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "art", "index.ts"))} },
+      { find: "@aura3d/engine/game/util", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "util", "index.ts"))} },
+      { find: "@aura3d/engine/game", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "index.ts"))} },
+      { find: "@aura3d/game/capture", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "capture", "index.ts"))} },
+      { find: "@aura3d/game/art", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "art", "index.ts"))} },
+      { find: "@aura3d/game/util", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "util", "index.ts"))} },
+      { find: "@aura3d/game", replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "index.ts"))} },
       ...rootAliases.filter((entry) => entry.find !== "@aura3d/engine")
     ],
     dedupe: ["@aura3d/engine"]
