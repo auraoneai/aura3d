@@ -37,16 +37,20 @@ export default defineArtDirection({
   lighting: {
     key: { type: "directional", colorTemperatureK: 5800, shadow: true },
     fill: "ibl",
-    practicals: 1,
+    practicals: 2,
     environment: { hdri: "k1-deep-space", background: "hdri" },
     exposureEV: 0.0
   },
   framing: { rig: "orbit", subjectHeightFraction: [0.5, 0.9], fovDeg: [40, 60], mobile: "landscape" },
   assets: [
-    { role: "world", assetKey: "lit-planets", kit: "K5", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
-    { role: "vehicle", assetKey: "courier-skiff", kit: "K7", maxTriangles: 12000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "dock-gate", maxTriangles: 24000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "deep-space-skybox", kit: "K1", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 2048 }
+    { role: "vehicle", assetKey: "gravityPostCourierSkiff", kit: "K7", maxTriangles: 12000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "gravityPostDockGate", kit: "K5", maxTriangles: 24000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "gravityPostDockBeacon", kit: "K5", maxTriangles: 24000, minTriangles: 1000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "world", assetKey: "gravityPlanetMercury", kit: "K7", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "world", assetKey: "gravityPlanetEarth", kit: "K7", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "world", assetKey: "gravityPlanetNeptune", kit: "K7", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "world", assetKey: "gravityPlanetMars", kit: "K7", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "world", assetKey: "gravityPlanetJupiter", kit: "K7", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 }
   ],
   vfx: [
     { event: "orbit-guide", kind: "trail" },
@@ -63,12 +67,7 @@ export default defineArtDirection({
     { event: "bed", cue: "space-hum", variants: 1 }
   ],
   signatureEffect: "A sun-lit system board — every planet shows a real terminator — crossed by hairline orbit guides and a ribboned courier path.",
-  standIns: [
-    { feature: "K1 deep-space skybox + parallax stars", file: "src/v2/scene/world.ts", request: "R-14-13", removeWhen: "deep-space HDRI admitted" },
-    { feature: "K5 atmosphere-shell planets", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K5 planet kit admitted" },
-    { feature: "K7 courier skiff + restored dock-gate maps", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K7 craft + gate maps admitted" },
-    { feature: "K8 thruster/dock loop set", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K8 loop clips admitted" }
-  ],
+  standIns: [],
   criticalCategories: ["lighting", "pbr_credibility", "environment_world"],
   tiers: {
     low: { particles: 300, shadowMap: 1024, cascades: 2, textureMax: 1024 },
