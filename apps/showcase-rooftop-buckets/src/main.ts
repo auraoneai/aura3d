@@ -9,6 +9,7 @@ import {
   camera,
   game,
   instances,
+  lights,
   looks,
   material,
   model,
@@ -112,96 +113,147 @@ const CAMERA_TARGET: readonly [number, number, number] = [0, 2.0, -0.4];
 const CAMERA_FOV = 48;
 
 // Three.js-grade PBR materials for the streetball rooftop venue.
-const COURT_DECK_MAT = material.reflectiveFloor({
-  name: "rooftop acrylic court deck",
-  color: "#1e293b",
-  roughness: 0.22,
-  clearcoat: 0.65
+const COURT_DECK_MAT = material.lacquer({
+  name: "rooftop dark hardwood court deck",
+  color: "#5c3418",
+  roughness: 0.24,
+  clearcoat: 0.85
+});
+const COURT_PAINT_LANE_MAT = material.lacquer({
+  name: "rooftop dark hardwood key lane",
+  color: "#3b1f0e",
+  roughness: 0.2,
+  clearcoat: 0.9
 });
 const COURT_LINE_MAT = material.clearcoatPaint({
-  name: "rooftop court markings",
-  color: "#ea580c",
-  roughness: 0.18
+  name: "rooftop crisp white court lines",
+  color: "#f8fafc",
+  roughness: 0.14
+});
+const COURT_ACCENT_LINE_MAT = material.neon({
+  name: "rooftop cyan three-point arc",
+  color: "#38bdf8",
+  emissive: "#38bdf8",
+  emissiveIntensity: 1.55,
+  practical: true
 });
 const BACKBOARD_GLASS_MAT = material.frostedGlass({
   name: "tempered glass backboard",
   color: "#e2e8f0",
-  opacity: 0.55
+  opacity: 0.68,
+  roughness: 0.18
 });
 const STANCHION_METAL_MAT = material.brushedMetal({
   name: "hoop stanchion and rooftop steel",
   color: "#cbd5e1",
-  roughness: 0.28
+  roughness: 0.24
+});
+const BLEACHER_CHARCOAL_MAT = material.ceramic({
+  name: "dark charcoal bleachers",
+  color: "#1e293b",
+  roughness: 0.46
 });
 const RIM_PAINT_MAT = material.carPaint({
   name: "breakaway orange rim",
   color: "#f97316",
-  roughness: 0.24
+  roughness: 0.22
 });
 const BASKETBALL_RUBBER_MAT = material.blackRubber({
   name: "pebbled streetball leather",
   color: "#ea580c",
-  roughness: 0.78
+  roughness: 0.72
 });
-const SKYLINE_LACQUER_MAT = material.lacquer({
-  name: "dusk skyline and water tower",
-  color: "#2e3b52",
-  roughness: 0.36
+const SKYLINE_SLATE_MAT = material.lacquer({
+  name: "dark slate navy skyline towers",
+  color: "#0f172a",
+  roughness: 0.32,
+  clearcoat: 0.45
 });
-const AIM_DOT_MAT = material.clearcoatPaint({
+const SKYLINE_WINDOW_WARM_MAT = material.neon({
+  name: "skyline warm lit windows",
+  color: "#fbbf24",
+  emissive: "#fbbf24",
+  emissiveIntensity: 1.85,
+  practical: true
+});
+const SKYLINE_WINDOW_CYAN_MAT = material.neon({
+  name: "skyline cyan lit windows",
+  color: "#38bdf8",
+  emissive: "#38bdf8",
+  emissiveIntensity: 1.95,
+  practical: true
+});
+const AIM_DOT_MAT = material.neon({
   name: "shot arc guide dot",
   color: "#ffd24d",
-  roughness: 0.2
+  emissive: "#ffd24d",
+  emissiveIntensity: 1.8,
+  practical: true
 });
 
-// Authored basketball poses applied over the CC_Base humanoid rig so the
-// athletes hold/load/follow-through the ball and guard the paint rather than
-// remaining in bind T-pose.
-const SHOOTER_POSES: Record<"ready" | "load" | "follow", { bones: Record<string, { rotation: [number, number, number, number] }> }> = {
+const quat = (x: number, y: number, z: number, w: number) => ({ x, y, z, w }) as const;
+
+// Authored basketball poses applied over the CC_Base humanoid rig via
+// setAnimationPose() so the athletes hold/load/follow-through the ball and
+// guard the paint rather than remaining in the GLB clips' static bind T-pose.
+const SHOOTER_POSES = {
   ready: {
     bones: {
-      CC_Base_L_Upperarm_050: { rotation: [0.4082, -0.1269, -0.5207, 0.739] },
-      CC_Base_R_Upperarm_074: { rotation: [0.4081, 0.1269, 0.5207, 0.739] },
-      CC_Base_L_Forearm_051: { rotation: [0.5896, 0.1376, -0.1638, 0.7788] },
-      CC_Base_R_Forearm_077: { rotation: [0.5896, -0.1376, 0.1638, 0.7788] }
+      CC_Base_Spine01_034: { rotation: quat(-0.145, 0, 0, 0.9894) },
+      CC_Base_Spine02_035: { rotation: quat(-0.025, 0, 0, 0.9997) },
+      CC_Base_L_Upperarm_050: { rotation: quat(0.487, 0.0536, -0.4923, 0.7195) },
+      CC_Base_R_Upperarm_074: { rotation: quat(0.487, -0.0536, 0.4923, 0.7195) },
+      CC_Base_L_Forearm_051: { rotation: quat(0.637, 0.0074, 0.0875, 0.766) },
+      CC_Base_R_Forearm_077: { rotation: quat(0.637, -0.0074, -0.0876, 0.766) },
+      CC_Base_L_Hand_055: { rotation: quat(0.08, 0.18, 0.04, 0.9796) },
+      CC_Base_R_Hand_081: { rotation: quat(0.08, -0.18, -0.04, 0.9796) }
     }
   },
   load: {
     bones: {
-      CC_Base_L_Upperarm_050: { rotation: [0.6123, -0.1399, -0.2923, 0.7212] },
-      CC_Base_R_Upperarm_074: { rotation: [0.6309, 0.1475, 0.2886, 0.7049] },
-      CC_Base_L_Forearm_051: { rotation: [0.7073, 0.1979, -0.1685, 0.6574] },
-      CC_Base_R_Forearm_077: { rotation: [0.7242, -0.2026, 0.1637, 0.6386] }
+      CC_Base_Spine01_034: { rotation: quat(-0.13, 0, 0, 0.9915) },
+      CC_Base_Spine02_035: { rotation: quat(-0.015, 0, 0, 0.9999) },
+      CC_Base_L_Upperarm_050: { rotation: quat(0.7296, -0.0108, -0.0638, 0.6808) },
+      CC_Base_R_Upperarm_074: { rotation: quat(0.7427, 0.0243, -0.0336, 0.6684) },
+      CC_Base_L_Forearm_051: { rotation: quat(0.3721, 0.0063, 0.5358, 0.7579) },
+      CC_Base_R_Forearm_077: { rotation: quat(0.2617, -0.0051, -0.5283, 0.8078) },
+      CC_Base_L_Hand_055: { rotation: quat(-0.12, 0.14, 0.02, 0.9827) },
+      CC_Base_R_Hand_081: { rotation: quat(-0.18, -0.1, -0.02, 0.9783) }
     }
   },
   follow: {
     bones: {
-      CC_Base_L_Upperarm_050: { rotation: [0.6967, -0.1023, -0.1693, 0.6896] },
-      CC_Base_R_Upperarm_074: { rotation: [0.7377, -0.1543, -0.2303, 0.6156] },
-      CC_Base_L_Forearm_051: { rotation: [0.4535, 0.0648, -0.1064, 0.8825] },
-      CC_Base_R_Forearm_077: { rotation: [0.1001, -0.0082, 0.0585, 0.9932] }
+      CC_Base_Spine01_034: { rotation: quat(-0.175, 0, 0, 0.9846) },
+      CC_Base_Spine02_035: { rotation: quat(-0.04, 0, 0, 0.9992) },
+      CC_Base_L_Upperarm_050: { rotation: quat(0.6864, -0.0427, 0.1786, 0.7036) },
+      CC_Base_R_Upperarm_074: { rotation: quat(0.4784, 0.0869, -0.5433, 0.6844) },
+      CC_Base_L_Forearm_051: { rotation: quat(0.0952, 0.0028, 0.4141, 0.9052) },
+      CC_Base_R_Forearm_077: { rotation: quat(0.0042, -0.0004, -0.0916, 0.9958) },
+      CC_Base_R_Hand_081: { rotation: quat(0.42, 0, 0, 0.9075) }
     }
   }
-};
+} as const;
 
-const DEFENDER_POSES: Record<"stance" | "contest", { bones: Record<string, { rotation: [number, number, number, number] }> }> = {
+const DEFENDER_POSES = {
   stance: {
     bones: {
-      CC_Base_L_Upperarm_050: { rotation: [0.3582, -0.0336, -0.2636, 0.895] },
-      CC_Base_R_Upperarm_074: { rotation: [0.3582, 0.0336, 0.2636, 0.895] },
-      CC_Base_L_Forearm_051: { rotation: [0.4029, 0.0045, 0.01, 0.9152] },
-      CC_Base_R_Forearm_077: { rotation: [0.4029, -0.0045, -0.01, 0.9152] }
+      CC_Base_Spine01_034: { rotation: quat(-0.14, 0, 0, 0.9902) },
+      CC_Base_L_Upperarm_050: { rotation: quat(0.3446, 0.0362, -0.3398, 0.8743) },
+      CC_Base_R_Upperarm_074: { rotation: quat(0.3446, -0.0362, 0.3398, 0.8743) },
+      CC_Base_L_Forearm_051: { rotation: quat(0.4244, 0.0061, 0.3506, 0.8347) },
+      CC_Base_R_Forearm_077: { rotation: quat(0.4243, -0.0061, -0.3506, 0.8347) }
     }
   },
   contest: {
     bones: {
-      CC_Base_L_Upperarm_050: { rotation: [0.6967, -0.1023, -0.1693, 0.6896] },
-      CC_Base_R_Upperarm_074: { rotation: [0.7377, -0.1543, -0.2303, 0.6156] },
-      CC_Base_L_Forearm_051: { rotation: [0.18, 0.02, -0.05, 0.982] },
-      CC_Base_R_Forearm_077: { rotation: [0.1001, -0.0082, 0.0585, 0.9932] }
+      CC_Base_Spine01_034: { rotation: quat(-0.18, 0, 0, 0.9837) },
+      CC_Base_L_Upperarm_050: { rotation: quat(0.3869, -0.0789, 0.5, 0.7708) },
+      CC_Base_R_Upperarm_074: { rotation: quat(0.3411, 0.0854, -0.5568, 0.7525) },
+      CC_Base_L_Forearm_051: { rotation: quat(-0.0223, 0.0004, 0.1419, 0.9897) },
+      CC_Base_R_Forearm_077: { rotation: quat(-0.0439, 0.0001, -0.0989, 0.9941) }
     }
   }
-};
+} as const;
 
 const inputOptions = {
   actions: {
@@ -263,7 +315,7 @@ const bucketsGame = createGame({
       { id: "heat", kind: "prompt", anchor: "top", label: "HEAT" },
       { id: "charge", kind: "meter", max: 100, anchor: "bottom", label: "CHARGE" },
       { id: "objective", kind: "objective", anchor: "bottom", label: "OBJECTIVE" }
-    ]
+    ] as unknown as readonly { readonly id: string; readonly kind: string; readonly anchor: "top-left" | "top-right" | "top" | "bottom"; readonly label?: string }[]
   },
   touch: {
     preset: "dpad-2btn",
@@ -475,37 +527,70 @@ function fullReset(): void {
 // ------------------------------------------------------------------ scene ----
 
 function buildCourtMarkingsTransforms() {
-  // Key / paint lane, free-throw line, baseline, sidelines, and 8-segment 3pt arc
+  // Crisp white boundary lines, key lane, free-throw line, and backboard shooter's square
   const lines: { position: [number, number, number]; rotation?: [number, number, number]; scale: [number, number, number] }[] = [
     // Baseline & sidelines
-    { position: [0, 0.008, -0.9], scale: [14.4, 0.012, 0.09] },
-    { position: [-7.2, 0.008, 4.4], scale: [0.09, 0.012, 10.6] },
-    { position: [7.2, 0.008, 4.4], scale: [0.09, 0.012, 10.6] },
-    // Paint / key lane (width 3.6m,baseline z=-0.9 to free-throw line z=4.6)
-    { position: [-1.8, 0.008, 1.85], scale: [0.08, 0.012, 5.5] },
-    { position: [1.8, 0.008, 1.85], scale: [0.08, 0.012, 5.5] },
-    { position: [0, 0.008, 4.6], scale: [3.68, 0.012, 0.08] },
-    // Backboard shooter's square (white/orange target box on glass)
-    { position: [0, 3.24, -0.31], scale: [0.62, 0.04, 0.02] },
-    { position: [0, 2.86, -0.31], scale: [0.62, 0.04, 0.02] },
-    { position: [-0.3, 3.05, -0.31], scale: [0.04, 0.42, 0.02] },
-    { position: [0.3, 3.05, -0.31], scale: [0.04, 0.42, 0.02] }
+    { position: [0, 0.032, -0.9], scale: [14.4, 0.012, 0.09] },
+    { position: [-7.2, 0.032, 4.4], scale: [0.09, 0.012, 10.6] },
+    { position: [7.2, 0.032, 4.4], scale: [0.09, 0.012, 10.6] },
+    // Paint / key lane (width 3.6m, baseline z=-0.9 to free-throw line z=4.6)
+    { position: [-1.8, 0.032, 1.85], scale: [0.08, 0.012, 5.5] },
+    { position: [1.8, 0.032, 1.85], scale: [0.08, 0.012, 5.5] },
+    { position: [0, 0.032, 4.6], scale: [3.68, 0.012, 0.08] },
+    // Backboard shooter's square + outer border (crisp white target box on frosted glass)
+    { position: [0, 3.24, -0.295], scale: [0.62, 0.04, 0.02] },
+    { position: [0, 2.86, -0.295], scale: [0.62, 0.04, 0.02] },
+    { position: [-0.3, 3.05, -0.295], scale: [0.04, 0.42, 0.02] },
+    { position: [0.3, 3.05, -0.295], scale: [0.04, 0.42, 0.02] },
+    { position: [0, 3.84, -0.295], scale: [1.82, 0.04, 0.02] },
+    { position: [0, 2.78, -0.295], scale: [1.82, 0.04, 0.02] },
+    { position: [-0.9, 3.31, -0.295], scale: [0.04, 1.08, 0.02] },
+    { position: [0.9, 3.31, -0.295], scale: [0.04, 1.08, 0.02] }
   ];
-  // 3-point arc segments (radius 6.6m around hoop [0, 0])
-  const arcSegments = 9;
+  return lines;
+}
+
+function buildCourtCyanArcTransforms() {
+  // Glowing cyan 3-point arc segments & free-throw semicircle accents
+  const lines: { position: [number, number, number]; rotation?: [number, number, number]; scale: [number, number, number] }[] = [];
+  const arcSegments = 11;
   const radius = 6.55;
   for (let i = 0; i < arcSegments; i += 1) {
-    const a0 = -Math.PI * 0.4 + (i / arcSegments) * (Math.PI * 0.8);
-    const a1 = -Math.PI * 0.4 + ((i + 1) / arcSegments) * (Math.PI * 0.8);
+    const a0 = -Math.PI * 0.42 + (i / arcSegments) * (Math.PI * 0.84);
+    const a1 = -Math.PI * 0.42 + ((i + 1) / arcSegments) * (Math.PI * 0.84);
     const mid = (a0 + a1) * 0.5;
     const segLen = radius * (a1 - a0);
     lines.push({
-      position: [Math.sin(mid) * radius, 0.008, Math.cos(mid) * radius],
+      position: [Math.sin(mid) * radius, 0.033, Math.cos(mid) * radius],
       rotation: [0, mid + Math.PI * 0.5, 0],
-      scale: [segLen, 0.012, 0.08]
+      scale: [segLen, 0.012, 0.085]
+    });
+  }
+  const ftSegments = 7;
+  const ftRadius = 1.8;
+  for (let i = 0; i < ftSegments; i += 1) {
+    const a0 = -Math.PI * 0.5 + (i / ftSegments) * Math.PI;
+    const a1 = -Math.PI * 0.5 + ((i + 1) / ftSegments) * Math.PI;
+    const mid = (a0 + a1) * 0.5;
+    const segLen = ftRadius * (a1 - a0);
+    lines.push({
+      position: [Math.sin(mid) * ftRadius, 0.033, 4.6 + Math.cos(mid) * ftRadius],
+      rotation: [0, mid + Math.PI * 0.5, 0],
+      scale: [segLen, 0.012, 0.065]
     });
   }
   return lines;
+}
+
+function buildCharcoalBleacherTransforms() {
+  return [
+    // Dark charcoal tiered bleachers behind baseline and along both sidelines
+    { position: [0, 0.32, -2.35] as [number, number, number], scale: [14.2, 0.52, 0.72] as [number, number, number] },
+    { position: [0, 0.78, -2.85] as [number, number, number], scale: [14.2, 0.52, 0.72] as [number, number, number] },
+    { position: [0, 1.24, -3.35] as [number, number, number], scale: [14.2, 0.52, 0.72] as [number, number, number] },
+    { position: [-8.55, 0.36, 3.2] as [number, number, number], scale: [0.95, 0.65, 11.2] as [number, number, number] },
+    { position: [8.55, 0.36, 3.2] as [number, number, number], scale: [0.95, 0.65, 11.2] as [number, number, number] }
+  ];
 }
 
 function buildStanchionAndParapetTransforms() {
@@ -529,12 +614,32 @@ function buildSkylineAndWaterTowerTransforms() {
     // Rooftop water tower barrel + cap at (-9.5, 5.4, -10.0)
     { position: [-9.5, 5.4, -10.0] as [number, number, number], scale: [2.6, 2.8, 2.6] as [number, number, number] },
     { position: [-9.5, 7.1, -10.0] as [number, number, number], scale: [1.8, 0.7, 1.8] as [number, number, number] },
-    // Sunset skyline high-rise silhouettes across the horizon
-    ...Array.from({ length: 8 }, (_, i) => ({
-      position: [-30 + i * 8.6, 5.5 + ((i * 5) % 4) * 2.8, -32 - (i % 3) * 5] as [number, number, number],
-      scale: [4.6, 12 + ((i * 3) % 5) * 3.6, 4.6] as [number, number, number]
+    // Dark slate/navy urban skyline high-rise towers across the horizon
+    ...Array.from({ length: 10 }, (_, i) => ({
+      position: [-34 + i * 7.6, 6.5 + ((i * 5) % 4) * 3.2, -28 - (i % 3) * 4.5] as [number, number, number],
+      scale: [4.8, 15 + ((i * 3) % 5) * 4.2, 4.8] as [number, number, number]
     }))
   ];
+}
+
+function buildSkylineWindowTransforms(parity: 0 | 1) {
+  const windows: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+  for (let i = 0; i < 10; i += 1) {
+    if (i % 2 !== parity) continue;
+    const tx = -34 + i * 7.6;
+    const tz = -28 - (i % 3) * 4.5 + 2.45;
+    for (let row = 0; row < 4; row += 1) {
+      windows.push({
+        position: [tx - 0.9, 4.2 + row * 2.4, tz],
+        scale: [1.1, 0.42, 0.08]
+      });
+      windows.push({
+        position: [tx + 0.9, 5.1 + row * 2.4, tz],
+        scale: [1.1, 0.42, 0.08]
+      });
+    }
+  }
+  return windows;
 }
 
 function buildScene() {
@@ -549,21 +654,43 @@ function buildScene() {
       castShadow: false,
       receiveShadow: true
     }).position(0, 0, 0),
-    // Reflective hardwood/acrylic rooftop playing surface + clearcoat painted key & 3pt arc
+    // Rich dark hardwood playing surface + espresso painted key lane
     primitives.box({
       name: "rooftop court surface deck",
       material: COURT_DECK_MAT,
       castShadow: false,
       receiveShadow: true
     })
-      .position(0, -0.008, 4.2)
-      .scale([15.6, 0.016, 11.6]),
+      .position(0, 0.012, 4.2)
+      .scale([15.6, 0.024, 11.6]),
+    primitives.box({
+      name: "rooftop court key paint lane",
+      material: COURT_PAINT_LANE_MAT,
+      castShadow: false,
+      receiveShadow: true
+    })
+      .position(0, 0.025, 1.85)
+      .scale([3.6, 0.008, 5.5]),
     instances.box({
-      name: "court key and three-point markings",
+      name: "court key and boundary markings",
       material: COURT_LINE_MAT,
       castShadow: false,
       receiveShadow: true,
       transforms: buildCourtMarkingsTransforms()
+    }),
+    instances.box({
+      name: "court cyan three-point arc",
+      material: COURT_ACCENT_LINE_MAT,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: buildCourtCyanArcTransforms()
+    }),
+    instances.box({
+      name: "dark charcoal bleachers",
+      material: BLEACHER_CHARCOAL_MAT,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: buildCharcoalBleacherTransforms()
     }),
     // Tempered frosted-glass backboard + brushed-metal stanchion + car-paint orange rim
     model(assets.rooftopBackboard, {
@@ -590,11 +717,25 @@ function buildScene() {
       transforms: buildStanchionAndParapetTransforms()
     }),
     instances.box({
-      name: "rooftop water tower and sunset skyline",
-      material: SKYLINE_LACQUER_MAT,
+      name: "rooftop water tower and slate skyline",
+      material: SKYLINE_SLATE_MAT,
       castShadow: false,
       receiveShadow: false,
       transforms: buildSkylineAndWaterTowerTransforms()
+    }),
+    instances.box({
+      name: "skyline warm window bands",
+      material: SKYLINE_WINDOW_WARM_MAT,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: buildSkylineWindowTransforms(0)
+    }),
+    instances.box({
+      name: "skyline cyan window bands",
+      material: SKYLINE_WINDOW_CYAN_MAT,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: buildSkylineWindowTransforms(1)
     }),
     model(assets.rooftopRim, {
       name: "rim",
@@ -616,7 +757,7 @@ function buildScene() {
       .position(spot.x, 1.42, spot.z - 0.34)
       .scale(BALL_SCALE)
       .runtime(game.runtimeNode("ball", { tags: ["basketball", "runtime"] })),
-    // Grounded 1.86 m shooter & defender in world scale
+    // Grounded 1.86 m shooter & defender in world scale, posed via setAnimationPose
     model(assets.rooftopLayupScorer, {
       name: "shooter",
       role: "primaryCharacter",
@@ -628,7 +769,6 @@ function buildScene() {
       .position(spot.x, ATHLETE_FLOOR_OFFSET, spot.z)
       .scale(ATHLETE_SCALE)
       .rotate(0, Math.PI, 0)
-      .animate({ clip: "Ready", loop: true, speed: 1 })
       .runtime(game.runtimeNode("shooter", { tags: ["shooter", "runtime"] })),
     model(assets.rooftopDefender, {
       name: "defender",
@@ -640,7 +780,6 @@ function buildScene() {
     })
       .position(-1.55, ATHLETE_FLOOR_OFFSET, 2.1)
       .scale(ATHLETE_SCALE)
-      .animate({ clip: "Plant", loop: true, speed: 1 })
       .runtime(game.runtimeNode("defender", { tags: ["defender", "runtime"] })),
     ...Array.from({ length: AIM_DOTS }, (_, i) =>
       model(assets.rooftopBall, {
@@ -653,11 +792,42 @@ function buildScene() {
         .position(0, -50, 0)
         .scale(0.055)
         .runtime(game.runtimeNode(`aim-dot-${i}`, { tags: ["aim-guide", "runtime"] }))
-    )
+    ),
+    // Two non-shadowed practical lights (permitted by art/direction.ts practicals: 2)
+    // to balance the golden-hour key with cool stadium sky fill and overhead court light.
+    lights
+      .directional({
+        name: "dusk stadium cool fill",
+        color: "#bae6fd",
+        intensity: 1.35,
+        position: [-14, 18, 14],
+        target: [0, 1.5, 2],
+        shadow: false
+      })
+      .toJSON(),
+    lights
+      .point({
+        name: "court overhead floodlight",
+        color: "#f8fafc",
+        intensity: 2.2,
+        position: [0, 7.5, 2.5],
+        distance: 24,
+        shadow: false
+      })
+      .toJSON()
   ];
 
   return scene()
-    .add(looks.preset(LOOK_ID))
+    .background("#0f172a")
+    .add(
+      looks.preset(LOOK_ID, {
+        fogDensityScale: 0.04,
+        background: "#0f172a",
+        accent: "#38bdf8",
+        exposureEv: -0.05,
+        sun: { elevationDeg: 32, azimuthDeg: 35 }
+      })
+    )
     .addMany(nodes)
     .camera(camera.perspective({ position: [...CAMERA_POSITION], target: [...CAMERA_TARGET], fov: CAMERA_FOV }));
 }
@@ -674,14 +844,14 @@ function syncNodes(): void {
   const yaw = Math.atan2(dx, dz);
   shooterNode.setPosition(spot.x, ATHLETE_FLOOR_OFFSET, spot.z).setRotation(0, yaw, 0);
 
-  const shooterClip = ballState.inFlight
-    ? "FollowThrough"
+  const shooterPoseKey: "ready" | "load" | "follow" = ballState.inFlight
+    ? "follow"
     : charge.charging
-      ? "Load"
-      : "Ready";
-  if (shooterClip !== lastShooterPoseKey) {
-    lastShooterPoseKey = shooterClip;
-    shooterNode.play?.(shooterClip, { loop: true, speed: 1 });
+      ? "load"
+      : "ready";
+  if (shooterPoseKey !== lastShooterPoseKey) {
+    lastShooterPoseKey = shooterPoseKey;
+    shooterNode.setAnimationPose(SHOOTER_POSES[shooterPoseKey]);
   }
 
   // While parked, place the visual basketball directly in the shooter's hands;
@@ -689,25 +859,25 @@ function syncNodes(): void {
   if (ballState.inFlight) {
     ballNode.setPosition(ballState.x, ballState.y, ballState.z);
   } else {
-    const handLift = charge.charging ? 0.14 + charge.power * 0.22 : 0;
-    const handForward = charge.charging ? 0.26 : 0.33;
+    const handLift = charge.charging ? 0.2 + charge.power * 0.16 : 0;
+    const handForward = charge.charging ? 0.28 : 0.32;
     ballNode.setPosition(spot.x + nx * handForward, 1.38 + handLift, spot.z + nz * handForward);
   }
 
-  // Show the perimeter defender actively contesting in Heat 3 (hide in open shooting heats).
-  if (hoopState.defenderActive) {
-    const defX = hoopState.defenderX;
-    const defY = ATHLETE_FLOOR_OFFSET + Math.max(0, hoopState.defenderY - 0.9);
-    const defZ = hoopState.defenderZ;
-    const defYaw = Math.atan2(spot.x - defX, spot.z - defZ);
-    defenderNode.setVisible(true).setPosition(defX, defY, defZ).setRotation(0, defYaw, 0);
-    const defenderClip = hoopState.defenderTelegraph === "contest" ? "Contest" : "Plant";
-    if (defenderClip !== lastDefenderPoseKey) {
-      lastDefenderPoseKey = defenderClip;
-      defenderNode.play?.(defenderClip, { loop: true, speed: 1 });
-    }
-  } else {
-    defenderNode.setVisible(false);
+  // Keep the defender visible on court at all times: actively contesting in the
+  // lane during Heat 3, and guarding the weak-side paint block in open heats.
+  const defX = hoopState.defenderActive ? hoopState.defenderX : -1.65;
+  const defY = hoopState.defenderActive
+    ? ATHLETE_FLOOR_OFFSET + Math.max(0, hoopState.defenderY - 0.9)
+    : ATHLETE_FLOOR_OFFSET;
+  const defZ = hoopState.defenderActive ? hoopState.defenderZ : 2.1;
+  const defYaw = Math.atan2(spot.x - defX, spot.z - defZ);
+  defenderNode.setVisible(true).setPosition(defX, defY, defZ).setRotation(0, defYaw, 0);
+  const defenderPoseKey: "stance" | "contest" =
+    hoopState.defenderActive && hoopState.defenderTelegraph === "contest" ? "contest" : "stance";
+  if (defenderPoseKey !== lastDefenderPoseKey) {
+    lastDefenderPoseKey = defenderPoseKey;
+    defenderNode.setAnimationPose(DEFENDER_POSES[defenderPoseKey]);
   }
 
   syncAimGuide();
@@ -741,17 +911,17 @@ function createHud(): HTMLElement {
   const root = document.createElement("aside");
   root.id = "rooftop-buckets-hud";
   root.style.cssText = [
-    "position:absolute",
-    "left:16px",
-    "top:56px",
+    "position:fixed",
+    "left:14px",
+    "bottom:14px",
     "z-index:5",
-    "min-width:330px",
-    "font:600 13px/1.35 Inter, system-ui, sans-serif",
+    "max-width:280px",
+    "font:500 11px/1.35 system-ui, sans-serif",
     "color:#f5fbff",
-    "background:rgba(10,14,26,0.72)",
-    "border:1px solid rgba(255,210,77,0.34)",
+    "background:rgba(10,14,26,0.78)",
+    "border:1px solid rgba(56,189,248,0.34)",
     "border-radius:8px",
-    "padding:12px",
+    "padding:8px 10px",
     "pointer-events:none"
   ].join(";");
   document.body.append(root);

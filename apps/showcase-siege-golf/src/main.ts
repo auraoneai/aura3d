@@ -752,17 +752,17 @@ function createHud(): HTMLElement {
   const root = document.createElement("aside");
   root.id = "siege-golf-hud";
   root.style.cssText = [
-    "position:absolute",
-    "left:16px",
-    "top:16px",
+    "position:fixed",
+    "left:14px",
+    "bottom:14px",
     "z-index:5",
-    "min-width:320px",
-    "font:600 13px/1.35 system-ui, sans-serif",
+    "max-width:260px",
+    "font:500 11px/1.35 system-ui, sans-serif",
     "color:#fff8ea",
     "background:rgba(24,32,14,0.72)",
     "border:1px solid rgba(255,207,92,0.4)",
     "border-radius:8px",
-    "padding:12px",
+    "padding:7px 10px",
     "pointer-events:none"
   ].join(";");
   document.body.append(root);

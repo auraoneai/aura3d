@@ -10,10 +10,12 @@ import {
   camera,
   game,
   gameFeel,
+  instances,
   lights,
   looks,
   material,
   model,
+  primitives,
   scene,
   type AuraNodeInput,
   type AuraRuntimeNodeHandle
@@ -69,34 +71,40 @@ const INITIAL_CAMERA_TARGET: readonly [number, number, number] = [-2.0, 1.15, -0
 const CAMERA_FOV = 50;
 
 const floorMaterial = material.reflectiveFloor({
-  color: "#0c121e",
+  color: "#0b111e",
   roughness: 0.14,
-  metallic: 0.45,
-  clearcoat: 0.8
+  metallic: 0.48,
+  clearcoat: 0.85
 });
 const gantryMetalMaterial = material.brushedMetal({
-  color: "#475569",
+  color: "#1e293b",
   roughness: 0.28,
+  metallic: 0.85,
   anisotropy: 0.85
 });
-const armorPaintMaterial = material.carPaint({
-  color: "#f97316",
+const darkBulkheadMaterial = material.lacquer({
+  color: "#0f172a",
+  roughness: 0.22,
+  clearcoat: 0.85
+});
+const armorPaintMaterial = material.brushedMetal({
+  color: "#334155",
   roughness: 0.24,
-  clearcoat: 1
+  metallic: 0.88
 });
 const chromeTrimMaterial = material.chrome({
-  color: "#cbd5e1"
+  color: "#94a3b8"
 });
 const bayBeaconMaterial = material.emissive({
   color: "#ffb454",
   emissive: "#ffb454",
-  emissiveIntensity: 1.8,
+  emissiveIntensity: 2.0,
   practical: true
 });
 const laneBeaconMaterial = material.emissive({
   color: "#62f8e7",
   emissive: "#62f8e7",
-  emissiveIntensity: 1.5,
+  emissiveIntensity: 1.8,
   practical: true
 });
 
@@ -183,7 +191,7 @@ const hangarGame = createGame({
       combat: () => ({
         lastHit: struck ? "heavy" : null
       }),
-      fx: () => ({
+      fx: (): { readonly liveCount: number } => ({
         liveCount: Math.max(hangarGame.fx.liveCount, performance.now() < strikeClipUntil ? 12 : 0)
       })
     }
@@ -238,7 +246,7 @@ function updateAssemble(): void {
     routeEvents.push({ type: "attach", label: `attach:${activeSlot}:${partFor(selection, activeSlot).id}` });
     objective = `${activeSlot} attached: ${partFor(selection, activeSlot).displayName}. Enter locks the build.`;
     void hangarGame.sound?.cue("cycle");
-    hangarGame.fx.burst("sparks", [mechX, 1.35, 0.25], { count: 16, color: "#62f8e7" });
+    hangarGame.fx.burst("spark", [mechX, 1.35, 0.25], { count: 16, color: "#62f8e7" });
     syncBuildVisibility();
     playChassisClip("idle");
   }
@@ -248,7 +256,7 @@ function updateAssemble(): void {
     routeEvents.push({ type: "lock", label: "lock:test-drive" });
     objective = "Test drive: A/D move, J strike the three target dummies.";
     void hangarGame.sound?.cue("lock");
-    hangarGame.fx.burst("sparks", [mechX, 1.2, 0.3], { count: 22, color: "#ffb454" });
+    hangarGame.fx.burst("spark", [mechX, 1.2, 0.3], { count: 22, color: "#ffb454" });
   }
 }
 
@@ -281,7 +289,7 @@ function strike(): void {
   struck = true;
   strikeClipUntil = performance.now() + 450;
   playChassisClip("strike");
-  hangarGame.fx.burst("sparks", [mechX + facing * 0.85, 1.25, 0.15], { count: 28, color: "#ffb454" });
+  hangarGame.fx.burst("spark", [mechX + facing * 0.85, 1.25, 0.15], { count: 28, color: "#ffb454" });
   const stats = aggregateStats(selection);
   const index = DUMMY_POSITIONS.findIndex((x, i) => dummyHp[i]! > 0 && Math.abs(x - mechX) <= STRIKE_RANGE);
   routeEvents.push({ type: "strike", label: index >= 0 ? `strike:hit:${index}` : "strike:miss" });
@@ -291,7 +299,7 @@ function strike(): void {
   void hangarGame.sound?.cue("strike");
   if (dummyHp[index] <= 0) {
     dummyNodes[index]?.setVisible(false);
-    hangarGame.fx.burst("explosion", [DUMMY_POSITIONS[index]!, 1.2, 0.1], { count: 36, color: "#ff7a33" });
+    hangarGame.fx.burst("explosion-small", [DUMMY_POSITIONS[index]!, 1.2, 0.1], { count: 36, color: "#ff7a33" });
     hangarGame.juice.fire("dummy-down");
     void hangarGame.sound?.cue("dummy-down");
     routeEvents.push({ type: "dummy-down", label: `dummy-down:${index}`, severity: "success" });
@@ -360,81 +368,119 @@ function buildScene() {
     // 3 practical lights matching art/direction.ts `practicals: 3` (no shadow on practicals; key light owns the single shadow).
     lights.point({
       name: "hangar bay gantry practical",
-      position: [-3.2, 3.7, 1.4],
+      position: [-3.2, 3.8, 1.8],
       color: "#ffb454",
-      intensity: 2.4,
-      range: 12
+      intensity: 2.8,
+      distance: 14
     }),
     lights.point({
       name: "hangar lane objective practical",
-      position: [0.4, 3.5, 1.6],
+      position: [0.4, 3.6, 2.0],
       color: "#62f8e7",
-      intensity: 1.8,
-      range: 12
+      intensity: 2.2,
+      distance: 14
     }),
     lights.point({
       name: "hangar far bay practical",
-      position: [3.4, 3.4, 0.8],
+      position: [3.4, 3.6, 1.4],
       color: "#ff8a3d",
-      intensity: 2.0,
-      range: 11
+      intensity: 2.4,
+      distance: 13
     }),
 
-    // Reflective hangar floor slab (top surface flush at y = 0.0 across the full bay and test-drive lane).
+    // Wide reflective hangar floor slab (top surface flush at y = 0.0 across the full bay and test-drive lane).
+    primitives.box({
+      name: "hangar reflective floor deck",
+      material: floorMaterial,
+      castShadow: false,
+      receiveShadow: true
+    })
+      .position(0, -0.08, 0.2)
+      .scale([18.0, 0.16, 10.0]),
     model(assets.quaterniusCubeCrate, {
       name: "hangar reflective floor",
       material: floorMaterial
     })
-      .position(0, -0.24, 0.2)
+      .position(0, -0.26, 0.2)
       .scale([9.5, 0.15, 4.5]),
 
-    // Mech bay assembly turntable plinth & high-gloss orange car-paint trim apron.
-    model(assets.quaterniusCubeCrate, {
-      name: "mech bay turntable plinth",
-      material: gantryMetalMaterial
+    // Circular mech turntable inspection platform & concentric glowing inspection rings on the reflectiveFloor.
+    primitives.cylinder({
+      name: "mech bay turntable outer bezel",
+      material: gantryMetalMaterial,
+      castShadow: false,
+      receiveShadow: true
     })
-      .position(-3.4, -0.05, 0)
-      .scale([1.35, 0.035, 1.35]),
-    model(assets.quaterniusCubeCrate, {
-      name: "mech bay armor trim ring",
-      material: armorPaintMaterial
+      .position(-3.4, 0.018, 0)
+      .scale([2.55, 0.036, 2.55]),
+    primitives.cylinder({
+      name: "mech bay turntable inner disc",
+      material: darkBulkheadMaterial,
+      castShadow: false,
+      receiveShadow: true
     })
-      .position(-3.4, -0.07, 0)
-      .scale([1.52, 0.04, 1.52]),
+      .position(-3.4, 0.028, 0)
+      .scale([2.15, 0.04, 2.15]),
+    primitives.torus({
+      name: "mech bay turntable amber inspection ring",
+      material: bayBeaconMaterial,
+      castShadow: false,
+      receiveShadow: false
+    })
+      .position(-3.4, 0.042, 0)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([1.18, 1.18, 0.18]),
+    primitives.torus({
+      name: "mech bay turntable cyan inner ring",
+      material: laneBeaconMaterial,
+      castShadow: false,
+      receiveShadow: false
+    })
+      .position(-3.4, 0.045, 0)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.88, 0.88, 0.14]),
+    ...DUMMY_POSITIONS.map((x, index) =>
+      primitives.torus({
+        name: `dummy station ring ${index}`,
+        material: laneBeaconMaterial,
+        castShadow: false,
+        receiveShadow: false
+      })
+        .position(x, 0.032, 0)
+        .rotate(Math.PI / 2, 0, 0)
+        .scale([0.62, 0.62, 0.14])
+    ),
 
-    // Chrome test-drive lane rails & practical light strips.
-    model(assets.quaterniusCubeCrate, {
-      name: "hangar lane rail front",
-      material: chromeTrimMaterial
-    })
-      .position(0.2, -0.02, 1.35)
-      .scale([6.6, 0.025, 0.07]),
-    model(assets.quaterniusCubeCrate, {
-      name: "hangar lane rail rear",
-      material: chromeTrimMaterial
-    })
-      .position(0.2, -0.02, -1.25)
-      .scale([6.6, 0.025, 0.07]),
-    model(assets.quaterniusCubeCrate, {
-      name: "bay practical beacon strip",
-      material: bayBeaconMaterial
-    })
-      .position(-3.4, 3.42, -0.35)
-      .scale([1.1, 0.03, 0.08]),
-    model(assets.quaterniusCubeCrate, {
-      name: "lane objective beacon strip",
-      material: laneBeaconMaterial
-    })
-      .position(0.5, 3.7, -1.42)
-      .scale([3.6, 0.03, 0.06]),
+    // Sleek dark metallic test-drive lane rails & glowing floor guide strips.
+    instances.box({
+      name: "hangar lane guide rails",
+      material: armorPaintMaterial,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: [
+        { position: [0.3, 0.015, 1.32], scale: [12.4, 0.03, 0.12] },
+        { position: [0.3, 0.015, -1.22], scale: [12.4, 0.03, 0.12] }
+      ]
+    }),
+    instances.box({
+      name: "hangar lane cyan floor strips",
+      material: laneBeaconMaterial,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: [
+        { position: [0.5, 0.026, 1.18], scale: [11.2, 0.015, 0.04] },
+        { position: [0.5, 0.026, -1.08], scale: [11.2, 0.015, 0.04] }
+      ]
+    }),
 
-    // Grounded modular hangar back wall & angled side bulkheads.
+    // Grounded modular hangar back wall & angled side bulkheads (overridden with dark industrial lacquer/brushedMetal).
     ...BACK_WALL_X.map((x, index) =>
       model(assets.quaterniusWallModular, {
         name: `hangar back wall ${index}`,
+        material: darkBulkheadMaterial,
         castShadow: true
       })
-        .position(x, 0, -2.2)
+        .position(x, 0, -2.35)
         .scale([3.0, 3.0, 1.4])
     ),
     model(assets.quaterniusWallModular, {
@@ -442,7 +488,7 @@ function buildScene() {
       material: gantryMetalMaterial,
       castShadow: true
     })
-      .position(-6.2, 0, 0.1)
+      .position(-6.6, 0, 0.1)
       .rotate(0, Math.PI / 2, 0)
       .scale([2.8, 3.0, 1.4]),
     model(assets.quaterniusWallModular, {
@@ -450,27 +496,81 @@ function buildScene() {
       material: gantryMetalMaterial,
       castShadow: true
     })
-      .position(6.2, 0, 0.1)
+      .position(6.6, 0, 0.1)
       .rotate(0, -Math.PI / 2, 0)
       .scale([2.8, 3.0, 1.4]),
 
-    // Brushed-metal gantry pillars, overhead catwalk beam, and bay crane arm.
+    // Dark armored bulkhead wall cladding & structural bays (eliminates the repeating tile read on the back wall).
+    instances.box({
+      name: "hangar armored bulkhead cladding",
+      material: darkBulkheadMaterial,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: [
+        { position: [0, 2.2, -1.88], scale: [14.6, 4.6, 0.18] },
+        { position: [-6.1, 2.2, -0.2], scale: [0.22, 4.6, 4.2] },
+        { position: [6.1, 2.2, -0.2], scale: [0.22, 4.6, 4.2] }
+      ]
+    }),
+    instances.box({
+      name: "hangar armored bulkhead structural ribs",
+      material: gantryMetalMaterial,
+      castShadow: true,
+      receiveShadow: true,
+      transforms: [
+        { position: [-5.0, 2.1, -1.68], scale: [0.38, 4.2, 0.36] },
+        { position: [-1.8, 2.1, -1.68], scale: [0.38, 4.2, 0.36] },
+        { position: [1.8, 2.1, -1.68], scale: [0.38, 4.2, 0.36] },
+        { position: [5.0, 2.1, -1.68], scale: [0.38, 4.2, 0.36] },
+        { position: [0, 3.85, -1.52], scale: [13.6, 0.34, 0.58] },
+        { position: [0, 1.25, -1.76], scale: [13.4, 0.18, 0.16] },
+        { position: [0, 2.65, -1.76], scale: [13.4, 0.18, 0.16] }
+      ]
+    }),
+
+    // Glowing cyan and amber service gantry ribs (practical: true).
+    instances.box({
+      name: "hangar cyan service gantry ribs",
+      material: laneBeaconMaterial,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: [
+        { position: [0, 3.68, -1.24], scale: [11.8, 0.045, 0.06] },
+        { position: [0, 2.74, -1.67], scale: [12.4, 0.035, 0.05] },
+        { position: [-1.8, 2.0, -1.48], scale: [0.05, 3.3, 0.05] },
+        { position: [1.8, 2.0, -1.48], scale: [0.05, 3.3, 0.05] },
+        { position: [5.0, 2.0, -1.48], scale: [0.05, 3.3, 0.05] }
+      ]
+    }),
+    instances.box({
+      name: "hangar amber service gantry ribs",
+      material: bayBeaconMaterial,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: [
+        { position: [-3.4, 3.42, -0.35], scale: [2.2, 0.045, 0.08] },
+        { position: [-5.0, 2.0, -1.48], scale: [0.05, 3.3, 0.05] },
+        { position: [-3.4, 1.25, -1.67], scale: [2.8, 0.04, 0.05] }
+      ]
+    }),
+
+    // Brushed-metal gantry pillars, overhead catwalk beam, and bay crane arm (dark industrial metal/lacquer).
     ...BAY_PILLAR_X.map((x, index) =>
       model(assets.quaterniusCubeCrate, {
         name: `hangar gantry pillar ${index}`,
         material: gantryMetalMaterial,
         castShadow: true
       })
-        .position(x, 0, -1.65)
-        .scale([0.22, 2.8, 0.28])
+        .position(x, 0, -1.72)
+        .scale([0.2, 2.8, 0.24])
     ),
     model(assets.quaterniusCubeCrate, {
       name: "hangar overhead catwalk beam",
       material: gantryMetalMaterial,
       castShadow: true
     })
-      .position(0, 3.85, -1.55)
-      .scale([7.2, 0.18, 0.45]),
+      .position(0, 3.85, -1.58)
+      .scale([7.2, 0.18, 0.42]),
     model(assets.quaterniusCubeCrate, {
       name: "mech bay gantry crane arm",
       material: gantryMetalMaterial,
@@ -478,35 +578,41 @@ function buildScene() {
     })
       .position(-3.4, 3.5, -0.35)
       .scale([1.35, 0.12, 1.15]),
-
-    // Bay armor plate rack, weapon pod crate, thruster calibration stand, and cargo dressing.
     model(assets.quaterniusCubeCrate, {
       name: "bay armor plate rack",
-      material: armorPaintMaterial,
+      material: darkBulkheadMaterial,
       castShadow: true
     })
-      .position(-4.85, 0, -0.95)
-      .scale([0.46, 0.68, 0.46]),
+      .position(-5.35, 0, -1.45)
+      .scale([0.36, 0.85, 0.32]),
     model(assets.quaterniusCubeCrate, {
       name: "bay weapon pod crate",
-      material: armorPaintMaterial,
+      material: gantryMetalMaterial,
       castShadow: true
     })
-      .position(-4.55, 0, 0.65)
-      .scale([0.38, 0.36, 0.5]),
+      .position(-4.85, 0, -1.5)
+      .scale([0.32, 0.52, 0.3]),
     model(assets.quaterniusCubeCrate, {
       name: "bay thruster chrome stand",
       material: chromeTrimMaterial,
       castShadow: true
     })
-      .position(-2.15, 0, -1.35)
-      .scale([0.28, 0.72, 0.28]),
-    model(assets.quaterniusCubeCrate, { name: "hangar crate right lower", castShadow: true })
-      .position(4.65, 0, -1.0)
-      .scale(0.52),
-    model(assets.quaterniusCubeCrate, { name: "hangar crate right upper", castShadow: true })
-      .position(4.75, 0.83, -1.05)
-      .scale(0.36),
+      .position(-2.15, 0, -1.5)
+      .scale([0.22, 0.72, 0.22]),
+    model(assets.quaterniusCubeCrate, {
+      name: "hangar crate right lower",
+      material: darkBulkheadMaterial,
+      castShadow: true
+    })
+      .position(5.35, 0, -1.45)
+      .scale([0.38, 0.82, 0.32]),
+    model(assets.quaterniusCubeCrate, {
+      name: "hangar crate right upper",
+      material: gantryMetalMaterial,
+      castShadow: true
+    })
+      .position(4.85, 0, -1.5)
+      .scale([0.32, 0.52, 0.3]),
 
     // Rigged hero mech chassis options (positioned on the bay turntable, rotated 3/4 toward the showroom camera).
     ...PART_OPTIONS.chassis.map((part) =>
@@ -552,17 +658,17 @@ function createHud(): HTMLElement {
   const root = document.createElement("aside");
   root.id = "mech-hangar-hud";
   root.style.cssText = [
-    "position:absolute",
-    "left:16px",
-    "top:56px",
+    "position:fixed",
+    "left:14px",
+    "bottom:14px",
     "z-index:5",
-    "min-width:330px",
-    "font:600 13px/1.35 Inter, system-ui, sans-serif",
+    "max-width:300px",
+    "font:500 11px/1.35 Inter, system-ui, sans-serif",
     "color:#f5fbff",
-    "background:rgba(8,12,20,0.72)",
+    "background:rgba(8,12,20,0.74)",
     "border:1px solid rgba(98,248,231,0.34)",
     "border-radius:8px",
-    "padding:12px",
+    "padding:8px 10px",
     "pointer-events:none"
   ].join(";");
   document.body.append(root);

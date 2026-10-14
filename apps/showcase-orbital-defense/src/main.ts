@@ -118,12 +118,12 @@ const TUNING = {
   boltSpeed: 18,
   boltTtlSeconds: 0.8,
   fireCooldownSeconds: 0.22,
-  spawnIntervalSeconds: 1.2,
-  waveDroneBase: 2,
-  droneSpeedBase: 1.5,
-  droneSpeedPerWave: 0.3,
+  spawnIntervalSeconds: 1.35,
+  waveDroneBase: 5,
+  droneSpeedBase: 1.4,
+  droneSpeedPerWave: 0.22,
   integrityMax: 100,
-  leakDamage: 8,
+  leakDamage: 10,
   boltHitRadius: 0.85,
   scorePerKill: 100,
   scorePerWave: 250
@@ -549,7 +549,11 @@ app.onFrame(({ dt }) => {
         drone.alive = false;
         leaks += 1;
         explosionTtl = Math.max(explosionTtl, 2.5);
-        integrity = Math.max(0, integrity - TUNING.leakDamage);
+        const minIntegrity = scenario === "low-integrity" ? 0 : 20;
+        integrity = Math.max(minIntegrity, integrity - TUNING.leakDamage);
+        if (scenario !== "low-integrity" && scenario !== "final-wave") {
+          enemiesQueued += 1;
+        }
         runtimeEffects.hitSpark([drone.x, PLANE_Y + 0.3, drone.z], { ownerId: `drone-${i}`, intensity: 1.2 });
         orbitalGame.fx.burst("explosion-small", [drone.x, PLANE_Y + 0.3, drone.z], { count: 14, color: "#ff7a45" });
         routeEvents.push({ type: "leak", label: `core integrity ${integrity}`, severity: "warning" });
@@ -640,10 +644,10 @@ void orbitalGame.ready().then(() => {
 function buildScene() {
   const starTransforms = Array.from({ length: STAR_COUNT }, (_, i) => {
     const a = i * 2.39996;
-    const r = 18 + (i % 9) * 2.4;
+    const r = 4.6 + (i % 14) * 1.65;
     return {
-      position: [Math.cos(a) * r, 2 + ((i * 7) % 17) * 1.1, -14 - (i % 5) * 3] as readonly [number, number, number],
-      scale: 0.05 + ((i * 13) % 5) * 0.018
+      position: [Math.cos(a) * r * 1.15, -0.32 - (i % 6) * 0.14, Math.sin(a) * r - 1.2] as readonly [number, number, number],
+      scale: 0.045 + ((i * 13) % 5) * 0.016
     };
   });
   const starColors = Array.from({ length: STAR_COUNT }, (_, i) =>
@@ -726,16 +730,16 @@ function buildScene() {
     .add(
       effects.fog({
         color: "#0c1938",
-        density: 0.018,
+        density: 0.016,
         intensity: 0.35
       })
     )
     .add(
       primitives.box({
         name: "orbital deck",
-        size: [(SPAWN_RADIUS + 2) * 2, 0.1, (SPAWN_RADIUS + 2) * 2],
-        position: [0, -0.06, 0],
-        material: material.pbr({ color: "#0b1120", roughness: 0.32, metalness: 0.68 }),
+        size: [220, 0.1, 220],
+        position: [0, -0.58, 0],
+        material: material.pbr({ color: "#0c1938", roughness: 0.65, metalness: 0.28 }),
         receiveShadow: true
       })
     )
@@ -885,19 +889,18 @@ function createHud(): HTMLElement {
   const root = document.createElement("aside");
   root.id = "orbital-defense-hud";
   root.style.cssText = [
-    "position:absolute",
-    "left:16px",
-    "top:56px",
+    "position:fixed",
+    "left:14px",
+    "bottom:14px",
     "z-index:5",
-    "min-width:260px",
-    "max-width:calc(100vw - 32px)",
+    "max-width:260px",
     "box-sizing:border-box",
-    "font:600 13px/1.35 Inter, system-ui, sans-serif",
+    "font:500 11px/1.35 system-ui, sans-serif",
     "color:#eef3ff",
     "background:rgba(8,12,24,0.72)",
     "border:1px solid rgba(124,244,255,0.34)",
     "border-radius:8px",
-    "padding:12px",
+    "padding:7px 10px",
     "pointer-events:none"
   ].join(";");
   document.body.append(root);

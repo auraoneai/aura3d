@@ -872,17 +872,17 @@ function createHud(): HTMLElement {
   const root = document.createElement("aside");
   root.id = "turbo-drift-hud";
   root.style.cssText = [
-    "position:absolute",
-    "left:16px",
-    "top:56px",
+    "position:fixed",
+    "left:14px",
+    "bottom:14px",
     "z-index:5",
-    "min-width:300px",
-    "font:600 13px/1.35 Inter, system-ui, sans-serif",
+    "max-width:260px",
+    "font:500 11px/1.35 system-ui, sans-serif",
     "color:#f5fbff",
     "background:rgba(20,12,4,0.66)",
     "border:1px solid rgba(235,190,125,0.34)",
     "border-radius:8px",
-    "padding:12px",
+    "padding:7px 10px",
     "pointer-events:none"
   ].join(";");
   document.body.append(root);

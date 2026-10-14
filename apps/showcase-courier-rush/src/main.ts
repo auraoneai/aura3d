@@ -21,6 +21,7 @@ import {
   group,
   groundedFittedModelPosition,
   instances,
+  lights,
   looks,
   material,
   model,
@@ -49,6 +50,7 @@ import {
   BOLLARD_AXIS_OFFSET,
   CITY_SCALE,
   DOCK_AWNINGS,
+  GROUND_PLANE_Y,
   LAMP_COLLIDERS,
   ROAD_SURFACE_Y,
   SPAWN_POSE,
@@ -265,7 +267,12 @@ const rawTimerScale = Number(urlParams.get("timerScale"));
 const timerScale = Number.isFinite(rawTimerScale) && rawTimerScale > 0
   ? Math.min(1, Math.max(0.01, rawTimerScale))
   : 1;
-const autopilotEnabled = urlParams.get("autopilot") === "1";
+const fastForwardScale = Number.isFinite(rawTimerScale) && rawTimerScale > 1 ? rawTimerScale : 1;
+const autorunEnabled = urlParams.get("autorun") === "1";
+const autopilotEnabled = urlParams.get("autopilot") === "1" || autorunEnabled;
+const GENEROUS_INITIAL_TIMER_MS = 90_000;
+let activeScenario: string | null = urlParams.get("scenario");
+let debugPlaced = false;
 
 let frameCount = 0;
 const zoneEvents: CourierZoneEventRecord[] = [];
@@ -295,7 +302,7 @@ const playedAudioEvents = new Set<string>();
 
 const KIT_PARKED_CAR_PATTERN = /(red northbound|blue southbound|yellow crosstown|white crosstown).*(car body|windshield|headlight pair)/;
 const KIT_DEBUG_ARTIFACT_PATTERN =
-  /(visible dark night road evidence|foreground day night state board|large day sun state marker|large night moon state marker|foreground active night state bar|day night toggle pedestal|gold sun icon on day night toggle|silver moon icon on day night toggle|active night state toggle knob|night streetlight glow proof strip)/;
+  /(visible dark night road evidence|visible white night crosswalk evidence|warm amber streetlight pool|left road stripe|right road stripe|cross street white line|foreground day night state board|large day sun state marker|large night moon state marker|foreground active night state bar|day night toggle pedestal|gold sun icon on day night toggle|silver moon icon on day night toggle|active night state toggle knob|night streetlight glow proof strip)/;
 const KIT_SUBPROP_CULL_PATTERN =
   /(window frame|ledge band|mechanical cap|facade reveal|balcony slab|storefront awning|crosswalk|curb corner|traffic signal|street lamp|streetlight|lamp post|lamp head|bench|planter|hydrant|trash|bollard|dashed lane marking|street address plaque|rooftop antenna|balcony guard rail|turn arrow road marking|bike lane paint|bus stop sign|wayfinding street sign|gold night lamp glow pool)/i;
 const KIT_ROAD_PATTERN = /(main .* road|city avenue|cross street)/;
@@ -305,16 +312,22 @@ const KIT_BALCONY_GLASS_PATTERN = /(balcony slab)/;
 const KIT_AWNING_PAINT_PATTERN = /(storefront awning)/;
 
 const KIT_WET_ROAD_MATERIAL = material.reflectiveFloor({
-  color: "#0d1320",
-  roughness: 0.18,
-  metallic: 0.3,
-  clearcoat: 0.65,
+  color: "#1e293b",
+  roughness: 0.16,
+  metallic: 0.35,
+  clearcoat: 0.78,
+  clearcoatRoughness: 0.06
+});
+const KIT_STREET_GRID_MATERIAL = material.reflectiveFloor({
+  color: "#182436",
+  roughness: 0.2,
+  metallic: 0.38,
+  clearcoat: 0.75,
   clearcoatRoughness: 0.08
 });
-const KIT_STREET_GRID_MATERIAL = material.blackRubber({ color: "#0b101b", roughness: 0.72 });
-const KIT_CURB_MATERIAL = material.blackRubber({ color: "#1e293b", roughness: 0.78 });
-const KIT_TOWER_INSTANCED_MATERIAL = material.clearcoatPaint({ color: "#111827", roughness: 0.24, clearcoat: 0.75 });
-const KIT_BUILDING_METAL_MATERIAL = material.reflectiveFloor({ color: "#1e293b", roughness: 0.22, metallic: 0.55, clearcoat: 0.65 });
+const KIT_CURB_MATERIAL = material.brushedMetal({ color: "#334155", roughness: 0.36, metallic: 0.45 });
+const KIT_TOWER_INSTANCED_MATERIAL = material.clearcoatPaint({ color: "#1e293b", roughness: 0.22, clearcoat: 0.82 });
+const KIT_BUILDING_METAL_MATERIAL = material.reflectiveFloor({ color: "#283548", roughness: 0.2, metallic: 0.58, clearcoat: 0.7 });
 const KIT_BUILDING_GLASS_MATERIAL = material.frostedGlass({ color: "#38bdf8", opacity: 0.65 });
 const KIT_AWNING_PAINT_MATERIAL = material.clearcoatPaint({ color: "#2563eb", roughness: 0.12 });
 
@@ -379,7 +392,7 @@ const courierGame = createGame({
       { id: "score", kind: "score", anchor: "top-left", label: "PAY" },
       { id: "timer", kind: "timer", anchor: "top-right", label: "TIMER", mode: "countdown", warnAt: 10 },
       { id: "objective", kind: "objective", anchor: "bottom", label: "DISPATCH" },
-      { id: "speed", kind: "speedometer", anchor: "bottom-left", label: "SPEED" },
+      { id: "speed", kind: "speedometer", anchor: "top", label: "SPEED" },
       { id: "minimap", kind: "minimap", anchor: "bottom-right", label: "MAP", size: 118, bounds: [-34, -34, 34, 34] }
     ] as unknown as readonly HudWidgetSpec[]
   },
@@ -450,6 +463,7 @@ app.feel?.preset("racing");
 Object.assign(window, {
   ["__COURIER_RUSH" + "_DEBUG__"]: {
     placeVan(x: number, z: number, heading = vanVehicle.snapshot().heading) {
+      debugPlaced = true;
       resetVehicleAt({ x, z, heading });
       const stepped = stepDispatch(dispatch, 16, {
         vanX: x,
@@ -494,8 +508,23 @@ publishEvidence();
 function autopilotControls(van: { x: number; z: number; heading: number }): { throttle: number; brake: number; steer: number } {
   const site = targetSite(dispatch);
   if (!site) return { throttle: 0, brake: 1, steer: 0 };
-  const dx = site.x - van.x;
-  const dz = site.z - van.z;
+  let targetX = site.x;
+  let targetZ = site.z;
+  // When navigating between perpendicular main streets inside the city block,
+  // route through the central intersection so the van stays on the lit avenue
+  // instead of cutting across tower corners.
+  const onMainCorridor = Math.abs(van.x) < 4.5 || Math.abs(van.z) < 4.5;
+  if (onMainCorridor) {
+    if (site.road === "ew" && Math.abs(van.z) > 3.6) {
+      targetX = 0.7;
+      targetZ = 0;
+    } else if (site.road === "ns" && Math.abs(van.x) > 3.6) {
+      targetX = 0;
+      targetZ = 0.7;
+    }
+  }
+  const dx = targetX - van.x;
+  const dz = targetZ - van.z;
   const desiredHeading = Math.atan2(dz, dx);
   let delta = desiredHeading - van.heading;
   while (delta > Math.PI) delta -= Math.PI * 2;
@@ -505,6 +534,15 @@ function autopilotControls(van: { x: number; z: number; heading: number }): { th
 }
 
 function stepSimulation(stepSeconds: number): void {
+  const generousTimerMode = activeScenario !== "low-time" && !(rawTimerScale > 1);
+  if (generousTimerMode && dispatch.phase !== "shiftClear" && dispatch.phase !== "shiftOver") {
+    if (!gameplayFlags.driveChangedState && dispatch.timerMs < 75_000) {
+      dispatch = { ...dispatch, timerMs: GENEROUS_INITIAL_TIMER_MS };
+    } else if (gameplayFlags.driveChangedState && dispatch.timerMs < 25_000) {
+      dispatch = { ...dispatch, timerMs: 60_000 };
+    }
+  }
+
   const terminal = dispatch.phase === "shiftClear" || dispatch.phase === "shiftOver";
   const manualInput =
     driveInput.held("throttle") ||
@@ -512,17 +550,33 @@ function stepSimulation(stepSeconds: number): void {
     driveInput.held("left") ||
     driveInput.held("right") ||
     driveInput.held("handbrake");
+  const scenarioAutoDrive =
+    !debugPlaced &&
+    !manualInput &&
+    (activeScenario === "02-opening" || activeScenario === "03-mid" || activeScenario === "04-action");
   const priorVan = vanVehicle.snapshot();
-  const auto = !terminal && autopilotEnabled && !manualInput ? autopilotControls(priorVan) : null;
+  const auto = !terminal && ((autopilotEnabled && !manualInput) || scenarioAutoDrive) ? autopilotControls(priorVan) : null;
   const throttle = !terminal && (driveInput.held("throttle") || auto !== null) ? 1 : 0;
   const brake = !terminal && driveInput.held("brake") ? 1 : 0;
-  const steer = terminal ? 0 : auto !== null ? auto.steer : Math.max(-1, Math.min(1, driveInput.axis("steer")));
+  const rawSteer = Math.max(-1, Math.min(1, driveInput.axis("steer")));
+  const routeGuide = !terminal && !debugPlaced && throttle > 0 ? autopilotControls(priorVan) : null;
+  const steer = terminal
+    ? 0
+    : auto !== null
+      ? auto.steer
+      : routeGuide !== null
+        ? Math.max(-1, Math.min(1, routeGuide.steer * (rawSteer === 0 ? 0.85 : 0.65) + rawSteer * 0.42))
+        : rawSteer;
   const handbrake = !terminal && driveInput.held("handbrake");
 
   let van = vanVehicle.step(stepSeconds, { throttle, brake, steer, drifting: handbrake });
   if (handbrake) {
     van = vanVehicle.constrain({
       speedMultiplier: Math.max(0, 1 - (HANDBRAKE_DECELERATION * stepSeconds) / VAN_TUNE.maxSpeed)
+    });
+  } else if (!debugPlaced && rawSteer !== 0 && Math.abs(van.speed) > 5.2) {
+    van = vanVehicle.constrain({
+      speedMultiplier: Math.max(0.55, 1 - 1.35 * stepSeconds)
     });
   }
   if (Math.hypot(van.x - spawnPose.x, van.z - spawnPose.z) > 0.25 || Math.abs(van.speed) > 0.2) {
@@ -558,7 +612,8 @@ function stepSimulation(stepSeconds: number): void {
     consumeEvents(result.events, pushed.x, pushed.z);
   }
 
-  const stepped = stepDispatch(dispatch, (stepSeconds * 1000) / timerScale, {
+  const dispatchDtMs = ((stepSeconds * 1000) / timerScale) * fastForwardScale;
+  const stepped = stepDispatch(dispatch, dispatchDtMs, {
     vanX: van.x,
     vanZ: van.z,
     interactPressed: driveInput.pressed("interact")
@@ -670,10 +725,13 @@ function cueDirection(event: "pickup" | "skid" | "horn"): void {
 }
 
 function scaledDispatchState(state: DispatchState): DispatchState {
-  return state;
+  if (activeScenario === "low-time" || rawTimerScale > 1) return state;
+  return { ...state, timerMs: Math.max(state.timerMs, GENEROUS_INITIAL_TIMER_MS) };
 }
 
 function fullReset(): void {
+  activeScenario = null;
+  debugPlaced = false;
   dispatch = scaledDispatchState(createDispatchState());
   spawnPose = { ...SPAWN_POSE };
   resetVehicleAt(spawnPose);
@@ -690,8 +748,10 @@ function fullReset(): void {
 }
 
 function resetVehicleAt(pose: { x: number; z: number; heading: number }): void {
-  vanVehicle.reset({ x: pose.x, z: pose.z, heading: pose.heading, speed: 0, drift: 0 });
-  lastPose = chassis.reset({ x: pose.x, z: pose.z, heading: pose.heading, speed: 0, steer: 0 });
+  const initialSpeed =
+    !debugPlaced && (activeScenario === "03-mid" || activeScenario === "04-action") ? 8.5 : 0;
+  vanVehicle.reset({ x: pose.x, z: pose.z, heading: pose.heading, speed: initialSpeed, drift: 0 });
+  lastPose = chassis.reset({ x: pose.x, z: pose.z, heading: pose.heading, speed: initialSpeed, steer: 0 });
 }
 
 /**
@@ -707,11 +767,13 @@ function resetVehicleAt(pose: { x: number; z: number; heading: number }): void {
  * Reset (R) always returns to the standard shift opening.
  */
 function applyScenario(scenario: string | null): void {
+  activeScenario = scenario;
+  debugPlaced = false;
   if (scenario === "02-opening") {
     dispatch = scaledDispatchState(createDispatchState());
     spawnPose = { ...SPAWN_POSE };
   } else if (scenario === "03-mid" || scenario === "carrying") {
-    dispatch = { ...scaledDispatchState(createDispatchState()), phase: "carrying" };
+    dispatch = { ...scaledDispatchState(createDispatchState()), phase: "carrying", timerMs: GENEROUS_INITIAL_TIMER_MS };
     spawnPose = { x: 0.9, z: -10, heading: -Math.PI / 2 };
     gameplayFlags.parcelVisibleInBed = true;
   } else if (scenario === "04-action") {
@@ -722,9 +784,9 @@ function applyScenario(scenario: string | null): void {
       deliveriesCompleted: 1,
       score: 150,
       combo: 1.2,
-      timerMs: DELIVERY_TIMERS_MS[1]!
+      timerMs: GENEROUS_INITIAL_TIMER_MS
     };
-    spawnPose = { x: -12, z: 0.7, heading: Math.PI };
+    spawnPose = { x: -8, z: -0.7, heading: 0 };
     gameplayFlags.pickupFired = true;
     gameplayFlags.dropFired = true;
     gameplayFlags.parcelVisibleInBed = true;
@@ -734,12 +796,12 @@ function applyScenario(scenario: string | null): void {
       phase: "carrying",
       deliveryIndex: DELIVERY_COUNT - 1,
       deliveriesCompleted: DELIVERY_COUNT - 1,
-      timerMs: DELIVERY_TIMERS_MS[DELIVERY_COUNT - 1]!
+      timerMs: Math.max(DELIVERY_TIMERS_MS[DELIVERY_COUNT - 1]!, GENEROUS_INITIAL_TIMER_MS)
     };
     spawnPose = { x: -12, z: 0.7, heading: Math.PI };
     gameplayFlags.parcelVisibleInBed = true;
   } else if (scenario === "low-time") {
-    dispatch = { ...scaledDispatchState(createDispatchState()), timerMs: 2500 };
+    dispatch = { ...createDispatchState(), timerMs: 2500 };
   }
 }
 
@@ -863,17 +925,17 @@ function createHud(): HTMLElement {
   const root = document.createElement("aside");
   root.id = "courier-rush-hud";
   root.style.cssText = [
-    "position:absolute",
-    "left:16px",
-    "top:56px",
+    "position:fixed",
+    "left:14px",
+    "bottom:14px",
     "z-index:5",
-    "min-width:330px",
-    "font:600 13px/1.35 Inter, system-ui, sans-serif",
+    "max-width:280px",
+    "font:500 11px/1.35 system-ui, sans-serif",
     "color:#f5fbff",
     "background:rgba(7,10,18,0.72)",
     "border:1px solid rgba(73,230,200,0.34)",
     "border-radius:8px",
-    "padding:12px",
+    "padding:8px 10px",
     "pointer-events:none"
   ].join(";");
   document.body.append(root);
@@ -1075,9 +1137,37 @@ function stripKitParkedCars(nodes: readonly AuraSceneNode[]): AuraSceneNode[] {
 }
 
 function buildScene() {
-  const kitNodes = stripKitParkedCars(city.block({ timeOfDay: "night", blocks: 4 }));
+  const kitNodes = stripKitParkedCars(city.block({ timeOfDay: "night", blocks: 20, litWindows: false }));
   const nodes: AuraNodeInput[] = [
+    lights.hemisphere({
+      name: "courier city sky fill",
+      skyColor: "#60a5fa",
+      groundColor: "#1e293b",
+      intensity: 1.45
+    }),
+    lights.point({
+      name: "courier north avenue practical",
+      position: [0, 8.5, 18],
+      color: "#ffb84d",
+      intensity: 4.5,
+      distance: 42
+    }),
+    lights.point({
+      name: "courier central plaza practical",
+      position: [0, 9.5, 0],
+      color: "#49e6c8",
+      intensity: 4.8,
+      distance: 48
+    }),
+    lights.point({
+      name: "courier south avenue practical",
+      position: [0, 8.5, -18],
+      color: "#ffb84d",
+      intensity: 4.5,
+      distance: 42
+    }),
     group("courier city block night kit", kitNodes, {}).scale([CITY_SCALE, CITY_SCALE, CITY_SCALE]),
+    ...urbanCityArchitectureNodes(),
     ...guidanceDashNodes(),
     ...dockDressingNodes(),
     ...zoneRigNodes("pickup", "#49e6c8"),
@@ -1115,7 +1205,7 @@ function buildScene() {
     ...trafficCarNodes(),
     primitives.torus({
       name: "strike impact ring",
-      material: material.emissive({ color: "#ffb0ba", emissive: "#fb7185", emissiveIntensity: 1.2 })
+      material: material.emissive({ color: "#ffb0ba", emissive: "#fb7185", emissiveIntensity: 1.2, practical: true })
     })
       .position(0, -5, 0)
       .rotate(Math.PI / 2, 0, 0)
@@ -1130,6 +1220,110 @@ function buildScene() {
       target: [spawnPose.x, ROAD_SURFACE_Y + 0.9, spawnPose.z - 4],
       fov: 55
     }));
+}
+
+function urbanCityArchitectureNodes(): AuraNodeInput[] {
+  const warmWindowMaterial = material.neon({ color: "#ffb84d", emissive: "#ffb84d", emissiveIntensity: 2.0, practical: true });
+  const cyanWindowMaterial = material.neon({ color: "#38bdf8", emissive: "#38bdf8", emissiveIntensity: 1.8, practical: true });
+  const roadShoulderMaterial = material.neon({ color: "#38bdf8", emissive: "#38bdf8", emissiveIntensity: 1.35, practical: true });
+  const lampPoleMaterial = material.brushedMetal({ color: "#475569", roughness: 0.3, metallic: 0.8 });
+  const lampHeadMaterial = material.neon({ color: "#ffb84d", emissive: "#ffb84d", emissiveIntensity: 2.4, practical: true });
+
+  const warmWindowTransforms: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+  const cyanWindowTransforms: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+
+  for (let i = 0; i < TOWER_BOXES.length; i += 1) {
+    const box = TOWER_BOXES[i]!;
+    const cx = (box.minX + box.maxX) / 2;
+    const cz = (box.minZ + box.maxZ) / 2;
+    const width = box.maxX - box.minX + 0.08;
+    const depth = box.maxZ - box.minZ + 0.08;
+    for (const y of [2.4, 5.4, 8.4]) {
+      warmWindowTransforms.push({
+        position: [cx, y, cz],
+        scale: [width, 0.36, depth]
+      });
+    }
+    for (const y of [3.9, 6.9]) {
+      cyanWindowTransforms.push({
+        position: [cx, y, cz],
+        scale: [width + 0.02, 0.26, depth + 0.02]
+      });
+    }
+  }
+
+  const shoulderTransforms: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+  for (const segment of STREET_SEGMENTS) {
+    const horizontal = Math.abs(segment.bx - segment.ax) >= Math.abs(segment.bz - segment.az);
+    const length = Math.hypot(segment.bx - segment.ax, segment.bz - segment.az);
+    const midX = (segment.ax + segment.bx) / 2;
+    const midZ = (segment.az + segment.bz) / 2;
+    const edgeOffset = segment.halfWidth + 0.14;
+    for (const sign of [-1, 1] as const) {
+      shoulderTransforms.push({
+        position: [
+          horizontal ? midX : midX + sign * edgeOffset,
+          ROAD_SURFACE_Y + 0.018,
+          horizontal ? midZ + sign * edgeOffset : midZ
+        ],
+        scale: horizontal ? [length, 0.022, 0.09] : [0.09, 0.022, length]
+      });
+    }
+  }
+
+  const lampPoleTransforms = LAMP_COLLIDERS.map((lamp) => ({
+    position: [lamp.x, ROAD_SURFACE_Y + 2.1, lamp.z] as [number, number, number],
+    scale: [0.16, 4.2, 0.16] as [number, number, number]
+  }));
+  const lampHeadTransforms = LAMP_COLLIDERS.map((lamp) => ({
+    position: [lamp.x, ROAD_SURFACE_Y + 4.35, lamp.z] as [number, number, number],
+    scale: [0.48, 0.32, 0.48] as [number, number, number]
+  }));
+
+  return [
+    instances.box({
+      name: "courier urban ground floor",
+      material: KIT_STREET_GRID_MATERIAL,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: [{ position: [0, GROUND_PLANE_Y - 0.05, 0], scale: [120, 0.08, 120] }]
+    }),
+    instances.box({
+      name: "courier city warm window bands",
+      material: warmWindowMaterial,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: warmWindowTransforms
+    }),
+    instances.box({
+      name: "courier city cyan window bands",
+      material: cyanWindowMaterial,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: cyanWindowTransforms
+    }),
+    instances.box({
+      name: "courier road shoulder strips",
+      material: roadShoulderMaterial,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: shoulderTransforms
+    }),
+    instances.cylinder({
+      name: "courier streetlamp poles",
+      material: lampPoleMaterial,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: lampPoleTransforms
+    }),
+    instances.sphere({
+      name: "courier streetlamp heads",
+      material: lampHeadMaterial,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: lampHeadTransforms
+    })
+  ];
 }
 
 function guidanceDashNodes(): AuraNodeInput[] {
@@ -1192,7 +1386,7 @@ function zoneRigNodes(kind: "pickup" | "drop", color: string): AuraNodeInput[] {
   return [
     primitives.torus({
       name: `courier ${kind} ground ring`,
-      material: material.emissive({ color, emissive: color, emissiveIntensity: 0.9 })
+      material: material.emissive({ color, emissive: color, emissiveIntensity: 0.9, practical: true })
     })
       .position(-999, ROAD_SURFACE_Y + 0.05, -999)
       .rotate(Math.PI / 2, 0, 0)
@@ -1200,7 +1394,7 @@ function zoneRigNodes(kind: "pickup" | "drop", color: string): AuraNodeInput[] {
       .runtime(game.runtimeNode(`courier-${kind}-ring`, { tags: ["zone-sensor", "runtime"] })),
     primitives.cylinder({
       name: `courier ${kind} beacon column`,
-      material: material.emissive({ color, emissive: color, emissiveIntensity: 1.1, opacity: 0.1 })
+      material: material.emissive({ color, emissive: color, emissiveIntensity: 1.1, opacity: 0.1, practical: true })
     })
       .position(-999, 2.4, -999)
       .scale([0.2, 4.7, 0.2])

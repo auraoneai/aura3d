@@ -3,7 +3,16 @@
 // dispatcher is deleted. Gameplay is the salvaged `src/gameplay/**` surface
 // (flight/patrol/drones/weapons/ghost) plus the extracted course data and
 // Rapier sensor layer; the scene, HUD, input, and evidence are new.
-import { game, type AuraRuntimeNodeHandle } from "@aura3d/engine";
+import {
+  game,
+  instances,
+  looks,
+  material,
+  primitives,
+  type AuraRuntimeNodeHandle,
+  type AuraSceneNode,
+  type AuraSceneSnapshot
+} from "@aura3d/engine";
 // PRD-09: mounted via the shared runtime — createGame owns mount/lifecycle,
 // the sci-fi-telemetry HUD theme, the flight touch preset, and sfx cues.
 import { createGame, sfxUrl } from "@aura3d/engine/game";
@@ -109,6 +118,203 @@ const BOUNCE_SCRAPE = 6;
 const LANDING = { padCenter: PAD_CENTER, padY: PAD_Y, padRadius: PAD_RADIUS } as const;
 const SPAWN = { position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]] as const, headingYaw: PAD_HEADING_YAW };
 
+// Three.js-grade coastal palette and PBR materials (replacing heavy peach fog wash).
+const DEEP_MARINE_OCEAN_MAT = material.reflectiveFloor({
+  name: "deep marine ocean",
+  color: "#062846",
+  roughness: 0.08,
+  metallic: 0.35,
+  clearcoat: 0.9,
+  clearcoatRoughness: 0.04
+});
+const OCEAN_CYAN_GLINT_MAT = material.reflectiveFloor({
+  name: "ocean cyan wake glint",
+  color: "#0c4a6e",
+  roughness: 0.05,
+  metallic: 0.42,
+  clearcoat: 0.95,
+  clearcoatRoughness: 0.03
+});
+const OCEAN_WAKE_FOAM_MAT = material.ceramic({
+  name: "cyan white surf foam",
+  color: "#e0f2fe",
+  roughness: 0.22,
+  clearcoat: 0.65
+});
+const BASALT_CLIFF_MAT = material.ceramic({
+  name: "dark basalt cliffs",
+  color: "#1e293b",
+  roughness: 0.65
+});
+const EMERALD_FOLIAGE_MAT = material.lacquer({
+  name: "lush emerald island foliage",
+  color: "#14532d",
+  roughness: 0.35,
+  clearcoat: 0.4
+});
+const SANDY_COVE_MAT = material.matteClay({
+  name: "sandy coastal coves",
+  color: "#d6b485",
+  roughness: 0.76
+});
+const AIRCRAFT_SILVER_FUSELAGE_MAT = material.brushedMetal({
+  name: "sleek silver fuselage",
+  color: "#cbd5e1",
+  roughness: 0.24
+});
+const AIRCRAFT_NAVY_TRIM_MAT = material.carPaint({
+  name: "sleek navy wing trim",
+  color: "#0284c7",
+  roughness: 0.22,
+  clearcoat: 0.95
+});
+const CYAN_THRUSTER_GLOW_MAT = material.neon({
+  name: "bright cyan thruster glow",
+  color: "#22d3ee",
+  emissive: "#22d3ee",
+  emissiveIntensity: 2.6,
+  practical: true
+});
+const RING_CHROME_ARCH_MAT = material.brushedMetal({
+  name: "ring gate chrome arch",
+  color: "#e2e8f0",
+  roughness: 0.16,
+  clearcoat: 0.85
+});
+const RING_AMBER_NEON_MAT = material.neon({
+  name: "ring active amber neon",
+  color: "#fbbf24",
+  emissive: "#fbbf24",
+  emissiveIntensity: 2.4,
+  practical: true
+});
+const RING_CYAN_NEON_MAT = material.neon({
+  name: "ring queued cyan neon",
+  color: "#22d3ee",
+  emissive: "#22d3ee",
+  emissiveIntensity: 2.0,
+  practical: true
+});
+const RING_PASSED_NEON_MAT = material.neon({
+  name: "ring passed emerald neon",
+  color: "#34d399",
+  emissive: "#34d399",
+  emissiveIntensity: 1.8,
+  practical: true
+});
+void RING_ACTIVE;
+void RING_QUEUED;
+void RING_PASSED;
+
+function buildUpgradedPatrolScene(): AuraSceneSnapshot {
+  const base = buildPatrolScene().toJSON();
+  const lookOverrideGroup = looks
+    .preset(LOOK_ID, {
+      fogDensityScale: 0.04,
+      background: "#0b2545",
+      accent: "#22d3ee",
+      exposureEv: 0.05,
+      sun: { elevationDeg: 32, azimuthDeg: 38 }
+    })
+    .toJSON();
+
+  const upgradedNodes: AuraSceneNode[] = base.nodes.map((node): AuraSceneNode => {
+    const name = "name" in node ? node.name : undefined;
+    if (node.kind === "group" && name === `aura-look:${LOOK_ID}`) {
+      return lookOverrideGroup;
+    }
+    if (node.kind === "light" && name === "evening sun key") {
+      return { ...node, color: "#bae6fd", intensity: 1.35 };
+    }
+    if (node.kind === "primitive") {
+      if (name === "ocean") return { ...node, material: DEEP_MARINE_OCEAN_MAT };
+      if (name?.startsWith("ocean-glint-")) return { ...node, material: OCEAN_CYAN_GLINT_MAT };
+      if (name === "shoreline-foam-ring") return { ...node, material: OCEAN_WAKE_FOAM_MAT };
+      if (name === "island-terrain" || name?.startsWith("foliage-ridge-")) {
+        return { ...node, material: EMERALD_FOLIAGE_MAT };
+      }
+      if (name === "island-cliff-skirt" || name?.startsWith("sea-stack-")) {
+        return { ...node, material: BASALT_CLIFF_MAT };
+      }
+      if (name === "plane-afterburner") {
+        return { ...node, material: CYAN_THRUSTER_GLOW_MAT };
+      }
+      if (name?.startsWith("ring-")) {
+        return { ...node, material: name === "ring-0" ? RING_AMBER_NEON_MAT : RING_CYAN_NEON_MAT };
+      }
+    }
+    return node;
+  });
+
+  const extraNodes: AuraSceneNode[] = [
+    // Sandy coves (#d6b485) framing the basalt cliffs and emerald terraces
+    instances
+      .cylinder({
+        name: "sandy-coves-terrace",
+        material: SANDY_COVE_MAT,
+        castShadow: false,
+        receiveShadow: true,
+        transforms: [
+          { position: [0, 0.14, 0], scale: [48.4, 0.22, 48.4] },
+          { position: [-14, 0.26, 15], scale: [14.5, 0.28, 10.5] },
+          { position: [15, 0.24, -14], scale: [13.0, 0.26, 9.5] },
+          { position: [-18, 0.22, -12], scale: [11.5, 0.24, 9.0] }
+        ]
+      })
+      .toJSON(),
+    // Cyan/white wake & surf foam streaks across the deep marine ocean
+    instances
+      .box({
+        name: "ocean-wake-foam-accents",
+        material: OCEAN_WAKE_FOAM_MAT,
+        castShadow: false,
+        receiveShadow: false,
+        transforms: [
+          { position: [-22, 0.05, 16.8], rotation: [0, 0.08, 0], scale: [14.0, 0.03, 0.55] },
+          { position: [-36, 0.05, 12.2], rotation: [0, 0.28, 0], scale: [16.0, 0.03, 0.65] },
+          { position: [-34, 0.06, -14], rotation: [0, 0.4, 0], scale: [9.2, 0.04, 7.8] },
+          { position: [-16, 0.06, -34], rotation: [0, 2.1, 0], scale: [9.8, 0.04, 8.2] },
+          { position: [26, 0.06, -32], rotation: [0, 0.8, 0], scale: [8.8, 0.04, 7.4] },
+          { position: [38, 0.06, 4], rotation: [0, 1.7, 0], scale: [8.4, 0.04, 9.0] }
+        ]
+      })
+      .toJSON(),
+    // High-contrast brushed-metal/chrome outer arches around each glowing neon ring gate
+    instances
+      .torus({
+        name: "ring-gate-chrome-arches",
+        material: RING_CHROME_ARCH_MAT,
+        castShadow: false,
+        receiveShadow: true,
+        transforms: RING_GATES.map((gate) => ({
+          position: [gate.position[0], gate.position[1], gate.position[2]] as [number, number, number],
+          rotation: [0, gate.yaw, 0] as [number, number, number],
+          scale: [gate.radius * 2.26, gate.radius * 2.26, gate.radius * 0.55] as [number, number, number]
+        }))
+      })
+      .toJSON(),
+    // Sleek silver fuselage spine & navy car-paint wing trim synced to the aircraft
+    primitives
+      .capsule({ name: "airframe-silver-fuselage", material: AIRCRAFT_SILVER_FUSELAGE_MAT, castShadow: true })
+      .position(SPAWN.position[0], SPAWN.position[1] + 0.08, SPAWN.position[2])
+      .scale([0.36, 2.5, 0.36])
+      .runtime(game.runtimeNode("airframe-silver-fuselage", { tags: ["airframe-trim"] }))
+      .toJSON(),
+    primitives
+      .box({ name: "airframe-navy-wing", material: AIRCRAFT_NAVY_TRIM_MAT, castShadow: true })
+      .position(SPAWN.position[0], SPAWN.position[1] + 0.04, SPAWN.position[2])
+      .scale([0.92, 0.08, 3.65])
+      .runtime(game.runtimeNode("airframe-navy-wing", { tags: ["airframe-trim"] }))
+      .toJSON()
+  ];
+
+  return {
+    ...base,
+    background: "#0b2545",
+    nodes: [...upgradedNodes, ...extraNodes]
+  };
+}
+
 // --------------------------------------------------------------------- sim ---
 let flight = new FlightModel({ ...SPAWN, grounded: "preflight" });
 const rings = new RingTracker();
@@ -138,7 +344,7 @@ const patrolGame = createGame({
   id: "showcase-patrol-wing",
   target: "#app",
   diagnostics: { overlay: false, performancePanel: false },
-  scene: () => buildPatrolScene(),
+  scene: () => buildUpgradedPatrolScene(),
   input: {
     actions: {
       // Salvaged flight mapping (flight.ts): S/W pitch, A/D roll, Q/E yaw,
@@ -408,7 +614,12 @@ function resetToPad(nextPatrol: number): void {
 
 function syncRingMaterials(): void {
   for (const gate of RING_GATES) {
-    const mat = gate.index < rings.nextRing ? RING_PASSED : gate.index === rings.nextRing ? RING_ACTIVE : RING_QUEUED;
+    const mat =
+      gate.index < rings.nextRing
+        ? RING_PASSED_NEON_MAT
+        : gate.index === rings.nextRing
+          ? RING_AMBER_NEON_MAT
+          : RING_CYAN_NEON_MAT;
     handle(`ring-${gate.index}`)?.setMaterial(mat);
   }
   const next: RingGate | undefined = RING_GATES[rings.nextRing];
@@ -567,6 +778,14 @@ function syncVisuals(): void {
   const u = flight.up;
   const r = flight.right;
   handle("patrol-plane")?.setVisible(true).setPosition(p[0], p[1], p[2]).setRotation(e.x, e.y, e.z);
+  handle("airframe-silver-fuselage")
+    ?.setVisible(true)
+    .setPosition(p[0] + u[0] * 0.08, p[1] + u[1] * 0.08, p[2] + u[2] * 0.08)
+    .setRotation(e.x, e.y, e.z - Math.PI / 2);
+  handle("airframe-navy-wing")
+    ?.setVisible(true)
+    .setPosition(p[0] - f[0] * 0.1 + u[0] * 0.04, p[1] - f[1] * 0.1 + u[1] * 0.04, p[2] - f[2] * 0.1 + u[2] * 0.04)
+    .setRotation(e.x, e.y, e.z);
   rigState.position = [p[0], p[1], p[2]];
   rigState.forward = [f[0], f[1], f[2]];
   rigState.up = [u[0], u[1], u[2]];
@@ -660,17 +879,17 @@ function createHud(): HTMLElement {
   const root = document.createElement("aside");
   root.id = "patrol-wing-hud";
   root.style.cssText = [
-    "position:absolute",
-    "left:16px",
-    "top:16px",
+    "position:fixed",
+    "left:14px",
+    "bottom:14px",
     "z-index:5",
-    "min-width:340px",
-    "font:600 13px/1.35 system-ui, sans-serif",
+    "max-width:280px",
+    "font:500 11px/1.35 system-ui, sans-serif",
     "color:#eef7ff",
-    "background:rgba(7,20,34,0.72)",
-    "border:1px solid rgba(89,215,255,0.34)",
+    "background:rgba(7,20,34,0.78)",
+    "border:1px solid rgba(34,211,238,0.38)",
     "border-radius:8px",
-    "padding:12px",
+    "padding:8px 10px",
     "pointer-events:none"
   ].join(";");
   document.body.append(root);

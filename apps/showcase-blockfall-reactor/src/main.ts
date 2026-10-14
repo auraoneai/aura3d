@@ -6,9 +6,11 @@ import {
   game,
   gameFeel,
   instances,
+  lights,
   looks,
   material,
   model,
+  primitives,
   scene,
   type AuraColor,
   type AuraNodeInput,
@@ -408,26 +410,190 @@ function createPracticeBoard(): Cell[][] {
 }
 
 function buildScene(board: Board) {
+  const floorY = boardOrigin.y - railSize;
+  const brushedSteel = material.brushedMetal({
+    color: "#94a3b8",
+    roughness: 0.2,
+    metallic: 0.88,
+    anisotropy: 0.88,
+    emissive: "#1e3a5f",
+    emissiveIntensity: 0.1
+  });
+  const reactorFrameMat = material.brushedMetal({
+    color: FRAME_COLOR,
+    roughness: 0.22,
+    metallic: 0.86,
+    anisotropy: 0.88,
+    emissive: FRAME_ACCENT,
+    emissiveIntensity: 0.22,
+    practical: true
+  });
+  const cyberDeckFloorMat = material.reflectiveFloor({
+    color: "#091326",
+    roughness: 0.08,
+    metallic: 0.54,
+    clearcoat: 0.92,
+    clearcoatRoughness: 0.03,
+    emissive: "#162a4a",
+    emissiveIntensity: 0.09
+  });
+  const reactorWallBackdropMat = material.reflectiveFloor({
+    color: "#0d1a33",
+    roughness: 0.14,
+    metallic: 0.48,
+    clearcoat: 0.88,
+    clearcoatRoughness: 0.04,
+    emissive: "#1e3a5f",
+    emissiveIntensity: 0.1
+  });
+  const neonCyanGridMat = material.neon({
+    color: "#4de8ff",
+    emissive: "#4de8ff",
+    emissiveIntensity: 1.4,
+    practical: true
+  });
+  const neonMagentaGridMat = material.neon({
+    color: "#ff5d7d",
+    emissive: "#ff5d7d",
+    emissiveIntensity: 1.35,
+    practical: true
+  });
+
+  const wallHeightScale = subjectHeight / assets.quaterniusWallModular.bounds[1];
+  const coolingTowerXs = [-5.4, -3.75, 3.75, 5.4] as const;
+  const gridXs = [-6.0, -4.8, -3.6, -2.4, -1.2, 0, 1.2, 2.4, 3.6, 4.8, 6.0] as const;
+  const gridZs = [-1.2, -0.4, 0.4, 1.2, 2.0, 2.8, 3.6] as const;
+
   const nodes: AuraNodeInput[] = [
-    // Symmetrical modular reactor bay pillars flank the board well,
-    // grounding the cabinet inside a 3D containment bay.
-    model(assets.quaterniusWallModular, { name: "typed arcade cabinet right", castShadow: true })
-      .position(2.05, 0.2, -0.55)
-      .rotate(0, -0.28, 0)
-      .scale(0.22),
-    model(assets.quaterniusWallModular, { name: "typed arcade cabinet left", castShadow: true })
-      .position(-2.05, 0.2, -0.55)
-      .rotate(0, 0.28, 0)
-      .scale(0.22),
-    // Reflective reactor chamber floor deck beneath the well so the neon
-    // frame and falling blocks cast crisp specular reflections.
+    // Enclosed reactor containment chamber backdrop wall spanning the full
+    // orthographic frame so no black void surrounds the board.
+    primitives.box({
+      name: "reactor-containment-backdrop-wall",
+      position: [0, boardCenterY + 0.55, -1.65],
+      size: [16.8, 9.6, 0.24],
+      material: reactorWallBackdropMat,
+      castShadow: false,
+      receiveShadow: true
+    }),
+    // Symmetrical modular reactor containment pylons anchored directly to the
+    // reactor floor with brushedSteel material.
+    model(assets.quaterniusWallModular, {
+      name: "typed arcade cabinet right",
+      material: brushedSteel,
+      scaleMode: "world",
+      castShadow: true
+    })
+      .position(2.15, boardCenterY, -0.36)
+      .rotate(0, -0.18, 0)
+      .scale([0.58, wallHeightScale, 1.15]),
+    model(assets.quaterniusWallModular, {
+      name: "typed arcade cabinet left",
+      material: brushedSteel,
+      scaleMode: "world",
+      castShadow: true
+    })
+      .position(-2.15, boardCenterY, -0.36)
+      .rotate(0, 0.18, 0)
+      .scale([0.58, wallHeightScale, 1.15]),
+    // Integrated base pedestals and upper containment caps anchored to the
+    // reactor floor and pylon tops so no wooden crate floats in mid-air.
     model(assets.quaterniusCubeCrate, {
-      name: "reactor chamber floor deck",
-      material: material.reflectiveFloor({ color: "#060b16", roughness: 0.1, metallic: 0.45, clearcoat: 0.88, clearcoatRoughness: 0.04 }),
+      name: "reactor-pylon-pedestal-left",
+      material: reactorFrameMat,
       scaleMode: "world"
     })
-      .position(0, boardOrigin.y - railSize - 0.05, 0.35)
-      .scale(worldScale3(subjectWidth + 3.8, 0.08, 2.2)),
+      .position(-2.15, floorY + 0.28, -0.24)
+      .scale(worldScale3(1.32, 0.56, 0.78)),
+    model(assets.quaterniusCubeCrate, {
+      name: "reactor-pylon-pedestal-right",
+      material: reactorFrameMat,
+      scaleMode: "world"
+    })
+      .position(2.15, floorY + 0.28, -0.24)
+      .scale(worldScale3(1.32, 0.56, 0.78)),
+    model(assets.quaterniusCubeCrate, {
+      name: "reactor-pylon-cap-left",
+      material: brushedSteel,
+      scaleMode: "world"
+    })
+      .position(-2.15, boardTop + railSize - 0.22, -0.24)
+      .scale(worldScale3(1.32, 0.44, 0.78)),
+    model(assets.quaterniusCubeCrate, {
+      name: "reactor-pylon-cap-right",
+      material: brushedSteel,
+      scaleMode: "world"
+    })
+      .position(2.15, boardTop + railSize - 0.22, -0.24)
+      .scale(worldScale3(1.32, 0.44, 0.78)),
+    model(assets.quaterniusCubeCrate, {
+      name: "reactor-hold-dock-pedestal",
+      material: reactorFrameMat,
+      scaleMode: "world"
+    })
+      .position(-2.15, 1.48, -0.06)
+      .scale(worldScale3(0.92, 0.16, 0.54)),
+    // Flanking reactor cooling towers + structural ribs in brushed steel,
+    // anchored to the reactor floor.
+    instances.box({
+      name: "reactor-cooling-towers-and-ribs",
+      material: brushedSteel,
+      transforms: [
+        ...coolingTowerXs.map((x) => ({
+          position: [x, floorY + 2.65, -0.82] as [number, number, number],
+          scale: [0.82, 5.3, 0.82] as [number, number, number]
+        })),
+        ...coolingTowerXs.map((x) => ({
+          position: [x, floorY + 0.22, -0.76] as [number, number, number],
+          scale: [1.14, 0.44, 1.08] as [number, number, number]
+        })),
+        { position: [0, boardTop + 0.62, -1.42], scale: [14.6, 0.28, 0.28] },
+        { position: [0, floorY + 0.14, -1.42], scale: [14.6, 0.28, 0.28] }
+      ]
+    }),
+    // Reflective reactor chamber cyber floor deck extending across the frame.
+    model(assets.quaterniusCubeCrate, {
+      name: "reactor chamber floor deck",
+      material: cyberDeckFloorMat,
+      scaleMode: "world"
+    })
+      .position(0, floorY - 0.06, 0.85)
+      .scale(worldScale3(16.8, 0.12, 11.4)),
+    // Neon cyan grid lines on the cyber floor deck + cooling tower rings.
+    instances.box({
+      name: "reactor-cyber-grid-cyan",
+      material: neonCyanGridMat,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: [
+        ...gridXs.map((x) => ({
+          position: [x, floorY + 0.01, 1.1] as [number, number, number],
+          scale: [0.035, 0.02, 6.2] as [number, number, number]
+        })),
+        ...coolingTowerXs.flatMap((x) => [
+          { position: [x, floorY + 1.2, -0.38] as [number, number, number], scale: [0.88, 0.07, 0.08] as [number, number, number] },
+          { position: [x, floorY + 2.8, -0.38] as [number, number, number], scale: [0.88, 0.07, 0.08] as [number, number, number] },
+          { position: [x, floorY + 4.4, -0.38] as [number, number, number], scale: [0.88, 0.07, 0.08] as [number, number, number] }
+        ])
+      ]
+    }),
+    // Neon magenta lateral cyber deck grid lines + containment conduit bands.
+    instances.box({
+      name: "reactor-cyber-grid-magenta",
+      material: neonMagentaGridMat,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: [
+        ...gridZs.map((z) => ({
+          position: [0, floorY + 0.012, z] as [number, number, number],
+          scale: [13.6, 0.02, 0.035] as [number, number, number]
+        })),
+        ...coolingTowerXs.map((x) => ({
+          position: [x, floorY + 2.0, -0.38] as [number, number, number],
+          scale: [0.88, 0.06, 0.08] as [number, number, number]
+        })),
+        { position: [0, boardTop + 0.42, -1.32], scale: [13.6, 0.06, 0.06] }
+      ]
+    }),
     // Dark clearcoated glossy board backing sourced from the typed block GLB,
     // sized in world metres to the full subject (well + rails).
     model(assets.quaterniusCubeCrate, {
@@ -437,33 +603,46 @@ function buildScene(board: Board) {
     })
       .position(0, boardCenterY, -0.16)
       .scale(worldScale3(subjectWidth, subjectHeight, 0.06)),
-    ...boardFrameNodes(),
+    ...boardFrameNodes(reactorFrameMat),
     ...settledCellsNode(board),
     ...activeCellNodes(),
     ...flashRowNodes(),
     model(assets.quaterniusCubeCrate, { name: "hold preview", material: material.neon({ color: "#b987d0", emissive: "#b987d0", emissiveIntensity: 0.5 }) })
-      .position(-2.05, 1.92, 0.1)
+      .position(-2.15, 1.72, 0.06)
       .scale(bs(0.09))
       .runtime(game.runtimeNode("hold-preview", { tags: ["hold", "runtime"] }))
   ];
 
   // The neon-arcade look supplies the night-city sky gradient, key light,
-  // fog and grade — no ambient fill, background override or debug overlay.
+  // fog and grade; two non-shadowed practical directional fills illuminate
+  // the brushed-steel containment pylons, cooling towers, and cyber floor.
   return scene()
-    .add(looks.preset(LOOK_ID))
+    .add(looks.preset(LOOK_ID, { exposureEv: 0.35, fogDensityScale: 0.2 }))
+    .add(
+      lights.directional({
+        name: "reactor-cyan-key-fill",
+        position: [-5.5, 4.5, 8.5],
+        target: [0, boardCenterY, -0.8],
+        color: "#4de8ff",
+        intensity: 2.2,
+        shadow: false
+      })
+    )
+    .add(
+      lights.directional({
+        name: "reactor-magenta-rim-fill",
+        position: [5.5, 3.8, 7.5],
+        target: [0, boardCenterY, -0.8],
+        color: "#ff5d7d",
+        intensity: 1.85,
+        shadow: false
+      })
+    )
     .addMany(nodes)
     .camera(camera.orthographic({ position: [0.35, 0.75, 4.6], target: [0, boardCenterY, 0], orthographicSize: ORTHOGRAPHIC_SIZE }));
 }
 
-function boardFrameNodes(): AuraNodeInput[] {
-  const rail = material.brushedMetal({
-    color: FRAME_COLOR,
-    roughness: 0.22,
-    anisotropy: 0.88,
-    emissive: FRAME_ACCENT,
-    emissiveIntensity: 0.22,
-    practical: true
-  });
+function boardFrameNodes(rail: ReturnType<typeof material.brushedMetal>): AuraNodeInput[] {
   const railDepth = 0.18;
   const halfRail = railSize / 2;
   return [
@@ -656,17 +835,17 @@ function createHud(): HTMLElement {
   const root = document.createElement("aside");
   root.id = "blockfall-reactor-hud";
   root.style.cssText = [
-    "position:absolute",
-    "left:16px",
-    "top:88px",
+    "position:fixed",
+    "left:14px",
+    "bottom:14px",
+    "max-width:260px",
     "z-index:5",
-    "min-width:290px",
-    "font:500 13px/1.4 'Whitney', 'DIN Pro', system-ui, sans-serif",
+    "font:500 11px/1.35 system-ui, sans-serif",
     "color:#f5fbff",
-    "background:rgba(8,10,22,0.78)",
+    "background:rgba(8,10,22,0.82)",
     "border:1px solid rgba(77,232,255,0.34)",
     "border-radius:8px",
-    "padding:10px 12px",
+    "padding:8px 10px",
     "pointer-events:none"
   ].join(";");
   document.body.append(root);
@@ -680,11 +859,13 @@ function renderHud(state: KitState): void {
   blockfallGame.hud.set("lines", state.lines);
   blockfallGame.hud.set("objective", objective);
   hudRoot.innerHTML = [
+    `<div id="hud">`,
     `<strong>Blockfall Reactor</strong>`,
-    `<div>Score ${state.score} | Lines ${state.lines} | Level ${state.level}</div>`,
+    `<div>Score <span id="score">${state.score}</span> | Lines <span id="lines">${state.lines}</span> | Level <span id="level">${state.level}</span></div>`,
     `<div>Active ${state.active?.kind ?? "--"} | Hold ${state.hold ?? "--"} | Checksum ${state.checksum.slice(0, 8)}</div>`,
-    `<div>${objective}</div>`,
-    `<div>Move arrows/A-D. Rotate W/Q. Drop Space. Hold C. Reset R.</div>`
+    `<div id="status">${objective}</div>`,
+    `<div>Move arrows/A-D. Rotate W/Q. Drop Space. Hold C. Reset R.</div>`,
+    `</div>`
   ].join("");
 }
 

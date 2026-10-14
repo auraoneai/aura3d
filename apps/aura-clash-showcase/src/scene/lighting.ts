@@ -33,35 +33,35 @@ export function auraClashLights(): AuraNodeInput[] {
       shadow: true
     }),
     // Cool back-rim directional (no shadow — one shadowed key only).
-    // 1.6 matches the arena-fight look preset's rim intensity so fighter
-    // silhouettes separate from the dark brick backdrop.
+    // 1.85 separates fighter silhouettes and rooftop architecture against the night skyline.
     lights.directional({
       name: "clash cool rim",
       color: "#39d6ff",
-      intensity: 1.6,
+      intensity: 1.85,
       position: [-4.5, 3.2, -6.5]
     }),
     // Neon practicals above the grounded floor-edge trim strips (x ±2.45).
     lights.point({
       name: "clash neon pink practical",
       color: "#ff2d78",
-      intensity: 1.35,
+      intensity: 1.65,
       position: [-2.45, 0.48, -1.2]
     }),
     lights.point({
       name: "clash neon cyan practical",
       color: "#39d6ff",
-      intensity: 1.25,
+      intensity: 1.55,
       position: [2.45, 0.48, -1.2]
     })
   ];
 }
 
-/** K1 night-city HDRI stand-in (R-14-13): dusk HDR at enclosed fill level. */
+/** K1 night-city HDRI stand-in (R-14-13): dusk HDR at enclosed fill level with dark sky background preserved. */
 export function auraClashEnvironment(): AuraNodeInput {
   return environments.hdri({
     name: "clash night city hdri",
     texture: envAssets.nightCityHdr,
-    intensity: 0.32
+    intensity: 0.42,
+    background: false
   });
 }

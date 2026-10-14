@@ -1342,17 +1342,17 @@ function createHudOverlay(): HTMLElement {
   root.id = "hud";
   root.setAttribute("data-hud", "gravity-post");
   root.style.cssText = [
-    "position:absolute",
-    "left:16px",
-    "top:56px",
+    "position:fixed",
+    "left:14px",
+    "bottom:52px",
     "z-index:5",
-    "max-width:340px",
-    "font:500 13px/1.4 system-ui, sans-serif",
+    "max-width:260px",
+    "font:500 11px/1.35 system-ui, sans-serif",
     "color:#f5fbff",
     "background:rgba(4,6,18,0.78)",
     "border:1px solid rgba(89,215,255,0.38)",
     "border-radius:8px",
-    "padding:10px 12px",
+    "padding:7px 10px",
     "pointer-events:none"
   ].join(";");
   document.body.append(root);

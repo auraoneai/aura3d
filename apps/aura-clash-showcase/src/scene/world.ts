@@ -61,15 +61,48 @@ export function auraClashWorldNodes(o: AuraClashWorldOptions = {}): readonly Aur
       receiveShadow: true,
       transforms: [
         { position: [0, 0.24, -1.62], scale: [9.2, 0.48, 0.12] },
+        { position: [0, 0.62, -1.62], scale: [9.2, 0.06, 0.08] },
         { position: [-4.54, 0.24, 0], scale: [0.12, 0.48, 3.2] },
         { position: [4.54, 0.24, 0], scale: [0.12, 0.48, 3.2] },
         { position: [-3.6, 0.55, -1.56], scale: [0.22, 1.1, 0.22] },
-        { position: [3.6, 0.55, -1.56], scale: [0.22, 1.1, 0.22] }
+        { position: [3.6, 0.55, -1.56], scale: [0.22, 1.1, 0.22] },
+        { position: [-4.54, 0.55, -1.56], scale: [0.2, 1.1, 0.2] },
+        { position: [4.54, 0.55, -1.56], scale: [0.2, 1.1, 0.2] }
+      ]
+    }),
+    // Deep urban rooftop substructure skirt under the arena slab (y < 0) so the
+    // stage sits on a grounded skyscraper crown rather than floating in space.
+    instances.box({
+      name: "clash rooftop substructure mass",
+      material: STAGE_BORDER_MATERIAL,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: [
+        { position: [0, -2.4, -0.1], scale: [9.2, 4.6, 3.16] },
+        { position: [-6.4, -2.6, -2.6], scale: [5.4, 4.6, 4.2] },
+        { position: [6.4, -2.6, -2.6], scale: [5.4, 4.6, 4.2] },
+        { position: [0, -3.2, -5.8], scale: [24.0, 5.6, 6.0] }
+      ]
+    }),
+    instances.box({
+      name: "clash rooftop substructure ribs",
+      material: ROOFTOP_TRIM_MATERIAL,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: [
+        { position: [0, -0.22, 0], scale: [9.44, 0.2, 3.36] },
+        { position: [0, -0.68, 1.54], scale: [9.36, 0.14, 0.18] },
+        { position: [0, -1.35, 1.54], scale: [9.36, 0.14, 0.18] },
+        { position: [-4.4, -1.8, 1.52], scale: [0.28, 3.2, 0.22] },
+        { position: [-2.2, -1.8, 1.52], scale: [0.24, 3.2, 0.2] },
+        { position: [0, -1.8, 1.52], scale: [0.28, 3.2, 0.22] },
+        { position: [2.2, -1.8, 1.52], scale: [0.24, 3.2, 0.2] },
+        { position: [4.4, -1.8, 1.52], scale: [0.28, 3.2, 0.22] }
       ]
     })
   );
 
-  // Grounded neon floor-edge trim strips at y = 0.04 (emissive practicals — nothing floating in mid-air).
+  // Grounded neon floor-edge trim strips at y = 0.04 and substructure cornice accents (emissive practicals).
   nodes.push(
     instances.box({
       name: "clash neon sign pink",
@@ -78,7 +111,10 @@ export function auraClashWorldNodes(o: AuraClashWorldOptions = {}): readonly Aur
       receiveShadow: false,
       transforms: [
         { position: [-2.1, 0.04, -1.36], scale: [2.6, 0.04, 0.08] },
-        { position: [-3.48, 0.04, 0], scale: [0.08, 0.04, 2.6] }
+        { position: [-3.48, 0.04, 0], scale: [0.08, 0.04, 2.6] },
+        { position: [-2.2, -0.34, 1.58], scale: [3.8, 0.04, 0.06] },
+        { position: [-9.2, 3.2, -16.2], scale: [2.4, 0.12, 0.12] },
+        { position: [-4.8, 4.6, -17.4], scale: [2.0, 0.12, 0.12] }
       ]
     }),
     instances.box({
@@ -88,26 +124,30 @@ export function auraClashWorldNodes(o: AuraClashWorldOptions = {}): readonly Aur
       receiveShadow: false,
       transforms: [
         { position: [2.1, 0.04, -1.36], scale: [2.6, 0.04, 0.08] },
-        { position: [3.48, 0.04, 0], scale: [0.08, 0.04, 2.6] }
+        { position: [3.48, 0.04, 0], scale: [0.08, 0.04, 2.6] },
+        { position: [2.2, -0.34, 1.58], scale: [3.8, 0.04, 0.06] },
+        { position: [4.8, 4.2, -17.4], scale: [2.2, 0.12, 0.12] },
+        { position: [9.4, 3.4, -16.2], scale: [2.4, 0.12, 0.12] }
       ]
     })
   );
 
   // K2 skyline layer beyond a fog card: the kept textured downtown GLB,
-  // pushed back and desaturated behind the parapet (setDressing, backdrop).
+  // flanked symmetrically on west and east by rooftop buildings and backed by
+  // a continuous distant city skyline silhouette so no edge cutouts appear.
   nodes.push(
-    instances.plane({
+    instances.box({
       name: "clash far fog card",
       material: FOG_CARD_MATERIAL,
       castShadow: false,
       receiveShadow: false,
-      transforms: [{ position: [0, 2.1, -4.6], scale: [12.5, 5.2, 1] }]
+      transforms: [{ position: [0, -1.8, -10.5], scale: [28.0, 2.4, 0.4] }]
     }),
     model(assets.arenaNeonDowntownTextured, {
       name: "clash downtown skyline",
       role: "primaryWorld",
       scaleMode: "fit",
-      targetMaxDimension: 14,
+      targetMaxDimension: 16,
       castShadow: false,
       receiveShadow: false,
       // Instruction-copy signs stay filtered (legacy :872-877 dropped them as
@@ -116,37 +156,38 @@ export function auraClashWorldNodes(o: AuraClashWorldOptions = {}): readonly Aur
         "AuraClash_Sign_NEON ROOFTOP",
         "AuraClash_Sign_FIGHT READY"
       ]
-    }).position(0, -0.4, -13).rotate(0, Math.PI, 0),
-    // DELETED (lane run 38414884637 brick-wall defect): the former §14.4
-    // "foreground props" second instance of this GLB at (-0.6,-0.35,2.1),
-    // fit 3.4. Under the fit scale its building nodes occupy
-    // x[-2.36,1.04] y[-0.35,2.59] z[2.50,4.43] — directly between the
-    // fighting camera and the fight plane — and lane pixels prove the
-    // hiddenNodeNames suppression did not remove them (full-frame brick
-    // at 1920x1080, brick-dominated openings at every viewport, building
-    // facade at frame-left in 03-mid). The nodes it meant to keep
-    // (Prop_ACUnit_*/Prop_Bollard_*) are ~0.07 m at that scale — no
-    // readable dressing — so the instance is removed by construction
-    // rather than relocated. Nothing authored may sit in the camera
-    // corridor z in (0, camera distance) across the stage width again.
+    }).position(-0.8, -0.5, -13.2).rotate(0, Math.PI, 0),
+    model(assets.arenaRooftopBuilding, {
+      name: "clash rooftop flank west",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 5.4,
+      castShadow: false,
+      receiveShadow: true
+    }).position(-6.2, -0.35, -2.5),
     model(assets.arenaRooftopBuilding, {
       name: "clash rooftop flank east",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 5.2,
+      targetMaxDimension: 5.4,
       castShadow: false,
       receiveShadow: true
-    }).position(6.4, 0, -2.2),
-    // Skyline silhouette filler slabs either side of the downtown layer.
+    }).position(6.2, -0.35, -2.5),
+    // Distant city skyline silhouette behind the downtown layer (z <= -16.5 so
+    // no slab ever clips in front of the brick building facade).
     instances.box({
       name: "clash skyline slabs",
       material: SKYLINE_MATERIAL,
       castShadow: false,
       receiveShadow: false,
       transforms: [
-        { position: [-6.8, 2.6, -8.2], scale: [3.4, 5.8, 0.6] },
-        { position: [-3.4, 3.4, -9.4], scale: [2.6, 7.4, 0.6] },
-        { position: [8.1, 3.0, -8.8], scale: [3.8, 6.6, 0.6] }
+        { position: [-12.5, 1.8, -17.5], scale: [4.2, 9.6, 1.2] },
+        { position: [-8.8, 2.6, -16.8], scale: [3.6, 11.2, 1.2] },
+        { position: [-4.6, 3.2, -18.2], scale: [3.8, 12.4, 1.2] },
+        { position: [0, 3.6, -19.0], scale: [5.2, 13.2, 1.2] },
+        { position: [4.8, 3.0, -18.2], scale: [3.8, 12.0, 1.2] },
+        { position: [9.0, 2.4, -16.8], scale: [3.8, 10.8, 1.2] },
+        { position: [12.8, 1.6, -17.5], scale: [4.4, 9.2, 1.2] }
       ]
     })
   );

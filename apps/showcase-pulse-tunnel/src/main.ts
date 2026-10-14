@@ -1235,17 +1235,18 @@ function createHudDom(): HTMLElement {
   const root = document.createElement("aside");
   root.id = "pulse-tunnel-hud";
   root.style.cssText = [
-    "position:absolute",
-    "left:16px",
-    "top:16px",
+    "position:fixed",
+    "left:14px",
+    "bottom:54px",
     "z-index:5",
-    "min-width:300px",
-    "font:500 13px/1.4 system-ui, sans-serif",
+    "max-width:260px",
+    "font:500 11px/1.35 system-ui, sans-serif",
     "color:#ecf8ff",
     "background:rgba(15,9,35,0.74)",
     "border:1px solid rgba(63,242,255,0.38)",
     "border-radius:8px",
-    "padding:10px 12px",
+    "padding:7px 10px",
+    "opacity:0.88",
     "pointer-events:none"
   ].join(";");
   document.body.append(root);
