@@ -402,7 +402,6 @@ function createSwarmRig(state: SwarmRigState): AuraCameraRig {
 // ----------------------------------------------------------------- scene -----
 
 function buildLaneGridNodes(): AuraNodeInput[] {
-  const nodes: AuraNodeInput[] = [];
   const cyanStripMat = material.neon({
     name: "neon-grid-cyan",
     color: "#082f49",
@@ -417,47 +416,54 @@ function buildLaneGridNodes(): AuraNodeInput[] {
     emissiveIntensity: 2.6,
     practical: true
   });
-  for (let i = -3; i <= 3; i += 1) {
-    nodes.push(
-      primitives.box({
-        name: `plaza-grid-x-${i + 4}`,
-        material: i % 2 === 0 ? cyanStripMat : magentaStripMat
+  const xTransforms = Array.from({ length: 7 }, (_, idx) => {
+    const i = idx - 3;
+    return {
+      position: [i * 6.5, 0.03, 0] as [number, number, number],
+      scale: [0.24, 0.05, 32] as [number, number, number]
+    };
+  });
+  const zTransforms = Array.from({ length: 5 }, (_, idx) => {
+    const j = idx - 2;
+    return {
+      position: [0, 0.032, j * 6.2] as [number, number, number],
+      scale: [48, 0.05, 0.24] as [number, number, number]
+    };
+  });
+  return [
+    instances
+      .box({
+        name: "plaza-grid-x-instanced",
+        transforms: xTransforms,
+        material: cyanStripMat
       })
-        .position(i * 6.5, 0.03, 0)
-        .scale([0.24, 0.05, 32])
-        .toJSON()
-    );
-  }
-  for (let j = -2; j <= 2; j += 1) {
-    nodes.push(
-      primitives.box({
-        name: `plaza-grid-z-${j + 3}`,
-        material: j % 2 === 0 ? magentaStripMat : cyanStripMat
+      .toJSON(),
+    instances
+      .box({
+        name: "plaza-grid-z-instanced",
+        transforms: zTransforms,
+        material: magentaStripMat
       })
-        .position(0, 0.032, j * 6.2)
-        .scale([48, 0.05, 0.24])
-        .toJSON()
-    );
-  }
-  nodes.push(
-    primitives.torus({
-      name: "plaza-inner-cyber-ring",
-      material: cyanStripMat
-    })
+      .toJSON(),
+    primitives
+      .torus({
+        name: "plaza-inner-cyber-ring",
+        material: cyanStripMat
+      })
       .position(0, 0.04, 1.5)
       .rotate(Math.PI / 2, 0, 0)
       .scale([4.8, 4.8, 0.22])
       .toJSON(),
-    primitives.torus({
-      name: "plaza-outer-cyber-ring",
-      material: magentaStripMat
-    })
+    primitives
+      .torus({
+        name: "plaza-outer-cyber-ring",
+        material: magentaStripMat
+      })
       .position(0, 0.038, 1.5)
       .rotate(Math.PI / 2, 0, 0)
       .scale([9.2, 9.2, 0.18])
       .toJSON()
-  );
-  return nodes;
+  ];
 }
 
 function buildPerimeterAndPylonNodes(): AuraNodeInput[] {
@@ -467,11 +473,6 @@ function buildPerimeterAndPylonNodes(): AuraNodeInput[] {
     color: "#1e293b",
     roughness: 0.24,
     anisotropy: 0.85
-  });
-  const shieldGlassMat = material.frostedGlass({
-    name: "arena-energy-shield",
-    color: "#38bdf8",
-    opacity: 0.42
   });
   const cyberTrimCyanMat = material.neon({
     name: "arena-cyber-trim-cyan",
@@ -492,7 +493,6 @@ function buildPerimeterAndPylonNodes(): AuraNodeInput[] {
     color: "#38bdf8"
   });
 
-  // 3D perimeter containment walls + translucent frostedGlass energy shields + neon cyber trim
   const wallSpecs = [
     { id: "north", x: 0, z: -16.8, sx: 53.2, sz: 0.9, trimMat: cyberTrimCyanMat },
     { id: "south", x: 0, z: 16.8, sx: 53.2, sz: 0.9, trimMat: cyberTrimMagentaMat },
@@ -502,31 +502,25 @@ function buildPerimeterAndPylonNodes(): AuraNodeInput[] {
 
   for (const w of wallSpecs) {
     nodes.push(
-      primitives.box({
-        name: `arena-perimeter-wall-${w.id}`,
-        material: wallMetalMat
-      })
+      primitives
+        .box({
+          name: `arena-perimeter-wall-${w.id}`,
+          material: wallMetalMat
+        })
         .position(w.x, 0.75, w.z)
         .scale([w.sx, 1.5, w.sz])
         .toJSON(),
-      primitives.box({
-        name: `arena-perimeter-shield-${w.id}`,
-        material: shieldGlassMat
-      })
-        .position(w.x, 1.85, w.z)
-        .scale([w.sx * 0.98, 1.15, Math.max(0.28, w.sz * 0.42)])
-        .toJSON(),
-      primitives.box({
-        name: `arena-perimeter-trim-${w.id}`,
-        material: w.trimMat
-      })
+      primitives
+        .box({
+          name: `arena-perimeter-trim-${w.id}`,
+          material: w.trimMat
+        })
         .position(w.x, 1.54, w.z)
-        .scale([w.sx, 0.16, Math.max(0.36, w.sz * 0.55)])
+        .scale([w.sx, 0.18, Math.max(0.36, w.sz * 0.55)])
         .toJSON()
     );
   }
 
-  // Octagonal corner bumpers & central arena bumpers
   const bumperCoords = [
     [-23.5, -14.5],
     [23.5, -14.5],
@@ -535,62 +529,35 @@ function buildPerimeterAndPylonNodes(): AuraNodeInput[] {
     [-16.5, 0],
     [16.5, 0]
   ] as const;
-  for (let i = 0; i < bumperCoords.length; i += 1) {
-    const [bx, bz] = bumperCoords[i]!;
-    nodes.push(
-      primitives.cylinder({
-        name: `arena-octagonal-bumper-${i}`,
-        material: wallMetalMat
-      })
-        .position(bx, 0.85, bz)
-        .scale([2.2, 1.7, 2.2])
-        .toJSON(),
-      primitives.torus({
-        name: `arena-bumper-trim-${i}`,
-        material: i % 2 === 0 ? cyberTrimCyanMat : cyberTrimMagentaMat
-      })
-        .position(bx, 1.45, bz)
-        .rotate(Math.PI / 2, 0, 0)
-        .scale([1.28, 1.28, 0.26])
-        .toJSON()
-    );
-  }
+  const bumperTransforms = bumperCoords.map(([bx, bz]) => ({
+    position: [bx, 0.85, bz] as [number, number, number],
+    scale: [2.2, 1.7, 2.2] as [number, number, number]
+  }));
+  const pylonBaseTransforms = arenaLayout.obstacles.map((obstacle) => ({
+    position: [obstacle.x, 0.28, obstacle.z] as [number, number, number],
+    scale: [2.15, 0.56, 2.15] as [number, number, number]
+  }));
+  const pylonCoreTransforms = arenaLayout.obstacles.map((obstacle) => ({
+    position: [obstacle.x, 1.15, obstacle.z] as [number, number, number],
+    scale: [0.62, 2.1, 0.62] as [number, number, number]
+  }));
 
-  // Cover pylons (swarmArenaPylon) around each obstacle barricade
-  arenaLayout.obstacles.forEach((obstacle, index) => {
-    nodes.push(
-      primitives.cylinder({
-        name: `swarm-arena-pylon-base-${index}`,
+  nodes.push(
+    instances
+      .cylinder({
+        name: "arena-octagonal-bumpers",
+        transforms: [...bumperTransforms, ...pylonBaseTransforms],
         material: wallMetalMat
       })
-        .position(obstacle.x, 0.28, obstacle.z)
-        .scale([2.15, 0.56, 2.15])
-        .toJSON(),
-      primitives.box({
-        name: `swarm-arena-pylon-shield-${index}`,
-        material: shieldGlassMat
-      })
-        .position(obstacle.x, 1.18, obstacle.z)
-        .rotate(0, obstacle.rotationY, 0)
-        .scale([2.35, 1.65, 0.34])
-        .toJSON(),
-      primitives.box({
-        name: `swarm-arena-pylon-trim-${index}`,
-        material: index % 2 === 0 ? cyberTrimCyanMat : cyberTrimMagentaMat
-      })
-        .position(obstacle.x, 2.04, obstacle.z)
-        .rotate(0, obstacle.rotationY, 0)
-        .scale([2.42, 0.16, 0.42])
-        .toJSON(),
-      primitives.cylinder({
-        name: `swarm-arena-pylon-core-${index}`,
+      .toJSON(),
+    instances
+      .cylinder({
+        name: "swarm-arena-pylon-cores",
+        transforms: pylonCoreTransforms,
         material: pylonChromeMat
       })
-        .position(obstacle.x, 1.15, obstacle.z)
-        .scale([0.62, 2.1, 0.62])
-        .toJSON()
-    );
-  });
+      .toJSON()
+  );
 
   return nodes;
 }
@@ -660,10 +627,10 @@ function buildScene() {
     name: "swarm-player-ship-paint",
     color: "#ec4899"
   });
-  const playerShipCanopyMat = material.frostedGlass({
+  const playerShipCanopyMat = material.chrome({
     name: "swarm-player-ship-canopy",
-    color: "#38bdf8",
-    opacity: 0.42
+    color: "#7dd3fc",
+    roughness: 0.08
   });
   const playerShipCoreMat = material.neon({
     name: "swarm-player-ship-core",
@@ -673,14 +640,14 @@ function buildScene() {
     practical: true
   });
 
-  const barricadeNodes: AuraNodeInput[] = arenaLayout.obstacles.map((obstacle, index) =>
+  const barricadeNodes: AuraNodeInput[] = arenaLayout.obstacles.slice(0, 2).map((obstacle, index) =>
     model(assets.neonBarricadeProp, {
       name: `street-barricade-${index}`,
       role: "primaryWorld",
       scaleMode: "fit",
       targetMaxDimension: 3.1,
-      castShadow: true,
-      receiveShadow: true
+      castShadow: false,
+      receiveShadow: false
     })
       .position(obstacle.x, 0, obstacle.z)
       .rotate(0, obstacle.rotationY, 0)
@@ -688,14 +655,14 @@ function buildScene() {
       .toJSON()
   );
 
-  const lampNodes: AuraNodeInput[] = arenaLayout.lamps.map((lamp, index) =>
+  const lampNodes: AuraNodeInput[] = arenaLayout.lamps.slice(0, 1).map((lamp, index) =>
     model(assets.neonStreetLampProp, {
       name: `street-lamp-${index}`,
       role: "setDressing",
       scaleMode: "fit",
       targetMaxDimension: 4.8,
       castShadow: false,
-      receiveShadow: true
+      receiveShadow: false
     })
       .position(lamp.x, 0, lamp.z)
       .runtime(engineGame.runtimeNode(`neon-lamp-${index}`, { tags: ["landmark", "typed-asset"] }))
@@ -703,10 +670,11 @@ function buildScene() {
   );
 
   const doorNodes: AuraNodeInput[] = PICKUP_DOORS.map((door) =>
-    primitives.torus({
-      name: `pickup-portal-${door.kind === "fire-rate" ? "cadence" : door.kind}`,
-      material: doorMat
-    })
+    primitives
+      .torus({
+        name: `pickup-portal-${door.kind === "fire-rate" ? "cadence" : door.kind}`,
+        material: doorMat
+      })
       .position(door.x, -8, door.z)
       .rotate(Math.PI / 2, 0, 0)
       .scale([1.25, 1.25, 0.42])
@@ -715,10 +683,11 @@ function buildScene() {
   );
 
   const boundaryNodes: AuraNodeInput[] = (["north", "south", "east", "west"] as const).map((edge) =>
-    primitives.box({
-      name: `arena-pressure-${edge}`,
-      material: boundaryMat
-    })
+    primitives
+      .box({
+        name: `arena-pressure-${edge}`,
+        material: boundaryMat
+      })
       .position(0, 0.22, 0)
       .scale([1, 0.36, 1])
       .runtime(engineGame.runtimeNode(`arena-pressure-${edge}`, { tags: ["arena-boundary", "danger"] }))
@@ -743,18 +712,20 @@ function buildScene() {
       })
     )
     .add(
-      primitives.box({
-        name: "night-plaza-apron-slab",
-        material: outerApronMat
-      })
+      primitives
+        .box({
+          name: "night-plaza-apron-slab",
+          material: outerApronMat
+        })
         .position(0, -0.32, 0)
         .scale([82, 0.4, 60])
     )
     .add(
-      primitives.box({
-        name: "night-plaza-floor",
-        material: floorMat
-      })
+      primitives
+        .box({
+          name: "night-plaza-floor",
+          material: floorMat
+        })
         .position(0, -0.12, 0)
         .scale([52, 0.24, 34])
     )
@@ -765,10 +736,11 @@ function buildScene() {
     .addMany(doorNodes)
     .addMany(boundaryNodes)
     .add(
-      primitives.sphere({
-        name: "risk-pickup-node",
-        material: pickupMat
-      })
+      primitives
+        .sphere({
+          name: "risk-pickup-node",
+          material: pickupMat
+        })
         .position(pickupPosition.x, 0.85, pickupPosition.z)
         .scale([0.92, 0.92, 0.92])
         .runtime(engineGame.runtimeNode("swarm-pickup", { tags: ["pickup", "collectible", "gameplay-state"] }))
@@ -778,152 +750,138 @@ function buildScene() {
         name: "courier-avatar",
         role: "primaryCharacter",
         scaleMode: "fit",
-        targetHeight: 2.65,
-        castShadow: true,
-        receiveShadow: true
+        targetHeight: 0.65,
+        castShadow: false,
+        receiveShadow: false
       })
-        .position(0, 0, 3)
+        .position(0, 0.18, 3)
         .runtime(engineGame.runtimeNode("neon-player", { tags: ["primary-actor", "typed-primary-asset"] }))
     )
     .add(
-      primitives.cylinder({
-        name: "courier-craft-hull",
-        material: playerShipChromeMat
-      })
+      primitives
+        .cylinder({
+          name: "courier-craft-hull",
+          material: playerShipChromeMat
+        })
         .position(0, 0.38, 3)
         .scale([1.75, 0.34, 2.15])
         .runtime(engineGame.runtimeNode("swarm-player-ship-hull", { tags: ["player-readability", "craft-hull"] }))
     )
     .add(
-      primitives.box({
-        name: "courier-craft-wings",
-        material: playerShipPaintMat
-      })
+      primitives
+        .box({
+          name: "courier-craft-wings",
+          material: playerShipPaintMat
+        })
         .position(0, 0.46, 3)
         .scale([2.2, 0.18, 0.92])
         .runtime(engineGame.runtimeNode("swarm-player-ship-wings", { tags: ["player-readability", "craft-wings"] }))
     )
     .add(
-      primitives.sphere({
-        name: "courier-craft-canopy",
-        material: playerShipCanopyMat
-      })
+      primitives
+        .sphere({
+          name: "courier-craft-canopy",
+          material: playerShipCanopyMat
+        })
         .position(0, 0.72, 3)
         .scale([1.05, 0.56, 1.25])
         .runtime(engineGame.runtimeNode("swarm-player-ship-canopy", { tags: ["player-readability", "craft-canopy"] }))
     )
     .add(
-      primitives.torus({
-        name: "courier-craft-core",
-        material: playerShipCoreMat
-      })
+      primitives
+        .torus({
+          name: "courier-craft-core",
+          material: playerShipCoreMat
+        })
         .position(0, 0.52, 3)
         .rotate(Math.PI / 2, 0, 0)
         .scale([1.15, 1.15, 0.26])
         .runtime(engineGame.runtimeNode("swarm-player-ship-core", { tags: ["player-readability", "craft-core"] }))
     )
     .add(
-      primitives.torus({
-        name: "courier-pulse-radius-ring",
-        material: pulseRingMat
-      })
+      primitives
+        .torus({
+          name: "courier-pulse-radius-ring",
+          material: pulseRingMat
+        })
         .position(0, 0.16, 3)
         .rotate(Math.PI / 2, 0, 0)
         .scale([1.45, 1.45, 0.22])
         .runtime(engineGame.runtimeNode("neon-player-burst-radius", { tags: ["player-readability", "burst-radius"] }))
     )
     .add(
-      primitives.torus({
-        name: "courier-burst-event-ring",
-        material: burstWaveMat
-      })
+      primitives
+        .torus({
+          name: "courier-burst-event-ring",
+          material: burstWaveMat
+        })
         .position(0, -8, 3)
         .rotate(Math.PI / 2, 0, 0)
         .scale([0.65, 0.65, 0.26])
         .runtime(engineGame.runtimeNode("neon-burst-event-ring", { tags: ["actual-event-feedback", "burst"] }))
     )
     .add(
-      primitives.box({
-        name: "courier-aim-vector-bar",
-        material: aimVectorMat
-      })
+      primitives
+        .box({
+          name: "courier-aim-vector-bar",
+          material: aimVectorMat
+        })
         .position(0, 0.28, 1.4)
         .scale([0.16, 0.1, 2.1])
         .runtime(engineGame.runtimeNode("neon-player-aim-vector", { tags: ["player-readability", "aim-vector"] }))
     )
     .add(
-      instances.capsule({
-        name: "swarm-grunt-pool",
-        transforms: swarm.gruntTransforms as unknown as readonly AuraTransformSpec[],
-        colors: swarm.gruntColors,
-        material: material.carPaint({
-          name: "swarm-chaser-drone-carpaint",
-          color: "#f97316",
-          roughness: 0.2,
-          metallic: 0.72,
-          clearcoat: 1,
-          clearcoatRoughness: 0.02
-        }),
-        size: [0.92, 1.95, 0.92]
-      }).runtime(engineGame.runtimeNode("neon-grunt-pool", { tags: ["enemy-pool", "instanced", "grunt"] }))
+      instances
+        .capsule({
+          name: "swarm-grunt-pool",
+          transforms: swarm.gruntTransforms as unknown as readonly AuraTransformSpec[],
+          colors: swarm.gruntColors,
+          material: material.carPaint({
+            name: "swarm-chaser-drone-carpaint",
+            color: "#f97316",
+            roughness: 0.2,
+            metallic: 0.72,
+            clearcoat: 1,
+            clearcoatRoughness: 0.02
+          }),
+          size: [1.05, 1.95, 1.05]
+        })
+        .runtime(engineGame.runtimeNode("neon-grunt-pool", { tags: ["enemy-pool", "instanced", "grunt"] }))
     )
     .add(
-      instances.torus({
-        name: "swarm-splitter-rotor-pool",
-        transforms: swarm.gruntTransforms as unknown as readonly AuraTransformSpec[],
-        colors: swarm.gruntColors,
-        material: material.chrome({
-          name: "swarm-splitter-drone-chrome",
-          color: "#38bdf8"
-        }),
-        size: [1.48, 0.26, 1.48]
-      }).runtime(engineGame.runtimeNode("neon-grunt-rotor-pool", { tags: ["enemy-pool", "instanced", "grunt-rotor"] }))
+      instances
+        .box({
+          name: "swarm-elite-pool",
+          transforms: swarm.eliteTransforms as unknown as readonly AuraTransformSpec[],
+          colors: swarm.eliteColors,
+          material: material.carPaint({
+            name: "swarm-charger-drone-carpaint",
+            color: "#ec4899",
+            roughness: 0.18,
+            metallic: 0.78,
+            clearcoat: 1,
+            clearcoatRoughness: 0.02
+          }),
+          size: [1.72, 0.96, 1.94]
+        })
+        .runtime(engineGame.runtimeNode("neon-elite-pool", { tags: ["enemy-pool", "instanced", "elite"] }))
     )
     .add(
-      instances.box({
-        name: "swarm-elite-pool",
-        transforms: swarm.eliteTransforms as unknown as readonly AuraTransformSpec[],
-        colors: swarm.eliteColors,
-        material: material.carPaint({
-          name: "swarm-charger-drone-carpaint",
-          color: "#ec4899",
-          roughness: 0.18,
-          metallic: 0.78,
-          clearcoat: 1,
-          clearcoatRoughness: 0.02
-        }),
-        size: [1.72, 0.96, 1.94]
-      }).runtime(engineGame.runtimeNode("neon-elite-pool", { tags: ["enemy-pool", "instanced", "elite"] }))
-    )
-    .add(
-      instances.sphere({
-        name: "swarm-charger-core-pool",
-        transforms: swarm.eliteTransforms as unknown as readonly AuraTransformSpec[],
-        colors: swarm.eliteColors,
-        material: material.neon({
-          name: "swarm-charger-drone-core",
-          color: "#4a044e",
-          emissive: "#ec4899",
-          emissiveIntensity: 2.8,
-          practical: true
-        }),
-        size: [1.18, 1.08, 1.18]
-      }).runtime(engineGame.runtimeNode("neon-elite-core-pool", { tags: ["enemy-pool", "instanced", "elite-core"] }))
-    )
-    .add(
-      instances.sphere({
-        name: "swarm-debris-pool",
-        transforms: sparkTransforms,
-        colors: sparkColors,
-        material: material.neon({
-          name: "swarm-spark-material",
-          color: "#422006",
-          emissive: "#ffd166",
-          emissiveIntensity: 2.8,
-          practical: true
-        }),
-        size: 0.28
-      }).runtime(engineGame.runtimeNode("neon-spark-pool", { tags: ["fx-pool", "instanced"] }))
+      instances
+        .sphere({
+          name: "swarm-debris-pool",
+          transforms: sparkTransforms,
+          colors: sparkColors,
+          material: material.neon({
+            name: "swarm-spark-material",
+            color: "#422006",
+            emissive: "#ffd166",
+            emissiveIntensity: 2.8,
+            practical: true
+          }),
+          size: 0.28
+        })
+        .runtime(engineGame.runtimeNode("neon-spark-pool", { tags: ["fx-pool", "instanced"] }))
     )
     .addMany([
       lights
@@ -1013,6 +971,8 @@ const hudBindings = [
 ] as const;
 
 let latestSnapshot: NeonSwarmEvidence | undefined;
+let cachedEngineEvidence: unknown;
+let lastHudSig = "";
 
 const swarmGame = createGame({
   id: "showcase-neon-swarm",
@@ -1665,7 +1625,7 @@ function syncSceneNodes(): void {
 
   const yaw = playerYaw();
   handle("neon-player")
-    ?.setPosition(player.x, 0, player.z)
+    ?.setPosition(player.x, 0.18, player.z)
     .setRotation(0, yaw, 0);
   handle("swarm-player-ship-hull")
     ?.setPosition(player.x, 0.42, player.z)
@@ -1741,11 +1701,16 @@ function objectiveText(): string {
 }
 
 function renderHud(): void {
+  const objText = objectiveText();
+  const burstVal = Number(burstCharge.toFixed(2));
+  const sig = `${score}|${combo}|${player.hp}|${burstVal}|${objText}|${runState}|${wave}`;
+  if (sig === lastHudSig) return;
+  lastHudSig = sig;
   swarmGame.hud.set("score", score);
   swarmGame.hud.set("combo", Math.max(1, combo));
   swarmGame.hud.set("hp", player.hp);
-  swarmGame.hud.set("burst", Number(burstCharge.toFixed(2)));
-  swarmGame.hud.set("objective", objectiveText());
+  swarmGame.hud.set("burst", burstVal);
+  swarmGame.hud.set("objective", objText);
   swarmGame.hud.set(
     "prompt",
     runState === "intermission"
@@ -1759,7 +1724,7 @@ function renderHud(): void {
     }
     const statusLine = document.getElementById("hud-status-line");
     if (statusLine) {
-      statusLine.textContent = objectiveText();
+      statusLine.textContent = objText;
     }
   }
 }
@@ -1781,18 +1746,21 @@ function audioEvidence(): NeonSwarmEvidence["audio"] {
 
 function publishEvidence(): NeonSwarmEvidence {
   const objective = objectiveText();
-  const evidence = app.evidence({
-    input,
-    events: routeEvents,
-    hud: hudBindings,
-    appState: {
-      score,
-      objective,
-      events: routeEvents.events().map((event: { readonly label: string }) => event.label)
-    },
-    assets: { typedAssets: Object.keys(assets).length, missingAssets: [] },
-    source: { expectsGame: true }
-  });
+  const eventList = routeEvents.events().map((event: { readonly label: string }) => event.label);
+  if (!cachedEngineEvidence || frame <= 5 || frame % 6 === 0) {
+    cachedEngineEvidence = app.evidence({
+      input,
+      events: routeEvents,
+      hud: hudBindings,
+      appState: {
+        score,
+        objective,
+        events: eventList
+      },
+      assets: { typedAssets: Object.keys(assets).length, missingAssets: [] },
+      source: { expectsGame: true }
+    });
+  }
   const diagnostics = app.diagnostics();
   const aliveTotal = swarm.aliveCount();
   const aliveGrunts = swarm.aliveGruntCount();
@@ -1914,8 +1882,8 @@ function publishEvidence(): NeonSwarmEvidence {
     look: { id: LOOK_ID, category: "neon" },
     appliedLook,
     audio: audioEvidence(),
-    events: routeEvents.events().map((event: { readonly label: string }) => event.label),
-    evidence
+    events: eventList,
+    evidence: cachedEngineEvidence
   };
   latestSnapshot = snapshot;
   if (typeof document !== "undefined" && framed) {
