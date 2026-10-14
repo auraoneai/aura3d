@@ -237,8 +237,8 @@ let frameCounter = 0;
 let objective = heatObjective();
 let aimCacheKey = "";
 let aimPoints: readonly { readonly x: number; readonly y: number; readonly z: number }[] = [];
-let lastShooterPoseKey: keyof typeof SHOOTER_POSES | "" = "";
-let lastDefenderPoseKey: keyof typeof DEFENDER_POSES | "" = "";
+let lastShooterPoseKey = "";
+let lastDefenderPoseKey = "";
 let lastHudSignature = "";
 let cachedDrawCalls = 0;
 let cachedEvidenceKey = "";
@@ -674,14 +674,14 @@ function syncNodes(): void {
   const yaw = Math.atan2(dx, dz);
   shooterNode.setPosition(spot.x, ATHLETE_FLOOR_OFFSET, spot.z).setRotation(0, yaw, 0);
 
-  const shooterPoseKey: keyof typeof SHOOTER_POSES = ballState.inFlight
-    ? "follow"
+  const shooterClip = ballState.inFlight
+    ? "FollowThrough"
     : charge.charging
-      ? "load"
-      : "ready";
-  if (shooterPoseKey !== lastShooterPoseKey) {
-    lastShooterPoseKey = shooterPoseKey;
-    shooterNode.setAnimationPose?.(SHOOTER_POSES[shooterPoseKey]);
+      ? "Load"
+      : "Ready";
+  if (shooterClip !== lastShooterPoseKey) {
+    lastShooterPoseKey = shooterClip;
+    shooterNode.play?.(shooterClip, { loop: true, speed: 1 });
   }
 
   // While parked, place the visual basketball directly in the shooter's hands;
@@ -694,19 +694,20 @@ function syncNodes(): void {
     ballNode.setPosition(spot.x + nx * handForward, 1.38 + handLift, spot.z + nz * handForward);
   }
 
-  // Keep the perimeter defender grounded on the court in an athletic stance
-  // (patrolling the left lane edge in open heats, actively contesting in Heat 3).
-  const defX = hoopState.defenderActive ? hoopState.defenderX : -1.55;
-  const defY = hoopState.defenderActive ? ATHLETE_FLOOR_OFFSET + Math.max(0, hoopState.defenderY - 0.9) : ATHLETE_FLOOR_OFFSET;
-  const defZ = hoopState.defenderActive ? hoopState.defenderZ : 2.1;
-  const defYaw = Math.atan2(spot.x - defX, spot.z - defZ);
-  defenderNode.setVisible(true).setPosition(defX, defY, defZ).setRotation(0, defYaw, 0);
-
-  const defenderPoseKey: keyof typeof DEFENDER_POSES =
-    hoopState.defenderActive && hoopState.defenderTelegraph === "contest" ? "contest" : "stance";
-  if (defenderPoseKey !== lastDefenderPoseKey) {
-    lastDefenderPoseKey = defenderPoseKey;
-    defenderNode.setAnimationPose?.(DEFENDER_POSES[defenderPoseKey]);
+  // Show the perimeter defender actively contesting in Heat 3 (hide in open shooting heats).
+  if (hoopState.defenderActive) {
+    const defX = hoopState.defenderX;
+    const defY = ATHLETE_FLOOR_OFFSET + Math.max(0, hoopState.defenderY - 0.9);
+    const defZ = hoopState.defenderZ;
+    const defYaw = Math.atan2(spot.x - defX, spot.z - defZ);
+    defenderNode.setVisible(true).setPosition(defX, defY, defZ).setRotation(0, defYaw, 0);
+    const defenderClip = hoopState.defenderTelegraph === "contest" ? "Contest" : "Plant";
+    if (defenderClip !== lastDefenderPoseKey) {
+      lastDefenderPoseKey = defenderClip;
+      defenderNode.play?.(defenderClip, { loop: true, speed: 1 });
+    }
+  } else {
+    defenderNode.setVisible(false);
   }
 
   syncAimGuide();
@@ -742,7 +743,7 @@ function createHud(): HTMLElement {
   root.style.cssText = [
     "position:absolute",
     "left:16px",
-    "top:16px",
+    "top:56px",
     "z-index:5",
     "min-width:330px",
     "font:600 13px/1.35 Inter, system-ui, sans-serif",
