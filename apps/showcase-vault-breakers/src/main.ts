@@ -352,18 +352,19 @@ function createHud(): HTMLElement {
   const root = document.createElement("aside");
   root.id = "vault-breakers-hud";
   root.style.cssText = [
-    "position:absolute",
-    "left:16px",
-    "top:16px",
+    "position:fixed",
+    "left:14px",
+    "bottom:52px",
     "z-index:5",
-    "min-width:320px",
-    "font:600 13px/1.35 system-ui, sans-serif",
-    "color:#f5fbff",
-    "background:rgba(8,8,16,0.72)",
-    "border:1px solid rgba(255,210,77,0.34)",
+    "max-width:260px",
+    "font:500 11px/1.35 system-ui, sans-serif",
+    "color:rgba(245,251,255,0.86)",
+    "background:rgba(8,8,16,0.68)",
+    "border:1px solid rgba(255,210,77,0.28)",
     "border-radius:8px",
-    "padding:12px",
-    "pointer-events:none"
+    "padding:7px 10px",
+    "pointer-events:none",
+    "backdrop-filter:blur(6px)"
   ].join(";");
   document.body.append(root);
   return root;
