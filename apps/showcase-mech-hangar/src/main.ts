@@ -209,6 +209,8 @@ const chassisNodes = new Map<string, AuraRuntimeNodeHandle>(
 const droneNode = app.nodes.require("support-drone");
 const dummyNodes = DUMMY_POSITIONS.map((_, index) => app.nodes.require(`dummy-${index}`));
 const hudRoot = createHud();
+let cachedEvidence: unknown = null;
+let cachedDrawCalls = 0;
 
 app.camera?.use(
   camera.rigs.static({
@@ -690,9 +692,6 @@ function renderHud(): void {
     `<div>Assemble 1/2 + arrows, Enter lock. Drive A/D, J strike, R reset.</div>`
   ].join("");
 }
-
-let cachedEvidence: unknown = null;
-let cachedDrawCalls = 0;
 
 function publishEvidence(): void {
   const stats = aggregateStats(selection);

@@ -33,9 +33,9 @@ export { createGame } from "./stubs/game";
 /** PR 0a: real — pure URL parsing. `?capture=review|overview` warns and is ignored. */
 export function captureFromUrl(url?: URL): CaptureContext {
   if (url === undefined || typeof URL === "undefined") return { mode: "play" };
-  const capture = url.searchParams.get("capture");
-  if (capture === "review" || capture === "overview") {
-    if (typeof console !== "undefined") console.warn(`capture:${capture} is ignored`);
+  const captureMatch = /(?:^\?|&)capture=(review|overview)(?:&|$)/.exec(url.search);
+  if (captureMatch !== null) {
+    if (typeof console !== "undefined") console.warn(`capture:${captureMatch[1]} is ignored`);
     return { mode: "play" };
   }
   const scenario = url.searchParams.get("scenario") ?? undefined;

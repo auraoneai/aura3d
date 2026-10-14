@@ -285,6 +285,8 @@ void blockfallGame.sound?.cue("reactor-hum");
 let activeNodes: AuraRuntimeNodeHandle[] = [];
 let flashNodes: AuraRuntimeNodeHandle[] = [];
 let holdNode: AuraRuntimeNodeHandle | undefined;
+let cachedEvidence: unknown = null;
+let cachedDrawCalls = 0;
 mountRuntimeHandles();
 const hudRoot = createHud();
 let objective = "Clear the prepared line. Move, rotate, hold, or hard drop.";
@@ -867,9 +869,6 @@ function renderHud(state: KitState): void {
     `</div>`
   ].join("");
 }
-
-let cachedEvidence: unknown = null;
-let cachedDrawCalls = 0;
 
 function publishEvidence(state: KitState): void {
   if (cachedEvidence === null || state.frame <= 5 || state.frame % 8 === 0) {

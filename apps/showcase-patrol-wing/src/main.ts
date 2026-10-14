@@ -334,6 +334,8 @@ const hudBindings = [
 
 // Latest published snapshot, read by the createGame evidence section below.
 let latestSnapshot: PatrolWingEvidence | undefined;
+let cachedEvidence: unknown = null;
+let cachedDrawCalls = 0;
 
 Object.defineProperty(window, "__AURA3D_SHOWCASE_PATROL_WING__", {
   configurable: true,
@@ -919,9 +921,6 @@ function renderHud(): void {
 }
 
 // ------------------------------------------------------------------ evidence -
-let cachedEvidence: unknown = null;
-let cachedDrawCalls = 0;
-
 function publishEvidence(): void {
   const score = scoreValue();
   if (cachedEvidence === null || frame <= 5 || frame % 8 === 0) {
