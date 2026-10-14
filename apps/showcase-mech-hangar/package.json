@@ -3,24 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Aura3D prototype: hangar-to-arena mech builder where typed, provenance-tracked catalog parts are the mechanic — assemble a mech from validated parts, watch stats move, then fight a createCombatAi rival.",
+  "description": "Aura3D Mech Hangar: hangar assembly prototype rebuilt single-path (createGame, typed Quaternius rigged chassis/support assets) — assemble, test-drive against target dummies, earn a rating.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "vite build",
-    "preview": "vite preview --host 127.0.0.1",
-    "models": "node scripts/build-models.mjs",
-    "register:models": "node scripts/register-models.mjs",
-    "register:shell": "node scripts/register-robotcand-shell.mjs",
-    "sfx": "node scripts/build-sfx.mjs",
-    "register:sfx": "node scripts/register-sfx.mjs",
-    "curate:parts": "node scripts/curate-parts.mjs",
-    "verify:modular-family": "node scripts/check-modular-family.mjs",
-    "verify:default-swap": "node scripts/verify-default-swap.mjs",
-    "test:modular-family": "node --test scripts/check-modular-family.test.mjs",
-    "evidence:performance": "tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
-    "evidence:deploy": "node scripts/write-deploy-report.mjs",
-    "evidence:route-health": "node scripts/write-route-health.mjs"
+    "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
     "@aura3d/engine": "workspace:*"
