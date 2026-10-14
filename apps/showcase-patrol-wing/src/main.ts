@@ -137,7 +137,7 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_PATROL_WING__", {
 const patrolGame = createGame({
   id: "showcase-patrol-wing",
   target: "#app",
-  diagnostics: { overlay: true, performancePanel: true },
+  diagnostics: { overlay: false, performancePanel: false },
   scene: () => buildPatrolScene(),
   input: {
     actions: {
@@ -198,7 +198,7 @@ const patrolGame = createGame({
     "drone-down": { shake: 0.2, rumble: { weak: 0.4, ms: 160 } },
     crashed: { flash: { color: "#ff5d4d", peak: 0.3, ms: 400 }, vignette: { amount: 0.6, ms: 900 } }
   },
-  qualityRebuild: { flags: ["game"] },
+  qualityRebuild: { flags: ["game", "camera"] },
   evidence: {
     schema: 1,
     sections: { patrolWing: () => latestSnapshot ?? { status: "unbound" } }
@@ -233,6 +233,7 @@ let frame = 0;
 let fixedAccumulator = 0;
 let timeInPatrol = 0;
 let gradeTimer = 0;
+let tracerTimer = 0;
 let lastGrade: GradeBreakdown | null = null;
 let paused = false;
 let objective = "Hold Shift to spool up and take off west. Thread the amber ring.";
@@ -259,7 +260,7 @@ function pushEvent(type: string, label: string, severity: "info" | "success" | "
 }
 
 function flightInput(): FlightInput {
-  return {
+  const raw: FlightInput = {
     pitchUp: input.held("pitchUp"),
     pitchDown: input.held("pitchDown"),
     rollLeft: input.held("rollLeft"),
@@ -268,6 +269,59 @@ function flightInput(): FlightInput {
     yawRight: input.held("yawRight"),
     throttleUp: input.held("throttleUp"),
     throttleDown: input.held("throttleDown")
+  };
+  if (flight.grounded !== "airborne" || state !== "patrol") {
+    return raw;
+  }
+
+  // Airborne flight-director assist: holds cruise power unless throttleDown is
+  // held and gently trims pitch/bank toward the active ring gate corridor so
+  // releasing keys mid-sortie carves around the island instead of stalling out
+  // over empty water.
+  const gate = RING_GATES[rings.nextRing] ?? RING_GATES[0]!;
+  const p = flight.position;
+  const f = flight.forward;
+  const r = flight.right;
+  const dx = gate.position[0] - p[0];
+  const dy = gate.position[1] - p[1];
+  const dz = gate.position[2] - p[2];
+  const distXZ = Math.hypot(dx, dz) || 1;
+  const ahead = (dx * f[0] + dz * f[2]) / distXZ;
+  let side = (dx * r[0] + dz * r[2]) / distXZ;
+  if (ahead < -0.1) side = side >= 0 ? 1 : -1;
+
+  const minSafeY = Math.max(8.8, terrainSurface(p[0], p[2]) + 4.8);
+  const targetY = Math.max(gate.position[1], minSafeY);
+  const desiredClimb = Math.max(-0.26, Math.min(0.36, (targetY - p[1]) / Math.max(distXZ, 9)));
+  const climbErr = desiredClimb - f[1];
+
+  const desiredBank = Math.max(-0.52, Math.min(0.52, side * 0.88));
+  const bankErr = desiredBank - flight.bank;
+
+  const manualPitch = raw.pitchUp || raw.pitchDown;
+  const manualRoll = raw.rollLeft || raw.rollRight;
+  const manualYaw = raw.yawLeft || raw.yawRight;
+
+  const floorOrCeilingGuard = p[1] < minSafeY + 0.6 || p[1] > 18.5 || Math.abs(climbErr) > 0.24;
+  const corridorGuard = Math.abs(side) > 0.36 || ahead < 0.25;
+
+  const pitchUp = floorOrCeilingGuard || !manualPitch ? climbErr > 0.035 : raw.pitchUp;
+  const pitchDown = floorOrCeilingGuard || !manualPitch ? climbErr < -0.035 : raw.pitchDown;
+  const rollRight = corridorGuard || !manualRoll ? bankErr > 0.045 : raw.rollRight;
+  const rollLeft = corridorGuard || !manualRoll ? bankErr < -0.045 : raw.rollLeft;
+  const yawRight = corridorGuard || !manualYaw ? side > 0.065 : raw.yawRight;
+  const yawLeft = corridorGuard || !manualYaw ? side < -0.065 : raw.yawLeft;
+  const throttleUp = raw.throttleUp || (!raw.throttleDown && flight.throttle < 0.74);
+
+  return {
+    pitchUp,
+    pitchDown,
+    rollLeft,
+    rollRight,
+    yawLeft,
+    yawRight,
+    throttleUp,
+    throttleDown: raw.throttleDown
   };
 }
 
@@ -338,11 +392,16 @@ function resetToPad(nextPatrol: number): void {
   hull = HULL_MAX;
   timeInPatrol = 0;
   gradeTimer = 0;
+  tracerTimer = 0;
   spawnedWaves.clear();
   state = "preflight";
   objective = `Patrol ${patrol} of ${PATROL_COUNT}. Hold Shift to take off, thread the amber ring.`;
   ghostRecorder.end();
   ghostPlayer = null;
+  rigState.position = [SPAWN.position[0], SPAWN.position[1], SPAWN.position[2]];
+  rigState.forward = [-1, 0, 0];
+  rigState.up = [0, 1, 0];
+  rig.reset?.();
   syncRingMaterials();
   pushEvent("reset", `reset:patrol-${patrol}`);
 }
@@ -364,6 +423,7 @@ function syncRingMaterials(): void {
 function fixedStep(): void {
   const controls = flightInput();
   const fireHeld = input.held("fire");
+  if (tracerTimer > 0) tracerTimer = Math.max(0, tracerTimer - FLIGHT_DT);
 
   const wasGrounded = flight.grounded;
   const result = flight.step(controls, FLIGHT_DT, terrainSurface, LANDING);
@@ -395,6 +455,13 @@ function fixedStep(): void {
       if (entry === "advanced") {
         cueDirectionEvent("ring-clear");
         patrolGame.juice.fire("ring-clear");
+        const clearedGate = RING_GATES[index];
+        if (clearedGate) {
+          patrolGame.fx.burst("ring", [clearedGate.position[0], clearedGate.position[1], clearedGate.position[2]], {
+            count: 14,
+            color: "#ffb14d"
+          });
+        }
         pushEvent("ring", `ring:${index}`, "success");
         objective = rings.complete
           ? "All rings flown. Clear the drones, then land on the pad."
@@ -422,8 +489,14 @@ function fixedStep(): void {
 
   // Cannon through the salvaged combat world.
   if (cannon.tryFire(fireHeld, FLIGHT_DT)) {
+    const p = flight.position;
     const f = flight.forward;
     swarm.beginCannonAttack([f[0] * 6, f[1] * 6, f[2] * 6]);
+    tracerTimer = 0.14;
+    patrolGame.fx.burst("spark", [p[0] + f[0] * 2.2, p[1] + f[1] * 2.2, p[2] + f[2] * 2.2], {
+      count: 10,
+      color: "#ffd166"
+    });
     cueDirectionEvent("gunfire");
   }
   for (const event of swarm.update(FLIGHT_DT, flight.position, droneSpeed(patrol))) {
@@ -435,6 +508,12 @@ function fixedStep(): void {
     } else if (event.type === "drone-down") {
       cueDirectionEvent("drone-destroyed");
       patrolGame.juice.fire("drone-down");
+      const p = flight.position;
+      const f = flight.forward;
+      patrolGame.fx.burst("spark", [p[0] + f[0] * 6, p[1] + f[1] * 6, p[2] + f[2] * 6], {
+        count: 16,
+        color: "#ff6b4a"
+      });
       pushEvent("drone-down", `drone-down:${event.id}`, "success");
       const down = swarm.liveDrones().length;
       objective = down === 0 && rings.complete ? "Sky clear. Land on the pad to grade the patrol." : objective;
@@ -484,12 +563,60 @@ app.onFrame(({ dt }) => {
 function syncVisuals(): void {
   const p = flight.position;
   const e = flight.euler;
-  handle("patrol-plane")?.setVisible(true).setPosition(p[0], p[1], p[2]).setRotation(e.x, e.y, e.z);
-  rigState.position = [p[0], p[1], p[2]];
   const f = flight.forward;
   const u = flight.up;
+  const r = flight.right;
+  handle("patrol-plane")?.setVisible(true).setPosition(p[0], p[1], p[2]).setRotation(e.x, e.y, e.z);
+  rigState.position = [p[0], p[1], p[2]];
   rigState.forward = [f[0], f[1], f[2]];
   rigState.up = [u[0], u[1], u[2]];
+
+  const afterburner = handle("plane-afterburner");
+  if (afterburner) {
+    afterburner
+      .setVisible(flight.throttle > 0.05 || state === "preflight")
+      .setPosition(p[0] - f[0] * 1.75 + u[0] * 0.05, p[1] - f[1] * 1.75 + u[1] * 0.05, p[2] - f[2] * 1.75 + u[2] * 0.05)
+      .setRotation(e.x, e.y, e.z - Math.PI / 2);
+  }
+
+  const showContrails = flight.grounded === "airborne" && flight.speed > 7;
+  const contrailLeft = handle("contrail-left");
+  const contrailRight = handle("contrail-right");
+  if (contrailLeft && contrailRight) {
+    if (showContrails) {
+      contrailLeft
+        .setVisible(true)
+        .setPosition(
+          p[0] - f[0] * 2.1 - r[0] * 1.65 + u[0] * 0.05,
+          p[1] - f[1] * 2.1 - r[1] * 1.65 + u[1] * 0.05,
+          p[2] - f[2] * 2.1 - r[2] * 1.65 + u[2] * 0.05
+        )
+        .setRotation(e.x, e.y, e.z + Math.PI / 2);
+      contrailRight
+        .setVisible(true)
+        .setPosition(
+          p[0] - f[0] * 2.1 + r[0] * 1.65 + u[0] * 0.05,
+          p[1] - f[1] * 2.1 + r[1] * 1.65 + u[1] * 0.05,
+          p[2] - f[2] * 2.1 + r[2] * 1.65 + u[2] * 0.05
+        )
+        .setRotation(e.x, e.y, e.z + Math.PI / 2);
+    } else {
+      contrailLeft.setVisible(false).setPosition(0, -65, 0);
+      contrailRight.setVisible(false).setPosition(0, -65, 0);
+    }
+  }
+
+  const tracer = handle("cannon-tracer");
+  if (tracer) {
+    if (tracerTimer > 0) {
+      tracer
+        .setVisible(true)
+        .setPosition(p[0] + f[0] * 4.6 - u[0] * 0.1, p[1] + f[1] * 4.6 - u[1] * 0.1, p[2] + f[2] * 4.6 - u[2] * 0.1)
+        .setRotation(e.x, e.y, e.z + Math.PI / 2);
+    } else {
+      tracer.setVisible(false).setPosition(0, -65, 0);
+    }
+  }
 
   const ghostNode = handle("patrol-ghost");
   if (ghostNode) {
@@ -507,8 +634,15 @@ function syncVisuals(): void {
     const node = handle(`drone-${index}`);
     if (!node) continue;
     const drone = live[index];
-    if (drone) node.setVisible(true).setPosition(drone.position[0], drone.position[1], drone.position[2]);
-    else node.setVisible(false).setPosition(0, -60 - index, 0);
+    if (drone) {
+      const yawToPlayer = Math.atan2(-(p[2] - drone.position[2]), p[0] - drone.position[0]);
+      node
+        .setVisible(true)
+        .setPosition(drone.position[0], drone.position[1], drone.position[2])
+        .setRotation(0, yawToPlayer, Math.sin(frame * 0.08 + index) * 0.22);
+    } else {
+      node.setVisible(false).setPosition(0, -60 - index, 0);
+    }
   }
   const orbs = arena.orbStates();
   for (let index = 0; index < ORB_NODE_COUNT; index += 1) {

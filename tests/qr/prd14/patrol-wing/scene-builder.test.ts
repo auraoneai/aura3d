@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { islandHeight, PAD_Y, RING_COUNT } from "../../../../apps/showcase-patrol-wing/src/gameplay/course-data";
-import { buildPatrolScene, buildTerrainGeometry, DRONE_NODE_COUNT, ORB_NODE_COUNT } from "../../../../apps/showcase-patrol-wing/src/scene";
+import manifest from "../../../../apps/showcase-patrol-wing/aura.assets.json";
+import direction from "../../../../apps/showcase-patrol-wing/art/direction";
+import { islandHeight, PAD_CENTER, PAD_Y, RING_COUNT } from "../../../../apps/showcase-patrol-wing/src/gameplay/course-data";
+import {
+  buildPatrolScene,
+  buildTerrainGeometry,
+  createPatrolRig,
+  DRONE_NODE_COUNT,
+  ORB_NODE_COUNT
+} from "../../../../apps/showcase-patrol-wing/src/scene";
+import { auditArtDirection } from "../../../../packages/game/src/art/audit";
+import { snapshotForAudit } from "../../../../packages/game/src/art/snapshot";
 
 /**
  * B5 port pins for the fresh single-path scene builder: the same builder
@@ -13,7 +23,11 @@ describe("patrol wing fresh scene builder (B5 port)", () => {
     const snapshot = buildPatrolScene().toJSON();
     const names = snapshot.nodes.map((n) => (n as { name?: string }).name ?? "");
     expect(names).toContain("island-terrain");
+    expect(names).toContain("island-cliff-skirt");
     expect(names).toContain("ocean");
+    expect(names).toContain("airstrip-tarmac");
+    expect(names).toContain("coastal-hangar-main");
+    expect(names).toContain("radar-tower-pylon");
     expect(names).toContain("landing-pad");
     expect(names).toContain("patrol-plane");
     expect(names).toContain("patrol-ghost");
@@ -21,6 +35,26 @@ describe("patrol wing fresh scene builder (B5 port)", () => {
     for (let i = 0; i < RING_COUNT; i += 1) expect(names).toContain(`ring-${i}`);
     for (let i = 0; i < DRONE_NODE_COUNT; i += 1) expect(names).toContain(`drone-${i}`);
     for (let i = 0; i < ORB_NODE_COUNT; i += 1) expect(names).toContain(`orb-${i}`);
+  });
+
+  it("satisfies S5 art-direction lighting, practicals, emissive-fill, and asset contracts and marks the chase rig continuous", () => {
+    const sceneSnapshot = buildPatrolScene().toJSON();
+    const auditSnap = snapshotForAudit(
+      {
+        scene: sceneSnapshot,
+        diagnostics: () => ({ drawCalls: 42 })
+      } as never,
+      manifest as never
+    );
+    const violations = auditArtDirection(direction, auditSnap, { drawCallsBudget: 180 });
+    expect(violations).toEqual([]);
+
+    const rig = createPatrolRig({
+      position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]],
+      forward: [-1, 0, 0],
+      up: [0, 1, 0]
+    });
+    expect(rig.continuous).toBe(true);
   });
 
   it("triangulates terrain from the extracted height data (pad plateau, peak, shoreline)", () => {
