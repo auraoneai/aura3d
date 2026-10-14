@@ -123,7 +123,7 @@ const TUNING = {
   droneSpeedBase: 1.5,
   droneSpeedPerWave: 0.3,
   integrityMax: 100,
-  leakDamage: 10,
+  leakDamage: 8,
   boltHitRadius: 0.85,
   scorePerKill: 100,
   scorePerWave: 250
@@ -841,7 +841,7 @@ function buildScene() {
     .add(
       model(orbitalCommandCore, { name: "orbital command core", castShadow: false, receiveShadow: false })
         .position(0, PLANE_Y, 0)
-        .scale(2.85)
+        .scale(0.55)
     )
     .add(
       model(assets.planet, { name: "defense core planet", castShadow: false, receiveShadow: false })
