@@ -188,11 +188,11 @@ function hashCell(cx: number, cz: number): number {
 // sea-glass, violet, and coral accents still preserve the route's neon identity
 // while giving individual threats enough value separation to read in a dense
 // top-down frame.
-const GRUNT_COLOR_BASE = "#3f7468";
-const GRUNT_COLOR_PALETTE = ["#38c7b1", "#59e2c5", "#2e9d91", "#86f4d8"] as const;
+const GRUNT_COLOR_BASE = "#38bdf8";
+const GRUNT_COLOR_PALETTE = ["#38bdf8", "#f97316", "#22d3ee", "#fb923c"] as const;
 const GRUNT_COLOR_FLASH = "#fff0dc";
-const ELITE_COLOR_BASE = "#f2d8c2";
-const ELITE_COLOR_PALETTE = ["#ff2e63", "#ff5c8a", "#c81d5e", "#ff8b3d"] as const;
+const ELITE_COLOR_BASE = "#ec4899";
+const ELITE_COLOR_PALETTE = ["#ec4899", "#f97316", "#f43f5e", "#e879f9"] as const;
 const ELITE_COLOR_FLASH = "#ffe8fb";
 const ELITE_COLOR_TELEGRAPH = "#ffc857";
 const HIDDEN_SCALE = 0;
@@ -264,8 +264,8 @@ export function createSwarmSimulation(options: SwarmVisualOptions = {}): SwarmSi
     drone.burstRemaining = 0;
     drone.flashRemaining = 0;
     const transform = transforms[slot]!;
-    transform.position = [request.x, 0, request.z];
-    transform.scale = [1, 1, 1];
+    transform.position = [request.x, elite ? 0.92 : 0.68, request.z];
+    transform.scale = elite ? [1.18, 0.96, 1.18] : [0.92, 0.88, 0.92];
     return true;
   }
 
@@ -419,36 +419,22 @@ export function createSwarmSimulation(options: SwarmVisualOptions = {}): SwarmSi
       const drone = pool[i]!;
       const transform = transforms[i]!;
       if (!drone.active) continue;
-      const bob = Math.sin(time * 3.1 + drone.wobblePhase) * 0.09;
-      transform.position = [drone.x, 0.58 + bob, drone.z];
+      const bob = Math.sin(time * 3.1 + drone.wobblePhase) * 0.12;
+      transform.position = [drone.x, (isElite ? 0.92 : 0.68) + bob, drone.z];
       // Deterministic silhouette variation keeps a dense finale readable as
       // individual threats instead of one repeated pink texture. The pool
       // remains instanced and the simulation/hash are unchanged.
-      // Keep the 320-drone finale dense but legible: the instanced silhouettes
-      // should frame the courier, not form a solid wall over it.
-      // Smaller, varied silhouettes preserve the exact 320-instance fixture
-      // while opening negative space around the courier and making the arena
-      // dressing visible. Elites remain intentionally larger for threat
-      // hierarchy and telegraph readability.
-      // The original 0.16 grunt scale read as a field of detached bars in the
-      // desktop probe. These silhouettes are still comfortably below the
-      // courier's 2.95u body, but now have enough screen area to read as
-      // distinct swarm roles instead of placeholder pixels.
-      // Review captures use a larger grunt silhouette so the 272 non-elite
-      // slots remain individually findable between the 48 typed elite cards.
-      // The route's normal play view keeps the original compact scale and all
-      // gameplay transforms, pool capacities, and hashes remain unchanged.
       let scale = isElite
-        ? 0.52
-        : (options.reviewCapture ? 0.42 + (i % 5) * 0.02 : 0.32 + (i % 5) * 0.016);
+        ? 1.16
+        : (options.reviewCapture ? 0.98 + (i % 5) * 0.04 : 0.88 + (i % 5) * 0.035);
       if (drone.flashRemaining > 0) scale *= 1.18;
-      if (isElite && drone.burstRemaining > 0) scale *= 1.12;
+      if (isElite && drone.burstRemaining > 0) scale *= 1.14;
       const profile = i % 6;
-      const width = 1.02 + (profile % 3) * 0.08;
-      const depth = 0.92 + ((profile + 1) % 3) * 0.06;
-      const tall = 0.9 + (profile % 2) * 0.08;
+      const width = 1.04 + (profile % 3) * 0.08;
+      const depth = 0.96 + ((profile + 1) % 3) * 0.06;
+      const tall = 0.92 + (profile % 2) * 0.08;
       transform.scale = isElite
-        ? [scale * (1.04 + (profile % 3) * 0.08), scale * 0.82, scale * (0.98 + (profile % 2) * 0.1)]
+        ? [scale * (1.06 + (profile % 3) * 0.08), scale * 0.88, scale * (1.02 + (profile % 2) * 0.1)]
         : [scale * width, scale * tall, scale * depth];
       transform.rotation = [
         isElite ? (profile % 2 === 0 ? 0.08 : -0.08) : (profile - 2) * 0.025,
