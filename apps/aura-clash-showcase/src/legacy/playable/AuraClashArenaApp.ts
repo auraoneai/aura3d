@@ -28,7 +28,7 @@ import {
   type SecondaryMotionResult
 } from "../../gameplay/animation/fighterSecondaryMotion";
 import { assets } from "../../aura-assets";
-import { assets as rootAssets } from "../../../../src/aura-assets";
+import { assets as rootAssets } from "../../../../../src/aura-assets";
 import {
   assertAuraClashClipReadiness,
   auraClashPlayerClips as playerClips,
