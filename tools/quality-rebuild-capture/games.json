@@ -23,7 +23,8 @@
       "deployed": true,
       "route": "/apps/aura-clash-showcase/",
       "altRoutes": [
-        "/showcase/aura-clash/playable/"
+        "/showcase/aura-clash/playable/",
+        "/examples/neon-corridor-strike/"
       ],
       "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",

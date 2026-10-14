@@ -834,12 +834,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    * rails, signage and building bases at the scale they were modelled for.
    */
   const arenaRailSpan = 13;
-  const arenaFightAreaWidth = (stage.maxX - stage.minX) * 1.68;
+  const arenaFightAreaWidth = (stage.maxX - stage.minX) * 1.95;
   const arenaScale = Number((arenaFightAreaWidth / arenaRailSpan).toFixed(4));
   arenaActor.pipeline.resources.scene.root.transform
     // The asset's floor sits at y=0, the same plane as the rendered combat floor, so it is dropped
     // just below to avoid coplanar z-fighting between the two surfaces.
-    .setPosition(0, -0.075, 0)
+    .setPosition(0.55, -0.075, 0)
     .setScale(arenaScale, arenaScale, arenaScale);
   // Identity: the previous 1.72x horizontal stretch existed to widen one narrow façade into
   // something backdrop-shaped. Stretching a street grid distorts every right angle in it.

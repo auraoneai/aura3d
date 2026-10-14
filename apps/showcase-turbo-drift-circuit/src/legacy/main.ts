@@ -618,7 +618,7 @@ const supplementalHairpinVenueEnabled = true;
 // one 1440x900 frame could complete. The V2 circuit remains the authoritative
 // visible world; this single kit is supporting context, not gameplay geometry.
 const supplementalHairpinVenueCopies = 1;
-const supplementalTsukubaReliefEnabled = true;
+const supplementalTsukubaReliefEnabled = false;
 const VISUAL_DRIFT_PLUME_COUNT = 16;
 let visualCaptureHeld = false;
 // The collision proof route holds the exact solved first-contact pose until the
@@ -3115,7 +3115,11 @@ const app = createAuraApp("#app", {
       // hairpin kit provide the same authored vegetation at measured roadside
       // offsets without occluding either car.
       hiddenNodeNames: [
-        "TDCE horizontal tyre walls"
+        "TDCE pine shadow",
+        "TDCE pine sun",
+        "TDCE tree bark",
+        "TDCE horizontal tyre walls",
+        "TDCE autumn foliage"
       ]
     }).position(...racingScene.trackModel.position).rotate(...racingScene.trackModel.rotation).runtime(game.runtimeNode("racing-bound-circuit-environment-v2", {
       tags: ["track-visual", "typed-supporting-asset", "renderer-owned-venue", "non-colliding"]
