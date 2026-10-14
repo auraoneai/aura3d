@@ -701,18 +701,18 @@ function buildScene() {
 
   const turretBatteries = Array.from({ length: TURRET_COUNT }, (_, i) => {
     const a = (i / TURRET_COUNT) * Math.PI * 2;
-    return model(orbitalTurret, { name: `orbital turret ${i}`, castShadow: true, receiveShadow: true })
+    return model(orbitalTurret, { name: `orbital turret ${i}`, castShadow: false, receiveShadow: true })
       .position(Math.cos(a) * (ORBIT_RADIUS + 0.32), PLANE_Y - 0.1, Math.sin(a) * (ORBIT_RADIUS + 0.32))
-      .rotation(0, Math.atan2(Math.cos(a), Math.sin(a)), 0)
+      .rotate(0, Math.atan2(Math.cos(a), Math.sin(a)), 0)
       .scale(0.52);
   });
 
   const shieldGenerators = Array.from({ length: 4 }, (_, i) => {
     const a = ((i + 0.5) / 4) * Math.PI * 2;
     const shieldR = CORE_RADIUS + 0.68;
-    return model(orbitalShieldGenerator, { name: `orbital generator ${i}`, castShadow: true, receiveShadow: true })
+    return model(orbitalShieldGenerator, { name: `orbital generator ${i}`, castShadow: false, receiveShadow: true })
       .position(Math.cos(a) * shieldR, PLANE_Y - 0.08, Math.sin(a) * shieldR)
-      .rotation(0, Math.atan2(Math.cos(a), Math.sin(a)), 0)
+      .rotate(0, Math.atan2(Math.cos(a), Math.sin(a)), 0)
       .scale(0.58);
   });
 
@@ -739,7 +739,7 @@ function buildScene() {
             color: "#78716c",
             roughness: 0.82
           }),
-      castShadow: true,
+      castShadow: false,
       receiveShadow: true
     });
   });
@@ -747,9 +747,9 @@ function buildScene() {
   const outerAsteroidModels = Array.from({ length: 4 }, (_, i) => {
     const a = (i / 4) * Math.PI * 2 + 0.42;
     const r = SPAWN_RADIUS + 1.45;
-    return model(orbitalAsteroid, { name: `orbital asteroid ${i}`, castShadow: true, receiveShadow: true })
+    return model(orbitalAsteroid, { name: `orbital asteroid ${i}`, castShadow: false, receiveShadow: true })
       .position(Math.cos(a) * r, PLANE_Y - 0.16, Math.sin(a) * r)
-      .rotation(i * 0.4, i * 1.1, i * 0.25)
+      .rotate(i * 0.4, i * 1.1, i * 0.25)
       .scale(0.55);
   });
 
@@ -808,7 +808,7 @@ function buildScene() {
         position: [0, PLANE_Y - 0.2, 0],
         rotation: [Math.PI / 2, 0, 0],
         material: material.brushedMetal({ color: "#94a3b8", roughness: 0.24, anisotropy: 0.85 }),
-        castShadow: true,
+        castShadow: false,
         receiveShadow: true
       })
     )
@@ -873,7 +873,7 @@ function buildScene() {
       })
     )
     .add(
-      model(orbitalCommandCore, { name: "orbital command core", castShadow: true, receiveShadow: true })
+      model(orbitalCommandCore, { name: "orbital command core", castShadow: false, receiveShadow: true })
         .position(0, PLANE_Y, 0)
         .scale(2.85)
     )
@@ -920,7 +920,7 @@ function buildScene() {
                   color: "#78716c",
                   roughness: 0.82
                 }),
-            castShadow: true,
+            castShadow: false,
             receiveShadow: true
           })
           .runtime(game.runtimeNode(`asteroid-${i}`, { tags: ["asteroid", "enemy"] }));
@@ -954,7 +954,7 @@ function createHud(): HTMLElement {
   root.style.cssText = [
     "position:absolute",
     "left:16px",
-    "top:16px",
+    "top:56px",
     "z-index:5",
     "min-width:260px",
     "max-width:calc(100vw - 32px)",
