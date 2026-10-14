@@ -971,7 +971,7 @@ function publishEvidence(): void {
   const objective = objectiveText();
   const scaledTimerMs = Math.max(0, Math.round(dispatch.timerMs * timerScale));
   const timeLeft = scaledTimerMs / 1000;
-  if (cachedEvidenceObj === null || frameCount <= 5 || frameCount % 8 === 0) {
+  if (cachedEvidenceObj === null || cachedDrawCalls === 0 || frameCount <= 5 || frameCount % 8 === 0) {
     cachedEvidenceObj = app.evidence({
       input,
       events: routeEvents,

@@ -287,6 +287,7 @@ let flashNodes: AuraRuntimeNodeHandle[] = [];
 let holdNode: AuraRuntimeNodeHandle | undefined;
 let cachedEvidence: unknown = null;
 let cachedDrawCalls = 0;
+let evidenceTick = 0;
 mountRuntimeHandles();
 const hudRoot = createHud();
 let objective = "Clear the prepared line. Move, rotate, hold, or hard drop.";
@@ -871,7 +872,8 @@ function renderHud(state: KitState): void {
 }
 
 function publishEvidence(state: KitState): void {
-  if (cachedEvidence === null || state.frame <= 5 || state.frame % 8 === 0) {
+  evidenceTick += 1;
+  if (cachedEvidence === null || cachedDrawCalls === 0 || evidenceTick <= 5 || evidenceTick % 8 === 0) {
     cachedEvidence = app.evidence({
       input,
       events: routeEvents,

@@ -923,7 +923,7 @@ function renderHud(): void {
 // ------------------------------------------------------------------ evidence -
 function publishEvidence(): void {
   const score = scoreValue();
-  if (cachedEvidence === null || frame <= 5 || frame % 8 === 0) {
+  if (cachedEvidence === null || cachedDrawCalls === 0 || frame <= 5 || frame % 8 === 0) {
     cachedEvidence = app.evidence({
       input,
       events: routeEvents,

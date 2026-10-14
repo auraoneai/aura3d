@@ -211,6 +211,7 @@ const dummyNodes = DUMMY_POSITIONS.map((_, index) => app.nodes.require(`dummy-${
 const hudRoot = createHud();
 let cachedEvidence: unknown = null;
 let cachedDrawCalls = 0;
+let evidenceTick = 0;
 
 app.camera?.use(
   camera.rigs.static({
@@ -695,7 +696,8 @@ function renderHud(): void {
 
 function publishEvidence(): void {
   const stats = aggregateStats(selection);
-  if (cachedEvidence === null || frame <= 5 || frame % 8 === 0) {
+  evidenceTick += 1;
+  if (cachedEvidence === null || cachedDrawCalls === 0 || evidenceTick <= 5 || evidenceTick % 8 === 0) {
     cachedEvidence = app.evidence({
       input,
       events: routeEvents,
