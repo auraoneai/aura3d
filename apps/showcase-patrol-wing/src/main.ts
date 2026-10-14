@@ -127,11 +127,10 @@ const DEEP_MARINE_OCEAN_MAT = material.reflectiveFloor({
   clearcoat: 0.9,
   clearcoatRoughness: 0.04
 });
-const OCEAN_CYAN_GLINT_MAT = material.reflectiveFloor({
+const OCEAN_CYAN_GLINT_MAT = material.lacquer({
   name: "ocean cyan wake glint",
   color: "#0c4a6e",
   roughness: 0.05,
-  metallic: 0.42,
   clearcoat: 0.95,
   clearcoatRoughness: 0.03
 });
@@ -208,19 +207,20 @@ void RING_PASSED;
 
 function buildUpgradedPatrolScene(): AuraSceneSnapshot {
   const base = buildPatrolScene().toJSON();
-  const lookOverrideGroup = looks
-    .preset(LOOK_ID, {
-      fogDensityScale: 0.04,
-      background: "#0b2545",
-      accent: "#22d3ee",
-      exposureEv: 0.05,
-      sun: { elevationDeg: 32, azimuthDeg: 38 }
-    })
-    .toJSON();
+  const lookOverrideRaw = looks.preset(LOOK_ID, {
+    fogDensityScale: 0.04,
+    background: "#0b2545",
+    accent: "#22d3ee",
+    exposureEv: 0.05,
+    sun: { elevationDeg: 32, azimuthDeg: 38 }
+  });
+  const lookOverrideGroup = typeof (lookOverrideRaw as { toJSON?: () => AuraSceneNode }).toJSON === "function"
+    ? (lookOverrideRaw as { toJSON: () => AuraSceneNode }).toJSON()
+    : (lookOverrideRaw as unknown as AuraSceneNode);
 
   const upgradedNodes: AuraSceneNode[] = base.nodes.map((node): AuraSceneNode => {
     const name = "name" in node ? node.name : undefined;
-    if (node.kind === "group" && name === `aura-look:${LOOK_ID}`) {
+    if ((node.kind === "group" && name === `aura-look:${LOOK_ID}`) || (node as { kind?: string }).kind === "look") {
       return lookOverrideGroup;
     }
     if (node.kind === "light" && name === "evening sun key") {
@@ -919,35 +919,41 @@ function renderHud(): void {
 }
 
 // ------------------------------------------------------------------ evidence -
+let cachedEvidence: unknown = null;
+let cachedDrawCalls = 0;
+
 function publishEvidence(): void {
   const score = scoreValue();
-  const evidence = app.evidence({
-    input,
-    events: routeEvents,
-    hud: hudBindings,
-    appState: {
-      score,
-      objective,
-      events: routeEvents.events().map((event: { readonly label: string }) => event.label)
-    },
-    assets: {
-      typedAssets: Object.keys(assets).length,
-      missingAssets: []
-    },
-    source: { expectsGame: true }
-  });
-  const diagnostics = app.diagnostics();
+  if (cachedEvidence === null || frame <= 5 || frame % 8 === 0) {
+    cachedEvidence = app.evidence({
+      input,
+      events: routeEvents,
+      hud: hudBindings,
+      appState: {
+        score,
+        objective,
+        events: routeEvents.events().map((event: { readonly label: string }) => event.label)
+      },
+      assets: {
+        typedAssets: Object.keys(assets).length,
+        missingAssets: []
+      },
+      source: { expectsGame: true }
+    });
+    cachedDrawCalls = app.diagnostics().drawCalls;
+  }
+  const evidence = cachedEvidence;
   const p = flight.position;
   const snapshot: PatrolWingEvidence = {
     // Framed once the renderer submits draw calls for the mounted island.
-    framed: diagnostics.drawCalls > 0,
+    framed: cachedDrawCalls > 0,
     state,
     frame,
     score,
     patrol,
     grade: lastGrade?.grade ?? null,
     backend: arena.backend,
-    drawCalls: diagnostics.drawCalls,
+    drawCalls: cachedDrawCalls,
     look: { id: LOOK_ID, category: LOOK_CATEGORY },
     flight: {
       position: [p[0], p[1], p[2]],

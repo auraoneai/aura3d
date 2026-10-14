@@ -318,16 +318,15 @@ const KIT_WET_ROAD_MATERIAL = material.reflectiveFloor({
   clearcoat: 0.78,
   clearcoatRoughness: 0.06
 });
-const KIT_STREET_GRID_MATERIAL = material.reflectiveFloor({
+const KIT_STREET_GRID_MATERIAL = material.lacquer({
   color: "#182436",
   roughness: 0.2,
-  metallic: 0.38,
   clearcoat: 0.75,
   clearcoatRoughness: 0.08
 });
 const KIT_CURB_MATERIAL = material.brushedMetal({ color: "#334155", roughness: 0.36, metallic: 0.45 });
 const KIT_TOWER_INSTANCED_MATERIAL = material.clearcoatPaint({ color: "#1e293b", roughness: 0.22, clearcoat: 0.82 });
-const KIT_BUILDING_METAL_MATERIAL = material.reflectiveFloor({ color: "#283548", roughness: 0.2, metallic: 0.58, clearcoat: 0.7 });
+const KIT_BUILDING_METAL_MATERIAL = material.brushedMetal({ color: "#283548", roughness: 0.22, metallic: 0.58 });
 const KIT_BUILDING_GLASS_MATERIAL = material.frostedGlass({ color: "#38bdf8", opacity: 0.65 });
 const KIT_AWNING_PAINT_MATERIAL = material.clearcoatPaint({ color: "#2563eb", roughness: 0.12 });
 
@@ -344,6 +343,7 @@ const hudBindings = [
 let latestSnapshot: CourierRushEvidence | undefined;
 let lastHudHtml = "";
 let cachedEvidenceObj: unknown = null;
+let cachedDrawCalls = 0;
 
 const inputOptions = {
   actions: {
@@ -971,7 +971,7 @@ function publishEvidence(): void {
   const objective = objectiveText();
   const scaledTimerMs = Math.max(0, Math.round(dispatch.timerMs * timerScale));
   const timeLeft = scaledTimerMs / 1000;
-  if (cachedEvidenceObj === null || frameCount <= 5 || frameCount % 6 === 0) {
+  if (cachedEvidenceObj === null || frameCount <= 5 || frameCount % 8 === 0) {
     cachedEvidenceObj = app.evidence({
       input,
       events: routeEvents,
@@ -985,13 +985,13 @@ function publishEvidence(): void {
       assets: { typedAssets: Object.keys(assets).length, missingAssets: [] },
       source: { expectsGame: true }
     });
+    cachedDrawCalls = app.diagnostics().drawCalls;
   }
   const evidence = cachedEvidenceObj;
-  const diagnostics = app.diagnostics();
   const activeTargetId = targetSite(dispatch)?.id ?? null;
   const carrying = dispatch.phase === "carrying";
   const snapshot: CourierRushEvidence = {
-    framed: diagnostics.drawCalls > 0,
+    framed: cachedDrawCalls > 0,
     state: dispatch.phase === "shiftClear" ? "won" : dispatch.phase === "shiftOver" ? "lost" : "playing",
     phase: dispatch.phase,
     score: dispatch.score,
@@ -1014,7 +1014,7 @@ function publishEvidence(): void {
     events: routeEvents.events().map((event: { readonly label: string }) => event.label),
     look: { id: LOOK_ID, category: looks.describe(LOOK_ID).category },
     appliedLook: { id: LOOK_ID, category: looks.describe(LOOK_ID).category, rig: "chase" },
-    drawCalls: diagnostics.drawCalls,
+    drawCalls: cachedDrawCalls,
     delivery: {
       completed: dispatch.deliveriesCompleted,
       phase: dispatch.phase,
@@ -1067,7 +1067,7 @@ function publishEvidence(): void {
     paused: courierGame.session.paused,
     autopilot: autopilotEnabled,
     activeTargetId,
-    diagnostics: { drawCalls: diagnostics.drawCalls },
+    diagnostics: { drawCalls: cachedDrawCalls },
     gameplay: { ...gameplayFlags }
   };
   latestSnapshot = snapshot;
@@ -1137,7 +1137,7 @@ function stripKitParkedCars(nodes: readonly AuraSceneNode[]): AuraSceneNode[] {
 }
 
 function buildScene() {
-  const kitNodes = stripKitParkedCars(city.block({ timeOfDay: "night", blocks: 20, litWindows: false }));
+  const kitNodes = stripKitParkedCars(city.block({ timeOfDay: "night", blocks: 4, litWindows: false }));
   const nodes: AuraNodeInput[] = [
     lights.hemisphere({
       name: "courier city sky fill",
@@ -1280,7 +1280,19 @@ function urbanCityArchitectureNodes(): AuraNodeInput[] {
     scale: [0.48, 0.32, 0.48] as [number, number, number]
   }));
 
+  const towerMassTransforms = TOWER_BOXES.map((box) => ({
+    position: [(box.minX + box.maxX) / 2, 5.2, (box.minZ + box.maxZ) / 2] as [number, number, number],
+    scale: [box.maxX - box.minX, 10.4, box.maxZ - box.minZ] as [number, number, number]
+  }));
+
   return [
+    instances.box({
+      name: "courier city tower masses",
+      material: KIT_TOWER_INSTANCED_MATERIAL,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: towerMassTransforms
+    }),
     instances.box({
       name: "courier urban ground floor",
       material: KIT_STREET_GRID_MATERIAL,

@@ -437,10 +437,9 @@ function buildScene(board: Board) {
     emissive: "#162a4a",
     emissiveIntensity: 0.09
   });
-  const reactorWallBackdropMat = material.reflectiveFloor({
+  const reactorWallBackdropMat = material.lacquer({
     color: "#0d1a33",
     roughness: 0.14,
-    metallic: 0.48,
     clearcoat: 0.88,
     clearcoatRoughness: 0.04,
     emissive: "#1e3a5f",
@@ -869,27 +868,33 @@ function renderHud(state: KitState): void {
   ].join("");
 }
 
+let cachedEvidence: unknown = null;
+let cachedDrawCalls = 0;
+
 function publishEvidence(state: KitState): void {
-  const evidence = app.evidence({
-    input,
-    events: routeEvents,
-    hud: hudBindings,
-    appState: {
-      score: state.score,
-      objective,
-      events: routeEvents.events().map((event: { readonly label: string }) => event.label)
-    },
-    assets: {
-      typedAssets: Object.keys(assets).length,
-      missingAssets: []
-    },
-    source: { expectsGame: true }
-  });
-  const diagnostics = app.diagnostics();
+  if (cachedEvidence === null || state.frame <= 5 || state.frame % 8 === 0) {
+    cachedEvidence = app.evidence({
+      input,
+      events: routeEvents,
+      hud: hudBindings,
+      appState: {
+        score: state.score,
+        objective,
+        events: routeEvents.events().map((event: { readonly label: string }) => event.label)
+      },
+      assets: {
+        typedAssets: Object.keys(assets).length,
+        missingAssets: []
+      },
+      source: { expectsGame: true }
+    });
+    cachedDrawCalls = app.diagnostics().drawCalls;
+  }
+  const evidence = cachedEvidence;
   const snapshot: BlockfallReactorEvidence = {
     // Framed once the renderer is submitting draw calls for a board that
     // carries settled cells inside the fixed orthographic rig.
-    framed: diagnostics.drawCalls > 0 && filledCellCount(state.board) > 0,
+    framed: cachedDrawCalls > 0 && filledCellCount(state.board) > 0,
     frame: state.frame,
     score: state.score,
     lines: state.lines,

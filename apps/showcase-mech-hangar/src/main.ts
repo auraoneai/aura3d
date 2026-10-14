@@ -388,10 +388,10 @@ function buildScene() {
       distance: 13
     }),
 
-    // Wide reflective hangar floor slab (top surface flush at y = 0.0 across the full bay and test-drive lane).
+    // Wide hangar floor slab (top surface flush at y = 0.0 across the full bay and test-drive lane).
     primitives.box({
       name: "hangar reflective floor deck",
-      material: floorMaterial,
+      material: darkBulkheadMaterial,
       castShadow: false,
       receiveShadow: true
     })
@@ -399,7 +399,8 @@ function buildScene() {
       .scale([18.0, 0.16, 10.0]),
     model(assets.quaterniusCubeCrate, {
       name: "hangar reflective floor",
-      material: floorMaterial
+      material: floorMaterial,
+      castShadow: false
     })
       .position(0, -0.26, 0.2)
       .scale([9.5, 0.15, 4.5]),
@@ -690,26 +691,32 @@ function renderHud(): void {
   ].join("");
 }
 
+let cachedEvidence: unknown = null;
+let cachedDrawCalls = 0;
+
 function publishEvidence(): void {
   const stats = aggregateStats(selection);
-  const evidence = app.evidence({
-    input,
-    events: routeEvents,
-    hud: hudBindings,
-    appState: {
-      dummiesDown: dummyHp.filter((hp) => hp <= 0).length,
-      objective,
-      events: routeEvents.events().map((event: { readonly label: string }) => event.label)
-    },
-    assets: {
-      typedAssets: Object.keys(assets).length,
-      missingAssets: []
-    },
-    source: { expectsGame: true }
-  });
-  const diagnostics = app.diagnostics();
+  if (cachedEvidence === null || frame <= 5 || frame % 8 === 0) {
+    cachedEvidence = app.evidence({
+      input,
+      events: routeEvents,
+      hud: hudBindings,
+      appState: {
+        dummiesDown: dummyHp.filter((hp) => hp <= 0).length,
+        objective,
+        events: routeEvents.events().map((event: { readonly label: string }) => event.label)
+      },
+      assets: {
+        typedAssets: Object.keys(assets).length,
+        missingAssets: []
+      },
+      source: { expectsGame: true }
+    });
+    cachedDrawCalls = app.diagnostics().drawCalls;
+  }
+  const evidence = cachedEvidence;
   const snapshot: MechHangarEvidence = {
-    framed: diagnostics.drawCalls > 0,
+    framed: cachedDrawCalls > 0,
     state,
     attachedParts: {
       chassis: partFor(selection, "chassis").id,
