@@ -18,7 +18,6 @@ import {
   model,
   primitives,
   scene,
-  sky,
   solvePlatformerMotion,
   type AuraNodeBuilder,
   type AuraSceneNode,
@@ -559,21 +558,9 @@ function buildScene() {
       .scale(3.4)
       .runtime(game.runtimeNode("goal", { tags: ["finish"] }))
   ];
-  const winterDuskSky = {
-    name: "winter-dusk-backdrop",
-    zenith: "#1a2f5a",
-    horizon: "#f08a4b",
-    ground: "#141d33",
-    zenithColor: "#1a2f5a",
-    horizonColor: "#f08a4b",
-    groundColor: "#141d33",
-    horizonGlow: 0.42,
-    sun: { elevationDeg: 18, azimuthDeg: 324, intensity: 1.9, color: "#ffd59e" }
-  };
   return scene()
-    .background("#1a2f5a", { toneMapped: false })
-    .add(looks.preset(LOOK_ID, { background: "#1a2f5a", sun: { elevationDeg: 34, azimuthDeg: 330 }, exposureEv: 0.28 }))
-    .add(sky.gradient(winterDuskSky))
+    .background("#2b4570", { toneMapped: false })
+    .add(looks.preset(LOOK_ID, { background: "#2b4570", sun: { elevationDeg: 34, azimuthDeg: 330 }, exposureEv: 0.28 }))
     .add(effects.fog({ name: "winter-dusk-atmosphere", color: "#2b4570", density: 0.016, intensity: 0.48 }))
     .add(
       lights.directional({
