@@ -198,7 +198,7 @@ const patrolGame = createGame({
     "drone-down": { shake: 0.2, rumble: { weak: 0.4, ms: 160 } },
     crashed: { flash: { color: "#ff5d4d", peak: 0.3, ms: 400 }, vignette: { amount: 0.6, ms: 900 } }
   },
-  qualityRebuild: { flags: ["game", "camera"] },
+  qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
     sections: { patrolWing: () => latestSnapshot ?? { status: "unbound" } }
