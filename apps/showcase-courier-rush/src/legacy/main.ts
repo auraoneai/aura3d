@@ -362,19 +362,20 @@ const app = createAuraApp("#app", {
     .addMany(
       ZONE_SITES.map((site, index) => {
         const curbSign = site.x < 0 ? -1 : 1;
-        const kioskX = site.x + curbSign * 2.35;
-        const kioskZ = site.z + (index % 2 === 0 ? 1.8 : -1.8);
+        const kioskX = curbSign * 6.8;
+        const kioskZ = site.z + (index % 2 === 0 ? 2.4 : -2.4);
         const yaw = curbSign < 0 ? Math.PI * 0.5 : -Math.PI * 0.5;
         return model(assets.courierDeliveryKioskMeshy, {
           name: "courier-curbside-kiosk-" + site.id,
           role: "setDressing",
           scaleMode: "fit",
-          targetMaxDimension: 2.8,
+          targetMaxDimension: 1.35,
           castShadow: true,
           receiveShadow: true
         })
           .position(kioskX, 0, kioskZ)
           .rotate(0, yaw, 0)
+          .scale([0.55, 0.55, 0.55])
           .runtime(game.runtimeNode("courier-curbside-kiosk-" + site.id, {
             tags: ["typed-asset", "delivery-kiosk", "set-dressing"]
           }));
@@ -385,12 +386,13 @@ const app = createAuraApp("#app", {
         name: "courier-corridor-kiosk-west",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 2.8,
+        targetMaxDimension: 1.35,
         castShadow: true,
         receiveShadow: true
       })
-        .position(-3.55, 0, 12.2)
+        .position(-6.8, 0, 12.2)
         .rotate(0, Math.PI * 0.5, 0)
+        .scale([0.55, 0.55, 0.55])
         .runtime(game.runtimeNode("courier-corridor-kiosk-west", {
           tags: ["typed-asset", "delivery-kiosk", "set-dressing"]
         }))
@@ -400,12 +402,13 @@ const app = createAuraApp("#app", {
         name: "courier-corridor-kiosk-east",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 2.8,
+        targetMaxDimension: 1.35,
         castShadow: true,
         receiveShadow: true
       })
-        .position(3.55, 0, 5.4)
+        .position(6.8, 0, 5.4)
         .rotate(0, -Math.PI * 0.5, 0)
+        .scale([0.55, 0.55, 0.55])
         .runtime(game.runtimeNode("courier-corridor-kiosk-east", {
           tags: ["typed-asset", "delivery-kiosk", "set-dressing"]
         }))

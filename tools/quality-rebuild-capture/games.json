@@ -1646,15 +1646,19 @@
           "steps": [
             {
               "hold": "KeyA",
-              "ms": 650
+              "ms": 420
             },
             {
-              "hold": "KeyS",
-              "ms": 550
+              "hold": "KeyW",
+              "ms": 340
             },
             {
               "hold": "KeyD",
-              "ms": 500
+              "ms": 420
+            },
+            {
+              "hold": "KeyS",
+              "ms": 340
             }
           ]
         },

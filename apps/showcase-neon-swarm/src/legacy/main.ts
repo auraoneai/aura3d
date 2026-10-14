@@ -1854,8 +1854,10 @@ function publishEvidence(): void {
   };
   window.__NEON_SWARM_EVIDENCE__ = evidence;
   window.__AURA3D_SHOWCASE_NEON_SWARM__ = evidence;
-  (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
-  document.body.dataset.aura3dShowcaseReady = "true";
+  if (elapsedSeconds > 0.12) {
+    (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
+    document.body.dataset.aura3dShowcaseReady = "true";
+  }
 }
 
 interface SafeDiagnostics {

@@ -283,8 +283,15 @@ function resolveShowcaseAssetBaseUrl() {
 function collectRouteAssetIds(manifestAssets) {
   const routeAssetIds = new Set();
   const assetReferencePattern = /\bassets\.([A-Za-z0-9_$]+)\b/g;
-  for (const route of publicRoutes) {
-    const routeDir = path.join(repoRoot, "apps", route, "src");
+  const extraSourceDirs = [
+    ["aura-clash-showcase", path.join(repoRoot, "apps", "aura-clash-showcase", "src")],
+    ["neon-corridor-strike", path.join(repoRoot, "examples", "neon-corridor-strike", "src")]
+  ];
+  const routeEntries = [
+    ...publicRoutes.map((route) => [route, path.join(repoRoot, "apps", route, "src")]),
+    ...extraSourceDirs
+  ];
+  for (const [route, routeDir] of routeEntries) {
     if (!existsSync(routeDir)) continue;
     const routeFiles = collectRouteFiles(routeDir);
     const routeSource = routeFiles.map((file) => readFileSync(file, "utf8")).join("\n");

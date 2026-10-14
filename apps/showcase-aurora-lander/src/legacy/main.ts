@@ -988,8 +988,8 @@ function buildWorldScene() {
     .camera(camera.follow({
       targetNode: "lander",
       distance: visualReviewCapture ? 10.6 : 15,
-      offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 5.8, 13.2],
-      targetOffset: visualReviewCapture ? [0, -0.55, -0.65] : [0, 0, 0],
+      offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 7.2, 13.5],
+      targetOffset: visualReviewCapture ? [0, -0.55, -0.65] : [0, -2.4, 0],
       fov: visualReviewCapture ? 46 : 58,
       smoothing: visualReviewCapture ? 0 : 0.05
     }));
@@ -1159,10 +1159,12 @@ function loadSite(index: number): void {
 
 /** Spawn state for this site, honoring the ?drop=1 evidence approach. */
 function spawnStateFor(site: LanderSite): LanderState {
-  if (!dropEvidenceMode && !approachEvidenceMode) return createLanderState(site.spawn, site.fuelBudget);
   const pad = site.pads[0]!;
   const activeField = siteFields.find((entry) => entry.site.id === site.id)?.field;
   const padHeight = activeField?.padHeights[0] ?? 0;
+  if (!dropEvidenceMode && !approachEvidenceMode) {
+    return createLanderState({ x: site.spawn.x, y: padHeight + 22, z: site.spawn.z }, site.fuelBudget);
+  }
   // Keep the deterministic acceptance approach close enough that all three real Rapier contacts
   // and site transitions complete within the browser gate even on a software-rendered worker.
   return createLanderState({ x: pad.x, y: padHeight + (dropEvidenceMode ? 14 : 26), z: pad.z }, site.fuelBudget);
@@ -1856,7 +1858,9 @@ function publishEvidence(): void {
       mountedEvidence.terrain.surfaceQueryStats = surfaceQuery.stats();
     }
   }
-  (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
+  if (simSeconds > 0.1) {
+    (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
+  }
 }
 
 // ---- main loop -----------------------------------------------------------------

@@ -213,9 +213,6 @@ const skylineWorldNodes = [
     tags: ["world", "typed-primary-asset", "single-level-one-world", "asset-surface-bound"]
   }))
 ];
-const openingSentryPointA = platformerScene.toScenePoint({ x: 2.25, y: 0.56 });
-const openingSentryPointB = platformerScene.toScenePoint({ x: 4.41, y: 0.58 });
-const openingCheckpointPoint = platformerScene.toScenePoint({ x: 3.33, y: 0.463 });
 const skylineSentryNodes = [
   ...SKYLINE_SENTRY_ENCOUNTERS.map((encounter) => {
     const [sceneX, sceneY] = platformerScene.toScenePoint({
@@ -226,36 +223,17 @@ const skylineSentryNodes = [
       name: `relay-sentry-${encounter.id}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.95,
+      targetMaxDimension: 0.36,
       castShadow: true,
       receiveShadow: true
     })
       .position(sceneX, sceneY + 0.08, GAMEPLAY_ACTOR_DEPTH)
       .rotate(0, -Math.PI / 2, 0)
+      .scale([0.19, 0.19, 0.19])
       .runtime(game.runtimeNode(`relay-sentry-${encounter.id}`, {
         tags: ["enemy", "typed-character", "hazard-aligned", `act-${SKYLINE_SECTION_LAYOUTS[encounter.section]?.act ?? 0}`]
       }));
-  }),
-  model(assets.skylineFrostSentryDroneMeshy, {
-    name: "skyline-frost-sentry-1",
-    role: "setDressing",
-    scaleMode: "fit",
-    targetMaxDimension: 0.95,
-    castShadow: true,
-    receiveShadow: true
   })
-    .position(openingSentryPointA[0], openingSentryPointA[1], GAMEPLAY_ACTOR_DEPTH - 0.14)
-    .rotate(0, -Math.PI * 0.38, 0),
-  model(assets.skylineFrostSentryDroneMeshy, {
-    name: "skyline-frost-sentry-2",
-    role: "setDressing",
-    scaleMode: "fit",
-    targetMaxDimension: 0.95,
-    castShadow: true,
-    receiveShadow: true
-  })
-    .position(openingSentryPointB[0], openingSentryPointB[1], GAMEPLAY_ACTOR_DEPTH - 0.14)
-    .rotate(0, -Math.PI * 0.42, 0)
 ];
 const finishPoint = platformerScene.toScenePoint({ x: level.finish?.x ?? 0, y: level.finish?.y ?? 0 });
 const summitBeaconMaterial = material.pbr({
@@ -276,18 +254,12 @@ const skylineSummitBeaconNodes = [
     name: "skyline-checkpoint-arch",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 2.6,
+    targetMaxDimension: 0.82,
     castShadow: false,
     receiveShadow: true
-  }).position(finishPoint[0], finishPoint[1], GAMEPLAY_ACTOR_DEPTH - 0.18),
-  model(assets.skylineCheckpointGateMeshy, {
-    name: "skyline-checkpoint-arch",
-    role: "setDressing",
-    scaleMode: "fit",
-    targetMaxDimension: 2.6,
-    castShadow: false,
-    receiveShadow: true
-  }).position(openingCheckpointPoint[0], openingCheckpointPoint[1], GAMEPLAY_ACTOR_DEPTH - 0.22),
+  })
+    .position(finishPoint[0], finishPoint[1], GAMEPLAY_ACTOR_DEPTH - 0.18)
+    .scale([0.42, 0.42, 0.42]),
   summitBeaconBlock("summit beacon plinth")
     .position(finishPoint[0], -20, platformerScene.worldZ + 0.4)
     .scale([0.0001, 0.0001, 0.0001])
@@ -1515,10 +1487,12 @@ const skylineRelayLanguageNodes = checkpoints.map((checkpoint) => {
       name: "skyline-checkpoint-arch",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 2.6,
+      targetMaxDimension: 0.82,
       castShadow: false,
       receiveShadow: true
-    }).position(0, 0, -0.14),
+    })
+      .position(0, 0, -0.14)
+      .scale([0.42, 0.42, 0.42]),
     primitives.box({ name: `relay post ${checkpoint.id}`, material: relayPostMaterial })
       .position(0, -10, 0)
       .scale([0.0001, 0.0001, 0.0001]),
@@ -2021,7 +1995,7 @@ const app = createAuraApp("#app", {
         receiveShadow: false
       })
         .position(sx, sy + 0.05, GAMEPLAY_ACTOR_DEPTH)
-        .scale(visualReviewCapture ? [0.18, 0.18, 0.18] : [0.45, 0.45, 0.45])
+        .scale(visualReviewCapture ? [0.12, 0.12, 0.12] : [0.14, 0.14, 0.14])
         .runtime(game.runtimeNode("skyline-pickup-glitter-" + collectible.id, {
           tags: ["pickup", "sky-shard", "collectible", "sky-shard-language", "shape-plus-color", "renderer-owned"]
         }));
@@ -2733,8 +2707,8 @@ function renderSkyShardGlitter(): void {
     const pulse = reducedMotion ? 1 : 1 + Math.sin(t * 10 + phase) * 0.18;
     node.setVisible(true);
     node.setScale(visualReviewCapture
-      ? [0.18 * pulse, 0.18 * pulse, 0.18 * pulse]
-      : [0.45 * pulse, 0.45 * pulse, 0.45 * pulse]);
+      ? [0.12 * pulse, 0.12 * pulse, 0.12 * pulse]
+      : [0.14 * pulse, 0.14 * pulse, 0.14 * pulse]);
     collectedIdleSparkleProof.shardSparkleRendered = true;
   }
 }
