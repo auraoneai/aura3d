@@ -15,7 +15,6 @@ import {
   stepDispatch, type CourierEvent, type DispatchState
 } from "../gameplay/dispatch";
 import { createTrafficSimulation } from "../gameplay/traffic";
-import { CAMERA_SOLIDS } from "../gameplay/camera-clearance";
 import {
   handbrakeSpeedMultiplier, toArcadeVehicleInput, VAN_TUNE, type VanDriveInput
 } from "../gameplay/van";
@@ -70,7 +69,7 @@ const world = courierWorldNodes();
 
 function buildScene() {
   return scene()
-    .background("#24344a")
+    .background("#1c2733")
     .camera(fallbackCameraNode())
     .addMany(world.nodes)
     .addMany(lightingNodes());
@@ -265,25 +264,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
   let vanAfter = vanVehicle.step(stepSeconds, arcadeInput);
   if (handbrake) {
     vanAfter = vanVehicle.constrain({ speedMultiplier: handbrakeSpeedMultiplier(stepSeconds) });
-  }
-
-  // Tower blocks are solid: only lamp poles carried colliders, so the van
-  // could drive straight into a kit tower and the chase eye followed it
-  // inside (the near-black 04-action frame). Push the van back to the
-  // nearest street face of any tall block it enters, scrubbing speed.
-  for (const box of CAMERA_SOLIDS) {
-    if (box.top - box.bottom < 1) continue;
-    const pad = VAN_COLLIDER_RADIUS;
-    if (vanAfter.x <= box.minX - pad || vanAfter.x >= box.maxX + pad ||
-        vanAfter.z <= box.minZ - pad || vanAfter.z >= box.maxZ + pad) continue;
-    const exits = [
-      { x: box.minX - pad, z: vanAfter.z, d: vanAfter.x - (box.minX - pad) },
-      { x: box.maxX + pad, z: vanAfter.z, d: box.maxX + pad - vanAfter.x },
-      { x: vanAfter.x, z: box.minZ - pad, d: vanAfter.z - (box.minZ - pad) },
-      { x: vanAfter.x, z: box.maxZ + pad, d: box.maxZ + pad - vanAfter.z }
-    ];
-    exits.sort((a, b) => a.d - b.d);
-    vanAfter = vanVehicle.constrain({ x: exits[0]!.x, z: exits[0]!.z, speedMultiplier: 0.35 });
   }
 
   // Strikes: lamp poles + slow-mover traffic contacts push the van out.

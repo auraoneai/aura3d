@@ -29,11 +29,9 @@ import {
   type VehicleVec3
 } from "@aura3d/engine";
 import { assets } from "../../../../src/aura-assets";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
 import { createShowcaseRapierPhysicsProof } from "../../../common/src/rapier-physics-proof";
 import { gameGeometryContract } from "../generated/game-geometry";
 import { turboAcceptanceExcursionInput } from "./acceptance-driver";
-import { turboEffectsPass, turboHeightHaze } from "./effects-pass";
 import { createTurboOpponentAi } from "../gameplay/opponent-ai";
 import { TURBO_AUDIO_CUE_WISHLIST } from "./audio-cues";
 import { createTurboAudio, type TurboAudioCue, type TurboAudioController } from "./turbo-audio";
@@ -413,8 +411,7 @@ const vehicleBoundaryInset = turboVehicleBoundaryInset({
 // makes the target-yaw chase camera orbit into the infield.
 const recoveryHeadingLimit = Math.PI / 90;
 
-// PRD-09: never read the forbidden `debug` URL param on the shipped route.
-const debugMode = false;
+const debugMode = new URLSearchParams(window.location.search).get("debug") === "1";
 // Query-gated deterministic driver used only to produce bounded, repeatable visual
 // acceptance frames from genuine checkpoint/lap state. Keyboard and touch remain
 // separately browser-proven and this mode is never enabled on the public route.
@@ -564,14 +561,7 @@ const collisionReviewCamera = new URLSearchParams(window.location.search).get("c
 // hierarchy.  The former 1.52x-distance / 1.95x-height overview reduced both
 // cars to thumbnail scale and let foreground barriers dominate the frame.
 // The public route remains on the closer gameplay chase camera.
-// Shipped play path only: the ?capture=overview lens was removed.
-const visualCaptureCamera: boolean = false;
-// PRD-03 §6.6 / Q-14-1: A3D_QR_POST (default on) bloom is linear HDR with no hidden
-// legacy gain; retune for v2 only so the `-post` legacy look is unchanged.
-const postV2Bloom = resolveQrFlags({
-  url: window.location.href,
-  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
-}).on("A3D_QR_POST");
+const visualCaptureCamera = new URLSearchParams(window.location.search).get("capture") === "overview";
 const VISUAL_CAPTURE_CAMERA = {
   // Keep the review frame on the same proven road-facing geometry as the live
   // chase rig.  The former close/high variant targeted a separate midpoint
@@ -3361,22 +3351,20 @@ const app = createAuraApp("#app", {
     // Formula GLB still owns the road, kerbs and collision surface.
     .addMany(buildTurboRallySetNodes())
     .addMany(buildTurboRoadDetailNodes())
-    .addMany(visualCaptureCamera ? buildTurboTreelineBands() : [])
+    .addMany(buildTurboTreelineBands())
     .addMany(buildTurboSignageNodes())
     .addMany(buildTurboBoostRingNodes())
     // Keep contact definition without crushing the Formula car's red palette into black.
     // The former 0.42 AO pass was appropriate for the pale untextured car and visibly
     // over-occluded the textured cockpit, sidepods and rear wing of the new hero.
-    .add(effects.ambientOcclusion({ intensity: visualCaptureCamera ? 0.28 : 0.14, radius: visualCaptureCamera ? 0.62 : 0.48 }))
+    .add(effects.ambientOcclusion({ intensity: visualCaptureCamera ? 0.28 : 0.18, radius: visualCaptureCamera ? 0.62 : 0.48 }))
     .add(effects.contactOcclusion({
       name: "vehicle-road contact occlusion",
-      intensity: visualCaptureCamera ? 0.5 : 0.22,
+      intensity: visualCaptureCamera ? 0.5 : 0.28,
       radius: visualCaptureCamera ? 0.68 : 0.54
     }))
-    .add(effects.neonBloom(postV2Bloom
-      ? { intensity: 0.38, threshold: 0.68, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
-      : { intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade(visualCaptureCamera ? { exposure: 1.05, contrast: 1.07, saturation: 1.12 } : { exposure: 1.02, contrast: 1.06, saturation: 1.10 }))
+    .add(effects.neonBloom({ intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.12 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     // Nonzero depth haze that grades the treeline into the sky and separates
     // near curbing from distant trackside.
@@ -3384,21 +3372,14 @@ const app = createAuraApp("#app", {
     // The previous values were tuned for a 5.4-unit scene; on this 39-unit circuit the
     // key and rim lights sat *inside* the track surface and the fog was ~7x too dense
     // for the distances involved, which is why the frame read as near-night.
-    // Visible effects pass (default boot; the overview capture lens is unchanged).
-    .addMany(visualCaptureCamera ? [] : turboEffectsPass({
-      sceneSize: SCENE_SIZE,
-      startPoint: [initialPlayerPose.position[0], initialPlayerPose.position[1], initialPlayerPose.position[2]],
-      apexPoint: [turboApexScenePoint[0], turboApexRoadY, turboApexScenePoint[2]],
-      reducedMotion
-    }))
-    .add(visualCaptureCamera ? effects.fog({
+    .add(effects.fog({
       name: "circuit distance atmosphere",
       color: visualCaptureCamera ? TURBO_REVIEW_GRADE.fog : TURBO_LATE_AFTERNOON_MOOD.fogColor,
       density: Number((TURBO_LATE_AFTERNOON_MOOD.fogReferenceDensity
         * (TURBO_LATE_AFTERNOON_MOOD.fogReferenceSceneSize / SCENE_SIZE)
         * (visualCaptureCamera ? 1.14 : 1)).toFixed(5)),
       intensity: visualCaptureCamera ? 0.44 : TURBO_LATE_AFTERNOON_MOOD.fogIntensity
-    }) : turboHeightHaze(TURBO_LATE_AFTERNOON_MOOD.fogColor))
+    }))
     .add(lights.ambient({
       name: "circuit sky fill",
       color: visualCaptureCamera ? TURBO_REVIEW_GRADE.ambient : TURBO_LATE_AFTERNOON_MOOD.ambientColor,
@@ -3407,8 +3388,7 @@ const app = createAuraApp("#app", {
     .add(lights.directional({
       name: "circuit daylight key",
       color: visualCaptureCamera ? TURBO_REVIEW_GRADE.key : TURBO_LATE_AFTERNOON_MOOD.keyColor,
-      intensity: visualCaptureCamera ? 2.35 : TURBO_LATE_AFTERNOON_MOOD.keyIntensity,
-      shadow: visualCaptureCamera ? false : { cascades: 2, mapSize: 1024, filter: "pcf", maxDistance: 30 }
+      intensity: visualCaptureCamera ? 2.35 : TURBO_LATE_AFTERNOON_MOOD.keyIntensity
     })
       .position(
         TURBO_LATE_AFTERNOON_MOOD.keyPositionFractions.x * SCENE_SIZE,
@@ -3425,18 +3405,18 @@ const app = createAuraApp("#app", {
         TURBO_LATE_AFTERNOON_MOOD.rimPositionFractions.y * SCENE_SIZE,
         TURBO_LATE_AFTERNOON_MOOD.rimPositionFractions.z * SCENE_SIZE
       ))
-    .add(lights.point({ name: "pit lane warm fill", color: TURBO_LATE_AFTERNOON_MOOD.pitFillColor, intensity: 0.55 })
+    .add(lights.point({ name: "pit lane warm fill", color: TURBO_LATE_AFTERNOON_MOOD.pitFillColor, intensity: 0.42 })
       .position(0.44 * SCENE_SIZE, 0.15 * SCENE_SIZE, -0.33 * SCENE_SIZE))
-    .add(lights.point({ name: "start line red glow", color: "#ff6b5a", intensity: 0.24 })
+    .add(lights.point({ name: "start line red glow", color: "#ff6b5a", intensity: 0.18 })
       .position(-0.33 * SCENE_SIZE, 0.16 * SCENE_SIZE, 0.3 * SCENE_SIZE))
-    .add(lights.point({ name: "start line green glow", color: "#8dffb8", intensity: 0.16 })
+    .add(lights.point({ name: "start line green glow", color: "#8dffb8", intensity: 0.12 })
       .position(-0.28 * SCENE_SIZE, 0.16 * SCENE_SIZE, 0.34 * SCENE_SIZE))
     // Route-bound practicals pick up the apex and exit with different hues so
     // the banked road does not collapse into one uniformly lit grey plane.
     // Their positions follow live centreline samples and own no gameplay state.
-    .add(lights.point({ name: "hairpin cyan apex practical", color: "#85e7ff", intensity: visualCaptureCamera ? 0 : 0.42 })
+    .add(lights.point({ name: "hairpin cyan apex practical", color: "#85e7ff", intensity: visualCaptureCamera ? 0 : 0.34 })
       .position(turboApexScenePoint[0] - 0.62, turboApexRoadY + 0.86, turboApexScenePoint[2] + 0.24))
-    .add(lights.point({ name: "hairpin amber exit practical", color: "#ffc27f", intensity: visualCaptureCamera ? 0.58 : 0.5 })
+    .add(lights.point({ name: "hairpin amber exit practical", color: "#ffc27f", intensity: visualCaptureCamera ? 0.58 : 0.42 })
       .position(turboExitScenePoint[0] + 0.58, turboExitRoadY + 0.72, turboExitScenePoint[2] - 0.18))
     .add(instances.sphere({
       name: "left drift smoke",
@@ -5123,7 +5103,7 @@ app.onFrame(({ dt }) => {
       // The particle cloud below replaces these low-frequency spheres in the
       // held review frame; retain them for normal gameplay only so a camera
       // close-up cannot turn two contact puffs into translucent bubbles.
-      .setVisible(driftSmokeVisible && !visualCaptureCamera);
+      .setVisible(false);
   }
   // Keep the volumetric layer on the same measured rear-axle contact as the
   // hand-authored puffs. The emitter's local fountain rises and disperses in
@@ -5142,7 +5122,7 @@ app.onFrame(({ dt }) => {
     // billboard as a tall cyan column in the locked overview frame. Keep the
     // effect live for normal gameplay where it reads volumetrically, while the
     // deterministic review uses the route-bound staggered dust billow below.
-    .setVisible(driftSmokeVisible && !visualCaptureCamera);
+    .setVisible(false);
   const reviewTrailForwardPoint = gamePointToScene({
     x: raceSnapshot.position.x + Math.cos(raceSnapshot.heading) * 0.1,
     y: raceSnapshot.position.y + Math.sin(raceSnapshot.heading) * 0.1

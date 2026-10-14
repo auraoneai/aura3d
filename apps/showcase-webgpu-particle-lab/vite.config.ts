@@ -19,7 +19,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: [
-      { find: /^@aura3d\/engine$/, replacement: resolve(auraRoot, "dist/engine/public/index.js") },
+      { find: /^@aura3d\/engine$/, replacement: resolve(auraRoot, "dist/engine/agent-api/index.js") },
       { find: /^@aura3d\/engine\/rendering$/, replacement: resolve(auraRoot, "dist/rendering/index.js") },
       { find: /^@aura3d\/engine\/scene$/, replacement: resolve(auraRoot, "dist/scene/index.js") }
     ]

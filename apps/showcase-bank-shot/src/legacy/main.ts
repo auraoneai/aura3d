@@ -26,7 +26,6 @@ import {
   type AuraDiagnostics
 } from "@aura3d/engine";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
-import { bankShotEffectsPass } from "./effects-pass";
 import { assets } from "../../../../src/aura-assets";
 import { CueController, AIM_STEP, SPIN_STEP } from "../gameplay/cue";
 import { RulesEngine, type ShotRecord, type ShotOutcome } from "../gameplay/rules";
@@ -49,6 +48,7 @@ const bankWindow = window as BankShotWindow;
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const portraitComposition = window.innerWidth <= 700 || window.innerHeight > window.innerWidth * 1.25;
+const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
 // PRD-03 §6.6 / Q-14-1: post v2 (A3D_QR_POST, default-on) has no hidden bloom
 // gain, a linear-HDR bloom threshold of 1.0 and real AO on the felt, which left
 // the hall ~9% darker than post-off. Under post v2 the aim overlays get HDR
@@ -60,7 +60,7 @@ const postV2 = resolveQrFlags({
 const NEON_GAIN = postV2 ? 2.6 : 1;
 const KEY_LIGHT_GAIN = postV2 ? 1.14 : 1;
 const AIM_EMISSIVE_STRENGTH = 1.35 * NEON_GAIN;
-document.body.dataset.capture = "default";
+document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 const APP_ID = "showcase-bank-shot";
 // Keep the Rapier bodies at regulation radius while giving the typed ball
@@ -186,7 +186,7 @@ function cueReady(name: string, gapFrames: number): boolean {
 }
 
 // ---------------------------------------------------------------- scene ------
-const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", emissiveIntensity: AIM_EMISSIVE_STRENGTH, opacity: 0.9 });
+const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", emissiveIntensity: AIM_EMISSIVE_STRENGTH, opacity: visualReviewCapture ? 0.62 : 0.9 });
 const AIM_BANK_MATERIAL = material.emissive({ name: "aim bank", color: "#f59e0b", emissive: "#d97706", emissiveIntensity: AIM_EMISSIVE_STRENGTH, opacity: 0.85 });
 const AIM_MARKER_MATERIAL = material.emissive({ name: "aim marker", color: "#38bdf8", emissive: "#7dd3fc", emissiveIntensity: AIM_EMISSIVE_STRENGTH });
 const GHOST_MATERIAL = material.emissive({ name: "cue ghost", color: "#38bdf8", emissive: "#0284c7", emissiveIntensity: AIM_EMISSIVE_STRENGTH, opacity: 0.55 });
@@ -279,7 +279,7 @@ function visualNodes(): AuraSceneNode[] {
   // Fine renderer-owned felt guides remain available in the playable route,
   // but the review capture relies on the typed table's integrated cloth marks
   // so no oversized route-side ring competes with the live break.
-  for (const z of [-0.52, -0.26, 0.26, 0.52]) {
+  for (const z of visualReviewCapture ? [] : [-0.52, -0.26, 0.26, 0.52]) {
     nodes.push(
       primitives.box({ name: `felt-guide-${z}`, material: FELT_GUIDE_MATERIAL })
         .position(0, 0.022, z)
@@ -331,40 +331,47 @@ function buildScene(): ReturnType<typeof scene> {
       // then tightened around the break zone so balls are not thumbnail-sized.
       // The camera remains table-centric; the panel-free review frame has no
       // need to reserve pixels for the DOM controls.
-      position: [-0.067, 2.514, 2.641],
+      position: visualReviewCapture ? [-0.34, 2.18, 2.18] : [-0.067, 2.514, 2.641],
       // The default route keeps the opaque HUD panel clear of the table's
       // right rail.  Shifting the camera target a fraction toward the foot
       // keeps every pocket in the canvas while the controls stay readable.
-      target: [0.32, -0.02, 0.0],
-      fov: 48
+      target: visualReviewCapture ? [0.16, -0.02, 0.0] : [0.32, -0.02, 0.0],
+      fov: visualReviewCapture ? 39 : 48
     });
   return scene()
-    .background("#05070d")
+    .background("#10182a")
     .addMany(visualNodes())
     .addMany([
       // Midnight Slate / Aurora Noir billiards-hall mood:
-      // No bloom/AO/contact-occlusion passes: on the L4 capture they cost
-      // ~28% fps vs baseline for a near-invisible change on this dark frame.
-      // Grounding comes from the shadowed key + renderer-owned ball patches;
-      // the broad lift comes from key/pendant intensity + IBL + grade below.
-      effects.colorGrade({ exposure: 1.02, contrast: 1.06, saturation: 1.08 }),
+      effects.neonBloom({ intensity: (reducedMotion ? 0.07 : 0.2) * (postV2 ? 1.6 : 1), quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" }),
-      ...bankShotEffectsPass(),
+      effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.74 : 0.26 }),
+      effects.contactOcclusion({ name: "ball-to-felt contact", intensity: 0.36, radius: 0.52 }),
+      effects.fog({
+        name: "hall haze",
+        density: visualReviewCapture ? 0.0035 : 0.011,
+        color: "#10182a",
+        intensity: visualReviewCapture ? 0.07 : 0.16
+      }),
       // A restrained ambient floor preserves the lacquer highlights and the
       // ball-to-felt contact gradient.  The previous broad blue fill flattened
       // every PBR response into the same midtone.
-      lights.ambient({ name: "slate ambient", color: "#28494a", intensity: 0.12 * KEY_LIGHT_GAIN }),
+      lights.ambient({ name: "slate ambient", color: "#35435a", intensity: (visualReviewCapture ? 0.1 : 0.24) * KEY_LIGHT_GAIN }),
       // An asymmetric three-lamp pool-room key. The offset sources create a
       // visible luminance falloff across felt, walnut bevels, and ball lacquer
       // instead of washing every surface with the same frontal value.
-      lights.point({ name: "pendant-light-mid", color: "#fff3da", intensity: 5.4 * KEY_LIGHT_GAIN }).position(-1.2, 1.55, 0.92),
-      lights.point({ name: "pendant-light-head", color: "#ffe3b2", intensity: 4.15 * KEY_LIGHT_GAIN }).position(0.2, 1.8, -0.7),
-      lights.point({ name: "pendant-light-foot", color: "#ffdc9e", intensity: 4.15 * KEY_LIGHT_GAIN }).position(1.25, 1.35, 0.35),
-      // Cool fill & rim lights (the rect softbox and three coloured rim
-      // points are gone: five fewer light evaluations per fragment, with
-      // the pendant points + IBL carrying the same table read).
-      lights.directional({ name: "cool rim key", color: "#7fe8cc", intensity: 1.25 }).position(3.2, 4.5, 2.2),
-      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: 0.4 }).position(-3.0, 3.5, -2.0)
+      lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: (visualReviewCapture ? 5.0 : 4.85) * KEY_LIGHT_GAIN }).position(-1.2, 1.55, 0.92),
+      lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: (visualReviewCapture ? 2.9 : 3.6) * KEY_LIGHT_GAIN }).position(0.2, 1.8, -0.7),
+      lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: (visualReviewCapture ? 1.9 : 3.6) * KEY_LIGHT_GAIN }).position(1.25, 1.35, 0.35),
+      lights.rect({ name: "table overhead softbox", color: "#fff4dc", intensity: (visualReviewCapture ? 1.45 : 1.8) * KEY_LIGHT_GAIN, width: 2.8, height: 1.25 })
+        .position(0, 2.25, 0.15),
+      // Cool fill & rim lights
+      lights.directional({ name: "cool rim key", color: "#83bdff", intensity: visualReviewCapture ? 1.35 : 1.35 }).position(3.2, 4.5, 2.2),
+      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: visualReviewCapture ? 0.78 : 0.32 }).position(-3.0, 3.5, -2.0),
+      lights.point({ name: "felt cyan bounce", color: "#55baff", intensity: visualReviewCapture ? 0.18 : 0.7 }).position(0, 0.75, 2.0),
+      lights.point({ name: "rack magenta rim", color: "#ff78ad", intensity: visualReviewCapture ? 0.28 : 0.72 }).position(1.65, 0.72, -0.58),
+      lights.point({ name: "cue teal rim", color: "#55e2d2", intensity: visualReviewCapture ? 0.24 : 0.62 }).position(-1.45, 0.62, 0.62)
     ])
     .camera(sceneCamera);
 }
@@ -824,13 +831,13 @@ function syncVisuals(): void {
   // The review capture keeps the line hairline-thin and subdued so it reads as
   // a real tactical cue rather than a UI banner; the playable route retains a
   // stronger training guide and bank preview.
-  poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_SURFACE_Y + 0.002, 0.006);
+  poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.0035 : 0.006);
   aimMarkerHandle?.setPosition(sweep.ghostX, BALL_SURFACE_Y, sweep.ghostZ);
   if (sweep.kind === "cushion") {
     const dot = dirX * sweep.normalX + dirZ * sweep.normalZ;
     const bankX = dirX - 2 * dot * sweep.normalX;
     const bankZ = dirZ - 2 * dot * sweep.normalZ;
-    poseLine(aimBankHandle, sweep.ghostX, sweep.ghostZ, sweep.ghostX + bankX * 0.45, sweep.ghostZ + bankZ * 0.45, BALL_SURFACE_Y + 0.002, 0.005);
+    poseLine(aimBankHandle, sweep.ghostX, sweep.ghostZ, sweep.ghostX + bankX * 0.45, sweep.ghostZ + bankZ * 0.45, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.003 : 0.005);
   } else {
     parkNode(aimBankHandle);
   }

@@ -36,7 +36,6 @@ import {
   type AuraSceneNode
 } from "@aura3d/engine";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
-import { galleryEffectsPass } from "./effects-pass";
 import { assets } from "../../../../src/aura-assets";
 import {
   FLOOR_LAYOUTS,
@@ -83,6 +82,7 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_GALLERY_SHIFT__", {
 });
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
 // PRD-03 §6.6 / Q-14-1: post v2 (A3D_QR_POST, default-on) composites bloom with no
 // hidden gain and a linear-HDR threshold of 1.0, so neon practicals need real HDR
 // emissive strength (3-8) to glow. Post-off keeps the legacy authoring untouched.
@@ -92,7 +92,7 @@ const postV2 = resolveQrFlags({
 }).on("A3D_QR_POST");
 const NEON_GAIN = postV2 ? 2.6 : 1;
 const DEFAULT_EMISSIVE_STRENGTH = 1.35;
-document.body.dataset.capture = "default";
+document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 const THIEF_FOCUS_MATERIAL = material.emissive({
   name: "thief tactical focus ring",
   color: "#123b3a",
@@ -259,10 +259,9 @@ addActorBox(guardDetailMesh, [0, 2.34, 0.24], [0.86, 0.1, 0.08]);
 addActorBox(guardDetailMesh, [-0.5, 1.52, 0], [0.08, 0.3, 0.24]);
 addActorBox(guardDetailMesh, [0.5, 1.52, 0], [0.08, 0.3, 0.24]);
 const GUARD_DETAIL_GEOMETRY = defineActorDetail(guardDetailMesh);
-// PRD-09: never read the forbidden `debug` URL param on the shipped route;
-// the debug overlay and teleport stay off in the public build.
-const debugMode = false;
-const showDebugOverlay = false;
+const debugValue = new URLSearchParams(window.location.search).get("debug");
+const debugMode = debugValue !== null;
+const showDebugOverlay = debugValue === "visual";
 
 const APP_ID = "showcase-gallery-shift";
 // The route-primary composition probe isolates the typed museum world only.
@@ -941,10 +940,29 @@ function debugOverlayNodes(): AuraSceneNode[] {
 }
 
 function meshyThiefCandidateNodes(): AuraSceneNode[] {
-  // Meshy candidate museum thief (galleryThief, quality: candidate) stays out
-  // of the shipped route: it exceeds the humanoid triangle budget (1.93M vs
-  // 150k) and carries no skeleton, so it never replaces the animated infiltrator.
-  return [];
+  // Meshy candidate museum thief (galleryThief, quality: candidate).
+  // Review-composition only: one grounded identity study beside the thief
+  // spawn so the capture shows the candidate's material break at action
+  // distance. Non-colliding set dressing; movement, sensors, scoring, clips,
+  // and the default composition are untouched. The candidate exceeds the
+  // humanoid triangle budget (1.93M vs 150k) and carries no skeleton, so it
+  // stays out of the default route and never replaces the animated infiltrator.
+  if (!visualReviewCapture) return [];
+  const spawn = FLOOR_LAYOUTS[0]!.thiefSpawn;
+  return [
+    model(assets.galleryThief, {
+      name: "Meshy museum thief candidate",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.8
+    })
+      .position(spawn.x + 2.2, 0, spawn.z + 0.6)
+      .rotate(0, -0.5, 0)
+      .runtime(game.runtimeNode("gallery-meshy-thief-candidate", {
+        tags: ["typed-asset", "thief-identity", "meshy-candidate", "review-set-dressing", "non-colliding"]
+      }))
+      .toJSON()
+  ];
 }
 
 function buildScene(): ReturnType<typeof scene> {
@@ -963,7 +981,7 @@ function buildScene(): ReturnType<typeof scene> {
         // actor collapses to a few pixels beside the guards; the review-only
         // 3.3m fit restores actor parity without touching movement, collision,
         // clips, or the default gameplay camera.
-        targetMaxDimension: 2.7
+        targetMaxDimension: visualReviewCapture ? 3.3 : 2.7
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief", { tags: ["typed-asset", "thief", "authored-movement"] }))
@@ -1015,7 +1033,7 @@ function buildScene(): ReturnType<typeof scene> {
       lights.point({
         name: "thief tactical practical",
         color: "#69f7df",
-        intensity: 1.5
+        intensity: visualReviewCapture ? 3.6 : 1.5
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 1.25, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief-practical", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
@@ -1025,7 +1043,7 @@ function buildScene(): ReturnType<typeof scene> {
       lights.point({
         name: "thief cyan rim fill",
         color: "#8fffee",
-        intensity: 1.3
+        intensity: visualReviewCapture ? 3.2 : 1.3
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x - 0.55, 2.15, FLOOR_LAYOUTS[0]!.thiefSpawn.z + 0.45)
         .runtime(game.runtimeNode("thief-rim-fill", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
@@ -1057,14 +1075,15 @@ function buildScene(): ReturnType<typeof scene> {
       // Low-lit marble hall: moonlight key, warm guard flashlights (sway gated
       // by reduced-motion below), cool exit glow, shallow fog, restrained bloom.
       effects.neonBloom({ intensity: (reducedMotion ? 0.06 : 0.22) * (postV2 ? 1.6 : 1), quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      ...galleryEffectsPass(),
+      effects.fog({ name: "gallery haze", density: 0.009, color: "#243b59", intensity: 0.18 }),
       effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.08 }),
       effects.antiAlias({ mode: "fxaa" }),
-      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: 0.38 }),
-      lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: 0.58 }),
+      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: visualReviewCapture ? 0.06 : 0.38 }),
+      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: visualReviewCapture ? 0.4 : 1.05 }),
+      lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: visualReviewCapture ? 1.04 : 0.58 }),
       lights.spot({ name: "rotunda guard spotlight", position: [-8.5, 2.6, 4.5], target: [-4, 0, 1], angle: 0.5, penumbra: 0.6, distance: 18, decay: 2, intensity: 2.2, color: "#ffd58a", shadow: true }),
-      lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: 1.55 }).position(-8.5, 1.8, 4.5),
-      lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: 1.55 }).position(8.5, 1.8, -5.5),
+      lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(-8.5, 1.8, 4.5),
+      lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(8.5, 1.8, -5.5),
       lights.point({ name: "exit sign glow", color: "#7ef8ff", intensity: 0.8 }).position(0, 2.2, -6.5)
     ])
     // The floor topology is genuine; the review camera has to make it read as
@@ -1093,7 +1112,7 @@ function buildScene(): ReturnType<typeof scene> {
       // two live patrol silhouettes into the same diagonal lane.  This is a
       // camera-only presentation change: FloorLayout, LOS, patrol positions,
       // and the staged encounter remain unchanged.
-      position: [0, 16.8, 17.2],
+      position: visualReviewCapture ? [0, 26.0, 2.5] : [0, 16.8, 17.2],
       // Centre the open foyer encounter rather than the south boundary. This
       // keeps a complete infiltrator body inside the canvas while retaining
       // both objective wings and the north service exit as route context.
@@ -1101,8 +1120,8 @@ function buildScene(): ReturnType<typeof scene> {
       // occlude sightlines and patrol paths in oblique review framings, so
       // the blueprint read (flat light-vs-dark threat legibility) needs
       // height over angle. Gameplay camera below is unchanged.
-      target: [0, 0.6, -0.6],
-      fov: 43
+      target: visualReviewCapture ? [0, 0.92, 0.35] : [0, 0.6, -0.6],
+      fov: visualReviewCapture ? 38 : 43
     }));
 }
 
@@ -1334,7 +1353,7 @@ function syncFloorVisuals(): void {
   layout.lightPools.forEach((_, poolIndex) => {
     const mine = app.nodes.get(`pool-${layout.id}-${poolIndex}`);
     const other = app.nodes.get(`pool-${layout.id === 1 ? 2 : 1}-${poolIndex}`);
-    mine?.setVisible(true);
+    mine?.setVisible(!visualReviewCapture);
     other?.setVisible(false);
   });
   const thiefNode = app.nodes.get("thief");
@@ -1390,7 +1409,7 @@ function syncCharacterVisuals(): void {
     // Passive cones are useful during play, but they have no target in the
     // retained review shot and otherwise float free of the museum geometry.
     // A true sighting still enables the alert wedge in syncThreatFeedback.
-    sightline?.setVisible(runtime.layout.id === 1);
+    sightline?.setVisible(!visualReviewCapture && runtime.layout.id === 1);
   }
 }
 
@@ -1440,7 +1459,7 @@ function syncThreatFeedback(): void {
     // A real sighting swaps the cool patrol preview for one alert wedge driven
     // by the same observer sample that raised the detection meter.
     app.nodes.get(`${sample.id} sightline preview`)
-      ?.setVisible(!sample.seesThief && runtime.layout.id === 1);
+      ?.setVisible(!visualReviewCapture && !sample.seesThief && runtime.layout.id === 1);
     if (primarySighting) {
       highlight?.setPosition(thief.x, 0.07, thief.z);
       // Keep the target marker one clear body-width beyond the infiltrator so
@@ -1599,8 +1618,8 @@ function publishEvidence(): void {
   // prevent both the evidence getter and CDP capture from responding. A drawn
   // renderer is therefore the complete review-mode mount condition; normal
   // visitors retain the canonical 90-frame lobby baseline.
-  const routeReady = rendererDrawn && frameCount >= 90;
-  if (rendererDrawn && frameCount < 90 && !bootWarmupScheduled) {
+  const routeReady = rendererDrawn && (visualReviewCapture || frameCount >= 90);
+  if (!visualReviewCapture && rendererDrawn && frameCount < 90 && !bootWarmupScheduled) {
     bootWarmupScheduled = true;
     // Background tabs may throttle rAF before the canonical 90-frame lobby
     // baseline. Complete that same deterministic idle warmup through the

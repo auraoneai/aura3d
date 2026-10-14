@@ -4,7 +4,7 @@
 // our dawn light — parked-car boxes stripped for live traffic), the typed
 // courier van + 8 lane-loop traffic bodies, movable pickup/drop zone rigs,
 // and the impact feedback nodes. No emissive fill.
-import { effects, game, model, primitives, type AuraNodeInput } from "@aura3d/engine";
+import { game, model, primitives, type AuraNodeInput } from "@aura3d/engine";
 import { batchStaticPrimitives } from "./batch";
 import { assets } from "../../../../../src/aura-assets";
 import { buildCityDressing } from "../../legacy/city";
@@ -22,17 +22,6 @@ export function courierWorldNodes(): CourierWorldNodes {
   const dressing = buildCityDressing(assets, false, "day");
   const staticDressing = batchStaticPrimitives(dressing.staticNodes, "courier static");
   const nodes: AuraNodeInput[] = [...staticDressing.nodes, ...dressing.pickupZone, ...dressing.dropZone];
-
-  // Wet-dawn distance haze: cool blue-grey air between the towers so depth
-  // reads at chase distance and the warm key separates from the skyline.
-  nodes.push(
-    effects.fog({
-      name: "courier dawn distance haze",
-      color: "#7e97ab",
-      density: 0.016,
-      intensity: 0.55
-    }).toJSON()
-  );
 
   // Hero van: typed Meshy body fit to the delivery footprint; the sim pose
   // drives it every frame. Livery trim + bumper accents attach to the pose.

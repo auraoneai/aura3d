@@ -47,7 +47,7 @@ import { prd02LightingOn } from "./lights.js";
 import { colorToLinearRgb } from "../colorUtils.js";
 import { isKnownNodeKind, resolveNodeHandler } from "./handlers.js";
 import { AuraRuntimeError } from "./errors.js";
-import { bindRuntimeCompiled } from "../../contracts/compiler.js";
+import { bindRuntimeCompiled, compilerSlot } from "../../contracts/compiler.js";
 import type { RuntimeCompiledSceneInternals } from "../../contracts/compiler.js";
 export { asRuntimeCompiled } from "../../contracts/compiler.js";
 
@@ -614,8 +614,11 @@ function sameItemResources(cached: RenderItem, fresh: RenderItem): boolean {
 /** @internal test seam for the T3.12 reuse rules (#1142). */
 export const reuseRenderItemsForTest = reuseRenderItems;
 
-/** The real C-36 impl, provided once from `lanes/prd15.ts`. */
+/** The real C-36 impl, provided once from `lanes/prd15.ts` (and self-registered here for agent-api builds). */
 export const realCompilerImpl: CompilerImpl = {
   compile: compileSceneReal,
   update: updateCompiledSceneReal
 };
+if (!compilerSlot.provided) {
+  compilerSlot.provide(realCompilerImpl);
+}

@@ -45,7 +45,7 @@ function laneRailNodes(): AuraNodeInput[] {
       material: LANE_GUIDE
     })
       .position(x, TUNNEL_FLOOR_Y + 0.02, (PULSE_PLAYER_Z - 13.5) / 2)
-      .scale([0.1, 0.025, 8.0])
+      .scale([0.05, 0.02, 8.0])
       .runtime(game.runtimeNode(`pulse-lane-guide-${index + 1}`, {
         tags: ["lane-guide", "set-dressing", "renderer-owned"]
       }))
@@ -138,10 +138,10 @@ export function pulseWorldNodes(conveyor?: PulseConveyor): PulseWorldNodes {
         tags: ["beat-feedback", "renderer-owned"]
       })),
     primitives.box({ name: "pulse section far glow", material: material.emissive({
-      color: "#8b5cf6", emissive: "#b18cff", emissiveIntensity: 1.15, opacity: 0.62
+      color: "#8b5cf6", emissive: "#a78bfa", emissiveIntensity: 0.7, opacity: 0.5
     }) })
       .position(0, 0.9, -13.2)
-      .scale([4.8, 2.9, 0.05])
+      .scale([3.4, 2.0, 0.05])
       .runtime(game.runtimeNode("pulse-far-glow", {
         tags: ["set-dressing", "renderer-owned"]
       }))

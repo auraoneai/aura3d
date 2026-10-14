@@ -33,7 +33,7 @@ export const TYRE_MATERIAL: AuraMaterialSpec = material.physical({
 
 export const ASPHALT_MATERIAL: AuraMaterialSpec = material.physical({
   name: "turbo asphalt",
-  color: "#383634",
+  color: "#2e2d2b",
   roughness: 0.75,
   metallic: 0
 });
@@ -41,7 +41,7 @@ export const ASPHALT_MATERIAL: AuraMaterialSpec = material.physical({
 /** Grass/dirt outfield under and around the circuit shell. */
 export const TERRAIN_MATERIAL: AuraMaterialSpec = material.pbr({
   name: "turbo outfield terrain",
-  color: "#5a663f",
+  color: "#4d5738",
   roughness: 0.95,
   metallic: 0
 });
@@ -49,7 +49,7 @@ export const TERRAIN_MATERIAL: AuraMaterialSpec = material.pbr({
 /** Distant mountain impostor band (beyond fog; backdrop → castShadow: false). */
 export const MOUNTAIN_MATERIAL: AuraMaterialSpec = material.pbr({
   name: "turbo distant mountain",
-  color: "#6a565f",
+  color: "#5a4a52",
   roughness: 1,
   metallic: 0
 });

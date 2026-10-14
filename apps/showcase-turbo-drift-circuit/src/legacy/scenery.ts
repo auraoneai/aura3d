@@ -36,25 +36,25 @@ export const TURBO_LATE_AFTERNOON_MOOD = {
   // The former blue-gray grade flattened the scene into a near-night test frame.
   // Keep a muted sunset sky so the typed cars and green verge separate from the
   // warm rally-road reference without turning the route into a color filter.
-  background: "#f2926e",
+  background: "#df967d",
   environmentName: "circuit late afternoon reflections",
   environmentColor: "#ffd0a4",
-  environmentIntensity: 1.37,
-  ambientColor: "#ffc696",
-  ambientIntensity: 1.27,
-  keyColor: "#ff9448",
-  keyIntensity: 2.9,
+  environmentIntensity: 1.24,
+  ambientColor: "#ffe0c5",
+  ambientIntensity: 1.16,
+  keyColor: "#ffc18e",
+  keyIntensity: 2.7,
   /** Key-light position as fractions of SCENE_SIZE (x, y, z). */
   keyPositionFractions: { x: -0.92, y: 0.38, z: 0.58 },
-  rimColor: "#a9cbe8",
-  rimIntensity: 1.05,
+  rimColor: "#c6d9e8",
+  rimIntensity: 0.96,
   rimPositionFractions: { x: 0.65, y: 0.59, z: -0.56 },
   pitFillColor: "#f6a178",
-  fogColor: "#e08a68",
+  fogColor: "#d48673",
   /** Fog density at the reference scene size; scaled by SCENE_SIZE at runtime. */
   fogReferenceDensity: 0.028,
   fogReferenceSceneSize: 5.4,
-  fogIntensity: 0.42
+  fogIntensity: 0.48
 } as const;
 
 export interface PlanTurboSceneryInput {

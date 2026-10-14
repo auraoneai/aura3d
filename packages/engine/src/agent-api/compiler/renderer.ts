@@ -25,6 +25,7 @@ import { camera } from "../nodes/camera.js";
 import { geometry } from "../nodes/geometry.js";
 import { material } from "../nodes/material.js";
 import { asRuntimeCompiled, compileScene, compilerSlot, updateCompiledScene } from "../../contracts/compiler.js";
+import "./compileScene.js";
 import type { MountSceneCompileContext } from "./compileScene.js";
 import { createDegradationSink } from "./degradation.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";

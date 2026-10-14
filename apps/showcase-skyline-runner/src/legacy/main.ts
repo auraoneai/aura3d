@@ -1,4 +1,3 @@
-import { resolveQrFlags } from "@aura3d/engine/contracts";
 import {
   createAuraApp,
   blendSkyBandColor,
@@ -59,7 +58,6 @@ import {
   skylineSparkleNodeId,
   skylineSparkleTint
 } from "./foliage";
-import { skylineActHazeOptions, skylineEffectsPass } from "./effects-pass";
 import { createSkylineAudio, type SkylineAudioController, type SkylineAudioProof } from "./skyline-audio";
 import { skylineAudioManifest, type SkylineAudioCue } from "./skyline-audio-manifest";
 import {
@@ -118,15 +116,8 @@ import {
 
 const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-// Shipped play path only: the ?capture= review lens was removed.
-const visualReviewCapture: boolean = false;
-// PRD-03 §6.6 / Q-14-1: with A3D_QR_POST on (default), bloom is linear-HDR with no
-// hidden legacy gain, so the legacy 0.1 neon bloom no longer glows. Retune for v2 only;
-// the `-post` legacy path keeps its original values.
-const postV2Bloom = resolveQrFlags({
-  url: typeof location === "undefined" ? undefined : location.href,
-  env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR }
-}).on("A3D_QR_POST");
+const visualReviewCapture = typeof window !== "undefined"
+  && new URLSearchParams(window.location.search).get("capture") === "review";
 // PART F2/F3 adoption probe: `?juiceProbe=1` fires the root-kit juice chain once
 // (trauma + punch-in + node-backed feel effects) for the adoption spec. Review
 // captures never set the flag, so certified framing stays exact.
@@ -1390,10 +1381,7 @@ function createActFogNode(actIndex: number) {
     // compete at the same contrast. Foreground gameplay nodes remain in front
     // of the depth falloff.
     density: reviewNocturne ? 0.021 : palette.fogDensity,
-    intensity: reviewNocturne ? 0.3 : palette.fogIntensity,
-    // Visible effects pass: the default boot renders each act's haze as
-    // ground-hugging height fog (the review lens keeps the flat exp2 haze).
-    ...(visualReviewCapture ? {} : skylineActHazeOptions(palette, platformerScene.toScenePoint({ x: 0, y: 0 })[1]))
+    intensity: reviewNocturne ? 0.3 : palette.fogIntensity
   }).runtime(game.runtimeNode(`skyline-act-${actIndex}-fog`, {
     tags: ["backdrop", "fog", `act-${actIndex}`]
   }));
@@ -1406,7 +1394,7 @@ const actPaletteLights = [0, 1, 2, 3, 4].map((actIndex) => {
   const reviewNocturne = visualReviewCapture && actIndex === 0;
   return {
     ambient: lights.ambient({ name: `skyline act-${actIndex} fill`, color: reviewNocturne ? "#7185a8" : palette.ambientLightColor, intensity: reviewNocturne ? 0.08 : palette.ambientLightIntensity }),
-    key: lights.directional({ name: `skyline act-${actIndex} key`, color: reviewNocturne ? "#ffb08e" : palette.keyLightColor, intensity: reviewNocturne ? 0.16 : palette.keyLightIntensity, shadow: visualReviewCapture ? false : { cascades: 2, mapSize: 1024, filter: "pcf", maxDistance: 14 } }).position(-3, 5, 4),
+    key: lights.directional({ name: `skyline act-${actIndex} key`, color: reviewNocturne ? "#ffb08e" : palette.keyLightColor, intensity: reviewNocturne ? 0.16 : palette.keyLightIntensity }).position(-3, 5, 4),
     checkpoint: lights.point({
       name: `skyline act-${actIndex} relay`,
       color: palette.checkpointLightColor,
@@ -1916,11 +1904,6 @@ const app = createAuraApp("#app", {
      */
     .addMany(actSkyBackdropNodeBuilders)
     .addMany(actFogNodeBuilders)
-    .addMany(visualReviewCapture ? [] : skylineEffectsPass({
-      districts: SKYLINE_DISTRICT_ANCHORS.map((anchor) => platformerScene.toScenePoint({ x: anchor.centerX, y: anchor.elevation })),
-      depth: GAMEPLAY_ACTOR_DEPTH,
-      reducedMotion
-    }))
     .addMany(skylineWinterBackdropNodes)
     .addMany(visualReviewCapture ? [] : [skylineStarfieldNode, skylineMoonNode])
     .addMany(skylineReviewCaptureNodes)
@@ -2109,10 +2092,8 @@ const app = createAuraApp("#app", {
     }).position(...initialPlayerPose.position).rotate(0, 0, Math.PI / 2).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode(`skyline-ember-volley-${index}`, {
       tags: ["projectile", "ember", "capsule-bolt", "shape-plus-color", "renderer-owned"]
     }))))
-    .add(effects.neonBloom(postV2Bloom
-      ? { intensity: visualReviewCapture ? 0 : 0.32, threshold: 0.72, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }
-      : { intensity: visualReviewCapture ? 0 : 0.1, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade(visualReviewCapture ? { exposure: 1.04, contrast: 1.06, saturation: 1.1 } : { exposure: 1.02, contrast: 1.06, saturation: 1.10 }))
+    .add(effects.neonBloom({ intensity: visualReviewCapture ? 0 : 0.1, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     .add(effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.34 : 0.2 }))
     .add(effects.contactOcclusion({ name: "platform landing contact", intensity: 0.32, radius: 0.5 }))

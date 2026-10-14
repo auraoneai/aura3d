@@ -259,20 +259,6 @@ function reviewCorridorNodes(): AuraNodeInput[] {
  * set-dressing boxes and window practicals; the typed van, parcel, traffic,
  * bollards, and awnings remain the route's primary/secondary assets.
  */
-/** Footprints (centre + full width/depth) of the skyline towers, for camera clearance. */
-export const SKYLINE_TOWER_FOOTPRINTS: readonly { readonly x: number; readonly z: number; readonly width: number; readonly depth: number }[] = [
-  { x: -11, z: -10, width: 3.5, depth: 3.1 },
-  { x: 11, z: -10, width: 3.1, depth: 3.4 },
-  { x: -12.5, z: 10.5, width: 3.4, depth: 2.8 },
-  { x: 12.5, z: 10.5, width: 3.8, depth: 3.2 },
-  { x: -4.9, z: 7.2, width: 2.7, depth: 2.4 },
-  { x: 4.9, z: 7.2, width: 2.7, depth: 2.4 },
-  { x: -6.2, z: 17.6, width: 2.6, depth: 2.2 },
-  { x: 6.2, z: 17.6, width: 2.6, depth: 2.2 },
-  { x: -8, z: 22, width: 3.2, depth: 2.4 },
-  { x: 8, z: 22, width: 3.2, depth: 2.4 }
-];
-
 function skylineDressingNodes(): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [];
   const towerMaterial = material.pbr({ name: "courier skyline concrete", color: "#27526a", roughness: 0.62, metallic: 0.2 });

@@ -53,10 +53,7 @@ export function comboClockText(count: number): string {
 
 export function readPlayableHudMode(location: { readonly pathname: string; readonly search: string }): PlayableHudMode {
   const params = new URLSearchParams(location.search);
-  // PRD-09: `debug` is a forbidden URL param on shipped routes (the capture
-  // harness fails any read of it); training keys off the test driver or the
-  // evidence path only.
-  const training = params.has("auraTestDriver") || location.pathname.includes("/evidence/");
+  const training = params.has("debug") || params.has("auraTestDriver") || location.pathname.includes("/evidence/");
   return { training, evidence: training };
 }
 

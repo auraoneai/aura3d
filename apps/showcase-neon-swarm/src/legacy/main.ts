@@ -27,7 +27,6 @@ import {
   primitives,
   scene
 } from "@aura3d/engine";
-import { POST_V2_CONTRAST, POST_V2_EXPOSURE, POST_V2_ON, withPostV2Bloom } from "./post-v2-retune";
 import { assets } from "../../../../src/aura-assets";
 import { createArenaLayout, playRect, spawnPointOnEdge } from "../gameplay/arena";
 import { createNeonSwarmDistrictDressing } from "./environment";
@@ -53,7 +52,6 @@ import { PICKUP_DOORS, riskPickupForWave, sensePickupDoors, senseRiskPickup } fr
 import { createCombatFeel } from "./combat-feel";
 import { createSwarmAudio, type SwarmAudioController, type SwarmAudioProof } from "./swarm-audio";
 import { setupHud, type HudController } from "./hud";
-import { createNeonSwarmEffectsPass } from "./effects-pass";
 import {
   FINALE_SURVIVAL_SECONDS,
   MAX_CAMPAIGN_WAVES,
@@ -175,8 +173,8 @@ const INTERMISSION_FIRST_SECONDS = 3.2;
 
 const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-// Shipped play view only: no ?capture review lens (PRD-09 capture parity).
-const visualReviewCapture: boolean = false;
+const visualReviewCapture = typeof window !== "undefined"
+  && new URLSearchParams(window.location.search).get("capture") === "review";
 // The retained desktop probe is a 1440x900 frame. Keep its camera language
 // closer to the actual horde-survival reference (player hierarchy first,
 // threats readable around a broad play pocket) without changing the gameplay
@@ -902,7 +900,7 @@ appScene.add(
   })
 );
 
-appScene.add(effects.fog({ density: 0.022, color: "#1c2a4a", intensity: 0.5 }));
+appScene.add(effects.fog({ density: 0.02, color: "#070a14" }));
 appScene.add(effects.ambientOcclusion({
   name: "district contact occlusion",
   intensity: visualReviewCapture ? 0.52 : 0.34,
@@ -910,11 +908,10 @@ appScene.add(effects.ambientOcclusion({
 }));
 appScene.add(effects.contactOcclusion({ name: "courier horde contact", intensity: 0.34, radius: 0.5 }));
 if (!reducedMotion) {
-  appScene.add(withPostV2Bloom(effects.bloom({ intensity: 0.42, color: "#35e6ff", quality: "balanced", softKnee: 0.5, shoulder: 0.6 })));
+  appScene.add(effects.bloom({ intensity: 0.42, color: "#35e6ff", quality: "balanced", softKnee: 0.5, shoulder: 0.6 }));
 }
-appScene.add(effects.colorGrade({ exposure: 1.05 * POST_V2_EXPOSURE, contrast: POST_V2_ON ? POST_V2_CONTRAST : 1.08, saturation: 1.12 }));
+appScene.add(effects.colorGrade({ exposure: 1.05, contrast: 1.08, saturation: 1.12 }));
 appScene.add(effects.antiAlias({ mode: "fxaa" }));
-appScene.addMany(createNeonSwarmEffectsPass({ reducedMotion }));
 
 appScene.camera(
   camera.follow({

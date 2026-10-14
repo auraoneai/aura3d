@@ -13,7 +13,6 @@ import {
   effects,
   type AuraRuntimeNodeHandle
 } from "@aura3d/engine";
-import { POST_V2_EXPOSURE, withPostV2Bloom } from "./post-v2-retune";
 import { assets } from "../../../../src/aura-assets";
 import {
   COURT_SPOTS,
@@ -44,17 +43,16 @@ import {
   type GameScoreState
 } from "../gameplay/scoring";
 import { createRooftopDressing } from "./environment";
-import { createRooftopEffectsPass } from "./effects-pass";
 import { BucketsAudioController } from "./buckets-audio";
 
-// Shipped play view only: no ?capture review lens (PRD-09 capture parity).
-const visualReviewCapture: boolean = false;
+const visualReviewCapture =
+  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("capture") === "review";
 // Keep the heavyweight 191-joint clip actors opt-in for the standalone
 // animation/debug harness. The normal game/review lane uses the lighter
 // registered raised-pose counterparts, which keeps the visual pass within its
 // documented draw-call budget while the route's clip state remains observable.
-// No ?debug harness in the shipped route (PRD-09 forbidden-param probe).
-const animationDebugCapture: boolean = false;
+const animationDebugCapture =
+  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "animation";
 if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 export interface RooftopBucketsEvidence {
@@ -373,18 +371,13 @@ function buildScene() {
     .addMany([
       // Atmospheric & Lighting Setup
       effects.fog({ name: "dusk haze", density: 0.005, color: "#24173f", intensity: 0.14 }),
-      withPostV2Bloom(effects.neonBloom({ intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 })),
-      effects.colorGrade({ exposure: 1.04 * POST_V2_EXPOSURE, contrast: 1.06, saturation: 1.1 }),
+      effects.neonBloom({ intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" }),
       // A restrained arena rig leaves real surface gradients on the court and
       // typed characters instead of flattening every material into emissive UI.
       lights.ambient({ color: "#8098c8", intensity: visualReviewCapture ? 0.72 : 1.32 }),
-      lights.directional({
-        color: "#fff3d6",
-        intensity: visualReviewCapture ? 2.75 : 3.6,
-        // Effects pass: cascaded PCSS sun shadows across the court.
-        shadow: { cascades: 1, mapSize: 1024, filter: "pcss", softness: 1.1, intensity: 0.9 }
-      }).position(8, 20, 10),
+      lights.directional({ color: "#fff3d6", intensity: visualReviewCapture ? 2.75 : 3.6 }).position(8, 20, 10),
       lights.point({ name: "scorer warm key", color: "#ffd6a0", intensity: visualReviewCapture ? 4.15 : 4.4 }).position(-4.0, 4.6, 5.4),
       lights.point({ name: "defender cool rim", color: "#79dcff", intensity: visualReviewCapture ? 3.45 : 3.4 }).position(1.5, 4.4, 3.3),
       lights.point({ name: "hoop amber practical", color: "#ffad58", intensity: visualReviewCapture ? 2.55 : 3.4 }).position(0.8, 4.8, -0.1),
@@ -713,9 +706,6 @@ function buildScene() {
         .scale([1.05, 1.05, 0.075])
         .runtime(outcomeHaloHandle)
     ])
-    .addMany(createRooftopEffectsPass({
-      reducedMotion: typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    }))
     .camera(
       camera.perspective({
         // The review lens is a sideline action camera: shooter, live arc,

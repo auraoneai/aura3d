@@ -119,7 +119,6 @@ import type {
 import { createAuraClashArenaProof } from "./evidence/auraClashArenaProof";
 import { createAuraClashLightingEvidence, type RenderedLightingRigSummary } from "../rendering/GameLighting";
 import { createAuraClashPostProcessEvidence } from "../rendering/GamePostProcess";
-import { auraClashRootEffects, effectsPassOn } from "../rendering/EffectsPass";
 import "./playable.css";
 
 type FighterId = "player" | "rival";
@@ -1398,17 +1397,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           (roundOver || reducedMotion ? 0 : sharedPunch.snapshot().fovOffset * Math.PI / 180) };
     },
     collectedLights: [...arenaLighting.collectedLights, ...fighterRimCollectedLights, ...fighterKeyCollectedLights],
-    // Effects pass: brighter IBL on the dark rigs and a lighter, bluer haze
-    // so the skyline separates from the fight plane.
-    environmentLighting: effectsPassOn
-      ? { ...renderPreset.environmentLighting, intensity: (renderPreset.environmentLighting.intensity ?? 0.42) * 2.2 }
-      : renderPreset.environmentLighting,
+    environmentLighting: renderPreset.environmentLighting,
     get environmentFog() {
       const densityControl = currentTweaks().fogDensity;
       if (renderPreset.environmentFog === false) return false;
       return {
         ...renderPreset.environmentFog,
-        ...(effectsPassOn ? { color: [0.05, 0.08, 0.13] as [number, number, number] } : {}),
         density: 0.008 + densityControl * 0.026,
         maxOpacity: 0.2 + densityControl * 0.42
       };
@@ -1496,10 +1490,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       target: [0, 0.2, 0], angle: 0.65, penumbra: 0.4, distance: 14,
       intensity: stageSpotEnabled ? 24 : 0, color: "#ffe0be",
       shadow: stageSpotShadow
-    }))
-    // Effects pass (default flags): the spotlight probe keeps its isolated
-    // four-state light readback, so the pass stays out of it.
-    .addMany(stageSpotlightProbeEnabled ? [] : auraClashRootEffects({ reducedMotion }));
+    }));
   const detachRootSource = attachRootRenderSource(canvas, {
     source, onFrame: (frameDiagnostics, submittedItems) => {
       diagnostics = frameDiagnostics;

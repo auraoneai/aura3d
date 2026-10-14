@@ -141,7 +141,13 @@ let surfaceCuePlayed = false;
 let oxygenWarningCuePlayed = false;
 let compositionProbeActive = false;
 const reducedMotion = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-document.body.dataset.capture = "default";
+const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
+document.body.dataset.capture = visualReviewCapture ? "review" : "default";
+// The review lens is a deliberately staged mission moment, not the launch
+// pose.  Keeping the submarine on the west approach and the Drowned Chapel in
+// the same camera-facing basin makes the typed vehicle/world relationship
+// legible in one frame while leaving the normal gameplay spawn untouched.
+const REVIEW_POSE = { x: -11.5, y: -12, z: -7, yaw: 0.18 } as const;
 const PRIMARY_ASSET_REFS = [
   assets.deepRecoverySub,
   assets.deepRecoveryWreckHull,
@@ -230,7 +236,6 @@ bindHeldButton("dr-dive-btn", "KeyQ");
 bindHeldButton("dr-surface-btn", "KeyE");
 
 import { createDeepOceanEnvironment } from "./environment";
-import { deepRecoveryEffectsPass, effectsPassOn } from "./effects-pass";
 
 // ---------------- Scene Construction ----------------
 const initialSonarTargets = [
@@ -253,10 +258,13 @@ const sceneDef = scene()
   // and destroyed the focal hierarchy the comment above describes. Depth cueing
   // now comes from a darker, less saturated water column so warm sub surfaces and
   // cyan sonar returns are the brightest things on screen.
-  // Effects pass: indigo twilight-zone water behind the in-scatter, matching
-  // the pass's fog and abyss shelf; flags-off keeps the pre-pass near-black.
-  .background(effectsPassOn ? "#0c173e" : "#04141c")
-  .addMany(deepRecoveryEffectsPass())
+  .background("#04141c")
+  .add(effects.fog({
+    name: "deep recovery suspended-particle haze",
+    color: "#0a2e3a",
+    density: 0.02,
+    intensity: 0.42
+  }))
   .add(effects.neonBloom({
     name: "deep recovery sonar bloom",
     intensity: 0.16,
@@ -267,7 +275,8 @@ const sceneDef = scene()
     softKnee: 0.5,
     shoulder: 0.6
   }))
-  .add(effects.colorGrade({ exposure: 1.02, contrast: 1.1, saturation: 1.14 }))
+  .add(effects.colorGrade({ exposure: 1.04, contrast: 1.1, saturation: 1.06 }))
+  .add(effects.antiAlias({ mode: "fxaa" }))
   // §6.9.14 P0: effects.volumetricFog deleted — it ran a CPU 8-bit readback
   // every frame (0.5 fps at 1920). The in-shader underwater fog (§8.3)
   // replaces the inscatter look in the v2 shell; the plain effects.fog above
@@ -281,24 +290,24 @@ const sceneDef = scene()
       // The comparison state is a salvage chart, so its dedicated camera is
       // genuinely overhead: the submarine, chapel island, rings, and wreck
       // form one readable map instead of a forest of near-camera columns.
-      offset: [6.4, 9.2, -15.4],
+      offset: visualReviewCapture ? [4.6, 21.8, 5.2] : [6.4, 9.2, -15.4],
       // The default route keeps the submarine in the west foreground while
       // aiming through the illuminated wreck basin. The old neutral target
       // looked down an empty corridor and left the typed world landmark at
       // the frame edge; this target makes the approach and destination share
       // one readable water column without changing movement authority.
-      targetOffset: [-2.0, -3.0, -5.2],
+      targetOffset: visualReviewCapture ? [4.5, -3.1, -5.2] : [-2.0, -3.0, -5.2],
       // Keep camera and authored submarine pose coherent during sonar/replay teleports.
       // The route's evidence harness captures within a bounded frame window; interpolation
       // otherwise leaves depth-aligned landmarks outside the capture frustum.
       smoothing: 0,
-      fov: 62
+      fov: visualReviewCapture ? 47 : 62
     })
   )
   .addMany([
     // Keep unsupported postprocess out of this root-safe evidence path. The
     // scene's emissive materials and authored lights provide the visible cues.
-    ...createDeepOceanEnvironment({ review: false }),
+    ...createDeepOceanEnvironment({ review: visualReviewCapture }),
 
     // Camera target rig
     primitives
@@ -315,11 +324,11 @@ const sceneDef = scene()
       name: "buoy-station",
       role: "primaryWorld",
       scaleMode: "fit",
-      targetMaxDimension: 4.25
+      targetMaxDimension: visualReviewCapture ? 0.001 : 4.25
     }).position(BUOY_STATION.x, BUOY_STATION.y, BUOY_STATION.z).runtime({ id: "buoy-station", tags: ["bank-zone", "repair-zone"] }),
 
     // Wreck Obstacles
-    ...WRECK_OBSTACLES.map((obs) =>
+    ...(visualReviewCapture ? [] : WRECK_OBSTACLES).map((obs) =>
       model(assets.deepRecoveryWreckHull, {
         name: `wreck-${obs.id}`,
         role: "setDressing",
@@ -333,7 +342,7 @@ const sceneDef = scene()
       name: "sub-root",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 8.4,
+      targetMaxDimension: visualReviewCapture ? 5.0 : 8.4,
       // The typed source is a deep-navy vehicle that disappears against the
       // trench walls in the sonar frame. Keep its geometry and provenance,
       // but give the hero a cool teal PBR finish so the hull, nose lamps, and
@@ -342,7 +351,7 @@ const sceneDef = scene()
         name: "deep recovery sub teal hull",
         color: "#2ab0c0",
         emissive: "#1596a8",
-        emissiveIntensity: 0.55,
+        emissiveIntensity: visualReviewCapture ? 0.5 : 0.55,
         roughness: 0.3,
         metallic: 0.46,
         clearcoat: 0.2,
@@ -357,22 +366,59 @@ const sceneDef = scene()
       name: "sonar reveal wreck landmark",
       role: "primaryWorld",
       scaleMode: "fit",
-      targetMaxDimension: 7.2
+      targetMaxDimension: visualReviewCapture ? 5.45 : 7.2,
+      material: visualReviewCapture ? material.pbr({
+        name: "deep recovery oxidized chapel wreck",
+        color: "#64796b",
+        emissive: "#2d5b51",
+        emissiveIntensity: 0.58,
+        roughness: 0.52,
+        metallic: 0.34,
+        clearcoat: 0.12,
+        clearcoatRoughness: 0.42
+      }) : undefined
     }).position(-6.4, -11.7, -11.6).runtime({ id: "sonar-reveal-wreck-landmark", tags: ["typed-asset", "environment-landmark"] }),
+
+    // The review lens is a real mission state, not an empty beauty render.
+    // Typed cargo is embedded in the revealed debris field so the world-space
+    // sonar bearings lead to resources the player can actually recover.
+    ...(visualReviewCapture ? [
+      model(assets.deepRecoveryCrateStandard, {
+        name: "review standard salvage contact",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 0.72,
+        material: material.pbr({ name: "review standard cargo", color: "#d6a54d", emissive: "#684719", emissiveIntensity: 0.34, roughness: 0.5, metallic: 0.32 })
+      }).position(-2.4, -14.08, -16.25).rotate(0.08, -0.32, 0.12).runtime({ id: "review-standard-contact", tags: ["typed-asset", "salvage-contact"] }),
+      model(assets.deepRecoveryCrateHeavy, {
+        name: "review heavy salvage contact",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 0.92,
+        material: material.pbr({ name: "review heavy cargo", color: "#b86439", emissive: "#672e1d", emissiveIntensity: 0.32, roughness: 0.54, metallic: 0.38 })
+      }).position(1.2, -14.02, -11.0).rotate(-0.06, 0.4, -0.08).runtime({ id: "review-heavy-contact", tags: ["typed-asset", "salvage-contact"] }),
+      model(assets.deepRecoveryCrateStandard, {
+        name: "review chapel supply contact",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 0.62,
+        material: material.pbr({ name: "review chapel supply", color: "#668d7f", emissive: "#214f4a", emissiveIntensity: 0.3, roughness: 0.58, metallic: 0.26 })
+      }).position(-4.7, -13.94, -9.7).rotate(0.12, -0.16, 0.08).runtime({ id: "review-chapel-contact", tags: ["typed-asset", "salvage-contact"] })
+    ] : []),
 
     // Renderer-owned warm lamp volume, breach beacon, and grapple cable.
     primitives.sphere({
       name: "sub-lamp-volume",
       material: material.emissive({ name: "sub lamp water", color: "#713f12", emissive: "#fde68a", opacity: 0.06 })
-    }).scale([1.8, 0.9, 3.2]).position(0, -6, 4).runtime({ id: "sub-lamp-volume", tags: ["lamp", "state-light"] }),
+    }).scale(visualReviewCapture ? [1.35, 0.55, 2.4] : [1.8, 0.9, 3.2]).position(0, -6, 4).runtime({ id: "sub-lamp-volume", tags: ["lamp", "state-light"] }),
     primitives.cylinder({
       name: "sub-lamp-port",
       material: material.emissive({ name: "warm port lamp beam", color: "#78350f", emissive: "#fde68a", opacity: 0.12 })
-    }).scale([0.16, 2.0, 0.16]).rotate(Math.PI / 2, 0, 0).position(-0.5, -6.2, 3).runtime({ id: "sub-lamp-port", tags: ["lamp", "world-space-light-cue"] }),
+    }).scale(visualReviewCapture ? [0.12, 1.45, 0.12] : [0.16, 2.0, 0.16]).rotate(Math.PI / 2, 0, 0).position(-0.5, -6.2, 3).runtime({ id: "sub-lamp-port", tags: ["lamp", "world-space-light-cue"] }),
     primitives.cylinder({
       name: "sub-lamp-starboard",
       material: material.emissive({ name: "warm starboard lamp beam", color: "#78350f", emissive: "#fde68a", opacity: 0.12 })
-    }).scale([0.16, 2.0, 0.16]).rotate(Math.PI / 2, 0, 0).position(0.5, -6.2, 3).runtime({ id: "sub-lamp-starboard", tags: ["lamp", "world-space-light-cue"] }),
+    }).scale(visualReviewCapture ? [0.12, 1.45, 0.12] : [0.16, 2.0, 0.16]).rotate(Math.PI / 2, 0, 0).position(0.5, -6.2, 3).runtime({ id: "sub-lamp-starboard", tags: ["lamp", "world-space-light-cue"] }),
     primitives.sphere({
       name: "breach-beacon",
       material: material.emissive({ name: "breach warning", color: "#7f1d1d", emissive: "#ef4444", opacity: 0.85 })
@@ -408,7 +454,7 @@ const sceneDef = scene()
       .scale([0.1, 0.05, 0.1]),
 
     // Crates
-    ...crates.map((c) =>
+    ...(visualReviewCapture ? [] : crates).map((c) =>
       model(c.kind === "crate-heavy" ? assets.deepRecoveryCrateHeavy : assets.deepRecoveryCrateStandard, {
         name: `crate-node-${c.id}`,
         role: "setDressing",
@@ -419,7 +465,7 @@ const sceneDef = scene()
 
     // Contact markers occupy the target's real world position and are hidden
     // until the spherical sonar query returns that exact target.
-    ...initialSonarTargets.map((target) =>
+    ...(visualReviewCapture ? [] : initialSonarTargets).map((target) =>
       primitives.torus({
         name: `sonar-marker-${target.id}`,
         material: material.emissive({ name: "sonar contact", color: "#075985", emissive: "#67e8f9", emissiveIntensity: 2.1, opacity: 0.88 })
@@ -686,7 +732,7 @@ function syncVisualNodes(): void {
     subState.z + Math.cos(subState.yaw) * 3.4
   );
   lampNode?.setRotation?.(subState.pitch, subState.yaw, 0);
-  lampNode?.setVisible?.(!compositionProbeActive && gameState !== "blackout");
+  lampNode?.setVisible?.(!visualReviewCapture && !compositionProbeActive && gameState !== "blackout");
   for (const [index, side] of [-0.52, 0.52].entries()) {
     const beam = app.nodes.get(index === 0 ? "sub-lamp-port" : "sub-lamp-starboard");
     const sideX = Math.cos(subState.yaw) * side;
@@ -697,7 +743,7 @@ function syncVisualNodes(): void {
       subState.z + sideZ + Math.cos(subState.yaw) * 3.1
     );
     beam?.setRotation?.(Math.PI / 2 + subState.pitch, subState.yaw, 0);
-    beam?.setVisible?.(!compositionProbeActive && gameState !== "blackout");
+    beam?.setVisible?.(!visualReviewCapture && !compositionProbeActive && gameState !== "blackout");
   }
   SILT_OFFSETS.forEach((offset, index) => {
     const drift = reducedMotion ? 0 : Math.sin(timeSinceStart * 0.7 + index * 1.3) * 0.22;
@@ -858,7 +904,7 @@ function updateEvidence(): void {
   const tetheredMass = tetheredCrates.reduce((sum, crate) => sum + crate.mass, 0);
   window.__DEEP_RECOVERY_EVIDENCE__ = {
     mounted: true,
-    status: frameCount >= 90 && Number(diagnostics.drawCalls ?? 0) > 0 ? "ready" : "loading",
+    status: (visualReviewCapture || frameCount >= 90) && Number(diagnostics.drawCalls ?? 0) > 0 ? "ready" : "loading",
     state: gameState,
     missionStage: missionStage(),
     depth: Math.abs(subState.y),
@@ -1009,12 +1055,14 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   configurable: true,
   value: {
     category: "application",
-    subject: { position: [-1.7, -6, -2], rotation: [0, 0, 0], targetSize: 4.2 },
+    subject: { position: visualReviewCapture ? [-11.5, -12, -7] : [-1.7, -6, -2], rotation: [0, 0, 0], targetSize: 4.2 },
     async settleSubjectPose() {
       app.pause();
       await app.ready();
       compositionProbeActive = true;
-      subState = { ...initialSubmarineState(), x: -1.7, y: -6, z: -2, yaw: 0 };
+      subState = visualReviewCapture
+        ? { ...initialSubmarineState(), ...REVIEW_POSE }
+        : { ...initialSubmarineState(), x: -1.7, y: -6, z: -2, yaw: 0 };
       // Seed the same sonar contact that the playable producer uses for its
       // named wreck-approach artifact.  This keeps both the normal route
       // primary probe and the dedicated review lens grounded in an actual

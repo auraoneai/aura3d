@@ -342,7 +342,7 @@ void game.ready().then(() => {
   const rig = createBankShotRig(rigState);
   game.app.camera?.use?.(rig, { blend: 0.4 });
   // C-05 output: "cinematic-film" preset + exposureEV 0 → linear 1.
-  game.app.setOutput?.({ preset: "cinematic-film", exposure: 1.1 });
+  game.app.setOutput?.({ preset: "cinematic-film", exposure: 1 });
 
   publishBankShotEvidence({
     game, sim, rules, cue: cueController, rigState,

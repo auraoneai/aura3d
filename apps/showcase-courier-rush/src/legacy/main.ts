@@ -24,7 +24,6 @@ import {
   type AuraRuntimeNodeHandle,
   type GameArcadeVehicle
 } from "@aura3d/engine";
-import { POST_V2_EXPOSURE, withPostV2Bloom } from "./post-v2-retune";
 import { assets } from "../../../../src/aura-assets";
 import {
   buildCityDressing,
@@ -55,8 +54,6 @@ import {
   VAN_TUNE,
   type VanDriveInput
 } from "../gameplay/van";
-import { CAMERA_SOLIDS, clearanceLift, createChaseClearance } from "../gameplay/camera-clearance";
-import { createCourierEffectsPass } from "./effects-pass";
 import { createCourierAudio, type CourierAudioController } from "./courier-audio";
 import {
   decayHudEffects,
@@ -99,10 +96,8 @@ declare global {
 const urlParams = new URLSearchParams(window.location.search);
 const autopilotEnabled = urlParams.get("autopilot") === "1";
 const timerScale = Number(urlParams.get("timerScale") ?? "1") || 1;
-// No ?debug overlay in the shipped route (PRD-09 forbidden-param probe).
-const debugMode: boolean = false;
-// Shipped play view only: no ?capture review lens (PRD-09 capture parity).
-const visualReviewCapture: boolean = false;
+const debugMode = urlParams.get("debug") === "1";
+const visualReviewCapture = urlParams.get("capture") === "review";
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 /** Deterministic shift seed (drives traffic line variation). */
@@ -233,9 +228,7 @@ const observed = {
 /** Shift start: on the free southbound lane, nose north toward the first dock. */
 const SPAWN_POSE = { x: -0.45, z: 18.6, heading: -Math.PI / 2 };
 
-const chaseClearance = createChaseClearance();
 function resetVan(): void {
-  chaseClearance.reset();
   vanVehicle.reset({ x: SPAWN_POSE.x, z: SPAWN_POSE.z, heading: SPAWN_POSE.heading, speed: 0, drift: 0 });
 }
 resetVan();
@@ -275,7 +268,7 @@ const app = createAuraApp("#app", {
     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
   },
   scene: scene()
-  .background("#0b1728")
+  .background("#030711")
     .addMany(dressing.staticNodes)
     .addMany(dressing.pickupZone)
     .addMany(dressing.dropZone)
@@ -285,7 +278,7 @@ const app = createAuraApp("#app", {
     // 1.72 over emissive city dressing and blew the whole frame - including the
     // player's own van - into a white core. Art direction is now a single set of
     // values so evidence and gameplay cannot drift apart again.
-    .add(effects.fog({ name: "night city haze", color: "#38536d", density: 0.0038, intensity: 0.46 }))
+    .add(effects.fog({ name: "night city haze", color: "#090714", density: 0.0018, intensity: 0.44 }))
     // Bloom was authored at 0.5, which is a screenshot-kernel value, not a
     // gameplay one. At that strength the typed van's white livery, its own
     // headlight cones and every rain trace merged into one white mass: the
@@ -300,22 +293,15 @@ const app = createAuraApp("#app", {
     // animation frame - a black canvas with zero console or page errors,
     // because the engine records it in `diagnostics.errors` instead of
     // rethrowing. 0.5 is the maximum legal value and the repo-wide convention.
-    .add(withPostV2Bloom(effects.neonBloom({ intensity: reducedMotion ? 0.26 : 0.44, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }), reducedMotion ? 0.26 / 0.44 : 1))
-    .add(effects.colorGrade({ exposure: 0.93 * POST_V2_EXPOSURE, contrast: 1.06, saturation: 1.22 }))
+    .add(effects.neonBloom({ intensity: reducedMotion ? 0.26 : 0.44, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.colorGrade({ exposure: 1.05, contrast: 1.1, saturation: 1.12 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
-    .addMany(createCourierEffectsPass({ reducedMotion, depot: START_SITE }))
     // The street itself was reading as black-on-black void with a few floating
     // signs. A lifted cool ambient plus a stronger moon key gives the kit
     // towers, kerbs and lane paint actual form between the practicals.
-    .add(lights.ambient({ name: "night city fill", color: "#93b7d4", intensity: 1.25 }))
-    .add(lights.directional({
-      name: "moonlight key",
-      color: "#ffd2a0",
-      intensity: 2.5,
-      // Effects pass: cascaded PCSS moon shadows across the chase depth.
-      shadow: { cascades: 1, mapSize: 1024, filter: "pcss", softness: 1, maxDistance: 60, intensity: 0.9 }
-    }).position(-18, 26, 8))
-    .add(lights.directional({ name: "city glow fill", color: "#4fd8ff", intensity: 1.42 }).position(20, 18, 16))
+    .add(lights.ambient({ name: "night city fill", color: "#7f9cb5", intensity: 1.25 }))
+    .add(lights.directional({ name: "moonlight key", color: "#d8f5ff", intensity: 2.5, shadow: true }).position(-18, 26, 8))
+    .add(lights.directional({ name: "city glow fill", color: "#36bdd2", intensity: 1.35 }).position(20, 18, 16))
     // Hero practicals used to sit at 2.6/1.8 directly on the van, which is what
     // turned the typed Meshy livery into a featureless white slab.
     .add(lights.point({ name: "courier hero key", color: "#e8fbff", intensity: 1.9 }).position(-1.6, 2.4, 6.5))
@@ -323,7 +309,7 @@ const app = createAuraApp("#app", {
      .add(lights.point({ name: "courier intersection practical", color: "#ff9d66", intensity: 1.9 }).position(0, 3.8, 0))
      .add(lights.point({ name: "courier forward cyan practical", color: "#22d3ee", intensity: 2.1 }).position(0, 3.4, 8.5))
      .add(lights.point({ name: "courier forward warning practical", color: "#fb7185", intensity: 1.7 }).position(0, 2.6, 12.8))
-    .add(lights.point({ name: "depot dock warm light", color: "#fbbf24", intensity: 1.45 })
+    .add(lights.point({ name: "depot dock warm light", color: "#fbbf24", intensity: 1.25 })
       .position(START_SITE.x + 4.5, 5.0, START_SITE.z))
     // Van fleet: every moving part is a top-level runtime node (the mutable
     // registry covers model/primitive/group/label nodes, so nothing rides in a
@@ -1173,24 +1159,6 @@ app.onFrame(({ dt }) => {
     vanAfter = vanVehicle.constrain({ speedMultiplier: handbrakeSpeedMultiplier(stepSeconds) });
   }
 
-  // Tower blocks are solid: only lamp poles carried colliders, so the van
-  // could drive into a kit tower and the chase frame collapsed to a black
-  // void. Push it back to the nearest street face, scrubbing speed.
-  for (const box of CAMERA_SOLIDS) {
-    if (box.top - box.bottom < 1) continue;
-    const pad = VAN_COLLIDER_RADIUS;
-    if (vanAfter.x <= box.minX - pad || vanAfter.x >= box.maxX + pad ||
-        vanAfter.z <= box.minZ - pad || vanAfter.z >= box.maxZ + pad) continue;
-    const exits = [
-      { x: box.minX - pad, z: vanAfter.z, d: vanAfter.x - (box.minX - pad) },
-      { x: box.maxX + pad, z: vanAfter.z, d: box.maxX + pad - vanAfter.x },
-      { x: vanAfter.x, z: box.minZ - pad, d: vanAfter.z - (box.minZ - pad) },
-      { x: vanAfter.x, z: box.maxZ + pad, d: box.maxZ + pad - vanAfter.z }
-    ];
-    exits.sort((a, b) => a.d - b.d);
-    vanAfter = vanVehicle.constrain({ x: exits[0]!.x, z: exits[0]!.z, speedMultiplier: 0.35 });
-  }
-
   // Strike detection against static props and live traffic footprints.
   const hits = collisionHits(vanAfter.x, vanAfter.z, vanAfter.speed);
   if (hits.length > 0) {
@@ -1423,25 +1391,11 @@ app.onFrame(({ dt }) => {
     ? Math.sin((1 - dropLookbackRemainingSeconds / DROP_LOOKBACK_SECONDS) * Math.PI)
     : 0;
   const offset = chaseOffsetForBlend(chaseBlend, visualReviewCapture ? 11.4 : undefined);
-  // Flash fix: keep the trailing eye out of tower blocks (see camera-clearance).
-  const clearanceSnap = vanVehicle.snapshot();
-  const clear = visualReviewCapture
-    ? { distance: offset.offsetZ, minOffsetY: 0 }
-    : chaseClearance.update(
-      clearanceSnap.x,
-      clearanceSnap.z,
-      -Math.cos(clearanceSnap.heading),
-      -Math.sin(clearanceSnap.heading),
-      offset.offsetZ,
-      offset.offsetY,
-      stepSeconds
-    );
-  const clearZ = clear.distance;
   Object.assign(chaseCamera as unknown as MutableChaseCamera, {
     offset: [
-      visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : offset.offsetX * (clearZ / offset.offsetZ),
-      visualReviewCapture ? 3.28 : Math.max(offset.offsetY + clearanceLift(offset.offsetZ, clearZ), clear.minOffsetY),
-      clearZ
+      visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : offset.offsetX,
+      visualReviewCapture ? 3.28 : offset.offsetY,
+      offset.offsetZ
     ] as const
   });
 
