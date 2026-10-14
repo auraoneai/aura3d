@@ -186,6 +186,7 @@ let objective = "Lift both exhibits (hold E by a pedestal), then reach the north
 let thiefYaw = Math.PI;
 let lastHudHtml = "";
 let cachedEvidence: unknown = null;
+let cachedDrawCalls = 0;
 
 function makeThief(): ThiefPlayer {
   return new ThiefPlayer(LAYOUT, layoutRects(LAYOUT), layoutCircles(LAYOUT), floorWorld.thiefBody, LAYOUT.thiefSpawn);
@@ -224,12 +225,11 @@ function buildScene() {
     clearcoat: 0.85,
     clearcoatRoughness: 0.05
   });
-  const rotundaInlayMat = material.reflectiveFloor({
+  const rotundaInlayMat = material.lacquer({
     color: "#131e36",
-    roughness: 0.1,
-    metallic: 0.42,
-    clearcoat: 0.9,
-    clearcoatRoughness: 0.04
+    roughness: 0.12,
+    clearcoat: 0.92,
+    clearcoatRoughness: 0.05
   });
   const inlayTrimMat = material.brushedMetal({ color: "#cbd5e1", roughness: 0.25 });
 
@@ -315,35 +315,46 @@ function buildScene() {
   );
 
   // Gallery walls with mahogany wainscoting & cutaway south parapet for the 3/4 view.
+  const wallTransforms: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+  const wainscotTransforms: { position: [number, number, number]; scale: [number, number, number] }[] = [];
   for (const wall of LAYOUT.walls) {
     const isSouthCutaway = wall.id === "wall-south";
     const visualHeight = isSouthCutaway ? 0.48 : wall.height;
     const wainscotHeight = isSouthCutaway ? 0.48 : 0.92;
     const wallWidthX = wall.halfX * 2;
     const wallWidthZ = wall.halfZ * 2;
-    nodes.push(
-      primitives.box({
-        name: `wall ${wall.id}`,
-        material: isSouthCutaway ? mahoganyWainscotMat : galleryWallMat,
-        castShadow: !isSouthCutaway,
-        receiveShadow: true
-      })
-        .position(wall.x, visualHeight / 2, wall.z)
-        .scale([wallWidthX, visualHeight, wallWidthZ])
-    );
-    if (!isSouthCutaway) {
-      nodes.push(
-        primitives.box({
-          name: `wainscot ${wall.id}`,
-          material: mahoganyWainscotMat,
-          castShadow: false,
-          receiveShadow: true
-        })
-          .position(wall.x, wainscotHeight / 2, wall.z)
-          .scale([wallWidthX + 0.06, wainscotHeight, wallWidthZ + 0.06])
-      );
+    if (isSouthCutaway) {
+      wainscotTransforms.push({
+        position: [wall.x, visualHeight / 2, wall.z],
+        scale: [wallWidthX, visualHeight, wallWidthZ]
+      });
+    } else {
+      wallTransforms.push({
+        position: [wall.x, visualHeight / 2, wall.z],
+        scale: [wallWidthX, visualHeight, wallWidthZ]
+      });
+      wainscotTransforms.push({
+        position: [wall.x, wainscotHeight / 2, wall.z],
+        scale: [wallWidthX + 0.06, wainscotHeight, wallWidthZ + 0.06]
+      });
     }
   }
+  nodes.push(
+    instances.box({
+      name: "gallery structural walls",
+      material: galleryWallMat,
+      castShadow: true,
+      receiveShadow: true,
+      transforms: wallTransforms
+    }),
+    instances.box({
+      name: "gallery mahogany wainscoting",
+      material: mahoganyWainscotMat,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: wainscotTransforms
+    })
+  );
   // Carved modular stone vault pediment over the north extraction exit.
   nodes.push(
     model(assets.quaterniusWallModular, {
@@ -403,15 +414,24 @@ function buildScene() {
         position: [art.x, art.y, art.z] as [number, number, number],
         scale: [art.sx, art.sy, art.sz] as [number, number, number]
       }))
+    }),
+    instances.box({
+      name: "gallery warm canvases",
+      material: canvasArtWarmMat,
+      transforms: paintings.filter((art) => art.warm).map((art) => ({
+        position: [art.x, art.y, art.z] as [number, number, number],
+        scale: [Math.max(0.1, art.sx - 0.18), art.sy - 0.18, Math.max(0.1, art.sz - 0.18)] as [number, number, number]
+      }))
+    }),
+    instances.box({
+      name: "gallery teal canvases",
+      material: canvasArtTealMat,
+      transforms: paintings.filter((art) => !art.warm).map((art) => ({
+        position: [art.x, art.y, art.z] as [number, number, number],
+        scale: [Math.max(0.1, art.sx - 0.18), art.sy - 0.18, Math.max(0.1, art.sz - 0.18)] as [number, number, number]
+      }))
     })
   );
-  for (const art of paintings) {
-    nodes.push(
-      primitives.box({ name: `canvas ${art.id}`, material: art.warm ? canvasArtWarmMat : canvasArtTealMat })
-        .position(art.x, art.y, art.z)
-        .scale([Math.max(0.1, art.sx - 0.18), art.sy - 0.18, Math.max(0.1, art.sz - 0.18)])
-    );
-  }
 
   // Artifact display pedestals: lacquer bases, frosted-glass vitrines, golden galleryArtifactBust sculptures, and felt velvet stanchions.
   const stanchionPostTransforms: { position: [number, number, number]; scale: [number, number, number] }[] = [];
@@ -463,20 +483,36 @@ function buildScene() {
   );
 
   // Wing display cases: lacquer base, Golden galleryArtifactBust sculpture, and frosted-glass vitrine hood.
-  for (const displayCase of LAYOUT.cases) {
-    nodes.push(
-      primitives.box({ name: `case base ${displayCase.id}`, material: pedestalBaseMat, castShadow: false, receiveShadow: true })
-        .position(displayCase.x, 0.42, displayCase.z)
-        .scale([1.12, 0.84, 1.12]),
-      primitives.box({ name: `case relic galleryArtifactBust ${displayCase.id}`, material: goldSculptureMat, castShadow: false })
-        .position(displayCase.x, 1.06, displayCase.z)
-        .rotate(0, Math.PI / 4, 0)
-        .scale([0.36, 0.44, 0.36]),
-      primitives.box({ name: `case vitrine ${displayCase.id}`, material: vitrineGlassMat })
-        .position(displayCase.x, 1.14, displayCase.z)
-        .scale([1.06, 0.68, 1.06])
-    );
-  }
+  nodes.push(
+    instances.box({
+      name: "wing display case bases",
+      material: pedestalBaseMat,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: LAYOUT.cases.map((displayCase) => ({
+        position: [displayCase.x, 0.42, displayCase.z] as [number, number, number],
+        scale: [1.12, 0.84, 1.12] as [number, number, number]
+      }))
+    }),
+    instances.box({
+      name: "wing display case relics galleryArtifactBust",
+      material: goldSculptureMat,
+      castShadow: false,
+      transforms: LAYOUT.cases.map((displayCase) => ({
+        position: [displayCase.x, 1.06, displayCase.z] as [number, number, number],
+        rotation: [0, Math.PI / 4, 0] as [number, number, number],
+        scale: [0.36, 0.44, 0.36] as [number, number, number]
+      }))
+    }),
+    instances.box({
+      name: "wing display case vitrines",
+      material: vitrineGlassMat,
+      transforms: LAYOUT.cases.map((displayCase) => ({
+        position: [displayCase.x, 1.14, displayCase.z] as [number, number, number],
+        scale: [1.06, 0.68, 1.06] as [number, number, number]
+      }))
+    })
+  );
 
   // North service extraction pad + brass threshold frame.
   nodes.push(
@@ -497,13 +533,16 @@ function buildScene() {
     { id: "rotunda-laser-west", x: -3.2, y: 0.35, z: -2.75, sx: 2.4, sz: 0.04 },
     { id: "rotunda-laser-east", x: 3.2, y: 0.35, z: -2.75, sx: 2.4, sz: 0.04 }
   ];
-  for (const beam of laserBeams) {
-    nodes.push(
-      primitives.box({ name: `security laser ${beam.id}`, material: securityLaserMat })
-        .position(beam.x, beam.y, beam.z)
-        .scale([beam.sx, 0.04, beam.sz])
-    );
-  }
+  nodes.push(
+    instances.box({
+      name: "security laser beams",
+      material: securityLaserMat,
+      transforms: laserBeams.map((beam) => ({
+        position: [beam.x, beam.y, beam.z] as [number, number, number],
+        scale: [beam.sx, 0.04, beam.sz] as [number, number, number]
+      }))
+    })
+  );
 
   // Thief (`galleryThief`) multi-part stealth character + patrolling guards (`galleryGuard`).
   nodes.push(
@@ -646,11 +685,14 @@ let accumulator = 0;
 app.onFrame(({ dt }) => {
   if (input.pressed("reset")) resetRound();
   if (phase === "playing") {
-    accumulator += Math.min(dt, 0.1);
-    while (accumulator >= FIXED_DT) {
+    accumulator += Math.min(dt, 0.05);
+    let steps = 0;
+    while (accumulator >= FIXED_DT && steps < 2) {
       stepFixed();
       accumulator -= FIXED_DT;
+      steps += 1;
     }
+    if (accumulator > FIXED_DT) accumulator = 0;
   }
   syncVisuals();
   renderHud();
@@ -776,10 +818,10 @@ function createHud(): HTMLElement {
   const root = document.createElement("aside");
   root.id = "gallery-shift-hud";
   root.style.cssText = [
-    "position:absolute", "left:16px", "top:56px", "z-index:5", "min-width:320px",
-    "font:600 13px/1.35 system-ui, sans-serif", "color:#f5fbff",
-    "background:rgba(7,9,13,0.74)", "border:1px solid rgba(255,180,84,0.4)",
-    "border-radius:8px", "padding:12px", "pointer-events:none"
+    "position:fixed", "left:14px", "bottom:14px", "z-index:5", "max-width:260px",
+    "font:500 11px/1.35 system-ui, sans-serif", "color:rgba(245,251,255,0.82)",
+    "background:rgba(7,9,13,0.68)", "border:1px solid rgba(255,180,84,0.28)",
+    "border-radius:8px", "padding:8px 10px", "pointer-events:none", "backdrop-filter:blur(6px)"
   ].join(";");
   document.body.append(root);
   return root;
@@ -790,10 +832,8 @@ function renderHud(): void {
   galleryGame.hud.set("alert", detection.value);
   galleryGame.hud.set("objective", objective);
   const nextHtml = [
-    `<strong>Gallery Shift</strong>`,
-    `<div>Loot ${score} | Detection ${Math.round(detection.value * 100)}% | ${phase}</div>`,
-    `<div>${objective}</div>`,
-    `<div>Move WASD/arrows. Sneak C. Sprint Shift. Lift hold E. Reset R.</div>`
+    `<strong>Gallery Shift</strong> · <span style="opacity:0.85">${phase.toUpperCase()}</span>`,
+    `<div style="opacity:0.75">WASD move · C sneak · Shift sprint · Hold E lift · R reset</div>`
   ].join("");
   if (nextHtml !== lastHudHtml) {
     lastHudHtml = nextHtml;
@@ -803,7 +843,7 @@ function renderHud(): void {
 
 function publishEvidence(): void {
   const snap = thief.snapshot();
-  if (cachedEvidence === null || frame <= 5 || frame % 6 === 0) {
+  if (cachedEvidence === null || frame <= 5 || frame % 8 === 0) {
     cachedEvidence = app.evidence({
       input,
       events: routeEvents,
@@ -816,11 +856,11 @@ function publishEvidence(): void {
       assets: { typedAssets: Object.keys(assets).length, missingAssets: [] },
       source: { expectsGame: true }
     });
+    cachedDrawCalls = app.diagnostics().drawCalls;
   }
   const evidence = cachedEvidence;
-  const diagnostics = app.diagnostics();
   const snapshot: GalleryShiftEvidence = {
-    framed: diagnostics.drawCalls > 0,
+    framed: cachedDrawCalls > 0,
     state: phase,
     frame,
     detection: detection.value,
@@ -836,7 +876,7 @@ function publishEvidence(): void {
     lifted: [...liftedIds],
     events: routeEvents.events().map((event: { readonly label: string }) => event.label),
     look: { id: LOOK_ID, category: "interior" },
-    drawCalls: diagnostics.drawCalls,
+    drawCalls: cachedDrawCalls,
     evidence
   };
   latestSnapshot = snapshot;
