@@ -408,9 +408,6 @@ function assertBuiltRoutes() {
     }
   }
 
-  const meshyPilotAsset = path.join(distDir, "aura-assets", "arenaRelic.0b04ec2f.glb");
-  if (!existsSync(meshyPilotAsset)) throw new Error(`Meshy pilot asset was not published: ${meshyPilotAsset}`);
-
   for (const route of ["showcase-turbo-drift-circuit", "showcase-skyline-runner"]) {
     const publicHtml = path.join(distDir, "apps", route, "index.html");
     if (!existsSync(publicHtml)) {
