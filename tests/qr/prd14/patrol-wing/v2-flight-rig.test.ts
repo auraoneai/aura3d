@@ -1,10 +1,12 @@
 // tests/qr/prd14/patrol-wing/v2-flight-rig.test.ts — §6.9.11 rig proofs.
+// B5 port: the rig now lives in the fresh single-path scene builder
+// (src/scene.ts) under the same contract; cases unchanged.
 import { describe, expect, it } from "vitest";
 import {
   createPatrolRig,
   patrolPoseFor,
   pointInRigFrame
-} from "../../../../apps/showcase-patrol-wing/src/v2/scene/camera";
+} from "../../../../apps/showcase-patrol-wing/src/scene";
 
 const ctx = (dt: number) => ({ dt, time: 0, aspect: 16 / 9 });
 

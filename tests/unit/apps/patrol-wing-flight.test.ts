@@ -5,9 +5,9 @@ import {
   FlightModel,
   NEUTRAL_INPUT,
   type FlightInput
-} from "../../../apps/showcase-patrol-wing/src/flight";
+} from "../../../apps/showcase-patrol-wing/src/gameplay/flight";
+import { createArenaPhysics } from "../../../apps/showcase-patrol-wing/src/gameplay/arena-physics";
 import {
-  createArenaPhysics,
   islandHeight,
   PAD_CENTER,
   PAD_HEADING_YAW,
@@ -16,16 +16,16 @@ import {
   RING_COUNT,
   RING_GATES,
   terrainSurface
-} from "../../../apps/showcase-patrol-wing/src/sky";
+} from "../../../apps/showcase-patrol-wing/src/gameplay/course-data";
 import {
   gradePatrol,
   gradeRank,
   RingTracker,
   ringHalfExtent,
   WAVE_TRIGGERS
-} from "../../../apps/showcase-patrol-wing/src/patrol";
-import { encodeControlFrame } from "../../../apps/showcase-patrol-wing/src/weapons";
-import { GhostPlayer, GhostRecorder } from "../../../apps/showcase-patrol-wing/src/ghost";
+} from "../../../apps/showcase-patrol-wing/src/gameplay/patrol";
+import { encodeControlFrame } from "../../../apps/showcase-patrol-wing/src/gameplay/weapons";
+import { GhostPlayer, GhostRecorder } from "../../../apps/showcase-patrol-wing/src/gameplay/ghost";
 
 /**
  * PRD definition-of-done pins for Patrol Wing flight/patrol (PW-13):
