@@ -151,14 +151,22 @@ describe("showcase-turbo-drift-circuit — tyre contact, track surface, opponent
     /*
      * The wheels-sinking defect was a rendered Y pinned to a single `TRACK_SURFACE_Y` literal: a
      * car grounded on a frozen plane cannot respond to the surface it is over. `VehicleChassis`
-     * takes a surface query and derives chassis height from four contact points.
+     * takes a surface query and derives chassis height from four contact points. The B2
+     * single-path rebuild wires it over `meshVehicleSurface(trackMeshQuery)` — the mesh
+     * extracted from the same GLB the scene renders — and the banned
+     * `ROAD_DETAIL_SURFACE_LIFT` paper-over from the deleted v2 shell stays deleted.
      */
-    expect(source).toMatch(/createVehicleChassis|vehicleChassis|surfaceQuery/);
+    expect(source).toMatch(/createVehicleChassis/);
+    expect(source).toMatch(/meshVehicleSurface\(trackMeshQuery/);
     expect(source).not.toMatch(/const\s+TRACK_SURFACE_Y\s*=/);
+    expect(source).not.toContain("ROAD_DETAIL_SURFACE_LIFT");
   });
 
   it("drives the opponent from a shared driver rather than a route-local integrator", () => {
+    // The salvaged route-local wrapper only delegates: every decision comes
+    // from the shared engine driver wired in main.ts.
     expect(source).toMatch(/createTurboOpponentAi|opponentAi/);
+    expect(source).toMatch(/createVehicleDriverAi/);
   });
 
   it("still declares its blocker rather than claiming a visual pass", () => {

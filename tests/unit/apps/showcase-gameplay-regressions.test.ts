@@ -2,12 +2,12 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   createGameAssetBoundPlatformerLevel,
-  createGameAssetBoundRacingRoute,
   createGamePlatformerKit,
   createGameRacingKit
 } from "../../../packages/engine/src/agent-api/GameGenreKits";
-import { gameGeometryContract as skylineGeometry } from "../../../apps/showcase-skyline-runner/src/generated/game-geometry";
-import { gameGeometryContract as turboGeometry } from "../../../apps/showcase-turbo-drift-circuit/src/generated/game-geometry";
+// Turbo's generated game-geometry contract was trashed with the dual-path
+// route (Live Fix B2); the rebuilt route ships the racing-starter route
+// geometry inline in src/main.ts, mirrored in the pace test below.
 import { createTurboOpponentAi, type TurboOpponentInput } from "../../../apps/showcase-turbo-drift-circuit/src/opponent-ai";
 import { createRunnerChallenge } from "../../../apps/showcase-skyline-runner/src/runner-challenge";
 import { createSixtySecondLevelProof } from "../../../apps/showcase-skyline-runner/src/level-proof";
@@ -32,8 +32,15 @@ describe("public showcase gameplay regressions", () => {
     expect(skyline).toContain("completionProof.finalTime = challengeEvidence.elapsedSeconds");
     expect(skyline).not.toContain("visualReviewPass: true");
     expect(turbo).not.toContain("visualReviewPass: true");
-    expect(turbo).toContain("opponentMovesIndependently");
-    expect(turbo).toContain("finishProgression");
+    // The trashed route proved these intents with evidence-field names
+    // (`opponentMovesIndependently`, `finishProgression`) that died with
+    // its generated geometry contract. The rebuilt main.ts proves the
+    // same intents structurally: the opponent is stepped from its own kit
+    // through the shared driver, and the race reaches a finished state.
+    expect(turbo).toContain("createVehicleDriverAi");
+    expect(turbo).toContain("opponentAi.step(");
+    expect(turbo).toContain("opponentProgress");
+    expect(turbo).toContain('playerState.status === "finished"');
   });
 
   it("keeps Skyline Runner traversable through its generated finish surface", () => {
@@ -211,50 +218,64 @@ describe("public showcase gameplay regressions", () => {
     expect(reset.recentEvents).toContain("challenge-reset");
   });
 
-  it("runs Turbo Drift at an arcade pace above the certified evidence baseline", () => {
-    const route = createGameAssetBoundRacingRoute({
-      vehicleAsset: "showcaseTexturedSportsCar",
-      trackAsset: "turboFormulaCircuit",
-      authoredLapSeconds: turboGeometry.authoredSeconds,
-      minLapSeconds: 30,
-      minCheckpoints: 6,
-      topology: turboGeometry.topology,
-      route: turboGeometry.route
-    });
-    const paceMultiplier = 4;
+  it("runs Turbo Drift at the shipped arcade pace on its inline route", () => {
+    // The certified-geometry pace pin (`gameplayPaceMultiplier = 4` over a
+    // certified baseline) belonged to the trashed generated contract and
+    // its src/hud.ts panel; both are deleted. The rebuilt route runs the
+    // racing-starter tuning teleported inline in src/main.ts. This test
+    // now proves the pace behaviourally on that shipped route shape
+    // (mirrored here) and keeps the banned machinery out by source.
+    const ROUTE_SCALE = 3.5;
+    const route = {
+      id: "turbo-drift-circuit",
+      width: 2.2 * ROUTE_SCALE,
+      points: [
+        { x: -0.4 * ROUTE_SCALE, y: -0.25 * ROUTE_SCALE },
+        { x: 2.4 * ROUTE_SCALE, y: -0.9 * ROUTE_SCALE },
+        { x: 5.4 * ROUTE_SCALE, y: 0.15 * ROUTE_SCALE },
+        { x: 5.9 * ROUTE_SCALE, y: 2.7 * ROUTE_SCALE },
+        { x: 3.2 * ROUTE_SCALE, y: 3.9 * ROUTE_SCALE },
+        { x: 0.3 * ROUTE_SCALE, y: 3.15 * ROUTE_SCALE },
+        { x: -0.75 * ROUTE_SCALE, y: 1.15 * ROUTE_SCALE }
+      ],
+      checkpoints: [0.14, 0.27, 0.4, 0.53, 0.66, 0.79]
+    };
     const simulation = createGameRacingKit({
       route,
-      paceMultiplier,
-      acceleration: route.assetBinding.speedModel.certifiedSpeed * paceMultiplier * 4.1,
-      drag: 0.28,
-      steerRate: 0.62
+      startProgress: 0.04,
+      checkpointRadius: 0.08,
+      lapsToWin: 3,
+      maxSpeed: 40,
+      acceleration: 60,
+      drag: 1.4,
+      steerRate: 2.85,
+      model: "bicycle",
+      chassis: false
     });
-
-    // Derived from the generated geometry contract rather than hardcoded, so the
-    // assertion tracks the certified topology instead of pinning a stale lap length.
-    expect(route.assetBinding.speedModel.certifiedSpeed).toBeCloseTo(
-      turboGeometry.topology.lapLengthMeters / turboGeometry.authoredSeconds,
-      3
-    );
-    expect(route.assetBinding.speedModel.certifiedSpeed).toBeGreaterThan(0.9);
-    expect(simulation.maxSpeed).toBeGreaterThan(4);
-    expect(simulation.maxSpeed).toBeCloseTo(route.assetBinding.speedModel.certifiedSpeed * paceMultiplier, 6);
+    expect(simulation.maxSpeed).toBe(40);
+    // Arcade pace, behaviourally: held throttle on the opening straight
+    // keeps accelerating through the first second (the bicycle model's
+    // effective rate is measured here rather than derived from the
+    // acceleration option; throttle-only for longer leaves the line and
+    // off-track drag dominates, which measures recovery, not pace).
+    let state = simulation.snapshot();
+    for (let frame = 0; frame < 30; frame += 1) {
+      state = simulation.step(1 / 60, { throttle: true });
+    }
+    const halfSecondSpeed = state.speed;
+    for (let frame = 0; frame < 30; frame += 1) {
+      state = simulation.step(1 / 60, { throttle: true });
+    }
+    expect(halfSecondSpeed).toBeGreaterThan(0);
+    expect(state.speed).toBeGreaterThan(halfSecondSpeed);
+    expect(state.progress).not.toBeCloseTo(0.04, 3);
 
     const source = readFileSync("apps/showcase-turbo-drift-circuit/src/main.ts", "utf8");
-    expect(source).toContain("const gameplayPaceMultiplier = 4");
-    // The speed HUD markup lives in the panel renderer, so its contract is checked
-    // there; main.ts must still mount the panel through renderTurboHudPanel.
-    const hudSource = readFileSync("apps/showcase-turbo-drift-circuit/src/hud.ts", "utf8");
-    expect(hudSource).toContain("Speed · km/h");
-    expect(source).toContain("renderTurboHudPanel");
-    expect(source).toContain('| "high-speed"');
-    expect(source).toContain('| "checkpoint"');
-    expect(source).toContain('| "off-track"');
-    expect(source).toContain('turboAcceptanceInputOverride = milestone === "off-track"');
-    expect(source).toContain('visualCaptureHeld = false');
-    expect(source).toMatch(/paceFraction:\s*visualCaptureCamera\s*\?\s*0\.94/);
-    expect(source).toContain("directRearImpact ? 0.5 : 0.86");
-    expect(source).toContain("directRearImpact ? 0.2 : 0.1");
+    expect(source).toContain("maxSpeed: 40");
+    expect(source).not.toContain("gameplayPaceMultiplier");
+    expect(source).not.toContain("renderTurboHudPanel");
+    expect(source).not.toContain("turboAcceptanceInputOverride");
+    expect(source).not.toContain("ROAD_DETAIL_SURFACE_LIFT");
   });
 
   it("drives the Turbo opponent from its own racing state instead of a player-progress offset", () => {

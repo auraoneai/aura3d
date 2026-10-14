@@ -3,18 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Aura3D Turbo Drift Circuit, a certified bounded time-trial presentation with typed race car and circuit assets, lap/reset gameplay, and retained release evidence." />
-    <title>Aura3D - Turbo Drift Circuit</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="./src/legacy/styles.css" />
+    <meta name="theme-color" content="#070707" />
+    <meta
+      name="description"
+      content="Aura3D Turbo Drift Circuit showcase, a 3-lap circuit race against a shared-driver rival with mesh-grounded vehicle seating."
+    />
+    <title>Turbo Drift Circuit</title>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #05070a;
+      }
+    </style>
   </head>
   <body>
-    <main class="shell" aria-label="Turbo Drift Circuit">
-      <section class="viewport">
-        <div id="app" class="stage" data-testid="turbo-drift-stage"></div>
-      </section>
-      <aside id="panel" class="panel" aria-label="Race controls and HUD"></aside>
-    </main>
-    <script type="module" src="./src/main.ts"></script>
+    <div id="app" aria-label="Turbo Drift Circuit 3D race"></div>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

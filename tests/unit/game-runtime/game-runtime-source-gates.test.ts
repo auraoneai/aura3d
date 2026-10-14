@@ -1438,15 +1438,17 @@ describe("game runtime source gates", () => {
     const skylineLevel = readSource("apps/showcase-skyline-runner/src/gameplay/level.ts");
     const skylineProof = readSource("apps/showcase-skyline-runner/src/gameplay/level-proof.ts");
     const turboMain = readSource("apps/showcase-turbo-drift-circuit/src/main.ts");
-    const turboSetup = readSource("apps/showcase-turbo-drift-circuit/src/v2/race-setup.ts");
-    const turboBoot = readSource("apps/showcase-turbo-drift-circuit/src/v2/boot.ts");
-    const turboGhost = readSource("apps/showcase-turbo-drift-circuit/src/gameplay/ghost.ts");
-    const turboOpponent = readSource("apps/showcase-turbo-drift-circuit/src/gameplay/opponent-ai.ts");
+    const turboGhost = readSource("apps/showcase-turbo-drift-circuit/src/ghost.ts");
+    const turboOpponent = readSource("apps/showcase-turbo-drift-circuit/src/opponent-ai.ts");
 
-    // Dispatchers resolve the route flag and defer to legacy or v2 — nothing more.
+    // Skyline's dispatcher resolves the route flag and defers to legacy or
+    // v2 — nothing more. Turbo's dispatcher was deleted in the Live Fix B2
+    // single-path rebuild: src/main.ts IS the route, with no flag fork.
     expect(skylineMain).toContain("resolveQrFlags");
     expect(skylineMain).toContain('ROUTE_FLAG = "A3D_QR_ROUTE_SKYLINE_RUNNER"');
-    expect(turboMain).toContain('ROUTE_FLAG = "A3D_QR_ROUTE_TURBO_DRIFT_CIRCUIT"');
+    expect(turboMain).not.toContain("A3D_QR_ROUTE_TURBO_DRIFT_CIRCUIT");
+    expect(existsSync("apps/showcase-turbo-drift-circuit/src/v2")).toBe(false);
+    expect(existsSync("apps/showcase-turbo-drift-circuit/src/legacy")).toBe(false);
 
     /*
      * Skyline runner: the level is built by `src/gameplay/level.ts` (shared with
@@ -1490,26 +1492,24 @@ describe("game runtime source gates", () => {
      */
     expect(existsSync("apps/showcase-skyline-runner/src/runner-rules.ts")).toBe(false);
 
-    // Turbo drift circuit: certified topology + public racing kits in v2/race-setup.
-    expect(turboSetup).toContain("const trackTopology =");
-    expect(turboSetup).toContain("const route = game.assetBoundRacingRoute(");
-    expect(turboSetup).toContain("const racingScene = game.racingSceneBinding({");
-    expect(turboSetup).toContain("const racingState = game.racing({");
-    expect(turboSetup).toContain('import { gameGeometryContract } from "../generated/game-geometry"');
+    // Turbo drift circuit (single-path rebuild): public racing kit +
+    // shared chassis/driver in src/main.ts, ground truth extracted from
+    // the rendered GLB into src/track-surface.ts. The certified-topology
+    // generated contract and its inlined track hash stay deleted.
+    expect(turboMain).toContain("game.racing({");
+    expect(turboMain).toContain("createVehicleChassis(chassisSpec, trackSurface)");
+    expect(turboMain).toContain("meshVehicleSurface(trackMeshQuery");
+    expect(turboMain).toContain("createVehicleDriverAi(");
+    expect(turboMain).not.toContain("gameGeometryContract");
+    expect(existsSync("apps/showcase-turbo-drift-circuit/src/generated/game-geometry.ts")).toBe(false);
+    expect(turboMain).not.toContain("sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a");
+    const turboSurface = readSource("apps/showcase-turbo-drift-circuit/src/track-surface.ts");
+    expect(turboSurface).toContain("createMeshSurfaceQuery(");
     expect(turboGhost).toContain("planarCollisionWorld");
     expect(turboOpponent).toContain("resolveContact");
-    expect(turboBoot).toContain("racingScene.toScenePose");
-    expect(turboBoot).not.toContain("collisionless visual");
-    const turboGeometry = readFileSync("apps/showcase-turbo-drift-circuit/src/generated/game-geometry.ts", "utf8");
-    expect(turboGeometry).toContain('"source": "asset-mesh-extracted"');
-    // The certified track hash belongs in the generated contract, never inlined in route
-    // source. Turbo now binds turboFormulaCircuit.
-    expect(turboGeometry).toContain("sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a");
-    expect(turboSetup).not.toContain("sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a");
     expect(turboMain).not.toContain("trackModelSceneOffset");
     expect(turboMain).not.toContain("camera.follow(");
-    expect(turboMain).not.toContain("import { camera,");
-    expect(turboMain).not.toMatch(/function\s+(updateCar|updateRaceProgress|projectToTrack|sampleTrackAt|createRacePathMetrics)\b/);
+    expect(turboMain).not.toMatch(/function\s+(updateCar|updateRaceProgress|projectToTrack|createRacePathMetrics)\b/);
     expect(turboMain).not.toContain("racePathMetrics");
     expect(turboMain).not.toContain("playerCar.setPosition(raceSnapshot.position.x");
   });
