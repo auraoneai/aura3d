@@ -518,7 +518,7 @@ const app = createAuraApp("#app", {
         receiveShadow: true
       })
         .position(SPAWN_POSE.x, 0, SPAWN_POSE.z)
-        .rotate(0, -SPAWN_POSE.heading, 0)
+        .rotate(0, -SPAWN_POSE.heading + Math.PI, 0)
         .runtime({ id: "courier-player-van-mesh", tags: ["player", "vehicle", "typed-primary-asset"] })
     )
     // Legacy low-poly van meshes kept hidden underground so they never cover the hero van.
@@ -1366,7 +1366,7 @@ app.onFrame(({ dt }) => {
   if (handbrake) {
     vanAfter = vanVehicle.constrain({ speedMultiplier: handbrakeSpeedMultiplier(stepSeconds) });
   }
-  if (!autopilotEnabled && !visualReviewCapture && shiftSeconds < 12) {
+  if (!autopilotEnabled && !visualReviewCapture && frameCount < 720) {
     const clampedX = Math.max(-1.85, Math.min(1.45, vanAfter.x));
     const clampedHeading = Math.max(-Math.PI / 2 - 0.24, Math.min(-Math.PI / 2 + 0.24, vanAfter.heading));
     const wrappedZ = vanAfter.z < -14.8 ? 16.2 : vanAfter.z;
@@ -1433,9 +1433,9 @@ app.onFrame(({ dt }) => {
   // ---- presentation updates -----------------------------------------------------
   const fx = Math.cos(vanAfter.heading);
   const fz = Math.sin(vanAfter.heading);
-  // Presentation yaw: `-heading` drives courierCyberVanMeshy nose-first away
-  // from its chase camera along the measured direction of travel.
-  vanNode.setPosition(vanAfter.x, 0, vanAfter.z).setRotation(0, -vanAfter.heading, 0);
+  // Presentation yaw: `-heading + PI` maps local -X (front hood) to [cos(h), 0, sin(h)]
+  // and local +X (rear cargo doors) toward the chase camera.
+  vanNode.setPosition(vanAfter.x, 0, vanAfter.z).setRotation(0, -vanAfter.heading + Math.PI, 0);
   cameraTargetNode
     .setPosition(vanAfter.x, 0.2, vanAfter.z)
     .setRotation(0, -vanAfter.heading - Math.PI / 2, 0)

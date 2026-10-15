@@ -256,7 +256,7 @@ function heroNodes(): AuraSceneNode[] {
       receiveShadow: true
     })
       .position(PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2])
-      .rotate(0, Math.PI, 0)
+      .rotate(0, 0, 0)
       .runtime({ id: "plane", tags: ["typed-asset", "hero"] })
       .toJSON()
   );
@@ -1399,12 +1399,12 @@ againButton.addEventListener("click", () => resetToPad());
 
 // --------------------------------------------------------- per-frame sync -----
 function planeEulerXYZ(forward: Vec3, _up: Vec3, _right: Vec3): { readonly x: number; readonly y: number; readonly z: number } {
-  // patrolJetAircraftMeshy has nose = +X, top = +Y in local model space.
-  // In Three.js 'XYZ' Euler order (R = Rx * Ry * Rz), Rz pitches the +X nose up/down,
-  // and Ry yaws around world Y (at forward=[-1,0,0], yaw = Math.PI).
+  // patrolJetAircraftMeshy has nose = -X, top = +Y in local model space.
+  // In Three.js 'XYZ' Euler order (R = Rx * Ry * Rz), Rz(-pitch) tilts local -X to [-cos(p), +sin(p), 0],
+  // and Ry(yaw) rotates around world Y (at forward=[-1,0,0], yaw = 0).
   const pitch = Math.asin(Math.max(-0.28, Math.min(0.28, forward[1])));
-  const yaw = Math.atan2(-forward[2], forward[0]);
-  return { x: 0, y: yaw, z: pitch };
+  const yaw = Math.atan2(forward[2], -forward[0]);
+  return { x: 0, y: yaw, z: -pitch };
 }
 
 function syncPlaneVisual(): void {
