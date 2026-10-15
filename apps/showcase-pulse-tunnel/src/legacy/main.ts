@@ -22,7 +22,7 @@ import {
   type AuraMaterialSpec,
   type RuntimeNodeHandleLike
 } from "@aura3d/engine";
-import { assets } from "../../../../src/aura-assets";
+import { assets, assets as rootAssets } from "../../../../src/aura-assets";
 import {
   PULSE_DRIFT_CHECKS_TO_FLIP,
   PULSE_DRIFT_TOLERANCE_MS,
@@ -99,6 +99,8 @@ const input = game.input({
     right: ["KeyD", "ArrowRight"],
     jump: ["KeyW", "ArrowUp"],
     slide: ["KeyS", "ArrowDown"],
+    barrelRoll: ["Space", "ShiftLeft", "ShiftRight"],
+    cannon: ["KeyJ", "KeyF"],
     pause: ["KeyP"],
     restart: ["KeyR"]
   },
@@ -282,16 +284,27 @@ const gateSlotBuilders = (() => {
   const builders = [];
   for (let slot = 0; slot < GATE_SLOTS; slot += 1) {
     builders.push(
-      model(assets.pulseBarrierDroneWallMeshy, {
+      model(rootAssets.pulseBarrierDroneWallMeshy, {
         name: `pulse gate ${slot} barrier model`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.95
+        targetMaxDimension: 1.15
       })
         .position(0, 0.34, PULSE_PLAYER_Z - 6)
-        .scale([0.001, 0.001, 0.001])
+        .scale([0.0001, 0.0001, 0.0001])
         .runtime(game.runtimeNode(`pulse-gate-${slot}-barrier`, {
           tags: ["gate", `slot-${slot}`, "typed-barrier"]
+        })),
+      model(rootAssets.neonSwarmChaserDroneMeshy, {
+        name: `pulse gate ${slot} chaser drone model`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 0.82
+      })
+        .position(0, 0.56, PULSE_PLAYER_Z - 6)
+        .scale([0.0001, 0.0001, 0.0001])
+        .runtime(game.runtimeNode(`pulse-gate-${slot}-chaser`, {
+          tags: ["gate", `slot-${slot}`, "typed-chaser-drone"]
         }))
     );
     for (const partName of ["top", "bottom", "core"] as const) {
@@ -300,8 +313,8 @@ const gateSlotBuilders = (() => {
           name: `pulse gate ${slot} ${partName}`,
           material: partName === "core" ? gateMaterialSpec("wall", false) : gateTrimMaterialSpec("wall", false)
         })
-          .position(0, 0.34, PULSE_PLAYER_Z - 6)
-          .scale([0.08, 0.08, 0.1])
+          .position(0, -50, PULSE_PLAYER_Z - 6)
+          .scale([0.0001, 0.0001, 0.0001])
           .runtime(game.runtimeNode(`pulse-gate-${slot}-${partName}`, {
             tags: ["gate", `slot-${slot}`, `part-${partName}`]
           }))
@@ -798,22 +811,22 @@ const reviewDeckCautionMaterial = material.emissive({
   emissiveIntensity: 0.76
 });
 
-// A sparse set of asymmetrical bulkheads and signal braces gives the review
-// lens an authored room profile instead of a blank gradient. These stay outside
-// all three gameplay lanes and are not collision or timing surfaces.
+// Flat primitive bulkheads, ceiling bridges, and rear pink slabs are hidden
+// (scale: [0.0001, 0.0001, 0.0001]) so the corridor is framed by real 3D Meshy
+// pulseNeonGateArchMeshy arches instead of unshaded primitive rectangles.
 const reviewStructureBuilders = [
   primitives.box({ name: "pulse review rear bulkhead left", material: reviewPanelMaterial })
-    .position(-2.35, 1.30, -5.85).rotate(0, 0.04, 0.02).scale([1.02, 1.38, 0.12]),
+    .position(0, -50, -5.85).rotate(0, 0.04, 0.02).scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pulse review rear bulkhead right", material: reviewPanelMaterial })
-    .position(2.58, 1.0, -5.35).rotate(0, -0.06, -0.025).scale([0.72, 1.08, 0.12]),
+    .position(0, -50, -5.35).rotate(0, -0.06, -0.025).scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pulse review left buttress", material: reviewBeamMaterial })
-    .position(-2.72, 1.15, -2.3).rotate(0.04, 0.02, -0.14).scale([0.22, 1.26, 2.62]),
+    .position(0, -50, -2.3).rotate(0.04, 0.02, -0.14).scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pulse review right buttress", material: reviewBeamMaterial })
-    .position(2.78, 1.36, -2.95).rotate(-0.03, -0.03, 0.16).scale([0.22, 1.48, 2.38]),
+    .position(0, -50, -2.95).rotate(-0.03, -0.03, 0.16).scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pulse review overhead bridge", material: reviewBeamMaterial })
-    .position(0.18, 3.18, -3.82).rotate(0, 0.03, 0.02).scale([2.72, 0.14, 0.20]),
+    .position(0, -50, -3.82).rotate(0, 0.03, 0.02).scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pulse review bridge signal", material: reviewSignalMaterial })
-    .position(0.18, 3.02, -3.58).scale([1.44, 0.035, 0.035]),
+    .position(0, -50, -3.58).scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pulse review left floor edge", material: reviewBeamMaterial })
     .position(-2.18, 0.05, -2.10).rotate(0, -0.08, 0).scale([0.12, 0.10, 3.10]),
   primitives.box({ name: "pulse review right floor edge", material: reviewBeamMaterial })
@@ -826,22 +839,17 @@ const reviewStructureBuilders = [
   ])
 ];
 
-// The review composition previously stopped at two dark buttresses and a
-// single backplate. These restrained reactor panels add a visible rear plane,
-// repeatable floor scale, and a warm/cool material cadence without becoming
-// a second hero asset. They are renderer-owned set dressing only; the chart,
-// lanes, and collision systems remain unchanged.
 const reviewArchitectureAccentBuilders = [
   primitives.box({ name: "pulse review rear reactor panel", material: reviewRearMaterial })
-    .position(0.08, 1.55, -5.72).rotate(0, 0.018, 0).scale([2.62, 1.54, 0.10]),
+    .position(0, -50, -5.72).rotate(0, 0.018, 0).scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pulse review rear reactor panel left seam", material: reviewSignalMaterial })
-    .position(-1.38, 1.56, -5.57).scale([0.035, 1.18, 0.035]),
+    .position(0, -50, -5.57).scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pulse review rear reactor panel right seam", material: reviewAccentMaterial })
-    .position(1.54, 1.56, -5.53).scale([0.035, 1.06, 0.035]),
+    .position(0, -50, -5.53).scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pulse review rear reactor header", material: reviewBeamMaterial })
-    .position(0.10, 2.88, -5.56).rotate(0, 0.02, 0).scale([2.86, 0.12, 0.14]),
+    .position(0, -50, -5.56).rotate(0, 0.02, 0).scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pulse review rear reactor header signal", material: reviewRose })
-    .position(0.10, 2.70, -5.38).scale([1.04, 0.026, 0.026]),
+    .position(0, -50, -5.38).scale([0.0001, 0.0001, 0.0001]),
   ...Array.from({ length: 8 }, (_, index) => {
     const z = 1.58 - index * 0.86;
     const side = index % 2 === 0 ? -1 : 1;
@@ -855,18 +863,12 @@ const reviewArchitectureAccentBuilders = [
   }),
   ...[-1, 1].flatMap((side) => [
     primitives.box({ name: `pulse review rear vertical truss ${side}`, material: reviewBeamMaterial })
-      .position(side * 2.18, 1.44, -5.18).rotate(0.04, side * 0.08, side * 0.10).scale([0.10, 1.72, 0.14]),
+      .position(0, -50, -5.18).rotate(0.04, side * 0.08, side * 0.10).scale([0.0001, 0.0001, 0.0001]),
     primitives.box({ name: `pulse review rear truss signal ${side}`, material: side < 0 ? reviewCyan : reviewRose })
-      .position(side * 2.02, 1.50, -5.02).rotate(0.04, side * 0.08, side * 0.10).scale([0.024, 1.22, 0.024])
+      .position(0, -50, -5.02).rotate(0.04, side * 0.08, side * 0.10).scale([0.0001, 0.0001, 0.0001])
   ])
 ];
 
-// The current typed encounter already establishes the deck and impact shelf,
-// but its upper half still reads as empty negative space in a frozen frame.
-// These low-intensity windows, side columns, floor chevrons, and horizon beams
-// build a continuous reactor-bay silhouette. They are renderer-owned dressing
-// outside all three gameplay lanes; the chart, collider, and typed assets stay
-// the only gameplay authorities.
 const reviewAtmosphereBuilders = [
   ...[
     { x: -2.76, y: 1.46, z: -5.86, sx: 0.12, sy: 1.54, sz: 0.12, warm: false, yaw: -0.06 },
@@ -878,9 +880,9 @@ const reviewAtmosphereBuilders = [
       name: `pulse review reactor window ${index + 1}`,
       material: window.warm ? reviewAtmosphereRose : reviewAtmosphereCyan
     })
-      .position(window.x, window.y, window.z)
+      .position(0, -50, window.z)
       .rotate(0.02, window.yaw, (index % 2 === 0 ? -1 : 1) * 0.035)
-      .scale([window.sx, window.sy, window.sz])
+      .scale([0.0001, 0.0001, 0.0001])
       .runtime(game.runtimeNode(`pulse-review-reactor-window-${index}`, { tags: ["reactor-atmosphere", "renderer-owned", "non-colliding"] }))
   ),
   ...[-1, 1].flatMap((side) =>
@@ -894,9 +896,9 @@ const reviewAtmosphereBuilders = [
         name: `pulse review reactor side column ${side} ${index + 1}`,
         material: column.tone === "cool" ? reviewAtmosphereCyan : column.tone === "warm" ? reviewAtmosphereRose : reviewAtmosphereSteel
       })
-        .position(side * (3.06 + (index % 2) * 0.14), column.h * 0.48 - 0.05, column.z)
+        .position(0, -50, column.z)
         .rotate(0.04, side * (0.10 + index * 0.025), side * 0.07)
-        .scale([0.16 + (index % 2) * 0.045, column.h, 0.14 + (index % 3) * 0.025])
+        .scale([0.0001, 0.0001, 0.0001])
         .runtime(game.runtimeNode(`pulse-review-reactor-column-${side}-${index}`, { tags: ["reactor-atmosphere", "renderer-owned", "non-colliding"] }))
     )
   ),
@@ -921,9 +923,9 @@ const reviewAtmosphereBuilders = [
       name: `pulse review reactor horizon beam ${index + 1}`,
       material: beam.warm ? reviewAtmosphereRose : reviewAtmosphereCyan
     })
-      .position(beam.x, beam.y, beam.z)
+      .position(0, -50, beam.z)
       .rotate(0, beam.yaw, (index % 2 === 0 ? -1 : 1) * 0.035)
-      .scale([beam.sx, 0.045, beam.sz])
+      .scale([0.0001, 0.0001, 0.0001])
       .runtime(game.runtimeNode(`pulse-review-reactor-beam-${index}`, { tags: ["reactor-atmosphere", "renderer-owned", "non-colliding"] }))
   )
 ];
@@ -1202,35 +1204,30 @@ const reviewArenaWorldBuilders = [
   primitives.box({ name: "pulse review exchange lane", material: reviewDeckMaterial })
     .position(0, -0.06, -2.1).scale([1.05, 0.045, 4.45]),
   primitives.box({ name: "pulse review runner launch apron", material: reviewShoulderMaterial })
-    .position(0, -50, 0).scale([0.001, 0.001, 0.001]),
+    .position(0, -50, 0).scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pulse review sentinel raised dock", material: reviewSteelEdge })
     .position(0, -0.01, -6.2).scale([1.56, 0.18, 1.16]),
   primitives.box({ name: "pulse review sentinel backplate", material: reviewSteel })
-    .position(0, 1.68, -7.2).scale([2.46, 1.72, 0.16]),
+    .position(0, -50, -7.2).scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pulse review runner launch spine", material: reviewSteelEdge })
-    .position(0, -50, 0).scale([0.001, 0.001, 0.001]),
+    .position(0, -50, 0).scale([0.0001, 0.0001, 0.0001]),
   primitives.torus({ name: "pulse review runner launch ring", material: reviewCyan })
-    .position(0, -50, 0).scale([0.001, 0.001, 0.001]),
-  // Layered side containment panels supply real occlusion/depth without
-  // crossing the three playable lanes.
+    .position(0, -50, 0).scale([0.0001, 0.0001, 0.0001]),
+  // Hide flat side containment and ceiling rib boxes so 3D Meshy arches frame the corridor cleanly.
   ...[-1, 1].flatMap((side) => [
     primitives.box({ name: `pulse review lower containment ${side}`, material: reviewSteel })
-      .position(side * 3.16, 0.62, -2.35).rotate(0, side * 0.08, 0).scale([0.2, 0.78, 3.55]),
+      .position(0, -50, -2.35).rotate(0, side * 0.08, 0).scale([0.0001, 0.0001, 0.0001]),
     primitives.box({ name: `pulse review upper containment ${side}`, material: reviewShoulderMaterial })
-      .position(side * 2.82, 2.22, -3.25).rotate(0, side * -0.16, side * 0.06).scale([0.16, 0.78, 3.0]),
+      .position(0, -50, -3.25).rotate(0, side * -0.16, side * 0.06).scale([0.0001, 0.0001, 0.0001]),
     primitives.box({ name: `pulse review side conduit ${side}`, material: reviewCyan })
       .position(side * 2.63, 0.44, -2.35).rotate(0, 0, side * 0.02).scale([0.035, 0.035, 3.25])
   ]),
-  // Angled overhead ribs and rear braces make the room read as an authored
-  // reactor bay rather than a flat tunnel backdrop.
   ...[-2.3, -0.55, 1.25, 3.0].flatMap((z, index) => [
     primitives.box({ name: `pulse review overhead rib left ${index}`, material: reviewSteelEdge })
-      .position(-2.25, 2.62, z).rotate(0, 0, -0.24).scale([1.75, 0.11, 0.16]),
+      .position(0, -50, z).rotate(0, 0, -0.24).scale([0.0001, 0.0001, 0.0001]),
     primitives.box({ name: `pulse review overhead rib right ${index}`, material: reviewSteelEdge })
-      .position(2.25, 2.62, z).rotate(0, 0, 0.24).scale([1.75, 0.11, 0.16])
+      .position(0, -50, z).rotate(0, 0, 0.24).scale([0.0001, 0.0001, 0.0001])
   ]),
-  // A warm reactor iris anchors the boss side; cyan floor markers point
-  // toward it and establish the direction of the combat exchange.
   primitives.torus({ name: "pulse review reactor iris", material: reviewRose })
     .position(0, 1.78, -6.96).rotate(0, 0, 0).scale([1.16, 1.16, 0.08]),
   primitives.sphere({ name: "pulse review reactor core", material: reviewAmber })
@@ -1239,72 +1236,160 @@ const reviewArenaWorldBuilders = [
     primitives.box({ name: `pulse review lane marker ${index}`, material: reviewCyan })
       .position(0, 0.04, z).rotate(0, 0, 0).scale([0.48, 0.018, 0.035])
   ),
-  // These state-driven practicals remain non-colliding and are deliberately
-  // separate from the HUD: one halo marks the warden's attack origin and
-  // the near plane catches a returning cutter stream.
   primitives.torus({ name: "pulse boss attack origin halo", material: reviewRose })
-    .position(0, -50, 0).scale([0.001, 0.001, 0.001])
+    .position(0, -50, 0).scale([0.0001, 0.0001, 0.0001])
     .runtime(game.runtimeNode("pulse-review-attack-origin", { tags: ["finale-arena", "attack-origin", "renderer-owned"] })),
   primitives.torus({ name: "pulse player shield impact plane", material: reviewCyan })
-    .position(0, -50, 0).scale([0.001, 0.001, 0.001])
+    .position(0, -50, 0).scale([0.0001, 0.0001, 0.0001])
     .runtime(game.runtimeNode("pulse-review-impact-plane", { tags: ["finale-arena", "impact-plane", "renderer-owned", "non-colliding"] })),
   primitives.torus({ name: "pulse terminal lock ring", material: reviewRose })
-    .position(0, -50, 0).scale([0.001, 0.001, 0.001])
+    .position(0, -50, 0).scale([0.0001, 0.0001, 0.0001])
 ];
 
-// Prominent Meshy 3D arch gates, crystal shards, barrier drone walls, and
-// 3-plane runner formation wingmen inside the active 3D encounter corridor.
+// Repeating 3D Meshy pulseNeonGateArchMeshy arches (9.5m width x 6.2m height)
+// every ~8 meters down the tunnel, 3D lane hazards (pulseBarrierDroneWallMeshy +
+// neonSwarmChaserDroneMeshy), and 3D rhythm collectibles (skylineCrystalShardMeshy +
+// fpsEnergyCorePickupMeshy), plus twin plasma afterburner plumes & Pulse Cannon bolts.
+const TUNNEL_ARCH_ZS = [2.4, -5.6, -13.6, -21.6, -29.6, -37.6] as const;
+const RHYTHM_NODE_SPECS = [
+  { z: -0.6, x: 0.0, kind: "shard" },
+  { z: -2.2, x: -1.02, kind: "core" },
+  { z: -3.9, x: 1.02, kind: "shard" },
+  { z: -5.8, x: 0.0, kind: "core" },
+  { z: -7.9, x: -1.02, kind: "shard" },
+  { z: -10.2, x: 1.02, kind: "core" }
+] as const;
+const CORRIDOR_DRONE_HAZARD_SPECS = [
+  { z: -3.2, x: -1.05, kind: "chaser" },
+  { z: -4.8, x: 1.05, kind: "barrier" },
+  { z: -7.1, x: -0.95, kind: "barrier" },
+  { z: -9.4, x: 1.02, kind: "chaser" }
+] as const;
+
 const corridorMeshyGateAndShardBuilders = [
-  ...[-4.8, -9.5, -14.5, -19.5, -24.5].flatMap((z, index) => [
-    model(assets.pulseNeonGateArchMeshy, {
+  ...TUNNEL_ARCH_ZS.flatMap((z, index) => [
+    // Overhead spanning 3D Meshy arch crown (9.5m width across tunnel ceiling)
+    model(rootAssets.pulseNeonGateArchMeshy, {
       name: `pulse-corridor-meshy-gate-arch-${index}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 2.15
+      targetMaxDimension: 9.5
     })
-      .position(0, 0.42, z)
-      .rotate(0, 0, 0)
-      .scale([1.15, 0.72, 0.85])
+      .position(0, 3.55, z)
+      .rotate(0, 0, Math.PI / 2)
+      .scale([0.42, 1.0, 0.88])
       .runtime(game.runtimeNode(`pulse-corridor-meshy-gate-${index}`, { tags: ["corridor-gate", "typed-meshy", "renderer-owned", "non-colliding"] })),
-    model(assets.skylineCrystalShardMeshy, {
+    // Left 3D Meshy arch pillar (targetHeight: 6.2)
+    model(rootAssets.pulseNeonGateArchMeshy, {
+      name: `pulse-corridor-meshy-arch-pillar-left-${index}`,
+      role: "setDressing",
+      scaleMode: "fit",
+      targetHeight: 6.2
+    })
+      .position(-3.45, 0.45, z)
+      .rotate(0, 0.14, -0.24)
+      .scale([0.85, 0.68, 0.85])
+      .runtime(game.runtimeNode(`pulse-corridor-arch-left-${index}`, { tags: ["corridor-gate", "typed-meshy", "renderer-owned", "non-colliding"] })),
+    // Right 3D Meshy arch pillar (targetHeight: 6.2)
+    model(rootAssets.pulseNeonGateArchMeshy, {
+      name: `pulse-corridor-meshy-arch-pillar-right-${index}`,
+      role: "setDressing",
+      scaleMode: "fit",
+      targetHeight: 6.2
+    })
+      .position(3.45, 0.45, z)
+      .rotate(0, -0.14, 0.24)
+      .scale([0.85, 0.68, 0.85])
+      .runtime(game.runtimeNode(`pulse-corridor-arch-right-${index}`, { tags: ["corridor-gate", "typed-meshy", "renderer-owned", "non-colliding"] })),
+    model(rootAssets.skylineCrystalShardMeshy, {
       name: `pulse-corridor-crystal-shard-left-${index}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.62
+      targetMaxDimension: 0.68
     })
       .position(-2.65 - (index % 2) * 0.18, 0.55 + (index % 2) * 0.14, z + 0.35)
       .rotate(0.14, 0.42 + index * 0.35, -0.18)
-      .scale(0.62)
+      .scale(0.68)
       .runtime(game.runtimeNode(`pulse-corridor-crystal-left-${index}`, { tags: ["corridor-crystal", "typed-meshy", "renderer-owned", "non-colliding"] })),
-    model(assets.skylineCrystalShardMeshy, {
+    model(rootAssets.skylineCrystalShardMeshy, {
       name: `pulse-corridor-crystal-shard-right-${index}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.62
+      targetMaxDimension: 0.68
     })
       .position(2.65 + (index % 2) * 0.18, 0.58 + (index % 2) * 0.14, z - 0.25)
       .rotate(-0.12, -0.38 - index * 0.35, 0.16)
-      .scale(0.62)
+      .scale(0.68)
       .runtime(game.runtimeNode(`pulse-corridor-crystal-right-${index}`, { tags: ["corridor-crystal", "typed-meshy", "renderer-owned", "non-colliding"] }))
   ]),
-  model(assets.pulseBarrierDroneWallMeshy, {
-    name: "pulse-corridor-drone-wall-left-near",
-    role: "setDressing",
-    scaleMode: "fit",
-    targetMaxDimension: 0.85
+  // 3D Collectible Rhythm Nodes (skylineCrystalShardMeshy + fpsEnergyCorePickupMeshy) in the lanes
+  ...RHYTHM_NODE_SPECS.map((node, index) =>
+    model(node.kind === "shard" ? rootAssets.skylineCrystalShardMeshy : rootAssets.fpsEnergyCorePickupMeshy, {
+      name: `pulse-rhythm-collectible-${index}`,
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: node.kind === "shard" ? 0.54 : 0.48
+    })
+      .position(node.x, 0.46, node.z)
+      .rotate(0.15, index * 0.8, 0.12)
+      .runtime(game.runtimeNode(`pulse-rhythm-collectible-${index}`, { tags: ["rhythm-collectible", "typed-meshy", "renderer-owned", "non-colliding"] }))
+  ),
+  // 3D Corridor Obstacle Hazards (pulseBarrierDroneWallMeshy + neonSwarmChaserDroneMeshy)
+  ...CORRIDOR_DRONE_HAZARD_SPECS.map((hazard, index) =>
+    model(hazard.kind === "chaser" ? rootAssets.neonSwarmChaserDroneMeshy : rootAssets.pulseBarrierDroneWallMeshy, {
+      name: `pulse-corridor-hazard-drone-${index}`,
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: hazard.kind === "chaser" ? 0.78 : 0.92
+    })
+      .position(hazard.x, hazard.kind === "chaser" ? 0.58 : 0.38, hazard.z)
+      .rotate(0, hazard.x < 0 ? 0.18 : -0.18, 0)
+      .runtime(game.runtimeNode(`pulse-corridor-hazard-drone-${index}`, { tags: ["corridor-hazard", "typed-meshy", "renderer-owned", "non-colliding"] }))
+  ),
+  // Twin glowing cyan/magenta plasma afterburner plumes behind hero starfighter
+  primitives.capsule({
+    name: "pulse starfighter afterburner plume left",
+    material: material.emissive({
+      name: "afterburner cyan plume",
+      color: "#67e8f9",
+      emissive: "#22d3ee",
+      emissiveIntensity: 2.35,
+      opacity: 0.88
+    })
   })
-    .position(-0.85, 0.36, -5.2)
-    .rotate(0, 0.08, 0)
-    .scale([0.65, 0.65, 0.55]),
-  model(assets.pulseBarrierDroneWallMeshy, {
-    name: "pulse-corridor-drone-wall-right-mid",
-    role: "setDressing",
-    scaleMode: "fit",
-    targetMaxDimension: 0.85
+    .position(-0.18, 0.44, 2.22)
+    .rotate(Math.PI / 2, 0, 0)
+    .scale([0.055, 0.34, 0.055])
+    .runtime(game.runtimeNode("pulse-afterburner-left", { tags: ["player", "afterburner", "renderer-owned"] })),
+  primitives.capsule({
+    name: "pulse starfighter afterburner plume right",
+    material: material.emissive({
+      name: "afterburner magenta plume",
+      color: "#f5d0fe",
+      emissive: "#e879f9",
+      emissiveIntensity: 2.35,
+      opacity: 0.88
+    })
   })
-    .position(0.85, 0.36, -8.8)
-    .rotate(0, -0.08, 0)
-    .scale([0.65, 0.65, 0.55]),
+    .position(0.18, 0.44, 2.22)
+    .rotate(Math.PI / 2, 0, 0)
+    .scale([0.055, 0.34, 0.055])
+    .runtime(game.runtimeNode("pulse-afterburner-right", { tags: ["player", "afterburner", "renderer-owned"] })),
+  // Pulse Cannon plasma bolts (J / F)
+  ...Array.from({ length: 4 }, (_, index) =>
+    primitives.sphere({
+      name: `pulse cannon plasma bolt ${index + 1}`,
+      material: material.emissive({
+        name: `pulse cannon bolt mat ${index}`,
+        color: index % 2 === 0 ? "#e0f2fe" : "#fae8ff",
+        emissive: index % 2 === 0 ? "#22d3ee" : "#e879f9",
+        emissiveIntensity: 2.55
+      })
+    })
+      .position(index % 2 === 0 ? -0.22 : 0.22, 0.48, 0.4 - index * 1.1)
+      .scale([0.09, 0.09, 0.24])
+      .runtime(game.runtimeNode(`pulse-cannon-bolt-${index}`, { tags: ["player", "pulse-cannon", "renderer-owned"] }))
+  ),
   // Keep formation wingman handles registered for asset checks while parked out
   // of the active foreground lane so the player starfighter reads as a single,
   // unmistakable hero silhouette in the center of the tunnel.
@@ -1643,6 +1728,11 @@ const hitFlash = requireHandle("pulse-hit-flash");
 const shipBody = requireHandle("pulse-ship-body");
 const shipGlow = requireHandle("pulse-ship-glow");
 const shipHoverLight = requireHandle("pulse-ship-hover-light");
+const afterburnerLeft = requireHandle("pulse-afterburner-left");
+const afterburnerRight = requireHandle("pulse-afterburner-right");
+const cannonBolts = Array.from({ length: 4 }, (_, index) => requireHandle(`pulse-cannon-bolt-${index}`));
+const rhythmCollectibles = RHYTHM_NODE_SPECS.map((_, index) => requireHandle(`pulse-rhythm-collectible-${index}`));
+const corridorHazardDrones = CORRIDOR_DRONE_HAZARD_SPECS.map((_, index) => requireHandle(`pulse-corridor-hazard-drone-${index}`));
 const finaleBeacon = requireHandle("pulse-finale-beacon");
 const finaleShieldVanes = finaleShieldVaneBuilders.map((_, index) => requireHandle("pulse-finale-shield-vane-" + index));
 const finaleArenaShell = requireHandle(pulseArenaCandidateEnabled ? "pulse-finale-arena-candidate" : "pulse-finale-arena-shell");
@@ -1729,18 +1819,21 @@ const hueHandles: Record<PulseSectionId, RuntimeNodeHandleLike[]> = {
 
 interface GateSlotParts {
   readonly barrier: PulseNodeHandle;
+  readonly chaser: PulseNodeHandle;
   readonly top: PulseNodeHandle;
   readonly bottom: PulseNodeHandle;
   readonly core: PulseNodeHandle;
 }
 const gateSlots: GateSlotParts[] = Array.from({ length: GATE_SLOTS }, (_, slot) => ({
   barrier: requireGateHandle(`pulse-gate-${slot}-barrier`),
+  chaser: requireGateHandle(`pulse-gate-${slot}-chaser`),
   top: requireGateHandle(`pulse-gate-${slot}-top`),
   bottom: requireGateHandle(`pulse-gate-${slot}-bottom`),
   core: requireGateHandle(`pulse-gate-${slot}-core`)
 }));
 for (const parts of gateSlots) {
   parts.barrier.setVisible(false);
+  parts.chaser.setVisible(false);
   parts.top.setVisible(false);
   parts.bottom.setVisible(false);
   parts.core.setVisible(false);
@@ -1780,6 +1873,9 @@ const evidence = {
     "assets.pulseReactorEncounterWorld",
     "assets.pulseNeonGateArchMeshy",
     "assets.pulseBarrierDroneWallMeshy",
+    "assets.neonSwarmChaserDroneMeshy",
+    "assets.skylineCrystalShardMeshy",
+    "assets.fpsEnergyCorePickupMeshy",
     "assets.pulseDrumsStem",
     "assets.pulseBassStem",
     "assets.pulseLeadStem",
@@ -1808,14 +1904,29 @@ const evidence = {
   runLengthSeconds: PULSE_RUN_SECONDS,
   reducedMotion,
   controls: {
-    keyboard: ["KeyA", "KeyD", "ArrowLeft", "ArrowRight", "KeyW", "ArrowUp", "KeyS", "ArrowDown", "KeyP", "KeyR"],
+    keyboard: [
+      "KeyA",
+      "KeyD",
+      "ArrowLeft",
+      "ArrowRight",
+      "KeyW",
+      "ArrowUp",
+      "KeyS",
+      "ArrowDown",
+      "Space",
+      "ShiftLeft",
+      "KeyJ",
+      "KeyF",
+      "KeyP",
+      "KeyR"
+    ],
     touch: true
   },
   systems: {
     scheduling: "measured audio-clock beat mode with deterministic authored-pattern fallback",
-    movement: "route-local buffered lane, jump, and slide kinematics",
-    collision: "deterministic gate geometry with graze, pass, shield, invulnerability, fail, and reset rules",
-    presentation: "release-validated typed spacecraft duel inside a release-probed typed reactor arena shell, with renderer-owned combat feedback and state-driven typed audio"
+    movement: "route-local buffered lane, jump, slide, and Barrel-Roll Phase Dodge kinematics",
+    collision: "deterministic gate geometry with graze, pass, shield, invulnerability, Pulse Cannon blast, fail, and reset rules",
+    presentation: "3D Meshy sci-fi archway corridor, 3D drone obstacles & crystal/core collectibles, twin plasma afterburners, and state-driven typed audio"
   },
   physics: "none (deterministic rhythm lane and obstacle pattern; deliberately non-physical to preserve beat reproducibility)",
   claimBoundary: "Root-safe prototype with the original release-validated typed pulseRunnerCraft, pulseTerminalSentry, and pulseReactorEncounterWorld. Beat accuracy is claimed only when the measured clock stays within 80 ms; otherwise the same chart continues in deterministic pattern mode. Does not claim physical spacecraft simulation, production-renderer parity, HDR/IBL, native WebGPU, or a reusable rhythm kit.",
@@ -1885,8 +1996,32 @@ let paused = false;
 let fogPulseRemaining = 0;
 let hitFlashRemaining = 0;
 let runStartPending = false;
+let barrelRollTimer = 0;
+let barrelRollCooldown = 0;
+let cannonBurstTimer = 0.65;
+let speedZoneBoostTimer = 0.8;
+let smoothedBankRoll = 0;
+let smoothedPitch = 0;
 const startupInputLatch = { left: false, right: false, jump: false, slide: false };
 let lastSection: PulseSectionId = "intro";
+
+function triggerBarrelRollDodge(): void {
+  if (barrelRollCooldown > 0) return;
+  barrelRollTimer = 0.55;
+  barrelRollCooldown = 0.95;
+  speedZoneBoostTimer = Math.max(speedZoneBoostTimer, 1.1);
+  player.applyInvuln(0.75);
+  styleSystem.graze();
+  void tunnelAudio.sfx("laneSwitch");
+}
+
+function triggerPulseCannon(): void {
+  cannonBurstTimer = 0.72;
+  styleSystem.graze();
+  void tunnelAudio.sfx("graze");
+  const firstActive = gateSystem.activeGates()[0];
+  if (firstActive) spawnSpark(firstActive.id);
+}
 
 function applySection(sectionId: PulseSectionId, announce: boolean): void {
   lastSection = sectionId;
@@ -1929,6 +2064,7 @@ function endRun(reason: string): void {
   hitFlash.setVisible(false);
   for (const parts of gateSlots) {
     parts.barrier.setVisible(false);
+    parts.chaser.setVisible(false);
     parts.top.setVisible(false);
     parts.bottom.setVisible(false);
     parts.core.setVisible(false);
@@ -1965,6 +2101,10 @@ function restart(): void {
   evidence.restarts += 1;
   fogPulseRemaining = 0;
   hitFlashRemaining = 0;
+  barrelRollTimer = 0;
+  barrelRollCooldown = 0;
+  cannonBurstTimer = 0.65;
+  speedZoneBoostTimer = 0.8;
   lastSection = "intro";
   paused = false;
   runState = "ready";
@@ -1984,6 +2124,10 @@ function onBeatReached(beat: number): void {
   const clampedBeat = Math.min(Math.max(beat, 0), PULSE_TOTAL_BEATS - 1);
   const section = pulseSectionAtBeat(clampedBeat);
   if (section.id !== lastSection) applySection(section.id, true);
+  if (beat % 4 === 0) {
+    speedZoneBoostTimer = 0.65;
+    if (cannonBurstTimer <= 0) cannonBurstTimer = 0.45;
+  }
   if (!reducedMotion && beat % 4 === 0 && beatClock.mode === "beat") {
     fogPulseRemaining = FOG_PULSE_SECONDS;
     fogPulse.setVisible(true);
@@ -2000,6 +2144,12 @@ function spawnSpark(sourceGateId: string): void {
 }
 
 function applyCollision(_event: PulsePassEvent): void {
+  if (barrelRollTimer > 0) {
+    // Barrel-Roll Phase Dodge phases cleanly through the hazard!
+    styleSystem.graze();
+    evidence.stats.grazes += 1;
+    return;
+  }
   evidence.stats.collisions += 1;
   evidence.shields = Math.max(0, evidence.shields - 1);
   player.applyInvuln(INVULN_SECONDS);
@@ -2041,6 +2191,8 @@ app.onFrame(() => {
     jump: input.pressed("jump"),
     slide: input.pressed("slide")
   };
+  if (input.pressed("barrelRoll")) triggerBarrelRollDodge();
+  if (input.pressed("cannon")) triggerPulseCannon();
   if (runStartPending) {
     startupInputLatch.left ||= startupInput.left;
     startupInputLatch.right ||= startupInput.right;
@@ -2064,6 +2216,11 @@ app.onFrame(() => {
     publish();
     return;
   }
+
+  barrelRollTimer = Math.max(0, barrelRollTimer - dt);
+  barrelRollCooldown = Math.max(0, barrelRollCooldown - dt);
+  cannonBurstTimer = Math.max(0, cannonBurstTimer - dt);
+  speedZoneBoostTimer = Math.max(0, speedZoneBoostTimer - dt);
 
   beatClock.update();
   playerState = player.step(dt, nowMs, {
@@ -2117,20 +2274,75 @@ function renderWorld(dt: number): void {
     reviewCombatPulse.ageSeconds += dt;
     if (evidence.latestCombatEvent) evidence.latestCombatEvent.ageSeconds = reviewCombatPulse.ageSeconds;
   }
-  const laneBank = (playerState.targetLane - playerState.lane) * -0.18;
+  const pulseClock = visualReviewCapture ? evidence.runSeconds : performance.now() / 1000;
+  const targetBank = (playerState.targetLane - playerState.lane) * -0.34;
+  smoothedBankRoll += (targetBank - smoothedBankRoll) * Math.min(1, dt * 14 + 0.15);
+  const targetPitch = playerState.airborne ? 0.16 : playerState.sliding ? -0.14 : Math.sin(pulseClock * 3.5) * 0.03;
+  smoothedPitch += (targetPitch - smoothedPitch) * Math.min(1, dt * 12 + 0.15);
+  const barrelRollSpin = barrelRollTimer > 0 ? ((0.55 - barrelRollTimer) / 0.55) * Math.PI * 2 : 0;
+
   const craftScale = [0.68, playerState.sliding ? 0.46 : 0.68, 0.68] as const;
   const reviewPlayerX = playerState.x;
   const reviewPlayerZ = 1.65;
   const craftCenterY = 0.44;
   shipBody.setPosition(reviewPlayerX, playerState.y + craftCenterY, reviewPlayerZ)
     .setScale(craftScale)
-    .setRotation(0, Math.PI / 2 + (playerState.targetLane - playerState.lane) * -0.08, laneBank);
+    .setRotation(
+      smoothedPitch,
+      Math.PI / 2 + (playerState.targetLane - playerState.lane) * -0.12,
+      smoothedBankRoll + barrelRollSpin
+    );
   shipGlow.setPosition(reviewPlayerX, playerState.y + craftCenterY + 0.02, reviewPlayerZ + 0.50)
     .setScale([0.09, 0.09, 0.09]);
   shipHoverLight.setPosition(reviewPlayerX, 0.01, reviewPlayerZ);
-  const blinking = playerState.invulnRemaining > 0 && Math.floor(performance.now() / 100) % 2 === 0;
+
+  // Twin glowing cyan/magenta plasma afterburner plumes behind the hero starfighter
+  const plumeStretch = (barrelRollTimer > 0 || speedZoneBoostTimer > 0 ? 0.48 : 0.34) + Math.sin(pulseClock * 18) * 0.05;
+  const plumeRadius = barrelRollTimer > 0 ? 0.072 : 0.056;
+  const blinking = playerState.invulnRemaining > 0 && barrelRollTimer <= 0 && Math.floor(performance.now() / 100) % 2 === 0;
   shipBody.setVisible(!blinking);
   shipGlow.setVisible(!blinking);
+  afterburnerLeft
+    .setVisible(!blinking && runState !== "summary")
+    .setPosition(reviewPlayerX - 0.17, playerState.y + craftCenterY + 0.02, reviewPlayerZ + 0.54)
+    .setRotation(Math.PI / 2 + smoothedPitch, 0, smoothedBankRoll)
+    .setScale([plumeRadius, plumeStretch, plumeRadius]);
+  afterburnerRight
+    .setVisible(!blinking && runState !== "summary")
+    .setPosition(reviewPlayerX + 0.17, playerState.y + craftCenterY + 0.02, reviewPlayerZ + 0.54)
+    .setRotation(Math.PI / 2 + smoothedPitch, 0, smoothedBankRoll)
+    .setScale([plumeRadius, plumeStretch, plumeRadius]);
+
+  // Animate 3D collectible rhythm nodes (skylineCrystalShardMeshy & fpsEnergyCorePickupMeshy)
+  RHYTHM_NODE_SPECS.forEach((spec, idx) => {
+    const handle = rhythmCollectibles[idx];
+    if (!handle) return;
+    handle.setVisible(runState !== "summary")
+      .setPosition(spec.x, 0.46 + Math.sin(pulseClock * 3.2 + idx) * 0.08, spec.z)
+      .setRotation(0.18, pulseClock * 2.2 + idx * 0.9, 0.14);
+  });
+
+  // Animate 3D corridor obstacle drones (pulseBarrierDroneWallMeshy & neonSwarmChaserDroneMeshy)
+  CORRIDOR_DRONE_HAZARD_SPECS.forEach((hazard, idx) => {
+    const handle = corridorHazardDrones[idx];
+    if (!handle) return;
+    const hoverY = (hazard.kind === "chaser" ? 0.58 : 0.38) + Math.cos(pulseClock * 2.6 + idx) * 0.06;
+    handle.setVisible(runState !== "summary")
+      .setPosition(hazard.x + Math.sin(pulseClock * 1.5 + idx) * 0.08, hoverY, hazard.z)
+      .setRotation(0, (hazard.x < 0 ? 0.18 : -0.18) + Math.sin(pulseClock * 2 + idx) * 0.12, 0);
+  });
+
+  // Animate Pulse Cannon plasma bolts blasting down the tunnel
+  cannonBolts.forEach((bolt, idx) => {
+    const active = runState !== "summary" && (cannonBurstTimer > 0 || visualReviewCapture || evidence.frameCount < 180);
+    bolt.setVisible(active);
+    if (active) {
+      const sideX = idx % 2 === 0 ? -0.22 : 0.22;
+      const travel = ((pulseClock * 8.5 + idx * 0.35) % 1) * 5.8;
+      bolt.setPosition(reviewPlayerX + sideX, playerState.y + 0.46, reviewPlayerZ - 0.35 - travel)
+        .setScale([0.085, 0.085, 0.28]);
+    }
+  });
 
   // Keep the 3D reactor encounter world, terminal sentry, islands, buttresses,
   // and projectile exchange visible throughout ready/running/paused states so
@@ -2219,6 +2431,7 @@ function renderWorld(dt: number): void {
     fogPulse.setVisible(false);
     for (const parts of gateSlots) {
       parts.barrier.setVisible(false);
+      parts.chaser.setVisible(false);
       parts.top.setVisible(false);
       parts.bottom.setVisible(false);
       parts.core.setVisible(false);
@@ -2233,6 +2446,7 @@ function renderWorld(dt: number): void {
     const parts = gateSlots[slot];
     if (visualReviewCapture) {
       parts.barrier.setVisible(false);
+      parts.chaser.setVisible(false);
       parts.top.setVisible(false);
       parts.bottom.setVisible(false);
       parts.core.setVisible(false);
@@ -2241,6 +2455,7 @@ function renderWorld(dt: number): void {
     const gate = gates[slot];
     if (!gate) {
       parts.barrier.setVisible(false);
+      parts.chaser.setVisible(false);
       parts.top.setVisible(false);
       parts.bottom.setVisible(false);
       parts.core.setVisible(false);
@@ -2259,22 +2474,24 @@ function renderWorld(dt: number): void {
       slotMaterialKeys.set(slot, materialKey);
     }
     if (gate.entry.kind === "low") {
-      parts.barrier.setVisible(true).setPosition(0, 0.14, gate.z).setScale([0.55, 0.42, 0.22]);
-      placePart(parts.core, true, 1.92, 0.22, 0, 0.14, gate.z, 0.09);
-      placePart(parts.top, true, 1.96, 0.036, 0, 0.26, gate.z, 0.11);
-      placePart(parts.bottom, true, 1.96, 0.034, 0, 0.02, gate.z, 0.11);
+      parts.barrier.setVisible(true).setPosition(0, 0.18, gate.z).setScale([0.92, 0.56, 0.45]);
+      parts.chaser.setVisible(true).setPosition(0, 0.42, gate.z - 0.15).setScale([0.62, 0.62, 0.62]);
+      placePart(parts.core, false, 0.0001, 0.0001, 0, -50, gate.z, 0.0001);
+      placePart(parts.top, false, 0.0001, 0.0001, 0, -50, gate.z, 0.0001);
+      placePart(parts.bottom, false, 0.0001, 0.0001, 0, -50, gate.z, 0.0001);
     } else if (gate.entry.kind === "high") {
-      parts.barrier.setVisible(true).setPosition(0, 0.62, gate.z).setScale([0.55, 0.52, 0.22]);
-      placePart(parts.core, true, 1.92, 0.36, 0, 0.62, gate.z, 0.09);
-      placePart(parts.top, true, 1.96, 0.04, 0, 0.81, gate.z, 0.11);
-      placePart(parts.bottom, true, 1.96, 0.04, 0, 0.43, gate.z, 0.11);
+      parts.barrier.setVisible(true).setPosition(0, 0.64, gate.z).setScale([0.92, 0.62, 0.45]);
+      parts.chaser.setVisible(true).setPosition(0, 0.86, gate.z - 0.15).setScale([0.68, 0.68, 0.68]);
+      placePart(parts.core, false, 0.0001, 0.0001, 0, -50, gate.z, 0.0001);
+      placePart(parts.top, false, 0.0001, 0.0001, 0, -50, gate.z, 0.0001);
+      placePart(parts.bottom, false, 0.0001, 0.0001, 0, -50, gate.z, 0.0001);
     } else {
-      const width = gate.entry.kind === "pylon" ? 0.25 : 0.44;
-      const trimWidth = width + 0.04;
-      parts.barrier.setVisible(true).setPosition(geometry.centerX, 0.32, gate.z).setScale([width * 0.52, 0.65, 0.24]);
-      placePart(parts.core, true, width, 0.58, geometry.centerX, 0.32, gate.z, 0.09);
-      placePart(parts.top, true, trimWidth, 0.04, geometry.centerX, 0.62, gate.z, 0.11);
-      placePart(parts.bottom, true, trimWidth, 0.045, geometry.centerX, 0.025, gate.z, 0.11);
+      const width = gate.entry.kind === "pylon" ? 0.55 : 0.78;
+      parts.barrier.setVisible(true).setPosition(geometry.centerX, 0.34, gate.z).setScale([width, 0.74, 0.48]);
+      parts.chaser.setVisible(true).setPosition(geometry.centerX, 0.68, gate.z - 0.12).setScale([0.66, 0.66, 0.66]);
+      placePart(parts.core, false, 0.0001, 0.0001, geometry.centerX, -50, gate.z, 0.0001);
+      placePart(parts.top, false, 0.0001, 0.0001, geometry.centerX, -50, gate.z, 0.0001);
+      placePart(parts.bottom, false, 0.0001, 0.0001, geometry.centerX, -50, gate.z, 0.0001);
     }
   }
 
@@ -2308,7 +2525,10 @@ function placePart(
   scaleZ = 0.1
 ): void {
   handle.setVisible(visible);
-  if (!visible) return;
+  if (!visible) {
+    handle.setPosition(x, -50, z).setScale([0.0001, 0.0001, 0.0001]);
+    return;
+  }
   handle.setPosition(x, y, z).setScale([scaleX, scaleY, scaleZ]);
 }
 

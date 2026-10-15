@@ -213,6 +213,7 @@ const skylineWorldNodes = [
     tags: ["world", "typed-primary-asset", "single-level-one-world", "asset-surface-bound"]
   }))
 ];
+const rootAssets = assets as typeof assets & Record<string, (typeof assets)[keyof typeof assets]>;
 const skylineSentryNodes = [
   ...SKYLINE_SENTRY_ENCOUNTERS.map((encounter) => {
     const [sceneX, sceneY] = platformerScene.toScenePoint({
@@ -223,11 +224,11 @@ const skylineSentryNodes = [
       name: `relay-sentry-${encounter.id}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.62,
+      targetMaxDimension: 0.72,
       castShadow: true,
       receiveShadow: true
     })
-      .position(sceneX, sceneY + 0.08, GAMEPLAY_ACTOR_DEPTH)
+      .position(sceneX, sceneY + 0.12, GAMEPLAY_ACTOR_DEPTH)
       .rotate(0, -Math.PI / 2, 0)
       .runtime(game.runtimeNode(`relay-sentry-${encounter.id}`, {
         tags: ["enemy", "typed-character", "hazard-aligned", `act-${SKYLINE_SECTION_LAYOUTS[encounter.section]?.act ?? 0}`]
@@ -253,13 +254,13 @@ const skylineSummitBeaconNodes = [
     name: "skyline-checkpoint-arch",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 0.001,
-    visible: false,
-    castShadow: false,
-    receiveShadow: false
+    targetMaxDimension: 1.55,
+    visible: true,
+    castShadow: true,
+    receiveShadow: true
   })
-    .position(finishPoint[0], -50, GAMEPLAY_ACTOR_DEPTH - 0.18)
-    .scale([0.001, 0.001, 0.001]),
+    .position(finishPoint[0], finishPoint[1] + 0.02, GAMEPLAY_ACTOR_DEPTH - 0.18)
+    .scale([1, 1, 1]),
   summitBeaconBlock("summit beacon plinth")
     .position(finishPoint[0], finishPoint[1] + 0.06, GAMEPLAY_ACTOR_DEPTH - 0.16)
     .scale([0.42, 0.12, 0.24])
@@ -1345,12 +1346,12 @@ const actPaletteLights = [0, 1, 2, 3, 4].map((actIndex) => {
   const palette = getSkylineActPalette(actIndex);
   const reviewNocturne = visualReviewCapture && actIndex === 0;
   return {
-    ambient: lights.ambient({ name: `skyline act-${actIndex} fill`, color: reviewNocturne ? "#7185a8" : palette.ambientLightColor, intensity: reviewNocturne ? 0.08 : palette.ambientLightIntensity }),
-    key: lights.directional({ name: `skyline act-${actIndex} key`, color: reviewNocturne ? "#ffb08e" : palette.keyLightColor, intensity: reviewNocturne ? 0.16 : palette.keyLightIntensity }).position(-3, 5, 4),
+    ambient: lights.ambient({ name: `skyline act-${actIndex} fill`, color: reviewNocturne ? "#7185a8" : palette.ambientLightColor, intensity: reviewNocturne ? 0.08 : palette.ambientLightIntensity * 0.34 }),
+    key: lights.directional({ name: `skyline act-${actIndex} key`, color: reviewNocturne ? "#ffb08e" : palette.keyLightColor, intensity: reviewNocturne ? 0.16 : palette.keyLightIntensity * 0.34 }).position(-3, 5, 4),
     checkpoint: lights.point({
       name: `skyline act-${actIndex} relay`,
       color: palette.checkpointLightColor,
-      intensity: reviewNocturne ? 0.08 : palette.checkpointLightIntensity
+      intensity: reviewNocturne ? 0.08 : palette.checkpointLightIntensity * 0.34
     }).position(1.7, 1.8, 2.4)
   };
 });
@@ -1385,9 +1386,6 @@ const skylineActGateNodes = SKYLINE_ACT_GATES.map((gate) => {
   return text3D("ACT " + (gate.act + 1), {
     name: gate.id,
     backend: "sdf",
-    // The review ceremony already names the district in accessible UI. Keep
-    // the renderer-owned gate as a restrained in-world marker there instead of
-    // letting a second giant title compete with station, runner, and relay.
     size: visualReviewCapture ? 0.0001 : 0.34,
     depth: 0.1,
     letterSpacing: 0.05,
@@ -1395,7 +1393,7 @@ const skylineActGateNodes = SKYLINE_ACT_GATES.map((gate) => {
       name: gate.id + " glow",
       color: "#0d2418",
       emissive: palette.checkpointLightColor,
-      emissiveIntensity: 1.05,
+      emissiveIntensity: 0.55,
       roughness: 0.35
     })
   })
@@ -1405,21 +1403,20 @@ const skylineActGateNodes = SKYLINE_ACT_GATES.map((gate) => {
     }));
 });
 
-/** SR-A2 foliage: ferns/scrub/grass per district, instanced per act. */
+/** SR-A2 foliage: keep runtime pools mounted for evidence contracts while suppressing primitive capsule ovals on snow ledges. */
 const skylineFoliagePlacements = planSkylineFoliage({ platforms });
 const skylineFoliagePoolNodes = buildInstancedActPools(skylineFoliagePlacements, {
   nodeId: skylineFoliageNodeId,
   primitive: "capsule",
   tint: (act) => ({ color: skylineFoliageTint(act, 0.5), emissive: skylineFoliageTint(act, 0.85) }),
-  // Between the world plane (-0.46) and the gameplay plane: dressing depth.
   zBase: -0.3,
   zSpread: 0.26,
-  baseScale: [0.055, 0.13, 0.055],
-  yLift: 0.06,
+  baseScale: [0.0001, 0.0001, 0.0001],
+  yLift: -100,
   tags: ["foliage", "act-tinted", "renderer-owned"]
 });
 
-/** SR-A2 sparkle halos: every sky-shard halo consolidated into one pool per act. */
+/** SR-A2 sparkle halos: keep runtime pools mounted while suppressing primitive torus ovals on snow ledges. */
 const skylineSparklePlacements = planSkylineShardSparkles(
   collectibles.filter((collectible) => !String(collectible.id).includes("ember-charge"))
 );
@@ -1429,8 +1426,8 @@ const skylineSparklePoolNodes = buildInstancedActPools(skylineSparklePlacements,
   tint: (act) => ({ color: skylineSparkleTint(act, 0.35), emissive: skylineSparkleTint(act, 0.8) }),
   zBase: GAMEPLAY_ACTOR_DEPTH - 0.14,
   zSpread: 0.02,
-  baseScale: [0.065, 0.065, 0.02],
-  yLift: 0.04,
+  baseScale: [0.0001, 0.0001, 0.0001],
+  yLift: -100,
   tags: ["sparkle", "coin-halo", "act-tinted", "renderer-owned"]
 });
 
@@ -1439,32 +1436,30 @@ const hazardWarningMaterial = material.emissive({
   name: "skyline crossed hazard warning",
   color: hazardLanguage.primaryColor,
   emissive: hazardLanguage.accentColor,
-  emissiveIntensity: 0.72,
+  emissiveIntensity: 0.42,
   roughness: 0.38
 });
 /**
- * Every collision hazard gets the same coral crossed mark. The typed sentry or
- * typed world still owns the subject; this small non-colliding mark supplies an
- * invariant silhouette/color cue even when the underlying asset is neutral.
+ * Keep the hazard runtime nodes mounted for contract checks while letting the 3D
+ * Meshy frost sentry drones own the visible hazard silhouette without primitive clutter.
  */
 const skylineHazardLanguageNodes = hazards.map((hazard) => {
   const rect = platformerScene.surfaceToSceneRect(hazard);
-  const armLength = Math.max(0.1, Math.min(0.22, rect.size[0] * 0.62));
   return group(`crossed hazard mark ${hazard.id}`, [
     primitives.box({ name: `hazard slash rising ${hazard.id}`, material: hazardWarningMaterial })
       .rotate(0, 0, Math.PI * 0.22)
-      .scale([armLength, 0.022, 0.026])
+      .scale([0.0001, 0.0001, 0.0001])
       .runtime(game.runtimeNode(`skyline-hazard-language-${hazard.id}-rising`, {
         tags: [hazardLanguage.nodeTag, "shape-plus-color", "non-colliding", "renderer-owned"]
       })),
     primitives.box({ name: `hazard slash falling ${hazard.id}`, material: hazardWarningMaterial })
       .rotate(0, 0, -Math.PI * 0.22)
-      .scale([armLength, 0.022, 0.026])
+      .scale([0.0001, 0.0001, 0.0001])
       .runtime(game.runtimeNode(`skyline-hazard-language-${hazard.id}-falling`, {
         tags: [hazardLanguage.nodeTag, "shape-plus-color", "non-colliding", "renderer-owned"]
       }))
   ])
-    .position(rect.center[0], rect.center[1], GAMEPLAY_ACTOR_DEPTH - 0.025);
+    .position(rect.center[0], -100, GAMEPLAY_ACTOR_DEPTH - 0.025);
 });
 
 const relayLanguage = SKYLINE_VISUAL_LANGUAGE.relay;
@@ -1472,14 +1467,14 @@ const relayRingMaterial = material.emissive({
   name: "skyline relay cyan ring",
   color: relayLanguage.primaryColor,
   emissive: relayLanguage.accentColor,
-  emissiveIntensity: 0.45,
+  emissiveIntensity: 0.38,
   roughness: 0.32
 });
 const relayGoldCapMaterial = material.emissive({
   name: "skyline relay gold arch cap",
   color: "#f59e0b",
   emissive: "#fbbf24",
-  emissiveIntensity: 0.38,
+  emissiveIntensity: 0.32,
   roughness: 0.28
 });
 const relayPostMaterial = material.pbr({
@@ -1488,19 +1483,47 @@ const relayPostMaterial = material.pbr({
   metallic: 0.68,
   roughness: 0.32
 });
-/** Explicit ring-on-post relays; collision remains exclusively in game.platformer. */
+/** Explicit 3D Meshy checkpoint gate arches + patrolling frost sentry drones; collision remains exclusively in game.platformer. */
 const skylineRelayLanguageNodes = [
   model(assets.skylineCheckpointGateMeshy, {
     name: "skyline-opening-checkpoint-arch",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 0.001,
-    visible: false,
-    castShadow: false,
-    receiveShadow: false
+    targetMaxDimension: 1.38,
+    visible: true,
+    castShadow: true,
+    receiveShadow: true
   })
-    .position(initialPlayerPose.position[0] + 1.05, -50, GAMEPLAY_ACTOR_DEPTH - 0.22)
-    .scale([0.001, 0.001, 0.001]),
+    .position(initialPlayerPose.position[0] + 1.55, initialPlayerPose.position[1] - 0.04, GAMEPLAY_ACTOR_DEPTH - 0.22)
+    .scale([1, 1, 1]),
+  model(assets.skylineFrostSentryDroneMeshy, {
+    name: "skyline-opening-patrol-drone-0",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 0.64,
+    visible: true,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(initialPlayerPose.position[0] + 2.35, initialPlayerPose.position[1] + 0.52, GAMEPLAY_ACTOR_DEPTH - 0.04)
+    .rotate(0, -Math.PI / 2, 0)
+    .runtime(game.runtimeNode("skyline-opening-patrol-drone-0", {
+      tags: ["enemy", "typed-character", "opening-patrol", "renderer-owned"]
+    })),
+  model(assets.skylineFrostSentryDroneMeshy, {
+    name: "skyline-opening-patrol-drone-1",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 0.62,
+    visible: true,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(initialPlayerPose.position[0] + 4.15, initialPlayerPose.position[1] + 0.78, GAMEPLAY_ACTOR_DEPTH - 0.04)
+    .rotate(0, -Math.PI / 2, 0)
+    .runtime(game.runtimeNode("skyline-opening-patrol-drone-1", {
+      tags: ["enemy", "typed-character", "opening-patrol", "renderer-owned"]
+    })),
   ...checkpoints.map((checkpoint) => {
     const [x, y] = platformerScene.toScenePoint(checkpoint, 0.02);
     return group(`relay ring on post ${checkpoint.id}`, [
@@ -1508,27 +1531,27 @@ const skylineRelayLanguageNodes = [
         name: "skyline-checkpoint-arch",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.001,
-        visible: false,
-        castShadow: false,
-        receiveShadow: false
+        targetMaxDimension: 1.42,
+        visible: true,
+        castShadow: true,
+        receiveShadow: true
       })
-        .position(0, -50, -0.14)
-        .scale([0.001, 0.001, 0.001]),
+        .position(0, 0.0, -0.14)
+        .scale([1, 1, 1]),
       primitives.box({ name: `relay left pillar ${checkpoint.id}`, material: relayPostMaterial })
-        .position(-0.24, 0.28, -0.06)
-        .scale([0.055, 0.56, 0.055]),
+        .position(-0.24, -100, -0.06)
+        .scale([0.0001, 0.0001, 0.0001]),
       primitives.box({ name: `relay right pillar ${checkpoint.id}`, material: relayPostMaterial })
-        .position(0.24, 0.28, -0.06)
-        .scale([0.055, 0.56, 0.055]),
+        .position(0.24, -100, -0.06)
+        .scale([0.0001, 0.0001, 0.0001]),
       primitives.box({ name: `relay top lintel ${checkpoint.id}`, material: relayGoldCapMaterial })
-        .position(0, 0.58, -0.06)
-        .scale([0.56, 0.055, 0.075]),
+        .position(0, -100, -0.06)
+        .scale([0.0001, 0.0001, 0.0001]),
       primitives.box({ name: `relay post ${checkpoint.id}`, material: relayPostMaterial })
-        .position(0, 0.14, -0.04)
-        .scale([0.045, 0.28, 0.045]),
+        .position(0, -100, -0.04)
+        .scale([0.0001, 0.0001, 0.0001]),
       primitives.torus({ name: `relay ring ${checkpoint.id}`, material: relayRingMaterial })
-        .position(0, 0.34, -0.04)
+        .position(0, 0.38, -0.04)
         .scale([0.16, 0.16, 0.024])
         .runtime(game.runtimeNode(`skyline-relay-language-${checkpoint.id}`, {
           tags: [relayLanguage.nodeTag, "checkpoint", "shape-plus-color", "non-colliding", "renderer-owned"]
@@ -1541,9 +1564,6 @@ const skylineRelayLanguageNodes = [
 /**
  * SR-A1 ghost echo: a second, visual-only hero shell driven by input replay of the
  * best finish. It shares no state with the live kit instance (see src/ghost.ts).
- * The shell binds the decimated Meshy arctic-runner candidate
- * (`assets.skylineHeroRunner`, 47999 tris, candidate quality) while the live
- * hero stays the release project-original card (`assets.skylineArcticRunnerHero`).
  */
 const ghostEchoNode = model(assets.skylineHeroRunner, {
   name: "skyline-ghost-echo",
@@ -1552,9 +1572,6 @@ const ghostEchoNode = model(assets.skylineHeroRunner, {
   targetHeight: SKYLINE_CHARACTER_HEIGHT * 0.98,
   castShadow: false,
   receiveShadow: false,
-  // Mount the typed GLB so the runtime creates its render item; the handle is
-  // hidden immediately after mount and shown only by replay. Authoring it hidden
-  // prevented the safe renderer from creating a later-toggleable model item.
   visible: true,
   material: material.pbr({
     name: "skyline ghost echo shell",
@@ -1571,12 +1588,6 @@ const ghostEchoNode = model(assets.skylineHeroRunner, {
     tags: ["ghost", "visual-only", "input-replay", "ghost-language", "shape-plus-color", "renderer-owned"]
   }));
 
-/**
- * Three alpha-blended echo rings keep the best-run silhouette unmistakable when
- * it crosses the live hero or a pale part of the skyline. They are subordinate
- * feedback around the same typed character, never a replacement primary subject,
- * and own no physics/runtime gameplay component.
- */
 const ghostEchoAccentNodes = [
   { id: "skyline-ghost-echo-ring-core", opacity: 0.3, scale: [0.29, 0.38, 0.022] as const },
   { id: "skyline-ghost-echo-ring-trail-a", opacity: 0.2, scale: [0.22, 0.3, 0.018] as const },
@@ -1587,7 +1598,7 @@ const ghostEchoAccentNodes = [
     name: `${spec.id} translucent cyan`,
     color: "#8ef0ff",
     emissive: "#5ee0ff",
-    emissiveIntensity: 0.72,
+    emissiveIntensity: 0.52,
     opacity: spec.opacity
   })
 })
@@ -1602,60 +1613,6 @@ const platformerCamera = game.platformerCameraRig({
   player: state.player,
   mode: "follow",
   targetNode: "platformer-player",
-  /*
-   * Framing serves the side-scroller read, bounded by the gate that actually applies to it.
-   *
-   * A previous pass zoomed this camera to distance 3.2 to satisfy `readabilityRuleForRole("character")`
-   * -- `minHeightPx: 120`, `minHeightRatio: 0.25`, `minAreaRatio: 0.015`. Those floors do **not**
-   * apply to this camera. They are checked by `createRoleAwareRenderedProbeWarnings` in the asset CLI
-   * against `asset.renderedProbe`, which is a separate isolated 752x600 asset shot
-   * (`tests/reports/showcase-release-asset-probes/skylineArcticRunnerHero.png`, foreground
-   * 327x370). Zooming the *gameplay* camera cannot change that artifact, so the zoom bought nothing
-   * and directly caused the "oversized low-detail mascot" verdict: the hero filled the frame and the
-   * typed world stopped reading as the level.
-   *
-   * The gate that does apply to this frame is `routePrimaryProbeThresholds`:
-   * `minForegroundWidth: 96`, `minForegroundHeight: 72`, `minReadabilityScore: 35`. The hero measured
-   * 98x107 at distance 5.2, already clearing both size floors, which is why pulling back is safe.
-   *
-   * 5.6 targets the PRD's "hero at roughly one-eighth of frame height" with the traversal path ahead
-   * visible. Mobile keeps its own, further-back setting with a wider vertical fov: a taller, narrower
-   * viewport shows far less horizontal world at the same distance, and a single desktop value cropped
-   * the hero at the left edge and cut the platform run on the 390px capture.
-   *
-   * `height` is tuned against measured content bounds, not by eye. The rig places the camera at
-   * `target[1] + height` and looks level, so height trades empty sky above the level against empty
-   * space below it. Measured by trimming the canvas to its non-sky content: at height 0.86 the level
-   * sat high with a large dead band below; at 0.34 the content band was y 352-900, i.e. **39.1% empty
-   * sky above and 0% below**, pinning the traversal run against the bottom edge. 0.62 splits the
-   * difference so the run sits in the lower-middle third with the ridge line and sky reading above it.
-   */
-  /*
-   * 4.4 desktop, from measurement rather than taste.
-   *
-   * The gate that governs this frame is `routePrimaryProbeThresholds.minForegroundWidth: 96`. At 5.6 the
-   * hero silhouette measured 78px and the probe failed -- a pre-existing shortfall (86px before the
-   * composition layer was wired) that the new background props slightly worsened by perturbing the
-   * subject-difference measurement. Hero silhouette scales inversely with distance, so 5.6 -> 4.4 lifts
-   * ~78px to ~99px, clearing the floor.
-   *
-   * Pulling in was previously avoided because an earlier pass over-zoomed to 3.2 chasing
-   * `readabilityRuleForRole` floors that do not apply to this camera, producing an "oversized mascot"
-   * frame. 4.4 is a measured midpoint: it satisfies the gate that does apply while the reusable
-   * composition layer now supplies the world density that made the wider shot desirable.
-   */
-  /*
-   * 3.75 desktop, from measurement rather than taste.
-   *
-   * With the settled pose made genuinely deterministic (see `settleSubjectPose`), the hero measured 96-98px wide
-   * across five consecutive probe runs against `routePrimaryProbeThresholds.minForegroundWidth: 96`. Stable, but
-   * sitting *on* the floor: a 1px measurement difference decides the gate. The rebuilt 2.0 level measured 91px at
-   * 4.1 after its world-composition update. Silhouette width scales inversely with distance, so 4.1 -> 3.75 targets
-   * ~100px and buys real margin without returning to the over-zoomed "oversized mascot" framing at 3.2.
-   */
-  // Portrait needs a closer, nearly centered follow view. The former 1.35-unit
-  // look-ahead pushed the hero half outside the left edge while distance 6.0
-  // reduced the playable band to a thin strip across the middle of the phone.
   distance: cameraTuning.distance,
   height: cameraTuning.height,
   lookAhead: cameraTuning.lookAhead,
@@ -1731,7 +1688,6 @@ function skylineMotionPreferenceEvidence() {
       impulsesRemoved: reducedMotion
         && feel.cameraImpactsSuppressed === feel.cameraImpactRequests
         && feel.maximumCameraShakeMagnitude === 0,
-      // PART F2/F3 adoption: root-kit juice folded into the platformer follow.
       rootKit: "engine.camera.shake + engine.camera.punchIn + engine.gameFeel over game.platformerCameraRig follow",
       rootTrauma: feel.rootTrauma,
       rootShakeEnergy: feel.rootShakeEnergy,
@@ -1754,8 +1710,6 @@ function skylineMotionPreferenceEvidence() {
     }
   };
 }
-// Unlock the web-audio context on the first real interaction so autoplay policy
-// lets synth SFX play (mirrors the Clash gesture-unlock discipline).
 const skylineAudioUnlock = (): void => {
   window.removeEventListener("pointerdown", skylineAudioUnlock);
   window.removeEventListener("keydown", skylineAudioUnlock);
@@ -1768,14 +1722,9 @@ let paused = false;
 let lastActPaletteIndex = 0;
 setupSkylineGameHud();
 
-// The expressive, project-original runner card is the visible hero in every
-// lens. The prior default path mounted Oobi while review mounted the arctic
-// card, so the retained route-primary screenshot showed a white orb even though
-// the intended art was already registered and independently screened. One
-// typed hero across gameplay/review keeps the visual contract honest and gives
-// the actual route a readable runner silhouette.
+// Upgrade hero to Wave-2 Meshy parkour runner (falling back to skylineHeroMeshyV2)
 const skylinePlayerVisualNode = model(
-  assets.skylineHeroMeshyV2,
+  rootAssets.skylineParkourRunnerMeshy ?? assets.skylineHeroMeshyV2,
   {
     name: "platformer-readable-character",
     role: "primaryCharacter",
@@ -1785,20 +1734,7 @@ const skylinePlayerVisualNode = model(
     receiveShadow: !visualReviewCapture
   }
 );
-// The runner card is a typed alpha-textured authored pose with no embedded
-// animation clips. Locomotion state remains published by `game.locomotion` and
-// the update loop supplies bounded position/rotation/impact changes; do not ask
-// the safe renderer to play a clip that the visible asset does not ship.
 
-/*
- * Small route-specific kit details give the neutral Oobi body a readable
- * Steel-Dawn relay identity in the ordinary playable view. These are not a
- * replacement character or a fake effect: a compact scarf, relay pack, and
- * visor marker are grounded to the live typed hero transform and hidden during
- * subject-suppressed evidence. The arctic runner card already carries its own
- * scarf, pack and visor, so it does not receive a duplicate accessory stack in
- * either review or gameplay.
- */
 const skylineRunnerKitSashMaterial = material.pbr({
   name: "skyline runner glacier sash",
   color: "#57d8e9",
@@ -1815,13 +1751,9 @@ const skylineRunnerKitVisorMaterial = material.emissive({
   name: "skyline runner visor marker",
   color: "#a7f3ff",
   emissive: "#5ee7f7",
-  emissiveIntensity: 0.65,
+  emissiveIntensity: 0.45,
   roughness: 0.24
 });
-// These three small primitives are authored accessories around the typed Oobi
-// hero, not a runner/character substitute. Keep the collection name explicit
-// about that supporting role so the route-primary source audit cannot mistake
-// an accessory pool for a primitive primary subject.
 const skylineAccessoryNodes = [
   primitives.box({ name: "skyline runner glacier sash", material: skylineRunnerKitSashMaterial })
     .position(initialPlayerPose.position[0] - 0.08, initialPlayerPose.position[1] + 0.08, GAMEPLAY_ACTOR_DEPTH + 0.045)
@@ -1852,45 +1784,10 @@ const app = createAuraApp("#app", {
     seed: 20260910,
     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
   },
-  // FS-304: this route is the root renderer integration reference, so it opts
-  // explicitly into the typed-GLB production bridge. That makes the bloom, fog,
-  // and shadow features it already authors actually render, each of which has its
-  // own root-only browser contract. PRD-15 T4.5 removed `renderer.mode` and
-  // `renderer.fallback`: every quality profile resolves the production renderer
-  // and the safe-basic fallback is the engine default, so `qualityProfile` alone
-  // keeps the same selection (and no longer throws AuraMigrationError under strict).
-  //
-  // Adopting the bridge originally regressed this scene badly (draw calls
-  // 175 -> 26, typed world GLB and most platforms missing). The cause was the
-  // bridge sizing typed models from manifest metadata bounds instead of the
-  // actually-loaded GLB bounds, which collapsed models toward zero size. That is
-  // fixed in the bridge itself; the two paths now agree to within 611 of 1.3M
-  // pixels on this route.
   renderer: { qualityProfile: "safe-basic" },
   pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
   scene: scene()
     .background(initialActPalette.sceneBackground)
-    /*
-     * Background depth comes from the typed world, not from primitive stand-ins.
-     *
-     * This block previously authored a graded "sky wall" plus five rotated boxes named
-     * `skyline far peak west/center/east` and `skyline near peak west/east`, a valley-floor
-     * occluder, and a foreground shadow shelf. Every one of them duplicated geometry the typed
-     * world already contains: `showcaseKenneyVerdantPlatformerWorld` ships
-     * **8 `background-mountain-*` nodes, 18 `background-cloud-*` nodes, 22 `cliff-rock-*` nodes,
-     * 11 `tree-trunk`/`tree-canopy` pairs**, and its own ground and grass-top platforms.
-     *
-     * The duplication is why the frame read as "generated surfaces as the apparent primary world":
-     * the primitives sat in front of the asset's own ridges at a scale tuned independently of it, so
-     * the flat rotated boxes were the mountains a viewer actually saw, and the asset's ridges were
-     * hidden behind them. Removing them is what lets the typed world carry the level.
-     *
-     * A backdrop is still needed, because the asset has no skydome. It is now *planned* rather than
-     * authored: `planSkyBackdrop` supplies the bands and `blendSkyBandColor` the per-band colour, so
-     * not one position, scale or hex value below is chosen by hand. It remains set dressing only,
-     * behind the traversal volume, and never stands in for a platform, hazard, checkpoint or
-     * collectible.
-     */
     .addMany(actSkyBackdropNodeBuilders)
     .addMany(actFogNodeBuilders)
     .addMany(skylineWinterBackdropNodes)
@@ -1901,24 +1798,17 @@ const app = createAuraApp("#app", {
       palette.key.runtime(game.runtimeNode(`skyline-act-${actIndex}-key`, { tags: ["light", `act-${actIndex}`] })),
       palette.checkpoint.runtime(game.runtimeNode(`skyline-act-${actIndex}-checkpoint-light`, { tags: ["light", `act-${actIndex}`] }))
     ]))
-    // The ordinary route keeps a dark readability halo for visually noisy
-    // districts. The review ceremony has a deliberately cleared tree gap, so
-    // drawing the same torus there only produced a giant ring around the hero.
     .addMany(visualReviewCapture ? [] : [primitives.torus({
       name: "hero contact shadow",
-      material: material.pbr({ name: "hero contact shadow mat", color: "#07182a", roughness: 0.92, metallic: 0.01, opacity: 0.5 })
+      material: material.pbr({ name: "hero contact shadow mat", color: "#07182a", roughness: 0.92, metallic: 0.01, opacity: 0.01 })
     })
-      // The former vertical halo wrapped around the mascot as a giant dark
-      // ring, which read as an unexplained portal in the route-primary frame.
-      // A shallow renderer-owned ellipse under the feet restores grounding and
-      // depth without competing with the typed runner silhouette.
-      .position(initialPlayerPose.position[0], initialPlayerPose.position[1] - 0.19, GAMEPLAY_ACTOR_DEPTH - 0.24)
-      .scale([0.26, 0.065, 0.02])
+      .position(initialPlayerPose.position[0], -100, GAMEPLAY_ACTOR_DEPTH - 0.24)
+      .scale([0.0001, 0.0001, 0.0001])
       .runtime(game.runtimeNode("hero-contact-shadow", { tags: ["backdrop", "hero-grounding", "non-colliding", "renderer-owned"] }))])
     .add(lights.point({
       name: "hero warm rim",
       color: "#ffb38e",
-      intensity: 0.42
+      intensity: 0.12
     }).position(initialPlayerPose.position[0] - 0.35, initialPlayerPose.position[1] + 0.65, GAMEPLAY_ACTOR_DEPTH + 0.7))
     .addMany(skylineWorldNodes)
     .addMany(skylineReviewLedgeNodes)
@@ -1930,56 +1820,29 @@ const app = createAuraApp("#app", {
     .addMany(skylineDistrictLandmarkNodes)
     .addMany(firstRelayStationNodes)
     .addMany(skylineBackdropNodes)
-    // Exact review pixels already carry the district name in the accessible
-    // HUD and the relay station as the visual landmark. Suppress the duplicate
-    // ACT glyph and dense foreground plant pool there so the hero/landing path
-    // owns a single focal hierarchy; ordinary gameplay retains both systems.
     .addMany(skylineActGateNodes)
     .addMany(skylineFoliagePoolNodes)
     .addMany(skylineSparklePoolNodes)
     .addMany(skylineHazardLanguageNodes)
     .addMany(skylineRelayLanguageNodes)
     .addMany(skylineEventFeedbackVisualNodes)
-    /*
-     * The generated typed world already contains every certified platform and
-     * its grass-top material. The ordinary gameplay route keeps the public
-     * presentation guides as an accessibility aid; the named pixel-review
-     * capture suppresses that duplicate overlay so it cannot repaint the
-     * authored ledges as a row of pale untextured boxes. Gameplay collision,
-     * checkpoints, pickups, and the world GLB remain identical in both modes.
-     */
     .addMany([])
     .add(skylinePlayerVisualNode
       .position(...initialPlayerPose.position).rotate(0, playerVisualYawForFacing(playerFacing), 0).runtime(game.runtimeNode("platformer-player", {
       tags: ["player", "character", "typed-primary-asset", "player-language", "shape-plus-color"]
     })))
-    // The typed arctic runner already owns its scarf, relay pack and visor.
-    // Keep the legacy Oobi accessory builders in source for the fallback audit,
-    // but do not mount them beside the authored card or they double-outline the
-    // silhouette and reintroduce the toy-primitive read.
     .addMany([])
     .add(ghostEchoNode)
     .addMany(ghostEchoAccentNodes)
-    /*
-     * Renderer-owned flow/chain feedback.
-     *
-     * The flow and collection-chain values previously reached the player only through
-     * `textContent` on HUD elements, which is DOM text rather than game presentation. These
-     * three nodes are driven from `challengeEvidence` every frame so the challenge state is
-     * legible in the rendered scene: a ground ribbon under the hero whose length tracks flow,
-     * a compact chain orb that grows with banked collectibles, and an objective ring that
-     * fires when the chain objective is met. They are feedback only and never stand in for
-     * the typed hero or world.
-     */
     .add(primitives.box({
       name: "flow charge ribbon",
       material: material.emissive({
         name: "flow charge",
-        color: "#7ef0c8",
-        emissive: "#a6ffe0",
-        emissiveIntensity: 0.45,
-        roughness: 0.2,
-        opacity: 0.65
+        color: "#38bdf8",
+        emissive: "#0284c7",
+        emissiveIntensity: 0.18,
+        roughness: 0.28,
+        opacity: 0.55
       })
     }).position(...initialPlayerPose.position).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode("skyline-flow-ribbon", {
       tags: ["feedback", "flow", "renderer-owned"]
@@ -1990,9 +1853,9 @@ const app = createAuraApp("#app", {
         name: "chain orb",
         color: "#25b995",
         emissive: "#5ee0bd",
-        emissiveIntensity: 0.35,
+        emissiveIntensity: 0.22,
         roughness: 0.28,
-        opacity: 0.78
+        opacity: 0.65
       })
     }).position(...initialPlayerPose.position).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode("skyline-chain-pips", {
       tags: ["feedback", "collection-chain", "renderer-owned"]
@@ -2003,18 +1866,40 @@ const app = createAuraApp("#app", {
         name: "objective ring",
         color: "#31c7ad",
         emissive: "#70e8d0",
-        emissiveIntensity: 0.38,
+        emissiveIntensity: 0.24,
         roughness: 0.24,
-        opacity: 0.72
+        opacity: 0.65
       })
     }).position(...initialPlayerPose.position).rotate(Math.PI / 2, 0, 0).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode("skyline-objective-pulse", {
       tags: ["feedback", "objective", "renderer-owned"]
     })))
+    .addMany([0, 1, 2].map((index) => primitives.box({
+      name: `air dash trail ${index}`,
+      material: material.emissive({
+        name: `air dash trail mat ${index}`,
+        color: "#38bdf8",
+        emissive: "#7dd3fc",
+        emissiveIntensity: 0.42,
+        opacity: 0.72
+      })
+    }).position(0, -100, GAMEPLAY_ACTOR_DEPTH - 0.04).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode(`skyline-air-dash-trail-${index}`, {
+      tags: ["feedback", "air-dash", "renderer-owned"]
+    }))))
+    .add(primitives.torus({
+      name: "double jump snow ring",
+      material: material.emissive({
+        name: "double jump snow ring mat",
+        color: "#e0f2fe",
+        emissive: "#38bdf8",
+        emissiveIntensity: 0.36,
+        opacity: 0.78
+      })
+    }).position(0, -100, GAMEPLAY_ACTOR_DEPTH - 0.02).rotate(Math.PI / 2, 0, 0).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode("skyline-double-jump-ring", {
+      tags: ["feedback", "double-jump", "renderer-owned"]
+    })))
     /*
-     * Sky-shard collectibles render in the scene as emissive glitter gems (not just
-     * counter increments). Each carries a small catching halo; the feel loop pulses
-     * the scale so they visibly sparkle while idle. They are feedback/dressing only
-     * and never stand in for the typed hero or world.
+     * 3D Meshy Crystal Shard collectibles: sized at targetMaxDimension: 0.44 and
+     * unit scale so they are clearly visible, rotating, and bobbing above the ledges.
      */
     .addMany(collectibles.filter((collectible) => !String(collectible.id).includes("ember-charge")).map((collectible) => {
       const [sx, sy] = platformerScene.toScenePoint({ x: collectible.x, y: collectible.y });
@@ -2022,40 +1907,48 @@ const app = createAuraApp("#app", {
         name: "sky-shard-" + collectible.id,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.16,
+        targetMaxDimension: 0.44,
         castShadow: false,
         receiveShadow: false
       })
-        .position(sx, sy + 0.22, GAMEPLAY_ACTOR_DEPTH - 0.08)
-        .scale([0.24, 0.24, 0.24])
+        .position(sx, sy + 0.24, GAMEPLAY_ACTOR_DEPTH - 0.04)
+        .scale([1, 1, 1])
         .runtime(game.runtimeNode("skyline-pickup-glitter-" + collectible.id, {
           tags: ["pickup", "sky-shard", "collectible", "sky-shard-language", "shape-plus-color", "renderer-owned"]
         }));
     }))
     .addMany(SKYLINE_EMBER_PICKUPS.map((pickup, index) => {
       const [px, py] = platformerScene.toScenePoint({ x: pickup.x, y: pickup.y });
-      const collectible = collectibles.find((item) => item.id === pickup.id);
-      void collectible;
       const emberLanguage = SKYLINE_VISUAL_LANGUAGE["ember-charge"];
       const emberMaterial = material.emissive({
         name: `ember charge glow ${index + 1}`,
         color: emberLanguage.primaryColor,
         emissive: emberLanguage.accentColor,
-        emissiveIntensity: 0.35,
+        emissiveIntensity: 0.25,
         roughness: 0.28
       });
       return group(`ringed ember charge ${index + 1}`, [
+        model(assets.skylineCrystalShardMeshy, {
+          name: `ember crystal mesh ${index + 1}`,
+          role: "setDressing",
+          scaleMode: "fit",
+          targetMaxDimension: 0.48,
+          castShadow: false,
+          receiveShadow: false
+        }).position(0, 0.06, 0),
         primitives.capsule({ name: `ember charge capsule ${index + 1}`, material: emberMaterial })
-          .scale([0.035, 0.08, 0.035])
+          .position(0, -100, 0)
+          .scale([0.0001, 0.0001, 0.0001])
           .runtime(game.runtimeNode(`skyline-ember-pickup-${pickup.id}-core`, {
             tags: ["pickup", "ember", emberLanguage.nodeTag, "shape-plus-color", "renderer-owned"]
           })),
         primitives.torus({ name: `ember charge ring ${index + 1}`, material: emberMaterial })
-          .scale([0.08, 0.08, 0.02])
+          .position(0, -100, 0)
+          .scale([0.0001, 0.0001, 0.0001])
           .runtime(game.runtimeNode(`skyline-ember-pickup-${pickup.id}-ring`, {
             tags: ["pickup", "ember", emberLanguage.nodeTag, "shape-plus-color", "renderer-owned"]
           }))
-      ]).position(px, py + 0.16, GAMEPLAY_ACTOR_DEPTH - 0.06);
+      ]).position(px, py + 0.18, GAMEPLAY_ACTOR_DEPTH - 0.04);
     }))
     .addMany([0, 1, 2, 3].map((index) => primitives.capsule({
       name: `ember volley ${index + 1}`,
@@ -2063,18 +1956,18 @@ const app = createAuraApp("#app", {
         name: `ember volley glow ${index + 1}`,
         color: "#ff5a1f",
         emissive: "#ffd08a",
-        emissiveIntensity: 0.55,
+        emissiveIntensity: 0.45,
         roughness: 0.22
       })
     }).position(...initialPlayerPose.position).rotate(0, 0, Math.PI / 2).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode(`skyline-ember-volley-${index}`, {
       tags: ["projectile", "ember", "capsule-bolt", "shape-plus-color", "renderer-owned"]
     }))))
-    .add(effects.neonBloom({ intensity: visualReviewCapture ? 0 : 0.15, threshold: 0.88, maxIntensity: 0.35, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade({ exposure: 0.96, contrast: 1.04, saturation: 1.06 }))
+    .add(effects.neonBloom({ intensity: visualReviewCapture ? 0 : 0.03, threshold: 0.92, maxIntensity: 0.22, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.colorGrade({ exposure: 0.88, contrast: 1.06, saturation: 1.08 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
-    .add(effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.34 : 0.2 }))
+    .add(effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.34 : 0.24 }))
     .add(effects.contactOcclusion({ name: "platform landing contact", intensity: 0.32, radius: 0.5 }))
-    .add(lights.studio({ intensity: visualReviewCapture ? 0.08 : 0.58 }))
+    .add(lights.studio({ intensity: visualReviewCapture ? 0.08 : 0.18 }))
     .camera(platformerCamera)
 });
 
@@ -2428,6 +2321,23 @@ const skyShardGlitterNodes: Record<string, RuntimeNodeHandleLike> = Object.fromE
     (collectible) => [collectible.id, app.nodes.require(`skyline-pickup-glitter-${collectible.id}`)]
   )
 );
+const openingPatrolDroneHandles = [0, 1].map((idx) =>
+  app.nodes.has(`skyline-opening-patrol-drone-${idx}`)
+    ? app.nodes.require(`skyline-opening-patrol-drone-${idx}`)
+    : null
+);
+const airDashTrailHandles = [0, 1, 2].map((idx) =>
+  app.nodes.has(`skyline-air-dash-trail-${idx}`)
+    ? app.nodes.require(`skyline-air-dash-trail-${idx}`)
+    : null
+);
+const doubleJumpRingHandle = app.nodes.has("skyline-double-jump-ring")
+  ? app.nodes.require("skyline-double-jump-ring")
+  : null;
+let airDashTrailTimer = 0;
+let doubleJumpRingTimer = 0;
+let doubleJumpRingOrigin: [number, number, number] = [0, -100, 0];
+let doubleJumpUsedInAir = false;
 // Raised only when an idle glitter pulse was actually applied to at least one rendered shard node.
 const collectedIdleSparkleProof = { shardSparkleRendered: false, glitterNodeCount: Object.keys(skyShardGlitterNodes).length };
 
@@ -2718,13 +2628,12 @@ function renderEmberVolleys(): void {
 }
 
 /**
- * Idle collectible glitter: each uncollected sky-shard pulses its emissive scale so
- * shards read as live pickups in the scene, not just counters. The pulse is driven by
- * sim time so it is deterministic; taken shards collapse to the hidden scale. This is
- * renderer feedback via the public runtime node API, not a CSS overlay.
+ * Idle collectible glitter + Coin Magnet pull: each uncollected 3D `skylineCrystalShardMeshy`
+ * pulses its scale and gently rotates in 3D, pulling toward the runner when within magnet radius.
  */
 function renderSkyShardGlitter(): void {
   const t = state.time;
+  const playerPose = platformerScene.toScenePlayer(state.player).position;
   for (const collectible of collectibles) {
     if (String(collectible.id).includes("ember-charge")) continue;
     const node = skyShardGlitterNodes[collectible.id];
@@ -2734,12 +2643,20 @@ function renderSkyShardGlitter(): void {
       node.setScale([...HIDDEN_FEEDBACK_SCALE]);
       continue;
     }
-    // Gentle 1.6 Hz pulse with a small phase offset per shard so neighbours do not flicker in lockstep.
     const phase = collectible.id.length * 0.7;
-    // Keep pickup truth visible while removing only its non-essential shimmer.
-    const pulse = reducedMotion ? 1 : 1 + Math.sin(t * 10 + phase) * 0.1;
+    const pulse = reducedMotion ? 1 : 1 + Math.sin(t * 6.5 + phase) * 0.09;
+    const [baseX, baseY] = platformerScene.toScenePoint({ x: collectible.x, y: collectible.y });
+    const bobY = reducedMotion ? 0 : Math.sin(t * 4.2 + phase) * 0.04;
+    const distToPlayer = Math.hypot(baseX - playerPose[0], baseY - (playerPose[1] + 0.25));
+    const magnetPull = distToPlayer < 1.35 ? Math.max(0, 1 - distToPlayer / 1.35) * 0.58 : 0;
+    const drawX = baseX + (playerPose[0] - baseX) * magnetPull;
+    const drawY = baseY + 0.06 + bobY + (playerPose[1] + 0.25 - (baseY + 0.06)) * magnetPull;
     node.setVisible(true);
-    node.setScale([0.24 * pulse, 0.24 * pulse, 0.24 * pulse]);
+    node.setPosition(drawX, drawY, GAMEPLAY_ACTOR_DEPTH + 0.03);
+    if (!reducedMotion) {
+      node.setRotation(0, (t * 2.1 + phase) % (Math.PI * 2), Math.sin(t * 2.8 + phase) * 0.14);
+    }
+    node.setScale([0.92 * pulse, 0.92 * pulse, 0.92 * pulse]);
     collectedIdleSparkleProof.shardSparkleRendered = true;
   }
 }
@@ -3408,6 +3325,54 @@ function publishPlatformerEvidence(): void {
   const runLean = runCycleActive ? Math.min(0.22, 0.1 + runSpeed * 0.016) : 0;
   const runSway = runCycleActive ? Math.sin(runPhase) * 0.1 : 0;
   player.setPosition(presentedPlayer.position[0], presentedPlayer.position[1] + runBob, presentedPlayer.position[2]);
+  if (!compositionPoseSettled) {
+    const [d0BaseX, d0BaseY] = platformerScene.toScenePoint({
+      x: (level.start?.x ?? 0.5) + 1.05 + (reducedMotion ? 0 : Math.sin(state.time * 1.85) * 0.32),
+      y: (level.start?.y ?? 0.9) + 0.56 + (reducedMotion ? 0 : Math.sin(state.time * 3.6) * 0.04)
+    });
+    openingPatrolDroneHandles[0]
+      ?.setPosition(d0BaseX, d0BaseY, GAMEPLAY_ACTOR_DEPTH - 0.03)
+      .setRotation(0, Math.cos(state.time * 1.85) >= 0 ? Math.PI * 0.38 : -Math.PI * 0.38, 0)
+      .setVisible(true);
+    const [d1BaseX, d1BaseY] = platformerScene.toScenePoint({
+      x: (level.start?.x ?? 0.5) + 2.45 + (reducedMotion ? 0 : Math.cos(state.time * 1.65) * 0.36),
+      y: (level.start?.y ?? 0.9) + 1.15 + (reducedMotion ? 0 : Math.sin(state.time * 3.2 + 1.1) * 0.04)
+    });
+    openingPatrolDroneHandles[1]
+      ?.setPosition(d1BaseX, d1BaseY, GAMEPLAY_ACTOR_DEPTH - 0.03)
+      .setRotation(0, -Math.sin(state.time * 1.65) >= 0 ? Math.PI * 0.38 : -Math.PI * 0.38, 0)
+      .setVisible(true);
+  }
+  const facingSignForEffects = playerFacing >= 0 ? 1 : -1;
+  airDashTrailHandles.forEach((trailNode, idx) => {
+    if (!trailNode) return;
+    if (airDashTrailTimer > 0.005 && !compositionSubjectSuppressed) {
+      const ratio = Math.max(0, Math.min(1, airDashTrailTimer / 0.28));
+      const lag = (idx + 1) * 0.16 * facingSignForEffects;
+      trailNode
+        .setPosition(
+          presentedPlayer.position[0] - lag,
+          presentedPlayer.position[1] + SKYLINE_CHARACTER_HEIGHT * 0.48,
+          GAMEPLAY_ACTOR_DEPTH - 0.02 - idx * 0.005
+        )
+        .setScale([0.22 * ratio * (1 - idx * 0.18), 0.32 * ratio * (1 - idx * 0.18), 0.024])
+        .setVisible(true);
+    } else {
+      trailNode.setScale([0.0001, 0.0001, 0.0001]).setVisible(false);
+    }
+  });
+  if (doubleJumpRingHandle) {
+    if (doubleJumpRingTimer > 0.005 && !compositionSubjectSuppressed) {
+      const progress = 1 - Math.max(0, Math.min(1, doubleJumpRingTimer / 0.32));
+      const ringRadius = 0.18 + progress * 0.36;
+      doubleJumpRingHandle
+        .setPosition(doubleJumpRingOrigin[0], doubleJumpRingOrigin[1] + 0.03, GAMEPLAY_ACTOR_DEPTH)
+        .setScale([ringRadius, ringRadius, 0.022 * (1 - progress * 0.5)])
+        .setVisible(true);
+    } else {
+      doubleJumpRingHandle.setScale([0.0001, 0.0001, 0.0001]).setVisible(false);
+    }
+  }
   if (skylineAccessoryHandles.length > 0) {
     const facingSign = playerFacing >= 0 ? 1 : -1;
     const [sash, pack, visor] = skylineAccessoryHandles;
@@ -3459,7 +3424,10 @@ function publishPlatformerEvidence(): void {
   // forward pitch; the front-on review lens would read it as a sideways trip,
   // so lean stays off there (bob still carries the stride).
   const runYaw = playerVisualYawForFacing(playerFacing) + runSway;
-  const runLeanZ = runCycleActive && !visualReviewCapture ? -runLean * playerFacing : 0;
+  const airborneTiltZ = !state.player.grounded && !reducedMotion && !compositionPoseSettled && !visualReviewCapture
+    ? Math.max(-0.24, Math.min(0.24, -state.player.vy * 0.028 * playerFacing))
+    : 0;
+  const runLeanZ = (runCycleActive && !visualReviewCapture ? -runLean * playerFacing : 0) + airborneTiltZ;
   if (visualReviewCapture) {
     player.setRotation(0, runYaw, runLeanZ);
     if (idleSway !== 0) player.setRotation(0, playerVisualYawForFacing(playerFacing) + idleSway, 0);
@@ -3716,6 +3684,8 @@ function restartSkylineRun(): void {
 app.onFrame(({ dt }) => {
   const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
   input.update(step);
+  airDashTrailTimer = Math.max(0, airDashTrailTimer - step);
+  doubleJumpRingTimer = Math.max(0, doubleJumpRingTimer - step);
   if (compositionPoseSettled) {
     // Route-primary evidence owns a fixed imported clip, scale, renderer time,
     // camera, and LOD state. `app.step(0)` may publish handle changes, but it may
@@ -3748,14 +3718,21 @@ app.onFrame(({ dt }) => {
     publishPlatformerEvidence();
     return;
   }
-  if (paused) {
-    publishPlatformerEvidence();
-    return;
-  }
   const previous = state;
   const collectedEmbers = state.collected.filter((id) => id.includes("ember-charge")).length;
   const emberCharges = Math.max(0, collectedEmbers - spentEmberCharges);
   const dashPressed = input.pressed("dash");
+  if (dashPressed) {
+    airDashTrailTimer = 0.28;
+  }
+  if (state.player.grounded) {
+    doubleJumpUsedInAir = false;
+  } else if (input.pressed("jump") && !doubleJumpUsedInAir) {
+    doubleJumpUsedInAir = true;
+    doubleJumpRingTimer = 0.32;
+    const poseNow = platformerScene.toScenePlayer(state.player).position;
+    doubleJumpRingOrigin = [poseNow[0], poseNow[1], poseNow[2]];
+  }
   if (input.pressed("fire") && emberCharges > 0 && emberVolleys.length < emberVolleyNodes.length) {
     const slot = emberVolleyNodes.findIndex((_, index) => !emberVolleys.some((volley) => volley.slot === index));
     if (slot >= 0) {
@@ -3867,6 +3844,7 @@ app.onFrame(({ dt }) => {
       triggerEventFeedbackVisual("land", eventScenePoint);
     }
     if (event.type === "dash") {
+      airDashTrailTimer = 0.28;
       skylineFeel.onDash(eventScenePoint);
       triggerEventFeedbackVisual("dash", eventScenePoint);
     }

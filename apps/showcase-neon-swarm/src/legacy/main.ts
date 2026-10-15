@@ -347,7 +347,11 @@ appScene.add(
   }))
 );
 
-const gardenLightNodes: ReturnType<typeof primitives.sphere>[] = [];
+const pBox = primitives.box;
+const pSphere = primitives.sphere;
+const pTorus = primitives.torus;
+
+const gardenLightNodes: ReturnType<typeof pSphere>[] = [];
 appScene.addMany(gardenLightNodes);
 
 const courierAccentMaterial = material.emissive({
@@ -357,7 +361,7 @@ const courierAccentMaterial = material.emissive({
   emissiveIntensity: 0.72,
   roughness: 0.24
 });
-const courierVisorNode = primitives.box({
+const courierVisorNode = pBox({
   name: "courier visor accent",
   size: [0.42, 0.16, 0.08],
   material: courierAccentMaterial,
@@ -365,7 +369,7 @@ const courierVisorNode = primitives.box({
 }).runtime(game.runtimeNode("neon-courier-visor-accent", {
   tags: ["primary-actor-accent", "renderer-owned", "non-colliding"]
 }));
-const courierCoreNode = primitives.sphere({
+const courierCoreNode = pSphere({
   name: "courier chest core accent",
   material: material.emissive({
     name: "courier magenta core accent",
@@ -379,7 +383,7 @@ const courierCoreNode = primitives.sphere({
 }).runtime(game.runtimeNode("neon-courier-chest-core", {
   tags: ["primary-actor-accent", "renderer-owned", "non-colliding"]
 }));
-const courierShoulderFrameNode = primitives.torus({
+const courierShoulderFrameNode = pTorus({
   name: "courier shoulder frame",
   material: material.emissive({
     name: "courier shoulder frame material",
@@ -394,7 +398,7 @@ const courierShoulderFrameNode = primitives.torus({
 }).runtime(game.runtimeNode("neon-courier-shoulder-frame", {
   tags: ["primary-actor-accent", "renderer-owned", "non-colliding"]
 }));
-const courierPulseEmitterNode = primitives.box({
+const courierPulseEmitterNode = pBox({
   name: "courier pulse emitter",
   size: [0.12, 0.12, 0.72],
   material: material.emissive({
@@ -419,7 +423,7 @@ const courierPulseRifleNode = model(assets.mechWeaponA, {
 }).runtime(game.runtimeNode("neon-courier-pulse-carbine", {
   tags: ["typed-weapon", "primary-actor-attachment", "renderer-owned", "non-colliding"]
 }));
-const courierPulseRifleCoreNode = primitives.box({
+const courierPulseRifleCoreNode = pBox({
   name: "courier pulse carbine core",
   size: [0.1, 0.1, 0.34],
   material: material.emissive({
@@ -431,7 +435,7 @@ const courierPulseRifleCoreNode = primitives.box({
 }).runtime(game.runtimeNode("neon-courier-pulse-carbine-core", {
   tags: ["primary-actor-attachment", "renderer-owned", "non-colliding", "weapon-silhouette"]
 }));
-const courierPulseMuzzleRingNode = primitives.torus({
+const courierPulseMuzzleRingNode = pTorus({
   name: "courier pulse muzzle ring",
   material: material.emissive({
     name: "courier pulse muzzle ring material",
@@ -443,7 +447,7 @@ const courierPulseMuzzleRingNode = primitives.torus({
 }).runtime(game.runtimeNode("neon-courier-pulse-muzzle-ring", {
   tags: ["primary-actor-attachment", "renderer-owned", "non-colliding", "weapon-silhouette"]
 }));
-const courierPulseMuzzleFlashNode = primitives.sphere({
+const courierPulseMuzzleFlashNode = pSphere({
   name: "courier pulse muzzle flash",
   material: material.emissive({
     name: "courier pulse muzzle flash material",
@@ -466,7 +470,7 @@ appScene.addMany([
   courierPulseMuzzleFlashNode
 ]);
 
-const courierCoreRingNode = primitives.torus({
+const courierCoreRingNode = pTorus({
   name: "courier core ring",
   material: material.emissive({
     name: "courier core ring material",
@@ -484,14 +488,16 @@ const courierCoreRingNode = primitives.torus({
 appScene.add(courierCoreRingNode);
 
 const CYBER_PYLON_PLACEMENTS: ReadonlyArray<readonly [number, number, number, number]> = [
-  [-6.4, 0.05, -1.8, 0.32],
-  [6.4, 0.05, -1.8, -0.32],
-  [-6.8, 0.05, 5.2, 0.48],
-  [6.8, 0.05, 5.2, -0.48]
+  [-6.2, 0.05, -2.2, 0.32],
+  [6.2, 0.05, -2.2, -0.32],
+  [-6.8, 0.05, 4.8, 0.48],
+  [6.8, 0.05, 4.8, -0.48],
+  [-4.2, 0.05, -5.6, 0.18],
+  [4.2, 0.05, -5.6, -0.18]
 ];
 
 if (!visualReviewCapture) {
-  arenaLayout.obstacles.forEach((obstacle, index) => {
+  arenaLayout.obstacles.forEach((obstacle) => {
     appScene.add(
       model(assets.neonBarricadeProp, {
         name: "street barricade " + obstacle.x + ":" + obstacle.z,
@@ -502,43 +508,54 @@ if (!visualReviewCapture) {
         .position(obstacle.x, -50, obstacle.z)
         .rotate(0, obstacle.rotationY, 0)
     );
-    const pylonPose = CYBER_PYLON_PLACEMENTS[index];
+  });
+  CYBER_PYLON_PLACEMENTS.forEach((pylonPose, index) => {
     appScene.add(
       model(assets.neonCyberPylonMeshy, {
         name: index === 0 ? "neon-cyber-pylon-barrier" : `neon-cyber-pylon-barrier-${index}`,
         role: "primaryWorld",
         scaleMode: "fit",
-        targetMaxDimension: 0.95,
+        targetMaxDimension: 2.15,
         castShadow: true,
         receiveShadow: true
       })
-        .position(
-          pylonPose ? pylonPose[0] : obstacle.x,
-          pylonPose ? pylonPose[1] : 0.05,
-          pylonPose ? pylonPose[2] : obstacle.z
-        )
-        .rotate(0, pylonPose ? pylonPose[3] : obstacle.rotationY, 0)
+        .position(pylonPose[0], pylonPose[1], pylonPose[2])
+        .rotate(0, pylonPose[3], 0)
     );
   });
 }
 
 [
-  [-5.6, 0.05, -4.8, 0.35],
-  [5.6, 0.05, -4.8, -0.35],
-  [-7.2, 0.05, 4.8, 2.55],
-  [7.2, 0.05, 4.8, -2.55]
+  [-5.4, 0.05, -4.4, 0.35],
+  [5.4, 0.05, -4.4, -0.35],
+  [-6.6, 0.05, 4.4, 2.55],
+  [6.6, 0.05, 4.4, -2.55]
 ].forEach(([gx, gy, gz, rotY], index) => {
   appScene.add(
     model(assets.neonArenaGeneratorCoreMeshy, {
       name: index === 0 ? "neon-arena-generator-spire" : `neon-arena-generator-spire-${index}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.15,
+      targetMaxDimension: 1.65,
       castShadow: true,
       receiveShadow: true
     })
       .position(gx!, gy!, gz!)
       .rotate(0, rotY!, 0)
+  );
+  appScene.add(
+    pTorus({
+      name: `neon-generator-shield-ring-${index}`,
+      material: material.emissive({
+        name: `generator shield ring mat ${index}`,
+        color: index % 2 === 0 ? "#38bdf8" : "#f472b6",
+        emissive: index % 2 === 0 ? "#35e6ff" : "#ff4fd8",
+        emissiveIntensity: 1.35
+      }),
+      position: [gx!, 0.42, gz!],
+      rotation: [Math.PI / 2, 0, 0],
+      scale: [0.92, 0.92, 0.045]
+    }).runtime(game.runtimeNode(`neon-generator-shield-ring-${index}`, { tags: ["set-dressing", "non-colliding"] }))
   );
 });
 
@@ -557,25 +574,25 @@ for (const lamp of arenaLayout.lamps) {
       lights.point({
         position: [lamp.x, 3.6, lamp.z],
         color: lampIndex % 2 === 0 ? "#35e6ff" : "#ff4fd8",
-        intensity: 16
+        intensity: 22
       })
     );
   }
   lampIndex += 1;
 }
 
-// High-key neon practicals over the generator cores, cyber pylons, and courier pocket.
-appScene.add(lights.ambient({ color: "#4dd5ea", intensity: 0.62 }));
-appScene.add(lights.directional({ color: "#e6faff", intensity: 2.15, shadow: true }).position(-4.5, 9.5, 6.2));
-appScene.add(lights.directional({ color: "#ff7ae2", intensity: 1.25 }).position(5.2, 7.4, -4.8));
-appScene.add(lights.point({ position: [-2.4, 2.6, -2.6], color: "#35e6ff", intensity: 18 }));
-appScene.add(lights.point({ position: [2.4, 2.6, -2.6], color: "#ff4fd8", intensity: 18 }));
-appScene.add(lights.point({ position: [-3.6, 2.4, 0.8], color: "#35e6ff", intensity: 16 }));
-appScene.add(lights.point({ position: [3.6, 2.4, 0.8], color: "#ff4fd8", intensity: 16 }));
-appScene.add(lights.point({ position: [0, 3.8, 1.8], color: "#ffc857", intensity: 14 }));
+// High-key neon practicals over the generator cores, cyber pylons, and courier pocket
+// so the 3D Meshy spider-mechs and arena architecture pop with crisp metallic rim lighting.
+appScene.add(lights.ambient({ color: "#6ee7f9", intensity: 0.96 }));
+appScene.add(lights.directional({ color: "#f0fdff", intensity: 2.85, shadow: true }).position(-4.5, 9.5, 6.2));
+appScene.add(lights.directional({ color: "#ff7ae2", intensity: 1.95 }).position(5.2, 7.4, -4.8));
+appScene.add(lights.point({ position: [-2.8, 2.8, -2.4], color: "#38bdf8", intensity: 28 }));
+appScene.add(lights.point({ position: [2.8, 2.8, -2.4], color: "#f472b6", intensity: 28 }));
+appScene.add(lights.point({ position: [-3.8, 2.6, 1.4], color: "#35e6ff", intensity: 26 }));
+appScene.add(lights.point({ position: [3.8, 2.6, 1.4], color: "#ff4fd8", intensity: 26 }));
+appScene.add(lights.point({ position: [0, 4.2, 2.2], color: "#ffc857", intensity: 24 }));
 
-// distanceLod relay beacon: near reads as a glowing sphere, far collapses to a
-// compact box - the documented root-safe LOD helper used as set dressing.
+// distanceLod relay beacon + 3D Meshy energy core pickup (`fpsEnergyCorePickupMeshy`).
 appScene.add(
   distanceLod({
     name: "risky charge pickup",
@@ -588,10 +605,20 @@ appScene.add(
     scale: 0.62
   }).runtime(game.runtimeNode("swarm-pickup", { tags: ["pickup", "collectible", "gameplay-state"] }))
 );
+appScene.add(
+  model(assets.fpsEnergyCorePickupMeshy, {
+    name: "neon-energy-core-pickup",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 0.95
+  })
+    .position(0, 1.05, 0)
+    .runtime(game.runtimeNode("neon-energy-core-pickup", { tags: ["pickup", "typed-asset"] }))
+);
 
 for (const door of PICKUP_DOORS) {
   appScene.add(
-    primitives.torus({
+    pTorus({
       name: "pickup gate " + door.kind,
       material: material.emissive({ color: "#131c2e", emissive: "#ffc857" }),
       position: [door.x, 1.05, door.z],
@@ -622,11 +649,39 @@ appScene.add(
   }).position(0, -50, 0)
 );
 
+// Two autonomous orbiting sentinel drones (`skylineFrostSentryDroneMeshy`) + laser beams
+for (let sIdx = 0; sIdx < 2; sIdx += 1) {
+  appScene.add(
+    model(assets.skylineFrostSentryDroneMeshy, {
+      name: `neon-sentinel-drone-${sIdx}`,
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.55
+    })
+      .position(sIdx === 0 ? -1.35 : 1.35, 1.18, 3)
+      .runtime(game.runtimeNode(`neon-sentinel-drone-${sIdx}`, { tags: ["primary-actor-attachment", "typed-asset", "sentinel-drone"] }))
+  );
+  appScene.add(
+    pBox({
+      name: `neon-sentinel-beam-${sIdx}`,
+      size: [0.032, 0.032, 1.0],
+      material: material.emissive({
+        name: `sentinel laser mat ${sIdx}`,
+        color: sIdx === 0 ? "#7cf8ff" : "#ff8fdf",
+        emissive: sIdx === 0 ? "#35e6ff" : "#ff4fd8",
+        emissiveIntensity: 1.55
+      })
+    })
+      .position(0, -8, 0)
+      .runtime(game.runtimeNode(`neon-sentinel-beam-${sIdx}`, { tags: ["actual-event-feedback", "sentinel-laser"] }))
+  );
+}
+
 // Renderer-owned player grammar. The typed courier remains the primary actor;
 // these abstract guides make its location, aim, and pulse reach readable when
 // 320 instanced enemies fill the arena. They are world geometry, not DOM FX.
 appScene.add(
-  primitives.torus({
+  pTorus({
     name: "courier burst radius",
     material: material.emissive({ color: "#153944", emissive: "#bffcff" }),
     position: [0, 0.16, 3],
@@ -636,7 +691,7 @@ appScene.add(
 );
 
 appScene.add(
-  primitives.torus({
+  pTorus({
     name: "charged burst event ring",
     material: material.emissive({ color: "#5d3c08", emissive: "#ffc857" }),
     position: [0, 0.24, 3],
@@ -646,38 +701,47 @@ appScene.add(
 );
 
 appScene.add(
-  primitives.box({
+  pBox({
     name: "courier aim vector",
     size: [0.025, 0.02, 1.35],
-    material: material.emissive({ color: "#8cf8ff", emissive: "#35e6ff", emissiveIntensity: 0.38 }),
+    material: material.emissive({ color: "#8cf8ff", emissive: "#35e6ff", emissiveIntensity: 0.55 }),
     position: [0, 0.22, 1.6]
   }).runtime(game.runtimeNode("neon-player-aim-vector", { tags: ["player-readability", "aim-vector"] }))
 );
 
-// Pulse feedback is renderer-owned but event-driven: both nodes remain hidden
-// until firePulse() executes the real simulation attack.
+// 3-bolt plasma spread rays + impact ring (event-driven on firePulse())
 appScene.addMany([
-  primitives.box({
+  pBox({
     name: "courier pulse shot ray",
-    size: [visualReviewCapture ? 0.035 : 0.055, 0.05, visualReviewCapture ? 2.3 : 2.6],
-    material: material.emissive({ color: "#8cf8ff", emissive: "#35e6ff", emissiveIntensity: 1.1 })
+    size: [visualReviewCapture ? 0.045 : 0.072, 0.06, visualReviewCapture ? 2.4 : 2.8],
+    material: material.emissive({ color: "#bffcff", emissive: "#35e6ff", emissiveIntensity: 1.65 })
   }).position(0, -8, 0).runtime(game.runtimeNode("neon-pulse-shot-ray", { tags: ["actual-event-feedback", "pulse-fire"] })),
-  primitives.torus({
+  pBox({
+    name: "courier pulse shot ray left",
+    size: [0.058, 0.05, 2.55],
+    material: material.emissive({ color: "#7cf8ff", emissive: "#38bdf8", emissiveIntensity: 1.45 })
+  }).position(0, -8, 0).runtime(game.runtimeNode("neon-pulse-shot-ray-left", { tags: ["actual-event-feedback", "pulse-fire"] })),
+  pBox({
+    name: "courier pulse shot ray right",
+    size: [0.058, 0.05, 2.55],
+    material: material.emissive({ color: "#7cf8ff", emissive: "#38bdf8", emissiveIntensity: 1.45 })
+  }).position(0, -8, 0).runtime(game.runtimeNode("neon-pulse-shot-ray-right", { tags: ["actual-event-feedback", "pulse-fire"] })),
+  pTorus({
     name: "courier pulse impact marker",
-    material: material.emissive({ color: "#fff3b0", emissive: "#ffc857", emissiveIntensity: 1.2 }),
+    material: material.emissive({ color: "#fff3b0", emissive: "#ffc857", emissiveIntensity: 1.45 }),
     rotation: [Math.PI / 2, 0, 0],
-    scale: [0.58, 0.58, 0.12]
+    scale: [0.64, 0.64, 0.14]
   }).position(0, -8, 0).runtime(game.runtimeNode("neon-pulse-impact-ring", { tags: ["actual-event-feedback", "pulse-hit"] }))
 ]);
 
 appScene.addMany(Array.from({ length: 6 }, (_, index) =>
-  primitives.box({
+  pBox({
     name: `pulse impact shard ${index}`,
     size: [0.055, 0.08, 0.28],
     material: material.emissive({
       color: index % 2 === 0 ? "#fff1b8" : "#ff806d",
       emissive: index % 2 === 0 ? "#ffc857" : "#ff5f55",
-      emissiveIntensity: 1.2
+      emissiveIntensity: 1.35
     })
   }).position(0, -8, 0).runtime(game.runtimeNode(`neon-pulse-impact-shard-${index}`, {
     tags: ["actual-event-feedback", "pulse-hit", "impact-shard"]
@@ -690,9 +754,9 @@ appScene.addMany(Array.from({ length: 6 }, (_, index) =>
 // shortcut; the ring never owns damage, collision, or scoring.
 if (!visualReviewCapture) {
   appScene.add(
-    primitives.torus({
+    pTorus({
       name: "arena center route ring",
-      material: material.emissive({ color: "#123c59", emissive: "#35e6ff", emissiveIntensity: 0.22 }),
+      material: material.emissive({ color: "#123c59", emissive: "#35e6ff", emissiveIntensity: 0.36 }),
       position: [0, 0.035, 3],
       rotation: [Math.PI / 2, 0, 0],
       scale: [4.65, 4.65, 0.035]
@@ -704,10 +768,10 @@ if (!visualReviewCapture) {
 // fireBurst() runs the public burst transition. Damage and scoring still belong
 // to swarm.radialBurst; these nodes only make that event visible in pixels.
 appScene.addMany(Array.from({ length: 8 }, (_, index) =>
-  primitives.box({
+  pBox({
     name: "burst cascade spoke " + index,
     size: [0.13, 0.1, 1.8],
-    material: material.emissive({ color: "#fff2a6", emissive: "#ffc857", emissiveIntensity: 1.2 })
+    material: material.emissive({ color: "#fff2a6", emissive: "#ffc857", emissiveIntensity: 1.35 })
   })
     .position(0, -8, 0)
     .rotate(0, index * Math.PI / 4, 0)
@@ -716,7 +780,7 @@ appScene.addMany(Array.from({ length: 8 }, (_, index) =>
 
 for (const edge of ["north", "south", "east", "west"] as const) {
   appScene.add(
-    primitives.box({
+    pBox({
       name: "arena pressure boundary " + edge,
       size: [1, 0.08, 1],
       material: material.emissive({ color: "#4a160f", emissive: "#ff5a36" }),
@@ -771,7 +835,7 @@ appScene.add(
     name: "thorn moth swarm grunt pool",
     transforms: swarm.gruntTransforms,
     colors: swarm.gruntColors,
-    material: material.pbr({ color: "#1c1226", emissive: "#be185d", emissiveIntensity: 0.28, roughness: 0.38, metallic: 0.45 })
+    material: material.pbr({ color: "#381c4a", emissive: "#ec4899", emissiveIntensity: 0.52, roughness: 0.32, metallic: 0.52 })
   })
 );
 
@@ -780,7 +844,7 @@ appScene.add(
     name: "crown hunter elite pool",
     transforms: swarm.eliteTransforms,
     colors: swarm.eliteColors,
-    material: material.pbr({ color: "#4c1229", emissive: "#f43f5e", emissiveIntensity: 0.38, roughness: 0.36, metallic: 0.48 })
+    material: material.pbr({ color: "#6b1839", emissive: "#fb7185", emissiveIntensity: 0.64, roughness: 0.30, metallic: 0.55 })
   })
 );
 
@@ -794,7 +858,7 @@ appScene.addMany(Array.from({ length: LIVE_CHASER_DRONE_COUNT }, (_, index) =>
     name: index === 0 ? "neon-swarm-chaser-drone" : `neon-swarm-chaser-drone-${index}`,
     role: "primaryCharacter",
     scaleMode: "fit",
-    targetMaxDimension: 1.08
+    targetMaxDimension: 1.24
   })
     .position(0, -8, 0)
     .runtime(game.runtimeNode(`neon-swarm-chaser-drone-${index}`, {
@@ -827,17 +891,17 @@ appScene.add(
   })
 );
 
-appScene.add(effects.fog({ density: 0.02, color: "#070a14" }));
+appScene.add(effects.fog({ density: 0.015, color: "#0a1222" }));
 appScene.add(effects.ambientOcclusion({
   name: "district contact occlusion",
-  intensity: visualReviewCapture ? 0.52 : 0.34,
+  intensity: visualReviewCapture ? 0.52 : 0.28,
   radius: visualReviewCapture ? 0.82 : 0.68
 }));
-appScene.add(effects.contactOcclusion({ name: "courier horde contact", intensity: 0.34, radius: 0.5 }));
+appScene.add(effects.contactOcclusion({ name: "courier horde contact", intensity: 0.32, radius: 0.5 }));
 if (!reducedMotion) {
-  appScene.add(effects.bloom({ intensity: 0.18, color: "#35e6ff", quality: "balanced", softKnee: 0.5, shoulder: 0.6 }));
+  appScene.add(effects.bloom({ intensity: 0.24, color: "#35e6ff", quality: "balanced", softKnee: 0.5, shoulder: 0.6 }));
 }
-appScene.add(effects.colorGrade({ exposure: 1.05, contrast: 1.08, saturation: 1.12 }));
+appScene.add(effects.colorGrade({ exposure: 1.12, contrast: 1.1, saturation: 1.16 }));
 appScene.add(effects.antiAlias({ mode: "fxaa" }));
 
 appScene.camera(
@@ -971,6 +1035,7 @@ function beginIntermission(seconds: number): void {
   runState = "intermission";
   pickupActive = false;
   app.nodes.get("swarm-pickup")?.setVisible(false);
+  app.nodes.get("neon-energy-core-pickup")?.setVisible(false);
   intermissionRemaining = seconds;
   chosenDoor = null;
   if (wave > 0) {
@@ -995,6 +1060,9 @@ function startWave(next: number): void {
   pickupActive = true;
   app.nodes.get("swarm-pickup")
     ?.setPosition(pickupPosition.x, 1.1, pickupPosition.z)
+    .setVisible(true);
+  app.nodes.get("neon-energy-core-pickup")
+    ?.setPosition(pickupPosition.x, 1.05, pickupPosition.z)
     .setVisible(true);
   chosenDoor = null;
   hud.hideDoors();
@@ -1047,8 +1115,14 @@ function resetRun(newSeed?: number): void {
   pulseFxRemaining = 0;
   app.nodes.get("neon-burst-event-ring")?.setVisible(false);
   app.nodes.get("neon-pulse-shot-ray")?.setVisible(false);
+  app.nodes.get("neon-pulse-shot-ray-left")?.setVisible(false);
+  app.nodes.get("neon-pulse-shot-ray-right")?.setVisible(false);
   app.nodes.get("neon-pulse-impact-ring")?.setVisible(false);
   app.nodes.get("neon-courier-pulse-muzzle-flash")?.setVisible(false);
+  app.nodes.get("neon-energy-core-pickup")?.setVisible(false);
+  for (let sIdx = 0; sIdx < 2; sIdx += 1) {
+    app.nodes.get(`neon-sentinel-beam-${sIdx}`)?.setVisible(false);
+  }
   for (let index = 0; index < 8; index += 1) app.nodes.get("neon-burst-spoke-" + index)?.setVisible(false);
   for (let index = 0; index < LIVE_CHASER_DRONE_COUNT; index += 1) {
     app.nodes.get(`neon-swarm-chaser-drone-${index}`)?.setPosition(0, -8, 0).setVisible(false);
@@ -1088,6 +1162,7 @@ function collectRiskPickup(): void {
   score += 250;
   burstCharge = Math.min(100, burstCharge + 25);
   app.nodes.get("swarm-pickup")?.setVisible(false);
+  app.nodes.get("neon-energy-core-pickup")?.setVisible(false);
   gameEffects.spawn("ring-shockwave", [pickupPosition.x, 0.55, pickupPosition.z], {
     color: "#ffc857", intensity: 0.9, duration: 0.48, radius: 2.1
   });
@@ -1097,26 +1172,49 @@ function collectRiskPickup(): void {
 
 function firePulse(): void {
   const aim = resolveAim();
-  const result = swarm.firePulse(player, aim.x, aim.z, DEFAULT_PLAYER_TUNING.pulseDamage, {
+  const pulseYaw = Math.atan2(aim.x, aim.z);
+  const spreadAngle = 0.244; // ~14 degrees spread left and right
+  const leftYaw = pulseYaw - spreadAngle;
+  const rightYaw = pulseYaw + spreadAngle;
+  const leftAim = { x: Math.sin(leftYaw), z: Math.cos(leftYaw) };
+  const rightAim = { x: Math.sin(rightYaw), z: Math.cos(rightYaw) };
+
+  const resultCenter = swarm.firePulse(player, aim.x, aim.z, DEFAULT_PLAYER_TUNING.pulseDamage, {
     onDroneKilled: handleDroneKilled
   });
-  if (result.hits > 0) {
-    combatFeel.spawnSparks({ x: player.x + aim.x * 1.4, z: player.z + aim.z * 1.4, count: 4, strength: 0.55 });
+  const resultLeft = swarm.firePulse(player, leftAim.x, leftAim.z, DEFAULT_PLAYER_TUNING.pulseDamage, {
+    onDroneKilled: handleDroneKilled
+  });
+  const resultRight = swarm.firePulse(player, rightAim.x, rightAim.z, DEFAULT_PLAYER_TUNING.pulseDamage, {
+    onDroneKilled: handleDroneKilled
+  });
+  const totalHits = resultCenter.hits + resultLeft.hits + resultRight.hits;
+  if (totalHits > 0) {
+    combatFeel.spawnSparks({ x: player.x + aim.x * 1.4, z: player.z + aim.z * 1.4, count: 6, strength: 0.65 });
     audio.cue("drone-hit").catch(() => undefined);
   }
   gameEffects.spawn("shockwave", [player.x + aim.x * 2.2, 0.5, player.z + aim.z * 2.2], {
     color: "#35e6ff",
-    intensity: 0.7,
+    intensity: 0.8,
     duration: 0.28,
-    radius: 3.2
+    radius: 3.4
   });
-  const pulseYaw = Math.atan2(aim.x, aim.z);
+  const rayDist = visualReviewCapture ? 1.15 : 1.55;
+  const rayY = visualReviewCapture ? 0.72 : 0.38;
   app.nodes.get("neon-pulse-shot-ray")
-    ?.setPosition(player.x + aim.x * (visualReviewCapture ? 1.15 : 1.55), visualReviewCapture ? 0.72 : 0.34, player.z + aim.z * (visualReviewCapture ? 1.15 : 1.55))
+    ?.setPosition(player.x + aim.x * rayDist, rayY, player.z + aim.z * rayDist)
     .setRotation(0, pulseYaw, 0)
     .setVisible(true);
+  app.nodes.get("neon-pulse-shot-ray-left")
+    ?.setPosition(player.x + leftAim.x * (rayDist * 0.96), rayY, player.z + leftAim.z * (rayDist * 0.96))
+    .setRotation(0, leftYaw, 0)
+    .setVisible(true);
+  app.nodes.get("neon-pulse-shot-ray-right")
+    ?.setPosition(player.x + rightAim.x * (rayDist * 0.96), rayY, player.z + rightAim.z * (rayDist * 0.96))
+    .setRotation(0, rightYaw, 0)
+    .setVisible(true);
   app.nodes.get("neon-pulse-impact-ring")
-    ?.setPosition(player.x + aim.x * (visualReviewCapture ? 2.35 : 3.15), visualReviewCapture ? 0.7 : 0.12, player.z + aim.z * (visualReviewCapture ? 2.35 : 3.15))
+    ?.setPosition(player.x + aim.x * (visualReviewCapture ? 2.35 : 3.15), visualReviewCapture ? 0.7 : 0.14, player.z + aim.z * (visualReviewCapture ? 2.35 : 3.15))
     .setRotation(Math.PI / 2, 0, 0)
     .setVisible(true);
   // Keep the event marker anchored to the carbine's +Z-facing basis so the
@@ -1144,7 +1242,7 @@ function firePulse(): void {
       .setRotation(0, -angle, index % 2 === 0 ? 0.45 : -0.45)
       .setVisible(true);
   }
-  pulseFxRemaining = visualReviewCapture ? 2 : 0.3;
+  pulseFxRemaining = visualReviewCapture ? 2 : 0.32;
   audio.cue("pulse-fire").catch(() => undefined);
 }
 
@@ -1326,7 +1424,27 @@ function update(dt: number): void {
   }
   if (input.pressed("burst") || burstRequested) {
     burstRequested = false;
-    fireBurst();
+    if (burstCharge >= 100) {
+      fireBurst();
+    } else if (runState === "wave-active" && !paused) {
+      // EMP Nova Dash visual shockwave when Space is pressed before full burst charge
+      burstFxRemaining = 0.48;
+      burstFxOrigin = { x: player.x, z: player.z };
+      app.nodes.get("neon-burst-event-ring")
+        ?.setPosition(player.x, 0.02, player.z)
+        .setScale([0.32, 0.32, 0.32])
+        .setVisible(true);
+      for (let index = 0; index < 8; index += 1) {
+        app.nodes.get("neon-burst-spoke-" + index)
+          ?.setPosition(player.x, 0.03, player.z)
+          .setScale([0.75, 0.75, 0.55])
+          .setVisible(true);
+      }
+      gameEffects.spawn("ring-shockwave", [player.x, 0.45, player.z], {
+        color: "#35e6ff", intensity: 0.9, duration: 0.45, radius: 3.6
+      });
+      combatFeel.spawnSparks({ x: player.x, z: player.z, count: 16, strength: 0.85 });
+    }
   }
 
   if (paused) {
@@ -1365,6 +1483,8 @@ function update(dt: number): void {
     pulseFxRemaining = Math.max(0, pulseFxRemaining - dt);
     if (pulseFxRemaining <= 0) {
       app.nodes.get("neon-pulse-shot-ray")?.setVisible(false);
+      app.nodes.get("neon-pulse-shot-ray-left")?.setVisible(false);
+      app.nodes.get("neon-pulse-shot-ray-right")?.setVisible(false);
       app.nodes.get("neon-pulse-impact-ring")?.setVisible(false);
       app.nodes.get("neon-courier-pulse-muzzle-flash")?.setVisible(false);
       for (let index = 0; index < 6; index += 1) app.nodes.get(`neon-pulse-impact-shard-${index}`)?.setVisible(false);
@@ -1423,14 +1543,18 @@ function update(dt: number): void {
     player.z = Math.max(2.1, Math.min(3.3, player.z));
   }
   app.nodes.get("neon-review-arena")?.setPosition(player.x * 0.35, 0.025, player.z - 2.3);
+  if (pickupActive) {
+    app.nodes.get("neon-energy-core-pickup")
+      ?.setPosition(pickupPosition.x, 1.05 + Math.sin(elapsedSeconds * 3.8) * 0.12, pickupPosition.z)
+      .setRotation(0, elapsedSeconds * 1.8, 0)
+      .setVisible(true);
+  }
 
   const playerNode = app.nodes.get("neon-player");
   const aim = resolveAim();
   const playerYaw = Math.atan2(aim.x, aim.z);
   const forwardX = Math.sin(playerYaw);
   const forwardZ = Math.cos(playerYaw);
-  const rightX = Math.cos(playerYaw);
-  const rightZ = -Math.sin(playerYaw);
   if (playerNode) {
     const bob = Math.sin(elapsedSeconds * 9) * 0.04;
     const hurtScale = player.hurtFlashRemaining > 0 ? 1.16 : 1;
@@ -1477,7 +1601,11 @@ function update(dt: number): void {
     }
     const sensed = sensePickupDoors(player);
     if (sensed.door && !chosenDoor) chooseDoor(sensed.door.kind);
-    if (intermissionRemaining <= 0) startWave(wave + 1);
+    // When the player presses or holds fire (KeyJ) during the opening intermission,
+    // immediately launch Wave 1 so active combat begins without delay.
+    if (intermissionRemaining <= 0 || (wave === 0 && (input.pressed("fire") || input.held("fire")))) {
+      startWave(wave + 1);
+    }
   } else {
     for (const door of PICKUP_DOORS) {
       app.nodes.get("pickup-gate-" + door.kind)?.setVisible(false);
@@ -1493,12 +1621,14 @@ function update(dt: number): void {
       spawnedCount += 1;
     }
 
-    if ((input.pressed("fire") || touchAimFire) && player.fireCooldownRemaining <= 0) {
+    if ((input.pressed("fire") || input.held("fire") || touchAimFire) && player.fireCooldownRemaining <= 0) {
       firePulse();
+      player.fireCooldownRemaining = DEFAULT_PLAYER_TUNING.fireCooldownSeconds * upgrades.fireRateMultiplier;
     }
 
     swarm.step(dt, player, arenaLayout.obstacles, undefined, inset);
     let assignedChaserSlots = 0;
+    const chaserPositions: Array<{ x: number; z: number }> = [];
     for (let gIdx = 0; gIdx < swarm.gruntTransforms.length; gIdx += 1) {
       const transform = swarm.gruntTransforms[gIdx];
       if (!transform || transform.position[1] <= -4 || transform.scale[0] <= 0) continue;
@@ -1512,7 +1642,8 @@ function update(dt: number): void {
             ?.setVisible(true)
             .setPosition(transform.position[0], 0.38, transform.position[2])
             .setRotation(0, transform.rotation[1], 0)
-            .setScale([0.95 + (slot % 4) * 0.05, 1, 0.95 + ((slot + 1) % 4) * 0.05]);
+            .setScale([1.02 + (slot % 4) * 0.05, 1.05, 1.02 + ((slot + 1) % 4) * 0.05]);
+          chaserPositions.push({ x: transform.position[0], z: transform.position[2] });
         }
         // Always suppress the low-poly octagon inside the camera pocket so only 3D Meshy drones render
         transform.scale = [0, 0, 0];
@@ -1535,7 +1666,33 @@ function update(dt: number): void {
         .setVisible(true)
         .setPosition(droneX, 0.35 + Math.sin(elapsedSeconds * 4.5 + slot) * 0.06, droneZ)
         .setRotation(0, faceYaw, 0)
-        .setScale([0.95 + (slot % 4) * 0.05, 1, 0.95 + ((slot + 1) % 4) * 0.05]);
+        .setScale([1.02 + (slot % 4) * 0.05, 1.05, 1.02 + ((slot + 1) % 4) * 0.05]);
+      chaserPositions.push({ x: droneX, z: droneZ });
+    }
+
+    // Update 2 orbiting autonomous sentinel drones and their laser beams targeting nearby spider-mechs
+    for (let sIdx = 0; sIdx < 2; sIdx += 1) {
+      const sAngle = elapsedSeconds * 2.4 + sIdx * Math.PI;
+      const sx = player.x + Math.cos(sAngle) * 1.38;
+      const sz = player.z + Math.sin(sAngle) * 1.38;
+      const sy = 1.18 + Math.sin(elapsedSeconds * 5 + sIdx * 1.7) * 0.08;
+      const target = chaserPositions[sIdx % Math.max(1, chaserPositions.length)] ?? {
+        x: player.x + aim.x * 2.8,
+        z: player.z + aim.z * 2.8
+      };
+      const tdx = target.x - sx;
+      const tdz = target.z - sz;
+      const tLen = Math.hypot(tdx, tdz) || 1;
+      const sYaw = Math.atan2(tdx, tdz);
+      app.nodes.get(`neon-sentinel-drone-${sIdx}`)
+        ?.setVisible(!compositionSubjectSuppressed)
+        .setPosition(sx, sy, sz)
+        .setRotation(0, sYaw, 0);
+      app.nodes.get(`neon-sentinel-beam-${sIdx}`)
+        ?.setVisible(!compositionSubjectSuppressed && tLen < 6.5)
+        .setPosition(sx + tdx * 0.5, 0.72, sz + tdz * 0.5)
+        .setRotation(0, sYaw, 0)
+        .setScale([1, 1, tLen]);
     }
     if (visualReviewCapture) {
       for (let index = 0; index < REVIEW_ELITE_CARD_COUNT; index += 1) {
@@ -1603,6 +1760,14 @@ function update(dt: number): void {
       else beginIntermission(waveSpec(wave).intermissionSeconds);
     }
   } else {
+    for (let sIdx = 0; sIdx < 2; sIdx += 1) {
+      const sAngle = elapsedSeconds * 2.0 + sIdx * Math.PI;
+      app.nodes.get(`neon-sentinel-drone-${sIdx}`)
+        ?.setVisible(!compositionSubjectSuppressed)
+        .setPosition(player.x + Math.cos(sAngle) * 1.35, 1.18, player.z + Math.sin(sAngle) * 1.35)
+        .setRotation(0, playerYaw, 0);
+      app.nodes.get(`neon-sentinel-beam-${sIdx}`)?.setVisible(false);
+    }
     combatFeel.stepSparks(dt);
   }
 
@@ -1735,6 +1900,8 @@ function publishEvidence(): void {
   };
   window.__NEON_SWARM_EVIDENCE__ = evidence;
   window.__AURA3D_SHOWCASE_NEON_SWARM__ = evidence;
+  (window as unknown as { __AURA3D_GAME_EVIDENCE__?: unknown }).__AURA3D_GAME_EVIDENCE__ = evidence;
+  document.body.dataset.aura3dReady = "true";
   if (elapsedSeconds > 0.12) {
     (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
     document.body.dataset.aura3dShowcaseReady = "true";

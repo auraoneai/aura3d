@@ -68,19 +68,20 @@ export function createRenderedArenaStage(): RenderedArenaStage {
 
   const floor = new PBRMaterial({
     name: "aura-clash-rendered-combat-floor",
-    baseColor: [0.018, 0.045, 0.052, 1],
-    metallic: 0.26,
-    roughness: 0.24,
-    emissiveColor: [0.02, 0.16, 0.14],
-    emissiveStrength: 0.14
+    baseColor: [0.032, 0.052, 0.088, 1],
+    metallic: 0.48,
+    roughness: 0.22,
+    emissiveColor: [0.025, 0.14, 0.22],
+    emissiveStrength: 0.16
   });
-  // The riser reads as a built platform edge under the fight plane, giving the floor a thickness
-  // that sits on the arena's own ground rather than appearing to hover over it.
+  // The riser reads as a brushed-gold and dark-obsidian tournament dojo platform edge under the fight plane.
   const riser = new PBRMaterial({
     name: "aura-clash-rendered-stage-riser",
-    baseColor: [0.052, 0.058, 0.068, 1],
-    metallic: 0.18,
-    roughness: 0.62
+    baseColor: [0.16, 0.12, 0.045, 1],
+    metallic: 0.68,
+    roughness: 0.28,
+    emissiveColor: [0.22, 0.15, 0.04],
+    emissiveStrength: 0.14
   });
   // Dark metal housings: unlit slabs read as untextured primitives, but a rough dark PBR housing
   // carrying a bright emissive lamp reads as a stage light.
@@ -92,11 +93,11 @@ export function createRenderedArenaStage(): RenderedArenaStage {
   });
   const barrierMetal = new PBRMaterial({
     name: "aura-clash-foreground-barrier-metal",
-    baseColor: [0.028, 0.068, 0.082, 1],
-    metallic: 0.72,
-    roughness: 0.32,
-    emissiveColor: [0.015, 0.12, 0.14],
-    emissiveStrength: 0.12
+    baseColor: [0.035, 0.062, 0.095, 1],
+    metallic: 0.76,
+    roughness: 0.28,
+    emissiveColor: [0.02, 0.14, 0.18],
+    emissiveStrength: 0.14
   });
 
   const paletteMaterials = {
@@ -187,23 +188,28 @@ export function createRenderedArenaStage(): RenderedArenaStage {
         items.push(item("floor-sheen", cube, floor, [0, -0.014, 0.18], [2.8, 0.004, 0.38]));
       }
 
-      // Grounded stage practicals replace the former floating banner slabs and portal ring. Each is a
-      // post standing on the floor, a housing at the top, and an emissive lamp inside it.
+      // Suppress primitive light-post sticks; 3D Meshy dragon guardian statues, speaker towers,
+      // and corner brazier pylons frame the tournament stage instead.
       if (tweaks.backdrop !== "skyline") {
-        const motion = tweaks.motion === "static" ? 0 : frame * (tweaks.motion === "lively" ? 0.024 : 0.009);
         for (const [index, practical] of PRACTICAL_POSTS.entries()) {
-          const height = index < 2 ? 1.94 : 1.52;
-          // A slow brightness pulse per practical, phase-offset so the stage is not uniformly lit.
-          const pulse = tweaks.motion === "static" ? 1 : 0.82 + Math.sin(motion * 2.2 + index * 1.7) * 0.18;
-          items.push(item(`practical-post-${index}`, post, housing, [practical.x, height / 2, practical.z], [0.07, height, 0.07]));
-          items.push(item(`practical-lamp-${index}`, lampHousing, housing, [practical.x, height + 0.05, practical.z], [0.15, 0.12, 0.15]));
-          items.push(item(
-            `practical-glow-${index}`,
-            glowSphere,
-            index % 2 === 0 ? palette.rim : palette.accent,
-            [practical.x, height + 0.015, practical.z],
-            [0.115 * pulse, 0.075 * pulse, 0.115 * pulse]
-          ));
+          items.push({
+            ...item(`practical-post-${index}`, post, housing, [practical.x, -50, practical.z], [0.0001, 0.0001, 0.0001]),
+            includeInAutoFrame: false
+          });
+          items.push({
+            ...item(`practical-lamp-${index}`, lampHousing, housing, [practical.x, -50, practical.z], [0.0001, 0.0001, 0.0001]),
+            includeInAutoFrame: false
+          });
+          items.push({
+            ...item(
+              `practical-glow-${index}`,
+              glowSphere,
+              index % 2 === 0 ? palette.rim : palette.accent,
+              [practical.x, -50, practical.z],
+              [0.0001, 0.0001, 0.0001]
+            ),
+            includeInAutoFrame: false
+          });
         }
       }
 

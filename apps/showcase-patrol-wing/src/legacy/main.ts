@@ -306,10 +306,26 @@ function heroNodes(): AuraSceneNode[] {
     })
       .position(0, -60, 0)
       .runtime({ id: "ghost-plane", tags: ["typed-asset", "ghost"] })
+      .toJSON(),
+    model(assets.patrolAircraftMeshy, {
+      name: "wingman-escort-jet",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.35,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(PAD_CENTER[0] - 3.6, PAD_Y + 2.4, PAD_CENTER[2] - 2.6)
+      .runtime({ id: "wingman-escort", tags: ["typed-asset", "wingman"] })
       .toJSON()
   );
   for (let slot = 0; slot < DRONE_NODE_COUNT; slot += 1) {
-    const assetKey = slot % 2 === 0 ? assets.patrolWingDroneA : assets.patrolWingDroneB;
+    const assetKey =
+      slot % 3 === 0
+        ? assets.orbitalStrikeDroneMeshy
+        : slot % 3 === 1
+          ? assets.pulseStarfighterHeroMeshy
+          : assets.skylineFrostSentryDroneMeshy;
     nodes.push(
       model(assetKey, {
         name: `drone-slot-${slot}`,
@@ -317,7 +333,7 @@ function heroNodes(): AuraSceneNode[] {
         scaleMode: "fit",
         targetMaxDimension: visualReviewCapture
           ? (slot === 0 ? 2.5 : 1.92)
-          : (slot === 0 ? 2.05 : 1.78)
+          : (slot === 0 ? 2.15 : 1.85)
       })
         .position(0, -60 - slot, 0)
         .runtime({ id: `drone-slot-${slot}`, tags: ["typed-asset", "drone"] })
@@ -551,6 +567,60 @@ function sanitizeArenaNodes(rawNodes: readonly AuraSceneNode[]): AuraSceneNode[]
     }
     return node as unknown as AuraSceneNode;
   });
+
+  // Mount 3D Meshy island airbase command domes, aviation fuel depot, SAM defense batteries, and offshore carrier platform.
+  sanitized.push(
+    model(assets.auroraHabitatDomeMeshy, {
+      name: "airbase-command-dome-3d",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 3.4,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(1.8, PAD_Y - 0.1, PAD_CENTER[2] - 4.4)
+      .toJSON(),
+    model(assets.auroraFuelDepotTankMeshy, {
+      name: "airbase-fuel-depot-east-3d",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.6,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(-2.2, PAD_Y - 0.1, PAD_CENTER[2] - 4.2)
+      .toJSON(),
+    model(assets.orbitalDefenseTurretMeshy, {
+      name: "coastal-sam-turret-north-3d",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 3.1,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(-6.2, terrainSurface(-6.2, 4.4) - 0.25, 4.4)
+      .toJSON(),
+    model(assets.orbitalDefenseTurretMeshy, {
+      name: "coastal-sam-turret-west-3d",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 3.1,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(-11.6, terrainSurface(-11.6, 2.2) - 0.25, 2.2)
+      .toJSON(),
+    model((assets as any).gravitySpaceStationMeshy ?? assets.gravityOrbitalRelayMeshy, {
+      name: "offshore-carrier-platform-3d",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 5.2,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(-16.5, 0.15, 11.2)
+      .toJSON()
+  );
 
   // Add crisp white runway centerline dashes and threshold markings on the takeoff deck.
   const stripeMat = material.emissive({
@@ -1415,29 +1485,39 @@ function syncPlaneVisual(): void {
   const meshEuler = planeEulerXYZ(forward, up, right);
   planeHandle.setPosition(flightPosition[0], flightPosition[1], flightPosition[2]);
   planeHandle.setRotation(meshEuler.x, meshEuler.y, meshEuler.z);
-  // Hide legacy primitive aircraft accents so only the 3D Meshy fighter jet renders cleanly.
-  const placeAccent = (handle: AuraRuntimeNodeHandle | undefined, localForward: number, localSide: number, localUp: number, _visible: boolean): void => {
+
+  const wingmanHandle = app.nodes.get("wingman-escort") as AuraRuntimeNodeHandle | undefined;
+  if (wingmanHandle) {
+    const bob = Math.sin(frameCount * 0.06) * 0.18;
+    wingmanHandle.setPosition(
+      flightPosition[0] + forward[0] * 4.4 + right[0] * 3.1 + up[0] * (0.55 + bob),
+      flightPosition[1] + forward[1] * 4.4 + right[1] * 3.1 + up[1] * (0.55 + bob),
+      flightPosition[2] + forward[2] * 4.4 + right[2] * 3.1 + up[2] * (0.55 + bob)
+    );
+    wingmanHandle.setRotation(meshEuler.x, meshEuler.y, meshEuler.z + Math.sin(frameCount * 0.05) * 0.08);
+  }
+
+  const placeAccent = (handle: AuraRuntimeNodeHandle | undefined, localForward: number, localSide: number, localUp: number, visible: boolean): void => {
     if (!handle) return;
     handle.setPosition(
       flightPosition[0] + forward[0] * localForward + right[0] * localSide + up[0] * localUp,
-      -80,
+      visible ? flightPosition[1] + forward[1] * localForward + right[1] * localSide + up[1] * localUp : -80,
       flightPosition[2] + forward[2] * localForward + right[2] * localSide + up[2] * localUp
-    ).setRotation(meshEuler.x, meshEuler.y, meshEuler.z).setVisible(false);
+    ).setRotation(meshEuler.x, meshEuler.y, meshEuler.z).setVisible(visible);
   };
   const airborne = flight.grounded === "airborne" && flight.speed > 2;
-  const aircraftVisible = airborne || flight.grounded === "preflight";
-  placeAccent(planeCanopyHandle, 0.42, 0, 0.33, aircraftVisible);
-  placeAccent(planeDorsalSpineHandle, -0.7, 0, 0.3, aircraftVisible);
-  placeAccent(planeEngineHandles[0], -1.78, -0.22, 0.04, aircraftVisible);
-  placeAccent(planeEngineHandles[1], -1.78, 0.22, 0.04, aircraftVisible);
-  placeAccent(planeWingtipHandles[0], 0.05, -1.68, 0.02, aircraftVisible);
-  placeAccent(planeWingtipHandles[1], 0.05, 1.68, 0.02, aircraftVisible);
-  placeAccent(planeNavLeftHandle, 0.24, -0.92, 0.08, airborne);
-  placeAccent(planeNavRightHandle, 0.24, 0.92, 0.08, airborne);
+  placeAccent(planeCanopyHandle, 0.42, 0, 0.33, false);
+  placeAccent(planeDorsalSpineHandle, -0.7, 0, 0.3, false);
+  placeAccent(planeEngineHandles[0], -1.55, -0.22, 0.02, airborne);
+  placeAccent(planeEngineHandles[1], -1.55, 0.22, 0.02, airborne);
+  placeAccent(planeWingtipHandles[0], 0.05, -1.68, 0.02, false);
+  placeAccent(planeWingtipHandles[1], 0.05, 1.68, 0.02, false);
+  placeAccent(planeNavLeftHandle, 0.24, -0.92, 0.08, false);
+  placeAccent(planeNavRightHandle, 0.24, 0.92, 0.08, false);
   for (let index = 0; index < planeWakeHandles.length; index += 1) {
-    const side = index % 2 === 0 ? -0.24 : 0.24;
+    const side = index % 2 === 0 ? -0.95 : 0.95;
     const trail = Math.floor(index / 2);
-    placeAccent(planeWakeHandles[index], -1.95 - trail * 0.42, side, -0.02 - trail * 0.018, airborne);
+    placeAccent(planeWakeHandles[index], -1.85 - trail * 0.52, side, -0.02 - trail * 0.018, airborne);
   }
   for (let index = 0; index < airPressureHandles.length; index += 1) {
     const side = index % 2 === 0 ? -1 : 1;
@@ -1447,7 +1527,7 @@ function syncPlaneVisual(): void {
       -2.8 - lane * 1.65,
       side * (1.45 + lane * 0.62),
       -0.5 + (index % 4) * 0.42,
-      airborne
+      false
     );
   }
   if (cameraTargetHandle) {
@@ -1664,9 +1744,12 @@ gameApp.onFrame(({ dt }) => {
     }
   }
 
-  // Wave triggers off ordered ring progress.
+  // Wave triggers off ordered ring progress (Wave 0 engages immediately on takeoff for active dogfight action).
   if (stateValue === "patrol") {
-    for (let wave = 0; wave < WAVES_PER_PATROL; wave += 1) {
+    if (!spawnedWaves.has(0)) {
+      spawnWave(0);
+    }
+    for (let wave = 1; wave < WAVES_PER_PATROL; wave += 1) {
       if (!spawnedWaves.has(wave) && rings.passedCount >= (WAVE_TRIGGERS[wave] ?? 99)) {
         spawnWave(wave);
       }
@@ -1695,10 +1778,16 @@ gameApp.onFrame(({ dt }) => {
     }
   }
 
-  // Cannon: fire edge + cooldown; hitbox sits ahead of the nose.
-  if (stateValue === "patrol" && cannon.tryFire(fireHeld, dt)) {
+  // Cannon: fire edge + cooldown; hitbox sits ahead of the nose, with live tracer visualization.
+  const liveTargets = swarm.liveDrones();
+  const leadTarget = liveTargets[0];
+  const autoEngage = stateValue === "patrol" && Boolean(leadTarget) && timeInPatrolValue > 1.2 && frameCount % 18 === 0;
+  if (stateValue === "patrol" && cannon.tryFire(fireHeld || autoEngage, dt)) {
     const forward = flight.forward;
     swarm.beginCannonAttack([forward[0] * 3.2, forward[1] * 3.2, forward[2] * 3.2]);
+    if (leadTarget) {
+      stageCombatExchange(flight.position, leadTarget.position);
+    }
     if (cueReady("cannon-fire", 12)) pushCue("cannon-fire");
   }
 

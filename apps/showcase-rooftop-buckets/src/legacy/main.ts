@@ -534,6 +534,54 @@ function buildScene() {
       })
         .scale(1.0)
         .position(0, 4.95, -6.5),
+      model((assets as any).rooftopFloodlightTowerMeshy ?? assets.auraClashStageSpeakerTowerMeshy, {
+        name: "rooftop-floodlight-tower-left",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 3.1
+      })
+        .position(-4.45, 0.02, -4.85)
+        .rotate(0, 0.42, 0),
+      model((assets as any).rooftopFloodlightTowerMeshy ?? assets.auraClashStageSpeakerTowerMeshy, {
+        name: "rooftop-floodlight-tower-right",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 3.1
+      })
+        .position(4.45, 0.02, -4.85)
+        .rotate(0, -0.42, 0),
+      model(assets.auraClashStageSpeakerTowerMeshy, {
+        name: "rooftop-dj-speaker-stack-left",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.75
+      })
+        .position(-3.85, 0.02, -2.25)
+        .rotate(0, 0.48, 0),
+      model(assets.auraClashStageSpeakerTowerMeshy, {
+        name: "rooftop-dj-speaker-stack-right",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.75
+      })
+        .position(3.85, 0.02, -2.25)
+        .rotate(0, -0.48, 0),
+      model(assets.courierDeliveryKioskMeshy, {
+        name: "rooftop-hydration-kiosk-left",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.65
+      })
+        .position(-4.35, 0.02, 0.65)
+        .rotate(0, 1.15, 0),
+      model(assets.courierDeliveryKioskMeshy, {
+        name: "rooftop-hydration-kiosk-right",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.65
+      })
+        .position(4.35, 0.02, 0.65)
+        .rotate(0, -1.15, 0),
       model(assets.rooftopBallRackCartMeshy, {
         name: "rooftop-ball-rack-cart-3d-left",
         role: "setDressing",
@@ -552,6 +600,24 @@ function buildScene() {
         .scale(1.18)
         .position(2.35, 0.06, -1.65)
         .rotate(0, -0.35, 0),
+      model(assets.rooftopBallRackCartMeshy, {
+        name: "rooftop-ball-rack-cart-wing-left",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.12
+      })
+        .scale(1.12)
+        .position(-3.2, 0.06, 1.45)
+        .rotate(0, 0.72, 0),
+      model(assets.rooftopBallRackCartMeshy, {
+        name: "rooftop-ball-rack-cart-wing-right",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.12
+      })
+        .scale(1.12)
+        .position(3.2, 0.06, 1.45)
+        .rotate(0, -0.72, 0),
       lights.point({
         name: "scoreboard gantry key light",
         color: "#ffbe7a",
@@ -1237,19 +1303,15 @@ function syncTransforms(): void {
     : isCharging
       ? "compression"
       : "ready";
-  const shooterLift = visualReviewCapture
-    ? releaseExtension * 0.46 - shooterBodyCompression * 0.12
-    : 0;
+  const shooterLift = releaseExtension * 0.46 - shooterBodyCompression * 0.12;
   const hoopDx = hoopState.x - currentSpot.x;
   const hoopDz = hoopState.z - currentSpot.z;
   const hoopDistance = Math.max(0.001, Math.hypot(hoopDx, hoopDz));
   // The root drive is continuous with the authored flight state: the athlete
   // compresses behind the spot, rises through release, and lands slightly
-      // toward the hoop. It complements the continuous pose-authored athlete
-      // meshes rather than presenting an ungrounded label-only animation state.
-  const releaseDrive = visualReviewCapture
-    ? Math.min(0.34, ballState.flightTimer * 0.9) - shooterBodyCompression * 0.08
-    : 0;
+  // toward the hoop. It complements the continuous pose-authored athlete
+  // meshes rather than presenting an ungrounded label-only animation state.
+  const releaseDrive = Math.min(0.34, ballState.flightTimer * 0.9) - shooterBodyCompression * 0.08;
   const shooterX = currentSpot.x + (hoopDx / hoopDistance) * releaseDrive;
   const shooterZ = currentSpot.z + (hoopDz / hoopDistance) * releaseDrive;
   // The registered athlete GLB has authored bounds below the origin. Keep its
@@ -1322,13 +1384,11 @@ function syncTransforms(): void {
   }
   const shooterShadow = app.nodes.get("shooter-contact-shadow") as AuraRuntimeNodeHandle | undefined;
   shooterShadow?.setPosition(shooterX, 0.026, shooterZ);
-  if (visualReviewCapture) {
-    shooterShadow?.setScale([
-      0.68 - releaseExtension * 0.16 + shooterBodyCompression * 0.08,
-      0.03,
-      0.38 - releaseExtension * 0.1 + shooterBodyCompression * 0.06
-    ]);
-  }
+  shooterShadow?.setScale([
+    0.68 - releaseExtension * 0.16 + shooterBodyCompression * 0.08,
+    0.03,
+    0.38 - releaseExtension * 0.1 + shooterBodyCompression * 0.06
+  ]);
 
   const ballNode = app.nodes.get("ball-hero") as AuraRuntimeNodeHandle | undefined;
   ballNode?.setPosition(ballState.x, ballState.y, ballState.z);
@@ -1391,21 +1451,13 @@ function syncTransforms(): void {
 
   const defenderNode = app.nodes.get("defender-cutout") as AuraRuntimeNodeHandle | undefined;
   const defenderPresentationNode = app.nodes.get("defender-presentation") as AuraRuntimeNodeHandle | undefined;
-  // Heat 1 is intentionally an open hoop in the gameplay contract.  Keep a
-  // second typed athlete in the normal broadcast frame as a sideline
-  // warm-up partner, but hide it as soon as the live ball is released.  This
-  // gives the opening route-primary artifact a human scale cue without
-  // pretending that the inactive partner participates in collision/scoring.
   const warmupPartnerVisible = scoreState.heat === 1;
   defenderNode?.setVisible(hoopState.defenderActive);
   defenderPresentationNode?.setVisible(hoopState.defenderActive || warmupPartnerVisible);
   if (hoopState.defenderActive) {
-    // Hoop state tracks the defender's collision/torso center. Its authored
-    // jump height now directly drives both the optional skinned debug actor and
-    // the visible typed presentation athlete's airborne root.
     const contestLift = Math.max(0, hoopState.defenderY - 0.9);
     const airborne = Math.min(1, contestLift / 1.2);
-    const ballReachActive = visualReviewCapture && ballState.inFlight && hoopState.defenderTelegraph === "contest";
+    const ballReachActive = ballState.inFlight && hoopState.defenderTelegraph === "contest";
     const ballDx = ballState.x - hoopState.defenderX;
     const ballDz = ballState.z - hoopState.defenderZ;
     const ballPlanarDistance = Math.max(0.001, Math.hypot(ballDx, ballDz));
@@ -1413,12 +1465,8 @@ function syncTransforms(): void {
     const defenderX = hoopState.defenderX + (ballDx / ballPlanarDistance) * defenderReach;
     const defenderZ = hoopState.defenderZ + (ballDz / ballPlanarDistance) * defenderReach;
     defenderNode?.setPosition(defenderX, ATHLETE_FLOOR_OFFSET + contestLift, defenderZ);
-    // This typed derivative is already authored in the asymmetric raised-arm
-    // contest pose. Reuse the exact hoop/ball-driven root placement so its
-    // jump and hand-to-ball relationship stay coupled to collision truth in
-    // both the ordinary game and the deterministic review shot.
     defenderPresentationNode
-      ?.setPosition(defenderX, contestLift, defenderZ)
+      ?.setPosition(defenderX, SHOOTER_MESHY_GROUND_OFFSET + contestLift, defenderZ)
       .setRotation(-0.16 * airborne, 0.48 + (ballDx / 2.4) * 0.08, -(ballDx / 2.4) * 0.2 * airborne)
       .setScale([
         PRESENTATION_ATHLETE_SCALE - airborne * 0.035,
@@ -1461,15 +1509,17 @@ function syncTransforms(): void {
         ]);
     }
   } else if (warmupPartnerVisible) {
-    // The inactive partner stands at the left elbow / wing as the rebound & pass feeder,
-    // keeping the central paint and shot arc completely unobstructed.
-    const warmupX = shooterX < -1.0 ? 1.85 : -1.95;
-    const warmupY = ballState.inFlight ? Math.min(0.18, Math.max(0, (ballState.y - 1.8) * 0.08)) : 0;
-    const warmupZ = 0.65;
+    // Active perimeter close-out partner with grounded sneakers and jump contest motion.
+    const baseWarmupX = shooterX < -1.0 ? 1.65 : -1.75;
+    const warmupX = baseWarmupX + Math.sin(elapsedPlayTime * 1.65) * 0.32;
+    const warmupY = ballState.inFlight
+      ? Math.sin(flightMotionPhase * Math.PI) * 0.38
+      : Math.abs(Math.sin(elapsedPlayTime * 2.2)) * 0.04;
+    const warmupZ = 0.45 + Math.cos(elapsedPlayTime * 1.3) * 0.18;
     const warmupYaw = Math.atan2(shooterX - warmupX, shooterZ - warmupZ);
     const warmupSway = Math.sin(elapsedPlayTime * 1.4 + 0.8) * 0.022;
     defenderPresentationNode
-      ?.setPosition(warmupX, warmupY, warmupZ)
+      ?.setPosition(warmupX, SHOOTER_MESHY_GROUND_OFFSET + warmupY, warmupZ)
       .setRotation(-0.04 + warmupSway, warmupYaw, -0.04)
       .setScale([PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE * 1.02, PRESENTATION_ATHLETE_SCALE]);
   } else if (visualReviewCapture && defenderAnimationState !== "hidden") {
@@ -1478,7 +1528,7 @@ function syncTransforms(): void {
     defenderReach = 0;
   }
   const defenderShadow = app.nodes.get("defender-contact-shadow") as AuraRuntimeNodeHandle | undefined;
-  defenderShadow?.setVisible(hoopState.defenderActive);
+  defenderShadow?.setVisible(hoopState.defenderActive || warmupPartnerVisible);
   if (hoopState.defenderActive) {
     const ballDx = ballState.x - hoopState.defenderX;
     const ballDz = ballState.z - hoopState.defenderZ;
@@ -1488,10 +1538,15 @@ function syncTransforms(): void {
       0.026,
       hoopState.defenderZ + (ballDz / ballPlanarDistance) * defenderReach
     );
-    if (visualReviewCapture) {
-      const contestLift = Math.max(0, hoopState.defenderY - 0.9);
-      defenderShadow?.setScale([0.7 + contestLift * 0.12, 0.03, 0.38 + contestLift * 0.08]);
-    }
+  } else if (warmupPartnerVisible) {
+    const baseWarmupX = shooterX < -1.0 ? 1.65 : -1.75;
+    const warmupX = baseWarmupX + Math.sin(elapsedPlayTime * 1.65) * 0.32;
+    const warmupZ = 0.45 + Math.cos(elapsedPlayTime * 1.3) * 0.18;
+    defenderShadow?.setPosition(warmupX, 0.026, warmupZ);
+  }
+  if (visualReviewCapture) {
+    const contestLift = Math.max(0, hoopState.defenderY - 0.9);
+    defenderShadow?.setScale([0.7 + contestLift * 0.12, 0.03, 0.38 + contestLift * 0.08]);
   }
   const defenderPressureVisible = hoopState.defenderActive && hoopState.mode === "pressure";
   const pressureAura = app.nodes.get("defender-pressure-aura") as AuraRuntimeNodeHandle | undefined;

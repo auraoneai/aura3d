@@ -221,6 +221,81 @@ export function buildScene() {
           tags: ["typed-cover", "set-dressing", "non-colliding"]
         }))
     ))
+    // 4x 3D Flying Security Attack Drones hovering at mid-height alongside the bipedal mechs
+    .addMany([
+      { id: "corridor-drone-0", asset: rootAssets.neonSwarmChaserDroneMeshy, x: -1.32, y: 1.54, z: 3.1, yaw: 0.24 },
+      { id: "corridor-drone-1", asset: rootAssets.skylineFrostSentryDroneMeshy, x: 1.36, y: 1.62, z: 1.35, yaw: -0.28 },
+      { id: "corridor-drone-2", asset: rootAssets.neonSwarmChaserDroneMeshy, x: -1.24, y: 1.48, z: -2.15, yaw: 0.18 },
+      { id: "corridor-drone-3", asset: rootAssets.skylineFrostSentryDroneMeshy, x: 1.28, y: 1.58, z: -4.85, yaw: -0.22 }
+    ].map((drone) =>
+      model(drone.asset, {
+        name: drone.id,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 0.95,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(drone.x, drone.y, drone.z)
+        .rotate(0, drone.yaw, 0)
+        .runtime(game.runtimeNode(drone.id, {
+          tags: ["typed-drone", "enemy-drone", "non-colliding"]
+        }))
+    ))
+    // 3D Heavy Boss Mech (mechHangarRivalUnitMeshy) guarding the far reactor bulkhead + rear containment threshold
+    .add(
+      model(rootAssets.mechHangarRivalUnitMeshy, {
+        name: "corridor-boss-mech",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 2.15,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(0, 0.24, -7.25)
+        .rotate(0, 0, 0)
+        .runtime(game.runtimeNode("corridor-boss-mech", {
+          tags: ["typed-boss-mech", "non-colliding"]
+        }))
+    )
+    .add(
+      model(rootAssets.mechHangarRivalUnitMeshy, {
+        name: "corridor-boss-mech-rear",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 2.15,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(0, 0.24, -13.5)
+        .rotate(0, 0, 0)
+        .runtime(game.runtimeNode("corridor-boss-mech-rear", {
+          tags: ["typed-boss-mech", "non-colliding"]
+        }))
+    )
+    // Reactor Containment Pylons & Neon Cyber Pylons along the corridor side alcoves (x = +-2.45)
+    .addMany([
+      { id: "alcove-pylon-0", asset: rootAssets.blockfallReactorContainmentPylonMeshy, x: -2.45, z: 3.3, yaw: 0.35 },
+      { id: "alcove-pylon-1", asset: rootAssets.neonCyberPylonMeshy, x: 2.45, z: 3.3, yaw: -0.35 },
+      { id: "alcove-pylon-2", asset: rootAssets.neonCyberPylonMeshy, x: -2.45, z: -0.65, yaw: 0.25 },
+      { id: "alcove-pylon-3", asset: rootAssets.blockfallReactorContainmentPylonMeshy, x: 2.45, z: -0.65, yaw: -0.25 },
+      { id: "alcove-pylon-4", asset: rootAssets.blockfallReactorContainmentPylonMeshy, x: -2.45, z: -4.8, yaw: 0.3 },
+      { id: "alcove-pylon-5", asset: rootAssets.neonCyberPylonMeshy, x: 2.45, z: -4.8, yaw: -0.3 }
+    ].map((pylon) =>
+      model(pylon.asset, {
+        name: pylon.id,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.45,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(pylon.x, 0.24, pylon.z)
+        .rotate(0, pylon.yaw, 0)
+        .runtime(game.runtimeNode(pylon.id, {
+          tags: ["typed-alcove-pylon", "set-dressing", "non-colliding"]
+        }))
+    ))
     // Admitted Meshy corridor module mounted flush to the port wall field.
     // Yawed so its thin axis faces the lane; no physics body, no collider.
     .add(model(assets.neonArena, {
@@ -357,6 +432,39 @@ export function buildScene() {
       name: "radial shot impact fracture ring",
       material: material.glowingEmissive({ color: "#ffd166", emissive: "#f05a1c", emissiveIntensity: 2.45 })
     }).position(0, -8, 0).rotate(Math.PI / 2, 0, 0).scale(0.02).runtime(game.runtimeNode("shot-impact", { tags: ["fx", "radial-impact"] })))
+    // Active mid-air 3D cyan plasma projectiles, muzzle flare, enemy crimson return-fire lasers, and EMP grenade shockwave
+    .add(primitives.box({
+      name: "combat plasma bolt 0",
+      material: material.glowingEmissive({ color: "#7ef8ff", emissive: "#00f5d4", emissiveIntensity: 2.85 })
+    }).position(0.14, 1.32, 3.6).scale([0.032, 0.032, 0.72]).runtime(game.runtimeNode("combat-plasma-bolt-0", { tags: ["fx", "plasma-bolt"] })))
+    .add(primitives.box({
+      name: "combat plasma bolt 1",
+      material: material.glowingEmissive({ color: "#38bdf8", emissive: "#22d3ee", emissiveIntensity: 2.65 })
+    }).position(0.05, 1.36, 0.65).scale([0.028, 0.028, 0.64]).runtime(game.runtimeNode("combat-plasma-bolt-1", { tags: ["fx", "plasma-bolt"] })))
+    .add(primitives.sphere({
+      name: "combat muzzle flare",
+      material: material.glowingEmissive({ color: "#e0f2fe", emissive: "#38bdf8", emissiveIntensity: 2.75 })
+    }).position(0.2, 1.24, 6.6).scale([0.055, 0.055, 0.14]).runtime(game.runtimeNode("combat-muzzle-flare", { tags: ["fx", "muzzle-flare"] })))
+    .add(primitives.box({
+      name: "enemy return laser 0",
+      material: material.glowingEmissive({ color: "#fda4af", emissive: "#ff2a5f", emissiveIntensity: 2.65 })
+    }).position(-0.85, 1.48, 2.2).scale([0.028, 0.028, 0.68]).runtime(game.runtimeNode("enemy-return-laser-0", { tags: ["fx", "enemy-laser"] })))
+    .add(primitives.box({
+      name: "enemy return laser 1",
+      material: material.glowingEmissive({ color: "#fb923c", emissive: "#f97316", emissiveIntensity: 2.55 })
+    }).position(0.92, 1.52, -0.4).scale([0.028, 0.028, 0.68]).runtime(game.runtimeNode("enemy-return-laser-1", { tags: ["fx", "enemy-laser"] })))
+    .add(primitives.sphere({
+      name: "emp grenade orb",
+      material: material.glowingEmissive({ color: "#a5f3fc", emissive: "#06b6d4", emissiveIntensity: 2.9 })
+    }).position(0, -8, 0).scale(0.11).runtime(game.runtimeNode("emp-grenade-orb", { tags: ["fx", "emp-grenade"] })))
+    .add(primitives.torus({
+      name: "emp shockwave ring",
+      material: material.glowingEmissive({ color: "#38bdf8", emissive: "#22d3ee", emissiveIntensity: 2.8 })
+    }).position(0, -8, 0).rotate(Math.PI / 2, 0, 0).scale([0.01, 0.01, 0.01]).runtime(game.runtimeNode("emp-shockwave-ring", { tags: ["fx", "emp-grenade"] })))
+    .add(primitives.torus({
+      name: "enemy stagger ring",
+      material: material.glowingEmissive({ color: "#fde047", emissive: "#f59e0b", emissiveIntensity: 2.75 })
+    }).position(0, -8, 0).scale([0.01, 0.01, 0.01]).runtime(game.runtimeNode("enemy-stagger-ring", { tags: ["fx", "stagger"] })))
     .add(primitives.box({
       name: "exit marker",
       material: material.emissive({ color: "#2a9c78", emissive: "#3dffb0", emissiveIntensity: 0.42 })

@@ -5,7 +5,7 @@ import {
   material,
   type AuraSceneNode
 } from "@aura3d/engine";
-import { assets } from "../../../../src/aura-assets";
+import { assets, assets as rootAssets } from "../../../../src/aura-assets";
 import { PLAY_HALF_X, PLAY_HALF_Z, POCKET_CENTERS } from "../gameplay/table";
 
 /**
@@ -15,58 +15,104 @@ import { PLAY_HALF_X, PLAY_HALF_Z, POCKET_CENTERS } from "../gameplay/table";
  * - 3-shade brass/emerald conical pendant lamp hanging over the table
  * - 18 mother-of-pearl diamond rail sights along table cushions
  * - Cast brass pocket corner brackets & deep leather drop pocket cups
- * - Wall-mounted cue stick rack & score abacus beads
+ * - Lounge club chairs, championship trophy cabinets & warm amber sconces
  */
 export function createPoolHallSetDressing(options: { readonly portrait?: boolean } = {}): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [];
+  const pBox = primitives.box;
+  const pCyl = primitives.cylinder;
+  const pSphere = primitives.sphere;
+
+  const clubChairAsset =
+    (rootAssets as any).billiardsClubChairMeshy ?? rootAssets.galleryMarbleBustExhibitMeshy;
+  const trophyCabinetAsset =
+    (rootAssets as any).billiardsTrophyCabinetMeshy ?? rootAssets.galleryMarbleBustExhibitMeshy;
 
   // 1. Materials
   const floorWoodMat = material.pbr({
     name: "parquet-floor",
-    color: "#0b1424",
-    roughness: 0.52,
-    metallic: 0.05
+    color: "#24140c",
+    emissive: "#120905",
+    emissiveIntensity: 0.22,
+    roughness: 0.46,
+    metallic: 0.08
   });
 
   const rugMat = material.pbr({
     name: "billiards-rug-burgundy",
-    color: "#170f20",
-    roughness: 0.9,
-    metallic: 0.0
+    color: "#5b1924",
+    emissive: "#2d0b12",
+    emissiveIntensity: 0.28,
+    roughness: 0.82,
+    metallic: 0.02
+  });
+
+  const rugMedallionMat = material.pbr({
+    name: "billiards-rug-medallion",
+    color: "#853124",
+    emissive: "#42160e",
+    emissiveIntensity: 0.26,
+    roughness: 0.78,
+    metallic: 0.06
   });
 
   const rugBorderMat = material.pbr({
     name: "billiards-rug-gold-trim",
-    color: "#3f2225",
-    roughness: 0.72,
-    metallic: 0.08
+    color: "#b47b28",
+    emissive: "#5c3a0d",
+    emissiveIntensity: 0.32,
+    roughness: 0.58,
+    metallic: 0.24
   });
 
   const wallWoodMat = material.pbr({
     name: "walnut-wainscot",
-    color: "#482916",
-    roughness: 0.45,
-    metallic: 0.1
+    color: "#6b381d",
+    emissive: "#381b0c",
+    emissiveIntensity: 0.34,
+    roughness: 0.42,
+    metallic: 0.12
+  });
+
+  const wallPanelInsertMat = material.pbr({
+    name: "mahogany-wainscot-panel",
+    color: "#844522",
+    emissive: "#46210e",
+    emissiveIntensity: 0.36,
+    roughness: 0.38,
+    metallic: 0.14
   });
 
   const wallUpperMat = material.pbr({
     name: "hall-upper-wall",
-    color: "#27435b",
-    roughness: 0.8,
-    metallic: 0.05
+    color: "#2c3e55",
+    emissive: "#182436",
+    emissiveIntensity: 0.28,
+    roughness: 0.72,
+    metallic: 0.06
   });
 
   const brassMat = material.pbr({
     name: "antique-brass",
-    color: "#d97706",
-    roughness: 0.25,
-    metallic: 0.9
+    color: "#f59e0b",
+    emissive: "#78350f",
+    emissiveIntensity: 0.35,
+    roughness: 0.24,
+    metallic: 0.88
   });
 
   const bulbGlowMat = material.emissive({
     name: "filament-bulb-glow",
     color: "#fffbeb",
-    emissive: "#fde047"
+    emissive: "#fde047",
+    emissiveIntensity: 1.85
+  });
+
+  const sconceGlowMat = material.emissive({
+    name: "lounge-sconce-amber-glow",
+    color: "#fef3c7",
+    emissive: "#fbbf24",
+    emissiveIntensity: 2.2
   });
 
   const diamondSightMat = material.emissive({
@@ -86,7 +132,7 @@ export function createPoolHallSetDressing(options: { readonly portrait?: boolean
     metallic: 0.74
   });
 
-  // 2. Room Architecture (Floor & Walls)
+  // 2. Room Architecture (Floor, Patterned Persian Rug & Warm Mahogany Wainscot Walls)
   nodes.push(
     // Floor
     primitives
@@ -95,138 +141,189 @@ export function createPoolHallSetDressing(options: { readonly portrait?: boolean
       .scale([14.0, 0.2, 12.0])
       .toJSON(),
 
-    // Persian Runner Rug directly under the table
-    primitives
-      .box({ name: "pool-hall-rug-main", material: rugMat })
-      .position(0, -0.89, 0)
+    // Persian Runner Rug directly under the table with gold border + inner medallion
+    pBox({ name: "pool-hall-rug-gold-border", material: rugBorderMat })
+      .position(0, -0.895, 0)
+      .scale([5.6, 0.015, 4.2])
+      .toJSON(),
+    pBox({ name: "pool-hall-rug-main", material: rugMat })
+      .position(0, -0.888, 0)
       .scale([5.2, 0.02, 3.8])
       .toJSON(),
-    primitives
-      .box({ name: "pool-hall-rug-gold-border", material: rugBorderMat })
-      .position(0, -0.88, 0)
-      .scale([5.4, 0.015, 4.0])
+    pBox({ name: "pool-hall-rug-inner-trim", material: rugBorderMat })
+      .position(0, -0.882, 0)
+      .scale([4.5, 0.022, 3.1])
+      .toJSON(),
+    pBox({ name: "pool-hall-rug-medallion", material: rugMedallionMat })
+      .position(0, -0.878, 0)
+      .scale([4.2, 0.024, 2.8])
       .toJSON(),
 
-    // North Wall (behind rack end)
-    primitives
-      .box({ name: "wall-north-lower", material: wallWoodMat })
-      .position(0, 0.2, -3.0)
-      .scale([12.0, 2.2, 0.4])
+    // North Wall (behind rack end — brought slightly closer so lounge furniture & sconces frame the shot)
+    pBox({ name: "wall-north-lower", material: wallWoodMat })
+      .position(0, 0.25, -2.85)
+      .scale([12.0, 2.3, 0.35])
       .toJSON(),
-    primitives
-      .box({ name: "wall-north-upper", material: wallUpperMat })
-      .position(0, 2.8, -3.0)
-      .scale([12.0, 3.0, 0.4])
+    pBox({ name: "wall-north-upper", material: wallUpperMat })
+      .position(0, 2.8, -2.85)
+      .scale([12.0, 3.0, 0.35])
       .toJSON(),
-    primitives
-      .box({ name: "wall-north-chair-rail", material: wallWoodMat })
-      .position(0, 1.3, -2.8)
-      .scale([12.0, 0.1, 0.1])
+    pBox({ name: "wall-north-chair-rail", material: brassMat })
+      .position(0, 1.38, -2.65)
+      .scale([12.0, 0.09, 0.12])
       .toJSON(),
 
     // South Wall
-    primitives
-      .box({ name: "wall-south-lower", material: wallWoodMat })
+    pBox({ name: "wall-south-lower", material: wallWoodMat })
       .position(0, 0.2, 4.5)
       .scale([12.0, 2.2, 0.4])
       .toJSON(),
-    primitives
-      .box({ name: "wall-south-upper", material: wallUpperMat })
+    pBox({ name: "wall-south-upper", material: wallUpperMat })
       .position(0, 2.8, 4.5)
       .scale([12.0, 3.0, 0.4])
       .toJSON(),
 
     // West Wall (behind cue player)
-    primitives
-      .box({ name: "wall-west-lower", material: wallWoodMat })
-      .position(-5.5, 0.2, 0)
+    pBox({ name: "wall-west-lower", material: wallWoodMat })
+      .position(-5.2, 0.2, 0)
       .scale([0.4, 2.2, 9.0])
       .toJSON(),
-    primitives
-      .box({ name: "wall-west-upper", material: wallUpperMat })
-      .position(-5.5, 2.8, 0)
+    pBox({ name: "wall-west-upper", material: wallUpperMat })
+      .position(-5.2, 2.8, 0)
       .scale([0.4, 3.0, 9.0])
       .toJSON(),
 
     // East Wall
-    primitives
-      .box({ name: "wall-east-lower", material: wallWoodMat })
-      .position(5.5, 0.2, 0)
+    pBox({ name: "wall-east-lower", material: wallWoodMat })
+      .position(5.2, 0.2, 0)
       .scale([0.4, 2.2, 9.0])
       .toJSON(),
-    primitives
-      .box({ name: "wall-east-upper", material: wallUpperMat })
-      .position(5.5, 2.8, 0)
+    pBox({ name: "wall-east-upper", material: wallUpperMat })
+      .position(5.2, 2.8, 0)
       .scale([0.4, 3.0, 9.0])
       .toJSON()
   );
 
-  // 3. Framed Vintage Championship Billiards Art on North & West Walls
+  // Raised mahogany wainscot panels + warm wall sconces across the North wall
+  [-3.2, -2.1, -1.05, 0, 1.05, 2.1, 3.2].forEach((wx, idx) => {
+    nodes.push(
+      pBox({ name: `wainscot-panel-n-${idx}`, material: wallPanelInsertMat })
+        .position(wx, 0.42, -2.66)
+        .scale([0.82, 1.45, 0.04])
+        .toJSON()
+    );
+  });
+
+  [-2.25, -0.92, 0.92, 2.25].forEach((sx, idx) => {
+    nodes.push(
+      pBox({ name: `wall-sconce-backplate-${idx}`, material: brassMat })
+        .position(sx, 1.62, -2.64)
+        .scale([0.14, 0.28, 0.05])
+        .toJSON(),
+      pSphere({ name: `wall-sconce-globe-${idx}`, material: sconceGlowMat })
+        .position(sx, 1.68, -2.56)
+        .scale([0.11, 0.14, 0.11])
+        .toJSON()
+    );
+  });
+
+  // 3. Framed Vintage Championship Billiards Art on North Wall
   const posterMat1 = material.pbr({
     name: "poster-vintage-1",
-    color: "#78350f",
-    roughness: 0.5,
+    color: "#9a3412",
+    emissive: "#431407",
+    emissiveIntensity: 0.32,
+    roughness: 0.46,
     metallic: 0.1
   });
   const posterMat2 = material.pbr({
     name: "poster-vintage-2",
-    color: "#0f766e",
-    roughness: 0.5,
+    color: "#115e59",
+    emissive: "#042f2e",
+    emissiveIntensity: 0.32,
+    roughness: 0.46,
     metallic: 0.1
   });
   const frameGoldMat = material.pbr({
     name: "art-frame-gold",
-    color: "#d97706",
-    roughness: 0.3,
-    metallic: 0.8
+    color: "#f59e0b",
+    emissive: "#78350f",
+    emissiveIntensity: 0.28,
+    roughness: 0.28,
+    metallic: 0.82
   });
 
   nodes.push(
     // North Wall Frame 1
-    primitives.box({ name: "poster-frame-1", material: frameGoldMat }).position(-1.8, 2.4, -2.78).scale([1.4, 1.8, 0.06]).toJSON(),
-    primitives.box({ name: "poster-art-1", material: posterMat1 }).position(-1.8, 2.4, -2.74).scale([1.2, 1.6, 0.02]).toJSON(),
+    pBox({ name: "poster-frame-1", material: frameGoldMat }).position(-1.6, 2.05, -2.65).scale([1.1, 1.0, 0.06]).toJSON(),
+    pBox({ name: "poster-art-1", material: posterMat1 }).position(-1.6, 2.05, -2.61).scale([0.94, 0.84, 0.02]).toJSON(),
 
     // North Wall Frame 2
-    primitives.box({ name: "poster-frame-2", material: frameGoldMat }).position(1.8, 2.4, -2.78).scale([1.4, 1.8, 0.06]).toJSON(),
-    primitives.box({ name: "poster-art-2", material: posterMat2 }).position(1.8, 2.4, -2.74).scale([1.2, 1.6, 0.02]).toJSON()
+    pBox({ name: "poster-frame-2", material: frameGoldMat }).position(1.6, 2.05, -2.65).scale([1.1, 1.0, 0.06]).toJSON(),
+    pBox({ name: "poster-art-2", material: posterMat2 }).position(1.6, 2.05, -2.61).scale([0.94, 0.84, 0.02]).toJSON()
   );
 
-  // 4. Overhead billiards pendant: bespoke Meshy 3D triple-shade brass/emerald stained-glass lamp
+  // 4. Overhead Tiffany Billiards Chandelier + 3D Lounge Club Chairs & Championship Trophy Cabinets
   if (!options.portrait) {
     nodes.push(
-      model(assets.bankShotBilliardLampMeshy, {
+      model(rootAssets.bankShotBilliardLampMeshy, {
         name: "billiard-hall-pendant-lamp-3d",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.95
+        targetMaxDimension: 1.55
       })
-        .position(0, 1.06, -0.16)
+        .position(0, 1.24, -0.14)
         .toJSON(),
-      model(assets.galleryMarbleBustExhibitMeshy, {
+      pCyl({ name: "billiard-hall-pendant-rod-left", material: brassMat })
+        .position(-0.48, 1.95, -0.14)
+        .scale([0.018, 1.1, 0.018])
+        .toJSON(),
+      pCyl({ name: "billiard-hall-pendant-rod-right", material: brassMat })
+        .position(0.48, 1.95, -0.14)
+        .scale([0.018, 1.1, 0.018])
+        .toJSON(),
+      model(trophyCabinetAsset, {
         name: "billiard-hall-trophy-pedestal-left",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.55
+        targetMaxDimension: 1.6
       })
-        .position(-1.85, -0.82, -2.15)
-        .rotate(0, 0.35, 0)
+        .position(-1.55, -0.1, -2.25)
+        .rotate(0, 0.18, 0)
         .toJSON(),
-      model(assets.galleryMarbleBustExhibitMeshy, {
+      model(trophyCabinetAsset, {
         name: "billiard-hall-trophy-pedestal-right",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.55
+        targetMaxDimension: 1.6
       })
-        .position(1.85, -0.82, -2.15)
-        .rotate(0, -0.35, 0)
+        .position(1.55, -0.1, -2.25)
+        .rotate(0, -0.18, 0)
+        .toJSON(),
+      model(clubChairAsset, {
+        name: "billiard-hall-club-chair-left",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.25
+      })
+        .position(-2.55, -0.28, -1.75)
+        .rotate(0, 0.58, 0)
+        .toJSON(),
+      model(clubChairAsset, {
+        name: "billiard-hall-club-chair-right",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.25
+      })
+        .position(2.55, -0.28, -1.75)
+        .rotate(0, -0.58, 0)
         .toJSON()
     );
-    [-0.65, 0, 0.65].forEach((lx, idx) => {
+    [-0.52, 0, 0.52].forEach((lx, idx) => {
       nodes.push(
-        primitives
-          .sphere({ name: `pendant-bulb-${idx}`, material: bulbGlowMat })
-          .position(lx, 1.02, -0.16)
-          .scale([0.038, 0.038, 0.038])
+        pSphere({ name: `pendant-bulb-${idx}`, material: bulbGlowMat })
+          .position(lx, 1.16, -0.14)
+          .scale([0.028, 0.028, 0.028])
           .toJSON()
       );
     });

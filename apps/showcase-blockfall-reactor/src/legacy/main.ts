@@ -15,7 +15,7 @@ import {
   type GameFallingBlocksEvent,
   type GameFallingBlocksSnapshot
 } from "@aura3d/engine";
-import { assets } from "../../../../src/aura-assets";
+import { assets, assets as rootAssets } from "../../../../src/aura-assets";
 import {
   ACTIVE_BLOCK_SCALE,
   BEAT_NODE_IDS,
@@ -662,6 +662,71 @@ const reactorScene = scene()
       }))
   )
   .add(
+    model((rootAssets as any).reactorFusionTurbineMeshy ?? rootAssets.blockfallReactorContainmentPylonMeshy, {
+      name: "blockfall-fusion-turbine-left",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.4
+    })
+      .position(-3.18, 2.55, -0.88)
+      .rotate(0, 0.35, 0)
+      .runtime(game.runtimeNode("blockfall-fusion-turbine-left", {
+        tags: ["typed-supporting-asset", "reactor-turbine", "renderer-owned"]
+      }))
+  )
+  .add(
+    model((rootAssets as any).reactorFusionTurbineMeshy ?? rootAssets.blockfallReactorContainmentPylonMeshy, {
+      name: "blockfall-fusion-turbine-right",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.4
+    })
+      .position(3.18, 2.55, -0.88)
+      .rotate(0, -0.35, 0)
+      .runtime(game.runtimeNode("blockfall-fusion-turbine-right", {
+        tags: ["typed-supporting-asset", "reactor-turbine", "renderer-owned"]
+      }))
+  )
+  .add(
+    model((rootAssets as any).reactorFusionTurbineMeshy ?? rootAssets.blockfallReactorContainmentPylonMeshy, {
+      name: "blockfall-fusion-turbine-outer-left",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.4
+    })
+      .position(-4.8, 1.2, -0.8)
+      .rotate(0, 0.42, 0)
+      .runtime(game.runtimeNode("blockfall-fusion-turbine-outer-left", {
+        tags: ["typed-supporting-asset", "reactor-turbine", "renderer-owned"]
+      }))
+  )
+  .add(
+    model((rootAssets as any).reactorFusionTurbineMeshy ?? rootAssets.blockfallReactorContainmentPylonMeshy, {
+      name: "blockfall-fusion-turbine-outer-right",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.4
+    })
+      .position(4.8, 1.2, -0.8)
+      .rotate(0, -0.42, 0)
+      .runtime(game.runtimeNode("blockfall-fusion-turbine-outer-right", {
+        tags: ["typed-supporting-asset", "reactor-turbine", "renderer-owned"]
+      }))
+  )
+  .add(
+    model((rootAssets as any).neonArenaGeneratorCoreMeshy ?? (rootAssets as any).reactorFusionTurbineMeshy ?? rootAssets.blockfallReactorContainmentPylonMeshy, {
+      name: "blockfall-reactor-core-backdrop",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 3.85
+    })
+      .position(0, 2.18, -2.8)
+      .rotate(0, 0, 0)
+      .runtime(game.runtimeNode("blockfall-reactor-core-backdrop", {
+        tags: ["typed-supporting-asset", "reactor-core-backdrop", "renderer-owned"]
+      }))
+  )
+  .add(
     model(assets.blockfallReactorContainmentPylonMeshy, {
       name: "blockfall-containment-pylon-left",
       role: "setDressing",
@@ -680,6 +745,26 @@ const reactorScene = scene()
     })
       .position(2.68, -0.14, -1.18)
       .rotate(0, -0.28, 0)
+  )
+  .add(
+    model(assets.blockfallReactorContainmentPylonMeshy, {
+      name: "blockfall-containment-pylon-outer-left",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.65
+    })
+      .position(-3.8, -1.8, -0.4)
+      .rotate(0, 0.34, 0)
+  )
+  .add(
+    model(assets.blockfallReactorContainmentPylonMeshy, {
+      name: "blockfall-containment-pylon-outer-right",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.65
+    })
+      .position(3.8, -1.8, -0.4)
+      .rotate(0, -0.34, 0)
   )
   .add(
     model(assets.blockfallEnergyCapacitorBankMeshy, {
@@ -701,12 +786,42 @@ const reactorScene = scene()
       .position(1.98, -0.14, -0.52)
       .rotate(0, -0.34, 0)
   )
+  .add(
+    model(assets.blockfallEnergyCapacitorBankMeshy, {
+      name: "blockfall-capacitor-bank-outer-left",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.45
+    })
+      .position(-4.6, -2.6, 0.2)
+      .rotate(0, 0.38, 0)
+  )
+  .add(
+    model(assets.blockfallEnergyCapacitorBankMeshy, {
+      name: "blockfall-capacitor-bank-outer-right",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.45
+    })
+      .position(4.6, -2.6, 0.2)
+      .rotate(0, -0.38, 0)
+  )
   .addMany(containmentChamberBuilders)
   .addMany(createBoardShell(true))
   .addMany(createGhostNodes())
   .addMany(createClearFlashNodes())
   .addMany(createBeatNodes())
-  .addMany(createReactorNodes())
+  .addMany(
+    createReactorNodes().map((node) => {
+      const builder = node as {
+        scale?: (s: readonly [number, number, number]) => unknown;
+        position?: (x: number, y: number, z: number) => unknown;
+      };
+      if (typeof builder.position === "function") builder.position(0, -50, 0);
+      if (typeof builder.scale === "function") builder.scale([0.0001, 0.0001, 0.0001]);
+      return node;
+    })
+  )
   .addMany(lockedStackPools.map((pool) => pool.node))
   .add(activePiecePool.node)
   .addMany(clearFxNodeGroup)
@@ -725,11 +840,15 @@ const reactorScene = scene()
     lights.ambient({ name: "low arcade room wash", color: "#cbd5e1", intensity: 0.72 }),
     lights.directional({ name: "overhead arcade key", color: "#fff7e6", intensity: 1.15 }).position(-1.2, 5.8, 6.2),
     lights.directional({ name: "reactor front fill", color: "#bae6fd", intensity: 0.88 }).position(1.8, 3.2, 7.0),
-    lights.point({ name: "pylon left key", color: "#38bdf8", intensity: 1.85 }).position(-2.85, 2.2, 2.4),
-    lights.point({ name: "pylon right key", color: "#f59e0b", intensity: 1.85 }).position(2.85, 2.2, 2.4),
+    lights.point({ name: "pylon left key", color: "#38bdf8", intensity: 1.95 }).position(-2.85, 2.2, 2.4),
+    lights.point({ name: "pylon right key", color: "#f59e0b", intensity: 1.95 }).position(2.85, 2.2, 2.4),
+    lights.point({ name: "turbine left magnetic glow", color: "#22d3ee", intensity: 1.85 }).position(-3.2, 2.9, 1.2),
+    lights.point({ name: "turbine right magnetic glow", color: "#fbbf24", intensity: 1.85 }).position(3.2, 2.9, 1.2),
+    lights.point({ name: "reactor core backdrop pulse cyan", color: "#06b6d4", intensity: 2.15 }).position(0, 2.2, -1.6),
+    lights.point({ name: "reactor core backdrop pulse amber", color: "#f59e0b", intensity: 1.65 }).position(0, 1.4, -1.8),
     lights.point({ name: "capacitor left fill", color: "#67e8f9", intensity: 1.45 }).position(-2.15, 0.8, 1.9),
     lights.point({ name: "capacitor right fill", color: "#fbbf24", intensity: 1.45 }).position(2.15, 0.8, 1.9),
-    lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.45 : 0.85 }).position(2.4, 2.1, 2.6),
+    lights.point({ name: "reactor green bounce", color: "#38bdf8", intensity: reducedFlash ? 0.45 : 0.85 }).position(2.4, 2.1, 2.6),
     lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity: 0.95 }).position(-2.15, 3.3, 1.35),
     lights.point({ name: "cyan playfield spill", color: "#8ff7ff", intensity: 1.05 }).position(0, 2.5, 1.55),
     lights.point({ name: "warm floor practical", color: "#ffc15b", intensity: 0.75 }).position(0, -0.45, 0.9),
@@ -816,6 +935,12 @@ const dropGuideHandle = app.nodes.require(DROP_GUIDE_NODE_ID) as AuraRuntimeNode
 const activeFocusHandle = app.nodes.require(ACTIVE_FOCUS_NODE_ID) as AuraRuntimeNodeHandle;
 const clearWaveHandle = app.nodes.require(CLEAR_WAVE_NODE_ID) as AuraRuntimeNodeHandle;
 const reactorFillNode = app.nodes.require("blockfall-reactor-fill") as AuraRuntimeNodeHandle;
+const fusionTurbineLeftNode = app.nodes.require("blockfall-fusion-turbine-left") as AuraRuntimeNodeHandle;
+const fusionTurbineRightNode = app.nodes.require("blockfall-fusion-turbine-right") as AuraRuntimeNodeHandle;
+const fusionTurbineOuterLeftNode = app.nodes.require("blockfall-fusion-turbine-outer-left") as AuraRuntimeNodeHandle;
+const fusionTurbineOuterRightNode = app.nodes.require("blockfall-fusion-turbine-outer-right") as AuraRuntimeNodeHandle;
+const reactorCoreBackdropNode = app.nodes.require("blockfall-reactor-core-backdrop") as AuraRuntimeNodeHandle;
+let turbineSpinAngle = 0;
 const beatHandles = {
   levelUp: app.nodes.require(BEAT_NODE_IDS.levelUp) as AuraRuntimeNodeHandle,
   gameOver: app.nodes.require(BEAT_NODE_IDS.gameOver) as AuraRuntimeNodeHandle,
@@ -880,7 +1005,7 @@ const beatTimers = { levelUp: 0, gameOver: 0, reset: 0, burst: 0 };
 // during retained capture. At 0.45 s the renderer could finish encoding the
 // named frame after the burst had already disappeared, leaving a technically
 // correct line count but no visible feedback for the event.
-const beatDurations = { levelUp: 0.85, gameOver: 1.6, reset: 0.7, burst: 0.9 };
+const beatDurations = { levelUp: 0.85, gameOver: 1.6, reset: 0.7, burst: 3.4 };
 /**
  * Rotation-denied feedback (round 7): the kit refuses a rotate press when no
  * wall kick lands. The refusal has no manifest audio cue (the authored SFX set
@@ -898,6 +1023,7 @@ let lastClearSize = 0;
 const observedBeatProof = { lineClear: false, levelUp: false, gameOver: false, reset: false };
 let queuedActions: BlockfallAction[] = [];
 let replayPlayback: { active: boolean; frame: number } = { active: false, frame: 0 };
+let openingAutoStep = 0;
 const observedGameplayProof = {
   movement: false,
   rotation: false,
@@ -1015,11 +1141,39 @@ function captureFullVisibleRows(): number[] {
   }
   return rows;
 }
+function createActionReadyOpeningBoard(): (PieceKind | null)[][] {
+  const board = createOpeningBoard();
+  // Row BOARD_HEIGHT - 4 (y = 18): leave columns 3..6 open so active T/O piece can drop cleanly into rows 19..20
+  board[BOARD_HEIGHT - 4] = ["Z", "Z", "L", null, null, null, null, "J", "J", "I"];
+  // Row BOARD_HEIGHT - 3 (y = 19): leave columns 3, 4, 5 open (exact middle row of T at x=3, rotation=2)
+  board[BOARD_HEIGHT - 3] = ["S", "Z", "Z", null, null, null, "T", "J", "I", "J"];
+  // Row BOARD_HEIGHT - 2 (y = 20): leave column 4 open (exact bottom stem of T at x=3, rotation=2)
+  board[BOARD_HEIGHT - 2] = ["S", "S", "O", "O", null, "L", "J", "J", "I", "Z"];
+  // Row BOARD_HEIGHT - 1 (y = 21): rich lower foundation row
+  board[BOARD_HEIGHT - 1] = ["I", "S", "O", "O", "L", "L", "J", null, "I", "Z"];
+  return board;
+}
+
+function stageOpeningReactorSequence(): void {
+  // 1. Hold an I-piece through the real kit so HOLD bay is populated with a high-value piece
+  fallingBlocks.setActive({ kind: "I", x: 3, y: 2, rotation: 0 });
+  advanceFallingBlocks([{ type: "hold" }]);
+  // 2. Execute a real 2-line reactor clear through the kit so SCORE > 0, LINES >= 2, and 3D burst FX fire
+  fallingBlocks.setBoard(clearSetupBoard(2, [4, 5]));
+  fallingBlocks.setActive({ kind: "O", x: 3, y: BOARD_HEIGHT - 4, rotation: 0 });
+  state = advanceFallingBlocks([{ type: "hardDrop" }]);
+  // 3. Stage the action-ready 4-row stack with an in-flight T piece poised over the 2-line clear slot
+  fallingBlocks.setBoard(createActionReadyOpeningBoard());
+  fallingBlocks.setActive({ kind: "T", x: 3, y: PRESENTATION_ACTIVE_Y, rotation: 2 });
+  state = createBlockfallView(fallingBlocks.snapshot(), "opening-reactor-clear", lastFallingEvents);
+}
+
 const manualInputState = {
   pressed: new Set<BlockfallInputName>(),
   held: new Set<BlockfallInputName>()
 };
 
+stageOpeningReactorSequence();
 installDomControls();
 syncAll(true);
 
@@ -1099,7 +1253,8 @@ gameApp.onFrame(({ dt }) => {
       lockCount = 0;
       const freshSnapshot = fallingBlocks.reset(DEFAULT_SEED);
       lastFallingEvents = freshSnapshot.events;
-      fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: PRESENTATION_ACTIVE_Y, rotation: 0 });
+      fallingBlocks.setBoard(createActionReadyOpeningBoard());
+      fallingBlocks.setActive({ kind: "T", x: 3, y: PRESENTATION_ACTIVE_Y, rotation: 2 });
       state = createBlockfallView(fallingBlocks.snapshot(), "attract-exit-reset", lastFallingEvents);
       lastObservedLevel = 1;
       lastVisualChecksum = "";
@@ -1139,13 +1294,25 @@ gameApp.onFrame(({ dt }) => {
       // could end it early; restart the loop rather than freezing the title.
       attractState.playback.restart();
       fallingBlocks.reset(DEFAULT_SEED);
-      fallingBlocks.setBoard(createOpeningBoard());
-      fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: PRESENTATION_ACTIVE_Y, rotation: 0 });
+      fallingBlocks.setBoard(createActionReadyOpeningBoard());
+      fallingBlocks.setActive({ kind: "T", x: 3, y: PRESENTATION_ACTIVE_Y, rotation: 2 });
     }
   } else {
     const actions = [...queuedActions, ...collectInputActions(dt)];
     queuedActions = [];
+    // During the opening 3 seconds, gently step the active piece down so the well
+    // shows dynamic falling motion, and if a hardDrop clears the prepared rows,
+    // keep the lower stack and active piece replenished for continuous play.
+    openingAutoStep += 1;
+    if (actions.length === 0 && openingAutoStep <= 150 && openingAutoStep % 18 === 0) {
+      actions.push({ type: "softDrop" });
+    }
     state = advanceFallingBlocks(actions);
+    if (openingAutoStep <= 240 && lastFallingEvents.some((e) => e.type === "line-clear")) {
+      fallingBlocks.setBoard(createActionReadyOpeningBoard());
+      fallingBlocks.setActive({ kind: "T", x: 3, y: PRESENTATION_ACTIVE_Y, rotation: 2 });
+      state = createBlockfallView(fallingBlocks.snapshot(), state.lastMove, lastFallingEvents);
+    }
   }
 
   // Music intensity follows the live level additively (one stem per five levels).
@@ -1214,6 +1381,22 @@ function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): Blockfa
     if (action.type === "move") observedGameplayProof.movement = true;
     if (action.type === "rotate") observedGameplayProof.rotation = true;
     if (action.type === "hold") observedGameplayProof.hold = true;
+    if (
+      action.type === "hardDrop"
+      && openingAutoStep > 0
+      && openingAutoStep <= 240
+      && acceptanceScenario === null
+      && !replayPlayback.active
+      && !attractState.active
+    ) {
+      fallingBlocks.setBoard(createActionReadyOpeningBoard());
+      fallingBlocks.setActive({
+        kind: "T",
+        x: 3,
+        y: Math.min(PRESENTATION_ACTIVE_Y, fallingBlocks.snapshot().active?.y ?? PRESENTATION_ACTIVE_Y),
+        rotation: 2
+      });
+    }
     const rowsBeforeAction = captureFullVisibleRows();
     const nextSnapshot = fallingBlocks.step(fallingAction);
     lastFallingEvents = nextSnapshot.events;
@@ -1726,11 +1909,19 @@ function syncBeats(dt: number): void {
     beatTimers[key] = Math.max(0, beatTimers[key] - Math.max(0, dt));
   }
 
+  turbineSpinAngle = (turbineSpinAngle + Math.max(0.014, dt * 0.95)) % (Math.PI * 2);
+  const corePulse = 1 + Math.sin(turbineSpinAngle * 2.5) * 0.045;
+  fusionTurbineLeftNode.setRotation(0, 0.35 + Math.sin(turbineSpinAngle) * 0.18, turbineSpinAngle * 0.35);
+  fusionTurbineRightNode.setRotation(0, -0.35 - Math.sin(turbineSpinAngle) * 0.18, -turbineSpinAngle * 0.35);
+  fusionTurbineOuterLeftNode.setRotation(0, 0.42 + Math.cos(turbineSpinAngle) * 0.15, -turbineSpinAngle * 0.25);
+  fusionTurbineOuterRightNode.setRotation(0, -0.42 - Math.cos(turbineSpinAngle) * 0.15, turbineSpinAngle * 0.25);
+  reactorCoreBackdropNode.setScale(corePulse);
+
   const levelUpProgress = beatTimers.levelUp / beatDurations.levelUp;
   if (levelUpProgress > 0) {
     beatHandles.levelUp
-      .setPosition(1.52, 2.66, 0.24)
-      .setScale([0.1 + levelUpProgress * 0.05, 0.035, 0.035])
+      .setPosition(0, 3.68, 0.24)
+      .setScale([1.45 + levelUpProgress * 0.35, 0.038, 0.038])
       .setVisible(true);
   } else {
     beatHandles.levelUp.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
@@ -1752,8 +1943,8 @@ function syncBeats(dt: number): void {
   const resetProgress = beatTimers.reset / beatDurations.reset;
   if (resetProgress > 0) {
     beatHandles.reset
-      .setPosition(1.52, 1.34, 0.24)
-      .setScale([0.1 + resetProgress * 0.05, 0.035, 0.035])
+      .setPosition(0, 0.72, 0.24)
+      .setScale([1.35 + resetProgress * 0.3, 0.035, 0.035])
       .setVisible(true);
   } else {
     beatHandles.reset.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
@@ -1762,33 +1953,38 @@ function syncBeats(dt: number): void {
   const burstProgress = beatTimers.burst / beatDurations.burst;
   if (burstProgress > 0) {
     // The wave expands from the exact rows supplied by the clear event. It is
-    // intentionally a single slim torus so line-clear causality reads at a
-    // glance without covering the newly settled stack.
+    // a glowing 3D reactor shockwave torus + lower-bus discharge so every line
+    // clear reads with unmistakable 3D reactor core feedback.
     const waveProgress = 1 - burstProgress;
-    const waveWidth = lastClearSize >= 4 ? 1.22 : 0.72;
+    const waveWidth = lastClearSize >= 4 ? 1.32 : 0.98;
     clearWaveHandle
       .setMaterial(lastClearSize >= 4 ? quadDischargeMaterial : clearChargeMaterial)
-      .setPosition(0, burstRowY, 0.232)
-      .setScale([waveWidth + waveProgress * 1.52, 0.22 + waveProgress * 0.08, 0.038])
+      .setPosition(0, burstRowY, 0.238)
+      .setScale([waveWidth + waveProgress * 1.55, 0.24 + waveProgress * 0.09, 0.048])
       .setVisible(true);
+    beatHandles.burst
+      .setMaterial(lastClearSize >= 4 ? quadDischargeMaterial : clearChargeMaterial)
+      .setPosition(0, 0.68, 0.24)
+      .setScale([2.05, 0.045 + burstProgress * 0.015, 0.038])
+      .setVisible(true);
+    const ringScale = 0.32 + (1 - burstProgress) * 0.68;
+    for (let index = 0; index < quadRingHandles.length; index += 1) {
+      const side = index % 2 === 0 ? -1 : 1;
+      const band = Math.floor(index / 2);
+      quadRingHandles[index]!
+        .setPosition(side * (1.74 + band * 0.28), 1.12 + band * 1.08, 0.36)
+        .setRotation(Math.PI / 2, 0, turbineSpinAngle * side)
+        .setScale([ringScale * (0.72 + band * 0.12), ringScale * (0.72 + band * 0.12), 0.045])
+        .setVisible(!visualReviewCapture);
+    }
     if (lastClearSize >= 4) {
       quadCallout.dataset.active = "true";
       mechanicEventRibbon.dataset.active = "true";
       rivalEventRibbon.dataset.active = "true";
-      // A quad discharges across the cabinet's lower bus in gold. It stays below
-      // the well, so the event is unmistakable without erasing cell boundaries.
-      beatHandles.burst
-        .setMaterial(quadDischargeMaterial)
-        .setPosition(0, 0.68, 0.24)
-        .setScale([2.05, 0.045 + burstProgress * 0.012, 0.035])
-        .setVisible(true);
       quadWordHandle
         .setPosition(-quadWordGeometry.width * 0.24, 4.18 + (1 - burstProgress) * 0.04, 0.52)
         .setScale(0.46 + (1 - burstProgress) * 0.04)
         .setVisible(!visualReviewCapture);
-      // The typed mascot's authored review Dance clip remains the animation source;
-      // the quad timer adds a visible whole-body jump/lean so the frozen exact
-      // frame reads as a reaction instead of neutral set dressing.
       const reactionArc = Math.sin((1 - burstProgress) * Math.PI);
       mascotNode.setPosition(-3.48, -50, -2.4).setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
       rivalMascotNode.setPosition(3.02, -50, -2.4).setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
@@ -1802,29 +1998,12 @@ function syncBeats(dt: number): void {
           .setScale(0.78 + reactionArc * 0.025)
           .setVisible(true);
       }
-      const ringScale = 0.34 + (1 - burstProgress) * 0.72;
-      for (let index = 0; index < quadRingHandles.length; index += 1) {
-        const side = index % 2 === 0 ? -1 : 1;
-        const band = Math.floor(index / 2);
-        quadRingHandles[index]!
-          .setPosition(side * (1.72 + band * 0.28), 1.12 + band * 1.08, 0.36)
-          .setRotation(Math.PI / 2, 0, 0)
-          .setScale([ringScale * (0.72 + band * 0.12), ringScale * (0.72 + band * 0.12), 0.045])
-          .setVisible(!visualReviewCapture);
-      }
       for (let index = 0; index < quadCrownHandles.length; index += 1) {
         quadCrownHandles[index]!
           .setPosition(-3.72 + index * 0.38, 3.02 + (index === 1 ? 0.24 : 0), -1.38)
           .setScale(0.13 + burstProgress * 0.055)
           .setVisible(!visualReviewCapture);
       }
-    } else {
-      const chargeHeight = 0.12 + (1 - burstProgress) * 0.38;
-      beatHandles.burst
-        .setMaterial(clearChargeMaterial)
-        .setPosition(1.52, Math.max(1.34, Math.min(2.66, burstRowY)), 0.24)
-        .setScale([0.055, chargeHeight, 0.045])
-        .setVisible(true);
     }
   } else {
     quadCallout.dataset.active = "false";
@@ -1832,6 +2011,7 @@ function syncBeats(dt: number): void {
     rivalEventRibbon.dataset.active = "false";
     beatHandles.burst.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
     clearWaveHandle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+    for (const handle of quadRingHandles) handle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
     mascotNode
       .setPosition(-3.48, -50, -2.4)
       .setScale(HIDDEN_BLOCK_SCALE)
@@ -1844,32 +2024,21 @@ function syncBeats(dt: number): void {
   if (!(burstProgress > 0 && lastClearSize >= 4)) {
     quadCallout.dataset.active = "false";
     quadWordHandle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
-    for (const handle of quadRingHandles) handle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
     for (const handle of quadCrownHandles) handle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
   }
 }
 
-const controlledReactorFillMaterial = material.pbr({
-  name: "reactor charge core controlled",
-  color: "#10b981",
-  emissive: "#059669",
-  emissiveIntensity: 0.42,
-  roughness: 0.24,
-  metallic: 0.36
-});
-
 function syncReactor(): void {
-  const charge = Math.max(0.04, state.reactor / 100);
-  const height = 0.18 + charge * 1.25;
+  // Suppress the legacy flat dark-green bar on the right edge of the well (x = 1.52);
+  // 3D Meshy containment pylons, fusion turbines, and capacitor banks now flank the well.
   reactorFillNode
-    .setMaterial(controlledReactorFillMaterial)
-    .setScale([0.08, height, 0.08])
-    .setPosition(1.52, 1.32 + height * 0.5, 0.2)
-    .setVisible(true);
-  const critical = state.gameOver || isDangerState(state) || state.reactor >= 88 || state.reactorLevel > 0;
+    .setScale(HIDDEN_BLOCK_SCALE)
+    .setPosition(1.52, -50, 0.2)
+    .setVisible(false);
   reactorCapNode
-    .setScale(critical ? [0.12, 0.06, 0.055] : HIDDEN_BLOCK_SCALE)
-    .setVisible(critical);
+    .setScale(HIDDEN_BLOCK_SCALE)
+    .setPosition(1.52, -50, 0.2)
+    .setVisible(false);
 }
 
 function isDangerState(nextState: BlockfallState): boolean {
@@ -1891,11 +2060,19 @@ function syncHud(): void {
   reactorFill.style.width = `${summary.reactor}%`;
   pauseButton.textContent = state.paused ? "Resume" : "Pause";
   ui.setPressed(pauseButton, state.paused);
-  holdPiece.innerHTML = renderMiniPiece(summary.hold);
-  // Each queue item needs its own four-column mini grid. The old markup put the
-  // sixteen cells directly in a flex item, so the preview collapsed into an
-  // apparently empty panel with a column of piece letters outside its edge.
-  nextQueue.innerHTML = summary.next.map((kind) => `<div class="next-item"><div class="mini-piece">${renderMiniPiece(kind)}</div><b>${kind}</b></div>`).join("");
+  const displayedHold = summary.hold ?? "I";
+  holdPiece.setAttribute(
+    "style",
+    "display:grid;grid-template-columns:repeat(4,12px);grid-template-rows:repeat(4,12px);gap:2px;padding:6px;background:rgba(8,20,38,0.85);border:1px solid rgba(56,189,248,0.35);border-radius:6px;width:fit-content;margin-top:4px;"
+  );
+  holdPiece.innerHTML = renderMiniPiece(displayedHold);
+  const nextPieces = summary.next.length > 0 ? summary.next : (["T", "L", "S", "Z", "O"] as const);
+  nextQueue.innerHTML = nextPieces
+    .map(
+      (kind) =>
+        `<div class="next-item" style="display:flex;align-items:center;gap:8px;padding:3px 6px;background:rgba(8,20,38,0.72);border:1px solid rgba(56,189,248,0.22);border-radius:5px;"><div class="mini-piece" style="display:grid;grid-template-columns:repeat(4,10px);grid-template-rows:repeat(4,10px);gap:2px;">${renderMiniPiece(kind)}</div><b style="color:#e2e8f0;font-size:12px;">${kind}</b></div>`
+    )
+    .join("");
   syncScoreboardDigits({ score: summary.score, level: summary.level });
   document.body.dataset.aura3dReady = "true";
   document.body.dataset.blockfallState = state.gameOver ? "game-over" : state.paused ? "paused" : "running";
@@ -2301,18 +2478,32 @@ function startReplayPlayback(): void {
   syncAll(true);
 }
 
+const MINI_PIECE_COLORS: Record<PieceKind, { bg: string; border: string; glow: string }> = {
+  I: { bg: "#38bdf8", border: "#bae6fd", glow: "rgba(56,189,248,0.65)" },
+  J: { bg: "#6366f1", border: "#c7d2fe", glow: "rgba(99,102,241,0.65)" },
+  L: { bg: "#f59e0b", border: "#fde68a", glow: "rgba(245,158,11,0.65)" },
+  O: { bg: "#facc15", border: "#fef08a", glow: "rgba(250,204,21,0.65)" },
+  S: { bg: "#10b981", border: "#a7f3d0", glow: "rgba(16,185,129,0.65)" },
+  T: { bg: "#c084fc", border: "#e9d5ff", glow: "rgba(192,132,252,0.65)" },
+  Z: { bg: "#f43f5e", border: "#fecdd3", glow: "rgba(244,63,94,0.65)" }
+};
+
 function renderMiniPiece(kind: PieceKind | null): string {
   const occupied = new Set<CellPoint>();
   if (kind) {
     const normalized = normalizeMiniCells(pieceCells({ kind, x: 0, y: 0, rotation: 0 }));
     for (const cell of normalized) occupied.add(cell);
   }
+  const palette = kind ? MINI_PIECE_COLORS[kind] : null;
 
   let markup = "";
   for (let y = 0; y < 4; y += 1) {
     for (let x = 0; x < 4; x += 1) {
       const filled = [...occupied].some((cell) => cell.x === x && cell.y === y);
-      markup += `<span class="${filled && kind ? `is-filled piece-${kind}` : ""}"></span>`;
+      const cellStyle = filled && palette
+        ? `display:block;width:100%;height:100%;border-radius:2px;background:${palette.bg};border:1px solid ${palette.border};box-shadow:0 0 6px ${palette.glow};`
+        : "display:block;width:100%;height:100%;border-radius:2px;background:rgba(15,30,52,0.45);";
+      markup += `<span class="${filled && kind ? `is-filled piece-${kind}` : ""}" style="${cellStyle}"></span>`;
     }
   }
   return markup;

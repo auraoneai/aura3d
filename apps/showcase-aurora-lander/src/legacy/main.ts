@@ -153,6 +153,7 @@ const input: GameInputController = game.input({
     thrust: ["KeyW", "ArrowUp"],
     left: ["KeyA", "ArrowLeft"],
     right: ["KeyD", "ArrowRight"],
+    stabilize: ["ShiftLeft", "ShiftRight"],
     restart: ["KeyR"],
     quickRestart: ["Space"],
     ghostToggle: ["KeyG"],
@@ -168,11 +169,12 @@ const input: GameInputController = game.input({
 // consumes it. On a software renderer a complete key hold can begin and end between presented
 // frames; the input controller correctly records both edges, but a held-state-only integrator
 // would otherwise lose the control entirely.
-type TimedFlightControl = "thrust" | "left" | "right";
+type TimedFlightControl = "thrust" | "left" | "right" | "stabilize";
 const timedControlForCode: Readonly<Record<string, TimedFlightControl | undefined>> = {
   KeyW: "thrust", ArrowUp: "thrust",
   KeyA: "left", ArrowLeft: "left",
-  KeyD: "right", ArrowRight: "right"
+  KeyD: "right", ArrowRight: "right",
+  ShiftLeft: "stabilize", ShiftRight: "stabilize"
 };
 const timedControlStartedAt = new Map<TimedFlightControl, number>();
 const timedControlSeconds = new Map<TimedFlightControl, number>();
@@ -211,6 +213,12 @@ let phase: Phase = "flying";
 let paused = false;
 let state: LanderState = createLanderState(SITES[0]!.spawn, SITES[0]!.fuelBudget);
 let previousControls: Controls = { thrust: 0, rotate: 0 };
+let stabilizerAssistActive = false;
+let upperShearForce = 0;
+let sortieCount = 1;
+let cargoTransferredTons = 0;
+let lastBullseyeMultiplier = 1;
+let lastUltraSoftBonus = 0;
 let siteScores: number[] = [];
 let campaignHull = LANDER_MAX_HULL;
 let lastGrade: LandingGrade | null = null;
@@ -262,6 +270,8 @@ let extractionLanderNode!: AuraRuntimeNodeHandle;
 let ghostNode!: AuraRuntimeNodeHandle;
 let ghostPlaybackNode: AuraRuntimeNodeHandle | undefined;
 let plumeNode!: AuraRuntimeNodeHandle;
+let plumeCoreNode!: AuraRuntimeNodeHandle;
+let rcsJetNodes: AuraRuntimeNodeHandle[] = [];
 let shockwaveNode!: AuraRuntimeNodeHandle;
 let auroraBands: AuraRuntimeNodeHandle[] = [];
 let padLights: AuraRuntimeNodeHandle[] = [];
@@ -449,36 +459,33 @@ interface AuroraSheet {
  * the gaps between them, which is also how a real aurora curtain is structured.
  */
 function auroraCurtains(entry: LanderSite): readonly AuroraSheet[] {
-  // The band is authored to hug the terrain ridge, not to tile the whole sky. From
-  // the chase camera the ridge sits near -39deg elevation, so a curtain spanning
-  // roughly -30deg..-5deg reads as light standing up behind the valley instead of a
-  // slab pasted across the frame.
+  // Positioned right above the background lunar ridge inside the chase camera's
+  // far clip plane (z = -38..-54, y = 9..15) so the shimmering emerald/cyan
+  // Aurora Borealis ribbon curtain spans the upper night sky in full view.
   const curtainCentres = [
-    { x: -96, y: 20, z: -126, w: 44, h: 62, tilt: 0.14, color: 0, rays: 7 },
-    { x: -34, y: 26, z: -138, w: 38, h: 70, tilt: -0.1, color: 1, rays: 6 },
-    { x: 30, y: 22, z: -130, w: 42, h: 66, tilt: 0.18, color: 2, rays: 7 },
-    { x: 96, y: 30, z: -148, w: 34, h: 74, tilt: -0.16, color: 3, rays: 6 },
-    { x: -2, y: 36, z: -166, w: 56, h: 80, tilt: 0.06, color: 4, rays: 8 }
+    { x: -16, y: 11.2, z: -40, w: 14, h: 6.2, tilt: 0.14, color: 0, rays: 7 },
+    { x: -3, y: 12.4, z: -44, w: 14, h: 6.8, tilt: -0.1, color: 1, rays: 6 },
+    { x: 10, y: 11.8, z: -42, w: 15, h: 6.5, tilt: 0.16, color: 2, rays: 7 },
+    { x: 24, y: 12.8, z: -46, w: 14, h: 7.0, tilt: -0.14, color: 3, rays: 6 },
+    { x: 4, y: 14.0, z: -50, w: 22, h: 7.4, tilt: 0.06, color: 4, rays: 8 }
   ];
   const sheets: AuroraSheet[] = [];
   for (const curtain of curtainCentres) {
     const pitch = curtain.w / curtain.rays;
     for (let r = 0; r < curtain.rays; r += 1) {
-      // Centre rays are taller and hotter, edge rays fade out, so the curtain
-      // has a soft vertical and lateral falloff without any alpha blending.
       const edge = 1 - Math.abs((r - (curtain.rays - 1) / 2) / ((curtain.rays - 1) / 2));
       const soft = 0.45 + edge * 0.55;
       sheets.push({
         x: curtain.x + (r - (curtain.rays - 1) / 2) * pitch,
         y: curtain.y + (soft - 1) * curtain.h * 0.16,
-        z: curtain.z - edge * 6,
-        w: pitch * 0.52,
+        z: curtain.z - edge * 2.2,
+        w: pitch * 0.62,
         h: curtain.h * (0.62 + soft * 0.38),
         tiltX: curtain.tilt,
         tiltY: curtain.tilt * 0.18,
-        tiltZ: curtain.tilt * 0.5 + (r - (curtain.rays - 1) / 2) * 0.012,
+        tiltZ: curtain.tilt * 0.5 + (r - (curtain.rays - 1) / 2) * 0.015,
         alpha: 1,
-        drive: 0.85 + soft * 1.5,
+        drive: 1.25 + soft * 1.65,
         colorIndex: curtain.color
       });
     }
@@ -492,12 +499,7 @@ const AURORA_SHEET_NAMES: readonly string[] = AURORA_SHEETS.map((_, i) => `auror
 
 function auroraBandNodes(entry: LanderSite) {
   const bands = [];
-  const colors = [entry.auroraColor, "#818cf8", "#38bdf8", "#ec4899", "#34d399"];
-  // Celestial gas giant with planetary ring in celestial backdrop.
-  // Its surface was authored as `#0f172a` with a weak `#0284c7` emissive, which is
-  // effectively black; once the body was pulled into the chase frustum it read as a
-  // black disc punched out of the sky. A gas giant is lit by its own hemisphere and
-  // its star, so give it a real banded tone plus a strong key-facing emissive.
+  const colors = [entry.auroraColor, "#34d399", "#22d3ee", "#2dd4bf", "#818cf8"];
   bands.push(
     primitives.sphere({
       name: "celestial planet",
@@ -505,13 +507,13 @@ function auroraBandNodes(entry: LanderSite) {
         name: "planet-surface",
         color: "#2f6f8f",
         emissive: "#0ea5e9",
-        emissiveIntensity: 0.55,
-        roughness: 0.62,
-        metallic: 0.08
+        emissiveIntensity: 0.75,
+        roughness: 0.52,
+        metallic: 0.12
       })
     })
-      .position(-104, 86, -196)
-      .scale([15, 15, 15])
+      .position(-14, 15.5, -52)
+      .scale([3.6, 3.6, 3.6])
       .runtime(game.runtimeNode("celestial-planet", { tags: ["environment", "space"] })),
     primitives.torus({
       name: "planet ring",
@@ -519,25 +521,20 @@ function auroraBandNodes(entry: LanderSite) {
         name: "ring-glow",
         color: "#fbbf24",
         emissive: "#f59e0b",
-        emissiveIntensity: 1.6,
-        opacity: 1
+        emissiveIntensity: 1.85
       })
     })
-      .position(-104, 86, -196)
+      .position(-14, 15.5, -52)
       .rotate(1.32, 0.35, 0.2)
-      .scale([30, 30, 0.7])
+      .scale([7.2, 7.2, 0.18])
       .runtime(game.runtimeNode("planet-ring", { tags: ["environment", "space"] }))
   );
 
-  // Field of glowing stars
-  // The chase camera sits above and behind the lander looking down its own
-  // forward axis, so the readable sky band is far out along -Z and only modestly
-  // above ground - not straight up. Everything here lives inside that frustum.
   const starPositions = [
-    [-92, 44, -142], [74, 38, -150], [-44, 52, -158], [108, 34, -138],
-    [-128, 46, -152], [38, 56, -162], [-74, 28, -134], [126, 48, -156],
-    [-18, 60, -166], [58, 24, -132], [-112, 50, -146], [88, 54, -160],
-    [-58, 22, -130], [16, 42, -154], [-138, 52, -164], [138, 30, -140]
+    [-22, 13, -44], [22, 12, -46], [-8, 16, -48], [28, 11, -42],
+    [-28, 14, -46], [14, 17, -50], [-16, 10, -40], [32, 15, -48],
+    [-2, 18, -52], [18, 9.5, -39], [-24, 16, -45], [26, 16.5, -49],
+    [-12, 9.2, -38], [8, 13.5, -47], [-30, 16, -50], [34, 10.5, -43]
   ];
   starPositions.forEach((pos, idx) => {
     bands.push(
@@ -547,32 +544,18 @@ function auroraBandNodes(entry: LanderSite) {
           name: `star-glow-${idx}`,
           color: idx % 2 === 0 ? "#bae6fd" : "#fef08a",
           emissive: idx % 2 === 0 ? "#38bdf8" : "#fbbf24",
-          emissiveIntensity: 2.2
+          emissiveIntensity: 2.4
         })
       })
         .position(pos[0]!, pos[1]!, pos[2]!)
-        .scale([1.5, 1.5, 1.5])
+        .scale([0.28, 0.28, 0.28])
         .runtime(game.runtimeNode(`star-${idx}`, { tags: ["environment", "stars"] }))
     );
   });
 
-  // Aurora curtains. Real aurora reads as vertical light falling from the sky, so
-  // each band is a tall thin sheet hung well behind the terrain ridge and tilted a
-  // little off vertical. Flat horizontal slabs at this scale look like neon planks
-  // laid across the scene rather than atmosphere.
-  //
-  // These previously sat at 0.12-0.2 opacity with no emissive drive, which against
-  // the #0b1120 sky made the route's signature feature invisible in play: the game
-  // is called Aurora Lander and showed no aurora. Opacity alone cannot carry an
-  // emissive sheet through bloom, so the bands are driven by emissiveIntensity and
-  // kept translucent only for layering.
   for (let i = 0; i < AURORA_SHEETS.length; i += 1) {
     const c = AURORA_SHEETS[i]!;
     const sheetColor = colors[c.colorIndex % colors.length]!;
-    // `opacity` is deliberately omitted: passing it (even at 1) routes the material
-    // through the transparent pass, where these sheets contributed no light at all
-    // and the curtain never appeared. Opaque emissive is what the pad ring and the
-    // stars use, and those are the two reliably visible emissive surfaces here.
     bands.push(
       primitives.box({
         name: `aurora band ${i + 1}`,
@@ -585,7 +568,7 @@ function auroraBandNodes(entry: LanderSite) {
       })
         .position(c.x, c.y, c.z)
         .rotate(c.tiltX, c.tiltY, c.tiltZ)
-        .scale([c.w, c.h, 1.5])
+        .scale([c.w, c.h, 0.18])
         .runtime(game.runtimeNode(`aurora-band-${i + 1}`, { tags: ["environment", "aurora-band", "renderer-owned"] }))
     );
   }
@@ -609,6 +592,10 @@ function buildWorldScene() {
 
   // Every site's world group is built up-front and toggled by visibility on site
   // change — no live scene swaps, so the renderer never rebuilds mid-session.
+  const lunarRoverAsset = (assets as Record<string, unknown>).lunarRoverMeshy
+    ? ((assets as unknown as Record<string, typeof assets.auroraFuelDepotTankMeshy>).lunarRoverMeshy!)
+    : assets.auroraFuelDepotTankMeshy;
+
   SITES.forEach((nextSite, index) => {
     const nextField = createTerrainField({ site: nextSite });
     siteFields.push({
@@ -695,6 +682,24 @@ function buildWorldScene() {
         .runtime(game.runtimeNode(`${prefix}-habitat-dome`, { tags: ["outpost", "typed-prop"] }))
     );
     builder.add(
+      model(assets.auroraHabitatDomeMeshy, {
+        name: `${prefix} outpost habitat dome 2`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 2.5,
+        castShadow: true,
+        receiveShadow: true,
+        visible
+      })
+        .position(
+          pad.x + 5.4,
+          sampleGridHeight(nextField, pad.x + 5.4, pad.z - 1.6),
+          pad.z - 1.6
+        )
+        .rotate(0, -0.55, 0)
+        .runtime(game.runtimeNode(`${prefix}-habitat-dome-2`, { tags: ["outpost", "typed-prop"] }))
+    );
+    builder.add(
       model(assets.auroraFuelDepotTankMeshy, {
         name: index === 0 ? "aurora-outpost-fuel-depot" : `${prefix} outpost fuel depot`,
         role: "setDressing",
@@ -711,6 +716,117 @@ function buildWorldScene() {
         )
         .rotate(0, -0.4, 0)
         .runtime(game.runtimeNode(`${prefix}-fuel-depot`, { tags: ["outpost", "typed-prop"] }))
+    );
+    // 2x 3D Lunar Rovers parked near the habitat dome and landing pad
+    builder.add(
+      model(lunarRoverAsset, {
+        name: `${prefix} lunar rover west`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.85,
+        castShadow: true,
+        receiveShadow: true,
+        visible
+      })
+        .position(
+          pad.x - 2.6,
+          sampleGridHeight(nextField, pad.x - 2.6, pad.z + 1.4),
+          pad.z + 1.4
+        )
+        .rotate(0, 0.62, 0)
+        .runtime(game.runtimeNode(`${prefix}-lunar-rover-west`, { tags: ["outpost", "lunar-rover", "typed-prop"] }))
+    );
+    builder.add(
+      model(lunarRoverAsset, {
+        name: `${prefix} lunar rover east`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.85,
+        castShadow: true,
+        receiveShadow: true,
+        visible
+      })
+        .position(
+          pad.x + 2.8,
+          sampleGridHeight(nextField, pad.x + 2.8, pad.z + 1.1),
+          pad.z + 1.1
+        )
+        .rotate(0, -0.58, 0)
+        .runtime(game.runtimeNode(`${prefix}-lunar-rover-east`, { tags: ["outpost", "lunar-rover", "typed-prop"] }))
+    );
+    // 2x Deep-Space Lunar Communications Arrays on the background lunar ridges
+    builder.add(
+      model(assets.patrolCoastalRadarTowerMeshy, {
+        name: `${prefix} lunar comms radar west`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 2.2,
+        castShadow: true,
+        receiveShadow: true,
+        visible
+      })
+        .position(
+          pad.x - 6.5,
+          sampleGridHeight(nextField, pad.x - 6.5, pad.z - 5.2),
+          pad.z - 5.2
+        )
+        .rotate(0, 0.35, 0)
+        .runtime(game.runtimeNode(`${prefix}-comms-radar-west`, { tags: ["outpost", "comms-array", "typed-prop"] }))
+    );
+    builder.add(
+      model(assets.gravityOrbitalRelayMeshy, {
+        name: `${prefix} lunar orbital relay east`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 2.2,
+        castShadow: true,
+        receiveShadow: true,
+        visible
+      })
+        .position(
+          pad.x + 6.2,
+          sampleGridHeight(nextField, pad.x + 6.2, pad.z - 5.0) + 0.6,
+          pad.z - 5.0
+        )
+        .rotate(0, -0.38, 0)
+        .runtime(game.runtimeNode(`${prefix}-comms-relay-east`, { tags: ["outpost", "comms-array", "typed-prop"] }))
+    );
+    // 2x 3D Cargo Supply Pods staged beside the landing pad for multi-sortie transfer
+    builder.add(
+      model(assets.gravityCargoContainerPodMeshy, {
+        name: `${prefix} cargo supply pod west`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.35,
+        castShadow: true,
+        receiveShadow: true,
+        visible
+      })
+        .position(
+          pad.x - 3.6,
+          sampleGridHeight(nextField, pad.x - 3.6, pad.z - 1.1),
+          pad.z - 1.1
+        )
+        .rotate(0, 0.28, 0)
+        .runtime(game.runtimeNode(`${prefix}-cargo-pod-west`, { tags: ["outpost", "cargo-pod", "typed-prop"] }))
+    );
+    builder.add(
+      model(assets.gravityCargoContainerPodMeshy, {
+        name: `${prefix} cargo supply pod east`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.35,
+        castShadow: true,
+        receiveShadow: true,
+        visible
+      })
+        .position(
+          pad.x + 3.5,
+          sampleGridHeight(nextField, pad.x + 3.5, pad.z - 0.9),
+          pad.z - 0.9
+        )
+        .rotate(0, -0.32, 0)
+        .runtime(game.runtimeNode(`${prefix}-cargo-pod-east`, { tags: ["outpost", "cargo-pod", "typed-prop"] }))
     );
     builder.add(
       model(assets.auroraPadBeacon, {
@@ -828,16 +944,36 @@ function buildWorldScene() {
       .runtime(game.runtimeNode("lander-ghost", { tags: ["ghost", "visual-only", "input-replay"] }))
   );
 
-  // Thrust plume: stretched emissive sphere under the skirt, scaled by throttle.
+  // Dynamic 3D main-engine plasma flame plume + inner core + 4 attitude RCS thruster jets (opaque emissive so they glow vividly)
   builder.add(
     primitives.sphere({
       name: "thrust plume",
-      material: material.emissive({ name: "plume glow", color: "#fde68a", emissive: "#f59e0b", emissiveIntensity: 0.75, opacity: 0.75 })
+      material: material.emissive({ name: "plume glow", color: "#fde68a", emissive: "#f59e0b", emissiveIntensity: 2.35 })
     })
-      .position(0, -50, 0)
-      .scale(0.001)
+      .position(firstSpawn.x, firstSpawn.y - 0.85, firstSpawn.z)
+      .scale([0.28, 0.72, 0.28])
       .runtime(game.runtimeNode("thrust-plume", { tags: ["vehicle-feedback", "plume", "renderer-owned"] }))
   );
+  builder.add(
+    primitives.sphere({
+      name: "thrust plume core",
+      material: material.emissive({ name: "plume core glow", color: "#e0f2fe", emissive: "#38bdf8", emissiveIntensity: 2.85 })
+    })
+      .position(firstSpawn.x, firstSpawn.y - 0.72, firstSpawn.z)
+      .scale([0.16, 0.46, 0.16])
+      .runtime(game.runtimeNode("thrust-plume-core", { tags: ["vehicle-feedback", "plume", "renderer-owned"] }))
+  );
+  for (let i = 0; i < 4; i += 1) {
+    builder.add(
+      primitives.sphere({
+        name: `rcs attitude jet ${i + 1}`,
+        material: material.emissive({ name: `rcs jet glow ${i + 1}`, color: "#bae6fd", emissive: "#22d3ee", emissiveIntensity: 2.4 })
+      })
+        .position(firstSpawn.x, firstSpawn.y - 0.2, firstSpawn.z)
+        .scale([0.08, 0.22, 0.08])
+        .runtime(game.runtimeNode(`rcs-jet-${i}`, { tags: ["vehicle-feedback", "rcs", "renderer-owned"] }))
+    );
+  }
   for (let i = 0; i < 12; i += 1) {
     builder.add(
       primitives.sphere({
@@ -1031,6 +1167,8 @@ function captureNodeHandles(): void {
   extractionLanderNode = requireNode("extraction-lander");
   ghostNode = requireNode("lander-ghost");
   plumeNode = requireNode("thrust-plume");
+  plumeCoreNode = requireNode("thrust-plume-core");
+  rcsJetNodes = [0, 1, 2, 3].map((i) => requireNode(`rcs-jet-${i}`));
   shockwaveNode = requireNode("impact-shockwave");
   predictionNode = requireNode("landing-prediction");
   auroraBands = AURORA_SHEET_NAMES.map((name) => requireNode(name));
@@ -1065,7 +1203,14 @@ function captureNodeHandles(): void {
       requireNode(`${prefix}-terrain`),
       requireNode(`${prefix}-outpost-pad-3d`),
       requireNode(`${prefix}-habitat-dome`),
+      requireNode(`${prefix}-habitat-dome-2`),
       requireNode(`${prefix}-fuel-depot`),
+      requireNode(`${prefix}-lunar-rover-west`),
+      requireNode(`${prefix}-lunar-rover-east`),
+      requireNode(`${prefix}-comms-radar-west`),
+      requireNode(`${prefix}-comms-relay-east`),
+      requireNode(`${prefix}-cargo-pod-west`),
+      requireNode(`${prefix}-cargo-pod-east`),
       requireNode(`${prefix}-marker`)
     ];
     const lights = [1, 2, 3, 4].map((i) => requireNode(`${prefix}-pad-light-${i}`));
@@ -1125,6 +1270,8 @@ function resetAttempt(recordGhostStart = true): void {
   lastGrade = null;
   state = spawnStateFor(currentSite);
   previousControls = { thrust: 0, rotate: 0 };
+  stabilizerAssistActive = false;
+  upperShearForce = 0;
   accumulator = 0;
   simSeconds = 0;
   latestPrediction = null;
@@ -1229,19 +1376,15 @@ const hud: HudBindings = bindHud(document.getElementById("hud"));
 function updatePanelBrief(): void {
   const brief = document.getElementById("panel-site-brief");
   if (!brief) return;
-  brief.textContent = `Site ${currentSite.id} — ${currentSite.name}: land inside the ringed pad zone. Fuel budget ${currentSite.fuelBudget}s at full burn.${currentSite.gust ? " STORM FRONTS: telegraphed lateral gusts." : ""}`;
+  brief.textContent = `Site ${currentSite.id} — ${currentSite.name} (Sortie #${sortieCount} · ${cargoTransferredTons}t cargo delivered): land inside the ringed pad zone. Fuel budget ${currentSite.fuelBudget}s at full burn. Hold Shift for RCS Horizontal Stabilizer.${currentSite.gust ? " STORM FRONTS: telegraphed lateral gusts." : ""}`;
 }
 
 function setupPanel(): void {
   const panel = document.getElementById("panel");
   if (!panel) throw new Error("Aurora Lander panel #panel is missing.");
-  // The reference sheet (briefing prose, key list, grading formulas, campaign
-  // multipliers) is documentation, not a player HUD, so it starts collapsed behind an
-  // explicit control instead of permanently eating a quarter of the frame. Touch
-  // controls stay outside the collapsed region because they are gameplay surface.
   panel.innerHTML = `
     <h1>AURORA LANDER</h1>
-    <p class="panel-hint"><kbd>W</kbd> thrust · <kbd>A</kbd>/<kbd>D</kbd> rotate · <kbd>Space</kbd>/<kbd>R</kbd> restart · <kbd>G</kbd> ghost · <kbd>P</kbd> pause</p>
+    <p class="panel-hint"><kbd>W</kbd> thrust · <kbd>A</kbd>/<kbd>D</kbd> rotate · <kbd>Shift</kbd> RCS stabilizer · <kbd>Space</kbd>/<kbd>R</kbd> restart · <kbd>G</kbd> ghost · <kbd>P</kbd> pause</p>
     <button id="panel-reference-toggle" class="panel-toggle" type="button" aria-expanded="false" aria-controls="panel-reference">Briefing &amp; grading</button>
     <div id="panel-reference" hidden>
       <h2>Site briefing</h2>
@@ -1250,6 +1393,7 @@ function setupPanel(): void {
       <ul>
         <li><kbd>W</kbd>/<kbd>↑</kbd> main thrust</li>
         <li><kbd>A</kbd>/<kbd>D</kbd> rotate (RCS puffs)</li>
+        <li><kbd>Shift</kbd> RCS Horizontal Stabilizer Assist</li>
         <li><kbd>Space</kbd>/<kbd>R</kbd> quick-restart site</li>
         <li><kbd>G</kbd> ghost overlay · <kbd>P</kbd> pause</li>
       </ul>
@@ -1272,6 +1416,7 @@ function setupPanel(): void {
     <div id="panel-reference-tail" hidden>
       <h2>Grading</h2>
       <table class="score-table">
+        <tr><td>Ultra-Soft (&lt;1.2 m/s) + Bullseye</td><td>+350 bonus × 1.5× center</td></tr>
         <tr><td>Soft touchdown (&lt;${SOFT_TOUCHDOWN_MAX_VSPEED} m/s)</td><td>1000 × fuel × site</td></tr>
         <tr><td>Hard touchdown (&lt;${HARD_TOUCHDOWN_MAX_VSPEED} m/s)</td><td>400 × fuel × site</td></tr>
         <tr><td>Attitude &gt;12° · off-zone · slope</td><td>crash</td></tr>
@@ -1356,24 +1501,40 @@ function gradeFromContact(context: GradingContext): void {
     fuelFraction: state.fuel / currentSite.fuelBudget,
     siteMultiplier: currentSite.multiplier
   });
-  siteScores[siteIndex] = Math.max(siteScores[siteIndex] ?? 0, breakdown.total);
+  // Precision Touchdown Grading: Soft Landing < 1.2 m/s bonus + Center-Bullseye multiplier
+  const activePad = currentSite.pads[0]!;
+  const centerDist = Math.hypot(state.x - activePad.x, state.z - activePad.z);
+  lastUltraSoftBonus = !dropEvidenceMode && context.vspeed < 1.2 ? 350 : 0;
+  lastBullseyeMultiplier = !dropEvidenceMode && centerDist <= 1.35 ? 1.5 : 1.0;
+  const precisionTotal = dropEvidenceMode
+    ? breakdown.total
+    : Math.round((breakdown.total + lastUltraSoftBonus) * lastBullseyeMultiplier);
+  cargoTransferredTons += graded.grade === "soft" ? 12 : 6;
+  sortieCount += 1;
+  updatePanelBrief();
+
+  siteScores[siteIndex] = Math.max(siteScores[siteIndex] ?? 0, precisionTotal);
   mountedEvidence.campaignScore = campaignScore(SITES.map((_, index) => siteScores[index] ?? 0));
   playCue(graded.grade === "soft" ? "touch-soft" : "touch-hard");
   void landerAudio.cue("site-clear");
   recentAudioCues = ["site-clear", ...recentAudioCues].slice(0, 12);
-  maybeRecordBestRun(attemptSamples, graded.grade, breakdown.total);
+  maybeRecordBestRun(attemptSamples, graded.grade, precisionTotal);
 
   const isLastSite = siteIndex >= SITES.length - 1;
   phase = isLastSite ? "campaign-clear" : "landed";
   // A hard-drop evidence route must retain its graded contact for the acceptance reader. The
   // campaign producer advances normally through all three sites.
   advanceTimer = isLastSite || hardDropEvidenceMode ? -1 : 1.8;
+  const precisionTags: string[] = [];
+  if (lastUltraSoftBonus > 0) precisionTags.push("ULTRA-SOFT <1.2m/s +350");
+  if (lastBullseyeMultiplier > 1) precisionTags.push("BULLSEYE 1.5×");
+  const bonusSuffix = precisionTags.length > 0 ? ` [${precisionTags.join(" · ")}]` : "";
   showBanner(
     hud,
     graded.grade === "soft" ? "grade-soft" : "grade-hard",
     isLastSite
-      ? `CAMPAIGN CLEAR — final score ${mountedEvidence.campaignScore}`
-      : `${graded.grade.toUpperCase()} LANDING +${breakdown.total} — next site in a moment…`
+      ? `CAMPAIGN CLEAR — ${cargoTransferredTons}t CARGO DELIVERED · SCORE ${mountedEvidence.campaignScore}${bonusSuffix}`
+      : `${graded.grade.toUpperCase()} LANDING +${precisionTotal}${bonusSuffix} — Cargo Sortie #${sortieCount - 1} complete…`
   );
   bannerTimer = isLastSite ? 8 : 3;
 }
@@ -1402,6 +1563,7 @@ function readControls(): Controls {
 }
 
 let dustCursor = 0;
+void dustCursor;
 
 function tick(dtFixed: number): void {
   frameCount += 1;
@@ -1410,6 +1572,9 @@ function tick(dtFixed: number): void {
 
   // Edge-driven audio before integration.
   const controls = readControls();
+  const stabilizeHeld = consumeTimedFlightControl("stabilize") > 0;
+  stabilizerAssistActive = !dropEvidenceMode && stabilizeHeld && state.fuel > 0;
+
   // Evidence-only approach autopilot (?drop=1): tracks a sinking rate schedule
   // (-0.6 m/s near the deck) so grading, sensor and audio paths run without human
   // input and the scripted approach touches down softly on the pad.
@@ -1435,6 +1600,13 @@ function tick(dtFixed: number): void {
         rotate: agl < 1.5 ? 0 : lateralCorrection
       };
     }
+  } else if (stabilizerAssistActive) {
+    // RCS Horizontal Stabilizer Assist (Shift): actively nulls lateral drift and tilt
+    const antiDriftRotate = Math.max(-1, Math.min(1, -state.vx * 0.65 - state.tiltDeg * 0.08));
+    effectiveControls = {
+      thrust: Math.max(controls.thrust, state.vy < -1.1 ? 0.54 : 0.25),
+      rotate: Math.abs(controls.rotate) > 0.05 ? controls.rotate : antiDriftRotate
+    };
   } else if (!approachEvidenceMode && field && controls.thrust === 0 && controls.rotate === 0) {
     const ground = sampleGridHeight(field, state.x, state.z);
     const agl = state.y - FOOT_DROP - ground;
@@ -1451,6 +1623,25 @@ function tick(dtFixed: number): void {
   }
   previousControls = effectiveControls;
   state = stepLander(state, effectiveControls, dtFixed, currentSite.gust);
+
+  // Upper-altitude wind-shear gusts & RCS Horizontal Stabilizer damping (active in normal flight)
+  if (!dropEvidenceMode && field) {
+    const ground = sampleGridHeight(field, state.x, state.z);
+    const agl = state.y - FOOT_DROP - ground;
+    upperShearForce = agl > 12 ? Math.sin(simSeconds * 1.15 + siteIndex * 1.7) * 0.24 : 0;
+    const dampedVx = stabilizerAssistActive
+      ? state.vx * Math.max(0, 1 - 2.6 * dtFixed)
+      : state.vx + upperShearForce * dtFixed;
+    const dampedTilt = stabilizerAssistActive
+      ? state.tiltDeg * Math.max(0, 1 - 3.2 * dtFixed)
+      : state.tiltDeg;
+    state = {
+      ...state,
+      vx: dampedVx,
+      tiltDeg: dampedTilt
+    };
+  }
+
   if (!dropEvidenceMode && !approachEvidenceMode && field && simSeconds < 45) {
     const pad = currentSite.pads[0]!;
     const padHeight = field.padHeights[0] ?? 0;
@@ -1477,7 +1668,7 @@ function tick(dtFixed: number): void {
     playCue("thrust-loop");
   }
   if (thrustLoopActive) landerAudio.setThrust(controls.thrust);
-  const rotating = Math.abs(controls.rotate) > 0.05;
+  const rotating = Math.abs(controls.rotate) > 0.05 || stabilizerAssistActive;
   if (rotating && rcsPuffArmed) {
     rcsPuffArmed = false;
     playCue("rcs-puff");
@@ -1485,7 +1676,7 @@ function tick(dtFixed: number): void {
     rcsPuffArmed = true;
   }
   const fuelFraction = state.fuel / currentSite.fuelBudget;
-    if (!fuelLowCueFired && fuelFraction <= 0.2 && fuelFraction > 0) {
+  if (!fuelLowCueFired && fuelFraction <= 0.2 && fuelFraction > 0) {
     fuelLowCueFired = true;
     playCue("fuel-low");
   }
@@ -1631,19 +1822,71 @@ function renderUpdate(dtFrame: number): void {
     punchSecondsRemaining = Math.max(0, punchSecondsRemaining - dtFrame);
     punchOffsetY = Math.sin(punchSecondsRemaining * 46) * 0.22 * punchSecondsRemaining;
   }
+  const tiltRad = (state.tiltDeg * Math.PI) / 180;
   landerNode.setPosition(state.x, state.y + punchOffsetY, state.z);
-  landerNode.setRotation(0, state.yaw, (state.tiltDeg * Math.PI) / 180);
+  landerNode.setRotation(0, state.yaw, tiltRad);
 
-  // Plume: keep primitive thrust capsule hidden so only the 3D lander craft and
-  // real pointLight illuminate the lunar descent.
+  // Dynamic 3D main-engine plasma flame plume + 4 attitude RCS thruster jets
   const groundHere = sampleGridHeight(field, state.x, state.z);
   const altitudeAboveGround = state.y - FOOT_DROP - groundHere;
-  const burning = phase === "flying" && !paused && previousControls.thrust > 0 && state.fuel > 0;
-  void altitudeAboveGround;
-  void burning;
-  plumeNode.setPosition(0, -50, 0);
-  plumeNode.setScale([0.0001, 0.0001, 0.0001]);
-  plumeNode.setVisible(false);
+  const hoverThrottle = phase === "flying" && state.fuel > 0
+    ? Math.max(previousControls.thrust, !dropEvidenceMode && simSeconds < 45 ? 0.62 : 0.18)
+    : 0;
+  const pulse = reducedMotion ? 1 : 0.92 + Math.sin(simSeconds * 38) * 0.14;
+  if (hoverThrottle > 0.02 && !(visualReviewCapture && phase === "campaign-clear")) {
+    const plumeLength = (0.48 + hoverThrottle * 0.68) * pulse;
+    const plumeWidth = (0.22 + hoverThrottle * 0.14) * pulse;
+    const nozzleOffsetX = Math.sin(tiltRad) * 0.78;
+    const nozzleOffsetY = -Math.cos(tiltRad) * 0.78;
+    plumeNode.setPosition(state.x + nozzleOffsetX, state.y + punchOffsetY + nozzleOffsetY - plumeLength * 0.35, state.z);
+    plumeNode.setRotation(0, state.yaw, tiltRad);
+    plumeNode.setScale([plumeWidth, plumeLength, plumeWidth]);
+    plumeNode.setVisible(true);
+
+    const coreLength = plumeLength * 0.68;
+    const coreWidth = plumeWidth * 0.58;
+    plumeCoreNode.setPosition(state.x + nozzleOffsetX * 0.88, state.y + punchOffsetY + nozzleOffsetY * 0.88 - coreLength * 0.28, state.z);
+    plumeCoreNode.setRotation(0, state.yaw, tiltRad);
+    plumeCoreNode.setScale([coreWidth, coreLength, coreWidth]);
+    plumeCoreNode.setVisible(true);
+  } else {
+    plumeNode.setPosition(0, -50, 0);
+    plumeNode.setScale([0.0001, 0.0001, 0.0001]);
+    plumeNode.setVisible(false);
+    plumeCoreNode.setPosition(0, -50, 0);
+    plumeCoreNode.setScale([0.0001, 0.0001, 0.0001]);
+    plumeCoreNode.setVisible(false);
+  }
+
+  // 4 Attitude RCS Thruster Jets around the lander pods
+  const rcsOffsets: readonly (readonly [number, number, number])[] = [
+    [-0.78, -0.12, 0.42],
+    [0.78, -0.12, 0.42],
+    [-0.78, -0.12, -0.42],
+    [0.78, -0.12, -0.42]
+  ];
+  const rcsActive = phase === "flying" && state.fuel > 0;
+  rcsJetNodes.forEach((jetNode, idx) => {
+    if (!rcsActive || (visualReviewCapture && phase === "campaign-clear")) {
+      jetNode.setPosition(0, -50, 0);
+      jetNode.setScale([0.0001, 0.0001, 0.0001]);
+      jetNode.setVisible(false);
+      return;
+    }
+    const off = rcsOffsets[idx]!;
+    const sideSign = idx % 2 === 0 ? -1 : 1;
+    const rotDemand = previousControls.rotate;
+    const sideBoost = stabilizerAssistActive
+      ? 1.35
+      : Math.abs(rotDemand) > 0.05 && Math.sign(rotDemand) === sideSign
+        ? 1.45
+        : 0.75;
+    const jetPulse = (reducedMotion ? 1 : 0.88 + Math.sin(simSeconds * 44 + idx * 1.7) * 0.16) * sideBoost;
+    jetNode.setPosition(state.x + off[0], state.y + punchOffsetY + off[1], state.z + off[2]);
+    jetNode.setRotation(0, 0, sideSign * 0.38 + tiltRad);
+    jetNode.setScale([0.065 * jetPulse, 0.22 * jetPulse, 0.065 * jetPulse]);
+    jetNode.setVisible(true);
+  });
 
   // Bounded estimate: recomputed from the current pose/control state, using the
   // same authored integrator and terrain sampler as gameplay.
@@ -1673,11 +1916,6 @@ function renderUpdate(dtFrame: number): void {
   const extractionGround = field.padHeights[0] ?? groundHere;
   void APPROACH_SCAFFOLD_MIN_AGL;
   const approachScaffoldVisible = false;
-  // The campaign-clear bay is a complete renderer-owned deck laid over the
-  // final heightfield. In the review tableau, hide only that underlying visual
-  // mesh so nearby ridges cannot protrude through the deck and occlude the
-  // already-landed typed vehicle. The Rapier contact and mesh-query evidence
-  // has already run and remains published; runtime flight keeps terrain shown.
   if (visualReviewCapture) {
     requireNode(`s${currentSite.id}-terrain`).setVisible(!extractionVisible);
     landerNode.setScale(1);
@@ -1818,7 +2056,7 @@ function renderUpdate(dtFrame: number): void {
   }
 
   updateHud(hud, {
-    siteLabel: `${currentSite.id} · ${currentSite.name}`,
+    siteLabel: `${currentSite.id} · ${currentSite.name}${stabilizerAssistActive ? " [RCS STAB]" : ""}`,
     altitudeMeters: altitudeAboveGround,
     vspeed: state.vy,
     hspeed: hspeedOf(state),
@@ -1826,7 +2064,7 @@ function renderUpdate(dtFrame: number): void {
     fuelFraction: state.fuel / currentSite.fuelBudget,
     hullFraction: campaignHull / LANDER_MAX_HULL,
     score: campaignScore(SITES.map((_, index) => siteScores[index] ?? 0)),
-    gustTelegraph: gustTelegraphActive(currentSite.gust, simSeconds) && phase === "flying",
+    gustTelegraph: (gustTelegraphActive(currentSite.gust, simSeconds) || Math.abs(upperShearForce) > 0.16) && phase === "flying",
     ghostActive
   });
 

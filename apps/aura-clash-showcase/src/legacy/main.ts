@@ -60,20 +60,28 @@ function installAuraClashSceneAndMaterialPolish(): void {
 
       for (const node of nodes) {
         if (!node || typeof node !== "object") continue;
-        if (node.name === "Aura Clash corner pylon left") {
-          node.position = [-2.75, -0.04, -1.35];
-          node.targetMaxDimension = 1.05;
+        if (node.name === "Aura Clash guardian dragon left") {
+          node.position = [-2.95, -0.04, -0.85];
+          node.rotation = [0, 0.45, 0];
+          node.targetMaxDimension = 1.85;
+        } else if (node.name === "Aura Clash guardian dragon right") {
+          node.position = [2.95, -0.04, -0.85];
+          node.rotation = [0, -0.45, 0];
+          node.targetMaxDimension = 1.85;
+        } else if (node.name === "Aura Clash corner pylon left") {
+          node.position = [-2.35, -0.04, -1.25];
+          node.targetMaxDimension = 1.15;
         } else if (node.name === "Aura Clash corner pylon right") {
-          node.position = [2.75, -0.04, -1.35];
-          node.targetMaxDimension = 1.05;
+          node.position = [2.35, -0.04, -1.25];
+          node.targetMaxDimension = 1.15;
         } else if (node.name === "Aura Clash stage speaker tower left") {
-          node.position = [-3.35, -0.04, -1.65];
-          node.rotation = [0, 0.24, 0];
-          node.targetMaxDimension = 1.55;
+          node.position = [-3.55, -0.04, -1.45];
+          node.rotation = [0, 0.28, 0];
+          node.targetMaxDimension = 1.65;
         } else if (node.name === "Aura Clash stage speaker tower right") {
-          node.position = [3.35, -0.04, -1.65];
-          node.rotation = [0, -0.24, 0];
-          node.targetMaxDimension = 1.55;
+          node.position = [3.55, -0.04, -1.45];
+          node.rotation = [0, -0.28, 0];
+          node.targetMaxDimension = 1.65;
         }
       }
 

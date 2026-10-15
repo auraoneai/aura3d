@@ -136815,6 +136815,1990 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
     },
   },
+  "siegeCatapultMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/siegeCatapultMeshy.5d4a533e.glb",
+    hash: "sha256-5d4a533e53893b4b4893160829ced0763fc51862bc3cd5495e7c360c8c1d8bdd",
+    bounds: [
+      1.8853,
+      1.1754,
+      1.2447
+    ],
+    sizeBytes: 824288,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/siegeCatapultMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/siegeCatapultMeshy/model.glb",
+      "outputPath": "public/aura-assets/siegeCatapultMeshy.5d4a533e.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.949,
+          -0.5827,
+          -0.623
+        ],
+        "max": [
+          0.9363,
+          0.5927,
+          0.6217
+        ],
+        "size": [
+          1.8853,
+          1.1754,
+          1.2447
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8853,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/siegeCatapultMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "siegeWatchtowerMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/siegeWatchtowerMeshy.fafe2129.glb",
+    hash: "sha256-fafe21297079d47e41d890704ebb9169eff1672130c26061569e6fe0f8ec35b1",
+    bounds: [
+      0.8869,
+      1.898,
+      0.9222
+    ],
+    sizeBytes: 893220,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/siegeWatchtowerMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/siegeWatchtowerMeshy/model.glb",
+      "outputPath": "public/aura-assets/siegeWatchtowerMeshy.fafe2129.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.4409,
+          -0.9501,
+          -0.4638
+        ],
+        "max": [
+          0.446,
+          0.9479,
+          0.4584
+        ],
+        "size": [
+          0.8869,
+          1.898,
+          0.9222
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.898,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/siegeWatchtowerMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "siegeStoneBridgeMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/siegeStoneBridgeMeshy.886393a6.glb",
+    hash: "sha256-886393a622fd769d762e468c4075d1740a6ff7db8ce1813f31da01c1bf0b372d",
+    bounds: [
+      1.7727,
+      0.695,
+      1.8988
+    ],
+    sizeBytes: 890220,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/siegeStoneBridgeMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/siegeStoneBridgeMeshy/model.glb",
+      "outputPath": "public/aura-assets/siegeStoneBridgeMeshy.886393a6.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.8873,
+          -0.3499,
+          -0.9501
+        ],
+        "max": [
+          0.8854,
+          0.3451,
+          0.9487
+        ],
+        "size": [
+          1.7727,
+          0.695,
+          1.8988
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8988,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/siegeStoneBridgeMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "skylineParkourRunnerMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/skylineParkourRunnerMeshy.8baf974c.glb",
+    hash: "sha256-8baf974c158b068e06dd2a7e0d6f938fd26220f736afebdc9e280694f5cefe14",
+    bounds: [
+      1.0441,
+      1.8933,
+      1.5534
+    ],
+    sizeBytes: 622732,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/skylineParkourRunnerMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/skylineParkourRunnerMeshy/model.glb",
+      "outputPath": "public/aura-assets/skylineParkourRunnerMeshy.8baf974c.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.522,
+          -0.9474,
+          -0.7793
+        ],
+        "max": [
+          0.5221,
+          0.9459,
+          0.7741
+        ],
+        "size": [
+          1.0441,
+          1.8933,
+          1.5534
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8933,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineParkourRunnerMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "galleryPharaohRelicMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/galleryPharaohRelicMeshy.4b90ffca.glb",
+    hash: "sha256-4b90ffca42bb5fa58799975d4c48d4da33b7a91ad20309aee7ac01c0b88fc215",
+    bounds: [
+      1.2377,
+      1.8978,
+      1.2247
+    ],
+    sizeBytes: 829000,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/galleryPharaohRelicMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/galleryPharaohRelicMeshy/model.glb",
+      "outputPath": "public/aura-assets/galleryPharaohRelicMeshy.4b90ffca.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.6196,
+          -0.9507,
+          -0.612
+        ],
+        "max": [
+          0.6181,
+          0.9471,
+          0.6127
+        ],
+        "size": [
+          1.2377,
+          1.8978,
+          1.2247
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8978,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/galleryPharaohRelicMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "gravityCargoShuttleMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/gravityCargoShuttleMeshy.f7cab155.glb",
+    hash: "sha256-f7cab1555d2cef6e501c0cb9c6be716f4443081f0b713fb5e3e17dc1369f9d9b",
+    bounds: [
+      1.8987,
+      0.4711,
+      1.4031
+    ],
+    sizeBytes: 795308,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/gravityCargoShuttleMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/gravityCargoShuttleMeshy/model.glb",
+      "outputPath": "public/aura-assets/gravityCargoShuttleMeshy.f7cab155.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.9506,
+          -0.235,
+          -0.7033
+        ],
+        "max": [
+          0.9481,
+          0.2361,
+          0.6998
+        ],
+        "size": [
+          1.8987,
+          0.4711,
+          1.4031
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8987,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/gravityCargoShuttleMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "gravitySpaceStationMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/gravitySpaceStationMeshy.d35f3dfb.glb",
+    hash: "sha256-d35f3dfb471087fa00ec7b09a846ed6c4c72d90d06e1e02224a69e8825fc1cc6",
+    bounds: [
+      1.891,
+      0.3742,
+      1.8242
+    ],
+    sizeBytes: 927012,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/gravitySpaceStationMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/gravitySpaceStationMeshy/model.glb",
+      "outputPath": "public/aura-assets/gravitySpaceStationMeshy.d35f3dfb.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.9475,
+          -0.1883,
+          -0.9121
+        ],
+        "max": [
+          0.9435,
+          0.1859,
+          0.9121
+        ],
+        "size": [
+          1.891,
+          0.3742,
+          1.8242
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.891,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/gravitySpaceStationMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "billiardsClubChairMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/billiardsClubChairMeshy.29eb7163.glb",
+    hash: "sha256-29eb71636fea4cfc852eeeaa2cfdfe26dd09657b971b414e024fb099be9a7760",
+    bounds: [
+      1.8959,
+      1.6033,
+      1.8944
+    ],
+    sizeBytes: 639700,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/billiardsClubChairMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/billiardsClubChairMeshy/model.glb",
+      "outputPath": "public/aura-assets/billiardsClubChairMeshy.29eb7163.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.9488,
+          -0.8029,
+          -0.948
+        ],
+        "max": [
+          0.9471,
+          0.8004,
+          0.9464
+        ],
+        "size": [
+          1.8959,
+          1.6033,
+          1.8944
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8959,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/billiardsClubChairMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "billiardsTrophyCabinetMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/billiardsTrophyCabinetMeshy.db74320a.glb",
+    hash: "sha256-db74320a949ffed9cea770231c4ab0caada694ccc3f2a9b32734dd282cb54a21",
+    bounds: [
+      1.8989,
+      1.8996,
+      1.2712
+    ],
+    sizeBytes: 858428,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/billiardsTrophyCabinetMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/billiardsTrophyCabinetMeshy/model.glb",
+      "outputPath": "public/aura-assets/billiardsTrophyCabinetMeshy.db74320a.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.9505,
+          -0.9507,
+          -0.6398
+        ],
+        "max": [
+          0.9484,
+          0.9489,
+          0.6314
+        ],
+        "size": [
+          1.8989,
+          1.8996,
+          1.2712
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8996,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/billiardsTrophyCabinetMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "reactorFusionTurbineMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/reactorFusionTurbineMeshy.820062e2.glb",
+    hash: "sha256-820062e26b86eb45153ba0e7d21216ba75e2af6b301e814feaf3dea6b0a2d8db",
+    bounds: [
+      1.8973,
+      1.5222,
+      0.9128
+    ],
+    sizeBytes: 861748,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/reactorFusionTurbineMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/reactorFusionTurbineMeshy/model.glb",
+      "outputPath": "public/aura-assets/reactorFusionTurbineMeshy.820062e2.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.9495,
+          -0.7618,
+          -0.4555
+        ],
+        "max": [
+          0.9478,
+          0.7604,
+          0.4573
+        ],
+        "size": [
+          1.8973,
+          1.5222,
+          0.9128
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8973,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/reactorFusionTurbineMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "clashDragonStatueMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/clashDragonStatueMeshy.fbf08315.glb",
+    hash: "sha256-fbf0831582ce2001b993f4e51b22d9e88493585b3bdd25801b2d089e1d01a839",
+    bounds: [
+      0.6555,
+      1.8973,
+      1.0329
+    ],
+    sizeBytes: 794028,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/clashDragonStatueMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/clashDragonStatueMeshy/model.glb",
+      "outputPath": "public/aura-assets/clashDragonStatueMeshy.fbf08315.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.3288,
+          -0.9494,
+          -0.5182
+        ],
+        "max": [
+          0.3267,
+          0.9479,
+          0.5147
+        ],
+        "size": [
+          0.6555,
+          1.8973,
+          1.0329
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8973,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/clashDragonStatueMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "lunarRoverMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/lunarRoverMeshy.7978f48b.glb",
+    hash: "sha256-7978f48bc29b485eaec838aeb3ee717962884765f08c1559f0ed2745d083faf4",
+    bounds: [
+      1.8859,
+      0.8605,
+      1.8877
+    ],
+    sizeBytes: 944324,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/lunarRoverMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/lunarRoverMeshy/model.glb",
+      "outputPath": "public/aura-assets/lunarRoverMeshy.7978f48b.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.9464,
+          -0.4322,
+          -0.9434
+        ],
+        "max": [
+          0.9395,
+          0.4283,
+          0.9443
+        ],
+        "size": [
+          1.8859,
+          0.8605,
+          1.8877
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8877,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/lunarRoverMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "deepShipwreckHullMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/deepShipwreckHullMeshy.dcf3fd19.glb",
+    hash: "sha256-dcf3fd192c148d01b585e6766d9be6fff33975459b057eb51b4c7b874be4b650",
+    bounds: [
+      1.8956,
+      0.9232,
+      1.1932
+    ],
+    sizeBytes: 907156,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/deepShipwreckHullMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/deepShipwreckHullMeshy/model.glb",
+      "outputPath": "public/aura-assets/deepShipwreckHullMeshy.dcf3fd19.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.9479,
+          -0.4614,
+          -0.598
+        ],
+        "max": [
+          0.9477,
+          0.4618,
+          0.5952
+        ],
+        "size": [
+          1.8956,
+          0.9232,
+          1.1932
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8956,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/deepShipwreckHullMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "rooftopFloodlightTowerMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rooftopFloodlightTowerMeshy.1bfcdd0b.glb",
+    hash: "sha256-1bfcdd0b57f632f8c32f1bbdf5ce5a7e57fe169e61aeb28047711dc333efca30",
+    bounds: [
+      1.8974,
+      1.434,
+      1.8967
+    ],
+    sizeBytes: 913928,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/rooftopFloodlightTowerMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/rooftopFloodlightTowerMeshy/model.glb",
+      "outputPath": "public/aura-assets/rooftopFloodlightTowerMeshy.1bfcdd0b.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.9494,
+          -0.7264,
+          -0.949
+        ],
+        "max": [
+          0.948,
+          0.7076,
+          0.9477
+        ],
+        "size": [
+          1.8974,
+          1.434,
+          1.8967
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8974,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rooftopFloodlightTowerMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "courierNeonStorefrontMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/courierNeonStorefrontMeshy.efb0a37b.glb",
+    hash: "sha256-efb0a37b75c80fea7ed6a7ccee46bce0a13b018047b8a9f554c6901c73105c17",
+    bounds: [
+      1.8416,
+      1.8984,
+      1.4554
+    ],
+    sizeBytes: 978772,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/courierNeonStorefrontMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/courierNeonStorefrontMeshy/model.glb",
+      "outputPath": "public/aura-assets/courierNeonStorefrontMeshy.efb0a37b.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.9188,
+          -0.9508,
+          -0.7286
+        ],
+        "max": [
+          0.9228,
+          0.9476,
+          0.7268
+        ],
+        "size": [
+          1.8416,
+          1.8984,
+          1.4554
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8984,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/courierNeonStorefrontMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "vaultPinballSlingshotMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/vaultPinballSlingshotMeshy.309c6581.glb",
+    hash: "sha256-309c65810b6cdde6c60f8a446a4ec6f7fbb6d3dbdc434c709b3a927f4e9e34c2",
+    bounds: [
+      1.8976,
+      1.3504,
+      0.7742
+    ],
+    sizeBytes: 969656,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/vaultPinballSlingshotMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T07:25:00.000Z",
+        "checkedAt": "2026-10-15T07:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/vaultPinballSlingshotMeshy/model.glb",
+      "outputPath": "public/aura-assets/vaultPinballSlingshotMeshy.309c6581.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.9498,
+          -0.6721,
+          -0.3877
+        ],
+        "max": [
+          0.9478,
+          0.6783,
+          0.3865
+        ],
+        "size": [
+          1.8976,
+          1.3504,
+          0.7742
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8976,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/vaultPinballSlingshotMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
 });
 
 export type AuraGeneratedAssets = typeof assets;

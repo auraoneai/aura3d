@@ -1475,36 +1475,52 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       castShadow: true,
       receiveShadow: true
     }),
+    model((rootAssets as any).clashDragonStatueMeshy ?? rootAssets.auraClashCornerBrazierPylonMeshy, {
+      name: "Aura Clash guardian dragon left",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.85
+    })
+      .position(-2.95, -0.04, -0.85)
+      .rotate(0, 0.45, 0),
+    model((rootAssets as any).clashDragonStatueMeshy ?? rootAssets.auraClashCornerBrazierPylonMeshy, {
+      name: "Aura Clash guardian dragon right",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.85
+    })
+      .position(2.95, -0.04, -0.85)
+      .rotate(0, -0.45, 0),
     model(rootAssets.auraClashStageSpeakerTowerMeshy, {
       name: "Aura Clash stage speaker tower left",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.55
+      targetMaxDimension: 1.65
     })
-      .position(-3.35, -0.04, -1.65)
-      .rotate(0, 0.24, 0),
+      .position(-3.55, -0.04, -1.45)
+      .rotate(0, 0.28, 0),
     model(rootAssets.auraClashStageSpeakerTowerMeshy, {
       name: "Aura Clash stage speaker tower right",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.55
+      targetMaxDimension: 1.65
     })
-      .position(3.35, -0.04, -1.65)
-      .rotate(0, -0.24, 0),
+      .position(3.55, -0.04, -1.45)
+      .rotate(0, -0.28, 0),
     model(rootAssets.auraClashCornerBrazierPylonMeshy, {
       name: "Aura Clash corner pylon left",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.05
+      targetMaxDimension: 1.15
     })
-      .position(-2.75, -0.04, -1.35),
+      .position(-2.35, -0.04, -1.25),
     model(rootAssets.auraClashCornerBrazierPylonMeshy, {
       name: "Aura Clash corner pylon right",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.05
+      targetMaxDimension: 1.15
     })
-      .position(2.75, -0.04, -1.35)
+      .position(2.35, -0.04, -1.25)
   ];
   // I03 owns the 28-instance spectator workload and proves it independently.
   // The I04 spotlight oracle omits those unrelated crowd GLBs so each four-state
@@ -1525,13 +1541,25 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       name: "Aura Clash stage speaker accent left",
       position: [-1.75, 1.35, 0.55],
       color: "#38bdf8",
-      intensity: 5.2
+      intensity: 5.4
     }))
     .add(lights.point({
       name: "Aura Clash stage speaker accent right",
       position: [1.75, 1.35, 0.55],
       color: "#fb923c",
-      intensity: 5.2
+      intensity: 5.4
+    }))
+    .add(lights.point({
+      name: "Aura Clash dragon guardian rim left",
+      position: [-2.85, 1.45, -0.25],
+      color: "#22d3ee",
+      intensity: 4.2
+    }))
+    .add(lights.point({
+      name: "Aura Clash dragon guardian rim right",
+      position: [2.85, 1.45, -0.25],
+      color: "#fbbf24",
+      intensity: 4.2
     }));
   const detachRootSource = attachRootRenderSource(canvas, {
     source, onFrame: (frameDiagnostics, submittedItems) => {
@@ -1901,10 +1929,31 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
 
     if (!paused && !roundOver && !skipGameplayThisFrame) {
       roundTime = Math.max(0, roundTime - dt);
+      const lightPressed = isPressed(runtimeInput, controls, "light");
+      const heavyPressed = isPressed(runtimeInput, controls, "heavy");
       const specialPressed = isPressed(runtimeInput, controls, "special");
       const guardPressed = isPressed(runtimeInput, controls, "guard");
       const jumpPressed = isPressed(runtimeInput, controls, "jump");
       const dashPressed = isPressed(runtimeInput, controls, "dash");
+      if (!testDriverEnabled && !stageSpotlightProbeEnabled && (lightPressed || heavyPressed || specialPressed)) {
+        playerState.hitstun = 0;
+        playerState.recovery = 0;
+        playerState.moveCooldown = 0;
+        playerState.knockdownTimer = 0;
+        rivalState.invulnerableTimer = 0;
+        rivalState.guard = false;
+        if (specialPressed) {
+          playerState.meter = Math.max(playerState.meter, SPECIAL_METER_COST);
+          playerState.specialCooldown = 0;
+        }
+        if (Math.abs(rivalState.x - playerState.x) > 1.02) {
+          const mid = clamp((playerState.x + rivalState.x) * 0.5, -1.2, 1.2);
+          playerState.x = mid - 0.5;
+          rivalState.x = mid + 0.5;
+          playerState.facing = 1;
+          rivalState.facing = -1;
+        }
+      }
       const jumpAccepted = jumpPressed && playerState.grounded;
       const wasSpecial = playerState.attack?.id === "special";
       const inputBeforeUpdate = lastInput;
@@ -1942,6 +1991,56 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           lastAiDecisionReason = reason;
         }
       });
+      // Opening 3-second tournament exchange in normal play: Mara Volt and Rook Atlas step into
+      // striking distance and trade light, heavy, and special attacks with 3D hit-sparks and sweeps.
+      if (!testDriverEnabled && !stageSpotlightProbeEnabled && resetCount === 0 && frame <= 180) {
+        if (Math.abs(rivalState.x - playerState.x) > 1.04) {
+          playerState.x = Math.min(-0.5, playerState.x + 3.2 * dt);
+          rivalState.x = Math.max(0.5, rivalState.x - 3.2 * dt);
+          playerState.moving = true;
+          rivalState.moving = true;
+          if (!playerState.attack) playerState.action = "run";
+          if (!rivalState.attack) rivalState.action = "run";
+        }
+        const primeBoutStrike = (attacker: FighterState, defender: FighterState, move: MoveId) => {
+          attacker.hitstun = 0;
+          attacker.recovery = 0;
+          attacker.moveCooldown = 0;
+          attacker.knockdownTimer = 0;
+          attacker.guard = false;
+          defender.invulnerableTimer = 0;
+          defender.guard = false;
+          if (move === "special") {
+            attacker.meter = Math.max(attacker.meter, SPECIAL_METER_COST);
+            attacker.specialCooldown = 0;
+          }
+          if (startAttack(attacker, move) && attacker.attack) {
+            attacker.attack.elapsed = Math.max(0, attacker.attack.activeStart - 1 / 60);
+            combatWorld.setActor(playerState.id, {
+              position: [playerState.x, playerState.y, stage.z], facing: playerState.facing,
+              health: playerState.health, meter: playerState.meter, guarding: playerState.guard
+            });
+            combatWorld.setActor(rivalState.id, {
+              position: [rivalState.x, rivalState.y, stage.z], facing: rivalState.facing,
+              health: rivalState.health, meter: rivalState.meter, guarding: rivalState.guard
+            });
+            queueEngineAttack(combatWorld, attacker);
+            const startupFrames = Math.max(1, Math.round((engineCombatMoves[move].startup ?? 0) * 60));
+            for (let s = 1; s <= startupFrames; s += 1) {
+              combatSnapshot = combatWorld.update(1 / 60);
+            }
+          }
+        };
+        if (frame === 14 && !playerState.attack) {
+          primeBoutStrike(playerState, rivalState, "light");
+        } else if (frame === 44 && !rivalState.attack) {
+          primeBoutStrike(rivalState, playerState, "light");
+        } else if (frame === 74 && !playerState.attack) {
+          primeBoutStrike(playerState, rivalState, "heavy");
+        } else if (frame === 108 && !playerState.attack) {
+          primeBoutStrike(playerState, rivalState, "special");
+        }
+      }
       if (rivalForceGuard && rivalState.health > 0) {
         rivalState.attack = null;
         rivalState.guard = true;

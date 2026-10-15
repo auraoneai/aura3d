@@ -1477,6 +1477,10 @@ function buildTurboTracksideIdentityNodes() {
     const leftZ = -Math.cos(sample.heading) * gantryHalfSpan;
     const isGantryStop = idx % 2 === 0 || progress === 0.28;
     const accentColor = idx % 2 === 0 ? "#22d3ee" : "#ff6b4a";
+    const floodlightAsset = (assets as Record<string, typeof assets.turboStartFinishGantryMeshy>).rooftopFloodlightTowerMeshy ?? assets.turboStartFinishGantryMeshy;
+    const paddockAsset = idx % 3 === 1
+      ? ((assets as Record<string, typeof assets.turboStartFinishGantryMeshy>).auroraHabitatDomeMeshy ?? assets.turboStartFinishGantryMeshy)
+      : ((assets as Record<string, typeof assets.turboStartFinishGantryMeshy>).rooftopScoreboardRigMeshy ?? assets.turboStartFinishGantryMeshy);
     return [
       ...(isGantryStop
         ? [
@@ -1484,35 +1488,54 @@ function buildTurboTracksideIdentityNodes() {
               name: `turbo-meshy-approach-gantry-3d-${idx}`,
               role: "setDressing",
               scaleMode: "fit",
-              targetMaxDimension: 0.001,
-              visible: false
+              targetMaxDimension: 2.35,
+              visible: true
             })
-              .position(center[0], TRACK_REFERENCE_Y - 20, center[2])
+              .position(center[0], roadY, center[2])
               .rotate(0, pose.rotation[1], 0),
+            model(floodlightAsset, {
+              name: `turbo-meshy-floodlight-tower-${idx}`,
+              role: "setDressing",
+              scaleMode: "fit",
+              targetMaxDimension: 1.52,
+              visible: true
+            })
+              .position(center[0] + leftX * 2.05, roadY, center[2] + leftZ * 2.05)
+              .rotate(0, pose.rotation[1] - Math.PI * 0.5, 0),
             lights.point({
               name: `turbo-gantry-key-light-${idx}`,
               color: accentColor,
-              intensity: 0.25
+              intensity: 0.42
             }).position(center[0], roadY + 2.4, center[2])
           ]
-        : []),
+        : [
+            model(paddockAsset, {
+              name: `turbo-meshy-paddock-structure-${idx}`,
+              role: "setDressing",
+              scaleMode: "fit",
+              targetMaxDimension: 1.42,
+              visible: true
+            })
+              .position(center[0] - leftX * 2.25, roadY, center[2] - leftZ * 2.25)
+              .rotate(0, pose.rotation[1] + Math.PI * 0.5, 0)
+          ]),
       model(assets.turboTireBarrierWallMeshy, {
         name: `turbo-meshy-tire-barrier-left-${idx}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.001,
-        visible: false
+        targetMaxDimension: 0.68,
+        visible: true
       })
-        .position(center[0] + leftX * 2.5, TRACK_REFERENCE_Y - 20, center[2] + leftZ * 2.5)
+        .position(center[0] + leftX * 1.48, roadY, center[2] + leftZ * 1.48)
         .rotate(0, pose.rotation[1], 0),
       model(assets.turboTireBarrierWallMeshy, {
         name: `turbo-meshy-tire-barrier-right-${idx}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.001,
-        visible: false
+        targetMaxDimension: 0.68,
+        visible: true
       })
-        .position(center[0] - leftX * 2.5, TRACK_REFERENCE_Y - 20, center[2] - leftZ * 2.5)
+        .position(center[0] - leftX * 1.48, roadY, center[2] - leftZ * 1.48)
         .rotate(0, pose.rotation[1], 0),
       // Sleek boost chevron pad on the asphalt centerline
       primitives.box({
@@ -1521,13 +1544,13 @@ function buildTurboTracksideIdentityNodes() {
           name: `turbo-boost-pad-mat-${idx}`,
           color: accentColor,
           emissive: accentColor,
-          emissiveIntensity: 0.45,
+          emissiveIntensity: 0.55,
           roughness: 0.35
         })
       })
         .position(center[0], roadY + ROAD_DETAIL_SURFACE_LIFT + 0.012, center[2])
         .rotate(0, pose.rotation[1], 0)
-        .scale([0.18, 0.005, 0.32])
+        .scale([0.22, 0.006, 0.36])
     ];
   });
 
@@ -3219,6 +3242,41 @@ const app = createAuraApp("#app", {
     }).position(...initialPlayerPose.position).runtime(game.runtimeNode("racing-time-trial-ghost", {
       tags: ["ghost", "visual-only", "no-collision"]
     })))
+    .add(model(assets.turboHeroRaceCarMeshy, {
+      name: "racing-contender-car-3d",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.04,
+      castShadow: true,
+      receiveShadow: true,
+      visible: true
+    }).position(...initialOpponentPose.position).runtime(game.runtimeNode("racing-contender-car-3d", {
+      tags: ["opponent-feedback", "contender-pack", "renderer-owned", "non-colliding"]
+    })))
+    .add(primitives.cylinder({
+      name: "player left nitro exhaust plume",
+      material: material.emissive({
+        name: "player left nitro exhaust mat",
+        color: "#38bdf8",
+        emissive: "#38bdf8",
+        emissiveIntensity: 0.92,
+        roughness: 0.2
+      })
+    }).position(...initialPlayerPose.position).scale([0.022, 0.14, 0.022]).runtime(game.runtimeNode("racing-player-nitro-flame-l", {
+      tags: ["vehicle-feedback", "nitro-exhaust", "renderer-owned", "non-colliding"]
+    })))
+    .add(primitives.cylinder({
+      name: "player right nitro exhaust plume",
+      material: material.emissive({
+        name: "player right nitro exhaust mat",
+        color: "#38bdf8",
+        emissive: "#38bdf8",
+        emissiveIntensity: 0.92,
+        roughness: 0.2
+      })
+    }).position(...initialPlayerPose.position).scale([0.022, 0.14, 0.022]).runtime(game.runtimeNode("racing-player-nitro-flame-r", {
+      tags: ["vehicle-feedback", "nitro-exhaust", "renderer-owned", "non-colliding"]
+    })))
     .add(instances.box({
       name: "left drift ribbon",
       material: material.pbr({ name: "fresh left tire mark", color: "#57443c", roughness: 0.96, metallic: 0.01, opacity: 0.54 }),
@@ -3488,6 +3546,9 @@ const racingActionFocus = app.nodes.require("racing-action-focus");
 racingActionFocus.setVisible(false);
 // TDC incorporation runtime handles.
 const ghostCarNode = app.nodes.require("racing-time-trial-ghost");
+const contenderCarNode = app.nodes.require("racing-contender-car-3d");
+const playerNitroFlameL = app.nodes.require("racing-player-nitro-flame-l");
+const playerNitroFlameR = app.nodes.require("racing-player-nitro-flame-r");
 const trackPropNodes = trackPropsPlan.placements.map((prop) =>
   app.nodes.require("turbo-prop-node-" + prop.id));
 const signageLapBoardNodes = signageBoardLabels.map((label, index) =>
@@ -3527,7 +3588,9 @@ const compositionFeedbackNodes: readonly AuraRuntimeNodeHandle[] = [
   leftDriftSmoke,
   rightDriftSmoke,
   ...visualDriftPlumes,
-  driftParticleCloudNode
+  driftParticleCloudNode,
+  playerNitroFlameL,
+  playerNitroFlameR
 ];
 let suppressedFeedbackVisibility: Map<AuraRuntimeNodeHandle, boolean> | null = null;
 // Screenshot controls must survive the explicit frame submitted by the probe.
@@ -5407,6 +5470,61 @@ app.onFrame(({ dt }) => {
   opponentCyanSideMarker.setVisible(!compositionRivalSuppressed);
   opponentContactShadow.setVisible(!compositionRivalSuppressed);
   opponentWheelContactPads.setVisible(!compositionRivalSuppressed);
+
+  // Update 3rd 3D Meshy contender car pacing slightly ahead on the outer racing line
+  const contenderProgress = (opponent.progress + 0.032) % 1;
+  const contenderSample = sampleCentreline(contenderProgress);
+  const contenderPose = racingScene.toScenePose(
+    { position: { x: contenderSample.x, y: contenderSample.y }, heading: contenderSample.heading },
+    -opponentRacingLineOffset * 1.15
+  );
+  const contenderRoadY = sampleTurboRoadHeight(contenderPose.position[0], contenderPose.position[2]);
+  contenderCarNode
+    .setPosition(
+      contenderPose.position[0],
+      contenderRoadY + ROAD_DETAIL_SURFACE_LIFT + 0.015,
+      contenderPose.position[2]
+    )
+    .setRotation(0, contenderPose.rotation[1], 0)
+    .setVisible(!compositionRivalSuppressed);
+
+  // Slipstream drafting boost when trailing behind rival or contender within 0.045 progress
+  const gapToRival = (opponent.progress - raceSnapshot.progress + 1) % 1;
+  const slipstreamActive = gapToRival > 0.004 && gapToRival < 0.048 && speedFraction > 0.25;
+  if (slipstreamActive && raceSession.nitroSeconds <= 0.15) {
+    raceSession = {
+      ...raceSession,
+      nitroSeconds: Math.min(1.2, raceSession.nitroSeconds + step * 0.45)
+    };
+  }
+
+  // Update twin glowing nitro afterburner exhaust plumes behind player car
+  const exhaustBackOffset = rearAxleOffset + 0.14;
+  const exhaustBaseX = playerPose.position[0] - Math.cos(heading) * exhaustBackOffset;
+  const exhaustBaseZ = playerPose.position[2] - Math.sin(heading) * exhaustBackOffset;
+  const exhaustSpread = 0.095;
+  const nitroBoostFactor = raceSession.nitroSeconds > 0 || slipstreamActive ? 1.65 : 0.85 + speedFraction * 0.45;
+  const exhaustFlutter = 0.92 + Math.sin(raceSnapshot.frame * 0.65) * 0.16;
+  const exhaustLen = 0.11 * nitroBoostFactor * exhaustFlutter;
+  const exhaustRad = 0.018 * (raceSession.nitroSeconds > 0 ? 1.35 : 1.0);
+  playerNitroFlameL
+    .setPosition(
+      exhaustBaseX - sideX * exhaustSpread,
+      playerGroundedVisual[1] + 0.068,
+      exhaustBaseZ - sideZ * exhaustSpread
+    )
+    .setRotation(Math.PI * 0.5, playerPose.rotation[1], 0)
+    .setScale([exhaustRad, exhaustLen, exhaustRad])
+    .setVisible(!compositionPlayerSuppressed && speedFraction > 0.08);
+  playerNitroFlameR
+    .setPosition(
+      exhaustBaseX + sideX * exhaustSpread,
+      playerGroundedVisual[1] + 0.068,
+      exhaustBaseZ + sideZ * exhaustSpread
+    )
+    .setRotation(Math.PI * 0.5, playerPose.rotation[1], 0)
+    .setScale([exhaustRad, exhaustLen, exhaustRad])
+    .setVisible(!compositionPlayerSuppressed && speedFraction > 0.08);
   if (visualCaptureCamera) {
     // The review lens must hold the live two-car encounter, not just chase the
     // player.  Following only `playerPose` left the opponent at the far end of

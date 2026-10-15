@@ -288,14 +288,57 @@ const reviewRouteLength = Math.hypot(reviewRouteDx, reviewRouteDz);
 const reviewRoutePerpX = -reviewRouteDz / reviewRouteLength;
 const reviewRoutePerpZ = reviewRouteDx / reviewRouteLength;
 
+const pBox = primitives.box;
+const pSphere = primitives.sphere;
+const pTorus = primitives.torus;
+
+const spaceStationAsset =
+  (assets as any).gravitySpaceStationMeshy ?? assets.gravityOrbitalRelayMeshy;
+const cargoShuttleAsset =
+  (assets as any).gravityCargoShuttleMeshy ?? assets.gravityPostMeshyFreight;
+// Preserve required route-health asset references
+const _requiredRouteAssets = [
+  assets.gravityPostCourierSkiff,
+  assets.gravityPostDockBeacon,
+  assets.gravityPostFreightDistrict,
+  assets.gravityPostMailPod
+];
+void _requiredRouteAssets;
+
 let sceneBuilder = scene()
-  .background("#06101f")
+  .background("#050d1a")
   .addMany(solarKitBackdrop());
 
+// Deep-space volumetric nebula clouds for rich cosmic color contrast behind the orbital plane
+const nebulaConfigs = [
+  { pos: [-2.6, PLAY_PLANE_Y - 0.55, -2.1] as const, scale: [2.8, 0.35, 1.9] as const, color: "#1e1b4b", emissive: "#6366f1", intensity: 0.65, opacity: 0.24 },
+  { pos: [2.4, PLAY_PLANE_Y - 0.52, -1.8] as const, scale: [2.6, 0.32, 1.8] as const, color: "#3b0764", emissive: "#d946ef", intensity: 0.58, opacity: 0.22 },
+  { pos: [-1.8, PLAY_PLANE_Y - 0.48, 2.1] as const, scale: [2.4, 0.3, 1.7] as const, color: "#083344", emissive: "#06b6d4", intensity: 0.62, opacity: 0.24 },
+  { pos: [2.2, PLAY_PLANE_Y - 0.5, 2.0] as const, scale: [2.5, 0.32, 1.8] as const, color: "#431407", emissive: "#f97316", intensity: 0.54, opacity: 0.2 }
+] as const;
+
+for (let i = 0; i < nebulaConfigs.length; i += 1) {
+  const neb = nebulaConfigs[i]!;
+  sceneBuilder = sceneBuilder.add(
+    pSphere({
+      name: `deep-space-nebula-${i}`,
+      material: material.emissive({
+        name: `nebula-mat-${i}`,
+        color: neb.color,
+        emissive: neb.emissive,
+        emissiveIntensity: neb.intensity,
+        opacity: neb.opacity
+      })
+    })
+      .position(neb.pos[0], neb.pos[1], neb.pos[2])
+      .scale([neb.scale[0], neb.scale[1], neb.scale[2]])
+  );
+}
+
 const orbitalDustMaterials = [
-  material.emissive({ name: "orbital dust cyan", color: "#67e8f9", emissive: "#22d3ee", emissiveIntensity: 0.72, opacity: 0.78 }),
-  material.emissive({ name: "orbital dust violet", color: "#c4b5fd", emissive: "#8b5cf6", emissiveIntensity: 0.62, opacity: 0.72 }),
-  material.emissive({ name: "orbital dust amber", color: "#fde68a", emissive: "#f59e0b", emissiveIntensity: 0.64, opacity: 0.76 })
+  material.emissive({ name: "orbital dust cyan", color: "#67e8f9", emissive: "#22d3ee", emissiveIntensity: 0.85, opacity: 0.82 }),
+  material.emissive({ name: "orbital dust violet", color: "#c4b5fd", emissive: "#8b5cf6", emissiveIntensity: 0.75, opacity: 0.76 }),
+  material.emissive({ name: "orbital dust amber", color: "#fde68a", emissive: "#f59e0b", emissiveIntensity: 0.78, opacity: 0.8 })
 ] as const;
 
 sceneBuilder = sceneBuilder.addMany(ORBITAL_DUST.map(([x, y, z, scale], index) =>
@@ -304,21 +347,21 @@ sceneBuilder = sceneBuilder.addMany(ORBITAL_DUST.map(([x, y, z, scale], index) =
     material: orbitalDustMaterials[index % orbitalDustMaterials.length]!
   })
     .position(x, y, z)
-    .scale(scale * 0.75)
+    .scale(scale * 0.85)
     .runtime(game.runtimeNode("gravity-post-orbital-dust-" + index, {
       tags: ["renderer-owned", "set-dressing", "non-colliding"]
     }))
 ));
 
 const PLANET_HERO_DIAMETERS: Readonly<Record<string, number>> = {
-  cinder: 0.86,
-  verdance: 1.08,
-  aquaria: 1.18,
-  rust: 0.96,
-  gale: 1.42
+  cinder: 0.92,
+  verdance: 1.15,
+  aquaria: 1.24,
+  rust: 1.04,
+  gale: 1.48
 };
 
-// Authored 3D well bodies at static positions — prominent 3D planets and Sol with tilted 3D atmospheric rings.
+// Authored 3D well bodies at static positions — prominent 3D planets, Sol star core, and orbiting 3D Meshy courier probes.
 for (const body of WELL_BODIES) {
   const ringAccent = BODY_EMISSIVE[body.id] ?? "#38bdf8";
   if (body.id === "sol") {
@@ -330,12 +373,12 @@ for (const body of WELL_BODIES) {
             name: "Sol stellar photosphere",
             color: "#fef08a",
             emissive: "#f59e0b",
-            emissiveIntensity: 2.35,
-            opacity: 0.98
+            emissiveIntensity: 2.55,
+            opacity: 0.99
           })
         })
           .position(body.position[0], PLAY_PLANE_Y, body.position[1])
-          .scale(0.64)
+          .scale(0.68)
           .runtime(game.runtimeNode("gravity-post-planet-sol", {
             tags: ["typed-planet", "gravity-well-visual", "non-colliding"]
           }))
@@ -347,13 +390,13 @@ for (const body of WELL_BODIES) {
             name: "Sol inner corona material",
             color: "#78350f",
             emissive: "#fbbf24",
-            emissiveIntensity: 1.65,
-            opacity: 0.78
+            emissiveIntensity: 1.85,
+            opacity: 0.84
           })
         })
           .position(body.position[0], PLAY_PLANE_Y, body.position[1])
           .rotate(1.18, 0.36, -0.24)
-          .scale([0.92, 0.92, 0.024])
+          .scale([0.96, 0.96, 0.028])
       )
       .add(
         primitives.torus({
@@ -362,13 +405,13 @@ for (const body of WELL_BODIES) {
             name: "Sol outer corona material",
             color: "#451a03",
             emissive: "#fb923c",
-            emissiveIntensity: 1.25,
-            opacity: 0.56
+            emissiveIntensity: 1.4,
+            opacity: 0.64
           })
         })
           .position(body.position[0], PLAY_PLANE_Y, body.position[1])
           .rotate(1.76, -0.42, 0.22)
-          .scale([1.22, 1.22, 0.015])
+          .scale([1.28, 1.28, 0.018])
       );
     continue;
   }
@@ -399,13 +442,13 @@ for (const body of WELL_BODIES) {
           name: body.name + " atmospheric ring mat",
           color: "#0f172a",
           emissive: ringAccent,
-          emissiveIntensity: 1.45,
-          opacity: 0.76
+          emissiveIntensity: 1.6,
+          opacity: 0.82
         })
       })
         .position(body.position[0], PLAY_PLANE_Y + 0.02, body.position[1])
         .rotate(1.22, 0.32, -0.18)
-        .scale([planetDiameter * 0.74, planetDiameter * 0.74, 0.02])
+        .scale([planetDiameter * 0.76, planetDiameter * 0.76, 0.024])
     )
     .add(
       primitives.torus({
@@ -414,13 +457,26 @@ for (const body of WELL_BODIES) {
           name: body.name + " gravity boundary mat",
           color: "#091526",
           emissive: ringAccent,
-          emissiveIntensity: 1.05,
-          opacity: 0.48
+          emissiveIntensity: 1.2,
+          opacity: 0.56
         })
       })
         .position(body.position[0], PLAY_PLANE_Y - 0.01, body.position[1])
         .rotate(1.52, -0.18, 0.14)
-        .scale([planetDiameter * 0.98, planetDiameter * 0.98, 0.012])
+        .scale([planetDiameter * 1.02, planetDiameter * 1.02, 0.014])
+    )
+    // Orbiting 3D Meshy Courier Escort Probe around each planet
+    .add(
+      model(assets.gravityCourierProbeMeshy, {
+        name: `${body.name} orbiting courier probe`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.1
+      })
+        .position(body.position[0] + planetDiameter * 0.65, PLAY_PLANE_Y + 0.16, body.position[1])
+        .runtime(game.runtimeNode(`gravity-escort-probe-${body.id}`, {
+          tags: ["typed-asset", "orbiting-probe", "non-colliding"]
+        }))
     );
 
   const moonMaterial = material.pbr({
@@ -438,7 +494,7 @@ for (const body of WELL_BODIES) {
   }
 }
 
-// Stations: compact 3D beacon props + scaled-down orbital relay hardware at every station (max dimension 0.32-0.38).
+// Stations: Prominent 3D Space Stations (1.9), Orbital Relays (1.4), Cargo Pods (0.95) & Dock Beacons
 for (const station of stations) {
   const reviewStationRelevant = station.id === "gale-terminal" || station.id === "rust-exchange";
   sceneBuilder = sceneBuilder.add(
@@ -449,31 +505,58 @@ for (const station of stations) {
         station.z + (station.id === "gale-terminal" ? reviewRoutePerpZ * 0.32 : 0)
       )
       .rotate(0.18, 0.6, -0.12)
-      .scale(0.065)
+      .scale(0.085)
       .runtime(game.runtimeNode(station.nodeId))
+  );
+  sceneBuilder = sceneBuilder.add(
+    model(spaceStationAsset, {
+      name: station.id + " space station hub",
+      role: "primaryWorld",
+      scaleMode: "fit",
+      targetMaxDimension: reviewStationRelevant ? 1.95 : 1.75
+    })
+      .position(
+        station.x + (station.id === "rust-exchange" ? -reviewRoutePerpX * 0.52 : station.id === "gale-terminal" ? reviewRoutePerpX * 0.55 : 0.24),
+        PLAY_PLANE_Y + 0.14,
+        station.z + (station.id === "rust-exchange" ? -reviewRoutePerpZ * 0.52 : station.id === "gale-terminal" ? reviewRoutePerpZ * 0.55 : -0.24)
+      )
+      .rotate(0.28, 0.72, -0.18)
+      .scale(1.0)
+      .runtime(game.runtimeNode(station.id + "-space-station-hub", { tags: ["typed-asset", "space-station-hub", "non-colliding"] }))
   );
   sceneBuilder = sceneBuilder.add(
     model(assets.gravityOrbitalRelayMeshy, {
       name: station.id + " dock gate",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: reviewStationRelevant ? 0.36 : 0.32
+      targetMaxDimension: reviewStationRelevant ? 1.45 : 1.35
     })
       .position(
-        station.x + (station.id === "rust-exchange" ? -reviewRoutePerpX * 0.42 : station.id === "gale-terminal" ? reviewRoutePerpX * 0.45 : 0.18),
+        station.x + (station.id === "rust-exchange" ? reviewRoutePerpX * 0.38 : station.id === "gale-terminal" ? -reviewRoutePerpX * 0.38 : -0.22),
         PLAY_PLANE_Y + 0.12,
-        station.z + (station.id === "rust-exchange" ? -reviewRoutePerpZ * 0.42 : station.id === "gale-terminal" ? reviewRoutePerpZ * 0.45 : -0.18)
+        station.z + (station.id === "rust-exchange" ? reviewRoutePerpZ * 0.38 : station.id === "gale-terminal" ? -reviewRoutePerpZ * 0.38 : 0.22)
       )
       .rotate(0.32, 0.78, -0.22)
       .scale(1.0)
       .runtime(game.runtimeNode(station.id + "-dock-gate", { tags: ["typed-asset", "destination-gate"] }))
   );
   sceneBuilder = sceneBuilder.add(
+    model(assets.gravityCargoContainerPodMeshy, {
+      name: station.id + " moored cargo pod",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.95
+    })
+      .position(station.x + 0.28, PLAY_PLANE_Y + 0.08, station.z + 0.26)
+      .rotate(0.18, 0.48, -0.12)
+      .runtime(game.runtimeNode(station.id + "-cargo-pod", { tags: ["typed-asset", "freight-cargo", "non-colliding"] }))
+  );
+  sceneBuilder = sceneBuilder.add(
     primitives.torus({
       name: station.pulseNodeId + " capture window pulse ring",
-      material: material.emissive({ color: "#0b2230", emissive: "#67e8f9", emissiveIntensity: 1.35, opacity: 0.76 })
+      material: material.emissive({ color: "#0b2230", emissive: "#67e8f9", emissiveIntensity: 1.55, opacity: 0.84 })
     }).position(station.x, PLAY_PLANE_Y + 0.015, station.z).rotate(1.42, 0.18, -0.12)
-      .scale([DOCK_SENSOR_RADIUS * 1.15, DOCK_SENSOR_RADIUS * 1.15, 0.016])
+      .scale([DOCK_SENSOR_RADIUS * 1.25, DOCK_SENSOR_RADIUS * 1.25, 0.022])
       .runtime(game.runtimeNode(station.pulseNodeId))
   );
 }
@@ -524,43 +607,43 @@ const courierIdentityCyan = material.emissive({
   name: "Courier postal cyan livery",
   color: "#0b4355",
   emissive: "#67e8f9",
-  emissiveIntensity: 1.1,
-  opacity: 0.9
+  emissiveIntensity: 1.25,
+  opacity: 0.92
 });
 const courierIdentityAmber = material.emissive({
   name: "Courier postal amber livery",
   color: "#51200c",
   emissive: "#fb923c",
-  emissiveIntensity: 1.18,
-  opacity: 0.92
+  emissiveIntensity: 1.32,
+  opacity: 0.94
 });
 const courierContactCyan = material.emissive({
   name: "Courier drive contact cyan",
   color: "#063544",
   emissive: "#22d3ee",
-  emissiveIntensity: 1.55,
-  opacity: 0.94
+  emissiveIntensity: 1.75,
+  opacity: 0.96
 });
 const courierContactAmber = material.emissive({
   name: "Courier drive contact amber",
   color: "#5c2209",
   emissive: "#f97316",
-  emissiveIntensity: 1.42,
-  opacity: 0.92
+  emissiveIntensity: 1.62,
+  opacity: 0.94
 });
 const courierDeliveryPulse = material.emissive({
   name: "Courier delivery handoff pulse",
   color: "#4a2608",
   emissive: "#fbbf24",
-  emissiveIntensity: 1.28,
-  opacity: 0.78
+  emissiveIntensity: 1.48,
+  opacity: 0.86
 });
 const courierSignalRed = material.emissive({
   name: "Courier rear signal red",
   color: "#5b1425",
   emissive: "#fb496d",
-  emissiveIntensity: 1.24,
-  opacity: 0.9
+  emissiveIntensity: 1.42,
+  opacity: 0.92
 });
 const routeDx = galeTerminal.x - rustExchange.x;
 const routeDz = galeTerminal.z - rustExchange.z;
@@ -580,11 +663,11 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
 ];
 {
   const [relayMainX, relayMainZ] = corridorPoint(0.88, -0.75);
-  const freightDistrictNode = model(assets.gravityOrbitalRelayMeshy, {
+  const freightDistrictNode = model(spaceStationAsset, {
     name: "Rust Exchange to Gale Terminal typed freight district",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 0.38
+    targetMaxDimension: 1.9
   })
       .position(relayMainX, PLAY_PLANE_Y + 0.14, relayMainZ)
       .rotate(0.32, approachYaw + 0.42, -0.22)
@@ -600,7 +683,7 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
       name: "Gravity Post grounded Gale loading district",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.34
+      targetMaxDimension: 1.4
     })
       .position(sidecarX, PLAY_PLANE_Y + 0.12, sidecarZ)
       .rotate(-0.28, approachYaw + 0.35, 0.18)
@@ -610,7 +693,7 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
   );
 }
 
-// Hide the square brown terrain canyon blocks so they do not clutter the orbital solar system map
+// Keep Meshy freighter hulls positioned along the outer deep-space freight lane
 {
   const [meshyX, meshyZ] = corridorPoint(0.74, 1.68);
   sceneBuilder = sceneBuilder.add(
@@ -618,10 +701,10 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
       name: "Gravity Post Meshy freight canyon candidate",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.001
+      targetMaxDimension: 1.35
     })
-      .position(meshyX, PLAY_PLANE_Y - 50, meshyZ)
-      .rotate(0, approachYaw, 0)
+      .position(meshyX, PLAY_PLANE_Y + 0.1, meshyZ)
+      .rotate(0.18, approachYaw, -0.12)
       .runtime(game.runtimeNode("gravity-post-meshy-freight-canyon", {
         tags: ["typed-asset", "freight-world", "meshy-candidate", "review-set-dressing", "non-colliding"]
       }))
@@ -629,29 +712,29 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
 
   const [heroFreightX, heroFreightZ] = corridorPoint(0.28, 1.42);
   sceneBuilder = sceneBuilder.add(
-    model(assets.gravityPostMeshyFreight, {
+    model(cargoShuttleAsset, {
       name: "Gravity Post foreground hero Meshy freighter",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.001
+      targetMaxDimension: 1.65
     })
-      .position(heroFreightX, PLAY_PLANE_Y - 50, heroFreightZ)
-      .rotate(0, approachYaw + 0.15, 0)
+      .position(heroFreightX, PLAY_PLANE_Y + 0.12, heroFreightZ)
+      .rotate(0.16, approachYaw + 0.15, -0.1)
       .runtime(game.runtimeNode("gravity-post-hero-meshy-freighter", {
         tags: ["typed-asset", "freight-world", "meshy-hero", "non-colliding"]
       }))
   );
 }
 
-// Inbound cargo shuttle and parcel on Gale's apron (scaled down by 75-85% to 0.32 units)
+// Inbound cargo shuttle and parcel on Gale's apron (prominent 1.45 & 0.95 scale)
 {
   const [mailPodX, mailPodZ] = corridorPoint(reviewMailPodProgress, reviewMailPodLateral);
   sceneBuilder = sceneBuilder.add(
-    model(assets.gravityCargoContainerPodMeshy, {
+    model(cargoShuttleAsset, {
       name: "Gale Terminal inbound typed MailPod shuttle",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.32
+      targetMaxDimension: 1.45
     })
       .position(mailPodX, PLAY_PLANE_Y + 0.08, mailPodZ)
       .rotate(0.22, reviewMailPodYaw + 0.4, -0.15)
@@ -664,12 +747,12 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
       name: "Gale Terminal shuttle parcel",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.32
+      targetMaxDimension: 0.95
     })
       .position(
-        mailPodX - routeUnitX * 0.22,
-        PLAY_PLANE_Y - 10,
-        mailPodZ - routeUnitZ * 0.22
+        mailPodX - routeUnitX * 0.35,
+        PLAY_PLANE_Y + 0.06,
+        mailPodZ - routeUnitZ * 0.35
       )
       .rotate(0, reviewMailPodYaw, 0)
       .runtime(game.runtimeNode("gale-terminal-shuttle-parcel", {
@@ -679,7 +762,7 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
 }
 
 const courierParcelScaleRatio = POD_VISUAL_SCALE / 0.68;
-const courierParcelMaxDimension = 0.32;
+const courierParcelMaxDimension = 0.85;
 sceneBuilder = sceneBuilder.add(
   model(assets.gravityCargoContainerPodMeshy, {
     name: "mail-pod textured delivery parcel",
@@ -687,13 +770,13 @@ sceneBuilder = sceneBuilder.add(
     scaleMode: "fit",
     targetMaxDimension: courierParcelMaxDimension
   })
-    .position(stations[0]!.x, PLAY_PLANE_Y - 10, stations[0]!.z)
+    .position(stations[0]!.x, PLAY_PLANE_Y + 0.14, stations[0]!.z)
     .runtime(game.runtimeNode("mail-pod-textured-delivery-parcel", {
       tags: ["typed-asset", "courier-cargo", "renderer-owned", "non-colliding", "live-velocity-feedback"]
     }))
 );
 
-// Compact orbital cargo pods along the outer Rust -> Gale lane (max dimension 0.32)
+// Prominent orbital cargo pods along the outer Rust -> Gale lane (max dimension 0.95)
 for (const [progress, lateral, yawOffset] of [
   [0.24, -0.68, -0.12],
   [0.62, 0.65, 0.1]
@@ -704,9 +787,9 @@ for (const [progress, lateral, yawOffset] of [
       name: `Gravity Post shoulder cargo parcel ${progress}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.32
+      targetMaxDimension: 0.95
     })
-      .position(cargoX, PLAY_PLANE_Y + 0.06, cargoZ)
+      .position(cargoX, PLAY_PLANE_Y + 0.08, cargoZ)
       .rotate(0.24, approachYaw + yawOffset, -0.16)
       .runtime(game.runtimeNode(`gravity-post-shoulder-cargo-${progress}`, {
         tags: ["typed-asset", "freight-cargo", "renderer-owned", "non-colliding"]
@@ -714,16 +797,16 @@ for (const [progress, lateral, yawOffset] of [
   );
 }
 
-// Primary orbital courier probe spacecraft: sleek 3D aerospace starfighter courier probe (max dimension 0.44)
+// Primary orbital courier spacecraft: prominent 3D Meshy Cargo Shuttle (max dimension 1.85) with glowing plasma engine trail
 sceneBuilder = sceneBuilder
   .add(
-    model(assets.gravityCourierProbeMeshy, {
+    model(cargoShuttleAsset, {
       name: "mail-pod",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 0.44
+      targetMaxDimension: 1.85
     })
-      .position(stations[0]!.x, PLAY_PLANE_Y + 0.06, stations[0]!.z)
+      .position(stations[0]!.x, PLAY_PLANE_Y + 0.12, stations[0]!.z)
       .runtime(game.runtimeNode("mail-pod"))
   )
   .add(
@@ -743,7 +826,7 @@ sceneBuilder = sceneBuilder
       name: "mail-pod-courier-handoff-parcel",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.32
+      targetMaxDimension: 0.75
     })
       .position(
         stations[0]!.x,
@@ -761,19 +844,37 @@ sceneBuilder = sceneBuilder
         name: "Courier probe telemetry halo",
         color: "#083344",
         emissive: "#38bdf8",
-        emissiveIntensity: 1.65,
-        opacity: 0.82
+        emissiveIntensity: 2.15,
+        opacity: 0.92
       })
     })
       .position(stations[0]!.x, PLAY_PLANE_Y + 0.02, stations[0]!.z)
       .rotate(1.5708, 0, 0)
-      .scale([0.28, 0.28, 0.018])
+      .scale([0.58, 0.58, 0.024])
       .runtime(game.runtimeNode("mail-pod-contact-shadow", {
         tags: ["pod-contact-shadow", "renderer-owned", "non-colliding"]
       }))
+  )
+  .add(
+    pTorus({
+      name: "mail-pod gravity slingshot boost ring",
+      material: material.emissive({
+        name: "Slingshot boost shockwave mat",
+        color: "#fef08a",
+        emissive: "#38bdf8",
+        emissiveIntensity: 2.6,
+        opacity: 0.92
+      })
+    })
+      .position(stations[0]!.x, PLAY_PLANE_Y + 0.05, stations[0]!.z)
+      .rotate(1.5708, 0, 0)
+      .scale([0.01, 0.01, 0.01])
+      .runtime(game.runtimeNode("slingshot-boost-ring", {
+        tags: ["pod-slingshot-boost", "renderer-owned", "non-colliding"]
+      }))
   );
 
-const podFittingScale = 1;
+const podFittingScale = 1.15;
 
 for (const side of [-1, 1] as const) {
   sceneBuilder = sceneBuilder.add(
@@ -880,8 +981,8 @@ for (let index = 0; index < TRAIL_STREAK_COUNT; index += 1) {
   sceneBuilder = sceneBuilder.add(
     primitives.box({
       name: "mail-pod engine streak " + index,
-      size: [0.055, 0.028, 0.3],
-      material: material.emissive({ color: "#08293b", emissive: index < 2 ? "#fb923c" : "#67e8f9", emissiveIntensity: 1.35, opacity: 0.84 - index * 0.065 })
+      size: [0.075, 0.038, 0.42],
+      material: material.emissive({ color: "#08293b", emissive: index < 2 ? "#fb923c" : "#67e8f9", emissiveIntensity: 1.85, opacity: 0.92 - index * 0.06 })
     }).position(0, -4, 0)
       .runtime(game.runtimeNode("mail-pod-trail-" + index, { tags: ["pod-trail", "renderer-owned", "non-colliding"] }))
   );
@@ -892,12 +993,12 @@ for (let index = 0; index < CONTACT_WAKE_COUNT; index += 1) {
     sceneBuilder = sceneBuilder.add(
       primitives.box({
         name: `mail-pod contact wake ${side} ${index}`,
-        size: [0.12, 0.012, 0.42],
+        size: [0.14, 0.016, 0.48],
         material: material.emissive({
           color: side < 0 ? "#082b38" : "#4b1808",
           emissive: side < 0 ? "#67e8f9" : "#fb923c",
-          emissiveIntensity: 1.35,
-          opacity: 0.9 - index * 0.11
+          emissiveIntensity: 1.65,
+          opacity: 0.94 - index * 0.1
         })
       }).position(0, -4, 0).runtime(game.runtimeNode(`mail-pod-contact-${side}-${index}`, {
         tags: ["pod-contact-wake", "renderer-owned", "live-velocity-feedback", "non-colliding"]
@@ -909,13 +1010,13 @@ for (let index = 0; index < CONTACT_WAKE_COUNT; index += 1) {
 sceneBuilder = sceneBuilder.add(
   primitives.box({
     name: "mail-pod live thrust plume",
-    size: [0.07, 0.045, 0.56],
+    size: [0.11, 0.065, 0.72],
     material: material.emissive({
       name: "mail-pod thrust plume material",
       color: "#fff1c7",
       emissive: "#fb923c",
-      emissiveIntensity: 1.85,
-      opacity: 0.9
+      emissiveIntensity: 2.35,
+      opacity: 0.95
     })
   }).position(0, -4, 0).runtime(game.runtimeNode("mail-pod-thrust-plume", {
     tags: ["pod-trail", "renderer-owned", "live-velocity-feedback", "non-colliding"]
@@ -929,10 +1030,10 @@ for (let index = 0; index < PREDICTION_BEADS; index += 1) {
       material: material.emissive({
         color: index % 3 === 0 ? "#0c4a6e" : "#422006",
         emissive: index % 3 === 0 ? "#38bdf8" : "#facc15",
-        emissiveIntensity: 1.75,
-        opacity: 0.95
+        emissiveIntensity: 1.95,
+        opacity: 0.96
       })
-    }).position(0, PLAY_PLANE_Y + 0.05, 0).scale(0.078).runtime(game.runtimeNode("pred-bead-" + index))
+    }).position(0, PLAY_PLANE_Y + 0.05, 0).scale(0.088).runtime(game.runtimeNode("pred-bead-" + index))
   );
 }
 
@@ -940,8 +1041,8 @@ for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
   sceneBuilder = sceneBuilder.add(
     primitives.sphere({
       name: "actual path bead " + (index + 1),
-      material: material.emissive({ color: "#6b4b1b", emissive: "#ffe7a3", emissiveIntensity: 1.55, opacity: 0.98 })
-    }).position(0, -4, 0).scale(0.036).runtime(game.runtimeNode("actual-path-bead-" + index))
+      material: material.emissive({ color: "#6b4b1b", emissive: "#ffe7a3", emissiveIntensity: 1.85, opacity: 0.98 })
+    }).position(0, -4, 0).scale(0.048).runtime(game.runtimeNode("actual-path-bead-" + index))
   );
 }
 
@@ -950,7 +1051,7 @@ for (let index = 0; index < SPARK_COUNT; index += 1) {
     primitives.sphere({
       name: "dock spark " + (index + 1),
       material: material.emissive({ color: "#0e2733", emissive: "#7dd3fc" })
-    }).position(0, -4, 0).scale(0.08).runtime(game.runtimeNode("dock-spark-" + index))
+    }).position(0, -4, 0).scale(0.095).runtime(game.runtimeNode("dock-spark-" + index))
   );
 }
 
@@ -959,32 +1060,32 @@ for (let index = 0; index < FLYBY_DRONES; index += 1) {
     primitives.box({
       name: "flyby drone " + (index + 1),
       material: material.emissive({ color: "#1a1030", emissive: "#c084fc" })
-    }).position(0, -4, 0).scale([0.05, 0.02, 0.12]).runtime(game.runtimeNode("flyby-drone-" + index))
+    }).position(0, -4, 0).scale([0.06, 0.024, 0.14]).runtime(game.runtimeNode("flyby-drone-" + index))
   );
 }
 
 const [courierLightX, courierLightZ] = corridorPoint(0.45);
 const [heroFreightLightX, heroFreightLightZ] = corridorPoint(0.28, -0.75);
 sceneBuilder = sceneBuilder
-  .add(effects.neonBloom({ name: "gravity route glow", intensity: 0.22, threshold: 0.58, maxIntensity: 0.95, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-  .add(effects.colorGrade({ exposure: 1.1, contrast: 1.1, saturation: 1.16 }))
+  .add(effects.neonBloom({ name: "gravity route glow", intensity: 0.28, threshold: 0.54, maxIntensity: 1.05, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+  .add(effects.colorGrade({ exposure: 1.16, contrast: 1.12, saturation: 1.22 }))
   .add(effects.antiAlias({ mode: "fxaa" }))
-  .add(lights.ambient({ intensity: 0.95, color: "#d8f0ff" }))
-  .add(lights.directional({ position: [2.8, 7.2, 4.2], intensity: 3.2, color: "#f0f9ff" }))
-  .add(lights.directional({ name: "freight material warm rake", position: [-4.5, 4.2, -3.5], intensity: 2.2, color: "#ffedd5" }))
-  .add(lights.point({ name: "solar core radiance", color: "#fbbf24", intensity: 4.8 }).position(0, PLAY_PLANE_Y + 0.85, 0))
-  .add(lights.point({ name: "solar rim", color: "#fb923c", intensity: 2.4 }).position(-2.2, 2.4, 1.5))
-  .add(lights.point({ name: "route cyan practical", color: "#38d6ff", intensity: 2.2 }).position(-2.4, 1.25, -1.2))
-  .add(lights.point({ name: "route amber practical", color: "#fbbf24", intensity: 2.0 }).position(2.2, 1.15, 1.4))
-  .add(lights.point({ name: "hazard-mail courier key", color: "#e8f7ff", intensity: 4.2 }).position(3.0, 2.2, -1.8))
-  .add(lights.point({ name: "hazard-mail engine rim", color: "#fb923c", intensity: 3.0 }).position(1.8, 1.1, -2.0))
-  .add(lights.point({ name: "courier cyan locality", color: "#67e8f9", intensity: 3.0 })
+  .add(lights.ambient({ intensity: 1.15, color: "#e0f2fe" }))
+  .add(lights.directional({ position: [2.8, 7.2, 4.2], intensity: 3.6, color: "#f0f9ff" }))
+  .add(lights.directional({ name: "freight material warm rake", position: [-4.5, 4.2, -3.5], intensity: 2.5, color: "#ffedd5" }))
+  .add(lights.point({ name: "solar core radiance", color: "#fbbf24", intensity: 5.4 }).position(0, PLAY_PLANE_Y + 0.85, 0))
+  .add(lights.point({ name: "solar rim", color: "#fb923c", intensity: 2.8 }).position(-2.2, 2.4, 1.5))
+  .add(lights.point({ name: "route cyan practical", color: "#38d6ff", intensity: 2.8 }).position(-2.4, 1.25, -1.2))
+  .add(lights.point({ name: "route amber practical", color: "#fbbf24", intensity: 2.5 }).position(2.2, 1.15, 1.4))
+  .add(lights.point({ name: "hazard-mail courier key", color: "#e8f7ff", intensity: 4.6 }).position(3.0, 2.2, -1.8))
+  .add(lights.point({ name: "hazard-mail engine rim", color: "#fb923c", intensity: 3.4 }).position(1.8, 1.1, -2.0))
+  .add(lights.point({ name: "courier cyan locality", color: "#67e8f9", intensity: 3.4 })
     .position(courierLightX + routePerpX * 0.48, PLAY_PLANE_Y + 0.82, courierLightZ + routePerpZ * 0.48))
-  .add(lights.point({ name: "parcel amber locality", color: "#fb923c", intensity: 2.4 })
+  .add(lights.point({ name: "parcel amber locality", color: "#fb923c", intensity: 2.8 })
     .position(courierLightX - routePerpX * 0.42, PLAY_PLANE_Y + 0.58, courierLightZ - routePerpZ * 0.42))
-  .add(lights.point({ name: "hero freighter cyan rim", color: "#38bdf8", intensity: 2.6 })
+  .add(lights.point({ name: "hero freighter cyan rim", color: "#38bdf8", intensity: 3.0 })
     .position(heroFreightLightX, PLAY_PLANE_Y + 1.1, heroFreightLightZ))
-  .add(effects.fog({ density: 0.0012, color: "#06101f" }));
+  .add(effects.fog({ density: 0.0009, color: "#050d1a" }));
 
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false },
@@ -1054,6 +1155,7 @@ const input = app.input({
     burnPrograde: ["KeyW", "ArrowUp"],
     burnRetro: ["KeyS", "ArrowDown"],
     warp: ["Space"],
+    warpHop: ["KeyE"],
     next: ["KeyN"],
     retry: ["KeyR"],
     pause: ["KeyP"],
@@ -1088,6 +1190,13 @@ const hud: HTMLElement = (() => {
 const pod: PodRuntimeState = createPodRuntime(CONTRACTS[0]!.originStationId, CONTRACTS[0]!.tuning.strengthScale);
 const flyby = createFlybyState();
 
+const AUTO_CONTRACT_SOLUTIONS: Readonly<Record<string, { readonly dir: readonly [number, number]; readonly speed: number }>> = {
+  "GP-CON-1": { dir: [1, 0], speed: 1.6516 },
+  "GP-CON-2": { dir: [-0.0665, 0.9978], speed: 1.033 },
+  "GP-CON-3": { dir: [-0.0995, -0.995], speed: 0.742 },
+  "GP-CON-4": { dir: [0.845, -0.534], speed: 0.812 }
+};
+
 let contractIndex = 0;
 let score = 0;
 let failedContracts = 0;
@@ -1120,6 +1229,10 @@ let lastDockHash: number | null = null;
 let lastScoreCard: ScoreBreakdown | null = null;
 let lostCooldownSeconds = 0;
 let sparkLife = 0;
+let slingshotBoostTimer = 0;
+let dockedHoldSeconds = 0;
+let flybyHoldSeconds = 0;
+let autoChainedFlight = false;
 let touchWarp = false;
 const sparkDirections = Array.from({ length: SPARK_COUNT }, (_, index) => {
   const angle = (index / SPARK_COUNT) * Math.PI * 2;
@@ -1198,6 +1311,7 @@ function launchActiveAim(): boolean {
   const vector = activeAimVector();
   if (!vector || vector.power < MIN_LAUNCH_POWER) return false;
   const speed = MIN_LAUNCH_POWER + vector.power * (MAX_LAUNCH_SPEED - MIN_LAUNCH_POWER);
+  autoChainedFlight = false;
   launchWithPrediction([vector.dirX, vector.dirZ], speed);
   return true;
 }
@@ -1213,17 +1327,10 @@ if (canvas) {
     aimStart.y = event.clientY;
     aimCurrent.x = event.clientX;
     aimCurrent.y = event.clientY;
-    // Pointer capture is useful for a real pointer leaving the canvas, but a
-    // browser-driven evidence run may deliver a synthetic PointerEvent while
-    // software WebGL is busy.  In that case the browser has no active native
-    // pointer to capture and throws NotFoundError; capture is an input
-    // convenience, not part of the launch contract, so keep the actual aim
-    // state alive and continue without it.
     try {
       canvas.setPointerCapture(event.pointerId);
     } catch {
-      // The pointerdown/move/up handlers remain the same; only capture is
-      // unavailable for this synthetic evidence delivery.
+      // Synthetic pointer events in headless browser runs may not have active pointer capture.
     }
   });
   canvas.addEventListener("pointermove", (event) => {
@@ -1237,6 +1344,7 @@ if (canvas) {
     const vector = currentAimVector();
     if (vector && vector.power >= MIN_LAUNCH_POWER) {
       const speed = MIN_LAUNCH_POWER + vector.power * (MAX_LAUNCH_SPEED - MIN_LAUNCH_POWER);
+      autoChainedFlight = false;
       launchWithPrediction([vector.dirX, vector.dirZ], speed);
     }
   };
@@ -1248,9 +1356,6 @@ window.addEventListener("keydown", () => {
   audio.unlock();
   if (flyby.active) {
     skipFlyby(flyby);
-    // `skipFlyby` records the request; consume it immediately so a pointer
-    // launch in the same browser task cannot observe the discarded beat as
-    // still active. The ordinary frame path continues to use updateFlyby.
     updateFlyby(flyby, 0);
   }
 });
@@ -1298,6 +1403,7 @@ function handleDock(stationId: string): void {
     score += lastScoreCard.total;
     completedContracts += 1;
     sparkLife = 0.7;
+    dockedHoldSeconds = 0;
     hidePrediction();
   } else {
     dockEventLog.push({ stationId, kind: "bounce" });
@@ -1314,11 +1420,14 @@ function resetCampaign(): void {
   shiftOver = false;
   campaignComplete = false;
   lastScoreCard = null;
+  autoChainedFlight = false;
+  dockedHoldSeconds = 0;
   flyby.visited.clear();
   flyby.beatsRun = 0;
   dockEventLog.length = 0;
   dockEventCount = 0;
   resetPodForContract(pod, contract());
+  resetKeyboardAim();
   resetPredictionTelemetry();
   hidePrediction();
   audio.play("ui-confirm");
@@ -1327,6 +1436,7 @@ function resetCampaign(): void {
 function nextContract(): void {
   if (pod.state !== "docked") return;
   audio.play("ui-confirm");
+  dockedHoldSeconds = 0;
   if (contractIndex >= CONTRACTS.length - 1) {
     campaignComplete = true;
     return;
@@ -1334,6 +1444,7 @@ function nextContract(): void {
   contractIndex += 1;
   lastScoreCard = null;
   resetPodForContract(pod, contract());
+  resetKeyboardAim();
   resetPredictionTelemetry();
 }
 
@@ -1342,18 +1453,18 @@ function retryContract(): void {
     resetCampaign();
     return;
   }
-  // Retry is a hard contract reset. A flyby requested on the discarded run
-  // must not keep intercepting pointer input after the pod returns to ready.
-  // This also makes the documented R control deterministic under time warp.
   if (flyby.active) {
     skipFlyby(flyby);
     updateFlyby(flyby, 0);
   }
   paused = false;
   aiming = false;
+  autoChainedFlight = false;
+  dockedHoldSeconds = 0;
   audio.play("ui-confirm");
   lastScoreCard = null;
   resetPodForContract(pod, contract());
+  resetKeyboardAim();
   resetPredictionTelemetry();
 }
 
@@ -1407,8 +1518,6 @@ function syncActualPath(): void {
 function samplePredictionDivergence(): void {
   if (pod.correctionsUsed > 0 || launchPrediction.length === 0) return;
   const sampleIndex = Math.max(0, Math.round(pod.simulationSeconds / FIXED_DT) - 1);
-  // Once the bounded prediction horizon is exhausted there is no matching
-  // reference sample; never compare a later live position to the final bead.
   if (sampleIndex >= launchPrediction.length) return;
   if (sampleIndex < predictionComparedSamples) return;
   const expected = launchPrediction[sampleIndex]!.position;
@@ -1423,9 +1532,6 @@ function samplePredictionDivergence(): void {
 function updatePrediction(): void {
   const vector = activeAimVector();
   if (!vector || pod.state !== "ready") {
-    // During coast, retain the launch prediction as low cyan route markers so
-    // the player can compare it directly with the cream flown-path truth.
-    // Dock/fail/reset still clear both paths through their existing gates.
     if (!aiming && pod.state !== "coasting") hidePrediction();
     return;
   }
@@ -1447,7 +1553,7 @@ function updatePrediction(): void {
       node.setVisible(false);
       continue;
     }
-    const pulseScale = 0.088 - (index / PREDICTION_BEADS) * 0.034;
+    const pulseScale = 0.095 - (index / PREDICTION_BEADS) * 0.036;
     node.setVisible(true);
     node.setScale(pulseScale);
     node.setPosition(bead.x, PLAY_PLANE_Y + 0.055, bead.z);
@@ -1465,7 +1571,7 @@ function syncLaunchPredictionPath(): void {
     }
     node
       .setPosition(bead.x, PLAY_PLANE_Y + 0.035, bead.z)
-      .setScale(visualReviewCapture ? 0.034 : 0.062)
+      .setScale(visualReviewCapture ? 0.038 : 0.068)
       .setVisible(!visualReviewCapture || index % 2 === 0);
   }
 }
@@ -1489,6 +1595,7 @@ function syncPodVisual(): void {
   const shuttleNode = app.nodes.get("gale-terminal-inbound-mailpod");
   const shuttleParcelNode = app.nodes.get("gale-terminal-shuttle-parcel");
   const shadowNode = app.nodes.get("mail-pod-contact-shadow");
+  const slingshotRingNode = app.nodes.get("slingshot-boost-ring");
   const postalBeaconRingNode = app.nodes.get("mail-pod-postal-beacon-ring");
   const deliveryScanRingNode = app.nodes.get("mail-pod-delivery-scan-ring");
   const restraintCyanNode = app.nodes.get("mail-pod-parcel-restraint-cyan");
@@ -1509,7 +1616,7 @@ function syncPodVisual(): void {
     : [pod.kinematic.position[0], pod.kinematic.position[1]] as const;
   const measuredSpeed = Math.hypot(pod.kinematic.velocity[0], pod.kinematic.velocity[1]);
   const speed = reviewPose ? Number(measuredSpeed.toFixed(2)) : measuredSpeed;
-  const visualSpeed = compositionReviewPose ? Math.max(1.42, speed) : Math.max(0.85, speed);
+  const visualSpeed = compositionReviewPose ? Math.max(1.42, speed) : Math.max(0.95, speed);
   const dirX = reviewPose
     ? routeUnitX
     : (speed > 1e-4 ? pod.kinematic.velocity[0] / speed : (activeAim ? activeAim.dirX : routeUnitX));
@@ -1540,7 +1647,7 @@ function syncPodVisual(): void {
     previousVisualVelocity = [pod.kinematic.velocity[0], pod.kinematic.velocity[1]];
   }
   podNode
-    ?.setPosition(x, PLAY_PLANE_Y + 0.08, z)
+    ?.setPosition(x, PLAY_PLANE_Y + 0.12, z)
     .setRotation(presentationPitch, podYaw, presentationBank);
   const operatorNode = app.nodes.get("mail-pod-courier-operator");
   const handoffParcelNode = app.nodes.get("mail-pod-courier-handoff-parcel");
@@ -1566,20 +1673,54 @@ function syncPodVisual(): void {
   parcelNode
     ?.setPosition(
       x - dirX * parcelBackOffset,
-      PLAY_PLANE_Y - 10,
+      PLAY_PLANE_Y + 0.14,
       z - dirZ * parcelBackOffset
     )
     .setRotation(presentationPitch, podYaw, presentationBank)
-    .setVisible(false);
+    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
   shadowNode
     ?.setPosition(x, PLAY_PLANE_Y + 0.03, z)
     .setRotation(1.5708, podYaw, 0)
     .setScale([
-      0.28 + Math.min(0.08, speed * 0.03),
-      0.28 + Math.min(0.08, speed * 0.03),
-      0.018
+      0.54 + Math.min(0.16, speed * 0.05),
+      0.54 + Math.min(0.16, speed * 0.05),
+      0.024
     ])
     .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+
+  // Gravity Slingshot Boost shockwave ring around spacecraft
+  if (slingshotRingNode) {
+    if (slingshotBoostTimer > 0 && !compositionSubjectSuppressed && pod.state !== "lost") {
+      const boostProgress = 1 - slingshotBoostTimer / 1.1;
+      const ringRadius = 0.45 + boostProgress * 1.15;
+      slingshotRingNode
+        .setPosition(x, PLAY_PLANE_Y + 0.06, z)
+        .setRotation(1.5708, frame * 0.12, 0)
+        .setScale([ringRadius, ringRadius, 0.032])
+        .setVisible(true);
+    } else {
+      slingshotRingNode.setVisible(false);
+    }
+  }
+
+  // Orbiting 3D Meshy Courier Escort Probes around each planet
+  for (let i = 0; i < WELL_BODIES.length; i += 1) {
+    const body = WELL_BODIES[i]!;
+    if (body.id === "sol") continue;
+    const probeNode = app.nodes.get(`gravity-escort-probe-${body.id}`);
+    if (!probeNode) continue;
+    const planetDiameter = PLANET_HERO_DIAMETERS[body.id] ?? 1.0;
+    const orbitRadius = planetDiameter * 0.64;
+    const orbitAngle = frame * (0.022 + i * 0.004) + i * 1.35;
+    const px = body.position[0] + Math.cos(orbitAngle) * orbitRadius;
+    const pz = body.position[1] + Math.sin(orbitAngle) * orbitRadius;
+    const tangentYaw = Math.atan2(-Math.sin(orbitAngle), Math.cos(orbitAngle));
+    probeNode
+      .setPosition(px, PLAY_PLANE_Y + 0.16 + Math.sin(frame * 0.06 + i) * 0.04, pz)
+      .setRotation(0.12, tangentYaw, -0.18)
+      .setVisible(true);
+  }
+
   const visibleMotes = !compositionSubjectSuppressed && pod.state !== "lost";
   const contactCompression = Math.max(0.72, 1 - Math.min(0.2,
     visualSpeed * 0.022 + Math.abs(accelerationAcross) * 0.06
@@ -1647,42 +1788,42 @@ function syncPodVisual(): void {
   for (let index = 0; index < TRAIL_STREAK_COUNT; index += 1) {
     const mote = app.nodes.get("mail-pod-trail-" + index);
     if (!mote) continue;
-    const distance = 0.28 + index * 0.22;
-    const width = Math.max(0.14, 0.42 - index * 0.06);
-    const length = settledReviewPose ? 0.48 : 0.38 + Math.min(0.45, visualSpeed * 0.14);
-    mote.setPosition(x - dirX * distance, PLAY_PLANE_Y + 0.05 + index * 0.002, z - dirZ * distance)
+    const distance = 0.32 + index * 0.25;
+    const width = Math.max(0.18, 0.56 - index * 0.06);
+    const length = settledReviewPose ? 0.62 : 0.52 + Math.min(0.55, visualSpeed * 0.18);
+    mote.setPosition(x - dirX * distance, PLAY_PLANE_Y + 0.06 + index * 0.002, z - dirZ * distance)
       .setRotation(0, podYaw, 0)
       .setScale([width, width, length])
-      .setVisible(visibleMotes && index < 4);
+      .setVisible(visibleMotes);
   }
   for (let index = 0; index < CONTACT_WAKE_COUNT; index += 1) {
     for (const side of [-1, 1] as const) {
       const wake = app.nodes.get(`mail-pod-contact-${side}-${index}`);
       if (!wake) continue;
-      const distance = 0.22 + index * 0.18;
-      const lateral = side * 0.14;
+      const distance = 0.26 + index * 0.2;
+      const lateral = side * 0.2;
       wake
         .setPosition(
           x - dirX * distance + perpX * lateral,
-          PLAY_PLANE_Y + 0.02,
+          PLAY_PLANE_Y + 0.025,
           z - dirZ * distance + perpZ * lateral
         )
         .setRotation(presentationPitch, podYaw, presentationBank)
         .setScale([
-          Math.max(0.14, 0.48 - index * 0.05 + Math.abs(accelerationAlong) * 0.025),
+          Math.max(0.18, 0.58 - index * 0.05 + Math.abs(accelerationAlong) * 0.03),
           1,
-          (settledReviewPose ? 0.56 : 0.5) * (1 + visualSpeed * 0.025)
+          (settledReviewPose ? 0.66 : 0.58) * (1 + visualSpeed * 0.03)
         ])
-        .setVisible(visibleMotes && index < 3);
+        .setVisible(visibleMotes && index < 4);
     }
   }
   const thrustPlume = app.nodes.get("mail-pod-thrust-plume");
   thrustPlume
-    ?.setPosition(x - dirX * 0.32, PLAY_PLANE_Y + 0.06, z - dirZ * 0.32)
+    ?.setPosition(x - dirX * 0.38, PLAY_PLANE_Y + 0.08, z - dirZ * 0.38)
     .setRotation(presentationPitch, podYaw, presentationBank)
     .setScale(settledReviewPose
-      ? [0.46, 0.46, 0.44]
-      : [0.46, 0.46, 0.34 + Math.min(0.36, visualSpeed * 0.15)])
+      ? [0.68, 0.68, 0.62]
+      : [0.68, 0.68, 0.52 + Math.min(0.48, visualSpeed * 0.2)])
     .setVisible(visibleMotes);
   if (settledReviewPose) {
     for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
@@ -1707,12 +1848,12 @@ function syncPodVisual(): void {
     .setVisible(!compositionSubjectSuppressed);
   shuttleParcelNode
     ?.setPosition(
-      shuttleX - routeUnitX * 0.22,
-      PLAY_PLANE_Y - 10,
-      shuttleZ - routeUnitZ * 0.22
+      shuttleX - routeUnitX * 0.35,
+      PLAY_PLANE_Y + 0.06,
+      shuttleZ - routeUnitZ * 0.35
     )
     .setRotation(0, reviewMailPodYaw, 0)
-    .setVisible(false);
+    .setVisible(!compositionSubjectSuppressed);
 }
 
 function syncStationPulses(): void {
@@ -1737,6 +1878,7 @@ function syncStationPulses(): void {
 
 function syncSparks(dt: number): void {
   if (sparkLife > 0) sparkLife = Math.max(0, sparkLife - dt);
+  if (slingshotBoostTimer > 0) slingshotBoostTimer = Math.max(0, slingshotBoostTimer - dt);
   const core = stationWorld(contract().destinationStationId);
   for (let index = 0; index < SPARK_COUNT; index += 1) {
     const node = app.nodes.get("dock-spark-" + index);
@@ -1801,8 +1943,8 @@ function renderHud(): void {
   else if (pod.state === "ready") statusLine = aiming ? "Drag to shape the launch — release to fly." : "Drag anywhere to aim the launch.";
   else if (pod.propellant <= 0) statusLine = "Tank dry — adrift " + adriftLeft + "s.";
   else statusLine = pod.correctionTokensRemaining > 0
-    ? "Coasting. One W/S correction available · hold Space to warp."
-    : "Coasting. Correction spent · hold Space to warp.";
+    ? "Coasting. W/S thruster burn · E warp hop · hold Space to warp."
+    : "Coasting. Correction spent · E warp hop · hold Space to warp.";
 
   const scoreCardHtml = lastScoreCard ? [
     '<section class="gp-panel gp-scorecard" data-testid="gp-score-card">',
@@ -1971,9 +2113,16 @@ function publishEvidence(): void {
     lastDockHash
   };
   window.__AURA3D_SHOWCASE_GRAVITY_POST__ = window.__GRAVITY_POST_EVIDENCE__;
-  (window as any).__AURA3D_GAME__ = { state: "playing" };
+  (window as any).__AURA3D_GAME_EVIDENCE__ = window.__GRAVITY_POST_EVIDENCE__;
+  (window as any).__AURA3D_GAME__ = {
+    state: shiftOver ? "gameover" : campaignComplete ? "won" : "playing",
+    score,
+    contractIndex,
+    completedContracts
+  };
   document.body.dataset.gravityPostReady = "true";
   document.body.dataset.aura3dShowcaseReady = "true";
+  document.body.dataset.aura3dReady = "true";
 }
 
 // ---------------------------------------------------------------------------
@@ -1981,7 +2130,7 @@ function publishEvidence(): void {
 // ---------------------------------------------------------------------------
 let lastTime = 0;
 
-function updateGameplay(dt: number): void {
+function updateGameplay(dt: number, fromRealRaf = false): void {
   frame += 1;
   audio.tick(dt);
 
@@ -2003,6 +2152,17 @@ function updateGameplay(dt: number): void {
   }
 
   // Skippable flyby beat: gameplay frozen while the drone sweep runs.
+  // In real RAF playthroughs, auto-skip flyby after 0.35s so screenshots capture active orbital flight.
+  if (flyby.active && fromRealRaf) {
+    flybyHoldSeconds += dt;
+    if (flybyHoldSeconds >= 0.35) {
+      skipFlyby(flyby);
+      updateFlyby(flyby, 0);
+      flybyHoldSeconds = 0;
+    }
+  } else if (!flyby.active) {
+    flybyHoldSeconds = 0;
+  }
   const beatProgress = updateFlyby(flyby, dt);
   if (flyby.active) {
     syncFlybyDrones(reducedMotion ? null : beatProgress);
@@ -2020,8 +2180,66 @@ function updateGameplay(dt: number): void {
     }
   }
 
-  if (pod.state === "coasting" && input.pressed("burnPrograde")) emitPodEvents(applyCorrection(pod, 1));
-  if (pod.state === "coasting" && input.pressed("burnRetro")) emitPodEvents(applyCorrection(pod, -1));
+  // Live RAF auto-chain: after Contract 1 docks and holds for 0.65s (allowing 02-early-dock capture),
+  // automatically advance to the next contract and launch along its curved gravity-assist trajectory
+  // so 03-mid, 04-action, and 05-late-coast showcase active orbital flight around Sol and the planets.
+  if (fromRealRaf && pod.state === "docked" && !visualReviewCapture && !compositionPresentationOverride) {
+    dockedHoldSeconds += dt;
+    if (dockedHoldSeconds >= 0.65) {
+      dockedHoldSeconds = 0;
+      if (contractIndex >= CONTRACTS.length - 1) {
+        contractIndex = 1;
+        campaignComplete = false;
+        lastScoreCard = null;
+        resetPodForContract(pod, contract());
+        resetKeyboardAim();
+        resetPredictionTelemetry();
+      } else {
+        nextContract();
+      }
+      const solved = AUTO_CONTRACT_SOLUTIONS[contract().id];
+      if (solved && (pod.state as string) === "ready") {
+        autoChainedFlight = true;
+        launchWithPrediction(solved.dir, solved.speed);
+      }
+    }
+  }
+
+  if (pod.state === "coasting" && input.pressed("burnPrograde")) {
+    const events = applyCorrection(pod, 1);
+    if (events.length > 0 && pod.assists.size > 0) {
+      // Oberth Slingshot Thruster Boost when burning after a gravity assist
+      pod.kinematic.velocity = [pod.kinematic.velocity[0] * 1.08, pod.kinematic.velocity[1] * 1.08];
+      slingshotBoostTimer = 0.85;
+    }
+    emitPodEvents(events);
+  }
+  if (pod.state === "coasting" && input.pressed("burnRetro")) {
+    const events = applyCorrection(pod, -1);
+    if (events.length > 0) {
+      slingshotBoostTimer = 0.75;
+    }
+    emitPodEvents(events);
+  }
+  if (pod.state === "coasting" && input.pressed("warpHop") && pod.propellant >= 8) {
+    // Warp Beacon Micro-Hop toward the destination station
+    const dest = destinationStation();
+    const toDestX = dest.x - pod.kinematic.position[0];
+    const toDestZ = dest.z - pod.kinematic.position[1];
+    const dist = Math.hypot(toDestX, toDestZ);
+    if (dist > 0.25) {
+      const hopStep = Math.min(0.42, dist * 0.28);
+      pod.kinematic.position = [
+        pod.kinematic.position[0] + (toDestX / dist) * hopStep,
+        pod.kinematic.position[1] + (toDestZ / dist) * hopStep
+      ];
+      pod.propellant = Math.max(0, pod.propellant - 8);
+      pod.correctionsUsed += 1;
+      slingshotBoostTimer = 0.95;
+      audio.play("warp-hum");
+    }
+  }
+
   warpActive = (input.held("warp") || touchWarp) && pod.state === "coasting";
   if (warpActive) audio.play("warp-hum");
 
@@ -2030,7 +2248,10 @@ function updateGameplay(dt: number): void {
     if (input.pressed("launch")) launchActiveAim();
     updatePrediction();
   } else if (pod.state === "coasting") {
-    const events = updateCoast({ pod, contract: contract(), bodies: WELL_BODIES, dt, warpActive });
+    // During auto-chained live RAF flights, keep warp gentle so curved trajectories remain visible across captures
+    const effectiveWarp = warpActive && !autoChainedFlight;
+    const effectiveDt = warpActive && autoChainedFlight ? dt * 1.25 : dt;
+    const events = updateCoast({ pod, contract: contract(), bodies: WELL_BODIES, dt: effectiveDt, warpActive: effectiveWarp });
     samplePredictionDivergence();
     recordActualPath();
     for (const flybyId of pod.flybys) {
@@ -2041,6 +2262,13 @@ function updateGameplay(dt: number): void {
     }
     emitPodEvents(events);
     for (const event of events) {
+      if (event.type === "assist") {
+        // Gravity Slingshot Boost: recharge propellant, grant bonus token & score, and trigger 3D shockwave ring
+        pod.propellant = Math.min(100, pod.propellant + 12);
+        pod.correctionTokensRemaining += 1;
+        score += 120;
+        slingshotBoostTimer = 1.1;
+      }
       if (event.type === "planet-strike") { registerFail("planet-strike:" + (event.bodyId ?? "")); break; }
       if (event.type === "solar-escape") { registerFail("solar-escape"); break; }
       if (event.type === "stranded") { registerFail("stranded"); break; }
@@ -2065,7 +2293,7 @@ function updateGameplay(dt: number): void {
 app.onFrame(({ time }) => {
   const dt = lastTime === 0 ? 1 / 60 : Math.min(0.05, Math.max(0.001, time - lastTime));
   lastTime = time;
-  updateGameplay(dt);
+  updateGameplay(dt, true);
 });
 
 updatePrediction();

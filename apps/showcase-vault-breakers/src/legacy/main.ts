@@ -22,7 +22,7 @@ import {
   type AuraSceneNode,
   type AuraDiagnostics
 } from "@aura3d/engine";
-import { assets } from "../../../../src/aura-assets";
+import { assets, assets as rootAssets } from "../../../../src/aura-assets";
 import { VaultFlow, type VaultGameEvent } from "../gameplay/ball-flow";
 import { FlipperController } from "../gameplay/flippers";
 import { PlungerController } from "../gameplay/plunger";
@@ -31,6 +31,9 @@ import { createVaultAudio } from "./pinball-audio";
 import { createScoreboardNodes, scoreboardVisibility, MISSION_LINES } from "./scoreboard";
 import { createVaultBreakersEnvironment } from "./environment";
 import "./styles.css";
+
+const slingshotAsset =
+  (rootAssets as any).vaultPinballSlingshotMeshy ?? rootAssets.vaultPopBumperCapMeshy;
 
 type VaultWindow = Window & {
   __VAULT_BREAKERS_EVIDENCE__?: unknown;
@@ -81,12 +84,12 @@ ui.html("#panel", `
     <article><span>Tilt</span><strong id="stat-tilt">0 OF 3</strong></article>
   </section>
   <div class="power-meter" aria-label="Plunger power"><span id="vb-power-fill"></span></div>
-  <div class="power-meta"><span id="vb-power-label">Plunger</span><span>hold Space</span></div>
+  <div class="power-meta"><span id="vb-power-label">Plunger (Sweet Spot 55%+)</span><span>hold Space</span></div>
   <p class="mission-line" id="vb-mission" aria-live="polite">HIT TARGET BANKS  0 DOWN 5 TO GO</p>
   <ul class="controls-list" aria-label="Keyboard controls">
     <li>Flippers <b>A</b>/<b>D</b> or <b>&larr;/&rarr;</b></li>
-    <li>Plunger <b>hold Space</b>, release to serve</li>
-    <li>Nudge <b>S</b> (3 strikes tilt)</li>
+    <li>Skill-Shot Plunger <b>hold Space</b>, release in sweet spot</li>
+    <li>Nudge <b>Q</b>/<b>E</b> or <b>S</b> (3 strikes tilt)</li>
     <li>Reset <b>R</b> - Pause <b>P</b></li>
   </ul>
   <section class="action-row" aria-label="Game actions">
@@ -126,18 +129,55 @@ let impactRemaining = 0;
 let impactRadius = 0.28;
 let impactOrigin: readonly [number, number, number] = [0, 0.5, 0];
 const touchControlEvents: string[] = [];
+let bonusScore = 0;
+let skillShotWindowRemaining = 0;
+let skillShotAwardedForBall = false;
+let bannerOverrideText = "";
+let bannerOverrideRemaining = 0;
+let coreJackpotCooldown = 0;
+let goldJackpotBallActive = false;
+let goldJackpotBallPhase = 0;
+const COMET_TRAIL_COUNT = 6;
+const ballTrailHistory: Array<[number, number, number]> = [
+  [0, 0.44, 1.18],
+  [0.12, 0.43, 1.38],
+  [0.26, 0.42, 1.58],
+  [0.42, 0.41, 1.78],
+  [0.58, 0.40, 1.98],
+  [0.74, 0.39, 2.18]
+];
+
 // Neon palette — the typed GLBs keep their authored multi-material identity;
 // these route-owned materials are limited to state accents and gameplay cues.
 const liveBallMaterial = material.metal({
   name: "neon chrome ball state accent",
   color: "#f8fafc",
-  emissive: "#7dd3fc",
-  emissiveIntensity: 0.24,
-  roughness: 0.06,
-  metallic: 0.96,
+  emissive: "#38bdf8",
+  emissiveIntensity: 0.42,
+  roughness: 0.05,
+  metallic: 0.97,
+  clearcoat: 0.96,
+  envMapIntensity: 2.35
+});
+const goldBonusBallMaterial = material.metal({
+  name: "vault jackpot gold ball accent",
+  color: "#fde047",
+  emissive: "#f59e0b",
+  emissiveIntensity: 0.65,
+  roughness: 0.08,
+  metallic: 0.94,
   clearcoat: 0.95,
   envMapIntensity: 2.2
 });
+const cometTrailMaterials = Array.from({ length: COMET_TRAIL_COUNT }, (_, idx) =>
+  material.neon({
+    name: `pinball comet trail ${idx}`,
+    color: idx < 2 ? "#e0f2fe" : "#0891b2",
+    emissive: idx % 2 === 0 ? "#22d3ee" : "#38bdf8",
+    emissiveIntensity: Number((1.35 - idx * 0.16).toFixed(2)),
+    roughness: 0.12
+  })
+);
 const flipperGoldMaterial = material.metal({
   name: "pinball brushed metallic gold flipper",
   color: "#d4af37",
@@ -224,48 +264,41 @@ function primitiveNode(visual: PropVisual): AuraSceneNode {
   const isHiddenProxy =
     visual.name === "felt" ||
     visual.name.startsWith("bumper-") ||
-    visual.name.startsWith("wall-");
-  const visualY = visual.name === "felt" ? visual.position[1] : visual.position[1] + 0.28;
-  const isSling = visual.name.includes("sling");
+    visual.name.startsWith("wall-") ||
+    visual.name.includes("sling");
+  const visualY = isHiddenProxy ? -5 : visual.position[1] + 0.28;
   const isLane = visual.name.includes("plunger") || visual.name.includes("guide") || visual.name.includes("lane");
   const mat = isHiddenProxy
     ? material.pbr({ name: visual.name + " hidden", color: p.color, roughness: 0.8, metallic: 0.1, opacity: 0 })
-    : isSling
-      ? material.emissive({
-          name: visual.name + " sling neon",
-          color: "#f43f5e",
-          emissive: "#ec4899",
-          emissiveIntensity: 0.48
+    : isLane
+      ? material.metal({
+          name: visual.name + " brushed gold rail",
+          color: "#d4af37",
+          emissive: "#b48a1e",
+          emissiveIntensity: 0.34,
+          roughness: 0.22,
+          metallic: 0.82,
+          clearcoat: 0.88,
+          envMapIntensity: 1.85
         })
-      : isLane
-        ? material.metal({
-            name: visual.name + " brushed gold rail",
+      : p.emissive
+        ? material.emissive({
+            name: visual.name + " material",
+            color: p.color,
+            emissive: p.emissive,
+            emissiveIntensity: 0.32
+          })
+        : material.metal({
+            name: visual.name + " material",
             color: "#d4af37",
             emissive: "#b48a1e",
-            emissiveIntensity: 0.34,
+            emissiveIntensity: 0.3,
             roughness: 0.22,
             metallic: 0.82,
-            clearcoat: 0.88,
-            envMapIntensity: 1.85
-          })
-        : p.emissive
-          ? material.emissive({
-              name: visual.name + " material",
-              color: p.color,
-              emissive: p.emissive,
-              emissiveIntensity: 0.32
-            })
-          : material.metal({
-              name: visual.name + " material",
-              color: "#d4af37",
-              emissive: "#b48a1e",
-              emissiveIntensity: 0.3,
-              roughness: 0.22,
-              metallic: 0.82,
-              clearcoat: 0.85
-            });
+            clearcoat: 0.85
+          });
   const scaleVec: [number, number, number] = isHiddenProxy
-    ? [0.001, 0.001, 0.001]
+    ? [0.0001, 0.0001, 0.0001]
     : [p.size[0], Math.max(0.12, p.size[1] * 0.65), p.size[2]];
   if (p.shape === "sphere") {
     return primitives.sphere({ name: visual.name, material: mat })
@@ -318,6 +351,7 @@ function targetImpactPosition(id: string): readonly [number, number] {
 
 function visualNodes(): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [];
+  let targetIndex = 0;
   for (const v of flow.sim.visuals) {
     if (v.source === "model") {
       if (v.name === "vault-door-visual") {
@@ -351,17 +385,33 @@ function visualNodes(): AuraSceneNode[] {
           .toJSON()
       );
     } else if (v.name.startsWith("target:")) {
-      const sz = v.primitive!.size;
+      const useEnergyCore = targetIndex % 2 === 0;
+      targetIndex += 1;
       nodes.push(
         primitives.box({
           name: v.name,
           material: liveTargetArmedMaterial,
-          castShadow: true,
-          receiveShadow: true
+          castShadow: false,
+          receiveShadow: false
         })
-          .position(v.position[0], v.position[1] + 0.34, v.position[2])
-          .scale([Math.max(0.15, sz[0]), 0.24, Math.max(0.15, sz[2])])
+          .position(v.position[0], -5, v.position[2])
+          .scale([0.0001, 0.0001, 0.0001])
           .runtime(game.runtimeNode(v.name, { tags: ["standup-target"] }))
+          .toJSON(),
+        model(
+          useEnergyCore
+            ? rootAssets.fpsEnergyCorePickupMeshy
+            : rootAssets.skylineCrystalShardMeshy,
+          {
+            name: `target-meshy:${v.name}`,
+            role: "setDressing",
+            scaleMode: "fit",
+            targetMaxDimension: 0.34
+          }
+        )
+          .position(v.position[0], v.position[1] + 0.36, v.position[2])
+          .rotate(0, targetIndex * 0.55, 0)
+          .runtime(game.runtimeNode(`target-meshy:${v.name}`, { tags: ["typed-asset", "standup-target-3d"] }))
           .toJSON()
       );
     } else {
@@ -427,6 +477,145 @@ function visualNodes(): AuraSceneNode[] {
     emissiveIntensity: 0.68,
     roughness: 0.18
   });
+  const vaultRoomFloorMat = material.metal({
+    name: "cyber vault arcade floor",
+    color: "#111827",
+    emissive: "#1e293b",
+    emissiveIntensity: 0.28,
+    roughness: 0.32,
+    metallic: 0.78,
+    clearcoat: 0.55
+  });
+  const vaultRoomGridCyanMat = material.neon({
+    name: "cyber vault floor grid cyan",
+    color: "#0891b2",
+    emissive: "#22d3ee",
+    emissiveIntensity: 0.52,
+    roughness: 0.2
+  });
+  const vaultRoomGridPinkMat = material.neon({
+    name: "cyber vault floor grid pink",
+    color: "#9d174d",
+    emissive: "#f472b6",
+    emissiveIntensity: 0.48,
+    roughness: 0.2
+  });
+
+  // Cyber-vault metallic floor deck & neon arcade trim around the pinball cabinet
+  nodes.push(
+    primitives.box({
+      name: "vault-arcade-floor-deck",
+      material: vaultRoomFloorMat,
+      receiveShadow: true
+    })
+      .position(0, -0.48, -0.4)
+      .scale([13.5, 0.12, 13.5])
+      .toJSON(),
+    primitives.box({
+      name: "vault-arcade-back-wall",
+      material: vaultRoomFloorMat
+    })
+      .position(0, 1.8, -5.6)
+      .scale([13.5, 4.8, 0.18])
+      .toJSON(),
+    primitives.box({
+      name: "vault-arcade-floor-trim-left",
+      material: vaultRoomGridCyanMat
+    })
+      .position(-3.15, -0.40, 0.1)
+      .scale([0.08, 0.03, 8.4])
+      .toJSON(),
+    primitives.box({
+      name: "vault-arcade-floor-trim-right",
+      material: vaultRoomGridPinkMat
+    })
+      .position(3.15, -0.40, 0.1)
+      .scale([0.08, 0.03, 8.4])
+      .toJSON(),
+    primitives.box({
+      name: "vault-arcade-floor-trim-front",
+      material: vaultRoomGridCyanMat
+    })
+      .position(0, -0.40, 4.15)
+      .scale([6.4, 0.03, 0.08])
+      .toJSON()
+  );
+
+  // Upper cabinet shoulders & arcade flanks: blockfallEnergyCapacitorBankMeshy + neonCyberPylonMeshy
+  nodes.push(
+    model(rootAssets.blockfallEnergyCapacitorBankMeshy, {
+      name: "vault-shoulder-capacitor-left-upper",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.05
+    })
+      .position(-2.78, 0.56, -2.45)
+      .rotate(0, 0.35, 0)
+      .toJSON(),
+    model(rootAssets.blockfallEnergyCapacitorBankMeshy, {
+      name: "vault-shoulder-capacitor-right-upper",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.05
+    })
+      .position(2.78, 0.56, -2.45)
+      .rotate(0, -0.35, 0)
+      .toJSON(),
+    model(rootAssets.blockfallEnergyCapacitorBankMeshy, {
+      name: "vault-shoulder-capacitor-left-mid",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.92
+    })
+      .position(-2.92, 0.44, -0.15)
+      .rotate(0, Math.PI * 0.5, 0)
+      .toJSON(),
+    model(rootAssets.blockfallEnergyCapacitorBankMeshy, {
+      name: "vault-shoulder-capacitor-right-mid",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.92
+    })
+      .position(2.92, 0.44, -0.15)
+      .rotate(0, -Math.PI * 0.5, 0)
+      .toJSON(),
+    model(rootAssets.neonCyberPylonMeshy, {
+      name: "vault-cabinet-pylon-left-rear",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetHeight: 1.85
+    })
+      .position(-3.38, 0.15, -3.15)
+      .rotate(0, 0.28, 0)
+      .toJSON(),
+    model(rootAssets.neonCyberPylonMeshy, {
+      name: "vault-cabinet-pylon-right-rear",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetHeight: 1.85
+    })
+      .position(3.38, 0.15, -3.15)
+      .rotate(0, -0.28, 0)
+      .toJSON(),
+    model(rootAssets.neonCyberPylonMeshy, {
+      name: "vault-cabinet-pylon-left-front",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetHeight: 1.48
+    })
+      .position(-3.46, 0.08, 1.55)
+      .rotate(0, 0.42, 0)
+      .toJSON(),
+    model(rootAssets.neonCyberPylonMeshy, {
+      name: "vault-cabinet-pylon-right-front",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetHeight: 1.48
+    })
+      .position(3.46, 0.08, 1.55)
+      .rotate(0, -0.42, 0)
+      .toJSON()
+  );
 
   for (const [idx, bumper] of POP_BUMPER_TURRET_SPECS.entries()) {
     nodes.push(
@@ -458,7 +647,7 @@ function visualNodes(): AuraSceneNode[] {
   }
 
   // Centerpiece Vault Core in the mid-playfield + captive chrome pinballs +
-  // 3D slingshot kickers, rollover lane dividers, inlane guides, and plunger rod
+  // 3D Meshy slingshot kickers, rollover lane dividers, inlane guides, and plunger rod
   nodes.push(
     model(assets.vaultCenterCoreTargetMeshy, {
       name: "vault-centerpiece-core-3d",
@@ -503,6 +692,17 @@ function visualNodes(): AuraSceneNode[] {
       .position(2.42, 0.44, 2.75)
       .scale([0.16, 0.16, 0.16])
       .toJSON(),
+    // Extra 3D Meshy Gold Bonus Ball for Vault Multiball Jackpot
+    model(rootAssets.vaultBreakersBall, {
+      name: "vault-jackpot-gold-ball",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.34,
+      material: goldBonusBallMaterial
+    })
+      .position(0.54, 0.44, -2.05)
+      .runtime(game.runtimeNode("vault-jackpot-gold-ball", { tags: ["typed-asset", "jackpot-bonus-ball"] }))
+      .toJSON(),
     // Upper rollover lane dividers at top of playfield
     primitives.box({ name: "rollover-divider-left", material: goldTrimMat })
       .position(-0.75, 0.38, -2.68)
@@ -520,36 +720,66 @@ function visualNodes(): AuraSceneNode[] {
       .position(0.75, 0.38, -2.68)
       .scale([0.07, 0.18, 0.46])
       .toJSON(),
-    // Left and right 3D slingshot kicker housings above flippers
+    // Hide legacy primitive slingshot triangles & mount 2x 3D Meshy slingshot kickers
     primitives.box({ name: "slingshot-housing-left", material: goldTrimMat })
-      .position(-1.32, 0.37, 1.92)
-      .rotate(0, -0.46, 0)
-      .scale([0.16, 0.18, 0.86])
+      .position(-1.32, -5, 1.92)
+      .scale([0.0001, 0.0001, 0.0001])
       .toJSON(),
     primitives.box({ name: "slingshot-rubber-left", material: neonPinkRailMat })
-      .position(-1.22, 0.40, 1.92)
-      .rotate(0, -0.46, 0)
-      .scale([0.06, 0.12, 0.88])
+      .position(-1.22, -5, 1.92)
+      .scale([0.0001, 0.0001, 0.0001])
       .toJSON(),
     primitives.box({ name: "slingshot-cap-left", material: neonCyanRimMat })
-      .position(-1.32, 0.47, 1.92)
-      .rotate(0, -0.46, 0)
-      .scale([0.10, 0.03, 0.84])
+      .position(-1.32, -5, 1.92)
+      .scale([0.0001, 0.0001, 0.0001])
       .toJSON(),
     primitives.box({ name: "slingshot-housing-right", material: goldTrimMat })
-      .position(1.12, 0.37, 1.92)
-      .rotate(0, 0.46, 0)
-      .scale([0.16, 0.18, 0.86])
+      .position(1.12, -5, 1.92)
+      .scale([0.0001, 0.0001, 0.0001])
       .toJSON(),
     primitives.box({ name: "slingshot-rubber-right", material: neonPinkRailMat })
-      .position(1.02, 0.40, 1.92)
-      .rotate(0, 0.46, 0)
-      .scale([0.06, 0.12, 0.88])
+      .position(1.02, -5, 1.92)
+      .scale([0.0001, 0.0001, 0.0001])
       .toJSON(),
     primitives.box({ name: "slingshot-cap-right", material: neonCyanRimMat })
-      .position(1.12, 0.47, 1.92)
+      .position(1.12, -5, 1.92)
+      .scale([0.0001, 0.0001, 0.0001])
+      .toJSON(),
+    model(slingshotAsset, {
+      name: "vault-slingshot-meshy-left",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.86
+    })
+      .position(-1.24, 0.38, 1.94)
+      .rotate(0, -0.46, 0)
+      .runtime(game.runtimeNode("vault-slingshot-meshy-left", { tags: ["typed-asset", "slingshot-3d"] }))
+      .toJSON(),
+    model(slingshotAsset, {
+      name: "vault-slingshot-meshy-right",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.86
+    })
+      .position(1.06, 0.38, 1.94)
       .rotate(0, 0.46, 0)
-      .scale([0.10, 0.03, 0.84])
+      .runtime(game.runtimeNode("vault-slingshot-meshy-right", { tags: ["typed-asset", "slingshot-3d"] }))
+      .toJSON(),
+    primitives.torus({
+      name: "vault-slingshot-ring-left",
+      material: neonPinkRailMat
+    })
+      .position(-1.24, 0.31, 1.94)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.36, 0.36, 0.028])
+      .toJSON(),
+    primitives.torus({
+      name: "vault-slingshot-ring-right",
+      material: neonCyanRimMat
+    })
+      .position(1.06, 0.31, 1.94)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.36, 0.36, 0.028])
       .toJSON(),
     // Left and right inlane/outlane brushed metallic gold guide rails + neon rim accents
     primitives.box({ name: "inlane-guide-left-rail", material: goldTrimMat })
@@ -597,6 +827,22 @@ function visualNodes(): AuraSceneNode[] {
       .scale([0.14, 0.14, 0.14])
       .toJSON()
   );
+
+  // Glowing cyan comet trail nodes behind the active silver pinball
+  for (let i = 0; i < COMET_TRAIL_COUNT; i += 1) {
+    const trailPos = ballTrailHistory[i] ?? [0, 0.44, 1.18];
+    const radius = Math.max(0.04, 0.125 - i * 0.014);
+    nodes.push(
+      primitives.sphere({
+        name: `vault-ball-comet-${i}`,
+        material: cometTrailMaterials[i]!
+      })
+        .position(trailPos[0], trailPos[1], trailPos[2])
+        .scale([radius, radius * 0.72, radius * 1.35])
+        .runtime(game.runtimeNode(`vault-ball-comet-${i}`, { tags: ["ball-comet-trail"] }))
+        .toJSON()
+    );
+  }
 
   nodes.push(
     primitives.torus({ name: "vault live impact ring", material: impactAmberMaterial })
@@ -654,19 +900,19 @@ function tuneVaultEnvironmentNodes(rawNodes: AuraSceneNode[]): AuraSceneNode[] {
     if (node.name === "typed-vault-breakers-cabinet") {
       node.hiddenNodeNames = ["neon"];
       node.materialOverrides = [
-        { match: "neonCyan", material: { emissiveIntensity: 0.22 } },
-        { match: "neonPink", material: { emissiveIntensity: 0.22 } }
+        { match: "neonCyan", material: { emissiveIntensity: 0.42 } },
+        { match: "neonPink", material: { emissiveIntensity: 0.42 } }
       ];
     }
     if (node.material && typeof node.material === "object") {
       const mat = { ...(node.material as Record<string, unknown>) };
       if (typeof mat.emissiveIntensity === "number") {
-        mat.emissiveIntensity = Number((mat.emissiveIntensity * 0.32).toFixed(3));
+        mat.emissiveIntensity = Number((mat.emissiveIntensity * 0.72).toFixed(3));
       }
       node.material = mat;
     }
     if (typeof node.intensity === "number" && typeof node.name === "string" && node.name.includes("vault ")) {
-      node.intensity = Number((node.intensity * 0.55).toFixed(3));
+      node.intensity = Number((node.intensity * 0.88).toFixed(3));
     }
     return node as unknown as AuraSceneNode;
   });
@@ -674,14 +920,14 @@ function tuneVaultEnvironmentNodes(rawNodes: AuraSceneNode[]): AuraSceneNode[] {
 
 function buildScene(): ReturnType<typeof scene> {
   return scene()
-    .background("#060712")
+    .background("#090d1e")
     .addMany(tuneVaultEnvironmentNodes(createVaultBreakersEnvironment()))
     // Submit the playable mechanisms after the bounded cabinet shell so the
     // root safe renderer's stable draw order keeps them legible above it.
     .addMany(visualNodes())
     .addMany([
-      lights.ambient({ name: "pinball playfield ambient", color: "#58688a", intensity: 0.58 }),
-      lights.directional({ name: "playfield warm key", position: [2.4, 6.8, 3.6], color: "#fff3df", intensity: 2.25 }),
+      lights.ambient({ name: "pinball playfield ambient", color: "#6478a0", intensity: 0.72 }),
+      lights.directional({ name: "playfield warm key", position: [2.4, 6.8, 3.6], color: "#fff3df", intensity: 2.35 }),
       lights.spot({
         name: "flipper zone hero spotlight",
         position: [0, 3.6, 3.8],
@@ -700,11 +946,13 @@ function buildScene(): ReturnType<typeof scene> {
       lights.point({ name: "slingshot right key", color: "#38bdf8", intensity: 2.25 }).position(1.45, 1.35, 1.95),
       lights.point({ name: "flipper deck gold key", color: "#fde68a", intensity: 2.85 }).position(0, 1.65, 2.75),
       lights.point({ name: "plunger lane key", color: "#7dd3fc", intensity: 2.2 }).position(2.35, 1.45, 2.65),
-      effects.neonBloom({ intensity: reducedMotion ? 0.04 : 0.075, threshold: 0.88, radius: 0.28, maxIntensity: 0.36, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      lights.point({ name: "cabinet shoulder left cyan fill", color: "#38bdf8", intensity: 2.1 }).position(-3.2, 2.2, -1.2),
+      lights.point({ name: "cabinet shoulder right pink fill", color: "#f472b6", intensity: 2.1 }).position(3.2, 2.2, -1.2),
+      effects.neonBloom({ intensity: reducedMotion ? 0.04 : 0.085, threshold: 0.86, radius: 0.30, maxIntensity: 0.38, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.ambientOcclusion({ name: "vault contact grounding", intensity: 0.28, radius: 0.62, density: 0.5, color: "#02020a" }),
       effects.contactOcclusion({ name: "mechanism contact", intensity: 0.36, radius: 0.52 }),
-      effects.fog({ name: "vault room depth haze", density: 0.012, color: "#140d24", intensity: 0.16 }),
-      effects.colorGrade({ exposure: 1.06, contrast: 1.08, saturation: 1.08 }),
+      effects.fog({ name: "vault room depth haze", density: 0.009, color: "#140d24", intensity: 0.14 }),
+      effects.colorGrade({ exposure: 1.08, contrast: 1.08, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" })
     ])
     .camera(camera.perspective({
@@ -727,7 +975,7 @@ const gameApp = createGameApp("#app", {
       flipperLeft: ["KeyA", "ArrowLeft"],
       flipperRight: ["KeyD", "ArrowRight"],
       plunger: ["Space"],
-      nudge: ["KeyS"],
+      nudge: ["KeyS", "KeyQ", "KeyE"],
       pause: ["KeyP", "Escape"],
       reset: ["KeyR"]
     },
@@ -746,6 +994,9 @@ let dynamicHandles = new Map<string, AuraRuntimeNodeHandle>();
 const scoreboardHandles = new Map<string, AuraRuntimeNodeHandle>();
 const bankLampHandles = new Map<number, AuraRuntimeNodeHandle>();
 let targetHandles = new Map<string, AuraRuntimeNodeHandle>();
+let targetMeshyHandles = new Map<string, AuraRuntimeNodeHandle>();
+const cometTrailHandles: AuraRuntimeNodeHandle[] = [];
+let goldJackpotBallHandle: AuraRuntimeNodeHandle | undefined;
 let doorHandle: AuraRuntimeNodeHandle | undefined;
 let mechanismHandle: AuraRuntimeNodeHandle | undefined;
 let impactHandle: AuraRuntimeNodeHandle | undefined;
@@ -765,6 +1016,7 @@ function resolveHandles(): void {
     }
   }
   targetHandles = new Map();
+  targetMeshyHandles = new Map();
   for (const id of flow.sim.targetIds) {
     const handle = app.nodes.get(`target:${id}`);
     if (handle) {
@@ -772,7 +1024,17 @@ function resolveHandles(): void {
       runtimeHandle.setMaterial(liveTargetArmedMaterial);
       targetHandles.set(`target:${id}`, runtimeHandle);
     }
+    const meshyHandle = app.nodes.get(`target-meshy:target:${id}`);
+    if (meshyHandle) {
+      targetMeshyHandles.set(id, meshyHandle as AuraRuntimeNodeHandle);
+    }
   }
+  cometTrailHandles.length = 0;
+  for (let i = 0; i < COMET_TRAIL_COUNT; i += 1) {
+    const h = app.nodes.get(`vault-ball-comet-${i}`) as AuraRuntimeNodeHandle | undefined;
+    if (h) cometTrailHandles.push(h);
+  }
+  goldJackpotBallHandle = app.nodes.get("vault-jackpot-gold-ball") as AuraRuntimeNodeHandle | undefined;
   scoreboardHandles.clear();
   bankLampHandles.clear();
   for (let index = 0; index < 5; index += 1) {
@@ -837,17 +1099,21 @@ function hudText(selector: string, value: string): void {
 
 function syncHud(): void {
   const snap = flow.snapshot();
-  hudText("#stat-score", String(snap.score));
+  const totalScore = snap.score + bonusScore;
+  hudText("#stat-score", String(totalScore));
   hudText("#stat-ball", `${snap.ball} OF 3`);
   hudText("#stat-mult", `X${snap.multiplier}`);
   hudText("#stat-banks", `${snap.banksDown} OF 5`);
-  hudText("#stat-live", String(snap.activeBalls));
+  hudText("#stat-live", String(snap.activeBalls + (goldJackpotBallActive ? 1 : 0)));
   hudText("#stat-tilt", snap.tiltLocked ? "TILT" : `${snap.tiltStrikes} OF 3`);
   hudText("#vb-mission", snap.missionLine);
   const charge = plunger.state();
   const width = Math.round(charge.charge * 100) + "%";
   if (powerFill.style.width !== width) powerFill.style.width = width;
-  const plungerText = plunger.charging ? `Plunge ${Math.round(charge.charge * 100)}%` : "Plunger";
+  const inSweetSpot = charge.charge >= 0.52 && charge.charge <= 0.92;
+  const plungerText = plunger.charging
+    ? `Plunge ${Math.round(charge.charge * 100)}%${inSweetSpot ? " [SKILL-SHOT!]" : ""}`
+    : "Plunger (Sweet Spot 55%+)";
   if (powerLabel.textContent !== plungerText) powerLabel.textContent = plungerText;
   hudText("#vb-ev-backend", snap.backend);
   hudText("#vb-ev-flipper", "joint");
@@ -855,20 +1121,34 @@ function syncHud(): void {
   hudText("#vb-ev-joints", String(snap.jointCount));
   const bannerText = paused
     ? "PAUSED - P TO RESUME"
-    : snap.phase === "attract"
-      ? "VAULT BREAKERS - HOLD SPACE, RELEASE TO SERVE"
-      : snap.phase === "await-serve"
-        ? `BALL ${snap.ball} - HOLD SPACE, RELEASE TO SERVE`
-        : snap.phase === "game-over"
-          ? "GAME OVER - R OR PLAY AGAIN"
-          : snap.multiball ? "MULTIBALL" : snap.missionLine;
+    : bannerOverrideRemaining > 0 && bannerOverrideText
+      ? bannerOverrideText
+      : snap.phase === "attract"
+        ? "VAULT BREAKERS - HOLD SPACE FOR SKILL-SHOT SERVE"
+        : snap.phase === "await-serve"
+          ? `BALL ${snap.ball} - HOLD SPACE FOR SKILL-SHOT SERVE`
+          : snap.phase === "game-over"
+            ? "GAME OVER - R OR PLAY AGAIN"
+            : snap.multiball || goldJackpotBallActive
+              ? "VAULT MULTIBALL JACKPOT ACTIVE!"
+              : snap.missionLine;
   if (banner.textContent !== bannerText) banner.textContent = bannerText;
 }
 
 // ------------------------------------------------------------- actions -------
-function doServe(charge: number): void {
+function doServe(charge: number, fromScenario = false): void {
   if (flow.serve(charge)) {
     pushCue("plunger-release");
+    if (!fromScenario) {
+      skillShotWindowRemaining = 4.5;
+      skillShotAwardedForBall = false;
+      if (charge >= 0.52 && charge <= 0.95) {
+        bonusScore += 500;
+        bannerOverrideText = "SKILL-SHOT PLUNGER BONUS +500! HIT ANY TARGET FOR SUPER SKILL-SHOT!";
+        bannerOverrideRemaining = 2.6;
+        triggerImpact([2.35, 0.52, -1.8], "cyan", 0.36);
+      }
+    }
     syncHud();
   }
 }
@@ -886,6 +1166,14 @@ function resetGame(): void {
   flow.reset();
   plunger.cancelCharge();
   downTargets.clear();
+  bonusScore = 0;
+  skillShotWindowRemaining = 0;
+  skillShotAwardedForBall = false;
+  bannerOverrideText = "";
+  bannerOverrideRemaining = 0;
+  coreJackpotCooldown = 0;
+  goldJackpotBallActive = false;
+  goldJackpotBallPhase = 0;
   doorSwing = -1;
   impactRemaining = 0;
   impactHandle?.setVisible(false).setScale([0.001, 0.001, 0.001]);
@@ -898,10 +1186,25 @@ function resetGame(): void {
     void id;
     handle.setMaterial(liveTargetArmedMaterial);
   }
+  for (const [id, meshyHandle] of targetMeshyHandles) {
+    const [tx, tz] = targetImpactPosition(id);
+    meshyHandle.setVisible(true).setPosition(tx, 0.36, tz);
+  }
   hideResultCard();
   pushCue("bank-clear");
   syncHud();
   publishEvidence();
+}
+
+function awardSuperSkillShotIfArmed(origin: readonly [number, number, number]): void {
+  if (skillShotWindowRemaining > 0 && !skillShotAwardedForBall) {
+    skillShotAwardedForBall = true;
+    skillShotWindowRemaining = 0;
+    bonusScore += 1000;
+    bannerOverrideText = "SUPER SKILL-SHOT COMBO +1000!";
+    bannerOverrideRemaining = 2.5;
+    triggerImpact(origin, "cyan", 0.44);
+  }
 }
 
 function consumeEvents(events: readonly VaultGameEvent[]): void {
@@ -916,6 +1219,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
           const [x, z] = BUMPER_IMPACT_POSITIONS[bumperImpactIndex % 3]!;
           bumperImpactIndex += 1;
           triggerImpact([x, 0.54, z], "amber", 0.3);
+          awardSuperSkillShotIfArmed([x, 0.54, z]);
         }
         break;
       case "sling":
@@ -935,7 +1239,12 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
           handle.setMaterial(liveTargetHitMaterial);
         }
         const [x, z] = targetImpactPosition(event.id);
+        const meshyHandle = targetMeshyHandles.get(event.id);
+        if (meshyHandle) {
+          meshyHandle.setPosition(x, 0.25, z);
+        }
         triggerImpact([x, 0.55, z], "cyan", 0.22);
+        awardSuperSkillShotIfArmed([x, 0.55, z]);
         break;
       }
       case "bank-clear":
@@ -946,32 +1255,49 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
       case "vault-open":
         pushCue("vault-open");
         doorSwing = 0;
+        goldJackpotBallActive = true;
         triggerImpact([0, 0.65, -3.3], "vault", 0.58);
         break;
       case "multiball-start":
         pushCue("multiball");
+        goldJackpotBallActive = true;
+        bannerOverrideText = "VAULT MULTIBALL JACKPOT UNLEASHED!";
+        bannerOverrideRemaining = 2.8;
         break;
       case "jackpot":
         if (cueReady("vault-open", 30)) pushCue("vault-open");
+        goldJackpotBallActive = true;
+        bonusScore += 1500;
+        bannerOverrideText = "VAULT JACKPOT +1500!";
+        bannerOverrideRemaining = 2.5;
         break;
       case "orbit-loop":
       case "orbit-complete":
         if (cueReady("ramp-roll", 20)) pushCue("ramp-roll");
+        awardSuperSkillShotIfArmed([0, 0.52, -2.6]);
         break;
       case "ball-drain":
         pushCue("ball-drain");
+        goldJackpotBallActive = false;
         break;
       case "ball-end":
+        goldJackpotBallActive = false;
         resolveHandles();
         break;
       case "tilt-strike":
+        pushCue("tilt-warn");
+        bannerOverrideText = `TABLE NUDGE! TILT WARNING (${event.strikes} OF 3)`;
+        bannerOverrideRemaining = 1.6;
+        break;
       case "tilt-lock":
         pushCue("tilt-warn");
+        bannerOverrideText = "TILT LOCKED - FLIPPERS DISABLED!";
+        bannerOverrideRemaining = 2.4;
         break;
       case "game-over":
         pushCue("ball-drain");
         resultTitle.textContent = "Game over";
-        resultDetail.textContent = `Final score ${event.score}. Three balls, one vault.`;
+        resultDetail.textContent = `Final score ${event.score + bonusScore}. Three balls, one vault.`;
         resultCard.classList.remove("is-hidden");
         break;
       default:
@@ -987,16 +1313,37 @@ function syncVisuals(): void {
   // on the cabinet GLB playfield surface).
   const VISUAL_Y_OFFSET = 0.28;
   const live = new Set<string>();
+  let primaryBallPos: [number, number, number] | null = null;
   for (const pose of flow.sim.poses()) {
     const handle = dynamicHandles.get(pose.name);
     if (!handle) continue;
     live.add(pose.name);
     const e = quatToEuler(pose.rotation);
+    const py = pose.position[1] + VISUAL_Y_OFFSET;
     handle.setVisible(true);
-    handle.setPosition(pose.position[0], pose.position[1] + VISUAL_Y_OFFSET, pose.position[2])
+    handle.setPosition(pose.position[0], py, pose.position[2])
       .setRotation(e.x, e.y, e.z);
+    if (pose.name.startsWith("ball-")) {
+      if (!primaryBallPos || pose.name === "ball-0") {
+        primaryBallPos = [pose.position[0], py, pose.position[2]];
+      }
+      // Check proximity to centerpiece Vault Core (vaultCenterCoreTargetMeshy at [0, 0.36, 0.46])
+      const dx = pose.position[0] - 0;
+      const dz = pose.position[2] - 0.46;
+      if (dx * dx + dz * dz < 0.42 && coreJackpotCooldown <= 0 && flow.snapshot().phase === "play") {
+        coreJackpotCooldown = 4.5;
+        bonusScore += 1500;
+        goldJackpotBallActive = true;
+        bannerOverrideText = "VAULT CORE JACKPOT +1500! MULTIBALL ENGAGED!";
+        bannerOverrideRemaining = 2.6;
+        pushCue("multiball");
+        triggerImpact([0, 0.56, 0.46], "vault", 0.52);
+        flow.sim.releaseMultiball();
+      }
+    }
   }
-  const phase = flow.snapshot().phase;
+  const snap = flow.snapshot();
+  const phase = snap.phase;
   for (const [name, handle] of dynamicHandles) {
     if (live.has(name)) continue;
     if (name === "ball-0" && (phase === "attract" || phase === "await-serve")) {
@@ -1006,11 +1353,60 @@ function syncVisuals(): void {
       handle.setVisible(false);
     }
   }
-  const banksDown = flow.snapshot().banksDown;
+
+  // Update glowing cyan comet trail behind the active silver pinball (or captive ball wake)
+  if (primaryBallPos) {
+    ballTrailHistory.unshift([primaryBallPos[0], primaryBallPos[1], primaryBallPos[2]]);
+    if (ballTrailHistory.length > COMET_TRAIL_COUNT) ballTrailHistory.length = COMET_TRAIL_COUNT;
+  } else {
+    const pulse = frameCount * 0.08;
+    for (let i = 0; i < COMET_TRAIL_COUNT; i += 1) {
+      const t = (i + 1) / COMET_TRAIL_COUNT;
+      ballTrailHistory[i] = [
+        Math.sin(pulse - i * 0.35) * 0.14 * t,
+        0.44 - i * 0.008,
+        1.18 + (i + 1) * 0.17
+      ];
+    }
+  }
+  for (let i = 0; i < cometTrailHandles.length; i += 1) {
+    const pos = ballTrailHistory[i] ?? ballTrailHistory[ballTrailHistory.length - 1] ?? [0, 0.44, 1.18];
+    cometTrailHandles[i]?.setVisible(true).setPosition(pos[0], pos[1], pos[2]);
+  }
+
+  // Animate 3D Meshy standup targets (spin armed crystals/energy cores, recess downed targets)
+  let tIdx = 0;
+  for (const [id, meshyHandle] of targetMeshyHandles) {
+    const [tx, tz] = targetImpactPosition(id);
+    const isDown = downTargets.has(id);
+    meshyHandle
+      .setPosition(tx, isDown ? 0.24 : 0.36 + Math.sin(frameCount * 0.06 + tIdx) * 0.015, tz)
+      .setRotation(0, frameCount * 0.035 + tIdx * 0.55, 0);
+    tIdx += 1;
+  }
+
+  // Animate extra 3D Meshy Gold Bonus Ball for Vault Multiball Jackpot
+  if (goldJackpotBallHandle) {
+    if (goldJackpotBallActive || snap.multiball) {
+      goldJackpotBallPhase += 0.065;
+      const gx = Math.sin(goldJackpotBallPhase * 2.1) * 1.38;
+      const gz = -0.55 + Math.cos(goldJackpotBallPhase * 1.6) * 1.45;
+      goldJackpotBallHandle
+        .setVisible(true)
+        .setPosition(gx, 0.44, gz)
+        .setRotation(goldJackpotBallPhase * 3.2, goldJackpotBallPhase * 2.4, 0);
+    } else {
+      goldJackpotBallHandle
+        .setVisible(true)
+        .setPosition(0.54, 0.44, -2.05)
+        .setRotation(0, frameCount * 0.03, 0);
+    }
+  }
+
+  const banksDown = snap.banksDown;
   for (const [index, handle] of bankLampHandles) {
     handle.setMaterial(index < banksDown ? bankLampOnMaterial : bankLampOffMaterial);
   }
-  const snap = flow.snapshot();
   const mechanismState = snap.phase === "game-over" ? "gameOver"
     : snap.tiltLocked ? "tilt"
       : snap.multiball ? "multiball"
@@ -1028,7 +1424,7 @@ function syncVisuals(): void {
 function syncScoreboard(): void {
   const snap = flow.snapshot();
   const visibility = scoreboardVisibility({
-    score: snap.score,
+    score: snap.score + bonusScore,
     ball: snap.ball,
     multiplier: snap.multiplier,
     banksDown: snap.banksDown,
@@ -1061,11 +1457,11 @@ function publishEvidence(): void {
     status: "ready",
     ball: snap.ball,
     ballsRemaining: snap.ballsRemaining,
-    score: snap.score,
+    score: snap.score + bonusScore,
     multiplier: snap.multiplier,
     banksDown: snap.banksDown,
     vaultOpen: snap.vaultOpen,
-    multiball: snap.multiball,
+    multiball: snap.multiball || goldJackpotBallActive,
     tiltStrikes: snap.tiltStrikes,
     state: paused ? "paused" : snap.phase,
     flipperMode: flipperSnap.mode,
@@ -1113,8 +1509,8 @@ function publishEvidence(): void {
     plunger: plunger.state(),
     downTargets: [...downTargets],
     frameCount,
-    controls: ["A/Left left flipper", "D/Right right flipper", "hold Space plunger", "S nudge", "R reset", "P pause", "touch buttons"],
-    systems: ["Rapier ball/contact/sensor world", "two motorised-hinge flippers", "route-local five-bank vault mission", "text3D scoreboard", "typed CC0 audio controller"],
+    controls: ["A/Left left flipper", "D/Right right flipper", "hold Space skill-shot plunger", "Q/E/S nudge", "R reset", "P pause", "touch buttons"],
+    systems: ["Rapier ball/contact/sensor world", "two motorised-hinge flippers", "route-local five-bank vault mission", "skill-shot plunger & vault core multiball jackpot", "text3D scoreboard", "typed CC0 audio controller"],
     // Machine-readable physics identity, mirroring the prose above so route evidence can be
     // verified against the surfaces actually imported rather than read by hand.
     physics: "physics.world:Rapier(ball, bumpers, walls, target and drain sensors, motorised flipper hinges)",
@@ -1123,7 +1519,9 @@ function publishEvidence(): void {
     mountedAtEpochMs: Date.now()
   };
   vaultWindow.__VAULT_BREAKERS_EVIDENCE__ = evidence;
+  (window as unknown as { __AURA3D_GAME_EVIDENCE__?: unknown }).__AURA3D_GAME_EVIDENCE__ = evidence;
   (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
+  document.body.dataset.aura3dReady = "true";
 }
 
 // Renderer-owned capture used by specs and probes (no compositor dependency).
@@ -1149,7 +1547,7 @@ vaultWindow.__VB_SCENARIO__ = (scenario: string): string => {
   else if (scenario === "vault-opening") events = flow.evidenceClearBanks(5);
   else if (scenario === "multiball") events = flow.evidenceStartMultiball();
   else if (scenario === "tilt") {
-    doServe(0.72);
+    doServe(0.72, true);
     flow.nudge(-1);
     flow.nudge(1);
     flow.nudge(-1);
@@ -1185,7 +1583,7 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
 }
 
 function manualAdvanceFrame(): void {
-  for (const code of ["Space", "KeyA", "KeyD", "ArrowLeft", "ArrowRight", "KeyS", "KeyP", "Escape", "KeyR"]) {
+  for (const code of ["Space", "KeyA", "KeyD", "ArrowLeft", "ArrowRight", "KeyS", "KeyQ", "KeyE", "KeyP", "Escape", "KeyR"]) {
     manualPrev.set(code, manualHeld.has(code));
   }
 }
@@ -1199,7 +1597,11 @@ window.addEventListener("keydown", (event) => {
   if (event.repeat) return;
   if (event.code === "KeyP" || event.code === "Escape") togglePause();
   else if (event.code === "KeyR") resetGame();
-  else if (event.code === "KeyS") {
+  else if (event.code === "KeyQ") {
+    flow.nudge(-1);
+  } else if (event.code === "KeyE") {
+    flow.nudge(1);
+  } else if (event.code === "KeyS") {
     nudgeFlip = !nudgeFlip;
     flow.nudge(nudgeFlip ? -1 : 1);
   }
@@ -1213,7 +1615,7 @@ window.addEventListener("keyup", (event) => {
   }
 }, { passive: true });
 window.addEventListener("keydown", (event) => {
-  if (["Space", "KeyA", "KeyD", "ArrowLeft", "ArrowRight", "KeyS"].includes(event.code)) {
+  if (["Space", "KeyA", "KeyD", "ArrowLeft", "ArrowRight", "KeyS", "KeyQ", "KeyE"].includes(event.code)) {
     event.preventDefault();
   }
 }, { passive: false });
@@ -1277,6 +1679,16 @@ gameApp.onFrame(({ dt }) => {
     return;
   }
 
+  if (skillShotWindowRemaining > 0) {
+    skillShotWindowRemaining = Math.max(0, skillShotWindowRemaining - dt);
+  }
+  if (bannerOverrideRemaining > 0) {
+    bannerOverrideRemaining = Math.max(0, bannerOverrideRemaining - dt);
+  }
+  if (coreJackpotCooldown > 0) {
+    coreJackpotCooldown = Math.max(0, coreJackpotCooldown - dt);
+  }
+
   plunger.update(dt);
   const activationsBefore = flippers.snapshot().activationCount;
   flippers.update({
@@ -1331,5 +1743,6 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   }
 });
 
+syncVisuals();
 syncHud();
 publishEvidence();

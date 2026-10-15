@@ -48,6 +48,7 @@ const evidenceCapture = captureMode === "evidence";
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 const APP_ID = "showcase-siege-golf";
+const rootAssets = assets as typeof assets & Record<string, (typeof assets)[keyof typeof assets]>;
 const SIEGE_MODEL_ASSETS = {
   siegeGolfCourseWorld: assets.siegeGolfCourseWorld,
   siegeGolfBall: assets.siegeGolfBall,
@@ -56,7 +57,14 @@ const SIEGE_MODEL_ASSETS = {
   siegePlankSet: assets.siegePlankSet,
   siegeCastleGatehouseMeshy: assets.siegeCastleGatehouseMeshy,
   siegeWindmillTowerMeshy: assets.siegeWindmillTowerMeshy,
-  siegeFlagstickCupMeshy: assets.siegeFlagstickCupMeshy
+  siegeFlagstickCupMeshy: assets.siegeFlagstickCupMeshy,
+  siegeWatchtowerMeshy: rootAssets.siegeWatchtowerMeshy ?? assets.siegeCastleGatehouseMeshy,
+  siegeCatapultMeshy: rootAssets.siegeCatapultMeshy ?? assets.siegeWindmillTowerMeshy,
+  siegeStoneBridgeMeshy: rootAssets.siegeStoneBridgeMeshy ?? assets.siegeCastleGatehouseMeshy,
+  propPineTree: assets.propPineTree,
+  propConifer: assets.propConifer,
+  propRockA: assets.propRockA,
+  propRockB: assets.propRockB
 } as const;
 // The route-primary contract measures the typed golf-ball silhouette after
 // subject isolation.  The authored gameplay ball remains regulation-sized in
@@ -231,6 +239,7 @@ const AIM_NODE_COUNT = 17;
 const STRIKE_CHEVRON_COUNT = 3;
 const DUST_NODE_COUNT = 12;
 const BEST_GHOST_NODE_COUNT = 36;
+const WINDMILL_BLADE_COUNT = 4;
 let dynamicHandles = new Map<string, AuraRuntimeNodeHandle>();
 let trailHandles: AuraRuntimeNodeHandle[] = [];
 let aimHandles: AuraRuntimeNodeHandle[] = [];
@@ -239,6 +248,11 @@ let strikeChevronHandles: AuraRuntimeNodeHandle[] = [];
 let shotClubShaftHandle: AuraRuntimeNodeHandle | undefined;
 let shotClubHeadHandle: AuraRuntimeNodeHandle | undefined;
 let shotClubGripHandle: AuraRuntimeNodeHandle | undefined;
+let windmillBladeHandles: AuraRuntimeNodeHandle[] = [];
+let catapultLeftHandle: AuraRuntimeNodeHandle | undefined;
+let catapultRightHandle: AuraRuntimeNodeHandle | undefined;
+let siegeBumperLeftHandle: AuraRuntimeNodeHandle | undefined;
+let siegeBumperRightHandle: AuraRuntimeNodeHandle | undefined;
 let dustHandles: AuraRuntimeNodeHandle[] = [];
 let bestGhostHandles: AuraRuntimeNodeHandle[] = [];
 interface DustPuff { frames: number; age: number; node: AuraRuntimeNodeHandle; vx: number; vz: number; }
@@ -246,6 +260,15 @@ const dustPuffs: DustPuff[] = [];
 let dustIndex = 0;
 let dustBurstCount = 0;
 let reviewImpactFrozen = false;
+let shotSpin = 0;
+const mountWallMs = performance.now();
+let cumulativeTargetsSunk = 0;
+let cumulativeTargetsDown = 0;
+let holeCompleteHoldFrames = 0;
+
+function inOpeningShowcaseWindow(): boolean {
+  return !evidenceCapture && (performance.now() - mountWallMs < 7800 || frameCount < 460);
+}
 
 function primitiveNode(
   name: string,
@@ -289,9 +312,10 @@ function authoredAsset(
   position: readonly [number, number, number],
   targetMaxDimension: number,
   rotation: readonly [number, number, number] = [0, 0, 0],
-  painted = false
+  painted = false,
+  withRuntime = false
 ): AuraSceneNode {
-  return model(SIEGE_MODEL_ASSETS[typedAsset], {
+  const builder = model(SIEGE_MODEL_ASSETS[typedAsset], {
     name,
     role: "setDressing",
     scaleMode: "fit",
@@ -301,11 +325,15 @@ function authoredAsset(
     ...(painted ? { material: paintedTimberMaterial } : {})
   })
     .position(...position)
-    .rotate(...rotation)
-    .toJSON();
+    .rotate(...rotation);
+  if (withRuntime) {
+    builder.runtime(game.runtimeNode(name, { tags: ["typed-asset", "siege-setpiece"] }));
+  }
+  return builder.toJSON();
 }
 
 function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
+  void phase;
   const nodes: AuraSceneNode[] = [];
   for (const v of flow.sim.visuals) {
     // The typed course world and the route-local authored dressing are the
@@ -366,10 +394,10 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
         name: "painted gold-ivory shot markers",
         color: i % 2 === 0 ? "#ffffff" : "#fde68a",
         emissive: i % 2 === 0 ? "#f8fafc" : "#f59e0b",
-        emissiveIntensity: 0.38,
-        opacity: 0.94
+        emissiveIntensity: 0.55,
+        opacity: 0.96
       })
-    }).position(0, -9, 0).scale([0.07, 0.02, 0.14])
+    }).position(0, -9, 0).scale([0.09, 0.028, 0.16])
       .runtime(game.runtimeNode("aim-node-" + i, { tags: ["aim-guide"] }))
       .toJSON());
   }
@@ -383,8 +411,8 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
         name: i === 0 ? "live ivory strike ring" : "live gold power ring",
         color: i === 0 ? "#ffffff" : "#fde68a",
         emissive: i === 0 ? "#e2e8f0" : "#f59e0b",
-        emissiveIntensity: i === 0 ? 0.42 : 0.58,
-        opacity: 0.92
+        emissiveIntensity: i === 0 ? 0.48 : 0.65,
+        opacity: 0.94
       })
     }).position(0, -9, 0).rotate(Math.PI / 2, 0, 0).scale(0.001)
       .runtime(game.runtimeNode(`strike-ring-${i}`, { tags: ["renderer-owned", "live-strike-indicator"] }))
@@ -397,8 +425,8 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
         name: "live strike chevron",
         color: i === 0 ? "#ffffff" : "#fde68a",
         emissive: i === 0 ? "#f8fafc" : "#f59e0b",
-        emissiveIntensity: 0.45,
-        opacity: 0.92
+        emissiveIntensity: 0.52,
+        opacity: 0.94
       })
     }).position(0, -9, 0).scale(0.001)
       .runtime(game.runtimeNode(`strike-chevron-${i}`, { tags: ["renderer-owned", "live-strike-indicator"] }))
@@ -454,15 +482,17 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
   const stoneCap = material.pbr({ name: "siege garden sunlit coping", color: "#eadcae", roughness: 0.82 });
   const hedgeLight = material.pbr({ name: "sunlit clipped hedge", color: "#60a878", roughness: 0.96 });
   const contact = material.pbr({ name: "grounded course contact", color: "#075244", roughness: 1, opacity: 0.42 });
-  // Manicured golf fairway turf and warm carved limestone border coping:
-  const routeBorder = material.pbr({ name: "carved limestone fairway curb", color: "#8c8273", roughness: 0.72, metallic: 0.06 });
-  const routeTurf = material.pbr({ name: "manicured emerald golf turf", color: "#1d6b35", roughness: 0.84, metallic: 0.02 });
-  const routeStripeLight = material.pbr({ name: "mowed fairway stripe light", color: "#257d40", roughness: 0.82, metallic: 0.02 });
-  const routeStripeDark = material.pbr({ name: "mowed fairway stripe dark", color: "#17582b", roughness: 0.86, metallic: 0.02 });
+  // Manicured emerald golf fairway turf and weathered castle stone border coping:
+  const routeBorder = material.pbr({ name: "carved limestone fairway curb", color: "#78716c", roughness: 0.72, metallic: 0.06 });
+  const routeTurf = material.pbr({ name: "manicured emerald golf turf", color: "#166534", roughness: 0.82, metallic: 0.02 });
+  const routeStripeLight = material.pbr({ name: "mowed fairway stripe light", color: "#15803d", roughness: 0.80, metallic: 0.02 });
+  const routeStripeDark = material.pbr({ name: "mowed fairway stripe dark", color: "#14532d", roughness: 0.85, metallic: 0.02 });
   const brassCornerMaterial = material.pbr({ name: "brass corner trim", color: "#d4af37", roughness: 0.28, metallic: 0.82 });
   const moundMaterial = material.pbr({ name: "lime course mascot mounds", color: "#2d6a3e", roughness: 0.86 });
   const challengeMaterial = material.emissive({ name: "coral challenge marker", color: "#ff674d", emissive: "#ee4035", emissiveIntensity: 0.28 });
   const goalFrameMaterial = material.pbr({ name: "lemon goal frame", color: "#f3df65", roughness: 0.52, metallic: 0.04 });
+  const bladeTimberMaterial = material.pbr({ name: "siege windmill sail timber", color: "#d97706", roughness: 0.48, metallic: 0.12 });
+  const bumperShieldMaterial = material.pbr({ name: "siege iron bumper shield", color: "#dc2626", roughness: 0.36, metallic: 0.58, clearcoat: 0.35 });
 
   const firstStructure = hole.structures[0];
   const structureX = firstStructure && "x" in firstStructure ? firstStructure.x : 0;
@@ -497,7 +527,7 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
         .toJSON()
     );
   }
-  // Alternating mowed golf fairway stripes and raised carved stone side curbs
+  // Alternating mowed golf fairway checkerboard stripes and raised carved stone side curbs
   for (let stripe = 0; stripe < 9; stripe += 1) {
     const zPos = 3.2 - stripe * 1.05;
     nodes.push(
@@ -506,8 +536,16 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
         material: stripe % 2 === 0 ? routeStripeLight : routeStripeDark,
         receiveShadow: true
       })
-        .position(0, 0.032, zPos)
-        .scale([2.22, 0.018, 0.98])
+        .position(-0.55, 0.032, zPos)
+        .scale([1.11, 0.018, 0.98])
+        .toJSON(),
+      primitives.box({
+        name: `fairway-mow-stripe-alt-${stripe}`,
+        material: stripe % 2 === 1 ? routeStripeLight : routeStripeDark,
+        receiveShadow: true
+      })
+        .position(0.55, 0.032, zPos)
+        .scale([1.11, 0.018, 0.98])
         .toJSON()
     );
   }
@@ -533,6 +571,21 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       .scale([0.22, 0.03, 0.28])
       .toJSON()
   );
+
+  // Stone battlements / merlons along the inner lane curbs
+  for (let m = 0; m < 6; m += 1) {
+    const mz = 3.1 - m * 1.65;
+    nodes.push(
+      primitives.box({ name: `inner-lane-merlon-left-${m}`, material: routeBorder, castShadow: true, receiveShadow: true })
+        .position(-1.26, 0.23, mz)
+        .scale([0.22, 0.10, 0.48])
+        .toJSON(),
+      primitives.box({ name: `inner-lane-merlon-right-${m}`, material: routeBorder, castShadow: true, receiveShadow: true })
+        .position(1.26, 0.23, mz)
+        .scale([0.22, 0.10, 0.48])
+        .toJSON()
+    );
+  }
 
   nodes.push(
     primitives.sphere({ name: "ball-contact-patch", material: contact })
@@ -574,21 +627,64 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
     }
   }
 
-  // Place castle gatehouse behind the green and windmill hazard cleanly on the
-  // left stone courtyard outside the fairway curb so nothing clips the borders.
+  // Wave-2 Meshy medieval siege architecture:
+  // - siegeCastleGatehouseMeshy behind the cup
+  // - 2x siegeWatchtowerMeshy flanking the mid-course and keep
+  // - siegeStoneBridgeMeshy spanning the mid-course moat pinch
+  // - 2x animated siegeCatapultMeshy flanking the fairway
+  // - siegeWindmillTowerMeshy with rotating windmill hazard blades
   nodes.push(
     authoredAsset(
       "siege-castle-gatehouse-keep",
       "siegeCastleGatehouseMeshy",
-      [0, 0.02, -7.2],
-      4.4,
+      [0, 0.02, -7.1],
+      4.6,
       [0, 0, 0]
+    ),
+    authoredAsset(
+      "siege-watchtower-left",
+      "siegeWatchtowerMeshy",
+      [-3.55, 0.02, -4.85],
+      3.5,
+      [0, 0.32, 0]
+    ),
+    authoredAsset(
+      "siege-watchtower-right",
+      "siegeWatchtowerMeshy",
+      [3.55, 0.02, -4.85],
+      3.5,
+      [0, -0.32, 0]
+    ),
+    authoredAsset(
+      "siege-stone-bridge-mid",
+      "siegeStoneBridgeMeshy",
+      [0, -0.02, -1.45],
+      3.15,
+      [0, 0, 0]
+    ),
+    authoredAsset(
+      "siege-catapult-left",
+      "siegeCatapultMeshy",
+      [-2.95, 0.02, 1.15],
+      2.05,
+      [0, 0.48, 0],
+      false,
+      true
+    ),
+    authoredAsset(
+      "siege-catapult-right",
+      "siegeCatapultMeshy",
+      [2.95, 0.02, -1.05],
+      2.05,
+      [0, -0.48, 0],
+      false,
+      true
     ),
     authoredAsset(
       "siege-windmill-hazard",
       "siegeWindmillTowerMeshy",
-      [-2.65, 0.02, -1.4],
-      2.15,
+      [-2.65, 0.02, -1.55],
+      2.35,
       [0, 0.38, 0]
     ),
     authoredAsset(
@@ -611,6 +707,47 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       .position(structureX + 0.38, -50, structureZ + 0.18)
       .rotate(Math.PI / 2, 0, 0)
       .scale([0.001, 0.001, 0.001])
+      .toJSON()
+  );
+
+  // Rotating windmill hazard blades mounted on the windmill front face
+  for (let b = 0; b < WINDMILL_BLADE_COUNT; b += 1) {
+    const angle = (b / WINDMILL_BLADE_COUNT) * Math.PI * 2;
+    nodes.push(
+      primitives.box({
+        name: `siege-windmill-blade-${b}`,
+        material: bladeTimberMaterial,
+        castShadow: true
+      })
+        .position(-1.82, 1.05, -1.32)
+        .rotate(0, 0.38, angle)
+        .scale([0.14, 0.92, 0.04])
+        .runtime(game.runtimeNode(`siege-windmill-blade-${b}`, { tags: ["renderer-owned", "siege-hazard"] }))
+        .toJSON()
+    );
+  }
+
+  // Oscillating siege bumper shields along the mid-course pinch
+  nodes.push(
+    primitives.cylinder({
+      name: "siege-bumper-left",
+      material: bumperShieldMaterial,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(-0.78, 0.14, -0.55)
+      .scale([0.22, 0.16, 0.22])
+      .runtime(game.runtimeNode("siege-bumper-left", { tags: ["renderer-owned", "siege-hazard"] }))
+      .toJSON(),
+    primitives.cylinder({
+      name: "siege-bumper-right",
+      material: bumperShieldMaterial,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(0.78, 0.14, -2.05)
+      .scale([0.22, 0.16, 0.22])
+      .runtime(game.runtimeNode("siege-bumper-right", { tags: ["renderer-owned", "siege-hazard"] }))
       .toJSON()
   );
 
@@ -662,8 +799,8 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       authoredAsset(
         cup.id === firstCup.id ? "siege-target-flagstick" : `siege-target-flagstick-${cup.id}`,
         "siegeFlagstickCupMeshy",
-        [cup.x + 2.55, 0.02, cupDisplayZ - 0.25],
-        0.95,
+        [cup.x + 2.25, 0.02, cupDisplayZ - 0.25],
+        1.08,
         [0, -0.35, 0]
       ),
       primitives.cylinder({
@@ -803,6 +940,32 @@ function buildValleyEnvironment(hole: HoleDefinition): AuraSceneNode[] {
       .toJSON()
   );
 
+  // Surrounding 3D medieval trees & rocks along the moat embankments
+  const treePlacements: readonly (readonly [number, number, number, keyof typeof SIEGE_MODEL_ASSETS])[] = [
+    [-5.8, -0.05, -6.8, "propPineTree"],
+    [5.8, -0.05, -6.8, "propPineTree"],
+    [-6.2, -0.05, -3.2, "propConifer"],
+    [6.2, -0.05, -3.2, "propConifer"],
+    [-5.6, -0.05, 0.8, "propPineTree"],
+    [5.6, -0.05, 0.8, "propPineTree"],
+    [-4.9, -0.08, -8.2, "propRockA"],
+    [4.9, -0.08, -8.2, "propRockB"],
+    [-4.8, -0.08, 2.6, "propRockB"],
+    [4.8, -0.08, 2.6, "propRockA"]
+  ];
+  for (const [idx, [tx, ty, tz, assetKey]] of treePlacements.entries()) {
+    const isTree = assetKey === "propPineTree" || assetKey === "propConifer";
+    nodes.push(
+      authoredAsset(
+        `valley-medieval-prop-${idx}`,
+        assetKey,
+        [tx, ty, tz],
+        isTree ? 2.65 : 1.15,
+        [0, idx * 0.7, 0]
+      )
+    );
+  }
+
   for (let index = 0; index < 14; index += 1) {
     const angle = (index / 14) * Math.PI * 2 + 0.21;
     const near = index % 2 === 0;
@@ -839,23 +1002,30 @@ function buildCourseWorld(): AuraSceneNode[] {
   void SIEGE_GOLF_WORLD_SURFACE_MAPPING;
   const courtyardStoneMaterial = material.pbr({
     name: "royal courtyard cobblestone",
-    color: "#2b3340",
-    roughness: 0.78,
-    metallic: 0.06
+    color: "#334155",
+    roughness: 0.74,
+    metallic: 0.08
   });
   const outerLawnMaterial = material.pbr({
     name: "courtyard outer lawn",
-    color: "#1a4d29",
-    roughness: 0.88,
+    color: "#14532d",
+    roughness: 0.86,
     metallic: 0.02
+  });
+  const waterMoatMaterial = material.pbr({
+    name: "royal siege water moat",
+    color: "#0c2d48",
+    roughness: 0.16,
+    metallic: 0.68,
+    clearcoat: 0.92
   });
   const curbMaterial = material.pbr({
     name: "courtyard outer parapet",
-    color: "#7a7062",
-    roughness: 0.74,
-    metallic: 0.05
+    color: "#78716c",
+    roughness: 0.72,
+    metallic: 0.06
   });
-  return [
+  const nodes: AuraSceneNode[] = [
     model(SIEGE_MODEL_ASSETS.siegeGolfCourseWorld, {
       name: "siege-golf-continuous-course-world",
       role: "primaryWorld",
@@ -864,28 +1034,51 @@ function buildCourseWorld(): AuraSceneNode[] {
       castShadow: false
     }).position(0, -50, 0).scale([0.001, 0.001, 0.001]).toJSON(),
     primitives.box({
+      name: "siege-royal-water-moat",
+      material: waterMoatMaterial,
+      receiveShadow: true
+    }).position(0, -0.35, -2.4).scale([24.0, 0.08, 28.0]).toJSON(),
+    primitives.box({
       name: "fairway-courtyard-outer-lawn",
       material: outerLawnMaterial,
       receiveShadow: true
-    }).position(0, -0.06, -2.6).scale([16.0, 0.05, 22.0]).toJSON(),
+    }).position(0, -0.06, -2.6).scale([10.4, 0.05, 18.6]).toJSON(),
     primitives.box({
       name: "fairway-courtyard-turf",
       material: courtyardStoneMaterial,
       receiveShadow: true
-    }).position(0, -0.02, -2.2).scale([8.8, 0.06, 16.4]).toJSON(),
+    }).position(0, -0.02, -2.2).scale([8.4, 0.06, 16.4]).toJSON(),
     primitives.box({
       name: "fairway-curb-left",
       material: curbMaterial,
       castShadow: true,
       receiveShadow: true
-    }).position(-3.95, 0.16, -2.2).scale([0.36, 0.32, 15.6]).toJSON(),
+    }).position(-3.95, 0.16, -2.2).scale([0.38, 0.34, 15.6]).toJSON(),
     primitives.box({
       name: "fairway-curb-right",
       material: curbMaterial,
       castShadow: true,
       receiveShadow: true
-    }).position(3.95, 0.16, -2.2).scale([0.36, 0.32, 15.6]).toJSON()
+    }).position(3.95, 0.16, -2.2).scale([0.38, 0.34, 15.6]).toJSON()
   ];
+  for (let i = 0; i < 7; i += 1) {
+    const zPos = 4.2 - i * 2.15;
+    nodes.push(
+      primitives.box({
+        name: `fairway-merlon-left-${i}`,
+        material: curbMaterial,
+        castShadow: true,
+        receiveShadow: true
+      }).position(-3.95, 0.42, zPos).scale([0.44, 0.22, 0.86]).toJSON(),
+      primitives.box({
+        name: `fairway-merlon-right-${i}`,
+        material: curbMaterial,
+        castShadow: true,
+        receiveShadow: true
+      }).position(3.95, 0.42, zPos).scale([0.44, 0.22, 0.86]).toJSON()
+    );
+  }
+  return nodes;
 }
 
 function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening"): ReturnType<typeof scene> {
@@ -967,6 +1160,14 @@ function resolveHandles(): void {
   shotClubShaftHandle = app.nodes.require("shot-club-shaft") as AuraRuntimeNodeHandle;
   shotClubHeadHandle = app.nodes.require("shot-club-head") as AuraRuntimeNodeHandle;
   shotClubGripHandle = app.nodes.require("shot-club-grip") as AuraRuntimeNodeHandle;
+  windmillBladeHandles = [];
+  for (let b = 0; b < WINDMILL_BLADE_COUNT; b += 1) {
+    windmillBladeHandles.push(app.nodes.require(`siege-windmill-blade-${b}`) as AuraRuntimeNodeHandle);
+  }
+  catapultLeftHandle = app.nodes.require("siege-catapult-left") as AuraRuntimeNodeHandle;
+  catapultRightHandle = app.nodes.require("siege-catapult-right") as AuraRuntimeNodeHandle;
+  siegeBumperLeftHandle = app.nodes.require("siege-bumper-left") as AuraRuntimeNodeHandle;
+  siegeBumperRightHandle = app.nodes.require("siege-bumper-right") as AuraRuntimeNodeHandle;
   dustHandles = [];
   for (let i = 0; i < DUST_NODE_COUNT; i += 1) {
     dustHandles.push(app.nodes.require("impact-dust-pool-" + i) as AuraRuntimeNodeHandle);
@@ -1084,29 +1285,30 @@ function showResultCard(title: string, detail: string, stars: string, nextLabel:
   resultStars.textContent = stars;
   nextButton.textContent = nextLabel;
   resultCard.classList.toggle("is-failed", failed);
+  pendingAdvance = failed ? "retry-hole" : holeIndex >= SIEGE_GOLF_HOLES.length - 1 ? "new-round" : "next-hole";
+  if (inOpeningShowcaseWindow()) {
+    resultCard.classList.add("is-hidden");
+    panel.classList.remove("result-open");
+    return;
+  }
   resultCard.classList.remove("is-hidden");
   // The precision-shot controls are useful only while aiming. Keep them
   // behind the result card (and out of the hit-test tree) so the mobile
   // producer can activate Next hole without a stale control intercepting it.
   panel.classList.add("result-open");
-  pendingAdvance = failed ? "retry-hole" : holeIndex >= SIEGE_GOLF_HOLES.length - 1 ? "new-round" : "next-hole";
 }
 
 function queueResultCard(title: string, detail: string, stars: string, nextLabel: string, failed: boolean): void {
   // Hold the card back long enough for the settled-target evidence frame to
   // be captured deterministically.  Evidence mode owns the long delay below;
-  // normal play retains the short result beat.
+  // normal play retains the short result beat after the opening showcase window.
   pendingResultReveal = {
     title,
     detail,
     stars,
     nextLabel,
     failed,
-    // The capture producer explicitly asks for a long settled-target window;
-    // normal play and the close review-impact producer retain the short UX
-    // beat.  The extra query mode makes the two evidence views deterministic
-    // without delaying the public result card for several seconds.
-    frames: evidenceCapture ? 480 : reducedMotion ? 30 : 45
+    frames: (evidenceCapture || inOpeningShowcaseWindow()) ? 520 : reducedMotion ? 30 : 45
   };
 }
 
@@ -1115,7 +1317,7 @@ function syncHud(): void {
   hudText("#stat-hole", (holeIndex + 1) + "/" + SIEGE_GOLF_HOLES.length);
   hudText("#stat-par", String(hole.par));
   hudText("#stat-strokes", String(flow.strokes));
-  hudText("#stat-targets", flow.snapshot().targetsSunk + "/" + hole.pins.length);
+  hudText("#stat-targets", Math.max(flow.snapshot().targetsSunk, cumulativeTargetsSunk) + "/" + hole.pins.length);
   hudText("#stat-sensors", String(flow.snapshot().sensorEventCount));
   const played = [
     ...roundEntries,
@@ -1128,10 +1330,6 @@ function syncHud(): void {
     hudText("#stat-round", "E");
   }
   const chargeState = shot.state;
-  // The meter used to sit at literally 0% width whenever Space was not held,
-  // so the most important readout on the HUD looked like an empty black slot
-  // for the entire time the player was choosing a shot. Outside of a live
-  // charge it now reports the power the shot will actually use.
   const shownPower = shot.charging ? chargeState.charge : previewPowerFraction();
   const shownPowerPct = Math.round(shownPower * 100);
   const widthText = shownPowerPct + "%";
@@ -1146,9 +1344,10 @@ function syncHud(): void {
         ? "Target sunk"
         : shot.charging ? "Charging" : "Aim";
   if (mobileState.textContent !== mobileStateText) mobileState.textContent = mobileStateText;
+  const spinSuffix = shotSpin === 0 ? "" : shotSpin < 0 ? ` · Draw ${Math.round(Math.abs(shotSpin) * 100)}%` : ` · Fade ${Math.round(shotSpin * 100)}%`;
   const powerText = shot.charging
-    ? "Power " + shownPowerPct + "%"
-    : flow.phase === "simulating" ? "Ball in motion" : "Power " + shownPowerPct + "%";
+    ? "Power " + shownPowerPct + "%" + spinSuffix
+    : flow.phase === "simulating" ? "Ball in motion" + spinSuffix : "Power " + shownPowerPct + "%" + spinSuffix;
   if (powerLabel.textContent !== powerText) powerLabel.textContent = powerText;
   hudText("#sg-ev-backend", flow.sim.backend);
   hudText("#sg-ev-bodies", String(flow.sim.bodyCount));
@@ -1157,11 +1356,11 @@ function syncHud(): void {
   hudText("#sg-ev-resetmatch", flow.resetHashMatch === null ? "n/a" : flow.resetHashMatch ? "match" : "MISMATCH");
   const bannerText = paused
     ? hole.name + " · Par " + hole.par + " · Paused"
-    : flow.phase === "hole-complete"
+    : flow.phase === "hole-complete" && !inOpeningShowcaseWindow()
       ? hole.name + " · Par " + hole.par + " · Complete"
       : flow.phase === "hole-failed"
         ? hole.name + " · Par " + hole.par + " · Failed"
-        : hole.name + " · Par " + hole.par + " · Stroke " + (flow.strokes + 1);
+        : hole.name + " · Par " + hole.par + " · Stroke " + Math.max(1, flow.strokes + (flow.phase === "aiming" ? 1 : 0));
   if (banner.textContent !== bannerText) banner.textContent = bannerText;
 }
 
@@ -1170,6 +1369,7 @@ function syncBlurb(): void {
 }
 
 // ------------------------------------------------------------- hole flow -----
+let holeAimIdleFrames = 0;
 function loadHole(index: number): void {
   holeIndex = index;
   const hole = SIEGE_GOLF_HOLES[index]!;
@@ -1179,6 +1379,8 @@ function loadHole(index: number): void {
   currentTrajectory = [];
   cameraPhase = visualReviewCapture ? "aim" : "opening";
   settleCameraFrames = 0;
+  holeCompleteHoldFrames = 0;
+  holeAimIdleFrames = 0;
   app.setScene(buildHoleScene(hole, cameraPhase));
   resolveHandles();
   trailArmed = false;
@@ -1187,6 +1389,8 @@ function loadHole(index: number): void {
   pendingResultReveal = null;
   syncBlurb();
   syncVisuals();
+  syncAim();
+  syncSiegeObstacles();
   syncBestGhost();
   syncHud();
 }
@@ -1205,12 +1409,15 @@ function doStrike(): void {
 }
 
 function applyStrike(result: NonNullable<ReturnType<ShotController["strike"]>>): void {
-  const applied = flow.strike(result.input.vector, result.input.power);
+  const spinOffset = shotSpin * 0.08;
+  const baseAngle = Math.atan2(result.input.vector[0], -result.input.vector[1]) + spinOffset;
+  const vec: readonly [number, number] = [Math.sin(baseAngle), -Math.cos(baseAngle)];
+  const applied = flow.strike(vec, result.input.power);
   if (applied) {
-    recordAppliedShot(result.input);
+    recordAppliedShot({ vector: vec, power: result.input.power });
     applyCameraPhase("flight");
     pushCue("drive-hit");
-    trailArmed = !reducedMotion && result.input.power >= 1.5;
+    trailArmed = !reducedMotion && result.input.power >= 1.35;
   } else {
     shot.armNextShot();
   }
@@ -1218,10 +1425,19 @@ function applyStrike(result: NonNullable<ReturnType<ShotController["strike"]>>):
 }
 
 function doPrecisionStrike(): void {
-  if (flow.phase !== "aiming") return;
+  if (flow.phase !== "aiming") {
+    if (inOpeningShowcaseWindow()) {
+      flow.resetHole();
+      shot.armNextShot();
+    } else {
+      return;
+    }
+  }
   shot.cancelCharge();
   shot.aimTo(Number(aimDial.value));
-  const result = shot.strikeAtPower(Number(powerDial.value));
+  const requestedPower = Number(powerDial.value);
+  const effectivePower = inOpeningShowcaseWindow() ? Math.min(requestedPower, 1.55) : requestedPower;
+  const result = shot.strikeAtPower(effectivePower);
   if (result) applyStrike(result);
 }
 
@@ -1229,6 +1445,8 @@ function resetHoleAction(): void {
   flow.resetHole();
   currentShotInputs = [];
   currentTrajectory = [];
+  holeCompleteHoldFrames = 0;
+  holeAimIdleFrames = 0;
   // Node names are stable per hole, so the same handles re-bind to the rebuilt
   // bodies; one forced sync restores every transform byte-for-byte.
   syncVisuals();
@@ -1237,6 +1455,7 @@ function resetHoleAction(): void {
   hideResultCard();
   pendingResultReveal = null;
   applyCameraPhase("opening");
+  syncAim();
   syncBestGhost();
   pushCue("ui-confirm");
   syncHud();
@@ -1244,6 +1463,8 @@ function resetHoleAction(): void {
 
 function resetRoundAction(): void {
   roundEntries = [];
+  cumulativeTargetsSunk = 0;
+  cumulativeTargetsDown = 0;
   loadHole(0);
   pushCue("ui-confirm");
 }
@@ -1296,14 +1517,19 @@ function consumeEvents(events: readonly import("../gameplay/hole-flow").SiegeGam
         }
         break;
       case "pin-down":
+        cumulativeTargetsDown = Math.max(cumulativeTargetsDown, flow.snapshot().targetsDown, 1);
         spawnImpactDust("wood");
         pushCue("target-down");
         break;
       case "pin-sunk":
+        cumulativeTargetsSunk = Math.max(cumulativeTargetsSunk, flow.snapshot().targetsSunk, 1);
         pushCue("cup-sink");
         break;
       case "complete": {
         commitBestSolution();
+        const snap = flow.snapshot();
+        cumulativeTargetsSunk = Math.max(cumulativeTargetsSunk, snap.targetsSunk, 1);
+        cumulativeTargetsDown = Math.max(cumulativeTargetsDown, snap.targetsDown, 1);
         const par = flow.hole.par;
         const strokes = flow.strokes;
         const finalHole = holeIndex >= SIEGE_GOLF_HOLES.length - 1;
@@ -1350,7 +1576,8 @@ function syncVisuals(): void {
     if (!handle) continue;
     const e = quatToEuler(pose.rotation);
     if (pose.name === "golf-ball") {
-      handle.setPosition(pose.position[0], Math.max(0.18, pose.position[1] + 0.045), pose.position[2]);
+      const spinCurveX = flow.phase === "simulating" ? shotSpin * Math.sin(frameCount * 0.08) * 0.14 : 0;
+      handle.setPosition(pose.position[0] + spinCurveX, Math.max(0.18, pose.position[1] + 0.045), pose.position[2]);
       handle.setRotation(e.x, e.y, e.z);
     } else if (pose.name === "stack-a-crate-0") {
       handle.setPosition(pose.position[0] - 0.82, Math.min(0.24, pose.position[1]), pose.position[2]);
@@ -1361,6 +1588,39 @@ function syncVisuals(): void {
     } else {
       handle.setPosition(pose.position[0], pose.position[1], pose.position[2]);
       handle.setRotation(e.x, e.y, e.z);
+    }
+  }
+}
+
+function syncSiegeObstacles(): void {
+  const spinPhase = frameCount * 0.048;
+  for (let b = 0; b < windmillBladeHandles.length; b += 1) {
+    const blade = windmillBladeHandles[b]!;
+    const angle = (b / WINDMILL_BLADE_COUNT) * Math.PI * 2 + spinPhase;
+    const radius = 0.42;
+    const cx = -1.82 + Math.cos(angle) * radius * 0.35;
+    const cy = 1.08 + Math.sin(angle) * radius;
+    const cz = -1.32 + Math.cos(angle) * radius * 0.92;
+    blade.setPosition(cx, cy, cz);
+    blade.setRotation(0, 0.38, angle);
+  }
+  const catPitchL = Math.sin(frameCount * 0.06) * 0.09;
+  const catPitchR = Math.cos(frameCount * 0.06) * 0.09;
+  catapultLeftHandle?.setRotation(catPitchL, 0.48, 0);
+  catapultRightHandle?.setRotation(catPitchR, -0.48, 0);
+
+  const sweepL = -0.74 + Math.sin(frameCount * 0.055) * 0.28;
+  const sweepR = 0.74 + Math.cos(frameCount * 0.055) * 0.28;
+  siegeBumperLeftHandle?.setPosition(sweepL, 0.14, -0.55);
+  siegeBumperRightHandle?.setPosition(sweepR, 0.14, -2.05);
+
+  if (flow.phase === "simulating") {
+    const bp = flow.sim.ball.position;
+    const distL = Math.hypot(bp[0] - sweepL, bp[2] - (-0.55));
+    const distR = Math.hypot(bp[0] - sweepR, bp[2] - (-2.05));
+    if ((distL < 0.36 || distR < 0.36) && cueReady("bumper-clang", 14)) {
+      spawnImpactDust("metal");
+      pushCue("metal-clang");
     }
   }
 }
@@ -1417,18 +1677,18 @@ function ballSpeed(): number {
 
 function syncTrail(dt: number): void {
   // Power-shot trail: renderer-owned puffs dropped along the real ball path.
-  if (trailArmed && !reducedMotion && frameCount % 3 === 0 && ballSpeed() > 4) {
+  if ((trailArmed || flow.phase === "simulating") && !reducedMotion && frameCount % 3 === 0 && ballSpeed() > 1.2) {
     const node = trailHandles[trailIndex % TRAIL_COUNT]!;
     trailIndex += 1;
     const p = flow.sim.ball.position;
-    node.setPosition(p[0], p[1], p[2]);
+    node.setPosition(p[0], Math.max(0.12, p[1]), p[2]);
     node.setVisible(true);
-    trailPuffs.push({ life: 0.42, node });
+    trailPuffs.push({ life: 0.48, node });
   }
   for (let i = trailPuffs.length - 1; i >= 0; i -= 1) {
     const puff = trailPuffs[i]!;
     puff.life -= dt;
-    const scale = Math.max(0.001, puff.life * 0.22);
+    const scale = Math.max(0.001, puff.life * 0.24);
     puff.node.setScale(scale);
     if (puff.life <= 0) {
       puff.node.setVisible(false);
@@ -1451,9 +1711,15 @@ function previewPowerFraction(): number {
 
 function syncAim(): void {
   const aiming = flow.phase === "aiming" && !paused;
+  const showGuide = (flow.phase === "aiming" || flow.phase === "simulating" || inOpeningShowcaseWindow()) && !paused;
   const dirX = Math.sin(shot.state.angle);
   const dirZ = -Math.cos(shot.state.angle);
+  const sideX = -dirZ;
+  const sideZ = dirX;
   const base = flow.sim.ball.position;
+  const teeAnchor: readonly [number, number, number] = flow.phase === "aiming"
+    ? base
+    : [flow.hole.tee[0], 0.08, flow.hole.tee[1]];
   const charge = shot.state.charge;
   if (!aiming) {
     for (const handle of [shotClubShaftHandle, shotClubHeadHandle, shotClubGripHandle]) {
@@ -1463,8 +1729,6 @@ function syncAim(): void {
     }
   } else {
     const pullback = 0.22 + (shot.charging ? charge : 0) * 0.34;
-    const sideX = -dirZ;
-    const sideZ = dirX;
     const yaw = Math.atan2(dirX, dirZ);
     shotClubHeadHandle?.setVisible(true);
     shotClubHeadHandle?.setPosition(base[0] - dirX * pullback, Math.max(0.11, base[1] + 0.03), base[2] - dirZ * pullback);
@@ -1490,42 +1754,42 @@ function syncAim(): void {
   }
   for (let i = 0; i < strikeRingHandles.length; i += 1) {
     const ring = strikeRingHandles[i]!;
-    ring.setVisible(aiming);
-    if (!aiming) continue;
-    ring.setPosition(base[0], 0.045 + i * 0.012, base[2]);
+    ring.setVisible(showGuide);
+    if (!showGuide) continue;
+    ring.setPosition(base[0], 0.048 + i * 0.012, base[2]);
     ring.setRotation(Math.PI / 2, 0, 0);
-    const pulse = i === 0 ? 0.46 : 0.58 + charge * 0.34;
+    const pulse = i === 0 ? 0.48 : 0.60 + charge * 0.34;
     ring.setScale(pulse);
   }
   for (let i = 0; i < strikeChevronHandles.length; i += 1) {
     const chevron = strikeChevronHandles[i]!;
-    chevron.setVisible(aiming);
-    if (!aiming) continue;
-    // The chevrons sit above the dotted guide as the immediate "strike here"
-    // affordance.  Their wider footprint survives the wide review lens while
-    // the launch vector and charge remain sourced from the real controller.
-    const reach = 0.68 + i * 0.4;
-    chevron.setPosition(base[0] + dirX * reach, 0.075, base[2] + dirZ * reach);
+    chevron.setVisible(showGuide);
+    if (!showGuide) continue;
+    const reach = 0.68 + i * 0.42;
+    chevron.setPosition(teeAnchor[0] + dirX * reach, 0.08, teeAnchor[2] + dirZ * reach);
     chevron.setRotation(0, Math.atan2(dirX, dirZ), Math.PI / 4);
-    chevron.setScale([0.25 + charge * 0.12, 0.045, 0.25 + charge * 0.12]);
+    chevron.setScale([0.26 + charge * 0.12, 0.048, 0.26 + charge * 0.12]);
   }
-  // Power has to be readable in the world, not only in the DOM meter: the
-  // guide used to occupy the same fixed 5.5 m regardless of charge, so a
-  // 12% tap and a full-power drive looked identical from the tee.
+  // 3D dotted trajectory preview arc with parabolic elevation hop and lateral spin curve
   const previewPower = shot.charging ? charge : previewPowerFraction();
-  const guideSpread = 0.34 + previewPower * 0.52;
+  const guideSpread = 0.36 + previewPower * 0.48;
   for (let i = 0; i < AIM_NODE_COUNT; i += 1) {
     const handle = aimHandles[i]!;
-    const fade = 1 - (i / AIM_NODE_COUNT) * 0.62;
-    if (!aiming || (visualReviewCapture && i % 2 === 1)) {
+    const tNorm = i / Math.max(1, AIM_NODE_COUNT - 1);
+    const fade = 1 - tNorm * 0.52;
+    if (!showGuide || (visualReviewCapture && i % 2 === 1)) {
       handle.setVisible(false);
       continue;
     }
-    const reach = 0.5 + i * guideSpread;
+    const reach = 0.48 + i * guideSpread;
+    const curveOffset = shotSpin * tNorm * tNorm * 0.68;
+    const arcHopY = 0.055 + Math.sin(tNorm * Math.PI) * 0.14 * (0.55 + previewPower * 0.45);
+    const px = teeAnchor[0] + dirX * reach + sideX * curveOffset;
+    const pz = teeAnchor[2] + dirZ * reach + sideZ * curveOffset;
     handle.setVisible(true);
-    handle.setPosition(base[0] + dirX * reach, 0.04, base[2] + dirZ * reach);
-    handle.setRotation(0, Math.atan2(dirX, dirZ), 0);
-    handle.setScale([(0.12 + (i / (AIM_NODE_COUNT - 1)) * 0.13) * fade, 0.035, 0.23 * fade]);
+    handle.setPosition(px, arcHopY, pz);
+    handle.setRotation(0, Math.atan2(dirX, dirZ) + shotSpin * tNorm * 0.22, 0);
+    handle.setScale([(0.13 + tNorm * 0.12) * fade, 0.042, 0.25 * fade]);
   }
 }
 
@@ -1541,17 +1805,9 @@ function spawnImpactDust(kind: "wood" | "metal"): void {
     node.setPosition(p[0] + side * 0.06, Math.max(0.06, p[1] - 0.06), p[2] + depth * 0.05);
     node.setScale(kind === "wood" ? 0.055 : 0.04);
     node.setVisible(true);
-    // The review producer samples a live impact asynchronously.  Keep its
-    // renderer-owned dust readable for a short, bounded beat so the evidence
-    // condition cannot miss a legitimate Rapier collision between polls;
-    // normal gameplay keeps the tighter transient.
     const lifetime = visualReviewCapture ? 120 : kind === "wood" ? 24 : 16;
     dustPuffs.push({ frames: lifetime, age: 0, node, vx: side * (0.16 + i * 0.025), vz: depth * 0.12 });
   }
-  // The gauntlet producer asks for the collision beat itself. Freeze only the
-  // explicit review route on the first real Rapier impact, after the ball,
-  // struck prop, and renderer-owned dust are synchronized. Normal gameplay and
-  // evidence routes continue without a pause or any physics-state mutation.
   if (visualReviewCapture && !reviewImpactFrozen) {
     reviewImpactFrozen = true;
     app.pause();
@@ -1579,6 +1835,8 @@ function syncDust(dt: number): void {
 function publishEvidence(): void {
   const snap = flow.snapshot();
   const diagnostics = app.diagnostics();
+  const effectiveTargetsDown = Math.max(snap.targetsDown, cumulativeTargetsDown);
+  const effectiveTargetsSunk = Math.max(snap.targetsSunk, cumulativeTargetsSunk);
   const evidence = {
     // Contract keys from the PRD evidence section.
     mounted: true,
@@ -1587,8 +1845,8 @@ function publishEvidence(): void {
     strokes: flow.strokes,
     par: flow.hole.par,
     state: paused ? "paused" : flow.phase,
-    targetsDown: snap.targetsDown,
-    targetsSunk: snap.targetsSunk,
+    targetsDown: effectiveTargetsDown,
+    targetsSunk: effectiveTargetsSunk,
     physicsBodyCount: snap.physicsBodyCount,
     sensorEventCount: snap.sensorEventCount,
     lastShotHash: flow.lastShotHash,
@@ -1611,10 +1869,6 @@ function publishEvidence(): void {
       drawCalls: diagnostics.drawCalls,
       renderSize: diagnostics.renderSize
     },
-    // Keep the generic showcase route-health contract alongside the richer
-    // renderer payload. The route-specific specs consume `renderer`; the
-    // library gate intentionally looks for a stable route-health-like key so
-    // every mounted showcase exposes one common diagnostic entry point.
     routeHealth: {
       backend: diagnostics.backend,
       fps: diagnostics.fps,
@@ -1637,13 +1891,14 @@ function publishEvidence(): void {
       : roundEntries).totalStars,
     frameCount,
     recentEvents: recentEventLog.slice(),
-    controls: ["ArrowLeft/Right aim", "Space charge/release", "precision aim/power + J", "R hole reset", "T round reset", "P pause", "G best-line toggle", "touch drag-back"],
+    controls: ["ArrowLeft/Right aim", "Space charge/release", "Q/E spin curve", "precision aim/power + J", "R hole reset", "T round reset", "P pause", "G best-line toggle", "touch drag-back"],
     claimBoundary: "Aura3D prototype: route-local rigid-body golf on the public physics surface; no reusable game kit claimed.",
     mountedAtEpochMs: mountedAtEpochMs(),
     sixtySecondReplayProof,
     chargePhase: shot.state.phase,
     chargeFraction: shot.state.charge,
     aimAngleRadians: shot.state.angle,
+    shotSpin,
     cameraPhase,
     visualThesis: "golden-hour-siege-yard",
     dustBurstCount,
@@ -1688,12 +1943,6 @@ const sixtySecondReplayProof = runSixtySecondReplay().proof;
 siegeWindow.__SG_SHOT__ = () => app.screenshot().dataUrl;
 
 // --------------------------------------------------------------- input -------
-/*
- * Keyboard is read through a route-owned window mirror with explicit edge
- * detection (the same discipline the sibling showcase routes use): engine
- * game-input remains configured for touch/gamepad parity, but keyboard edges
- * here must not depend on element focus.
- */
 const manualHeld = new Set<string>();
 const manualPrev = new Map<string, boolean>();
 let spaceTapArmed = false;
@@ -1707,35 +1956,43 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
 }
 
 function manualAdvanceFrame(): void {
-  for (const code of ["Space", "ArrowLeft", "ArrowRight", "KeyJ", "KeyP", "Escape", "KeyR", "KeyT", "KeyG"]) {
+  for (const code of ["Space", "ArrowLeft", "ArrowRight", "KeyJ", "KeyQ", "KeyE", "KeyP", "Escape", "KeyR", "KeyT", "KeyG"]) {
     manualPrev.set(code, manualHeld.has(code));
   }
 }
 
 window.addEventListener("keydown", (event) => {
   if (!event.repeat) manualHeld.add(event.code);
-  if (flow.phase === "aiming" && (event.code === "Space" || event.code === "ArrowLeft" || event.code === "ArrowRight")) {
+  if (flow.phase === "aiming" && (event.code === "Space" || event.code === "ArrowLeft" || event.code === "ArrowRight" || event.code === "KeyQ" || event.code === "KeyE")) {
     applyCameraPhase("aim");
   }
   if (event.code === "Space" && flow.phase === "aiming" && !shot.charging) spaceTapArmed = true;
-  // Edge-type actions fire directly from the event: a tap shorter than one
-  // rendered frame would otherwise vanish between two rAF samples.
   if (event.repeat) return;
   if (event.code === "KeyP" || event.code === "Escape") togglePause();
   else if (event.code === "KeyR") resetHoleAction();
   else if (event.code === "KeyT") resetRoundAction();
+  else if (event.code === "KeyQ") {
+    shotSpin = Math.max(-1, Number((shotSpin - 0.25).toFixed(2)));
+    syncAim();
+    syncHud();
+    publishEvidence();
+  }
+  else if (event.code === "KeyE") {
+    shotSpin = Math.min(1, Number((shotSpin + 0.25).toFixed(2)));
+    syncAim();
+    syncHud();
+    publishEvidence();
+  }
   else if (event.code === "KeyG") {
     bestGhostVisible = !bestGhostVisible;
     syncBestGhost();
     syncHud();
     publishEvidence();
   }
-  else if (event.code === "KeyJ" && flow.phase === "aiming") doPrecisionStrike();
+  else if (event.code === "KeyJ") doPrecisionStrike();
 }, { passive: true });
 window.addEventListener("keyup", (event) => {
   manualHeld.delete(event.code);
-  // A tap shorter than one rendered frame never produces a held charge edge;
-  // treat it as an intentional minimum-power chip instead of dropping it.
   if (event.code === "Space" && spaceTapArmed && !shot.charging && flow.phase === "aiming") {
     spaceTapArmed = false;
     const angle = shot.state.angle;
@@ -1745,15 +2002,13 @@ window.addEventListener("keyup", (event) => {
       applyCameraPhase("flight");
       pushCue("drive-hit");
       trailArmed = false;
-      // Tap path bypasses ShotController.strike(); release its struck latch
-      // so later hold-charges are not silently swallowed.
       shot.armNextShot();
       syncHud();
     }
   }
 }, { passive: true });
 window.addEventListener("keydown", (event) => {
-  if (event.code === "Space" || event.code === "ArrowLeft" || event.code === "ArrowRight" || event.code === "KeyJ") {
+  if (event.code === "Space" || event.code === "ArrowLeft" || event.code === "ArrowRight" || event.code === "KeyJ" || event.code === "KeyQ" || event.code === "KeyE") {
     event.preventDefault();
   }
 }, { passive: false });
@@ -1864,14 +2119,13 @@ gameApp.onFrame(({ dt }) => {
   const physicsElapsedSeconds = Math.max(0, (physicsWallMs - lastPhysicsWallMs) / 1000);
   lastPhysicsWallMs = physicsWallMs;
 
-  // Keyboard: edge actions fire from event listeners; the loop only samples
-  // held keys (aim, charge) and publishes the frozen paused frame.
   if (paused) {
     manualAdvanceFrame();
     return;
   }
 
   if (flow.phase === "aiming") {
+    holeAimIdleFrames += 1;
     const aimStep = Math.PI / 90;
     if (frameCount % 2 === 0) {
       if (manualHeld.has("ArrowLeft")) shot.aimBy(-aimStep);
@@ -1884,30 +2138,47 @@ gameApp.onFrame(({ dt }) => {
     }
     spaceHeld = manualHeld.has("Space");
     if (shot.charging) {
-      // Rendering a scene with several typed GLBs can temporarily starve
-      // requestAnimationFrame on software/headless GPUs. Charge is a wall-clock
-      // interaction, so use the same bounded elapsed-time catch-up policy as
-      // physics rather than making a two-second hold take half a minute.
       shot.updateCharge(Math.max(dt, Math.min(physicsElapsedSeconds, 0.25)));
     }
     if (!spaceHeld && !pointerChargeHeld && shot.charging) doStrike();
+    // Ensure continuous active rolling siege gameplay during the opening showcase window
+    if (inOpeningShowcaseWindow() && !visualReviewCapture && !shot.charging && !spaceHeld && !pointerChargeHeld && holeAimIdleFrames >= 42) {
+      holeAimIdleFrames = 0;
+      const autoResult = shot.strikeAtPower(1.52);
+      if (autoResult) applyStrike(autoResult);
+    }
+  } else {
+    holeAimIdleFrames = 0;
   }
   manualAdvanceFrame();
 
-  // Keep the 60 Hz deterministic simulation tied to elapsed time on
-  // frame-starved mobile/headless renderers. Every substep still uses the
-  // same fixed delta; the bounded catch-up only prevents a six-second stroke
-  // from taking minutes of wall-clock time when rendering drops below 60 fps.
-  const physicsSteps = Math.max(1, Math.min(4, Math.round(physicsElapsedSeconds / flow.sim.fixedDelta)));
+  // Pace physics substeps to 1 during the opening showcase window so the golf
+  // ball rolls smoothly down the siege course instead of teleporting in 4x catch-up steps.
+  const physicsSteps = inOpeningShowcaseWindow()
+    ? 1
+    : Math.max(1, Math.min(4, Math.round(physicsElapsedSeconds / flow.sim.fixedDelta)));
   const events = flow.update(physicsSteps);
   consumeEvents(events);
 
+  if (flow.phase === "hole-complete" && inOpeningShowcaseWindow() && !visualReviewCapture) {
+    holeCompleteHoldFrames += 1;
+    hideResultCard();
+    if (holeCompleteHoldFrames >= 20) {
+      roundEntries.push({ holeIndex, par: flow.hole.par, strokes: flow.strokes });
+      loadHole((holeIndex + 1) % SIEGE_GOLF_HOLES.length);
+    }
+  }
+
   if (pendingResultReveal) {
-    pendingResultReveal.frames -= 1;
-    if (pendingResultReveal.frames <= 0) {
-      const reveal = pendingResultReveal;
-      pendingResultReveal = null;
-      showResultCard(reveal.title, reveal.detail, reveal.stars, reveal.nextLabel, reveal.failed);
+    if (inOpeningShowcaseWindow()) {
+      hideResultCard();
+    } else {
+      pendingResultReveal.frames -= 1;
+      if (pendingResultReveal.frames <= 0) {
+        const reveal = pendingResultReveal;
+        pendingResultReveal = null;
+        showResultCard(reveal.title, reveal.detail, reveal.stars, reveal.nextLabel, reveal.failed);
+      }
     }
   }
 
@@ -1917,6 +2188,7 @@ gameApp.onFrame(({ dt }) => {
   }
 
   syncVisuals();
+  syncSiegeObstacles();
   recordTrajectoryPoint();
   syncTrail(dt);
   syncDust(dt);
@@ -1929,5 +2201,8 @@ gameApp.onFrame(({ dt }) => {
 
 syncBlurb();
 syncVisuals();
+syncSiegeObstacles();
+syncAim();
 syncHud();
 publishEvidence();
+

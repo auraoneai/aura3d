@@ -518,6 +518,73 @@ const app = createAuraApp("#app", {
     )
     .add(lights.point({ name: "courier kiosk west key", color: "#38bdf8", intensity: 1.4 }).position(-6.2, 3.2, 12.2))
     .add(lights.point({ name: "courier kiosk east key", color: "#fbbf24", intensity: 1.4 }).position(6.2, 3.2, 8.8))
+    // 3D Meshy cyberpunk neon storefronts lining both sides of the avenue.
+    .addMany(
+      [-10, -2, 6, 14].flatMap((zPos, idx) => [
+        model((assets as any).courierNeonStorefrontMeshy ?? assets.courierDeliveryKioskMeshy, {
+          name: `courier-neon-storefront-west-${idx}`,
+          role: "setDressing",
+          scaleMode: "fit",
+          targetMaxDimension: 4.6,
+          castShadow: true,
+          receiveShadow: true
+        })
+          .position(-8.8, 0, zPos)
+          .rotate(0, Math.PI * 0.5, 0),
+        model((assets as any).courierNeonStorefrontMeshy ?? assets.courierDeliveryKioskMeshy, {
+          name: `courier-neon-storefront-east-${idx}`,
+          role: "setDressing",
+          scaleMode: "fit",
+          targetMaxDimension: 4.6,
+          castShadow: true,
+          receiveShadow: true
+        })
+          .position(8.8, 0, zPos)
+          .rotate(0, -Math.PI * 0.5, 0)
+      ])
+    )
+    // 3D Meshy overhead cyber highway arch gantries & intersection pylons.
+    .addMany(
+      [5.5, -5.5].map((zArch, idx) =>
+        model(assets.pulseNeonGateArchMeshy, {
+          name: `courier-avenue-arch-gantry-${idx}`,
+          role: "setDressing",
+          scaleMode: "fit",
+          targetMaxDimension: 12.2,
+          castShadow: false,
+          receiveShadow: true
+        }).position(0, 0, zArch)
+      )
+    )
+    .addMany(
+      [
+        [-7.2, -3.6],
+        [7.2, -3.6],
+        [-7.2, 3.6],
+        [7.2, 3.6]
+      ].map(([px, pz], idx) =>
+        model(assets.neonCyberPylonMeshy, {
+          name: `courier-intersection-cyber-pylon-${idx}`,
+          role: "setDressing",
+          scaleMode: "fit",
+          targetMaxDimension: 2.6,
+          castShadow: true,
+          receiveShadow: true
+        }).position(px!, 0, pz!)
+      )
+    )
+    // Autonomous 3D Courier Guide Drone hovering ahead of the player van.
+    .add(
+      model(assets.skylineFrostSentryDroneMeshy, {
+        name: "courier-guide-drone-mesh",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 0.72,
+        castShadow: true
+      })
+        .position(SPAWN_POSE.x, 1.75, SPAWN_POSE.z - 3.2)
+        .runtime({ id: "courier-guide-drone", tags: ["guide-drone", "typed-secondary-asset"] })
+    )
     // Active player delivery van: high-detail Meshy cyber van grounded cleanly on the lane with uniform proportions.
     .add(
       model(normalizeModelAsset((assets as Record<string, unknown>).courierCyberVanMeshy), {
@@ -587,24 +654,23 @@ const app = createAuraApp("#app", {
       ...impactFeedbackNodes(),
       ...trafficHeadlightNodes()
     ])
-    // Traffic fleet: two typed variants on the authored lane loops.
-    .addMany(trafficSim.cars().map((car) =>
-      model(car.variant === "sedan" ? assets.courierTrafficSedan : assets.courierTrafficHatch, {
-        name: car.id,
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: car.variant === "sedan" ? 2.55 : 2.35,
-        material: material.pbr({
-          name: car.variant === "sedan" ? "courier traffic sedan lacquer" : "courier traffic hatch lacquer",
-          color: car.variant === "sedan" ? "#e45b74" : "#54c8d9",
-          roughness: 0.26,
-          metallic: 0.48,
-          clearcoat: 0.38,
-          clearcoatRoughness: 0.14
-        }),
-        castShadow: true,
-        receiveShadow: true
-      }).runtime({ id: car.id, tags: ["traffic", "typed-secondary-asset", "route-local-ai"] })
+    // Traffic fleet: high-detail 3D Meshy GT sports cars and urban vehicles on the authored lane loops.
+    .addMany(trafficSim.cars().map((car, idx) =>
+      model(
+        idx % 3 === 0
+          ? assets.turboRivalRaceCarMeshy
+          : idx % 3 === 1
+            ? assets.turboHeroRaceCarMeshy
+            : assets.courierVanMeshyV2Decimated,
+        {
+          name: car.id,
+          role: "setDressing",
+          scaleMode: "fit",
+          targetMaxDimension: car.variant === "sedan" ? 2.55 : 2.35,
+          castShadow: true,
+          receiveShadow: true
+        }
+      ).runtime({ id: car.id, tags: ["traffic", "typed-secondary-asset", "route-local-ai"] })
     ))
     .camera(chaseCamera)
 });
@@ -1447,6 +1513,17 @@ app.onFrame(({ dt }) => {
   // Presentation yaw: `-heading + PI` maps local -X (front hood) to [cos(h), 0, sin(h)]
   // and local +X (rear cargo doors) toward the chase camera.
   vanNode.setPosition(vanAfter.x, 0, vanAfter.z).setRotation(0, -vanAfter.heading + Math.PI, 0);
+  const guideDroneNode = app.nodes.get("courier-guide-drone") as { setPosition?: (x: number, y: number, z: number) => void; setRotation?: (rx: number, ry: number, rz: number) => void } | undefined;
+  const activeRouteSite = activeTargetSite(dispatch);
+  const droneAimYaw = activeRouteSite
+    ? Math.atan2(activeRouteSite.x - vanAfter.x, activeRouteSite.z - vanAfter.z)
+    : -vanAfter.heading;
+  guideDroneNode?.setPosition?.(
+    vanAfter.x + fx * 3.1 + Math.sin(frameCount * 0.06) * 0.32,
+    1.72 + Math.sin(frameCount * 0.11) * 0.14,
+    vanAfter.z + fz * 3.1
+  );
+  guideDroneNode?.setRotation?.(-0.14, droneAimYaw, Math.sin(frameCount * 0.08) * 0.12);
   cameraTargetNode
     .setPosition(vanAfter.x, 0.2, vanAfter.z)
     .setRotation(0, -vanAfter.heading - Math.PI / 2, 0)

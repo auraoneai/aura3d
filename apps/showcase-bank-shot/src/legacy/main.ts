@@ -39,6 +39,8 @@ import "./styles.css";
 type BankShotWindow = Window & {
   __BANK_SHOT_EVIDENCE__?: unknown;
   __AURA3D_SHOWCASE_BANK_SHOT__?: unknown;
+  __AURA3D_GAME_EVIDENCE__?: unknown;
+  __AURA3D_GAME__?: unknown;
   __AURA3D_COMPOSITION_PROBE__?: unknown;
   __BS_SHOT__?: () => string;
   __BS_PUMP__?: (frames: number) => number;
@@ -167,6 +169,7 @@ let ghost = { x: CUE_SPOT[0], z: CUE_SPOT[1] };
 let toastTimer = 0;
 let sessionScoreAtRackStart = 0;
 let evidenceScenarioActive = false;
+let sideEnglish = 0;
 
 function pushCue(cue: Parameters<typeof audio.cue>[0]): void {
   void audio.cue(cue).catch(() => undefined);
@@ -183,6 +186,9 @@ function cueReady(name: string, gapFrames: number): boolean {
 // ---------------------------------------------------------------- scene ------
 const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", emissiveIntensity: AIM_EMISSIVE_STRENGTH, opacity: visualReviewCapture ? 0.62 : 0.9 });
 const AIM_BANK_MATERIAL = material.emissive({ name: "aim bank", color: "#f59e0b", emissive: "#d97706", emissiveIntensity: AIM_EMISSIVE_STRENGTH, opacity: 0.85 });
+const AIM_OBJECT_MATERIAL = material.emissive({ name: "aim object target vector", color: "#fbbf24", emissive: "#f59e0b", emissiveIntensity: AIM_EMISSIVE_STRENGTH * 1.15, opacity: 0.92 });
+const AIM_DEFLECTION_MATERIAL = material.emissive({ name: "aim cue deflection vector", color: "#e0f2fe", emissive: "#38bdf8", emissiveIntensity: AIM_EMISSIVE_STRENGTH * 0.95, opacity: 0.82 });
+const AIM_GHOST_RING_MATERIAL = material.emissive({ name: "aim ghost contact ring", color: "#7dd3fc", emissive: "#38bdf8", emissiveIntensity: AIM_EMISSIVE_STRENGTH * 1.2, opacity: 0.88 });
 const AIM_MARKER_MATERIAL = material.emissive({ name: "aim marker", color: "#38bdf8", emissive: "#7dd3fc", emissiveIntensity: AIM_EMISSIVE_STRENGTH });
 const GHOST_MATERIAL = material.emissive({ name: "cue ghost", color: "#38bdf8", emissive: "#0284c7", emissiveIntensity: AIM_EMISSIVE_STRENGTH, opacity: 0.55 });
 const FELT_GUIDE_MATERIAL = material.emissive({
@@ -259,26 +265,38 @@ function visualNodes(): AuraSceneNode[] {
       .position(0, -5, 0)
       .scale([BALL_VISUAL_SCALE * 1.18, BALL_VISUAL_SCALE * 1.18, BALL_VISUAL_SCALE * 1.18])
       .runtime(game.runtimeNode("cue-stick", { tags: ["typed-asset", "cue"] }))
+      .toJSON()
+  );
+  const pBox = primitives.box;
+  const pTorus = primitives.torus;
+  nodes.push(
+    pBox({
+      name: "cue-tip-3d",
+      material: material.pbr({ name: "cue blue chalk tip", color: "#0284c7", roughness: 0.42, metallic: 0.05 })
+    })
+      .position(0, -5, 0)
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode("cue-tip-3d", { tags: ["renderer-owned", "cue"] }))
       .toJSON(),
-    primitives.box({
+    pBox({
       name: "cue-ferrule-3d",
-      material: material.pbr({ name: "cue brass ferrule", color: "#fbbf24", roughness: 0.22, metallic: 0.88 })
+      material: material.pbr({ name: "cue brass ferrule", color: "#fbbf24", roughness: 0.18, metallic: 0.92, clearcoat: 0.4 })
     })
       .position(0, -5, 0)
       .scale([0.001, 0.001, 0.001])
       .runtime(game.runtimeNode("cue-ferrule-3d", { tags: ["renderer-owned", "cue"] }))
       .toJSON(),
-    primitives.box({
+    pBox({
       name: "cue-shaft-3d",
-      material: material.pbr({ name: "cue maple shaft", color: "#f3dcb3", roughness: 0.32, metallic: 0.06, clearcoat: 0.55 })
+      material: material.pbr({ name: "cue maple shaft", color: "#f5e1be", roughness: 0.28, metallic: 0.06, clearcoat: 0.65 })
     })
       .position(0, -5, 0)
       .scale([0.001, 0.001, 0.001])
       .runtime(game.runtimeNode("cue-shaft-3d", { tags: ["renderer-owned", "cue"] }))
       .toJSON(),
-    primitives.box({
+    pBox({
       name: "cue-butt-3d",
-      material: material.pbr({ name: "cue rosewood butt", color: "#5c2415", roughness: 0.26, metallic: 0.14, clearcoat: 0.72 })
+      material: material.pbr({ name: "cue rosewood butt", color: "#3d160c", roughness: 0.22, metallic: 0.16, clearcoat: 0.82 })
     })
       .position(0, -5, 0)
       .scale([0.001, 0.001, 0.001])
@@ -306,46 +324,44 @@ function visualNodes(): AuraSceneNode[] {
         .toJSON()
     );
   }
-  // In-scene aim geometry (PRD 6): line, first-contact marker, object direction,
-  // and the bank preview line. Set dressing around the typed subjects.
+  // In-scene aim geometry (PRD 6): line, first-contact ghost ring, object ball
+  // target vector, cue tangent deflection vector, and the bank preview line.
   nodes.push(
     primitives.box({ name: "aim-line", material: AIM_LINE_MATERIAL })
       .position(0, -5, 0)
       .scale([1, 0.006, 0.006])
       .runtime(game.runtimeNode("aim-line", { tags: ["aim-preview"] }))
-      .toJSON()
-  );
-  nodes.push(
+      .toJSON(),
     primitives.box({ name: "aim-bank", material: AIM_BANK_MATERIAL })
       .position(0, -5, 0)
       .scale([1, 0.005, 0.005])
       .runtime(game.runtimeNode("aim-bank", { tags: ["aim-preview"] }))
+      .toJSON(),
+    pBox({ name: "aim-object-line", material: AIM_OBJECT_MATERIAL })
+      .position(0, -5, 0)
+      .scale([1, 0.005, 0.005])
+      .runtime(game.runtimeNode("aim-object-line", { tags: ["aim-preview"] }))
+      .toJSON(),
+    pBox({ name: "aim-deflection-line", material: AIM_DEFLECTION_MATERIAL })
+      .position(0, -5, 0)
+      .scale([1, 0.004, 0.004])
+      .runtime(game.runtimeNode("aim-deflection-line", { tags: ["aim-preview"] }))
+      .toJSON(),
+    pTorus({
+      name: "aim-ghost-ring",
+      material: AIM_GHOST_RING_MATERIAL
+    })
+      .position(0, -5, 0)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([BALL_VISUAL_RADIUS * 1.06, BALL_VISUAL_RADIUS * 1.06, 0.008])
+      .runtime(game.runtimeNode("aim-ghost-ring", { tags: ["aim-preview"] }))
       .toJSON()
   );
-  // Add complete 3D Billiards Lounge environment with scaled/raised pendant
-  // lamp and without the oversized corner astrolabe pedestals clipping the rails.
+  // Add complete 3D Billiards Lounge environment with the suspended stained-glass
+  // Tiffany chandelier, mahogany wainscot walls, patterned Persian rug, trophy
+  // cabinets, and leather club chairs directly from environment.ts.
   for (const rawNode of createPoolHallSetDressing({ portrait: portraitComposition })) {
-    const entry = { ...(rawNode as unknown as Record<string, unknown>) };
-    if (entry.name === "billiard-hall-pendant-lamp-3d") {
-      entry.position = [0, 1.56, -0.18];
-      entry.scale = [0.38, 0.34, 0.38];
-      entry.targetMaxDimension = 0.68;
-    } else if (
-      entry.name === "billiard-hall-trophy-pedestal-left" ||
-      entry.name === "billiard-hall-trophy-pedestal-right"
-    ) {
-      entry.position = [0, -50, 0];
-      entry.scale = [0.001, 0.001, 0.001];
-      entry.targetMaxDimension = 0.001;
-    } else if (typeof entry.name === "string" && entry.name.startsWith("pendant-bulb-")) {
-      const pos = Array.isArray(entry.position) ? entry.position : [0, 1.52, -0.18];
-      entry.position = [pos[0], 1.52, pos[2]];
-      entry.scale = [0.014, 0.014, 0.014];
-      if (entry.material && typeof entry.material === "object") {
-        entry.material = { ...(entry.material as Record<string, unknown>), emissiveIntensity: 0.24 };
-      }
-    }
-    nodes.push(entry as unknown as AuraSceneNode);
+    nodes.push(rawNode);
   }
 
   return nodes;
@@ -380,13 +396,15 @@ function buildScene(): ReturnType<typeof scene> {
       lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: 2.1 * KEY_LIGHT_GAIN }).position(0.2, 2.1, -0.55),
       lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: 2.0 * KEY_LIGHT_GAIN }).position(1.05, 2.0, 0.25),
       lights.point({ name: "pendant-shade-front-key", color: "#ffedd5", intensity: 1.45 * KEY_LIGHT_GAIN }).position(0, 2.15, 0.95),
-      lights.point({ name: "lounge-wall-sconce-left", color: "#fbbf24", intensity: 1.65 * KEY_LIGHT_GAIN }).position(-1.8, 1.4, -1.65),
-      lights.point({ name: "lounge-wall-sconce-right", color: "#38bdf8", intensity: 1.55 * KEY_LIGHT_GAIN }).position(1.8, 1.4, -1.65),
+      lights.point({ name: "lounge-wall-sconce-left", color: "#fbbf24", intensity: 3.8 * KEY_LIGHT_GAIN }).position(-2.1, 1.38, -2.15),
+      lights.point({ name: "lounge-wall-sconce-mid-left", color: "#f59e0b", intensity: 3.4 * KEY_LIGHT_GAIN }).position(-0.82, 1.38, -2.15),
+      lights.point({ name: "lounge-wall-sconce-mid-right", color: "#f59e0b", intensity: 3.4 * KEY_LIGHT_GAIN }).position(0.82, 1.38, -2.15),
+      lights.point({ name: "lounge-wall-sconce-right", color: "#fbbf24", intensity: 3.8 * KEY_LIGHT_GAIN }).position(2.1, 1.38, -2.15),
       lights.rect({ name: "table overhead softbox", color: "#fff4dc", intensity: 1.25 * KEY_LIGHT_GAIN, width: 2.8, height: 1.25 })
         .position(0, 2.35, 0.15),
       // Cool fill & rim lights
       lights.directional({ name: "cool rim key", color: "#83bdff", intensity: 1.15 }).position(3.2, 4.5, 2.2),
-      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: 0.78 }).position(-3.0, 3.5, -2.0),
+      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: 0.92 }).position(-3.0, 3.5, -2.0),
       lights.point({ name: "felt cyan bounce", color: "#55baff", intensity: visualReviewCapture ? 0.18 : 0.48 }).position(0, 0.75, 2.0),
       lights.point({ name: "rack magenta rim", color: "#ff78ad", intensity: visualReviewCapture ? 0.24 : 0.52 }).position(1.65, 0.72, -0.58),
       lights.point({ name: "cue teal rim", color: "#55e2d2", intensity: visualReviewCapture ? 0.22 : 0.48 }).position(-1.45, 0.62, 0.62)
@@ -407,6 +425,8 @@ const gameApp = createGameApp("#app", {
       aimRight: ["KeyD", "ArrowRight"],
       spinTop: ["KeyW", "ArrowUp"],
       spinDraw: ["KeyS", "ArrowDown"],
+      englishLeft: ["KeyQ"],
+      englishRight: ["KeyE"],
       charge: ["Space"],
       pause: ["KeyP", "Escape"],
       reset: ["KeyR"]
@@ -427,12 +447,16 @@ const ballShadowHandles = new Map<string, AuraRuntimeNodeHandle>();
 const previousBallPositions = new Map<string, readonly [number, number]>();
 let tableHandle: AuraRuntimeNodeHandle | undefined;
 let cueStickHandle: AuraRuntimeNodeHandle | undefined;
+let cueTip3dHandle: AuraRuntimeNodeHandle | undefined;
 let cueFerrule3dHandle: AuraRuntimeNodeHandle | undefined;
 let cueShaft3dHandle: AuraRuntimeNodeHandle | undefined;
 let cueButt3dHandle: AuraRuntimeNodeHandle | undefined;
 let cueGhostHandle: AuraRuntimeNodeHandle | undefined;
 let aimLineHandle: AuraRuntimeNodeHandle | undefined;
 let aimBankHandle: AuraRuntimeNodeHandle | undefined;
+let aimObjectLineHandle: AuraRuntimeNodeHandle | undefined;
+let aimDeflectionLineHandle: AuraRuntimeNodeHandle | undefined;
+let aimGhostRingHandle: AuraRuntimeNodeHandle | undefined;
 let aimMarkerHandle: AuraRuntimeNodeHandle | undefined;
 const pocketAccentHandles: AuraRuntimeNodeHandle[] = [];
 
@@ -449,12 +473,16 @@ function resolveHandles(): void {
     if (shadowHandle) ballShadowHandles.set(name, shadowHandle as AuraRuntimeNodeHandle);
   }
   cueStickHandle = app.nodes.get("cue-stick") as AuraRuntimeNodeHandle | undefined;
+  cueTip3dHandle = app.nodes.get("cue-tip-3d") as AuraRuntimeNodeHandle | undefined;
   cueFerrule3dHandle = app.nodes.get("cue-ferrule-3d") as AuraRuntimeNodeHandle | undefined;
   cueShaft3dHandle = app.nodes.get("cue-shaft-3d") as AuraRuntimeNodeHandle | undefined;
   cueButt3dHandle = app.nodes.get("cue-butt-3d") as AuraRuntimeNodeHandle | undefined;
   cueGhostHandle = app.nodes.get("cue-ghost") as AuraRuntimeNodeHandle | undefined;
   aimLineHandle = app.nodes.get("aim-line") as AuraRuntimeNodeHandle | undefined;
   aimBankHandle = app.nodes.get("aim-bank") as AuraRuntimeNodeHandle | undefined;
+  aimObjectLineHandle = app.nodes.get("aim-object-line") as AuraRuntimeNodeHandle | undefined;
+  aimDeflectionLineHandle = app.nodes.get("aim-deflection-line") as AuraRuntimeNodeHandle | undefined;
+  aimGhostRingHandle = app.nodes.get("aim-ghost-ring") as AuraRuntimeNodeHandle | undefined;
   aimMarkerHandle = app.nodes.get("aim-marker") as AuraRuntimeNodeHandle | undefined;
   pocketAccentHandles.length = 0;
   for (const pocket of POCKET_CENTERS) {
@@ -757,7 +785,7 @@ function poseLine(
 }
 
 function syncVisuals(): void {
-  if (ballHandles.size < 16 || !cueStickHandle || !aimLineHandle || !aimBankHandle || !aimMarkerHandle || !cueGhostHandle) {
+  if (ballHandles.size < 16 || !cueStickHandle || !aimLineHandle || !aimBankHandle || !aimGhostRingHandle || !cueGhostHandle) {
     resolveHandles();
   }
 
@@ -807,11 +835,15 @@ function syncVisuals(): void {
   const cueInfo = sim.ballInfos().find((ball) => ball.number === 0);
   if (phase === "rack-won" || phase === "rack-lost" || !cueInfo || !cueInfo.live) {
     parkNode(cueStickHandle);
+    parkNode(cueTip3dHandle);
     parkNode(cueFerrule3dHandle);
     parkNode(cueShaft3dHandle);
     parkNode(cueButt3dHandle);
     parkNode(aimLineHandle);
     parkNode(aimBankHandle);
+    parkNode(aimObjectLineHandle);
+    parkNode(aimDeflectionLineHandle);
+    parkNode(aimGhostRingHandle);
     parkNode(aimMarkerHandle);
     parkNode(cueGhostHandle);
     return;
@@ -820,6 +852,9 @@ function syncVisuals(): void {
   if (phase === "shooting") {
     parkNode(aimLineHandle);
     parkNode(aimBankHandle);
+    parkNode(aimObjectLineHandle);
+    parkNode(aimDeflectionLineHandle);
+    parkNode(aimGhostRingHandle);
     parkNode(aimMarkerHandle);
     parkNode(cueGhostHandle);
     const strikeAngle = typeof lastShotObject?.angle === "number" ? lastShotObject.angle : cueController.aimAngle;
@@ -829,42 +864,55 @@ function syncVisuals(): void {
     cueStickHandle?.setPosition(cueInfo.x - strikeX * 0.42, BALL_SURFACE_Y + 0.025, cueInfo.z - strikeZ * 0.42);
     cueStickHandle?.setRotation(0, -strikeAngle, 0.045);
     poseLine(
+      cueTip3dHandle,
+      cueInfo.x - strikeX * 0.036,
+      cueInfo.z - strikeZ * 0.036,
+      cueInfo.x - strikeX * 0.052,
+      cueInfo.z - strikeZ * 0.052,
+      BALL_SURFACE_Y + 0.015,
+      0.011
+    );
+    poseLine(
       cueFerrule3dHandle,
-      cueInfo.x - strikeX * 0.05,
-      cueInfo.z - strikeZ * 0.05,
-      cueInfo.x - strikeX * 0.10,
-      cueInfo.z - strikeZ * 0.10,
+      cueInfo.x - strikeX * 0.052,
+      cueInfo.z - strikeZ * 0.052,
+      cueInfo.x - strikeX * 0.098,
+      cueInfo.z - strikeZ * 0.098,
       BALL_SURFACE_Y + 0.018,
-      0.015
+      0.013
     );
     poseLine(
       cueShaft3dHandle,
-      cueInfo.x - strikeX * 0.10,
-      cueInfo.z - strikeZ * 0.10,
+      cueInfo.x - strikeX * 0.098,
+      cueInfo.z - strikeZ * 0.098,
       cueInfo.x - strikeX * 0.56,
       cueInfo.z - strikeZ * 0.56,
       BALL_SURFACE_Y + 0.032,
-      0.021
+      0.018
     );
     poseLine(
       cueButt3dHandle,
       cueInfo.x - strikeX * 0.56,
       cueInfo.z - strikeZ * 0.56,
-      cueInfo.x - strikeX * 1.05,
-      cueInfo.z - strikeZ * 1.05,
+      cueInfo.x - strikeX * 1.06,
+      cueInfo.z - strikeZ * 1.06,
       BALL_SURFACE_Y + 0.056,
-      0.030
+      0.025
     );
     return;
   }
 
   if (phase === "ball-in-hand") {
     parkNode(cueStickHandle);
+    parkNode(cueTip3dHandle);
     parkNode(cueFerrule3dHandle);
     parkNode(cueShaft3dHandle);
     parkNode(cueButt3dHandle);
     parkNode(aimLineHandle);
     parkNode(aimBankHandle);
+    parkNode(aimObjectLineHandle);
+    parkNode(aimDeflectionLineHandle);
+    parkNode(aimGhostRingHandle);
     parkNode(aimMarkerHandle);
     cueGhostHandle?.setScale([BALL_VISUAL_SCALE, BALL_VISUAL_SCALE, BALL_VISUAL_SCALE]);
     cueGhostHandle?.setPosition(ghost.x, BALL_SURFACE_Y + 0.004, ghost.z);
@@ -875,53 +923,118 @@ function syncVisuals(): void {
   const angle = cueController.aimAngle;
   const dirX = Math.cos(angle);
   const dirZ = Math.sin(angle);
+  const perpX = -dirZ;
+  const perpZ = dirX;
+  const englishOffset = sideEnglish * 0.012;
 
-  // Cue stick behind the ball, pulling back with the charge.
+  // Cue stick behind the ball, pulling back with the charge and shifting slightly for side english.
   const pullback = 0.06 + cueController.state().charge * 0.28;
+  const cueBaseX = cueInfo.x + perpX * englishOffset;
+  const cueBaseZ = cueInfo.z + perpZ * englishOffset;
   cueStickHandle?.setScale([BALL_VISUAL_SCALE * 1.18, BALL_VISUAL_SCALE * 1.18, BALL_VISUAL_SCALE * 1.18]);
-  cueStickHandle?.setPosition(cueInfo.x - dirX * (0.48 + pullback), BALL_SURFACE_Y + 0.028, cueInfo.z - dirZ * (0.48 + pullback));
+  cueStickHandle?.setPosition(cueBaseX - dirX * (0.48 + pullback), BALL_SURFACE_Y + 0.028, cueBaseZ - dirZ * (0.48 + pullback));
   cueStickHandle?.setRotation(0, -angle, 0.06);
 
-  // Render crisp 3D brass ferrule, maple shaft, and rosewood butt extending behind the cue ball
+  // Render crisp 3D blue chalk tip, brass ferrule, maple shaft, and rosewood butt extending behind the cue ball
+  poseLine(
+    cueTip3dHandle,
+    cueBaseX - dirX * (0.036 + pullback),
+    cueBaseZ - dirZ * (0.036 + pullback),
+    cueBaseX - dirX * (0.052 + pullback),
+    cueBaseZ - dirZ * (0.052 + pullback),
+    BALL_SURFACE_Y + 0.015,
+    0.011
+  );
   poseLine(
     cueFerrule3dHandle,
-    cueInfo.x - dirX * (0.045 + pullback),
-    cueInfo.z - dirZ * (0.045 + pullback),
-    cueInfo.x - dirX * (0.095 + pullback),
-    cueInfo.z - dirZ * (0.095 + pullback),
+    cueBaseX - dirX * (0.052 + pullback),
+    cueBaseZ - dirZ * (0.052 + pullback),
+    cueBaseX - dirX * (0.098 + pullback),
+    cueBaseZ - dirZ * (0.098 + pullback),
     BALL_SURFACE_Y + 0.018,
-    0.016
+    0.013
   );
   poseLine(
     cueShaft3dHandle,
-    cueInfo.x - dirX * (0.095 + pullback),
-    cueInfo.z - dirZ * (0.095 + pullback),
-    cueInfo.x - dirX * (0.58 + pullback),
-    cueInfo.z - dirZ * (0.58 + pullback),
+    cueBaseX - dirX * (0.098 + pullback),
+    cueBaseZ - dirZ * (0.098 + pullback),
+    cueBaseX - dirX * (0.58 + pullback),
+    cueBaseZ - dirZ * (0.58 + pullback),
     BALL_SURFACE_Y + 0.034,
-    0.022
+    0.018
   );
   poseLine(
     cueButt3dHandle,
-    cueInfo.x - dirX * (0.58 + pullback),
-    cueInfo.z - dirZ * (0.58 + pullback),
-    cueInfo.x - dirX * (1.08 + pullback),
-    cueInfo.z - dirZ * (1.08 + pullback),
+    cueBaseX - dirX * (0.58 + pullback),
+    cueBaseZ - dirZ * (0.58 + pullback),
+    cueBaseX - dirX * (1.08 + pullback),
+    cueBaseZ - dirZ * (1.08 + pullback),
     BALL_SURFACE_Y + 0.058,
-    0.032
+    0.025
   );
 
   // Physics sweep preview (sphereCast against live balls and cushions).
   const sweep = sim.sweepFromCue(angle);
-  poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.0035 : 0.006);
+  poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.0038 : 0.006);
   aimMarkerHandle?.setPosition(sweep.ghostX, BALL_SURFACE_Y, sweep.ghostZ);
-  if (sweep.kind === "cushion") {
+  aimGhostRingHandle?.setPosition(sweep.ghostX, BALL_SURFACE_Y + 0.003, sweep.ghostZ);
+  aimGhostRingHandle?.setRotation(Math.PI / 2, 0, 0);
+  aimGhostRingHandle?.setScale([1, 1, 1]);
+
+  if (sweep.kind === "ball" && sweep.ballNumber !== null) {
+    parkNode(aimBankHandle);
+    const targetBall = ballInfoByNumber.get(sweep.ballNumber);
+    if (targetBall) {
+      const impDx = targetBall.x - sweep.ghostX;
+      const impDz = targetBall.z - sweep.ghostZ;
+      const impLen = Math.hypot(impDx, impDz) || 1;
+      const objDirX = impDx / impLen;
+      const objDirZ = impDz / impLen;
+      // Object ball target vector (gold)
+      poseLine(
+        aimObjectLineHandle,
+        targetBall.x,
+        targetBall.z,
+        targetBall.x + objDirX * 0.56,
+        targetBall.z + objDirZ * 0.56,
+        BALL_SURFACE_Y + 0.003,
+        visualReviewCapture ? 0.0036 : 0.0052
+      );
+      // Cue ball tangent deflection vector (cyan-white), modulated by spin/english
+      const dot = dirX * objDirX + dirZ * objDirZ;
+      let tangX = dirX - dot * objDirX + cueController.state().spin * 0.35 * dirX + sideEnglish * 0.25 * perpX;
+      let tangZ = dirZ - dot * objDirZ + cueController.state().spin * 0.35 * dirZ + sideEnglish * 0.25 * perpZ;
+      const tangLen = Math.hypot(tangX, tangZ);
+      if (tangLen > 0.05) {
+        tangX /= tangLen;
+        tangZ /= tangLen;
+        poseLine(
+          aimDeflectionLineHandle,
+          sweep.ghostX,
+          sweep.ghostZ,
+          sweep.ghostX + tangX * 0.38,
+          sweep.ghostZ + tangZ * 0.38,
+          BALL_SURFACE_Y + 0.003,
+          visualReviewCapture ? 0.0032 : 0.0045
+        );
+      } else {
+        parkNode(aimDeflectionLineHandle);
+      }
+    } else {
+      parkNode(aimObjectLineHandle);
+      parkNode(aimDeflectionLineHandle);
+    }
+  } else if (sweep.kind === "cushion") {
+    parkNode(aimObjectLineHandle);
+    parkNode(aimDeflectionLineHandle);
     const dot = dirX * sweep.normalX + dirZ * sweep.normalZ;
-    const bankX = dirX - 2 * dot * sweep.normalX;
-    const bankZ = dirZ - 2 * dot * sweep.normalZ;
-    poseLine(aimBankHandle, sweep.ghostX, sweep.ghostZ, sweep.ghostX + bankX * 0.45, sweep.ghostZ + bankZ * 0.45, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.003 : 0.005);
+    const bankX = dirX - 2 * dot * sweep.normalX + sideEnglish * 0.18 * perpX;
+    const bankZ = dirZ - 2 * dot * sweep.normalZ + sideEnglish * 0.18 * perpZ;
+    poseLine(aimBankHandle, sweep.ghostX, sweep.ghostZ, sweep.ghostX + bankX * 0.48, sweep.ghostZ + bankZ * 0.48, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.0034 : 0.005);
   } else {
     parkNode(aimBankHandle);
+    parkNode(aimObjectLineHandle);
+    parkNode(aimDeflectionLineHandle);
   }
 }
 
@@ -930,6 +1043,10 @@ function publishEvidence(): void {
   const snap = rules.snapshot();
   const cueState = cueController.state();
   const diagnostics: AuraDiagnostics = app.diagnostics();
+  const infos = sim.ballInfos();
+  const maxBallSpeed = infos.reduce((max, b) => Math.max(max, b.speed), 0);
+  const maxAngularSpeed = maxBallSpeed / Math.max(0.01, BALL_RADIUS);
+  const liveCount = evidenceScenarioActive ? snap.ballsRemaining + 1 : sim.liveBallCount();
   const evidence = {
     // Contract keys from the PRD evidence section.
     status: "ready",
@@ -949,6 +1066,17 @@ function publishEvidence(): void {
     clockMs: snap.clockMs,
     sensorEventCount,
     physicsBodyCount: sim.world.snapshot().bodies,
+    table: {
+      pottedThisShot: [...pottedThisShot],
+      potted: [...snap.potted],
+      score: snap.score,
+      rack: snap.rack
+    },
+    balls: {
+      maxAngularSpeed,
+      maxLinearSpeed: maxBallSpeed,
+      liveCount
+    },
     renderer: {
       // AuraDiagnostics.backend is the engine-owned render backend
       // ("webgl2" | "webgpu" | "canvas2d" | "headless"); the previous
@@ -969,8 +1097,9 @@ function publishEvidence(): void {
     aimAngle: cueState.aimAngle,
     charge: cueState.charge,
     spin: cueState.spin,
+    sideEnglish,
     charging: cueState.charging,
-    liveBallCount: evidenceScenarioActive ? snap.ballsRemaining + 1 : sim.liveBallCount(),
+    liveBallCount: liveCount,
     physicsLiveBallCount: sim.liveBallCount(),
     evidenceScenario: evidenceScenarioActive,
     resolvedNodeHandles: ballHandles.size + (cueStickHandle ? 1 : 0) + (aimLineHandle ? 1 : 0),
@@ -981,13 +1110,16 @@ function publishEvidence(): void {
     shotCount: snap.shotCount,
     lastShotObject,
     rackClockLimitMs: rackConfigFor(snap.rack).clockMs,
-    controls: ["A/Left aim left", "D/Right aim right", "W top spin", "S draw", "hold Space charge", "R re-rack", "P pause", "touch buttons"],
+    controls: ["A/Left aim left", "D/Right aim right", "W top spin", "S draw", "Q/E side english", "hold Space charge", "R re-rack", "P pause", "touch buttons"],
     systems: ROUTE_SYSTEMS,
     claimBoundary: "Aura3D prototype: route-local arcade 8-ball on the public physics surface (16 dynamic spheres, cushion restitution, pocket sensors); authored spin is a velocity nudge, no angular simulation; no reusable cue-sports kit claimed.",
     mountedAtEpochMs: Date.now()
   };
   void sessionScoreAtRackStart;
   bankWindow.__BANK_SHOT_EVIDENCE__ = evidence;
+  bankWindow.__AURA3D_GAME_EVIDENCE__ = evidence;
+  bankWindow.__AURA3D_GAME__ = { state: paused ? "paused" : "playing", phase: snap.phase, score: snap.score };
+  document.body.dataset.aura3dReady = "true";
   Object.defineProperty(window, "__AURA3D_SHOWCASE_BANK_SHOT__", { value: evidence, configurable: true, writable: true });
 }
 
@@ -1077,7 +1209,7 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
 }
 
 function manualAdvanceFrame(): void {
-  for (const code of ["Space", "KeyA", "KeyD", "KeyW", "KeyS", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "KeyP", "Escape", "KeyR"]) {
+  for (const code of ["Space", "KeyA", "KeyD", "KeyW", "KeyS", "KeyQ", "KeyE", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "KeyP", "Escape", "KeyR"]) {
     manualPrev.set(code, manualHeld.has(code));
   }
 }
@@ -1133,7 +1265,7 @@ window.addEventListener("keyup", (event) => {
   }
 }, { passive: true });
 window.addEventListener("keydown", (event) => {
-  if (["Space", "KeyA", "KeyD", "KeyW", "KeyS", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.code)) {
+  if (["Space", "KeyA", "KeyD", "KeyW", "KeyS", "KeyQ", "KeyE", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.code)) {
     event.preventDefault();
   }
 }, { passive: false });
@@ -1187,6 +1319,8 @@ gameApp.onFrame(({ dt }) => {
     if (manualHeld.has("KeyD") || manualHeld.has("ArrowRight")) cueController.aimBy(AIM_STEP);
     if (manualHeld.has("KeyW") || manualHeld.has("ArrowUp")) cueController.spinBy(SPIN_STEP);
     if (manualHeld.has("KeyS") || manualHeld.has("ArrowDown")) cueController.spinBy(-SPIN_STEP);
+    if (manualHeld.has("KeyQ")) sideEnglish = Math.max(-1, sideEnglish - SPIN_STEP);
+    if (manualHeld.has("KeyE")) sideEnglish = Math.min(1, sideEnglish + SPIN_STEP);
   } else if (rules.phase === "ball-in-hand") {
     const margin = BALL_RADIUS + 0.02;
     if (manualHeld.has("KeyA") || manualHeld.has("ArrowLeft")) ghost.x = Math.max(-PLAY_HALF_X + margin, ghost.x - BALL_IN_HAND_STEP);

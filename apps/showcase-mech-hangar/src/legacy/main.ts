@@ -451,24 +451,74 @@ const hangarServiceGantryBuilders = [
     name: "mech-arena-service-gantry-left",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 0.0001,
-    castShadow: false,
-    receiveShadow: false
+    targetMaxDimension: 3.85,
+    castShadow: true,
+    receiveShadow: true
   })
-    .position(-6.85, -70, ARENA_CENTER_Z - 4.35)
-    .scale([0.0001, 0.0001, 0.0001])
+    .position(-4.35, 0, ARENA_CENTER_Z - 4.15)
     .rotate(0, 0.28, 0),
   model(rootAssets.mechHangarServiceGantryMeshy, {
     name: "mech-arena-service-gantry-right",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 0.0001,
-    castShadow: false,
-    receiveShadow: false
+    targetMaxDimension: 3.85,
+    castShadow: true,
+    receiveShadow: true
   })
-    .position(6.85, -70, ARENA_CENTER_Z - 4.35)
-    .scale([0.0001, 0.0001, 0.0001])
+    .position(4.35, 0, ARENA_CENTER_Z - 4.15)
     .rotate(0, -0.28, 0),
+  model(rootAssets.mechHangarServiceGantryMeshy, {
+    name: "mech-hangar-service-gantry-left",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 3.65,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(HANGAR_CENTER[0] - 4.15, 0, HANGAR_CENTER[2] - 4.35)
+    .rotate(0, 0.32, 0),
+  model(rootAssets.mechHangarServiceGantryMeshy, {
+    name: "mech-hangar-service-gantry-right",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 3.65,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(HANGAR_CENTER[0] + 4.15, 0, HANGAR_CENTER[2] - 4.35)
+    .rotate(0, -0.32, 0),
+  model(rootAssets.neonArenaGeneratorCoreMeshy, {
+    name: "mech-arena-generator-core",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 2.35,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(0, 1.38, ARENA_CENTER_Z - 4.55)
+    .runtime(game.runtimeNode("mech-arena-generator-core", { tags: ["arena-prop", "renderer-owned"] })),
+  model(rootAssets.reactorFusionTurbineMeshy, {
+    name: "mech-arena-fusion-turbine-left",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 1.95,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(-2.15, 1.28, ARENA_CENTER_Z - 4.42)
+    .rotate(0, 0.22, 0)
+    .runtime(game.runtimeNode("mech-arena-fusion-turbine-left", { tags: ["arena-prop", "renderer-owned"] })),
+  model(rootAssets.reactorFusionTurbineMeshy, {
+    name: "mech-arena-fusion-turbine-right",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 1.95,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(2.15, 1.28, ARENA_CENTER_Z - 4.42)
+    .rotate(0, -0.22, 0)
+    .runtime(game.runtimeNode("mech-arena-fusion-turbine-right", { tags: ["arena-prop", "renderer-owned"] })),
   model(rootAssets.blockfallEnergyCapacitorBankMeshy, {
     name: "mech-arena-capacitor-bank-left",
     role: "setDressing",
@@ -528,7 +578,27 @@ const hangarServiceGantryBuilders = [
     receiveShadow: true
   })
     .position(HANGAR_CENTER[0] + 3.4, 0, HANGAR_CENTER[2] - 4.2)
-    .rotate(0, -0.38, 0)
+    .rotate(0, -0.38, 0),
+  model(rootAssets.blockfallEnergyCapacitorBankMeshy, {
+    name: "mech-bay-capacitor-bank-left",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 1.45,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(HANGAR_CENTER[0] - 2.55, 0, HANGAR_CENTER[2] - 3.85)
+    .rotate(0, 0.25, 0),
+  model(rootAssets.blockfallEnergyCapacitorBankMeshy, {
+    name: "mech-bay-capacitor-bank-right",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 1.45,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(HANGAR_CENTER[0] + 2.55, 0, HANGAR_CENTER[2] - 3.85)
+    .rotate(0, -0.25, 0)
 ];
 const hangarFloorInsetBuilder = primitives.box({
   name: "hangar floor presentation inset",
@@ -558,14 +628,14 @@ const pitBackdropBuilder = primitives.box({
 }).position(0, 3.6, ARENA_CENTER_Z - 5.35).scale([28, 11.5, 0.36]);
 
 const pitPillarMaterial = material.pbr({ name: "pit structural steel", color: "#152538", roughness: 0.56, metallic: 0.52 });
-const pitPillarLight = material.emissive({ name: "pit structural light", color: "#163e52", emissive: "#38bdf8", emissiveIntensity: 0.24 });
+const pitPillarLight = material.emissive({ name: "pit structural light", color: "#163e52", emissive: "#38bdf8", emissiveIntensity: 0.52 });
 const pitStructureBuilders = [-7.2, -3.6, 0, 3.6, 7.2].flatMap((x, index) => [
   primitives.box({ name: `pit pillar ${index}`, material: pitPillarMaterial })
     .position(x, 2.25, ARENA_CENTER_Z - 4.85)
     .scale([0.58, 4.5, 0.48]),
   primitives.box({ name: `pit pillar light ${index}`, material: pitPillarLight })
-    .position(x, -70, ARENA_CENTER_Z - 4.52)
-    .scale([0.0001, 0.0001, 0.0001])
+    .position(x, 2.25, ARENA_CENTER_Z - 4.56)
+    .scale([0.08, 3.85, 0.06])
 ]);
 
 const pitDeckPanelMaterial = material.pbr({
@@ -608,7 +678,7 @@ const pitDeckBuilders = Array.from({ length: 10 }, (_, index) => {
 // enough to sit behind the fighters, but hide the mid gantry bridge beam so it
 // never cuts across as a bright horizontal bar between the two mechs' chests.
 const pitTrussMaterial = material.pbr({ name: "pit overhead truss", color: "#192d42", roughness: 0.68, metallic: 0.38, clearcoat: 0, clearcoatRoughness: 0.8 });
-const pitTrussLight = material.emissive({ name: "pit overhead light band", color: "#133a4e", emissive: "#38bdf8", emissiveIntensity: 0.22 });
+const pitTrussLight = material.emissive({ name: "pit overhead light band", color: "#133a4e", emissive: "#38bdf8", emissiveIntensity: 0.48 });
 const pitTrussBuilders = [
   primitives.box({ name: "pit overhead truss beam", material: pitTrussMaterial })
     .position(0, 6.15, ARENA_CENTER_Z - 3.9)
@@ -620,11 +690,11 @@ const pitTrussBuilders = [
     .position(0, -70, ARENA_CENTER_Z - 4.78)
     .scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pit overhead light band", material: pitTrussLight })
-    .position(0, -70, ARENA_CENTER_Z - 3.55)
-    .scale([0.0001, 0.0001, 0.0001]),
-  primitives.box({ name: "pit overhead magenta band", material: material.emissive({ name: "pit overhead magenta light", color: "#5e1c47", emissive: "#f472b6", emissiveIntensity: 0.22 }) })
-    .position(0, -70, ARENA_CENTER_Z - 3.68)
-    .scale([0.0001, 0.0001, 0.0001])
+    .position(0, 5.95, ARENA_CENTER_Z - 3.75)
+    .scale([9.2, 0.06, 0.06]),
+  primitives.box({ name: "pit overhead magenta band", material: material.emissive({ name: "pit overhead magenta light", color: "#5e1c47", emissive: "#f472b6", emissiveIntensity: 0.38 }) })
+    .position(0, 5.82, ARENA_CENTER_Z - 3.82)
+    .scale([7.6, 0.045, 0.045])
 ];
 
 const pitMarkingMaterial = material.pbr({ name: "pit lane marks", color: "#183142", emissive: "#38bdf8", emissiveIntensity: 0.12, roughness: 0.9, metallic: 0.05, clearcoat: 0 });
@@ -712,8 +782,8 @@ const pitBackPanelBuilders = Array.from({ length: 7 }, (_, index) => {
     }).position(x, 2.35, ARENA_CENTER_Z - 5.08).scale([2.25, 4.7, 0.22]),
     primitives.box({
       name: `pit back wall light ${index}`,
-      material: material.emissive({ name: `pit back wall light material ${index}`, color: tint, emissive: tint, emissiveIntensity: 0.16 })
-    }).position(x, -70, ARENA_CENTER_Z - 4.92).scale([0.0001, 0.0001, 0.0001])
+      material: material.emissive({ name: `pit back wall light material ${index}`, color: tint, emissive: tint, emissiveIntensity: 0.42 })
+    }).position(x, 2.35, ARENA_CENTER_Z - 4.92).scale([0.07, 4.1, 0.04])
   ];
 }).flat();
 
@@ -730,8 +800,8 @@ const pitSignMaterial = material.emissive({
   name: "pit wayfinding sign",
   color: "#102b42",
   emissive: "#8aeaff",
-  emissiveIntensity: 0.32,
-  opacity: 0.85
+  emissiveIntensity: 0.68,
+  opacity: 0.92
 });
 const pitSignBuilders = [
   text3D("MECH PIT", {
@@ -741,23 +811,106 @@ const pitSignBuilders = [
     letterSpacing: 0.03,
     material: pitSignMaterial,
     backend: "sdf"
-  }).position(-3.05, -70, ARENA_CENTER_Z - 4.46).scale([0.0001, 0.0001, 0.0001]),
+  }).position(-3.05, 3.85, ARENA_CENTER_Z - 4.46),
   text3D("ROUND 01", {
     name: "pit sign round",
     size: 0.22,
     depth: 0.03,
     letterSpacing: 0.025,
-    material: material.emissive({ name: "pit round sign", color: "#401b2b", emissive: "#ff8aa8", emissiveIntensity: 0.32 }),
+    material: material.emissive({ name: "pit round sign", color: "#401b2b", emissive: "#ff8aa8", emissiveIntensity: 0.68 }),
     backend: "sdf"
-  }).position(2.7, -70, ARENA_CENTER_Z - 4.45).scale([0.0001, 0.0001, 0.0001]),
+  }).position(2.55, 3.92, ARENA_CENTER_Z - 4.45),
   text3D("MH-2M // LIVE TEST", {
     name: "pit sign mh2m live test",
     size: 0.18,
     depth: 0.03,
     letterSpacing: 0.022,
-    material: material.emissive({ name: "pit mh2m sign", color: "#163c54", emissive: "#61dcff", emissiveIntensity: 0.32 })
-  }).position(-0.78, -70, ARENA_CENTER_Z - 4.45).scale([0.0001, 0.0001, 0.0001])
+    material: material.emissive({ name: "pit mh2m sign", color: "#163c54", emissive: "#61dcff", emissiveIntensity: 0.68 })
+  }).position(-0.85, 3.32, ARENA_CENTER_Z - 4.45)
 ];
+
+// 3D Combat VFX: Plasma Cannon Beams, Shoulder Missile Salvos with Exhaust Plumes,
+// and Energy Shield Domes for active arena exchanges.
+const plasmaBeamMaterials = {
+  playerCore: material.emissive({ name: "player plasma core", color: "#e0faff", emissive: "#38f2ff", emissiveIntensity: 2.8, opacity: 0.96 }),
+  playerSheath: material.emissive({ name: "player plasma sheath", color: "#38bdf8", emissive: "#00d4ff", emissiveIntensity: 1.65, opacity: 0.52 }),
+  rivalCore: material.emissive({ name: "rival plasma core", color: "#ffe4ee", emissive: "#ff3f79", emissiveIntensity: 2.8, opacity: 0.96 }),
+  rivalSheath: material.emissive({ name: "rival plasma sheath", color: "#fb7185", emissive: "#ff2a6d", emissiveIntensity: 1.65, opacity: 0.52 })
+} as const;
+
+const missileWarheadMaterial = material.pbr({
+  name: "mech missile warhead",
+  color: "#e2e8f0",
+  emissive: "#ff6b35",
+  emissiveIntensity: 0.85,
+  roughness: 0.32,
+  metallic: 0.82
+});
+const missileTrailMaterial = material.emissive({
+  name: "mech missile exhaust plume",
+  color: "#ffedd5",
+  emissive: "#ff9233",
+  emissiveIntensity: 2.45,
+  opacity: 0.88
+});
+
+const shieldDomeMaterials = {
+  player: material.emissive({ name: "player energy shield dome", color: "#164e63", emissive: "#22d3ee", emissiveIntensity: 1.35, opacity: 0.34 }),
+  rival: material.emissive({ name: "rival energy shield dome", color: "#4c0519", emissive: "#fb7185", emissiveIntensity: 1.35, opacity: 0.34 })
+} as const;
+
+const MISSILE_SALVO_COUNT = 4;
+const combatVfxBuilders = [
+  primitives.cylinder({ name: "mech-player-plasma-beam", material: plasmaBeamMaterials.playerCore })
+    .position(0, -70, ARENA_CENTER_Z)
+    .rotate(0, 0, Math.PI / 2)
+    .scale([0.001, 0.001, 0.001])
+    .runtime(game.runtimeNode("mech-player-plasma-beam", { tags: ["combat-vfx", "renderer-owned"] })),
+  primitives.cylinder({ name: "mech-player-plasma-sheath", material: plasmaBeamMaterials.playerSheath })
+    .position(0, -70, ARENA_CENTER_Z)
+    .rotate(0, 0, Math.PI / 2)
+    .scale([0.001, 0.001, 0.001])
+    .runtime(game.runtimeNode("mech-player-plasma-sheath", { tags: ["combat-vfx", "renderer-owned"] })),
+  primitives.sphere({ name: "mech-player-muzzle-flash", material: plasmaBeamMaterials.playerCore })
+    .position(0, -70, ARENA_CENTER_Z)
+    .scale([0.001, 0.001, 0.001])
+    .runtime(game.runtimeNode("mech-player-muzzle-flash", { tags: ["combat-vfx", "renderer-owned"] })),
+  primitives.cylinder({ name: "mech-rival-plasma-beam", material: plasmaBeamMaterials.rivalCore })
+    .position(0, -70, ARENA_CENTER_Z)
+    .rotate(0, 0, Math.PI / 2)
+    .scale([0.001, 0.001, 0.001])
+    .runtime(game.runtimeNode("mech-rival-plasma-beam", { tags: ["combat-vfx", "renderer-owned"] })),
+  primitives.cylinder({ name: "mech-rival-plasma-sheath", material: plasmaBeamMaterials.rivalSheath })
+    .position(0, -70, ARENA_CENTER_Z)
+    .rotate(0, 0, Math.PI / 2)
+    .scale([0.001, 0.001, 0.001])
+    .runtime(game.runtimeNode("mech-rival-plasma-sheath", { tags: ["combat-vfx", "renderer-owned"] })),
+  primitives.sphere({ name: "mech-rival-muzzle-flash", material: plasmaBeamMaterials.rivalCore })
+    .position(0, -70, ARENA_CENTER_Z)
+    .scale([0.001, 0.001, 0.001])
+    .runtime(game.runtimeNode("mech-rival-muzzle-flash", { tags: ["combat-vfx", "renderer-owned"] })),
+  ...(["player", "rival"] as const).flatMap((side) => [
+    primitives.sphere({ name: `mech-${side}-shield-dome`, material: shieldDomeMaterials[side] })
+      .position(0, -70, ARENA_CENTER_Z)
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode(`mech-${side}-shield-dome`, { tags: ["combat-vfx", "renderer-owned"] })),
+    primitives.torus({ name: `mech-${side}-shield-ring`, material: side === "player" ? plasmaBeamMaterials.playerCore : plasmaBeamMaterials.rivalCore })
+      .position(0, -70, ARENA_CENTER_Z)
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode(`mech-${side}-shield-ring`, { tags: ["combat-vfx", "renderer-owned"] }))
+  ]),
+  ...Array.from({ length: MISSILE_SALVO_COUNT }, (_, index) => [
+    primitives.cone({ name: `mech-missile-${index}`, material: missileWarheadMaterial })
+      .position(0, -70, ARENA_CENTER_Z)
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode(`mech-missile-${index}`, { tags: ["combat-vfx", "renderer-owned"] })),
+    primitives.cylinder({ name: `mech-missile-trail-${index}`, material: missileTrailMaterial })
+      .position(0, -70, ARENA_CENTER_Z)
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode(`mech-missile-trail-${index}`, { tags: ["combat-vfx", "renderer-owned"] }))
+  ]).flat()
+];
+
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { qualityProfile: "production" },
@@ -783,8 +936,11 @@ const app = createAuraApp("#app", {
       lights.point({ name: "arena front key", position: [0, 4.2, ARENA_CENTER_Z + 6.5], intensity: 1.25, color: "#d8ecff" }),
       lights.point({ name: "arena player hero key", position: [-1.85, 3.2, ARENA_CENTER_Z + 1.4], intensity: 1.35, color: "#93c5fd" }),
       lights.point({ name: "arena rival hero key", position: [1.85, 3.2, ARENA_CENTER_Z + 1.4], intensity: 1.65, color: "#fda4af" }),
-      lights.point({ name: "arena blue rim", position: [-4.8, 2.5, ARENA_CENTER_Z - 3.8], intensity: 1.85, color: "#47cfff" }),
-      lights.point({ name: "arena warm rim", position: [4.8, 2.2, ARENA_CENTER_Z - 1.8], intensity: 1.85, color: "#ff7a5c" }),
+      lights.point({ name: "arena blue rim", position: [-4.8, 2.5, ARENA_CENTER_Z - 3.8], intensity: 2.15, color: "#47cfff" }),
+      lights.point({ name: "arena warm rim", position: [4.8, 2.2, ARENA_CENTER_Z - 1.8], intensity: 2.15, color: "#ff7a5c" }),
+      lights.point({ name: "arena gantry amber left", position: [-3.8, 3.4, ARENA_CENTER_Z - 3.6], intensity: 2.25, color: "#ffa94d" }),
+      lights.point({ name: "arena gantry amber right", position: [3.8, 3.4, ARENA_CENTER_Z - 3.6], intensity: 2.25, color: "#ffa94d" }),
+      lights.point({ name: "arena core cyan glow", position: [0, 2.4, ARENA_CENTER_Z - 3.9], intensity: 2.45, color: "#38e8ff" }),
       turntableBuilder,
       turntableContactBuilder,
       hangarFloorBuilder,
@@ -815,6 +971,7 @@ const app = createAuraApp("#app", {
       ...sparkBuilders,
       ...dustBuilders,
       ...impactRingBuilders,
+      ...combatVfxBuilders,
       ...teamMarkerBuilders,
       ...weaponAccentBuilders,
       ...heroNodeBuilders("player"),
@@ -893,6 +1050,258 @@ const footContactNodes = new Map<"player" | "rival", {
     rightReceiver: app.nodes.require("mech-" + side + "-right-foot-receiver") as RuntimeNodeHandleLike
   }])
 );
+
+const arenaGeneratorCoreNode = app.nodes.get("mech-arena-generator-core") as RuntimeNodeHandleLike | undefined;
+const arenaTurbineLeftNode = app.nodes.get("mech-arena-fusion-turbine-left") as RuntimeNodeHandleLike | undefined;
+const arenaTurbineRightNode = app.nodes.get("mech-arena-fusion-turbine-right") as RuntimeNodeHandleLike | undefined;
+
+const combatVfxNodes = {
+  playerBeam: app.nodes.require("mech-player-plasma-beam") as RuntimeNodeHandleLike,
+  playerSheath: app.nodes.require("mech-player-plasma-sheath") as RuntimeNodeHandleLike,
+  playerMuzzle: app.nodes.require("mech-player-muzzle-flash") as RuntimeNodeHandleLike,
+  rivalBeam: app.nodes.require("mech-rival-plasma-beam") as RuntimeNodeHandleLike,
+  rivalSheath: app.nodes.require("mech-rival-plasma-sheath") as RuntimeNodeHandleLike,
+  rivalMuzzle: app.nodes.require("mech-rival-muzzle-flash") as RuntimeNodeHandleLike,
+  playerShieldDome: app.nodes.require("mech-player-shield-dome") as RuntimeNodeHandleLike,
+  playerShieldRing: app.nodes.require("mech-player-shield-ring") as RuntimeNodeHandleLike,
+  rivalShieldDome: app.nodes.require("mech-rival-shield-dome") as RuntimeNodeHandleLike,
+  rivalShieldRing: app.nodes.require("mech-rival-shield-ring") as RuntimeNodeHandleLike,
+  missiles: Array.from({ length: MISSILE_SALVO_COUNT }, (_, index) => ({
+    warhead: app.nodes.require(`mech-missile-${index}`) as RuntimeNodeHandleLike,
+    trail: app.nodes.require(`mech-missile-trail-${index}`) as RuntimeNodeHandleLike
+  }))
+};
+
+let playerBeamTimer = 0;
+let rivalBeamTimer = 0;
+let playerShieldTimer = 0;
+let rivalShieldTimer = 0;
+let missileSalvoTimer = 0;
+let missileSalvoAttacker: "player" | "rival" = "player";
+let arenaDisplayFrames = 0;
+let arenaAutoEngaged = false;
+let simTickUsed = false;
+
+function hideCombatVfx(): void {
+  const handles: RuntimeNodeHandleLike[] = [
+    combatVfxNodes.playerBeam,
+    combatVfxNodes.playerSheath,
+    combatVfxNodes.playerMuzzle,
+    combatVfxNodes.rivalBeam,
+    combatVfxNodes.rivalSheath,
+    combatVfxNodes.rivalMuzzle,
+    combatVfxNodes.playerShieldDome,
+    combatVfxNodes.playerShieldRing,
+    combatVfxNodes.rivalShieldDome,
+    combatVfxNodes.rivalShieldRing,
+    ...combatVfxNodes.missiles.flatMap((m) => [m.warhead, m.trail])
+  ];
+  for (const handle of handles) {
+    handle.setVisible(false);
+    handle.setPosition(0, -70, ARENA_CENTER_Z);
+    handle.setScale([0.001, 0.001, 0.001]);
+  }
+}
+
+function updateCombatVfx(snap: BoutSnapshot, dt: number): void {
+  if (compositionSubjectSuppressed || mode !== "arena") {
+    hideCombatVfx();
+    return;
+  }
+
+  // Spin the industrial arena fusion turbines and pulse the generator core.
+  arenaTurbineLeftNode?.setRotation(0, 0.22 + elapsed * 1.45, 0);
+  arenaTurbineRightNode?.setRotation(0, -0.22 - elapsed * 1.45, 0);
+  arenaGeneratorCoreNode?.setRotation(0, Math.sin(elapsed * 0.85) * 0.14, 0);
+
+  for (const event of snap.events) {
+    if (event.type === "specialFire" || (event.type === "hit" && event.heavy)) {
+      if (event.attackerId === "player") {
+        playerBeamTimer = 0.42;
+        missileSalvoTimer = 0.68;
+        missileSalvoAttacker = "player";
+      } else if (event.attackerId === "rival") {
+        rivalBeamTimer = 0.42;
+        missileSalvoTimer = 0.68;
+        missileSalvoAttacker = "rival";
+      }
+    } else if (event.type === "hit") {
+      if (event.attackerId === "player") playerBeamTimer = Math.max(playerBeamTimer, 0.26);
+      if (event.attackerId === "rival") rivalBeamTimer = Math.max(rivalBeamTimer, 0.26);
+      if (event.victimId === "player") playerShieldTimer = Math.max(playerShieldTimer, 0.22);
+      if (event.victimId === "rival") rivalShieldTimer = Math.max(rivalShieldTimer, 0.22);
+    } else if (event.type === "blocked" || event.type === "guardBreak") {
+      if (event.victimId === "player") playerShieldTimer = 0.44;
+      if (event.victimId === "rival") rivalShieldTimer = 0.44;
+    }
+  }
+
+  if (snap.player.move) {
+    playerBeamTimer = Math.max(playerBeamTimer, snap.player.move.id === "special" ? 0.36 : 0.22);
+    if (snap.player.move.id !== "light" && missileSalvoTimer <= 0.08) {
+      missileSalvoTimer = 0.56;
+      missileSalvoAttacker = "player";
+    }
+  }
+  if (snap.rival.move) {
+    rivalBeamTimer = Math.max(rivalBeamTimer, snap.rival.move.id === "special" ? 0.36 : 0.22);
+    if (snap.rival.move.id !== "light" && missileSalvoTimer <= 0.08) {
+      missileSalvoTimer = 0.56;
+      missileSalvoAttacker = "rival";
+    }
+  }
+  if (snap.player.guarding) playerShieldTimer = Math.max(playerShieldTimer, 0.18);
+  if (snap.rival.guarding) rivalShieldTimer = Math.max(rivalShieldTimer, 0.18);
+
+  // Keep a periodic tactical exchange pulse active while fighting at close/mid range
+  // so plasma cannon fire and shoulder missile arcs remain visually readable.
+  const gap = Math.abs(snap.rival.x - snap.player.x);
+  if (snap.phase === "fighting" && gap < 2.2) {
+    const cycle = elapsed % 1.6;
+    if (cycle < 0.38) {
+      playerBeamTimer = Math.max(playerBeamTimer, 0.16);
+    } else if (cycle >= 0.8 && cycle < 1.15) {
+      rivalBeamTimer = Math.max(rivalBeamTimer, 0.16);
+    }
+    if (missileSalvoTimer <= 0 && (cycle < 0.12 || (cycle >= 0.82 && cycle < 0.94))) {
+      missileSalvoTimer = 0.62;
+      missileSalvoAttacker = cycle < 0.5 ? "player" : "rival";
+    }
+  }
+
+  playerBeamTimer = Math.max(0, playerBeamTimer - dt);
+  rivalBeamTimer = Math.max(0, rivalBeamTimer - dt);
+  playerShieldTimer = Math.max(0, playerShieldTimer - dt);
+  rivalShieldTimer = Math.max(0, rivalShieldTimer - dt);
+  missileSalvoTimer = Math.max(0, missileSalvoTimer - dt);
+
+  const updateBeam = (
+    activeTimer: number,
+    attacker: BoutSnapshot["player"],
+    defender: BoutSnapshot["rival"],
+    beam: RuntimeNodeHandleLike,
+    sheath: RuntimeNodeHandleLike,
+    muzzle: RuntimeNodeHandleLike,
+    zOffset: number
+  ) => {
+    if (activeTimer <= 0) {
+      beam.setVisible(false);
+      sheath.setVisible(false);
+      muzzle.setVisible(false);
+      return;
+    }
+    const dir = defender.x >= attacker.x ? 1 : -1;
+    const startX = attacker.x + dir * 0.48;
+    const endX = defender.x - dir * 0.24;
+    const span = Math.max(0.45, Math.abs(endX - startX));
+    const centerX = (startX + endX) * 0.5;
+    const beamY = attacker.y + 1.24;
+    const pulse = 0.85 + 0.25 * Math.sin(elapsed * 28);
+    beam.setVisible(true);
+    beam.setPosition(centerX, beamY, ARENA_CENTER_Z + zOffset);
+    beam.setRotation(0, 0, Math.PI / 2);
+    beam.setScale([0.052 * pulse, span * 0.5, 0.052 * pulse]);
+
+    sheath.setVisible(true);
+    sheath.setPosition(centerX, beamY, ARENA_CENTER_Z + zOffset);
+    sheath.setRotation(0, 0, Math.PI / 2);
+    sheath.setScale([0.115 * pulse, span * 0.52, 0.115 * pulse]);
+
+    muzzle.setVisible(true);
+    muzzle.setPosition(startX, beamY, ARENA_CENTER_Z + zOffset);
+    muzzle.setScale([0.16 * pulse, 0.16 * pulse, 0.16 * pulse]);
+  };
+
+  updateBeam(
+    playerBeamTimer,
+    snap.player,
+    snap.rival,
+    combatVfxNodes.playerBeam,
+    combatVfxNodes.playerSheath,
+    combatVfxNodes.playerMuzzle,
+    0.16
+  );
+  updateBeam(
+    rivalBeamTimer,
+    snap.rival,
+    snap.player,
+    combatVfxNodes.rivalBeam,
+    combatVfxNodes.rivalSheath,
+    combatVfxNodes.rivalMuzzle,
+    -0.14
+  );
+
+  const updateShield = (
+    timer: number,
+    fighter: BoutSnapshot["player"],
+    dome: RuntimeNodeHandleLike,
+    ring: RuntimeNodeHandleLike
+  ) => {
+    if (timer <= 0) {
+      dome.setVisible(false);
+      ring.setVisible(false);
+      return;
+    }
+    const pulse = 0.94 + 0.08 * Math.sin(elapsed * 20);
+    dome.setVisible(true);
+    dome.setPosition(fighter.x + fighter.facing * 0.18, fighter.y + 1.16, ARENA_CENTER_Z + 0.08);
+    dome.setScale([0.62 * pulse, 0.82 * pulse, 0.62 * pulse]);
+
+    ring.setVisible(true);
+    ring.setPosition(fighter.x + fighter.facing * 0.24, fighter.y + 1.16, ARENA_CENTER_Z + 0.14);
+    ring.setRotation(0, Math.PI / 2, elapsed * 4.5);
+    ring.setScale([0.54 * pulse, 0.54 * pulse, 0.032]);
+  };
+
+  updateShield(playerShieldTimer, snap.player, combatVfxNodes.playerShieldDome, combatVfxNodes.playerShieldRing);
+  updateShield(rivalShieldTimer, snap.rival, combatVfxNodes.rivalShieldDome, combatVfxNodes.rivalShieldRing);
+
+  // Update 4-missile arcing shoulder salvo + glowing thruster plumes
+  if (missileSalvoTimer <= 0) {
+    for (const m of combatVfxNodes.missiles) {
+      m.warhead.setVisible(false);
+      m.trail.setVisible(false);
+    }
+  } else {
+    const attacker = missileSalvoAttacker === "player" ? snap.player : snap.rival;
+    const defender = missileSalvoAttacker === "player" ? snap.rival : snap.player;
+    const progressBase = 1 - Math.min(1, missileSalvoTimer / 0.68);
+    for (let index = 0; index < MISSILE_SALVO_COUNT; index += 1) {
+      const m = combatVfxNodes.missiles[index]!;
+      const stagger = index * 0.11;
+      const t = Math.max(0, Math.min(1, (progressBase - stagger) / (1 - stagger * 0.7)));
+      if (t <= 0 || t >= 0.99) {
+        m.warhead.setVisible(false);
+        m.trail.setVisible(false);
+        continue;
+      }
+      const startX = attacker.x + attacker.facing * 0.18;
+      const endX = defender.x - attacker.facing * 0.12;
+      const x = startX + (endX - startX) * t;
+      const arcHeight = 0.68 + (index % 2) * 0.24;
+      const startY = attacker.y + 1.78;
+      const endY = defender.y + 1.15;
+      const y = startY * (1 - t) + endY * t + Math.sin(t * Math.PI) * arcHeight;
+      const zLane = (index - 1.5) * 0.16;
+      const z = ARENA_CENTER_Z + zLane;
+      const pitch = Math.atan2(
+        (endY - startY) + Math.cos(t * Math.PI) * Math.PI * arcHeight,
+        endX - startX
+      );
+      m.warhead.setVisible(true);
+      m.warhead.setPosition(x, y, z);
+      m.warhead.setRotation(0, 0, pitch - Math.PI / 2);
+      m.warhead.setScale([0.065, 0.18, 0.065]);
+
+      const trailX = x - Math.cos(pitch) * 0.16;
+      const trailY = y - Math.sin(pitch) * 0.16;
+      m.trail.setVisible(true);
+      m.trail.setPosition(trailX, trailY, z);
+      m.trail.setRotation(0, 0, pitch - Math.PI / 2);
+      m.trail.setScale([0.042, 0.22, 0.042]);
+    }
+  }
+}
 
 // The route-primary visual probe isolates the same typed modular assembly that
 // human reviewers see. Keep suppression state in the route so the regular mount
@@ -1134,6 +1543,15 @@ function startBout(): void {
     presetIndex,
     seed: 20260821 + boutIndex * 7919
   });
+  arenaDisplayFrames = 0;
+  arenaAutoEngaged = false;
+  simTickUsed = false;
+  playerBeamTimer = 0;
+  rivalBeamTimer = 0;
+  playerShieldTimer = 0;
+  rivalShieldTimer = 0;
+  missileSalvoTimer = 0;
+  hideCombatVfx();
   hideKoCard(arenaHud);
   // Reset the cached fighter evidence with the fresh bout: the display loop
   // rewrites these every frame, but without this the first published frames
@@ -1148,6 +1566,7 @@ function leaveToHangar(): void {
   mode = "hangar";
   paused = false;
   bout = null;
+  hideCombatVfx();
   panelHost.parentElement?.classList.remove("is-arena");
   hangar.unlockForRematchEdit();
   setArenaVisible(arenaHud, false);
@@ -1158,12 +1577,22 @@ function leaveToHangar(): void {
 }
 
 function playerInputsFromActions(): BoutInputs {
+  const rawMoveX = (input.held("right") ? 1 : 0) - (input.held("left") ? 1 : 0);
+  const light = input.buffered("light");
+  const heavy = input.buffered("heavy");
+  const special = input.buffered("special");
+  const gap = lastFighterPositions.rivalX - lastFighterPositions.playerX;
+  const lungeMoveX = rawMoveX !== 0
+    ? rawMoveX
+    : (light || heavy || special) && Math.abs(gap) > 1.08
+      ? Math.sign(gap)
+      : 0;
   return {
-    moveX: (input.held("right") ? 1 : 0) - (input.held("left") ? 1 : 0),
+    moveX: lungeMoveX,
     jump: input.buffered("jump"),
-    light: input.buffered("light"),
-    heavy: input.buffered("heavy"),
-    special: input.buffered("special"),
+    light,
+    heavy,
+    special,
     guard: input.held("guard")
   };
 }
@@ -1339,6 +1768,23 @@ let timeWarp = 1;
   guard?: boolean;
 }) => {
   if (!bout || paused) return null;
+  if (!simTickUsed) {
+    simTickUsed = true;
+    if (arenaAutoEngaged) {
+      const presetIndex = boutIndex % AGGRESSION_PRESET_COUNT;
+      bout = createMechBout({
+        playerSelection: hangar.selection,
+        rivalSelection: RIVAL_FIXED_LOADOUT.selection,
+        presetIndex,
+        seed: 20260821 + boutIndex * 7919
+      });
+      publishedKoEvents.length = 0;
+      hideKoCard(arenaHud);
+      lastFighterPositions = { playerX: -1.9, rivalX: 1.9 };
+      lastFighterVitals = { playerHp: 1, rivalHp: 1, playerGuard: 1, playerPower: 0.5 };
+      arenaAutoEngaged = false;
+    }
+  }
   const strikeEvery = options?.strike && options.strike !== "none" ? 34 : Number.MAX_SAFE_INTEGER;
   for (let index = 0; index < frames; index += 1) {
     const gap = lastFighterPositions.rivalX - lastFighterPositions.playerX;
@@ -1367,6 +1813,7 @@ let timeWarp = 1;
     };
     mountSide("player", hangar.selection, [snap.player.x, snap.player.y, ARENA_CENTER_Z], Math.PI / 2, playerNodes);
     mountSide("rival", RIVAL_FIXED_LOADOUT.selection, [snap.rival.x, snap.rival.y, ARENA_CENTER_Z], -Math.PI / 2, rivalNodes);
+    updateCombatVfx(snap, 1 / 60);
     if (snap.phase === "ko" || snap.phase === "lost") break;
   }
   const pacedMidX = (lastFighterPositions.playerX + lastFighterPositions.rivalX) / 2;
@@ -1480,6 +1927,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
         mountSide("player", hangar.selection, [lastFighterPositions.playerX, 0, ARENA_CENTER_Z], Math.PI / 2, playerNodes);
         mountSide("rival", RIVAL_FIXED_LOADOUT.selection, [lastFighterPositions.rivalX, 0, ARENA_CENTER_Z], -Math.PI / 2, rivalNodes);
       }
+      if (suppressed) hideCombatVfx();
       // Present the hidden state used by the pixel diff. On restore, mutate the
       // live nodes back without an unused third full-frame submission.
       if (suppressed) app.step(0);
@@ -1558,15 +2006,56 @@ app.onFrame(({ dt }) => {
     return;
   }
 
+  arenaDisplayFrames += 1;
   let snap = bout.snapshot();
-  for (let warpStep = 0; warpStep < timeWarp; warpStep += 1) {
-    bout.pushInputs(playerInputsFromActions());
-    snap = bout.step(stepDt);
+
+  // During the opening arena sequence (when not driven by __MECH_HANGAR_SIM_TICK__),
+  // pace through the countdown and close the 3.8m starting gap so both mechs actively
+  // engage in close-quarters combat with plasma fire, missiles, and visible HP damage.
+  const basePlayerInputs = playerInputsFromActions();
+  const manualActive =
+    basePlayerInputs.moveX !== 0 ||
+    basePlayerInputs.jump ||
+    basePlayerInputs.light ||
+    basePlayerInputs.heavy ||
+    basePlayerInputs.special ||
+    basePlayerInputs.guard;
+
+  const extraOpeningSteps = !simTickUsed && arenaDisplayFrames >= 2 && arenaDisplayFrames <= 36 ? 5 : 0;
+  const totalSteps = timeWarp + extraOpeningSteps;
+
+  for (let warpStep = 0; warpStep < totalSteps; warpStep += 1) {
+    const currentSnap = bout.snapshot();
+    let stepInputs = warpStep === 0 ? basePlayerInputs : { moveX: 0, jump: false, light: false, heavy: false, special: false, guard: false };
+    if (!simTickUsed && !manualActive && currentSnap.frame <= 240) {
+      arenaAutoEngaged = true;
+      const gap = currentSnap.rival.x - currentSnap.player.x;
+      const f = currentSnap.frame;
+      const closeIn = Math.abs(gap) > 1.04 ? Math.sign(gap) : 0;
+      const fireSpecial = f === 96 || f === 168;
+      const fireHeavy = f === 82 || f === 128 || f === 196;
+      const fireLight = f === 76 || f === 112 || f === 148 || f === 182 || f === 216;
+      const autoGuard = (f >= 134 && f <= 142) || (f >= 202 && f <= 210);
+      stepInputs = {
+        moveX: closeIn,
+        jump: false,
+        light: fireLight,
+        heavy: fireHeavy,
+        special: fireSpecial,
+        guard: autoGuard
+      };
+    }
+    bout.pushInputs(stepInputs);
+    snap = bout.step(1 / 60);
     for (const event of snap.events) handleBoutEvent(event);
+    if (extraOpeningSteps > 0 && snap.events.length > 0) {
+      feel.onEvents(snap.events);
+    }
   }
   feel.noteHitStop(snap.hitstopFrames);
 
   feel.update(stepDt * timeWarp, snap.events, { x: (snap.player.x + snap.rival.x) / 2, y: 1.02, z: ARENA_CENTER_Z });
+  updateCombatVfx(snap, stepDt);
   const midX = (snap.player.x + snap.rival.x) / 2;
   anchor.setPosition(midX, 1.02, ARENA_CENTER_Z);
   anchor.setRotation(0, 0, 0);

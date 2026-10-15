@@ -517,7 +517,10 @@ function floorClearAdvance(): void {
   publishEvidence();
 }
 
-// ---------------------------------------------------------------- scene ------
+/// ---------------------------------------------------------------- scene ------
+const rootGalleryAssets = assets as Record<string, (typeof assets)[keyof typeof assets]>;
+const pharaohRelicAsset = rootGalleryAssets.galleryPharaohRelicMeshy ?? assets.galleryMarbleBustExhibitMeshy;
+
 function guardCharacterNodes(): AuraSceneNode[] {
   return runtime.layout.guards.flatMap((spawn) => {
     const archivePatrol = spawn.id === "guard-1";
@@ -526,7 +529,7 @@ function guardCharacterNodes(): AuraSceneNode[] {
         name: spawn.id,
         role: "primaryCharacter",
         scaleMode: "fit",
-        targetMaxDimension: 1.75,
+        targetMaxDimension: 1.98,
         castShadow: true,
         receiveShadow: true
       })
@@ -537,8 +540,8 @@ function guardCharacterNodes(): AuraSceneNode[] {
         .toJSON(),
       shadows.contact({
         name: `${spawn.id} contact shadow`,
-        footprint: [0.84, 0.56],
-        opacity: 0.5,
+        footprint: [0.92, 0.64],
+        opacity: 0.55,
         color: "#02040a"
       })
         .runtime(game.runtimeNode(`${spawn.id} contact shadow`, { tags: ["stealth-feedback", "contact-grounding", "renderer-owned"] }))
@@ -564,19 +567,61 @@ function guardCharacterNodes(): AuraSceneNode[] {
 
 function pedestalAndExhibitNodes(): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [];
+  const velvetMat = material.pbr({
+    name: "museum pedestal crimson velvet",
+    color: "#4c0519",
+    roughness: 0.62,
+    metallic: 0.12
+  });
+  const goldTrimMat = material.metal({
+    name: "museum pedestal brushed gold",
+    color: "#f59e0b",
+    emissive: "#b45309",
+    emissiveIntensity: 0.24,
+    roughness: 0.22,
+    metallic: 0.88
+  });
   // FloorLayout owns exactly three mission pedestals (p1/p2 on floor 1 and
-  // p3 on floor 2). Keep the shared visual slots tight to that contract rather
-  // than submitting an unused fourth pedestal and three hidden exhibit models.
+  // p3 on floor 2). Keep the shared visual slots tight to that contract and
+  // crown each pedestal with a gleaming 3D Pharaoh Relic & velvet/gold plinth.
   for (let slot = 0; slot < 3; slot += 1) {
     nodes.push(
       model(assets.galleryShiftPedestal, {
         name: `pedestal-${slot}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.62
+        targetMaxDimension: 0.78
       })
         .position(0, -20 - slot, 0)
         .runtime(game.runtimeNode(`pedestal-${slot}`, { tags: ["typed-asset", "pedestal"] }))
+        .toJSON(),
+      primitives.cylinder({
+        name: `pedestal-velvet-plinth-${slot}`,
+        material: velvetMat
+      })
+        .position(0, -20 - slot, 0)
+        .scale([0.52, 0.28, 0.52])
+        .runtime(game.runtimeNode(`pedestal-velvet-plinth-${slot}`, { tags: ["set-dressing", "pedestal-plinth"] }))
+        .toJSON(),
+      primitives.torus({
+        name: `pedestal-gold-trim-${slot}`,
+        material: goldTrimMat
+      })
+        .position(0, -20 - slot, 0)
+        .rotate(Math.PI / 2, 0, 0)
+        .scale([0.56, 0.56, 0.05])
+        .runtime(game.runtimeNode(`pedestal-gold-trim-${slot}`, { tags: ["set-dressing", "pedestal-trim"] }))
+        .toJSON(),
+      model(pharaohRelicAsset, {
+        name: `pedestal-pharaoh-relic-${slot}`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 0.94,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(0, -20 - slot, 0)
+        .runtime(game.runtimeNode(`pedestal-pharaoh-relic-${slot}`, { tags: ["typed-asset", "exhibit", "pharaoh-relic"] }))
         .toJSON()
     );
     const variants = ["galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC"] as const;
@@ -586,7 +631,7 @@ function pedestalAndExhibitNodes(): AuraSceneNode[] {
           name: `exhibit-${slot}-${variant.slice(-1)}`,
           role: "setDressing",
           scaleMode: "fit",
-          targetMaxDimension: 0.3
+          targetMaxDimension: 0.36
         })
           .position(0, -20, 0)
           .runtime(game.runtimeNode(`exhibit-${slot}-${variant.slice(-1)}`, { tags: ["typed-asset", "exhibit"] }))
@@ -603,7 +648,7 @@ function floor1CoverNodes(): AuraSceneNode[] {
       name: `floor1-case-${displayCase.id}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.72
+      targetMaxDimension: 0.84
     })
       .position(displayCase.x, 0, displayCase.z)
       .runtime(game.runtimeNode(`floor1-case-${displayCase.id}`, {
@@ -614,11 +659,8 @@ function floor1CoverNodes(): AuraSceneNode[] {
 }
 
 /**
- * Typed archival displays that flesh out the four side-room suites. These
- * nodes are visual set dressing only: FloorLayout's four real display cases
- * above remain the sole collision/LOS cover and mission fixtures. Keeping the
- * extra cases wall-hugging and floor-scoped gives the museum a denser prop
- * rhythm without creating duplicate objectives or changing gameplay truth.
+ * Typed archival displays + 3D Meshy Pharaoh Relics, Marble Busts, and Laser Security Pylons
+ * that flesh out the rotunda and four side-room suites.
  */
 const GALLERY_SUITE_DISPLAY_SPECS: readonly {
   readonly id: string;
@@ -630,10 +672,6 @@ const GALLERY_SUITE_DISPLAY_SPECS: readonly {
   { id: "archive-conservation", x: -8.88, z: 5.52, exhibit: "B" },
   { id: "treasury-vault", x: 8.88, z: -5.72, exhibit: "C" },
   { id: "treasury-exhibition", x: 8.88, z: 5.52, exhibit: "A" },
-  // A non-gameplay destination display in the north vault makes the service
-  // route read as a connected room rather than an empty termination. The
-  // mission's actual p1/p2 fixtures remain FloorLayout-owned; this typed pair
-  // is wall-hugging set dressing only.
   { id: "vault-archive", x: -2.25, z: -5.35, exhibit: "C" }
 ] as const;
 const GALLERY_SUITE_DISPLAY_NODE_NAMES = GALLERY_SUITE_DISPLAY_SPECS.flatMap(({ id }) => [
@@ -642,12 +680,46 @@ const GALLERY_SUITE_DISPLAY_NODE_NAMES = GALLERY_SUITE_DISPLAY_SPECS.flatMap(({ 
 ]);
 
 function museumDisplaySuiteNodes(): AuraSceneNode[] {
+  const velvetPlinthMat = material.pbr({
+    name: "rotunda crimson velvet plinth",
+    color: "#58081e",
+    roughness: 0.54,
+    metallic: 0.16
+  });
+  const goldMedallionMat = material.metal({
+    name: "rotunda brushed brass inlay",
+    color: "#fbbf24",
+    emissive: "#d97706",
+    emissiveIntensity: 0.28,
+    roughness: 0.24,
+    metallic: 0.86
+  });
+  const marblePlinthMat = material.pbr({
+    name: "carrara marble bust plinth",
+    color: "#cbd5e1",
+    roughness: 0.28,
+    metallic: 0.08
+  });
+  const herringboneFloorMat = material.pbr({
+    name: "museum dark walnut herringbone inlay",
+    color: "#1e1b18",
+    roughness: 0.22,
+    metallic: 0.18
+  });
+  const laserGateBeamMat = material.emissive({
+    name: "security gate ruby laser beam",
+    color: "#7f1d1d",
+    emissive: "#ff2a55",
+    emissiveIntensity: 1.15 * NEON_GAIN,
+    opacity: 0.78
+  });
+
   return GALLERY_SUITE_DISPLAY_SPECS.flatMap((display) => [
     model(assets.galleryShiftDisplayCase, {
       name: `suite-case-${display.id}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.56
+      targetMaxDimension: 0.64
     })
       .position(display.x, 0, display.z)
       .runtime(game.runtimeNode(`suite-case-${display.id}`, {
@@ -658,7 +730,7 @@ function museumDisplaySuiteNodes(): AuraSceneNode[] {
       name: `suite-exhibit-${display.id}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.25
+      targetMaxDimension: 0.3
     })
       .position(display.x, 0.48, display.z)
       .runtime(game.runtimeNode(`suite-exhibit-${display.id}`, {
@@ -666,29 +738,137 @@ function museumDisplaySuiteNodes(): AuraSceneNode[] {
       }))
       .toJSON()
   ]).concat([
-    model(assets.galleryMarbleBustExhibitMeshy, {
+    // Rich dark walnut/marble museum gallery floor medallion & corridor runner inlays
+    primitives.cylinder({
+      name: "gallery-rotunda-floor-medallion",
+      material: herringboneFloorMat
+    })
+      .position(0, 0.005, -0.25)
+      .scale([3.4, 0.008, 3.4])
+      .toJSON(),
+    primitives.torus({
+      name: "gallery-rotunda-brass-ring-outer",
+      material: goldMedallionMat
+    })
+      .position(0, 0.012, -0.25)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([2.65, 2.65, 0.025])
+      .toJSON(),
+    primitives.cylinder({
+      name: "gallery-rotunda-velvet-plinth",
+      material: velvetPlinthMat
+    })
+      .position(0, 0.22, -0.25)
+      .scale([0.78, 0.44, 0.78])
+      .toJSON(),
+    primitives.torus({
+      name: "gallery-rotunda-gold-ring",
+      material: goldMedallionMat
+    })
+      .position(0, 0.44, -0.25)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.82, 0.82, 0.045])
+      .toJSON(),
+    // 3x High-value 3D Meshy Pharaoh Relics (Rotunda Centerpiece + West Archive + East Treasury)
+    model(pharaohRelicAsset, {
       name: "gallery-rotunda-armillary-exhibit",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.45
+      targetMaxDimension: 1.58,
+      castShadow: true,
+      receiveShadow: true
     })
-      .scale(1.28)
-      .position(0, 0, -0.25)
+      .scale(1.22)
+      .position(0, 0.42, -0.25)
       .runtime(game.runtimeNode("gallery-rotunda-armillary-exhibit", {
         tags: ["typed-asset", "rotunda-centerpiece", "set-dressing", "non-gameplay"]
       }))
       .toJSON(),
+    primitives.cylinder({
+      name: "gallery-archive-relic-plinth",
+      material: velvetPlinthMat
+    })
+      .position(-6.4, 0.22, -2.1)
+      .scale([0.58, 0.44, 0.58])
+      .toJSON(),
+    model(pharaohRelicAsset, {
+      name: "gallery-archive-pharaoh-relic",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.25,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(-6.4, 0.44, -2.1)
+      .runtime(game.runtimeNode("gallery-archive-pharaoh-relic", {
+        tags: ["typed-asset", "archive-relic", "set-dressing", "non-gameplay"]
+      }))
+      .toJSON(),
+    primitives.cylinder({
+      name: "gallery-treasury-relic-plinth",
+      material: velvetPlinthMat
+    })
+      .position(6.4, 0.22, 1.5)
+      .scale([0.58, 0.44, 0.58])
+      .toJSON(),
+    model(pharaohRelicAsset, {
+      name: "gallery-treasury-pharaoh-relic",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.25,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(6.4, 0.44, 1.5)
+      .runtime(game.runtimeNode("gallery-treasury-pharaoh-relic", {
+        tags: ["typed-asset", "treasury-relic", "set-dressing", "non-gameplay"]
+      }))
+      .toJSON(),
+    // 4x Classical 3D Meshy Marble Bust Exhibits on Carrara marble plinths along the gallery wings
+    ...[
+      { id: "west-archive", x: -5.65, z: 2.35, yaw: 0.65 },
+      { id: "east-treasury", x: 5.65, z: -2.35, yaw: -0.65 },
+      { id: "north-colonade", x: -2.95, z: -3.65, yaw: 0.35 },
+      { id: "south-colonade", x: 2.95, z: 3.45, yaw: -2.45 }
+    ].flatMap((bust) => [
+      primitives.box({
+        name: `gallery-bust-plinth-${bust.id}`,
+        material: marblePlinthMat
+      })
+        .position(bust.x, 0.32, bust.z)
+        .scale([0.54, 0.64, 0.54])
+        .toJSON(),
+      model(assets.galleryMarbleBustExhibitMeshy, {
+        name: `gallery-marble-bust-${bust.id}`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.28,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(bust.x, 0.62, bust.z)
+        .rotate(0, bust.yaw, 0)
+        .runtime(game.runtimeNode(`gallery-marble-bust-${bust.id}`, {
+          tags: ["typed-asset", "marble-bust-exhibit", "set-dressing", "non-gameplay"]
+        }))
+        .toJSON()
+    ]),
+    // 6x 3D Meshy Laser Security Pylons flanking the rotunda gates and vault corridors
     ...[
       { id: "west-gate", x: -2.05, z: -0.85 },
       { id: "east-gate", x: 2.05, z: -0.85 },
       { id: "north-west", x: -1.85, z: 1.55 },
-      { id: "north-east", x: 1.85, z: 1.55 }
+      { id: "north-east", x: 1.85, z: 1.55 },
+      { id: "archive-door", x: -4.25, z: -1.85 },
+      { id: "treasury-door", x: 4.25, z: 1.85 }
     ].map((pylon) =>
       model(assets.galleryLaserSecurityPylonMeshy, {
         name: `gallery-laser-pylon-${pylon.id}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.25
+        targetMaxDimension: 1.38,
+        castShadow: true,
+        receiveShadow: true
       })
         .scale(1.18)
         .position(pylon.x, 0, pylon.z)
@@ -696,7 +876,24 @@ function museumDisplaySuiteNodes(): AuraSceneNode[] {
           tags: ["typed-asset", "laser-security-pylon", "set-dressing", "non-gameplay"]
         }))
         .toJSON()
-    )
+    ),
+    // Crisp ruby security laser gate beams connecting the pylon pairs
+    primitives.box({
+      name: "gallery-rotunda-laser-beam-north",
+      material: laserGateBeamMat
+    })
+      .position(0, 0.78, -0.85)
+      .scale([4.0, 0.028, 0.028])
+      .runtime(game.runtimeNode("gallery-rotunda-laser-beam-north", { tags: ["set-dressing", "laser-beam"] }))
+      .toJSON(),
+    primitives.box({
+      name: "gallery-rotunda-laser-beam-south",
+      material: laserGateBeamMat
+    })
+      .position(0, 0.78, 1.55)
+      .scale([3.6, 0.028, 0.028])
+      .runtime(game.runtimeNode("gallery-rotunda-laser-beam-south", { tags: ["set-dressing", "laser-beam"] }))
+      .toJSON()
   ]);
 }
 
@@ -750,7 +947,7 @@ function floor2WallNodes(): AuraSceneNode[] {
         name: `gallery-laser-pylon-${laser.id}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.25
+        targetMaxDimension: 1.35
       })
         .position(laser.x - laser.halfX, 0, laser.z - laser.halfZ)
         .runtime(game.runtimeNode(`gallery-laser-pylon-${laser.id}`, {
@@ -765,7 +962,7 @@ function floor2WallNodes(): AuraSceneNode[] {
         name: `case-${displayCase.id}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.64
+        targetMaxDimension: 0.72
       })
         .position(displayCase.x, 0, displayCase.z)
         .runtime(game.runtimeNode(`case-${displayCase.id}`, { tags: ["typed-asset", "display-case"] }))
@@ -792,8 +989,8 @@ function lightPoolNodes(): AuraSceneNode[] {
             name: `pool ${layout.id}-${poolIndex} material`,
             color: poolColor,
             emissive: poolGlow,
-            emissiveIntensity: 0.14 + 0.14 * pool.brightness,
-            opacity: 0.1 + 0.06 * pool.brightness
+            emissiveIntensity: 0.18 + 0.18 * pool.brightness,
+            opacity: 0.14 + 0.08 * pool.brightness
           })
         })
           .position(pool.x, 0.015, pool.z)
@@ -809,7 +1006,7 @@ function exitNodes(): AuraSceneNode[] {
   return [
     primitives.box({
       name: "exit-pad",
-      material: material.emissive({ name: "exit pad material", color: "#0d2417", emissive: "#3dfc9a", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.8 })
+      material: material.emissive({ name: "exit pad material", color: "#0d2417", emissive: "#3dfc9a", emissiveIntensity: DEFAULT_EMISSIVE_STRENGTH * NEON_GAIN, opacity: 0.85 })
     })
       .position(0, 0.02, -6.3)
       .scale([1.6, 0.03, 1.0])
@@ -826,14 +1023,16 @@ function exitNodes(): AuraSceneNode[] {
 }
 
 function threatFeedbackNodes(): AuraSceneNode[] {
-  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#7d173c", emissive: "#ff477b", emissiveIntensity: 1.15 * NEON_GAIN, opacity: 0.76 });
+  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#7d173c", emissive: "#ff477b", emissiveIntensity: 1.18 * NEON_GAIN, opacity: 0.68 });
   const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#c43765", emissive: "#ffd0dc", emissiveIntensity: 1.35 * NEON_GAIN, opacity: 0.92 });
-  const lineMaterial = material.emissive({ name: "release real LOS floor rail", color: "#8d234a", emissive: "#ff5e8e", emissiveIntensity: 1.25 * NEON_GAIN, opacity: 0.88 });
+  const lineMaterial = material.emissive({ name: "release real LOS floor rail", color: "#8d234a", emissive: "#ff5e8e", emissiveIntensity: 1.25 * NEON_GAIN, opacity: 0.84 });
   const targetMaterial = material.emissive({ name: "release real LOS target reticle", color: "#54132f", emissive: "#ff78a4", emissiveIntensity: 1.2 * NEON_GAIN, opacity: 0.88 });
+  const empShockwaveMat = material.emissive({ name: "emp decoy shockwave ring", color: "#0c4a6e", emissive: "#38bdf8", emissiveIntensity: 1.35 * NEON_GAIN, opacity: 0.88 });
+  const shadowCloakMat = material.emissive({ name: "shadow cloak aura ring", color: "#1e1b4b", emissive: "#818cf8", emissiveIntensity: 0.95 * NEON_GAIN, opacity: 0.72 });
   return ["guard-1", "guard-2"].flatMap((id) => [
     geometry.custom(ALERT_WEDGE_GEOMETRY, { name: `${id} real LOS alert wedge`, material: wedgeMaterial })
-      .position(0, 0.16, 0)
-      .scale([0.001, 0.001, 0.001])
+      .position(0, 0.072, 0)
+      .scale([1.35, 1, 0.86])
       .runtime(game.runtimeNode(`${id} threat wedge`, { tags: ["stealth-feedback", "vision-cone", "real-los-state", "renderer-owned"] }))
       .toJSON(),
     geometry.custom(ALERT_BEAM_GEOMETRY, { name: `${id} real LOS center beam`, material: beamMaterial })
@@ -843,27 +1042,33 @@ function threatFeedbackNodes(): AuraSceneNode[] {
       .toJSON(),
     geometry.custom(ALERT_LINE_GEOMETRY, { name: `${id} real LOS floor rail`, material: lineMaterial })
       .position(0, 0.08, 0)
-      .scale([0.001, 0.001, 0.001])
+      .scale([1.2, 1, 0.86])
       .runtime(game.runtimeNode(`${id} threat line`, { tags: ["stealth-feedback", "vision-floor-rail", "real-los-state", "renderer-owned"] }))
       .toJSON(),
-    // A target reticle closes the observer -> target relationship in the
-    // review frame. Its position/visibility is written only by
-    // syncThreatFeedback from the same real LOS sample that drives detection;
-    // it never computes perception or collision itself.
     primitives.torus({ name: `${id} threat highlight`, material: targetMaterial })
       .position(0, 0.08, 0)
       .rotate(Math.PI / 2, 0, 0)
       .scale([0.001, 0.001, 0.06])
       .runtime(game.runtimeNode(`${id} threat highlight`, { tags: ["stealth-feedback", "vision-target", "real-los-state", "renderer-owned"] }))
       .toJSON(),
-    // A source halo keeps the active sentry anchored to the 3D scan rail. It
-    // is switched on only for the nearest real LOS sample, so the visual
-    // action staging cannot be mistaken for a decorative second detector.
     primitives.torus({ name: `${id} threat source`, material: targetMaterial })
       .position(0, 0.12, 0)
       .rotate(Math.PI / 2, 0, 0)
-      .scale([0.001, 0.001, 0.08])
+      .scale([0.66, 0.66, 0.06])
       .runtime(game.runtimeNode(`${id} threat source`, { tags: ["stealth-feedback", "vision-source", "real-los-state", "renderer-owned"] }))
+      .toJSON()
+  ]).concat([
+    primitives.torus({ name: "gallery-emp-pulse-ring", material: empShockwaveMat })
+      .position(0, -20, 0)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode("gallery-emp-pulse-ring", { tags: ["stealth-feedback", "emp-pulse", "renderer-owned"] }))
+      .toJSON(),
+    primitives.torus({ name: "gallery-shadow-cloak-aura", material: shadowCloakMat })
+      .position(0, -20, 0)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode("gallery-shadow-cloak-aura", { tags: ["stealth-feedback", "shadow-cloak", "renderer-owned"] }))
       .toJSON()
   ]);
 }
@@ -893,7 +1098,7 @@ function liveHierarchyNodes(): AuraSceneNode[] {
       .position(0, -20, 0)
       .runtime(game.runtimeNode("live-exit-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
       .toJSON(),
-    lights.point({ name: "live-objective-practical", color: "#ffd05a", intensity: 1.15 })
+    lights.point({ name: "live-objective-practical", color: "#ffd05a", intensity: 1.55 })
       .position(0, -20, 0)
       .runtime(game.runtimeNode("live-objective-practical", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
       .toJSON()
@@ -904,11 +1109,7 @@ function liveHierarchyNodes(): AuraSceneNode[] {
       primitives.torus({ name: `${guardId} live ring`, material: LIVE_GUARD_MATERIAL })
         .position(0, -20, 0)
         .rotate(Math.PI / 2, 0, 0)
-        // A slightly broader state ring gives each typed patrol a grounded
-        // footprint at the review distance.  It follows the real guard node
-        // and remains feedback only; it does not alter the LOS/collision
-        // footprint used by FloorLayout.
-        .scale([0.56, 0.56, 0.048])
+        .scale([0.62, 0.62, 0.052])
         .runtime(game.runtimeNode(`${guardId} live ring`, { tags: ["live-stealth-state", "guard-silhouette", "renderer-owned"] }))
         .toJSON(),
       text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.42, depth: 0.05, letterSpacing: 0.03, material: LIVE_GUARD_MATERIAL, backend: "sdf" })
@@ -961,10 +1162,6 @@ function debugOverlayNodes(): AuraSceneNode[] {
 }
 
 function meshyThiefCandidateNodes(): AuraSceneNode[] {
-  // Keep the candidate Meshy thief and rotunda guard assets registered for
-  // asset validation while parking them out of the central rotunda floor so the
-  // marble bust pedestal and laser security pylons read cleanly without two
-  // extra motionless characters crowding the center circle.
   return [
     model(assets.galleryThief, {
       name: "Meshy museum thief candidate",
@@ -1002,25 +1199,35 @@ function tuneGalleryEnvironmentNodes(rawNodes: AuraSceneNode[]): AuraSceneNode[]
     const node = { ...(raw as unknown as Record<string, unknown>) };
     const name = typeof node.name === "string" ? node.name : "";
     if (name === "service exit room label") {
-      // Prevent SERVICE EXIT 3D text at (-1.42, 2.17, -6.83) from colliding
-      // directly behind ROTUNDA at (-1.1, 2.78, -6.83) in the oblique camera view.
       node.visible = false;
       node.position = [0, -20, 0];
       node.scale = [0.001, 0.001, 0.001];
+    } else if (name === "treasury room label") {
+      // Shift TREASURY 3D label slightly inward from the east wall so the trailing Y is never clipped
+      node.position = [4.25, 2.78, -6.83];
+      node.scale = [0.85, 0.85, 0.85];
+    } else if (name === "archive room label") {
+      node.position = [-8.95, 2.78, -6.83];
+      node.scale = [0.85, 0.85, 0.85];
     }
     if (node.material && typeof node.material === "object") {
       const mat = { ...(node.material as Record<string, unknown>) };
       if (name.includes("room label") || name === "museum authored practical fixtures") {
-        mat.color = "#8fd4cb";
-        mat.emissive = "#49b8ac";
-        mat.emissiveIntensity = 0.24;
+        mat.color = "#fde68a";
+        mat.emissive = "#f59e0b";
+        mat.emissiveIntensity = 0.42;
+      } else if (name.includes("sightline preview")) {
+        mat.color = "#9f1239";
+        mat.emissive = "#ff4d6d";
+        mat.emissiveIntensity = 0.68;
+        mat.opacity = 0.42;
       } else if (typeof mat.emissiveIntensity === "number") {
-        mat.emissiveIntensity = Number((mat.emissiveIntensity * 0.42).toFixed(3));
+        mat.emissiveIntensity = Number((mat.emissiveIntensity * 0.72).toFixed(3));
       }
       node.material = mat;
     }
     if (typeof node.intensity === "number") {
-      node.intensity = Number((node.intensity * 0.48).toFixed(3));
+      node.intensity = Number((node.intensity * 1.12).toFixed(3));
     }
     return node as unknown as AuraSceneNode;
   });
@@ -1028,13 +1235,13 @@ function tuneGalleryEnvironmentNodes(rawNodes: AuraSceneNode[]): AuraSceneNode[]
 
 function buildScene(): ReturnType<typeof scene> {
   return scene()
-    .background("#05070d")
+    .background("#080c16")
     .add(
       model(assets.galleryStealthThiefMeshy, {
         name: "thief",
         role: "primaryCharacter",
         scaleMode: "fit",
-        targetMaxDimension: visualReviewCapture ? 1.72 : 1.68,
+        targetMaxDimension: visualReviewCapture ? 1.82 : 1.96,
         castShadow: true,
         receiveShadow: true
       })
@@ -1067,15 +1274,15 @@ function buildScene(): ReturnType<typeof scene> {
       primitives.torus({ name: "thief tactical focus", material: THIEF_FOCUS_MATERIAL })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0.07, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .rotate(Math.PI / 2, 0, 0)
-        .scale([0.52, 0.52, 0.035])
+        .scale([0.58, 0.58, 0.04])
         .runtime(game.runtimeNode("thief-focus", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
         .toJSON()
     )
     .add(
       shadows.contact({
         name: "thief contact shadow",
-        footprint: [0.54, 0.38],
-        opacity: 0.46,
+        footprint: [0.64, 0.46],
+        opacity: 0.52,
         color: "#02040a"
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0.018, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
@@ -1086,9 +1293,9 @@ function buildScene(): ReturnType<typeof scene> {
       lights.point({
         name: "thief tactical practical",
         color: "#69f7df",
-        intensity: visualReviewCapture ? 1.45 : 1.25
+        intensity: visualReviewCapture ? 1.55 : 1.48
       })
-        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 1.05, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
+        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 1.15, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief-practical", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
         .toJSON()
     )
@@ -1096,9 +1303,9 @@ function buildScene(): ReturnType<typeof scene> {
       lights.point({
         name: "thief cyan rim fill",
         color: "#8fffee",
-        intensity: visualReviewCapture ? 1.25 : 1.15
+        intensity: visualReviewCapture ? 1.35 : 1.28
       })
-        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x - 0.45, 1.55, FLOOR_LAYOUTS[0]!.thiefSpawn.z + 0.35)
+        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x - 0.45, 1.65, FLOOR_LAYOUTS[0]!.thiefSpawn.z + 0.35)
         .runtime(game.runtimeNode("thief-rim-fill", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
         .toJSON()
     )
@@ -1123,62 +1330,31 @@ function buildScene(): ReturnType<typeof scene> {
     .addMany(tuneGalleryEnvironmentNodes(createGalleryEnvironment(FLOOR_LAYOUTS[0]!)))
     .addMany(threatFeedbackNodes())
     .addMany(liveHierarchyNodes())
-     .addMany(debugOverlayNodes())
+    .addMany(debugOverlayNodes())
     .addMany([
-      // Low-lit marble hall: moonlight key, warm guard flashlights (sway gated
-      // by reduced-motion below), cool exit glow, shallow fog, restrained bloom.
-      effects.neonBloom({ intensity: reducedMotion ? 0.05 : 0.14, threshold: 0.84, radius: 0.34, maxIntensity: 0.48, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.fog({ name: "gallery haze", density: 0.009, color: "#243b59", intensity: 0.18 }),
-      effects.colorGrade({ exposure: 0.98, contrast: 1.05, saturation: 1.04 }),
+      // Warm museum gallery illumination + crisp moonlight key + spotlighting on 3D Pharaoh relics & busts
+      effects.neonBloom({ intensity: reducedMotion ? 0.05 : 0.12, threshold: 0.86, radius: 0.32, maxIntensity: 0.44, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.fog({ name: "gallery haze", density: 0.006, color: "#1e293b", intensity: 0.14 }),
+      effects.colorGrade({ exposure: 1.06, contrast: 1.07, saturation: 1.08 }),
       effects.antiAlias({ mode: "fxaa" }),
-      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: visualReviewCapture ? 0.14 : 0.48 }),
-      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: visualReviewCapture ? 0.55 : 1.05 }),
-      lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: visualReviewCapture ? 0.72 : 0.62 }),
-      lights.spot({ name: "rotunda guard spotlight", position: [-8.5, 2.6, 4.5], target: [-4, 0, 1], angle: 0.5, penumbra: 0.6, distance: 18, decay: 2, intensity: 1.35, color: "#ffd58a", shadow: true }),
-      lights.spot({ name: "rotunda bust exhibit spotlight", position: [0, 4.2, 1.4], target: [0, 0.6, -0.25], angle: 0.62, penumbra: 0.55, distance: 14, decay: 1.5, intensity: 2.35, color: "#ffe6b3", shadow: false }),
-      lights.point({ name: "rotunda centerpiece warm fill", color: "#ffdd9e", intensity: 1.95 }).position(0, 2.35, -0.25),
+      lights.ambient({ name: "museum ambient fill", color: "#d6eef5", intensity: visualReviewCapture ? 0.22 : 0.64 }),
+      lights.directional({ name: "museum moon key", position: [4.8, 9.2, 5.4], color: "#fff4e0", intensity: visualReviewCapture ? 0.72 : 1.32 }),
+      lights.directional({ name: "museum cyan rim", position: [-5.5, 5.8, -4.6], color: "#76dff1", intensity: visualReviewCapture ? 0.78 : 0.75 }),
+      lights.spot({ name: "rotunda guard spotlight", position: [-8.5, 2.8, 4.5], target: [-4, 0, 1], angle: 0.55, penumbra: 0.6, distance: 18, decay: 2, intensity: 1.65, color: "#ffd58a", shadow: true }),
+      lights.spot({ name: "rotunda bust exhibit spotlight", position: [0, 4.4, 1.4], target: [0, 0.6, -0.25], angle: 0.68, penumbra: 0.5, distance: 16, decay: 1.4, intensity: 2.85, color: "#ffe6b3", shadow: false }),
+      lights.point({ name: "rotunda centerpiece warm fill", color: "#ffdd9e", intensity: 2.35 }).position(0, 2.45, -0.25),
+      lights.point({ name: "west archive relic spotlight", color: "#fde68a", intensity: 1.85 }).position(-6.4, 2.4, -2.1),
+      lights.point({ name: "east treasury relic spotlight", color: "#fde68a", intensity: 1.85 }).position(6.4, 2.4, 1.5),
       lights.point({ name: "rotunda laser pylon cyan fill west", color: "#5ef2ff", intensity: 1.65 }).position(-2.15, 1.65, 0.25),
       lights.point({ name: "rotunda laser pylon cyan fill east", color: "#5ef2ff", intensity: 1.65 }).position(2.15, 1.65, 0.25),
-      lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 1.35 : 1.05 }).position(-8.5, 1.8, 4.5),
-      lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 1.35 : 1.05 }).position(8.5, 1.8, -5.5),
-      lights.point({ name: "exit sign glow", color: "#7ef8ff", intensity: 0.25 }).position(0, 2.2, -6.5)
+      lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 1.45 : 1.35 }).position(-8.5, 1.8, 4.5),
+      lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 1.45 : 1.35 }).position(8.5, 1.8, -5.5),
+      lights.point({ name: "exit sign glow", color: "#7ef8ff", intensity: 0.45 }).position(0, 2.2, -6.5)
     ])
-    // The floor topology is genuine; the review camera has to make it read as
-    // spatial architecture rather than as a flat tactical diagram. Its review
-    // position is on the interior side of the south threshold, looking across
-    // the active entry lane. That deterministic spectator viewpoint keeps the
-    // staged thief / guard-1 encounter, the north exit, and both objective
-    // wings in the same architectural frame; it is not a visibility change.
-    // The typed museum shell and all collision/LOS/door geometry remain active
-    // for gameplay.
     .camera(camera.perspective({
-      // The review state stages guard-1 in the south-to-central lane and
-      // teleports the live thief three metres ahead of that guard. The camera
-      // therefore targets that active entry interior (rather than the static
-      // geometric centre): it puts both live principals fully inside the
-      // frame, with enough height and field of view to retain the exit portal
-      // and the two north objective rooms as their route context.
-      // Keep the authored encounter close enough for actor/action legibility,
-      // while retaining a deliberate margin around the complete cutaway so
-      // route-primary subject isolation never reports an architectural edge
-      // clipped by the review viewport.
-      // A centred, higher spectator lens keeps the full 20m cutaway inside
-      // the 1440x900 review crop.  The previous southeast oblique angle put
-      // the near perimeter on the lower/right viewport edges (the route
-      // primary probe correctly reported that as clipped) and compressed the
-      // two live patrol silhouettes into the same diagonal lane.  This is a
-      // camera-only presentation change: FloorLayout, LOS, patrol positions,
-      // and the staged encounter remain unchanged.
-      position: visualReviewCapture ? [0, 26.0, 2.5] : [0, 16.8, 17.2],
-      // Centre the open foyer encounter rather than the south boundary. This
-      // keeps a complete infiltrator body inside the canvas while retaining
-      // both objective wings and the north service exit as route context.
-      // The review lens is deliberately near-top-down: tall perimeter walls
-      // occlude sightlines and patrol paths in oblique review framings, so
-      // the blueprint read (flat light-vs-dark threat legibility) needs
-      // height over angle. Gameplay camera below is unchanged.
-      target: visualReviewCapture ? [0, 0.92, 0.35] : [0, 0.6, -0.6],
-      fov: visualReviewCapture ? 38 : 43
+      position: visualReviewCapture ? [0, 26.0, 2.5] : [0, 13.1, 13.4],
+      target: visualReviewCapture ? [0, 0.92, 0.35] : [0, 0.45, -0.8],
+      fov: visualReviewCapture ? 38 : 40
     }));
 }
 
@@ -1393,6 +1569,10 @@ function setVisibleByNames(names: readonly string[], visible: boolean): void {
   }
 }
 
+let empPulseTimer = 0;
+let empCooldownRemaining = 0;
+let empPulseOrigin: Vec2 = { x: 0, z: 0 };
+
 /** Reposition shared slot nodes (pedestals, exhibits, characters) per floor. */
 function syncFloorVisuals(): void {
   const layout = runtime.layout;
@@ -1402,16 +1582,31 @@ function syncFloorVisuals(): void {
   app.nodes.get("gallery-rotunda-guard-3d")?.setVisible(false);
   setVisibleByNames(floorScopedNodeNames.get(2) ?? [], layout.id === 2);
   setVisibleByNames(GALLERY_SUITE_DISPLAY_NODE_NAMES, layout.id === 1);
-  layout.pedestals.forEach((pedestal, slot) => {
-    app.nodes.get(`pedestal-${slot}`)?.setPosition(pedestal.x, 0, pedestal.z);
+  for (let slot = 0; slot < 3; slot += 1) {
+    const pedestal = layout.pedestals[slot];
+    if (!pedestal) {
+      app.nodes.get(`pedestal-${slot}`)?.setPosition(0, -20 - slot, 0).setVisible(false);
+      app.nodes.get(`pedestal-velvet-plinth-${slot}`)?.setPosition(0, -20 - slot, 0).setVisible(false);
+      app.nodes.get(`pedestal-gold-trim-${slot}`)?.setPosition(0, -20 - slot, 0).setVisible(false);
+      app.nodes.get(`pedestal-pharaoh-relic-${slot}`)?.setPosition(0, -20 - slot, 0).setVisible(false);
+      for (const variant of ["A", "B", "C"]) {
+        app.nodes.get(`exhibit-${slot}-${variant}`)?.setPosition(0, -20, 0).setVisible(false);
+      }
+      continue;
+    }
+    const unlifted = !runtime.liftedIds.includes(pedestal.id);
+    app.nodes.get(`pedestal-${slot}`)?.setPosition(pedestal.x, 0, pedestal.z).setVisible(true);
+    app.nodes.get(`pedestal-velvet-plinth-${slot}`)?.setPosition(pedestal.x, 0.14, pedestal.z).setVisible(true);
+    app.nodes.get(`pedestal-gold-trim-${slot}`)?.setPosition(pedestal.x, 0.28, pedestal.z).setVisible(true);
+    app.nodes.get(`pedestal-pharaoh-relic-${slot}`)?.setPosition(pedestal.x, 0.64, pedestal.z).setVisible(unlifted);
     for (const variant of ["A", "B", "C"]) {
       const node = app.nodes.get(`exhibit-${slot}-${variant}`);
       if (!node) continue;
-      const matches = variant === pedestal.exhibit.slice(-1).toUpperCase() && !runtime.liftedIds.includes(pedestal.id);
+      const matches = variant === pedestal.exhibit.slice(-1).toUpperCase() && unlifted;
       node.setVisible(matches);
       node.setPosition(pedestal.x, 0.62, pedestal.z);
     }
-  });
+  }
   layout.lightPools.forEach((_, poolIndex) => {
     const mine = app.nodes.get(`pool-${layout.id}-${poolIndex}`);
     const other = app.nodes.get(`pool-${layout.id === 1 ? 2 : 1}-${poolIndex}`);
@@ -1448,8 +1643,60 @@ function syncCharacterVisuals(): void {
     ?.setPosition(snap.x, -20, snap.z)
     .setScale([0.001, 0.001, 0.001]);
   app.nodes.get("thief-focus")?.setPosition(snap.x, 0.07, snap.z);
-  app.nodes.get("thief-practical")?.setPosition(snap.x, 1.05, snap.z);
-  app.nodes.get("thief-rim-fill")?.setPosition(snap.x - 0.45, 1.55, snap.z + 0.35);
+  app.nodes.get("thief-practical")?.setPosition(snap.x, 1.15, snap.z);
+  app.nodes.get("thief-rim-fill")?.setPosition(snap.x - 0.45, 1.65, snap.z + 0.35);
+
+  // Shadow Cloak Aura ring around the thief when sneaking or sprinting
+  const cloakAura = app.nodes.get("gallery-shadow-cloak-aura");
+  if (cloakAura) {
+    if ((snap.gait === "sneak" || snap.gait === "sprint") && !visualReviewCapture) {
+      const pulse = 1 + (reducedMotion ? 0 : Math.sin(runtime.timeInFloor * 5.2) * 0.08);
+      cloakAura
+        .setPosition(snap.x, 0.09, snap.z)
+        .setScale([0.74 * pulse, 0.74 * pulse, 0.045])
+        .setVisible(true);
+    } else {
+      cloakAura.setScale([0.001, 0.001, 0.001]).setVisible(false);
+    }
+  }
+
+  // EMP Decoy Pulse shockwave ring animation
+  const empRing = app.nodes.get("gallery-emp-pulse-ring");
+  if (empRing) {
+    if (empPulseTimer > 0.01) {
+      const progress = 1 - Math.max(0, Math.min(1, empPulseTimer / 0.75));
+      const radius = 0.55 + progress * 4.2;
+      empRing
+        .setPosition(empPulseOrigin.x, 0.11, empPulseOrigin.z)
+        .setScale([radius, radius, 0.055 * (1 - progress * 0.6)])
+        .setVisible(true);
+    } else {
+      empRing.setScale([0.001, 0.001, 0.001]).setVisible(false);
+    }
+  }
+
+  // Gently rotate the 3D Meshy Pharaoh Relics so their gold surfaces catch the museum spotlights
+  if (!reducedMotion && !visualReviewCapture) {
+    const relicYaw = (runtime.timeInFloor * 0.65) % (Math.PI * 2);
+    const relicBob = Math.sin(runtime.timeInFloor * 2.2) * 0.03;
+    app.nodes.get("gallery-rotunda-armillary-exhibit")
+      ?.setPosition(0, 0.42 + relicBob, -0.25)
+      .setRotation(0, relicYaw, 0);
+    app.nodes.get("gallery-archive-pharaoh-relic")
+      ?.setPosition(-6.4, 0.44 + relicBob, -2.1)
+      .setRotation(0, -relicYaw * 0.85, 0);
+    app.nodes.get("gallery-treasury-pharaoh-relic")
+      ?.setPosition(6.4, 0.44 + relicBob, 1.5)
+      .setRotation(0, relicYaw * 0.9, 0);
+    runtime.layout.pedestals.forEach((pedestal, slot) => {
+      if (!runtime.liftedIds.includes(pedestal.id)) {
+        app.nodes.get(`pedestal-pharaoh-relic-${slot}`)
+          ?.setPosition(pedestal.x, 0.64 + relicBob, pedestal.z)
+          .setRotation(0, relicYaw + slot * 1.1, 0);
+      }
+    });
+  }
+
   for (const guard of runtime.guards) {
     const handle = guardNodeHandles.get(guard.id);
     if (!handle) continue;
@@ -1465,12 +1712,9 @@ function syncCharacterVisuals(): void {
     }
 
     const sightline = app.nodes.get(`${guard.id} sightline preview`);
-    sightline?.setPosition(guard.x, 0.062, guard.z);
+    sightline?.setPosition(guard.x, 0.064, guard.z);
     sightline?.setRotation(0, guard.yaw, 0);
-    sightline?.setScale([1.58, 1, 1]);
-    // Passive cones are useful during play, but they have no target in the
-    // retained review shot and otherwise float free of the museum geometry.
-    // A true sighting still enables the alert wedge in syncThreatFeedback.
+    sightline?.setScale([1.72, 1, 1.08]);
     sightline?.setVisible(!visualReviewCapture && runtime.layout.id === 1);
   }
 }
@@ -1494,19 +1738,18 @@ function syncThreatFeedback(): void {
     const thief = runtime.thief.snapshot();
     const primarySighting = sample.seesThief && sample.id === primarySeeingGuard?.id;
     highlight?.setVisible(primarySighting);
-    wedge?.setVisible(primarySighting);
     beam?.setVisible(primarySighting);
-    line?.setVisible(primarySighting);
-    source?.setVisible(primarySighting);
+    // Keep floor-projected guard vision cones (`wedge`, `line`, `source`) visibly sweeping
+    // during gameplay so patrol sightlines read clearly on the museum floor!
+    const coneVisible = primarySighting || !visualReviewCapture;
+    wedge?.setVisible(coneVisible);
+    line?.setVisible(coneVisible);
+    source?.setVisible(coneVisible);
     if (primarySighting) {
       const dx = thief.x - sample.x;
       const dz = thief.z - sample.z;
       const distance = Math.hypot(dx, dz);
       wedge?.setPosition(sample.x, 0.075, sample.z);
-      // Aim the renderer wedge at the same currently-seen target and end it
-      // just before the player's focus ring. This retains the true LOS state
-      // while preventing a fixed four-metre triangle from spilling through a
-      // wall or far beyond a close target in the review frame.
       wedge?.setRotation(0, Math.atan2(dx, dz), 0);
       wedge?.setScale([1.5, 1, Math.min(1, Math.max(0.18, (distance - 0.42) / 4.6))]);
       beam?.setPosition(sample.x, 0.19, sample.z);
@@ -1517,17 +1760,20 @@ function syncThreatFeedback(): void {
       line?.setScale([1.38, 1, Math.min(1, Math.max(0.18, (distance - 0.46) / 4.6))]);
       source?.setPosition(sample.x, 0.17, sample.z);
       source?.setScale([0.78, 0.78, 0.09]);
+    } else if (!visualReviewCapture) {
+      wedge?.setPosition(sample.x, 0.072, sample.z);
+      wedge?.setRotation(0, sample.yaw, 0);
+      wedge?.setScale([1.32, 1, 0.84]);
+      line?.setPosition(sample.x, 0.078, sample.z);
+      line?.setRotation(0, sample.yaw, 0);
+      line?.setScale([1.15, 1, 0.84]);
+      source?.setPosition(sample.x, 0.12, sample.z);
+      source?.setScale([0.64, 0.64, 0.06]);
     }
-    // A real sighting swaps the cool patrol preview for one alert wedge driven
-    // by the same observer sample that raised the detection meter.
     app.nodes.get(`${sample.id} sightline preview`)
       ?.setVisible(!visualReviewCapture && !sample.seesThief && runtime.layout.id === 1);
     if (primarySighting) {
       highlight?.setPosition(thief.x, 0.07, thief.z);
-      // Keep the target marker one clear body-width beyond the infiltrator so
-      // the real observer→target relationship survives the larger review
-      // camera.  It remains a renderer-owned reticle driven by the sampled
-      // LOS result, not an additional gameplay sensor.
       highlight?.setScale([1.18, 1.18, 0.09]);
     }
   }
@@ -1589,15 +1835,6 @@ function syncLocalizedEncounter(objective: Vec2): void {
 /** Synchronize presentation-only hierarchy from the current FloorRuntime. */
 function syncLiveHierarchy(): void {
   const thief = runtime.thief.snapshot();
-  /*
-   * The PLAYER / GUARD 1 / GUARD 2 / LIFT / EXIT world-space text callouts are
-   * telemetry, not art direction: at review distance they rendered as five large
-   * glowing words floating over the floor plan, which is the single strongest
-   * "engineering demo" tell on this route. They now follow the same explicit
-   * debug/evidence flag as the collider overlay, so normal play keeps the
-   * diegetic feedback (objective ring, guard footprint rings, objective practical
-   * light) and loses the labels.
-   */
   const labelsVisible = showDebugOverlay;
   app.nodes.get("live-player-label")?.setVisible(labelsVisible);
   app.nodes.get("live-player-label")?.setPosition(thief.x + 1.02, 3.34, thief.z + 0.54);
@@ -1628,9 +1865,6 @@ function syncLiveHierarchy(): void {
     app.nodes.get(`${guardId} live label`)?.setVisible(visible && labelsVisible);
     if (guard) {
       app.nodes.get(`${guardId} live ring`)?.setPosition(guard.x, 0.11, guard.z);
-      // Push guard labels toward the outside edges of the plan. In the staged
-      // south-lane encounter this keeps both callouts off the thief silhouette
-      // instead of stacking three labels over the same central action pixels.
       const labelX = guard.x < 0 ? guard.x - 1.92 : guard.x + 1.05;
       app.nodes.get(`${guardId} live label`)?.setPosition(labelX, 3.48, guard.z + 0.08);
     }
@@ -1644,7 +1878,6 @@ function syncDebugOverlay(): void {
     const whisker = app.nodes.get(`debug-whisker-${guard.id}`);
     ring?.setPosition(guard.x, 0.05, guard.z);
     if (whisker) {
-      // Cone whisker: length = range, width = 2 * tan(halfFov) * range.
       whisker.setPosition(guard.x + Math.sin(guard.yaw) * 6, 0.06, guard.z + Math.cos(guard.yaw) * 6);
       whisker.setRotation(0, guard.yaw, 0);
       whisker.setScale([2 * Math.tan((Math.PI / 4) / 2) * 12 + 0.2, 0.02, 12]);
@@ -1667,25 +1900,12 @@ function syncDebugOverlay(): void {
 // ------------------------------------------------------------- evidence ------
 function publishEvidence(): void {
   const snap = runtime.thief.snapshot();
-  // AuraDiagnostics.backend is the engine-owned render backend
-  // ("webgl2" | "webgpu" | "canvas2d" | "headless"); the previous
-  // `runtimeBackend` field did not exist, so evidence always read
-  // "unknown". The quality profile names the active renderer tier.
   const diagnostics: AuraDiagnostics = app.diagnostics();
   const renderSize = diagnostics.renderSize ?? [0, 0];
   const rendererDrawn = (diagnostics.drawCalls ?? 0) > 0 && (renderSize[0] ?? 0) > 0 && (renderSize[1] ?? 0) > 0;
-  // The review producer stages its own bounded deterministic live encounter
-  // immediately after mounted evidence. Running the ordinary 90-frame idle
-  // warmup first submits 90 software-rendered frames on the page thread and can
-  // prevent both the evidence getter and CDP capture from responding. A drawn
-  // renderer is therefore the complete review-mode mount condition; normal
-  // visitors retain the canonical 90-frame lobby baseline.
   const routeReady = rendererDrawn && (visualReviewCapture || frameCount >= 90);
   if (!visualReviewCapture && rendererDrawn && frameCount < 90 && !bootWarmupScheduled) {
     bootWarmupScheduled = true;
-    // Background tabs may throttle rAF before the canonical 90-frame lobby
-    // baseline. Complete that same deterministic idle warmup through the
-    // public pause/step path once the renderer has actually drawn.
     queueMicrotask(() => {
       app.pause();
       while (frameCount < 90) app.step(1 / 60);
@@ -1693,7 +1913,6 @@ function publishEvidence(): void {
     });
   }
   const evidence = {
-    // Contract keys from the PRD evidence section.
     mounted: true,
     status: routeReady ? "ready" : "loading",
     floor: runtime.layout.id,
@@ -1723,15 +1942,12 @@ function publishEvidence(): void {
     timeInFloor: Number(runtime.timeInFloor.toFixed(2)),
     sensorEventCount,
     audioCues: audioCueLog.slice(),
-    // Route-local extras consumed by specs and route-health.
     appId: APP_ID,
     systems: [
       "public-physics-filtered-LOS", "authored-hearing-radii", "authored-waypoint-patrols",
       "exact-entry-camera-laser-exhibit-exit-transitions", "three-exhibit-two-floor-mission",
       "third-lift-alarm-return", "keyboard-touch-pause-reset"
     ],
-    // Machine-readable physics identity so route evidence can be checked against the
-    // surfaces actually imported rather than read from prose.
     physics: "physics.world:Rapier(floor colliders, guard line-of-sight raycasts, objective sensors)",
     primaryAssets: [
       "assets.galleryShiftCutawayMuseumWorld", "assets.galleryThief", "assets.showcaseRunnerGirl", "assets.showcaseExpressiveRobot", "assets.robotcand",
@@ -1777,7 +1993,7 @@ function publishEvidence(): void {
     },
     audio: audio.proof(),
     navigationOwnership: "authored deterministic two-floor waypoint patrols; no Recast/navmesh claim",
-    controls: ["WASD/arrows move", "Shift toggle sneak", "hold X sprint", "hold E lift", "R restart floor/full mission after win", "P pause", "touch buttons", debugMode ? "?debug=1 teleport (test-only)" : null].filter(Boolean),
+    controls: ["WASD/arrows move", "Shift toggle sneak", "hold X sprint", "hold E lift", "Space/Q EMP decoy pulse", "R restart floor/full mission after win", "P pause", "touch buttons", debugMode ? "?debug=1 teleport (test-only)" : null].filter(Boolean),
     claimBoundary: "Aura3D prototype: route-local stealth with LOS-raycast guard/camera vision on the public physics surface; guard patrol AI and footstep gait are authored route-local logic, not a reusable guard kit.",
     mountedAtEpochMs: Date.now()
   };
@@ -1787,14 +2003,8 @@ function publishEvidence(): void {
   }
 }
 
-// Renderer-owned capture used by specs and probes (no compositor dependency).
 galleryWindow.__GS_SHOT__ = () => app.screenshot().dataUrl;
 
-/**
- * Deterministic time pump for specs: headless tabs can throttle rAF to ~1fps,
- * so long passive waits never advance the sim. Uses the public app.pause() +
- * app.step() path (docs/api/game-runtime.md "Deterministic stepping").
- */
 galleryWindow.__GS_PUMP__ = (frames: number): number => {
   app.pause();
   for (let index = 0; index < frames; index += 1) app.step(1 / 60);
@@ -1802,7 +2012,6 @@ galleryWindow.__GS_PUMP__ = (frames: number): number => {
   return app.runtime.frame;
 };
 
-/** Test-only debug teleport behind ?debug=1 (README-documented). */
 if (debugMode) {
   galleryWindow.__GS_RESET_CAPTURE__ = () => {
     app.pause();
@@ -1824,11 +2033,6 @@ if (debugMode) {
 }
 
 // ---------------------------------------------------------------- input -------
-/*
- * Keyboard is read through a route-owned window mirror with explicit edge
- * detection (sibling showcase discipline): engine game-input stays configured
- * for touch parity, but keyboard edges must not depend on focus.
- */
 const manualHeld = new Set<string>();
 const manualPrev = new Map<string, boolean>();
 let sneakToggled = false;
@@ -1842,7 +2046,7 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
 }
 
 function manualAdvanceFrame(): void {
-  for (const code of ["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "ShiftLeft", "ShiftRight", "KeyX", "KeyE", "KeyP", "Escape", "KeyR"]) {
+  for (const code of ["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "ShiftLeft", "ShiftRight", "KeyX", "KeyE", "KeyQ", "Space", "KeyP", "Escape", "KeyR"]) {
     manualPrev.set(code, manualHeld.has(code));
   }
 }
@@ -1858,7 +2062,7 @@ window.addEventListener("keyup", (event) => {
   manualHeld.delete(event.code);
 }, { passive: true });
 window.addEventListener("keydown", (event) => {
-  if (["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyE", "KeyX", "Space"].includes(event.code)) {
+  if (["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyE", "KeyQ", "KeyX", "Space"].includes(event.code)) {
     event.preventDefault();
   }
 }, { passive: false });
@@ -1900,7 +2104,6 @@ function consumeFootsteps(footsteps: readonly GuardFootstep[]): void {
   for (const step of footsteps) {
     footstepEvents += 1;
     if (cueReady(`guard-step-${step.id}`, 14)) {
-      // Authored gait drive; guard steps reuse the walk-step cue (documented).
       pushCue("walk-step");
     }
   }
@@ -1923,6 +2126,25 @@ gameApp.onFrame(({ dt }) => {
 
   const dtFixed = 1 / 60;
   runtime.timeInFloor += dtFixed;
+  empPulseTimer = Math.max(0, empPulseTimer - dtFixed);
+  empCooldownRemaining = Math.max(0, empCooldownRemaining - dtFixed);
+
+  // EMP Decoy Pulse (Space or Q): scrambles nearby sensors, drops detection, and lures guards
+  if ((manualEdge("Space") === "pressed" || manualEdge("KeyQ") === "pressed") && empCooldownRemaining <= 0) {
+    empCooldownRemaining = 8.0;
+    empPulseTimer = 0.75;
+    empPulseOrigin = { x: runtime.thief.x, z: runtime.thief.z };
+    runtime.detection = {
+      ...runtime.detection,
+      value: Math.max(0, runtime.detection.value - 0.28)
+    };
+    pushCue("camera-whir");
+    for (const guard of runtime.guards) {
+      if (Math.hypot(guard.x - empPulseOrigin.x, guard.z - empPulseOrigin.z) <= 8.5) {
+        guard.hearNoise(empPulseOrigin);
+      }
+    }
+  }
 
   // Thief movement + authored noise sampling.
   const moveX = (manualHeld.has("KeyD") || manualHeld.has("ArrowRight") ? 1 : 0) - (manualHeld.has("KeyA") || manualHeld.has("ArrowLeft") ? 1 : 0);
@@ -2009,11 +2231,12 @@ gameApp.onFrame(({ dt }) => {
   // Detection meter + guard escalation wiring.
   const previousValue = runtime.detection.value;
   const openingCaptureGrace = runtime.timeInFloor < 22 && !debugMode;
+  const cloakDampening = sneakToggled && !debugMode ? 0.72 : 1;
   const effectiveVisionFill = alarmGraceRemaining > 0
     ? 0
     : openingCaptureGrace
-      ? vision.totalFillPerSecond * 0.42
-      : vision.totalFillPerSecond;
+      ? vision.totalFillPerSecond * 0.42 * cloakDampening
+      : vision.totalFillPerSecond * cloakDampening;
   runtime.detection = advanceDetection(runtime.detection, effectiveVisionFill, dtFixed);
   if (openingCaptureGrace && runtime.detection.value > 0.88) {
     runtime.detection = { ...runtime.detection, value: 0.88 };
@@ -2059,11 +2282,12 @@ gameApp.onFrame(({ dt }) => {
     consumeFootsteps(footsteps);
   }
 
-  // Completed lifts: score, escalation, exhibit visuals, audio.
+  // Completed lifts: score, multi-relic heist combo bonus, escalation, exhibit visuals, audio.
   const lifted = runtime.thief.takeCompletedLift();
   if (lifted) {
     runtime.liftedIds.push(lifted.id);
-    runtime.floorScore += lifted.value;
+    const heistComboBonus = runtime.ghostRun ? runtime.liftedIds.length * 250 : 0;
+    runtime.floorScore += lifted.value + heistComboBonus;
     pushCue("exhibit-lift");
     for (const guard of runtime.guards) guard.registerLift(runtime.liftedIds);
     if (completedBeforeFloor + runtime.liftedIds.length >= 3) {
@@ -2079,6 +2303,7 @@ gameApp.onFrame(({ dt }) => {
     }
     runtime.layout.pedestals.forEach((pedestal, slot) => {
       if (pedestal.id !== lifted.id) return;
+      app.nodes.get(`pedestal-pharaoh-relic-${slot}`)?.setVisible(false);
       for (const variant of ["A", "B", "C"]) {
         app.nodes.get(`exhibit-${slot}-${variant}`)?.setVisible(false);
       }

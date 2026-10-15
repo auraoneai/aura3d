@@ -153,6 +153,19 @@ const PRIMARY_ASSET_REFS = [
   assets.deepRecoveryBuoyBeacon
 ] as const;
 
+const shipwreckHullAsset =
+  (assets as unknown as Record<string, (typeof assets)["deepSunkenReactorCoreMeshy"]>).deepShipwreckHullMeshy ??
+  assets.deepSunkenReactorCoreMeshy;
+
+const THERMAL_VENTS = [
+  { id: "vent-west", x: -3.8, y: -14.2, z: -10.4, radius: 2.2, updraft: 1.35 },
+  { id: "vent-east", x: 2.6, y: -14.2, z: -11.8, radius: 2.2, updraft: 1.45 }
+] as const;
+
+let visualSonarSweepSec = 1.65;
+let ballastPurgeActive = false;
+let thermalUpdraftActive = false;
+
 Object.defineProperty(window, "__AURA3D_SHOWCASE_DEEP_RECOVERY__", {
   configurable: true,
   get: () => window.__DEEP_RECOVERY_EVIDENCE__
@@ -165,9 +178,12 @@ void audio.init();
 const keys = new Set<string>();
 window.addEventListener("keydown", (e) => {
   keys.add(e.code);
-  if (e.code === "Space") {
+  if (e.code === "Space" || e.code === "KeyB") {
     e.preventDefault();
+    visualSonarSweepSec = 0.01;
     handlePing();
+  } else if (e.code === "KeyE") {
+    visualSonarSweepSec = 0.01;
   } else if (e.code === "KeyF") {
     e.preventDefault();
     handleGrappleToggle();
@@ -388,7 +404,7 @@ const sceneDef = scene()
       })
     }).position(-2.2, -14.35, -10.8).scale([4.6, 4.6, 0.015]).rotate(Math.PI / 2, 0, 0),
 
-    // Point lights: warm golden floodlight on submarine + bioluminescent cyan/emerald seabed point lights
+    // Point lights: warm golden floodlight on submarine + bioluminescent cyan/emerald seabed & coral point lights
     lights.point({
       name: "sub warm golden nose floodlight",
       color: "#fbbf24",
@@ -419,6 +435,16 @@ const sceneDef = scene()
       color: "#38bdf8",
       intensity: 18
     }).position(-4.2, -9.6, -16.2),
+    lights.point({
+      name: "trench wall bioluminescent coral west",
+      color: "#22d3ee",
+      intensity: 16
+    }).position(-5.8, -11.4, -11.5),
+    lights.point({
+      name: "trench wall bioluminescent coral east",
+      color: "#34d399",
+      intensity: 16
+    }).position(4.6, -11.2, -13.0),
 
     // Camera target rig
     primitives
@@ -484,6 +510,76 @@ const sceneDef = scene()
       .position(-0.4, -13.9, -8.6)
       .rotate(0, 0.18, 0)
       .runtime({ id: "deep-sunken-reactor-vault-3d-mid", tags: ["typed-asset", "salvage-containment-vault"] }),
+
+    // 2x Massive Sunken Shipwreck Hulls on the left and back-center trench ridges (Meshy 2k PBR)
+    model(shipwreckHullAsset, {
+      name: "deep-shipwreck-hull-west-ridge",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 4.2,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(-5.8, -13.0, -11.5)
+      .rotate(0.14, 0.52, -0.18)
+      .runtime({ id: "deep-shipwreck-hull-west-ridge", tags: ["typed-asset", "shipwreck-hull"] }),
+    model(shipwreckHullAsset, {
+      name: "deep-shipwreck-hull-back-ridge",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 4.2,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(4.5, -12.8, -13.0)
+      .rotate(-0.12, -0.64, 0.16)
+      .runtime({ id: "deep-shipwreck-hull-back-ridge", tags: ["typed-asset", "shipwreck-hull"] }),
+
+    // 2x Gravity Cargo Container Pods & 2x FPS Energy Core Black-Box Pickups around the salvage site
+    model(assets.gravityCargoContainerPodMeshy, {
+      name: "salvage-cargo-pod-west",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.35,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(-3.4, -13.92, -9.6)
+      .rotate(0, 0.36, 0.08)
+      .runtime({ id: "salvage-cargo-pod-west", tags: ["typed-asset", "salvage-blackbox"] }),
+    model(assets.gravityCargoContainerPodMeshy, {
+      name: "salvage-cargo-pod-east",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.35,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(3.1, -13.88, -11.4)
+      .rotate(0, -0.44, -0.06)
+      .runtime({ id: "salvage-cargo-pod-east", tags: ["typed-asset", "salvage-blackbox"] }),
+    model(assets.fpsEnergyCorePickupMeshy, {
+      name: "salvage-blackbox-core-1",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.95,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(-1.3, -13.95, -9.4)
+      .rotate(0, 0.24, 0)
+      .runtime({ id: "salvage-blackbox-core-1", tags: ["typed-asset", "salvage-blackbox"] }),
+    model(assets.fpsEnergyCorePickupMeshy, {
+      name: "salvage-blackbox-core-2",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.95,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(1.1, -13.95, -11.6)
+      .rotate(0, -0.38, 0)
+      .runtime({ id: "salvage-blackbox-core-2", tags: ["typed-asset", "salvage-blackbox"] }),
 
     // Submarine Player Entity (Meshy 2k PBR deep-sea research submersible in left-center foreground)
     model(assets.deepSubMeshy, {
@@ -559,10 +655,34 @@ const sceneDef = scene()
       name: "breach-beacon",
       material: material.emissive({ name: "breach warning", color: "#7f1d1d", emissive: "#ef4444", opacity: 0.85 })
     }).scale(0.28).position(0, -100, 0).runtime({ id: "breach-beacon", tags: ["warning", "state-light"] }),
+
+    // 3D Grappling Winch Tether Beam & Magnetic Recovery Claw connecting deepSubMeshy to active salvage pod
     primitives.box({
       name: "grapple-line",
-      material: material.emissive({ name: "grapple cable", color: "#f59e0b", emissive: "#fbbf24", opacity: 0.95 })
-    }).scale([0.045, 0.045, 0.1]).position(0, -100, 0).runtime({ id: "grapple-line", tags: ["tether", "world-space-truth"] }),
+      material: material.emissive({ name: "grapple cable", color: "#f59e0b", emissive: "#fbbf24", emissiveIntensity: 2.35 })
+    }).scale([0.042, 0.042, 0.1]).position(0, -100, 0).runtime({ id: "grapple-line", tags: ["tether", "world-space-truth"] }),
+    primitives.sphere({
+      name: "winch-claw-head",
+      material: material.emissive({ name: "winch magnetic claw", color: "#38bdf8", emissive: "#22d3ee", emissiveIntensity: 2.5 })
+    }).scale([0.16, 0.11, 0.16]).position(0.2, -13.45, -9.2).runtime({ id: "winch-claw-head", tags: ["tether", "winch-claw"] }),
+    primitives.cylinder({
+      name: "ballast-purge-plume",
+      material: material.emissive({ name: "ballast purge jet", color: "#38bdf8", emissive: "#22d3ee", emissiveIntensity: 2.6 })
+    }).scale([0.24, 0.65, 0.24]).position(0, -100, 0).runtime({ id: "ballast-purge-plume", tags: ["fx", "ballast-purge"] }),
+
+    // Abyssal Hydrothermal Vent Updraft Plumes on the Trench Floor
+    ...THERMAL_VENTS.map((vent, idx) =>
+      primitives.torus({
+        name: `thermal-vent-plume-${idx}`,
+        material: material.emissive({
+          name: `thermal vent ring ${idx}`,
+          color: "#064e3b",
+          emissive: idx === 0 ? "#22d3ee" : "#34d399",
+          emissiveIntensity: 1.95
+        })
+      }).position(vent.x, vent.y + 0.22, vent.z).scale([0.95, 0.95, 0.025]).rotate(Math.PI / 2, 0, 0).runtime({ id: `thermal-vent-plume-${idx}`, tags: ["thermal-vent"] })
+    ),
+
     ...SILT_OFFSETS.map((offset, index) =>
       primitives.sphere({
         name: `silt-mote-${index}`,
@@ -576,29 +696,51 @@ const sceneDef = scene()
       }).scale(index % 4 === 0 ? 0.12 : 0.08).position(offset[0], -6 + offset[1], offset[2]).runtime({ id: `silt-mote-${index}`, tags: ["underwater-particle", "renderer-owned"] })
     ),
 
-    // Sonar Wave Expanding Pulse Ring (hidden so no solid cylinder disc blocks the seabed)
+    // Expanding 3D Glowing Cyan Acoustic Sonar Ping Wave Rings around the submarine
     primitives
-      .cylinder({
+      .torus({
         name: "sonar-pulse-ring",
         material: material.emissive({
           name: "sonar-wave-mat",
-          color: "#0c4a6e",
-          emissive: "#38bdf8",
-          emissiveIntensity: 0.01,
-          opacity: 0
+          color: "#0ea5e9",
+          emissive: "#22d3ee",
+          emissiveIntensity: 2.45
         })
       })
-      .position(0, -100, 0)
-      .scale([0.0001, 0.0001, 0.0001]),
+      .position(subState.x, subState.y - 0.55, subState.z)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([2.8, 2.8, 0.024])
+      .runtime({ id: "sonar-pulse-ring", tags: ["sonar-wave", "fx"] }),
+    primitives
+      .torus({
+        name: "sonar-pulse-ring-2",
+        material: material.emissive({
+          name: "sonar-wave-harmonic-mat",
+          color: "#10b981",
+          emissive: "#34d399",
+          emissiveIntensity: 1.95
+        })
+      })
+      .position(subState.x, subState.y - 0.85, subState.z)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([1.6, 1.6, 0.018])
+      .runtime({ id: "sonar-pulse-ring-2", tags: ["sonar-wave", "fx"] }),
 
-    // 3D brass salvage pods mounted as the visible 3D mesh for every salvage crate
-    ...(visualReviewCapture ? [] : crates).map((c) =>
-      model(assets.deepSunkenReactorCoreMeshy, {
-        name: `crate-node-${c.id}`,
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: c.kind === "crate-heavy" ? 1.35 : 1.15
-      }).position(c.x, c.y, c.z).runtime({ id: `crate-node-${c.id}`, tags: ["salvage", c.kind] })
+    // 3D salvage pods mounted as the visible 3D mesh for every salvage crate (alternating reactor core, cargo container, and energy core)
+    ...(visualReviewCapture ? [] : crates).map((c, idx) =>
+      model(
+        c.kind === "crate-heavy"
+          ? assets.gravityCargoContainerPodMeshy
+          : idx % 2 === 0
+            ? assets.deepSunkenReactorCoreMeshy
+            : assets.fpsEnergyCorePickupMeshy,
+        {
+          name: `crate-node-${c.id}`,
+          role: "setDressing",
+          scaleMode: "fit",
+          targetMaxDimension: c.kind === "crate-heavy" ? 1.38 : 1.15
+        }
+      ).position(c.x, c.y, c.z).runtime({ id: `crate-node-${c.id}`, tags: ["salvage", c.kind] })
     ),
 
     // Contact markers occupy the target's real world position and are hidden
@@ -606,7 +748,7 @@ const sceneDef = scene()
     ...(visualReviewCapture ? [] : initialSonarTargets).map((target) =>
       primitives.torus({
         name: `sonar-marker-${target.id}`,
-        material: material.emissive({ name: "sonar contact", color: "#075985", emissive: "#38bdf8", emissiveIntensity: 0.65, opacity: 0.65 })
+        material: material.emissive({ name: "sonar contact", color: "#075985", emissive: "#38bdf8", emissiveIntensity: 1.85 })
       }).scale([0.75, 0.75, 0.03]).rotate(Math.PI / 2, 0, 0).position(target.position.x, target.position.y, target.position.z).runtime({ id: `sonar-marker-${target.id}`, tags: ["sonar-return", "world-space-truth"] })
     )
   ]);
@@ -710,6 +852,9 @@ function resetGame(): void {
   surfaceCuePlayed = false;
   oxygenWarningCuePlayed = false;
   teleportedByHook = false;
+  visualSonarSweepSec = 1.65;
+  ballastPurgeActive = false;
+  thermalUpdraftActive = false;
   sensorEventCount = 0;
   frameCount = 0;
   timeSinceStart = 0;
@@ -736,6 +881,7 @@ function runSimulationStep(dt: number): void {
 
   frameCount += 1;
   timeSinceStart += dt;
+  visualSonarSweepSec = (visualSonarSweepSec + dt) % 4.2;
 
   // 1. Gather Inputs
   let throttle = 0;
@@ -751,23 +897,55 @@ function runSimulationStep(dt: number): void {
   if (keys.has("KeyQ") || keys.has("PageDown")) heave -= 1;
 
   const sprint = keys.has("ShiftLeft") || keys.has("ShiftRight");
-  const pitch = heave * 0.3;
 
-  // 2. Physics & Submarine Update
+  // 2. Physics, Turbo Ballast Purge & Submarine Update
   const tetheredCrates = crates.filter((c) => c.tethered);
   const tetherResult = updateTetherPhysics(
     { x: subState.x, y: subState.y, z: subState.z },
     crates,
     dt
   );
-  lastTowDrag = tetherResult.towDragForce;
+
+  // Turbo Ballast Purge (Shift): reduces heavy cargo tow drag by 45% and provides rapid ascent boost
+  ballastPurgeActive = sprint && (tetheredCrates.length > 0 || heave > 0);
+  const effectiveTowDrag = ballastPurgeActive
+    ? tetherResult.towDragForce * 0.55
+    : tetherResult.towDragForce;
+  lastTowDrag = effectiveTowDrag;
+
+  const effectiveHeave = ballastPurgeActive && heave >= 0 ? Math.min(1.55, heave + 0.55) : heave;
+  const pitch = effectiveHeave * 0.3;
 
   subState = updateSubmarine(
     subState,
-    { throttle, heave, turn, pitch, sprint },
-    tetherResult.towDragForce,
+    { throttle, heave: effectiveHeave, turn, pitch, sprint },
+    effectiveTowDrag,
     dt
   );
+
+  // Apply thermal vent updraft currents & Turbo Ballast vertical impulse outside deterministic teleport hooks
+  thermalUpdraftActive = false;
+  if (!teleportedByHook && timeSinceStart >= 15) {
+    for (const vent of THERMAL_VENTS) {
+      const horizDist = Math.hypot(subState.x - vent.x, subState.z - vent.z);
+      if (horizDist <= vent.radius && subState.y <= -6.5 && subState.y >= vent.y - 0.8) {
+        thermalUpdraftActive = true;
+        const liftFactor = 1 - horizDist / vent.radius;
+        subState = {
+          ...subState,
+          vy: subState.vy + vent.updraft * liftFactor * dt,
+          y: Math.min(0, subState.y + vent.updraft * 0.45 * liftFactor * dt)
+        };
+      }
+    }
+    if (ballastPurgeActive && tetheredCrates.length > 0 && heave >= 0) {
+      subState = {
+        ...subState,
+        vy: subState.vy + 1.25 * dt,
+        y: Math.min(0, subState.y + 0.55 * dt)
+      };
+    }
+  }
 
   if (timeSinceStart < 15 && !compositionProbeActive && !teleportedByHook) {
     subState = {
@@ -928,36 +1106,106 @@ function syncVisualNodes(): void {
   const visibleContacts = new Set(sonarState.contacts.map((contact) => contact.id));
   for (const target of initialSonarTargets) {
     const marker = app.nodes.get(`sonar-marker-${target.id}`);
-    marker?.setVisible?.(visibleContacts.has(target.id));
+    // Show contact markers when pinged or during active sonar scanner pulse
+    const scannerHighlight = !teleportedByHook && !compositionProbeActive && visualSonarSweepSec < 2.8;
+    marker?.setVisible?.(visibleContacts.has(target.id) || scannerHighlight);
     const contact = sonarState.contacts.find((entry) => entry.id === target.id);
-    if (marker && contact && !reducedMotion) {
-      const dist = contact.distance;
+    if (marker && (contact || scannerHighlight) && !reducedMotion) {
+      const dist = contact?.distance ?? 4.0;
       const pulse = 0.72 + Math.sin(timeSinceStart * 5 + dist) * 0.08;
       marker.setScale?.([pulse, pulse, 0.03]);
     }
   }
 
+  // 3D Grappling Winch Tether Beam & Claw connecting deepSubMeshy to tethered crate or nearest active salvage pod
   const tethered = crates.find((crate) => crate.tethered && !crate.banked);
   const tetherNode = app.nodes.get("grapple-line");
-  if (tetherNode && tethered) {
-    const dx = tethered.x - subState.x;
-    const dy = tethered.y - subState.y;
-    const dz = tethered.z - subState.z;
-    const distance = Math.max(0.01, Math.hypot(dx, dy, dz));
-    tetherNode.setPosition?.(subState.x + dx / 2, subState.y + dy / 2, subState.z + dz / 2);
-    tetherNode.setRotation?.(-Math.asin(dy / distance), Math.atan2(dx, dz), 0);
-    tetherNode.setScale?.([0.045, 0.045, distance]);
-    tetherNode.setVisible?.(true);
-  } else {
-    tetherNode?.setVisible?.(false);
+  const winchClawNode = app.nodes.get("winch-claw-head");
+  if (tetherNode) {
+    if (tethered) {
+      const dx = tethered.x - subState.x;
+      const dy = tethered.y - subState.y;
+      const dz = tethered.z - subState.z;
+      const distance = Math.max(0.01, Math.hypot(dx, dy, dz));
+      tetherNode.setPosition?.(subState.x + dx / 2, subState.y + dy / 2, subState.z + dz / 2);
+      tetherNode.setRotation?.(-Math.asin(dy / distance), Math.atan2(dx, dz), 0);
+      tetherNode.setScale?.([0.045, 0.045, distance]);
+      tetherNode.setVisible?.(true);
+      winchClawNode?.setPosition?.(tethered.x, tethered.y + 0.42, tethered.z);
+      winchClawNode?.setVisible?.(true);
+    } else if (!teleportedByHook && !compositionProbeActive) {
+      const winchOriginX = subState.x + 0.36;
+      const winchOriginY = subState.y - 0.34;
+      const winchOriginZ = subState.z - 0.42;
+      const targetPodX = 0.2;
+      const targetPodY = -13.55;
+      const targetPodZ = -9.2;
+      const dx = targetPodX - winchOriginX;
+      const dy = targetPodY - winchOriginY;
+      const dz = targetPodZ - winchOriginZ;
+      const distance = Math.max(0.01, Math.hypot(dx, dy, dz));
+      tetherNode.setPosition?.(winchOriginX + dx / 2, winchOriginY + dy / 2, winchOriginZ + dz / 2);
+      tetherNode.setRotation?.(-Math.asin(dy / distance), Math.atan2(dx, dz), 0);
+      tetherNode.setScale?.([0.04, 0.04, distance]);
+      tetherNode.setVisible?.(true);
+      winchClawNode?.setPosition?.(targetPodX, targetPodY + 0.12, targetPodZ);
+      winchClawNode?.setVisible?.(true);
+    } else {
+      tetherNode.setVisible?.(false);
+      winchClawNode?.setVisible?.(false);
+    }
   }
 
-  // Keep solid cylinder sonar-pulse-ring hidden so it never draws a flat disc across the reef
+  // Turbo Ballast Purge Plume under/behind submarine
+  const purgeNode = app.nodes.get("ballast-purge-plume");
+  if (purgeNode) {
+    if ((ballastPurgeActive || thermalUpdraftActive) && !compositionProbeActive) {
+      const pulse = reducedMotion ? 1.0 : 0.88 + Math.sin(timeSinceStart * 18) * 0.16;
+      purgeNode.setPosition?.(
+        subState.x - Math.sin(subState.yaw) * 1.35,
+        subState.y - 0.35,
+        subState.z - Math.cos(subState.yaw) * 1.35
+      );
+      purgeNode.setScale?.([0.24 * pulse, 0.72 * pulse, 0.24 * pulse]);
+      purgeNode.setVisible?.(true);
+    } else {
+      purgeNode.setPosition?.(0, -100, 0);
+      purgeNode.setVisible?.(false);
+    }
+  }
+
+  // Animate Abyssal Hydrothermal Vent Plume Rings
+  THERMAL_VENTS.forEach((vent, idx) => {
+    const ventNode = app.nodes.get(`thermal-vent-plume-${idx}`);
+    if (ventNode) {
+      const phase = ((timeSinceStart * 0.65 + idx * 0.5) % 1);
+      const liftY = reducedMotion ? 0.35 : phase * 2.1;
+      const radius = 0.78 + phase * 0.65;
+      ventNode.setPosition?.(vent.x, vent.y + 0.2 + liftY, vent.z);
+      ventNode.setScale?.([radius, radius, 0.024]);
+      ventNode.setVisible?.(!compositionProbeActive);
+    }
+  });
+
+  // Expanding 3D Glowing Cyan Acoustic Sonar Ping Wave Rings around the submarine
   const sonarNode = app.nodes.get("sonar-pulse-ring");
+  const sonarHarmonicNode = app.nodes.get("sonar-pulse-ring-2");
   if (sonarNode) {
-    sonarNode.setPosition?.(0, -100, 0);
-    sonarNode.setScale?.([0.0001, 0.0001, 0.0001]);
-    sonarNode.setVisible?.(false);
+    const activePingRadius = sonarState.pulseWaveRadius > 0
+      ? Math.min(5.8, 1.4 + sonarState.pulseWaveRadius * 0.14)
+      : 1.65 + (visualSonarSweepSec / 4.2) * 3.4;
+    sonarNode.setPosition?.(subState.x, subState.y - 0.55, subState.z);
+    sonarNode.setRotation?.(Math.PI / 2, 0, 0);
+    sonarNode.setScale?.([activePingRadius, activePingRadius, 0.024]);
+    sonarNode.setVisible?.(!compositionProbeActive);
+  }
+  if (sonarHarmonicNode) {
+    const harmonicPhase = ((visualSonarSweepSec + 2.1) % 4.2) / 4.2;
+    const harmonicRadius = 1.35 + harmonicPhase * 2.85;
+    sonarHarmonicNode.setPosition?.(-1.2, -13.78, -10.0);
+    sonarHarmonicNode.setRotation?.(Math.PI / 2, 0, 0);
+    sonarHarmonicNode.setScale?.([harmonicRadius, harmonicRadius, 0.02]);
+    sonarHarmonicNode.setVisible?.(!compositionProbeActive);
   }
 }
 
@@ -988,7 +1236,11 @@ function syncHud(): void {
   const zone = getDepthZone(subState.y);
   const stage = missionStage();
 
-  elZoneBadge.textContent = zone.name;
+  elZoneBadge.textContent = ballastPurgeActive
+    ? `${zone.name} · BALLAST PURGE`
+    : thermalUpdraftActive
+      ? `${zone.name} · VENT UPDRAFT`
+      : zone.name;
   elBreachBadge.style.display = oxygenState.breached ? "inline-block" : "none";
   document.body.classList.toggle("is-breached", oxygenState.breached);
   document.body.classList.toggle("is-low-oxygen", oxygenState.warningActive);
@@ -1027,7 +1279,7 @@ function syncHud(): void {
     elSonarCd.textContent = "READY";
   }
   elContactList.textContent = sonarState.contacts.length === 0
-    ? "No returns — pulse sonar"
+    ? "SONAR SCANNER ACTIVE · PULSE (SPACE) TO LOCK RETURNS"
     : sonarState.contacts.slice(0, 6).map((contact) => `${contact.kind.replace("crate-", "").toUpperCase()} ${contact.distance.toFixed(0)}m`).join(" · ");
 }
 
