@@ -33,12 +33,12 @@ export const RIM_DIMENSIONS = {
 } as const;
 
 export const COURT_SPOTS: readonly ShotSpot[] = [
-  { id: 1, name: "Left Mid (2-pt)", x: -2.8, z: 4.2, points: 2, sweetPower: 0.55 },
-  { id: 2, name: "Free Throw (2-pt)", x: 0.0, z: 4.6, points: 2, sweetPower: 0.60 },
-  { id: 3, name: "Right Mid (2-pt)", x: 2.8, z: 4.2, points: 2, sweetPower: 0.55 },
-  { id: 4, name: "Left Wing (3-pt)", x: -4.5, z: 6.2, points: 3, sweetPower: 0.78 },
-  { id: 5, name: "Top of Key (3-pt)", x: 0.0, z: 6.8, points: 3, sweetPower: 0.82 },
-  { id: 6, name: "Right Wing (3-pt)", x: 4.5, z: 6.2, points: 3, sweetPower: 0.78 }
+  { id: 1, name: "Left Mid (2-pt)", x: -1.65, z: 4.0, points: 2, sweetPower: 0.55 },
+  { id: 2, name: "Free Throw (2-pt)", x: 0.0, z: 4.3, points: 2, sweetPower: 0.60 },
+  { id: 3, name: "Right Mid (2-pt)", x: 1.65, z: 4.0, points: 2, sweetPower: 0.55 },
+  { id: 4, name: "Left Wing (3-pt)", x: -2.25, z: 4.85, points: 3, sweetPower: 0.78 },
+  { id: 5, name: "Top of Key (3-pt)", x: 0.0, z: 5.2, points: 3, sweetPower: 0.82 },
+  { id: 6, name: "Right Wing (3-pt)", x: 2.25, z: 4.85, points: 3, sweetPower: 0.78 }
 ] as const;
 
 export const COURT_BOUNDS = {

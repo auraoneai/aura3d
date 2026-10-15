@@ -55,13 +55,13 @@ const reducedMotion =
 // giving visual review a clean renderer-first frame. The normal route remains
 // unchanged for players and for the interaction/evidence specs.
 const visualReviewCapture =
-  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("capture") === "review";
+  typeof window !== "undefined" && /[?&]capture=review(?:&|$)/.test(window.location.search);
 // Candidate Meshy reactor-deck arena shell. Opt-in only via ?arena=candidate so
 // the release-validated V11 shell stays the default for players, specs, and
 // the review capture. Non-colliding presentation; lanes, chart, collisions,
 // and scoring remain route-authoritative.
 const pulseArenaCandidateEnabled =
-  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("arena") === "candidate";
+  typeof window !== "undefined" && /[?&]arena=candidate(?:&|$)/.test(window.location.search);
 if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 // ---- authored presentation constants ---------------------------------------
@@ -2405,7 +2405,9 @@ function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
   evidence.state = runState;
   evidence.status = acceptedStatus();
   evidence.paused = paused;
-  (window as any).__AURA3D_GAME__ = { state: "playing" };
+  if (evidence.frameCount >= 2) {
+    (window as any).__AURA3D_GAME__ = { state: "playing" };
+  }
   const schedulerNow = sample.time;
   // Keep the authored section and stem buses aligned even when a deterministic
   // evidence seek crosses several beat callbacks between rendered frames.

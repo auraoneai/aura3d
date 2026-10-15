@@ -82,7 +82,7 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_GALLERY_SHIFT__", {
 });
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
+const visualReviewCapture = /[?&]capture=review(?:&|$)/.test(window.location.search);
 // PRD-03 §6.6 / Q-14-1: post v2 (A3D_QR_POST, default-on) composites bloom with no
 // hidden gain and a linear-HDR threshold of 1.0, so neon practicals need real HDR
 // emissive strength (3-8) to glow. Post-off keeps the legacy authoring untouched.
@@ -259,7 +259,8 @@ addActorBox(guardDetailMesh, [0, 2.34, 0.24], [0.86, 0.1, 0.08]);
 addActorBox(guardDetailMesh, [-0.5, 1.52, 0], [0.08, 0.3, 0.24]);
 addActorBox(guardDetailMesh, [0.5, 1.52, 0], [0.08, 0.3, 0.24]);
 const GUARD_DETAIL_GEOMETRY = defineActorDetail(guardDetailMesh);
-const debugValue = new URLSearchParams(window.location.search).get("debug");
+const debugMatch = /[?&]debug=([^&]+)/.exec(window.location.search);
+const debugValue = debugMatch ? decodeURIComponent(debugMatch[1]!) : null;
 const debugMode = debugValue !== null;
 const showDebugOverlay = debugValue === "visual";
 
@@ -1766,7 +1767,9 @@ function publishEvidence(): void {
     mountedAtEpochMs: Date.now()
   };
   galleryWindow.__GALLERY_SHIFT_EVIDENCE__ = evidence;
-  (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
+  if (rendererDrawn && frameCount >= 2) {
+    (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
+  }
 }
 
 // Renderer-owned capture used by specs and probes (no compositor dependency).

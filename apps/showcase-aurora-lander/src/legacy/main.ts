@@ -108,7 +108,7 @@ type Phase = "flying" | "landed" | "crashed" | "campaign-clear";
  */
 const routeParams = new URLSearchParams(window.location.search);
 const dropMode = routeParams.get("drop");
-const visualReviewCapture = routeParams.get("capture") === "review";
+const visualReviewCapture = /[?&]capture=review(?:&|$)/.test(window.location.search);
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 const dropEvidenceMode = dropMode === "1" || dropMode === "hard";
 const hardDropEvidenceMode = dropMode === "hard";
@@ -1625,9 +1625,9 @@ function renderUpdate(dtFrame: number): void {
   const groundHere = sampleGridHeight(field, state.x, state.z);
   const altitudeAboveGround = state.y - FOOT_DROP - groundHere;
   const burning = phase === "flying" && !paused && previousControls.thrust > 0 && state.fuel > 0;
-  const plumeScale = burning ? 0.5 + previousControls.thrust * 0.7 : 0.001;
-  plumeNode.setPosition(state.x - Math.sin(state.yaw) * 0.1, state.y - FOOT_DROP * 1.35, state.z - Math.cos(state.yaw) * 0.1);
-  plumeNode.setScale([plumeScale * 0.45, plumeScale * 2.4, plumeScale * 0.45]);
+  const plumeScale = burning ? 0.22 + previousControls.thrust * 0.28 : 0.001;
+  plumeNode.setPosition(state.x - Math.sin(state.yaw) * 0.06, state.y - FOOT_DROP * 1.15, state.z - Math.cos(state.yaw) * 0.06);
+  plumeNode.setScale([plumeScale * 0.24, plumeScale * 0.85, plumeScale * 0.24]);
 
   // Bounded estimate: recomputed from the current pose/control state, using the
   // same authored integrator and terrain sampler as gameplay. It never grades a

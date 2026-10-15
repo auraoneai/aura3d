@@ -174,7 +174,7 @@ const INTERMISSION_FIRST_SECONDS = 3.2;
 const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const visualReviewCapture = typeof window !== "undefined"
-  && new URLSearchParams(window.location.search).get("capture") === "review";
+  && /[?&]capture=review(?:&|$)/.test(window.location.search);
 // The retained desktop probe is a 1440x900 frame. Keep its camera language
 // closer to the actual horde-survival reference (player hierarchy first,
 // threats readable around a broad play pocket) without changing the gameplay
@@ -256,15 +256,15 @@ const appScene = scene()
     name: "rain garden review arena",
     role: "primaryWorld",
     scaleMode: "fit",
-    targetMaxDimension: 21.5
+    targetMaxDimension: 28.5
   }).position(0, 0.025, 2.6).runtime(game.runtimeNode("neon-review-arena", {
     tags: ["set-dressing", "typed-asset", "review-background", "non-gameplay"]
   })))
   .add(primitives.box({
     name: "wet asphalt street plane",
-    size: [0.001, 0.001, 0.001],
-    position: [0, -50, 0],
-    material: material.pbr({ color: "#33565f", roughness: 0.42, metallic: 0.3, emissive: "#123845", emissiveIntensity: 0.42 })
+    size: [54, 0.04, 42],
+    position: [0, -0.04, 2.6],
+    material: material.pbr({ color: "#12242e", roughness: 0.48, metallic: 0.26, emissive: "#0a1f29", emissiveIntensity: 0.18 })
   }))
   .add(instances.box({
     name: "neon lane strips",

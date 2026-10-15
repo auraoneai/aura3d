@@ -46,13 +46,13 @@ import { createRooftopDressing } from "./environment";
 import { BucketsAudioController } from "./buckets-audio";
 
 const visualReviewCapture =
-  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("capture") === "review";
+  typeof window !== "undefined" && /[?&]capture=review(?:&|$)/.test(window.location.search);
 // Keep the heavyweight 191-joint clip actors opt-in for the standalone
 // animation/debug harness. The normal game/review lane uses the lighter
 // registered raised-pose counterparts, which keeps the visual pass within its
 // documented draw-call budget while the route's clip state remains observable.
 const animationDebugCapture =
-  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "animation";
+  typeof window !== "undefined" && /[?&]debug=animation(?:&|$)/.test(window.location.search);
 if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 export interface RooftopBucketsEvidence {
@@ -434,8 +434,8 @@ function buildScene() {
     .addMany([
       // Atmospheric & Lighting Setup
       effects.fog({ name: "dusk haze", density: 0.005, color: "#24173f", intensity: 0.14 }),
-      effects.neonBloom({ intensity: 0.16, threshold: 0.82, radius: 0.35, maxIntensity: 0.52, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.colorGrade({ exposure: 1.02, contrast: 1.06, saturation: 1.06 }),
+      effects.neonBloom({ intensity: 0.06, threshold: 0.92, radius: 0.25, maxIntensity: 0.32, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.colorGrade({ exposure: 1.0, contrast: 1.05, saturation: 1.04 }),
       effects.antiAlias({ mode: "fxaa" }),
       // A restrained arena rig leaves real surface gradients on the court and
       // typed characters instead of flattening every material into emissive UI.
@@ -860,7 +860,7 @@ function buildScene() {
         // airborne defender, and rim share one readable diagonal. It is close
         // enough for the verified athletes to read as characters while still
         // retaining court grounding and the complete ballistic chain.
-        position: visualReviewCapture ? [4.35, 3.45, 7.2] : [1.6, 4.35, 10.25],
+        position: visualReviewCapture ? [4.35, 3.45, 7.2] : [0.55, 4.55, 11.4],
         // Pan the sideline lens toward the shooter while keeping the hoop and
         // airborne defender in the same broadcast frame. The larger typed
         // athletes now occupy the action center instead of clipping against
@@ -869,8 +869,8 @@ function buildScene() {
         // grounded shooter fully in frame while retaining the backboard/rim as
         // the hero anchor. This is a framing correction paired with the
         // presentation-asset pass above, not a camera-only substitute for art.
-        target: visualReviewCapture ? [-0.86, 1.55, 1.18] : [-0.22, 1.9, 1.3],
-        fov: visualReviewCapture ? 46 : 48
+        target: visualReviewCapture ? [-0.86, 1.55, 1.18] : [0.0, 1.85, 1.5],
+        fov: visualReviewCapture ? 46 : 50
       })
     );
 }
@@ -1385,7 +1385,7 @@ function syncTransforms(): void {
   // warm-up partner, but hide it as soon as the live ball is released.  This
   // gives the opening route-primary artifact a human scale cue without
   // pretending that the inactive partner participates in collision/scoring.
-  const warmupPartnerVisible = scoreState.heat === 1 && !ballState.inFlight;
+  const warmupPartnerVisible = scoreState.heat === 1;
   defenderNode?.setVisible(hoopState.defenderActive);
   defenderPresentationNode?.setVisible(hoopState.defenderActive || warmupPartnerVisible);
   if (hoopState.defenderActive) {
@@ -1450,18 +1450,16 @@ function syncTransforms(): void {
         ]);
     }
   } else if (warmupPartnerVisible) {
-    // The inactive partner is placed on the weak side of the key in a
-    // grounded, defensive-ready stance.  It is still the registered typed
-    // defender asset; only its root presentation is authored here.  Keep the
-    // evidence state truthful (defenderTelegraph remains inactive and no
-    // defender contact region is enabled).
-    const warmupX = 2.18;
-    const warmupY = 0;
-    const warmupZ = 2.78;
+    // The inactive partner is placed in the paint/high-post in a
+    // grounded, defensive-ready stance facing the active shooter.
+    const warmupX = shooterX * 0.48 + (shooterX >= 0 ? -0.58 : 0.58);
+    const warmupY = ballState.inFlight ? Math.min(0.38, Math.max(0, (ballState.y - 1.8) * 0.2)) : 0;
+    const warmupZ = shooterZ * 0.52 + 0.25;
+    const warmupYaw = Math.atan2(shooterX - warmupX, shooterZ - warmupZ);
     const warmupSway = Math.sin(elapsedPlayTime * 1.4 + 0.8) * 0.022;
     defenderPresentationNode
       ?.setPosition(warmupX, warmupY, warmupZ)
-      .setRotation(-0.04 + warmupSway, 0.42, -0.06)
+      .setRotation(-0.04 + warmupSway, warmupYaw, -0.04)
       .setScale([PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE * 1.02, PRESENTATION_ATHLETE_SCALE]);
   } else if (visualReviewCapture && defenderAnimationState !== "hidden") {
     defenderAnimationState = "hidden";
@@ -1752,7 +1750,9 @@ function publishEvidence(): RooftopBucketsEvidence {
   };
   (window as unknown as { __ROOFTOP_BUCKETS_EVIDENCE__?: RooftopBucketsEvidence }).__ROOFTOP_BUCKETS_EVIDENCE__ = ev;
   Object.defineProperty(window, "__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__", { value: ev, configurable: true, writable: true });
-  (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
+  if (diagnostics.drawCalls > 0) {
+    (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
+  }
   return ev;
 }
 

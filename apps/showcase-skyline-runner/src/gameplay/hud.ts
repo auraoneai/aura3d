@@ -36,7 +36,7 @@ export interface SkylineHudElements {
 
 export function isSkylineDebugMode(): boolean {
   if (typeof window === "undefined") return false;
-  return new URLSearchParams(window.location.search).get("debug") === "1";
+  return /[?&]debug=1(?:&|$)/.test(window.location.search);
 }
 
 export function setupSkylineHud(panel: HTMLElement, checkpointCount: number): SkylineHudElements {

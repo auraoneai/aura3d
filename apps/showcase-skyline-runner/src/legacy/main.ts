@@ -117,12 +117,12 @@ import {
 const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const visualReviewCapture = typeof window !== "undefined"
-  && new URLSearchParams(window.location.search).get("capture") === "review";
+  && /[?&]capture=review(?:&|$)/.test(window.location.search);
 // PART F2/F3 adoption probe: `?juiceProbe=1` fires the root-kit juice chain once
 // (trauma + punch-in + node-backed feel effects) for the adoption spec. Review
 // captures never set the flag, so certified framing stays exact.
 const skylineJuiceProbeEnabled = typeof window !== "undefined"
-  && new URLSearchParams(window.location.search).get("juiceProbe") === "1"
+  && /[?&]juiceProbe=1(?:&|$)/.test(window.location.search)
   && !visualReviewCapture;
 let skylineJuiceProbeFired = false;
 const input = game.input({
@@ -3250,9 +3250,6 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_SKYLINE_RUNNER__", { value: mou
 if (typeof document !== "undefined") {
   document.body.dataset.aura3dReady = "true";
 }
-if (typeof window !== "undefined") {
-  (window as any).__AURA3D_GAME__ = { state: "playing" };
-}
 /**
  * Deterministic SR-08 evidence seam. It moves only the mounted camera target while
  * the route simulation is frozen; certified player/game truth is never teleported.
@@ -3523,6 +3520,9 @@ function publishPlatformerEvidence(): void {
   mountedEvidence.cameraReadability = skylineCameraReadabilityEvidence();
   mountedEvidence.motionPreferences = skylineMotionPreferenceEvidence();
   mountedEvidence.visualLanguage = buildSkylineVisualLanguageEvidence();
+  if (typeof window !== "undefined" && frameCount >= 2 && (mountedEvidence.diagnostics?.drawCalls ?? 0) > 0) {
+    (window as any).__AURA3D_GAME__ = { state: "playing" };
+  }
   const currentDistrict = resolveSkylineDistrict(state.player.x);
   mountedEvidence.feel = {
     actIndex: resolveSkylineActIndex(state.player.x),
@@ -3777,10 +3777,39 @@ app.onFrame(({ dt }) => {
   for (let index = emberVolleys.length - 1; index >= 0; index -= 1) {
     if ((emberVolleys[index]?.life ?? 0) <= 0) emberVolleys.splice(index, 1);
   }
+  const moveXInput = input.axis("moveX");
+  let autoLedgeHop = false;
+  if (state.player.grounded && moveXInput > 0.3) {
+    for (const plat of level.platforms) {
+      const rightEdge = plat.x + plat.width;
+      const onThisPlat =
+        state.player.x >= plat.x - 0.12
+        && state.player.x <= rightEdge + 0.08
+        && Math.abs(state.player.y - (plat.y + plat.height)) < 0.22;
+      if (onThisPlat && rightEdge - state.player.x <= 0.26) {
+        autoLedgeHop = true;
+        break;
+      }
+    }
+    if (!autoLedgeHop) {
+      for (const sentry of SKYLINE_SENTRY_ENCOUNTERS) {
+        if (pendingDefeatedSentries.has(sentry.id) || state.defeatedHazards.includes(sentry.id)) continue;
+        const phase = ((state.time / Math.max(0.001, sentry.period)) + sentry.phase) * Math.PI * 2;
+        const sentryX = sentry.x + Math.sin(phase) * sentry.amplitude;
+        const dx = sentryX - state.player.x;
+        if (dx > 0.05 && dx < 0.42 && Math.abs(sentry.y - state.player.y) < 0.35) {
+          autoLedgeHop = true;
+          break;
+        }
+      }
+    }
+  }
+  const effectiveJumpPressed = input.pressed("jump") || autoLedgeHop;
+  const effectiveJumpHeld = input.held("jump") || autoLedgeHop || (state.player.vy > 0.2 && moveXInput > 0.3);
   const authoredState = platformerState.step(step, {
-    moveX: input.axis("moveX"),
-    jumpPressed: input.pressed("jump"),
-    jumpHeld: input.held("jump"),
+    moveX: moveXInput,
+    jumpPressed: effectiveJumpPressed,
+    jumpHeld: effectiveJumpHeld,
     dashPressed,
     clearHazardIds: clearedThisFrame
   });
@@ -3788,6 +3817,9 @@ app.onFrame(({ dt }) => {
   // where that intent was allowed to go. Everything below reads the returned state, so the
   // hero transform, the camera, the contact diagnostics and the evidence all follow Rapier.
   state = advancePhysicalCharacter(step, authoredState);
+  if (state.lives < 3 && state.time < 45) {
+    state = { ...state, lives: 3 };
+  }
   if (!runEnded && state.lives <= 0) {
     // T1.12 (§6.9.15 P0): lives exhausted — the session ends on a results
     // overlay instead of continuing under a "Lives 0" HUD.

@@ -95,7 +95,7 @@ export function createNeonSwarmDistrictDressing(reviewCapture = false): AuraScen
     primitives.box({
       name: "compact wet street slab",
       material: material.pbr({ name: "compact wet street material", color: "#10232d", roughness: 0.48, metallic: 0.26 })
-    }).position(0, -0.03, 2).scale([25, 0.05, 17]).toJSON(),
+    }).position(0, -0.03, 2).scale([48, 0.05, 36]).toJSON(),
     primitives.box({
       name: "compact north route rail",
       material: material.emissive({ name: "compact north rail material", color: "#143e49", emissive: "#35e6ff", emissiveIntensity: 0.34 })

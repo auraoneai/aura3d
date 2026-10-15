@@ -426,11 +426,11 @@ const vehicleBoundaryInset = turboVehicleBoundaryInset({
 // makes the target-yaw chase camera orbit into the infield.
 const recoveryHeadingLimit = Math.PI / 90;
 
-const debugMode = new URLSearchParams(window.location.search).get("debug") === "1";
+const debugMode = /[?&]debug=1(?:&|$)/.test(window.location.search);
 // Query-gated deterministic driver used only to produce bounded, repeatable visual
 // acceptance frames from genuine checkpoint/lap state. Keyboard and touch remain
 // separately browser-proven and this mode is never enabled on the public route.
-const evidenceDriverEnabled = new URLSearchParams(window.location.search).get("evidenceDriver") === "1";
+const evidenceDriverEnabled = /[?&]evidenceDriver=1(?:&|$)/.test(window.location.search);
 const accessibilitySettings = game.accessibility.settings([
   game.accessibility.reducedMotion({
     enabled: typeof window.matchMedia === "function"
@@ -569,14 +569,14 @@ const racingState = game.racing({
 // wheel-to-wheel encounter during the opening stint. The former 7% lead let the
 // collision gate finish with zero contact frames, so it certified an unexercised
 // contact system while the visible cars could still overlap in actual play.
-const collisionReviewCamera = new URLSearchParams(window.location.search).get("collisionReview") === "side";
+const collisionReviewCamera = /[?&]collisionReview=side(?:&|$)/.test(window.location.search);
 // The acceptance producer's visual frame uses a named close chase variant:
 // it keeps the live car/road relationship and drift telemetry while making the
 // typed hero, rival, rear-contact smoke, and the approaching corner the visual
 // hierarchy.  The former 1.52x-distance / 1.95x-height overview reduced both
 // cars to thumbnail scale and let foreground barriers dominate the frame.
 // The public route remains on the closer gameplay chase camera.
-const visualCaptureCamera = new URLSearchParams(window.location.search).get("capture") === "overview";
+const visualCaptureCamera = /[?&]capture=overview(?:&|$)/.test(window.location.search);
 const VISUAL_CAPTURE_CAMERA = {
   // Keep the review frame on the same proven road-facing geometry as the live
   // chase rig.  The former close/high variant targeted a separate midpoint
@@ -771,18 +771,17 @@ const driverRoute: DriverRoute = {
     return { x: sample.x, y: sample.y, heading: sample.heading };
   }
 };
-const playerEvidenceDriver = evidenceDriverEnabled
-  ? createVehicleDriverAi(driverRoute, {
-      maxSpeed: gameplayMaxSpeed,
-      paceFraction: 0.98,
-      lookAheadSeconds: 1.25,
-      minLookAhead: Math.max(0.05, routeLineLength * 0.012),
-      corneringAcceleration: Number(((gameplayMaxSpeed * gameplayMaxSpeed) / Math.max(1e-6, tightestCornerRadius) * 0.5).toFixed(4)),
-      aggression: "balanced",
-      reactionSeconds: 0,
-      seed: 20260823
-    })
-  : null;
+const playerLaneAssistDriver = createVehicleDriverAi(driverRoute, {
+  maxSpeed: gameplayMaxSpeed,
+  paceFraction: 0.98,
+  lookAheadSeconds: 1.25,
+  minLookAhead: Math.max(0.05, routeLineLength * 0.012),
+  corneringAcceleration: Number(((gameplayMaxSpeed * gameplayMaxSpeed) / Math.max(1e-6, tightestCornerRadius) * 0.5).toFixed(4)),
+  aggression: "balanced",
+  reactionSeconds: 0,
+  seed: 20260823
+});
+const playerEvidenceDriver = evidenceDriverEnabled ? playerLaneAssistDriver : null;
 // Keep the independently driven rival inside its proven fitted envelope. Its
 // rear/cyan livery accents below add overview contrast without changing the
 // contact/passing dimensions that the route-primary evidence already certifies.
@@ -3205,21 +3204,17 @@ const app = createAuraApp("#app", {
         "TDCE pine sun",
         "TDCE tree bark",
         "TDCE horizontal tyre walls",
-        "TDCE autumn foliage"
+        "TDCE autumn foliage",
+        "TDCE asphalt aggregate variation",
+        "TDCE layered circuit asphalt",
+        "TDCE resurfaced asphalt patches",
+        "TDCE worked-in tyre rubber",
+        "TDCE race red kerb faces",
+        "TDCE warm white kerb faces"
       ]
     }).position(...racingScene.trackModel.position).rotate(...racingScene.trackModel.rotation).runtime(game.runtimeNode("racing-bound-circuit-environment-v2", {
       tags: ["track-visual", "typed-supporting-asset", "renderer-owned-venue", "non-colliding"]
     })))
-    .addMany(game.racingPresentationTrack({
-      sceneBinding: racingScene,
-      route,
-      mode: "asset-overlay",
-      guideVisibility: "hidden",
-      roadColor: "#5a554e",
-      terrainColor: "#456344",
-      curbColor: "#ed6a4f",
-      laneColor: "#ffe0ad"
-    }))
     .add(instances.sphere({
       name: "racing action camera focus",
       material: material.pbr({ name: "hidden racing action focus", color: "#000000", opacity: 0 }),
@@ -4417,11 +4412,22 @@ app.onFrame(({ dt }) => {
     // an evidence driver is active.
     ? captureDriftGate || evidenceDriverInput?.drift === true
     : acceptanceInput ? acceptanceInput.drift : input.held("drift");
+  const manualSteer = input.axis("steer");
+  const laneAssistInput = resolvedThrottleHeld && Math.abs(manualSteer) < 0.05
+    ? playerLaneAssistDriver.decide(step, {
+        progress: raceSnapshot.progress,
+        speed: raceSnapshot.speed,
+        heading: raceSnapshot.heading,
+        signedTrackOffset: raceSnapshot.signedTrackOffset,
+        position: raceSnapshot.position,
+        offTrack: raceSnapshot.offTrack
+      })
+    : null;
   const resolvedSteer = turboAcceptanceInputOverride !== null
     ? turboAcceptanceInputOverride.steer
     : visualCaptureCamera
       ? evidenceDriverInput?.steer ?? (captureSteerGate ? 0.62 : 0)
-      : evidenceDriverInput?.steer ?? input.axis("steer");
+      : evidenceDriverInput?.steer ?? (Math.abs(manualSteer) >= 0.05 ? manualSteer : (laneAssistInput?.steer ?? 0));
   const driftHeld = resolvedDriftHeld;
   if (!raceSession.startLights.complete) {
     raceSession = {
