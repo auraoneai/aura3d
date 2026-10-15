@@ -1419,9 +1419,10 @@ function update(dt: number): void {
   }
 
   if (elapsedSeconds < 12 && !visualReviewCapture) {
-    player.x = Math.max(-1.6, Math.min(1.6, player.x));
-    player.z = Math.max(0.9, Math.min(3.3, player.z));
+    player.x = Math.max(-1.2, Math.min(1.2, player.x));
+    player.z = Math.max(2.1, Math.min(3.3, player.z));
   }
+  app.nodes.get("neon-review-arena")?.setPosition(player.x * 0.35, 0.025, player.z - 2.3);
 
   const playerNode = app.nodes.get("neon-player");
   const aim = resolveAim();
