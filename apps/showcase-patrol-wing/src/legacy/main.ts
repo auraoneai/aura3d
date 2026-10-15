@@ -1331,11 +1331,11 @@ function readFlightInput(): FlightInput {
   const ctrlHeld = manualHeld.has("ControlLeft") || manualHeld.has("ControlRight");
   const manualTurn = left || right || manualHeld.has("KeyQ") || manualHeld.has("KeyE");
 
-  // When KeyW / ArrowUp is held without conflicting manual turn/pitch-up inputs,
-  // smoothly power takeoff/cruise and guide pitch & heading through the ordered ring course.
-  if (rawDown && !rawUp && !manualTurn) {
+  // During initial takeoff and early ring approach (< 8s) when ShiftLeft or KeyW is held,
+  // smoothly guide pitch & heading toward the active ring gate so the jet flies over the island through the 3D rings.
+  if ((rawDown && !rawUp && !manualTurn) || (shiftHeld && timeInPatrolValue < 8.5 && !evidenceStaged)) {
     const targetGate = RING_GATES[Math.min(rings.nextRing, RING_GATES.length - 1)] ?? RING_GATES[0]!;
-    const targetAlt = flight.grounded === "preflight" ? 8.8 : targetGate.position[1];
+    const targetAlt = flight.grounded === "preflight" ? 9.2 : targetGate.position[1];
     const desiredForwardY = Math.max(-0.14, Math.min(0.22, (targetAlt - flight.position[1]) * 0.055));
     let autoYawLeft = false;
     let autoYawRight = false;
@@ -1345,8 +1345,8 @@ function readFlightInput(): FlightInput {
       const fx = flight.forward[0];
       const fz = flight.forward[2];
       const turnError = Math.atan2(fz * dx - fx * dz, fx * dx + fz * dz);
-      autoYawLeft = turnError > 0.05;
-      autoYawRight = turnError < -0.05;
+      autoYawLeft = turnError > 0.04;
+      autoYawRight = turnError < -0.04;
     }
     return {
       pitchUp: flight.forward[1] < desiredForwardY - 0.015,
@@ -1415,15 +1415,14 @@ function syncPlaneVisual(): void {
   const meshEuler = planeEulerXYZ(forward, up, right);
   planeHandle.setPosition(flightPosition[0], flightPosition[1], flightPosition[2]);
   planeHandle.setRotation(meshEuler.x, meshEuler.y, meshEuler.z);
-  // Use the authored body axes, including pitch and bank, for every attached
-  // detail.
-  const placeAccent = (handle: AuraRuntimeNodeHandle | undefined, localForward: number, localSide: number, localUp: number, visible: boolean): void => {
+  // Hide legacy primitive aircraft accents so only the 3D Meshy fighter jet renders cleanly.
+  const placeAccent = (handle: AuraRuntimeNodeHandle | undefined, localForward: number, localSide: number, localUp: number, _visible: boolean): void => {
     if (!handle) return;
     handle.setPosition(
       flightPosition[0] + forward[0] * localForward + right[0] * localSide + up[0] * localUp,
-      flightPosition[1] + forward[1] * localForward + right[1] * localSide + up[1] * localUp,
+      -80,
       flightPosition[2] + forward[2] * localForward + right[2] * localSide + up[2] * localUp
-    ).setRotation(meshEuler.x, meshEuler.y, meshEuler.z).setVisible(visible);
+    ).setRotation(meshEuler.x, meshEuler.y, meshEuler.z).setVisible(false);
   };
   const airborne = flight.grounded === "airborne" && flight.speed > 2;
   const aircraftVisible = airborne || flight.grounded === "preflight";

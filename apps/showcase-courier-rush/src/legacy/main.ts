@@ -247,12 +247,12 @@ const chaseCamera = camera.follow({
   // desktop frame, which hid the cargo identity and made the scene read like
   // an empty road board. This is still the same follow rig and simulation
   // heading; only the visual composition is corrected.
-  targetOffset: visualReviewCapture ? [0, 1.16, -0.05] : [0, 0.85, -2.2],
+  targetOffset: visualReviewCapture ? [0, 1.16, -0.05] : [0, 0.95, -0.45],
   offsetMode: "target-yaw",
   offset: visualReviewCapture
     ? [0.55, 2.7, 8.6]
-    : [0, 2.85, 6.2] as [number, number, number],
-  fov: visualReviewCapture ? 55 : 48,
+    : [0, 2.35, 5.4] as [number, number, number],
+  fov: visualReviewCapture ? 55 : 50,
   // Review retains the normal follow rig but removes its long residual pan so
   // a real collision is framed where the simulation says it occurred.
   smoothing: visualReviewCapture ? 0.1 : 0.22
@@ -318,6 +318,15 @@ function sanitizeCityNodes(
       name.startsWith("courier eastbound portal ") ||
       name.startsWith("courier overhead ") ||
       name.startsWith("courier dispatch gantry ") ||
+      name.startsWith("courier rain trace ") ||
+      name === "courier review structural ribs" ||
+      name === "courier review rib practicals" ||
+      name === "courier opening crosswalk" ||
+      name === "courier reflective curb markers" ||
+      name === "courier loading bay plinths" ||
+      name === "courier left curb markers" ||
+      name === "courier right curb markers" ||
+      name === "courier pressure gate cyan lane laser" ||
       name === "courier dispatch billboard" ||
       name === "courier drop billboard" ||
       name.startsWith("courier dispatch sign post ") ||
@@ -518,7 +527,7 @@ const app = createAuraApp("#app", {
         receiveShadow: true
       })
         .position(SPAWN_POSE.x, 0, SPAWN_POSE.z)
-        .rotate(0, -SPAWN_POSE.heading + Math.PI, 0)
+        .rotate(0, -SPAWN_POSE.heading, 0)
         .runtime({ id: "courier-player-van-mesh", tags: ["player", "vehicle", "typed-primary-asset"] })
     )
     // Legacy low-poly van meshes kept hidden underground so they never cover the hero van.
@@ -1433,9 +1442,9 @@ app.onFrame(({ dt }) => {
   // ---- presentation updates -----------------------------------------------------
   const fx = Math.cos(vanAfter.heading);
   const fz = Math.sin(vanAfter.heading);
-  // Presentation yaw: `-heading + PI` maps local -X (front hood) to [cos(h), 0, sin(h)]
-  // and local +X (rear cargo doors) toward the chase camera.
-  vanNode.setPosition(vanAfter.x, 0, vanAfter.z).setRotation(0, -vanAfter.heading + Math.PI, 0);
+  // Presentation yaw: `-heading` maps local +X (front hood) to [cos(h), 0, sin(h)]
+  // and local -X (rear cargo doors) toward the chase camera.
+  vanNode.setPosition(vanAfter.x, 0, vanAfter.z).setRotation(0, -vanAfter.heading, 0);
   cameraTargetNode
     .setPosition(vanAfter.x, 0.2, vanAfter.z)
     .setRotation(0, -vanAfter.heading - Math.PI / 2, 0)
@@ -1448,7 +1457,7 @@ app.onFrame(({ dt }) => {
   parcelAttachedVisible = Boolean(planNow && carrying);
 
   // Keep primitive trim and bumper proxies hidden so the 3D Meshy van reads cleanly.
-  const vanRenderHeading = -vanAfter.heading + Math.PI;
+  const vanRenderHeading = -vanAfter.heading;
   const trimLateral = VAN_HALF_WIDTH + 0.04;
   vanTrimNodes[0]!
     .setPosition(vanAfter.x + rightX * -trimLateral, -50, vanAfter.z + rightZ * -trimLateral)
@@ -1468,9 +1477,9 @@ app.onFrame(({ dt }) => {
     .setScale(parcelBeaconVisible ? [0.07, 0.03, 0.07] : [0.001, 0.001, 0.0001])
     .setVisible(parcelBeaconVisible);
   vanRoofBeacon
-    .setPosition(vanAfter.x + fx * 0.08, visualReviewCapture ? 1.28 : 1.18, vanAfter.z + fz * 0.08)
+    .setPosition(vanAfter.x + fx * 0.08, -50, vanAfter.z + fz * 0.08)
     .setRotation(0, vanRenderHeading, 0)
-    .setVisible(!reducedMotion);
+    .setVisible(false);
 
   // A strike's scene feedback is placed at the collider-boundary contact
   // computed above. The short envelope is hidden again as soon as the real
@@ -1591,12 +1600,12 @@ app.onFrame(({ dt }) => {
   if (dropLookbackRemainingSeconds > 0) {
     dropLookbackRemainingSeconds = Math.max(0, dropLookbackRemainingSeconds - stepSeconds);
   }
-  const offset = chaseOffsetForBlend(0, visualReviewCapture ? 11.4 : 4.15);
+  const offset = chaseOffsetForBlend(0, visualReviewCapture ? 11.4 : 5.4);
   Object.assign(chaseCamera as unknown as MutableChaseCamera, {
     offset: [
       visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : 0,
-      visualReviewCapture ? 3.28 : 2.2,
-      visualReviewCapture ? offset.offsetZ : 4.15
+      visualReviewCapture ? 3.28 : 2.35,
+      visualReviewCapture ? offset.offsetZ : 5.4
     ] as const
   });
 

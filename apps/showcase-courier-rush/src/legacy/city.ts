@@ -108,9 +108,9 @@ function reviewCorridorNodes(): AuraNodeInput[] {
   for (let bay = 0; bay < 12; bay += 1) {
     const side = bay % 2 === 0 ? -1 : 1;
     const depthIndex = Math.floor(bay / 2);
-    const z = 17 - depthIndex * 7.4;
+    const z = 20 - depthIndex * 7.4;
     const height = 6.2 + (depthIndex % 3) * 1.15;
-    facadeTransforms.push({ position: [side * 6.5, height / 2, z], scale: [1.7, height / 2, 3.55] });
+    facadeTransforms.push({ position: [side * 8.8, height / 2, z], scale: [1.9, height / 2, 3.65] });
 
     // The inner faces use repeated window bays rather than unrelated neon
     // confetti. Their regular vertical/horizontal cadence carries real scale
@@ -119,7 +119,7 @@ function reviewCorridorNodes(): AuraNodeInput[] {
     for (let row = 0; row < 4; row += 1) {
       for (let column = 0; column < 3; column += 1) {
         practicalTransforms.push({
-          position: [side * 4.78, 1.05 + row * 1.16, z - 2.05 + column * 2.05],
+          position: [side * 7.75, 1.05 + row * 1.16, z - 2.05 + column * 2.05],
           scale: [0.055, 0.22, 0.66]
         });
         practicalColors.push((depthIndex + row + column + (side > 0 ? 1 : 0)) % 5 === 0 ? "#ff9aaa" : "#8af7ff");
@@ -166,23 +166,23 @@ function reviewCorridorNodes(): AuraNodeInput[] {
     );
     laneColors.push(dash % 3 === 0 ? "#ffd166" : "#a5f3fc", dash % 3 === 1 ? "#ff9aaa" : "#8af7ff");
     curbTransforms.push(
-      { position: [-2.18, 0.08, z], scale: [0.14, 0.09, 1.1] },
-      { position: [2.18, 0.08, z + 0.35], scale: [0.14, 0.09, 1.1] }
+      { position: [-5.35, 0.08, z], scale: [0.18, 0.12, 1.8] },
+      { position: [5.35, 0.08, z + 0.35], scale: [0.18, 0.12, 1.8] }
     );
   }
   return [
     instances.box({
       name: "courier review main road",
       size: [1, 1, 1],
-      transforms: [{ position: [0, -0.08, -2], scale: [4.6, 0.08, 34] }],
+      transforms: [{ position: [0, -0.08, 0], scale: [10.8, 0.08, 52] }],
       material: road
     }),
     instances.box({
       name: "courier review sidewalks",
       size: [1, 1, 1],
       transforms: [
-        { position: [-6.1, 0.08, -2], scale: [1.45, 0.16, 34] },
-        { position: [6.1, 0.08, -2], scale: [1.45, 0.16, 34] }
+        { position: [-6.65, 0.08, 0], scale: [2.4, 0.16, 52] },
+        { position: [6.65, 0.08, 0], scale: [2.4, 0.16, 52] }
       ],
       material: sidewalk
     }),
