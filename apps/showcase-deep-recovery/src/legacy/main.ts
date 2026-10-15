@@ -678,9 +678,10 @@ const sceneDef = scene()
           name: `thermal vent ring ${idx}`,
           color: "#064e3b",
           emissive: idx === 0 ? "#22d3ee" : "#34d399",
-          emissiveIntensity: 1.95
+          emissiveIntensity: 0.35,
+          opacity: 0.55
         })
-      }).position(vent.x, vent.y + 0.22, vent.z).scale([0.95, 0.95, 0.025]).rotate(Math.PI / 2, 0, 0).runtime({ id: `thermal-vent-plume-${idx}`, tags: ["thermal-vent"] })
+      }).position(vent.x, vent.y + 0.22, vent.z).scale([0.75, 0.75, 0.008]).rotate(Math.PI / 2, 0, 0).runtime({ id: `thermal-vent-plume-${idx}`, tags: ["thermal-vent"] })
     ),
 
     ...SILT_OFFSETS.map((offset, index) =>
@@ -690,40 +691,42 @@ const sceneDef = scene()
           name: `bioluminescent silt ${index}`,
           color: index % 3 === 0 ? "#064e3b" : "#083344",
           emissive: index % 3 === 0 ? "#34d399" : "#22d3ee",
-          emissiveIntensity: 1.15,
-          opacity: 0.72
+          emissiveIntensity: 0.85,
+          opacity: 0.65
         })
-      }).scale(index % 4 === 0 ? 0.12 : 0.08).position(offset[0], -6 + offset[1], offset[2]).runtime({ id: `silt-mote-${index}`, tags: ["underwater-particle", "renderer-owned"] })
+      }).scale(index % 4 === 0 ? 0.09 : 0.06).position(offset[0], -6 + offset[1], offset[2]).runtime({ id: `silt-mote-${index}`, tags: ["underwater-particle", "renderer-owned"] })
     ),
 
-    // Expanding 3D Glowing Cyan Acoustic Sonar Ping Wave Rings around the submarine
+    // Subtle 3D Acoustic Sonar Ping Wave Rings on the seabed floor
     primitives
       .torus({
         name: "sonar-pulse-ring",
         material: material.emissive({
           name: "sonar-wave-mat",
-          color: "#0ea5e9",
+          color: "#083344",
           emissive: "#22d3ee",
-          emissiveIntensity: 2.45
+          emissiveIntensity: 0.38,
+          opacity: 0.52
         })
       })
-      .position(subState.x, subState.y - 0.55, subState.z)
+      .position(-1.8, -14.28, -10.4)
       .rotate(Math.PI / 2, 0, 0)
-      .scale([2.8, 2.8, 0.024])
+      .scale([2.4, 2.4, 0.008])
       .runtime({ id: "sonar-pulse-ring", tags: ["sonar-wave", "fx"] }),
     primitives
       .torus({
         name: "sonar-pulse-ring-2",
         material: material.emissive({
           name: "sonar-wave-harmonic-mat",
-          color: "#10b981",
+          color: "#064e3b",
           emissive: "#34d399",
-          emissiveIntensity: 1.95
+          emissiveIntensity: 0.32,
+          opacity: 0.45
         })
       })
-      .position(subState.x, subState.y - 0.85, subState.z)
+      .position(-1.2, -14.3, -10.8)
       .rotate(Math.PI / 2, 0, 0)
-      .scale([1.6, 1.6, 0.018])
+      .scale([1.6, 1.6, 0.007])
       .runtime({ id: "sonar-pulse-ring-2", tags: ["sonar-wave", "fx"] }),
 
     // 3D salvage pods mounted as the visible 3D mesh for every salvage crate (alternating reactor core, cargo container, and energy core)
@@ -925,7 +928,7 @@ function runSimulationStep(dt: number): void {
 
   // Apply thermal vent updraft currents & Turbo Ballast vertical impulse outside deterministic teleport hooks
   thermalUpdraftActive = false;
-  if (!teleportedByHook && timeSinceStart >= 15) {
+  if (!teleportedByHook && timeSinceStart >= 45) {
     for (const vent of THERMAL_VENTS) {
       const horizDist = Math.hypot(subState.x - vent.x, subState.z - vent.z);
       if (horizDist <= vent.radius && subState.y <= -6.5 && subState.y >= vent.y - 0.8) {
@@ -947,14 +950,14 @@ function runSimulationStep(dt: number): void {
     }
   }
 
-  if (timeSinceStart < 15 && !compositionProbeActive && !teleportedByHook) {
+  if (timeSinceStart < 45 && !compositionProbeActive && !teleportedByHook) {
     subState = {
       ...subState,
-      x: Math.max(-3.6, Math.min(-1.6, subState.x)),
-      y: Math.max(-12.2, Math.min(-10.8, subState.y)),
-      z: Math.max(-7.8, Math.min(-5.8, subState.z)),
-      yaw: Math.max(0.22, Math.min(0.42, subState.yaw)),
-      pitch: Math.max(-0.12, Math.min(0.12, subState.pitch))
+      x: Math.max(-3.6, Math.min(-2.2, subState.x)),
+      y: Math.max(-12.2, Math.min(-11.0, subState.y)),
+      z: Math.max(-8.2, Math.min(-6.8, subState.z)),
+      yaw: Math.max(0.24, Math.min(0.38, subState.yaw)),
+      pitch: Math.max(-0.08, Math.min(0.08, subState.pitch))
     };
   }
 
@@ -1043,10 +1046,10 @@ function syncVisualNodes(): void {
   // so the submarine stays cleanly in the left-center third overlooking the ROVs and salvage pods.
   const camNode = app.nodes.get("camera-target");
   if (camNode) {
-    if (!compositionProbeActive && !teleportedByHook && timeSinceStart < 15) {
-      const camX = -2.2 + (subState.x + 2.8) * 0.25;
-      const camY = -11.6 + (subState.y + 11.6) * 0.2;
-      const camZ = -7.2 + (subState.z + 6.6) * 0.25;
+    if (!compositionProbeActive && !teleportedByHook && timeSinceStart < 45) {
+      const camX = -2.0 + (subState.x + 2.8) * 0.2;
+      const camY = -11.6 + (subState.y + 11.6) * 0.18;
+      const camZ = -7.4 + (subState.z + 7.2) * 0.2;
       camNode.setPosition?.(camX, camY, camZ);
       camNode.setRotation?.(0, 0, 0);
     } else {
@@ -1179,32 +1182,32 @@ function syncVisualNodes(): void {
     const ventNode = app.nodes.get(`thermal-vent-plume-${idx}`);
     if (ventNode) {
       const phase = ((timeSinceStart * 0.65 + idx * 0.5) % 1);
-      const liftY = reducedMotion ? 0.35 : phase * 2.1;
-      const radius = 0.78 + phase * 0.65;
-      ventNode.setPosition?.(vent.x, vent.y + 0.2 + liftY, vent.z);
-      ventNode.setScale?.([radius, radius, 0.024]);
+      const liftY = reducedMotion ? 0.25 : phase * 1.35;
+      const radius = 0.65 + phase * 0.45;
+      ventNode.setPosition?.(vent.x, vent.y + 0.18 + liftY, vent.z);
+      ventNode.setScale?.([radius, radius, 0.008]);
       ventNode.setVisible?.(!compositionProbeActive);
     }
   });
 
-  // Expanding 3D Glowing Cyan Acoustic Sonar Ping Wave Rings around the submarine
+  // Subtle 3D Acoustic Sonar Ping Wave Rings on the seabed floor
   const sonarNode = app.nodes.get("sonar-pulse-ring");
   const sonarHarmonicNode = app.nodes.get("sonar-pulse-ring-2");
   if (sonarNode) {
     const activePingRadius = sonarState.pulseWaveRadius > 0
-      ? Math.min(5.8, 1.4 + sonarState.pulseWaveRadius * 0.14)
-      : 1.65 + (visualSonarSweepSec / 4.2) * 3.4;
-    sonarNode.setPosition?.(subState.x, subState.y - 0.55, subState.z);
+      ? Math.min(4.2, 1.3 + sonarState.pulseWaveRadius * 0.1)
+      : 1.5 + (visualSonarSweepSec / 4.2) * 2.4;
+    sonarNode.setPosition?.(-1.6, -14.28, -10.4);
     sonarNode.setRotation?.(Math.PI / 2, 0, 0);
-    sonarNode.setScale?.([activePingRadius, activePingRadius, 0.024]);
+    sonarNode.setScale?.([activePingRadius, activePingRadius, 0.008]);
     sonarNode.setVisible?.(!compositionProbeActive);
   }
   if (sonarHarmonicNode) {
     const harmonicPhase = ((visualSonarSweepSec + 2.1) % 4.2) / 4.2;
-    const harmonicRadius = 1.35 + harmonicPhase * 2.85;
-    sonarHarmonicNode.setPosition?.(-1.2, -13.78, -10.0);
+    const harmonicRadius = 1.2 + harmonicPhase * 2.1;
+    sonarHarmonicNode.setPosition?.(-1.2, -14.3, -10.8);
     sonarHarmonicNode.setRotation?.(Math.PI / 2, 0, 0);
-    sonarHarmonicNode.setScale?.([harmonicRadius, harmonicRadius, 0.02]);
+    sonarHarmonicNode.setScale?.([harmonicRadius, harmonicRadius, 0.007]);
     sonarHarmonicNode.setVisible?.(!compositionProbeActive);
   }
 }

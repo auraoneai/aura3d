@@ -543,17 +543,19 @@ const app = createAuraApp("#app", {
           .rotate(0, -Math.PI * 0.5, 0)
       ])
     )
-    // 3D Meshy overhead cyber highway arch gantries & intersection pylons.
+    // 3D Meshy overhead cyber highway arch gantries & intersection pylons placed on outer sidewalk shoulders so the 4-lane road is 100% clear.
     .addMany(
       [5.5, -5.5].map((zArch, idx) =>
         model(assets.pulseNeonGateArchMeshy, {
           name: `courier-avenue-arch-gantry-${idx}`,
           role: "setDressing",
           scaleMode: "fit",
-          targetMaxDimension: 12.2,
+          targetMaxDimension: 4.8,
           castShadow: false,
           receiveShadow: true
-        }).position(0, 0, zArch)
+        })
+          .position(idx % 2 === 0 ? -9.2 : 9.2, 0, zArch)
+          .rotate(0, idx % 2 === 0 ? Math.PI * 0.5 : -Math.PI * 0.5, 0)
       )
     )
     .addMany(

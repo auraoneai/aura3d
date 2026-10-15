@@ -467,9 +467,9 @@ function applyHit(enemyId: string, point: readonly [number, number, number]): vo
 }
 
 function autoRefillCombatMag(): void {
-  if (state.ammo <= 0 && state.reserve > 0 && (state.hits > 0 || state.kills > 0)) {
-    const refill = Math.min(8, state.reserve);
-    state.ammo = refill;
+  if (state.ammo <= 2 && state.reserve > 0) {
+    const refill = Math.min(8 - state.ammo, state.reserve);
+    state.ammo += refill;
     state.reserve -= refill;
     state.dryFirePulse = 0;
     state.reloadClock = 0;

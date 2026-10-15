@@ -307,7 +307,7 @@ function heroNodes(): AuraSceneNode[] {
       .position(0, -60, 0)
       .runtime({ id: "ghost-plane", tags: ["typed-asset", "ghost"] })
       .toJSON(),
-    model(assets.patrolAircraftMeshy, {
+    model(assets.patrolJetAircraftMeshy, {
       name: "wingman-escort-jet",
       role: "setDressing",
       scaleMode: "fit",

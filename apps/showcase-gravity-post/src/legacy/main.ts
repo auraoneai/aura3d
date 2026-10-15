@@ -326,12 +326,12 @@ for (let i = 0; i < nebulaConfigs.length; i += 1) {
         name: `nebula-mat-${i}`,
         color: neb.color,
         emissive: neb.emissive,
-        emissiveIntensity: neb.intensity,
-        opacity: neb.opacity
+        emissiveIntensity: 0.01,
+        opacity: 0
       })
     })
-      .position(neb.pos[0], neb.pos[1], neb.pos[2])
-      .scale([neb.scale[0], neb.scale[1], neb.scale[2]])
+      .position(neb.pos[0], -90, neb.pos[2])
+      .scale([0.0001, 0.0001, 0.0001])
   );
 }
 
@@ -471,7 +471,7 @@ for (const body of WELL_BODIES) {
         name: `${body.name} orbiting courier probe`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.1
+        targetMaxDimension: 0.42
       })
         .position(body.position[0] + planetDiameter * 0.65, PLAY_PLANE_Y + 0.16, body.position[1])
         .runtime(game.runtimeNode(`gravity-escort-probe-${body.id}`, {
@@ -494,7 +494,7 @@ for (const body of WELL_BODIES) {
   }
 }
 
-// Stations: Prominent 3D Space Stations (1.9), Orbital Relays (1.4), Cargo Pods (0.95) & Dock Beacons
+// Stations: Compact 3D Space Stations (0.55), Orbital Relays (0.48), Cargo Pods (0.36) & Dock Beacons orbiting cleanly around the planets
 for (const station of stations) {
   const reviewStationRelevant = station.id === "gale-terminal" || station.id === "rust-exchange";
   sceneBuilder = sceneBuilder.add(
@@ -513,7 +513,7 @@ for (const station of stations) {
       name: station.id + " space station hub",
       role: "primaryWorld",
       scaleMode: "fit",
-      targetMaxDimension: reviewStationRelevant ? 1.95 : 1.75
+      targetMaxDimension: reviewStationRelevant ? 0.58 : 0.48
     })
       .position(
         station.x + (station.id === "rust-exchange" ? -reviewRoutePerpX * 0.52 : station.id === "gale-terminal" ? reviewRoutePerpX * 0.55 : 0.24),
@@ -521,7 +521,6 @@ for (const station of stations) {
         station.z + (station.id === "rust-exchange" ? -reviewRoutePerpZ * 0.52 : station.id === "gale-terminal" ? reviewRoutePerpZ * 0.55 : -0.24)
       )
       .rotate(0.28, 0.72, -0.18)
-      .scale(1.0)
       .runtime(game.runtimeNode(station.id + "-space-station-hub", { tags: ["typed-asset", "space-station-hub", "non-colliding"] }))
   );
   sceneBuilder = sceneBuilder.add(
@@ -529,7 +528,7 @@ for (const station of stations) {
       name: station.id + " dock gate",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: reviewStationRelevant ? 1.45 : 1.35
+      targetMaxDimension: reviewStationRelevant ? 0.48 : 0.42
     })
       .position(
         station.x + (station.id === "rust-exchange" ? reviewRoutePerpX * 0.38 : station.id === "gale-terminal" ? -reviewRoutePerpX * 0.38 : -0.22),
@@ -537,7 +536,6 @@ for (const station of stations) {
         station.z + (station.id === "rust-exchange" ? reviewRoutePerpZ * 0.38 : station.id === "gale-terminal" ? -reviewRoutePerpZ * 0.38 : 0.22)
       )
       .rotate(0.32, 0.78, -0.22)
-      .scale(1.0)
       .runtime(game.runtimeNode(station.id + "-dock-gate", { tags: ["typed-asset", "destination-gate"] }))
   );
   sceneBuilder = sceneBuilder.add(
@@ -545,7 +543,7 @@ for (const station of stations) {
       name: station.id + " moored cargo pod",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.95
+      targetMaxDimension: 0.38
     })
       .position(station.x + 0.28, PLAY_PLANE_Y + 0.08, station.z + 0.26)
       .rotate(0.18, 0.48, -0.12)
@@ -797,14 +795,14 @@ for (const [progress, lateral, yawOffset] of [
   );
 }
 
-// Primary orbital courier spacecraft: prominent 3D Meshy Cargo Shuttle (max dimension 1.85) with glowing plasma engine trail
+// Primary orbital courier spacecraft: 3D Meshy Cargo Shuttle (max dimension 0.92) with glowing plasma engine trail
 sceneBuilder = sceneBuilder
   .add(
     model(cargoShuttleAsset, {
       name: "mail-pod",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 1.85
+      targetMaxDimension: 0.92
     })
       .position(stations[0]!.x, PLAY_PLANE_Y + 0.12, stations[0]!.z)
       .runtime(game.runtimeNode("mail-pod"))

@@ -563,12 +563,13 @@ function auroraBandNodes(entry: LanderSite) {
           name: `aurora glow ${i + 1}`,
           color: sheetColor,
           emissive: sheetColor,
-          emissiveIntensity: c.drive
+          emissiveIntensity: 0.01,
+          opacity: 0
         })
       })
-        .position(c.x, c.y, c.z)
+        .position(c.x, -90, c.z)
         .rotate(c.tiltX, c.tiltY, c.tiltZ)
-        .scale([c.w, c.h, 0.18])
+        .scale([0.0001, 0.0001, 0.0001])
         .runtime(game.runtimeNode(`aurora-band-${i + 1}`, { tags: ["environment", "aurora-band", "renderer-owned"] }))
     );
   }

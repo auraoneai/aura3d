@@ -244,9 +244,9 @@ const appScene = scene()
       name: "orbital defense relay beta",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.88
+      targetMaxDimension: 0.82
     })
-      .position(0, 2.32, 0.12)
+      .position(0, 1.98, 0.12)
       .rotate(0.32, 0.45, 0.12)
       .runtime(game.runtimeNode("orbital-relay-zenith"))
   )
@@ -270,30 +270,19 @@ const appScene = scene()
       .position(-1.76, -1.34, 0.24)
       .rotate(0.45, 0.95, 0.32)
   )
-  // Deep-space nebula backdrop + rich multi-layer starfield directly in camera frustum
+  // Deep-space starfield directly in camera frustum (nebula cloud ovals hidden to keep Earth and orbital stations crystal clear)
   .add(
     instances.sphere({
       name: "orbital-nebula-cyan-cloud",
       material: material.emissive({
         color: "#0c4a6e",
         emissive: "#0284c7",
-        emissiveIntensity: 0.65,
-        opacity: 0.24
+        emissiveIntensity: 0.01,
+        opacity: 0
       }),
       castShadow: false,
       receiveShadow: false,
-      transforms: Array.from({ length: 28 }, (_, i) => {
-        const x = (orbitalHash(i + 10) - 0.5) * 11.5;
-        const y = (orbitalHash(i + 40) - 0.5) * 6.8;
-        const z = -5.8 - orbitalHash(i + 70) * 3.2;
-        const sx = 0.85 + orbitalHash(i + 90) * 1.45;
-        const sy = 0.45 + orbitalHash(i + 110) * 0.85;
-        return {
-          position: [x, y, z] as [number, number, number],
-          rotation: [0, 0, orbitalHash(i + 130) * Math.PI] as [number, number, number],
-          scale: [sx, sy, 0.12] as [number, number, number]
-        };
-      })
+      transforms: [{ position: [0, -90, -20], rotation: [0, 0, 0], scale: [0.0001, 0.0001, 0.0001] }]
     })
   )
   .add(
@@ -302,23 +291,12 @@ const appScene = scene()
       material: material.emissive({
         color: "#3b0764",
         emissive: "#7c3aed",
-        emissiveIntensity: 0.58,
-        opacity: 0.20
+        emissiveIntensity: 0.01,
+        opacity: 0
       }),
       castShadow: false,
       receiveShadow: false,
-      transforms: Array.from({ length: 22 }, (_, i) => {
-        const x = (orbitalHash(i + 210) - 0.5) * 12.0;
-        const y = (orbitalHash(i + 240) - 0.5) * 7.2;
-        const z = -6.4 - orbitalHash(i + 270) * 3.4;
-        const sx = 0.95 + orbitalHash(i + 290) * 1.5;
-        const sy = 0.42 + orbitalHash(i + 310) * 0.78;
-        return {
-          position: [x, y, z] as [number, number, number],
-          rotation: [0, 0, orbitalHash(i + 330) * Math.PI] as [number, number, number],
-          scale: [sx, sy, 0.10] as [number, number, number]
-        };
-      })
+      transforms: [{ position: [0, -90, -20], rotation: [0, 0, 0], scale: [0.0001, 0.0001, 0.0001] }]
     })
   )
   .add(

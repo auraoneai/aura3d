@@ -1464,7 +1464,11 @@ function buildTurboTracksideIdentityNodes() {
     }))
   });
 
-  const gantryProgresses = [0.018, 0.055, 0.095, 0.135, 0.175, 0.215, 0.255, 0.28, 0.32] as const;
+  const gantryProgresses = [
+    0.018, 0.055, 0.095, 0.135, 0.175, 0.215, 0.255, 0.295,
+    0.34, 0.385, 0.43, 0.475, 0.52, 0.565, 0.61, 0.655,
+    0.70, 0.745, 0.79, 0.835, 0.88, 0.925, 0.965
+  ] as const;
   const meshyCorridorNodes = gantryProgresses.flatMap((progress, idx) => {
     const sample = sampleCentreline(progress);
     const center = gamePointToScene(sample);
@@ -1475,7 +1479,7 @@ function buildTurboTracksideIdentityNodes() {
     const roadY = sampleTurboRoadHeight(center[0], center[2]);
     const leftX = Math.sin(sample.heading) * gantryHalfSpan;
     const leftZ = -Math.cos(sample.heading) * gantryHalfSpan;
-    const isGantryStop = idx % 2 === 0 || progress === 0.28;
+    const isGantryStop = idx % 2 === 0;
     const accentColor = idx % 2 === 0 ? "#22d3ee" : "#ff6b4a";
     const floodlightAsset = (assets as Record<string, typeof assets.turboStartFinishGantryMeshy>).rooftopFloodlightTowerMeshy ?? assets.turboStartFinishGantryMeshy;
     const paddockAsset = idx % 3 === 1
@@ -1488,11 +1492,11 @@ function buildTurboTracksideIdentityNodes() {
               name: `turbo-meshy-approach-gantry-3d-${idx}`,
               role: "setDressing",
               scaleMode: "fit",
-              targetMaxDimension: 2.35,
+              targetMaxDimension: 1.65,
               visible: true
             })
-              .position(center[0], roadY, center[2])
-              .rotate(0, pose.rotation[1], 0),
+              .position(center[0] - leftX * 2.05, roadY, center[2] - leftZ * 2.05)
+              .rotate(0, pose.rotation[1] + Math.PI * 0.5, 0),
             model(floodlightAsset, {
               name: `turbo-meshy-floodlight-tower-${idx}`,
               role: "setDressing",
@@ -3246,11 +3250,22 @@ const app = createAuraApp("#app", {
       name: "racing-contender-car-3d",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.04,
+      targetMaxDimension: opponentTargetMaxDimension,
       castShadow: true,
       receiveShadow: true,
       visible: true
     }).position(...initialOpponentPose.position).runtime(game.runtimeNode("racing-contender-car-3d", {
+      tags: ["opponent-feedback", "contender-pack", "renderer-owned", "non-colliding"]
+    })))
+    .add(model(assets.turboRivalRaceCarMeshy, {
+      name: "racing-pack-rival-car-3d",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: opponentTargetMaxDimension,
+      castShadow: true,
+      receiveShadow: true,
+      visible: true
+    }).position(...initialOpponentPose.position).runtime(game.runtimeNode("racing-pack-rival-car-3d", {
       tags: ["opponent-feedback", "contender-pack", "renderer-owned", "non-colliding"]
     })))
     .add(primitives.cylinder({
@@ -3547,6 +3562,7 @@ racingActionFocus.setVisible(false);
 // TDC incorporation runtime handles.
 const ghostCarNode = app.nodes.require("racing-time-trial-ghost");
 const contenderCarNode = app.nodes.require("racing-contender-car-3d");
+const packRivalCarNode = app.nodes.require("racing-pack-rival-car-3d");
 const playerNitroFlameL = app.nodes.require("racing-player-nitro-flame-l");
 const playerNitroFlameR = app.nodes.require("racing-player-nitro-flame-r");
 const trackPropNodes = trackPropsPlan.placements.map((prop) =>
@@ -5471,12 +5487,12 @@ app.onFrame(({ dt }) => {
   opponentContactShadow.setVisible(!compositionRivalSuppressed);
   opponentWheelContactPads.setVisible(!compositionRivalSuppressed);
 
-  // Update 3rd 3D Meshy contender car pacing slightly ahead on the outer racing line
-  const contenderProgress = (opponent.progress + 0.032) % 1;
+  // Update 3D Meshy contender pack cars pacing right ahead of the player car on left/right racing lines
+  const contenderProgress = (raceSnapshot.progress + 0.013) % 1;
   const contenderSample = sampleCentreline(contenderProgress);
   const contenderPose = racingScene.toScenePose(
     { position: { x: contenderSample.x, y: contenderSample.y }, heading: contenderSample.heading },
-    -opponentRacingLineOffset * 1.15
+    0.26
   );
   const contenderRoadY = sampleTurboRoadHeight(contenderPose.position[0], contenderPose.position[2]);
   contenderCarNode
@@ -5485,8 +5501,24 @@ app.onFrame(({ dt }) => {
       contenderRoadY + ROAD_DETAIL_SURFACE_LIFT + 0.015,
       contenderPose.position[2]
     )
-    .setRotation(0, contenderPose.rotation[1], 0)
-    .setVisible(!compositionRivalSuppressed);
+    .setRotation(0, opponentPresentationRotation(contenderPose.rotation)[1], 0)
+    .setVisible(!compositionRivalSuppressed && !compositionPlayerSuppressed);
+
+  const packRivalProgress = (raceSnapshot.progress + 0.022) % 1;
+  const packRivalSample = sampleCentreline(packRivalProgress);
+  const packRivalPose = racingScene.toScenePose(
+    { position: { x: packRivalSample.x, y: packRivalSample.y }, heading: packRivalSample.heading },
+    -0.24
+  );
+  const packRivalRoadY = sampleTurboRoadHeight(packRivalPose.position[0], packRivalPose.position[2]);
+  packRivalCarNode
+    .setPosition(
+      packRivalPose.position[0],
+      packRivalRoadY + ROAD_DETAIL_SURFACE_LIFT + 0.015,
+      packRivalPose.position[2]
+    )
+    .setRotation(0, opponentPresentationRotation(packRivalPose.rotation)[1], 0)
+    .setVisible(!compositionRivalSuppressed && !compositionPlayerSuppressed);
 
   // Slipstream drafting boost when trailing behind rival or contender within 0.045 progress
   const gapToRival = (opponent.progress - raceSnapshot.progress + 1) % 1;

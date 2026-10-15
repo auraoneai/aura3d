@@ -900,7 +900,7 @@ const combatVfxBuilders = [
       .runtime(game.runtimeNode(`mech-${side}-shield-ring`, { tags: ["combat-vfx", "renderer-owned"] }))
   ]),
   ...Array.from({ length: MISSILE_SALVO_COUNT }, (_, index) => [
-    primitives.cone({ name: `mech-missile-${index}`, material: missileWarheadMaterial })
+    primitives.cylinder({ name: `mech-missile-${index}`, material: missileWarheadMaterial })
       .position(0, -70, ARENA_CENTER_Z)
       .scale([0.001, 0.001, 0.001])
       .runtime(game.runtimeNode(`mech-missile-${index}`, { tags: ["combat-vfx", "renderer-owned"] })),

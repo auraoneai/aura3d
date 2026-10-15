@@ -257,6 +257,41 @@ function buildGame(game) {
     timeout: 20 * 60_000,
     maxBuffer: 64 * 1024 * 1024
   });
+  if (Array.isArray(game.altRoutes) && game.altRoutes.includes("/examples/neon-corridor-strike/")) {
+    const exDir = path.join(repoRoot, "examples", "neon-corridor-strike");
+    const exOutDir = path.join(buildRoot, "site", "examples", "neon-corridor-strike");
+    const exConfigPath = path.join(buildRoot, "configs", "neon-corridor-strike.vite.config.mjs");
+    writeFileSync(exConfigPath, `import sourceConfig from ${JSON.stringify(path.join(repoRoot, "vite.config.ts"))};
+const resolved = typeof sourceConfig === "function"
+  ? await sourceConfig({ command: "build", mode: "production", isSsrBuild: false, isPreview: false })
+  : sourceConfig;
+const build = resolved.build ?? {};
+const rollupOptions = build.rollupOptions ?? {};
+export default {
+  ...resolved,
+  root: ${JSON.stringify(exDir)},
+  base: "/examples/neon-corridor-strike/",
+  publicDir: false,
+  logLevel: "warn",
+  build: {
+    ...build,
+    outDir: ${JSON.stringify(exOutDir)},
+    emptyOutDir: true,
+    sourcemap: false,
+    reportCompressedSize: false,
+    rollupOptions: { ...rollupOptions, input: ${JSON.stringify(path.join(exDir, "index.html"))} }
+  }
+};
+`, "utf8");
+    log(`build neon-corridor-strike -> ${path.relative(repoRoot, exOutDir)}`);
+    spawnSync(process.execPath, ["--max-old-space-size=6144", viteBin, "build", "--config", exConfigPath], {
+      cwd: repoRoot,
+      env: { ...process.env, FORCE_COLOR: "0" },
+      encoding: "utf8",
+      timeout: 10 * 60_000,
+      maxBuffer: 64 * 1024 * 1024
+    });
+  }
   const ok = result.status === 0 && existsSync(path.join(outputDir, "index.html"));
   const tail = `${result.stdout ?? ""}\n${result.stderr ?? ""}`.trim().split("\n").slice(-40).join("\n");
   if (!ok) log(`build FAILED ${game.id} (status ${result.status}${result.error ? `, ${result.error.message}` : ""})\n${tail}`);
@@ -279,6 +314,7 @@ function startStaticServer() {
   const fallbackRoots = [
     path.join(repoRoot, "public"),
     path.join(repoRoot, "apps", "aura-clash-showcase", "public"),
+    path.join(repoRoot, "examples", "neon-corridor-strike", "public"),
     path.join(repoRoot, "marketing", "public")
   ];
   const tryFile = (root, rel) => {

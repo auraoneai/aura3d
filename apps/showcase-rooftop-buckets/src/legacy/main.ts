@@ -538,33 +538,33 @@ function buildScene() {
         name: "rooftop-floodlight-tower-left",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 3.1
+        targetMaxDimension: 3.2
       })
-        .position(-4.45, 0.02, -4.85)
+        .position(-5.85, 0.02, -5.45)
         .rotate(0, 0.42, 0),
       model((assets as any).rooftopFloodlightTowerMeshy ?? assets.auraClashStageSpeakerTowerMeshy, {
         name: "rooftop-floodlight-tower-right",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 3.1
+        targetMaxDimension: 3.2
       })
-        .position(4.45, 0.02, -4.85)
+        .position(5.85, 0.02, -5.45)
         .rotate(0, -0.42, 0),
       model(assets.auraClashStageSpeakerTowerMeshy, {
         name: "rooftop-dj-speaker-stack-left",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.75
+        targetMaxDimension: 1.35
       })
-        .position(-3.85, 0.02, -2.25)
+        .position(-6.45, 0.02, -3.65)
         .rotate(0, 0.48, 0),
       model(assets.auraClashStageSpeakerTowerMeshy, {
         name: "rooftop-dj-speaker-stack-right",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.75
+        targetMaxDimension: 1.35
       })
-        .position(3.85, 0.02, -2.25)
+        .position(6.45, 0.02, -3.65)
         .rotate(0, -0.48, 0),
       model(assets.courierDeliveryKioskMeshy, {
         name: "rooftop-hydration-kiosk-left",
