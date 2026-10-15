@@ -495,7 +495,11 @@ function buildScene() {
             node.name.startsWith("pavilion ") ||
             node.name === "warm rooftop facade" ||
             node.name.startsWith("facade-") ||
-            node.name.startsWith("arena-window-"))
+            node.name.startsWith("arena-window-") ||
+            node.name.startsWith("window-strip-") ||
+            node.name === "rooftop-billboard" ||
+            node.name === "billboard-frame" ||
+            node.name === "rooftop league facade sign")
         ) {
           node.scale = [0.001, 0.001, 0.001];
           node.position = [0, -20, 0];
@@ -526,10 +530,10 @@ function buildScene() {
         name: "rooftop-scoreboard-gantry-3d",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 2.35
+        targetMaxDimension: 2.25
       })
         .scale(1.0)
-        .position(0, 5.15, -6.5),
+        .position(0, 4.95, -6.5),
       model(assets.rooftopBallRackCartMeshy, {
         name: "rooftop-ball-rack-cart-3d-left",
         role: "setDressing",

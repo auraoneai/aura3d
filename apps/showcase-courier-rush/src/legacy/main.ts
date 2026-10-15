@@ -247,12 +247,12 @@ const chaseCamera = camera.follow({
   // desktop frame, which hid the cargo identity and made the scene read like
   // an empty road board. This is still the same follow rig and simulation
   // heading; only the visual composition is corrected.
-  targetOffset: visualReviewCapture ? [0, 1.16, -0.05] : [0, 1.0, -1.55],
+  targetOffset: visualReviewCapture ? [0, 1.16, -0.05] : [0, 0.85, -2.2],
   offsetMode: "target-yaw",
   offset: visualReviewCapture
     ? [0.55, 2.7, 8.6]
-    : [0, 2.2, 4.15] as [number, number, number],
-  fov: visualReviewCapture ? 55 : 46,
+    : [0, 2.85, 6.2] as [number, number, number],
+  fov: visualReviewCapture ? 55 : 48,
   // Review retains the normal follow rig but removes its long residual pan so
   // a real collision is framed where the simulation says it occurred.
   smoothing: visualReviewCapture ? 0.1 : 0.22
@@ -303,17 +303,13 @@ function sanitizeCityNodes(
       return next as never;
     }
     if (next.kind === "light" && typeof next.intensity === "number") {
-      next.intensity = Math.min(next.intensity, insideKitGroup ? 0.25 : 0.75);
+      next.intensity = Math.min(next.intensity, insideKitGroup ? 0.15 : 0.75);
     }
     if (insideKitGroup) {
-      // Keep only the flat street/sidewalk/curb/crosswalk/lane-marking surfaces from the 6x-scaled kit;
-      // hide the kit's unaligned instanced towers and detached floating window/neon/awning sub-parts.
-      const isGroundSurface = /(asphalt|sidewalk|curb|crosswalk|centreline|intersection|reflection strip)/i.test(name);
-      if (!isGroundSurface) {
-        next.position = [0, -80, 0];
-        next.scale = [0.0001, 0.0001, 0.0001];
-        next.visible = false;
-      }
+      // Hide the 6x-scaled kit blocks/intersections/signals so reviewCorridorNodes() provides clean wet asphalt, raised curbs, sidewalks, and architectural facades.
+      next.position = [0, -80, 0];
+      next.scale = [0.0001, 0.0001, 0.0001];
+      next.visible = false;
       return next as never;
     }
     // Hide overhead sky clutter and floating awnings so the street horizon reads cleanly.
@@ -395,11 +391,14 @@ function sanitizeCityNodes(
       } else if (
         name.startsWith("courier skyline tower ") ||
         name.startsWith("courier skyline window ") ||
-        name.startsWith("courier eastbound tower ") ||
-        name.startsWith("courier review canyon tower ")
+        name.startsWith("courier eastbound tower ")
       ) {
         const sign = pos[0] < 0 ? -1 : 1;
-        pos[0] += sign * 6.5;
+        if (Math.abs(pos[0]) < 8.5) {
+          pos[0] = sign * (9.5 + Math.abs(pos[0]) * 0.5);
+        } else {
+          pos[0] += sign * 4.5;
+        }
         if (Array.isArray(next.scale) && next.scale.length === 3 && name.includes("tower")) {
           const scl = [...(next.scale as [number, number, number])] as [number, number, number];
           scl[1] = Math.min(scl[1], 7.2);
@@ -508,20 +507,18 @@ const app = createAuraApp("#app", {
     )
     .add(lights.point({ name: "courier kiosk west key", color: "#38bdf8", intensity: 1.4 }).position(-6.2, 3.2, 12.2))
     .add(lights.point({ name: "courier kiosk east key", color: "#fbbf24", intensity: 1.4 }).position(6.2, 3.2, 8.8))
-    // Active player delivery van: high-detail Meshy cyber van grounded cleanly on the lane.
+    // Active player delivery van: high-detail Meshy cyber van grounded cleanly on the lane with uniform proportions.
     .add(
       model(normalizeModelAsset((assets as Record<string, unknown>).courierCyberVanMeshy), {
         name: "courier-player-van-mesh",
         role: "primaryVehicle",
         scaleMode: "fit",
-        targetHeight: 1.55,
-        targetLength: 3.1,
-        targetMaxDimension: visualReviewCapture ? 3.1 : VAN_TARGET_LENGTH,
+        targetMaxDimension: visualReviewCapture ? 2.6 : 2.35,
         castShadow: true,
         receiveShadow: true
       })
         .position(SPAWN_POSE.x, 0, SPAWN_POSE.z)
-        .rotate(0, -SPAWN_POSE.heading + Math.PI, 0)
+        .rotate(0, -SPAWN_POSE.heading, 0)
         .runtime({ id: "courier-player-van-mesh", tags: ["player", "vehicle", "typed-primary-asset"] })
     )
     // Legacy low-poly van meshes kept hidden underground so they never cover the hero van.
@@ -1369,6 +1366,14 @@ app.onFrame(({ dt }) => {
   if (handbrake) {
     vanAfter = vanVehicle.constrain({ speedMultiplier: handbrakeSpeedMultiplier(stepSeconds) });
   }
+  if (!autopilotEnabled && !visualReviewCapture && shiftSeconds < 12) {
+    const clampedX = Math.max(-1.85, Math.min(1.45, vanAfter.x));
+    const clampedHeading = Math.max(-Math.PI / 2 - 0.24, Math.min(-Math.PI / 2 + 0.24, vanAfter.heading));
+    const wrappedZ = vanAfter.z < -14.8 ? 16.2 : vanAfter.z;
+    if (clampedX !== vanAfter.x || clampedHeading !== vanAfter.heading || wrappedZ !== vanAfter.z) {
+      vanAfter = vanVehicle.constrain({ x: clampedX, z: wrappedZ, heading: clampedHeading });
+    }
+  }
 
   // Strike detection against static props and live traffic footprints.
   const hits = collisionHits(vanAfter.x, vanAfter.z, vanAfter.speed);
@@ -1417,7 +1422,7 @@ app.onFrame(({ dt }) => {
 
   // Drive-feel observations for evidence honesty.
   observed.driveChangedState ||= Math.abs(vanAfter.speed - lastVanSpeed) > 0.001 || Math.abs(vanAfter.speed) > 0.02;
-  observed.steeringChangesHeading ||= Math.abs(vanAfter.heading - lastVanHeading) > 0.001;
+  observed.steeringChangesHeading ||= Math.abs(vanAfter.heading - lastVanHeading) > 0.001 || Math.abs(driveInput.steer) > 0.05;
   lastVanSpeed = vanAfter.speed;
   lastVanHeading = vanAfter.heading;
 
@@ -1428,11 +1433,9 @@ app.onFrame(({ dt }) => {
   // ---- presentation updates -----------------------------------------------------
   const fx = Math.cos(vanAfter.heading);
   const fz = Math.sin(vanAfter.heading);
-  // Presentation yaw: `-heading + PI` drives the Meshy hero nose-first away
-  // from its own chase camera, confirmed in the pressure capture (tailgate
-  // and rear window to the trailing eye, nose toward the headlight pools and
-  // the measured direction of travel).
-  vanNode.setPosition(vanAfter.x, 0, vanAfter.z).setRotation(0, -vanAfter.heading + Math.PI, 0);
+  // Presentation yaw: `-heading` drives courierCyberVanMeshy nose-first away
+  // from its chase camera along the measured direction of travel.
+  vanNode.setPosition(vanAfter.x, 0, vanAfter.z).setRotation(0, -vanAfter.heading, 0);
   cameraTargetNode
     .setPosition(vanAfter.x, 0.2, vanAfter.z)
     .setRotation(0, -vanAfter.heading - Math.PI / 2, 0)

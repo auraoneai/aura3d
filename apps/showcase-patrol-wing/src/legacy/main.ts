@@ -251,14 +251,12 @@ function heroNodes(): AuraSceneNode[] {
       name: "patrol-plane",
       role: "primaryCharacter",
       scaleMode: "fit",
-      targetHeight: 1.25,
-      targetLength: 4.4,
-      targetMaxDimension: visualReviewCapture ? 4.4 : 4.0,
+      targetMaxDimension: visualReviewCapture ? 3.4 : 3.1,
       castShadow: true,
       receiveShadow: true
     })
       .position(PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2])
-      .rotate(0, PAD_HEADING_YAW + Math.PI, 0)
+      .rotate(0, Math.PI, 0)
       .runtime({ id: "plane", tags: ["typed-asset", "hero"] })
       .toJSON()
   );
@@ -464,8 +462,8 @@ function heroNodes(): AuraSceneNode[] {
 const chaseCameraSpec = camera.follow({
   targetNode: "camera-target",
   offsetMode: "target-yaw",
-  offset: [0, 1.55, 6.2] as [number, number, number],
-  targetOffset: [0, 0.22, -4.2],
+  offset: [0, 2.35, 9.2] as [number, number, number],
+  targetOffset: [0, 0.35, -4.5],
   fov: 50,
   smoothing: 0,
   subjectEmphasis: 0.82
@@ -879,7 +877,7 @@ function resetToPad(nextPatrol?: number): void {
     arena = createArenaPhysics(ringHalfExtent(patrolValue));
     setArenaTimeOfDay(app.nodes, patrolValue);
   }
-  Object.assign(chaseCameraSpec as unknown as MutableCameraSpec, { offset: [0, 1.55, 6.2], targetOffset: [0, 0.22, -4.2], fov: 50 });
+  Object.assign(chaseCameraSpec as unknown as MutableCameraSpec, { offset: [0, 2.35, 9.2], targetOffset: [0, 0.35, -4.5], fov: 50 });
   flight = new FlightModel({ position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]], headingYaw: PAD_HEADING_YAW, throttle: 0, speed: 0 });
   rings.reset();
   planeHandle.setScale([1, 1, 1]);
@@ -1400,20 +1398,13 @@ ui.onClick("#pw-pause-button", () => togglePause());
 againButton.addEventListener("click", () => resetToPad());
 
 // --------------------------------------------------------- per-frame sync -----
-function planeEulerXYZ(forward: Vec3, up: Vec3, right: Vec3): { readonly x: number; readonly y: number; readonly z: number } {
-  // patrolJetAircraftMeshy has nose = -X, top = +Y, right wing = -Z in local model space.
-  const m11 = -forward[0];
-  const m12 = up[0];
-  const m13 = -right[0];
-  const m22 = up[1];
-  const m23 = -right[1];
-  const m32 = up[2];
-  const m33 = -right[2];
-  const clampedM13 = Math.max(-1, Math.min(1, m13));
-  const y = Math.asin(clampedM13);
-  const x = Math.abs(clampedM13) < 0.99999 ? Math.atan2(-m23, m33) : Math.atan2(m32, m22);
-  const z = Math.abs(clampedM13) < 0.99999 ? Math.atan2(-m12, m11) : 0;
-  return { x, y, z };
+function planeEulerXYZ(forward: Vec3, _up: Vec3, _right: Vec3): { readonly x: number; readonly y: number; readonly z: number } {
+  // patrolJetAircraftMeshy has nose = +X, top = +Y in local model space.
+  // In Three.js 'XYZ' Euler order (R = Rx * Ry * Rz), Rz pitches the +X nose up/down,
+  // and Ry yaws around world Y (at forward=[-1,0,0], yaw = Math.PI).
+  const pitch = Math.asin(Math.max(-0.28, Math.min(0.28, forward[1])));
+  const yaw = Math.atan2(-forward[2], forward[0]);
+  return { x: 0, y: yaw, z: pitch };
 }
 
 function syncPlaneVisual(): void {

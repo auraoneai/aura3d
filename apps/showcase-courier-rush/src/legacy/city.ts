@@ -770,6 +770,7 @@ export function buildCityDressing(
     // so van, traffic, wet road, and canyon share world coordinates.
     ? [group("courier review east-avenue canyon", reviewCorridorNodes(), {}).position(15.3, 0, 0)]
     : [
+        group("courier main-avenue canyon", reviewCorridorNodes(), {}).position(0, 0, 0),
         group(`courier city block ${timeOfDay} kit`, kitNodes, {}).scale([CITY_SCALE, CITY_SCALE, CITY_SCALE]),
         ...guidanceNodes,
         ...skylineDressingNodes(),

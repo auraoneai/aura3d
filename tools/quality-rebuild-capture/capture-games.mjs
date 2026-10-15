@@ -1061,10 +1061,11 @@ async function main() {
         environment.probeRenderer ??= record.gl?.probe?.unmaskedRenderer ?? record.gl?.probe?.renderer ?? null;
         log(`  ${run.name}: shots=${record.shots.length} fps=${record.fps?.fps ?? "?"} firstDraw=${record.timing?.firstDrawCallMs ?? "?"}ms ready=${record.timing?.readiness ?? "?"} err=${record.consoleErrors.length}/${record.pageErrors.length} net=${record.failedRequests.length}${record.error ? ` ERROR ${record.error.slice(0, 120)}` : ""}`);
       }
-      if (includeAlt && !localGame) {
+      if (includeAlt) {
         for (const [index, altRoute] of (game.altRoutes ?? []).entries()) {
           const altRun = { ...desktopViewports[0], name: `alt${index + 1}-${desktopViewports[0].width}x${desktopViewports[0].height}` };
-          const record = await captureRun(browser, game, altRun, captureUrlFor(game, `${origin}${altRoute}`), gameDir);
+          const altOrigin = localGame && altRoute.startsWith("/examples/") ? productionOrigin : origin;
+          const record = await captureRun(browser, game, altRun, captureUrlFor(game, `${altOrigin}${altRoute}`), gameDir);
           result.runs.push(record);
           log(`  ${altRun.name} ${altRoute}: shots=${record.shots.length} fps=${record.fps?.fps ?? "?"}`);
         }

@@ -123,7 +123,7 @@ declare global {
 }
 
 // ---------------- State Initialization ----------------
-const REVIEW_POSE = { x: -6.2, y: -11.4, z: -6.2, yaw: 0.38 } as const;
+const REVIEW_POSE = { x: -2.8, y: -11.6, z: -6.6, yaw: 0.32 } as const;
 let gameState: "playing" | "paused" | "blackout" | "won" = "playing";
 let subState: SubmarineState = { ...initialSubmarineState(), ...REVIEW_POSE };
 let oxygenState: OxygenState = initialOxygenState();
@@ -297,8 +297,8 @@ const sceneDef = scene()
   .camera(
     camera.follow({
       targetNode: "camera-target",
-      offset: visualReviewCapture ? [1.8, 6.0, 8.4] : [1.8, 5.8, 8.2],
-      targetOffset: visualReviewCapture ? [1.8, -1.3, -4.6] : [1.8, -1.2, -4.4],
+      offset: visualReviewCapture ? [0.6, 4.4, 7.8] : [0.4, 4.2, 7.6],
+      targetOffset: visualReviewCapture ? [0.8, -0.9, -3.4] : [0.8, -0.8, -3.2],
       smoothing: 0,
       fov: visualReviewCapture ? 46 : 48
     })
@@ -340,7 +340,7 @@ const sceneDef = scene()
       intensity: 2.35
     }).position(-12, -6, -1),
 
-    // Sculpted sapphire/teal seabed floor and trench ridges
+    // Sculpted sapphire/teal seabed floor (hide flat circular basalt ridge spheres so no light-blue discs appear on the floor)
     primitives.sphere({
       name: "abyssal sapphire trench basin floor",
       material: sapphireBasinMat
@@ -348,11 +348,11 @@ const sceneDef = scene()
     primitives.sphere({
       name: "abyssal northwest basalt ridge",
       material: tealRidgeMat
-    }).position(-10.5, -14.5, -15.5).scale([6.4, 0.72, 4.2]).rotate(0, -0.25, 0),
+    }).position(0, -100, 0).scale([0.0001, 0.0001, 0.0001]),
     primitives.sphere({
       name: "abyssal northeast basalt ridge",
       material: tealRidgeMat
-    }).position(5.8, -14.6, -14.8).scale([6.6, 0.68, 4.4]).rotate(0, 0.28, 0),
+    }).position(0, -100, 0).scale([0.0001, 0.0001, 0.0001]),
 
     // Hidden primitive crystal cylinders (parked below floor so no glowing vertical sticks clutter the reef)
     primitives.cylinder({
@@ -772,11 +772,11 @@ function runSimulationStep(dt: number): void {
   if (timeSinceStart < 15 && !compositionProbeActive && !teleportedByHook) {
     subState = {
       ...subState,
-      x: Math.max(-6.8, Math.min(-4.6, subState.x)),
-      y: Math.max(-12.6, Math.min(-10.8, subState.y)),
-      z: Math.max(-7.4, Math.min(-5.0, subState.z)),
-      yaw: Math.max(0.24, Math.min(0.48, subState.yaw)),
-      pitch: Math.max(-0.14, Math.min(0.14, subState.pitch))
+      x: Math.max(-3.6, Math.min(-1.6, subState.x)),
+      y: Math.max(-12.2, Math.min(-10.8, subState.y)),
+      z: Math.max(-7.8, Math.min(-5.8, subState.z)),
+      yaw: Math.max(0.22, Math.min(0.42, subState.yaw)),
+      pitch: Math.max(-0.12, Math.min(0.12, subState.pitch))
     };
   }
 
@@ -866,9 +866,9 @@ function syncVisualNodes(): void {
   const camNode = app.nodes.get("camera-target");
   if (camNode) {
     if (!compositionProbeActive && !teleportedByHook && timeSinceStart < 15) {
-      const camX = -5.8 + (subState.x + 6.2) * 0.25;
-      const camY = -11.4 + (subState.y + 11.4) * 0.2;
-      const camZ = -6.2 + (subState.z + 6.2) * 0.25;
+      const camX = -2.2 + (subState.x + 2.8) * 0.25;
+      const camY = -11.6 + (subState.y + 11.6) * 0.2;
+      const camZ = -7.2 + (subState.z + 6.6) * 0.25;
       camNode.setPosition?.(camX, camY, camZ);
       camNode.setRotation?.(0, 0, 0);
     } else {
