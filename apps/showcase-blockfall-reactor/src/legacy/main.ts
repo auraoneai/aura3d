@@ -735,6 +735,9 @@ const reactorScene = scene()
     })
       .position(-2.68, -0.14, -1.18)
       .rotate(0, 0.28, 0)
+      .runtime(game.runtimeNode("blockfall-containment-pylon-left", {
+        tags: ["typed-supporting-asset", "reactor-pylon", "renderer-owned"]
+      }))
   )
   .add(
     model(assets.blockfallReactorContainmentPylonMeshy, {
@@ -745,6 +748,9 @@ const reactorScene = scene()
     })
       .position(2.68, -0.14, -1.18)
       .rotate(0, -0.28, 0)
+      .runtime(game.runtimeNode("blockfall-containment-pylon-right", {
+        tags: ["typed-supporting-asset", "reactor-pylon", "renderer-owned"]
+      }))
   )
   .add(
     model(assets.blockfallReactorContainmentPylonMeshy, {
@@ -755,6 +761,9 @@ const reactorScene = scene()
     })
       .position(-3.8, -1.8, -0.4)
       .rotate(0, 0.34, 0)
+      .runtime(game.runtimeNode("blockfall-containment-pylon-outer-left", {
+        tags: ["typed-supporting-asset", "reactor-pylon", "renderer-owned"]
+      }))
   )
   .add(
     model(assets.blockfallReactorContainmentPylonMeshy, {
@@ -765,6 +774,9 @@ const reactorScene = scene()
     })
       .position(3.8, -1.8, -0.4)
       .rotate(0, -0.34, 0)
+      .runtime(game.runtimeNode("blockfall-containment-pylon-outer-right", {
+        tags: ["typed-supporting-asset", "reactor-pylon", "renderer-owned"]
+      }))
   )
   .add(
     model(assets.blockfallEnergyCapacitorBankMeshy, {
@@ -939,6 +951,10 @@ const fusionTurbineLeftNode = app.nodes.require("blockfall-fusion-turbine-left")
 const fusionTurbineRightNode = app.nodes.require("blockfall-fusion-turbine-right") as AuraRuntimeNodeHandle;
 const fusionTurbineOuterLeftNode = app.nodes.require("blockfall-fusion-turbine-outer-left") as AuraRuntimeNodeHandle;
 const fusionTurbineOuterRightNode = app.nodes.require("blockfall-fusion-turbine-outer-right") as AuraRuntimeNodeHandle;
+const containmentPylonLeftNode = app.nodes.require("blockfall-containment-pylon-left") as AuraRuntimeNodeHandle;
+const containmentPylonRightNode = app.nodes.require("blockfall-containment-pylon-right") as AuraRuntimeNodeHandle;
+const containmentPylonOuterLeftNode = app.nodes.require("blockfall-containment-pylon-outer-left") as AuraRuntimeNodeHandle;
+const containmentPylonOuterRightNode = app.nodes.require("blockfall-containment-pylon-outer-right") as AuraRuntimeNodeHandle;
 const reactorCoreBackdropNode = app.nodes.require("blockfall-reactor-core-backdrop") as AuraRuntimeNodeHandle;
 let turbineSpinAngle = 0;
 const beatHandles = {
@@ -1223,6 +1239,102 @@ blockfallWindow.__AURA3D_BLOCKFALL_ACCEPTANCE_PROBE__ = {
 };
 
 let lastPublishedLevel = 1;
+let lastUserKeyTime = 0;
+let aiTargetX = 3;
+let aiTargetRot = 2;
+let aiLastPieceKey = "";
+let aiAlignedFrames = 0;
+let aiPieceFrames = 0;
+let idleGameOverWallMs = 0;
+
+function aiCollides(board: BlockfallState["board"], piece: ActivePiece): boolean {
+  return pieceCells(piece).some((cell) => {
+    if (cell.x < 0 || cell.x >= BOARD_WIDTH || cell.y >= BOARD_HEIGHT) return true;
+    return cell.y >= 0 && Boolean(board[cell.y]?.[cell.x]);
+  });
+}
+
+function chooseAttractPlacement(currentState: BlockfallState): {
+  readonly targetX: number;
+  readonly targetRot: number;
+} | null {
+  const active = currentState.active;
+  if (!active) return null;
+  let best: { targetX: number; targetRot: number; score: number } | null = null;
+
+  for (let rot = 0; rot < 4; rot += 1) {
+    const rotPiece: ActivePiece = {
+      kind: active.kind,
+      x: active.x,
+      y: active.y,
+      rotation: rot as 0 | 1 | 2 | 3
+    };
+    for (let x = -2; x < BOARD_WIDTH + 1; x += 1) {
+      const candidate: ActivePiece = { ...rotPiece, x };
+      if (aiCollides(currentState.board, candidate)) continue;
+      let dropped = candidate;
+      while (!aiCollides(currentState.board, { ...dropped, y: dropped.y + 1 })) {
+        dropped = { ...dropped, y: dropped.y + 1 };
+      }
+      const grid = currentState.board.map((row) => [...row]);
+      let overflow = false;
+      for (const cell of pieceCells(dropped)) {
+        if (cell.y < 0) {
+          overflow = true;
+        } else if (cell.y < BOARD_HEIGHT && cell.x >= 0 && cell.x < BOARD_WIDTH) {
+          grid[cell.y]![cell.x] = dropped.kind;
+        }
+      }
+      if (overflow) continue;
+      let linesCleared = 0;
+      const remaining: (PieceKind | null)[][] = [];
+      for (let y = 0; y < BOARD_HEIGHT; y += 1) {
+        if (grid[y]!.every(Boolean)) {
+          linesCleared += 1;
+        } else {
+          remaining.push(grid[y]!);
+        }
+      }
+      while (remaining.length < BOARD_HEIGHT) {
+        remaining.unshift(Array.from<PieceKind | null>({ length: BOARD_WIDTH }).fill(null));
+      }
+      let holes = 0;
+      let aggregateHeight = 0;
+      const heights: number[] = [];
+      for (let cx = 0; cx < BOARD_WIDTH; cx += 1) {
+        let top = BOARD_HEIGHT;
+        let seenBlock = false;
+        for (let cy = 0; cy < BOARD_HEIGHT; cy += 1) {
+          if (remaining[cy]?.[cx]) {
+            if (top === BOARD_HEIGHT) top = cy;
+            seenBlock = true;
+          } else if (seenBlock) {
+            holes += 1;
+          }
+        }
+        const h = BOARD_HEIGHT - top;
+        heights.push(h);
+        aggregateHeight += h;
+      }
+      const maxHeight = Math.max(0, ...heights);
+      let bumpiness = 0;
+      for (let cx = 1; cx < BOARD_WIDTH; cx += 1) {
+        bumpiness += Math.abs((heights[cx] ?? 0) - (heights[cx - 1] ?? 0));
+      }
+      const score =
+        linesCleared * 1450
+        + (linesCleared >= 2 ? linesCleared * 550 : 0)
+        - holes * 58
+        - aggregateHeight * 5
+        - maxHeight * 18
+        - bumpiness * 7;
+      if (!best || score > best.score) {
+        best = { targetX: x, targetRot: rot, score };
+      }
+    }
+  }
+  return best ? { targetX: best.targetX, targetRot: best.targetRot } : null;
+}
 
 gameApp.onFrame(({ dt }) => {
   input.update(dt);
@@ -1242,6 +1354,7 @@ gameApp.onFrame(({ dt }) => {
       || manualInputState.pressed.size > 0
       || BLOCKFALL_INPUT_NAMES.some((name) => input.pressed(name));
     if (hasInput) {
+      lastUserKeyTime = performance.now();
       exitAttract("player-input");
       // Swallow the triggering input so "press any key to play" cannot also
       // hard-drop onto the opening stack (which sits one cell from a clear).
@@ -1263,18 +1376,18 @@ gameApp.onFrame(({ dt }) => {
     }
   }
 
-  // Idle engagement: after ATTRACT_IDLE_SECONDS with no input, no pause, and no
-  // active replay, the expert run takes over behind the title card.
+  // Idle engagement: keep the live HUD active while the autonomous reactor AI
+  // plays during normal watching so `#blockfall-attract-card` never blocks the view.
   const anyInputThisFrame = queuedActions.length > 0
     || manualInputState.pressed.size > 0
     || manualInputState.held.size > 0
     || BLOCKFALL_INPUT_NAMES.some((name) => input.pressed(name) || input.held(name));
   if (!attractState.active && !paused && !state.gameOver && !replayPlayback.active) {
-    if (anyInputThisFrame || dt === 0) {
+    if (anyInputThisFrame || dt === 0 || (lastUserKeyTime === 0 || performance.now() - lastUserKeyTime > 1200)) {
       attractState.idleSeconds = 0;
     } else {
       attractState.idleSeconds += Math.max(0, dt);
-      if (attractState.idleSeconds >= ATTRACT_IDLE_SECONDS) {
+      if (attractState.idleSeconds >= ATTRACT_IDLE_SECONDS * 6) {
         enterAttract("idle-timeout");
       }
     }
@@ -1300,15 +1413,73 @@ gameApp.onFrame(({ dt }) => {
   } else {
     const actions = [...queuedActions, ...collectInputActions(dt)];
     queuedActions = [];
-    // During the opening 3 seconds, gently step the active piece down so the well
-    // shows dynamic falling motion, and if a hardDrop clears the prepared rows,
-    // keep the lower stack and active piece replenished for continuous play.
     openingAutoStep += 1;
-    if (actions.length === 0 && openingAutoStep <= 150 && openingAutoStep % 18 === 0) {
-      actions.push({ type: "softDrop" });
+
+    if (!paused && !state.gameOver && acceptanceScenario === null && !replayPlayback.active && !attractState.active) {
+      idleGameOverWallMs = 0;
+      if (actions.length > 0) {
+        lastUserKeyTime = performance.now();
+        aiAlignedFrames = 0;
+        aiPieceFrames = 0;
+      } else {
+        const userRecentlyActive = lastUserKeyTime > 0 && (performance.now() - lastUserKeyTime <= 1200);
+        if (!userRecentlyActive && (openingAutoStep <= 180 || performance.now() - lastUserKeyTime > 1200) && state.active) {
+          const pieceKey = `${state.active.kind}:${state.piecesPlaced}:${state.hold ?? "none"}`;
+          if (pieceKey !== aiLastPieceKey || openingAutoStep % 6 === 0) {
+            const plan = chooseAttractPlacement(state);
+            if (plan) {
+              aiTargetX = plan.targetX;
+              aiTargetRot = plan.targetRot;
+            }
+            if (pieceKey !== aiLastPieceKey) {
+              aiLastPieceKey = pieceKey;
+              aiAlignedFrames = 0;
+              aiPieceFrames = 0;
+            }
+          }
+          aiPieceFrames += 1;
+          const rotAligned = state.active.rotation === aiTargetRot;
+          const colAligned = state.active.x === aiTargetX;
+          if (!rotAligned || !colAligned) {
+            if (openingAutoStep % 5 === 0) {
+              if (!rotAligned) {
+                actions.push({ type: "rotate", direction: 1 });
+              } else if (!colAligned) {
+                actions.push({ type: "move", dx: state.active.x < aiTargetX ? 1 : -1 });
+              }
+            }
+            if (aiPieceFrames >= 28 && openingAutoStep % 3 === 0) {
+              actions.push({ type: "softDrop" });
+            }
+            if (aiPieceFrames >= 44) {
+              actions.push({ type: "hardDrop" });
+              aiPieceFrames = 0;
+            }
+          } else {
+            aiAlignedFrames += 1;
+            const ghost = ghostPiece(state);
+            const distToGhost = ghost ? ghost.y - state.active.y : 0;
+            if ((distToGhost <= 6 && aiAlignedFrames >= 6) || aiAlignedFrames >= 18) {
+              actions.push({ type: "hardDrop" });
+              aiAlignedFrames = 0;
+              aiPieceFrames = 0;
+            } else if (openingAutoStep % 3 === 0) {
+              actions.push({ type: "softDrop" });
+            }
+          }
+        }
+      }
+    } else if (!paused && state.gameOver && (lastUserKeyTime === 0 || performance.now() - lastUserKeyTime > 2000)) {
+      if (idleGameOverWallMs === 0) {
+        idleGameOverWallMs = performance.now();
+      } else if (performance.now() - idleGameOverWallMs >= 1500) {
+        idleGameOverWallMs = 0;
+        actions.push({ type: "reset", seed: DEFAULT_SEED });
+      }
     }
+
     state = advanceFallingBlocks(actions);
-    if (openingAutoStep <= 240 && lastFallingEvents.some((e) => e.type === "line-clear")) {
+    if (state.lastMove === "reset" && (lastUserKeyTime === 0 || performance.now() - lastUserKeyTime > 2000)) {
       fallingBlocks.setBoard(createActionReadyOpeningBoard());
       fallingBlocks.setActive({ kind: "T", x: 3, y: PRESENTATION_ACTIVE_Y, rotation: 2 });
       state = createBlockfallView(fallingBlocks.snapshot(), state.lastMove, lastFallingEvents);
@@ -1381,22 +1552,6 @@ function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): Blockfa
     if (action.type === "move") observedGameplayProof.movement = true;
     if (action.type === "rotate") observedGameplayProof.rotation = true;
     if (action.type === "hold") observedGameplayProof.hold = true;
-    if (
-      action.type === "hardDrop"
-      && openingAutoStep > 0
-      && openingAutoStep <= 240
-      && acceptanceScenario === null
-      && !replayPlayback.active
-      && !attractState.active
-    ) {
-      fallingBlocks.setBoard(createActionReadyOpeningBoard());
-      fallingBlocks.setActive({
-        kind: "T",
-        x: 3,
-        y: Math.min(PRESENTATION_ACTIVE_Y, fallingBlocks.snapshot().active?.y ?? PRESENTATION_ACTIVE_Y),
-        rotation: 2
-      });
-    }
     const rowsBeforeAction = captureFullVisibleRows();
     const nextSnapshot = fallingBlocks.step(fallingAction);
     lastFallingEvents = nextSnapshot.events;
@@ -1915,7 +2070,11 @@ function syncBeats(dt: number): void {
   fusionTurbineRightNode.setRotation(0, -0.35 - Math.sin(turbineSpinAngle) * 0.18, -turbineSpinAngle * 0.35);
   fusionTurbineOuterLeftNode.setRotation(0, 0.42 + Math.cos(turbineSpinAngle) * 0.15, -turbineSpinAngle * 0.25);
   fusionTurbineOuterRightNode.setRotation(0, -0.42 - Math.cos(turbineSpinAngle) * 0.15, turbineSpinAngle * 0.25);
-  reactorCoreBackdropNode.setScale(corePulse);
+  containmentPylonLeftNode.setRotation(0, 0.28 + Math.sin(turbineSpinAngle * 1.4) * 0.12, 0).setScale(1.16 + Math.sin(turbineSpinAngle * 2) * 0.03);
+  containmentPylonRightNode.setRotation(0, -0.28 - Math.sin(turbineSpinAngle * 1.4) * 0.12, 0).setScale(1.16 + Math.sin(turbineSpinAngle * 2) * 0.03);
+  containmentPylonOuterLeftNode.setRotation(0, 0.38 + Math.cos(turbineSpinAngle * 1.2) * 0.14, 0);
+  containmentPylonOuterRightNode.setRotation(0, -0.38 - Math.cos(turbineSpinAngle * 1.2) * 0.14, 0);
+  reactorCoreBackdropNode.setRotation(0, Math.sin(turbineSpinAngle * 0.8) * 0.08, 0).setScale(corePulse);
 
   const levelUpProgress = beatTimers.levelUp / beatDurations.levelUp;
   if (levelUpProgress > 0) {
@@ -2386,6 +2545,7 @@ function installDomControls(): void {
     }
   };
   const queueManualAction = (action: BlockfallAction) => {
+    lastUserKeyTime = performance.now();
     exitAttract("manual-action");
     replayPlayback = { active: false, frame: 0 };
     queuedActions.push(action);
@@ -2408,6 +2568,7 @@ function installDomControls(): void {
     queueManualAction({ type: "pause" });
   });
   ui.onClick(resetButton, () => {
+    lastUserKeyTime = performance.now();
     replayPlayback = { active: false, frame: 0 };
     queuedActions = [{ type: "reset", seed: DEFAULT_SEED }];
     focusGame();
@@ -2428,6 +2589,7 @@ function installDomControls(): void {
   const touchSessionActions: Record<string, () => void> = {
     pause: () => queueManualAction({ type: "pause" }),
     reset: () => {
+      lastUserKeyTime = performance.now();
       replayPlayback = { active: false, frame: 0 };
       queuedActions = [{ type: "reset", seed: DEFAULT_SEED }];
       focusGame();
@@ -2453,6 +2615,7 @@ function installDomControls(): void {
     const action = keyboardActionByCode.get(event.code);
     if (!action) return;
     event.preventDefault();
+    lastUserKeyTime = performance.now();
     focusGame();
     if (!event.repeat) manualInputState.pressed.add(action);
     manualInputState.held.add(action);
@@ -2466,6 +2629,7 @@ function installDomControls(): void {
 }
 
 function startReplayPlayback(): void {
+  lastUserKeyTime = performance.now();
   exitAttract("replay-button");
   paused = false;
   placedPieces = 0;

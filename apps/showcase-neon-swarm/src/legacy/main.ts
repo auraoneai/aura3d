@@ -525,23 +525,27 @@ if (!visualReviewCapture) {
   });
 }
 
-[
+const GENERATOR_SPIRE_PLACEMENTS: ReadonlyArray<readonly [number, number, number, number]> = [
   [-5.4, 0.05, -4.4, 0.35],
   [5.4, 0.05, -4.4, -0.35],
   [-6.6, 0.05, 4.4, 2.55],
   [6.6, 0.05, 4.4, -2.55]
-].forEach(([gx, gy, gz, rotY], index) => {
+];
+
+GENERATOR_SPIRE_PLACEMENTS.forEach(([gx, gy, gz, rotY], index) => {
+  const spireId = index === 0 ? "neon-arena-generator-spire" : `neon-arena-generator-spire-${index}`;
   appScene.add(
     model(assets.neonArenaGeneratorCoreMeshy, {
-      name: index === 0 ? "neon-arena-generator-spire" : `neon-arena-generator-spire-${index}`,
+      name: spireId,
       role: "setDressing",
       scaleMode: "fit",
       targetMaxDimension: 1.65,
       castShadow: true,
       receiveShadow: true
     })
-      .position(gx!, gy!, gz!)
-      .rotate(0, rotY!, 0)
+      .position(gx, gy, gz)
+      .rotate(0, rotY, 0)
+      .runtime(game.runtimeNode(spireId, { tags: ["set-dressing", "non-colliding"] }))
   );
   appScene.add(
     pTorus({
@@ -552,7 +556,7 @@ if (!visualReviewCapture) {
         emissive: index % 2 === 0 ? "#35e6ff" : "#ff4fd8",
         emissiveIntensity: 1.35
       }),
-      position: [gx!, 0.42, gz!],
+      position: [gx, 0.42, gz],
       rotation: [Math.PI / 2, 0, 0],
       scale: [0.92, 0.92, 0.045]
     }).runtime(game.runtimeNode(`neon-generator-shield-ring-${index}`, { tags: ["set-dressing", "non-colliding"] }))
@@ -1010,6 +1014,12 @@ let compositionSubjectSuppressed = false;
 let burstFxRemaining = 0;
 let pulseFxRemaining = 0;
 let burstFxOrigin = { x: 0, z: 3 };
+let lastManualMoveTime = -999;
+let lastAutopilotDashTime = -999;
+let recoilKickRemaining = 0;
+let displayedPlayerYaw = Math.PI;
+let terminalStateIdleSeconds = 0;
+let debugFixtureActive = false;
 
 const BEST_KEY = "neon-swarm-best-score";
 
@@ -1243,6 +1253,7 @@ function firePulse(): void {
       .setVisible(true);
   }
   pulseFxRemaining = visualReviewCapture ? 2 : 0.32;
+  recoilKickRemaining = 0.14;
   audio.cue("pulse-fire").catch(() => undefined);
 }
 
@@ -1453,6 +1464,7 @@ function update(dt: number): void {
   }
 
   elapsedSeconds += dt;
+  recoilKickRemaining = Math.max(0, recoilKickRemaining - dt);
 
   if (burstFxRemaining > 0) {
     burstFxRemaining = Math.max(0, burstFxRemaining - dt);
@@ -1491,8 +1503,179 @@ function update(dt: number): void {
     }
   }
 
-  const axisX = Math.max(-1, Math.min(1, input.axis("moveX") + touchMove.x));
-  const axisZ = Math.max(-1, Math.min(1, input.axis("moveZ") + touchMove.z));
+  const rawAxisX = Math.max(-1, Math.min(1, input.axis("moveX") + touchMove.x));
+  const rawAxisZ = Math.max(-1, Math.min(1, input.axis("moveZ") + touchMove.z));
+  const manualInputActive =
+    rawAxisX !== 0 ||
+    rawAxisZ !== 0 ||
+    input.pressed("dash") ||
+    input.pressed("fire") ||
+    input.held("fire") ||
+    input.pressed("burst") ||
+    touchAimFire;
+  if (manualInputActive) {
+    lastManualMoveTime = elapsedSeconds;
+    terminalStateIdleSeconds = 0;
+  }
+
+  const isAutopilot =
+    !debugFixtureActive &&
+    !visualReviewCapture &&
+    rawAxisX === 0 &&
+    rawAxisZ === 0 &&
+    elapsedSeconds - lastManualMoveTime > 0.4;
+
+  if (isAutopilot && (runState === "dead" || runState === "complete")) {
+    terminalStateIdleSeconds += dt;
+    if (terminalStateIdleSeconds >= 1.8) {
+      terminalStateIdleSeconds = 0;
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      resetRun(seed);
+    }
+  }
+
+  let axisX = rawAxisX;
+  let axisZ = rawAxisZ;
+  let autopilotDashPressed = false;
+  let autopilotFireReady = false;
+
+  if (isAutopilot && runState !== "dead" && runState !== "complete") {
+    // Tactical Combat Autopilot: circle-strafe around the arena (~4.2m radius),
+    // actively repelling from incoming spider-drones within 4.5m and weaving around cover pylons.
+    const orbitAngle = elapsedSeconds * 1.25;
+    const orbitRadius = 4.2 + Math.sin(elapsedSeconds * 0.7) * 0.65;
+    const orbitTargetX = Math.cos(orbitAngle) * orbitRadius;
+    const orbitTargetZ = 1.0 + Math.sin(orbitAngle) * (orbitRadius * 0.76);
+    let steerX = (orbitTargetX - player.x) * 0.85;
+    let steerZ = (orbitTargetZ - player.z) * 0.85;
+
+    let nearestEnemyDist = Infinity;
+    let nearestEnemyDx = 0;
+    let nearestEnemyDz = -1;
+
+    const scanThreatPool = (transforms: ReadonlyArray<{ position: readonly [number, number, number] | readonly number[]; scale?: readonly [number, number, number] | readonly number[] | number }>) => {
+      for (let i = 0; i < transforms.length; i += 1) {
+        const tr = transforms[i];
+        if (!tr || tr.position[1] <= -4) continue;
+        const dx = tr.position[0] - player.x;
+        const dz = tr.position[2] - player.z;
+        const dist = Math.hypot(dx, dz);
+        if (dist < 0.001) continue;
+        if (dist < nearestEnemyDist) {
+          nearestEnemyDist = dist;
+          nearestEnemyDx = dx / dist;
+          nearestEnemyDz = dz / dist;
+        }
+        if (dist < 4.5) {
+          const weight = ((4.5 - dist) / 4.5) ** 2 * 4.6;
+          steerX -= (dx / dist) * weight;
+          steerZ -= (dz / dist) * weight;
+        }
+      }
+    };
+    scanThreatPool(swarm.gruntTransforms);
+    scanThreatPool(swarm.eliteTransforms);
+
+    // Also scan the 20 chaser drones so the hero reacts to perimeter spider-drones
+    for (let slot = 0; slot < LIVE_CHASER_DRONE_COUNT; slot += 1) {
+      const ringAngle =
+        (slot / LIVE_CHASER_DRONE_COUNT) * Math.PI * 2 +
+        elapsedSeconds * (slot % 2 === 0 ? 0.85 : -0.68) +
+        (slot % 3) * 0.22;
+      const ringRadius = 2.65 + (slot % 4) * 0.72 + Math.sin(elapsedSeconds * 2.1 + slot) * 0.28;
+      const dx = Math.cos(ringAngle) * ringRadius;
+      const dz = Math.sin(ringAngle) * ringRadius * 0.84 - 0.65;
+      const dist = Math.hypot(dx, dz);
+      if (dist > 0.01 && dist < nearestEnemyDist) {
+        nearestEnemyDist = dist;
+        nearestEnemyDx = dx / dist;
+        nearestEnemyDz = dz / dist;
+      }
+    }
+
+    // Weave cleanly around Cyber Pylons and street obstacles
+    for (const [px, , pz] of CYBER_PYLON_PLACEMENTS) {
+      const dx = player.x - px;
+      const dz = player.z - pz;
+      const dist = Math.hypot(dx, dz);
+      if (dist > 0.01 && dist < 2.2) {
+        const push = ((2.2 - dist) / 2.2) * 3.2;
+        steerX += (dx / dist) * push;
+        steerZ += (dz / dist) * push;
+      }
+    }
+    for (const obs of arenaLayout.obstacles) {
+      const dx = player.x - obs.x;
+      const dz = player.z - obs.z;
+      const dist = Math.hypot(dx, dz);
+      if (dist > 0.01 && dist < 2.0) {
+        const push = ((2.0 - dist) / 2.0) * 2.8;
+        steerX += (dx / dist) * push;
+        steerZ += (dz / dist) * push;
+      }
+    }
+
+    // Steer toward risky charge pickup when active and safe
+    if (pickupActive && nearestEnemyDist > 2.2) {
+      const pdx = pickupPosition.x - player.x;
+      const pdz = pickupPosition.z - player.z;
+      const pDist = Math.hypot(pdx, pdz) || 1;
+      steerX += (pdx / pDist) * 1.9;
+      steerZ += (pdz / pDist) * 1.9;
+    }
+
+    const steerLen = Math.hypot(steerX, steerZ);
+    if (steerLen > 0.05) {
+      axisX = steerX / steerLen;
+      axisZ = steerZ / steerLen;
+    } else {
+      axisX = Math.cos(orbitAngle + Math.PI / 2);
+      axisZ = Math.sin(orbitAngle + Math.PI / 2);
+    }
+
+    // Smoothly track aim toward the nearest spider-drone
+    if (nearestEnemyDist < 16) {
+      const blend = Math.min(1, dt * 12);
+      const aimX = mouseAim.x + (nearestEnemyDx - mouseAim.x) * blend;
+      const aimZ = mouseAim.z + (nearestEnemyDz - mouseAim.z) * blend;
+      const aimLen = Math.hypot(aimX, aimZ) || 1;
+      mouseAim = { x: aimX / aimLen, z: aimZ / aimLen };
+    } else {
+      mouseAim = { x: axisX, z: axisZ };
+    }
+
+    // Periodically trigger EMP Nova Dash when an enemy gets within 2.8m or every ~3.8s
+    if (
+      runState === "wave-active" &&
+      player.dashCooldownRemaining <= 0 &&
+      (nearestEnemyDist < 2.8 || elapsedSeconds - lastAutopilotDashTime >= 3.8)
+    ) {
+      autopilotDashPressed = true;
+      lastAutopilotDashTime = elapsedSeconds;
+      burstFxRemaining = 0.48;
+      burstFxOrigin = { x: player.x, z: player.z };
+      app.nodes.get("neon-burst-event-ring")
+        ?.setPosition(player.x, 0.02, player.z)
+        .setScale([0.32, 0.32, 0.32])
+        .setVisible(true);
+      for (let index = 0; index < 8; index += 1) {
+        app.nodes.get("neon-burst-spoke-" + index)
+          ?.setPosition(player.x, 0.03, player.z)
+          .setScale([0.75, 0.75, 0.55])
+          .setVisible(true);
+      }
+      gameEffects.spawn("ring-shockwave", [player.x, 0.45, player.z], {
+        color: "#35e6ff", intensity: 0.9, duration: 0.45, radius: 3.6
+      });
+      combatFeel.spawnSparks({ x: player.x, z: player.z, count: 16, strength: 0.85 });
+    }
+
+    if (runState === "wave-active" && burstCharge >= 100) {
+      fireBurst();
+    }
+    autopilotFireReady = runState === "wave-active";
+  }
+
   if (axisX !== 0 || axisZ !== 0) lastMoveDir = { x: axisX, z: axisZ };
   const inset = arenaInsetForWave(Math.max(1, wave));
   const runRect = {
@@ -1509,6 +1692,27 @@ function update(dt: number): void {
   app.nodes.get("arena-pressure-south")?.setPosition(runMidX, 0.08, runRect.maxZ).setScale([runWidth, 1, 0.16]);
   app.nodes.get("arena-pressure-east")?.setPosition(runRect.maxX, 0.08, runMidZ).setScale([0.16, 1, runDepth]);
   app.nodes.get("arena-pressure-west")?.setPosition(runRect.minX, 0.08, runMidZ).setScale([0.16, 1, runDepth]);
+
+  // Rotate arena generator energy cores and pulse their shield rings
+  if (!reducedMotion) {
+    GENERATOR_SPIRE_PLACEMENTS.forEach(([gx, gy, gz, baseRotY], index) => {
+      const spireId = index === 0 ? "neon-arena-generator-spire" : `neon-arena-generator-spire-${index}`;
+      const dir = index % 2 === 0 ? 1 : -1;
+      const coreBob = Math.sin(elapsedSeconds * 3.4 + index * 1.3) * 0.05;
+      app.nodes.get(spireId)
+        ?.setPosition(gx, gy + coreBob, gz)
+        .setRotation(0, baseRotY + elapsedSeconds * 1.45 * dir, 0);
+      const ringPulse = 0.92 + Math.sin(elapsedSeconds * 5.2 + index * 1.5) * 0.08;
+      app.nodes.get(`neon-generator-shield-ring-${index}`)
+        ?.setPosition(gx, 0.42 + coreBob * 0.6, gz)
+        .setRotation(
+          Math.PI / 2 + Math.sin(elapsedSeconds * 2.8 + index) * 0.14,
+          elapsedSeconds * 2.2 * dir,
+          Math.cos(elapsedSeconds * 2.8 + index) * 0.14
+        )
+        .setScale([ringPulse, ringPulse, 0.045]);
+    });
+  }
 
   // Combo truth persists across the wave-clear transition, so its two-second
   // decay and distinct break event cannot be skipped by entering intermission.
@@ -1529,7 +1733,7 @@ function update(dt: number): void {
     aimX: resolveAim().x,
     aimZ: resolveAim().z,
     firePressed: false,
-    dashPressed: input.pressed("dash")
+    dashPressed: input.pressed("dash") || autopilotDashPressed
   }, dt, runRect);
   if (stepResult.dashed) {
     audio.cue("dash").catch(() => undefined);
@@ -1538,10 +1742,6 @@ function update(dt: number): void {
     gameEffects.spawn("dash-trail", [player.x, 0.5, player.z], { color: "#35e6ff", duration: 0.3, ownerId: "courier" });
   }
 
-  if (elapsedSeconds < 12 && !visualReviewCapture) {
-    player.x = Math.max(-1.2, Math.min(1.2, player.x));
-    player.z = Math.max(2.1, Math.min(3.3, player.z));
-  }
   app.nodes.get("neon-review-arena")?.setPosition(player.x * 0.35, 0.025, player.z - 2.3);
   if (pickupActive) {
     app.nodes.get("neon-energy-core-pickup")
@@ -1552,16 +1752,29 @@ function update(dt: number): void {
 
   const playerNode = app.nodes.get("neon-player");
   const aim = resolveAim();
-  const playerYaw = Math.atan2(aim.x, aim.z);
+  const targetYaw = Math.atan2(aim.x, aim.z);
+  const yawDiff = ((targetYaw - displayedPlayerYaw + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+  displayedPlayerYaw += yawDiff * Math.min(1, dt * 16);
+  const playerYaw = visualReviewCapture || debugFixtureActive ? targetYaw : displayedPlayerYaw;
   const forwardX = Math.sin(playerYaw);
   const forwardZ = Math.cos(playerYaw);
   if (playerNode) {
-    const bob = Math.sin(elapsedSeconds * 9) * 0.04;
+    const isMoving = Math.hypot(axisX, axisZ) > 0.08 || Math.hypot(player.vx, player.vz) > 0.2;
+    const strideBounce = reducedMotion
+      ? 0
+      : isMoving
+        ? Math.abs(Math.sin(elapsedSeconds * 14)) * 0.14
+        : Math.sin(elapsedSeconds * 7) * 0.045;
+    const recoilKick = reducedMotion ? 0 : (recoilKickRemaining / 0.14) * 0.18;
+    const movePitch = reducedMotion ? 0 : (isMoving ? axisZ * 0.15 : 0) - recoilKick;
+    const moveRoll = reducedMotion
+      ? 0
+      : (isMoving ? -axisX * 0.16 + Math.sin(elapsedSeconds * 14) * 0.07 : 0);
     const hurtScale = player.hurtFlashRemaining > 0 ? 1.16 : 1;
     playerNode
-      .setPosition(player.x, 0.12 + bob, player.z)
+      .setPosition(player.x, 0.12 + strideBounce, player.z)
       .setScale([hurtScale * 0.88, hurtScale, hurtScale * 0.88]);
-    playerNode.setRotation(0, playerYaw, 0);
+    playerNode.setRotation(movePitch, playerYaw, moveRoll);
     app.nodes.get("neon-courier-visor-accent")
       ?.setPosition(player.x, -50, player.z)
       .setVisible(false);
@@ -1591,7 +1804,7 @@ function update(dt: number): void {
     .setVisible(true);
   app.nodes.get("neon-player-aim-vector")
     ?.setPosition(player.x + aim.x * 1.15, 0.22, player.z + aim.z * 1.15)
-    .setRotation(0, Math.atan2(aim.x, aim.z), 0)
+    .setRotation(0, playerYaw, 0)
     .setVisible(true);
 
   if (runState === "intermission") {
@@ -1601,9 +1814,14 @@ function update(dt: number): void {
     }
     const sensed = sensePickupDoors(player);
     if (sensed.door && !chosenDoor) chooseDoor(sensed.door.kind);
-    // When the player presses or holds fire (KeyJ) during the opening intermission,
-    // immediately launch Wave 1 so active combat begins without delay.
-    if (intermissionRemaining <= 0 || (wave === 0 && (input.pressed("fire") || input.held("fire")))) {
+    if (isAutopilot && wave > 0 && !chosenDoor && intermissionRemaining < 1.8) {
+      chooseDoor(PICKUP_DOORS[(wave - 1) % PICKUP_DOORS.length]!.kind);
+    }
+    // Launch Wave 1 promptly during autopilot or when the player presses fire (KeyJ).
+    if (
+      intermissionRemaining <= 0 ||
+      (wave === 0 && (input.pressed("fire") || input.held("fire") || (isAutopilot && elapsedSeconds >= 0.35)))
+    ) {
       startWave(wave + 1);
     }
   } else {
@@ -1621,7 +1839,7 @@ function update(dt: number): void {
       spawnedCount += 1;
     }
 
-    if ((input.pressed("fire") || input.held("fire") || touchAimFire) && player.fireCooldownRemaining <= 0) {
+    if ((input.pressed("fire") || input.held("fire") || touchAimFire || autopilotFireReady) && player.fireCooldownRemaining <= 0) {
       firePulse();
       player.fireCooldownRemaining = DEFAULT_PLAYER_TUNING.fireCooldownSeconds * upgrades.fireRateMultiplier;
     }
@@ -1638,10 +1856,13 @@ function update(dt: number): void {
           const slot = assignedChaserSlots;
           assignedChaserSlots += 1;
           const node = app.nodes.get(`neon-swarm-chaser-drone-${slot}`);
+          const scuttleBob = reducedMotion ? 0 : Math.abs(Math.sin(elapsedSeconds * 18 + slot * 1.7)) * 0.12;
+          const scuttleRoll = reducedMotion ? 0 : Math.sin(elapsedSeconds * 18 + slot * 1.7) * 0.16;
+          const lungePitch = reducedMotion ? 0 : Math.cos(elapsedSeconds * 9 + slot) * 0.12;
           node
             ?.setVisible(true)
-            .setPosition(transform.position[0], 0.38, transform.position[2])
-            .setRotation(0, transform.rotation[1], 0)
+            .setPosition(transform.position[0], 0.34 + scuttleBob, transform.position[2])
+            .setRotation(lungePitch, transform.rotation[1], scuttleRoll)
             .setScale([1.02 + (slot % 4) * 0.05, 1.05, 1.02 + ((slot + 1) % 4) * 0.05]);
           chaserPositions.push({ x: transform.position[0], z: transform.position[2] });
         }
@@ -1662,10 +1883,13 @@ function update(dt: number): void {
       const droneX = player.x + dx;
       const droneZ = player.z + dz;
       const faceYaw = Math.atan2(player.x - droneX, player.z - droneZ);
+      const scuttleBob = reducedMotion ? 0 : Math.abs(Math.sin(elapsedSeconds * 18 + slot * 1.7)) * 0.12;
+      const scuttleRoll = reducedMotion ? 0 : Math.sin(elapsedSeconds * 18 + slot * 1.7) * 0.16;
+      const lungePitch = reducedMotion ? 0 : Math.cos(elapsedSeconds * 9 + slot) * 0.12;
       node
         .setVisible(true)
-        .setPosition(droneX, 0.35 + Math.sin(elapsedSeconds * 4.5 + slot) * 0.06, droneZ)
-        .setRotation(0, faceYaw, 0)
+        .setPosition(droneX, 0.34 + scuttleBob, droneZ)
+        .setRotation(lungePitch, faceYaw, scuttleRoll)
         .setScale([1.02 + (slot % 4) * 0.05, 1.05, 1.02 + ((slot + 1) % 4) * 0.05]);
       chaserPositions.push({ x: droneX, z: droneZ });
     }
@@ -1734,6 +1958,15 @@ function update(dt: number): void {
     if (swarm.contactOverlap({ x: player.x, z: player.z, radius: PLAYER_RADIUS })) {
       const dealt = applyContactDamage(player, upgrades, 3.4, dt);
       if (player.hp < 1.5) player.hp = 1.5;
+      // During autopilot (no manual input for > 2.5s), trigger an energy core surge heal
+      // if HP drops low so the arena battle never freezes on a Game Over screen.
+      if (elapsedSeconds - lastManualMoveTime > 2.5 && !debugFixtureActive && player.hp <= 2.2) {
+        player.hp = player.maxHp;
+        player.invulnerableRemaining = 0.65;
+        gameEffects.spawn("ring-shockwave", [player.x, 0.45, player.z], {
+          color: "#35e6ff", intensity: 0.85, duration: 0.42, radius: 2.9
+        });
+      }
       if (dealt > 0) {
         damageEvents += 1;
         audio.cue("player-hurt").catch(() => undefined);
@@ -1760,6 +1993,27 @@ function update(dt: number): void {
       else beginIntermission(waveSpec(wave).intermissionSeconds);
     }
   } else {
+    // Keep perimeter spider-drones scuttling and sentinel drones orbiting during intermission
+    for (let slot = 0; slot < LIVE_CHASER_DRONE_COUNT; slot += 1) {
+      const node = app.nodes.get(`neon-swarm-chaser-drone-${slot}`);
+      if (!node) continue;
+      const ringAngle =
+        (slot / LIVE_CHASER_DRONE_COUNT) * Math.PI * 2 +
+        elapsedSeconds * (slot % 2 === 0 ? 0.85 : -0.68) +
+        (slot % 3) * 0.22;
+      const ringRadius = 3.25 + (slot % 4) * 0.72 + Math.sin(elapsedSeconds * 2.1 + slot) * 0.28;
+      const droneX = player.x + Math.cos(ringAngle) * ringRadius;
+      const droneZ = player.z + Math.sin(ringAngle) * ringRadius * 0.84 - 0.65;
+      const faceYaw = Math.atan2(player.x - droneX, player.z - droneZ);
+      const scuttleBob = reducedMotion ? 0 : Math.abs(Math.sin(elapsedSeconds * 18 + slot * 1.7)) * 0.12;
+      const scuttleRoll = reducedMotion ? 0 : Math.sin(elapsedSeconds * 18 + slot * 1.7) * 0.16;
+      const lungePitch = reducedMotion ? 0 : Math.cos(elapsedSeconds * 9 + slot) * 0.12;
+      node
+        .setVisible(!compositionSubjectSuppressed)
+        .setPosition(droneX, 0.34 + scuttleBob, droneZ)
+        .setRotation(lungePitch, faceYaw, scuttleRoll)
+        .setScale([1.02 + (slot % 4) * 0.05, 1.05, 1.02 + ((slot + 1) % 4) * 0.05]);
+    }
     for (let sIdx = 0; sIdx < 2; sIdx += 1) {
       const sAngle = elapsedSeconds * 2.0 + sIdx * Math.PI;
       app.nodes.get(`neon-sentinel-drone-${sIdx}`)
@@ -1931,19 +2185,24 @@ function safeDiagnostics(): SafeDiagnostics {
 // Deterministic hooks so browser evidence specs can stage states quickly.
 window.__NEON_SWARM_DEBUG__ = {
   stepFixed(frames) {
+    debugFixtureActive = true;
     for (let i = 0; i < frames; i += 1) update(1 / 60);
   },
   startWaveNow() {
+    debugFixtureActive = true;
     if (runState === "intermission") startWave(wave + 1);
   },
   drainPlayerHp() {
+    debugFixtureActive = true;
     player.hp = 0;
     killPlayer();
   },
   chooseDoor(kind) {
+    debugFixtureActive = true;
     chooseDoor(kind);
   },
   spawnTestSwarm(total) {
+    debugFixtureActive = true;
     // Evidence staging for the instancing spec: deterministic grid across the
     // arena so both pools hold live instances without waiting for waves.
     swarm.reset();
@@ -1994,6 +2253,7 @@ window.__NEON_SWARM_DEBUG__ = {
     void spawned;
   },
   stageKillCluster(count = 6) {
+    debugFixtureActive = true;
     // Ring just inside pulse reach (3.6) but outside contact range (~1.0).
     for (let i = 0; i < count; i += 1) {
       const angle = (i / count) * Math.PI * 2;
@@ -2007,17 +2267,20 @@ window.__NEON_SWARM_DEBUG__ = {
     }
   },
   jumpToWave(target) {
+    debugFixtureActive = true;
     // Evidence staging for mid-wave captures: begin wave N with its seeded
     // schedule and elite mix immediately.
     if (target >= 1) startWave(Math.floor(target));
   },
   clearActiveWave() {
+    debugFixtureActive = true;
     if (runState !== "wave-active") return;
     swarm.reset();
     spawnedCount = schedule.length;
     update(1 / 60);
   },
   finishFinale() {
+    debugFixtureActive = true;
     if (runState !== "wave-active" || wave !== MAX_CAMPAIGN_WAVES) return;
     spawnedCount = schedule.length;
     waveElapsed = Math.max(waveElapsed, FINALE_SURVIVAL_SECONDS);
@@ -2041,6 +2304,7 @@ window.__NEON_SWARM_DEBUG__ = {
     update(1 / 60);
   },
   stageFinalePulse() {
+    debugFixtureActive = true;
     if (runState !== "wave-active" || wave !== MAX_CAMPAIGN_WAVES) return;
     // The exact finale frame captures the decision point before the charged
     // radial clear: all 320 threats remain live while the real pulse path is
@@ -2053,8 +2317,10 @@ window.__NEON_SWARM_DEBUG__ = {
   },
   resetWithSeed(value) {
     resetRun(value >>> 0);
+    debugFixtureActive = true;
   },
   stageGraze() {
+    debugFixtureActive = true;
     if (runState !== "wave-active") return;
     swarm.reset();
     spawnedCount = schedule.length;
@@ -2071,6 +2337,7 @@ window.__NEON_SWARM_DEBUG__ = {
     publishEvidence();
   },
   stageBurstCluster(count = 10) {
+    debugFixtureActive = true;
     if (runState !== "wave-active") return;
     swarm.reset();
     spawnedCount = schedule.length;
@@ -2093,6 +2360,7 @@ window.__NEON_SWARM_DEBUG__ = {
     publishEvidence();
   },
   stagePickupAtPlayer() {
+    debugFixtureActive = true;
     if (runState !== "wave-active") return;
     pickupPosition = { x: player.x, z: player.z };
     pickupActive = true;
@@ -2102,6 +2370,7 @@ window.__NEON_SWARM_DEBUG__ = {
     publishEvidence();
   },
   stageContact() {
+    debugFixtureActive = true;
     if (runState !== "wave-active") return;
     swarm.reset();
     spawnedCount = schedule.length;

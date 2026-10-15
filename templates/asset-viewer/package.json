@@ -7,8 +7,8 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@aura3d/assets": "3.0.1",
-    "@aura3d/engine": "3.0.1",
+    "@aura3d/assets": "4.0.0",
+    "@aura3d/engine": "4.0.0",
     "typescript": "^5.8.3",
     "vite": "^5.4.0"
   },

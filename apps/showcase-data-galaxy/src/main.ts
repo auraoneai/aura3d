@@ -16,9 +16,11 @@ import {
   resolveSemanticRegion,
   scene,
   timeline,
-  ui
+  ui,
+  type AuraCameraSpec,
+  type AuraNodeInput,
+  type AuraSceneSnapshot
 } from "@aura3d/engine";
-import type { AuraCameraSpec, AuraNodeInput, AuraSceneSnapshot } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import "./styles.css";
 
@@ -219,7 +221,20 @@ function buildDataGalaxyScene(): SceneBuild {
       .scale([2.35, 1, 1.62]))
     .addMany(sceneNodes)
     .add(effects.fog({ name: "soft analytics volume haze", density: 0.018, color: "#102426", intensity: 0.24 }))
-    .add(effects.bloom({ name: "controlled data galaxy bloom", intensity: controls.performance === "cinematic" ? 0.22 : 0.16, threshold: 0.78, radius: 0.24 }))
+    .add(effects.bloom({ name: "controlled data galaxy bloom", intensity: controls.performance === "cinematic" ? 0.24 : 0.18, threshold: 0.76, radius: 0.26 }))
+    .add(effects.vignette({ name: "data galaxy observatory vignette", intensity: 0.22, smoothness: 0.72, roundness: 0.86, color: "#030506" }))
+    .add(effects.colorGrade({ name: "data galaxy analytics grade", contrast: 1.06, saturation: 1.08 }))
+    .add(effects.auroraRibbon({
+      name: "data galaxy upper inference ribbon",
+      color: controls.formation === "network" ? "#a3e635" : "#64f4cf",
+      colorTop: "#ffd27d",
+      intensity: 0.42,
+      width: 3.2,
+      height: 1.2,
+      segments: 48,
+      sway: 0.6,
+      shimmer: 0.45
+    }).position(0, 1.48, -1.35))
     .add(effects.particles({
       name: "restrained inference dust particle system",
       emitter: controls.formation === "wave" ? "fountain" : "swirl",

@@ -1388,12 +1388,18 @@ function mountSide(
       hero.setVisible(false);
     } else {
       hero.setVisible(true);
+      const isArenaAnimated = mode === "arena" && !compositionProbeActive && !paused && !reducedMotion;
+      const phaseOffset = side === "player" ? 0 : 1.75;
+      const strideBob = isArenaAnimated ? Math.abs(Math.sin(elapsed * 7.8 + phaseOffset)) * 0.085 : 0;
+      const lungePitch = isArenaAnimated ? Math.sin(elapsed * 5.2 + phaseOffset) * 0.075 : 0;
+      const torsoTwist = isArenaAnimated ? Math.cos(elapsed * 6.4 + phaseOffset) * 0.11 : 0;
+      const combatRoll = isArenaAnimated ? Math.sin(elapsed * 7.8 + phaseOffset) * 0.045 : 0;
       hero.setPosition(
         rootPosition[0] + Math.sin(yaw) * HERO_FORWARD,
-        rootPosition[1] + HERO_FEET_LIFT,
+        rootPosition[1] + HERO_FEET_LIFT + strideBob,
         rootPosition[2] + Math.cos(yaw) * HERO_FORWARD
       );
-      hero.setRotation(0, yaw, 0);
+      hero.setRotation(lungePitch, yaw + torsoTwist, combatRoll);
     }
   }
 
@@ -2027,18 +2033,19 @@ app.onFrame(({ dt }) => {
   for (let warpStep = 0; warpStep < totalSteps; warpStep += 1) {
     const currentSnap = bout.snapshot();
     let stepInputs = warpStep === 0 ? basePlayerInputs : { moveX: 0, jump: false, light: false, heavy: false, special: false, guard: false };
-    if (!simTickUsed && !manualActive && currentSnap.frame <= 240) {
+    if (!simTickUsed && !manualActive) {
       arenaAutoEngaged = true;
       const gap = currentSnap.rival.x - currentSnap.player.x;
       const f = currentSnap.frame;
-      const closeIn = Math.abs(gap) > 1.04 ? Math.sign(gap) : 0;
-      const fireSpecial = f === 96 || f === 168;
-      const fireHeavy = f === 82 || f === 128 || f === 196;
-      const fireLight = f === 76 || f === 112 || f === 148 || f === 182 || f === 216;
-      const autoGuard = (f >= 134 && f <= 142) || (f >= 202 && f <= 210);
+      const cycle = f % 180;
+      const closeIn = Math.abs(gap) > 1.04 ? Math.sign(gap) : Math.abs(gap) < 0.72 ? -Math.sign(gap) : 0;
+      const fireSpecial = f === 96 || f === 168 || (f > 240 && cycle === 72);
+      const fireHeavy = f === 82 || f === 128 || f === 196 || (f > 240 && (cycle === 36 || cycle === 124));
+      const fireLight = f === 76 || f === 112 || f === 148 || f === 182 || f === 216 || (f > 240 && cycle % 28 === 0);
+      const autoGuard = (f >= 134 && f <= 142) || (f >= 202 && f <= 210) || (f > 240 && cycle >= 95 && cycle <= 106);
       stepInputs = {
         moveX: closeIn,
-        jump: false,
+        jump: f > 240 && cycle === 148,
         light: fireLight,
         heavy: fireHeavy,
         special: fireSpecial,
@@ -2051,6 +2058,11 @@ app.onFrame(({ dt }) => {
     if (extraOpeningSteps > 0 && snap.events.length > 0) {
       feel.onEvents(snap.events);
     }
+  }
+  if (!simTickUsed && !manualActive && (snap.phase === "ko" || snap.phase === "lost") && snap.frame % 120 === 0) {
+    boutIndex += 1;
+    startBout();
+    snap = bout.snapshot();
   }
   feel.noteHitStop(snap.hitstopFrames);
 

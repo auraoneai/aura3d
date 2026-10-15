@@ -268,6 +268,16 @@ let elapsedPlayTime = 0;
 let chargeTickAccumulator = 0;
 let touchAimDirection = 0;
 let touchShootHeld = false;
+let visualShooterX = COURT_SPOTS[0]!.x;
+let visualShooterZ = COURT_SPOTS[0]!.z;
+let visualDefenderX = COURT_SPOTS[0]!.x * 0.58;
+let visualDefenderZ = COURT_SPOTS[0]!.z * 0.58;
+let lastManualInputTime = -10_000;
+let idlePlayTime = 0;
+let spotDribbleTimer = 0;
+let autoCharging = false;
+let idleModalTimer = 0;
+let rbTestHookUsed = false;
 // These are actual embedded GLB clip names.  The route still exposes the
 // deterministic state machine separately so evidence can distinguish clip
 // sampling from root translation and ballistic ownership.
@@ -998,7 +1008,19 @@ function togglePause(): void {
   publishEvidence();
 }
 
+function markManualInput(): void {
+  lastManualInputTime = performance.now();
+  idlePlayTime = 0;
+  spotDribbleTimer = 0;
+  if (autoCharging) {
+    autoCharging = false;
+    isCharging = false;
+    chargePower = 0;
+  }
+}
+
 window.addEventListener("keydown", (event) => {
+  markManualInput();
   if (!event.repeat && (event.code === "KeyP" || event.code === "Escape")) {
     event.preventDefault();
     togglePause();
@@ -1017,26 +1039,27 @@ window.addEventListener("keydown", (event) => {
 function changeSpot(delta: number): void {
   if (ballState.inFlight || scoreState.state !== "playing") return;
   currentSpotIndex = (currentSpotIndex + delta + COURT_SPOTS.length) % COURT_SPOTS.length;
+  spotDribbleTimer = 0;
   resetBallToSpot();
   updateHUD();
   syncTransforms();
   publishEvidence();
 }
 
-document.getElementById("rb-touch-spot-left")?.addEventListener("click", () => changeSpot(-1));
-document.getElementById("rb-touch-spot-right")?.addEventListener("click", () => changeSpot(1));
+document.getElementById("rb-touch-spot-left")?.addEventListener("click", () => { markManualInput(); changeSpot(-1); });
+document.getElementById("rb-touch-spot-right")?.addEventListener("click", () => { markManualInput(); changeSpot(1); });
 for (const [id, direction] of [["rb-touch-aim-down", -1], ["rb-touch-aim-up", 1]] as const) {
   const button = document.getElementById(id);
-  button?.addEventListener("pointerdown", () => { touchAimDirection = direction; });
-  button?.addEventListener("pointerup", () => { touchAimDirection = 0; });
+  button?.addEventListener("pointerdown", () => { markManualInput(); touchAimDirection = direction; });
+  button?.addEventListener("pointerup", () => { markManualInput(); touchAimDirection = 0; });
   button?.addEventListener("pointercancel", () => { touchAimDirection = 0; });
 }
 const touchShoot = document.getElementById("rb-touch-shoot");
-touchShoot?.addEventListener("pointerdown", () => { touchShootHeld = true; });
-touchShoot?.addEventListener("pointerup", () => { touchShootHeld = false; });
+touchShoot?.addEventListener("pointerdown", () => { markManualInput(); touchShootHeld = true; });
+touchShoot?.addEventListener("pointerup", () => { markManualInput(); touchShootHeld = false; });
 touchShoot?.addEventListener("pointercancel", () => { touchShootHeld = false; });
-document.getElementById("rb-touch-pause")?.addEventListener("click", togglePause);
-document.getElementById("rb-touch-reset")?.addEventListener("click", fullReset);
+document.getElementById("rb-touch-pause")?.addEventListener("click", () => { markManualInput(); togglePause(); });
+document.getElementById("rb-touch-reset")?.addEventListener("click", () => { markManualInput(); fullReset(); });
 
 function resetBallToSpot(): void {
   const spot = COURT_SPOTS[currentSpotIndex]!;
@@ -1044,12 +1067,17 @@ function resetBallToSpot(): void {
   ballState = createBallAtSpot(spot, isGold);
   chargePower = 0.0;
   isCharging = false;
+  autoCharging = false;
   chargeDirection = 1;
 }
 
 function fullReset(): void {
   scoreState = initialScoreState(1);
   currentSpotIndex = 0;
+  visualShooterX = COURT_SPOTS[0]!.x;
+  visualShooterZ = COURT_SPOTS[0]!.z;
+  visualDefenderX = COURT_SPOTS[0]!.x * 0.58;
+  visualDefenderZ = COURT_SPOTS[0]!.z * 0.58;
   hoopState = initialHoopState(1);
   resetBallToSpot();
   updateHUD();
@@ -1157,18 +1185,88 @@ function stepGame(dt: number): void {
     if (contactFxTimer === 0) contactFxKind = "none";
   }
 
+  const manualActive =
+    input.held("aimUp") ||
+    input.held("aimDown") ||
+    input.held("shoot") ||
+    input.held("spotLeft") ||
+    input.held("spotRight") ||
+    touchAimDirection !== 0 ||
+    touchShootHeld;
+  if (manualActive) {
+    lastManualInputTime = performance.now();
+    idlePlayTime = 0;
+    if (autoCharging) {
+      autoCharging = false;
+    }
+  } else {
+    idlePlayTime += dt;
+  }
+
+  const autonomousAllowed =
+    !visualReviewCapture &&
+    !rbTestHookUsed &&
+    idlePlayTime >= 0.75 &&
+    performance.now() - lastManualInputTime > 1400;
+
   if (scoreState.state !== "playing") {
+    if (scoreState.state !== "paused" && autonomousAllowed) {
+      idleModalTimer += dt;
+      if (idleModalTimer >= 1.8) {
+        idleModalTimer = 0;
+        if (scoreState.state === "heat-cleared") {
+          scoreState = advanceHeat(scoreState);
+          currentSpotIndex = scoreState.heat === 2 ? 0 : currentSpotIndex;
+          hoopState = initialHoopState(scoreState.heat);
+          audio.playCue("heatAdvance", 0.9);
+          resetBallToSpot();
+          updateHUD();
+        } else {
+          fullReset();
+        }
+        elModal.classList.add("hidden");
+      }
+    } else {
+      idleModalTimer = 0;
+    }
     publishEvidence();
     return;
   }
+  idleModalTimer = 0;
 
   elapsedPlayTime += dt;
 
-  // 1. Update Hoop position (sway & defender)
+  // 1. Update Hoop position (sway & defender) & smooth court running
   const currentSpot = COURT_SPOTS[currentSpotIndex]!;
+  const spotDx = currentSpot.x - visualShooterX;
+  const spotDz = currentSpot.z - visualShooterZ;
+  const spotDist = Math.hypot(spotDx, spotDz);
+  if (visualReviewCapture || rbTestHookUsed) {
+    visualShooterX = currentSpot.x;
+    visualShooterZ = currentSpot.z;
+  } else if (spotDist > 0.001) {
+    const stepDist = Math.min(spotDist, dt * 6.5);
+    visualShooterX += (spotDx / spotDist) * stepDist;
+    visualShooterZ += (spotDz / spotDist) * stepDist;
+  } else {
+    visualShooterX = currentSpot.x;
+    visualShooterZ = currentSpot.z;
+  }
+
+  const targetDefX = visualShooterX * 0.58 + Math.sin(elapsedPlayTime * 3.8) * (isCharging || ballState.inFlight ? 0.1 : 0.42);
+  const targetDefZ = Math.max(1.15, visualShooterZ * 0.56 + Math.cos(elapsedPlayTime * 2.9) * 0.22);
+  const defDx = targetDefX - visualDefenderX;
+  const defDz = targetDefZ - visualDefenderZ;
+  const defDist = Math.hypot(defDx, defDz);
+  if (defDist > 0.001) {
+    const defStep = Math.min(defDist, dt * 5.8);
+    visualDefenderX += (defDx / defDist) * defStep;
+    visualDefenderZ += (defDz / defDist) * defStep;
+  }
+
   hoopState = updateHoop(hoopState, scoreState.heat, elapsedPlayTime, currentSpot.x);
 
-  // 2. Handle Inputs
+  // 2. Handle Inputs & Autonomous Streetball Shootout
   if (!ballState.inFlight) {
     if (input.held("aimUp") || touchAimDirection > 0) {
       aimPitch = Math.min(1.0, aimPitch + dt * 1.5);
@@ -1178,6 +1276,7 @@ function stepGame(dt: number): void {
 
     // Charge & Shoot
     if (input.held("shoot") || touchShootHeld) {
+      autoCharging = false;
       isCharging = true;
       chargePower += chargeDirection * dt * 1.4;
       if (chargePower >= 1.0) {
@@ -1193,10 +1292,35 @@ function stepGame(dt: number): void {
         chargeTickAccumulator = 0;
         audio.playCue("chargeTick", 0.18);
       }
+    } else if (autoCharging && autonomousAllowed) {
+      isCharging = true;
+      const shotIndex = scoreState.makes + scoreState.misses;
+      const targetAutoPower = Math.min(
+        0.94,
+        Math.max(0.24, currentSpot.sweetPower + Math.sin(shotIndex * 1.7) * 0.022)
+      );
+      const targetPitch = Math.cos(shotIndex * 1.3) * 0.06;
+      aimPitch += (targetPitch - aimPitch) * Math.min(1, dt * 6);
+      chargePower = Math.min(1.0, chargePower + dt * 1.38);
+      if (chargePower >= targetAutoPower) {
+        autoCharging = false;
+        isCharging = false;
+        spotDribbleTimer = 0;
+        releaseShot(chargePower, aimPitch);
+      }
     } else if (isCharging || input.released("shoot")) {
       // Released Space
+      autoCharging = false;
       isCharging = false;
       releaseShot();
+    } else if (autonomousAllowed && spotDist <= 0.05) {
+      spotDribbleTimer += dt;
+      if (spotDribbleTimer >= 0.65) {
+        autoCharging = true;
+        isCharging = true;
+        chargePower = 0.04;
+        chargeDirection = 1;
+      }
     }
   }
 
@@ -1245,6 +1369,10 @@ function stepGame(dt: number): void {
       }
 
       if (scoreState.state === "playing") {
+        if (autonomousAllowed) {
+          currentSpotIndex = (currentSpotIndex + 1) % COURT_SPOTS.length;
+          spotDribbleTimer = 0;
+        }
         resetBallToSpot();
       }
     }
@@ -1304,33 +1432,68 @@ function syncTransforms(): void {
       ? "compression"
       : "ready";
   const shooterLift = releaseExtension * 0.46 - shooterBodyCompression * 0.12;
-  const hoopDx = hoopState.x - currentSpot.x;
-  const hoopDz = hoopState.z - currentSpot.z;
+  const baseSpotX = visualReviewCapture || rbTestHookUsed ? currentSpot.x : visualShooterX;
+  const baseSpotZ = visualReviewCapture || rbTestHookUsed ? currentSpot.z : visualShooterZ;
+  const spotMoveDx = currentSpot.x - baseSpotX;
+  const spotMoveDz = currentSpot.z - baseSpotZ;
+  const spotMoveDist = Math.hypot(spotMoveDx, spotMoveDz);
+  const isRunningBetweenSpots = !visualReviewCapture && !rbTestHookUsed && spotMoveDist > 0.03;
+  const runStrideBounce = isRunningBetweenSpots ? Math.abs(Math.sin(elapsedPlayTime * 14)) * 0.14 : 0;
+  const runStrideRoll = isRunningBetweenSpots ? Math.sin(elapsedPlayTime * 14) * 0.11 : 0;
+  const runDirectionYaw = isRunningBetweenSpots ? Math.atan2(spotMoveDx, spotMoveDz) : shooterFacingYaw;
+  const runBlend = Math.min(1, spotMoveDist * 1.8);
+
+  // Jump-shot gather crouch -> explosive upward jump-shot leap -> smooth landing
+  const chargeGatherDip = isCharging && chargePower < 0.35
+    ? -Math.sin((chargePower / 0.35) * Math.PI * 0.5) * 0.14
+    : 0;
+  const chargeJumpRise = isCharging && chargePower >= 0.35
+    ? ((chargePower - 0.35) / 0.65) * 0.52
+    : 0;
+  const liveShooterJumpLift = ballState.inFlight
+    ? releaseExtension * 0.52
+    : isCharging
+      ? chargeGatherDip + chargeJumpRise
+      : Math.abs(Math.sin(elapsedPlayTime * 7.2)) * 0.055 + runStrideBounce;
+
+  const hoopDx = hoopState.x - baseSpotX;
+  const hoopDz = hoopState.z - baseSpotZ;
   const hoopDistance = Math.max(0.001, Math.hypot(hoopDx, hoopDz));
   // The root drive is continuous with the authored flight state: the athlete
   // compresses behind the spot, rises through release, and lands slightly
   // toward the hoop. It complements the continuous pose-authored athlete
   // meshes rather than presenting an ungrounded label-only animation state.
   const releaseDrive = Math.min(0.34, ballState.flightTimer * 0.9) - shooterBodyCompression * 0.08;
-  const shooterX = currentSpot.x + (hoopDx / hoopDistance) * releaseDrive;
-  const shooterZ = currentSpot.z + (hoopDz / hoopDistance) * releaseDrive;
+  const shooterX = baseSpotX + (hoopDx / hoopDistance) * releaseDrive;
+  const shooterZ = baseSpotZ + (hoopDz / hoopDistance) * releaseDrive;
   // The registered athlete GLB has authored bounds below the origin. Keep its
   // feet on the court while the route-local lift continues to follow release.
   shooterNode?.setPosition(shooterX, ATHLETE_FLOOR_OFFSET + shooterLift, shooterZ);
   const shooterPresentationNode = app.nodes.get("shooter-presentation") as AuraRuntimeNodeHandle | undefined;
+  const presentationLift = visualReviewCapture ? shooterLift : liveShooterJumpLift;
+  const activeShooterYaw = visualReviewCapture
+    ? shooterFacingYaw
+    : shooterFacingYaw * (1 - runBlend * 0.65) + runDirectionYaw * (runBlend * 0.65) +
+      (ballState.inFlight ? 0 : Math.sin(elapsedPlayTime * 7.2) * 0.065);
+  const activeShooterPitch = visualReviewCapture
+    ? -0.08 - 0.15 * (ballState.inFlight ? Math.min(1, flightMotionPhase) : 0)
+    : isRunningBetweenSpots
+      ? 0.18 + Math.sin(elapsedPlayTime * 28) * 0.04
+      : isCharging
+        ? chargePower < 0.35 ? 0.14 : -0.12 * ((chargePower - 0.35) / 0.65)
+        : ballState.inFlight
+          ? -0.18 * releaseExtension
+          : 0.06 + Math.sin(elapsedPlayTime * 14.4) * 0.045;
+  const activeShooterRoll = visualReviewCapture
+    ? -0.035 - 0.08 * releaseExtension
+    : isRunningBetweenSpots
+      ? runStrideRoll
+      : -0.035 - 0.08 * releaseExtension + Math.cos(elapsedPlayTime * 7.2) * 0.04;
   // The Meshy shooter GLB is centered at its origin (bounds.min[1] ≈ -0.95),
   // so add SHOOTER_MESHY_GROUND_OFFSET to place its sneakers on the court floor.
   shooterPresentationNode
-    ?.setPosition(shooterX, SHOOTER_MESHY_GROUND_OFFSET + shooterLift, shooterZ)
-    // A quiet idle sway keeps the normal opening frame from reading as a
-    // mannequin while remaining a presentation-only root pose.  During a
-    // live flight the launch-derived yaw is exact so the actor cannot drift
-    // off the hoop-facing orientation in the retained throw frame.
-    .setRotation(
-      -0.08 - 0.15 * (ballState.inFlight ? Math.min(1, flightMotionPhase) : 0),
-      shooterFacingYaw + (ballState.inFlight ? 0 : Math.sin(elapsedPlayTime * 1.8) * 0.028),
-      -0.035 - 0.08 * releaseExtension
-    )
+    ?.setPosition(shooterX, SHOOTER_MESHY_GROUND_OFFSET + presentationLift, shooterZ)
+    .setRotation(activeShooterPitch, activeShooterYaw, activeShooterRoll)
     .setScale([
       PRESENTATION_ATHLETE_SCALE - releaseExtension * 0.035 + shooterBodyCompression * 0.018,
       PRESENTATION_ATHLETE_SCALE + releaseExtension * 0.06 - shooterBodyCompression * 0.045,
@@ -1391,14 +1554,32 @@ function syncTransforms(): void {
   ]);
 
   const ballNode = app.nodes.get("ball-hero") as AuraRuntimeNodeHandle | undefined;
-  ballNode?.setPosition(ballState.x, ballState.y, ballState.z);
   ballNode?.setMaterial(ballState.isGold ? goldMaterial : orangeMaterial);
-  if (ballState.inFlight) {
-    // Visible spin is derived from flight time and velocity, preserving the
-    // route-local ballistic integrator as the sole translation owner.
-    ballNode?.setRotation(ballState.flightTimer * 9.5, ballState.flightTimer * 2.4, -ballState.flightTimer * 4.2);
+  if (ballState.inFlight || visualReviewCapture) {
+    ballNode?.setPosition(ballState.x, ballState.y, ballState.z);
+    if (ballState.inFlight) {
+      // Visible spin is derived from flight time and velocity, preserving the
+      // route-local ballistic integrator as the sole translation owner.
+      ballNode?.setRotation(ballState.flightTimer * 9.5, ballState.flightTimer * 2.4, -ballState.flightTimer * 4.2);
+    } else {
+      ballNode?.setRotation(0, 0, 0);
+    }
   } else {
-    ballNode?.setRotation(0, 0, 0);
+    // Live dribbling and jump-shot gather when holding the ball
+    const handRightX = Math.cos(activeShooterYaw) * 0.28 + Math.sin(activeShooterYaw) * 0.34;
+    const handRightZ = -Math.sin(activeShooterYaw) * 0.28 + Math.cos(activeShooterYaw) * 0.34;
+    if (isCharging) {
+      const gatherX = shooterX + Math.sin(activeShooterYaw) * 0.26 + Math.cos(activeShooterYaw) * 0.08 * (1 - chargePower);
+      const gatherZ = shooterZ + Math.cos(activeShooterYaw) * 0.26 - Math.sin(activeShooterYaw) * 0.08 * (1 - chargePower);
+      const gatherY = 1.15 + chargePower * 0.72 + Math.max(0, presentationLift);
+      ballNode?.setPosition(gatherX, gatherY, gatherZ);
+      ballNode?.setRotation(-chargePower * 2.4, activeShooterYaw, 0);
+    } else {
+      const dribbleBounce = Math.abs(Math.sin(elapsedPlayTime * 7.2));
+      const dribbleY = 0.14 + dribbleBounce * (1.08 - 0.14) + runStrideBounce * 0.35;
+      ballNode?.setPosition(shooterX + handRightX, dribbleY, shooterZ + handRightZ);
+      ballNode?.setRotation(elapsedPlayTime * 8.5, activeShooterYaw, Math.sin(elapsedPlayTime * 7.2) * 0.38);
+    }
   }
 
   const flightHalo = app.nodes.get("flight-halo") as AuraRuntimeNodeHandle | undefined;
@@ -1451,12 +1632,20 @@ function syncTransforms(): void {
 
   const defenderNode = app.nodes.get("defender-cutout") as AuraRuntimeNodeHandle | undefined;
   const defenderPresentationNode = app.nodes.get("defender-presentation") as AuraRuntimeNodeHandle | undefined;
-  const warmupPartnerVisible = scoreState.heat === 1;
+  const warmupPartnerVisible = !visualReviewCapture || scoreState.heat === 1;
   defenderNode?.setVisible(hoopState.defenderActive);
   defenderPresentationNode?.setVisible(hoopState.defenderActive || warmupPartnerVisible);
   if (hoopState.defenderActive) {
     const contestLift = Math.max(0, hoopState.defenderY - 0.9);
-    const airborne = Math.min(1, contestLift / 1.2);
+    const extraJumpContest = !visualReviewCapture && ballState.inFlight
+      ? Math.sin(flightMotionPhase * Math.PI) * 0.58
+      : !visualReviewCapture && isCharging
+        ? Math.max(0, (chargePower - 0.35) * 0.38)
+        : !visualReviewCapture
+          ? Math.abs(Math.sin(elapsedPlayTime * 9.5)) * 0.08
+          : 0;
+    const effectiveContestLift = Math.max(contestLift, extraJumpContest);
+    const airborne = Math.min(1, effectiveContestLift / 1.2);
     const ballReachActive = ballState.inFlight && hoopState.defenderTelegraph === "contest";
     const ballDx = ballState.x - hoopState.defenderX;
     const ballDz = ballState.z - hoopState.defenderZ;
@@ -1465,9 +1654,16 @@ function syncTransforms(): void {
     const defenderX = hoopState.defenderX + (ballDx / ballPlanarDistance) * defenderReach;
     const defenderZ = hoopState.defenderZ + (ballDz / ballPlanarDistance) * defenderReach;
     defenderNode?.setPosition(defenderX, ATHLETE_FLOOR_OFFSET + contestLift, defenderZ);
+    const defYaw = visualReviewCapture
+      ? 0.48 + (ballDx / 2.4) * 0.08
+      : Math.atan2(shooterX - defenderX, shooterZ - defenderZ);
     defenderPresentationNode
-      ?.setPosition(defenderX, SHOOTER_MESHY_GROUND_OFFSET + contestLift, defenderZ)
-      .setRotation(-0.16 * airborne, 0.48 + (ballDx / 2.4) * 0.08, -(ballDx / 2.4) * 0.2 * airborne)
+      ?.setPosition(defenderX, SHOOTER_MESHY_GROUND_OFFSET + effectiveContestLift, defenderZ)
+      .setRotation(
+        -0.16 * airborne + (!visualReviewCapture ? Math.sin(elapsedPlayTime * 9.5) * 0.05 : 0),
+        defYaw,
+        -(ballDx / 2.4) * 0.2 * airborne + (!visualReviewCapture ? Math.cos(elapsedPlayTime * 4.8) * 0.08 : 0)
+      )
       .setScale([
         PRESENTATION_ATHLETE_SCALE - airborne * 0.035,
         PRESENTATION_ATHLETE_SCALE + airborne * 0.08,
@@ -1509,19 +1705,31 @@ function syncTransforms(): void {
         ]);
     }
   } else if (warmupPartnerVisible) {
-    // Active perimeter close-out partner with grounded sneakers and jump contest motion.
-    const baseWarmupX = shooterX < -1.0 ? 1.65 : -1.75;
-    const warmupX = baseWarmupX + Math.sin(elapsedPlayTime * 1.65) * 0.32;
+    // Active perimeter close-out partner with athletic defensive slide and +0.58m jump contest.
+    const warmupX = visualReviewCapture
+      ? (shooterX < -1.0 ? 1.65 : -1.75) + Math.sin(elapsedPlayTime * 1.65) * 0.32
+      : visualDefenderX;
+    const warmupZ = visualReviewCapture
+      ? 0.45 + Math.cos(elapsedPlayTime * 1.3) * 0.18
+      : visualDefenderZ;
     const warmupY = ballState.inFlight
-      ? Math.sin(flightMotionPhase * Math.PI) * 0.38
-      : Math.abs(Math.sin(elapsedPlayTime * 2.2)) * 0.04;
-    const warmupZ = 0.45 + Math.cos(elapsedPlayTime * 1.3) * 0.18;
+      ? Math.sin(flightMotionPhase * Math.PI) * 0.58
+      : isCharging
+        ? Math.max(0, (chargePower - 0.35) * 0.42)
+        : Math.abs(Math.sin(elapsedPlayTime * 9.5)) * 0.08;
     const warmupYaw = Math.atan2(shooterX - warmupX, shooterZ - warmupZ);
-    const warmupSway = Math.sin(elapsedPlayTime * 1.4 + 0.8) * 0.022;
+    const warmupPitch = ballState.inFlight
+      ? -0.18 * Math.sin(flightMotionPhase * Math.PI)
+      : 0.08 + Math.sin(elapsedPlayTime * 9.5) * 0.04;
+    const warmupRoll = Math.cos(elapsedPlayTime * 3.8) * 0.09;
     defenderPresentationNode
       ?.setPosition(warmupX, SHOOTER_MESHY_GROUND_OFFSET + warmupY, warmupZ)
-      .setRotation(-0.04 + warmupSway, warmupYaw, -0.04)
-      .setScale([PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE * 1.02, PRESENTATION_ATHLETE_SCALE]);
+      .setRotation(warmupPitch, warmupYaw, warmupRoll)
+      .setScale([
+        PRESENTATION_ATHLETE_SCALE,
+        PRESENTATION_ATHLETE_SCALE * (1.02 + (ballState.inFlight ? 0.05 : 0)),
+        PRESENTATION_ATHLETE_SCALE
+      ]);
   } else if (visualReviewCapture && defenderAnimationState !== "hidden") {
     defenderAnimationState = "hidden";
     defenderMotionPhase = "hidden";
@@ -1539,9 +1747,12 @@ function syncTransforms(): void {
       hoopState.defenderZ + (ballDz / ballPlanarDistance) * defenderReach
     );
   } else if (warmupPartnerVisible) {
-    const baseWarmupX = shooterX < -1.0 ? 1.65 : -1.75;
-    const warmupX = baseWarmupX + Math.sin(elapsedPlayTime * 1.65) * 0.32;
-    const warmupZ = 0.45 + Math.cos(elapsedPlayTime * 1.3) * 0.18;
+    const warmupX = visualReviewCapture
+      ? (shooterX < -1.0 ? 1.65 : -1.75) + Math.sin(elapsedPlayTime * 1.65) * 0.32
+      : visualDefenderX;
+    const warmupZ = visualReviewCapture
+      ? 0.45 + Math.cos(elapsedPlayTime * 1.3) * 0.18
+      : visualDefenderZ;
     defenderShadow?.setPosition(warmupX, 0.026, warmupZ);
   }
   if (visualReviewCapture) {
@@ -1815,7 +2026,11 @@ function publishEvidence(): RooftopBucketsEvidence {
     hoopPos: { x: hoopState.x, y: hoopState.y, z: hoopState.z }
   };
   (window as unknown as { __ROOFTOP_BUCKETS_EVIDENCE__?: RooftopBucketsEvidence }).__ROOFTOP_BUCKETS_EVIDENCE__ = ev;
+  (window as unknown as { __AURA3D_GAME_EVIDENCE__?: RooftopBucketsEvidence }).__AURA3D_GAME_EVIDENCE__ = ev;
   Object.defineProperty(window, "__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__", { value: ev, configurable: true, writable: true });
+  if (typeof document !== "undefined") {
+    document.body.dataset.aura3dReady = "true";
+  }
   if (diagnostics.drawCalls > 0) {
     (window as unknown as { __AURA3D_GAME__?: { state: string } }).__AURA3D_GAME__ = { state: "playing" };
   }
@@ -1827,6 +2042,8 @@ function publishEvidence(): RooftopBucketsEvidence {
   __RB_SHOOT__?: (power: number, pitch?: number) => void;
   __RB_SET_SPOT__?: (index: number) => void;
 }).__RB_PUMP__ = (frames: number) => {
+  rbTestHookUsed = true;
+  markManualInput();
   for (let i = 0; i < frames; i++) {
     stepGame(1 / 60);
   }
@@ -1836,6 +2053,8 @@ function publishEvidence(): RooftopBucketsEvidence {
 (window as unknown as {
   __RB_SHOOT__?: (power: number, pitch?: number) => void;
 }).__RB_SHOOT__ = (power: number, pitch = 0) => {
+  rbTestHookUsed = true;
+  markManualInput();
   releaseShot(power, pitch);
 };
 
@@ -1847,11 +2066,15 @@ function publishEvidence(): RooftopBucketsEvidence {
 // updateHoop/stepBall functions used by normal play; there is no alternate
 // capture-only trajectory or scoring shortcut.
 function stageActiveReviewShot(): void {
+  rbTestHookUsed = true;
+  markManualInput();
   scoreState = initialScoreState(3);
   // Use a real mid-range spot for the retained pressure shot. This keeps the
   // shooter, live ball, pressure athlete, and regulation hoop in one readable
   // causal diagonal instead of letting an oversized arc separate the actors.
   currentSpotIndex = 0;
+  visualShooterX = COURT_SPOTS[currentSpotIndex]!.x;
+  visualShooterZ = COURT_SPOTS[currentSpotIndex]!.z;
   // Bind the retained action to the apex of the real 1.6 s telegraph cycle.
   // The hook advances the same route-owned hoop and ball functions and then
   // pauses that exact beat. Browser rendering cadence can no longer move the
@@ -1882,6 +2105,8 @@ function stageActiveReviewShot(): void {
 (window as unknown as {
   __RB_SCENARIO__?: (scenario: "open-clear" | "spot-clear" | "pressure" | "pressure-clear" | "fire" | "miss" | "buzzer" | "gold-miss" | "gold-win") => string;
 }).__RB_SCENARIO__ = (scenario) => {
+  rbTestHookUsed = true;
+  markManualInput();
   const apply = (outcome: "swish" | "brick", spotIndex: number, gold = false) => {
     const spot = COURT_SPOTS[spotIndex]!;
     scoreState = recordShotOutcome(scoreState, outcome, spot.points, gold, spot.id).state;
@@ -1910,6 +2135,8 @@ function stageActiveReviewShot(): void {
   } else if (scenario === "pressure" || scenario === "pressure-clear") {
     scoreState = initialScoreState(3);
     currentSpotIndex = 2;
+    visualShooterX = COURT_SPOTS[currentSpotIndex]!.x;
+    visualShooterZ = COURT_SPOTS[currentSpotIndex]!.z;
     hoopState = updateHoop(initialHoopState(3), 3, 0.85, COURT_SPOTS[currentSpotIndex]!.x);
     if (scenario === "pressure-clear") {
       apply("swish", 4);
@@ -1957,7 +2184,11 @@ function stageActiveReviewShot(): void {
 (window as unknown as {
   __RB_SET_SPOT__?: (index: number) => void;
 }).__RB_SET_SPOT__ = (index: number) => {
+  rbTestHookUsed = true;
+  markManualInput();
   currentSpotIndex = Math.max(0, Math.min(COURT_SPOTS.length - 1, index));
+  visualShooterX = COURT_SPOTS[currentSpotIndex]!.x;
+  visualShooterZ = COURT_SPOTS[currentSpotIndex]!.z;
   resetBallToSpot();
   updateHUD();
 };

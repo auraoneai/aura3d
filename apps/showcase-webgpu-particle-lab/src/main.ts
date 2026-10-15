@@ -238,6 +238,31 @@ function buildLabSetScene(nextControls: LabControls): ReturnType<typeof scene> {
       materialMode: plume.materialMode,
       texturedBillboard: true
     }))
+    .add(effects.depthFog({
+      name: "particle lab containment haze",
+      density: 0.014,
+      color: "#061112",
+      intensity: 0.18
+    }))
+    .add(effects.bloom({
+      name: "particle lab reactor bloom",
+      intensity: 0.24,
+      threshold: 0.76,
+      radius: 0.3,
+      color
+    }))
+    .add(effects.vignette({
+      name: "particle lab chamber vignette",
+      intensity: 0.24,
+      smoothness: 0.72,
+      roundness: 0.86,
+      color: "#010405"
+    }))
+    .add(effects.colorGrade({
+      name: "particle lab telemetry grade",
+      contrast: 1.06,
+      saturation: 1.07
+    }))
     .add(shadows.contact({ name: "reactor core contact glow", position: [0, -0.12, -0.72], footprint: [0.82, 0.52], opacity: 0.28 }))
     .add(lights.ambient({ name: "particle lab cool ambient", intensity: 0.18, color: "#d9fffa" }))
     .add(lights.point({ name: "core cyan scan key", position: [-1.6, 1.34, 1.2], intensity: 1.84, color: secondary }))

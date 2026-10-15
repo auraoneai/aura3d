@@ -34,5 +34,17 @@ void startWowGltfShowcase({
     pitchRadians: -0.2,
     paddingRatio: 0.025,
     fovYRadians: 0.48
+  },
+  lightingRig: {
+    keyIntensity: 2.3,
+    fillIntensity: 1.05,
+    rimIntensity: 1.2
+  },
+  postProcess: {
+    tonemapping: { enabled: true, mode: "aces", exposure: 1.15 },
+    bloom: { enabled: true, intensity: 0.22, threshold: 0.8 },
+    ssao: { enabled: true, radius: 0.45, intensity: 0.35 },
+    fxaa: { enabled: true },
+    vignette: { enabled: true, intensity: 0.22 }
   }
 });

@@ -1,6 +1,6 @@
 # Architecture Decision Records — the R11 architecture lock
 
-The Aura3D 2.0 architecture contract forbids introducing a
+The Aura3D 4.0 architecture contract forbids introducing a
 new engine subsystem for 2.0 without first answering, in writing:
 
 1. Does Three.js already solve this?

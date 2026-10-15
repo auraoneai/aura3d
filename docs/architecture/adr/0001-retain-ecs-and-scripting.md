@@ -6,7 +6,7 @@
 
 ## Context
 
-The Aura3D 2.0 platform boundary lists "an ECS research framework" and "a behaviour-tree /
+The Aura3D 4.0 platform boundary lists "an ECS research framework" and "a behaviour-tree /
 GOAP / HTN AI framework" under *what Aura3D is NOT*, and WS-3.3 was written to delete both
 packages (7,317 lines) from the active tree on the premise that they had **zero consumers**.
 

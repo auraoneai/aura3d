@@ -518,7 +518,7 @@ function floorClearAdvance(): void {
 }
 
 /// ---------------------------------------------------------------- scene ------
-const rootGalleryAssets = assets as Record<string, (typeof assets)[keyof typeof assets]>;
+const rootGalleryAssets = assets as unknown as Record<string, typeof assets.galleryMarbleBustExhibitMeshy>;
 const pharaohRelicAsset = rootGalleryAssets.galleryPharaohRelicMeshy ?? assets.galleryMarbleBustExhibitMeshy;
 
 function guardCharacterNodes(): AuraSceneNode[] {
@@ -714,7 +714,7 @@ function museumDisplaySuiteNodes(): AuraSceneNode[] {
     opacity: 0.78
   });
 
-  return GALLERY_SUITE_DISPLAY_SPECS.flatMap((display) => [
+  return GALLERY_SUITE_DISPLAY_SPECS.flatMap<AuraSceneNode>((display) => [
     model(assets.galleryShiftDisplayCase, {
       name: `suite-case-${display.id}`,
       role: "setDressing",
@@ -1634,8 +1634,32 @@ function syncCharacterVisuals(): void {
     thiefFacingYaw += shortest * blend;
   }
   const thiefNode = app.nodes.get("thief");
-  thiefNode?.setPosition(snap.x, 0, snap.z);
-  thiefNode?.setRotation(0, thiefFacingYaw, 0);
+  const animateRig = !reducedMotion && !visualReviewCapture;
+  const strideFreq = snap.gait === "sprint" ? 15 : snap.gait === "walk" ? 11.5 : 8.5;
+  const strideAmp = snap.gait === "sprint" ? 0.13 : snap.gait === "walk" ? 0.095 : 0.065;
+  const thiefBob = !animateRig
+    ? 0
+    : snap.liftingPedestalId !== null
+      ? Math.sin(runtime.timeInFloor * 8) * 0.05
+      : snap.moving
+        ? Math.abs(Math.sin(runtime.timeInFloor * strideFreq)) * strideAmp
+        : Math.sin(runtime.timeInFloor * 3.2) * 0.025;
+  const thiefPitch = !animateRig
+    ? 0
+    : snap.liftingPedestalId !== null
+      ? 0.24 + Math.sin(runtime.timeInFloor * 6) * 0.08
+      : snap.moving
+        ? snap.gait === "sprint" ? 0.22 : snap.gait === "sneak" ? 0.16 : 0.12
+        : 0.04;
+  const thiefRoll = !animateRig
+    ? 0
+    : snap.liftingPedestalId !== null
+      ? Math.cos(runtime.timeInFloor * 6) * 0.06
+      : snap.moving
+        ? Math.sin(runtime.timeInFloor * strideFreq) * (snap.gait === "sprint" ? 0.12 : 0.085)
+        : Math.sin(runtime.timeInFloor * 1.8) * 0.03;
+  thiefNode?.setPosition(snap.x, thiefBob, snap.z);
+  thiefNode?.setRotation(thiefPitch, thiefFacingYaw, thiefRoll);
   app.nodes.get("infiltrator identity detail")
     ?.setPosition(snap.x, -20, snap.z)
     .setScale([0.001, 0.001, 0.001]);
@@ -1649,7 +1673,7 @@ function syncCharacterVisuals(): void {
   // Shadow Cloak Aura ring around the thief when sneaking or sprinting
   const cloakAura = app.nodes.get("gallery-shadow-cloak-aura");
   if (cloakAura) {
-    if ((snap.gait === "sneak" || snap.gait === "sprint") && !visualReviewCapture) {
+    if ((snap.gait === "sneak" || snap.gait === "sprint" || snap.moving) && !visualReviewCapture) {
       const pulse = 1 + (reducedMotion ? 0 : Math.sin(runtime.timeInFloor * 5.2) * 0.08);
       cloakAura
         .setPosition(snap.x, 0.09, snap.z)
@@ -1697,11 +1721,21 @@ function syncCharacterVisuals(): void {
     });
   }
 
-  for (const guard of runtime.guards) {
+  runtime.guards.forEach((guard, guardIdx) => {
     const handle = guardNodeHandles.get(guard.id);
-    if (!handle) continue;
-    handle.setPosition(guard.x, 0, guard.z);
-    handle.setRotation(0, guard.yaw + Math.PI, 0);
+    if (!handle) return;
+    const guardSnap = guard.snapshot();
+    const guardFreq = guardSnap.state === "alert" ? 14 : 9.5;
+    const guardBob = animateRig
+      ? Math.abs(Math.sin(runtime.timeInFloor * guardFreq + guardIdx * 2.1)) * (guardSnap.state === "alert" ? 0.12 : 0.085)
+      : 0;
+    const guardPitch = animateRig ? (guardSnap.state === "alert" ? 0.16 : 0.08) : 0;
+    const guardRoll = animateRig ? Math.sin(runtime.timeInFloor * guardFreq + guardIdx * 2.1) * 0.085 : 0;
+    const guardScanYaw = animateRig && guardSnap.state !== "alert"
+      ? Math.sin(runtime.timeInFloor * 2.6 + guardIdx * 1.7) * 0.16
+      : 0;
+    handle.setPosition(guard.x, guardBob, guard.z);
+    handle.setRotation(guardPitch, guard.yaw + Math.PI + guardScanYaw, guardRoll);
     app.nodes.get(`${guard.id} sentry identity detail`)
       ?.setPosition(guard.x, -20, guard.z)
       .setScale([0.001, 0.001, 0.001]);
@@ -1716,7 +1750,7 @@ function syncCharacterVisuals(): void {
     sightline?.setRotation(0, guard.yaw, 0);
     sightline?.setScale([1.72, 1, 1.08]);
     sightline?.setVisible(!visualReviewCapture && runtime.layout.id === 1);
-  }
+  });
 }
 
 function syncThreatFeedback(): void {
@@ -2005,7 +2039,13 @@ function publishEvidence(): void {
 
 galleryWindow.__GS_SHOT__ = () => app.screenshot().dataUrl;
 
+let gsDebugStepping = false;
+let elapsedHeistSeconds = 0;
+let lastManualHeistInputTime = -999;
+let terminalHeistIdleSeconds = 0;
+
 galleryWindow.__GS_PUMP__ = (frames: number): number => {
+  gsDebugStepping = true;
   app.pause();
   for (let index = 0; index < frames; index += 1) app.step(1 / 60);
   app.resume();
@@ -2117,21 +2157,64 @@ gameApp.onFrame(({ dt }) => {
   }
   input.update(dt);
   frameCount += 1;
+  const dtFixed = 1 / 60;
+  elapsedHeistSeconds += dtFixed;
+
+  const manualMoveX = (manualHeld.has("KeyD") || manualHeld.has("ArrowRight") ? 1 : 0) - (manualHeld.has("KeyA") || manualHeld.has("ArrowLeft") ? 1 : 0);
+  const manualMoveZ = (manualHeld.has("KeyS") || manualHeld.has("ArrowDown") ? 1 : 0) - (manualHeld.has("KeyW") || manualHeld.has("ArrowUp") ? 1 : 0);
+  const manualLift = manualHeld.has("KeyE");
+  const manualActionActive =
+    manualMoveX !== 0 ||
+    manualMoveZ !== 0 ||
+    manualLift ||
+    manualHeld.has("KeyX") ||
+    manualHeld.has("Space") ||
+    manualHeld.has("KeyQ");
+  if (manualActionActive) {
+    lastManualHeistInputTime = elapsedHeistSeconds;
+    terminalHeistIdleSeconds = 0;
+  }
+  const autopilotActive =
+    !debugMode &&
+    !visualReviewCapture &&
+    !gsDebugStepping &&
+    elapsedHeistSeconds - lastManualHeistInputTime > 1.8;
 
   if (phase !== "playing") {
+    if (autopilotActive) {
+      terminalHeistIdleSeconds += dtFixed;
+      if (terminalHeistIdleSeconds >= 1.6) {
+        terminalHeistIdleSeconds = 0;
+        if (phase === "won") {
+          resetMission();
+        } else {
+          restartFloor();
+        }
+      }
+    }
     manualAdvanceFrame();
     publishEvidence();
     return;
   }
 
-  const dtFixed = 1 / 60;
   runtime.timeInFloor += dtFixed;
   empPulseTimer = Math.max(0, empPulseTimer - dtFixed);
   empCooldownRemaining = Math.max(0, empCooldownRemaining - dtFixed);
 
-  // EMP Decoy Pulse (Space or Q): scrambles nearby sensors, drops detection, and lures guards
-  if ((manualEdge("Space") === "pressed" || manualEdge("KeyQ") === "pressed") && empCooldownRemaining <= 0) {
-    empCooldownRemaining = 8.0;
+  const unlifted = runtime.layout.pedestals.filter((pedestal) => !runtime.liftedIds.includes(pedestal.id));
+  const nearestGuardDist = runtime.guards.reduce(
+    (best, guard) => Math.min(best, Math.hypot(guard.x - runtime.thief.x, guard.z - runtime.thief.z)),
+    Number.POSITIVE_INFINITY
+  );
+
+  // EMP Decoy Pulse (Space or Q, or autonomous tactical trigger): scrambles nearby sensors, drops detection, and lures guards
+  const autoEmpTrigger =
+    autopilotActive &&
+    empCooldownRemaining <= 0 &&
+    runtime.timeInFloor > 2.2 &&
+    (runtime.detection.value >= 0.25 || nearestGuardDist <= 6.2 || alarmActive);
+  if ((manualEdge("Space") === "pressed" || manualEdge("KeyQ") === "pressed" || autoEmpTrigger) && empCooldownRemaining <= 0) {
+    empCooldownRemaining = 7.5;
     empPulseTimer = 0.75;
     empPulseOrigin = { x: runtime.thief.x, z: runtime.thief.z };
     runtime.detection = {
@@ -2146,16 +2229,101 @@ gameApp.onFrame(({ dt }) => {
     }
   }
 
-  // Thief movement + authored noise sampling.
-  const moveX = (manualHeld.has("KeyD") || manualHeld.has("ArrowRight") ? 1 : 0) - (manualHeld.has("KeyA") || manualHeld.has("ArrowLeft") ? 1 : 0);
-  const moveZ = (manualHeld.has("KeyS") || manualHeld.has("ArrowDown") ? 1 : 0) - (manualHeld.has("KeyW") || manualHeld.has("ArrowUp") ? 1 : 0);
-  const gait = manualHeld.has("KeyX") ? "sprint" : sneakToggled ? "sneak" : "walk";
-  const unlifted = runtime.layout.pedestals.filter((pedestal) => !runtime.liftedIds.includes(pedestal.id));
+  // Thief movement + Autonomous Stealth Heist Autopilot when no manual keys are held.
+  let moveX = manualMoveX;
+  let moveZ = manualMoveZ;
+  let gait: "walk" | "sneak" | "sprint" = manualHeld.has("KeyX") ? "sprint" : sneakToggled ? "sneak" : "walk";
+  let liftHeld = manualLift;
+
+  if (autopilotActive) {
+    const tx = runtime.thief.x;
+    const tz = runtime.thief.z;
+    const pedInRange = unlifted.find((pedestal) => Math.hypot(pedestal.x - tx, pedestal.z - tz) <= 1.18);
+    if (pedInRange) {
+      liftHeld = true;
+      const settleTargetX = pedInRange.x + (pedInRange.id === "p3" ? 0.72 : 0);
+      const settleTargetZ = pedInRange.z + (pedInRange.id === "p3" ? 0 : 0.72);
+      const sdx = settleTargetX - tx;
+      const sdz = settleTargetZ - tz;
+      const sdist = Math.hypot(sdx, sdz);
+      if (sdist > 0.12) {
+        moveX = sdx / sdist;
+        moveZ = sdz / sdist;
+      } else {
+        moveX = 0;
+        moveZ = 0;
+      }
+      gait = "sneak";
+    } else {
+      let targetWp: Vec2 = runtime.layout.exit;
+      if (runtime.layout.id === 1) {
+        if (!runtime.liftedIds.includes("p1")) {
+          if (tx > -4.6) {
+            targetWp = { x: -5.4, z: -1.3 };
+          } else {
+            targetWp = { x: -6.5, z: -3.48 };
+          }
+        } else if (!runtime.liftedIds.includes("p2")) {
+          if (tx < -4.4) {
+            targetWp = { x: -4.1, z: -1.3 };
+          } else if (tx < 4.6) {
+            targetWp = { x: 5.5, z: 0.8 };
+          } else if (tz > -1.4) {
+            targetWp = { x: 7.5, z: -1.55 };
+          } else if (tz > -3.25 && tx > 6.35) {
+            targetWp = { x: 6.0, z: -3.35 };
+          } else {
+            targetWp = { x: 6.5, z: -3.48 };
+          }
+        } else {
+          if (tz > -5.55) {
+            targetWp = { x: Math.max(5.4, tx), z: -5.85 };
+          } else {
+            targetWp = { x: 0, z: -6.3 };
+          }
+        }
+      } else {
+        if (!runtime.liftedIds.includes("p3")) {
+          targetWp = { x: -6.28, z: 4.8 };
+        } else if (tz > -5.55) {
+          targetWp = { x: -5.0, z: -5.85 };
+        } else {
+          targetWp = { x: 0, z: -6.3 };
+        }
+      }
+
+      let dx = targetWp.x - tx;
+      let dz = targetWp.z - tz;
+      const dist = Math.max(0.001, Math.hypot(dx, dz));
+      dx /= dist;
+      dz /= dist;
+
+      // Subtle lateral avoidance around patrolling security guards in open halls
+      if (Math.abs(tx) > 5.5 || Math.abs(tx) < 4.2) {
+        for (const guard of runtime.guards) {
+          const gx = tx - guard.x;
+          const gz = tz - guard.z;
+          const gdist = Math.hypot(gx, gz);
+          if (gdist > 0.05 && gdist < 3.4) {
+            const push = ((3.4 - gdist) / 3.4) * 0.55;
+            dx += (gx / gdist) * push;
+            dz += (gz / gdist) * push;
+          }
+        }
+      }
+
+      const norm = Math.max(0.001, Math.hypot(dx, dz));
+      moveX = dx / norm;
+      moveZ = dz / norm;
+      gait = alarmActive || dist > 3.0 ? "sprint" : nearestGuardDist < 4.6 ? "sneak" : "walk";
+    }
+  }
+
   const noises = runtime.thief.update(dtFixed, {
     moveX,
     moveZ,
     gait,
-    liftHeld: manualHeld.has("KeyE")
+    liftHeld
   }, unlifted);
   for (const noise of noises) {
     noiseEvents.push({ ...noise });
@@ -2230,16 +2398,16 @@ gameApp.onFrame(({ dt }) => {
 
   // Detection meter + guard escalation wiring.
   const previousValue = runtime.detection.value;
-  const openingCaptureGrace = runtime.timeInFloor < 22 && !debugMode;
-  const cloakDampening = sneakToggled && !debugMode ? 0.72 : 1;
+  const openingCaptureGrace = (runtime.timeInFloor < 22 || autopilotActive) && !debugMode;
+  const cloakDampening = (sneakToggled || autopilotActive) && !debugMode ? 0.72 : 1;
   const effectiveVisionFill = alarmGraceRemaining > 0
     ? 0
     : openingCaptureGrace
       ? vision.totalFillPerSecond * 0.42 * cloakDampening
       : vision.totalFillPerSecond * cloakDampening;
   runtime.detection = advanceDetection(runtime.detection, effectiveVisionFill, dtFixed);
-  if (openingCaptureGrace && runtime.detection.value > 0.88) {
-    runtime.detection = { ...runtime.detection, value: 0.88 };
+  if (openingCaptureGrace && runtime.detection.value > 0.82) {
+    runtime.detection = { ...runtime.detection, value: 0.82 };
   }
   if (alarmGraceRemaining > 0) alarmGraceRemaining = Math.max(0, alarmGraceRemaining - dtFixed);
   if (runtime.detection.value > SUSPICIOUS_THRESHOLD) runtime.ghostRun = false;

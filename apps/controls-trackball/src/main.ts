@@ -1,6 +1,11 @@
 import { TrackballControls } from "@aura3d/controls";
-import { Geometry, PBRMaterial } from "@aura3d/rendering";
-import { Renderer } from "@aura3d/engine/renderer";
+import {
+  Geometry,
+  PBRMaterial,
+  Renderer,
+  createLightingRig,
+  type RendererPostProcessOptions
+} from "@aura3d/rendering";
 
 declare global {
   interface Window {
@@ -34,6 +39,46 @@ const APP_ID = "controls-trackball" as const;
 const WIDTH = 1280;
 const HEIGHT = 720;
 
+const TRACKBALL_POSTPROCESS_4_0 = {
+  tonemapping: { enabled: true, mode: "aces" as const, exposure: 1.15 },
+  bloom: { enabled: true, intensity: 0.18, threshold: 0.82 },
+  fxaa: { enabled: true },
+  vignette: { enabled: true, intensity: 0.2 }
+} as const;
+
+const TRACKBALL_POSTPROCESS_OPTIONS: RendererPostProcessOptions = {
+  targetFormat: "rgba8",
+  toneMapping: {
+    operator: TRACKBALL_POSTPROCESS_4_0.tonemapping.mode,
+    exposure: TRACKBALL_POSTPROCESS_4_0.tonemapping.exposure,
+    inputColorSpace: "linear",
+    outputColorSpace: "srgb"
+  },
+  bloom: {
+    intensity: TRACKBALL_POSTPROCESS_4_0.bloom.intensity,
+    threshold: TRACKBALL_POSTPROCESS_4_0.bloom.threshold,
+    radius: 1,
+    quality: "balanced"
+  },
+  colorGrade: {
+    contrast: 1.06,
+    saturation: 1.05,
+    vignette: TRACKBALL_POSTPROCESS_4_0.vignette.intensity
+  },
+  fxaa: TRACKBALL_POSTPROCESS_4_0.fxaa.enabled
+};
+
+function composeTransform(tx: number, ty: number, tz: number, sx: number, sy: number, sz: number, rollZ: number): Float32Array {
+  const c = Math.cos(rollZ);
+  const s = Math.sin(rollZ);
+  return new Float32Array([
+    c * sx, s * sx, 0, 0,
+    -s * sy, c * sy, 0, 0,
+    0, 0, sz, 0,
+    tx, ty, tz, 1
+  ]);
+}
+
 async function run(): Promise<void> {
   const root = document.getElementById("app");
   const canvas = document.getElementById("viewport");
@@ -64,19 +109,36 @@ async function run(): Promise<void> {
     controls.pan(0.08, -0.04);
     controls.dolly(0.86);
     controls.roll(0.22);
+    const lightingRig = createLightingRig({
+      preset: "key-fill-rim",
+      intensityScale: 1.3,
+      shadows: false,
+      subject: { height: 1.6, width: 2.1, floorY: -0.9 }
+    });
     const renderer = await Renderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,
       height: HEIGHT,
-      clearColor: [0.008, 0.01, 0.014, 1]
+      clearColor: [0.008, 0.01, 0.014, 1],
+      output: {
+        toneMapping: TRACKBALL_POSTPROCESS_4_0.tonemapping.mode,
+        exposure: TRACKBALL_POSTPROCESS_4_0.tonemapping.exposure
+      }
     });
     const geometry = Geometry.litCube(1.15);
+    const satelliteGeometry = Geometry.litCube(0.42);
     const material = new PBRMaterial({
-      baseColor: [0.36, 0.52, 0.78, 1],
-      roughness: 0.42,
-      metallic: 0.08,
-      environmentIntensity: 0.22
+      baseColor: [0.34, 0.58, 0.88, 1],
+      roughness: 0.26,
+      metallic: 0.42,
+      environmentIntensity: 0.58
+    });
+    const copperAccentMaterial = new PBRMaterial({
+      baseColor: [0.94, 0.56, 0.24, 1],
+      roughness: 0.24,
+      metallic: 0.64,
+      environmentIntensity: 0.62
     });
 
     const render = (now: number): void => {
@@ -94,23 +156,49 @@ async function run(): Promise<void> {
         }
         controls.rotate(0.004, 0.0015);
         controls.roll(0.0025);
+        const roll = controls.state.rotation.z;
         const result = renderer.render({
+          collectedLights: lightingRig.collectedLights,
           environmentLighting: {
-            color: [0.44, 0.52, 0.68],
-            intensity: 1.15
+            color: [0.54, 0.64, 0.82],
+            intensity: 1.28,
+            proceduralMap: {
+              skyColor: [0.58, 0.72, 0.96],
+              horizonColor: [0.3, 0.38, 0.52],
+              groundColor: [0.08, 0.1, 0.14],
+              specularColor: [1, 0.96, 0.9],
+              intensity: 1.25,
+              specularIntensity: 1.35
+            }
           },
           cameraPosition: [controls.state.target.x, controls.state.target.y, Math.max(2.7, controls.state.position.z)],
-          cameraFrameBounds: { min: [-1.05, -1.05, -1.05], max: [1.05, 1.05, 1.05] },
+          cameraFrameBounds: { min: [-1.35, -1.15, -1.05], max: [1.35, 1.15, 1.05] },
           cameraFrameOptions: {
             yawRadians: controls.state.rotation.y,
             pitchRadians: controls.state.rotation.x,
             paddingRatio: 0.2
           },
-          renderItems: [{
-            geometry,
-            material,
-            label: "trackball-control-cube"
-          }]
+          renderItems: [
+            {
+              geometry,
+              material,
+              modelMatrix: composeTransform(0, 0, 0, 1, 1, 1, roll * 0.35),
+              label: "trackball-control-cube"
+            },
+            {
+              geometry: satelliteGeometry,
+              material: copperAccentMaterial,
+              modelMatrix: composeTransform(-0.92, 0.42, 0.18, 1, 1, 1, -roll * 0.5),
+              label: "trackball-accent-left"
+            },
+            {
+              geometry: satelliteGeometry,
+              material: copperAccentMaterial,
+              modelMatrix: composeTransform(0.92, -0.42, -0.18, 1, 1, 1, roll * 0.5),
+              label: "trackball-accent-right"
+            }
+          ],
+          postprocess: TRACKBALL_POSTPROCESS_OPTIONS
         });
         runtime = createRuntime(frameCount === 1 ? "ready" : "running", frameCount === 1 ? "Ready" : "Running", startedAt, {
           frameCount,

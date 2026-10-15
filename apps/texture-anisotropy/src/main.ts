@@ -2,13 +2,14 @@ import {
   IndexBuffer,
   RenderDeviceError,
   RenderPipeline,
+  Renderer,
   Sampler,
   Texture,
   TextureBinding,
   VertexBuffer,
-  VertexFormat
+  VertexFormat,
+  type UniformValue
 } from "@aura3d/rendering";
-import { Renderer } from "@aura3d/engine/renderer";
 
 declare global {
   interface Window {
@@ -37,6 +38,12 @@ const WIDTH = 1280;
 const HEIGHT = 720;
 const REQUESTED_ANISOTROPY = 8;
 
+const ANISOTROPY_POSTPROCESS_4_0 = {
+  tonemapping: { enabled: true, mode: "aces" as const, exposure: 1.15 },
+  fxaa: { enabled: true },
+  vignette: { enabled: true, intensity: 0.18 }
+} as const;
+
 void run();
 
 async function run(): Promise<void> {
@@ -56,7 +63,17 @@ async function run(): Promise<void> {
   publish();
 
   try {
-    const renderer = await Renderer.create({ canvas, width: WIDTH, height: HEIGHT, backend: "webgl2", antialias: true, });
+    const renderer = await Renderer.create({
+      canvas,
+      width: WIDTH,
+      height: HEIGHT,
+      backend: "webgl2",
+      antialias: true,
+      output: {
+        toneMapping: ANISOTROPY_POSTPROCESS_4_0.tonemapping.mode,
+        exposure: ANISOTROPY_POSTPROCESS_4_0.tonemapping.exposure
+      }
+    });
     const device = renderer.device;
     const shader = device.createShaderProgram({
       label: "texture-anisotropy-shader",
@@ -68,8 +85,10 @@ in vec3 a_position;
 in vec2 a_uv;
 uniform float u_time;
 out vec2 v_uv;
+out vec2 v_ndc;
 void main() {
-  v_uv = a_uv + vec2(u_time * 0.04, 0.0);
+  v_uv = a_uv + vec2(u_time * 0.04, u_time * 0.015);
+  v_ndc = a_position.xy;
   gl_Position = vec4(a_position, 1.0);
 }
 `,
@@ -78,10 +97,27 @@ void main() {
 precision highp float;
 uniform sampler2D u_texture;
 in vec2 v_uv;
+in vec2 v_ndc;
 out vec4 outColor;
+
+vec3 acesFilm(vec3 x) {
+  const float a = 2.51;
+  const float b = 0.03;
+  const float c = 2.43;
+  const float d = 0.59;
+  const float e = 0.14;
+  return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
+}
+
 void main() {
   vec4 texel = texture(u_texture, v_uv);
-  outColor = vec4(texel.rgb, 1.0);
+  float horizonDepth = clamp((v_ndc.y + 0.85) / 1.7, 0.0, 1.0);
+  vec3 keyLight = vec3(1.08, 0.98, 0.88) * mix(1.18, 0.78, horizonDepth * 0.65);
+  vec3 rimGlow = vec3(0.24, 0.68, 1.0) * pow(horizonDepth, 2.2) * 0.28;
+  vec3 hdrColor = (texel.rgb * keyLight + rimGlow) * ${ANISOTROPY_POSTPROCESS_4_0.tonemapping.exposure.toFixed(2)};
+  float vignette = 1.0 - dot(v_ndc * 0.65, v_ndc * 0.65) * ${ANISOTROPY_POSTPROCESS_4_0.vignette.intensity.toFixed(2)};
+  vec3 mapped = acesFilm(hdrColor * clamp(vignette, 0.72, 1.0));
+  outColor = vec4(mapped, 1.0);
 }
 `
     });
@@ -96,10 +132,10 @@ void main() {
       maxAnisotropy: REQUESTED_ANISOTROPY
     });
     const texture = new Texture({
-      width: 128,
-      height: 128,
+      width: 256,
+      height: 256,
       colorSpace: "srgb",
-      data: createCheckerTexture(128, 128),
+      data: createCheckerTexture(256, 256),
       label: "anisotropy-checker"
     });
     const textureBinding = new TextureBinding({
@@ -141,7 +177,7 @@ void main() {
           indexBuffer,
           indexType: geometry.indices.type,
           indexCount: geometry.indices.count,
-          uniforms: new Map([
+          uniforms: new Map<string, UniformValue>([
             ["u_texture", textureBinding],
             ["u_time", now / 1000]
           ])
@@ -178,12 +214,12 @@ void main() {
 function createSlantedPlaneGeometry(): { readonly vertices: VertexBuffer; readonly indices: IndexBuffer } {
   const vertices = new VertexBuffer(VertexFormat.P3N3T2, 4);
   const positions: readonly (readonly [number, number, number])[] = [
-    [-0.92, -0.82, 0],
-    [0.92, -0.62, 0],
-    [0.56, 0.84, 0],
-    [-0.54, 0.58, 0]
+    [-0.94, -0.84, 0],
+    [0.94, -0.64, 0],
+    [0.58, 0.86, 0],
+    [-0.56, 0.6, 0]
   ];
-  const uvs: readonly (readonly [number, number])[] = [[0, 0], [12, 0], [12, 18], [0, 18]];
+  const uvs: readonly (readonly [number, number])[] = [[0, 0], [14, 0], [14, 22], [0, 22]];
   positions.forEach((position, index) => {
     vertices.setAttribute(index, "position", position);
     vertices.setAttribute(index, "normal", [0, 0, 1]);
@@ -197,10 +233,19 @@ function createCheckerTexture(width: number, height: number): Uint8Array {
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       const index = (y * width + x) * 4;
-      const checker = ((Math.floor(x / 8) + Math.floor(y / 8)) % 2) === 0;
-      pixels[index] = checker ? 236 : 28;
-      pixels[index + 1] = checker ? 214 : 68;
-      pixels[index + 2] = checker ? 126 : 176;
+      const cellX = Math.floor(x / 16);
+      const cellY = Math.floor(y / 16);
+      const checker = ((cellX + cellY) % 2) === 0;
+      const border = (x % 16 === 0) || (y % 16 === 0);
+      if (border) {
+        pixels[index] = 248;
+        pixels[index + 1] = 250;
+        pixels[index + 2] = 255;
+      } else {
+        pixels[index] = checker ? 242 : 24;
+        pixels[index + 1] = checker ? 216 : 74;
+        pixels[index + 2] = checker ? 128 : 188;
+      }
       pixels[index + 3] = 255;
     }
   }

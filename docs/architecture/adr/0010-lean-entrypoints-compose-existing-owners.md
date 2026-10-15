@@ -1,7 +1,7 @@
 # ADR 0010: Lean entrypoints compose existing owners
 
 - **Date:** 2026-08-11
-- **Status:** accepted for Aura3D 2.0.0
+- **Status:** accepted for Aura3D 4.0.0
 - **Workstream:** 2.0 public-surface consolidation
 
 ## Context

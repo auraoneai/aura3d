@@ -22,9 +22,10 @@ import {
   type AuraNodeInput,
   type SemanticRegion
 } from "@aura3d/engine";
-import type { HelperPlacementClaim } from "@aura3d/engine/devtools";
 import { assets } from "../../../src/aura-assets";
 import "./styles.css";
+
+type HelperPlacementClaim = Parameters<typeof checkSpatialInvariants>[1][number];
 
 type OpsMode = "normal" | "maintenance" | "incident";
 type ZoneId = "assembly" | "packaging" | "energy" | "dock";
@@ -392,13 +393,17 @@ function buildOpsScene() {
   return scene()
     .background("#071923")
     .addMany(createWorkcellPresentation())
-    .add(lights.ambient({ name: "workcell ambient fill", intensity: 0.6, color: "#d7f5f2" }))
-    .add(lights.directional({ name: "factory key light", position: [2.1, 3.6, 2.8], intensity: 1.62, color: "#fff1d2" }))
-    .add(lights.directional({ name: "factory cool rim", position: [-2.4, 2.4, -2.4], intensity: 0.74, color: "#78cbe3" }))
-    .add(lights.point({ name: "workcell cyan practical", position: [-0.82, 1.24, 0.62], intensity: 1.15, color: "#54e7dc" }))
-    .add(lights.point({ name: "workcell warm inspection light", position: [0.76, 1.08, -0.28], intensity: 1.08, color: "#f3ad59" }))
-    .add(effects.ambientOcclusion({ name: "workcell contact occlusion", intensity: 0.56, radius: 0.82 }))
-    .add(effects.bloom({ name: "workcell status glow", intensity: 0.18, threshold: 0.78, radius: 0.22 }))
+    .add(lights.ambient({ name: "workcell ambient fill", intensity: 0.58, color: "#d7f5f2" }))
+    .add(lights.directional({ name: "factory key light", position: [2.2, 3.8, 2.9], intensity: 1.72, color: "#fff2d6" }))
+    .add(lights.directional({ name: "factory cool rim", position: [-2.5, 2.5, -2.4], intensity: 0.86, color: "#78cbe3" }))
+    .add(lights.point({ name: "orangeIndustrialRobot key rim kicker", position: [-1.36, 1.76, 1.14], intensity: 0.94, color: "#ff9e5e" }))
+    .add(lights.point({ name: "workcell cyan practical", position: [-0.82, 1.24, 0.62], intensity: 1.18, color: "#54e7dc" }))
+    .add(lights.point({ name: "workcell warm inspection light", position: [0.76, 1.08, -0.28], intensity: 1.12, color: "#f3ad59" }))
+    .add(effects.ambientOcclusion({ name: "workcell contact occlusion", intensity: 0.56, radius: 0.82, falloff: 1.8, multiBounce: true }))
+    .add(effects.contactShadows({ length: 0.22, thickness: 0.045, steps: 12, intensity: 0.82, lights: "sun" }))
+    .add(effects.bloom({ name: "workcell status glow", intensity: 0.22, threshold: 0.76, radius: 0.26 }))
+    .add(effects.vignette({ name: "workcell inspection vignette", intensity: 0.2, smoothness: 0.68, roundness: 0.85, color: "#030b11" }))
+    .add(effects.colorGrade({ name: "workcell telemetry grade", contrast: 1.06, saturation: 1.05 }))
     .add(effects.fog({ name: "bounded ops depth haze", density: 0.0021, color: "#0a1a23", intensity: 0.06 }))
     .add(interactions.orbit())
     .camera(camera.perspective({ position: [...cameraPose.position], target: [...cameraPose.target], fov: cameraPose.fov }));

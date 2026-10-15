@@ -1,0 +1,128 @@
+Aura3D agent guide — a typed scene API for building real 3D apps: scenes, looks,
+lighting, materials, typed assets, camera rigs, gameFeel, SDF text, decals, rigid bodies, and gameplay through
+`@aura3d/engine` plus the `@aura3d/cli` toolchain. Current release: Aura3D 4.0.0 (succeeding 4.0.0).
+
+Hello world: every scene gets a look first.
+
+```ts
+import { createAuraApp, looks, model, scene } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+createAuraApp("#app", {
+  scene: scene().add(looks.preset("product-studio")).add(model(assets.robot)),
+  ...looks.appOptions("product-studio")
+});
+```
+
+The quality floor — what the defaults give you, and the never list:
+
+- A `looks.preset` supplies environment light (IBL), a shadow-casting key, fog,
+  background and a post grade as one unit — never hand-wire
+  `lights.ambient()` as the only fill, it flattens shading and kills IBL.
+- Never a solid void background: the look's sky, biome or studio backdrop owns it.
+- Never `pixelRatio`/`qualityProfile`/`safe-basic`/FXAA overrides or
+  `replaceTextures: true` — `looks.appOptions(id)` carries the renderer contract.
+- Never a hero subject made of primitives; `model(assets.x)` with a typed
+  catalog asset.
+- Never emissive cards or sprites faking reflections, puddles, splashes or glows —
+  use the look's `post` grade and `effects.*`.
+- Never CSS/DOM particles, overlays or labels standing in for rendered output;
+  HUD lives in the DOM, the scene does not.
+- Keep the key shadow at full strength with contact darkening at the subject's
+  feet; fog or atmosphere carries depth to the horizon.
+
+three.js → Aura3D mapping (corrected):
+
+| three.js | Aura3D |
+| --- | --- |
+| `new THREE.Scene()` | `scene()` |
+| `new THREE.Mesh(...)` + `new GLTFLoader()` | `model(assets.x)` (typed asset) |
+| `new THREE.PerspectiveCamera(...)` | `camera.perspective(...)`, `camera.rigs.*` |
+| `AmbientLight` | `lights.hemisphere(...)` or the look's environment fill |
+| `DirectionalLight` key/fill | the look's `key`/`rim` slots |
+| `scene.environment` + PMREM | `environments.preset|hdri`, `world.biome` |
+| `toneMapping`/exposure | `output.preset` and the look's post grade |
+| `setPixelRatio` | `quality: "auto"` via `looks.appOptions` |
+| `castShadow = true` | `shadow: true` on the light/node |
+| `EffectComposer` passes | `output.preset` + `effects.*` |
+| `AnimationMixer` | `AnimationController` / `createAnimationController` |
+| `new OrbitControls(...)` | `interactions.orbit(...)` |
+
+Effects, post-processing, atmospherics & VFX (`effects.*` in `@aura3d/engine@4.0.0`):
+- Post-processing: `effects.bloom`, `effects.neonBloom`, `effects.cinematicBloom`, `effects.ambientOcclusion`, `effects.contactOcclusion`, `effects.contactShadows`, `effects.screenSpaceReflections`, `effects.depthOfField`, `effects.motionBlur`, `effects.colorGrade`, `effects.vignette`, `effects.filmGrain`, `effects.chromaticAberration`, `effects.antiAlias`, `effects.outline`
+- Atmospherics & volumetrics: `effects.fog`, `effects.depthFog`, `effects.volumetricFog`, `effects.fogVolume`, `effects.lightCone`, `effects.auroraRibbon`, `atmosphere.setSky`, `atmosphere.setWetness`
+- Particles, weather & trails: `effects.particles`, `effects.meshParticles`, `effects.rain`, `effects.snow`, `effects.flipbook`, `effects.trail`, `effects.beam`, `ResidentGPUParticleRenderer` (WebGPU compute)
+- Game feel: `game.feel` / `app.feel` (`hitStop`, `slowMo`, `damageFlash`, `speedLines`, `landingDust`, camera trauma)
+
+Genre recipes (see `aura3d-art-direction/references/look-recipes.md`):
+
+| Genre | Look | Camera + fov | Palette/accent | Atmosphere |
+| --- | --- | --- | --- | --- |
+| platformer | `outdoor-day` | follow2d fov 50 | greens/sky/wood + gold | fog 0.0025 |
+| racing | `golden-hour` | chase fov 60 | asphalt/orange/charcoal + amber | fog 30–180 m |
+| fighting | `arena-fight` | fighting fov 45 | arena dark/rope/crowd + rim | haze cone |
+| arena shooter | `space` | topDown fov 55 | space blue/graphite/teal + magenta | none |
+| sports/table | `interior-industrial` | topDown fov 40 | turf/white/dark + ball | indoor haze |
+| product | `product-studio` | orbit fov 35 | grey/white/metal + brand | none |
+| character | `character-showcase` | orbit fov 40 | costume neutrals + rim | room haze |
+| outdoor env | `overcast` | wide fov 55 | green/slate/fog blue + wildflower | fog 0.004 |
+| interior | `interior-warm` | orbit fov 45 | wood/cream/spines + plant | dust shafts |
+| night city | `night-city` | tele fov 35 | sodium/neon/asphalt + cyan | fog 15–90 m |
+| space | `space` | orbit fov 60 | void blue/limb/stars + aurora | none |
+| underwater | `underwater` | follow fov 50 | deep blue/teal/kelp + coral | scatter 0.03 |
+| cinematic | `polar-night` | dolly fov 35 | aurora/snow/night + lantern | snow mist 0.006 |
+
+The look-dev loop:
+
+1. Pick the genre recipe row and 1–3 reference frames; write a 3-line look brief.
+2. Build with the look preset and typed assets; no renderer overrides.
+3. Capture `aura3d look capture --route / --shots opening,mid,action`.
+4. Judge each frame against the quality-bar rubric; read `aura3d look lint`.
+5. Fix the single highest-leverage thing; one change per round; repeat until
+   every category reads 7+ or the loop exits flat.
+
+Assets — resolve real objects from the catalog first. Do not invent asset paths,
+URLs or ids — every model comes from a generated `assets.<key>`:
+
+- `npx @aura3d/cli@latest assets search "<object>"` (natural descriptive phrase;
+  the catalog is ~850k license-verified GLB/glTF aggregated from Objaverse,
+  Sketchfab, Poly Pizza, Poly Haven, OS3A, Khronos and CC0 packs).
+- `assets resolve "<object>" --name <name>` pulls the top auto-pullable match
+  and types it as `assets.<name>` → `model(assets.<name>)`.
+- Add local files with `assets add ./assets/model.glb --name model`, then read
+  the generated `src/aura-assets.ts`.
+- Playable characters: `assets resolve "animated humanoid fighting character"
+  --profile fighting-character` keeps provenance in `aura.assets.json`.
+
+Scaffold:
+
+```bash
+npx create-aura3d@latest my-scene --template product-viewer
+npx create-aura3d@latest my-fighter --template fighting-game
+cd my-scene && npm run dev
+```
+
+Claims: use every feature freely. Claim only what a judged capture shows.
+
+- Label every capability as one of: `createAuraApp` root safe API,
+  `production-runtime`, `rendering` internals, CLI asset pipeline, template-only
+  scaffold, prototype, or roadmap.
+- Public examples prove only what the safe API renders through `@aura3d/engine`.
+- A compiling route is not proof: route health, typed provenance and a readable
+  frame are required.
+
+Release integrity rules:
+- no raw string asset IDs, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports, or `GLTFLoader` in public examples;
+- no primary character, vehicle, product, weapon, creature, world, or hero environment made only from primitives unless the route is explicitly abstract visualization;
+- no CSS/DOM particle implementation for examples claiming Aura3D particle rendering;
+- no WebGPU, PBR, postprocess, skinned animation, morph, or game-runtime claim without matching browser evidence;
+- no public showcase or README claim that exceeds detected capability, route-health evidence, or screenshots.
+
+Benchmark mode: if `aura3d look capture` is available, run the look-dev loop;
+otherwise run finite commands (`npm install && npm run build`) then stop and
+label the result `prototype`.
+
+| Scene Kit | API | Status |
+| --- | --- | --- |
+| Material lab | `sceneKits.materialLab()` | root-proven (partial advanced coat extensions) |
+

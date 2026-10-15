@@ -1,13 +1,20 @@
-import { type Mat4 } from "/packages/scene/src/index.ts";
+import { type Mat4 } from "@aura3d/scene";
 import {
   Renderer,
   type Bounds3,
+  type CollectedLight,
   type EnvironmentLightingOptions,
   type RenderItem,
   type RendererCameraPolicy,
   type RendererPostProcessOptions,
   type RenderDeviceDiagnostics
-} from "/packages/rendering/src/index.ts";
+} from "@aura3d/rendering";
+import {
+  createWowStudioLightingRig,
+  resolveWowPostProcessOptions,
+  type WowPostProcessConfig,
+  type WowStudioLightingConfig
+} from "./gltf-showcase";
 import { applyRouteChromeMode, routeRenderQuality } from "./route-quality";
 
 export interface SimpleGraphicsFrame {
@@ -19,8 +26,10 @@ export interface SimpleGraphicsFrame {
     readonly yawRadians?: number;
     readonly pitchRadians?: number;
   };
+  readonly collectedLights?: readonly CollectedLight[];
   readonly environmentLighting?: EnvironmentLightingOptions | false;
   readonly postprocess?: RendererPostProcessOptions | false;
+  readonly postProcess?: WowPostProcessConfig;
 }
 
 export interface SimpleGraphicsShowcaseConfig {
@@ -32,6 +41,8 @@ export interface SimpleGraphicsShowcaseConfig {
     readonly primitive: string;
     readonly api: string;
   };
+  readonly lightingRig?: WowStudioLightingConfig;
+  readonly postProcess?: WowPostProcessConfig;
   createFrame(timeSeconds: number): SimpleGraphicsFrame;
 }
 
@@ -76,6 +87,8 @@ export async function startSimpleGraphicsShowcase(config: SimpleGraphicsShowcase
   let renderSize = syncCanvasRenderSize(canvas);
   let renderer: Renderer | undefined;
   let diagnostics: RenderDeviceDiagnostics | undefined;
+  const defaultLights = createWowStudioLightingRig(config.lightingRig);
+  const defaultPostProcess = resolveWowPostProcessOptions(config.postProcess);
   let frameCount = 0;
   let fps = 0;
   let fpsFrames = 0;
@@ -138,14 +151,20 @@ export async function startSimpleGraphicsShowcase(config: SimpleGraphicsShowcase
       const before = performance.now();
       const seconds = (now - startedAt) / 1000;
       const scene = config.createFrame(seconds);
+      const postprocess = scene.postprocess !== undefined
+        ? scene.postprocess
+        : scene.postProcess
+          ? resolveWowPostProcessOptions(scene.postProcess)
+          : defaultPostProcess;
       diagnostics = renderer.render({
         renderItems: scene.renderItems,
         cameraPolicy: scene.cameraPolicy ?? "auto-frame",
         cameraFrameBounds: scene.bounds,
         cameraFrameOptions: scene.cameraFrameOptions ?? { paddingRatio: 0.18, yawRadians: -0.4, pitchRadians: -0.16 },
+        collectedLights: scene.collectedLights ?? defaultLights,
         environmentLighting: scene.environmentLighting ?? false,
         shadow: false,
-        postprocess: scene.postprocess ?? false
+        postprocess
       });
       frameCount += 1;
       fpsFrames += 1;

@@ -45,7 +45,13 @@ export function buildProductConfiguratorScene(_r: Resources, time: number, state
     ...stage.items,
     ...createProductConfiguratorShowroomDetailItems(_r, time)
   ];
-  return frame(showroomItems, bounds([-1.82, -0.96, -0.94], [1.82, 0.68, 0.96]), productLighting.collectedLights, productEnvironment, false, [
+  return frame(showroomItems, bounds([-1.82, -0.96, -0.94], [1.82, 0.68, 0.96]), productLighting.collectedLights, productEnvironment, {
+    targetFormat: "rgba8",
+    toneMapping: { exposure: 1.12, whitePoint: 1.32, gamma: 2.2, operator: "filmic" },
+    bloom: { threshold: 0.85, intensity: 0.14, radius: 2 },
+    colorGrade: { contrast: 1.06, saturation: 1.04, vignette: 0.16, sharpening: 0.05 },
+    fxaa: { edgeThreshold: 0.08, subpixelBlend: 0.45 }
+  }, [
     ...PRODUCT_CONFIGURATOR_AUTHORED_SYSTEMS,
     turntableEnabled ? "car-concept turntable enabled" : "car-concept turntable paused",
     "route-owned car-only showroom staging around original car hero",

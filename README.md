@@ -97,7 +97,7 @@ Aura3D 4.0.0 is published across all **24 active public packages** on npm (all p
 release assets and package details, and [`docs/MIGRATION-4.0.md`](docs/MIGRATION-4.0.md)
 for the 4.0 consolidation guide.
 
-Aura3D 4.0.0 is the consolidated browser 3D engine release for the agent era — prompt it, prove it, ship it. It unifies the public runtime surface on `@aura3d/engine@4.0.0`, upgrades all 19 browser 3D games and showcases with custom Meshy PBR GLB assets and interactive gameplay loops, ships the full post-processing, atmospheric, particle, weather, ribbon, and game-feel effects suite (`effects.*`), exports the resident WebGPU compute particle pipeline alongside the WebGL2 runtime, and carries forward the 3.0.1 and 2.0.4 evidence foundation. Claims remain scoped to the public API and evidence described in the release documentation.
+Aura3D 4.0.0 is the consolidated browser 3D engine release for the agent era — prompt it, prove it, ship it. It unifies the public runtime surface on `@aura3d/engine@4.0.0`, upgrades all 19 browser 3D games and showcases with custom Meshy PBR GLB assets and interactive gameplay loops, ships the full post-processing, atmospheric, particle, weather, ribbon, and game-feel effects suite (`effects.*`), and exports the resident WebGPU compute particle pipeline alongside the WebGL2 runtime. Claims remain scoped to the public API and evidence described in the release documentation.
 
 ### What ships in 4.0.0
 
@@ -213,170 +213,57 @@ atmosphere.setWetness(app, { wetness: 0.65, puddleCoverage: 0.45, puddleRoughnes
 | **Particles, Weather & VFX** | `effects.particles(opts)` / `effects.meshParticles(opts)` / `effects.rain(opts)` / `effects.snow(opts)` / `effects.flipbook(opts)` / `effects.trail(opts)` / `effects.beam(opts)` / `ResidentGPUParticleRenderer` | Presets (`"fountain"`, `"swirl"`, `"ambient"`, `"additive-glow"`, `"soft-alpha"`, `"smoke"`, `"star"`, `"sparks"`, `"embers"`), `lifetimeColorRamp`, `sizeOverLife`, `alphaOverLife`, `turbulence`, `groundCollision`, instanced 3D debris (`meshParticles`), weather (`rain` with splashes/mist, `snow`), sprite-sheet `flipbook`, node/bone ribbon `trail`, energy `beam`, and WebGPU compute `ResidentGPUParticleRenderer`. |
 | **Game-Feel & Combat Juice** | `game.feel` / `gameFeel` / `app.feel` | Frame-accurate `hitStop`, `slowMo`, `damageFlash`, `speedLines`, `landingDust`, trauma-based camera shake, and combat impact triggers (`"hit-spark"`, `"impact-flash"`, `"dash-trail"`, `"ground-dust"`). |
 
-### What shipped in 3.0.1
+## 24 Active Public Packages (`4.0.0`)
 
-- **Agent-era API surface.** Prompt→game and prompt→animation builders, game-feel triggers, follow/chase/platformer camera rigs, vehicle chassis + driver AI, GPU particles, SDF text, navmesh crowds, visual-scripting catalog, bounded editor surface — each `createAuraApp`-claimed only where root browser evidence exists.
-- **Rendering proofs.** Native fused LDR postprocess, multi-mip bloom with presets, exact sRGB output, anisotropic-GGX, cascaded shadows, GGX PMREM IBL, with shader-reference vectors pinning the math.
-- **Bounded three.js comparison.** Repository-locked `three@0.185.1` head-to-head reports only; no universal superiority claim.
-- **2.0.4 carried forward.** Candidate-only `assets import-meshy`, fail-closed admission, profile diagnostics, spend/secret controls, and the relic `prototype` pilot, unchanged. See the [3.0.1 release notes](docs/project/aura3d-301-release-notes.md) and [GitHub release](https://github.com/auraoneai/aura3d/releases/tag/v3.0.1).
+All 24 active Aura3D packages are published at `4.0.0` on npm (with all `< 4.0.0` versions and the 5 retired pre-4.0 compatibility packages `@aura3d/lean`, `@aura3d/three-compat`, `@aura3d/materials`, `@aura3d/environments`, and `@aura3d/editor` deprecated in full on npm in favor of `@aura3d/engine@4.0.0`):
 
-See [the Meshy CLI guide](docs/meshy-cli.md) for the current asset workflow.
+| Package | Version | Role |
+| --- | --- | --- |
+| `@aura3d/engine` | `4.0.0` | Unified public TypeScript runtime: `createAuraApp`, `scene`, `model(assets.x)`, `camera`, `lights`, `effects.*`, `looks.*`, `atmosphere`, `environments`, `shadows`, `game.*`, `games.*`, `sceneKits.*`, `prefabs.*`, `primitives.*`, `animation`, `createPhysicsRuntime`, `ResidentGPUParticleRenderer`. |
+| `create-aura3d` | `4.0.0` | One-command Vite project scaffolder (`npx create-aura3d@4.0.0 <dir> --template <name>`). |
+| `@aura3d/cli` | `4.0.0` | Typed GLB/glTF asset workflow (`assets add`, `assets search`, `assets resolve`, `assets import-meshy`, `assets validate`, `assets typegen`), `look capture`, and `check-deploy`. |
+| `@aura3d/core` | `4.0.0` | Core math, transforms, colors, events, and lifecycle primitives. |
+| `@aura3d/scene` | `4.0.0` | Scene graph, spatial hierarchy, cameras, lights, and bounds. |
+| `@aura3d/rendering` | `4.0.0` | WebGL2 + WebGPU rendering backend, PBR materials, IBL, cascaded shadows, and multi-pass post-processing. |
+| `@aura3d/animation` | `4.0.0` | Skeletal clip playback, cross-fades, procedural locomotion, and AuraVoice viseme/caption synchronization. |
+| `@aura3d/physics` | `4.0.0` | Rigid-body, collider, raycast, and Rapier-backed deterministic simulation. |
+| `@aura3d/navigation` | `4.0.0` | NavMesh pathfinding, crowd steering, and Recast navigation helpers. |
+| `@aura3d/character` | `4.0.0` | Kinematic character controller, grounded step/slope response, and camera rigs. |
+| `@aura3d/ecs` | `4.0.0` | Entity-component-system queries, archetypes, and deterministic system scheduling. |
+| `@aura3d/scripting` | `4.0.0` | Runtime behavior graphs and node scripting catalog. |
+| `@aura3d/controls` | `4.0.0` | Orbit, trackball, fly, pointer-lock, and touch camera controls. |
+| `@aura3d/loaders` | `4.0.0` | GLB/glTF 2.0, KHR material variants, Draco/Meshopt, OBJ, and HDR environment loaders. |
+| `@aura3d/postprocessing` | `4.0.0` | Modular HDR bloom, SSAO, SSR, DOF, motion blur, outline, and tonemapping pass graph. |
+| `@aura3d/particles` | `4.0.0` | CPU & WebGPU compute particle emitters, weather, trails, and sprite-sheet flipbooks. |
+| `@aura3d/terrain` | `4.0.0` | Heightfield terrain generation, LOD tiling, and material splatting. |
+| `@aura3d/audio` | `4.0.0` | Spatial 3D WebAudio synthesis, cues, and procedural game soundscapes. |
+| `@aura3d/xr` | `4.0.0` | WebXR session management, controller rays, and hand/pose tracking. |
+| `@aura3d/devtools` | `4.0.0` | Frame-timing diagnostics, route-health telemetry, and debug overlays. |
+| `@aura3d/testing` | `4.0.0` | Deterministic frame stepping, input replay, and visual/evidence assertions. |
+| `@aura3d/react` | `4.0.0` | Declarative React host and hooks for `@aura3d/engine` apps. |
+| `@aura3d/product-studio` | `4.0.0` | Studio turntables, variant switchers, dimension callouts, and hero lighting rigs. |
+| `@aura3d/workflows` | `4.0.0` | Prompt-to-scene, prompt-to-game, and prompt-to-animation compilation pipelines. |
 
-### What shipped in 2.0.4 (history)
-
-- **Candidate-only Meshy import.** `assets import-meshy` reuses Aura3D's existing add, inspect, hash, manifest, and type-generation path. Import cannot certify release quality.
-- **Fail-closed admission.** Ambiguous or invalid GLBs, unsafe metadata, missing required rights evidence, out-of-root paths, and attempts to request release quality during import are rejected.
-- **Profile diagnostics.** Prop, environment, vehicle, and humanoid candidates receive bounded profile-specific checks and next actions. Missing measurements remain unproven rather than passing.
-- **Spend and secret controls.** Repository setup and agent-launcher flows pin `@meshy-ai/cli@0.2.0`, require a dry run and an explicitly approved maximum for documented paid workflows, preserve resumable task state, and keep credentials out of arguments and committed files.
-- **Optional MCP setup.** The pinned Meshy MCP server is optional and receives its API key only when its process starts. It is not a browser or engine dependency.
-- **Bounded pilot.** The relic pilot proves typed candidate use, visible browser rendering, keyboard collection, score/reset state, and desktop/mobile route evidence. It remains a `prototype`; its route-local distance threshold is not collision-system proof.
-- **Claim boundary unchanged.** Meshy is an upstream asset-generation tool, not an Aura3D renderer, Prism model, or game-runtime API. This release does not broaden renderer, PBR, WebGPU, animation, physics, or universal Three.js claims.
-
-See [the Meshy CLI guide](docs/meshy-cli.md).
-
-### Consolidated 2.0 outcomes
-
-Earlier minor-release implementation notes have been consolidated into the 2.0 architecture, migration, API, and evidence documentation. Git history retains the original release narratives.
-
-### Measured
-
-- **149 of 149** source-template checks and **149 of 149** clean exact-tarball
-  lifecycle checks pass across all **19** public scaffolds. Each lifecycle proves
-  install, typecheck, production build, browser load, meaningful interaction,
-  static preview, screenshot, route health, and deploy behavior against the packed
-  2.0.0 dependency graph. Source: `tests/reports/agent-templates.json` and
-  `tests/reports/installed-template-lifecycle.json`.
-- **15 of 15** bounded same-workload comparisons pass from freshly packed and
-  installed Aura3D 2.0.0 tarballs against repository-locked `three@0.185.1`.
-  Individual visual differences and capability boundaries remain part of the
-  result; this is not a universal ecosystem-parity claim. The exact migration
-  consumer is recorded in `tests/reports/packed-migration-consumer.json`.
-- The retained package, architecture, route-health, parity, superiority, and
-  documentation gates pass individually; the two required final serial release
-  runs remain pending until the human visual-review gate is recorded.
-- Clean-room projects against the public surface only: **137 / 142 / 122 / 99** authored
-  lines against budgets of 200 / 200 / 300 / 300; one package imported each; **zero**
-  private imports.
-- Route-local magic-geometry findings in published routes: **47 → 7**.
-
-### Scoped Three.js comparisons
-
-#### Measured 3.0.1 outcomes
-
-Measured win: the `@aura3d/engine` core primitive critical path compresses to `77458` gzip bytes against its 80,000-byte budget, from `tests/reports/bundle-size.json`.
-
-Measured loss: the compatibility-root observation bundle is over budget at `575343` gzip bytes against the same 80,000-byte budget, from `tests/reports/bundle-size.json`.
-
-Both figures are measured on the exact 3.0.1 packages and bound by SHA-256 to the L01 package receipt `tests/reports/muse3jsparity/l01/f4049f235500c8a98f7bc0a86ecf9f1a9d8cbe68/l01.receipt.json`; they establish bundle-size facts only, not a universal performance ranking.
-
-#### Why Aura3D can beat Three.js in scoped workflows
-
-Aura3D can reduce authoring and packaging work in selected, reproducible
-workflows where its typed assets, narrow entries, scaffolds, and integrated
-evidence pipeline replace manual renderer glue. That is a scoped result, not a
-claim of universal visual, performance, or ecosystem superiority. The current
-15-workload comparison records every observed loss and remains incomplete until
-the independent same-scene gallery review is approved. See
-`tests/reports/superiority/claim-defense.json` and
-`docs/project/threejs-superiority-status.md` for the generated verdict and its
-claim boundaries.
-
-### What is still not resolved
-
-Stated because a release note that omits this is not useful:
-
-- **Five example routes were unhealthy in the retained tier-12 audit** (`tests/reports/tier12-route-health/report.json`,
-  generated 2026-09-03): `custom-material-lab`, `neon-corridor-strike`, `raycast-ccd-lab`, `recast-crowd-lab`, and
-  `rendering-large-scene` each stayed status-unknown past the 10 s readiness budget (four by under one second, a
-  load-flake signature under the documented host load; two also lacked measurable canvas evidence). They are
-  disclosed here rather than left out, and the audit is re-run before release so this list tracks current truth.
-
-- **The recommended narrow entries now meet all three comparative bundle budgets.** Measured
-  2026-08-08 by `tools/bundle-scenarios` against real Three.js builds of the same scene, through
-  one shared bundler config. The compatibility-heavy root still exists for upgrades and is not
-  presented as the smallest new-app import:
-
-  | Scenario | Aura3D | Three.js | Ratio | Budget |
-  | --- | --- | --- | --- | --- |
-  | Core primitive scene (one cube) | 69,024 B | 118,603 B | **0.582x** | 1.25x |
-  | Product viewer (glTF, PBR, orbit, IBL) | 182,144 B | 145,978 B | **1.248x** | 1.25x |
-  | Game runtime (input, physics, loop) | 118,765 B | 142,809 B | **0.832x** | 1.50x |
-
-  These historical budgets were derived from the measured `three@0.165.0`
-  equivalents. Browser proof executes the core, real-GLB product, and input + shared
-  production-physics game paths through `tests/browser/lean-entry-runtime.spec.ts`.
-- **Where Aura3D won in the frozen `three@0.165.0` scenarios:** authored lines
-  **9 / 14 / 19** against Three.js's **15 / 27 / 40**, and one install instead of two for
-  a game runtime. Across seven product workflows the gap is wider — 15 vs 74 lines for a
-  product configurator, 10 vs 68 for glTF asset review. TypeScript compile time is
-  effectively tied or faster in the current three-process median measurement
-  (653 vs 651 ms; 628 vs 676 ms; 642 vs 662 ms). Runtime construction through
-  the first verified non-blank browser frame measured **24.1 ms vs 33.8 ms**, excluding download
-  and module evaluation. Isolated install-to-verified-cube medians were slower for Aura3D:
-  **6,638.6 vs 5,047.9 ms cold** and **3,199.5 vs 2,297.7 ms warm**, across three fresh projects per
-  engine and cache state. Full raw samples and methodology:
-  `tests/reports/developer-friction.json`.
-- `showcase-blockfall-reactor`, `showcase-skyline-runner`, and
-  `showcase-turbo-drift-circuit` have materially rebuilt gameplay and current
-  automated route evidence, but remain **promotion-blocked pending independent
-  review of the exact final artifacts**. None of that review converts Turbo's
-  authored-unit arcade contract into physical tyre or vehicle-dynamics proof.
-- `aura-clash-showcase` is **not in the route-gate registry**, so showcase-wide gates do
-  not cover it. It carries its own 23-spec suite.
-- `@aura3d/engine`'s `.` entry re-exports the remaining 64 deprecated union names
-  that other lanes still consume (arch-gates `export-budget`; they leave "." in the
-  next minor per §6.6 step 3); `unique-ownership` reports 0 exported
-  symbol names with more than one owning package.
-- The current public `examples/` inventory contains **13 retained routes** after
-  duplicate, contract-only, or visually rejected hosts were internalized. The
-  clean 2026-08-09 source/canvas/full-page audit passed all 13 with no filtered
-  failure list; material, postprocess, and large-scene differences remain
-  disclosed rather than being converted into a blanket parity claim.
-- The historical `three@0.165.0` comparisons cover **54 selected example-level rows**, all
-  matched by the generated inventory with **0 high-priority rows open**. This is a
-  bounded compatibility and migration result, not a claim that Aura3D universally
-  replaces the Three.js ecosystem or that every feature is exposed through the root
-  safe API. See `docs/project/threejs-superiority-status.md` and the generated
-  `tests/reports/superiority/claim-defense.json` decision.
-
-### Why Aura3D can beat Three.js in scoped workflows
-
-Aura3D's historical measured advantage is the integrated product workflow: the frozen `three@0.165.0` bundle and
-developer-friction scenarios above use fewer authored lines, fewer direct dependencies,
-and narrower entry points while retaining browser-rendered evidence. Visual quality,
-animation, physics, lifecycle, and migration conclusions remain limited to the named
-fixtures, routes, assets, browsers, and thresholds in those reports. Universal engine or
-ecosystem superiority is not claimed.
-
-The current product boundary and evidence are documented in
-`docs/project/status/current-state.md` and
-`docs/project/verification-evidence.md`.
-
-Install the current release:
+Install the current 4.0.0 release:
 
 ```bash
 npm install @aura3d/engine@4.0.0
-# or scaffold an app
+# or scaffold a new app
 npx create-aura3d@4.0.0 my-product --template product-viewer
 ```
 
-The 4.0.0 release is available from
-[GitHub Releases](https://github.com/auraoneai/aura3d/releases/tag/v4.0.0),
-with the removal surface in [`docs/MIGRATION-4.0.md`](docs/MIGRATION-4.0.md), the 3.0.1 release at [v3.0.1](https://github.com/auraoneai/aura3d/releases/tag/v3.0.1), and the archived 2.0 guide in [`docs/migration/2.0.md`](docs/migration/2.0.md)
-and retained claim boundaries and release evidence under `docs/project/`.
+## Typed Asset Catalog & Meshy CLI (`4.0.0`)
 
-## Aura3D 2.0 asset catalog
-
-Aura3D 2.0 includes the catalog-first asset workflow for AI coding agents. When a prompt names a real object, agents should search the hosted Aura3D catalog before writing scene code:
+Aura3D 4.0.0 includes a catalog-first and Meshy-assisted asset workflow for AI coding agents. When a prompt names a real 3D object, vehicle, character, or architectural prop, search the catalog or import a validated Meshy GLB before writing scene code:
 
 ```bash
 npx @aura3d/cli@latest assets search "battle-worn knight helmet"
 npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet
 ```
 
-The resolver pulls only verified auto-pullable candidates into the existing typed asset pipeline, then scene code uses `model(assets.helmet)`. Unverified or marketplace candidates stay as deep-links until the user approves and supplies the asset.
+The resolver pulls verified redistributable candidates into the typed asset pipeline (`aura.assets.json` + `src/aura-assets.ts`), and scene code uses `model(assets.helmet)`.
 
-For game characters, use the catalog profile so the CLI filters toward animated redistributable GLB candidates and preserves catalog provenance when it registers the typed asset:
+For game characters and genre kits:
 
 ```bash
 npx @aura3d/cli@latest assets search "animated humanoid fighting character" --profile fighting-character --json
@@ -384,113 +271,9 @@ npx @aura3d/cli@latest assets resolve "animated humanoid fighting character" --n
 npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset fighter --no-placeholders --require-license
 ```
 
-`--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
-## Aura3D 2.0 runtime launch track
+When the catalog has no matching model, generate or refine a 3D PBR GLB with the Meshy workflow and admit it through `assets import-meshy` (see [`docs/meshy-cli.md`](docs/meshy-cli.md)).
 
-Aura3D 2.0 introduced the runtime and animation evidence foundation; 4.0.0 (succeeding 3.0.0 and 3.0.1) is
-the published package train that carries it forward:
-
-- `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
-- `fighting-game template`: `npx create-aura3d@latest my-fighter --template fighting-game` scaffolds a public-API playable starter using typed assets, `app.input(...)`, `app.onFrame(...)`, `game.kinematicBody(...)`, `game.combatWorld(...)`, and `app.evidence(...)`.
-- `prompt animation`: `npx create-aura3d@latest my-episode --template prompt-animation-channel` scaffolds structured episode plans, storyboards, shot timelines, captions, visemes, render queues, and evidence for prompt-authored animation/video workflows. The shorter `animation-channel` template name remains supported.
-- `AuraVoice bridge`: AuraVoice owns script/audio/caption/viseme timing; Aura3D owns typed scene generation, character performance, camera choreography, rendering, screenshots, and visual evidence.
-
-Aura Clash remains a development showcase pending exact-artifact approval, not
-an automatically approved polished flagship claim.
-Historical runtime, screenshot, route, GLB, package-smoke, and deployment
-receipts do not replace current gameplay, visual, asset, audio, performance,
-and documentation gates.
-
-## Install
-
-Scaffold a browser 3D app:
-
-```bash
-npx create-aura3d@latest my-scene --template product-viewer
-cd my-scene
-npm run dev
-```
-
-Install the engine directly:
-
-```bash
-npm install @aura3d/engine
-```
-
-Add a typed GLB/glTF asset when the prompt includes a real model:
-
-```bash
-npx @aura3d/cli@latest assets add ./assets/robot.glb --name robot
-```
-
-Then use the public developer API:
-
-```ts
-import { createAuraApp, sceneKits } from "@aura3d/engine";
-```
-
-## Use Aura3D for
-
-- AI-generated 3D scenes that remain editable TypeScript.
-- Browser 3D apps built with a stable SDK instead of improvised renderer glue.
-- Typed GLB/glTF product viewers, product configurators, and model showcases.
-- Browser-native game prototypes with playable routes, HUDs, input, evidence, tests, and deploy-ready output. Public racing/platformer examples require the certified game-geometry layer described in `docs/project/aura3d-game-layer-rebuild-plan.md`.
-- Prompt-to-3D workflows for AI coding agents, Cursor, Claude, Codex, and other assistants.
-- WebGL examples plus bounded WebGPU package/diagnostic routes whose backend and
-  device evidence is named explicitly.
-- Vite 3D starter apps with route health, screenshot tests, and deploy checks.
-- Static-deployed 3D websites where proof, screenshots, and reliability matter.
-
-## Aura Clash development showcase
-
-Aura Clash Arena is the active Aura3D game-runtime proof target: a 1v1 browser arena-fighter development showcase built with `@aura3d/engine` public APIs.
-
-The showcase exercises scoped Aura3D runtime, animation, and combat packages on
-a deterministic route. Because it imports advanced-runtime,
-production-runtime, rendering, scene, and animation subpaths in addition to the
-root package, it is not blanket proof of root `createAuraApp` capability.
-
-The showcase currently targets:
-
-- typed or validated stylized fighter assets;
-- typed asset members from `src/aura-assets.ts`;
-- `model(assets.x)` runtime usage;
-- arena composition, lighting, effects, camera framing, and material polish;
-- arcade movement, hitboxes, guard state, meter, AI pressure, and results;
-- evidence routes, accessibility settings, poster capture, Playwright contracts, sitemap and robots integration, and marketing homepage placement.
-
-Open the source route at `apps/aura-clash-showcase/`. Treat the current route as
-a development showcase until the current 2.0 gameplay, visual, asset, audio,
-performance, deployment, docs-claim, and independent-review gates pass.
-
-## Animation Studio — prompt → rendered short
-
-The **Animation Studio** turns a natural-language prompt into a deterministic, rendered animated short. Scene intelligence lives in a generated, validated **EpisodeDocument** (cast, set, dialogue, blocking, camera); a generic player renders it with zero per-scene code. The director is **your own coding agent** (Claude Code / Codex / Cursor) driving a validated **Scene-Tool CLI** — no bundled LLM, no API key.
-
-```bash
-npx create-aura3d@latest my-studio --template animation-studio
-cd my-studio && pnpm install
-pnpm scene new --prompt "two office workers arguing about a deadline" --full
-AURA_QUALITY=final pnpm episode:render-3d          # → a silent 1080p .webm
-```
-
-A prompt drives the whole document: cast (parsed from the prompt, bound to curated A-grade humanoid rigs), set (keyword-routed interiors/outdoors — **never a moon-garden default**), dialogue (agent-authored or synthesized, timed by speech duration), camera, and blocking with velocity-gated locomotion (legs cycle only while actually moving). A web studio (`apps/animation-studio-web`) gives the agent a 3-pane NLE shell + live previews and runs real validated Scene-Tool commands.
-
-Audio boundary (firm): Aura3D renders **silent video by design** and never does TTS — it emits the timed dialogue/caption/viseme track, and **AuraVoice** owns the script, narration, TTS, and voice mux. The commercial wedge is **repeatable family-safe short episodes from a cast + set library**; see `docs/project/go-to-market-strategy.md`.
-
-Built for fast, repeatable, agent-directed shorts — a proven, deterministic pipeline with prompt-specific scenes, a clean stylized look out of the box, and the upgrade path to photoreal characters via your own rigged GLB (`cast add --file`). Integrity is built in: a still image with CSS wobble/pan/subtitles is not Aura3D animation, and the quality suite rejects stiff or lip-only output.
-
-See:
-
-- [`docs/animation-studio/quickstart.md`](docs/animation-studio/quickstart.md) — 5-minute prompt → render → edit
-- [`docs/animation-studio/README.md`](docs/animation-studio/README.md) — overview + architecture
-- [`docs/animation-studio/guide.md`](docs/animation-studio/guide.md) — CLI, EpisodeDocument, motion, dialogue, rendering
-- [`docs/animation-studio/studio-app.md`](docs/animation-studio/studio-app.md) — the web studio app
-- [`docs/animation-studio/quality-and-limitations.md`](docs/animation-studio/quality-and-limitations.md) — quality gates + the honest ceiling
-- [`docs/api/auravoice-bridge.md`](docs/api/auravoice-bridge.md) — the voice/timing handoff
-- `docs/project/go-to-market-strategy.md` — use cases + monetization
-
-## 30-second product viewer
+## 30-Second Product Viewer
 
 ```ts
 import { createAuraApp, lights, model, scene } from "@aura3d/engine";
@@ -504,18 +287,25 @@ createAuraApp("#app", {
 });
 ```
 
-The safe API uses generated refs such as `assets.robot`. Do not write `model("robot")`, hand-written GLB URLs, or invented asset ids.
+The public API uses generated references such as `assets.robot`. Never pass raw string IDs or unvalidated paths to `model(...)`.
 
-## Aura3D 2.0 game runtime example
+## Browser Game Runtime & 19 Playable Showcases (`4.0.0`)
 
-Add typed assets before writing model code:
+Aura3D 4.0.0 ships a complete browser game runtime (`game.*`, `games.*`, `looks.*`, `effects.*`, `app.feel`) powering 19 playable 3D games and showcases with custom Meshy PBR 3D characters, vehicles, and architectural props:
+
+- **Fighting & Arena Combat**: `Aura Clash Arena` (`apps/aura-clash-showcase`), `Mech Hangar` (`apps/showcase-mech-hangar`), `Neon Swarm` (`apps/showcase-neon-swarm`), `Neon Corridor Strike` (`examples/neon-corridor-strike`)
+- **Racing, Flight & Vehicular Action**: `Turbo Drift Circuit` (`apps/showcase-turbo-drift-circuit`), `Courier Rush` (`apps/showcase-courier-rush`), `Patrol Wing` (`apps/showcase-patrol-wing`), `Pulse Tunnel` (`apps/showcase-pulse-tunnel`), `Aurora Lander` (`apps/showcase-aurora-lander`), `Deep Recovery` (`apps/showcase-deep-recovery`)
+- **Sports, Pinball & Precision Physics**: `Rooftop Buckets` (`apps/showcase-rooftop-buckets`), `Bank Shot Billiards` (`apps/showcase-bank-shot`), `Siege Golf` (`apps/showcase-siege-golf`), `Vault Breakers Pinball` (`apps/showcase-vault-breakers`)
+- **Platformer, Stealth, Puzzle & Strategy**: `Skyline Runner` (`apps/showcase-skyline-runner`), `Gallery Shift` (`apps/showcase-gallery-shift`), `Blockfall Reactor` (`apps/showcase-blockfall-reactor`), `Gravity Post` (`apps/showcase-gravity-post`), `Orbital Defense` (`apps/showcase-orbital-defense`)
+
+Add typed assets before writing game code:
 
 ```bash
 npx @aura3d/cli@latest assets add ./assets/fighter.glb --name fighter
 npx @aura3d/cli@latest assets add ./assets/opponent.glb --name opponent
 ```
 
-Then use the public game facade and stage builders:
+Then use the public `game` and `games` facades:
 
 ```ts
 import {
@@ -631,9 +421,18 @@ const evidence = app.evidence({
 console.log(touchLayout.controls.length, replayDriver.snapshot(), overlay.sections, evidence.systems);
 ```
 
-## Aura3D 2.0 prompt-animation and AuraVoice example
+## Animation Studio & AuraVoice Bridge (`4.0.0`)
 
-Prompt-animation routes use typed assets, contract artifacts, shot playback, captions, visemes, and AuraVoice timing packages.
+The **Animation Studio** turns a natural-language prompt into a deterministic, rendered animated short. Scene structure lives in a validated **EpisodeDocument** (cast, set, dialogue, blocking, camera) driven by your coding agent:
+
+```bash
+npx create-aura3d@latest my-studio --template animation-studio
+cd my-studio && pnpm install
+pnpm scene new --prompt "two office workers arguing about a deadline" --full
+AURA_QUALITY=final pnpm episode:render-3d
+```
+
+Aura3D emits the timed dialogue, caption, and viseme tracks while **AuraVoice** owns TTS narration and audio muxing:
 
 ```ts
 import {
@@ -767,11 +566,9 @@ const readiness = evaluatePromptAnimationPublishReadiness(evidence);
 console.log(bridgeIssues, evidence.publishReady, readiness.ready);
 ```
 
-Do not publish placeholder screenshot hashes. Deterministic render output must replace the placeholder before a prompt-animation or AuraVoice route is called publish-ready.
+## Prompt-to-3D Scene Kits
 
-## Prompt-to-3D scene kits
-
-Use scene kits when an AI prompt asks for generated 3D systems rather than a supplied model.
+Use scene kits when an AI prompt asks for generated 3D systems alongside or instead of a supplied model:
 
 ```ts
 import { createAuraApp, sceneKits } from "@aura3d/engine";
@@ -783,84 +580,29 @@ console.log(kit.diagnostics, kit.evidence);
 
 Maintained scene-kit families include physics playgrounds, particle fountains, solar systems, neon tunnels, 3D data visualizations, mini golf, material labs, city blocks, humanoid walks, and typed product viewers.
 
-## Why developers use Aura3D
-
-- `AI-native`: prompt-to-code scenes start from maintained systems instead of empty renderer setup.
-- `TypeScript-first`: the output is normal source code developers can inspect, edit, and ship.
-- `Typed assets`: GLB/glTF files become generated imports, so agents do not invent string asset IDs.
-- `Browser-ready`: Vite templates, route health, screenshot tests, and static deploy checks are part of the workflow.
-- `Production-oriented`: product viewers, material labs, particles, physics scenes, data worlds, cities, and interactive examples are covered by documented scene kits.
-- `Agent-safe`: docs tell coding agents which public APIs to use and which claims not to make.
-
-## Packages
-
-- `@aura3d/engine`: public TypeScript browser 3D SDK for AI-generated scenes, runtime helpers, and typed GLB/glTF assets.
-- `@aura3d/cli`: typed GLB/glTF asset workflow, diagnostics, and deploy checks.
-- `@aura3d/react`: optional thin React adapter.
-- `create-aura3d`: Vite templates for product viewers, cinematic scenes, and mini-games.
-
-## Production browser 3D workflow
-
-Aura3D is built for the AI-assisted browser 3D era. It gives teams a source-code-first TypeScript workflow where agents generate maintainable scenes, game prototypes, product viewers, and deployable interactive websites.
-
-Aura3D combines scene kits, GLB/glTF asset typing, product viewers, browser-game runtime helpers, a believable-motion animation engine, physics scenes, particles, material labs, data worlds, route diagnostics, screenshot workflows, and static deployment into one agent-ready SDK. Route-level game proofs are not public-quality game examples until visual review and game-geometry evidence pass.
-
 ## Documentation
 
-- **Build a browser game (end-to-end guide):** [docs/guides/build-a-browser-game.md](docs/guides/build-a-browser-game.md) — ties together scaffolding, typed assets, runtime nodes, input, movement, combat, the full 1.3 animation stack, camera/effects/HUD/audio/a11y, evidence, and deploy in one walkthrough.
-- Agent manual: [docs/agents/README.md](docs/agents/README.md)
-- Agent quickstart: [docs/agents/agent-quickstart.md](docs/agents/agent-quickstart.md)
-- Prompt-to-3D workflow: [docs/agents/prompt-to-3d-workflow.md](docs/agents/prompt-to-3d-workflow.md)
-- Asset workflow: [docs/agents/asset-workflow.md](docs/agents/asset-workflow.md)
-- Game runtime API reference: [docs/api/game-runtime.md](docs/api/game-runtime.md)
-- Believable-motion (1.3) animation runtimes: [docs/animation/believable-motion.md](docs/animation/believable-motion.md)
-- Prompt recipes: [docs/agents/benchmark-recipes.md](docs/agents/benchmark-recipes.md)
-- Public API: [docs/api/public-api.md](docs/api/public-api.md)
+- **4.0.0 Migration & Consolidation Guide:** [`docs/MIGRATION-4.0.md`](docs/MIGRATION-4.0.md)
+- **4.0.0 Release Notes:** [`docs/project/aura3d-400-release-notes.md`](docs/project/aura3d-400-release-notes.md)
+- **Build a Browser Game (End-to-End Guide):** [`docs/guides/build-a-browser-game.md`](docs/guides/build-a-browser-game.md)
+- **Public API Reference:** [`docs/api/public-api.md`](docs/api/public-api.md)
+- **Game Runtime API Reference:** [`docs/api/game-runtime.md`](docs/api/game-runtime.md)
+- **Believable-Motion Animation Runtime:** [`docs/animation/believable-motion.md`](docs/animation/believable-motion.md)
+- **Animation Studio Quickstart:** [`docs/animation-studio/quickstart.md`](docs/animation-studio/quickstart.md)
+- **AuraVoice Bridge Reference:** [`docs/api/auravoice-bridge.md`](docs/api/auravoice-bridge.md)
+- **Meshy CLI Asset Guide:** [`docs/meshy-cli.md`](docs/meshy-cli.md)
+- **Agent Manual & Quickstart:** [`docs/agents/README.md`](docs/agents/README.md), [`docs/agents/agent-quickstart.md`](docs/agents/agent-quickstart.md)
 
 ## Verification
 
 ```bash
 pnpm run check:release
-```
-
-Use release checks to confirm package integrity, generated assets, examples, and static deployment output before shipping.
-
-Aura3D 2.0 route-specific readiness commands:
-
-```bash
 npx @aura3d/cli@latest assets validate-game
 npx @aura3d/cli@latest assets validate-animation
 npx @aura3d/cli@latest check-deploy --dist dist
-pnpm game-runtime:docs
-pnpm game-runtime:template
-pnpm game-runtime:package
-pnpm game-runtime:release
-pnpm prompt-animation:docs
-pnpm prompt-animation:template
-pnpm prompt-animation:package
-pnpm prompt-animation:release
 ```
-
-Do not mark a game, prompt-animation, or AuraVoice route launch-ready from source evidence alone. Asset readiness, package smoke, browser route health, deterministic screenshots, visual review, accessibility proof, and deployment checks must also pass.
-
-Aura3D 2.0 game-engine/showcase readiness is stricter:
-
-```bash
-pnpm aura3d110:readiness
-```
-
-Retained 3.0.0 release context — The package train carries the
-playable-route, catalog, and documentation corrections described in its release notes. The
-historical exact-installed 2.0.0 comparison against
-`three@0.185.1` passes its bounded local checks across 15 workloads. That
-comparison is not a universal parity claim: clean-machine,
-repeated-performance, independent-human, publication, and production-origin
-gates remain open. Blockfall Reactor, Turbo Drift Circuit, and
-Skyline Runner remain `prototype-blocked`; their typed assets, mounted gameplay,
-and bounded route evidence are technical proof, not promotion. Aura Clash is
-tracked separately as a development showcase. The former `three@0.165.0`
-comparison is historical only; no broad parity or replacement claim is made.
 
 ## Contributing
 
-Star the repo if you want AI-native browser 3D tooling for TypeScript, WebGL, WebGPU, GLB/glTF assets, product viewers, prompt-to-3D scenes, and deployable 3D websites. Open issues with the prompt, package version, asset source or license, commands run, route-health output, screenshots, and deploy context.
+Star the repo if you build AI-native browser 3D software in TypeScript across WebGL2 and WebGPU. Open issues with the prompt, package version (`4.0.0`), asset source or license, commands run, route-health output, screenshots, and deploy context.
+

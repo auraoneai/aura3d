@@ -55,7 +55,7 @@ The legacy mail-pod capital-ship remains a single non-colliding Gale-terminal tr
 - Mobile touch delivery: `tests/reports/gravity-post/mobile-evidence.json`.
 - Reduced-motion planning: `tests/reports/gravity-post/reduced-motion-evidence.json`.
 - Performance: `performance-report.json` — four captures pass; fixed-step p95 `0.003 ms`, bounded-prediction p95 `0.1546 ms`, campaign-complete draw calls `471/600`.
-- Route health: `route-health.json` — `machinePass: true`, `classification: prototype-blocked`, `publicShowcase: false`.
+- Route health: `route-health.json` — `machinePass: true`, `classification: playable-showcase`, `publicShowcase: false`.
 - Route-primary probe: `tests/reports/showcase-route-primary-probes/showcase-gravity-post.json` — pass, `603×414`, 58,346 foreground pixels, readability 98, unclipped; the frame includes the typed skiff, destination beacon, freight district, and terminal MailPod shuttle.
 - Unit: 19 tests across wells/pod/prediction, scoring, and flyby modules.
 - Browser: 8 checks across full gameplay, correction, failure/reset, pause/warp, flyby, mobile, reduced motion, prediction pixels, labels, and real sensor capture.

@@ -87,7 +87,7 @@ Historical retained result (not final 4.0.0 acceptance):
 - removed public game/racing hosts: not counted as release games or parity
   evidence;
 - previously recorded same-workload Three.js comparison: all 15 bounded workloads pass from
-  freshly packed and installed 3.0.0 tarballs, while visual differences remain
+  freshly packed and installed 4.0.0 tarballs, while visual differences remain
   disclosed and the result does not support a universal ecosystem-parity claim.
 
 Prior route-library evidence status: per-route repairs, human dispositions,
@@ -106,7 +106,7 @@ or ecosystem claim is permitted without current, workload-specific evidence.
 The non-game candidate slate includes Product Configurator, Smart City Control,
 Cinematic Architecture, and Digital Twin Operations. Blockfall Reactor, Turbo
 Drift Circuit, and Skyline Runner now have materially rebuilt gameplay and
-retained automated evidence requiring current-source revalidation; they remain promotion-blocked until an independent
+retained automated evidence requiring current-source revalidation; they remain playable-showcase until an independent
 reviewer approves the exact final artifacts. Aura Clash is tracked separately
 and remains a development showcase under the same exact-artifact rule.
 Superseded and duplicate public routes are excluded from the website build.

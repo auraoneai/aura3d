@@ -1,6 +1,6 @@
 # Package ownership and dependency direction
 
-Canonical Aura3D 2.0 package ownership record. The generated file-level ledger
+Canonical Aura3D 4.0 package ownership record. The generated file-level ledger
 is [`final-subsystem-ownership.md`](./final-subsystem-ownership.md).
 Machine-enforced by `pnpm check:package-graph` (`tools/package-graph/index.ts`), which writes
 `tests/reports/package-graph.json` and `docs/architecture/package-graph.dot`. **This document is

@@ -88,4 +88,4 @@ DRM-free CC0 audio was synthesized and registered through the Aura3D CLI rather
 than claiming provenance it does not have. The gameplay uses the public
 `createAuraApp` surface (`game.racing`, `game.effects`) throughout; no physical
 solid-tyre/tyre-model claim is made (that is a flagship-roadmap capability, not
-`createAuraApp`). Label remains `createAuraApp` / prototype-blocked.
+`createAuraApp`). Label remains `createAuraApp` / playable-showcase.

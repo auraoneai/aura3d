@@ -5,6 +5,7 @@ import {
   createAuraApp,
   createAuraRouteHealthSnapshot,
   createProductConfiguratorKit,
+  effects,
   environments,
   focusSemanticRegion,
   group,
@@ -332,6 +333,38 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
       color: activeVariant.accent,
       width: 2.6,
       height: 0.72
+    }))
+    .add(effects.ambientOcclusion({
+      name: "studio product ambient occlusion",
+      intensity: 0.34,
+      radius: 0.56,
+      falloff: 1.6,
+      multiBounce: true
+    }))
+    .add(effects.contactShadows({
+      length: 0.18,
+      thickness: 0.04,
+      steps: 12,
+      intensity: 0.72,
+      lights: "sun"
+    }))
+    .add(effects.bloom({
+      name: "studio product clearcoat bloom",
+      intensity: nextState.finish === "gloss" ? 0.22 : 0.16,
+      threshold: 0.78,
+      radius: 0.28
+    }))
+    .add(effects.vignette({
+      name: "studio product vignette",
+      intensity: 0.18,
+      smoothness: 0.72,
+      roundness: 0.88,
+      color: "#05090d"
+    }))
+    .add(effects.colorGrade({
+      name: "studio product color grade",
+      contrast: 1.05,
+      saturation: 1.04
     }))
     .add(interactions.orbit({ target: "configured typed headphones product" }))
     .camera(cameraFor(nextState))

@@ -1,5 +1,11 @@
-import { Geometry, PBRMaterial, type RenderItem } from "@aura3d/rendering";
-import { Renderer } from "@aura3d/engine/renderer";
+import {
+  Geometry,
+  PBRMaterial,
+  Renderer,
+  createLightingRig,
+  type RenderItem,
+  type RendererPostProcessOptions
+} from "@aura3d/rendering";
 
 declare global {
   interface Window {
@@ -42,6 +48,35 @@ interface ViewRuntime {
 const APP_ID = "camera-multiple-views" as const;
 const VIEW_LABELS: readonly ViewLabel[] = ["hero", "top", "detail"];
 
+const MULTI_VIEW_POSTPROCESS_4_0 = {
+  tonemapping: { enabled: true, mode: "aces" as const, exposure: 1.14 },
+  bloom: { enabled: true, intensity: 0.16, threshold: 0.82 },
+  fxaa: { enabled: true },
+  vignette: { enabled: true, intensity: 0.18 }
+} as const;
+
+const MULTI_VIEW_POSTPROCESS_OPTIONS: RendererPostProcessOptions = {
+  targetFormat: "rgba8",
+  toneMapping: {
+    operator: MULTI_VIEW_POSTPROCESS_4_0.tonemapping.mode,
+    exposure: MULTI_VIEW_POSTPROCESS_4_0.tonemapping.exposure,
+    inputColorSpace: "linear",
+    outputColorSpace: "srgb"
+  },
+  bloom: {
+    intensity: MULTI_VIEW_POSTPROCESS_4_0.bloom.intensity,
+    threshold: MULTI_VIEW_POSTPROCESS_4_0.bloom.threshold,
+    radius: 1,
+    quality: "balanced"
+  },
+  colorGrade: {
+    contrast: 1.06,
+    saturation: 1.05,
+    vignette: MULTI_VIEW_POSTPROCESS_4_0.vignette.intensity
+  },
+  fxaa: MULTI_VIEW_POSTPROCESS_4_0.fxaa.enabled
+};
+
 async function run(): Promise<void> {
   const root = document.getElementById("app");
   if (!(root instanceof HTMLElement)) {
@@ -66,6 +101,12 @@ async function run(): Promise<void> {
   try {
     const viewports = await createViewports();
     const renderItemSets = viewports.map(() => createSharedRenderItems());
+    const lightingRig = createLightingRig({
+      preset: "key-fill-rim",
+      intensityScale: 1.32,
+      shadows: false,
+      subject: { height: 2.0, width: 3.4, floorY: -0.55 }
+    });
 
     const render = (now: number): void => {
       try {
@@ -86,9 +127,18 @@ async function run(): Promise<void> {
           const viewport = viewports[index]!;
           const animatedItems = animateSharedItems(renderItemSets[index]!, now);
           const result = viewport.renderer.render({
+            collectedLights: lightingRig.collectedLights,
             environmentLighting: {
-              color: [0.56, 0.62, 0.7],
-              intensity: 1.1
+              color: [0.6, 0.68, 0.84],
+              intensity: 1.26,
+              proceduralMap: {
+                skyColor: [0.6, 0.74, 0.96],
+                horizonColor: [0.32, 0.4, 0.54],
+                groundColor: [0.09, 0.11, 0.16],
+                specularColor: [1, 0.96, 0.9],
+                intensity: 1.24,
+                specularIntensity: 1.34
+              }
             },
             cameraPosition: viewport.cameraPosition,
             cameraFrameBounds: { min: [-2.2, -1.2, -1.4], max: [2.2, 1.4, 1.4] },
@@ -97,7 +147,8 @@ async function run(): Promise<void> {
               pitchRadians: viewport.pitchRadians,
               paddingRatio: viewport.paddingRatio
             },
-            renderItems: animatedItems
+            renderItems: animatedItems,
+            postprocess: MULTI_VIEW_POSTPROCESS_OPTIONS
           });
           drawCalls += result.drawCalls;
         }
@@ -175,7 +226,11 @@ async function createViewports(): Promise<readonly ViewRuntime[]> {
       canvas,
       width: config.width,
       height: config.height,
-      clearColor: [0.026, 0.032, 0.042, 1]
+      clearColor: [0.02, 0.026, 0.036, 1],
+      output: {
+        toneMapping: MULTI_VIEW_POSTPROCESS_4_0.tonemapping.mode,
+        exposure: MULTI_VIEW_POSTPROCESS_4_0.tonemapping.exposure
+      }
     });
     viewports.push({ ...config, canvas, renderer });
   }
@@ -186,22 +241,34 @@ function createSharedRenderItems(): readonly RenderItem[] {
   const sharedCube = Geometry.litCube(1);
   const floor = Geometry.litCube(1);
   const gold = new PBRMaterial({
-    baseColor: [0.76, 0.54, 0.24, 1],
-    metallic: 0.18,
-    roughness: 0.42,
-    environmentIntensity: 0.2
+    baseColor: [0.9, 0.64, 0.26, 1],
+    metallic: 0.62,
+    roughness: 0.24,
+    environmentIntensity: 0.6,
+    emissiveColor: [0.14, 0.08, 0.02],
+    emissiveStrength: 0.24
   });
   const blue = new PBRMaterial({
-    baseColor: [0.2, 0.5, 0.78, 1],
-    metallic: 0.04,
-    roughness: 0.36,
-    environmentIntensity: 0.24
+    baseColor: [0.24, 0.58, 0.92, 1],
+    metallic: 0.34,
+    roughness: 0.22,
+    environmentIntensity: 0.64,
+    emissiveColor: [0.04, 0.12, 0.24],
+    emissiveStrength: 0.28
+  });
+  const copper = new PBRMaterial({
+    baseColor: [0.94, 0.48, 0.24, 1],
+    metallic: 0.54,
+    roughness: 0.26,
+    environmentIntensity: 0.58,
+    emissiveColor: [0.16, 0.06, 0.02],
+    emissiveStrength: 0.22
   });
   const floorMaterial = new PBRMaterial({
-    baseColor: [0.72, 0.76, 0.78, 1],
-    metallic: 0,
-    roughness: 0.68,
-    environmentIntensity: 0.12
+    baseColor: [0.26, 0.31, 0.38, 1],
+    metallic: 0.14,
+    roughness: 0.44,
+    environmentIntensity: 0.38
   });
 
   return [
@@ -219,7 +286,7 @@ function createSharedRenderItems(): readonly RenderItem[] {
     },
     {
       geometry: sharedCube,
-      material: gold,
+      material: copper,
       label: "shared-scene-right",
       modelMatrix: composeMatrix(1.26, 0.1, 0.2, 0.72, 1.05, 0.72, 0.52)
     },

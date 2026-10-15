@@ -60,7 +60,11 @@ async function run(): Promise<void> {
 
   try {
     const modes: readonly A3DXRSessionMode[] = ["immersive-vr", "immersive-ar", "inline"];
-    const samples = [];
+    const samples: Array<{
+      readonly mode: A3DXRSessionMode;
+      readonly start: Awaited<ReturnType<WebXRSessionController["start"]>>;
+      readonly sample: ReturnType<WebXRSessionController["sampleFrame"]>;
+    }> = [];
     for (const mode of modes) {
       const controller = new WebXRSessionController({
         xr: createInjectedXR(mode),
@@ -214,49 +218,132 @@ function drawPreview(canvas: HTMLCanvasElement, ballShots: number, draggedObject
   canvas.height = SIZE;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("2D preview context unavailable.");
-  const gradient = context.createLinearGradient(0, 0, SIZE, SIZE);
-  gradient.addColorStop(0, "#111827");
-  gradient.addColorStop(1, "#05070b");
+  const gradient = context.createRadialGradient(SIZE * 0.5, SIZE * 0.42, SIZE * 0.08, SIZE * 0.5, SIZE * 0.5, SIZE * 0.72);
+  gradient.addColorStop(0, "#17253b");
+  gradient.addColorStop(0.55, "#0d1526");
+  gradient.addColorStop(1, "#05070c");
   context.fillStyle = gradient;
   context.fillRect(0, 0, SIZE, SIZE);
   context.save();
   context.scale(SIZE / BASE_SIZE, SIZE / BASE_SIZE);
-  context.strokeStyle = "rgba(148, 163, 184, 0.26)";
-  context.lineWidth = 2;
+
+  // Spatial local-floor perspective grid & boundary guardian
+  context.strokeStyle = "rgba(56, 189, 248, 0.16)";
+  context.lineWidth = 1;
+  for (let row = 0; row <= 5; row += 1) {
+    const y = 132 + row * 12;
+    const inset = (5 - row) * 8;
+    context.beginPath();
+    context.moveTo(26 + inset, y);
+    context.lineTo(BASE_SIZE - 26 - inset, y);
+    context.stroke();
+  }
+  for (let col = -3; col <= 3; col += 1) {
+    context.beginPath();
+    context.moveTo(BASE_SIZE / 2 + col * 18, 132);
+    context.lineTo(BASE_SIZE / 2 + col * 32, 192);
+    context.stroke();
+  }
+
+  context.strokeStyle = "rgba(148, 163, 184, 0.32)";
+  context.lineWidth = 1.75;
   context.strokeRect(34, 36, 192, 156);
+
+  // Central holographic XR target orb with specular highlight
+  const orbY = 114 + Math.sin(time * 1.5) * 5;
+  const orbGlow = context.createRadialGradient(BASE_SIZE / 2 - 6, orbY - 6, 3, BASE_SIZE / 2, orbY, 28);
+  orbGlow.addColorStop(0, "rgba(186, 230, 253, 0.72)");
+  orbGlow.addColorStop(0.5, "rgba(56, 189, 248, 0.32)");
+  orbGlow.addColorStop(1, "rgba(14, 116, 144, 0.04)");
+  context.fillStyle = orbGlow;
+  context.beginPath();
+  context.arc(BASE_SIZE / 2, orbY, 26, 0, Math.PI * 2);
+  context.fill();
+
   drawController(context, 74 + Math.sin(time * 2) * 4, 176, "#60a5fa", ballShots, time);
   drawController(context, 186 + Math.cos(time * 2.2) * 4, 176, "#f59e0b", draggedObjects, time + 0.4);
   for (let index = 0; index < arCones; index += 1) {
-    drawCone(context, 82 + index * 48, 94 + Math.sin(time * 2.4 + index) * 5, index % 2 === 0 ? "#67e8f9" : "#fde68a");
+    drawCone(
+      context,
+      82 + index * 48,
+      94 + Math.sin(time * 2.4 + index) * 5,
+      index % 2 === 0 ? "#67e8f9" : "#fde68a",
+      index % 2 === 0 ? "#0891b2" : "#d97706"
+    );
   }
-  context.fillStyle = "rgba(255, 255, 255, 0.16)";
+
+  // Tracked right-hand joint constellation preview
+  const handJoints: readonly (readonly [number, number])[] = [
+    [206, 146],
+    [214, 134],
+    [198, 138]
+  ];
+  context.strokeStyle = "rgba(167, 243, 208, 0.65)";
+  context.lineWidth = 1.4;
   context.beginPath();
-  context.arc(BASE_SIZE / 2, 118 + Math.sin(time * 1.5) * 5, 22, 0, Math.PI * 2);
-  context.fill();
+  context.moveTo(handJoints[0]![0], handJoints[0]![1]);
+  context.lineTo(handJoints[1]![0], handJoints[1]![1]);
+  context.moveTo(handJoints[0]![0], handJoints[0]![1]);
+  context.lineTo(handJoints[2]![0], handJoints[2]![1]);
+  context.stroke();
+  for (const [jx, jy] of handJoints) {
+    context.fillStyle = "#34d399";
+    context.beginPath();
+    context.arc(jx, jy + Math.sin(time * 2.1) * 2, 2.8, 0, Math.PI * 2);
+    context.fill();
+  }
+
   context.restore();
   return analyzePixels(context.getImageData(0, 0, SIZE, SIZE).data);
 }
 
 function drawController(context: CanvasRenderingContext2D, x: number, y: number, color: string, beams: number, time: number): void {
+  context.save();
+  context.shadowColor = color;
+  context.shadowBlur = 10;
   context.fillStyle = color;
   context.beginPath();
   context.roundRect(x - 9, y - 22, 18, 44, 8);
   context.fill();
   context.strokeStyle = color;
-  context.lineWidth = 2;
+  context.lineWidth = 2.2;
   for (let index = 0; index < beams; index += 1) {
+    const targetX = BASE_SIZE / 2 + (index - 0.5) * 28 + Math.sin(time * 3 + index) * 8;
+    const targetY = 108 - index * 8;
     context.beginPath();
     context.moveTo(x, y - 18);
-    context.lineTo(BASE_SIZE / 2 + (index - 0.5) * 28 + Math.sin(time * 3 + index) * 8, 108 - index * 8);
+    context.lineTo(targetX, targetY);
     context.stroke();
+    context.fillStyle = "#ffffff";
+    context.beginPath();
+    context.arc(targetX, targetY, 3, 0, Math.PI * 2);
+    context.fill();
   }
+  context.restore();
 }
 
-function drawCone(context: CanvasRenderingContext2D, x: number, y: number, color: string): void {
-  context.fillStyle = color;
+function drawCone(context: CanvasRenderingContext2D, x: number, y: number, litColor: string, shadeColor: string): void {
+  // AR hit-test reticle ring
+  context.strokeStyle = "rgba(103, 232, 249, 0.45)";
+  context.lineWidth = 1.4;
+  context.beginPath();
+  context.ellipse(x, y + 21, 19, 5, 0, 0, Math.PI * 2);
+  context.stroke();
+
+  // Left lit facet
+  context.fillStyle = litColor;
   context.beginPath();
   context.moveTo(x, y - 24);
   context.lineTo(x - 17, y + 20);
+  context.lineTo(x, y + 22);
+  context.closePath();
+  context.fill();
+
+  // Right shaded facet for 3D form
+  context.fillStyle = shadeColor;
+  context.beginPath();
+  context.moveTo(x, y - 24);
+  context.lineTo(x, y + 22);
   context.lineTo(x + 17, y + 20);
   context.closePath();
   context.fill();

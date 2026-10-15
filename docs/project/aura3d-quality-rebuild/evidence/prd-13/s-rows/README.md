@@ -38,7 +38,7 @@ Lane 13 section (13-BASE, 13-S1/S2, 13-S3/S4/S5, 13-S6, 13-S8, 13-S9, 13-PROMO).
   `capture` (macos-14), inputs `source_ref=v3.0.1`, `qr_flags=none`,
   `templates=` (empty = all). The `Check out templates from source_ref` step
   replaces `packages/create-aura3d/templates` with the tag's tree (so
-  `arena-shooter`, added after 3.0.1, is not captured) and
+  `arena-shooter`, added after 4.0.0, is not captured) and
   `capture-templates.mjs` records `templateSource: { ref, commit }` in
   `report.json`. Packages (packed tarballs) and the capture tool stay at the
   dispatched main commit (`environment.sha`). Then dispatch
@@ -56,14 +56,14 @@ Lane 13 section (13-BASE, 13-S1/S2, 13-S3/S4/S5, 13-S6, 13-S8, 13-S9, 13-PROMO).
   #137 `KIRO_PRISM_API_KEY` (owner action) for round-0.
 - Status: NOT-RUN.
 
-## 13-S1/S2: blind A/B vs 3.0.1 and game-template panel
+## 13-S1/S2: blind A/B vs 4.0.0 and game-template panel
 
 - Needs: S1, blind A/B of all 20 templates against their 13-BASE frames
   (median gain >= +1.5, no category drop > 0.5). S2, the 6 game templates
   judged absolutely (median >= 4.5, none < 4.0; ibl/env >= 4.5,
   atmospheric >= 4.0, shadows >= 3.5). Vision judge plus >= 1 named human,
   through the G5 panel tooling. Open question for G5: main has 20 templates but
-  v3.0.1 has 19 (`arena-shooter` is new), so one of the 20 has no 3.0.1 A side.
+  v3.0.1 has 19 (`arena-shooter` is new), so one of the 20 has no 4.0.0 A side.
 - Command: B-side frames from `template-lookdev.yml` job `capture` on main
   (`qr_flags` as the row under test requires); A-side is the 13-BASE run. The
   panel packet is assembled by the G5 panel tooling (not yet on main).

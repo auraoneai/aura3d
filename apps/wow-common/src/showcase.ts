@@ -6,6 +6,14 @@ import {
   type CurrentRoutesViewerControls,
   type CurrentRoutesViewerSnapshot
 } from "../../../packages/engine/src/threejs-example-parity/index";
+import {
+  DEFAULT_WOW_POST_PROCESS,
+  DEFAULT_WOW_STUDIO_LIGHTING,
+  createWowStudioLightingRig,
+  resolveWowPostProcessOptions,
+  type WowPostProcessConfig,
+  type WowStudioLightingConfig
+} from "./gltf-showcase";
 import { applyRouteChromeMode, routeRenderQuality } from "./route-quality";
 
 export interface WowShowcaseConfig {
@@ -15,6 +23,8 @@ export interface WowShowcaseConfig {
   readonly assetId: CurrentRoutesFlagshipAssetId;
   readonly environmentId: CurrentRoutesEnvironmentId;
   readonly controls?: Partial<CurrentRoutesViewerControls>;
+  readonly lightingRig?: WowStudioLightingConfig;
+  readonly postProcess?: WowPostProcessConfig;
   readonly orbitSpeed?: number;
   readonly pitchDrift?: number;
 }
@@ -35,6 +45,8 @@ interface Runtime {
   readonly renderHeight: number;
   readonly loadMs: number;
   readonly renderer: "a3d-webgl2";
+  readonly postProcess: WowPostProcessConfig;
+  readonly lightingRig: WowStudioLightingConfig;
   readonly error?: string;
 }
 
@@ -62,6 +74,19 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
   let viewer: CurrentRoutesFlagshipViewer | undefined;
   let snapshot: CurrentRoutesViewerSnapshot | undefined;
   let pointer: { readonly x: number; readonly y: number } | undefined;
+  const postProcess: WowPostProcessConfig = {
+    tonemapping: { ...DEFAULT_WOW_POST_PROCESS.tonemapping, ...(config.postProcess?.tonemapping ?? {}) },
+    bloom: { ...DEFAULT_WOW_POST_PROCESS.bloom, ...(config.postProcess?.bloom ?? {}) },
+    ssao: { ...DEFAULT_WOW_POST_PROCESS.ssao, ...(config.postProcess?.ssao ?? {}) },
+    fxaa: { ...DEFAULT_WOW_POST_PROCESS.fxaa, ...(config.postProcess?.fxaa ?? {}) },
+    vignette: { ...DEFAULT_WOW_POST_PROCESS.vignette, ...(config.postProcess?.vignette ?? {}) }
+  };
+  const lightingRig: WowStudioLightingConfig = {
+    ...DEFAULT_WOW_STUDIO_LIGHTING,
+    ...(config.lightingRig ?? {})
+  };
+  void createWowStudioLightingRig(lightingRig);
+  void resolveWowPostProcessOptions(postProcess);
   let fps = 0;
   let fpsFrames = 0;
   let fpsFrom = 0;
@@ -87,6 +112,8 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
       renderHeight: renderSize.height,
       loadMs: Math.round((snapshot?.loading.assetMs ?? 0) + (snapshot?.loading.rendererMs ?? 0)),
       renderer: "a3d-webgl2",
+      postProcess,
+      lightingRig,
       ...(error ? { error } : {})
     };
     window.__a3dWowRuntime = runtime;
@@ -109,7 +136,11 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
       assetId: config.assetId,
       environmentId: config.environmentId
     });
-    if (config.controls) viewer.updateControls(config.controls);
+    const mergedControls: Partial<CurrentRoutesViewerControls> = {
+      exposure: postProcess.tonemapping?.exposure ?? 1.15,
+      ...(config.controls ?? {})
+    };
+    viewer.updateControls(mergedControls);
     bindCanvasOrbit(canvas, {
       onStart: (x, y) => {
         pointer = { x, y };

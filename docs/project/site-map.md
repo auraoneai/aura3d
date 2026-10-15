@@ -59,7 +59,7 @@ Showcase routes must be linked only with their classification from
 `docs/project/showcase/apps-classification.md` and their evidence status from
 `docs/project/showcase/quality-gates.md`.
 
-Blocked, prototype-blocked, and internal-diagnostic routes should not appear as
+Blocked, playable-showcase, and internal-diagnostic routes should not appear as
 public release cards.
 
 ## Release And API References

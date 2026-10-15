@@ -13,7 +13,7 @@ is implemented as first-party source owned by the existing packages
 `@aura3d/controls`, `@aura3d/input`, `@aura3d/materials`,
 `@aura3d/editor-runtime`, `@aura3d/scripting`, `@aura3d/three-compat`) rather
 than delegated to external libraries or vendored `three/examples` code.
-Acceptance checkpoint is the 3.0.0 release gate (K2) plus human release review;
+Acceptance checkpoint is the 4.0.0 release gate (K2) plus human release review;
 a reviewer who disagrees supersedes this record per the naming rule.
 
 ## The four R11 questions

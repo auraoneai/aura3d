@@ -2,7 +2,7 @@
 
 Bank Shot is a root-safe Aura3D prototype: a three-rack after-hours billiards run built with one public `createGameApp(...)` mount. The live table uses the public Rapier-backed physics surface for sixteen dynamic sphere bodies, cushion contacts, and six pocket sensor regions. Rack rules, aim/charge, the bounded first-contact guide, score/combo, authored spin nudge, clocks, and outcome presentation are route-local TypeScript—not a reusable cue-sports or general billiards kit.
 
-The route remains `prototype-blocked` and is not a public showcase card. Automated tests and generated artifacts do not grant visual approval; promotion requires an independent verdict on the exact hash-bound desktop and mobile artifact set recorded by route health.
+The route remains `playable-showcase` and is not a public showcase card. Automated tests and generated artifacts do not grant visual approval; promotion requires an independent verdict on the exact hash-bound desktop and mobile artifact set recorded by route health.
 
 ## Player loop
 

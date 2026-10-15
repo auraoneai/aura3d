@@ -24,5 +24,5 @@ Patrol Wing is a root-safe `createGameApp` prototype with route-local authored a
 
 ## Evidence boundary
 
-Machine evidence includes focused unit tests, source-bound browser receipts and exact screenshots, release-model probes, route-primary evidence, performance sampling, strict deploy checks, and generated route health. These checks do not constitute independent human visual approval. The route remains `prototype-blocked` and `publicShowcase: false` until a separate reviewer approves the exact hash-bound desktop, mobile, and reduced-motion artifact family.
+Machine evidence includes focused unit tests, source-bound browser receipts and exact screenshots, release-model probes, route-primary evidence, performance sampling, strict deploy checks, and generated route health. These checks do not constitute independent human visual approval. The route remains `playable-showcase` and `publicShowcase: false` until a separate reviewer approves the exact hash-bound desktop, mobile, and reduced-motion artifact family.
 

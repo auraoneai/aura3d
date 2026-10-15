@@ -360,7 +360,7 @@ Use this JSON in launch evidence and deploy gates. Only mark a visual-quality ta
 
 ## 2.0 animation and editor evidence
 
-Aura3D 2.0 animation, editor, and visual scripting work needs stronger asset
+Aura3D 4.0 animation, editor, and visual scripting work needs stronger asset
 evidence than a static model route. Character, animation, animation, and editor
 assets must carry enough metadata for agents to choose real clips and morph
 targets without guessing.

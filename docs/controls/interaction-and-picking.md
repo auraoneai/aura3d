@@ -52,7 +52,7 @@ Reference: repository-locked `three@0.185.1` addon implementations.
 | Rotate / orbit | yes | yes | yes (free, no polar clamp) | yes | yes | n/a (look) | yes (`look`) | yes (locked `look`) | n/a | n/a | yes (delegates) |
 | Pan / truck | yes | yes | yes (`pan`) | yes | yes (`truck`, XZ ground plane) | n/a (strafe/lift) | n/a | n/a | n/a | n/a | yes (delegates) |
 | Dolly / zoom + min/max distance | yes | yes (min/maxDistance, polar clamp via engine) | yes (`dolly`, min/maxDistance) | yes | yes | n/a | n/a | n/a | n/a | n/a | yes (delegates) |
-| Damping (`enableDamping` + tick) | Orbit/Trackball yes | implemented; 3.0.1 attached unit proof, browser acceptance pending | yes (`update(dt)`) | yes (`update(dt)`) | inherits Orbit implementation; browser acceptance pending | GAP (direct velocity) | GAP | GAP | n/a | n/a | n/a |
+| Damping (`enableDamping` + tick) | Orbit/Trackball yes | implemented; 4.0.0 attached unit proof, browser acceptance pending | yes (`update(dt)`) | yes (`update(dt)`) | inherits Orbit implementation; browser acceptance pending | GAP (direct velocity) | GAP | GAP | n/a | n/a | n/a |
 | Zoom to cursor | Orbit yes | implemented with projection adapter; browser acceptance pending | GAP (see note 1) | inherits attached Orbit adapter | implemented with projection adapter; browser acceptance pending | n/a | n/a | n/a | n/a | n/a | n/a |
 | Pan bounds | no (unbounded) | optional world-axis target AABB; browser acceptance pending | n/a (matches: unbounded) | inherits attached Orbit | optional XZ target/truck AABB; browser acceptance pending | n/a | n/a | n/a | n/a | n/a | n/a |
 | Keyboard look/pan/roll/dolly | Trackball keys | GAP | GAP | yes (`handleKey`) | GAP | yes (WASD/QE + Shift fast) | yes | yes (locked) | n/a | n/a | yes (fly keys) |
@@ -139,7 +139,7 @@ Focused coverage lives in:
 
 - `tests/unit/controls/control-disposal.test.ts` (F1: every control + repeated mount)
 - `tests/unit/controls/orbit-map-options-301.test.ts` (attached Orbit/Map damping, projection anchor, bounds, touch, invalid input)
-- `tests/browser/orbit-map-options-301.spec.ts` (3.0.1 real mouse/wheel and injected touch pointer events; WebGL2 perspective/orthographic pixels; remote execution required)
+- `tests/browser/orbit-map-options-301.spec.ts` (4.0.0 real mouse/wheel and injected touch pointer events; WebGL2 perspective/orthographic pixels; remote execution required)
 - `tests/unit/controls/skinned-instanced-picking.test.ts` (F4)
 - `tests/unit/controls/hover-outline-focus-frame.test.ts` (F4)
 - `tests/browser/controls-hover-focus.spec.ts` (F4 pixel proof)

@@ -8,14 +8,16 @@ import {
   type GLTFDracoDecoderModule
 } from "@aura3d/assets";
 import {
+  Renderer,
   computePerspectiveCameraFrame,
   type CameraFrameBounds,
+  type CollectedLight,
   type Material,
   type RenderItem,
-  type RenderSource
+  type RenderSource,
+  type RendererPostProcessOptions
 } from "@aura3d/rendering";
-import { Renderer, a3dRenderFrame } from "@aura3d/engine/renderer";
-import { multiplyMat4, type Mat4 } from "@aura3d/scene";
+import { DirectionalLight, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import { applyRouteChromeMode, routeRenderQuality } from "./route-quality";
 
 type Pipeline = Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
@@ -23,6 +25,186 @@ type Mixer = ReturnType<typeof createGLTFSceneAnimationMixer>;
 type DracoDecoderModuleFactory = (config?: {
   readonly locateFile?: (file: string, prefix: string) => string;
 }) => Promise<GLTFDracoDecoderModule> | GLTFDracoDecoderModule;
+
+export interface WowPostProcessConfig {
+  readonly tonemapping?: {
+    readonly enabled: boolean;
+    readonly mode: "aces" | "filmic" | "reinhard";
+    readonly exposure: number;
+  };
+  readonly bloom?: {
+    readonly enabled: boolean;
+    readonly intensity: number;
+    readonly threshold: number;
+    readonly radius?: number;
+  };
+  readonly ssao?: {
+    readonly enabled: boolean;
+    readonly radius: number;
+    readonly intensity: number;
+    readonly bias?: number;
+  };
+  readonly fxaa?: {
+    readonly enabled: boolean;
+    readonly edgeThreshold?: number;
+    readonly subpixelBlend?: number;
+  };
+  readonly vignette?: {
+    readonly enabled: boolean;
+    readonly intensity: number;
+  };
+}
+
+export interface WowStudioLightingConfig {
+  readonly keyIntensity?: number;
+  readonly fillIntensity?: number;
+  readonly rimIntensity?: number;
+  readonly keyColor?: readonly [number, number, number];
+  readonly fillColor?: readonly [number, number, number];
+  readonly rimColor?: readonly [number, number, number];
+}
+
+export const DEFAULT_WOW_POST_PROCESS: Required<WowPostProcessConfig> = {
+  tonemapping: { enabled: true, mode: "aces", exposure: 1.15 },
+  bloom: { enabled: true, intensity: 0.22, threshold: 0.8, radius: 3 },
+  ssao: { enabled: true, radius: 0.45, intensity: 0.35, bias: 0.025 },
+  fxaa: { enabled: true, edgeThreshold: 0.08, subpixelBlend: 0.5 },
+  vignette: { enabled: true, intensity: 0.22 }
+};
+
+export const DEFAULT_WOW_STUDIO_LIGHTING: Required<WowStudioLightingConfig> = {
+  keyIntensity: 2.25,
+  fillIntensity: 1.0,
+  rimIntensity: 1.2,
+  keyColor: [1.0, 0.95, 0.88],
+  fillColor: [0.62, 0.76, 0.98],
+  rimColor: [0.84, 0.91, 1.0]
+};
+
+export function createWowStudioLightingRig(
+  config: WowStudioLightingConfig = {}
+): readonly CollectedLight[] {
+  const key = new DirectionalLight("wow-studio-key");
+  key.color = [...(config.keyColor ?? DEFAULT_WOW_STUDIO_LIGHTING.keyColor)];
+  key.intensity = config.keyIntensity ?? DEFAULT_WOW_STUDIO_LIGHTING.keyIntensity;
+
+  const fill = new DirectionalLight("wow-studio-fill");
+  fill.color = [...(config.fillColor ?? DEFAULT_WOW_STUDIO_LIGHTING.fillColor)];
+  fill.intensity = config.fillIntensity ?? DEFAULT_WOW_STUDIO_LIGHTING.fillIntensity;
+
+  const rim = new DirectionalLight("wow-studio-rim");
+  rim.color = [...(config.rimColor ?? DEFAULT_WOW_STUDIO_LIGHTING.rimColor)];
+  rim.intensity = config.rimIntensity ?? DEFAULT_WOW_STUDIO_LIGHTING.rimIntensity;
+
+  return [
+    {
+      kind: "directional",
+      color: key.color,
+      intensity: key.intensity,
+      position: [4.8, 6.2, 4.6],
+      direction: [-0.48, -0.68, -0.55],
+      range: 0,
+      spotAngle: 0,
+      penumbra: 0,
+      castsShadow: false,
+      layerMask: 0xffffffff,
+      source: key
+    },
+    {
+      kind: "directional",
+      color: fill.color,
+      intensity: fill.intensity,
+      position: [-5.2, 3.6, 2.8],
+      direction: [0.58, -0.38, -0.72],
+      range: 0,
+      spotAngle: 0,
+      penumbra: 0,
+      castsShadow: false,
+      layerMask: 0xffffffff,
+      source: fill
+    },
+    {
+      kind: "directional",
+      color: rim.color,
+      intensity: rim.intensity,
+      position: [-2.4, 5.0, -5.4],
+      direction: [0.32, -0.52, 0.79],
+      range: 0,
+      spotAngle: 0,
+      penumbra: 0,
+      castsShadow: false,
+      layerMask: 0xffffffff,
+      source: rim
+    }
+  ];
+}
+
+export function resolveWowPostProcessOptions(
+  preset: WowPostProcessConfig = DEFAULT_WOW_POST_PROCESS
+): RendererPostProcessOptions {
+  const tonemapping = {
+    ...DEFAULT_WOW_POST_PROCESS.tonemapping,
+    ...(preset.tonemapping ?? {})
+  };
+  const bloom = {
+    ...DEFAULT_WOW_POST_PROCESS.bloom,
+    ...(preset.bloom ?? {})
+  };
+  const ssao = {
+    ...DEFAULT_WOW_POST_PROCESS.ssao,
+    ...(preset.ssao ?? {})
+  };
+  const fxaa = {
+    ...DEFAULT_WOW_POST_PROCESS.fxaa,
+    ...(preset.fxaa ?? {})
+  };
+  const vignette = {
+    ...DEFAULT_WOW_POST_PROCESS.vignette,
+    ...(preset.vignette ?? {})
+  };
+
+  return {
+    toneMapping: tonemapping.enabled
+      ? {
+          exposure: tonemapping.exposure,
+          whitePoint: 1.35,
+          gamma: 2.2,
+          operator: tonemapping.mode === "reinhard" ? "reinhard" : "filmic"
+        }
+      : false,
+    tonemapping,
+    bloom: bloom.enabled
+      ? {
+          enabled: true,
+          threshold: bloom.threshold,
+          intensity: bloom.intensity,
+          radius: bloom.radius ?? 3
+        }
+      : false,
+    ssao: ssao.enabled
+      ? {
+          enabled: true,
+          radius: ssao.radius,
+          intensity: ssao.intensity,
+          bias: ssao.bias ?? 0.025
+        }
+      : false,
+    colorGrade: {
+      contrast: 1.08,
+      saturation: 1.06,
+      vignette: vignette.enabled ? vignette.intensity : 0,
+      sharpening: 0.04
+    },
+    vignette,
+    fxaa: fxaa.enabled
+      ? {
+          enabled: true,
+          edgeThreshold: fxaa.edgeThreshold ?? 0.08,
+          subpixelBlend: fxaa.subpixelBlend ?? 0.5
+        }
+      : false
+  } as unknown as RendererPostProcessOptions;
+}
 
 export interface WowGltfShowcaseConfig {
   readonly appId: string;
@@ -44,6 +226,8 @@ export interface WowGltfShowcaseConfig {
     readonly speed?: number;
     readonly targetFps?: number;
   };
+  readonly lightingRig?: WowStudioLightingConfig;
+  readonly postProcess?: WowPostProcessConfig;
   readonly requiresDraco?: boolean;
   readonly modelMatrix?: Mat4;
   readonly animateCamera?: boolean;
@@ -99,6 +283,8 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
   drawFallbackFrame(canvas, config.clearColor ?? [0.86, 0.86, 0.84, 1]);
 
   const started = performance.now();
+  const studioLights = createWowStudioLightingRig(config.lightingRig);
+  const postProcessOptions = resolveWowPostProcessOptions(config.postProcess);
   let pipeline: Pipeline | undefined;
   let mixer: Mixer | undefined;
   let frameCount = 0;
@@ -116,10 +302,10 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
       canvas,
       width: size.width,
       height: size.height,
-	      	      antialias: true,
-	      errorCheckMode: "frame",
-	      clearColor: config.clearColor ?? [0.86, 0.86, 0.84, 1]
-	    });
+      antialias: true,
+      errorCheckMode: "frame",
+      clearColor: config.clearColor ?? [0.86, 0.86, 0.84, 1]
+    });
     timings.rendererCreateMs = Math.round(performance.now() - phaseStarted);
     phaseStarted = performance.now();
     const dracoDecoder = config.requiresDraco === true ? await createBrowserDracoDecoder() : undefined;
@@ -141,7 +327,7 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
           paddingRatio: config.frame?.paddingRatio ?? 0.08,
           fovYRadians: config.frame?.fovYRadians ?? 0.58
         },
-        postprocess: false
+        postprocess: postProcessOptions
       }
     });
     timings.pipelineMs = Math.round(performance.now() - phaseStarted);
@@ -152,12 +338,12 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
       asset: pipeline.asset,
       autoPlay: false
     });
-	    const clip = selectClip(pipeline, config.preferredClip);
-	    if (clip) {
-	      mixer.playExclusive(clip.name, { weight: 1, timeScale: 1, loopMode: "repeat" });
-	    }
-	    canvas.classList.toggle("cinematic-drift", Boolean(!clip && config.animateCamera));
-	    timings.mixerMs = Math.round(performance.now() - phaseStarted);
+    const clip = selectClip(pipeline, config.preferredClip);
+    if (clip) {
+      mixer.playExclusive(clip.name, { weight: 1, timeScale: 1, loopMode: "repeat" });
+    }
+    canvas.classList.toggle("cinematic-drift", Boolean(!clip && config.animateCamera));
+    timings.mixerMs = Math.round(performance.now() - phaseStarted);
 
     const resizeObserver = new ResizeObserver(() => {
       size = syncCanvasSize(canvas);
@@ -173,11 +359,11 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
           mixer.resume(clip.name);
           mixer.update(0);
         }
-        const bounds = pipeline!.resources.bounds;
-	        const shouldAnimateCamera = Boolean(clip || config.animateCamera);
-	        const orbitYaw = (config.frame?.yawRadians ?? -0.62) + (shouldAnimateCamera
-            ? Math.sin(seconds * (config.cameraOrbit?.speed ?? (clip ? 0.11 : 0.32))) * (config.cameraOrbit?.yawAmplitudeRadians ?? (clip ? 0.08 : 0.2))
-            : 0);
+        const bounds: CameraFrameBounds = pipeline!.resources.bounds;
+        const shouldAnimateCamera = Boolean(clip || config.animateCamera);
+        const orbitYaw = (config.frame?.yawRadians ?? -0.62) + (shouldAnimateCamera
+          ? Math.sin(seconds * (config.cameraOrbit?.speed ?? (clip ? 0.11 : 0.32))) * (config.cameraOrbit?.yawAmplitudeRadians ?? (clip ? 0.08 : 0.2))
+          : 0);
         const frame = computePerspectiveCameraFrame(bounds, size, {
           yawRadians: orbitYaw,
           pitchRadians: config.frame?.pitchRadians ?? -0.16,
@@ -186,81 +372,65 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
           nearPadding: 0.08,
           farPadding: 2.6
         });
-	        const source: RenderSource = {
-	          collectRenderItems: () => {
-	            if (!clip) {
-	              staticRenderItems ??= collectImportedItems(pipeline!, config);
-	              return staticRenderItems;
-	            }
-	            return collectImportedItems(pipeline!, config);
-	          },
-          collectedLights: [],
+        const source: RenderSource = {
+          collectRenderItems: () => {
+            if (!clip) {
+              staticRenderItems ??= collectImportedItems(pipeline!, config);
+              return staticRenderItems;
+            }
+            return collectImportedItems(pipeline!, config);
+          },
+          collectedLights: studioLights,
           environmentLighting: DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING,
           cameraPolicy: "require",
           cameraPosition: frame.cameraPosition,
           cameraFrameBounds: bounds,
           frustumCulling: false,
-          postprocess: false
+          postprocess: postProcessOptions
         };
-	        const renderStarted = performance.now();
-	        const result = a3dRenderFrame(renderer, {
+        const renderStarted = performance.now();
+        const diagnostics = renderer.render({
           source,
           camera: {
             viewProjectionMatrix: frame.viewProjectionMatrix,
             viewMatrix: frame.viewMatrix,
             projectionMatrix: frame.projectionMatrix
-          },
-          metadata: {
-            assetId: config.appId,
-            assetName: config.assetName,
-            assetUri: config.assetUrl,
-            meshCount: pipeline!.metadata.meshCount,
-            primitiveCount: pipeline!.metadata.primitiveCount,
-            materialCount: pipeline!.metadata.materialCount,
-            textureCount: pipeline!.metadata.textureCount,
-            imageCount: pipeline!.metadata.imageCount,
-            animationCount: pipeline!.metadata.animationCount,
-            skinCount: pipeline!.metadata.skinCount,
-            morphTargetCount: pipeline!.metadata.morphTargetCount,
-            extensionsUsed: pipeline!.metadata.extensionsUsed,
-            environmentId: "studio-preview",
-            hdrEnvironmentUri: "default-gltf-studio-preview"
           }
-	        });
-	        if (frameCount === 0) {
-	          timings.firstRenderFrameMs = Math.round(performance.now() - renderStarted);
-	          timings.firstReadyMs = Math.round(performance.now() - started);
-	        }
-	        frameCount += 1;
+        });
+        if (frameCount === 0) {
+          timings.firstRenderFrameMs = Math.round(performance.now() - renderStarted);
+          timings.firstReadyMs = Math.round(performance.now() - started);
+        }
+        frameCount += 1;
         fpsFrames += 1;
         if (now - fpsFrom >= 500) {
           fps = fpsFrames * 1000 / (now - fpsFrom);
           fpsFrames = 0;
           fpsFrom = now;
         }
-	        runtime = createRuntime(config, frameCount === 1 ? "ready" : "running", size, started, frameCount, fps, {
-	          pipeline,
-	          drawCalls: result.diagnostics.drawCalls,
-		          clipName: clip?.name ?? (config.animateCamera ? "cinematic camera orbit" : "static scene"),
-	          timings
-	        });
-	        window.__a3dWowGltfRuntime = runtime;
-	        (window as unknown as Record<string, Runtime>)[`__a3d${config.appId.replaceAll("-", "")}`] = runtime;
-	        if (!diagnosticsPublished) {
-	          const diagnosticsStarted = performance.now();
-	          window.__a3dWowGltfDiagnostics = createDiagnostics(pipeline!, config);
-	          timings.diagnosticsMs = Math.round(performance.now() - diagnosticsStarted);
-	          diagnosticsPublished = true;
-	        }
+        runtime = createRuntime(config, frameCount === 1 ? "ready" : "running", size, started, frameCount, fps, {
+          pipeline,
+          drawCalls: diagnostics.drawCalls,
+          clipName: clip?.name ?? (config.animateCamera ? "cinematic camera orbit" : "static scene"),
+          timings
+        });
+        window.__a3dWowGltfRuntime = runtime;
+        (window as unknown as Record<string, Runtime>)[`__a3d${config.appId.replaceAll("-", "")}`] = runtime;
+        if (!diagnosticsPublished) {
+          const diagnosticsStarted = performance.now();
+          window.__a3dWowGltfDiagnostics = createDiagnostics(pipeline!, config);
+          timings.diagnosticsMs = Math.round(performance.now() - diagnosticsStarted);
+          diagnosticsPublished = true;
+        }
         if (!chromeHidden && (frameCount === 1 || now - lastUi > 250)) {
           publish(root, runtime, frameCount === 1);
           lastUi = now;
         }
-	        if (clip) {
-	          requestAnimationFrame(render);
-	        } else if (config.animateCamera) {
-	          window.setTimeout(() => requestAnimationFrame(render), 1000 / (config.cameraOrbit?.targetFps ?? 18));
-	        }
+        if (clip) {
+          requestAnimationFrame(render);
+        } else if (config.animateCamera) {
+          window.setTimeout(() => requestAnimationFrame(render), 1000 / (config.cameraOrbit?.targetFps ?? 18));
+        }
       } catch (error) {
 	        runtime = createRuntime(config, "error", size, started, frameCount, fps, {
 	          pipeline,

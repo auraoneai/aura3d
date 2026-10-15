@@ -1643,23 +1643,23 @@ function tick(dtFixed: number): void {
     };
   }
 
-  if (!dropEvidenceMode && !approachEvidenceMode && field && simSeconds < 45) {
+  const manualFlightInput = controls.thrust > 0.01 || Math.abs(controls.rotate) > 0.01 || stabilizerAssistActive;
+  if (!dropEvidenceMode && !approachEvidenceMode && field && !manualFlightInput) {
     const pad = currentSite.pads[0]!;
     const padHeight = field.padHeights[0] ?? 0;
-    const minY = padHeight + 3.4;
-    const maxY = padHeight + 4.6;
-    const clampedY = Math.max(minY, Math.min(maxY, state.y));
-    const clampedVy = state.y > maxY ? Math.min(0, state.vy) : state.y < minY ? Math.max(0, state.vy) : Math.max(-0.5, Math.min(0.3, state.vy));
-    const clampedX = Math.max(pad.x - 0.5, Math.min(pad.x + 0.5, state.x));
-    const clampedVx = Math.max(-0.25, Math.min(0.25, state.vx));
-    const clampedTilt = Math.max(-4, Math.min(4, state.tiltDeg));
+    const hoverY = padHeight + 3.85 + Math.sin(simSeconds * 1.35) * 0.52;
+    const hoverX = pad.x + Math.sin(simSeconds * 0.85) * 0.62;
+    const hoverVx = Math.cos(simSeconds * 0.85) * 0.52;
+    const hoverVy = Math.cos(simSeconds * 1.35) * 0.7;
+    const hoverTilt = Math.cos(simSeconds * 0.85) * 5.2;
     state = {
       ...state,
-      x: clampedX,
-      y: clampedY,
-      vx: clampedVx,
-      vy: clampedVy,
-      tiltDeg: clampedTilt
+      x: hoverX,
+      y: hoverY,
+      vx: hoverVx,
+      vy: hoverVy,
+      tiltDeg: hoverTilt,
+      yaw: Math.sin(simSeconds * 0.55) * 0.14
     };
   }
   // The thrust loop starts on the first burn and then follows the throttle

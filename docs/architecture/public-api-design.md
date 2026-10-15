@@ -1,6 +1,6 @@
-# Aura3D 2.0 public API design rules
+# Aura3D 4.0 public API design rules
 
-Status: current for Aura3D 2.0.0
+Status: current for Aura3D 4.0.0
 
 These rules were derived from visible product defects. They govern new public
 APIs and functional changes to existing surfaces.

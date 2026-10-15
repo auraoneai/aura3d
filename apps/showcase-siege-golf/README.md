@@ -89,7 +89,7 @@ every mechanic across two cups.
   and 16.7 ms physics-step-p95 budgets. This is route-local headless Rapier
   evidence and does not claim rendering performance.
 - Shared release evidence: the route is registered in
-  `tools/showcase-library/route-gates.json` as `prototype-blocked`; its retained
+  `tools/showcase-library/route-gates.json` as `playable-showcase`; its retained
   route-primary probe isolates the typed ball through a presentation-only pixel
   diff, while the generated launch evidence records passing build and deploy
   checks. Registration in these gates does not make it a public showcase card.

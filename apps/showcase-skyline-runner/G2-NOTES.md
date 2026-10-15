@@ -24,7 +24,7 @@
 ## Known open items (carried from prior before-probe)
 - Horizontal speed flagged "+0.58 units in 15 frames" — design-reviewed as
   intentional precision-platformer pacing; completion window unchanged.
-- Route gate: `prototype-blocked`, published, publicTemplateReady=false — preserved.
+- Route gate: `playable-showcase`, published, publicTemplateReady=false — preserved.
 
 ## Changes in this lane
 - None to gameplay code. Verification evidence recorded here.

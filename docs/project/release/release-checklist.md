@@ -81,7 +81,7 @@ against `three@0.165.0` remain recorded but cannot close the current
 - [ ] `docs/project/showcase-launch-evidence.json` separates `publicReleaseOk`
   from `allRoutesOk`.
 - [ ] Public release candidates are counted separately from internal
-  diagnostics, prototype-blocked routes, removed routes, and the showcase index.
+  diagnostics, playable-showcase routes, removed routes, and the showcase index.
 - [ ] Every promoted route has a route-health declaration with category,
   primary assets, renderer mode, fallback mode, primitive count, and claims.
 - [ ] Every promoted route passes the asset and primitive rules in
@@ -95,7 +95,7 @@ against `three@0.165.0` remain recorded but cannot close the current
 - [ ] Data Galaxy and WebGPU Particle Lab remain internal diagnostics unless
   their public visual/release evidence passes.
 - [ ] Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner remain
-  `prototype-blocked` and are never counted as promoted public candidates in
+  `playable-showcase` and are never counted as promoted public candidates in
   this release.
 - [ ] A 7/7 route-library build/check result is described as a technical
   sub-gate, not an overall public-ready verdict, unless the full required test

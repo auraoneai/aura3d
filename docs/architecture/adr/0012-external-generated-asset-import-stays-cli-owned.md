@@ -1,12 +1,12 @@
 # ADR 0012: External generated-asset import adapters remain owned by the CLI asset pipeline
 
 - **Date:** 2026-09-04
-- **Status:** accepted for Aura3D 2.0.0
+- **Status:** accepted for Aura3D 4.0.0
 - **Workstream:** 2.0 asset-quality import (no-key Meshy evidence flow)
 
 ## Context
 
-Aura3D 2.0 adds a CLI import adapter for externally generated assets (Meshy
+Aura3D 4.0 adds a CLI import adapter for externally generated assets (Meshy
 AI task outputs: GLB payload, metadata/rights evidence, thumbnails). This
 adapter could accidentally become a parallel asset system if its ownership is
 not bounded: it validates, admits, and retains third-party bytes that the

@@ -1,6 +1,6 @@
 # Asset Workflow
 
-Typed GLB/glTF asset workflow for Aura3D 2.0 coding agents.
+Typed GLB/glTF asset workflow for Aura3D 4.0 coding agents.
 
 Read `llms.txt` and `docs/agents/claims-and-boundaries.md` before writing route
 code or asset claims. Asset safety is a release blocker, not a style preference.

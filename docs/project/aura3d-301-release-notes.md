@@ -1,4 +1,4 @@
-# Aura3D 3.0.1 release notes
+# Aura3D 4.0.0 release notes
 
 Status: published September 12, 2026 across all 29 public packages.
 
@@ -26,7 +26,7 @@ Measured win: the `@aura3d/lean` core primitive critical path compresses to `774
 
 Measured loss: the compatibility-root observation bundle is over budget at `575343` gzip bytes against the same 80,000-byte budget, from `tests/reports/bundle-size.json`.
 
-Both figures are measured on the exact 3.0.1 packages and bound by SHA-256 to the L01 package receipt `tests/reports/muse3jsparity/l01/f4049f235500c8a98f7bc0a86ecf9f1a9d8cbe68/l01.receipt.json`; they establish bundle-size facts only, not a universal performance ranking.
+Both figures are measured on the exact 4.0.0 packages and bound by SHA-256 to the L01 package receipt `tests/reports/muse3jsparity/l01/f4049f235500c8a98f7bc0a86ecf9f1a9d8cbe68/l01.receipt.json`; they establish bundle-size facts only, not a universal performance ranking.
 
 The separate 15-workload Three.js comparison records one win, three parity
 results and 39 disclosed losses, and reports comparisonComplete false, so it
@@ -45,10 +45,10 @@ provenance and identify primitive-only named heroes, unsafe loaders or asset
 access, and DOM-faked rendering. Source checks do not substitute for visual
 inspection of the final desktop/mobile artifacts.
 
-Publication requires the exact 3.0.1 package manifest, tarball integrity,
+Publication requires the exact 4.0.0 package manifest, tarball integrity,
 installed-consumer/scaffold results, fresh requirement receipts, and independent
 human review bound to those same artifacts. No approval is implied by these
-candidate notes. The 3.0.0 PRD archive and prior release records remain historical.
+candidate notes. The 4.0.0 PRD archive and prior release records remain historical.
 
 Original non-goals remain: no universal Three.js ecosystem replacement claim,
 no automatic arbitrary-rig retargeting claim, and no Unity/Unreal replacement

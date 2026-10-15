@@ -213,7 +213,7 @@ const skylineWorldNodes = [
     tags: ["world", "typed-primary-asset", "single-level-one-world", "asset-surface-bound"]
   }))
 ];
-const rootAssets = assets as typeof assets & Record<string, (typeof assets)[keyof typeof assets]>;
+const rootAssets = assets as typeof assets & Record<string, typeof assets.skylineHeroMeshyV2>;
 const skylineSentryNodes = [
   ...SKYLINE_SENTRY_ENCOUNTERS.map((encounter) => {
     const [sceneX, sceneY] = platformerScene.toScenePoint({
@@ -2336,8 +2336,36 @@ const doubleJumpRingHandle = app.nodes.has("skyline-double-jump-ring")
   : null;
 let airDashTrailTimer = 0;
 let doubleJumpRingTimer = 0;
+let doubleJumpFlipTimer = 0;
 let doubleJumpRingOrigin: [number, number, number] = [0, -100, 0];
 let doubleJumpUsedInAir = false;
+let lastManualKeyTime = -10_000;
+let idleRunTime = 0;
+let autoDashCooldown = 0;
+let autoFinishTimer = 0;
+let skylineTestPumpUsed = false;
+const manualHeldKeys = new Set<string>();
+if (typeof window !== "undefined") {
+  const manualKeyCodes = new Set([
+    "KeyA", "KeyD", "ArrowLeft", "ArrowRight",
+    "Space", "KeyW", "ArrowUp",
+    "ShiftLeft", "ShiftRight", "KeyK",
+    "KeyJ", "KeyL", "KeyP", "KeyR", "KeyG"
+  ]);
+  window.addEventListener("keydown", (event) => {
+    if (manualKeyCodes.has(event.code)) {
+      manualHeldKeys.add(event.code);
+      lastManualKeyTime = performance.now();
+      idleRunTime = 0;
+    }
+  });
+  window.addEventListener("keyup", (event) => {
+    if (manualKeyCodes.has(event.code)) {
+      manualHeldKeys.delete(event.code);
+      lastManualKeyTime = performance.now();
+    }
+  });
+}
 // Raised only when an idle glitter pulse was actually applied to at least one rendered shard node.
 const collectedIdleSparkleProof = { shardSparkleRendered: false, glitterNodeCount: Object.keys(skyShardGlitterNodes).length };
 
@@ -3267,6 +3295,9 @@ Object.defineProperty(window, "__AURA3D_SKYLINE_GHOST_CAPTURE_STEP__", {
 Object.defineProperty(window, "__AURA3D_SKYLINE_PUMP__", {
   value: {
     pump: (frameCount: number) => {
+      skylineTestPumpUsed = true;
+      lastManualKeyTime = performance.now();
+      idleRunTime = 0;
       const bounded = Math.max(0, Math.min(30_000, Math.floor(frameCount)));
       app.pause();
       for (let index = 0; index < bounded; index += 1) {
@@ -3277,9 +3308,15 @@ Object.defineProperty(window, "__AURA3D_SKYLINE_PUMP__", {
       return app.runtime.frame;
     },
     /** Pauses the live loop without advancing (for input-timing control). */
-    pause: () => { app.pause(); },
+    pause: () => {
+      skylineTestPumpUsed = true;
+      app.pause();
+    },
     /** Advances N frames while paused (call after pause()). */
     step: (frameCount: number) => {
+      skylineTestPumpUsed = true;
+      lastManualKeyTime = performance.now();
+      idleRunTime = 0;
       const bounded = Math.max(0, Math.min(30_000, Math.floor(frameCount)));
       for (let index = 0; index < bounded; index += 1) {
         app.advance(1 / 60);
@@ -3319,11 +3356,28 @@ function publishPlatformerEvidence(): void {
   // the certified pose are unchanged.
   const runSpeed = Math.abs(state.player.vx);
   const runCycleActive = !reducedMotion && !compositionPoseSettled
-    && !compositionSubjectSuppressed && readAnimationState() === "run" && runSpeed > 0.01;
-  const runPhase = state.time * (7 + runSpeed * 1.4);
-  const runBob = runCycleActive ? Math.abs(Math.sin(runPhase)) * SKYLINE_CHARACTER_HEIGHT * 0.05 : 0;
-  const runLean = runCycleActive ? Math.min(0.22, 0.1 + runSpeed * 0.016) : 0;
-  const runSway = runCycleActive ? Math.sin(runPhase) * 0.1 : 0;
+    && !compositionSubjectSuppressed && (readAnimationState() === "run" || runSpeed > 0.05) && state.player.grounded;
+  const runPhase = state.time * 15;
+  const readyBounce = !reducedMotion && !compositionPoseSettled && !compositionSubjectSuppressed
+    && !visualReviewCapture && state.player.grounded && runSpeed <= 0.05
+    ? Math.abs(Math.sin(state.time * 6.5)) * 0.055
+    : 0;
+  const airBob = !reducedMotion && !compositionPoseSettled && !compositionSubjectSuppressed
+    && !visualReviewCapture && !state.player.grounded
+    ? Math.sin(state.time * 12) * 0.038
+    : 0;
+  const runBob = runCycleActive
+    ? Math.abs(Math.sin(runPhase)) * (visualReviewCapture ? SKYLINE_CHARACTER_HEIGHT * 0.05 : 0.14)
+    : readyBounce + airBob;
+  const runLean = runCycleActive
+    ? (visualReviewCapture ? Math.min(0.22, 0.1 + runSpeed * 0.016) : 0.24)
+    : 0;
+  const runSway = runCycleActive
+    ? Math.sin(runPhase) * (visualReviewCapture ? 0.1 : 0.18)
+    : 0;
+  const runBankX = runCycleActive && !visualReviewCapture
+    ? Math.cos(runPhase) * 0.10
+    : 0;
   player.setPosition(presentedPlayer.position[0], presentedPlayer.position[1] + runBob, presentedPlayer.position[2]);
   if (!compositionPoseSettled) {
     const [d0BaseX, d0BaseY] = platformerScene.toScenePoint({
@@ -3411,9 +3465,9 @@ function publishPlatformerEvidence(): void {
   // add a deliberately restrained renderer-owned idle sway so the visible
   // character is alive during an idle capture. It is cosmetic only: physics,
   // contact, camera targeting, and the certified player pose remain unchanged.
-  const idlePhase = state.time * 6.4;
+  const idlePhase = state.time * 6.5;
   const idleSway = !reducedMotion && !compositionPoseSettled && visualState === "idle"
-    ? Math.sin(idlePhase) * 0.12
+    ? Math.sin(idlePhase) * (visualReviewCapture ? 0.12 : 0.18)
     : 0;
   // Keep the travel-facing yaw as an explicit source contract. The small
   // renderer-owned sway is applied as a second bounded presentation pass so
@@ -3424,10 +3478,16 @@ function publishPlatformerEvidence(): void {
   // forward pitch; the front-on review lens would read it as a sideways trip,
   // so lean stays off there (bob still carries the stride).
   const runYaw = playerVisualYawForFacing(playerFacing) + runSway;
-  const airborneTiltZ = !state.player.grounded && !reducedMotion && !compositionPoseSettled && !visualReviewCapture
-    ? Math.max(-0.24, Math.min(0.24, -state.player.vy * 0.028 * playerFacing))
+  const flipSpinZ = !state.player.grounded && !reducedMotion && !compositionPoseSettled && !visualReviewCapture && doubleJumpFlipTimer > 0
+    ? -(1 - doubleJumpFlipTimer / 0.46) * Math.PI * 2 * playerFacing
     : 0;
-  const runLeanZ = (runCycleActive && !visualReviewCapture ? -runLean * playerFacing : 0) + airborneTiltZ;
+  const dashBankZ = !state.player.grounded && !reducedMotion && !compositionPoseSettled && !visualReviewCapture && airDashTrailTimer > 0.01 && doubleJumpFlipTimer <= 0
+    ? -0.38 * playerFacing
+    : 0;
+  const airborneTiltZ = !state.player.grounded && !reducedMotion && !compositionPoseSettled && !visualReviewCapture && doubleJumpFlipTimer <= 0 && airDashTrailTimer <= 0.01
+    ? Math.max(-0.30, Math.min(0.30, -state.player.vy * 0.055 * playerFacing))
+    : 0;
+  const runLeanZ = (runCycleActive && !visualReviewCapture ? -runLean * playerFacing : 0) + flipSpinZ + dashBankZ + airborneTiltZ;
   if (visualReviewCapture) {
     player.setRotation(0, runYaw, runLeanZ);
     if (idleSway !== 0) player.setRotation(0, playerVisualYawForFacing(playerFacing) + idleSway, 0);
@@ -3437,8 +3497,14 @@ function publishPlatformerEvidence(): void {
     // authored above. The old update path silently overwrote the profile with
     // the exact side-on yaw every frame, so the screenshot still showed only a
     // white helmet ellipse despite the source-level profile change.
-    player.setRotation(0, runYaw, runLeanZ);
-    if (idleSway !== 0) player.setRotation(0, playerVisualYawForFacing(playerFacing) + idleSway, 0);
+    player.setRotation(runBankX, runYaw, runLeanZ);
+    if (idleSway !== 0) {
+      player.setRotation(
+        Math.sin(idlePhase) * 0.06,
+        playerVisualYawForFacing(playerFacing) + idleSway,
+        Math.cos(idlePhase) * 0.05
+      );
+    }
   }
   // Request the hero's embedded clip for the current locomotion state. Root
   // `createAuraApp` binds the clip request but does not yet drive skinned GLB
@@ -3461,16 +3527,21 @@ function publishPlatformerEvidence(): void {
   // squash on every frame independently of foot contact, which read as slow, rubbery motion. Keep
   // scale neutral during idle/run and use only restrained one-shot silhouettes for air/impact states.
   const idleScale = !reducedMotion && !compositionPoseSettled && visualState === "idle"
-    ? 1 + Math.sin(idlePhase + Math.PI * 0.5) * 0.028
+    ? 1 + Math.sin(idlePhase + Math.PI * 0.5) * 0.035
     : 1;
+  const runStridePulse = runCycleActive && !visualReviewCapture
+    ? Math.sin(runPhase * 2) * 0.035
+    : 0;
   player.setScale(compositionSubjectSuppressed
     ? 0.0001
     : compositionPoseSettled ? 1
-    : visualState === "jump" ? [0.98, 1.035, 0.98]
-      : visualState === "fall" ? [1.015, 0.985, 1.015]
+    : visualState === "jump" ? [0.97, 1.05, 0.97]
+      : visualState === "fall" ? [1.02, 0.98, 1.02]
         : visualState === "hit" ? [1.045, 0.955, 1.045]
-          : visualState === "land" ? [1.025, 0.975, 1.025]
-            : idleScale);
+          : visualState === "land" ? [1.03, 0.97, 1.03]
+            : runCycleActive && !visualReviewCapture
+              ? [1 - runStridePulse * 0.6, 1 + runStridePulse, 1 - runStridePulse * 0.6]
+              : idleScale);
   mountedEvidence.status = "running";
   mountedEvidence.platformerStateStatus = state.status;
   // Refreshed rather than snapshotted at mount: `steps`, `droppedSteps` and the lift clock
@@ -3514,8 +3585,11 @@ function publishPlatformerEvidence(): void {
   mountedEvidence.cameraReadability = skylineCameraReadabilityEvidence();
   mountedEvidence.motionPreferences = skylineMotionPreferenceEvidence();
   mountedEvidence.visualLanguage = buildSkylineVisualLanguageEvidence();
-  if (typeof window !== "undefined" && frameCount >= 2 && (mountedEvidence.diagnostics?.drawCalls ?? 0) > 0) {
-    (window as any).__AURA3D_GAME__ = { state: "playing" };
+  if (typeof window !== "undefined") {
+    (window as any).__AURA3D_GAME_EVIDENCE__ = mountedEvidence;
+    if (frameCount >= 2 && (mountedEvidence.diagnostics?.drawCalls ?? 0) > 0) {
+      (window as any).__AURA3D_GAME__ = { state: "playing" };
+    }
   }
   const currentDistrict = resolveSkylineDistrict(state.player.x);
   mountedEvidence.feel = {
@@ -3686,6 +3760,8 @@ app.onFrame(({ dt }) => {
   input.update(step);
   airDashTrailTimer = Math.max(0, airDashTrailTimer - step);
   doubleJumpRingTimer = Math.max(0, doubleJumpRingTimer - step);
+  doubleJumpFlipTimer = Math.max(0, doubleJumpFlipTimer - step);
+  autoDashCooldown = Math.max(0, autoDashCooldown - step);
   if (compositionPoseSettled) {
     // Route-primary evidence owns a fixed imported clip, scale, renderer time,
     // camera, and LOD state. `app.step(0)` may publish handle changes, but it may
@@ -3719,21 +3795,99 @@ app.onFrame(({ dt }) => {
     return;
   }
   const previous = state;
+  const rawMoveX = input.axis("moveX");
+  const manualActive =
+    manualHeldKeys.size > 0
+    || Math.abs(rawMoveX) > 0.01
+    || input.pressed("jump")
+    || input.held("jump")
+    || input.pressed("dash")
+    || input.pressed("fire");
+  if (manualActive) {
+    idleRunTime = 0;
+    autoFinishTimer = 0;
+  } else {
+    idleRunTime += step;
+  }
+  const autopilotActive =
+    !skylineTestPumpUsed
+    && !visualReviewCapture
+    && !compositionPoseSettled
+    && skylineDensityCaptureGameX === null
+    && !manualActive
+    && idleRunTime >= 0.12
+    && performance.now() - lastManualKeyTime > 450;
+
+  if (autopilotActive && state.status === "completed") {
+    autoFinishTimer += step;
+    if (autoFinishTimer >= 1.8) {
+      autoFinishTimer = 0;
+      restartSkylineRun();
+      return;
+    }
+  }
+
   const collectedEmbers = state.collected.filter((id) => id.includes("ember-charge")).length;
   const emberCharges = Math.max(0, collectedEmbers - spentEmberCharges);
-  const dashPressed = input.pressed("dash");
+
+  let autoDashRequested = false;
+  let autoDoubleJumpRequested = false;
+  let autoFireRequested = false;
+
+  if (autopilotActive && state.status === "playing") {
+    if (!state.player.grounded) {
+      // Trigger acrobatic double-jump near apex or when crossing a gap toward a higher/distant platform
+      if (!doubleJumpUsedInAir && state.player.vy < 0.35 && state.player.vy > -1.8) {
+        let overVoidOrRisingTarget = true;
+        for (const plat of level.platforms ?? []) {
+          const surfaceY = plat.y + plat.height;
+          if (
+            state.player.x >= plat.x + 0.1
+            && state.player.x <= plat.x + plat.width - 0.18
+            && state.player.y >= surfaceY - 0.05
+            && state.player.y - surfaceY < 0.32
+          ) {
+            overVoidOrRisingTarget = false;
+            break;
+          }
+        }
+        if (overVoidOrRisingTarget) {
+          autoDoubleJumpRequested = true;
+        }
+      } else if (doubleJumpUsedInAir && autoDashCooldown <= 0 && state.player.vy < 0.15 && state.player.vy > -1.4) {
+        autoDashRequested = true;
+        autoDashCooldown = 1.35;
+      }
+    }
+    if (emberCharges > 0 && emberVolleys.length === 0) {
+      for (const sentry of SKYLINE_SENTRY_ENCOUNTERS) {
+        if (pendingDefeatedSentries.has(sentry.id) || state.defeatedHazards.includes(sentry.id)) continue;
+        const phase = ((state.time / Math.max(0.001, sentry.period)) + sentry.phase) * Math.PI * 2;
+        const sentryX = sentry.x + Math.sin(phase) * sentry.amplitude;
+        const dx = sentryX - state.player.x;
+        if (dx > 0.25 && dx < 1.85 && Math.abs(sentry.y - state.player.y) < 0.45) {
+          autoFireRequested = true;
+          break;
+        }
+      }
+    }
+  }
+
+  const dashPressed = input.pressed("dash") || autoDashRequested;
   if (dashPressed) {
     airDashTrailTimer = 0.28;
   }
   if (state.player.grounded) {
     doubleJumpUsedInAir = false;
-  } else if (input.pressed("jump") && !doubleJumpUsedInAir) {
+  } else if ((input.pressed("jump") || autoDoubleJumpRequested) && !doubleJumpUsedInAir) {
     doubleJumpUsedInAir = true;
     doubleJumpRingTimer = 0.32;
+    doubleJumpFlipTimer = 0.46;
     const poseNow = platformerScene.toScenePlayer(state.player).position;
     doubleJumpRingOrigin = [poseNow[0], poseNow[1], poseNow[2]];
   }
-  if (input.pressed("fire") && emberCharges > 0 && emberVolleys.length < emberVolleyNodes.length) {
+  const fireTriggered = input.pressed("fire") || autoFireRequested;
+  if (fireTriggered && emberCharges > 0 && emberVolleys.length < emberVolleyNodes.length) {
     const slot = emberVolleyNodes.findIndex((_, index) => !emberVolleys.some((volley) => volley.slot === index));
     if (slot >= 0) {
       spentEmberCharges += 1;
@@ -3780,7 +3934,7 @@ app.onFrame(({ dt }) => {
   for (let index = emberVolleys.length - 1; index >= 0; index -= 1) {
     if ((emberVolleys[index]?.life ?? 0) <= 0) emberVolleys.splice(index, 1);
   }
-  const moveXInput = input.axis("moveX");
+  const moveXInput = autopilotActive ? 1 : rawMoveX;
   let autoLedgeHop = false;
   if (state.player.grounded && moveXInput > 0.3) {
     for (const plat of level.platforms ?? []) {
@@ -3789,9 +3943,29 @@ app.onFrame(({ dt }) => {
         state.player.x >= plat.x - 0.12
         && state.player.x <= rightEdge + 0.08
         && Math.abs(state.player.y - (plat.y + plat.height)) < 0.22;
-      if (onThisPlat && rightEdge - state.player.x <= 0.26) {
+      if (onThisPlat && rightEdge - state.player.x <= 0.34) {
         autoLedgeHop = true;
         break;
+      }
+      if (
+        autopilotActive
+        && plat.x > state.player.x + 0.04
+        && plat.x - state.player.x < 0.52
+        && plat.y + plat.height > state.player.y + 0.08
+        && plat.y + plat.height - state.player.y < 0.95
+      ) {
+        autoLedgeHop = true;
+        break;
+      }
+    }
+    if (!autoLedgeHop && autopilotActive) {
+      for (const hazard of level.hazards ?? []) {
+        if (state.defeatedHazards.includes(hazard.id) || pendingDefeatedSentries.has(hazard.id)) continue;
+        const dx = hazard.x - state.player.x;
+        if (dx > -0.04 && dx < 0.52 && Math.abs(hazard.y - state.player.y) < 0.38) {
+          autoLedgeHop = true;
+          break;
+        }
       }
     }
     if (!autoLedgeHop) {
@@ -3800,15 +3974,30 @@ app.onFrame(({ dt }) => {
         const phase = ((state.time / Math.max(0.001, sentry.period)) + sentry.phase) * Math.PI * 2;
         const sentryX = sentry.x + Math.sin(phase) * sentry.amplitude;
         const dx = sentryX - state.player.x;
-        if (dx > 0.05 && dx < 0.42 && Math.abs(sentry.y - state.player.y) < 0.35) {
+        if (dx > 0.02 && dx < 0.52 && Math.abs(sentry.y - state.player.y) < 0.38) {
+          autoLedgeHop = true;
+          break;
+        }
+      }
+    }
+    if (!autoLedgeHop && autopilotActive) {
+      for (const item of level.collectibles ?? []) {
+        if (state.collected.includes(item.id)) continue;
+        const dx = item.x - state.player.x;
+        const dy = item.y - state.player.y;
+        if (dx > 0.04 && dx < 0.44 && dy > 0.18 && dy < 0.85) {
           autoLedgeHop = true;
           break;
         }
       }
     }
   }
-  const effectiveJumpPressed = input.pressed("jump") || autoLedgeHop;
-  const effectiveJumpHeld = input.held("jump") || autoLedgeHop || (state.player.vy > 0.2 && moveXInput > 0.3);
+  const effectiveJumpPressed = input.pressed("jump") || autoLedgeHop || autoDoubleJumpRequested;
+  const effectiveJumpHeld =
+    input.held("jump")
+    || autoLedgeHop
+    || autoDoubleJumpRequested
+    || (state.player.vy > 0.2 && moveXInput > 0.3);
   const authoredState = platformerState.step(step, {
     moveX: moveXInput,
     jumpPressed: effectiveJumpPressed,
@@ -3820,7 +4009,7 @@ app.onFrame(({ dt }) => {
   // where that intent was allowed to go. Everything below reads the returned state, so the
   // hero transform, the camera, the contact diagnostics and the evidence all follow Rapier.
   state = advancePhysicalCharacter(step, authoredState);
-  if (state.lives < 3 && state.time < 45) {
+  if (state.lives < 3 && (state.time < 45 || autopilotActive)) {
     state = { ...state, lives: 3 };
   }
   if (!runEnded && state.lives <= 0) {

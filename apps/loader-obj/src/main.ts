@@ -4,7 +4,15 @@ import {
   createGLTFRenderResources,
   type GLTFRenderResources
 } from "@aura3d/assets";
-import { Renderer, a3dRenderFrame } from "@aura3d/engine/renderer";
+import {
+  PBRMaterial,
+  Renderer,
+  createLightingRig,
+  type CollectedLight,
+  type Material,
+  type RendererInput,
+  type RendererPostProcessOptions
+} from "@aura3d/rendering";
 
 declare global {
   interface Window {
@@ -35,6 +43,67 @@ interface CurrentRoutesLoaderOBJRuntime {
 const APP_ID = "loader-obj" as const;
 const WIDTH = 1280;
 const HEIGHT = 720;
+
+const OBJ_POSTPROCESS_4_0 = {
+  tonemapping: { enabled: true, mode: "aces" as const, exposure: 1.12 },
+  bloom: { enabled: true, intensity: 0.16, threshold: 0.84 },
+  fxaa: { enabled: true },
+  vignette: { enabled: true, intensity: 0.2 }
+} as const;
+
+const OBJ_POSTPROCESS_OPTIONS: RendererPostProcessOptions = {
+  targetFormat: "rgba8",
+  toneMapping: {
+    operator: OBJ_POSTPROCESS_4_0.tonemapping.mode,
+    exposure: OBJ_POSTPROCESS_4_0.tonemapping.exposure,
+    inputColorSpace: "linear",
+    outputColorSpace: "srgb"
+  },
+  bloom: {
+    intensity: OBJ_POSTPROCESS_4_0.bloom.intensity,
+    threshold: OBJ_POSTPROCESS_4_0.bloom.threshold,
+    radius: 1,
+    quality: "balanced"
+  },
+  colorGrade: {
+    contrast: 1.07,
+    saturation: 1.04,
+    vignette: OBJ_POSTPROCESS_4_0.vignette.intensity
+  },
+  fxaa: OBJ_POSTPROCESS_4_0.fxaa.enabled
+};
+
+function createObjStudioLights(): readonly CollectedLight[] {
+  const rig = createLightingRig({
+    preset: "key-fill-rim",
+    intensityScale: 1.3,
+    shadows: false,
+    subject: { height: 1.85, width: 2.0, floorY: -0.6 }
+  });
+  return rig.collectedLights.map((light, index) => {
+    if (index === 0) {
+      return { ...light, color: [1.0, 0.91, 0.76] as const, intensity: 2.55 };
+    }
+    if (index === 1) {
+      return { ...light, color: [0.46, 0.64, 0.92] as const, intensity: 0.72 };
+    }
+    return { ...light, color: [0.36, 0.78, 1.0] as const, intensity: 1.45 };
+  });
+}
+
+function createEnhancedObjMaterialLibrary(resources: GLTFRenderResources): ReadonlyMap<string, Material> {
+  const pbrCrateMaterial = new PBRMaterial({
+    baseColor: [0.78, 0.82, 0.9, 1],
+    metallic: 0.34,
+    roughness: 0.28,
+    environmentIntensity: 0.58
+  });
+  const map = new Map<string, Material>();
+  for (const key of resources.materialLibrary.keys()) {
+    map.set(key, pbrCrateMaterial);
+  }
+  return map;
+}
 
 void run();
 
@@ -68,11 +137,18 @@ async function run(): Promise<void> {
       type: "obj"
     }, new LoadContext());
     const resources = await createGLTFRenderResources(asset);
+    const enhancedMaterials = createEnhancedObjMaterialLibrary(resources);
+    const studioLights = createObjStudioLights();
     const renderer = await Renderer.create({
+      backend: "webgl2",
       canvas,
       width: WIDTH,
       height: HEIGHT,
-            clearColor: [0.014, 0.016, 0.02, 1]
+      clearColor: [0.014, 0.016, 0.02, 1],
+      output: {
+        toneMapping: OBJ_POSTPROCESS_4_0.tonemapping.mode,
+        exposure: OBJ_POSTPROCESS_4_0.tonemapping.exposure
+      }
     });
     const featureSet = new Set(asset.loaderDiagnostics.features);
     runtime = createRuntime("ready", "Ready", startedAt, {
@@ -100,10 +176,10 @@ async function run(): Promise<void> {
           fpsFrames = 0;
           fpsFrom = now;
         }
-        const result = a3dRenderFrame(renderer, createRendererInput(resources, now / 1000));
+        const diagnostics = renderer.render(createRendererInput(resources, enhancedMaterials, studioLights, now / 1000));
         runtime = createRuntime(frameCount === 1 ? "ready" : "running", frameCount === 1 ? "Ready" : "Running", startedAt, {
           frameCount,
-          drawCalls: result.diagnostics.drawCalls,
+          drawCalls: diagnostics.drawCalls,
           fps,
           meshCount: asset.loaderDiagnostics.meshCount,
           vertexCount: asset.loaderDiagnostics.vertexCount,
@@ -132,10 +208,28 @@ async function run(): Promise<void> {
   }
 }
 
-function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<typeof a3dRenderFrame>[1] {
+function createRendererInput(
+  resources: GLTFRenderResources,
+  materialLibrary: ReadonlyMap<string, Material>,
+  collectedLights: readonly CollectedLight[],
+  time: number
+): RendererInput {
   const input = resources.toRendererInput({ width: WIDTH, height: HEIGHT }, {
     qualityPreset: "studio-preview",
-    postprocess: { fxaa: true },
+    collectedLights,
+    environmentLighting: {
+      color: [0.6, 0.7, 0.88],
+      intensity: 1.24,
+      proceduralMap: {
+        skyColor: [0.58, 0.72, 0.94],
+        horizonColor: [0.32, 0.38, 0.5],
+        groundColor: [0.09, 0.11, 0.15],
+        specularColor: [1, 0.95, 0.88],
+        intensity: 1.2,
+        specularIntensity: 1.3
+      }
+    },
+    postprocess: OBJ_POSTPROCESS_OPTIONS,
     frame: {
       yawRadians: -0.64 + Math.sin(time * 0.65) * 0.08,
       pitchRadians: -0.16,
@@ -145,22 +239,11 @@ function createRendererInput(resources: GLTFRenderResources, time: number): Para
     }
   });
   return {
-    source: input.source,
-    camera: input.camera,
-    metadata: {
-      assetId: APP_ID,
-      assetName: "CurrentRoutes Loader OBJ",
-      assetUri: "/apps/loader-obj/",
-      meshCount: 1,
-      primitiveCount: 1,
-      materialCount: 1,
-      textureCount: 0,
-      imageCount: 0,
-      animationCount: 0,
-      skinCount: 0,
-      morphTargetCount: 0,
-      extensionsUsed: ["OBJ"]
-    }
+    source: {
+      ...input.source,
+      materialLibrary
+    },
+    camera: input.camera
   };
 }
 

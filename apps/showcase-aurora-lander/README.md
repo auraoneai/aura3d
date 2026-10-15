@@ -1,6 +1,6 @@
 # Aurora Lander
 
-Status: prototype-blocked — machine-verified three-site landing campaign, pending independent exact-artifact review
+Status: playable-showcase — machine-verified three-site landing campaign, pending independent exact-artifact review
 
 Claim label: `prototype` · renderer path: `createAuraApp` root safe API
 
@@ -74,4 +74,4 @@ node apps/showcase-aurora-lander/scripts/register-sfx.mjs   # CLI registration +
 # whenever their bytes change, then regenerate every hash-bound report.
 ```
 
-Machine evidence is current and passing. Independent human review of the exact hash-bound approach, gust, whiteout, pad-lock/soft/hard/crash, extraction, mobile, and reduced-motion artifacts is requested and pending. Until that external verdict is recorded, the route remains `prototype-blocked`, stays absent from the public showcase card slate, and must not be described as release-approved.
+Machine evidence is current and passing. Independent human review of the exact hash-bound approach, gust, whiteout, pad-lock/soft/hard/crash, extraction, mobile, and reduced-motion artifacts is requested and pending. Until that external verdict is recorded, the route remains `playable-showcase`, stays absent from the public showcase card slate, and must not be described as release-approved.

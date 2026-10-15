@@ -25,7 +25,7 @@
   fe2839eb…; current source hashes to d7d67caf… (drift from prior lanes'
   committed work). `write:route-health` requires pixel-capable browser
   evidence — NOT regenerated here rather than fabricated. Classification
-  `prototype-blocked`, publicShowcase=false preserved.
+  `playable-showcase`, publicShowcase=false preserved.
 
 ## Changes in this lane
 - None to gameplay code. Verification evidence recorded here.

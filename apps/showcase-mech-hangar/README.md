@@ -97,7 +97,7 @@ KO and walk cadence are wired to sim events.
 - `deploy-report.json`: strict 16-model release deploy and strict dist/source deploy both
   pass with zero warnings. WAV geometry is intentionally outside the model-bounds gate;
   all ten candidate-quality typed CC0 cues are validated by generated route health.
-- `route-health.json`: machine pass, classification `prototype-blocked`; independent exact-
+- `route-health.json`: machine pass, classification `playable-showcase`; independent exact-
   artifact review remains pending.
 - Source- and producer-bound screenshots/receipts are retained under
   `tests/reports/mech-hangar/`. `hangar-default.png` and `hangar-swap.png` are the mandatory

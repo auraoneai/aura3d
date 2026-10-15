@@ -1,5 +1,5 @@
-import { composeMat4 } from "/packages/scene/src/index.ts";
-import { Geometry, PBRMaterial, createLightingDefault } from "/packages/rendering/src/index.ts";
+import { composeMat4 } from "@aura3d/scene";
+import { Geometry, PBRMaterial, createLightingDefault } from "@aura3d/rendering";
 import { rotationYQuat, simpleBounds, startSimpleGraphicsShowcase } from "/apps/wow-common/src/simple-showcase.ts";
 
 const sphere = Geometry.uvSphere(0.34, 48, 24);
@@ -24,6 +24,14 @@ const plinthMaterial = new PBRMaterial({
   roughness: 0.62
 });
 
+const postProcess = {
+  tonemapping: { enabled: true, mode: "aces" as const, exposure: 1.15 },
+  bloom: { enabled: true, intensity: 0.22, threshold: 0.8 },
+  ssao: { enabled: true, radius: 0.45, intensity: 0.35 },
+  fxaa: { enabled: true },
+  vignette: { enabled: true, intensity: 0.22 }
+};
+
 void startSimpleGraphicsShowcase({
   appId: "wow-standard-material-spheres",
   title: "Aura3D Material Spheres",
@@ -33,6 +41,12 @@ void startSimpleGraphicsShowcase({
     primitive: "12 lit UV spheres",
     api: "Geometry.uvSphere + PBRMaterial + Renderer"
   },
+  lightingRig: {
+    keyIntensity: 2.3,
+    fillIntensity: 1.05,
+    rimIntensity: 1.25
+  },
+  postProcess,
   createFrame: (timeSeconds) => ({
     renderItems: [
       {
@@ -59,6 +73,6 @@ void startSimpleGraphicsShowcase({
     bounds: simpleBounds(2.35),
     cameraFrameOptions: { paddingRatio: 0.08, yawRadians: -0.12, pitchRadians: -0.08 },
     environmentLighting: lighting.environmentLighting,
-    postprocess: false
+    postProcess
   })
 });

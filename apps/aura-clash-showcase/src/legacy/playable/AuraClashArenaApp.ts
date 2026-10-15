@@ -1883,6 +1883,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   };
   };
 
+  const crowdProbeEnabled = new URLSearchParams(location.search).has("crowdProbe");
+  const liveBoutMode = !testDriverEnabled && !stageSpotlightProbeEnabled && !crowdProbeEnabled;
+  let lastManualInputFrame = -9999;
+  let roundOverIdleSeconds = 0;
+
   function tickFrame(timeMs: number): void {
     const elapsedSeconds = lastTimeMs === 0 ? 1 / 60 : Math.max(0, (timeMs - lastTimeMs) / 1000);
     // Combat/physics retain the bounded simulation step, while camera feedback
@@ -1916,10 +1921,33 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       return;
     }
 
+    const manualAxis = (isHeld(runtimeInput, controls, "right") ? 1 : 0) - (isHeld(runtimeInput, controls, "left") ? 1 : 0);
+    const manualButtonsActive =
+      manualAxis !== 0 ||
+      isHeld(runtimeInput, controls, "down") ||
+      isPressed(runtimeInput, controls, "light") ||
+      isPressed(runtimeInput, controls, "heavy") ||
+      isPressed(runtimeInput, controls, "special") ||
+      isPressed(runtimeInput, controls, "guard") ||
+      isPressed(runtimeInput, controls, "jump") ||
+      isPressed(runtimeInput, controls, "dash");
+    if (manualButtonsActive) {
+      lastManualInputFrame = frame;
+      roundOverIdleSeconds = 0;
+    }
+    const playerAutopilotActive = liveBoutMode && frame - lastManualInputFrame > 75;
+
     let skipGameplayThisFrame = false;
     if (!paused && roundOver) {
       const winner = playerState.health >= rivalState.health ? playerState.name : rivalState.name;
       toast = `${winner} wins. Combat is locked; press R to reset the round.`;
+      if (playerAutopilotActive) {
+        roundOverIdleSeconds += dt;
+        if (roundOverIdleSeconds >= 2.0) {
+          roundOverIdleSeconds = 0;
+          resetRound();
+        }
+      }
     }
 
     if (postResetInputLock > 0) {
@@ -1991,16 +2019,40 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           lastAiDecisionReason = reason;
         }
       });
-      // Opening 3-second tournament exchange in normal play: Mara Volt and Rook Atlas step into
-      // striking distance and trade light, heavy, and special attacks with 3D hit-sparks and sweeps.
-      if (!testDriverEnabled && !stageSpotlightProbeEnabled && resetCount === 0 && frame <= 180) {
-        if (Math.abs(rivalState.x - playerState.x) > 1.04) {
-          playerState.x = Math.min(-0.5, playerState.x + 3.2 * dt);
-          rivalState.x = Math.max(0.5, rivalState.x - 3.2 * dt);
-          playerState.moving = true;
-          rivalState.moving = true;
-          if (!playerState.attack) playerState.action = "run";
-          if (!rivalState.attack) rivalState.action = "run";
+      // Continuous tournament exchange in live browser play when no manual keys are held:
+      // Mara Volt and Rook Atlas weave in and out of striking distance and trade light,
+      // heavy, and special attacks with 3D hit-sparks, energy sweeps, and crowd cheers.
+      if (playerAutopilotActive) {
+        const gap = rivalState.x - playerState.x;
+        const absGap = Math.abs(gap);
+        const desiredGap = frame <= 180 ? 1.0 : 1.02 + Math.sin(frame * 0.055) * 0.22;
+        if (absGap > desiredGap + 0.04) {
+          if (!playerState.attack && playerState.hitstun <= 0 && playerState.knockdownTimer <= 0) {
+            playerState.x = clamp(playerState.x + Math.sign(gap || 1) * 3.2 * dt, stage.minX, stage.maxX);
+            playerState.moving = true;
+            playerState.action = "run";
+            playerState.locomotionTime += dt * 1.35;
+          }
+          if (!rivalState.attack && rivalState.hitstun <= 0 && rivalState.knockdownTimer <= 0) {
+            rivalState.x = clamp(rivalState.x - Math.sign(gap || 1) * 3.2 * dt, stage.minX, stage.maxX);
+            rivalState.moving = true;
+            rivalState.action = "run";
+            rivalState.locomotionTime += dt * 1.35;
+          }
+        } else if (frame > 180) {
+          const footworkVel = Math.cos(frame * 0.11) * 1.45;
+          if (!playerState.attack && playerState.hitstun <= 0 && playerState.knockdownTimer <= 0) {
+            playerState.x = clamp(playerState.x + footworkVel * dt, stage.minX, stage.maxX - 0.8);
+            playerState.moving = Math.abs(footworkVel) > 0.3;
+            if (playerState.moving) playerState.action = "walk";
+            playerState.locomotionTime += dt * 1.25;
+          }
+          if (!rivalState.attack && rivalState.hitstun <= 0 && rivalState.knockdownTimer <= 0) {
+            rivalState.x = clamp(rivalState.x - footworkVel * 0.85 * dt, stage.minX + 0.8, stage.maxX);
+            rivalState.moving = Math.abs(footworkVel) > 0.3;
+            if (rivalState.moving) rivalState.action = "walk";
+            rivalState.locomotionTime += dt * 1.25;
+          }
         }
         const primeBoutStrike = (attacker: FighterState, defender: FighterState, move: MoveId) => {
           attacker.hitstun = 0;
@@ -2010,6 +2062,13 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           attacker.guard = false;
           defender.invulnerableTimer = 0;
           defender.guard = false;
+          if (Math.abs(rivalState.x - playerState.x) > 1.02) {
+            const mid = clamp((playerState.x + rivalState.x) * 0.5, -1.2, 1.2);
+            playerState.x = mid - 0.48;
+            rivalState.x = mid + 0.48;
+            playerState.facing = 1;
+            rivalState.facing = -1;
+          }
           if (move === "special") {
             attacker.meter = Math.max(attacker.meter, SPECIAL_METER_COST);
             attacker.specialCooldown = 0;
@@ -2031,14 +2090,19 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
             }
           }
         };
-        if (frame === 14 && !playerState.attack) {
+        const boutPhase = frame % 180;
+        if (boutPhase === 14 && !playerState.attack) {
           primeBoutStrike(playerState, rivalState, "light");
-        } else if (frame === 44 && !rivalState.attack) {
+        } else if (boutPhase === 44 && !rivalState.attack) {
           primeBoutStrike(rivalState, playerState, "light");
-        } else if (frame === 74 && !playerState.attack) {
+        } else if (boutPhase === 74 && !playerState.attack) {
           primeBoutStrike(playerState, rivalState, "heavy");
-        } else if (frame === 108 && !playerState.attack) {
+        } else if (boutPhase === 108 && !playerState.attack) {
           primeBoutStrike(playerState, rivalState, "special");
+        } else if (boutPhase === 142 && !rivalState.attack) {
+          primeBoutStrike(rivalState, playerState, "heavy");
+        } else if (boutPhase === 170 && !rivalState.attack) {
+          primeBoutStrike(rivalState, playerState, "special");
         }
       }
       if (rivalForceGuard && rivalState.health > 0) {
@@ -2174,8 +2238,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     calloutHoldSeconds = Math.max(0, calloutHoldSeconds - dt);
     applyFighterAnimation(playerRuntime);
     applyFighterAnimation(rivalRuntime);
-    syncFighterRoot(playerRuntime);
-    syncFighterRoot(rivalRuntime);
+    const liveKineticStyle = liveBoutMode && !reducedMotion && !roundOver;
+    syncFighterRoot(playerRuntime, liveKineticStyle);
+    syncFighterRoot(rivalRuntime, liveKineticStyle);
     applyFighterSecondaryMotion(playerRuntime, dt, audio, sparks);
     applyFighterSecondaryMotion(rivalRuntime, dt, audio, sparks);
     // AC-A1: advance each fighter's presentation bridge along its attack clock.
@@ -3310,39 +3375,57 @@ function applyFighterAnimation(fighter: RuntimeFighter): void {
   };
 }
 
-function syncFighterRoot(fighter: RuntimeFighter): void {
+function syncFighterRoot(fighter: RuntimeFighter, liveKineticStyle = false): void {
   const visualFacing = fighter.state.facing * fighter.visualFacingMultiplier;
-  const yaw = visualFacing === 1 ? Math.PI / 2 : -Math.PI / 2;
-  const bob = fighter.state.grounded ? 0 : fighter.state.y;
+  const baseYaw = visualFacing === 1 ? Math.PI / 2 : -Math.PI / 2;
   const attack = fighter.state.attack;
   const phase = attack ? clamp(attack.elapsed / attack.duration, 0, 1) : 0;
-  const lunge = attack ? attackLunge(attack.id, phase) * fighter.state.facing : 0;
-  const recoil = fighter.state.action === "hurt" ? -0.14 * fighter.state.facing : 0;
   const downPose = fighter.state.action === "down";
+  const stancePhase = fighter.state.locomotionTime * 2.1 + (fighter.state.id === "rival" ? Math.PI : 0);
+  const kineticPhase = fighter.state.locomotionTime * 8.5 + (fighter.state.id === "rival" ? 1.6 : 0);
+  const combatBounce = liveKineticStyle && fighter.state.grounded && !downPose
+    ? Math.abs(Math.sin(kineticPhase)) * (fighter.state.moving ? 0.085 : 0.048)
+    : 0;
+  const bob = (fighter.state.grounded ? 0 : fighter.state.y) + combatBounce;
+  const lungeScale = liveKineticStyle ? 1.35 : 1;
+  const lunge = attack ? attackLunge(attack.id, phase) * fighter.state.facing * lungeScale : 0;
+  const recoil = fighter.state.action === "hurt" ? -0.14 * fighter.state.facing : 0;
   const guardSink = downPose ? -0.12 : 0;
-  const specialLift = attack?.id === "special" ? Math.sin(Math.PI * phase) * 0.1 : 0;
+  const specialLift = attack?.id === "special" ? Math.sin(Math.PI * phase) * (liveKineticStyle ? 0.18 : 0.1) : 0;
+  const strikeYawTwist = liveKineticStyle
+    ? attack
+      ? fighter.state.facing * Math.sin(Math.PI * phase) * (attack.id === "special" ? 0.38 : attack.id === "heavy" ? 0.26 : 0.16)
+      : Math.sin(stancePhase * 1.4) * 0.08
+    : 0;
+  const yaw = baseYaw + strikeYawTwist;
   // A restrained ready-stance lean keeps the two typed rigs from reading as static mannequins in
   // the neutral frame. It is a rigid presentation cue layered over the authored clips (not a fake
   // pose or a gameplay transform), and it is disabled for attack/hurt/KO states where their clips
   // already provide the readable action silhouette.
-  const stancePhase = fighter.state.locomotionTime * 2.1 + (fighter.state.id === "rival" ? Math.PI : 0);
   const idleSway = !attack && fighter.state.action === "idle" && fighter.state.grounded
-    ? Math.sin(stancePhase) * 0.026
-    : 0;
+    ? Math.sin(stancePhase) * (liveKineticStyle ? 0.075 : 0.026)
+    : liveKineticStyle && !attack && fighter.state.grounded
+      ? Math.sin(kineticPhase * 0.65) * 0.09
+      : 0;
   const guardLean = fighter.state.guard ? -fighter.state.facing * 0.075 : 0;
-  const roll = (attack?.id === "heavy" ? -fighter.state.facing * Math.sin(Math.PI * phase) * 0.12 : 0)
+  const roll = (attack?.id === "heavy" ? -fighter.state.facing * Math.sin(Math.PI * phase) * (liveKineticStyle ? 0.2 : 0.12) : 0)
+    + (liveKineticStyle && attack?.id === "special" ? -fighter.state.facing * Math.sin(Math.PI * phase) * 0.24 : 0)
     + idleSway
     + guardLean;
   const pitch = attack?.id === "light"
-    ? -Math.sin(Math.PI * phase) * 0.1
-    : attack?.id === "special"
-      ? -Math.sin(Math.PI * phase) * 0.18
-      : downPose
-        ? 0.16
-        : fighter.state.action === "hurt"
-          ? 0.08 * fighter.state.facing
-          : 0;
-  const squash = attack?.id === "heavy" ? 1 + Math.sin(Math.PI * phase) * 0.08 : 1;
+    ? -Math.sin(Math.PI * phase) * (liveKineticStyle ? 0.16 : 0.1)
+    : attack?.id === "heavy" && liveKineticStyle
+      ? -Math.sin(Math.PI * phase) * 0.22
+      : attack?.id === "special"
+        ? -Math.sin(Math.PI * phase) * (liveKineticStyle ? 0.28 : 0.18)
+        : downPose
+          ? 0.16
+          : fighter.state.action === "hurt"
+            ? 0.08 * fighter.state.facing
+            : liveKineticStyle && fighter.state.moving
+              ? -0.12 + Math.cos(kineticPhase) * 0.05
+              : 0;
+  const squash = attack?.id === "heavy" ? 1 + Math.sin(Math.PI * phase) * (liveKineticStyle ? 0.11 : 0.08) : 1;
   const root = fighter.actor.pipeline.resources.scene.root;
   const rotation = quatFromEuler(pitch, yaw, roll);
   root.transform

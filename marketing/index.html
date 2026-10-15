@@ -224,61 +224,61 @@
 </section>
 
 <!-- ─── AURA3D 4.0.0 ───────────────────────────────────────────── -->
-<section class="section-tight" id="release-30" data-search-index="aura3d 4.0.0 agent era prompt to game verified threejs comparison typed assets rapier recast evidence launch showcase">
+<section class="section-tight" id="release-30" data-search-index="aura3d 4.0.0 agent era prompt to game verified threejs comparison typed assets rapier recast effects postprocessing bloom ssao ssr volumetric fog particles meshy 3d pbr evidence launch showcase">
   <div class="wrap">
     <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
       <div class="sec-head-left">
         <span class="eyebrow">New in 4.0.0 · agent era, live</span>
         <h2 class="h2">The engine three.js would be <em style="font-family:var(--serif);font-style:italic">if it had been designed for models to drive it.</em></h2>
-        <p class="lede">three.js (locked against the r185 comparison baseline, three@0.185.1) hands your agent a renderer and wishes it luck: no agent API, no asset pipeline, no correctness proof. Aura3D 4.0.0 turns a game prompt into a playable, machine-verified browser game — and proves it. Aura3D 4.0.0 is live across all 29 coordinated packages with the unified <code>@aura3d/engine@4.0.0</code> SDK, <code>create-aura3d@4.0.0</code> agent-first CLI workflow, WebGPU compute + WebGL2 rendering pipeline, deterministic physics &amp; game kits (<code>game.platformer</code>, <code>game.racing</code>, <code>game.fallingBlocks</code>, <code>game.fighting</code>), and 19 playable 3D games and interactive showcases powered by custom Meshy 3D PBR hero vehicles, characters, and architectural props across 50 live apps and focused examples.</p>
+        <p class="lede">three.js (locked against the r185 comparison baseline, three@0.185.1) hands your agent a renderer and wishes it luck: no agent API, no asset pipeline, no correctness proof. Aura3D 4.0.0 turns a game prompt into a playable, machine-verified browser game — and proves it. Aura3D 4.0.0 is live across all 24 active public packages on npm (with all <code>&lt; 4.0.0</code> versions and the 5 retired pre-4.0 compatibility packages consolidated into <code>@aura3d/engine@4.0.0</code> and deprecated in full), featuring the unified <code>@aura3d/engine@4.0.0</code> single-entrypoint SDK, <code>create-aura3d@4.0.0</code> agent-first CLI workflow, the complete <code>effects.*</code> post-processing, atmospheric, volumetric, weather, GPU particle, ribbon, and <code>game.feel</code> suite, deterministic Rapier physics &amp; game kits (<code>game.platformer</code>, <code>game.racing</code>, <code>game.fallingBlocks</code>, <code>game.fighting</code>), and 19 playable 3D games and interactive showcases powered by 38+ custom Meshy 3D PBR hero vehicles, characters, and architectural props across 50 live apps and focused examples.</p>
       </div>
     </div>
 
     <div class="diag">
       <div class="diag-card">
         <div class="diag-head">
-          <span class="title">unified SDK + game kits</span>
+          <span class="title">consolidated 4.0.0 SDK + game kits</span>
           <span class="pass">● @aura3d/engine@4.0.0</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">surface</span> <span class="v ok">unified @aura3d/engine@4.0.0 + create-aura3d@4.0.0</span></div>
-          <div class="diag-row"><span class="k">game kits</span> <span class="v ok">game.platformer, game.racing, game.fallingBlocks, game.fighting</span></div>
-          <div class="diag-row"><span class="k">three.js delta</span> <span class="v">no agent entrypoint; every app hand-wires its own loop</span></div>
+          <div class="diag-row"><span class="k">surface</span> <span class="v ok">1 root entrypoint (@aura3d/engine@4.0.0) · 24 active npm packages</span></div>
+          <div class="diag-row"><span class="k">game kits</span> <span class="v ok">game.platformer, game.racing, game.fallingBlocks, game.fighting, game.feel</span></div>
+          <div class="diag-row"><span class="k">deprecation</span> <span class="v ok">all &lt; 4.0.0 versions &amp; 5 legacy compat packages deprecated on npm</span></div>
         </div>
       </div>
 
       <div class="diag-card">
         <div class="diag-head">
-          <span class="title">typed PBR asset pipeline</span>
+          <span class="title">effects.* post, atmosphere &amp; VFX</span>
+          <span class="pass">● 28+ built-in builders</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">post-process</span> <span class="v ok">bloom, neonBloom, cinematicBloom, SSAO, contactShadows, SSR, DoF, motionBlur, colorGrade, vignette, filmGrain, chromaticAberration, FXAA, outline</span></div>
+          <div class="diag-row"><span class="k">atmosphere</span> <span class="v ok">fog, depthFog, volumetricFog, fogVolume, lightCone, auroraRibbon, rain, snow, atmosphere.setSky</span></div>
+          <div class="diag-row"><span class="k">particles &amp; feel</span> <span class="v ok">particles, meshParticles, flipbook, trail, beam, ResidentGPUParticleRenderer, looks.preset</span></div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">typed PBR &amp; Meshy 3D pipeline</span>
           <span class="pass">● hash-pinned</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">catalog</span> <span class="v ok">800,000+ real GLB/glTF + custom Meshy 3D PBR hero assets</span></div>
-          <div class="diag-row"><span class="k">consumption</span> <span class="v ok">@aura3d/cli@4.0.0 generated keys; invented paths fail closed</span></div>
-          <div class="diag-row"><span class="k">three.js delta</span> <span class="v">raw URLs and loaders; nothing stops a hallucinated path</span></div>
+          <div class="diag-row"><span class="k">catalog</span> <span class="v ok">800,000+ real GLB/glTF + 38+ custom Meshy 3D PBR hero assets</span></div>
+          <div class="diag-row"><span class="k">consumption</span> <span class="v ok">@aura3d/cli@4.0.0 import-meshy &amp; typegen; invented paths fail closed</span></div>
+          <div class="diag-row"><span class="k">simulation</span> <span class="v ok">Rapier deterministic physics + Recast crowd navigation</span></div>
         </div>
       </div>
 
       <div class="diag-card">
         <div class="diag-head">
-          <span class="title">rendering + deterministic physics</span>
-          <span class="pass">● single owners</span>
-        </div>
-        <div class="diag-body">
-          <div class="diag-row"><span class="k">pipeline</span> <span class="v ok">WebGPU compute + WebGL2 rendering pipeline</span></div>
-          <div class="diag-row"><span class="k">simulation</span> <span class="v ok">Rapier deterministic physics + Recast navigation</span></div>
-          <div class="diag-row"><span class="k">three.js delta</span> <span class="v">no physics, no nav; every project vets its own plugins</span></div>
-        </div>
-      </div>
-
-      <div class="diag-card">
-        <div class="diag-head">
-          <span class="title">19 playable 3D games + proof</span>
+          <span class="title">19 playable 3D games + 50 routes</span>
           <span class="pass">● fail-closed</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">showcases</span> <span class="v ok">19 playable 3D games &amp; interactive showcases (50 live routes)</span></div>
-          <div class="diag-row"><span class="k">per route</span> <span class="v ok">health, probes, screenshots, gameplay receipts</span></div>
+          <div class="diag-row"><span class="k">showcases</span> <span class="v ok">19 upgraded 3D games &amp; 31 interactive showcases/labs (50 live routes)</span></div>
+          <div class="diag-row"><span class="k">per route</span> <span class="v ok">1920×1080 L4 GPU posters, route-health probes, gameplay receipts</span></div>
           <div class="diag-row"><span class="k">three.js delta</span> <span class="v">correctness is the developer's problem, every time</span></div>
         </div>
       </div>
@@ -513,22 +513,26 @@
           </div>
           <span class="mono mute-2" style="font-size:11px">TypeScript</span>
         </div>
-<pre class="code"><span class="c">// Typed GLB path: register once, then compose the scene.</span>
+<pre class="code"><span class="c">// Typed GLB + 4.0.0 effects.* pipeline: register once, then compose the scene.</span>
 <span class="k">import</span> {
   <span class="f">createAuraApp</span>, <span class="f">scene</span>, <span class="f">model</span>, <span class="f">camera</span>,
-  <span class="f">lights</span>, <span class="f">effects</span>
+  <span class="f">lights</span>, <span class="f">effects</span>, <span class="f">looks</span>
 } <span class="k">from</span> <span class="s">"@aura3d/engine"</span>;
 <span class="k">import</span> { assets } <span class="k">from</span> <span class="s">"./aura-assets"</span>;
 
 <span class="f">createAuraApp</span>(<span class="s">"#app"</span>, {
+  ...<span class="f">looks</span>.<span class="f">appOptions</span>(<span class="s">"studio-product"</span>),
   diagnostics: { overlay: <span class="n">true</span> },
   scene: <span class="f">scene</span>({ background: <span class="s">"#05070a"</span> })
     .add(<span class="f">model</span>(assets.boombox, { scale: <span class="n">1.2</span> }))
     .add(<span class="f">lights</span>.studio({ intensity: <span class="n">1.2</span> }))
     .camera(<span class="f">camera</span>.orbit({ distance: <span class="n">4</span> }))
-    .add(<span class="f">effects</span>.bloom({ intensity: <span class="n">0.35</span> }))
+    .add(<span class="f">effects</span>.bloom({ intensity: <span class="n">0.28</span> }))
+    .add(<span class="f">effects</span>.ambientOcclusion({ intensity: <span class="n">0.35</span>, radius: <span class="n">0.45</span> }))
+    .add(<span class="f">effects</span>.contactShadows({ opacity: <span class="n">0.45</span>, blur: <span class="n">1.6</span> }))
+    .add(<span class="f">effects</span>.vignette({ intensity: <span class="n">0.22</span> }))
 });
-<span class="c">// Typed assets keep the model path stable across builds.</span></pre>
+<span class="c">// Typed assets &amp; 4.0.0 effects.* keep models and post-processing deterministic.</span></pre>
       </div>
 
       <div class="split-view">
@@ -931,11 +935,11 @@
       <div class="sec-head-left">
         <span class="eyebrow">06 — Surface</span>
         <h2 class="h2">A practical 3D SDK surface.<br /><em style="font-family:var(--serif);font-style:italic">Packaged for AI speed.</em></h2>
-        <p class="lede">Aura3D brings the current production pieces together: engine API, prompt workflow, GLB/glTF asset CLI, React adapter, scene kits, diagnostics, static deploy checks, and lower-level packages for teams that want full control.</p>
+        <p class="lede">Aura3D 4.0.0 consolidates materials, environments, effects, looks, game kits, physics, navigation, animation, audio, and scene kits into the single <code>@aura3d/engine@4.0.0</code> root entrypoint—backed by 24 active public packages on npm, with all <code>&lt; 4.0.0</code> versions and the 5 legacy compatibility packages deprecated in full.</p>
       </div>
       <div class="sec-head-right">
           <span class="eyebrow-num">@aura3d/engine@4.0.0</span>
-        <span class="mute-2 mono" style="font-size:11px">4.0.0 published · npm, GitHub, and production verified</span>
+        <span class="mute-2 mono" style="font-size:11px">24 packages at 4.0.0 · &lt; 4.0.0 deprecated on npm</span>
       </div>
     </div>
 
@@ -943,116 +947,116 @@
       <div class="diag-card">
         <div class="diag-head">
           <span class="title">4.0.0 public release</span>
-          <span class="pass">● published</span>
+          <span class="pass">● 24/24 published on npm</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">target package</span> <span class="v ok">@aura3d/engine@4.0.0</span></div>
+          <div class="diag-row"><span class="k">primary SDK</span> <span class="v ok">@aura3d/engine@4.0.0 + create-aura3d@4.0.0 + @aura3d/cli@4.0.0</span></div>
+          <div class="diag-row"><span class="k">effects &amp; looks</span> <span class="v ok">28+ effects.* post/atmosphere/particle builders + 8 looks.preset recipes</span></div>
           <div class="diag-row"><span class="k">renderer proof</span> <span class="v ok">WebGPU compute + WebGL2 route evidence + bounded diagnostics</span></div>
-          <div class="diag-row"><span class="k">animation</span> <span class="v ok">believable-motion packages</span></div>
         </div>
       </div>
       <div class="diag-card">
         <div class="diag-head">
-          <span class="title">migration package</span>
-          <span class="pass">● separate</span>
+          <span class="title">4.0.0 consolidation &amp; deprecation</span>
+          <span class="pass">● single root entrypoint</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">compatibility</span> <span class="v">@aura3d/three-compat</span></div>
-          <div class="diag-row"><span class="k">install path</span> <span class="v">optional migration workflow</span></div>
-          <div class="diag-row"><span class="k">engine identity</span> <span class="v ok">independent root package</span></div>
+          <div class="diag-row"><span class="k">consolidated into root</span> <span class="v ok">materials, environments, effects, looks, game, sceneKits, physics</span></div>
+          <div class="diag-row"><span class="k">deprecated on npm</span> <span class="v">all &lt; 4.0.0 versions + @aura3d/lean, three-compat, materials, environments, editor</span></div>
+          <div class="diag-row"><span class="k">three.js migration</span> <span class="v ok">aura3d migrate three (@aura3d/cli@4.0.0 codemod)</span></div>
         </div>
       </div>
     </div>
 
     <div class="pkg-grid">
       <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">engine</span></div>
+        <div class="pkg-desc">Unified 4.0.0 SDK: createAuraApp, scene, model, material, lights, camera, environments, effects.*, looks.*, game.*, physics, navigation, animation, audio, sceneKits.</div>
+        <div class="pkg-tags"><span class="pkg-tag">primary SDK</span><span class="pkg-tag">4.0.0</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">cli</span></div>
+        <div class="pkg-desc">800,000+ asset search/resolve/add, import-meshy, assets validate &amp; typegen, migrate three codemod, check-deploy, and create-aura3d scaffolding.</div>
+        <div class="pkg-tags"><span class="pkg-tag">cli</span><span class="pkg-tag">create-aura3d</span></div>
+      </div>
+      <div class="pkg">
         <div class="pkg-name">@aura3d/<span class="sub">rendering</span></div>
-        <div class="pkg-desc">WebGL2 + WebGPU devices, forward pass, queues, shadows, postprocess, instancing.</div>
+        <div class="pkg-desc">WebGL2 + WebGPU devices, forward pass, PBR, transmission, clearcoat, sheen, shadows, postprocess (bloom, SSAO, SSR, DoF, FXAA), ResidentGPUParticleRenderer.</div>
         <div class="pkg-tags"><span class="pkg-tag">core</span><span class="pkg-tag">backends</span></div>
       </div>
       <div class="pkg">
         <div class="pkg-name">@aura3d/<span class="sub">scene</span></div>
-        <div class="pkg-desc">Object3D-style hierarchy, transforms, cameras, lights, renderables, serialization.</div>
+        <div class="pkg-desc">Scene graph hierarchy, transforms, cameras, lights, renderables, frustum culling, and deterministic serialization.</div>
         <div class="pkg-tags"><span class="pkg-tag">core</span></div>
       </div>
+
       <div class="pkg">
         <div class="pkg-name">@aura3d/<span class="sub">assets</span></div>
-        <div class="pkg-desc">glTF / GLB, Draco, Meshopt, bounded KTX2 / Basis, and RGBE HDR loading. OpenEXR decoding remains unsupported.</div>
+        <div class="pkg-desc">glTF / GLB, Draco, Meshopt, bounded KTX2 / Basis, RGBE HDR / PMREM IBL, and @aura3d/asset-index catalog resolution.</div>
         <div class="pkg-tags"><span class="pkg-tag">gltf</span><span class="pkg-tag">pipeline</span></div>
       </div>
       <div class="pkg">
         <div class="pkg-name">@aura3d/<span class="sub">animation</span></div>
-        <div class="pkg-desc">Clips, tracks, mixers, layers, skinning, morphs, IK, root motion, motion-quality reports.</div>
+        <div class="pkg-desc">Clips, tracks, mixers, layers, skinning, morphs, two-bone IK, root motion, retargeting worker, and motion-quality reports.</div>
         <div class="pkg-tags"><span class="pkg-tag">rig</span></div>
       </div>
-
       <div class="pkg">
-        <div class="pkg-name">@aura3d/<span class="sub">physics</span></div>
-        <div class="pkg-desc">Rigid bodies, colliders, raycasts, constraints, character controllers, scene sync.</div>
+        <div class="pkg-name">@aura3d/<span class="sub">physics-rapier</span></div>
+        <div class="pkg-desc">Native Rapier WASM adapter + @aura3d/physics rigid bodies, colliders, raycasts, character controllers, vehicles, and scene sync.</div>
         <div class="pkg-tags"><span class="pkg-tag">Rapier</span><span class="pkg-tag">single owner</span></div>
       </div>
       <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">navigation-recast</span></div>
+        <div class="pkg-desc">Native Recast / Detour WASM navmesh generation, pathfinding queries, and multi-agent local avoidance crowd simulation.</div>
+        <div class="pkg-tags"><span class="pkg-tag">Recast</span><span class="pkg-tag">navmesh</span></div>
+      </div>
+
+      <div class="pkg">
         <div class="pkg-name">@aura3d/<span class="sub">controls</span></div>
-        <div class="pkg-desc">Orbit, trackball, fly, first-person, drag, transform, map, pointer-lock, picking.</div>
+        <div class="pkg-desc">Orbit, trackball, fly, first-person, drag, transform, map, pointer-lock, and camera framing helpers.</div>
         <div class="pkg-tags"><span class="pkg-tag">camera</span></div>
       </div>
       <div class="pkg">
-        <div class="pkg-name">@aura3d/<span class="sub">materials</span></div>
-        <div class="pkg-desc">PBR, transmission, clearcoat, sheen, specular, volume. Variants end to end.</div>
-        <div class="pkg-tags"><span class="pkg-tag">pbr</span></div>
-      </div>
-      <div class="pkg">
-        <div class="pkg-name">@aura3d/<span class="sub">environments</span></div>
-        <div class="pkg-desc">HDRI environments, PMREM, image-based lighting, environment registry, presets.</div>
-        <div class="pkg-tags"><span class="pkg-tag">ibl</span></div>
-      </div>
-
-      <div class="pkg">
         <div class="pkg-name">@aura3d/<span class="sub">input</span></div>
-        <div class="pkg-desc">Keyboard, pointer, gamepad, gestures, virtual joystick, WebXR sessions, AR hit-test.</div>
-        <div class="pkg-tags"><span class="pkg-tag">xr</span></div>
+        <div class="pkg-desc">Keyboard, pointer, gamepad, gestures, virtual joystick, ray picking, WebXR sessions, and AR hit-test.</div>
+        <div class="pkg-tags"><span class="pkg-tag">xr</span><span class="pkg-tag">input</span></div>
       </div>
       <div class="pkg">
         <div class="pkg-name">@aura3d/<span class="sub">audio</span></div>
-        <div class="pkg-desc">Spatial audio, mixer, effects, scene bridge, adaptive music, reverb and filters.</div>
+        <div class="pkg-desc">Spatial WebAudio, mixer buses, procedural synth cues, scene bridge, adaptive stems, reverb, and filters.</div>
         <div class="pkg-tags"><span class="pkg-tag">spatial</span></div>
       </div>
       <div class="pkg">
-        <div class="pkg-name">@aura3d/<span class="sub">workflows</span></div>
-        <div class="pkg-desc">Reusable workflow helpers remain available, but starter templates begin with the smaller agent API.</div>
-        <div class="pkg-tags"><span class="pkg-tag">presets</span></div>
-      </div>
-      <div class="pkg">
-        <div class="pkg-name">@aura3d/<span class="sub">product-studio</span></div>
-        <div class="pkg-desc">Product-viewer helpers, variants, asset loading, studio lighting, and diagnostics.</div>
-        <div class="pkg-tags"><span class="pkg-tag">viewer</span></div>
+        <div class="pkg-name">@aura3d/<span class="sub">react</span></div>
+        <div class="pkg-desc">Declarative &lt;AuraCanvas&gt; React component wrapper and lifecycle bridge for @aura3d/engine@4.0.0 apps.</div>
+        <div class="pkg-tags"><span class="pkg-tag">react</span></div>
       </div>
 
       <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">product-studio</span></div>
+        <div class="pkg-desc">Product-viewer studio layouts, material variants, exploded views, studio lighting rigs, and @aura3d/workflows helpers.</div>
+        <div class="pkg-tags"><span class="pkg-tag">viewer</span></div>
+      </div>
+      <div class="pkg">
         <div class="pkg-name">@aura3d/<span class="sub">math</span></div>
-        <div class="pkg-desc">Vectors, matrices, quaternions, rays, bounds, planes, frustums — branded types.</div>
+        <div class="pkg-desc">Vectors, matrices, quaternions, rays, bounds, planes, frustums, and deterministic PRNG utilities.</div>
         <div class="pkg-tags"><span class="pkg-tag">primitives</span></div>
       </div>
       <div class="pkg">
         <div class="pkg-name">@aura3d/<span class="sub">ecs</span></div>
-        <div class="pkg-desc">Entity / component / system, archetypes, queries, command buffer, system scheduler.</div>
+        <div class="pkg-desc">Entity / component / system, archetypes, queries, command buffer, scheduler, plus @aura3d/core &amp; @aura3d/scripting.</div>
         <div class="pkg-tags"><span class="pkg-tag">runtime</span></div>
       </div>
       <div class="pkg">
         <div class="pkg-name">@aura3d/<span class="sub">debug</span></div>
-        <div class="pkg-desc">Draw-call tracker, GPU profiler, render-state inspector, and development overlays.</div>
+        <div class="pkg-desc">Draw-call tracker, GPU profiler, render-state inspector, development overlays, plus @aura3d/editor-runtime &amp; @aura3d/apps.</div>
         <div class="pkg-tags"><span class="pkg-tag">inspect</span></div>
-      </div>
-      <div class="pkg">
-        <div class="pkg-name">@aura3d/<span class="sub">three-compat</span></div>
-        <div class="pkg-desc">low-level renderer code-shaped imports, Aura3D-backed runtime. Move at the pace your team can absorb.</div>
-        <div class="pkg-tags"><span class="pkg-tag">migration</span></div>
       </div>
     </div>
 
     <div style="margin-top:18px; display:flex; justify-content:space-between; align-items:center; font-size:13px;">
-      <span class="mono mute-2">Plus agent-focused additions: @aura3d/cli@4.0.0, @aura3d/react@4.0.0, scene kits, typed assets, and Vite starters.</span>
-      <a href="/docs/api.html" class="mono" style="color:var(--accent)">Explore the API →</a>
+      <span class="mono mute-2">All 24 active packages published at 4.0.0 on npm · Legacy pre-4.0 packages (@aura3d/lean, three-compat, materials, environments, editor) &amp; all &lt; 4.0.0 versions deprecated.</span>
+      <a href="/docs/api.html" class="mono" style="color:var(--accent)">Explore the 4.0.0 API →</a>
     </div>
   </div>
 </section>

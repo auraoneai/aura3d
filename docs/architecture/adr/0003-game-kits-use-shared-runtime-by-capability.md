@@ -87,7 +87,7 @@ Before deleting either private continuous integrator, retained tests must prove:
 - locomotion preserves transition priority and one-shot timing;
 - fighting preserves deterministic combat, pushboxes, camera and effects evidence.
 
-The three prototype-blocked showcase routes remain blocked. This decision does not grant a visual
+The three playable-showcase showcase routes remain blocked. This decision does not grant a visual
 approval or promote a route.
 
 ## Consequences

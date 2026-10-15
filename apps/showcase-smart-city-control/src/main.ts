@@ -3,33 +3,40 @@ import {
   checkSpatialInvariants,
   city,
   clearFocus,
-  createSmartCityKit,
   collectAuraSceneEvidence,
   createAuraApp,
+  createSmartCityKit,
   distanceLod,
   effects,
+  enforceFrameBudget,
+  fitSizeToRegion,
   focusObject,
   game,
   groups,
   instances,
   interactions,
-  fitSizeToRegion,
   labels,
   lights,
   material,
   model,
   placedBounds,
+  planScatterInstances,
   primitives,
   resolveBoundsAnchor,
   resolveSemanticRegion,
+  scatterWindOffset,
   scene,
   sceneKits,
   shadows,
   timeline,
-  ui
+  ui,
+  type AuraCameraSpec,
+  type AuraNodeInput,
+  type AuraSceneNode,
+  type AuraSceneSnapshot,
+  type FocusResult,
+  type SemanticRegion
 } from "@aura3d/engine";
-import type { AuraCameraSpec, AuraNodeInput, AuraSceneNode, AuraSceneSnapshot, FocusResult, SemanticRegion } from "@aura3d/engine";
-import { enforceFrameBudget, planScatterInstances, scatterWindOffset } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import "./styles.css";
 
@@ -511,7 +518,7 @@ function buildSmartCityScene(): SceneBuild {
     .addMany(kitScene.nodes.filter((node) => !(node.kind === "label" && node.name === "city scene kit hud")))
     .addMany(depthNodes)
     .addMany(createSmartCityTrafficNodes())
-    .add(effects.fog({
+    .add(effects.depthFog({
       name: "smart city operational depth haze",
       density: controls.timeOfDay === "night" ? 0.018 : 0.012,
       color: controls.timeOfDay === "night" ? "#17334a" : "#d7f4ff",
@@ -520,9 +527,21 @@ function buildSmartCityScene(): SceneBuild {
     }))
     .add(effects.bloom({
       name: "smart city bounded infrastructure bloom",
-      intensity: controls.timeOfDay === "night" ? 0.33 : 0.16,
+      intensity: controls.timeOfDay === "night" ? 0.34 : 0.16,
       threshold: 0.74,
       radius: 0.38
+    }))
+    .add(effects.vignette({
+      name: "smart city command framing vignette",
+      intensity: controls.timeOfDay === "night" ? 0.22 : 0.14,
+      smoothness: 0.72,
+      roundness: 0.86,
+      color: controls.timeOfDay === "night" ? "#030a12" : "#10283b"
+    }))
+    .add(effects.colorGrade({
+      name: "smart city district telemetry grade",
+      contrast: controls.timeOfDay === "night" ? 1.06 : 1.04,
+      saturation: controls.timeOfDay === "night" ? 1.08 : 1.04
     }))
     .add(lights.point({
       name: "operations amber district rim light",

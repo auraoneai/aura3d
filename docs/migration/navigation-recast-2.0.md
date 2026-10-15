@@ -1,6 +1,6 @@
-# Navigation migration for Aura3D 2.0
+# Navigation migration for Aura3D 4.0
 
-Aura3D 2.0 removes the in-house grid navigation, local
+Aura3D 4.0 removes the in-house grid navigation, local
 steering, and quadratic crowd simulation exports from `@aura3d/physics`.
 `@aura3d/navigation-recast` is the sole selected owner for 3D navmesh
 generation, Detour path queries, crowds, serialization, and temporary

@@ -1,9 +1,8 @@
 # @aura3d/ecs
 
-> Optional compatibility/application-architecture package. It is not part of
-> the recommended renderer, product, or arcade entry and is not a rendering
-> capability claim. Prefer this direct package over the legacy
-> `@aura3d/engine/ecs` subpath, which is scheduled for removal in 2.0.
+> Application-architecture ECS package (`@aura3d/ecs@4.0.0`). Import `@aura3d/ecs`
+> directly or use the root `@aura3d/engine@4.0.0` runtime surface; legacy
+> `@aura3d/engine/ecs` subpaths were removed in 4.0.0.
 
 `@aura3d/ecs` owns entity identity, component registration/storage, sparse-set and archetype data structures, queries, command buffering, systems, scheduling, serialization, profiling, and common transform/name/tag components.
 

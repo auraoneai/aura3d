@@ -20,7 +20,7 @@ export function createProductConfiguratorShowroomLighting(
   if (lightingControl === "inspection") {
     const lightingRig = createLightingRig({
       preset: "product-detail",
-      intensityScale: 1,
+      intensityScale: 1.05,
       shadows: false
     });
     return {
@@ -28,7 +28,7 @@ export function createProductConfiguratorShowroomLighting(
       collectedLights: createStudioLighting({
         preset: "inspection",
         shadows: false,
-        intensityScale: 1
+        intensityScale: 1.05
       }),
       diagnostics: lightingRig.diagnostics
     };
@@ -36,7 +36,7 @@ export function createProductConfiguratorShowroomLighting(
   if (lightingControl === "environment") {
     const lightingRig = createLightingRig({
       preset: "urban-neon",
-      intensityScale: 1.05,
+      intensityScale: 1.08,
       shadows: false
     });
     return {
@@ -44,18 +44,18 @@ export function createProductConfiguratorShowroomLighting(
       collectedLights: createStudioLighting({
         preset: "softbox",
         shadows: false,
-        intensityScale: 0.82
+        intensityScale: 0.88
       }).map((light) => {
-        if (/key/i.test(light.source.name)) return adjustProductLight(light, [0.42, 0.62, 1], 0.86);
-        if (/fill/i.test(light.source.name)) return adjustProductLight(light, [0.28, 0.72, 0.82], 1.35);
-        return adjustProductLight(light, [0.72, 0.38, 0.95], 1.12);
+        if (/key/i.test(light.source.name)) return adjustProductLight(light, [0.46, 0.66, 1], 0.9);
+        if (/fill/i.test(light.source.name)) return adjustProductLight(light, [0.3, 0.74, 0.84], 1.38);
+        return adjustProductLight(light, [0.74, 0.4, 0.96], 1.15);
       }),
       diagnostics: lightingRig.diagnostics
     };
   }
   const lightingRig = createLightingRig({
     preset: "product-shot",
-    intensityScale: 1,
+    intensityScale: 1.06,
     shadows: false
   });
   return {
@@ -63,7 +63,7 @@ export function createProductConfiguratorShowroomLighting(
     collectedLights: createStudioLighting({
       preset: "product",
       shadows: false,
-      intensityScale: 1
+      intensityScale: 1.06
     }),
     diagnostics: lightingRig.diagnostics
   };

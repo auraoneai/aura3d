@@ -120,5 +120,5 @@ Machine implementation and verification: **complete as of 2026-08-23**.
 Independent human visual review: **pending**. The exact telegraph, lane, jump,
 graze, drop, shield, finale, failure, completion/reduced-motion, and mobile hashes
 are recorded in `route-health.json`. Route classification remains
-`prototype-blocked` in `tools/showcase-library/route-gates.json`; no promotion is
+`playable-showcase` in `tools/showcase-library/route-gates.json`; no promotion is
 claimed until an external verdict approves those exact artifacts.

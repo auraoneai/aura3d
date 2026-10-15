@@ -173,4 +173,4 @@ These are bounded workflow or integration results, not a universal renderer verd
 This generated inventory may support a statement about a specifically named row and
 its retained historical evidence. It may not support `current`, `head-to-head`, broad
 `parity`, `replacement`, or performance wording. Those claims require the r185 current
-Aura3D 2.0 comparison program and its current evidence rules.
+Aura3D 4.0 comparison program and its current evidence rules.

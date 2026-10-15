@@ -2,12 +2,16 @@ import { pickingRayFromCamera } from "@aura3d/input";
 import { Ray, Vector3 } from "@aura3d/math";
 import {
   Geometry,
+  PBRMaterial,
   RenderDeviceError,
+  Renderer,
   UnlitMaterial,
+  createLightingRig,
   pickSceneRenderableHits,
-  pickSceneRenderables
+  pickSceneRenderables,
+  type RenderMaterial,
+  type RendererPostProcessOptions
 } from "@aura3d/rendering";
-import { Renderer } from "@aura3d/engine/renderer";
 import { Renderable, Scene, type SceneNode } from "@aura3d/scene";
 
 declare global {
@@ -57,6 +61,35 @@ const POINT_POSITIONS = [
   [2.06, -1.22, -4.95]
 ] as const;
 
+const PICKING_POSTPROCESS_4_0 = {
+  tonemapping: { enabled: true, mode: "aces" as const, exposure: 1.15 },
+  bloom: { enabled: true, intensity: 0.2, threshold: 0.8 },
+  fxaa: { enabled: true },
+  vignette: { enabled: true, intensity: 0.22 }
+} as const;
+
+const PICKING_POSTPROCESS_OPTIONS: RendererPostProcessOptions = {
+  targetFormat: "rgba8",
+  toneMapping: {
+    operator: PICKING_POSTPROCESS_4_0.tonemapping.mode,
+    exposure: PICKING_POSTPROCESS_4_0.tonemapping.exposure,
+    inputColorSpace: "linear",
+    outputColorSpace: "srgb"
+  },
+  bloom: {
+    intensity: PICKING_POSTPROCESS_4_0.bloom.intensity,
+    threshold: PICKING_POSTPROCESS_4_0.bloom.threshold,
+    radius: 1,
+    quality: "balanced"
+  },
+  colorGrade: {
+    contrast: 1.06,
+    saturation: 1.05,
+    vignette: PICKING_POSTPROCESS_4_0.vignette.intensity
+  },
+  fxaa: PICKING_POSTPROCESS_4_0.fxaa.enabled
+};
+
 void run();
 
 async function run(): Promise<void> {
@@ -81,21 +114,59 @@ async function run(): Promise<void> {
     const camera = scene.collectCameras()[0];
     if (!camera) throw new Error("Interactive picking route requires a camera.");
     camera.setViewport({ x: 0, y: 0, width: WIDTH, height: HEIGHT });
+    const lightingRig = createLightingRig({
+      preset: "key-fill-rim",
+      intensityScale: 1.35,
+      shadows: false,
+      subject: { height: 2.6, width: 4.2, floorY: -1.4 }
+    });
     const geometryLibrary = {
-      "geometry:cube": Geometry.cube(0.46),
+      "geometry:cube": Geometry.litCube(0.46),
       "geometry:points": Geometry.points(POINT_POSITIONS)
     };
-    const materialLibrary = {
-      "material:amber": new UnlitMaterial({ color: [0.95, 0.58, 0.18, 1] }),
-      "material:cyan": new UnlitMaterial({ color: [0.3, 0.82, 1, 1] }),
-      "material:point": new UnlitMaterial({ color: [0.88, 0.96, 0.62, 1] })
-    };
+    const amberMaterial = new PBRMaterial({
+      baseColor: [0.96, 0.58, 0.18, 1],
+      metallic: 0.34,
+      roughness: 0.28,
+      environmentIntensity: 0.58,
+      emissiveColor: [0.18, 0.08, 0.01],
+      emissiveStrength: 0.32
+    });
+    const cyanMaterial = new PBRMaterial({
+      baseColor: [0.24, 0.8, 1, 1],
+      metallic: 0.28,
+      roughness: 0.26,
+      environmentIntensity: 0.6,
+      emissiveColor: [0.02, 0.14, 0.22],
+      emissiveStrength: 0.32
+    });
+    const highlightedAmberMaterial = new PBRMaterial({
+      baseColor: [1, 0.78, 0.32, 1],
+      metallic: 0.42,
+      roughness: 0.18,
+      environmentIntensity: 0.72,
+      emissiveColor: [1, 0.64, 0.18],
+      emissiveStrength: 1.25
+    });
+    const highlightedCyanMaterial = new PBRMaterial({
+      baseColor: [0.48, 0.92, 1, 1],
+      metallic: 0.38,
+      roughness: 0.18,
+      environmentIntensity: 0.72,
+      emissiveColor: [0.22, 0.84, 1],
+      emissiveStrength: 1.25
+    });
+    const pointMaterial = new UnlitMaterial({ color: [0.92, 0.98, 0.68, 1] });
     const renderer = await Renderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,
       height: HEIGHT,
-      clearColor: [0.014, 0.017, 0.022, 1]
+      clearColor: [0.014, 0.017, 0.022, 1],
+      output: {
+        toneMapping: PICKING_POSTPROCESS_4_0.tonemapping.mode,
+        exposure: PICKING_POSTPROCESS_4_0.tonemapping.exposure
+      }
     });
 
     let frameCount = 0;
@@ -104,6 +175,7 @@ async function run(): Promise<void> {
     let fpsFrom = 0;
     let pointerPickHits = 0;
     let lastPointerHit = "none";
+    let hoveredCubeId: string | null = null;
     let lastUi = 0;
     let lastDiagnosticPick = 0;
     let cachedCubePickHits = 0;
@@ -119,7 +191,10 @@ async function run(): Promise<void> {
       const hit = pickSceneRenderables({ scene, geometryLibrary }, ray, { pointRadius: 0.18 });
       if (hit) {
         pointerPickHits += 1;
+        hoveredCubeId = hit.pointIndex === undefined ? hit.node.name : null;
         lastPointerHit = hit.pointIndex === undefined ? hit.node.name : `${hit.node.name}#${hit.pointIndex}`;
+      } else {
+        hoveredCubeId = null;
       }
     });
 
@@ -144,13 +219,40 @@ async function run(): Promise<void> {
           cachedNearestPointIndex = pointHits[0]?.pointIndex ?? -1;
           lastDiagnosticPick = now;
         }
+        const activeHighlightId = hoveredCubeId ?? cachedNearestCubeId;
+        const materialLibrary: Record<string, RenderMaterial> = {
+          "material:amber": amberMaterial,
+          "material:cyan": cyanMaterial,
+          "material:point": pointMaterial
+        };
+        for (let index = 0; index < CUBE_POSITIONS.length; index += 1) {
+          const cubeName = `cube-${index + 1}`;
+          const isAmber = index % 2 === 0;
+          const isHighlighted = cubeName === activeHighlightId;
+          materialLibrary[`material:${cubeName}`] = isHighlighted
+            ? (isAmber ? highlightedAmberMaterial : highlightedCyanMaterial)
+            : (isAmber ? amberMaterial : cyanMaterial);
+        }
         const diagnostics = renderer.render({
           scene,
           geometryLibrary,
           materialLibrary,
+          collectedLights: lightingRig.collectedLights,
+          environmentLighting: {
+            color: [0.56, 0.66, 0.84],
+            intensity: 1.25,
+            proceduralMap: {
+              skyColor: [0.58, 0.72, 0.96],
+              horizonColor: [0.3, 0.38, 0.52],
+              groundColor: [0.08, 0.1, 0.14],
+              specularColor: [1, 0.96, 0.9],
+              intensity: 1.2,
+              specularIntensity: 1.32
+            }
+          },
           cameraPolicy: "require",
           frustumCulling: true,
-          postprocess: false
+          postprocess: PICKING_POSTPROCESS_OPTIONS
         });
 
         runtime = createRuntime(startedAt, frameCount === 1 ? "ready" : "running", {
@@ -194,7 +296,7 @@ function createScene(): { readonly scene: Scene; readonly cubeNodes: readonly Sc
     cubeNodes.push(node);
     scene.addRenderable(node, new Renderable({
       geometry: "geometry:cube",
-      material: index % 2 === 0 ? "material:amber" : "material:cyan"
+      material: `material:cube-${index + 1}`
     }));
   });
   const points = scene.createNode("point-cloud");

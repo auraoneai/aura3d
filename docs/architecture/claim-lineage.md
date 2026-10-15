@@ -3,7 +3,7 @@
 > **No parity, performance, compatibility, or visual claim may be generated from evidence that does
 > not execute the public production path of the thing being claimed.**
 
-This is the Aura3D 2.0 claim-lineage contract and the
+This is the Aura3D 4.0 claim-lineage contract and the
 controlling principle of the 2.0 release. It is enforced by `pnpm check:claim-lineage`
 (`tools/claim-lineage/index.ts`), which runs inside `check:release`.
 

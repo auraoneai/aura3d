@@ -1,6 +1,6 @@
 # Asset Viewer Source Fixture
 
-> The public route entry point was removed for Aura3D 2.0. This lower-level
+> The public route entry point was removed for Aura3D 4.0. This lower-level
 > loader/inspector source intentionally accepts custom fixture URLs and remains
 > available to asset, compression, animation, drag/drop, and renderer contract
 > tests through `/tests/fixtures/asset-viewer/`. It is not the typed public asset

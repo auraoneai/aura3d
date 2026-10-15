@@ -9,7 +9,7 @@ evidence. Do not let production-runtime, rendering package, template, roadmap,
 or prototype capability leak into claims about the root `createAuraApp` safe
 API.
 
-Aura3D 2.0 comparison claims use repository-locked `three@0.185.1`. The 15
+Aura3D 4.0 comparison claims use repository-locked `three@0.185.1`. The 15
 selected exact-installed correctness workloads are bounded evidence, not a
 universal parity verdict; full repeated performance, clean-machine replication,
 and independent gallery review remain separate gates.

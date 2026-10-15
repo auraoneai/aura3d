@@ -383,7 +383,7 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
       castShadow: true,
       receiveShadow: true
     }))
-    .add(effects.fog({
+    .add(effects.depthFog({
       name: "architectural depth haze",
       density: 0.006 + haze * 0.012,
       color: mood.fog,
@@ -399,7 +399,28 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
     .add(effects.ambientOcclusion({
       name: "architectural contact occlusion",
       intensity: 0.34,
-      radius: 0.68
+      radius: 0.68,
+      falloff: 1.7,
+      multiBounce: true
+    }))
+    .add(effects.contactShadows({
+      length: 0.24,
+      thickness: 0.045,
+      steps: 12,
+      intensity: 0.76,
+      lights: "sun"
+    }))
+    .add(effects.vignette({
+      name: "architectural framing vignette",
+      intensity: nextControls.mood === "nocturne" ? 0.24 : 0.16,
+      smoothness: 0.74,
+      roundness: 0.86,
+      color: mood.background
+    }))
+    .add(effects.colorGrade({
+      name: "architectural mood color grade",
+      contrast: nextControls.mood === "nocturne" ? 1.07 : 1.04,
+      saturation: nextControls.mood === "dawn" ? 1.06 : 1.03
     }))
     .add(lights.spot({
       name: "architectural night facade spotlight",

@@ -5,7 +5,13 @@ import {
   type GLTFAsset,
   type GLTFRenderResources
 } from "@aura3d/assets";
-import { Renderer, a3dRenderFrame } from "@aura3d/engine/renderer";
+import {
+  Renderer,
+  createLightingRig,
+  type CollectedLight,
+  type RendererInput,
+  type RendererPostProcessOptions
+} from "@aura3d/rendering";
 
 declare global {
   interface Window {
@@ -43,6 +49,45 @@ const VARIANT_COLORS: Record<string, string> = {
   arctic: "#7ec8ff"
 };
 
+const STUDIO_POSTPROCESS_4_0 = {
+  tonemapping: { enabled: true, mode: "aces" as const, exposure: 1.15 },
+  bloom: { enabled: true, intensity: 0.18, threshold: 0.82 },
+  fxaa: { enabled: true },
+  vignette: { enabled: true, intensity: 0.22 }
+} as const;
+
+const STUDIO_POSTPROCESS_OPTIONS: RendererPostProcessOptions = {
+  targetFormat: "rgba8",
+  toneMapping: {
+    operator: STUDIO_POSTPROCESS_4_0.tonemapping.mode,
+    exposure: STUDIO_POSTPROCESS_4_0.tonemapping.exposure,
+    inputColorSpace: "linear",
+    outputColorSpace: "srgb"
+  },
+  bloom: {
+    intensity: STUDIO_POSTPROCESS_4_0.bloom.intensity,
+    threshold: STUDIO_POSTPROCESS_4_0.bloom.threshold,
+    radius: 1,
+    quality: "balanced"
+  },
+  colorGrade: {
+    contrast: 1.06,
+    saturation: 1.05,
+    vignette: STUDIO_POSTPROCESS_4_0.vignette.intensity
+  },
+  fxaa: STUDIO_POSTPROCESS_4_0.fxaa.enabled
+};
+
+function createStudioThreePointLights(): readonly CollectedLight[] {
+  const rig = createLightingRig({
+    preset: "key-fill-rim",
+    intensityScale: 1.25,
+    shadows: false,
+    subject: { height: 1.4, width: 2.2, floorY: -0.55 }
+  });
+  return rig.collectedLights;
+}
+
 async function run(): Promise<void> {
   const root = document.getElementById("app");
   const canvas = document.getElementById("viewport");
@@ -70,11 +115,17 @@ async function run(): Promise<void> {
   try {
     const asset = await new GLTFLoader().load({ url: createVariantFixtureDataUrl() }, new LoadContext());
     const resourcesByVariant = await createVariantResources(asset);
+    const studioLights = createStudioThreePointLights();
     const renderer = await Renderer.create({
+      backend: "webgl2",
       canvas,
       width: WIDTH,
       height: HEIGHT,
-            clearColor: [0.012, 0.014, 0.018, 1]
+      clearColor: [0.012, 0.014, 0.018, 1],
+      output: {
+        toneMapping: STUDIO_POSTPROCESS_4_0.tonemapping.mode,
+        exposure: STUDIO_POSTPROCESS_4_0.tonemapping.exposure
+      }
     });
     const variants = ["base", ...asset.materialVariants.map((variant) => variant.name)];
     const selectedMaterials = variants.map((variant) => inspectSelectedMaterial(asset, variant));
@@ -107,10 +158,10 @@ async function run(): Promise<void> {
         const activeVariant = variants[Math.floor(now / 900) % variants.length] ?? "base";
         const resources = resourcesByVariant.get(activeVariant) ?? resourcesByVariant.get("base");
         if (!resources) throw new Error("Variant resources were not created.");
-        const result = a3dRenderFrame(renderer, createRendererInput(resources, activeVariant, now / 1000));
+        const diagnostics = renderer.render(createRendererInput(resources, studioLights, now / 1000));
         runtime = createRuntime(frameCount === 1 ? "ready" : "running", frameCount === 1 ? "Ready" : "Running", startedAt, {
           frameCount,
-          drawCalls: result.diagnostics.drawCalls,
+          drawCalls: diagnostics.drawCalls,
           fps,
           meshCount: asset.loaderDiagnostics.meshCount,
           materialCount: asset.loaderDiagnostics.materialCount,
@@ -153,14 +204,27 @@ function inspectSelectedMaterial(asset: GLTFAsset, variant: string): string {
   return scene.collectRenderables()[0]?.renderable.material ?? "unknown";
 }
 
-function createRendererInput(resources: GLTFRenderResources, activeVariant: string, time: number): Parameters<typeof a3dRenderFrame>[1] {
+function createRendererInput(
+  resources: GLTFRenderResources,
+  collectedLights: readonly CollectedLight[],
+  time: number
+): RendererInput {
   const input = resources.toRendererInput({ width: WIDTH, height: HEIGHT }, {
     qualityPreset: "studio-preview",
-    postprocess: {
-      targetFormat: "rgba8",
-      toneMapping: { exposure: 1, operator: "filmic", inputColorSpace: "linear", outputColorSpace: "srgb" },
-      fxaa: true
+    collectedLights,
+    environmentLighting: {
+      color: [0.64, 0.72, 0.88],
+      intensity: 1.28,
+      proceduralMap: {
+        skyColor: [0.62, 0.74, 0.96],
+        horizonColor: [0.34, 0.4, 0.52],
+        groundColor: [0.1, 0.12, 0.16],
+        specularColor: [1, 0.96, 0.9],
+        intensity: 1.25,
+        specularIntensity: 1.35
+      }
     },
+    postprocess: STUDIO_POSTPROCESS_OPTIONS,
     frame: {
       yawRadians: -0.4 + Math.sin(time * 0.5) * 0.05,
       pitchRadians: -0.14,
@@ -171,21 +235,7 @@ function createRendererInput(resources: GLTFRenderResources, activeVariant: stri
   });
   return {
     source: input.source,
-    camera: input.camera,
-    metadata: {
-      assetId: APP_ID,
-      assetName: `CurrentRoutes Loader GLTF Variants ${activeVariant}`,
-      assetUri: "/apps/loader-gltf-variants/",
-      meshCount: 1,
-      primitiveCount: 1,
-      materialCount: 3,
-      textureCount: 0,
-      imageCount: 0,
-      animationCount: 0,
-      skinCount: 0,
-      morphTargetCount: 0,
-      extensionsUsed: ["KHR_materials_variants"]
-    }
+    camera: input.camera
   };
 }
 

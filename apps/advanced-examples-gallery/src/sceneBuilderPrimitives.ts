@@ -128,45 +128,72 @@ export function frame(
 export function lights(kind: string): readonly CollectedLight[] {
   const key = new DirectionalLight(`${kind}-key`);
   const fill = new DirectionalLight(`${kind}-fill`);
+  const rim = new DirectionalLight(`${kind}-rim`);
   const point = new PointLight(`${kind}-point`);
   if (kind.startsWith("product-")) {
     const inspection = kind === "product-inspection";
     const environment = kind === "product-environment";
-    key.color = inspection ? [0.82, 0.9, 1] : [1, 0.86, 0.68];
-    key.intensity = inspection ? 0.74 : environment ? 0.82 : 0.68;
-    fill.color = [0.34, 0.46, 0.66];
-    fill.intensity = inspection ? 0.22 : 0.14;
-    point.color = environment ? [0.5, 0.76, 1] : [1, 0.64, 0.36];
-    point.intensity = inspection ? 1.08 : environment ? 1.2 : 0.95;
+    key.color = inspection ? [0.84, 0.91, 1] : [1, 0.88, 0.72];
+    key.intensity = inspection ? 0.78 : environment ? 0.86 : 0.72;
+    fill.color = [0.36, 0.48, 0.68];
+    fill.intensity = inspection ? 0.24 : 0.16;
+    rim.color = [0.68, 0.78, 0.92];
+    rim.intensity = inspection ? 0.28 : 0.22;
+    point.color = environment ? [0.52, 0.78, 1] : [1, 0.66, 0.38];
+    point.intensity = inspection ? 1.12 : environment ? 1.24 : 0.98;
     return [
       { kind: "directional", color: key.color, intensity: key.intensity, position: [4.8, 5.4, 4.2], direction: [-0.42, -0.72, -0.36], range: 0, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: key },
       { kind: "directional", color: fill.color, intensity: fill.intensity, position: [-4.8, 3.2, -3.8], direction: [0.48, -0.42, 0.52], range: 0, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: fill },
+      { kind: "directional", color: rim.color, intensity: rim.intensity, position: [-2.4, 4.6, -4.8], direction: [0.3, -0.5, 0.81], range: 0, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: rim },
       { kind: "point", color: point.color, intensity: point.intensity, position: [0, 2.2, 0.8], direction: [0, -1, 0], range: 5.4, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: point }
     ];
   }
   if (kind === "reactor") {
-    key.color = [0.58, 0.76, 1];
-    key.intensity = 1.85;
-    fill.color = [0.3, 0.55, 0.9];
-    fill.intensity = 0.74;
-    point.color = [0.22, 0.82, 1];
-    point.intensity = 16;
+    key.color = [0.58, 0.78, 1];
+    key.intensity = 1.92;
+    fill.color = [0.32, 0.58, 0.92];
+    fill.intensity = 0.78;
+    rim.color = [0.42, 0.86, 1];
+    rim.intensity = 0.64;
+    point.color = [0.22, 0.84, 1];
+    point.intensity = 16.5;
     return [
       { kind: "directional", color: key.color, intensity: key.intensity, position: [5, 7, 5], direction: [-0.45, -0.72, -0.42], range: 0, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: key },
       { kind: "directional", color: fill.color, intensity: fill.intensity, position: [-5, 4, -4], direction: [0.5, -0.34, 0.5], range: 0, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: fill },
+      { kind: "directional", color: rim.color, intensity: rim.intensity, position: [0, 5.2, -5.6], direction: [0, -0.48, 0.88], range: 0, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: rim },
       { kind: "point", color: point.color, intensity: point.intensity, position: [0, 2.15, 0.16], direction: [0, -1, 0], range: 6.5, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: point }
     ];
   }
-  const hot = kind === "night" || kind === "city" || kind === "reactor";
-  key.color = hot ? [0.6, 0.78, 1] : [1, 0.88, 0.68];
-  key.intensity = kind === "storm" ? 3.6 : hot ? 2.4 : 3.1;
-  fill.color = hot ? [0.35, 0.55, 1] : [0.55, 0.7, 1];
-  fill.intensity = hot ? 1.2 : 0.9;
-  point.color = kind === "reactor" ? [0.25, 0.9, 1] : [1, 0.55, 0.2];
-  point.intensity = kind === "reactor" ? 42 : 18;
+  if (kind === "cathedral") {
+    key.color = [1, 0.86, 0.64];
+    key.intensity = 2.85;
+    fill.color = [0.48, 0.62, 0.78];
+    fill.intensity = 0.92;
+    rim.color = [0.92, 0.76, 0.54];
+    rim.intensity = 0.74;
+    point.color = [1, 0.72, 0.42];
+    point.intensity = 14;
+    return [
+      { kind: "directional", color: key.color, intensity: key.intensity, position: [4.2, 7.6, 3.8], direction: [-0.38, -0.78, -0.49], range: 0, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: key },
+      { kind: "directional", color: fill.color, intensity: fill.intensity, position: [-4.6, 3.8, -3.4], direction: [0.48, -0.36, 0.54], range: 0, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: fill },
+      { kind: "directional", color: rim.color, intensity: rim.intensity, position: [0, 5.8, -6.2], direction: [0, -0.46, 0.89], range: 0, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: rim },
+      { kind: "point", color: point.color, intensity: point.intensity, position: [0, 2.6, -1.8], direction: [0, -1, 0], range: 9, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: point }
+    ];
+  }
+  const hot = kind === "night" || kind === "city";
+  const industrial = kind === "lab" || kind === "factory";
+  key.color = hot ? [0.62, 0.8, 1] : industrial ? [0.94, 0.96, 1] : [1, 0.88, 0.68];
+  key.intensity = kind === "storm" ? 3.6 : hot ? 2.45 : industrial ? 2.75 : 3.1;
+  fill.color = hot ? [0.36, 0.56, 1] : industrial ? [0.52, 0.68, 0.92] : [0.55, 0.7, 1];
+  fill.intensity = hot ? 1.2 : industrial ? 1.05 : 0.95;
+  rim.color = hot ? [0.48, 0.76, 1] : [0.84, 0.9, 1];
+  rim.intensity = industrial ? 0.72 : 0.58;
+  point.color = industrial ? [0.38, 0.86, 1] : [1, 0.56, 0.22];
+  point.intensity = industrial ? 15 : 18;
   return [
     { kind: "directional", color: key.color, intensity: key.intensity, position: [5, 7, 5], direction: [-0.45, -0.72, -0.42], range: 0, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: key },
     { kind: "directional", color: fill.color, intensity: fill.intensity, position: [-5, 4, -4], direction: [0.5, -0.34, 0.5], range: 0, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: fill },
+    { kind: "directional", color: rim.color, intensity: rim.intensity, position: [-2.2, 5.2, -5.4], direction: [0.3, -0.5, 0.81], range: 0, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: rim },
     { kind: "point", color: point.color, intensity: point.intensity, position: [0, 2.4, 0], direction: [0, -1, 0], range: 8, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: point }
   ];
 }

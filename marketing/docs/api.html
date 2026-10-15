@@ -86,7 +86,8 @@
       </div>
       <pre class="code doc-code"><code>import {
   createAuraApp, scene, model, camera, lights, material,
-  primitives, sceneKits, interactions, effects
+  environments, primitives, sceneKits, interactions,
+  effects, looks, game, physics, navigation, animation, audio
 } from "@aura3d/engine";</code></pre>
     </aside>
   </div>
@@ -112,38 +113,52 @@
   <div class="wrap">
     <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
       <div class="sec-head-left">
-        <span class="eyebrow">TypeScript API</span>
-        <h2 class="h2">Compose scenes from named building blocks.</h2>
-        <p class="lede">The API covers the parts agents need most: scene setup, primitives, model placement, lighting, cameras, effects, interactions, UI overlays, and complete scene kits.</p>
+        <span class="eyebrow">TypeScript API · Aura3D 4.0.0</span>
+        <h2 class="h2">Compose scenes, effects, and games from one root package.</h2>
+        <p class="lede">Aura3D 4.0.0 consolidates scene authoring, PBR materials, environments, 28+ <code>effects.*</code> post-processing/atmosphere/particle builders, <code>looks.*</code> art-direction presets, <code>game.*</code> genre kits, Rapier physics, Recast navigation, animation, and spatial audio into <code>@aura3d/engine@4.0.0</code> across 24 active public npm packages (with all <code>&lt; 4.0.0</code> versions and the 5 legacy compatibility packages deprecated in full).</p>
       </div>
     </div>
     <div class="doc-card-grid">
 
           <a class="doc-card" href="/docs/prompt-recipes.html">
-            <span class="doc-card-kicker mono">TypeScript API</span>
-            <h3>Scene kits</h3>
-            <p>Complete systems for common prompt families like particles, physics, data, materials, and product viewers.</p>
+            <span class="doc-card-kicker mono">effects.* · Post-Processing</span>
+            <h3>Screen-Space &amp; Cinematic Post</h3>
+            <p><code>effects.bloom</code>, <code>neonBloom</code>, <code>cinematicBloom</code>, <code>ambientOcclusion</code> (SSAO), <code>contactOcclusion</code>, <code>contactShadows</code>, <code>screenSpaceReflections</code> (SSR), <code>depthOfField</code>, <code>motionBlur</code>, <code>colorGrade</code>, <code>vignette</code>, <code>filmGrain</code>, <code>chromaticAberration</code>, <code>antiAlias</code> (FXAA), and <code>outline</code>.</p>
             <span class="doc-card-link">Read guide <span class="arr"></span></span>
           </a>
 
           <a class="doc-card" href="/docs/prompt-recipes.html">
-            <span class="doc-card-kicker mono">TypeScript API</span>
-            <h3>Primitives</h3>
-            <p>Use boxes, spheres, capsules, planes, groups, labels, and materials for prompt-specific geometry.</p>
+            <span class="doc-card-kicker mono">effects.* · Atmosphere &amp; VFX</span>
+            <h3>Volumetrics, Weather &amp; Particles</h3>
+            <p><code>effects.fog</code>, <code>depthFog</code>, <code>volumetricFog</code>, <code>fogVolume</code>, <code>lightCone</code>, <code>auroraRibbon</code>, <code>rain</code>, <code>snow</code>, <code>particles</code>, <code>meshParticles</code>, <code>flipbook</code>, <code>trail</code>, <code>beam</code>, <code>atmosphere.setSky</code>, <code>atmosphere.setWetness</code>, and <code>ResidentGPUParticleRenderer</code>.</p>
+            <span class="doc-card-link">Read guide <span class="arr"></span></span>
+          </a>
+
+          <a class="doc-card" href="/docs/templates.html">
+            <span class="doc-card-kicker mono">game.* &amp; looks.*</span>
+            <h3>Genre Kits, Looks &amp; Game Feel</h3>
+            <p><code>game.platformer</code>, <code>game.racing</code>, <code>game.fallingBlocks</code>, <code>game.fighting</code>, <code>game.feel</code> (<code>shake</code>, <code>hitStop</code>, <code>flash</code>, <code>pulseFov</code>, <code>chromaticBurst</code>, <code>burst</code>), and 8 <code>looks.preset</code> / <code>looks.appOptions</code> art-direction recipes.</p>
             <span class="doc-card-link">Read guide <span class="arr"></span></span>
           </a>
 
           <a class="doc-card" href="/docs/assets.html">
-            <span class="doc-card-kicker mono">TypeScript API</span>
-            <h3>Typed assets</h3>
-            <p>Load user-supplied GLB/glTF models through generated asset references.</p>
+            <span class="doc-card-kicker mono">@aura3d/cli@4.0.0</span>
+            <h3>Typed GLB &amp; Meshy 3D Pipeline</h3>
+            <p>Search 800,000+ catalog models or admit custom Meshy 3D PBR assets via <code>aura3d assets import-meshy</code>, <code>assets validate</code>, and <code>assets typegen</code> for fail-closed <code>model(assets.key)</code> consumption.</p>
             <span class="doc-card-link">Read guide <span class="arr"></span></span>
           </a>
 
-          <a class="doc-card" href="/docs/api.html">
-            <span class="doc-card-kicker mono">TypeScript API</span>
-            <h3>Interactions</h3>
-            <p>Add orbit controls, sliders, buttons, selection states, and UI overlays with documented Aura3D APIs.</p>
+          <a class="doc-card" href="/docs/prompt-recipes.html">
+            <span class="doc-card-kicker mono">Scene &amp; Simulation</span>
+            <h3>Scene Kits, Physics &amp; NavMesh</h3>
+            <p><code>sceneKits.*</code>, <code>primitives.*</code>, <code>material.*</code>, <code>lights.*</code>, <code>camera.*</code>, <code>environments.*</code>, Rapier physics (<code>@aura3d/physics-rapier</code>), and Recast crowd navigation (<code>@aura3d/navigation-recast</code>).</p>
+            <span class="doc-card-link">Read guide <span class="arr"></span></span>
+          </a>
+
+          <a class="doc-card" href="/docs/deployment.html">
+            <span class="doc-card-kicker mono">24 Active 4.0.0 Packages</span>
+            <h3>Consolidated 4.0.0 Package Surface</h3>
+            <p><code>@aura3d/engine</code>, <code>create-aura3d</code>, <code>@aura3d/cli</code>, <code>rendering</code>, <code>scene</code>, <code>assets</code>, <code>asset-index</code>, <code>animation</code>, <code>physics</code>, <code>physics-rapier</code>, <code>navigation-recast</code>, <code>controls</code>, <code>input</code>, <code>audio</code>, <code>react</code>, <code>workflows</code>, <code>product-studio</code>, <code>math</code>, <code>ecs</code>, <code>debug</code>, <code>scripting</code>, <code>editor-runtime</code>, <code>apps</code>, <code>core</code>.</p>
             <span class="doc-card-link">Read guide <span class="arr"></span></span>
           </a>
     </div>

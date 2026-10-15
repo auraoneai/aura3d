@@ -2,7 +2,7 @@
   "schema": "aura3d.marketing-final-previews/1.0",
   "status": "machine-reviewed-human-approval-pending",
   "approvalNote": "The August 12 approval predates subsequent game, lighting, and homepage changes. Exact final artifacts require renewed independent review.",
-  "generatedAt": "2026-08-15T17:10:00.000Z",
+  "generatedAt": "2026-10-15T18:01:57.594Z",
   "previews": [
     {
       "id": "showcase-product-configurator",
@@ -28,8 +28,8 @@
       "target": "marketing/public/previews/showcase/showcase-cinematic-architecture.png",
       "width": 1440,
       "height": 900,
-      "sha256": "b8758ff643e465d6dd785a8c66199ddbf136ba5c62f0f41a97319411843d2339",
-      "bytes": 284469
+      "sha256": "0a3c40cd3dd4015164093524b4fe5374a40e05acbe0eb3fe6d5dd3e136cb4cde",
+      "bytes": 284604
     },
     {
       "id": "showcase-digital-twin-ops",
@@ -37,44 +37,44 @@
       "target": "marketing/public/previews/showcase/showcase-digital-twin-ops.png",
       "width": 1440,
       "height": 900,
-      "sha256": "14daa36d49d73f5653dc7f8f4b854e128c0ca267c7e61bed699b53b35d957bb7",
-      "bytes": 219853
+      "sha256": "719ed1df84834fca1352e075caf4b57a23ed09046aca1964bd30361fa093ac9b",
+      "bytes": 219833
     },
     {
       "id": "showcase-blockfall-reactor",
       "source": "tests/reports/showcase-gameplay/showcase-blockfall-reactor-line-clear.png",
       "target": "marketing/public/previews/showcase/showcase-blockfall-reactor.png",
-      "width": 1280,
-      "height": 800,
-      "sha256": "186105e3874b03e9e1d2040b32ef408fa2201c558a4ff6ec24c6c1d731cfdf2c",
-      "bytes": 142555
+      "width": 1920,
+      "height": 1080,
+      "sha256": "6b0d6df848de44159f7717d4424129aa1468033ef2e21e718c1bf9037e0b4990",
+      "bytes": 1645970
     },
     {
       "id": "showcase-turbo-drift-circuit",
       "source": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-high-speed-chase.png",
       "target": "marketing/public/previews/showcase/showcase-turbo-drift-circuit.png",
-      "width": 1280,
-      "height": 800,
-      "sha256": "557f6c1ff454313cbabf912fe68e1d02c6fb1ac31922a7ff955c9b3830984da1",
-      "bytes": 1324883
+      "width": 1920,
+      "height": 1080,
+      "sha256": "420bde88e126d3237783ab69df999b1a8fa84792bdc85d421f477eb1237a594f",
+      "bytes": 696742
     },
     {
       "id": "showcase-skyline-runner",
       "source": "tests/reports/showcase-gameplay/showcase-skyline-runner-act-aurora-crown.png",
       "target": "marketing/public/previews/showcase/showcase-skyline-runner.png",
-      "width": 1280,
-      "height": 800,
-      "sha256": "282326eaf5f9517991dd775d9e3e67c0223a327efb13cd158495cf92e24f5d8f",
-      "bytes": 402363
+      "width": 1920,
+      "height": 1080,
+      "sha256": "9cfd98578e5ffdd184cad76f847bc9e06fe862e23abec74ce952f73dbfbf3476",
+      "bytes": 2101565
     },
     {
       "id": "aura-clash-arena",
       "source": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-special.png",
       "target": "marketing/public/previews/aura-clash-poster.png",
-      "width": 1280,
-      "height": 1091,
-      "sha256": "efd19a07149d896e40b2590db9cad801537354ff171825e44bf0a8c727cd61d7",
-      "bytes": 853341
+      "width": 1920,
+      "height": 1080,
+      "sha256": "5a615c03d532cc9ac7e8107ab6073a27ae44b5e1f2283c5b049ba6425cb1f6d6",
+      "bytes": 1124255
     }
   ]
 }

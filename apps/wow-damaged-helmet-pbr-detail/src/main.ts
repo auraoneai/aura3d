@@ -10,13 +10,25 @@ void startWowShowcase({
     yaw: 0.42,
     pitch: -0.04,
     zoom: 0.74,
-    exposure: 0.58,
-    roughnessScale: 0.78,
-    metallicScale: 0.88,
-    clearcoatBoost: 0.08,
+    exposure: 1.12,
+    roughnessScale: 0.76,
+    metallicScale: 0.96,
+    clearcoatBoost: 0.12,
     backgroundBlur: 0.28,
     backgroundVisible: false,
     shadows: true
+  },
+  lightingRig: {
+    keyIntensity: 2.3,
+    fillIntensity: 1.0,
+    rimIntensity: 1.28
+  },
+  postProcess: {
+    tonemapping: { enabled: true, mode: "aces", exposure: 1.15 },
+    bloom: { enabled: true, intensity: 0.22, threshold: 0.8 },
+    ssao: { enabled: true, radius: 0.45, intensity: 0.35 },
+    fxaa: { enabled: true },
+    vignette: { enabled: true, intensity: 0.22 }
   },
   orbitSpeed: -0.0022
 });

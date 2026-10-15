@@ -1,6 +1,6 @@
 Aura3D agent guide — a typed scene API for building real 3D apps: scenes, looks,
 lighting, materials, typed assets, camera rigs, gameFeel, SDF text, decals, rigid bodies, and gameplay through
-`@aura3d/engine` plus the `@aura3d/cli` toolchain. Current release: Aura3D 4.0.0 (succeeding 3.0.1).
+`@aura3d/engine` plus the `@aura3d/cli` toolchain. Current release: Aura3D 4.0.0 (succeeding 4.0.0).
 
 Hello world: every scene gets a look first.
 
@@ -121,3 +121,8 @@ Release integrity rules:
 Benchmark mode: if `aura3d look capture` is available, run the look-dev loop;
 otherwise run finite commands (`npm install && npm run build`) then stop and
 label the result `prototype`.
+
+| Scene Kit | API | Status |
+| --- | --- | --- |
+| Material lab | `sceneKits.materialLab()` | root-proven (partial advanced coat extensions) |
+

@@ -218,14 +218,18 @@ export function updateEnemies(
     const at = body.position();
     let x = at[0];
     let z = at[2];
+    const animClock = performance.now() * 0.001 + enemy.x * 1.9 + enemy.z * 0.7;
 
     if (state.spawnGuard > 0) {
-      // Dormant: pinned to spawn, facing the entrance, reading as a set piece.
+      // Dormant: pinned to spawn, facing the entrance, with heavy mech combat-ready patrol bobbing.
       body.setPosition([enemy.x, ENEMY_BODY_Y, enemy.z]);
       const yaw = yawToward(enemy.x, enemy.z, playerAt[0], playerAt[2]);
       facing.set(id, yaw);
-      node?.setPosition(enemy.x, visualY, enemy.z);
-      node?.setRotation(0, yaw, 0);
+      const guardBob = Math.abs(Math.sin(animClock * 5.8)) * 0.065;
+      const guardSway = Math.sin(animClock * 2.9) * 0.14;
+      const guardRoll = Math.cos(animClock * 5.8) * 0.045;
+      node?.setPosition(enemy.x + Math.sin(animClock * 2.9) * 0.12, visualY + guardBob, enemy.z);
+      node?.setRotation(0.05, yaw + guardSway, guardRoll);
       node?.setVisible(true);
       collar?.setPosition(enemy.x, 1.2, enemy.z - 0.24);
       collar?.setRotation(0, yaw, 0);
@@ -290,10 +294,17 @@ export function updateEnemies(
     const backZ = Math.cos(yaw) * 0.19 * flinchK;
     // Telegraph lean: wind up toward the player so the swipe is readable.
     const telegraphLean = telegraph > 0 ? Math.sin((1 - telegraph / TELEGRAPH) * Math.PI) : 0;
-    node?.setRotation(0.22 * telegraphLean - 0.26 * (flinch > 0 ? 1 : 0), yaw, 0.08 * (flinch > 0 ? 1 : 0));
+    const strideBob = Math.abs(Math.sin(animClock * 9.5)) * 0.095;
+    const strideRoll = Math.sin(animClock * 9.5) * 0.068;
+    const strideTwist = Math.cos(animClock * 9.5) * 0.11;
+    node?.setRotation(
+      0.12 + 0.22 * telegraphLean - 0.26 * (flinch > 0 ? 1 : 0),
+      yaw + strideTwist,
+      strideRoll + 0.08 * (flinch > 0 ? 1 : 0)
+    );
     node?.setPosition(
       x + backX - Math.sin(yaw) * 0.12 * telegraphLean,
-      visualY,
+      visualY + strideBob,
       z + backZ - Math.cos(yaw) * 0.12 * telegraphLean
     );
     node?.setVisible(true);

@@ -900,6 +900,7 @@ function runSimulationStep(dt: number): void {
   if (keys.has("KeyQ") || keys.has("PageDown")) heave -= 1;
 
   const sprint = keys.has("ShiftLeft") || keys.has("ShiftRight");
+  const manualMovePressed = throttle !== 0 || turn !== 0 || heave !== 0 || sprint;
 
   // 2. Physics, Turbo Ballast Purge & Submarine Update
   const tetheredCrates = crates.filter((c) => c.tethered);
@@ -928,7 +929,7 @@ function runSimulationStep(dt: number): void {
 
   // Apply thermal vent updraft currents & Turbo Ballast vertical impulse outside deterministic teleport hooks
   thermalUpdraftActive = false;
-  if (!teleportedByHook && timeSinceStart >= 45) {
+  if (!teleportedByHook && (manualMovePressed || timeSinceStart >= 45)) {
     for (const vent of THERMAL_VENTS) {
       const horizDist = Math.hypot(subState.x - vent.x, subState.z - vent.z);
       if (horizDist <= vent.radius && subState.y <= -6.5 && subState.y >= vent.y - 0.8) {
@@ -950,14 +951,24 @@ function runSimulationStep(dt: number): void {
     }
   }
 
-  if (timeSinceStart < 45 && !compositionProbeActive && !teleportedByHook) {
+  if (!manualMovePressed && !compositionProbeActive && !teleportedByHook) {
+    // Autonomous deep-sea salvage patrol orbit when player is watching without holding WASD
+    const patrolPhase = timeSinceStart * 0.72;
+    const patrolX = -2.85 + Math.sin(patrolPhase) * 0.58;
+    const patrolY = -11.55 + Math.sin(patrolPhase * 1.6) * 0.28;
+    const patrolZ = -7.45 + Math.cos(patrolPhase) * 0.52;
+    const patrolYaw = 0.31 + Math.cos(patrolPhase) * 0.14;
+    const patrolPitch = Math.cos(patrolPhase * 1.6) * 0.065;
+    const patrolRoll = Math.sin(patrolPhase * 1.15) * 0.055;
     subState = {
       ...subState,
-      x: Math.max(-3.6, Math.min(-2.2, subState.x)),
-      y: Math.max(-12.2, Math.min(-11.0, subState.y)),
-      z: Math.max(-8.2, Math.min(-6.8, subState.z)),
-      yaw: Math.max(0.24, Math.min(0.38, subState.yaw)),
-      pitch: Math.max(-0.08, Math.min(0.08, subState.pitch))
+      x: patrolX,
+      y: patrolY,
+      z: patrolZ,
+      yaw: patrolYaw,
+      pitch: patrolPitch,
+      roll: patrolRoll,
+      speed: 2.15 + Math.sin(patrolPhase * 1.4) * 0.35
     };
   }
 

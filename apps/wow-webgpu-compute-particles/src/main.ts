@@ -7,6 +7,7 @@ import {
   ParticleEmitter,
   ParticleRenderer,
   ParticleSystem,
+  ResidentGPUParticleRenderer,
   SizeModule,
   SubEmitterModule,
   TrailModule,
@@ -24,6 +25,7 @@ import {
   UnlitMaterial,
 } from "@aura3d/rendering";
 
+import { resolveWowPostProcessOptions } from "/apps/wow-common/src/gltf-showcase.ts";
 import { startWebGPUShowcase } from "/apps/wow-common/src/webgpu-showcase.ts";
 
 /**
@@ -38,6 +40,14 @@ const particleCount = 10_000;
 const trailLifetime = 0.45;
 const fadeDistance = 0.45;
 const cameraAnchor = { x: 0, y: 1.5, z: 3.2 };
+
+const particlePostProcess = resolveWowPostProcessOptions({
+  tonemapping: { enabled: true, mode: "aces", exposure: 1.15 },
+  bloom: { enabled: true, intensity: 0.22, threshold: 0.8 },
+  ssao: { enabled: true, radius: 0.45, intensity: 0.35 },
+  fxaa: { enabled: true },
+  vignette: { enabled: true, intensity: 0.22 }
+});
 
 const particleMaterial = new UnlitMaterial({ name: "a4-live-attributes", color: [1, 1, 1, 1],
   renderState: { blend: true, depthWrite: false, cullMode: "none" } });
@@ -203,7 +213,7 @@ void startWebGPUShowcase({
   labels: {
     concept: "gpu particle behavior",
     workload: `${particleCount} accelerated particles`,
-    api: "WebGPUParticleBackend + ParticleSystem A4 effects",
+    api: "ResidentGPUParticleRenderer + WebGPUParticleBackend + ParticleSystem A4 effects",
   },
   async setup({ canvas, renderSize }) {
     const capabilities = await queryGPUParticleBackendCapabilities();
@@ -315,7 +325,7 @@ void startWebGPUShowcase({
           camera: { position: [cameraAnchor.x,cameraAnchor.y,cameraAnchor.z], target: [0,1,0], fovDegrees: 65, near: 0.05, far: 30 },
           environmentLighting: false,
           shadow: false,
-          postprocess: false,
+          postprocess: particlePostProcess,
         });
         // renderAsync submits commands; fence the native queue so receipt timestamps
         // represent completed GPU work. This fence introduces no texture readback.
@@ -370,7 +380,6 @@ void startWebGPUShowcase({
 /** One-time authoring upload, then native storage simulation and vertex-pulled
  * quads/ribbons. Only compact GPU reduction counters return to JavaScript. */
 async function setupResidentParticles(canvas: HTMLCanvasElement, width: number, height: number) {
-  const { ResidentGPUParticleRenderer } = await import('@aura3d/rendering');
   // This route is fill-heavy (10k sprites plus resident ribbons). Cap its native
   // backbuffer at 1280 on the long edge while preserving the CSS aspect ratio.
   // The frozen P01 gate drives the reference viewport at its required 1280x720;

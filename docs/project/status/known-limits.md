@@ -76,7 +76,7 @@ candidate. Final release claims require regeneration and source-bound receipts.
   vehicles, four-lap progression, per-wheel circuit contact, and visual
   asphalt wide enough to pass on tarmac;
   Blockfall retains hold/queue, line-clear, game-over, reset, and progression
-  proof. All three remain promotion-blocked until independent review approves
+  proof. All three remain playable-showcase until independent review approves
   their exact final artifacts. None of this generalizes to arbitrary assets,
   physical tyre simulation, or production games.
 
@@ -114,7 +114,7 @@ candidate. Final release claims require regeneration and source-bound receipts.
   measurements use `three@0.165.0`. They are historical regression evidence,
   not evidence of parity with the locked current `three@0.185.1` ecosystem.
 - The prior r185.1 comparison recorded passes for 15 selected correctness
-  workloads from 29 freshly packed and npm-installed Aura3D 3.0.0 tarballs
+  workloads from 29 freshly packed and npm-installed Aura3D 4.0.0 tarballs
   (K2 `fresh-installed-2.0-packages-prove-all-workloads` gate green at the
   release commit; the check id retains its 2.0-era name).
   These prior package receipts do not certify the 4.0.0 worktree.

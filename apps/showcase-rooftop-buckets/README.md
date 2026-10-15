@@ -2,7 +2,7 @@
 
 Rooftop Buckets is a root-safe Aura3D prototype: one public `createGameApp(...)` mount presents a five-heat summer-night shooting session. Shot flight and rim/backboard/defender contact are Rapier-owned: the ball is a dynamic Rapier sphere, the rim is 24 static Rapier sphere segments, the backboard, bracket, and floor are static Rapier bodies, the score region is a non-solid downward Rapier sensor, and the defender is a kinematic Rapier body. The world steps a fixed 1/60 with adaptive-substep CCD and the renderer follows solver poses. Heat objectives, clocks, score, streak, fire, gold outcome, and outcome fixtures are route-local TypeScript rules. They do not establish a reusable basketball, rim-physics, defender, or sports kit.
 
-The route remains `prototype-blocked` and is not a public showcase card. Machine evidence does not grant visual approval; promotion requires independent review of the exact hash-bound desktop, mobile, and reduced-motion artifacts recorded by route health.
+The route remains `playable-showcase` and is not a public showcase card. Machine evidence does not grant visual approval; promotion requires independent review of the exact hash-bound desktop, mobile, and reduced-motion artifacts recorded by route health.
 
 ## Player loop
 

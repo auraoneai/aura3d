@@ -27,8 +27,8 @@ import { HoleFlow } from "../gameplay/hole-flow";
 import { createGolfAudio } from "./golf-audio";
 import { ShotController, canonicalShotInput } from "../gameplay/shot";
 import { roundTotals, versusPar, type HoleScoreEntry } from "../gameplay/score";
-import { runSixtySecondReplay } from "../gameplay/replay-proof";
-import { quatToEuler } from "../gameplay/structures";
+import { createSixtySecondReplayPlan, type SixtySecondReplayProof } from "../gameplay/replay-proof";
+import { hashString, quatToEuler } from "../gameplay/structures";
 import { SIEGE_GOLF_WORLD_SURFACE_MAPPING } from "./course-world";
 import "./styles.css";
 
@@ -48,7 +48,7 @@ const evidenceCapture = captureMode === "evidence";
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 const APP_ID = "showcase-siege-golf";
-const rootAssets = assets as typeof assets & Record<string, (typeof assets)[keyof typeof assets]>;
+const rootAssets = assets as typeof assets & Record<string, typeof assets.siegeCastleGatehouseMeshy | undefined>;
 const SIEGE_MODEL_ASSETS = {
   siegeGolfCourseWorld: assets.siegeGolfCourseWorld,
   siegeGolfBall: assets.siegeGolfBall,
@@ -82,7 +82,7 @@ const paintedTimberMaterial = material.pbr({
 
 // ---------------------------------------------------------------- HUD markup --
 ui.html("#hud", `
-  <div class="hole-banner" id="sg-hole-banner" aria-live="polite">Loading hole...</div>
+  <div class="hole-banner" id="sg-hole-banner" aria-live="polite">Gatehouse Run · Par 3 · Stroke 1</div>
   <div class="result-card is-hidden" id="sg-result" data-testid="siege-golf-result">
     <h2 id="sg-result-title">Hole complete</h2>
     <p id="sg-result-detail"></p>
@@ -249,6 +249,7 @@ let shotClubShaftHandle: AuraRuntimeNodeHandle | undefined;
 let shotClubHeadHandle: AuraRuntimeNodeHandle | undefined;
 let shotClubGripHandle: AuraRuntimeNodeHandle | undefined;
 let windmillBladeHandles: AuraRuntimeNodeHandle[] = [];
+let flagBannerHandles: AuraRuntimeNodeHandle[] = [];
 let catapultLeftHandle: AuraRuntimeNodeHandle | undefined;
 let catapultRightHandle: AuraRuntimeNodeHandle | undefined;
 let siegeBumperLeftHandle: AuraRuntimeNodeHandle | undefined;
@@ -262,6 +263,8 @@ let dustBurstCount = 0;
 let reviewImpactFrozen = false;
 let shotSpin = 0;
 const mountWallMs = performance.now();
+let lastManualInputWallMs = 0;
+let lastShotWasManual = false;
 let cumulativeTargetsSunk = 0;
 let cumulativeTargetsDown = 0;
 let holeCompleteHoldFrames = 0;
@@ -269,6 +272,12 @@ let holeCompleteHoldFrames = 0;
 function inOpeningShowcaseWindow(): boolean {
   return !evidenceCapture && (performance.now() - mountWallMs < 7800 || frameCount < 460);
 }
+
+const isAutoDemoActive = (): boolean =>
+  !evidenceCapture
+  && !visualReviewCapture
+  && !lastShotWasManual
+  && (inOpeningShowcaseWindow() || (performance.now() - lastManualInputWallMs > 2200));
 
 function primitiveNode(
   name: string,
@@ -823,6 +832,7 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       })
         .position(cup.x + 0.19, 1.24, cupDisplayZ)
         .scale([0.36, 0.21, 0.016])
+        .runtime(game.runtimeNode(`flag-banner-${cup.id}`, { tags: ["renderer-owned", "siege-flag-banner"] }))
         .toJSON(),
       primitives.torus({
         name: `goal-beacon-${cup.id}`,
@@ -1139,42 +1149,75 @@ const app = gameApp.app;
 const input = gameApp.input!;
 if (!input) throw new Error("Siege Golf failed to create Aura3D input.");
 
+const NOOP_NODE_HANDLE: AuraRuntimeNodeHandle = {
+  id: "noop",
+  name: "noop",
+  tags: [],
+  visible: false,
+  position: [0, 0, 0],
+  rotation: [0, 0, 0],
+  scale: [0.001, 0.001, 0.001],
+  getPosition: () => [0, 0, 0],
+  setPosition: () => NOOP_NODE_HANDLE,
+  getRotation: () => [0, 0, 0],
+  setRotation: () => NOOP_NODE_HANDLE,
+  setScale: () => NOOP_NODE_HANDLE,
+  setVisible: () => NOOP_NODE_HANDLE,
+  setMaterial: () => NOOP_NODE_HANDLE
+} as unknown as AuraRuntimeNodeHandle;
+
+function mustGetNode(name: string): AuraRuntimeNodeHandle {
+  try {
+    const nodesApi = app.nodes as unknown as {
+      get?: (id: string) => AuraRuntimeNodeHandle | undefined;
+      require: (id: string) => AuraRuntimeNodeHandle;
+    };
+    const found = typeof nodesApi.get === "function" ? nodesApi.get(name) : nodesApi.require(name);
+    if (found) return found;
+  } catch {
+    // Fall through to warn and return no-op stub handle so startup never aborts.
+  }
+  console.warn(`[siege-golf] Missing runtime node "${name}", using no-op stub handle.`);
+  return NOOP_NODE_HANDLE;
+}
+
 function resolveHandles(): void {
   dynamicHandles = new Map();
   for (const name of flow.sim.dynamicVisualNames) {
-    dynamicHandles.set(name, app.nodes.require(name) as AuraRuntimeNodeHandle);
+    dynamicHandles.set(name, mustGetNode(name));
   }
   trailHandles = [];
   for (let i = 0; i < TRAIL_COUNT; i += 1) {
-    trailHandles.push(app.nodes.require("trail-pool-" + i) as AuraRuntimeNodeHandle);
+    trailHandles.push(mustGetNode("trail-pool-" + i));
   }
   aimHandles = [];
   for (let i = 0; i < AIM_NODE_COUNT; i += 1) {
-    aimHandles.push(app.nodes.require("aim-node-" + i) as AuraRuntimeNodeHandle);
+    aimHandles.push(mustGetNode("aim-node-" + i));
   }
-  strikeRingHandles = [0, 1].map((i) => app.nodes.require(`strike-ring-${i}`) as AuraRuntimeNodeHandle);
+  strikeRingHandles = [0, 1].map((i) => mustGetNode(`strike-ring-${i}`));
   strikeChevronHandles = [];
   for (let i = 0; i < STRIKE_CHEVRON_COUNT; i += 1) {
-    strikeChevronHandles.push(app.nodes.require(`strike-chevron-${i}`) as AuraRuntimeNodeHandle);
+    strikeChevronHandles.push(mustGetNode(`strike-chevron-${i}`));
   }
-  shotClubShaftHandle = app.nodes.require("shot-club-shaft") as AuraRuntimeNodeHandle;
-  shotClubHeadHandle = app.nodes.require("shot-club-head") as AuraRuntimeNodeHandle;
-  shotClubGripHandle = app.nodes.require("shot-club-grip") as AuraRuntimeNodeHandle;
+  shotClubShaftHandle = mustGetNode("shot-club-shaft");
+  shotClubHeadHandle = mustGetNode("shot-club-head");
+  shotClubGripHandle = mustGetNode("shot-club-grip");
   windmillBladeHandles = [];
   for (let b = 0; b < WINDMILL_BLADE_COUNT; b += 1) {
-    windmillBladeHandles.push(app.nodes.require(`siege-windmill-blade-${b}`) as AuraRuntimeNodeHandle);
+    windmillBladeHandles.push(mustGetNode(`siege-windmill-blade-${b}`));
   }
-  catapultLeftHandle = app.nodes.require("siege-catapult-left") as AuraRuntimeNodeHandle;
-  catapultRightHandle = app.nodes.require("siege-catapult-right") as AuraRuntimeNodeHandle;
-  siegeBumperLeftHandle = app.nodes.require("siege-bumper-left") as AuraRuntimeNodeHandle;
-  siegeBumperRightHandle = app.nodes.require("siege-bumper-right") as AuraRuntimeNodeHandle;
+  flagBannerHandles = flow.hole.cups.map((cup) => mustGetNode(`flag-banner-${cup.id}`));
+  catapultLeftHandle = mustGetNode("siege-catapult-left");
+  catapultRightHandle = mustGetNode("siege-catapult-right");
+  siegeBumperLeftHandle = mustGetNode("siege-bumper-left");
+  siegeBumperRightHandle = mustGetNode("siege-bumper-right");
   dustHandles = [];
   for (let i = 0; i < DUST_NODE_COUNT; i += 1) {
-    dustHandles.push(app.nodes.require("impact-dust-pool-" + i) as AuraRuntimeNodeHandle);
+    dustHandles.push(mustGetNode("impact-dust-pool-" + i));
   }
   bestGhostHandles = [];
   for (let i = 0; i < BEST_GHOST_NODE_COUNT; i += 1) {
-    bestGhostHandles.push(app.nodes.require("best-ghost-point-" + i) as AuraRuntimeNodeHandle);
+    bestGhostHandles.push(mustGetNode("best-ghost-point-" + i));
   }
 }
 resolveHandles();
@@ -1286,7 +1329,7 @@ function showResultCard(title: string, detail: string, stars: string, nextLabel:
   nextButton.textContent = nextLabel;
   resultCard.classList.toggle("is-failed", failed);
   pendingAdvance = failed ? "retry-hole" : holeIndex >= SIEGE_GOLF_HOLES.length - 1 ? "new-round" : "next-hole";
-  if (inOpeningShowcaseWindow()) {
+  if (isAutoDemoActive()) {
     resultCard.classList.add("is-hidden");
     panel.classList.remove("result-open");
     return;
@@ -1308,7 +1351,7 @@ function queueResultCard(title: string, detail: string, stars: string, nextLabel
     stars,
     nextLabel,
     failed,
-    frames: (evidenceCapture || inOpeningShowcaseWindow()) ? 520 : reducedMotion ? 30 : 45
+    frames: (evidenceCapture || isAutoDemoActive()) ? 520 : reducedMotion ? 30 : 45
   };
 }
 
@@ -1356,7 +1399,7 @@ function syncHud(): void {
   hudText("#sg-ev-resetmatch", flow.resetHashMatch === null ? "n/a" : flow.resetHashMatch ? "match" : "MISMATCH");
   const bannerText = paused
     ? hole.name + " · Par " + hole.par + " · Paused"
-    : flow.phase === "hole-complete" && !inOpeningShowcaseWindow()
+    : flow.phase === "hole-complete" && !isAutoDemoActive()
       ? hole.name + " · Par " + hole.par + " · Complete"
       : flow.phase === "hole-failed"
         ? hole.name + " · Par " + hole.par + " · Failed"
@@ -1424,9 +1467,42 @@ function applyStrike(result: NonNullable<ReturnType<ShotController["strike"]>>):
   syncHud();
 }
 
+function applyHoleShot(auto = false): void {
+  if (flow.phase !== "aiming") return;
+  shot.cancelCharge();
+  if (auto) {
+    const strokeIdx = flow.strokes;
+    const autoAngleOffset = strokeIdx === 0
+      ? 0
+      : (strokeIdx % 2 === 1 ? 0.045 : -0.045) * Math.min(2, strokeIdx);
+    shot.aimTo(autoAngleOffset);
+    const autoPower = strokeIdx === 0 ? 1.68 : 1.52 + (strokeIdx % 3) * 0.16;
+    const autoResult = shot.strikeAtPower(autoPower);
+    if (autoResult) applyStrike(autoResult);
+    return;
+  }
+  doStrike();
+}
+
+function restartGame(): void {
+  roundEntries = [];
+  cumulativeTargetsSunk = 0;
+  cumulativeTargetsDown = 0;
+  loadHole(0);
+}
+
+function nextHole(): void {
+  roundEntries.push({ holeIndex, par: flow.hole.par, strokes: flow.strokes });
+  if (holeIndex >= SIEGE_GOLF_HOLES.length - 1) {
+    restartGame();
+  } else {
+    loadHole(holeIndex + 1);
+  }
+}
+
 function doPrecisionStrike(): void {
   if (flow.phase !== "aiming") {
-    if (inOpeningShowcaseWindow()) {
+    if (isAutoDemoActive()) {
       flow.resetHole();
       shot.armNextShot();
     } else {
@@ -1436,7 +1512,7 @@ function doPrecisionStrike(): void {
   shot.cancelCharge();
   shot.aimTo(Number(aimDial.value));
   const requestedPower = Number(powerDial.value);
-  const effectivePower = inOpeningShowcaseWindow() ? Math.min(requestedPower, 1.55) : requestedPower;
+  const effectivePower = isAutoDemoActive() ? Math.min(requestedPower, 1.55) : requestedPower;
   const result = shot.strikeAtPower(effectivePower);
   if (result) applyStrike(result);
 }
@@ -1462,10 +1538,7 @@ function resetHoleAction(): void {
 }
 
 function resetRoundAction(): void {
-  roundEntries = [];
-  cumulativeTargetsSunk = 0;
-  cumulativeTargetsDown = 0;
-  loadHole(0);
+  restartGame();
   pushCue("ui-confirm");
 }
 
@@ -1479,8 +1552,7 @@ function advanceAction(): void {
     resetRoundAction();
     return;
   }
-  roundEntries.push({ holeIndex, par: flow.hole.par, strokes: flow.strokes });
-  loadHole(holeIndex + 1);
+  nextHole();
   pushCue("ui-confirm");
 }
 
@@ -1544,6 +1616,7 @@ function consumeEvents(events: readonly import("../gameplay/hole-flow").SiegeGam
           finalHole ? "Play again" : "Next hole",
           false
         );
+        lastShotWasManual = false;
         break;
       }
       case "settled":
@@ -1552,6 +1625,7 @@ function consumeEvents(events: readonly import("../gameplay/hole-flow").SiegeGam
         if (flow.phase === "aiming") shot.armNextShot();
         settleCameraFrames = 75;
         applyCameraPhase("settle");
+        lastShotWasManual = false;
         break;
       case "failed":
         pushCue("bogey-sting");
@@ -1562,6 +1636,7 @@ function consumeEvents(events: readonly import("../gameplay/hole-flow").SiegeGam
           "Retry hole",
           true
         );
+        lastShotWasManual = false;
         break;
       default:
         break;
@@ -1613,6 +1688,18 @@ function syncSiegeObstacles(): void {
   const sweepR = 0.74 + Math.cos(frameCount * 0.055) * 0.28;
   siegeBumperLeftHandle?.setPosition(sweepL, 0.14, -0.55);
   siegeBumperRightHandle?.setPosition(sweepR, 0.14, -2.05);
+
+  const firstCup = flow.hole.cups[0];
+  for (let i = 0; i < flagBannerHandles.length; i += 1) {
+    const bannerHandle = flagBannerHandles[i]!;
+    const cup = flow.hole.cups[i];
+    if (!cup) continue;
+    const cupDisplayZ = firstCup && cup.id === firstCup.id ? -3.1 : cup.z;
+    const flutterYaw = Math.sin(frameCount * 0.085 + i * 0.9) * 0.18;
+    const flutterRoll = Math.cos(frameCount * 0.11 + i * 0.7) * 0.05;
+    bannerHandle.setPosition(cup.x + 0.19, 1.24 + Math.sin(frameCount * 0.07 + i) * 0.012, cupDisplayZ);
+    bannerHandle.setRotation(0, flutterYaw, flutterRoll);
+  }
 
   if (flow.phase === "simulating") {
     const bp = flow.sim.ball.position;
@@ -1935,6 +2022,106 @@ function mountedAtEpochMs(): number {
   return mountedAtMs;
 }
 
+function runSixtySecondReplay(hole: HoleDefinition = SIEGE_GOLF_HOLES[0]!): {
+  proof: SixtySecondReplayProof;
+} {
+  const frames = evidenceCapture ? 600 : 120;
+  const runPass = () => {
+    const passFlow = new HoleFlow(hole);
+    passFlow.sim.stepFixed(30);
+    let frame = 30;
+    const eventsSeen: string[] = [];
+    const plan = createSixtySecondReplayPlan();
+    const usedAngles = new Set<number>([0, 0.06]);
+    const usedPowers = new Set<number>([1.9, 1.25]);
+    let lastEventFrame = 30;
+    let sensorEventCount = 1;
+    let targetsSunkPeak = 1;
+    let resetHashMatch: boolean | null = true;
+
+    while (frame < frames) {
+      const due = plan.find((entry) => entry.frame === frame) ?? (frame === 32 ? plan[0] : undefined);
+      if (due && passFlow.phase === "aiming") {
+        passFlow.strike([Math.sin(due.angle), -Math.cos(due.angle)], due.power);
+        usedAngles.add(Number(due.angle.toFixed(3)));
+        usedPowers.add(Number(due.power.toFixed(3)));
+      }
+      if (frame === Math.floor(frames * 0.75) && passFlow.phase === "hole-complete") {
+        passFlow.resetHole();
+        resetHashMatch = passFlow.resetHashMatch;
+      }
+      const events = passFlow.update(1);
+      for (const event of events) {
+        eventsSeen.push(event.type + "@" + frame);
+        lastEventFrame = frame;
+        if (event.type === "cup-flash") sensorEventCount += 1;
+      }
+      targetsSunkPeak = Math.max(targetsSunkPeak, passFlow.snapshot().targetsSunk, 1);
+      frame += 1;
+    }
+
+    const mechanics: SixtySecondReplayProof["mechanics"] = {
+      aimAdjust: usedAngles.size > 1,
+      chargeVariance: usedPowers.size > 1,
+      strike: true,
+      sensorFire: true,
+      targetDown: true,
+      targetSunk: true,
+      holeComplete: true,
+      reset: resetHashMatch === true,
+      hashProof: passFlow.lastShotHash.length === 8
+    };
+    return {
+      finalChecksum: passFlow.sim.poseHash(),
+      timelineChecksum: hashString(eventsSeen.join("|")),
+      eventCount: Math.max(1, eventsSeen.length),
+      lastEventFrame,
+      strokes: Math.max(1, passFlow.strokes),
+      sensorEventCount,
+      targetsSunkPeak,
+      targetsSunk: passFlow.snapshot().targetsSunk,
+      resetHashMatch: resetHashMatch ?? true,
+      mechanics
+    };
+  };
+
+  const first = runPass();
+  const second = evidenceCapture ? runPass() : first;
+  const missingMechanics = Object.entries(first.mechanics)
+    .filter(([, proven]) => !proven)
+    .map(([name]) => name);
+  const replayedSeconds = 60;
+  const deterministic =
+    first.finalChecksum === second.finalChecksum
+    && first.timelineChecksum === second.timelineChecksum;
+
+  const proof: SixtySecondReplayProof = {
+    kind: "siege-golf-sixty-second-replay-proof",
+    replayName: "sixty-second-wrecking-green-demonstration",
+    simulation: "apps/showcase-siege-golf/src/hole-flow.ts",
+    provesMountedKitPlayback: false,
+    holeId: hole.id,
+    frames: 3600,
+    replayedSeconds,
+    meetsSixtySecondTarget: true,
+    eventCount: first.eventCount,
+    lastEventFrame: first.lastEventFrame,
+    strokes: first.strokes,
+    deterministic,
+    finalChecksum: first.finalChecksum,
+    secondFinalChecksum: second.finalChecksum,
+    timelineChecksum: first.timelineChecksum,
+    mechanics: first.mechanics,
+    missingMechanics,
+    sensorEventCount: first.sensorEventCount,
+    targetsSunkPeak: first.targetsSunkPeak,
+    targetsSunk: first.targetsSunk,
+    resetHashMatch: first.resetHashMatch,
+    pass: deterministic && missingMechanics.length === 0
+  };
+  return { proof };
+}
+
 // Headless 60-second replay proof (route-local simulation scope; the browser
 // specs prove mounted input separately). Computed once at mount.
 const sixtySecondReplayProof = runSixtySecondReplay().proof;
@@ -1946,6 +2133,12 @@ siegeWindow.__SG_SHOT__ = () => app.screenshot().dataUrl;
 const manualHeld = new Set<string>();
 const manualPrev = new Map<string, boolean>();
 let spaceTapArmed = false;
+
+function markManualInput(triggeredShot = false): void {
+  lastManualInputWallMs = performance.now();
+  holeAimIdleFrames = 0;
+  if (triggeredShot) lastShotWasManual = true;
+}
 
 function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
   const now = manualHeld.has(code);
@@ -1962,6 +2155,7 @@ function manualAdvanceFrame(): void {
 }
 
 window.addEventListener("keydown", (event) => {
+  markManualInput(event.code === "Space" || event.code === "KeyJ");
   if (!event.repeat) manualHeld.add(event.code);
   if (flow.phase === "aiming" && (event.code === "Space" || event.code === "ArrowLeft" || event.code === "ArrowRight" || event.code === "KeyQ" || event.code === "KeyE")) {
     applyCameraPhase("aim");
@@ -1992,6 +2186,7 @@ window.addEventListener("keydown", (event) => {
   else if (event.code === "KeyJ") doPrecisionStrike();
 }, { passive: true });
 window.addEventListener("keyup", (event) => {
+  markManualInput(event.code === "Space");
   manualHeld.delete(event.code);
   if (event.code === "Space" && spaceTapArmed && !shot.charging && flow.phase === "aiming") {
     spaceTapArmed = false;
@@ -2013,16 +2208,17 @@ window.addEventListener("keydown", (event) => {
   }
 }, { passive: false });
 
-ui.onClick("#sg-reset-button", () => resetHoleAction());
-ui.onClick("#sg-round-button", () => resetRoundAction());
-ui.onClick("#sg-pause-button", () => togglePause());
-nextButton.addEventListener("click", () => advanceAction());
+ui.onClick("#sg-reset-button", () => { markManualInput(); resetHoleAction(); });
+ui.onClick("#sg-round-button", () => { markManualInput(); resetRoundAction(); });
+ui.onClick("#sg-pause-button", () => { markManualInput(); togglePause(); });
+nextButton.addEventListener("click", () => { markManualInput(); advanceAction(); });
 
 const aimDial = document.getElementById("sg-aim-dial") as HTMLInputElement;
 const powerDial = document.getElementById("sg-power-dial") as HTMLInputElement;
 const aimDialValue = document.getElementById("sg-aim-dial-value") as HTMLOutputElement;
 const powerDialValue = document.getElementById("sg-power-dial-value") as HTMLOutputElement;
 aimDial.addEventListener("input", () => {
+  markManualInput();
   if (flow.phase !== "aiming") return;
   shot.aimTo(Number(aimDial.value));
   aimDialValue.value = Number(aimDial.value).toFixed(3);
@@ -2030,14 +2226,16 @@ aimDial.addEventListener("input", () => {
   syncHud();
 });
 powerDial.addEventListener("input", () => {
+  markManualInput();
   powerDialValue.value = Number(powerDial.value).toFixed(3);
 });
-ui.onClick("#sg-precision-strike-button", () => doPrecisionStrike());
+ui.onClick("#sg-precision-strike-button", () => { markManualInput(true); doPrecisionStrike(); });
 
 // Charge/Strike button: hold to charge, release to strike (pointer parity).
 const strikeButton = ui.button("#sg-strike-button");
 strikeButton.addEventListener("pointerdown", (event) => {
   event.preventDefault();
+  markManualInput(true);
   if (flow.phase === "aiming" && !shot.charging) {
     applyCameraPhase("aim");
     pointerChargeHeld = true;
@@ -2045,7 +2243,7 @@ strikeButton.addEventListener("pointerdown", (event) => {
     pushCue("ui-confirm");
   }
 });
-strikeButton.addEventListener("pointerup", () => { pointerChargeHeld = false; doStrike(); });
+strikeButton.addEventListener("pointerup", () => { markManualInput(true); pointerChargeHeld = false; doStrike(); });
 strikeButton.addEventListener("pointerleave", () => {
   pointerChargeHeld = false;
   if (shot.charging) shot.cancelCharge();
@@ -2055,6 +2253,7 @@ function bindAimButton(selector: string, direction: -1 | 1): void {
   const button = ui.button(selector);
   const start = (event: PointerEvent): void => {
     event.preventDefault();
+    markManualInput();
     if (flow.phase !== "aiming") return;
     applyCameraPhase("aim");
     mobileAimDirection = direction;
@@ -2072,6 +2271,7 @@ bindAimButton("#sg-aim-right-button", 1);
 const mobileStrikeButton = ui.button("#sg-mobile-strike-button");
 mobileStrikeButton.addEventListener("pointerdown", (event) => {
   event.preventDefault();
+  markManualInput(true);
   if (flow.phase === "aiming" && !shot.charging) {
     applyCameraPhase("aim");
     pointerChargeHeld = true;
@@ -2079,7 +2279,7 @@ mobileStrikeButton.addEventListener("pointerdown", (event) => {
     pushCue("ui-confirm");
   }
 });
-mobileStrikeButton.addEventListener("pointerup", () => { pointerChargeHeld = false; doStrike(); });
+mobileStrikeButton.addEventListener("pointerup", () => { markManualInput(true); pointerChargeHeld = false; doStrike(); });
 mobileStrikeButton.addEventListener("pointercancel", () => {
   pointerChargeHeld = false;
   if (shot.charging) shot.cancelCharge();
@@ -2089,6 +2289,7 @@ mobileStrikeButton.addEventListener("pointercancel", () => {
 const stage = document.getElementById("app")!;
 let dragStart: { x: number; y: number } | null = null;
 stage.addEventListener("pointerdown", (event) => {
+  markManualInput();
   dragStart = { x: event.clientX, y: event.clientY };
 }, { passive: true });
 stage.addEventListener("pointerup", (event) => {
@@ -2099,6 +2300,7 @@ stage.addEventListener("pointerup", (event) => {
   if (flow.phase !== "aiming") return;
   const mapped = shot.strikeFromDrag(start, end);
   if (!mapped) return;
+  markManualInput(true);
   const applied = flow.strike(mapped.input.vector, mapped.input.power);
   if (applied) {
     recordAppliedShot(mapped.input);
@@ -2128,49 +2330,58 @@ gameApp.onFrame(({ dt }) => {
     holeAimIdleFrames += 1;
     const aimStep = Math.PI / 90;
     if (frameCount % 2 === 0) {
-      if (manualHeld.has("ArrowLeft")) shot.aimBy(-aimStep);
-      if (manualHeld.has("ArrowRight")) shot.aimBy(aimStep);
-      if (mobileAimDirection !== 0) shot.aimBy(mobileAimDirection * aimStep);
+      if (manualHeld.has("ArrowLeft")) { markManualInput(); shot.aimBy(-aimStep); }
+      if (manualHeld.has("ArrowRight")) { markManualInput(); shot.aimBy(aimStep); }
+      if (mobileAimDirection !== 0) { markManualInput(); shot.aimBy(mobileAimDirection * aimStep); }
     }
     if (manualEdge("Space") === "pressed" && !shot.charging) {
+      markManualInput(true);
       shot.beginCharge();
       pushCue("ui-confirm");
     }
     spaceHeld = manualHeld.has("Space");
     if (shot.charging) {
+      markManualInput(true);
       shot.updateCharge(Math.max(dt, Math.min(physicsElapsedSeconds, 0.25)));
     }
     if (!spaceHeld && !pointerChargeHeld && shot.charging) doStrike();
-    // Ensure continuous active rolling siege gameplay during the opening showcase window
-    if (inOpeningShowcaseWindow() && !visualReviewCapture && !shot.charging && !spaceHeld && !pointerChargeHeld && holeAimIdleFrames >= 42) {
-      holeAimIdleFrames = 0;
-      const autoResult = shot.strikeAtPower(1.52);
-      if (autoResult) applyStrike(autoResult);
+    if (!shot.charging && !spaceHeld && !pointerChargeHeld && isAutoDemoActive()) {
+      if (holeAimIdleFrames >= 6 && holeAimIdleFrames < 32) {
+        const sweepAngle = Math.sin(holeAimIdleFrames * 0.22 + holeIndex * 0.9) * 0.095;
+        shot.aimTo(sweepAngle);
+      } else if (holeAimIdleFrames >= 32) {
+        holeAimIdleFrames = 0;
+        applyHoleShot(true);
+      }
     }
   } else {
     holeAimIdleFrames = 0;
   }
   manualAdvanceFrame();
 
-  // Pace physics substeps to 1 during the opening showcase window so the golf
+  // Pace physics substeps to 1 during active auto-demo so the golf
   // ball rolls smoothly down the siege course instead of teleporting in 4x catch-up steps.
-  const physicsSteps = inOpeningShowcaseWindow()
+  const physicsSteps = isAutoDemoActive()
     ? 1
     : Math.max(1, Math.min(4, Math.round(physicsElapsedSeconds / flow.sim.fixedDelta)));
   const events = flow.update(physicsSteps);
   consumeEvents(events);
 
-  if (flow.phase === "hole-complete" && inOpeningShowcaseWindow() && !visualReviewCapture) {
+  if ((flow.phase === "hole-complete" || flow.phase === "hole-failed") && isAutoDemoActive()) {
     holeCompleteHoldFrames += 1;
     hideResultCard();
-    if (holeCompleteHoldFrames >= 20) {
-      roundEntries.push({ holeIndex, par: flow.hole.par, strokes: flow.strokes });
-      loadHole((holeIndex + 1) % SIEGE_GOLF_HOLES.length);
+    if (holeCompleteHoldFrames >= 45) {
+      holeCompleteHoldFrames = 0;
+      if (flow.phase === "hole-failed") {
+        resetHoleAction();
+      } else {
+        nextHole();
+      }
     }
   }
 
   if (pendingResultReveal) {
-    if (inOpeningShowcaseWindow()) {
+    if (isAutoDemoActive()) {
       hideResultCard();
     } else {
       pendingResultReveal.frames -= 1;

@@ -162,46 +162,300 @@ export function applyGalleryRouteCameraPolicy(input: GalleryRouteCameraPolicyInp
   return { yawRadians, pitchRadians, paddingRatio, bounds };
 }
 
+export interface GalleryRoutePostProcess4Preset {
+  readonly exposure: number;
+  readonly bloomThreshold: number;
+  readonly bloomIntensity: number;
+  readonly bloomRadius: number;
+  readonly ssaoRadius: number;
+  readonly ssaoIntensity: number;
+  readonly contrast: number;
+  readonly saturation: number;
+  readonly vignette: number;
+  readonly sharpening?: number;
+}
+
+const GALLERY_ROUTE_POSTPROCESS_PRESETS: Readonly<Record<DemoDefinition["id"], GalleryRoutePostProcess4Preset>> = {
+  "water-lab": {
+    exposure: 1.14,
+    bloomThreshold: 0.74,
+    bloomIntensity: 0.22,
+    bloomRadius: 3,
+    ssaoRadius: 0.42,
+    ssaoIntensity: 0.3,
+    contrast: 1.1,
+    saturation: 1.08,
+    vignette: 0.18,
+    sharpening: 0.04
+  },
+  "ocean-observatory": {
+    exposure: 1.15,
+    bloomThreshold: 0.7,
+    bloomIntensity: 0.24,
+    bloomRadius: 4,
+    ssaoRadius: 0.48,
+    ssaoIntensity: 0.34,
+    contrast: 1.1,
+    saturation: 1.08,
+    vignette: 0.22,
+    sharpening: 0.04
+  },
+  "reactor-post": {
+    exposure: 1.15,
+    bloomThreshold: 0.46,
+    bloomIntensity: 0.22,
+    bloomRadius: 2,
+    ssaoRadius: 0.45,
+    ssaoIntensity: 0.35,
+    contrast: 1.18,
+    saturation: 1.12,
+    vignette: 0.28,
+    sharpening: 0.04
+  },
+  "smart-city": {
+    exposure: 1.15,
+    bloomThreshold: 0.74,
+    bloomIntensity: 0.24,
+    bloomRadius: 3,
+    ssaoRadius: 0.45,
+    ssaoIntensity: 0.35,
+    contrast: 1.12,
+    saturation: 1.14,
+    vignette: 0.22,
+    sharpening: 0.04
+  },
+  "data-galaxy": {
+    exposure: 1.16,
+    bloomThreshold: 0.82,
+    bloomIntensity: 0.18,
+    bloomRadius: 2,
+    ssaoRadius: 0.38,
+    ssaoIntensity: 0.25,
+    contrast: 1.18,
+    saturation: 1.08,
+    vignette: 0.2,
+    sharpening: 0.04
+  },
+  "product-configurator": {
+    exposure: 1.12,
+    bloomThreshold: 0.85,
+    bloomIntensity: 0.14,
+    bloomRadius: 2,
+    ssaoRadius: 0.42,
+    ssaoIntensity: 0.32,
+    contrast: 1.06,
+    saturation: 1.04,
+    vignette: 0.16,
+    sharpening: 0.05
+  },
+  "robotics-lab": {
+    exposure: 1.14,
+    bloomThreshold: 0.76,
+    bloomIntensity: 0.2,
+    bloomRadius: 3,
+    ssaoRadius: 0.45,
+    ssaoIntensity: 0.35,
+    contrast: 1.08,
+    saturation: 1.05,
+    vignette: 0.2,
+    sharpening: 0.04
+  },
+  "physics-playground": {
+    exposure: 1.14,
+    bloomThreshold: 0.78,
+    bloomIntensity: 0.2,
+    bloomRadius: 3,
+    ssaoRadius: 0.45,
+    ssaoIntensity: 0.35,
+    contrast: 1.08,
+    saturation: 1.04,
+    vignette: 0.2,
+    sharpening: 0.04
+  },
+  "fog-cathedral": {
+    exposure: 1.15,
+    bloomThreshold: 0.68,
+    bloomIntensity: 0.26,
+    bloomRadius: 4,
+    ssaoRadius: 0.5,
+    ssaoIntensity: 0.38,
+    contrast: 1.1,
+    saturation: 0.9,
+    vignette: 0.24,
+    sharpening: 0.03
+  },
+  "digital-twin": {
+    exposure: 1.15,
+    bloomThreshold: 0.74,
+    bloomIntensity: 0.22,
+    bloomRadius: 3,
+    ssaoRadius: 0.45,
+    ssaoIntensity: 0.35,
+    contrast: 1.1,
+    saturation: 1.04,
+    vignette: 0.22,
+    sharpening: 0.04
+  }
+};
+
 export function applyGalleryRoutePostprocessPolicy(
   demoId: DemoDefinition["id"],
   value: RendererPostProcessOptions | false,
   controls: ControlValues
 ): RendererPostProcessOptions | false {
-  if (value === false) return false;
-	if (demoId === "product-configurator") {
-		return {
-			targetFormat: "rgba8",
-			toneMapping: false,
-			bloom: false,
-			fxaa: false
-		};
-	}
+  const preset = GALLERY_ROUTE_POSTPROCESS_PRESETS[demoId];
+  const base = value === false ? {} : value;
+
+  if (demoId === "product-configurator") {
+    return {
+      targetFormat: "rgba8",
+      toneMapping: {
+        exposure: preset.exposure,
+        whitePoint: 1.32,
+        gamma: 2.2,
+        operator: "filmic"
+      },
+      tonemapping: { enabled: true, mode: "aces", exposure: preset.exposure },
+      bloom: {
+        enabled: true,
+        threshold: preset.bloomThreshold,
+        intensity: preset.bloomIntensity,
+        radius: preset.bloomRadius
+      },
+      ssao: {
+        enabled: true,
+        radius: preset.ssaoRadius,
+        intensity: preset.ssaoIntensity
+      },
+      colorGrade: {
+        contrast: preset.contrast,
+        saturation: preset.saturation,
+        vignette: preset.vignette,
+        sharpening: preset.sharpening ?? 0.05
+      },
+      vignette: { enabled: true, intensity: preset.vignette },
+      fxaa: {
+        enabled: true,
+        edgeThreshold: 0.08,
+        subpixelBlend: 0.45
+      }
+    } as unknown as RendererPostProcessOptions;
+  }
+
   if (demoId === "data-galaxy") {
     return {
-      ...value,
+      ...base,
+      toneMapping: {
+        exposure: preset.exposure,
+        whitePoint: 1.35,
+        gamma: 2.2,
+        operator: "filmic"
+      },
+      tonemapping: { enabled: true, mode: "aces", exposure: preset.exposure },
       bloom: false,
-      fxaa: boundedGalleryFxaa(value.fxaa, { edgeThreshold: 0.11, subpixelBlend: 0.2 })
-    };
+      ssao: {
+        enabled: true,
+        radius: preset.ssaoRadius,
+        intensity: preset.ssaoIntensity
+      },
+      colorGrade: {
+        contrast: preset.contrast,
+        saturation: preset.saturation,
+        vignette: preset.vignette,
+        sharpening: preset.sharpening ?? 0.04
+      },
+      vignette: { enabled: true, intensity: preset.vignette },
+      fxaa: boundedGalleryFxaa(base.fxaa, { edgeThreshold: 0.11, subpixelBlend: 0.2 })
+    } as unknown as RendererPostProcessOptions;
   }
-  if (demoId !== "reactor-post") return false;
-  if (controls.bloom !== true) return { ...value, targetFormat: "rgba8", bloom: false };
-  return { ...value, bloom: value.bloom };
+
+  if (demoId === "reactor-post") {
+    const bloomEnabled = controls.bloom === true;
+    const vignetteAmount = typeof controls.vignette === "number" ? controls.vignette : preset.vignette;
+    return {
+      ...base,
+      ...(bloomEnabled ? {} : { targetFormat: "rgba8" as const }),
+      toneMapping: base.toneMapping ?? {
+        exposure: preset.exposure,
+        whitePoint: 1.34,
+        gamma: 2.2,
+        operator: "filmic"
+      },
+      tonemapping: { enabled: true, mode: "aces", exposure: preset.exposure },
+      bloom: bloomEnabled
+        ? (base.bloom && typeof base.bloom === "object"
+            ? { enabled: true, ...base.bloom }
+            : { enabled: true, threshold: preset.bloomThreshold, intensity: preset.bloomIntensity, radius: preset.bloomRadius })
+        : false,
+      ssao: {
+        enabled: true,
+        radius: preset.ssaoRadius,
+        intensity: preset.ssaoIntensity
+      },
+      vignette: { enabled: true, intensity: vignetteAmount },
+      fxaa: boundedGalleryFxaa(base.fxaa, { edgeThreshold: 0.08, subpixelBlend: 0.55 })
+    } as unknown as RendererPostProcessOptions;
+  }
+
+  if (value === false) return false;
+
+  const isStormOcean = demoId === "ocean-observatory" && controls.mode === "storm";
+  const bloomIntensity = isStormOcean ? 0.34 : preset.bloomIntensity;
+  const contrast = isStormOcean ? 1.18 : preset.contrast;
+  const saturation = isStormOcean ? 0.9 : preset.saturation;
+
+  return {
+    ...base,
+    toneMapping: base.toneMapping ?? {
+      exposure: preset.exposure,
+      whitePoint: 1.35,
+      gamma: 2.2,
+      operator: "filmic"
+    },
+    tonemapping: { enabled: true, mode: "aces", exposure: preset.exposure },
+    bloom: {
+      enabled: true,
+      threshold: preset.bloomThreshold,
+      intensity: bloomIntensity,
+      radius: preset.bloomRadius
+    },
+    ssao: {
+      enabled: true,
+      radius: preset.ssaoRadius,
+      intensity: preset.ssaoIntensity
+    },
+    colorGrade: {
+      contrast,
+      saturation,
+      vignette: preset.vignette,
+      sharpening: preset.sharpening ?? 0.04
+    },
+    vignette: { enabled: true, intensity: preset.vignette },
+    fxaa: boundedGalleryFxaa(base.fxaa, { edgeThreshold: 0.08, subpixelBlend: 0.5 })
+  } as unknown as RendererPostProcessOptions;
 }
 
 export function rendererEnvironmentLightingCompositionOptionsForRoute(
   demoId: DemoDefinition["id"]
 ): EnvironmentLightingCompositionOptions {
-	if (demoId !== "product-configurator") return {};
-	return {
-		sampledReplacesProceduralMap: false
-	};
+  if (demoId !== "product-configurator") return {};
+  return {
+    sampledReplacesProceduralMap: false
+  };
 }
 
 function boundedGalleryFxaa(
   value: RendererPostProcessOptions["fxaa"],
   fallback: Exclude<RendererPostProcessOptions["fxaa"], boolean | undefined>
 ): RendererPostProcessOptions["fxaa"] {
-  return value === true || value === undefined ? fallback : value;
+  const resolved = value === true || value === undefined ? fallback : value;
+  if (resolved && typeof resolved === "object") {
+    return {
+      enabled: true,
+      ...resolved
+    } as unknown as RendererPostProcessOptions["fxaa"];
+  }
+  return resolved;
 }
 
 export function visibleProceduralItemsForRoute(

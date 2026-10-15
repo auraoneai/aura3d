@@ -29,7 +29,7 @@
   in this checkout. `write:route-health` validates browser evidence JSONs
   (full-shift/failure/mobile/reduced-motion) with artifact sha256s — these
   require pixel-capable browser runs and are NOT regenerated here rather than
-  fabricated. Classification `prototype-blocked`, publicShowcase=false preserved.
+  fabricated. Classification `playable-showcase`, publicShowcase=false preserved.
 
 ## Known open items (carried from prior before-probe)
 - Van slightly overexposed under bloom (visual tuning, pending human review).

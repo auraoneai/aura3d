@@ -1,4 +1,5 @@
 import {
+  Renderer,
   composeEnvironmentLighting,
   computePerspectiveCameraFrame,
   loadProductionHdrEnvironment,
@@ -7,7 +8,6 @@ import {
   type RenderItem,
   type ProductionLoadedHdrEnvironment
 } from "@aura3d/rendering";
-import { Renderer } from "@aura3d/engine/renderer";
 import { DEMOS, getDemo, type DemoDefinition } from "./metadata";
 import { buildScene, createResources, type ControlValues, type GalleryState, type Ripple, type SceneFrame } from "./sceneBuilders";
 import { createAuthoredGalleryLayer, type AuthoredAssetRuntimeState } from "./authoredLayer";
@@ -685,7 +685,7 @@ function renderShell(): void {
         <header>
           <span>A3D Advanced Gallery</span>
           <h1>Evidence-Gated Aura3D Showcases</h1>
-          <p>Explore ten browser 3D candidate routes built with Aura3D 2.0.3. Each route discloses its implementation boundaries and requires exact-source evidence plus independent review before release acceptance.</p>
+          <p>Explore ten browser 3D candidate routes built with Aura3D 4.0.0. Each route discloses its implementation boundaries and requires exact-source evidence plus independent review before release acceptance.</p>
         </header>
         <div class="gallery-grid">
           ${DEMOS.map((demo, index) => `
