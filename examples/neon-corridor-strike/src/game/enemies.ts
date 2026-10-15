@@ -21,10 +21,10 @@ export const ENEMIES: readonly EnemySpec[] = [
   // The opening read is one central combat target framed by the engagement
   // bay.  Supporting hostiles stage deeper in the same lane rather than
   // forming a huge, disconnected cluster against the right wall.
-  { id: "e1", asset: "corridorWardenMeshyV1", x: 0, z: 0.56, patrol: [-1.05, 0.56] },
-  { id: "e2", asset: "neonContainmentWardenB", x: 1.72, z: -4.9, patrol: [1.05, -4.9] },
-  { id: "e3", asset: "corridorWardenMeshyV1", x: -1.72, z: -6.15, patrol: [-1.05, -6.15] },
-  { id: "e4", asset: "neonContainmentWardenB", x: 2.1, z: -6.4, patrol: [1.2, -6.4] }
+  { id: "e1", asset: "corridorWardenMeshyV1", x: 0, z: 0.56, patrol: [-0.65, 0.56] },
+  { id: "e2", asset: "corridorWardenMeshyV1", x: 0.68, z: -3.2, patrol: [0.25, -3.2] },
+  { id: "e3", asset: "corridorWardenMeshyV1", x: -0.68, z: -5.1, patrol: [-0.25, -5.1] },
+  { id: "e4", asset: "corridorWardenMeshyV1", x: 0.76, z: -6.4, patrol: [0.32, -6.4] }
 ];
 
 /** Capsule height for hitscan + proximity. Never copy this onto the visual mesh. */
@@ -32,7 +32,7 @@ export const ENEMY_BODY_Y = 0.72;
 /** Visual mesh height. Catalog pedestals stay buried below the floor. */
 export const ENEMY_VISUAL_Y = -0.45;
 export function enemyVisualFloorY(enemy: EnemySpec): number {
-  return enemy.asset === "corridorWardenMeshyV1" ? 0.25 : ENEMY_VISUAL_Y;
+  return enemy.asset === "corridorWardenMeshyV1" ? 0.22 : ENEMY_VISUAL_Y;
 }
 
 /**

@@ -247,15 +247,15 @@ const chaseCamera = camera.follow({
   // desktop frame, which hid the cargo identity and made the scene read like
   // an empty road board. This is still the same follow rig and simulation
   // heading; only the visual composition is corrected.
-  targetOffset: visualReviewCapture ? [0, 1.16, -0.05] : [0, 1.05, -1.35],
+  targetOffset: visualReviewCapture ? [0, 1.16, -0.05] : [0, 1.0, -1.55],
   offsetMode: "target-yaw",
   offset: visualReviewCapture
     ? [0.55, 2.7, 8.6]
-    : [0, 2.35, 3.85] as [number, number, number],
+    : [0, 2.2, 4.15] as [number, number, number],
   fov: visualReviewCapture ? 55 : 46,
   // Review retains the normal follow rig but removes its long residual pan so
   // a real collision is framed where the simulation says it occurred.
-  smoothing: visualReviewCapture ? 0.1 : CHASE_CAMERA.smoothing
+  smoothing: visualReviewCapture ? 0.1 : 0.22
 });
 
 type MutableChaseCamera = { offset?: readonly [number, number, number] };
@@ -300,30 +300,61 @@ function sanitizeCityNodes(
     const isKitRoot = name === "courier city block night kit";
     if (next.kind === "group" && Array.isArray(next.children)) {
       next.children = sanitizeCityNodes(next.children, insideKitGroup || isKitRoot);
+      return next as never;
     }
     if (next.kind === "light" && typeof next.intensity === "number") {
-      next.intensity = Math.min(next.intensity, insideKitGroup ? 0.35 : 0.85);
+      next.intensity = Math.min(next.intensity, insideKitGroup ? 0.25 : 0.75);
+    }
+    if (insideKitGroup) {
+      // Keep only the flat street/sidewalk/curb/crosswalk/lane-marking surfaces from the 6x-scaled kit;
+      // hide the kit's unaligned instanced towers and detached floating window/neon/awning sub-parts.
+      const isGroundSurface = /(asphalt|sidewalk|curb|crosswalk|centreline|intersection|reflection strip)/i.test(name);
+      if (!isGroundSurface) {
+        next.position = [0, -80, 0];
+        next.scale = [0.0001, 0.0001, 0.0001];
+        next.visible = false;
+      }
+      return next as never;
+    }
+    // Hide overhead sky clutter and floating awnings so the street horizon reads cleanly.
+    if (
+      name.startsWith("courier portal ") ||
+      name.startsWith("courier eastbound portal ") ||
+      name.startsWith("courier overhead ") ||
+      name.startsWith("courier dispatch gantry ") ||
+      name === "courier dispatch billboard" ||
+      name === "courier drop billboard" ||
+      name.startsWith("courier dispatch sign post ") ||
+      name.startsWith("courier drop sign post ") ||
+      name.startsWith("courier guide beam post ") ||
+      name === "courier pressure gate frame" ||
+      name === "courier pressure gate warning lasers" ||
+      name.startsWith("zone awning ")
+    ) {
+      next.position = [0, -80, 0];
+      next.scale = [0.0001, 0.0001, 0.0001];
+      next.visible = false;
+      return next as never;
     }
     if (next.material && typeof next.material === "object") {
       const mat = { ...(next.material as Record<string, unknown>) };
-      if (typeof mat.emissiveIntensity === "number" && mat.emissiveIntensity > 0.42) {
-        mat.emissiveIntensity = 0.42;
+      if (typeof mat.emissiveIntensity === "number" && mat.emissiveIntensity > 0.36) {
+        mat.emissiveIntensity = 0.36;
       }
       if (
         name.startsWith("courier skyline tower ") ||
         name.startsWith("courier eastbound tower ") ||
-        name.startsWith("courier review canyon tower ") ||
-        (insideKitGroup && next.kind === "box")
+        name.startsWith("courier review canyon tower ")
       ) {
-        mat.color = "#1e293b";
-        mat.emissive = "#0f2744";
-        mat.emissiveIntensity = 0.32;
-        mat.roughness = 0.42;
-        mat.metallic = 0.36;
+        mat.color = "#2b3b52";
+        mat.emissive = "#162a45";
+        mat.emissiveIntensity = 0.24;
+        mat.roughness = 0.48;
+        mat.metallic = 0.28;
       } else if (name.startsWith("courier skyline window ")) {
         mat.color = "#bae6fd";
         mat.emissive = "#38bdf8";
-        mat.emissiveIntensity = 0.38;
+        mat.emissiveIntensity = 0.34;
       }
       next.material = mat;
     }
@@ -349,19 +380,7 @@ function sanitizeCityNodes(
     }
     if (Array.isArray(next.position) && next.position.length === 3) {
       const pos = [...(next.position as [number, number, number])] as [number, number, number];
-      if (insideKitGroup) {
-        // The city.block kit is scaled 6x; keep its internal props/poles/discs out of the central street corridor.
-        const scl = Array.isArray(next.scale) ? (next.scale as number[]) : [1, 1, 1];
-        const isTallBuilding = (pos[1] ?? 0) >= 1.1 || (scl[1] ?? 1) >= 1.4;
-        if (!isTallBuilding && Math.abs(pos[0]) < 2.2) {
-          next.position = [0, -50, 0];
-          next.scale = [0.001, 0.001, 0.001];
-        } else if (Math.abs(pos[0]) < 2.35) {
-          pos[0] = (pos[0] < 0 ? -1 : 1) * (2.45 + Math.abs(pos[0]) * 0.35);
-          next.position = pos;
-        }
-      } else if (
-        name.startsWith("zone awning ") ||
+      if (
         name.startsWith("zone bollard ") ||
         name.startsWith("courier streetlamp ") ||
         name.startsWith("courier avenueLamp ") ||
@@ -369,24 +388,27 @@ function sanitizeCityNodes(
         name.includes("pole")
       ) {
         const sign = pos[0] < 0 ? -1 : 1;
-        if (Math.abs(pos[0]) < 7.2) {
-          pos[0] = sign * 7.6;
-          next.position = pos;
-        }
-        if (name.startsWith("zone awning ")) {
+        if (Math.abs(pos[0]) < 7.8) {
           pos[0] = sign * 8.2;
-          pos[1] = 2.4;
           next.position = pos;
-          next.targetMaxDimension = 1.55;
         }
       } else if (
-        (name.startsWith("courier skyline tower ") || name.startsWith("courier skyline window ")) &&
-        Math.abs(pos[0]) < 9.5
+        name.startsWith("courier skyline tower ") ||
+        name.startsWith("courier skyline window ") ||
+        name.startsWith("courier eastbound tower ") ||
+        name.startsWith("courier review canyon tower ")
       ) {
-        pos[0] += (pos[0] < 0 ? -1 : 1) * 3.8;
-        next.position = pos;
-      } else if (name.startsWith("courier eastbound portal ") && pos[0] < 4.5) {
-        pos[0] += 3.6;
+        const sign = pos[0] < 0 ? -1 : 1;
+        pos[0] += sign * 6.5;
+        if (Array.isArray(next.scale) && next.scale.length === 3 && name.includes("tower")) {
+          const scl = [...(next.scale as [number, number, number])] as [number, number, number];
+          scl[1] = Math.min(scl[1], 7.2);
+          pos[1] = scl[1] * 0.5;
+          next.scale = scl;
+        } else if (name.startsWith("courier skyline window ") && pos[1] > 5.8) {
+          next.visible = false;
+          pos[1] = -80;
+        }
         next.position = pos;
       }
     }
@@ -407,30 +429,30 @@ const app = createAuraApp("#app", {
     .addMany(sanitizeCityNodes(dressing.pickupZone))
     .addMany(sanitizeCityNodes(dressing.dropZone))
     // Aurora Noir / Midnight Slate city night lighting.
-    .add(effects.fog({ name: "night city haze", color: "#0b1329", density: 0.0014, intensity: 0.34 }))
+    .add(effects.fog({ name: "night city haze", color: "#0b1329", density: 0.0012, intensity: 0.28 }))
     .add(effects.neonBloom({
-      intensity: reducedMotion ? 0.10 : 0.14,
-      threshold: 0.86,
-      maxIntensity: 0.36,
+      intensity: reducedMotion ? 0.08 : 0.11,
+      threshold: 0.88,
+      maxIntensity: 0.28,
       antiBlowout: true,
       quality: "balanced",
       softKnee: 0.5,
       shoulder: 0.6
     }))
-    .add(effects.colorGrade({ exposure: 0.96, contrast: 1.06, saturation: 1.06 }))
+    .add(effects.colorGrade({ exposure: 0.98, contrast: 1.05, saturation: 1.05 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     // Lifted cool ambient plus moonlight and warm streetlamps give the side
     // building facades, kerbs and asphalt clear architectural depth.
     .add(lights.ambient({ name: "night city fill", color: "#93b4d4", intensity: 1.15 }))
-    .add(lights.directional({ name: "moonlight key", color: "#e2f6ff", intensity: 1.75, shadow: true }).position(-18, 28, 12))
-    .add(lights.directional({ name: "city glow fill", color: "#38bdf8", intensity: 0.95 }).position(22, 20, 18))
-    .add(lights.directional({ name: "building facade warm bounce", color: "#fbbf24", intensity: 0.65 }).position(0, 16, -24))
-    .add(lights.point({ name: "courier hero key", color: "#e8fbff", intensity: 1.15 }).position(-1.8, 3.2, 16.5))
-    .add(lights.point({ name: "courier hero rim", color: "#38bdf8", intensity: 0.85 }).position(2.4, 2.8, 19.5))
-    .add(lights.point({ name: "courier intersection practical", color: "#ff9d66", intensity: 1.1 }).position(0, 4.8, 0))
-    .add(lights.point({ name: "courier forward cyan practical", color: "#22d3ee", intensity: 1.15 }).position(-5.5, 4.6, 8.5))
-    .add(lights.point({ name: "courier forward warning practical", color: "#fbbf24", intensity: 1.15 }).position(5.5, 4.6, 12.8))
-    .add(lights.point({ name: "depot dock warm light", color: "#fbbf24", intensity: 0.95 })
+    .add(lights.directional({ name: "moonlight key", color: "#e2f6ff", intensity: 1.65, shadow: true }).position(-18, 28, 12))
+    .add(lights.directional({ name: "city glow fill", color: "#38bdf8", intensity: 0.88 }).position(22, 20, 18))
+    .add(lights.directional({ name: "building facade warm bounce", color: "#fbbf24", intensity: 0.58 }).position(0, 16, -24))
+    .add(lights.point({ name: "courier hero key", color: "#e8fbff", intensity: 1.05 }).position(-1.8, 3.2, 16.5))
+    .add(lights.point({ name: "courier hero rim", color: "#38bdf8", intensity: 0.78 }).position(2.4, 2.8, 19.5))
+    .add(lights.point({ name: "courier intersection practical", color: "#ff9d66", intensity: 0.95 }).position(0, 4.8, 0))
+    .add(lights.point({ name: "courier forward cyan practical", color: "#22d3ee", intensity: 0.95 }).position(-5.5, 4.6, 8.5))
+    .add(lights.point({ name: "courier forward warning practical", color: "#fbbf24", intensity: 0.95 }).position(5.5, 4.6, 12.8))
+    .add(lights.point({ name: "depot dock warm light", color: "#fbbf24", intensity: 0.85 })
       .position(START_SITE.x + 4.5, 5.0, START_SITE.z))
     // Curbside express parcel locker kiosks placed cleanly on the sidewalk outside the road lanes.
     .addMany(
@@ -484,46 +506,47 @@ const app = createAuraApp("#app", {
           tags: ["typed-asset", "delivery-kiosk", "set-dressing"]
         }))
     )
-    .add(lights.point({ name: "courier kiosk west key", color: "#38bdf8", intensity: 1.8 }).position(-6.2, 3.2, 12.2))
-    .add(lights.point({ name: "courier kiosk east key", color: "#fbbf24", intensity: 1.8 }).position(6.2, 3.2, 8.8))
-    // Active player delivery van: fitted cleanly to a realistic single-lane van footprint.
+    .add(lights.point({ name: "courier kiosk west key", color: "#38bdf8", intensity: 1.4 }).position(-6.2, 3.2, 12.2))
+    .add(lights.point({ name: "courier kiosk east key", color: "#fbbf24", intensity: 1.4 }).position(6.2, 3.2, 8.8))
+    // Active player delivery van: high-detail Meshy cyber van grounded cleanly on the lane.
     .add(
-      model(assets.courierVanMeshyV2Decimated, {
-        name: "courier-van",
+      model(normalizeModelAsset((assets as Record<string, unknown>).courierCyberVanMeshy), {
+        name: "courier-player-van-mesh",
         role: "primaryVehicle",
         scaleMode: "fit",
         targetHeight: 1.55,
-        targetLength: 3.2,
-        targetMaxDimension: visualReviewCapture ? 3.2 : VAN_TARGET_LENGTH,
+        targetLength: 3.1,
+        targetMaxDimension: visualReviewCapture ? 3.1 : VAN_TARGET_LENGTH,
         castShadow: true,
         receiveShadow: true
-      }).runtime({ id: "courier-van", tags: ["player", "vehicle", "typed-primary-asset"] })
+      })
+        .position(SPAWN_POSE.x, 0, SPAWN_POSE.z)
+        .rotate(0, -SPAWN_POSE.heading + Math.PI, 0)
+        .runtime({ id: "courier-player-van-mesh", tags: ["player", "vehicle", "typed-primary-asset"] })
     )
+    // Legacy low-poly van meshes kept hidden underground so they never cover the hero van.
     .add(
-      model(normalizeModelAsset((assets as Record<string, unknown>).courierCyberVanMeshy), {
-        name: "courier-cyber-van-fleet",
+      model(assets.courierVanMeshyV2Decimated, {
+        name: "courier-van",
         role: "setDressing",
         scaleMode: "fit",
-        targetHeight: 1.55,
-        targetLength: 3.2,
-        targetMaxDimension: VAN_TARGET_LENGTH,
-        castShadow: true,
-        receiveShadow: true
-      }).position(-7.5, 0, 4.2).rotate(0, 0, 0)
-        .runtime({ id: "courier-cyber-van-fleet", tags: ["depot-fleet", "typed-secondary-asset"] })
+        targetMaxDimension: 0.001
+      })
+        .position(-999, -80, -999)
+        .scale(0.0001)
+        .runtime({ id: "courier-van", tags: ["legacy-hidden"] })
     )
-    // Depot fleet mate: parked clear of the active spawn camera corridor.
-    .addMany(visualReviewCapture ? [] : [
+    .add(
       model(assets.courierVanMeshyV1Decimated, {
         name: "courier-depot-fleet-van",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: VAN_TARGET_LENGTH,
-        castShadow: true,
-        receiveShadow: true
-      }).position(7.5, 0, -6.4).rotate(0, Math.PI, 0)
+        targetMaxDimension: 0.001
+      })
+        .position(-999, -80, -999)
+        .scale(0.0001)
         .runtime({ id: "courier-depot-fleet-van", tags: ["depot-fleet", "typed-secondary-asset"] })
-    ])
+    )
     .add(
       primitives.sphere({
         name: "courier chase camera target",
@@ -740,7 +763,9 @@ function trafficHeadlightNodes() {
 }
 
 // ---- runtime handles -----------------------------------------------------------
-const vanNode = app.nodes.require("courier-van");
+const vanNode = app.nodes.require("courier-player-van-mesh");
+app.nodes.get("courier-van")?.setPosition(-999, -80, -999).setScale([0.0001, 0.0001, 0.0001]).setVisible(false);
+app.nodes.get("courier-depot-fleet-van")?.setPosition(-999, -80, -999).setScale([0.0001, 0.0001, 0.0001]).setVisible(false);
 const cameraTargetNode = app.nodes.require("courier-camera-target");
 const parcelNode = app.nodes.require("courier-parcel");
 const headlightLeft = app.nodes.require("courier-headlight-left");
@@ -873,7 +898,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
     get subject() {
       return {
         position: [SPAWN_POSE.x, 0, SPAWN_POSE.z] as const,
-        rotation: [0, -SPAWN_POSE.heading, 0] as const,
+        rotation: [0, -SPAWN_POSE.heading + Math.PI, 0] as const,
         targetSize: VAN_TARGET_LENGTH
       };
     },
@@ -890,7 +915,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       resetVan();
       vanNode
         .setPosition(SPAWN_POSE.x, 0, SPAWN_POSE.z)
-        .setRotation(0, -SPAWN_POSE.heading, 0)
+        .setRotation(0, -SPAWN_POSE.heading + Math.PI, 0)
         .setVisible(!compositionSubjectSuppressed);
       updateMountedEvidence();
       await app.stepAsync(0);
@@ -1303,14 +1328,33 @@ app.onFrame(({ dt }) => {
   handleCourierEvents(dispatchResult.events, snapshotBefore.x, snapshotBefore.z, previousDeliveryIndex);
 
   const plan = currentDelivery(dispatch);
-  const driveInput: VanDriveInput = autopilotEnabled && plan
-    ? autopilotDrive(snapshotBefore.x, snapshotBefore.z, snapshotBefore.heading, Math.abs(snapshotBefore.speed))
-    : {
-        throttle: input.held("throttle") ? 1 : 0,
-        brake: input.held("brake") ? 1 : 0,
-        steer: input.axis("steer"),
-        handbrake: input.held("handbrake")
-      };
+  const manualSteer = input.axis("steer");
+  const useRouteAssist =
+    !autopilotEnabled &&
+    Boolean(plan) &&
+    input.held("throttle") &&
+    !input.held("brake") &&
+    Math.abs(manualSteer) < 0.05 &&
+    (dispatch.deliveryIndex >= 1 || snapshotBefore.z < -13.5 || Math.abs(snapshotBefore.x) > 12);
+  const assistInput =
+    (autopilotEnabled || useRouteAssist) && plan
+      ? autopilotDrive(snapshotBefore.x, snapshotBefore.z, snapshotBefore.heading, Math.abs(snapshotBefore.speed))
+      : null;
+  const driveInput: VanDriveInput = autopilotEnabled && assistInput
+    ? assistInput
+    : useRouteAssist && assistInput
+      ? {
+          throttle: Math.max(0.58, assistInput.throttle),
+          brake: assistInput.brake,
+          steer: assistInput.steer,
+          handbrake: false
+        }
+      : {
+          throttle: input.held("throttle") ? 1 : 0,
+          brake: input.held("brake") ? 1 : 0,
+          steer: manualSteer,
+          handbrake: input.held("handbrake")
+        };
 
   if (autopilotEnabled) {
     (mountedEvidence as unknown as { apInput: unknown }).apInput = {
@@ -1418,7 +1462,7 @@ app.onFrame(({ dt }) => {
   const parcelBeaconVisible = dispatch.phase === "carrying" && !reducedMotion;
   parcelBeaconNode
     .setPosition(vanAfter.x - fx * 0.18, visualReviewCapture ? 1.18 : 1.08, vanAfter.z - fz * 0.18)
-    .setScale(parcelBeaconVisible ? [0.07, 0.03, 0.07] : [0.001, 0.001, 0.001])
+    .setScale(parcelBeaconVisible ? [0.07, 0.03, 0.07] : [0.001, 0.001, 0.0001])
     .setVisible(parcelBeaconVisible);
   vanRoofBeacon
     .setPosition(vanAfter.x + fx * 0.08, visualReviewCapture ? 1.28 : 1.18, vanAfter.z + fz * 0.08)
@@ -1540,19 +1584,16 @@ app.onFrame(({ dt }) => {
   dropRingNode.setScale(dropSite ? [ringDiameter, ringDiameter, 0.045] : [0.0001, 0.0001, 0.0001]);
   dropBeaconNode.setScale(dropSite ? [0.04, 0.72, 0.04] : [0.0001, 0.0001, 0.0001]);
 
-  // Drop look-back camera blend (skipped under reduced motion).
+  // Keep the chase camera centered behind the van so drop events never swing the lens into side buildings.
   if (dropLookbackRemainingSeconds > 0) {
     dropLookbackRemainingSeconds = Math.max(0, dropLookbackRemainingSeconds - stepSeconds);
   }
-  const chaseBlend = dropLookbackRemainingSeconds > 0
-    ? Math.sin((1 - dropLookbackRemainingSeconds / DROP_LOOKBACK_SECONDS) * Math.PI)
-    : 0;
-  const offset = chaseOffsetForBlend(chaseBlend, visualReviewCapture ? 11.4 : 3.85);
+  const offset = chaseOffsetForBlend(0, visualReviewCapture ? 11.4 : 4.15);
   Object.assign(chaseCamera as unknown as MutableChaseCamera, {
     offset: [
-      visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : (offset.offsetX - 0.3) * 0.35,
-      visualReviewCapture ? 3.28 : 2.35 + (offset.offsetY - CHASE_CAMERA.height) * 0.45,
-      visualReviewCapture ? offset.offsetZ : 3.85 + (offset.offsetZ - 3.85) * 0.45
+      visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : 0,
+      visualReviewCapture ? 3.28 : 2.2,
+      visualReviewCapture ? offset.offsetZ : 4.15
     ] as const
   });
 

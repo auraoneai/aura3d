@@ -1103,23 +1103,23 @@ const reviewExchangeCausalityBuilders = [
 // no gameplay or collision role.
 const reviewCombatAccentBuilders = [
   primitives.box({ name: "pulse runner cyan wing edge left", material: reviewSignalMaterial })
-    .position(-1.82, 0.48, 0.28).rotate(0, -0.08, -0.05).scale([0.72, 0.028, 0.042]),
+    .position(0, -50, 0).scale([0.001, 0.001, 0.001]),
   primitives.box({ name: "pulse runner cyan wing edge right", material: reviewSignalMaterial })
-    .position(-0.94, 0.48, 0.28).rotate(0, 0.08, 0.05).scale([0.72, 0.028, 0.042]),
+    .position(0, -50, 0).scale([0.001, 0.001, 0.001]),
   primitives.capsule({ name: "pulse runner drive wake left", material: reviewCyan })
-    .position(-1.72, 0.30, 0.78).rotate(Math.PI / 2, 0, 0).scale([0.055, 0.42, 0.055]),
+    .position(0, -50, 0).scale([0.001, 0.001, 0.001]),
   primitives.capsule({ name: "pulse runner drive wake right", material: reviewCyan })
-    .position(-1.04, 0.30, 0.78).rotate(Math.PI / 2, 0, 0).scale([0.055, 0.42, 0.055]),
+    .position(0, -50, 0).scale([0.001, 0.001, 0.001]),
   primitives.box({ name: "pulse sentry fire lane marker", material: reviewAccentMaterial })
-    .position(1.38, 1.14, -3.02).rotate(0, 0, 0).scale([0.46, 0.026, 0.026]),
+    .position(0, -50, 0).scale([0.001, 0.001, 0.001]),
   primitives.torus({ name: "pulse exchange impact outer", material: reviewAmber })
-    .position(0.04, 0.96, -2.18).scale([0.34, 0.34, 0.042])
+    .position(0.04, 0.96, -2.18).scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-impact-outer", { tags: ["combat-impact", "renderer-owned", "non-colliding"] })),
   primitives.torus({ name: "pulse exchange impact inner", material: reviewCyan })
-    .position(0.04, 0.96, -2.18).scale([0.16, 0.16, 0.055])
+    .position(0.04, 0.96, -2.18).scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-impact-inner", { tags: ["combat-impact", "renderer-owned", "non-colliding"] })),
   primitives.sphere({ name: "pulse exchange impact core", material: reviewRose })
-    .position(0.04, 0.96, -2.18).scale([0.09, 0.09, 0.09])
+    .position(0.04, 0.96, -2.18).scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-impact-core", { tags: ["combat-impact", "renderer-owned", "non-colliding"] }))
 ];
 
@@ -1133,20 +1133,20 @@ const reviewSentryIdentityBuilders = [
   primitives.box({ name: "pulse sentry left shoulder contour", material: reviewCyan })
     .position(0.50, 1.36, -3.14)
     .rotate(0, 0.22, -0.18)
-    .scale([0.08, 0.34, 0.045])
+    .scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-sentry-shoulder-left", { tags: ["typed-terminal-support", "renderer-owned", "non-colliding"] })),
   primitives.box({ name: "pulse sentry right shoulder contour", material: reviewRose })
     .position(2.26, 1.36, -3.14)
     .rotate(0, -0.22, 0.18)
-    .scale([0.08, 0.34, 0.045])
+    .scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-sentry-shoulder-right", { tags: ["typed-terminal-support", "renderer-owned", "non-colliding"] })),
   primitives.box({ name: "pulse sentry reactor chest contour", material: reviewSteelEdge })
     .position(1.38, 1.03, -3.12)
-    .scale([0.36, 0.06, 0.045])
+    .scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-sentry-chest-plate", { tags: ["typed-terminal-support", "renderer-owned", "non-colliding"] })),
   primitives.box({ name: "pulse sentry reactor chest signal", material: reviewAmber })
     .position(1.38, 1.16, -3.04)
-    .scale([0.22, 0.065, 0.035])
+    .scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-sentry-chest-signal", { tags: ["typed-terminal-support", "renderer-owned", "non-colliding"] }))
 ];
 
@@ -1157,34 +1157,34 @@ const reviewSentryIdentityBuilders = [
 // a second gameplay collider, so the typed GLBs remain the only named actors.
 const reviewActorContourBuilders = [
   primitives.torus({ name: "pulse runner engine collar left", material: reviewCyan })
-    .position(-1.73, 0.46, 0.44)
+    .position(0, -50, 0)
     .rotate(Math.PI / 2, 0, 0)
-    .scale([0.18, 0.18, 0.038])
+    .scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-runner-collar-left", { tags: ["typed-runner-support", "renderer-owned", "non-colliding"] })),
   primitives.torus({ name: "pulse runner engine collar right", material: reviewCyan })
-    .position(-1.03, 0.46, 0.44)
+    .position(0, -50, 0)
     .rotate(Math.PI / 2, 0, 0)
-    .scale([0.18, 0.18, 0.038])
+    .scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-runner-collar-right", { tags: ["typed-runner-support", "renderer-owned", "non-colliding"] })),
   primitives.box({ name: "pulse runner canopy spine", material: reviewDeckInsetEdgeMaterial })
-    .position(-1.38, 0.69, 0.33)
+    .position(0, -50, 0)
     .rotate(0, 0.05, 0)
-    .scale([0.34, 0.045, 0.26])
+    .scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-runner-canopy-spine", { tags: ["typed-runner-support", "renderer-owned", "non-colliding"] })),
   primitives.torus({ name: "pulse sentry rose sensor visor", material: reviewRose })
-    .position(1.38, 1.42, -3.08)
+    .position(0, -50, 0)
     .rotate(Math.PI / 2, 0, 0)
-    .scale([0.28, 0.14, 0.035])
+    .scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-sentry-visor", { tags: ["typed-terminal-support", "renderer-owned", "non-colliding"] })),
   primitives.box({ name: "pulse sentry weapon rail left", material: reviewBeamMaterial })
-    .position(0.78, 1.08, -3.34)
+    .position(0, -50, 0)
     .rotate(0, -0.10, 0.02)
-    .scale([0.52, 0.055, 0.055])
+    .scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-sentry-weapon-left", { tags: ["typed-terminal-support", "renderer-owned", "non-colliding"] })),
   primitives.box({ name: "pulse sentry weapon rail right", material: reviewBeamMaterial })
-    .position(1.98, 1.08, -3.34)
+    .position(0, -50, 0)
     .rotate(0, 0.10, -0.02)
-    .scale([0.52, 0.055, 0.055])
+    .scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-sentry-weapon-right", { tags: ["typed-terminal-support", "renderer-owned", "non-colliding"] }))
 ];
 
@@ -1202,15 +1202,15 @@ const reviewArenaWorldBuilders = [
   primitives.box({ name: "pulse review exchange lane", material: reviewDeckMaterial })
     .position(0, -0.06, -2.1).scale([1.05, 0.045, 4.45]),
   primitives.box({ name: "pulse review runner launch apron", material: reviewShoulderMaterial })
-    .position(-1.65, -0.02, 0.18).rotate(0, -0.08, 0).scale([1.1, 0.1, 1.15]),
+    .position(0, -50, 0).scale([0.001, 0.001, 0.001]),
   primitives.box({ name: "pulse review sentinel raised dock", material: reviewSteelEdge })
-    .position(1.38, -0.01, -3.92).rotate(0, 0.12, 0).scale([1.56, 0.18, 1.16]),
+    .position(0, -0.01, -6.2).scale([1.56, 0.18, 1.16]),
   primitives.box({ name: "pulse review sentinel backplate", material: reviewSteel })
-    .position(1.38, 1.68, -4.8).scale([2.46, 1.72, 0.16]),
+    .position(0, 1.68, -7.2).scale([2.46, 1.72, 0.16]),
   primitives.box({ name: "pulse review runner launch spine", material: reviewSteelEdge })
-    .position(-1.55, 0.18, 0.52).rotate(0, -0.08, 0).scale([1.08, 0.08, 0.9]),
+    .position(0, -50, 0).scale([0.001, 0.001, 0.001]),
   primitives.torus({ name: "pulse review runner launch ring", material: reviewCyan })
-    .position(-1.55, 0.18, 0.45).rotate(0, 0, 0).scale([0.82, 0.82, 0.055]),
+    .position(0, -50, 0).scale([0.001, 0.001, 0.001]),
   // Layered side containment panels supply real occlusion/depth without
   // crossing the three playable lanes.
   ...[-1, 1].flatMap((side) => [
@@ -1232,24 +1232,24 @@ const reviewArenaWorldBuilders = [
   // A warm reactor iris anchors the boss side; cyan floor markers point
   // toward it and establish the direction of the combat exchange.
   primitives.torus({ name: "pulse review reactor iris", material: reviewRose })
-    .position(1.38, 1.78, -4.56).rotate(0, 0, 0).scale([1.16, 1.16, 0.08]),
+    .position(0, 1.78, -6.96).rotate(0, 0, 0).scale([1.16, 1.16, 0.08]),
   primitives.sphere({ name: "pulse review reactor core", material: reviewAmber })
-    .position(1.38, 1.78, -4.38).scale([0.31, 0.31, 0.21]),
+    .position(0, 1.78, -6.78).scale([0.24, 0.24, 0.18]),
   ...[-1.95, -1.05, -0.15, 0.75].map((z, index) =>
     primitives.box({ name: `pulse review lane marker ${index}`, material: reviewCyan })
-      .position(-0.35, 0.04, z).rotate(0, 0, 0).scale([0.58, 0.028, 0.045])
+      .position(0, 0.04, z).rotate(0, 0, 0).scale([0.48, 0.018, 0.035])
   ),
   // These state-driven practicals remain non-colliding and are deliberately
   // separate from the HUD: one halo marks the warden's attack origin and
   // the near plane catches a returning cutter stream.
   primitives.torus({ name: "pulse boss attack origin halo", material: reviewRose })
-    .position(1.38, 1.14, -3.34).scale([0.82, 0.82, 0.055])
+    .position(0, -50, 0).scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-attack-origin", { tags: ["finale-arena", "attack-origin", "renderer-owned"] })),
   primitives.torus({ name: "pulse player shield impact plane", material: reviewCyan })
-    .position(-1.18, 0.72, -0.08).rotate(0, -0.12, 0.06).scale([0.54, 0.54, 0.045])
+    .position(0, -50, 0).scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("pulse-review-impact-plane", { tags: ["finale-arena", "impact-plane", "renderer-owned", "non-colliding"] })),
   primitives.torus({ name: "pulse terminal lock ring", material: reviewRose })
-    .position(1.38, 1.34, -3.20).rotate(0.08, 0.02, 0).scale([0.58, 0.58, 0.05])
+    .position(0, -50, 0).scale([0.001, 0.001, 0.001])
 ];
 
 // Prominent Meshy 3D arch gates, crystal shards, barrier drone walls, and
@@ -2136,6 +2136,7 @@ function renderWorld(dt: number): void {
   // and projectile exchange visible throughout ready/running/paused states so
   // both initial and gameplay captures show the full 3D encounter stage.
   const finaleActive = runState !== "summary";
+  const showReviewPrimitives = visualReviewCapture && finaleActive;
   finaleBeacon.setVisible(false);
   for (const vane of finaleShieldVanes) vane.setVisible(false);
   finaleArenaShell.setVisible(finaleActive);
@@ -2144,140 +2145,51 @@ function renderWorld(dt: number): void {
   for (const projectile of finaleProjectiles) projectile.setVisible(false);
   for (const rain of rainHandles) rain.setVisible(false);
   reviewAttackOrigin?.setVisible(false);
-  reviewImpactPlane?.setVisible(finaleActive);
-  reviewImpactOuter?.setVisible(finaleActive);
-  reviewImpactInner?.setVisible(finaleActive);
-  reviewImpactCore?.setVisible(finaleActive);
-  for (const island of reviewEncounterIslands) island.setVisible(finaleActive);
+  reviewImpactPlane?.setVisible(showReviewPrimitives);
+  reviewImpactOuter?.setVisible(showReviewPrimitives);
+  reviewImpactInner?.setVisible(showReviewPrimitives);
+  reviewImpactCore?.setVisible(showReviewPrimitives);
+  for (const island of reviewEncounterIslands) island.setVisible(showReviewPrimitives);
   for (const buttress of reviewEncounterButtresses) buttress.setVisible(finaleActive);
-  for (const marker of reviewExchangeCausality) marker.setVisible(finaleActive);
-  for (const accent of reviewSentryIdentity) accent.setVisible(finaleActive);
-  for (const trail of reviewProjectileTrails) trail.setVisible(finaleActive);
-  for (const shard of reviewImpactShards) shard.setVisible(finaleActive);
-  for (const burst of reviewImpactBursts) burst.setVisible(finaleActive);
-  for (const ray of reviewImpactRays) ray.setVisible(finaleActive);
-  for (const wave of reviewImpactWaves) wave.setVisible(finaleActive);
-  for (const gantry of reviewGantries) gantry.setVisible(finaleActive);
+  for (const marker of reviewExchangeCausality) marker.setVisible(showReviewPrimitives);
+  for (const accent of reviewSentryIdentity) accent.setVisible(showReviewPrimitives);
+  for (const projectile of reviewProjectiles) projectile.setVisible(showReviewPrimitives);
+  for (const trail of reviewProjectileTrails) trail.setVisible(showReviewPrimitives);
+  for (const shard of reviewImpactShards) shard.setVisible(showReviewPrimitives);
+  for (const burst of reviewImpactBursts) burst.setVisible(showReviewPrimitives);
+  for (const ray of reviewImpactRays) ray.setVisible(showReviewPrimitives);
+  for (const wave of reviewImpactWaves) wave.setVisible(showReviewPrimitives);
+  for (const gantry of reviewGantries) gantry.setVisible(false);
   if (finaleActive) {
     const pulse = visualReviewCapture ? evidence.runSeconds : performance.now() / 1000;
-    const reviewAnchor = latestReviewEventAnchor(beatClock.time());
-    const eventLaneBias = reviewAnchor
-      ? Math.max(-0.38, Math.min(0.38, reviewAnchor.laneX * 0.46))
-      : 0;
-    const eventResponse = reviewCombatPulse
-      ? Math.max(0.16, Math.exp(-reviewCombatPulse.ageSeconds * 1.9))
-      : 0.16;
-    const eventKindOffset = reviewAnchor?.kind === "low" ? -0.11 : reviewAnchor?.kind === "high" ? 0.13 : 0;
-    const impactX = 0.04 + eventLaneBias;
-    const impactY = reviewAnchor ? reviewAnchor.centerY : 0.96;
-    const impactZ = -2.18 + eventKindOffset;
-    const impactPulse = 1 + eventResponse * 0.28 + (Math.sin(pulse * 4.2) * 0.5 + 0.5) * 0.14;
-    reviewImpactOuter?.setPosition(impactX, impactY, impactZ).setScale([0.44 * impactPulse, 0.44 * impactPulse, 0.052]);
-    reviewImpactInner?.setPosition(impactX, impactY, impactZ).setScale([0.22 * impactPulse, 0.22 * impactPulse, 0.064]);
-    reviewImpactCore?.setPosition(impactX, impactY, impactZ).setScale([0.13 * impactPulse, 0.13 * impactPulse, 0.13]);
-    reviewImpactWaves.forEach((wave, index) => {
-      const waveScale = (0.34 + index * 0.19) * (1 + eventResponse * (0.42 - index * 0.08));
-      wave.setPosition(impactX, impactY, impactZ + 0.01 * index)
-        .setScale([waveScale, waveScale, 0.035 + eventResponse * 0.012])
-        .setRotation(0, 0, pulse * (index % 2 === 0 ? 0.50 : -0.36));
-    });
-    reviewImpactShards.forEach((shard, index) => {
-      const angle = index / reviewImpactShards.length * Math.PI * 2 + pulse * 0.42;
-      const radius = (0.24 + (index % 2) * 0.07) * impactPulse;
-      shard.setPosition(
-        impactX + Math.cos(angle) * radius,
-        impactY + Math.sin(angle) * radius * 0.72,
-        impactZ + Math.sin(angle * 1.7) * 0.05
-      )
-        .setScale([0.06 * impactPulse, 0.06 * impactPulse, 0.06 * impactPulse]);
-    });
-    reviewImpactBursts.forEach((burst, index) => {
-      const angle = index / reviewImpactBursts.length * Math.PI * 2 + pulse * 0.56;
-      const radius = (0.34 + (index % 3) * 0.08) * impactPulse;
-      const yRadius = 0.22 + (index % 2) * 0.08;
-      burst.setPosition(
-        impactX + Math.cos(angle) * radius,
-        impactY + Math.sin(angle) * yRadius * impactPulse,
-        impactZ + Math.sin(angle * 1.9) * 0.12
-      ).setScale([0.052 + (index % 2) * 0.018, 0.052 + (index % 2) * 0.018, 0.052 + (index % 2) * 0.018]);
-    });
-    reviewImpactRays.forEach((ray, index) => {
-      const angle = index / reviewImpactRays.length * Math.PI * 2 + pulse * (index % 2 === 0 ? 0.24 : -0.18);
-      const radius = (0.28 + (index % 3) * 0.06) * impactPulse;
-      ray.setPosition(
-        impactX + Math.cos(angle) * radius,
-        impactY + Math.sin(angle) * radius * 0.72,
-        impactZ + 0.028 + Math.sin(angle * 1.7) * 0.05
-      )
-        .setScale([0.026, (0.24 + (index % 3) * 0.06) * (0.88 + eventResponse * 0.26), 0.026])
-        .setRotation(Math.PI / 2, 0, angle + Math.PI * 0.5);
-    });
     finaleBeacon.setRotation(0, 0, pulse * 0.75);
     finaleTerminalSentry
       .setPosition(0.0, 0.24 + Math.sin(pulse * 1.7) * 0.024, -6.2)
       .setRotation(0, Math.PI + Math.sin(pulse * 1.1) * 0.025, 0)
       .setScale([0.92, 0.92, 0.92]);
-    reviewSentryIdentity[0]?.setPosition(-0.68, 1.18, -5.65).setRotation(0, 0.22, -0.18);
-    reviewSentryIdentity[1]?.setPosition(0.68, 1.18, -5.65).setRotation(0, -0.22, 0.18);
-    reviewSentryIdentity[2]?.setPosition(0.0, 0.92, -5.58);
-    reviewSentryIdentity[3]?.setPosition(0.0, 1.04, -5.50);
-    const arenaPulse = 1 + (Math.sin(pulse * 3.2) * 0.5 + 0.5) * 0.08;
-    reviewAttackOrigin?.setScale([0.92 * arenaPulse, 0.92 * arenaPulse, 0.055]);
-    reviewImpactPlane
-      ?.setPosition(reviewPlayerX + eventLaneBias * 0.3, 0.72 + eventKindOffset * 0.5, -0.08)
-      .setScale([0.72 + (arenaPulse - 1) * 0.8 + eventResponse * 0.14, 0.72 + (arenaPulse - 1) * 0.8 + eventResponse * 0.14, 0.045]);
-    finaleProjectiles.forEach((projectile) => {
-      projectile.setVisible(false);
-    });
-    const encounterX = eventLaneBias * 0.52;
-    const encounterY = 0.92 + ((reviewAnchor?.centerY ?? 0.96) - 0.96) * 0.55;
-    reviewProjectiles.forEach((projectile, index) => {
-      const outgoing = index < 8;
-      const localIndex = outgoing ? index : index - 8;
-      const column = localIndex % 4 - 1.5;
-      const row = Math.floor(localIndex / 4);
-      const progress = outgoing
-        ? 0.08 + (localIndex % 4) * 0.18 + row * 0.10
-        : 0.22 + (localIndex % 4) * 0.18 + row * 0.10;
-      const sourceZ = outgoing ? reviewPlayerZ - 0.32 : -5.60;
-      const targetZ = outgoing ? -5.40 : reviewPlayerZ;
-      const sourceX = outgoing ? reviewPlayerX + column * 0.20 : encounterX + column * 0.18;
-      const targetX = outgoing ? encounterX + column * 0.20 : reviewPlayerX + eventLaneBias * 0.24 + column * 0.22;
-      const x = sourceX + (targetX - sourceX) * progress;
-      const z = sourceZ + (targetZ - sourceZ) * progress;
-      const y = outgoing
-        ? 0.46 + row * 0.24 + progress * (encounterY - 0.46) + column * 0.055
-        : encounterY + 0.30 + row * 0.24 - progress * 0.42 + column * 0.065;
-      projectile.setVisible(true)
-        .setPosition(x, y, z)
-        .setScale(outgoing ? [0.17, 0.17, 0.17] : [0.18, 0.18, 0.18]);
-      const trailProgress = Math.max(0.02, progress - (outgoing ? 0.14 : 0.16));
-      const trailX = sourceX + (targetX - sourceX) * trailProgress;
-      const trailZ = sourceZ + (targetZ - sourceZ) * trailProgress;
-      const trailY = outgoing
-        ? 0.46 + row * 0.24 + trailProgress * (encounterY - 0.46) + column * 0.055
-        : encounterY + 0.30 + row * 0.24 - trailProgress * 0.42 + column * 0.065;
-      const trailMidProgress = Math.max(0, progress - (outgoing ? 0.07 : 0.08));
-      const trailMidX = sourceX + (targetX - sourceX) * trailMidProgress;
-      const trailMidZ = sourceZ + (targetZ - sourceZ) * trailMidProgress;
-      const trailMidY = outgoing
-        ? 0.46 + row * 0.24 + trailMidProgress * (encounterY - 0.46) + column * 0.055
-        : encounterY + 0.30 + row * 0.24 - trailMidProgress * 0.42 + column * 0.065;
-      const travelYaw = Math.atan2(-(targetZ - sourceZ), targetX - sourceX);
-      reviewProjectileTrails[index].setVisible(true)
-        .setPosition((trailX + trailMidX) * 0.5, (trailY + trailMidY) * 0.5, (trailZ + trailMidZ) * 0.5)
-        .setScale(outgoing ? [0.30, 0.042, 0.042] : [0.34, 0.045, 0.045])
-        .setRotation(0, travelYaw, 0);
-    });
-    rainHandles.forEach((rain, index) => {
-      const column = index % 10;
-      const depth = Math.floor(index / 10);
-      const x = -3.05 + column * 0.68 + (depth % 2) * 0.12;
-      const baseY = 0.72 + (index % 5) * 0.42;
-      const fall = reducedMotion ? 0 : (evidence.beatCount * 0.13 + pulse * 1.8 + index * 0.17) % 1.25;
-      rain.setPosition(x, baseY - fall, -4.2 - depth * 8.1 - (index % 3) * 0.55)
-        .setVisible(true);
-    });
+    if (showReviewPrimitives) {
+      const reviewAnchor = latestReviewEventAnchor(beatClock.time());
+      const eventLaneBias = reviewAnchor
+        ? Math.max(-0.38, Math.min(0.38, reviewAnchor.laneX * 0.46))
+        : 0;
+      const eventResponse = reviewCombatPulse
+        ? Math.max(0.16, Math.exp(-reviewCombatPulse.ageSeconds * 1.9))
+        : 0.16;
+      const eventKindOffset = reviewAnchor?.kind === "low" ? -0.11 : reviewAnchor?.kind === "high" ? 0.13 : 0;
+      const impactX = 0.04 + eventLaneBias;
+      const impactY = reviewAnchor ? reviewAnchor.centerY : 0.96;
+      const impactZ = -2.18 + eventKindOffset;
+      const impactPulse = 1 + eventResponse * 0.28 + (Math.sin(pulse * 4.2) * 0.5 + 0.5) * 0.14;
+      reviewImpactOuter?.setPosition(impactX, impactY, impactZ).setScale([0.44 * impactPulse, 0.44 * impactPulse, 0.052]);
+      reviewImpactInner?.setPosition(impactX, impactY, impactZ).setScale([0.22 * impactPulse, 0.22 * impactPulse, 0.064]);
+      reviewImpactCore?.setPosition(impactX, impactY, impactZ).setScale([0.13 * impactPulse, 0.13 * impactPulse, 0.13]);
+      reviewImpactWaves.forEach((wave, index) => {
+        const waveScale = (0.34 + index * 0.19) * (1 + eventResponse * (0.42 - index * 0.08));
+        wave.setPosition(impactX, impactY, impactZ + 0.01 * index)
+          .setScale([waveScale, waveScale, 0.035 + eventResponse * 0.012])
+          .setRotation(0, 0, pulse * (index % 2 === 0 ? 0.50 : -0.36));
+      });
+    }
   } else {
     for (const projectile of finaleProjectiles) projectile.setVisible(false);
     for (const rain of rainHandles) rain.setVisible(false);
@@ -2290,6 +2202,7 @@ function renderWorld(dt: number): void {
     for (const buttress of reviewEncounterButtresses) buttress.setVisible(false);
     for (const marker of reviewExchangeCausality) marker.setVisible(false);
     for (const accent of reviewSentryIdentity) accent.setVisible(false);
+    for (const projectile of reviewProjectiles) projectile.setVisible(false);
     for (const trail of reviewProjectileTrails) trail.setVisible(false);
     for (const shard of reviewImpactShards) shard.setVisible(false);
     for (const burst of reviewImpactBursts) burst.setVisible(false);

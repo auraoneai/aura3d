@@ -195,6 +195,31 @@ const COURT_CROWD_HEAD_NODES: readonly string[] = [
   ...Array.from({ length: 51 }, (_, index) => `Sphere.${String(index + 1).padStart(3, "0")}`)
 ];
 const COURT_REVIEW_HIDDEN_NODES: readonly string[] = [
+  "rear bleacher tier 1",
+  "rear bleacher tier 2",
+  "rear bleacher tier 3",
+  "rear bleacher tier 4",
+  "rear guard post 1",
+  "rear guard post 1 right",
+  "rear guard post 2",
+  "rear guard post 2 right",
+  "rear guard post 3",
+  "rear guard post 3 right",
+  "rear guard rail 1",
+  "rear guard rail 2",
+  "rear guard rail 3",
+  "side bleacher 1 1",
+  "side bleacher 1 2",
+  "side bleacher 1 3",
+  "side bleacher -1 1",
+  "side bleacher -1 2",
+  "side bleacher -1 3",
+  "side handrail 1",
+  "side handrail -1",
+  "side rail post 1",
+  "side rail post -1",
+  "venue cyan kicker 1",
+  "venue cyan kicker -1",
   "rear sponsor banner -5.6",
   "rear sponsor banner -2.8",
   "rear sponsor banner 0",
@@ -466,7 +491,11 @@ function buildScene() {
         }
         if (
           typeof node.name === "string" &&
-          (node.name === "rooftop-access-shed" || node.name.startsWith("pavilion "))
+          (node.name === "rooftop-access-shed" ||
+            node.name.startsWith("pavilion ") ||
+            node.name === "warm rooftop facade" ||
+            node.name.startsWith("facade-") ||
+            node.name.startsWith("arena-window-"))
         ) {
           node.scale = [0.001, 0.001, 0.001];
           node.position = [0, -20, 0];
@@ -497,10 +526,10 @@ function buildScene() {
         name: "rooftop-scoreboard-gantry-3d",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 3.8
+        targetMaxDimension: 2.35
       })
-        .scale(1.25)
-        .position(0, 4.35, -7.85),
+        .scale(1.0)
+        .position(0, 5.15, -6.5),
       model(assets.rooftopBallRackCartMeshy, {
         name: "rooftop-ball-rack-cart-3d-left",
         role: "setDressing",

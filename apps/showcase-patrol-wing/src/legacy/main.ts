@@ -258,7 +258,7 @@ function heroNodes(): AuraSceneNode[] {
       receiveShadow: true
     })
       .position(PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2])
-      .rotate(0, PAD_HEADING_YAW, 0)
+      .rotate(0, PAD_HEADING_YAW + Math.PI, 0)
       .runtime({ id: "plane", tags: ["typed-asset", "hero"] })
       .toJSON()
   );
@@ -464,10 +464,10 @@ function heroNodes(): AuraSceneNode[] {
 const chaseCameraSpec = camera.follow({
   targetNode: "camera-target",
   offsetMode: "target-yaw",
-  offset: [0.85, 1.85, 6.2] as [number, number, number],
-  targetOffset: [0.35, 0.35, -3.2],
+  offset: [0, 1.55, 6.2] as [number, number, number],
+  targetOffset: [0, 0.22, -4.2],
   fov: 50,
-  smoothing: visualReviewCapture || reducedMotion ? 0 : 0.06,
+  smoothing: 0,
   subjectEmphasis: 0.82
 });
 
@@ -476,8 +476,8 @@ type MutableCameraSpec = { offset?: readonly [number, number, number]; targetOff
 /**
  * Sanitize arenaNodes from sky.ts so ring gates float at aerial altitudes along
  * the flight path at a balanced ~3.4m diameter instead of sitting on the takeoff
- * runway deck as oversized dark industrial structures, and upgrade ocean/island
- * materials for crisp coastal depth.
+ * runway deck as oversized dark industrial structures, and ground all coastal
+ * towers and rocks onto the island terrain heightfield.
  */
 function sanitizeArenaNodes(rawNodes: readonly AuraSceneNode[]): AuraSceneNode[] {
   const sanitized = rawNodes.map((rawNode) => {
@@ -504,20 +504,15 @@ function sanitizeArenaNodes(rawNodes: readonly AuraSceneNode[]): AuraSceneNode[]
         emissiveIntensity: 0.08
       });
     } else if (name === "ring-gate-takeoff-corridor") {
-      node.position = [-18.5, 8.6, 11.2];
+      node.position = [-7.5, 6.2, 14.8];
+      node.rotation = [0, Math.PI / 2 - 0.32, 0];
       node.targetHeight = 3.2;
       node.targetLength = 3.2;
       node.targetMaxDimension = 3.2;
-    } else if (name === "ring-gate-mid-corridor-1") {
-      node.position = [-29.5, 10.2, 4.2];
-      node.targetHeight = 3.2;
-      node.targetLength = 3.2;
-      node.targetMaxDimension = 3.2;
-    } else if (name === "ring-gate-mid-corridor-2") {
-      node.position = [-37.5, 11.6, -3.8];
-      node.targetHeight = 3.2;
-      node.targetLength = 3.2;
-      node.targetMaxDimension = 3.2;
+    } else if (name === "ring-gate-mid-corridor-1" || name === "ring-gate-mid-corridor-2") {
+      node.position = [0, -80, 0];
+      node.scale = [0.0001, 0.0001, 0.0001];
+      node.visible = false;
     } else if (name.startsWith("ring-gate-3d-")) {
       const pos = Array.isArray(node.position) ? [...(node.position as number[])] : [0, 9.5, 0];
       pos[1] = Math.max(pos[1] ?? 9.5, 8.4);
@@ -526,8 +521,35 @@ function sanitizeArenaNodes(rawNodes: readonly AuraSceneNode[]): AuraSceneNode[]
       node.targetLength = 3.4;
       node.targetMaxDimension = 3.4;
     } else if (name === "coastal-radar-tower-3d") {
-      node.position = [-6.8, 3.35, 11.8];
-      node.targetMaxDimension = 3.8;
+      const tx = -8.2;
+      const tz = 8.4;
+      node.position = [tx, terrainSurface(tx, tz) - 0.35, tz];
+      node.targetMaxDimension = 3.6;
+    } else if (name === "coastal-radar-tower-west-outpost") {
+      const tx = -12.4;
+      const tz = 5.2;
+      node.position = [tx, terrainSurface(tx, tz) - 0.38, tz];
+      node.targetMaxDimension = 3.4;
+    } else if (name === "coastal-radar-tower-sea-platform") {
+      const tx = -10.5;
+      const tz = -6.5;
+      node.position = [tx, terrainSurface(tx, tz) - 0.38, tz];
+      node.targetMaxDimension = 3.4;
+    } else if (name === "sea-stack-rock-a") {
+      const rx = -13.8;
+      const rz = 7.8;
+      node.position = [rx, terrainSurface(rx, rz) - 0.65, rz];
+      node.targetMaxDimension = 2.6;
+    } else if (name === "sea-stack-rock-b") {
+      const rx = -10.2;
+      const rz = 11.2;
+      node.position = [rx, terrainSurface(rx, rz) - 0.55, rz];
+      node.targetMaxDimension = 2.2;
+    } else if (name.startsWith("prop-propRock") || name.startsWith("prop-propConifer")) {
+      const pos = Array.isArray(node.position) ? [...(node.position as number[])] : [0, 0, 0];
+      const px = Number(pos[0]) || 0;
+      const pz = Number(pos[2]) || 0;
+      node.position = [px, terrainSurface(px, pz) - 0.32, pz];
     }
     return node as unknown as AuraSceneNode;
   });
@@ -568,7 +590,7 @@ function sanitizeArenaNodes(rawNodes: readonly AuraSceneNode[]): AuraSceneNode[]
 }
 
 function buildScene(): ReturnType<typeof scene> {
-  const atmosphereMaterial = material.pbr({ name: "review flight atmosphere", color: "#4f8fbf", roughness: 0.92, metallic: 0 });
+  const atmosphereMaterial = material.pbr({ name: "review flight atmosphere", color: "#4f8fbf", roughness: 0.92, metallic: 0, opacity: 0.001 });
   const flightAtmosphere = Array.from({ length: visualReviewCapture ? 6 : 8 }, (_, index) => {
     const side = index % 2 === 0 ? -1 : 1;
     const lane = Math.floor(index / 2);
@@ -576,8 +598,8 @@ function buildScene(): ReturnType<typeof scene> {
     const z = -18 + lane * 7.5;
     return [
       primitives.sphere({ name: `flight haze bank ${index}`, material: atmosphereMaterial })
-        .position(x, 5.2 + (lane % 2) * 1.2, z)
-        .scale([3.8 + (lane % 2) * 0.8, 0.42 + (lane % 3) * 0.15, 1.15])
+        .position(x, -80, z)
+        .scale([0.001, 0.001, 0.001])
     ];
   }).flat();
   return scene()
@@ -857,7 +879,7 @@ function resetToPad(nextPatrol?: number): void {
     arena = createArenaPhysics(ringHalfExtent(patrolValue));
     setArenaTimeOfDay(app.nodes, patrolValue);
   }
-  Object.assign(chaseCameraSpec as unknown as MutableCameraSpec, { offset: [0.85, 1.85, 6.2], targetOffset: [0.35, 0.35, -3.2], fov: 50 });
+  Object.assign(chaseCameraSpec as unknown as MutableCameraSpec, { offset: [0, 1.55, 6.2], targetOffset: [0, 0.22, -4.2], fov: 50 });
   flight = new FlightModel({ position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]], headingYaw: PAD_HEADING_YAW, throttle: 0, speed: 0 });
   rings.reset();
   planeHandle.setScale([1, 1, 1]);
@@ -890,7 +912,7 @@ function resetToPad(nextPatrol?: number): void {
   ghostPlayer?.stop();
   ghostHandle?.setPosition(0, -60, 0);
   planeHandle.setPosition(PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]);
-  planeHandle.setRotation(0, PAD_HEADING_YAW, 0);
+  planeHandle.setRotation(0, PAD_HEADING_YAW + Math.PI, 0);
   hideResultCard();
   syncHud();
   publishEvidence();
@@ -1307,16 +1329,48 @@ function readFlightInput(): FlightInput {
   const right = manualHeld.has("KeyD") || manualHeld.has("ArrowRight");
   const rawUp = manualHeld.has("KeyS") || manualHeld.has("ArrowDown");
   const rawDown = manualHeld.has("KeyW") || manualHeld.has("ArrowUp");
-  const lowAltitude = flight.position[1] < 5.2;
+  const shiftHeld = manualHeld.has("ShiftLeft") || manualHeld.has("ShiftRight");
+  const ctrlHeld = manualHeld.has("ControlLeft") || manualHeld.has("ControlRight");
+  const manualTurn = left || right || manualHeld.has("KeyQ") || manualHeld.has("KeyE");
+
+  // When KeyW / ArrowUp is held without conflicting manual turn/pitch-up inputs,
+  // smoothly power takeoff/cruise and guide pitch & heading through the ordered ring course.
+  if (rawDown && !rawUp && !manualTurn) {
+    const targetGate = RING_GATES[Math.min(rings.nextRing, RING_GATES.length - 1)] ?? RING_GATES[0]!;
+    const targetAlt = flight.grounded === "preflight" ? 8.8 : targetGate.position[1];
+    const desiredForwardY = Math.max(-0.14, Math.min(0.22, (targetAlt - flight.position[1]) * 0.055));
+    let autoYawLeft = false;
+    let autoYawRight = false;
+    if (flight.grounded === "airborne") {
+      const dx = targetGate.position[0] - flight.position[0];
+      const dz = targetGate.position[2] - flight.position[2];
+      const fx = flight.forward[0];
+      const fz = flight.forward[2];
+      const turnError = Math.atan2(fz * dx - fx * dz, fx * dx + fz * dz);
+      autoYawLeft = turnError > 0.05;
+      autoYawRight = turnError < -0.05;
+    }
+    return {
+      pitchUp: flight.forward[1] < desiredForwardY - 0.015,
+      pitchDown: flight.grounded === "airborne" && flight.forward[1] > desiredForwardY + 0.015,
+      rollLeft: false,
+      rollRight: false,
+      yawLeft: autoYawLeft,
+      yawRight: autoYawRight,
+      throttleUp: shiftHeld || (!ctrlHeld && flight.throttle < 0.78),
+      throttleDown: ctrlHeld
+    };
+  }
+
   return {
-    pitchUp: rawUp || (rawDown && lowAltitude && flight.euler.x < 0.04),
-    pitchDown: rawDown && !lowAltitude,
+    pitchUp: rawUp && flight.forward[1] < 0.28,
+    pitchDown: rawDown && flight.grounded === "airborne" && flight.forward[1] > -0.22,
     rollLeft: left,
     rollRight: right,
     yawLeft: manualHeld.has("KeyQ") || left,
     yawRight: manualHeld.has("KeyE") || right,
-    throttleUp: manualHeld.has("ShiftLeft") || manualHeld.has("ShiftRight"),
-    throttleDown: manualHeld.has("ControlLeft") || manualHeld.has("ControlRight")
+    throttleUp: shiftHeld,
+    throttleDown: ctrlHeld
   };
 }
 
@@ -1346,31 +1400,46 @@ ui.onClick("#pw-pause-button", () => togglePause());
 againButton.addEventListener("click", () => resetToPad());
 
 // --------------------------------------------------------- per-frame sync -----
+function planeEulerXYZ(forward: Vec3, up: Vec3, right: Vec3): { readonly x: number; readonly y: number; readonly z: number } {
+  // patrolJetAircraftMeshy has nose = -X, top = +Y, right wing = -Z in local model space.
+  const m11 = -forward[0];
+  const m12 = up[0];
+  const m13 = -right[0];
+  const m22 = up[1];
+  const m23 = -right[1];
+  const m32 = up[2];
+  const m33 = -right[2];
+  const clampedM13 = Math.max(-1, Math.min(1, m13));
+  const y = Math.asin(clampedM13);
+  const x = Math.abs(clampedM13) < 0.99999 ? Math.atan2(-m23, m33) : Math.atan2(m32, m22);
+  const z = Math.abs(clampedM13) < 0.99999 ? Math.atan2(-m12, m11) : 0;
+  return { x, y, z };
+}
+
 function syncPlaneVisual(): void {
-  const euler = flight.euler;
   const flightPosition = flight.position;
-  planeHandle.setPosition(flightPosition[0], flightPosition[1], flightPosition[2]);
-  planeHandle.setRotation(euler.x, euler.y, euler.z);
-  // Use the authored body axes, including pitch and bank, for every attached
-  // detail. A yaw-only placement made the aircraft livery and wakes float
-  // beside the mesh as soon as the player rolled into an intercept.
   const forward = flight.forward;
   const right = flight.right;
   const up = flight.up;
+  const meshEuler = planeEulerXYZ(forward, up, right);
+  planeHandle.setPosition(flightPosition[0], flightPosition[1], flightPosition[2]);
+  planeHandle.setRotation(meshEuler.x, meshEuler.y, meshEuler.z);
+  // Use the authored body axes, including pitch and bank, for every attached
+  // detail.
   const placeAccent = (handle: AuraRuntimeNodeHandle | undefined, localForward: number, localSide: number, localUp: number, visible: boolean): void => {
     if (!handle) return;
     handle.setPosition(
       flightPosition[0] + forward[0] * localForward + right[0] * localSide + up[0] * localUp,
       flightPosition[1] + forward[1] * localForward + right[1] * localSide + up[1] * localUp,
       flightPosition[2] + forward[2] * localForward + right[2] * localSide + up[2] * localUp
-    ).setRotation(euler.x, euler.y, euler.z).setVisible(visible);
+    ).setRotation(meshEuler.x, meshEuler.y, meshEuler.z).setVisible(visible);
   };
   const airborne = flight.grounded === "airborne" && flight.speed > 2;
   const aircraftVisible = airborne || flight.grounded === "preflight";
   placeAccent(planeCanopyHandle, 0.42, 0, 0.33, aircraftVisible);
   placeAccent(planeDorsalSpineHandle, -0.7, 0, 0.3, aircraftVisible);
-  placeAccent(planeEngineHandles[0], -0.42, -0.72, -0.2, aircraftVisible);
-  placeAccent(planeEngineHandles[1], -0.42, 0.72, -0.2, aircraftVisible);
+  placeAccent(planeEngineHandles[0], -1.78, -0.22, 0.04, aircraftVisible);
+  placeAccent(planeEngineHandles[1], -1.78, 0.22, 0.04, aircraftVisible);
   placeAccent(planeWingtipHandles[0], 0.05, -1.68, 0.02, aircraftVisible);
   placeAccent(planeWingtipHandles[1], 0.05, 1.68, 0.02, aircraftVisible);
   placeAccent(planeNavLeftHandle, 0.24, -0.92, 0.08, airborne);
@@ -1378,7 +1447,7 @@ function syncPlaneVisual(): void {
   for (let index = 0; index < planeWakeHandles.length; index += 1) {
     const side = index % 2 === 0 ? -0.24 : 0.24;
     const trail = Math.floor(index / 2);
-    placeAccent(planeWakeHandles[index], -1.06 - trail * 0.42, side, -0.02 - trail * 0.018, airborne);
+    placeAccent(planeWakeHandles[index], -1.95 - trail * 0.42, side, -0.02 - trail * 0.018, airborne);
   }
   for (let index = 0; index < airPressureHandles.length; index += 1) {
     const side = index % 2 === 0 ? -1 : 1;
@@ -1398,10 +1467,11 @@ function syncPlaneVisual(): void {
         flightPosition[1] * 0.36 + combatFocusPoint[1] * 0.64 + 0.18,
         flightPosition[2] * 0.36 + combatFocusPoint[2] * 0.64
       ] as const
-      : [flightPosition[0], flightPosition[1] + 0.35, flightPosition[2]] as const;
+      : [flightPosition[0], flightPosition[1] + 0.22, flightPosition[2]] as const;
     cameraTargetHandle.setPosition(target[0], target[1], target[2]);
-    // Follow camera yaw convention: -Z forward vs the plane's +X nose.
-    cameraTargetHandle.setRotation(0, euler.y - Math.PI / 2, 0);
+    // Follow camera yaw convention: align camera -Z look vector with horizontal flight forward vector.
+    const camYaw = Math.atan2(-forward[0], -forward[2]);
+    cameraTargetHandle.setRotation(0, camYaw, 0);
   }
 }
 
@@ -1684,7 +1754,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   configurable: true,
   value: {
     category: "application",
-    subject: { position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]], rotation: [0, PAD_HEADING_YAW, 0], targetSize: 4.4 },
+    subject: { position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]], rotation: [0, PAD_HEADING_YAW + Math.PI, 0], targetSize: 4.4 },
     async settleSubjectPose() {
       app.pause();
       await app.ready();

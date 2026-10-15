@@ -76,6 +76,8 @@ function orbitalHash(i: number): number {
   return x - Math.floor(x);
 }
 
+const visualPlayerRadius = 2.12;
+
 const appScene = scene()
   .background("#040915")
   .add(
@@ -83,8 +85,8 @@ const appScene = scene()
       name: "defended planet globe",
       role: "primaryWorld",
       scaleMode: "fit",
-      targetMaxDimension: 2.35
-    }).position(0, -1.175, 0)
+      targetMaxDimension: 2.28
+    }).position(0, -1.14, 0)
   )
   .add(
     primitives.torus({
@@ -97,16 +99,16 @@ const appScene = scene()
       })
     })
       .position(0, 0, -0.08)
-      .scale([playerRadius, playerRadius, 0.012])
+      .scale([visualPlayerRadius, visualPlayerRadius, 0.012])
   )
   .add(
     model(assets.orbitalDefenseTurretMeshy, {
       name: "orbital defense turret alpha",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.76
+      targetMaxDimension: 0.68
     })
-      .position(-2.45, 0.88, 0.18)
+      .position(-2.12, 0.76, 0.18)
       .rotate(1.15, 1.32, -0.38)
   )
   .add(
@@ -114,19 +116,29 @@ const appScene = scene()
       name: "orbital defense relay beta",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.68
+      targetMaxDimension: 0.0001
     })
-      .position(2.42, -1.02, 0.18)
-      .rotate(-1.12, -1.28, 0.35)
+      .position(0, 0, -40)
+      .scale([0.0001, 0.0001, 0.0001])
+  )
+  .add(
+    model(assets.skylineFrostSentryDroneMeshy, {
+      name: "orbital defense sentry satellite beta",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.64
+    })
+      .position(2.14, -0.86, 0.18)
+      .rotate(-0.32, -0.68, 0.22)
   )
   .add(
     model(assets.gravityCargoContainerPodMeshy, {
       name: "orbital defense supply pod",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.48
+      targetMaxDimension: 0.46
     })
-      .position(-1.92, -1.52, 0.24)
+      .position(-1.76, -1.34, 0.24)
       .rotate(0.45, 0.95, 0.32)
   )
   .add(
@@ -171,9 +183,9 @@ const appScene = scene()
       name: "player interceptor",
       role: "primaryCharacter",
       scaleMode: "fit",
-      targetMaxDimension: 0.88
+      targetMaxDimension: 0.74
     })
-      .position(playerRadius, 0, 0.28)
+      .position(visualPlayerRadius, 0, 0.28)
       .rotate(0.35, 0.6, -0.2)
       .runtime(game.runtimeNode("player-interceptor"))
   )
@@ -187,8 +199,8 @@ const appScene = scene()
         opacity: 0.82
       })
     })
-      .position(playerRadius, 0, 0.26)
-      .scale([0.42, 0.42, 0.018])
+      .position(visualPlayerRadius, 0, 0.26)
+      .scale([0.36, 0.36, 0.016])
       .runtime(game.runtimeNode("player-interceptor-shield"))
   )
   .add(
@@ -200,11 +212,11 @@ const appScene = scene()
         emissiveIntensity: 1.85
       })
     })
-      .position(playerRadius, 0, 0.28)
-      .scale(0.068)
+      .position(visualPlayerRadius, 0, 0.28)
+      .scale(0.058)
       .runtime(game.runtimeNode("player-interceptor-thruster"))
   )
-  .add(primitives.sphere({ name: "player aiming bead", material: material.emissive({ color: "#2b2109", emissive: "#facc15", emissiveIntensity: 1.25 }) }).position(playerRadius + 0.38, 0, 0.24).scale(0.055).runtime(game.runtimeNode("player-aim")))
+  .add(primitives.sphere({ name: "player aiming bead", material: material.emissive({ color: "#2b2109", emissive: "#facc15", emissiveIntensity: 1.25 }) }).position(visualPlayerRadius + 0.32, 0, 0.24).scale(0.05).runtime(game.runtimeNode("player-aim")))
   .add(lights.ambient({ intensity: 0.92, color: "#93c5fd" }))
   .add(lights.directional({ position: [2.6, 4.2, 5.6], intensity: 2.1, color: "#e0f2fe" }))
   .add(lights.directional({ position: [-3.8, -2.8, 4.8], intensity: 1.65, color: "#fb923c" }))
@@ -213,10 +225,14 @@ const appScene = scene()
   .add(lights.point({ position: [2.6, -1.6, 3.2], color: "#fbbf24", intensity: 2.4 }))
   .add(lights.point({ position: [0, 2.6, 2.8], color: "#fb7185", intensity: 2.2 }))
   .add(lights.point({ position: [0, -2.6, 2.8], color: "#f97316", intensity: 2.2 }))
-  .add(effects.bloom({ intensity: 0.16, color: "#38bdf8" }))
+  .add(effects.bloom({ intensity: 0.14, color: "#38bdf8" }))
   .add(effects.fog({ density: 0.004, color: "#060d1d" }))
   .add(interactions.orbit())
-  .camera(camera.perspective({ position: [0, -0.15, 5.85], target: [0, 0, 0], fov: 44 }));
+  .camera(camera.perspective({ position: [0, 0, 7.15], target: [0, 0, 0], fov: 46 }));
+
+function elRadiusClamp(_i: number, _r: number): number {
+  return 0;
+}
 
 let builtScene = appScene;
 for (const [index, id] of enemyIds.entries()) {
@@ -227,7 +243,7 @@ for (const [index, id] of enemyIds.entries()) {
         name: `${id} wave drone`,
         role: "enemy",
         scaleMode: "fit",
-        targetMaxDimension: 0.74
+        targetMaxDimension: 0.62
       })
         .position(8, 8, 0)
         .runtime(game.runtimeNode(id))
@@ -243,7 +259,7 @@ for (const [index, id] of enemyIds.entries()) {
         })
       })
         .position(8, 8, 0)
-        .scale([0.34, 0.34, 0.022])
+        .scale([0.28, 0.28, 0.02])
         .runtime(game.runtimeNode(`${id}-core-ring`))
     )
     .add(
@@ -256,7 +272,7 @@ for (const [index, id] of enemyIds.entries()) {
         })
       })
         .position(8, 8, 0)
-        .scale(0.065)
+        .scale(0.055)
         .runtime(game.runtimeNode(`${id}-core-beacon`))
     );
 }
@@ -335,23 +351,24 @@ function update(dt: number): void {
 }
 
 function syncRuntimeNodes(): void {
-  const playerPosition = polar(player.angle, playerRadius, 0.28);
+  const playerPosition = polar(player.angle, visualPlayerRadius, 0.28);
   app.nodes.require("player-interceptor")
-    .setPosition(playerPosition[0], playerPosition[1] - 0.24, playerPosition[2])
+    .setPosition(playerPosition[0], playerPosition[1] - 0.18, playerPosition[2])
     .setRotation(0.35, 0.6, player.angle + Math.PI / 2 - 0.2);
   app.nodes.require("player-interceptor-shield")
     .setPosition(playerPosition[0], playerPosition[1], playerPosition[2] - 0.02)
     .setRotation(0.22, 0.35, player.angle);
-  const thrusterPos = polar(player.angle - 0.08, playerRadius - 0.06, 0.28);
+  const thrusterPos = polar(player.angle - 0.08, visualPlayerRadius - 0.06, 0.28);
   app.nodes.require("player-interceptor-thruster")
     .setPosition(thrusterPos[0], thrusterPos[1], thrusterPos[2]);
-  const aimPosition = polar(player.angle, playerRadius + 0.42, 0.24);
+  const aimPosition = polar(player.angle, visualPlayerRadius + 0.34, 0.24);
   app.nodes.require("player-aim").setPosition(aimPosition[0], aimPosition[1], aimPosition[2]);
 
   for (const enemy of state.enemies) {
-    const pos = enemy.active ? polar(enemy.angle, enemy.radius, 0.18 + enemy.lane * 0.06) : ([8, 8, 0] as const);
+    const visualEnemyRadius = 1.38 + Math.min(1.0, Math.max(0, (enemy.radius - 1.2) * 0.28));
+    const pos = enemy.active ? polar(enemy.angle, visualEnemyRadius, 0.18 + enemy.lane * 0.06) : ([8, 8, 0] as const);
     app.nodes.require(enemy.id)
-      .setPosition(pos[0], enemy.active ? pos[1] - 0.22 : pos[1], pos[2])
+      .setPosition(pos[0], enemy.active ? pos[1] - 0.16 : pos[1], pos[2])
       .setRotation(0.42, 0.52, -enemy.angle + Math.PI * 0.25);
     app.nodes.require(`${enemy.id}-core-ring`)
       .setPosition(pos[0], pos[1], pos[2] - 0.02)
@@ -362,13 +379,14 @@ function syncRuntimeNodes(): void {
       .setVisible(enemy.active);
   }
   for (const projectile of state.projectiles) {
-    const pos = projectile.active ? polar(projectile.angle, projectile.radius, 0.24) : ([8, 8, 0] as const);
+    const visualProjectileRadius = visualPlayerRadius + Math.max(0, (projectile.radius - playerRadius) * 0.28);
+    const pos = projectile.active ? polar(projectile.angle, visualProjectileRadius, 0.24) : ([8, 8, 0] as const);
     app.nodes.require(projectile.id).setPosition(pos[0], pos[1], pos[2]);
   }
   for (let index = 0; index < shieldIds.length; index += 1) {
     const pulse = player.shieldPulses[index];
-    const pos = pulse ? polar(pulse.angle, 2.04, 0.18) : ([8, 8, 0] as const);
-    const scale = pulse ? 0.42 + (1.2 - pulse.ttl) * 0.34 : 0.01;
+    const pos = pulse ? polar(pulse.angle, 1.78, 0.18) : ([8, 8, 0] as const);
+    const scale = pulse ? 0.38 + (1.2 - pulse.ttl) * 0.28 : 0.01;
     app.nodes.require(shieldIds[index]!).setPosition(pos[0], pos[1], pos[2]).setScale([scale, scale, 0.02]);
   }
 }

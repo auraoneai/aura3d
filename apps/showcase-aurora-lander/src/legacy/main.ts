@@ -633,11 +633,11 @@ function buildWorldScene() {
           name: `${prefix} heightfield terrain`,
           material: material.pbr({
             name: `${prefix} regolith`,
-            color: "#112233",
-            emissive: "#0d1f33",
-            emissiveIntensity: 0.12,
-            roughness: 0.86,
-            metallic: 0.08
+            color: "#162a40",
+            emissive: "#0f2438",
+            emissiveIntensity: 0.16,
+            roughness: 0.82,
+            metallic: 0.12
           }),
           receiveShadow: true
         }
@@ -653,17 +653,13 @@ function buildWorldScene() {
           name: `${prefix} ring glow`,
           color: "#2dd4bf",
           emissive: "#14b8a6",
-          emissiveIntensity: 0.28,
-          opacity: 0.78
+          emissiveIntensity: 0.01,
+          opacity: 0
         })
       })
-        .position(pad.x, padHeight + 0.06, pad.z)
+        .position(pad.x, -50, pad.z)
         .rotate(Math.PI / 2, 0, 0)
-        .scale([
-          pad.radius * (visualReviewCapture ? 1.28 : 1.92),
-          pad.radius * (visualReviewCapture ? 1.28 : 1.92),
-          visualReviewCapture ? 0.06 : 0.06
-        ])
+        .scale([0.0001, 0.0001, 0.0001])
         .runtime(game.runtimeNode(`${prefix}-pad-ring`, { tags: ["pad", "zone-marker", "renderer-owned"] }))
     );
 
@@ -721,11 +717,12 @@ function buildWorldScene() {
         name: `${prefix} beacon left`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.9,
-        castShadow: true,
-        visible
+        targetMaxDimension: 0.001,
+        castShadow: false,
+        visible: false
       })
-        .position(pad.x - pad.radius - 1.4, padHeight, pad.z + pad.radius + 1.2)
+        .position(pad.x, -50, pad.z)
+        .scale([0.0001, 0.0001, 0.0001])
         .runtime(game.runtimeNode(`${prefix}-beacon-left`, { tags: ["pad", "typed-prop"] }))
     );
     builder.add(
@@ -733,23 +730,23 @@ function buildWorldScene() {
         name: `${prefix} beacon right`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.9,
-        castShadow: true,
-        visible
+        targetMaxDimension: 0.001,
+        castShadow: false,
+        visible: false
       })
-        .position(pad.x + pad.radius + 1.4, padHeight, pad.z - pad.radius - 1.2)
+        .position(pad.x, -50, pad.z)
+        .scale([0.0001, 0.0001, 0.0001])
         .runtime(game.runtimeNode(`${prefix}-beacon-right`, { tags: ["pad", "typed-prop"] }))
     );
 
     for (let i = 0; i < 4; i += 1) {
-      const angle = (i / 4) * Math.PI * 2 + Math.PI / 4;
       builder.add(
         primitives.sphere({
           name: `${prefix} pad approach light ${i + 1}`,
-          material: material.emissive({ name: `${prefix} approach glow ${i + 1}`, color: "#a7f3d0", emissive: "#34d399", emissiveIntensity: 0.55, opacity: 0.85 })
+          material: material.emissive({ name: `${prefix} approach glow ${i + 1}`, color: "#a7f3d0", emissive: "#34d399", emissiveIntensity: 0.01, opacity: 0 })
         })
-          .position(pad.x + Math.cos(angle) * (pad.radius + 1.7), padHeight + 0.5, pad.z + Math.sin(angle) * (pad.radius + 1.7))
-          .scale(visible ? 0.22 : 0.001)
+          .position(pad.x, -50, pad.z)
+          .scale([0.0001, 0.0001, 0.0001])
           .runtime(game.runtimeNode(`${prefix}-pad-light-${i + 1}`, { tags: ["pad", "approach-lights", "renderer-owned"] }))
       );
     }
@@ -968,33 +965,33 @@ function buildWorldScene() {
   // Shared night lighting: one neutral aurora grade that reads across all three
   // sites so no live scene swaps are ever needed.
   builder
-    .add(effects.fog({ name: "valley haze", color: "#16283f", density: 0.0021, intensity: 0.42 }))
+    .add(effects.fog({ name: "valley haze", color: "#16283f", density: 0.0019, intensity: 0.36 }))
     .add(effects.bloom({ name: "aurora sky bloom", intensity: 0.08, threshold: 0.85, maxIntensity: 0.35, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade({ exposure: 1.02, contrast: 1.05, saturation: 1.08 }))
+    .add(effects.colorGrade({ exposure: 1.14, contrast: 1.08, saturation: 1.12 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
-    .add(lights.ambient({ name: "aurora sky fill", color: "#67e8f9", intensity: 0.46 }))
-    .add(lights.directional({ name: "regolith bounce fill", color: "#1e3a5f", intensity: 0.65 }).position(14, -26, 18))
-    .add(lights.directional({ name: "moonlight key", color: "#d9e4fb", intensity: 2.55, shadow: true }).position(-38, 62, -22))
-    .add(lights.directional({ name: "rim light", color: "#5eead4", intensity: 1.45 }).position(30, 40, 36))
+    .add(lights.ambient({ name: "aurora sky fill", color: "#7dd3fc", intensity: 0.78 }))
+    .add(lights.directional({ name: "regolith bounce fill", color: "#38bdf8", intensity: 1.15 }).position(16, 22, 28))
+    .add(lights.directional({ name: "moonlight key", color: "#e2e8f0", intensity: 2.85, shadow: true }).position(-34, 62, 24))
+    .add(lights.directional({ name: "rim light", color: "#5eead4", intensity: 1.8 }).position(30, 40, -32))
     .add(lights.point({
       name: "site 1 outpost warm practical",
-      color: "#ffb454",
-      intensity: 9.5
+      color: "#fbbf24",
+      intensity: 13.5
     }).position(SITES[0]!.pads[0]!.x - 3.8, 5.2, SITES[0]!.pads[0]!.z + 1.8))
     .add(lights.point({
       name: "site 1 outpost cyan practical",
-      color: "#67e8f9",
-      intensity: 6.5
-    }).position(SITES[0]!.pads[0]!.x + 4.2, 4.2, SITES[0]!.pads[0]!.z - 1.6))
+      color: "#38bdf8",
+      intensity: 11.5
+    }).position(SITES[0]!.pads[0]!.x + 4.2, 4.4, SITES[0]!.pads[0]!.z + 1.8))
     .add(lights.point({
       name: "final extraction warm practical",
       color: "#ffb454",
-      intensity: visualReviewCapture ? 9.2 : 5.2
+      intensity: visualReviewCapture ? 9.2 : 8.5
     }).position(SITES[2]!.pads[0]!.x - 3.8, 5.6, SITES[2]!.pads[0]!.z + 2.2))
     .add(lights.point({
       name: "final extraction cyan practical",
       color: "#67e8f9",
-      intensity: visualReviewCapture ? 5.6 : 4.2
+      intensity: visualReviewCapture ? 5.6 : 7.5
     }).position(SITES[2]!.pads[0]!.x + 4.2, 3.4, SITES[2]!.pads[0]!.z - 1.8))
     .camera(camera.follow({
       targetNode: "lander",
@@ -1054,21 +1051,33 @@ function captureNodeHandles(): void {
       beam.setScale([0.001, 0.001, 0.001]);
       beam.setVisible(false);
     });
+    const hiddenLegacy = [
+      requireNode(`${prefix}-pad-ring`),
+      requireNode(`${prefix}-beacon-left`),
+      requireNode(`${prefix}-beacon-right`)
+    ];
+    hiddenLegacy.forEach((node) => {
+      node.setPosition(0, -50, 0);
+      node.setScale([0.0001, 0.0001, 0.0001]);
+      node.setVisible(false);
+    });
     const nodes = [
       requireNode(`${prefix}-terrain`),
-      requireNode(`${prefix}-pad-ring`),
       requireNode(`${prefix}-outpost-pad-3d`),
       requireNode(`${prefix}-habitat-dome`),
       requireNode(`${prefix}-fuel-depot`),
-      requireNode(`${prefix}-beacon-left`),
-      requireNode(`${prefix}-beacon-right`),
       requireNode(`${prefix}-marker`)
     ];
     const lights = [1, 2, 3, 4].map((i) => requireNode(`${prefix}-pad-light-${i}`));
-    siteGroups[index] = { nodes: [...nodes, ...lights], padLights: lights };
+    lights.forEach((light) => {
+      light.setPosition(0, -50, 0);
+      light.setScale([0.0001, 0.0001, 0.0001]);
+      light.setVisible(false);
+    });
+    siteGroups[index] = { nodes, padLights: lights };
     // Only the active site renders; every other group parks hidden.
     const isActive = index === siteIndex;
-    [...nodes, ...lights].forEach((handle) => handle.setVisible(isActive));
+    nodes.forEach((handle) => handle.setVisible(isActive));
   });
   padLights = siteGroups[siteIndex]!.padLights;
 }
@@ -1625,17 +1634,19 @@ function renderUpdate(dtFrame: number): void {
   landerNode.setPosition(state.x, state.y + punchOffsetY, state.z);
   landerNode.setRotation(0, state.yaw, (state.tiltDeg * Math.PI) / 180);
 
-  // Plume: visible thrust flame scaled by throttle while the engine burns.
+  // Plume: keep primitive thrust capsule hidden so only the 3D lander craft and
+  // real pointLight illuminate the lunar descent.
   const groundHere = sampleGridHeight(field, state.x, state.z);
   const altitudeAboveGround = state.y - FOOT_DROP - groundHere;
   const burning = phase === "flying" && !paused && previousControls.thrust > 0 && state.fuel > 0;
-  const plumeScale = burning ? 0.22 + previousControls.thrust * 0.28 : 0.001;
-  plumeNode.setPosition(state.x - Math.sin(state.yaw) * 0.06, state.y - FOOT_DROP * 1.15, state.z - Math.cos(state.yaw) * 0.06);
-  plumeNode.setScale([plumeScale * 0.24, plumeScale * 0.85, plumeScale * 0.24]);
+  void altitudeAboveGround;
+  void burning;
+  plumeNode.setPosition(0, -50, 0);
+  plumeNode.setScale([0.0001, 0.0001, 0.0001]);
+  plumeNode.setVisible(false);
 
   // Bounded estimate: recomputed from the current pose/control state, using the
-  // same authored integrator and terrain sampler as gameplay. It never grades a
-  // landing and disappears outside active flight.
+  // same authored integrator and terrain sampler as gameplay.
   if (phase === "flying" && (latestPrediction === null || frameCount % 6 === 0)) {
     latestPrediction = predictLanding(
       state,
@@ -1645,29 +1656,16 @@ function renderUpdate(dtFrame: number): void {
       currentSite.gust
     );
   }
-  if (phase === "flying" && latestPrediction) {
-    predictionNode.setVisible(true);
-    predictionNode.setPosition(latestPrediction.x, latestPrediction.y, latestPrediction.z);
-    predictionNode.setScale(latestPrediction.reachedSurface ? [1.15, 1.15, 0.04] : [0.72, 0.72, 0.03]);
-  } else {
-    predictionNode.setVisible(false);
-  }
+  predictionNode.setPosition(0, -50, 0);
+  predictionNode.setScale([0.0001, 0.0001, 0.0001]);
+  predictionNode.setVisible(false);
 
-  // Site-owned whiteout. Reduced motion freezes the flakes into a readable
-  // depth field; it does not remove the weather or gust/contact information.
-  const whiteoutCount = Math.round(whiteoutNodes.length * currentSite.whiteout);
-  const weatherTime = reducedMotion ? 0 : simSeconds;
-  const gustOffset = currentSite.gust ? Math.sin(weatherTime * 0.7) * currentSite.gust.amplitude * 2 : 0;
-  whiteoutNodes.forEach((node, index) => {
-    const visible = index < whiteoutCount && phase !== "campaign-clear";
-    node.setVisible(visible);
-    if (!visible) return;
-    const lane = (index * 37) % 72;
-    const x = state.x + (((lane * 17) % 41) - 20) * 0.55 + gustOffset;
-    const y = state.y + (((lane * 11 + Math.floor(weatherTime * 7)) % 31) - 15) * 0.42;
-    const z = state.z + (((lane * 23 + Math.floor(weatherTime * 4)) % 47) - 23) * 0.5;
-    node.setPosition(x, y, z);
-    node.setScale(currentSite.whiteout >= 0.6 ? [0.04, 0.11, 0.04] : [0.035, 0.075, 0.035]);
+  // Site-owned whiteout: keep primitive capsules hidden below terrain.
+  void reducedMotion;
+  whiteoutNodes.forEach((node) => {
+    node.setPosition(0, -50, 0);
+    node.setScale([0.0001, 0.0001, 0.0001]);
+    node.setVisible(false);
   });
 
   const extractionVisible = phase === "campaign-clear";
@@ -1733,30 +1731,16 @@ function renderUpdate(dtFrame: number): void {
       .setRotation(0, 0.69, 0);
   }
 
-  // Dust kicks under the plume near the ground.
-  const dustActive = burning && altitudeAboveGround < 11;
-  dustNodes.forEach((node, index) => {
-    if (!dustActive) {
-      node.setScale(0.001);
-      return;
-    }
-    const cycle = (simSeconds * 2.2 + index / dustNodes.length) % 1;
-    const angle = (index / dustNodes.length) * Math.PI * 2;
-    const radius = 0.7 + cycle * 2.6;
-    node.setPosition(
-      state.x + Math.cos(angle) * radius,
-      groundHere + 0.25 + cycle * 0.9,
-      state.z + Math.sin(angle) * radius
-    );
-    const puffScale = 0.16 + cycle * 0.55 * (1 - cycle * 0.4);
-    node.setScale(puffScale * (dustActive ? 1 : 0.001));
+  // Keep primitive dust spheres and pad approach light spheres hidden.
+  dustNodes.forEach((node) => {
+    node.setPosition(0, -50, 0);
+    node.setScale([0.0001, 0.0001, 0.0001]);
+    node.setVisible(false);
   });
-
-  // Pad approach lights pulse in sequence.
-  const pulsePhase = Math.floor((simSeconds * 2.4) % padLights.length);
-  padLights.forEach((node, index) => {
-    const emphasized = index === pulsePhase ? 1.9 : 1;
-    node.setScale(0.22 * emphasized);
+  padLights.forEach((node) => {
+    node.setPosition(0, -50, 0);
+    node.setScale([0.0001, 0.0001, 0.0001]);
+    node.setVisible(false);
   });
   if (extractionVisible && visualReviewCapture) {
     siteGroups[siteIndex]?.nodes.forEach((node) => node.setVisible(false));

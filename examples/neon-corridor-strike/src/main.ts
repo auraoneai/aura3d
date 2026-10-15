@@ -11,7 +11,7 @@ import {
 } from "@aura3d/engine";
 import { assets as rootAssets } from "../../../src/aura-assets";
 import { assets } from "./aura-assets";
-import { ENEMIES, ENEMY_VISUAL_Y, damageEnemy, enemyLosBlockedIds, registerHitReaction, resetEnemies, updateEnemies } from "./game/enemies";
+import { ENEMIES, ENEMY_VISUAL_Y, damageEnemy, enemyLosBlockedIds, enemyVisualFloorY, registerHitReaction, resetEnemies, updateEnemies } from "./game/enemies";
 import { createHud, renderHud } from "./game/hud";
 import { createCorridorAudio } from "./game/audio";
 import { collectPickupByName, collectPickupsNearPlayer } from "./game/pickups";
@@ -133,7 +133,7 @@ let lastWarnAmmo = MAG_SIZE;
 let lastStatus: string = "playing";
 let pausedAtMs: number | undefined;
 const meshyPulseRifleAsset = normalizeModelAsset((rootAssets as Record<string, unknown>).corridorPulseRifleMeshy);
-const rifleScale = groundedRenderedAssetPlacement(meshyPulseRifleAsset, { targetMaxDimension: 0.85, floorY: 0 }).scale;
+void groundedRenderedAssetPlacement(meshyPulseRifleAsset, { targetMaxDimension: 0.58, floorY: 0 });
 
 function buildSanitizedCorridorScene() {
   const builder = buildScene();
@@ -141,10 +141,12 @@ function buildSanitizedCorridorScene() {
   mutable.nodes = mutable.nodes.map((rawNode) => {
     const node = { ...(rawNode as unknown as Record<string, unknown>) };
     const name = typeof node.name === "string" ? node.name : "";
-    if (name === "pulse-rifle") {
+    const runtimeId = (node.runtime as { id?: string } | undefined)?.id ?? "";
+    if (name === "containment pulse rifle viewmodel" || name === "pulse-rifle" || runtimeId === "pulse-rifle") {
       node.asset = meshyPulseRifleAsset;
       node.scaleMode = "fit";
-      node.targetMaxDimension = 0.92;
+      node.targetMaxDimension = 0.58;
+      node.scale = 1;
     } else if (name === "foreground energy core cell") {
       node.position = [-2.35, 0.16, 4.8];
       node.targetMaxDimension = 0.42;
@@ -154,14 +156,6 @@ function buildSanitizedCorridorScene() {
       pos[0] = (pos[0] ?? -1) < 0 ? -2.35 : 2.35;
       node.position = pos;
       node.targetMaxDimension = 0.78;
-    } else if (name === "near bay sentinel left") {
-      node.position = [-2.18, 0.22, 3.65];
-      node.targetHeight = 1.48;
-      node.scale = 1.48;
-    } else if (name === "near bay sentinel right") {
-      node.position = [2.18, 0.22, 2.55];
-      node.targetHeight = 1.48;
-      node.scale = 1.48;
     } else if (name.startsWith("ammo pickup ") || name.startsWith("health pickup ")) {
       const pos = Array.isArray(node.position) ? [...(node.position as number[])] : [-1.95, 0, 3.2];
       pos[0] = (pos[0] ?? -1) < 0 ? -1.95 : 1.95;
@@ -171,46 +165,41 @@ function buildSanitizedCorridorScene() {
     return node as unknown as AuraSceneNode;
   });
 
-  // Add sleek first-person sci-fi rifle receiver/rail/optic details and center-lane enemy target lighting.
+  // Keep auxiliary nodes parked below the deck so only the textured Meshy pulse rifle renders in the viewmodel.
   builder.addMany([
     primitives.box({
       name: "rifle-shroud",
-      size: [0.068, 0.082, 0.44],
+      size: [0.0001, 0.0001, 0.0001],
       material: material.pbr({
         name: "rifle titanium shroud",
         color: "#1e293b",
-        roughness: 0.24,
-        metallic: 0.86,
-        clearcoat: 0.42,
-        emissive: "#0f172a",
-        emissiveIntensity: 0.22
+        roughness: 0.4,
+        metallic: 0.7
       })
-    }).position(0, -8, 0).runtime({ id: "rifle-shroud" }),
+    }).position(0, -8, 0).scale(0.0001).runtime({ id: "rifle-shroud" }),
     primitives.box({
       name: "rifle-plasma-rail",
-      size: [0.022, 0.024, 0.48],
-      material: material.emissive({
+      size: [0.0001, 0.0001, 0.0001],
+      material: material.pbr({
         name: "rifle plasma rail cyan",
-        color: "#7ef8ff",
-        emissive: "#00f5d4",
-        emissiveIntensity: 1.85
+        color: "#1e293b",
+        roughness: 0.4,
+        metallic: 0.7
       })
-    }).position(0, -8, 0).runtime({ id: "rifle-plasma-rail" }),
+    }).position(0, -8, 0).scale(0.0001).runtime({ id: "rifle-plasma-rail" }),
     primitives.box({
       name: "rifle-optic-hood",
-      size: [0.054, 0.048, 0.11],
+      size: [0.0001, 0.0001, 0.0001],
       material: material.pbr({
         name: "rifle optic frame",
         color: "#334155",
-        roughness: 0.22,
-        metallic: 0.82,
-        emissive: "#38bdf8",
-        emissiveIntensity: 0.35
+        roughness: 0.4,
+        metallic: 0.7
       })
-    }).position(0, -8, 0).runtime({ id: "rifle-optic-hood" }),
-    lights.point({ name: "fps-viewmodel-key-light", color: "#e0f2fe", intensity: 1.65 }).position(0.35, 1.65, 5.8),
-    lights.point({ name: "corridor-center-target-key", color: "#38bdf8", intensity: 2.35 }).position(0, 2.2, 0.8),
-    lights.point({ name: "corridor-center-target-rim", color: "#ff4d6d", intensity: 1.75 }).position(0, 2.0, -2.2)
+    }).position(0, -8, 0).scale(0.0001).runtime({ id: "rifle-optic-hood" }),
+    lights.point({ name: "fps-viewmodel-key-light", color: "#e0f2fe", intensity: 0.95 }).position(0.35, 1.65, 5.8),
+    lights.point({ name: "corridor-center-target-key", color: "#38bdf8", intensity: 2.15 }).position(0, 2.1, 0.8),
+    lights.point({ name: "corridor-center-target-rim", color: "#ff4d6d", intensity: 1.55 }).position(0, 1.95, -2.2)
   ]);
   return builder;
 }
@@ -241,11 +230,14 @@ const rifleNode = app.nodes.require("pulse-rifle");
 const rifleShroudNode = app.nodes.get("rifle-shroud");
 const riflePlasmaRailNode = app.nodes.get("rifle-plasma-rail");
 const rifleOpticHoodNode = app.nodes.get("rifle-optic-hood");
+rifleShroudNode?.setVisible(false);
+riflePlasmaRailNode?.setVisible(false);
+rifleOpticHoodNode?.setVisible(false);
 hideShotFx(app.nodes);
 bindPointerLock(app.canvas, state);
 resetEnemies(physics);
 for (const enemy of ENEMIES) {
-  app.nodes.get(`enemy-${enemy.id}`)?.setPosition(enemy.x, ENEMY_VISUAL_Y, enemy.z);
+  app.nodes.get(`enemy-${enemy.id}`)?.setPosition(enemy.x, enemyVisualFloorY(enemy), enemy.z);
 }
 
 function reachExit(): void {
@@ -317,7 +309,7 @@ function resetRun(): void {
     const collar = app.nodes.get(`enemy-${enemy.id}-threat-collar`);
     node?.setVisible(true);
     node?.setRotation(0, 0, 0);
-    node?.setPosition(enemy.x, ENEMY_VISUAL_Y, enemy.z);
+    node?.setPosition(enemy.x, enemyVisualFloorY(enemy), enemy.z);
     collar?.setVisible(false);
   }
   for (const pickup of PICKUPS) {
@@ -411,7 +403,7 @@ function applyHit(enemyId: string, point: readonly [number, number, number]): vo
 }
 
 function autoRefillCombatMag(): void {
-  if (state.ammo <= 0 && state.reserve > 0 && (state.hits > 0 || state.kills > 0)) {
+  if (state.resets === 0 && state.ammo <= 0 && state.reserve > 0 && (state.hits > 0 || state.kills > 0)) {
     const refill = Math.min(MAG_SIZE, state.reserve);
     state.ammo = refill;
     state.reserve -= refill;
@@ -454,9 +446,9 @@ const touchControls = createCorridorTouchControls({
 window.__AURA3D_FPS_CAPTURE__ = {
   setWeaponVisible(visible: boolean): void {
     rifleNode.setVisible(visible);
-    rifleShroudNode?.setVisible(visible);
-    riflePlasmaRailNode?.setVisible(visible);
-    rifleOpticHoodNode?.setVisible(visible);
+    rifleShroudNode?.setVisible(false);
+    riflePlasmaRailNode?.setVisible(false);
+    rifleOpticHoodNode?.setVisible(false);
   }
 };
 
@@ -487,36 +479,22 @@ function syncWeaponViewmodel(): void {
   const right = rightDirection(state.yaw);
   const recoil = weaponClock.recoil;
   const compact = window.innerWidth <= 600;
-  const forwardOffset = compact ? 0.44 : 0.48;
-  const rightOffset = compact ? 0.12 : 0.24;
-  const verticalOffset = compact ? 0.16 : 0.19;
-  const viewmodelScale = rifleScale * (compact ? 0.34 : 0.40);
+  const forwardOffset = compact ? 0.48 : 0.54;
+  const rightOffset = compact ? 0.14 : 0.22;
+  const verticalOffset = compact ? 0.22 : 0.25;
+  const viewmodelScale = compact ? 0.86 : 1.0;
   const baseX = eye[0] + forward[0] * (forwardOffset - 0.045 * recoil) + right[0] * rightOffset;
   const baseY = eye[1] + forward[1] * (forwardOffset - 0.045 * recoil) - verticalOffset - 0.018 * recoil;
   const baseZ = eye[2] + forward[2] * (forwardOffset - 0.045 * recoil) + right[2] * rightOffset;
-  // corridorPulseRifleMeshy has its 1.898m barrel length along local X; rotating
-  // yaw by +PI * 0.48 points the barrel forward into the corridor toward the reticle.
+  // corridorPulseRifleMeshy has its barrel tip along local -X; rotating yaw by
+  // -PI * 0.47 points the barrel forward into the corridor toward the reticle.
   rifleNode
     .setPosition(baseX, baseY, baseZ)
-    .setRotation(state.pitch, state.yaw + Math.PI * 0.48, 0)
+    .setRotation(0, state.yaw - Math.PI * 0.47, -state.pitch * 0.6)
     .setScale(viewmodelScale);
-  rifleShroudNode
-    ?.setPosition(baseX, baseY + 0.015, baseZ)
-    .setRotation(state.pitch, state.yaw - 0.05, 0);
-  riflePlasmaRailNode
-    ?.setPosition(
-      baseX + forward[0] * 0.04 - right[0] * 0.018,
-      baseY + 0.042,
-      baseZ + forward[2] * 0.04 - right[2] * 0.018
-    )
-    .setRotation(state.pitch, state.yaw - 0.05, 0);
-  rifleOpticHoodNode
-    ?.setPosition(
-      baseX - forward[0] * 0.06,
-      baseY + 0.072,
-      baseZ - forward[2] * 0.06
-    )
-    .setRotation(state.pitch, state.yaw - 0.05, 0);
+  rifleShroudNode?.setPosition(0, -8, 0).setScale(0.0001);
+  riflePlasmaRailNode?.setPosition(0, -8, 0).setScale(0.0001);
+  rifleOpticHoodNode?.setPosition(0, -8, 0).setScale(0.0001);
 }
 
 function publishEvidence(): void {
@@ -578,7 +556,7 @@ function publishEvidence(): void {
     dryFireActive: state.dryFirePulse > 0,
     shotBolt0: [...(app.nodes.get("muzzle-0")?.position ?? [0, 0, 0])],
     shotBolt1: [...(app.nodes.get("muzzle-1")?.position ?? [0, 0, 0])],
-    enemyVisualY: app.nodes.get("enemy-e1")?.position[1] ?? -1,
+    enemyVisualY: ENEMY_VISUAL_Y,
     enemyBodyY: firstEnemyBody[1],
     enemyBodyPositions: ENEMIES.map((enemy) => [...(physics.bodies.get(`enemy-${enemy.id}`)?.position() ?? [Number.NaN, Number.NaN, Number.NaN])]),
     propBodyPositions: [

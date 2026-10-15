@@ -939,8 +939,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    * live fight rather than painting a capture-only highlight over it.
    */
   const fighterKeyLights = [
-    { id: "aura-clash-player-key", color: [0.78, 0.96, 1] as const, intensity: 4.7, owner: "player" as const },
-    { id: "aura-clash-rival-key", color: [1, 0.84, 0.66] as const, intensity: 4.45, owner: "rival" as const }
+    { id: "aura-clash-player-key", color: [0.95, 0.98, 1] as const, intensity: 2.75, owner: "player" as const },
+    { id: "aura-clash-rival-key", color: [1, 0.96, 0.92] as const, intensity: 2.75, owner: "rival" as const }
   ].map((descriptor) => {
     const light = new PointLight(descriptor.id);
     light.color = [...descriptor.color];
@@ -1479,32 +1479,32 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       name: "Aura Clash stage speaker tower left",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 2.05
+      targetMaxDimension: 1.55
     })
-      .position(-1.92, -0.04, -0.52)
-      .rotate(0, 0.34, 0),
+      .position(-3.35, -0.04, -1.65)
+      .rotate(0, 0.24, 0),
     model(rootAssets.auraClashStageSpeakerTowerMeshy, {
       name: "Aura Clash stage speaker tower right",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 2.05
+      targetMaxDimension: 1.55
     })
-      .position(1.92, -0.04, -0.52)
-      .rotate(0, -0.34, 0),
+      .position(3.35, -0.04, -1.65)
+      .rotate(0, -0.24, 0),
     model(rootAssets.auraClashCornerBrazierPylonMeshy, {
       name: "Aura Clash corner pylon left",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.18
+      targetMaxDimension: 1.05
     })
-      .position(-1.46, -0.04, -0.38),
+      .position(-2.75, -0.04, -1.35),
     model(rootAssets.auraClashCornerBrazierPylonMeshy, {
       name: "Aura Clash corner pylon right",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.18
+      targetMaxDimension: 1.05
     })
-      .position(1.46, -0.04, -0.38)
+      .position(2.75, -0.04, -1.35)
   ];
   // I03 owns the 28-instance spectator workload and proves it independently.
   // The I04 spotlight oracle omits those unrelated crowd GLBs so each four-state
@@ -3421,33 +3421,33 @@ function collectFighterFlashMaterials(actor: TypedGLBActor, owner: FighterId): F
     const isSkin = materialName.includes("regular") || materialName.includes("superhero");
     const isHair = materialName.includes("hair");
     const baseColor: readonly number[] = isOutfit
-      ? (owner === "player" ? [0.56, 0.78, 0.9, 1] : [0.86, 0.46, 0.25, 1])
+      ? (owner === "player" ? [0.96, 0.99, 1, 1] : [1, 0.97, 0.94, 1])
       : isSkin
-        ? (owner === "player" ? [1, 0.9, 0.82, 1] : [0.92, 0.76, 0.62, 1])
+        ? (owner === "player" ? [1, 0.95, 0.9, 1] : [0.98, 0.9, 0.82, 1])
         : isHair
-          ? [0.68, 0.78, 0.84, 1]
+          ? (owner === "player" ? [0.88, 0.94, 0.98, 1] : [0.95, 0.9, 0.86, 1])
           : [1, 1, 1, 1];
     if (isOutfit) {
       material.setParameter("u_baseColor", [...baseColor]);
-      material.setParameter("u_roughness", owner === "player" ? 0.48 : 0.56);
-      material.setParameter("u_metallic", owner === "player" ? 0.08 : 0.12);
-      material.setParameter("u_clearcoatFactor", owner === "player" ? 0.08 : 0.04);
-      material.setParameter("u_clearcoatRoughnessFactor", 0.5);
+      material.setParameter("u_roughness", owner === "player" ? 0.46 : 0.52);
+      material.setParameter("u_metallic", owner === "player" ? 0.12 : 0.14);
+      material.setParameter("u_clearcoatFactor", owner === "player" ? 0.06 : 0.04);
+      material.setParameter("u_clearcoatRoughnessFactor", 0.48);
     } else {
       material.setParameter("u_baseColor", [...baseColor]);
-      material.setParameter("u_roughness", isSkin ? 0.62 : 0.5);
+      material.setParameter("u_roughness", isSkin ? 0.58 : 0.48);
       material.setParameter("u_metallic", 0.02);
     }
-    material.setParameter("u_environmentIntensity", 1.16);
-    material.setParameter("u_specularFactor", isOutfit ? 0.72 : 0.58);
+    material.setParameter("u_environmentIntensity", 1.08);
+    material.setParameter("u_specularFactor", isOutfit ? 0.62 : 0.52);
     const hasEmissive = material.getParameter("u_emissiveColor") !== undefined;
     const baseEmissive: readonly number[] = hasEmissive && isOutfit
-      ? (owner === "player" ? [0.04, 0.34, 0.5] : [0.5, 0.12, 0.025])
+      ? (owner === "player" ? [0.02, 0.18, 0.28] : [0.28, 0.08, 0.02])
       : hasEmissive
         ? [...((material.getParameter("u_emissiveColor") as readonly number[] | undefined) ?? [0, 0, 0])]
         : [0, 0, 0];
     const baseEmissiveStrength = hasEmissive
-      ? (isOutfit ? (owner === "player" ? 0.16 : 0.2) : Number(material.getParameter("u_emissiveStrength") ?? 0))
+      ? (isOutfit ? (owner === "player" ? 0.03 : 0.04) : Math.min(0.04, Number(material.getParameter("u_emissiveStrength") ?? 0)))
       : 0;
     if (hasEmissive) {
       material.setParameter("u_emissiveColor", [...baseEmissive]);
@@ -3456,7 +3456,7 @@ function collectFighterFlashMaterials(actor: TypedGLBActor, owner: FighterId): F
     flashes.push({
       material,
       baseColor,
-      baseEnvironmentIntensity: 1.16,
+      baseEnvironmentIntensity: 1.08,
       hasEmissive,
       baseEmissive,
       baseEmissiveStrength

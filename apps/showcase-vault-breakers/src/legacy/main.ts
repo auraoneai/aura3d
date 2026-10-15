@@ -138,6 +138,16 @@ const liveBallMaterial = material.metal({
   clearcoat: 0.95,
   envMapIntensity: 2.2
 });
+const flipperGoldMaterial = material.metal({
+  name: "pinball brushed metallic gold flipper",
+  color: "#d4af37",
+  emissive: "#b48a1e",
+  emissiveIntensity: 0.36,
+  roughness: 0.22,
+  metallic: 0.82,
+  clearcoat: 0.9,
+  envMapIntensity: 1.95
+});
 const liveTargetArmedMaterial = material.clearcoat({
   name: "target armed amber state accent",
   color: "#f59e0b",
@@ -225,27 +235,34 @@ function primitiveNode(visual: PropVisual): AuraSceneNode {
           name: visual.name + " sling neon",
           color: "#f43f5e",
           emissive: "#ec4899",
-          emissiveIntensity: 0.42
+          emissiveIntensity: 0.48
         })
       : isLane
-        ? material.pbr({
-            name: visual.name + " brushed steel rail",
-            color: "#94a3b8",
-            roughness: 0.24,
-            metallic: 0.86
+        ? material.metal({
+            name: visual.name + " brushed gold rail",
+            color: "#d4af37",
+            emissive: "#b48a1e",
+            emissiveIntensity: 0.34,
+            roughness: 0.22,
+            metallic: 0.82,
+            clearcoat: 0.88,
+            envMapIntensity: 1.85
           })
         : p.emissive
           ? material.emissive({
               name: visual.name + " material",
               color: p.color,
               emissive: p.emissive,
-              emissiveIntensity: 0.28
+              emissiveIntensity: 0.32
             })
-          : material.pbr({
+          : material.metal({
               name: visual.name + " material",
-              color: "#64748b",
-              roughness: 0.3,
-              metallic: 0.78
+              color: "#d4af37",
+              emissive: "#b48a1e",
+              emissiveIntensity: 0.3,
+              roughness: 0.22,
+              metallic: 0.82,
+              clearcoat: 0.85
             });
   const scaleVec: [number, number, number] = isHiddenProxy
     ? [0.001, 0.001, 0.001]
@@ -279,9 +296,9 @@ function primitiveNode(visual: PropVisual): AuraSceneNode {
 /** Static physics landmarks used as origins for the renderer-owned impact cue. */
 const BUMPER_IMPACT_POSITIONS = [[-0.9, -1.7], [0.9, -1.7], [0, -0.7]] as const;
 const POP_BUMPER_TURRET_SPECS = [
-  { id: "left", x: -0.9, z: -1.65 },
-  { id: "right", x: 0.9, z: -1.65 },
-  { id: "center", x: 0, z: -0.68 }
+  { id: "left", x: -1.04, z: -1.48 },
+  { id: "right", x: 1.04, z: -1.48 },
+  { id: "center", x: 0, z: -1.92 }
 ] as const;
 const TARGET_BANK_POSITIONS: Record<string, readonly (readonly [number, number])[]> = {
   "bank-left-top": [[-2.32, -2.4], [-2.32, -2.8], [-2.32, -3.2]],
@@ -325,7 +342,8 @@ function visualNodes(): AuraSceneNode[] {
           name: v.name,
           role: isBall ? "primaryCharacter" : "setDressing",
           scaleMode: "fit",
-          targetMaxDimension: isFlipper ? 0.86 : isBall ? 0.34 : (v.targetMaxDimension ?? 1)
+          targetMaxDimension: isFlipper ? 0.86 : isBall ? 0.34 : (v.targetMaxDimension ?? 1),
+          ...(isFlipper ? { material: flipperGoldMaterial } : {})
         })
           .position(v.position[0], v.position[1] + 0.30, v.position[2])
           .rotate(v.rotation.x, v.rotation.y, v.rotation.z)
@@ -376,23 +394,38 @@ function visualNodes(): AuraSceneNode[] {
     emissive: "#f59e0b",
     emissiveIntensity: 0.62
   });
-  const brushedSteelMat = material.pbr({
+  const brushedSteelMat = material.metal({
     name: "pinball brushed steel",
-    color: "#cbd5e1",
-    roughness: 0.22,
-    metallic: 0.88
+    color: "#e2e8f0",
+    emissive: "#38bdf8",
+    emissiveIntensity: 0.2,
+    roughness: 0.2,
+    metallic: 0.86,
+    clearcoat: 0.88,
+    envMapIntensity: 1.9
   });
-  const goldTrimMat = material.pbr({
+  const goldTrimMat = material.metal({
     name: "pinball brass trim",
-    color: "#f59e0b",
-    roughness: 0.26,
-    metallic: 0.82
+    color: "#d4af37",
+    emissive: "#b48a1e",
+    emissiveIntensity: 0.36,
+    roughness: 0.22,
+    metallic: 0.82,
+    clearcoat: 0.9,
+    envMapIntensity: 1.95
   });
   const neonPinkRailMat = material.emissive({
     name: "slingshot neon rubber",
     color: "#f472b6",
     emissive: "#ec4899",
-    emissiveIntensity: 0.52
+    emissiveIntensity: 0.56
+  });
+  const neonCyanRimMat = material.neon({
+    name: "lane guide cyan neon rim",
+    color: "#0e7490",
+    emissive: "#22d3ee",
+    emissiveIntensity: 0.68,
+    roughness: 0.18
   });
 
   for (const [idx, bumper] of POP_BUMPER_TURRET_SPECS.entries()) {
@@ -401,10 +434,9 @@ function visualNodes(): AuraSceneNode[] {
         name: `vault-pop-bumper-3d-${bumper.id}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.74
+        targetMaxDimension: 0.68
       })
-        .scale(0.74)
-        .position(bumper.x, 0.36, bumper.z)
+        .position(bumper.x, 0.38, bumper.z)
         .runtime(game.runtimeNode(`vault-pop-bumper-3d-${bumper.id}`, { tags: ["typed-asset", "pop-bumper-turret"] }))
         .toJSON(),
       primitives.torus({
@@ -432,15 +464,15 @@ function visualNodes(): AuraSceneNode[] {
       name: "vault-centerpiece-core-3d",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.76
+      targetMaxDimension: 0.74
     })
-      .position(0, 0.36, 0.32)
+      .position(0, 0.36, 0.46)
       .toJSON(),
     primitives.torus({
       name: "vault-centerpiece-core-ring",
       material: bumperRingAmber
     })
-      .position(0, 0.31, 0.32)
+      .position(0, 0.31, 0.46)
       .rotate(Math.PI / 2, 0, 0)
       .scale([0.52, 0.52, 0.036])
       .toJSON(),
@@ -448,7 +480,7 @@ function visualNodes(): AuraSceneNode[] {
       name: "vault-centerpiece-outer-ring",
       material: bumperRingCyan
     })
-      .position(0, 0.30, 0.32)
+      .position(0, 0.30, 0.46)
       .rotate(Math.PI / 2, 0, 0)
       .scale([0.68, 0.68, 0.022])
       .toJSON(),
@@ -459,7 +491,7 @@ function visualNodes(): AuraSceneNode[] {
       castShadow: true,
       receiveShadow: true
     })
-      .position(0, 0.44, 1.05)
+      .position(0, 0.44, 1.18)
       .scale([0.16, 0.16, 0.16])
       .toJSON(),
     primitives.sphere({
@@ -489,7 +521,7 @@ function visualNodes(): AuraSceneNode[] {
       .scale([0.07, 0.18, 0.46])
       .toJSON(),
     // Left and right 3D slingshot kicker housings above flippers
-    primitives.box({ name: "slingshot-housing-left", material: brushedSteelMat })
+    primitives.box({ name: "slingshot-housing-left", material: goldTrimMat })
       .position(-1.32, 0.37, 1.92)
       .rotate(0, -0.46, 0)
       .scale([0.16, 0.18, 0.86])
@@ -499,7 +531,12 @@ function visualNodes(): AuraSceneNode[] {
       .rotate(0, -0.46, 0)
       .scale([0.06, 0.12, 0.88])
       .toJSON(),
-    primitives.box({ name: "slingshot-housing-right", material: brushedSteelMat })
+    primitives.box({ name: "slingshot-cap-left", material: neonCyanRimMat })
+      .position(-1.32, 0.47, 1.92)
+      .rotate(0, -0.46, 0)
+      .scale([0.10, 0.03, 0.84])
+      .toJSON(),
+    primitives.box({ name: "slingshot-housing-right", material: goldTrimMat })
       .position(1.12, 0.37, 1.92)
       .rotate(0, 0.46, 0)
       .scale([0.16, 0.18, 0.86])
@@ -509,16 +546,42 @@ function visualNodes(): AuraSceneNode[] {
       .rotate(0, 0.46, 0)
       .scale([0.06, 0.12, 0.88])
       .toJSON(),
-    // Left and right inlane/outlane metallic guide rails
+    primitives.box({ name: "slingshot-cap-right", material: neonCyanRimMat })
+      .position(1.12, 0.47, 1.92)
+      .rotate(0, 0.46, 0)
+      .scale([0.10, 0.03, 0.84])
+      .toJSON(),
+    // Left and right inlane/outlane brushed metallic gold guide rails + neon rim accents
     primitives.box({ name: "inlane-guide-left-rail", material: goldTrimMat })
       .position(-1.86, 0.38, 2.08)
       .rotate(0, -0.32, 0)
-      .scale([0.08, 0.20, 1.18])
+      .scale([0.10, 0.20, 1.18])
+      .toJSON(),
+    primitives.box({ name: "inlane-guide-left-neon-rim", material: neonCyanRimMat })
+      .position(-1.86, 0.49, 2.08)
+      .rotate(0, -0.32, 0)
+      .scale([0.06, 0.035, 1.16])
       .toJSON(),
     primitives.box({ name: "inlane-guide-right-rail", material: goldTrimMat })
       .position(1.66, 0.38, 2.08)
       .rotate(0, 0.32, 0)
-      .scale([0.08, 0.20, 1.18])
+      .scale([0.10, 0.20, 1.18])
+      .toJSON(),
+    primitives.box({ name: "inlane-guide-right-neon-rim", material: neonCyanRimMat })
+      .position(1.66, 0.49, 2.08)
+      .rotate(0, 0.32, 0)
+      .scale([0.06, 0.035, 1.16])
+      .toJSON(),
+    // Flipper base pivot rings (cyan/magenta neon accents under the brushed gold flippers)
+    primitives.torus({ name: "flipper-left-pivot-ring", material: neonCyanRimMat })
+      .position(-0.85, 0.31, 3.15)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.22, 0.22, 0.025])
+      .toJSON(),
+    primitives.torus({ name: "flipper-right-pivot-ring", material: neonPinkRailMat })
+      .position(0.85, 0.31, 3.15)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.22, 0.22, 0.025])
       .toJSON(),
     // Plunger lane divider wall and spring-loaded chrome shooter rod
     primitives.box({ name: "plunger-lane-divider-rail", material: brushedSteelMat })
@@ -562,19 +625,23 @@ function visualNodes(): AuraSceneNode[] {
   }
   for (const node of createScoreboardNodes().nodes) {
     const scoreNode = { ...node } as Record<string, unknown>;
+    const isMission = typeof scoreNode.name === "string" && scoreNode.name.startsWith("sb-mission-");
     if (Array.isArray(scoreNode.position) && scoreNode.position.length === 3) {
       const [px, py, pz] = scoreNode.position as [number, number, number];
       scoreNode.position = [
-        Number((px * 0.56).toFixed(3)),
-        Number((1.18 + (py - 0.98) * 0.56).toFixed(3)),
-        Number((pz + 0.32).toFixed(3))
+        isMission ? -1.06 : Number((px * 0.42).toFixed(3)),
+        Number((1.18 + (py - 0.98) * 0.44).toFixed(3)),
+        Number((pz + 0.26).toFixed(3))
       ];
     }
     if (typeof scoreNode.size === "number") {
-      scoreNode.size = Number((scoreNode.size * 0.64).toFixed(3));
+      scoreNode.size = Number((scoreNode.size * (isMission ? 0.35 : 0.46)).toFixed(3));
+    }
+    if (typeof scoreNode.letterSpacing === "number") {
+      scoreNode.letterSpacing = isMission ? 0.006 : 0.01;
     }
     if (scoreNode.material && typeof scoreNode.material === "object") {
-      scoreNode.material = { ...(scoreNode.material as Record<string, unknown>), emissiveIntensity: 0.16 };
+      scoreNode.material = { ...(scoreNode.material as Record<string, unknown>), emissiveIntensity: 0.14 };
     }
     nodes.push(scoreNode as unknown as AuraSceneNode);
   }
@@ -613,17 +680,26 @@ function buildScene(): ReturnType<typeof scene> {
     // root safe renderer's stable draw order keeps them legible above it.
     .addMany(visualNodes())
     .addMany([
-      lights.ambient({ name: "pinball playfield ambient", color: "#4c5b78", intensity: 0.52 }),
-      lights.directional({ name: "playfield warm key", position: [2.4, 6.8, 3.6], color: "#fff3df", intensity: 2.15 }),
+      lights.ambient({ name: "pinball playfield ambient", color: "#58688a", intensity: 0.58 }),
+      lights.directional({ name: "playfield warm key", position: [2.4, 6.8, 3.6], color: "#fff3df", intensity: 2.25 }),
+      lights.spot({
+        name: "flipper zone hero spotlight",
+        position: [0, 3.6, 3.8],
+        target: [0, 0.3, 2.45],
+        color: "#fef08a",
+        intensity: 3.4,
+        angle: 0.72,
+        penumbra: 0.45
+      }),
       lights.point({ name: "playfield mid fill", color: "#e2f1ff", intensity: 2.45 }).position(0, 3.2, 0.4),
       lights.point({ name: "playfield center core key", color: "#fbbf24", intensity: 2.35 }).position(0, 1.65, 0.55),
-      lights.point({ name: "bumper turret warm key", color: "#ffbd69", intensity: 2.5 }).position(0, 1.45, -1.25),
-      lights.point({ name: "bumper turret cyan rim", color: "#39f0ff", intensity: 2.2 }).position(0, 1.35, -1.85),
+      lights.point({ name: "bumper turret warm key", color: "#ffbd69", intensity: 2.65 }).position(0, 1.55, -1.55),
+      lights.point({ name: "bumper turret cyan rim", color: "#39f0ff", intensity: 2.35 }).position(0, 1.45, -1.95),
       lights.point({ name: "vault door hero spot", color: "#ffd88a", intensity: 2.3 }).position(0, 1.55, -2.85),
-      lights.point({ name: "slingshot left key", color: "#f472b6", intensity: 1.95 }).position(-1.35, 1.35, 1.85),
-      lights.point({ name: "slingshot right key", color: "#38bdf8", intensity: 1.95 }).position(1.35, 1.35, 1.85),
-      lights.point({ name: "flipper deck fill", color: "#f8fafc", intensity: 2.25 }).position(0, 1.5, 2.85),
-      lights.point({ name: "plunger lane key", color: "#7dd3fc", intensity: 2.1 }).position(2.35, 1.45, 2.65),
+      lights.point({ name: "slingshot left key", color: "#f472b6", intensity: 2.25 }).position(-1.45, 1.35, 1.95),
+      lights.point({ name: "slingshot right key", color: "#38bdf8", intensity: 2.25 }).position(1.45, 1.35, 1.95),
+      lights.point({ name: "flipper deck gold key", color: "#fde68a", intensity: 2.85 }).position(0, 1.65, 2.75),
+      lights.point({ name: "plunger lane key", color: "#7dd3fc", intensity: 2.2 }).position(2.35, 1.45, 2.65),
       effects.neonBloom({ intensity: reducedMotion ? 0.04 : 0.075, threshold: 0.88, radius: 0.28, maxIntensity: 0.36, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.ambientOcclusion({ name: "vault contact grounding", intensity: 0.28, radius: 0.62, density: 0.5, color: "#02020a" }),
       effects.contactOcclusion({ name: "mechanism contact", intensity: 0.36, radius: 0.52 }),
@@ -683,8 +759,8 @@ function resolveHandles(): void {
     const handle = app.nodes.get(name);
     if (handle) {
       const runtimeHandle = handle as AuraRuntimeNodeHandle;
-      // Only override ball material; let flipper GLB materials show through
       if (name.startsWith("ball-")) runtimeHandle.setMaterial(liveBallMaterial);
+      else if (name.startsWith("flipper-")) runtimeHandle.setMaterial(flipperGoldMaterial);
       dynamicHandles.set(name, runtimeHandle);
     }
   }

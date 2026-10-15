@@ -123,7 +123,7 @@ declare global {
 }
 
 // ---------------- State Initialization ----------------
-const REVIEW_POSE = { x: -8.2, y: -11.4, z: -5.8, yaw: 0.38 } as const;
+const REVIEW_POSE = { x: -6.2, y: -11.4, z: -6.2, yaw: 0.38 } as const;
 let gameState: "playing" | "paused" | "blackout" | "won" = "playing";
 let subState: SubmarineState = { ...initialSubmarineState(), ...REVIEW_POSE };
 let oxygenState: OxygenState = initialOxygenState();
@@ -141,6 +141,7 @@ let lastTowDrag = 0;
 let surfaceCuePlayed = false;
 let oxygenWarningCuePlayed = false;
 let compositionProbeActive = false;
+let teleportedByHook = false;
 const reducedMotion = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
@@ -244,62 +245,62 @@ const SILT_OFFSETS = [
 
 const sapphireBasinMat = material.pbr({
   name: "abyssal sapphire trench floor",
-  color: "#07263d",
-  emissive: "#083344",
-  emissiveIntensity: 0.36,
-  roughness: 0.88,
-  metallic: 0.08
+  color: "#0e3a5c",
+  emissive: "#0c4a6e",
+  emissiveIntensity: 0.48,
+  roughness: 0.82,
+  metallic: 0.12
 });
 const tealRidgeMat = material.pbr({
   name: "abyssal teal ridge stone",
-  color: "#0c3b54",
-  emissive: "#0e4f68",
-  emissiveIntensity: 0.32,
-  roughness: 0.82,
-  metallic: 0.12
+  color: "#154e70",
+  emissive: "#0ea5e9",
+  emissiveIntensity: 0.42,
+  roughness: 0.78,
+  metallic: 0.16
 });
 const bioCyanCrystalMat = material.emissive({
   name: "bioluminescent cyan crystal",
   color: "#083344",
   emissive: "#22d3ee",
-  emissiveIntensity: 1.85,
-  opacity: 0.92
+  emissiveIntensity: 0.25,
+  opacity: 0.1
 });
 const bioEmeraldCrystalMat = material.emissive({
   name: "bioluminescent emerald crystal",
   color: "#064e3b",
   emissive: "#10b981",
-  emissiveIntensity: 1.75,
-  opacity: 0.9
+  emissiveIntensity: 0.25,
+  opacity: 0.1
 });
 
 const sceneDef = scene()
-  .background("#041322")
+  .background("#061a2e")
   .add(effects.fog({
     name: "deep recovery bioluminescent sapphire haze",
-    color: "#061d33",
-    density: 0.0095,
-    intensity: 0.24
+    color: "#0b2540",
+    density: 0.0082,
+    intensity: 0.2
   }))
   .add(effects.neonBloom({
     name: "deep recovery sonar bloom",
-    intensity: 0.2,
-    threshold: 0.68,
-    maxIntensity: 0.55,
+    intensity: 0.14,
+    threshold: 0.76,
+    maxIntensity: 0.42,
     antiBlowout: true,
     quality: "balanced",
     softKnee: 0.5,
     shoulder: 0.6
   }))
-  .add(effects.colorGrade({ exposure: 1.14, contrast: 1.12, saturation: 1.18 }))
+  .add(effects.colorGrade({ exposure: 1.22, contrast: 1.1, saturation: 1.16 }))
   .add(effects.antiAlias({ mode: "fxaa" }))
   .camera(
     camera.follow({
       targetNode: "camera-target",
-      offset: visualReviewCapture ? [3.2, 6.2, 7.6] : [3.0, 5.8, 7.4],
-      targetOffset: visualReviewCapture ? [3.4, -1.3, -4.6] : [3.2, -1.2, -4.4],
+      offset: visualReviewCapture ? [1.8, 6.0, 8.4] : [1.8, 5.8, 8.2],
+      targetOffset: visualReviewCapture ? [1.8, -1.3, -4.6] : [1.8, -1.2, -4.4],
       smoothing: 0,
-      fov: visualReviewCapture ? 46 : 47
+      fov: visualReviewCapture ? 46 : 48
     })
   )
   .addMany([
@@ -317,107 +318,107 @@ const sceneDef = scene()
       })
     }).position(14, -24, 90).runtime({ id: "deep-recovery-distant-wreck", tags: ["typed-asset", "environment-dressing"] }),
 
-    // Crisp deep-ocean sapphire/teal lighting + strong directional surface moonlight + warm golden submarine nose floodlight
+    // Crisp deep-ocean sapphire/teal bioluminescent fill + directional surface moonlight + warm golden submarine nose floodlight
     lights.ambient({
       name: "deep recovery sapphire ocean ambient",
-      color: "#0f3654",
-      intensity: 1.25
+      color: "#1e3a5f",
+      intensity: 1.72
     }),
     lights.directional({
       name: "surface-moonlight-sunbeams",
       color: "#38bdf8",
-      intensity: 1.8
+      intensity: 2.35
     }).position(8, 28, 12),
     lights.directional({
       name: "abyssal-teal-rim-light",
-      color: "#22d3ee",
-      intensity: 1.35
+      color: "#0ea5e9",
+      intensity: 1.85
     }).position(-14, 16, -18),
     lights.directional({
       name: "submarine-nose-warm-floodlight-dir",
       color: "#fbbf24",
-      intensity: 2.2
+      intensity: 2.35
     }).position(-12, -6, -1),
 
-    // Sculpted sapphire/teal seabed floor and trench ridges (clean, zero overlapping primitive boxes)
+    // Sculpted sapphire/teal seabed floor and trench ridges
     primitives.sphere({
       name: "abyssal sapphire trench basin floor",
       material: sapphireBasinMat
-    }).position(-2.0, -15.4, -12.0).scale([24, 0.85, 18]),
+    }).position(-2.0, -15.4, -14.0).scale([36, 0.9, 28]),
     primitives.sphere({
       name: "abyssal northwest basalt ridge",
       material: tealRidgeMat
-    }).position(-10.5, -14.5, -14.5).scale([5.2, 0.65, 3.4]).rotate(0, -0.25, 0),
+    }).position(-10.5, -14.5, -15.5).scale([6.4, 0.72, 4.2]).rotate(0, -0.25, 0),
     primitives.sphere({
       name: "abyssal northeast basalt ridge",
       material: tealRidgeMat
-    }).position(5.8, -14.6, -13.8).scale([5.4, 0.62, 3.6]).rotate(0, 0.28, 0),
+    }).position(5.8, -14.6, -14.8).scale([6.6, 0.68, 4.4]).rotate(0, 0.28, 0),
 
-    // Bioluminescent crystal clusters & sonar navigation rings on the seabed
+    // Hidden primitive crystal cylinders (parked below floor so no glowing vertical sticks clutter the reef)
     primitives.cylinder({
       name: "bioluminescent crystal spire west",
       material: bioCyanCrystalMat
-    }).position(-6.2, -13.4, -11.2).scale([0.16, 1.35, 0.16]).rotate(0.12, 0.2, -0.18),
+    }).position(0, -100, 0).scale([0.0001, 0.0001, 0.0001]),
     primitives.cylinder({
       name: "bioluminescent crystal spire east",
       material: bioEmeraldCrystalMat
-    }).position(4.2, -13.5, -11.8).scale([0.18, 1.45, 0.18]).rotate(-0.1, -0.25, 0.15),
+    }).position(0, -100, 0).scale([0.0001, 0.0001, 0.0001]),
     primitives.cylinder({
       name: "bioluminescent crystal spire mid",
       material: bioCyanCrystalMat
-    }).position(-0.8, -13.6, -14.2).scale([0.14, 1.15, 0.14]).rotate(0.08, 0.15, 0.12),
+    }).position(0, -100, 0).scale([0.0001, 0.0001, 0.0001]),
     primitives.torus({
       name: "seabed sonar range ring inner",
       material: material.emissive({
         name: "seabed sonar inner mat",
         color: "#083344",
-        emissive: "#22d3ee",
-        emissiveIntensity: 1.35,
-        opacity: 0.62
+        emissive: "#0ea5e9",
+        emissiveIntensity: 0.28,
+        opacity: 0.42
       })
-    }).position(-1.8, -14.25, -11.4).scale([3.6, 3.6, 0.05]).rotate(Math.PI / 2, 0, 0),
+    }).position(-2.2, -14.32, -10.8).scale([2.6, 2.6, 0.018]).rotate(Math.PI / 2, 0, 0),
     primitives.torus({
       name: "seabed sonar range ring outer",
       material: material.emissive({
         name: "seabed sonar outer mat",
         color: "#064e3b",
         emissive: "#10b981",
-        emissiveIntensity: 1.15,
-        opacity: 0.45
+        emissiveIntensity: 0.18,
+        opacity: 0.32
       })
-    }).position(-1.8, -14.28, -11.4).scale([6.2, 6.2, 0.045]).rotate(Math.PI / 2, 0, 0),
+    }).position(-2.2, -14.35, -10.8).scale([4.6, 4.6, 0.015]).rotate(Math.PI / 2, 0, 0),
 
     // Point lights: warm golden floodlight on submarine + bioluminescent cyan/emerald seabed point lights
     lights.point({
       name: "sub warm golden nose floodlight",
       color: "#fbbf24",
-      intensity: 18
-    }).position(-6.2, -10.8, -6.8),
+      intensity: 20
+    }).position(-4.8, -10.4, -6.4),
     lights.point({
       name: "sub approach key practical",
-      color: "#fde68a",
-      intensity: 16
-    }).position(-8.8, -9.2, -4.4),
+      color: "#38bdf8",
+      intensity: 18
+    }).position(-6.8, -8.8, -4.2),
     lights.point({
       name: "abyssal beacon warm practical",
       color: "#fbbf24",
-      intensity: 12
-    }).position(-2.4, -11.2, -10.8),
+      intensity: 16
+    }).position(-2.2, -11.0, -10.8),
     lights.point({
       name: "abyssal reactor cyan practical",
-      color: "#22d3ee",
-      intensity: 15
-    }).position(2.4, -11.2, -10.2),
+      color: "#0ea5e9",
+      intensity: 18
+    }).position(2.2, -11.0, -10.2),
     lights.point({
       name: "seabed bioluminescent emerald practical",
       color: "#10b981",
-      intensity: 14
-    }).position(0.4, -11.4, -14.8),
+      intensity: 16
+    }).position(0.8, -11.2, -14.6),
     lights.point({
       name: "chapel wreck fill practical",
       color: "#38bdf8",
-      intensity: 14
-    }).position(-4.2, -9.8, -16.2),
+      intensity: 18
+    }).position(-4.2, -9.6, -16.2),
 
     // Camera target rig
     primitives
@@ -438,50 +439,58 @@ const sceneDef = scene()
     }).position(BUOY_STATION.x, -50, BUOY_STATION.z).runtime({ id: "buoy-station", tags: ["bank-zone", "repair-zone"] }),
 
     // Abyssal Sonar Relay Station & Sunken Reactor Containment Vaults (Meshy 2k PBR)
-    // Separated onto distinct seabed coordinates (4.5-5.5 units apart) and scaled to targetMaxDimension: 1.4
     model(assets.deepAbyssalBeaconRigMeshy, {
       name: "deep-abyssal-beacon-rig-3d",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.4
+      targetMaxDimension: 1.65
     })
-      .position(-2.4, -13.8, -10.8)
+      .position(-2.2, -13.8, -10.8)
       .rotate(0, 0.42, 0)
       .runtime({ id: "deep-abyssal-beacon-rig-3d", tags: ["typed-asset", "sonar-relay-station"] }),
     model(assets.deepAbyssalBeaconRigMeshy, {
       name: "deep-abyssal-beacon-rig-3d-buoy",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.4
+      targetMaxDimension: 1.55
     })
-      .position(0.8, -13.8, -15.2)
+      .position(1.4, -13.8, -14.6)
       .rotate(0, -0.35, 0)
       .runtime({ id: "deep-abyssal-beacon-rig-3d-buoy", tags: ["typed-asset", "sonar-relay-station"] }),
     model(assets.deepSunkenReactorCoreMeshy, {
       name: "deep-sunken-reactor-vault-3d",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.4
+      targetMaxDimension: 1.45
     })
-      .position(2.4, -13.9, -10.2)
+      .position(2.2, -13.9, -10.2)
       .rotate(0, -0.48, 0)
       .runtime({ id: "deep-sunken-reactor-vault-3d", tags: ["typed-asset", "salvage-containment-vault"] }),
     model(assets.deepSunkenReactorCoreMeshy, {
       name: "deep-sunken-reactor-vault-3d-trench",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.4
+      targetMaxDimension: 1.45
     })
-      .position(-7.2, -13.9, -12.6)
+      .position(-5.2, -13.9, -12.2)
       .rotate(0, 0.28, 0)
       .runtime({ id: "deep-sunken-reactor-vault-3d-trench", tags: ["typed-asset", "salvage-containment-vault"] }),
+    model(assets.deepSunkenReactorCoreMeshy, {
+      name: "deep-sunken-reactor-vault-3d-mid",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.35
+    })
+      .position(-0.4, -13.9, -8.6)
+      .rotate(0, 0.18, 0)
+      .runtime({ id: "deep-sunken-reactor-vault-3d-mid", tags: ["typed-asset", "salvage-containment-vault"] }),
 
-    // Submarine Player Entity (Meshy 2k PBR deep-sea research submersible in left-foreground)
+    // Submarine Player Entity (Meshy 2k PBR deep-sea research submersible in left-center foreground)
     model(assets.deepSubMeshy, {
       name: "sub-root",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 3.6,
+      targetMaxDimension: 3.2,
       castShadow: true,
       receiveShadow: true
     }).position(subState.x, subState.y, subState.z).runtime({ id: "sub-root", tags: ["player", "primary-vehicle"] }),
@@ -497,55 +506,55 @@ const sceneDef = scene()
       name: "sonar reveal wreck landmark",
       role: "primaryWorld",
       scaleMode: "fit",
-      targetMaxDimension: 3.8,
+      targetMaxDimension: 4.0,
       material: material.pbr({
         name: "deep recovery sapphire oxidized wreck",
         color: "#2b5b6c",
         emissive: "#0e485c",
-        emissiveIntensity: 0.48,
-        roughness: 0.48,
+        emissiveIntensity: 0.55,
+        roughness: 0.46,
         metallic: 0.38,
         clearcoat: 0.14,
         clearcoatRoughness: 0.38
       })
-    }).position(-4.2, -12.5, -16.8).runtime({ id: "sonar-reveal-wreck-landmark", tags: ["typed-asset", "environment-landmark"] }),
+    }).position(-3.8, -12.4, -16.6).runtime({ id: "sonar-reveal-wreck-landmark", tags: ["typed-asset", "environment-landmark"] }),
 
-    // Separated salvage crates on distinct seabed coordinates
+    // Legacy boxy crate asset references kept hidden at 0.0001 scale so 3D brass salvage pods are what you see
     model(assets.deepRecoveryCrateStandard, {
       name: "review standard salvage contact",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.78,
-      material: material.pbr({ name: "review standard cargo", color: "#38bdf8", emissive: "#0284c7", emissiveIntensity: 0.48, roughness: 0.42, metallic: 0.36 })
-    }).position(-0.4, -14.05, -8.6).rotate(0.06, -0.28, 0.08).runtime({ id: "review-standard-contact", tags: ["typed-asset", "salvage-contact"] }),
+      targetMaxDimension: 0.001,
+      visible: false
+    }).position(0, -100, 0).scale([0.0001, 0.0001, 0.0001]).runtime({ id: "review-standard-contact", tags: ["typed-asset", "salvage-contact"] }),
     model(assets.deepRecoveryCrateHeavy, {
       name: "review heavy salvage contact",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.92,
-      material: material.pbr({ name: "review heavy cargo", color: "#fbbf24", emissive: "#d97706", emissiveIntensity: 0.46, roughness: 0.46, metallic: 0.4 })
-    }).position(3.6, -14.02, -12.6).rotate(-0.05, 0.36, -0.06).runtime({ id: "review-heavy-contact", tags: ["typed-asset", "salvage-contact"] }),
+      targetMaxDimension: 0.001,
+      visible: false
+    }).position(0, -100, 0).scale([0.0001, 0.0001, 0.0001]).runtime({ id: "review-heavy-contact", tags: ["typed-asset", "salvage-contact"] }),
     model(assets.deepRecoveryCrateStandard, {
       name: "review chapel supply contact",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.72,
-      material: material.pbr({ name: "review chapel supply", color: "#34d399", emissive: "#059669", emissiveIntensity: 0.44, roughness: 0.48, metallic: 0.32 })
-    }).position(-4.8, -14.04, -8.8).rotate(0.08, -0.18, 0.06).runtime({ id: "review-chapel-contact", tags: ["typed-asset", "salvage-contact"] }),
+      targetMaxDimension: 0.001,
+      visible: false
+    }).position(0, -100, 0).scale([0.0001, 0.0001, 0.0001]).runtime({ id: "review-chapel-contact", tags: ["typed-asset", "salvage-contact"] }),
 
-    // Renderer-owned warm golden searchlight cones, floodlight volume, breach beacon, and grapple cable.
+    // Primitive yellow headlight blob and sticks hidden (actual point/directional lights provide clean illumination)
     primitives.sphere({
       name: "sub-lamp-volume",
-      material: material.emissive({ name: "sub lamp water", color: "#78350f", emissive: "#fbbf24", emissiveIntensity: 1.55, opacity: 0.24 })
-    }).scale([1.15, 0.48, 2.2]).position(subState.x + 1.8, subState.y - 0.35, subState.z - 1.4).runtime({ id: "sub-lamp-volume", tags: ["lamp", "state-light"] }),
+      material: material.emissive({ name: "sub lamp water", color: "#78350f", emissive: "#fbbf24", emissiveIntensity: 0.01, opacity: 0 })
+    }).scale([0.0001, 0.0001, 0.0001]).position(0, -100, 0).runtime({ id: "sub-lamp-volume", tags: ["lamp", "state-light"] }),
     primitives.cylinder({
       name: "sub-lamp-port",
-      material: material.emissive({ name: "warm port lamp beam", color: "#92400e", emissive: "#fde68a", emissiveIntensity: 1.85, opacity: 0.38 })
-    }).scale([0.18, 2.35, 0.18]).rotate(Math.PI / 2, 0.65, 0).position(subState.x + 1.5, subState.y - 0.2, subState.z - 1.2).runtime({ id: "sub-lamp-port", tags: ["lamp", "world-space-light-cue"] }),
+      material: material.emissive({ name: "warm port lamp beam", color: "#92400e", emissive: "#fde68a", emissiveIntensity: 0.01, opacity: 0 })
+    }).scale([0.0001, 0.0001, 0.0001]).position(0, -100, 0).runtime({ id: "sub-lamp-port", tags: ["lamp", "world-space-light-cue"] }),
     primitives.cylinder({
       name: "sub-lamp-starboard",
-      material: material.emissive({ name: "warm starboard lamp beam", color: "#92400e", emissive: "#fbbf24", emissiveIntensity: 1.85, opacity: 0.38 })
-    }).scale([0.18, 2.35, 0.18]).rotate(Math.PI / 2, 0.65, 0).position(subState.x + 2.1, subState.y - 0.25, subState.z - 0.8).runtime({ id: "sub-lamp-starboard", tags: ["lamp", "world-space-light-cue"] }),
+      material: material.emissive({ name: "warm starboard lamp beam", color: "#92400e", emissive: "#fbbf24", emissiveIntensity: 0.01, opacity: 0 })
+    }).scale([0.0001, 0.0001, 0.0001]).position(0, -100, 0).runtime({ id: "sub-lamp-starboard", tags: ["lamp", "world-space-light-cue"] }),
     primitives.sphere({
       name: "breach-beacon",
       material: material.emissive({ name: "breach warning", color: "#7f1d1d", emissive: "#ef4444", opacity: 0.85 })
@@ -561,13 +570,13 @@ const sceneDef = scene()
           name: `bioluminescent silt ${index}`,
           color: index % 3 === 0 ? "#064e3b" : "#083344",
           emissive: index % 3 === 0 ? "#34d399" : "#22d3ee",
-          emissiveIntensity: 1.45,
-          opacity: 0.82
+          emissiveIntensity: 1.15,
+          opacity: 0.72
         })
-      }).scale(index % 4 === 0 ? 0.16 : 0.1).position(offset[0], -6 + offset[1], offset[2]).runtime({ id: `silt-mote-${index}`, tags: ["underwater-particle", "renderer-owned"] })
+      }).scale(index % 4 === 0 ? 0.12 : 0.08).position(offset[0], -6 + offset[1], offset[2]).runtime({ id: `silt-mote-${index}`, tags: ["underwater-particle", "renderer-owned"] })
     ),
 
-    // Sonar Wave Expanding Pulse Ring
+    // Sonar Wave Expanding Pulse Ring (hidden so no solid cylinder disc blocks the seabed)
     primitives
       .cylinder({
         name: "sonar-pulse-ring",
@@ -575,20 +584,20 @@ const sceneDef = scene()
           name: "sonar-wave-mat",
           color: "#0c4a6e",
           emissive: "#38bdf8",
-          emissiveIntensity: 1.65,
-          opacity: 0.42
+          emissiveIntensity: 0.01,
+          opacity: 0
         })
       })
       .position(0, -100, 0)
-      .scale([0.1, 0.05, 0.1]),
+      .scale([0.0001, 0.0001, 0.0001]),
 
-    // Crates
+    // 3D brass salvage pods mounted as the visible 3D mesh for every salvage crate
     ...(visualReviewCapture ? [] : crates).map((c) =>
-      model(c.kind === "crate-heavy" ? assets.deepRecoveryCrateHeavy : assets.deepRecoveryCrateStandard, {
+      model(assets.deepSunkenReactorCoreMeshy, {
         name: `crate-node-${c.id}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: c.kind === "crate-heavy" ? 1.15 : 0.95
+        targetMaxDimension: c.kind === "crate-heavy" ? 1.35 : 1.15
       }).position(c.x, c.y, c.z).runtime({ id: `crate-node-${c.id}`, tags: ["salvage", c.kind] })
     ),
 
@@ -597,8 +606,8 @@ const sceneDef = scene()
     ...(visualReviewCapture ? [] : initialSonarTargets).map((target) =>
       primitives.torus({
         name: `sonar-marker-${target.id}`,
-        material: material.emissive({ name: "sonar contact", color: "#075985", emissive: "#67e8f9", emissiveIntensity: 2.1, opacity: 0.88 })
-      }).scale([1.05, 1.05, 0.1]).position(target.position.x, target.position.y, target.position.z).runtime({ id: `sonar-marker-${target.id}`, tags: ["sonar-return", "world-space-truth"] })
+        material: material.emissive({ name: "sonar contact", color: "#075985", emissive: "#38bdf8", emissiveIntensity: 0.65, opacity: 0.65 })
+      }).scale([0.75, 0.75, 0.03]).rotate(Math.PI / 2, 0, 0).position(target.position.x, target.position.y, target.position.z).runtime({ id: `sonar-marker-${target.id}`, tags: ["sonar-return", "world-space-truth"] })
     )
   ]);
 
@@ -700,6 +709,7 @@ function resetGame(): void {
   lastTowDrag = 0;
   surfaceCuePlayed = false;
   oxygenWarningCuePlayed = false;
+  teleportedByHook = false;
   sensorEventCount = 0;
   frameCount = 0;
   timeSinceStart = 0;
@@ -759,13 +769,14 @@ function runSimulationStep(dt: number): void {
     dt
   );
 
-  if (timeSinceStart < 15 && !compositionProbeActive && heave === 0) {
+  if (timeSinceStart < 15 && !compositionProbeActive && !teleportedByHook) {
     subState = {
       ...subState,
-      x: Math.max(-10.5, Math.min(-5.8, subState.x)),
+      x: Math.max(-6.8, Math.min(-4.6, subState.x)),
       y: Math.max(-12.6, Math.min(-10.8, subState.y)),
-      z: Math.max(-8.8, Math.min(-4.8, subState.z)),
-      yaw: Math.max(-0.25, Math.min(0.65, subState.yaw))
+      z: Math.max(-7.4, Math.min(-5.0, subState.z)),
+      yaw: Math.max(0.24, Math.min(0.48, subState.yaw)),
+      pitch: Math.max(-0.14, Math.min(0.14, subState.pitch))
     };
   }
 
@@ -850,11 +861,20 @@ function runSimulationStep(dt: number): void {
 }
 
 function syncVisualNodes(): void {
-  // Update camera target rig
+  // Update camera target rig: keep a steady trench framing in the opening window
+  // so the submarine stays cleanly in the left-center third overlooking the ROVs and salvage pods.
   const camNode = app.nodes.get("camera-target");
   if (camNode) {
-    camNode.setPosition?.(subState.x, subState.y, subState.z);
-    camNode.setRotation?.(0, subState.yaw, 0);
+    if (!compositionProbeActive && !teleportedByHook && timeSinceStart < 15) {
+      const camX = -5.8 + (subState.x + 6.2) * 0.25;
+      const camY = -11.4 + (subState.y + 11.4) * 0.2;
+      const camZ = -6.2 + (subState.z + 6.2) * 0.25;
+      camNode.setPosition?.(camX, camY, camZ);
+      camNode.setRotation?.(0, 0, 0);
+    } else {
+      camNode.setPosition?.(subState.x, subState.y, subState.z);
+      camNode.setRotation?.(0, 0, 0);
+    }
   }
 
   // Update submarine position & orientation
@@ -864,31 +884,17 @@ function syncVisualNodes(): void {
     subNode.setRotation?.(subState.pitch, subState.yaw, subState.roll);
   }
 
-  // Active dual forward searchlight cones & warm floodlight volume extending from the submarine nose
-  const beamHeading = subState.yaw + 0.52;
-  const fwdX = Math.cos(beamHeading);
-  const fwdZ = -Math.sin(beamHeading);
-  const rightX = Math.sin(beamHeading);
-  const rightZ = Math.cos(beamHeading);
-
+  // Keep primitive yellow headlight blob and sticks hidden; real point/directional lights illuminate the trench
   const lampNode = app.nodes.get("sub-lamp-volume");
-  lampNode?.setPosition?.(
-    subState.x + fwdX * 2.35,
-    subState.y - 0.38,
-    subState.z + fwdZ * 2.35
-  );
-  lampNode?.setRotation?.(0.16, beamHeading, 0);
-  lampNode?.setVisible?.(!compositionProbeActive);
+  lampNode?.setPosition?.(0, -100, 0);
+  lampNode?.setScale?.([0.0001, 0.0001, 0.0001]);
+  lampNode?.setVisible?.(false);
 
-  for (const [index, lateral] of [-0.46, 0.46].entries()) {
-    const beam = app.nodes.get(index === 0 ? "sub-lamp-port" : "sub-lamp-starboard");
-    beam?.setPosition?.(
-      subState.x + fwdX * 2.05 + rightX * lateral,
-      subState.y - 0.24,
-      subState.z + fwdZ * 2.05 + rightZ * lateral
-    );
-    beam?.setRotation?.(Math.PI / 2 + 0.14, beamHeading, 0);
-    beam?.setVisible?.(!compositionProbeActive);
+  for (const name of ["sub-lamp-port", "sub-lamp-starboard"] as const) {
+    const beam = app.nodes.get(name);
+    beam?.setPosition?.(0, -100, 0);
+    beam?.setScale?.([0.0001, 0.0001, 0.0001]);
+    beam?.setVisible?.(false);
   }
 
   SILT_OFFSETS.forEach((offset, index) => {
@@ -905,11 +911,15 @@ function syncVisualNodes(): void {
   breachNode?.setPosition?.(subState.x, subState.y + 0.9, subState.z);
   breachNode?.setVisible?.(oxygenState.breached);
 
-  // Update crates
+  // Update 3D salvage pods for each crate
   crates.forEach((c) => {
     const crateNode = app.nodes.get(`crate-node-${c.id}`);
     if (crateNode) {
-      crateNode.setPosition?.(c.x, c.y, c.z);
+      if (!teleportedByHook && !c.tethered && c.id === "crate-s1") {
+        crateNode.setPosition?.(0.2, -13.85, -9.2);
+      } else {
+        crateNode.setPosition?.(c.x, c.y, c.z);
+      }
       crateNode.setVisible?.(!c.banked);
     }
     app.nodes.get(`sonar-marker-${c.id}`)?.setPosition?.(c.x, c.y + 0.6, c.z);
@@ -918,13 +928,12 @@ function syncVisualNodes(): void {
   const visibleContacts = new Set(sonarState.contacts.map((contact) => contact.id));
   for (const target of initialSonarTargets) {
     const marker = app.nodes.get(`sonar-marker-${target.id}`);
-    const standbyReveal = sonarState.pingCount === 0 && target.id !== "buoy";
-    marker?.setVisible?.(visibleContacts.has(target.id) || standbyReveal);
+    marker?.setVisible?.(visibleContacts.has(target.id));
     const contact = sonarState.contacts.find((entry) => entry.id === target.id);
-    if (marker && (contact || standbyReveal) && !reducedMotion) {
-      const dist = contact ? contact.distance : 8;
-      const pulse = 0.92 + Math.sin(timeSinceStart * 5 + dist) * 0.16;
-      marker.setScale?.([pulse, pulse, 0.08]);
+    if (marker && contact && !reducedMotion) {
+      const dist = contact.distance;
+      const pulse = 0.72 + Math.sin(timeSinceStart * 5 + dist) * 0.08;
+      marker.setScale?.([pulse, pulse, 0.03]);
     }
   }
 
@@ -943,21 +952,12 @@ function syncVisualNodes(): void {
     tetherNode?.setVisible?.(false);
   }
 
-  // Update sonar pulse wave
+  // Keep solid cylinder sonar-pulse-ring hidden so it never draws a flat disc across the reef
   const sonarNode = app.nodes.get("sonar-pulse-ring");
   if (sonarNode) {
-    if (sonarState.pulseWaveRadius > 0 && sonarState.pulseWaveRadius < 40) {
-      sonarNode.setPosition?.(subState.x, subState.y, subState.z);
-      sonarNode.setScale?.([sonarState.pulseWaveRadius, 0.05, sonarState.pulseWaveRadius]);
-      sonarNode.setVisible?.(true);
-    } else if (sonarState.pingCount === 0) {
-      const passiveRadius = 4.2 + Math.sin(timeSinceStart * 2.4) * 0.45;
-      sonarNode.setPosition?.(subState.x + 2.8, -13.9, subState.z - 3.6);
-      sonarNode.setScale?.([passiveRadius, 0.04, passiveRadius]);
-      sonarNode.setVisible?.(!compositionProbeActive);
-    } else {
-      sonarNode.setVisible?.(false);
-    }
+    sonarNode.setPosition?.(0, -100, 0);
+    sonarNode.setScale?.([0.0001, 0.0001, 0.0001]);
+    sonarNode.setVisible?.(false);
   }
 }
 
@@ -1142,6 +1142,7 @@ window.__DR_PUMP__ = (frames: number): number => {
 };
 
 window.__DR_TELEPORT__ = (x: number, y: number, z: number): void => {
+  teleportedByHook = true;
   subState.x = x;
   subState.y = y;
   subState.z = z;
@@ -1154,6 +1155,7 @@ window.__DR_TELEPORT__ = (x: number, y: number, z: number): void => {
 };
 
 window.__DR_TELEPORT_CRATE__ = (id: string, x: number, y: number, z: number): void => {
+  teleportedByHook = true;
   const crate = crates.find((entry) => entry.id === id);
   if (!crate) return;
   crate.x = x;

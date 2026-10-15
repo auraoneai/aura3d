@@ -125,7 +125,11 @@ export function buildScene() {
       receiveShadow: true
     }).position(world.position[0], world.position[1], world.position[2]).scale(world.scale)
       .runtime(game.runtimeNode("containment-world", { tags: ["typed-primary-world"] })))
-    .add(model(assets.neonContainmentPulseRifle, { name: "containment pulse rifle viewmodel" }).position(0.28, 1.18, 5.7).scale(rifle.scale).runtime(game.runtimeNode("pulse-rifle", { tags: ["weapon"] })))
+    .add(model(rootAssets.corridorPulseRifleMeshy, {
+      name: "containment pulse rifle viewmodel",
+      scaleMode: "fit",
+      targetMaxDimension: 0.58
+    }).position(0.22, 1.12, 7.46).scale(rifle.scale > 0 ? 1 : 1).runtime(game.runtimeNode("pulse-rifle", { tags: ["weapon"] })))
     .addMany(ENEMIES.map((enemy) => {
       // The Meshy warden bot replaces WardenA's blockout breacher with a
       // textured gunmetal combatant (glowing orange core, joint lights).
@@ -134,13 +138,12 @@ export function buildScene() {
       if (enemy.asset === "corridorWardenMeshyV1") {
         return model(assets.corridorWardenMeshyV1, {
           name: `containment warden ${enemy.id}`,
-          role: "enemy",
           scaleMode: "fit",
-          targetMaxDimension: 2.05,
+          targetMaxDimension: 1.76,
           castShadow: true,
           receiveShadow: true
         })
-          .position(enemy.x, 0.25, enemy.z)
+          .position(enemy.x, 0.22, enemy.z)
           .runtime(game.runtimeNode(`enemy-${enemy.id}`, { tags: ["enemy"] }));
       }
       const asset = enemy.asset === "neonContainmentWardenB" ? assets.neonContainmentWardenB : assets.neonContainmentWardenA;
@@ -155,31 +158,6 @@ export function buildScene() {
         .scale(placed.scale)
         .runtime(game.runtimeNode(`enemy-${enemy.id}`, { tags: ["enemy"] }));
     }))
-    // Foreground staged Meshy breach wardens flanking the near containment bay
-    .add(
-      model(assets.corridorWardenMeshyV1, {
-        name: "near bay sentinel left",
-        role: "enemy",
-        scaleMode: "fit",
-        targetMaxDimension: 1.95,
-        castShadow: true,
-        receiveShadow: true
-      })
-        .position(-1.28, 0.25, 3.85)
-        .rotate(0, 0.28, 0)
-    )
-    .add(
-      model(assets.corridorWardenMeshyV1, {
-        name: "near bay sentinel right",
-        role: "enemy",
-        scaleMode: "fit",
-        targetMaxDimension: 1.95,
-        castShadow: true,
-        receiveShadow: true
-      })
-        .position(1.32, 0.25, 2.75)
-        .rotate(0, -0.32, 0)
-    )
     // A renderer-owned hostile collar keeps each typed warden legible against
     // the dark bay at gameplay scale. It is deliberately a restrained vertical
     // ring behind the model (not a DOM reticle or a replacement body), and the
@@ -216,23 +194,10 @@ export function buildScene() {
     .add(
       model(rootAssets.fpsEnergyCorePickupMeshy, {
         name: "foreground energy core cell",
-        role: "collectible",
         scaleMode: "fit",
         targetMaxDimension: 0.56
       })
         .position(-0.78, 0.26, 5.45)
-    )
-    .add(
-      model(rootAssets.corridorPulseRifleMeshy, {
-        name: "tactical bay pulse rifle rack",
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: 0.82,
-        castShadow: true,
-        receiveShadow: true
-      })
-        .position(1.48, 0.62, 5.15)
-        .rotate(0, -0.45, 0)
     )
     // Grounded, textured typed Meshy sci-fi tactical cover crates replace the
     // imported corridor's pale blockout-rubble read in the opening encounter.
@@ -562,8 +527,8 @@ export function buildScene() {
     .add(effects.ambientOcclusion({ name: "containment bay grounding", intensity: 0.32, radius: 0.68, density: 0.54, color: "#02090d" }))
     .add(effects.contactOcclusion({ name: "warden deck contact", intensity: 0.34, radius: 0.5 }))
     .add(effects.fog({ density: 0.022, color: "#10252c" }))
-    .add(effects.bloom({ name: "containment power bloom", intensity: 0.16, color: "#79e4ec", threshold: 0.82, radius: 0.2, maxIntensity: 0.26, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }))
+    .add(effects.bloom({ name: "containment power bloom", intensity: 0.08, color: "#79e4ec", threshold: 0.9, radius: 0.18, maxIntensity: 0.16, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.colorGrade({ exposure: 1.0, contrast: 1.05, saturation: 1.08 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     .add(environments.preset("night", { intensity: 0.45, background: false }))
     .add(lights.directional({ name: "steel architectural key", position: [-4, 7, 6], intensity: 1.02, color: "#dcefeb" }))

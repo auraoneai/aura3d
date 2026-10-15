@@ -1811,25 +1811,27 @@ function buildTurboRoadDetailNodes() {
     const start = gamePointToScene(sampleCentreline(startProgress));
     const end = gamePointToScene(sampleCentreline(endProgress));
     const segDx = end[0] - start[0];
+    const segDy = end[1] - start[1];
     const segDz = end[2] - start[2];
     const segmentLength = Math.max(0.08, Math.hypot(segDx, segDz));
     const segYaw = Math.atan2(segDx, segDz);
+    const segPitch = -Math.atan2(segDy, segmentLength);
     const sceneLeftX = Math.cos(segYaw);
     const sceneLeftZ = -Math.sin(segYaw);
     const pose = racingScene.toScenePose({
       position: { x: midpoint.x, y: midpoint.y },
       heading: midpoint.heading
     });
-    const roadY = sampleTurboRoadHeight(pose.position[0], pose.position[2]);
+    const roadY = (start[1] + end[1]) * 0.5;
     const roadDetailY = roadY + ROAD_DETAIL_SURFACE_LIFT;
     const edgeOffsetScene = gamePointToSceneLength(routeWidth * 0.52);
     for (const side of [-1, 1] as const) {
       const edgeX = pose.position[0] + sceneLeftX * edgeOffsetScene * side;
       const edgeZ = pose.position[2] + sceneLeftZ * edgeOffsetScene * side;
       curbTransforms.push({
-        position: [edgeX, roadDetailY + 0.008, edgeZ],
-        rotation: [0, segYaw, 0],
-        scale: [0.075, 0.016, segmentLength * 0.88]
+        position: [edgeX, roadDetailY + 0.002, edgeZ],
+        rotation: [segPitch, segYaw, 0],
+        scale: [0.055, 0.005, segmentLength * 0.78]
       });
       curbColors.push((index + (side > 0 ? 0 : 1)) % 2 === 0 ? "#d94b38" : "#e8dfd1");
     }
@@ -1837,11 +1839,11 @@ function buildTurboRoadDetailNodes() {
     // Leave a purposeful gap between centre dashes.  The line is painted onto
     // the road's own plane, so its perspective continues through the bend and
     // never becomes a floating HUD element.
-    if (index % 2 === 0) {
+    if (index % 3 === 0) {
       centreDashTransforms.push({
-        position: [pose.position[0], roadDetailY + 0.008, pose.position[2]],
-        rotation: [0, segYaw, 0],
-        scale: [0.052, 0.008, Math.min(0.34, segmentLength * 0.42)]
+        position: [pose.position[0], roadDetailY + 0.002, pose.position[2]],
+        rotation: [segPitch, segYaw, 0],
+        scale: [0.036, 0.003, Math.min(0.18, segmentLength * 0.32)]
       });
     }
 
@@ -2035,13 +2037,13 @@ function buildTurboRoadDetailNodes() {
       name: "route-bound continuous asphalt ribbon",
       material: material.pbr({
         name: "layered asphalt",
-        color: visualCaptureCamera ? TURBO_REVIEW_GRADE.asphalt : "#343c47",
-        roughness: 0.62,
-        metallic: 0.06,
-        clearcoat: 0.08,
+        color: visualCaptureCamera ? TURBO_REVIEW_GRADE.asphalt : "#272e38",
+        roughness: 0.84,
+        metallic: 0.03,
+        clearcoat: 0.01,
         normal: material.proceduralTexture("plastic-micro-scratch", { scale: 34, strength: 0.24, contrast: 0.58 }),
         roughnessMap: material.proceduralTexture("rubber-roughness", { scale: 18, strength: 0.46, contrast: 0.64 }),
-        envMapIntensity: 0.58
+        envMapIntensity: 0.36
       }),
       castShadow: false,
       receiveShadow: true
