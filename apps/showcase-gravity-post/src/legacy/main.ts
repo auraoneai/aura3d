@@ -367,9 +367,13 @@ for (const station of stations) {
       name: station.id + " dock gate",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: reviewStationRelevant ? 1.45 : 1.15
+      targetMaxDimension: reviewStationRelevant ? 1.18 : 0.95
     })
-      .position(station.x, PLAY_PLANE_Y + 0.14, station.z)
+      .position(
+        station.x + (station.id === "rust-exchange" ? -reviewRoutePerpX * 1.25 : station.id === "gale-terminal" ? reviewRoutePerpX * 1.35 : 0),
+        PLAY_PLANE_Y + 0.18,
+        station.z + (station.id === "rust-exchange" ? -reviewRoutePerpZ * 1.25 : station.id === "gale-terminal" ? reviewRoutePerpZ * 1.35 : 0)
+      )
       .scale(1.0)
       .runtime(game.runtimeNode(station.id + "-dock-gate", { tags: ["typed-asset", "destination-gate"] }))
   );
@@ -481,20 +485,9 @@ const routeUnitX = routeDx / routeLength;
 const routeUnitZ = routeDz / routeLength;
 const routePerpX = -routeUnitZ;
 const routePerpZ = routeUnitX;
-// The catalog's release-validated MailPod is a detailed CC-BY transit craft,
-// distinct from the route-owned skiff.  In the review lens it serves as one
-// stationary terminal shuttle on the same Rust -> Gale vector: a grounded
-// scale reference and a second silhouette that makes Gale read as an active
-// freight destination.  It is set dressing only; the live pod, sensors, and
-// score remain bound to `gravityPostCourierSkiff` and route-local state.
-// Keep the supporting transit shuttle at the Gale-side apron, behind and
-// outside the live lane. It remains a typed destination cue, but no longer
-// competes with the parcel-bearing courier for foreground silhouette.
-const reviewMailPodProgress = 0.95;
-const reviewMailPodLateral = 1.52;
+const reviewMailPodProgress = 0.92;
+const reviewMailPodLateral = 1.45;
 const reviewMailPodYaw = Math.atan2(routeUnitX, routeUnitZ);
-// Boxes use local X as their long axis, so this yaw aligns them to the live
-// origin/destination vector instead of a screen-authored arbitrary angle.
 const approachYaw = -Math.atan2(routeDz, routeDx);
 const acrossRouteYaw = approachYaw + Math.PI / 2;
 const corridorPoint = (progress: number, lateral = 0): readonly [number, number] => [
@@ -502,48 +495,31 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
   rustExchange.z + routeDz * progress + routePerpZ * lateral
 ];
 {
-  // Fit the 3x-authored deck's Rust edge (local X=-1.74) across the route plus a
-  // 10% outer service-apron overhang, while keeping its destination-pad center
-  // (local X=8.25) exactly on Gale. This geometry-derived uniform scale keeps
-  // the loading district substantial inside the frozen chase lens without
-  // screen-space camera tuning or destination drift.
-  const freightDistrictRustEdgeX = -1.74;
-  const freightDistrictDestinationPadX = 8.25;
-  // The retained district is fitted to the real route with a modest service
-  // apron.  The extra footprint gives the cargo terraces and arrival crown
-  // enough screen occupancy to establish a journey without changing either
-  // endpoint or introducing a second world asset.
-  const freightDistrictServiceApronFactor = 1.28;
-  const freightDistrictScale = routeLength * freightDistrictServiceApronFactor / (freightDistrictDestinationPadX - freightDistrictRustEdgeX);
-  const freightDistrictPadDistance = freightDistrictDestinationPadX * freightDistrictScale;
+  const [relayMainX, relayMainZ] = corridorPoint(0.88, -1.55);
   const freightDistrictNode = model(assets.gravityOrbitalRelayMeshy, {
     name: "Rust Exchange to Gale Terminal typed freight district",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 1.55
+    targetMaxDimension: 1.32
   })
-      .position(
-        galeTerminal.x - routeUnitX * freightDistrictPadDistance,
-        PLAY_PLANE_Y + 0.06 * freightDistrictScale,
-        galeTerminal.z - routeUnitZ * freightDistrictPadDistance
-      )
+      .position(relayMainX, PLAY_PLANE_Y + 0.16, relayMainZ)
       .rotate(0, approachYaw, 0)
-      .scale(freightDistrictScale)
+      .scale(1.0)
       .runtime(game.runtimeNode("rust-gale-typed-freight-district", {
         tags: ["typed-asset", "freight-world", "renderer-owned", "non-colliding"]
       }));
   sceneBuilder = sceneBuilder.add(freightDistrictNode);
 
-  const [sidecarX, sidecarZ] = corridorPoint(0.82, -1.48);
+  const [sidecarX, sidecarZ] = corridorPoint(0.46, -1.72);
   sceneBuilder = sceneBuilder.add(
     model(assets.gravityOrbitalRelayMeshy, {
       name: "Gravity Post grounded Gale loading district",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.55
+      targetMaxDimension: 1.18
     })
-      .position(sidecarX, PLAY_PLANE_Y + 0.12, sidecarZ)
-      .rotate(0, approachYaw, 0)
+      .position(sidecarX, PLAY_PLANE_Y + 0.14, sidecarZ)
+      .rotate(0, approachYaw + 0.35, 0)
       .runtime(game.runtimeNode("gravity-post-textured-loading-bay-sidecar", {
         tags: ["typed-asset", "freight-world", "review-set-dressing", "non-colliding"]
       }))
@@ -552,13 +528,13 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
 
 // Prominent 3D Meshy freighter and freight canyon structures along the corridor
 {
-  const [meshyX, meshyZ] = corridorPoint(0.62, 1.55);
+  const [meshyX, meshyZ] = corridorPoint(0.74, 1.68);
   sceneBuilder = sceneBuilder.add(
     model(assets.gravityPostMeshyFreight, {
       name: "Gravity Post Meshy freight canyon candidate",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.65
+      targetMaxDimension: 1.35
     })
       .position(meshyX, PLAY_PLANE_Y + 0.14, meshyZ)
       .rotate(0, approachYaw, 0)
@@ -567,15 +543,15 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
       }))
   );
 
-  const [heroFreightX, heroFreightZ] = corridorPoint(0.28, -0.92);
+  const [heroFreightX, heroFreightZ] = corridorPoint(0.28, 1.42);
   sceneBuilder = sceneBuilder.add(
     model(assets.gravityPostMeshyFreight, {
       name: "Gravity Post foreground hero Meshy freighter",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.55
+      targetMaxDimension: 1.25
     })
-      .position(heroFreightX, PLAY_PLANE_Y + 0.18, heroFreightZ)
+      .position(heroFreightX, PLAY_PLANE_Y + 0.16, heroFreightZ)
       .rotate(0, approachYaw + 0.15, 0)
       .runtime(game.runtimeNode("gravity-post-hero-meshy-freighter", {
         tags: ["typed-asset", "freight-world", "meshy-hero", "non-colliding"]
@@ -583,24 +559,24 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
   );
 
   // Corridor-flanking 3D planets so textured 3D planetary worlds are clearly framed in the close 3D camera
-  const [planetLeftX, planetLeftZ] = corridorPoint(0.88, -2.65);
-  const [planetRightX, planetRightZ] = corridorPoint(0.42, 2.55);
+  const [planetLeftX, planetLeftZ] = corridorPoint(1.16, -2.35);
+  const [planetRightX, planetRightZ] = corridorPoint(0.54, 2.75);
   sceneBuilder = sceneBuilder
     .add(
       model(assets.gravityPlanetJupiter, {
         name: "Gale corridor 3D gas giant",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.85
-      }).position(planetLeftX, PLAY_PLANE_Y - 0.35, planetLeftZ)
+        targetMaxDimension: 1.65
+      }).position(planetLeftX, PLAY_PLANE_Y + 0.12, planetLeftZ)
     )
     .add(
       model(assets.gravityPlanetMars, {
         name: "Rust corridor 3D planet",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.35
-      }).position(planetRightX, PLAY_PLANE_Y - 0.22, planetRightZ)
+        targetMaxDimension: 1.25
+      }).position(planetRightX, PLAY_PLANE_Y + 0.18, planetRightZ)
     );
 }
 
@@ -612,7 +588,7 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
       name: "Gale Terminal inbound typed MailPod shuttle",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.25
+      targetMaxDimension: 0.92
     })
       .position(mailPodX, PLAY_PLANE_Y + 0.095, mailPodZ)
       .rotate(0, reviewMailPodYaw, 0)
@@ -625,11 +601,11 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
       name: "Gale Terminal shuttle parcel",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.45
+      targetMaxDimension: 0.35
     })
       .position(
         mailPodX - routeUnitX * 0.22,
-        PLAY_PLANE_Y + 0.34,
+        PLAY_PLANE_Y - 10,
         mailPodZ - routeUnitZ * 0.22
       )
       .rotate(0, reviewMailPodYaw, 0)
@@ -641,21 +617,16 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
 
 const terminalRunwayPanels = Array.from({ length: 7 }, (_, index) => {
   const progress = index / 6;
-  const [x, z] = corridorPoint(0.69 + progress * 0.27);
+  const [x, z] = corridorPoint(0.18 + progress * 0.72);
   return primitives.box({
     name: `Gale Terminal illuminated runway panel ${index}`,
-    size: [0.25, 0.028, 0.12],
+    size: [0.22, 0.022, 0.1],
     material: index % 2 === 0 ? terminalSignal : terminalHazard
   })
     .position(x, PLAY_PLANE_Y - 0.015, z)
     .rotate(0, approachYaw, 0);
 });
 sceneBuilder = sceneBuilder.addMany([
-  ...createRustGaleFreightway({
-    origin: [rustExchange.x, rustExchange.z],
-    destination: [galeTerminal.x, galeTerminal.z],
-    playPlaneY: PLAY_PLANE_Y
-  }),
   ...terminalRunwayPanels
 ]);
 
@@ -668,18 +639,16 @@ sceneBuilder = sceneBuilder.add(
     scaleMode: "fit",
     targetMaxDimension: courierParcelMaxDimension
   })
-    .position(stations[0]!.x, PLAY_PLANE_Y + courierParcelLift * courierParcelScaleRatio, stations[0]!.z - 0.43 * courierParcelScaleRatio)
+    .position(stations[0]!.x, PLAY_PLANE_Y - 10, stations[0]!.z)
     .runtime(game.runtimeNode("mail-pod-textured-delivery-parcel", {
       tags: ["typed-asset", "courier-cargo", "renderer-owned", "non-colliding", "live-velocity-feedback"]
     }))
 );
 
-// Shoulder orbital cargo pods and orbital relays along the Rust -> Gale lane
+// Shoulder orbital cargo pods along the Rust -> Gale lane
 for (const [progress, lateral, yawOffset] of [
-  [0.22, 1.08, 0.14],
-  [0.34, -1.18, -0.12],
-  [0.52, -1.12, 0.08],
-  [0.64, 1.2, 0.1]
+  [0.24, -1.08, -0.12],
+  [0.62, 1.05, 0.1]
 ] as const) {
   const [cargoX, cargoZ] = corridorPoint(progress, lateral);
   sceneBuilder = sceneBuilder.add(
@@ -689,7 +658,7 @@ for (const [progress, lateral, yawOffset] of [
       scaleMode: "fit",
       targetMaxDimension: 0.72
     })
-      .position(cargoX, PLAY_PLANE_Y + 0.19, cargoZ)
+      .position(cargoX, PLAY_PLANE_Y + 0.08, cargoZ)
       .rotate(0, approachYaw + yawOffset, 0)
       .runtime(game.runtimeNode(`gravity-post-shoulder-cargo-${progress}`, {
         tags: ["typed-asset", "freight-cargo", "renderer-owned", "non-colliding"]
@@ -705,7 +674,7 @@ sceneBuilder = sceneBuilder
       name: "mail-pod",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 1.35
+      targetMaxDimension: 1.12
     })
       .position(stations[0]!.x, PLAY_PLANE_Y, stations[0]!.z)
       .runtime(game.runtimeNode("mail-pod"))
@@ -717,7 +686,7 @@ sceneBuilder = sceneBuilder
       scaleMode: "fit",
       targetMaxDimension: courierOperatorTargetHeight
     })
-      .position(stations[0]!.x, PLAY_PLANE_Y + courierOperatorSeatHeight, stations[0]!.z + courierOperatorSeatOffset)
+      .position(stations[0]!.x, PLAY_PLANE_Y - 10, stations[0]!.z)
       .runtime(game.runtimeNode("mail-pod-courier-operator", {
         tags: ["typed-asset", "courier-operator", "renderer-owned", "non-colliding", "static-character"]
       }))
@@ -731,7 +700,7 @@ sceneBuilder = sceneBuilder
     })
       .position(
         stations[0]!.x,
-        PLAY_PLANE_Y + courierHandoffParcelHeight,
+        PLAY_PLANE_Y - 10,
         stations[0]!.z
       )
       .runtime(game.runtimeNode("mail-pod-courier-handoff-parcel", {
@@ -1510,30 +1479,30 @@ function syncPodVisual(): void {
   operatorNode
     ?.setPosition(
       x + dirX * courierOperatorSeatOffset,
-      PLAY_PLANE_Y + courierOperatorSeatHeight,
+      PLAY_PLANE_Y - 10,
       z + dirZ * courierOperatorSeatOffset
     )
     .setRotation(presentationPitch, podYaw, presentationBank)
-    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+    .setVisible(false);
   const operatorX = x + dirX * courierOperatorSeatOffset;
   const operatorZ = z + dirZ * courierOperatorSeatOffset;
   handoffParcelNode
     ?.setPosition(
       operatorX + dirX * courierHandoffParcelForwardOffset + perpX * courierHandoffParcelLateralOffset,
-      PLAY_PLANE_Y + courierHandoffParcelHeight,
+      PLAY_PLANE_Y - 10,
       operatorZ + dirZ * courierHandoffParcelForwardOffset + perpZ * courierHandoffParcelLateralOffset
     )
     .setRotation(presentationPitch, podYaw, presentationBank)
-    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+    .setVisible(false);
   const parcelBackOffset = 0.43 * courierParcelScaleRatio;
   parcelNode
     ?.setPosition(
       x - dirX * parcelBackOffset,
-      PLAY_PLANE_Y + courierParcelLift * courierParcelScaleRatio,
+      PLAY_PLANE_Y - 10,
       z - dirZ * parcelBackOffset
     )
     .setRotation(presentationPitch, podYaw, presentationBank)
-    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+    .setVisible(false);
   shadowNode
     ?.setPosition(x, PLAY_PLANE_Y + 0.02, z)
     .setRotation(0, podYaw, 0)
@@ -1552,40 +1521,38 @@ function syncPodVisual(): void {
     app.nodes.get(`mail-pod-livery-${side}`)
       ?.setPosition(
         x + perpX * side * 0.49 * podFittingScale,
-        PLAY_PLANE_Y + 0.38 * podFittingScale,
+        PLAY_PLANE_Y - 10,
         z + perpZ * side * 0.49 * podFittingScale
       )
       .setRotation(presentationPitch, podYaw, presentationBank)
-      .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+      .setVisible(false);
   }
   rearRouteSignalNode
-    ?.setPosition(x - dirX * 0.62 * podFittingScale, PLAY_PLANE_Y + 0.3 * podFittingScale, z - dirZ * 0.62 * podFittingScale)
+    ?.setPosition(x - dirX * 0.62 * podFittingScale, PLAY_PLANE_Y - 10, z - dirZ * 0.62 * podFittingScale)
     .setRotation(presentationPitch, podYaw, presentationBank)
-    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+    .setVisible(false);
   roofPostalLightBarNode
-    ?.setPosition(x + dirX * 0.05 * podFittingScale, PLAY_PLANE_Y + 0.82 * podFittingScale, z + dirZ * 0.05 * podFittingScale)
+    ?.setPosition(x + dirX * 0.05 * podFittingScale, PLAY_PLANE_Y - 10, z + dirZ * 0.05 * podFittingScale)
     .setRotation(presentationPitch, podYaw, presentationBank)
-    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+    .setVisible(false);
   postalBeaconRingNode
-    ?.setPosition(x + dirX * 0.04 * podFittingScale, PLAY_PLANE_Y + 0.78 * podFittingScale, z + dirZ * 0.04 * podFittingScale)
+    ?.setPosition(x + dirX * 0.04 * podFittingScale, PLAY_PLANE_Y - 10, z + dirZ * 0.04 * podFittingScale)
     .setRotation(1.5708, 0, 0)
     .setScale([0.14 * podFittingScale, 0.14 * podFittingScale, 0.018 * podFittingScale])
-    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
-  const restraintVisible = !compositionSubjectSuppressed && pod.state !== "lost";
+    .setVisible(false);
   restraintCyanNode
-    ?.setPosition(x + perpX * -0.24 * podFittingScale, PLAY_PLANE_Y + 0.64 * podFittingScale, z + perpZ * -0.24 * podFittingScale)
+    ?.setPosition(x + perpX * -0.24 * podFittingScale, PLAY_PLANE_Y - 10, z + perpZ * -0.24 * podFittingScale)
     .setRotation(presentationPitch, podYaw, presentationBank)
-    .setVisible(restraintVisible);
+    .setVisible(false);
   restraintAmberNode
-    ?.setPosition(x + perpX * 0.24 * podFittingScale, PLAY_PLANE_Y + 0.64 * podFittingScale, z + perpZ * 0.24 * podFittingScale)
+    ?.setPosition(x + perpX * 0.24 * podFittingScale, PLAY_PLANE_Y - 10, z + perpZ * 0.24 * podFittingScale)
     .setRotation(presentationPitch, podYaw, presentationBank)
-    .setVisible(restraintVisible);
-  const scanVisible = !compositionSubjectSuppressed && pod.state !== "lost";
+    .setVisible(false);
   const scanBreathe = 1 + Math.sin(frame * 0.22) * 0.08;
   deliveryScanRingNode
-    ?.setPosition(x, PLAY_PLANE_Y + 0.72, z)
+    ?.setPosition(x, PLAY_PLANE_Y - 10, z)
     .setScale([0.34 * podFittingScale * scanBreathe, 0.34 * podFittingScale * scanBreathe, 0.012 * podFittingScale])
-    .setVisible(scanVisible);
+    .setVisible(false);
   for (let index = 0; index < courierDriveOffsets.length; index += 1) {
     const node = app.nodes.get(`mail-pod-drive-contact-${index + 1}`);
     const [side, longitudinal] = courierDriveOffsets[index]!;
@@ -1594,21 +1561,21 @@ function syncPodVisual(): void {
     node
       .setPosition(
         x + (perpX * side * 0.44 + dirX * longitudinal) * podFittingScale,
-        PLAY_PLANE_Y + 0.155 * podFittingScale,
+        PLAY_PLANE_Y - 10,
         z + (perpZ * side * 0.44 + dirZ * longitudinal) * podFittingScale
       )
       .setRotation(presentationPitch, podYaw, presentationBank)
       .setScale([0.12 * podFittingScale * contactPulse, 0.045 * podFittingScale * contactCompression, 0.16 * podFittingScale * contactPulse])
-      .setVisible(visibleMotes || !compositionSubjectSuppressed);
+      .setVisible(false);
     app.nodes.get(`mail-pod-drive-contact-ring-${index + 1}`)
       ?.setPosition(
         x + (perpX * side * 0.44 + dirX * longitudinal) * podFittingScale,
-        PLAY_PLANE_Y + 0.12 * podFittingScale,
+        PLAY_PLANE_Y - 10,
         z + (perpZ * side * 0.44 + dirZ * longitudinal) * podFittingScale
       )
       .setRotation(1.5708, 0, 0)
       .setScale([0.16 * podFittingScale * contactPulse, 0.16 * podFittingScale * contactPulse * (1 + (1 - contactCompression) * 0.7), 0.014 * podFittingScale])
-      .setVisible(visibleMotes || !compositionSubjectSuppressed);
+      .setVisible(false);
   }
   for (let index = 0; index < TRAIL_STREAK_COUNT; index += 1) {
     const mote = app.nodes.get("mail-pod-trail-" + index);
@@ -1674,11 +1641,11 @@ function syncPodVisual(): void {
   shuttleParcelNode
     ?.setPosition(
       shuttleX - routeUnitX * 0.22,
-      PLAY_PLANE_Y + 0.34,
+      PLAY_PLANE_Y - 10,
       shuttleZ - routeUnitZ * 0.22
     )
     .setRotation(0, reviewMailPodYaw, 0)
-    .setVisible(!compositionSubjectSuppressed);
+    .setVisible(false);
 }
 
 function syncStationPulses(): void {

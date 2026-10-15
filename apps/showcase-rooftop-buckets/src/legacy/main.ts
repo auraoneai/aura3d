@@ -725,7 +725,7 @@ function buildScene() {
         scale: [1.38, 1.38, 1.38],
         visible: true
       })
-        .position(-1.35, 0.02, 2.15)
+        .position(-1.35, 1.05, 2.15)
         .rotate(0, 0.32, 0)
         .runtime(game.runtimeNode("shooter-meshy-candidate", { tags: ["candidate-asset", "meshy-decimated"] })),
       primitives.sphere({ name: "shooter contact shadow", material: contactShadowMaterial })
