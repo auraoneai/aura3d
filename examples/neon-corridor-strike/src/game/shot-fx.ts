@@ -106,35 +106,22 @@ export function syncShotFx(
   const boltAt = lerp(pose.barrel, pose.end, Math.min(0.88, 0.48 + travel * 0.4));
   bolt?.setPosition(boltAt[0], boltAt[1], boltAt[2]);
   bolt?.setRotation(pose.pitch, pose.yaw, 0);
-  // The blue-white bolt carries the player-action read through the center of
-  // the lane, while the visible target remains the warmer, larger Warden. A
-  // shorter, thicker capsule keeps the shot legible as a discrete round at
-  // gameplay scale rather than a white beam pasted across the corridor.
-  const boltRadius = Math.max(0.024, 0.054 * fade);
-  bolt?.setScale([boltRadius, boltRadius, boltRadius * 2.8]);
+  const postFlightDecay = travel < 1 ? 1 : Math.max(0.18, 1 - (elapsed - BOLT_TRAVEL_SECONDS) * 1.8);
+  const boltRadius = Math.max(0.008, 0.022 * fade * postFlightDecay);
+  bolt?.setScale([boltRadius, boltRadius, boltRadius * 2.2]);
 
   const tracer = handle(nodes, "muzzle-2");
   const tracerAt = lerp(pose.barrel, pose.end, Math.min(0.46, 0.16 + travel * 0.28));
   tracer?.setPosition(tracerAt[0], tracerAt[1], tracerAt[2]);
   tracer?.setRotation(pose.pitch, pose.yaw, 0);
-  // This is a compact second pulse, not a stretched beam. Together with the
-  // muzzle core, lead bolt, and endpoint ring it makes one readable causal
-  // chain while keeping the target and corridor visible between the pulses.
-  tracer?.setScale([0.034 * fade, 0.034 * fade, 0.24 * fade]);
+  const tracerScale = Math.max(0.006, 0.016 * fade * postFlightDecay);
+  tracer?.setScale([tracerScale, tracerScale, 0.11 * fade * postFlightDecay]);
 
   const impact = handle(nodes, "shot-impact");
-  // Hitscan resolves immediately, so the endpoint fracture belongs on screen
-  // immediately too; the travelling bolt is presentation, not hit authority.
-  // Torus normal is +Y, hence the quarter-turn before yaw/pitch aligns its open
-  // face with the firing ray instead of showing the player an edge-on sliver.
   impact?.setPosition(pose.end[0], pose.end[1], pose.end[2]);
-  impact?.setRotation(pose.pitch + Math.PI / 2, pose.yaw, 0);
-  // Pulse the endpoint ring around the *actual* hitscan point. The warm pulse
-  // is deliberately larger at the instant of contact, then settles into a
-  // small ember, so a reviewer can read muzzle → projectile → target as one
-  // causal chain without adding another fake hit node.
-  const impactPulse = 0.29 + Math.sin(Math.min(elapsed, 0.72) * 18) * 0.055;
-  impact?.setScale(Math.max(0.18, impactPulse * Math.max(fade, 0.8)));
+  impact?.setRotation(pose.pitch, pose.yaw, 0);
+  const impactPulse = (0.075 + Math.sin(Math.min(elapsed, 0.72) * 18) * 0.015) * Math.max(fade * postFlightDecay, 0.35);
+  impact?.setScale([impactPulse, impactPulse, 0.008]);
 }
 
 /** Diagnostic counters for the evidence payload (why did FX hide, when). */

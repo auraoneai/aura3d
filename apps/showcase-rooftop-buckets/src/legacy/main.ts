@@ -205,29 +205,6 @@ const COURT_REVIEW_HIDDEN_NODES: readonly string[] = [
   "rear sponsor bar 0",
   "rear sponsor bar 2.8",
   "rear sponsor bar 5.6",
-  "rear bleacher tier 1",
-  "rear bleacher tier 2",
-  "rear bleacher tier 3",
-  "rear bleacher tier 4",
-  "rear guard post 1",
-  "rear guard post 1 right",
-  "rear guard post 2",
-  "rear guard post 2 right",
-  "rear guard post 3",
-  "rear guard post 3 right",
-  "rear guard rail 1",
-  "rear guard rail 2",
-  "rear guard rail 3",
-  "side bleacher 1 1",
-  "side bleacher 1 2",
-  "side bleacher 1 3",
-  "side bleacher -1 1",
-  "side bleacher -1 2",
-  "side bleacher -1 3",
-  "side handrail 1",
-  "side handrail -1",
-  "side rail post 1",
-  "side rail post -1",
   "side seat trim 1 1",
   "side seat trim 1 2",
   "side seat trim 1 3",
@@ -238,6 +215,7 @@ const COURT_REVIEW_HIDDEN_NODES: readonly string[] = [
   ...COURT_CROWD_TORSO_NODES,
   ...COURT_CROWD_HEAD_NODES
 ];
+const DEFENDER_MESHY_GROUND_OFFSET = 0.95 * PRESENTATION_ATHLETE_SCALE;
 
 // ---------------- Game State ----------------
 const audio = new BucketsAudioController();
@@ -1450,11 +1428,11 @@ function syncTransforms(): void {
         ]);
     }
   } else if (warmupPartnerVisible) {
-    // The inactive partner is placed in the paint/high-post in a
-    // grounded, defensive-ready stance facing the active shooter.
-    const warmupX = shooterX * 0.48 + (shooterX >= 0 ? -0.58 : 0.58);
-    const warmupY = ballState.inFlight ? Math.min(0.38, Math.max(0, (ballState.y - 1.8) * 0.2)) : 0;
-    const warmupZ = shooterZ * 0.52 + 0.25;
+    // The inactive partner stands at the left elbow / wing as the rebound & pass feeder,
+    // keeping the central paint and shot arc completely unobstructed.
+    const warmupX = shooterX < -1.0 ? 1.85 : -1.95;
+    const warmupY = ballState.inFlight ? Math.min(0.18, Math.max(0, (ballState.y - 1.8) * 0.08)) : 0;
+    const warmupZ = 0.65;
     const warmupYaw = Math.atan2(shooterX - warmupX, shooterZ - warmupZ);
     const warmupSway = Math.sin(elapsedPlayTime * 1.4 + 0.8) * 0.022;
     defenderPresentationNode

@@ -1786,21 +1786,20 @@ function buildTurboRoadDetailNodes() {
     const delta = 1 / segmentCount;
     const previous = gamePointToScene(sampleCentreline((progress - delta + 1) % 1));
     const next = gamePointToScene(sampleCentreline((progress + delta) % 1));
-    const sample = sampleCentreline(progress);
-    const tangent = [next[0] - previous[0], next[1] - previous[1], next[2] - previous[2]] as const;
-    const leftX = Math.sin(sample.heading);
-    const leftZ = -Math.cos(sample.heading);
-    // Width vector and tangent cross product yields the upward-facing surface
-    // normal for the transformed route. Flip defensively if a future binding
-    // reverses handedness.
+    const tanX = next[0] - previous[0];
+    const tanY = next[1] - previous[1];
+    const tanZ = next[2] - previous[2];
+    const horizLen = Math.max(1e-6, Math.hypot(tanX, tanZ));
+    const leftX = tanZ / horizLen;
+    const leftZ = -tanX / horizLen;
     let normal: [number, number, number] = [
-      leftZ * tangent[1],
-      leftZ * tangent[0] - leftX * tangent[2],
-      -leftX * tangent[1]
+      leftZ * tanY,
+      horizLen,
+      -leftX * tanY
     ];
     const length = Math.hypot(normal[0], normal[1], normal[2]);
     if (length > 1e-6) normal = [normal[0] / length, normal[1] / length, normal[2] / length];
-    if (normal[1] < 0) normal = [-normal[0], -normal[1], -normal[2]];
+    else normal = [0, 1, 0];
     return normal;
   };
 
@@ -2000,9 +1999,9 @@ function buildTurboRoadDetailNodes() {
       name: "route-bound continuous asphalt shoulders",
       material: material.pbr({
         name: "layered asphalt shoulder",
-        color: visualCaptureCamera ? TURBO_REVIEW_GRADE.shoulder : "#262d33",
-        roughness: 0.9,
-        metallic: 0.01,
+        color: visualCaptureCamera ? TURBO_REVIEW_GRADE.shoulder : "#3f4752",
+        roughness: 0.78,
+        metallic: 0.04,
         clearcoat: 0,
         normal: material.proceduralTexture("plastic-micro-scratch", { scale: 30, strength: 0.18, contrast: 0.54 }),
         roughnessMap: material.proceduralTexture("rubber-roughness", { scale: 16, strength: 0.34, contrast: 0.62 })
@@ -2036,13 +2035,13 @@ function buildTurboRoadDetailNodes() {
       name: "route-bound continuous asphalt ribbon",
       material: material.pbr({
         name: "layered asphalt",
-        color: visualCaptureCamera ? TURBO_REVIEW_GRADE.asphalt : "#1e2329",
-        roughness: 0.9,
-        metallic: 0.01,
-        clearcoat: 0,
+        color: visualCaptureCamera ? TURBO_REVIEW_GRADE.asphalt : "#343c47",
+        roughness: 0.62,
+        metallic: 0.06,
+        clearcoat: 0.08,
         normal: material.proceduralTexture("plastic-micro-scratch", { scale: 34, strength: 0.24, contrast: 0.58 }),
         roughnessMap: material.proceduralTexture("rubber-roughness", { scale: 18, strength: 0.46, contrast: 0.64 }),
-        envMapIntensity: 0.18
+        envMapIntensity: 0.58
       }),
       castShadow: false,
       receiveShadow: true

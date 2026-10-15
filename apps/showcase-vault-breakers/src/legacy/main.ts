@@ -130,21 +130,21 @@ const touchControlEvents: string[] = [];
 // these route-owned materials are limited to state accents and gameplay cues.
 const liveBallMaterial = material.metal({
   name: "neon chrome ball state accent",
-  color: "#dcecf5",
-  emissive: "#39dfff",
-  emissiveIntensity: 0.15,
-  roughness: 0.12,
+  color: "#f8fafc",
+  emissive: "#7dd3fc",
+  emissiveIntensity: 0.24,
+  roughness: 0.06,
   metallic: 0.96,
-  clearcoat: 0.78,
-  envMapIntensity: 1.6
+  clearcoat: 0.95,
+  envMapIntensity: 2.2
 });
 const liveTargetArmedMaterial = material.clearcoat({
   name: "target armed amber state accent",
-  color: "#f2a83b",
-  emissive: "#ff7a22",
-  emissiveIntensity: 0.28,
-  roughness: 0.24,
-  clearcoat: 0.58
+  color: "#f59e0b",
+  emissive: "#ff8c1a",
+  emissiveIntensity: 0.42,
+  roughness: 0.2,
+  clearcoat: 0.65
 });
 const liveTargetHitMaterial = material.neon({
   name: "target hit cyan state accent",
@@ -154,7 +154,7 @@ const liveTargetHitMaterial = material.neon({
   roughness: 0.2,
   metallic: 0.22
 });
-const bankLampOffMaterial = material.emissive({ name: "bank lamp off", color: "#1e1824", emissive: "#805030", emissiveIntensity: 0.1 });
+const bankLampOffMaterial = material.emissive({ name: "bank lamp off", color: "#2d2238", emissive: "#f59e0b", emissiveIntensity: 0.22 });
 const bankLampOnMaterial = material.neon({ name: "bank lamp on", color: "#087d77", emissive: "#28f5cc", emissiveIntensity: 0.78, roughness: 0.18 });
 const impactAmberMaterial = material.neon({ name: "impact amber ring", color: "#653415", emissive: "#ff9f43", emissiveIntensity: 1.1, roughness: 0.13 });
 const impactCyanMaterial = material.neon({ name: "impact cyan ring", color: "#0e5661", emissive: "#55f4ff", emissiveIntensity: 1.1, roughness: 0.13 });
@@ -211,39 +211,77 @@ function syncImpact(dt: number): void {
 // ---------------------------------------------------------------- scene ------
 function primitiveNode(visual: PropVisual): AuraSceneNode {
   const p = visual.primitive!;
+  const isHiddenProxy =
+    visual.name === "felt" ||
+    visual.name.startsWith("bumper-") ||
+    visual.name.startsWith("wall-");
   const visualY = visual.name === "felt" ? visual.position[1] : visual.position[1] + 0.28;
-  const mat = p.emissive
-    ? material.emissive({ name: visual.name + " material", color: p.color, emissive: p.emissive, emissiveIntensity: 0.05, opacity: 0 })
-    : material.pbr({ name: visual.name + " material", color: p.color, roughness: 0.8, metallic: 0.1, opacity: 0 });
+  const isSling = visual.name.includes("sling");
+  const isLane = visual.name.includes("plunger") || visual.name.includes("guide") || visual.name.includes("lane");
+  const mat = isHiddenProxy
+    ? material.pbr({ name: visual.name + " hidden", color: p.color, roughness: 0.8, metallic: 0.1, opacity: 0 })
+    : isSling
+      ? material.emissive({
+          name: visual.name + " sling neon",
+          color: "#f43f5e",
+          emissive: "#ec4899",
+          emissiveIntensity: 0.42
+        })
+      : isLane
+        ? material.pbr({
+            name: visual.name + " brushed steel rail",
+            color: "#94a3b8",
+            roughness: 0.24,
+            metallic: 0.86
+          })
+        : p.emissive
+          ? material.emissive({
+              name: visual.name + " material",
+              color: p.color,
+              emissive: p.emissive,
+              emissiveIntensity: 0.28
+            })
+          : material.pbr({
+              name: visual.name + " material",
+              color: "#64748b",
+              roughness: 0.3,
+              metallic: 0.78
+            });
+  const scaleVec: [number, number, number] = isHiddenProxy
+    ? [0.001, 0.001, 0.001]
+    : [p.size[0], Math.max(0.12, p.size[1] * 0.65), p.size[2]];
   if (p.shape === "sphere") {
-    return primitives.sphere({ name: visual.name, material: mat }).position(visual.position[0], visualY, visual.position[2]).scale([0.001, 0.001, 0.001]).toJSON();
+    return primitives.sphere({ name: visual.name, material: mat })
+      .position(visual.position[0], visualY, visual.position[2])
+      .scale(scaleVec)
+      .toJSON();
   }
   if (p.shape === "cylinder") {
     return primitives.cylinder({ name: visual.name, material: mat })
       .position(visual.position[0], visualY, visual.position[2])
-      .scale([0.001, 0.001, 0.001])
+      .scale(scaleVec)
       .toJSON();
   }
   if (p.shape === "torus") {
     return primitives.torus({ name: visual.name, material: mat })
       .position(visual.position[0], visualY, visual.position[2])
       .rotate(visual.rotation.x, visual.rotation.y, visual.rotation.z)
-      .scale([0.001, 0.001, 0.001])
+      .scale(scaleVec)
       .toJSON();
   }
   return primitives.box({ name: visual.name, material: mat })
     .position(visual.position[0], visualY, visual.position[2])
     .rotate(visual.rotation.x, visual.rotation.y, visual.rotation.z)
-    .scale([0.001, 0.001, 0.001])
+    .scale(scaleVec)
     .toJSON();
 }
 
 /** Static physics landmarks used as origins for the renderer-owned impact cue. */
 const BUMPER_IMPACT_POSITIONS = [[-0.9, -1.7], [0.9, -1.7], [0, -0.7]] as const;
 const POP_BUMPER_TURRET_SPECS = [
-  { id: "left", x: -0.9, z: -1.7 },
-  { id: "right", x: 0.9, z: -1.7 },
-  { id: "center", x: 0, z: -0.7 }
+  { id: "left", x: -0.9, z: -1.65 },
+  { id: "right", x: 0.9, z: -1.65 },
+  { id: "center", x: 0, z: -0.68 }
 ] as const;
 const TARGET_BANK_POSITIONS: Record<string, readonly (readonly [number, number])[]> = {
   "bank-left-top": [[-2.32, -2.4], [-2.32, -2.8], [-2.32, -3.2]],
@@ -271,7 +309,7 @@ function visualNodes(): AuraSceneNode[] {
             name: "vault-door-visual",
             role: "setDressing",
             scaleMode: "fit",
-            targetMaxDimension: 0.95
+            targetMaxDimension: 0.92
           })
             .position(0, 0.62, -3.12)
             .runtime(game.runtimeNode("vault-door-visual", { tags: ["vault-door"] }))
@@ -280,33 +318,31 @@ function visualNodes(): AuraSceneNode[] {
         continue;
       }
       const isFlipper = v.typedAsset === "vaultBreakersFlipper";
+      const isBall = v.typedAsset === "vaultBreakersBall";
       const modelAsset = isFlipper ? assets.vaultBreakersFlipperReal : assets[v.typedAsset!];
       nodes.push(
         model(modelAsset, {
           name: v.name,
-          role: v.typedAsset === "vaultBreakersBall" ? "primaryCharacter" : "setDressing",
+          role: isBall ? "primaryCharacter" : "setDressing",
           scaleMode: "fit",
-          targetMaxDimension: isFlipper ? 1.05 : (v.targetMaxDimension ?? 1)
+          targetMaxDimension: isFlipper ? 0.86 : isBall ? 0.34 : (v.targetMaxDimension ?? 1)
         })
-          .position(v.position[0], v.position[1] + 0.28, v.position[2])
+          .position(v.position[0], v.position[1] + 0.30, v.position[2])
           .rotate(v.rotation.x, v.rotation.y, v.rotation.z)
           .runtime(game.runtimeNode(v.name, { tags: ["typed-asset", "physics-synced"] }))
           .toJSON()
       );
     } else if (v.name.startsWith("target:")) {
+      const sz = v.primitive!.size;
       nodes.push(
         primitives.box({
           name: v.name,
-          material: material.emissive({
-            name: v.name + " material",
-            color: v.primitive!.color,
-            emissive: v.primitive!.emissive,
-            emissiveIntensity: 0.05,
-            opacity: 0
-          })
+          material: liveTargetArmedMaterial,
+          castShadow: true,
+          receiveShadow: true
         })
-          .position(v.position[0], v.position[1] + 0.28, v.position[2])
-          .scale([0.001, 0.001, 0.001])
+          .position(v.position[0], v.position[1] + 0.34, v.position[2])
+          .scale([Math.max(0.15, sz[0]), 0.24, Math.max(0.15, sz[2])])
           .runtime(game.runtimeNode(v.name, { tags: ["standup-target"] }))
           .toJSON()
       );
@@ -326,20 +362,179 @@ function visualNodes(): AuraSceneNode[] {
       .runtime(game.runtimeNode("typed-vault-breakers-mechanisms", { tags: ["typed-asset", "mission-state"] }))
       .toJSON()
   );
-  for (const bumper of POP_BUMPER_TURRET_SPECS) {
+
+  // Pop bumper turrets with glowing neon base skirts and chrome collars
+  const bumperRingCyan = material.emissive({
+    name: "bumper skirt ring cyan",
+    color: "#38bdf8",
+    emissive: "#0ea5e9",
+    emissiveIntensity: 0.62
+  });
+  const bumperRingAmber = material.emissive({
+    name: "bumper skirt ring amber",
+    color: "#fbbf24",
+    emissive: "#f59e0b",
+    emissiveIntensity: 0.62
+  });
+  const brushedSteelMat = material.pbr({
+    name: "pinball brushed steel",
+    color: "#cbd5e1",
+    roughness: 0.22,
+    metallic: 0.88
+  });
+  const goldTrimMat = material.pbr({
+    name: "pinball brass trim",
+    color: "#f59e0b",
+    roughness: 0.26,
+    metallic: 0.82
+  });
+  const neonPinkRailMat = material.emissive({
+    name: "slingshot neon rubber",
+    color: "#f472b6",
+    emissive: "#ec4899",
+    emissiveIntensity: 0.52
+  });
+
+  for (const [idx, bumper] of POP_BUMPER_TURRET_SPECS.entries()) {
     nodes.push(
       model(assets.vaultPopBumperCapMeshy, {
         name: `vault-pop-bumper-3d-${bumper.id}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.85
+        targetMaxDimension: 0.74
       })
-        .scale(0.85)
+        .scale(0.74)
         .position(bumper.x, 0.36, bumper.z)
         .runtime(game.runtimeNode(`vault-pop-bumper-3d-${bumper.id}`, { tags: ["typed-asset", "pop-bumper-turret"] }))
+        .toJSON(),
+      primitives.torus({
+        name: `vault-bumper-skirt-ring-${bumper.id}`,
+        material: idx === 2 ? bumperRingAmber : bumperRingCyan
+      })
+        .position(bumper.x, 0.31, bumper.z)
+        .rotate(Math.PI / 2, 0, 0)
+        .scale([0.40, 0.40, 0.035])
+        .toJSON(),
+      primitives.cylinder({
+        name: `vault-bumper-collar-${bumper.id}`,
+        material: brushedSteelMat
+      })
+        .position(bumper.x, 0.29, bumper.z)
+        .scale([0.34, 0.04, 0.34])
         .toJSON()
     );
   }
+
+  // Centerpiece Vault Core in the mid-playfield + captive chrome pinballs +
+  // 3D slingshot kickers, rollover lane dividers, inlane guides, and plunger rod
+  nodes.push(
+    model(assets.vaultCenterCoreTargetMeshy, {
+      name: "vault-centerpiece-core-3d",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.76
+    })
+      .position(0, 0.36, 0.32)
+      .toJSON(),
+    primitives.torus({
+      name: "vault-centerpiece-core-ring",
+      material: bumperRingAmber
+    })
+      .position(0, 0.31, 0.32)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.52, 0.52, 0.036])
+      .toJSON(),
+    primitives.torus({
+      name: "vault-centerpiece-outer-ring",
+      material: bumperRingCyan
+    })
+      .position(0, 0.30, 0.32)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.68, 0.68, 0.022])
+      .toJSON(),
+    // Gleaming mirror-chrome captive ball in front of the center core & shooter-lane ball
+    primitives.sphere({
+      name: "vault-captive-chrome-ball",
+      material: liveBallMaterial,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(0, 0.44, 1.05)
+      .scale([0.16, 0.16, 0.16])
+      .toJSON(),
+    primitives.sphere({
+      name: "vault-shooter-lane-chrome-ball",
+      material: liveBallMaterial,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(2.42, 0.44, 2.75)
+      .scale([0.16, 0.16, 0.16])
+      .toJSON(),
+    // Upper rollover lane dividers at top of playfield
+    primitives.box({ name: "rollover-divider-left", material: goldTrimMat })
+      .position(-0.75, 0.38, -2.68)
+      .scale([0.07, 0.18, 0.46])
+      .toJSON(),
+    primitives.box({ name: "rollover-divider-mid-left", material: goldTrimMat })
+      .position(-0.25, 0.38, -2.68)
+      .scale([0.07, 0.18, 0.46])
+      .toJSON(),
+    primitives.box({ name: "rollover-divider-mid-right", material: goldTrimMat })
+      .position(0.25, 0.38, -2.68)
+      .scale([0.07, 0.18, 0.46])
+      .toJSON(),
+    primitives.box({ name: "rollover-divider-right", material: goldTrimMat })
+      .position(0.75, 0.38, -2.68)
+      .scale([0.07, 0.18, 0.46])
+      .toJSON(),
+    // Left and right 3D slingshot kicker housings above flippers
+    primitives.box({ name: "slingshot-housing-left", material: brushedSteelMat })
+      .position(-1.32, 0.37, 1.92)
+      .rotate(0, -0.46, 0)
+      .scale([0.16, 0.18, 0.86])
+      .toJSON(),
+    primitives.box({ name: "slingshot-rubber-left", material: neonPinkRailMat })
+      .position(-1.22, 0.40, 1.92)
+      .rotate(0, -0.46, 0)
+      .scale([0.06, 0.12, 0.88])
+      .toJSON(),
+    primitives.box({ name: "slingshot-housing-right", material: brushedSteelMat })
+      .position(1.12, 0.37, 1.92)
+      .rotate(0, 0.46, 0)
+      .scale([0.16, 0.18, 0.86])
+      .toJSON(),
+    primitives.box({ name: "slingshot-rubber-right", material: neonPinkRailMat })
+      .position(1.02, 0.40, 1.92)
+      .rotate(0, 0.46, 0)
+      .scale([0.06, 0.12, 0.88])
+      .toJSON(),
+    // Left and right inlane/outlane metallic guide rails
+    primitives.box({ name: "inlane-guide-left-rail", material: goldTrimMat })
+      .position(-1.86, 0.38, 2.08)
+      .rotate(0, -0.32, 0)
+      .scale([0.08, 0.20, 1.18])
+      .toJSON(),
+    primitives.box({ name: "inlane-guide-right-rail", material: goldTrimMat })
+      .position(1.66, 0.38, 2.08)
+      .rotate(0, 0.32, 0)
+      .scale([0.08, 0.20, 1.18])
+      .toJSON(),
+    // Plunger lane divider wall and spring-loaded chrome shooter rod
+    primitives.box({ name: "plunger-lane-divider-rail", material: brushedSteelMat })
+      .position(2.12, 0.40, 0.65)
+      .scale([0.09, 0.22, 5.2])
+      .toJSON(),
+    primitives.cylinder({ name: "plunger-shooter-rod", material: brushedSteelMat })
+      .position(2.42, 0.38, 3.25)
+      .scale([0.08, 0.42, 0.08])
+      .toJSON(),
+    primitives.sphere({ name: "plunger-shooter-knob", material: goldTrimMat })
+      .position(2.42, 0.38, 3.52)
+      .scale([0.14, 0.14, 0.14])
+      .toJSON()
+  );
+
   nodes.push(
     primitives.torus({ name: "vault live impact ring", material: impactAmberMaterial })
       .position(0, -5, 0)
@@ -359,16 +554,27 @@ function visualNodes(): AuraSceneNode[] {
   for (let index = 0; index < 5; index += 1) {
     nodes.push(
       primitives.box({ name: `bank-status-${index}`, material: bankLampOffMaterial })
-        .position(-1.4 + index * 0.7, -5, -2.72)
-        .scale([0.001, 0.001, 0.001])
+        .position(-1.12 + index * 0.56, 0.34, -2.18)
+        .scale([0.24, 0.04, 0.12])
         .runtime(game.runtimeNode(`bank-status-${index}`, { tags: ["mission-progress", "bank-lamp"] }))
         .toJSON()
     );
   }
   for (const node of createScoreboardNodes().nodes) {
     const scoreNode = { ...node } as Record<string, unknown>;
+    if (Array.isArray(scoreNode.position) && scoreNode.position.length === 3) {
+      const [px, py, pz] = scoreNode.position as [number, number, number];
+      scoreNode.position = [
+        Number((px * 0.56).toFixed(3)),
+        Number((1.18 + (py - 0.98) * 0.56).toFixed(3)),
+        Number((pz + 0.32).toFixed(3))
+      ];
+    }
+    if (typeof scoreNode.size === "number") {
+      scoreNode.size = Number((scoreNode.size * 0.64).toFixed(3));
+    }
     if (scoreNode.material && typeof scoreNode.material === "object") {
-      scoreNode.material = { ...(scoreNode.material as Record<string, unknown>), emissiveIntensity: 0.34 };
+      scoreNode.material = { ...(scoreNode.material as Record<string, unknown>), emissiveIntensity: 0.16 };
     }
     nodes.push(scoreNode as unknown as AuraSceneNode);
   }
@@ -381,14 +587,14 @@ function tuneVaultEnvironmentNodes(rawNodes: AuraSceneNode[]): AuraSceneNode[] {
     if (node.name === "typed-vault-breakers-cabinet") {
       node.hiddenNodeNames = ["neon"];
       node.materialOverrides = [
-        { match: "neonCyan", material: { emissiveIntensity: 0.26 } },
-        { match: "neonPink", material: { emissiveIntensity: 0.26 } }
+        { match: "neonCyan", material: { emissiveIntensity: 0.22 } },
+        { match: "neonPink", material: { emissiveIntensity: 0.22 } }
       ];
     }
     if (node.material && typeof node.material === "object") {
       const mat = { ...(node.material as Record<string, unknown>) };
       if (typeof mat.emissiveIntensity === "number") {
-        mat.emissiveIntensity = Number((mat.emissiveIntensity * 0.36).toFixed(3));
+        mat.emissiveIntensity = Number((mat.emissiveIntensity * 0.32).toFixed(3));
       }
       node.material = mat;
     }
@@ -401,45 +607,31 @@ function tuneVaultEnvironmentNodes(rawNodes: AuraSceneNode[]): AuraSceneNode[] {
 
 function buildScene(): ReturnType<typeof scene> {
   return scene()
-    .background("#030308")
+    .background("#060712")
     .addMany(tuneVaultEnvironmentNodes(createVaultBreakersEnvironment()))
     // Submit the playable mechanisms after the bounded cabinet shell so the
     // root safe renderer's stable draw order keeps them legible above it.
     .addMany(visualNodes())
     .addMany([
-      lights.directional({ name: "playfield warm key", position: [2.4, 6.8, 3.6], color: "#fff3df", intensity: 1.85 }),
-      lights.point({ name: "playfield mid fill", color: "#d8ecff", intensity: 1.65 }).position(0, 3.4, 0.4),
-      lights.point({ name: "bumper turret warm key", color: "#ffbd69", intensity: 2.4 }).position(0, 1.45, -1.25),
-      lights.point({ name: "bumper turret cyan rim", color: "#39f0ff", intensity: 2.1 }).position(0, 1.35, -1.85),
+      lights.ambient({ name: "pinball playfield ambient", color: "#4c5b78", intensity: 0.52 }),
+      lights.directional({ name: "playfield warm key", position: [2.4, 6.8, 3.6], color: "#fff3df", intensity: 2.15 }),
+      lights.point({ name: "playfield mid fill", color: "#e2f1ff", intensity: 2.45 }).position(0, 3.2, 0.4),
+      lights.point({ name: "playfield center core key", color: "#fbbf24", intensity: 2.35 }).position(0, 1.65, 0.55),
+      lights.point({ name: "bumper turret warm key", color: "#ffbd69", intensity: 2.5 }).position(0, 1.45, -1.25),
+      lights.point({ name: "bumper turret cyan rim", color: "#39f0ff", intensity: 2.2 }).position(0, 1.35, -1.85),
       lights.point({ name: "vault door hero spot", color: "#ffd88a", intensity: 2.3 }).position(0, 1.55, -2.85),
-      lights.point({ name: "flipper deck fill", color: "#79e8ff", intensity: 1.85 }).position(0, 1.4, 2.95),
-      effects.neonBloom({ intensity: reducedMotion ? 0.08 : 0.18, threshold: 0.82, radius: 0.36, maxIntensity: 0.52, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.ambientOcclusion({ name: "vault contact grounding", intensity: 0.3, radius: 0.62, density: 0.5, color: "#02020a" }),
+      lights.point({ name: "slingshot left key", color: "#f472b6", intensity: 1.95 }).position(-1.35, 1.35, 1.85),
+      lights.point({ name: "slingshot right key", color: "#38bdf8", intensity: 1.95 }).position(1.35, 1.35, 1.85),
+      lights.point({ name: "flipper deck fill", color: "#f8fafc", intensity: 2.25 }).position(0, 1.5, 2.85),
+      lights.point({ name: "plunger lane key", color: "#7dd3fc", intensity: 2.1 }).position(2.35, 1.45, 2.65),
+      effects.neonBloom({ intensity: reducedMotion ? 0.04 : 0.075, threshold: 0.88, radius: 0.28, maxIntensity: 0.36, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.ambientOcclusion({ name: "vault contact grounding", intensity: 0.28, radius: 0.62, density: 0.5, color: "#02020a" }),
       effects.contactOcclusion({ name: "mechanism contact", intensity: 0.36, radius: 0.52 }),
-      effects.fog({ name: "vault room depth haze", density: 0.018, color: "#190e2b", intensity: 0.24 }),
-      effects.colorGrade({ exposure: 1.0, contrast: 1.06, saturation: 1.05 }),
+      effects.fog({ name: "vault room depth haze", density: 0.012, color: "#140d24", intensity: 0.16 }),
+      effects.colorGrade({ exposure: 1.06, contrast: 1.08, saturation: 1.08 }),
       effects.antiAlias({ mode: "fxaa" })
     ])
     .camera(camera.perspective({
-      // Give the typed mechanism assembly a small safety margin on every edge
-      // of the review viewport.  The previous close pinball angle clipped the
-      // mission GLB at the upper and left canvas bounds even though the table
-      // itself remained playable.
-      // The explicit review lens presents the playable surface as the hero
-      // while retaining enough cabinet silhouette to read as a physical table.
-      //
-      // Normal play used to sit at [0, 3.8, 10.8] for a "roomier cabinet-and-controls
-      // composition", but at that distance and height the playfield occupied about a
-      // quarter of the canvas and the ball was an almost invisible grey dot. A pinball
-      // table lives or dies on tracking the ball, so normal play now borrows most of
-      // the review lens - closer and higher, still a little wider so the cabinet legs
-      // and the vault assembly stay in shot.
-      //
-      // A steeper/shorter lens was tried and rejected by inspection: raising the eye
-      // to 7.05 at 5.55 depth cropped both the flipper pair and the near drain apron,
-      // so the ball left frame exactly where a player most needs to track it. The
-      // framing below is the tightest lens that still keeps the whole playable surface
-      // - backbox to drain gap - inside the canvas.
       position: visualReviewCapture ? [0, 5.9, 5.15] : [0, 5.15, 7.35],
       target: visualReviewCapture ? [0, 0.08, -0.45] : [0, -0.05, -0.38],
       fov: visualReviewCapture ? 46 : 50
@@ -724,17 +916,19 @@ function syncVisuals(): void {
     if (!handle) continue;
     live.add(pose.name);
     const e = quatToEuler(pose.rotation);
+    handle.setVisible(true);
     handle.setPosition(pose.position[0], pose.position[1] + VISUAL_Y_OFFSET, pose.position[2])
       .setRotation(e.x, e.y, e.z);
   }
-  // A drained ball leaves the pose list, so its node kept the last pose it was
-  // given and a phantom ball stayed painted on the playfield until the next
-  // serve. Anything the solver no longer reports is parked far below the
-  // cabinet and hidden; live nodes are explicitly re-shown because a node that
-  // was hidden on a previous frame stays hidden until something says otherwise.
+  const phase = flow.snapshot().phase;
   for (const [name, handle] of dynamicHandles) {
     if (live.has(name)) continue;
-    if (name.startsWith("ball-")) handle.setVisible(false);
+    if (name === "ball-0" && (phase === "attract" || phase === "await-serve")) {
+      handle.setVisible(true);
+      handle.setPosition(2.38, 0.44, 2.75);
+    } else if (name.startsWith("ball-")) {
+      handle.setVisible(false);
+    }
   }
   const banksDown = flow.snapshot().banksDown;
   for (const [index, handle] of bankLampHandles) {

@@ -218,32 +218,75 @@ function cueReady(name: string, gapFrames: number): boolean {
   return true;
 }
 
+function normalizeModelAsset(raw: unknown): Parameters<typeof model>[0] {
+  const rec = (raw ?? {}) as Record<string, unknown>;
+  const b = rec.bounds;
+  const tupleBounds: readonly [number, number, number] = Array.isArray(b) && b.length === 3
+    ? [Number(b[0]) || 1, Number(b[1]) || 1, Number(b[2]) || 1]
+    : b && typeof b === "object" && Array.isArray((b as { size?: unknown }).size)
+      ? [
+          Number((b as { size: number[] }).size[0]) || 1,
+          Number((b as { size: number[] }).size[1]) || 1,
+          Number((b as { size: number[] }).size[2]) || 1
+        ]
+      : [1.8985, 0.6049, 1.6945];
+  const rawHash = typeof rec.hash === "string"
+    ? rec.hash
+    : `sha256-${String(rec.sha256 ?? "0")}`;
+  return {
+    ...rec,
+    type: "model",
+    format: "glb",
+    url: String(rec.url ?? ""),
+    hash: rawHash,
+    bounds: tupleBounds
+  } as unknown as Parameters<typeof model>[0];
+}
+
 // ---------------------------------------------------------------- scene -------
 function heroNodes(): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [];
   nodes.push(
-    model(assets.patrolAircraftMeshy, {
+    model(normalizeModelAsset((assets as Record<string, unknown>).patrolJetAircraftMeshy), {
       name: "patrol-plane",
       role: "primaryCharacter",
       scaleMode: "fit",
-      targetMaxDimension: visualReviewCapture ? 5.6 : 4.2
+      targetHeight: 1.25,
+      targetLength: 4.4,
+      targetMaxDimension: visualReviewCapture ? 4.4 : 4.0,
+      castShadow: true,
+      receiveShadow: true
     })
       .position(PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2])
       .rotate(0, PAD_HEADING_YAW, 0)
       .runtime({ id: "plane", tags: ["typed-asset", "hero"] })
       .toJSON()
   );
-  // The Meshy patrol aircraft is a complete silhouette (canopy, prop, gear,
-  // patrol livery), so the old primitive hardpoints are retired. Wingtip
-  // navigation lights stay: small emissive markers that bank with the live
-  // flight axes and read at chase distance.
+  // Twin afterburner exhaust glows and wingtip navigation lights that bank
+  // with the live FlightModel axes.
   nodes.push(
+    primitives.sphere({
+      name: "aircraft left afterburner glow",
+      material: material.emissive({ name: "jet afterburner cyan", color: "#bae6fd", emissive: "#38bdf8", emissiveIntensity: 2.2 })
+    })
+      .position(0, -70, 0)
+      .scale([0.16, 0.11, 0.24])
+      .runtime({ id: "plane-engine-left", tags: ["aircraft-identity", "renderer-owned"] })
+      .toJSON(),
+    primitives.sphere({
+      name: "aircraft right afterburner glow",
+      material: material.emissive({ name: "jet afterburner cyan right", color: "#bae6fd", emissive: "#38bdf8", emissiveIntensity: 2.2 })
+    })
+      .position(0, -70, 0)
+      .scale([0.16, 0.11, 0.24])
+      .runtime({ id: "plane-engine-right", tags: ["aircraft-identity", "renderer-owned"] })
+      .toJSON(),
     primitives.box({
       name: "aircraft left wingtip livery",
       material: material.emissive({ name: "aircraft coral livery", color: "#ff718b", emissive: "#ff3d70", emissiveIntensity: 1.35 })
     })
       .position(0, -70, 0)
-      .scale([0.34, 0.045, 0.16])
+      .scale([0.28, 0.04, 0.14])
       .runtime({ id: "plane-wingtip-left", tags: ["aircraft-identity", "renderer-owned"] })
       .toJSON(),
     primitives.box({
@@ -251,7 +294,7 @@ function heroNodes(): AuraSceneNode[] {
       material: material.emissive({ name: "aircraft cyan livery", color: "#78efff", emissive: "#16c9e6", emissiveIntensity: 1.45 })
     })
       .position(0, -70, 0)
-      .scale([0.34, 0.045, 0.16])
+      .scale([0.28, 0.04, 0.14])
       .runtime({ id: "plane-wingtip-right", tags: ["aircraft-identity", "renderer-owned"] })
       .toJSON()
   );
@@ -329,11 +372,6 @@ function heroNodes(): AuraSceneNode[] {
         .toJSON()
     );
   }
-  // Small renderer-owned aircraft accents make the typed hero readable at
-  // chase distance without replacing its mesh. The exhaust and pressure
-  // streaks follow the real authored flight transform every frame, so the
-  // retained action frame reads as one moving aircraft rather than a model
-  // surrounded by unrelated review geometry.
   nodes.push(
     primitives.sphere({ name: "plane nav lamp left", material: material.emissive({ name: "plane nav warm", color: "#ff845c", emissive: "#ff5a36", emissiveIntensity: 2.4 }) })
       .position(0, -70, 0).scale(0.12).runtime({ id: "plane-nav-left", tags: ["aircraft-accent", "renderer-owned"] }).toJSON(),
@@ -407,9 +445,7 @@ function heroNodes(): AuraSceneNode[] {
     primitives.box({ name: "combat cannon tracer", material: material.emissive({ color: "#ffd166", emissive: "#ff9f1c", emissiveIntensity: 3.8, opacity: 0.9 }) })
       .position(0, -70, 0).scale([0.018, 0.018, 1.3]).runtime({ id: "combat-cannon-tracer", tags: ["combat-fx", "projectile-feedback"] }).toJSON()
   );
-  // Follow-camera target: a small nav light riding the plane. The follow
-  // camera reads scene yaw with a -Z-forward convention while the plane's nose
-  // is +X, so this node carries yaw = planeYaw - PI/2 (derivation in README).
+  // Follow-camera target: a small nav light riding the plane.
   nodes.push(
     primitives
       .sphere({
@@ -426,34 +462,112 @@ function heroNodes(): AuraSceneNode[] {
 }
 
 const chaseCameraSpec = camera.follow({
-  // The typed plane mesh's +X nose does not share the follow camera's -Z
-  // forward convention. camera-target is synchronized from the same live
-  // FlightModel with that 90-degree conversion, so an aircraft-forward enemy
-  // actually lands under the centered aiming reticle rather than drifting
-  // sideways out of the chase view.
   targetNode: "camera-target",
   offsetMode: "target-yaw",
-  // The review lens is a little lower and tighter so the typed aircraft owns
-  // the foreground while the island, rings, drones, and horizon still supply
-  // a readable flight corridor. Public gameplay keeps the wider chase.
   offset: [0.85, 1.85, 6.2] as [number, number, number],
   targetOffset: [0.35, 0.35, -3.2],
   fov: 50,
-  // Exact review evidence captures the visible and suppressed subject at the
-  // same authored camera pose. Follow smoothing would advance between those
-  // two renderer submissions and turn camera motion into false subject pixels.
   smoothing: visualReviewCapture || reducedMotion ? 0 : 0.06,
   subjectEmphasis: 0.82
 });
 
 type MutableCameraSpec = { offset?: readonly [number, number, number]; targetOffset?: readonly [number, number, number]; fov?: number };
 
+/**
+ * Sanitize arenaNodes from sky.ts so ring gates float at aerial altitudes along
+ * the flight path at a balanced ~3.4m diameter instead of sitting on the takeoff
+ * runway deck as oversized dark industrial structures, and upgrade ocean/island
+ * materials for crisp coastal depth.
+ */
+function sanitizeArenaNodes(rawNodes: readonly AuraSceneNode[]): AuraSceneNode[] {
+  const sanitized = rawNodes.map((rawNode) => {
+    const node = { ...(rawNode as unknown as Record<string, unknown>) };
+    const name = typeof node.name === "string" ? node.name : "";
+    if (name === "ocean") {
+      node.material = material.pbr({
+        name: "coastal ocean specular water",
+        color: "#0b3b66",
+        roughness: 0.14,
+        metallic: 0.54,
+        clearcoat: 0.76,
+        clearcoatRoughness: 0.1,
+        emissive: "#0284c7",
+        emissiveIntensity: 0.2
+      });
+    } else if (name === "island-terrain") {
+      node.material = material.pbr({
+        name: "island coastal relief",
+        color: "#3d6b48",
+        roughness: 0.72,
+        metallic: 0.06,
+        emissive: "#143321",
+        emissiveIntensity: 0.08
+      });
+    } else if (name === "ring-gate-takeoff-corridor") {
+      node.position = [-18.5, 8.6, 11.2];
+      node.targetHeight = 3.2;
+      node.targetLength = 3.2;
+      node.targetMaxDimension = 3.2;
+    } else if (name === "ring-gate-mid-corridor-1") {
+      node.position = [-29.5, 10.2, 4.2];
+      node.targetHeight = 3.2;
+      node.targetLength = 3.2;
+      node.targetMaxDimension = 3.2;
+    } else if (name === "ring-gate-mid-corridor-2") {
+      node.position = [-37.5, 11.6, -3.8];
+      node.targetHeight = 3.2;
+      node.targetLength = 3.2;
+      node.targetMaxDimension = 3.2;
+    } else if (name.startsWith("ring-gate-3d-")) {
+      const pos = Array.isArray(node.position) ? [...(node.position as number[])] : [0, 9.5, 0];
+      pos[1] = Math.max(pos[1] ?? 9.5, 8.4);
+      node.position = pos;
+      node.targetHeight = 3.4;
+      node.targetLength = 3.4;
+      node.targetMaxDimension = 3.4;
+    } else if (name === "coastal-radar-tower-3d") {
+      node.position = [-6.8, 3.35, 11.8];
+      node.targetMaxDimension = 3.8;
+    }
+    return node as unknown as AuraSceneNode;
+  });
+
+  // Add crisp white runway centerline dashes and threshold markings on the takeoff deck.
+  const stripeMat = material.emissive({
+    name: "runway centerline paint",
+    color: "#f8fafc",
+    emissive: "#e2e8f0",
+    emissiveIntensity: 0.45
+  });
+  const edgeMat = material.emissive({
+    name: "runway edge cyan marker",
+    color: "#7dd3fc",
+    emissive: "#38bdf8",
+    emissiveIntensity: 0.65
+  });
+  for (let dash = 0; dash < 7; dash += 1) {
+    const dashX = 1.6 - dash * 2.6;
+    sanitized.push(
+      primitives.box({ name: `runway centerline dash ${dash}`, material: stripeMat })
+        .position(dashX, PAD_Y + 0.172, PAD_CENTER[2])
+        .scale([1.25, 0.015, 0.16])
+        .toJSON()
+    );
+    sanitized.push(
+      primitives.sphere({ name: `runway edge light north ${dash}`, material: edgeMat })
+        .position(dashX, PAD_Y + 0.2, PAD_CENTER[2] - 2.35)
+        .scale(0.08)
+        .toJSON(),
+      primitives.sphere({ name: `runway edge light south ${dash}`, material: edgeMat })
+        .position(dashX, PAD_Y + 0.2, PAD_CENTER[2] + 2.35)
+        .scale(0.08)
+        .toJSON()
+    );
+  }
+  return sanitized;
+}
+
 function buildScene(): ReturnType<typeof scene> {
-  // Same compositing constraint as the sky ribbons: sub-1 `opacity` on these
-  // emissive/glass haze volumes rendered as dark shells over the horizon instead
-  // of atmosphere, so the preflight frame carried black wedges. The haze is now
-  // opaque and reads as layered colour bands; the accent slivers are dropped
-  // entirely because at 0.08 unit scale they were invisible except as artifacts.
   const atmosphereMaterial = material.pbr({ name: "review flight atmosphere", color: "#4f8fbf", roughness: 0.92, metallic: 0 });
   const flightAtmosphere = Array.from({ length: visualReviewCapture ? 6 : 8 }, (_, index) => {
     const side = index % 2 === 0 ? -1 : 1;
@@ -467,13 +581,13 @@ function buildScene(): ReturnType<typeof scene> {
     ];
   }).flat();
   return scene()
-    .background(visualReviewCapture ? "#16364e" : "#254760")
-    .addMany(arenaNodes({ reviewCapture: visualReviewCapture }))
+    .background(visualReviewCapture ? "#16364e" : "#1e425e")
+    .addMany(sanitizeArenaNodes(arenaNodes({ reviewCapture: visualReviewCapture })))
     .addMany(heroNodes())
     .addMany(flightAtmosphere)
     .addMany(arenaLighting().nodes)
     .addMany([
-      effects.fog({ name: "coastal haze", density: visualReviewCapture ? 0.0028 : 0.0032, color: "#42647a", intensity: visualReviewCapture ? 0.26 : 0.32 }),
+      effects.fog({ name: "coastal haze", density: visualReviewCapture ? 0.0022 : 0.0026, color: "#42647a", intensity: visualReviewCapture ? 0.22 : 0.28 }),
       effects.neonBloom({ intensity: visualReviewCapture ? 0.14 : reducedMotion ? 0.05 : 0.14, threshold: 0.82, maxIntensity: 0.38, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.colorGrade({ exposure: 1.08, contrast: 1.06, saturation: 1.12 }),
       effects.antiAlias({ mode: "fxaa" }),
@@ -481,7 +595,7 @@ function buildScene(): ReturnType<typeof scene> {
       lights.point({ name: "sun warm catch", color: "#ffd4a1", intensity: 3.2 }).position(20, 24, 30),
       lights.point({ name: "aircraft rim light", color: "#b7dce6", intensity: 3.1 }).position(-8, 14, -4),
       lights.point({ name: "flight horizon fill", color: "#8bbccc", intensity: 2.25 }).position(0, 9, -18),
-      lights.point({ name: "ring corridor key", color: "#fde047", intensity: 4.2 }).position(-9, 8, 9),
+      lights.point({ name: "ring corridor key", color: "#38bdf8", intensity: 4.2 }).position(-14, 10, 11),
       lights.point({ name: "radar peak key", color: "#38bdf8", intensity: 4.5 }).position(0, 14, 2)
     ])
     .camera(chaseCameraSpec);
@@ -658,18 +772,21 @@ function applyRingMaterials(): void {
     const handle = ringHandles.get(gate.index);
     if (!handle) continue;
     const passed = gate.index < rings.nextRing;
-    // The next gate is the objective anchor: 1.25x in-plane scale plus a hot
-    // emissive so it reads at island distance; upcoming gates stay dim. On
-    // the preflight pad the full boost would loom over the parked plane, so
-    // the gate stays at authored scale until takeoff.
     const isNext = gate.index === rings.nextRing && stateValue !== "preflight";
     handle.setMaterial(
       passed
-        ? material.emissive({ name: `ring-${gate.index} passed`, color: "#0f3a30", emissive: RING_PASSED_COLOR, emissiveIntensity: 0.75, roughness: 0.35, opacity: 0.9 })
-        : material.emissive({ name: `ring-${gate.index} active`, color: "#20323a", emissive: RING_ACTIVE_COLOR, emissiveIntensity: isNext ? 1.15 : 0.75, roughness: 0.35, opacity: 0.92 })
+        ? material.emissive({ name: `ring-${gate.index} passed`, color: "#34d399", emissive: RING_PASSED_COLOR, emissiveIntensity: 0.82, roughness: 0.25, opacity: 0.88 })
+        : material.emissive({
+            name: `ring-${gate.index} active`,
+            color: isNext ? "#fde047" : "#38bdf8",
+            emissive: isNext ? "#f59e0b" : "#0ea5e9",
+            emissiveIntensity: isNext ? 1.25 : 0.78,
+            roughness: 0.25,
+            opacity: 0.88
+          })
     );
-    const s = isNext ? 1.12 : 1;
-    handle.setScale([gate.radius * 2 * s, gate.radius * 2 * s, gate.radius * 0.9]);
+    const s = isNext ? 1.08 : 1;
+    handle.setScale([gate.radius * 1.18 * s, gate.radius * 1.18 * s, 0.16]);
   }
   if (nextRingBeaconHandle) {
     nextRingBeaconHandle.setVisible(false);

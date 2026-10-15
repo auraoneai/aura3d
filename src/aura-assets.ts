@@ -454,6 +454,14 @@ type AuraGeneratedAssetDefinitions = {
   readonly "vaultTargetDownSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "vaultTiltWarnSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "vaultVaultOpenSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "courierCyberVanMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "patrolJetAircraftMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "corridorPulseRifleMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "clashFighterMaraMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "clashFighterRookMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "vaultCenterCoreTargetMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "gravityCourierProbeMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "mechHeroPlayerMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
@@ -136007,6 +136015,806 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
     },
   },
-} as const);
+  "courierCyberVanMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/courierCyberVanMeshy.ca2df299.glb",
+    hash: "sha256-ca2df2994e3a4ee14c69e821138796f6e7ce2354fcdf6e52ac758734e721f77c",
+    bounds: [
+      1.8984,
+      0.9927,
+      0.9003
+    ],
+    sizeBytes: 908684,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/courierCyberVanMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T05:00:00.000Z",
+        "checkedAt": "2026-10-15T05:00:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/courierCyberVanMeshy/model.glb",
+      "outputPath": "public/aura-assets/courierCyberVanMeshy.ca2df299.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/courierCyberVanMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+  "patrolJetAircraftMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/patrolJetAircraftMeshy.360b0f51.glb",
+    hash: "sha256-360b0f51b58b8f4b9cedfa45710b1096a761e1afc58cd5e38fa452526fcec7a0",
+    bounds: [
+      1.8985,
+      0.6049,
+      1.6945
+    ],
+    sizeBytes: 542160,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/patrolJetAircraftMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T05:00:00.000Z",
+        "checkedAt": "2026-10-15T05:00:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/patrolJetAircraftMeshy/model.glb",
+      "outputPath": "public/aura-assets/patrolJetAircraftMeshy.360b0f51.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/patrolJetAircraftMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+  "corridorPulseRifleMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/corridorPulseRifleMeshy.de9ae48d.glb",
+    hash: "sha256-de9ae48dedfecba3a57fedef847300205e65edb236421ac659eb2762257bfb32",
+    bounds: [
+      1.8983,
+      0.7926,
+      0.2006
+    ],
+    sizeBytes: 811236,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/corridorPulseRifleMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T05:00:00.000Z",
+        "checkedAt": "2026-10-15T05:00:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/corridorPulseRifleMeshy/model.glb",
+      "outputPath": "public/aura-assets/corridorPulseRifleMeshy.de9ae48d.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/corridorPulseRifleMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+  "clashFighterMaraMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/clashFighterMaraMeshy.0be18cbf.glb",
+    hash: "sha256-0be18cbface3374e5971b43af126a8ab3d36a1ef1b00c1f69faadf073fc8382a",
+    bounds: [
+      0.9032,
+      1.8926,
+      1.0476
+    ],
+    sizeBytes: 850732,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/clashFighterMaraMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T05:00:00.000Z",
+        "checkedAt": "2026-10-15T05:00:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/clashFighterMaraMeshy/model.glb",
+      "outputPath": "public/aura-assets/clashFighterMaraMeshy.0be18cbf.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/clashFighterMaraMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+  "clashFighterRookMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/clashFighterRookMeshy.2adf4c5c.glb",
+    hash: "sha256-2adf4c5c7a494d72fbca44b0b2651a8f7362306d01f2cb5a6db076f6410ab173",
+    bounds: [
+      0.9636,
+      1.8949,
+      0.7695
+    ],
+    sizeBytes: 843172,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/clashFighterRookMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T05:00:00.000Z",
+        "checkedAt": "2026-10-15T05:00:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/clashFighterRookMeshy/model.glb",
+      "outputPath": "public/aura-assets/clashFighterRookMeshy.2adf4c5c.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/clashFighterRookMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+  "vaultCenterCoreTargetMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/vaultCenterCoreTargetMeshy.1e2b5e88.glb",
+    hash: "sha256-1e2b5e88d1421d4a621f4883bd22307bae239d1dd3e7736d15901312d6df65a3",
+    bounds: [
+      1.8908,
+      1.8633,
+      1.4574
+    ],
+    sizeBytes: 958772,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/vaultCenterCoreTargetMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T05:00:00.000Z",
+        "checkedAt": "2026-10-15T05:00:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/vaultCenterCoreTargetMeshy/model.glb",
+      "outputPath": "public/aura-assets/vaultCenterCoreTargetMeshy.1e2b5e88.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/vaultCenterCoreTargetMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+  "gravityCourierProbeMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/gravityCourierProbeMeshy.6de2dcbb.glb",
+    hash: "sha256-6de2dcbbbb61ad83dfbbe8cafefea7303b869286c320eac61d839ca65969ec72",
+    bounds: [
+      1.721,
+      0.5142,
+      1.898
+    ],
+    sizeBytes: 835484,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/gravityCourierProbeMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T05:00:00.000Z",
+        "checkedAt": "2026-10-15T05:00:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/gravityCourierProbeMeshy/model.glb",
+      "outputPath": "public/aura-assets/gravityCourierProbeMeshy.6de2dcbb.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/gravityCourierProbeMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+  "mechHeroPlayerMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/mechHeroPlayerMeshy.38e09b7a.glb",
+    hash: "sha256-38e09b7aa5b6640e18a045059b6d39a78727b6e1fa455869cd384cf5b3e67d07",
+    bounds: [
+      1.2344,
+      1.8969,
+      0.9546
+    ],
+    sizeBytes: 910268,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/mechHeroPlayerMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T05:00:00.000Z",
+        "checkedAt": "2026-10-15T05:00:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/mechHeroPlayerMeshy/model.glb",
+      "outputPath": "public/aura-assets/mechHeroPlayerMeshy.38e09b7a.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/mechHeroPlayerMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+});
 
 export type AuraGeneratedAssets = typeof assets;

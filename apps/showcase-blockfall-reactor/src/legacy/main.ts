@@ -439,6 +439,18 @@ const sourceEvidence = {
 // without cropping the cabinet, hold, or next columns.
 // BF-A2/BF-A3/BF-A4 scene extensions. Pools and boards are built before the scene
 // so their owned mutable state can be captured by the mounted route.
+// Upgrade tetromino cell materials to glossy, clearcoated 3D energy cells with
+// controlled emissive glow so every piece reads with crisp beveled facets.
+Object.assign(pieceMaterials, {
+  I: material.pbr({ name: "faceted ion cyan tetromino", color: "#22d3ee", emissive: "#0891b2", emissiveIntensity: 0.28, roughness: 0.18, metallic: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.14 }),
+  J: material.pbr({ name: "faceted cobalt J tetromino", color: "#3b82f6", emissive: "#1d4ed8", emissiveIntensity: 0.26, roughness: 0.18, metallic: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.14 }),
+  L: material.pbr({ name: "faceted amber L tetromino", color: "#fb923c", emissive: "#c2410c", emissiveIntensity: 0.26, roughness: 0.18, metallic: 0.36, clearcoat: 0.5, clearcoatRoughness: 0.14 }),
+  O: material.pbr({ name: "faceted solar O tetromino", color: "#facc15", emissive: "#a16207", emissiveIntensity: 0.28, roughness: 0.18, metallic: 0.36, clearcoat: 0.5, clearcoatRoughness: 0.14 }),
+  S: material.pbr({ name: "faceted reactor green S tetromino", color: "#4ade80", emissive: "#15803d", emissiveIntensity: 0.26, roughness: 0.18, metallic: 0.36, clearcoat: 0.5, clearcoatRoughness: 0.14 }),
+  T: material.pbr({ name: "faceted magenta T tetromino", color: "#e879f9", emissive: "#86198f", emissiveIntensity: 0.28, roughness: 0.18, metallic: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.14 }),
+  Z: material.pbr({ name: "faceted warning red Z tetromino", color: "#fb7185", emissive: "#be123c", emissiveIntensity: 0.26, roughness: 0.18, metallic: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.14 })
+});
+
 const lockedStackPools: readonly InstancedBoardPool[] = createLockedStackPools(LOCKED_POOL_CAPACITY_PER_KIND);
 const activePiecePool: InstancedBoardPool = createActivePiecePool();
 const clearFxNodeGroup = createClearFxNodes();
@@ -494,35 +506,68 @@ const cabinetPosition = [0, 0.15, -3.15] as const;
 const cabinetTargetSize = visualReviewCapture ? 3.4 : 3.2;
 /**
  * BF-A5 bloom formalization. Exact shipped intensities:
- *   - full motion: intensity 0.26, threshold 0.55, maxIntensity 1.6, antiBlowout on
+ *   - full motion: intensity 0.26, threshold 0.82, maxIntensity 0.85, antiBlowout on
  *   - reduced flash (prefers-reduced-motion): intensity 0.12, same guards
- * The threshold + anti-blowout cap keep the emissive cells glowing without washing
- * out the board backplate; the retained before/after stills live in
- * tests/reports/blockfall-reactor-bloom/ via blockfall-bloom-stills.spec.ts.
+ * High threshold + anti-blowout cap keep the emissive cells glowing without creating
+ * white hotspots on the side containment pylons or cabinet rails.
  */
 const bloomEffect = effects.neonBloom({
   name: "blockfall reactor emissive bloom",
   intensity: reducedFlash ? 0.12 : 0.26,
-  threshold: 0.55,
-  maxIntensity: 1.6,
+  threshold: 0.82,
+  maxIntensity: 0.85,
   antiBlowout: true,
   quality: "balanced",
   softKnee: 0.5,
-  shoulder: 0.6
+  shoulder: 0.65
 });
 // The builder stores its node by reference (toJSON returns this.value), so the
 // stills probe can mutate the exact node object the mounted scene renders.
 const bloomEffectNode = bloomEffect.toJSON();
+
+const containmentChamberBuilders = [
+  primitives.box({
+    name: "reactor containment rear bulkhead",
+    material: material.pbr({ name: "reactor rear bulkhead steel", color: "#08101e", roughness: 0.72, metallic: 0.48 }),
+    receiveShadow: true
+  }).position(0, 1.8, -3.85).scale([26, 15, 0.22]),
+  primitives.box({
+    name: "reactor containment floor deck",
+    material: material.pbr({ name: "reactor floor deck steel", color: "#0b1526", roughness: 0.68, metallic: 0.46 }),
+    receiveShadow: true
+  }).position(0, -0.58, -1.2).scale([24, 0.18, 10]),
+  primitives.box({
+    name: "reactor containment podium base",
+    material: material.pbr({ name: "reactor podium steel", color: "#0f1d33", roughness: 0.56, metallic: 0.58 }),
+    castShadow: true,
+    receiveShadow: true
+  }).position(0, -0.26, -0.95).scale([8.6, 0.26, 2.8]),
+  primitives.box({
+    name: "reactor containment podium cyan trim",
+    material: material.emissive({ name: "reactor podium cyan trim mat", color: "#0c4a6e", emissive: "#38bdf8", emissiveIntensity: 0.28 })
+  }).position(0, -0.12, 0.42).scale([7.8, 0.03, 0.04]),
+  primitives.box({
+    name: "reactor containment left bay bulkhead",
+    material: material.pbr({ name: "reactor left bay steel", color: "#0c182c", roughness: 0.62, metallic: 0.52 }),
+    receiveShadow: true
+  }).position(-4.8, 1.6, -2.95).scale([3.4, 8.5, 0.26]),
+  primitives.box({
+    name: "reactor containment right bay bulkhead",
+    material: material.pbr({ name: "reactor right bay steel", color: "#0c182c", roughness: 0.62, metallic: 0.52 }),
+    receiveShadow: true
+  }).position(4.8, 1.6, -2.95).scale([3.4, 8.5, 0.26])
+];
+
 const reactorScene = scene()
-  .background(visualReviewCapture ? "#07131d" : "#24103a")
+  .background("#070d18")
   .add(
     model(assets.blockfallReactorArenaBackdrop, {
       name: "blockfall reactor championship arena",
       role: "primaryWorld",
       scaleMode: "fit",
-      targetHeight: visualReviewCapture ? 14.2 : 8.25
+      targetHeight: 15.6
     })
-      .position(0, visualReviewCapture ? -0.38 : 1.82, -3.52)
+      .position(0, -1.65, -3.55)
       .runtime(game.runtimeNode("blockfall-reactor-arena-backdrop", {
         tags: ["typed-supporting-asset", "review-background", "release-probed", "non-gameplay-set-dressing"]
       }))
@@ -621,20 +666,20 @@ const reactorScene = scene()
       name: "blockfall-containment-pylon-left",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 3.45
+      targetMaxDimension: 3.65
     })
-      .position(-2.55, 0.15, -1.15)
-      .rotate(0, 0.32, 0)
+      .position(-2.68, -0.14, -1.18)
+      .rotate(0, 0.28, 0)
   )
   .add(
     model(assets.blockfallReactorContainmentPylonMeshy, {
       name: "blockfall-containment-pylon-right",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 3.45
+      targetMaxDimension: 3.65
     })
-      .position(2.55, 0.15, -1.15)
-      .rotate(0, -0.32, 0)
+      .position(2.68, -0.14, -1.18)
+      .rotate(0, -0.28, 0)
   )
   .add(
     model(assets.blockfallEnergyCapacitorBankMeshy, {
@@ -643,8 +688,8 @@ const reactorScene = scene()
       scaleMode: "fit",
       targetMaxDimension: 1.55
     })
-      .position(-1.85, 0.05, -0.45)
-      .rotate(0, 0.38, 0)
+      .position(-1.98, -0.14, -0.52)
+      .rotate(0, 0.34, 0)
   )
   .add(
     model(assets.blockfallEnergyCapacitorBankMeshy, {
@@ -653,11 +698,11 @@ const reactorScene = scene()
       scaleMode: "fit",
       targetMaxDimension: 1.55
     })
-      .position(1.85, 0.05, -0.45)
-      .rotate(0, -0.38, 0)
+      .position(1.98, -0.14, -0.52)
+      .rotate(0, -0.34, 0)
   )
-  .addMany([])
-  .addMany(createBoardShell(visualReviewCapture))
+  .addMany(containmentChamberBuilders)
+  .addMany(createBoardShell(true))
   .addMany(createGhostNodes())
   .addMany(createClearFlashNodes())
   .addMany(createBeatNodes())
@@ -673,22 +718,22 @@ const reactorScene = scene()
     // from the room behind it.
     bloomEffect,
     effects.ambientOcclusion({ intensity: 0.46, radius: 0.68 }),
-    effects.contactOcclusion({ name: "cabinet floor contact", intensity: 0.34, radius: 0.5 }),
-    effects.fog({ name: "arcade room depth haze", density: 0.022, color: "#0d0514", intensity: 0.22 }),
-    effects.colorGrade({ exposure: 1.12, contrast: 1.07, saturation: 1.12 }),
+    effects.contactOcclusion({ name: "cabinet floor contact", intensity: 0.38, radius: 0.55 }),
+    effects.fog({ name: "arcade room depth haze", density: 0.018, color: "#070d18", intensity: 0.18 }),
+    effects.colorGrade({ exposure: 0.96, contrast: 1.08, saturation: 1.10 }),
     effects.antiAlias({ mode: "fxaa" }),
-    lights.ambient({ name: "low arcade room wash", color: "#e8ddff", intensity: 1.25 }),
-    lights.directional({ name: "overhead arcade key", color: "#fff7e6", intensity: 2.35 }).position(-1.2, 5.8, 6.2),
-    lights.directional({ name: "reactor front fill", color: "#bae6fd", intensity: 1.85 }).position(1.8, 3.2, 7.0),
-    lights.point({ name: "pylon left key", color: "#38bdf8", intensity: 5.2 }).position(-2.5, 2.1, 2.2),
-    lights.point({ name: "pylon right key", color: "#f59e0b", intensity: 5.2 }).position(2.5, 2.1, 2.2),
-    lights.point({ name: "capacitor left fill", color: "#67e8f9", intensity: 4.2 }).position(-1.9, 0.7, 1.8),
-    lights.point({ name: "capacitor right fill", color: "#fbbf24", intensity: 4.2 }).position(1.9, 0.7, 1.8),
-    lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.72 : 1.48 }).position(2.4, 2.1, 2.6),
-    lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity: 1.68 }).position(-2.15, 3.3, 1.35),
-    lights.point({ name: "cyan playfield spill", color: "#8ff7ff", intensity: 1.95 }).position(0, 2.5, 1.55),
-    lights.point({ name: "warm floor practical", color: "#ffc15b", intensity: 1.15 }).position(0, -0.45, 0.9),
-    lights.point({ name: "rival corner practical", color: "#ff72c9", intensity: 1.55 }).position(3.35, 1.35, 1.15)
+    lights.ambient({ name: "low arcade room wash", color: "#cbd5e1", intensity: 0.72 }),
+    lights.directional({ name: "overhead arcade key", color: "#fff7e6", intensity: 1.15 }).position(-1.2, 5.8, 6.2),
+    lights.directional({ name: "reactor front fill", color: "#bae6fd", intensity: 0.88 }).position(1.8, 3.2, 7.0),
+    lights.point({ name: "pylon left key", color: "#38bdf8", intensity: 1.85 }).position(-2.85, 2.2, 2.4),
+    lights.point({ name: "pylon right key", color: "#f59e0b", intensity: 1.85 }).position(2.85, 2.2, 2.4),
+    lights.point({ name: "capacitor left fill", color: "#67e8f9", intensity: 1.45 }).position(-2.15, 0.8, 1.9),
+    lights.point({ name: "capacitor right fill", color: "#fbbf24", intensity: 1.45 }).position(2.15, 0.8, 1.9),
+    lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.45 : 0.85 }).position(2.4, 2.1, 2.6),
+    lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity: 0.95 }).position(-2.15, 3.3, 1.35),
+    lights.point({ name: "cyan playfield spill", color: "#8ff7ff", intensity: 1.05 }).position(0, 2.5, 1.55),
+    lights.point({ name: "warm floor practical", color: "#ffc15b", intensity: 0.75 }).position(0, -0.45, 0.9),
+    lights.point({ name: "rival corner practical", color: "#ff72c9", intensity: 0.95 }).position(3.35, 1.35, 1.15)
   ])
   .camera(reactorCamera);
 
@@ -1804,10 +1849,23 @@ function syncBeats(dt: number): void {
   }
 }
 
+const controlledReactorFillMaterial = material.pbr({
+  name: "reactor charge core controlled",
+  color: "#10b981",
+  emissive: "#059669",
+  emissiveIntensity: 0.42,
+  roughness: 0.24,
+  metallic: 0.36
+});
+
 function syncReactor(): void {
   const charge = Math.max(0.04, state.reactor / 100);
   const height = 0.18 + charge * 1.25;
-  reactorFillNode.setScale([0.08, height, 0.08]).setPosition(1.52, 1.32 + height * 0.5, 0.2).setVisible(true);
+  reactorFillNode
+    .setMaterial(controlledReactorFillMaterial)
+    .setScale([0.08, height, 0.08])
+    .setPosition(1.52, 1.32 + height * 0.5, 0.2)
+    .setVisible(true);
   const critical = state.gameOver || isDangerState(state) || state.reactor >= 88 || state.reactorLevel > 0;
   reactorCapNode
     .setScale(critical ? [0.12, 0.06, 0.055] : HIDDEN_BLOCK_SCALE)

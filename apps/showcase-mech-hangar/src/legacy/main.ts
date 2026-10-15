@@ -216,7 +216,7 @@ const HERO_FEET_LIFT = 0.953; // -boundsMin.y of the hero asset: feet land on th
 // earlier 0.55 m step opened a daylight gap that read as two separate robots.
 const HERO_FORWARD = 0.32;
 function heroNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] {
-  const heroAsset = side === "rival" ? rootAssets.mechHangarRivalUnitMeshy : rootAssets.mechHeroDecimated;
+  const heroAsset = side === "rival" ? rootAssets.mechHangarRivalUnitMeshy : rootAssets.mechHeroPlayerMeshy;
   return [
     model(heroAsset, {
       name: "mech-hero-" + side,
@@ -451,41 +451,61 @@ const hangarServiceGantryBuilders = [
     name: "mech-arena-service-gantry-left",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 2.35,
+    targetMaxDimension: 1.75,
     castShadow: true,
     receiveShadow: true
   })
-    .position(-3.25, 0, ARENA_CENTER_Z - 2.8)
-    .rotate(0, 0.35, 0),
+    .position(-6.85, 2.35, ARENA_CENTER_Z - 4.35)
+    .rotate(0, 0.28, 0),
   model(rootAssets.mechHangarServiceGantryMeshy, {
     name: "mech-arena-service-gantry-right",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 2.35,
+    targetMaxDimension: 1.75,
     castShadow: true,
     receiveShadow: true
   })
-    .position(3.25, 0, ARENA_CENTER_Z - 2.8)
-    .rotate(0, -0.35, 0),
+    .position(6.85, 2.35, ARENA_CENTER_Z - 4.35)
+    .rotate(0, -0.28, 0),
+  model(rootAssets.blockfallEnergyCapacitorBankMeshy, {
+    name: "mech-arena-capacitor-bank-left",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 1.55,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(-3.55, 0, ARENA_CENTER_Z - 3.35)
+    .rotate(0, 0.28, 0),
+  model(rootAssets.blockfallEnergyCapacitorBankMeshy, {
+    name: "mech-arena-capacitor-bank-right",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: 1.55,
+    castShadow: true,
+    receiveShadow: true
+  })
+    .position(3.55, 0, ARENA_CENTER_Z - 3.35)
+    .rotate(0, -0.28, 0),
   model(rootAssets.blockfallReactorContainmentPylonMeshy, {
     name: "mech-arena-containment-pylon-left",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 1.85,
+    targetMaxDimension: 1.95,
     castShadow: true,
     receiveShadow: true
   })
-    .position(-4.1, 0, ARENA_CENTER_Z - 1.6)
+    .position(-4.25, 0, ARENA_CENTER_Z - 1.75)
     .rotate(0, 0.42, 0),
   model(rootAssets.blockfallReactorContainmentPylonMeshy, {
     name: "mech-arena-containment-pylon-right",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 1.85,
+    targetMaxDimension: 1.95,
     castShadow: true,
     receiveShadow: true
   })
-    .position(4.1, 0, ARENA_CENTER_Z - 1.6)
+    .position(4.25, 0, ARENA_CENTER_Z - 1.75)
     .rotate(0, -0.42, 0),
   model(rootAssets.blockfallReactorContainmentPylonMeshy, {
     name: "mech-bay-containment-pylon-left",
@@ -510,7 +530,7 @@ const hangarServiceGantryBuilders = [
 ];
 const hangarFloorInsetBuilder = primitives.box({
   name: "hangar floor presentation inset",
-  material: material.pbr({ name: "hangar floor presentation steel", color: "#243a50", roughness: 0.74, metallic: 0.30, clearcoat: 0.12, clearcoatRoughness: 0.42 })
+  material: material.pbr({ name: "hangar floor presentation steel", color: "#1a2b3c", roughness: 0.82, metallic: 0.22, clearcoat: 0, clearcoatRoughness: 0.7 })
 }).position(HANGAR_CENTER[0], 0.008, HANGAR_CENTER[2] + 0.35).scale([5.8, 0.02, 4.2]);
 const hangarFloorEdgeBuilders = [-1, 1].flatMap((side) => [
   primitives.box({ name: `hangar floor cyan edge ${side}`, material: hangarStripMaterial })
@@ -521,51 +541,47 @@ const hangarFloorEdgeBuilders = [-1, 1].flatMap((side) => [
 
 const pitFloorBuilder = primitives.box({
   name: "arena armored floor",
-  // The deck is a scuffed armored plate, not a mirror. The previous
-  // metallic 0.68 / roughness 0.36 / clearcoat 0.22 treatment turned the pit
-  // centre into a polished specular mirror: both arena floodlights reflected
-  // straight back into the follow camera and produced a pure-white radial
-  // blowout that swamped the combat ring and both fighters' lower bodies.
-  // Roughness is raised and the clearcoat layer dropped so the sheen stays a
-  // readable gradient instead of clipping to white.
-  material: material.pbr({ name: "pit floor steel", color: "#182f43", roughness: 0.62, metallic: 0.26, clearcoat: 0.06, clearcoatRoughness: 0.5 })
+  // The deck is a scuffed armored plate, not a mirror. High roughness and zero
+  // clearcoat prevent overhead floodlights and hero point lights from creating
+  // a white specular glare between the mechs.
+  material: material.pbr({ name: "pit floor steel", color: "#111e2e", roughness: 0.84, metallic: 0.16, clearcoat: 0, clearcoatRoughness: 0.8 })
 // The review camera is a three-quarter follow view rather than an orthographic
 // top-down shot.  Keep the authored combat envelope centred under that view so
 // the active frame reads as an arena instead of ending at the canvas midpoint.
-}).position(0, -0.065, ARENA_CENTER_Z).scale([20, 0.13, 14]);
+}).position(0, -0.065, ARENA_CENTER_Z).scale([24, 0.13, 16]);
 
 const pitBackdropBuilder = primitives.box({
   name: "arena flood wall",
-  material: material.emissive({ name: "pit back wall", color: "#1b4058", emissive: "#176b8f", emissiveIntensity: 0.46 })
-}).position(0, 3.5, ARENA_CENTER_Z - 5.3).scale([20.5, 7.1, 0.28]);
+  material: material.pbr({ name: "pit back wall", color: "#0b1320", roughness: 0.78, metallic: 0.46 })
+}).position(0, 3.6, ARENA_CENTER_Z - 5.35).scale([28, 11.5, 0.36]);
 
-const pitPillarMaterial = material.pbr({ name: "pit structural steel", color: "#172d42", roughness: 0.42, metallic: 0.66 });
-const pitPillarLight = material.emissive({ name: "pit structural light", color: "#1c5369", emissive: "#47cfff", emissiveIntensity: 0.8 });
-const pitStructureBuilders = [-7.2, 0, 7.2].flatMap((x, index) => [
+const pitPillarMaterial = material.pbr({ name: "pit structural steel", color: "#152538", roughness: 0.48, metallic: 0.64 });
+const pitPillarLight = material.emissive({ name: "pit structural light", color: "#163e52", emissive: "#38bdf8", emissiveIntensity: 0.42 });
+const pitStructureBuilders = [-7.2, -3.6, 0, 3.6, 7.2].flatMap((x, index) => [
   primitives.box({ name: `pit pillar ${index}`, material: pitPillarMaterial })
-    .position(x, 1.55, ARENA_CENTER_Z - 4.85)
-    .scale([0.55, 3.1, 0.45]),
+    .position(x, 2.25, ARENA_CENTER_Z - 4.85)
+    .scale([0.58, 4.5, 0.48]),
   primitives.box({ name: `pit pillar light ${index}`, material: pitPillarLight })
     .position(x, 4.15, ARENA_CENTER_Z - 4.52)
-    .scale([0.22, 0.08, 0.05])
+    .scale([0.24, 0.08, 0.05])
 ]);
 
 const pitDeckPanelMaterial = material.pbr({
   name: "pit deck panel finish",
-  color: "#203b50",
-  // Matches the de-polished `pit floor steel` above: these plates sit directly
-  // under the floodlights and blew out to white at metallic 0.72 / roughness 0.42.
-  roughness: 0.66,
-  metallic: 0.3,
-  clearcoat: 0.06,
-  clearcoatRoughness: 0.5
+  color: "#162638",
+  // Matches the de-polished `pit floor steel` above so floor panels read as dark
+  // industrial armor plates without specular whiteout.
+  roughness: 0.82,
+  metallic: 0.18,
+  clearcoat: 0,
+  clearcoatRoughness: 0.8
 });
 const pitDeckSeamMaterial = material.emissive({
   name: "pit deck seam light",
-  color: "#164e63",
+  color: "#123b4d",
   emissive: "#38d6ff",
-  emissiveIntensity: 0.7,
-  opacity: 0.82
+  emissiveIntensity: 0.22,
+  opacity: 0.78
 });
 const pitDeckBuilders = Array.from({ length: 10 }, (_, index) => {
   const side = index % 2 === 0 ? -1 : 1;
@@ -586,28 +602,34 @@ const pitDeckBuilders = Array.from({ length: 10 }, (_, index) => {
 // The overhead frame is a major depth cue in the arena capture. Keep it dark
 // enough to sit behind the fighters, but lift it out of absolute black so the
 // clipped-at-the-edge beams read as painted steel instead of missing geometry.
-const pitTrussMaterial = material.pbr({ name: "pit overhead truss", color: "#234c66", roughness: 0.42, metallic: 0.58, clearcoat: 0.18, clearcoatRoughness: 0.3 });
-const pitTrussLight = material.emissive({ name: "pit overhead light band", color: "#174b63", emissive: "#5ee7ff", emissiveIntensity: 1.25 });
+const pitTrussMaterial = material.pbr({ name: "pit overhead truss", color: "#192d42", roughness: 0.48, metallic: 0.62, clearcoat: 0.08, clearcoatRoughness: 0.4 });
+const pitTrussLight = material.emissive({ name: "pit overhead light band", color: "#133a4e", emissive: "#38bdf8", emissiveIntensity: 0.48 });
 const pitTrussBuilders = [
   primitives.box({ name: "pit overhead truss beam", material: pitTrussMaterial })
     .position(0, 6.15, ARENA_CENTER_Z - 3.9)
-    .scale([8.8, 0.24, 0.22]),
+    .scale([9.8, 0.26, 0.24]),
+  primitives.box({ name: "pit mid gantry bridge beam", material: pitTrussMaterial })
+    .position(0, 3.65, ARENA_CENTER_Z - 4.72)
+    .scale([16.5, 0.32, 0.34]),
+  primitives.box({ name: "pit lower bulkhead datum beam", material: pitTrussMaterial })
+    .position(0, 1.35, ARENA_CENTER_Z - 4.78)
+    .scale([16.5, 0.24, 0.28]),
   primitives.box({ name: "pit overhead light band", material: pitTrussLight })
     .position(0, 5.76, ARENA_CENTER_Z - 3.55)
-    .scale([6.9, 0.06, 0.05]),
-  primitives.box({ name: "pit overhead magenta band", material: material.emissive({ name: "pit overhead magenta light", color: "#7e225f", emissive: "#f472b6", emissiveIntensity: 1.05 }) })
+    .scale([6.9, 0.05, 0.05]),
+  primitives.box({ name: "pit overhead magenta band", material: material.emissive({ name: "pit overhead magenta light", color: "#5e1c47", emissive: "#f472b6", emissiveIntensity: 0.42 }) })
     .position(0, 5.62, ARENA_CENTER_Z - 3.68)
-    .scale([4.8, 0.045, 0.04])
+    .scale([4.8, 0.04, 0.04])
 ];
 
-const pitMarkingMaterial = material.emissive({ name: "pit lane marks", color: "#23455c", emissive: "#4cc9e8", emissiveIntensity: 0.42 });
+const pitMarkingMaterial = material.emissive({ name: "pit lane marks", color: "#183142", emissive: "#38bdf8", emissiveIntensity: 0.18 });
 const pitMarkingBuilders = [-3.6, -1.8, 0, 1.8, 3.6].map((x, index) =>
   primitives.box({ name: "pit lane mark " + index, material: pitMarkingMaterial })
     .position(x, 0.012, ARENA_CENTER_Z)
     .scale([0.035, 0.024, 7.6])
 );
 
-const rimMaterial = material.emissive({ name: "pit rim mat", color: "#2a4a63", emissive: "#59d7ff", emissiveIntensity: 1.1 });
+const rimMaterial = material.emissive({ name: "pit rim mat", color: "#1d3549", emissive: "#38bdf8", emissiveIntensity: 0.32 });
 const rimBuilders = [-1, 1].map((side) =>
   primitives.box({ name: "pit rim " + (side < 0 ? "west" : "east"), material: rimMaterial })
     .position(side * 4.85, 0.09, ARENA_CENTER_Z)
@@ -617,7 +639,7 @@ const rimBuilders = [-1, 1].map((side) =>
 // A shallow combat ring and warning chevrons give the arena a purposeful
 // footprint beneath the assembled typed fighters. These are set dressing only;
 // bout spacing and hit tests remain owned by the route-local combat sim.
-const arenaRingMaterial = material.emissive({ name: "arena combat ring", color: "#15364a", emissive: "#65e6ff", emissiveIntensity: 0.72, opacity: 0.9 });
+const arenaRingMaterial = material.emissive({ name: "arena combat ring", color: "#122b3d", emissive: "#38bdf8", emissiveIntensity: 0.24, opacity: 0.85 });
 const arenaRingBuilders = [
   primitives.torus({ name: "arena outer combat ring", material: arenaRingMaterial })
     .position(0, 0.025, ARENA_CENTER_Z)
@@ -628,7 +650,7 @@ const arenaRingBuilders = [
     .rotate(Math.PI / 2, 0, 0)
     .scale([2.55, 2.55, 0.022])
 ];
-const arenaWarningMaterial = material.emissive({ name: "arena warning stripes", color: "#4a2619", emissive: "#ff9055", emissiveIntensity: 0.5, opacity: 0.86 });
+const arenaWarningMaterial = material.emissive({ name: "arena warning stripes", color: "#3d2015", emissive: "#f97316", emissiveIntensity: 0.26, opacity: 0.82 });
 const arenaWarningBuilders = [-3.9, 3.9].flatMap((x, side) =>
   [-1.8, 0, 1.8].map((z, index) =>
     primitives.box({ name: `arena warning ${side}-${index}`, material: arenaWarningMaterial })
@@ -644,22 +666,18 @@ const arenaWarningBuilders = [-3.9, 3.9].flatMap((x, side) =>
 // owned by the route-local bout simulation.
 const pitFloorInlay = material.pbr({
   name: "pit center inlay",
-  color: "#274761",
-  // This is the brightest reflector in the pit: metallic 0.78 / roughness 0.28
-  // with a 0.3 clearcoat sat exactly on the floodlights' mirror angle to the
-  // follow camera and was the core of the arena blowout. Kept as a lightly
-  // polished plate, but far outside the mirror regime.
-  roughness: 0.6,
-  metallic: 0.3,
-  clearcoat: 0.06,
-  clearcoatRoughness: 0.5
+  color: "#182a3e",
+  roughness: 0.80,
+  metallic: 0.20,
+  clearcoat: 0,
+  clearcoatRoughness: 0.8
 });
 const pitFloorGlow = material.emissive({
   name: "pit center glow seam",
-  color: "#2d8ca8",
-  emissive: "#54e7ff",
-  emissiveIntensity: 0.64,
-  opacity: 0.86
+  color: "#1b586e",
+  emissive: "#38bdf8",
+  emissiveIntensity: 0.20,
+  opacity: 0.78
 });
 const pitCenterPlateBuilders = Array.from({ length: 12 }, (_, index) => {
   const row = Math.floor(index / 4);
@@ -678,16 +696,16 @@ const pitCenterPlateBuilders = Array.from({ length: 12 }, (_, index) => {
 
 const pitBackPanelBuilders = Array.from({ length: 7 }, (_, index) => {
   const x = -8.4 + index * 2.8;
-  const tint = index % 3 === 0 ? "#ff5f86" : index % 2 === 0 ? "#58e5ff" : "#8f7dff";
+  const tint = index % 2 === 0 ? "#38bdf8" : "#f59e0b";
   return [
     primitives.box({
       name: `pit back wall panel ${index}`,
-      material: material.pbr({ name: `pit back wall panel material ${index}`, color: index % 2 === 0 ? "#1c2d45" : "#17253b", roughness: 0.54, metallic: 0.48 })
-    }).position(x, -70, ARENA_CENTER_Z - 4.76).scale([0.0001, 0.0001, 0.0001]),
+      material: material.pbr({ name: `pit back wall panel material ${index}`, color: index % 2 === 0 ? "#101b2b" : "#0d1624", roughness: 0.68, metallic: 0.52 })
+    }).position(x, 2.35, ARENA_CENTER_Z - 5.08).scale([2.25, 4.7, 0.22]),
     primitives.box({
       name: `pit back wall light ${index}`,
-      material: material.emissive({ name: `pit back wall light material ${index}`, color: tint, emissive: tint, emissiveIntensity: 0.88 })
-    }).position(x, -70, ARENA_CENTER_Z - 4.62).scale([0.0001, 0.0001, 0.0001])
+      material: material.emissive({ name: `pit back wall light material ${index}`, color: tint, emissive: tint, emissiveIntensity: 0.26 })
+    }).position(x, 3.45, ARENA_CENTER_Z - 4.92).scale([1.45, 0.045, 0.04])
   ];
 }).flat();
 
@@ -695,7 +713,7 @@ const pitSuspendedLightBuilders = [-5.6, 0, 5.6].flatMap((x, index) => [
   primitives.box({ name: `pit suspended light rail ${index}`, material: pitTrussLight })
     .position(x, 5.15, ARENA_CENTER_Z + 0.8)
     .scale([1.55, 0.06, 0.08]),
-  primitives.box({ name: `pit suspended light drop ${index}`, material: material.emissive({ name: `pit suspended drop material ${index}`, color: index % 2 === 0 ? "#ff638c" : "#65e6ff", emissive: index % 2 === 0 ? "#ff638c" : "#65e6ff", emissiveIntensity: 0.96 }) })
+  primitives.box({ name: `pit suspended light drop ${index}`, material: material.emissive({ name: `pit suspended drop material ${index}`, color: index % 2 === 0 ? "#fb7185" : "#38bdf8", emissive: index % 2 === 0 ? "#fb7185" : "#38bdf8", emissiveIntensity: 0.42 }) })
     .position(x, 4.56, ARENA_CENTER_Z + 0.8)
     .scale([0.08, 0.54, 0.05])
 ]);
@@ -704,7 +722,7 @@ const pitSignMaterial = material.emissive({
   name: "pit wayfinding sign",
   color: "#102b42",
   emissive: "#8aeaff",
-  emissiveIntensity: 0.92,
+  emissiveIntensity: 0.62,
   opacity: 0.9
 });
 const pitSignBuilders = [
@@ -721,7 +739,7 @@ const pitSignBuilders = [
     size: 0.22,
     depth: 0.03,
     letterSpacing: 0.025,
-    material: material.emissive({ name: "pit round sign", color: "#401b2b", emissive: "#ff8aa8", emissiveIntensity: 0.72 }),
+    material: material.emissive({ name: "pit round sign", color: "#401b2b", emissive: "#ff8aa8", emissiveIntensity: 0.52 }),
     backend: "sdf"
   }).position(2.7, 5.08, ARENA_CENTER_Z - 4.45),
   text3D("MH-2M // LIVE TEST", {
@@ -729,7 +747,7 @@ const pitSignBuilders = [
     size: 0.18,
     depth: 0.03,
     letterSpacing: 0.022,
-    material: material.emissive({ name: "pit mh2m sign", color: "#163c54", emissive: "#61dcff", emissiveIntensity: 0.82 })
+    material: material.emissive({ name: "pit mh2m sign", color: "#163c54", emissive: "#61dcff", emissiveIntensity: 0.56 })
   }).position(-0.78, 4.58, ARENA_CENTER_Z - 4.45)
 ];
 const app = createAuraApp("#app", {
@@ -740,28 +758,25 @@ const app = createAuraApp("#app", {
     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
   },
   scene: scene()
-    .background("#081522")
+    .background("#070d18")
     .addMany([
       // Hangar lighting: cool workshop key + warm practicals (PRD section 6).
-      effects.bloom({ name: "hangar workshop bloom", intensity: 0.2, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", radius: 0.38, softKnee: 0.5, shoulder: 0.6 }),
-      effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.08 }),
+      effects.bloom({ name: "hangar workshop bloom", intensity: 0.14, threshold: 0.84, maxIntensity: 0.42, quality: "balanced", radius: 0.34, softKnee: 0.5, shoulder: 0.65 }),
+      effects.colorGrade({ exposure: 0.98, contrast: 1.08, saturation: 1.08 }),
       effects.antiAlias({ mode: "fxaa" }),
-      effects.contactOcclusion({ name: "fighter deck contact", intensity: 0.4, radius: 0.6 }),
-      lights.directional({ name: "workshop cool key", position: [4.2, 5.4, 3.2], intensity: 1.55, color: "#d7ebff" }),
-      lights.point({ name: "warm practical left", position: [-2.6, 2.3, 1.9], intensity: 3.65, color: "#ffb454" }),
-      lights.point({ name: "warm practical right", position: [2.7, 2.1, -1.4], intensity: 3.05, color: "#ff9a3d" }),
-      // Arena floodlights over the pit. These two directionals are the pair
-      // that drove the pit-floor specular blowout: at 1.85 / 1.35 they pushed
-      // the polished deck past pure white across the whole combat ring. They
-      // are reduced, not removed, so the pit keeps its overhead modelling and
-      // the fighters still separate from the back wall.
-      lights.directional({ name: "floodlight north", position: [0, 7.4, ARENA_CENTER_Z - 3.4], intensity: 1.55, color: "#eaf4ff" }),
-      lights.directional({ name: "floodlight south", position: [2.4, 6.4, ARENA_CENTER_Z + 3.6], intensity: 1.15, color: "#cfe2ff" }),
-      lights.point({ name: "arena front key", position: [0, 4.2, ARENA_CENTER_Z + 6.5], intensity: 3.4, color: "#d8ecff" }),
-      lights.point({ name: "arena player hero key", position: [-1.6, 2.8, ARENA_CENTER_Z + 0.5], intensity: 8.5, color: "#93c5fd" }),
-      lights.point({ name: "arena rival hero key", position: [1.6, 2.8, ARENA_CENTER_Z + 0.5], intensity: 8.5, color: "#fda4af" }),
-      lights.point({ name: "arena blue rim", position: [-4.8, 2.5, ARENA_CENTER_Z - 3.8], intensity: 4.2, color: "#47cfff" }),
-      lights.point({ name: "arena warm rim", position: [4.8, 2.2, ARENA_CENTER_Z - 1.8], intensity: 4.0, color: "#ff7a5c" }),
+      effects.contactOcclusion({ name: "fighter deck contact", intensity: 0.45, radius: 0.65 }),
+      lights.directional({ name: "workshop cool key", position: [4.2, 5.4, 3.2], intensity: 1.25, color: "#d7ebff" }),
+      lights.point({ name: "warm practical left", position: [-2.6, 2.3, 1.9], intensity: 2.65, color: "#ffb454" }),
+      lights.point({ name: "warm practical right", position: [2.7, 2.1, -1.4], intensity: 2.35, color: "#ff9a3d" }),
+      // Arena floodlights over the pit. Kept controlled so the dark steel floor
+      // never clips to white while both mech silhouettes stay sharply lit.
+      lights.directional({ name: "floodlight north", position: [0, 7.4, ARENA_CENTER_Z - 3.4], intensity: 1.05, color: "#eaf4ff" }),
+      lights.directional({ name: "floodlight south", position: [2.4, 6.4, ARENA_CENTER_Z + 3.6], intensity: 0.82, color: "#cfe2ff" }),
+      lights.point({ name: "arena front key", position: [0, 4.2, ARENA_CENTER_Z + 6.5], intensity: 2.1, color: "#d8ecff" }),
+      lights.point({ name: "arena player hero key", position: [-1.85, 3.2, ARENA_CENTER_Z + 1.4], intensity: 2.8, color: "#93c5fd" }),
+      lights.point({ name: "arena rival hero key", position: [1.85, 3.2, ARENA_CENTER_Z + 1.4], intensity: 2.8, color: "#fda4af" }),
+      lights.point({ name: "arena blue rim", position: [-4.8, 2.5, ARENA_CENTER_Z - 3.8], intensity: 2.6, color: "#47cfff" }),
+      lights.point({ name: "arena warm rim", position: [4.8, 2.2, ARENA_CENTER_Z - 1.8], intensity: 2.5, color: "#ff7a5c" }),
       turntableBuilder,
       turntableContactBuilder,
       hangarFloorBuilder,

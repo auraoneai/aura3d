@@ -317,19 +317,30 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
       continue;
     }
     if (v.source === "model") {
+      const isBall = v.name === "golf-ball";
+      const isPin = v.name.startsWith("pin-");
       nodes.push(model(SIEGE_MODEL_ASSETS[v.typedAsset!], {
         name: v.name,
-        role: v.name === "golf-ball" ? "primaryCharacter" : "setDressing",
+        role: isBall ? "primaryCharacter" : "setDressing",
         scaleMode: "fit",
-        // Destructibles and the ball must sit in the scene optically, not
-        // float above it: they both cast into the sun key and receive the
-        // stack shadows of their neighbours.
         castShadow: true,
         receiveShadow: true,
-        targetMaxDimension: v.name === "golf-ball" && visualReviewCapture
-          ? (v.targetMaxDimension ?? 1) * 1.65
-          : v.targetMaxDimension ?? 1,
-        ...(v.typedAsset === "siegeWoodenCrate" ? { material: paintedTimberMaterial } : {})
+        targetMaxDimension: isBall
+          ? (visualReviewCapture ? 0.34 : 0.30)
+          : isPin
+            ? 0.42
+            : (v.targetMaxDimension ?? 1) * 0.72,
+        ...(isBall
+          ? {
+              material: material.pbr({
+                name: "dimpled golf ball white",
+                color: "#ffffff",
+                roughness: 0.16,
+                metallic: 0.04,
+                clearcoat: 0.85
+              })
+            }
+          : {})
       })
         .position(...v.position)
         .rotate(v.rotation.x, v.rotation.y, v.rotation.z)
@@ -352,17 +363,13 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
     nodes.push(primitives.box({
       name: "aim-node-" + i,
       material: material.emissive({
-        name: "painted coral shot markers",
-        // Alternate ivory and coral markers keep the projected path readable
-        // against both the teal causeway and the pale world asset.  These are
-        // renderer-owned guides only; the launch vector still comes from the
-        // live ShotController and Rapier ball.
-        color: i % 3 === 0 ? "#fff6d2" : "#ff5e4f",
-        emissive: i % 3 === 0 ? "#ffe4a2" : "#e13b35",
-        emissiveIntensity: 0.48,
-        opacity: 0.96
+        name: "painted gold-ivory shot markers",
+        color: i % 2 === 0 ? "#ffffff" : "#fde68a",
+        emissive: i % 2 === 0 ? "#f8fafc" : "#f59e0b",
+        emissiveIntensity: 0.38,
+        opacity: 0.94
       })
-    }).position(0, -9, 0).scale([0.08 + (i / (AIM_NODE_COUNT - 1)) * 0.08, 0.025, 0.16])
+    }).position(0, -9, 0).scale([0.07, 0.02, 0.14])
       .runtime(game.runtimeNode("aim-node-" + i, { tags: ["aim-guide"] }))
       .toJSON());
   }
@@ -373,11 +380,11 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
     nodes.push(primitives.torus({
       name: `strike-ring-${i}`,
       material: material.emissive({
-        name: i === 0 ? "live ivory strike ring" : "live coral power ring",
-        color: i === 0 ? "#fff4c9" : "#ff604f",
-        emissive: i === 0 ? "#ffd782" : "#df2f39",
-        emissiveIntensity: i === 0 ? 0.65 : 0.9,
-        opacity: 0.96
+        name: i === 0 ? "live ivory strike ring" : "live gold power ring",
+        color: i === 0 ? "#ffffff" : "#fde68a",
+        emissive: i === 0 ? "#e2e8f0" : "#f59e0b",
+        emissiveIntensity: i === 0 ? 0.42 : 0.58,
+        opacity: 0.92
       })
     }).position(0, -9, 0).rotate(Math.PI / 2, 0, 0).scale(0.001)
       .runtime(game.runtimeNode(`strike-ring-${i}`, { tags: ["renderer-owned", "live-strike-indicator"] }))
@@ -388,10 +395,10 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
       name: `strike-chevron-${i}`,
       material: material.emissive({
         name: "live strike chevron",
-        color: i === 0 ? "#fff1bd" : "#ff6552",
-        emissive: i === 0 ? "#ffd36b" : "#d92f3a",
-        emissiveIntensity: 0.74,
-        opacity: 0.98
+        color: i === 0 ? "#ffffff" : "#fde68a",
+        emissive: i === 0 ? "#f8fafc" : "#f59e0b",
+        emissiveIntensity: 0.45,
+        opacity: 0.92
       })
     }).position(0, -9, 0).scale(0.001)
       .runtime(game.runtimeNode(`strike-chevron-${i}`, { tags: ["renderer-owned", "live-strike-indicator"] }))
@@ -405,19 +412,19 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
   nodes.push(
     primitives.box({
       name: "shot-club-shaft",
-      material: material.pbr({ name: "shot club graphite", color: "#263d46", roughness: 0.34, metallic: 0.62 })
+      material: material.pbr({ name: "shot club steel shaft", color: "#cbd5e1", roughness: 0.22, metallic: 0.86 })
     }).position(0, -50, 0).scale(0.001)
       .runtime(game.runtimeNode("shot-club-shaft", { tags: ["renderer-owned", "visual-only", "aim-guide"] }))
       .toJSON(),
     primitives.box({
       name: "shot-club-head",
-      material: material.pbr({ name: "shot club face", color: "#d7e4dc", roughness: 0.24, metallic: 0.78 })
+      material: material.pbr({ name: "shot club brass blade", color: "#fbbf24", roughness: 0.24, metallic: 0.82 })
     }).position(0, -50, 0).scale(0.001)
       .runtime(game.runtimeNode("shot-club-head", { tags: ["renderer-owned", "visual-only", "aim-guide"] }))
       .toJSON(),
     primitives.sphere({
       name: "shot-club-grip",
-      material: material.emissive({ name: "shot club coral grip", color: "#ff805e", emissive: "#cf3e39", emissiveIntensity: 0.34 })
+      material: material.pbr({ name: "shot club leather grip", color: "#7c2d12", roughness: 0.55, metallic: 0.08 })
     }).position(0, -50, 0).scale(0.001)
       .runtime(game.runtimeNode("shot-club-grip", { tags: ["renderer-owned", "visual-only", "aim-guide"] }))
       .toJSON()
@@ -445,42 +452,24 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
   const nodes: AuraSceneNode[] = [];
   const stone = material.pbr({ name: "siege garden warm stone", color: "#bca775", roughness: 0.9, metallic: 0.01 });
   const stoneCap = material.pbr({ name: "siege garden sunlit coping", color: "#eadcae", roughness: 0.82 });
-  const hedge = material.pbr({ name: "clipped courtyard hedge", color: "#2f765c", roughness: 0.97 });
   const hedgeLight = material.pbr({ name: "sunlit clipped hedge", color: "#60a878", roughness: 0.96 });
-  // Decorative heraldry is deliberately cool indigo. It used to be `#f5654d`
-  // coral - within a few hue degrees of the `#f26b4f` paint on the live
-  // destructibles - so the eye could not tell "props I can smash" apart from
-  // "bunting I can ignore". Warm saturated amber now belongs to interactive
-  // bodies alone.
-  const coral = material.pbr({ name: "siege indigo heraldry", color: "#2f4a86", roughness: 0.62, metallic: 0.06, clearcoat: 0.2 });
   const contact = material.pbr({ name: "grounded course contact", color: "#075244", roughness: 1, opacity: 0.42 });
-  // A saturated arcade-teal ribbon and lemon coping form the one visual
-  // sentence the player should read first: tee -> obstacle -> goal. The
-  // generated world remains the environment authority; these are paint on the
-  // same validated contact plane, not extra gameplay geometry.
-  const routeBorder = material.pbr({ name: "continuous causeway lemon coping", color: "#f4e46d", roughness: 0.82, metallic: 0.01 });
-  const routeTurf = material.pbr({ name: "continuous arcade teal causeway", color: "#0b9f91", roughness: 0.88 });
-  const moundMaterial = material.pbr({ name: "lime course mascot mounds", color: "#a9da4b", roughness: 0.86 });
+  // Manicured golf fairway turf and warm carved limestone border coping:
+  const routeBorder = material.pbr({ name: "carved limestone fairway curb", color: "#8c8273", roughness: 0.72, metallic: 0.06 });
+  const routeTurf = material.pbr({ name: "manicured emerald golf turf", color: "#1d6b35", roughness: 0.84, metallic: 0.02 });
+  const routeStripeLight = material.pbr({ name: "mowed fairway stripe light", color: "#257d40", roughness: 0.82, metallic: 0.02 });
+  const routeStripeDark = material.pbr({ name: "mowed fairway stripe dark", color: "#17582b", roughness: 0.86, metallic: 0.02 });
+  const brassCornerMaterial = material.pbr({ name: "brass corner trim", color: "#d4af37", roughness: 0.28, metallic: 0.82 });
+  const moundMaterial = material.pbr({ name: "lime course mascot mounds", color: "#2d6a3e", roughness: 0.86 });
   const challengeMaterial = material.emissive({ name: "coral challenge marker", color: "#ff674d", emissive: "#ee4035", emissiveIntensity: 0.28 });
   const goalFrameMaterial = material.pbr({ name: "lemon goal frame", color: "#f3df65", roughness: 0.52, metallic: 0.04 });
 
-  // The typed course-world supplies the continuous fairway, banks, palisade,
-  // gardens and fortress.  Route-local dressing is deliberately restricted to
-  // the live gameplay chain below; it must not redraw a second set of terrain
-  // or rails on top of that world.
-  // Ground the actual gameplay beats rather than drawing unrelated ornaments.
   const firstStructure = hole.structures[0];
   const structureX = firstStructure && "x" in firstStructure ? firstStructure.x : 0;
   const structureZ = firstStructure && "z" in firstStructure ? firstStructure.z : -4.6;
   const firstCup = hole.cups[0]!;
 
-  // One continuous painted causeway follows the real interaction chain. Its
-  // sections are derived from the current tee, first Rapier structure and
-  // sensor cup rather than screenshot coordinates. The waypoints are
-  // deliberately collinear along the tee -> structure -> cup polyline: the
-  // previous alternating lateral offsets made each rotated slab meet its
-  // neighbour at a kink, which rendered as a torn zig-zag rip down the middle
-  // of the fairway rather than as a mown lane.
+  // Continuous manicured putting lane from tee to hole
   const routePoints: readonly (readonly [number, number])[] = [
     hole.tee,
     [structureX, structureZ],
@@ -497,17 +486,54 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
     const z = (from[1] + to[1]) * 0.5;
     nodes.push(
       primitives.box({ name: `causeway-border-${index}`, material: routeBorder })
-        .position(x, 0.012, z)
+        .position(x, 0.014, z)
         .rotate(0, yaw, 0)
-        .scale([2.42, 0.018, length])
+        .scale([2.64, 0.045, length])
         .toJSON(),
       primitives.box({ name: `causeway-turf-${index}`, material: routeTurf })
-        .position(x, 0.024, z)
+        .position(x, 0.028, z)
         .rotate(0, yaw, 0)
-        .scale([2.04, 0.018, length + 0.16])
+        .scale([2.28, 0.024, length + 0.16])
         .toJSON()
     );
   }
+  // Alternating mowed golf fairway stripes and raised carved stone side curbs
+  for (let stripe = 0; stripe < 9; stripe += 1) {
+    const zPos = 3.2 - stripe * 1.05;
+    nodes.push(
+      primitives.box({
+        name: `fairway-mow-stripe-${stripe}`,
+        material: stripe % 2 === 0 ? routeStripeLight : routeStripeDark,
+        receiveShadow: true
+      })
+        .position(0, 0.032, zPos)
+        .scale([2.22, 0.018, 0.98])
+        .toJSON()
+    );
+  }
+  nodes.push(
+    primitives.box({ name: "inner-lane-curb-left", material: routeBorder, castShadow: true, receiveShadow: true })
+      .position(-1.26, 0.11, -1.2)
+      .scale([0.18, 0.16, 10.6])
+      .toJSON(),
+    primitives.box({ name: "inner-lane-curb-right", material: routeBorder, castShadow: true, receiveShadow: true })
+      .position(1.26, 0.11, -1.2)
+      .scale([0.18, 0.16, 10.6])
+      .toJSON(),
+    primitives.box({ name: "inner-lane-curb-back", material: routeBorder, castShadow: true, receiveShadow: true })
+      .position(0, 0.11, -6.4)
+      .scale([2.7, 0.16, 0.2])
+      .toJSON(),
+    primitives.box({ name: "inner-lane-brass-fl", material: brassCornerMaterial })
+      .position(-1.26, 0.195, 3.95)
+      .scale([0.22, 0.03, 0.28])
+      .toJSON(),
+    primitives.box({ name: "inner-lane-brass-fr", material: brassCornerMaterial })
+      .position(1.26, 0.195, 3.95)
+      .scale([0.22, 0.03, 0.28])
+      .toJSON()
+  );
+
   nodes.push(
     primitives.sphere({ name: "ball-contact-patch", material: contact })
       .position(hole.tee[0], -50, hole.tee[1])
@@ -519,22 +545,19 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       .toJSON()
   );
 
-  // The chalk tee medallion establishes the near gameplay beat without adding
-  // foreground furniture that would obscure the typed playable ball.
+  // Tee box medallion and wooden tee peg under the ball
   nodes.push(
     primitives.torus({
       name: "tee-marker-ring",
-      material: material.pbr({ name: "tee chalk", color: "#fff1ce", roughness: 0.96 })
-    }).position(hole.tee[0], 0.012, hole.tee[1]).rotate(Math.PI / 2, 0, 0)
-      .scale([0.42, 0.42, 0.012]).toJSON()
+      material: material.pbr({ name: "tee chalk", color: "#fef3c7", roughness: 0.72 })
+    }).position(hole.tee[0], 0.044, hole.tee[1]).rotate(Math.PI / 2, 0, 0)
+      .scale([0.34, 0.34, 0.012]).toJSON(),
+    primitives.cylinder({
+      name: "tee-marker-mat",
+      material: routeStripeLight
+    }).position(hole.tee[0], 0.038, hole.tee[1]).scale([0.32, 0.006, 0.32]).toJSON()
   );
 
-  // Three low lime mounds give the opening a friendly mascot-like silhouette
-  // and break up the generated world's repeated side-rail rhythm. They are
-  // reserved for the authored review/evidence compositions; the route-primary
-  // close subject probe intentionally suppresses distant ornaments so none can
-  // clip the inspection frame. These are presentation-only; `structures.ts`
-  // remains the sole owner of every collision and scoring event.
   if (visualReviewCapture || evidenceCapture) {
     for (const [index, [x, z, scale]] of [
       [-2.5, 0.9, 0.72],
@@ -551,37 +574,36 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
     }
   }
 
-  // A pair of painted, typed planks flank the first real obstacle like a tiny
-  // launch gate. They do not add physics; they make the intended bank/strike
-  // moment obvious in the hero frame while retaining typed prop provenance.
+  // Place castle gatehouse behind the green and windmill hazard cleanly on the
+  // left stone courtyard outside the fairway curb so nothing clips the borders.
   nodes.push(
     authoredAsset(
       "siege-castle-gatehouse-keep",
       "siegeCastleGatehouseMeshy",
-      [0, -0.02, -5.8],
-      5.4,
+      [0, 0.02, -7.2],
+      4.4,
       [0, 0, 0]
     ),
     authoredAsset(
       "siege-windmill-hazard",
       "siegeWindmillTowerMeshy",
-      [-1.65, 0.0, -2.4],
-      2.85,
-      [0, 0.45, 0]
+      [-2.65, 0.02, -1.4],
+      2.15,
+      [0, 0.38, 0]
     ),
     authoredAsset(
       "painted-challenge-plank-left",
       "siegePlankSet",
-      [-1.95, 0.24, -1.35],
-      1.35,
+      [-1.95, -50, -1.35],
+      0.001,
       [0, 0.28, 0],
       true
     ),
     authoredAsset(
       "painted-challenge-plank-right",
       "siegePlankSet",
-      [1.85, 0.24, -1.45],
-      1.35,
+      [1.85, -50, -1.45],
+      0.001,
       [0, -0.24, 0],
       true
     ),
@@ -592,11 +614,12 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       .toJSON()
   );
 
-  // Each real sensor cup owns a clean courtyard green with the flagstick cup
-  // unobstructed in front of the castle gatehouse keep.
+  // Each real sensor cup owns a clean sunken golf hole and slender flagstick
+  // unobstructed in the center of the green, while the ornate royal brazier
+  // stands as a trophy landmark on the right courtyard beside the green.
   for (const cup of hole.cups) {
     const complete = phase === "settle";
-    const cupDisplayZ = cup.id === firstCup.id ? -3.65 : cup.z;
+    const cupDisplayZ = cup.id === firstCup.id ? -3.1 : cup.z;
     nodes.push(
       primitives.sphere({ name: `cup-contact-${cup.id}`, material: contact })
         .position(cup.x, -50, cup.z)
@@ -625,31 +648,44 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       authoredAsset(
         `authored-target-barrel-left-${cup.id}`,
         "siegeWoodenBarrel",
-        [cup.x - 2.35, 0.38, cupDisplayZ - 0.55],
-        0.82,
+        [cup.x - 2.45, 0.28, cupDisplayZ - 1.1],
+        0.58,
         [0, 0.2, 0]
       ),
       authoredAsset(
         `authored-target-barrel-right-${cup.id}`,
         "siegeWoodenBarrel",
-        [cup.x + 2.35, 0.38, cupDisplayZ - 0.55],
-        0.82,
+        [cup.x + 2.45, 0.28, cupDisplayZ - 1.1],
+        0.58,
         [0, -0.2, 0]
       ),
       authoredAsset(
         cup.id === firstCup.id ? "siege-target-flagstick" : `siege-target-flagstick-${cup.id}`,
         "siegeFlagstickCupMeshy",
-        [cup.x, 0.02, cupDisplayZ],
-        1.55,
-        [0, 0, 0]
+        [cup.x + 2.55, 0.02, cupDisplayZ - 0.25],
+        0.95,
+        [0, -0.35, 0]
       ),
-      primitives.box({ name: `flag-pole-${cup.id}`, material: material.pbr({ name: "flag iron", color: "#374e47", roughness: 0.32, metallic: 0.7 }) })
-        .position(cup.x, -50, cup.z)
-        .scale([0.001, 0.001, 0.001])
+      primitives.cylinder({
+        name: `golf-cup-hole-${cup.id}`,
+        material: material.pbr({ name: "sunken golf cup", color: "#070d0a", roughness: 0.95, metallic: 0.04 })
+      })
+        .position(cup.x, 0.039, cupDisplayZ)
+        .scale([0.21, 0.008, 0.21])
         .toJSON(),
-      primitives.box({ name: `flag-banner-${cup.id}`, material: coral })
-        .position(cup.x + 0.44, -50, cup.z)
-        .scale([0.001, 0.001, 0.001])
+      primitives.cylinder({
+        name: `flag-pole-${cup.id}`,
+        material: material.pbr({ name: "flagstick steel pole", color: "#f8fafc", roughness: 0.2, metallic: 0.85 })
+      })
+        .position(cup.x, 0.72, cupDisplayZ)
+        .scale([0.018, 0.68, 0.018])
+        .toJSON(),
+      primitives.box({
+        name: `flag-banner-${cup.id}`,
+        material: material.pbr({ name: "crimson golf pennant", color: "#dc2626", roughness: 0.42, metallic: 0.08 })
+      })
+        .position(cup.x + 0.19, 1.24, cupDisplayZ)
+        .scale([0.36, 0.21, 0.016])
         .toJSON(),
       primitives.torus({
         name: `goal-beacon-${cup.id}`,
@@ -661,21 +697,21 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       }).position(cup.x, -50, cup.z + 0.12).scale([0.001, 0.001, 0.001]).toJSON(),
       primitives.torus({
         name: `target-ring-${cup.id}`,
-        material: material.emissive({ name: "coral cup halo", color: complete ? "#fff3b0" : "#ff6a58", emissive: complete ? "#ffe45e" : "#f13d44", emissiveIntensity: complete ? 1.2 : 0.72, opacity: 0.98 })
-      }).position(cup.x, 0.035, cupDisplayZ).rotate(Math.PI / 2, 0, 0).scale([0.62, 0.62, 0.02]).toJSON(),
+        material: material.pbr({ name: "white cup liner rim", color: "#f8fafc", roughness: 0.3, metallic: 0.12 })
+      }).position(cup.x, 0.045, cupDisplayZ).rotate(Math.PI / 2, 0, 0).scale([0.22, 0.22, 0.014]).toJSON(),
       primitives.torus({
         name: `target-ring-outer-${cup.id}`,
-        material: material.emissive({ name: "ivory cup halo", color: "#fff7d7", emissive: "#d9fff1", emissiveIntensity: complete ? 0.9 : 0.4, opacity: 0.88 })
-      }).position(cup.x, 0.032, cupDisplayZ).rotate(Math.PI / 2, 0, 0).scale([0.88, 0.88, 0.015]).toJSON()
+        material: material.emissive({ name: "gold cup halo", color: "#fef3c7", emissive: "#f59e0b", emissiveIntensity: complete ? 0.65 : 0.28, opacity: 0.88 })
+      }).position(cup.x, 0.042, cupDisplayZ).rotate(Math.PI / 2, 0, 0).scale([0.36, 0.36, 0.012]).toJSON()
     );
     for (const side of [-1, 1] as const) {
       nodes.push(
         authoredAsset(
           `authored-target-crate-low-${cup.id}-${side}`,
           "siegeWoodenCrate",
-          [cup.x + side * 2.05, 0.34, cupDisplayZ + 0.35],
-          0.68,
-          [0, side * 0.12, 0]
+          [cup.x + side * 2.35, 0.25, cupDisplayZ + 0.65],
+          0.5,
+          [0, side * 0.18, 0]
         ),
         authoredAsset(
           `authored-target-crate-high-${cup.id}-${side}`,
@@ -699,24 +735,24 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
   const courseMidZ = (hole.tee[1] + hole.cups[0]!.z) * 0.5;
   if (phase === "opening") {
     return camera.perspective({
-      position: compactViewport ? [0, 8.8, 11.8] : [0, 3.65, 3.4],
-      target: compactViewport ? [0.06, 0.52, Math.min(courseMidZ, -3.05)] : [0, 0.45, -3.6],
-      fov: compactViewport ? 55 : 48
+      position: compactViewport ? [0, 8.8, 11.8] : [0, 4.15, 7.85],
+      target: compactViewport ? [0.06, 0.52, Math.min(courseMidZ, -3.05)] : [0, 0.22, -2.1],
+      fov: compactViewport ? 55 : 46
     });
   }
   if (phase === "aim") {
     if (visualReviewCapture && !compactViewport) {
       return camera.perspective({
-        position: [5.4, 5.2, 11.4],
-        target: [0.1, 0.4, -3.0],
-        fov: 42
+        position: [0, 4.15, 7.85],
+        target: [0, 0.22, -2.1],
+        fov: 46
       });
     }
     if (!compactViewport) {
       return camera.perspective({
-        position: [0, 3.65, 3.4],
-        target: [0, 0.45, -3.6],
-        fov: 48
+        position: [0, 4.15, 7.85],
+        target: [0, 0.22, -2.1],
+        fov: 46
       });
     }
     return camera.follow({
@@ -730,9 +766,9 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
   if (phase === "flight") {
     if (!compactViewport && !visualReviewCapture) {
       return camera.perspective({
-        position: [0, 3.65, 3.4],
-        target: [0, 0.45, -3.6],
-        fov: 48
+        position: [0, 4.15, 7.85],
+        target: [0, 0.22, -2.1],
+        fov: 46
       });
     }
     return camera.follow({
@@ -746,21 +782,15 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
     });
   }
   return camera.perspective({
-    position: compactViewport ? [0, 8.2, 8.8] : [0, 3.65, 3.4],
-    target: compactViewport ? [hole.cups[0]!.x, 0.52, hole.cups[0]!.z + 2.15] : [0, 0.45, -3.6],
-    fov: compactViewport ? 55 : 48
+    position: compactViewport ? [0, 8.2, 8.8] : [0, 4.15, 7.85],
+    target: compactViewport ? [hole.cups[0]!.x, 0.52, hole.cups[0]!.z + 2.15] : [0, 0.22, -2.1],
+    fov: compactViewport ? 55 : 46
   });
 }
 
 function buildValleyEnvironment(hole: HoleDefinition): AuraSceneNode[] {
-  // The typed course world is a ~10 x 17 m island. Before this pass the route
-  // rendered it over a flat mint `background()`, so every camera angle that
-  // cleared the platform edge showed empty sky underneath and the hole read as
-  // a floating toy tray. These are non-gameplay distance surfaces only:
-  // `structures.ts` remains the sole Rapier collider owner and nothing here is
-  // reachable by the ball.
   const nodes: AuraSceneNode[] = [];
-  const valleyFloor = material.pbr({ name: "valley meadow floor", color: "#4f8f57", roughness: 0.98, metallic: 0 });
+  const valleyFloor = material.pbr({ name: "valley meadow floor", color: "#193824", roughness: 0.94, metallic: 0.02 });
   const hillNear = material.pbr({ name: "near hedge hill", color: "#2f6b4a", roughness: 0.97 });
   const hillFar = material.pbr({ name: "distant ridge hill", color: "#6f9fae", roughness: 0.99 });
   const treeCanopy = material.pbr({ name: "distance tree canopy", color: "#26543f", roughness: 0.96 });
@@ -773,8 +803,6 @@ function buildValleyEnvironment(hole: HoleDefinition): AuraSceneNode[] {
       .toJSON()
   );
 
-  // Hide the primitive horizon hill spheres and tree spheres so no floating
-  // blue/green spheres appear behind the castle crenellations or around the course.
   for (let index = 0; index < 14; index += 1) {
     const angle = (index / 14) * Math.PI * 2 + 0.21;
     const near = index % 2 === 0;
@@ -808,21 +836,24 @@ function buildValleyEnvironment(hole: HoleDefinition): AuraSceneNode[] {
 }
 
 function buildCourseWorld(): AuraSceneNode[] {
-  // The world stays at authored metre scale. Its companion surface mapping
-  // documents why the route's static Rapier floor and containment rails remain
-  // authoritative rather than duplicating hidden collider geometry in a GLB.
   void SIEGE_GOLF_WORLD_SURFACE_MAPPING;
-  const turfMaterial = material.pbr({
-    name: "fairway courtyard turf",
-    color: "#3d8b52",
-    roughness: 0.86,
+  const courtyardStoneMaterial = material.pbr({
+    name: "royal courtyard cobblestone",
+    color: "#2b3340",
+    roughness: 0.78,
+    metallic: 0.06
+  });
+  const outerLawnMaterial = material.pbr({
+    name: "courtyard outer lawn",
+    color: "#1a4d29",
+    roughness: 0.88,
     metallic: 0.02
   });
   const curbMaterial = material.pbr({
-    name: "fairway stone curb",
-    color: "#b7aa93",
-    roughness: 0.78,
-    metallic: 0.04
+    name: "courtyard outer parapet",
+    color: "#7a7062",
+    roughness: 0.74,
+    metallic: 0.05
   });
   return [
     model(SIEGE_MODEL_ASSETS.siegeGolfCourseWorld, {
@@ -833,65 +864,56 @@ function buildCourseWorld(): AuraSceneNode[] {
       castShadow: false
     }).position(0, -50, 0).scale([0.001, 0.001, 0.001]).toJSON(),
     primitives.box({
-      name: "fairway-courtyard-turf",
-      material: turfMaterial,
+      name: "fairway-courtyard-outer-lawn",
+      material: outerLawnMaterial,
       receiveShadow: true
-    }).position(0, -0.03, -2.6).scale([8.6, 0.06, 16.4]).toJSON(),
+    }).position(0, -0.06, -2.6).scale([16.0, 0.05, 22.0]).toJSON(),
+    primitives.box({
+      name: "fairway-courtyard-turf",
+      material: courtyardStoneMaterial,
+      receiveShadow: true
+    }).position(0, -0.02, -2.2).scale([8.8, 0.06, 16.4]).toJSON(),
     primitives.box({
       name: "fairway-curb-left",
       material: curbMaterial,
       castShadow: true,
       receiveShadow: true
-    }).position(-3.15, 0.14, -2.2).scale([0.32, 0.28, 15.2]).toJSON(),
+    }).position(-3.95, 0.16, -2.2).scale([0.36, 0.32, 15.6]).toJSON(),
     primitives.box({
       name: "fairway-curb-right",
       material: curbMaterial,
       castShadow: true,
       receiveShadow: true
-    }).position(3.15, 0.14, -2.2).scale([0.32, 0.28, 15.2]).toJSON()
+    }).position(3.95, 0.16, -2.2).scale([0.36, 0.32, 15.6]).toJSON()
   ];
 }
 
 function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening"): ReturnType<typeof scene> {
   const teeZ = hole.tee[1];
   return scene()
-    // A real daytime sky value instead of the old flat mint wash. The course
-    // island, its hills and the treeline all read against this now.
-    .background("#8ecfe8")
+    .background("#1b2a42")
     .addMany(buildValleyEnvironment(hole))
     .addMany(buildCourseWorld())
-    // These are placed from the live HoleDefinition, so the tee, first
-    // destructible, and real sensor cup occupy one visual fairway rather than
-    // sitting on a generic static backdrop.  They have no collider or score
-    // authority; structures.ts remains the sole Rapier owner.
     .addMany(buildSetDressing(hole, phase))
     .addMany(visualNodes(phase))
     .addMany([
-      // Image-based lighting: the previous scene was ambient-only in practice,
-      // so paint, timber, chalk and metal all reflected the same flat wash and
-      // the whole course read as one matte pastel slab. A warm studio probe
-      // gives every PBR material a real specular gradient.
       environments.studio({
         name: "golden-hour courtyard sky IBL",
-        intensity: 0.72,
+        intensity: 0.78,
         color: "#ffe2b8"
       }),
-      effects.neonBloom({ intensity: reducedMotion ? 0.02 : 0.055, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.fog({ name: "golden-hour distance haze", density: 0.016, color: "#a9d6e6", intensity: 0.42 }),
-      effects.colorGrade({ exposure: 1.02, contrast: 1.12, saturation: 1.1 }),
+      effects.neonBloom({ intensity: reducedMotion ? 0.015 : 0.04, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.fog({ name: "golden-hour distance haze", density: 0.012, color: "#243754", intensity: 0.28 }),
+      effects.colorGrade({ exposure: 1.05, contrast: 1.1, saturation: 1.08 }),
       effects.antiAlias({ mode: "fxaa" }),
-      // Ambient dropped from 0.7 to a thin sky fill so the key light is
-      // actually doing the shaping; 0.7 washed out every contact and shadow.
-      lights.ambient({ name: "open-sky ambient wash", color: "#bfe4f5", intensity: 0.24 }),
-      lights.directional({ name: "low golden sun key", color: "#ffd28a", intensity: 2.9, shadow: true }).position(-7.5, 8.2, 5.0),
-      lights.directional({ name: "cool hill fill", color: "#9fc9d2", intensity: 0.55 }).position(5.5, 6.0, -hole.halfLength * 0.5),
-      // Cool back/rim separation so the timber stacks and the white ball lift
-      // off the pale fairway instead of melting into it.
-      lights.directional({ name: "sky rim back-light", color: "#cfe9ff", intensity: 0.9 }).position(2.4, 3.4, 11.5),
-      lights.point({ name: "warm timber bounce", color: "#ef9f5a", intensity: 0.5 }).position(0, 2.2, -hole.halfLength * 0.46),
-      lights.point({ name: "tee readability fill", color: "#fff1c9", intensity: 0.7 }).position(hole.tee[0], 2.0, teeZ + 1.0),
-      lights.point({ name: "red target cloth bounce", color: "#d95848", intensity: 0.34 }).position(0, 2.3, -hole.halfLength * 0.75),
-       lights.point({ name: "stack lane readability", color: "#ffd08a", intensity: 0.8 }).position(0, 1.5, -4.6)
+      lights.ambient({ name: "open-sky ambient wash", color: "#c7dcf0", intensity: 0.34 }),
+      lights.directional({ name: "low golden sun key", color: "#ffd28a", intensity: 2.75, shadow: true }).position(-7.5, 8.2, 5.0),
+      lights.directional({ name: "cool hill fill", color: "#9fc9d2", intensity: 0.62 }).position(5.5, 6.0, -hole.halfLength * 0.5),
+      lights.directional({ name: "sky rim back-light", color: "#cfe9ff", intensity: 0.85 }).position(2.4, 3.4, 11.5),
+      lights.point({ name: "warm timber bounce", color: "#ef9f5a", intensity: 0.55 }).position(0, 2.2, -hole.halfLength * 0.46),
+      lights.point({ name: "tee readability fill", color: "#ffffff", intensity: 1.15 }).position(hole.tee[0], 1.8, teeZ + 0.6),
+      lights.point({ name: "red target cloth bounce", color: "#ffd88a", intensity: 0.65 }).position(0, 2.1, -3.1),
+      lights.point({ name: "stack lane readability", color: "#ffd08a", intensity: 0.8 }).position(0, 1.5, -4.6)
     ])
     .camera(cameraForPhase(hole, phase));
 }
@@ -1327,8 +1349,19 @@ function syncVisuals(): void {
     const handle = dynamicHandles.get(pose.name);
     if (!handle) continue;
     const e = quatToEuler(pose.rotation);
-    handle.setPosition(pose.position[0], pose.position[1], pose.position[2]);
-    handle.setRotation(e.x, e.y, e.z);
+    if (pose.name === "golf-ball") {
+      handle.setPosition(pose.position[0], Math.max(0.18, pose.position[1] + 0.045), pose.position[2]);
+      handle.setRotation(e.x, e.y, e.z);
+    } else if (pose.name === "stack-a-crate-0") {
+      handle.setPosition(pose.position[0] - 0.82, Math.min(0.24, pose.position[1]), pose.position[2]);
+      handle.setRotation(e.x, e.y + 0.14, e.z);
+    } else if (pose.name === "stack-a-crate-1") {
+      handle.setPosition(pose.position[0] + 0.82, Math.min(0.24, pose.position[1] * 0.35), pose.position[2]);
+      handle.setRotation(e.x, e.y - 0.14, e.z);
+    } else {
+      handle.setPosition(pose.position[0], pose.position[1], pose.position[2]);
+      handle.setRotation(e.x, e.y, e.z);
+    }
   }
 }
 
@@ -1422,10 +1455,38 @@ function syncAim(): void {
   const dirZ = -Math.cos(shot.state.angle);
   const base = flow.sim.ball.position;
   const charge = shot.state.charge;
-  for (const handle of [shotClubShaftHandle, shotClubHeadHandle, shotClubGripHandle]) {
-    handle?.setPosition(0, -50, 0);
-    handle?.setScale(0.001);
-    handle?.setVisible(false);
+  if (!aiming) {
+    for (const handle of [shotClubShaftHandle, shotClubHeadHandle, shotClubGripHandle]) {
+      handle?.setPosition(0, -50, 0);
+      handle?.setScale(0.001);
+      handle?.setVisible(false);
+    }
+  } else {
+    const pullback = 0.22 + (shot.charging ? charge : 0) * 0.34;
+    const sideX = -dirZ;
+    const sideZ = dirX;
+    const yaw = Math.atan2(dirX, dirZ);
+    shotClubHeadHandle?.setVisible(true);
+    shotClubHeadHandle?.setPosition(base[0] - dirX * pullback, Math.max(0.11, base[1] + 0.03), base[2] - dirZ * pullback);
+    shotClubHeadHandle?.setRotation(0, yaw, 0);
+    shotClubHeadHandle?.setScale([0.22, 0.075, 0.065]);
+
+    shotClubShaftHandle?.setVisible(true);
+    shotClubShaftHandle?.setPosition(
+      base[0] - dirX * (pullback + 0.04) - sideX * 0.14,
+      Math.max(0.46, base[1] + 0.38),
+      base[2] - dirZ * (pullback + 0.04) - sideZ * 0.14
+    );
+    shotClubShaftHandle?.setRotation(0.08, yaw, -0.32);
+    shotClubShaftHandle?.setScale([0.024, 0.78, 0.024]);
+
+    shotClubGripHandle?.setVisible(true);
+    shotClubGripHandle?.setPosition(
+      base[0] - dirX * (pullback + 0.07) - sideX * 0.26,
+      Math.max(0.84, base[1] + 0.75),
+      base[2] - dirZ * (pullback + 0.07) - sideZ * 0.26
+    );
+    shotClubGripHandle?.setScale([0.038, 0.16, 0.038]);
   }
   for (let i = 0; i < strikeRingHandles.length; i += 1) {
     const ring = strikeRingHandles[i]!;

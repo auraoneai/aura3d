@@ -819,8 +819,8 @@ function exitNodes(): AuraSceneNode[] {
       name: "exit-sign",
       material: material.emissive({ name: "exit sign material", color: "#0d2417", emissive: "#58d4dc", emissiveIntensity: 0.25, opacity: 0.85 })
     })
-      .position(0, 2.42, -6.92)
-      .scale([1.2, 0.28, 0.06])
+      .position(0, -20, -6.92)
+      .scale([0.001, 0.001, 0.001])
       .toJSON()
   ];
 }
@@ -961,17 +961,20 @@ function debugOverlayNodes(): AuraSceneNode[] {
 }
 
 function meshyThiefCandidateNodes(): AuraSceneNode[] {
-  // Always mount the 3D Meshy museum thief and security guard actors in the
-  // central rotunda on both default and review routes alongside the marble bust
-  // exhibit and laser security pylons.
+  // Keep the candidate Meshy thief and rotunda guard assets registered for
+  // asset validation while parking them out of the central rotunda floor so the
+  // marble bust pedestal and laser security pylons read cleanly without two
+  // extra motionless characters crowding the center circle.
   return [
     model(assets.galleryThief, {
       name: "Meshy museum thief candidate",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.68
+      targetMaxDimension: 1.68,
+      visible: false
     })
-      .position(-1.25, 0, 0.45)
+      .position(0, -25, 0)
+      .scale([0.001, 0.001, 0.001])
       .rotate(0, 2.35, 0)
       .runtime(game.runtimeNode("gallery-meshy-thief-candidate", {
         tags: ["typed-asset", "thief-identity", "meshy-candidate", "review-set-dressing", "non-colliding"]
@@ -981,9 +984,11 @@ function meshyThiefCandidateNodes(): AuraSceneNode[] {
       name: "gallery-rotunda-guard-3d",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.78
+      targetMaxDimension: 1.78,
+      visible: false
     })
-      .position(1.45, 0, -0.55)
+      .position(0, -25, 0)
+      .scale([0.001, 0.001, 0.001])
       .rotate(0, -0.75, 0)
       .runtime(game.runtimeNode("gallery-rotunda-guard-3d", {
         tags: ["typed-asset", "guard-identity", "rotunda-sentry", "non-colliding"]
@@ -996,6 +1001,13 @@ function tuneGalleryEnvironmentNodes(rawNodes: AuraSceneNode[]): AuraSceneNode[]
   return rawNodes.map((raw) => {
     const node = { ...(raw as unknown as Record<string, unknown>) };
     const name = typeof node.name === "string" ? node.name : "";
+    if (name === "service exit room label") {
+      // Prevent SERVICE EXIT 3D text at (-1.42, 2.17, -6.83) from colliding
+      // directly behind ROTUNDA at (-1.1, 2.78, -6.83) in the oblique camera view.
+      node.visible = false;
+      node.position = [0, -20, 0];
+      node.scale = [0.001, 0.001, 0.001];
+    }
     if (node.material && typeof node.material === "object") {
       const mat = { ...(node.material as Record<string, unknown>) };
       if (name.includes("room label") || name === "museum authored practical fixtures") {
@@ -1385,6 +1397,9 @@ function setVisibleByNames(names: readonly string[], visible: boolean): void {
 function syncFloorVisuals(): void {
   const layout = runtime.layout;
   app.nodes.get("museum-interior")?.setVisible(layout.id === 1);
+  app.nodes.get("service exit room label")?.setVisible(false);
+  app.nodes.get("gallery-meshy-thief-candidate")?.setVisible(false);
+  app.nodes.get("gallery-rotunda-guard-3d")?.setVisible(false);
   setVisibleByNames(floorScopedNodeNames.get(2) ?? [], layout.id === 2);
   setVisibleByNames(GALLERY_SUITE_DISPLAY_NODE_NAMES, layout.id === 1);
   layout.pedestals.forEach((pedestal, slot) => {

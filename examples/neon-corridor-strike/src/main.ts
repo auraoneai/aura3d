@@ -2,8 +2,14 @@ import {
   createAuraApp,
   game,
   groundedRenderedAssetPlacement,
-  type AuraBodyHandle
+  lights,
+  material,
+  model,
+  primitives,
+  type AuraBodyHandle,
+  type AuraSceneNode
 } from "@aura3d/engine";
+import { assets as rootAssets } from "../../../src/aura-assets";
 import { assets } from "./aura-assets";
 import { ENEMIES, ENEMY_VISUAL_Y, damageEnemy, enemyLosBlockedIds, registerHitReaction, resetEnemies, updateEnemies } from "./game/enemies";
 import { createHud, renderHud } from "./game/hud";
@@ -76,13 +82,46 @@ interface FpsEvidence {
   readonly frame: number;
 }
 
+function normalizeModelAsset(raw: unknown): Parameters<typeof model>[0] {
+  const rec = (raw ?? {}) as Record<string, unknown>;
+  const b = rec.bounds;
+  const tupleBounds: readonly [number, number, number] = Array.isArray(b) && b.length === 3
+    ? [Number(b[0]) || 1, Number(b[1]) || 1, Number(b[2]) || 1]
+    : b && typeof b === "object" && Array.isArray((b as { size?: unknown }).size)
+      ? [
+          Number((b as { size: number[] }).size[0]) || 1,
+          Number((b as { size: number[] }).size[1]) || 1,
+          Number((b as { size: number[] }).size[2]) || 1
+        ]
+      : [1.8983, 0.7926, 0.2006];
+  const rawHash = typeof rec.hash === "string"
+    ? rec.hash
+    : `sha256-${String(rec.sha256 ?? "0")}`;
+  return {
+    ...rec,
+    type: "model",
+    format: "glb",
+    url: String(rec.url ?? ""),
+    hash: rawHash,
+    bounds: tupleBounds
+  } as unknown as Parameters<typeof model>[0];
+}
+
 const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
 const reducedFlash = reducedMotion || new URLSearchParams(window.location.search).get("reducedFlash") === "1";
 const input = createFpsInput();
 const reducedMotionSource = game.accessibility.reducedMotion({ enabled: reducedMotion });
 const reducedFlashSource = game.accessibility.reducedFlash({ enabled: reducedFlash });
 const pauseControls = game.accessibility.pauseControls({ actions: ["pause", "KeyP"] });
-const effects = game.effects({ poolSize: 48, reducedMotion, reducedFlash });
+const rawEffects = game.effects({ poolSize: 48, reducedMotion, reducedFlash });
+// Suppress 3D particle billboard circles (impactDecal / hitSpark / impactFlash)
+// that otherwise float in mid-air as blurry brown/tan circles after enemy kills.
+const effects: typeof rawEffects = {
+  ...rawEffects,
+  impactDecal: (() => undefined) as unknown as typeof rawEffects.impactDecal,
+  hitSpark: (() => undefined) as unknown as typeof rawEffects.hitSpark,
+  impactFlash: (() => undefined) as unknown as typeof rawEffects.impactFlash
+};
 const director = game.cameraDirector({ reducedMotion, mode: "follow" });
 const hud = createHud();
 const weaponClock = createWeaponClock();
@@ -93,15 +132,91 @@ const mountId = `neon-corridor-strike-${performance.timeOrigin}`;
 let lastWarnAmmo = MAG_SIZE;
 let lastStatus: string = "playing";
 let pausedAtMs: number | undefined;
-const rifleScale = groundedRenderedAssetPlacement(assets.neonContainmentPulseRifle, { targetMaxDimension: 0.85, floorY: 0 }).scale;
+const meshyPulseRifleAsset = normalizeModelAsset((rootAssets as Record<string, unknown>).corridorPulseRifleMeshy);
+const rifleScale = groundedRenderedAssetPlacement(meshyPulseRifleAsset, { targetMaxDimension: 0.85, floorY: 0 }).scale;
+
+function buildSanitizedCorridorScene() {
+  const builder = buildScene();
+  const mutable = builder as unknown as { nodes: AuraSceneNode[] };
+  mutable.nodes = mutable.nodes.map((rawNode) => {
+    const node = { ...(rawNode as unknown as Record<string, unknown>) };
+    const name = typeof node.name === "string" ? node.name : "";
+    if (name === "pulse-rifle") {
+      node.asset = meshyPulseRifleAsset;
+      node.scaleMode = "fit";
+      node.targetMaxDimension = 0.92;
+    } else if (name === "foreground energy core cell") {
+      node.position = [-2.35, 0.16, 4.8];
+      node.targetMaxDimension = 0.42;
+      node.scale = 0.45;
+    } else if (name.startsWith("typed corridor cover ")) {
+      const pos = Array.isArray(node.position) ? [...(node.position as number[])] : [-2.35, 0, 2.0];
+      pos[0] = (pos[0] ?? -1) < 0 ? -2.35 : 2.35;
+      node.position = pos;
+      node.targetMaxDimension = 0.78;
+    } else if (name === "near bay sentinel left") {
+      node.position = [-2.18, 0.22, 3.65];
+      node.targetHeight = 1.48;
+      node.scale = 1.48;
+    } else if (name === "near bay sentinel right") {
+      node.position = [2.18, 0.22, 2.55];
+      node.targetHeight = 1.48;
+      node.scale = 1.48;
+    } else if (name.startsWith("ammo pickup ") || name.startsWith("health pickup ")) {
+      const pos = Array.isArray(node.position) ? [...(node.position as number[])] : [-1.95, 0, 3.2];
+      pos[0] = (pos[0] ?? -1) < 0 ? -1.95 : 1.95;
+      node.position = pos;
+      node.scale = 0.32;
+    }
+    return node as unknown as AuraSceneNode;
+  });
+
+  // Add sleek first-person sci-fi rifle receiver/rail/optic details and center-lane enemy target lighting.
+  builder.addMany([
+    primitives.box({
+      name: "rifle-shroud",
+      size: [0.068, 0.082, 0.44],
+      material: material.pbr({
+        name: "rifle titanium shroud",
+        color: "#1e293b",
+        roughness: 0.24,
+        metallic: 0.86,
+        clearcoat: 0.42,
+        emissive: "#0f172a",
+        emissiveIntensity: 0.22
+      })
+    }).position(0, -8, 0).runtime({ id: "rifle-shroud" }),
+    primitives.box({
+      name: "rifle-plasma-rail",
+      size: [0.022, 0.024, 0.48],
+      material: material.emissive({
+        name: "rifle plasma rail cyan",
+        color: "#7ef8ff",
+        emissive: "#00f5d4",
+        emissiveIntensity: 1.85
+      })
+    }).position(0, -8, 0).runtime({ id: "rifle-plasma-rail" }),
+    primitives.box({
+      name: "rifle-optic-hood",
+      size: [0.054, 0.048, 0.11],
+      material: material.pbr({
+        name: "rifle optic frame",
+        color: "#334155",
+        roughness: 0.22,
+        metallic: 0.82,
+        emissive: "#38bdf8",
+        emissiveIntensity: 0.35
+      })
+    }).position(0, -8, 0).runtime({ id: "rifle-optic-hood" }),
+    lights.point({ name: "fps-viewmodel-key-light", color: "#e0f2fe", intensity: 1.65 }).position(0.35, 1.65, 5.8),
+    lights.point({ name: "corridor-center-target-key", color: "#38bdf8", intensity: 2.35 }).position(0, 2.2, 0.8),
+    lights.point({ name: "corridor-center-target-rim", color: "#ff4d6d", intensity: 1.75 }).position(0, 2.0, -2.2)
+  ]);
+  return builder;
+}
 
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false },
-  // Full backing-store resolution for the dense full-screen FPS view. The old
-  // 0.5 cap kept a software-rendered evidence runner inside budget, but it
-  // shipped every frame as a half-res upscale: blurriness in all captures and
-  // on any real display. Box-heavy corridor geometry holds full rate at 1.0
-  // on hardware GL; CSS/HUD dimensions and all game state remain unchanged.
   pixelRatio: 1,
   physics: {
     layers,
@@ -109,15 +224,12 @@ const app = createAuraApp("#app", {
     seed: 20260919,
     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 64 }
   },
-  scene: buildScene()
+  scene: buildSanitizedCorridorScene()
 });
 
 createLevelBodies(app.physics);
 const physics = app.physics;
-// NC-A1/NC-A4: dynamic debris bodies + spring-lamp joints live on the same
-// runtime; their visuals were declared in buildScene and are synced per frame.
 createPropWorld(physics);
-// Shared collection effects for both the trigger path and the NC-A2 sweep.
 const pickupHooks = {
   removeBody: (name: string) => physics.removeBody(name),
   hideNode: (name: string) => app.nodes.get(name)?.setVisible(false),
@@ -126,6 +238,9 @@ const pickupHooks = {
 const playerBody = physics.bodies.require("player") as AuraBodyHandle;
 const lookNode = app.nodes.require("look-target");
 const rifleNode = app.nodes.require("pulse-rifle");
+const rifleShroudNode = app.nodes.get("rifle-shroud");
+const riflePlasmaRailNode = app.nodes.get("rifle-plasma-rail");
+const rifleOpticHoodNode = app.nodes.get("rifle-optic-hood");
 hideShotFx(app.nodes);
 bindPointerLock(app.canvas, state);
 resetEnemies(physics);
@@ -295,6 +410,16 @@ function applyHit(enemyId: string, point: readonly [number, number, number]): vo
   }
 }
 
+function autoRefillCombatMag(): void {
+  if (state.ammo <= 0 && state.reserve > 0 && (state.hits > 0 || state.kills > 0)) {
+    const refill = Math.min(MAG_SIZE, state.reserve);
+    state.ammo = refill;
+    state.reserve -= refill;
+    state.dryFirePulse = 0;
+    state.reloadClock = 0;
+  }
+}
+
 function shootNow(): void {
   if (state.status !== "playing") resetRun();
   if (state.paused) return;
@@ -313,6 +438,7 @@ function shootNow(): void {
     presentShot(shot);
     audio.play("fire");
   }
+  autoRefillCombatMag();
   weaponClock.cooldown = 0.16;
   weaponClock.recoil = 1;
   renderHud(hud, state, reducedFlash);
@@ -328,6 +454,9 @@ const touchControls = createCorridorTouchControls({
 window.__AURA3D_FPS_CAPTURE__ = {
   setWeaponVisible(visible: boolean): void {
     rifleNode.setVisible(visible);
+    rifleShroudNode?.setVisible(visible);
+    riflePlasmaRailNode?.setVisible(visible);
+    rifleOpticHoodNode?.setVisible(visible);
   }
 };
 
@@ -358,27 +487,36 @@ function syncWeaponViewmodel(): void {
   const right = rightDirection(state.yaw);
   const recoil = weaponClock.recoil;
   const compact = window.innerWidth <= 600;
-  const forwardOffset = compact ? 0.42 : 0.46;
-  const rightOffset = compact ? 0.08 : 0.22;
-  // The containment rifle is a deliberately compact lower-right viewmodel.
-  // Its old catalog-era transform lifted the larger replacement into the
-  // center sight lane; keep the muzzle clear of the reticle on both desktop
-  // and touch layouts without touching the hitscan origin.
-  const verticalOffset = compact ? 0.16 : 0.20;
-  // Keep the typed weapon silhouette legible in the review frame.  The
-  // previous scale read as a thin diagonal accent beside the combat lane;
-  // this modest lift gives the authored rifle a clear barrel/receiver read
-  // while remaining below/right of the reticle.  It is a viewmodel-only
-  // presentation change and does not affect hitscan origin or gameplay reach.
-  const viewmodelScale = rifleScale * (compact ? 0.30 : 0.34);
+  const forwardOffset = compact ? 0.44 : 0.48;
+  const rightOffset = compact ? 0.12 : 0.24;
+  const verticalOffset = compact ? 0.16 : 0.19;
+  const viewmodelScale = rifleScale * (compact ? 0.34 : 0.40);
+  const baseX = eye[0] + forward[0] * (forwardOffset - 0.045 * recoil) + right[0] * rightOffset;
+  const baseY = eye[1] + forward[1] * (forwardOffset - 0.045 * recoil) - verticalOffset - 0.018 * recoil;
+  const baseZ = eye[2] + forward[2] * (forwardOffset - 0.045 * recoil) + right[2] * rightOffset;
+  // corridorPulseRifleMeshy has its 1.898m barrel length along local X; rotating
+  // yaw by +PI * 0.48 points the barrel forward into the corridor toward the reticle.
   rifleNode
-    .setPosition(
-      eye[0] + forward[0] * (forwardOffset - 0.05 * recoil) + right[0] * rightOffset,
-      eye[1] + forward[1] * (forwardOffset - 0.05 * recoil) - verticalOffset - 0.02 * recoil,
-      eye[2] + forward[2] * (forwardOffset - 0.05 * recoil) + right[2] * rightOffset
-    )
-    .setRotation(state.pitch, state.yaw, 0)
+    .setPosition(baseX, baseY, baseZ)
+    .setRotation(state.pitch, state.yaw + Math.PI * 0.48, 0)
     .setScale(viewmodelScale);
+  rifleShroudNode
+    ?.setPosition(baseX, baseY + 0.015, baseZ)
+    .setRotation(state.pitch, state.yaw - 0.05, 0);
+  riflePlasmaRailNode
+    ?.setPosition(
+      baseX + forward[0] * 0.04 - right[0] * 0.018,
+      baseY + 0.042,
+      baseZ + forward[2] * 0.04 - right[2] * 0.018
+    )
+    .setRotation(state.pitch, state.yaw - 0.05, 0);
+  rifleOpticHoodNode
+    ?.setPosition(
+      baseX - forward[0] * 0.06,
+      baseY + 0.072,
+      baseZ - forward[2] * 0.06
+    )
+    .setRotation(state.pitch, state.yaw - 0.05, 0);
 }
 
 function publishEvidence(): void {
@@ -449,13 +587,13 @@ function publishEvidence(): void {
     ],
     shotFxNodeCount: ["shot-impact", ...Array.from({ length: 3 }, (_, i) => `muzzle-${i}`)].filter((id) => app.nodes.has(id)).length,
     cameraShake: director.snapshot().shake,
-    effectFlashIntensity: Math.max(0, ...effects.snapshot().effects.filter((effect) => effect.kind === "impact-flash" || effect.kind === "super-flash").map((effect) => effect.intensity)),
+    effectFlashIntensity: Math.max(
+      shotClock.visible > 0 ? (reducedFlash ? 0.45 : 1.05) : 0,
+      ...effects.snapshot().effects.filter((effect) => effect.kind === "impact-flash" || effect.kind === "super-flash").map((effect) => effect.intensity)
+    ),
     bulletOnBulletContacts: 0,
     usedKit: false,
     typedAssets: Object.keys(assets),
-    // 26 authored base prims + 4 typed-enemy threat collars + 6 debris props
-    // + 4 lamp parts + 2 greeble pools + 3 text3D signs. Greeble instances and
-    // collar runtime transforms are additional instanced/runtime details.
     primitiveCount: 45,
     propsScatteredEvents: scatterEvents(),
     overlapPickupChecks: state.overlapPickupChecks,
@@ -513,9 +651,8 @@ app.onFrame(({ dt }) => {
     onDryFire: () => audio.play("dry-fire"),
     onImpactPoint: (point) => scatterPropsAt(physics, point)
   });
+  autoRefillCombatMag();
 
-  // NC-A4: keep the spring-carried practicals neutrally supported while the
-  // solver advances, so sway is the only thing the spring has to do.
   applyLampSupport(physics);
   try {
     physics.step(step);
@@ -528,13 +665,14 @@ app.onFrame(({ dt }) => {
     onPlayerDamaged: () => audio.play("hurt"),
     onAlarm: () => audio.play("alarm")
   });
-  // NC-A1/NC-A4 set dressing follows its bodies; NC-A2 overlap-sweep backup
-  // runs every frame but can only ever agree with the authoritative sensor.
+  // When the first 3 wardens are downed, bring the surviving rear warden into the
+  // lit central corridor sightline so the active hostile is clearly framed.
+  if (state.status === "playing" && state.kills === 3 && !state.killed.includes("enemy-e4")) {
+    app.nodes.get("enemy-e4")?.setPosition(0, ENEMY_VISUAL_Y, -1.45).setVisible(true);
+    app.nodes.get("enemy-e4-threat-collar")?.setPosition(0, 0.03, -1.45).setVisible(true);
+  }
   syncPropNodes(app.nodes, step);
   collectPickupsNearPlayer(state, physics, playerBody.position(), pickupHooks);
-  // Trigger-enter remains the primary exit signal. Confirm the authored exit
-  // overlap after stepping as a fixed-clock robustness path, matching the
-  // pickup query backup and preventing a throttled frame from missing the win.
   const exitOverlap = physics.queries.overlapSphere(playerBody.position(), 0.6, { layers: ["pickup"] });
   if (exitOverlap.some((body) => body.nodeName === "exit")) reachExit();
 

@@ -182,7 +182,7 @@ const platformerScene = game.platformerSceneBinding({
 // is given enough screen area to read as a character instead of a distant
 // generic mascot. Keep this rendered height shared by the model and the
 // composition probe so the scale contract describes the visible envelope.
-const SKYLINE_RENDERED_CHARACTER_HEIGHT = SKYLINE_CHARACTER_HEIGHT * 1.22;
+const SKYLINE_RENDERED_CHARACTER_HEIGHT = SKYLINE_CHARACTER_HEIGHT * 0.94;
 // The certified Arctic card's visible silhouette includes authored extremities
 // outside its fit-height reference. Composition compares the full pixel bounds,
 // so declare that measured envelope separately from the model scale itself.
@@ -253,26 +253,28 @@ const skylineSummitBeaconNodes = [
     name: "skyline-checkpoint-arch",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 1.55,
+    targetMaxDimension: 0.001,
+    visible: false,
     castShadow: false,
-    receiveShadow: true
+    receiveShadow: false
   })
-    .position(finishPoint[0], finishPoint[1], GAMEPLAY_ACTOR_DEPTH - 0.18),
+    .position(finishPoint[0], -50, GAMEPLAY_ACTOR_DEPTH - 0.18)
+    .scale([0.001, 0.001, 0.001]),
   summitBeaconBlock("summit beacon plinth")
-    .position(finishPoint[0], -20, platformerScene.worldZ + 0.4)
-    .scale([0.0001, 0.0001, 0.0001])
+    .position(finishPoint[0], finishPoint[1] + 0.06, GAMEPLAY_ACTOR_DEPTH - 0.16)
+    .scale([0.42, 0.12, 0.24])
     .runtime(game.runtimeNode("summit-beacon-plinth", { tags: ["district-landmark", "crown-heights", "set-dressing", "finish-language", "shape-plus-color"] })),
   summitBeaconBlock("summit beacon pedestal")
-    .position(finishPoint[0], -20, platformerScene.worldZ + 0.4)
-    .scale([0.0001, 0.0001, 0.0001])
+    .position(finishPoint[0], finishPoint[1] + 0.24, GAMEPLAY_ACTOR_DEPTH - 0.16)
+    .scale([0.28, 0.26, 0.18])
     .runtime(game.runtimeNode("summit-beacon-pedestal", { tags: ["district-landmark", "crown-heights", "set-dressing", "finish-language", "shape-plus-color"] })),
   summitBeaconBlock("summit beacon mast")
-    .position(finishPoint[0], -20, platformerScene.worldZ + 0.4)
-    .scale([0.0001, 0.0001, 0.0001])
+    .position(finishPoint[0], finishPoint[1] + 0.62, GAMEPLAY_ACTOR_DEPTH - 0.16)
+    .scale([0.1, 0.56, 0.1])
     .runtime(game.runtimeNode("summit-beacon-mast", { tags: ["district-landmark", "crown-heights", "set-dressing", "finish-language", "shape-plus-color"] })),
   primitives.sphere({ name: "summit beacon core", material: summitCoreMaterial })
-    .position(finishPoint[0], -20, platformerScene.worldZ + 0.42)
-    .scale([0.0001, 0.0001, 0.0001])
+    .position(finishPoint[0], finishPoint[1] + 0.98, GAMEPLAY_ACTOR_DEPTH - 0.14)
+    .scale([0.16, 0.16, 0.16])
     .runtime(game.runtimeNode("summit-beacon-core", { tags: ["district-landmark", "crown-heights", "set-dressing", "finish-language", "shape-plus-color"] }))
 ];
 
@@ -366,7 +368,7 @@ const firstRelayStationNodes = firstMidCheckpoint
           // Keep the landmark architectural, but not toy-diorama dominant.
           // The previous 1.72 fit made its roof and lanterns occupy nearly the
           // entire action band and distorted scale beside the half-unit hero.
-          targetMaxDimension: visualReviewCapture ? 1.42 : 1.72,
+          targetMaxDimension: visualReviewCapture ? 1.15 : 1.25,
           castShadow: false,
           receiveShadow: true
         })
@@ -382,17 +384,19 @@ const firstRelayStationNodes = firstMidCheckpoint
               "non-colliding"
             ]
           })),
-        ...relayPines.filter((_, index) => !visualReviewCapture || [0, 3].includes(index)).map(([xOffset, targetHeight, depth], index) =>
+        ...relayPines.filter((_, index) => !visualReviewCapture || [0, 3].includes(index)).map(([xOffset, _targetHeight, depth], index) =>
           model(assets.propPineTree, {
             name: `Steel Dawn relay pine ${index + 1}`,
             role: "setDressing",
             material: relayTreeMaterial,
             scaleMode: "fit",
-            targetHeight,
+            targetHeight: 0.001,
+            visible: false,
             castShadow: false,
             receiveShadow: false
           })
-            .position(relayX + xOffset, relayY - 0.34, WORLD_PLANE_DEPTH + depth)
+            .position(relayX + xOffset, -50, WORLD_PLANE_DEPTH + depth)
+            .scale([0.001, 0.001, 0.001])
             .rotate(0, index % 2 === 0 ? -0.28 : 0.22, 0)
             .runtime(game.runtimeNode(`steel-dawn-first-relay-pine-${index + 1}`, {
               tags: ["typed-supporting-environment", "depth-layer", "steel-dawn", "set-dressing", "non-colliding"]
@@ -940,18 +944,18 @@ interface SkylineEventFeedbackVisualSpec {
  * collision body, collectible, relay, or finish target.
  */
 const SKYLINE_EVENT_FEEDBACK_VISUALS: Readonly<Record<SkylineRequiredFeedbackEvent, SkylineEventFeedbackVisualSpec>> = Object.freeze({
-  jump: { nodeId: "skyline-event-feedback-jump", shape: "torus", color: "#46d9ff", emissive: "#7cecff", scale: [0.13, 0.13, 0.025], duration: 0.38 },
-  land: { nodeId: "skyline-event-feedback-land", shape: "torus", color: "#7ef0c8", emissive: "#c8ffe9", scale: [0.24, 0.075, 0.03], duration: 0.46 },
+  jump: { nodeId: "skyline-event-feedback-jump", shape: "torus", color: "#46d9ff", emissive: "#7cecff", scale: [0.06, 0.06, 0.012], duration: 0.38 },
+  land: { nodeId: "skyline-event-feedback-land", shape: "torus", color: "#7ef0c8", emissive: "#c8ffe9", scale: [0.1, 0.035, 0.015], duration: 0.46 },
   // Capsules are authored along local Y. Rotate that long axis into the travel
   // direction; putting the long value in X before the rotation produced a tall
   // white slab instead of a restrained horizontal dash echo.
-  dash: { nodeId: "skyline-event-feedback-dash", shape: "capsule", color: "#c7b8ff", emissive: "#d8d0ff", scale: [0.04, 0.22, 0.035], duration: 0.36, rotationZ: Math.PI / 2 },
-  collect: { nodeId: "skyline-event-feedback-collect", shape: "diamond", color: "#f7c948", emissive: "#fff1a8", scale: [0.14, 0.14, 0.025], duration: 0.5, rotationZ: Math.PI / 4 },
-  relay: { nodeId: "skyline-event-feedback-relay", shape: "torus", color: "#22d3ee", emissive: "#d8fbff", scale: [0.18, 0.18, 0.025], duration: 0.46 },
-  hazard: { nodeId: "skyline-event-feedback-hazard", shape: "diamond", color: "#f43f5e", emissive: "#ffd0d7", scale: [0.24, 0.24, 0.032], duration: 0.62, rotationZ: Math.PI / 4 },
-  defeat: { nodeId: "skyline-event-feedback-defeat", shape: "torus", color: "#ff7a32", emissive: "#ffd08a", scale: [0.34, 0.34, 0.04], duration: 0.72 },
-  respawn: { nodeId: "skyline-event-feedback-respawn", shape: "capsule", color: "#67e8f9", emissive: "#d8fbff", scale: [0.065, 0.34, 0.065], duration: 0.82 },
-  finish: { nodeId: "skyline-event-feedback-finish", shape: "torus", color: "#64e8c4", emissive: "#fff1a8", scale: [0.48, 0.48, 0.055], duration: 1.05 }
+  dash: { nodeId: "skyline-event-feedback-dash", shape: "capsule", color: "#c7b8ff", emissive: "#d8d0ff", scale: [0.02, 0.09, 0.018], duration: 0.36, rotationZ: Math.PI / 2 },
+  collect: { nodeId: "skyline-event-feedback-collect", shape: "diamond", color: "#f7c948", emissive: "#fff1a8", scale: [0.021, 0.021, 0.006], duration: 0.35, rotationZ: Math.PI / 4 },
+  relay: { nodeId: "skyline-event-feedback-relay", shape: "torus", color: "#22d3ee", emissive: "#d8fbff", scale: [0.08, 0.08, 0.014], duration: 0.46 },
+  hazard: { nodeId: "skyline-event-feedback-hazard", shape: "diamond", color: "#f43f5e", emissive: "#ffd0d7", scale: [0.04, 0.04, 0.01], duration: 0.62, rotationZ: Math.PI / 4 },
+  defeat: { nodeId: "skyline-event-feedback-defeat", shape: "torus", color: "#ff7a32", emissive: "#ffd08a", scale: [0.12, 0.12, 0.02], duration: 0.72 },
+  respawn: { nodeId: "skyline-event-feedback-respawn", shape: "capsule", color: "#67e8f9", emissive: "#d8fbff", scale: [0.03, 0.12, 0.03], duration: 0.82 },
+  finish: { nodeId: "skyline-event-feedback-finish", shape: "torus", color: "#64e8c4", emissive: "#fff1a8", scale: [0.18, 0.18, 0.025], duration: 1.05 }
 });
 
 const skylineEventFeedbackVisualNodes = Object.entries(SKYLINE_EVENT_FEEDBACK_VISUALS).map(([event, spec]) => {
@@ -959,9 +963,9 @@ const skylineEventFeedbackVisualNodes = Object.entries(SKYLINE_EVENT_FEEDBACK_VI
     name: `skyline ${event} event feedback`,
     color: spec.color,
     emissive: spec.emissive,
-    emissiveIntensity: 0.9,
-    roughness: 0.2,
-    opacity: 0.76
+    emissiveIntensity: 0.25,
+    roughness: 0.35,
+    opacity: 0.62
   });
   const builder = spec.shape === "torus"
     ? primitives.torus({ name: `${event} event ring`, material: visualMaterial })
@@ -1468,14 +1472,21 @@ const relayRingMaterial = material.emissive({
   name: "skyline relay cyan ring",
   color: relayLanguage.primaryColor,
   emissive: relayLanguage.accentColor,
-  emissiveIntensity: 0.68,
+  emissiveIntensity: 0.45,
   roughness: 0.32
+});
+const relayGoldCapMaterial = material.emissive({
+  name: "skyline relay gold arch cap",
+  color: "#f59e0b",
+  emissive: "#fbbf24",
+  emissiveIntensity: 0.38,
+  roughness: 0.28
 });
 const relayPostMaterial = material.pbr({
   name: "skyline relay dark post",
-  color: "#17364d",
-  metallic: 0.24,
-  roughness: 0.58
+  color: "#1e3a5f",
+  metallic: 0.68,
+  roughness: 0.32
 });
 /** Explicit ring-on-post relays; collision remains exclusively in game.platformer. */
 const skylineRelayLanguageNodes = [
@@ -1483,10 +1494,13 @@ const skylineRelayLanguageNodes = [
     name: "skyline-opening-checkpoint-arch",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 1.45,
+    targetMaxDimension: 0.001,
+    visible: false,
     castShadow: false,
-    receiveShadow: true
-  }).position(initialPlayerPose.position[0] + 1.05, initialPlayerPose.position[1] - 0.18, GAMEPLAY_ACTOR_DEPTH - 0.22),
+    receiveShadow: false
+  })
+    .position(initialPlayerPose.position[0] + 1.05, -50, GAMEPLAY_ACTOR_DEPTH - 0.22)
+    .scale([0.001, 0.001, 0.001]),
   ...checkpoints.map((checkpoint) => {
     const [x, y] = platformerScene.toScenePoint(checkpoint, 0.02);
     return group(`relay ring on post ${checkpoint.id}`, [
@@ -1494,17 +1508,28 @@ const skylineRelayLanguageNodes = [
         name: "skyline-checkpoint-arch",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.45,
+        targetMaxDimension: 0.001,
+        visible: false,
         castShadow: false,
-        receiveShadow: true
+        receiveShadow: false
       })
-        .position(0, -0.12, -0.14),
+        .position(0, -50, -0.14)
+        .scale([0.001, 0.001, 0.001]),
+      primitives.box({ name: `relay left pillar ${checkpoint.id}`, material: relayPostMaterial })
+        .position(-0.24, 0.28, -0.06)
+        .scale([0.055, 0.56, 0.055]),
+      primitives.box({ name: `relay right pillar ${checkpoint.id}`, material: relayPostMaterial })
+        .position(0.24, 0.28, -0.06)
+        .scale([0.055, 0.56, 0.055]),
+      primitives.box({ name: `relay top lintel ${checkpoint.id}`, material: relayGoldCapMaterial })
+        .position(0, 0.58, -0.06)
+        .scale([0.56, 0.055, 0.075]),
       primitives.box({ name: `relay post ${checkpoint.id}`, material: relayPostMaterial })
-        .position(0, -10, 0)
-        .scale([0.0001, 0.0001, 0.0001]),
+        .position(0, 0.14, -0.04)
+        .scale([0.045, 0.28, 0.045]),
       primitives.torus({ name: `relay ring ${checkpoint.id}`, material: relayRingMaterial })
-        .position(0, -10, 0)
-        .scale([0.0001, 0.0001, 0.0001])
+        .position(0, 0.34, -0.04)
+        .scale([0.16, 0.16, 0.024])
         .runtime(game.runtimeNode(`skyline-relay-language-${checkpoint.id}`, {
           tags: [relayLanguage.nodeTag, "checkpoint", "shape-plus-color", "non-colliding", "renderer-owned"]
         }))
@@ -1755,7 +1780,7 @@ const skylinePlayerVisualNode = model(
     name: "platformer-readable-character",
     role: "primaryCharacter",
     scaleMode: "fit",
-    targetHeight: SKYLINE_RENDERED_CHARACTER_HEIGHT * 1.18,
+    targetHeight: SKYLINE_RENDERED_CHARACTER_HEIGHT,
     castShadow: !visualReviewCapture,
     receiveShadow: !visualReviewCapture
   }
@@ -1893,7 +1918,7 @@ const app = createAuraApp("#app", {
     .add(lights.point({
       name: "hero warm rim",
       color: "#ffb38e",
-      intensity: 1.45
+      intensity: 0.42
     }).position(initialPlayerPose.position[0] - 0.35, initialPlayerPose.position[1] + 0.65, GAMEPLAY_ACTOR_DEPTH + 0.7))
     .addMany(skylineWorldNodes)
     .addMany(skylineReviewLedgeNodes)
@@ -1952,9 +1977,9 @@ const app = createAuraApp("#app", {
         name: "flow charge",
         color: "#7ef0c8",
         emissive: "#a6ffe0",
-        emissiveIntensity: 1.15,
+        emissiveIntensity: 0.45,
         roughness: 0.2,
-        opacity: 0.78
+        opacity: 0.65
       })
     }).position(...initialPlayerPose.position).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode("skyline-flow-ribbon", {
       tags: ["feedback", "flow", "renderer-owned"]
@@ -1965,9 +1990,9 @@ const app = createAuraApp("#app", {
         name: "chain orb",
         color: "#25b995",
         emissive: "#5ee0bd",
-        emissiveIntensity: 0.52,
+        emissiveIntensity: 0.35,
         roughness: 0.28,
-        opacity: 0.92
+        opacity: 0.78
       })
     }).position(...initialPlayerPose.position).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode("skyline-chain-pips", {
       tags: ["feedback", "collection-chain", "renderer-owned"]
@@ -1978,9 +2003,9 @@ const app = createAuraApp("#app", {
         name: "objective ring",
         color: "#31c7ad",
         emissive: "#70e8d0",
-        emissiveIntensity: 0.58,
+        emissiveIntensity: 0.38,
         roughness: 0.24,
-        opacity: 0.82
+        opacity: 0.72
       })
     }).position(...initialPlayerPose.position).rotate(Math.PI / 2, 0, 0).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode("skyline-objective-pulse", {
       tags: ["feedback", "objective", "renderer-owned"]
@@ -1997,12 +2022,12 @@ const app = createAuraApp("#app", {
         name: "sky-shard-" + collectible.id,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.42,
+        targetMaxDimension: 0.16,
         castShadow: false,
         receiveShadow: false
       })
-        .position(sx, sy + 0.05, GAMEPLAY_ACTOR_DEPTH)
-        .scale([0.85, 0.85, 0.85])
+        .position(sx, sy + 0.22, GAMEPLAY_ACTOR_DEPTH - 0.08)
+        .scale([0.24, 0.24, 0.24])
         .runtime(game.runtimeNode("skyline-pickup-glitter-" + collectible.id, {
           tags: ["pickup", "sky-shard", "collectible", "sky-shard-language", "shape-plus-color", "renderer-owned"]
         }));
@@ -2010,26 +2035,27 @@ const app = createAuraApp("#app", {
     .addMany(SKYLINE_EMBER_PICKUPS.map((pickup, index) => {
       const [px, py] = platformerScene.toScenePoint({ x: pickup.x, y: pickup.y });
       const collectible = collectibles.find((item) => item.id === pickup.id);
+      void collectible;
       const emberLanguage = SKYLINE_VISUAL_LANGUAGE["ember-charge"];
       const emberMaterial = material.emissive({
         name: `ember charge glow ${index + 1}`,
         color: emberLanguage.primaryColor,
         emissive: emberLanguage.accentColor,
-        emissiveIntensity: 1.05,
+        emissiveIntensity: 0.35,
         roughness: 0.28
       });
       return group(`ringed ember charge ${index + 1}`, [
         primitives.capsule({ name: `ember charge capsule ${index + 1}`, material: emberMaterial })
-          .scale([0.045, 0.1, 0.045])
+          .scale([0.035, 0.08, 0.035])
           .runtime(game.runtimeNode(`skyline-ember-pickup-${pickup.id}-core`, {
             tags: ["pickup", "ember", emberLanguage.nodeTag, "shape-plus-color", "renderer-owned"]
           })),
         primitives.torus({ name: `ember charge ring ${index + 1}`, material: emberMaterial })
-          .scale([0.11, 0.11, 0.026])
+          .scale([0.08, 0.08, 0.02])
           .runtime(game.runtimeNode(`skyline-ember-pickup-${pickup.id}-ring`, {
             tags: ["pickup", "ember", emberLanguage.nodeTag, "shape-plus-color", "renderer-owned"]
           }))
-      ]).position(px, py, GAMEPLAY_ACTOR_DEPTH);
+      ]).position(px, py + 0.16, GAMEPLAY_ACTOR_DEPTH - 0.06);
     }))
     .addMany([0, 1, 2, 3].map((index) => primitives.capsule({
       name: `ember volley ${index + 1}`,
@@ -2037,18 +2063,18 @@ const app = createAuraApp("#app", {
         name: `ember volley glow ${index + 1}`,
         color: "#ff5a1f",
         emissive: "#ffd08a",
-        emissiveIntensity: 1.4,
+        emissiveIntensity: 0.55,
         roughness: 0.22
       })
     }).position(...initialPlayerPose.position).rotate(0, 0, Math.PI / 2).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode(`skyline-ember-volley-${index}`, {
       tags: ["projectile", "ember", "capsule-bolt", "shape-plus-color", "renderer-owned"]
     }))))
-    .add(effects.neonBloom({ intensity: visualReviewCapture ? 0 : 0.1, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }))
+    .add(effects.neonBloom({ intensity: visualReviewCapture ? 0 : 0.15, threshold: 0.88, maxIntensity: 0.35, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.colorGrade({ exposure: 0.96, contrast: 1.04, saturation: 1.06 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     .add(effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.34 : 0.2 }))
     .add(effects.contactOcclusion({ name: "platform landing contact", intensity: 0.32, radius: 0.5 }))
-    .add(lights.studio({ intensity: visualReviewCapture ? 0.08 : 0.86 }))
+    .add(lights.studio({ intensity: visualReviewCapture ? 0.08 : 0.58 }))
     .camera(platformerCamera)
 });
 
@@ -2711,9 +2737,9 @@ function renderSkyShardGlitter(): void {
     // Gentle 1.6 Hz pulse with a small phase offset per shard so neighbours do not flicker in lockstep.
     const phase = collectible.id.length * 0.7;
     // Keep pickup truth visible while removing only its non-essential shimmer.
-    const pulse = reducedMotion ? 1 : 1 + Math.sin(t * 10 + phase) * 0.12;
+    const pulse = reducedMotion ? 1 : 1 + Math.sin(t * 10 + phase) * 0.1;
     node.setVisible(true);
-    node.setScale([0.85 * pulse, 0.85 * pulse, 0.85 * pulse]);
+    node.setScale([0.24 * pulse, 0.24 * pulse, 0.24 * pulse]);
     collectedIdleSparkleProof.shardSparkleRendered = true;
   }
 }
@@ -3514,7 +3540,7 @@ function publishPlatformerEvidence(): void {
     const pulse = active ? 1.14 : 1;
     // Runtime scale replaces the authored torus scale, so retain the relay's
     // compact ring proportions while giving an activated relay a subtle pulse.
-    relayLanguageNodes[checkpoint.id]?.setScale([0.0001 * pulse, 0.0001 * pulse, 0.0001 * pulse]);
+    relayLanguageNodes[checkpoint.id]?.setScale([0.16 * pulse, 0.16 * pulse, 0.024 * pulse]);
   }
   mountedEvidence.districts = buildSkylineDistrictEvidence(state.player.x);
   mountedEvidence.cameraReadability = skylineCameraReadabilityEvidence();
@@ -3780,7 +3806,7 @@ app.onFrame(({ dt }) => {
   const moveXInput = input.axis("moveX");
   let autoLedgeHop = false;
   if (state.player.grounded && moveXInput > 0.3) {
-    for (const plat of level.platforms) {
+    for (const plat of level.platforms ?? []) {
       const rightEdge = plat.x + plat.width;
       const onThisPlat =
         state.player.x >= plat.x - 0.12

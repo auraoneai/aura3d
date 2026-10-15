@@ -77,7 +77,7 @@ function orbitalHash(i: number): number {
 }
 
 const appScene = scene()
-  .background("#050812")
+  .background("#040915")
   .add(
     model(assets.orbitalPlanetGlobeMeshy, {
       name: "defended planet globe",
@@ -87,34 +87,47 @@ const appScene = scene()
     }).position(0, -1.175, 0)
   )
   .add(
-    model(assets.gravityOrbitalRelayMeshy, {
-      name: "orbital defense relay alpha",
+    primitives.torus({
+      name: "planetary defense orbital grid ring",
+      material: material.emissive({
+        color: "#082f49",
+        emissive: "#38bdf8",
+        emissiveIntensity: 0.65,
+        opacity: 0.55
+      })
+    })
+      .position(0, 0, -0.08)
+      .scale([playerRadius, playerRadius, 0.012])
+  )
+  .add(
+    model(assets.orbitalDefenseTurretMeshy, {
+      name: "orbital defense turret alpha",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.78
+      targetMaxDimension: 0.76
     })
-      .position(-2.35, 0.85, 0.25)
-      .rotate(0.2, 0.6, -0.15)
+      .position(-2.45, 0.88, 0.18)
+      .rotate(1.15, 1.32, -0.38)
   )
   .add(
     model(assets.gravityOrbitalRelayMeshy, {
       name: "orbital defense relay beta",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.78
+      targetMaxDimension: 0.68
     })
-      .position(2.35, -1.05, 0.25)
-      .rotate(-0.2, -0.5, 0.18)
+      .position(2.42, -1.02, 0.18)
+      .rotate(-1.12, -1.28, 0.35)
   )
   .add(
     model(assets.gravityCargoContainerPodMeshy, {
       name: "orbital defense supply pod",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.58
+      targetMaxDimension: 0.48
     })
-      .position(-1.85, -1.55, 0.32)
-      .rotate(0.15, 0.8, 0.25)
+      .position(-1.92, -1.52, 0.24)
+      .rotate(0.45, 0.95, 0.32)
   )
   .add(
     instances.sphere({
@@ -138,7 +151,7 @@ const appScene = scene()
   .add(
     instances.sphere({
       name: "orbital-asteroid-belt",
-      material: material.pbr({ color: "#475569", roughness: 0.88, metallic: 0.14 }),
+      material: material.pbr({ color: "#64748b", roughness: 0.72, metallic: 0.28 }),
       castShadow: false,
       receiveShadow: true,
       transforms: Array.from({ length: 120 }, (_, i) => {
@@ -154,54 +167,113 @@ const appScene = scene()
     })
   )
   .add(
-    model(assets.orbitalDefenseTurretMeshy, {
+    model(assets.pulseStarfighterHeroMeshy, {
       name: "player interceptor",
       role: "primaryCharacter",
       scaleMode: "fit",
       targetMaxDimension: 0.88
     })
-      .position(playerRadius, -0.32, 0.28)
+      .position(playerRadius, 0, 0.28)
+      .rotate(0.35, 0.6, -0.2)
       .runtime(game.runtimeNode("player-interceptor"))
   )
-  .add(primitives.sphere({ name: "player aiming bead", material: material.emissive({ color: "#2b2109", emissive: "#facc15", emissiveIntensity: 0.85 }) }).position(playerRadius + 0.38, 0, 0.24).scale(0.045).runtime(game.runtimeNode("player-aim")))
-  .add(lights.ambient({ intensity: 0.78, color: "#bae6fd" }))
-  .add(lights.point({ position: [-2.4, 2.6, 3.8], color: "#38bdf8", intensity: 4.2 }))
-  .add(lights.point({ position: [2.8, -1.4, 3.6], color: "#fbbf24", intensity: 3.6 }))
-  .add(lights.point({ position: [0, 0.4, 4.2], color: "#ffffff", intensity: 3.2 }))
-  .add(lights.directional({ position: [2.2, 4.4, 5.8], intensity: 2.45, color: "#f0f9ff" }))
-  .add(lights.directional({ position: [-3.2, -2.4, 4.2], intensity: 1.35, color: "#7dd3fc" }))
-  .add(effects.bloom({ intensity: 0.14, color: "#38bdf8" }))
-  .add(effects.fog({ density: 0.006, color: "#091220" }))
+  .add(
+    primitives.torus({
+      name: "player interceptor cyan shield halo",
+      material: material.emissive({
+        color: "#083344",
+        emissive: "#22d3ee",
+        emissiveIntensity: 1.45,
+        opacity: 0.82
+      })
+    })
+      .position(playerRadius, 0, 0.26)
+      .scale([0.42, 0.42, 0.018])
+      .runtime(game.runtimeNode("player-interceptor-shield"))
+  )
+  .add(
+    primitives.sphere({
+      name: "player interceptor thruster core",
+      material: material.emissive({
+        color: "#06b6d4",
+        emissive: "#67e8f9",
+        emissiveIntensity: 1.85
+      })
+    })
+      .position(playerRadius, 0, 0.28)
+      .scale(0.068)
+      .runtime(game.runtimeNode("player-interceptor-thruster"))
+  )
+  .add(primitives.sphere({ name: "player aiming bead", material: material.emissive({ color: "#2b2109", emissive: "#facc15", emissiveIntensity: 1.25 }) }).position(playerRadius + 0.38, 0, 0.24).scale(0.055).runtime(game.runtimeNode("player-aim")))
+  .add(lights.ambient({ intensity: 0.92, color: "#93c5fd" }))
+  .add(lights.directional({ position: [2.6, 4.2, 5.6], intensity: 2.1, color: "#e0f2fe" }))
+  .add(lights.directional({ position: [-3.8, -2.8, 4.8], intensity: 1.65, color: "#fb923c" }))
+  .add(lights.directional({ position: [0.4, 5.2, -3.4], intensity: 1.45, color: "#38bdf8" }))
+  .add(lights.point({ position: [-2.4, 2.2, 3.2], color: "#38bdf8", intensity: 2.6 }))
+  .add(lights.point({ position: [2.6, -1.6, 3.2], color: "#fbbf24", intensity: 2.4 }))
+  .add(lights.point({ position: [0, 2.6, 2.8], color: "#fb7185", intensity: 2.2 }))
+  .add(lights.point({ position: [0, -2.6, 2.8], color: "#f97316", intensity: 2.2 }))
+  .add(effects.bloom({ intensity: 0.16, color: "#38bdf8" }))
+  .add(effects.fog({ density: 0.004, color: "#060d1d" }))
   .add(interactions.orbit())
   .camera(camera.perspective({ position: [0, -0.15, 5.85], target: [0, 0, 0], fov: 44 }));
 
 let builtScene = appScene;
 for (const [index, id] of enemyIds.entries()) {
-  builtScene = builtScene.add(
-    model(index % 3 === 2 ? assets.patrolWingDroneB : assets.orbitalStrikeDroneMeshy, {
-      name: `${id} wave drone`,
-      role: "enemy",
-      scaleMode: "fit",
-      targetMaxDimension: 0.68
-    })
-      .position(8, 8, 0)
-      .runtime(game.runtimeNode(id))
-  );
+  const isCrimsonVariant = index % 2 === 0;
+  builtScene = builtScene
+    .add(
+      model(assets.orbitalStrikeDroneMeshy, {
+        name: `${id} wave drone`,
+        role: "enemy",
+        scaleMode: "fit",
+        targetMaxDimension: 0.74
+      })
+        .position(8, 8, 0)
+        .runtime(game.runtimeNode(id))
+    )
+    .add(
+      primitives.torus({
+        name: `${id} threat core ring`,
+        material: material.emissive({
+          color: isCrimsonVariant ? "#4c0519" : "#451a03",
+          emissive: isCrimsonVariant ? "#fb7185" : "#fbbf24",
+          emissiveIntensity: 1.75,
+          opacity: 0.92
+        })
+      })
+        .position(8, 8, 0)
+        .scale([0.34, 0.34, 0.022])
+        .runtime(game.runtimeNode(`${id}-core-ring`))
+    )
+    .add(
+      primitives.sphere({
+        name: `${id} threat engine core`,
+        material: material.emissive({
+          color: "#7f1d1d",
+          emissive: isCrimsonVariant ? "#f43f5e" : "#f97316",
+          emissiveIntensity: 1.95
+        })
+      })
+        .position(8, 8, 0)
+        .scale(0.065)
+        .runtime(game.runtimeNode(`${id}-core-beacon`))
+    );
 }
 for (const id of projectileIds) {
   builtScene = builtScene.add(
-    primitives.sphere({ name: `${id} interceptor bolt`, material: material.emissive({ color: "#112a2a", emissive: "#67e8f9", emissiveIntensity: 0.95 }) })
+    primitives.sphere({ name: `${id} interceptor bolt`, material: material.emissive({ color: "#112a2a", emissive: "#67e8f9", emissiveIntensity: 1.45 }) })
       .position(8, 8, 0)
-      .scale(0.055)
+      .scale(0.065)
       .runtime(game.runtimeNode(id))
   );
 }
 for (const id of shieldIds) {
   builtScene = builtScene.add(
-    primitives.torus({ name: `${id} shield segment`, material: material.emissive({ color: "#11261f", emissive: "#75f2cf", emissiveIntensity: 0.75 }) })
+    primitives.torus({ name: `${id} shield segment`, material: material.emissive({ color: "#11261f", emissive: "#75f2cf", emissiveIntensity: 1.15 }) })
       .position(8, 8, 0)
       .rotate(1.5708, 0, 0)
-      .scale([0.35, 0.35, 0.012])
+      .scale([0.35, 0.35, 0.016])
       .runtime(game.runtimeNode(id))
   );
 }
@@ -236,9 +308,6 @@ let lastTime = 0;
 
 const hud = document.querySelector<HTMLElement>("#hud");
 if (!hud) throw new Error("Orbital Defense requires #hud.");
-// Declared before the first renderHud() call: a `const` read before its
-// declaration line throws a TDZ ReferenceError and aborts the whole boot
-// (no onFrame loop, static first frame).
 const lastHudHtml = { value: undefined as string | undefined };
 renderHud();
 
@@ -268,14 +337,29 @@ function update(dt: number): void {
 function syncRuntimeNodes(): void {
   const playerPosition = polar(player.angle, playerRadius, 0.28);
   app.nodes.require("player-interceptor")
-    .setPosition(playerPosition[0], playerPosition[1] - 0.32, playerPosition[2])
-    .setRotation(0, 0, player.angle + Math.PI / 2);
+    .setPosition(playerPosition[0], playerPosition[1] - 0.24, playerPosition[2])
+    .setRotation(0.35, 0.6, player.angle + Math.PI / 2 - 0.2);
+  app.nodes.require("player-interceptor-shield")
+    .setPosition(playerPosition[0], playerPosition[1], playerPosition[2] - 0.02)
+    .setRotation(0.22, 0.35, player.angle);
+  const thrusterPos = polar(player.angle - 0.08, playerRadius - 0.06, 0.28);
+  app.nodes.require("player-interceptor-thruster")
+    .setPosition(thrusterPos[0], thrusterPos[1], thrusterPos[2]);
   const aimPosition = polar(player.angle, playerRadius + 0.42, 0.24);
   app.nodes.require("player-aim").setPosition(aimPosition[0], aimPosition[1], aimPosition[2]);
 
   for (const enemy of state.enemies) {
-    const pos = enemy.active ? polar(enemy.angle, enemy.radius, 0.14 + enemy.lane * 0.06) : ([8, 8, 0] as const);
-    app.nodes.require(enemy.id).setPosition(pos[0], enemy.active ? pos[1] - 0.24 : pos[1], pos[2]).setRotation(0, 0, -enemy.angle);
+    const pos = enemy.active ? polar(enemy.angle, enemy.radius, 0.18 + enemy.lane * 0.06) : ([8, 8, 0] as const);
+    app.nodes.require(enemy.id)
+      .setPosition(pos[0], enemy.active ? pos[1] - 0.22 : pos[1], pos[2])
+      .setRotation(0.42, 0.52, -enemy.angle + Math.PI * 0.25);
+    app.nodes.require(`${enemy.id}-core-ring`)
+      .setPosition(pos[0], pos[1], pos[2] - 0.02)
+      .setRotation(0.25, 0.2, -enemy.angle)
+      .setVisible(enemy.active);
+    app.nodes.require(`${enemy.id}-core-beacon`)
+      .setPosition(pos[0], pos[1], pos[2] + 0.04)
+      .setVisible(enemy.active);
   }
   for (const projectile of state.projectiles) {
     const pos = projectile.active ? polar(projectile.angle, projectile.radius, 0.24) : ([8, 8, 0] as const);

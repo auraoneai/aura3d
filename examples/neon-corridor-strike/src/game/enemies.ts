@@ -298,15 +298,10 @@ export function updateEnemies(
     );
     node?.setVisible(true);
 
-    // The collar is a compact hostile silhouette cue, not gameplay truth. Its
-    // small pulse expands only during the real telegraph/flinch clocks, making
-    // the attack read in a still while preserving the typed model's identity.
     const collarPulse = 1 + telegraphLean * 0.16 + (flinch > 0 ? 0.1 : 0);
-    collar?.setPosition(x, 1.2 + 0.04 * telegraphLean, z - 0.24);
-    collar?.setRotation(0, yaw, 0.06 * flinchK);
+    collar?.setPosition(x, 0.32, z - 0.35);
+    collar?.setRotation(Math.PI / 2, yaw, 0);
     collar?.setVisible(true);
-    collar?.setScale(enemy.asset === "neonContainmentWardenB"
-      ? [0.66 * collarPulse, 0.42 * collarPulse, 0.022 * collarPulse]
-      : [0.5 * collarPulse, 0.68 * collarPulse, 0.022 * collarPulse]);
+    collar?.setScale([0.16 * collarPulse, 0.16 * collarPulse, 0.005]);
   }
 }

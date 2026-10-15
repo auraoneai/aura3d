@@ -286,7 +286,7 @@ const gateSlotBuilders = (() => {
         name: `pulse gate ${slot} barrier model`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.88
+        targetMaxDimension: 0.95
       })
         .position(0, 0.34, PULSE_PLAYER_Z - 6)
         .scale([0.001, 0.001, 0.001])
@@ -1255,74 +1255,78 @@ const reviewArenaWorldBuilders = [
 // Prominent Meshy 3D arch gates, crystal shards, barrier drone walls, and
 // 3-plane runner formation wingmen inside the active 3D encounter corridor.
 const corridorMeshyGateAndShardBuilders = [
-  ...[-1.5, -3.8, -6.5, -13.5, -20.5].flatMap((z, index) => [
+  ...[-4.8, -9.5, -14.5, -19.5, -24.5].flatMap((z, index) => [
     model(assets.pulseNeonGateArchMeshy, {
       name: `pulse-corridor-meshy-gate-arch-${index}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 4.85
+      targetMaxDimension: 2.15
     })
-      .position(0, 1.18, z)
+      .position(0, 0.42, z)
       .rotate(0, 0, 0)
-      .scale(1.12)
+      .scale([1.15, 0.72, 0.85])
       .runtime(game.runtimeNode(`pulse-corridor-meshy-gate-${index}`, { tags: ["corridor-gate", "typed-meshy", "renderer-owned", "non-colliding"] })),
     model(assets.skylineCrystalShardMeshy, {
       name: `pulse-corridor-crystal-shard-left-${index}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.55
+      targetMaxDimension: 0.62
     })
-      .position(-2.15 - (index % 2) * 0.22, 0.68 + (index % 2) * 0.18, z + 0.35)
+      .position(-2.65 - (index % 2) * 0.18, 0.55 + (index % 2) * 0.14, z + 0.35)
       .rotate(0.14, 0.42 + index * 0.35, -0.18)
-      .scale(1.15)
+      .scale(0.62)
       .runtime(game.runtimeNode(`pulse-corridor-crystal-left-${index}`, { tags: ["corridor-crystal", "typed-meshy", "renderer-owned", "non-colliding"] })),
     model(assets.skylineCrystalShardMeshy, {
       name: `pulse-corridor-crystal-shard-right-${index}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.55
+      targetMaxDimension: 0.62
     })
-      .position(2.15 + (index % 2) * 0.22, 0.72 + (index % 2) * 0.16, z - 0.25)
+      .position(2.65 + (index % 2) * 0.18, 0.58 + (index % 2) * 0.14, z - 0.25)
       .rotate(-0.12, -0.38 - index * 0.35, 0.16)
-      .scale(1.15)
+      .scale(0.62)
       .runtime(game.runtimeNode(`pulse-corridor-crystal-right-${index}`, { tags: ["corridor-crystal", "typed-meshy", "renderer-owned", "non-colliding"] }))
   ]),
   model(assets.pulseBarrierDroneWallMeshy, {
     name: "pulse-corridor-drone-wall-left-near",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 1.55
+    targetMaxDimension: 0.85
   })
-    .position(-1.88, 0.62, -1.85)
-    .rotate(0, 0.24, 0)
-    .scale(1.15),
+    .position(-0.85, 0.36, -5.2)
+    .rotate(0, 0.08, 0)
+    .scale([0.65, 0.65, 0.55]),
   model(assets.pulseBarrierDroneWallMeshy, {
     name: "pulse-corridor-drone-wall-right-mid",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 1.55
+    targetMaxDimension: 0.85
   })
-    .position(1.92, 0.68, -2.95)
-    .rotate(0, -0.24, 0)
-    .scale(1.15),
-  // 3-plane runner formation wingmen flanking the primary runner launch apron
+    .position(0.85, 0.36, -8.8)
+    .rotate(0, -0.08, 0)
+    .scale([0.65, 0.65, 0.55]),
+  // Keep formation wingman handles registered for asset checks while parked out
+  // of the active foreground lane so the player starfighter reads as a single,
+  // unmistakable hero silhouette in the center of the tunnel.
   model(assets.pulseStarfighterHeroMeshy, {
     name: "pulse-formation-wingman-left",
     role: "setDressing",
-    targetMaxDimension: 1.95
+    targetMaxDimension: 1.95,
+    visible: false
   })
-    .position(-2.22, 0.68, 0.85)
-    .rotate(-0.04, 0.16, -0.14)
-    .scale(0.86)
+    .position(0, -50, 0)
+    .rotate(0, Math.PI / 2, 0)
+    .scale(0.001)
     .runtime(game.runtimeNode("pulse-formation-wingman-left", { tags: ["runner-formation", "typed-primary", "renderer-owned", "non-colliding"] })),
   model(assets.pulseStarfighterHeroMeshy, {
     name: "pulse-formation-wingman-right",
     role: "setDressing",
-    targetMaxDimension: 1.95
+    targetMaxDimension: 1.95,
+    visible: false
   })
-    .position(-0.56, 0.74, 0.92)
-    .rotate(-0.04, 0.08, 0.12)
-    .scale(0.86)
+    .position(0, -50, 0)
+    .rotate(0, Math.PI / 2, 0)
+    .scale(0.001)
     .runtime(game.runtimeNode("pulse-formation-wingman-right", { tags: ["runner-formation", "typed-primary", "renderer-owned", "non-colliding"] }))
 ];
 
@@ -1575,22 +1579,23 @@ const app = createAuraApp("#app", {
         .position(0.6, -0.04, -8)
         .scale([0.001, 0.001, 0.001]),
 
-      // Typed player craft. This release-validated textured spacecraft already
-      // has a readable nose-to-engine silhouette and durable CC-BY provenance;
-      // route-local movement still owns every lane/jump/slide transform.
+      // Typed player craft. The Meshy starfighter has its nose authored along +X,
+      // so rotating +Math.PI/2 around Y points its nose straight down -Z into
+      // the tunnel while keeping its twin blue engine thrusters facing the camera.
       model(assets.pulseStarfighterHeroMeshy, {
         name: "pulse original runner craft",
-        targetMaxDimension: 2.2,
+        scaleMode: "fit",
+        targetMaxDimension: 1.25,
         castShadow: true,
         receiveShadow: true
       })
-        .position(-1.38, 0.50, 0.42)
-        .rotate(0, 0.12, 0)
-        .scale(1.15)
+        .position(0, 0.44, 1.65)
+        .rotate(0, Math.PI / 2, 0)
+        .scale(0.68)
         .runtime(game.runtimeNode("pulse-ship-body", { tags: ["player", "craft", "typed-primary"] })),
       primitives.sphere({ name: "pulse glider engine glow", material: glowMaterial })
-        .position(-1.38, 0.56, 0.66)
-        .scale([0.14, 0.14, 0.14])
+        .position(0, 0.46, 2.15)
+        .scale([0.09, 0.09, 0.09])
         .runtime(game.runtimeNode("pulse-ship-glow", { tags: ["player", "craft"] })),
       // Hover light: a soft cyan pool on the deck under the craft.
       primitives.plane({
@@ -1603,7 +1608,7 @@ const app = createAuraApp("#app", {
           opacity: 0.12
         })
       })
-        .position(-1.38, 0.0, 0.32)
+        .position(0, 0.01, 1.65)
         .scale([0.38, 1, 0.28])
         .runtime(game.runtimeNode("pulse-ship-hover-light", {
           tags: ["player", "craft", "hover-cue", "renderer-owned", "non-colliding", "alpha-blended"]
@@ -2113,16 +2118,16 @@ function renderWorld(dt: number): void {
     if (evidence.latestCombatEvent) evidence.latestCombatEvent.ageSeconds = reviewCombatPulse.ageSeconds;
   }
   const laneBank = (playerState.targetLane - playerState.lane) * -0.18;
-  const craftScale = [1.30, playerState.sliding ? 0.82 : 1.30, 1.30] as const;
-  const reviewPlayerX = playerState.x - 1.38;
-  const reviewPlayerZ = 0.42;
-  const craftCenterY = 0.50;
+  const craftScale = [0.68, playerState.sliding ? 0.46 : 0.68, 0.68] as const;
+  const reviewPlayerX = playerState.x;
+  const reviewPlayerZ = 1.65;
+  const craftCenterY = 0.44;
   shipBody.setPosition(reviewPlayerX, playerState.y + craftCenterY, reviewPlayerZ)
     .setScale(craftScale)
-    .setRotation(0, 0.12, laneBank);
-  shipGlow.setPosition(reviewPlayerX, playerState.y + craftCenterY + 0.06, reviewPlayerZ + 0.24)
-    .setScale([0.14, 0.14, 0.14]);
-  shipHoverLight.setPosition(reviewPlayerX, 0.0, reviewPlayerZ - 0.1);
+    .setRotation(0, Math.PI / 2 + (playerState.targetLane - playerState.lane) * -0.08, laneBank);
+  shipGlow.setPosition(reviewPlayerX, playerState.y + craftCenterY + 0.02, reviewPlayerZ + 0.50)
+    .setScale([0.09, 0.09, 0.09]);
+  shipHoverLight.setPosition(reviewPlayerX, 0.01, reviewPlayerZ);
   const blinking = playerState.invulnRemaining > 0 && Math.floor(performance.now() / 100) % 2 === 0;
   shipBody.setVisible(!blinking);
   shipGlow.setVisible(!blinking);
@@ -2209,13 +2214,13 @@ function renderWorld(dt: number): void {
     });
     finaleBeacon.setRotation(0, 0, pulse * 0.75);
     finaleTerminalSentry
-      .setPosition(1.38, 0.22 + Math.sin(pulse * 1.7) * 0.024, -3.72)
-      .setRotation(0, Math.PI + 0.18 + Math.sin(pulse * 1.1) * 0.025, 0)
-      .setScale([1.58, 1.58, 1.58]);
-    reviewSentryIdentity[0]?.setPosition(0.50, 1.36, -3.14).setRotation(0, 0.22, -0.18);
-    reviewSentryIdentity[1]?.setPosition(2.26, 1.36, -3.14).setRotation(0, -0.22, 0.18);
-    reviewSentryIdentity[2]?.setPosition(1.38, 1.03, -3.12);
-    reviewSentryIdentity[3]?.setPosition(1.38, 1.16, -3.04);
+      .setPosition(0.0, 0.24 + Math.sin(pulse * 1.7) * 0.024, -6.2)
+      .setRotation(0, Math.PI + Math.sin(pulse * 1.1) * 0.025, 0)
+      .setScale([0.92, 0.92, 0.92]);
+    reviewSentryIdentity[0]?.setPosition(-0.68, 1.18, -5.65).setRotation(0, 0.22, -0.18);
+    reviewSentryIdentity[1]?.setPosition(0.68, 1.18, -5.65).setRotation(0, -0.22, 0.18);
+    reviewSentryIdentity[2]?.setPosition(0.0, 0.92, -5.58);
+    reviewSentryIdentity[3]?.setPosition(0.0, 1.04, -5.50);
     const arenaPulse = 1 + (Math.sin(pulse * 3.2) * 0.5 + 0.5) * 0.08;
     reviewAttackOrigin?.setScale([0.92 * arenaPulse, 0.92 * arenaPulse, 0.055]);
     reviewImpactPlane
@@ -2224,8 +2229,8 @@ function renderWorld(dt: number): void {
     finaleProjectiles.forEach((projectile) => {
       projectile.setVisible(false);
     });
-    const encounterX = 1.38 + eventLaneBias * 0.72;
-    const encounterY = 1.10 + ((reviewAnchor?.centerY ?? 0.96) - 0.96) * 0.55;
+    const encounterX = eventLaneBias * 0.52;
+    const encounterY = 0.92 + ((reviewAnchor?.centerY ?? 0.96) - 0.96) * 0.55;
     reviewProjectiles.forEach((projectile, index) => {
       const outgoing = index < 8;
       const localIndex = outgoing ? index : index - 8;
@@ -2234,8 +2239,8 @@ function renderWorld(dt: number): void {
       const progress = outgoing
         ? 0.08 + (localIndex % 4) * 0.18 + row * 0.10
         : 0.22 + (localIndex % 4) * 0.18 + row * 0.10;
-      const sourceZ = outgoing ? reviewPlayerZ - 0.32 : -3.84;
-      const targetZ = outgoing ? -3.56 : reviewPlayerZ;
+      const sourceZ = outgoing ? reviewPlayerZ - 0.32 : -5.60;
+      const targetZ = outgoing ? -5.40 : reviewPlayerZ;
       const sourceX = outgoing ? reviewPlayerX + column * 0.20 : encounterX + column * 0.18;
       const targetX = outgoing ? encounterX + column * 0.20 : reviewPlayerX + eventLaneBias * 0.24 + column * 0.22;
       const x = sourceX + (targetX - sourceX) * progress;
@@ -2341,19 +2346,19 @@ function renderWorld(dt: number): void {
       slotMaterialKeys.set(slot, materialKey);
     }
     if (gate.entry.kind === "low") {
-      parts.barrier.setVisible(true).setPosition(0, 0.14, gate.z).setScale([1.02, 0.72, 0.24]);
+      parts.barrier.setVisible(true).setPosition(0, 0.14, gate.z).setScale([0.55, 0.42, 0.22]);
       placePart(parts.core, true, 1.92, 0.22, 0, 0.14, gate.z, 0.09);
       placePart(parts.top, true, 1.96, 0.036, 0, 0.26, gate.z, 0.11);
       placePart(parts.bottom, true, 1.96, 0.034, 0, 0.02, gate.z, 0.11);
     } else if (gate.entry.kind === "high") {
-      parts.barrier.setVisible(true).setPosition(0, 0.62, gate.z).setScale([1.02, 1.05, 0.26]);
+      parts.barrier.setVisible(true).setPosition(0, 0.62, gate.z).setScale([0.55, 0.52, 0.22]);
       placePart(parts.core, true, 1.92, 0.36, 0, 0.62, gate.z, 0.09);
       placePart(parts.top, true, 1.96, 0.04, 0, 0.81, gate.z, 0.11);
       placePart(parts.bottom, true, 1.96, 0.04, 0, 0.43, gate.z, 0.11);
     } else {
       const width = gate.entry.kind === "pylon" ? 0.25 : 0.44;
       const trimWidth = width + 0.04;
-      parts.barrier.setVisible(true).setPosition(geometry.centerX, 0.32, gate.z).setScale([width * 0.85, 1.45, 0.28]);
+      parts.barrier.setVisible(true).setPosition(geometry.centerX, 0.32, gate.z).setScale([width * 0.52, 0.65, 0.24]);
       placePart(parts.core, true, width, 0.58, geometry.centerX, 0.32, gate.z, 0.09);
       placePart(parts.top, true, trimWidth, 0.04, geometry.centerX, 0.62, gate.z, 0.11);
       placePart(parts.bottom, true, trimWidth, 0.045, geometry.centerX, 0.025, gate.z, 0.11);

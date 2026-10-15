@@ -633,9 +633,11 @@ function buildWorldScene() {
           name: `${prefix} heightfield terrain`,
           material: material.pbr({
             name: `${prefix} regolith`,
-            color: nextSite.terrainColor,
-            roughness: 0.94,
-            metallic: 0.02
+            color: "#112233",
+            emissive: "#0d1f33",
+            emissiveIntensity: 0.12,
+            roughness: 0.86,
+            metallic: 0.08
           }),
           receiveShadow: true
         }
@@ -670,7 +672,7 @@ function buildWorldScene() {
         name: index === 0 ? "aurora-outpost-landing-pad-3d" : `${prefix} outpost landing pad 3d`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 6.2,
+        targetMaxDimension: 3.4,
         castShadow: true,
         receiveShadow: true,
         visible
@@ -683,15 +685,15 @@ function buildWorldScene() {
         name: index === 0 ? "aurora-outpost-habitat-dome" : `${prefix} outpost habitat dome`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 6.0,
+        targetMaxDimension: 3.1,
         castShadow: true,
         receiveShadow: true,
         visible
       })
         .position(
-          pad.x - 5.2,
-          sampleGridHeight(nextField, pad.x - 5.2, pad.z - 3.2),
-          pad.z - 3.2
+          pad.x - 6.2,
+          sampleGridHeight(nextField, pad.x - 6.2, pad.z - 3.4),
+          pad.z - 3.4
         )
         .rotate(0, 0.45, 0)
         .runtime(game.runtimeNode(`${prefix}-habitat-dome`, { tags: ["outpost", "typed-prop"] }))
@@ -701,15 +703,15 @@ function buildWorldScene() {
         name: index === 0 ? "aurora-outpost-fuel-depot" : `${prefix} outpost fuel depot`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 4.4,
+        targetMaxDimension: 2.4,
         castShadow: true,
         receiveShadow: true,
         visible
       })
         .position(
-          pad.x + 5.0,
-          sampleGridHeight(nextField, pad.x + 5.0, pad.z - 2.8),
-          pad.z - 2.8
+          pad.x + 6.0,
+          sampleGridHeight(nextField, pad.x + 6.0, pad.z - 3.2),
+          pad.z - 3.2
         )
         .rotate(0, -0.4, 0)
         .runtime(game.runtimeNode(`${prefix}-fuel-depot`, { tags: ["outpost", "typed-prop"] }))
@@ -778,21 +780,23 @@ function buildWorldScene() {
 
     // text3D site marker above the pad — real depth-bearing geometry, not a DOM label.
     builder.add(
-      text3D(`SITE ${nextSite.id}`, { size: 0.7, depth: 0.18, backend: "sdf" })
-        .position(pad.x - 2.2, padHeight + 2.4, pad.z - 3.3)
-        .rotate(0.42, 0.78, 0)
+      text3D(`SITE ${nextSite.id}`, { size: 0.52, depth: 0.14, backend: "sdf" })
+        .position(pad.x - 1.4, padHeight + 1.15, pad.z - 2.4)
+        .rotate(0.28, 0.45, 0)
         .runtime(game.runtimeNode(`${prefix}-marker`, { tags: ["site-marker", "text3d"] }))
     );
   });
 
   // Hero lander + translucent replay ghost are GLOBAL across sites.
-  const firstSpawn = SITES[0]!.spawn;
+  const firstPad = SITES[0]!.pads[0]!;
+  const firstPadHeight = siteFields[0]?.field.padHeights[0] ?? 0;
+  const firstSpawn = { x: firstPad.x, y: firstPadHeight + 4.2, z: firstPad.z };
   builder.add(
     model(assets.auroraLanderCraftMeshy, {
       name: "aurora lander probe",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 3.1,
+      targetMaxDimension: 2.3,
       castShadow: true,
       receiveShadow: true
     })
@@ -969,7 +973,7 @@ function buildWorldScene() {
     .add(effects.colorGrade({ exposure: 1.02, contrast: 1.05, saturation: 1.08 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     .add(lights.ambient({ name: "aurora sky fill", color: "#67e8f9", intensity: 0.46 }))
-    .add(lights.directional({ name: "regolith bounce fill", color: "#2f4a3d", intensity: 0.65 }).position(14, -26, 18))
+    .add(lights.directional({ name: "regolith bounce fill", color: "#1e3a5f", intensity: 0.65 }).position(14, -26, 18))
     .add(lights.directional({ name: "moonlight key", color: "#d9e4fb", intensity: 2.55, shadow: true }).position(-38, 62, -22))
     .add(lights.directional({ name: "rim light", color: "#5eead4", intensity: 1.45 }).position(30, 40, 36))
     .add(lights.point({
@@ -994,11 +998,11 @@ function buildWorldScene() {
     }).position(SITES[2]!.pads[0]!.x + 4.2, 3.4, SITES[2]!.pads[0]!.z - 1.8))
     .camera(camera.follow({
       targetNode: "lander",
-      distance: visualReviewCapture ? 10.6 : 11.5,
-      offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 4.2, 11.2],
-      targetOffset: visualReviewCapture ? [0, -0.55, -0.65] : [0, -2.2, 0],
-      fov: visualReviewCapture ? 46 : 54,
-      smoothing: visualReviewCapture ? 0 : 0.05
+      distance: visualReviewCapture ? 10.6 : 14.5,
+      offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 2.8, 14.2],
+      targetOffset: visualReviewCapture ? [0, -0.55, -0.65] : [0, -0.8, 0],
+      fov: visualReviewCapture ? 46 : 50,
+      smoothing: 0
     }));
 
   return builder;
@@ -1170,7 +1174,7 @@ function spawnStateFor(site: LanderSite): LanderState {
   const activeField = siteFields.find((entry) => entry.site.id === site.id)?.field;
   const padHeight = activeField?.padHeights[0] ?? 0;
   if (!dropEvidenceMode && !approachEvidenceMode) {
-    return createLanderState({ x: pad.x, y: padHeight + 5.8, z: pad.z }, site.fuelBudget);
+    return createLanderState({ x: pad.x, y: padHeight + 4.2, z: pad.z }, site.fuelBudget);
   }
   // Keep the deterministic acceptance approach close enough that all three real Rapier contacts
   // and site transitions complete within the browser gate even on a software-rendered worker.
@@ -1438,16 +1442,16 @@ function tick(dtFixed: number): void {
   }
   previousControls = effectiveControls;
   state = stepLander(state, effectiveControls, dtFixed, currentSite.gust);
-  if (!dropEvidenceMode && !approachEvidenceMode && field && simSeconds < 15) {
+  if (!dropEvidenceMode && !approachEvidenceMode && field && simSeconds < 45) {
     const pad = currentSite.pads[0]!;
     const padHeight = field.padHeights[0] ?? 0;
-    const minY = padHeight + 4.6;
-    const maxY = padHeight + 6.8;
+    const minY = padHeight + 3.4;
+    const maxY = padHeight + 4.6;
     const clampedY = Math.max(minY, Math.min(maxY, state.y));
-    const clampedVy = state.y > maxY ? Math.min(0, state.vy) : state.y < minY ? Math.max(0, state.vy) : Math.max(-0.8, Math.min(0.4, state.vy));
-    const clampedX = Math.max(pad.x - 1.4, Math.min(pad.x + 1.4, state.x));
-    const clampedVx = Math.max(-0.5, Math.min(0.5, state.vx));
-    const clampedTilt = Math.max(-7, Math.min(7, state.tiltDeg));
+    const clampedVy = state.y > maxY ? Math.min(0, state.vy) : state.y < minY ? Math.max(0, state.vy) : Math.max(-0.5, Math.min(0.3, state.vy));
+    const clampedX = Math.max(pad.x - 0.5, Math.min(pad.x + 0.5, state.x));
+    const clampedVx = Math.max(-0.25, Math.min(0.25, state.vx));
+    const clampedTilt = Math.max(-4, Math.min(4, state.tiltDeg));
     state = {
       ...state,
       x: clampedX,

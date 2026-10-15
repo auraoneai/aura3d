@@ -484,10 +484,10 @@ const courierCoreRingNode = primitives.torus({
 appScene.add(courierCoreRingNode);
 
 const CYBER_PYLON_PLACEMENTS: ReadonlyArray<readonly [number, number, number, number]> = [
-  [-3.6, 0.05, 0.8, 0.32],
-  [3.6, 0.05, 0.8, -0.32],
-  [-4.4, 0.05, 4.4, 0.48],
-  [4.4, 0.05, 4.4, -0.48]
+  [-6.4, 0.05, -1.8, 0.32],
+  [6.4, 0.05, -1.8, -0.32],
+  [-6.8, 0.05, 5.2, 0.48],
+  [6.8, 0.05, 5.2, -0.48]
 ];
 
 if (!visualReviewCapture) {
@@ -508,7 +508,7 @@ if (!visualReviewCapture) {
         name: index === 0 ? "neon-cyber-pylon-barrier" : `neon-cyber-pylon-barrier-${index}`,
         role: "primaryWorld",
         scaleMode: "fit",
-        targetMaxDimension: 1.85,
+        targetMaxDimension: 0.95,
         castShadow: true,
         receiveShadow: true
       })
@@ -523,17 +523,17 @@ if (!visualReviewCapture) {
 }
 
 [
-  [-2.4, 0.05, -2.6, 0.35],
-  [2.4, 0.05, -2.6, -0.35],
-  [-5.8, 0.05, 3.8, 2.55],
-  [5.8, 0.05, 3.8, -2.55]
+  [-5.6, 0.05, -4.8, 0.35],
+  [5.6, 0.05, -4.8, -0.35],
+  [-7.2, 0.05, 4.8, 2.55],
+  [7.2, 0.05, 4.8, -2.55]
 ].forEach(([gx, gy, gz, rotY], index) => {
   appScene.add(
     model(assets.neonArenaGeneratorCoreMeshy, {
       name: index === 0 ? "neon-arena-generator-spire" : `neon-arena-generator-spire-${index}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 2.35,
+      targetMaxDimension: 1.15,
       castShadow: true,
       receiveShadow: true
     })
@@ -648,8 +648,8 @@ appScene.add(
 appScene.add(
   primitives.box({
     name: "courier aim vector",
-    size: [0.09, 0.08, 1.9],
-    material: material.emissive({ color: "#e9ffff", emissive: "#35e6ff" }),
+    size: [0.025, 0.02, 1.35],
+    material: material.emissive({ color: "#8cf8ff", emissive: "#35e6ff", emissiveIntensity: 0.38 }),
     position: [0, 0.22, 1.6]
   }).runtime(game.runtimeNode("neon-player-aim-vector", { tags: ["player-readability", "aim-vector"] }))
 );
@@ -659,12 +659,12 @@ appScene.add(
 appScene.addMany([
   primitives.box({
     name: "courier pulse shot ray",
-    size: [visualReviewCapture ? 0.035 : 0.075, 0.08, visualReviewCapture ? 2.3 : 3.0],
-    material: material.emissive({ color: "#8cf8ff", emissive: "#35e6ff", emissiveIntensity: 2.1 })
+    size: [visualReviewCapture ? 0.035 : 0.055, 0.05, visualReviewCapture ? 2.3 : 2.6],
+    material: material.emissive({ color: "#8cf8ff", emissive: "#35e6ff", emissiveIntensity: 1.1 })
   }).position(0, -8, 0).runtime(game.runtimeNode("neon-pulse-shot-ray", { tags: ["actual-event-feedback", "pulse-fire"] })),
   primitives.torus({
     name: "courier pulse impact marker",
-    material: material.emissive({ color: "#fff3b0", emissive: "#ffc857", emissiveIntensity: 2.1 }),
+    material: material.emissive({ color: "#fff3b0", emissive: "#ffc857", emissiveIntensity: 1.2 }),
     rotation: [Math.PI / 2, 0, 0],
     scale: [0.58, 0.58, 0.12]
   }).position(0, -8, 0).runtime(game.runtimeNode("neon-pulse-impact-ring", { tags: ["actual-event-feedback", "pulse-hit"] }))
@@ -677,7 +677,7 @@ appScene.addMany(Array.from({ length: 6 }, (_, index) =>
     material: material.emissive({
       color: index % 2 === 0 ? "#fff1b8" : "#ff806d",
       emissive: index % 2 === 0 ? "#ffc857" : "#ff5f55",
-      emissiveIntensity: 1.8
+      emissiveIntensity: 1.2
     })
   }).position(0, -8, 0).runtime(game.runtimeNode(`neon-pulse-impact-shard-${index}`, {
     tags: ["actual-event-feedback", "pulse-hit", "impact-shard"]
@@ -692,7 +692,7 @@ if (!visualReviewCapture) {
   appScene.add(
     primitives.torus({
       name: "arena center route ring",
-      material: material.emissive({ color: "#123c59", emissive: "#35e6ff", emissiveIntensity: 0.28 }),
+      material: material.emissive({ color: "#123c59", emissive: "#35e6ff", emissiveIntensity: 0.22 }),
       position: [0, 0.035, 3],
       rotation: [Math.PI / 2, 0, 0],
       scale: [4.65, 4.65, 0.035]
@@ -707,7 +707,7 @@ appScene.addMany(Array.from({ length: 8 }, (_, index) =>
   primitives.box({
     name: "burst cascade spoke " + index,
     size: [0.13, 0.1, 1.8],
-    material: material.emissive({ color: "#fff2a6", emissive: "#ffc857", emissiveIntensity: 1.9 })
+    material: material.emissive({ color: "#fff2a6", emissive: "#ffc857", emissiveIntensity: 1.2 })
   })
     .position(0, -8, 0)
     .rotate(0, index * Math.PI / 4, 0)
@@ -771,7 +771,7 @@ appScene.add(
     name: "thorn moth swarm grunt pool",
     transforms: swarm.gruntTransforms,
     colors: swarm.gruntColors,
-    material: material.pbr({ color: "#315f57", emissive: "#73b99d", emissiveIntensity: 0.5, roughness: 0.48, metallic: 0.12 })
+    material: material.pbr({ color: "#1c1226", emissive: "#be185d", emissiveIntensity: 0.28, roughness: 0.38, metallic: 0.45 })
   })
 );
 
@@ -780,7 +780,7 @@ appScene.add(
     name: "crown hunter elite pool",
     transforms: swarm.eliteTransforms,
     colors: swarm.eliteColors,
-    material: material.pbr({ color: "#7a1f3d", emissive: "#ff4d7e", emissiveIntensity: 0.55, roughness: 0.42, metallic: 0.12 })
+    material: material.pbr({ color: "#4c1229", emissive: "#f43f5e", emissiveIntensity: 0.38, roughness: 0.36, metallic: 0.48 })
   })
 );
 
@@ -788,7 +788,7 @@ appScene.add(
 // instantiate 48 hidden GLB actors in normal play: hidden assets still consume
 // renderer/shadow bookkeeping and were pushing the default instancing producer
 // past its honest draw/memory budget before the first input was processed.
-const LIVE_CHASER_DRONE_COUNT = 16;
+const LIVE_CHASER_DRONE_COUNT = 20;
 appScene.addMany(Array.from({ length: LIVE_CHASER_DRONE_COUNT }, (_, index) =>
   model(assets.neonSwarmChaserDroneMeshy, {
     name: index === 0 ? "neon-swarm-chaser-drone" : `neon-swarm-chaser-drone-${index}`,
@@ -835,7 +835,7 @@ appScene.add(effects.ambientOcclusion({
 }));
 appScene.add(effects.contactOcclusion({ name: "courier horde contact", intensity: 0.34, radius: 0.5 }));
 if (!reducedMotion) {
-  appScene.add(effects.bloom({ intensity: 0.42, color: "#35e6ff", quality: "balanced", softKnee: 0.5, shoulder: 0.6 }));
+  appScene.add(effects.bloom({ intensity: 0.18, color: "#35e6ff", quality: "balanced", softKnee: 0.5, shoulder: 0.6 }));
 }
 appScene.add(effects.colorGrade({ exposure: 1.05, contrast: 1.08, saturation: 1.12 }));
 appScene.add(effects.antiAlias({ mode: "fxaa" }));
@@ -1452,36 +1452,21 @@ function update(dt: number): void {
       .setVisible(false);
 
     app.nodes.get("neon-courier-pulse-carbine")
-      ?.setPosition(
-        player.x + forwardX * 0.52 + rightX * 0.24,
-        1.54 + bob,
-        player.z + forwardZ * 0.52 + rightZ * 0.24
-      )
-      .setRotation(0, playerYaw, 0)
-      .setVisible(true);
+      ?.setPosition(player.x, -50, player.z)
+      .setVisible(false);
     app.nodes.get("neon-courier-pulse-carbine-core")
-      ?.setPosition(
-        player.x + forwardX * 0.76 + rightX * 0.24,
-        1.54 + bob,
-        player.z + forwardZ * 0.76 + rightZ * 0.24
-      )
-      .setRotation(0, playerYaw, 0)
-      .setVisible(true);
+      ?.setPosition(player.x, -50, player.z)
+      .setVisible(false);
     app.nodes.get("neon-courier-pulse-muzzle-ring")
-      ?.setPosition(
-        player.x + forwardX * 1.02 + rightX * 0.24,
-        1.54 + bob,
-        player.z + forwardZ * 1.02 + rightZ * 0.24
-      )
-      .setRotation(0, playerYaw, 0)
-      .setVisible(true);
+      ?.setPosition(player.x, -50, player.z)
+      .setVisible(false);
   }
   app.nodes.get("neon-player-burst-radius")?.setPosition(player.x, 0.12, player.z).setVisible(true);
   app.nodes.get("neon-courier-core-ring")
     ?.setPosition(player.x + forwardX * 0.34, 0.26, player.z + forwardZ * 0.34)
     .setVisible(true);
   app.nodes.get("neon-player-aim-vector")
-    ?.setPosition(player.x + aim.x * 1.35, 0.22, player.z + aim.z * 1.35)
+    ?.setPosition(player.x + aim.x * 1.15, 0.22, player.z + aim.z * 1.15)
     .setRotation(0, Math.atan2(aim.x, aim.z), 0)
     .setVisible(true);
 
@@ -1499,41 +1484,6 @@ function update(dt: number): void {
     }
   }
 
-  for (let index = 0; index < LIVE_CHASER_DRONE_COUNT; index += 1) {
-    const transform = swarm.gruntTransforms[index];
-    const activeInPocket =
-      runState === "wave-active" &&
-      transform !== undefined &&
-      transform.position[1] > -4 &&
-      transform.scale[0] > 0 &&
-      Math.hypot(transform.position[0] - player.x, transform.position[2] - player.z) < 6.4;
-    const node = app.nodes.get(`neon-swarm-chaser-drone-${index}`);
-    if (!node) continue;
-    node.setVisible(true);
-    if (activeInPocket && transform) {
-      node
-        .setPosition(transform.position[0], 0.38, transform.position[2])
-        .setRotation(0, transform.rotation[1], 0)
-        .setScale([0.95 + (index % 4) * 0.05, 1, 0.95 + ((index + 1) % 4) * 0.05]);
-      transform.scale = [0, 0, 0];
-    } else {
-      const ringAngle =
-        (index / LIVE_CHASER_DRONE_COUNT) * Math.PI * 2 +
-        elapsedSeconds * (index % 2 === 0 ? 0.85 : -0.68) +
-        (index % 3) * 0.22;
-      const ringRadius = 2.45 + (index % 4) * 0.68 + Math.sin(elapsedSeconds * 2.1 + index) * 0.28;
-      const dx = Math.cos(ringAngle) * ringRadius;
-      const dz = Math.sin(ringAngle) * ringRadius * 0.84 - 0.65;
-      const droneX = player.x + dx;
-      const droneZ = player.z + dz;
-      const faceYaw = Math.atan2(player.x - droneX, player.z - droneZ);
-      node
-        .setPosition(droneX, 0.35 + Math.sin(elapsedSeconds * 4.5 + index) * 0.06, droneZ)
-        .setRotation(0, faceYaw, 0)
-        .setScale([0.95 + (index % 4) * 0.05, 1, 0.95 + ((index + 1) % 4) * 0.05]);
-    }
-  }
-
   if (runState === "wave-active") {
     waveElapsed += dt;
     while (spawnedCount < schedule.length && schedule[spawnedCount]!.atSeconds <= waveElapsed) {
@@ -1548,6 +1498,45 @@ function update(dt: number): void {
     }
 
     swarm.step(dt, player, arenaLayout.obstacles, undefined, inset);
+    let assignedChaserSlots = 0;
+    for (let gIdx = 0; gIdx < swarm.gruntTransforms.length; gIdx += 1) {
+      const transform = swarm.gruntTransforms[gIdx];
+      if (!transform || transform.position[1] <= -4 || transform.scale[0] <= 0) continue;
+      const dist = Math.hypot(transform.position[0] - player.x, transform.position[2] - player.z);
+      if (dist < 8.5) {
+        if (assignedChaserSlots < LIVE_CHASER_DRONE_COUNT) {
+          const slot = assignedChaserSlots;
+          assignedChaserSlots += 1;
+          const node = app.nodes.get(`neon-swarm-chaser-drone-${slot}`);
+          node
+            ?.setVisible(true)
+            .setPosition(transform.position[0], 0.38, transform.position[2])
+            .setRotation(0, transform.rotation[1], 0)
+            .setScale([0.95 + (slot % 4) * 0.05, 1, 0.95 + ((slot + 1) % 4) * 0.05]);
+        }
+        // Always suppress the low-poly octagon inside the camera pocket so only 3D Meshy drones render
+        transform.scale = [0, 0, 0];
+      }
+    }
+    for (let slot = assignedChaserSlots; slot < LIVE_CHASER_DRONE_COUNT; slot += 1) {
+      const node = app.nodes.get(`neon-swarm-chaser-drone-${slot}`);
+      if (!node) continue;
+      const ringAngle =
+        (slot / LIVE_CHASER_DRONE_COUNT) * Math.PI * 2 +
+        elapsedSeconds * (slot % 2 === 0 ? 0.85 : -0.68) +
+        (slot % 3) * 0.22;
+      const ringRadius = 2.65 + (slot % 4) * 0.72 + Math.sin(elapsedSeconds * 2.1 + slot) * 0.28;
+      const dx = Math.cos(ringAngle) * ringRadius;
+      const dz = Math.sin(ringAngle) * ringRadius * 0.84 - 0.65;
+      const droneX = player.x + dx;
+      const droneZ = player.z + dz;
+      const faceYaw = Math.atan2(player.x - droneX, player.z - droneZ);
+      node
+        .setVisible(true)
+        .setPosition(droneX, 0.35 + Math.sin(elapsedSeconds * 4.5 + slot) * 0.06, droneZ)
+        .setRotation(0, faceYaw, 0)
+        .setScale([0.95 + (slot % 4) * 0.05, 1, 0.95 + ((slot + 1) % 4) * 0.05]);
+    }
     if (visualReviewCapture) {
       for (let index = 0; index < REVIEW_ELITE_CARD_COUNT; index += 1) {
         const transform = swarm.eliteTransforms[index]!;

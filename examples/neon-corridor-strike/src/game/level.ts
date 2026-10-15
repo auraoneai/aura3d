@@ -192,19 +192,15 @@ export function buildScene() {
       return primitives.torus({
         name: `hostile threat collar ${enemy.id}`,
         material: material.glowingEmissive({
-          color: isManta ? "#401625" : "#4a2418",
-          emissive: isManta ? "#c52245" : "#bd4b24",
-          emissiveIntensity: 0.34
+          color: isManta ? "#240d16" : "#28150f",
+          emissive: isManta ? "#c52245" : "#38bdf8",
+          emissiveIntensity: 0.14
         }),
         castShadow: false,
         receiveShadow: false
       })
-        // Park below the collision floor until the alarm transition exposes it;
-        // AuraPrimitiveOptions has no static visibility flag on the public API.
-        .position(enemy.x, -8, enemy.z - 0.24)
-        // Aura torus geometry lies in local XY (normal +Z), so it is already a
-        // vertical, camera-facing collar. Keep Z as the thin tube axis.
-        .scale(isManta ? [0.66, 0.42, 0.022] : [0.5, 0.68, 0.022])
+        .position(enemy.x, -8, enemy.z - 0.48)
+        .scale([0.18, 0.18, 0.005])
         .runtime(game.runtimeNode(`enemy-${enemy.id}-threat-collar`, { tags: ["enemy", "telegraph", "fx"] }));
     }))
     .addMany(PICKUPS.map((pickup) => {
@@ -225,6 +221,18 @@ export function buildScene() {
         targetMaxDimension: 0.56
       })
         .position(-0.78, 0.26, 5.45)
+    )
+    .add(
+      model(rootAssets.corridorPulseRifleMeshy, {
+        name: "tactical bay pulse rifle rack",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 0.82,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(1.48, 0.62, 5.15)
+        .rotate(0, -0.45, 0)
     )
     // Grounded, textured typed Meshy sci-fi tactical cover crates replace the
     // imported corridor's pale blockout-rubble read in the opening encounter.

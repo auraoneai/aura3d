@@ -257,8 +257,32 @@ function visualNodes(): AuraSceneNode[] {
       scaleMode: "world"
     })
       .position(0, -5, 0)
-      .scale([BALL_VISUAL_SCALE, BALL_VISUAL_SCALE, BALL_VISUAL_SCALE])
+      .scale([BALL_VISUAL_SCALE * 1.18, BALL_VISUAL_SCALE * 1.18, BALL_VISUAL_SCALE * 1.18])
       .runtime(game.runtimeNode("cue-stick", { tags: ["typed-asset", "cue"] }))
+      .toJSON(),
+    primitives.box({
+      name: "cue-ferrule-3d",
+      material: material.pbr({ name: "cue brass ferrule", color: "#fbbf24", roughness: 0.22, metallic: 0.88 })
+    })
+      .position(0, -5, 0)
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode("cue-ferrule-3d", { tags: ["renderer-owned", "cue"] }))
+      .toJSON(),
+    primitives.box({
+      name: "cue-shaft-3d",
+      material: material.pbr({ name: "cue maple shaft", color: "#f3dcb3", roughness: 0.32, metallic: 0.06, clearcoat: 0.55 })
+    })
+      .position(0, -5, 0)
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode("cue-shaft-3d", { tags: ["renderer-owned", "cue"] }))
+      .toJSON(),
+    primitives.box({
+      name: "cue-butt-3d",
+      material: material.pbr({ name: "cue rosewood butt", color: "#5c2415", roughness: 0.26, metallic: 0.14, clearcoat: 0.72 })
+    })
+      .position(0, -5, 0)
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode("cue-butt-3d", { tags: ["renderer-owned", "cue"] }))
       .toJSON()
   );
   nodes.push(
@@ -298,38 +322,40 @@ function visualNodes(): AuraSceneNode[] {
       .runtime(game.runtimeNode("aim-bank", { tags: ["aim-preview"] }))
       .toJSON()
   );
-  // Add complete 3D Billiards Lounge environment
-  nodes.push(...createPoolHallSetDressing({ portrait: portraitComposition }));
+  // Add complete 3D Billiards Lounge environment with scaled/raised pendant
+  // lamp and without the oversized corner astrolabe pedestals clipping the rails.
+  for (const rawNode of createPoolHallSetDressing({ portrait: portraitComposition })) {
+    const entry = { ...(rawNode as unknown as Record<string, unknown>) };
+    if (entry.name === "billiard-hall-pendant-lamp-3d") {
+      entry.position = [0, 1.56, -0.18];
+      entry.scale = [0.38, 0.34, 0.38];
+      entry.targetMaxDimension = 0.68;
+    } else if (
+      entry.name === "billiard-hall-trophy-pedestal-left" ||
+      entry.name === "billiard-hall-trophy-pedestal-right"
+    ) {
+      entry.position = [0, -50, 0];
+      entry.scale = [0.001, 0.001, 0.001];
+      entry.targetMaxDimension = 0.001;
+    } else if (typeof entry.name === "string" && entry.name.startsWith("pendant-bulb-")) {
+      const pos = Array.isArray(entry.position) ? entry.position : [0, 1.52, -0.18];
+      entry.position = [pos[0], 1.52, pos[2]];
+      entry.scale = [0.014, 0.014, 0.014];
+      if (entry.material && typeof entry.material === "object") {
+        entry.material = { ...(entry.material as Record<string, unknown>), emissiveIntensity: 0.24 };
+      }
+    }
+    nodes.push(entry as unknown as AuraSceneNode);
+  }
 
   return nodes;
 }
 
 function buildScene(): ReturnType<typeof scene> {
   const sceneCamera = portraitComposition
-    // Put the table's long axis up the portrait viewport so all six pockets,
-    // every ball, the cue, and the first line of action remain visible.
     ? camera.perspective({ position: [-3.8, 7.2, 0], target: [-0.38, -0.05, 0], fov: 62 })
-    // The table is the product of this route. Keep the review camera close
-    // enough that the six pockets and live balls read immediately instead of
-    // spending the lower half of the frame on an empty lounge floor.
     : camera.perspective({
-      // Keep the full typed table inside the review viewport, including the
-      // near rail and the panel-side pocket.  The previous close crop clipped
-      // the primary surface and let the HUD panel cover its right edge in the
-      // route-primary evidence frame.
-      // A lower, tighter spectator angle gives the table and rack the same
-      // visual priority as a real pool-room capture.  The full rail footprint
-      // remains inside the canvas while the empty ceiling/floor fall away.
-      // A close three-quarter spectator angle gives the rack and cue ball the
-      // visual weight of a real pool-room capture. The review lens is raised
-      // just enough to show the full cloth plane and its pocket/rail falloff,
-      // then tightened around the break zone so balls are not thumbnail-sized.
-      // The camera remains table-centric; the panel-free review frame has no
-      // need to reserve pixels for the DOM controls.
       position: visualReviewCapture ? [-0.28, 1.88, 2.52] : [-0.08, 1.92, 2.68],
-      // The default route keeps the opaque HUD panel clear of the table's
-      // right rail.  Shifting the camera target a fraction toward the foot
-      // keeps every pocket in the canvas while the controls stay readable.
       target: visualReviewCapture ? [0.14, 0.28, -0.08] : [0.24, 0.28, -0.08],
       fov: visualReviewCapture ? 46 : 50
     });
@@ -337,9 +363,9 @@ function buildScene(): ReturnType<typeof scene> {
     .background("#10182a")
     .addMany(visualNodes())
     .addMany([
-      // Midnight Slate / Aurora Noir billiards-hall mood:
-      effects.neonBloom({ intensity: (reducedMotion ? 0.07 : 0.16) * (postV2 ? 1.4 : 1), quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.colorGrade({ exposure: 1.12, contrast: 1.07, saturation: 1.12 }),
+      // Midnight Slate / Aurora Noir billiards-hall mood with balanced speculars:
+      effects.neonBloom({ intensity: reducedMotion ? 0.04 : 0.065, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.colorGrade({ exposure: 1.04, contrast: 1.08, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" }),
       effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.54 : 0.26 }),
       effects.contactOcclusion({ name: "ball-to-felt contact", intensity: 0.36, radius: 0.52 }),
@@ -349,27 +375,21 @@ function buildScene(): ReturnType<typeof scene> {
         color: "#141e33",
         intensity: visualReviewCapture ? 0.06 : 0.1
       }),
-      // A restrained ambient floor preserves the lacquer highlights and the
-      // ball-to-felt contact gradient.  The previous broad blue fill flattened
-      // every PBR response into the same midtone.
-      lights.ambient({ name: "slate ambient", color: "#4b5e7a", intensity: (visualReviewCapture ? 0.38 : 0.45) * KEY_LIGHT_GAIN }),
-      // An asymmetric three-lamp pool-room key. The offset sources create a
-      // visible luminance falloff across felt, walnut bevels, and ball lacquer
-      // instead of washing every surface with the same frontal value.
-      lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: (visualReviewCapture ? 5.0 : 4.85) * KEY_LIGHT_GAIN }).position(-1.2, 1.55, 0.92),
-      lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: (visualReviewCapture ? 2.9 : 3.6) * KEY_LIGHT_GAIN }).position(0.2, 1.8, -0.7),
-      lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: (visualReviewCapture ? 1.9 : 3.6) * KEY_LIGHT_GAIN }).position(1.25, 1.35, 0.35),
-      lights.point({ name: "pendant-shade-front-key", color: "#ffedd5", intensity: 3.8 * KEY_LIGHT_GAIN }).position(0, 1.55, 1.15),
-      lights.point({ name: "lounge-wall-sconce-left", color: "#fbbf24", intensity: 2.8 * KEY_LIGHT_GAIN }).position(-1.8, 1.4, -1.65),
-      lights.point({ name: "lounge-wall-sconce-right", color: "#38bdf8", intensity: 2.6 * KEY_LIGHT_GAIN }).position(1.8, 1.4, -1.65),
-      lights.rect({ name: "table overhead softbox", color: "#fff4dc", intensity: (visualReviewCapture ? 1.45 : 1.8) * KEY_LIGHT_GAIN, width: 2.8, height: 1.25 })
-        .position(0, 2.25, 0.15),
+      lights.ambient({ name: "slate ambient", color: "#586d8c", intensity: (visualReviewCapture ? 0.42 : 0.48) * KEY_LIGHT_GAIN }),
+      lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: 2.35 * KEY_LIGHT_GAIN }).position(-0.95, 2.05, 0.65),
+      lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: 2.1 * KEY_LIGHT_GAIN }).position(0.2, 2.1, -0.55),
+      lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: 2.0 * KEY_LIGHT_GAIN }).position(1.05, 2.0, 0.25),
+      lights.point({ name: "pendant-shade-front-key", color: "#ffedd5", intensity: 1.45 * KEY_LIGHT_GAIN }).position(0, 2.15, 0.95),
+      lights.point({ name: "lounge-wall-sconce-left", color: "#fbbf24", intensity: 1.65 * KEY_LIGHT_GAIN }).position(-1.8, 1.4, -1.65),
+      lights.point({ name: "lounge-wall-sconce-right", color: "#38bdf8", intensity: 1.55 * KEY_LIGHT_GAIN }).position(1.8, 1.4, -1.65),
+      lights.rect({ name: "table overhead softbox", color: "#fff4dc", intensity: 1.25 * KEY_LIGHT_GAIN, width: 2.8, height: 1.25 })
+        .position(0, 2.35, 0.15),
       // Cool fill & rim lights
-      lights.directional({ name: "cool rim key", color: "#83bdff", intensity: visualReviewCapture ? 1.35 : 1.35 }).position(3.2, 4.5, 2.2),
-      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: visualReviewCapture ? 0.95 : 0.85 }).position(-3.0, 3.5, -2.0),
-      lights.point({ name: "felt cyan bounce", color: "#55baff", intensity: visualReviewCapture ? 0.18 : 0.7 }).position(0, 0.75, 2.0),
-      lights.point({ name: "rack magenta rim", color: "#ff78ad", intensity: visualReviewCapture ? 0.28 : 0.72 }).position(1.65, 0.72, -0.58),
-      lights.point({ name: "cue teal rim", color: "#55e2d2", intensity: visualReviewCapture ? 0.24 : 0.62 }).position(-1.45, 0.62, 0.62)
+      lights.directional({ name: "cool rim key", color: "#83bdff", intensity: 1.15 }).position(3.2, 4.5, 2.2),
+      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: 0.78 }).position(-3.0, 3.5, -2.0),
+      lights.point({ name: "felt cyan bounce", color: "#55baff", intensity: visualReviewCapture ? 0.18 : 0.48 }).position(0, 0.75, 2.0),
+      lights.point({ name: "rack magenta rim", color: "#ff78ad", intensity: visualReviewCapture ? 0.24 : 0.52 }).position(1.65, 0.72, -0.58),
+      lights.point({ name: "cue teal rim", color: "#55e2d2", intensity: visualReviewCapture ? 0.22 : 0.48 }).position(-1.45, 0.62, 0.62)
     ])
     .camera(sceneCamera);
 }
@@ -407,6 +427,9 @@ const ballShadowHandles = new Map<string, AuraRuntimeNodeHandle>();
 const previousBallPositions = new Map<string, readonly [number, number]>();
 let tableHandle: AuraRuntimeNodeHandle | undefined;
 let cueStickHandle: AuraRuntimeNodeHandle | undefined;
+let cueFerrule3dHandle: AuraRuntimeNodeHandle | undefined;
+let cueShaft3dHandle: AuraRuntimeNodeHandle | undefined;
+let cueButt3dHandle: AuraRuntimeNodeHandle | undefined;
 let cueGhostHandle: AuraRuntimeNodeHandle | undefined;
 let aimLineHandle: AuraRuntimeNodeHandle | undefined;
 let aimBankHandle: AuraRuntimeNodeHandle | undefined;
@@ -426,6 +449,9 @@ function resolveHandles(): void {
     if (shadowHandle) ballShadowHandles.set(name, shadowHandle as AuraRuntimeNodeHandle);
   }
   cueStickHandle = app.nodes.get("cue-stick") as AuraRuntimeNodeHandle | undefined;
+  cueFerrule3dHandle = app.nodes.get("cue-ferrule-3d") as AuraRuntimeNodeHandle | undefined;
+  cueShaft3dHandle = app.nodes.get("cue-shaft-3d") as AuraRuntimeNodeHandle | undefined;
+  cueButt3dHandle = app.nodes.get("cue-butt-3d") as AuraRuntimeNodeHandle | undefined;
   cueGhostHandle = app.nodes.get("cue-ghost") as AuraRuntimeNodeHandle | undefined;
   aimLineHandle = app.nodes.get("aim-line") as AuraRuntimeNodeHandle | undefined;
   aimBankHandle = app.nodes.get("aim-bank") as AuraRuntimeNodeHandle | undefined;
@@ -781,6 +807,9 @@ function syncVisuals(): void {
   const cueInfo = sim.ballInfos().find((ball) => ball.number === 0);
   if (phase === "rack-won" || phase === "rack-lost" || !cueInfo || !cueInfo.live) {
     parkNode(cueStickHandle);
+    parkNode(cueFerrule3dHandle);
+    parkNode(cueShaft3dHandle);
+    parkNode(cueButt3dHandle);
     parkNode(aimLineHandle);
     parkNode(aimBankHandle);
     parkNode(aimMarkerHandle);
@@ -789,9 +818,6 @@ function syncVisuals(): void {
   }
 
   if (phase === "shooting") {
-    // Keep the typed cue in a short follow-through pose during the live break.
-    // The rest of the aim overlays are parked, leaving a readable cue-ball /
-    // rack action relationship in the deterministic review capture.
     parkNode(aimLineHandle);
     parkNode(aimBankHandle);
     parkNode(aimMarkerHandle);
@@ -799,14 +825,44 @@ function syncVisuals(): void {
     const strikeAngle = typeof lastShotObject?.angle === "number" ? lastShotObject.angle : cueController.aimAngle;
     const strikeX = Math.cos(strikeAngle);
     const strikeZ = Math.sin(strikeAngle);
-    cueStickHandle?.setScale([BALL_VISUAL_SCALE, BALL_VISUAL_SCALE, BALL_VISUAL_SCALE]);
-    cueStickHandle?.setPosition(cueInfo.x + strikeX * 0.045, BALL_SURFACE_Y + 0.008, cueInfo.z + strikeZ * 0.045);
-    cueStickHandle?.setRotation(0, -strikeAngle, 0.035);
+    cueStickHandle?.setScale([BALL_VISUAL_SCALE * 1.18, BALL_VISUAL_SCALE * 1.18, BALL_VISUAL_SCALE * 1.18]);
+    cueStickHandle?.setPosition(cueInfo.x - strikeX * 0.42, BALL_SURFACE_Y + 0.025, cueInfo.z - strikeZ * 0.42);
+    cueStickHandle?.setRotation(0, -strikeAngle, 0.045);
+    poseLine(
+      cueFerrule3dHandle,
+      cueInfo.x - strikeX * 0.05,
+      cueInfo.z - strikeZ * 0.05,
+      cueInfo.x - strikeX * 0.10,
+      cueInfo.z - strikeZ * 0.10,
+      BALL_SURFACE_Y + 0.018,
+      0.015
+    );
+    poseLine(
+      cueShaft3dHandle,
+      cueInfo.x - strikeX * 0.10,
+      cueInfo.z - strikeZ * 0.10,
+      cueInfo.x - strikeX * 0.56,
+      cueInfo.z - strikeZ * 0.56,
+      BALL_SURFACE_Y + 0.032,
+      0.021
+    );
+    poseLine(
+      cueButt3dHandle,
+      cueInfo.x - strikeX * 0.56,
+      cueInfo.z - strikeZ * 0.56,
+      cueInfo.x - strikeX * 1.05,
+      cueInfo.z - strikeZ * 1.05,
+      BALL_SURFACE_Y + 0.056,
+      0.030
+    );
     return;
   }
 
   if (phase === "ball-in-hand") {
     parkNode(cueStickHandle);
+    parkNode(cueFerrule3dHandle);
+    parkNode(cueShaft3dHandle);
+    parkNode(cueButt3dHandle);
     parkNode(aimLineHandle);
     parkNode(aimBankHandle);
     parkNode(aimMarkerHandle);
@@ -821,19 +877,42 @@ function syncVisuals(): void {
   const dirZ = Math.sin(angle);
 
   // Cue stick behind the ball, pulling back with the charge.
-  const pullback = 0.04 + cueController.state().charge * 0.28;
-  cueStickHandle?.setPosition(cueInfo.x - dirX * pullback, BALL_SURFACE_Y + 0.008, cueInfo.z - dirZ * pullback);
+  const pullback = 0.06 + cueController.state().charge * 0.28;
+  cueStickHandle?.setScale([BALL_VISUAL_SCALE * 1.18, BALL_VISUAL_SCALE * 1.18, BALL_VISUAL_SCALE * 1.18]);
+  cueStickHandle?.setPosition(cueInfo.x - dirX * (0.48 + pullback), BALL_SURFACE_Y + 0.028, cueInfo.z - dirZ * (0.48 + pullback));
   cueStickHandle?.setRotation(0, -angle, 0.06);
 
-  // The exact review frame is the uncluttered table presentation.  Preserve
-  // the live cue pose and every underlying sweep/evidence value, but keep the
-  // thick training overlays for the playable route where they are useful.
-  // This is renderer state, not CSS or screenshot compositing.
+  // Render crisp 3D brass ferrule, maple shaft, and rosewood butt extending behind the cue ball
+  poseLine(
+    cueFerrule3dHandle,
+    cueInfo.x - dirX * (0.045 + pullback),
+    cueInfo.z - dirZ * (0.045 + pullback),
+    cueInfo.x - dirX * (0.095 + pullback),
+    cueInfo.z - dirZ * (0.095 + pullback),
+    BALL_SURFACE_Y + 0.018,
+    0.016
+  );
+  poseLine(
+    cueShaft3dHandle,
+    cueInfo.x - dirX * (0.095 + pullback),
+    cueInfo.z - dirZ * (0.095 + pullback),
+    cueInfo.x - dirX * (0.58 + pullback),
+    cueInfo.z - dirZ * (0.58 + pullback),
+    BALL_SURFACE_Y + 0.034,
+    0.022
+  );
+  poseLine(
+    cueButt3dHandle,
+    cueInfo.x - dirX * (0.58 + pullback),
+    cueInfo.z - dirZ * (0.58 + pullback),
+    cueInfo.x - dirX * (1.08 + pullback),
+    cueInfo.z - dirZ * (1.08 + pullback),
+    BALL_SURFACE_Y + 0.058,
+    0.032
+  );
+
   // Physics sweep preview (sphereCast against live balls and cushions).
   const sweep = sim.sweepFromCue(angle);
-  // The review capture keeps the line hairline-thin and subdued so it reads as
-  // a real tactical cue rather than a UI banner; the playable route retains a
-  // stronger training guide and bank preview.
   poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.0035 : 0.006);
   aimMarkerHandle?.setPosition(sweep.ghostX, BALL_SURFACE_Y, sweep.ghostZ);
   if (sweep.kind === "cushion") {
