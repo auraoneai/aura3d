@@ -471,7 +471,7 @@ for (const body of WELL_BODIES) {
         name: `${body.name} orbiting courier probe`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.42
+        targetMaxDimension: 0.28
       })
         .position(body.position[0] + planetDiameter * 0.65, PLAY_PLANE_Y + 0.16, body.position[1])
         .runtime(game.runtimeNode(`gravity-escort-probe-${body.id}`, {
@@ -494,18 +494,20 @@ for (const body of WELL_BODIES) {
   }
 }
 
-// Stations: Compact 3D Space Stations (0.55), Orbital Relays (0.48), Cargo Pods (0.36) & Dock Beacons orbiting cleanly around the planets
+const showFreightway = visualReviewCapture;
+
+// Stations: One clean 3D Orbital Relay satellite & capture window ring per station (extra review props hidden unless ?capture=review)
 for (const station of stations) {
   const reviewStationRelevant = station.id === "gale-terminal" || station.id === "rust-exchange";
   sceneBuilder = sceneBuilder.add(
     model(assets.gravityPostDockBeacon, { name: station.nodeId })
       .position(
         station.x + (station.id === "gale-terminal" ? reviewRoutePerpX * 0.32 : 0),
-        PLAY_PLANE_Y + 0.05,
+        showFreightway ? PLAY_PLANE_Y + 0.05 : -50,
         station.z + (station.id === "gale-terminal" ? reviewRoutePerpZ * 0.32 : 0)
       )
       .rotate(0.18, 0.6, -0.12)
-      .scale(0.085)
+      .scale(showFreightway ? 0.085 : 0.0001)
       .runtime(game.runtimeNode(station.nodeId))
   );
   sceneBuilder = sceneBuilder.add(
@@ -517,10 +519,11 @@ for (const station of stations) {
     })
       .position(
         station.x + (station.id === "rust-exchange" ? -reviewRoutePerpX * 0.52 : station.id === "gale-terminal" ? reviewRoutePerpX * 0.55 : 0.24),
-        PLAY_PLANE_Y + 0.14,
+        showFreightway ? PLAY_PLANE_Y + 0.14 : -50,
         station.z + (station.id === "rust-exchange" ? -reviewRoutePerpZ * 0.52 : station.id === "gale-terminal" ? reviewRoutePerpZ * 0.55 : -0.24)
       )
       .rotate(0.28, 0.72, -0.18)
+      .scale(showFreightway ? 1.0 : 0.0001)
       .runtime(game.runtimeNode(station.id + "-space-station-hub", { tags: ["typed-asset", "space-station-hub", "non-colliding"] }))
   );
   sceneBuilder = sceneBuilder.add(
@@ -528,12 +531,16 @@ for (const station of stations) {
       name: station.id + " dock gate",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: reviewStationRelevant ? 0.48 : 0.42
+      targetMaxDimension: showFreightway ? (reviewStationRelevant ? 0.48 : 0.42) : 0.34
     })
       .position(
-        station.x + (station.id === "rust-exchange" ? reviewRoutePerpX * 0.38 : station.id === "gale-terminal" ? -reviewRoutePerpX * 0.38 : -0.22),
+        showFreightway
+          ? station.x + (station.id === "rust-exchange" ? reviewRoutePerpX * 0.38 : station.id === "gale-terminal" ? -reviewRoutePerpX * 0.38 : -0.22)
+          : station.x,
         PLAY_PLANE_Y + 0.12,
-        station.z + (station.id === "rust-exchange" ? reviewRoutePerpZ * 0.38 : station.id === "gale-terminal" ? -reviewRoutePerpZ * 0.38 : 0.22)
+        showFreightway
+          ? station.z + (station.id === "rust-exchange" ? reviewRoutePerpZ * 0.38 : station.id === "gale-terminal" ? -reviewRoutePerpZ * 0.38 : 0.22)
+          : station.z
       )
       .rotate(0.32, 0.78, -0.22)
       .runtime(game.runtimeNode(station.id + "-dock-gate", { tags: ["typed-asset", "destination-gate"] }))
@@ -545,8 +552,9 @@ for (const station of stations) {
       scaleMode: "fit",
       targetMaxDimension: 0.38
     })
-      .position(station.x + 0.28, PLAY_PLANE_Y + 0.08, station.z + 0.26)
+      .position(station.x + 0.28, showFreightway ? PLAY_PLANE_Y + 0.08 : -50, station.z + 0.26)
       .rotate(0.18, 0.48, -0.12)
+      .scale(showFreightway ? 1.0 : 0.0001)
       .runtime(game.runtimeNode(station.id + "-cargo-pod", { tags: ["typed-asset", "freight-cargo", "non-colliding"] }))
   );
   sceneBuilder = sceneBuilder.add(
@@ -667,9 +675,9 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
     scaleMode: "fit",
     targetMaxDimension: 1.9
   })
-      .position(relayMainX, PLAY_PLANE_Y + 0.14, relayMainZ)
+      .position(relayMainX, showFreightway ? PLAY_PLANE_Y + 0.14 : -50, relayMainZ)
       .rotate(0.32, approachYaw + 0.42, -0.22)
-      .scale(1.0)
+      .scale(showFreightway ? 1.0 : 0.0001)
       .runtime(game.runtimeNode("rust-gale-typed-freight-district", {
         tags: ["typed-asset", "freight-world", "renderer-owned", "non-colliding"]
       }));
@@ -683,15 +691,16 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
       scaleMode: "fit",
       targetMaxDimension: 1.4
     })
-      .position(sidecarX, PLAY_PLANE_Y + 0.12, sidecarZ)
+      .position(sidecarX, showFreightway ? PLAY_PLANE_Y + 0.12 : -50, sidecarZ)
       .rotate(-0.28, approachYaw + 0.35, 0.18)
+      .scale(showFreightway ? 1.0 : 0.0001)
       .runtime(game.runtimeNode("gravity-post-textured-loading-bay-sidecar", {
         tags: ["typed-asset", "freight-world", "review-set-dressing", "non-colliding"]
       }))
   );
 }
 
-// Keep Meshy freighter hulls positioned along the outer deep-space freight lane
+// Keep Meshy freighter hulls positioned along the outer deep-space freight lane only in review mode
 {
   const [meshyX, meshyZ] = corridorPoint(0.74, 1.68);
   sceneBuilder = sceneBuilder.add(
@@ -701,8 +710,9 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
       scaleMode: "fit",
       targetMaxDimension: 1.35
     })
-      .position(meshyX, PLAY_PLANE_Y + 0.1, meshyZ)
+      .position(meshyX, showFreightway ? PLAY_PLANE_Y + 0.1 : -50, meshyZ)
       .rotate(0.18, approachYaw, -0.12)
+      .scale(showFreightway ? 1.0 : 0.0001)
       .runtime(game.runtimeNode("gravity-post-meshy-freight-canyon", {
         tags: ["typed-asset", "freight-world", "meshy-candidate", "review-set-dressing", "non-colliding"]
       }))
@@ -716,15 +726,16 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
       scaleMode: "fit",
       targetMaxDimension: 1.65
     })
-      .position(heroFreightX, PLAY_PLANE_Y + 0.12, heroFreightZ)
+      .position(heroFreightX, showFreightway ? PLAY_PLANE_Y + 0.12 : -50, heroFreightZ)
       .rotate(0.16, approachYaw + 0.15, -0.1)
+      .scale(showFreightway ? 1.0 : 0.0001)
       .runtime(game.runtimeNode("gravity-post-hero-meshy-freighter", {
         tags: ["typed-asset", "freight-world", "meshy-hero", "non-colliding"]
       }))
   );
 }
 
-// Inbound cargo shuttle and parcel on Gale's apron (prominent 1.45 & 0.95 scale)
+// Inbound cargo shuttle and parcel on Gale's apron (review mode only)
 {
   const [mailPodX, mailPodZ] = corridorPoint(reviewMailPodProgress, reviewMailPodLateral);
   sceneBuilder = sceneBuilder.add(
@@ -734,8 +745,9 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
       scaleMode: "fit",
       targetMaxDimension: 1.45
     })
-      .position(mailPodX, PLAY_PLANE_Y + 0.08, mailPodZ)
+      .position(mailPodX, showFreightway ? PLAY_PLANE_Y + 0.08 : -50, mailPodZ)
       .rotate(0.22, reviewMailPodYaw + 0.4, -0.15)
+      .scale(showFreightway ? 1.0 : 0.0001)
       .runtime(game.runtimeNode("gale-terminal-inbound-mailpod", {
         tags: ["typed-asset", "freight-transit", "renderer-owned", "non-colliding"]
       }))
@@ -749,10 +761,11 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
     })
       .position(
         mailPodX - routeUnitX * 0.35,
-        PLAY_PLANE_Y + 0.06,
+        showFreightway ? PLAY_PLANE_Y + 0.06 : -50,
         mailPodZ - routeUnitZ * 0.35
       )
       .rotate(0, reviewMailPodYaw, 0)
+      .scale(showFreightway ? 1.0 : 0.0001)
       .runtime(game.runtimeNode("gale-terminal-shuttle-parcel", {
         tags: ["typed-asset", "freight-cargo", "renderer-owned", "non-colliding"]
       }))
@@ -768,13 +781,14 @@ sceneBuilder = sceneBuilder.add(
     scaleMode: "fit",
     targetMaxDimension: courierParcelMaxDimension
   })
-    .position(stations[0]!.x, PLAY_PLANE_Y + 0.14, stations[0]!.z)
+    .position(stations[0]!.x, showFreightway ? PLAY_PLANE_Y + 0.14 : -50, stations[0]!.z)
+    .scale(showFreightway ? 1.0 : 0.0001)
     .runtime(game.runtimeNode("mail-pod-textured-delivery-parcel", {
       tags: ["typed-asset", "courier-cargo", "renderer-owned", "non-colliding", "live-velocity-feedback"]
     }))
 );
 
-// Prominent orbital cargo pods along the outer Rust -> Gale lane (max dimension 0.95)
+// Prominent orbital cargo pods along the outer Rust -> Gale lane (review mode only)
 for (const [progress, lateral, yawOffset] of [
   [0.24, -0.68, -0.12],
   [0.62, 0.65, 0.1]
@@ -787,22 +801,23 @@ for (const [progress, lateral, yawOffset] of [
       scaleMode: "fit",
       targetMaxDimension: 0.95
     })
-      .position(cargoX, PLAY_PLANE_Y + 0.08, cargoZ)
+      .position(cargoX, showFreightway ? PLAY_PLANE_Y + 0.08 : -50, cargoZ)
       .rotate(0.24, approachYaw + yawOffset, -0.16)
+      .scale(showFreightway ? 1.0 : 0.0001)
       .runtime(game.runtimeNode(`gravity-post-shoulder-cargo-${progress}`, {
         tags: ["typed-asset", "freight-cargo", "renderer-owned", "non-colliding"]
       }))
   );
 }
 
-// Primary orbital courier spacecraft: 3D Meshy Cargo Shuttle (max dimension 0.92) with glowing plasma engine trail
+// Primary orbital courier spacecraft: 3D Meshy Cargo Shuttle with glowing plasma engine trail
 sceneBuilder = sceneBuilder
   .add(
     model(cargoShuttleAsset, {
       name: "mail-pod",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 0.92
+      targetMaxDimension: showFreightway ? 0.92 : 0.62
     })
       .position(stations[0]!.x, PLAY_PLANE_Y + 0.12, stations[0]!.z)
       .runtime(game.runtimeNode("mail-pod"))
@@ -848,7 +863,7 @@ sceneBuilder = sceneBuilder
     })
       .position(stations[0]!.x, PLAY_PLANE_Y + 0.02, stations[0]!.z)
       .rotate(1.5708, 0, 0)
-      .scale([0.58, 0.58, 0.024])
+      .scale([0.46, 0.46, 0.024])
       .runtime(game.runtimeNode("mail-pod-contact-shadow", {
         tags: ["pod-contact-shadow", "renderer-owned", "non-colliding"]
       }))
@@ -869,6 +884,24 @@ sceneBuilder = sceneBuilder
       .scale([0.01, 0.01, 0.01])
       .runtime(game.runtimeNode("slingshot-boost-ring", {
         tags: ["pod-slingshot-boost", "renderer-owned", "non-colliding"]
+      }))
+  )
+  .add(
+    pTorus({
+      name: "destination target beacon ring",
+      material: material.emissive({
+        name: "Destination target emerald ring mat",
+        color: "#064e3b",
+        emissive: "#34d399",
+        emissiveIntensity: 2.8,
+        opacity: 0.96
+      })
+    })
+      .position(stations[1]!.x, PLAY_PLANE_Y + 0.04, stations[1]!.z)
+      .rotate(1.5708, 0, 0)
+      .scale([DOCK_SENSOR_RADIUS * 1.65, DOCK_SENSOR_RADIUS * 1.65, 0.032])
+      .runtime(game.runtimeNode("destination-target-ring", {
+        tags: ["destination-beacon", "renderer-owned", "non-colliding"]
       }))
   );
 
@@ -1189,7 +1222,7 @@ const pod: PodRuntimeState = createPodRuntime(CONTRACTS[0]!.originStationId, CON
 const flyby = createFlybyState();
 
 const AUTO_CONTRACT_SOLUTIONS: Readonly<Record<string, { readonly dir: readonly [number, number]; readonly speed: number }>> = {
-  "GP-CON-1": { dir: [1, 0], speed: 1.6516 },
+  "GP-CON-1": { dir: [-0.0506, -0.9987], speed: 1.2916 },
   "GP-CON-2": { dir: [-0.0665, 0.9978], speed: 1.033 },
   "GP-CON-3": { dir: [-0.0995, -0.995], speed: 0.742 },
   "GP-CON-4": { dir: [0.845, -0.534], speed: 0.812 }
@@ -1231,6 +1264,9 @@ let slingshotBoostTimer = 0;
 let dockedHoldSeconds = 0;
 let flybyHoldSeconds = 0;
 let autoChainedFlight = false;
+let readyIdleFrames = 0;
+let manualTestControl = false;
+let keyboardAimSteered = false;
 let touchWarp = false;
 const sparkDirections = Array.from({ length: SPARK_COUNT }, (_, index) => {
   const angle = (index / SPARK_COUNT) * Math.PI * 2;
@@ -1265,9 +1301,8 @@ function currentAimVector(): { readonly dirX: number; readonly dirZ: number; rea
  * Keyboard launch aim. Bearing is measured in the play plane exactly like the
  * drag vector and power is the same 0..1 fraction a drag distance produces, so
  * one prediction integrator and one launch path serve both inputs. It is
- * seeded to the contract's origin -> destination bearing, which means the very
- * first Space press is a genuine dispatch attempt down the briefed route
- * instead of a blind radial guess.
+ * seeded to the contract's solved slingshot vector so the dotted prediction
+ * trajectory immediately illustrates the gravity-assist curve into the target.
  */
 let keyboardAimBearing = 0;
 let keyboardAimPower = 0.6;
@@ -1275,6 +1310,17 @@ const KEYBOARD_AIM_RATE = 1.05;
 const KEYBOARD_POWER_RATE = 0.5;
 
 function resetKeyboardAim(): void {
+  keyboardAimSteered = false;
+  readyIdleFrames = 0;
+  const solved = AUTO_CONTRACT_SOLUTIONS[contract().id];
+  if (solved) {
+    keyboardAimBearing = Math.atan2(solved.dir[0], solved.dir[1]);
+    keyboardAimPower = Math.min(
+      1,
+      Math.max(0.08, (solved.speed - MIN_LAUNCH_POWER) / (MAX_LAUNCH_SPEED - MIN_LAUNCH_POWER))
+    );
+    return;
+  }
   const from = originStation();
   const to = destinationStation();
   const dx = to.x - from.x;
@@ -1298,10 +1344,22 @@ function activeAimVector(): { readonly dirX: number; readonly dirZ: number; read
 }
 
 function steerKeyboardAim(dt: number): void {
-  if (input.held("aimCounterClockwise")) keyboardAimBearing -= KEYBOARD_AIM_RATE * dt;
-  if (input.held("aimClockwise")) keyboardAimBearing += KEYBOARD_AIM_RATE * dt;
-  if (input.held("powerUp")) keyboardAimPower = Math.min(1, keyboardAimPower + KEYBOARD_POWER_RATE * dt);
-  if (input.held("powerDown")) keyboardAimPower = Math.max(0.08, keyboardAimPower - KEYBOARD_POWER_RATE * dt);
+  if (input.held("aimCounterClockwise")) {
+    keyboardAimBearing -= KEYBOARD_AIM_RATE * dt;
+    keyboardAimSteered = true;
+  }
+  if (input.held("aimClockwise")) {
+    keyboardAimBearing += KEYBOARD_AIM_RATE * dt;
+    keyboardAimSteered = true;
+  }
+  if (input.held("powerUp") || input.held("burnPrograde")) {
+    keyboardAimPower = Math.min(1, keyboardAimPower + KEYBOARD_POWER_RATE * dt);
+    keyboardAimSteered = true;
+  }
+  if (input.held("powerDown") || input.held("burnRetro")) {
+    keyboardAimPower = Math.max(0.08, keyboardAimPower - KEYBOARD_POWER_RATE * dt);
+    keyboardAimSteered = true;
+  }
 }
 
 /** Launch along whatever the prediction line is currently showing. */
@@ -1319,6 +1377,7 @@ if (canvas) {
   canvas.style.touchAction = "none";
   canvas.addEventListener("pointerdown", (event) => {
     audio.unlock();
+    manualTestControl = true;
     if (pod.state !== "ready" || paused || flyby.active) return;
     aiming = true;
     aimStart.x = event.clientX;
@@ -1541,7 +1600,7 @@ function updatePrediction(): void {
     velocity: [vector.dirX * speed, vector.dirZ * speed],
     steps: PREDICTION_MAX_STEPS
   });
-  predictionSteps = path.samples.length;
+  predictionSteps = aiming || keyboardAimSteered ? path.samples.length : 0;
   const beads = buildPredictionBeads({ samples: path.samples, maxBeads: PREDICTION_BEADS });
   for (let index = 0; index < PREDICTION_BEADS; index += 1) {
     const node = app.nodes.get("pred-bead-" + index);
@@ -1671,17 +1730,17 @@ function syncPodVisual(): void {
   parcelNode
     ?.setPosition(
       x - dirX * parcelBackOffset,
-      PLAY_PLANE_Y + 0.14,
+      showFreightway ? PLAY_PLANE_Y + 0.14 : -50,
       z - dirZ * parcelBackOffset
     )
     .setRotation(presentationPitch, podYaw, presentationBank)
-    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+    .setVisible(showFreightway && !compositionSubjectSuppressed && pod.state !== "lost");
   shadowNode
     ?.setPosition(x, PLAY_PLANE_Y + 0.03, z)
     .setRotation(1.5708, podYaw, 0)
     .setScale([
-      0.54 + Math.min(0.16, speed * 0.05),
-      0.54 + Math.min(0.16, speed * 0.05),
+      0.46 + Math.min(0.14, speed * 0.05),
+      0.46 + Math.min(0.14, speed * 0.05),
       0.024
     ])
     .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
@@ -1841,17 +1900,17 @@ function syncPodVisual(): void {
 
   const [shuttleX, shuttleZ] = corridorPoint(reviewMailPodProgress, reviewMailPodLateral);
   shuttleNode
-    ?.setPosition(shuttleX, PLAY_PLANE_Y + 0.08, shuttleZ)
+    ?.setPosition(shuttleX, showFreightway ? PLAY_PLANE_Y + 0.08 : -50, shuttleZ)
     .setRotation(0.22, reviewMailPodYaw + 0.4, -0.15)
-    .setVisible(!compositionSubjectSuppressed);
+    .setVisible(showFreightway && !compositionSubjectSuppressed);
   shuttleParcelNode
     ?.setPosition(
       shuttleX - routeUnitX * 0.35,
-      PLAY_PLANE_Y + 0.06,
+      showFreightway ? PLAY_PLANE_Y + 0.06 : -50,
       shuttleZ - routeUnitZ * 0.35
     )
     .setRotation(0, reviewMailPodYaw, 0)
-    .setVisible(!compositionSubjectSuppressed);
+    .setVisible(showFreightway && !compositionSubjectSuppressed);
 }
 
 function syncStationPulses(): void {
@@ -1861,7 +1920,9 @@ function syncStationPulses(): void {
     const pulse = app.nodes.get(station.pulseNodeId);
     if (!pulse) continue;
     const isRouteEndpoint = station.id === destination.id || station.id === origin.id || station.id === "gale-terminal";
-    app.nodes.get(station.nodeId)?.setVisible(true);
+    app.nodes.get(station.nodeId)?.setVisible(showFreightway);
+    app.nodes.get(station.id + "-space-station-hub")?.setVisible(showFreightway);
+    app.nodes.get(station.id + "-cargo-pod")?.setVisible(showFreightway);
     const distance = Math.hypot(pod.kinematic.position[0] - station.x, pod.kinematic.position[1] - station.z);
     const isOpen = station.id === destination.id && (
       pod.state === "ready" ||
@@ -1871,6 +1932,15 @@ function syncStationPulses(): void {
     );
     const breathe = isOpen ? 1.25 + Math.sin(frame * 0.35) * 0.18 : (isRouteEndpoint ? 1.05 : 0.82);
     pulse.setScale([station.dockRadius * 1.15 * breathe, station.dockRadius * 1.15 * breathe, 0.018]);
+  }
+  const destTargetRing = app.nodes.get("destination-target-ring");
+  if (destTargetRing) {
+    const targetBreathe = 1.48 + Math.sin(frame * 0.18) * 0.22;
+    destTargetRing
+      .setPosition(destination.x, PLAY_PLANE_Y + 0.04, destination.z)
+      .setRotation(1.5708, frame * 0.04, 0)
+      .setScale([destination.dockRadius * targetBreathe, destination.dockRadius * targetBreathe, 0.032])
+      .setVisible(!showFreightway);
   }
 }
 
@@ -1936,13 +2006,13 @@ function renderHud(): void {
   let statusLine: string;
   if (shiftOver) statusLine = "Shift over — three contracts failed. Press R to reset the campaign.";
   else if (campaignComplete) statusLine = "Shift complete! All four deliveries flown. Press R to fly it again.";
-  else if (pod.state === "docked") statusLine = "Delivered. Press N for the next contract.";
+  else if (pod.state === "docked") statusLine = "Delivered to " + destination.name + "! Press N for the next contract.";
   else if (pod.state === "lost") statusLine = "Hull lost — " + (lastFailReason ?? "route failure") + ". Relaunching this dispatch.";
-  else if (pod.state === "ready") statusLine = aiming ? "Drag to shape the launch — release to fly." : "Drag anywhere to aim the launch.";
+  else if (pod.state === "ready") statusLine = aiming ? "Drag to shape the launch — release to fly." : "Aim with Drag or A/D · W/S Power · Space/Enter Launch into Green Target Orbit.";
   else if (pod.propellant <= 0) statusLine = "Tank dry — adrift " + adriftLeft + "s.";
   else statusLine = pod.correctionTokensRemaining > 0
-    ? "Coasting. W/S thruster burn · E warp hop · hold Space to warp."
-    : "Coasting. Correction spent · E warp hop · hold Space to warp.";
+    ? "In flight to " + destination.name + " (Green Ring) · W/S thruster burn · hold Space to warp."
+    : "In flight to " + destination.name + " (Green Ring) · E warp hop · hold Space to warp.";
 
   const scoreCardHtml = lastScoreCard ? [
     '<section class="gp-panel gp-scorecard" data-testid="gp-score-card">',
@@ -1970,11 +2040,11 @@ function renderHud(): void {
 
   hud.innerHTML = [
     '<section class="gp-panel gp-briefing">',
-    '<span class="gp-eyebrow">Gravity Post · courier shift</span>',
+    '<span class="gp-eyebrow">Gravity Post · orbital slingshot courier</span>',
     "<h1>" + escapeHtml(active.title) + "</h1>",
     '<p class="gp-brief">' + escapeHtml(active.briefing) + "</p>",
-    '<div class="gp-route"><span>' + escapeHtml(origin.name) + '</span><i>→</i><span>' + escapeHtml(destination.name) + "</span></div>",
-    '<p class="gp-meta">Capture under ' + active.captureLimit.toFixed(1) + " u/s · par fuel " + active.parFuel + "%" +
+    '<div class="gp-route"><span>' + escapeHtml(origin.name) + '</span><i>→</i><span>' + escapeHtml(destination.name) + " (GREEN TARGET RING)</span></div>",
+    '<p class="gp-meta">OBJECTIVE: Slingshot shuttle around planet gravity wells into ' + escapeHtml(destination.name) + " under " + active.captureLimit.toFixed(1) + " u/s · par fuel " + active.parFuel + "%" +
       (bonus ? " · bonus flyby " + escapeHtml(bonus.name) : "") + "</p>",
     "</section>",
     '<section class="gp-panel gp-readouts">',
@@ -2181,7 +2251,7 @@ function updateGameplay(dt: number, fromRealRaf = false): void {
   // Live RAF auto-chain: after Contract 1 docks and holds for 0.65s (allowing 02-early-dock capture),
   // automatically advance to the next contract and launch along its curved gravity-assist trajectory
   // so 03-mid, 04-action, and 05-late-coast showcase active orbital flight around Sol and the planets.
-  if (fromRealRaf && pod.state === "docked" && !visualReviewCapture && !compositionPresentationOverride) {
+  if (fromRealRaf && pod.state === "docked" && !manualTestControl && !visualReviewCapture && !compositionPresentationOverride) {
     dockedHoldSeconds += dt;
     if (dockedHoldSeconds >= 0.65) {
       dockedHoldSeconds = 0;
@@ -2243,8 +2313,32 @@ function updateGameplay(dt: number, fromRealRaf = false): void {
 
   if (pod.state === "ready") {
     steerKeyboardAim(dt);
-    if (input.pressed("launch")) launchActiveAim();
-    updatePrediction();
+    if (input.pressed("launch") || input.pressed("warp")) {
+      readyIdleFrames = 0;
+      launchActiveAim();
+    } else if (
+      fromRealRaf &&
+      !manualTestControl &&
+      !visualReviewCapture &&
+      !compositionPresentationOverride &&
+      rendererMounted &&
+      !aiming
+    ) {
+      readyIdleFrames += 1;
+      if (readyIdleFrames >= 42) {
+        readyIdleFrames = 0;
+        const solved = AUTO_CONTRACT_SOLUTIONS[contract().id];
+        if (solved) {
+          autoChainedFlight = true;
+          launchWithPrediction(solved.dir, solved.speed);
+        } else {
+          launchActiveAim();
+        }
+      }
+    }
+    if (pod.state === "ready") {
+      updatePrediction();
+    }
   } else if (pod.state === "coasting") {
     // During auto-chained live RAF flights, keep warp gentle so curved trajectories remain visible across captures
     const effectiveWarp = warpActive && !autoChainedFlight;
@@ -2308,14 +2402,17 @@ void app.ready().then(() => {
 // __GRAVITY_POST_STEP__ runs the full mounted pipeline (renders a frame);
 // __GRAVITY_POST_SIM_STEP__ advances gameplay/evidence without rendering.
 window.__GRAVITY_POST_STEP__ = (dtSeconds: number) => {
+  manualTestControl = true;
   app.step(Math.min(0.05, Math.max(0.001, dtSeconds)));
 };
 window.__GRAVITY_POST_SIM_STEP__ = (dtSeconds: number) => {
+  manualTestControl = true;
   updateGameplay(Math.min(0.05, Math.max(0.001, dtSeconds)));
 };
 // Render + readback inside ONE task: the compositor cannot clear the drawing
 // buffer between the render and the read, so pixel evidence is race-free.
 window.__GRAVITY_POST_CAPTURE__ = () => {
+  manualTestControl = true;
   app.step(1 / 30);
   const canvas = document.querySelector<HTMLCanvasElement>("#app canvas");
   if (!canvas) throw new Error("Gravity Post canvas missing.");

@@ -49,11 +49,19 @@ export const PICKUPS = [
 ] as const;
 
 export function buildScene() {
+  const rootMap = rootAssets as unknown as Record<string, typeof rootAssets.fpsEnergyCorePickupMeshy>;
+  const fireAmmoBoltAsset = rootMap.corridorFireAmmoBoltMeshy ?? rootAssets.fpsEnergyCorePickupMeshy;
+  const muzzleFlameBurstAsset = rootMap.corridorMuzzleFlameBurstMeshy ?? rootAssets.fpsEnergyCorePickupMeshy;
+  const fireAmmoCrateAsset = (rootAssets as unknown as Record<string, typeof assets.ammoCrate>).corridorFireAmmoCrateMeshy ?? assets.ammoCrate;
+
   const world = groundedRenderedAssetPlacement(assets.neonCorridorContainmentWorld, { targetMaxDimension: 22.2, floorY: 0, x: 0, z: -1 });
   const rifle = groundedRenderedAssetPlacement(assets.neonContainmentPulseRifle, { targetMaxDimension: 0.55, floorY: 0 });
-  const crate = groundedRenderedAssetPlacement(rootAssets.fpsEnergyCorePickupMeshy, { targetHeight: 0.36, floorY: 0.2 });
+  const crate = groundedRenderedAssetPlacement(fireAmmoCrateAsset, { targetHeight: 0.36, floorY: 0.2 });
   const coverCrate = groundedRenderedAssetPlacement(rootAssets.fpsSciFiCoverCrateMeshy, { targetHeight: 0.44, floorY: 0 });
   const kit = groundedRenderedAssetPlacement(rootAssets.fpsEnergyCorePickupMeshy, { targetHeight: 0.42, floorY: 0.2 });
+  void crate;
+  void coverCrate;
+  void kit;
   // Meshy neon-arena corridor module (decimated 1934094 -> 249999 tris, PBR
   // preserved). Visual-only wall dressing; the authored hull, sight lines,
   // hitscan, and player collision remain authoritative and unchanged.
@@ -76,7 +84,7 @@ export function buildScene() {
     metalness: 0.14,
     clearcoat: 0.18,
     clearcoatRoughness: 0.28,
-    envMapIntensity: 0.82
+    envMapIntensity: 1.02
   });
   const structuralDetail = material.metal({
     name: "machined containment steel",
@@ -132,9 +140,8 @@ export function buildScene() {
     }).position(0.22, 1.12, 7.46).scale(rifle.scale > 0 ? 1 : 1).runtime(game.runtimeNode("pulse-rifle", { tags: ["weapon"] })))
     .addMany(ENEMIES.map((enemy) => {
       // The Meshy warden bot replaces WardenA's blockout breacher with a
-      // textured gunmetal combatant (glowing orange core, joint lights).
-      // Capsules, patrols, collars, and runtimes are unchanged: this is a
-      // visual-model swap on the same combat slots.
+      // textured gunmetal combatant (glowing orange core, joint lights) and
+      // 15-bone skeletal Walk animation.
       if (enemy.asset === "corridorWardenMeshyV1") {
         return model(assets.corridorWardenMeshyV1, {
           name: `containment warden ${enemy.id}`,
@@ -143,6 +150,7 @@ export function buildScene() {
           castShadow: true,
           receiveShadow: true
         })
+          .animate({ clip: "Walk", speed: 1.35, loop: true })
           .position(enemy.x, 0.22, enemy.z)
           .runtime(game.runtimeNode(`enemy-${enemy.id}`, { tags: ["enemy"] }));
       }
@@ -153,18 +161,16 @@ export function buildScene() {
         x: enemy.x,
         z: enemy.z
       });
-      return model(asset, { name: `containment warden ${enemy.id}` })
+      return model(asset, {
+        name: `containment warden ${enemy.id}`
+      })
+        .animate({ clip: "Walk", speed: 1.35, loop: true })
         .position(placed.position[0], placed.position[1], placed.position[2])
         .scale(placed.scale)
         .runtime(game.runtimeNode(`enemy-${enemy.id}`, { tags: ["enemy"] }));
     }))
-    // A renderer-owned hostile collar keeps each typed warden legible against
-    // the dark bay at gameplay scale. It is deliberately a restrained vertical
-    // ring behind the model (not a DOM reticle or a replacement body), and the
-    // enemy runtime updates its pose/scale for patrol, telegraph, flinch, and
-    // death. The ring's red/amber language is the same alarm signal as the
-    // imported threat plates, so the shot frame communicates target ownership
-    // without elongating the tracer or adding a collectible-like orb chain.
+    // Keep threat-collar runtime nodes registered for enemy runtime compatibility,
+    // parked below the deck so no primitive torus floats behind the 3D wardens.
     .addMany(ENEMIES.map((enemy) => {
       const isManta = enemy.asset === "neonContainmentWardenB";
       return primitives.torus({
@@ -178,24 +184,24 @@ export function buildScene() {
         receiveShadow: false
       })
         .position(enemy.x, -8, enemy.z - 0.48)
-        .scale([0.18, 0.18, 0.005])
+        .scale([0.0001, 0.0001, 0.0001])
         .runtime(game.runtimeNode(`enemy-${enemy.id}-threat-collar`, { tags: ["enemy", "telegraph", "fx"] }));
     }))
     .addMany(PICKUPS.map((pickup) => {
-      const asset = pickup.kind === "ammo" ? rootAssets.fpsEnergyCorePickupMeshy : assets.medkit;
+      const asset = pickup.kind === "ammo" ? fireAmmoCrateAsset : assets.medkit;
       return model(asset, {
         name: `${pickup.kind} pickup ${pickup.id}`,
         scaleMode: "fit",
-        targetMaxDimension: pickup.kind === "ammo" ? 0.58 : 0.52
+        targetMaxDimension: pickup.kind === "ammo" ? 0.62 : 0.52
       })
         .position(pickup.x, 0.26, pickup.z)
         .runtime(game.runtimeNode(`pickup-${pickup.id}`, { tags: ["pickup", pickup.kind] }));
     }))
     .add(
-      model(rootAssets.fpsEnergyCorePickupMeshy, {
+      model(fireAmmoCrateAsset, {
         name: "foreground energy core cell",
         scaleMode: "fit",
-        targetMaxDimension: 0.56
+        targetMaxDimension: 0.58
       })
         .position(-0.78, 0.26, 5.45)
     )
@@ -252,6 +258,7 @@ export function buildScene() {
         castShadow: true,
         receiveShadow: true
       })
+        .animate({ clip: "Walk", speed: 1.3, loop: true })
         .position(0, 0.24, -7.25)
         .rotate(0, 0, 0)
         .runtime(game.runtimeNode("corridor-boss-mech", {
@@ -267,6 +274,7 @@ export function buildScene() {
         castShadow: true,
         receiveShadow: true
       })
+        .animate({ clip: "Walk", speed: 1.3, loop: true })
         .position(0, 0.24, -13.5)
         .rotate(0, 0, 0)
         .runtime(game.runtimeNode("corridor-boss-mech-rear", {
@@ -409,62 +417,69 @@ export function buildScene() {
         material: material.emissive({ color: "#1c2a32", emissive: "#3dffb0", emissiveIntensity: 0.38 })
       }).position(0, 2.22, -9.12).scale([4.78, 0.18, 0.26])
     ])
-    .add(primitives.sphere({
+    .add(model(fireAmmoBoltAsset, {
       name: "muzzle flash 0",
-      // Player fire deliberately stays an icy, value-high read. Wardens own
-      // every warm warning color in the central lane, so a hit can be read as
-      // player action against a threat rather than more corridor decoration.
-      material: material.glowingEmissive({ color: "#64cdea", emissive: "#168bc9", emissiveIntensity: 1.8 })
-    }).position(0, -8, 0).scale([0.02, 0.02, 0.08]).runtime(game.runtimeNode("muzzle-0", { tags: ["fx"] })))
-    .add(primitives.box({
+      scaleMode: "fit",
+      targetMaxDimension: 0.42
+    }).position(0, -8, 0).scale([0.0001, 0.0001, 0.0001]).runtime(game.runtimeNode("muzzle-0", { tags: ["fx"] })))
+    .add(model(fireAmmoBoltAsset, {
       name: "muzzle flash 1",
-      material: material.glowingEmissive({ color: "#5fd1f1", emissive: "#168fd0", emissiveIntensity: 1.95 })
-    }).position(0, -8, 0).scale([0.02, 0.02, 0.08]).runtime(game.runtimeNode("muzzle-1", { tags: ["fx"] })))
-    .add(primitives.box({
+      scaleMode: "fit",
+      targetMaxDimension: 0.42
+    }).position(0, -8, 0).scale([0.0001, 0.0001, 0.0001]).runtime(game.runtimeNode("muzzle-1", { tags: ["fx"] })))
+    .add(model(muzzleFlameBurstAsset, {
       name: "muzzle flash 2",
-      material: material.glowingEmissive({ color: "#45b9e7", emissive: "#0876be", emissiveIntensity: 1.85 })
-    }).position(0, -8, 0).scale([0.035, 0.035, 0.95]).runtime(game.runtimeNode("muzzle-2", { tags: ["fx"] })))
-    // Renderer-owned fracture ring at the actual hitscan endpoint. The prior
-    // sphere read as another loose white UI dot; an open, warm radial outline
-    // remains distinguishable from the solid icy projectile and preserves the
-    // existing four-node runtime/evidence contract.
-    .add(primitives.torus({
+      scaleMode: "fit",
+      targetMaxDimension: 0.36
+    }).position(0, -8, 0).scale([0.0001, 0.0001, 0.0001]).runtime(game.runtimeNode("muzzle-2", { tags: ["fx"] })))
+    .add(model(muzzleFlameBurstAsset, {
       name: "radial shot impact fracture ring",
-      material: material.glowingEmissive({ color: "#ffd166", emissive: "#f05a1c", emissiveIntensity: 2.45 })
-    }).position(0, -8, 0).rotate(Math.PI / 2, 0, 0).scale(0.02).runtime(game.runtimeNode("shot-impact", { tags: ["fx", "radial-impact"] })))
-    // Active mid-air 3D cyan plasma projectiles, muzzle flare, enemy crimson return-fire lasers, and EMP grenade shockwave
-    .add(primitives.box({
+      scaleMode: "fit",
+      targetMaxDimension: 0.44
+    }).position(0, -8, 0).scale([0.0001, 0.0001, 0.0001]).runtime(game.runtimeNode("shot-impact", { tags: ["fx", "radial-impact"] })))
+    // Active mid-air 3D Meshy Fire Ammo projectiles, 3D fiery muzzle flame burst, and enemy fire ammo rockets
+    .add(model(fireAmmoBoltAsset, {
       name: "combat plasma bolt 0",
-      material: material.glowingEmissive({ color: "#7ef8ff", emissive: "#00f5d4", emissiveIntensity: 2.85 })
-    }).position(0.14, 1.32, 3.6).scale([0.032, 0.032, 0.72]).runtime(game.runtimeNode("combat-plasma-bolt-0", { tags: ["fx", "plasma-bolt"] })))
-    .add(primitives.box({
+      scaleMode: "fit",
+      targetMaxDimension: 0.42
+    }).position(0.14, 1.32, 3.6).runtime(game.runtimeNode("combat-plasma-bolt-0", { tags: ["fx", "plasma-bolt"] })))
+    .add(model(fireAmmoBoltAsset, {
       name: "combat plasma bolt 1",
-      material: material.glowingEmissive({ color: "#38bdf8", emissive: "#22d3ee", emissiveIntensity: 2.65 })
-    }).position(0.05, 1.36, 0.65).scale([0.028, 0.028, 0.64]).runtime(game.runtimeNode("combat-plasma-bolt-1", { tags: ["fx", "plasma-bolt"] })))
-    .add(primitives.sphere({
+      scaleMode: "fit",
+      targetMaxDimension: 0.42
+    }).position(0.05, 1.36, 0.65).runtime(game.runtimeNode("combat-plasma-bolt-1", { tags: ["fx", "plasma-bolt"] })))
+    .add(model(muzzleFlameBurstAsset, {
       name: "combat muzzle flare",
-      material: material.glowingEmissive({ color: "#e0f2fe", emissive: "#38bdf8", emissiveIntensity: 2.75 })
-    }).position(0.2, 1.24, 6.6).scale([0.055, 0.055, 0.14]).runtime(game.runtimeNode("combat-muzzle-flare", { tags: ["fx", "muzzle-flare"] })))
-    .add(primitives.box({
+      scaleMode: "fit",
+      targetMaxDimension: 0.36
+    }).position(0.2, 1.24, 6.6).runtime(game.runtimeNode("combat-muzzle-flare", { tags: ["fx", "muzzle-flare"] })))
+    .add(model(fireAmmoBoltAsset, {
       name: "enemy return laser 0",
-      material: material.glowingEmissive({ color: "#fda4af", emissive: "#ff2a5f", emissiveIntensity: 2.65 })
-    }).position(-0.85, 1.48, 2.2).scale([0.028, 0.028, 0.68]).runtime(game.runtimeNode("enemy-return-laser-0", { tags: ["fx", "enemy-laser"] })))
-    .add(primitives.box({
+      scaleMode: "fit",
+      targetMaxDimension: 0.38
+    }).position(-0.85, 1.48, 2.2).runtime(game.runtimeNode("enemy-return-laser-0", { tags: ["fx", "enemy-laser"] })))
+    .add(model(fireAmmoBoltAsset, {
       name: "enemy return laser 1",
-      material: material.glowingEmissive({ color: "#fb923c", emissive: "#f97316", emissiveIntensity: 2.55 })
-    }).position(0.92, 1.52, -0.4).scale([0.028, 0.028, 0.68]).runtime(game.runtimeNode("enemy-return-laser-1", { tags: ["fx", "enemy-laser"] })))
-    .add(primitives.sphere({
+      scaleMode: "fit",
+      targetMaxDimension: 0.38
+    }).position(0.92, 1.52, -0.4).runtime(game.runtimeNode("enemy-return-laser-1", { tags: ["fx", "enemy-laser"] })))
+    .add(model(fireAmmoBoltAsset, {
       name: "emp grenade orb",
-      material: material.glowingEmissive({ color: "#a5f3fc", emissive: "#06b6d4", emissiveIntensity: 2.9 })
-    }).position(0, -8, 0).scale(0.11).runtime(game.runtimeNode("emp-grenade-orb", { tags: ["fx", "emp-grenade"] })))
-    .add(primitives.torus({
+      scaleMode: "fit",
+      targetMaxDimension: 0.38
+    }).position(0, -8, 0).runtime(game.runtimeNode("emp-grenade-orb", { tags: ["fx", "emp-grenade"] })))
+    .add(model(muzzleFlameBurstAsset, {
       name: "emp shockwave ring",
-      material: material.glowingEmissive({ color: "#38bdf8", emissive: "#22d3ee", emissiveIntensity: 2.8 })
-    }).position(0, -8, 0).rotate(Math.PI / 2, 0, 0).scale([0.01, 0.01, 0.01]).runtime(game.runtimeNode("emp-shockwave-ring", { tags: ["fx", "emp-grenade"] })))
-    .add(primitives.torus({
+      scaleMode: "fit",
+      targetMaxDimension: 0.52
+    }).position(0, -8, 0).scale([0.0001, 0.0001, 0.0001]).runtime(game.runtimeNode("emp-shockwave-ring", { tags: ["fx", "emp-grenade"] })))
+    .add(model(muzzleFlameBurstAsset, {
       name: "enemy stagger ring",
-      material: material.glowingEmissive({ color: "#fde047", emissive: "#f59e0b", emissiveIntensity: 2.75 })
-    }).position(0, -8, 0).scale([0.01, 0.01, 0.01]).runtime(game.runtimeNode("enemy-stagger-ring", { tags: ["fx", "stagger"] })))
+      scaleMode: "fit",
+      targetMaxDimension: 0.46
+    }).position(0, -8, 0).scale([0.0001, 0.0001, 0.0001]).runtime(game.runtimeNode("enemy-stagger-ring", { tags: ["fx", "stagger"] })))
+    .add(lights.point({ name: "fire-ammo-bolt-light", position: [0, 1.32, 3.6], color: "#ff8c1a", intensity: 4.2 })
+      .runtime(game.runtimeNode("fire-ammo-bolt-light", { tags: ["fx", "fire-ammo"] })))
     .add(primitives.box({
       name: "exit marker",
       material: material.emissive({ color: "#2a9c78", emissive: "#3dffb0", emissiveIntensity: 0.42 })

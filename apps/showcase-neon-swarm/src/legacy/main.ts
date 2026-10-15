@@ -641,6 +641,7 @@ appScene.add(
     castShadow: true,
     receiveShadow: true
   })
+    .animate({ clip: "Run", speed: 1.45, loop: true })
     .position(0, 0.12, 3)
     .runtime(game.runtimeNode("neon-player", { tags: ["primary-actor", "typed-primary-asset"] }))
 );

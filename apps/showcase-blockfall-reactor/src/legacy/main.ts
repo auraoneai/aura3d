@@ -1423,7 +1423,11 @@ gameApp.onFrame(({ dt }) => {
         aiPieceFrames = 0;
       } else {
         const userRecentlyActive = lastUserKeyTime > 0 && (performance.now() - lastUserKeyTime <= 1200);
-        if (!userRecentlyActive && (openingAutoStep <= 180 || performance.now() - lastUserKeyTime > 1200) && state.active) {
+        if (userRecentlyActive) {
+          if (state.frame % 16 === 0) {
+            actions.push({ type: "softDrop" });
+          }
+        } else if ((openingAutoStep <= 180 || performance.now() - lastUserKeyTime > 1200) && state.active) {
           const pieceKey = `${state.active.kind}:${state.piecesPlaced}:${state.hold ?? "none"}`;
           if (pieceKey !== aiLastPieceKey || openingAutoStep % 6 === 0) {
             const plan = chooseAttractPlacement(state);
@@ -1440,30 +1444,34 @@ gameApp.onFrame(({ dt }) => {
           aiPieceFrames += 1;
           const rotAligned = state.active.rotation === aiTargetRot;
           const colAligned = state.active.x === aiTargetX;
+          const ghost = ghostPiece(state);
+          const distToGhost = ghost ? ghost.y - state.active.y : 0;
           if (!rotAligned || !colAligned) {
-            if (openingAutoStep % 5 === 0) {
+            if (openingAutoStep % 6 === 0) {
               if (!rotAligned) {
                 actions.push({ type: "rotate", direction: 1 });
               } else if (!colAligned) {
                 actions.push({ type: "move", dx: state.active.x < aiTargetX ? 1 : -1 });
               }
             }
-            if (aiPieceFrames >= 28 && openingAutoStep % 3 === 0) {
+            if (openingAutoStep % 4 === 0) {
               actions.push({ type: "softDrop" });
             }
-            if (aiPieceFrames >= 44) {
+            if (aiPieceFrames >= 72 && (state.active.y >= HIDDEN_ROWS + 10 || distToGhost <= 3)) {
               actions.push({ type: "hardDrop" });
               aiPieceFrames = 0;
             }
           } else {
             aiAlignedFrames += 1;
-            const ghost = ghostPiece(state);
-            const distToGhost = ghost ? ghost.y - state.active.y : 0;
-            if ((distToGhost <= 6 && aiAlignedFrames >= 6) || aiAlignedFrames >= 18) {
+            const readyForCommit =
+              (state.active.y >= HIDDEN_ROWS + 11 && aiAlignedFrames >= 8)
+              || (distToGhost <= 3 && aiAlignedFrames >= 4)
+              || aiPieceFrames >= 84;
+            if (readyForCommit) {
               actions.push({ type: "hardDrop" });
               aiAlignedFrames = 0;
               aiPieceFrames = 0;
-            } else if (openingAutoStep % 3 === 0) {
+            } else if (openingAutoStep % 4 === 0) {
               actions.push({ type: "softDrop" });
             }
           }
@@ -1519,6 +1527,22 @@ function collectInputActions(dt: number): BlockfallAction[] {
   }
   manualInputState.pressed.clear();
   return actions;
+}
+
+function ensureActivePieceInVisibleWell(): void {
+  if (acceptanceScenario !== null || replayPlayback.active || attractState.active || paused) return;
+  const snap = fallingBlocks.snapshot();
+  const active = snap.active as ActivePiece | null;
+  if (!active || snap.gameOver || active.y >= HIDDEN_ROWS) return;
+  const candidate: ActivePiece = {
+    kind: active.kind,
+    x: active.x,
+    y: HIDDEN_ROWS,
+    rotation: active.rotation as 0 | 1 | 2 | 3
+  };
+  if (!aiCollides(snap.board as BlockfallState["board"], candidate)) {
+    fallingBlocks.setActive(candidate);
+  }
 }
 
 function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): BlockfallState {
@@ -1582,6 +1606,7 @@ function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): Blockfa
     }
   }
 
+  ensureActivePieceInVisibleWell();
   return createBlockfallView(fallingBlocks.snapshot(), lastMove, lastFallingEvents);
 }
 
@@ -1930,6 +1955,8 @@ function syncInstancedPools(): void {
     spec.position = [cell.position[0], cell.position[1], cell.position[2]];
     spec.scale = [ACTIVE_BLOCK_SCALE[0], ACTIVE_BLOCK_SCALE[1], ACTIVE_BLOCK_SCALE[2]];
   }
+  lockedPoolHandles.forEach((handle) => handle.setVisible(true));
+  activePoolHandle.setVisible(!state.gameOver);
 }
 
 /** Wall scoreboard digits mirror score and level with zero-padded formats (BF-A3). */
@@ -1979,7 +2006,7 @@ function syncActivePiece(piece: ActivePiece | null): void {
   const cells = pieceCells(piece);
   const visibleCells = cells
     .map((cell, index) => ({ cell, index, visibleY: cell.y - HIDDEN_ROWS }))
-    .filter(({ visibleY }) => visibleY > 0 && visibleY < VISIBLE_HEIGHT);
+    .filter(({ visibleY }) => visibleY >= 0 && visibleY < VISIBLE_HEIGHT);
 
   // State-bound focus reticle: the ring follows the active piece's projected
   // centre and gives the eye an authored drop target even on a busy board.

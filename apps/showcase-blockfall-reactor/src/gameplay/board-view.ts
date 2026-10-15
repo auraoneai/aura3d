@@ -59,15 +59,21 @@ function emptyLockedByKind(): Record<PieceKind, BoardCellInstance[]> {
   return { I: [], J: [], L: [], O: [], S: [], T: [], Z: [] };
 }
 
+function projectActivePieceCells(
+  piece: ActivePiece
+): { readonly cell: { readonly x: number; readonly y: number }; readonly visibleY: number }[] {
+  const rowShift = piece.y < HIDDEN_ROWS ? HIDDEN_ROWS - piece.y : 0;
+  return pieceCells(piece)
+    .map((cell) => ({ cell, visibleY: cell.y + rowShift - HIDDEN_ROWS }))
+    .filter(({ cell, visibleY }) => cell.x >= 0 && cell.x < BOARD_WIDTH && visibleY >= 0 && visibleY < VISIBLE_HEIGHT);
+}
+
 function activeCellInstances(piece: ActivePiece | null, z: number, scale: Vec3): BoardCellInstance[] {
   if (!piece) return [];
-  return pieceCells(piece)
-    .map((cell) => ({ cell, visibleY: cell.y - HIDDEN_ROWS }))
-    .filter(({ visibleY }) => visibleY >= 0 && visibleY < VISIBLE_HEIGHT)
-    .map(({ cell, visibleY }) => {
-      const position = cellPosition(cell.x, visibleY, z);
-      return { x: cell.x, y: visibleY, kind: piece.kind, position, scale };
-    });
+  return projectActivePieceCells(piece).map(({ cell, visibleY }) => {
+    const position = cellPosition(cell.x, visibleY, z);
+    return { x: cell.x, y: visibleY, kind: piece.kind, position, scale };
+  });
 }
 
 /** Projects kit state onto the two instanced pools plus the ghost overlay. Pure. */
@@ -121,10 +127,11 @@ export function boardViewMatchesState(view: BoardViewModel, state: BlockfallStat
   }
   const activePiece = state.active;
   const expectedActive = activePiece
-    ? pieceCells(activePiece)
-        .map((cell) => ({ cell, visibleY: cell.y - HIDDEN_ROWS }))
-        .filter(({ visibleY }) => visibleY >= 0 && visibleY < VISIBLE_HEIGHT)
-        .map(({ cell, visibleY }) => ({ x: cell.x, y: visibleY, kind: activePiece.kind }))
+    ? projectActivePieceCells(activePiece).map(({ cell, visibleY }) => ({
+        x: cell.x,
+        y: visibleY,
+        kind: activePiece.kind
+      }))
     : [];
   if (view.active.length !== expectedActive.length) return false;
   for (let index = 0; index < expectedActive.length; index += 1) {

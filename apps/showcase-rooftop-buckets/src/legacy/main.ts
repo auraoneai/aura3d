@@ -745,19 +745,16 @@ function buildScene() {
           receiveShadow: true,
           scaleMode: "world",
           scale: [ATHLETE_MODEL_SCALE, ATHLETE_MODEL_SCALE, ATHLETE_MODEL_SCALE],
-          // The release clip set remains mounted and is sampled by the route's
-          // evidence state, but its imported bind-pose frame reads as a T at
-          // the opening camera. The visible raised-ball derivative below owns
-          // the broadcast silhouette for this lane.
           visible: false,
           hiddenNodeNames: ATHLETE_MICRO_MESHES
         })
           .position(COURT_SPOTS[0]!.x, ATHLETE_FLOOR_OFFSET, COURT_SPOTS[0]!.z)
-          .animate({ clip: "Release", loop: false, speed: 1, captureTime: 0.62 })
+          .animate(
+            visualReviewCapture
+              ? { clip: "Release", loop: false, speed: 1, captureTime: 0.62 }
+              : { clip: "Run", loop: true, speed: 1.35 }
+          )
           .runtime(shooterHandle),
-        // Distinct crimson release-probed athlete from the same licensed source
-        // family, with an actual 191-joint contest clip set. It is hidden until
-        // the real pressure telegraph enables it.
         model(assets.rooftopDefender, {
           name: "contest-defender-mesh",
           role: "primaryCharacter",
@@ -769,16 +766,17 @@ function buildScene() {
           hiddenNodeNames: ATHLETE_MICRO_MESHES
         })
           .position(0, -10, 0)
-          .animate({ clip: "Plant", loop: true, speed: 1, captureTime: 0.35 })
+          .animate(
+            visualReviewCapture
+              ? { clip: "Plant", loop: true, speed: 1, captureTime: 0.35 }
+              : { clip: "Walk", loop: true, speed: 1.35 }
+          )
           .runtime(defenderHandle)
       ] : []),
-      // Presentation athletes are registered CC-BY-4.0 derivatives with
-      // continuous textured meshes and authored raised-shot/contest poses.
-      // They are visual counterparts to the hidden skinned clip actors above;
-      // the route still owns ballistics, root motion, contest state, scoring,
-      // and reset/progression. Keeping the assets typed avoids primitive-only
-      // named subjects while preserving a readable opening/action silhouette.
-      model(assets.rooftopShooterMeshyV1, {
+      // Presentation athletes with 15-bone glTF skeletons and 23 baked basketball clips.
+      // `rooftopShooterCleanMeshy` is the empty-handed 3D shooter mesh so only
+      // the live physics basketball (`ball-hero`) is visible during dribble and flight.
+      model((assets as any).rooftopShooterCleanMeshy ?? assets.rooftopShooterMeshyV1, {
         name: "shooter-presentation-mesh",
         role: "primaryCharacter",
         castShadow: true,
@@ -787,6 +785,7 @@ function buildScene() {
         scale: [PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE]
       })
         .position(COURT_SPOTS[0]!.x, SHOOTER_MESHY_GROUND_OFFSET, COURT_SPOTS[0]!.z)
+        .animate({ clip: "Run", speed: 1.35, loop: true })
         .runtime(shooterPresentationHandle),
       model(assets.rooftopDefenderMeshy, {
         name: "defender-presentation-mesh",
@@ -797,6 +796,7 @@ function buildScene() {
         scale: [PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE]
       })
         .position(0, -10, 0)
+        .animate({ clip: "Walk", speed: 1.35, loop: true })
         .runtime(defenderPresentationHandle),
       // Keep the legacy shooter reference hidden off-court so there is no
       // frozen clone on the court while typed-asset coverage remains intact.
@@ -1398,6 +1398,10 @@ function stepGame(dt: number): void {
   publishEvidence();
 }
 
+let lastShooterClip = "";
+let lastDefenderClip = "";
+const hasCleanShooterMesh = Boolean((assets as any).rooftopShooterCleanMeshy);
+
 function syncTransforms(): void {
   const currentSpot = COURT_SPOTS[currentSpotIndex]!;
   const shooterNode = app.nodes.get("shooter-player") as AuraRuntimeNodeHandle | undefined;
@@ -1438,34 +1442,37 @@ function syncTransforms(): void {
   const spotMoveDz = currentSpot.z - baseSpotZ;
   const spotMoveDist = Math.hypot(spotMoveDx, spotMoveDz);
   const isRunningBetweenSpots = !visualReviewCapture && !rbTestHookUsed && spotMoveDist > 0.03;
-  const runStrideBounce = isRunningBetweenSpots ? Math.abs(Math.sin(elapsedPlayTime * 14)) * 0.14 : 0;
-  const runStrideRoll = isRunningBetweenSpots ? Math.sin(elapsedPlayTime * 14) * 0.11 : 0;
+  const runStrideBounce = isRunningBetweenSpots ? Math.abs(Math.sin(elapsedPlayTime * 14)) * 0.055 : 0;
+  const runStrideRoll = isRunningBetweenSpots ? Math.sin(elapsedPlayTime * 14) * 0.045 : 0;
   const runDirectionYaw = isRunningBetweenSpots ? Math.atan2(spotMoveDx, spotMoveDz) : shooterFacingYaw;
   const runBlend = Math.min(1, spotMoveDist * 1.8);
 
   // Jump-shot gather crouch -> explosive upward jump-shot leap -> smooth landing
   const chargeGatherDip = isCharging && chargePower < 0.35
-    ? -Math.sin((chargePower / 0.35) * Math.PI * 0.5) * 0.14
+    ? -Math.sin((chargePower / 0.35) * Math.PI * 0.5) * 0.12
     : 0;
   const chargeJumpRise = isCharging && chargePower >= 0.35
-    ? ((chargePower - 0.35) / 0.65) * 0.52
+    ? ((chargePower - 0.35) / 0.65) * 0.48
     : 0;
   const liveShooterJumpLift = ballState.inFlight
-    ? releaseExtension * 0.52
+    ? releaseExtension * 0.48
     : isCharging
       ? chargeGatherDip + chargeJumpRise
-      : Math.abs(Math.sin(elapsedPlayTime * 7.2)) * 0.055 + runStrideBounce;
+      : Math.abs(Math.sin(elapsedPlayTime * 7.2)) * 0.025 + runStrideBounce;
 
   const hoopDx = hoopState.x - baseSpotX;
   const hoopDz = hoopState.z - baseSpotZ;
   const hoopDistance = Math.max(0.001, Math.hypot(hoopDx, hoopDz));
-  // The root drive is continuous with the authored flight state: the athlete
-  // compresses behind the spot, rises through release, and lands slightly
-  // toward the hoop. It complements the continuous pose-authored athlete
-  // meshes rather than presenting an ungrounded label-only animation state.
+  // Active lateral court footwork while ready/dribbling between shots so the
+  // 15-bone skeletal legs and feet visibly step across the perimeter spot.
+  const lateralFootwork = !visualReviewCapture && !rbTestHookUsed && !ballState.inFlight && !isCharging && !isRunningBetweenSpots
+    ? Math.sin(elapsedPlayTime * 3.2) * 0.24
+    : 0;
+  const perpX = -(hoopDz / hoopDistance) * lateralFootwork;
+  const perpZ = (hoopDx / hoopDistance) * lateralFootwork;
   const releaseDrive = Math.min(0.34, ballState.flightTimer * 0.9) - shooterBodyCompression * 0.08;
-  const shooterX = baseSpotX + (hoopDx / hoopDistance) * releaseDrive;
-  const shooterZ = baseSpotZ + (hoopDz / hoopDistance) * releaseDrive;
+  const shooterX = baseSpotX + (hoopDx / hoopDistance) * releaseDrive + perpX;
+  const shooterZ = baseSpotZ + (hoopDz / hoopDistance) * releaseDrive + perpZ;
   // The registered athlete GLB has authored bounds below the origin. Keep its
   // feet on the court while the route-local lift continues to follow release.
   shooterNode?.setPosition(shooterX, ATHLETE_FLOOR_OFFSET + shooterLift, shooterZ);
@@ -1474,30 +1481,30 @@ function syncTransforms(): void {
   const activeShooterYaw = visualReviewCapture
     ? shooterFacingYaw
     : shooterFacingYaw * (1 - runBlend * 0.65) + runDirectionYaw * (runBlend * 0.65) +
-      (ballState.inFlight ? 0 : Math.sin(elapsedPlayTime * 7.2) * 0.065);
+      (ballState.inFlight ? 0 : Math.sin(elapsedPlayTime * 6.4) * 0.04);
   const activeShooterPitch = visualReviewCapture
     ? -0.08 - 0.15 * (ballState.inFlight ? Math.min(1, flightMotionPhase) : 0)
     : isRunningBetweenSpots
-      ? 0.18 + Math.sin(elapsedPlayTime * 28) * 0.04
+      ? 0.08 + Math.sin(elapsedPlayTime * 14) * 0.02
       : isCharging
-        ? chargePower < 0.35 ? 0.14 : -0.12 * ((chargePower - 0.35) / 0.65)
+        ? chargePower < 0.35 ? 0.08 : -0.08 * ((chargePower - 0.35) / 0.65)
         : ballState.inFlight
-          ? -0.18 * releaseExtension
-          : 0.06 + Math.sin(elapsedPlayTime * 14.4) * 0.045;
+          ? -0.1 * releaseExtension
+          : 0.03 + Math.sin(elapsedPlayTime * 7.2) * 0.02;
   const activeShooterRoll = visualReviewCapture
     ? -0.035 - 0.08 * releaseExtension
     : isRunningBetweenSpots
       ? runStrideRoll
-      : -0.035 - 0.08 * releaseExtension + Math.cos(elapsedPlayTime * 7.2) * 0.04;
+      : -0.02 - 0.04 * releaseExtension + Math.cos(elapsedPlayTime * 6.4) * 0.02;
   // The Meshy shooter GLB is centered at its origin (bounds.min[1] ≈ -0.95),
   // so add SHOOTER_MESHY_GROUND_OFFSET to place its sneakers on the court floor.
   shooterPresentationNode
     ?.setPosition(shooterX, SHOOTER_MESHY_GROUND_OFFSET + presentationLift, shooterZ)
     .setRotation(activeShooterPitch, activeShooterYaw, activeShooterRoll)
     .setScale([
-      PRESENTATION_ATHLETE_SCALE - releaseExtension * 0.035 + shooterBodyCompression * 0.018,
-      PRESENTATION_ATHLETE_SCALE + releaseExtension * 0.06 - shooterBodyCompression * 0.045,
-      PRESENTATION_ATHLETE_SCALE + shooterBodyCompression * 0.018
+      PRESENTATION_ATHLETE_SCALE - releaseExtension * 0.02 + shooterBodyCompression * 0.012,
+      PRESENTATION_ATHLETE_SCALE + releaseExtension * 0.035 - shooterBodyCompression * 0.028,
+      PRESENTATION_ATHLETE_SCALE + shooterBodyCompression * 0.012
     ]);
   if (visualReviewCapture) {
     const nextShooterAnimation = isCharging
@@ -1534,16 +1541,29 @@ function syncTransforms(): void {
     const followLean = ballState.inFlight ? Math.sin(Math.min(1, flightMotionPhase / 0.72) * Math.PI / 2) : 0;
     const landingSettle = flightMotionPhase > 0.78 ? (flightMotionPhase - 0.78) / 0.22 : 0;
     shooterNode
-      // The skinned release asset is authored +Z-forward; the review camera
-      // sits on the +Z sideline. Keep its root facing the target hoop using
-      // the same launch vector as the visible presentation actor; no camera
-      // mirroring or alternate trajectory is introduced here.
       ?.setRotation(-0.2 * followLean + 0.08 * landingSettle, shooterFacingYaw, -0.11 * releaseExtension)
       .setScale([
         ATHLETE_MODEL_SCALE - releaseExtension * 0.045 + shooterBodyCompression * 0.035,
         ATHLETE_MODEL_SCALE + releaseExtension * 0.085 - shooterBodyCompression * 0.085,
         ATHLETE_MODEL_SCALE + shooterBodyCompression * 0.03
       ]);
+  } else {
+    // Live 15-bone skeletal clip switching on `shooter-presentation` (and `shooter-player`).
+    // Only call `setAnimation` on clip transitions so the engine mixer advances time continuously.
+    const nextShooterClip = isRunningBetweenSpots
+      ? "Run"
+      : isCharging
+        ? "Load"
+        : ballState.inFlight
+          ? "Release"
+          : "Walk";
+    const nextShooterSpeed = nextShooterClip === "Run" ? 1.45 : 1.35;
+    if (nextShooterClip !== lastShooterClip) {
+      lastShooterClip = nextShooterClip;
+      shooterAnimationState = nextShooterClip;
+      shooterPresentationNode?.setAnimation({ clip: nextShooterClip, speed: nextShooterSpeed, loop: true });
+      shooterNode?.setAnimation({ clip: nextShooterClip, speed: nextShooterSpeed, loop: true });
+    }
   }
   const shooterShadow = app.nodes.get("shooter-contact-shadow") as AuraRuntimeNodeHandle | undefined;
   shooterShadow?.setPosition(shooterX, 0.026, shooterZ);
@@ -1556,6 +1576,8 @@ function syncTransforms(): void {
   const ballNode = app.nodes.get("ball-hero") as AuraRuntimeNodeHandle | undefined;
   ballNode?.setMaterial(ballState.isGold ? goldMaterial : orangeMaterial);
   if (ballState.inFlight || visualReviewCapture) {
+    ballNode?.setVisible(true);
+    ballNode?.setScale(visualReviewCapture ? [0.33, 0.33, 0.33] : [0.28, 0.28, 0.28]);
     ballNode?.setPosition(ballState.x, ballState.y, ballState.z);
     if (ballState.inFlight) {
       // Visible spin is derived from flight time and velocity, preserving the
@@ -1565,18 +1587,22 @@ function syncTransforms(): void {
       ballNode?.setRotation(0, 0, 0);
     }
   } else {
-    // Live dribbling and jump-shot gather when holding the ball
-    const handRightX = Math.cos(activeShooterYaw) * 0.28 + Math.sin(activeShooterYaw) * 0.34;
-    const handRightZ = -Math.sin(activeShooterYaw) * 0.28 + Math.cos(activeShooterYaw) * 0.34;
+    // Live dribbling and jump-shot gather when holding the ball.
+    // `rooftopShooterCleanMeshy` has empty hands so `ball-hero` is the single visible basketball;
+    // if falling back to `rooftopShooterMeshyV1` (which has a baked ball in hand), hide `ball-hero`
+    // until release so there are never two basketballs on screen.
+    ballNode?.setScale(hasCleanShooterMesh ? [0.28, 0.28, 0.28] : [0.001, 0.001, 0.001]);
+    const handRightX = Math.cos(activeShooterYaw) * 0.22 + Math.sin(activeShooterYaw) * 0.28;
+    const handRightZ = -Math.sin(activeShooterYaw) * 0.22 + Math.cos(activeShooterYaw) * 0.28;
     if (isCharging) {
-      const gatherX = shooterX + Math.sin(activeShooterYaw) * 0.26 + Math.cos(activeShooterYaw) * 0.08 * (1 - chargePower);
-      const gatherZ = shooterZ + Math.cos(activeShooterYaw) * 0.26 - Math.sin(activeShooterYaw) * 0.08 * (1 - chargePower);
-      const gatherY = 1.15 + chargePower * 0.72 + Math.max(0, presentationLift);
+      const gatherX = shooterX + Math.sin(activeShooterYaw) * 0.24 + Math.cos(activeShooterYaw) * 0.06 * (1 - chargePower);
+      const gatherZ = shooterZ + Math.cos(activeShooterYaw) * 0.24 - Math.sin(activeShooterYaw) * 0.06 * (1 - chargePower);
+      const gatherY = 1.15 + chargePower * 0.68 + Math.max(0, presentationLift);
       ballNode?.setPosition(gatherX, gatherY, gatherZ);
       ballNode?.setRotation(-chargePower * 2.4, activeShooterYaw, 0);
     } else {
       const dribbleBounce = Math.abs(Math.sin(elapsedPlayTime * 7.2));
-      const dribbleY = 0.14 + dribbleBounce * (1.08 - 0.14) + runStrideBounce * 0.35;
+      const dribbleY = 0.14 + dribbleBounce * (1.02 - 0.14) + runStrideBounce * 0.35;
       ballNode?.setPosition(shooterX + handRightX, dribbleY, shooterZ + handRightZ);
       ballNode?.setRotation(elapsedPlayTime * 8.5, activeShooterYaw, Math.sin(elapsedPlayTime * 7.2) * 0.38);
     }
@@ -1635,14 +1661,26 @@ function syncTransforms(): void {
   const warmupPartnerVisible = !visualReviewCapture || scoreState.heat === 1;
   defenderNode?.setVisible(hoopState.defenderActive);
   defenderPresentationNode?.setVisible(hoopState.defenderActive || warmupPartnerVisible);
+  if (!visualReviewCapture) {
+    const nextDefenderClip = ballState.inFlight || hoopState.defenderTelegraph === "contest"
+      ? "Contest"
+      : "Run";
+    const nextDefenderSpeed = nextDefenderClip === "Contest" ? 1.35 : 1.4;
+    if (nextDefenderClip !== lastDefenderClip) {
+      lastDefenderClip = nextDefenderClip;
+      defenderAnimationState = nextDefenderClip;
+      defenderPresentationNode?.setAnimation({ clip: nextDefenderClip, speed: nextDefenderSpeed, loop: true });
+      defenderNode?.setAnimation({ clip: nextDefenderClip, speed: nextDefenderSpeed, loop: true });
+    }
+  }
   if (hoopState.defenderActive) {
     const contestLift = Math.max(0, hoopState.defenderY - 0.9);
     const extraJumpContest = !visualReviewCapture && ballState.inFlight
-      ? Math.sin(flightMotionPhase * Math.PI) * 0.58
+      ? Math.sin(flightMotionPhase * Math.PI) * 0.52
       : !visualReviewCapture && isCharging
-        ? Math.max(0, (chargePower - 0.35) * 0.38)
+        ? Math.max(0, (chargePower - 0.35) * 0.34)
         : !visualReviewCapture
-          ? Math.abs(Math.sin(elapsedPlayTime * 9.5)) * 0.08
+          ? Math.abs(Math.sin(elapsedPlayTime * 9.5)) * 0.035
           : 0;
     const effectiveContestLift = Math.max(contestLift, extraJumpContest);
     const airborne = Math.min(1, effectiveContestLift / 1.2);
@@ -1660,14 +1698,14 @@ function syncTransforms(): void {
     defenderPresentationNode
       ?.setPosition(defenderX, SHOOTER_MESHY_GROUND_OFFSET + effectiveContestLift, defenderZ)
       .setRotation(
-        -0.16 * airborne + (!visualReviewCapture ? Math.sin(elapsedPlayTime * 9.5) * 0.05 : 0),
+        -0.08 * airborne + (!visualReviewCapture ? Math.sin(elapsedPlayTime * 9.5) * 0.025 : 0),
         defYaw,
-        -(ballDx / 2.4) * 0.2 * airborne + (!visualReviewCapture ? Math.cos(elapsedPlayTime * 4.8) * 0.08 : 0)
+        -(ballDx / 2.4) * 0.08 * airborne + (!visualReviewCapture ? Math.cos(elapsedPlayTime * 4.8) * 0.035 : 0)
       )
       .setScale([
-        PRESENTATION_ATHLETE_SCALE - airborne * 0.035,
-        PRESENTATION_ATHLETE_SCALE + airborne * 0.08,
-        PRESENTATION_ATHLETE_SCALE - airborne * 0.015
+        PRESENTATION_ATHLETE_SCALE - airborne * 0.02,
+        PRESENTATION_ATHLETE_SCALE + airborne * 0.045,
+        PRESENTATION_ATHLETE_SCALE - airborne * 0.01
       ]);
     if (visualReviewCapture) {
       const nextDefenderAnimation = hoopState.defenderTelegraph === "windup"
@@ -1705,7 +1743,7 @@ function syncTransforms(): void {
         ]);
     }
   } else if (warmupPartnerVisible) {
-    // Active perimeter close-out partner with athletic defensive slide and +0.58m jump contest.
+    // Active perimeter close-out partner with 15-bone skeletal lateral run/contest and +0.52m jump contest.
     const warmupX = visualReviewCapture
       ? (shooterX < -1.0 ? 1.65 : -1.75) + Math.sin(elapsedPlayTime * 1.65) * 0.32
       : visualDefenderX;
@@ -1713,21 +1751,21 @@ function syncTransforms(): void {
       ? 0.45 + Math.cos(elapsedPlayTime * 1.3) * 0.18
       : visualDefenderZ;
     const warmupY = ballState.inFlight
-      ? Math.sin(flightMotionPhase * Math.PI) * 0.58
+      ? Math.sin(flightMotionPhase * Math.PI) * 0.52
       : isCharging
-        ? Math.max(0, (chargePower - 0.35) * 0.42)
-        : Math.abs(Math.sin(elapsedPlayTime * 9.5)) * 0.08;
+        ? Math.max(0, (chargePower - 0.35) * 0.36)
+        : Math.abs(Math.sin(elapsedPlayTime * 9.5)) * 0.035;
     const warmupYaw = Math.atan2(shooterX - warmupX, shooterZ - warmupZ);
     const warmupPitch = ballState.inFlight
-      ? -0.18 * Math.sin(flightMotionPhase * Math.PI)
-      : 0.08 + Math.sin(elapsedPlayTime * 9.5) * 0.04;
-    const warmupRoll = Math.cos(elapsedPlayTime * 3.8) * 0.09;
+      ? -0.09 * Math.sin(flightMotionPhase * Math.PI)
+      : 0.04 + Math.sin(elapsedPlayTime * 9.5) * 0.02;
+    const warmupRoll = Math.cos(elapsedPlayTime * 3.8) * 0.035;
     defenderPresentationNode
       ?.setPosition(warmupX, SHOOTER_MESHY_GROUND_OFFSET + warmupY, warmupZ)
       .setRotation(warmupPitch, warmupYaw, warmupRoll)
       .setScale([
         PRESENTATION_ATHLETE_SCALE,
-        PRESENTATION_ATHLETE_SCALE * (1.02 + (ballState.inFlight ? 0.05 : 0)),
+        PRESENTATION_ATHLETE_SCALE * (1.01 + (ballState.inFlight ? 0.035 : 0)),
         PRESENTATION_ATHLETE_SCALE
       ]);
   } else if (visualReviewCapture && defenderAnimationState !== "hidden") {

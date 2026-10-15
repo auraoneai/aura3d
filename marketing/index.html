@@ -43,14 +43,15 @@
   <div class="wrap nav-inner">
     <a href="/" class="brand">
       <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,0.12)" />
-        <ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" stroke-width="1" opacity="0.6" transform="rotate(-22 12 12)" />
-        <circle cx="12" cy="12" r="1.6" fill="#4ade9d" />
+        <circle cx="12" cy="12" r="6" stroke="#38bdf8" stroke-width="1.4" fill="rgba(56,189,248,0.14)" />
+        <ellipse cx="12" cy="12" rx="11" ry="3" stroke="#34d399" stroke-width="1.1" opacity="0.72" transform="rotate(-22 12 12)" />
+        <circle cx="12" cy="12" r="1.7" fill="#38bdf8" />
       </svg>
       <span>Aura3D</span>
     </a>
     <div class="nav-links">
       <a class="nav-link nav-link-feature" href="#aura-clash">Aura&nbsp;Clash</a>
+      <a class="nav-link" href="#why-aura3d-vs-threejs">vs&nbsp;Three.js</a>
       <a class="nav-link" href="#workflows">SDK</a>
       <a class="nav-link" href="#prompts">Prompts</a>
       <a class="nav-link" href="/apps/showcase-index/">Examples</a>
@@ -85,16 +86,16 @@
       <span class="hero-tag">
         <span class="pill">4.0.0 live</span>
         <b>Agent-era 3D.</b>
-        <span class="mute">Prompt it. Prove it. Ship it.</span>
+        <span class="mute">18 lines vs. 120 lines of raw Three.js.</span>
       </span>
 
       <h1>
-        The 3D SDK<br />
-        <em>for the agent era.</em>
+        Stop assembling renderer plumbing.<br />
+        <em>Ship verified 3D in 18 lines.</em>
       </h1>
 
       <p class="hero-lede">
-        Aura3D 4.0.0 turns a sentence into an editable browser 3D scene or playable game your team can actually own — and its CLI gives your AI agent searchable, license-aware access to a catalog of <b>800,000+ real GLB/glTF assets</b> plus custom Meshy 3D PBR hero vehicles, characters, and architectural props, so prompts resolve to real models instead of generic grey-box cubes. Where a low-level renderer hands your agent raw plumbing and wishes it luck, Aura3D ships one unified <code>@aura3d/engine@4.0.0</code> SDK — typed assets, WebGPU compute + WebGL2 rendering pipeline, deterministic physics &amp; game kits (<code>game.platformer</code>, <code>game.racing</code>, <code>game.fallingBlocks</code>, <code>game.fighting</code>), and an agent-first CLI workflow (<code>create-aura3d@4.0.0</code>) — where all 19 playable 3D games and interactive showcases carry machine-checked visual and gameplay evidence before release.
+        Raw Three.js makes you hand-wire 14 packages, untyped string URLs, manual Draco/KTX2 WASM workers, PMREM generators, and recursive <code>dispose()</code> loops just to boot a scene. <b>Aura3D 4.0.0 (<code>@aura3d/engine@4.0.0</code>)</b> packages the entire browser 3D application stack into one zero-dependency TypeScript engine—compile-time typed GLB/glTF assets from an <b>800,000+ model catalog</b> + custom Meshy 3D PBR assets, WebGPU compute + WebGL2 rendering, physical PBR + HDR post-processing, deterministic Rapier physics, Recast crowd AI, and <code>aura3d migrate three</code> codemods—proven across 19 playable 3D games and 50 live routes.
       </p>
 
       <div class="hero-cta">
@@ -108,26 +109,27 @@
             <span id="copyLabel">Copy</span>
           </button>
         </div>
-        <a class="btn btn-primary" href="#prompts">Watch prompt-to-3D <span class="arr"></span></a>
+        <a class="btn btn-primary" href="#why-aura3d-vs-threejs">Aura3D 4.0.0 vs. Three.js <span class="arr"></span></a>
+        <a class="btn btn-ghost" href="#prompts">Watch prompt-to-3D</a>
         <a class="btn btn-ghost" href="/llms.txt">Give agents context</a>
       </div>
 
       <div class="hero-meta">
         <div class="hero-meta-item">
+          <span class="v"><b>18 lines</b></span>
+          <span class="k">vs ~120 in raw Three.js</span>
+        </div>
+        <div class="hero-meta-item">
           <span class="v"><b>800K+ assets</b></span>
-          <span class="k">agent-resolved catalog</span>
+          <span class="k">compile-time typed GLBs</span>
         </div>
         <div class="hero-meta-item">
           <span class="v"><b>v4.0.0</b></span>
-          <span class="k">latest engine</span>
+          <span class="k">zero external deps</span>
         </div>
         <div class="hero-meta-item">
           <span class="v"><b>19 games</b></span>
-          <span class="k">playable 3D showcases</span>
-        </div>
-        <div class="hero-meta-item">
-          <span class="v"><b>Deploy</b></span>
-          <span class="k">static-ready output</span>
+          <span class="k">50 live routes</span>
         </div>
       </div>
     </div>
@@ -197,7 +199,7 @@
         <div class="visual-proof-stage">
           <iframe data-preview="static" data-poster-image="/previews/showcase/showcase-product-configurator.png" data-route="/apps/showcase-product-configurator/" title="Aura3D · Product Configurator preview" data-poster-title="Product Configurator" data-poster-kicker="interactive typed product" data-poster-description="Change the finish, focus individual parts, orbit the typed GLB, and inspect its retained asset provenance."></iframe>
         </div>
-        <div class="visual-proof-copy"><span>01 · Product</span><h3>One asset. Every finish.</h3><p>Typed GLB provenance, production PBR materials, clearcoat response, product lighting, part focus, and an interactive turntable through the public API.</p><a href="/apps/showcase-product-configurator/">Open Product Configurator <span class="arr"></span></a></div>
+        <div class="visual-proof-copy"><span>01 · Product</span><h3>One asset. Every finish.</h3><p>Typed GLB provenance, physical PBR materials, clearcoat response, product lighting, part focus, and an interactive turntable through the public API.</p><a href="/apps/showcase-product-configurator/">Open Product Configurator <span class="arr"></span></a></div>
       </article>
 
       <article class="visual-proof-card">
@@ -218,7 +220,166 @@
     <div class="comparison-callout">
       <div><span class="eyebrow">Built to ship</span><h3>Your 3D application stack, already assembled.</h3></div>
       <p>Start above renderer plumbing with typed assets, agent-ready scene composition, maintained scaffolds, Rapier physics, Recast navigation, interaction systems, diagnostics, and deployment checks in one TypeScript workflow.</p>
-      <a class="btn btn-primary" href="/docs/agent-quickstart.html">Build your first scene <span class="arr"></span></a>
+      <a class="btn btn-primary" href="/docs/aura3d-vs-threejs.html">Aura3D 4.0.0 vs. Raw Three.js <span class="arr"></span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── WHY TEAMS CHOOSE AURA3D OVER RAW THREE.JS ──────────── -->
+<section class="section-tight" id="why-aura3d-vs-threejs" data-search-index="why teams choose aura3d over raw threejs 18 lines vs 120 lines architectural comparison table typed assets webgpu compute pbr postprocessing rapier recast splats portals check-deploy">
+  <div class="wrap">
+    <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
+      <div class="sec-head-left">
+        <span class="eyebrow">Why Teams Choose Aura3D 4.0.0 Over Raw Three.js</span>
+        <h2 class="h2">Stop assembling 14 fragile npm packages.<br /><em style="font-family:var(--serif);font-style:italic">Boot a verified 3D scene in 18 lines of TypeScript.</em></h2>
+        <p class="lede">Three.js is a legendary low-level rendering kernel—not a complete application engine. The moment you step beyond a spinning cube, raw Three.js forces your team to hand-wire <code>WebGLRenderer</code>, <code>PerspectiveCamera</code>, <code>OrbitControls</code>, <code>GLTFLoader</code>, <code>DRACOLoader</code>, <code>KTX2Loader</code>, <code>RGBELoader</code>, <code>EffectComposer</code>, <code>PMREMGenerator</code>, <code>Rapier3D</code>, <code>Recast</code>, manual resize observers, and recursive <code>dispose()</code> loops just to keep a single route from leaking GPU memory. <strong>Aura3D 4.0.0 (<code>@aura3d/engine@4.0.0</code>)</strong> ships the entire browser 3D application stack in one zero-dependency, MIT-licensed TypeScript SDK.</p>
+      </div>
+      <div class="sec-head-right">
+        <a class="btn btn-ghost" href="/docs/aura3d-vs-threejs.html">Full architectural comparison <span class="arr"></span></a>
+      </div>
+    </div>
+
+    <div class="compare" role="region" aria-label="Aura3D 4.0.0 vs Raw Three.js 10-point architectural comparison">
+      <div class="compare-head">
+        <div>Capability</div>
+        <div>Aura3D 4.0.0 (<code>@aura3d/engine@4.0.0</code> + <code>@aura3d/cli@4.0.0</code>)</div>
+        <div>Raw Three.js Stack (<code>three@0.185.x</code> + ecosystem)</div>
+        <div>Advantage</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Scene Boot &amp; Lifecycle</div>
+        <div class="compare-value aura">18 lines with <code>createAuraApp()</code>: deterministic clock, resize observer, context-loss recovery, and <code>app.dispose()</code></div>
+        <div class="compare-value base">~120 lines of manual <code>WebGLRenderer</code>, <code>PerspectiveCamera</code>, <code>ResizeObserver</code>, <code>requestAnimationFrame</code>, and recursive <code>dispose()</code></div>
+        <div><span class="delta">83% less code</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Asset Pipeline &amp; Type Safety</div>
+        <div class="compare-value aura">Compile-time typed <code>src/aura-assets.ts</code> generated from <code>aura.assets.json</code> with SHA-256 digests, SPDX checks, and clip/morph metadata</div>
+        <div class="compare-value base">Untyped string URLs (<code>loader.load('/foo.glb')</code>), silent 404s, manual <code>DRACOLoader</code> / <code>KTX2Loader</code> WASM worker path wiring</div>
+        <div><span class="delta">Compile-time safe</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Materials &amp; Lighting</div>
+        <div class="compare-value aura">Built-in physical PBR: clearcoat, sheen, transmission, volume attenuation, dispersion, iridescence, anisotropy, procedural sky + IBL, AgX / ACES tone mapping</div>
+        <div class="compare-value base">Manual <code>PMREMGenerator</code>, manual shader chunks, separate <code>RGBELoader</code> setup, ad-hoc tone mapping configuration</div>
+        <div><span class="delta">Zero setup</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Post-Processing</div>
+        <div class="compare-value aura">Integrated HDR post stack (<code>bloom</code>, <code>ssao</code>, <code>ssr</code>, <code>dof</code>, <code>motionBlur</code>, <code>chromaticAberration</code>, <code>vignette</code>, <code>colorGrading</code>, <code>taa</code>, <code>fxaa</code>)</div>
+        <div class="compare-value base">External <code>three/examples/jsm/postprocessing</code> or third-party composer with manual render-target ping-pong management</div>
+        <div><span class="delta">Declarative post()</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">WebGPU &amp; Compute</div>
+        <div class="compare-value aura">First-class WebGPU compute shaders (<code>compute.createComputePipeline</code>), GPU frustum + Hi-Z occlusion culling, and GPU particle systems alongside WebGL2</div>
+        <div class="compare-value base">Experimental node-material split across separate build entry points; manual storage-buffer management</div>
+        <div><span class="delta">Unified runtime</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Physics &amp; Character Control</div>
+        <div class="compare-value aura">Built-in deterministic fixed-step physics, CCD, joints, swept kinematic character controller, and raycast vehicle dynamics</div>
+        <div class="compare-value base">Bring-your-own <code>@dimforge/rapier3d-compat</code>, manual WASM init, custom fixed-step accumulator, custom raycast vehicle math</div>
+        <div><span class="delta">1 simulation owner</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Navigation &amp; Crowd AI</div>
+        <div class="compare-value aura">Built-in navmesh generation, A* corridor pathfinding, and multi-agent crowd steering with local avoidance</div>
+        <div class="compare-value base">Bring-your-own <code>recast-navigation</code> + WASM glue + custom steering loops</div>
+        <div><span class="delta">Built-in AI crowds</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Advanced Rendering (Splats, Portals, VFX)</div>
+        <div class="compare-value aura">Native <code>splats.createGaussianSplat()</code>, recursive stencil/FBO <code>portals.createPortalWorld()</code>, GPU compute particles, decals, trails, and water waves</div>
+        <div class="compare-value base">Fragmented third-party Gaussian Splat viewers, manual stencil-buffer portal passes, custom instanced particle shaders</div>
+        <div><span class="delta">First-party APIs</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Three.js Migration Path</div>
+        <div class="compare-value aura">Automated AST codemod (<code>aura3d migrate three</code>) plus <code>migrateThreeToA3D</code> compatibility layer and 5 dedicated migration starter templates</div>
+        <div class="compare-value base">Rewrite from scratch or maintain legacy imperative <code>THREE.*</code> code indefinitely</div>
+        <div><span class="delta">Automated codemod</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Pre-Deploy Verification</div>
+        <div class="compare-value aura">Built-in <code>aura3d check-deploy</code> &amp; <code>aura3d evidence</code>: headless Chromium route health, zero-console-error enforcement, and <code>aura-evidence.json</code></div>
+        <div class="compare-value base">Manual browser eyeballs; no standard GPU or asset gate in CI</div>
+        <div><span class="delta">CI-certified</span></div>
+      </div>
+    </div>
+
+    <div class="migration">
+      <div class="migration-col">
+        <div class="migration-head">
+          <span>Raw Three.js (<code>three@0.185.1</code> + 6 addons)</span>
+          <span class="migration-tag">~120 lines · manual lifecycle</span>
+        </div>
+        <pre class="code"><code><span class="c">// 7+ imports, untyped string URLs, manual WASM decoders,</span>
+<span class="c">// manual PMREM/HDRI setup, manual EffectComposer, manual resize &amp; dispose</span>
+<span class="k">import</span> * <span class="k">as</span> THREE <span class="k">from</span> <span class="s">'three'</span>;
+<span class="k">import</span> { OrbitControls } <span class="k">from</span> <span class="s">'three/examples/jsm/controls/OrbitControls.js'</span>;
+<span class="k">import</span> { GLTFLoader } <span class="k">from</span> <span class="s">'three/examples/jsm/loaders/GLTFLoader.js'</span>;
+<span class="k">import</span> { DRACOLoader } <span class="k">from</span> <span class="s">'three/examples/jsm/loaders/DRACOLoader.js'</span>;
+<span class="k">import</span> { KTX2Loader } <span class="k">from</span> <span class="s">'three/examples/jsm/loaders/KTX2Loader.js'</span>;
+<span class="k">import</span> { RGBELoader } <span class="k">from</span> <span class="s">'three/examples/jsm/loaders/RGBELoader.js'</span>;
+<span class="k">import</span> { EffectComposer } <span class="k">from</span> <span class="s">'three/examples/jsm/postprocessing/EffectComposer.js'</span>;
+<span class="k">import</span> { RenderPass } <span class="k">from</span> <span class="s">'three/examples/jsm/postprocessing/RenderPass.js'</span>;
+<span class="k">import</span> { UnrealBloomPass } <span class="k">from</span> <span class="s">'three/examples/jsm/postprocessing/UnrealBloomPass.js'</span>;
+
+<span class="k">const</span> container = document.<span class="f">getElementById</span>(<span class="s">'app'</span>)!;
+<span class="k">const</span> scene = <span class="k">new</span> THREE.<span class="f">Scene</span>();
+<span class="k">const</span> camera = <span class="k">new</span> THREE.<span class="f">PerspectiveCamera</span>(<span class="n">45</span>, container.clientWidth / container.clientHeight, <span class="n">0.1</span>, <span class="n">100</span>);
+camera.position.<span class="f">set</span>(<span class="n">2.8</span>, <span class="n">1.9</span>, <span class="n">3.6</span>);
+
+<span class="k">const</span> renderer = <span class="k">new</span> THREE.<span class="f">WebGLRenderer</span>({ antialias: <span class="n">true</span>, powerPreference: <span class="s">'high-performance'</span> });
+renderer.<span class="f">setPixelRatio</span>(Math.<span class="f">min</span>(window.devicePixelRatio, <span class="n">2</span>));
+renderer.<span class="f">setSize</span>(container.clientWidth, container.clientHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = <span class="n">1.1</span>;
+renderer.shadowMap.enabled = <span class="n">true</span>;
+container.<span class="f">appendChild</span>(renderer.domElement);
+
+<span class="k">const</span> controls = <span class="k">new</span> <span class="f">OrbitControls</span>(camera, renderer.domElement);
+controls.target.<span class="f">set</span>(<span class="n">0</span>, <span class="n">0.85</span>, <span class="n">0</span>);
+controls.enableDamping = <span class="n">true</span>;
+
+<span class="k">const</span> pmrem = <span class="k">new</span> THREE.<span class="f">PMREMGenerator</span>(renderer);
+<span class="k">new</span> <span class="f">RGBELoader</span>().<span class="f">load</span>(<span class="s">'/assets/studio.hdr'</span>, (hdr) =&gt; {
+  scene.environment = pmrem.<span class="f">fromEquirectangular</span>(hdr).texture;
+  hdr.<span class="f">dispose</span>();
+  pmrem.<span class="f">dispose</span>();
+});
+
+<span class="k">const</span> draco = <span class="k">new</span> <span class="f">DRACOLoader</span>().<span class="f">setDecoderPath</span>(<span class="s">'/wasm/draco/'</span>);
+<span class="k">const</span> ktx2 = <span class="k">new</span> <span class="f">KTX2Loader</span>().<span class="f">setTranscoderPath</span>(<span class="s">'/wasm/basis/'</span>).<span class="f">detectSupport</span>(renderer);
+<span class="k">const</span> loader = <span class="k">new</span> <span class="f">GLTFLoader</span>().<span class="f">setDRACOLoader</span>(draco).<span class="f">setKTX2Loader</span>(ktx2);
+<span class="c">// + 65 more lines for lights, shadows, AnimationMixer, EffectComposer,</span>
+<span class="c">// ResizeObserver, requestAnimationFrame loop, and recursive dispose()...</span></code></pre>
+      </div>
+      <div class="migration-col aura">
+        <div class="migration-head">
+          <span>Aura3D 4.0.0 (<code>@aura3d/engine@4.0.0</code>)</span>
+          <span class="migration-tag">18 lines · typed &amp; verified</span>
+        </div>
+        <pre class="code"><code><span class="k">import</span> { createAuraApp, environment, light, model, orbitCamera, post } <span class="k">from</span> <span class="s">'@aura3d/engine'</span>;
+<span class="k">import</span> { assets } <span class="k">from</span> <span class="s">'./aura-assets'</span>;
+
+<span class="k">const</span> app = <span class="k">await</span> <span class="f">createAuraApp</span>({
+  target: <span class="s">'#app'</span>,
+  scene: [
+    environment.<span class="f">studio</span>({ intensity: <span class="n">1.15</span>, sky: <span class="s">'procedural-dusk'</span> }),
+    <span class="f">orbitCamera</span>({ position: [<span class="n">2.8</span>, <span class="n">1.9</span>, <span class="n">3.6</span>], target: [<span class="n">0</span>, <span class="n">0.85</span>, <span class="n">0</span>], damping: <span class="n">0.08</span> }),
+    light.<span class="f">directional</span>({ position: [<span class="n">4</span>, <span class="n">7</span>, <span class="n">5</span>], intensity: <span class="n">3.2</span>, color: <span class="s">'#fff4e6'</span>, castShadow: <span class="n">true</span> }),
+    <span class="f">model</span>(assets.damagedHelmet, {
+      position: [<span class="n">0</span>, <span class="n">0.85</span>, <span class="n">0</span>],
+      castShadow: <span class="n">true</span>,
+      receiveShadow: <span class="n">true</span>,
+      clip: <span class="s">'Idle'</span>,
+    }),
+    <span class="f">post</span>({ toneMapping: <span class="s">'agx'</span>, exposure: <span class="n">1.1</span>, bloom: { intensity: <span class="n">0.35</span>, threshold: <span class="n">0.85</span> }, ssao: <span class="n">true</span> }),
+  ],
+});</code></pre>
+      </div>
     </div>
   </div>
 </section>

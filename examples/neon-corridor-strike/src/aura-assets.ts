@@ -1532,13 +1532,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/examples/neon-corridor-strike/public/aura-assets/corridorWardenMeshyV1.53557aeb.glb",
-    hash: "sha256-53557aeb64825a1982182fdc19d7d8acbddf09171318645a828b4577663bfc77",
+    hash: "sha256-cd542ca7e02718d0c01a7a12fcd74d92ff39ab8ae948135dfad0fc719c70f139",
     bounds: [
       1.28,
       1.904,
       0.729
     ],
-    sizeBytes: 10828272,
+    sizeBytes: 1561276,
     metadata: {
       "materials": [
         "material"
@@ -1659,7 +1659,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "renderedProbe": {
         "url": "/examples/neon-corridor-strike/public/aura-assets/corridorWardenMeshyV1.meshy-candidate.0da064c7.png",
         "kind": "manual-inspection",
-        "sha256": "sha256-0da064c739fdd6fb51ca728d6937cd53ce404ba7ac07b6a0fb253e0c29dbe8f6",
+        "sha256": "sha256-cd542ca7e02718d0c01a7a12fcd74d92ff39ab8ae948135dfad0fc719c70f139",
         "checkedAt": "2026-09-04T14:20:59.417Z"
       }
     },

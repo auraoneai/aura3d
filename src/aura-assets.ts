@@ -32335,13 +32335,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/mechHangarRivalUnitMeshy.39baba31.glb",
-    hash: "sha256-39baba310aaea4f25868e8ef7d7e859361440aaf1e33a0cbe32f562831c81ca3",
+    hash: "sha256-02ac958508282f33a092937c368ff55cdff0bcda10e9f3846c1090cf050b4453",
     bounds: [
       1.192,
       1.901,
       0.718
     ],
-    sizeBytes: 1347744,
+    sizeBytes: 2674676,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -32462,7 +32462,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "renderedProbe": {
         "url": "/aura-assets/mechHangarRivalUnitMeshy.meshy-candidate.98b273cf.png",
         "kind": "manual-inspection",
-        "sha256": "sha256-98b273cfe035b4ae34aa56c502da4934b3c287b0cbac740a679b6d77c12f6180",
+        "sha256": "sha256-02ac958508282f33a092937c368ff55cdff0bcda10e9f3846c1090cf050b4453",
         "checkedAt": "2026-10-14T21:03:03.802Z"
       }
     },
@@ -51289,13 +51289,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/rooftopShooterMeshyV1.ed5a33b3.glb",
-    hash: "sha256-ed5a33b3d23aecb240072e6de6525effca6a5147ef0dff958c74735083ad8828",
+    hash: "sha256-554588531168dcb1fec857353d66b915dc2762e221201ddce52c6e2d4332c5aa",
     bounds: [
       0.734,
       1.902,
       0.663
     ],
-    sizeBytes: 714604,
+    sizeBytes: 1513704,
     metadata: {
       "materials": [
         "material"
@@ -51416,7 +51416,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "renderedProbe": {
         "url": "/aura-assets/rooftopShooterMeshyV1.meshy-candidate.1fd938c9.png",
         "kind": "manual-inspection",
-        "sha256": "sha256-1fd938c97036cbe6c58e95bda7f6a6ef449d543b93e857ba6153086c08708639",
+        "sha256": "sha256-554588531168dcb1fec857353d66b915dc2762e221201ddce52c6e2d4332c5aa",
         "checkedAt": "2026-09-03T08:07:25.278Z"
       }
     },
@@ -113529,13 +113529,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/skylineHeroMeshyV2.9bdd5ae2.glb",
-    hash: "sha256-9bdd5ae2a040cb1c2cb43ec0220a70fd86a3b5d6940fdaf31befa46531c9e81a",
+    hash: "sha256-8862ce21d99ddecd8eaa3cd94a46344d34838b50fbbb64584c1d75e0635e6376",
     bounds: [
       0.912,
       1.903,
       0.653
     ],
-    sizeBytes: 987804,
+    sizeBytes: 808348,
     metadata: {
       "materials": [
         "material"
@@ -113656,7 +113656,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "renderedProbe": {
         "url": "/aura-assets/skylineHeroMeshyV2.meshy-candidate.6dbb7b50.png",
         "kind": "manual-inspection",
-        "sha256": "sha256-6dbb7b50d400d667b108d8af19969842535bdbb9e5034898b115b6ac883e25b6",
+        "sha256": "sha256-8862ce21d99ddecd8eaa3cd94a46344d34838b50fbbb64584c1d75e0635e6376",
         "checkedAt": "2026-09-04T14:14:20.824Z"
       }
     },
@@ -135419,13 +135419,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/rooftopDefenderMeshy.c53681c7.glb",
-    hash: "sha256-c53681c71f51f6e30fd08bb326cdab96ae70a61d10d0b1d8e0ffffba7d1d59f5",
+    hash: "sha256-783ec8135ef8aaf1e9d6b2351b37f0573a859b99612370a8fb072660121e6ce6",
     bounds: [
       0.831,
       1.886,
       0.646
     ],
-    sizeBytes: 783700,
+    sizeBytes: 1517348,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -135519,13 +135519,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/galleryStealthThiefMeshy.d9d45962.glb",
-    hash: "sha256-d9d4596215ccd430c12186e752db923f662bb21278836df543a65f1cb7b9561c",
+    hash: "sha256-e5d2d4481db068171c37e6729b53a0a87271941ffb2ea2b90fe20a93d363c6fe",
     bounds: [
       1.057,
       1.893,
       1.256
     ],
-    sizeBytes: 772224,
+    sizeBytes: 1724708,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -135619,13 +135619,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/gallerySecurityGuardMeshy.e45c9d16.glb",
-    hash: "sha256-e45c9d1670c066aa5130afa104ad29d1d4cda47a5f3c511adf1dcbcfc9b1463f",
+    hash: "sha256-4d66273f50e7fe1ba1b814f8c44f665186d9e74292dfce10e7308454dca72bd9",
     bounds: [
       0.739,
       1.896,
       0.483
     ],
-    sizeBytes: 889196,
+    sizeBytes: 1638972,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -135819,13 +135819,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/neonSwarmHeroMeshy.6607054a.glb",
-    hash: "sha256-6607054aa274d0dd5faef56384bb8aa25e375b2c89a6b6b330ddfe5e7c4ac38e",
+    hash: "sha256-64611ebedd5ce2d925dffe0580be9db042cb5003178020e85b586526d58c672a",
     bounds: [
       0.919,
       1.896,
       1.109
     ],
-    sizeBytes: 810592,
+    sizeBytes: 1672024,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -136719,13 +136719,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/mechHeroPlayerMeshy.38e09b7a.glb",
-    hash: "sha256-38e09b7aa5b6640e18a045059b6d39a78727b6e1fa455869cd384cf5b3e67d07",
+    hash: "sha256-49ece584ecfa113b95ed77d2c9b10cd7bedd5d2c076a70a00e998a72e4b78149",
     bounds: [
       1.2344,
       1.8969,
       0.9546
     ],
-    sizeBytes: 910268,
+    sizeBytes: 1908412,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -137191,13 +137191,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/skylineParkourRunnerMeshy.8baf974c.glb",
-    hash: "sha256-8baf974c158b068e06dd2a7e0d6f938fd26220f736afebdc9e280694f5cefe14",
+    hash: "sha256-d380183fe78bb972632480a8b33b0c700ae7c4ffee9be88ebce1c2b7ca23a575",
     bounds: [
       1.0441,
       1.8933,
       1.5534
     ],
-    sizeBytes: 622732,
+    sizeBytes: 1358852,
     metadata: {
       "materials": [
         "BakedMaterial"

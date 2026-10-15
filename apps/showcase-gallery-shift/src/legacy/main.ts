@@ -288,7 +288,7 @@ const MAX_CUE_LOG = 48;
 
 // ---------------------------------------------------------------- HUD markup --
 ui.html("#hud", `
-  <div class="hall-banner" id="gs-banner" aria-live="polite">GALLERY SHIFT - SNEAK IN, LIFT THREE, WALK OUT</div>
+  <div class="hall-banner" id="gs-banner" aria-live="polite">OBJECTIVE: STEAL 3 GOLDEN RELICS [0/3] &amp; ESCAPE AT GREEN EXIT — MOVE: WASD / ARROWS • STEAL: SPACE/E • CLOAK: SHIFT</div>
   <div class="review-brief" id="gs-brief" aria-live="polite">STEALTH LINK // SCANNING</div>
   <div class="mission-rail" id="gs-mission-rail" aria-label="Live heist route">
     <div class="mission-rail-head"><span>HEIST ROUTE</span><b id="gs-route-state">MARBLE HALL / LIVE</b></div>
@@ -533,6 +533,7 @@ function guardCharacterNodes(): AuraSceneNode[] {
         castShadow: true,
         receiveShadow: true
       })
+        .animate({ clip: "Walk", speed: 1.35, loop: true })
         .position(spawn.x, 0, spawn.z)
         .runtime(game.runtimeNode(spawn.id, {
           tags: ["typed-asset", "guard", "authored-movement", archivePatrol ? "robotcand-sentry" : "animated-sentry"]
@@ -1073,6 +1074,42 @@ function threatFeedbackNodes(): AuraSceneNode[] {
   ]);
 }
 
+const OBJECTIVE_ARROW_GEOMETRY = geometry.define({
+  positions: [
+    // Arrowhead triangle pointing in local +Z
+    [0, 0.04, 0.56], [-0.34, 0.04, 0.04], [0.34, 0.04, 0.04],
+    // Arrow shaft quad behind arrowhead
+    [-0.13, 0.04, 0.04], [0.13, 0.04, 0.04], [0.13, 0.04, -0.44], [-0.13, 0.04, -0.44]
+  ],
+  normals: [
+    [0, 1, 0], [0, 1, 0], [0, 1, 0],
+    [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0]
+  ],
+  indices: [
+    0, 2, 1,
+    0, 1, 2,
+    3, 4, 5, 3, 5, 6,
+    3, 5, 4, 3, 6, 5
+  ],
+  bounds: { min: [-0.34, 0.02, -0.44], max: [0.34, 0.06, 0.56] }
+});
+
+const OBJECTIVE_ARROW_MATERIAL = material.emissive({
+  name: "thief objective waypoint arrow material",
+  color: "#78350f",
+  emissive: "#ffd05a",
+  emissiveIntensity: 1.35 * NEON_GAIN,
+  opacity: 0.96
+});
+
+const OBJECTIVE_BEACON_MATERIAL = material.emissive({
+  name: "relic objective beacon ring material",
+  color: "#78350f",
+  emissive: "#fbbf24",
+  emissiveIntensity: 1.25 * NEON_GAIN,
+  opacity: 0.88
+});
+
 /**
  * High-contrast renderer feedback whose transforms and visibility are owned by
  * live stealth state. These nodes never decide movement, LOS, collision,
@@ -1084,11 +1121,36 @@ function liveHierarchyNodes(): AuraSceneNode[] {
       .position(0, -20, 0)
       .runtime(game.runtimeNode("live-player-label", { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
       .toJSON(),
+    geometry.custom(OBJECTIVE_ARROW_GEOMETRY, {
+      name: "thief-objective-arrow",
+      material: OBJECTIVE_ARROW_MATERIAL
+    })
+      .position(0, -20, 0)
+      .runtime(game.runtimeNode("thief-objective-arrow", { tags: ["live-stealth-state", "active-objective", "waypoint-arrow", "renderer-owned"] }))
+      .toJSON(),
+    primitives.torus({ name: "thief-compass-ring", material: OBJECTIVE_BEACON_MATERIAL })
+      .position(0, -20, 0)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.84, 0.84, 0.045])
+      .runtime(game.runtimeNode("thief-compass-ring", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
+      .toJSON(),
     primitives.torus({ name: "live-objective-ring", material: LIVE_OBJECTIVE_MATERIAL })
       .position(0, -20, 0)
       .rotate(Math.PI / 2, 0, 0)
       .scale([0.95, 0.95, 0.08])
       .runtime(game.runtimeNode("live-objective-ring", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
+      .toJSON(),
+    primitives.torus({ name: "live-objective-beacon", material: OBJECTIVE_BEACON_MATERIAL })
+      .position(0, -20, 0)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([1.15, 1.15, 0.09])
+      .runtime(game.runtimeNode("live-objective-beacon", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
+      .toJSON(),
+    primitives.torus({ name: "live-objective-beacon-upper", material: OBJECTIVE_BEACON_MATERIAL })
+      .position(0, -20, 0)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.88, 0.88, 0.075])
+      .runtime(game.runtimeNode("live-objective-beacon-upper", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
       .toJSON(),
     text3D("LIFT", { name: "live-lift-label", size: 0.46, depth: 0.05, letterSpacing: 0.04, material: LIVE_OBJECTIVE_MATERIAL, backend: "sdf" })
       .position(0, -20, 0)
@@ -1098,7 +1160,7 @@ function liveHierarchyNodes(): AuraSceneNode[] {
       .position(0, -20, 0)
       .runtime(game.runtimeNode("live-exit-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
       .toJSON(),
-    lights.point({ name: "live-objective-practical", color: "#ffd05a", intensity: 1.55 })
+    lights.point({ name: "live-objective-practical", color: "#ffd05a", intensity: 2.35 })
       .position(0, -20, 0)
       .runtime(game.runtimeNode("live-objective-practical", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
       .toJSON()
@@ -1245,6 +1307,7 @@ function buildScene(): ReturnType<typeof scene> {
         castShadow: true,
         receiveShadow: true
       })
+        .animate({ clip: "Run", speed: 1.4, loop: true })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief", { tags: ["typed-asset", "thief", "authored-movement"] }))
         .toJSON()
@@ -1411,40 +1474,57 @@ const guardAnimations: Array<AnimationController<string> | null> = [
 ];
 
 const thiefNodeHandle = app.nodes.get("thief") as AuraRuntimeNodeHandle | undefined;
-if (thiefNodeHandle) thiefAnimation.bindRuntimeNode(thiefNodeHandle, { id: "thief-runtime-animation", defaultClipId: THIEF_CLIPS.idle });
 const guardNodeHandles = new Map<string, AuraRuntimeNodeHandle>();
 for (const spawn of FLOOR_LAYOUTS[0]!.guards) {
   const handle = app.nodes.get(spawn.id) as AuraRuntimeNodeHandle | undefined;
   if (handle) guardNodeHandles.set(spawn.id, handle);
 }
-guardAnimations.forEach((controller, index) => {
-  if (!controller) return;
-  const id = FLOOR_LAYOUTS[0]!.guards[index]!.id;
-  const handle = guardNodeHandles.get(id);
-  if (handle) controller.bindRuntimeNode(handle, { id: `${id}-runtime-animation`, defaultClipId: GUARD_CLIPS.idle });
-});
 
 let thiefClipActive: string | null = null;
+let lastThiefSkeletalClip = "Run";
 function playThiefClip(clip: string): void {
-  if (thiefClipActive === clip) return;
-  thiefClipActive = clip;
-  try {
-    thiefAnimation.crossFade(clip, 0.12, { loop: "loop" });
-  } catch {
-    // Diagnostics surface registration issues; never break the frame loop.
+  if (thiefClipActive !== clip) {
+    thiefClipActive = clip;
+    try {
+      thiefAnimation.crossFade(clip, 0.12, { loop: "loop" });
+    } catch {
+      // Diagnostics surface registration issues; never break the frame loop.
+    }
+  }
+  const nextSkeletalClip = clip === THIEF_CLIPS.idle ? "Walk" : "Run";
+  if (nextSkeletalClip !== lastThiefSkeletalClip) {
+    lastThiefSkeletalClip = nextSkeletalClip;
+    thiefNodeHandle?.setAnimation({
+      clip: nextSkeletalClip,
+      speed: nextSkeletalClip === "Run" ? 1.4 : 1.25,
+      loop: true
+    });
   }
 }
 
 const guardClipActive = new Map<string, string>();
+const lastGuardSkeletalClip = new Map<string, string>([
+  ["guard-1", "Walk"],
+  ["guard-2", "Walk"]
+]);
 function playGuardClip(guardId: string, controllerIndex: number, clip: string): void {
   const controller = guardAnimations[controllerIndex];
-  if (!controller) return;
-  if (guardClipActive.get(guardId) === clip) return;
-  guardClipActive.set(guardId, clip);
-  try {
-    controller.crossFade(clip, 0.12, { loop: "loop" });
-  } catch {
-    // See above.
+  if (controller && guardClipActive.get(guardId) !== clip) {
+    guardClipActive.set(guardId, clip);
+    try {
+      controller.crossFade(clip, 0.12, { loop: "loop" });
+    } catch {
+      // See above.
+    }
+  }
+  const nextSkeletalClip = clip === GUARD_CLIPS.run ? "Run" : "Walk";
+  if (lastGuardSkeletalClip.get(guardId) !== nextSkeletalClip) {
+    lastGuardSkeletalClip.set(guardId, nextSkeletalClip);
+    guardNodeHandles.get(guardId)?.setAnimation({
+      clip: nextSkeletalClip,
+      speed: nextSkeletalClip === "Run" ? 1.45 : 1.35,
+      loop: true
+    });
   }
 }
 
@@ -1535,13 +1615,7 @@ function syncHud(): void {
       ? "CAUGHT - R TO RESTART THE FLOOR"
       : phase === "won"
         ? "HEIST COMPLETE - R FOR ANOTHER RUN"
-        : phase === "floor-clear"
-          ? `FLOOR ${runtime.layout.id} - ${runtime.layout.name.toUpperCase()}`
-          : runtime.laserAlertRemaining > 0
-            ? "LASER TRIP - FLOOR-WIDE ALERT"
-            : runtime.liftedIds.length >= runtime.layout.pedestals.length
-              ? alarmActive ? "ALARM ACTIVE - RETURN TO THE SERVICE EXIT" : "FLOOR CLEAR - REACH THE SERVICE EXIT"
-              : `LIFT ${totalLifted + 1} OF 3 - AVOID THE CONES`;
+        : `OBJECTIVE: STEAL 3 GOLDEN RELICS [${totalLifted}/3] & ESCAPE AT GREEN EXIT — MOVE: WASD / ARROWS • STEAL: SPACE/E • CLOAK: SHIFT`;
 }
 
 function syncAlarmVisuals(): void {
@@ -1885,8 +1959,35 @@ function syncLiveHierarchy(): void {
 
   syncLocalizedEncounter(objective);
 
-  app.nodes.get("live-objective-ring")?.setPosition(objective.x, 0.13, objective.z);
-  app.nodes.get("live-objective-practical")?.setPosition(objective.x, 1.55, objective.z);
+  const objDx = objective.x - thief.x;
+  const objDz = objective.z - thief.z;
+  const objDist = Math.hypot(objDx, objDz);
+  const objYaw = Math.atan2(objDx, objDz);
+  const pulse = reducedMotion ? 1 : 1 + Math.sin(runtime.timeInFloor * 5.2) * 0.14;
+  const arrowLead = Math.min(1.18, Math.max(0.65, objDist * 0.35));
+
+  app.nodes.get("thief-objective-arrow")
+    ?.setPosition(thief.x + Math.sin(objYaw) * arrowLead, 0.085, thief.z + Math.cos(objYaw) * arrowLead)
+    .setRotation(0, objYaw, 0)
+    .setScale([1.05 * pulse, 1, 1.15 * pulse])
+    .setVisible(!visualReviewCapture);
+  app.nodes.get("thief-compass-ring")
+    ?.setPosition(thief.x, 0.075, thief.z)
+    .setScale([0.84 * pulse, 0.84 * pulse, 0.045])
+    .setVisible(!visualReviewCapture);
+
+  app.nodes.get("live-objective-ring")
+    ?.setPosition(objective.x, 0.13, objective.z)
+    .setScale([0.98 * pulse, 0.98 * pulse, 0.085]);
+  app.nodes.get("live-objective-beacon")
+    ?.setPosition(objective.x, 0.82 + (reducedMotion ? 0 : Math.sin(runtime.timeInFloor * 3.8) * 0.16), objective.z)
+    .setScale([1.15 * pulse, 1.15 * pulse, 0.09])
+    .setVisible(!visualReviewCapture);
+  app.nodes.get("live-objective-beacon-upper")
+    ?.setPosition(objective.x, 1.68 + (reducedMotion ? 0 : Math.cos(runtime.timeInFloor * 3.8) * 0.18), objective.z)
+    .setScale([0.88 * pulse, 0.88 * pulse, 0.075])
+    .setVisible(!visualReviewCapture);
+  app.nodes.get("live-objective-practical")?.setPosition(objective.x, 1.75, objective.z);
   const objectiveLabel = exiting ? app.nodes.get("live-exit-label") : app.nodes.get("live-lift-label");
   app.nodes.get("live-lift-label")?.setVisible(labelsVisible && !exiting);
   app.nodes.get("live-exit-label")?.setVisible(labelsVisible && exiting);
@@ -2160,9 +2261,13 @@ gameApp.onFrame(({ dt }) => {
   const dtFixed = 1 / 60;
   elapsedHeistSeconds += dtFixed;
 
+  const unlifted = runtime.layout.pedestals.filter((pedestal) => !runtime.liftedIds.includes(pedestal.id));
+  const nearPedestalForManualLift = unlifted.some(
+    (pedestal) => Math.hypot(pedestal.x - runtime.thief.x, pedestal.z - runtime.thief.z) <= 1.25
+  );
   const manualMoveX = (manualHeld.has("KeyD") || manualHeld.has("ArrowRight") ? 1 : 0) - (manualHeld.has("KeyA") || manualHeld.has("ArrowLeft") ? 1 : 0);
   const manualMoveZ = (manualHeld.has("KeyS") || manualHeld.has("ArrowDown") ? 1 : 0) - (manualHeld.has("KeyW") || manualHeld.has("ArrowUp") ? 1 : 0);
-  const manualLift = manualHeld.has("KeyE");
+  const manualLift = manualHeld.has("KeyE") || (manualHeld.has("Space") && nearPedestalForManualLift);
   const manualActionActive =
     manualMoveX !== 0 ||
     manualMoveZ !== 0 ||
@@ -2178,7 +2283,7 @@ gameApp.onFrame(({ dt }) => {
     !debugMode &&
     !visualReviewCapture &&
     !gsDebugStepping &&
-    elapsedHeistSeconds - lastManualHeistInputTime > 1.8;
+    elapsedHeistSeconds - lastManualHeistInputTime > 1.5;
 
   if (phase !== "playing") {
     if (autopilotActive) {
@@ -2201,19 +2306,18 @@ gameApp.onFrame(({ dt }) => {
   empPulseTimer = Math.max(0, empPulseTimer - dtFixed);
   empCooldownRemaining = Math.max(0, empCooldownRemaining - dtFixed);
 
-  const unlifted = runtime.layout.pedestals.filter((pedestal) => !runtime.liftedIds.includes(pedestal.id));
   const nearestGuardDist = runtime.guards.reduce(
     (best, guard) => Math.min(best, Math.hypot(guard.x - runtime.thief.x, guard.z - runtime.thief.z)),
     Number.POSITIVE_INFINITY
   );
 
-  // EMP Decoy Pulse (Space or Q, or autonomous tactical trigger): scrambles nearby sensors, drops detection, and lures guards
+  // EMP Decoy Pulse (Space when not lifting or Q, or autonomous tactical trigger): scrambles nearby sensors, drops detection, and lures guards
   const autoEmpTrigger =
     autopilotActive &&
     empCooldownRemaining <= 0 &&
     runtime.timeInFloor > 2.2 &&
     (runtime.detection.value >= 0.25 || nearestGuardDist <= 6.2 || alarmActive);
-  if ((manualEdge("Space") === "pressed" || manualEdge("KeyQ") === "pressed" || autoEmpTrigger) && empCooldownRemaining <= 0) {
+  if (((manualEdge("Space") === "pressed" && !nearPedestalForManualLift) || manualEdge("KeyQ") === "pressed" || autoEmpTrigger) && empCooldownRemaining <= 0) {
     empCooldownRemaining = 7.5;
     empPulseTimer = 0.75;
     empPulseOrigin = { x: runtime.thief.x, z: runtime.thief.z };
@@ -2298,17 +2402,15 @@ gameApp.onFrame(({ dt }) => {
       dx /= dist;
       dz /= dist;
 
-      // Subtle lateral avoidance around patrolling security guards in open halls
-      if (Math.abs(tx) > 5.5 || Math.abs(tx) < 4.2) {
-        for (const guard of runtime.guards) {
-          const gx = tx - guard.x;
-          const gz = tz - guard.z;
-          const gdist = Math.hypot(gx, gz);
-          if (gdist > 0.05 && gdist < 3.4) {
-            const push = ((3.4 - gdist) / 3.4) * 0.55;
-            dx += (gx / gdist) * push;
-            dz += (gz / gdist) * push;
-          }
+      // Continuous lateral avoidance around patrolling security guards so characters never overlap
+      for (const guard of runtime.guards) {
+        const gx = tx - guard.x;
+        const gz = tz - guard.z;
+        const gdist = Math.hypot(gx, gz);
+        if (gdist > 0.05 && gdist < 4.2) {
+          const push = ((4.2 - gdist) / 4.2) * 0.72;
+          dx += (gx / gdist) * push;
+          dz += (gz / gdist) * push;
         }
       }
 
@@ -2437,7 +2539,7 @@ gameApp.onFrame(({ dt }) => {
     return;
   }
 
-  // Guards advance (authored deterministic patrols).
+  // Guards advance (authored deterministic patrols) + minimum personal-space separation from thief & other guards.
   for (const guard of runtime.guards) {
     const footsteps = guard.update({
       dt: dtFixed,
@@ -2448,6 +2550,38 @@ gameApp.onFrame(({ dt }) => {
       laserAlertPoint: runtime.laserAlertRemaining > 0 ? runtime.laserAlertPoint : null
     });
     consumeFootsteps(footsteps);
+    if (!debugMode && !gsDebugStepping) {
+      const dxT = guard.x - runtime.thief.x;
+      const dzT = guard.z - runtime.thief.z;
+      const distT = Math.hypot(dxT, dzT);
+      if (distT < 1.85) {
+        const safeDist = Math.max(0.01, distT);
+        const nx = distT > 0.01 ? dxT / safeDist : (guard.id === "guard-1" ? -1 : 1);
+        const nz = distT > 0.01 ? dzT / safeDist : 0;
+        const mutableGuard = guard as unknown as { xValue: number; zValue: number };
+        mutableGuard.xValue = runtime.thief.x + nx * 1.85;
+        mutableGuard.zValue = runtime.thief.z + nz * 1.85;
+      }
+    }
+  }
+  if (!debugMode && !gsDebugStepping && runtime.guards.length >= 2) {
+    const g0 = runtime.guards[0]!;
+    const g1 = runtime.guards[1]!;
+    const gdx = g1.x - g0.x;
+    const gdz = g1.z - g0.z;
+    const gdist = Math.hypot(gdx, gdz);
+    if (gdist < 1.85) {
+      const safeDist = Math.max(0.01, gdist);
+      const nx = gdist > 0.01 ? gdx / safeDist : 1;
+      const nz = gdist > 0.01 ? gdz / safeDist : 0;
+      const push = (1.85 - gdist) * 0.5;
+      const mg0 = g0 as unknown as { xValue: number; zValue: number };
+      const mg1 = g1 as unknown as { xValue: number; zValue: number };
+      mg0.xValue = g0.x - nx * push;
+      mg0.zValue = g0.z - nz * push;
+      mg1.xValue = g1.x + nx * push;
+      mg1.zValue = g1.z + nz * push;
+    }
   }
 
   // Completed lifts: score, multi-relic heist combo bonus, escalation, exhibit visuals, audio.

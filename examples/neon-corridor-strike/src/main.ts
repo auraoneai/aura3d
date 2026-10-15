@@ -149,8 +149,8 @@ function buildSanitizedCorridorScene() {
       node.scale = 1;
     } else if (name === "foreground energy core cell") {
       node.position = [-2.35, 0.16, 4.8];
-      node.targetMaxDimension = 0.42;
-      node.scale = 0.45;
+      node.targetMaxDimension = 0.58;
+      node.scale = 1;
     } else if (name.startsWith("typed corridor cover ")) {
       const pos = Array.isArray(node.position) ? [...(node.position as number[])] : [-2.35, 0, 2.0];
       pos[0] = (pos[0] ?? -1) < 0 ? -2.35 : 2.35;
@@ -160,7 +160,8 @@ function buildSanitizedCorridorScene() {
       const pos = Array.isArray(node.position) ? [...(node.position as number[])] : [-1.95, 0, 3.2];
       pos[0] = (pos[0] ?? -1) < 0 ? -1.95 : 1.95;
       node.position = pos;
-      node.scale = 0.32;
+      node.targetMaxDimension = 0.58;
+      node.scale = 1;
     }
     return node as unknown as AuraSceneNode;
   });
@@ -571,11 +572,40 @@ function syncWeaponViewmodel(): void {
   rifleOpticHoodNode?.setPosition(0, -8, 0).setScale(0.0001);
 }
 
+const lastEnemySkeletalClips = new Map<string, string>();
+
 function syncCorridorDronesBossAndCombatFx(step: number): void {
   corridorElapsedSec += step;
   const targetAds = adsHeld && state.reloadClock <= 0 ? 1 : 0;
   adsBlend += (targetAds - adsBlend) * Math.min(1, step * 12);
   empCooldown = Math.max(0, empCooldown - step);
+
+  // Keep shot-fx positions intact for shotBolt0/shotBolt1 evidence while clamping
+  // legacy beam stretch so only the 3D Meshy fire-ammo rockets and flame bursts render.
+  for (const fxId of ["muzzle-0", "muzzle-1", "muzzle-2", "shot-impact"]) {
+    app.nodes.get(fxId)?.setScale(0.0001);
+  }
+
+  // Drive active corridor stride and 15-bone skeletal Walk/Attack clips on living enemy mechs
+  const playerAt = playerBody.position();
+  ENEMIES.forEach((enemy, idx) => {
+    const enemyId = `enemy-${enemy.id}`;
+    app.nodes.get(`${enemyId}-threat-collar`)?.setScale(0.0001).setVisible(false);
+    if (state.killed.includes(enemyId)) return;
+    const node = app.nodes.get(enemyId);
+    if (!node) return;
+    const curPos = node.position;
+    const distToPlayer = Math.hypot(playerAt[0] - curPos[0], playerAt[2] - curPos[2]);
+    const patrolOffset = reducedMotion ? 0 : Math.sin(corridorElapsedSec * 2.1 + idx * 1.45) * 0.22;
+    const clampedX = Math.max(-1.85, Math.min(1.85, curPos[0] + patrolOffset * step * 3.5));
+    const faceYaw = Math.atan2(playerAt[0] - clampedX, playerAt[2] - curPos[2]);
+    node.setPosition(clampedX, curPos[1], curPos[2]).setRotation(0, faceYaw, 0);
+    const desiredClip = distToPlayer < 4.5 ? "Attack" : "Walk";
+    if (lastEnemySkeletalClips.get(enemyId) !== desiredClip) {
+      lastEnemySkeletalClips.set(enemyId, desiredClip);
+      node.setAnimation({ clip: desiredClip, speed: desiredClip === "Attack" ? 1.35 : 1.4, loop: true });
+    }
+  });
 
   // Animate 4 hovering security attack drones alongside the bipedal mechs
   CORRIDOR_DRONE_SLOTS.forEach((slot, idx) => {
@@ -598,32 +628,41 @@ function syncCorridorDronesBossAndCombatFx(step: number): void {
     bossNode.setPosition(patrolX, 0.24, -7.25).setRotation(0, yawSway, 0);
   }
 
-  // Active 3D cyan player plasma bolts + muzzle flare + crimson enemy return-fire lasers in mid-air
+  // Active 3D Meshy fire-ammo rocket bolts + 3D fiery muzzle flame burst + return-fire rockets
   const barrel = muzzleBarrel();
   const dir = lookDirection(state.yaw, state.pitch);
   const combatActive = state.status === "playing" && weaponVisibleOverride && (shotClock.visible > 0 || state.shotsFired > 0 || corridorElapsedSec < 5.0);
   const bolt0Node = app.nodes.get("combat-plasma-bolt-0");
   const bolt1Node = app.nodes.get("combat-plasma-bolt-1");
   const muzzleFlareNode = app.nodes.get("combat-muzzle-flare");
+  const fireAmmoLight = app.nodes.get("fire-ammo-bolt-light");
   if (combatActive) {
     const phase0 = ((corridorElapsedSec * 4.5) % 1);
     const phase1 = ((corridorElapsedSec * 4.5 + 0.48) % 1);
     const dist0 = 1.35 + phase0 * 4.6;
     const dist1 = 1.35 + phase1 * 4.6;
+    const bolt0Pos: [number, number, number] = [
+      barrel[0] + dir[0] * dist0,
+      barrel[1] + dir[1] * dist0 + 0.04,
+      barrel[2] + dir[2] * dist0
+    ];
+    const axialSpin = reducedMotion ? 0 : corridorElapsedSec * 11;
     bolt0Node
-      ?.setPosition(barrel[0] + dir[0] * dist0, barrel[1] + dir[1] * dist0 + 0.04, barrel[2] + dir[2] * dist0)
-      .setRotation(-state.pitch, state.yaw, 0)
-      .setScale([0.034, 0.034, 0.78])
+      ?.setPosition(bolt0Pos[0], bolt0Pos[1], bolt0Pos[2])
+      .setRotation(-state.pitch, state.yaw, axialSpin)
+      .setScale(1.0)
       .setVisible(true);
     bolt1Node
       ?.setPosition(barrel[0] + dir[0] * dist1 - 0.06, barrel[1] + dir[1] * dist1 + 0.06, barrel[2] + dir[2] * dist1)
-      .setRotation(-state.pitch, state.yaw, 0)
-      .setScale([0.028, 0.028, 0.68])
+      .setRotation(-state.pitch, state.yaw, -axialSpin)
+      .setScale(0.92)
       .setVisible(true);
+    fireAmmoLight?.setPosition(bolt0Pos[0], bolt0Pos[1] + 0.08, bolt0Pos[2]);
     const flarePulse = shotClock.visible > 0 ? 1.25 : 0.85 + Math.sin(corridorElapsedSec * 24) * 0.2;
     muzzleFlareNode
       ?.setPosition(barrel[0] + dir[0] * 0.18, barrel[1] + dir[1] * 0.18, barrel[2] + dir[2] * 0.18)
-      .setScale([0.052 * flarePulse, 0.052 * flarePulse, 0.14 * flarePulse])
+      .setRotation(-state.pitch, state.yaw, axialSpin * 0.6)
+      .setScale(flarePulse)
       .setVisible(true);
     if (shotClock.visible <= 0) {
       app.nodes.get("shot-light")?.setPosition(barrel[0], barrel[1], barrel[2]);
@@ -632,9 +671,10 @@ function syncCorridorDronesBossAndCombatFx(step: number): void {
     bolt0Node?.setPosition(0, -8, 0).setVisible(false);
     bolt1Node?.setPosition(0, -8, 0).setVisible(false);
     muzzleFlareNode?.setPosition(0, -8, 0).setVisible(false);
+    fireAmmoLight?.setPosition(0, -8, 0);
   }
 
-  // Enemy return-fire crimson/amber laser bolts from the hovering drones and wardens
+  // Enemy return-fire 3D Meshy fire-ammo bolts from the hovering drones and wardens
   const enemyLaser0 = app.nodes.get("enemy-return-laser-0");
   const enemyLaser1 = app.nodes.get("enemy-return-laser-1");
   if (state.status === "playing" && weaponVisibleOverride) {
@@ -642,20 +682,20 @@ function syncCorridorDronesBossAndCombatFx(step: number): void {
     const ePhase1 = ((corridorElapsedSec * 3.2 + 0.5) % 1);
     enemyLaser0
       ?.setPosition(-1.18 + ePhase0 * 0.55, 1.48 - ePhase0 * 0.14, 2.8 - ePhase0 * -3.6)
-      .setRotation(0.04, -0.15, 0)
-      .setScale([0.028, 0.028, 0.68])
+      .setRotation(0.04, Math.PI - 0.15, corridorElapsedSec * 8)
+      .setScale(0.9)
       .setVisible(true);
     enemyLaser1
       ?.setPosition(1.22 - ePhase1 * 0.55, 1.54 - ePhase1 * 0.16, 1.1 - ePhase1 * -4.2)
-      .setRotation(0.04, 0.15, 0)
-      .setScale([0.028, 0.028, 0.68])
+      .setRotation(0.04, Math.PI + 0.15, -corridorElapsedSec * 8)
+      .setScale(0.9)
       .setVisible(true);
   } else {
     enemyLaser0?.setPosition(0, -8, 0).setVisible(false);
     enemyLaser1?.setPosition(0, -8, 0).setVisible(false);
   }
 
-  // Frag / EMP Grenade flight & shockwave detonation
+  // Frag / Fire-Ammo Grenade flight & 3D flame burst detonation
   const empOrb = app.nodes.get("emp-grenade-orb");
   const empRing = app.nodes.get("emp-shockwave-ring");
   if (empFlightTimer > 0) {
@@ -665,7 +705,7 @@ function syncCorridorDronesBossAndCombatFx(step: number): void {
     const gx = empOrigin[0] + (empTarget[0] - empOrigin[0]) * t;
     const gy = empOrigin[1] + (empTarget[1] - empOrigin[1]) * t + arcY;
     const gz = empOrigin[2] + (empTarget[2] - empOrigin[2]) * t;
-    empOrb?.setPosition(gx, gy, gz).setScale(0.12).setVisible(true);
+    empOrb?.setPosition(gx, gy, gz).setRotation(t * 6, state.yaw, t * 9).setScale(1.0).setVisible(true);
     if (empFlightTimer <= 0) {
       empDetonateTimer = 0.48;
       scatterPropsAt(physics, empTarget);
@@ -686,26 +726,26 @@ function syncCorridorDronesBossAndCombatFx(step: number): void {
   if (empDetonateTimer > 0) {
     empDetonateTimer = Math.max(0, empDetonateTimer - step);
     const progress = 1 - empDetonateTimer / 0.48;
-    const radius = 0.45 + progress * 2.65;
+    const burstScale = 0.85 + progress * 1.9;
     empRing
-      ?.setPosition(empTarget[0], 0.38, empTarget[2])
-      .setRotation(Math.PI / 2, 0, 0)
-      .setScale([radius, radius, 0.035])
+      ?.setPosition(empTarget[0], 0.48, empTarget[2])
+      .setRotation(0, progress * Math.PI * 2, 0)
+      .setScale(burstScale)
       .setVisible(true);
   } else {
     empRing?.setPosition(0, -8, 0).setVisible(false);
   }
 
-  // Enemy hit-stagger flash ring
+  // Enemy hit-stagger 3D flame burst
   const staggerNode = app.nodes.get("enemy-stagger-ring");
   if (staggerFlashTimer > 0) {
     staggerFlashTimer = Math.max(0, staggerFlashTimer - step);
     const sProgress = 1 - staggerFlashTimer / 0.36;
-    const sRadius = 0.28 + sProgress * 0.55;
+    const burstScale = 0.75 + sProgress * 0.85;
     staggerNode
       ?.setPosition(staggerFlashPos[0], staggerFlashPos[1], staggerFlashPos[2])
-      .setRotation(0, state.yaw, 0)
-      .setScale([sRadius, sRadius, 0.025])
+      .setRotation(0, state.yaw + sProgress * 3.14, 0)
+      .setScale(burstScale)
       .setVisible(true);
   } else {
     staggerNode?.setPosition(0, -8, 0).setVisible(false);
@@ -862,7 +902,7 @@ app.onFrame(({ dt }) => {
   // lit central corridor sightline so the active hostile is clearly framed.
   if (state.status === "playing" && state.kills === 3 && !state.killed.includes("enemy-e4")) {
     app.nodes.get("enemy-e4")?.setPosition(0, ENEMY_VISUAL_Y, -1.45).setVisible(true);
-    app.nodes.get("enemy-e4-threat-collar")?.setPosition(0, 0.03, -1.45).setVisible(true);
+    app.nodes.get("enemy-e4-threat-collar")?.setPosition(0, 0.03, -1.45).setVisible(false);
   }
   syncPropNodes(app.nodes, step);
   collectPickupsNearPlayer(state, physics, playerBody.position(), pickupHooks);

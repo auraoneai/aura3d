@@ -3,24 +3,22 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Aura3D Documentation for AI-Assisted Browser 3D</title>
-<meta name="description" content="Aura3D 4.0.0 production documentation for TypeScript browser 3D apps, typed GLB/glTF assets, Vite templates, physics-backed interaction, and deployment checks." />
-
-    
-    <meta name="keywords" content="Aura3D documentation, TypeScript browser 3D documentation, AI-assisted 3D development, prompt-to-3D docs, GLB asset workflow, Vite 3D templates" /><meta name="robots" content="index, follow, max-image-preview:large" /><link rel="canonical" href="https://aura3d.auraone.ai/" />
+<title>Aura3D 4.0.0 Documentation — Open-Source TypeScript 3D Engine</title>
+<meta name="description" content="Aura3D 4.0.0 documentation for TypeScript browser 3D apps, typed GLB/glTF assets, Vite templates, WebGPU compute, physical PBR, physics-backed interaction, and deployment checks." />
+<meta name="keywords" content="Aura3D documentation, TypeScript browser 3D documentation, AI-assisted 3D development, prompt-to-3D docs, GLB asset workflow, Vite 3D templates" /><meta name="robots" content="index, follow, max-image-preview:large" /><link rel="canonical" href="https://aura3d.auraone.ai/" />
 <meta property="og:site_name" content="Aura3D" />
 <meta property="og:type" content="article" />
-<meta property="og:title" content="Aura3D Documentation for AI-Assisted Browser 3D" />
-<meta property="og:description" content="Aura3D 4.0.0 production documentation for TypeScript browser 3D apps, typed GLB/glTF assets, Vite templates, physics-backed interaction, and deployment checks." />
+<meta property="og:title" content="Aura3D 4.0.0 Documentation — Open-Source TypeScript 3D Engine" />
+<meta property="og:description" content="Aura3D 4.0.0 documentation for TypeScript browser 3D apps, typed GLB/glTF assets, Vite templates, WebGPU compute, physical PBR, physics-backed interaction, and deployment checks." />
 <meta property="og:url" content="https://aura3d.auraone.ai/" />
 <meta property="og:image" content="/og/aura3d-og.png" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Aura3D Documentation for AI-Assisted Browser 3D" />
-<meta name="twitter:description" content="Aura3D 4.0.0 production documentation for TypeScript browser 3D apps, typed GLB/glTF assets, Vite templates, physics-backed interaction, and deployment checks." />
+<meta name="twitter:title" content="Aura3D 4.0.0 Documentation — Open-Source TypeScript 3D Engine" />
+<meta name="twitter:description" content="Aura3D 4.0.0 documentation for TypeScript browser 3D apps, typed GLB/glTF assets, Vite templates, WebGPU compute, physical PBR, physics-backed interaction, and deployment checks." />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="shortcut icon" href="/favicon.svg" />
 <meta name="theme-color" content="#07080a" />
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Aura3D Documentation for AI-Assisted Browser 3D","description":"Aura3D 4.0.0 production documentation for TypeScript browser 3D apps, typed GLB/glTF assets, Vite templates, physics-backed interaction, and deployment checks.","softwareVersion":"4.0.0","url":"https://aura3d.auraone.ai/","publisher":{"@type":"Organization","name":"Aura3D"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Aura3D 4.0.0 Documentation — Open-Source TypeScript 3D Engine","description":"Aura3D 4.0.0 documentation for TypeScript browser 3D apps, typed GLB/glTF assets, Vite templates, WebGPU compute, physical PBR, physics-backed interaction, and deployment checks.","softwareVersion":"4.0.0","url":"https://aura3d.auraone.ai/","publisher":{"@type":"Organization","name":"Aura3D"}}</script>
 <link rel="stylesheet" href="/marketing/src/styles.css" />
 </head>
 <body>
@@ -39,7 +37,7 @@
       <a class="nav-link" href="/docs/prompt-recipes.html">AI prompts</a>
       <a class="nav-link" href="/apps/showcase-index/">Examples</a>
       <a class="nav-link" href="/docs/templates.html">Templates</a>
-      <a class="nav-link" href="/docs/api.html">Packages</a>
+      <a class="nav-link" href="/docs/aura3d-vs-threejs.html">vs Three.js</a>
       <a class="nav-link" href="/docs/deployment.html">Deploy</a>
       <a class="nav-link" href="/llms.txt">llms.txt</a>
     </div>
@@ -64,10 +62,11 @@
   <div class="wrap doc-hero-grid">
     <div>
       <span class="hero-tag"><span class="pill">v4.0.0 LIVE</span><b>Documentation</b><a class="mute" href="https://github.com/auraoneai/aura3d/releases/tag/v4.0.0" target="_blank" rel="noopener">Release notes</a></span>
-      <h1>Build browser 3D apps with prompts, scene kits, typed assets, and editable TypeScript.</h1>
-      <p class="hero-lede">Aura3D 4.0.0 is live across all 24 active public packages on npm (with all <code>&lt; 4.0.0</code> versions and the 5 retired pre-4.0 compatibility packages consolidated into <code>@aura3d/engine@4.0.0</code> and deprecated in full) and documented in <a href="https://github.com/auraoneai/aura3d/blob/main/docs/project/aura3d-400-release-notes.md" target="_blank" rel="noopener">aura3d-400-release-notes.md</a>. Start from typed GLB/Meshy 3D PBR assets, the 28+ <code>effects.*</code> post-processing/atmospheric/particle builders, and <code>game.*</code> kits to ship browser 3D apps and games.</p>
+      <h1>Stop assembling 14 npm packages.<br /><em>Ship browser 3D in 18 lines of TypeScript.</em></h1>
+      <p class="hero-lede">Aura3D 4.0.0 (<code>@aura3d/engine@4.0.0</code>) is the open-source (MIT), zero-dependency TypeScript 3D engine that replaces ~120 lines of manual Three.js boilerplate with a unified WebGPU compute + WebGL2 runtime, compile-time typed GLB/glTF assets, physical PBR materials, HDR post-processing, Rapier physics, Recast crowd steering, Gaussian splats, portal worlds, and automated Playwright deployment verification.</p>
       <div class="hero-cta">
         <a class="btn btn-primary" href="/docs/agent-quickstart.html">Start building <span class="arr"></span></a>
+        <a class="btn btn-ghost" href="/docs/aura3d-vs-threejs.html">Aura3D 4.0.0 vs. Raw Three.js</a>
         <a class="btn btn-ghost" href="/apps/showcase-index/">Launch 50 examples</a>
       </div>
     </div>
@@ -95,6 +94,7 @@ npm run dev</code></pre>
     <span class="tape-label">Docs</span>
     <div class="doc-pill-row">
           <a class="doc-pill active" href="/">Docs</a>
+          <a class="doc-pill" href="/docs/aura3d-vs-threejs.html">vs Three.js</a>
           <a class="doc-pill" href="/docs/agent-quickstart.html">Quickstart</a>
           <a class="doc-pill" href="/docs/prompt-recipes.html">Prompts</a>
           <a class="doc-pill" href="/docs/assets.html">Assets</a>
@@ -124,7 +124,7 @@ npm run dev</code></pre>
         <div class="visual-proof-stage">
           <iframe data-preview="static" data-poster-image="/previews/showcase/showcase-product-configurator.png" data-route="/apps/showcase-product-configurator/" title="Aura3D · Product Configurator preview" data-poster-title="Product Configurator" data-poster-kicker="interactive typed product" data-poster-description="Change the finish, focus individual parts, orbit the typed GLB, and inspect its retained asset provenance."></iframe>
         </div>
-        <div class="visual-proof-copy"><span>01 · Product</span><h3>One asset. Every finish.</h3><p>Typed GLB provenance, production PBR materials, clearcoat response, product lighting, part focus, and an interactive turntable.</p><a href="/apps/showcase-product-configurator/">Open Product Configurator <span class="arr"></span></a></div>
+        <div class="visual-proof-copy"><span>01 · Product</span><h3>One asset. Every finish.</h3><p>Typed GLB provenance, physical PBR materials, clearcoat response, product lighting, part focus, and an interactive turntable.</p><a href="/apps/showcase-product-configurator/">Open Product Configurator <span class="arr"></span></a></div>
       </article>
       <article class="visual-proof-card">
         <div class="visual-proof-stage">
@@ -140,9 +140,9 @@ npm run dev</code></pre>
       </article>
     </div>
     <div class="comparison-callout">
-      <div><span class="eyebrow">Built to ship</span><h3>Start with an application stack—not a pile of renderer parts.</h3></div>
-      <p>Aura3D connects typed assets, agent-oriented composition, reusable scene kits, Rapier physics, Recast navigation, interactive controls, production scaffolds, and deploy checks in one TypeScript workflow.</p>
-      <a class="btn btn-primary" href="/docs/agent-quickstart.html">Build your first scene <span class="arr"></span></a>
+      <div><span class="eyebrow">Why Teams Switch from Raw Three.js</span><h3>18 lines of declarative TypeScript instead of ~120 lines of fragile boilerplate.</h3></div>
+      <p>Raw Three.js leaves you hand-wiring Draco/KTX2 WASM workers, PMREM environment generators, EffectComposer passes, Rapier/Recast glue, and recursive GPU memory disposal. Aura3D 4.0.0 unifies the entire application stack into one zero-dependency SDK.</p>
+      <a class="btn btn-primary" href="/docs/aura3d-vs-threejs.html">Compare Aura3D 4.0.0 vs. Three.js <span class="arr"></span></a>
     </div>
   </div>
 </section>
@@ -152,10 +152,17 @@ npm run dev</code></pre>
       <div class="sec-head-left">
         <span class="eyebrow">Documentation</span>
         <h2 class="h2">Choose the guide that matches the page you are building.</h2>
-        <p class="lede">Aura3D documentation is organized around production tasks: create an app, describe a scene, register assets, choose templates, use the public API, and prepare a static deployment.</p>
+        <p class="lede">Aura3D documentation is organized around production tasks: compare against raw Three.js, create an app, describe a scene, register assets, choose templates, use the public API, and prepare a static deployment.</p>
       </div>
     </div>
     <div class="doc-card-grid docs-index-grid">
+
+          <a class="doc-card" href="/docs/aura3d-vs-threejs.html">
+            <span class="doc-card-kicker mono">Comparison</span>
+            <h3>Aura3D 4.0.0 vs. Raw Three.js</h3>
+            <p>See the 10-point architectural comparison, 18-line vs. ~120-line code breakdown, and automated AST migration codemod.</p>
+            <span class="doc-card-link">Read comparison <span class="arr"></span></span>
+          </a>
 
           <a class="doc-card" href="/docs/agent-quickstart.html">
             <span class="doc-card-kicker mono">Documentation</span>
@@ -193,7 +200,7 @@ npm run dev</code></pre>
           </a>
 
           <a class="doc-card" href="/docs/evidence.html"><span class="doc-card-kicker mono">Documentation</span><h3>Evidence</h3><p>Understand route, asset, gameplay, visual-QA, package, and hosted deployment proof.</p><span class="doc-card-link">Read guide <span class="arr"></span></span></a>
-          <a class="doc-card" href="/docs/claims.html"><span class="doc-card-kicker mono">Documentation</span><h3>Claims & limits</h3><p>See exactly what Aura3D 4.0.0 proves, what stays route-scoped, and what is not claimed.</p><span class="doc-card-link">Read guide <span class="arr"></span></span></a>
+          <a class="doc-card" href="/docs/claims.html"><span class="doc-card-kicker mono">Documentation</span><h3>Claims &amp; limits</h3><p>See exactly what Aura3D 4.0.0 proves, what stays route-scoped, and what is not claimed.</p><span class="doc-card-link">Read guide <span class="arr"></span></span></a>
 
           <a class="doc-card" href="/docs/deployment.html">
             <span class="doc-card-kicker mono">Documentation</span>
@@ -221,6 +228,7 @@ npm run dev</code></pre>
       </div>
       <div class="foot-col">
         <h4>Product</h4>
+        <a href="/docs/aura3d-vs-threejs.html">Aura3D vs Three.js</a>
         <a href="/docs/api.html">Agent API</a>
         <a href="/docs/prompt-recipes.html">AI prompts</a>
         <a href="/apps/showcase-index/">Examples</a>

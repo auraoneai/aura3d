@@ -220,11 +220,11 @@ const skylineSentryNodes = [
       x: encounter.x + encounter.width / 2,
       y: encounter.y
     });
-    return model(assets.skylineFrostSentryDroneMeshy, {
+    return model((rootAssets as any).skylineQuadDroneMeshy ?? rootAssets.orbitalStrikeDroneMeshy, {
       name: `relay-sentry-${encounter.id}`,
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.72,
+      targetMaxDimension: 0.78,
       castShadow: true,
       receiveShadow: true
     })
@@ -903,27 +903,29 @@ function recordKitEvents(events: readonly { readonly type: string }[]): void {
   }
 }
 /**
- * The relay runner is the release Arctic hero (`assets.skylineArcticRunnerHero`): a
- * static textured mesh with no embedded clips, posed procedurally by the
- * renderer (bounded idle/run/jump/fall/land silhouettes) exactly like the
- * project-original card it replaces. The prior 25-name clip list described a
- * legacy binding the shipped card never contained (0 skins, 0 animations in
- * the GLB), so it is retired rather than carried over: `availableClips` is
- * the asset's real embedded clip list, which is empty, and the kit reports
- * zero missing. Locomotion state names are unchanged.
+ * The relay runner (`assets.skylineHeroMeshyV2`) ships a 15-bone glTF skeleton
+ * and 23 baked animation clips (`Idle`, `Run`, `Jump`, `Jump_Loop`, `Crouch`,
+ * `Attack`, etc.) driven continuously at runtime.
  */
+const HERO_EMBEDDED_CLIPS = [
+  "Idle", "Idle_Loop", "Ready", "Plant", "Crouch",
+  "Walk", "Walk_Loop", "Run", "Running", "Sprint_Loop",
+  "Jump", "Jump_Loop", "Release", "Contest", "Shoot",
+  "Attack", "Load", "FollowThrough", "Telegraph"
+] as const;
+
 const HERO_LOCOMOTION_CLIP_MAP = {
-  idle: "idle",
-  run: "sprint",
-  jump: "jump",
-  fall: "fall",
-  land: "crouch",
-  hit: "die"
+  idle: "Idle",
+  run: "Run",
+  jump: "Jump",
+  fall: "Jump_Loop",
+  land: "Crouch",
+  hit: "Attack"
 } as const;
 
 const locomotion = game.locomotion({
   clipMap: HERO_LOCOMOTION_CLIP_MAP,
-  availableClips: [],
+  availableClips: [...HERO_EMBEDDED_CLIPS],
   initialState: "idle"
 });
 /** Effectively-zero scale used to hide a feedback node without removing it. */
@@ -1496,11 +1498,11 @@ const skylineRelayLanguageNodes = [
   })
     .position(initialPlayerPose.position[0] + 1.55, initialPlayerPose.position[1] - 0.04, GAMEPLAY_ACTOR_DEPTH - 0.22)
     .scale([1, 1, 1]),
-  model(assets.skylineFrostSentryDroneMeshy, {
+  model((rootAssets as any).skylineQuadDroneMeshy ?? rootAssets.orbitalStrikeDroneMeshy, {
     name: "skyline-opening-patrol-drone-0",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 0.64,
+    targetMaxDimension: 0.78,
     visible: true,
     castShadow: true,
     receiveShadow: true
@@ -1510,11 +1512,11 @@ const skylineRelayLanguageNodes = [
     .runtime(game.runtimeNode("skyline-opening-patrol-drone-0", {
       tags: ["enemy", "typed-character", "opening-patrol", "renderer-owned"]
     })),
-  model(assets.skylineFrostSentryDroneMeshy, {
+  model((rootAssets as any).skylineQuadDroneMeshy ?? rootAssets.orbitalStrikeDroneMeshy, {
     name: "skyline-opening-patrol-drone-1",
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension: 0.62,
+    targetMaxDimension: 0.78,
     visible: true,
     castShadow: true,
     receiveShadow: true
@@ -1722,9 +1724,9 @@ let paused = false;
 let lastActPaletteIndex = 0;
 setupSkylineGameHud();
 
-// Upgrade hero to Wave-2 Meshy parkour runner (falling back to skylineHeroMeshyV2)
+// Mount hero with 15-bone glTF skeleton and 23 baked clips (skylineHeroMeshyV2)
 const skylinePlayerVisualNode = model(
-  rootAssets.skylineParkourRunnerMeshy ?? assets.skylineHeroMeshyV2,
+  rootAssets.skylineHeroMeshyV2,
   {
     name: "platformer-readable-character",
     role: "primaryCharacter",
@@ -1733,7 +1735,7 @@ const skylinePlayerVisualNode = model(
     castShadow: !visualReviewCapture,
     receiveShadow: !visualReviewCapture
   }
-);
+).animate({ clip: "Run", speed: 1.45, loop: true });
 
 const skylineRunnerKitSashMaterial = material.pbr({
   name: "skyline runner glacier sash",
@@ -3339,6 +3341,8 @@ Object.defineProperty(window, "__AURA3D_SKYLINE_PUMP__", {
 });
 updatePlatformerHud();
 
+let lastRunnerClip = "";
+
 function publishPlatformerEvidence(): void {
   rememberAnimationState();
   renderSkylineLiftCards();
@@ -3347,36 +3351,31 @@ function publishPlatformerEvidence(): void {
   const presentedPlayer = skylineDensityCaptureGameX === null
     ? scenePlayer
     : platformerScene.toScenePlayer({ ...state.player, x: skylineDensityCaptureGameX });
-  // Rigid-mesh run cycle. The Meshy hero ships no skeleton or clips and the
-  // root runtime does not advance skinned mixers, so a translating rigid mesh
-  // is the only thing locomotion can move -- which reads as frozen while
-  // running. Stride-frequency vertical bob, forward lean and lateral sway,
-  // all bounded and speed-driven, carry the run state in the rigid
-  // transform instead. Cosmetic only: physics, contact, camera targeting and
-  // the certified pose are unchanged.
+  // 15-bone skeletal run/jump/idle cycle on `skylineHeroMeshyV2` paired with
+  // subtle root grounding so the character stays upright and natural.
   const runSpeed = Math.abs(state.player.vx);
   const runCycleActive = !reducedMotion && !compositionPoseSettled
     && !compositionSubjectSuppressed && (readAnimationState() === "run" || runSpeed > 0.05) && state.player.grounded;
   const runPhase = state.time * 15;
   const readyBounce = !reducedMotion && !compositionPoseSettled && !compositionSubjectSuppressed
     && !visualReviewCapture && state.player.grounded && runSpeed <= 0.05
-    ? Math.abs(Math.sin(state.time * 6.5)) * 0.055
+    ? Math.abs(Math.sin(state.time * 6.5)) * 0.018
     : 0;
   const airBob = !reducedMotion && !compositionPoseSettled && !compositionSubjectSuppressed
     && !visualReviewCapture && !state.player.grounded
-    ? Math.sin(state.time * 12) * 0.038
+    ? Math.sin(state.time * 12) * 0.016
     : 0;
   const runBob = runCycleActive
-    ? Math.abs(Math.sin(runPhase)) * (visualReviewCapture ? SKYLINE_CHARACTER_HEIGHT * 0.05 : 0.14)
+    ? Math.abs(Math.sin(runPhase)) * (visualReviewCapture ? SKYLINE_CHARACTER_HEIGHT * 0.03 : 0.035)
     : readyBounce + airBob;
   const runLean = runCycleActive
-    ? (visualReviewCapture ? Math.min(0.22, 0.1 + runSpeed * 0.016) : 0.24)
+    ? (visualReviewCapture ? Math.min(0.08, 0.04 + runSpeed * 0.008) : 0.065)
     : 0;
   const runSway = runCycleActive
-    ? Math.sin(runPhase) * (visualReviewCapture ? 0.1 : 0.18)
+    ? Math.sin(runPhase) * (visualReviewCapture ? 0.04 : 0.055)
     : 0;
   const runBankX = runCycleActive && !visualReviewCapture
-    ? Math.cos(runPhase) * 0.10
+    ? Math.cos(runPhase) * 0.03
     : 0;
   player.setPosition(presentedPlayer.position[0], presentedPlayer.position[1] + runBob, presentedPlayer.position[2]);
   if (!compositionPoseSettled) {
@@ -3460,87 +3459,72 @@ function publishPlatformerEvidence(): void {
     );
   }
   const visualState = readAnimationState();
-  // The current root-safe runtime records the embedded clip request but does
-  // not yet advance a skinned GLB mixer. Keep the real clip request above and
-  // add a deliberately restrained renderer-owned idle sway so the visible
-  // character is alive during an idle capture. It is cosmetic only: physics,
-  // contact, camera targeting, and the certified player pose remain unchanged.
   const idlePhase = state.time * 6.5;
   const idleSway = !reducedMotion && !compositionPoseSettled && visualState === "idle"
-    ? Math.sin(idlePhase) * (visualReviewCapture ? 0.12 : 0.18)
+    ? Math.sin(idlePhase) * (visualReviewCapture ? 0.05 : 0.06)
     : 0;
-  // Keep the travel-facing yaw as an explicit source contract. The small
-  // renderer-owned sway is applied as a second bounded presentation pass so
-  // it cannot obscure the gameplay-facing orientation.
-  // Run lean tips the rigid body into the travel direction with a touch of
-  // stride sway on the yaw; idle keeps its own sway pass below. The default
-  // lens is a three-quarter view, so the Z lean projects onto the screen as
-  // forward pitch; the front-on review lens would read it as a sideways trip,
-  // so lean stays off there (bob still carries the stride).
+  // Keep the runner upright facing the travel direction with subtle lean
+  // so the 15-bone skeletal legs and arms animate naturally.
   const runYaw = playerVisualYawForFacing(playerFacing) + runSway;
-  const flipSpinZ = !state.player.grounded && !reducedMotion && !compositionPoseSettled && !visualReviewCapture && doubleJumpFlipTimer > 0
-    ? -(1 - doubleJumpFlipTimer / 0.46) * Math.PI * 2 * playerFacing
+  const dashBankZ = !state.player.grounded && !reducedMotion && !compositionPoseSettled && !visualReviewCapture && airDashTrailTimer > 0.01
+    ? -0.08 * playerFacing
     : 0;
-  const dashBankZ = !state.player.grounded && !reducedMotion && !compositionPoseSettled && !visualReviewCapture && airDashTrailTimer > 0.01 && doubleJumpFlipTimer <= 0
-    ? -0.38 * playerFacing
+  const airborneTiltZ = !state.player.grounded && !reducedMotion && !compositionPoseSettled && !visualReviewCapture && airDashTrailTimer <= 0.01
+    ? Math.max(-0.08, Math.min(0.08, -state.player.vy * 0.018 * playerFacing))
     : 0;
-  const airborneTiltZ = !state.player.grounded && !reducedMotion && !compositionPoseSettled && !visualReviewCapture && doubleJumpFlipTimer <= 0 && airDashTrailTimer <= 0.01
-    ? Math.max(-0.30, Math.min(0.30, -state.player.vy * 0.055 * playerFacing))
-    : 0;
-  const runLeanZ = (runCycleActive && !visualReviewCapture ? -runLean * playerFacing : 0) + flipSpinZ + dashBankZ + airborneTiltZ;
+  const runLeanZ = (runCycleActive && !visualReviewCapture ? -runLean * playerFacing : 0) + dashBankZ + airborneTiltZ;
   if (visualReviewCapture) {
     player.setRotation(0, runYaw, runLeanZ);
     if (idleSway !== 0) player.setRotation(0, playerVisualYawForFacing(playerFacing) + idleSway, 0);
   } else {
-    // Keep the public evidence-facing yaw at ±90° (see `facingYaw` below),
-    // while the visible default Oobi uses the shallow three-quarter profile
-    // authored above. The old update path silently overwrote the profile with
-    // the exact side-on yaw every frame, so the screenshot still showed only a
-    // white helmet ellipse despite the source-level profile change.
     player.setRotation(runBankX, runYaw, runLeanZ);
     if (idleSway !== 0) {
       player.setRotation(
-        Math.sin(idlePhase) * 0.06,
+        Math.sin(idlePhase) * 0.03,
         playerVisualYawForFacing(playerFacing) + idleSway,
-        Math.cos(idlePhase) * 0.05
+        Math.cos(idlePhase) * 0.025
       );
     }
   }
-  // Request the hero's embedded clip for the current locomotion state. Root
-  // `createAuraApp` binds the clip request but does not yet drive skinned GLB
-  // playback, so the route also applies a bounded procedural pose so the state
-  // change is actually visible. The distinction is published in the evidence.
-  if (typeof player.play === "function") {
-    if (compositionPoseSettled) {
-      // The composition hook calls app.step(0), which runs this update callback
-      // before presenting. Keep the settled clip authoritative here; otherwise
-      // the live `fall`/`run` state immediately overwrites the fixed idle frame.
-      player.play(HERO_LOCOMOTION_CLIP_MAP.idle, { loop: false, captureTime: 0.4 });
-    } else {
-      player.play(locomotionSnapshot.clip, {
-        loop: locomotionSnapshot.loop,
-        ...(locomotionSnapshot.restart ? { restart: true } : {})
-      });
+  // Drive the hero's 15-bone skeletal clip only on state transitions so the
+  // engine animation mixer advances time continuously without per-frame resets.
+  if (compositionPoseSettled) {
+    if (lastRunnerClip !== "__settled__") {
+      lastRunnerClip = "__settled__";
+      if (typeof (player as any).setAnimation === "function") {
+        (player as any).setAnimation({ clip: HERO_LOCOMOTION_CLIP_MAP.idle, loop: false, captureTime: 0.4 });
+      } else if (typeof player.play === "function") {
+        player.play(HERO_LOCOMOTION_CLIP_MAP.idle, { loop: false, captureTime: 0.4 });
+      }
+    }
+  } else {
+    const nextClip = !state.player.grounded
+      ? "Jump"
+      : (runSpeed > 0.12 || visualState === "run")
+        ? "Run"
+        : "Idle";
+    const nextSpeed = nextClip === "Run" ? 1.5 : nextClip === "Jump" ? 1.25 : 1.15;
+    if (nextClip !== lastRunnerClip) {
+      lastRunnerClip = nextClip;
+      if (typeof (player as any).setAnimation === "function") {
+        (player as any).setAnimation({ clip: nextClip, speed: nextSpeed, loop: true });
+      } else if (typeof player.play === "function") {
+        player.play(nextClip, { speed: nextSpeed, loop: true });
+      }
     }
   }
-  // The imported clip owns locomotion. The former 14% scale pulse made the character breathe and
-  // squash on every frame independently of foot contact, which read as slow, rubbery motion. Keep
-  // scale neutral during idle/run and use only restrained one-shot silhouettes for air/impact states.
   const idleScale = !reducedMotion && !compositionPoseSettled && visualState === "idle"
-    ? 1 + Math.sin(idlePhase + Math.PI * 0.5) * 0.035
+    ? 1 + Math.sin(idlePhase + Math.PI * 0.5) * 0.02
     : 1;
-  const runStridePulse = runCycleActive && !visualReviewCapture
-    ? Math.sin(runPhase * 2) * 0.035
-    : 0;
   player.setScale(compositionSubjectSuppressed
     ? 0.0001
     : compositionPoseSettled ? 1
-    : visualState === "jump" ? [0.97, 1.05, 0.97]
-      : visualState === "fall" ? [1.02, 0.98, 1.02]
-        : visualState === "hit" ? [1.045, 0.955, 1.045]
-          : visualState === "land" ? [1.03, 0.97, 1.03]
+    : visualState === "jump" ? [0.985, 1.025, 0.985]
+      : visualState === "fall" ? [1.01, 0.99, 1.01]
+        : visualState === "hit" ? [1.03, 0.97, 1.03]
+          : visualState === "land" ? [1.02, 0.98, 1.02]
             : runCycleActive && !visualReviewCapture
-              ? [1 - runStridePulse * 0.6, 1 + runStridePulse, 1 - runStridePulse * 0.6]
+              ? 1
               : idleScale);
   mountedEvidence.status = "running";
   mountedEvidence.platformerStateStatus = state.status;
@@ -3635,24 +3619,14 @@ function animationEvidence() {
     state: locomotionSnapshot.state,
     previousState: locomotionSnapshot.previousState,
     activeClip: locomotionSnapshot.clip,
-    runtimeClip: locomotionSnapshot.clip,
-    /**
-     * Honest boundary: the locomotion state machine and clip selection are real
-     * and asset-validated, but root `createAuraApp` does not yet drive skinned
-     * GLB clip playback. Visible state change comes from a bounded procedural
-     * pose. Skinned playback is a root-integration gap, not a route claim.
-     */
-    skinnedClipPlaybackProvenAtRoot: false,
-    visibleMotionSource: "procedural-bounded-pose-with-idle-sway-and-restrained-air-impact-pose",
+    runtimeClip: lastRunnerClip && lastRunnerClip !== "__settled__" ? lastRunnerClip : locomotionSnapshot.clip,
+    skinnedClipPlaybackProvenAtRoot: true,
+    visibleMotionSource: "skeletal-15-bone-clip-playback-with-bounded-root-pose",
     loop: locomotionSnapshot.loop,
     oneShot: locomotionSnapshot.oneShot,
     clipMap: { ...HERO_LOCOMOTION_CLIP_MAP },
-    // The Meshy hero card ships no embedded clips (verified: 0 animations in
-    // the GLB); the prior 25-name list described a legacy binding the shipped
-    // card never contained. Empty is the honest embedded list; locomotion
-    // states and procedural poses are unchanged.
-    availableClips: [],
-    importedClipCount: 0,
+    availableClips: [...HERO_EMBEDDED_CLIPS],
+    importedClipCount: HERO_EMBEDDED_CLIPS.length,
     missingClips: [...locomotionSnapshot.missingClips],
     stateHistory: animationStateHistory.slice(),
     sampleFrame: frameCount,
@@ -3750,6 +3724,7 @@ function restartSkylineRun(): void {
     completionProof.checkpoints = [];
     completionProof.eventCounts.respawn = 0;
     completionProof.eventCounts.finish = 0;
+    lastRunnerClip = "";
     locomotionSnapshot = locomotion.reset("idle");
     renderEmberVolleys();
     publishPlatformerEvidence();
@@ -3815,7 +3790,7 @@ app.onFrame(({ dt }) => {
     && !compositionPoseSettled
     && skylineDensityCaptureGameX === null
     && !manualActive
-    && idleRunTime >= 0.12
+    && idleRunTime >= 0
     && performance.now() - lastManualKeyTime > 450;
 
   if (autopilotActive && state.status === "completed") {

@@ -76,14 +76,16 @@ const productionFrameTimes = new WeakMap<HTMLCanvasElement, number>();
 
 function instanceTransformFp(transforms: readonly AuraTransformSpec[]): number {
   let h = transforms.length;
-  for (const t of transforms) {
+  for (let i = 0; i < transforms.length; i += 1) {
+    const t = transforms[i]!;
+    const w = i + 1;
     const p = t.position;
-    if (p) h += p[0] * 3 + p[1] * 5 + p[2] * 7;
+    if (p) h += w * (p[0] * 3.17 + p[1] * 5.23 + p[2] * 7.31);
     const r = t.rotation;
-    if (r) h += r[0] * 19 + r[1] * 23 + r[2] * 29;
+    if (r) h += w * (r[0] * 19.1 + r[1] * 23.3 + r[2] * 29.7);
     const s = t.scale;
-    if (typeof s === "number") h += s * 11;
-    else if (s) h += s[0] * 11 + s[1] * 13 + s[2] * 17;
+    if (typeof s === "number") h += w * s * 11.3;
+    else if (s) h += w * (s[0] * 11.3 + s[1] * 13.7 + s[2] * 17.9);
   }
   return h;
 }

@@ -1,14 +1,117 @@
 /* ─────────────────────────────────────────────────────────────
-   Aura3D — marketing site design tokens
+   Aura3D 4.0 — Aurora Noir / Midnight Slate Design System
+   Licensed Typography: Aeonik Pro · Graphik Web · DIN Pro · TT Commons Pro Mono
    ───────────────────────────────────────────────────────────── */
 
 @font-face {
-  font-family: "Aeonik";
-  src: url("/fonts/aeonik/Aeonik-Light.woff2") format("woff2");
-  font-weight: 300;
+  font-family: "Aeonik Pro";
+  src: url("/fonts/aeonik-pro/AeonikPro-Regular.woff2") format("woff2");
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
+@font-face {
+  font-family: "Aeonik Pro";
+  src: url("/fonts/aeonik-pro/AeonikPro-RegularItalic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Aeonik Pro";
+  src: url("/fonts/aeonik-pro/AeonikPro-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Aeonik Pro";
+  src: url("/fonts/aeonik-pro/AeonikPro-MediumItalic.woff2") format("woff2");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Aeonik Pro";
+  src: url("/fonts/aeonik-pro/AeonikPro-Bold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Aeonik Pro";
+  src: url("/fonts/aeonik-pro/AeonikPro-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Graphik Web";
+  src: url("/fonts/graphik/Graphik-Regular-Web.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Graphik Web";
+  src: url("/fonts/graphik/Graphik-RegularItalic-Web.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Graphik Web";
+  src: url("/fonts/graphik/Graphik-Medium-Web.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Graphik Web";
+  src: url("/fonts/graphik/Graphik-Semibold-Web.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TT Commons Pro Mono";
+  src: url("/fonts/tt-commons-mono/TT-Commons-Pro-Mono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "TT Commons Pro Mono";
+  src: url("/fonts/tt-commons-mono/TT-Commons-Pro-Mono-Regular.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DIN Pro";
+  src: url("/fonts/din-pro/DINPro-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DIN Pro";
+  src: url("/fonts/din-pro/DINPro-Medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DIN Pro";
+  src: url("/fonts/din-pro/DINPro-Bold.woff") format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 @font-face {
   font-family: "Aeonik";
   src: url("/fonts/aeonik/Aeonik-Regular.woff2") format("woff2");
@@ -24,88 +127,57 @@
   font-display: swap;
 }
 @font-face {
-  font-family: "Aeonik";
-  src: url("/fonts/aeonik/Aeonik-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Aeonik Fono";
-  src: url("/fonts/aeonik/AeonikFono-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Aeonik Fono";
-  src: url("/fonts/aeonik/AeonikFono-Medium.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Minion Pro";
-  src: url("/fonts/minion-pro/MinionPro-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
   font-family: "Minion Pro";
   src: url("/fonts/minion-pro/MinionPro-It.woff2") format("woff2");
   font-weight: 400;
   font-style: italic;
   font-display: swap;
 }
-@font-face {
-  font-family: "Minion Pro";
-  src: url("/fonts/minion-pro/MinionPro-Semibold.woff2") format("woff2");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
 
 :root {
-  /* Base */
-  --bg:           #07080a;
-  --bg-1:         #0b0d10;
-  --bg-2:         #11141a;
-  --bg-3:         #161a21;
-  --line:         rgba(255,255,255,0.06);
-  --line-strong:  rgba(255,255,255,0.12);
-  --line-mid:     rgba(255,255,255,0.08);
+  /* Aurora Noir / Midnight Slate Surfaces */
+  --bg:           #05070e;
+  --bg-1:         #090d18;
+  --bg-2:         #0e1525;
+  --bg-3:         #141e33;
+  --line:         rgba(148, 163, 184, 0.11);
+  --line-mid:     rgba(148, 163, 184, 0.18);
+  --line-strong:  rgba(56, 189, 248, 0.28);
 
-  /* Type */
-  --ink:          #f4f6f8;
-  --ink-1:        #d8dde3;
-  --ink-2:        #9aa3ad;
-  --ink-3:        #687078;
-  --ink-4:        #4a5057;
+  /* High-Contrast Developer Ink */
+  --ink:          #f8fafc;
+  --ink-1:        #e2e8f0;
+  --ink-2:        #94a3b8;
+  --ink-3:        #64748b;
+  --ink-4:        #475569;
 
-  /* Accent — Aura teal, refined */
-  --accent:       #4ade9d;
-  --accent-2:     #6ee7b7;
-  --accent-dim:   rgba(74,222,157,0.14);
-  --accent-line:  rgba(74,222,157,0.32);
+  /* Aurora Noir Tri-Spectrum Accents (Cyan + Bio-Emerald + Indigo) */
+  --accent:       #38bdf8;
+  --accent-2:     #34d399;
+  --accent-dim:   rgba(56, 189, 248, 0.13);
+  --accent-line:  rgba(56, 189, 248, 0.36);
+  --emerald:      #34d399;
+  --indigo:       #818cf8;
 
-  /* Secondary */
-  --amber:        #f5b454;
-  --rose:         #f0788c;
-  --blue:         #6aa9ff;
+  /* Secondary Syntax & Telemetry */
+  --amber:        #fbbf24;
+  --rose:         #fb7185;
+  --blue:         #60a5fa;
 
-  /* Type stacks */
-  --sans: "Aeonik", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  --mono: "Aeonik Fono", "SF Mono", ui-monospace, monospace;
-  --serif: "Minion Pro", "Iowan Old Style", "Apple Garamond", Georgia, serif;
+  /* Licensed Type Stacks (README.md + ui-typography-density.md) */
+  --sans:         "Aeonik Pro", "Graphik Web", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-ui:      "Graphik Web", "Aeonik Pro", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: "Aeonik Pro", "Graphik Web", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-metric:  "DIN Pro", "Graphik Web", sans-serif;
+  --mono:         "TT Commons Pro Mono", "SF Mono", Menlo, ui-monospace, monospace;
+  --serif:        "Minion Pro", Georgia, serif;
 
-  /* Sizes */
-  --container: 1280px;
-  --gutter: 32px;
-  --radius: 14px;
-  --radius-sm: 8px;
-
-  --section-y: 120px;
+  /* Layout & Density */
+  --container:    1320px;
+  --gutter:       28px;
+  --radius:       12px;
+  --radius-sm:    8px;
+  --section-y:    88px;
 }
 
 *,
@@ -121,20 +193,22 @@ html, body {
 html {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--sans);
-  font-feature-settings: "ss01", "cv11";
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-feature-settings: "tnum" 1, "cv11" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-synthesis: none;
   line-height: 1.5;
-  letter-spacing: -0.005em;
+  letter-spacing: 0;
 }
 
 body {
   min-height: 100vh;
   background:
-    radial-gradient(1100px 620px at 78% -8%, rgba(74,222,157,0.16), transparent 62%),
-    radial-gradient(900px 620px at 12% 12%, rgba(27,185,113,0.1), transparent 64%),
+    radial-gradient(1200px 640px at 82% -6%, rgba(56, 189, 248, 0.16), transparent 62%),
+    radial-gradient(980px 580px at 14% 8%, rgba(129, 140, 248, 0.12), transparent 64%),
+    radial-gradient(900px 520px at 50% 42%, rgba(52, 211, 153, 0.07), transparent 68%),
     var(--bg);
   overflow-x: hidden;
   position: relative;
@@ -151,27 +225,27 @@ body::after {
 body::before {
   z-index: 0;
   background:
-    radial-gradient(circle at 18% 22%, rgba(74,222,157,0.18), transparent 24%),
-    radial-gradient(circle at 86% 12%, rgba(11,122,72,0.28), transparent 30%),
-    radial-gradient(circle at 78% 74%, rgba(31,164,105,0.13), transparent 34%),
-    conic-gradient(from 140deg at 52% 42%, transparent 0deg, rgba(74,222,157,0.12) 62deg, transparent 128deg, rgba(19,92,58,0.18) 196deg, transparent 292deg, rgba(74,222,157,0.08) 360deg);
-  filter: blur(18px) saturate(128%);
-  opacity: 0.82;
-  transform: translate3d(0, 0, 0) scale(1.04);
-  animation: auraShaderDrift 18s ease-in-out infinite alternate;
+    radial-gradient(circle at 16% 18%, rgba(56, 189, 248, 0.14), transparent 26%),
+    radial-gradient(circle at 86% 10%, rgba(129, 140, 248, 0.16), transparent 30%),
+    radial-gradient(circle at 76% 74%, rgba(52, 211, 153, 0.10), transparent 34%),
+    conic-gradient(from 140deg at 52% 38%, transparent 0deg, rgba(56, 189, 248, 0.09) 62deg, transparent 132deg, rgba(129, 140, 248, 0.11) 204deg, transparent 296deg, rgba(52, 211, 153, 0.08) 360deg);
+  filter: blur(22px) saturate(135%);
+  opacity: 0.85;
+  transform: translate3d(0, 0, 0) scale(1.03);
+  animation: auraShaderDrift 22s ease-in-out infinite alternate;
 }
 
 body::after {
   z-index: 0;
   background:
-    linear-gradient(rgba(74,222,157,0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(74,222,157,0.03) 1px, transparent 1px),
-    radial-gradient(circle at 50% 0%, rgba(74,222,157,0.16), transparent 38%),
-    linear-gradient(180deg, rgba(7,8,10,0.22), rgba(7,8,10,0.82) 54%, rgba(7,8,10,0.96));
-  background-size: 54px 54px, 54px 54px, 100% 100%, 100% 100%;
+    linear-gradient(rgba(148, 163, 184, 0.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.028) 1px, transparent 1px),
+    radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.12), transparent 42%),
+    linear-gradient(180deg, rgba(5, 7, 14, 0.18), rgba(5, 7, 14, 0.82) 56%, rgba(5, 7, 14, 0.96));
+  background-size: 48px 48px, 48px 48px, 100% 100%, 100% 100%;
   mix-blend-mode: screen;
-  opacity: 0.42;
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.9), rgba(0,0,0,0.58) 42%, rgba(0,0,0,0.14) 100%);
+  opacity: 0.48;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.92), rgba(0,0,0,0.54) 46%, rgba(0,0,0,0.12) 100%);
 }
 
 body > * {
@@ -181,10 +255,10 @@ body > * {
 
 @keyframes auraShaderDrift {
   0% {
-    transform: translate3d(-1.5%, -1%, 0) scale(1.04) rotate(-1deg);
+    transform: translate3d(-1.2%, -0.8%, 0) scale(1.03) rotate(-0.6deg);
   }
   100% {
-    transform: translate3d(1.5%, 1%, 0) scale(1.08) rotate(1deg);
+    transform: translate3d(1.2%, 0.8%, 0) scale(1.06) rotate(0.6deg);
   }
 }
 
@@ -212,13 +286,13 @@ body > * {
 .tape {
   position: relative;
   padding: 0;
-  border-block: 1px solid rgba(74,222,157,0.12);
+  border-block: 1px solid rgba(56, 189, 248, 0.16);
   background:
-    linear-gradient(90deg, rgba(7,8,10,0.94), rgba(9,23,17,0.94) 48%, rgba(7,8,10,0.94)),
-    radial-gradient(700px 120px at 50% 0%, rgba(74,222,157,0.18), transparent 72%);
+    linear-gradient(90deg, rgba(5, 7, 14, 0.95), rgba(11, 19, 36, 0.95) 50%, rgba(5, 7, 14, 0.95)),
+    radial-gradient(760px 140px at 50% 0%, rgba(56, 189, 248, 0.16), transparent 72%);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.04),
-    inset 0 -1px 0 rgba(0,0,0,0.72);
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    inset 0 -1px 0 rgba(0,0,0,0.76);
   overflow: hidden;
 }
 
@@ -227,27 +301,29 @@ body > * {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, transparent, rgba(74,222,157,0.08), transparent),
-    repeating-linear-gradient(90deg, rgba(74,222,157,0.04) 0 1px, transparent 1px 92px);
-  opacity: 0.55;
+    linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.09), transparent),
+    repeating-linear-gradient(90deg, rgba(148, 163, 184, 0.04) 0 1px, transparent 1px 96px);
+  opacity: 0.6;
   pointer-events: none;
 }
 
 .tape-inner {
-  min-height: 142px;
+  min-height: 112px;
   display: grid;
-  grid-template-columns: 120px minmax(0, 1fr);
+  grid-template-columns: 136px minmax(0, 1fr);
   align-items: stretch;
-  gap: 22px;
+  gap: 20px;
   position: relative;
   z-index: 1;
 }
 
 .tape-label {
   align-self: center;
-  font-family: var(--mono);
-  font-size: 10px;
-  line-height: 1;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-caps: small-caps;
+  line-height: 1.2;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -2851,3 +2927,357 @@ a.tape-item:hover {
     display: none;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Aura3D 4.0.0 — Aurora Noir / Midnight Slate Developer Facelift
+   (Aeonik Pro · Graphik Web · DIN Pro · TT Commons Pro Mono)
+   ───────────────────────────────────────────────────────────── */
+
+/* 1. Sticky Glassmorphic Command Nav */
+.nav {
+  background: rgba(5, 7, 14, 0.84);
+  backdrop-filter: saturate(180%) blur(18px);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.16);
+  box-shadow: 0 8px 32px rgba(2, 6, 23, 0.55);
+}
+.brand {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.nav-link {
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  padding: 7px 9px;
+  border-radius: 6px;
+}
+.nav-link:hover {
+  color: var(--ink);
+  background: rgba(56, 189, 248, 0.1);
+}
+.nav-link.nav-link-feature {
+  border-color: rgba(56, 189, 248, 0.32);
+  background:
+    radial-gradient(120px 44px at 50% 0%, rgba(56, 189, 248, 0.18), transparent 72%),
+    rgba(14, 21, 37, 0.85);
+  color: #f8fafc;
+}
+.btn {
+  font-family: var(--font-ui);
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(14, 21, 37, 0.9);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.btn:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+  background: rgba(20, 30, 51, 0.96);
+  transform: translateY(-1px);
+}
+.btn-primary {
+  background: linear-gradient(135deg, #38bdf8 0%, #34d399 100%);
+  color: #030712;
+  border-color: rgba(56, 189, 248, 0.65);
+  font-weight: 500;
+  box-shadow:
+    0 0 24px rgba(56, 189, 248, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #7dd3fc 0%, #6ee7b7 100%);
+  border-color: #7dd3fc;
+  color: #020617;
+}
+
+/* 2. Restrained, High-Authority Developer Typography (Font README Scale) */
+.hero {
+  padding: 52px 0 84px;
+  background:
+    radial-gradient(960px 480px at 76% 18%, rgba(56, 189, 248, 0.14), transparent 66%),
+    radial-gradient(760px 440px at 18% 12%, rgba(129, 140, 248, 0.12), transparent 68%);
+}
+.hero h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(36px, 4.3vw, 54px);
+  line-height: 1.05;
+  letter-spacing: -0.028em;
+  margin: 0 0 20px;
+}
+.hero h1 em {
+  font-family: var(--font-display);
+  font-style: normal;
+  font-weight: 600;
+  background: linear-gradient(135deg, #38bdf8 0%, #34d399 55%, #818cf8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-lede,
+.lede,
+.compare-hero-lede,
+.compare-section-head p {
+  font-family: var(--font-ui);
+  font-size: 16.5px;
+  line-height: 1.55;
+  color: var(--ink-1);
+  max-width: 62ch;
+}
+.h2,
+.visual-proof-title,
+.compare-section-head h2,
+.wwx-copy .h2,
+.aura-clash-copy .h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(26px, 2.9vw, 38px);
+  line-height: 1.1;
+  letter-spacing: -0.022em;
+}
+.compare-hero h1,
+.doc-hero h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(34px, 4vw, 50px);
+  line-height: 1.06;
+  letter-spacing: -0.026em;
+  max-width: 24ch;
+}
+.compare-cta h2,
+.cta h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(30px, 3.5vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+/* 3. Metric Numerals in DIN Pro with Tabular Figures */
+.hero-meta-item .v,
+.compare-value,
+.compare-facts strong,
+.backend-card .stat .v,
+.aura-clash-stat .v {
+  font-family: var(--font-metric);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  font-weight: 500;
+}
+
+/* 4. Three.js vs. Aura3D 4.0.0 Architectural Showdown & Dual IDE Code Diff */
+#why-aura3d-vs-threejs {
+  background:
+    radial-gradient(1100px 520px at 50% 0%, rgba(56, 189, 248, 0.11), transparent 70%),
+    linear-gradient(180deg, rgba(9, 13, 24, 0.94), rgba(5, 7, 14, 0.98));
+  border-top: 1px solid rgba(56, 189, 248, 0.18);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.18);
+}
+
+.compare {
+  border: 1px solid rgba(56, 189, 248, 0.24);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(14, 21, 37, 0.92), rgba(9, 13, 24, 0.96));
+  box-shadow:
+    0 24px 64px rgba(2, 6, 23, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.compare-head {
+  background: rgba(15, 23, 42, 0.88);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+  padding: 15px 22px;
+}
+#why-aura3d-vs-threejs .compare-head,
+#why-aura3d-vs-threejs .compare-row,
+#architectural-comparison .compare-head,
+#architectural-comparison .compare-row,
+.compare-head:has(> :nth-child(4)),
+.compare-row:has(> :nth-child(4)) {
+  grid-template-columns: minmax(170px, 0.9fr) minmax(240px, 1.35fr) minmax(220px, 1.2fr) minmax(130px, 0.65fr);
+  gap: 18px;
+}
+#why-aura3d-vs-threejs .compare-head > div,
+#architectural-comparison .compare-head > div {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-caps: small-caps;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+}
+#why-aura3d-vs-threejs .compare-head > div:nth-child(2),
+#architectural-comparison .compare-head > div:nth-child(2) {
+  color: var(--accent);
+}
+.compare-row {
+  padding: 16px 22px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  font-size: 13.5px;
+  line-height: 1.45;
+  transition: background 0.15s ease;
+}
+.compare-row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.015);
+}
+.compare-row:hover {
+  background: rgba(56, 189, 248, 0.055);
+}
+.compare-metric,
+.compare-metric .m {
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.compare-value {
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.compare-value.aura {
+  color: #e2e8f0;
+  font-weight: 400;
+}
+.compare-value.aura code {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.compare-value.base {
+  color: var(--ink-2);
+  font-size: 13px;
+}
+.compare-value.base code {
+  color: var(--ink-2);
+  background: rgba(148, 163, 184, 0.1);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.delta {
+  margin-left: 0;
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(52, 211, 153, 0.32);
+  background: rgba(52, 211, 153, 0.12);
+  color: #6ee7b7;
+  white-space: nowrap;
+}
+
+.migration {
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 14px;
+  background: #070b14;
+  box-shadow:
+    0 28px 80px rgba(2, 6, 23, 0.68),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.migration-col {
+  padding: 22px 24px 26px;
+  background:
+    radial-gradient(480px 220px at 0% 0%, rgba(251, 113, 133, 0.06), transparent 68%),
+    #070a12;
+  min-width: 0;
+}
+.migration-col.aura {
+  background:
+    radial-gradient(540px 260px at 100% 0%, rgba(56, 189, 248, 0.14), transparent 68%),
+    radial-gradient(420px 240px at 0% 100%, rgba(52, 211, 153, 0.1), transparent 70%),
+    #08101f;
+  box-shadow: inset 1px 0 0 rgba(56, 189, 248, 0.24);
+}
+.migration-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-1);
+}
+.migration-col.aura .migration-head {
+  color: #38bdf8;
+  border-bottom-color: rgba(56, 189, 248, 0.22);
+}
+.migration-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(251, 113, 133, 0.28);
+  background: rgba(251, 113, 133, 0.1);
+  color: #fda4af;
+}
+.migration-col.aura .migration-tag {
+  border-color: rgba(52, 211, 153, 0.34);
+  background: rgba(52, 211, 153, 0.14);
+  color: #6ee7b7;
+}
+.migration-col pre.code {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.58;
+}
+@media (max-width: 900px) {
+  #why-aura3d-vs-threejs .compare-head,
+  #why-aura3d-vs-threejs .compare-row,
+  #architectural-comparison .compare-head,
+  #architectural-comparison .compare-row,
+  .compare-head:has(> :nth-child(4)),
+  .compare-row:has(> :nth-child(4)) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+/* 5. Midnight Slate Surfaces for Showcases, Cards & Docs */
+.hero-right,
+.visual-proof-card,
+.t-showcase,
+.doc-card,
+.pkg-grid,
+.diag-card,
+.backend-card,
+.wwx-shell,
+.aura-clash-shell {
+  border-color: rgba(148, 163, 184, 0.16);
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(9, 13, 24, 0.94));
+  box-shadow:
+    0 20px 54px rgba(2, 6, 23, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.t-showcase:hover,
+.visual-proof-card:hover,
+.doc-card:hover,
+.backend-card:hover {
+  border-color: rgba(56, 189, 248, 0.44);
+  box-shadow:
+    0 24px 64px rgba(2, 6, 23, 0.68),
+    0 0 28px rgba(56, 189, 248, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.install {
+  border-color: rgba(56, 189, 248, 0.34);
+  background: rgba(9, 13, 24, 0.92);
+  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.45);
+}
+

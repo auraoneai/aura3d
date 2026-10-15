@@ -223,9 +223,16 @@ function heroNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] 
       role: "primaryCharacter",
       castShadow: true,
       receiveShadow: true
-    }).position(HANGAR_CENTER[0], -60 + HERO_FEET_LIFT, HANGAR_CENTER[2]).runtime(game.runtimeNode("mech-hero-" + side, {
-      tags: ["mech-hero", side, "typed-primary-asset"]
-    }))
+    })
+      .animate(
+        side === "rival"
+          ? { clip: "Attack", speed: 1.25, loop: true }
+          : { clip: "Walk", speed: 1.35, loop: true }
+      )
+      .position(HANGAR_CENTER[0], -60 + HERO_FEET_LIFT, HANGAR_CENTER[2])
+      .runtime(game.runtimeNode("mech-hero-" + side, {
+        tags: ["mech-hero", side, "typed-primary-asset"]
+      }))
   ];
 }
 
@@ -497,7 +504,7 @@ const hangarServiceGantryBuilders = [
   })
     .position(0, 1.38, ARENA_CENTER_Z - 4.55)
     .runtime(game.runtimeNode("mech-arena-generator-core", { tags: ["arena-prop", "renderer-owned"] })),
-  model(rootAssets.reactorFusionTurbineMeshy, {
+  model((rootAssets as unknown as Record<string, typeof rootAssets.blockfallEnergyGeneratorCoreMeshy>).reactorFusionTurbineMeshy ?? rootAssets.blockfallEnergyGeneratorCoreMeshy, {
     name: "mech-arena-fusion-turbine-left",
     role: "setDressing",
     scaleMode: "fit",
@@ -508,7 +515,7 @@ const hangarServiceGantryBuilders = [
     .position(-2.15, 1.28, ARENA_CENTER_Z - 4.42)
     .rotate(0, 0.22, 0)
     .runtime(game.runtimeNode("mech-arena-fusion-turbine-left", { tags: ["arena-prop", "renderer-owned"] })),
-  model(rootAssets.reactorFusionTurbineMeshy, {
+  model((rootAssets as unknown as Record<string, typeof rootAssets.blockfallEnergyGeneratorCoreMeshy>).reactorFusionTurbineMeshy ?? rootAssets.blockfallEnergyGeneratorCoreMeshy, {
     name: "mech-arena-fusion-turbine-right",
     role: "setDressing",
     scaleMode: "fit",

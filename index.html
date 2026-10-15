@@ -3,23 +3,33 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Aura3D 4.0.0 Examples</title>
+    <title>Aura3D 4.0.0 Examples &amp; Architecture Registry</title>
     <style>
-      :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #0b0f14; color: #f4f7fb; }
+      :root { color-scheme: dark; font-family: 'Whitney', 'Graphik', -apple-system, BlinkMacSystemFont, sans-serif; background: #0b0f14; color: #f4f7fb; }
       body { margin: 0; min-height: 100vh; background: #0b0f14; }
       main { width: min(1120px, calc(100vw - 40px)); margin: 0 auto; padding: 36px 0 52px; }
       header { border-bottom: 1px solid #263140; padding-bottom: 22px; margin-bottom: 28px; }
-      h1 { margin: 0 0 8px; font-size: 30px; letter-spacing: 0; }
-      h2 { margin: 0 0 12px; font-size: 20px; letter-spacing: 0; }
-      p { margin: 0; color: #aab5c4; line-height: 1.5; max-width: 760px; }
+      h1 { margin: 0 0 8px; font-size: 30px; letter-spacing: 0; font-weight: 600; }
+      h2 { margin: 0 0 12px; font-size: 20px; letter-spacing: 0; font-weight: 500; }
+      h3 { margin: 0 0 8px; font-size: 15px; letter-spacing: 0; font-weight: 500; }
+      p { margin: 0; color: #aab5c4; line-height: 1.45; font-size: 14px; max-width: 820px; }
+      code, pre { font-family: 'Monument Grotesk Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
       .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
       .route-card { display: grid; gap: 10px; min-height: 172px; padding: 18px; border: 1px solid #2d3544; border-radius: 8px; color: #f4f7fb; background: #111821; }
       .route-card:hover { border-color: #58a6ff; }
       a { color: #9fd3ff; text-decoration: none; }
-      small { color: #8fa1b4; text-transform: uppercase; }
-      strong { font-size: 18px; }
+      small { color: #8fa1b4; text-transform: uppercase; font-size: 12px; }
+      strong { font-size: 18px; font-weight: 500; }
       .route-summary { color: #aab5c4; font-size: 13px; line-height: 1.45; }
       section { margin-top: 30px; }
+      .compare-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; line-height: 1.4; border: 1px solid #263140; background: #111821; }
+      .compare-table th, .compare-table td { padding: 9px 12px; border-bottom: 1px solid #1e2836; text-align: left; vertical-align: top; }
+      .compare-table th { color: #8fa1b4; font-weight: 500; text-transform: uppercase; font-size: 12px; background: #0e141c; }
+      .compare-table td.aura-col { color: #d8f8e8; }
+      .compare-table td.base-col { color: #95a3b5; }
+      .code-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; margin-top: 16px; }
+      .code-panel { border: 1px solid #2d3544; border-radius: 8px; background: #111821; padding: 14px; overflow-x: auto; }
+      .code-panel pre { margin: 8px 0 0; line-height: 1.45; color: #dbe7f5; }
     </style>
   </head>
   <body>
@@ -29,7 +39,7 @@
         <p>
           Aura3D 4.0.0 (<code>@aura3d/engine@4.0.0</code>, <code>create-aura3d@4.0.0</code>, <code>@aura3d/cli@4.0.0</code>) live examples are grouped by product workflow: typed asset references,
           materials and lights, camera motion, WebGPU compute + WebGL2 rendering pipeline, deterministic physics &amp; game kits (<code>game.platformer</code>, <code>game.racing</code>, <code>game.fallingBlocks</code>, <code>game.fighting</code>), 19 playable 3D games and interactive showcases powered by custom Meshy 3D PBR hero vehicles, characters, and architectural props, diagnostics, screenshots, and
-          deployment checks for agent-written browser 3D. See the <a href="https://github.com/auraoneai/aura3d/releases/tag/v4.0.0">v4.0.0 release tag</a> and <a href="https://github.com/auraoneai/aura3d/blob/main/docs/project/aura3d-400-release-notes.md">aura3d-400-release-notes.md</a>.
+          deployment checks for agent-written browser 3D. See the <a href="https://github.com/auraoneai/aura3d/releases/tag/v4.0.0">v4.0.0 release tag</a>, <a href="https://github.com/auraoneai/aura3d/blob/main/docs/project/aura3d-400-release-notes.md">aura3d-400-release-notes.md</a>, and the <a href="/docs/aura3d-vs-threejs.html">Aura3D 4.0.0 vs. Raw Three.js comparison</a>.
         </p>
       </header>
 
@@ -60,6 +70,110 @@
             <span class="route-summary">4,096 instances through public `Scene.createInstancedMesh` in one draw call, with dynamic per-instance matrices and per-instance colours.</span>
             <small><a href="/apps/instancing-performance/">live</a> · <a href="/apps/instancing-performance/src/main.ts">source</a> · <a href="/docs/agents/api-surface.md">docs</a></small>
           </article>
+        </div>
+      </section>
+
+      <section id="why-aura3d-vs-threejs">
+        <h2>Why Teams Choose Aura3D 4.0.0 Over Raw Three.js</h2>
+        <p>
+          <strong>Stop assembling 14 fragile npm packages to render a 3D scene.</strong> Raw Three.js forces teams to hand-wire <code>WebGLRenderer</code>, <code>PerspectiveCamera</code>, <code>OrbitControls</code>, <code>GLTFLoader</code>, <code>DRACOLoader</code>, <code>KTX2Loader</code>, <code>RGBELoader</code>, <code>EffectComposer</code>, <code>PMREMGenerator</code>, <code>Rapier3D</code>, <code>Recast</code>, manual resize observers, and recursive <code>dispose()</code> loops. Aura3D 4.0.0 (<code>@aura3d/engine@4.0.0</code>) replaces ~120 lines of manual boilerplate with 18 lines of declarative, type-safe TypeScript.
+        </p>
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Capability</th>
+              <th>Raw Three.js Stack (<code>three@0.185.x</code> + addons)</th>
+              <th>Aura3D 4.0.0 (<code>@aura3d/engine@4.0.0</code> + <code>@aura3d/cli@4.0.0</code>)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Scene Boot &amp; Lifecycle</td>
+              <td class="base-col">~120 lines of manual renderer, camera, ResizeObserver, RAF loop, and recursive dispose()</td>
+              <td class="aura-col">18 lines with <code>createAuraApp()</code>: deterministic clock, resize observer, context recovery, and <code>app.dispose()</code></td>
+            </tr>
+            <tr>
+              <td>Asset Pipeline &amp; Type Safety</td>
+              <td class="base-col">Untyped string URLs, silent 404s, manual DRACOLoader / KTX2Loader WASM worker paths</td>
+              <td class="aura-col">Compile-time typed <code>src/aura-assets.ts</code> from <code>aura.assets.json</code> with SHA-256 digests and SPDX checks</td>
+            </tr>
+            <tr>
+              <td>Materials &amp; Lighting</td>
+              <td class="base-col">Manual PMREMGenerator, separate RGBELoader setup, ad-hoc tone mapping</td>
+              <td class="aura-col">Built-in physical PBR: clearcoat, sheen, transmission, dispersion, iridescence, anisotropy, procedural sky + IBL, AgX/ACES</td>
+            </tr>
+            <tr>
+              <td>Post-Processing</td>
+              <td class="base-col">External EffectComposer passes and manual render-target ping-pong management</td>
+              <td class="aura-col">Integrated HDR post stack (<code>bloom</code>, <code>ssao</code>, <code>ssr</code>, <code>dof</code>, <code>motionBlur</code>, <code>taa</code>, <code>fxaa</code>)</td>
+            </tr>
+            <tr>
+              <td>WebGPU &amp; Compute</td>
+              <td class="base-col">Experimental split entry points and manual storage-buffer management</td>
+              <td class="aura-col">First-class WebGPU compute shaders, GPU frustum + Hi-Z occlusion culling, and GPU particles alongside WebGL2</td>
+            </tr>
+            <tr>
+              <td>Physics &amp; Character Control</td>
+              <td class="base-col">Bring-your-own Rapier WASM init, custom fixed-step accumulator, custom vehicle math</td>
+              <td class="aura-col">Built-in deterministic fixed-step physics, CCD, joints, swept character controller, and raycast vehicles</td>
+            </tr>
+            <tr>
+              <td>Navigation &amp; Crowd AI</td>
+              <td class="base-col">Bring-your-own recast-navigation WASM glue and custom steering loops</td>
+              <td class="aura-col">Built-in navmesh generation, A* corridor pathfinding, and multi-agent crowd steering</td>
+            </tr>
+            <tr>
+              <td>Advanced Rendering</td>
+              <td class="base-col">Fragmented third-party Gaussian Splat viewers and manual stencil portal passes</td>
+              <td class="aura-col">Native <code>splats.createGaussianSplat()</code>, recursive <code>portals.createPortalWorld()</code>, decals, trails, and water</td>
+            </tr>
+            <tr>
+              <td>Three.js Migration Path</td>
+              <td class="base-col">Rewrite from scratch or maintain imperative THREE.* code indefinitely</td>
+              <td class="aura-col">Automated AST codemod (<code>aura3d migrate three</code>) and 5 migration starter templates</td>
+            </tr>
+            <tr>
+              <td>Pre-Deploy Verification</td>
+              <td class="base-col">Manual browser checks; no standard GPU or asset gate in CI</td>
+              <td class="aura-col">Built-in <code>aura3d check-deploy</code> &amp; <code>aura3d evidence</code> with headless Chromium route health and visual QA</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="code-split">
+          <div class="code-panel">
+            <h3>Raw Three.js (~120 lines of manual boilerplate)</h3>
+            <pre><code>import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+// + 110 lines of manual WebGLRenderer, PMREMGenerator, WASM worker paths,
+// shadow traversal, AnimationMixer, ResizeObserver, and recursive dispose()...</code></pre>
+          </div>
+          <div class="code-panel">
+            <h3>Aura3D 4.0.0 (18 lines of declarative, type-safe TypeScript)</h3>
+            <pre><code>import { createAuraApp, environment, light, model, orbitCamera, post } from '@aura3d/engine';
+import { assets } from './aura-assets';
+
+const app = await createAuraApp({
+  target: '#app',
+  scene: [
+    environment.studio({ intensity: 1.15, sky: 'procedural-dusk' }),
+    orbitCamera({ position: [2.8, 1.9, 3.6], target: [0, 0.85, 0], damping: 0.08 }),
+    light.directional({ position: [4, 7, 5], intensity: 3.2, color: '#fff4e6', castShadow: true }),
+    model(assets.damagedHelmet, {
+      position: [0, 0.85, 0],
+      castShadow: true,
+      receiveShadow: true,
+      clip: 'Idle',
+    }),
+    post({ toneMapping: 'agx', exposure: 1.1, bloom: { intensity: 0.35, threshold: 0.85 }, ssao: true }),
+  ],
+});</code></pre>
+          </div>
         </div>
       </section>
     </main>

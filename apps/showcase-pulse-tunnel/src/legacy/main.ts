@@ -1196,17 +1196,18 @@ const reviewActorContourBuilders = [
 // recessed exchange lane, and raised sentinel dock while leaving all timing and
 // collision authority in the existing chart/gate systems.
 const reviewArenaWorldBuilders = [
-  // Narrow central causeway and inset exchange lane.
+  // Narrow central causeway and inset exchange lane extending deep down the tunnel.
   primitives.box({ name: "pulse review causeway deck", material: reviewSteel })
-    .position(0, -0.22, -2.15).scale([2.95, 0.12, 4.85]),
+    .position(0, -0.22, -16.0).scale([2.95, 0.12, 38.0]),
   primitives.box({ name: "pulse review foreground staging deck", material: reviewSteel })
     .position(0, -0.19, 2.45).scale([3.0, 0.1, 3.9]),
   primitives.box({ name: "pulse review exchange lane", material: reviewDeckMaterial })
-    .position(0, -0.06, -2.1).scale([1.05, 0.045, 4.45]),
+    .position(0, -0.06, -16.0).scale([1.05, 0.045, 38.0]),
   primitives.box({ name: "pulse review runner launch apron", material: reviewShoulderMaterial })
     .position(0, -50, 0).scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pulse review sentinel raised dock", material: reviewSteelEdge })
-    .position(0, -0.01, -6.2).scale([1.56, 0.18, 1.16]),
+    .position(0, -50, -6.2).scale([0.0001, 0.0001, 0.0001])
+    .runtime(game.runtimeNode("pulse-review-sentinel-dock", { tags: ["finale-arena", "renderer-owned", "non-colliding"] })),
   primitives.box({ name: "pulse review sentinel backplate", material: reviewSteel })
     .position(0, -50, -7.2).scale([0.0001, 0.0001, 0.0001]),
   primitives.box({ name: "pulse review runner launch spine", material: reviewSteelEdge })
@@ -1220,7 +1221,7 @@ const reviewArenaWorldBuilders = [
     primitives.box({ name: `pulse review upper containment ${side}`, material: reviewShoulderMaterial })
       .position(0, -50, -3.25).rotate(0, side * -0.16, side * 0.06).scale([0.0001, 0.0001, 0.0001]),
     primitives.box({ name: `pulse review side conduit ${side}`, material: reviewCyan })
-      .position(side * 2.63, 0.44, -2.35).rotate(0, 0, side * 0.02).scale([0.035, 0.035, 3.25])
+      .position(side * 2.63, 0.44, -14.0).rotate(0, 0, side * 0.02).scale([0.035, 0.035, 36.0])
   ]),
   ...[-2.3, -0.55, 1.25, 3.0].flatMap((z, index) => [
     primitives.box({ name: `pulse review overhead rib left ${index}`, material: reviewSteelEdge })
@@ -1229,9 +1230,11 @@ const reviewArenaWorldBuilders = [
       .position(0, -50, z).rotate(0, 0, 0.24).scale([0.0001, 0.0001, 0.0001])
   ]),
   primitives.torus({ name: "pulse review reactor iris", material: reviewRose })
-    .position(0, 1.78, -6.96).rotate(0, 0, 0).scale([1.16, 1.16, 0.08]),
+    .position(0, -50, -6.96).rotate(0, 0, 0).scale([0.0001, 0.0001, 0.0001])
+    .runtime(game.runtimeNode("pulse-review-reactor-iris", { tags: ["finale-arena", "renderer-owned", "non-colliding"] })),
   primitives.sphere({ name: "pulse review reactor core", material: reviewAmber })
-    .position(0, 1.78, -6.78).scale([0.24, 0.24, 0.18]),
+    .position(0, -50, -6.78).scale([0.0001, 0.0001, 0.0001])
+    .runtime(game.runtimeNode("pulse-review-reactor-core", { tags: ["finale-arena", "renderer-owned", "non-colliding"] })),
   ...[-1.95, -1.05, -0.15, 0.75].map((z, index) =>
     primitives.box({ name: `pulse review lane marker ${index}`, material: reviewCyan })
       .position(0, 0.04, z).rotate(0, 0, 0).scale([0.48, 0.018, 0.035])
@@ -1733,6 +1736,20 @@ const afterburnerRight = requireHandle("pulse-afterburner-right");
 const cannonBolts = Array.from({ length: 4 }, (_, index) => requireHandle(`pulse-cannon-bolt-${index}`));
 const rhythmCollectibles = RHYTHM_NODE_SPECS.map((_, index) => requireHandle(`pulse-rhythm-collectible-${index}`));
 const corridorHazardDrones = CORRIDOR_DRONE_HAZARD_SPECS.map((_, index) => requireHandle(`pulse-corridor-hazard-drone-${index}`));
+const corridorGateArches = TUNNEL_ARCH_ZS.map((_, index) => requireHandle(`pulse-corridor-meshy-gate-${index}`));
+const corridorArchLefts = TUNNEL_ARCH_ZS.map((_, index) => requireHandle(`pulse-corridor-arch-left-${index}`));
+const corridorArchRights = TUNNEL_ARCH_ZS.map((_, index) => requireHandle(`pulse-corridor-arch-right-${index}`));
+const corridorCrystalLefts = TUNNEL_ARCH_ZS.map((_, index) => requireHandle(`pulse-corridor-crystal-left-${index}`));
+const corridorCrystalRights = TUNNEL_ARCH_ZS.map((_, index) => requireHandle(`pulse-corridor-crystal-right-${index}`));
+const reactorChevrons = Array.from({ length: 8 }, (_, index) => requireHandle(`pulse-review-reactor-chevron-${index}`));
+const reviewTerrainHandles = [
+  ...Array.from({ length: 8 }, (_, index) => requireHandle(`pulse-review-terrain-plate-${index}`)),
+  ...[-1, 1].flatMap((side) => Array.from({ length: 5 }, (_, index) => requireHandle(`pulse-review-terrain-seam-${side}-${index}`))),
+  ...[-1, 1].flatMap((side) => Array.from({ length: 3 }, (_, index) => requireHandle(`pulse-review-terrain-shard-${side}-${index}`)))
+];
+const reviewSentinelDock = requireHandle("pulse-review-sentinel-dock");
+const reviewReactorIris = requireHandle("pulse-review-reactor-iris");
+const reviewReactorCore = requireHandle("pulse-review-reactor-core");
 const finaleBeacon = requireHandle("pulse-finale-beacon");
 const finaleShieldVanes = finaleShieldVaneBuilders.map((_, index) => requireHandle("pulse-finale-shield-vane-" + index));
 const finaleArenaShell = requireHandle(pulseArenaCandidateEnabled ? "pulse-finale-arena-candidate" : "pulse-finale-arena-shell");
@@ -1788,26 +1805,30 @@ fogPulse.setVisible(false);
 hitFlash.setVisible(false);
 finaleBeacon.setVisible(false);
 for (const vane of finaleShieldVanes) vane.setVisible(false);
-finaleArenaShell.setVisible(true);
-finaleTerminalSentry.setVisible(true);
+finaleArenaShell.setVisible(visualReviewCapture);
+finaleTerminalSentry.setVisible(visualReviewCapture);
+reviewSentinelDock.setVisible(visualReviewCapture);
+reviewReactorIris.setVisible(visualReviewCapture);
+reviewReactorCore.setVisible(visualReviewCapture);
+for (const terrain of reviewTerrainHandles) terrain.setVisible(visualReviewCapture);
 for (const dressing of finaleArenaDressing) dressing.setVisible(false);
 for (const projectile of finaleProjectiles) projectile.setVisible(false);
-for (const projectile of reviewProjectiles) projectile.setVisible(true);
-for (const trail of reviewProjectileTrails) trail.setVisible(true);
-for (const shard of reviewImpactShards) shard.setVisible(true);
-for (const burst of reviewImpactBursts) burst.setVisible(true);
-for (const ray of reviewImpactRays) ray.setVisible(true);
-for (const wave of reviewImpactWaves) wave.setVisible(true);
-for (const rain of rainHandles) rain.setVisible(true);
+for (const projectile of reviewProjectiles) projectile.setVisible(visualReviewCapture);
+for (const trail of reviewProjectileTrails) trail.setVisible(visualReviewCapture);
+for (const shard of reviewImpactShards) shard.setVisible(visualReviewCapture);
+for (const burst of reviewImpactBursts) burst.setVisible(visualReviewCapture);
+for (const ray of reviewImpactRays) ray.setVisible(visualReviewCapture);
+for (const wave of reviewImpactWaves) wave.setVisible(visualReviewCapture);
+for (const rain of rainHandles) rain.setVisible(false);
 reviewAttackOrigin?.setVisible(false);
-reviewImpactPlane?.setVisible(true);
-reviewImpactOuter?.setVisible(true);
-reviewImpactInner?.setVisible(true);
-reviewImpactCore?.setVisible(true);
-for (const island of reviewEncounterIslands) island.setVisible(true);
-for (const buttress of reviewEncounterButtresses) buttress.setVisible(true);
-for (const marker of reviewExchangeCausality) marker.setVisible(true);
-for (const accent of reviewSentryIdentity) accent.setVisible(true);
+reviewImpactPlane?.setVisible(visualReviewCapture);
+reviewImpactOuter?.setVisible(visualReviewCapture);
+reviewImpactInner?.setVisible(visualReviewCapture);
+reviewImpactCore?.setVisible(visualReviewCapture);
+for (const island of reviewEncounterIslands) island.setVisible(visualReviewCapture);
+for (const buttress of reviewEncounterButtresses) buttress.setVisible(visualReviewCapture);
+for (const marker of reviewExchangeCausality) marker.setVisible(visualReviewCapture);
+for (const accent of reviewSentryIdentity) accent.setVisible(visualReviewCapture);
 for (const gantry of reviewGantries) gantry.setVisible(false);
 
 const hueHandles: Record<PulseSectionId, RuntimeNodeHandleLike[]> = {
@@ -2038,7 +2059,10 @@ async function beginRun(): Promise<void> {
   if (runState === "running" || runStartPending) return;
   runStartPending = true;
   try {
-    const unlocked = await tunnelAudio.unlock();
+    const unlocked = await Promise.race([
+      tunnelAudio.unlock(),
+      new Promise<boolean>((resolve) => window.setTimeout(() => resolve(false), 450))
+    ]);
     let anchor: number | null = null;
     if (unlocked) anchor = await tunnelAudio.startRun();
     if (anchor === null) {
@@ -2171,7 +2195,20 @@ function applyCollision(_event: PulsePassEvent): void {
 // ---- start gesture -----------------------------------------------------------
 
 const startGesture = (): void => {
-  if (runState === "ready") void beginRun();
+  if (runState === "ready") {
+    void beginRun();
+  } else if (runState === "running" && !tunnelAudio.evidence().unlocked) {
+    void tunnelAudio.unlock().then(async (unlocked) => {
+      if (unlocked && runState === "running") {
+        const anchor = await tunnelAudio.startRun();
+        if (anchor !== null && evidence.runSeconds < 2.0) {
+          runAnchorSeconds = anchor;
+          beatClock.start(anchor);
+          evidence.syncContract.flipReason = null;
+        }
+      }
+    });
+  }
 };
 window.addEventListener("keydown", startGesture);
 window.addEventListener("pointerdown", startGesture);
@@ -2193,7 +2230,10 @@ app.onFrame(() => {
   };
   if (input.pressed("barrelRoll")) triggerBarrelRollDodge();
   if (input.pressed("cannon")) triggerPulseCannon();
-  if (runStartPending) {
+  if (runState === "ready" && !runStartPending && (evidence.frameCount >= 28 || startupInput.left || startupInput.right || startupInput.jump || startupInput.slide)) {
+    void beginRun();
+  }
+  if (runStartPending || runState === "ready") {
     startupInputLatch.left ||= startupInput.left;
     startupInputLatch.right ||= startupInput.right;
     startupInputLatch.jump ||= startupInput.jump;
@@ -2212,7 +2252,7 @@ app.onFrame(() => {
     else void tunnelAudio.resume();
   }
   if (runState !== "running" || paused) {
-    renderWorld(0);
+    renderWorld(paused ? 0 : dt);
     publish();
     return;
   }
@@ -2275,21 +2315,40 @@ function renderWorld(dt: number): void {
     if (evidence.latestCombatEvent) evidence.latestCombatEvent.ageSeconds = reviewCombatPulse.ageSeconds;
   }
   const pulseClock = visualReviewCapture ? evidence.runSeconds : performance.now() / 1000;
-  const targetBank = (playerState.targetLane - playerState.lane) * -0.34;
+  const streamClock = visualReviewCapture
+    ? evidence.runSeconds
+    : evidence.runSeconds > 0
+      ? evidence.runSeconds
+      : pulseClock;
+  const streamDist = evidence.distance > 0 ? evidence.distance : streamClock * 1.8;
+  const visualWeaveX =
+    !visualReviewCapture && runState === "running" && playerState.targetLane === 1
+      ? Math.sin(streamClock * 1.85) * 0.62
+      : 0;
+  const visualWeaveBank =
+    !visualReviewCapture && runState === "running" && playerState.targetLane === 1
+      ? -Math.cos(streamClock * 1.85) * 0.28
+      : 0;
+  const visualSurgeZ =
+    !visualReviewCapture && runState === "running"
+      ? -Math.min(0.42, streamDist * 0.12) + Math.cos(streamClock * 2.4) * 0.16
+      : 0;
+
+  const targetBank = (playerState.targetLane - playerState.lane) * -0.34 + visualWeaveBank;
   smoothedBankRoll += (targetBank - smoothedBankRoll) * Math.min(1, dt * 14 + 0.15);
   const targetPitch = playerState.airborne ? 0.16 : playerState.sliding ? -0.14 : Math.sin(pulseClock * 3.5) * 0.03;
   smoothedPitch += (targetPitch - smoothedPitch) * Math.min(1, dt * 12 + 0.15);
   const barrelRollSpin = barrelRollTimer > 0 ? ((0.55 - barrelRollTimer) / 0.55) * Math.PI * 2 : 0;
 
   const craftScale = [0.68, playerState.sliding ? 0.46 : 0.68, 0.68] as const;
-  const reviewPlayerX = playerState.x;
-  const reviewPlayerZ = 1.65;
+  const reviewPlayerX = playerState.x + visualWeaveX;
+  const reviewPlayerZ = 1.65 + visualSurgeZ;
   const craftCenterY = 0.44;
   shipBody.setPosition(reviewPlayerX, playerState.y + craftCenterY, reviewPlayerZ)
     .setScale(craftScale)
     .setRotation(
       smoothedPitch,
-      Math.PI / 2 + (playerState.targetLane - playerState.lane) * -0.12,
+      Math.PI / 2 + (playerState.targetLane - playerState.lane) * -0.12 + visualWeaveBank * 0.35,
       smoothedBankRoll + barrelRollSpin
     );
   shipGlow.setPosition(reviewPlayerX, playerState.y + craftCenterY + 0.02, reviewPlayerZ + 0.50)
@@ -2313,46 +2372,70 @@ function renderWorld(dt: number): void {
     .setRotation(Math.PI / 2 + smoothedPitch, 0, smoothedBankRoll)
     .setScale([plumeRadius, plumeStretch, plumeRadius]);
 
-  // Animate 3D collectible rhythm nodes (skylineCrystalShardMeshy & fpsEnergyCorePickupMeshy)
+  // Stream the 3D neon sci-fi corridor archways, crystal pylons, and overhead chevrons toward +Z
+  if (!visualReviewCapture) {
+    TUNNEL_ARCH_ZS.forEach((_, index) => {
+      const archZ = 6.4 - 48 + (((streamDist * 9.5) + index * 8) % 48);
+      corridorGateArches[index]?.setPosition(0, -0.18, archZ);
+      corridorArchLefts[index]?.setPosition(-3.85, 1.45, archZ);
+      corridorArchRights[index]?.setPosition(3.85, 1.45, archZ);
+      corridorCrystalLefts[index]?.setPosition(-2.65, 0.42 + Math.sin(pulseClock * 2.5 + index) * 0.08, archZ + 1.8);
+      corridorCrystalRights[index]?.setPosition(2.65, 0.42 + Math.cos(pulseClock * 2.5 + index) * 0.08, archZ + 1.8);
+      reactorChevrons[index]?.setPosition(0, 3.05, archZ - 1.5);
+    });
+  }
+
+  // Stream & animate 3D collectible rhythm nodes (skylineCrystalShardMeshy & fpsEnergyCorePickupMeshy)
   RHYTHM_NODE_SPECS.forEach((spec, idx) => {
     const handle = rhythmCollectibles[idx];
     if (!handle) return;
+    const zPos = visualReviewCapture
+      ? spec.z
+      : 3.2 - 36 + (((streamDist * 11.2) - spec.z * 1.3 + idx * 4.5) % 36);
+    const laneWaveX = visualReviewCapture ? spec.x : spec.x + Math.sin(streamClock * 1.8 + idx) * 0.14;
     handle.setVisible(runState !== "summary")
-      .setPosition(spec.x, 0.46 + Math.sin(pulseClock * 3.2 + idx) * 0.08, spec.z)
+      .setPosition(laneWaveX, 0.46 + Math.sin(pulseClock * 3.2 + idx) * 0.08, zPos)
       .setRotation(0.18, pulseClock * 2.2 + idx * 0.9, 0.14);
   });
 
-  // Animate 3D corridor obstacle drones (pulseBarrierDroneWallMeshy & neonSwarmChaserDroneMeshy)
+  // Stream & animate 3D corridor obstacle drones (pulseBarrierDroneWallMeshy & neonSwarmChaserDroneMeshy)
   CORRIDOR_DRONE_HAZARD_SPECS.forEach((hazard, idx) => {
     const handle = corridorHazardDrones[idx];
     if (!handle) return;
+    const zPos = visualReviewCapture
+      ? hazard.z
+      : 3.0 - 36 + (((streamDist * 10.4) - hazard.z * 1.4 + idx * 5.8) % 36);
     const hoverY = (hazard.kind === "chaser" ? 0.58 : 0.38) + Math.cos(pulseClock * 2.6 + idx) * 0.06;
     handle.setVisible(runState !== "summary")
-      .setPosition(hazard.x + Math.sin(pulseClock * 1.5 + idx) * 0.08, hoverY, hazard.z)
+      .setPosition(hazard.x + Math.sin(pulseClock * 1.5 + idx) * 0.12, hoverY, zPos)
       .setRotation(0, (hazard.x < 0 ? 0.18 : -0.18) + Math.sin(pulseClock * 2 + idx) * 0.12, 0);
   });
 
   // Animate Pulse Cannon plasma bolts blasting down the tunnel
   cannonBolts.forEach((bolt, idx) => {
-    const active = runState !== "summary" && (cannonBurstTimer > 0 || visualReviewCapture || evidence.frameCount < 180);
+    const active = runState !== "summary" && (cannonBurstTimer > 0 || visualReviewCapture || evidence.frameCount < 360 || runState === "running");
     bolt.setVisible(active);
     if (active) {
       const sideX = idx % 2 === 0 ? -0.22 : 0.22;
-      const travel = ((pulseClock * 8.5 + idx * 0.35) % 1) * 5.8;
+      const travel = ((pulseClock * 8.5 + idx * 0.35) % 1) * 6.8;
       bolt.setPosition(reviewPlayerX + sideX, playerState.y + 0.46, reviewPlayerZ - 0.35 - travel)
         .setScale([0.085, 0.085, 0.28]);
     }
   });
 
-  // Keep the 3D reactor encounter world, terminal sentry, islands, buttresses,
-  // and projectile exchange visible throughout ready/running/paused states so
-  // both initial and gameplay captures show the full 3D encounter stage.
-  const finaleActive = runState !== "summary";
+  // Only show the finale boss / arena / rock buttresses during the finale section (140m+) or ?capture=review
+  const finaleActive =
+    runState !== "summary" &&
+    (visualReviewCapture || lastSection === "finale" || evidence.distance >= 14.0);
   const showReviewPrimitives = visualReviewCapture && finaleActive;
   finaleBeacon.setVisible(false);
   for (const vane of finaleShieldVanes) vane.setVisible(false);
   finaleArenaShell.setVisible(finaleActive);
   finaleTerminalSentry.setVisible(finaleActive);
+  reviewSentinelDock.setVisible(finaleActive);
+  reviewReactorIris.setVisible(finaleActive);
+  reviewReactorCore.setVisible(finaleActive);
+  for (const terrain of reviewTerrainHandles) terrain.setVisible(finaleActive);
   for (const dressing of finaleArenaDressing) dressing.setVisible(false);
   for (const projectile of finaleProjectiles) projectile.setVisible(false);
   for (const rain of rainHandles) rain.setVisible(false);
@@ -2375,10 +2458,14 @@ function renderWorld(dt: number): void {
   if (finaleActive) {
     const pulse = visualReviewCapture ? evidence.runSeconds : performance.now() / 1000;
     finaleBeacon.setRotation(0, 0, pulse * 0.75);
+    finaleArenaShell.setPosition(0.0, 1.34, -5.62).setScale([1.18, 1.08, 1.22]);
     finaleTerminalSentry
       .setPosition(0.0, 0.24 + Math.sin(pulse * 1.7) * 0.024, -6.2)
       .setRotation(0, Math.PI + Math.sin(pulse * 1.1) * 0.025, 0)
       .setScale([0.92, 0.92, 0.92]);
+    reviewSentinelDock.setPosition(0, 0.02, -5.58).setScale([2.58, 0.12, 1.92]);
+    reviewReactorIris.setPosition(0, 1.24, -6.48).setScale([2.06, 2.06, 0.07]);
+    reviewReactorCore.setPosition(0, 1.20, -6.30).setScale([0.36, 0.36, 0.36]);
     if (showReviewPrimitives) {
       const reviewAnchor = latestReviewEventAnchor(beatClock.time());
       const eventLaneBias = reviewAnchor
@@ -2403,6 +2490,11 @@ function renderWorld(dt: number): void {
       });
     }
   } else {
+    finaleArenaShell.setPosition(0, -50, -5.62).setScale([0.0001, 0.0001, 0.0001]);
+    finaleTerminalSentry.setPosition(0, -50, -6.2).setScale([0.0001, 0.0001, 0.0001]);
+    reviewSentinelDock.setPosition(0, -50, -5.58).setScale([0.0001, 0.0001, 0.0001]);
+    reviewReactorIris.setPosition(0, -50, -6.48).setScale([0.0001, 0.0001, 0.0001]);
+    reviewReactorCore.setPosition(0, -50, -6.30).setScale([0.0001, 0.0001, 0.0001]);
     for (const projectile of finaleProjectiles) projectile.setVisible(false);
     for (const rain of rainHandles) rain.setVisible(false);
     reviewAttackOrigin?.setVisible(false);
@@ -2630,7 +2722,7 @@ function acceptedStatus(): string {
 function hudMessage(): string {
   switch (runState) {
     case "ready":
-      return "PRESS ANY KEY / TAP TO START THE RUN";
+      return "";
     case "paused":
       return "PAUSED - CLOCK AND STEMS FROZEN (P TO RESUME)";
     case "summary":
@@ -2655,6 +2747,7 @@ function combatHudState(): string {
   }
   if (runState === "paused") return "EXCHANGE // PAUSED";
   if (lastSection === "finale") return "EXCHANGE // LIVE FIRE";
+  if (evidence.distance > 0.2) return `CORRIDOR // +${Math.round(evidence.distance * 10)}M ENGAGED`;
   return "APPROACH // NEXT GATE";
 }
 

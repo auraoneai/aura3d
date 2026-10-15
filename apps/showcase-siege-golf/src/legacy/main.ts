@@ -177,7 +177,7 @@ interface PendingResultReveal {
 }
 let pendingResultReveal: PendingResultReveal | null = null;
 type SiegeCameraPhase = "opening" | "aim" | "flight" | "settle";
-let cameraPhase: SiegeCameraPhase = visualReviewCapture ? "aim" : "opening";
+let cameraPhase: SiegeCameraPhase = "aim";
 let settleCameraFrames = 0;
 let mobileAimDirection: -1 | 0 | 1 = 0;
 interface RecordedShotInput {
@@ -245,6 +245,7 @@ let trailHandles: AuraRuntimeNodeHandle[] = [];
 let aimHandles: AuraRuntimeNodeHandle[] = [];
 let strikeRingHandles: AuraRuntimeNodeHandle[] = [];
 let strikeChevronHandles: AuraRuntimeNodeHandle[] = [];
+let ballHighlightRingHandle: AuraRuntimeNodeHandle | undefined;
 let shotClubShaftHandle: AuraRuntimeNodeHandle | undefined;
 let shotClubHeadHandle: AuraRuntimeNodeHandle | undefined;
 let shotClubGripHandle: AuraRuntimeNodeHandle | undefined;
@@ -268,6 +269,8 @@ let lastShotWasManual = false;
 let cumulativeTargetsSunk = 0;
 let cumulativeTargetsDown = 0;
 let holeCompleteHoldFrames = 0;
+const autoPlayRequested = new URLSearchParams(window.location.search).get("autoplay") === "1";
+let openingAutoShotFired = false;
 
 function inOpeningShowcaseWindow(): boolean {
   return !evidenceCapture && (performance.now() - mountWallMs < 7800 || frameCount < 460);
@@ -275,9 +278,9 @@ function inOpeningShowcaseWindow(): boolean {
 
 const isAutoDemoActive = (): boolean =>
   !evidenceCapture
-  && !visualReviewCapture
+  && (visualReviewCapture || autoPlayRequested)
   && !lastShotWasManual
-  && (inOpeningShowcaseWindow() || (performance.now() - lastManualInputWallMs > 2200));
+  && !openingAutoShotFired;
 
 function primitiveNode(
   name: string,
@@ -356,6 +359,9 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
     if (v.source === "model") {
       const isBall = v.name === "golf-ball";
       const isPin = v.name.startsWith("pin-");
+      const initialPos: readonly [number, number, number] = isBall
+        ? [v.position[0], Math.max(0.22, v.position[1] + 0.045), v.position[2]]
+        : v.position;
       nodes.push(model(SIEGE_MODEL_ASSETS[v.typedAsset!], {
         name: v.name,
         role: isBall ? "primaryCharacter" : "setDressing",
@@ -363,7 +369,7 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
         castShadow: true,
         receiveShadow: true,
         targetMaxDimension: isBall
-          ? (visualReviewCapture ? 0.34 : 0.30)
+          ? 0.36
           : isPin
             ? 0.42
             : (v.targetMaxDimension ?? 1) * 0.72,
@@ -372,15 +378,16 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
               material: material.pbr({
                 name: "dimpled golf ball white",
                 color: "#ffffff",
-                roughness: 0.16,
+                roughness: 0.14,
                 metallic: 0.04,
-                clearcoat: 0.85
+                clearcoat: 0.92
               })
             }
           : {})
       })
-        .position(...v.position)
+        .position(...initialPos)
         .rotate(v.rotation.x, v.rotation.y, v.rotation.z)
+        .scale(isBall ? 1.85 : 1)
         .runtime(game.runtimeNode(v.name, { tags: ["typed-asset", "physics-synced"] }))
         .toJSON());
     } else {
@@ -388,6 +395,23 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
       nodes.push(primitiveNode(v.name, p.shape, p.size, p.color, p.emissive, p.opacity, v.position, v.rotation));
     }
   }
+  nodes.push(
+    primitives.torus({
+      name: "golf-ball-highlight-ring",
+      material: material.emissive({
+        name: "golf ball highlight ring",
+        color: "#38bdf8",
+        emissive: "#38bdf8",
+        emissiveIntensity: 0.85,
+        opacity: 0.96
+      })
+    })
+      .position(flow.hole.tee[0], 0.052, flow.hole.tee[1])
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.22, 0.22, 0.032])
+      .runtime(game.runtimeNode("golf-ball-highlight-ring", { tags: ["renderer-owned", "ball-highlight"] }))
+      .toJSON()
+  );
   for (let i = 0; i < TRAIL_COUNT; i += 1) {
     nodes.push(primitives.sphere({
       name: "trail-pool-" + i,
@@ -1199,6 +1223,7 @@ function resolveHandles(): void {
   for (let i = 0; i < STRIKE_CHEVRON_COUNT; i += 1) {
     strikeChevronHandles.push(mustGetNode(`strike-chevron-${i}`));
   }
+  ballHighlightRingHandle = mustGetNode("golf-ball-highlight-ring");
   shotClubShaftHandle = mustGetNode("shot-club-shaft");
   shotClubHeadHandle = mustGetNode("shot-club-head");
   shotClubGripHandle = mustGetNode("shot-club-grip");
@@ -1277,11 +1302,6 @@ Object.defineProperty(siegeWindow, "__AURA3D_COMPOSITION_PROBE__", {
 function applyCameraPhase(next: SiegeCameraPhase): void {
   if (cameraPhase === next) return;
   cameraPhase = next;
-  app.setScene(buildHoleScene(flow.hole, cameraPhase));
-  resolveHandles();
-  trailPuffs.length = 0;
-  dustPuffs.length = 0;
-  syncVisuals();
   syncAim();
   syncBestGhost();
 }
@@ -1420,7 +1440,7 @@ function loadHole(index: number): void {
   shot.loadHole(hole.aim);
   currentShotInputs = [];
   currentTrajectory = [];
-  cameraPhase = visualReviewCapture ? "aim" : "opening";
+  cameraPhase = "aim";
   settleCameraFrames = 0;
   holeCompleteHoldFrames = 0;
   holeAimIdleFrames = 0;
@@ -1530,7 +1550,7 @@ function resetHoleAction(): void {
   trailPuffs.length = 0;
   hideResultCard();
   pendingResultReveal = null;
-  applyCameraPhase("opening");
+  applyCameraPhase("aim");
   syncAim();
   syncBestGhost();
   pushCue("ui-confirm");
@@ -1652,8 +1672,17 @@ function syncVisuals(): void {
     const e = quatToEuler(pose.rotation);
     if (pose.name === "golf-ball") {
       const spinCurveX = flow.phase === "simulating" ? shotSpin * Math.sin(frameCount * 0.08) * 0.14 : 0;
-      handle.setPosition(pose.position[0] + spinCurveX, Math.max(0.18, pose.position[1] + 0.045), pose.position[2]);
+      const bx = pose.position[0] + spinCurveX;
+      const by = Math.max(0.22, pose.position[1] + 0.045);
+      const bz = pose.position[2];
+      const ballPulseScale = 1.85;
+      handle.setPosition(bx, by, bz);
       handle.setRotation(e.x, e.y, e.z);
+      handle.setScale(ballPulseScale);
+      handle.setVisible(true);
+      ballHighlightRingHandle?.setPosition(bx, 0.052, bz);
+      ballHighlightRingHandle?.setRotation(Math.PI / 2, 0, 0);
+      ballHighlightRingHandle?.setVisible(true);
     } else if (pose.name === "stack-a-crate-0") {
       handle.setPosition(pose.position[0] - 0.82, Math.min(0.24, pose.position[1]), pose.position[2]);
       handle.setRotation(e.x, e.y + 0.14, e.z);
@@ -1868,7 +1897,7 @@ function syncAim(): void {
       handle.setVisible(false);
       continue;
     }
-    const reach = 0.48 + i * guideSpread;
+    const reach = 0.54 + i * guideSpread;
     const curveOffset = shotSpin * tNorm * tNorm * 0.68;
     const arcHopY = 0.055 + Math.sin(tNorm * Math.PI) * 0.14 * (0.55 + previewPower * 0.45);
     const px = teeAnchor[0] + dirX * reach + sideX * curveOffset;
@@ -2149,15 +2178,15 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
 }
 
 function manualAdvanceFrame(): void {
-  for (const code of ["Space", "ArrowLeft", "ArrowRight", "KeyJ", "KeyQ", "KeyE", "KeyP", "Escape", "KeyR", "KeyT", "KeyG"]) {
+  for (const code of ["Space", "ArrowLeft", "ArrowRight", "KeyA", "KeyD", "ArrowUp", "ArrowDown", "KeyW", "KeyS", "KeyJ", "Enter", "KeyQ", "KeyE", "KeyP", "Escape", "KeyR", "KeyT", "KeyG"]) {
     manualPrev.set(code, manualHeld.has(code));
   }
 }
 
 window.addEventListener("keydown", (event) => {
-  markManualInput(event.code === "Space" || event.code === "KeyJ");
+  markManualInput(event.code === "Space" || event.code === "KeyJ" || event.code === "Enter");
   if (!event.repeat) manualHeld.add(event.code);
-  if (flow.phase === "aiming" && (event.code === "Space" || event.code === "ArrowLeft" || event.code === "ArrowRight" || event.code === "KeyQ" || event.code === "KeyE")) {
+  if (flow.phase === "aiming" && (event.code === "Space" || event.code === "ArrowLeft" || event.code === "ArrowRight" || event.code === "KeyA" || event.code === "KeyD" || event.code === "KeyQ" || event.code === "KeyE")) {
     applyCameraPhase("aim");
   }
   if (event.code === "Space" && flow.phase === "aiming" && !shot.charging) spaceTapArmed = true;
@@ -2165,6 +2194,22 @@ window.addEventListener("keydown", (event) => {
   if (event.code === "KeyP" || event.code === "Escape") togglePause();
   else if (event.code === "KeyR") resetHoleAction();
   else if (event.code === "KeyT") resetRoundAction();
+  else if (event.code === "ArrowUp" || event.code === "KeyW") {
+    const nextPower = Math.min(2.3, Number((Number(powerDial.value) + 0.15).toFixed(3)));
+    powerDial.value = String(nextPower);
+    powerDialValue.value = nextPower.toFixed(3);
+    syncAim();
+    syncHud();
+    publishEvidence();
+  }
+  else if (event.code === "ArrowDown" || event.code === "KeyS") {
+    const nextPower = Math.max(0.55, Number((Number(powerDial.value) - 0.15).toFixed(3)));
+    powerDial.value = String(nextPower);
+    powerDialValue.value = nextPower.toFixed(3);
+    syncAim();
+    syncHud();
+    publishEvidence();
+  }
   else if (event.code === "KeyQ") {
     shotSpin = Math.max(-1, Number((shotSpin - 0.25).toFixed(2)));
     syncAim();
@@ -2183,7 +2228,7 @@ window.addEventListener("keydown", (event) => {
     syncHud();
     publishEvidence();
   }
-  else if (event.code === "KeyJ") doPrecisionStrike();
+  else if (event.code === "KeyJ" || event.code === "Enter") doPrecisionStrike();
 }, { passive: true });
 window.addEventListener("keyup", (event) => {
   markManualInput(event.code === "Space");
@@ -2203,7 +2248,7 @@ window.addEventListener("keyup", (event) => {
   }
 }, { passive: true });
 window.addEventListener("keydown", (event) => {
-  if (event.code === "Space" || event.code === "ArrowLeft" || event.code === "ArrowRight" || event.code === "KeyJ" || event.code === "KeyQ" || event.code === "KeyE") {
+  if (event.code === "Space" || event.code === "ArrowLeft" || event.code === "ArrowRight" || event.code === "ArrowUp" || event.code === "ArrowDown" || event.code === "KeyJ" || event.code === "Enter" || event.code === "KeyQ" || event.code === "KeyE") {
     event.preventDefault();
   }
 }, { passive: false });
@@ -2330,8 +2375,8 @@ gameApp.onFrame(({ dt }) => {
     holeAimIdleFrames += 1;
     const aimStep = Math.PI / 90;
     if (frameCount % 2 === 0) {
-      if (manualHeld.has("ArrowLeft")) { markManualInput(); shot.aimBy(-aimStep); }
-      if (manualHeld.has("ArrowRight")) { markManualInput(); shot.aimBy(aimStep); }
+      if (manualHeld.has("ArrowLeft") || manualHeld.has("KeyA")) { markManualInput(); shot.aimBy(-aimStep); }
+      if (manualHeld.has("ArrowRight") || manualHeld.has("KeyD")) { markManualInput(); shot.aimBy(aimStep); }
       if (mobileAimDirection !== 0) { markManualInput(); shot.aimBy(mobileAimDirection * aimStep); }
     }
     if (manualEdge("Space") === "pressed" && !shot.charging) {
@@ -2345,40 +2390,19 @@ gameApp.onFrame(({ dt }) => {
       shot.updateCharge(Math.max(dt, Math.min(physicsElapsedSeconds, 0.25)));
     }
     if (!spaceHeld && !pointerChargeHeld && shot.charging) doStrike();
-    if (!shot.charging && !spaceHeld && !pointerChargeHeld && isAutoDemoActive()) {
-      if (holeAimIdleFrames >= 6 && holeAimIdleFrames < 32) {
-        const sweepAngle = Math.sin(holeAimIdleFrames * 0.22 + holeIndex * 0.9) * 0.095;
-        shot.aimTo(sweepAngle);
-      } else if (holeAimIdleFrames >= 32) {
-        holeAimIdleFrames = 0;
-        applyHoleShot(true);
-      }
+    if (!shot.charging && !spaceHeld && !pointerChargeHeld && isAutoDemoActive() && holeAimIdleFrames >= 108) {
+      openingAutoShotFired = true;
+      holeAimIdleFrames = 0;
+      applyHoleShot(true);
     }
   } else {
     holeAimIdleFrames = 0;
   }
   manualAdvanceFrame();
 
-  // Pace physics substeps to 1 during active auto-demo so the golf
-  // ball rolls smoothly down the siege course instead of teleporting in 4x catch-up steps.
-  const physicsSteps = isAutoDemoActive()
-    ? 1
-    : Math.max(1, Math.min(4, Math.round(physicsElapsedSeconds / flow.sim.fixedDelta)));
+  const physicsSteps = Math.max(1, Math.min(4, Math.round(physicsElapsedSeconds / flow.sim.fixedDelta)));
   const events = flow.update(physicsSteps);
   consumeEvents(events);
-
-  if ((flow.phase === "hole-complete" || flow.phase === "hole-failed") && isAutoDemoActive()) {
-    holeCompleteHoldFrames += 1;
-    hideResultCard();
-    if (holeCompleteHoldFrames >= 45) {
-      holeCompleteHoldFrames = 0;
-      if (flow.phase === "hole-failed") {
-        resetHoleAction();
-      } else {
-        nextHole();
-      }
-    }
-  }
 
   if (pendingResultReveal) {
     if (isAutoDemoActive()) {
