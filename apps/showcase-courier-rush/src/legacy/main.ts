@@ -319,6 +319,8 @@ function sanitizeCityNodes(
       name.startsWith("courier overhead ") ||
       name.startsWith("courier dispatch gantry ") ||
       name.startsWith("courier rain trace ") ||
+      name.startsWith("courier lane marker cross-") ||
+      name.startsWith("courier lane marker main-ew") ||
       name === "courier review structural ribs" ||
       name === "courier review rib practicals" ||
       name === "courier opening crosswalk" ||
@@ -527,7 +529,7 @@ const app = createAuraApp("#app", {
         receiveShadow: true
       })
         .position(SPAWN_POSE.x, 0, SPAWN_POSE.z)
-        .rotate(0, -SPAWN_POSE.heading, 0)
+        .rotate(0, -SPAWN_POSE.heading + Math.PI, 0)
         .runtime({ id: "courier-player-van-mesh", tags: ["player", "vehicle", "typed-primary-asset"] })
     )
     // Legacy low-poly van meshes kept hidden underground so they never cover the hero van.
@@ -1442,9 +1444,9 @@ app.onFrame(({ dt }) => {
   // ---- presentation updates -----------------------------------------------------
   const fx = Math.cos(vanAfter.heading);
   const fz = Math.sin(vanAfter.heading);
-  // Presentation yaw: `-heading` maps local +X (front hood) to [cos(h), 0, sin(h)]
-  // and local -X (rear cargo doors) toward the chase camera.
-  vanNode.setPosition(vanAfter.x, 0, vanAfter.z).setRotation(0, -vanAfter.heading, 0);
+  // Presentation yaw: `-heading + PI` maps local -X (front hood) to [cos(h), 0, sin(h)]
+  // and local +X (rear cargo doors) toward the chase camera.
+  vanNode.setPosition(vanAfter.x, 0, vanAfter.z).setRotation(0, -vanAfter.heading + Math.PI, 0);
   cameraTargetNode
     .setPosition(vanAfter.x, 0.2, vanAfter.z)
     .setRotation(0, -vanAfter.heading - Math.PI / 2, 0)
@@ -1457,7 +1459,7 @@ app.onFrame(({ dt }) => {
   parcelAttachedVisible = Boolean(planNow && carrying);
 
   // Keep primitive trim and bumper proxies hidden so the 3D Meshy van reads cleanly.
-  const vanRenderHeading = -vanAfter.heading;
+  const vanRenderHeading = -vanAfter.heading + Math.PI;
   const trimLateral = VAN_HALF_WIDTH + 0.04;
   vanTrimNodes[0]!
     .setPosition(vanAfter.x + rightX * -trimLateral, -50, vanAfter.z + rightZ * -trimLateral)
@@ -1527,7 +1529,6 @@ app.onFrame(({ dt }) => {
   headlightRight.setPosition(vanAfter.x + fx * 2.1 + fz * 0.42, -50, vanAfter.z + fz * 2.1 - fx * 0.42)
     .setRotation(0, -vanAfter.heading, 0)
     .setVisible(false);
-  const streakVisible = Math.abs(vanAfter.speed) > 0.42 && !reducedMotion;
   const streakLength = Math.min(1.85, 0.82 + Math.abs(vanAfter.speed) * 0.065);
   const streakOffsets = [-0.58, 0.58, 0] as const;
   for (let index = 0; index < speedStreakNodes.length; index += 1) {
@@ -1535,13 +1536,12 @@ app.onFrame(({ dt }) => {
     const node = speedStreakNodes[index]!;
     node.setPosition(
       vanAfter.x - fx * (0.45 + index * 0.18) - fz * lateral,
-      0.052,
+      -50,
       vanAfter.z - fz * (0.45 + index * 0.18) + fx * lateral
     ).setRotation(0, -vanAfter.heading, 0)
       .setScale([index === 2 ? 0.035 : 0.022, 0.012, streakLength])
-      .setVisible(streakVisible);
+      .setVisible(false);
   }
-  const contactVisible = !reducedMotion && (Math.abs(vanAfter.speed) > 0.55 || impactFlash > 0);
   const contactLength = Math.min(0.92, 0.25 + Math.abs(vanAfter.speed) * 0.052 + (driveInput.brake > 0 ? 0.18 : 0) + (impactFlash > 0 ? 0.24 : 0));
   const contactPositions = [
     { forward: 0.72, lateral: -0.54 },
@@ -1553,10 +1553,10 @@ app.onFrame(({ dt }) => {
     const contact = contactPositions[index]!;
     const impulse = impactFlash && index < 2 ? 1.3 : 1;
     tyreContactNodes[index]!
-      .setPosition(vanAfter.x + fx * contact.forward + rightX * contact.lateral, 0.028, vanAfter.z + fz * contact.forward + rightZ * contact.lateral)
+      .setPosition(vanAfter.x + fx * contact.forward + rightX * contact.lateral, -50, vanAfter.z + fz * contact.forward + rightZ * contact.lateral)
       .setRotation(0, -vanAfter.heading, 0)
       .setScale([0.11 * impulse, 0.008, contactLength * impulse])
-      .setVisible(contactVisible);
+      .setVisible(false);
   }
 
   for (const car of carsNow) {
