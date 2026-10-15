@@ -134,20 +134,15 @@ const audio = createBilliardsAudio();
 let ambientStarted = false;
 window.addEventListener("pointerdown", () => {
   void audio.unlock().then(() => {
-    if (!ambientStarted) {
-      ambientStarted = true;
-      void audio.cue("ambient-hall").catch(() => undefined);
-    }
+    ambientStarted = true;
   }).catch(() => undefined);
 }, { passive: true });
 window.addEventListener("keydown", () => {
   void audio.unlock().then(() => {
-    if (!ambientStarted) {
-      ambientStarted = true;
-      void audio.cue("ambient-hall").catch(() => undefined);
-    }
+    ambientStarted = true;
   }).catch(() => undefined);
 }, { passive: true });
+void ambientStarted;
 
 // ---------------------------------------------------------------- state ------
 const sim = createTableSimulation();
@@ -569,18 +564,23 @@ function consumeShotEvents(): void {
   }
   for (const fact of sim.consumeShotFactEvents()) {
     if (fact.type === "cue-first-contact") {
-      if (cueReady("ball-hit", 5)) pushCue("ball-hit");
+      if (cueReady("ball-hit", 14)) pushCue("ball-hit");
     } else if (fact.type === "cushion-touch") {
-      if (cueReady("cushion-hit", 6)) pushCue("cushion-hit");
+      if (cueReady("cushion-hit", 16)) pushCue("cushion-hit");
     }
   }
   // Cluster clacks from the polled contact events (slower, persistent pairs).
   for (const impact of sim.consumeImpacts()) {
-    if (impact.kind === "ball-ball" && impact.speed > 0.6 && cueReady("ball-hit", 12)) pushCue("ball-hit");
+    if (impact.kind === "ball-ball" && impact.speed > 0.85 && cueReady("ball-hit", 18)) pushCue("ball-hit");
   }
   for (const pot of sim.consumePotEvents()) {
     pottedThisShot.push(pot.ball);
-    pushCue("pocket-drop");
+    if (cueReady("pocket-drop", 10)) {
+      pushCue("pocket-drop");
+    } else {
+      audioCueLog.push("pocket-drop");
+      if (audioCueLog.length > 48) audioCueLog.shift();
+    }
     showToast(pot.ball === 0 ? "SCRATCH" : `BALL ${pot.ball} DOWN`);
   }
 }

@@ -521,11 +521,13 @@ function guardCharacterNodes(): AuraSceneNode[] {
   return runtime.layout.guards.flatMap((spawn) => {
     const archivePatrol = spawn.id === "guard-1";
     const nodes: AuraSceneNode[] = [
-      model(assets.robotcand, {
+      model(assets.gallerySecurityGuardMeshy, {
         name: spawn.id,
         role: "primaryCharacter",
         scaleMode: "fit",
-        targetMaxDimension: 1.75
+        targetMaxDimension: 1.75,
+        castShadow: true,
+        receiveShadow: true
       })
         .position(spawn.x, 0, spawn.z)
         .runtime(game.runtimeNode(spawn.id, {
@@ -1015,11 +1017,13 @@ function buildScene(): ReturnType<typeof scene> {
   return scene()
     .background("#05070d")
     .add(
-      model(assets.galleryThief, {
+      model(assets.galleryStealthThiefMeshy, {
         name: "thief",
         role: "primaryCharacter",
         scaleMode: "fit",
-        targetMaxDimension: visualReviewCapture ? 1.72 : 1.68
+        targetMaxDimension: visualReviewCapture ? 1.72 : 1.68,
+        castShadow: true,
+        receiveShadow: true
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief", { tags: ["typed-asset", "thief", "authored-movement"] }))

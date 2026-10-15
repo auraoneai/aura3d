@@ -134,7 +134,8 @@ const ATHLETE_MODEL_SCALE = 1.18;
 // contest partner visually subordinate to the venue slab; a modestly larger
 // scale keeps feet grounded while giving the players the screen weight of a
 // sports broadcast without changing collision regions or shot math.
-const PRESENTATION_ATHLETE_SCALE = visualReviewCapture ? 1.4 : 1.34;
+const PRESENTATION_ATHLETE_SCALE = 1.05;
+const SHOOTER_MESHY_GROUND_OFFSET = 0;
 // The release GLBs report a raw minimum Y of -1.016.  Account for the
 // route's authored model scale so the feet stay on the 16x14 court slab.
 const ATHLETE_FLOOR_OFFSET = 1.016 * ATHLETE_MODEL_SCALE;
@@ -690,43 +691,39 @@ function buildScene() {
       // the route still owns ballistics, root motion, contest state, scoring,
       // and reset/progression. Keeping the assets typed avoids primitive-only
       // named subjects while preserving a readable opening/action silhouette.
-      model(assets.rooftopAthleteShooter, {
+      model(assets.rooftopShooterMeshyV1, {
         name: "shooter-presentation-mesh",
         role: "primaryCharacter",
         castShadow: true,
         receiveShadow: true,
         scaleMode: "world",
-        scale: [PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE],
-        hiddenNodeNames: PRESENTATION_MICRO_MESHES
+        scale: [PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE]
       })
-        // The acquired derivative is already grounded at min-Y=0; unlike the
-        // skinned production actor it does not need the -1.016m floor offset.
-        .position(COURT_SPOTS[0]!.x, 0, COURT_SPOTS[0]!.z)
+        .position(COURT_SPOTS[0]!.x, SHOOTER_MESHY_GROUND_OFFSET, COURT_SPOTS[0]!.z)
         .runtime(shooterPresentationHandle),
-      model(assets.rooftopAthleteDefender, {
+      model(assets.rooftopDefenderMeshy, {
         name: "defender-presentation-mesh",
         role: "primaryCharacter",
         castShadow: true,
         receiveShadow: true,
         scaleMode: "world",
-        scale: [PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE],
-        hiddenNodeNames: PRESENTATION_MICRO_MESHES
+        scale: [PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE]
       })
         .position(0, -10, 0)
         .runtime(defenderPresentationHandle),
-      // Meshy decimated shooter candidate (50k tris, Blender COLLAPSE). Mounted
-      // visibly on the court wing so the high-poly Meshy athlete is clearly in frame.
-      model(assets.rooftopShooterMeshyV1, {
+      // Keep the legacy shooter reference hidden off-court so there is no
+      // frozen clone on the court while typed-asset coverage remains intact.
+      model(assets.rooftopAthleteShooter, {
         name: "shooter-meshy-candidate-mesh",
         role: "primaryCharacter",
-        castShadow: true,
-        receiveShadow: true,
+        castShadow: false,
+        receiveShadow: false,
         scaleMode: "world",
-        scale: [1.38, 1.38, 1.38],
-        visible: true
+        scale: [0.001, 0.001, 0.001],
+        visible: false,
+        hiddenNodeNames: PRESENTATION_MICRO_MESHES
       })
-        .position(-1.35, 1.05, 2.15)
-        .rotate(0, 0.32, 0)
+        .position(0, -50, 0)
         .runtime(game.runtimeNode("shooter-meshy-candidate", { tags: ["candidate-asset", "meshy-decimated"] })),
       primitives.sphere({ name: "shooter contact shadow", material: contactShadowMaterial })
         .position(COURT_SPOTS[0]!.x, 0.026, COURT_SPOTS[0]!.z)
@@ -1115,9 +1112,9 @@ function stepGame(dt: number): void {
       }
 
       chargeTickAccumulator += dt;
-      if (chargeTickAccumulator >= 0.08) {
+      if (chargeTickAccumulator >= 0.28) {
         chargeTickAccumulator = 0;
-        audio.playCue("chargeTick", 0.4);
+        audio.playCue("chargeTick", 0.18);
       }
     } else if (isCharging || input.released("shoot")) {
       // Released Space
@@ -1248,11 +1245,10 @@ function syncTransforms(): void {
   // feet on the court while the route-local lift continues to follow release.
   shooterNode?.setPosition(shooterX, ATHLETE_FLOOR_OFFSET + shooterLift, shooterZ);
   const shooterPresentationNode = app.nodes.get("shooter-presentation") as AuraRuntimeNodeHandle | undefined;
-  // The visible CC-BY release-pose derivative is authored with a grounded
-  // min-Y=0, so its root lift is the route's actual release/landing lift rather
-  // than the skinned asset's negative-origin correction above.
+  // The Meshy shooter GLB is centered at its origin (bounds.min[1] ≈ -0.95),
+  // so add SHOOTER_MESHY_GROUND_OFFSET to place its sneakers on the court floor.
   shooterPresentationNode
-    ?.setPosition(shooterX, shooterLift, shooterZ)
+    ?.setPosition(shooterX, SHOOTER_MESHY_GROUND_OFFSET + shooterLift, shooterZ)
     // A quiet idle sway keeps the normal opening frame from reading as a
     // mannequin while remaining a presentation-only root pose.  During a
     // live flight the launch-derived yaw is exact so the actor cannot drift

@@ -492,8 +492,13 @@ export function createSkylineCharacterWorld(options: {
         // The probe is folded into the *desired* displacement, never into a stored
         // velocity, so it is not a second gravity integration: the solver either blocks
         // it (a contact, which is the answer we wanted) or lets it fall at a speed that
-        // is 5% of the route's own acceleration.
-        const probedVy = Math.min(intent.vy, -groundProbeSpeed);
+        // is 5% of the route's own acceleration. When jumping upward (intent.vy > 0),
+        // preserve the upward jump velocity instead of clamping it downward.
+        const jumpingUpward = intent.vy > 0;
+        character.setSnapToGround(jumpingUpward ? 0 : snapToGroundDistanceScene);
+        const probedVy = jumpingUpward
+          ? intent.vy
+          : Math.min(intent.vy, -groundProbeSpeed);
         const desired: AuraVec3 = [
           carry[0] + intent.vx * FIXED_STEP_SECONDS * scale,
           carry[1] + probedVy * FIXED_STEP_SECONDS * scale,

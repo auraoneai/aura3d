@@ -197,7 +197,7 @@ const CAR_TARGET_MAX_DIMENSION = 0.96;
  * justified by reciting a third asset's bounds in a comment. Swapping the hero asset now requires no
  * edit below this line.
  */
-const heroFraming = resolveChaseFraming(assets.showcaseCc0FormulaRaceCar, {
+const heroFraming = resolveChaseFraming(assets.turboHeroRaceCarMeshy, {
   targetMaxDimension: CAR_TARGET_MAX_DIMENSION,
   /*
    * Measured, not guessed. The chase frame that reads correctly for this genre -- car as clear
@@ -247,20 +247,35 @@ const ROAD_DETAIL_SURFACE_LIFT = 0.075;
  * The chassis reports the certified contact plane, but the route-bound asphalt
  * ribbon the camera sees is built `ROAD_DETAIL_SURFACE_LIFT` above it (the
  * contact shadows, tyre shadows and drift particles already render on that
- * shell). Seating the fitted model on the contact plane therefore buries the
- * tyres ~0.069 scene units deep in the visible road -- about two thirds of the
- * hero's fitted wheel radius. This lift is presentation-only: suspension,
- * telemetry and Rapier contact keep reporting the mesh contact plane below it.
+ * shell). Sample the highest road height across the car's centre and four wheel
+ * corners so banked/crowned road sections or suspension compression never let
+ * a tyre sink below the visible asphalt or aggregate band.
  */
 function seatCarOnVisibleAsphalt(
   pose: Pick<VehiclePose, "groundedPosition" | "rotation">,
   fittedSize: VehicleVec3,
   wheelRadius: number
 ): VehicleVec3 {
-  const seated = groundedFittedModelPosition(pose, fittedSize, {
-    contactClearance: wheelRadius * 0.24
+  const cx = pose.groundedPosition[0];
+  const cz = pose.groundedPosition[2];
+  const halfW = fittedSize[0] * 0.44;
+  const halfL = fittedSize[2] * 0.44;
+  const highestRoadY = Math.max(
+    pose.groundedPosition[1],
+    sampleTurboRoadHeight(cx, cz),
+    sampleTurboRoadHeight(cx - halfW, cz - halfL),
+    sampleTurboRoadHeight(cx + halfW, cz - halfL),
+    sampleTurboRoadHeight(cx - halfW, cz + halfL),
+    sampleTurboRoadHeight(cx + halfW, cz + halfL)
+  );
+  const dampedPose = {
+    groundedPosition: [cx, highestRoadY, cz] as VehicleVec3,
+    rotation: [pose.rotation[0] * 0.35, pose.rotation[1], pose.rotation[2] * 0.35] as VehicleVec3
+  };
+  const seated = groundedFittedModelPosition(dampedPose, fittedSize, {
+    contactClearance: wheelRadius * 0.34
   });
-  return [seated[0], seated[1] + ROAD_DETAIL_SURFACE_LIFT, seated[2]];
+  return [seated[0], seated[1] + ROAD_DETAIL_SURFACE_LIFT + 0.022, seated[2]];
 }
 // Renderer-owned drift feedback tuning. This is a visual particle parameter,
 // not a gameplay/world-physics gravity constant; keep it explicit so the
@@ -772,11 +787,11 @@ const playerEvidenceDriver = evidenceDriverEnabled
 // rear/cyan livery accents below add overview contrast without changing the
 // contact/passing dimensions that the route-primary evidence already certifies.
 const opponentTargetMaxDimension = 0.91;
-const opponentAssetScale = opponentTargetMaxDimension / Math.max(...assets.showcaseCcByFormulaOpponent.bounds);
+const opponentAssetScale = opponentTargetMaxDimension / Math.max(...assets.turboRivalRaceCarMeshy.bounds);
 const opponentRenderedSize: AuraVec3 = [
-  assets.showcaseCcByFormulaOpponent.bounds[0] * opponentAssetScale,
-  assets.showcaseCcByFormulaOpponent.bounds[1] * opponentAssetScale,
-  assets.showcaseCcByFormulaOpponent.bounds[2] * opponentAssetScale
+  assets.turboRivalRaceCarMeshy.bounds[0] * opponentAssetScale,
+  assets.turboRivalRaceCarMeshy.bounds[1] * opponentAssetScale,
+  assets.turboRivalRaceCarMeshy.bounds[2] * opponentAssetScale
 ];
 const passingLane = measureTurboPassingLane({
   roadWidth: routeWidth,
@@ -1723,7 +1738,7 @@ function sampleTurboRoadHeight(x: number, z: number): number {
  * per dash/kerb and does not enter Rapier or the route's contact width.
  */
 function buildTurboRoadDetailNodes() {
-  const segmentCount = 44;
+  const segmentCount = 160;
   const asphaltPositions: [number, number, number][] = [];
   const asphaltNormals: [number, number, number][] = [];
   const asphaltIndices: number[] = [];
@@ -3199,7 +3214,7 @@ const app = createAuraApp("#app", {
       sceneBinding: racingScene,
       route,
       mode: "asset-overlay",
-      guideVisibility: "public",
+      guideVisibility: "hidden",
       roadColor: "#5a554e",
       terrainColor: "#456344",
       curbColor: "#ed6a4f",
@@ -3221,33 +3236,29 @@ const app = createAuraApp("#app", {
       .rotate(...initialPlayerPose.rotation)
       .scale(0.001)
       .runtime(game.runtimeNode("racing-action-focus", { tags: ["camera-target", "review-only", "non-colliding"] })))
-    // The hero is the detailed CC0 Formula racer with authored red/white/graphite
-    // materials, visible suspension, driver, wings and exposed tyres. The rival is
-    // the separate CC-BY Formula racer with blue/black livery. Both retain their
-    // suspension, driver, front/rear wings and exposed tires. Neither vehicle receives a
-    // whole-model tint: the distinction comes from authored materials and geometry.
-    .add(model(assets.showcaseCc0FormulaRaceCar, {
+    // The hero is the bespoke Meshy GT Formula drift racer with crimson/carbon
+    // PBR livery and exposed slick tyres. The rival is the bespoke Meshy GT
+    // Formula racer with electric cyan/carbon PBR livery.
+    .add(model(assets.turboHeroRaceCarMeshy, {
       name: "racing-player-car",
       role: "primaryVehicle",
       scaleMode: "fit",
       // Keep the rendered fit exactly in the same asset-derived envelope used by
-      // the chassis, chase framing, and composition probe.  A stale 1.1 here made
-      // the visible car 14.6% larger than `heroFraming.subject`, so the probe's
-      // contact projection and the raster silhouette described different cars.
+      // the chassis, chase framing, and composition probe.
       targetMaxDimension: CAR_TARGET_MAX_DIMENSION,
       castShadow: true,
       receiveShadow: true
-    }).position(...seatCarOnVisibleAsphalt(playerChassisPose, heroFraming.subject.size, carChassisSpec.wheelRadius)).rotate(playerChassisPose.rotation[0], initialPlayerPose.rotation[1], playerChassisPose.rotation[2]).runtime(game.runtimeNode("racing-player-car", {
+    }).position(...seatCarOnVisibleAsphalt(playerChassisPose, heroFraming.subject.size, carChassisSpec.wheelRadius)).rotate(playerChassisPose.rotation[0] * 0.35, initialPlayerPose.rotation[1], playerChassisPose.rotation[2] * 0.35).runtime(game.runtimeNode("racing-player-car", {
       tags: ["player", "vehicle", "typed-primary-asset"]
     })))
-    .add(model(assets.showcaseCcByFormulaOpponent, {
+    .add(model(assets.turboRivalRaceCarMeshy, {
       name: "racing-opponent-car",
       role: "setDressing",
       scaleMode: "fit",
       targetMaxDimension: opponentTargetMaxDimension,
       castShadow: true,
       receiveShadow: true
-    }).position(...seatCarOnVisibleAsphalt(opponentChassisPose, opponentRenderedSize, opponentChassisSpec.wheelRadius)).rotate(opponentChassisPose.rotation[0], opponentPresentationRotation(initialOpponentPose.rotation)[1], opponentChassisPose.rotation[2]).runtime(game.runtimeNode("racing-opponent-car", {
+    }).position(...seatCarOnVisibleAsphalt(opponentChassisPose, opponentRenderedSize, opponentChassisSpec.wheelRadius)).rotate(opponentChassisPose.rotation[0] * 0.35, opponentPresentationRotation(initialOpponentPose.rotation)[1], opponentChassisPose.rotation[2] * 0.35).runtime(game.runtimeNode("racing-opponent-car", {
       tags: ["opponent", "vehicle", "typed-secondary-asset", "route-local-ai"]
     })))
     // A pair of tiny renderer-owned livery lights make the typed rival read as
@@ -3275,7 +3286,7 @@ const app = createAuraApp("#app", {
       })))
     // TDC-A1: visual-only time-trial ghost. Same typed hero asset with a translucent
     // material override; it owns no collision body and never enters gap/position logic.
-    .add(model(assets.showcaseCc0FormulaRaceCar, {
+    .add(model(assets.turboHeroRaceCarMeshy, {
       name: "racing-time-trial-ghost",
       role: "setDressing",
       scaleMode: "fit",
@@ -4989,7 +5000,7 @@ app.onFrame(({ dt }) => {
     playerGroundedVisual[1],
     playerGroundedVisual[2]
   );
-  playerCar.setRotation(playerChassisPose.rotation[0], playerPose.rotation[1] + reviewSlipYaw, playerChassisPose.rotation[2]);
+  playerCar.setRotation(playerChassisPose.rotation[0] * 0.35, playerPose.rotation[1] + reviewSlipYaw, playerChassisPose.rotation[2] * 0.35);
   playerCar.setVisible(!compositionPlayerSuppressed);
   if (compositionPlayerSuppressed) {
     compositionFeedbackNodes.forEach((node) => node.setVisible(false));
@@ -5126,7 +5137,7 @@ app.onFrame(({ dt }) => {
   }
   const playerAsphalt = asphaltAlignment(raceSnapshot.signedTrackOffset, playerBodyHalfWidth);
   // Drift scuff fires periodically while visibly drifting on asphalt (not on grass).
-  if (driftVisible && playerAsphalt.onAsphalt && audioUnlocked && Math.round(raceSnapshot.frame) % 10 === 0) {
+  if (driftVisible && playerAsphalt.onAsphalt && audioUnlocked && Math.round(raceSnapshot.frame) % 28 === 0) {
     playCue("drift-scuff");
   }
   const driftSmokeVisible = driftVisible && playerAsphalt.onAsphalt && !reducedMotion;
@@ -5370,7 +5381,7 @@ app.onFrame(({ dt }) => {
     opponentGroundedVisual[1],
     opponentGroundedVisual[2]
   );
-  opponentCar.setRotation(opponentChassisPose.rotation[0], opponentPose.rotation[1], opponentChassisPose.rotation[2]);
+  opponentCar.setRotation(opponentChassisPose.rotation[0] * 0.35, opponentPose.rotation[1], opponentChassisPose.rotation[2] * 0.35);
   const rivalRearOffset = opponentChassisSpec.wheelbase * 0.52;
   const rivalRearX = opponentPose.position[0] - Math.cos(opponentPose.heading) * rivalRearOffset;
   const rivalRearZ = opponentPose.position[2] - Math.sin(opponentPose.heading) * rivalRearOffset;

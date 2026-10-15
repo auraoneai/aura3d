@@ -788,7 +788,7 @@ function buildWorldScene() {
   // Hero lander + translucent replay ghost are GLOBAL across sites.
   const firstSpawn = SITES[0]!.spawn;
   builder.add(
-    model(assets.auroraExtractionLanderHero, {
+    model(assets.auroraLanderCraftMeshy, {
       name: "aurora lander probe",
       role: "primaryVehicle",
       scaleMode: "fit",
@@ -800,7 +800,7 @@ function buildWorldScene() {
       .runtime(game.runtimeNode("lander", { tags: ["player", "lander", "typed-primary-asset"] }))
   );
   builder.add(
-    model(assets.auroraLanderProbe, {
+    model(assets.auroraLanderCraftMeshy, {
       name: "aurora extraction lander presentation",
       role: "primaryVehicle",
       scaleMode: "fit",
@@ -815,7 +815,7 @@ function buildWorldScene() {
       }))
   );
   builder.add(
-    model(assets.auroraLanderProbe, {
+    model(assets.auroraLanderCraftMeshy, {
       name: "replay ghost",
       role: "setDressing",
       scaleMode: "fit",

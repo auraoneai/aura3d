@@ -11,6 +11,8 @@ import { ktx2TargetToTextureFormat, transcodeKTX2BasisTexture } from "../KTX2Bas
 import type { DecodedGLTFImage, GLTFRenderResourceOptions } from "../GLTFRenderResources";
 import { assetPhaseMark } from "../assetPhaseMarks";
 
+const decodedImageCache = new WeakMap<GLTFAsset, Map<string, Promise<DecodedGLTFImage>>>();
+
 export async function decodeImageInBrowser(
   image: GLTFImageAsset,
   _imageIndex: number,
@@ -18,7 +20,21 @@ export async function decodeImageInBrowser(
   options: GLTFRenderResourceOptions = {}
 ): Promise<DecodedGLTFImage> {
   assetPhaseMark(`image-decode:start:${_imageIndex}`);
-  const decoded = await decodeImageInBrowserUnmarked(image, _imageIndex, asset, options);
+  const cacheKey = `${_imageIndex}:${options.qrAssets ? 1 : 0}:${options.maxTextureSize ?? ""}:${options.ktx2BasisTargetFormat ?? options.ktx2BasisTranscoderOptions?.targetFormat ?? ""}:${options.ktx2BasisTranscoderOptions?.colorSpace ?? ""}`;
+  let assetCache = decodedImageCache.get(asset);
+  if (!assetCache) {
+    assetCache = new Map<string, Promise<DecodedGLTFImage>>();
+    decodedImageCache.set(asset, assetCache);
+  }
+  let pending = assetCache.get(cacheKey);
+  if (!pending) {
+    pending = decodeImageInBrowserUnmarked(image, _imageIndex, asset, options).catch((error) => {
+      assetCache?.delete(cacheKey);
+      throw error;
+    });
+    assetCache.set(cacheKey, pending);
+  }
+  const decoded = await pending;
   assetPhaseMark(`image-decode:end:${_imageIndex}`);
   return decoded;
 }

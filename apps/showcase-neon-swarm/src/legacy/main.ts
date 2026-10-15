@@ -602,11 +602,11 @@ for (const door of PICKUP_DOORS) {
 }
 
 appScene.add(
-  model(assets.neonRainCourierHero, {
+  model(assets.neonSwarmHeroMeshy, {
     name: "courier avatar",
     role: "primaryCharacter",
     scaleMode: "fit",
-    targetMaxDimension: 3.35,
+    targetMaxDimension: 2.35,
     castShadow: true,
     receiveShadow: true
   })

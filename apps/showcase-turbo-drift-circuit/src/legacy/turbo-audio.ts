@@ -56,16 +56,16 @@ export const turboAudioCueAssetKeys: Record<TurboAudioCue, TurboAudioAssetKey> =
 export type TurboAudioBusId = "player" | "engine" | "wind" | "music" | "ui";
 
 export const TURBO_AUDIO_BUS_VOLUMES: Record<TurboAudioBusId, number> = {
-  player: 0.8,
-  engine: 0.55,
-  wind: 0.42,
-  music: 0.34,
-  ui: 0.6
+  player: 0.48,
+  engine: 0.24,
+  wind: 0.18,
+  music: 0.22,
+  ui: 0.42
 };
 
 /** Engine-loop playback rate at idle and at top speed (rpm → pitch). */
 export const TURBO_ENGINE_IDLE_RATE = 0.8;
-export const TURBO_ENGINE_MAX_RATE = 1.9;
+export const TURBO_ENGINE_MAX_RATE = 1.65;
 
 /**
  * Engine level relative to its authored volume: a quiet idle (0.12), rising
@@ -132,16 +132,16 @@ function define(
 
 /** Committed cue -> bus/intent/asset/volume manifest. */
 export const turboAudioManifest: Record<TurboAudioCue, TurboAudioCueDefinition> = {
-  engine: define("engine", "engine", "Driving engine loop, gated by throttle presence.", true, 0.5),
-  "drift-scuff": define("drift-scuff", "player", "Tyres scuffing while the car is drifting.", false, 0.7),
-  wind: define("wind", "wind", "Ambient wind loop at speed.", true, 0.25),
-  music: define("music", "music", "Registered late-afternoon music loop (seamless by synthesis).", true, 0.32),
-  checkpoint: define("checkpoint", "player", "Ordered gate credited.", false, 0.6),
-  countdown: define("countdown", "player", "Start-light countdown tick.", false, 0.5),
-  go: define("go", "player", "Green-flag start blast.", false, 0.65),
-  "finish-fanfare": define("finish-fanfare", "player", "Race-complete fanfare.", false, 0.7),
-  "off-track": define("off-track", "player", "Grass/verge rumble when leaving the road.", false, 0.6),
-  "ui-confirm": define("ui-confirm", "ui", "Pause/reset confirmation.", false, 0.4)
+  engine: define("engine", "engine", "Driving engine loop, gated by throttle presence.", true, 0.28),
+  "drift-scuff": define("drift-scuff", "player", "Tyres scuffing while the car is drifting.", false, 0.28),
+  wind: define("wind", "wind", "Ambient wind loop at speed.", true, 0.18),
+  music: define("music", "music", "Registered late-afternoon music loop (seamless by synthesis).", true, 0.24),
+  checkpoint: define("checkpoint", "player", "Ordered gate credited.", false, 0.5),
+  countdown: define("countdown", "player", "Start-light countdown tick.", false, 0.42),
+  go: define("go", "player", "Green-flag start blast.", false, 0.55),
+  "finish-fanfare": define("finish-fanfare", "player", "Race-complete fanfare.", false, 0.6),
+  "off-track": define("off-track", "player", "Grass/verge rumble when leaving the road.", false, 0.26),
+  "ui-confirm": define("ui-confirm", "ui", "Pause/reset confirmation.", false, 0.35)
 };
 
 export const turboAudioAssets = Object.freeze(

@@ -2,6 +2,14 @@ import { defineAuraAssets } from "@aura3d/engine";
 import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";
 
 type AuraGeneratedAssetDefinitions = {
+  readonly "pulseStarfighterHeroMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "neonSwarmHeroMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "auroraLanderCraftMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "gallerySecurityGuardMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "galleryStealthThiefMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rooftopDefenderMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "turboRivalRaceCarMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "turboHeroRaceCarMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "animationPointerPanel": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "auraClashCornerBrazierPylonMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "auraClashStageSpeakerTowerMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -592,7 +600,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.903,
       0.991
     ],
-    sizeBytes: 22973972,
+    sizeBytes: 1207344,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -728,7 +736,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.371,
       1.9
     ],
-    sizeBytes: 24096704,
+    sizeBytes: 1803816,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -1353,7 +1361,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.369,
       0.86
     ],
-    sizeBytes: 22381840,
+    sizeBytes: 1457144,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -1659,7 +1667,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.033,
       1.903
     ],
-    sizeBytes: 24116564,
+    sizeBytes: 1647200,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -1982,7 +1990,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       0.176,
       1.902
     ],
-    sizeBytes: 19163848,
+    sizeBytes: 830668,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -5755,7 +5763,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.575,
       0.71
     ],
-    sizeBytes: 24835232,
+    sizeBytes: 1393644,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -7069,7 +7077,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.559,
       1.85
     ],
-    sizeBytes: 17211212,
+    sizeBytes: 1389156,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -8335,7 +8343,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.901,
       0.761
     ],
-    sizeBytes: 24745560,
+    sizeBytes: 1829824,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -9040,7 +9048,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       0.94,
       1.085
     ],
-    sizeBytes: 17284496,
+    sizeBytes: 1050448,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -11279,7 +11287,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       0.867,
       0.847
     ],
-    sizeBytes: 19113732,
+    sizeBytes: 1149200,
     metadata: {
       "materials": [
         "material"
@@ -11415,7 +11423,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       0.941,
       0.998
     ],
-    sizeBytes: 9737668,
+    sizeBytes: 1198884,
     metadata: {
       "materials": [
         "material"
@@ -12006,7 +12014,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.9,
       1.109
     ],
-    sizeBytes: 25989512,
+    sizeBytes: 1868700,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -14083,7 +14091,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       0.987,
       0.789
     ],
-    sizeBytes: 21030980,
+    sizeBytes: 1030164,
     metadata: {
       "materials": [
         "material"
@@ -14219,7 +14227,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.8,
       1.826
     ],
-    sizeBytes: 27048120,
+    sizeBytes: 1685272,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -14551,7 +14559,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.902,
       1.874
     ],
-    sizeBytes: 21960460,
+    sizeBytes: 1094004,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -14687,7 +14695,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.902,
       1.113
     ],
-    sizeBytes: 19900012,
+    sizeBytes: 1201556,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -14823,7 +14831,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.903,
       0.614
     ],
-    sizeBytes: 16199472,
+    sizeBytes: 652436,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -14959,7 +14967,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.903,
       1.232
     ],
-    sizeBytes: 17110628,
+    sizeBytes: 792920,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -17647,7 +17655,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.577,
       1.905
     ],
-    sizeBytes: 19933340,
+    sizeBytes: 1023572,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -17783,7 +17791,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.901,
       1.712
     ],
-    sizeBytes: 25662072,
+    sizeBytes: 1802128,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -22010,7 +22018,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       0.917,
       1.907
     ],
-    sizeBytes: 22380092,
+    sizeBytes: 1302388,
     metadata: {
       "materials": [
         "material"
@@ -32325,7 +32333,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.901,
       0.718
     ],
-    sizeBytes: 24762200,
+    sizeBytes: 1347744,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -32461,7 +32469,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.902,
       1.627
     ],
-    sizeBytes: 24518276,
+    sizeBytes: 1684184,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -34916,7 +34924,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.903,
       1.154
     ],
-    sizeBytes: 23527804,
+    sizeBytes: 1070012,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -35853,7 +35861,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.618,
       1.899
     ],
-    sizeBytes: 21747136,
+    sizeBytes: 1224972,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -37374,7 +37382,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       0.985,
       1.489
     ],
-    sizeBytes: 22284088,
+    sizeBytes: 1219868,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -37680,7 +37688,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       0.523,
       1.802
     ],
-    sizeBytes: 24580688,
+    sizeBytes: 1188456,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -37816,7 +37824,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.903,
       1.887
     ],
-    sizeBytes: 23618532,
+    sizeBytes: 1539516,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -37952,7 +37960,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       0.621,
       1.902
     ],
-    sizeBytes: 24921992,
+    sizeBytes: 1361432,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -38088,7 +38096,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       0.409,
       1.902
     ],
-    sizeBytes: 19885212,
+    sizeBytes: 799924,
     metadata: {
       "materials": [
         "material"
@@ -38224,7 +38232,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.903,
       1.105
     ],
-    sizeBytes: 23535084,
+    sizeBytes: 1537208,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -38360,7 +38368,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.788,
       0.24
     ],
-    sizeBytes: 22204864,
+    sizeBytes: 996332,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -41848,7 +41856,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       0.305,
       1.905
     ],
-    sizeBytes: 21605396,
+    sizeBytes: 1212212,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -42494,7 +42502,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.903,
       0.709
     ],
-    sizeBytes: 22164384,
+    sizeBytes: 1058004,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -45518,7 +45526,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.903,
       0.892
     ],
-    sizeBytes: 20137844,
+    sizeBytes: 1154300,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -50897,7 +50905,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.089,
       1.844
     ],
-    sizeBytes: 21922324,
+    sizeBytes: 1641312,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -51279,7 +51287,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.902,
       0.663
     ],
-    sizeBytes: 21597028,
+    sizeBytes: 714604,
     metadata: {
       "materials": [
         "material"
@@ -110100,7 +110108,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.215,
       0.424
     ],
-    sizeBytes: 23458380,
+    sizeBytes: 1331532,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -110398,7 +110406,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.896,
       1.247
     ],
-    sizeBytes: 25627168,
+    sizeBytes: 1741200,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -111543,7 +111551,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.902,
       1.173
     ],
-    sizeBytes: 23522028,
+    sizeBytes: 1603408,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -112704,7 +112712,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.444,
       0.764
     ],
-    sizeBytes: 23719480,
+    sizeBytes: 1123836,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -112921,7 +112929,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.903,
       0.358
     ],
-    sizeBytes: 20285104,
+    sizeBytes: 739816,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -113383,7 +113391,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.536,
       1.903
     ],
-    sizeBytes: 23839740,
+    sizeBytes: 1476056,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -113519,7 +113527,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.903,
       0.653
     ],
-    sizeBytes: 8664812,
+    sizeBytes: 987804,
     metadata: {
       "materials": [
         "material"
@@ -131769,7 +131777,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       0.532,
       0.117
     ],
-    sizeBytes: 29700912,
+    sizeBytes: 2191332,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -131905,7 +131913,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.295,
       1.901
     ],
-    sizeBytes: 18350392,
+    sizeBytes: 1558664,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -134618,7 +134626,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       1.091,
       1.902
     ],
-    sizeBytes: 22048560,
+    sizeBytes: 857060,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -135197,6 +135205,806 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "unknown",
       "suitabilityReason": "Vault-open cue driven by the authored door transition after bank completion."
+    },
+  },
+  "turboHeroRaceCarMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
+    hash: "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+    bounds: [
+      0.876,
+      0.559,
+      1.897
+    ],
+    sizeBytes: 905264,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T01:25:00.000Z",
+        "checkedAt": "2026-10-15T01:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
+      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+  "turboRivalRaceCarMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/turboRivalRaceCarMeshy.01185197.glb",
+    hash: "sha256-01185197e42b44fe8bd49dee3ab5758ef7eb6b8f881010deb8cf89475bc47d48",
+    bounds: [
+      0.953,
+      0.49,
+      1.897
+    ],
+    sizeBytes: 974244,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/turboRivalRaceCarMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T01:25:00.000Z",
+        "checkedAt": "2026-10-15T01:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/turboRivalRaceCarMeshy/model.glb",
+      "outputPath": "public/aura-assets/turboRivalRaceCarMeshy.01185197.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboRivalRaceCarMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+  "rooftopDefenderMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rooftopDefenderMeshy.c53681c7.glb",
+    hash: "sha256-c53681c71f51f6e30fd08bb326cdab96ae70a61d10d0b1d8e0ffffba7d1d59f5",
+    bounds: [
+      0.831,
+      1.886,
+      0.646
+    ],
+    sizeBytes: 783700,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/rooftopDefenderMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T01:25:00.000Z",
+        "checkedAt": "2026-10-15T01:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/rooftopDefenderMeshy/model.glb",
+      "outputPath": "public/aura-assets/rooftopDefenderMeshy.c53681c7.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rooftopDefenderMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+  "galleryStealthThiefMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/galleryStealthThiefMeshy.d9d45962.glb",
+    hash: "sha256-d9d4596215ccd430c12186e752db923f662bb21278836df543a65f1cb7b9561c",
+    bounds: [
+      1.057,
+      1.893,
+      1.256
+    ],
+    sizeBytes: 772224,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/galleryStealthThiefMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T01:25:00.000Z",
+        "checkedAt": "2026-10-15T01:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/galleryStealthThiefMeshy/model.glb",
+      "outputPath": "public/aura-assets/galleryStealthThiefMeshy.d9d45962.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/galleryStealthThiefMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+  "gallerySecurityGuardMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/gallerySecurityGuardMeshy.e45c9d16.glb",
+    hash: "sha256-e45c9d1670c066aa5130afa104ad29d1d4cda47a5f3c511adf1dcbcfc9b1463f",
+    bounds: [
+      0.739,
+      1.896,
+      0.483
+    ],
+    sizeBytes: 889196,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/gallerySecurityGuardMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T01:25:00.000Z",
+        "checkedAt": "2026-10-15T01:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/gallerySecurityGuardMeshy/model.glb",
+      "outputPath": "public/aura-assets/gallerySecurityGuardMeshy.e45c9d16.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/gallerySecurityGuardMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+  "auroraLanderCraftMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/auroraLanderCraftMeshy.6973df74.glb",
+    hash: "sha256-6973df74d22906517e1fa788c01949d30cdb0e72a03d23b7770757cf7571f8db",
+    bounds: [
+      1.898,
+      1.346,
+      1.895
+    ],
+    sizeBytes: 927288,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/auroraLanderCraftMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T01:25:00.000Z",
+        "checkedAt": "2026-10-15T01:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/auroraLanderCraftMeshy/model.glb",
+      "outputPath": "public/aura-assets/auroraLanderCraftMeshy.6973df74.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/auroraLanderCraftMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+  "neonSwarmHeroMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/neonSwarmHeroMeshy.6607054a.glb",
+    hash: "sha256-6607054aa274d0dd5faef56384bb8aa25e375b2c89a6b6b330ddfe5e7c4ac38e",
+    bounds: [
+      0.919,
+      1.896,
+      1.109
+    ],
+    sizeBytes: 810592,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/neonSwarmHeroMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T01:25:00.000Z",
+        "checkedAt": "2026-10-15T01:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/neonSwarmHeroMeshy/model.glb",
+      "outputPath": "public/aura-assets/neonSwarmHeroMeshy.6607054a.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/neonSwarmHeroMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
+    },
+  },
+  "pulseStarfighterHeroMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pulseStarfighterHeroMeshy.477315c7.glb",
+    hash: "sha256-477315c7c79ee7e53708a40552c59d8bcd0db460ec9f57ceed25a1423eb088d9",
+    bounds: [
+      1.885,
+      0.606,
+      1.898
+    ],
+    sizeBytes: 818784,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/pulseStarfighterHeroMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T01:25:00.000Z",
+        "checkedAt": "2026-10-15T01:25:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/pulseStarfighterHeroMeshy/model.glb",
+      "outputPath": "public/aura-assets/pulseStarfighterHeroMeshy.477315c7.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pulseStarfighterHeroMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
     },
   },
 } as const);

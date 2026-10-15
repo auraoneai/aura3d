@@ -159,8 +159,8 @@
       "source": "artifacts/meshy/aura-clash-corner-pylon-v1/model.glb",
       "outputPath": "public/aura-assets/auraClashCornerBrazierPylonMeshy.108d9df6.glb",
       "url": "/aura-assets/auraClashCornerBrazierPylonMeshy.108d9df6.glb",
-      "hash": "sha256-108d9df6c7715e283e8b304624697753a93917169ad0d5117f280d3e8b655ee6",
-      "sizeBytes": 22973972,
+      "hash": "sha256-7bfde4b91ba054299e093c29390777e40fd933a9cf97ddd86b0bfc05524422de",
+      "sizeBytes": 1207344,
       "bounds": [
         0.99,
         1.903,
@@ -324,8 +324,8 @@
       "source": "artifacts/meshy/aura-clash-speaker-tower-v1/model.glb",
       "outputPath": "public/aura-assets/auraClashStageSpeakerTowerMeshy.78813e2b.glb",
       "url": "/aura-assets/auraClashStageSpeakerTowerMeshy.78813e2b.glb",
-      "hash": "sha256-78813e2b7a4169db76feb4a8b6afc255bbbf65d3ee4ce4086bd509bca06a9e6a",
-      "sizeBytes": 24096704,
+      "hash": "sha256-8278084501f18c1d2dd998f179d160ad3b250718c0c6fd1afa08803a5440d22b",
+      "sizeBytes": 1803816,
       "bounds": [
         1.901,
         1.371,
@@ -1032,8 +1032,8 @@
       "source": "artifacts/meshy/aurora-fuel-depot-tank-v1/model.glb",
       "outputPath": "public/aura-assets/auroraFuelDepotTankMeshy.2c8aec52.glb",
       "url": "/aura-assets/auroraFuelDepotTankMeshy.2c8aec52.glb",
-      "hash": "sha256-2c8aec52567e321e1d4f82ddecdb12ad594e344e9f01d72cd11ded251cddc88e",
-      "sizeBytes": 22381840,
+      "hash": "sha256-34ac7757254ddceb6bc2e78aae86a30a05519f7485de7e34393749bbb470ac5e",
+      "sizeBytes": 1457144,
       "bounds": [
         1.903,
         1.369,
@@ -1389,8 +1389,8 @@
       "source": "artifacts/meshy/aurora-habitat-dome-v1/model.glb",
       "outputPath": "public/aura-assets/auroraHabitatDomeMeshy.b0e5deb5.glb",
       "url": "/aura-assets/auroraHabitatDomeMeshy.b0e5deb5.glb",
-      "hash": "sha256-b0e5deb5455a3763e10a6525c55687ebc05a0ba1cbf012887b7bc5d9a638912f",
-      "sizeBytes": 24116564,
+      "hash": "sha256-005c7082de1ca33398b42b3ace401daf88d51e299c19bd9534c4c57f4c9adcca",
+      "sizeBytes": 1647200,
       "bounds": [
         1.704,
         1.033,
@@ -1542,6 +1542,173 @@
         "kind": "manual-inspection",
         "sha256": "sha256-29b8177240c57cfe44d5975f9d7b5e098a7f5f4a5fa11bb277e5f734964561c6",
         "checkedAt": "2026-10-14T21:03:10.644Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "auroraLanderCraftMeshy",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/auroraLanderCraftMeshy/model.glb",
+      "outputPath": "public/aura-assets/auroraLanderCraftMeshy.6973df74.glb",
+      "url": "/aura-assets/auroraLanderCraftMeshy.6973df74.glb",
+      "hash": "sha256-6973df74d22906517e1fa788c01949d30cdb0e72a03d23b7770757cf7571f8db",
+      "sizeBytes": 927288,
+      "bounds": [
+        1.898,
+        1.346,
+        1.895
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.949,
+          0,
+          -0.949
+        ],
+        "max": [
+          0.949,
+          1.346,
+          0.946
+        ],
+        "size": [
+          1.898,
+          1.346,
+          1.895
+        ],
+        "center": [
+          0,
+          0.673,
+          -0.002
+        ],
+        "maxDimension": 1.898,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/aura-clash-corner-pylon-v1/model.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Aura Clash Arena lane boundary corner pylon) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-14T20:41:04.404Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a13c23-b8a0-73ab-9179-75296436372c",
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-070bd6683422a23e94e9aa7d939a0d9309da25850f57530af6448245769ed535",
+          "createdAt": "2026-10-14T20:38:56.453Z",
+          "finishedAt": "2026-10-14T20:41:04.404Z",
+          "consumedCredits": 30,
+          "localMetadata": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "rightsEvidence": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json",
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "public/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png"
+        ],
+        "checkedAt": "2026-10-14T20:41:04.404Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0 for auroraLanderCraftMeshy."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "thumbnailUrl": "/aura-assets/auroraLanderCraftMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "renderedProbe": {
+        "url": "/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-5dba189c41e4727649102bce244aa5ddf635aa6c7a4be0d4ef4ee96990bae9bc",
+        "checkedAt": "2026-10-14T21:02:59.667Z"
       },
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
@@ -1758,8 +1925,8 @@
       "source": "artifacts/meshy/aurora-outpost-pad-v1/model.glb",
       "outputPath": "public/aura-assets/auroraOutpostPadMeshy.db71e9d7.glb",
       "url": "/aura-assets/auroraOutpostPadMeshy.db71e9d7.glb",
-      "hash": "sha256-db71e9d7f58c25da8524e559f112b9b7caf24c9999640ee34ee14da91a48ae2e",
-      "sizeBytes": 19163848,
+      "hash": "sha256-58a735a2eedc4955f747aa104d738445f2ba4ba55fb4b0bad8832fc24080ea02",
+      "sizeBytes": 830668,
       "bounds": [
         1.902,
         0.176,
@@ -5921,8 +6088,8 @@
       "source": "artifacts/meshy/bank-shot-billiard-lamp-v1/model.glb",
       "outputPath": "public/aura-assets/bankShotBilliardLampMeshy.b380e61c.glb",
       "url": "/aura-assets/bankShotBilliardLampMeshy.b380e61c.glb",
-      "hash": "sha256-b380e61c902bc8b122df374382523dc685fd06ea4d6e514de017f1bcff9b8f86",
-      "sizeBytes": 24835232,
+      "hash": "sha256-d8af525176357d2c6b9fec8cc0b80124cc6be946f3bdec5c526100bedca95246",
+      "sizeBytes": 1393644,
       "bounds": [
         1.9,
         1.575,
@@ -7384,8 +7551,8 @@
       "source": "artifacts/meshy/blockfall-capacitor-bank-v1/model.glb",
       "outputPath": "public/aura-assets/blockfallEnergyCapacitorBankMeshy.533cb22d.glb",
       "url": "/aura-assets/blockfallEnergyCapacitorBankMeshy.533cb22d.glb",
-      "hash": "sha256-533cb22dea7aaee74271f980da54af5c118c3a7614921ec561cfeba1d71bf828",
-      "sizeBytes": 17211212,
+      "hash": "sha256-4be258ee4c92b9940793be3ca96eacd8c9b6a1ee43293fe37bcfd4231d3f4355",
+      "sizeBytes": 1389156,
       "bounds": [
         1.902,
         1.559,
@@ -8827,8 +8994,8 @@
       "source": "artifacts/meshy/blockfall-containment-pylon-v1/model.glb",
       "outputPath": "public/aura-assets/blockfallReactorContainmentPylonMeshy.4767326f.glb",
       "url": "/aura-assets/blockfallReactorContainmentPylonMeshy.4767326f.glb",
-      "hash": "sha256-4767326fdb8bfb718f22ebae52f0c5a714dd4a49447412b4c052b4b50ef861be",
-      "sizeBytes": 24745560,
+      "hash": "sha256-31d05dd8be425a8932aa97d8732828d783189ccd26504a57c74b3243144a3309",
+      "sizeBytes": 1829824,
       "bounds": [
         0.786,
         1.901,
@@ -9626,8 +9793,8 @@
       "source": "artifacts/meshy/courier-delivery-kiosk-v1/model.glb",
       "outputPath": "public/aura-assets/courierDeliveryKioskMeshy.71266ea6.glb",
       "url": "/aura-assets/courierDeliveryKioskMeshy.71266ea6.glb",
-      "hash": "sha256-71266ea60622970cad4e3a007c1f9fc22d5dd6fb47755ae1d4b4ba0086184436",
-      "sizeBytes": 17284496,
+      "hash": "sha256-a7d0b7898d3e6b2b9ce013f5a351a01e248e8dc02096b1dd68587be8b6c901b4",
+      "sizeBytes": 1050448,
       "bounds": [
         1.901,
         0.94,
@@ -12059,8 +12226,8 @@
       "source": "artifacts/meshy/courier-van-v1/model-decimated.glb",
       "outputPath": "public/aura-assets/courierVanMeshyV1Decimated.6c1aa6f0.glb",
       "url": "/aura-assets/courierVanMeshyV1Decimated.6c1aa6f0.glb",
-      "hash": "sha256-6c1aa6f092aa920933d78c62c55ed30a1e44489594ade51113d46d81ada33916",
-      "sizeBytes": 19113732,
+      "hash": "sha256-4cdc96daded67df371f08f59f76f99289e7ceb9cb06d476e461046a46b37b019",
+      "sizeBytes": 1149200,
       "bounds": [
         1.905,
         0.867,
@@ -12224,8 +12391,8 @@
       "source": "artifacts/meshy/courier-van-v2/model-decimated.glb",
       "outputPath": "public/aura-assets/courierVanMeshyV2Decimated.6f509ab0.glb",
       "url": "/aura-assets/courierVanMeshyV2Decimated.6f509ab0.glb",
-      "hash": "sha256-6f509ab0902bbf048f828938332c4172b1dac0aef67f375e3fc666e88e0ba983",
-      "sizeBytes": 9737668,
+      "hash": "sha256-e390e2814f66cdf3af6ff9f2cc7994494fc775842d9413ae45996326ba2c7064",
+      "sizeBytes": 1198884,
       "bounds": [
         1.904,
         0.941,
@@ -12874,8 +13041,8 @@
       "source": "artifacts/meshy/deep-abyssal-beacon-rig-v1/model.glb",
       "outputPath": "public/aura-assets/deepAbyssalBeaconRigMeshy.a642fd40.glb",
       "url": "/aura-assets/deepAbyssalBeaconRigMeshy.a642fd40.glb",
-      "hash": "sha256-a642fd40a971f6c328abc5ea4da4ff333fd65089801e57b6cda23fe8c23a2815",
-      "sizeBytes": 25989512,
+      "hash": "sha256-ce330875eeb6eb2ee0c899c9b8c41aa68609bce50e4738ab030807a1e8e14945",
+      "sizeBytes": 1868700,
       "bounds": [
         1.815,
         1.9,
@@ -15186,8 +15353,8 @@
       "source": "artifacts/meshy/deep-sub-v1/model-decimated.glb",
       "outputPath": "public/aura-assets/deepSubMeshy.f6feb67e.glb",
       "url": "/aura-assets/deepSubMeshy.f6feb67e.glb",
-      "hash": "sha256-f6feb67e48009ad3c05861ca249b401d88e6204f0e1be71abbbea8e80b3defc1",
-      "sizeBytes": 21030980,
+      "hash": "sha256-c21fd7bc89712a10616889298e5878c866ef69f8041ecc4e44b8a49bfddb3baa",
+      "sizeBytes": 1030164,
       "bounds": [
         1.903,
         0.987,
@@ -15351,8 +15518,8 @@
       "source": "artifacts/meshy/deep-sunken-reactor-core-v1/model.glb",
       "outputPath": "public/aura-assets/deepSunkenReactorCoreMeshy.c86ae496.glb",
       "url": "/aura-assets/deepSunkenReactorCoreMeshy.c86ae496.glb",
-      "hash": "sha256-c86ae49686da47cfdb58a087971cde1974a03af59026af1e4516b79013525cfc",
-      "sizeBytes": 27048120,
+      "hash": "sha256-4e30cebdfbb3f6dbebf6de8039d721189e3d80244dc6253b9629fd605500e199",
+      "sizeBytes": 1685272,
       "bounds": [
         1.817,
         1.8,
@@ -15729,8 +15896,8 @@
       "source": "artifacts/meshy/fps-energy-core-pickup-v1/model.glb",
       "outputPath": "public/aura-assets/fpsEnergyCorePickupMeshy.a89ec482.glb",
       "url": "/aura-assets/fpsEnergyCorePickupMeshy.a89ec482.glb",
-      "hash": "sha256-a89ec4826bb656dbb219c9f7101ec6a227b3f91a94c13ddc0a5b1526633319a7",
-      "sizeBytes": 21960460,
+      "hash": "sha256-e98b5565006f6fcfcb4a9204bda71635e305ef5de88a4c4a03da398bb06c403e",
+      "sizeBytes": 1094004,
       "bounds": [
         1.882,
         1.902,
@@ -15894,8 +16061,8 @@
       "source": "artifacts/meshy/fps-scifi-cover-crate-v1/model.glb",
       "outputPath": "public/aura-assets/fpsSciFiCoverCrateMeshy.1cb66c1c.glb",
       "url": "/aura-assets/fpsSciFiCoverCrateMeshy.1cb66c1c.glb",
-      "hash": "sha256-1cb66c1cc24856a12f4459eb8baf4e43b4764b971f53f418014a4f59d5c50b3f",
-      "sizeBytes": 19900012,
+      "hash": "sha256-0f40fc7793d962e7969e01b502abaeefe3820685352e7cf6541dc56fa3044314",
+      "sizeBytes": 1201556,
       "bounds": [
         1.221,
         1.902,
@@ -16059,8 +16226,8 @@
       "source": "artifacts/meshy/gallery-laser-pylon-v1/model.glb",
       "outputPath": "public/aura-assets/galleryLaserSecurityPylonMeshy.1fca1ae9.glb",
       "url": "/aura-assets/galleryLaserSecurityPylonMeshy.1fca1ae9.glb",
-      "hash": "sha256-1fca1ae982f07e95bb7b5e78d9aba56d3f54ae0dc00efe6533c6046eda691c90",
-      "sizeBytes": 16199472,
+      "hash": "sha256-5c9ea00663a4eb3dc96648484f2d37acad6c9345144a34779ca4ddc129025ea6",
+      "sizeBytes": 652436,
       "bounds": [
         0.614,
         1.903,
@@ -16224,8 +16391,8 @@
       "source": "artifacts/meshy/gallery-marble-bust-exhibit-v1/model.glb",
       "outputPath": "public/aura-assets/galleryMarbleBustExhibitMeshy.a17a57de.glb",
       "url": "/aura-assets/galleryMarbleBustExhibitMeshy.a17a57de.glb",
-      "hash": "sha256-a17a57de0cf92a7da2afec0441d47a6d72a2b4871d93188c6e4f5bb84c469a78",
-      "sizeBytes": 17110628,
+      "hash": "sha256-8e4ebfe34b6bac5451125c74d3d1c47675b9e24ed394fd319bce53b58db89814",
+      "sizeBytes": 792920,
       "bounds": [
         1.23,
         1.903,
@@ -16377,6 +16544,173 @@
         "kind": "manual-inspection",
         "sha256": "sha256-f49d9adf473f6386883e8d580036d1e5138585839bbc2ec35b217c3306e827cd",
         "checkedAt": "2026-10-14T21:03:19.141Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "gallerySecurityGuardMeshy",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/gallerySecurityGuardMeshy/model.glb",
+      "outputPath": "public/aura-assets/gallerySecurityGuardMeshy.e45c9d16.glb",
+      "url": "/aura-assets/gallerySecurityGuardMeshy.e45c9d16.glb",
+      "hash": "sha256-e45c9d1670c066aa5130afa104ad29d1d4cda47a5f3c511adf1dcbcfc9b1463f",
+      "sizeBytes": 889196,
+      "bounds": [
+        0.739,
+        1.896,
+        0.483
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.374,
+          0,
+          -0.24
+        ],
+        "max": [
+          0.366,
+          1.896,
+          0.244
+        ],
+        "size": [
+          0.739,
+          1.896,
+          0.483
+        ],
+        "center": [
+          -0.004,
+          0.948,
+          0.002
+        ],
+        "maxDimension": 1.896,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/aura-clash-corner-pylon-v1/model.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Aura Clash Arena lane boundary corner pylon) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-14T20:41:04.404Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a13c23-b8a0-73ab-9179-75296436372c",
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-070bd6683422a23e94e9aa7d939a0d9309da25850f57530af6448245769ed535",
+          "createdAt": "2026-10-14T20:38:56.453Z",
+          "finishedAt": "2026-10-14T20:41:04.404Z",
+          "consumedCredits": 30,
+          "localMetadata": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "rightsEvidence": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json",
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "public/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png"
+        ],
+        "checkedAt": "2026-10-14T20:41:04.404Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0 for gallerySecurityGuardMeshy."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "thumbnailUrl": "/aura-assets/gallerySecurityGuardMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "renderedProbe": {
+        "url": "/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-5dba189c41e4727649102bce244aa5ddf635aa6c7a4be0d4ef4ee96990bae9bc",
+        "checkedAt": "2026-10-14T21:02:59.667Z"
       },
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
@@ -19039,6 +19373,173 @@
       ]
     },
     {
+      "id": "galleryStealthThiefMeshy",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/galleryStealthThiefMeshy/model.glb",
+      "outputPath": "public/aura-assets/galleryStealthThiefMeshy.d9d45962.glb",
+      "url": "/aura-assets/galleryStealthThiefMeshy.d9d45962.glb",
+      "hash": "sha256-d9d4596215ccd430c12186e752db923f662bb21278836df543a65f1cb7b9561c",
+      "sizeBytes": 772224,
+      "bounds": [
+        1.057,
+        1.893,
+        1.256
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.529,
+          0,
+          -0.629
+        ],
+        "max": [
+          0.527,
+          1.893,
+          0.627
+        ],
+        "size": [
+          1.057,
+          1.893,
+          1.256
+        ],
+        "center": [
+          -0.001,
+          0.947,
+          -0.001
+        ],
+        "maxDimension": 1.893,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/aura-clash-corner-pylon-v1/model.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Aura Clash Arena lane boundary corner pylon) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-14T20:41:04.404Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a13c23-b8a0-73ab-9179-75296436372c",
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-070bd6683422a23e94e9aa7d939a0d9309da25850f57530af6448245769ed535",
+          "createdAt": "2026-10-14T20:38:56.453Z",
+          "finishedAt": "2026-10-14T20:41:04.404Z",
+          "consumedCredits": 30,
+          "localMetadata": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "rightsEvidence": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json",
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "public/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png"
+        ],
+        "checkedAt": "2026-10-14T20:41:04.404Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0 for galleryStealthThiefMeshy."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "thumbnailUrl": "/aura-assets/galleryStealthThiefMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "renderedProbe": {
+        "url": "/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-5dba189c41e4727649102bce244aa5ddf635aa6c7a4be0d4ef4ee96990bae9bc",
+        "checkedAt": "2026-10-14T21:02:59.667Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
       "id": "galleryThief",
       "type": "model",
       "format": "glb",
@@ -19210,8 +19711,8 @@
       "source": "artifacts/meshy/gravity-cargo-container-pod-v1/model.glb",
       "outputPath": "public/aura-assets/gravityCargoContainerPodMeshy.ef38aac7.glb",
       "url": "/aura-assets/gravityCargoContainerPodMeshy.ef38aac7.glb",
-      "hash": "sha256-ef38aac79dd3a2a991178c1abfdb430b13ee04b61165722c580e7ea3e6aac46f",
-      "sizeBytes": 19933340,
+      "hash": "sha256-cc1595458611bf130c851fec73752e9dbb6a954aa468fa73f4639415022c1f67",
+      "sizeBytes": 1023572,
       "bounds": [
         1.891,
         1.577,
@@ -19375,8 +19876,8 @@
       "source": "artifacts/meshy/gravity-orbital-relay-v1/model.glb",
       "outputPath": "public/aura-assets/gravityOrbitalRelayMeshy.bd64dad5.glb",
       "url": "/aura-assets/gravityOrbitalRelayMeshy.bd64dad5.glb",
-      "hash": "sha256-bd64dad55b268b9ea595b3114038eb09565c1fae4434dd996bbd58b449868a42",
-      "sizeBytes": 25662072,
+      "hash": "sha256-cd90014c33c88ae171e02f94bdb59ee0c1a9c5c237982884b17f4bad733140b2",
+      "sizeBytes": 1802128,
       "bounds": [
         1.841,
         1.901,
@@ -23886,8 +24387,8 @@
       "source": "artifacts/meshy/gravity-freight-v1/model-decimated.glb",
       "outputPath": "public/aura-assets/gravityPostMeshyFreight.1db015a8.glb",
       "url": "/aura-assets/gravityPostMeshyFreight.1db015a8.glb",
-      "hash": "sha256-1db015a8a1294f6e7fc2446faff58cffcb30a1196a498073c05ffcb542a53e8c",
-      "sizeBytes": 22380092,
+      "hash": "sha256-7f6e480ba253314f3287bafb1023e26cabc80278039c34c624ec7b045ab5a1d0",
+      "sizeBytes": 1302388,
       "bounds": [
         1.654,
         0.917,
@@ -34434,8 +34935,8 @@
       "source": "artifacts/meshy/mech-hangar-rival-unit-v1/model.glb",
       "outputPath": "public/aura-assets/mechHangarRivalUnitMeshy.39baba31.glb",
       "url": "/aura-assets/mechHangarRivalUnitMeshy.39baba31.glb",
-      "hash": "sha256-39baba310aaea4f25868e8ef7d7e859361440aaf1e33a0cbe32f562831c81ca3",
-      "sizeBytes": 24762200,
+      "hash": "sha256-7176f9444efd284bc9aa1f72d932d0e4896e9a2e6f21918e1c60ee782ca6ead3",
+      "sizeBytes": 1347744,
       "bounds": [
         1.192,
         1.901,
@@ -34599,8 +35100,8 @@
       "source": "artifacts/meshy/mech-hangar-service-gantry-v1/model.glb",
       "outputPath": "public/aura-assets/mechHangarServiceGantryMeshy.83bcd2f3.glb",
       "url": "/aura-assets/mechHangarServiceGantryMeshy.83bcd2f3.glb",
-      "hash": "sha256-83bcd2f3e7eafe98b4e441e5461155d4f3ce8ef75ca7654ce76ceb1c4507149f",
-      "sizeBytes": 24518276,
+      "hash": "sha256-9830e93321d5e7b657ce2b3936327cdab00e57e514f8ec207d2e36ff6398ff44",
+      "sizeBytes": 1684184,
       "bounds": [
         1.509,
         1.902,
@@ -37359,8 +37860,8 @@
       "source": "artifacts/meshy/neon-arena-generator-core-v1/model.glb",
       "outputPath": "public/aura-assets/neonArenaGeneratorCoreMeshy.3f31a88c.glb",
       "url": "/aura-assets/neonArenaGeneratorCoreMeshy.3f31a88c.glb",
-      "hash": "sha256-3f31a88c99f0c946fdee2ffbeb40b1bcdd6bb201d77401765de036059712d3a0",
-      "sizeBytes": 23527804,
+      "hash": "sha256-6d2d1156f81859db5e2fd6b89f3bfa7de8950d2b1e26fcb08e2bba79db6b24e4",
+      "sizeBytes": 1070012,
       "bounds": [
         1.166,
         1.903,
@@ -38396,8 +38897,8 @@
       "source": "artifacts/meshy/neon-cyber-pylon-v1/model.glb",
       "outputPath": "public/aura-assets/neonCyberPylonMeshy.9b29d4fa.glb",
       "url": "/aura-assets/neonCyberPylonMeshy.9b29d4fa.glb",
-      "hash": "sha256-9b29d4fae458ecb5a792852264841f28a6c7ea9ad37062d18927671507d98f9d",
-      "sizeBytes": 21747136,
+      "hash": "sha256-1649e67f8d1053f41042af86f000c4d26a5609aab9e8719dd7e16e2407678155",
+      "sizeBytes": 1224972,
       "bounds": [
         1.885,
         1.618,
@@ -40083,8 +40584,8 @@
       "source": "artifacts/meshy/neon-swarm-chaser-drone-v1/model.glb",
       "outputPath": "public/aura-assets/neonSwarmChaserDroneMeshy.85d6f8dd.glb",
       "url": "/aura-assets/neonSwarmChaserDroneMeshy.85d6f8dd.glb",
-      "hash": "sha256-85d6f8dda683c38e5dd2eea8fb8d99d2a003e7dc205552ca046d2e11887834f0",
-      "sizeBytes": 22284088,
+      "hash": "sha256-caa99fc1af6a16556e7cfe90ed8cad95852898de20d403977170771e25fe9f3f",
+      "sizeBytes": 1219868,
       "bounds": [
         1.903,
         0.985,
@@ -40236,6 +40737,173 @@
         "kind": "manual-inspection",
         "sha256": "sha256-4d7ff2933ed9080bc59f2f52c5d280bc782225498bdeb1ffee0bcb98af6dd3a5",
         "checkedAt": "2026-10-14T21:03:12.342Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "neonSwarmHeroMeshy",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/neonSwarmHeroMeshy/model.glb",
+      "outputPath": "public/aura-assets/neonSwarmHeroMeshy.6607054a.glb",
+      "url": "/aura-assets/neonSwarmHeroMeshy.6607054a.glb",
+      "hash": "sha256-6607054aa274d0dd5faef56384bb8aa25e375b2c89a6b6b330ddfe5e7c4ac38e",
+      "sizeBytes": 810592,
+      "bounds": [
+        0.919,
+        1.896,
+        1.109
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.463,
+          0,
+          -0.553
+        ],
+        "max": [
+          0.456,
+          1.896,
+          0.555
+        ],
+        "size": [
+          0.919,
+          1.896,
+          1.109
+        ],
+        "center": [
+          -0.004,
+          0.948,
+          0.001
+        ],
+        "maxDimension": 1.896,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/aura-clash-corner-pylon-v1/model.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Aura Clash Arena lane boundary corner pylon) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-14T20:41:04.404Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a13c23-b8a0-73ab-9179-75296436372c",
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-070bd6683422a23e94e9aa7d939a0d9309da25850f57530af6448245769ed535",
+          "createdAt": "2026-10-14T20:38:56.453Z",
+          "finishedAt": "2026-10-14T20:41:04.404Z",
+          "consumedCredits": 30,
+          "localMetadata": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "rightsEvidence": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json",
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "public/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png"
+        ],
+        "checkedAt": "2026-10-14T20:41:04.404Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0 for neonSwarmHeroMeshy."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "thumbnailUrl": "/aura-assets/neonSwarmHeroMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "renderedProbe": {
+        "url": "/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-5dba189c41e4727649102bce244aa5ddf635aa6c7a4be0d4ef4ee96990bae9bc",
+        "checkedAt": "2026-10-14T21:02:59.667Z"
       },
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
@@ -40440,8 +41108,8 @@
       "source": "artifacts/meshy/orbital-defense-turret-v1/model.glb",
       "outputPath": "public/aura-assets/orbitalDefenseTurretMeshy.61ef91e4.glb",
       "url": "/aura-assets/orbitalDefenseTurretMeshy.61ef91e4.glb",
-      "hash": "sha256-61ef91e40fa4f9f929599dd64138734d9b7515ad26b3288dc00191bbe219da15",
-      "sizeBytes": 24580688,
+      "hash": "sha256-29b372ff13492926af58a935b24509f8b51dafcb3a8d80bb6cb9f22ccc16f23f",
+      "sizeBytes": 1188456,
       "bounds": [
         1.902,
         0.523,
@@ -40605,8 +41273,8 @@
       "source": "artifacts/meshy/orbital-planet-globe-v1/model.glb",
       "outputPath": "public/aura-assets/orbitalPlanetGlobeMeshy.dfb029ed.glb",
       "url": "/aura-assets/orbitalPlanetGlobeMeshy.dfb029ed.glb",
-      "hash": "sha256-dfb029ed3e950b15851862f4b7650aa6c21591fb8d249d3592d34b6130320cc1",
-      "sizeBytes": 23618532,
+      "hash": "sha256-5569841bbd97892a8585a29b6971f0f8f157859e43381680b14892b20c03a81e",
+      "sizeBytes": 1539516,
       "bounds": [
         1.896,
         1.903,
@@ -40770,8 +41438,8 @@
       "source": "artifacts/meshy/orbital-strike-drone-v1/model.glb",
       "outputPath": "public/aura-assets/orbitalStrikeDroneMeshy.17efd760.glb",
       "url": "/aura-assets/orbitalStrikeDroneMeshy.17efd760.glb",
-      "hash": "sha256-17efd760960acaa80bc894300a0b76f597895b55ddb393ce7e4c3913e4770dfd",
-      "sizeBytes": 24921992,
+      "hash": "sha256-c064bf4165bb8d7d108952ead0fbc01184bec61b2da17eb9d062ecf7101dd91d",
+      "sizeBytes": 1361432,
       "bounds": [
         1.622,
         0.621,
@@ -40935,8 +41603,8 @@
       "source": "artifacts/meshy/patrol-aircraft-v1/model-decimated.glb",
       "outputPath": "public/aura-assets/patrolAircraftMeshy.183e83f8.glb",
       "url": "/aura-assets/patrolAircraftMeshy.183e83f8.glb",
-      "hash": "sha256-183e83f818cc35b68d0a5f0b1dcb2d11485abaf977c7cbefd4c3a538554d3428",
-      "sizeBytes": 19885212,
+      "hash": "sha256-e0f931d27982646b0049adf2c05b9978e277c31ed19179881925c899fe017986",
+      "sizeBytes": 799924,
       "bounds": [
         1.535,
         0.409,
@@ -41100,8 +41768,8 @@
       "source": "artifacts/meshy/patrol-coastal-radar-tower-v1/model.glb",
       "outputPath": "public/aura-assets/patrolCoastalRadarTowerMeshy.7d37c6a6.glb",
       "url": "/aura-assets/patrolCoastalRadarTowerMeshy.7d37c6a6.glb",
-      "hash": "sha256-7d37c6a66780f68625b74f0fef7254ce36d3c1a85f3840da12adae8ec02f677e",
-      "sizeBytes": 23535084,
+      "hash": "sha256-50b5e995e1990a5dbf781eca739d0ec4796007aede11019758de2bdaf1e48844",
+      "sizeBytes": 1537208,
       "bounds": [
         1.104,
         1.903,
@@ -41265,8 +41933,8 @@
       "source": "artifacts/meshy/patrol-ring-gate-v1/model.glb",
       "outputPath": "public/aura-assets/patrolRingGateMeshy.6f25f48f.glb",
       "url": "/aura-assets/patrolRingGateMeshy.6f25f48f.glb",
-      "hash": "sha256-6f25f48f6b2beb46f92fbb2e6dbdeadd562c432ac0d1f59ad249097f979fba35",
-      "sizeBytes": 22204864,
+      "hash": "sha256-25b7d4cc525873876be356b2c78a15ca8d2d6caf6702a5d40d02a8163ad4ee46",
+      "sizeBytes": 996332,
       "bounds": [
         1.902,
         1.788,
@@ -45092,8 +45760,8 @@
       "source": "artifacts/meshy/pulse-barrier-drone-wall-v1/model.glb",
       "outputPath": "public/aura-assets/pulseBarrierDroneWallMeshy.3e1b4d89.glb",
       "url": "/aura-assets/pulseBarrierDroneWallMeshy.3e1b4d89.glb",
-      "hash": "sha256-3e1b4d8984649e90e0c407a7f94b089b6afdd6733299996f8afda729ff1de0fa",
-      "sizeBytes": 21605396,
+      "hash": "sha256-ec9898bc81b52e66ae5835f73298ad58582757453c7cefb490ba70b00412a614",
+      "sizeBytes": 1212212,
       "bounds": [
         1.905,
         0.305,
@@ -45833,8 +46501,8 @@
       "source": "artifacts/meshy/pulse-neon-gate-arch-v1/model.glb",
       "outputPath": "public/aura-assets/pulseNeonGateArchMeshy.02cfefe8.glb",
       "url": "/aura-assets/pulseNeonGateArchMeshy.02cfefe8.glb",
-      "hash": "sha256-02cfefe8ca8d3ad94bba07a2980e7cd27d0d0425a532caaecb5c16629a533e81",
-      "sizeBytes": 22164384,
+      "hash": "sha256-a5e6d4eaf752cd91c22421b770c3fce97f37c6356a342fa5679bb525b61e69b8",
+      "sizeBytes": 1058004,
       "bounds": [
         0.656,
         1.903,
@@ -47535,6 +48203,173 @@
       ]
     },
     {
+      "id": "pulseStarfighterHeroMeshy",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/pulseStarfighterHeroMeshy/model.glb",
+      "outputPath": "public/aura-assets/pulseStarfighterHeroMeshy.477315c7.glb",
+      "url": "/aura-assets/pulseStarfighterHeroMeshy.477315c7.glb",
+      "hash": "sha256-477315c7c79ee7e53708a40552c59d8bcd0db460ec9f57ceed25a1423eb088d9",
+      "sizeBytes": 818784,
+      "bounds": [
+        1.885,
+        0.606,
+        1.898
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.95,
+          0,
+          -0.95
+        ],
+        "max": [
+          0.936,
+          0.606,
+          0.948
+        ],
+        "size": [
+          1.885,
+          0.606,
+          1.898
+        ],
+        "center": [
+          -0.007,
+          0.303,
+          -0.001
+        ],
+        "maxDimension": 1.898,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/aura-clash-corner-pylon-v1/model.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Aura Clash Arena lane boundary corner pylon) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-14T20:41:04.404Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a13c23-b8a0-73ab-9179-75296436372c",
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-070bd6683422a23e94e9aa7d939a0d9309da25850f57530af6448245769ed535",
+          "createdAt": "2026-10-14T20:38:56.453Z",
+          "finishedAt": "2026-10-14T20:41:04.404Z",
+          "consumedCredits": 30,
+          "localMetadata": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "rightsEvidence": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json",
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "public/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png"
+        ],
+        "checkedAt": "2026-10-14T20:41:04.404Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0 for pulseStarfighterHeroMeshy."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "thumbnailUrl": "/aura-assets/pulseStarfighterHeroMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "renderedProbe": {
+        "url": "/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-5dba189c41e4727649102bce244aa5ddf635aa6c7a4be0d4ef4ee96990bae9bc",
+        "checkedAt": "2026-10-14T21:02:59.667Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
       "id": "pulseTerminalSentry",
       "type": "model",
       "format": "glb",
@@ -49082,8 +49917,8 @@
       "source": "artifacts/meshy/rooftop-ball-rack-cart-v1/model.glb",
       "outputPath": "public/aura-assets/rooftopBallRackCartMeshy.da24de7e.glb",
       "url": "/aura-assets/rooftopBallRackCartMeshy.da24de7e.glb",
-      "hash": "sha256-da24de7e4455714a9c5a017c3bfad300bcffaf1f99774d9f8fb99706fd10f446",
-      "sizeBytes": 20137844,
+      "hash": "sha256-1df90b8c7f5ae04ea2e95f3c1919e238f41f1c14bb642a180c2bfcae65c15608",
+      "sizeBytes": 1154300,
       "bounds": [
         1.47,
         1.903,
@@ -52503,6 +53338,173 @@
       "warnings": []
     },
     {
+      "id": "rooftopDefenderMeshy",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/rooftopDefenderMeshy/model.glb",
+      "outputPath": "public/aura-assets/rooftopDefenderMeshy.c53681c7.glb",
+      "url": "/aura-assets/rooftopDefenderMeshy.c53681c7.glb",
+      "hash": "sha256-c53681c71f51f6e30fd08bb326cdab96ae70a61d10d0b1d8e0ffffba7d1d59f5",
+      "sizeBytes": 783700,
+      "bounds": [
+        0.831,
+        1.886,
+        0.646
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.417,
+          0,
+          -0.324
+        ],
+        "max": [
+          0.415,
+          1.886,
+          0.322
+        ],
+        "size": [
+          0.831,
+          1.886,
+          0.646
+        ],
+        "center": [
+          -0.001,
+          0.943,
+          -0.001
+        ],
+        "maxDimension": 1.886,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/aura-clash-corner-pylon-v1/model.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Aura Clash Arena lane boundary corner pylon) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-14T20:41:04.404Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a13c23-b8a0-73ab-9179-75296436372c",
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-070bd6683422a23e94e9aa7d939a0d9309da25850f57530af6448245769ed535",
+          "createdAt": "2026-10-14T20:38:56.453Z",
+          "finishedAt": "2026-10-14T20:41:04.404Z",
+          "consumedCredits": 30,
+          "localMetadata": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "rightsEvidence": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json",
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "public/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png"
+        ],
+        "checkedAt": "2026-10-14T20:41:04.404Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0 for rooftopDefenderMeshy."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "thumbnailUrl": "/aura-assets/rooftopDefenderMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "renderedProbe": {
+        "url": "/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-5dba189c41e4727649102bce244aa5ddf635aa6c7a4be0d4ef4ee96990bae9bc",
+        "checkedAt": "2026-10-14T21:02:59.667Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
       "id": "rooftopDefenderV2",
       "type": "model",
       "format": "glb",
@@ -54662,8 +55664,8 @@
       "source": "artifacts/meshy/rooftop-scoreboard-rig-v1/model.glb",
       "outputPath": "public/aura-assets/rooftopScoreboardRigMeshy.866123b7.glb",
       "url": "/aura-assets/rooftopScoreboardRigMeshy.866123b7.glb",
-      "hash": "sha256-866123b72952441f5abb5abb0343ac6063d09a9cac9fab086bfae8c96888c29c",
-      "sizeBytes": 21922324,
+      "hash": "sha256-ca7da62eace9dde10d40e2121a9f7012335048fe907e5ba01de276bf97b91582",
+      "sizeBytes": 1641312,
       "bounds": [
         1.905,
         1.089,
@@ -55089,8 +56091,8 @@
       "source": "artifacts/meshy/rooftop-shooter-v1/model-decimated.glb",
       "outputPath": "public/aura-assets/rooftopShooterMeshyV1.ed5a33b3.glb",
       "url": "/aura-assets/rooftopShooterMeshyV1.ed5a33b3.glb",
-      "hash": "sha256-ed5a33b3d23aecb240072e6de6525effca6a5147ef0dff958c74735083ad8828",
-      "sizeBytes": 21597028,
+      "hash": "sha256-ee220fcce3695f8059a43b2470edad5c2e0a34070bfcf54d628feb4b580ae5ea",
+      "sizeBytes": 714604,
       "bounds": [
         0.734,
         1.902,
@@ -55099,12 +56101,12 @@
       "boundsMetadata": {
         "min": [
           -0.37,
-          -0.951,
+          0,
           -0.335
         ],
         "max": [
           0.364,
-          0.951,
+          1.902,
           0.327
         ],
         "size": [
@@ -55114,11 +56116,11 @@
         ],
         "center": [
           -0.003,
-          0,
+          0.951,
           -0.004
         ],
         "maxDimension": 1.902,
-        "grounded": false
+        "grounded": true
       },
       "materials": [
         "material"
@@ -115108,8 +116110,8 @@
       "source": "artifacts/meshy/siege-castle-gatehouse-v1/model.glb",
       "outputPath": "public/aura-assets/siegeCastleGatehouseMeshy.9457851c.glb",
       "url": "/aura-assets/siegeCastleGatehouseMeshy.9457851c.glb",
-      "hash": "sha256-9457851c9247777c8f27a3e7f0b8c14c5576cc21eaeff3a3a99faca17c511ba9",
-      "sizeBytes": 23458380,
+      "hash": "sha256-c97801d48a694e9b0a398769f3da9a9fe67e5c256a8dd6042b9abfe165450541",
+      "sizeBytes": 1331532,
       "bounds": [
         1.907,
         1.215,
@@ -115457,8 +116459,8 @@
       "source": "artifacts/meshy/siege-flagstick-cup-v1/model.glb",
       "outputPath": "public/aura-assets/siegeFlagstickCupMeshy.1177fa78.glb",
       "url": "/aura-assets/siegeFlagstickCupMeshy.1177fa78.glb",
-      "hash": "sha256-1177fa7889d9c805ea385526cf5f826f82c5a757ba83a6a519cf34f67798a8b3",
-      "sizeBytes": 25627168,
+      "hash": "sha256-bbdb77dfc30d18f05afe8e6d4010cbd66c218747c53208876a12a104676a618e",
+      "sizeBytes": 1741200,
       "bounds": [
         1.835,
         1.896,
@@ -116725,8 +117727,8 @@
       "source": "artifacts/meshy/siege-windmill-tower-v1/model.glb",
       "outputPath": "public/aura-assets/siegeWindmillTowerMeshy.781c80ad.glb",
       "url": "/aura-assets/siegeWindmillTowerMeshy.781c80ad.glb",
-      "hash": "sha256-781c80ad94d8d17c5a7712c396aa0d90b4d8a79b73a599b926b7efa7559e5223",
-      "sizeBytes": 23522028,
+      "hash": "sha256-3aee206780a7d26c2c3d1b4a0573fd07f6292840a83fe21822e1b5a7bd9e152d",
+      "sizeBytes": 1603408,
       "bounds": [
         1.764,
         1.902,
@@ -118018,8 +119020,8 @@
       "source": "artifacts/meshy/skyline-checkpoint-gate-v1/model.glb",
       "outputPath": "public/aura-assets/skylineCheckpointGateMeshy.3435e2fe.glb",
       "url": "/aura-assets/skylineCheckpointGateMeshy.3435e2fe.glb",
-      "hash": "sha256-3435e2fe8529596d6863ecc2d81e20ae2f9561248a4df6305ba8c70c0942bffd",
-      "sizeBytes": 23719480,
+      "hash": "sha256-260324292a15574e39b76f78ef59eb139de6e10dbd3f0d285c997918c445c6b0",
+      "sizeBytes": 1123836,
       "bounds": [
         1.901,
         1.444,
@@ -118275,8 +119277,8 @@
       "source": "artifacts/meshy/skyline-crystal-shard-v1/model.glb",
       "outputPath": "public/aura-assets/skylineCrystalShardMeshy.5b5dc457.glb",
       "url": "/aura-assets/skylineCrystalShardMeshy.5b5dc457.glb",
-      "hash": "sha256-5b5dc457e6652b80598913560c4cf178c6cf8eaa7af4e7e087455400d1ca7c07",
-      "sizeBytes": 20285104,
+      "hash": "sha256-9afba0b530761ca4e60b31054090bd551a2ae9421d6607cb083b9db3112c2017",
+      "sizeBytes": 739816,
       "bounds": [
         1.889,
         1.903,
@@ -118810,8 +119812,8 @@
       "source": "artifacts/meshy/skyline-frost-sentry-drone-v1/model.glb",
       "outputPath": "public/aura-assets/skylineFrostSentryDroneMeshy.e64b3b70.glb",
       "url": "/aura-assets/skylineFrostSentryDroneMeshy.e64b3b70.glb",
-      "hash": "sha256-e64b3b702963623e770d66dc81aeb04439fa481f2fe75c8dcf0bd9911bb630b8",
-      "sizeBytes": 23839740,
+      "hash": "sha256-1b61dfa5d9cf0acb2b9215582ebe2fa02bf7f5f1ae785609f8764aef97562cc4",
+      "sizeBytes": 1476056,
       "bounds": [
         1.346,
         1.536,
@@ -118975,8 +119977,8 @@
       "source": "artifacts/meshy/skyline-hero-v2/model-decimated.glb",
       "outputPath": "public/aura-assets/skylineHeroMeshyV2.9bdd5ae2.glb",
       "url": "/aura-assets/skylineHeroMeshyV2.9bdd5ae2.glb",
-      "hash": "sha256-9bdd5ae2a040cb1c2cb43ec0220a70fd86a3b5d6940fdaf31befa46531c9e81a",
-      "sizeBytes": 8664812,
+      "hash": "sha256-0218c9a98c0de2352bef103bc285b4dfed638ef3db06841c75d130e01c275816",
+      "sizeBytes": 987804,
       "bounds": [
         0.912,
         1.903,
@@ -137120,6 +138122,173 @@
       ]
     },
     {
+      "id": "turboHeroRaceCarMeshy",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
+      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
+      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
+      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "sizeBytes": 905264,
+      "bounds": [
+        0.876,
+        0.559,
+        1.897
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.44,
+          0,
+          -0.948
+        ],
+        "max": [
+          0.436,
+          0.559,
+          0.95
+        ],
+        "size": [
+          0.876,
+          0.559,
+          1.897
+        ],
+        "center": [
+          -0.002,
+          0.279,
+          0.001
+        ],
+        "maxDimension": 1.897,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/aura-clash-corner-pylon-v1/model.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Aura Clash Arena lane boundary corner pylon) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-14T20:41:04.404Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a13c23-b8a0-73ab-9179-75296436372c",
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-070bd6683422a23e94e9aa7d939a0d9309da25850f57530af6448245769ed535",
+          "createdAt": "2026-10-14T20:38:56.453Z",
+          "finishedAt": "2026-10-14T20:41:04.404Z",
+          "consumedCredits": 30,
+          "localMetadata": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "rightsEvidence": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json",
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "public/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png"
+        ],
+        "checkedAt": "2026-10-14T20:41:04.404Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0 for turboHeroRaceCarMeshy."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "renderedProbe": {
+        "url": "/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-5dba189c41e4727649102bce244aa5ddf635aa6c7a4be0d4ef4ee96990bae9bc",
+        "checkedAt": "2026-10-14T21:02:59.667Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
       "id": "turboMusicLoopSfx",
       "type": "audio",
       "format": "wav",
@@ -137592,14 +138761,181 @@
       ]
     },
     {
+      "id": "turboRivalRaceCarMeshy",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/turboRivalRaceCarMeshy/model.glb",
+      "outputPath": "public/aura-assets/turboRivalRaceCarMeshy.01185197.glb",
+      "url": "/aura-assets/turboRivalRaceCarMeshy.01185197.glb",
+      "hash": "sha256-01185197e42b44fe8bd49dee3ab5758ef7eb6b8f881010deb8cf89475bc47d48",
+      "sizeBytes": 974244,
+      "bounds": [
+        0.953,
+        0.49,
+        1.897
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.478,
+          0,
+          -0.948
+        ],
+        "max": [
+          0.474,
+          0.49,
+          0.949
+        ],
+        "size": [
+          0.953,
+          0.49,
+          1.897
+        ],
+        "center": [
+          -0.002,
+          0.245,
+          0.001
+        ],
+        "maxDimension": 1.897,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/aura-clash-corner-pylon-v1/model.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Aura Clash Arena lane boundary corner pylon) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-14T20:41:04.404Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a13c23-b8a0-73ab-9179-75296436372c",
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-070bd6683422a23e94e9aa7d939a0d9309da25850f57530af6448245769ed535",
+          "createdAt": "2026-10-14T20:38:56.453Z",
+          "finishedAt": "2026-10-14T20:41:04.404Z",
+          "consumedCredits": 30,
+          "localMetadata": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "rightsEvidence": "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json",
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "public/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png"
+        ],
+        "checkedAt": "2026-10-14T20:41:04.404Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0 for turboRivalRaceCarMeshy."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "thumbnailUrl": "/aura-assets/turboRivalRaceCarMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "renderedProbe": {
+        "url": "/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-5dba189c41e4727649102bce244aa5ddf635aa6c7a4be0d4ef4ee96990bae9bc",
+        "checkedAt": "2026-10-14T21:02:59.667Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
       "id": "turboStartFinishGantryMeshy",
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turbo-start-finish-gantry-v1/model.glb",
       "outputPath": "public/aura-assets/turboStartFinishGantryMeshy.d3a896d6.glb",
       "url": "/aura-assets/turboStartFinishGantryMeshy.d3a896d6.glb",
-      "hash": "sha256-d3a896d621410e087f01fbaf097ebf66411d07fd5ef3a7ad997effcc95aab316",
-      "sizeBytes": 29700912,
+      "hash": "sha256-9b1a75f7fb6b59fa18759ed4cf8799184cc527dc0d8051efa09e50fd9a452712",
+      "sizeBytes": 2191332,
       "bounds": [
         1.894,
         0.532,
@@ -137764,8 +139100,8 @@
       "source": "artifacts/meshy/turbo-tire-barrier-wall-v1/model.glb",
       "outputPath": "public/aura-assets/turboTireBarrierWallMeshy.b95d7d64.glb",
       "url": "/aura-assets/turboTireBarrierWallMeshy.b95d7d64.glb",
-      "hash": "sha256-b95d7d641e3e361271788473bc7e5ed98d752f5ca6794e0c2d4d81b4a0a21651",
-      "sizeBytes": 18350392,
+      "hash": "sha256-2464ac980383ae2939fae011ddcb1ffe666eaf636d303d512b62b87e82430629",
+      "sizeBytes": 1558664,
       "bounds": [
         1.894,
         1.295,
@@ -140739,8 +142075,8 @@
       "source": "artifacts/meshy/vault-pop-bumper-cap-v1/model.glb",
       "outputPath": "public/aura-assets/vaultPopBumperCapMeshy.5d13a8e2.glb",
       "url": "/aura-assets/vaultPopBumperCapMeshy.5d13a8e2.glb",
-      "hash": "sha256-5d13a8e2ff81c372659aafd8afad7aa518060c5d8a30c99e7f8fc3e74730a362",
-      "sizeBytes": 22048560,
+      "hash": "sha256-6e0b4d587271e4a350ee84d48b22671f44a6b6d7481fc6e220506e6c96d79f03",
+      "sizeBytes": 857060,
       "bounds": [
         1.902,
         1.091,

@@ -1306,19 +1306,19 @@ const corridorMeshyGateAndShardBuilders = [
     .rotate(0, -0.24, 0)
     .scale(1.15),
   // 3-plane runner formation wingmen flanking the primary runner launch apron
-  model(assets.pulseRunnerCraft, {
+  model(assets.pulseStarfighterHeroMeshy, {
     name: "pulse-formation-wingman-left",
     role: "setDressing",
-    targetMaxDimension: 2.05
+    targetMaxDimension: 1.95
   })
     .position(-2.22, 0.68, 0.85)
     .rotate(-0.04, 0.16, -0.14)
     .scale(0.86)
     .runtime(game.runtimeNode("pulse-formation-wingman-left", { tags: ["runner-formation", "typed-primary", "renderer-owned", "non-colliding"] })),
-  model(assets.pulseRunnerCraft, {
+  model(assets.pulseStarfighterHeroMeshy, {
     name: "pulse-formation-wingman-right",
     role: "setDressing",
-    targetMaxDimension: 2.05
+    targetMaxDimension: 1.95
   })
     .position(-0.56, 0.74, 0.92)
     .rotate(-0.04, 0.08, 0.12)
@@ -1578,13 +1578,15 @@ const app = createAuraApp("#app", {
       // Typed player craft. This release-validated textured spacecraft already
       // has a readable nose-to-engine silhouette and durable CC-BY provenance;
       // route-local movement still owns every lane/jump/slide transform.
-      model(assets.pulseRunnerCraft, {
+      model(assets.pulseStarfighterHeroMeshy, {
         name: "pulse original runner craft",
-        targetMaxDimension: 2.408,
+        targetMaxDimension: 2.2,
+        castShadow: true,
+        receiveShadow: true
       })
         .position(-1.38, 0.50, 0.42)
         .rotate(0, 0.12, 0)
-        .scale(1.30)
+        .scale(1.15)
         .runtime(game.runtimeNode("pulse-ship-body", { tags: ["player", "craft", "typed-primary"] })),
       primitives.sphere({ name: "pulse glider engine glow", material: glowMaterial })
         .position(-1.38, 0.56, 0.66)
@@ -1927,6 +1929,7 @@ function endRun(reason: string): void {
     parts.core.setVisible(false);
   }
   tunnelAudio.duckForSummary();
+  tunnelAudio.stopStems();
   void tunnelAudio.sfx("runOver");
 }
 
@@ -2407,9 +2410,9 @@ function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
   // Keep the authored section and stem buses aligned even when a deterministic
   // evidence seek crosses several beat callbacks between rendered frames.
   const schedulerSection = pulseSectionAtTime(schedulerNow);
-  // Re-apply every frame so accelerated evidence seeks cannot leave the mixer
-  // ducked or stale when the section label has already advanced.
-  applySection(schedulerSection.id, false);
+  if (runState !== "summary" && schedulerSection.id !== lastSection) {
+    applySection(schedulerSection.id, false);
+  }
   const activeIds = new Set(gateSystem.activeGates().map((gate) => gate.id));
   evidence.upcoming = [
     ...gateSystem.activeGates().map((gate) => ({
