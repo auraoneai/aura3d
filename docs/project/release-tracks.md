@@ -1,7 +1,9 @@
 # Release Tracks
 
-Date: 2026-08-11
-Status: 2.0.0 release-candidate tracks
+Version: 4.0.0
+
+Date: 2026-10-15
+Status: 4.0.0 release-candidate tracks
 
 Aura3D releases are split into independent tracks. Passing one track does not
 grant claims for another.
@@ -37,7 +39,7 @@ Required gates:
 - `pnpm verify:package-provenance`
 - `npm pack --dry-run --json`
 - `node tools/release/publish-all.mjs --dry-run` for every public package in the
-  generated 2.0.0 publish inventory
+  generated 4.0.0 publish inventory
   release, with npm auth stored outside the repository
 
 ## Track 2: Showcase Candidate Release

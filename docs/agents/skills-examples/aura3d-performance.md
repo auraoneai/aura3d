@@ -1,7 +1,7 @@
 # Worked example: aura3d-performance
 
 Date: 2026-09-25. Run inside the Aura3D monorepo with the local CLI build and
-the built engine dist (3.0.1). Lightweight commands only; no bundle-size
+the built engine dist (4.0.0). Lightweight commands only; no bundle-size
 regeneration, profiling, or browser runs locally.
 
 ## Goal

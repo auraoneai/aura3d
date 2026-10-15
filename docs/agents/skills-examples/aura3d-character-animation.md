@@ -1,7 +1,7 @@
 # Worked example: aura3d-character-animation
 
 Date: 2026-09-25. Run in `packages/create-aura3d/templates/mini-game` with the
-local CLI build (`packages/aura3d-cli/dist/cli.js`, 3.0.1) against the shipped
+local CLI build (`packages/aura3d-cli/dist/cli.js`, 4.0.0) against the shipped
 `showcaseKenneyOobiPlatformerHero` GLB. No files were written. No browser
 capture was run locally.
 

@@ -1,6 +1,6 @@
 # Art Direction for Aura3D Agents
 
-Version: 3.0.0 (supersedes `cinematic-scene-quality.md`)
+Version: 4.0.0 (supersedes `cinematic-scene-quality.md`)
 
 Every scene an agent ships has a look: an environment, a key light, a shadow,
 a background, fog, a grade. This doc is the API-level companion to the

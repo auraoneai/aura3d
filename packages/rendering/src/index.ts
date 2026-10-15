@@ -1227,7 +1227,8 @@ export { ANIMATION_TOON_SHADER_MARKER, ANIMATION_TOON_SHADER_NAME, AnimationToon
 export type { AnimationFrameVisualInput, AnimationFrameVisualQuality, AnimationMaterialStyle, AnimationMaterialStyleOptions, AnimationRenderPresetEvidence, AnimationRenderPresetOptions, AnimationVisualQualityOptions, AnimationVisualQualityReport } from "./animation/index.js";
 
 
-// T5.3: "./effects/ResidentGPUParticleRenderer.js" names had no importers — removed from the barrel.
+export { RESIDENT_PARTICLE_CAMERA, ResidentGPUParticleRenderer, residentLifecycleShader } from "./effects/ResidentGPUParticleRenderer.js";
+export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentParticleFrame, ResidentParticlePacingControl } from "./effects/ResidentGPUParticleRenderer.js";
 
 // Aura3D Quality Rebuild contract surface (CONTRACTS.md §3.8).
 export * from "./contracts/index.js";

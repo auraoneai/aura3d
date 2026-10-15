@@ -1,6 +1,6 @@
 # Editor Runtime
 
-Version: 2.0.3
+Version: 4.0.0
 
 Editor-runtime code provides reusable browser authoring primitives. It is separate from any product editor shell.
 

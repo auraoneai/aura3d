@@ -1,7 +1,7 @@
 # Worked example: aura3d-browser-game
 
 Date: 2026-09-25. Run inside the Aura3D monorepo with the local CLI build
-(`packages/aura3d-cli/dist/cli.js`, 3.0.1) and the built engine dist. Commands
+(`packages/aura3d-cli/dist/cli.js`, 4.0.0) and the built engine dist. Commands
 ran in the `racing-starter` and `mini-game` template directories; none wrote
 files (`"wroteManifest": false`, `git status` unchanged). No Playwright or dev
 server was run locally.

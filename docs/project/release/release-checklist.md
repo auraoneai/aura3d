@@ -1,11 +1,11 @@
 # Aura3D Release Checklist
 
-Version: 3.0.1
+Version: 4.0.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-Date: 2026-09-12
-Status: 3.0.1 published. This checklist is retained for future releases.
+Date: 2026-10-15
+Status: 4.0.0 release checklist. Retained for current and future releases.
 
 Use this checklist before publishing packages, docs, hosted demos, showcase
 routes, benchmark claims, or marketing copy. Checked items have current retained
@@ -27,7 +27,7 @@ against `three@0.165.0` remain recorded but cannot close the current
 - [ ] `README.md`, `llms.txt`, route READMEs, package/template READMEs, and
   release docs describe the same public status.
 - [ ] The current release-candidate summary in
-  `docs/project/aura3d-301-release-notes.md` matches the commands being run for
+  `docs/project/aura3d-400-release-notes.md` (and historical `docs/project/aura3d-301-release-notes.md`) matches the commands being run for
   this release.
 
 ## Package Gates
@@ -39,17 +39,17 @@ against `three@0.165.0` remain recorded but cannot close the current
 - [ ] No focused retained-evidence test is failing; the current
   `showcase-route-gates` failure is the deliberate missing-human-verdict gate,
   not stale evidence or an allowlisted failure.
-- [ ] `pnpm test:integration` passes from the final 3.0.1 release commit.
-- [ ] `pnpm test:browser` passes from the final 3.0.1 release commit. The final
+- [ ] `pnpm test:integration` passes from the final 4.0.0 release commit.
+- [ ] `pnpm test:browser` passes from the final 4.0.0 release commit. The final
   unfiltered visual-audit component is current and green: 13 routes, zero
   failures, with human dispositions recorded; the complete browser suite still
   requires its release-commit run.
-- [ ] `pnpm build` passes; finalization covers 29 packages, including the independent lean workload package and optional physical-simulation and navigation adapters.
+- [ ] `pnpm build` passes; finalization covers the `@aura3d/engine` public surface and workspace packages, including optional physical-simulation and navigation adapters.
 - [ ] `pnpm verify:api-docs -- --write` has been run after export changes.
-- [ ] `pnpm verify:package-install-smoke:fresh` passes for 3.0.1 tarballs.
-- [ ] `pnpm verify:package-provenance` passes for 3.0.1 tarballs.
+- [ ] `pnpm verify:package-install-smoke:fresh` passes for 4.0.0 tarballs.
+- [ ] `pnpm verify:package-provenance` passes for 4.0.0 tarballs.
 - [ ] `pnpm exec vitest run tests/unit/package-dist --reporter=dot` passes from
-  the final 3.0.1 release commit.
+  the final 4.0.0 release commit.
 - [ ] Package dry-run or pack verification succeeds for packages being
   published.
 - [ ] Publishing uses `node tools/release/publish-all.mjs` with npm auth stored
@@ -124,7 +124,7 @@ against `three@0.165.0` remain recorded but cannot close the current
   realistic companion stacks pass for every advertised capability. The 15/15
   installed correctness run and clean Linux reproduction are green, subject to
   the documented native-WebGPU hardware boundary. Broad performance is not a
-  2.0 claim; independent gallery review remains open.
+  4.0 claim; independent gallery review remains open.
 - [ ] Material, lighting, shadow, and postprocess claims cite exact route pixels.
 - [ ] Animation claims use screenshot/video deltas in the animated subject
   region, not only counters or camera movement.
@@ -153,7 +153,7 @@ against `three@0.165.0` remain recorded but cannot close the current
 
 - [ ] Every applicable release check is complete and its exact-commit evidence
   is current.
-- [ ] Hosted 3.0.0 route claims have public HTTPS deployment checks. Complete only
+- [ ] Hosted 4.0.0 route claims have public HTTPS deployment checks. Complete only
   after the verified production deployment reaches `https://aura3d.auraone.ai`.
 - [ ] `docs/project/release-artifacts.json` references the final package
   artifacts from the exact release commit.

@@ -1,6 +1,20 @@
 # Changelog
 
-Version: 3.0.1
+Version: 4.0.0
+
+Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.0.0 (2026-10-15)
+
+Published across all 24 active public packages on npm (with all `< 4.0.0` versions and the 5 retired pre-4.0 packages `@aura3d/lean`, `@aura3d/three-compat`, `@aura3d/materials`, `@aura3d/environments`, and `@aura3d/editor` deprecated in full on npm) and on GitHub at https://github.com/auraoneai/aura3d/releases/tag/v4.0.0:
+
+- **Single `@aura3d/engine@4.0.0` package surface**: removes the retired `@aura3d/lean`, `@aura3d/three-compat`, `@aura3d/materials`, `@aura3d/environments`, and `@aura3d/editor` compatibility packages and consolidates the public runtime surface (`createAuraApp`, `model(assets.x)`, `scene`, `camera`, `lights`, `effects`, `atmosphere`, `environments`, `shadows`, `game.*`, `sceneKits.*`, `prefabs.*`, `primitives.*`, `animation`, `createPhysicsRuntime`) on `@aura3d/engine`, serving the core primitive path directly from `.` via code-split internals (`docs/MIGRATION-4.0.md`);
+- **Complete `effects.*` post-processing, atmospheric, particle, weather, and VFX suite**: documents and ships `effects.bloom`, `effects.neonBloom`, `effects.cinematicBloom`, `effects.ambientOcclusion`, `effects.contactOcclusion`, `effects.contactShadows`, `effects.screenSpaceReflections`, `effects.depthOfField`, `effects.motionBlur`, `effects.colorGrade`, `effects.vignette`, `effects.filmGrain`, `effects.chromaticAberration`, `effects.antiAlias`, `effects.outline`, `effects.fog`, `effects.depthFog`, `effects.volumetricFog`, `effects.fogVolume`, `effects.lightCone`, `effects.auroraRibbon`, `effects.particles`, `effects.meshParticles`, `effects.rain`, `effects.snow`, `effects.flipbook`, `effects.trail`, `effects.beam`, `atmosphere.setSky`, `atmosphere.setWetness`, and `game.feel` / `app.feel` triggers;
+- **19 upgraded 3D browser games and showcases**: upgrades all 19 browser game and showcase routes (`Aura Clash Arena` development showcase, `Neon Corridor Strike`, `Turbo Drift Circuit`, `Rooftop Buckets`, `Vault Breakers`, `Mech Hangar`, `Patrol Wing`, `Deep Recovery`, `Aurora Lander`, `Gallery Shift`, `Siege Golf`, `Skyline Runner`, `Gravity Post`, `Neon Swarm`, `Bank Shot`, `Blockfall Reactor`, `Orbital Defense`, `Pulse Tunnel`, `Courier Rush`) with 38+ custom Meshy 3D PBR GLB hero vehicles, rigged/posed characters, architectural setpieces, and interactive gameplay loops;
+- **WebGPU `ResidentGPUParticleRenderer` compute pipeline export**: exports `ResidentGPUParticleRenderer`, `RESIDENT_PARTICLE_CAMERA`, and `residentLifecycleShader` for resident GPU compute particle simulation alongside the WebGL2 runtime and deterministic fixed-step game simulation;
+- **Same-origin fixture and asset delivery**: serves GLB/glTF models, Draco decoders, and environment fixtures from same-origin paths for static deployments without external runtime fetches;
+- **PBR material and HDR/IBL pipeline improvements**: physical PBR materials (clearcoat, sheen, transmission, anisotropy, iridescence), GGX PMREM HDR/IBL environment lighting, multi-mip bloom, and look presets (`looks.preset`, `looks.appOptions`);
+- **CLI and agent workflow upgrades**: updates `create-aura3d@4.0.0` scaffolds, `@aura3d/cli@4.0.0` typed asset commands (`aura3d assets add/resolve/import-meshy/validate/typegen`), look-dev loop tooling (`aura3d look capture/judge/rubric/lint`), Three.js migration codemod (`aura3d migrate three`), and `aura3d check-deploy`.
 
 ## 3.0.1 (2026-09-12)
 

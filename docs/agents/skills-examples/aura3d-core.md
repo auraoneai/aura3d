@@ -4,7 +4,7 @@ Goal: orient on a fresh Aura3D task, confirm the CLI contract, and route to the
 next skill for "show a battle-worn knight helmet on a studio plinth".
 
 Environment: this repository, built CLI at `packages/aura3d-cli/dist/cli.js`
-(Aura3D 3.0.1). Lightweight commands only; no dev server, Playwright, or build.
+(Aura3D 4.0.0). Lightweight commands only; no dev server, Playwright, or build.
 
 ## Commands run
 

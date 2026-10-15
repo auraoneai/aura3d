@@ -235,7 +235,22 @@ function copyAdvancedGalleryAssets(outDir: string): void {
     "fixtures/advanced-gallery/assets/physics-robotics-testbed-blender/physics-robotics-testbed-blender.glb",
     "fixtures/advanced-gallery/assets/fog-cathedral-blender/fog-cathedral-blender.glb",
     "fixtures/advanced-gallery/assets/digital-twin-factory-blender/digital-twin-factory-blender.glb",
-    "fixtures/threejs-parity/assets/physics/cesium-milk-truck.glb"
+    "fixtures/threejs-parity/assets/physics/cesium-milk-truck.glb",
+    "fixtures/advanced-gallery/assets/product-configurator-studio-blender/product-configurator-studio-blender.glb",
+    "fixtures/advanced-gallery/assets/product-configurator-car-batched/car-concept-batched.glb",
+    "fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb",
+    "fixtures/workflow-assets/assets/material-spheres/material-spheres.glb",
+    "fixtures/workflow-assets/assets/product-camera/product-camera.glb",
+    "fixtures/workflow-assets/assets/variant-product/variant-product.glb",
+    "fixtures/asset-corpus/damaged-helmet.glb",
+    "fixtures/asset-corpus/avocado.glb",
+    "fixtures/asset-corpus/boom-box.glb",
+    "fixtures/asset-corpus/clear-coat-test.glb",
+    "fixtures/asset-corpus/sheen-test-grid.glb",
+    "fixtures/asset-corpus/antique-camera.glb",
+    "fixtures/asset-corpus/duck.glb",
+    "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
+    "fixtures/advanced-gallery/environments/hdri/data_galaxy_deep_space_1k.hdr"
   ];
   for (const fixtureFile of fixtureFiles) {
     const source = resolve(repoRoot, fixtureFile);
@@ -314,14 +329,34 @@ function resolveDracoDir(): string | undefined {
   return undefined;
 }
 
+function resolveRetargetWorker() {
+  const target = resolve(repoRoot, "packages/animation/src/pose/retarget.worker.ts");
+  return {
+    name: "resolve-retarget-worker",
+    resolveId(id: string) {
+      if (
+        id.endsWith("packages/animation/src/pose/retarget.worker.js") ||
+        id.endsWith("packages/animation/src/pose/retarget.worker.ts")
+      ) {
+        return target;
+      }
+      return null;
+    }
+  };
+}
+
 export default defineConfig({
   root: repoRoot,
   publicDir: resolve(marketingDir, "public"),
   plugins: [
+    resolveRetargetWorker(),
     ...(rootConfig.plugins ?? []),
     serveRootAuraAssets(),
     copyMarketingPublicFiles()
   ],
+  worker: {
+    plugins: () => [resolveRetargetWorker(), ...(rootConfig.plugins ?? [])]
+  },
   resolve: rootConfig.resolve,
   optimizeDeps: rootConfig.optimizeDeps,
   server: {
@@ -342,3 +377,4 @@ export default defineConfig({
     }
   }
 });
+

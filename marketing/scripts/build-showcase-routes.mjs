@@ -269,6 +269,11 @@ function copyAuraAssets() {
       console.log(`Mirrored public/${sharedPublicSubdir} to ${sharedPublicSubdir}/.`);
     }
   }
+
+  const auraClashPublicAssets = path.join(repoRoot, "apps", "aura-clash-showcase", "public", "aura-assets");
+  if (existsSync(auraClashPublicAssets)) {
+    copyRouteLocalAuraAssets("aura-clash-showcase");
+  }
 }
 
 function resolveShowcaseAssetBaseUrl() {
@@ -282,7 +287,7 @@ function resolveShowcaseAssetBaseUrl() {
 
 function collectRouteAssetIds(manifestAssets) {
   const routeAssetIds = new Set();
-  const assetReferencePattern = /\bassets\.([A-Za-z0-9_$]+)\b/g;
+  const assetReferencePattern = /(?:assets|rootAssets)(?:\s+as\s+any\))?\.([A-Za-z0-9_$]+)/g;
   const extraSourceDirs = [
     ["aura-clash-showcase", path.join(repoRoot, "apps", "aura-clash-showcase", "src")],
     ["neon-corridor-strike", path.join(repoRoot, "examples", "neon-corridor-strike", "src")]

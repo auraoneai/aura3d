@@ -13,40 +13,40 @@ pnpm verify:api-docs
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/animation` | `3.0.1` | `packages/animation/src/index.ts` | 46 |
-| `@aura3d/apps` | `3.0.1` | `packages/apps/src/index.ts` | 10 |
-| `@aura3d/asset-index` | `3.0.1` | `packages/asset-index/src/index.ts` | 32 |
-| `@aura3d/assets` | `3.0.1` | `packages/assets/src/index.ts` | 79 |
-| `@aura3d/assets/gltf-runtime` | `3.0.1` | `packages/assets/src/gltf-runtime.ts` | 4 |
-| `@aura3d/audio` | `3.0.1` | `packages/audio/src/index.ts` | 46 |
-| `@aura3d/cli` | `3.0.1` | `packages/aura3d-cli/src/index.ts` | 37 |
-| `@aura3d/controls` | `3.0.1` | `packages/controls/src/index.ts` | 46 |
-| `@aura3d/core` | `3.0.1` | `packages/core/src/index.ts` | 14 |
-| `create-aura3d` | `3.0.1` | `packages/create-aura3d/src/index.ts` | 11 |
-| `@aura3d/debug` | `3.0.1` | `packages/debug/src/index.ts` | 30 |
-| `@aura3d/ecs` | `3.0.1` | `packages/ecs/src/index.ts` | 25 |
-| `@aura3d/editor-runtime` | `3.0.1` | `packages/editor-runtime/src/index.ts` | 82 |
-| `@aura3d/engine` | `3.0.1` | `packages/engine/src/index.ts` | 21 |
-| `@aura3d/input` | `3.0.1` | `packages/input/src/index.ts` | 48 |
-| `@aura3d/math` | `3.0.1` | `packages/math/src/index.ts` | 18 |
-| `@aura3d/navigation-recast` | `3.0.1` | `packages/navigation-recast/src/index.ts` | 16 |
-| `@aura3d/physics` | `3.0.1` | `packages/physics/src/index.ts` | 24 |
-| `@aura3d/physics-rapier` | `3.0.1` | `packages/physics-rapier/src/index.ts` | 22 |
-| `@aura3d/physics/solverless` | `3.0.1` | `packages/physics/src/solverless.ts` | 13 |
-| `@aura3d/physics/world` | `3.0.1` | `packages/physics/src/world.ts` | 2 |
-| `@aura3d/product-studio` | `3.0.1` | `packages/product-studio/src/index.ts` | 12 |
-| `@aura3d/react` | `3.0.1` | `packages/react/src/index.ts` | 39 |
-| `@aura3d/rendering` | `3.0.1` | `packages/rendering/src/index.ts` | 379 |
-| `@aura3d/rendering/extension-scalar-atlas` | `3.0.1` | `packages/rendering/src/extension-scalar-atlas.ts` | 2 |
-| `@aura3d/rendering/reflection-surfaces` | `3.0.1` | `packages/rendering/src/reflection-surfaces.ts` | 4 |
-| `@aura3d/rendering/webgpu` | `3.0.1` | `packages/rendering/src/webgpu.ts` | 8 |
-| `@aura3d/scene` | `3.0.1` | `packages/scene/src/index.ts` | 21 |
-| `@aura3d/scripting` | `3.0.1` | `packages/scripting/src/index.ts` | 39 |
-| `@aura3d/workflows` | `3.0.1` | `packages/workflows/src/index.ts` | 12 |
+| `@aura3d/animation` | `4.0.0` | `packages/animation/src/index.ts` | 46 |
+| `@aura3d/apps` | `4.0.0` | `packages/apps/src/index.ts` | 10 |
+| `@aura3d/asset-index` | `4.0.0` | `packages/asset-index/src/index.ts` | 35 |
+| `@aura3d/assets` | `4.0.0` | `packages/assets/src/index.ts` | 82 |
+| `@aura3d/assets/gltf-runtime` | `4.0.0` | `packages/assets/src/gltf-runtime.ts` | 4 |
+| `@aura3d/audio` | `4.0.0` | `packages/audio/src/index.ts` | 47 |
+| `@aura3d/cli` | `4.0.0` | `packages/aura3d-cli/src/index.ts` | 37 |
+| `@aura3d/controls` | `4.0.0` | `packages/controls/src/index.ts` | 46 |
+| `@aura3d/core` | `4.0.0` | `packages/core/src/index.ts` | 14 |
+| `create-aura3d` | `4.0.0` | `packages/create-aura3d/src/index.ts` | 16 |
+| `@aura3d/debug` | `4.0.0` | `packages/debug/src/index.ts` | 30 |
+| `@aura3d/ecs` | `4.0.0` | `packages/ecs/src/index.ts` | 25 |
+| `@aura3d/editor-runtime` | `4.0.0` | `packages/editor-runtime/src/index.ts` | 82 |
+| `@aura3d/engine` | `4.0.0` | `packages/engine/src/index.ts` | 21 |
+| `@aura3d/input` | `4.0.0` | `packages/input/src/index.ts` | 48 |
+| `@aura3d/math` | `4.0.0` | `packages/math/src/index.ts` | 18 |
+| `@aura3d/navigation-recast` | `4.0.0` | `packages/navigation-recast/src/index.ts` | 16 |
+| `@aura3d/physics` | `4.0.0` | `packages/physics/src/index.ts` | 24 |
+| `@aura3d/physics-rapier` | `4.0.0` | `packages/physics-rapier/src/index.ts` | 26 |
+| `@aura3d/physics/solverless` | `4.0.0` | `packages/physics/src/solverless.ts` | 13 |
+| `@aura3d/physics/world` | `4.0.0` | `packages/physics/src/world.ts` | 2 |
+| `@aura3d/product-studio` | `4.0.0` | `packages/product-studio/src/index.ts` | 12 |
+| `@aura3d/react` | `4.0.0` | `packages/react/src/index.ts` | 39 |
+| `@aura3d/rendering` | `4.0.0` | `packages/rendering/src/index.ts` | 387 |
+| `@aura3d/rendering/extension-scalar-atlas` | `4.0.0` | `packages/rendering/src/extension-scalar-atlas.ts` | 2 |
+| `@aura3d/rendering/reflection-surfaces` | `4.0.0` | `packages/rendering/src/reflection-surfaces.ts` | 4 |
+| `@aura3d/rendering/webgpu` | `4.0.0` | `packages/rendering/src/webgpu.ts` | 8 |
+| `@aura3d/scene` | `4.0.0` | `packages/scene/src/index.ts` | 21 |
+| `@aura3d/scripting` | `4.0.0` | `packages/scripting/src/index.ts` | 39 |
+| `@aura3d/workflows` | `4.0.0` | `packages/workflows/src/index.ts` | 12 |
 
 ## @aura3d/animation
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/animation/package.json`
 - Public entrypoint: `packages/animation/src/index.ts`
 
@@ -78,7 +78,7 @@ export * from "./ECSAnimationBridge.js";
 export * from "./IK.js";
 export * from "./FootIk.js";
 export * from "./SpringBones.js";
-export * from "./CrowdAnimation.js";
+export * from "./experimental/CrowdAnimation.js";
 export * from "./AnimationClipEvents.js";
 export { AnimationClipRegistry, createAnimationClipRegistry, validateAnimationClipMap, validateAnimationStudioClipMap } from "./AnimationClipRegistry.js";
 export type { AnimationClipDefinition, AnimationClipId, AnimationClipManifest, AnimationClipRegistryDiagnostic, AnimationClipRegistryDiagnosticSeverity, AnimationClipRegistryOptions, AnimationClipSampleContext, AnimationClipSampler, AnimationKeyframe, AnimationTrack as AnimationClipTrack, AnimationTrackTarget, AnimationClipMapReadiness, AnimationClipMapReadinessOptions, RegisteredAnimationClip } from "./AnimationClipRegistry.js";
@@ -103,7 +103,7 @@ export type { ThreeCompatAnimatedAssetDiagnostic } from "./threejs-compatibility
 
 ## @aura3d/apps
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/apps/package.json`
 - Public entrypoint: `packages/apps/src/index.ts`
 
@@ -124,7 +124,7 @@ export async function createA3DApp(options: A3DAppOptions = {}): Promise<A3DApp>
 
 ## @aura3d/asset-index
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/asset-index/package.json`
 - Public entrypoint: `packages/asset-index/src/index.ts`
 
@@ -147,6 +147,9 @@ export { FederatedResolver } from "./federate.js";
 export { createKhronosAdapter } from "./adapters/khronos.js";
 export { createOS3AAdapter } from "./adapters/os3a.js";
 export { createPolyHavenAdapter } from "./adapters/poly-haven.js";
+export { createAmbientCgAdapter } from "./adapters/ambientcg.js";
+export { createAuraLibraryAdapter } from "./adapters/aura-library.js";
+export type { AuraLibraryAdapterOptions, AuraLibraryEntryShape, AuraLibraryManifestShape } from "./adapters/aura-library.js";
 export { createPolyPizzaAdapter } from "./adapters/poly-pizza.js";
 export type { PolyPizzaAdapterOptions } from "./adapters/poly-pizza.js";
 export { createSketchfabAdapter } from "./adapters/sketchfab.js";
@@ -162,12 +165,12 @@ export { refreshIndex } from "./refresh.js";
 export type { RefreshResult, RefreshOptions, WritableAssetIndex } from "./refresh.js";
 export { LocalHashEmbedding, cosineSimilarity, assetEmbeddingText, embeddingRanker, DEFAULT_EMBEDDING_DIMS, } from "./embedding.js";
 export type { EmbeddingProvider } from "./embedding.js";
-export function defaultAdapters(): SourceAdapter[] { return [ createAnimationStarterPackAdapter(), createKhronosAdapter(), createOS3AAdapter(), createPolyHavenAdapter(), createJsDelivrMirrorAdapter(), ];
+export function defaultAdapters(): SourceAdapter[] { return [ createAnimationStarterPackAdapter(), createKhronosAdapter(), createOS3AAdapter(), createPolyHavenAdapter(), createAmbientCgAdapter(), createJsDelivrMirrorAdapter(), ];
 ```
 
 ## @aura3d/assets
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/assets/package.json`
 - Public entrypoint: `packages/assets/src/index.ts`
 
@@ -217,7 +220,7 @@ export { applyCarConceptMaterialStability, carConceptMaterialVisualRole, carConc
 export type { CarConceptMaterialBaseline, CarConceptMaterialVisualRole, CarConceptMaterialStabilityOptions, CarConceptMaterialStabilityProfile } from "./CarConceptMaterialStability";
 export { ImageLoader } from "./ImageLoader";
 export type { ImageAsset } from "./ImageLoader";
-export { GLTFLoader, normalizeSkinWeights, parseGlbDocument, parseMaterialVariantSelection, resolveAnimationPointerBinding, serializeMaterialVariantSelection } from "./GLTFLoader";
+export { fetchGltfBytesShared, GLTFLoader, normalizeSkinWeights, parseGlbDocument, parseMaterialVariantSelection, resolveAnimationPointerBinding, serializeMaterialVariantSelection } from "./GLTFLoader";
 export type { GLBDocumentInspection } from "./GLTFLoader";
 export { autoFitGLTFScene, computeAutoFitTransform } from "./GLTFAutoFit";
 export type { AutoFitOptions, AutoFitTransform, GLTFUpAxis } from "./GLTFAutoFit";
@@ -233,6 +236,9 @@ export { createRenderableScene } from "./createRenderableScene";
 export type { CreateRenderableSceneOptions, RenderableScene } from "./createRenderableScene";
 export { ensureCompressedTextureSupport, transcodeKTX2BasisTexture } from "./KTX2BasisTextureTranscoder";
 export type { CompressedTextureDecoderProbes, CompressedTextureDecoderStatus, CompressedTextureSupportDiagnostics, CompressedTextureSupportRequest, KTX2BasisTargetFormat, KTX2BasisTextureTranscoderOptions } from "./KTX2BasisTextureTranscoder";
+export { selectKTX2TargetFormat } from "./KTX2TargetSelection";
+export { AssetDecoderUnavailable, createAssetDecoderRegistry, probeKTX2Header } from "./AssetDecoderRegistry";
+export type { AssetDecoderId, AssetDecoderRegistry, AssetDecoderRegistryDiagnostics, AssetDecoderRegistryOptions, AuraAssetDecoderSet } from "./AssetDecoderRegistry";
 export { ImportPipeline, ImportPipelineError } from "./ImportPipeline";
 export type { ImportPipelineContext, ImportPipelineProgressEvent, ImportPipelineProgressStatus, ImportStage } from "./ImportPipeline";
 export { LoadContext } from "./LoadContext";
@@ -257,7 +263,7 @@ export * from "./TextureStreaming.js";
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/assets/package.json`
 - Public entrypoint: `packages/assets/src/gltf-runtime.ts`
 
@@ -265,14 +271,14 @@ export * from "./TextureStreaming.js";
 
 ```ts
 export { createGLTFSceneAnimationRuntime } from "./GLTFAnimationRuntime.js";
-export type { GLTFootPlantingApplyResult, GLTFootPlantingConfig, GLTFootPlantingLegConfig, GLTFSceneAnimationApplyResult, GLTFSceneAnimationMaterialSink, GLTFSceneAnimationRuntime, GLTFSceneAnimationRuntimeOptions, GLTFSceneAnimationRuntimeSnapshot, GLTFScenePose } from "./GLTFAnimationRuntime.js";
+export type { AddClipsFromRuntimeOptions, GLTFootPlantingApplyResult, GLTFootPlantingConfig, GLTFootPlantingLegConfig, GLTFSceneAnimationApplyResult, GLTFSceneAnimationMaterialSink, GLTFPoseConstraint, GLTFSceneAnimationRuntime, GLTFSceneAnimationRuntimeOptions, GLTFSceneAnimationRuntimeSnapshot, GLTFScenePose } from "./GLTFAnimationRuntime.js";
 export { loadProductionGLTFRenderPipeline } from "./asset-corpus/ProductionGLTFRenderPipeline.js";
 export type { ProductionGLTFRenderPipeline } from "./asset-corpus/ProductionGLTFRenderPipeline.js";
 ```
 
 ## @aura3d/audio
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/audio/package.json`
 - Public entrypoint: `packages/audio/src/index.ts`
 
@@ -311,6 +317,7 @@ export type { SpatialAudioOptions } from "./SpatialAudio";
 export { FilterEffect } from "./effects/Filter";
 export { ReverbEffect } from "./effects/Reverb";
 export { createGameSoundEngine } from "./game-sound/GameSoundEngine";
+export { createGameSoundEngine as createStubGameSoundEngine } from "./contracts/gameSound";
 export type { GameSoundOptions, SoundCueSpec, AudioAssetRef, EngineLoopSpec, GameBusId } from "./game-sound/GameSoundEngine";
 export type { SoundGraphContext } from "./game-sound/types";
 export { createMasterChain, safetyClipCurve } from "./game-sound/MasterChain";
@@ -329,7 +336,7 @@ export type { ListenerLike } from "./game-sound/listenerSync";
 
 ## @aura3d/cli
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/aura3d-cli/package.json`
 - Public entrypoint: `packages/aura3d-cli/src/index.ts`
 
@@ -350,7 +357,7 @@ export { admitAssetForRole, rankAssetCandidatesForRole, HERO_MIN_RENDERED_AZIMUT
 export type { AssetAdmissionCheck, AssetAdmissionInput, AssetAdmissionReport, AssetAdmissionRole, AssetAdmissionVerdict, AssetGeometryFacts, AssetProvenanceFacts, AssetRenderedFacts, AssetRoleRequirement } from "./asset-role-admission.js";
 export { DEFAULT_AURA_ASSET_MANIFEST, DEFAULT_AURA_ASSET_OUTPUT_DIR, DEFAULT_AURA_ASSET_PUBLIC_PATH, DEFAULT_AURA_ASSET_TYPEGEN } from "./asset-constants.js";
 export { listAssets, readAssetManifest, writeAssetManifest, writeTypedAssets } from "./asset-manifest.js";
-export type { AddAssetOptions, AssetCliResult, AssetSourceTypedAssetUsage, AssetSourceValidationReport, AssetValidationOptions, AssetValidationResult, AuraAssetQuality, AuraCliAssetEntry, AuraCliAssetManifest, AuraCliAssetProvenance, AuraCliGeneratedAssetProvenance, AuraCliAssetRole, AuraCliAssetType, AuraCliRenderedProbe, AuraCliRenderedProbeForegroundBounds, AuraCliRenderedProbeKind, AuraCliResolveCandidateProvenance, BindGameRouteEvidenceOptions, BindGameRouteEvidenceResult, CertifyGameGeometryOptions, CheckDeployOptions, GameGeometryCertificationResult, ReadRenderedProbeMetadataOptions } from "./asset-core-types.js";
+export type { AddAssetOptions, AssetCliResult, AssetSourceTypedAssetUsage, AssetSourceValidationReport, AssetValidationOptions, AssetValidationResult, AuraAssetQuality, AuraCliAssetEntry, AuraCliAssetManifest, AuraCliAssetProvenance, AuraCliAudioMetadata, AuraCliGeneratedAssetProvenance, AuraCliAssetRole, AuraCliAssetType, AuraCliRenderedProbe, AuraCliRenderedProbeForegroundBounds, AuraCliRenderedProbeKind, AuraCliResolveCandidateProvenance, BindGameRouteEvidenceOptions, BindGameRouteEvidenceResult, CertifyGameGeometryOptions, CheckDeployOptions, GameGeometryCertificationResult, ReadRenderedProbeMetadataOptions } from "./asset-core-types.js";
 export { importMeshyAsset } from "./meshy/import.js";
 export { createMeshyAdmissionReport, inferMeshyAssetProfile, inspectMeshyTextureDimensions } from "./meshy/admission.js";
 export type { MeshyAdmissionCheck, MeshyAdmissionReport, MeshyAdmissionVerdict, MeshyAssetProfile } from "./meshy/admission.js";
@@ -377,7 +384,7 @@ export function initAgentSetup(options: { readonly projectDir?: string;
 
 ## @aura3d/controls
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/controls/package.json`
 - Public entrypoint: `packages/controls/src/index.ts`
 
@@ -434,7 +441,7 @@ export { PointerLockControls as PointerLockControlsEngine } from "./engine/Point
 
 ## @aura3d/core
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/core/package.json`
 - Public entrypoint: `packages/core/src/index.ts`
 
@@ -459,7 +466,7 @@ export * from "./VersionedSerialization.js";
 
 ## create-aura3d
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/create-aura3d/package.json`
 - Public entrypoint: `packages/create-aura3d/src/index.ts`
 
@@ -468,6 +475,11 @@ export * from "./VersionedSerialization.js";
 ```ts
 export const CREATE_AURA3D_TEMPLATES = [
 export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
+export const TEMPLATE_ALIASES = Object.freeze({ "three-compat-premium-product-viewer": "premium-product-viewer", "three-compat-architecture-interior": "architecture-interior", "three-compat-material-authoring": "material-authoring", "three-compat-asset-inspector": "asset-inspector", "three-compat-character-viewer": "character-viewer", "three-compat-postprocess-scene": "postprocess-scene", "three-compat-custom-threejs-migration": "custom-scene", "three-compat-large-scene": "large-scene" } as const satisfies Record<string, CreateA3DTemplate>);
+export type CreateA3DTemplateAlias = keyof typeof TEMPLATE_ALIASES;
+export interface ResolvedTemplateName { readonly template: CreateA3DTemplate;
+export function resolveTemplateAlias(name: string): ResolvedTemplateName | null { if ((CREATE_AURA3D_TEMPLATES as readonly string[]).includes(name)) { return { template: name as CreateA3DTemplate, deprecated: null };
+export function templateAliasWarning(resolved: ResolvedTemplateName): string | null { if (!resolved.deprecated) return null;
 export interface CreateA3DProjectOptions { readonly targetDir: string;
 export interface CreateA3DProjectResult { readonly targetDir: string;
 export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DProjectResult { const template = options.template ?? "product-viewer";
@@ -481,7 +493,7 @@ export { AURA_AGENT_CLIENTS, AURA_SKILLS_LEDGER, findBundledSkillsDir, readSkill
 
 ## @aura3d/debug
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/debug/package.json`
 - Public entrypoint: `packages/debug/src/index.ts`
 
@@ -522,7 +534,7 @@ export type { DebugReport } from "./ReportExporter.js";
 
 ## @aura3d/ecs
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/ecs/package.json`
 - Public entrypoint: `packages/ecs/src/index.ts`
 
@@ -558,7 +570,7 @@ export * from "./systems/index.js";
 
 ## @aura3d/editor-runtime
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/editor-runtime/package.json`
 - Public entrypoint: `packages/editor-runtime/src/index.ts`
 
@@ -651,7 +663,7 @@ export type { SceneTransformTargetLike, TransformLike, TransformTarget } from ".
 
 ## @aura3d/engine
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `package.json`
 - Public entrypoint: `packages/engine/src/index.ts`
 
@@ -683,7 +695,7 @@ export * from "./lanes/index.js";
 
 ## @aura3d/input
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/input/package.json`
 - Public entrypoint: `packages/input/src/index.ts`
 
@@ -742,7 +754,7 @@ export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFol
 
 ## @aura3d/math
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/math/package.json`
 - Public entrypoint: `packages/math/src/index.ts`
 
@@ -771,7 +783,7 @@ export * from "./Curves.js";
 
 ## @aura3d/navigation-recast
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/navigation-recast/package.json`
 - Public entrypoint: `packages/navigation-recast/src/index.ts`
 
@@ -798,7 +810,7 @@ export async function createRecastNavigation(options: RecastNavigationOptions = 
 
 ## @aura3d/physics
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/index.ts`
 
@@ -833,7 +845,7 @@ export * from "./PhysicsDebugDraw.js";
 
 ## @aura3d/physics-rapier
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/physics-rapier/package.json`
 - Public entrypoint: `packages/physics-rapier/src/index.ts`
 
@@ -862,11 +874,15 @@ export class RapierVehicleControllerHandle { readonly #world: RapierPhysicsWorld
 export class RapierPhysicsWorld { readonly #module: RapierModule;
 export async function createRapierPhysics(options: RapierPhysicsOptions = {}): Promise<RapierPhysicsWorld> { const module = await (options.moduleLoader ?? (() => import("@dimforge/rapier3d-compat")))();
 export function createRapierPhysicsSync(options: Omit<RapierPhysicsOptions, "moduleLoader"> = {}): RapierPhysicsWorld { return new RapierPhysicsWorld(defaultRapierModule, options.gravity ?? [0, -9.81, 0]);
+export interface ColliderSidecarTransform { readonly position?: PhysicsVec3;
+export interface ColliderSidecarOptions extends ColliderSidecarTransform { readonly body?: RapierBodyHandle;
+export interface ColliderSidecarResult { readonly body: RapierBodyHandle;
+export async function createCollidersFromSidecar( world: RapierPhysicsWorld, source: string | Uint8Array, options: ColliderSidecarOptions = {} ): Promise<ColliderSidecarResult> { const bytes = typeof source === "string" ? new Uint8Array(await (await fetch(source)).arrayBuffer()) : source;
 ```
 
 ## @aura3d/physics/solverless
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/solverless.ts`
 
@@ -890,7 +906,7 @@ export type { MeshSurfaceQuery, MeshSurfaceQueryOptions, SurfaceSample } from ".
 
 ## @aura3d/physics/world
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/world.ts`
 
@@ -903,7 +919,7 @@ export type { PhysicsBackend, PhysicsBackendPreference, PhysicsBackendSelection,
 
 ## @aura3d/product-studio
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/product-studio/package.json`
 - Public entrypoint: `packages/product-studio/src/index.ts`
 
@@ -926,7 +942,7 @@ export type * from "./ProductShowcaseLayout";
 
 ## @aura3d/react
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/react/package.json`
 - Public entrypoint: `packages/react/src/index.ts`
 
@@ -976,7 +992,7 @@ export function productViewerScene(asset: AuraAssetRef<"model">, material?: Aura
 
 ## @aura3d/rendering
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/index.ts`
 
@@ -989,7 +1005,7 @@ export { buildGpuTargetInventory, GPU_TARGET_BUDGET_BYTES, resolveGpuTargetOwner
 export type { GpuTargetInventory, GpuTargetInventoryEntry, GpuTargetKind, GpuTargetOwner } from "./RenderDevice";
 export { createRenderDevice } from "./RenderBackend";
 export type { RenderBackendOptions } from "./RenderBackend";
-export { WebGL2Device } from "./WebGL2Device";
+export { WebGL2Device, webGL2MaxTextureSize } from "./WebGL2Device";
 export type { WebGL2BloomDiagnostics, WebGL2DeviceOptions } from "./WebGL2Device";
 export { WebGL2StateCache } from "./WebGL2StateCache";
 export type { WebGL2StateCacheDescriptor, WebGL2StateCacheSnapshot, WebGL2StateCacheStats } from "./WebGL2StateCache";
@@ -1018,7 +1034,8 @@ export { ProgramCache } from "./program/ProgramCache";
 export { ProgramWarmup, collectWarmupFeatures } from "./program/ProgramWarmup";
 export type { WarmupInput, WarmupResult } from "./program/ProgramWarmup";
 export { defaultProgramFeatures, materialFeatureWarning, materialUsesGeneratedProgram, ALLOWLIST_PROGRAM_SHADERS } from "./program/MaterialFeatures";
-export { qrCoreGeneratorOn, qrCoreOutputOn, rendererProgramCache, rendererProgramCachePeek, rendererAuraFrame, rendererOutputPass } from "./renderer/qrSubFlags";
+export { qrCoreGeneratorOn, qrCoreOutputOn, qrE3CompilerLightingOn, rendererProgramCache, rendererProgramCachePeek, rendererAuraFrame, rendererOutputPass, setRendererProgramDegradationSink } from "./renderer/qrSubFlags";
+export { createPrd06ProgramCacheWarmup, type Prd06ShaderWarmupOptions } from "./renderer/Prd06ShaderWarmup";
 export { OutputPass } from "./output/OutputPass";
 export { createHdrTarget, ensureHdrTarget, type HdrTargetOptions } from "./output/HdrTarget";
 export { OUTPUT_VERTEX_GLSL, OUTPUT_FRAGMENT_PROLOGUE_GLSL, OUTPUT_FRAGMENT_EPILOGUE_GLSL, TONE_MAPPING_OPERATORS_GLSL, TONE_MAP_OPERATOR_FUNCTIONS, outputFragmentGlsl } from "./output/ToneMappingOperators.glsl";
@@ -1164,6 +1181,7 @@ export { RendererTimingCollector, createCpuFallbackGpuTimingBackend, createImmed
 export type { RendererGpuTimingBackend, RendererGpuTimingResult, RendererGpuTimingToken, RendererTimingCollectorOptions, RendererTimingSample, RendererTimingSampleSource, RendererTimingSnapshot } from "./RendererTiming";
 export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms, forwardPassFeatureAxes, splitForwardItems, forwardItemBucket, type ForwardBucket } from "./ForwardPass";
 export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS } from "./ForwardPass";
+export { ensureMorphTargetTexture, releaseMorphScratchGeometry, releaseMorphTargetTexture, morphTextureDiagnostics } from "./ForwardPass";
 export { createSpotShadowProjection, defaultSpotShadowKernel, projectSpotShadowUv, resolveSpotShadowFactor, selectSpotShadowAtlasTier, } from "./shadows/SpotShadowMaps";
 export type { ForwardSpotShadowMapOptions, SpotShadowAtlasTier, SpotShadowFactorInput, SpotShadowProjection } from "./shadows/SpotShadowMaps";
 export { computeShimmerScore, createCascadeBiasTable, selectCascadeWithHysteresis, } from "./shadows/CascadeHysteresis";
@@ -1177,7 +1195,9 @@ export type { GlassRefractionCaptureOptions, GlassRefractionCaptureResult, Glass
 export { consolidateBatchedMeshes, instancingPathMatrix, resetInstancingFallbackWarnings, warnOnInstancingFallback, } from "./InstancingDiagnostics";
 export type { BatchedMeshResult, BatchedMeshTelemetry, InstancingFallbackReason, InstancingFallbackReport, InstancingPathEntry, InstancingPathSupport } from "./InstancingDiagnostics";
 export { auditRenderOrder, createTerrainTileGrid, enforceFrameBudget, planScatterInstances, queryTerrainHeight, resolveTerrainSlopeBlend, scatterWindOffset, } from "./TerrainTiles";
-export type { FrameBudgetDecision, FrameBudgetInput, RenderOrderAuditEntry, ScatterPlan, ScatterPlanOptions, ScatterWindOffset, TerrainBlendLayer, TerrainTileGridOptions, TerrainTileKey, TerrainTilePlan } from "./TerrainTiles";
+export type { FrameBudgetDecision, FrameBudgetInput, RenderOrderAuditEntry, ScatterPlan, ScatterPlanOptions, ScatterWindOffset, TerrainBlendLayer } from "./TerrainTiles";
+export { toHeightTexture } from "./TerrainHeightfield";
+export type { TerrainHeightTexture } from "./TerrainHeightfield";
 export { createBeamDescriptor, resolveBillboardCorners, resolveFlipbookUv, } from "./SpriteFlipbook";
 export type { BeamDescriptor, BillboardCorners, BillboardMode, BillboardOptions, FlipbookFrame } from "./SpriteFlipbook";
 export { createMorphTargetPlan, planMorphTargets, resolveWrinkleMapStrength, DEFAULT_MORPH_DEVICE_LIMITS, MORPH_UNIFORM_MAX_TARGETS, MORPH_UNIFORM_MAX_VERTICES } from "./MorphTargetPlan";
@@ -1298,8 +1318,12 @@ export { createParticleEffectPreset } from "./effects/ParticleEffectPresets.js";
 export { createLayeredParticleBudgetPlan, createParticleBatchDiagnostics, summarizeParticleBatchDiagnostics } from "./effects/ParticleDiagnostics.js";
 export { ANIMATION_TOON_SHADER_MARKER, ANIMATION_TOON_SHADER_NAME, AnimationToonMaterial, applyAnimationRenderPreset, createAnimationMaterialStyle, createAnimationRenderPreset, createAnimationVisualQualityReport, quantizeToonBand, toonDiffuseRamp, toonRimTerm, toonShadeColor } from "./animation/index.js";
 export type { AnimationFrameVisualInput, AnimationFrameVisualQuality, AnimationMaterialStyle, AnimationMaterialStyleOptions, AnimationRenderPresetEvidence, AnimationRenderPresetOptions, AnimationVisualQualityOptions, AnimationVisualQualityReport } from "./animation/index.js";
+export { RESIDENT_PARTICLE_CAMERA, ResidentGPUParticleRenderer, residentLifecycleShader } from "./effects/ResidentGPUParticleRenderer.js";
+export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentParticleFrame, ResidentParticlePacingControl } from "./effects/ResidentGPUParticleRenderer.js";
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
+export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DrawDataTexture, buildMultiDrawBatch, multiDrawCommands, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
+export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
 export type { DecalBasis, DecalBox, DecalGeometryResult, DecalRay, DecalRaycastHit, DecalRaycastOptions, DecalRaycastResult, DecalShape, DecalTriangleMesh } from "./DecalGeometry.js";
 export { createMatrixInstanceAttribute } from "./Instancing.js";
@@ -1366,7 +1390,7 @@ export type { ProjectedDecalBasis, ProjectedDecalGeometryResult, ProjectedDecalR
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/extension-scalar-atlas.ts`
 
@@ -1379,7 +1403,7 @@ export type { ExtensionScalarAtlas, ExtensionScalarAtlasSlot, ExtensionScalarPix
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/reflection-surfaces.ts`
 
@@ -1394,7 +1418,7 @@ export type { ReflectionSurface, ReflectionSurfaceKind, ReflectionSurfaceOptions
 
 ## @aura3d/rendering/webgpu
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/webgpu.ts`
 
@@ -1413,7 +1437,7 @@ export { Texture } from "./Texture";
 
 ## @aura3d/scene
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/scene/package.json`
 - Public entrypoint: `packages/scene/src/index.ts`
 
@@ -1445,7 +1469,7 @@ export * from "./SceneSerializer.js";
 
 ## @aura3d/scripting
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/scripting/package.json`
 - Public entrypoint: `packages/scripting/src/index.ts`
 
@@ -1495,7 +1519,7 @@ export type { VisualNode, VisualPort, VisualPortDirection, VisualPortType } from
 
 ## @aura3d/workflows
 
-- Version: `3.0.1`
+- Version: `4.0.0`
 - Package manifest: `packages/workflows/package.json`
 - Public entrypoint: `packages/workflows/src/index.ts`
 

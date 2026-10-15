@@ -1,6 +1,6 @@
 # Getting Started: Render A Real Scene
 
-Version: 2.0.3
+Version: 4.0.0
 
 This tutorial uses the current asset and renderer APIs with a local GLB fixture.
 

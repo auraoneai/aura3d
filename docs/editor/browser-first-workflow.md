@@ -1,6 +1,6 @@
 # Browser-First Editor Workflow
 
-Version: 2.0.3
+Version: 4.0.0
 
 The editor workflow is browser-first and package-backed, but it is not documented as a full desktop editor replacement.
 

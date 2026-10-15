@@ -1,22 +1,24 @@
 # Aura3D Known Limits
 
-Date: 2026-09-05
+Version: 4.0.0
+
+Date: 2026-10-15
 Status: canonical limitations doc
 
 This file is the public limitations source for project docs, release copy, and
 showcase review. If a guide or README makes a claim narrowed by this file, the
 guide or README must include the narrower wording.
 
-## 3.0.1 limits
+## 4.0.0 limits
 
-Aura3D 3.0.1 is published. Capability claims remain limited to the named public
+Aura3D 4.0.0 is the current release. Capability claims remain limited to the named public
 API, packages, routes, and retained evidence. The project does not claim a
 universal replacement for Three.js, Unity, or Unreal, and route-specific visual
 approval does not transfer automatically to other examples.
 
 ## Evidence dating
 
-Unless identified as 3.0.1 source implementation, measured examples below are
+Unless identified as 4.0.0 source implementation, measured examples below are
 historical retained workload evidence. Relevant records include the August 9
 2026 public-renderer, animation, WebGPU architecture, shadow-cascade and Rapier
 validation reports, and the August 10 portable-custom-material report. They
@@ -115,7 +117,7 @@ candidate. Final release claims require regeneration and source-bound receipts.
   workloads from 29 freshly packed and npm-installed Aura3D 3.0.0 tarballs
   (K2 `fresh-installed-2.0-packages-prove-all-workloads` gate green at the
   release commit; the check id retains its 2.0-era name).
-  These prior package receipts do not certify the 3.0.1 worktree.
+  These prior package receipts do not certify the 4.0.0 worktree.
   Every workload retains explicit losses and a claim boundary. The aggregate
   remains incomplete because the full repeated-performance protocol,
   clean-machine reproduction, independent gallery review, general TSL/node-
@@ -168,7 +170,7 @@ candidate. Final release claims require regeneration and source-bound receipts.
 
 ## Physics Backend Limits
 
-- `@aura3d/physics` has one production solver owner since 2.0 (current in 3.0.0):
+- `@aura3d/physics` has one production solver owner since 2.0 (current in 4.0.0):
   `@dimforge/rapier3d-compat@0.20.0`. Removed Cannon and custom-solver paths are
   not fallbacks and must not be described as current production owners.
 - The public contract has named production-backend invariants for stacking,

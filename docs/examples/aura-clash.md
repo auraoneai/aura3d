@@ -1,4 +1,4 @@
-# Aura Clash in Aura3D 2.0
+# Aura Clash in Aura3D 4.0
 
 Status: development-showcase documentation; human visual approval pending
 
@@ -29,7 +29,7 @@ are disabled in normal play.
 
 ## Evidence contract
 
-The app's 2.0 evidence must prove:
+The app's 4.0 evidence must prove:
 
 - production build and route boot without console or network failures;
 - two typed fighter runtime nodes and advancing rendered frames;
@@ -48,7 +48,7 @@ are evidence, not source documentation.
 
 ## Current verification
 
-The 2.0 candidate has passing production build, 22-state playable coverage,
+The 4.0 candidate has passing production build, 22-state playable coverage,
 12-state visual regression, asset-quality, provenance, deterministic replay,
 camera/combat feedback, performance-budget, audio, accessibility, screenshot,
 and flagship-readiness gates. Those machine checks do not grant aesthetic

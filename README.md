@@ -90,20 +90,135 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Current Release: Aura3D 3.0.1
+## Current Release 4.0.0
 
-Aura3D 3.0.1 is published across all 29 public packages. See the
-[GitHub release](https://github.com/auraoneai/aura3d/releases/tag/v3.0.1) for
-release assets and package details.
+Aura3D 4.0.0 is published across all **24 active public packages** on npm (all pre-4.0 versions `< 4.0.0` and the 5 retired pre-4.0 compatibility packages `@aura3d/lean`, `@aura3d/three-compat`, `@aura3d/materials`, `@aura3d/environments`, and `@aura3d/editor` are deprecated in full on npm in favor of `@aura3d/engine@4.0.0`). See the
+[GitHub release](https://github.com/auraoneai/aura3d/releases/tag/v4.0.0) for
+release assets and package details, and [`docs/MIGRATION-4.0.md`](docs/MIGRATION-4.0.md)
+for the 4.0 consolidation guide.
 
-Aura3D 3.0.1 is the current agent-era release: the browser 3D engine for the agent era — prompt it, prove it, ship it. It carries forward the 2.0 runtime and animation evidence foundation plus the 2.0.4 Meshy CLI asset-pipeline patch, with the public API surface and parity evidence accumulated since 2.0. Claims remain scoped to the public API and evidence described in the release documentation. See the [3.0.1 release notes](docs/project/aura3d-301-release-notes.md) and [GitHub release](https://github.com/auraoneai/aura3d/releases/tag/v3.0.1) for current scope and package details.
+Aura3D 4.0.0 is the consolidated browser 3D engine release for the agent era — prompt it, prove it, ship it. It unifies the public runtime surface on `@aura3d/engine@4.0.0`, upgrades all 19 browser 3D games and showcases with custom Meshy PBR GLB assets and interactive gameplay loops, ships the full post-processing, atmospheric, particle, weather, ribbon, and game-feel effects suite (`effects.*`), exports the resident WebGPU compute particle pipeline alongside the WebGL2 runtime, and carries forward the 3.0.1 and 2.0.4 evidence foundation. Claims remain scoped to the public API and evidence described in the release documentation.
 
-### What ships in 3.0.1
+### What ships in 4.0.0
+
+- **Single Public Entrypoint (`@aura3d/engine@4.0.0`).** Consolidated public runtime surface (`createAuraApp`, `model(assets.x)`, `scene`, `camera`, `lights`, `effects`, `atmosphere`, `environments`, `shadows`, `game.*`, `sceneKits.*`, `prefabs.*`, `primitives.*`, `animation`, `createPhysicsRuntime`) with pre-4.0 versions (`< 4.0.0`) and retired compatibility packages (`@aura3d/lean`, `@aura3d/three-compat`, `@aura3d/materials`, `@aura3d/environments`, `@aura3d/editor`) deprecated in full on npm.
+- **Complete Effects, Post-Processing, Atmospherics & VFX Suite (`effects.*`).** Built-in scene-graph effect builders covering HDR bloom (`effects.bloom`, `effects.neonBloom`, `effects.cinematicBloom`), screen-space & contact occlusion (`effects.ambientOcclusion`, `effects.contactOcclusion`, `effects.contactShadows`), screen-space reflections (`effects.screenSpaceReflections`), physical depth of field (`effects.depthOfField`), camera/object motion blur (`effects.motionBlur`), ACES/AgX color grading & finishing (`effects.colorGrade`, `effects.vignette`, `effects.filmGrain`, `effects.chromaticAberration`, `effects.antiAlias`, `effects.outline`), volumetric & height fog (`effects.fog`, `effects.depthFog`, `effects.volumetricFog`, `effects.fogVolume`, `effects.lightCone`, `effects.auroraRibbon`), GPU & CPU particle/weather systems (`effects.particles`, `effects.meshParticles`, `effects.rain`, `effects.snow`, `effects.flipbook`, `effects.trail`), physical sky/wetness (`atmosphere.setSky`, `atmosphere.setWetness`), resident WebGPU compute particles (`ResidentGPUParticleRenderer`), and combat game-feel triggers (`game.feel` / `app.feel`).
+- **19 Upgraded 3D Browser Games & Showcases.** Upgraded with 38+ custom Meshy 3D PBR GLB hero vehicles, rigged/posed characters, architectural setpieces, and deep interactive gameplay loops (`Aura Clash Arena` development showcase, `Neon Corridor Strike`, `Turbo Drift Circuit`, `Rooftop Buckets`, `Vault Breakers`, `Mech Hangar`, `Patrol Wing`, `Deep Recovery`, `Aurora Lander`, `Gallery Shift`, `Siege Golf`, `Skyline Runner`, `Gravity Post`, `Neon Swarm`, `Bank Shot`, `Blockfall Reactor`, `Orbital Defense`, `Pulse Tunnel`, `Courier Rush`), backed by same-origin fixture and asset delivery.
+- **WebGPU Compute + WebGL2 Parity Runtime.** Resident GPU compute particle simulation (`ResidentGPUParticleRenderer`), physical PBR materials (clearcoat, sheen, transmission, anisotropy, iridescence), HDR/IBL environment lighting, and deterministic fixed-step game simulation.
+- **Agent-First Authoring & Typed Asset Pipeline.** `create-aura3d@4.0.0`, `aura3d assets add/resolve/import-meshy/validate/typegen`, and `aura3d check-deploy`.
+
+## Effects, Post-Processing, Atmospherics & VFX (`effects.*`)
+
+Aura3D 4.0.0 ships a unified, declarative `effects.*` builder surface in `@aura3d/engine` that attaches directly to `scene()` alongside `atmosphere.*`, `environments.*`, `shadows.*`, and runtime `game.feel` triggers:
+
+```ts
+import {
+  atmosphere,
+  createAuraApp,
+  effects,
+  environments,
+  lights,
+  model,
+  scene,
+  shadows
+} from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+const app = createAuraApp("#app", {
+  scene: scene()
+    .add(model(assets.heroCar))
+    .add(environments.night({ intensity: 1.15 }))
+    .add(lights.studio())
+    .add(shadows.cascaded({ cascades: 3, mapSize: 2048, contactHardening: true }))
+    // Post-processing & camera lens pipeline
+    .add(effects.bloom({ intensity: 0.32, threshold: 0.72, radius: 0.4, antiBlowout: true }))
+    .add(effects.ambientOcclusion({ intensity: 0.45, radius: 0.7, falloff: 0.6, multiBounce: true }))
+    .add(effects.contactShadows({ length: 0.25, thickness: 0.05, steps: 16, intensity: 0.9 }))
+    .add(effects.screenSpaceReflections({ intensity: 0.65, maxDistance: 18, roughnessCutoff: 0.45 }))
+    .add(effects.depthOfField({ focusDistance: 6.5, fStop: 2.8, focalLength: 50, maxBlur: 0.015 }))
+    .add(effects.motionBlur({ intensity: 0.35, shutter: 0.5, samples: 12 }))
+    .add(effects.colorGrade({ exposure: 1.05, contrast: 1.08, saturation: 1.12 }))
+    .add(effects.vignette({ intensity: 0.28, smoothness: 0.65, roundness: 0.8 }))
+    .add(effects.chromaticAberration({ intensity: 0.0012 }))
+    .add(effects.filmGrain({ intensity: 0.035, size: 1.2, luminanceResponse: 0.8 }))
+    .add(effects.antiAlias({ mode: "taa", intensity: 1 }))
+    // Atmospherics & volumetric lighting
+    .add(effects.volumetricFog({ density: 0.018, color: "#0f172a", heightFalloff: 0.22, inscatterIntensity: 0.65 }))
+    .add(effects.fogVolume({ center: [0, 0.8, -4], size: [12, 2.4, 12], density: 0.35, color: "#38bdf8", scatteringAnisotropy: 0.4 }))
+    .add(effects.lightCone({ position: [0, 5.5, 0], direction: [0, -1, 0], length: 6, radius: 2.4, color: "#38bdf8", intensity: 0.75 }))
+    .add(effects.auroraRibbon({ position: [0, 18, -32], width: 48, height: 10, color: "#22d3ee", secondaryColor: "#a855f7", sway: 0.6, shimmer: 0.8 }))
+    // Weather, particles, trails & flipbooks
+    .add(effects.rain({ count: 1400, area: 24, speed: 16, streakLength: 0.65, splashes: true, mist: true }))
+    .add(effects.particles({
+      preset: "sparks",
+      count: 240,
+      color: "#38bdf8",
+      lifetimeColorRamp: ["#ffffff", "#38bdf8", "#a855f7"],
+      sizeOverLife: [1, 0.6, 0],
+      turbulence: 0.45,
+      groundCollision: true,
+      groundY: 0,
+      groundBounce: 0.45,
+      blendMode: "additive",
+      softParticles: true
+    }))
+    .add(effects.meshParticles({
+      mesh: "dodecahedron",
+      count: 36,
+      position: [0, 1.2, 0],
+      spread: 2.5,
+      gravity: -9.8,
+      bounce: 0.45,
+      groundY: 0,
+      color: "#f59e0b",
+      metalness: 0.75,
+      roughness: 0.28
+    }))
+    .add(effects.trail({
+      attachTo: "hero-car",
+      width: 0.28,
+      endWidth: 0.02,
+      lifetime: 0.45,
+      color: "#22d3ee",
+      endColor: "#ec4899",
+      blendMode: "additive"
+    }))
+    .add(effects.flipbook({
+      atlasCols: 4,
+      atlasRows: 4,
+      frameCount: 16,
+      fps: 24,
+      position: [0, 1.4, -2],
+      size: 1.8,
+      color: "#fb923c",
+      blendMode: "additive",
+      softParticles: true
+    }))
+});
+
+// Physical sky & wet surface response
+atmosphere.setSky(app, { mode: "preetham", turbidity: 2.4, rayleigh: 1.8, sunElevation: 14, sunAzimuth: 195 });
+atmosphere.setWetness(app, { wetness: 0.65, puddleCoverage: 0.45, puddleRoughness: 0.06, rippleIntensity: 0.5 });
+```
+
+### Complete Effects Reference (`@aura3d/engine@4.0.0`)
+
+| Category | Builder / API | Key Options & Capabilities |
+| --- | --- | --- |
+| **Bloom & Glare** | `effects.bloom(opts)` / `effects.neonBloom(opts)` / `effects.cinematicBloom(opts)` | Multi-mip HDR bloom with `intensity`, `threshold`, `radius`, `color`, `quality`, `softKnee`, `shoulder`, and `antiBlowout` / `maxIntensity` luminance clamping. |
+| **Ambient & Contact Occlusion** | `effects.ambientOcclusion(opts)` / `effects.contactOcclusion(opts)` / `effects.contactShadows(opts)` | Screen-space ambient occlusion (`intensity`, `radius`, `density`, `falloff`, `multiBounce`), micro-contact grounding, and ray-marched screen-space `contactShadows` (`length`, `thickness`, `steps`, `lights`). |
+| **Reflections & Lens Optics** | `effects.screenSpaceReflections(opts)` / `effects.depthOfField(opts)` / `effects.motionBlur(opts)` | Glossy PBR screen-space reflections (`maxDistance`, `thickness`, `roughnessCutoff`, `steps`), physical circle-of-confusion `depthOfField` (`focusDistance`, `fStop`, `focalLength`, `maxBlur`, `bokehScale`), and shutter `motionBlur` (`shutter`, `samples`, `tileSize`). |
+| **Color Grading & Finishing** | `effects.colorGrade(opts)` / `effects.vignette(opts)` / `effects.filmGrain(opts)` / `effects.chromaticAberration(opts)` / `effects.antiAlias(opts)` / `effects.outline(opts)` | Tonemapped grading (`exposure`, `contrast`, `saturation`, `shadows`, `highlights`, `lut`), display `vignette` (`smoothness`, `roundness`, `color`), luminance-weighted `filmGrain`, radial `chromaticAberration`, `antiAlias` (`"auto"`, `"taa"`, `"smaa"`, `"fxaa"`, `"msaa"`), and selection/edge `outline`. |
+| **Fog, Volumetrics & Sky** | `effects.fog(opts)` / `effects.depthFog(opts)` / `effects.volumetricFog(opts)` / `effects.fogVolume(opts)` / `effects.lightCone(opts)` / `effects.auroraRibbon(opts)` / `atmosphere.setSky(app, opts)` / `atmosphere.setWetness(app, opts)` | Distance & height-falloff fog, depth-aware volumetric inscatter, localized 3D `fogVolume` boxes with `scatteringAnisotropy`, spotlight `lightCone` shafts, animated shader `auroraRibbon` curtains, Preetham/gradient sky, and rain puddle wetness. |
+| **Particles, Weather & VFX** | `effects.particles(opts)` / `effects.meshParticles(opts)` / `effects.rain(opts)` / `effects.snow(opts)` / `effects.flipbook(opts)` / `effects.trail(opts)` / `effects.beam(opts)` / `ResidentGPUParticleRenderer` | Presets (`"fountain"`, `"swirl"`, `"ambient"`, `"additive-glow"`, `"soft-alpha"`, `"smoke"`, `"star"`, `"sparks"`, `"embers"`), `lifetimeColorRamp`, `sizeOverLife`, `alphaOverLife`, `turbulence`, `groundCollision`, instanced 3D debris (`meshParticles`), weather (`rain` with splashes/mist, `snow`), sprite-sheet `flipbook`, node/bone ribbon `trail`, energy `beam`, and WebGPU compute `ResidentGPUParticleRenderer`. |
+| **Game-Feel & Combat Juice** | `game.feel` / `gameFeel` / `app.feel` | Frame-accurate `hitStop`, `slowMo`, `damageFlash`, `speedLines`, `landingDust`, trauma-based camera shake, and combat impact triggers (`"hit-spark"`, `"impact-flash"`, `"dash-trail"`, `"ground-dust"`). |
+
+### What shipped in 3.0.1
 
 - **Agent-era API surface.** Prompt→game and prompt→animation builders, game-feel triggers, follow/chase/platformer camera rigs, vehicle chassis + driver AI, GPU particles, SDF text, navmesh crowds, visual-scripting catalog, bounded editor surface — each `createAuraApp`-claimed only where root browser evidence exists.
 - **Rendering proofs.** Native fused LDR postprocess, multi-mip bloom with presets, exact sRGB output, anisotropic-GGX, cascaded shadows, GGX PMREM IBL, with shader-reference vectors pinning the math.
 - **Bounded three.js comparison.** Repository-locked `three@0.185.1` head-to-head reports only; no universal superiority claim.
-- **2.0.4 carried forward.** Candidate-only `assets import-meshy`, fail-closed admission, profile diagnostics, spend/secret controls, and the relic `prototype` pilot, unchanged.
+- **2.0.4 carried forward.** Candidate-only `assets import-meshy`, fail-closed admission, profile diagnostics, spend/secret controls, and the relic `prototype` pilot, unchanged. See the [3.0.1 release notes](docs/project/aura3d-301-release-notes.md) and [GitHub release](https://github.com/auraoneai/aura3d/releases/tag/v3.0.1).
 
 See [the Meshy CLI guide](docs/meshy-cli.md) for the current asset workflow.
 
@@ -240,14 +355,14 @@ The current product boundary and evidence are documented in
 Install the current release:
 
 ```bash
-npm install @aura3d/engine@3.0.1
+npm install @aura3d/engine@4.0.0
 # or scaffold an app
-npx create-aura3d@3.0.1 my-product --template product-viewer
+npx create-aura3d@4.0.0 my-product --template product-viewer
 ```
 
-The 3.0.1 release is available from
-[GitHub Releases](https://github.com/auraoneai/aura3d/releases/tag/v3.0.1),
-with the removal surface in [`docs/MIGRATION-4.0.md`](docs/MIGRATION-4.0.md) and the archived 2.0 guide in [`docs/migration/2.0.md`](docs/migration/2.0.md)
+The 4.0.0 release is available from
+[GitHub Releases](https://github.com/auraoneai/aura3d/releases/tag/v4.0.0),
+with the removal surface in [`docs/MIGRATION-4.0.md`](docs/MIGRATION-4.0.md), the 3.0.1 release at [v3.0.1](https://github.com/auraoneai/aura3d/releases/tag/v3.0.1), and the archived 2.0 guide in [`docs/migration/2.0.md`](docs/migration/2.0.md)
 and retained claim boundaries and release evidence under `docs/project/`.
 
 ## Aura3D 2.0 asset catalog
@@ -272,7 +387,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 2.0 runtime launch track
 
-Aura3D 2.0 introduced the runtime and animation evidence foundation; 3.0.0 is
+Aura3D 2.0 introduced the runtime and animation evidence foundation; 4.0.0 (succeeding 3.0.0 and 3.0.1) is
 the published package train that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.

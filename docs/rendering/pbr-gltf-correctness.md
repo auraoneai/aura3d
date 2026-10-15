@@ -1,6 +1,6 @@
 # PBR and glTF correctness
 
-The prior bounded PBR/glTF comparison is recorded below. Its measurements need regeneration on the final 3.0.1 source before current-candidate claims are accepted. The
+The prior bounded PBR/glTF comparison is recorded below. Its measurements need regeneration on the final 4.0.0 source before current-candidate claims are accepted. The
 canonical command is:
 
 ```bash
@@ -186,7 +186,7 @@ NDF, Estevez-Kulla 2017 sheen, Narkowicz ACES fit, sRGB specification.
 - real-loader same-fixture comparison: `tests/reports/threejs-parity/loader-material-extensions-parity.json`;
 - current baseline: `tests/reports/current-threejs-baseline.json`.
 
-## Historical K1 captures (2026-09-04; not per-feature 3.0.1 acceptance)
+## Historical K1 captures (2026-09-04; not per-feature 4.0.0 acceptance)
 
 - Recorded same-scene Aura-vs-pinned-three@0.185.1 captures, generated
   in-run — `tests/reports/muse3jsparity/head-to-head-aura.png` vs
@@ -198,7 +198,7 @@ NDF, Estevez-Kulla 2017 sheen, Narkowicz ACES fit, sRGB specification.
   shading; bundle position stays over budget as disclosed in the release
   notes.
 
-### 3.0.1 extension texture verification status
+### 4.0.0 extension texture verification status
 
 The root typed material bridge accepts separate clearcoat factor, roughness and
 normal maps; sheen color and roughness maps; iridescence factor and thickness

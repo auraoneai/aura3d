@@ -11,9 +11,13 @@ const isCleanEmbed =
 const clearColor: [number, number, number, number] = isCleanEmbed
   ? [0, 0, 0, 1]
   : [0.86, 0.86, 0.84, 1];
+const sameOriginFixtureHost =
+  typeof location !== "undefined" &&
+  (["localhost", "127.0.0.1", "0.0.0.0", "[::1]", "aura3d.auraone.ai"].includes(location.hostname) ||
+    location.hostname.endsWith(".vercel.app"));
 const publicAssetOrigin =
   (window as unknown as { AURA3D_PUBLIC_ASSET_ORIGIN?: string }).AURA3D_PUBLIC_ASSET_ORIGIN
-  ?? "https://cdn.jsdelivr.net/gh/auraoneai/aura3d@main";
+  ?? (sameOriginFixtureHost ? "" : "https://cdn.jsdelivr.net/gh/auraoneai/aura3d@main");
 
 void startWowGltfShowcase({
   appId: "wow-tokyo-keyframes",

@@ -143780,11 +143780,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/siegeCatapultMeshy.5d4a533e.glb",
+      "url": "/aura-assets/siegeCatapultMeshy.5d4a533e.glb",
+      "hash": "sha256-5d4a533e53893b4b4893160829ced0763fc51862bc3cd5495e7c360c8c1d8bdd",
       "sizeBytes": 824288,
-      "bounds": {
+      "bounds": [
+        1.8853,
+        1.1754,
+        1.2447
+      ],
+      "boundsMetadata": {
         "min": [
           -0.949,
           -0.5827,
@@ -143799,31 +143804,14 @@
           1.8853,
           1.1754,
           1.2447
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.8853,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -143941,7 +143929,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/siegeCatapultMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -143961,11 +143949,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/siegeWatchtowerMeshy.fafe2129.glb",
+      "url": "/aura-assets/siegeWatchtowerMeshy.fafe2129.glb",
+      "hash": "sha256-fafe21297079d47e41d890704ebb9169eff1672130c26061569e6fe0f8ec35b1",
       "sizeBytes": 893220,
-      "bounds": {
+      "bounds": [
+        0.8869,
+        1.898,
+        0.9222
+      ],
+      "boundsMetadata": {
         "min": [
           -0.4409,
           -0.9501,
@@ -143980,31 +143973,14 @@
           0.8869,
           1.898,
           0.9222
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.898,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -144122,7 +144098,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/siegeWatchtowerMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -144142,11 +144118,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/siegeStoneBridgeMeshy.886393a6.glb",
+      "url": "/aura-assets/siegeStoneBridgeMeshy.886393a6.glb",
+      "hash": "sha256-886393a622fd769d762e468c4075d1740a6ff7db8ce1813f31da01c1bf0b372d",
       "sizeBytes": 890220,
-      "bounds": {
+      "bounds": [
+        1.7727,
+        0.695,
+        1.8988
+      ],
+      "boundsMetadata": {
         "min": [
           -0.8873,
           -0.3499,
@@ -144161,31 +144142,14 @@
           1.7727,
           0.695,
           1.8988
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.8988,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -144303,7 +144267,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/siegeStoneBridgeMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -144323,11 +144287,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/skylineParkourRunnerMeshy.8baf974c.glb",
+      "url": "/aura-assets/skylineParkourRunnerMeshy.8baf974c.glb",
+      "hash": "sha256-8baf974c158b068e06dd2a7e0d6f938fd26220f736afebdc9e280694f5cefe14",
       "sizeBytes": 622732,
-      "bounds": {
+      "bounds": [
+        1.0441,
+        1.8933,
+        1.5534
+      ],
+      "boundsMetadata": {
         "min": [
           -0.522,
           -0.9474,
@@ -144342,31 +144311,14 @@
           1.0441,
           1.8933,
           1.5534
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.8933,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -144484,7 +144436,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/skylineParkourRunnerMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -144504,11 +144456,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/galleryPharaohRelicMeshy.4b90ffca.glb",
+      "url": "/aura-assets/galleryPharaohRelicMeshy.4b90ffca.glb",
+      "hash": "sha256-4b90ffca42bb5fa58799975d4c48d4da33b7a91ad20309aee7ac01c0b88fc215",
       "sizeBytes": 829000,
-      "bounds": {
+      "bounds": [
+        1.2377,
+        1.8978,
+        1.2247
+      ],
+      "boundsMetadata": {
         "min": [
           -0.6196,
           -0.9507,
@@ -144523,31 +144480,14 @@
           1.2377,
           1.8978,
           1.2247
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.8978,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -144665,7 +144605,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/galleryPharaohRelicMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -144685,11 +144625,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/gravityCargoShuttleMeshy.f7cab155.glb",
+      "url": "/aura-assets/gravityCargoShuttleMeshy.f7cab155.glb",
+      "hash": "sha256-f7cab1555d2cef6e501c0cb9c6be716f4443081f0b713fb5e3e17dc1369f9d9b",
       "sizeBytes": 795308,
-      "bounds": {
+      "bounds": [
+        1.8987,
+        0.4711,
+        1.4031
+      ],
+      "boundsMetadata": {
         "min": [
           -0.9506,
           -0.235,
@@ -144704,31 +144649,14 @@
           1.8987,
           0.4711,
           1.4031
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.8987,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -144846,7 +144774,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/gravityCargoShuttleMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -144866,11 +144794,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/gravitySpaceStationMeshy.d35f3dfb.glb",
+      "url": "/aura-assets/gravitySpaceStationMeshy.d35f3dfb.glb",
+      "hash": "sha256-d35f3dfb471087fa00ec7b09a846ed6c4c72d90d06e1e02224a69e8825fc1cc6",
       "sizeBytes": 927012,
-      "bounds": {
+      "bounds": [
+        1.891,
+        0.3742,
+        1.8242
+      ],
+      "boundsMetadata": {
         "min": [
           -0.9475,
           -0.1883,
@@ -144885,31 +144818,14 @@
           1.891,
           0.3742,
           1.8242
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.891,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -145027,7 +144943,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/gravitySpaceStationMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -145047,11 +144963,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/billiardsClubChairMeshy.29eb7163.glb",
+      "url": "/aura-assets/billiardsClubChairMeshy.29eb7163.glb",
+      "hash": "sha256-29eb71636fea4cfc852eeeaa2cfdfe26dd09657b971b414e024fb099be9a7760",
       "sizeBytes": 639700,
-      "bounds": {
+      "bounds": [
+        1.8959,
+        1.6033,
+        1.8944
+      ],
+      "boundsMetadata": {
         "min": [
           -0.9488,
           -0.8029,
@@ -145066,31 +144987,14 @@
           1.8959,
           1.6033,
           1.8944
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.8959,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -145208,7 +145112,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/billiardsClubChairMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -145228,11 +145132,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/billiardsTrophyCabinetMeshy.db74320a.glb",
+      "url": "/aura-assets/billiardsTrophyCabinetMeshy.db74320a.glb",
+      "hash": "sha256-db74320a949ffed9cea770231c4ab0caada694ccc3f2a9b32734dd282cb54a21",
       "sizeBytes": 858428,
-      "bounds": {
+      "bounds": [
+        1.8989,
+        1.8996,
+        1.2712
+      ],
+      "boundsMetadata": {
         "min": [
           -0.9505,
           -0.9507,
@@ -145247,31 +145156,14 @@
           1.8989,
           1.8996,
           1.2712
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.8996,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -145389,7 +145281,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/billiardsTrophyCabinetMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -145409,11 +145301,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/reactorFusionTurbineMeshy.820062e2.glb",
+      "url": "/aura-assets/reactorFusionTurbineMeshy.820062e2.glb",
+      "hash": "sha256-820062e26b86eb45153ba0e7d21216ba75e2af6b301e814feaf3dea6b0a2d8db",
       "sizeBytes": 861748,
-      "bounds": {
+      "bounds": [
+        1.8973,
+        1.5222,
+        0.9128
+      ],
+      "boundsMetadata": {
         "min": [
           -0.9495,
           -0.7618,
@@ -145428,31 +145325,14 @@
           1.8973,
           1.5222,
           0.9128
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.8973,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -145570,7 +145450,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/reactorFusionTurbineMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -145590,11 +145470,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/clashDragonStatueMeshy.fbf08315.glb",
+      "url": "/aura-assets/clashDragonStatueMeshy.fbf08315.glb",
+      "hash": "sha256-fbf0831582ce2001b993f4e51b22d9e88493585b3bdd25801b2d089e1d01a839",
       "sizeBytes": 794028,
-      "bounds": {
+      "bounds": [
+        0.6555,
+        1.8973,
+        1.0329
+      ],
+      "boundsMetadata": {
         "min": [
           -0.3288,
           -0.9494,
@@ -145609,31 +145494,14 @@
           0.6555,
           1.8973,
           1.0329
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.8973,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -145751,7 +145619,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/clashDragonStatueMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -145771,11 +145639,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/lunarRoverMeshy.7978f48b.glb",
+      "url": "/aura-assets/lunarRoverMeshy.7978f48b.glb",
+      "hash": "sha256-7978f48bc29b485eaec838aeb3ee717962884765f08c1559f0ed2745d083faf4",
       "sizeBytes": 944324,
-      "bounds": {
+      "bounds": [
+        1.8859,
+        0.8605,
+        1.8877
+      ],
+      "boundsMetadata": {
         "min": [
           -0.9464,
           -0.4322,
@@ -145790,31 +145663,14 @@
           1.8859,
           0.8605,
           1.8877
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.8877,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -145932,7 +145788,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/lunarRoverMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -145952,11 +145808,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/deepShipwreckHullMeshy.dcf3fd19.glb",
+      "url": "/aura-assets/deepShipwreckHullMeshy.dcf3fd19.glb",
+      "hash": "sha256-dcf3fd192c148d01b585e6766d9be6fff33975459b057eb51b4c7b874be4b650",
       "sizeBytes": 907156,
-      "bounds": {
+      "bounds": [
+        1.8956,
+        0.9232,
+        1.1932
+      ],
+      "boundsMetadata": {
         "min": [
           -0.9479,
           -0.4614,
@@ -145971,31 +145832,14 @@
           1.8956,
           0.9232,
           1.1932
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.8956,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -146113,7 +145957,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/deepShipwreckHullMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -146133,11 +145977,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/rooftopFloodlightTowerMeshy.1bfcdd0b.glb",
+      "url": "/aura-assets/rooftopFloodlightTowerMeshy.1bfcdd0b.glb",
+      "hash": "sha256-1bfcdd0b57f632f8c32f1bbdf5ce5a7e57fe169e61aeb28047711dc333efca30",
       "sizeBytes": 913928,
-      "bounds": {
+      "bounds": [
+        1.8974,
+        1.434,
+        1.8967
+      ],
+      "boundsMetadata": {
         "min": [
           -0.9494,
           -0.7264,
@@ -146152,31 +146001,14 @@
           1.8974,
           1.434,
           1.8967
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.8974,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -146294,7 +146126,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/rooftopFloodlightTowerMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -146314,11 +146146,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/courierNeonStorefrontMeshy.efb0a37b.glb",
+      "url": "/aura-assets/courierNeonStorefrontMeshy.efb0a37b.glb",
+      "hash": "sha256-efb0a37b75c80fea7ed6a7ccee46bce0a13b018047b8a9f554c6901c73105c17",
       "sizeBytes": 978772,
-      "bounds": {
+      "bounds": [
+        1.8416,
+        1.8984,
+        1.4554
+      ],
+      "boundsMetadata": {
         "min": [
           -0.9188,
           -0.9508,
@@ -146333,31 +146170,14 @@
           1.8416,
           1.8984,
           1.4554
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.8984,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -146475,7 +146295,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/courierNeonStorefrontMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {
@@ -146495,11 +146315,16 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "url": "/aura-assets/turboHeroRaceCarMeshy.da2055fb.glb",
-      "hash": "sha256-da2055fb3738792b7653511f7e44db3b5460115ab8472b932a7f7b22d9e598ed",
+      "outputPath": "public/aura-assets/vaultPinballSlingshotMeshy.309c6581.glb",
+      "url": "/aura-assets/vaultPinballSlingshotMeshy.309c6581.glb",
+      "hash": "sha256-309c65810b6cdde6c60f8a446a4ec6f7fbb6d3dbdc434c709b3a927f4e9e34c2",
       "sizeBytes": 969656,
-      "bounds": {
+      "bounds": [
+        1.8976,
+        1.3504,
+        0.7742
+      ],
+      "boundsMetadata": {
         "min": [
           -0.9498,
           -0.6721,
@@ -146514,31 +146339,14 @@
           1.8976,
           1.3504,
           0.7742
-        ]
-      },
-      "boundsMetadata": {
-        "min": [
-          -0.44,
-          0,
-          -0.948
-        ],
-        "max": [
-          0.436,
-          0.559,
-          0.95
-        ],
-        "size": [
-          0.876,
-          0.559,
-          1.897
         ],
         "center": [
-          -0.002,
-          0.279,
-          0.001
+          0,
+          0,
+          0
         ],
-        "maxDimension": 1.897,
-        "grounded": true
+        "maxDimension": 1.8976,
+        "grounded": false
       },
       "materials": [
         "BakedMaterial"
@@ -146656,7 +146464,7 @@
       "nodeNames": [
         "output_unwrapped"
       ],
-      "thumbnailUrl": "/aura-assets/turboHeroRaceCarMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/vaultPinballSlingshotMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
       "renderedProbe": {

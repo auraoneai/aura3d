@@ -1,11 +1,11 @@
 # Site Map
 
-Version: 3.0.1
+Version: 4.0.0
 
-Current release: Aura3D 3.0.1.
+Current release: Aura3D 4.0.0.
 
-Date: 2026-09-12
-Status: Aura3D 3.0.1 site map
+Date: 2026-10-15
+Status: Aura3D 4.0.0 site map
 
 ## Public Marketing Pages
 
@@ -33,9 +33,10 @@ copy boundary and must not present prototypes as public release examples.
 - [Release tracks](release-tracks.md)
 - [Release checklist](release/release-checklist.md)
 - [Release process](release-process.md)
+- [Aura3D 4.0.0 release notes](aura3d-400-release-notes.md)
 - [2.0 platform architecture](../architecture/2.0-platform.md)
 - [2.0 removals and retrieval](../architecture/2.0-removals.md)
-- [Aura3D 2.0.0 Three.js comparison status](threejs-superiority-status.md)
+- [Aura3D Three.js comparison status](threejs-superiority-status.md)
 - [Verification evidence](verification-evidence.md)
 - [Showcase quality gates](showcase/quality-gates.md)
 - [Apps classification](showcase/apps-classification.md)

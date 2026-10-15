@@ -1,14 +1,16 @@
 # Migration From low-level renderer code
 
-Version: 3.0.1
+Version: 4.0.0
 
-Current release: Aura3D 3.0.1.
+Current release: Aura3D 4.0.0.
 
 ## Current Migration Surface
 
 Migration support is optional and lives outside the default `@aura3d/engine`
-runtime install path. Use the separate compatibility package when a migration
-workflow needs Three.js-shaped APIs:
+runtime install path. For upgrading from Aura3D 3.x to the single-package
+`@aura3d/engine@4.0.0` surface, see [docs/MIGRATION-4.0.md](../MIGRATION-4.0.md).
+Use the separate compatibility package when a migration workflow needs
+Three.js-shaped APIs:
 
 ```sh
 npm install @aura3d/three-compat three
@@ -33,7 +35,7 @@ A3D can help migrate selected workflows:
 
 The compatibility package does not make A3D a full runtime drop-in for every low-level renderer code API, example, addon, shader chunk, loader, or renderer path. Migration docs should name the specific API or workflow that is supported and point to code/tests.
 
-`@aura3d/engine@2.0.0` keeps Three.js out of the root engine runtime and npm
+`@aura3d/engine@4.0.0` keeps Three.js out of the root engine runtime and npm
 dependency graph. Three.js parity, migration, and compatibility tooling remain
 available outside the default engine install path. Public Aura3D agent APIs,
 typed assets, templates, diagnostics, screenshots, runtime helpers, and catalog

@@ -1,6 +1,6 @@
 # Aura3D Editor And Visual Scripting API
 
-Status: Aura3D 2.0.0 guidance.
+Status: Aura3D 4.0.0 guidance.
 
 This page documents the safe authoring-tool pattern for Aura3D editor-runtime
 and visual scripting work. It is scoped to browser authoring, timeline runtime
@@ -30,7 +30,7 @@ Aura3D currently exposes reusable packages:
   runtime nodes, runs `app.onFrame(...)`, steps deterministically through
   `app.step(dt)`, and collects evidence.
 
-Aura3D 2.0 must prove the bridge between these layers. A visual graph or
+Aura3D 4.0 must prove the bridge between these layers. A visual graph or
 editor project is not release-ready until it has browser evidence showing that
 the authored data mutates the mounted Aura app.
 

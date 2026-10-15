@@ -1,6 +1,6 @@
 # Aura3D Editor Review And Edit Tooling API
 
-Status: Aura3D 2.0.0 guidance.
+Status: Aura3D 4.0.0 guidance.
 
 This page documents the new 1.1 editor-runtime review and editing tooling. These
 are source-level editor models: deterministic, serializable state machines that

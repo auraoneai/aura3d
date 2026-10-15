@@ -161,9 +161,19 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
   }
 }
 
+const SAME_ORIGIN_FIXTURE_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "[::1]", "aura3d.auraone.ai"]);
+
+function hostServesPublishedFixtures(hostname: string): boolean {
+  return SAME_ORIGIN_FIXTURE_HOSTS.has(hostname) || hostname.endsWith(".vercel.app");
+}
+
 function publicAssetOrigin(): string {
   const configured = (window as unknown as { AURA3D_PUBLIC_ASSET_ORIGIN?: string }).AURA3D_PUBLIC_ASSET_ORIGIN;
-  return configured ?? PUBLIC_ASSET_ORIGIN;
+  if (configured !== undefined) return configured;
+  if (typeof location !== "undefined" && hostServesPublishedFixtures(location.hostname)) {
+    return "";
+  }
+  return PUBLIC_ASSET_ORIGIN;
 }
 
 function syncCanvasRenderSize(canvas: HTMLCanvasElement): { readonly width: number; readonly height: number } {

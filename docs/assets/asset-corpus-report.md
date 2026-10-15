@@ -1,6 +1,6 @@
 # Asset Corpus Report
 
-Version: 2.0.3
+Version: 4.0.0
 
 This page describes the local asset corpus that is present in the repository.
 

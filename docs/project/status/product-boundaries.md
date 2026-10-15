@@ -1,7 +1,9 @@
 # Aura3D Product Boundaries
 
-Date: 2026-08-11
-Status: Aura3D 2.0.0 canonical product boundary
+Version: 4.0.0
+
+Date: 2026-10-15
+Status: Aura3D 4.0.0 canonical product boundary
 
 Aura3D is a developer SDK, asset pipeline, template system, diagnostics surface,
 and agent-readable documentation set for browser 3D apps. It is not a hidden

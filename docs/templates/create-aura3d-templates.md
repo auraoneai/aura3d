@@ -32,7 +32,7 @@
 - `three-compat-large-scene`: A large-scene migration starter with bounded
   diagnostics.
 
-The authoritative registry contains 19 templates. Aura3D 2.0 requires both the
+The authoritative registry contains 19 templates. Aura3D 4.0 requires both the
 source lifecycle and the separate clean exact-tarball lifecycle to pass 149/149
 checks across all 19: install, typecheck, production build, browser load,
 meaningful interaction, static preview, screenshot, route health, and deploy.

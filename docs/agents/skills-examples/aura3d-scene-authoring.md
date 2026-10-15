@@ -1,7 +1,7 @@
 # Worked example: aura3d-scene-authoring
 
 Date: 2026-09-25. Run inside the Aura3D monorepo against the built engine at
-`packages/engine/dist/index.js` (version 3.0.1). Lightweight commands only; no
+`packages/engine/dist/index.js` (version 4.0.0). Lightweight commands only; no
 dev server, Playwright, or screenshots were run locally.
 
 ## Goal

@@ -1,10 +1,12 @@
-# Aura3D 2.0 documentation index
+# Aura3D 4.0.0 documentation index
 
-Date: 2026-08-16
-Status: current for Aura3D 2.0.3
+Version: 4.0.0
+
+Date: 2026-10-15
+Status: current for Aura3D 4.0.0
 
 The current tree contains product documentation, executable evidence inputs,
-required package/app entry points, and the 2.0 release record. Superseded PRDs,
+required package/app entry points, and the 4.0.0 release record. Superseded PRDs,
 prompts, handoffs, duplicate per-version release notes, and archive Markdown are
 removed after their still-valid decisions are consolidated here. Git history is
 the archive.
@@ -17,6 +19,7 @@ the archive.
 - Current product state: [`status/current-state.md`](./status/current-state.md)
 - Known limits: [`status/known-limits.md`](./status/known-limits.md)
 - Public API: [`docs/api/public-api.md`](../api/public-api.md)
+- Release notes (4.0.0): [`aura3d-400-release-notes.md`](./aura3d-400-release-notes.md)
 - Migration to 4.0: [`docs/MIGRATION-4.0.md`](../MIGRATION-4.0.md)
 - Migration to 2.0 (archived): [`docs/migration/2.0.md`](../migration/2.0.md)
 
@@ -82,15 +85,16 @@ reproduction tool consumes them. They are data, not current public claims.
 - Security: [`security-policy.md`](./security-policy.md)
 - Support: [`support-policy.md`](./support-policy.md)
 
-`CHANGELOG.md` is the single retained release-history document. Separate 1.x
+`CHANGELOG.md` is the single retained release-history document alongside the
+canonical release notes (`aura3d-400-release-notes.md`). Separate 1.x
 release-note drafts and obsolete migration/handoff files are not part of the
-2.0 documentation surface.
+4.0.0 documentation surface.
 
 ## Retention rules
 
 A Markdown file remains only when it is one of:
 
-1. current 2.0 product/API/architecture/migration/release documentation;
+1. current 4.0.0 product/API/architecture/migration/release documentation;
 2. a required colocated README, agent instruction, legal/license file, or ADR;
 3. an executable benchmark specification or frozen evidence input consumed by
    a current command;
@@ -99,4 +103,4 @@ A Markdown file remains only when it is one of:
 Scratch prompts, PRDs, handoffs, stale status snapshots, superseded plans,
 duplicate release notes, and archive-only explanations belong in Git history.
 No retained historical datum can override a current generated report or expand
-a 2.0 public claim.
+a 4.0.0 public claim.

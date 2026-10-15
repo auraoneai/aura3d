@@ -1,7 +1,9 @@
 # Release completion verification
 
+Version: 4.0.0
+
 This page is the retained completion record consumed by production-runtime and
-Three.js-compat verification tools. It describes how to verify a 2.0 release
+Three.js-compat verification tools. It describes how to verify a 4.0 release
 candidate against current source and generated evidence. It is not a feature
 todo list and it is not a substitute for the operational checklist.
 

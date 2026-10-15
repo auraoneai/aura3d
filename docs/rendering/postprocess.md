@@ -18,9 +18,9 @@ claim a rendered postprocess effect only when:
   caused by the pass;
 - evidence records the backend and any fallback state.
 
-## Prior root evidence (revalidation required for 3.0.1)
+## Prior root evidence (revalidation required for 4.0.0)
 
-The measurements below describe the prior recorded workload, not acceptance of the changing 3.0.1 source. Fresh root browser receipts are required.
+The measurements below describe the prior recorded workload, not acceptance of the changing 4.0.0 source. Fresh root browser receipts are required.
 
 `tests/browser/createAuraApp-postprocess-contract.spec.ts` retains the measured
 root evidence at
@@ -35,11 +35,11 @@ differs, so a measured delta is attributable to the pass.
 | Environment fog | Root-proven | `effects.fog(...)` reaches the forward pass and changes 68.82% of the frame (mean channel delta 15.0343). Visual review records that this probe setting nearly silhouettes the subject, so the screenshot is not used as a quality-parity claim. |
 | Ambient / contact occlusion (SSAO) | Partial | The `ssao` pass genuinely executes and `ambientOcclusionPass` is true, but the measured on/off change is near zero. The pass runs; its visible contribution in the probe scene is not provable, so it is not claimed. |
 | Color grading | Root-proven (2026-09-03) | `effects.colorGrade(...)` submits the native pass: 99.85% frame delta (mean 34.01) on/off. contrast/saturation execute; exposure/shadows/highlights/lut are recorded and warned, never silently accepted. Receipt: `tests/reports/root-effects-a3/a3-probe.json`. |
-| FXAA | Root-proven (2026-09-03) | `effects.antiAlias({ mode: "fxaa" })` submits the native pass: 3.27% frame delta (mean 2.50) on/off. TAA has new 3.0.1 history bindings under verification; `"off"` submits nothing. |
+| FXAA | Root-proven (2026-09-03) | `effects.antiAlias({ mode: "fxaa" })` submits the native pass: 3.27% frame delta (mean 2.50) on/off. TAA has history bindings under verification; `"off"` submits nothing. |
 | Outline | Root-proven (2026-09-03) | `effects.outline(...)` submits the native pass: 9.18% frame delta (mean 27.02) on/off, width clamped to the device range 1-6. |
 | SSR | Root-proven (2026-09-03) | `effects.screenSpaceReflections(...)` submits the native pass against renderer-owned depth: 37.49% frame delta (mean 85.92) on/off. Required a real fix: raw GL depth is nonlinear (0.1/1000 defaults park the play area past 0.97), so the native program linearizes depth with near/far uniforms while the CPU byte kernel keeps fixture-unit semantics (documented divergence, proven by the GL-depth contract in `native-outline-pixel.spec.ts`). |
 | Depth of field | Root-proven (2026-09-03) | `effects.depthOfField(...)` submits the native pass against renderer-owned depth: 7.12% frame delta (mean 7.42) on/off. focus is a linear-distance fraction (0 = near, 1 = far); same native/CPU contract split as SSR. |
-| Motion blur, TAA | 3.0.1 implementation under verification | Root velocity/history bindings replace the previous withheld path. Fresh `root-effects-a3.spec.ts` sequence, negative-control, and lifecycle receipts must establish acceptance before these are described as root-proven. |
+| Motion blur, TAA | 4.0.0 implementation under verification | Root velocity/history bindings replace the previous withheld path. Fresh `root-effects-a3.spec.ts` sequence, negative-control, and lifecycle receipts must establish acceptance before these are described as root-proven. |
 
 The pass set and `pixelBacked` status are also verified to survive canvas resize
 and device-pixel-ratio change across three distinct backing stores, so a resize
@@ -153,7 +153,7 @@ when any constituent browser receipt is older than 30 minutes. Package-level
 proof does not promote unavailable effects into root `createAuraApp`; the root
 table above remains authoritative.
 
-## Historical K1 measurement (2026-09-04; not 3.0.1 performance acceptance)
+## Historical K1 measurement (2026-09-04; not 4.0.0 performance acceptance)
 
 - Recorded directional same-machine measurement: full bloom chain — bright-extract 640x360 +
   5-mip separable blur pyramid + composite — median **1.30 ms** over 25
@@ -165,7 +165,7 @@ table above remains authoritative.
   reflections (B4) retain no per-part files — live capture only
   (`tests/reports/muse3jsparity/game-visual-superiority.json` `b4Note`).
 
-## Root asynchronous submission (3.0.1 implementation)
+## Root asynchronous submission (4.0.0 implementation)
 
 The `createAuraApp` root safe API provides `await app.stepAsync(dt)` for a
 serialized manual frame and `await app.disposeAsync()` for teardown that waits
@@ -184,5 +184,5 @@ remains visible to its caller and does not poison subsequent manual submissions.
 `stepAsync()` performs rendering, not screenshot capture. Call `app.screenshot()`
 after awaiting it when readback is required. Native bloom equivalence is checked by
 `tests/browser/native-bloom-pyramid.spec.ts` through root imports on both paths.
-The 3.0.1 integrated browser run must provide fresh pixels and device diagnostics
+The 4.0.0 integrated browser run must provide fresh pixels and device diagnostics
 before asynchronous bloom parity is considered verified.

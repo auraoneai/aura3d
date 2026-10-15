@@ -1,7 +1,9 @@
 # Launch Positioning
 
-Date: 2026-07-01
-Status: public copy boundary
+Version: 4.0.0
+
+Date: 2026-10-15
+Status: Aura3D 4.0.0 public copy boundary
 
 Use this file to decide what can be said publicly today and what must wait for
 library or showcase gates.

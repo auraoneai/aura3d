@@ -13,10 +13,20 @@ import { startWebGPUShowcase } from "/apps/wow-common/src/webgpu-showcase.ts";
 const requestedBackend = new URLSearchParams(location.search).get("backend") === "auto" ? "auto" : "webgpu";
 const PUBLIC_ASSET_ORIGIN = "https://cdn.jsdelivr.net/gh/auraoneai/aura3d@main";
 
+const SAME_ORIGIN_FIXTURE_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "[::1]", "aura3d.auraone.ai"]);
+
+function hostServesPublishedFixtures(hostname: string): boolean {
+  return SAME_ORIGIN_FIXTURE_HOSTS.has(hostname) || hostname.endsWith(".vercel.app");
+}
+
 function publicAssetUrl(path: string): string {
   const configured = (window as unknown as { AURA3D_PUBLIC_ASSET_ORIGIN?: string }).AURA3D_PUBLIC_ASSET_ORIGIN;
-  const origin = configured ?? PUBLIC_ASSET_ORIGIN;
-  return new URL(path, origin).href;
+  if (!configured && typeof location !== "undefined" && hostServesPublishedFixtures(location.hostname)) {
+    return path.startsWith("/") ? path : `/${path}`;
+  }
+  const base = (configured ?? PUBLIC_ASSET_ORIGIN).replace(/\/+$/, "");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${base}${normalizedPath}`;
 }
 
 void startWebGPUShowcase({
