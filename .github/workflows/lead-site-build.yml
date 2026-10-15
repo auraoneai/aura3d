@@ -46,7 +46,7 @@ jobs:
       - name: Verify deployed asset payloads are real binaries
         run: |
           set -euo pipefail
-          sample="$(find marketing/dist/aura-assets -type f -name '*.glb' | sort | head -n 1)"
+          sample="$(find marketing/dist/aura-assets -type f -name '*.glb' | sort | sed -n '1p')"
           test -n "$sample"
           magic="$(head -c 4 "$sample")"
           test "$magic" = "glTF"
