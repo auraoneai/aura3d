@@ -626,7 +626,7 @@ const reviewVenuePlate = new URLSearchParams(window.location.search).get("venueP
 // undifferentiated asphalt slab.  The runtime placement below keeps the kit
 // beyond the shoulder and follows the live review pose, so it supplies real
 // 3-D tents, timber rails, rocks and spectators without entering gameplay.
-const supplementalHairpinVenueEnabled = true;
+const supplementalHairpinVenueEnabled = false;
 // One authored venue kit supplies real trackside depth in the certified capture.
 // The previous four-copy arrangement plus a second full circuit relief duplicated
 // environment geometry and spent more than 35 CPU-minutes in SwiftShader before
@@ -1484,32 +1484,35 @@ function buildTurboTracksideIdentityNodes() {
               name: `turbo-meshy-approach-gantry-3d-${idx}`,
               role: "setDressing",
               scaleMode: "fit",
-              targetMaxDimension: Math.max(2.6, gantryHalfSpan * 2.35)
+              targetMaxDimension: 0.001,
+              visible: false
             })
-              .position(center[0], roadY + 0.02, center[2])
+              .position(center[0], TRACK_REFERENCE_Y - 20, center[2])
               .rotate(0, pose.rotation[1], 0),
             lights.point({
               name: `turbo-gantry-key-light-${idx}`,
               color: accentColor,
-              intensity: 1.6
-            }).position(center[0], roadY + 1.65, center[2])
+              intensity: 0.25
+            }).position(center[0], roadY + 2.4, center[2])
           ]
         : []),
       model(assets.turboTireBarrierWallMeshy, {
         name: `turbo-meshy-tire-barrier-left-${idx}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.68
+        targetMaxDimension: 0.001,
+        visible: false
       })
-        .position(center[0] + leftX * 1.58, roadY + 0.01, center[2] + leftZ * 1.58)
+        .position(center[0] + leftX * 2.5, TRACK_REFERENCE_Y - 20, center[2] + leftZ * 2.5)
         .rotate(0, pose.rotation[1], 0),
       model(assets.turboTireBarrierWallMeshy, {
         name: `turbo-meshy-tire-barrier-right-${idx}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.68
+        targetMaxDimension: 0.001,
+        visible: false
       })
-        .position(center[0] - leftX * 1.58, roadY + 0.01, center[2] - leftZ * 1.58)
+        .position(center[0] - leftX * 2.5, TRACK_REFERENCE_Y - 20, center[2] - leftZ * 2.5)
         .rotate(0, pose.rotation[1], 0),
       // Sleek boost chevron pad on the asphalt centerline
       primitives.box({
@@ -1518,13 +1521,13 @@ function buildTurboTracksideIdentityNodes() {
           name: `turbo-boost-pad-mat-${idx}`,
           color: accentColor,
           emissive: accentColor,
-          emissiveIntensity: 0.55,
+          emissiveIntensity: 0.45,
           roughness: 0.35
         })
       })
         .position(center[0], roadY + ROAD_DETAIL_SURFACE_LIFT + 0.012, center[2])
         .rotate(0, pose.rotation[1], 0)
-        .scale([0.22, 0.006, 0.38])
+        .scale([0.18, 0.005, 0.32])
     ];
   });
 
@@ -1808,32 +1811,28 @@ function buildTurboRoadDetailNodes() {
     const midpoint = sampleCentreline(midpointProgress);
     const start = gamePointToScene(sampleCentreline(startProgress));
     const end = gamePointToScene(sampleCentreline(endProgress));
-    const segmentLength = Math.max(0.08, Math.hypot(end[0] - start[0], end[2] - start[2]));
+    const segDx = end[0] - start[0];
+    const segDz = end[2] - start[2];
+    const segmentLength = Math.max(0.08, Math.hypot(segDx, segDz));
+    const segYaw = Math.atan2(segDx, segDz);
+    const sceneLeftX = Math.cos(segYaw);
+    const sceneLeftZ = -Math.sin(segYaw);
     const pose = racingScene.toScenePose({
       position: { x: midpoint.x, y: midpoint.y },
       heading: midpoint.heading
     });
     const roadY = sampleTurboRoadHeight(pose.position[0], pose.position[2]);
     const roadDetailY = roadY + ROAD_DETAIL_SURFACE_LIFT;
-    const edgeOffset = visualAsphaltHalfWidthGame * 0.97;
-    const leftX = Math.sin(midpoint.heading);
-    const leftZ = -Math.cos(midpoint.heading);
+    const edgeOffsetScene = gamePointToSceneLength(routeWidth * 0.52);
     for (const side of [-1, 1] as const) {
-      const edge = gamePointToScene({
-        x: midpoint.x + leftX * edgeOffset * side,
-        y: midpoint.y + leftZ * edgeOffset * side
-      });
+      const edgeX = pose.position[0] + sceneLeftX * edgeOffsetScene * side;
+      const edgeZ = pose.position[2] + sceneLeftZ * edgeOffsetScene * side;
       curbTransforms.push({
-        // Each kerb block sits on the mesh sampled at its own XZ (see
-        // edgeRoadSkinY): the centre sample floats over a banked edge.
-        position: [edge[0], roadDetailY + 0.012, edge[2]],
-        rotation: [0, pose.rotation[1], 0],
-        // Keep the kerb just outside the certified asphalt edge.  Its narrow
-        // cross-section reads as a curb stripe without changing the contact
-        // plane used by either chassis.
-        scale: [0.082, 0.022, segmentLength * 0.9]
+        position: [edgeX, roadDetailY + 0.008, edgeZ],
+        rotation: [0, segYaw, 0],
+        scale: [0.075, 0.016, segmentLength * 0.88]
       });
-      curbColors.push((index + (side > 0 ? 0 : 1)) % 2 === 0 ? "#e35f48" : "#f0d9b9");
+      curbColors.push((index + (side > 0 ? 0 : 1)) % 2 === 0 ? "#d94b38" : "#e8dfd1");
     }
 
     // Leave a purposeful gap between centre dashes.  The line is painted onto
@@ -1841,9 +1840,9 @@ function buildTurboRoadDetailNodes() {
     // never becomes a floating HUD element.
     if (index % 2 === 0) {
       centreDashTransforms.push({
-        position: [pose.position[0], roadDetailY + 0.012, pose.position[2]],
-        rotation: [0, pose.rotation[1], 0],
-        scale: [0.062, 0.011, Math.min(0.36, segmentLength * 0.44)]
+        position: [pose.position[0], roadDetailY + 0.008, pose.position[2]],
+        rotation: [0, segYaw, 0],
+        scale: [0.052, 0.008, Math.min(0.34, segmentLength * 0.42)]
       });
     }
 
@@ -1876,13 +1875,17 @@ function buildTurboRoadDetailNodes() {
     }));
   })();
   for (let index = 0; index <= segmentCount; index += 1) {
-    const sample = sampleCentreline(index / segmentCount);
+    const progress = index / segmentCount;
+    const sample = sampleCentreline(progress);
     const centre = gamePointToScene(sample);
-    const roadY = sampleTurboRoadHeight(centre[0], centre[2]);
-    const roadDetailY = roadY + ROAD_DETAIL_SURFACE_LIFT;
-    const leftX = Math.sin(sample.heading);
-    const leftZ = -Math.cos(sample.heading);
-    const halfWidth = gamePointToSceneLength(routeWidth * 0.54);
+    const prevCentre = gamePointToScene(sampleCentreline((progress - 0.5 / segmentCount + 1) % 1));
+    const nextCentre = gamePointToScene(sampleCentreline((progress + 0.5 / segmentCount) % 1));
+    const tanDx = nextCentre[0] - prevCentre[0];
+    const tanDz = nextCentre[2] - prevCentre[2];
+    const tanLen = Math.max(1e-6, Math.hypot(tanDx, tanDz));
+    const leftX = tanDz / tanLen;
+    const leftZ = -tanDx / tanLen;
+    const halfWidth = gamePointToSceneLength(routeWidth * 0.56);
     const leftEdgeX = centre[0] + leftX * halfWidth;
     const leftEdgeZ = centre[2] + leftZ * halfWidth;
     const rightEdgeX = centre[0] - leftX * halfWidth;
@@ -1894,8 +1897,8 @@ function buildTurboRoadDetailNodes() {
     );
     const asphaltNormal = asphaltNormalAt(index / segmentCount);
     asphaltNormals.push(asphaltNormal, asphaltNormal);
-    const shoulderInnerOffset = gamePointToSceneLength(routeWidth * 0.54);
-    const shoulderOuterOffset = gamePointToSceneLength(routeWidth * 0.54 + 0.28);
+    const shoulderInnerOffset = gamePointToSceneLength(routeWidth * 0.56);
+    const shoulderOuterOffset = gamePointToSceneLength(routeWidth * 0.56 + 0.28);
     const shoulderDrop = 0.018;
     for (const side of [-1, 1] as const) {
       const innerX = centre[0] + leftX * shoulderInnerOffset * side;
@@ -1924,9 +1927,9 @@ function buildTurboRoadDetailNodes() {
       }
     }
     const bankSections = [
-      { offset: routeWidth * 0.54 + 0.32, drop: 0.042 },
-      { offset: routeWidth * 0.54 + 0.94, drop: 0.102 },
-      { offset: routeWidth * 0.54 + 1.62, drop: 0.16 }
+      { offset: routeWidth * 0.56 + 0.32, drop: 0.042 },
+      { offset: routeWidth * 0.56 + 0.94, drop: 0.102 },
+      { offset: routeWidth * 0.56 + 1.62, drop: 0.16 }
     ] as const;
     for (const side of [-1, 1] as const) {
       const bankBase = vergeBankPositions.length;
@@ -1997,8 +2000,8 @@ function buildTurboRoadDetailNodes() {
       name: "route-bound continuous asphalt shoulders",
       material: material.pbr({
         name: "layered asphalt shoulder",
-        color: visualCaptureCamera ? TURBO_REVIEW_GRADE.shoulder : "#2d353a",
-        roughness: 0.88,
+        color: visualCaptureCamera ? TURBO_REVIEW_GRADE.shoulder : "#262d33",
+        roughness: 0.9,
         metallic: 0.01,
         clearcoat: 0,
         normal: material.proceduralTexture("plastic-micro-scratch", { scale: 30, strength: 0.18, contrast: 0.54 }),
@@ -2015,10 +2018,10 @@ function buildTurboRoadDetailNodes() {
       name: "route-bound rally verge banks",
       material: material.pbr({
         name: "layered rally verge",
-        color: visualCaptureCamera ? "#6a704f" : "#465b42",
+        color: visualCaptureCamera ? "#6a704f" : "#3d5239",
         roughness: 0.94,
         metallic: 0,
-        clearcoat: 0.04,
+        clearcoat: 0,
         normal: material.proceduralTexture("plastic-micro-scratch", { scale: 22, strength: 0.2, contrast: 0.5 }),
         roughnessMap: material.proceduralTexture("rubber-roughness", { scale: 14, strength: 0.22, contrast: 0.52 })
       }),
@@ -2033,13 +2036,13 @@ function buildTurboRoadDetailNodes() {
       name: "route-bound continuous asphalt ribbon",
       material: material.pbr({
         name: "layered asphalt",
-        color: visualCaptureCamera ? TURBO_REVIEW_GRADE.asphalt : "#242a30",
-        roughness: 0.82,
-        metallic: 0.02,
-        clearcoat: 0.04,
+        color: visualCaptureCamera ? TURBO_REVIEW_GRADE.asphalt : "#1e2329",
+        roughness: 0.9,
+        metallic: 0.01,
+        clearcoat: 0,
         normal: material.proceduralTexture("plastic-micro-scratch", { scale: 34, strength: 0.24, contrast: 0.58 }),
         roughnessMap: material.proceduralTexture("rubber-roughness", { scale: 18, strength: 0.46, contrast: 0.64 }),
-        envMapIntensity: 0.36
+        envMapIntensity: 0.18
       }),
       castShadow: false,
       receiveShadow: true
@@ -2063,7 +2066,7 @@ function buildTurboRoadDetailNodes() {
     }),
     instances.box({
       name: "route-bound alternating kerbs (instanced)",
-      material: material.pbr({ name: "route kerb paint", color: "#ffff00", roughness: 0.68, metallic: 0 }),
+      material: material.pbr({ name: "route kerb paint", color: "#c84b3a", roughness: 0.68, metallic: 0 }),
       instanceColors: curbColors,
       castShadow: false,
       receiveShadow: false,
@@ -3119,12 +3122,13 @@ const app = createAuraApp("#app", {
         "TDCE worked-in tyre rubber",
         "TDCE race red kerb faces",
         "TDCE warm white kerb faces",
-        "TDCE warm gravel runoff"
+        "TDCE warm gravel runoff",
+        "TDCE terrace rock"
       ]
     }).position(
-      racingScene.trackModel.position[0] - 0.588 * (TRACK_MODEL_TARGET_MAX_DIMENSION / 39),
-      racingScene.trackModel.position[1] - 0.064 * (TRACK_MODEL_TARGET_MAX_DIMENSION / 39) - 0.04,
-      racingScene.trackModel.position[2] - 3.129 * (TRACK_MODEL_TARGET_MAX_DIMENSION / 39)
+      racingScene.trackModel.position[0],
+      racingScene.trackModel.position[1] - 0.04,
+      racingScene.trackModel.position[2]
     ).rotate(...racingScene.trackModel.rotation).runtime(game.runtimeNode("racing-bound-circuit-environment-v2", {
       tags: ["track-visual", "typed-supporting-asset", "renderer-owned-venue", "non-colliding"]
     })))
