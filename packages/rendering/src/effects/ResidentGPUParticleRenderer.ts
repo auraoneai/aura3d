@@ -488,7 +488,7 @@ fn particleColor(i: u32) -> vec4<f32> {
   }
   return color;
 }
-struct Out { @builtin(position) position: vec4<f32>, @location(0) color: vec4<f32>, @location(1) world: vec3<f32> };
+struct Out { @builtin(position) position: vec4<f32>, @location(0) color: vec4<f32>, @location(1) world: vec3<f32>, @location(2) uv: vec2<f32> };
 fn corner(vertex: u32) -> vec2<f32> {
   var corners = array<vec2<f32>, 6>(vec2<f32>(-1,-1),vec2<f32>(1,-1),vec2<f32>(1,1),vec2<f32>(-1,-1),vec2<f32>(1,1),vec2<f32>(-1,1));
   return corners[vertex % 6u];
@@ -496,7 +496,7 @@ fn corner(vertex: u32) -> vec2<f32> {
 @vertex fn sprite(@builtin(vertex_index) vertex: u32, @builtin(instance_index) i: u32) -> Out {
   let c = corner(vertex); let size = attr[i * 2u + 1u].x * 0.5;
   let world = p[i].xyz + vec3<f32>(c.x, c.y * ${-cameraForwardZ}, c.y * ${cameraForwardY}) * size;
-  var out: Out; out.position = project(world, view.aspect); out.world = world; out.color = particleColor(i);
+  var out: Out; out.position = project(world, view.aspect); out.world = world; out.color = particleColor(i); out.uv = c;
   if (p[i].w < 0.0) { out.position = vec4<f32>(2,2,2,1); out.color.a = 0.0; }
   return out;
 }
@@ -508,15 +508,20 @@ fn corner(vertex: u32) -> vec2<f32> {
   let side = sideRaw / max(length(sideRaw), 0.00001);
   let endpoint = select(a.xyz, b.xyz, c.y > 0.0);
   let world = endpoint + side * c.x * attr[i * 2u + 1u].x * 0.3;
-  var out: Out; out.position = project(world, view.aspect); out.world = world;
+  var out: Out; out.position = project(world, view.aspect); out.world = world; out.uv = vec2<f32>(c.x * 0.65, 0.0);
   out.color = particleColor(i); out.color.a *= 0.45 * (1.0 - f32(segment) / ${depth}.0);
   if (a.w < 0.0 || b.w < 0.0 || p[i].w - b.w > view.trailLife || length(forward) <= 0.00001) { out.position = vec4<f32>(2,2,2,1); out.color.a = 0.0; }
   return out;
 }
 @fragment fn fragment(input: Out) -> @location(0) vec4<f32> {
-  let linear = max(input.color.rgb, vec3<f32>(0.0));
+  let r2 = dot(input.uv, input.uv);
+  if (r2 > 1.0) { discard; }
+  let radial = pow(1.0 - r2, 1.85);
+  let core = exp(-r2 * 6.5) * 0.55;
+  let linear = max(input.color.rgb * (0.88 + core * 0.9) + vec3<f32>(core * 0.48), vec3<f32>(0.0));
   let srgb = select(linear * 12.92, 1.055 * pow(linear, vec3<f32>(1.0 / 2.4)) - 0.055, linear > vec3<f32>(0.0031308));
-  return vec4<f32>(srgb, input.color.a * select(1.0, softFade(input.world, view.fade), (u32(view.camera.w) & 2u) != 0u));
+  let fade = select(1.0, softFade(input.world, view.fade), (u32(view.camera.w) & 2u) != 0u);
+  return vec4<f32>(clamp(srgb, vec3<f32>(0.0), vec3<f32>(1.0)), input.color.a * radial * fade);
 }
 `;
 }

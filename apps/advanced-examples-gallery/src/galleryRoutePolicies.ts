@@ -56,36 +56,35 @@ export function applyGalleryRouteCameraPolicy(input: GalleryRouteCameraPolicyInp
     paddingRatio = 0.006;
   }
   if (input.demoId === "product-configurator" && input.cameraPreset === "hero") {
-    yawRadians = -0.48 + Math.sin(input.time * 0.26) * 0.12;
-    pitchRadians = -0.14 + Math.cos(input.time * 0.18) * 0.015;
+    yawRadians = -0.48 + Math.sin(input.time * 0.18) * 0.003;
+    pitchRadians = -0.085 + Math.cos(input.time * 0.16) * 0.002;
     paddingRatio = 0.035;
   }
   if (input.demoId === "data-galaxy" && input.cameraPreset === "hero") {
     yawRadians = -0.22 + Math.sin(input.time * 0.22) * 0.08;
-    pitchRadians = -0.12 + Math.cos(input.time * 0.16) * 0.015;
+    pitchRadians = -0.12;
     paddingRatio = 0.004;
   }
   if (input.demoId === "smart-city" && input.cameraPreset === "hero") {
     const district = String(input.controls.district ?? "all");
-    const gentleDrift = Math.sin(input.time * 0.2) * 0.06;
     if (district === "harbor") {
-      yawRadians = -0.28 + gentleDrift;
+      yawRadians = -0.28;
       pitchRadians = -0.18;
       paddingRatio = 0.04;
     } else if (district === "industrial") {
-      yawRadians = -1.15 + gentleDrift;
+      yawRadians = -1.15;
       pitchRadians = -0.2;
       paddingRatio = 0.04;
     } else if (district === "north") {
-      yawRadians = 0.52 + gentleDrift;
+      yawRadians = 0.52;
       pitchRadians = -0.2;
       paddingRatio = 0.04;
     } else if (district === "core") {
-      yawRadians = -0.72 + gentleDrift;
+      yawRadians = -0.72;
       pitchRadians = -0.34;
       paddingRatio = 0.02;
     } else {
-      yawRadians = -0.58 + gentleDrift;
+      yawRadians = -0.58;
       pitchRadians = -0.42;
       paddingRatio = 0.035;
     }
@@ -162,7 +161,7 @@ export function applyGalleryRouteCameraPolicy(input: GalleryRouteCameraPolicyInp
     pitchRadians = -0.32;
     paddingRatio = 0.015;
     if (authoredReady && input.authored.drawItems > 0) {
-      yawRadians = -0.72 + Math.sin(input.time * 0.18) * 0.04;
+      yawRadians = -0.72 + Math.sin(input.time * 0.18) * 0.01;
       pitchRadians = -0.24;
       paddingRatio = 0.012;
       bounds = { min: [-2.65, -0.82, -3.35], max: [2.65, 2.42, 1.45] };
@@ -324,69 +323,41 @@ export function applyGalleryRoutePostprocessPolicy(
   if (demoId === "product-configurator") {
     return {
       targetFormat: "rgba8",
-      toneMapping: {
-        exposure: preset.exposure,
-        whitePoint: 1.32,
-        gamma: 2.2,
-        operator: "filmic"
-      },
-      tonemapping: { enabled: true, mode: "aces", exposure: preset.exposure },
-      bloom: {
-        enabled: true,
-        threshold: preset.bloomThreshold,
-        intensity: preset.bloomIntensity,
-        radius: preset.bloomRadius
-      },
-      ssao: {
-        enabled: true,
-        radius: ssaoRadius,
-        intensity: preset.ssaoIntensity
-      },
-      colorGrade: {
-        contrast: preset.contrast,
-        saturation: preset.saturation,
-        vignette: preset.vignette,
-        sharpening: preset.sharpening ?? 0.05
-      },
-      vignette: { enabled: true, intensity: preset.vignette },
-      fxaa: {
-        enabled: true,
-        edgeThreshold: 0.08,
-        subpixelBlend: 0.45
-      }
-    } as unknown as RendererPostProcessOptions;
+      toneMapping: false,
+      bloom: false,
+      colorGrade: false,
+      fxaa: false
+    };
+  }
+
+  if (demoId === "smart-city") {
+    return false;
   }
 
   if (demoId === "data-galaxy") {
+    if (value === false) return false;
     return {
       ...base,
-      toneMapping: {
+      toneMapping: base.toneMapping ?? {
         exposure: preset.exposure,
         whitePoint: 1.35,
         gamma: 2.2,
         operator: "filmic"
       },
-      tonemapping: { enabled: true, mode: "aces", exposure: preset.exposure },
       bloom: false,
-      ssao: {
-        enabled: true,
-        radius: ssaoRadius,
-        intensity: preset.ssaoIntensity
-      },
-      colorGrade: {
+      colorGrade: base.colorGrade ?? {
         contrast: preset.contrast,
         saturation: preset.saturation,
         vignette: preset.vignette,
         sharpening: preset.sharpening ?? 0.04
       },
-      vignette: { enabled: true, intensity: preset.vignette },
       fxaa: boundedGalleryFxaa(base.fxaa, { edgeThreshold: 0.11, subpixelBlend: 0.2 })
-    } as unknown as RendererPostProcessOptions;
+    };
   }
 
   if (demoId === "reactor-post") {
+    if (value === false) return false;
     const bloomEnabled = controls.bloom === true;
-    const vignetteAmount = typeof controls.vignette === "number" ? controls.vignette : preset.vignette;
     return {
       ...base,
       ...(bloomEnabled ? {} : { targetFormat: "rgba8" as const }),
@@ -396,20 +367,11 @@ export function applyGalleryRoutePostprocessPolicy(
         gamma: 2.2,
         operator: "filmic"
       },
-      tonemapping: { enabled: true, mode: "aces", exposure: preset.exposure },
       bloom: bloomEnabled
-        ? (base.bloom && typeof base.bloom === "object"
-            ? { enabled: true, ...base.bloom }
-            : { enabled: true, threshold: preset.bloomThreshold, intensity: preset.bloomIntensity, radius: preset.bloomRadius })
+        ? (base.bloom ?? { threshold: preset.bloomThreshold, intensity: preset.bloomIntensity, radius: preset.bloomRadius })
         : false,
-      ssao: {
-        enabled: true,
-        radius: ssaoRadius,
-        intensity: preset.ssaoIntensity
-      },
-      vignette: { enabled: true, intensity: vignetteAmount },
       fxaa: boundedGalleryFxaa(base.fxaa, { edgeThreshold: 0.08, subpixelBlend: 0.55 })
-    } as unknown as RendererPostProcessOptions;
+    };
   }
 
   if (value === false) return false;
@@ -427,15 +389,12 @@ export function applyGalleryRoutePostprocessPolicy(
       gamma: 2.2,
       operator: "filmic"
     },
-    tonemapping: { enabled: true, mode: "aces", exposure: preset.exposure },
     bloom: {
-      enabled: true,
       threshold: preset.bloomThreshold,
       intensity: bloomIntensity,
       radius: preset.bloomRadius
     },
     ssao: {
-      enabled: true,
       radius: ssaoRadius,
       intensity: preset.ssaoIntensity
     },
@@ -445,9 +404,8 @@ export function applyGalleryRoutePostprocessPolicy(
       vignette: preset.vignette,
       sharpening: preset.sharpening ?? 0.04
     },
-    vignette: { enabled: true, intensity: preset.vignette },
     fxaa: boundedGalleryFxaa(base.fxaa, { edgeThreshold: 0.08, subpixelBlend: 0.5 })
-  } as unknown as RendererPostProcessOptions;
+  };
 }
 
 export const resolveGalleryRoutePostProcessOptions = applyGalleryRoutePostprocessPolicy;
@@ -465,14 +423,8 @@ function boundedGalleryFxaa(
   value: RendererPostProcessOptions["fxaa"],
   fallback: Exclude<RendererPostProcessOptions["fxaa"], boolean | undefined>
 ): RendererPostProcessOptions["fxaa"] {
-  const resolved = value === true || value === undefined ? fallback : value;
-  if (resolved && typeof resolved === "object") {
-    return {
-      enabled: true,
-      ...resolved
-    } as unknown as RendererPostProcessOptions["fxaa"];
-  }
-  return resolved;
+  if (value === true || value === undefined) return fallback;
+  return value;
 }
 
 function isWireframeOrDebugWaterItem(item: RenderItem): boolean {
@@ -501,9 +453,6 @@ export function visibleProceduralItemsForRoute(
   if (authored.status !== "ready" || authored.drawItems === 0) {
     if (demoId === "water-lab" || demoId === "ocean-observatory") {
       return scene.items.filter((item) => !isWireframeOrDebugWaterItem(item));
-    }
-    if (demoId === "product-configurator") {
-      return filterByLabel(scene.items, productConfiguratorStageLabel);
     }
     return scene.items;
   }
@@ -1128,13 +1077,10 @@ export function composeGalleryRouteRenderItems(
   demoId: DemoDefinition["id"],
   proceduralItems: readonly RenderItem[],
   authoredItems: readonly RenderItem[],
-  controls: ControlValues = {},
-  time = 0
+  _controls: ControlValues = {},
+  _time = 0
 ): RenderItem[] {
   if (authoredItems.length === 0) {
-    if (demoId === "product-configurator") {
-      return [...proceduralItems, ...buildProceduralProductConfiguratorHeroItems(controls, time)];
-    }
     return [...proceduralItems];
   }
   if (demoId === "digital-twin") return [...authoredItems, ...proceduralItems];

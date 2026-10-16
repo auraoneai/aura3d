@@ -55,7 +55,7 @@ export function createProductConfiguratorShowroomLighting(
   }
   const lightingRig = createLightingRig({
     preset: "product-shot",
-    intensityScale: 1.06,
+    intensityScale: 1,
     shadows: false
   });
   return {
@@ -63,7 +63,7 @@ export function createProductConfiguratorShowroomLighting(
     collectedLights: createStudioLighting({
       preset: "product",
       shadows: false,
-      intensityScale: 1.06
+      intensityScale: 1
     }),
     diagnostics: lightingRig.diagnostics
   };

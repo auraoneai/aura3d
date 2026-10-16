@@ -22,7 +22,8 @@ import {
   queryGPUParticleBackendCapabilities,
   Geometry,
   Renderer,
-  UnlitMaterial,
+  Texture,
+  TexturedUnlitMaterial,
 } from "@aura3d/rendering";
 
 import { resolveWowPostProcessOptions } from "/apps/wow-common/src/gltf-showcase.ts";
@@ -43,18 +44,60 @@ const cameraAnchor = { x: 0, y: 1.5, z: 3.2 };
 
 const particlePostProcess = resolveWowPostProcessOptions({
   tonemapping: { enabled: true, mode: "aces", exposure: 1.15 },
-  bloom: { enabled: true, intensity: 0.22, threshold: 0.8 },
+  bloom: { enabled: true, intensity: 0.24, threshold: 0.78 },
   ssao: { enabled: true, radius: 2, intensity: 0.32 },
   fxaa: { enabled: true },
   vignette: { enabled: true, intensity: 0.22 }
 });
 
-const particleMaterial = new UnlitMaterial({ name: "a4-live-attributes", color: [1, 1, 1, 1],
-  renderState: { blend: true, depthWrite: false, cullMode: "none" } });
+function createSoftParticleRadialTexture(size = 64): Texture {
+  const data = new Uint8Array(size * size * 4);
+  const half = (size - 1) * 0.5;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const dx = (x - half) / half;
+      const dy = (y - half) / half;
+      const r2 = dx * dx + dy * dy;
+      const idx = (y * size + x) * 4;
+      if (r2 >= 1.0) {
+        data[idx] = 255;
+        data[idx + 1] = 255;
+        data[idx + 2] = 255;
+        data[idx + 3] = 0;
+        continue;
+      }
+      const radial = Math.pow(1.0 - r2, 1.85);
+      const core = Math.exp(-r2 * 5.8);
+      const lum = Math.min(255, Math.round((0.88 + core * 0.12) * 255));
+      const alpha = Math.min(255, Math.max(0, Math.round(radial * 255)));
+      data[idx] = lum;
+      data[idx + 1] = lum;
+      data[idx + 2] = lum;
+      data[idx + 3] = alpha;
+    }
+  }
+  return new Texture({
+    width: size,
+    height: size,
+    format: "rgba8",
+    colorSpace: "srgb",
+    label: "a4-soft-particle-radial",
+    data,
+  });
+}
+
+const softParticleTexture = createSoftParticleRadialTexture(64);
+const particleMaterial = new TexturedUnlitMaterial({
+  name: "a4-live-attributes",
+  texture: softParticleTexture,
+  color: [1, 1, 1, 1],
+  renderState: { blend: true, depthWrite: false, cullMode: "none" },
+});
 const particleFormat = new VertexFormat([
   { semantic: "position", components: 3, offset: 0 },
-  { semantic: "color", components: 4, offset: 12 },
-], 28);
+  { semantic: "uv", components: 2, offset: 12 },
+  { semantic: "color", components: 4, offset: 20 },
+], 36);
 
 /** Instrument the completed native compute result, not ceil(configured capacity). */
 class ObservedParticleBackend extends WebGPUParticleBackend {
@@ -91,48 +134,58 @@ function writeQuadFast(
   x1: number, y1: number, z1: number,
   x2: number, y2: number, z2: number,
   x3: number, y3: number, z3: number,
-  r: number, g: number, b: number, a: number
+  r: number, g: number, b: number, a: number,
+  u0 = 0, v0 = 0,
+  u1 = 1, v1 = 0,
+  u2 = 1, v2 = 1,
+  u3 = 0, v3 = 1
 ): void {
-  let o = vertexIndex * 7;
+  let o = vertexIndex * 9;
   // Corner 0
   floats[o] = x0; floats[o + 1] = y0; floats[o + 2] = z0;
-  floats[o + 3] = r; floats[o + 4] = g; floats[o + 5] = b; floats[o + 6] = a;
-  o += 7;
+  floats[o + 3] = u0; floats[o + 4] = v0;
+  floats[o + 5] = r; floats[o + 6] = g; floats[o + 7] = b; floats[o + 8] = a;
+  o += 9;
   // Corner 1
   floats[o] = x1; floats[o + 1] = y1; floats[o + 2] = z1;
-  floats[o + 3] = r; floats[o + 4] = g; floats[o + 5] = b; floats[o + 6] = a;
-  o += 7;
+  floats[o + 3] = u1; floats[o + 4] = v1;
+  floats[o + 5] = r; floats[o + 6] = g; floats[o + 7] = b; floats[o + 8] = a;
+  o += 9;
   // Corner 2
   floats[o] = x2; floats[o + 1] = y2; floats[o + 2] = z2;
-  floats[o + 3] = r; floats[o + 4] = g; floats[o + 5] = b; floats[o + 6] = a;
-  o += 7;
+  floats[o + 3] = u2; floats[o + 4] = v2;
+  floats[o + 5] = r; floats[o + 6] = g; floats[o + 7] = b; floats[o + 8] = a;
+  o += 9;
   // Corner 0
   floats[o] = x0; floats[o + 1] = y0; floats[o + 2] = z0;
-  floats[o + 3] = r; floats[o + 4] = g; floats[o + 5] = b; floats[o + 6] = a;
-  o += 7;
+  floats[o + 3] = u0; floats[o + 4] = v0;
+  floats[o + 5] = r; floats[o + 6] = g; floats[o + 7] = b; floats[o + 8] = a;
+  o += 9;
   // Corner 2
   floats[o] = x2; floats[o + 1] = y2; floats[o + 2] = z2;
-  floats[o + 3] = r; floats[o + 4] = g; floats[o + 5] = b; floats[o + 6] = a;
-  o += 7;
+  floats[o + 3] = u2; floats[o + 4] = v2;
+  floats[o + 5] = r; floats[o + 6] = g; floats[o + 7] = b; floats[o + 8] = a;
+  o += 9;
   // Corner 3
   floats[o] = x3; floats[o + 1] = y3; floats[o + 2] = z3;
-  floats[o + 3] = r; floats[o + 4] = g; floats[o + 5] = b; floats[o + 6] = a;
+  floats[o + 3] = u3; floats[o + 4] = v3;
+  floats[o + 5] = r; floats[o + 6] = g; floats[o + 7] = b; floats[o + 8] = a;
 }
 
 function markBufferDirtyRange(buffer: VertexBuffer, activeVertices: number, previousVertices: number): number {
   const floats = buffer.floats;
   if (previousVertices > activeVertices) {
-    floats.fill(0, activeVertices * 7, previousVertices * 7);
+    floats.fill(0, activeVertices * 9, previousVertices * 9);
   }
   const touchEnd = Math.max(0, Math.max(activeVertices, previousVertices) - 1);
   if (buffer.vertexCount > 0) {
     const firstPos: [number, number, number] = [floats[0] ?? 0, floats[1] ?? 0, floats[2] ?? 0];
-    const endOffset = touchEnd * 7;
+    const endOffset = touchEnd * 9;
     const endColor: [number, number, number, number] = [
-      floats[endOffset + 3] ?? 0,
-      floats[endOffset + 4] ?? 0,
       floats[endOffset + 5] ?? 0,
       floats[endOffset + 6] ?? 0,
+      floats[endOffset + 7] ?? 0,
+      floats[endOffset + 8] ?? 0,
     ];
     buffer.setAttribute(0, "position", firstPos);
     buffer.setAttribute(touchEnd, "color", endColor);
@@ -147,7 +200,7 @@ function writeSprites(buffer: VertexBuffer, batch: ParticleRenderBatch, previous
   for (let i = 0; i < batch.sprites.length; i++) {
     const sprite = batch.sprites[i]!;
     const { x, y, z } = sprite.position;
-    const r = Math.max(0.022, sprite.size * 0.55);
+    const r = Math.max(0.018, sprite.size * 0.46);
     writeQuadFast(
       floats,
       vertex,
@@ -187,7 +240,7 @@ function createParticleSystem(): ParticleSystem {
         speed: { min: 0.9, max: 2.4 },
         shape: { type: "sphere", center: { x: 0.22, y: 1.08, z: -0.15 }, radius: 2.2 },
         initial: {
-          size: 0.085,
+          size: 0.068,
           acceleration: { x: 0, y: -0.55, z: 0 },
           color: { r: 0.18, g: 0.94, b: 1.0, a: 1 },
         },
@@ -219,10 +272,10 @@ function createParticleSystem(): ParticleSystem {
         { time: 1, color: { r: 0.45, g: 0.22, b: 0.92, a: 0.15 } },
       ]),
       new SizeModule([
-        { time: 0, size: 0.065 },
-        { time: 0.35, size: 0.115 },
-        { time: 0.75, size: 0.085 },
-        { time: 1, size: 0.032 },
+        { time: 0, size: 0.052 },
+        { time: 0.35, size: 0.088 },
+        { time: 0.75, size: 0.064 },
+        { time: 1, size: 0.024 },
       ]),
       new LightingModule({
         ambient: [0.58, 0.62, 0.72],
@@ -380,7 +433,11 @@ void startWebGPUShowcase({
               a.position.x + ox, a.position.y + oy, a.position.z,
               b.position.x + ox, b.position.y + oy, b.position.z,
               b.position.x - ox, b.position.y - oy, b.position.z,
-              particle.color.r, particle.color.g, particle.color.b, alpha
+              particle.color.r, particle.color.g, particle.color.b, alpha,
+              0.15, 0.5,
+              0.85, 0.5,
+              0.85, 0.5,
+              0.15, 0.5
             );
             ribbonVertices += 6;
           }

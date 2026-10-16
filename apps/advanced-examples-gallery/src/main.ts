@@ -445,18 +445,7 @@ async function run(): Promise<void> {
         const authoredFinishedAt = performance.now();
         const proceduralItems = visibleProceduralItemsForRoute(scene, selectedDemo.id, authored.runtime);
         const renderItems = composeGalleryRouteRenderItems(selectedDemo.id, proceduralItems, authored.items, controls, time);
-        const effectiveAuthoredRuntime: AuthoredAssetRuntimeState =
-          authored.runtime.status === "ready" || authored.runtime.status === "idle" || renderItems.length === 0
-            ? authored.runtime
-            : {
-                ...authored.runtime,
-                status: "ready",
-                assets: authored.runtime.assets.length > 0 ? authored.runtime.assets : [`${selectedDemo.id}-studio-hero`],
-                drawItems: Math.max(authored.runtime.drawItems, renderItems.length),
-                loadMs: authored.runtime.loadMs > 0
-                  ? authored.runtime.loadMs
-                  : Math.max(12, Math.round(authoredFinishedAt - routeStartedAt))
-              };
+        const effectiveAuthoredRuntime: AuthoredAssetRuntimeState = authored.runtime;
         if (effectiveAuthoredRuntime.status === "ready" && fpsReadyResetDemoId !== selectedDemo.id) {
           authoredReadyMs = authoredFinishedAt - routeStartedAt;
           resetFpsWindow(now);

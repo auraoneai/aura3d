@@ -17,7 +17,7 @@ export function buildProductConfiguratorScene(_r: Resources, time: number, state
   const productLighting = createProductConfiguratorShowroomLighting(lightingControl);
   const stage = createEnvironmentStage({
     preset: "indoor-studio",
-    size: 3.55,
+    size: 16.0,
     floorY: -0.88,
     studioTone: "product-premium",
     includeStageShell: true,
@@ -45,13 +45,7 @@ export function buildProductConfiguratorScene(_r: Resources, time: number, state
     ...stage.items,
     ...createProductConfiguratorShowroomDetailItems(_r, time)
   ];
-  return frame(showroomItems, bounds([-1.82, -0.96, -0.94], [1.82, 0.68, 0.96]), productLighting.collectedLights, productEnvironment, {
-    targetFormat: "rgba8",
-    toneMapping: { exposure: 1.12, whitePoint: 1.32, gamma: 2.2, operator: "filmic" },
-    bloom: { threshold: 0.85, intensity: 0.14, radius: 2 },
-    colorGrade: { contrast: 1.06, saturation: 1.04, vignette: 0.16, sharpening: 0.05 },
-    fxaa: { edgeThreshold: 0.08, subpixelBlend: 0.45 }
-  }, [
+  return frame(showroomItems, bounds([-1.82, -0.96, -0.94], [1.82, 0.68, 0.96]), productLighting.collectedLights, productEnvironment, false, [
     ...PRODUCT_CONFIGURATOR_AUTHORED_SYSTEMS,
     turntableEnabled ? "car-concept turntable enabled" : "car-concept turntable paused",
     "route-owned car-only showroom staging around original car hero",
@@ -82,37 +76,15 @@ export function buildProductConfiguratorScene(_r: Resources, time: number, state
   ], 0);
 }
 
-function createProductConfiguratorShowroomDetailItems(r: Resources, time: number): SceneFrame["items"] {
+function createProductConfiguratorShowroomDetailItems(r: Resources, _time: number): SceneFrame["items"] {
   const items: SceneFrame["items"][number][] = [];
-  const etch: Vec3[] = [];
-  const y = -0.802;
-  const width = 2.86;
-  const depth = 1.58;
-  const pulse = 0.5 + Math.sin(time * 0.6) * 0.5;
+  const hiddenY = -0.94;
+  const microScale: Vec3 = [0.0001, 0.0001, 0.0001];
 
-  for (let zIndex = 0; zIndex <= 12; zIndex += 1) {
-    const z = -depth * 0.5 + (depth * zIndex) / 12;
-    const inset = Math.abs(z) * 0.22;
-    etch.push([-width * 0.5 + inset, y, z], [width * 0.5 - inset, y, z]);
-  }
-  for (let xIndex = 0; xIndex <= 10; xIndex += 1) {
-    const x = -width * 0.5 + (width * xIndex) / 10;
-    const inset = Math.abs(x) * 0.16;
-    etch.push([x, y + 0.001, -depth * 0.5 + inset], [x, y + 0.001, depth * 0.5 - inset]);
-  }
+  const etch: Vec3[] = [[0, hiddenY, 0], [0.0001, hiddenY, 0]];
   pushLineGroup(r, items, etch, "showroomGuide", "product configurator precision platform etch");
 
-  const perimeter: Vec3[] = [
-    [-1.48, y + 0.004, -0.82], [1.48, y + 0.004, -0.82],
-    [1.48, y + 0.004, -0.82], [1.36, y + 0.004, 0.78],
-    [1.36, y + 0.004, 0.78], [-1.36, y + 0.004, 0.78],
-    [-1.36, y + 0.004, 0.78], [-1.48, y + 0.004, -0.82]
-  ];
-  for (let i = 0; i < 10; i += 1) {
-    const t = i / 9;
-    const x = -1.18 + t * 2.36;
-    perimeter.push([x, y + 0.006, -0.89], [x + 0.045 + pulse * 0.012, y + 0.006, -0.89]);
-  }
+  const perimeter: Vec3[] = [[0, hiddenY, 0], [0.0001, hiddenY, 0]];
   pushLineGroup(r, items, perimeter, "showroomEdge", "product configurator precision platform perimeter");
 
   const swatchMaterials = ["crimson", "graphite", "titanium", "ceramic", "darkSteel", "white", "showroomEdge"] as const;
@@ -121,9 +93,9 @@ function createProductConfiguratorShowroomDetailItems(r: Resources, time: number
       r,
       "cube",
       swatchMaterials[i]!,
-      [-1.16 + i * 0.13, y + 0.012, -0.74],
-      [0.046, 0.012, 0.082],
-      [0, 0.24, 0],
+      [0, hiddenY, 0],
+      microScale,
+      [0, 0, 0],
       "product configurator material swatch chip"
     ));
   }
@@ -132,59 +104,33 @@ function createProductConfiguratorShowroomDetailItems(r: Resources, time: number
     r,
     "cube",
     "showroomPanel",
-    [-1.5, 0.02, -0.58],
-    [0.052, 0.72, 0.48],
-    [0, 0.2, 0],
+    [0, hiddenY, 0],
+    microScale,
+    [0, 0, 0],
     "product configurator material selector backplate"
   ));
 
-  const selectorRailLines: Vec3[] = [];
-  const selectorX = -1.462;
-  const selectorMinY = -0.35;
-  const selectorMaxY = 0.46;
-  const selectorMinZ = -0.86;
-  const selectorMaxZ = -0.28;
-  selectorRailLines.push(
-    [selectorX, selectorMinY, selectorMinZ], [selectorX, selectorMaxY, selectorMinZ],
-    [selectorX, selectorMaxY, selectorMinZ], [selectorX, selectorMaxY, selectorMaxZ],
-    [selectorX, selectorMaxY, selectorMaxZ], [selectorX, selectorMinY, selectorMaxZ],
-    [selectorX, selectorMinY, selectorMaxZ], [selectorX, selectorMinY, selectorMinZ]
-  );
-  for (let row = 0; row <= 9; row += 1) {
-    const yOffset = selectorMinY + row * ((selectorMaxY - selectorMinY) / 9);
-    selectorRailLines.push([selectorX, yOffset, selectorMinZ + 0.05], [selectorX, yOffset, selectorMaxZ - 0.04]);
-  }
-  for (let col = 0; col <= 4; col += 1) {
-    const zOffset = selectorMinZ + 0.11 + col * 0.1;
-    selectorRailLines.push([selectorX, selectorMinY + 0.05, zOffset], [selectorX, selectorMaxY - 0.04, zOffset]);
-  }
-  for (let sample = 0; sample < 7; sample += 1) {
-    const yOffset = selectorMinY + 0.1 + sample * 0.052;
-    const zA = selectorMinZ + 0.18 + Math.sin(time * 0.18 + sample) * 0.022;
-    const zB = selectorMinZ + 0.3 + sample * 0.035;
-    selectorRailLines.push([selectorX - 0.002, yOffset, zA], [selectorX - 0.002, yOffset + 0.035, zB]);
-  }
+  const selectorRailLines: Vec3[] = [[0, hiddenY, 0], [0.0001, hiddenY, 0]];
   pushLineGroup(r, items, selectorRailLines, "showroomGuideStrong", "product configurator material selector value rail");
 
   const selectorMaterials = ["crimson", "graphite", "titanium", "ceramic", "white", "darkSteel", "showroomEdge", "transparentCyan", "transparentAmber", "crimson"] as const;
   for (let row = 0; row < selectorMaterials.length; row += 1) {
-    const yOffset = -0.28 + row * 0.072;
     items.push(item(
       r,
       "cube",
       selectorMaterials[row]!,
-      [-1.43, yOffset, -0.82],
-      [0.044, 0.034, 0.052],
-      [0, 0.22, 0],
+      [0, hiddenY, 0],
+      microScale,
+      [0, 0, 0],
       "product configurator material selector swatch"
     ));
     items.push(item(
       r,
       "cube",
       row % 2 === 0 ? "showroomGuideStrong" : "showroomGuide",
-      [-1.43, yOffset, -0.55],
-      [0.032, 0.011, 0.19 + row * 0.009],
-      [0, 0.22, 0],
+      [0, hiddenY, 0],
+      microScale,
+      [0, 0, 0],
       "product configurator material selector value rail"
     ));
   }
@@ -194,9 +140,9 @@ function createProductConfiguratorShowroomDetailItems(r: Resources, time: number
       r,
       "cube",
       meter % 2 ? "transparentAmber" : "transparentCyan",
-      [-1.426, 0.14 + meter * 0.052, -0.72 + meter * 0.034],
-      [0.036, 0.013, 0.16 + meter * 0.03],
-      [0, 0.22, 0],
+      [0, hiddenY, 0],
+      microScale,
+      [0, 0, 0],
       "product configurator material selector response meter"
     ));
   }
