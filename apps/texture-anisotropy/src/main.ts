@@ -278,8 +278,8 @@ function renderUi(root: HTMLElement, runtime: CurrentRoutesTextureAnisotropyRunt
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>CurrentRoutes Texture Anisotropy</h1>
-        <p>TextureBinding sampler uses WebGL anisotropic filtering when available.</p>
+        <h1>Aura3D 4.0 · Texture Anisotropy</h1>
+        <p>TextureBinding sampler uses WebGL anisotropic filtering with ACES tone mapping.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>
     </section>

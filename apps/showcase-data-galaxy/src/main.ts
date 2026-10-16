@@ -4,6 +4,7 @@ import {
   collectAuraSceneEvidence,
   createAuraApp,
   effects,
+  environments,
   game,
   interactions,
   labels,
@@ -215,43 +216,62 @@ function buildDataGalaxyScene(): SceneBuild {
     ...createGalaxyOverlayNodes()
   ];
   const builder = scene()
-    .background("#050607")
-    .add(primitives.plane({ name: "quiet transparent data explorer floor", material: material.glass({ color: "#071011", opacity: 0.13, roughness: 0.2 }) })
+    .background("#060b0f")
+    .add(environments.nightCinematic({
+      name: "data galaxy observatory HDR IBL",
+      intensity: 0.96,
+      color: "#64f4cf"
+    }))
+    .add(primitives.plane({ name: "quiet transparent data explorer floor", material: material.reflectiveFloor({ color: "#081417", roughness: 0.24, metallic: 0.32 }) })
       .position(0, -0.045, 0.1)
       .scale([2.35, 1, 1.62]))
     .addMany(sceneNodes)
-    .add(effects.fog({ name: "soft analytics volume haze", density: 0.018, color: "#102426", intensity: 0.24 }))
-    .add(effects.bloom({ name: "controlled data galaxy bloom", intensity: controls.performance === "cinematic" ? 0.24 : 0.18, threshold: 0.76, radius: 0.26 }))
-    .add(effects.vignette({ name: "data galaxy observatory vignette", intensity: 0.22, smoothness: 0.72, roundness: 0.86, color: "#030506" }))
-    .add(effects.colorGrade({ name: "data galaxy analytics grade", contrast: 1.06, saturation: 1.08 }))
+    .add(effects.ambientOcclusion({
+      name: "data galaxy chart ambient occlusion",
+      intensity: 0.42,
+      radius: 0.56,
+      falloff: 1.6,
+      multiBounce: true
+    }))
+    .add(effects.contactShadows({
+      length: 0.18,
+      thickness: 0.04,
+      steps: 12,
+      intensity: 0.68,
+      lights: "sun"
+    }))
+    .add(effects.fog({ name: "soft analytics volume haze", density: 0.015, color: "#102426", intensity: 0.2 }))
+    .add(effects.bloom({ name: "controlled data galaxy bloom", intensity: controls.performance === "cinematic" ? 0.36 : 0.28, threshold: 0.68, radius: 0.34 }))
+    .add(effects.vignette({ name: "data galaxy observatory vignette", intensity: 0.2, smoothness: 0.74, roundness: 0.86, color: "#030506" }))
+    .add(effects.colorGrade({ name: "data galaxy analytics grade", contrast: 1.08, saturation: 1.12 }))
     .add(effects.auroraRibbon({
       name: "data galaxy upper inference ribbon",
       color: controls.formation === "network" ? "#a3e635" : "#64f4cf",
       colorTop: "#ffd27d",
-      intensity: 0.42,
-      width: 3.2,
-      height: 1.2,
-      segments: 48,
-      sway: 0.6,
-      shimmer: 0.45
+      intensity: 0.58,
+      width: 3.4,
+      height: 1.32,
+      segments: 56,
+      sway: 0.65,
+      shimmer: 0.52
     }).position(0, 1.48, -1.35))
     .add(effects.particles({
       name: "restrained inference dust particle system",
       emitter: controls.formation === "wave" ? "fountain" : "swirl",
       particleCount: effectiveParticleCount(),
-      emissionRate: Math.round(14 * controls.speed),
+      emissionRate: Math.round(16 * controls.speed),
       color: controls.formation === "network" ? "#a3e635" : "#64f4cf",
-      radius: controls.performance === "dense" ? 0.42 : 0.34,
-      height: 0.46,
-      speed: controls.speed * 0.36,
-      turbulence: controls.performance === "cinematic" ? 0.035 : 0.055,
+      radius: controls.performance === "dense" ? 0.46 : 0.38,
+      height: 0.52,
+      speed: controls.speed * 0.38,
+      turbulence: controls.performance === "cinematic" ? 0.04 : 0.06,
       materialMode: "spark"
     }))
     .add(model(dataCoreAsset, {
       name: "typed diagnostic particle core route-primary hero",
       scaleMode: "fit",
       targetMaxDimension: DATA_CORE_TARGET_MAX_DIMENSION,
-      material: material.neon({ color: "#64f4cf", emissive: "#64f4cf", emissiveIntensity: 0.72 }),
+      material: material.neon({ color: "#64f4cf", emissive: "#64f4cf", emissiveIntensity: 1.25 }),
       castShadow: false,
       receiveShadow: true
     })
@@ -262,7 +282,7 @@ function buildDataGalaxyScene(): SceneBuild {
       name: "typed data reactor particle core central observatory",
       scaleMode: "fit",
       targetMaxDimension: 0.52,
-      material: material.glass({ color: "#64f4cf", opacity: 0.28, roughness: 0.2 }),
+      material: material.glass({ color: "#64f4cf", opacity: 0.42, roughness: 0.16 }),
       castShadow: true,
       receiveShadow: false
     })
@@ -271,8 +291,13 @@ function buildDataGalaxyScene(): SceneBuild {
       .scale(0.48)
       .animate({ clip: "turntable", speed: 0.12, captureTime: 0.42 })
       .runtime(game.runtimeNode("data-galaxy-core-asset", { tags: ["typed-asset", "data-reactor", "hero"] })))
-    .add(lights.point({ name: "data galaxy amber rim light", position: [2.4, 2.5, 2.5], color: "#ffd27d", intensity: 0.95 }))
-    .add(lights.point({ name: "data galaxy teal core light", position: [-1.8, 1.7, 1.3], color: "#64f4cf", intensity: 1.15 }))
+    .add(lights.ambient({ name: "data galaxy ambient fill", color: "#c2f7ea", intensity: 0.38 }))
+    .add(lights.hemisphere({ name: "data galaxy sky-floor hemisphere", skyColor: "#9ef8e2", groundColor: "#142a2e", intensity: 0.52 }))
+    .add(lights.directional({ name: "data galaxy chart key light", position: [-2.4, 4.2, 3.2], color: "#e6fff8", intensity: 1.65, shadow: true }))
+    .add(lights.directional({ name: "data galaxy golden rim light", position: [2.8, 3.1, -2.2], color: "#ffd27d", intensity: 1.15 }))
+    .add(lights.point({ name: "data galaxy amber rim light", position: [2.4, 2.5, 2.5], color: "#ffd27d", intensity: 1.55 }))
+    .add(lights.point({ name: "data galaxy teal core light", position: [-1.8, 1.7, 1.3], color: "#64f4cf", intensity: 1.85 }))
+    .add(lights.point({ name: "data galaxy rose accent underglow", position: [0.1, 0.45, 1.2], color: "#ff8ba7", intensity: 0.92 }))
     .add(interactions.highlight({ target: "height-colored data bar 2-2", selected: "height-colored data bar 2-2" }))
     .camera(dataGalaxyCamera(controls.cameraMode))
     .timeline(timeline.loop({ seconds: Math.max(5, 11 / controls.speed), captureTime: 0.42 }));
@@ -334,9 +359,11 @@ function createCleanDataBarsNodes(dataset: number[][]): AuraNodeInput[] {
           name: `height-colored data bar ${row + 1}-${col + 1}`,
           material: material.clearcoatPaint({
             color,
-            roughness: 0.32,
-            metallic: 0.02,
-            clearcoat: selected ? 0.78 : 0.42
+            roughness: 0.22,
+            metallic: 0.08,
+            clearcoat: selected ? 0.92 : 0.58,
+            emissive: color,
+            emissiveIntensity: selected ? 0.42 : 0.18
           })
         })
           .position(x, 0.055 + height / 2, z)
@@ -346,7 +373,7 @@ function createCleanDataBarsNodes(dataset: number[][]): AuraNodeInput[] {
           material: material.emissive({
             color: selected ? "#f8fbff" : color,
             emissive: selected ? "#f8fbff" : color,
-            emissiveIntensity: selected ? 0.28 : 0.1
+            emissiveIntensity: selected ? 0.88 : 0.42
           })
         })
           .position(x, 0.074 + height, z)
@@ -359,7 +386,7 @@ function createCleanDataBarsNodes(dataset: number[][]): AuraNodeInput[] {
     nodes.push(
       primitives.box({
         name: `quiet x axis tick ${col + 1}`,
-        material: material.emissive({ color: "#29373a", emissive: "#64f4cf", emissiveIntensity: 0.08 })
+        material: material.emissive({ color: "#29373a", emissive: "#64f4cf", emissiveIntensity: 0.24 })
       })
         .position(originX + col * xStep, 0.03, originZ - 0.28)
         .scale([0.01, 0.006, 0.1])
@@ -370,7 +397,7 @@ function createCleanDataBarsNodes(dataset: number[][]): AuraNodeInput[] {
     nodes.push(
       primitives.box({
         name: `quiet z axis tick ${row + 1}`,
-        material: material.emissive({ color: "#2e2b20", emissive: "#f7c65f", emissiveIntensity: 0.08 })
+        material: material.emissive({ color: "#2e2b20", emissive: "#f7c65f", emissiveIntensity: 0.24 })
       })
         .position(originX - 0.28, 0.03, originZ + row * zStep)
         .scale([0.1, 0.006, 0.01])
@@ -386,21 +413,21 @@ function createGalaxyOverlayNodes(): AuraNodeInput[] {
     // Core and its orbits all resolve to the same chart point, so they cannot drift apart.
     primitives.sphere({
       name: "data galaxy quiet inference core",
-      material: material.neon({ color: "#f8fbff", emissive: "#64f4cf", emissiveIntensity: 1.55 })
+      material: material.neon({ color: "#f8fbff", emissive: "#64f4cf", emissiveIntensity: 2.15 })
     }).position(...CORE_POINT).scale(CHART_EXTENT.width * 0.088).runtime(game.runtimeNode("data-galaxy-core")),
     // Orbit radii are fractions of the chart width and thinned on Z, the torus tube axis,
     // so each stays a ring at any chart size.
     primitives.torus({
       name: "quiet inference orbit",
-      material: material.neon({ color: "#64f4cf", emissive: "#64f4cf", emissiveIntensity: 0.52, opacity: 0.34 })
+      material: material.neon({ color: "#64f4cf", emissive: "#64f4cf", emissiveIntensity: 0.88, opacity: 0.56 })
     }).position(...CORE_POINT).rotate(1.5708, 0.18, 0).scale([CHART_EXTENT.width * 0.529, CHART_EXTENT.width * 0.529, CHART_EXTENT.width * 0.01]),
     primitives.torus({
       name: "data galaxy vortex evidence ring",
-      material: material.neon({ color: "#ffd27d", emissive: "#ffd27d", emissiveIntensity: 0.56, opacity: 0.32 })
+      material: material.neon({ color: "#ffd27d", emissive: "#ffd27d", emissiveIntensity: 0.92, opacity: 0.54 })
     }).position(...CORE_POINT).rotate(1.22, 0.18, 0.22).scale([CHART_EXTENT.width * 0.676, CHART_EXTENT.width * 0.676, CHART_EXTENT.width * 0.013]).runtime(game.runtimeNode("data-galaxy-vortex-ring")),
     primitives.torus({
       name: "subtle amber confidence orbit",
-      material: material.neon({ color: "#ffd27d", emissive: "#ffd27d", emissiveIntensity: 0.42, opacity: 0.24 })
+      material: material.neon({ color: "#ffd27d", emissive: "#ffd27d", emissiveIntensity: 0.72, opacity: 0.42 })
     }).position(...CONFIDENCE_POINT).rotate(1.5708, -0.14, 0).scale([CHART_EXTENT.width * 0.309, CHART_EXTENT.width * 0.309, CHART_EXTENT.width * 0.007]),
     labels.callout("Inference Core", "data galaxy quiet inference core", {
       name: "data galaxy inference core label",

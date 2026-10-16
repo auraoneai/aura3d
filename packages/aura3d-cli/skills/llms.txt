@@ -1,6 +1,6 @@
 Aura3D agent guide — a typed scene API for building real 3D apps: scenes, looks,
 lighting, materials, typed assets, camera rigs and gameplay through
-`@aura3d/engine` plus the `@aura3d/cli` toolchain. Current release: Aura3D 4.0.0.
+`@aura3d/engine` plus the `@aura3d/cli` toolchain. Current release: Aura3D 4.0.1.
 
 Hello world: every scene gets a look first.
 

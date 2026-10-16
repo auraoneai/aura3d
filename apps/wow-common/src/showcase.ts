@@ -74,10 +74,14 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
   let viewer: CurrentRoutesFlagshipViewer | undefined;
   let snapshot: CurrentRoutesViewerSnapshot | undefined;
   let pointer: { readonly x: number; readonly y: number } | undefined;
+  const rawSsao = { ...DEFAULT_WOW_POST_PROCESS.ssao, ...(config.postProcess?.ssao ?? {}) };
   const postProcess: WowPostProcessConfig = {
     tonemapping: { ...DEFAULT_WOW_POST_PROCESS.tonemapping, ...(config.postProcess?.tonemapping ?? {}) },
     bloom: { ...DEFAULT_WOW_POST_PROCESS.bloom, ...(config.postProcess?.bloom ?? {}) },
-    ssao: { ...DEFAULT_WOW_POST_PROCESS.ssao, ...(config.postProcess?.ssao ?? {}) },
+    ssao: {
+      ...rawSsao,
+      radius: Math.max(1, Math.min(8, Math.round(rawSsao.radius < 1 ? rawSsao.radius * 8 : rawSsao.radius)))
+    },
     fxaa: { ...DEFAULT_WOW_POST_PROCESS.fxaa, ...(config.postProcess?.fxaa ?? {}) },
     vignette: { ...DEFAULT_WOW_POST_PROCESS.vignette, ...(config.postProcess?.vignette ?? {}) }
   };

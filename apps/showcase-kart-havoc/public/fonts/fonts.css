@@ -1,0 +1,58 @@
+@font-face {
+  font-family: "Whitney";
+  src: url("/fonts/whitney-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("/fonts/whitney-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("/fonts/whitney-semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DIN Pro";
+  src: url("/fonts/dinpro-regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DIN Pro";
+  src: url("/fonts/dinpro-medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Monument Grotesk Mono";
+  src: url("/fonts/monument-mono.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-ui: "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-smallcaps: "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-metric: "DIN Pro", "Whitney", sans-serif;
+  --font-code: "Monument Grotesk Mono", ui-monospace, Menlo, monospace;
+}
+
+html {
+  font-synthesis: none;
+}

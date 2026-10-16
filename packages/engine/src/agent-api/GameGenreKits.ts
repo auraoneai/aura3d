@@ -116,6 +116,22 @@ export interface GamePlatformerInput {
    * where restart lives is an API-consistency defect, not a caller error.
    */
   readonly reset?: boolean;
+  /**
+   * Optional external physics authority pose sync (e.g. Rapier character controller).
+   * Anchors the kit's internal body to the solver's resolved position and grounded state
+   * before evaluating movement, jump, collectibles, checkpoints, and hazards.
+   */
+  readonly syncPlayer?: {
+    readonly x: number;
+    readonly y: number;
+    readonly vx?: number;
+    readonly vy?: number;
+    readonly grounded: boolean;
+    readonly ridingPlatformId?: string | undefined;
+    readonly minLives?: number | undefined;
+  };
+  /** Optional vertical velocity impulse override (e.g. double-jump). */
+  readonly boostVy?: number;
 }
 
 export type GamePlatformerEventType =
@@ -999,7 +1015,7 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
     gravity: config.gravity,
     groundY: -1_000_000,
     friction: 0,
-    maxSpeed: Math.max(config.moveSpeed, config.dashSpeed),
+    maxSpeed: Math.max(config.moveSpeed * 4, config.dashSpeed),
     jumpVelocity: config.jumpVelocity,
     coyoteMs: config.coyoteMs,
     jumpBufferMs: config.jumpBufferMs,
@@ -1124,13 +1140,31 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
       state.frame += 1;
       const previousTime = state.time;
       state.time += step;
+      if (input.syncPlayer) {
+        const wasGrounded = state.player.grounded;
+        body.position = [input.syncPlayer.x, input.syncPlayer.y, 0];
+        if (input.syncPlayer.grounded && body.velocity[1] <= 0) {
+          body.snapToGround(input.syncPlayer.y);
+          if (!wasGrounded) {
+            pendingImpactSpeed = Math.abs(state.player.vy);
+            squashPulse = Math.min(1, pendingImpactSpeed / (config.jumpVelocity * 1.4));
+            landImpactLevel = pendingImpactSpeed;
+            emit("land", input.syncPlayer.ridingPlatformId);
+          }
+        }
+        syncPlayerFromBody();
+        state.player.grounded = input.syncPlayer.grounded && body.velocity[1] <= 0;
+        state.player.ridingPlatformId = input.syncPlayer.ridingPlatformId;
+        state.respawnControlLock = 0;
+        state.respawnAwaitingNeutralInput = false;
+      }
       const previousPlayer = { ...state.player };
       const previousMoving = platformerMovingRectsAt(previousTime, config);
       const moving = platformerMovingRectsAt(state.time, config);
-      const carried = state.player.ridingPlatformId
+      const carried = !input.syncPlayer && state.player.ridingPlatformId
         ? moving.find((platform) => platform.id === state.player.ridingPlatformId)
         : undefined;
-      const carriedPrevious = state.player.ridingPlatformId
+      const carriedPrevious = !input.syncPlayer && state.player.ridingPlatformId
         ? previousMoving.find((platform) => platform.id === state.player.ridingPlatformId)
         : undefined;
       if (carried && carriedPrevious && state.player.grounded) {
@@ -1143,7 +1177,7 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
       }
 
       state.respawnControlLock = Math.max(0, state.respawnControlLock - step);
-      const requestedMoveX = clampNumber(input.moveX ?? 0, -1, 1);
+      const requestedMoveX = clampNumber(input.moveX ?? 0, -4, 4);
       if (state.respawnAwaitingNeutralInput && Math.abs(requestedMoveX) <= 0.01) {
         state.respawnAwaitingNeutralInput = false;
       }
@@ -1159,6 +1193,11 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
         emit("dash");
       }
       if (body.consumeJump(config.jumpVelocity)) {
+        state.player.ridingPlatformId = undefined;
+        jumpReleaseApplied = false;
+        emit("jump");
+      } else if (input.boostVy !== undefined && Number.isFinite(input.boostVy)) {
+        body.velocity = [body.velocity[0], input.boostVy, body.velocity[2]];
         state.player.ridingPlatformId = undefined;
         jumpReleaseApplied = false;
         emit("jump");
@@ -1248,6 +1287,11 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
         break;
       }
       if (state.player.y < config.lowerBound) respawn("fall");
+      if (input.syncPlayer?.minLives !== undefined && state.lives < input.syncPlayer.minLives) {
+        state.lives = input.syncPlayer.minLives;
+        state.respawnControlLock = 0;
+        state.respawnAwaitingNeutralInput = false;
+      }
       if (config.finish && state.player.x >= config.finish.x && Math.abs(state.player.y - config.finish.y) <= 1.25) {
         state.status = "completed";
         emit("complete");

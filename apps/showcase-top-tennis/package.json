@@ -1,0 +1,20 @@
+{
+  "name": "@aura3d/showcase-top-tennis",
+  "version": "4.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D 1:1 3D port of Top Tennis (toptennisgame.com) — deterministic ball flight, 2-bone IK articulated athletes, 6 courts, singles matches, smash practice, and 32-player tour.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

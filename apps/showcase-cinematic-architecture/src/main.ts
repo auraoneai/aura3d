@@ -76,6 +76,7 @@ interface ArchitectureEvidence {
 declare global {
   interface Window {
     __AURA3D_SHOWCASE_CINEMATIC_ARCHITECTURE__?: ArchitectureEvidence;
+    __AURA3D_COMPOSITION_PROBE__?: unknown;
   }
 }
 
@@ -97,45 +98,45 @@ const moods: Record<MoodId, {
 }> = {
   dawn: {
     label: "Dawn",
-    background: "#152235",
+    background: "#132236",
     floor: "#2b271f",
-    stone: "#8c8170",
-    stoneDark: "#403b33",
-    glass: "#d6efe5",
-    accent: "#d9a74e",
-    secondary: "#7aa16e",
-    fog: "#d7c8a6",
-    key: "#ffd9a0",
-    fill: "#9fd4c4",
-    bloom: "#f2bf68"
+    stone: "#9a8d7a",
+    stoneDark: "#38342d",
+    glass: "#dbf5ec",
+    accent: "#f5b858",
+    secondary: "#82b076",
+    fog: "#decba8",
+    key: "#ffd494",
+    fill: "#7ec8e3",
+    bloom: "#f7be63"
   },
   gallery: {
     label: "Gallery",
-    background: "#081722",
+    background: "#091926",
     floor: "#18201f",
-    stone: "#b8b2a2",
-    stoneDark: "#2a302d",
-    glass: "#8edee1",
-    accent: "#d9a74e",
-    secondary: "#c77a83",
-    fog: "#9cb9b5",
-    key: "#fff1d0",
-    fill: "#5dd3d6",
-    bloom: "#5dd3d6"
+    stone: "#c4beb0",
+    stoneDark: "#242c30",
+    glass: "#9ae8ec",
+    accent: "#f2b85c",
+    secondary: "#d4848e",
+    fog: "#9ec4c8",
+    key: "#ffe2b0",
+    fill: "#6ad8eb",
+    bloom: "#78e2eb"
   },
   nocturne: {
     label: "Nocturne",
-    background: "#060d18",
+    background: "#060e1b",
     floor: "#111318",
-    stone: "#6f7782",
-    stoneDark: "#1d2028",
-    glass: "#b7c8ff",
-    accent: "#8fb0ff",
-    secondary: "#d9a74e",
-    fog: "#8797c2",
-    key: "#b9c8ff",
-    fill: "#d9a74e",
-    bloom: "#8fb0ff"
+    stone: "#7a8492",
+    stoneDark: "#191e28",
+    glass: "#c2d2ff",
+    accent: "#99baff",
+    secondary: "#f0b456",
+    fog: "#8ba0cf",
+    key: "#c2d2ff",
+    fill: "#f0b456",
+    bloom: "#99baff"
   }
 };
 
@@ -250,6 +251,34 @@ const app = createAuraApp("#aura-scene", {
   scene: initialScene
 });
 
+Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+  value: {
+    category: "application",
+    get camera() {
+      return cameraPaths[controls.cameraPath].createCamera();
+    },
+    get subject() {
+      const compactViewport = window.innerWidth < 700;
+      return {
+        position: [0.2, compactViewport ? -0.28 : -0.36, -0.62] as const,
+        rotation: [0, -0.28, 0] as const,
+        targetSize: compactViewport ? 1.62 : 2.0
+      };
+    },
+    setSubjectSuppressed: (suppressed: boolean) => {
+      app.pause();
+      app.nodes.get("architecture-district")?.setScale(suppressed ? 0.0001 : 1);
+      app.step(0);
+    },
+    settleSubjectPose: () => {
+      app.pause();
+      app.nodes.get("architecture-district")?.setScale(1);
+      app.step(0);
+    }
+  },
+  configurable: true
+});
+
 // Evidence toggles operate on this application's scene and renderer, with a fixed
 // public camera time. They never create a replacement scene or a second canvas.
 if (new URLSearchParams(location.search).has("spotlightProbe")) {
@@ -295,12 +324,13 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
   const mood = moods[nextControls.mood];
   const haze = nextControls.haze / 100;
   const compactViewport = window.innerWidth < 700;
+  const spotlightProbeEnabled = new URLSearchParams(location.search).has("spotlightProbe");
 
   return scene()
     .background(mood.background)
     .add(nextControls.mood === "nocturne"
-      ? environments.nightCinematic({ name: "architectural night cinematic HDR IBL", intensity: 0.82, color: mood.fill })
-      : environments.studio({ name: "architectural daylight studio HDR IBL", intensity: nextControls.mood === "dawn" ? 0.92 : 1.04, color: mood.key }))
+      ? environments.nightCinematic({ name: "architectural night cinematic HDR IBL", intensity: 0.96, color: mood.fill })
+      : environments.studio({ name: "architectural daylight studio HDR IBL", intensity: nextControls.mood === "dawn" ? 1.12 : 1.24, color: mood.key }))
     .add(model(assets.showcaseSkylineCity, {
       name: "typed architectural district city asset",
       castShadow: true,
@@ -363,42 +393,62 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
       .position(compactViewport ? -0.22 : -0.32, -0.15, -1.0)
       .rotate(0, 1.62, 0)
       .runtime({ id: "architecture-traffic-background" }))
-    // The district GLB remains the primary architecture. These two small
-    // authored set-dressing pieces put a real receiver and occluder inside the
-    // nocturne spot cone, so the route demonstrates the same production shadow
-    // path it advertises instead of relying on a favorable imported-mesh pose.
+    // Subtle glowing architectural window and plaza light strips that accent the
+    // district silhouette without obstructing any skyline or street geometry.
+    .add(primitives.box({
+      name: "architectural plaza foreground warm light strip",
+      size: [0.42, 0.012, 0.018],
+      position: [0.36, -0.34, 0.18],
+      material: material.emissive({ color: mood.accent, emissive: mood.accent, emissiveIntensity: 1.15, opacity: 0.88 })
+    }))
+    .add(primitives.box({
+      name: "architectural atrium midground glass window glow",
+      size: [0.34, 0.014, 0.018],
+      position: [0.18, -0.12, -0.58],
+      material: material.emissive({ color: mood.glass, emissive: mood.fill, emissiveIntensity: 1.28, opacity: 0.84 })
+    }))
+    .add(primitives.box({
+      name: "architectural skyline background crown beacon",
+      size: [0.48, 0.016, 0.02],
+      position: [-0.74, 0.18, -1.42],
+      material: material.emissive({ color: mood.bloom, emissive: mood.bloom, emissiveIntensity: 1.42, opacity: 0.9 })
+    }))
+    // In normal viewing, keep the terrace tucked cleanly beneath the district
+    // base and reduce the caster to a low curbside bollard so the left skyline
+    // and annex tower are 100% unobstructed. When `?spotlightProbe=1` runs,
+    // retain the probe's exact shadow-test geometry.
     .add(primitives.box({
       name: "architectural spotlight receiver terrace",
-      size: [2.4, 0.08, 1.7],
-      position: [0.08, -0.52, -0.54],
-      material: material.pbr({ color: "#566174", roughness: 0.84, metallic: 0.04 }),
+      size: spotlightProbeEnabled ? [2.4, 0.08, 1.7] : [1.38, 0.04, 1.28],
+      position: spotlightProbeEnabled ? [0.08, -0.52, -0.54] : [0.2, -0.5, -0.62],
+      material: material.pbr({ color: spotlightProbeEnabled ? "#566174" : "#1c2836", roughness: 0.82, metallic: 0.08 }),
       castShadow: false,
       receiveShadow: true
     }))
     .add(primitives.box({
       name: "architectural spotlight pylon caster",
-      size: [0.3, 0.92, 0.3],
-      position: [-0.24, -0.02, -0.18],
-      material: material.pbr({ color: "#9a6845", roughness: 0.48, metallic: 0.16 }),
+      size: spotlightProbeEnabled ? [0.3, 0.92, 0.3] : [0.035, 0.055, 0.035],
+      position: spotlightProbeEnabled ? [-0.24, -0.02, -0.18] : [0.68, -0.46, 0.28],
+      material: material.pbr({ color: spotlightProbeEnabled ? "#9a6845" : "#2b394a", roughness: 0.44, metallic: 0.28 }),
       castShadow: true,
       receiveShadow: true
     }))
     .add(effects.depthFog({
       name: "architectural depth haze",
-      density: 0.006 + haze * 0.012,
+      density: 0.005 + haze * 0.01,
       color: mood.fog,
-      intensity: 0.08 + haze * 0.2
+      intensity: 0.06 + haze * 0.16
     }))
     .add(effects.bloom({
       name: "architectural practical bloom",
-      intensity: 0.06 + haze * 0.1,
-      threshold: 0.82,
-      radius: 0.24,
+      intensity: 0.12 + haze * 0.12,
+      threshold: 0.76,
+      radius: 0.28,
       color: mood.bloom
     }))
     .add(effects.ambientOcclusion({
       name: "architectural contact occlusion",
-      intensity: 0.34,
+      intensity: 0.38,
       radius: 0.68,
       falloff: 1.7,
       multiBounce: true
@@ -407,20 +457,20 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
       length: 0.24,
       thickness: 0.045,
       steps: 12,
-      intensity: 0.76,
+      intensity: 0.78,
       lights: "sun"
     }))
     .add(effects.vignette({
       name: "architectural framing vignette",
-      intensity: nextControls.mood === "nocturne" ? 0.24 : 0.16,
+      intensity: nextControls.mood === "nocturne" ? 0.22 : 0.14,
       smoothness: 0.74,
       roundness: 0.86,
       color: mood.background
     }))
     .add(effects.colorGrade({
       name: "architectural mood color grade",
-      contrast: nextControls.mood === "nocturne" ? 1.07 : 1.04,
-      saturation: nextControls.mood === "dawn" ? 1.06 : 1.03
+      contrast: nextControls.mood === "nocturne" ? 1.08 : 1.06,
+      saturation: nextControls.mood === "dawn" ? 1.08 : 1.06
     }))
     .add(lights.spot({
       name: "architectural night facade spotlight",
@@ -429,11 +479,19 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
       intensity: nextControls.mood === "nocturne" && nightSpotlightEnabled ? 18 : 0,
       shadow: nightSpotlightShadow
     }))
-    .add(lights.ambient({ name: "low gallery ambient fill", intensity: 0.2 + haze * 0.06, color: mood.fog }))
-    .add(lights.directional({ name: "high museum key light", position: [-2.4, 4.8, 2.4], intensity: 2.15, color: mood.key }))
-    .add(lights.point({ name: "warm street-level practical", position: [-1.75, 0.92, 1.18], intensity: 1.45, color: mood.accent }))
-    .add(lights.point({ name: "cool glass edge practical", position: [1.9, 1.45, -0.68], intensity: 1.85, color: mood.fill }))
-    .add(lights.rect({ name: "soft gallery skylight wash", position: [0.1, 2.78, -1.62], intensity: 1.65, color: mood.key, width: 4.2, height: 0.64 }))
+    .add(lights.hemisphere({
+      name: "cool twilight sky fill",
+      skyColor: mood.fill,
+      groundColor: mood.stoneDark,
+      intensity: nextControls.mood === "nocturne" ? 0.46 : 0.64
+    }))
+    .add(lights.ambient({ name: "low gallery ambient fill", intensity: 0.28 + haze * 0.08, color: mood.fog }))
+    .add(lights.directional({ name: "high museum key light", position: [-2.5, 4.9, 2.5], intensity: 2.65, color: mood.key, shadow: true }))
+    .add(lights.directional({ name: "cool twilight rim fill", position: [2.6, 3.1, -1.8], intensity: 1.15, color: mood.fill }))
+    .add(lights.point({ name: "warm street-level practical", position: [-1.45, 0.92, 1.12], intensity: 1.85, color: mood.accent }))
+    .add(lights.point({ name: "cool glass edge practical", position: [1.85, 1.48, -0.68], intensity: 2.15, color: mood.fill }))
+    .add(lights.point({ name: "golden architectural window accent uplight", position: [-0.58, 0.46, -1.12], intensity: 1.92, color: mood.accent }))
+    .add(lights.rect({ name: "soft gallery skylight wash", position: [0.1, 2.78, -1.62], intensity: 1.95, color: mood.key, width: 4.2, height: 0.64 }))
     .add(interactions.orbit())
     .camera(cameraPaths[nextControls.cameraPath].createCamera())
     .timeline(timeline.loop({ seconds: cameraPaths[nextControls.cameraPath].seconds, captureTime: 0.52 }));

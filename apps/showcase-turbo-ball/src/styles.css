@@ -1,0 +1,350 @@
+/* Turbo Ball — Aurora Noir / Midnight Slate Dense Telemetry HUD
+ * Uses exclusively the self-hosted AuraOne licensed typography stack
+ * declared in /fonts/fonts.css (Whitney, DIN Pro, Monument Grotesk Mono).
+ * Weight discipline: 400 body/values, 500 labels/controls/metrics, 600 single title only. Never 700.
+ */
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #070a12;
+  font-synthesis: none;
+  font-family: var(--font-ui);
+  font-size: var(--type-body, 0.8125rem);
+  line-height: var(--leading-normal, 1.45);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-primary, #f1f5f9);
+}
+
+#turbo-ball-hud {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 12px 16px;
+  font-family: var(--font-ui);
+  font-synthesis: none;
+}
+
+/* Top Broadcast Scorebug & Telemetry Bar */
+.tb-topbar {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tb-brand-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(11, 15, 25, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-left: 2px solid #f59e0b;
+  padding: 8px 12px;
+  min-width: 248px;
+  backdrop-filter: blur(10px);
+}
+
+.tb-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Single Semibold (600) 17px page title */
+.tb-title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-h1, 1.0625rem);
+  line-height: var(--leading-tight, 1.2);
+  font-weight: 600;
+  color: #f8fafc;
+  letter-spacing: 0;
+}
+
+.tb-mode-tag {
+  font-family: var(--font-code);
+  font-size: var(--type-meta, 0.75rem);
+  line-height: var(--leading-none, 1);
+  font-weight: 400;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.32);
+  padding: 3px 6px;
+}
+
+.tb-objective {
+  font-family: var(--font-ui);
+  font-size: var(--type-body, 0.8125rem);
+  line-height: var(--leading-snug, 1.35);
+  font-weight: 400;
+  color: #cbd5e1;
+}
+
+/* Center Match Scoreboard */
+.tb-scorebug {
+  display: grid;
+  grid-template-columns: 128px 104px 128px;
+  align-items: center;
+  background: rgba(11, 15, 25, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  backdrop-filter: blur(12px);
+  height: 54px;
+}
+
+.tb-team {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  height: 100%;
+}
+
+.tb-team-orange {
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.18) 0%, rgba(11, 15, 25, 0) 100%);
+}
+
+.tb-team-blue {
+  border-left: 1px solid rgba(148, 163, 184, 0.2);
+  background: linear-gradient(270deg, rgba(56, 189, 248, 0.18) 0%, rgba(11, 15, 25, 0) 100%);
+}
+
+.tb-team-name {
+  font-family: var(--font-ui);
+  font-size: var(--type-body, 0.8125rem);
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.tb-team-sub {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--type-meta, 0.75rem);
+  font-weight: 400;
+  color: #94a3b8;
+  line-height: 1.2;
+}
+
+.tb-score-num {
+  font-family: var(--font-metric);
+  font-size: var(--type-figure, 1.25rem);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  line-height: 1;
+}
+
+.tb-team-orange .tb-score-num {
+  color: #fbbf24;
+}
+
+.tb-team-blue .tb-score-num {
+  color: #38bdf8;
+}
+
+.tb-clock-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.tb-clock-label {
+  font-family: var(--font-smallcaps);
+  font-variant-caps: small-caps;
+  font-feature-settings: "smcp" 1;
+  font-size: var(--type-meta, 0.75rem);
+  font-weight: 500;
+  color: #94a3b8;
+  line-height: 1;
+}
+
+.tb-clock-val {
+  font-family: var(--font-ui);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  color: #f8fafc;
+  line-height: 1.15;
+}
+
+/* Right Telemetry Matrix */
+.tb-telemetry-panel {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  align-items: center;
+  background: rgba(11, 15, 25, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  backdrop-filter: blur(10px);
+}
+
+.tb-stat-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6px 12px;
+  height: var(--row-height, 34px);
+  border-right: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.tb-stat-cell:last-child {
+  border-right: none;
+}
+
+.tb-stat-label {
+  font-family: var(--font-smallcaps);
+  font-variant-caps: small-caps;
+  font-feature-settings: "smcp" 1;
+  font-size: var(--type-meta, 0.75rem);
+  font-weight: 500;
+  color: #94a3b8;
+  line-height: 1.1;
+}
+
+.tb-stat-val {
+  font-family: var(--font-metric);
+  font-size: var(--type-h2, 0.875rem);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  color: #f1f5f9;
+  line-height: 1.25;
+}
+
+/* Center Goal / Event Banner */
+.tb-center-stage {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 14px;
+}
+
+.tb-banner {
+  background: rgba(11, 15, 25, 0.92);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  padding: 6px 16px;
+  font-family: var(--font-ui);
+  font-size: var(--type-h2, 0.875rem);
+  font-weight: 500;
+  color: #f8fafc;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.tb-banner[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Bottom Bar: Controls Strip + Boost & Speed Gauges */
+.tb-bottombar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tb-controls-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background: rgba(11, 15, 25, 0.86);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  padding: 0 12px;
+  min-height: var(--row-height, 34px);
+}
+
+.tb-control-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-ui);
+  font-size: var(--type-meta, 0.75rem);
+  font-weight: 400;
+  color: #cbd5e1;
+}
+
+.tb-kbd {
+  font-family: var(--font-code);
+  font-size: var(--type-meta, 0.75rem);
+  font-weight: 400;
+  color: #f8fafc;
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  padding: 1px 5px;
+  line-height: 1.2;
+}
+
+.tb-gauges {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.tb-gauge-box {
+  background: rgba(11, 15, 25, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  padding: 6px 12px;
+  min-width: 148px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.tb-gauge-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tb-gauge-title {
+  font-family: var(--font-smallcaps);
+  font-variant-caps: small-caps;
+  font-feature-settings: "smcp" 1;
+  font-size: var(--type-meta, 0.75rem);
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.tb-gauge-num {
+  font-family: var(--font-metric);
+  font-size: var(--type-figure, 1.25rem);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  color: #f8fafc;
+  line-height: 1;
+}
+
+.tb-boost-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  overflow: hidden;
+}
+
+.tb-boost-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b 0%, #38bdf8 100%);
+  width: 100%;
+  transition: width 60ms linear;
+}

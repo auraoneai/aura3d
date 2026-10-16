@@ -37,7 +37,7 @@ npx create-aura3d@latest --help
 ## Why Use It
 
 - **You get an app, not a blank canvas.** Templates ship with Vite, source,
-  scripts, test files, and `@aura3d/engine@4.0.0` imports wired up.
+  scripts, test files, and `@aura3d/engine@4.0.1` imports wired up.
 - **Assets stay typed.** Generated projects use `src/aura-assets.ts` so scene
   code renders `model(assets.product)` instead of guessed URLs or string IDs.
 - **Complete 4.0.0 effects & looks built in.** Every scaffold has immediate access to the 28+ `effects.*` post-processing, atmospheric, volumetric, weather, and GPU/CPU particle builders (`effects.bloom`, `effects.ambientOcclusion`, `effects.contactShadows`, `effects.screenSpaceReflections`, `effects.depthOfField`, `effects.volumetricFog`, `effects.particles`, `effects.rain`, `effects.snow`) plus 8 `looks.preset` / `looks.appOptions` art-direction recipes and `game.feel` combat/arcade juice.
@@ -47,21 +47,21 @@ npx create-aura3d@latest --help
 - **Static deploys are first-class.** Build output is a browser app you can
   deploy like any Vite project.
 
-Aura3D `4.0.0` scaffolds pin the consolidated `@aura3d/engine@4.0.0` dependency graph across all 24 active public packages (with all `< 4.0.0` versions and legacy compatibility packages deprecated in full on npm).
+Aura3D `4.0.0` scaffolds pin the consolidated `@aura3d/engine@4.0.1` dependency graph across all 24 active public packages (with all `< 4.0.0` versions and legacy compatibility packages deprecated in full on npm).
 
 ## Add A Real Model
 
 Add a local GLB/glTF asset:
 
 ```bash
-npx @aura3d/cli@4.0.0 assets add ./assets/sneaker.glb --name sneaker
+npx @aura3d/cli@4.0.1 assets add ./assets/sneaker.glb --name sneaker
 ```
 
 Or resolve a catalog candidate or Meshy 3D PBR model:
 
 ```bash
-npx @aura3d/cli@4.0.0 assets search "battle-worn knight helmet"
-npx @aura3d/cli@4.0.0 assets resolve "battle-worn knight helmet" --name helmet
+npx @aura3d/cli@4.0.1 assets search "battle-worn knight helmet"
+npx @aura3d/cli@4.0.1 assets resolve "battle-worn knight helmet" --name helmet
 ```
 
 Then render the generated typed reference with `4.0.0` studio lighting and effects:

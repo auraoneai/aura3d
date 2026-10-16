@@ -1,0 +1,254 @@
+/* Bean Brawl Race — Aurora Noir / Midnight Slate Dense Telemetry HUD
+ * Follows AuraOne UI/UX & Paid Font Gallery policy:
+ * - Primary UI: var(--font-ui) Whitney 400/500, Semibold 600 on single h1 title only
+ * - Metrics: var(--font-metric) DIN Pro 400/500 with tabular-nums
+ * - Identifiers/Clips: var(--font-code) Monument Grotesk Mono 400
+ * - Zero 700 weights; 13px body, 12px meta floor, 34px compact rows, 32px controls
+ */
+
+#character-controller-hud {
+  position: fixed;
+  left: 16px;
+  top: 16px;
+  z-index: 10;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  font-family: var(--font-ui);
+  font-size: var(--type-body, 0.8125rem);
+  line-height: var(--leading-normal, 1.45);
+  font-weight: 400;
+  font-synthesis: none;
+  letter-spacing: 0;
+  color: var(--text-primary, #f1f5f9);
+  background: var(--bg-panel, rgba(11, 15, 25, 0.86));
+  border: 1px solid var(--border-hairline, rgba(148, 163, 184, 0.24));
+  border-left: 2px solid var(--accent-cyan, #38bdf8);
+  border-radius: 6px;
+  padding: 12px 14px;
+  backdrop-filter: blur(12px);
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.brawl-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-hairline, rgba(148, 163, 184, 0.22));
+}
+
+.brawl-title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-h1, 1.0625rem);
+  line-height: var(--leading-tight, 1.2);
+  font-weight: 600;
+  color: var(--text-primary, #f1f5f9);
+  letter-spacing: 0;
+}
+
+.brawl-status-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-family: var(--font-ui);
+  font-size: var(--type-meta, 0.75rem);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--accent-cyan, #38bdf8);
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.32);
+}
+
+.brawl-status-chip[data-qualified="true"] {
+  color: var(--accent-emerald, #34d399);
+  background: rgba(52, 211, 153, 0.14);
+  border-color: rgba(52, 211, 153, 0.4);
+}
+
+.brawl-status-chip[data-knocked="true"] {
+  color: var(--accent-rose, #fb7185);
+  background: rgba(251, 113, 133, 0.14);
+  border-color: rgba(251, 113, 133, 0.4);
+}
+
+.brawl-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-hairline, rgba(148, 163, 184, 0.22));
+}
+
+.brawl-kpi-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  background: var(--bg-surface, rgba(18, 24, 38, 0.78));
+  border: 1px solid var(--border-hairline, rgba(148, 163, 184, 0.18));
+  border-radius: 4px;
+}
+
+.brawl-kpi-label {
+  font-family: var(--font-smallcaps);
+  font-variant-caps: small-caps;
+  font-feature-settings: "smcp" 1;
+  font-size: var(--type-meta, 0.75rem);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.brawl-kpi-value {
+  font-family: var(--font-metric);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  font-size: var(--type-figure, 1.25rem);
+  font-weight: 500;
+  line-height: var(--leading-none, 1);
+  color: var(--text-primary, #f1f5f9);
+}
+
+.brawl-kpi-value-time {
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: var(--leading-none, 1);
+  color: var(--accent-amber, #f59e0b);
+}
+
+.brawl-stage-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--row-height, 34px);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border-hairline, rgba(148, 163, 184, 0.22));
+  font-size: var(--type-body, 0.8125rem);
+}
+
+.brawl-stage-name {
+  font-weight: 500;
+  color: var(--text-primary, #f1f5f9);
+}
+
+.brawl-stage-clip {
+  font-family: var(--font-code);
+  font-size: var(--type-meta, 0.75rem);
+  font-weight: 400;
+  color: var(--accent-cyan, #38bdf8);
+}
+
+.brawl-progress-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--border-hairline, rgba(148, 163, 184, 0.22));
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 6px 0 8px 0;
+}
+
+.brawl-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #38bdf8 0%, #34d399 65%, #f59e0b 100%);
+  transition: width 80ms linear;
+}
+
+.brawl-standings {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-body, 0.8125rem);
+}
+
+.brawl-standings th {
+  height: 24px;
+  text-align: left;
+  font-family: var(--font-smallcaps);
+  font-variant-caps: small-caps;
+  font-feature-settings: "smcp" 1;
+  font-size: var(--type-meta, 0.75rem);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--text-secondary, #94a3b8);
+  border-bottom: 1px solid var(--border-hairline, rgba(148, 163, 184, 0.22));
+  padding: 0 4px;
+}
+
+.brawl-standings th.num,
+.brawl-standings td.num {
+  text-align: right;
+  font-family: var(--font-metric);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.brawl-standings td {
+  height: var(--row-height, 34px);
+  padding: 0 4px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  color: var(--text-primary, #f1f5f9);
+  font-weight: 400;
+}
+
+.brawl-standings tr[data-player="true"] td {
+  background: rgba(56, 189, 248, 0.09);
+  font-weight: 500;
+}
+
+.brawl-bean-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.brawl-code-badge {
+  font-family: var(--font-code);
+  font-size: var(--type-meta, 0.75rem);
+  font-weight: 400;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.brawl-footer {
+  margin-top: 8px;
+  padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--type-meta, 0.75rem);
+  line-height: 1.4;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.brawl-controls-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.brawl-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 3px;
+  font-family: var(--font-code);
+  font-size: var(--type-meta, 0.75rem);
+  font-weight: 400;
+  color: var(--text-primary, #f1f5f9);
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid var(--border-hairline, rgba(148, 163, 184, 0.28));
+}

@@ -462,6 +462,26 @@ type AuraGeneratedAssetDefinitions = {
   readonly "vaultCenterCoreTargetMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "gravityCourierProbeMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "mechHeroPlayerMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "siegeCatapultMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "siegeWatchtowerMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "siegeStoneBridgeMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "skylineParkourRunnerMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "galleryPharaohRelicMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "gravityCargoShuttleMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "gravitySpaceStationMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "billiardsClubChairMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "billiardsTrophyCabinetMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "reactorFusionTurbineMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "clashDragonStatueMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "lunarRoverMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "deepShipwreckHullMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rooftopFloodlightTowerMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "courierNeonStorefrontMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "vaultPinballSlingshotMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "corridorFireAmmoBoltMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "corridorMuzzleFlameBurstMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "corridorFireAmmoCrateMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rooftopShooterCleanMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
@@ -138797,6 +138817,544 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "production",
       "role": "prop",
       "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "corridorFireAmmoBoltMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/corridorFireAmmoBoltMeshy.8c0594f0.glb",
+    hash: "sha256-8c0594f04927a1011f0bac0d14e2dba7e1d88ecbf1ab567fc0bcd0e2ecd70039",
+    bounds: [
+      1.8812,
+      0.7742,
+      0.6819
+    ],
+    sizeBytes: 640928,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/corridorFireAmmoBoltMeshy.8c0594f0.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Meshy AI 3D",
+        "sourceFamily": "meshy",
+        "attribution": "Meshy AI 3D generated PBR asset (corridorFireAmmoBoltMeshy)",
+        "retrievedAt": "2026-10-15T19:55:00.000Z",
+        "checkedAt": "2026-10-15T19:55:00.000Z"
+      },
+      "sourcePath": "public/aura-assets/corridorFireAmmoBoltMeshy.8c0594f0.glb",
+      "outputPath": "public/aura-assets/corridorFireAmmoBoltMeshy.8c0594f0.glb",
+      "license": "CC-BY-4.0",
+      "author": "Meshy AI 3D",
+      "boundsMetadata": {
+        "min": [
+          -0.9325,
+          -0.3884,
+          -0.3442
+        ],
+        "max": [
+          0.9487,
+          0.3858,
+          0.3377
+        ],
+        "size": [
+          1.8812,
+          0.7742,
+          0.6819
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8812,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "corridorMuzzleFlameBurstMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/corridorMuzzleFlameBurstMeshy.ae2d3508.glb",
+    hash: "sha256-ae2d35082b235c8becb831c5afd8ef37f7024d939c347cce469e1e11abef2dbd",
+    bounds: [
+      1.6774,
+      1.4051,
+      1.8799
+    ],
+    sizeBytes: 652400,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/corridorMuzzleFlameBurstMeshy.ae2d3508.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Meshy AI 3D",
+        "sourceFamily": "meshy",
+        "attribution": "Meshy AI 3D generated PBR asset (corridorMuzzleFlameBurstMeshy)",
+        "retrievedAt": "2026-10-15T19:55:00.000Z",
+        "checkedAt": "2026-10-15T19:55:00.000Z"
+      },
+      "sourcePath": "public/aura-assets/corridorMuzzleFlameBurstMeshy.ae2d3508.glb",
+      "outputPath": "public/aura-assets/corridorMuzzleFlameBurstMeshy.ae2d3508.glb",
+      "license": "CC-BY-4.0",
+      "author": "Meshy AI 3D",
+      "boundsMetadata": {
+        "min": [
+          -0.8407,
+          -0.7018,
+          -0.9317
+        ],
+        "max": [
+          0.8367,
+          0.7033,
+          0.9482
+        ],
+        "size": [
+          1.6774,
+          1.4051,
+          1.8799
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8799,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "corridorFireAmmoCrateMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/corridorFireAmmoCrateMeshy.963c58ca.glb",
+    hash: "sha256-963c58ca43c83a3e7f7184ae79d9e9d8f17605a01b6c110ddc8b70db33615751",
+    bounds: [
+      1.8979,
+      1.6122,
+      1.4045
+    ],
+    sizeBytes: 739720,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/corridorFireAmmoCrateMeshy.963c58ca.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Meshy AI 3D",
+        "sourceFamily": "meshy",
+        "attribution": "Meshy AI 3D generated PBR asset (corridorFireAmmoCrateMeshy)",
+        "retrievedAt": "2026-10-15T19:55:00.000Z",
+        "checkedAt": "2026-10-15T19:55:00.000Z"
+      },
+      "sourcePath": "public/aura-assets/corridorFireAmmoCrateMeshy.963c58ca.glb",
+      "outputPath": "public/aura-assets/corridorFireAmmoCrateMeshy.963c58ca.glb",
+      "license": "CC-BY-4.0",
+      "author": "Meshy AI 3D",
+      "boundsMetadata": {
+        "min": [
+          -0.9495,
+          -0.807,
+          -0.7032
+        ],
+        "max": [
+          0.9484,
+          0.8052,
+          0.7013
+        ],
+        "size": [
+          1.8979,
+          1.6122,
+          1.4045
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8979,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D asset."
+    }
+  },
+  "rooftopShooterCleanMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rooftopShooterCleanMeshy.2be27d6a.glb",
+    hash: "sha256-fcf0841169f4c4add2d0fd64bf3addec20b810b46d237d89e070188a9aaff3b2",
+    bounds: [
+      0.6268,
+      1.8741,
+      0.4102
+    ],
+    sizeBytes: 1005576,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [
+        "Idle",
+        "Idle_Loop",
+        "Ready",
+        "Plant",
+        "Crouch",
+        "Crouch_Idle_Loop",
+        "Walk",
+        "Walk_Loop",
+        "Walking",
+        "Run",
+        "Running",
+        "Sprint_Loop",
+        "Jump",
+        "Jump_Loop",
+        "Release",
+        "Contest",
+        "Shoot",
+        "Attack",
+        "Load",
+        "FollowThrough",
+        "Telegraph",
+        "Punch_Jab",
+        "Sword_Attack"
+      ],
+      "animationClips": [
+        "Idle",
+        "Idle_Loop",
+        "Ready",
+        "Plant",
+        "Crouch",
+        "Crouch_Idle_Loop",
+        "Walk",
+        "Walk_Loop",
+        "Walking",
+        "Run",
+        "Running",
+        "Sprint_Loop",
+        "Jump",
+        "Jump_Loop",
+        "Release",
+        "Contest",
+        "Shoot",
+        "Attack",
+        "Load",
+        "FollowThrough",
+        "Telegraph",
+        "Punch_Jab",
+        "Sword_Attack"
+      ],
+      "animationMetadata": {
+        "clipCount": 23,
+        "clips": [],
+        "messages": [
+          "Detected 23 embedded animation clips."
+        ]
+      },
+      "humanoid": true,
+      "humanoidStatus": "humanoid",
+      "humanoidConfidence": "high",
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 15,
+        "skins": [],
+        "messages": []
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 23,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Armature"
+        ],
+        "maxDepth": 5,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/rooftopShooterCleanMeshy.2be27d6a.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Meshy AI 3D",
+        "sourceFamily": "meshy",
+        "attribution": "Meshy AI 3D generated PBR asset (rooftopShooterCleanMeshy)",
+        "retrievedAt": "2026-10-15T19:55:00.000Z",
+        "checkedAt": "2026-10-15T19:55:00.000Z"
+      },
+      "sourcePath": "public/aura-assets/rooftopShooterCleanMeshy.2be27d6a.glb",
+      "outputPath": "public/aura-assets/rooftopShooterCleanMeshy.2be27d6a.glb",
+      "license": "CC-BY-4.0",
+      "author": "Meshy AI 3D",
+      "boundsMetadata": {
+        "min": [
+          -0.3142,
+          -0.9506,
+          -0.2045
+        ],
+        "max": [
+          0.3126,
+          0.9235,
+          0.2057
+        ],
+        "size": [
+          0.6268,
+          1.8741,
+          0.4102
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8741,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "Armature"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "quality": "production",
+      "role": "primaryCharacter",
+      "suitabilityReason": "Bespoke Meshy 2K PBR rigged 3D character."
     }
   },
 });

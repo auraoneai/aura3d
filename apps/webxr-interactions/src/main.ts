@@ -402,7 +402,7 @@ function renderUi(root: HTMLElement, runtime: CurrentRoutesWebXRInteractionsRunt
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>CurrentRoutes WebXR Interactions</h1>
+          <h1>Aura3D 4.0 · WebXR Spatial Interactions</h1>
           <p>Public WebXR session controller for VR controller input, dragging, and AR hit-test placement using injected session evidence.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>

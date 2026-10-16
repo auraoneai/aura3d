@@ -181,7 +181,7 @@ const GALLERY_ROUTE_POSTPROCESS_PRESETS: Readonly<Record<DemoDefinition["id"], G
     bloomThreshold: 0.74,
     bloomIntensity: 0.22,
     bloomRadius: 3,
-    ssaoRadius: 0.42,
+    ssaoRadius: 2,
     ssaoIntensity: 0.3,
     contrast: 1.1,
     saturation: 1.08,
@@ -193,7 +193,7 @@ const GALLERY_ROUTE_POSTPROCESS_PRESETS: Readonly<Record<DemoDefinition["id"], G
     bloomThreshold: 0.7,
     bloomIntensity: 0.24,
     bloomRadius: 4,
-    ssaoRadius: 0.48,
+    ssaoRadius: 3,
     ssaoIntensity: 0.34,
     contrast: 1.1,
     saturation: 1.08,
@@ -205,7 +205,7 @@ const GALLERY_ROUTE_POSTPROCESS_PRESETS: Readonly<Record<DemoDefinition["id"], G
     bloomThreshold: 0.46,
     bloomIntensity: 0.22,
     bloomRadius: 2,
-    ssaoRadius: 0.45,
+    ssaoRadius: 2,
     ssaoIntensity: 0.35,
     contrast: 1.18,
     saturation: 1.12,
@@ -217,7 +217,7 @@ const GALLERY_ROUTE_POSTPROCESS_PRESETS: Readonly<Record<DemoDefinition["id"], G
     bloomThreshold: 0.74,
     bloomIntensity: 0.24,
     bloomRadius: 3,
-    ssaoRadius: 0.45,
+    ssaoRadius: 2,
     ssaoIntensity: 0.35,
     contrast: 1.12,
     saturation: 1.14,
@@ -229,7 +229,7 @@ const GALLERY_ROUTE_POSTPROCESS_PRESETS: Readonly<Record<DemoDefinition["id"], G
     bloomThreshold: 0.82,
     bloomIntensity: 0.18,
     bloomRadius: 2,
-    ssaoRadius: 0.38,
+    ssaoRadius: 2,
     ssaoIntensity: 0.25,
     contrast: 1.18,
     saturation: 1.08,
@@ -241,7 +241,7 @@ const GALLERY_ROUTE_POSTPROCESS_PRESETS: Readonly<Record<DemoDefinition["id"], G
     bloomThreshold: 0.85,
     bloomIntensity: 0.14,
     bloomRadius: 2,
-    ssaoRadius: 0.42,
+    ssaoRadius: 2,
     ssaoIntensity: 0.32,
     contrast: 1.06,
     saturation: 1.04,
@@ -253,7 +253,7 @@ const GALLERY_ROUTE_POSTPROCESS_PRESETS: Readonly<Record<DemoDefinition["id"], G
     bloomThreshold: 0.76,
     bloomIntensity: 0.2,
     bloomRadius: 3,
-    ssaoRadius: 0.45,
+    ssaoRadius: 2,
     ssaoIntensity: 0.35,
     contrast: 1.08,
     saturation: 1.05,
@@ -265,7 +265,7 @@ const GALLERY_ROUTE_POSTPROCESS_PRESETS: Readonly<Record<DemoDefinition["id"], G
     bloomThreshold: 0.78,
     bloomIntensity: 0.2,
     bloomRadius: 3,
-    ssaoRadius: 0.45,
+    ssaoRadius: 2,
     ssaoIntensity: 0.35,
     contrast: 1.08,
     saturation: 1.04,
@@ -277,7 +277,7 @@ const GALLERY_ROUTE_POSTPROCESS_PRESETS: Readonly<Record<DemoDefinition["id"], G
     bloomThreshold: 0.68,
     bloomIntensity: 0.26,
     bloomRadius: 4,
-    ssaoRadius: 0.5,
+    ssaoRadius: 3,
     ssaoIntensity: 0.38,
     contrast: 1.1,
     saturation: 0.9,
@@ -289,7 +289,7 @@ const GALLERY_ROUTE_POSTPROCESS_PRESETS: Readonly<Record<DemoDefinition["id"], G
     bloomThreshold: 0.74,
     bloomIntensity: 0.22,
     bloomRadius: 3,
-    ssaoRadius: 0.45,
+    ssaoRadius: 2,
     ssaoIntensity: 0.35,
     contrast: 1.1,
     saturation: 1.04,
@@ -298,12 +298,17 @@ const GALLERY_ROUTE_POSTPROCESS_PRESETS: Readonly<Record<DemoDefinition["id"], G
   }
 };
 
+function clampGallerySsaoRadius(radius: number): number {
+  return Math.max(1, Math.min(8, Math.round(radius < 1 ? radius * 8 : radius)));
+}
+
 export function applyGalleryRoutePostprocessPolicy(
   demoId: DemoDefinition["id"],
   value: RendererPostProcessOptions | false,
   controls: ControlValues
 ): RendererPostProcessOptions | false {
   const preset = GALLERY_ROUTE_POSTPROCESS_PRESETS[demoId];
+  const ssaoRadius = clampGallerySsaoRadius(preset.ssaoRadius);
   const base = value === false ? {} : value;
 
   if (demoId === "product-configurator") {
@@ -324,7 +329,7 @@ export function applyGalleryRoutePostprocessPolicy(
       },
       ssao: {
         enabled: true,
-        radius: preset.ssaoRadius,
+        radius: ssaoRadius,
         intensity: preset.ssaoIntensity
       },
       colorGrade: {
@@ -355,7 +360,7 @@ export function applyGalleryRoutePostprocessPolicy(
       bloom: false,
       ssao: {
         enabled: true,
-        radius: preset.ssaoRadius,
+        radius: ssaoRadius,
         intensity: preset.ssaoIntensity
       },
       colorGrade: {
@@ -389,7 +394,7 @@ export function applyGalleryRoutePostprocessPolicy(
         : false,
       ssao: {
         enabled: true,
-        radius: preset.ssaoRadius,
+        radius: ssaoRadius,
         intensity: preset.ssaoIntensity
       },
       vignette: { enabled: true, intensity: vignetteAmount },
@@ -421,7 +426,7 @@ export function applyGalleryRoutePostprocessPolicy(
     },
     ssao: {
       enabled: true,
-      radius: preset.ssaoRadius,
+      radius: ssaoRadius,
       intensity: preset.ssaoIntensity
     },
     colorGrade: {
@@ -434,6 +439,8 @@ export function applyGalleryRoutePostprocessPolicy(
     fxaa: boundedGalleryFxaa(base.fxaa, { edgeThreshold: 0.08, subpixelBlend: 0.5 })
   } as unknown as RendererPostProcessOptions;
 }
+
+export const resolveGalleryRoutePostProcessOptions = applyGalleryRoutePostprocessPolicy;
 
 export function rendererEnvironmentLightingCompositionOptionsForRoute(
   demoId: DemoDefinition["id"]

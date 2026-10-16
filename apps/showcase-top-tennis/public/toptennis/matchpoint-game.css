@@ -1,0 +1,228 @@
+/* Matchpoint typography and palette for the existing game menus.
+   Keep setup steps, tournament eligibility, court art and the playing HUD intact. */
+.mode-menu,
+.roster-dialog,
+.appearance-dialog,
+.online-panel,
+.tournament-draw-dialog {
+  --mp-ink: #071a23;
+  --mp-panel: #102a34;
+  --mp-paper: #f4f2e9;
+  --mp-lime: #dbf77b;
+  --mp-muted: #bccac6;
+  font-family: Whitney, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+:is(.mode-menu, .roster-dialog, .appearance-dialog, .online-panel, .tournament-draw-dialog) :is(button, input, select, textarea) {
+  font-family: Whitney, Arial, sans-serif;
+}
+
+:is(.mode-menu, .roster-dialog, .appearance-dialog, .online-panel) :is(h1, h2),
+.draw-header h2 {
+  font-family: "DIN Pro", "Arial Narrow", sans-serif;
+  font-weight: 800;
+  font-style: normal;
+  letter-spacing: -.015em;
+  line-height: 1.05;
+}
+
+.mode-menu { --menu-ink: var(--mp-paper); --menu-dim: var(--mp-muted); --menu-lime: var(--mp-lime); }
+.mode-menu h1 { font-size:var(--text-display); color: var(--mp-paper); }
+.mode-menu h2 { font-size:var(--text-page); color: var(--mp-paper); }
+.mode-menu .tour-heading h2 { font-size:var(--text-display); letter-spacing: -.015em; }
+.mode-menu h1 em, .tour-heading em { color: var(--mp-lime); }
+.mode-choice strong { font-family: "DIN Pro", "Arial Narrow", sans-serif; font-weight: 800; letter-spacing: .01em; }
+.mode-choice { color: var(--mp-paper); background: #102a34eb; border-color: #f4f2e92b; }
+.mode-choice.featured { background: var(--mp-lime); border-color: var(--mp-lime); color: var(--mp-ink); }
+.mode-choice:hover, .mode-choice:focus-visible { background: #19353f; }
+.mode-choice.featured:hover, .mode-choice.featured:focus-visible { background: #e9ffad; }
+.mode-description, .home-tagline, .setup-description { color: var(--mp-muted); }
+.featured .mode-description, .featured .mode-number { color: #304b42; }
+
+.mode-menu :is(.primary-btn, .tour-enter),
+.online-panel .primary-btn {
+  background: var(--mp-lime);
+  border-color: var(--mp-lime);
+  color: var(--mp-ink);
+  font-weight: 600;
+  letter-spacing: .015em;
+}
+.mode-menu :is(.primary-btn, .tour-enter):hover:not(:disabled),
+.online-panel .primary-btn:hover:not(:disabled) { background: #e9ffad; }
+.mode-menu :is(.secondary-btn, .difficulty-btn, .venue-btn),
+.online-panel .secondary-btn { background: var(--mp-panel); color: var(--mp-paper); border-color: #f4f2e940; }
+.mode-menu :is(.difficulty-btn, .venue-btn).active { background: #dbf77b12; border-color: var(--mp-lime); }
+.mode-menu :is(.difficulty-btn, .venue-btn).active > span { color: var(--mp-lime); }
+.mode-menu :is(.difficulty-btn, .venue-btn) small { color: var(--mp-muted); }
+.mode-menu :is(.option-label, .roster-entry-heading, .online-entry label) { color: #c3ceca; }
+.mode-menu :is(.menu-kicker, .current-step), .tour-nav a { color: var(--mp-lime); }
+.mode-menu .text-button, .online-panel h2 { color: var(--mp-paper); }
+.mode-menu .text-button:hover { color: var(--mp-lime); }
+
+.mode-menu .online-entry input,
+.mode-menu .player-entry input,
+.online-panel input:not([type=checkbox]),
+.tour-onboarding input[name=username] {
+  background: var(--mp-paper);
+  border-color: #8ca5a6;
+  color: var(--mp-ink);
+  caret-color: var(--mp-ink);
+}
+.mode-menu input::placeholder, .online-panel input::placeholder { color: #5d6b6d; opacity: 1; }
+.mode-menu input[type=checkbox], .online-panel input[type=checkbox] { accent-color: var(--mp-lime); }
+.mode-menu :is(button, a, input, summary):focus-visible,
+.online-panel :is(button, input, summary):focus-visible { outline: 2px solid var(--mp-lime); outline-offset: 3px; }
+.mode-menu :is(.primary-btn, .tour-enter):focus-visible { outline-color: var(--mp-paper); }
+.online-panel, .multiplayer-build, .how-to-play { background: #102a34; border-color: #f4f2e940; color: #f4f2e9; }
+.build-heading output, .build-track i.added { color: #dbf77b; }
+.build-track i.added { background: #dbf77b; }
+
+/* Retain the selected player and appearance controls in their light dialogs. */
+.roster-dialog, .appearance-dialog { background: var(--mp-paper); color: var(--mp-ink); border-color: #071a2326; }
+.roster-dialog h2, .appearance-dialog h2 { color: var(--mp-ink); }
+.roster-kicker, .appearance-kicker, #roster-style,
+.appearance-preview-label, .appearance-group legend span { color: #586b6a; }
+.roster-grid small, #roster-description, #appearance-description,
+.appearance-footer p, .roster-footer p span { color: #526563; }
+.roster-grid button { border-color: #071a2329; background: #fffdf7; }
+.roster-grid button[aria-pressed=true], .roster-side button[aria-pressed=true] {
+  background: var(--mp-ink);
+  border-color: var(--mp-ink);
+  color: var(--mp-paper);
+}
+.roster-grid button[aria-pressed=true] small { color: #c3ceca; }
+.roster-grid button:hover { border-color: #526b70; }
+.roster-side { background: #e3e5dc; }
+#roster-classic[aria-pressed=true], .appearance-swatches button[aria-pressed=true] {
+  background: #e6edcf;
+  border-color: var(--mp-ink);
+}
+.roster-stat-track { background: #dce0d8; }
+.roster-stat-track i { background: #345764; }
+.roster-dialog #roster-apply, .appearance-dialog #appearance-apply {
+  background: var(--mp-lime);
+  border: 1px solid #071a2340;
+  color: var(--mp-ink);
+}
+.roster-dialog #roster-apply:hover, .appearance-dialog #appearance-apply:hover { background: #e4fba0; }
+.roster-dialog button:focus-visible, .appearance-dialog button:focus-visible { outline-color: var(--mp-ink); }
+.appearance-preview { background: #e8e9e1; border-color: #071a231a; }
+#single-player-picker .roster-grid button { background: #102a34; border-color: #f4f2e940; }
+#single-player-picker .roster-grid button[aria-pressed=true] { background: #dbf77b12; border-color: var(--mp-lime); }
+#single-player-picker .roster-grid button[aria-pressed=true] strong { color: var(--mp-lime); }
+#single-player-profile .roster-stat-track i { background: var(--mp-lime); }
+#create-player[aria-pressed=true] { color: var(--mp-ink); background: var(--mp-lime); }
+
+/* Keep city palettes and locked Major states; share the same interface colors. */
+.tour-hub { color: var(--mp-paper); }
+.tour-card { background: var(--mp-panel); border-color: #f4f2e92b; }
+.tour-card h4 { font-weight: 600; letter-spacing: -.025em; color: var(--mp-paper); }
+.tour-card-description, .tour-card-tagline, .tour-description { color: var(--mp-muted); }
+.tour-section-heading h3, .tour-qualification h3 {
+  font-family: "DIN Pro", "Arial Narrow", sans-serif;
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
+.tour-notice, .tour-setup-event, .tour-onboarding, .tour-character-summary {
+  background: var(--mp-panel);
+  border-color: #f4f2e933;
+  color: var(--mp-paper);
+}
+.tour-onboarding :is(p, small), .tour-character-summary p { color: var(--mp-muted); }
+.tour-onboarding .menu-kicker { color: var(--mp-lime); }
+.tour-onboarding h3 { font-size:var(--text-title); font-weight: 600; letter-spacing: -.025em; }
+.tour-onboarding input[name=username] { font-size:var(--text-body); }
+.tour-notice.is-error { color: #ffd0b7; border-color: #f5ae8b66; }
+.mode-menu .tour-card-major .tour-enter { background: var(--mp-lime); color: var(--mp-ink); }
+.mode-menu .tour-card-major .tour-enter:hover:not(:disabled) { background: #e9ffad; }
+.mode-menu .tour-card-major.is-locked .tour-enter:disabled {
+  background: #dcc08712;
+  border-color: #cbb47555;
+  color: #d6c59e;
+}
+
+@media (max-width: 760px) {
+  .mode-menu h1 { font-size:var(--text-display); }
+  .mode-menu h2 { font-size:var(--text-section); }
+  .mode-menu .tour-heading h2 { font-size:var(--text-page); }
+}
+@media (max-width: 600px) {
+  .roster-footer { background: #f4f2e9; box-shadow: 0 -8px 12px #f4f2e9; }
+}
+@media (max-height: 480px) and (min-width: 500px) {
+  .mode-menu h1 { font-size:var(--text-page); }
+  .mode-menu h2, .mode-menu .tour-heading h2 { font-size:var(--text-section); }
+}
+
+/* Shared reading rhythm for menus, setup and dialogs. Menus use the site's content column. */
+.mode-menu { --menu-inline:max(var(--content-gutter),calc((100% - var(--content-width)) / 2)); padding:var(--space-4) var(--menu-inline); gap:var(--space-3); }
+.mode-menu .menu-home { gap:var(--space-3); }
+.mode-menu .games-played { font-size:var(--text-small);line-height:var(--leading-label); }
+.mode-menu :is(.home-tagline,.setup-description,.mode-description,.career-invite p,.tour-description,.tour-notice) { font-size:var(--text-body);line-height:var(--leading-body); }
+.mode-menu :is(.menu-kicker,.mode-number,.option-label,.setup-navigation,.career-invite small,.career-invite-actions>span) { font-size:var(--text-small);line-height:var(--leading-label);letter-spacing:.04em; }
+.mode-menu :is(.home-tagline,.setup-description) { max-width:65ch; }
+.mode-menu .mode-picker { gap:var(--space-3);align-items:stretch; }
+.mode-menu .mode-choice { padding:var(--space-3);text-align:left;align-items:flex-start;min-width:0;min-height:0;height:auto; }
+.mode-menu .mode-choice strong { font-size:var(--text-title);line-height:var(--leading-heading); }
+.mode-menu .mode-top { width:100%;margin-bottom:var(--space-2);justify-content:space-between;text-align:left; }
+.mode-menu .mode-description { margin-top:var(--space-1); }
+.mode-menu .career-invite { padding:var(--space-3);gap:var(--space-3);align-items:center; }
+.mode-menu .career-invite h2 { font-size:var(--text-title);line-height:var(--leading-heading);margin-bottom:var(--space-1); }
+.mode-menu .career-invite .menu-kicker { margin-bottom:var(--space-1); }
+.mode-menu .career-invite-actions a { font-size:var(--text-body);min-height:48px; }
+.mode-menu .career-invite-actions>span { max-width:28ch;letter-spacing:0; }
+.mode-menu :is(.primary-btn,.secondary-btn,.text-button,.tour-enter),.roster-dialog button,.appearance-dialog button { min-height:44px; }
+.mode-menu input:not([type=checkbox]):not([type=range]) { font-size:var(--text-body);min-height:48px; }
+.mode-menu .setup-navigation { flex-wrap:wrap;gap:var(--space-2); }
+.mode-menu .setup-content { max-width:none; }
+.mode-menu .setup-content h2 { text-align:left; }
+.mode-menu .setup-description { margin:var(--space-2) 0 var(--space-3); }
+.mode-menu .online-entry-actions { flex-wrap:wrap; }
+.mode-menu .online-entry-actions button { white-space:normal; }
+.mode-menu .menu-footer { flex-wrap:wrap;gap:var(--space-3); }
+.mode-menu :is(.controls-rule,.touch-help,.controls-grid span) { font-size:var(--text-body);line-height:var(--leading-body); }
+@media(max-width:760px) {
+ .mode-menu { padding:var(--space-3) var(--menu-inline); }
+ .mode-menu .career-invite { align-items:stretch; }
+ .mode-menu .mode-picker { gap:var(--space-2); }
+ .mode-menu .mode-choice { min-height:144px; }
+ .mode-menu .mode-top { margin-bottom:0; }
+ .mode-menu .mode-number { letter-spacing:.02em; }
+ .mode-menu .setup-navigation>span { border:0;padding:0; }
+ .mode-menu .difficulty { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .mode-menu .controls-grid { grid-template-columns:1fr; }
+}
+
+/* Keep account benefits visible through casual match setup. */
+.mode-menu .setup-signin-invite { margin:var(--space-2) 0 var(--space-3); padding:var(--space-2); border-left:3px solid #ddf887; background:#18342f; color:#f5f5e9; text-align:left; }
+.mode-menu .setup-signin-invite p { margin:0; font-size:var(--text-body); line-height:var(--leading-body); }
+.mode-menu .setup-signin-invite p + p { margin-top:var(--space-1); font-size:var(--text-small); }
+.mode-menu :is(.setup-signin-invite,.career-invite,.tour-notice) p a, .mode-menu .tour-notice a { font-weight:700; background-size:100% 1px; }
+.mode-menu .setup-signin-invite a { color:#ddf887; }
+
+.mode-menu .career-invite p a:any-link { color:#193d2b; font-weight:700; }
+
+.mode-menu .player-entry { max-width:none; width:100%; }
+.mode-menu .player-entry input { max-width:430px; }
+.mode-menu .player-entry .setup-signin-invite { margin:var(--space-1) 0 0; }
+
+/* Stable first paint while the renderer and confirmed statistics load. */
+.game-shell:has(> #game) { background:#071a23 none center / cover no-repeat; }
+/* Portrait play reserves space outside the canvas for the score and controls.
+   Remove the loading poster once the renderer is ready so it cannot show
+   a second court through those areas, including while a match is paused. */
+.game-shell:has(> #game[data-ready="true"]) { background-image:none; }
+#game { opacity:0; transition:opacity .25s ease; }
+#game[data-ready="true"] { opacity:1; }
+.mode-menu .games-played { min-width:0; min-height:2.8em; font-variant-numeric:tabular-nums; }
+.mode-menu .games-played[data-loading="true"] { color:transparent; background:linear-gradient(90deg,#b8cdca22,#b8cdca44,#b8cdca22) left center / 90% 1em no-repeat; border-radius:3px; }
+@media(prefers-reduced-motion:reduce) { #game { transition:none; } }
+
+.mode-menu .play-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:start; }
+@media(max-width:760px) { .mode-menu .play-stats { grid-template-columns:1fr; gap:8px; } .mode-menu .games-played { min-height:1.4em; } }
+
+/* Reserve the account card before the session check completes. */
+.career-invite[data-loading="true"] { position:relative; }
+.career-invite[data-loading="true"] > * { visibility:hidden; }
+.career-invite[data-loading="true"]::after { content:""; position:absolute; inset:24px; background:linear-gradient(#17392e22,#17392e22) left 15% / 40% 24px no-repeat,linear-gradient(#17392e18,#17392e18) left 65% / 70% 16px no-repeat; }

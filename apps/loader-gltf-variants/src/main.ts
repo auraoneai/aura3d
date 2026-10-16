@@ -127,15 +127,16 @@ async function run(): Promise<void> {
         exposure: STUDIO_POSTPROCESS_4_0.tonemapping.exposure
       }
     });
-    const variants = ["base", ...asset.materialVariants.map((variant) => variant.name)];
-    const selectedMaterials = variants.map((variant) => inspectSelectedMaterial(asset, variant));
+    const variants = [...asset.materialVariants.map((variant) => variant.name), "base"];
+    const selectedMaterials = ["base", ...asset.materialVariants.map((variant) => variant.name)].map((variant) => inspectSelectedMaterial(asset, variant));
+    const initialVariant = variants[0] ?? "copper";
     runtime = createRuntime("ready", "Ready", startedAt, {
       meshCount: asset.loaderDiagnostics.meshCount,
       materialCount: asset.loaderDiagnostics.materialCount,
       variantCount: asset.materialVariants.length,
       materialVariantNames: asset.materialVariants.map((variant) => variant.name),
-      activeVariant: "base",
-      selectedMaterialName: selectedMaterials[0] ?? "base-material",
+      activeVariant: initialVariant,
+      selectedMaterialName: inspectSelectedMaterial(asset, initialVariant),
       sceneSelectedMaterials: selectedMaterials,
       extensionsUsed: asset.loaderDiagnostics.extensionsUsed,
       unsupportedRequired: []
@@ -155,7 +156,7 @@ async function run(): Promise<void> {
           fpsFrames = 0;
           fpsFrom = now;
         }
-        const activeVariant = variants[Math.floor(now / 900) % variants.length] ?? "base";
+        const activeVariant = variants[Math.floor(now / 1200) % variants.length] ?? initialVariant;
         const resources = resourcesByVariant.get(activeVariant) ?? resourcesByVariant.get("base");
         if (!resources) throw new Error("Variant resources were not created.");
         const diagnostics = renderer.render(createRendererInput(resources, studioLights, now / 1000));
@@ -209,7 +210,7 @@ function createRendererInput(
   collectedLights: readonly CollectedLight[],
   time: number
 ): RendererInput {
-  const input = resources.toRendererInput({ width: WIDTH, height: HEIGHT }, {
+  return resources.toRendererInput({ width: WIDTH, height: HEIGHT }, {
     qualityPreset: "studio-preview",
     collectedLights,
     environmentLighting: {
@@ -226,17 +227,13 @@ function createRendererInput(
     },
     postprocess: STUDIO_POSTPROCESS_OPTIONS,
     frame: {
-      yawRadians: -0.4 + Math.sin(time * 0.5) * 0.05,
-      pitchRadians: -0.14,
-      paddingRatio: 0.2,
+      yawRadians: -0.58 + Math.sin(time * 0.6) * 0.12,
+      pitchRadians: -0.32,
+      paddingRatio: 0.22,
       nearPadding: 0.2,
       farPadding: 2.2
     }
   });
-  return {
-    source: input.source,
-    camera: input.camera
-  };
 }
 
 function createRuntime(
@@ -269,25 +266,42 @@ function createRuntime(
 
 function createVariantFixtureDataUrl(): string {
   const positions = new Float32Array([
-    -1.1, -0.55, 0,
-    1.1, -0.55, 0,
-    1.1, 0.55, 0,
-    -1.1, 0.55, 0
+    // Front (+Z)
+    -0.85, -0.55,  0.55,   0.85, -0.55,  0.55,   0.85,  0.55,  0.55,  -0.85,  0.55,  0.55,
+    // Back (-Z)
+     0.85, -0.55, -0.55,  -0.85, -0.55, -0.55,  -0.85,  0.55, -0.55,   0.85,  0.55, -0.55,
+    // Top (+Y)
+    -0.85,  0.55,  0.55,   0.85,  0.55,  0.55,   0.85,  0.55, -0.55,  -0.85,  0.55, -0.55,
+    // Bottom (-Y)
+    -0.85, -0.55, -0.55,   0.85, -0.55, -0.55,   0.85, -0.55,  0.55,  -0.85, -0.55,  0.55,
+    // Right (+X)
+     0.85, -0.55,  0.55,   0.85, -0.55, -0.55,   0.85,  0.55, -0.55,   0.85,  0.55,  0.55,
+    // Left (-X)
+    -0.85, -0.55, -0.55,  -0.85, -0.55,  0.55,  -0.85,  0.55,  0.55,  -0.85,  0.55, -0.55
   ]);
   const normals = new Float32Array([
-    0, 0, 1,
-    0, 0, 1,
-    0, 0, 1,
-    0, 0, 1
+     0,  0,  1,   0,  0,  1,   0,  0,  1,   0,  0,  1,
+     0,  0, -1,   0,  0, -1,   0,  0, -1,   0,  0, -1,
+     0,  1,  0,   0,  1,  0,   0,  1,  0,   0,  1,  0,
+     0, -1,  0,   0, -1,  0,   0, -1,  0,   0, -1,  0,
+     1,  0,  0,   1,  0,  0,   1,  0,  0,   1,  0,  0,
+    -1,  0,  0,  -1,  0,  0,  -1,  0,  0,  -1,  0,  0
   ]);
-  const indices = new Uint16Array([0, 1, 2, 0, 2, 3]);
+  const indices = new Uint16Array([
+     0,  1,  2,   0,  2,  3,
+     4,  5,  6,   4,  6,  7,
+     8,  9, 10,   8, 10, 11,
+    12, 13, 14,  12, 14, 15,
+    16, 17, 18,  16, 18, 19,
+    20, 21, 22,  20, 22, 23
+  ]);
   const buffer = new BinaryBufferBuilder();
   const positionView = buffer.appendFloat32(positions);
   const normalView = buffer.appendFloat32(normals);
   const indexView = buffer.appendUint16(indices);
   const bytes = buffer.bytes();
   const gltf = {
-    asset: { version: "2.0", generator: "Aura3D CurrentRoutes variants fixture" },
+    asset: { version: "2.0", generator: "Aura3D 4.0 variants fixture" },
     extensionsUsed: ["KHR_materials_variants"],
     extensionsRequired: ["KHR_materials_variants"],
     extensions: {
@@ -298,14 +312,14 @@ function createVariantFixtureDataUrl(): string {
     buffers: [{ uri: `data:application/octet-stream;base64,${bytesToBase64(bytes)}`, byteLength: bytes.byteLength }],
     bufferViews: buffer.views,
     accessors: [
-      { bufferView: positionView, componentType: 5126, count: 4, type: "VEC3", min: [-1.1, -0.55, 0], max: [1.1, 0.55, 0] },
-      { bufferView: normalView, componentType: 5126, count: 4, type: "VEC3" },
-      { bufferView: indexView, componentType: 5123, count: 6, type: "SCALAR" }
+      { bufferView: positionView, componentType: 5126, count: 24, type: "VEC3", min: [-0.85, -0.55, -0.55], max: [0.85, 0.55, 0.55] },
+      { bufferView: normalView, componentType: 5126, count: 24, type: "VEC3" },
+      { bufferView: indexView, componentType: 5123, count: 36, type: "SCALAR" }
     ],
     materials: [
-      material("base-material", [0.74, 0.71, 0.64, 1], 0, 0.58),
-      material("copper-material", [0.96, 0.44, 0.16, 1], 0.2, 0.38),
-      material("arctic-material", [0.22, 0.72, 1, 1], 0, 0.22)
+      material("base-material", [0.84, 0.80, 0.72, 1], 0.35, 0.28),
+      material("copper-material", [0.96, 0.48, 0.18, 1], 0.72, 0.22),
+      material("arctic-material", [0.28, 0.78, 1.0, 1], 0.48, 0.18)
     ],
     meshes: [{
       name: "variant-panel",
@@ -323,7 +337,7 @@ function createVariantFixtureDataUrl(): string {
         }
       }]
     }],
-    nodes: [{ name: "variant-panel-node", mesh: 0 }],
+    nodes: [{ name: "variant-panel-node", mesh: 0, rotation: [0.21, -0.36, 0.08, 0.905] }],
     scenes: [{ name: "variant-scene", nodes: [0] }],
     scene: 0
   };
@@ -393,7 +407,7 @@ function renderUi(root: HTMLElement, runtime: CurrentRoutesLoaderGLTFVariantsRun
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>CurrentRoutes Loader GLTF Variants</h1>
+          <h1>Aura3D 4.0 · glTF Material Variants</h1>
           <p>KHR_materials_variants selected through public GLTF render resources.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>

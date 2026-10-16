@@ -165,3 +165,41 @@ export type {
   SubmittedPostprocessRecord
 } from "../agent-api/postBridge.js";
 export { createProductionRuntimePostprocess } from "../agent-api/compiler/postprocess.js";
+export {
+  arcadeKart,
+  buildGrandPrixRoadwayNodes,
+  createArcadeKartGameKit,
+  buildCarSoccerPitchNodes,
+  carSoccer,
+  createCarSoccerGameKit,
+  createRacketSportsGameKit,
+  directionToEulerXYZ,
+  localDirToWorld,
+  localToWorld,
+  orientCylinderBetween,
+  racketSports,
+  solveArmElbow,
+  stepRacketBallPhysics
+} from "../agent-api/index.js";
+export type {
+  ArcadeKartGameKit,
+  ArcadeKartGameKitOptions,
+  ArcadeKartPlayerState,
+  ArcadeKartRivalSpec,
+  ArcadeKartStepControls,
+  ArcadeKartStepResult,
+  GrandPrixRoadwayOptions,
+  CarSoccerBallState,
+  CarSoccerBallStepEvents,
+  CarSoccerControls,
+  CarSoccerGameKit,
+  CarSoccerGameKitOptions,
+  CarSoccerPitchOptions,
+  CarSoccerVehicleActor,
+  RacketBallState,
+  RacketBallStepEvents,
+  RacketSportsGameKit,
+  RacketSurfacePhysicsOptions,
+  RacketVec3
+} from "../agent-api/index.js";
+

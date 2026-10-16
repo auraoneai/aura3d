@@ -127,32 +127,32 @@ const productScale = normalizedModelScale(0.4841);
 const PRODUCT_POSITION: readonly [number, number, number] = [0, 0.46, -0.22];
 
 const variants: Record<VariantId, { readonly label: string; readonly color: string; readonly accent: string }> = {
-  graphite: { label: "Graphite Studio", color: "#555d66", accent: "#cdbd99" },
-  ceramic: { label: "Ceramic Pearl", color: "#efe9dd", accent: "#2f3334" },
-  copper: { label: "Copper Limited", color: "#d4764c", accent: "#f2c06d" }
+  graphite: { label: "Graphite Studio", color: "#7a8694", accent: "#e4d5b4" },
+  ceramic: { label: "Ceramic Pearl", color: "#f7f3ea", accent: "#485258" },
+  copper: { label: "Copper Limited", color: "#f09363", accent: "#ffd27d" }
 };
 
 const finishes: Record<FinishId, { readonly label: string; readonly roughness: number; readonly metallic: number; readonly clearcoat: number; readonly accentMaterial: AuraMaterialSpec }> = {
   satin: {
     label: "Satin polymer",
-    roughness: 0.62,
-    metallic: 0.04,
-    clearcoat: 0.24,
-    accentMaterial: material.blackRubber({ color: "#111111", roughness: 0.94 })
+    roughness: 0.46,
+    metallic: 0.08,
+    clearcoat: 0.34,
+    accentMaterial: material.blackRubber({ color: "#1d2226", roughness: 0.88 })
   },
   gloss: {
     label: "Gloss clearcoat",
-    roughness: 0.22,
-    metallic: 0.03,
-    clearcoat: 0.58,
-    accentMaterial: material.clearGlass({ color: "#c9d0d4", opacity: 0.12, transmission: 0.62 })
+    roughness: 0.16,
+    metallic: 0.08,
+    clearcoat: 0.78,
+    accentMaterial: material.clearGlass({ color: "#d8e2e8", opacity: 0.16, transmission: 0.68 })
   },
   titanium: {
     label: "Brushed titanium",
-    roughness: 0.27,
-    metallic: 0.86,
-    clearcoat: 0.18,
-    accentMaterial: material.brushedMetal({ color: "#b7bec6", roughness: 0.28, anisotropy: 0.72 })
+    roughness: 0.22,
+    metallic: 0.88,
+    clearcoat: 0.28,
+    accentMaterial: material.brushedMetal({ color: "#c9d2dc", roughness: 0.24, anisotropy: 0.76 })
   }
 };
 
@@ -271,6 +271,23 @@ app = createAuraApp("#aura-stage", {
 });
 publishEvidence(app.diagnostics().errors.length > 0 ? "error" : "ready", app.scene);
 
+Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+  value: {
+    category: "application",
+    subject: {
+      position: PRODUCT_POSITION,
+      rotation: [0, focusYaw(state.focus), 0] as const,
+      targetSize: 1.55 * productScale
+    },
+    setSubjectSuppressed: (suppressed: boolean) => {
+      app.pause();
+      app.nodes.get("configured-headphones")?.setScale(suppressed ? 0.0001 : productScale);
+      app.step(0);
+    }
+  },
+  configurable: true
+});
+
 app.onFrame(() => {
   frameTick += 1;
   if (frameTick <= 4 || frameTick % 45 === 0) {
@@ -292,7 +309,6 @@ window.addEventListener("resize", () => {
 
 function buildConfiguratorScene(nextState: ConfiguratorState) {
   const activeVariant = variants[nextState.variant];
-  const activeFinish = finishes[nextState.finish];
   const productMaterial = productMaterialFor(nextState);
   const productModel = model(productAsset, {
     name: "configured typed headphones product",
@@ -306,37 +322,35 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
     .runtime({ id: "configured-headphones", tags: ["typed-asset", "showcaseHeadphones", "configurable-product"] });
 
   const builder = scene()
-    .background("#0a1016")
+    .background("#0c151e")
     .add(environments.productHero({
       name: "authored product hero HDR environment",
-      // Keep the environment strong enough to describe the clearcoat without
-      // lifting the entire copper body toward one flat midtone. The two long
-      // directional cards below provide the readable highlight-to-shadow
-      // transition that a product photograph needs.
-      intensity: 0.72,
-      color: "#fff4e6"
+      intensity: 1.38,
+      color: "#fff7ec"
     }))
     .addMany(compactProductStageNodes(nextState))
     .add(nextState.turntable
       ? productModel.animate({ clip: "turntable", speed: 0.36, duration: 9, captureTime: 0.36 })
       : productModel)
     .addMany(configuratorSceneAccents(nextState))
-    .add(lights.ambient({ name: "product configurator ambient fill", intensity: 0.16, color: "#cbd4dc" }))
-    .add(lights.directional({ name: "large softbox product key", position: [-3.4, 5.2, 4.4], intensity: 1.32, color: "#ffe8d3" }))
-    .add(lights.rect({ name: "front diffusion product softbox", position: [-1.8, 2.35, 3.2], intensity: 0.54, width: 3.5, height: 1.65, color: "#fff7ed" }))
-    .add(lights.directional({ name: "cool edge separation card", position: [3.8, 2.8, -1.5], intensity: 0.42, color: "#80b7da" }))
-    .add(lights.point({ name: "earcup contour kicker", position: [0.1, 0.68, 2.25], intensity: 0.22, color: "#efbf91" }))
+    .add(lights.ambient({ name: "product configurator ambient fill", intensity: 0.48, color: "#dce8f2" }))
+    .add(lights.hemisphere({ name: "product studio sky-plinth fill", skyColor: "#eef6ff", groundColor: "#263b4a", intensity: 0.64 }))
+    .add(lights.directional({ name: "large softbox product key", position: [-3.1, 5.1, 4.5], intensity: 2.85, color: "#fff1de", shadow: true }))
+    .add(lights.rect({ name: "front diffusion product softbox", position: [-1.4, 2.15, 3.2], intensity: 1.65, width: 3.6, height: 1.85, color: "#fff9f0" }))
+    .add(lights.directional({ name: "cool edge separation card", position: [3.6, 2.9, -1.6], intensity: 1.55, color: "#68d8f0" }))
+    .add(lights.point({ name: "earcup contour kicker", position: [0.16, 0.78, 2.15], intensity: 1.25, color: "#ffd29d", distance: 6 }))
+    .add(lights.point({ name: "headband crown gold rim light", position: [-0.28, 1.85, 0.45], intensity: 1.35, color: activeVariant.accent, distance: 5 }))
     .add(lights.rect({
       name: "long warm showroom reflection card",
-      position: [2.75, 1.62, 1.72],
-      intensity: nextState.variant === "copper" ? 0.46 : 0.34,
+      position: [2.55, 1.58, 1.82],
+      intensity: nextState.variant === "copper" ? 1.28 : 1.05,
       color: activeVariant.accent,
-      width: 2.6,
-      height: 0.72
+      width: 2.8,
+      height: 0.88
     }))
     .add(effects.ambientOcclusion({
       name: "studio product ambient occlusion",
-      intensity: 0.34,
+      intensity: 0.38,
       radius: 0.56,
       falloff: 1.6,
       multiBounce: true
@@ -350,21 +364,21 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
     }))
     .add(effects.bloom({
       name: "studio product clearcoat bloom",
-      intensity: nextState.finish === "gloss" ? 0.22 : 0.16,
-      threshold: 0.78,
-      radius: 0.28
+      intensity: nextState.finish === "gloss" ? 0.28 : 0.22,
+      threshold: 0.74,
+      radius: 0.32
     }))
     .add(effects.vignette({
       name: "studio product vignette",
-      intensity: 0.18,
-      smoothness: 0.72,
+      intensity: 0.16,
+      smoothness: 0.74,
       roundness: 0.88,
       color: "#05090d"
     }))
     .add(effects.colorGrade({
       name: "studio product color grade",
-      contrast: 1.05,
-      saturation: 1.04
+      contrast: 1.06,
+      saturation: 1.08
     }))
     .add(interactions.orbit({ target: "configured typed headphones product" }))
     .camera(cameraFor(nextState))
@@ -374,67 +388,63 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
 }
 
 function compactProductStageNodes(nextState: ConfiguratorState): readonly AuraSceneNode[] {
-  // The product needs a photographic context, not an empty black canvas. Keep
-  // this stage route-owned so the light/material choices stay tuned to the
-  // copper/ceramic/graphite finishes instead of inheriting the bright generic
-  // product-stage backdrop (which overwhelms the foreground probe and flattens
-  // the selected material). Every item here is staging around the typed GLB;
-  // it is never presented as a product part.
   const floor = material.pbr({
     name: "deep slate studio floor",
-    // A product photograph still needs a readable floor/value break. The
-    // previous near-black floor made the pedestal disappear into the canvas,
-    // especially for the selected copper finish.
-    color: nextState.variant === "ceramic" ? "#354b57" : "#243b49",
-    roughness: 0.58,
-    metallic: 0.16,
+    color: nextState.variant === "ceramic" ? "#3b5360" : "#2b4555",
+    roughness: 0.52,
+    metallic: 0.18,
     opacity: 1
   });
   const wall = material.pbr({
     name: "deep slate seamless photo sweep",
-    color: nextState.variant === "ceramic" ? "#1f303b" : "#111d27",
-    roughness: 0.72,
-    metallic: 0.04
+    color: nextState.variant === "ceramic" ? "#243744" : "#152532",
+    roughness: 0.68,
+    metallic: 0.06
   });
   const plinth = material.clearcoat({
     name: "brushed smoked glass product plinth",
-    color: "#3f5c68",
-    roughness: 0.42,
-    metallic: 0.34,
-    clearcoat: 0.72,
-    envMapIntensity: 0.72
+    color: "#4a6b78",
+    roughness: 0.34,
+    metallic: 0.42,
+    clearcoat: 0.84,
+    envMapIntensity: 1.15
   });
   const pedestalBase = material.pbr({
     name: "grounded smoked glass pedestal base",
-    color: "#294553",
-    roughness: 0.44,
-    metallic: 0.24,
+    color: "#315160",
+    roughness: 0.4,
+    metallic: 0.28,
     opacity: 1
   });
   const pedestalCollar = material.clearcoatPaint({
     name: "pedestal collar shadow break",
-    color: "#1a2e39",
-    roughness: 0.3,
-    metallic: 0.3,
-    clearcoat: 0.5
+    color: "#203846",
+    roughness: 0.26,
+    metallic: 0.36,
+    clearcoat: 0.58
   });
   const contact = material.pbr({
     name: "soft product contact shadow",
     color: "#02050a",
     roughness: 0.94,
     metallic: 0,
-    opacity: 0.58
+    opacity: 0.52
   });
-  const cyan = material.emissive({ color: "#3bc7de", emissive: "#3bc7de", emissiveIntensity: 0.12, opacity: 0.2 });
-  const amber = material.emissive({ color: nextState.variant === "copper" ? "#f0a060" : "#d5b36a", emissive: nextState.variant === "copper" ? "#f0a060" : "#d5b36a", emissiveIntensity: 0.1, opacity: 0.2 });
+  const cyan = material.emissive({ color: "#4fe0f8", emissive: "#4fe0f8", emissiveIntensity: 0.42, opacity: 0.46 });
+  const amber = material.emissive({ color: nextState.variant === "copper" ? "#ffad66" : "#f2cf7e", emissive: nextState.variant === "copper" ? "#ffad66" : "#f2cf7e", emissiveIntensity: 0.38, opacity: 0.44 });
   const rim = material.emissive({
     name: "subtle turntable rim light",
-    // Keep the turntable groove in the same cool studio family instead of
-    // introducing a second bright accent that competes with the copper shell.
-    color: "#4a8a98",
-    emissive: "#4a8a98",
-    emissiveIntensity: 0.035,
-    opacity: 0.18
+    color: "#5ce1e6",
+    emissive: "#5ce1e6",
+    emissiveIntensity: 0.68,
+    opacity: 0.74
+  });
+  const innerRim = material.emissive({
+    name: "inner turntable gold accent ring",
+    color: variants[nextState.variant].accent,
+    emissive: variants[nextState.variant].accent,
+    emissiveIntensity: 0.52,
+    opacity: 0.64
   });
   return [
     primitives.plane({ name: "deep slate product studio floor", material: floor })
@@ -451,6 +461,8 @@ function compactProductStageNodes(nextState: ConfiguratorState): readonly AuraSc
       .position(0, 0.469, -0.45).scale([0.55, 0.008, 0.34]).toJSON(),
     primitives.torus({ name: "subtle turntable rim light", material: rim })
       .position(0, 0.475, -0.45).rotate(1.5708, 0, 0).scale([0.72, 0.52, 0.018]).toJSON(),
+    primitives.cylinder({ name: "inner turntable gold accent ring", material: innerRim })
+      .position(0, 0.473, -0.45).scale([0.62, 0.006, 0.42]).toJSON(),
     primitives.box({ name: "cool cyan studio reflection panel", material: cyan })
       .position(-2.72, 1.12, -2.14).scale([0.1, 1.2, 0.02]).toJSON(),
     primitives.box({ name: "warm amber studio reflection panel", material: amber })
@@ -681,11 +693,13 @@ function productMaterialFor(nextState: ConfiguratorState): AuraMaterialSpec {
   if (nextState.finish === "titanium") {
     return material.brushedMetal({
       name: `${activeVariant.label} brushed titanium override`,
-      color: nextState.variant === "ceramic" ? "#d8d7d0" : activeVariant.color,
+      color: nextState.variant === "ceramic" ? "#e2e1da" : activeVariant.color,
       roughness: activeFinish.roughness,
       metallic: activeFinish.metallic,
       clearcoat: activeFinish.clearcoat,
-      envMapIntensity: 1.44
+      emissive: activeVariant.color,
+      emissiveIntensity: nextState.variant === "ceramic" ? 0.08 : 0.14,
+      envMapIntensity: 1.85
     });
   }
   return material.clearcoatPaint({
@@ -694,8 +708,10 @@ function productMaterialFor(nextState: ConfiguratorState): AuraMaterialSpec {
     roughness: activeFinish.roughness,
     metallic: activeFinish.metallic,
     clearcoat: activeFinish.clearcoat,
-    clearcoatRoughness: nextState.finish === "gloss" ? 0.16 : 0.12,
-    envMapIntensity: nextState.finish === "gloss" ? 0.92 : 0.84
+    clearcoatRoughness: nextState.finish === "gloss" ? 0.1 : 0.14,
+    emissive: activeVariant.color,
+    emissiveIntensity: nextState.variant === "ceramic" ? 0.08 : 0.16,
+    envMapIntensity: nextState.finish === "gloss" ? 1.65 : 1.38
   });
 }
 

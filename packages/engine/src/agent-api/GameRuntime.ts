@@ -1915,17 +1915,36 @@ export function createGameInput(options: GameInputOptions): GameInputController 
     return latestSnapshot;
   };
   const target = options.target ?? (typeof window !== "undefined" ? window : undefined);
+  const fallbackCodeForKey = (key: string | undefined): string | undefined => {
+    if (!key) return undefined;
+    if (key === " " || key === "Spacebar") return "Space";
+    if (key === "Shift") return "ShiftLeft";
+    if (key.length === 1 && /[a-z]/i.test(key)) return `Key${key.toUpperCase()}`;
+    if (key.length === 1 && /[0-9]/.test(key)) return `Digit${key}`;
+    return undefined;
+  };
   const onKeyDown = (event: Event) => {
     const keyboard = event as KeyboardEvent;
     if (keyboard.repeat) return;
     markDevice("keyboard");
-    if (keyboard.code) pressBinding(keyboard.code);
-    if (keyboard.key && keyboard.key !== keyboard.code) pressBinding(keyboard.key);
+    const code = keyboard.code || fallbackCodeForKey(keyboard.key);
+    if (code) pressBinding(code);
+    if (keyboard.key && keyboard.key !== code) {
+      pressBinding(keyboard.key);
+      if (keyboard.key.length === 1) pressBinding(keyboard.key.toLowerCase());
+    }
   };
   const onKeyUp = (event: Event) => {
     const keyboard = event as KeyboardEvent;
-    if (keyboard.code) releaseBinding(keyboard.code);
-    if (keyboard.key && keyboard.key !== keyboard.code) releaseBinding(keyboard.key);
+    const code = keyboard.code || fallbackCodeForKey(keyboard.key);
+    if (code) releaseBinding(code);
+    if (keyboard.key && keyboard.key !== code) {
+      releaseBinding(keyboard.key);
+      if (keyboard.key.length === 1) {
+        releaseBinding(keyboard.key.toLowerCase());
+        releaseBinding(keyboard.key.toUpperCase());
+      }
+    }
   };
   // E5: under pointer lock, clientX/clientY freeze at the lock point and
   // only movementX/movementY carry the delta — the old clientX-diff math

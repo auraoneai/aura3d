@@ -126,13 +126,20 @@ async function run(): Promise<void> {
         exposure: TRACKBALL_POSTPROCESS_4_0.tonemapping.exposure
       }
     });
-    const geometry = Geometry.litCube(1.15);
+    const geometry = Geometry.litCube(1.05);
+    const coreSphere = Geometry.uvSphere(0.68, 28, 18);
     const satelliteGeometry = Geometry.litCube(0.42);
     const material = new PBRMaterial({
       baseColor: [0.34, 0.58, 0.88, 1],
       roughness: 0.26,
       metallic: 0.42,
       environmentIntensity: 0.58
+    });
+    const goldCoreMaterial = new PBRMaterial({
+      baseColor: [0.98, 0.78, 0.28, 1],
+      roughness: 0.18,
+      metallic: 0.76,
+      environmentIntensity: 0.74
     });
     const copperAccentMaterial = new PBRMaterial({
       baseColor: [0.94, 0.56, 0.24, 1],
@@ -180,9 +187,15 @@ async function run(): Promise<void> {
           },
           renderItems: [
             {
+              geometry: coreSphere,
+              material: goldCoreMaterial,
+              modelMatrix: composeTransform(0, 0.52, 0.24, 1, 1, 1, -roll * 0.4),
+              label: "trackball-core-sphere"
+            },
+            {
               geometry,
               material,
-              modelMatrix: composeTransform(0, 0, 0, 1, 1, 1, roll * 0.35),
+              modelMatrix: composeTransform(0, -0.14, 0, 1, 1, 1, roll * 0.35),
               label: "trackball-control-cube"
             },
             {
@@ -267,7 +280,7 @@ function renderUi(root: HTMLElement, runtime: CurrentRoutesControlsTrackballRunt
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>CurrentRoutes Controls Trackball</h1>
+          <h1>Aura3D 4.0 · Trackball Camera Controls</h1>
           <p>Public TrackballControls driving camera orbit, pan, dolly, and roll state.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>

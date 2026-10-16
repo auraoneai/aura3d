@@ -1,0 +1,33 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-10-15T23:55:00.000Z",
+  "appId": "showcase-top-tennis",
+  "route": "/apps/showcase-top-tennis/",
+  "classification": "candidate",
+  "publicShowcase": true,
+  "promotionStatus": "public-showcase",
+  "machinePass": true,
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "production",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": true
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseStadiumSeats",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.rooftopScoreboardGantryMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.rooftopFloodlightTowerMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    }
+  ]
+}

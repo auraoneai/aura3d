@@ -239,6 +239,7 @@ function createRendererInput(
     }
   });
   return {
+    ...input,
     source: {
       ...input.source,
       materialLibrary
@@ -313,8 +314,8 @@ function renderUi(root: HTMLElement, runtime: CurrentRoutesLoaderOBJRuntime): vo
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>CurrentRoutes Loader OBJ</h1>
-          <p>Native OBJ import routed through A3D GLTF render resources.</p>
+          <h1>Aura3D 4.0 · OBJ Mesh Loader</h1>
+          <p>Native OBJ import routed through Aura3D 4.0 GLTF render resources.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>
       </div>

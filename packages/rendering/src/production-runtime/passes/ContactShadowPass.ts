@@ -73,20 +73,20 @@ export function createContactShadowPass(options: ContactShadowPassOptions): Cont
   ];
   const geometry = Geometry.cylinder({ radius: 0.5, height: 1, segments: 128, capped: true });
   const layers = [
-    { id: "ambient-penumbra", scaleX: 2.1, scaleZ: 1.72, lift: 0.024, alpha: 0.018, offsetScale: 0.9 },
-    { id: "directional-penumbra", scaleX: 1.62, scaleZ: 1.16, lift: 0.027, alpha: 0.052, offsetScale: 1.08 },
-    { id: "cast-falloff", scaleX: 1.05, scaleZ: 0.68, lift: 0.03, alpha: 0.13, offsetScale: 1.42 },
-    { id: "cast-core", scaleX: 0.72, scaleZ: 0.42, lift: 0.033, alpha: 0.26, offsetScale: 1.74 },
-    { id: "near-contact", scaleX: 0.76, scaleZ: 0.58, lift: 0.036, alpha: 0.18, offsetScale: 0.2 },
-    { id: "core-contact", scaleX: 0.42, scaleZ: 0.34, lift: 0.039, alpha: 0.22, offsetScale: 0 },
-    { id: "asset-anchor", scaleX: 0.22, scaleZ: 0.18, lift: 0.042, alpha: 0.14, offsetScale: -0.08 }
+    { id: "ambient-penumbra", scaleX: 1.48, scaleZ: 1.32, lift: 0.0008, alpha: 0.008, offsetScale: 0.45 },
+    { id: "directional-penumbra", scaleX: 1.18, scaleZ: 0.96, lift: 0.0012, alpha: 0.014, offsetScale: 0.65 },
+    { id: "cast-falloff", scaleX: 0.88, scaleZ: 0.64, lift: 0.0016, alpha: 0.022, offsetScale: 0.85 },
+    { id: "cast-core", scaleX: 0.62, scaleZ: 0.42, lift: 0.002, alpha: 0.032, offsetScale: 0.95 },
+    { id: "near-contact", scaleX: 0.56, scaleZ: 0.46, lift: 0.0024, alpha: 0.028, offsetScale: 0.12 },
+    { id: "core-contact", scaleX: 0.36, scaleZ: 0.28, lift: 0.0028, alpha: 0.036, offsetScale: 0 },
+    { id: "asset-anchor", scaleX: 0.2, scaleZ: 0.16, lift: 0.0032, alpha: 0.024, offsetScale: -0.04 }
   ] as const;
   const renderItems: RenderItem[] = layers.map((layer) => ({
     label: `${labelPrefix}-${layer.id}`,
     geometry,
     material: new UnlitMaterial({
       name: `${labelPrefix}-${layer.id}-material`,
-      color: [0.011, 0.012, 0.015, layer.alpha * opacity * gapFade * lightAngleFade],
+      color: [0.008, 0.01, 0.014, layer.alpha * opacity * gapFade * lightAngleFade],
       renderState: { blend: true, depthWrite: false, cullMode: "none" }
     }),
     modelMatrix: composeMat4(
@@ -96,7 +96,7 @@ export function createContactShadowPass(options: ContactShadowPassOptions): Cont
         centerZ + directionalOffset[1] * layer.offsetScale
       ],
       projectionRotation,
-      [radiusX * layer.scaleX, 0.0035, radiusZ * layer.scaleZ]
+      [radiusX * layer.scaleX, 0.0008, radiusZ * layer.scaleZ]
     )
   }));
   const footprintPoints = sanitizeFootprintPoints(options.footprintPoints ?? [], bounds, options.floorY).slice(0, 24);

@@ -600,7 +600,37 @@ export class CurrentRoutesFlagshipViewer {
           ...(this.cinematicScene?.collectedLights ?? [])
         ],
         shadow: this.controls.shadows,
-        postprocess: false
+        postprocess: {
+          toneMapping: {
+            operator: "filmic",
+            exposure: 1.08,
+            whitePoint: 1.35,
+            gamma: 2.2
+          },
+          bloom: {
+            enabled: true,
+            threshold: 0.82,
+            intensity: 0.16,
+            radius: 3
+          },
+          ssao: {
+            enabled: true,
+            radius: 2,
+            intensity: 0.26,
+            bias: 0.02
+          },
+          colorGrade: {
+            contrast: 1.06,
+            saturation: 1.05,
+            vignette: 0.18,
+            sharpening: 0.04
+          },
+          fxaa: {
+            enabled: true,
+            edgeThreshold: 0.08,
+            subpixelBlend: 0.5
+          }
+        } as unknown as RendererPostProcessOptions
       });
       await this.renderer.renderFrame({
         source: source.source,
@@ -1496,7 +1526,7 @@ export function createGroundedStage(bounds: CameraFrameBounds, options: A3DGroun
   const centerX = (bounds.min[0] + bounds.max[0]) / 2;
   const centerY = (bounds.min[1] + bounds.max[1]) / 2;
   const centerZ = (bounds.min[2] + bounds.max[2]) / 2;
-  const floorOffset = options.floorOffset ?? Math.min(0.05, assetExtent * 0.035);
+  const floorOffset = options.floorOffset ?? Math.min(0.004, assetExtent * 0.002);
   const floorThickness = options.floorThickness ?? Math.min(0.035, Math.max(0.002, assetExtent * 0.018));
   const floorY = bounds.min[1] - floorOffset;
   const backZ = bounds.min[2] - depth * (options.backdropDepthOffsetScale ?? 0.42);
@@ -1504,8 +1534,8 @@ export function createGroundedStage(bounds: CameraFrameBounds, options: A3DGroun
   const floorMaterial = new PBRMaterial({
     name: `${labelPrefix}-floor-material`,
     baseColor: options.floorColor ?? [0.022, 0.024, 0.029, 1],
-    metallic: clamp(options.floorMetallic ?? 0, 0, 1),
-    roughness: clamp(options.floorRoughness ?? 0.46, 0.02, 1),
+    metallic: clamp(options.floorMetallic ?? 0.08, 0, 1),
+    roughness: clamp(options.floorRoughness ?? 0.34, 0.02, 1),
     environmentIntensity: 0.82
   });
   const backdropMaterial = new PBRMaterial({

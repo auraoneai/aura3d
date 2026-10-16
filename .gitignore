@@ -410,3 +410,7 @@ AGENTS.md
 !packages/create-aura3d/templates/*/.claude/CLAUDE.md
 !templates/*/AGENTS.md
 !templates/*/.claude/CLAUDE.md
+
+# Meshy key maintainer local vault + state (secrets, never commit)
+apps/meshy-keys/.meshy-keys.local.json
+apps/meshy-keys/.meshy-keys-state.json

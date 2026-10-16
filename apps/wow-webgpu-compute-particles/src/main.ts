@@ -44,7 +44,7 @@ const cameraAnchor = { x: 0, y: 1.5, z: 3.2 };
 const particlePostProcess = resolveWowPostProcessOptions({
   tonemapping: { enabled: true, mode: "aces", exposure: 1.15 },
   bloom: { enabled: true, intensity: 0.22, threshold: 0.8 },
-  ssao: { enabled: true, radius: 0.45, intensity: 0.35 },
+  ssao: { enabled: true, radius: 2, intensity: 0.32 },
   fxaa: { enabled: true },
   vignette: { enabled: true, intensity: 0.22 }
 });
@@ -208,7 +208,7 @@ function particleViewDepth(x: number, y: number, z: number): number {
 
 void startWebGPUShowcase({
   appId: "wow-webgpu-compute-particles",
-  title: "Aura3D Accelerated Particle Field",
+  title: "Aura3D 4.0 · Accelerated Particle Field",
   subtitle: "10k GPU particles: sub-emitters, curl turbulence, heightfield collision, ribbon trails, life curves, lighting, soft depth fade.",
   labels: {
     concept: "gpu particle behavior",

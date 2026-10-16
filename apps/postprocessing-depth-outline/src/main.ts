@@ -116,7 +116,9 @@ async function run(): Promise<void> {
     let lastUi = 0;
     let lastMetricSample = 0;
     let metrics = { nonDark: 0, colorBuckets: 0, edgeContrast: 0 };
-    const triangle = Geometry.triangle();
+    const nearSphere = Geometry.uvSphere(0.54, 24, 16);
+    const midCube = Geometry.litCube(0.84);
+    const farSphere = Geometry.uvSphere(0.58, 24, 16);
     const nearMaterial = new UnlitMaterial({ color: [0.08, 0.86, 1.0, 1], renderState: { cullMode: "none" } });
     const midMaterial = new UnlitMaterial({ color: [0.46, 0.34, 0.96, 1], renderState: { cullMode: "none" } });
     const farMaterial = new UnlitMaterial({ color: [1, 0.34, 0.12, 1], renderState: { cullMode: "none" } });
@@ -138,21 +140,21 @@ async function run(): Promise<void> {
           cameraFrameOptions: { yawRadians: -0.24 + Math.sin(now / 1600) * 0.16, pitchRadians: -0.08, paddingRatio: 0.1 },
           renderItems: [
             {
-              geometry: triangle,
+              geometry: nearSphere,
               material: nearMaterial,
-              modelMatrix: multiply(translation(-0.36 + Math.sin(now / 1000) * 0.12, 0.12, -0.45), scale(1.02, 1.02, 1)),
+              modelMatrix: multiply(translation(-0.36 + Math.sin(now / 1000) * 0.12, 0.12, -0.45), scale(1.02, 1.02, 1.02)),
               label: "depth-outline-near-cyan"
             },
             {
-              geometry: triangle,
+              geometry: midCube,
               material: midMaterial,
-              modelMatrix: multiply(translation(0.04, -0.04 + Math.cos(now / 1200) * 0.08, 0.02), scale(0.94, 0.94, 1)),
+              modelMatrix: multiply(translation(0.04, -0.04 + Math.cos(now / 1200) * 0.08, 0.02), scale(0.94, 0.94, 0.94)),
               label: "depth-outline-mid-violet"
             },
             {
-              geometry: triangle,
+              geometry: farSphere,
               material: farMaterial,
-              modelMatrix: multiply(translation(0.42, -0.2, 0.45), scale(0.86, 0.86, 1)),
+              modelMatrix: multiply(translation(0.42, -0.2, 0.45), scale(0.86, 0.86, 0.86)),
               label: "depth-outline-far-orange"
             }
           ],
@@ -264,7 +266,7 @@ function renderUi(root: HTMLElement, runtime: CurrentRoutesPostprocessingDepthOu
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>CurrentRoutes Depth Outline</h1>
+        <h1>Aura3D 4.0 · Depth Outline Post-Processing</h1>
         <p>Renderer-owned depth-of-field, SSAO, outline, tone mapping, and FXAA.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>

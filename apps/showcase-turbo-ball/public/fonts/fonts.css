@@ -1,0 +1,128 @@
+/* AuraOne Shared Dense Typography Stack — self-hosted from /Users/gurbakshchahal/fonts */
+@font-face {
+  font-family: "Whitney";
+  src: url("/fonts/whitney-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("/fonts/whitney-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("/fonts/whitney-semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney Fallback";
+  src: local("Arial"), local("Helvetica Neue"), local("Helvetica");
+  size-adjust: 96.5%;
+  ascent-override: 96%;
+  descent-override: 24%;
+}
+
+@font-face {
+  font-family: "DIN Pro";
+  src: url("/fonts/dinpro-regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DIN Pro";
+  src: url("/fonts/dinpro-medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DIN Pro Fallback";
+  src: local("Arial Narrow"), local("Arial"), local("Helvetica");
+  size-adjust: 98%;
+}
+
+@font-face {
+  font-family: "Monument Grotesk Mono";
+  src: url("/fonts/monument-mono.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-ui: "Whitney", "Whitney Fallback", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-smallcaps: "Whitney", "Whitney Fallback", sans-serif;
+  --font-metric: "DIN Pro", "DIN Pro Fallback", "Whitney", sans-serif;
+  --font-code: "Monument Grotesk Mono", ui-monospace, Menlo, monospace;
+
+  /* Shared AuraOne Dense UI tokens */
+  --type-body: 0.8125rem; /* 13px */
+  --type-h1: 1.0625rem;   /* 17px — single Semibold 600 title */
+  --type-h2: 0.875rem;    /* 14px — Medium 500 section heading */
+  --type-meta: 0.75rem;   /* 12px — floor */
+  --type-figure: 1.25rem; /* 20px — DIN Pro metric */
+  --row-height: 34px;
+  --control-height: 32px;
+  --panel-pad: 16px;
+  --leading-none: 1;
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.45;
+
+  /* Aurora Noir / Midnight Slate palette */
+  --bg-panel: rgba(11, 15, 25, 0.84);
+  --bg-surface: rgba(18, 24, 38, 0.78);
+  --border-hairline: rgba(148, 163, 184, 0.22);
+  --border-accent: rgba(56, 189, 248, 0.38);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent-cyan: #38bdf8;
+  --accent-amber: #f59e0b;
+  --accent-emerald: #34d399;
+  --accent-rose: #fb7185;
+}
+
+html, body {
+  font-synthesis: none;
+  font-family: var(--font-ui);
+  font-size: var(--type-body);
+  line-height: var(--leading-normal);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+  background: #070a12;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.smcp {
+  font-family: var(--font-smallcaps);
+  font-variant-caps: small-caps;
+  font-feature-settings: "smcp" 1;
+  letter-spacing: 0.03em;
+}
+
+.metric-val {
+  font-family: var(--font-metric);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  line-height: var(--leading-none);
+}

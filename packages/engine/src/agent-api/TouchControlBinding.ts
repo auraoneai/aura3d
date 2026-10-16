@@ -186,8 +186,18 @@ export function bindGameTouchControls(spec: GameControlBindingSpec): GameControl
   for (const control of spec.hold ?? []) {
     const element = claim(control.elementId);
     if (!element) continue;
-    const press = (): void => host.dispatchKey(control.code, "keydown");
-    const release = (): void => host.dispatchKey(control.code, "keyup");
+    let isPointerDown = false;
+    const press = (): void => {
+      isPointerDown = true;
+      (element as unknown as { blur?: () => void }).blur?.();
+      host.dispatchKey(control.code, "keydown");
+    };
+    const release = (): void => {
+      if (!isPointerDown) return;
+      isPointerDown = false;
+      (element as unknown as { blur?: () => void }).blur?.();
+      host.dispatchKey(control.code, "keyup");
+    };
     element.addEventListener("pointerdown", press);
     element.addEventListener("pointerup", release);
     // `pointercancel` and `pointerleave` both matter: a finger sliding off a button must not latch the key on.
@@ -212,6 +222,7 @@ export function bindGameTouchControls(spec: GameControlBindingSpec): GameControl
     const holdMs = Math.max(1, control.holdMs ?? 40);
     const timers = new Set<unknown>();
     const press = (): void => {
+      (element as unknown as { blur?: () => void }).blur?.();
       host.dispatchKey(control.code, "keydown");
       const timer = host.setTimer(() => {
         timers.delete(timer);

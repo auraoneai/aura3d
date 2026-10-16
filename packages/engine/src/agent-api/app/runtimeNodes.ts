@@ -416,6 +416,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
         scale: node.scale ?? 1,
         visible: getVisible(),
         animation: node.animation,
+        ...("material" in node && node.material ? { material: node.material } : {}),
         ...(node.instances ? { instances: node.instances } : {}),
         ...(node.instanceColors ? { instanceColors: node.instanceColors } : {}),
         animationBinding,

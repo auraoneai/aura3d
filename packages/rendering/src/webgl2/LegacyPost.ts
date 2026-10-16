@@ -2602,11 +2602,14 @@ function normalizeNativeOutlineOptions(options: Readonly<Record<string, unknown>
 }
 
 function normalizeNativeSsaoOptions(options: Readonly<Record<string, unknown>>): NativeSsaoOptions {
-  const radius = ssaoNumberOption(options, "radius", 2);
+  const rawRadius = ssaoNumberOption(options, "radius", 2);
+  const radius = rawRadius > 0 && rawRadius < 1
+    ? Math.max(1, Math.min(8, Math.round(rawRadius * 8)))
+    : rawRadius;
   const intensity = ssaoNumberOption(options, "intensity", 0.38);
   const bias = ssaoNumberOption(options, "bias", 0.015);
   if (!Number.isInteger(radius) || radius < 1 || radius > 8) {
-    throw new RenderDeviceError("SSAO radius must be an integer in [1, 8].", "INVALID_POSTPROCESS_OPTIONS", { radius });
+    throw new RenderDeviceError("SSAO radius must be an integer in [1, 8].", "INVALID_POSTPROCESS_OPTIONS", { radius: rawRadius });
   }
   if (intensity < 0 || intensity > 2) {
     throw new RenderDeviceError("SSAO intensity must be finite and in [0, 2].", "INVALID_POSTPROCESS_OPTIONS", { intensity });

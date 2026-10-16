@@ -14,6 +14,9 @@ import { createRuntimeNodeSpec } from "../../GameSceneBridge.js";
 import { createGamePlatformerPresentationCamera, createGamePlatformerSceneBinding, createGameRacingPresentationCamera, createGameRacingSceneBinding } from "../../GameSceneGeometryBindings.js";
 import { certifyPublicPlatformerGeometry, certifyPublicRacingGeometry } from "../../PublicGameGeometry.js";
 import { createFightingGameKit, fighting } from "../../game-kits/fighting.js";
+import { buildGrandPrixRoadwayNodes, createArcadeKartGameKit } from "../../game-kits/arcadeKart.js";
+import { buildCarSoccerPitchNodes, createCarSoccerGameKit } from "../../game-kits/carSoccer.js";
+import { createRacketSportsGameKit } from "../../game-kits/racketSports.js";
 import { createGameRacingCameraRig } from "./racingCamera.js";
 import { lazyNamespace } from "../../lazyNamespace.js";
 
@@ -67,6 +70,11 @@ export const game = lazyNamespace(() => ({
   certifyRacingGeometry: certifyPublicRacingGeometry,
   certifyRacingPresentation: certifyPublicRacingPresentation,
   racing: createGameRacingKit,
+  arcadeKart: createArcadeKartGameKit,
+  grandPrixRoad: buildGrandPrixRoadwayNodes,
+  carSoccer: createCarSoccerGameKit,
+  carSoccerPitch: buildCarSoccerPitchNodes,
+  racketSports: createRacketSportsGameKit,
   fallingBlocks: createGameFallingBlocksKit,
   fallingBlockPieces: GAME_FALLING_BLOCK_PIECES,
   eventLog: createGameEventLog,

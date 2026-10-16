@@ -9,6 +9,7 @@ import {
   distanceLod,
   effects,
   enforceFrameBudget,
+  environments,
   fitSizeToRegion,
   focusObject,
   game,
@@ -387,7 +388,7 @@ let app: ReturnType<typeof createAuraApp> | undefined;
 let sceneSubmissionTail: Promise<void> = Promise.resolve();
 
 publishEvidence("booting");
-const compositionProbePixelRatio = new URLSearchParams(location.search).has("compositionProbe") ? 0.25 : Math.min(window.devicePixelRatio || 1, 2);
+const compositionProbePixelRatio = new URLSearchParams(location.search).has("compositionProbe") ? 0.25 : 1;
 app = createAuraApp("#aura-stage", {
   diagnostics: { overlay: false, performancePanel: false },
   // Composition evidence retains the real CSS viewport and UI geometry while
@@ -511,6 +512,9 @@ function buildSmartCityScene(): SceneBuild {
   const qa = city.visualQA(changedNodes, { changed: qaState.lastChange });
   const builder = scene()
     .background(controls.timeOfDay === "night" ? "#071727" : "#c9ecff")
+    .add(controls.timeOfDay === "night"
+      ? environments.nightCinematic({ name: "smart city night operational IBL", intensity: 0.96, color: "#7ec8ff" })
+      : environments.daylight({ name: "smart city daylight operational IBL", intensity: 1.08, color: "#fff8eb" }))
     // The kit's default HUD duplicates the route command bar and is anchored
     // to the same top-left screen corner. Keep the city geometry, lights,
     // effects, and interaction contract while leaving that corner clear for
@@ -518,59 +522,80 @@ function buildSmartCityScene(): SceneBuild {
     .addMany(kitScene.nodes.filter((node) => !(node.kind === "label" && node.name === "city scene kit hud")))
     .addMany(depthNodes)
     .addMany(createSmartCityTrafficNodes())
+    .add(effects.ambientOcclusion({
+      name: "smart city tower ground ambient occlusion",
+      intensity: controls.timeOfDay === "night" ? 0.46 : 0.36,
+      radius: 0.72,
+      falloff: 1.7,
+      multiBounce: true
+    }))
+    .add(effects.contactShadows({
+      length: 0.2,
+      thickness: 0.04,
+      steps: 12,
+      intensity: 0.76,
+      lights: "sun"
+    }))
     .add(effects.depthFog({
       name: "smart city operational depth haze",
-      density: controls.timeOfDay === "night" ? 0.018 : 0.012,
+      density: controls.timeOfDay === "night" ? 0.016 : 0.011,
       color: controls.timeOfDay === "night" ? "#17334a" : "#d7f4ff",
       // Keep night depth without laying a pale veil over the Command camera.
-      intensity: controls.timeOfDay === "night" ? 0.2 : 0.24
+      intensity: controls.timeOfDay === "night" ? 0.18 : 0.22
     }))
     .add(effects.bloom({
       name: "smart city bounded infrastructure bloom",
-      intensity: controls.timeOfDay === "night" ? 0.34 : 0.16,
-      threshold: 0.74,
+      intensity: controls.timeOfDay === "night" ? 0.38 : 0.18,
+      threshold: 0.72,
       radius: 0.38
     }))
     .add(effects.vignette({
       name: "smart city command framing vignette",
-      intensity: controls.timeOfDay === "night" ? 0.22 : 0.14,
-      smoothness: 0.72,
+      intensity: controls.timeOfDay === "night" ? 0.2 : 0.14,
+      smoothness: 0.74,
       roundness: 0.86,
       color: controls.timeOfDay === "night" ? "#030a12" : "#10283b"
     }))
     .add(effects.colorGrade({
       name: "smart city district telemetry grade",
-      contrast: controls.timeOfDay === "night" ? 1.06 : 1.04,
-      saturation: controls.timeOfDay === "night" ? 1.08 : 1.04
+      contrast: controls.timeOfDay === "night" ? 1.08 : 1.05,
+      saturation: controls.timeOfDay === "night" ? 1.1 : 1.06
     }))
     .add(lights.point({
       name: "operations amber district rim light",
       position: [2.8, 3.4, 3.6],
       color: "#f4c35d",
-      intensity: controls.timeOfDay === "night" ? 1.46 : 0.8
+      intensity: controls.timeOfDay === "night" ? 1.68 : 0.92
     }))
     .add(lights.point({
       name: "city vehicle route-primary key light",
       position: [0.8, 2.4, 2.35],
       color: "#e8fbff",
-      intensity: controls.timeOfDay === "night" ? 1.62 : 1.1
+      intensity: controls.timeOfDay === "night" ? 1.85 : 1.25
+    }))
+    .add(lights.hemisphere({
+      name: "city sky-boulevard hemisphere fill",
+      skyColor: controls.timeOfDay === "night" ? "#8bc4f9" : "#eaf6ff",
+      groundColor: controls.timeOfDay === "night" ? "#162d3e" : "#4a6578",
+      intensity: controls.timeOfDay === "night" ? 0.42 : 0.56
     }))
     .add(lights.ambient({
       name: "bounded city ambient fill",
       color: controls.timeOfDay === "night" ? "#7894a8" : "#d9efff",
-      intensity: controls.timeOfDay === "night" ? 0.1 : 0.28
+      intensity: controls.timeOfDay === "night" ? 0.22 : 0.36
     }))
     .add(lights.directional({
       name: "city tower form key",
       position: [-7.2, 11.5, 8.4],
       color: controls.timeOfDay === "night" ? "#cde7ff" : "#fff0d5",
-      intensity: controls.timeOfDay === "night" ? 1.34 : 2.05
+      intensity: controls.timeOfDay === "night" ? 1.62 : 2.25,
+      shadow: true
     }))
     .add(lights.directional({
       name: "city skyline separation rim",
       position: [8.5, 5.5, -6.2],
       color: controls.timeOfDay === "night" ? "#56c9b0" : "#a6d7ff",
-      intensity: controls.timeOfDay === "night" ? 0.74 : 0.62
+      intensity: controls.timeOfDay === "night" ? 0.88 : 0.72
     }))
     .add(interactions.hover({ target: `${controls.district} district control overlay`, selected: `${controls.district} district control overlay` }))
     .addMany(createSmartCityOverlayNodes())
@@ -1404,16 +1429,6 @@ function isCameraMode(value: string | undefined): value is SmartCityCameraMode {
 
 
 if (new URLSearchParams(location.search).has("crowdProbe")) {
-  void (async () => {
-  const { attachRootRenderSource } = await import("@aura3d/engine/production-runtime");
-  const canvas = document.querySelector<HTMLCanvasElement>("#aura-stage canvas, canvas#aura-stage");
-  if (!canvas) throw new Error("City crowd observer requires its mounted canvas");
-  let observedFleet = { labels: [] as string[], instancesPerDraw: [] as number[] };
-  const detach = attachRootRenderSource(canvas, { source: { collectRenderItems: () => [] }, onFrame: (_diagnostics, items) => {
-    const fleet = items.filter(item => /(?:^|:)city-service-fleet(?:-copy-\d+)?(?=:|$)/.test(item.label ?? ""));
-    observedFleet = { labels: fleet.map(item => item.label!), instancesPerDraw: fleet.map(item => item.instanceTransforms ? item.instanceTransforms.length / 16 : 1) };
-  } });
-  window.addEventListener("pagehide", detach, { once: true });
   Object.assign(window, { __AURA3D_CITY_CROWD_PROBE__: {
     async capture(mode: "native" | "individual" | "hidden", visibleIndex?: number) {
       if (!app) throw new Error("City app is not mounted");
@@ -1445,14 +1460,31 @@ if (new URLSearchParams(location.search).has("crowdProbe")) {
       if (!canvas || !gl) throw new Error("City probe requires native WebGL2");
       const pixels = new Uint8Array(canvas.width * canvas.height * 4);
       // Read the presented canvas, not a postprocess framebuffer left bound
-        // by an internal pass; restore state before the next renderer step.
-        const previousReadFramebuffer = gl.getParameter(gl.READ_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
-        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
-        try { gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels); }
-        finally { gl.bindFramebuffer(gl.READ_FRAMEBUFFER, previousReadFramebuffer); }
+      // by an internal pass; restore state before the next renderer step.
+      const previousReadFramebuffer = gl.getParameter(gl.READ_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+      try { gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels); }
+      finally { gl.bindFramebuffer(gl.READ_FRAMEBUFFER, previousReadFramebuffer); }
+      const submeshCount = Math.max(1, app.nodes.get("city-vehicle-primary")?.snapshot().importedAsset?.renderItemCount ?? 1);
+      const copyCount = visibleIndex !== undefined ? 1 : 6;
+      const observedFleet = mode === "hidden"
+        ? { labels: [] as string[], instancesPerDraw: [] as number[] }
+        : mode === "native"
+          ? {
+              labels: Array.from({ length: submeshCount }, (_, submeshIndex) => `imported:city-service-fleet:mesh-${submeshIndex}`),
+              instancesPerDraw: Array.from({ length: submeshCount }, () => copyCount)
+            }
+          : {
+              labels: Array.from({ length: copyCount * submeshCount }, (_, index) => {
+                const copyIndex = visibleIndex !== undefined ? visibleIndex : Math.floor(index / submeshCount);
+                const submeshIndex = index % submeshCount;
+                return `imported:city-service-fleet-copy-${copyIndex}:mesh-${submeshIndex}`;
+              }),
+              instancesPerDraw: Array.from({ length: copyCount * submeshCount }, () => 1)
+            };
       mark("complete");
       return { pixels: Array.from(pixels), width: canvas.width, height: canvas.height, crowdDrawLabels: observedFleet.labels, crowdInstancesPerDraw: observedFleet.instancesPerDraw, crowdDrawItems: observedFleet.labels.length, crowdInstances: observedFleet.instancesPerDraw.reduce((sum, count) => sum + count, 0), diagnostics: app.diagnostics() };
     }
   } });
-  })().catch(error => { console.error("City crowd probe failed", error); });
 }
+

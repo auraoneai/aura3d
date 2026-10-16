@@ -2,8 +2,8 @@ import { startWowShowcase } from "/apps/wow-common/src/showcase.ts";
 
 void startWowShowcase({
   appId: "wow-robot-expressive-rig",
-  title: "Authored Robot Expressive Rig",
-  subtitle: "Imported Robot Expressive GLB with rigged character source, morph targets, animation clips, HDR lighting, and diagnostics.",
+  title: "Aura3D 4.0 · Expressive Robot Rig",
+  subtitle: "Imported Robot Expressive GLB with rigged character armatures, morph targets, animation clips, HDR lighting, and diagnostics.",
   assetId: "robot-expressive",
   environmentId: "industrial-sunset-puresky",
   controls: {
@@ -27,7 +27,7 @@ void startWowShowcase({
   postProcess: {
     tonemapping: { enabled: true, mode: "aces", exposure: 1.15 },
     bloom: { enabled: true, intensity: 0.22, threshold: 0.8 },
-    ssao: { enabled: true, radius: 0.45, intensity: 0.35 },
+    ssao: { enabled: true, radius: 2, intensity: 0.32 },
     fxaa: { enabled: true },
     vignette: { enabled: true, intensity: 0.22 }
   },

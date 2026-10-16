@@ -2,8 +2,8 @@ import { startWowShowcase } from "/apps/wow-common/src/showcase.ts";
 
 void startWowShowcase({
   appId: "wow-boombox-texture-lab",
-  title: "Aura3D Avocado Texture Lab",
-  subtitle: "Imported Avocado GLB rendered through Aura3D with organic textures, material detail, controlled studio lighting, and clean product staging.",
+  title: "Aura3D 4.0 · BoomBox Texture Lab",
+  subtitle: "Imported Avocado GLB rendered through Aura3D 4.0 with organic textures, material detail, controlled studio lighting, and clean product staging.",
   assetId: "avocado",
   environmentId: "studio-small-08",
   controls: {
@@ -26,7 +26,7 @@ void startWowShowcase({
   postProcess: {
     tonemapping: { enabled: true, mode: "aces", exposure: 1.15 },
     bloom: { enabled: true, intensity: 0.22, threshold: 0.8 },
-    ssao: { enabled: true, radius: 0.45, intensity: 0.35 },
+    ssao: { enabled: true, radius: 2, intensity: 0.32 },
     fxaa: { enabled: true },
     vignette: { enabled: true, intensity: 0.22 }
   },

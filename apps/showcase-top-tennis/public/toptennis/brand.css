@@ -1,0 +1,16 @@
+/* Shared wordmark typography, taken from the landing page. Sizes stay local. */
+body :is(.wordmark, .brand, .menu-wordmark, .footer-brand, .scoreboard-brand, .app-splash strong) {
+  font-family: Arial, Helvetica, sans-serif;
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: -.0541667em;
+  color: #f6f7e9;
+  white-space: nowrap;
+}
+body :is(.wordmark, .brand, .menu-wordmark, .footer-brand, .scoreboard-brand, .app-splash strong) > span {
+  font: inherit;
+  letter-spacing: inherit;
+  margin-top: 0;
+  color: #dcf66d;
+  margin-left: .166667em;
+}

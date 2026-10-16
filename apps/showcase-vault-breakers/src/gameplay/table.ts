@@ -30,8 +30,8 @@ export const BALL_MASS = 0.08;
  * flat and the ball rolls realistically downhill toward the drain (+Z).
  */
 export const SLOPE_ANGLE = 0.113;
-/** Downhill acceleration from slope: g * sin(angle) ≈ 9.81 * 0.113 ≈ 1.11 m/s² */
-export const SLOPE_ACCELERATION = 9.81 * Math.sin(SLOPE_ANGLE);
+/** Downhill acceleration from slope so the ball rolls briskly down toward the flippers (+Z). */
+export const SLOPE_ACCELERATION = 5.2;
 /**
  * Flipper pivots at |x| = 0.85: the resting tips leave a 0.32 m surface gap
  * (a 0.28 m ball falls through to the drain), while the raised tips close to

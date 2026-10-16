@@ -1,0 +1,1680 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "boostPad",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/turboball-boost-pad/model.glb",
+      "outputPath": "public/aura-assets/boostPad.9045e081.glb",
+      "url": "/aura-assets/boostPad.9045e081.glb",
+      "hash": "sha256-9045e0815f2ff84e2a13efd514d24f7fc6ae2e6370c5bd2abd3daf9cc12c0775",
+      "sizeBytes": 953904,
+      "bounds": [
+        1.903,
+        0.303,
+        1.896
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.152,
+          -0.948
+        ],
+        "max": [
+          0.951,
+          0.152,
+          0.947
+        ],
+        "size": [
+          1.903,
+          0.303,
+          1.896
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/turboball-boost-pad/model.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-10-15 via the Meshy API (text-to-3D, remesh, rigging, animation) under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-16T01:22:53.835Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a1424c-7958-72dc-89f9-b827ddf45066",
+          "operation": "remesh",
+          "createdAt": "2026-10-16T01:21:10.559Z",
+          "finishedAt": "2026-10-16T01:22:53.835Z",
+          "consumedCredits": 5,
+          "localMetadata": "aura-evidence/meshy/boostPad.metadata.234b3c2cfbfd.json",
+          "rightsEvidence": "aura-evidence/meshy/boostPad.rights.8f8012b08333.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/boostPad.rights.8f8012b08333.json",
+          "aura-evidence/meshy/boostPad.metadata.234b3c2cfbfd.json",
+          "public/aura-assets/boostPad.meshy-candidate.e05040c9.png"
+        ],
+        "checkedAt": "2026-10-16T01:22:53.835Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "thumbnailUrl": "/aura-assets/boostPad.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/boostPad.meshy-candidate.e05040c9.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-e05040c9a5df1ac8213670d3090d3ebad17b6b3ebf187f5c80842550e5fb945a",
+        "checkedAt": "2026-10-16T02:03:07.905Z"
+      },
+      "warnings": []
+    },
+    {
+      "id": "floodlightTower",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/turboball-floodlight/model.glb",
+      "outputPath": "public/aura-assets/floodlightTower.bfbd3320.glb",
+      "url": "/aura-assets/floodlightTower.bfbd3320.glb",
+      "hash": "sha256-bfbd3320a8637a82af3e4efadaf15bb2702fd6222ae172266849a85d2f67034d",
+      "sizeBytes": 1868112,
+      "bounds": [
+        0.774,
+        1.903,
+        0.618
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.383,
+          -0.952,
+          -0.311
+        ],
+        "max": [
+          0.391,
+          0.951,
+          0.307
+        ],
+        "size": [
+          0.774,
+          1.903,
+          0.618
+        ],
+        "center": [
+          0.004,
+          0,
+          -0.002
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/turboball-floodlight/model.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-10-15 via the Meshy API (text-to-3D, remesh, rigging, animation) under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-16T01:29:58.706Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a14252-8d89-7048-bcea-241627229df3",
+          "operation": "remesh",
+          "createdAt": "2026-10-16T01:27:48.922Z",
+          "finishedAt": "2026-10-16T01:29:58.706Z",
+          "consumedCredits": 5,
+          "localMetadata": "aura-evidence/meshy/floodlightTower.metadata.de9c7bf6aade.json",
+          "rightsEvidence": "aura-evidence/meshy/floodlightTower.rights.8f8012b08333.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/floodlightTower.rights.8f8012b08333.json",
+          "aura-evidence/meshy/floodlightTower.metadata.de9c7bf6aade.json",
+          "public/aura-assets/floodlightTower.meshy-candidate.9c37ab85.png"
+        ],
+        "checkedAt": "2026-10-16T01:29:58.706Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "thumbnailUrl": "/aura-assets/floodlightTower.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/floodlightTower.meshy-candidate.9c37ab85.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-9c37ab852fc8309a21407d684054f82a18dd51b9ebd6c212e4f1d6f8e5bacc63",
+        "checkedAt": "2026-10-16T02:03:07.918Z"
+      },
+      "warnings": []
+    },
+    {
+      "id": "greenCar",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/turboball-car-green/model.glb",
+      "outputPath": "public/aura-assets/greenCar.f9f128cb.glb",
+      "url": "/aura-assets/greenCar.f9f128cb.glb",
+      "hash": "sha256-f9f128cbdbe82943d4d3df704a5b30ee6e0cbeabb70f4733154e733d9de07086",
+      "sizeBytes": 4372592,
+      "bounds": [
+        1.906,
+        0.587,
+        0.968
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.294,
+          -0.484
+        ],
+        "max": [
+          0.954,
+          0.293,
+          0.484
+        ],
+        "size": [
+          1.906,
+          0.587,
+          0.968
+        ],
+        "center": [
+          0.001,
+          0,
+          0
+        ],
+        "maxDimension": 1.906,
+        "grounded": false
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 5,
+        "meshCount": 5,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "chassis_body",
+          "wheel_fl",
+          "wheel_fr",
+          "wheel_rl",
+          "wheel_rr"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 5 nodes across 5 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/turboball-car-green/model.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-10-15 via the Meshy API (text-to-3D, remesh, rigging, animation) under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-16T01:13:57.191Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a14243-a82f-7789-bc50-201031549457",
+          "operation": "remesh",
+          "createdAt": "2026-10-16T01:11:32.715Z",
+          "finishedAt": "2026-10-16T01:13:57.191Z",
+          "consumedCredits": 5,
+          "localMetadata": "aura-evidence/meshy/greenCar.metadata.b7314786c324.json",
+          "rightsEvidence": "aura-evidence/meshy/greenCar.rights.8f8012b08333.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/greenCar.rights.8f8012b08333.json",
+          "aura-evidence/meshy/greenCar.metadata.b7314786c324.json",
+          "public/aura-assets/greenCar.meshy-candidate.30f93f1e.png"
+        ],
+        "checkedAt": "2026-10-16T01:13:57.191Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "chassis_body",
+        "wheel_fl",
+        "wheel_fr",
+        "wheel_rl",
+        "wheel_rr"
+      ],
+      "thumbnailUrl": "/aura-assets/greenCar.thumb.svg",
+      "quality": "candidate",
+      "role": "vehicle",
+      "renderedProbe": {
+        "url": "/aura-assets/greenCar.meshy-candidate.30f93f1e.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-30f93f1e53d94e7ca0ece4c48ff0b3676ac9cd0e457ddd68c64475ec253a063f",
+        "checkedAt": "2026-10-16T02:03:07.884Z"
+      },
+      "warnings": []
+    },
+    {
+      "id": "heroCar",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/turboball-hero-car/model.glb",
+      "outputPath": "public/aura-assets/heroCar.504dd96b.glb",
+      "url": "/aura-assets/heroCar.504dd96b.glb",
+      "hash": "sha256-504dd96be58c6b6973c9c3eac930afb78ead8af062a546b1f559bd447e6bf04d",
+      "sizeBytes": 4123596,
+      "bounds": [
+        1.903,
+        0.554,
+        0.882
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.278,
+          -0.441
+        ],
+        "max": [
+          0.951,
+          0.276,
+          0.441
+        ],
+        "size": [
+          1.903,
+          0.554,
+          0.882
+        ],
+        "center": [
+          0,
+          -0.001,
+          0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 5,
+        "meshCount": 5,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "chassis_body",
+          "wheel_fl",
+          "wheel_fr",
+          "wheel_rl",
+          "wheel_rr"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 5 nodes across 5 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/turboball-hero-car/model.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-10-15 via the Meshy API (text-to-3D, remesh, rigging, animation) under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-16T00:42:22.185Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a14226-dd7b-7069-a728-4a6bc6a747e6",
+          "operation": "remesh",
+          "createdAt": "2026-10-16T00:40:05.801Z",
+          "finishedAt": "2026-10-16T00:42:22.185Z",
+          "consumedCredits": 5,
+          "localMetadata": "aura-evidence/meshy/heroCar.metadata.9d271c3d9adc.json",
+          "rightsEvidence": "aura-evidence/meshy/heroCar.rights.8f8012b08333.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/heroCar.rights.8f8012b08333.json",
+          "aura-evidence/meshy/heroCar.metadata.9d271c3d9adc.json",
+          "public/aura-assets/heroCar.meshy-candidate.63412477.png"
+        ],
+        "checkedAt": "2026-10-16T00:42:22.185Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "chassis_body",
+        "wheel_fl",
+        "wheel_fr",
+        "wheel_rl",
+        "wheel_rr"
+      ],
+      "thumbnailUrl": "/aura-assets/heroCar.thumb.svg",
+      "quality": "candidate",
+      "role": "vehicle",
+      "renderedProbe": {
+        "url": "/aura-assets/heroCar.meshy-candidate.63412477.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-63412477af77ef165656f519291bd0294c98564e4f7f88ffc3c882663d99d52a",
+        "checkedAt": "2026-10-16T02:03:06.971Z"
+      },
+      "warnings": []
+    },
+    {
+      "id": "purpleCar",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/turboball-car-purple/model.glb",
+      "outputPath": "public/aura-assets/purpleCar.f9c92fbf.glb",
+      "url": "/aura-assets/purpleCar.f9c92fbf.glb",
+      "hash": "sha256-f9c92fbf16fc50af6665dad15210921e4b78e08c60ff4bfa480f929418081630",
+      "sizeBytes": 5037364,
+      "bounds": [
+        1.901,
+        0.682,
+        1.066
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.342,
+          -0.533
+        ],
+        "max": [
+          0.95,
+          0.34,
+          0.533
+        ],
+        "size": [
+          1.901,
+          0.682,
+          1.066
+        ],
+        "center": [
+          -0.001,
+          -0.001,
+          0
+        ],
+        "maxDimension": 1.901,
+        "grounded": false
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 5,
+        "meshCount": 5,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "chassis_body",
+          "wheel_fl",
+          "wheel_fr",
+          "wheel_rl",
+          "wheel_rr"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 5 nodes across 5 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/turboball-car-purple/model.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-10-15 via the Meshy API (text-to-3D, remesh, rigging, animation) under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-16T01:11:09.047Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a14240-bf9e-71a1-a6a2-0ff7a81c9164",
+          "operation": "remesh",
+          "createdAt": "2026-10-16T01:08:22.092Z",
+          "finishedAt": "2026-10-16T01:11:09.047Z",
+          "consumedCredits": 5,
+          "localMetadata": "aura-evidence/meshy/purpleCar.metadata.522d2fcceb05.json",
+          "rightsEvidence": "aura-evidence/meshy/purpleCar.rights.8f8012b08333.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/purpleCar.rights.8f8012b08333.json",
+          "aura-evidence/meshy/purpleCar.metadata.522d2fcceb05.json",
+          "public/aura-assets/purpleCar.meshy-candidate.696f1999.png"
+        ],
+        "checkedAt": "2026-10-16T01:11:09.047Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "chassis_body",
+        "wheel_fl",
+        "wheel_fr",
+        "wheel_rl",
+        "wheel_rr"
+      ],
+      "thumbnailUrl": "/aura-assets/purpleCar.thumb.svg",
+      "quality": "candidate",
+      "role": "vehicle",
+      "renderedProbe": {
+        "url": "/aura-assets/purpleCar.meshy-candidate.696f1999.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-696f199911b9d8da2d03fdbf449e4f422ed89dadd21bbb6955c600ddd038256a",
+        "checkedAt": "2026-10-16T02:03:07.608Z"
+      },
+      "warnings": []
+    },
+    {
+      "id": "refereeDrone",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/turboball-drone/model.glb",
+      "outputPath": "public/aura-assets/refereeDrone.498e189a.glb",
+      "url": "/aura-assets/refereeDrone.498e189a.glb",
+      "hash": "sha256-498e189a8fe107abe2f647548ef4ccb354edc02eb5bc406e949c4f5522fe8199",
+      "sizeBytes": 1564652,
+      "bounds": [
+        1.866,
+        0.606,
+        1.905
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.931,
+          -0.309,
+          -0.954
+        ],
+        "max": [
+          0.935,
+          0.297,
+          0.951
+        ],
+        "size": [
+          1.866,
+          0.606,
+          1.905
+        ],
+        "center": [
+          0.002,
+          -0.006,
+          -0.001
+        ],
+        "maxDimension": 1.905,
+        "grounded": false
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/turboball-drone/model.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-10-15 via the Meshy API (text-to-3D, remesh, rigging, animation) under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-16T01:27:15.690Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a14250-2cd8-7044-bf25-8f65842755ea",
+          "operation": "remesh",
+          "createdAt": "2026-10-16T01:25:13.083Z",
+          "finishedAt": "2026-10-16T01:27:15.690Z",
+          "consumedCredits": 5,
+          "localMetadata": "aura-evidence/meshy/refereeDrone.metadata.33eb48564af7.json",
+          "rightsEvidence": "aura-evidence/meshy/refereeDrone.rights.8f8012b08333.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/refereeDrone.rights.8f8012b08333.json",
+          "aura-evidence/meshy/refereeDrone.metadata.33eb48564af7.json",
+          "public/aura-assets/refereeDrone.meshy-candidate.9f44690f.png"
+        ],
+        "checkedAt": "2026-10-16T01:27:15.690Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "thumbnailUrl": "/aura-assets/refereeDrone.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/refereeDrone.meshy-candidate.9f44690f.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-9f44690fc8205a7941534e17a6c663b91123f90dbf00e4b1fe3ae90c8c25a407",
+        "checkedAt": "2026-10-16T02:03:07.913Z"
+      },
+      "warnings": []
+    },
+    {
+      "id": "rivalCar",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/turboball-rival-car/model.glb",
+      "outputPath": "public/aura-assets/rivalCar.ccd67629.glb",
+      "url": "/aura-assets/rivalCar.ccd67629.glb",
+      "hash": "sha256-ccd676293ee36711f86107e2050148492901c4f18dbffe739925261de1f12a89",
+      "sizeBytes": 4434224,
+      "bounds": [
+        1.903,
+        0.668,
+        1.233
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.953,
+          -0.34,
+          -0.617
+        ],
+        "max": [
+          0.951,
+          0.328,
+          0.616
+        ],
+        "size": [
+          1.903,
+          0.668,
+          1.233
+        ],
+        "center": [
+          -0.001,
+          -0.006,
+          0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 5,
+        "meshCount": 5,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "chassis_body",
+          "wheel_fl",
+          "wheel_fr",
+          "wheel_rl",
+          "wheel_rr"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 5 nodes across 5 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/turboball-rival-car/model.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-10-15 via the Meshy API (text-to-3D, remesh, rigging, animation) under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-16T01:07:58.139Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a1423e-24dc-7317-a4be-bbf7ab1df439",
+          "operation": "remesh",
+          "createdAt": "2026-10-16T01:05:31.406Z",
+          "finishedAt": "2026-10-16T01:07:58.139Z",
+          "consumedCredits": 5,
+          "localMetadata": "aura-evidence/meshy/rivalCar.metadata.1e7cd06f9b84.json",
+          "rightsEvidence": "aura-evidence/meshy/rivalCar.rights.8f8012b08333.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/rivalCar.rights.8f8012b08333.json",
+          "aura-evidence/meshy/rivalCar.metadata.1e7cd06f9b84.json",
+          "public/aura-assets/rivalCar.meshy-candidate.be51b103.png"
+        ],
+        "checkedAt": "2026-10-16T01:07:58.139Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "chassis_body",
+        "wheel_fl",
+        "wheel_fr",
+        "wheel_rl",
+        "wheel_rr"
+      ],
+      "thumbnailUrl": "/aura-assets/rivalCar.thumb.svg",
+      "quality": "candidate",
+      "role": "vehicle",
+      "renderedProbe": {
+        "url": "/aura-assets/rivalCar.meshy-candidate.be51b103.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-be51b10305cc21ba0c0c33962486baab1ead9876f85e1ce46db1422ccdd2fb36",
+        "checkedAt": "2026-10-16T02:03:07.224Z"
+      },
+      "warnings": []
+    },
+    {
+      "id": "soccerBall",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/turboball-ball/model.glb",
+      "outputPath": "public/aura-assets/soccerBall.25c7b4d8.glb",
+      "url": "/aura-assets/soccerBall.25c7b4d8.glb",
+      "hash": "sha256-25c7b4d826f338391bf5fa2ba1c33734a9b0c65cea194ac389b40eca9aafa3b0",
+      "sizeBytes": 1653788,
+      "bounds": [
+        1.889,
+        1.895,
+        1.901
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.945,
+          -0.947,
+          -0.952
+        ],
+        "max": [
+          0.944,
+          0.947,
+          0.95
+        ],
+        "size": [
+          1.889,
+          1.895,
+          1.901
+        ],
+        "center": [
+          -0.001,
+          0,
+          -0.001
+        ],
+        "maxDimension": 1.901,
+        "grounded": false
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/turboball-ball/model.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-10-15 via the Meshy API (text-to-3D, remesh, rigging, animation) under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-16T01:20:44.130Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a1424a-191d-755c-acc0-beed61016ea3",
+          "operation": "remesh",
+          "createdAt": "2026-10-16T01:18:34.819Z",
+          "finishedAt": "2026-10-16T01:20:44.130Z",
+          "consumedCredits": 5,
+          "localMetadata": "aura-evidence/meshy/soccerBall.metadata.6239d8586db6.json",
+          "rightsEvidence": "aura-evidence/meshy/soccerBall.rights.8f8012b08333.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/soccerBall.rights.8f8012b08333.json",
+          "aura-evidence/meshy/soccerBall.metadata.6239d8586db6.json",
+          "public/aura-assets/soccerBall.meshy-candidate.14a5407d.png"
+        ],
+        "checkedAt": "2026-10-16T01:20:44.130Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "thumbnailUrl": "/aura-assets/soccerBall.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/soccerBall.meshy-candidate.14a5407d.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-14a5407d9ede015d47ed7dc73e82f1725168d65a83b77b1a6c6211dd3ebed37b",
+        "checkedAt": "2026-10-16T02:03:07.901Z"
+      },
+      "warnings": []
+    },
+    {
+      "id": "stadiumArena",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/turboball-stadium-v2/model.glb",
+      "outputPath": "public/aura-assets/stadiumArena.40b48b71.glb",
+      "url": "/aura-assets/stadiumArena.40b48b71.glb",
+      "hash": "sha256-40b48b717ef3b6a6f1d5af13859ea237afd38a0c2ba8dac26401c2e2f8f20620",
+      "sizeBytes": 5653920,
+      "bounds": [
+        1.851,
+        0.404,
+        1.902
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.925,
+          -0.206,
+          -0.952
+        ],
+        "max": [
+          0.925,
+          0.199,
+          0.95
+        ],
+        "size": [
+          1.851,
+          0.404,
+          1.902
+        ],
+        "center": [
+          0,
+          -0.003,
+          -0.001
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/turboball-stadium-v2/model.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-10-15 via the Meshy API (text-to-3D, remesh, rigging, animation) under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-16T01:18:21.097Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a14246-42e2-7390-9499-1bd02e8b613d",
+          "operation": "remesh",
+          "createdAt": "2026-10-16T01:14:23.361Z",
+          "finishedAt": "2026-10-16T01:18:21.097Z",
+          "consumedCredits": 5,
+          "localMetadata": "aura-evidence/meshy/stadiumArena.metadata.ce046589b6c8.json",
+          "rightsEvidence": "aura-evidence/meshy/stadiumArena.rights.8f8012b08333.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/stadiumArena.rights.8f8012b08333.json",
+          "aura-evidence/meshy/stadiumArena.metadata.ce046589b6c8.json",
+          "public/aura-assets/stadiumArena.meshy-candidate.67b1e0d7.png"
+        ],
+        "checkedAt": "2026-10-16T01:18:21.097Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "thumbnailUrl": "/aura-assets/stadiumArena.thumb.svg",
+      "quality": "candidate",
+      "role": "world",
+      "renderedProbe": {
+        "url": "/aura-assets/stadiumArena.meshy-candidate.67b1e0d7.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-67b1e0d720f4c913dbcff556a04253d84c5b0741bae7586c1e23fd8955c78f02",
+        "checkedAt": "2026-10-16T02:03:07.893Z"
+      },
+      "warnings": []
+    },
+    {
+      "id": "trophyCup",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/turboball-trophy/model.glb",
+      "outputPath": "public/aura-assets/trophyCup.0185047a.glb",
+      "url": "/aura-assets/trophyCup.0185047a.glb",
+      "hash": "sha256-0185047adb17f016ff4b99c757f138f6962e174afda13971b2776b807bee7d93",
+      "sizeBytes": 1210612,
+      "bounds": [
+        1.493,
+        1.902,
+        0.915
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.747,
+          -0.952,
+          -0.458
+        ],
+        "max": [
+          0.746,
+          0.95,
+          0.457
+        ],
+        "size": [
+          1.493,
+          1.902,
+          0.915
+        ],
+        "center": [
+          -0.001,
+          -0.001,
+          0
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/turboball-trophy/model.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-10-15 via the Meshy API (text-to-3D, remesh, rigging, animation) under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-16T01:24:59.497Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a1424e-72e7-77fe-abbb-932c18436e84",
+          "operation": "remesh",
+          "createdAt": "2026-10-16T01:23:19.968Z",
+          "finishedAt": "2026-10-16T01:24:59.497Z",
+          "consumedCredits": 5,
+          "localMetadata": "aura-evidence/meshy/trophyCup.metadata.db68adb62b83.json",
+          "rightsEvidence": "aura-evidence/meshy/trophyCup.rights.8f8012b08333.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/trophyCup.rights.8f8012b08333.json",
+          "aura-evidence/meshy/trophyCup.metadata.db68adb62b83.json",
+          "public/aura-assets/trophyCup.meshy-candidate.405ed744.png"
+        ],
+        "checkedAt": "2026-10-16T01:24:59.497Z"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "thumbnailUrl": "/aura-assets/trophyCup.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/trophyCup.meshy-candidate.405ed744.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-405ed744e411111a077d14b8712c58f6522c357bbbbaac248d15d50a1cddaea8",
+        "checkedAt": "2026-10-16T02:03:07.909Z"
+      },
+      "warnings": []
+    }
+  ]
+}

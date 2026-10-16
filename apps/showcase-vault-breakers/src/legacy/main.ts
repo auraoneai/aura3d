@@ -265,6 +265,7 @@ function primitiveNode(visual: PropVisual): AuraSceneNode {
     visual.name === "felt" ||
     visual.name.startsWith("bumper-") ||
     visual.name.startsWith("wall-") ||
+    visual.name.startsWith("guide-") ||
     visual.name.includes("sling");
   const visualY = isHiddenProxy ? -5 : visual.position[1] + 0.28;
   const isLane = visual.name.includes("plunger") || visual.name.includes("guide") || visual.name.includes("lane");
@@ -673,26 +674,21 @@ function visualNodes(): AuraSceneNode[] {
       .rotate(Math.PI / 2, 0, 0)
       .scale([0.68, 0.68, 0.022])
       .toJSON(),
-    // Gleaming mirror-chrome captive ball in front of the center core & shooter-lane ball
+    // Decorative balls kept hidden below playfield so only the real physics pinball is visible
     primitives.sphere({
       name: "vault-captive-chrome-ball",
-      material: liveBallMaterial,
-      castShadow: true,
-      receiveShadow: true
+      material: liveBallMaterial
     })
-      .position(0, 0.44, 1.18)
-      .scale([0.16, 0.16, 0.16])
+      .position(0, -50, 1.18)
+      .scale([0.0001, 0.0001, 0.0001])
       .toJSON(),
     primitives.sphere({
       name: "vault-shooter-lane-chrome-ball",
-      material: liveBallMaterial,
-      castShadow: true,
-      receiveShadow: true
+      material: liveBallMaterial
     })
-      .position(2.42, 0.44, 2.75)
-      .scale([0.16, 0.16, 0.16])
+      .position(2.42, -50, 2.75)
+      .scale([0.0001, 0.0001, 0.0001])
       .toJSON(),
-    // Extra 3D Meshy Gold Bonus Ball for Vault Multiball Jackpot
     model(rootAssets.vaultBreakersBall, {
       name: "vault-jackpot-gold-ball",
       role: "setDressing",
@@ -700,7 +696,8 @@ function visualNodes(): AuraSceneNode[] {
       targetMaxDimension: 0.34,
       material: goldBonusBallMaterial
     })
-      .position(0.54, 0.44, -2.05)
+      .position(0.54, -50, -2.05)
+      .scale([0.0001, 0.0001, 0.0001])
       .runtime(game.runtimeNode("vault-jackpot-gold-ball", { tags: ["typed-asset", "jackpot-bonus-ball"] }))
       .toJSON(),
     // Upper rollover lane dividers at top of playfield
@@ -781,26 +778,26 @@ function visualNodes(): AuraSceneNode[] {
       .rotate(Math.PI / 2, 0, 0)
       .scale([0.36, 0.36, 0.028])
       .toJSON(),
-    // Left and right inlane/outlane brushed metallic gold guide rails + neon rim accents
+    // Left and right inlane/outlane rails hidden so they do not read as static extra flippers
     primitives.box({ name: "inlane-guide-left-rail", material: goldTrimMat })
-      .position(-1.86, 0.38, 2.08)
+      .position(-1.86, -50, 2.08)
       .rotate(0, -0.32, 0)
-      .scale([0.10, 0.20, 1.18])
+      .scale([0.0001, 0.0001, 0.0001])
       .toJSON(),
     primitives.box({ name: "inlane-guide-left-neon-rim", material: neonCyanRimMat })
-      .position(-1.86, 0.49, 2.08)
+      .position(-1.86, -50, 2.08)
       .rotate(0, -0.32, 0)
-      .scale([0.06, 0.035, 1.16])
+      .scale([0.0001, 0.0001, 0.0001])
       .toJSON(),
     primitives.box({ name: "inlane-guide-right-rail", material: goldTrimMat })
-      .position(1.66, 0.38, 2.08)
+      .position(1.66, -50, 2.08)
       .rotate(0, 0.32, 0)
-      .scale([0.10, 0.20, 1.18])
+      .scale([0.0001, 0.0001, 0.0001])
       .toJSON(),
     primitives.box({ name: "inlane-guide-right-neon-rim", material: neonCyanRimMat })
-      .position(1.66, 0.49, 2.08)
+      .position(1.66, -50, 2.08)
       .rotate(0, 0.32, 0)
-      .scale([0.06, 0.035, 1.16])
+      .scale([0.0001, 0.0001, 0.0001])
       .toJSON(),
     // Flipper base pivot rings (cyan/magenta neon accents under the brushed gold flippers)
     primitives.torus({ name: "flipper-left-pivot-ring", material: neonCyanRimMat })
@@ -828,17 +825,15 @@ function visualNodes(): AuraSceneNode[] {
       .toJSON()
   );
 
-  // Glowing cyan comet trail nodes behind the active silver pinball
+  // Comet trail nodes kept hidden so no stray spheres look like stuck balls
   for (let i = 0; i < COMET_TRAIL_COUNT; i += 1) {
-    const trailPos = ballTrailHistory[i] ?? [0, 0.44, 1.18];
-    const radius = Math.max(0.04, 0.125 - i * 0.014);
     nodes.push(
       primitives.sphere({
         name: `vault-ball-comet-${i}`,
         material: cometTrailMaterials[i]!
       })
-        .position(trailPos[0], trailPos[1], trailPos[2])
-        .scale([radius, radius * 0.72, radius * 1.35])
+        .position(0, -50, 0)
+        .scale([0.0001, 0.0001, 0.0001])
         .runtime(game.runtimeNode(`vault-ball-comet-${i}`, { tags: ["ball-comet-trail"] }))
         .toJSON()
     );
@@ -1354,24 +1349,9 @@ function syncVisuals(): void {
     }
   }
 
-  // Update glowing cyan comet trail behind the active silver pinball (or captive ball wake)
-  if (primaryBallPos) {
-    ballTrailHistory.unshift([primaryBallPos[0], primaryBallPos[1], primaryBallPos[2]]);
-    if (ballTrailHistory.length > COMET_TRAIL_COUNT) ballTrailHistory.length = COMET_TRAIL_COUNT;
-  } else {
-    const pulse = frameCount * 0.08;
-    for (let i = 0; i < COMET_TRAIL_COUNT; i += 1) {
-      const t = (i + 1) / COMET_TRAIL_COUNT;
-      ballTrailHistory[i] = [
-        Math.sin(pulse - i * 0.35) * 0.14 * t,
-        0.44 - i * 0.008,
-        1.18 + (i + 1) * 0.17
-      ];
-    }
-  }
+  // Keep comet trail spheres hidden so no static spheres look like extra floating balls
   for (let i = 0; i < cometTrailHandles.length; i += 1) {
-    const pos = ballTrailHistory[i] ?? ballTrailHistory[ballTrailHistory.length - 1] ?? [0, 0.44, 1.18];
-    cometTrailHandles[i]?.setVisible(true).setPosition(pos[0], pos[1], pos[2]);
+    cometTrailHandles[i]?.setVisible(false).setPosition(0, -50, 0);
   }
 
   // Animate 3D Meshy standup targets (spin armed crystals/energy cores, recess downed targets)
@@ -1385,22 +1365,9 @@ function syncVisuals(): void {
     tIdx += 1;
   }
 
-  // Animate extra 3D Meshy Gold Bonus Ball for Vault Multiball Jackpot
+  // Keep decorative jackpot ball hidden so no ball flies autonomously without physics
   if (goldJackpotBallHandle) {
-    if (goldJackpotBallActive || snap.multiball) {
-      goldJackpotBallPhase += 0.065;
-      const gx = Math.sin(goldJackpotBallPhase * 2.1) * 1.38;
-      const gz = -0.55 + Math.cos(goldJackpotBallPhase * 1.6) * 1.45;
-      goldJackpotBallHandle
-        .setVisible(true)
-        .setPosition(gx, 0.44, gz)
-        .setRotation(goldJackpotBallPhase * 3.2, goldJackpotBallPhase * 2.4, 0);
-    } else {
-      goldJackpotBallHandle
-        .setVisible(true)
-        .setPosition(0.54, 0.44, -2.05)
-        .setRotation(0, frameCount * 0.03, 0);
-    }
+    goldJackpotBallHandle.setVisible(false).setPosition(0, -50, 0);
   }
 
   const banksDown = snap.banksDown;

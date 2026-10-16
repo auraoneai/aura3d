@@ -3,6 +3,7 @@ import {
   collectAuraSceneEvidence,
   createAuraApp,
   effects,
+  environments,
   game,
   interactions,
   lights,
@@ -174,15 +175,20 @@ function buildLabSetScene(nextControls: LabControls): ReturnType<typeof scene> {
         };
 
   return scene()
-    .background("#000000")
-    .add(primitives.plane({ name: "typed particle lab reflective floor", material: material.reflectiveFloor({ color: "#07100f", roughness: 0.3, metallic: 0.14 }) })
+    .background("#040b10")
+    .add(environments.nightCinematic({
+      name: "particle lab containment HDR IBL",
+      intensity: 1.08,
+      color
+    }))
+    .add(primitives.plane({ name: "typed particle lab reflective floor", material: material.reflectiveFloor({ color: "#081416", roughness: 0.24, metallic: 0.28 }) })
       .position(0, -0.18, -0.86)
       .scale([1.42, 1, 1.02]))
     .add(model(particleCoreAsset, {
       name: "typed CLI sci-fi reactor core particle emitter",
       scaleMode: "fit",
       targetMaxDimension: 1.68,
-      material: material.neon({ color: "#64d8d3", emissive: "#64d8d3", emissiveIntensity: 0.68 }),
+      material: material.neon({ color: "#64d8d3", emissive: "#64d8d3", emissiveIntensity: 1.35 }),
       castShadow: true,
       receiveShadow: true
     })
@@ -191,46 +197,46 @@ function buildLabSetScene(nextControls: LabControls): ReturnType<typeof scene> {
       .scale(0.54)
       .animate({ clip: "turntable", speed: 0.1, captureTime: 0.46 })
       .runtime(game.runtimeNode(PARTICLE_CORE_NODE_ID, { tags: ["typed-asset", "route-primary", "particle-core"] })))
-    .add(primitives.torus({ name: "reactor containment ring outer", material: material.neon({ color, emissive: color, emissiveIntensity: 0.92, opacity: 0.56 }) })
+    .add(primitives.torus({ name: "reactor containment ring outer", material: material.neon({ color, emissive: color, emissiveIntensity: 1.45, opacity: 0.78 }) })
       .position(0, 0.42, -0.72)
       .rotate(1.5708, 0, 0)
       .scale([0.54, 0.54, 0.014])
       .animate({ clip: "turntable", speed: 0.18, captureTime: 0.4 }))
-    .add(primitives.torus({ name: "reactor vertical induction ring", material: material.neon({ color: secondary, emissive: secondary, emissiveIntensity: 0.72, opacity: 0.42 }) })
+    .add(primitives.torus({ name: "reactor vertical induction ring", material: material.neon({ color: secondary, emissive: secondary, emissiveIntensity: 1.18, opacity: 0.66 }) })
       .position(0, 0.46, -0.72)
       .rotate(0, 1.5708, 0)
       .scale([0.48, 0.48, 0.012])
       .animate({ clip: "turntable", speed: -0.14, captureTime: 0.5 }))
-    .add(primitives.torus({ name: "reactor lower calibration ring", material: material.neon({ color: "#f4b957", emissive: "#f4b957", emissiveIntensity: 0.5, opacity: 0.36 }) })
+    .add(primitives.torus({ name: "reactor lower calibration ring", material: material.neon({ color: "#f4b957", emissive: "#f4b957", emissiveIntensity: 0.95, opacity: 0.58 }) })
       .position(0, -0.02, -0.72)
       .rotate(1.5708, 0, 0)
       .scale([0.62, 0.62, 0.01]))
-    .add(primitives.box({ name: "left reactor field column", material: material.pbr({ color: "#101819", roughness: 0.38, metallic: 0.48 }) })
+    .add(primitives.box({ name: "left reactor field column", material: material.pbr({ color: "#152326", roughness: 0.32, metallic: 0.56 }) })
       .position(-0.72, 0.42, -0.86)
       .scale([0.052, 0.72, 0.052]))
-    .add(primitives.box({ name: "right reactor field column", material: material.pbr({ color: "#101819", roughness: 0.38, metallic: 0.48 }) })
+    .add(primitives.box({ name: "right reactor field column", material: material.pbr({ color: "#152326", roughness: 0.32, metallic: 0.56 }) })
       .position(0.72, 0.42, -0.86)
       .scale([0.052, 0.72, 0.052]))
-    .add(primitives.box({ name: "left cyan reactor column strip", material: material.neon({ color: secondary, emissive: secondary, emissiveIntensity: 0.58 }) })
+    .add(primitives.box({ name: "left cyan reactor column strip", material: material.neon({ color: secondary, emissive: secondary, emissiveIntensity: 1.25 }) })
       .position(-0.72, 0.44, -0.74)
       .scale([0.014, 0.58, 0.02]))
-    .add(primitives.box({ name: "right amber reactor column strip", material: material.neon({ color, emissive: color, emissiveIntensity: 0.58 }) })
+    .add(primitives.box({ name: "right amber reactor column strip", material: material.neon({ color, emissive: color, emissiveIntensity: 1.25 }) })
       .position(0.72, 0.44, -0.74)
       .scale([0.014, 0.58, 0.02]))
-    .add(primitives.box({ name: "overhead particle lab gantry", material: material.pbr({ color: "#12191b", roughness: 0.34, metallic: 0.42 }) })
+    .add(primitives.box({ name: "overhead particle lab gantry", material: material.pbr({ color: "#182428", roughness: 0.28, metallic: 0.52 }) })
       .position(0, 0.98, -0.9)
       .scale([0.98, 0.042, 0.052]))
-    .add(primitives.box({ name: "overhead active particle bus", material: material.neon({ color: "#64d8d3", emissive: "#64d8d3", emissiveIntensity: 0.52 }) })
+    .add(primitives.box({ name: "overhead active particle bus", material: material.neon({ color: "#64d8d3", emissive: "#64d8d3", emissiveIntensity: 1.15 }) })
       .position(0, 0.94, -0.76)
       .scale([0.82, 0.014, 0.02]))
     .add(effects.particles({
       name: "Aura3D particle library primary emitter",
       emitter: plume.emitter,
       color,
-      particleCount: Math.max(10, Math.round(count * 0.09)),
-      emissionRate: plume.emissionRate,
-      density: 0.42,
-      intensity: plume.intensity,
+      particleCount: Math.max(12, Math.round(count * 0.11)),
+      emissionRate: plume.emissionRate + 4,
+      density: 0.52,
+      intensity: plume.intensity + 0.14,
       radius: plume.radius,
       height: plume.height,
       speed: plume.speed,
@@ -238,36 +244,78 @@ function buildLabSetScene(nextControls: LabControls): ReturnType<typeof scene> {
       materialMode: plume.materialMode,
       texturedBillboard: true
     }))
+    .add(effects.particles({
+      name: "Aura3D particle library depth-mote emitter",
+      emitter: "ambient",
+      color: secondary,
+      particleCount: Math.max(8, Math.round(count * 0.05)),
+      emissionRate: 10,
+      density: 0.34,
+      intensity: 0.28,
+      radius: 0.36,
+      height: 0.62,
+      speed: 0.14,
+      turbulence: 0.08,
+      materialMode: "spark",
+      texturedBillboard: true
+    }))
+    .add(effects.auroraRibbon({
+      name: "particle lab upper containment field ribbon",
+      color,
+      colorTop: secondary,
+      intensity: 0.44,
+      width: 2.1,
+      height: 0.72,
+      segments: 42,
+      sway: 0.52,
+      shimmer: 0.48
+    }).position(0, 1.12, -1.18))
+    .add(effects.ambientOcclusion({
+      name: "particle lab containment ambient occlusion",
+      intensity: 0.42,
+      radius: 0.54,
+      falloff: 1.6,
+      multiBounce: true
+    }))
+    .add(effects.contactShadows({
+      length: 0.18,
+      thickness: 0.04,
+      steps: 12,
+      intensity: 0.72,
+      lights: "sun"
+    }))
     .add(effects.depthFog({
       name: "particle lab containment haze",
-      density: 0.014,
+      density: 0.012,
       color: "#061112",
-      intensity: 0.18
+      intensity: 0.16
     }))
     .add(effects.bloom({
       name: "particle lab reactor bloom",
-      intensity: 0.24,
-      threshold: 0.76,
-      radius: 0.3,
+      intensity: 0.38,
+      threshold: 0.68,
+      radius: 0.34,
       color
     }))
     .add(effects.vignette({
       name: "particle lab chamber vignette",
-      intensity: 0.24,
-      smoothness: 0.72,
+      intensity: 0.22,
+      smoothness: 0.74,
       roundness: 0.86,
       color: "#010405"
     }))
     .add(effects.colorGrade({
       name: "particle lab telemetry grade",
-      contrast: 1.06,
-      saturation: 1.07
+      contrast: 1.08,
+      saturation: 1.12
     }))
-    .add(shadows.contact({ name: "reactor core contact glow", position: [0, -0.12, -0.72], footprint: [0.82, 0.52], opacity: 0.28 }))
-    .add(lights.ambient({ name: "particle lab cool ambient", intensity: 0.18, color: "#d9fffa" }))
-    .add(lights.point({ name: "core cyan scan key", position: [-1.6, 1.34, 1.2], intensity: 1.84, color: secondary }))
-    .add(lights.point({ name: "core amber energy fill", position: [1.7, 1.12, 0.62], intensity: 1.45, color }))
-    .add(lights.directional({ name: "reactor overhead strip key", position: [0.8, 3.1, 2.2], intensity: 0.64, color: "#ffffff" }))
+    .add(shadows.contact({ name: "reactor core contact glow", position: [0, -0.12, -0.72], footprint: [0.82, 0.52], opacity: 0.36 }))
+    .add(lights.ambient({ name: "particle lab cool ambient", intensity: 0.36, color: "#d9fffa" }))
+    .add(lights.hemisphere({ name: "particle lab chamber sky-floor fill", skyColor: "#a8fff8", groundColor: "#0e2226", intensity: 0.52 }))
+    .add(lights.point({ name: "core cyan scan key", position: [-1.6, 1.34, 1.2], intensity: 2.25, color: secondary }))
+    .add(lights.point({ name: "core amber energy fill", position: [1.7, 1.12, 0.62], intensity: 1.95, color }))
+    .add(lights.directional({ name: "reactor overhead strip key", position: [0.8, 3.1, 2.2], intensity: 2.1, color: "#ffffff", shadow: true }))
+    .add(lights.directional({ name: "reactor containment rim backlight", position: [-1.4, 2.2, -2.4], intensity: 1.25, color: secondary }))
     .add(interactions.orbit())
     .camera(camera.dolly({ from: [0.08, 0.86, 4.18], to: [0, 0.82, 3.62], target: [0, 0.34, -0.72], seconds: 9, fov: 31, captureTime: 0.5 }))
     .timeline(timeline.loop({ seconds: 9, captureTime: 0.5 }));

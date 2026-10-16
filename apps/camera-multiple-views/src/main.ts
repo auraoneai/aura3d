@@ -366,8 +366,8 @@ function renderUi(root: HTMLElement, runtime: CurrentRoutesCameraMultipleViewsRu
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>CurrentRoutes Camera Multiple Views</h1>
-          <p>Three independent WebGL elements render one shared A3D scene definition through distinct camera views.</p>
+          <h1>Aura3D 4.0 · Multi-Viewport Camera Rig</h1>
+          <p>Three independent WebGL elements render one shared Aura3D 4.0 scene definition through distinct camera views.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>
       </div>

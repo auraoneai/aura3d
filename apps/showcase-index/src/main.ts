@@ -102,6 +102,28 @@ const apps = [
     notes: "Compiler-selected OrangeIndustrialRobot replaces rejected AssemblyLine and is staged in a restrained workcell with live route-primary plus deploy evidence; telemetry remains deterministic sample state, not real facility integration."
   },
   {
+    id: "showcase-data-galaxy",
+    route: "/apps/showcase-data-galaxy/",
+    routeHealth: "/apps/showcase-data-galaxy/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
+    primaryAssetStatus: "typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Interactive 3D data galaxy showcase with orbital telemetry nodes, cluster focus, and 4.0.0 post-processing."
+  },
+  {
+    id: "showcase-webgpu-particle-lab",
+    route: "/apps/showcase-webgpu-particle-lab/",
+    routeHealth: "/apps/showcase-webgpu-particle-lab/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
+    primaryAssetStatus: "typed-supporting-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Accelerated GPU particle field lab with interactive attractors, presets, and 4.0.0 bloom post-processing."
+  },
+  {
     id: "showcase-blockfall-reactor",
     route: "/apps/showcase-blockfall-reactor/",
     routeHealth: "/apps/showcase-blockfall-reactor/route-health.json",
@@ -113,191 +135,105 @@ const apps = [
     notes: "Bounded falling-block candidate with passing route-primary, deploy/release, and gameplay proof; ships a synthesized nine-cue audio pass with additive level stems, an instanced two-pool board view, reduced-motion-gated clear FX and camera punch, extruded wall scoreboards, and tuned retained-bloom stills."
   },
   {
-    id: "showcase-skyline-runner",
-    route: "/apps/showcase-skyline-runner/",
-    routeHealth: "/apps/showcase-skyline-runner/route-health.json",
-    classification: "candidate",
-    publicShowcase: true,
-    primaryAssetStatus: "release-validated-typed-primary-assets",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "bounded",
-    notes: "Public platformer candidate with a typed Kenney character, mesh-derived verdant-world surfaces, grounded contact, follow-camera framing, and retained gameplay evidence."
-  },
-  {
-    id: "showcase-turbo-drift-circuit",
-    route: "/apps/showcase-turbo-drift-circuit/",
-    routeHealth: "/apps/showcase-turbo-drift-circuit/route-health.json",
-    classification: "candidate",
-    publicShowcase: true,
-    primaryAssetStatus: "release-validated-typed-primary-assets",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "bounded",
-    notes: "Public racing candidate with a typed Kenney race car, mesh-derived neon-circuit topology, certified car-to-road binding, evidence-selected framing, and retained gameplay evidence."
-  },
-  {
-    id: "showcase-siege-golf",
-    route: "/apps/showcase-siege-golf/",
-    routeHealth: "/apps/showcase-siege-golf/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
-    primaryAssetStatus: "release-validated-typed-primary-assets",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "bounded",
-    notes: "Nine-hole route-local Rapier demolition-golf prototype with typed ball and structure props, complete machine evidence, and public promotion held for independent exact-artifact review."
-  },
-  {
     id: "showcase-aurora-lander",
     route: "/apps/showcase-aurora-lander/",
     routeHealth: "/apps/showcase-aurora-lander/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
-    primaryAssetStatus: "typed-primary-assets-with-current-root-probes",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "bounded",
-    notes: "Three-site authored arcade landing prototype with typed probe/beacons, static Rapier terrain contact, bounded prediction, and public promotion held for independent exact-artifact review."
-  },
-  {
-    id: "showcase-neon-swarm",
-    route: "/apps/showcase-neon-swarm/",
-    routeHealth: "/apps/showcase-neon-swarm/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
+    classification: "candidate",
+    publicShowcase: true,
     primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "Five-wave abstract horde-survival prototype with a typed courier and street props, deterministic route-local steering, a real 320-instance finale, and public promotion held for independent exact-artifact review."
-  },
-  {
-    id: "showcase-gravity-post",
-    route: "/apps/showcase-gravity-post/",
-    routeHealth: "/apps/showcase-gravity-post/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
-    primaryAssetStatus: "typed-primary-assets-pending-current-release-probes",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "bounded",
-    notes: "Four-delivery authored arcade-gravity courier prototype with a typed mail pod and dock beacons, fixed-step prediction telemetry, real dock sensors, and public promotion held for independent exact-artifact review."
-  },
-  {
-    id: "showcase-courier-rush",
-    route: "/apps/showcase-courier-rush/",
-    routeHealth: "/apps/showcase-courier-rush/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
-    primaryAssetStatus: "release-validated-typed-primary-assets",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "bounded",
-    notes: "Five-dispatch arcade courier prototype with typed van, parcel, traffic, and zone landmarks; machine evidence is complete and public promotion remains held for independent exact-artifact review."
-  },
-  {
-    id: "showcase-pulse-tunnel",
-    route: "/apps/showcase-pulse-tunnel/",
-    routeHealth: "/apps/showcase-pulse-tunnel/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
-    primaryAssetStatus: "primitive-only",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "bounded",
-    notes: "Explicitly abstract 90-second tunnel runner with 13 typed audio assets and a measured deterministic pattern fallback; no typed visual-primary claim, and public promotion remains held for independent exact-artifact review."
-  },
-  {
-    id: "showcase-mech-hangar",
-    route: "/apps/showcase-mech-hangar/",
-    routeHealth: "/apps/showcase-mech-hangar/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
-    primaryAssetStatus: "release-validated-typed-primary-assets",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "bounded",
-    notes: "Root-safe hangar-to-arena prototype with a deterministic original CC0 16-part MH-2M family, validated rigid socket assembly, route-local combat, and public promotion held for independent exact-artifact review."
+    notes: "Precision lunar lander showcase with Meshy lander craft, habitat domes, lunar rovers, thruster vectoring, and touchdown scoring."
   },
   {
     id: "showcase-vault-breakers",
     route: "/apps/showcase-vault-breakers/",
     routeHealth: "/apps/showcase-vault-breakers/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
+    classification: "candidate",
+    publicShowcase: true,
     primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "Root-safe route-local pinball prototype with typed original cabinet, mechanism overlay, ball, flipper, and vault-door assets on public Rapier contacts; public promotion remains held for independent exact-artifact review."
-  },
-  {
-    id: "showcase-rooftop-buckets",
-    route: "/apps/showcase-rooftop-buckets/",
-    routeHealth: "/apps/showcase-rooftop-buckets/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
-    primaryAssetStatus: "release-validated-typed-primary-assets",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "bounded",
-    notes: "Root-safe five-heat rooftop shooting prototype with an original CC0 typed court, backboard, rim, regulation-scaled ball, and player-shaped defender standee; public promotion remains held for independent exact-artifact review."
+    notes: "Cyber-vault pinball showcase with Meshy cabinet, pop bumpers, slingshots, vault core, and Rapier hinge flippers."
   },
   {
     id: "showcase-bank-shot",
     route: "/apps/showcase-bank-shot/",
     routeHealth: "/apps/showcase-bank-shot/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
+    classification: "candidate",
+    publicShowcase: true,
     primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "Root-safe three-rack billiards prototype with an original CC0 typed table, cue, and individually marked 16-ball family on public Rapier contacts; public promotion remains held for independent exact-artifact review."
+    notes: "Three-rack billiards showcase with typed table, cue, and individually marked 16-ball family on public Rapier contacts."
   },
   {
-    id: "showcase-gallery-shift",
-    route: "/apps/showcase-gallery-shift/",
-    routeHealth: "/apps/showcase-gallery-shift/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
+    id: "showcase-top-tennis",
+    route: "/apps/showcase-top-tennis/",
+    routeHealth: "/apps/showcase-top-tennis/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
     primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "Root-safe two-floor stealth prototype with six original CC0 museum/exhibit assets, public-physics LOS and sensors, authored route-local hearing/patrol navigation, and public promotion held for independent exact-artifact review."
+    notes: "1:1 Aura3D port of TopTennisGame.com with 2-bone IK articulated athletes, 6 courts, Smash Lab, and 32-player World Tour."
   },
   {
-    id: "showcase-deep-recovery",
-    route: "/apps/showcase-deep-recovery/",
-    routeHealth: "/apps/showcase-deep-recovery/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
+    id: "showcase-turbo-ball",
+    route: "/apps/showcase-turbo-ball/",
+    routeHealth: "/apps/showcase-turbo-ball/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
     primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "Root-safe route-local submarine salvage prototype with five original CC0 typed sub, wreck, standard/heavy pod, and buoy assets; authored thrust, drag, buoyancy, collision, sonar, oxygen, and tow rules; public promotion held for independent exact-artifact review."
+    notes: "2v2 Rocket League-style car soccer arena with 10 custom Meshy 3D assets, Ball-Cam/Car-Cam toggle, rocket boost, and power-hop strikes."
   },
   {
-    id: "showcase-patrol-wing",
-    route: "/apps/showcase-patrol-wing/",
-    routeHealth: "/apps/showcase-patrol-wing/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
+    id: "showcase-kart-havoc",
+    route: "/apps/showcase-kart-havoc/",
+    routeHealth: "/apps/showcase-kart-havoc/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
     primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "Root-safe route-local authored arcade-flight patrol with four original CC0 typed aircraft, drone, and pad assets; Rapier-backed route-local sensors, root combat-world hits, and public promotion held for independent exact-artifact review."
+    notes: "Desert canyon Mario Kart-style item racing with 12 custom Meshy 3D assets, drift mini-turbo boost, homing canisters, and oil traps."
+  },
+  {
+    id: "showcase-bean-brawl-race",
+    route: "/apps/showcase-bean-brawl-race/",
+    routeHealth: "/apps/showcase-bean-brawl-race/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Fall Guys-style 3D obstacle course knockout race with 11 custom Meshy 3D assets, 4 rigged humanoid beans, spinning sweepers, and pendulums."
+  },
+  {
+    id: "aura-clash-showcase",
+    route: "/showcase/aura-clash/playable/",
+    routeHealth: "/showcase/aura-clash/playable/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "3D arena fighting showcase with Meshy PBR combatants, obsidian dragon dojo stage, combo cancels, and hit-spark VFX."
   }
 ] as const;
 
 const GAME_APP_IDS = new Set([
-  "showcase-turbo-drift-circuit",
-  "showcase-skyline-runner",
   "showcase-blockfall-reactor",
   "aura-clash-showcase",
-  "neon-corridor-strike",
-  "showcase-siege-golf",
-  "showcase-neon-swarm",
   "showcase-aurora-lander",
-  "showcase-gravity-post",
-  "showcase-courier-rush",
-  "showcase-pulse-tunnel",
-  "showcase-mech-hangar",
-  "showcase-vault-breakers",
   "showcase-bank-shot",
-  "showcase-patrol-wing",
-  "showcase-gallery-shift",
-  "showcase-deep-recovery",
-  "showcase-rooftop-buckets"
+  "showcase-vault-breakers",
+  "showcase-top-tennis",
+  "showcase-turbo-ball",
+  "showcase-kart-havoc",
+  "showcase-bean-brawl-race"
 ]);
 
 const publicApps = apps.filter((entry) => entry.publicShowcase);

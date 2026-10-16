@@ -41,6 +41,7 @@ export interface SimpleGraphicsShowcaseConfig {
     readonly primitive: string;
     readonly api: string;
   };
+  readonly clearColor?: readonly [number, number, number, number];
   readonly lightingRig?: WowStudioLightingConfig;
   readonly postProcess?: WowPostProcessConfig;
   createFrame(timeSeconds: number): SimpleGraphicsFrame;
@@ -134,7 +135,7 @@ export async function startSimpleGraphicsShowcase(config: SimpleGraphicsShowcase
       canvas,
       width: renderSize.width,
       height: renderSize.height,
-      clearColor: [0.012, 0.014, 0.018, 1],
+      clearColor: config.clearColor ? [...config.clearColor] : [0.012, 0.014, 0.018, 1],
       antialias: true
     });
 
@@ -148,41 +149,49 @@ export async function startSimpleGraphicsShowcase(config: SimpleGraphicsShowcase
 
     const frame = (now: number): void => {
       if (!renderer) return;
-      const before = performance.now();
-      const seconds = (now - startedAt) / 1000;
-      const scene = config.createFrame(seconds);
-      const postprocess = scene.postprocess !== undefined
-        ? scene.postprocess
-        : scene.postProcess
-          ? resolveWowPostProcessOptions(scene.postProcess)
-          : defaultPostProcess;
-      diagnostics = renderer.render({
-        renderItems: scene.renderItems,
-        cameraPolicy: scene.cameraPolicy ?? "auto-frame",
-        cameraFrameBounds: scene.bounds,
-        cameraFrameOptions: scene.cameraFrameOptions ?? { paddingRatio: 0.18, yawRadians: -0.4, pitchRadians: -0.16 },
-        collectedLights: scene.collectedLights ?? defaultLights,
-        environmentLighting: scene.environmentLighting ?? false,
-        shadow: false,
-        postprocess
-      });
-      frameCount += 1;
-      fpsFrames += 1;
-      if (fpsFrom === 0) fpsFrom = now;
-      if (now - fpsFrom >= 500) {
-        fps = fpsFrames * 1000 / (now - fpsFrom);
-        fpsFrames = 0;
-        fpsFrom = now;
+      try {
+        const before = performance.now();
+        const seconds = (now - startedAt) / 1000;
+        const scene = config.createFrame(seconds);
+        const postprocess = scene.postprocess !== undefined
+          ? scene.postprocess
+          : scene.postProcess
+            ? resolveWowPostProcessOptions(scene.postProcess)
+            : defaultPostProcess;
+        diagnostics = renderer.render({
+          renderItems: scene.renderItems,
+          cameraPolicy: scene.cameraPolicy ?? "auto-frame",
+          cameraFrameBounds: scene.bounds,
+          cameraFrameOptions: scene.cameraFrameOptions ?? { paddingRatio: 0.18, yawRadians: -0.4, pitchRadians: -0.16 },
+          collectedLights: scene.collectedLights ?? defaultLights,
+          environmentLighting: scene.environmentLighting ?? false,
+          shadow: false,
+          postprocess
+        });
+        frameCount += 1;
+        fpsFrames += 1;
+        if (fpsFrom === 0) fpsFrom = now;
+        if (now - fpsFrom >= 500) {
+          fps = fpsFrames * 1000 / (now - fpsFrom);
+          fpsFrames = 0;
+          fpsFrom = now;
+        }
+        lastFrameMs = performance.now() - before;
+        smoothedFrameMs = smoothedFrameMs === 0 ? lastFrameMs : smoothedFrameMs * 0.86 + lastFrameMs * 0.14;
+        publish(frameCount > 1 ? "running" : "ready", undefined, frameCount <= 2);
+        requestAnimationFrame(frame);
+      } catch (error) {
+        publish("error", formatError(error), true);
       }
-      lastFrameMs = performance.now() - before;
-      smoothedFrameMs = smoothedFrameMs === 0 ? lastFrameMs : smoothedFrameMs * 0.86 + lastFrameMs * 0.14;
-      publish(frameCount > 1 ? "running" : "ready");
-      requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
   } catch (error) {
-    publish("error", formatError(error));
+    publish("error", formatError(error), true);
   }
+}
+
+export function rotationXQuat(angle: number): readonly [number, number, number, number] {
+  return [Math.sin(angle / 2), 0, 0, Math.cos(angle / 2)];
 }
 
 export function rotationYQuat(angle: number): readonly [number, number, number, number] {

@@ -124,7 +124,7 @@ const REPLAY_FRAME_COUNT = Math.max(240, ...DEMO_REPLAY.map((event) => event.fra
 // Keep the boot frame visually in-flight: the opening T sits a few rows into
 // the well, with a long state-bound ghost guide down to the stack. Gameplay
 // remains deterministic; this is only the starting presentation pose.
-const PRESENTATION_ACTIVE_Y = HIDDEN_ROWS + 6;
+const PRESENTATION_ACTIVE_Y = HIDDEN_ROWS;
 
 ui.html(
   "#hud",
@@ -140,7 +140,7 @@ ui.html(
         </div>
         <div class="status-strip">
           <span id="status-mode">Running</span>
-          <span id="status-speed">48f gravity</span>
+          <span id="status-speed">45f gravity</span>
         </div>
         <div class="controls-strip" aria-label="Keyboard controls">
           <span>Move <b>A/D</b> or <b>&larr;/&rarr;</b></span>
@@ -442,13 +442,13 @@ const sourceEvidence = {
 // Upgrade tetromino cell materials to glossy, clearcoated 3D energy cells with
 // controlled emissive glow so every piece reads with crisp beveled facets.
 Object.assign(pieceMaterials, {
-  I: material.pbr({ name: "faceted ion cyan tetromino", color: "#22d3ee", emissive: "#0891b2", emissiveIntensity: 0.28, roughness: 0.18, metallic: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.14 }),
-  J: material.pbr({ name: "faceted cobalt J tetromino", color: "#3b82f6", emissive: "#1d4ed8", emissiveIntensity: 0.26, roughness: 0.18, metallic: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.14 }),
-  L: material.pbr({ name: "faceted amber L tetromino", color: "#fb923c", emissive: "#c2410c", emissiveIntensity: 0.26, roughness: 0.18, metallic: 0.36, clearcoat: 0.5, clearcoatRoughness: 0.14 }),
-  O: material.pbr({ name: "faceted solar O tetromino", color: "#facc15", emissive: "#a16207", emissiveIntensity: 0.28, roughness: 0.18, metallic: 0.36, clearcoat: 0.5, clearcoatRoughness: 0.14 }),
-  S: material.pbr({ name: "faceted reactor green S tetromino", color: "#4ade80", emissive: "#15803d", emissiveIntensity: 0.26, roughness: 0.18, metallic: 0.36, clearcoat: 0.5, clearcoatRoughness: 0.14 }),
-  T: material.pbr({ name: "faceted magenta T tetromino", color: "#e879f9", emissive: "#86198f", emissiveIntensity: 0.28, roughness: 0.18, metallic: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.14 }),
-  Z: material.pbr({ name: "faceted warning red Z tetromino", color: "#fb7185", emissive: "#be123c", emissiveIntensity: 0.26, roughness: 0.18, metallic: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.14 })
+  I: material.pbr({ name: "faceted ion cyan tetromino", color: "#22d3ee", emissive: "#0891b2", emissiveIntensity: 0.34, roughness: 0.18, metallic: 0.38 }),
+  J: material.pbr({ name: "faceted cobalt J tetromino", color: "#3b82f6", emissive: "#1d4ed8", emissiveIntensity: 0.32, roughness: 0.18, metallic: 0.38 }),
+  L: material.pbr({ name: "faceted amber L tetromino", color: "#fb923c", emissive: "#c2410c", emissiveIntensity: 0.32, roughness: 0.18, metallic: 0.36 }),
+  O: material.pbr({ name: "faceted solar O tetromino", color: "#facc15", emissive: "#a16207", emissiveIntensity: 0.34, roughness: 0.18, metallic: 0.36 }),
+  S: material.pbr({ name: "faceted reactor green S tetromino", color: "#4ade80", emissive: "#15803d", emissiveIntensity: 0.32, roughness: 0.18, metallic: 0.36 }),
+  T: material.pbr({ name: "faceted magenta T tetromino", color: "#e879f9", emissive: "#86198f", emissiveIntensity: 0.34, roughness: 0.18, metallic: 0.38 }),
+  Z: material.pbr({ name: "faceted warning red Z tetromino", color: "#fb7185", emissive: "#be123c", emissiveIntensity: 0.32, roughness: 0.18, metallic: 0.38 })
 });
 
 const lockedStackPools: readonly InstancedBoardPool[] = createLockedStackPools(LOCKED_POOL_CAPACITY_PER_KIND);
@@ -1002,9 +1002,11 @@ const fallingBlocks = game.fallingBlocks({
   width: BOARD_WIDTH,
   height: BOARD_HEIGHT,
   hiddenRows: HIDDEN_ROWS,
+  gravityFrames: 36,
+  lockDelayFrames: 30,
   board: createOpeningBoard()
 });
-fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: PRESENTATION_ACTIVE_Y, rotation: 0 });
+fallingBlocks.setActive({ kind: "T", x: 3, y: PRESENTATION_ACTIVE_Y, rotation: 2 });
 let paused = false;
 let placedPieces = 0;
 let lockCount = 0;
@@ -1020,7 +1022,7 @@ const beatTimers = { levelUp: 0, gameOver: 0, reset: 0, burst: 0 };
 // Keep the line-clear sweep visible long enough to read during real play and
 // during retained capture. At 0.45 s the renderer could finish encoding the
 // named frame after the burst had already disappeared, leaving a technically
-// correct line count but no visible feedback for the event.
+// dry line count but no visible feedback for the event.
 const beatDurations = { levelUp: 0.85, gameOver: 1.6, reset: 0.7, burst: 3.4 };
 /**
  * Rotation-denied feedback (round 7): the kit refuses a rotate press when no
@@ -1040,6 +1042,9 @@ const observedBeatProof = { lineClear: false, levelUp: false, gameOver: false, r
 let queuedActions: BlockfallAction[] = [];
 let replayPlayback: { active: boolean; frame: number } = { active: false, frame: 0 };
 let openingAutoStep = 0;
+let gravityStepAccumulator = 0;
+let lastWallClockMs = 0;
+let aiMoveCooldownFrames = 20;
 const observedGameplayProof = {
   movement: false,
   rotation: false,
@@ -1060,7 +1065,7 @@ const observedGameplayProof = {
 const repeat = {
   left: createRepeatGate(0.15, 0.055),
   right: createRepeatGate(0.15, 0.055),
-  soft: createRepeatGate(0.025, 0.025)
+  soft: createRepeatGate(0.06, 0.055)
 };
 
 /**
@@ -1189,6 +1194,25 @@ const manualInputState = {
   held: new Set<BlockfallInputName>()
 };
 
+const MINI_PIECE_COLORS: Record<PieceKind, { bg: string; border: string; glow: string }> = {
+  I: { bg: "#38bdf8", border: "#bae6fd", glow: "rgba(56,189,248,0.65)" },
+  J: { bg: "#6366f1", border: "#c7d2fe", glow: "rgba(99,102,241,0.65)" },
+  L: { bg: "#f59e0b", border: "#fde68a", glow: "rgba(245,158,11,0.65)" },
+  O: { bg: "#facc15", border: "#fef08a", glow: "rgba(250,204,21,0.65)" },
+  S: { bg: "#10b981", border: "#a7f3d0", glow: "rgba(16,185,129,0.65)" },
+  T: { bg: "#c084fc", border: "#e9d5ff", glow: "rgba(192,132,252,0.65)" },
+  Z: { bg: "#f43f5e", border: "#fecdd3", glow: "rgba(244,63,94,0.65)" }
+};
+
+let lastPublishedLevel = 1;
+let lastUserKeyTime = 0;
+let aiTargetX = 3;
+let aiTargetRot = 2;
+let aiLastPieceKey = "";
+let aiAlignedFrames = 0;
+let aiPieceFrames = 0;
+let idleGameOverWallMs = 0;
+
 stageOpeningReactorSequence();
 installDomControls();
 syncAll(true);
@@ -1237,15 +1261,6 @@ blockfallWindow.__AURA3D_BLOCKFALL_ACCEPTANCE_PROBE__ = {
     return true;
   }
 };
-
-let lastPublishedLevel = 1;
-let lastUserKeyTime = 0;
-let aiTargetX = 3;
-let aiTargetRot = 2;
-let aiLastPieceKey = "";
-let aiAlignedFrames = 0;
-let aiPieceFrames = 0;
-let idleGameOverWallMs = 0;
 
 function aiCollides(board: BlockfallState["board"], piece: ActivePiece): boolean {
   return pieceCells(piece).some((cell) => {
@@ -1337,8 +1352,6 @@ function chooseAttractPlacement(currentState: BlockfallState): {
 }
 
 gameApp.onFrame(({ dt }) => {
-  input.update(dt);
-
   // Exact acceptance captures intentionally freeze gameplay after a real kit
   // transition. `app.step(0)` is still allowed to flush the renderer, but it
   // must not inject an extra gravity tick or alter the captured checksum.
@@ -1356,8 +1369,6 @@ gameApp.onFrame(({ dt }) => {
     if (hasInput) {
       lastUserKeyTime = performance.now();
       exitAttract("player-input");
-      // Swallow the triggering input so "press any key to play" cannot also
-      // hard-drop onto the opening stack (which sits one cell from a clear).
       manualInputState.pressed.clear();
       queuedActions = [];
       replayPlayback = { active: false, frame: 0 };
@@ -1376,22 +1387,7 @@ gameApp.onFrame(({ dt }) => {
     }
   }
 
-  // Idle engagement: keep the live HUD active while the autonomous reactor AI
-  // plays during normal watching so `#blockfall-attract-card` never blocks the view.
-  const anyInputThisFrame = queuedActions.length > 0
-    || manualInputState.pressed.size > 0
-    || manualInputState.held.size > 0
-    || BLOCKFALL_INPUT_NAMES.some((name) => input.pressed(name) || input.held(name));
-  if (!attractState.active && !paused && !state.gameOver && !replayPlayback.active) {
-    if (anyInputThisFrame || dt === 0 || (lastUserKeyTime === 0 || performance.now() - lastUserKeyTime > 1200)) {
-      attractState.idleSeconds = 0;
-    } else {
-      attractState.idleSeconds += Math.max(0, dt);
-      if (attractState.idleSeconds >= ATTRACT_IDLE_SECONDS * 6) {
-        enterAttract("idle-timeout");
-      }
-    }
-  }
+  attractState.idleSeconds = 0;
 
   if (replayPlayback.active) {
     replayPlayback = { ...replayPlayback, frame: replayPlayback.frame + 1 };
@@ -1403,94 +1399,87 @@ gameApp.onFrame(({ dt }) => {
     attractState.framesReplayed += 1;
     state = advanceFallingBlocks(attractActions);
     if (state.gameOver) {
-      // The recorded segment never tops out against rules.ts, but kit divergence
-      // could end it early; restart the loop rather than freezing the title.
       attractState.playback.restart();
       fallingBlocks.reset(DEFAULT_SEED);
       fallingBlocks.setBoard(createActionReadyOpeningBoard());
       fallingBlocks.setActive({ kind: "T", x: 3, y: PRESENTATION_ACTIVE_Y, rotation: 2 });
     }
   } else {
-    const actions = [...queuedActions, ...collectInputActions(dt)];
-    queuedActions = [];
-    openingAutoStep += 1;
+    const nowWallMs = performance.now();
+    const wallDt =
+      lastWallClockMs > 0
+        ? Math.min(0.25, Math.max(1 / 240, (nowWallMs - lastWallClockMs) / 1000))
+        : 1 / 60;
+    lastWallClockMs = nowWallMs;
 
-    if (!paused && !state.gameOver && acceptanceScenario === null && !replayPlayback.active && !attractState.active) {
-      idleGameOverWallMs = 0;
-      if (actions.length > 0) {
-        lastUserKeyTime = performance.now();
-        aiAlignedFrames = 0;
-        aiPieceFrames = 0;
-      } else {
-        const userRecentlyActive = lastUserKeyTime > 0 && (performance.now() - lastUserKeyTime <= 1200);
-        if (userRecentlyActive) {
-          if (state.frame % 16 === 0) {
-            actions.push({ type: "softDrop" });
-          }
-        } else if ((openingAutoStep <= 180 || performance.now() - lastUserKeyTime > 1200) && state.active) {
-          const pieceKey = `${state.active.kind}:${state.piecesPlaced}:${state.hold ?? "none"}`;
-          if (pieceKey !== aiLastPieceKey || openingAutoStep % 6 === 0) {
-            const plan = chooseAttractPlacement(state);
-            if (plan) {
-              aiTargetX = plan.targetX;
-              aiTargetRot = plan.targetRot;
-            }
-            if (pieceKey !== aiLastPieceKey) {
-              aiLastPieceKey = pieceKey;
-              aiAlignedFrames = 0;
-              aiPieceFrames = 0;
-            }
-          }
-          aiPieceFrames += 1;
-          const rotAligned = state.active.rotation === aiTargetRot;
-          const colAligned = state.active.x === aiTargetX;
-          const ghost = ghostPiece(state);
-          const distToGhost = ghost ? ghost.y - state.active.y : 0;
-          if (!rotAligned || !colAligned) {
-            if (openingAutoStep % 6 === 0) {
-              if (!rotAligned) {
-                actions.push({ type: "rotate", direction: 1 });
-              } else if (!colAligned) {
-                actions.push({ type: "move", dx: state.active.x < aiTargetX ? 1 : -1 });
-              }
-            }
-            if (openingAutoStep % 4 === 0) {
-              actions.push({ type: "softDrop" });
-            }
-            if (aiPieceFrames >= 72 && (state.active.y >= HIDDEN_ROWS + 10 || distToGhost <= 3)) {
-              actions.push({ type: "hardDrop" });
-              aiPieceFrames = 0;
-            }
-          } else {
-            aiAlignedFrames += 1;
-            const readyForCommit =
-              (state.active.y >= HIDDEN_ROWS + 11 && aiAlignedFrames >= 8)
-              || (distToGhost <= 3 && aiAlignedFrames >= 4)
-              || aiPieceFrames >= 84;
-            if (readyForCommit) {
-              actions.push({ type: "hardDrop" });
-              aiAlignedFrames = 0;
-              aiPieceFrames = 0;
-            } else if (openingAutoStep % 4 === 0) {
-              actions.push({ type: "softDrop" });
-            }
-          }
-        }
-      }
-    } else if (!paused && state.gameOver && (lastUserKeyTime === 0 || performance.now() - lastUserKeyTime > 2000)) {
-      if (idleGameOverWallMs === 0) {
-        idleGameOverWallMs = performance.now();
-      } else if (performance.now() - idleGameOverWallMs >= 1500) {
-        idleGameOverWallMs = 0;
-        actions.push({ type: "reset", seed: DEFAULT_SEED });
-      }
+    const actions = [...queuedActions, ...collectInputActions(wallDt)];
+    queuedActions = [];
+    gravityStepAccumulator += wallDt;
+    let tickFrames = 0;
+    while (gravityStepAccumulator >= 1 / 60) {
+      gravityStepAccumulator -= 1 / 60;
+      tickFrames += 1;
+      openingAutoStep += 1;
     }
 
-    state = advanceFallingBlocks(actions);
-    if (state.lastMove === "reset" && (lastUserKeyTime === 0 || performance.now() - lastUserKeyTime > 2000)) {
+    if (actions.length > 0 || manualInputState.held.size > 0) {
+      lastUserKeyTime = nowWallMs;
+      idleGameOverWallMs = 0;
+    }
+
+    const userControlling = lastUserKeyTime > 0 && nowWallMs - lastUserKeyTime < 12000;
+
+    if (!userControlling && !paused && !state.gameOver && tickFrames > 0) {
+      const pieceKey = state.active
+        ? `${state.active.kind}-${placedPieces}-${lockCount}`
+        : "";
+      if (pieceKey && pieceKey !== aiLastPieceKey) {
+        aiLastPieceKey = pieceKey;
+        aiPieceFrames = 0;
+        aiAlignedFrames = 0;
+        aiMoveCooldownFrames = 20;
+        const plan = chooseAttractPlacement(state);
+        if (plan) {
+          aiTargetX = plan.targetX;
+          aiTargetRot = plan.targetRot;
+        }
+      }
+      aiPieceFrames += tickFrames;
+      aiMoveCooldownFrames -= tickFrames;
+      if (state.active && aiMoveCooldownFrames <= 0) {
+        // Calm horizontal alignment (no forced softDrop — piece descends naturally via gravityFrames: 36 at 60Hz = 0.60s per row)
+        if (state.active.rotation !== aiTargetRot) {
+          actions.push({ type: "rotate", direction: 1 });
+          aiMoveCooldownFrames = 24;
+        } else if (state.active.x < aiTargetX) {
+          actions.push({ type: "move", dx: 1 });
+          aiMoveCooldownFrames = 20;
+        } else if (state.active.x > aiTargetX) {
+          actions.push({ type: "move", dx: -1 });
+          aiMoveCooldownFrames = 20;
+        } else {
+          aiAlignedFrames += 1;
+          aiMoveCooldownFrames = 20;
+        }
+      }
+    } else if (!paused && state.gameOver) {
+      idleGameOverWallMs = 0;
+      actions.push({ type: "reset", seed: DEFAULT_SEED });
+    }
+
+    state = advanceFallingBlocks(actions, tickFrames);
+    if (state.gameOver && (lastUserKeyTime === 0 || performance.now() - lastUserKeyTime > 2000)) {
+      fallingBlocks.reset(DEFAULT_SEED);
+      fallingBlocks.setBoard(createActionReadyOpeningBoard());
+      fallingBlocks.setActive({ kind: "T", x: 3, y: PRESENTATION_ACTIVE_Y, rotation: 2 });
+      state = createBlockfallView(fallingBlocks.snapshot(), "reset", lastFallingEvents);
+      aiLastPieceKey = "";
+    }
+    if (state.lastMove === "reset") {
       fallingBlocks.setBoard(createActionReadyOpeningBoard());
       fallingBlocks.setActive({ kind: "T", x: 3, y: PRESENTATION_ACTIVE_Y, rotation: 2 });
       state = createBlockfallView(fallingBlocks.snapshot(), state.lastMove, lastFallingEvents);
+      aiLastPieceKey = "";
     }
   }
 
@@ -1545,7 +1534,7 @@ function ensureActivePieceInVisibleWell(): void {
   }
 }
 
-function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): BlockfallState {
+function advanceFallingBlocks(actions: readonly BlockfallAction[] = [], tickFrames = 1): BlockfallState {
   let lastMove = "frame";
   let resetApplied = false;
 
@@ -1596,9 +1585,9 @@ function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): Blockfa
     countFallingBlockEvents(lastFallingEvents, rowsBeforeAction);
   }
 
-  if (!resetApplied && !paused && !fallingBlocks.snapshot().gameOver) {
+  if (!resetApplied && !paused && !fallingBlocks.snapshot().gameOver && tickFrames > 0) {
     const rowsBeforeTick = captureFullVisibleRows();
-    const tickSnapshot = fallingBlocks.tick();
+    const tickSnapshot = fallingBlocks.tick(tickFrames);
     lastFallingEvents = tickSnapshot.events;
     if (tickSnapshot.events.length > 0) {
       lastMove = tickSnapshot.events.map((event) => event.type).join("+");
@@ -1935,6 +1924,7 @@ function syncInstancedPools(): void {
       spec.position = [cell.position[0], cell.position[1], cell.position[2]];
       spec.scale = [BLOCK_SCALE[0], BLOCK_SCALE[1], BLOCK_SCALE[2]];
     }
+    lockedPoolHandles[poolIndex]?.setInstances(pool.transforms);
   });
   // Active piece: a single four-instance pool whose material follows the live kind.
   const activeKind = state.active ? state.active.kind : null;
@@ -1955,6 +1945,7 @@ function syncInstancedPools(): void {
     spec.position = [cell.position[0], cell.position[1], cell.position[2]];
     spec.scale = [ACTIVE_BLOCK_SCALE[0], ACTIVE_BLOCK_SCALE[1], ACTIVE_BLOCK_SCALE[2]];
   }
+  activePoolHandle.setInstances(activePiecePool.transforms);
   lockedPoolHandles.forEach((handle) => handle.setVisible(true));
   activePoolHandle.setVisible(!state.gameOver);
 }
@@ -2240,7 +2231,7 @@ function syncHud(): void {
   ui.setText(hudReactor, `${summary.reactor}%`);
   ui.setText(hudBackToBack, summary.backToBack ? "B2B armed" : "B2B off");
   ui.setText(hudMode, state.gameOver ? "Game over" : replayPlayback.active ? "Replay" : state.paused ? "Paused" : "Running");
-  ui.setText(hudSpeed, `${gravityFrames(state)}f gravity`);
+  ui.setText(hudSpeed, `${fallingBlocks.snapshot().gravityFrames}f gravity`);
   ui.setText(hudChecksum, summary.checksum);
   ui.setText(hudReplayChecksum, replayEvidence.replayChecksum);
   reactorFill.style.width = `${summary.reactor}%`;
@@ -2638,21 +2629,40 @@ function installDomControls(): void {
     });
   });
 
-  window.addEventListener("keydown", (event) => {
-    const action = keyboardActionByCode.get(event.code);
+  const resolveKeyboardAction = (event: KeyboardEvent): BlockfallInputName | undefined => {
+    const byCode = keyboardActionByCode.get(event.code);
+    if (byCode) return byCode;
+    const key = (event.key || "").toLowerCase();
+    if (key === "arrowleft" || key === "a") return "left";
+    if (key === "arrowright" || key === "d") return "right";
+    if (key === "arrowup" || key === "w" || key === "x" || key === "e") return "rotateCW";
+    if (key === "z" || key === "q") return "rotateCCW";
+    if (key === "arrowdown" || key === "s") return "softDrop";
+    if (key === " ") return "hardDrop";
+    if (key === "c" || key === "shift") return "hold";
+    if (key === "escape" || key === "p") return "pause";
+    if (key === "r") return "reset";
+    return undefined;
+  };
+  const onKeyDown = (event: KeyboardEvent) => {
+    const action = resolveKeyboardAction(event);
     if (!action) return;
     event.preventDefault();
     lastUserKeyTime = performance.now();
     focusGame();
     if (!event.repeat) manualInputState.pressed.add(action);
     manualInputState.held.add(action);
-  }, { passive: false });
-  window.addEventListener("keyup", (event) => {
-    const action = keyboardActionByCode.get(event.code);
+  };
+  const onKeyUp = (event: KeyboardEvent) => {
+    const action = resolveKeyboardAction(event);
     if (!action) return;
     event.preventDefault();
     manualInputState.held.delete(action);
-  }, { passive: false });
+  };
+  window.addEventListener("keydown", onKeyDown, { capture: true, passive: false });
+  window.addEventListener("keyup", onKeyUp, { capture: true, passive: false });
+  document.addEventListener("keydown", onKeyDown, { capture: true, passive: false });
+  document.addEventListener("keyup", onKeyUp, { capture: true, passive: false });
 }
 
 function startReplayPlayback(): void {
@@ -2668,16 +2678,6 @@ function startReplayPlayback(): void {
   queuedActions = [];
   syncAll(true);
 }
-
-const MINI_PIECE_COLORS: Record<PieceKind, { bg: string; border: string; glow: string }> = {
-  I: { bg: "#38bdf8", border: "#bae6fd", glow: "rgba(56,189,248,0.65)" },
-  J: { bg: "#6366f1", border: "#c7d2fe", glow: "rgba(99,102,241,0.65)" },
-  L: { bg: "#f59e0b", border: "#fde68a", glow: "rgba(245,158,11,0.65)" },
-  O: { bg: "#facc15", border: "#fef08a", glow: "rgba(250,204,21,0.65)" },
-  S: { bg: "#10b981", border: "#a7f3d0", glow: "rgba(16,185,129,0.65)" },
-  T: { bg: "#c084fc", border: "#e9d5ff", glow: "rgba(192,132,252,0.65)" },
-  Z: { bg: "#f43f5e", border: "#fecdd3", glow: "rgba(244,63,94,0.65)" }
-};
 
 function renderMiniPiece(kind: PieceKind | null): string {
   const occupied = new Set<CellPoint>();

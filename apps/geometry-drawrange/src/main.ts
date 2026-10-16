@@ -292,8 +292,8 @@ function renderUi(root: HTMLElement, runtime: CurrentRoutesGeometryDrawRangeRunt
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>CurrentRoutes Geometry DrawRange</h1>
-        <p>Indexed and array draw ranges routed through A3D render commands.</p>
+        <h1>Aura3D 4.0 · Geometry DrawRange</h1>
+        <p>Indexed and array draw ranges routed through Aura3D 4.0 render commands.</p>
         <p>Change draw ranges with ↑/↓, Space, or a click on the viewport.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>

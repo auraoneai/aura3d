@@ -43,20 +43,29 @@ const showcaseRoutes = [
   "showcase-smart-city-control",
   "showcase-cinematic-architecture",
   "showcase-digital-twin-ops",
+  "showcase-data-galaxy",
+  "showcase-webgpu-particle-lab",
   "showcase-blockfall-reactor",
-  "showcase-turbo-drift-circuit",
-  "showcase-skyline-runner",
-  "showcase-gravity-post",
+  "showcase-bank-shot",
   "showcase-aurora-lander",
+  "showcase-vault-breakers",
+  "showcase-top-tennis",
+  "showcase-turbo-ball",
+  "showcase-kart-havoc",
+  "showcase-bean-brawl-race"
+];
+
+const retiredPrototypeRoutes = [
+  "showcase-skyline-runner",
   "showcase-siege-golf",
+  "showcase-mech-hangar",
+  "showcase-patrol-wing",
+  "showcase-turbo-drift-circuit",
+  "showcase-gravity-post",
   "showcase-neon-swarm",
   "showcase-courier-rush",
   "showcase-orbital-defense",
   "showcase-pulse-tunnel",
-  "showcase-mech-hangar",
-  "showcase-vault-breakers",
-  "showcase-bank-shot",
-  "showcase-patrol-wing",
   "showcase-gallery-shift",
   "showcase-deep-recovery",
   "showcase-rooftop-buckets"
@@ -145,6 +154,8 @@ function writeViteConfig(tempDir) {
   const routeInputs = Object.fromEntries(
     publicRoutes.map((route) => [route, path.join(repoRoot, "apps", route, "index.html")])
   );
+  const retargetWorkerPath = path.join(repoRoot, "packages", "animation", "src", "pose", "retarget.worker.ts");
+  const gamePackageEntry = path.join(repoRoot, "packages", "game", "src", "index.ts");
 
   const configPath = path.join(tempDir, "vite.config.mjs");
   writeFileSync(
@@ -152,13 +163,35 @@ function writeViteConfig(tempDir) {
     `import rootConfig from ${JSON.stringify(rootViteConfig)};
 
 const rootAliases = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.alias : [];
+const retargetWorkerTarget = ${JSON.stringify(retargetWorkerPath)};
+
+function resolveRetargetWorker() {
+  return {
+    name: "resolve-retarget-worker",
+    resolveId(id) {
+      if (
+        id.endsWith("packages/animation/src/pose/retarget.worker.js") ||
+        id.endsWith("packages/animation/src/pose/retarget.worker.ts")
+      ) {
+        return retargetWorkerTarget;
+      }
+      return null;
+    }
+  };
+}
 
 export default {
   root: ${JSON.stringify(repoRoot)},
   publicDir: false,
   base: "/",
+  plugins: [resolveRetargetWorker()],
+  worker: {
+    plugins: () => [resolveRetargetWorker()]
+  },
   resolve: {
     alias: [
+      { find: /^@aura3d\\/engine\\/game$/, replacement: ${JSON.stringify(gamePackageEntry)} },
+      { find: /^@aura3d\\/game$/, replacement: ${JSON.stringify(gamePackageEntry)} },
       { find: /^@aura3d\\/engine$/, replacement: ${JSON.stringify(engineSourceEntry)} },
       ...rootAliases.filter((entry) => entry.find !== "@aura3d/engine")
     ],
@@ -202,6 +235,15 @@ function copyRouteHealth() {
     if (!existsSync(routeHealth)) continue;
     const outputDir = path.join(distDir, "apps", route);
     cpSync(routeHealth, path.join(outputDir, "route-health.json"));
+  }
+  const topTennisPublic = path.join(repoRoot, "apps", "showcase-top-tennis", "public", "toptennis");
+  if (existsSync(topTennisPublic)) {
+    const targetRouteDir = path.join(distDir, "apps", "showcase-top-tennis", "toptennis");
+    mkdirSync(targetRouteDir, { recursive: true });
+    cpSync(topTennisPublic, targetRouteDir, { recursive: true });
+    const targetRootDir = path.join(distDir, "toptennis");
+    mkdirSync(targetRootDir, { recursive: true });
+    cpSync(topTennisPublic, targetRootDir, { recursive: true });
   }
 }
 
@@ -260,19 +302,21 @@ function copyAuraAssets() {
     console.log(`Mirrored GLB companion textures to aura-assets/Textures/.`);
   }
 
-  for (const sharedPublicSubdir of ["aura-environments", "aura-decoders"]) {
+  for (const sharedPublicSubdir of ["aura-environments", "aura-decoders", "hdri", "packs", "probes"]) {
     const sourceSubdir = path.join(repoRoot, "public", sharedPublicSubdir);
     if (existsSync(sourceSubdir)) {
       const targetSubdir = path.join(distDir, sharedPublicSubdir);
       mkdirSync(targetSubdir, { recursive: true });
-      cpSync(sourceSubdir, targetSubdir, { recursive: true });
+      cpSync(sourceSubdir, targetSubdir, { recursive: true, dereference: true, force: true });
       console.log(`Mirrored public/${sharedPublicSubdir} to ${sharedPublicSubdir}/.`);
     }
   }
 
-  const auraClashPublicAssets = path.join(repoRoot, "apps", "aura-clash-showcase", "public", "aura-assets");
-  if (existsSync(auraClashPublicAssets)) {
-    copyRouteLocalAuraAssets("aura-clash-showcase");
+  for (const route of ["aura-clash-showcase", ...showcaseRoutes]) {
+    const routePublicAssets = path.join(repoRoot, "apps", route, "public", "aura-assets");
+    if (existsSync(routePublicAssets)) {
+      copyRouteLocalAuraAssets(route);
+    }
   }
 }
 
@@ -289,8 +333,7 @@ function collectRouteAssetIds(manifestAssets) {
   const routeAssetIds = new Set();
   const assetReferencePattern = /(?:assets|rootAssets)(?:\s+as\s+any\))?\.([A-Za-z0-9_$]+)/g;
   const extraSourceDirs = [
-    ["aura-clash-showcase", path.join(repoRoot, "apps", "aura-clash-showcase", "src")],
-    ["neon-corridor-strike", path.join(repoRoot, "examples", "neon-corridor-strike", "src")]
+    ["aura-clash-showcase", path.join(repoRoot, "apps", "aura-clash-showcase", "src")]
   ];
   const routeEntries = [
     ...publicRoutes.map((route) => [route, path.join(repoRoot, "apps", route, "src")]),
@@ -391,9 +434,7 @@ function assertBuiltRoutes() {
   const supersededPublicRoutes = [
     "showcase-material-asset-inspector",
     "showcase-public-racing-presentation-proof",
-    "showcase-public-platformer-presentation-proof",
-    "showcase-data-galaxy",
-    "showcase-webgpu-particle-lab"
+    "showcase-public-platformer-presentation-proof"
   ];
   for (const route of supersededPublicRoutes) {
     const staleRoute = path.join(distDir, "apps", route);
@@ -418,13 +459,19 @@ function assertBuiltRoutes() {
     }
   }
 
-  for (const route of ["showcase-turbo-drift-circuit", "showcase-skyline-runner"]) {
-    const publicHtml = path.join(distDir, "apps", route, "index.html");
-    if (!existsSync(publicHtml)) {
-      throw new Error(`release-ready game route must be published by marketing build: ${publicHtml}`);
-    }
+  const redirectHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=/apps/showcase-index/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><title>Aura3D Showcase</title><script>window.location.replace("/apps/showcase-index/");</script></head><body style="background:#06080f;color:#f3f5f8;font-family:sans-serif;padding:24px">Redirecting to <a href="/apps/showcase-index/" style="color:#4de2ff">Aura3D Showcase Index</a>...</body></html>\n`;
+
+  for (const route of retiredPrototypeRoutes) {
+    const retiredDir = path.join(distDir, "apps", route);
+    rmSync(retiredDir, { recursive: true, force: true });
+    mkdirSync(retiredDir, { recursive: true });
+    writeFileSync(path.join(retiredDir, "index.html"), redirectHtml, "utf8");
   }
 
+  const retiredCorridorDir = path.join(distDir, "examples", "neon-corridor-strike");
+  rmSync(retiredCorridorDir, { recursive: true, force: true });
+  mkdirSync(retiredCorridorDir, { recursive: true });
+  writeFileSync(path.join(retiredCorridorDir, "index.html"), redirectHtml, "utf8");
 }
 
 function main() {

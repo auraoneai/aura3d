@@ -1338,7 +1338,10 @@ export function ssaoPixels(
   if (depthTexture.width !== width || depthTexture.height !== height) {
     throw new Error("SSAO depth texture dimensions must match source pixels.");
   }
-  const radius = options.radius ?? 2;
+  const rawRadius = options.radius ?? 2;
+  const radius = rawRadius > 0 && rawRadius < 1
+    ? Math.max(1, Math.min(8, Math.round(rawRadius * 8)))
+    : rawRadius;
   const intensity = options.intensity ?? 0.38;
   const bias = options.bias ?? 0.015;
   if (!Number.isInteger(radius) || radius < 1 || radius > 8) {

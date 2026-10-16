@@ -27,14 +27,14 @@ const plinthMaterial = new PBRMaterial({
 const postProcess = {
   tonemapping: { enabled: true, mode: "aces" as const, exposure: 1.15 },
   bloom: { enabled: true, intensity: 0.22, threshold: 0.8 },
-  ssao: { enabled: true, radius: 0.45, intensity: 0.35 },
+  ssao: { enabled: true, radius: 2, intensity: 0.32 },
   fxaa: { enabled: true },
   vignette: { enabled: true, intensity: 0.22 }
 };
 
 void startSimpleGraphicsShowcase({
   appId: "wow-standard-material-spheres",
-  title: "Aura3D Material Spheres",
+  title: "Aura3D 4.0 · Material Spheres",
   subtitle: "A focused Aura3D material grid comparing metallic response and roughness under one consistent studio-lighting setup.",
   labels: {
     concept: "metallic and roughness matrix",

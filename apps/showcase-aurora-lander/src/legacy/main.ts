@@ -150,12 +150,12 @@ const playCue = (cue: LanderAudioCue): void => {
 // ---- input -------------------------------------------------------------------
 const input: GameInputController = game.input({
   actions: {
-    thrust: ["KeyW", "ArrowUp"],
+    thrust: ["KeyW", "ArrowUp", "Space"],
     left: ["KeyA", "ArrowLeft"],
     right: ["KeyD", "ArrowRight"],
     stabilize: ["ShiftLeft", "ShiftRight"],
     restart: ["KeyR"],
-    quickRestart: ["Space"],
+    quickRestart: ["KeyR"],
     ghostToggle: ["KeyG"],
     pause: ["KeyP"]
   },
@@ -171,10 +171,10 @@ const input: GameInputController = game.input({
 // would otherwise lose the control entirely.
 type TimedFlightControl = "thrust" | "left" | "right" | "stabilize";
 const timedControlForCode: Readonly<Record<string, TimedFlightControl | undefined>> = {
-  KeyW: "thrust", ArrowUp: "thrust",
+  KeyW: "thrust", ArrowUp: "thrust", Space: "thrust",
   KeyA: "left", ArrowLeft: "left",
   KeyD: "right", ArrowRight: "right",
-  ShiftLeft: "stabilize", ShiftRight: "stabilize"
+  ShiftLeft: "stabilize", ShiftRight: "stabilize", KeyS: "stabilize", ArrowDown: "stabilize"
 };
 const timedControlStartedAt = new Map<TimedFlightControl, number>();
 const timedControlSeconds = new Map<TimedFlightControl, number>();
@@ -194,18 +194,23 @@ const consumeTimedFlightControl = (control: TimedFlightControl): number => {
   timedControlSeconds.set(control, Math.max(0, available - FIXED_DT));
   return consumed / FIXED_DT;
 };
-window.addEventListener("keydown", (event) => {
+const onLanderKeyDown = (event: KeyboardEvent): void => {
   const control = timedControlForCode[event.code];
+  if (control || event.code === "KeyR" || event.code === "KeyG" || event.code === "KeyP") {
+    event.preventDefault();
+  }
   if (!control || event.repeat || timedControlStartedAt.has(control)) return;
   timedControlStartedAt.set(control, performance.now());
-});
-window.addEventListener("keyup", (event) => {
+};
+const onLanderKeyUp = (event: KeyboardEvent): void => {
   const control = timedControlForCode[event.code];
   if (!control) return;
   const startedAt = timedControlStartedAt.get(control);
   if (startedAt !== undefined) addTimedControlSeconds(control, (performance.now() - startedAt) / 1000);
   timedControlStartedAt.delete(control);
-});
+};
+window.addEventListener("keydown", onLanderKeyDown, { capture: true, passive: false });
+window.addEventListener("keyup", onLanderKeyUp, { capture: true, passive: true });
 
 // ---- mutable route state -----------------------------------------------------
 let siteIndex = 0;
@@ -1331,7 +1336,10 @@ function spawnStateFor(site: LanderSite): LanderState {
   const activeField = siteFields.find((entry) => entry.site.id === site.id)?.field;
   const padHeight = activeField?.padHeights[0] ?? 0;
   if (!dropEvidenceMode && !approachEvidenceMode) {
-    return createLanderState({ x: pad.x, y: padHeight + 4.2, z: pad.z }, site.fuelBudget);
+    // Spawn in mid-air descent over the lunar colony pad so the player has plenty of altitude
+    // to fire the main thruster (W / ArrowUp / Space) and steer with RCS (A / D / Left / Right).
+    const initial = createLanderState({ x: pad.x - 2.6, y: padHeight + 13.5, z: pad.z }, site.fuelBudget);
+    return { ...initial, vx: 0.35, vy: -0.65 };
   }
   // Keep the deterministic acceptance approach close enough that all three real Rapier contacts
   // and site transitions complete within the browser gate even on a software-rendered worker.
@@ -1377,7 +1385,7 @@ const hud: HudBindings = bindHud(document.getElementById("hud"));
 function updatePanelBrief(): void {
   const brief = document.getElementById("panel-site-brief");
   if (!brief) return;
-  brief.textContent = `Site ${currentSite.id} — ${currentSite.name} (Sortie #${sortieCount} · ${cargoTransferredTons}t cargo delivered): land inside the ringed pad zone. Fuel budget ${currentSite.fuelBudget}s at full burn. Hold Shift for RCS Horizontal Stabilizer.${currentSite.gust ? " STORM FRONTS: telegraphed lateral gusts." : ""}`;
+  brief.textContent = `Site ${currentSite.id} — ${currentSite.name} (Sortie #${sortieCount} · ${cargoTransferredTons}t cargo delivered): land inside the ringed pad zone. Fuel budget ${currentSite.fuelBudget}s at full burn. Hold Shift/S/↓ for RCS Horizontal Stabilizer.${currentSite.gust ? " STORM FRONTS: telegraphed lateral gusts." : ""}`;
 }
 
 function setupPanel(): void {
@@ -1385,17 +1393,17 @@ function setupPanel(): void {
   if (!panel) throw new Error("Aurora Lander panel #panel is missing.");
   panel.innerHTML = `
     <h1>AURORA LANDER</h1>
-    <p class="panel-hint"><kbd>W</kbd> thrust · <kbd>A</kbd>/<kbd>D</kbd> rotate · <kbd>Shift</kbd> RCS stabilizer · <kbd>Space</kbd>/<kbd>R</kbd> restart · <kbd>G</kbd> ghost · <kbd>P</kbd> pause</p>
+    <p class="panel-hint"><kbd>W</kbd>/<kbd>↑</kbd>/<kbd>Space</kbd> thrust · <kbd>A</kbd>/<kbd>D</kbd> or <kbd>←</kbd>/<kbd>→</kbd> RCS · <kbd>Shift</kbd>/<kbd>S</kbd> stabilizer · <kbd>R</kbd> restart · <kbd>P</kbd> pause</p>
     <button id="panel-reference-toggle" class="panel-toggle" type="button" aria-expanded="false" aria-controls="panel-reference">Briefing &amp; grading</button>
     <div id="panel-reference" hidden>
       <h2>Site briefing</h2>
       <p id="panel-site-brief"></p>
       <h2>Controls</h2>
       <ul>
-        <li><kbd>W</kbd>/<kbd>↑</kbd> main thrust</li>
-        <li><kbd>A</kbd>/<kbd>D</kbd> rotate (RCS puffs)</li>
-        <li><kbd>Shift</kbd> RCS Horizontal Stabilizer Assist</li>
-        <li><kbd>Space</kbd>/<kbd>R</kbd> quick-restart site</li>
+        <li><kbd>W</kbd>/<kbd>↑</kbd>/<kbd>Space</kbd> main thrust</li>
+        <li><kbd>A</kbd>/<kbd>D</kbd> or <kbd>←</kbd>/<kbd>→</kbd> rotate (RCS puffs)</li>
+        <li><kbd>Shift</kbd>/<kbd>S</kbd>/<kbd>↓</kbd> RCS Horizontal Stabilizer Assist</li>
+        <li><kbd>R</kbd> quick-restart site</li>
         <li><kbd>G</kbd> ghost overlay · <kbd>P</kbd> pause</li>
       </ul>
     </div>
@@ -1523,8 +1531,6 @@ function gradeFromContact(context: GradingContext): void {
 
   const isLastSite = siteIndex >= SITES.length - 1;
   phase = isLastSite ? "campaign-clear" : "landed";
-  // A hard-drop evidence route must retain its graded contact for the acceptance reader. The
-  // campaign producer advances normally through all three sites.
   advanceTimer = isLastSite || hardDropEvidenceMode ? -1 : 1.8;
   const precisionTags: string[] = [];
   if (lastUltraSoftBonus > 0) precisionTags.push("ULTRA-SOFT <1.2m/s +350");
@@ -1596,31 +1602,16 @@ function tick(dtFixed: number): void {
       const vyError = desiredVy - state.vy;
       effectiveControls = {
         thrust: Math.min(1, Math.max(0, 0.52 + vyError * 0.32)),
-        // Stop commanding lateral RCS near the deck so the same authored
-        // self-righting path available to the player can meet the 12° limit.
         rotate: agl < 1.5 ? 0 : lateralCorrection
       };
     }
   } else if (stabilizerAssistActive) {
-    // RCS Horizontal Stabilizer Assist (Shift): actively nulls lateral drift and tilt
+    // RCS Horizontal Stabilizer Assist (Shift / S / ArrowDown): actively nulls lateral drift and tilt
     const antiDriftRotate = Math.max(-1, Math.min(1, -state.vx * 0.65 - state.tiltDeg * 0.08));
     effectiveControls = {
       thrust: Math.max(controls.thrust, state.vy < -1.1 ? 0.54 : 0.25),
       rotate: Math.abs(controls.rotate) > 0.05 ? controls.rotate : antiDriftRotate
     };
-  } else if (!approachEvidenceMode && field && controls.thrust === 0 && controls.rotate === 0) {
-    const ground = sampleGridHeight(field, state.x, state.z);
-    const agl = state.y - FOOT_DROP - ground;
-    if (agl < 32 && state.vy < -1.4) {
-      const pad = currentSite.pads[0]!;
-      const lateralCorrection = Math.max(-1, Math.min(1, (pad.x - state.x) * 0.12 - state.vx * 0.5));
-      const desiredVy = -Math.max(0.8, Math.min(2.0, agl * 0.14));
-      const vyError = desiredVy - state.vy;
-      effectiveControls = {
-        thrust: Math.min(1, Math.max(0, 0.52 + vyError * 0.32)),
-        rotate: agl < 1.5 ? 0 : lateralCorrection
-      };
-    }
   }
   previousControls = effectiveControls;
   state = stepLander(state, effectiveControls, dtFixed, currentSite.gust);
@@ -1640,26 +1631,6 @@ function tick(dtFixed: number): void {
       ...state,
       vx: dampedVx,
       tiltDeg: dampedTilt
-    };
-  }
-
-  const manualFlightInput = controls.thrust > 0.01 || Math.abs(controls.rotate) > 0.01 || stabilizerAssistActive;
-  if (!dropEvidenceMode && !approachEvidenceMode && field && !manualFlightInput) {
-    const pad = currentSite.pads[0]!;
-    const padHeight = field.padHeights[0] ?? 0;
-    const hoverY = padHeight + 3.85 + Math.sin(simSeconds * 1.35) * 0.52;
-    const hoverX = pad.x + Math.sin(simSeconds * 0.85) * 0.62;
-    const hoverVx = Math.cos(simSeconds * 0.85) * 0.52;
-    const hoverVy = Math.cos(simSeconds * 1.35) * 0.7;
-    const hoverTilt = Math.cos(simSeconds * 0.85) * 5.2;
-    state = {
-      ...state,
-      x: hoverX,
-      y: hoverY,
-      vx: hoverVx,
-      vy: hoverVy,
-      tiltDeg: hoverTilt,
-      yaw: Math.sin(simSeconds * 0.55) * 0.14
     };
   }
   // The thrust loop starts on the first burn and then follows the throttle
@@ -1722,15 +1693,10 @@ function tick(dtFixed: number): void {
         padSensorArmed = true;
         playCue("pad-lock");
       }
-      // Sensors prove the pad-zone crossing but carry a center-to-center direction,
-      // not a solver surface normal. Grade only the subsequent solid terrain contact.
       continue;
     }
     if (phase !== "flying" || !field || !surfaceQuery || !sample) continue;
 
-    // Cross-check the solver contact normal against the BVH surface normal at the same
-    // point. Contact normals are pair-oriented (A→B), so collider ordering may flip the
-    // sign; compare absolute alignment rather than assuming an upward-facing event normal.
     const queryNormal = surfaceQuery.sampleNormal(state.x, state.z);
     const normalAlignment = Math.abs(
       queryNormal[0] * eventItem.normal[0]
@@ -1741,7 +1707,6 @@ function tick(dtFixed: number): void {
     mountedEvidence.touchdown.contactQueryAgreement = contactQueryAgreement;
     mountedEvidence.touchdown.contactEventSeen = true;
 
-    // Attitude: lander up tilted toward heading vs pad/terrain normal.
     const tiltRad = (state.tiltDeg * Math.PI) / 180;
     const yawRad = state.yaw;
     const upX = Math.sin(tiltRad) * -Math.sin(yawRad);
@@ -1751,7 +1716,6 @@ function tick(dtFixed: number): void {
     const attitudeDeg = (Math.acos(Math.max(-1, Math.min(1, dot))) * 180) / Math.PI;
     const slopeDeg = (Math.acos(Math.max(-1, Math.min(1, queryNormal[1]))) * 180) / Math.PI;
 
-    // Zone check: inside a pad circle horizontally AND near its plateau height.
     const feetY = state.y - FOOT_DROP;
     const insidePadZone = currentSite.pads.some((pad, index) => {
       const padHeight = field!.padHeights[index] ?? 0;
@@ -1816,8 +1780,6 @@ function handleControlEdges(): void {
 function renderUpdate(dtFrame: number): void {
   if (!field) return;
 
-  // Crash camera punch: a decaying vertical jolt through the FOLLOWED node, so the
-  // declarative follow camera itself jolts. Reduced-motion gates it entirely.
   let punchOffsetY = 0;
   if (punchSecondsRemaining > 0) {
     punchSecondsRemaining = Math.max(0, punchSecondsRemaining - dtFrame);
@@ -1831,12 +1793,12 @@ function renderUpdate(dtFrame: number): void {
   const groundHere = sampleGridHeight(field, state.x, state.z);
   const altitudeAboveGround = state.y - FOOT_DROP - groundHere;
   const hoverThrottle = phase === "flying" && state.fuel > 0
-    ? Math.max(previousControls.thrust, !dropEvidenceMode && simSeconds < 45 ? 0.62 : 0.18)
+    ? Math.max(previousControls.thrust, stabilizerAssistActive ? 0.48 : 0.16)
     : 0;
   const pulse = reducedMotion ? 1 : 0.92 + Math.sin(simSeconds * 38) * 0.14;
   if (hoverThrottle > 0.02 && !(visualReviewCapture && phase === "campaign-clear")) {
-    const plumeLength = (0.48 + hoverThrottle * 0.68) * pulse;
-    const plumeWidth = (0.22 + hoverThrottle * 0.14) * pulse;
+    const plumeLength = (0.36 + hoverThrottle * 0.85) * pulse;
+    const plumeWidth = (0.18 + hoverThrottle * 0.18) * pulse;
     const nozzleOffsetX = Math.sin(tiltRad) * 0.78;
     const nozzleOffsetY = -Math.cos(tiltRad) * 0.78;
     plumeNode.setPosition(state.x + nozzleOffsetX, state.y + punchOffsetY + nozzleOffsetY - plumeLength * 0.35, state.z);
@@ -1900,9 +1862,15 @@ function renderUpdate(dtFrame: number): void {
       currentSite.gust
     );
   }
-  predictionNode.setPosition(0, -50, 0);
-  predictionNode.setScale([0.0001, 0.0001, 0.0001]);
-  predictionNode.setVisible(false);
+  if (phase === "flying" && latestPrediction && !visualReviewCapture) {
+    predictionNode.setPosition(latestPrediction.x, latestPrediction.y + 0.14, latestPrediction.z);
+    predictionNode.setScale([1.15, 1.15, 0.04]);
+    predictionNode.setVisible(true);
+  } else {
+    predictionNode.setPosition(0, -50, 0);
+    predictionNode.setScale([0.0001, 0.0001, 0.0001]);
+    predictionNode.setVisible(false);
+  }
 
   // Site-owned whiteout: keep primitive capsules hidden below terrain.
   void reducedMotion;

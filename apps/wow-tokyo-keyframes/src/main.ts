@@ -10,7 +10,7 @@ const isCleanEmbed =
 
 const clearColor: [number, number, number, number] = isCleanEmbed
   ? [0, 0, 0, 1]
-  : [0.86, 0.86, 0.84, 1];
+  : [0.06, 0.08, 0.13, 1];
 const sameOriginFixtureHost =
   typeof location !== "undefined" &&
   (["localhost", "127.0.0.1", "0.0.0.0", "[::1]", "aura3d.auraone.ai"].includes(location.hostname) ||
@@ -21,8 +21,8 @@ const publicAssetOrigin =
 
 void startWowGltfShowcase({
   appId: "wow-tokyo-keyframes",
-  title: "A3D Authored Tokyo Keyframes",
-  subtitle: "Imported authored scene with native A3D glTF animation playback.",
+  title: "Aura3D 4.0 · Littlest Tokyo Keyframes",
+  subtitle: "Imported Littlest Tokyo diorama with native Aura3D 4.0 glTF keyframe animation playback.",
   assetUrl: `${publicAssetOrigin}/fixtures/threejs-parity/assets/showcase/littlest-tokyo.glb`,
   assetName: "Littlest Tokyo animated scene",
   attribution: "Model: Littlest Tokyo by Glen Fox, CC Attribution.",
@@ -43,7 +43,7 @@ void startWowGltfShowcase({
   postProcess: {
     tonemapping: { enabled: true, mode: "aces", exposure: 1.15 },
     bloom: { enabled: true, intensity: 0.22, threshold: 0.8 },
-    ssao: { enabled: true, radius: 0.45, intensity: 0.35 },
+    ssao: { enabled: true, radius: 2, intensity: 0.32 },
     fxaa: { enabled: true },
     vignette: { enabled: true, intensity: 0.22 }
   }

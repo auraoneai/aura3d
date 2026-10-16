@@ -30,17 +30,18 @@ for (const pattern of read('package.json').files ?? []) {
 }
 for(const path of selectedRootFiles)manifests.add(path);
 manifests.add('marketing/package.json');
+manifests.add('packages/engine/package.json');
 const changed=[];
 for (const path of manifests) {
  const original=readFileSync(resolve(root,path),'utf8'); const manifest=JSON.parse(original);
- if (packages.includes(path)) manifest.version=version;
+ if (packages.includes(path) || path === 'packages/engine/package.json') manifest.version=version;
  for (const field of ['dependencies','devDependencies','peerDependencies','optionalDependencies']) for (const [name, constraint] of Object.entries(manifest[field]??{})) {
   if (!names.has(name) || constraint.startsWith('workspace:')) continue;
   // Preserve peer range semantics and optional-peer metadata. Rewrite only exact/current-major pins.
-  if (/^[~^]?3\.0\.\d+$/.test(constraint)) manifest[field][name]=constraint.replace(/3\.0\.\d+$/,version);
+  if (/^[~^]?[34]\.0\.\d+$/.test(constraint)) manifest[field][name]=constraint.replace(/[34]\.0\.\d+$/,version);
  }
  for(const [key,command] of Object.entries(manifest.scripts??{})) {
-  manifest.scripts[key]=command.replace(/(@aura3d\/[a-z0-9-]+)@3\.0\.\d+/g,(match,name)=>names.has(name)?`${name}@${version}`:match);
+  manifest.scripts[key]=command.replace(/(@aura3d\/[a-z0-9-]+)@[34]\.0\.\d+/g,(match,name)=>names.has(name)?`${name}@${version}`:match);
  }
  const updated=JSON.stringify(manifest,null,2)+'\n';
  if(updated!==original){changed.push(path); if(!check)writeFileSync(resolve(root,path),updated);}

@@ -1,6 +1,6 @@
 Aura3D agent guide — a typed scene API for building real 3D apps: scenes, looks,
 lighting, materials, typed assets, camera rigs, gameFeel, SDF text, decals, rigid bodies, and gameplay through
-`@aura3d/engine` plus the `@aura3d/cli` toolchain. Current release: Aura3D 4.0.0 (succeeding 4.0.0).
+`@aura3d/engine` plus the `@aura3d/cli` toolchain. Current release: Aura3D 4.0.1 (succeeding 4.0.0).
 
 Hello world: every scene gets a look first.
 
@@ -48,11 +48,11 @@ three.js → Aura3D mapping (corrected):
 | `AnimationMixer` | `AnimationController` / `createAnimationController` |
 | `new OrbitControls(...)` | `interactions.orbit(...)` |
 
-Effects, post-processing, atmospherics & VFX (`effects.*` in `@aura3d/engine@4.0.0`):
+Effects, post-processing, atmospherics & VFX (`effects.*` in `@aura3d/engine@4.0.1`):
 - Post-processing: `effects.bloom`, `effects.neonBloom`, `effects.cinematicBloom`, `effects.ambientOcclusion`, `effects.contactOcclusion`, `effects.contactShadows`, `effects.screenSpaceReflections`, `effects.depthOfField`, `effects.motionBlur`, `effects.colorGrade`, `effects.vignette`, `effects.filmGrain`, `effects.chromaticAberration`, `effects.antiAlias`, `effects.outline`
 - Atmospherics & volumetrics: `effects.fog`, `effects.depthFog`, `effects.volumetricFog`, `effects.fogVolume`, `effects.lightCone`, `effects.auroraRibbon`, `atmosphere.setSky`, `atmosphere.setWetness`
 - Particles, weather & trails: `effects.particles`, `effects.meshParticles`, `effects.rain`, `effects.snow`, `effects.flipbook`, `effects.trail`, `effects.beam`, `ResidentGPUParticleRenderer` (WebGPU compute)
-- Game feel: `game.feel` / `app.feel` (`hitStop`, `slowMo`, `damageFlash`, `speedLines`, `landingDust`, camera trauma)
+- Game feel & genre kits: `game.feel` / `app.feel` (`hitStop`, `slowMo`, `damageFlash`, `speedLines`, `landingDust`, camera trauma), `game.platformer`, `game.racing`, `game.arcadeKart`, `game.grandPrixRoad`, `game.carSoccer`, `game.carSoccerPitch`, `game.racketSports`, `game.fallingBlocks`, `game.fighting`
 
 Genre recipes (see `aura3d-art-direction/references/look-recipes.md`):
 

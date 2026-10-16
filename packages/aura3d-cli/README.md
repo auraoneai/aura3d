@@ -62,7 +62,7 @@ so the rest of the app still uses `model(assets.helmet)`.
 Meshy generation runs through the pinned official Meshy CLI. After a completed run is downloaded locally, admit a selected GLB through Aura3D:
 
 ```bash
-npx @aura3d/cli@4.0.0 assets import-meshy artifacts/meshy/arena-relic/ \
+npx @aura3d/cli@4.0.1 assets import-meshy artifacts/meshy/arena-relic/ \
   --name arenaRelic \
   --quality candidate \
   --role prop \
@@ -70,27 +70,27 @@ npx @aura3d/cli@4.0.0 assets import-meshy artifacts/meshy/arena-relic/ \
   --rights-evidence artifacts/meshy/arena-relic/rights.json
 ```
 
-The import reuses the normal Aura3D add, inspect, hash, manifest, and type-generation path and prints the generated `assets.arenaRelic` key plus the next validation steps. It records supplied rights evidence and generates typed `model(assets.arenaRelic)` keys for `@aura3d/engine@4.0.0`.
+The import reuses the normal Aura3D add, inspect, hash, manifest, and type-generation path and prints the generated `assets.arenaRelic` key plus the next validation steps. It records supplied rights evidence and generates typed `model(assets.arenaRelic)` keys for `@aura3d/engine@4.0.1`.
 
 See the [Meshy CLI guide](https://github.com/auraoneai/aura3d/blob/main/docs/meshy-cli.md).
 
 ## Command Shortlist
 
 ```bash
-npx @aura3d/cli@4.0.0 assets add ./model.glb --name model
-npx @aura3d/cli@4.0.0 assets search "studio robot" --json
-npx @aura3d/cli@4.0.0 assets resolve "studio robot" --name robot
-npx @aura3d/cli@4.0.0 assets import-meshy artifacts/meshy/arena-relic/ --name arenaRelic --quality candidate --role prop --profile prop --rights-evidence artifacts/meshy/arena-relic/rights.json
-npx @aura3d/cli@4.0.0 assets inspect ./model.glb --animation --humanoid
-npx @aura3d/cli@4.0.0 assets validate --source --release
-npx @aura3d/cli@4.0.0 assets validate-game --profile fighting-character --asset fighter
-npx @aura3d/cli@4.0.0 assets validate-animation --clips idle,walk,run
-npx @aura3d/cli@4.0.0 assets certify-game-geometry --asset track --category racing
-npx @aura3d/cli@4.0.0 assets bind-game-route-evidence --route my-race --category racing --assets car,track --screenshot tests/reports/route.png --geometry-report tests/reports/topology.json --composition-report tests/reports/composition.json --visual-review docs/visual-review.json
-npx @aura3d/cli@4.0.0 assets assemble-character --name hero --body heroBody --part hair=heroHair
-npx @aura3d/cli@4.0.0 migrate three ./src
-npx @aura3d/cli@4.0.0 check-deploy --dist dist
-npx @aura3d/cli@4.0.0 init --agent all
+npx @aura3d/cli@4.0.1 assets add ./model.glb --name model
+npx @aura3d/cli@4.0.1 assets search "studio robot" --json
+npx @aura3d/cli@4.0.1 assets resolve "studio robot" --name robot
+npx @aura3d/cli@4.0.1 assets import-meshy artifacts/meshy/arena-relic/ --name arenaRelic --quality candidate --role prop --profile prop --rights-evidence artifacts/meshy/arena-relic/rights.json
+npx @aura3d/cli@4.0.1 assets inspect ./model.glb --animation --humanoid
+npx @aura3d/cli@4.0.1 assets validate --source --release
+npx @aura3d/cli@4.0.1 assets validate-game --profile fighting-character --asset fighter
+npx @aura3d/cli@4.0.1 assets validate-animation --clips idle,walk,run
+npx @aura3d/cli@4.0.1 assets certify-game-geometry --asset track --category racing
+npx @aura3d/cli@4.0.1 assets bind-game-route-evidence --route my-race --category racing --assets car,track --screenshot tests/reports/route.png --geometry-report tests/reports/topology.json --composition-report tests/reports/composition.json --visual-review docs/visual-review.json
+npx @aura3d/cli@4.0.1 assets assemble-character --name hero --body heroBody --part hair=heroHair
+npx @aura3d/cli@4.0.1 migrate three ./src
+npx @aura3d/cli@4.0.1 check-deploy --dist dist
+npx @aura3d/cli@4.0.1 init --agent all
 ```
 
 ## What It Writes

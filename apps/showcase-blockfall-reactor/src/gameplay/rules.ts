@@ -372,7 +372,7 @@ export function createInitialState(seed = DEFAULT_SEED, board?: (PieceKind | nul
 }
 
 export function gravityFrames(state: Pick<BlockfallState, "level" | "reactorLevel">): number {
-  return Math.max(6, 48 - (state.level - 1) * 4 - state.reactorLevel * 2);
+  return Math.max(4, 14 - (state.level - 1) * 2 - state.reactorLevel);
 }
 
 export function gravityIntervalSeconds(state: Pick<BlockfallState, "level" | "reactorLevel">): number {

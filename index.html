@@ -1,181 +1,1545 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Aura3D 4.0.0 Examples &amp; Architecture Registry</title>
-    <style>
-      :root { color-scheme: dark; font-family: 'Whitney', 'Graphik', -apple-system, BlinkMacSystemFont, sans-serif; background: #0b0f14; color: #f4f7fb; }
-      body { margin: 0; min-height: 100vh; background: #0b0f14; }
-      main { width: min(1120px, calc(100vw - 40px)); margin: 0 auto; padding: 36px 0 52px; }
-      header { border-bottom: 1px solid #263140; padding-bottom: 22px; margin-bottom: 28px; }
-      h1 { margin: 0 0 8px; font-size: 30px; letter-spacing: 0; font-weight: 600; }
-      h2 { margin: 0 0 12px; font-size: 20px; letter-spacing: 0; font-weight: 500; }
-      h3 { margin: 0 0 8px; font-size: 15px; letter-spacing: 0; font-weight: 500; }
-      p { margin: 0; color: #aab5c4; line-height: 1.45; font-size: 14px; max-width: 820px; }
-      code, pre { font-family: 'Monument Grotesk Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
-      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
-      .route-card { display: grid; gap: 10px; min-height: 172px; padding: 18px; border: 1px solid #2d3544; border-radius: 8px; color: #f4f7fb; background: #111821; }
-      .route-card:hover { border-color: #58a6ff; }
-      a { color: #9fd3ff; text-decoration: none; }
-      small { color: #8fa1b4; text-transform: uppercase; font-size: 12px; }
-      strong { font-size: 18px; font-weight: 500; }
-      .route-summary { color: #aab5c4; font-size: 13px; line-height: 1.45; }
-      section { margin-top: 30px; }
-      .compare-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; line-height: 1.4; border: 1px solid #263140; background: #111821; }
-      .compare-table th, .compare-table td { padding: 9px 12px; border-bottom: 1px solid #1e2836; text-align: left; vertical-align: top; }
-      .compare-table th { color: #8fa1b4; font-weight: 500; text-transform: uppercase; font-size: 12px; background: #0e141c; }
-      .compare-table td.aura-col { color: #d8f8e8; }
-      .compare-table td.base-col { color: #95a3b5; }
-      .code-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; margin-top: 16px; }
-      .code-panel { border: 1px solid #2d3544; border-radius: 8px; background: #111821; padding: 14px; overflow-x: auto; }
-      .code-panel pre { margin: 8px 0 0; line-height: 1.45; color: #dbe7f5; }
-    </style>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aura3D: AI-Native TypeScript 3D SDK for Browser 3D Apps</title>
+<meta name="description" content="Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, prompt-to-code scene kits, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deploy checks." />
+
+    
+    
+    
+    <meta name="twitter:description" content="Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, prompt-to-code scene kits, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deploy checks." /><meta name="twitter:title" content="Aura3D: AI-Native TypeScript 3D SDK for Browser 3D Apps" /><meta name="keywords" content="Aura3D, TypeScript 3D SDK, browser 3D SDK, AI 3D generation, prompt to 3D, WebGL SDK, WebGPU examples, GLB viewer, glTF assets, 3D JavaScript library, Vite 3D templates, typed asset workflow, browser runtime evidence" /><meta name="robots" content="index, follow, max-image-preview:large" /><link rel="canonical" href="https://aura3d.auraone.ai/" />
+<meta property="og:site_name" content="Aura3D" />
+
+    <meta property="og:url" content="https://aura3d.auraone.ai/" /><meta property="og:type" content="website" />
+<meta property="og:title" content="Aura3D: AI-Native TypeScript 3D SDK for Browser 3D Apps" />
+<meta property="og:description" content="Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, prompt-to-code scene kits, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deploy checks." />
+<meta property="og:image" content="https://aura3d.auraone.ai/previews/aura-clash-poster.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="shortcut icon" href="/favicon.svg" />
+<meta name="theme-color" content="#07080a" />
+<link rel="stylesheet" href="/marketing/src/styles.css" />
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Aura3D",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Web",
+  "url": "https://aura3d.auraone.ai",
+  "downloadUrl": "https://www.npmjs.com/package/@aura3d/engine",
+  "codeRepository": "https://github.com/auraoneai/aura3d",
+  "softwareVersion": "4.0.1",
+  "programmingLanguage": "TypeScript",
+  "description": "AI-native TypeScript 3D SDK for browser 3D apps, prompt-to-code scenes, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deployment checks."
+}
+    </script>
   </head>
-  <body>
-    <main>
-      <header>
-        <h1>Aura3D 4.0.0 Example Registry</h1>
-        <p>
-          Aura3D 4.0.0 (<code>@aura3d/engine@4.0.0</code>, <code>create-aura3d@4.0.0</code>, <code>@aura3d/cli@4.0.0</code>) live examples are grouped by product workflow: typed asset references,
-          materials and lights, camera motion, WebGPU compute + WebGL2 rendering pipeline, deterministic physics &amp; game kits (<code>game.platformer</code>, <code>game.racing</code>, <code>game.fallingBlocks</code>, <code>game.fighting</code>), 19 playable 3D games and interactive showcases powered by custom Meshy 3D PBR hero vehicles, characters, and architectural props, diagnostics, screenshots, and
-          deployment checks for agent-written browser 3D. See the <a href="https://github.com/auraoneai/aura3d/releases/tag/v4.0.0">v4.0.0 release tag</a>, <a href="https://github.com/auraoneai/aura3d/blob/main/docs/project/aura3d-400-release-notes.md">aura3d-400-release-notes.md</a>, and the <a href="/docs/aura3d-vs-threejs.html">Aura3D 4.0.0 vs. Raw Three.js comparison</a>.
-        </p>
-      </header>
+<body>
+<!-- ─── NAV ──────────────────────────────────────────────────── -->
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a href="/" class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="6" stroke="#38bdf8" stroke-width="1.4" fill="rgba(56,189,248,0.14)" />
+        <ellipse cx="12" cy="12" rx="11" ry="3" stroke="#34d399" stroke-width="1.1" opacity="0.72" transform="rotate(-22 12 12)" />
+        <circle cx="12" cy="12" r="1.7" fill="#38bdf8" />
+      </svg>
+      <span>Aura3D</span>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link nav-link-feature" href="#aura-clash">Aura&nbsp;Clash</a>
+      <a class="nav-link" href="#why-aura3d-vs-threejs">vs&nbsp;Three.js</a>
+      <a class="nav-link" href="#workflows">SDK</a>
+      <a class="nav-link" href="#prompts">Prompts</a>
+      <a class="nav-link" href="/apps/showcase-index/">Examples</a>
+      <a class="nav-link" href="#templates">Templates</a>
+      <a class="nav-link" href="#packages">Platform</a>
+      <a class="nav-link" href="#deployment">Deploy</a>
+      <a class="nav-link" href="#release-30">4.0</a>
+      <a class="nav-link" href="/llms.txt">Agent&nbsp;context</a>
+    </div>
+    <div class="nav-actions">
+      <div class="nav-social" aria-label="Aura3D source and package links">
+        <a class="nav-social-link" href="https://github.com/auraoneai/aura3d" target="_blank" rel="noopener" aria-label="Aura3D GitHub repository">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2C6.48 2 2 6.58 2 12.26c0 4.53 2.87 8.37 6.84 9.73.5.09.68-.22.68-.49 0-.24-.01-1.04-.01-1.89-2.78.62-3.37-1.22-3.37-1.22-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.2-2.71 0 0 .84-.28 2.75 1.05A9.27 9.27 0 0 1 12 6.98c.85 0 1.7.12 2.5.34 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.95.68 1.92 0 1.38-.01 2.49-.01 2.83 0 .27.18.59.69.49A10.05 10.05 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z" /></svg>
+          <span>GitHub</span>
+        </a>
+        <a class="nav-social-link nav-social-npm" href="https://www.npmjs.com/package/@aura3d/engine" target="_blank" rel="noopener" aria-label="@aura3d/engine on npm">
+          <span class="npm-logo" aria-hidden="true">npm</span>
+          <span>npm</span>
+        </a>
+      </div>
+      <span class="nav-version">v4.0.1</span>
+      <a class="btn btn-ghost" href="/docs/index.html">Docs</a>
+      <a class="btn btn-primary nav-start" href="#templates">Get&nbsp;started <span class="arr"></span></a>
+    </div>
+  </div>
+</nav>
 
-      <section>
-        <h2>Agent API Starter Examples</h2>
-        <div class="grid">
-          <article class="route-card" data-route-path="/apps/hello-world-typed-asset/">
-            <small>Typed asset API</small>
-            <strong>Hello World Typed Asset</strong>
-            <span class="route-summary">Five-line scene using `model(assets.robot)` and `lights.studio()`.</span>
-            <small><a href="/apps/hello-world-typed-asset/">live</a> · <a href="/apps/hello-world-typed-asset/src/main.ts">source</a> · <a href="/docs/agents/api-surface.md">docs</a></small>
-          </article>
-          <article class="route-card" data-route-path="/apps/material-lighting/">
-            <small>Materials and lights</small>
-            <strong>Material Lighting</strong>
-            <span class="route-summary">PBR, metallic, emissive material helpers with ambient, directional, and point lights.</span>
-            <small><a href="/apps/material-lighting/">live</a> · <a href="/apps/material-lighting/src/main.ts">source</a> · <a href="/docs/agents/api-surface.md">docs</a></small>
-          </article>
-          <article class="route-card" data-route-path="/apps/camera-path/">
-            <small>Camera path</small>
-            <strong>Camera Path</strong>
-            <span class="route-summary">Dolly camera and timeline helpers with bloom and studio lighting.</span>
-            <small><a href="/apps/camera-path/">live</a> · <a href="/apps/camera-path/src/main.ts">source</a> · <a href="/docs/agents/api-surface.md">docs</a></small>
-          </article>
-          <article class="route-card" data-route-path="/apps/instancing-performance/">
-            <small>Instanced meshes</small>
-            <strong>CurrentRoutes Instancing Performance</strong>
-            <span class="route-summary">4,096 instances through public `Scene.createInstancedMesh` in one draw call, with dynamic per-instance matrices and per-instance colours.</span>
-            <small><a href="/apps/instancing-performance/">live</a> · <a href="/apps/instancing-performance/src/main.ts">source</a> · <a href="/docs/agents/api-surface.md">docs</a></small>
-          </article>
+<!-- ─── HERO ─────────────────────────────────────────────────── -->
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-left">
+      <span class="hero-tag">
+        <span class="pill">4.0.0 live</span>
+        <b>Agent-era 3D.</b>
+        <span class="mute">18 lines vs. 120 lines of raw Three.js.</span>
+      </span>
+
+      <h1>
+        Stop assembling renderer plumbing.<br />
+        <em>Ship verified 3D in 18 lines.</em>
+      </h1>
+
+      <p class="hero-lede">
+        Raw Three.js makes you hand-wire 14 packages, untyped string URLs, manual Draco/KTX2 WASM workers, PMREM generators, and recursive <code>dispose()</code> loops just to boot a scene. <b>Aura3D 4.0.1 (<code>@aura3d/engine@4.0.1</code>)</b> packages the entire browser 3D application stack into one zero-dependency TypeScript engine—compile-time typed GLB/glTF assets from an <b>800,000+ model catalog</b> + custom Meshy 3D PBR assets, WebGPU compute + WebGL2 rendering, physical PBR + HDR post-processing, deterministic Rapier physics, Recast crowd AI, and <code>aura3d migrate three</code> codemods—proven across 19 playable 3D games and 50 live routes.
+      </p>
+
+      <div class="hero-cta">
+        <div class="install" id="installBox">
+          <span class="install-cmd"><span class="dollar">$</span> npx <b>create-aura3d@4.0.1</b> my-scene --template product-viewer</span>
+          <button class="install-copy" id="copyBtn" type="button">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" rx="1.2" stroke="currentColor" stroke-width="1.2"/>
+              <polyline points="2 8 2 1 8 1" stroke="currentColor" stroke-width="1.2" fill="none" />
+            </svg>
+            <span id="copyLabel">Copy</span>
+          </button>
         </div>
-      </section>
+        <a class="btn btn-primary" href="#why-aura3d-vs-threejs">Aura3D 4.0.1 vs. Three.js <span class="arr"></span></a>
+        <a class="btn btn-ghost" href="#prompts">Watch prompt-to-3D</a>
+        <a class="btn btn-ghost" href="/llms.txt">Give agents context</a>
+      </div>
 
-      <section id="why-aura3d-vs-threejs">
-        <h2>Why Teams Choose Aura3D 4.0.0 Over Raw Three.js</h2>
-        <p>
-          <strong>Stop assembling 14 fragile npm packages to render a 3D scene.</strong> Raw Three.js forces teams to hand-wire <code>WebGLRenderer</code>, <code>PerspectiveCamera</code>, <code>OrbitControls</code>, <code>GLTFLoader</code>, <code>DRACOLoader</code>, <code>KTX2Loader</code>, <code>RGBELoader</code>, <code>EffectComposer</code>, <code>PMREMGenerator</code>, <code>Rapier3D</code>, <code>Recast</code>, manual resize observers, and recursive <code>dispose()</code> loops. Aura3D 4.0.0 (<code>@aura3d/engine@4.0.0</code>) replaces ~120 lines of manual boilerplate with 18 lines of declarative, type-safe TypeScript.
-        </p>
-        <table class="compare-table">
-          <thead>
-            <tr>
-              <th>Capability</th>
-              <th>Raw Three.js Stack (<code>three@0.185.x</code> + addons)</th>
-              <th>Aura3D 4.0.0 (<code>@aura3d/engine@4.0.0</code> + <code>@aura3d/cli@4.0.0</code>)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Scene Boot &amp; Lifecycle</td>
-              <td class="base-col">~120 lines of manual renderer, camera, ResizeObserver, RAF loop, and recursive dispose()</td>
-              <td class="aura-col">18 lines with <code>createAuraApp()</code>: deterministic clock, resize observer, context recovery, and <code>app.dispose()</code></td>
-            </tr>
-            <tr>
-              <td>Asset Pipeline &amp; Type Safety</td>
-              <td class="base-col">Untyped string URLs, silent 404s, manual DRACOLoader / KTX2Loader WASM worker paths</td>
-              <td class="aura-col">Compile-time typed <code>src/aura-assets.ts</code> from <code>aura.assets.json</code> with SHA-256 digests and SPDX checks</td>
-            </tr>
-            <tr>
-              <td>Materials &amp; Lighting</td>
-              <td class="base-col">Manual PMREMGenerator, separate RGBELoader setup, ad-hoc tone mapping</td>
-              <td class="aura-col">Built-in physical PBR: clearcoat, sheen, transmission, dispersion, iridescence, anisotropy, procedural sky + IBL, AgX/ACES</td>
-            </tr>
-            <tr>
-              <td>Post-Processing</td>
-              <td class="base-col">External EffectComposer passes and manual render-target ping-pong management</td>
-              <td class="aura-col">Integrated HDR post stack (<code>bloom</code>, <code>ssao</code>, <code>ssr</code>, <code>dof</code>, <code>motionBlur</code>, <code>taa</code>, <code>fxaa</code>)</td>
-            </tr>
-            <tr>
-              <td>WebGPU &amp; Compute</td>
-              <td class="base-col">Experimental split entry points and manual storage-buffer management</td>
-              <td class="aura-col">First-class WebGPU compute shaders, GPU frustum + Hi-Z occlusion culling, and GPU particles alongside WebGL2</td>
-            </tr>
-            <tr>
-              <td>Physics &amp; Character Control</td>
-              <td class="base-col">Bring-your-own Rapier WASM init, custom fixed-step accumulator, custom vehicle math</td>
-              <td class="aura-col">Built-in deterministic fixed-step physics, CCD, joints, swept character controller, and raycast vehicles</td>
-            </tr>
-            <tr>
-              <td>Navigation &amp; Crowd AI</td>
-              <td class="base-col">Bring-your-own recast-navigation WASM glue and custom steering loops</td>
-              <td class="aura-col">Built-in navmesh generation, A* corridor pathfinding, and multi-agent crowd steering</td>
-            </tr>
-            <tr>
-              <td>Advanced Rendering</td>
-              <td class="base-col">Fragmented third-party Gaussian Splat viewers and manual stencil portal passes</td>
-              <td class="aura-col">Native <code>splats.createGaussianSplat()</code>, recursive <code>portals.createPortalWorld()</code>, decals, trails, and water</td>
-            </tr>
-            <tr>
-              <td>Three.js Migration Path</td>
-              <td class="base-col">Rewrite from scratch or maintain imperative THREE.* code indefinitely</td>
-              <td class="aura-col">Automated AST codemod (<code>aura3d migrate three</code>) and 5 migration starter templates</td>
-            </tr>
-            <tr>
-              <td>Pre-Deploy Verification</td>
-              <td class="base-col">Manual browser checks; no standard GPU or asset gate in CI</td>
-              <td class="aura-col">Built-in <code>aura3d check-deploy</code> &amp; <code>aura3d evidence</code> with headless Chromium route health and visual QA</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <span class="v"><b>18 lines</b></span>
+          <span class="k">vs ~120 in raw Three.js</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="v"><b>800K+ assets</b></span>
+          <span class="k">compile-time typed GLBs</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="v"><b>v4.0.1</b></span>
+          <span class="k">zero external deps</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="v"><b>19 games</b></span>
+          <span class="k">50 live routes</span>
+        </div>
+      </div>
+    </div>
 
-        <div class="code-split">
-          <div class="code-panel">
-            <h3>Raw Three.js (~120 lines of manual boilerplate)</h3>
-            <pre><code>import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
-import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-// + 110 lines of manual WebGLRenderer, PMREMGenerator, WASM worker paths,
-// shadow traversal, AnimationMixer, ResizeObserver, and recursive dispose()...</code></pre>
-          </div>
-          <div class="code-panel">
-            <h3>Aura3D 4.0.0 (18 lines of declarative, type-safe TypeScript)</h3>
-            <pre><code>import { createAuraApp, environment, light, model, orbitCamera, post } from '@aura3d/engine';
-import { assets } from './aura-assets';
+    <div class="hero-right">
+      <!--
+        The homepage hero must render on phones, including iOS browsers without
+        WebGPU.  The former embed was the native-only WebGPU compute route; that
+        route correctly reports `unsupported` when `navigator.gpu` is absent, but
+        `chrome=hidden` also hides its diagnostic panel, leaving a black hero on
+        those devices.  Keep native WebGPU as a dedicated capability example and
+        use the WebGL2-compatible authored concept car for the universal first
+        impression. Its production GLB is part of the deployed fixture corpus,
+        so the public site does not depend on an unpublished worktree asset.
+      -->
+      <iframe class="hero-canvas" data-route="/apps/wow-concept-car-cinema/" title="Aura3D · authored cinematic concept car"></iframe>
+      <div class="hero-overlay">
+        <div class="hero-overlay-top">
+          <span class="scene-chip"><span class="dot"></span>Authored cinematic vehicle</span>
+          <span class="scene-stat">typed GLB</span>
+        </div>
+        <div class="hero-overlay-bot">
+          <span class="scene-chip">clearcoat · glass · materials</span>
+          <span class="scene-stat">WebGL2 mobile-ready</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
 
-const app = await createAuraApp({
-  target: '#app',
+<!-- ─── TAPE / TRUST ─────────────────────────────────────────── -->
+<section class="tape">
+  <div class="wrap tape-inner">
+    <span class="tape-label">Built on</span>
+    <div class="tape-items">
+      <a class="tape-item" href="#prompts">AI prompt plans</a>
+      <a class="tape-item" href="#prompts">Scene kits</a>
+      <a class="tape-item" href="/docs/api.html">TypeScript API</a>
+      <a class="tape-item" href="/docs/assets.html">Asset CLI</a>
+      <a class="tape-item" href="/docs/assets.html">Typed asset refs</a>
+      <a class="tape-item" href="#packages">React adapter</a>
+      <a class="tape-item" href="#templates">Vite templates</a>
+      <a class="tape-item" href="#gallery">Live examples</a>
+      <a class="tape-item" href="#gallery">Polished scenes</a>
+      <a class="tape-item" href="#deployment">Static deploys</a>
+      <a class="tape-item" href="#animation-studio">Animation Studio</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── LIVE PRODUCT PROOF ─────────────────────────────────── -->
+<section class="section visual-proof" id="product-proof" data-search-index="live Aura3D examples product configurator smart city skyline runner typed GLB production renderer">
+  <div class="wrap">
+    <div class="visual-proof-head">
+      <div>
+        <span class="eyebrow">Built with Aura3D 4.0.1</span>
+        <h2 class="visual-proof-title">Don’t take our word for it.<br /><em>Use the product.</em></h2>
+      </div>
+      <div class="visual-proof-intro">
+        <p>These are live public routes—not video loops or composited mockups. Open a product, operate a city, or play one of 19 playable 3D games and interactive showcases powered by custom Meshy 3D PBR hero vehicles, characters, and architectural props, then inspect the TypeScript and the evidence behind it.</p>
+        <a class="btn btn-ghost" href="/apps/showcase-index/">Launch all 50 experiences <span class="arr"></span></a>
+      </div>
+    </div>
+
+    <div class="visual-proof-grid">
+      <article class="visual-proof-card visual-proof-card-wide">
+        <div class="visual-proof-stage">
+          <iframe data-preview="static" data-poster-image="/previews/showcase/showcase-product-configurator.png" data-route="/apps/showcase-product-configurator/" title="Aura3D · Product Configurator preview" data-poster-title="Product Configurator" data-poster-kicker="interactive typed product" data-poster-description="Change the finish, focus individual parts, orbit the typed GLB, and inspect its retained asset provenance."></iframe>
+        </div>
+        <div class="visual-proof-copy"><span>01 · Product</span><h3>One asset. Every finish.</h3><p>Typed GLB provenance, physical PBR materials, clearcoat response, product lighting, part focus, and an interactive turntable through the public API.</p><a href="/apps/showcase-product-configurator/">Open Product Configurator <span class="arr"></span></a></div>
+      </article>
+
+      <article class="visual-proof-card">
+        <div class="visual-proof-stage">
+          <iframe data-preview="static" data-poster-image="/previews/showcase/showcase-smart-city-control-scene.png" data-route="/apps/showcase-smart-city-control/" title="Aura3D · Smart City Control preview" data-poster-title="Smart City Control" data-poster-kicker="interactive operations scene" data-poster-description="Switch districts and cameras across a typed, instanced operational city."></iframe>
+        </div>
+        <div class="visual-proof-copy"><span>02 · Operations</span><h3>A city that answers back.</h3><p>Native instancing, distance LOD, frustum-culling diagnostics, typed assets, district focus, live telemetry, and day/night state.</p><a href="/apps/showcase-smart-city-control/">Open Smart City Control <span class="arr"></span></a></div>
+      </article>
+
+      <article class="visual-proof-card">
+        <div class="visual-proof-stage">
+          <iframe data-preview="static" data-poster-image="/previews/showcase-index/top-tennis.webp" data-route="/apps/showcase-top-tennis/" title="Aura3D · Top Tennis 3D preview" data-poster-title="Top Tennis 3D" data-poster-kicker="full playable 3D court" data-poster-description="Serve, rally, aim cross-court winners, and compete across 6 world stadiums and the 32-player World Tour."></iframe>
+        </div>
+        <div class="visual-proof-copy"><span>03 · Play</span><h3>Full 3D court action.</h3><p>Articulated 2-bone IK tennis athletes, 6 stadiums (New York, London, Paris, Dubai, Beach, Moon), Smash Lab target practice, and a 32-player World Tour.</p><a href="/apps/showcase-top-tennis/">Play Top Tennis 3D <span class="arr"></span></a></div>
+      </article>
+    </div>
+
+    <div class="comparison-callout">
+      <div><span class="eyebrow">Built to ship</span><h3>Your 3D application stack, already assembled.</h3></div>
+      <p>Start above renderer plumbing with typed assets, agent-ready scene composition, maintained scaffolds, Rapier physics, Recast navigation, interaction systems, diagnostics, and deployment checks in one TypeScript workflow.</p>
+      <a class="btn btn-primary" href="/docs/aura3d-vs-threejs.html">Aura3D 4.0.1 vs. Raw Three.js <span class="arr"></span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── WHY TEAMS CHOOSE AURA3D OVER RAW THREE.JS ──────────── -->
+<section class="section-tight" id="why-aura3d-vs-threejs" data-search-index="why teams choose aura3d over raw threejs 18 lines vs 120 lines architectural comparison table typed assets webgpu compute pbr postprocessing rapier recast splats portals check-deploy">
+  <div class="wrap">
+    <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
+      <div class="sec-head-left">
+        <span class="eyebrow">Why Teams Choose Aura3D 4.0.1 Over Raw Three.js</span>
+        <h2 class="h2">Stop assembling 14 fragile npm packages.<br /><em style="font-family:var(--serif);font-style:italic">Boot a verified 3D scene in 18 lines of TypeScript.</em></h2>
+        <p class="lede">Three.js is a legendary low-level rendering kernel—not a complete application engine. The moment you step beyond a spinning cube, raw Three.js forces your team to hand-wire <code>WebGLRenderer</code>, <code>PerspectiveCamera</code>, <code>OrbitControls</code>, <code>GLTFLoader</code>, <code>DRACOLoader</code>, <code>KTX2Loader</code>, <code>RGBELoader</code>, <code>EffectComposer</code>, <code>PMREMGenerator</code>, <code>Rapier3D</code>, <code>Recast</code>, manual resize observers, and recursive <code>dispose()</code> loops just to keep a single route from leaking GPU memory. <strong>Aura3D 4.0.1 (<code>@aura3d/engine@4.0.1</code>)</strong> ships the entire browser 3D application stack in one zero-dependency, MIT-licensed TypeScript SDK.</p>
+      </div>
+      <div class="sec-head-right">
+        <a class="btn btn-ghost" href="/docs/aura3d-vs-threejs.html">Full architectural comparison <span class="arr"></span></a>
+      </div>
+    </div>
+
+    <div class="compare" role="region" aria-label="Aura3D 4.0.1 vs Raw Three.js 10-point architectural comparison">
+      <div class="compare-head">
+        <div>Capability</div>
+        <div>Aura3D 4.0.1 (<code>@aura3d/engine@4.0.1</code> + <code>@aura3d/cli@4.0.1</code>)</div>
+        <div>Raw Three.js Stack (<code>three@0.185.x</code> + ecosystem)</div>
+        <div>Advantage</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Scene Boot &amp; Lifecycle</div>
+        <div class="compare-value aura">18 lines with <code>createAuraApp()</code>: deterministic clock, resize observer, context-loss recovery, and <code>app.dispose()</code></div>
+        <div class="compare-value base">~120 lines of manual <code>WebGLRenderer</code>, <code>PerspectiveCamera</code>, <code>ResizeObserver</code>, <code>requestAnimationFrame</code>, and recursive <code>dispose()</code></div>
+        <div><span class="delta">83% less code</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Asset Pipeline &amp; Type Safety</div>
+        <div class="compare-value aura">Compile-time typed <code>src/aura-assets.ts</code> generated from <code>aura.assets.json</code> with SHA-256 digests, SPDX checks, and clip/morph metadata</div>
+        <div class="compare-value base">Untyped string URLs (<code>loader.load('/foo.glb')</code>), silent 404s, manual <code>DRACOLoader</code> / <code>KTX2Loader</code> WASM worker path wiring</div>
+        <div><span class="delta">Compile-time safe</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Materials &amp; Lighting</div>
+        <div class="compare-value aura">Built-in physical PBR: clearcoat, sheen, transmission, volume attenuation, dispersion, iridescence, anisotropy, procedural sky + IBL, AgX / ACES tone mapping</div>
+        <div class="compare-value base">Manual <code>PMREMGenerator</code>, manual shader chunks, separate <code>RGBELoader</code> setup, ad-hoc tone mapping configuration</div>
+        <div><span class="delta">Zero setup</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Post-Processing</div>
+        <div class="compare-value aura">Integrated HDR post stack (<code>bloom</code>, <code>ssao</code>, <code>ssr</code>, <code>dof</code>, <code>motionBlur</code>, <code>chromaticAberration</code>, <code>vignette</code>, <code>colorGrading</code>, <code>taa</code>, <code>fxaa</code>)</div>
+        <div class="compare-value base">External <code>three/examples/jsm/postprocessing</code> or third-party composer with manual render-target ping-pong management</div>
+        <div><span class="delta">Declarative post()</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">WebGPU &amp; Compute</div>
+        <div class="compare-value aura">First-class WebGPU compute shaders (<code>compute.createComputePipeline</code>), GPU frustum + Hi-Z occlusion culling, and GPU particle systems alongside WebGL2</div>
+        <div class="compare-value base">Experimental node-material split across separate build entry points; manual storage-buffer management</div>
+        <div><span class="delta">Unified runtime</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Physics &amp; Character Control</div>
+        <div class="compare-value aura">Built-in deterministic fixed-step physics, CCD, joints, swept kinematic character controller, and raycast vehicle dynamics</div>
+        <div class="compare-value base">Bring-your-own <code>@dimforge/rapier3d-compat</code>, manual WASM init, custom fixed-step accumulator, custom raycast vehicle math</div>
+        <div><span class="delta">1 simulation owner</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Navigation &amp; Crowd AI</div>
+        <div class="compare-value aura">Built-in navmesh generation, A* corridor pathfinding, and multi-agent crowd steering with local avoidance</div>
+        <div class="compare-value base">Bring-your-own <code>recast-navigation</code> + WASM glue + custom steering loops</div>
+        <div><span class="delta">Built-in AI crowds</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Advanced Rendering (Splats, Portals, VFX)</div>
+        <div class="compare-value aura">Native <code>splats.createGaussianSplat()</code>, recursive stencil/FBO <code>portals.createPortalWorld()</code>, GPU compute particles, decals, trails, and water waves</div>
+        <div class="compare-value base">Fragmented third-party Gaussian Splat viewers, manual stencil-buffer portal passes, custom instanced particle shaders</div>
+        <div><span class="delta">First-party APIs</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Three.js Migration Path</div>
+        <div class="compare-value aura">Automated AST codemod (<code>aura3d migrate three</code>) plus <code>migrateThreeToA3D</code> compatibility layer and 5 dedicated migration starter templates</div>
+        <div class="compare-value base">Rewrite from scratch or maintain legacy imperative <code>THREE.*</code> code indefinitely</div>
+        <div><span class="delta">Automated codemod</span></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-metric">Pre-Deploy Verification</div>
+        <div class="compare-value aura">Built-in <code>aura3d check-deploy</code> &amp; <code>aura3d evidence</code>: headless Chromium route health, zero-console-error enforcement, and <code>aura-evidence.json</code></div>
+        <div class="compare-value base">Manual browser eyeballs; no standard GPU or asset gate in CI</div>
+        <div><span class="delta">CI-certified</span></div>
+      </div>
+    </div>
+
+    <div class="migration">
+      <div class="migration-col">
+        <div class="migration-head">
+          <span>Raw Three.js (<code>three@0.185.1</code> + 6 addons)</span>
+          <span class="migration-tag">~120 lines · manual lifecycle</span>
+        </div>
+        <pre class="code"><code><span class="c">// 7+ imports, untyped string URLs, manual WASM decoders,</span>
+<span class="c">// manual PMREM/HDRI setup, manual EffectComposer, manual resize &amp; dispose</span>
+<span class="k">import</span> * <span class="k">as</span> THREE <span class="k">from</span> <span class="s">'three'</span>;
+<span class="k">import</span> { OrbitControls } <span class="k">from</span> <span class="s">'three/examples/jsm/controls/OrbitControls.js'</span>;
+<span class="k">import</span> { GLTFLoader } <span class="k">from</span> <span class="s">'three/examples/jsm/loaders/GLTFLoader.js'</span>;
+<span class="k">import</span> { DRACOLoader } <span class="k">from</span> <span class="s">'three/examples/jsm/loaders/DRACOLoader.js'</span>;
+<span class="k">import</span> { KTX2Loader } <span class="k">from</span> <span class="s">'three/examples/jsm/loaders/KTX2Loader.js'</span>;
+<span class="k">import</span> { RGBELoader } <span class="k">from</span> <span class="s">'three/examples/jsm/loaders/RGBELoader.js'</span>;
+<span class="k">import</span> { EffectComposer } <span class="k">from</span> <span class="s">'three/examples/jsm/postprocessing/EffectComposer.js'</span>;
+<span class="k">import</span> { RenderPass } <span class="k">from</span> <span class="s">'three/examples/jsm/postprocessing/RenderPass.js'</span>;
+<span class="k">import</span> { UnrealBloomPass } <span class="k">from</span> <span class="s">'three/examples/jsm/postprocessing/UnrealBloomPass.js'</span>;
+
+<span class="k">const</span> container = document.<span class="f">getElementById</span>(<span class="s">'app'</span>)!;
+<span class="k">const</span> scene = <span class="k">new</span> THREE.<span class="f">Scene</span>();
+<span class="k">const</span> camera = <span class="k">new</span> THREE.<span class="f">PerspectiveCamera</span>(<span class="n">45</span>, container.clientWidth / container.clientHeight, <span class="n">0.1</span>, <span class="n">100</span>);
+camera.position.<span class="f">set</span>(<span class="n">2.8</span>, <span class="n">1.9</span>, <span class="n">3.6</span>);
+
+<span class="k">const</span> renderer = <span class="k">new</span> THREE.<span class="f">WebGLRenderer</span>({ antialias: <span class="n">true</span>, powerPreference: <span class="s">'high-performance'</span> });
+renderer.<span class="f">setPixelRatio</span>(Math.<span class="f">min</span>(window.devicePixelRatio, <span class="n">2</span>));
+renderer.<span class="f">setSize</span>(container.clientWidth, container.clientHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = <span class="n">1.1</span>;
+renderer.shadowMap.enabled = <span class="n">true</span>;
+container.<span class="f">appendChild</span>(renderer.domElement);
+
+<span class="k">const</span> controls = <span class="k">new</span> <span class="f">OrbitControls</span>(camera, renderer.domElement);
+controls.target.<span class="f">set</span>(<span class="n">0</span>, <span class="n">0.85</span>, <span class="n">0</span>);
+controls.enableDamping = <span class="n">true</span>;
+
+<span class="k">const</span> pmrem = <span class="k">new</span> THREE.<span class="f">PMREMGenerator</span>(renderer);
+<span class="k">new</span> <span class="f">RGBELoader</span>().<span class="f">load</span>(<span class="s">'/assets/studio.hdr'</span>, (hdr) =&gt; {
+  scene.environment = pmrem.<span class="f">fromEquirectangular</span>(hdr).texture;
+  hdr.<span class="f">dispose</span>();
+  pmrem.<span class="f">dispose</span>();
+});
+
+<span class="k">const</span> draco = <span class="k">new</span> <span class="f">DRACOLoader</span>().<span class="f">setDecoderPath</span>(<span class="s">'/wasm/draco/'</span>);
+<span class="k">const</span> ktx2 = <span class="k">new</span> <span class="f">KTX2Loader</span>().<span class="f">setTranscoderPath</span>(<span class="s">'/wasm/basis/'</span>).<span class="f">detectSupport</span>(renderer);
+<span class="k">const</span> loader = <span class="k">new</span> <span class="f">GLTFLoader</span>().<span class="f">setDRACOLoader</span>(draco).<span class="f">setKTX2Loader</span>(ktx2);
+<span class="c">// + 65 more lines for lights, shadows, AnimationMixer, EffectComposer,</span>
+<span class="c">// ResizeObserver, requestAnimationFrame loop, and recursive dispose()...</span></code></pre>
+      </div>
+      <div class="migration-col aura">
+        <div class="migration-head">
+          <span>Aura3D 4.0.1 (<code>@aura3d/engine@4.0.1</code>)</span>
+          <span class="migration-tag">18 lines · typed &amp; verified</span>
+        </div>
+        <pre class="code"><code><span class="k">import</span> { createAuraApp, environment, light, model, orbitCamera, post } <span class="k">from</span> <span class="s">'@aura3d/engine'</span>;
+<span class="k">import</span> { assets } <span class="k">from</span> <span class="s">'./aura-assets'</span>;
+
+<span class="k">const</span> app = <span class="k">await</span> <span class="f">createAuraApp</span>({
+  target: <span class="s">'#app'</span>,
   scene: [
-    environment.studio({ intensity: 1.15, sky: 'procedural-dusk' }),
-    orbitCamera({ position: [2.8, 1.9, 3.6], target: [0, 0.85, 0], damping: 0.08 }),
-    light.directional({ position: [4, 7, 5], intensity: 3.2, color: '#fff4e6', castShadow: true }),
-    model(assets.damagedHelmet, {
-      position: [0, 0.85, 0],
-      castShadow: true,
-      receiveShadow: true,
-      clip: 'Idle',
+    environment.<span class="f">studio</span>({ intensity: <span class="n">1.15</span>, sky: <span class="s">'procedural-dusk'</span> }),
+    <span class="f">orbitCamera</span>({ position: [<span class="n">2.8</span>, <span class="n">1.9</span>, <span class="n">3.6</span>], target: [<span class="n">0</span>, <span class="n">0.85</span>, <span class="n">0</span>], damping: <span class="n">0.08</span> }),
+    light.<span class="f">directional</span>({ position: [<span class="n">4</span>, <span class="n">7</span>, <span class="n">5</span>], intensity: <span class="n">3.2</span>, color: <span class="s">'#fff4e6'</span>, castShadow: <span class="n">true</span> }),
+    <span class="f">model</span>(assets.damagedHelmet, {
+      position: [<span class="n">0</span>, <span class="n">0.85</span>, <span class="n">0</span>],
+      castShadow: <span class="n">true</span>,
+      receiveShadow: <span class="n">true</span>,
+      clip: <span class="s">'Idle'</span>,
     }),
-    post({ toneMapping: 'agx', exposure: 1.1, bloom: { intensity: 0.35, threshold: 0.85 }, ssao: true }),
+    <span class="f">post</span>({ toneMapping: <span class="s">'agx'</span>, exposure: <span class="n">1.1</span>, bloom: { intensity: <span class="n">0.35</span>, threshold: <span class="n">0.85</span> }, ssao: <span class="n">true</span> }),
   ],
 });</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── AURA3D 4.0.0 ───────────────────────────────────────────── -->
+<section class="section-tight" id="release-30" data-search-index="aura3d 4.0.0 agent era prompt to game verified threejs comparison typed assets rapier recast effects postprocessing bloom ssao ssr volumetric fog particles meshy 3d pbr evidence launch showcase">
+  <div class="wrap">
+    <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
+      <div class="sec-head-left">
+        <span class="eyebrow">New in 4.0.0 · agent era, live</span>
+        <h2 class="h2">The engine three.js would be <em style="font-family:var(--serif);font-style:italic">if it had been designed for models to drive it.</em></h2>
+        <p class="lede">three.js (locked against the r185 comparison baseline, three@0.185.1) hands your agent a renderer and wishes it luck: no agent API, no asset pipeline, no correctness proof. Aura3D 4.0.1 turns a game prompt into a playable, machine-verified browser game — and proves it. Aura3D 4.0.1 is live across all 24 active public packages on npm (with all <code>&lt; 4.0.0</code> versions and the 5 retired pre-4.0 compatibility packages consolidated into <code>@aura3d/engine@4.0.1</code> and deprecated in full), featuring the unified <code>@aura3d/engine@4.0.1</code> single-entrypoint SDK, <code>create-aura3d@4.0.1</code> agent-first CLI workflow, the complete <code>effects.*</code> post-processing, atmospheric, volumetric, weather, GPU particle, ribbon, and <code>game.feel</code> suite, deterministic Rapier physics &amp; game kits (<code>game.platformer</code>, <code>game.racing</code>, <code>game.fallingBlocks</code>, <code>game.fighting</code>), and 19 playable 3D games and interactive showcases powered by 38+ custom Meshy 3D PBR hero vehicles, characters, and architectural props across 50 live apps and focused examples.</p>
+      </div>
+    </div>
+
+    <div class="diag">
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">consolidated 4.0.0 SDK + game kits</span>
+          <span class="pass">● @aura3d/engine@4.0.1</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">surface</span> <span class="v ok">1 root entrypoint (@aura3d/engine@4.0.1) · 24 active npm packages</span></div>
+          <div class="diag-row"><span class="k">game kits</span> <span class="v ok">game.platformer, game.racing, game.fallingBlocks, game.fighting, game.feel</span></div>
+          <div class="diag-row"><span class="k">deprecation</span> <span class="v ok">all &lt; 4.0.0 versions &amp; 5 legacy compat packages deprecated on npm</span></div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">effects.* post, atmosphere &amp; VFX</span>
+          <span class="pass">● 28+ built-in builders</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">post-process</span> <span class="v ok">bloom, neonBloom, cinematicBloom, SSAO, contactShadows, SSR, DoF, motionBlur, colorGrade, vignette, filmGrain, chromaticAberration, FXAA, outline</span></div>
+          <div class="diag-row"><span class="k">atmosphere</span> <span class="v ok">fog, depthFog, volumetricFog, fogVolume, lightCone, auroraRibbon, rain, snow, atmosphere.setSky</span></div>
+          <div class="diag-row"><span class="k">particles &amp; feel</span> <span class="v ok">particles, meshParticles, flipbook, trail, beam, ResidentGPUParticleRenderer, looks.preset</span></div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">typed PBR &amp; Meshy 3D pipeline</span>
+          <span class="pass">● hash-pinned</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">catalog</span> <span class="v ok">800,000+ real GLB/glTF + 38+ custom Meshy 3D PBR hero assets</span></div>
+          <div class="diag-row"><span class="k">consumption</span> <span class="v ok">@aura3d/cli@4.0.1 import-meshy &amp; typegen; invented paths fail closed</span></div>
+          <div class="diag-row"><span class="k">simulation</span> <span class="v ok">Rapier deterministic physics + Recast crowd navigation</span></div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">19 playable 3D games + 50 routes</span>
+          <span class="pass">● fail-closed</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">showcases</span> <span class="v ok">19 upgraded 3D games &amp; 31 interactive showcases/labs (50 live routes)</span></div>
+          <div class="diag-row"><span class="k">per route</span> <span class="v ok">1920×1080 L4 GPU posters, route-health probes, gameplay receipts</span></div>
+          <div class="diag-row"><span class="k">three.js delta</span> <span class="v">correctness is the developer's problem, every time</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="wwx-source-row" aria-label="Aura3D 4.0.1 agent-era references" style="margin-top:24px">
+      <a href="/llms.txt">Agent context</a>
+      <a href="/docs/agent-quickstart.html">Agent quickstart</a>
+      <a href="/docs/api.html">Public API</a>
+      <a href="#templates">Templates</a>
+      <a href="/apps/showcase-index/">50 live experiences</a>
+      <a href="https://github.com/auraoneai/aura3d/releases/tag/v4.0.1" target="_blank" rel="noopener">4.0.0 release tag</a>
+      <a href="https://github.com/auraoneai/aura3d/blob/main/docs/project/aura3d-400-release-notes.md" target="_blank" rel="noopener">aura3d-400-release-notes.md</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── 2.0.4 HISTORY ────────────────────────────────────── -->
+<section class="section-tight" id="release-204" data-search-index="release 2.0.4 meshy cli asset pipeline candidate provenance rights admission typed assets prototype evidence history">
+  <div class="wrap">
+    <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
+      <div class="sec-head-left">
+        <span class="eyebrow">2.0.4 · history — CLI asset pipeline</span>
+        <h2 class="h2">Generate upstream. Admit locally. <em style="font-family:var(--serif);font-style:italic">Keep it typed.</em></h2>
+        <p class="lede">Aura3D 2.0.4 shipped across all 29 coordinated packages at 2.0.4, with 50 apps, games, and focused examples. It connects the pinned official Meshy CLI to Aura3D’s typed asset workflow without moving provider generation into the browser or engine. Plan and download with Meshy; import selected local GLBs as candidate assets with hashes, sanitized provenance, supplied rights evidence, generated TypeScript keys, and fail-closed admission diagnostics.</p>
+      </div>
+    </div>
+
+    <div class="diag">
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">official Meshy CLI</span>
+          <span class="pass">● upstream owner</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">provider operations</span> <span class="v ok">auth, planning, tasks, resume, download</span></div>
+          <div class="diag-row"><span class="k">pin</span> <span class="v">@meshy-ai/cli@0.2.0</span></div>
+          <div class="diag-row"><span class="k">paid workflow</span> <span class="v">dry run + explicit maximum</span></div>
+          <div class="diag-row"><span class="k">runtime boundary</span> <span class="v">not a browser or engine dependency</span></div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">Aura3D CLI admission</span>
+          <span class="pass">● candidate only</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">local pipeline</span> <span class="v ok">validate, hash, manifest, type generation</span></div>
+          <div class="diag-row"><span class="k">default quality</span> <span class="v ok">candidate</span></div>
+          <div class="diag-row"><span class="k">profiles</span> <span class="v">prop, environment, vehicle, humanoid</span></div>
+          <div class="diag-row"><span class="k">rights</span> <span class="v">supplied and recorded, never inferred</span></div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">bounded pilot</span>
+          <span class="pass">● prototype</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">asset</span> <span class="v ok">typed relic candidate</span></div>
+          <div class="diag-row"><span class="k">mechanic</span> <span class="v ok">keyboard collect, score, reset</span></div>
+          <div class="diag-row"><span class="k">framing</span> <span class="v ok">desktop + 390px mobile reviewed</span></div>
+          <div class="diag-row"><span class="k">collision</span> <span class="v">route-local threshold; asset collision unproven</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="wwx-source-row" aria-label="Aura3D 2.0.4 Meshy CLI asset-pipeline references" style="margin-top:24px">
+      <a href="https://www.npmjs.com/package/@aura3d/cli" target="_blank" rel="noopener">@aura3d/cli on npm</a>
+      <a href="https://www.npmjs.com/package/@aura3d/engine" target="_blank" rel="noopener">npm package</a>
+      <a href="https://github.com/auraoneai/aura3d/blob/main/docs/migration/2.0.md" target="_blank" rel="noopener">4.0 migration</a>
+      <a href="https://github.com/auraoneai/aura3d/blob/main/docs/api/public-api.md" target="_blank" rel="noopener">Public API</a>
+      <a href="https://github.com/auraoneai/aura3d/blob/main/docs/meshy-cli.md" target="_blank" rel="noopener">Meshy CLI guide</a>
+      <a href="https://github.com/auraoneai/aura3d/releases/tag/v2.0.4" target="_blank" rel="noopener">2.0.4 release notes</a>
+      <a href="https://github.com/auraoneai/aura3d" target="_blank" rel="noopener">GitHub source</a>
+      <a href="/apps/showcase-index/">50 live experiences</a>
+      <a href="/docs/templates.html">Templates</a>
+      <a href="/docs/assets.html">Asset pipeline</a>
+      <a href="/docs/deployment.html">Deployment</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── AURA CLASH DEVELOPMENT SHOWCASE ────────────────────── -->
+<section class="section wwx-feature" id="aura-clash" data-search-index="aura clash browser fighting game development showcase typed glb assets poster playable evidence accessibility deploy check deployment gates believable motion foot ik foot-lock spring bones critically damped transitions animation event tracks footsteps vfx">
+  <div class="wrap">
+    <div class="wwx-shell">
+      <div class="wwx-copy">
+        <span class="eyebrow">4.0.0 approved game showcase</span>
+        <h2 class="h2">Aura Clash Arena demonstrates a complete, inspectable browser fighting-game loop.</h2>
+        <p class="lede">
+          Jump into a browser-native fighting showcase powered by typed GLB fighters, responsive combat, a cinematic
+          neon arena, audio cues, accessibility controls, screenshot capture, and deploy evidence. Aura Clash shows
+          how scoped Aura3D runtime packages support inspectable TypeScript game code and iteration.
+        </p>
+        <p class="lede">
+          The 1.2 animation upgrade adds crossfaded state transitions, hit reactions that vary by attack weight and
+          grounded/airborne state, and attacks layered on an upper-body bone mask over a walking lower body &mdash; all
+          driven by the engine animation runtime and proven by browser tests with deterministic combat replay.
+        </p>
+        <p class="lede">
+          The 1.3 source/test integration covers believable-motion systems in the arena: critically-damped, momentum-preserving move
+          transitions that carry through instead of dissolving, two-bone foot IK with a foot-lock so planted feet stop
+          sliding (driving real footsteps), spring-bone secondary dynamics that lean the body into dashes and knockback,
+          and authored animation event tracks driving hit active-frames, footsteps, and VFX &mdash; all presentation-layer,
+          so the deterministic combat replay stays byte-stable.
+        </p>
+        <div class="wwx-actions">
+          <a class="btn btn-ghost" href="/showcase/aura-clash/">Open showcase hub</a>
+          <a class="btn btn-primary" href="/showcase/aura-clash/playable/">Play Aura Clash <span class="arr"></span></a>
+          <a class="btn btn-ghost" href="/docs/aura-clash-showcase.html">Read the evidence docs</a>
+        </div>
+        <div class="wwx-proof-grid" aria-label="Aura Clash proof points">
+          <span>typed GLB runtime</span>
+          <span>lazy-loaded route</span>
+          <span>playable route metadata</span>
+          <span>accessibility controls</span>
+          <span>static poster preview</span>
+          <span>crossfade + layered attacks</span>
+          <span>critically-damped transitions</span>
+          <span>foot IK + foot-lock</span>
+          <span>spring body-sway</span>
+          <span>authored event tracks</span>
+          <span>4.0.0 package proof</span>
+        </div>
+        <div class="wwx-source-row" aria-label="Aura3D source and package visibility">
+          <a href="https://github.com/auraoneai/aura3d" target="_blank" rel="noopener">GitHub repository</a>
+          <a href="https://www.npmjs.com/package/@aura3d/engine" target="_blank" rel="noopener">@aura3d/engine on npm</a>
+        </div>
+      </div>
+      <div class="wwx-stage">
+        <a class="wwx-static-link" href="/showcase/aura-clash/playable/" aria-label="Play Aura Clash">
+          <img
+            class="wwx-static-preview"
+            src="/previews/aura-clash-poster.png"
+            alt="Aura Clash Arena mid-combat: two typed GLB fighters on a textured neon rooftop, impact VFX on a landed heavy, live health bars and round clock"
+            loading="lazy" />
+        </a>
+        <div class="wwx-stage-badge">
+          <span class="dot"></span>
+          <span>Clean gameplay preview · click through to the live route</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── ANIMATION STUDIO ────────────────────────────────────── -->
+<section class="section wwx-feature" id="animation-studio" data-search-index="animation studio prompt to animated short episode document director scene-tool cli silent render auravoice timeline nle previz">
+  <div class="wrap">
+    <div class="wwx-shell">
+      <div class="wwx-copy">
+        <span class="eyebrow">Animation Studio</span>
+        <h2 class="h2">Describe a scene. <em style="font-family:var(--serif);font-style:italic">Watch it perform.</em></h2>
+        <p class="lede">
+          Type a prompt &mdash; get a rendered animated short. The same prompt, every time. Scene intelligence isn't code
+          you write; it's a generated <strong>EpisodeDocument</strong> played by one generic renderer with zero
+          scene-specific constants. And the director isn't a model we bundle &mdash; it's <em>your own</em> coding agent,
+          driving a validated Scene-Tool CLI. No bundled LLM. No API key.
+        </p>
+        <p class="lede">
+          The cast is parsed straight from your words and bound to graded humanoid rigs. Sets are keyword-routed &mdash;
+          an office becomes an office, a forest a meadow &mdash; never a moon-garden default. A shared retargeted motion
+          library drives everyone, with velocity-gated locomotion so planted feet stay planted and captions timed to the
+          length of the line. A ten-gate quality suite stands guard: it rejects stiff bodies, lip-only motion, and
+          fabricated proof. Every gate measures a real signal &mdash; nothing hard-codes a pass.
+        </p>
+        <p class="lede">
+          The web studio is a three-pane NLE &mdash; a Director Console, live previews, and real validated commands, not a
+          mockup. Renders are <strong>silent by design</strong>; AuraVoice owns the voice. A clean, stylized look you can
+          watch in minutes &mdash; and when you want photoreal characters, drop in your own rigged GLB and it renders them
+          too. Describe the next shot, and the scene changes. It just renders.
+        </p>
+        <div class="wwx-actions">
+          <a class="btn btn-primary" href="https://github.com/auraoneai/aura3d/tree/main/docs/animation-studio/guide.md">Read the guide <span class="arr"></span></a>
+          <a class="btn btn-ghost" href="https://github.com/auraoneai/aura3d/tree/main/docs/animation-studio/README.md">See the quickstart</a>
+          <a class="btn btn-ghost" href="https://github.com/auraoneai/aura3d/tree/main/docs/animation-studio">Open the docs</a>
+        </div>
+        <div class="wwx-proof-grid" aria-label="Animation Studio proof points">
+          <span>prompt → EpisodeDocument</span>
+          <span>generic player, zero scene code</span>
+          <span>agent is the director</span>
+          <span>no bundled LLM / API key</span>
+          <span>retargeted motion library</span>
+          <span>velocity-gated locomotion</span>
+          <span>speech-duration captions</span>
+          <span>10-gate quality suite</span>
+          <span>deterministic renders</span>
+          <span>silent · AuraVoice owns voice</span>
+          <span>web NLE studio</span>
+        </div>
+        <div class="wwx-source-row" aria-label="Aura3D source and package visibility">
+          <a href="https://github.com/auraoneai/aura3d" target="_blank" rel="noopener">GitHub repository</a>
+          <a href="https://www.npmjs.com/package/@aura3d/engine" target="_blank" rel="noopener">@aura3d/engine on npm</a>
+        </div>
+      </div>
+      <div class="wwx-stage">
+        <a class="wwx-static-link" href="https://github.com/auraoneai/aura3d/tree/main/docs/animation-studio" aria-label="Open the Animation Studio docs">
+          <img
+            class="wwx-static-preview"
+            src="/previews/animation-studio.svg"
+            alt="Animation Studio web NLE with a Director Console and a prompt-generated office scene rendered in stylized toon shading"
+            loading="lazy" />
+        </a>
+        <div class="wwx-stage-badge">
+          <span class="dot"></span>
+          <span>Live studio · prompt-generated office scene</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── §01 — THE SDK / WORKFLOWS ───────────────────────────── -->
+<section class="section-tight" id="workflows">
+  <div class="wrap">
+    <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
+      <div class="sec-head-left">
+        <span class="eyebrow">01 — SDK</span>
+        <h2 class="h2">A complete 3D vocabulary, <em style="font-family:var(--serif);font-style:italic">designed for generation.</em></h2>
+        <p class="lede">Aura3D gives AI coding assistants the nouns and verbs of browser 3D: scenes, models, lights, cameras, materials, effects, interactions, UI, and deployment-ready assets behind a compact TypeScript API. The result is fast to generate and simple to refine.</p>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="split-code">
+        <div class="split-code-head">
+          <div class="split-code-tabs">
+            <span class="split-code-tab active">agent-scene.ts</span>
+            <span class="split-code-tab">typed-assets.ts</span>
+            <span class="split-code-tab">deploy-check.ts</span>
+          </div>
+          <span class="mono mute-2" style="font-size:11px">TypeScript</span>
+        </div>
+<pre class="code"><span class="c">// Typed GLB + 4.0.0 effects.* pipeline: register once, then compose the scene.</span>
+<span class="k">import</span> {
+  <span class="f">createAuraApp</span>, <span class="f">scene</span>, <span class="f">model</span>, <span class="f">camera</span>,
+  <span class="f">lights</span>, <span class="f">effects</span>, <span class="f">looks</span>
+} <span class="k">from</span> <span class="s">"@aura3d/engine"</span>;
+<span class="k">import</span> { assets } <span class="k">from</span> <span class="s">"./aura-assets"</span>;
+
+<span class="f">createAuraApp</span>(<span class="s">"#app"</span>, {
+  ...<span class="f">looks</span>.<span class="f">appOptions</span>(<span class="s">"studio-product"</span>),
+  diagnostics: { overlay: <span class="n">true</span> },
+  scene: <span class="f">scene</span>({ background: <span class="s">"#05070a"</span> })
+    .add(<span class="f">model</span>(assets.boombox, { scale: <span class="n">1.2</span> }))
+    .add(<span class="f">lights</span>.studio({ intensity: <span class="n">1.2</span> }))
+    .camera(<span class="f">camera</span>.orbit({ distance: <span class="n">4</span> }))
+    .add(<span class="f">effects</span>.bloom({ intensity: <span class="n">0.28</span> }))
+    .add(<span class="f">effects</span>.ambientOcclusion({ intensity: <span class="n">0.35</span>, radius: <span class="n">0.45</span> }))
+    .add(<span class="f">effects</span>.contactShadows({ opacity: <span class="n">0.45</span>, blur: <span class="n">1.6</span> }))
+    .add(<span class="f">effects</span>.vignette({ intensity: <span class="n">0.22</span> }))
+});
+<span class="c">// Typed assets &amp; 4.0.0 effects.* keep models and post-processing deterministic.</span></pre>
+      </div>
+
+      <div class="split-view">
+        <iframe class="split-canvas" data-route="/apps/wow-boombox-texture-lab/" title="Aura3D · GLB asset pipeline"></iframe>
+        <div class="hero-overlay">
+          <div class="hero-overlay-top">
+            <span class="scene-chip"><span class="dot"></span>Typed GLB workflow</span>
+            <span class="scene-stat">typed assets</span>
+          </div>
+          <div class="hero-overlay-bot">
+            <span class="scene-chip">asset manifest · studio lighting</span>
+            <span class="scene-stat">studio ready</span>
           </div>
         </div>
-      </section>
-    </main>
-  </body>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── §02 — AI PROMPT WORKFLOW ────────────────────────────── -->
+<section class="section" id="prompts" data-search-index="ai prompts prompt plans scene kits examples product viewer particle fountain mini golf city data visualization">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-head-left">
+        <span class="eyebrow">02 — Prompt-to-3D</span>
+        <h2 class="h2">Describe the world.<br /><em style="font-family:var(--serif);font-style:italic">Receive the scene.</em></h2>
+        <p class="lede">Aura3D gives prompts structure: cinematic particles, physical playgrounds, data galaxies, material labs, city blocks, mini-games, humanoids, and product viewers. The assistant starts with a maintained scene system, then edits the TypeScript you own.</p>
+      </div>
+      <div class="sec-head-right">
+        <span class="eyebrow-num">prompt · code · asset · deploy</span>
+        <a href="/docs/agent-quickstart.html" class="mono" style="font-size:12px;color:var(--accent)">Start building →</a>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="split-code">
+        <div class="split-code-head">
+          <div class="split-code-tabs">
+            <span class="split-code-tab active">prompt-plan.ts</span>
+            <span class="split-code-tab">scene-kit.ts</span>
+            <span class="split-code-tab">scene-kit.ts</span>
+          </div>
+          <span class="mono mute-2" style="font-size:11px">TypeScript</span>
+        </div>
+<pre class="code"><span class="c">// Prompt + asset path: bring the GLB, then stage it.</span>
+<span class="k">import</span> {
+  <span class="f">createAuraApp</span>, <span class="f">sceneKits</span>
+} <span class="k">from</span> <span class="s">"@aura3d/engine"</span>;
+<span class="k">import</span> { assets } <span class="k">from</span> <span class="s">"./aura-assets"</span>;
+
+<span class="k">const</span> kit = <span class="f">sceneKits</span>.<span class="f">productViewer</span>({
+  asset: assets.conceptCar,
+  lighting: <span class="s">"cinematic"</span>,
+  controls: <span class="s">"orbit"</span>,
+});
+
+<span class="f">createAuraApp</span>(<span class="s">"#app"</span>, kit.<span class="f">toAppOptions</span>());</pre>
+      </div>
+
+      <div class="split-view">
+        <iframe class="split-canvas" data-route="/apps/wow-concept-car-cinema/" title="Aura3D · cinematic concept car product scene"></iframe>
+        <div class="hero-overlay">
+          <div class="hero-overlay-top">
+            <span class="scene-chip"><span class="dot"></span>prompt-staged GLB scene</span>
+            <span class="scene-stat">product cinema</span>
+          </div>
+          <div class="hero-overlay-bot">
+            <span class="scene-chip">typed asset · lighting · controls</span>
+            <span class="scene-stat">owned TypeScript</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pkg-grid" style="margin-top:18px">
+      <div class="pkg">
+        <div class="pkg-name">Prompt · Physics playground</div>
+        <div class="pkg-desc">"Create falling cubes, ramps, bins, gravity cues, contact patches, reset controls, and a cinematic camera."</div>
+        <div class="pkg-tags"><span class="pkg-tag">primitives</span><span class="pkg-tag">physics</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">Prompt · Particle fountain</div>
+        <div class="pkg-desc">"Build an interactive particle fountain with an emission slider, colored droplet lifetimes, collision splash, pedestal, basin, and dark stage."</div>
+        <div class="pkg-tags"><span class="pkg-tag">particles</span><span class="pkg-tag">controls</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">Prompt · Data galaxy</div>
+        <div class="pkg-desc">"Generate a 3D analytics scene with bars, particles, labels, selected values, camera motion, and presentation-ready composition."</div>
+        <div class="pkg-tags"><span class="pkg-tag">data viz</span><span class="pkg-tag">generated</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">Prompt · City block</div>
+        <div class="pkg-desc">"Generate buildings, roads, windows, crosswalks, traffic lights, street props, night lighting, and a visible day/night state."</div>
+        <div class="pkg-tags"><span class="pkg-tag">city</span><span class="pkg-tag">procedural</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">Prompt · Material lab</div>
+        <div class="pkg-desc">"Show chrome, glass, rubber, emissive, and clearcoat as distinct primitives with lighting, reflections, and labels."</div>
+        <div class="pkg-tags"><span class="pkg-tag">materials</span><span class="pkg-tag">primitives</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">GLB · Concept car cinema</div>
+        <div class="pkg-desc">"When the concept car GLB is supplied, stage it with cinematic lighting, orbit controls, material polish, and a showroom camera."</div>
+        <div class="pkg-tags"><span class="pkg-tag">typed asset</span><span class="pkg-tag">product cinema</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── §04 — PUBLIC SHOWCASE ROUTES ───────────────────────── -->
+<section class="section" id="gallery">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-head-left">
+        <span class="eyebrow">04 — Public showcase</span>
+        <h2 class="h2">Tracked public experiences.<br /><em style="font-family:var(--serif);font-style:italic">Every status stays visible.</em></h2>
+        <p class="lede">The 4.0.0 inventory features 10 flagship interactive 3D showcases and playable games powered by custom Meshy 3D PBR assets alongside 13 retained public examples with explicit real-asset workflow or bounded-diagnostic labels. Duplicate, contract-only, fake editor-output, distorted game/racing, public HDR/WebGPU capability, and misleading primitive hosts are excluded. The four flagships, Aura Clash Arena, Blockfall Reactor, Bank Shot, Aurora Lander, Vault Breakers, Top Tennis 3D, and the selected comparison gallery are approved against their exact final review artifacts.</p>
+        <p class="lede">The same source-code workflow powers the starter apps, while retained engine evidence routes stay separately labeled and unpromoted.</p>
+      </div>
+      <div class="sec-head-right">
+        <span class="eyebrow-num">9 playable 3D games · 13 retained examples · audit green</span>
+        <a href="/apps/showcase-index/" class="mono" style="font-size:12px;color:var(--accent)">Open showcase index →</a>
+      </div>
+    </div>
+
+    <div class="gallery gallery--showcase">
+      <article class="tile t-showcase" data-link="/apps/showcase-product-configurator/" role="link" tabindex="0" aria-label="Open Product Configurator showcase">
+        <div class="showcase-preview">
+          <iframe class="tile-canvas" data-route="/apps/showcase-product-configurator/" data-poster-image="/previews/showcase/showcase-product-configurator.png" title="Product Configurator"></iframe>
+          <span class="showcase-open">Open live route ↗</span>
+        </div>
+        <div class="showcase-copy">
+          <div class="showcase-kicker"><span class="chip">4.0.0 approved</span><span class="chip">Product</span></div>
+          <h3>Product Configurator</h3>
+          <p>Typed headphones, material controls, current technical evidence, and independent visual approval.</p>
+        </div>
+      </article>
+      <article class="tile t-showcase" data-link="/apps/showcase-smart-city-control/" role="link" tabindex="0" aria-label="Open Smart City Control showcase">
+        <div class="showcase-preview">
+          <iframe class="tile-canvas" data-route="/apps/showcase-smart-city-control/" data-poster-image="/previews/showcase/showcase-smart-city-control-scene.png" title="Smart City Control"></iframe>
+          <span class="showcase-open">Open live route ↗</span>
+        </div>
+        <div class="showcase-copy">
+          <div class="showcase-kicker"><span class="chip">4.0.0 approved</span><span class="chip">Operations</span></div>
+          <h3>Smart City Control</h3>
+          <p>A bounded operations interface with a typed vehicle, current route evidence, and independent visual approval.</p>
+        </div>
+      </article>
+      <article class="tile t-showcase" data-link="/apps/showcase-cinematic-architecture/" role="link" tabindex="0" aria-label="Open Cinematic Architecture showcase">
+        <div class="showcase-preview">
+          <iframe class="tile-canvas" data-route="/apps/showcase-cinematic-architecture/" data-poster-image="/previews/showcase/showcase-cinematic-architecture.png" title="Cinematic Architecture"></iframe>
+          <span class="showcase-open">Open live route ↗</span>
+        </div>
+        <div class="showcase-copy">
+          <div class="showcase-kicker"><span class="chip">4.0.0 approved</span><span class="chip">Architecture</span></div>
+          <h3>Cinematic Architecture</h3>
+          <p>A typed city district with route evidence, cinematic framing, and independent visual approval.</p>
+        </div>
+      </article>
+      <article class="tile t-showcase" data-link="/apps/showcase-digital-twin-ops/" role="link" tabindex="0" aria-label="Open Digital Twin Operations showcase">
+        <div class="showcase-preview">
+          <iframe class="tile-canvas" data-route="/apps/showcase-digital-twin-ops/" data-poster-image="/previews/showcase/showcase-digital-twin-ops.png" title="Digital Twin Operations"></iframe>
+          <span class="showcase-open">Open live route ↗</span>
+        </div>
+        <div class="showcase-copy">
+          <div class="showcase-kicker"><span class="chip">4.0.0 approved</span><span class="chip">Industrial</span></div>
+          <h3>Digital Twin Operations</h3>
+          <p>A typed workcell and bounded operations dashboard with technical proof and independent visual approval.</p>
+        </div>
+      </article>
+      <article class="tile t-showcase" data-link="/showcase/aura-clash/playable/" role="link" tabindex="0" aria-label="Open Aura Clash Arena showcase">
+        <div class="showcase-preview">
+          <iframe class="tile-canvas" data-route="/showcase/aura-clash/playable/" data-poster-image="/previews/aura-clash-poster.png" title="Aura Clash Arena"></iframe>
+          <span class="showcase-open">Play live showcase ↗</span>
+        </div>
+        <div class="showcase-copy">
+          <div class="showcase-kicker"><span class="chip">4.0.0 approved</span><span class="chip">Fighting game</span></div>
+          <h3>Aura Clash Arena</h3>
+          <p>Two typed fighters, responsive browser combat, accessibility controls, deterministic replay, and approved gameplay evidence.</p>
+        </div>
+      </article>
+      <article class="tile t-showcase" data-link="/apps/showcase-turbo-ball/" role="link" tabindex="0" aria-label="Open Turbo Ball showcase">
+        <div class="showcase-preview">
+          <iframe class="tile-canvas" data-route="/apps/showcase-turbo-ball/" data-poster-image="/previews/showcase-index/turbo-ball.webp" title="Turbo Ball"></iframe>
+          <span class="showcase-open">Open live route ↗</span>
+        </div>
+        <div class="showcase-copy">
+          <div class="showcase-kicker"><span class="chip">4.0.0 approved</span><span class="chip">Car Soccer</span></div>
+          <h3>Turbo Ball</h3>
+          <p>2v2 Rocket League-style car soccer arena with 10 custom Meshy 3D assets, Ball-Cam/Car-Cam toggle, rocket boost, and power-hop strikes.</p>
+        </div>
+      </article>
+      <article class="tile t-showcase" data-link="/apps/showcase-kart-havoc/" role="link" tabindex="0" aria-label="Open Kart Havoc showcase">
+        <div class="showcase-preview">
+          <iframe class="tile-canvas" data-route="/apps/showcase-kart-havoc/" data-poster-image="/previews/showcase-index/kart-havoc.webp" title="Kart Havoc"></iframe>
+          <span class="showcase-open">Open live route ↗</span>
+        </div>
+        <div class="showcase-copy">
+          <div class="showcase-kicker"><span class="chip">4.0.0 approved</span><span class="chip">Kart Racing</span></div>
+          <h3>Kart Havoc</h3>
+          <p>Desert canyon Mario Kart-style item racing with 12 custom Meshy 3D assets, drift mini-turbo boost, homing canisters, and oil traps.</p>
+        </div>
+      </article>
+      <article class="tile t-showcase" data-link="/apps/showcase-bean-brawl-race/" role="link" tabindex="0" aria-label="Open Bean Brawl Race showcase">
+        <div class="showcase-preview">
+          <iframe class="tile-canvas" data-route="/apps/showcase-bean-brawl-race/" data-poster-image="/previews/showcase-index/bean-brawl-race.webp" title="Bean Brawl Race"></iframe>
+          <span class="showcase-open">Open live route ↗</span>
+        </div>
+        <div class="showcase-copy">
+          <div class="showcase-kicker"><span class="chip">4.0.0 approved</span><span class="chip">Obstacle Knockout</span></div>
+          <h3>Bean Brawl Race</h3>
+          <p>Fall Guys-style 3D obstacle course knockout race with 11 custom Meshy 3D assets, 4 rigged humanoid beans, spinning sweepers, and pendulums.</p>
+        </div>
+      </article>
+      <article class="tile t-showcase" data-link="/apps/showcase-top-tennis/" role="link" tabindex="0" aria-label="Open Top Tennis 3D showcase">
+        <div class="showcase-preview">
+          <iframe class="tile-canvas" data-route="/apps/showcase-top-tennis/" data-poster-image="/previews/showcase-index/top-tennis.webp" title="Top Tennis 3D"></iframe>
+          <span class="showcase-open">Open live route ↗</span>
+        </div>
+        <div class="showcase-copy">
+          <div class="showcase-kicker"><span class="chip">4.0.0 approved</span><span class="chip">3D Tennis</span></div>
+          <h3>Top Tennis 3D</h3>
+          <p>1:1 Aura3D port of TopTennisGame.com with 2-bone IK articulated athletes, 6 courts, Smash Lab, and 32-player World Tour.</p>
+        </div>
+      </article>
+      <article class="tile t-showcase" data-link="/apps/showcase-blockfall-reactor/" role="link" tabindex="0" aria-label="Open Blockfall Reactor showcase">
+        <div class="showcase-preview">
+          <iframe class="tile-canvas" data-route="/apps/showcase-blockfall-reactor/" data-poster-image="/previews/showcase/showcase-blockfall-reactor.png" title="Blockfall Reactor"></iframe>
+          <span class="showcase-open">Open live route ↗</span>
+        </div>
+        <div class="showcase-copy">
+          <div class="showcase-kicker"><span class="chip">4.0.0 approved</span><span class="chip">Arcade</span></div>
+          <h3>Blockfall Reactor</h3>
+          <p>A route-local 3D arcade loop with keyboard gameplay, scoring, line-clear, failure, reset, and approved visual evidence.</p>
+        </div>
+      </article>
+      <article class="tile t-showcase" data-link="/apps/showcase-bank-shot/" role="link" tabindex="0" aria-label="Open Bank Shot showcase">
+        <div class="showcase-preview">
+          <iframe class="tile-canvas" data-route="/apps/showcase-bank-shot/" data-poster-image="/previews/showcase-index/bank-shot.webp" title="Bank Shot"></iframe>
+          <span class="showcase-open">Open live route ↗</span>
+        </div>
+        <div class="showcase-copy">
+          <div class="showcase-kicker"><span class="chip">4.0.0 approved</span><span class="chip">Billiards</span></div>
+          <h3>Bank Shot</h3>
+          <p>Championship billiards lounge with Meshy Tiffany chandelier, leather club chairs, trophy cabinets, and english spin aim.</p>
+        </div>
+      </article>
+      <article class="tile t-showcase" data-link="/apps/showcase-aurora-lander/" role="link" tabindex="0" aria-label="Open Aurora Lander showcase">
+        <div class="showcase-preview">
+          <iframe class="tile-canvas" data-route="/apps/showcase-aurora-lander/" data-poster-image="/previews/showcase-index/aurora-lander.webp" title="Aurora Lander"></iframe>
+          <span class="showcase-open">Open live route ↗</span>
+        </div>
+        <div class="showcase-copy">
+          <div class="showcase-kicker"><span class="chip">4.0.0 approved</span><span class="chip">Lunar Lander</span></div>
+          <h3>Aurora Lander</h3>
+          <p>Precision lunar lander with Meshy lander craft, habitat domes, lunar rovers, thruster vectoring, and touchdown scoring.</p>
+        </div>
+      </article>
+      <article class="tile t-showcase" data-link="/apps/showcase-vault-breakers/" role="link" tabindex="0" aria-label="Open Vault Breakers showcase">
+        <div class="showcase-preview">
+          <iframe class="tile-canvas" data-route="/apps/showcase-vault-breakers/" data-poster-image="/previews/showcase-index/vault-breakers.webp" title="Vault Breakers"></iframe>
+          <span class="showcase-open">Open live route ↗</span>
+        </div>
+        <div class="showcase-copy">
+          <div class="showcase-kicker"><span class="chip">4.0.0 approved</span><span class="chip">Pinball</span></div>
+          <h3>Vault Breakers</h3>
+          <p>Cyber-vault pinball cabinet with Meshy pop bumpers, slingshot kickers, vault core target, and Rapier hinge flippers.</p>
+        </div>
+      </article>
+    </div>
+    <div class="example-mix">
+      <div class="example-column">
+        <div class="example-column-head">
+          <span class="eyebrow-num">Approved 4.0.0 showcases</span>
+          <h3>Automated evidence plus independent review.</h3>
+          <p>These routes passed their source, interaction, render, and deployment gates and were approved against the exact final artifacts.</p>
+        </div>
+        <div class="example-list">
+          <a class="example-card" href="/apps/showcase-product-configurator/">
+            <span>Product Configurator</span>
+            <small>typed headphones · material controls · 4.0.0 approved</small>
+          </a>
+          <a class="example-card" href="/apps/showcase-smart-city-control/">
+            <span>Smart City Control</span>
+            <small>typed vehicle · bounded operations UI · 4.0.0 approved</small>
+          </a>
+          <a class="example-card" href="/apps/showcase-cinematic-architecture/">
+            <span>Cinematic Architecture</span>
+            <small>typed city architecture · route evidence · 4.0.0 approved</small>
+          </a>
+          <a class="example-card" href="/apps/showcase-digital-twin-ops/">
+            <span>Digital Twin Operations</span>
+            <small>typed industrial workcell · bounded ops dashboard · 4.0.0 approved</small>
+          </a>
+          <a class="example-card" href="/showcase/aura-clash/playable/">
+            <span>Aura Clash Arena</span>
+            <small>typed fighters · browser combat loop · 4.0.0 approved</small>
+          </a>
+          <a class="example-card" href="/apps/showcase-turbo-ball/">
+            <span>Turbo Ball</span>
+            <small>2v2 car soccer · 10 Meshy assets · 4.0.0 approved</small>
+          </a>
+          <a class="example-card" href="/apps/showcase-kart-havoc/">
+            <span>Kart Havoc</span>
+            <small>desert item karting · 12 Meshy assets · 4.0.0 approved</small>
+          </a>
+          <a class="example-card" href="/apps/showcase-bean-brawl-race/">
+            <span>Bean Brawl Race</span>
+            <small>obstacle knockout · 4 rigged beans · 4.0.0 approved</small>
+          </a>
+          <a class="example-card" href="/apps/showcase-top-tennis/">
+            <span>Top Tennis 3D</span>
+            <small>6 stadiums · 2-bone IK athletes · 4.0.0 approved</small>
+          </a>
+          <a class="example-card" href="/apps/showcase-blockfall-reactor/">
+            <span>Blockfall Reactor</span>
+            <small>route-local arcade loop · typed cabinet · 4.0.0 approved</small>
+          </a>
+          <a class="example-card" href="/apps/showcase-bank-shot/">
+            <span>Bank Shot</span>
+            <small>championship billiards · english spin · 4.0.0 approved</small>
+          </a>
+          <a class="example-card" href="/apps/showcase-aurora-lander/">
+            <span>Aurora Lander</span>
+            <small>precision lunar lander · thruster vectoring · 4.0.0 approved</small>
+          </a>
+          <a class="example-card" href="/apps/showcase-vault-breakers/">
+            <span>Vault Breakers</span>
+            <small>cyber-vault pinball · Rapier flippers · 4.0.0 approved</small>
+          </a>
+        </div>
+      </div>
+
+      <div class="example-column generated">
+        <div class="example-column-head">
+          <span class="eyebrow-num">Labs diagnostics</span>
+          <h3>Useful evidence, not public examples.</h3>
+          <p>Diagnostics remain accessible for engineering review, but they are not counted as public release candidates and do not promote unsupported WebGPU, simulation, or game claims.</p>
+        </div>
+        <div class="example-list">
+          <a class="example-card" href="/apps/showcase-data-galaxy/">
+            <span>Data Galaxy</span>
+            <small>internal diagnostic · abstract data anchor · public release excluded</small>
+          </a>
+          <a class="example-card" href="/apps/showcase-webgpu-particle-lab/">
+            <span>Particle Lab</span>
+            <small>internal diagnostic · no native WebGPU claim · public release excluded</small>
+          </a>
+          <a class="example-card" href="/apps/loader-gltf-variants/">
+            <span>glTF Material Variants</span>
+            <small>WebGL2 evidence · KHR_materials_variants · scoped loader proof</small>
+          </a>
+          <a class="example-card" href="/apps/loader-obj/">
+            <span>OBJ Import</span>
+            <small>WebGL2 evidence · triangulation · normals · UV preservation</small>
+          </a>
+          <a class="example-card" href="/apps/texture-anisotropy/">
+            <span>Texture Anisotropy</span>
+            <small>WebGL2 evidence · sampler upload diagnostics</small>
+          </a>
+          <a class="example-card" href="/apps/postprocessing-depth-outline/">
+            <span>Depth + Outline</span>
+            <small>WebGL2 evidence · DOF · SSAO · outline chain</small>
+          </a>
+          <a class="example-card" href="/apps/controls-trackball/">
+            <span>Trackball Controls</span>
+            <small>WebGL2 evidence · rotate · pan · dolly · roll</small>
+          </a>
+          <a class="example-card" href="/apps/geometry-drawrange/">
+            <span>Geometry Draw Ranges</span>
+            <small>WebGL2 evidence · indexed and array draw ranges</small>
+          </a>
+          <a class="example-card" href="/apps/interactive-picking/">
+            <span>Interactive Picking</span>
+            <small>WebGL2 evidence · cubes · points · pointer rays</small>
+          </a>
+          <a class="example-card" href="/apps/camera-multiple-views/">
+            <span>Multiple Camera Views</span>
+            <small>WebGL2 evidence · shared geometry · three distinct views</small>
+          </a>
+          <a class="example-card" href="/apps/webxr-interactions/">
+            <span>Injected WebXR Interactions</span>
+            <small>input/session contract · explanatory 2D preview · no hardware claim</small>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── §05 — TEMPLATES / COMMANDS ──────────────────────────── -->
+<section class="section-tight" id="templates" data-search-index="install scaffold assets templates deployment examples llms agent docs">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-head-left">
+        <span class="eyebrow">05 — Start here</span>
+        <h2 class="h2">One command.<br /><em style="font-family:var(--serif);font-style:italic">A real app begins.</em></h2>
+        <p class="lede">Start with a template, add a real asset, and let the assistant shape the scene. The agent writes code. You bring the assets. Aura3D is not a hidden runtime generator; it keeps the browser 3D foundation visible so your team can focus on the moment users see.</p>
+      </div>
+      <div class="sec-head-right">
+        <a href="/llms.txt" class="mono" style="font-size:12px;color:var(--accent)">Open agent context →</a>
+        <a href="/docs/index.html" class="mono" style="font-size:12px;color:var(--accent)">Documentation →</a>
+      </div>
+    </div>
+
+    <div class="docs-search" data-docs-search>
+      <input class="docs-search-input" type="search" aria-label="Search Aura3D docs" data-docs-search-input />
+      <div class="docs-search-results" data-docs-search-results>
+        <a href="/docs/index.html" data-search-terms="install scaffold create-aura3d product-viewer">Install / scaffold</a>
+        <a href="/docs/assets.html" data-search-terms="asset add assets add typed assets glb">Asset add</a>
+        <a href="/docs/templates.html" data-search-terms="templates product-viewer cinematic-scene mini-game">Templates</a>
+        <a href="/docs/deployment.html" data-search-terms="deployment deploy check-deploy dist">Deployment</a>
+        <a href="/docs/deployment.html" data-search-terms="deployment static hosting assets deploy">Static hosting</a>
+        <a href="/docs/deployment.html" data-search-terms="troubleshooting errors blank canvas console failed assets">Troubleshooting</a>
+      </div>
+    </div>
+
+    <div class="pkg-grid">
+      <div class="pkg">
+        <div class="pkg-name">product-viewer</div>
+        <div class="pkg-desc">A starter for a user-provided GLB with camera, lighting, orbit controls, typed assets, and production build output.</div>
+        <div class="pkg-tags"><span class="pkg-tag">starter</span><span class="pkg-tag">template</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">cinematic-scene</div>
+        <div class="pkg-desc">A starter for camera motion, lights, bloom and fog atmosphere, and polished landing-page scenes.</div>
+        <div class="pkg-tags"><span class="pkg-tag">starter</span><span class="pkg-tag">template</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">mini-game</div>
+        <div class="pkg-desc">A starter for simple interaction, primitives, follow-camera behavior, scoring, controls, and deployable browser output.</div>
+        <div class="pkg-tags"><span class="pkg-tag">starter</span><span class="pkg-tag">template</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">agent setup</div>
+        <div class="pkg-desc">Give AI coding assistants the Aura3D API rules, asset workflow, and scene-kit patterns before they edit the app.</div>
+        <div class="pkg-tags"><span class="pkg-tag">Agent rules</span><span class="pkg-tag">rules</span></div>
+      </div>
+    </div>
+
+    <div class="diag" style="margin-top:18px">
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">copyable Aura3D commands</span>
+          <span class="pass">● supported path</span>
+        </div>
+        <div class="diag-body">
+          <button class="install-copy command-copy" data-copy="scaffold" data-copy-text="npx create-aura3d@4.0.1 my-scene --template product-viewer" type="button">Scaffold mini-game</button>
+          <button class="install-copy command-copy" data-copy="asset-add" data-copy-text="npx @aura3d/cli@4.0.1 assets add &lt;path-to-source-model&gt; --name robot" type="button">Add typed asset</button>
+          <button class="install-copy command-copy" data-copy="check-deploy" data-copy-text="npx @aura3d/cli@4.0.1 check-deploy --dist dist" type="button">Check deploy</button>
+          <button class="install-copy command-copy" data-copy="agent-init" data-copy-text="npx @aura3d/cli@4.0.1 init --agent all" type="button">Write agent setup</button>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">what Aura3D preserves</span>
+          <span class="pass">● clear model</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">AI assistant</span> <span class="v">your choice</span></div>
+          <div class="diag-row"><span class="k">asset ownership</span> <span class="v">user-owned</span></div>
+          <div class="diag-row"><span class="k">scene authoring</span> <span class="v">source code</span></div>
+          <div class="diag-row"><span class="k">runtime</span> <span class="v">browser-native</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── §06 — PACKAGES ──────────────────────────────────────── -->
+<section class="section" id="packages">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-head-left">
+        <span class="eyebrow">06 — Surface</span>
+        <h2 class="h2">A practical 3D SDK surface.<br /><em style="font-family:var(--serif);font-style:italic">Packaged for AI speed.</em></h2>
+        <p class="lede">Aura3D 4.0.1 consolidates materials, environments, effects, looks, game kits, physics, navigation, animation, audio, and scene kits into the single <code>@aura3d/engine@4.0.1</code> root entrypoint—backed by 24 active public packages on npm, with all <code>&lt; 4.0.0</code> versions and the 5 legacy compatibility packages deprecated in full.</p>
+      </div>
+      <div class="sec-head-right">
+          <span class="eyebrow-num">@aura3d/engine@4.0.1</span>
+        <span class="mute-2 mono" style="font-size:11px">24 packages at 4.0.0 · &lt; 4.0.0 deprecated on npm</span>
+      </div>
+    </div>
+
+    <div class="diag" style="margin-bottom:18px">
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">4.0.0 public release</span>
+          <span class="pass">● 24/24 published on npm</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">primary SDK</span> <span class="v ok">@aura3d/engine@4.0.1 + create-aura3d@4.0.1 + @aura3d/cli@4.0.1</span></div>
+          <div class="diag-row"><span class="k">effects &amp; looks</span> <span class="v ok">28+ effects.* post/atmosphere/particle builders + 8 looks.preset recipes</span></div>
+          <div class="diag-row"><span class="k">renderer proof</span> <span class="v ok">WebGPU compute + WebGL2 route evidence + bounded diagnostics</span></div>
+        </div>
+      </div>
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">4.0.0 consolidation &amp; deprecation</span>
+          <span class="pass">● single root entrypoint</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">consolidated into root</span> <span class="v ok">materials, environments, effects, looks, game, sceneKits, physics</span></div>
+          <div class="diag-row"><span class="k">deprecated on npm</span> <span class="v">all &lt; 4.0.0 versions + @aura3d/lean, three-compat, materials, environments, editor</span></div>
+          <div class="diag-row"><span class="k">three.js migration</span> <span class="v ok">aura3d migrate three (@aura3d/cli@4.0.1 codemod)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pkg-grid">
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">engine</span></div>
+        <div class="pkg-desc">Unified 4.0.0 SDK: createAuraApp, scene, model, material, lights, camera, environments, effects.*, looks.*, game.*, physics, navigation, animation, audio, sceneKits.</div>
+        <div class="pkg-tags"><span class="pkg-tag">primary SDK</span><span class="pkg-tag">4.0.0</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">cli</span></div>
+        <div class="pkg-desc">800,000+ asset search/resolve/add, import-meshy, assets validate &amp; typegen, migrate three codemod, check-deploy, and create-aura3d scaffolding.</div>
+        <div class="pkg-tags"><span class="pkg-tag">cli</span><span class="pkg-tag">create-aura3d</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">rendering</span></div>
+        <div class="pkg-desc">WebGL2 + WebGPU devices, forward pass, PBR, transmission, clearcoat, sheen, shadows, postprocess (bloom, SSAO, SSR, DoF, FXAA), ResidentGPUParticleRenderer.</div>
+        <div class="pkg-tags"><span class="pkg-tag">core</span><span class="pkg-tag">backends</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">scene</span></div>
+        <div class="pkg-desc">Scene graph hierarchy, transforms, cameras, lights, renderables, frustum culling, and deterministic serialization.</div>
+        <div class="pkg-tags"><span class="pkg-tag">core</span></div>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">assets</span></div>
+        <div class="pkg-desc">glTF / GLB, Draco, Meshopt, bounded KTX2 / Basis, RGBE HDR / PMREM IBL, and @aura3d/asset-index catalog resolution.</div>
+        <div class="pkg-tags"><span class="pkg-tag">gltf</span><span class="pkg-tag">pipeline</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">animation</span></div>
+        <div class="pkg-desc">Clips, tracks, mixers, layers, skinning, morphs, two-bone IK, root motion, retargeting worker, and motion-quality reports.</div>
+        <div class="pkg-tags"><span class="pkg-tag">rig</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">physics-rapier</span></div>
+        <div class="pkg-desc">Native Rapier WASM adapter + @aura3d/physics rigid bodies, colliders, raycasts, character controllers, vehicles, and scene sync.</div>
+        <div class="pkg-tags"><span class="pkg-tag">Rapier</span><span class="pkg-tag">single owner</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">navigation-recast</span></div>
+        <div class="pkg-desc">Native Recast / Detour WASM navmesh generation, pathfinding queries, and multi-agent local avoidance crowd simulation.</div>
+        <div class="pkg-tags"><span class="pkg-tag">Recast</span><span class="pkg-tag">navmesh</span></div>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">controls</span></div>
+        <div class="pkg-desc">Orbit, trackball, fly, first-person, drag, transform, map, pointer-lock, and camera framing helpers.</div>
+        <div class="pkg-tags"><span class="pkg-tag">camera</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">input</span></div>
+        <div class="pkg-desc">Keyboard, pointer, gamepad, gestures, virtual joystick, ray picking, WebXR sessions, and AR hit-test.</div>
+        <div class="pkg-tags"><span class="pkg-tag">xr</span><span class="pkg-tag">input</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">audio</span></div>
+        <div class="pkg-desc">Spatial WebAudio, mixer buses, procedural synth cues, scene bridge, adaptive stems, reverb, and filters.</div>
+        <div class="pkg-tags"><span class="pkg-tag">spatial</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">react</span></div>
+        <div class="pkg-desc">Declarative &lt;AuraCanvas&gt; React component wrapper and lifecycle bridge for @aura3d/engine@4.0.1 apps.</div>
+        <div class="pkg-tags"><span class="pkg-tag">react</span></div>
+      </div>
+
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">product-studio</span></div>
+        <div class="pkg-desc">Product-viewer studio layouts, material variants, exploded views, studio lighting rigs, and @aura3d/workflows helpers.</div>
+        <div class="pkg-tags"><span class="pkg-tag">viewer</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">math</span></div>
+        <div class="pkg-desc">Vectors, matrices, quaternions, rays, bounds, planes, frustums, and deterministic PRNG utilities.</div>
+        <div class="pkg-tags"><span class="pkg-tag">primitives</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">ecs</span></div>
+        <div class="pkg-desc">Entity / component / system, archetypes, queries, command buffer, scheduler, plus @aura3d/core &amp; @aura3d/scripting.</div>
+        <div class="pkg-tags"><span class="pkg-tag">runtime</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">@aura3d/<span class="sub">debug</span></div>
+        <div class="pkg-desc">Draw-call tracker, GPU profiler, render-state inspector, development overlays, plus @aura3d/editor-runtime &amp; @aura3d/apps.</div>
+        <div class="pkg-tags"><span class="pkg-tag">inspect</span></div>
+      </div>
+    </div>
+
+    <div style="margin-top:18px; display:flex; justify-content:space-between; align-items:center; font-size:13px;">
+      <span class="mono mute-2">All 24 active packages published at 4.0.0 on npm · Legacy pre-4.0 packages (@aura3d/lean, three-compat, materials, environments, editor) &amp; all &lt; 4.0.0 versions deprecated.</span>
+      <a href="/docs/api.html" class="mono" style="color:var(--accent)">Explore the 4.0.0 API →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── §07 — QUALITY CHECKS ───────────────────────────────── -->
+<section class="section" id="quality">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-head-left">
+        <span class="eyebrow">07 — Production polish</span>
+        <h2 class="h2">Make it beautiful.<br /><em style="font-family:var(--serif);font-style:italic">Then make it shippable.</em></h2>
+        <p class="lede">A 3D landing page has to feel effortless: fast first load, correct assets, clear controls, and no broken routes. Aura3D keeps those production details close to the code.</p>
+      </div>
+    </div>
+
+    <div class="diag">
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">verification workflow</span>
+          <span class="pass">● scoped path</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">API surface</span> <span class="v ok">typed imports</span></div>
+          <div class="diag-row"><span class="k">asset CLI</span> <span class="v ok">hash + manifest + refs</span></div>
+          <div class="diag-row"><span class="k">templates</span> <span class="v ok">build output</span></div>
+          <div class="diag-row"><span class="k">examples</span> <span class="v ok">live app routes</span></div>
+          <div class="diag-row"><span class="k">deployment</span> <span class="v ok">static asset check</span></div>
+          <div class="diag-row"><span class="k">site</span> <span class="v ok">production copy</span></div>
+
+          <div class="diag-bar">
+            <div class="diag-bar-row">
+              <span class="label">Scaffold</span>
+              <span class="track"><span class="fill" style="transform:scaleX(0.86)"></span></span>
+              <span class="val">templates</span>
+            </div>
+            <div class="diag-bar-row">
+              <span class="label">Assets</span>
+              <span class="track"><span class="fill" style="transform:scaleX(0.92)"></span></span>
+              <span class="val">typed refs</span>
+            </div>
+            <div class="diag-bar-row">
+              <span class="label">Deploy</span>
+              <span class="track"><span class="fill" style="transform:scaleX(0.78); background:var(--bg-3)"></span></span>
+              <span class="val">static check</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">browser support</span>
+          <span class="pass">● clear</span>
+        </div>
+<div class="json-viewer">{
+  <span class="k2">"positioning"</span>: <span class="s2">"AI-native browser 3D"</span>,
+  <span class="k2">"sceneKits"</span>: <span class="s2">"particles, physics, data, materials, games"</span>,
+  <span class="k2">"assets"</span>: <span class="s2">"typed GLB when supplied"</span>,
+  <span class="k2">"templates"</span>: [
+    <span class="s2">"mini-game"</span>,
+    <span class="s2">"product-viewer"</span>,
+    <span class="s2">"cinematic-scene"</span>,
+    <span class="s2">"mini-game"</span>
+  ],
+  <span class="k2">"commands"</span>: [
+    <span class="s2">"create-aura3d"</span>,
+    <span class="s2">"sceneKits.physicsPlayground"</span>,
+    <span class="s2">"assets add"</span>,
+    <span class="s2">"check-deploy"</span>,
+    <span class="s2">"init --agent all"</span>
+  ],
+  <span class="k2">"launch"</span>: <span class="s2">"examples, assets, build output"</span>
+}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── §08 — RUNTIME / DEPLOYMENT ──────────────────────────── -->
+<section class="section">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-head-left">
+        <span class="eyebrow">08 — Runtime</span>
+        <h2 class="h2">Built for <em style="font-family:var(--serif);font-style:italic">the browser.</em></h2>
+        <p class="lede">Aura3D starts with its browser runtime. Named lower-level examples can opt into WebGPU only when adapter, backend, dispatch/render, fallback, telemetry, and pixel evidence support the exact route.</p>
+      </div>
+    </div>
+
+    <div class="backends">
+      <div class="backend-card">
+        <span class="label">● Default browser path</span>
+        <h3>WebGL2</h3>
+        <p class="desc">The practical default for agent-written browser 3D: canvas setup, resize, render loop, camera, lights, interactions, and cleanup handled by the app API.</p>
+        <div class="stats">
+          <div class="stat"><div class="v"><b>route</b></div><div class="k">loads cleanly</div></div>
+          <div class="stat"><div class="v"><b>asset</b></div><div class="k">paths resolve</div></div>
+          <div class="stat"><div class="v"><b>diag</b></div><div class="k">clear errors</div></div>
+        </div>
+      </div>
+
+      <div class="backend-card" style="background:linear-gradient(180deg, rgba(74,222,157,0.04), var(--bg-1));">
+        <span class="label" style="color:var(--accent)">● Browser capability</span>
+        <h3>WebGPU</h3>
+        <p class="desc">WebGPU examples depend on browser and hardware support. The lower-level path carries a 96-joint skinning palette and has emulation/package proof; real-device WGSL execution and root-default WebGPU remain evidence-bound. Unsupported routes must report or use their documented fallback.</p>
+        <div class="stats">
+          <div class="stat"><div class="v"><b>opt-in</b></div><div class="k">backend</div></div>
+          <div class="stat"><div class="v"><b>96-joint</b></div><div class="k">bounded palette proof</div></div>
+          <div class="stat"><div class="v"><b>path</b></div><div class="k">documented</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── §09 — DEPLOYMENT ────────────────────────────────────── -->
+<section class="section" id="deployment">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-head-left">
+        <span class="eyebrow">09 — Deployment</span>
+        <h2 class="h2">Bring the model.<br /><em style="font-family:var(--serif);font-style:italic">Aura3D builds the stage.</em></h2>
+        <p class="lede">The CLI fingerprints the file, writes the manifest, and generates typed asset references. From there, the assistant can compose a polished product scene without brittle paths.</p>
+      </div>
+    </div>
+
+    <div class="migration">
+      <div class="migration-col">
+        <div class="label"><span class="ring"></span>Add a real asset</div>
+<pre class="code"><span class="c"># The file already exists on disk.</span>
+npx @aura3d/cli@4.0.1 assets add \
+  &lt;path-to-source-model&gt; \
+  --name robot \
+  --public-path /aura-assets/
+
+<span class="c"># Generated files:</span>
+./aura.assets.json
+./src/aura-assets.ts</pre>
+      </div>
+
+      <div class="migration-col aura">
+        <div class="label"><span class="ring"></span>Reference typed refs</div>
+<pre class="code"><span class="k">import</span> { assets } <span class="k">from</span> <span class="s">"./aura-assets"</span>;
+
+scene()
+  .add(model(assets.robot))
+  .add(lights.studio());
+
+<span class="c">// Stable path:</span> model(assets.robot)</pre>
+      </div>
+    </div>
+
+    <div class="deployment-steps">
+      <div style="border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--bg-1)">
+        <div class="mono mute-2" style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase">Step 1</div>
+        <div style="font-size:15px;margin-top:6px">Add asset</div>
+        <div class="mute" style="font-size:13px;margin-top:6px;line-height:1.5">Hash, copy, inspect, and type-generate.</div>
+      </div>
+      <div style="border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--bg-1)">
+        <div class="mono mute-2" style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase">Step 2</div>
+        <div style="font-size:15px;margin-top:6px">Build app</div>
+        <div class="mute" style="font-size:13px;margin-top:6px;line-height:1.5">Agent writes code against real refs.</div>
+      </div>
+      <div style="border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--bg-1)">
+        <div class="mono mute-2" style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase">Step 3</div>
+        <div style="font-size:15px;margin-top:6px">Verify route</div>
+        <div class="mute" style="font-size:13px;margin-top:6px;line-height:1.5">Open the exact page users will visit.</div>
+      </div>
+      <div style="border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--bg-1)">
+        <div class="mono mute-2" style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase">Step 4</div>
+        <div style="font-size:15px;margin-top:6px">Check deploy</div>
+        <div class="mute" style="font-size:13px;margin-top:6px;line-height:1.5">Confirm assets ship with the static site.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CTA ──────────────────────────────────────────────────── -->
+<section class="cta">
+  <div class="cta-bg"></div>
+  <div class="wrap cta-inner">
+    <span class="eyebrow">Ready when you are</span>
+    <h2>Give your product<br />a 3D interface.</h2>
+    <p class="lede" style="text-align:center">Describe the scene. Generate primitives, particles, physics, data, controls, and product viewers. Bring real GLB assets when you have them. Aura3D turns browser 3D into a product surface your team can design, edit, verify, and ship when the gates pass.</p>
+    <div class="hero-cta" style="justify-content:center;margin:0">
+      <a class="btn btn-primary" href="/docs/agent-quickstart.html">Start building <span class="arr"></span></a>
+      <a class="btn btn-ghost" href="/docs/templates.html">Template docs</a>
+      <a class="btn btn-ghost" href="#gallery">Open live examples</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ───────────────────────────────────────────────── -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a href="#" class="brand">
+          <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,0.12)" />
+            <ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" stroke-width="1" opacity="0.6" transform="rotate(-22 12 12)" />
+            <circle cx="12" cy="12" r="1.6" fill="#4ade9d" />
+          </svg>
+          <span>Aura3D</span>
+        </a>
+        <p class="foot-blurb">Aura3D is the AI-native TypeScript 3D SDK for the web: prompt workflows, scene kits, primitives, typed GLB/glTF assets, Vite templates, diagnostics, and static deployment checks.</p>
+      </div>
+      <div class="foot-col">
+        <h3>Library</h3>
+        <a href="#workflows">Agent API</a>
+        <a href="#prompts">AI prompts</a>
+        <a href="#packages">Packages</a>
+        <a href="/docs/api.html">API reference</a>
+              </div>
+      <div class="foot-col">
+        <h3>Build</h3>
+        <a href="/docs/agent-quickstart.html">Getting started</a>
+        <a href="/showcase/aura-clash/">Aura&nbsp;Clash</a>
+        <a href="#templates">Templates</a>
+        <a href="#deployment">Deployment</a>
+        <a href="#gallery">Examples</a>
+      </div>
+      <div class="foot-col">
+        <h3>Quality</h3>
+        <a href="#quality">Release workflow</a>
+        <a href="/docs/deployment.html">Deployment checks</a>
+        <a href="/docs/assets.html">Asset workflow</a>
+        <a href="/docs/api.html">API overview</a>
+        <a href="/docs/evidence.html">Evidence</a>
+        <a href="/docs/claims.html">Claims & limits</a>
+        <a href="https://github.com/auraoneai/aura3d/blob/main/docs/project/superiority-evidence-workflow.md" target="_blank" rel="noopener">Comparison method</a>
+      </div>
+      <div class="foot-col">
+        <h3>Project</h3>
+        <a href="/llms.txt">llms.txt</a>
+        <a href="/docs/agent-rules.html">Agent setup</a>
+        <a href="/docs/claude.html">Claude guide</a>
+        <a href="/docs/cursor.html">Cursor guide</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Aura3D · @aura3d/engine v4.0.1 · MIT licensed</span>
+      <span>Prompt-to-3D · typed assets · production browser scenes</span>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="/marketing/src/main.ts"></script>
+</body>
 </html>

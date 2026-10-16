@@ -67,7 +67,7 @@ export interface WowStudioLightingConfig {
 export const DEFAULT_WOW_POST_PROCESS: Required<WowPostProcessConfig> = {
   tonemapping: { enabled: true, mode: "aces", exposure: 1.15 },
   bloom: { enabled: true, intensity: 0.22, threshold: 0.8, radius: 3 },
-  ssao: { enabled: true, radius: 0.45, intensity: 0.35, bias: 0.025 },
+  ssao: { enabled: true, radius: 2, intensity: 0.32, bias: 0.025 },
   fxaa: { enabled: true, edgeThreshold: 0.08, subpixelBlend: 0.5 },
   vignette: { enabled: true, intensity: 0.22 }
 };
@@ -184,7 +184,7 @@ export function resolveWowPostProcessOptions(
     ssao: ssao.enabled
       ? {
           enabled: true,
-          radius: ssao.radius,
+          radius: Math.max(1, Math.min(8, Math.round(ssao.radius < 1 ? ssao.radius * 8 : ssao.radius))),
           intensity: ssao.intensity,
           bias: ssao.bias ?? 0.025
         }

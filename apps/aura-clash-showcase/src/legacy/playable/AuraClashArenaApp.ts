@@ -1935,7 +1935,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       lastManualInputFrame = frame;
       roundOverIdleSeconds = 0;
     }
-    const playerAutopilotActive = liveBoutMode && frame - lastManualInputFrame > 75;
+    const playerAutopilotActive = false;
 
     let skipGameplayThisFrame = false;
     if (!paused && roundOver) {
@@ -1968,18 +1968,14 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         playerState.recovery = 0;
         playerState.moveCooldown = 0;
         playerState.knockdownTimer = 0;
-        rivalState.invulnerableTimer = 0;
-        rivalState.guard = false;
         if (specialPressed) {
           playerState.meter = Math.max(playerState.meter, SPECIAL_METER_COST);
           playerState.specialCooldown = 0;
         }
-        if (Math.abs(rivalState.x - playerState.x) > 1.02) {
-          const mid = clamp((playerState.x + rivalState.x) * 0.5, -1.2, 1.2);
-          playerState.x = mid - 0.5;
-          rivalState.x = mid + 0.5;
-          playerState.facing = 1;
-          rivalState.facing = -1;
+        const gapToRival = rivalState.x - playerState.x;
+        if (Math.abs(gapToRival) > 0.95 && Math.abs(gapToRival) < 2.2) {
+          playerState.x = clamp(playerState.x + Math.sign(gapToRival) * 0.28, stage.minX, stage.maxX);
+          playerState.facing = gapToRival >= 0 ? 1 : -1;
         }
       }
       const jumpAccepted = jumpPressed && playerState.grounded;

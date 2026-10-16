@@ -6,6 +6,7 @@ import {
   createDigitalTwinKit,
   distributeInRegion,
   effects,
+  environments,
   focusCameraIntent,
   focusSemanticRegion,
   game,
@@ -392,19 +393,25 @@ app.onFrame(({ dt }) => {
 function buildOpsScene() {
   return scene()
     .background("#071923")
+    .add(environments.studio({
+      name: "workcell industrial HDR IBL",
+      intensity: 1.08,
+      color: "#e6f7f5"
+    }))
     .addMany(createWorkcellPresentation())
-    .add(lights.ambient({ name: "workcell ambient fill", intensity: 0.58, color: "#d7f5f2" }))
-    .add(lights.directional({ name: "factory key light", position: [2.2, 3.8, 2.9], intensity: 1.72, color: "#fff2d6" }))
-    .add(lights.directional({ name: "factory cool rim", position: [-2.5, 2.5, -2.4], intensity: 0.86, color: "#78cbe3" }))
-    .add(lights.point({ name: "orangeIndustrialRobot key rim kicker", position: [-1.36, 1.76, 1.14], intensity: 0.94, color: "#ff9e5e" }))
-    .add(lights.point({ name: "workcell cyan practical", position: [-0.82, 1.24, 0.62], intensity: 1.18, color: "#54e7dc" }))
-    .add(lights.point({ name: "workcell warm inspection light", position: [0.76, 1.08, -0.28], intensity: 1.12, color: "#f3ad59" }))
-    .add(effects.ambientOcclusion({ name: "workcell contact occlusion", intensity: 0.56, radius: 0.82, falloff: 1.8, multiBounce: true }))
-    .add(effects.contactShadows({ length: 0.22, thickness: 0.045, steps: 12, intensity: 0.82, lights: "sun" }))
-    .add(effects.bloom({ name: "workcell status glow", intensity: 0.22, threshold: 0.76, radius: 0.26 }))
-    .add(effects.vignette({ name: "workcell inspection vignette", intensity: 0.2, smoothness: 0.68, roundness: 0.85, color: "#030b11" }))
-    .add(effects.colorGrade({ name: "workcell telemetry grade", contrast: 1.06, saturation: 1.05 }))
-    .add(effects.fog({ name: "bounded ops depth haze", density: 0.0021, color: "#0a1a23", intensity: 0.06 }))
+    .add(lights.ambient({ name: "workcell ambient fill", intensity: 0.64, color: "#d7f5f2" }))
+    .add(lights.hemisphere({ name: "workcell bay sky-floor fill", skyColor: "#e4fbf9", groundColor: "#142e38", intensity: 0.48 }))
+    .add(lights.directional({ name: "factory key light", position: [2.2, 3.8, 2.9], intensity: 1.98, color: "#fff2d6", shadow: true }))
+    .add(lights.directional({ name: "factory cool rim", position: [-2.5, 2.5, -2.4], intensity: 1.12, color: "#78cbe3" }))
+    .add(lights.point({ name: "orangeIndustrialRobot key rim kicker", position: [-1.36, 1.76, 1.14], intensity: 1.24, color: "#ff9e5e" }))
+    .add(lights.point({ name: "workcell cyan practical", position: [-0.82, 1.24, 0.62], intensity: 1.42, color: "#54e7dc" }))
+    .add(lights.point({ name: "workcell warm inspection light", position: [0.76, 1.08, -0.28], intensity: 1.32, color: "#f3ad59" }))
+    .add(effects.ambientOcclusion({ name: "workcell contact occlusion", intensity: 0.58, radius: 0.82, falloff: 1.8, multiBounce: true }))
+    .add(effects.contactShadows({ length: 0.22, thickness: 0.045, steps: 12, intensity: 0.84, lights: "sun" }))
+    .add(effects.bloom({ name: "workcell status glow", intensity: 0.28, threshold: 0.72, radius: 0.3 }))
+    .add(effects.vignette({ name: "workcell inspection vignette", intensity: 0.18, smoothness: 0.7, roundness: 0.85, color: "#030b11" }))
+    .add(effects.colorGrade({ name: "workcell telemetry grade", contrast: 1.08, saturation: 1.08 }))
+    .add(effects.fog({ name: "bounded ops depth haze", density: 0.0019, color: "#0a1a23", intensity: 0.05 }))
     .add(interactions.orbit())
     .camera(camera.perspective({ position: [...cameraPose.position], target: [...cameraPose.target], fov: cameraPose.fov }));
 }
@@ -419,10 +426,10 @@ function createWorkcellPresentation(): AuraNodeInput[] {
   const scannerAnchor = resolveSemanticRegion(bounds, { id: "scanner", u: 0.78, v: 0.62, w: 0.6 });
 
   const nodes: AuraNodeInput[] = [
-    primitives.plane({ name: "quiet ops floor", material: material.reflectiveFloor({ color: "#0a1b24", roughness: 0.38, metallic: 0.28 }) })
+    primitives.plane({ name: "quiet ops floor", material: material.reflectiveFloor({ color: "#0c202a", roughness: 0.32, metallic: 0.34 }) })
       .position(bounds.center[0], bounds.floorY - 0.082, bounds.center[2])
       .scale([...floorScale]),
-    primitives.box({ name: "single workcell presentation plinth", material: material.pbr({ color: "#233e47", roughness: 0.56, metallic: 0.2, emissive: "#07151b", emissiveIntensity: 0.16 }) })
+    primitives.box({ name: "single workcell presentation plinth", material: material.pbr({ color: "#284650", roughness: 0.48, metallic: 0.28, emissive: "#091c24", emissiveIntensity: 0.22 }) })
       .position(bounds.center[0], bounds.floorY - 0.04, bounds.center[2])
       .scale([bounds.size[0] * 1.14, 0.035, bounds.size[2] * 1.2]),
     ...createOperationsBay(bounds),
@@ -443,18 +450,18 @@ function createWorkcellPresentation(): AuraNodeInput[] {
     ...isolationIndicatorNodes(),
     ...alarmIndicatorNodes(),
     ...zoneWorldLabels(),
-    primitives.box({ name: "raised packaging conveyor deck", material: material.pbr({ color: "#24383b", roughness: 0.52, metallic: 0.48 }) })
+    primitives.box({ name: "raised packaging conveyor deck", material: material.pbr({ color: "#294044", roughness: 0.46, metallic: 0.54 }) })
       .position(belt.center[0], belt.center[1], belt.center[2])
       .scale([belt.size[0], deckHeight, belt.size[2]]),
-    primitives.box({ name: "short conveyor motion marker", material: material.neon({ color: "#7ee8c4", emissive: "#7ee8c4", emissiveIntensity: 0.64, opacity: 0.62 }) })
+    primitives.box({ name: "short conveyor motion marker", material: material.neon({ color: "#7ee8c4", emissive: "#7ee8c4", emissiveIntensity: 0.84, opacity: 0.72 }) })
       .position(belt.min[0], workpieceY - deckHeight * 0.35, belt.center[2])
       .scale([belt.size[0] * 0.2, deckHeight * 0.16, belt.size[2] * 0.62])
       .runtime(game.runtimeNode("ops-conveyor-motion", { tags: ["conveyor", "runtime", "motion-proof"] })),
-    primitives.box({ name: "optical scanner sweep", material: material.neon({ color: "#b8f7d9", emissive: "#b8f7d9", emissiveIntensity: 0.68, opacity: 0.54 }) })
+    primitives.box({ name: "optical scanner sweep", material: material.neon({ color: "#b8f7d9", emissive: "#b8f7d9", emissiveIntensity: 0.88, opacity: 0.64 }) })
       .position(...scannerAnchor.center)
       .scale([bounds.size[0] * 0.1, 0.01, bounds.size[2] * 0.026])
       .runtime(game.runtimeNode("ops-sensor-sweep", { tags: ["scanner", "runtime", "motion-proof"] })),
-    primitives.sphere({ name: "incident alarm beacon", material: material.neon({ color: "#f2715c", emissive: "#f2715c", emissiveIntensity: 1.1 }) })
+    primitives.sphere({ name: "incident alarm beacon", material: material.neon({ color: "#f2715c", emissive: "#f2715c", emissiveIntensity: 1.35 }) })
       .position(...alarmAnchor.position)
       .scale(Math.max(...bounds.size) * 0.036)
       .runtime(game.runtimeNode("ops-alarm-beacon", { tags: ["alarm", "runtime"] }))
@@ -485,33 +492,33 @@ function createOperationsBay(bounds: ReturnType<typeof workcellBounds>): AuraNod
   const { belt, deckHeight, surfaceY } = conveyorDimensions();
   const wallMaterial = material.pbr({
     name: "operations bay graphite wall",
-    color: "#102b35",
-    roughness: 0.62,
-    metallic: 0.24,
-    emissive: "#06141b",
-    emissiveIntensity: 0.18
+    color: "#143440",
+    roughness: 0.56,
+    metallic: 0.28,
+    emissive: "#081a22",
+    emissiveIntensity: 0.22
   });
   const railMaterial = material.metal({
     name: "operations bay structural rail",
-    color: "#4b7982",
-    roughness: 0.3,
-    metallic: 0.82,
-    emissive: "#123a43",
-    emissiveIntensity: 0.28
+    color: "#568892",
+    roughness: 0.26,
+    metallic: 0.85,
+    emissive: "#15444e",
+    emissiveIntensity: 0.32
   });
   const cyanMaterial = material.emissive({
     name: "operations bay cyan status rail",
     color: "#5ee7df",
     emissive: "#36d8dc",
-    emissiveIntensity: 1.05,
-    opacity: 0.88
+    emissiveIntensity: 1.25,
+    opacity: 0.92
   });
   const amberMaterial = material.emissive({
     name: "operations bay amber status rail",
     color: "#f6bd68",
     emissive: "#ec8f38",
-    emissiveIntensity: 0.9,
-    opacity: 0.88
+    emissiveIntensity: 1.12,
+    opacity: 0.92
   });
   const floorLineMaterial = material.pbr({
     name: "operations bay floor inlay",

@@ -74,7 +74,18 @@ export function createProductionPrimitiveResources(node: AuraPrimitiveNode, qr?:
 }
 
 export function selectProductionPrimitiveResource(entry: ProductionRuntimePrimitiveEntry, node: AuraPrimitiveNode, cameraPosition: AuraVec3, lodBias = 1): ProductionRuntimePrimitiveResource {
-  if (!node.lod?.levels.length) return entry.resources[0]!;
+  if (!node.lod?.levels.length) {
+    const resource = entry.resources[0]!;
+    if (node.material && node.material !== resource.materialSpec) {
+      const mutableResource = resource as {
+        materialSpec?: AuraPrimitiveNode["material"];
+        material: ProductionRuntimePrimitiveResource["material"];
+      };
+      mutableResource.materialSpec = node.material;
+      mutableResource.material = createProductionPrimitiveMaterial(node);
+    }
+    return resource;
+  }
   const position = node.position ?? [0, 0, 0];
   const distance = Math.hypot(cameraPosition[0] - position[0], cameraPosition[1] - position[1], cameraPosition[2] - position[2]);
   const selection = selectAuraRootLodLevel(distance * lodBias, node.lod.levels, entry.currentLodIndex, node.lod.hysteresis ?? 0);
@@ -120,6 +131,7 @@ export function resolveProductionPrimitiveRuntimeState(
   const runtimeId = entry.node.runtime?.id;
   if (!runtimeId) return { node: entry.node, visible: true };
   const runtimeSnapshot = runtimeNodes?.get(runtimeId)?.snapshot() as (ReturnType<NonNullable<ReturnType<AuraRuntimeNodeRegistry["get"]>>["snapshot"]> & {
+    readonly material?: AuraPrimitiveNode["material"];
     readonly instances?: AuraPrimitiveNode["instances"];
     readonly instanceColors?: AuraPrimitiveNode["instanceColors"];
   }) | undefined;
@@ -130,6 +142,7 @@ export function resolveProductionPrimitiveRuntimeState(
       position: runtimeSnapshot.position,
       rotation: runtimeSnapshot.rotation,
       scale: runtimeSnapshot.scale,
+      material: runtimeSnapshot.material ?? entry.node.material,
       animation: runtimeSnapshot.animation ?? entry.node.animation,
       ...(runtimeSnapshot.instances ? { instances: runtimeSnapshot.instances } : {}),
       ...(runtimeSnapshot.instanceColors ? { instanceColors: runtimeSnapshot.instanceColors } : {})
