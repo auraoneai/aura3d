@@ -269,7 +269,65 @@ declare global {
 const MAX_DPR = 2;
 const MAX_RENDER_EDGE = 3200;
 
+function ensureCompactWowHudStyles(): void {
+  if (typeof document === "undefined" || document.getElementById("a3d-wow-compact-hud")) return;
+  const style = document.createElement("style");
+  style.id = "a3d-wow-compact-hud";
+  style.textContent = `
+    #app {
+      top: 16px !important;
+      left: 16px !important;
+      width: min(280px, calc(100vw - 32px)) !important;
+      max-width: 280px !important;
+    }
+    .hud {
+      max-width: 280px !important;
+      padding: 13px 14px !important;
+      background: rgba(8, 13, 23, 0.78) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+      border-color: rgba(164, 214, 255, 0.2) !important;
+    }
+    .hud h1 {
+      margin: 8px 0 4px !important;
+      font-size: clamp(16px, 1.5vw, 19px) !important;
+      line-height: 1.15 !important;
+    }
+    .hud p {
+      font-size: 11.5px !important;
+      line-height: 1.35 !important;
+    }
+    .hud .actions {
+      margin-top: 8px !important;
+      gap: 6px !important;
+    }
+    .hud button {
+      min-height: 28px !important;
+      padding: 0 9px !important;
+      font-size: 11px !important;
+    }
+    .hud dl {
+      margin-top: 9px !important;
+      gap: 5px !important;
+    }
+    .hud dl div {
+      padding: 6px 8px !important;
+    }
+    .hud dt {
+      font-size: 9.5px !important;
+    }
+    .hud dd {
+      margin-top: 2px !important;
+      font-size: 11.5px !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+ensureCompactWowHudStyles();
+
 export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promise<void> {
+  ensureCompactWowHudStyles();
   const root = document.getElementById("app");
   const canvas = document.getElementById("viewport");
   if (!(root instanceof HTMLElement) || !(canvas instanceof HTMLCanvasElement)) {
@@ -277,9 +335,16 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
   }
   const chromeHidden = applyRouteChromeMode();
 
+  let rotateActive = config.animateCamera ?? true;
+  let dragging = false;
+  let lastPointerX = 0;
+  let lastPointerY = 0;
+  let orbitYawOffset = 0;
+  let orbitPitchOffset = 0;
+
   let size = syncCanvasSize(canvas);
   let runtime = createRuntime(config, "loading", size, performance.now(), 0, 0);
-  if (!chromeHidden) publish(root, runtime, true);
+  if (!chromeHidden) publish(root, runtime, true, rotateActive);
   drawFallbackFrame(canvas, config.clearColor ?? [0.86, 0.86, 0.84, 1]);
 
   const started = performance.now();
@@ -288,13 +353,53 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
   let pipeline: Pipeline | undefined;
   let mixer: Mixer | undefined;
   let frameCount = 0;
-  let fps = 0;
+  let fps = 60;
   let fpsFrames = 0;
   let fpsFrom = performance.now();
+  let lastFrameAt = started;
   let lastUi = 0;
   let diagnosticsPublished = false;
   let staticRenderItems: readonly RenderItem[] | undefined;
   const timings: Record<string, number> = {};
+
+  root.addEventListener("click", (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-action]");
+    if (!button) return;
+    if (button.dataset.action === "rotate") {
+      rotateActive = !rotateActive;
+      publish(root, runtime, true, rotateActive);
+    } else if (button.dataset.action === "reset") {
+      rotateActive = true;
+      orbitYawOffset = 0;
+      orbitPitchOffset = 0;
+      publish(root, runtime, true, rotateActive);
+    }
+  });
+
+  canvas.addEventListener("pointerdown", (event) => {
+    dragging = true;
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+    canvas.setPointerCapture(event.pointerId);
+  });
+  canvas.addEventListener("pointermove", (event) => {
+    if (!dragging) return;
+    const dx = event.clientX - lastPointerX;
+    const dy = event.clientY - lastPointerY;
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+    orbitYawOffset -= dx * 0.0065;
+    orbitPitchOffset = Math.max(-0.55, Math.min(0.45, orbitPitchOffset - dy * 0.0045));
+  });
+  const endDrag = (event: PointerEvent): void => {
+    if (!dragging) return;
+    dragging = false;
+    if (canvas.hasPointerCapture(event.pointerId)) {
+      canvas.releasePointerCapture(event.pointerId);
+    }
+  };
+  canvas.addEventListener("pointerup", endDrag);
+  canvas.addEventListener("pointercancel", endDrag);
 
   try {
     let phaseStarted = performance.now();
@@ -342,7 +447,7 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
     if (clip) {
       mixer.playExclusive(clip.name, { weight: 1, timeScale: 1, loopMode: "repeat" });
     }
-    canvas.classList.toggle("cinematic-drift", Boolean(!clip && config.animateCamera));
+    canvas.classList.toggle("cinematic-drift", Boolean(!clip && rotateActive));
     timings.mixerMs = Math.round(performance.now() - phaseStarted);
 
     const resizeObserver = new ResizeObserver(() => {
@@ -351,22 +456,33 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
     });
     resizeObserver.observe(canvas);
 
+    lastFrameAt = performance.now();
+    fpsFrom = lastFrameAt;
+
     const render = (now: number): void => {
       try {
+        const dt = Math.min(0.05, Math.max(0.001, (now - lastFrameAt) / 1000));
+        lastFrameAt = now;
         const seconds = (now - started) / 1000;
         if (clip && mixer) {
           mixer.seek(clip.name, clip.duration > 0 ? seconds % clip.duration : 0);
           mixer.resume(clip.name);
           mixer.update(0);
         }
+        if (rotateActive && !dragging) {
+          orbitYawOffset += dt * (clip ? 0.14 : 0.18);
+        }
         const bounds: CameraFrameBounds = pipeline!.resources.bounds;
-        const shouldAnimateCamera = Boolean(clip || config.animateCamera);
-        const orbitYaw = (config.frame?.yawRadians ?? -0.62) + (shouldAnimateCamera
-          ? Math.sin(seconds * (config.cameraOrbit?.speed ?? (clip ? 0.11 : 0.32))) * (config.cameraOrbit?.yawAmplitudeRadians ?? (clip ? 0.08 : 0.2))
-          : 0);
+        const baseYaw = config.frame?.yawRadians ?? -0.62;
+        const basePitch = config.frame?.pitchRadians ?? -0.16;
+        const gentleBob = rotateActive
+          ? Math.sin(seconds * (config.cameraOrbit?.speed ?? (clip ? 0.22 : 0.35))) * 0.025
+          : 0;
+        const orbitYaw = baseYaw + orbitYawOffset;
+        const orbitPitch = Math.max(-1.1, Math.min(0.85, basePitch + orbitPitchOffset + gentleBob));
         const frame = computePerspectiveCameraFrame(bounds, size, {
           yawRadians: orbitYaw,
-          pitchRadians: config.frame?.pitchRadians ?? -0.16,
+          pitchRadians: orbitPitch,
           paddingRatio: config.frame?.paddingRatio ?? 0.08,
           fovYRadians: config.frame?.fovYRadians ?? 0.58,
           nearPadding: 0.08,
@@ -403,15 +519,18 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
         }
         frameCount += 1;
         fpsFrames += 1;
-        if (now - fpsFrom >= 500) {
-          fps = fpsFrames * 1000 / (now - fpsFrom);
+        const elapsedFpsWindow = now - fpsFrom;
+        if (elapsedFpsWindow >= 400) {
+          fps = (fpsFrames * 1000) / elapsedFpsWindow;
           fpsFrames = 0;
           fpsFrom = now;
+        } else if (frameCount <= 30 && dt > 0) {
+          fps = Math.min(60, 1 / dt);
         }
         runtime = createRuntime(config, frameCount === 1 ? "ready" : "running", size, started, frameCount, fps, {
           pipeline,
           drawCalls: diagnostics.drawCalls,
-          clipName: clip?.name ?? (config.animateCamera ? "cinematic camera orbit" : "static scene"),
+          clipName: clip?.name ?? (rotateActive ? "cinematic camera orbit" : "interactive orbit"),
           timings
         });
         window.__a3dWowGltfRuntime = runtime;
@@ -422,28 +541,24 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
           timings.diagnosticsMs = Math.round(performance.now() - diagnosticsStarted);
           diagnosticsPublished = true;
         }
-        if (!chromeHidden && (frameCount === 1 || now - lastUi > 250)) {
-          publish(root, runtime, frameCount === 1);
+        if (!chromeHidden && (frameCount <= 3 || now - lastUi > 180)) {
+          publish(root, runtime, frameCount === 1, rotateActive);
           lastUi = now;
         }
-        if (clip) {
-          requestAnimationFrame(render);
-        } else if (config.animateCamera) {
-          window.setTimeout(() => requestAnimationFrame(render), 1000 / (config.cameraOrbit?.targetFps ?? 18));
-        }
+        requestAnimationFrame(render);
       } catch (error) {
-	        runtime = createRuntime(config, "error", size, started, frameCount, fps, {
-	          pipeline,
-	          error: formatError(error),
-	          timings
-	        });
-        if (!chromeHidden) publish(root, runtime, true);
+        runtime = createRuntime(config, "error", size, started, frameCount, fps, {
+          pipeline,
+          error: formatError(error),
+          timings
+        });
+        if (!chromeHidden) publish(root, runtime, true, rotateActive);
       }
     };
     requestAnimationFrame(render);
   } catch (error) {
     runtime = createRuntime(config, "error", size, started, frameCount, fps, { pipeline, error: formatError(error), timings });
-    if (!chromeHidden) publish(root, runtime, true);
+    if (!chromeHidden) publish(root, runtime, true, rotateActive);
   }
 }
 
@@ -583,14 +698,17 @@ function createRuntime(
   };
 }
 
-function publish(root: HTMLElement, runtime: Runtime, force: boolean): void {
-  if (!force && runtime.frames > 1) return;
+function publish(root: HTMLElement, runtime: Runtime, _force: boolean, rotateActive = true): void {
   root.innerHTML = `
     <section class="hud ${runtime.status === "error" ? "is-error" : ""}">
       <span class="state ${runtime.status === "error" ? "is-error" : ""}">${escapeHtml(runtime.status)}</span>
       <h1>${escapeHtml(runtime.title)}</h1>
       <p>${escapeHtml(runtime.asset)}</p>
       <p class="credit">${escapeHtml(runtime.attribution)}</p>
+      <div class="actions">
+        <button class="${rotateActive ? "is-active" : ""}" data-action="rotate" type="button">Rotate</button>
+        <button data-action="reset" type="button">Reset</button>
+      </div>
       <dl>
         <div><dt>Frames</dt><dd>${runtime.frames}</dd></div>
         <div><dt>FPS</dt><dd>${runtime.fps.toFixed(1)}</dd></div>

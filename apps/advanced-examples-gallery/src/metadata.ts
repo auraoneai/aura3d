@@ -332,5 +332,5 @@ export const DEMOS: readonly DemoDefinition[] = [
 ];
 
 export function getDemo(id: string | null | undefined): DemoDefinition {
-  return DEMOS.find((demo) => demo.id === id) ?? DEMOS[0]!;
+  return DEMOS.find((demo) => demo.id === id) ?? DEMOS.find((demo) => demo.id === "product-configurator") ?? DEMOS[0]!;
 }

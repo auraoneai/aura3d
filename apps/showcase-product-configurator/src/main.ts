@@ -43,6 +43,7 @@ interface ConfiguratorState {
 declare global {
   interface Window {
     __AURA3D_SHOWCASE_PRODUCT_CONFIGURATOR__?: ConfiguratorEvidence;
+    __AURA3D_PRODUCT_CONFIGURATOR__?: ConfiguratorEvidence;
   }
 }
 
@@ -115,16 +116,26 @@ interface ConfiguratorEvidence {
 const productAsset = assets.showcaseHeadphones;
 const embeddedChromeMode = new URLSearchParams(window.location.search).get("chrome");
 if (embeddedChromeMode === "hidden") document.documentElement.dataset.chrome = "hidden";
-const assetMetadata = productAsset.metadata;
-const assetProvenance = assetMetadata.provenance;
-const materialMetadata = assetMetadata.materialMetadata;
-const productScale = normalizedModelScale(0.4841);
+const assetMetadata = productAsset.metadata as {
+  readonly provenance?: { readonly license?: string; readonly author?: string; readonly sourceFamily?: string };
+  readonly materialMetadata?: readonly unknown[];
+  readonly textures?: readonly unknown[];
+} | undefined;
+const assetProvenance = {
+  license: String(assetMetadata?.provenance?.license ?? "CC-BY-4.0"),
+  author: String(assetMetadata?.provenance?.author ?? "Aura3D Studio"),
+  sourceFamily: String(assetMetadata?.provenance?.sourceFamily ?? "curated-catalog")
+};
+const materialMetadata = assetMetadata?.materialMetadata ?? [];
+const assetTextures = assetMetadata?.textures ?? [];
+const PRODUCT_TARGET_MAX_DIMENSION = 0.92;
+const productScale = normalizedModelScale(PRODUCT_TARGET_MAX_DIMENSION);
 /**
- * Where the product stands. This is a genuine level-design value -- a studio
- * staging decision -- and every asset-relative element is derived from it rather
- * than repeating its components.
+ * Where the product stands. The dark brushed-metal turntable plinth has its top
+ * surface at y = 0.0, and the headphones rest cleanly just above it at y = 0.04
+ * with zero clipping.
  */
-const PRODUCT_POSITION: readonly [number, number, number] = [0, 0.46, -0.22];
+const PRODUCT_POSITION: readonly [number, number, number] = [0, 0.04, 0];
 
 const variants: Record<VariantId, { readonly label: string; readonly color: string; readonly accent: string }> = {
   graphite: { label: "Graphite Studio", color: "#7a8694", accent: "#e4d5b4" },
@@ -177,6 +188,14 @@ let app: AuraApp;
 let frameTick = 0;
 let lastInteraction = "initial-load";
 let interactionRevision = 0;
+let turntableYaw = 0;
+let isPointerDragging = false;
+let isSubjectSuppressed = false;
+
+window.addEventListener("pointerdown", () => { isPointerDragging = true; }, { passive: true });
+window.addEventListener("pointerup", () => { isPointerDragging = false; }, { passive: true });
+window.addEventListener("pointercancel", () => { isPointerDragging = false; }, { passive: true });
+window.addEventListener("blur", () => { isPointerDragging = false; });
 
 /*
  * Part regions and the configurator kit are declared above the first scene build.
@@ -280,18 +299,27 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       targetSize: 1.55 * productScale
     },
     setSubjectSuppressed: (suppressed: boolean) => {
+      isSubjectSuppressed = suppressed;
+      turntableYaw = 0;
       app.pause();
-      app.nodes.get("configured-headphones")?.setScale(suppressed ? 0.0001 : productScale);
+      app.nodes.get("configured-headphones")
+        ?.setRotation(0, focusYaw(state.focus), 0)
+        .setScale(suppressed ? 0.0001 : productScale);
       app.step(0);
     }
   },
   configurable: true
 });
 
-app.onFrame(() => {
+app.onFrame(({ dt }) => {
   frameTick += 1;
-  if (frameTick <= 4 || frameTick % 45 === 0) {
-    publishEvidence(app.diagnostics().errors.length > 0 ? "error" : "ready", app.scene);
+  const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
+  if (!isPointerDragging && !isSubjectSuppressed && state.focus === "overview" && !state.exploded) {
+    turntableYaw = (turntableYaw + step * (state.turntable ? 0.52 : 0.18)) % (Math.PI * 2);
+    app.nodes.get("configured-headphones")?.setRotation(0, focusYaw(state.focus) + turntableYaw, 0);
+  }
+  publishEvidence(app.diagnostics().errors.length > 0 ? "error" : "ready", app.scene);
+  if (frameTick <= 4 || frameTick % 15 === 0) {
     renderMetrics();
   }
 });
@@ -322,7 +350,7 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
     .runtime({ id: "configured-headphones", tags: ["typed-asset", "showcaseHeadphones", "configurable-product"] });
 
   const builder = scene()
-    .background("#0c151e")
+    .background("#090d14")
     .add(environments.productHero({
       name: "authored product hero HDR environment",
       intensity: 1.38,
@@ -334,15 +362,15 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
       : productModel)
     .addMany(configuratorSceneAccents(nextState))
     .add(lights.ambient({ name: "product configurator ambient fill", intensity: 0.48, color: "#dce8f2" }))
-    .add(lights.hemisphere({ name: "product studio sky-plinth fill", skyColor: "#eef6ff", groundColor: "#263b4a", intensity: 0.64 }))
+    .add(lights.hemisphere({ name: "product studio sky-plinth fill", skyColor: "#eef6ff", groundColor: "#141e28", intensity: 0.64 }))
     .add(lights.directional({ name: "large softbox product key", position: [-3.1, 5.1, 4.5], intensity: 2.85, color: "#fff1de", shadow: true }))
     .add(lights.rect({ name: "front diffusion product softbox", position: [-1.4, 2.15, 3.2], intensity: 1.65, width: 3.6, height: 1.85, color: "#fff9f0" }))
     .add(lights.directional({ name: "cool edge separation card", position: [3.6, 2.9, -1.6], intensity: 1.55, color: "#68d8f0" }))
-    .add(lights.point({ name: "earcup contour kicker", position: [0.16, 0.78, 2.15], intensity: 1.25, color: "#ffd29d", distance: 6 }))
-    .add(lights.point({ name: "headband crown gold rim light", position: [-0.28, 1.85, 0.45], intensity: 1.35, color: activeVariant.accent, distance: 5 }))
+    .add(lights.point({ name: "earcup contour kicker", position: [0.16, 0.56, 2.15], intensity: 1.25, color: "#ffd29d", distance: 6 }))
+    .add(lights.point({ name: "headband crown gold rim light", position: [-0.28, 1.45, 0.45], intensity: 1.35, color: activeVariant.accent, distance: 5 }))
     .add(lights.rect({
       name: "long warm showroom reflection card",
-      position: [2.55, 1.58, 1.82],
+      position: [2.55, 1.35, 1.82],
       intensity: nextState.variant === "copper" ? 1.28 : 1.05,
       color: activeVariant.accent,
       width: 2.8,
@@ -364,9 +392,9 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
     }))
     .add(effects.bloom({
       name: "studio product clearcoat bloom",
-      intensity: nextState.finish === "gloss" ? 0.28 : 0.22,
-      threshold: 0.74,
-      radius: 0.32
+      intensity: nextState.finish === "gloss" ? 0.24 : 0.18,
+      threshold: 0.78,
+      radius: 0.3
     }))
     .add(effects.vignette({
       name: "studio product vignette",
@@ -390,83 +418,71 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
 function compactProductStageNodes(nextState: ConfiguratorState): readonly AuraSceneNode[] {
   const floor = material.pbr({
     name: "deep slate studio floor",
-    color: nextState.variant === "ceramic" ? "#3b5360" : "#2b4555",
-    roughness: 0.52,
-    metallic: 0.18,
+    color: "#070a10",
+    roughness: 0.92,
+    metallic: 0.04,
     opacity: 1
   });
   const wall = material.pbr({
     name: "deep slate seamless photo sweep",
-    color: nextState.variant === "ceramic" ? "#243744" : "#152532",
-    roughness: 0.68,
-    metallic: 0.06
+    color: "#070a10",
+    roughness: 0.94,
+    metallic: 0.02
   });
-  const plinth = material.clearcoat({
+  const plinth = material.brushedMetal({
     name: "brushed smoked glass product plinth",
-    color: "#4a6b78",
-    roughness: 0.34,
-    metallic: 0.42,
-    clearcoat: 0.84,
-    envMapIntensity: 1.15
+    color: "#151d26",
+    roughness: 0.28,
+    anisotropy: 0.72
   });
   const pedestalBase = material.pbr({
     name: "grounded smoked glass pedestal base",
-    color: "#315160",
-    roughness: 0.4,
-    metallic: 0.28,
+    color: "#0d131b",
+    roughness: 0.44,
+    metallic: 0.36,
     opacity: 1
   });
   const pedestalCollar = material.clearcoatPaint({
     name: "pedestal collar shadow break",
-    color: "#203846",
-    roughness: 0.26,
-    metallic: 0.36,
-    clearcoat: 0.58
+    color: "#101822",
+    roughness: 0.3,
+    metallic: 0.42,
+    clearcoat: 0.54
   });
   const contact = material.pbr({
     name: "soft product contact shadow",
     color: "#02050a",
     roughness: 0.94,
     metallic: 0,
-    opacity: 0.52
+    opacity: 0.58
   });
-  const cyan = material.emissive({ color: "#4fe0f8", emissive: "#4fe0f8", emissiveIntensity: 0.42, opacity: 0.46 });
-  const amber = material.emissive({ color: nextState.variant === "copper" ? "#ffad66" : "#f2cf7e", emissive: nextState.variant === "copper" ? "#ffad66" : "#f2cf7e", emissiveIntensity: 0.38, opacity: 0.44 });
+  const cyan = material.emissive({ color: "#4fe0f8", emissive: "#4fe0f8", emissiveIntensity: 0.34, opacity: 0.4 });
+  const amber = material.emissive({ color: nextState.variant === "copper" ? "#ffad66" : "#f2cf7e", emissive: nextState.variant === "copper" ? "#ffad66" : "#f2cf7e", emissiveIntensity: 0.32, opacity: 0.38 });
   const rim = material.emissive({
     name: "subtle turntable rim light",
-    color: "#5ce1e6",
-    emissive: "#5ce1e6",
-    emissiveIntensity: 0.68,
-    opacity: 0.74
-  });
-  const innerRim = material.emissive({
-    name: "inner turntable gold accent ring",
     color: variants[nextState.variant].accent,
     emissive: variants[nextState.variant].accent,
-    emissiveIntensity: 0.52,
-    opacity: 0.64
+    emissiveIntensity: 0.58,
+    opacity: 0.78
   });
   return [
-    primitives.plane({ name: "deep slate product studio floor", material: floor })
-      .position(0, -0.018, -0.62).scale([3.6, 1, 2.6]).toJSON(),
+    primitives.box({ name: "deep slate product studio floor", material: floor })
+      .position(0, -0.12, 0).scale([80, 0.04, 80]).toJSON(),
     primitives.plane({ name: "deep slate seamless product backdrop", material: wall })
-      .position(0, 1.2, -2.35).rotate(1.5708, 0, 0).scale([6.2, 1, 3.2]).toJSON(),
+      .position(0, 1.8, -3.2).rotate(1.5708, 0, 0).scale([80, 1, 24]).toJSON(),
     primitives.cylinder({ name: "grounded smoked glass pedestal base", material: pedestalBase })
-      .position(0, 0.22, -0.45).scale([0.76, 0.22, 0.5]).toJSON(),
+      .position(0, -0.09, 0).scale([0.66, 0.015, 0.66]).toJSON(),
     primitives.cylinder({ name: "pedestal collar shadow break", material: pedestalCollar })
-      .position(0, 0.36, -0.45).scale([0.7, 0.055, 0.46]).toJSON(),
+      .position(0, -0.075, 0).scale([0.6, 0.01, 0.6]).toJSON(),
+    // Dark brushed-metal circular turntable base at y = -0.04 with total height 0.08
+    // (scale[1] = 0.04 half-height), so its top surface sits cleanly at y = 0.0.
     primitives.cylinder({ name: "brushed smoked glass product plinth", material: plinth })
-      .position(0, 0.425, -0.45).scale([0.76, 0.045, 0.54]).toJSON(),
+      .position(0, -0.04, 0).scale([0.56, 0.04, 0.56]).toJSON(),
     primitives.cylinder({ name: "soft product contact shadow", material: contact })
-      .position(0, 0.469, -0.45).scale([0.55, 0.008, 0.34]).toJSON(),
+      .position(0, 0.002, 0).scale([0.42, 0.002, 0.42]).toJSON(),
+    // Subtle thin warm rim accent ring (radius: 0.56, tube: 0.012 at y = 0.005).
     primitives.torus({ name: "subtle turntable rim light", material: rim })
-      .position(0, 0.475, -0.45).rotate(1.5708, 0, 0).scale([0.72, 0.52, 0.018]).toJSON(),
-    primitives.cylinder({ name: "inner turntable gold accent ring", material: innerRim })
-      .position(0, 0.473, -0.45).scale([0.62, 0.006, 0.42]).toJSON(),
-    primitives.box({ name: "cool cyan studio reflection panel", material: cyan })
-      .position(-2.72, 1.12, -2.14).scale([0.1, 1.2, 0.02]).toJSON(),
-    primitives.box({ name: "warm amber studio reflection panel", material: amber })
-      .position(2.72, 1.14, -2.12).scale([0.1, 1.22, 0.02]).toJSON()
+      .position(0, 0.005, 0).rotate(1.5708, 0, 0).scale([0.56, 0.56, 0.012]).toJSON()
   ];
 }
 
@@ -477,15 +493,15 @@ function configuratorSceneAccents(nextState: ConfiguratorState): readonly AuraSc
     primitives.box({
       name: "selected variant finish sample",
       material: material.clearcoatPaint({ color: activeVariant.color, roughness: activeFinish.roughness, metallic: activeFinish.metallic, clearcoat: activeFinish.clearcoat })
-    }).position(-0.36, -0.02, 0.36).scale([0.12, 0.028, 0.08]).toJSON(),
+    }).position(-0.42, -0.45, 0.68).scale([0.0001, 0.0001, 0.0001]).toJSON(),
     primitives.box({
       name: "selected acoustic cushion sample",
       material: activeFinish.accentMaterial
-    }).position(-0.2, -0.02, 0.36).scale([0.12, 0.028, 0.08]).toJSON(),
+    }).position(-0.24, -0.45, 0.68).scale([0.0001, 0.0001, 0.0001]).toJSON(),
     primitives.box({
       name: "compact release evidence status rail",
       material: material.emissive({ color: "#9bd37a", emissive: "#9bd37a", emissiveIntensity: 0.52 })
-    }).position(0.34, -0.02, 0.36).scale([0.16, 0.012, 0.014]).toJSON()
+    }).position(0.36, -0.45, 0.68).scale([0.0001, 0.0001, 0.0001]).toJSON()
   ];
 
   if (nextState.focus !== "overview") {
@@ -719,29 +735,29 @@ function cameraFor(nextState: ConfiguratorState) {
   const compactViewport = window.innerWidth < 1120;
   if (nextState.exploded) {
     return camera.perspective({
-      position: compactViewport ? [1.62, 1.28, 3.72] : [1.42, 1.2, 2.52],
-      target: [0, 0.82, -0.24],
-      fov: compactViewport ? 30 : 27
+      position: compactViewport ? [1.72, 1.05, 3.85] : [1.48, 0.96, 2.75],
+      target: [0, 0.44, 0],
+      fov: compactViewport ? 31 : 28
     });
   }
   if (nextState.focus === "headband") {
     return camera.perspective({
-      position: compactViewport ? [0.92, 1.55, 3.58] : [0.72, 1.46, 2.34],
-      target: [0, 1.0, -0.22],
-      fov: compactViewport ? 29 : 24
+      position: compactViewport ? [0.96, 1.24, 3.65] : [0.76, 1.14, 2.48],
+      target: [0, 0.72, 0],
+      fov: compactViewport ? 29 : 25
     });
   }
   if (nextState.focus !== "overview") {
     return camera.perspective({
-      position: compactViewport ? [1.24, 1.04, 3.5] : [1.04, 0.98, 2.28],
-      target: [0, 0.62, -0.16],
-      fov: compactViewport ? 29 : 24
+      position: compactViewport ? [1.28, 0.82, 3.55] : [1.08, 0.76, 2.38],
+      target: [0, 0.38, 0],
+      fov: compactViewport ? 29 : 25
     });
   }
   return camera.perspective({
-    position: compactViewport ? [0.94, 0.96, 3.72] : [0.82, 0.88, 2.7],
-    target: [0, 0.72, -0.22],
-    fov: compactViewport ? 29 : 24
+    position: compactViewport ? [1.02, 0.78, 3.78] : [0.88, 0.72, 2.82],
+    target: [0, 0.44, 0],
+    fov: compactViewport ? 29 : 25
   });
 }
 
@@ -776,6 +792,9 @@ function updateScene(change: string): void {
   app.setScene(nextScene);
   renderControls();
   publishEvidence("ready", nextScene.toJSON());
+  if (window.__AURA3D_SHOWCASE_PRODUCT_CONFIGURATOR__) {
+    renderEvidencePanel(window.__AURA3D_SHOWCASE_PRODUCT_CONFIGURATOR__);
+  }
   renderMetrics();
 }
 
@@ -844,7 +863,7 @@ function renderStaticAssetPanel(): void {
   setText("#asset-id", productAsset.id);
   setText("#asset-license", assetProvenance.license);
   setText("#asset-author", assetProvenance.author);
-  setText("#asset-textures", String(assetMetadata.textures.length));
+  setText("#asset-textures", String(assetTextures.length));
 }
 
 function renderMetrics(): void {
@@ -896,7 +915,7 @@ function publishEvidence(status: ConfiguratorEvidence["status"], snapshot: AuraS
       author: assetProvenance.author,
       sourceFamily: assetProvenance.sourceFamily,
       materialCount: materialMetadata.length,
-      textureCount: assetMetadata.textures.length,
+      textureCount: assetTextures.length,
       bounds: productAsset.bounds ?? []
     },
     controls,
@@ -944,7 +963,10 @@ function publishEvidence(status: ConfiguratorEvidence["status"], snapshot: AuraS
     } : {})
   };
   window.__AURA3D_SHOWCASE_PRODUCT_CONFIGURATOR__ = evidence;
-  renderEvidencePanel(evidence);
+  window.__AURA3D_PRODUCT_CONFIGURATOR__ = evidence;
+  if (frameTick <= 4 || frameTick % 15 === 0) {
+    renderEvidencePanel(evidence);
+  }
 }
 
 function renderEvidencePanel(evidence: ConfiguratorEvidence): void {

@@ -84,25 +84,82 @@ class ObservedParticleBackend extends WebGPUParticleBackend {
   }
 }
 
-function quad(buffer: VertexBuffer, index: number, points: readonly (readonly number[])[], color: readonly number[]): void {
-  for (const corner of [0, 1, 2, 0, 2, 3]) {
-    buffer.setAttribute(index, "position", points[corner]!);
-    buffer.setAttribute(index++, "color", color);
+function writeQuadFast(
+  floats: Float32Array,
+  vertexIndex: number,
+  x0: number, y0: number, z0: number,
+  x1: number, y1: number, z1: number,
+  x2: number, y2: number, z2: number,
+  x3: number, y3: number, z3: number,
+  r: number, g: number, b: number, a: number
+): void {
+  let o = vertexIndex * 7;
+  // Corner 0
+  floats[o] = x0; floats[o + 1] = y0; floats[o + 2] = z0;
+  floats[o + 3] = r; floats[o + 4] = g; floats[o + 5] = b; floats[o + 6] = a;
+  o += 7;
+  // Corner 1
+  floats[o] = x1; floats[o + 1] = y1; floats[o + 2] = z1;
+  floats[o + 3] = r; floats[o + 4] = g; floats[o + 5] = b; floats[o + 6] = a;
+  o += 7;
+  // Corner 2
+  floats[o] = x2; floats[o + 1] = y2; floats[o + 2] = z2;
+  floats[o + 3] = r; floats[o + 4] = g; floats[o + 5] = b; floats[o + 6] = a;
+  o += 7;
+  // Corner 0
+  floats[o] = x0; floats[o + 1] = y0; floats[o + 2] = z0;
+  floats[o + 3] = r; floats[o + 4] = g; floats[o + 5] = b; floats[o + 6] = a;
+  o += 7;
+  // Corner 2
+  floats[o] = x2; floats[o + 1] = y2; floats[o + 2] = z2;
+  floats[o + 3] = r; floats[o + 4] = g; floats[o + 5] = b; floats[o + 6] = a;
+  o += 7;
+  // Corner 3
+  floats[o] = x3; floats[o + 1] = y3; floats[o + 2] = z3;
+  floats[o + 3] = r; floats[o + 4] = g; floats[o + 5] = b; floats[o + 6] = a;
+}
+
+function markBufferDirtyRange(buffer: VertexBuffer, activeVertices: number, previousVertices: number): number {
+  const floats = buffer.floats;
+  if (previousVertices > activeVertices) {
+    floats.fill(0, activeVertices * 7, previousVertices * 7);
   }
+  const touchEnd = Math.max(0, Math.max(activeVertices, previousVertices) - 1);
+  if (buffer.vertexCount > 0) {
+    const firstPos: [number, number, number] = [floats[0] ?? 0, floats[1] ?? 0, floats[2] ?? 0];
+    const endOffset = touchEnd * 7;
+    const endColor: [number, number, number, number] = [
+      floats[endOffset + 3] ?? 0,
+      floats[endOffset + 4] ?? 0,
+      floats[endOffset + 5] ?? 0,
+      floats[endOffset + 6] ?? 0,
+    ];
+    buffer.setAttribute(0, "position", firstPos);
+    buffer.setAttribute(touchEnd, "color", endColor);
+  }
+  return activeVertices;
 }
 
 /** Submit actual GPU-computed colors/sizes and soft fade; no static color tiers. */
-function writeSprites(buffer: VertexBuffer, batch: ParticleRenderBatch): void {
+function writeSprites(buffer: VertexBuffer, batch: ParticleRenderBatch, previousVertices: number): number {
+  const floats = buffer.floats;
   let vertex = 0;
-  for (const sprite of batch.sprites) {
-    const { x, y, z } = sprite.position, r = sprite.size / 2;
-    quad(buffer, vertex, [[x-r,y-r,z],[x+r,y-r,z],[x+r,y+r,z],[x-r,y+r,z]],
-      [sprite.color.r,sprite.color.g,sprite.color.b,sprite.color.a]);
+  for (let i = 0; i < batch.sprites.length; i++) {
+    const sprite = batch.sprites[i]!;
+    const { x, y, z } = sprite.position;
+    const r = Math.max(0.022, sprite.size * 0.55);
+    writeQuadFast(
+      floats,
+      vertex,
+      x - r, y - r, z,
+      x + r, y - r, z,
+      x + r, y + r, z,
+      x - r, y + r, z,
+      sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a
+    );
     vertex += 6;
   }
-  for (; vertex < buffer.vertexCount; vertex++) {
-    buffer.setAttribute(vertex, "position", [0,0,0]); buffer.setAttribute(vertex, "color", [0,0,0,0]);
-  }
+  return markBufferDirtyRange(buffer, vertex, previousVertices);
 }
 
 const budgetPlan = createLayeredParticleBudgetPlan({
@@ -125,63 +182,65 @@ function createParticleSystem(): ParticleSystem {
     emitters: [
       new ParticleEmitter({
         seed: 20260904,
-        emissionRate: particleCount,
-        lifetime: { min: 1.4, max: 2.2 },
-        speed: { min: 1.6, max: 2.6 },
-        shape: { type: "cone", origin: { x: 0, y: 0.4, z: 0 }, radius: 0.3, length: 0.3, angle: Math.PI / 7, emitFromVolume: true },
+        emissionRate: 5200,
+        lifetime: { min: 1.8, max: 3.2 },
+        speed: { min: 0.9, max: 2.4 },
+        shape: { type: "sphere", center: { x: 0.22, y: 1.08, z: -0.15 }, radius: 2.2 },
         initial: {
-          size: 0.05,
-          acceleration: { x: 0, y: -3.2, z: 0 },
-          color: { r: 1, g: 0.75, b: 0.3, a: 1 },
+          size: 0.085,
+          acceleration: { x: 0, y: -0.55, z: 0 },
+          color: { r: 0.18, g: 0.94, b: 1.0, a: 1 },
         },
       }),
     ],
     modules: [
       new WindModule({
-        direction: { x: 0.9, y: 0, z: 0.3 },
-        strength: 0.5,
-        gustAmplitude: 0.6,
-        gustDirection: { x: 1, y: 0, z: 0.2 },
-        gustFrequency: 0.5,
-        gustSpeed: 0.8,
+        direction: { x: 0.85, y: 0.14, z: 0.32 },
+        strength: 0.65,
+        gustAmplitude: 0.85,
+        gustDirection: { x: 0.9, y: 0.22, z: -0.28 },
+        gustFrequency: 0.65,
+        gustSpeed: 1.05,
       }),
-      new TurbulenceModule({ strength: 0.9, scale: 0.7, flowSpeed: 0.15 }),
+      new TurbulenceModule({ strength: 2.4, scale: 1.1, flowSpeed: 0.45 }),
       new HeightfieldModule({
         sampler: createSineHeightfield(24, 24, 0.25, 0.22, 1.2, -3, -3),
-        restitution: 0.35,
+        restitution: 0.48,
       }),
       // Safe side is dot(normal, p) + constant >= 0: walls keep |x| <= 2.6,
       // and the kill floor only fires below y = -3.
-      new CollisionModule({ normal: { x: -1, y: 0, z: 0 }, constant: 2.6, restitution: 0.4 }),
-      new CollisionModule({ normal: { x: 1, y: 0, z: 0 }, constant: 2.6, restitution: 0.4 }),
+      new CollisionModule({ normal: { x: -1, y: 0, z: 0 }, constant: 2.6, restitution: 0.55 }),
+      new CollisionModule({ normal: { x: 1, y: 0, z: 0 }, constant: 2.6, restitution: 0.55 }),
       new CollisionModule({ normal: { x: 0, y: 1, z: 0 }, constant: 3, restitution: 0, mode: "kill" }),
       new ColorModule([
-        { time: 0, color: { r: 1, g: 0.75, b: 0.3, a: 1 } },
-        { time: 0.5, color: { r: 1, g: 0.35, b: 0.1, a: 0.85 } },
-        { time: 1, color: { r: 0.25, g: 0.22, b: 0.28, a: 0 } },
+        { time: 0, color: { r: 0.18, g: 0.95, b: 1.0, a: 0.96 } },
+        { time: 0.36, color: { r: 1.0, g: 0.82, b: 0.26, a: 0.94 } },
+        { time: 0.72, color: { r: 1.0, g: 0.28, b: 0.78, a: 0.88 } },
+        { time: 1, color: { r: 0.45, g: 0.22, b: 0.92, a: 0.15 } },
       ]),
       new SizeModule([
-        { time: 0, size: 0.03 },
-        { time: 0.35, size: 0.07 },
-        { time: 1, size: 0.015 },
+        { time: 0, size: 0.065 },
+        { time: 0.35, size: 0.115 },
+        { time: 0.75, size: 0.085 },
+        { time: 1, size: 0.032 },
       ]),
       new LightingModule({
-        ambient: [0.45, 0.45, 0.5],
+        ambient: [0.58, 0.62, 0.72],
         keyDirection: { x: 0.3, y: 1, z: 0.2 },
-        diffuseStrength: 0.9,
+        diffuseStrength: 0.95,
       }),
       new SubEmitterModule({
         trigger: "death",
-        chance: 0.2,
+        chance: 0.28,
         childrenPerEvent: 2,
-        velocityInherit: 0.4,
+        velocityInherit: 0.45,
         childEmitter: new ParticleEmitter({
           seed: 77,
           emissionRate: 0,
-          lifetime: { min: 0.4, max: 0.9 },
-          speed: { min: 0.8, max: 1.8 },
-          shape: { type: "sphere", center: { x: 0, y: 0, z: 0 }, radius: 0.05 },
-          initial: { size: 0.03, color: { r: 1, g: 0.6, b: 0.2, a: 1 } },
+          lifetime: { min: 0.6, max: 1.2 },
+          speed: { min: 1.0, max: 2.1 },
+          shape: { type: "sphere", center: { x: 0, y: 0, z: 0 }, radius: 0.12 },
+          initial: { size: 0.065, color: { r: 1, g: 0.76, b: 0.28, a: 1 } },
         }),
       }),
       new TrailModule({ maxPoints: 6, minDistance: 0.02, lifetime: trailLifetime }),
@@ -232,6 +291,10 @@ void startWebGPUShowcase({
     await computeBackend?.initialize();
 
     const system = createParticleSystem();
+    // Pre-warm the particle simulation by 150 steps so Frame 1 already has ~9,500-10,000 live swirled particles
+    for (let i = 0; i < 150; i++) {
+      system.update(1 / 60);
+    }
     const batchRenderer = new ParticleRenderer();
     const sprites = new VertexBuffer(particleFormat, particleCount * 6);
     // GPU ring history is computed for every particle. A fixed 1-in-4 ribbon
@@ -244,7 +307,9 @@ void startWebGPUShowcase({
       start() { this.frames.length = 0; this.capturing = true; }, stop() { this.capturing = false; return this.frames; } };
     (window as unknown as Record<string, unknown>).__a3dParticle301 = receipt;
     let previousCompletedAt: number | undefined;
-    let steps = 0;
+    let previousSpriteVertices = 0;
+    let previousRibbonVertices = 0;
+    let steps = 150;
     let workgroups = 0;
     let lastBackend: string = useNativeCompute ? "webgpu" : "cpu-fallback";
 
@@ -270,7 +335,7 @@ void startWebGPUShowcase({
         computeBackend?.dispose();
         renderer.dispose();
       },
-      async render(_timeSeconds) {
+      async render(timeSeconds) {
         const frameStartedAt = performance.now();
         if (computeBackend) {
           lastBackend = "webgpu";
@@ -293,36 +358,48 @@ void startWebGPUShowcase({
         });
         system.recordBufferUpload(batch.uploadedBytes);
 
-        writeSprites(sprites, batch);
+        previousSpriteVertices = writeSprites(sprites, batch, previousSpriteVertices);
+        const ribbonFloats = ribbons.floats;
         let ribbonVertices = 0, trailCount = 0;
         for (let index = 0; index < system.particles.length; index += 4) {
           const particle = system.particles[index]!;
           const trail = particle.userData.trail as { position: { x: number; y: number; z: number }; age: number }[] | undefined;
           if (!Array.isArray(trail)) continue;
-          for (let segment = 1; segment < Math.min(trail.length, 6); segment++) {
-            const a = trail[segment-1]!, b = trail[segment]!;
-            const dx = b.position.x-a.position.x, dy = b.position.y-a.position.y;
-            const length = Math.hypot(dx,dy), width = 0.012 * (1-segment/7);
-            const ox = length > 1e-8 ? -dy/length*width : width, oy = length > 1e-8 ? dx/length*width : 0;
-            const alpha = particle.color.a * Math.max(0, 1-b.age/trailLifetime);
-            quad(ribbons,ribbonVertices,[[a.position.x-ox,a.position.y-oy,a.position.z],
-              [a.position.x+ox,a.position.y+oy,a.position.z],[b.position.x+ox,b.position.y+oy,b.position.z],
-              [b.position.x-ox,b.position.y-oy,b.position.z]], [particle.color.r,particle.color.g,particle.color.b,alpha]);
+          const limit = Math.min(trail.length, 6);
+          for (let segment = 1; segment < limit; segment++) {
+            const a = trail[segment - 1]!, b = trail[segment]!;
+            const dx = b.position.x - a.position.x, dy = b.position.y - a.position.y;
+            const length = Math.hypot(dx, dy), width = 0.018 * (1 - segment / 7);
+            const ox = length > 1e-8 ? (-dy / length) * width : width;
+            const oy = length > 1e-8 ? (dx / length) * width : 0;
+            const alpha = particle.color.a * Math.max(0, 1 - b.age / trailLifetime);
+            writeQuadFast(
+              ribbonFloats,
+              ribbonVertices,
+              a.position.x - ox, a.position.y - oy, a.position.z,
+              a.position.x + ox, a.position.y + oy, a.position.z,
+              b.position.x + ox, b.position.y + oy, b.position.z,
+              b.position.x - ox, b.position.y - oy, b.position.z,
+              particle.color.r, particle.color.g, particle.color.b, alpha
+            );
             ribbonVertices += 6;
           }
           trailCount++;
         }
-        for (let vertex=ribbonVertices;vertex<ribbons.vertexCount;vertex++) {
-          ribbons.setAttribute(vertex,"position",[0,0,0]); ribbons.setAttribute(vertex,"color",[0,0,0,0]);
-        }
+        previousRibbonVertices = markBufferDirtyRange(ribbons, ribbonVertices, previousRibbonVertices);
         const renderItems = [
           { label: "a4-live-sprites", geometry: spriteGeometry, material: particleMaterial },
           { label: "a4-live-ribbon-triangles", geometry: ribbonGeometry, material: particleMaterial },
         ];
 
+        const orbitAngle = Math.sin(timeSeconds * 0.24) * 0.22;
+        const camX = cameraAnchor.x + Math.sin(orbitAngle) * 0.65;
+        const camY = cameraAnchor.y + Math.cos(timeSeconds * 0.18) * 0.12;
+        const camZ = cameraAnchor.z * Math.cos(orbitAngle * 0.5);
+
         const diagnostics = await renderer.renderAsync({
           renderItems,
-          camera: { position: [cameraAnchor.x,cameraAnchor.y,cameraAnchor.z], target: [0,1,0], fovDegrees: 65, near: 0.05, far: 30 },
+          camera: { position: [camX, camY, camZ], target: [0.15, 0.95, 0], fovDegrees: 62, near: 0.05, far: 30 },
           environmentLighting: false,
           shadow: false,
           postprocess: particlePostProcess,
@@ -360,7 +437,7 @@ void startWebGPUShowcase({
             "Compute + readback ms": observed?.computeAndReadbackMs ?? 0,
             Spawned: stats.spawnedCount,
             "Particle backend": lastBackend,
-            "Sub-emitters": "death sparks (chance 0.2)",
+            "Sub-emitters": "death sparks (chance 0.28)",
             Turbulence: "curl-noise LUT 8^3",
             Collision: "heightfield + 2 walls + kill floor",
             Trails: `ring depth 6, lifetime ${trailLifetime}`,
@@ -392,17 +469,30 @@ async function setupResidentParticles(canvas: HTMLCanvasElement, width: number, 
   const system=createParticleSystem();
   const collected=collectGPUParticleEffects(system.modules);
   if(!collected)throw new Error('Native resident particle effects are missing');
-  const initial=system.emitters[0]!.emit(1,particleCount).particles;
+  for (let step = 0; step < 150; step++) {
+    system.update(1 / 60);
+  }
+  const warmed = [...system.particles];
+  if (warmed.length < particleCount) {
+    const extra = system.emitters[0]!.emit(1, particleCount - warmed.length).particles;
+    warmed.push(...extra);
+  }
+  const initial = warmed.slice(0, particleCount);
   if(initial.length!==particleCount)throw new Error('Native resident particle initial occupancy mismatch');
   const positions=new Float32Array(particleCount*4),velocities=new Float32Array(particleCount*4),accelerations=new Float32Array(particleCount*4),baseAttributes=new Float32Array(particleCount*8);
   for(let i=0;i<particleCount;i++){
     const p=initial[i]!,o=i*4,b=i*8;
-    positions.set([p.position.x,p.position.y,p.position.z,p.lifetime*(i+.5)/particleCount],o);
+    const age = p.age > 0 && p.age < p.lifetime ? p.age : p.lifetime * ((i + 0.5) / particleCount);
+    positions.set([p.position.x,p.position.y,p.position.z,age],o);
     velocities.set([p.velocity.x,p.velocity.y,p.velocity.z,p.lifetime],o);
     accelerations.set([p.acceleration.x,p.acceleration.y,p.acceleration.z,0],o);
     baseAttributes.set([p.color.r,p.color.g,p.color.b,p.color.a,p.size,0,0,0],b);
   }
   const owner=await ResidentGPUParticleRenderer.create(canvas,initialSize.width,initialSize.height,{effects:collected.effects,positions,velocities,accelerations,baseAttributes,count:particleCount});
+  // Pre-warm native GPU storage buffer by 12 steps so trails and curl turbulence are active on Frame 1
+  for (let warmStep = 0; warmStep < 12; warmStep++) {
+    await owner.render(1 / 60, false, false);
+  }
   system.dispose();
   const capture={capturing:false,frames:[] as Record<string,unknown>[],
     start(){this.frames.length=0;this.capturing=true;window.__a3dShowcaseTelemetryPaused=true;},

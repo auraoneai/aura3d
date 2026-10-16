@@ -275,7 +275,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           speed: speedRange,
           // Plume preset: tight column over the `radius` spawn disc.
           spread: node.spread ?? (node.emitter === "ambient" ? 1 : node.emitter === "swirl" ? 0.35 : plume ? 0.06 : 0.18),
-          ...(plume && typeof node.radius === "number" && node.radius > 0 ? { spawnRadius: node.radius } : {}),
+          ...(typeof node.radius === "number" && node.radius > 0 ? { spawnRadius: node.radius } : {}),
           direction: node.direction ?? (node.emitter === "ambient" ? [0.15, 0.4, 0.1] : [0, 1, 0]),
           gravity,
           size: asRange(node.size) ?? (node.emitter === "ambient" ? [0.04, 0.1] : [0.05, 0.14]),

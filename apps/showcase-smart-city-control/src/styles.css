@@ -76,8 +76,8 @@ input {
   left: 18px;
   right: 18px;
   display: grid;
-  grid-template-columns: minmax(320px, 0.42fr) minmax(0, 1.58fr);
-  gap: 18px;
+  grid-template-columns: minmax(250px, 0.34fr) minmax(0, 1.66fr);
+  gap: 14px;
   align-items: center;
   min-height: 86px;
   padding: 14px 16px;
@@ -115,7 +115,7 @@ input {
 h1 {
   margin: 0;
   overflow: hidden;
-  font-size: clamp(20px, 2.3vw, 30px);
+  font-size: clamp(18px, 2vw, 28px);
   line-height: 1.04;
   letter-spacing: 0;
   text-overflow: ellipsis;
@@ -124,8 +124,8 @@ h1 {
 
 .command-groups {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-  gap: 12px;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  gap: 10px;
   align-items: end;
   min-width: 0;
 }
@@ -147,18 +147,18 @@ h1 {
 
 .control-cluster {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 7px;
+  grid-template-columns: repeat(5, minmax(max-content, 1fr));
+  gap: 6px;
   align-items: center;
 }
 
 .control-cluster.compact {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(max-content, 1fr));
 }
 
 .control-cluster button,
 .controls button {
-  min-height: 34px;
+  min-height: 32px;
   border: 1px solid rgba(246, 251, 255, 0.14);
   border-radius: 7px;
   background: rgba(255, 255, 255, 0.07);
@@ -167,16 +167,22 @@ h1 {
 }
 
 .control-cluster button {
-  min-width: 0;
-  padding: 0 10px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  min-width: max-content;
+  padding: 6px 10px;
+  font-size: 11px;
 }
 
 .controls button {
   width: 100%;
-  padding: 0 12px;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  min-width: max-content;
+  padding: 6px 12px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -384,16 +390,16 @@ html[data-chrome="hidden"] .panel {
   }
 
   .control-cluster {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(max-content, 1fr));
   }
 
   .control-cluster.compact {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(max-content, 1fr));
   }
 
   .control-cluster button {
     width: 100%;
-    min-width: 0;
+    min-width: max-content;
   }
 }
 

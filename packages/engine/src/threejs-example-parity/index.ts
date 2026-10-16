@@ -1517,11 +1517,11 @@ export function createStudioLighting(options: A3DStudioLightingOptions = {}): re
 export function createGroundedStage(bounds: CameraFrameBounds, options: A3DGroundedStageOptions = {}): A3DGroundedStage {
   const labelPrefix = options.labelPrefix ?? "a3d-current-routes-grounded-stage";
   const assetExtent = boundsExtent(bounds);
-  const width = Math.max(options.minWidth ?? 3.8, (bounds.max[0] - bounds.min[0]) * (options.widthScale ?? 2.4));
-  const height = Math.max(options.minHeight ?? 2.6, (bounds.max[1] - bounds.min[1]) * (options.heightScale ?? 2.35));
+  const width = Math.max(options.minWidth ?? 16, (bounds.max[0] - bounds.min[0]) * (options.widthScale ?? 6.5));
+  const height = Math.max(options.minHeight ?? 4.2, (bounds.max[1] - bounds.min[1]) * (options.heightScale ?? 3.2));
   const depth = Math.max(
-    options.minDepth ?? 3.2,
-    (bounds.max[2] - bounds.min[2]) * (options.depthScale ?? 3.2) + (options.depthPadding ?? 1.35)
+    options.minDepth ?? 16,
+    (bounds.max[2] - bounds.min[2]) * (options.depthScale ?? 6.5) + (options.depthPadding ?? 2.4)
   );
   const centerX = (bounds.min[0] + bounds.max[0]) / 2;
   const centerY = (bounds.min[1] + bounds.max[1]) / 2;
@@ -1529,36 +1529,36 @@ export function createGroundedStage(bounds: CameraFrameBounds, options: A3DGroun
   const floorOffset = options.floorOffset ?? Math.min(0.004, assetExtent * 0.002);
   const floorThickness = options.floorThickness ?? Math.min(0.035, Math.max(0.002, assetExtent * 0.018));
   const floorY = bounds.min[1] - floorOffset;
-  const backZ = bounds.min[2] - depth * (options.backdropDepthOffsetScale ?? 0.42);
+  const backZ = bounds.min[2] - depth * (options.backdropDepthOffsetScale ?? 0.46);
   const stageGeometry = Geometry.litCube(1);
   const floorMaterial = new PBRMaterial({
     name: `${labelPrefix}-floor-material`,
-    baseColor: options.floorColor ?? [0.022, 0.024, 0.029, 1],
-    metallic: clamp(options.floorMetallic ?? 0.08, 0, 1),
-    roughness: clamp(options.floorRoughness ?? 0.34, 0.02, 1),
-    environmentIntensity: 0.82
+    baseColor: options.floorColor ?? [0.014, 0.017, 0.023, 1],
+    metallic: clamp(options.floorMetallic ?? 0.04, 0, 1),
+    roughness: clamp(options.floorRoughness ?? 0.68, 0.02, 1),
+    environmentIntensity: 0.32
   });
   const backdropMaterial = new PBRMaterial({
     name: `${labelPrefix}-backdrop-material`,
-    baseColor: options.backdropColor ?? [0.006, 0.008, 0.012, 1],
+    baseColor: options.backdropColor ?? [0.008, 0.010, 0.015, 1],
     metallic: 0,
-    roughness: clamp(options.backdropRoughness ?? 0.58, 0.02, 1),
-    environmentIntensity: 0.54
+    roughness: clamp(options.backdropRoughness ?? 0.78, 0.02, 1),
+    environmentIntensity: 0.24
   });
   const contactShadow = options.contactShadows === false ? undefined : createContactShadowPass({
     bounds,
     floorY,
     labelPrefix: `${labelPrefix}-contact-shadow`,
-    opacity: 1,
+    opacity: 0.75,
     lightDirection: options.shadowLightDirection ?? [-0.42, -0.82, -0.38],
-    softness: 0.82
+    softness: 0.86
   });
   const groundingItems: RenderItem[] = [
     {
       label: `${labelPrefix}-floor`,
       geometry: stageGeometry,
       material: floorMaterial,
-      modelMatrix: composeMat4([centerX, floorY, centerZ + depth * 0.12], [0, 0, 0, 1], [width, floorThickness, depth])
+      modelMatrix: composeMat4([centerX, floorY - floorThickness * 0.5, centerZ + depth * 0.08], [0, 0, 0, 1], [width, floorThickness, depth])
     },
     ...(contactShadow?.renderItems ?? [])
   ];
@@ -1570,7 +1570,7 @@ export function createGroundedStage(bounds: CameraFrameBounds, options: A3DGroun
       modelMatrix: composeMat4(
         [centerX, centerY + height * 0.9, backZ],
         [0, 0, 0, 1],
-        [width * (options.backdropWidthScale ?? 1.35), height * (options.backdropHeightScale ?? 2.8), options.backdropThickness ?? 0.05]
+        [width * (options.backdropWidthScale ?? 2.8), height * (options.backdropHeightScale ?? 3.8), options.backdropThickness ?? 0.05]
       )
     }
   ];
@@ -1589,8 +1589,8 @@ export function createGroundedStage(bounds: CameraFrameBounds, options: A3DGroun
     update(settings = {}) {
       const blur = clamp(settings.backgroundBlur ?? 0.08, 0, 1);
       const visible = settings.backgroundVisible === false ? 0 : 1;
-      backdropMaterial.roughness = clamp((options.backdropRoughness ?? 0.52) + blur * 0.32, 0.02, 1);
-      backdropMaterial.environmentIntensity = visible * (0.58 - blur * 0.18);
+      backdropMaterial.roughness = clamp((options.backdropRoughness ?? 0.72) + blur * 0.24, 0.02, 1);
+      backdropMaterial.environmentIntensity = visible * (0.28 - blur * 0.1);
     },
     renderItems(renderOptions = {}) {
       return [
@@ -1687,7 +1687,7 @@ function productViewerCameraPreset(preset: A3DProductViewerCameraDiagnostics["pr
       return { fovYRadians: 0.82, paddingRatio: 0.12, minDistance: 0.55, nearPadding: 0.1, farPadding: 2.2, yawRadians: -0.34, pitchRadians: -0.08 };
     case "product-hero":
     default:
-      return { fovYRadians: 0.45, paddingRatio: 0.024, minDistance: 0.58, nearPadding: 0.1, farPadding: 3.3, yawRadians: -0.34, pitchRadians: -0.08 };
+      return { fovYRadians: 0.45, paddingRatio: 0.04, minDistance: 0.58, nearPadding: 0.1, farPadding: 3.3, yawRadians: -0.34, pitchRadians: -0.08 };
   }
 }
 
@@ -1702,8 +1702,8 @@ function productViewerTargetOffset(
     bounds.max[1] - bounds.min[1],
     bounds.max[2] - bounds.min[2]
   );
-  const presetVerticalOffset = preset === "product-hero" ? -0.1 : 0;
-  const presetHorizontalOffset = preset === "product-hero" ? 0.16 : 0;
+  const presetVerticalOffset = preset === "product-hero" ? -0.04 : 0;
+  const presetHorizontalOffset = preset === "product-hero" ? -0.05 : 0;
   return [
     target[0] * extent * 0.05 + presetHorizontalOffset * extent,
     target[1] * extent * 0.05 + presetVerticalOffset * extent,

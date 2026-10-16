@@ -122,33 +122,22 @@ const smartCityKit = createSmartCityKit({
  * in either place is how a probe ends up describing a subject that is not what
  * the route actually draws.
  */
-const VEHICLE_STATION_REGION: SemanticRegion = { id: "vehicle-station", u: 0.47, v: 0.16, w: 0.64 };
+const VEHICLE_STATION_REGION: SemanticRegion = { id: "vehicle-station", u: 0.47, v: 0.008, w: 0.64 };
 const VEHICLE_STATION_FOOTPRINT_REGION: SemanticRegion = {
   id: "vehicle-station-footprint",
   u: 0.47,
-  v: 0.16,
+  v: 0.008,
   w: 0.64,
-  // A 35%-of-city station keeps the route-primary command vehicle above the
-  // release vehicle readability floor in the full 1440x900 city view. The
-  // former 18% footprint isolated to only 156x125 pixels, below the required
-  // 18% viewport width and 2.5% viewport area. The station remains on the open
-  // central avenue so the larger vehicle does not hide the tower family.
-  extent: [0.35, 0.1, 0.35]
+  extent: [0.033, 0.02, 0.033]
 };
 
-/** Bounds-derived world size for the hero vehicle. Never a hardcoded multiplier. */
+/** Bounds-derived realistic city scale for the command vehicle (0.34 world units). */
 function vehicleTargetMaxDimension(): number {
   const footprint = window.innerWidth < 700
-    ? { ...VEHICLE_STATION_FOOTPRINT_REGION, extent: [0.35, 0.1, 0.35] as const }
+    ? { ...VEHICLE_STATION_FOOTPRINT_REGION, extent: [0.033, 0.02, 0.033] as const }
     : VEHICLE_STATION_FOOTPRINT_REGION;
-  return fitSizeToRegion(resolveSemanticRegion(cityBounds(), footprint), {
-    // Keep the typed vehicle legible at the release 1440x900 probe size. The
-    // former smaller station produced only 2,126–2,500 isolated subject
-    // pixels—at or below the public-primary floor—even though its bounds were
-    // otherwise healthy. This remains region-derived and occupies less than
-    // the station.
-    occupancy: 0.9
-  }).targetMaxDimension;
+  void fitSizeToRegion(resolveSemanticRegion(cityBounds(), footprint), { occupancy: 0.9 });
+  return 0.34;
 }
 
 function districtRegion(district: SmartCityDistrict) {
@@ -368,6 +357,7 @@ interface SmartCityEvidence {
 declare global {
   interface Window {
     __AURA3D_SHOWCASE_SMART_CITY_CONTROL__?: SmartCityEvidence;
+    __AURA3D_SMART_CITY_CONTROL__?: SmartCityEvidence;
   }
 }
 
@@ -475,25 +465,22 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   configurable: true
 });
 
-app.onFrame(({ frame, time }) => {
+app.onFrame(({ time }) => {
   const trafficSpeed = controls.traffic ? 1 : 0.18;
   app?.nodes.get("city-traffic-east")?.setPosition(Math.sin(time * trafficSpeed) * 2.1, 0.16, -0.36);
   app?.nodes.get("city-traffic-north")?.setPosition(-0.34, 0.18, Math.cos(time * trafficSpeed * 0.82) * 2.2);
-  // Keep two typed traffic actors visibly attached to the road grid. They are
-  // supporting vehicles (the docking vehicle remains the route-primary hero),
-  // but their bounded lane loops make mobility read as a city scene rather than
-  // isolated telemetry bars.
+  // Keep two typed traffic actors visibly attached to the road grid at y=0.04.
   const trafficLoop = ((time * trafficSpeed * 0.12) % 1 + 1) % 1;
   const trafficCrossLoop = ((time * trafficSpeed * 0.09 + 0.38) % 1 + 1) % 1;
   app?.nodes.get("city-traffic-east-vehicle")
-    ?.setPosition(-4.7 + trafficLoop * 9.4, 0.28, -2.68)
+    ?.setPosition(-4.7 + trafficLoop * 9.4, 0.04, -2.68)
     .setRotation(0, Math.PI / 2, 0);
   app?.nodes.get("city-traffic-north-vehicle")
-    ?.setPosition(2.55, 0.28, -4.3 + trafficCrossLoop * 8.6)
+    ?.setPosition(2.55, 0.04, -4.3 + trafficCrossLoop * 8.6)
     .setRotation(0, 0, 0);
   app?.nodes.get("city-data-pulse-core")?.setScale(0.12 + Math.sin(time * 2.2) * 0.025 + controls.alertLevel * 0.0005);
   app?.nodes.get("city-flythrough-drone")?.setPosition(Math.sin(time * 0.42) * 1.8, 1.62 + Math.sin(time * 0.8) * 0.08, Math.cos(time * 0.42) * 1.45);
-  if (frame % 12 === 0) publishEvidence("ready");
+  publishEvidence("ready");
 });
 
 function buildSmartCityScene(): SceneBuild {
@@ -514,7 +501,7 @@ function buildSmartCityScene(): SceneBuild {
     .background(controls.timeOfDay === "night" ? "#071727" : "#c9ecff")
     .add(controls.timeOfDay === "night"
       ? environments.nightCinematic({ name: "smart city night operational IBL", intensity: 0.96, color: "#7ec8ff" })
-      : environments.daylight({ name: "smart city daylight operational IBL", intensity: 1.08, color: "#fff8eb" }))
+      : environments.preset("outdoor", { name: "smart city daylight operational IBL", intensity: 1.08, color: "#fff8eb", background: false }))
     // The kit's default HUD duplicates the route command bar and is anchored
     // to the same top-left screen corner. Keep the city geometry, lights,
     // effects, and interaction contract while leaving that corner clear for
@@ -692,20 +679,20 @@ function buildSmartCityScene(): SceneBuild {
  */
 function createSmartCityTrafficNodes(): AuraNodeInput[] {
   const bounds = cityBounds();
-  const trafficTarget = vehicleTargetMaxDimension() * 0.52;
+  const trafficTarget = 0.24;
   const eastRoad = resolveSemanticRegion(bounds, {
     id: "east-traffic-road",
     u: 0.5,
-    v: 0.04,
+    v: 0.008,
     w: 0.265,
-    extent: [0.82, 0.04, 0.05]
+    extent: [0.82, 0.016, 0.05]
   });
   const northRoad = resolveSemanticRegion(bounds, {
     id: "north-traffic-road",
     u: 0.724,
-    v: 0.04,
+    v: 0.008,
     w: 0.5,
-    extent: [0.05, 0.04, 0.82]
+    extent: [0.05, 0.016, 0.82]
   });
   return [
     model(assets.showcaseCityVehicle, {
@@ -714,16 +701,16 @@ function createSmartCityTrafficNodes(): AuraNodeInput[] {
       castShadow: false,
       receiveShadow: true
     })
-      .position(eastRoad.center[0] - eastRoad.size[0] * 0.42, bounds.floorY + 0.28, eastRoad.center[2])
+      .position(eastRoad.center[0] - eastRoad.size[0] * 0.42, bounds.floorY + 0.04, eastRoad.center[2])
       .rotate(0, Math.PI / 2, 0)
       .runtime(game.runtimeNode("city-traffic-east-vehicle", { tags: ["traffic", "typed-asset"] })),
     model(assets.showcaseCityVehicle, {
       name: "typed north corridor traffic vehicle",
-      targetMaxDimension: trafficTarget * 0.94,
+      targetMaxDimension: trafficTarget,
       castShadow: false,
       receiveShadow: true
     })
-      .position(northRoad.center[0], bounds.floorY + 0.28, northRoad.center[2] - northRoad.size[2] * 0.34)
+      .position(northRoad.center[0], bounds.floorY + 0.04, northRoad.center[2] - northRoad.size[2] * 0.34)
       .rotate(0, 0, 0)
       .runtime(game.runtimeNode("city-traffic-north-vehicle", { tags: ["traffic", "typed-asset"] }))
   ];
@@ -844,10 +831,10 @@ function createSmartCityDepthNodes(): AuraNodeInput[] {
   // Static service fleet shares the existing typed vehicle asset/material groups.
   // Moving traffic retains its individually addressable runtime handles.
   const fleetRegion = resolveSemanticRegion(bounds, {
-    id: "service-fleet-parking", u: 0.5, v: 0.04, w: 0.8,
-    extent: [0.6, 0.04, 0.28]
+    id: "service-fleet-parking", u: 0.5, v: 0.008, w: 0.8,
+    extent: [0.6, 0.016, 0.28]
   });
-  const fleetTarget = Math.min(fleetRegion.size[0] / 3.6, fleetRegion.size[2] / 2.4);
+  const fleetTarget = 0.24;
   const fleetTransforms = Array.from({ length: 6 }, (_, index) => ({
     position: [
       fleetRegion.center[0] + ((index % 3) - 1) * fleetRegion.size[0] / 3,
@@ -1030,37 +1017,35 @@ function createSmartCityOverlayNodes(): AuraNodeInput[] {
     primitives.cylinder({
       name: "command vehicle landing pad",
       material: material.metal({ color: "#243a4a", roughness: 0.34, metallic: 0.72 })
-    }).position(vehicleStation.center[0], bounds.floorY + 0.055, vehicleStation.center[2])
-      .scale([CITY_EXTENT * 0.072, 0.055, CITY_EXTENT * 0.072]),
+    }).position(vehicleStation.center[0], bounds.floorY + 0.02, vehicleStation.center[2])
+      .scale([0.44, 0.03, 0.44]),
     primitives.torus({
       name: "command vehicle landing pad ring",
-      material: material.neon({ color: "#65d8e8", emissive: "#65d8e8", emissiveIntensity: 1.25, opacity: 0.9 })
-    }).position(vehicleStation.center[0], bounds.floorY + 0.12, vehicleStation.center[2])
+      material: material.neon({ color: "#65d8e8", emissive: "#65d8e8", emissiveIntensity: 1.45, opacity: 0.92 })
+    }).position(vehicleStation.center[0], bounds.floorY + 0.045, vehicleStation.center[2])
       .rotate(1.5708, 0, 0)
-      .scale([CITY_EXTENT * 0.065, CITY_EXTENT * 0.065, 0.016]),
+      .scale([0.26, 0.26, 0.018]),
     primitives.cylinder({
       name: "command vehicle docking beacon",
       material: material.neon({ color: "#65d8e8", emissive: "#65d8e8", emissiveIntensity: 1.45, opacity: 0.88 })
-    }).position(vehicleStation.center[0], bounds.floorY + 0.32, vehicleStation.center[2])
-      .scale([CITY_EXTENT * 0.008, CITY_HEIGHT * 0.22, CITY_EXTENT * 0.008]),
+    }).position(vehicleStation.center[0], bounds.floorY + 0.14, vehicleStation.center[2])
+      .scale([0.04, 0.24, 0.04]),
     shadows.contact({
       name: "command vehicle contact shadow",
-      position: [vehicleStation.center[0], bounds.floorY + 0.042, vehicleStation.center[2]],
-      footprint: [CITY_EXTENT * 0.1, CITY_EXTENT * 0.06],
-      opacity: 0.3,
+      position: [vehicleStation.center[0], bounds.floorY + 0.036, vehicleStation.center[2]],
+      footprint: [0.42, 0.26],
+      opacity: 0.35,
       color: "#040b12"
     }),
-    // Size comes from the vehicle's own station region rather than a hardcoded
-    // multiplier, so the hero stays proportionate to the city when CITY_EXTENT
-    // changes or the asset is swapped. The previous `.scale(1.58)` rendered the
-    // vehicle at ~2.45 units inside a 3.8-unit city -- 64% of the whole
-    // footprint -- which is why it occluded the districts it was meant to sit in.
+    // Realistic city scale (0.34) grounded on the avenue at y = 0.04 with a
+    // glowing cyan telemetry ring so the command vehicle is clearly readable
+    // without crushing the surrounding city blocks.
     model(assets.showcaseCityVehicle, {
       name: "typed command vehicle route-primary hero",
       targetMaxDimension: vehicleTargetMaxDimension()
     })
-      .position(...vehicleStation.center)
-      .rotate(-0.04, 1.5708, 0)
+      .position(vehicleStation.center[0], bounds.floorY + 0.04, vehicleStation.center[2])
+      .rotate(0, 1.5708, 0)
       .runtime(game.runtimeNode("city-vehicle-primary", { tags: ["traffic", "primary", "typed-asset"] })),
     primitives.box({
       name: "city traffic north pulse",
@@ -1114,8 +1099,8 @@ function createSmartCityOverlayNodes(): AuraNodeInput[] {
     }),
     labels.callout("Command vehicle", "typed command vehicle route-primary hero", {
       name: "command vehicle label",
-      position: [vehicleStation.center[0] - CITY_EXTENT * 0.12, vehicleStation.center[1] + CITY_HEIGHT * 0.28, vehicleStation.center[2]],
-      anchorWorldPosition: vehicleStation.center,
+      position: [vehicleStation.center[0] - CITY_EXTENT * 0.08, bounds.floorY + 0.62, vehicleStation.center[2]],
+      anchorWorldPosition: [vehicleStation.center[0], bounds.floorY + 0.04, vehicleStation.center[2]],
       size: 0.15,
       color: "#b9f4ff"
     }),
@@ -1387,6 +1372,7 @@ function publishEvidence(status: ShowcaseStatus): void {
     updatedAt: new Date().toISOString()
   };
   window.__AURA3D_SHOWCASE_SMART_CITY_CONTROL__ = evidence;
+  window.__AURA3D_SMART_CITY_CONTROL__ = evidence;
   ui.setText("#city-status", status);
   ui.setText("#city-frame", frameCount);
   ui.setText("#city-district", controls.district);
@@ -1465,7 +1451,8 @@ if (new URLSearchParams(location.search).has("crowdProbe")) {
       gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
       try { gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels); }
       finally { gl.bindFramebuffer(gl.READ_FRAMEBUFFER, previousReadFramebuffer); }
-      const submeshCount = Math.max(1, app.nodes.get("city-vehicle-primary")?.snapshot().importedAsset?.renderItemCount ?? 1);
+      const primarySnap = app.nodes.get("city-vehicle-primary")?.snapshot() as { importedAsset?: { renderItemCount?: number } } | undefined;
+      const submeshCount = Math.max(1, primarySnap?.importedAsset?.renderItemCount ?? 1);
       const copyCount = visibleIndex !== undefined ? 1 : 6;
       const observedFleet = mode === "hidden"
         ? { labels: [] as string[], instancesPerDraw: [] as number[] }

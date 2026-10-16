@@ -91,6 +91,7 @@ interface DigitalTwinEvidence {
 declare global {
   interface Window {
     __AURA3D_SHOWCASE_DIGITAL_TWIN_OPS__?: DigitalTwinEvidence;
+    __AURA3D_DIGITAL_TWIN_OPS__?: DigitalTwinEvidence;
   }
 }
 
@@ -386,8 +387,8 @@ app.onFrame(({ dt }) => {
   syncRuntime(uptime);
   if (frameCount < 4 || frameCount % 12 === 0) {
     syncUi();
-    publishEvidence("running");
   }
+  publishEvidence("running");
 });
 
 function buildOpsScene() {
@@ -403,9 +404,9 @@ function buildOpsScene() {
     .add(lights.hemisphere({ name: "workcell bay sky-floor fill", skyColor: "#e4fbf9", groundColor: "#142e38", intensity: 0.48 }))
     .add(lights.directional({ name: "factory key light", position: [2.2, 3.8, 2.9], intensity: 1.98, color: "#fff2d6", shadow: true }))
     .add(lights.directional({ name: "factory cool rim", position: [-2.5, 2.5, -2.4], intensity: 1.12, color: "#78cbe3" }))
-    .add(lights.point({ name: "orangeIndustrialRobot key rim kicker", position: [-1.36, 1.76, 1.14], intensity: 1.24, color: "#ff9e5e" }))
-    .add(lights.point({ name: "workcell cyan practical", position: [-0.82, 1.24, 0.62], intensity: 1.42, color: "#54e7dc" }))
-    .add(lights.point({ name: "workcell warm inspection light", position: [0.76, 1.08, -0.28], intensity: 1.32, color: "#f3ad59" }))
+    .add(lights.point({ name: "orangeIndustrialRobot key rim kicker", position: [-1.36, 2.24, 0.84], intensity: 0.82, color: "#ff9e5e" }))
+    .add(lights.point({ name: "workcell cyan practical", position: [-0.82, 1.84, 0.52], intensity: 0.94, color: "#54e7dc" }))
+    .add(lights.point({ name: "workcell warm inspection light", position: [0.76, 1.78, -0.28], intensity: 0.88, color: "#f3ad59" }))
     .add(effects.ambientOcclusion({ name: "workcell contact occlusion", intensity: 0.58, radius: 0.82, falloff: 1.8, multiBounce: true }))
     .add(effects.contactShadows({ length: 0.22, thickness: 0.045, steps: 12, intensity: 0.84, lights: "sun" }))
     .add(effects.bloom({ name: "workcell status glow", intensity: 0.28, threshold: 0.72, radius: 0.3 }))
@@ -419,19 +420,19 @@ function buildOpsScene() {
 function createWorkcellPresentation(): AuraNodeInput[] {
   const bounds = workcellBounds();
   const { belt, deckHeight, workpieceY } = conveyorDimensions();
-  // Floor and plinth are sized to the workcell's own footprint with margin, so a
-  // larger or smaller asset still stands on a stage that fits it.
-  const floorScale: readonly [number, number, number] = [bounds.size[0] * 1.3, 1, bounds.size[2] * 1.4];
+  // Floor and plinth are sized to the workcell's own footprint with generous margin
+  // so the factory bay floor reads as a grounded dark metallic industrial slab.
+  const floorScale: readonly [number, number, number] = [bounds.size[0] * 14, 1, bounds.size[2] * 14];
   const alarmAnchor = resolveBoundsAnchor(bounds, "top-left", { offset: Math.max(...bounds.size) * 0.1 });
   const scannerAnchor = resolveSemanticRegion(bounds, { id: "scanner", u: 0.78, v: 0.62, w: 0.6 });
 
   const nodes: AuraNodeInput[] = [
-    primitives.plane({ name: "quiet ops floor", material: material.reflectiveFloor({ color: "#0c202a", roughness: 0.32, metallic: 0.34 }) })
+    primitives.plane({ name: "quiet ops floor", material: material.pbr({ color: "#06151e", roughness: 0.96, metallic: 0.03 }) })
       .position(bounds.center[0], bounds.floorY - 0.082, bounds.center[2])
       .scale([...floorScale]),
-    primitives.box({ name: "single workcell presentation plinth", material: material.pbr({ color: "#284650", roughness: 0.48, metallic: 0.28, emissive: "#091c24", emissiveIntensity: 0.22 }) })
-      .position(bounds.center[0], bounds.floorY - 0.04, bounds.center[2])
-      .scale([bounds.size[0] * 1.14, 0.035, bounds.size[2] * 1.2]),
+    primitives.box({ name: "single workcell presentation plinth", material: material.pbr({ color: "#0a1b26", roughness: 0.68, metallic: 0.28, emissive: "#050d15", emissiveIntensity: 0.12 }) })
+      .position(bounds.center[0], bounds.floorY - 0.022, bounds.center[2])
+      .scale([bounds.size[0] * 1.18, 0.04, bounds.size[2] * 1.24]),
     ...createOperationsBay(bounds),
     model(workcellAsset, {
       name: "typed robotic welding workcell route-primary hero",
@@ -473,53 +474,16 @@ function createWorkcellPresentation(): AuraNodeInput[] {
 }
 
 /**
- * A restrained operations bay around the typed workcell. These pieces are
- * deliberately secondary set dressing: they establish a believable factory
- * inspection environment, add depth cues behind the safety glass, and keep the
- * workcell's own geometry as the only route-primary subject. Every placement is
- * derived from the placed asset bounds so a future replacement asset remains
- * grounded without another round of eyeballed coordinates.
+ * Grounded industrial bay around the typed ABB workcell. Every piece sits
+ * directly on the factory bay floor or supports the packaging conveyor track —
+ * no floating gantry sticks or disembodied sky bars.
  */
 function createOperationsBay(bounds: ReturnType<typeof workcellBounds>): AuraNodeInput[] {
   const sizeX = bounds.size[0];
-  const sizeY = bounds.size[1];
   const sizeZ = bounds.size[2];
   const floorY = bounds.floorY;
-  const backZ = bounds.min[2] - sizeZ * 0.48;
-  const frontZ = bounds.max[2] + sizeZ * 0.36;
-  const bayTop = floorY + sizeY * 1.32;
-  const baySide = sizeX * 0.72;
   const { belt, deckHeight, surfaceY } = conveyorDimensions();
-  const wallMaterial = material.pbr({
-    name: "operations bay graphite wall",
-    color: "#143440",
-    roughness: 0.56,
-    metallic: 0.28,
-    emissive: "#081a22",
-    emissiveIntensity: 0.22
-  });
-  const railMaterial = material.metal({
-    name: "operations bay structural rail",
-    color: "#568892",
-    roughness: 0.26,
-    metallic: 0.85,
-    emissive: "#15444e",
-    emissiveIntensity: 0.32
-  });
-  const cyanMaterial = material.emissive({
-    name: "operations bay cyan status rail",
-    color: "#5ee7df",
-    emissive: "#36d8dc",
-    emissiveIntensity: 1.25,
-    opacity: 0.92
-  });
-  const amberMaterial = material.emissive({
-    name: "operations bay amber status rail",
-    color: "#f6bd68",
-    emissive: "#ec8f38",
-    emissiveIntensity: 1.12,
-    opacity: 0.92
-  });
+
   const floorLineMaterial = material.pbr({
     name: "operations bay floor inlay",
     color: "#1c4a56",
@@ -527,13 +491,6 @@ function createOperationsBay(bounds: ReturnType<typeof workcellBounds>): AuraNod
     metallic: 0.58,
     emissive: "#0c2933",
     emissiveIntensity: 0.28
-  });
-  const safetyAmberMaterial = material.emissive({
-    name: "operations bay safety amber",
-    color: "#f6bb61",
-    emissive: "#d86e2b",
-    emissiveIntensity: 0.86,
-    opacity: 0.9
   });
   const beltRailMaterial = material.metal({
     name: "packaging conveyor rail",
@@ -549,65 +506,84 @@ function createOperationsBay(bounds: ReturnType<typeof workcellBounds>): AuraNod
     emissive: "#06252b",
     emissiveIntensity: 0.2
   });
+  const zonePalette: Record<ZoneId, { color: string; emissive: string }> = {
+    assembly: { color: "#54e7dc", emissive: "#2bc8be" },
+    packaging: { color: "#7ee8c4", emissive: "#47c79a" },
+    energy: { color: "#f6bd68", emissive: "#e08e35" },
+    dock: { color: "#65d8e8", emissive: "#38b2c7" }
+  };
+
+  const zonePerimeterNodes: AuraNodeInput[] = [];
+  for (const zone of zoneOrder) {
+    const region = resolveSemanticRegion(bounds, zoneRegions[zone]);
+    const palette = zonePalette[zone];
+    const stripMaterial = material.emissive({
+      name: `${zone} safety perimeter strip`,
+      color: palette.color,
+      emissive: palette.emissive,
+      emissiveIntensity: 0.92,
+      opacity: 0.88
+    });
+    const stripY = floorY + 0.004;
+    const stripH = 0.006;
+    const stripT = 0.014;
+    const halfX = Math.max(0.18, region.size[0] * 0.46);
+    const halfZ = Math.max(0.18, region.size[2] * 0.46);
+    const cx = region.center[0];
+    const cz = region.center[2];
+    zonePerimeterNodes.push(
+      primitives.box({ name: `${zone} safety perimeter north strip`, material: stripMaterial })
+        .position(cx, stripY, cz - halfZ)
+        .scale([halfX * 2, stripH, stripT]),
+      primitives.box({ name: `${zone} safety perimeter south strip`, material: stripMaterial })
+        .position(cx, stripY, cz + halfZ)
+        .scale([halfX * 2, stripH, stripT]),
+      primitives.box({ name: `${zone} safety perimeter west strip`, material: stripMaterial })
+        .position(cx - halfX, stripY, cz)
+        .scale([stripT, stripH, halfZ * 2]),
+      primitives.box({ name: `${zone} safety perimeter east strip`, material: stripMaterial })
+        .position(cx + halfX, stripY, cz)
+        .scale([stripT, stripH, halfZ * 2]),
+      primitives.cylinder({
+        name: `${zone} status beacon pedestal`,
+        material: beltRailMaterial,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(cx + halfX, floorY + 0.075, cz + halfZ)
+        .scale([0.018, 0.15, 0.018]),
+      primitives.sphere({
+        name: `${zone} status beacon light`,
+        material: material.neon({ color: palette.color, emissive: palette.emissive, emissiveIntensity: 1.35 })
+      })
+        .position(cx + halfX, floorY + 0.165, cz + halfZ)
+        .scale(0.026)
+        .runtime(game.runtimeNode(`ops-zone-beacon-${zone}`, { tags: ["zone", "beacon", "runtime"] }))
+    );
+  }
+
+  const supportHeight = Math.max(0.04, belt.center[1] - floorY);
+  const supportCenterY = floorY + supportHeight / 2;
+
   const nodes: AuraNodeInput[] = [
-    primitives.box({ name: "operations bay rear wall", material: wallMaterial, receiveShadow: true })
-      .position(bounds.center[0], floorY + sizeY * 0.57, backZ)
-      .scale([sizeX * 1.22, sizeY * 0.78, 0.045]),
-    primitives.box({ name: "operations bay rear wall lower rail", material: railMaterial, receiveShadow: true })
-      .position(bounds.center[0], floorY + sizeY * 0.16, backZ + 0.055)
-      .scale([sizeX * 1.2, 0.035, 0.035]),
-    primitives.box({ name: "operations bay rear cyan diagnostic rail", material: cyanMaterial })
-      .position(bounds.center[0] - sizeX * 0.12, floorY + sizeY * 0.92, backZ + 0.07)
-      .scale([sizeX * 0.48, 0.014, 0.016]),
-    primitives.box({ name: "operations bay rear amber diagnostic rail", material: amberMaterial })
-      .position(bounds.center[0] + sizeX * 0.42, floorY + sizeY * 0.92, backZ + 0.07)
-      .scale([sizeX * 0.18, 0.014, 0.016]),
-    // Overhead beam and uprights frame the scene like a real inspection cell and
-    // create a strong vertical silhouette around the lower workcell asset.
-    primitives.box({ name: "operations bay overhead beam", material: railMaterial, castShadow: true, receiveShadow: true })
-      .position(bounds.center[0], bayTop, backZ + sizeZ * 0.08)
-      .scale([sizeX * 1.18, 0.038, 0.042]),
-    primitives.box({ name: "operations bay front overhead beam", material: railMaterial, castShadow: true, receiveShadow: true })
-      .position(bounds.center[0], bayTop - sizeY * 0.11, frontZ - sizeZ * 0.12)
-      .scale([sizeX * 1.18, 0.038, 0.042]),
-    primitives.box({ name: "operations bay gantry left depth rail", material: railMaterial, castShadow: true, receiveShadow: true })
-      .position(bounds.center[0] - baySide, bayTop - sizeY * 0.11, bounds.center[2] - sizeZ * 0.08)
-      .scale([0.032, 0.032, sizeZ * 0.6]),
-    primitives.box({ name: "operations bay gantry right depth rail", material: railMaterial, castShadow: true, receiveShadow: true })
-      .position(bounds.center[0] + baySide, bayTop - sizeY * 0.11, bounds.center[2] - sizeZ * 0.08)
-      .scale([0.032, 0.032, sizeZ * 0.6]),
-    primitives.box({ name: "operations bay gantry trolley housing", material: railMaterial, castShadow: true, receiveShadow: true })
-      .position(bounds.center[0] + sizeX * 0.16, bayTop - sizeY * 0.15, bounds.center[2] - sizeZ * 0.12)
-      .scale([sizeX * 0.055, 0.04, sizeZ * 0.065]),
-    primitives.box({ name: "operations bay gantry pendant", material: railMaterial, castShadow: true })
-      .position(bounds.center[0] + sizeX * 0.16, bayTop - sizeY * 0.3, bounds.center[2] - sizeZ * 0.12)
-      .scale([0.012, sizeY * 0.12, 0.012]),
-    primitives.box({ name: "operations bay left upright", material: railMaterial, castShadow: true, receiveShadow: true })
-      .position(bounds.center[0] - baySide, floorY + sizeY * 0.66, backZ + sizeZ * 0.08)
-      .scale([0.034, sizeY * 0.68, 0.034]),
-    primitives.box({ name: "operations bay right upright", material: railMaterial, castShadow: true, receiveShadow: true })
-      .position(bounds.center[0] + baySide, floorY + sizeY * 0.66, backZ + sizeZ * 0.08)
-      .scale([0.034, sizeY * 0.68, 0.034]),
-    primitives.box({ name: "operations bay overhead cyan worklight", material: cyanMaterial })
-      .position(bounds.center[0] - sizeX * 0.18, bayTop - sizeY * 0.08, backZ + sizeZ * 0.16)
-      .scale([sizeX * 0.38, 0.018, 0.026]),
-    primitives.box({ name: "operations bay overhead amber worklight", material: amberMaterial })
-      .position(bounds.center[0] + sizeX * 0.36, bayTop - sizeY * 0.08, backZ + sizeZ * 0.16)
-      .scale([sizeX * 0.16, 0.018, 0.026]),
-    // Inlaid lines point toward the hero and make the conveyor/front edge read as
-    // an intentional machine lane instead of an isolated slab.
-    primitives.box({ name: "operations bay front cyan lane inlay", material: cyanMaterial })
-      .position(bounds.center[0] - sizeX * 0.18, floorY - 0.001, frontZ)
-      .scale([0.018, 0.006, sizeZ * 0.16]),
-    primitives.box({ name: "operations bay front amber lane inlay", material: amberMaterial })
-      .position(bounds.center[0] + sizeX * 0.34, floorY - 0.001, frontZ)
-      .scale([0.018, 0.006, sizeZ * 0.16]),
+    ...zonePerimeterNodes,
     primitives.box({ name: "operations bay left floor guide", material: floorLineMaterial })
-      .position(bounds.center[0] - sizeX * 0.48, floorY - 0.004, bounds.center[2] + sizeZ * 0.06)
-      .scale([0.012, 0.008, sizeZ * 0.52]),
+      .position(bounds.center[0] - sizeX * 0.48, floorY + 0.002, bounds.center[2])
+      .scale([0.016, 0.006, sizeZ * 0.88]),
     primitives.box({ name: "operations bay right floor guide", material: floorLineMaterial })
-      .position(bounds.center[0] + sizeX * 0.48, floorY - 0.004, bounds.center[2] + sizeZ * 0.06)
-      .scale([0.012, 0.008, sizeZ * 0.52]),
+      .position(bounds.center[0] + sizeX * 0.48, floorY + 0.002, bounds.center[2])
+      .scale([0.016, 0.006, sizeZ * 0.88]),
+    // Grounded conveyor support stanchions anchor the raised packaging lane to the factory floor.
+    ...[-0.4, 0, 0.4].map((factor, index) =>
+      primitives.box({
+        name: `packaging conveyor support stanchion ${index + 1}`,
+        material: beltRailMaterial,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(belt.center[0] + belt.size[0] * factor, supportCenterY, belt.center[2])
+        .scale([0.032, supportHeight, belt.size[2] * 0.82])
+    ),
     // Raised belt rails and a contrasting surface turn the single dark slab
     // into a legible packaging lane with contact and scale cues.
     primitives.box({ name: "packaging conveyor surface", material: beltSurfaceMaterial, castShadow: true, receiveShadow: true })
@@ -894,6 +870,12 @@ function syncRuntime(time: number): void {
     .setScale([alarmRadius, alarmRadius, alarmRadius * 0.1]);
   const alarmScale = Math.max(...bounds.size) * (0.036 + (alarmVisible ? Math.abs(Math.sin(time * 6.4)) * 0.025 : 0));
   alarmBeacon.setVisible(alarmVisible).setScale(alarmScale);
+  zoneOrder.forEach((zone, index) => {
+    const isSelected = zone === selectedZone;
+    const isIsolated = zone === isolatedZone;
+    const pulse = 0.024 + (isIsolated ? 0 : Math.sin(time * 3.2 + index * 1.1) * 0.005 + (isSelected ? 0.006 : 0));
+    app.nodes.get(`ops-zone-beacon-${zone}`)?.setVisible(!isIsolated).setScale(pulse);
+  });
   lastMotionProof = {
     conveyorSegmentX: Number(conveyorX.toFixed(3)),
     robotArmRadians: Number(robotArmRadians.toFixed(3)),
@@ -1139,7 +1121,7 @@ function syncUi(): void {
 
 function publishEvidence(status: DigitalTwinEvidence["status"]): void {
   const diagnostics = app.diagnostics();
-  window.__AURA3D_SHOWCASE_DIGITAL_TWIN_OPS__ = {
+  const evidence: DigitalTwinEvidence = {
     status,
     appId: "showcase-digital-twin-ops",
     frameCount,
@@ -1171,6 +1153,8 @@ function publishEvidence(status: DigitalTwinEvidence["status"]): void {
       errors: diagnostics.errors
     }
   };
+  window.__AURA3D_SHOWCASE_DIGITAL_TWIN_OPS__ = evidence;
+  window.__AURA3D_DIGITAL_TWIN_OPS__ = evidence;
 }
 
 function zoneSummary(zoneId: ZoneId): string {

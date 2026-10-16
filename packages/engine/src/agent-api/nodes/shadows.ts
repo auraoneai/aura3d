@@ -15,16 +15,18 @@ export const shadows = {
     readonly color?: AuraColor;
   } = {}): AuraNodeBuilder<AuraPrimitiveNode> => {
     const footprint = options.footprint ?? [1.2, 0.72];
+    const pos = options.position ?? ([0, 0.002, 0] as const);
     return primitives.cylinder({
       name: options.name ?? "soft footprint contact shadow",
       material: material.pbr({
-        color: options.color ?? "#030712",
-        roughness: 0.94,
-        opacity: options.opacity ?? 0.34
+        color: options.color ?? "#02040a",
+        roughness: 0.99,
+        metallic: 0,
+        opacity: Math.min(options.opacity ?? 0.16, 0.18)
       })
     })
-      .position(...(options.position ?? [0, 0.018, 0] as const))
-      .scale([footprint[0], 0.012, footprint[1]]);
+      .position(pos[0], Math.min(pos[1], 0.003), pos[2])
+      .scale([footprint[0], 0.0015, footprint[1]]);
   },
   /** Blob footprint shadow — the PRD-02 name for `contact` (C-10). */
   blobShadow: (options: {
@@ -35,16 +37,18 @@ export const shadows = {
     readonly color?: AuraColor;
   } = {}): AuraNodeBuilder<AuraPrimitiveNode> => {
     const footprint = options.footprint ?? [1.2, 0.72];
+    const pos = options.position ?? ([0, 0.002, 0] as const);
     return primitives.cylinder({
       name: options.name ?? "soft footprint blob shadow",
       material: material.pbr({
-        color: options.color ?? "#030712",
-        roughness: 0.94,
-        opacity: options.opacity ?? 0.34
+        color: options.color ?? "#02040a",
+        roughness: 0.99,
+        metallic: 0,
+        opacity: Math.min(options.opacity ?? 0.16, 0.18)
       })
     })
-      .position(...(options.position ?? [0, 0.018, 0] as const))
-      .scale([footprint[0], 0.012, footprint[1]]);
+      .position(pos[0], Math.min(pos[1], 0.003), pos[2])
+      .scale([footprint[0], 0.0015, footprint[1]]);
   }
 } as const;
 

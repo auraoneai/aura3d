@@ -314,10 +314,18 @@ window.addEventListener("resize", () => {
 });
 publishEvidence("loading");
 setInterval(() => publishEvidence(), 450);
-app.onFrame(() => {
-  if (app.runtime.frame < 4 || app.runtime.frame % 45 === 0) {
-    publishEvidence();
-  }
+app.onFrame(({ time }) => {
+  const compactViewport = window.innerWidth < 700;
+  const streetY = compactViewport ? -0.20 : -0.26;
+  const shuttleTravel = Math.sin(time * 0.45) * 0.22;
+  const plazaCarTravel = Math.cos(time * 0.38) * 0.18;
+  app.nodes.get("architecture-traffic-foreground")
+    ?.setPosition((compactViewport ? 0.34 : 0.38) + shuttleTravel, streetY, (compactViewport ? -0.08 : -0.04) + shuttleTravel * 0.28)
+    .setRotation(0, -0.28, 0);
+  app.nodes.get("architecture-traffic-background")
+    ?.setPosition((compactViewport ? -0.12 : -0.16) - plazaCarTravel * 0.28, streetY, -0.78 + plazaCarTravel)
+    .setRotation(0, 1.29, 0);
+  publishEvidence();
 });
 
 function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<typeof scene> {
@@ -325,6 +333,10 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
   const haze = nextControls.haze / 100;
   const compactViewport = window.innerWidth < 700;
   const spotlightProbeEnabled = new URLSearchParams(location.search).has("spotlightProbe");
+  const districtBaseY = compactViewport ? -0.28 : -0.36;
+  const streetY = compactViewport ? -0.20 : -0.26;
+  const annexX = compactViewport ? -0.68 : -0.76;
+  const annexZ = -1.24;
 
   return scene()
     .background(mood.background)
@@ -357,78 +369,88 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
         "Icosphere.088_TEXTURE FINALE.002_0"
       ]
     })
-      .position(0.2, compactViewport ? -0.28 : -0.36, -0.62)
+      .position(0.2, districtBaseY, -0.62)
       .rotate(0, -0.28, 0)
       .runtime({ id: "architecture-district" }))
+    // Grounded architectural terrace slab and sleek dark-stone podium underneath
+    // the neon annex tower so its cantilevered west wing and base rest solidly on
+    // street-level stone architecture with zero floating geometry.
+    .add(primitives.box({
+      name: "architectural annex grounded terrace slab",
+      size: [1.1, 0.06, 1.1],
+      position: [annexX, districtBaseY - 0.02, annexZ],
+      material: material.pbr({ color: mood.stoneDark, roughness: 0.76, metallic: 0.12 }),
+      castShadow: false,
+      receiveShadow: true
+    }).rotate(0, -0.28, 0))
+    .add(primitives.box({
+      name: "architectural skyline background stone podium",
+      size: [0.52, compactViewport ? 0.42 : 0.48, 0.56],
+      position: [annexX - 0.22, districtBaseY + (compactViewport ? 0.21 : 0.24), annexZ + 0.04],
+      material: material.pbr({ color: mood.stoneDark, roughness: 0.54, metallic: 0.24 }),
+      castShadow: true,
+      receiveShadow: true
+    }).rotate(0, -0.28, 0))
     .add(model(assets.showcaseVoxelBuilding, {
       name: "typed neon annex tower supporting architecture district",
       castShadow: true,
       receiveShadow: true,
       scaleMode: "fit",
-      // A release-proven typed secondary building gives the wide district a
-      // readable vertical anchor. It is deliberately supporting set dressing;
-      // the Skyline City GLB remains the sole route-primary world subject.
-      targetMaxDimension: compactViewport ? 1.08 : 1.25
+      targetMaxDimension: compactViewport ? 0.86 : 0.98
     })
-      .position(compactViewport ? -0.72 : -0.8, compactViewport ? -0.48 : -0.62, -1.52)
-      .rotate(0, 0.22, 0)
+      .position(annexX, districtBaseY + 0.02, annexZ)
+      .rotate(0, -0.28, 0)
       .runtime({ id: "architecture-annex-tower" }))
     .add(model(assets.showcaseCityVehicle, {
       name: "typed district traffic vehicle foreground prop",
       castShadow: true,
       receiveShadow: true,
       scaleMode: "fit",
-      targetMaxDimension: compactViewport ? 0.28 : 0.32
+      targetMaxDimension: compactViewport ? 0.18 : 0.22
     })
-      .position(compactViewport ? 0.44 : 0.5, -0.16, compactViewport ? 0.12 : 0.18)
-      .rotate(0, -0.72, 0)
+      .position(compactViewport ? 0.34 : 0.38, streetY, compactViewport ? -0.08 : -0.04)
+      .rotate(0, -0.28, 0)
       .runtime({ id: "architecture-traffic-foreground" }))
     .add(model(assets.showcaseCityVehicle, {
       name: "typed district traffic vehicle background prop",
       castShadow: true,
       receiveShadow: true,
       scaleMode: "fit",
-      targetMaxDimension: compactViewport ? 0.24 : 0.28
+      targetMaxDimension: compactViewport ? 0.18 : 0.22
     })
-      .position(compactViewport ? -0.22 : -0.32, -0.15, -1.0)
-      .rotate(0, 1.62, 0)
+      .position(compactViewport ? -0.12 : -0.16, streetY, -0.78)
+      .rotate(0, 1.29, 0)
       .runtime({ id: "architecture-traffic-background" }))
-    // Subtle glowing architectural window and plaza light strips that accent the
-    // district silhouette without obstructing any skyline or street geometry.
+    // Grounded warm architectural promenade bollards and a reflective courtyard
+    // water canal basin at street level (replacing floating light sticks).
     .add(primitives.box({
-      name: "architectural plaza foreground warm light strip",
-      size: [0.42, 0.012, 0.018],
-      position: [0.36, -0.34, 0.18],
-      material: material.emissive({ color: mood.accent, emissive: mood.accent, emissiveIntensity: 1.15, opacity: 0.88 })
+      name: "architectural plaza foreground promenade bollard",
+      size: [0.024, 0.042, 0.024],
+      position: [0.34, streetY + 0.021, -0.18],
+      material: material.emissive({ color: mood.accent, emissive: mood.accent, emissiveIntensity: 0.95, opacity: 0.92 })
     }))
     .add(primitives.box({
-      name: "architectural atrium midground glass window glow",
-      size: [0.34, 0.014, 0.018],
-      position: [0.18, -0.12, -0.58],
-      material: material.emissive({ color: mood.glass, emissive: mood.fill, emissiveIntensity: 1.28, opacity: 0.84 })
-    }))
-    .add(primitives.box({
-      name: "architectural skyline background crown beacon",
-      size: [0.48, 0.016, 0.02],
-      position: [-0.74, 0.18, -1.42],
-      material: material.emissive({ color: mood.bloom, emissive: mood.bloom, emissiveIntensity: 1.42, opacity: 0.9 })
-    }))
+      name: "architectural atrium midground reflective water canal pool",
+      size: [0.24, 0.008, 0.14],
+      position: [0.08, streetY + 0.004, -0.58],
+      material: material.pbr({ color: "#0e2f44", roughness: 0.12, metallic: 0.68 })
+    }).rotate(0, -0.28, 0))
     // In normal viewing, keep the terrace tucked cleanly beneath the district
     // base and reduce the caster to a low curbside bollard so the left skyline
     // and annex tower are 100% unobstructed. When `?spotlightProbe=1` runs,
     // retain the probe's exact shadow-test geometry.
     .add(primitives.box({
       name: "architectural spotlight receiver terrace",
-      size: spotlightProbeEnabled ? [2.4, 0.08, 1.7] : [1.38, 0.04, 1.28],
-      position: spotlightProbeEnabled ? [0.08, -0.52, -0.54] : [0.2, -0.5, -0.62],
-      material: material.pbr({ color: spotlightProbeEnabled ? "#566174" : "#1c2836", roughness: 0.82, metallic: 0.08 }),
+      size: spotlightProbeEnabled ? [2.4, 0.08, 1.7] : [1.85, 0.05, 1.65],
+      position: spotlightProbeEnabled ? [0.08, -0.52, -0.54] : [-0.08, districtBaseY - 0.04, -0.78],
+      material: material.pbr({ color: spotlightProbeEnabled ? "#566174" : "#18222e", roughness: 0.82, metallic: 0.08 }),
       castShadow: false,
       receiveShadow: true
-    }))
+    }).rotate(0, spotlightProbeEnabled ? 0 : -0.28, 0))
     .add(primitives.box({
       name: "architectural spotlight pylon caster",
-      size: spotlightProbeEnabled ? [0.3, 0.92, 0.3] : [0.035, 0.055, 0.035],
-      position: spotlightProbeEnabled ? [-0.24, -0.02, -0.18] : [0.68, -0.46, 0.28],
+      size: spotlightProbeEnabled ? [0.3, 0.92, 0.3] : [0.028, 0.045, 0.028],
+      position: spotlightProbeEnabled ? [-0.24, -0.02, -0.18] : [0.52, streetY + 0.022, -0.12],
       material: material.pbr({ color: spotlightProbeEnabled ? "#9a6845" : "#2b394a", roughness: 0.44, metallic: 0.28 }),
       castShadow: true,
       receiveShadow: true
@@ -730,6 +752,7 @@ function publishEvidence(forcedStatus?: RouteStatus): void {
 
   latestEvidence = evidence;
   window.__AURA3D_SHOWCASE_CINEMATIC_ARCHITECTURE__ = evidence;
+  (window as unknown as Record<string, unknown>).__AURA3D_CINEMATIC_ARCHITECTURE__ = evidence;
   renderEvidencePanel(evidence);
 }
 

@@ -72,12 +72,12 @@ const apps = [
     id: "showcase-smart-city-control",
     route: "/apps/showcase-smart-city-control/",
     routeHealth: "/apps/showcase-smart-city-control/route-health.json",
-    classification: "candidate",
-    publicShowcase: true,
+    classification: "removed-from-public-showcase",
+    publicShowcase: false,
     primaryAssetStatus: "typed-primary-assets",
     primitiveStatus: "heavy-set-dressing",
     claimStatus: "bounded",
-    notes: "Typed command vehicle passes retained route-primary and release/deploy asset evidence; procedural city, telemetry, and controls remain bounded supporting context."
+    notes: "Retained command vehicle route; trimmed from promoted gallery in favor of Cinematic Architecture Tour."
   },
   {
     id: "showcase-cinematic-architecture",
@@ -258,8 +258,8 @@ document.querySelectorAll<HTMLAnchorElement>(".showcase-card").forEach((card, in
   image.alt = `${title} live preview`;
   image.width = 720;
   image.height = 450;
-  image.loading = index < 6 ? "eager" : "lazy";
-  image.decoding = "async";
+  image.loading = "eager";
+  image.decoding = "sync";
   image.onerror = () => {
     if (!image.dataset.retried) {
       image.dataset.retried = "true";

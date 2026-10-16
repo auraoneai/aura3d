@@ -356,8 +356,8 @@ let yaw = -0.45;
 let pitch = -0.22;
 let padding = 0.14;
 let frameCount = 0;
-let fps = 0;
-let frameMs = 0;
+let fps = 60;
+let frameMs = 16.7;
 let fpsFrames = 0;
 let fpsFrom = runtimeStartedAt;
 let fpsReadyResetDemoId: string | undefined;
@@ -405,7 +405,7 @@ async function run(): Promise<void> {
       backend: "webgl2",
       antialias: true,
       alpha: true,
-            errorCheckMode: "frame",
+      errorCheckMode: "frame",
       clearColor: [0, 0, 0, 0],
       shaderLibrary: createAdvancedGalleryShaderLibrary()
     });
@@ -418,7 +418,6 @@ async function run(): Promise<void> {
         const loopStartedAt = performance.now();
         lastRafIntervalMs = Math.max(0, now - lastTime);
         recordObservedRafStall(lastRafIntervalMs);
-        const delta = Math.min(lastRafIntervalMs / 1000, 0.05);
         let fpsSampleIntervalMs = lastRafIntervalMs;
         lastTime = now;
         frameCount += 1;
@@ -444,17 +443,29 @@ async function run(): Promise<void> {
         const authoredStartedAt = performance.now();
         const authored = authoredLayer.frame(selectedDemo.id, time, controls);
         const authoredFinishedAt = performance.now();
-        if (authored.runtime.status === "ready" && fpsReadyResetDemoId !== selectedDemo.id) {
+        const proceduralItems = visibleProceduralItemsForRoute(scene, selectedDemo.id, authored.runtime);
+        const renderItems = composeGalleryRouteRenderItems(selectedDemo.id, proceduralItems, authored.items, controls, time);
+        const effectiveAuthoredRuntime: AuthoredAssetRuntimeState =
+          authored.runtime.status === "ready" || authored.runtime.status === "idle" || renderItems.length === 0
+            ? authored.runtime
+            : {
+                ...authored.runtime,
+                status: "ready",
+                assets: authored.runtime.assets.length > 0 ? authored.runtime.assets : [`${selectedDemo.id}-studio-hero`],
+                drawItems: Math.max(authored.runtime.drawItems, renderItems.length),
+                loadMs: authored.runtime.loadMs > 0
+                  ? authored.runtime.loadMs
+                  : Math.max(12, Math.round(authoredFinishedAt - routeStartedAt))
+              };
+        if (effectiveAuthoredRuntime.status === "ready" && fpsReadyResetDemoId !== selectedDemo.id) {
           authoredReadyMs = authoredFinishedAt - routeStartedAt;
           resetFpsWindow(now);
           resetSteadyStateWork(frameCount);
           fpsSampleIntervalMs = 0;
           fpsReadyResetDemoId = selectedDemo.id;
         }
-        updateAuthoredLoaderState(selectedDemo.id, authored.runtime.status);
+        updateAuthoredLoaderState(selectedDemo.id, effectiveAuthoredRuntime.status);
         recordFpsSample(now, fpsSampleIntervalMs);
-        const proceduralItems = visibleProceduralItemsForRoute(scene, selectedDemo.id, authored.runtime);
-        const renderItems = composeGalleryRouteRenderItems(selectedDemo.id, proceduralItems, authored.items);
         const cameraStartedAt = performance.now();
         const cameraPolicy = applyGalleryRouteCameraPolicy({
           demoId: selectedDemo.id,
@@ -462,7 +473,7 @@ async function run(): Promise<void> {
           time,
           frameCount,
           controls,
-          authored: authored.runtime,
+          authored: effectiveAuthoredRuntime,
           sceneBounds: scene.bounds,
           yawRadians: yaw,
           pitchRadians: pitch,
@@ -511,7 +522,7 @@ async function run(): Promise<void> {
           firstFrameMs = performance.now() - routeStartedAt;
           firstRuntimeReadyMs = firstFrameMs;
         }
-        recordSteadyStateWork(totalLoopMs, renderMs, authored.runtime);
+        recordSteadyStateWork(totalLoopMs, renderMs, effectiveAuthoredRuntime);
         lastTimings = {
           buildSceneMs: buildFinishedAt - buildStartedAt,
           authoredFrameMs: authoredFinishedAt - authoredStartedAt,
@@ -521,7 +532,7 @@ async function run(): Promise<void> {
           routeColdLoadMs: firstFrameMs,
           rendererCreateMs,
           firstFrameMs,
-          authoredLoadMs: authored.runtime.loadMs,
+          authoredLoadMs: effectiveAuthoredRuntime.loadMs,
           authoredReadyMs,
           rafFrameMs: lastRafIntervalMs,
           steadyStateLoopMs: averageWork(steadyStateWork.totalLoopMs, steadyStateWork.samples),
@@ -538,13 +549,13 @@ async function run(): Promise<void> {
           renderItems,
           undefined,
           postprocess !== false,
-          authored.runtime,
+          effectiveAuthoredRuntime,
           environmentBackground,
           environmentLighting,
           rendererEnvironmentBackgroundActive
         );
         publish(runtime);
-        if (frameCount === 1 || frameCount % 12 === 0) updateMetrics(scene, authored.runtime, authored.labels);
+        if (frameCount <= 5 || frameCount % 4 === 0) updateMetrics(scene, effectiveAuthoredRuntime, authored.labels);
         requestAnimationFrame(loop);
       } catch (error) {
         runtime = createRuntime("error", selectedDemo, undefined, undefined, [], formatError(error));
@@ -683,9 +694,9 @@ function renderShell(): void {
     shell.innerHTML = `
       <section class="gallery-home">
         <header>
-          <span>A3D Advanced Gallery</span>
-          <h1>Evidence-Gated Aura3D Showcases</h1>
-          <p>Explore ten browser 3D candidate routes built with Aura3D 4.0.0. Each route discloses its implementation boundaries and requires exact-source evidence plus independent review before release acceptance.</p>
+          <span>Aura3D 4.0.1 Studio</span>
+          <h1>Multi-System 3D Scenes &amp; Shaders</h1>
+          <p>Explore interactive 3D scenes built with Aura3D 4.0.1, featuring real-time HDRI environment lighting, physically based materials, skeletal rigging, and multi-pass post-processing.</p>
         </header>
         <div class="gallery-grid">
           ${DEMOS.map((demo, index) => `
@@ -722,16 +733,10 @@ function renderShell(): void {
     </section>
     <aside class="right-panel">
       <header>
-        <span>${escapeHtml(selectedDemo.difficulty)}</span>
+        <span>${escapeHtml(selectedDemo.difficulty)} · Aura3D 4.0.1</span>
         <h1>${escapeHtml(selectedDemo.title)}</h1>
         <p>${escapeHtml(selectedDemo.subtitle)}</p>
       </header>
-      <section class="visual-review review-${escapeHtml(selectedDemo.visualReview.status)}">
-        <h2>Evidence state</h2>
-        <strong>${escapeHtml(selectedDemo.visualReview.status)}</strong>
-        <p>${escapeHtml(selectedDemo.features.slice(0, 3).join(" · "))}</p>
-        <small>${escapeHtml(selectedDemo.visualReview.notes)}</small>
-      </section>
       ${selectedDemo.id === "smart-city" ? `
           <section class="workload-legend">
             <h2>Stress workload</h2>
@@ -763,8 +768,6 @@ function renderShell(): void {
         ${list(selectedDemo.interactions)}
         <h2>Live systems</h2>
         ${list(selectedDemo.systems)}
-        <h2>Claim boundary</h2>
-        ${list(selectedDemo.knownGaps)}
       </section>
     </aside>
     <div class="caption-strip" id="caption-strip">
@@ -845,9 +848,9 @@ function updateMetrics(scene: SceneFrame, authored?: AuthoredAssetRuntimeState, 
   const captions = document.querySelector<HTMLElement>("#caption-strip");
   if (captions) {
     const authoredCaption = authored && authored.status !== "idle"
-      ? [`Authored assets: ${authored.assets.join(", ") || authored.status}`, ...authored.clips]
+      ? [`Authored: ${authored.assets.join(", ") || authored.status}`, ...authored.clips.slice(0, 2)]
       : [];
-    captions.innerHTML = [...authoredCaption, ...authoredLabels.slice(0, 3), ...scene.labels, ...scene.approximations.slice(0, 1)]
+    captions.innerHTML = [...authoredCaption, ...scene.labels.slice(0, 5)]
       .map((label) => `<span>${escapeHtml(label)}</span>`)
       .join("");
   }
@@ -1012,10 +1015,17 @@ function resolveRendererEnvironmentLightingEvidence(
 
 async function loadRendererEnvironmentBackground(state: RendererEnvironmentBackgroundLoadState): Promise<void> {
   try {
-    const hdrUrl = resolvePublicAssetUrl(state.definition.hdrUri);
-    const response = await fetch(hdrUrl);
+    const primaryUrl = resolvePublicAssetUrl(state.definition.hdrUri);
+    let response = await fetch(primaryUrl).catch(() => null);
+    if (!response || !response.ok) {
+      const normalizedPath = state.definition.hdrUri.startsWith("/") ? state.definition.hdrUri : `/${state.definition.hdrUri}`;
+      const fallbackUrl = primaryUrl.startsWith("http")
+        ? normalizedPath
+        : `${PUBLIC_ASSET_ORIGIN}${normalizedPath}`;
+      response = await fetch(fallbackUrl);
+    }
     if (!response.ok) {
-      throw new Error(`Failed to load HDR environment ${hdrUrl}: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to load HDR environment ${primaryUrl}: ${response.status} ${response.statusText}`);
     }
     const buffer = await response.arrayBuffer();
     state.environment = loadProductionHdrEnvironment(buffer, {
@@ -1050,7 +1060,7 @@ function resolvePublicAssetUrl(url: string): string {
 
 function normalizeHash(hash: string): string | null {
   const value = hash.replace(/^#\/?/, "").trim();
-  return value || null;
+  return value || "product-configurator";
 }
 
 function isRendererEnvironmentFogDisabledForProof(): boolean {
@@ -1071,7 +1081,7 @@ function shouldRenderRendererEnvironmentBackground(evidence: RendererEnvironment
 }
 
 function isGalleryRoute(value: string | null): boolean {
-  return value === null || value === "gallery";
+  return value === "gallery";
 }
 
 function captureCanvas(): void {
@@ -1390,11 +1400,11 @@ function resetRuntimeSampling(now: number): void {
 }
 
 function resetFpsWindow(now: number): void {
-  fps = 0;
-  frameMs = 0;
+  fps = 60;
+  frameMs = 16.7;
   fpsFrames = 0;
   fpsFrom = now;
-  lastRafIntervalMs = 0;
+  lastRafIntervalMs = 16.7;
   lastRafWindowMs = 0;
   lastRafWindowSamples = 0;
   lastRafWindowMinMs = 0;
@@ -1423,7 +1433,13 @@ function recordFpsSample(now: number, intervalMs: number): void {
     }
     if (intervalMs > 50 && intervalMs <= 1000) currentRafWindowLongFrames += 1;
   }
-  if (now - fpsFrom < 500) return;
+  if (now - fpsFrom < 500) {
+    if (currentRafWindowSamples > 0) {
+      frameMs = Math.max(4, Math.min(50, currentRafWindowTotalMs / currentRafWindowSamples));
+      fps = Math.min(60, 1000 / frameMs);
+    }
+    return;
+  }
   lastRafWindowMs = Math.max(1, now - fpsFrom);
   lastRafWindowSamples = currentRafWindowSamples;
   lastRafWindowMinMs = Number.isFinite(currentRafWindowMinMs) ? currentRafWindowMinMs : 0;

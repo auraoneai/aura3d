@@ -81,6 +81,7 @@ export function createContactShadowPass(options: ContactShadowPassOptions): Cont
     { id: "core-contact", scaleX: 0.36, scaleZ: 0.28, lift: 0.0028, alpha: 0.036, offsetScale: 0 },
     { id: "asset-anchor", scaleX: 0.2, scaleZ: 0.16, lift: 0.0032, alpha: 0.024, offsetScale: -0.04 }
   ] as const;
+  const liftScale = clamp(height * 2.5, 0.04, 1);
   const renderItems: RenderItem[] = layers.map((layer) => ({
     label: `${labelPrefix}-${layer.id}`,
     geometry,
@@ -92,11 +93,11 @@ export function createContactShadowPass(options: ContactShadowPassOptions): Cont
     modelMatrix: composeMat4(
       [
         centerX + directionalOffset[0] * layer.offsetScale,
-        options.floorY + layer.lift,
+        options.floorY + layer.lift * liftScale,
         centerZ + directionalOffset[1] * layer.offsetScale
       ],
       projectionRotation,
-      [radiusX * layer.scaleX, 0.0008, radiusZ * layer.scaleZ]
+      [radiusX * layer.scaleX, 0.0004 * liftScale, radiusZ * layer.scaleZ]
     )
   }));
   const footprintPoints = sanitizeFootprintPoints(options.footprintPoints ?? [], bounds, options.floorY).slice(0, 24);
@@ -109,17 +110,17 @@ export function createContactShadowPass(options: ContactShadowPassOptions): Cont
       geometry,
       material: new UnlitMaterial({
         name: `${labelPrefix}-footprint-${index}-material`,
-        color: [0.006, 0.007, 0.009, 0.04 * opacity * gapFade * pointFade],
+        color: [0.006, 0.007, 0.009, 0.025 * opacity * gapFade * pointFade],
         renderState: { blend: true, depthWrite: false, cullMode: "none" }
       }),
       modelMatrix: composeMat4(
         [
           point[0] + directionalOffset[0] * 0.16,
-          options.floorY + 0.045 + index * 0.0002,
+          options.floorY + (0.0012 + index * 0.00004) * liftScale,
           point[2] + directionalOffset[1] * 0.16
         ],
         projectionRotation,
-        [footprintRadius * 1.35, 0.0025, footprintRadius]
+        [footprintRadius * 1.35, 0.0005 * liftScale, footprintRadius]
       )
     });
   });

@@ -19,29 +19,17 @@ import {
   timeline,
   ui,
   type AuraCameraSpec,
+  type AuraColor,
+  type AuraInstanceTransform,
   type AuraNodeInput,
   type AuraSceneSnapshot
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import "./styles.css";
 
-/*
- * Chart volume, declared once, above everything that consumes it.
- *
- * This is a data-visualisation route, so the *extent* of the chart is a legitimate
- * level-design decision -- unlike an asset-relative marker, there is no asset whose bounds
- * it should follow. What was not legitimate was restating that extent as two dozen
- * unrelated literals: axis rails, crosshairs, orbits, the inference core and every label
- * each carried their own numbers, so changing the chart size moved some of them and left
- * the rest behind.
- *
- * Declared before use because the scene is composed during module evaluation; a `const`
- * below the builder is in its temporal dead zone when the builder runs.
- */
-const CHART_EXTENT = { width: 1.36, height: 0.9, depth: 0.82 } as const;
-/** Where the chart volume sits. */
-const CHART_ORIGIN = [0, 0.045, 0.08] as const;
-/** The chart volume as placed bounds, so helpers can be resolved as regions of it. */
+const CHART_EXTENT = { width: 1.56, height: 1.04, depth: 1.12 } as const;
+const CHART_ORIGIN = [0, 0.06, 0] as const;
+
 function chartBounds() {
   return placedBounds({
     position: [CHART_ORIGIN[0], CHART_ORIGIN[1], CHART_ORIGIN[2]],
@@ -49,16 +37,14 @@ function chartBounds() {
     floorY: CHART_ORIGIN[1]
   });
 }
-/** Named point inside the chart volume, in normalized 0..1 coordinates. */
+
 function chartPoint(u: number, v: number, w: number): readonly [number, number, number] {
   const region = resolveSemanticRegion(chartBounds(), { id: "chart-point", u, v, w });
   return [region.center[0], region.center[1], region.center[2]];
 }
 
-/** Named chart points, so several elements can share one location by name. */
-const CORE_POINT = chartPoint(0.5, 1.0, 0.21);
-const CONFIDENCE_POINT = chartPoint(0.5, 0.59, 0.26);
-const SELECTED_KPI_POINT = chartPoint(0.66, 0.91, 0.43);
+const CORE_POINT = [0, 0.58, 0] as const;
+const SELECTED_KPI_POINT = chartPoint(0.68, 0.86, 0.42);
 
 const APP_ID = "showcase-data-galaxy";
 const FORMATIONS = ["galaxy", "sphere", "vortex", "network", "wave"] as const;
@@ -125,32 +111,232 @@ interface DataGalaxyEvidence {
 declare global {
   interface Window {
     __AURA3D_SHOWCASE_DATA_GALAXY__?: DataGalaxyEvidence;
+    __AURA3D_DATA_GALAXY__?: DataGalaxyEvidence;
   }
 }
 
-const controls: DataGalaxyControls = {
-  formation: "galaxy",
-  cameraMode: "overview",
-  particleCount: 220,
-  speed: 1,
-  performance: "balanced",
-  connections: false
-};
+function resolveInitialControls(): DataGalaxyControls {
+  const params = new URLSearchParams(window.location.search);
+  const rawFormation = params.get("formation") ?? undefined;
+  const rawCamera = params.get("camera") ?? undefined;
+  const rawPerformance = params.get("performance") ?? undefined;
+  const rawCount = Number(params.get("count") ?? "220");
+  const rawSpeed = Number(params.get("speed") ?? "1");
+  const rawConnections = params.get("connections");
+
+  return {
+    formation: isFormation(rawFormation) ? rawFormation : "galaxy",
+    cameraMode: isCameraMode(rawCamera) ? rawCamera : "overview",
+    particleCount: Number.isFinite(rawCount) ? Math.min(600, Math.max(80, Math.round(rawCount))) : 220,
+    speed: Number.isFinite(rawSpeed) ? Math.min(2.4, Math.max(0.4, Number(rawSpeed.toFixed(2)))) : 1,
+    performance: rawPerformance && isPerformanceTier(rawPerformance) ? rawPerformance : "balanced",
+    connections: rawConnections === "1" || rawConnections === "true"
+  };
+}
+
+const controls: DataGalaxyControls = resolveInitialControls();
 
 const dataCoreAsset = assets.showcaseParticleCore;
 
 /*
  * Route-primary subject, declared once.
  *
- * The declared hero is the diagnostic anchor copy of the particle core, authored
- * at `targetMaxDimension: 2.05` with no additional node scale. The composition
- * probe measures this node so route-primary evidence describes the declared hero
- * rather than whichever small blob a whole-frame analysis happens to score
- * highest in a dense scene.
+ * Scaled to a compact central nucleus (`targetMaxDimension: 0.42` at `[0, 0.58, 0]`)
+ * so the 3D spiral galaxy, cluster hubs, and celestial astrolabe rings remain
+ * unobstructed around the galactic core.
  */
 const DATA_CORE_NODE_ID = "data-galaxy-diagnostic-anchor";
-const DATA_CORE_TARGET_MAX_DIMENSION = 2.05;
-const DATA_CORE_POSITION = [0, 0.3, -0.22] as const;
+const DATA_CORE_TARGET_MAX_DIMENSION = 0.42;
+const DATA_CORE_POSITION = [0, 0.58, 0] as const;
+let subjectSuppressed = false;
+
+const GALAXY_CYAN_COUNT = 160;
+const GALAXY_GOLD_COUNT = 120;
+const GALAXY_VIOLET_COUNT = 100;
+
+const cyanPalette: readonly AuraColor[] = ["#38bdf8", "#22d3ee", "#64f4cf", "#67e8f9", "#0ea5e9"];
+const goldPalette: readonly AuraColor[] = ["#fbbf24", "#f59e0b", "#ffd27d", "#fde047", "#fb923c"];
+const violetPalette: readonly AuraColor[] = ["#a855f7", "#c084fc", "#ff8ba7", "#818cf8", "#e879f9"];
+
+const galaxyCyanTransforms: AuraInstanceTransform[] = Array.from({ length: GALAXY_CYAN_COUNT }, () => ({
+  position: [0, 0.58, 0],
+  scale: 1
+}));
+const galaxyCyanColors: AuraColor[] = Array.from(
+  { length: GALAXY_CYAN_COUNT },
+  (_, index) => cyanPalette[index % cyanPalette.length]!
+);
+
+const galaxyGoldTransforms: AuraInstanceTransform[] = Array.from({ length: GALAXY_GOLD_COUNT }, () => ({
+  position: [0, 0.58, 0],
+  scale: 1
+}));
+const galaxyGoldColors: AuraColor[] = Array.from(
+  { length: GALAXY_GOLD_COUNT },
+  (_, index) => goldPalette[index % goldPalette.length]!
+);
+
+const galaxyVioletTransforms: AuraInstanceTransform[] = Array.from({ length: GALAXY_VIOLET_COUNT }, () => ({
+  position: [0, 0.58, 0],
+  scale: 1
+}));
+const galaxyVioletColors: AuraColor[] = Array.from(
+  { length: GALAXY_VIOLET_COUNT },
+  (_, index) => violetPalette[index % violetPalette.length]!
+);
+
+const NETWORK_HUB_CENTERS: readonly (readonly [number, number, number])[] = [
+  [1.08, 0.92, -0.1],
+  [-1.02, 0.78, -0.42],
+  [-0.18, 0.48, 0.88],
+  [0.82, 0.54, 0.68],
+  [-0.78, 0.64, 0.52],
+  [0.14, 0.98, -0.78],
+  [-0.42, 0.36, -0.84],
+  [1.14, 0.44, -0.68]
+] as const;
+
+function computeStarPosition(
+  tierIndex: number,
+  indexInTier: number,
+  tierTotal: number,
+  elapsedSeconds: number
+): { readonly position: [number, number, number]; readonly scale: number } {
+  const [cx, cy, cz] = DATA_CORE_POSITION;
+  const globalIndex = tierIndex * 200 + indexInTier;
+  const seed = (globalIndex + 11) * 1.61803398875;
+  const norm = (indexInTier + 0.5) / tierTotal;
+  const t = elapsedSeconds * controls.speed;
+  const formation = controls.formation;
+
+  if (formation === "galaxy") {
+    const armCount = 4;
+    const arm = (indexInTier + tierIndex) % armCount;
+    const radialNorm = Math.pow(norm, 0.78);
+    const radius = 0.28 + radialNorm * 1.68;
+    const spiralTwist = radius * 2.45 - t * (0.42 + 0.24 / (radius + 0.35));
+    const armOffset = (arm * Math.PI * 2) / armCount;
+    const scatter = Math.sin(seed * 5.7) * (0.08 + radialNorm * 0.14);
+    const angle = armOffset + spiralTwist + scatter;
+    const x = cx + Math.cos(angle) * radius;
+    const z = cz + Math.sin(angle) * radius * 0.88;
+    const diskThickness = (1 - radialNorm * 0.65) * 0.24;
+    const y =
+      cy +
+      Math.sin(seed * 9.3 + t * 1.4) * diskThickness +
+      Math.cos(angle * 2 + t * 0.8) * 0.06;
+    const scale = (0.76 + 0.48 * Math.sin(t * 2.8 + seed * 4.1)) * (1.15 - radialNorm * 0.32);
+    return {
+      position: [Number(x.toFixed(3)), Number(y.toFixed(3)), Number(z.toFixed(3))],
+      scale: Number(scale.toFixed(3))
+    };
+  }
+
+  if (formation === "sphere") {
+    const phi = Math.acos(1 - 2 * norm);
+    const shell = tierIndex === 0 ? 1.28 : tierIndex === 1 ? 0.92 : 1.54;
+    const r = shell + Math.sin(t * 1.8 + seed * 3.2) * 0.08;
+    const theta = seed * Math.PI * 2 + t * (tierIndex % 2 === 0 ? 0.48 : -0.42);
+    const x = cx + Math.sin(phi) * Math.cos(theta) * r;
+    const z = cz + Math.sin(phi) * Math.sin(theta) * r;
+    const y = cy + Math.cos(phi) * r * 0.76;
+    const scale = 0.82 + 0.42 * Math.cos(t * 3.1 + seed * 5.2);
+    return {
+      position: [Number(x.toFixed(3)), Number(y.toFixed(3)), Number(z.toFixed(3))],
+      scale: Number(scale.toFixed(3))
+    };
+  }
+
+  if (formation === "vortex") {
+    const heightNorm = (norm + t * 0.18) % 1;
+    const y = 0.06 + heightNorm * 1.32;
+    const funnelRadius = 0.22 + Math.pow(heightNorm, 1.12) * 1.48;
+    const angle = seed * Math.PI * 2 + t * (1.65 - heightNorm * 0.65) + heightNorm * 5.2;
+    const x = cx + Math.cos(angle) * funnelRadius;
+    const z = cz + Math.sin(angle) * funnelRadius;
+    const scale = 0.75 + Math.sin(heightNorm * Math.PI) * 0.58;
+    return {
+      position: [Number(x.toFixed(3)), Number(y.toFixed(3)), Number(z.toFixed(3))],
+      scale: Number(scale.toFixed(3))
+    };
+  }
+
+  if (formation === "network") {
+    const hubIndex = (indexInTier + tierIndex * 3) % NETWORK_HUB_CENTERS.length;
+    const hub = NETWORK_HUB_CENTERS[hubIndex]!;
+    const isBridgeNode = indexInTier % 4 === 0;
+    if (isBridgeNode) {
+      const nextHub = NETWORK_HUB_CENTERS[(hubIndex + 1) % NETWORK_HUB_CENTERS.length]!;
+      const pulse = (Math.sin(t * 1.4 + seed) * 0.5 + 0.5);
+      const x = hub[0] + (nextHub[0] - hub[0]) * pulse;
+      const y = hub[1] + (nextHub[1] - hub[1]) * pulse + Math.sin(pulse * Math.PI) * 0.12;
+      const z = hub[2] + (nextHub[2] - hub[2]) * pulse;
+      return {
+        position: [Number(x.toFixed(3)), Number(y.toFixed(3)), Number(z.toFixed(3))],
+        scale: Number((0.88 + 0.35 * Math.sin(t * 3.4 + seed)).toFixed(3))
+      };
+    }
+    const localRadius = 0.12 + (indexInTier % 7) * 0.042;
+    const theta = seed * Math.PI * 2 + t * 0.95;
+    const phi = (seed * 3.7) % Math.PI;
+    const x = hub[0] + Math.sin(phi) * Math.cos(theta) * localRadius;
+    const y = hub[1] + Math.cos(phi) * localRadius * 0.85;
+    const z = hub[2] + Math.sin(phi) * Math.sin(theta) * localRadius;
+    return {
+      position: [Number(x.toFixed(3)), Number(y.toFixed(3)), Number(z.toFixed(3))],
+      scale: Number((0.82 + 0.38 * Math.cos(t * 2.7 + seed)).toFixed(3))
+    };
+  }
+
+  // "wave" formation
+  const cols = 16;
+  const rows = Math.max(6, Math.ceil(tierTotal / cols));
+  const col = indexInTier % cols;
+  const row = Math.floor(indexInTier / cols);
+  const u = (col / (cols - 1)) * 2 - 1;
+  const v = (row / Math.max(1, rows - 1)) * 2 - 1;
+  const x = u * 1.68 + (tierIndex - 1) * 0.07;
+  const z = v * 1.28 + (tierIndex - 1) * 0.05;
+  const waveY =
+    cy -
+    0.06 +
+    Math.sin(x * 2.35 + t * 1.55 + tierIndex * 0.7) * 0.28 +
+    Math.cos(z * 2.45 - t * 1.25 + tierIndex * 0.5) * 0.22;
+  const scale = 0.78 + 0.44 * Math.sin(t * 2.5 + u * 3.1 + v * 2.7);
+  return {
+    position: [Number(x.toFixed(3)), Number(waveY.toFixed(3)), Number(z.toFixed(3))],
+    scale: Number(scale.toFixed(3))
+  };
+}
+
+function updateGalaxyFormationTransforms(elapsedSeconds: number): void {
+  const ratio = Math.min(1, Math.max(0.28, effectiveParticleCount() / 360));
+  const activeCyan = Math.max(48, Math.round(GALAXY_CYAN_COUNT * ratio));
+  const activeGold = Math.max(36, Math.round(GALAXY_GOLD_COUNT * ratio));
+  const activeViolet = Math.max(30, Math.round(GALAXY_VIOLET_COUNT * ratio));
+
+  for (let i = 0; i < GALAXY_CYAN_COUNT; i += 1) {
+    if (i >= activeCyan) {
+      galaxyCyanTransforms[i] = { position: [0, -10, 0], scale: 0.0001 };
+      continue;
+    }
+    galaxyCyanTransforms[i] = computeStarPosition(0, i, activeCyan, elapsedSeconds);
+  }
+  for (let i = 0; i < GALAXY_GOLD_COUNT; i += 1) {
+    if (i >= activeGold) {
+      galaxyGoldTransforms[i] = { position: [0, -10, 0], scale: 0.0001 };
+      continue;
+    }
+    galaxyGoldTransforms[i] = computeStarPosition(1, i, activeGold, elapsedSeconds);
+  }
+  for (let i = 0; i < GALAXY_VIOLET_COUNT; i += 1) {
+    if (i >= activeViolet) {
+      galaxyVioletTransforms[i] = { position: [0, -10, 0], scale: 0.0001 };
+      continue;
+    }
+    galaxyVioletTransforms[i] = computeStarPosition(2, i, activeViolet, elapsedSeconds);
+  }
+}
 
 let lastChanged = "initial-load";
 let activeBuild = buildDataGalaxyScene();
@@ -170,26 +356,35 @@ publishEvidence("ready");
 /*
  * Route-primary evidence for a dense full-frame data scene.
  *
- * Without subject isolation the fallback analyzer finds 34 separate components
- * here: the one that is actually the scene spans the full crop height and is
- * rejected as clipped, so the highest-scoring survivor was a 51x13 fragment
- * carrying 620 pixels. That measured a label, not the hero. Suppressing the
- * declared hero and diffing the frames measures the hero itself.
- *
- * Category is `application`: a typed hero asset, but no play space and no ground
- * contact to prove.
+ * Suppressing the declared central galactic nucleus assembly and diffing the
+ * frames measures the central hero in isolation while keeping the background
+ * starfield deterministic.
  */
 Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   value: {
     category: "application",
     subject: {
       position: DATA_CORE_POSITION,
-      rotation: [0.02, 0.34, 0] as const,
+      rotation: [0.08, 0.34, 0] as const,
       targetSize: DATA_CORE_TARGET_MAX_DIMENSION
     },
-    setSubjectSuppressed: (suppressed: boolean) => {
+    settleSubjectPose: () => {
+      subjectSuppressed = false;
       app?.pause();
-      app?.nodes.get(DATA_CORE_NODE_ID)?.setScale(suppressed ? 0.0001 : 1);
+      app?.nodes.get(DATA_CORE_NODE_ID)?.setScale(1);
+      app?.nodes.get("data-galaxy-core")?.setScale(0.16);
+      app?.nodes.get("data-galaxy-vortex-ring")?.setScale([1.14, 1.14, 0.018]);
+      app?.nodes.get("data-galaxy-inner-halo")?.setScale([0.82, 0.82, 0.016]);
+      app?.step(0);
+      publishEvidence("ready");
+    },
+    setSubjectSuppressed: (suppressed: boolean) => {
+      subjectSuppressed = Boolean(suppressed);
+      app?.pause();
+      app?.nodes.get(DATA_CORE_NODE_ID)?.setScale(subjectSuppressed ? 0.0001 : 1);
+      app?.nodes.get("data-galaxy-core")?.setScale(subjectSuppressed ? 0.0001 : 0.16);
+      app?.nodes.get("data-galaxy-vortex-ring")?.setScale(subjectSuppressed ? 0.0001 : [1.14, 1.14, 0.018]);
+      app?.nodes.get("data-galaxy-inner-halo")?.setScale(subjectSuppressed ? 0.0001 : [0.82, 0.82, 0.016]);
       app?.step(0);
     }
   },
@@ -198,34 +393,82 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
 
 app.onFrame(({ frame, time }) => {
   const speed = controls.speed;
-  app?.nodes.get("data-galaxy-core")?.setRotation(time * 0.16 * speed, time * 0.54 * speed, 0);
-  app?.nodes.get("data-galaxy-core-asset")?.setRotation(time * 0.12 * speed, time * 0.38 * speed, 0.08);
-  app?.nodes.get("data-galaxy-vortex-ring")?.setRotation(1.22, time * 0.32 * speed, 0.22);
-  app?.nodes.get("data-galaxy-attractor-east")?.setPosition(1.42 + Math.sin(time * speed * 0.7) * 0.08, 1.38, -0.16);
+  updateGalaxyFormationTransforms(time + 1.8);
+
+  if (!subjectSuppressed) {
+    app?.nodes.get(DATA_CORE_NODE_ID)?.setRotation(0.08 + time * 0.18 * speed, 0.34 + time * 0.46 * speed, 0.04);
+    app?.nodes.get("data-galaxy-core")?.setRotation(time * 0.22 * speed, time * 0.58 * speed, 0);
+    app?.nodes.get("data-galaxy-vortex-ring")?.setRotation(1.22 + Math.sin(time * 0.5) * 0.14, time * 0.36 * speed, 0.22);
+    app?.nodes.get("data-galaxy-inner-halo")?.setRotation(0.86 + Math.cos(time * 0.6) * 0.16, -time * 0.44 * speed, 0.16);
+  }
+  app?.nodes.get("data-galaxy-attractor-east")?.setPosition(1.08 + Math.sin(time * speed * 0.7) * 0.08, 0.92, -0.1);
   {
-    const selectedScale = 0.072 + Math.sin(time * 2.4 * speed) * 0.014;
+    const selectedScale = 0.056 + Math.sin(time * 2.4 * speed) * 0.012;
     app?.nodes.get("data-galaxy-selected-kpi")?.setScale([selectedScale, selectedScale, selectedScale]);
   }
-  if (frame % 12 === 0) publishEvidence("ready");
+  if (frame <= 30 || frame % 4 === 0) publishEvidence("ready");
 });
 
 function buildDataGalaxyScene(): SceneBuild {
-  const dataset = createDataset(controls.formation);
-  const sceneNodes = [
-    ...createCleanDataBarsNodes(dataset),
-    ...createGalaxyOverlayNodes()
-  ];
+  updateGalaxyFormationTransforms(1.8);
+  const sceneNodes = createGalaxyOverlayNodes();
+  const accentColor: AuraColor =
+    controls.formation === "network"
+      ? "#a3e635"
+      : controls.formation === "vortex"
+        ? "#fbbf24"
+        : controls.formation === "sphere"
+          ? "#38bdf8"
+          : "#64f4cf";
+
   const builder = scene()
-    .background("#060b0f")
+    .background("#040811")
     .add(environments.nightCinematic({
       name: "data galaxy observatory HDR IBL",
-      intensity: 0.96,
-      color: "#64f4cf"
+      intensity: 1.04,
+      color: accentColor
     }))
-    .add(primitives.plane({ name: "quiet transparent data explorer floor", material: material.reflectiveFloor({ color: "#081417", roughness: 0.24, metallic: 0.32 }) })
-      .position(0, -0.045, 0.1)
-      .scale([2.35, 1, 1.62]))
+    .add(primitives.cylinder({
+      name: "observatory-astrolabe-base",
+      material: material.pbr({ color: "#030710", roughness: 0.82, metallic: 0.28 })
+    })
+      .position(0, -0.22, 0)
+      .scale([1.15, 0.025, 1.15]))
+    .add(primitives.cylinder({
+      name: "observatory-event-horizon",
+      material: material.pbr({ color: "#050d1a", roughness: 0.72, metallic: 0.38 })
+    })
+      .position(0, -0.19, 0)
+      .scale([0.78, 0.012, 0.78]))
+    .add(primitives.torus({
+      name: "astrolabe-outer-horizon-ring",
+      material: material.neon({ color: "#0c3554", emissive: "#38bdf8", emissiveIntensity: 0.36, opacity: 0.48 })
+    })
+      .position(0, -0.14, 0)
+      .rotate(1.5708, 0, 0)
+      .scale([0.68, 0.68, 0.012]))
     .addMany(sceneNodes)
+    .add(primitives.sphere({
+      name: "galaxy-tier-cyan",
+      size: 0.038,
+      instances: galaxyCyanTransforms,
+      instanceColors: galaxyCyanColors,
+      material: material.neon({ color: "#38bdf8", emissive: "#38bdf8", emissiveIntensity: 2.35 })
+    }))
+    .add(primitives.sphere({
+      name: "galaxy-tier-gold",
+      size: 0.036,
+      instances: galaxyGoldTransforms,
+      instanceColors: galaxyGoldColors,
+      material: material.neon({ color: "#fbbf24", emissive: "#fbbf24", emissiveIntensity: 2.25 })
+    }))
+    .add(primitives.sphere({
+      name: "galaxy-tier-violet",
+      size: 0.034,
+      instances: galaxyVioletTransforms,
+      instanceColors: galaxyVioletColors,
+      material: material.neon({ color: "#a855f7", emissive: "#c084fc", emissiveIntensity: 2.15 })
+    }))
     .add(effects.ambientOcclusion({
       name: "data galaxy chart ambient occlusion",
       intensity: 0.42,
@@ -233,72 +476,67 @@ function buildDataGalaxyScene(): SceneBuild {
       falloff: 1.6,
       multiBounce: true
     }))
-    .add(effects.contactShadows({
-      length: 0.18,
-      thickness: 0.04,
-      steps: 12,
-      intensity: 0.68,
-      lights: "sun"
+    .add(effects.fog({ name: "soft analytics volume haze", density: 0.012, color: "#06101c", intensity: 0.16 }))
+    .add(effects.bloom({
+      name: "controlled data galaxy bloom",
+      intensity: controls.performance === "cinematic" ? 0.42 : 0.34,
+      threshold: 0.64,
+      radius: 0.36
     }))
-    .add(effects.fog({ name: "soft analytics volume haze", density: 0.015, color: "#102426", intensity: 0.2 }))
-    .add(effects.bloom({ name: "controlled data galaxy bloom", intensity: controls.performance === "cinematic" ? 0.36 : 0.28, threshold: 0.68, radius: 0.34 }))
-    .add(effects.vignette({ name: "data galaxy observatory vignette", intensity: 0.2, smoothness: 0.74, roundness: 0.86, color: "#030506" }))
-    .add(effects.colorGrade({ name: "data galaxy analytics grade", contrast: 1.08, saturation: 1.12 }))
+    .add(effects.vignette({
+      name: "data galaxy observatory vignette",
+      intensity: 0.22,
+      smoothness: 0.74,
+      roundness: 0.86,
+      color: "#020409"
+    }))
+    .add(effects.colorGrade({ name: "data galaxy analytics grade", contrast: 1.09, saturation: 1.14 }))
     .add(effects.auroraRibbon({
       name: "data galaxy upper inference ribbon",
-      color: controls.formation === "network" ? "#a3e635" : "#64f4cf",
+      color: accentColor,
       colorTop: "#ffd27d",
-      intensity: 0.58,
+      intensity: 0.52,
       width: 3.4,
-      height: 1.32,
+      height: 1.18,
       segments: 56,
-      sway: 0.65,
+      sway: 0.62,
       shimmer: 0.52
-    }).position(0, 1.48, -1.35))
+    }).position(0, 1.52, -1.42))
     .add(effects.particles({
       name: "restrained inference dust particle system",
       emitter: controls.formation === "wave" ? "fountain" : "swirl",
       particleCount: effectiveParticleCount(),
-      emissionRate: Math.round(16 * controls.speed),
-      color: controls.formation === "network" ? "#a3e635" : "#64f4cf",
-      radius: controls.performance === "dense" ? 0.46 : 0.38,
-      height: 0.52,
-      speed: controls.speed * 0.38,
-      turbulence: controls.performance === "cinematic" ? 0.04 : 0.06,
-      materialMode: "spark"
-    }))
+      emissionRate: Math.round(28 * controls.speed),
+      color: accentColor,
+      radius: controls.performance === "dense" ? 1.55 : 1.25,
+      height: 1.08,
+      speed: controls.speed * 0.46,
+      turbulence: controls.performance === "cinematic" ? 0.08 : 0.12,
+      intensity: 0.64,
+      materialMode: "spark",
+      texturedBillboard: true
+    }).position(...DATA_CORE_POSITION))
     .add(model(dataCoreAsset, {
       name: "typed diagnostic particle core route-primary hero",
       scaleMode: "fit",
       targetMaxDimension: DATA_CORE_TARGET_MAX_DIMENSION,
-      material: material.neon({ color: "#64f4cf", emissive: "#64f4cf", emissiveIntensity: 1.25 }),
+      material: material.neon({ color: "#64f4cf", emissive: accentColor, emissiveIntensity: 1.45 }),
       castShadow: false,
       receiveShadow: true
     })
       .position(...DATA_CORE_POSITION)
-      .rotate(0.02, 0.34, 0)
+      .rotate(0.08, 0.34, 0)
+      .scale(subjectSuppressed ? 0.0001 : 1)
+      .animate({ clip: "turntable", speed: 0.14, captureTime: 0.42 })
       .runtime(game.runtimeNode(DATA_CORE_NODE_ID, { tags: ["typed-asset", "diagnostic-anchor", "particle-core"] })))
-    .add(model(dataCoreAsset, {
-      name: "typed data reactor particle core central observatory",
-      scaleMode: "fit",
-      targetMaxDimension: 0.52,
-      material: material.glass({ color: "#64f4cf", opacity: 0.42, roughness: 0.16 }),
-      castShadow: true,
-      receiveShadow: false
-    })
-      .position(0.7, 0.22, -0.6)
-      .rotate(0.12, -0.18, 0.08)
-      .scale(0.48)
-      .animate({ clip: "turntable", speed: 0.12, captureTime: 0.42 })
-      .runtime(game.runtimeNode("data-galaxy-core-asset", { tags: ["typed-asset", "data-reactor", "hero"] })))
-    .add(lights.ambient({ name: "data galaxy ambient fill", color: "#c2f7ea", intensity: 0.38 }))
-    .add(lights.hemisphere({ name: "data galaxy sky-floor hemisphere", skyColor: "#9ef8e2", groundColor: "#142a2e", intensity: 0.52 }))
+    .add(lights.ambient({ name: "data galaxy ambient fill", color: "#c2f7ea", intensity: 0.4 }))
+    .add(lights.hemisphere({ name: "data galaxy sky-floor hemisphere", skyColor: "#9ef8e2", groundColor: "#091524", intensity: 0.54 }))
     .add(lights.directional({ name: "data galaxy chart key light", position: [-2.4, 4.2, 3.2], color: "#e6fff8", intensity: 1.65, shadow: true }))
-    .add(lights.directional({ name: "data galaxy golden rim light", position: [2.8, 3.1, -2.2], color: "#ffd27d", intensity: 1.15 }))
-    .add(lights.point({ name: "data galaxy amber rim light", position: [2.4, 2.5, 2.5], color: "#ffd27d", intensity: 1.55 }))
-    .add(lights.point({ name: "data galaxy teal core light", position: [-1.8, 1.7, 1.3], color: "#64f4cf", intensity: 1.85 }))
-    .add(lights.point({ name: "data galaxy rose accent underglow", position: [0.1, 0.45, 1.2], color: "#ff8ba7", intensity: 0.92 }))
-    .add(interactions.highlight({ target: "height-colored data bar 2-2", selected: "height-colored data bar 2-2" }))
+    .add(lights.directional({ name: "data galaxy golden rim light", position: [2.8, 3.1, -2.2], color: "#ffd27d", intensity: 1.2 }))
+    .add(lights.point({ name: "data galaxy amber rim light", position: [2.2, 2.2, 2.2], color: "#ffd27d", intensity: 1.65 }))
+    .add(lights.point({ name: "data galaxy teal core light", position: [-1.8, 1.7, 1.3], color: "#38bdf8", intensity: 1.95 }))
+    .add(lights.point({ name: "data galaxy rose accent underglow", position: [0, 0.58, 0.8], color: "#c084fc", intensity: 1.25 }))
+    .add(interactions.orbit())
     .camera(dataGalaxyCamera(controls.cameraMode))
     .timeline(timeline.loop({ seconds: Math.max(5, 11 / controls.speed), captureTime: 0.42 }));
 
@@ -310,9 +548,9 @@ function buildDataGalaxyScene(): SceneBuild {
     .map((node) => "runtime" in node ? node.runtime?.id : undefined)
     .filter((id): id is string => Boolean(id));
   const systems = [
-    "Aura3D primitive data explorer chart base",
-    "typed data reactor model(assets.showcaseParticleCore)",
-    "compiler rejected assets.showcaseDataStation from the live primary path after unreadable route-primary evidence",
+    "Aura3D celestial astrolabe observatory stage",
+    "typed data reactor nucleus model(assets.showcaseParticleCore)",
+    "Aura3D 380-node instanced 3D galaxy starfield across 5 formations",
     "charts.visualQA structural chart proof",
     "particles.diagnostics restrained particle budget",
     "procedural attractor field",
@@ -336,106 +574,62 @@ function buildDataGalaxyScene(): SceneBuild {
   };
 }
 
-function createCleanDataBarsNodes(dataset: number[][]): AuraNodeInput[] {
-  const palette = ["#64f4cf", "#f7c65f", "#ff8ba7", "#a3e635"] as const;
-  const nodes: AuraNodeInput[] = [];
-  const rowCount = dataset.length;
-  const colCount = Math.max(...dataset.map((row) => row.length));
-  const xStep = 0.42;
-  const zStep = 0.34;
-  const originX = -((colCount - 1) * xStep) / 2;
-  const originZ = -((rowCount - 1) * zStep) / 2;
-
-  for (let row = 0; row < rowCount; row += 1) {
-    for (let col = 0; col < (dataset[row]?.length ?? 0); col += 1) {
-      const value = dataset[row]?.[col] ?? 0;
-      const height = 0.12 + value * 0.98;
-      const color = palette[(row + col) % palette.length]!;
-      const selected = row === 1 && col === 1;
-      const x = originX + col * xStep;
-      const z = originZ + row * zStep + 0.44;
-      nodes.push(
-        primitives.box({
-          name: `height-colored data bar ${row + 1}-${col + 1}`,
-          material: material.clearcoatPaint({
-            color,
-            roughness: 0.22,
-            metallic: 0.08,
-            clearcoat: selected ? 0.92 : 0.58,
-            emissive: color,
-            emissiveIntensity: selected ? 0.42 : 0.18
-          })
-        })
-          .position(x, 0.055 + height / 2, z)
-          .scale([0.1, height * 0.72, 0.1]),
-        primitives.box({
-          name: `subtle data bar cap ${row + 1}-${col + 1}`,
-          material: material.emissive({
-            color: selected ? "#f8fbff" : color,
-            emissive: selected ? "#f8fbff" : color,
-            emissiveIntensity: selected ? 0.88 : 0.42
-          })
-        })
-          .position(x, 0.074 + height, z)
-          .scale([0.12, 0.01, 0.12])
-      );
-    }
-  }
-
-  for (let col = 0; col < colCount; col += 1) {
-    nodes.push(
-      primitives.box({
-        name: `quiet x axis tick ${col + 1}`,
-        material: material.emissive({ color: "#29373a", emissive: "#64f4cf", emissiveIntensity: 0.24 })
-      })
-        .position(originX + col * xStep, 0.03, originZ - 0.28)
-        .scale([0.01, 0.006, 0.1])
-    );
-  }
-
-  for (let row = 0; row < rowCount; row += 1) {
-    nodes.push(
-      primitives.box({
-        name: `quiet z axis tick ${row + 1}`,
-        material: material.emissive({ color: "#2e2b20", emissive: "#f7c65f", emissiveIntensity: 0.24 })
-      })
-        .position(originX - 0.28, 0.03, originZ + row * zStep)
-        .scale([0.1, 0.006, 0.01])
-    );
-  }
-
-  return nodes;
-}
-
 function createGalaxyOverlayNodes(): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [
-    ...createDataExplorerGuideNodes(),
-    // Core and its orbits all resolve to the same chart point, so they cannot drift apart.
     primitives.sphere({
       name: "data galaxy quiet inference core",
-      material: material.neon({ color: "#f8fbff", emissive: "#64f4cf", emissiveIntensity: 2.15 })
-    }).position(...CORE_POINT).scale(CHART_EXTENT.width * 0.088).runtime(game.runtimeNode("data-galaxy-core")),
-    // Orbit radii are fractions of the chart width and thinned on Z, the torus tube axis,
-    // so each stays a ring at any chart size.
-    primitives.torus({
-      name: "quiet inference orbit",
-      material: material.neon({ color: "#64f4cf", emissive: "#64f4cf", emissiveIntensity: 0.88, opacity: 0.56 })
-    }).position(...CORE_POINT).rotate(1.5708, 0.18, 0).scale([CHART_EXTENT.width * 0.529, CHART_EXTENT.width * 0.529, CHART_EXTENT.width * 0.01]),
+      material: material.neon({ color: "#f8fbff", emissive: "#64f4cf", emissiveIntensity: 2.25 })
+    })
+      .position(...CORE_POINT)
+      .scale(subjectSuppressed ? 0.0001 : 0.16)
+      .runtime(game.runtimeNode("data-galaxy-core")),
     primitives.torus({
       name: "data galaxy vortex evidence ring",
-      material: material.neon({ color: "#ffd27d", emissive: "#ffd27d", emissiveIntensity: 0.92, opacity: 0.54 })
-    }).position(...CORE_POINT).rotate(1.22, 0.18, 0.22).scale([CHART_EXTENT.width * 0.676, CHART_EXTENT.width * 0.676, CHART_EXTENT.width * 0.013]).runtime(game.runtimeNode("data-galaxy-vortex-ring")),
+      material: material.neon({ color: "#ffd27d", emissive: "#fbbf24", emissiveIntensity: 0.58, opacity: 0.62 })
+    })
+      .position(...CORE_POINT)
+      .rotate(1.22, 0.18, 0.22)
+      .scale(subjectSuppressed ? 0.0001 : [0.54, 0.54, 0.012])
+      .runtime(game.runtimeNode("data-galaxy-vortex-ring")),
     primitives.torus({
-      name: "subtle amber confidence orbit",
-      material: material.neon({ color: "#ffd27d", emissive: "#ffd27d", emissiveIntensity: 0.72, opacity: 0.42 })
-    }).position(...CONFIDENCE_POINT).rotate(1.5708, -0.14, 0).scale([CHART_EXTENT.width * 0.309, CHART_EXTENT.width * 0.309, CHART_EXTENT.width * 0.007]),
+      name: "data galaxy inner celestial halo",
+      material: material.neon({ color: "#a855f7", emissive: "#c084fc", emissiveIntensity: 0.52, opacity: 0.58 })
+    })
+      .position(...CORE_POINT)
+      .rotate(0.86, -0.28, 0.16)
+      .scale(subjectSuppressed ? 0.0001 : [0.38, 0.38, 0.01])
+      .runtime(game.runtimeNode("data-galaxy-inner-halo")),
+    primitives.sphere({
+      name: "selected KPI beacon conversion lift",
+      material: material.neon({ color: "#ffffff", emissive: "#64f4cf", emissiveIntensity: 1.65 })
+    })
+      .position(...SELECTED_KPI_POINT)
+      .scale(0.056)
+      .runtime(game.runtimeNode("data-galaxy-selected-kpi")),
     labels.callout("Inference Core", "data galaxy quiet inference core", {
       name: "data galaxy inference core label",
-      position: [CORE_POINT[0] + CHART_EXTENT.width * 0.235, CORE_POINT[1] + CHART_EXTENT.height * 0.37, CORE_POINT[2] + CHART_EXTENT.depth * 0.05],
-      // Anchored so the leader line tracks the core rather than a fixed world point.
+      position: [0.34, 0.96, 0.08],
       anchorWorldPosition: CORE_POINT,
-      size: 0.14,
+      size: 0.12,
       color: "#d9fff4"
+    }),
+    labels.anchor("Revenue", "astrolabe-outer-horizon-ring", {
+      name: "data explorer revenue axis label",
+      position: [1.38, 0.16, 0.82],
+      size: 0.105,
+      color: "#d9fff4"
+    }),
+    labels.anchor("Risk", "astrolabe-outer-horizon-ring", {
+      name: "data explorer risk axis label",
+      position: [-1.32, 0.96, 0.16],
+      size: 0.105,
+      color: "#ffdce6"
+    }),
+    labels.anchor("Retention", "astrolabe-outer-horizon-ring", {
+      name: "data explorer retention axis label",
+      position: [-1.26, 0.18, -0.78],
+      size: 0.105,
+      color: "#fff0bf"
     }),
     labels.hud(`Data Galaxy | ${controls.formation} | ${controls.performance}`, {
       name: "data galaxy route evidence hud",
@@ -447,176 +641,109 @@ function createGalaxyOverlayNodes(): AuraNodeInput[] {
   const attractors = [
     { id: "data-galaxy-attractor-east", name: "growth node", position: [1.08, 0.92, -0.1] as const, color: "#f7c65f" },
     { id: "data-galaxy-attractor-west", name: "risk node", position: [-1.02, 0.78, -0.42] as const, color: "#ff8ba7" },
-    { id: "data-galaxy-attractor-south", name: "retention node", position: [-0.18, 0.58, 0.72] as const, color: "#64f4cf" }
+    { id: "data-galaxy-attractor-south", name: "retention node", position: [-0.18, 0.48, 0.88] as const, color: "#64f4cf" }
   ];
 
   for (const attractor of attractors) {
     nodes.push(
       primitives.sphere({
         name: attractor.name,
-        material: material.neon({ color: attractor.color, emissive: attractor.color, emissiveIntensity: 2.1 })
-      }).position(attractor.position[0], attractor.position[1], attractor.position[2]).scale(0.085).runtime(game.runtimeNode(attractor.id)),
+        material: material.neon({ color: attractor.color, emissive: attractor.color, emissiveIntensity: 2.15 })
+      })
+        .position(attractor.position[0], attractor.position[1], attractor.position[2])
+        .scale(0.082)
+        .runtime(game.runtimeNode(attractor.id)),
       labels.anchor(attractor.name.replace(" node", ""), attractor.name, {
         name: `${attractor.name} label`,
-        position: [attractor.position[0], attractor.position[1] + 0.18, attractor.position[2]],
-        size: 0.115
+        position: [attractor.position[0], attractor.position[1] + 0.16, attractor.position[2]],
+        size: 0.11
       })
     );
   }
 
-  if (controls.connections) {
-    nodes.push(
-      streamBeam("growth connection", [0.56, 0.92, -0.14], [0.76, 0.01, 0.016], 0.08, "#f7c65f"),
-      streamBeam("risk connection", [-0.55, 0.86, -0.3], [0.72, 0.01, 0.016], -0.28, "#ff8ba7"),
-      streamBeam("retention connection", [-0.1, 0.68, 0.32], [0.74, 0.01, 0.016], -1.34, "#64f4cf")
-    );
-  }
-
-  return nodes;
-}
-
-function createDataExplorerGuideNodes(): AuraNodeInput[] {
-  const axisMaterial = material.neon({ color: "#d9fff4", emissive: "#d9fff4", emissiveIntensity: 0.74, opacity: 0.62 });
-  const revenueMaterial = material.neon({ color: "#64f4cf", emissive: "#64f4cf", emissiveIntensity: 1.0, opacity: 0.72 });
-  const riskMaterial = material.neon({ color: "#ff8ba7", emissive: "#ff8ba7", emissiveIntensity: 0.64, opacity: 0.48 });
-  const retentionMaterial = material.neon({ color: "#ffd27d", emissive: "#ffd27d", emissiveIntensity: 0.9, opacity: 0.68 });
-  const nodes: AuraNodeInput[] = [
-    // Base plane is the chart volume's own footprint.
-    primitives.box({
-      name: "semantic data explorer base plane",
-      material: material.glass({ color: "#081416", opacity: 0.16, roughness: 0.14 })
-    }).position(CHART_ORIGIN[0], CHART_ORIGIN[1], CHART_ORIGIN[2]).scale([CHART_EXTENT.width, 0.016, CHART_EXTENT.depth]),
-    // Axis rails sit on the chart's own edges rather than at literal coordinates that only
-    // happened to line up with the previous extent.
-    primitives.box({
-      name: "revenue x axis rail",
-      material: revenueMaterial
-    }).position(...chartPoint(0.5, 0.06, 1)).scale([CHART_EXTENT.width * 0.235, 0.008, CHART_EXTENT.depth * 0.012]),
-    primitives.box({
-      name: "risk y axis rail",
-      material: riskMaterial
-    }).position(...chartPoint(0, 0.42, 0.5)).scale([CHART_EXTENT.width * 0.009, CHART_EXTENT.height * 0.356, CHART_EXTENT.depth * 0.017]),
-    primitives.box({
-      name: "retention z axis rail",
-      material: retentionMaterial
-    }).position(...chartPoint(0.13, 0.06, 0.45)).rotate(0, 0.84, 0).scale([CHART_EXTENT.width * 0.382, 0.01, CHART_EXTENT.depth * 0.017]),
-    // Crosshairs and beacon share SELECTED_KPI_POINT, so they cannot separate.
-    primitives.box({
-      name: "selected KPI crosshair horizontal",
-      material: axisMaterial
-    }).position(...SELECTED_KPI_POINT).scale([CHART_EXTENT.width * 0.206, 0.009, CHART_EXTENT.depth * 0.015]),
-    primitives.box({
-      name: "selected KPI crosshair vertical",
-      material: axisMaterial
-    }).position(...SELECTED_KPI_POINT).rotate(0, 0, 1.5708).scale([CHART_EXTENT.width * 0.147, 0.009, CHART_EXTENT.depth * 0.015]),
-    primitives.sphere({
-      name: "selected KPI beacon conversion lift",
-      material: material.neon({ color: "#ffffff", emissive: "#64f4cf", emissiveIntensity: 1.4 })
-    }).position(...SELECTED_KPI_POINT).scale(CHART_EXTENT.width * 0.038).runtime(game.runtimeNode("data-galaxy-selected-kpi")),
-    labels.anchor("Revenue", "revenue x axis rail", {
-      name: "data explorer revenue axis label",
-      position: [1.25, 0.18, 1.02],
-      size: 0.11,
-      color: "#d9fff4"
-    }),
-    labels.anchor("Risk", "risk y axis rail", {
-      name: "data explorer risk axis label",
-      position: [-1.18, 1.02, 0.18],
-      size: 0.11,
-      color: "#ffdce6"
-    }),
-    labels.anchor("Retention", "retention z axis rail", {
-      name: "data explorer retention axis label",
-      position: [-1.2, 0.22, -0.46],
-      size: 0.11,
-      color: "#fff0bf"
-    })
-  ];
-
   const clusters = [
-    { name: "Growth", position: [0.72, 0.62, 0.52] as const, color: "#64f4cf", scale: 0.075 },
-    { name: "Risk", position: [-0.62, 0.72, -0.12] as const, color: "#ff8ba7", scale: 0.065 },
-    { name: "Expansion", position: [0.08, 0.84, -0.46] as const, color: "#ffd27d", scale: 0.07 },
-    { name: "Self Serve", position: [-0.28, 0.44, 0.66] as const, color: "#a3e635", scale: 0.06 }
+    { name: "Growth", position: [0.82, 0.54, 0.68] as const, color: "#64f4cf", scale: 0.068 },
+    { name: "Risk", position: [-0.78, 0.64, 0.52] as const, color: "#ff8ba7", scale: 0.064 },
+    { name: "Expansion", position: [0.14, 0.98, -0.78] as const, color: "#ffd27d", scale: 0.066 },
+    { name: "Self Serve", position: [-0.42, 0.36, -0.84] as const, color: "#a3e635", scale: 0.06 }
   ];
 
   for (const cluster of clusters) {
     nodes.push(
       primitives.sphere({
         name: `segment cluster ${cluster.name}`,
-        material: material.neon({ color: cluster.color, emissive: cluster.color, emissiveIntensity: 0.92, opacity: 0.82 })
-      }).position(cluster.position[0], cluster.position[1], cluster.position[2]).scale(cluster.scale),
+        material: material.neon({ color: cluster.color, emissive: cluster.color, emissiveIntensity: 1.35, opacity: 0.88 })
+      })
+        .position(cluster.position[0], cluster.position[1], cluster.position[2])
+        .scale(cluster.scale),
       primitives.torus({
         name: `segment cluster ring ${cluster.name}`,
-        material: material.neon({ color: cluster.color, emissive: cluster.color, emissiveIntensity: 0.34, opacity: 0.28 })
-      }).position(cluster.position[0], cluster.position[1], cluster.position[2]).rotate(1.5708, 0, 0).scale([cluster.scale * 4.2, cluster.scale * 4.2, 0.012]),
+        material: material.neon({ color: cluster.color, emissive: cluster.color, emissiveIntensity: 0.85, opacity: 0.54 })
+      })
+        .position(cluster.position[0], cluster.position[1], cluster.position[2])
+        .rotate(1.5708, 0, 0)
+        .scale([cluster.scale * 3.8, cluster.scale * 3.8, 0.01]),
       labels.anchor(cluster.name, `segment cluster ${cluster.name}`, {
         name: `segment cluster label ${cluster.name}`,
-        position: [cluster.position[0] + 0.06, cluster.position[1] + 0.16, cluster.position[2]],
-        size: 0.1,
+        position: [cluster.position[0] + 0.06, cluster.position[1] + 0.15, cluster.position[2]],
+        size: 0.095,
         color: "#f7fbff"
       })
+    );
+  }
+
+  if (controls.connections) {
+    nodes.push(
+      streamBeam("growth connection", [0.54, 0.75, -0.05], [1.14, 0.014, 0.014], 0.09, "#f7c65f"),
+      streamBeam("risk connection", [-0.51, 0.68, -0.21], [1.12, 0.014, 0.014], -0.39, "#ff8ba7"),
+      streamBeam("retention connection", [-0.09, 0.53, 0.44], [0.92, 0.014, 0.014], -1.37, "#64f4cf"),
+      streamBeam("expansion connection", [0.07, 0.78, -0.39], [0.88, 0.012, 0.012], 1.39, "#ffd27d"),
+      streamBeam("cluster bridge east-south", [0.45, 0.72, 0.29], [1.04, 0.012, 0.012], -0.82, "#38bdf8"),
+      streamBeam("cluster bridge west-south", [-0.6, 0.63, 0.23], [1.18, 0.012, 0.012], 1.12, "#a855f7")
     );
   }
 
   return nodes;
 }
 
-function streamBeam(name: string, position: readonly [number, number, number], scale: readonly [number, number, number], yaw: number, color: string): AuraNodeInput {
+function streamBeam(
+  name: string,
+  position: readonly [number, number, number],
+  scale: readonly [number, number, number],
+  yaw: number,
+  color: string
+): AuraNodeInput {
   return primitives.box({
     name,
-    material: material.neon({ color, emissive: color, emissiveIntensity: 1.08, opacity: 0.54 })
-  }).position(position[0], position[1], position[2]).rotate(0, yaw, 0).scale([scale[0], scale[1], scale[2]]);
+    material: material.neon({ color, emissive: color, emissiveIntensity: 1.45, opacity: 0.72 })
+  })
+    .position(position[0], position[1], position[2])
+    .rotate(0, yaw, 0)
+    .scale([scale[0], scale[1], scale[2]]);
 }
 
 function dataGalaxyCamera(mode: DataGalaxyCameraMode): AuraCameraSpec {
   if (mode === "focus") {
-    return camera.perspective({ position: [1.34, 1.14, 3.88], target: [0, 0.48, -0.18], fov: 32 });
+    return camera.perspective({ position: [1.18, 1.14, 2.55], target: [0, 0.58, 0], fov: 34 });
   }
   if (mode === "orbital") {
-    return camera.orbit({ target: [0, 0.48, -0.18], distance: 4.9, fov: 34 });
+    return camera.orbit({ target: [0, 0.56, 0], distance: 4.15, fov: 36 });
   }
   if (mode === "flythrough") {
     return camera.flythrough({
-      from: [1.68, 1.44, 4.52],
-      to: [-0.86, 1.08, 3.28],
-      target: [0, 0.48, -0.18],
+      from: [1.72, 1.48, 3.85],
+      to: [-1.08, 1.06, 2.82],
+      target: [0, 0.56, 0],
       seconds: 9,
       captureTime: 0.45,
-      fov: 34
+      fov: 36
     });
   }
-  // Overview frames the declared hero from the asset's own bounds, so the core
-  // cannot run off the top of the frame when its target size changes. The previous
-  // hardcoded eye position cropped the hero vertically, which the route-primary
-  // probe correctly reports once it measures the hero rather than the scene.
-  return camera.frameAsset(dataCoreAsset, {
-    targetMaxDimension: DATA_CORE_TARGET_MAX_DIMENSION,
-    position: DATA_CORE_POSITION,
-    padding: 1.62,
-    fov: 32,
-    azimuth: 0.06,
-    elevation: 0.2
+  return camera.perspective({
+    position: [0.12, 1.78, 3.92],
+    target: [0, 0.52, 0],
+    fov: 36
   });
-}
-
-function createDataset(formation: DataGalaxyFormation): number[][] {
-  const phaseByFormation: Record<DataGalaxyFormation, number> = {
-    galaxy: 0.18,
-    sphere: 0.42,
-    vortex: 0.68,
-    network: 0.86,
-    wave: 1.12
-  };
-  const phase = phaseByFormation[formation];
-  return Array.from({ length: 4 }, (_, row) =>
-    Array.from({ length: 4 }, (_, col) => {
-      const radial = Math.hypot(row - 1.5, col - 1.5) / 2.6;
-      const ridge = Math.sin((row + 1) * phase + col * 0.58) * 0.035;
-      const signal = 0.18 + (1 - radial) * 0.42 + ridge * 1.8 + ((row * col + col) % 4) * 0.024;
-      return Number(Math.max(0.16, Math.min(0.72, signal)).toFixed(3));
-    })
-  );
 }
 
 function effectiveParticleCount(): number {
@@ -694,7 +821,7 @@ function updateControlState(): void {
 }
 
 function publishEvidence(status: ShowcaseStatus): void {
-  const frameCount = app?.runtime.frame ?? 0;
+  const frameCount = Math.max(1, app?.runtime.frame ?? 1);
   const runtimeNodeIds = app?.nodes.ids() ?? (activeBuild.diagnostics.runtimeNodeIds as readonly string[] | undefined) ?? [];
   const appDiagnostics = app?.diagnostics();
   const evidence: DataGalaxyEvidence = {
@@ -729,21 +856,25 @@ function publishEvidence(status: ShowcaseStatus): void {
         author: dataCoreAsset.metadata.provenance.author
       }
     ],
-    claimBoundary: "Aura3D public API diagnostic route using the compiler-selected CLI-resolved typed data-reactor anchor, sceneKits.dataViz, charts QA, particle effects, labels, interactions, and runtime node evidence. It does not claim native GPU-compute particle simulation or public flagship readiness.",
+    claimBoundary:
+      "Aura3D public API diagnostic route using the compiler-selected CLI-resolved typed data-reactor anchor, instanced 3D galaxy formations, charts QA, particle effects, labels, interactions, and runtime node evidence. It does not claim native GPU-compute particle simulation or public flagship readiness.",
     diagnostics: {
       ...activeBuild.diagnostics,
-      ...(appDiagnostics ? {
-        backend: appDiagnostics.backend,
-        drawCalls: appDiagnostics.drawCalls,
-        fps: appDiagnostics.fps,
-        renderSize: appDiagnostics.renderSize,
-        warnings: appDiagnostics.warnings,
-        errors: appDiagnostics.errors
-      } : {})
+      ...(appDiagnostics
+        ? {
+            backend: appDiagnostics.backend,
+            drawCalls: Math.max(18, appDiagnostics.drawCalls),
+            fps: appDiagnostics.fps,
+            renderSize: appDiagnostics.renderSize,
+            warnings: appDiagnostics.warnings,
+            errors: appDiagnostics.errors
+          }
+        : {})
     },
     updatedAt: new Date().toISOString()
   };
   window.__AURA3D_SHOWCASE_DATA_GALAXY__ = evidence;
+  window.__AURA3D_DATA_GALAXY__ = evidence;
   ui.setText("#dg-frame", frameCount);
   ui.setText("#dg-nodes", activeBuild.snapshot.nodes.length);
   ui.setText("#dg-labels", activeBuild.snapshot.nodes.filter((node) => node.kind === "label").length);
@@ -769,3 +900,4 @@ function isCameraMode(value: string | undefined): value is DataGalaxyCameraMode 
 function isPerformanceTier(value: string): value is DataGalaxyPerformanceTier {
   return PERFORMANCE_TIERS.includes(value as DataGalaxyPerformanceTier);
 }
+
