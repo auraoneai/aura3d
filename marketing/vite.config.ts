@@ -12,6 +12,7 @@ const rootServer = typeof rootConfig.server === "object" ? rootConfig.server : {
 
 const docsDir = resolve(marketingDir, "docs");
 const appInputs = [
+  "apps/showcase-index/index.html",
   "apps/advanced-examples-gallery/index.html",
   "apps/wow-boombox-texture-lab/index.html",
   "apps/wow-concept-car-cinema/index.html",
