@@ -31377,6 +31377,6 @@ async function x_() {
   });
 }
 x_().catch((e31) => {
-  console.error(`Roadster Rush failed to boot`, e31);
+  console.error(`Apex Overdrive failed to boot`, e31);
   b_(`The freeway is closed for repairs. Try reloading.`);
 });

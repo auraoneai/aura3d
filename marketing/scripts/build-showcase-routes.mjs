@@ -39,24 +39,27 @@ const engineGameSource = path.join(repoRoot, "packages", "engine", "src", "agent
 
 const showcaseRoutes = [
   "showcase-index",
+  "showcase-top-tennis",
+  "showcase-roadster-rush",
+  "showcase-heatsink",
+  "showcase-teleoperator"
+];
+
+const retiredPrototypeRoutes = [
+  "aura-clash-showcase",
+  "showcase-blockfall-reactor",
+  "showcase-turbo-ball",
+  "showcase-bean-brawl-race",
+  "showcase-kart-havoc",
+  "showcase-bank-shot",
+  "showcase-aurora-lander",
+  "showcase-vault-breakers",
   "showcase-product-configurator",
   "showcase-smart-city-control",
   "showcase-cinematic-architecture",
   "showcase-digital-twin-ops",
   "showcase-data-galaxy",
   "showcase-webgpu-particle-lab",
-  "showcase-blockfall-reactor",
-  "showcase-bank-shot",
-  "showcase-aurora-lander",
-  "showcase-vault-breakers",
-  "showcase-top-tennis",
-  "showcase-roadster-rush",
-  "showcase-turbo-ball",
-  "showcase-kart-havoc",
-  "showcase-bean-brawl-race"
-];
-
-const retiredPrototypeRoutes = [
   "showcase-skyline-runner",
   "showcase-siege-golf",
   "showcase-mech-hangar",
@@ -69,10 +72,7 @@ const retiredPrototypeRoutes = [
   "showcase-pulse-tunnel",
   "showcase-gallery-shift",
   "showcase-deep-recovery",
-  "showcase-rooftop-buckets"
-];
-
-const evidenceRoutes = [
+  "showcase-rooftop-buckets",
   "loader-gltf-variants",
   "loader-obj",
   "texture-anisotropy",
@@ -83,6 +83,8 @@ const evidenceRoutes = [
   "camera-multiple-views",
   "webxr-interactions"
 ];
+
+const evidenceRoutes = [];
 
 const publicRoutes = [...showcaseRoutes, ...evidenceRoutes];
 
@@ -324,7 +326,7 @@ function copyAuraAssets() {
     }
   }
 
-  for (const route of ["aura-clash-showcase", ...showcaseRoutes]) {
+  for (const route of showcaseRoutes) {
     const routePublicAssets = path.join(repoRoot, "apps", route, "public", "aura-assets");
     if (existsSync(routePublicAssets)) {
       copyRouteLocalAuraAssets(route);
@@ -344,36 +346,20 @@ function resolveShowcaseAssetBaseUrl() {
 function collectRouteAssetIds(manifestAssets) {
   const routeAssetIds = new Set();
   const assetReferencePattern = /(?:assets|rootAssets)(?:\s+as\s+any\))?\.([A-Za-z0-9_$]+)/g;
-  const extraSourceDirs = [
-    ["aura-clash-showcase", path.join(repoRoot, "apps", "aura-clash-showcase", "src")]
-  ];
   const routeEntries = [
-    ...publicRoutes.map((route) => [route, path.join(repoRoot, "apps", route, "src")]),
-    ...extraSourceDirs
+    ...publicRoutes.map((route) => [route, path.join(repoRoot, "apps", route, "src")])
   ];
   for (const [route, routeDir] of routeEntries) {
     if (!existsSync(routeDir)) continue;
     const routeFiles = collectRouteFiles(routeDir);
     const routeSource = routeFiles.map((file) => readFileSync(file, "utf8")).join("\n");
 
-    /*
-     * Keep route-local assets even when a game selects them through a
-     * generated key (for example `bankShotBall${number}`) instead of a
-     * statically analyzable `assets.foo` member. The old collector copied only
-     * the first ball and left the rest as production 404s, which caused the
-     * renderer to wait on an incomplete scene and present a blank canvas.
-     * Matching the manifest source path also keeps this bounded to the route's
-     * own authored asset folder rather than shipping the entire catalog.
-     * Shared set-dressing IDs are included when their literal typed key is
-     * present in the route source (for example Patrol Wing's island props).
-     */
     for (const [assetId, asset] of manifestAssets) {
       const sourcePaths = [asset.source, asset.provenance?.sourcePath].filter(
         (value) => typeof value === "string"
       );
       if (
-        assetId.toLowerCase().includes("meshy")
-        || sourcePaths.some((value) => value.replaceAll("\\", "/").startsWith(`apps/${route}/`))
+        sourcePaths.some((value) => value.replaceAll("\\", "/").startsWith(`apps/${route}/`))
         || routeSource.includes(assetId)
       ) {
         routeAssetIds.add(assetId);
@@ -429,20 +415,7 @@ function copyRouteLocalAuraAssets(route) {
 
 function assertBuiltRoutes() {
   assertNoGitLfsPointers(distDir, "marketing/dist");
-  const auraClashPlayable = path.join(distDir, "showcase", "aura-clash", "playable", "index.html");
-  if (!existsSync(auraClashPlayable)) {
-    throw new Error(`homepage Aura Clash playable route was not emitted: ${auraClashPlayable}`);
-  }
 
-  /*
-   * Routes that must not appear in the published site.
-   *
-   * `showcase-public-racing-presentation-proof` and `showcase-public-platformer-presentation-proof`
-   * were deleted from `apps/` outright: they were superseded by Turbo Drift Circuit and Skyline Runner,
-   * and keeping them as "historical certification evidence" meant two low-quality public routes stayed
-   * shippable and kept consuming review, screenshot and gate budget. They stay listed here so a stale
-   * `dist/` from an older build is still pruned.
-   */
   const supersededPublicRoutes = [
     "showcase-material-asset-inspector",
     "showcase-public-racing-presentation-proof",
@@ -478,6 +451,17 @@ function assertBuiltRoutes() {
     rmSync(retiredDir, { recursive: true, force: true });
     mkdirSync(retiredDir, { recursive: true });
     writeFileSync(path.join(retiredDir, "index.html"), redirectHtml, "utf8");
+  }
+
+  for (const clashPath of [
+    ["showcase", "aura-clash"],
+    ["showcase", "aura-clash", "playable"],
+    ["apps", "aura-clash"]
+  ]) {
+    const targetDir = path.join(distDir, ...clashPath);
+    rmSync(targetDir, { recursive: true, force: true });
+    mkdirSync(targetDir, { recursive: true });
+    writeFileSync(path.join(targetDir, "index.html"), redirectHtml, "utf8");
   }
 
   const retiredCorridorDir = path.join(distDir, "examples", "neon-corridor-strike");

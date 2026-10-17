@@ -12,15 +12,8 @@ const rootServer = typeof rootConfig.server === "object" ? rootConfig.server : {
 
 const docsDir = resolve(marketingDir, "docs");
 const appInputs = [
-  "apps/advanced-examples-gallery/index.html",
-  "apps/wow-boombox-texture-lab/index.html",
   "apps/wow-concept-car-cinema/index.html",
-  "apps/wow-damaged-helmet-pbr-detail/index.html",
-  "apps/wow-robot-expressive-rig/index.html",
-  "apps/wow-simple-transforms/index.html",
-  "apps/wow-standard-material-spheres/index.html",
-  "apps/wow-tokyo-keyframes/index.html",
-  "apps/wow-webgpu-compute-particles/index.html"
+  "apps/wow-damaged-helmet-pbr-detail/index.html"
 ];
 const htmlInputs = Object.fromEntries([
   ["index", resolve(marketingDir, "index.html")],
@@ -37,21 +30,6 @@ const htmlInputs = Object.fromEntries([
 ]);
 
 function serveRootAuraAssets() {
-  /*
-   * Dev-server middleware: serve /aura-assets/ from the repo-root public dir.
-   *
-   * The marketing Vite config sets `publicDir: marketing/public`, so the dev
-   * server only serves files from `marketing/public/aura-assets/` — which has
-   * Aura Clash fighter assets but NOT the game showcase assets (circuit, car,
-   * lander, etc.) that live in `public/aura-assets/` at the repo root. Without
-   * this middleware, `/aura-assets/showcaseTsukubaCircuit.8c139a57.glb` gets the
-   * Vite SPA HTML fallback, the GLB loader tries to parse HTML as binary, and
-   * every game renders a blank canvas with a silent `SyntaxError: Unexpected
-   * token '<'` in diagnostics().errors.
-   *
-   * This only affects dev — the production build copies assets from both dirs
-   * via `copyAuraAssets()` in build-showcase-routes.mjs.
-   */
   const rootAuraAssetsDir = resolve(repoRoot, "public/aura-assets");
   const marketingAuraAssetsDir = resolve(marketingDir, "public/aura-assets");
   return {
@@ -69,8 +47,6 @@ function serveRootAuraAssets() {
           candidates = [
             resolve(marketingAuraAssetsDir, file),
             resolve(rootAuraAssetsDir, file),
-            resolve(repoRoot, "apps/aura-clash-showcase/public/aura-assets", file),
-            resolve(repoRoot, "apps/aura-clash-showcase/dist/aura-assets", file),
           ];
         } else if (path.startsWith("/previews/")) {
           const file = path.replace(/^\/previews\//, "");
@@ -121,14 +97,6 @@ function copyMarketingPublicFiles() {
         if (existsSync(source)) copyFileSync(source, resolve(outDir, file));
       }
 
-      copyAuraClashApp(outDir);
-
-      const auraClashAssetsDir = resolve(repoRoot, "apps/aura-clash-showcase/public/aura-assets");
-      if (existsSync(auraClashAssetsDir)) {
-        pruneAuraClashRuntimeAssets(resolve(outDir, "aura-assets"));
-        copyAuraClashRuntimeAssets(auraClashAssetsDir, resolve(outDir, "aura-assets"));
-      }
-
       const dracoDir = resolveDracoDir();
       if (dracoDir) {
         const targetDir = resolve(outDir, "node_modules/draco3d");
@@ -139,52 +107,6 @@ function copyMarketingPublicFiles() {
       }
     }
   };
-}
-
-function copyAuraClashApp(outDir: string): void {
-  const sourceDir = resolve(repoRoot, "apps/aura-clash-showcase/dist");
-  if (!existsSync(resolve(sourceDir, "index.html"))) {
-    throw new Error("Aura Clash production build is missing. Run the Aura Clash build before the marketing build.");
-  }
-
-  copyDir(resolve(sourceDir, "assets"), resolve(outDir, "assets"));
-  const routeRoots = [
-    "apps/aura-clash-showcase",
-    "apps/aura-clash",
-    "showcase/aura-clash"
-  ];
-  const routeLeaves = [
-    "",
-    "playable",
-    "evidence",
-    "accessibility",
-    "deploy-check",
-    "poster"
-  ];
-  for (const routeRoot of routeRoots) {
-    for (const routeLeaf of routeLeaves) {
-      const targetDir = routeLeaf ? resolve(outDir, routeRoot, routeLeaf) : resolve(outDir, routeRoot);
-      mkdirSync(targetDir, { recursive: true });
-      copyFileSync(resolve(sourceDir, "index.html"), resolve(targetDir, "index.html"));
-    }
-  }
-
-  for (const routeLeaf of ["playable", "evidence", "accessibility", "deploy-check", "poster"]) {
-    const targetDir = resolve(outDir, routeLeaf);
-    mkdirSync(targetDir, { recursive: true });
-    copyFileSync(resolve(sourceDir, "index.html"), resolve(targetDir, "index.html"));
-  }
-
-  for (const file of ["robots.txt", "sitemap.xml"]) {
-    const source = resolve(repoRoot, "apps/aura-clash-showcase", file);
-    if (!existsSync(source)) continue;
-    mkdirSync(resolve(outDir, "apps/aura-clash-showcase"), { recursive: true });
-    mkdirSync(resolve(outDir, "apps/aura-clash"), { recursive: true });
-    mkdirSync(resolve(outDir, "showcase/aura-clash"), { recursive: true });
-    copyFileSync(source, resolve(outDir, "apps/aura-clash-showcase", file));
-    copyFileSync(source, resolve(outDir, "apps/aura-clash", file));
-    copyFileSync(source, resolve(outDir, "showcase/aura-clash", file));
-  }
 }
 
 function copyDir(sourceDir: string, targetDir: string): void {
@@ -263,12 +185,10 @@ function pruneAuraClashRuntimeAssets(targetDir: string): void {
 
 function mirrorMarketingHtmlOutput(outDir: string): void {
   const generatedMarketingDir = resolve(outDir, "marketing");
+  const generatedMarketingIndex = resolve(generatedMarketingDir, "index.html");
   const generatedDocsDir = resolve(generatedMarketingDir, "docs");
-  const generatedDocsIndex = resolve(generatedDocsDir, "index.html");
-  if (existsSync(generatedDocsIndex)) {
-    // Aura3D 2.0 uses the documentation-led experience as the canonical
-    // homepage. Do not restore the retired 1.x marketing page at `/`.
-    copyFileSync(generatedDocsIndex, resolve(outDir, "index.html"));
+  if (existsSync(generatedMarketingIndex)) {
+    copyFileSync(generatedMarketingIndex, resolve(outDir, "index.html"));
   }
 
   const publicDocsDir = resolve(outDir, "docs");

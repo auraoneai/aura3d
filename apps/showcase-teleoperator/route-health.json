@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-10-17T01:05:00.000Z",
+  "appId": "showcase-teleoperator",
+  "route": "/apps/showcase-teleoperator/",
+  "kind": "showcase",
+  "classification": "candidate",
+  "publicShowcase": true,
+  "claimLevel": "production",
+  "promotionStatus": "public-showcase",
+  "machinePass": true,
+  "rendererMode": "production",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "production",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": true
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.teleopWaymoHero",
+      "quality": "production",
+      "role": "primaryVehicle"
+    },
+    {
+      "typedRef": "assets.teleopCybercab",
+      "quality": "production",
+      "role": "primaryVehicle"
+    },
+    {
+      "typedRef": "assets.teleopCybertruck",
+      "quality": "production",
+      "role": "primaryVehicle"
+    },
+    {
+      "typedRef": "assets.teleopCorvette",
+      "quality": "production",
+      "role": "primaryVehicle"
+    },
+    {
+      "typedRef": "assets.teleopWaymoTraffic",
+      "quality": "production",
+      "role": "primaryVehicle"
+    },
+    {
+      "typedRef": "assets.teleopCablecar",
+      "quality": "production",
+      "role": "primaryVehicle"
+    },
+    {
+      "typedRef": "assets.roadsterRushPlayerCar",
+      "quality": "production",
+      "role": "primaryVehicle"
+    },
+    {
+      "typedRef": "assets.roadsterRushSedan",
+      "quality": "production",
+      "role": "setDressing"
+    }
+  ],
+  "notes": "Aura3D 4.0.1 full 3D San Francisco Robotaxi & Teleoperator showcase port of teleoperator.mindblown.ai featuring Waymo Jaguar I-PACE with spinning roof LiDAR dome, Tesla Cybercab, Cybertruck FSD, Corvette ZR1X, SpaceX Roadster, SF Cable Cars, L5 autonomous driving, 3D pickup/dropoff kerb beacons, floating multiplayer peer nameplates, SVG speedometer dial, and vector minimap."
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@aura3d/showcase-heatsink",
+  "version": "4.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  }
+}

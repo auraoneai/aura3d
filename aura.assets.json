@@ -146999,6 +146999,1227 @@
         "retrievedAt": "2026-10-16T21:55:00.000Z",
         "checkedAt": "2026-10-16T21:55:00.000Z"
       }
+    },
+    {
+      "id": "heatsinkDroneOrion",
+      "name": "heatsinkDroneOrion",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkDroneOrion.988f172d.glb",
+      "source": "public/aura-assets/heatsinkDroneOrion.988f172d.glb",
+      "sha256": "988f172d50d48550b53dc5152fd7ab7cb1fe6c353299d5068597dda6ad06b03f",
+      "byteLength": 526924,
+      "sizeBytes": 526924,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle",
+      "nodeCount": 15,
+      "meshCount": 10,
+      "materialCount": 9,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -3.84,
+          -1.31,
+          -2.58
+        ],
+        "max": [
+          3.84,
+          2.5,
+          2.8
+        ],
+        "size": [
+          7.68,
+          3.81,
+          5.38
+        ]
+      }
+    },
+    {
+      "id": "heatsinkDroneVolt",
+      "name": "heatsinkDroneVolt",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkDroneVolt.f1825d10.glb",
+      "source": "public/aura-assets/heatsinkDroneVolt.f1825d10.glb",
+      "sha256": "f1825d100a50359f27e61d3584d76c9a2658811544b24ed2ce7e6b05123dddb7",
+      "byteLength": 555468,
+      "sizeBytes": 555468,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle",
+      "nodeCount": 17,
+      "meshCount": 12,
+      "materialCount": 9,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -3.23,
+          -1.4851,
+          -2.685
+        ],
+        "max": [
+          3.23,
+          1.56,
+          3.56
+        ],
+        "size": [
+          6.46,
+          3.0451,
+          6.245
+        ]
+      }
+    },
+    {
+      "id": "heatsinkDroneBastion",
+      "name": "heatsinkDroneBastion",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkDroneBastion.6a09c499.glb",
+      "source": "public/aura-assets/heatsinkDroneBastion.6a09c499.glb",
+      "sha256": "6a09c499be6dc1400ebc20c03909045eca7b24e8ec04807fa3ef628bfd444e6d",
+      "byteLength": 475156,
+      "sizeBytes": 475156,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle",
+      "nodeCount": 15,
+      "meshCount": 10,
+      "materialCount": 8,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -3.41,
+          -1.89,
+          -2.22
+        ],
+        "max": [
+          3.41,
+          1.89,
+          2.81
+        ],
+        "size": [
+          6.82,
+          3.78,
+          5.03
+        ]
+      }
+    },
+    {
+      "id": "heatsinkDroneSpectre",
+      "name": "heatsinkDroneSpectre",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkDroneSpectre.f66809c1.glb",
+      "source": "public/aura-assets/heatsinkDroneSpectre.f66809c1.glb",
+      "sha256": "f66809c1d473381853c3f627aef9421870f95efd36b133acf6b7b551098b3260",
+      "byteLength": 613108,
+      "sizeBytes": 613108,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle",
+      "nodeCount": 19,
+      "meshCount": 14,
+      "materialCount": 8,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -3.35,
+          -1.5573,
+          -2.65
+        ],
+        "max": [
+          3.35,
+          1.46,
+          2.4
+        ],
+        "size": [
+          6.7,
+          3.0173,
+          5.05
+        ]
+      }
+    },
+    {
+      "id": "heatsinkDroneRazor",
+      "name": "heatsinkDroneRazor",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkDroneRazor.2f28a258.glb",
+      "source": "public/aura-assets/heatsinkDroneRazor.2f28a258.glb",
+      "sha256": "2f28a2585d95d6119e183b5a943a830333e54d0d978b81cab81e34e081893eec",
+      "byteLength": 415004,
+      "sizeBytes": 415004,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle",
+      "nodeCount": 15,
+      "meshCount": 10,
+      "materialCount": 8,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -3.46,
+          -0.91,
+          -2.77
+        ],
+        "max": [
+          3.46,
+          1.8842,
+          3.41
+        ],
+        "size": [
+          6.92,
+          2.7942,
+          6.18
+        ]
+      }
+    },
+    {
+      "id": "heatsinkDroneNighthawk",
+      "name": "heatsinkDroneNighthawk",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkDroneNighthawk.8113ba27.glb",
+      "source": "public/aura-assets/heatsinkDroneNighthawk.8113ba27.glb",
+      "sha256": "8113ba2745e8838c72e10159c0c86c654de4b7b7abf64d1b2160bd51dd121f88",
+      "byteLength": 629432,
+      "sizeBytes": 629432,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle",
+      "nodeCount": 15,
+      "meshCount": 10,
+      "materialCount": 7,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -3.02,
+          -1.025,
+          -2.65
+        ],
+        "max": [
+          3.02,
+          1.505,
+          3.07
+        ],
+        "size": [
+          6.04,
+          2.53,
+          5.72
+        ]
+      }
+    },
+    {
+      "id": "heatsinkDroneWraith",
+      "name": "heatsinkDroneWraith",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkDroneWraith.c0a00195.glb",
+      "source": "public/aura-assets/heatsinkDroneWraith.c0a00195.glb",
+      "sha256": "c0a001954eab3ce403ccfbad17b2b63bc482bee2224aabe24aac2b001afa6644",
+      "byteLength": 627376,
+      "sizeBytes": 627376,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle",
+      "nodeCount": 15,
+      "meshCount": 10,
+      "materialCount": 9,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -2.97,
+          -1.025,
+          -2.76
+        ],
+        "max": [
+          2.97,
+          1.5145,
+          3.22
+        ],
+        "size": [
+          5.94,
+          2.5395,
+          5.98
+        ]
+      }
+    },
+    {
+      "id": "heatsinkBoostPad",
+      "name": "heatsinkBoostPad",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkBoostPad.e58b4f3c.glb",
+      "source": "public/aura-assets/heatsinkBoostPad.e58b4f3c.glb",
+      "sha256": "e58b4f3ccba2ddefe11ae011f2ae5c3b24ee7688c89b67466f1adb32e0058791",
+      "byteLength": 13148,
+      "sizeBytes": 13148,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "prop",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 3,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -3.1,
+          0,
+          -4.1
+        ],
+        "max": [
+          3.1,
+          0.24,
+          4.1
+        ],
+        "size": [
+          6.2,
+          0.24,
+          8.2
+        ]
+      }
+    },
+    {
+      "id": "heatsinkCheckpointRing",
+      "name": "heatsinkCheckpointRing",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkCheckpointRing.67ee1db8.glb",
+      "source": "public/aura-assets/heatsinkCheckpointRing.67ee1db8.glb",
+      "sha256": "67ee1db8b200fc46a3161fd816dcf8ce09daf7ebb4efff5674bccb3bc09894f3",
+      "byteLength": 33632,
+      "sizeBytes": 33632,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "prop",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 3,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -0.8,
+          -14.9588,
+          -1.9675
+        ],
+        "max": [
+          24.8,
+          14.9588,
+          1.9675
+        ],
+        "size": [
+          25.6,
+          29.9176,
+          3.935
+        ]
+      }
+    },
+    {
+      "id": "heatsinkCoolingCanister",
+      "name": "heatsinkCoolingCanister",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkCoolingCanister.0199c8d5.glb",
+      "source": "public/aura-assets/heatsinkCoolingCanister.0199c8d5.glb",
+      "sha256": "0199c8d53995fac82ce635741325e3d4c4f2c62722cddc647d459ac724febf23",
+      "byteLength": 29888,
+      "sizeBytes": 29888,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "prop",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 3,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -0.56,
+          0,
+          -0.54
+        ],
+        "max": [
+          0.56,
+          1.67,
+          0.54
+        ],
+        "size": [
+          1.12,
+          1.67,
+          1.08
+        ]
+      }
+    },
+    {
+      "id": "heatsinkExplosiveBarrel",
+      "name": "heatsinkExplosiveBarrel",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkExplosiveBarrel.543538b2.glb",
+      "source": "public/aura-assets/heatsinkExplosiveBarrel.543538b2.glb",
+      "sha256": "543538b232a58e99c5ec188077452015d95b9173a265d3b85cfabe867a106105",
+      "byteLength": 25264,
+      "sizeBytes": 25264,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "prop",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 3,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -0.69,
+          0,
+          -0.6837
+        ],
+        "max": [
+          0.69,
+          2.04,
+          0.6837
+        ],
+        "size": [
+          1.38,
+          2.04,
+          1.3674
+        ]
+      }
+    },
+    {
+      "id": "heatsinkHoloBillboard",
+      "name": "heatsinkHoloBillboard",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkHoloBillboard.d3d7edc7.glb",
+      "source": "public/aura-assets/heatsinkHoloBillboard.d3d7edc7.glb",
+      "sha256": "d3d7edc7b6babc4b3cec63539f7f38a06bdfa7e6549833bc17232671615baf26",
+      "byteLength": 39476,
+      "sizeBytes": 39476,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "prop",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 4,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -0.5966,
+          0,
+          -6.6
+        ],
+        "max": [
+          0.5966,
+          9,
+          6.6
+        ],
+        "size": [
+          1.1932,
+          9,
+          13.2
+        ]
+      }
+    },
+    {
+      "id": "heatsinkShieldPickup",
+      "name": "heatsinkShieldPickup",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkShieldPickup.e3b41a15.glb",
+      "source": "public/aura-assets/heatsinkShieldPickup.e3b41a15.glb",
+      "sha256": "e3b41a1547dc05425a0543dcf1401c62455c852c8c70d5726fad533726842514",
+      "byteLength": 30156,
+      "sizeBytes": 30156,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "prop",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 3,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -0.6467,
+          0,
+          -0.6467
+        ],
+        "max": [
+          0.6467,
+          2.16,
+          0.6467
+        ],
+        "size": [
+          1.2934,
+          2.16,
+          1.2934
+        ]
+      }
+    },
+    {
+      "id": "heatsinkWeaponMine",
+      "name": "heatsinkWeaponMine",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkWeaponMine.10baedc3.glb",
+      "source": "public/aura-assets/heatsinkWeaponMine.10baedc3.glb",
+      "sha256": "10baedc3fe86fa6d3320931f5be8a8da682b8267534dcc1cfc272f20ec1f7234",
+      "byteLength": 42516,
+      "sizeBytes": 42516,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "prop",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 4,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -1.1465,
+          -0.0352,
+          -1.1465
+        ],
+        "max": [
+          1.1465,
+          0.715,
+          1.1465
+        ],
+        "size": [
+          2.293,
+          0.7502,
+          2.293
+        ]
+      }
+    },
+    {
+      "id": "heatsinkWeaponShockwave",
+      "name": "heatsinkWeaponShockwave",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkWeaponShockwave.816dd6ed.glb",
+      "source": "public/aura-assets/heatsinkWeaponShockwave.816dd6ed.glb",
+      "sha256": "816dd6ed1465d9f1e870ed919ccbf61cce77736e7a2394960ad015894fdb7f03",
+      "byteLength": 23880,
+      "sizeBytes": 23880,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "prop",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 4,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -0.6282,
+          -0.6282,
+          -0.75
+        ],
+        "max": [
+          0.65,
+          0.85,
+          0.5
+        ],
+        "size": [
+          1.2782,
+          1.4782,
+          1.25
+        ]
+      }
+    },
+    {
+      "id": "heatsinkWaterEmitter",
+      "name": "heatsinkWaterEmitter",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkWaterEmitter.7721726f.glb",
+      "source": "public/aura-assets/heatsinkWaterEmitter.7721726f.glb",
+      "sha256": "7721726f89ba22c4163eb50d6ecd2111007933fe19b87137c038f290b4ff9758",
+      "byteLength": 23000,
+      "sizeBytes": 23000,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "prop",
+      "nodeCount": 2,
+      "meshCount": 1,
+      "materialCount": 3,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -1.1857,
+          0,
+          -1.875
+        ],
+        "max": [
+          1.22,
+          3.7011,
+          1.3603
+        ],
+        "size": [
+          2.4057,
+          3.7011,
+          3.2353
+        ]
+      }
+    },
+    {
+      "id": "heatsinkGantryStart",
+      "name": "heatsinkGantryStart",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkGantryStart.7f73743e.glb",
+      "source": "public/aura-assets/heatsinkGantryStart.7f73743e.glb",
+      "sha256": "7f73743ed9df9f0a38c1fa92ccf9abf89f78bf94e14369202502f8d9edbd6e11",
+      "byteLength": 38224,
+      "sizeBytes": 38224,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "environment",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 7,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -15,
+          0,
+          -2.5
+        ],
+        "max": [
+          15,
+          21.4,
+          2.5
+        ],
+        "size": [
+          30,
+          21.4,
+          5
+        ]
+      }
+    },
+    {
+      "id": "heatsinkArch",
+      "name": "heatsinkArch",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkArch.9a90ebd4.glb",
+      "source": "public/aura-assets/heatsinkArch.9a90ebd4.glb",
+      "sha256": "9a90ebd4e8b1497419de91f0c1fddad5770abbd8107e5e13d685fd0e4577fc30",
+      "byteLength": 38716,
+      "sizeBytes": 38716,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "environment",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 4,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -16,
+          0,
+          -3
+        ],
+        "max": [
+          16,
+          30.6,
+          3
+        ],
+        "size": [
+          32,
+          30.6,
+          6
+        ]
+      }
+    },
+    {
+      "id": "heatsinkOverpass",
+      "name": "heatsinkOverpass",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkOverpass.c6bb161f.glb",
+      "source": "public/aura-assets/heatsinkOverpass.c6bb161f.glb",
+      "sha256": "c6bb161fecdc3f00f006903a20433d1905804ce99277686cbcfe9a5ff867687b",
+      "byteLength": 26784,
+      "sizeBytes": 26784,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "environment",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 5,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -40,
+          0,
+          -6
+        ],
+        "max": [
+          40,
+          26.2,
+          6.2
+        ],
+        "size": [
+          80,
+          26.2,
+          12.2
+        ]
+      }
+    },
+    {
+      "id": "heatsinkTunnelFrame",
+      "name": "heatsinkTunnelFrame",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkTunnelFrame.1678ba89.glb",
+      "source": "public/aura-assets/heatsinkTunnelFrame.1678ba89.glb",
+      "sha256": "1678ba89fa69338e7d78f9b398d88769ca9e09a6aceb069659d40ebe4013612f",
+      "byteLength": 27576,
+      "sizeBytes": 27576,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "environment",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 6,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -12.2,
+          0,
+          -8
+        ],
+        "max": [
+          12.2,
+          12.15,
+          1.4
+        ],
+        "size": [
+          24.4,
+          12.15,
+          9.4
+        ]
+      }
+    },
+    {
+      "id": "heatsinkStatue",
+      "name": "heatsinkStatue",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkStatue.7ac4ef8a.glb",
+      "source": "public/aura-assets/heatsinkStatue.7ac4ef8a.glb",
+      "sha256": "7ac4ef8adf061f176b724eef9671e273b249a9f3940cc01b8856f7771c625e15",
+      "byteLength": 18240,
+      "sizeBytes": 18240,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "environment",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 4,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -2.5,
+          0,
+          -2.675
+        ],
+        "max": [
+          2.5,
+          18.772,
+          2.5
+        ],
+        "size": [
+          5,
+          18.772,
+          5.175
+        ]
+      }
+    },
+    {
+      "id": "heatsinkTowerL",
+      "name": "heatsinkTowerL",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkTowerL.48cef1cc.glb",
+      "source": "public/aura-assets/heatsinkTowerL.48cef1cc.glb",
+      "sha256": "48cef1cc6f54ab2e2f2d3a57c51279101b90b0364b4ae57fe7aba0bde6a6d1de",
+      "byteLength": 169752,
+      "sizeBytes": 169752,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "environment",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 5,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -20,
+          0,
+          -20
+        ],
+        "max": [
+          20,
+          202.8,
+          20
+        ],
+        "size": [
+          40,
+          202.8,
+          40
+        ]
+      }
+    },
+    {
+      "id": "heatsinkTowerT",
+      "name": "heatsinkTowerT",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkTowerT.3e5f0a0c.glb",
+      "source": "public/aura-assets/heatsinkTowerT.3e5f0a0c.glb",
+      "sha256": "3e5f0a0cbf4bbef5e8b0f7cfdb028fd1f18c4044efc079f44f1a3d943cf9c452",
+      "byteLength": 179916,
+      "sizeBytes": 179916,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "environment",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 6,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -25.5,
+          0,
+          -9.65
+        ],
+        "max": [
+          25.5,
+          177.4632,
+          9.65
+        ],
+        "size": [
+          51,
+          177.4632,
+          19.3
+        ]
+      }
+    },
+    {
+      "id": "heatsinkTowerX",
+      "name": "heatsinkTowerX",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkTowerX.69d0e56e.glb",
+      "source": "public/aura-assets/heatsinkTowerX.69d0e56e.glb",
+      "sha256": "69d0e56ed3fec36848c16ddfec4f3953d52a27fab19eefaa5995cb64639d816c",
+      "byteLength": 165320,
+      "sizeBytes": 165320,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "environment",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 6,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -14.9461,
+          0,
+          -10.0914
+        ],
+        "max": [
+          14.9461,
+          183.9244,
+          10.0914
+        ],
+        "size": [
+          29.8922,
+          183.9244,
+          20.1828
+        ]
+      }
+    },
+    {
+      "id": "heatsinkBarrierA",
+      "name": "heatsinkBarrierA",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkBarrierA.ac31de34.glb",
+      "source": "public/aura-assets/heatsinkBarrierA.ac31de34.glb",
+      "sha256": "ac31de343a01d6fa614d2c8a48a7168a71b4b2ee1edec9e31cdf327805502570",
+      "byteLength": 18436,
+      "sizeBytes": 18436,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "prop",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 5,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -0.49,
+          0,
+          -2.18
+        ],
+        "max": [
+          0.49,
+          1.1,
+          2.18
+        ],
+        "size": [
+          0.98,
+          1.1,
+          4.36
+        ]
+      }
+    },
+    {
+      "id": "heatsinkLavaFall",
+      "name": "heatsinkLavaFall",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/heatsinkLavaFall.71c51eb3.glb",
+      "source": "public/aura-assets/heatsinkLavaFall.71c51eb3.glb",
+      "sha256": "71c51eb3dc99a1e72b65cf73559cd065510acf0f2e7e8cdf496dc2f0a55d981d",
+      "byteLength": 9760,
+      "sizeBytes": 9760,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "environment",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 3,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -5,
+          0,
+          -5
+        ],
+        "max": [
+          1.5,
+          16,
+          5
+        ],
+        "size": [
+          6.5,
+          16,
+          10
+        ]
+      }
+    },
+    {
+      "id": "teleopWaymoHero",
+      "name": "teleopWaymoHero",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopWaymoHero.6d2a9bfb.glb",
+      "source": "public/aura-assets/teleopWaymoHero.6d2a9bfb.glb",
+      "sha256": "6d2a9bfb61613fd1e5a0fd64aa3b8222d237bc58b7486f009d014c61066ee45a",
+      "byteLength": 5207840,
+      "sizeBytes": 5207840,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle",
+      "nodeCount": 8,
+      "meshCount": 8,
+      "materialCount": 0,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -1.1,
+          -0.352,
+          -2.3615
+        ],
+        "max": [
+          1.1,
+          2.1402,
+          2.2063
+        ],
+        "size": [
+          2.2,
+          2.4922,
+          4.5678
+        ]
+      }
+    },
+    {
+      "id": "teleopWaymoTraffic",
+      "name": "teleopWaymoTraffic",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopWaymoTraffic.f476abe7.glb",
+      "source": "public/aura-assets/teleopWaymoTraffic.f476abe7.glb",
+      "sha256": "f476abe7f85470beff321bef6c521e425a549c13e1a10cfdd3c41e1f339b4559",
+      "byteLength": 618524,
+      "sizeBytes": 618524,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle",
+      "nodeCount": 2,
+      "meshCount": 2,
+      "materialCount": 0,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -1.1,
+          0,
+          -2.2589
+        ],
+        "max": [
+          1.1016,
+          2.1402,
+          2.3618
+        ],
+        "size": [
+          2.2016,
+          2.1402,
+          4.6207
+        ]
+      }
+    },
+    {
+      "id": "teleopCybercab",
+      "name": "teleopCybercab",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopCybercab.08358a58.glb",
+      "source": "public/aura-assets/teleopCybercab.08358a58.glb",
+      "sha256": "08358a58dd8d530ccc7b4249db3a9d2e11ccf8ecfac1c9d9d7afea452a1de291",
+      "byteLength": 5234180,
+      "sizeBytes": 5234180,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle",
+      "nodeCount": 9,
+      "meshCount": 9,
+      "materialCount": 2,
+      "textureCount": 2,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -0.8765,
+          -0.3857,
+          -2.1881
+        ],
+        "max": [
+          0.8767,
+          1.3999,
+          2.2298
+        ],
+        "size": [
+          1.7532,
+          1.7856,
+          4.4179
+        ]
+      }
+    },
+    {
+      "id": "teleopCybertruck",
+      "name": "teleopCybertruck",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopCybertruck.6aa8f5c4.glb",
+      "source": "public/aura-assets/teleopCybertruck.6aa8f5c4.glb",
+      "sha256": "6aa8f5c420b6362c41b6376fb8d7107e1af536450cff75580b094d201906ec7b",
+      "byteLength": 410736,
+      "sizeBytes": 410736,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle",
+      "nodeCount": 10,
+      "meshCount": 10,
+      "materialCount": 0,
+      "textureCount": 0,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -1.17,
+          -0.44,
+          -2.798
+        ],
+        "max": [
+          1.17,
+          1.791,
+          2.895
+        ],
+        "size": [
+          2.34,
+          2.231,
+          5.693
+        ]
+      }
+    },
+    {
+      "id": "teleopCorvette",
+      "name": "teleopCorvette",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopCorvette.e7009c34.glb",
+      "source": "public/aura-assets/teleopCorvette.e7009c34.glb",
+      "sha256": "e7009c3418b2d0c3163bd1af8737f3986bab9c372aea90ce81dab8fb37197598",
+      "byteLength": 7637636,
+      "sizeBytes": 7637636,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle",
+      "nodeCount": 15,
+      "meshCount": 15,
+      "materialCount": 2,
+      "textureCount": 2,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -1.0229,
+          -0.334,
+          -2.3911
+        ],
+        "max": [
+          1.0229,
+          1.2298,
+          2.2838
+        ],
+        "size": [
+          2.0458,
+          1.5638,
+          4.6749
+        ]
+      }
+    },
+    {
+      "id": "teleopMissions",
+      "name": "teleopMissions",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopMissions.6996bfa9.glb",
+      "source": "public/aura-assets/teleopMissions.6996bfa9.glb",
+      "sha256": "6996bfa9c290d2c4a4790c9334a48dc8c1798128fb14a8a4bfc9e2800a60be6a",
+      "byteLength": 7207332,
+      "sizeBytes": 7207332,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle",
+      "nodeCount": 14,
+      "meshCount": 14,
+      "materialCount": 2,
+      "textureCount": 2,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -0.9988,
+          -0.3315,
+          -2.3737
+        ],
+        "max": [
+          0.9988,
+          1.2,
+          2.1263
+        ],
+        "size": [
+          1.9976,
+          1.5315,
+          4.5
+        ]
+      }
+    },
+    {
+      "id": "teleopCablecar",
+      "name": "teleopCablecar",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopCablecar.6412a9ca.glb",
+      "source": "public/aura-assets/teleopCablecar.6412a9ca.glb",
+      "sha256": "6412a9cac8abcb7b26156602dde013b87af5d8d7127cca6606f714fc18df16de",
+      "byteLength": 1795392,
+      "sizeBytes": 1795392,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 1,
+      "textureCount": 2,
+      "animationClips": [],
+      "morphTargets": [],
+      "bounds": {
+        "min": [
+          -1.4453,
+          0.0003,
+          -4.199
+        ],
+        "max": [
+          1.4432,
+          4.0933,
+          4.1985
+        ],
+        "size": [
+          2.8885,
+          4.093,
+          8.3975
+        ]
+      }
     }
   ]
 }
