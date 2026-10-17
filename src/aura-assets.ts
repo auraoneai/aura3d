@@ -557,6 +557,91 @@ type AuraGeneratedAssetDefinitions = {
   readonly "vaultTargetDownSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "vaultTiltWarnSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "vaultVaultOpenSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondAthlete": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondBall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondBase": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondBat": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondBatCrackSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondCanyonArch": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondClickSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondConfirmSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondContactSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondCrowdSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondCrowdSwelSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondDugout": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondEarthRise": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondFloodlight": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondFoulPole": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondFoulSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondGlove": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondHarborPier": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondHomerBigSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondHomerSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondIvyWall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondLunarRover": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondMittPopSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondMoonDome": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondOrganSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondPitchWhooshSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondQuadSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondRock": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondScoreboard": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondSlideSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondStadium": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondStrikeoutSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondSwingSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondTower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondTrophy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondTyphoonDome": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "diamondUmpSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondWalkSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "diamondWindSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "fcFloodlightPylonMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "fcGlacierDomeMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "fcHeroTrophyMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "fcMatchBallMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "fcScoreboardGantryMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsAmbientSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsAthleteBig": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsAthleteGuard": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsBackboard": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsBall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsBallCart": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsBlockSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsBoardThudSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsBrickSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsBuzzerSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsCanopy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsChargeTickSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsCheckSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsCourtShell": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsCrowdSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsDribbleSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsDunkSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsEarth": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsFanfareSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsFireSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsFloodlight": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsGoldChimeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsHeatTickSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsHoopRig": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsLamp": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsOrbitArena": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsPalm": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsRim": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsRimClankSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsScoreboard": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsSelectChimeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsSkyline": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsStealSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsSwishSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "hoopsTower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsTrophy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rzAltitudeDomeMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rzFloodlightPylonMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rzFootballMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rzLombardiCupMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rzScoreboardGantryMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
@@ -144548,6 +144633,9282 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "unknown",
       "suitabilityReason": "Vault-open cue driven by the authored door transition after bank completion."
+    },
+  },
+  "diamondAthlete": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondAthlete.4e29f649.glb",
+    hash: "sha256-4e29f6492f811121eccb762928a34d078f156e9ccd3ae390f1e0cbedb4e07160",
+    bounds: [
+      1.796,
+      1.903,
+      0.365
+    ],
+    sizeBytes: 4861492,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-athlete/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:22:29.602Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondAthlete.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondAthlete.metadata.0ed31fcae3ae.json",
+          "public/aura-assets/diamondAthlete.meshy-candidate.998ca9a8.png"
+        ],
+        "checkedAt": "2026-10-17T09:22:29.602Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-athlete/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondAthlete.4e29f649.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.899,
+          -0.952,
+          -0.182
+        ],
+        "max": [
+          0.898,
+          0.951,
+          0.183
+        ],
+        "size": [
+          1.796,
+          1.903,
+          0.365
+        ],
+        "center": [
+          -0.001,
+          -0.001,
+          0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondAthlete.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondAthlete.meshy-candidate.998ca9a8.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-998ca9a8bd41bce2504281b263cae05c81680d8245c9a5fa451385b1ff9f8cfb",
+        "checkedAt": "2026-10-17T09:55:51.419Z"
+      }
+    },
+  },
+  "diamondBall": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondBall.6b449af4.glb",
+    hash: "sha256-6b449af4d538bdac57cc27967326ab1bc82c0fde56366a8759ea45f4164b2974",
+    bounds: [
+      1.903,
+      1.903,
+      1.903
+    ],
+    sizeBytes: 1366004,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-ball/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:23:05.467Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondBall.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondBall.metadata.67a10f8ea17e.json",
+          "public/aura-assets/diamondBall.meshy-candidate.934688d7.png"
+        ],
+        "checkedAt": "2026-10-17T09:23:05.467Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-ball/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondBall.6b449af4.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.952,
+          -0.952
+        ],
+        "max": [
+          0.951,
+          0.951,
+          0.951
+        ],
+        "size": [
+          1.903,
+          1.903,
+          1.903
+        ],
+        "center": [
+          -0.001,
+          0,
+          0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondBall.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondBall.meshy-candidate.934688d7.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-934688d75f1a776ac19be24a2bdfa08a1cbee61152ff35d8dcaa0574d9fa954f",
+        "checkedAt": "2026-10-17T09:55:51.637Z"
+      }
+    },
+  },
+  "diamondBase": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondBase.8531b50b.glb",
+    hash: "sha256-8531b50b212bc4be1b6e9ff909077db35daf4a69e4801ea25c9898226cb938e7",
+    bounds: [
+      1.903,
+      0.221,
+      1.693
+    ],
+    sizeBytes: 1083912,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-base/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:22:50.305Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondBase.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondBase.metadata.38510bd568b7.json",
+          "public/aura-assets/diamondBase.meshy-candidate.86edc401.png"
+        ],
+        "checkedAt": "2026-10-17T09:22:50.305Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-base/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondBase.8531b50b.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.111,
+          -0.847
+        ],
+        "max": [
+          0.951,
+          0.111,
+          0.846
+        ],
+        "size": [
+          1.903,
+          0.221,
+          1.693
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondBase.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondBase.meshy-candidate.86edc401.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-86edc40161bad2c8e2e6df9673553d9fd7959604708c862cd79ef94f89a9aaf7",
+        "checkedAt": "2026-10-17T09:55:51.858Z"
+      }
+    },
+  },
+  "diamondBat": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondBat.c85da7a5.glb",
+    hash: "sha256-c85da7a56621868654de4ef912e3830dad6f462963b63120ff39ce22208f2add",
+    bounds: [
+      1.903,
+      0.232,
+      0.235
+    ],
+    sizeBytes: 884612,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-bat/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:22:41.698Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondBat.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondBat.metadata.ccd1be7e45a8.json",
+          "public/aura-assets/diamondBat.meshy-candidate.77c64884.png"
+        ],
+        "checkedAt": "2026-10-17T09:22:41.698Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-bat/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondBat.c85da7a5.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.116,
+          -0.118
+        ],
+        "max": [
+          0.951,
+          0.116,
+          0.117
+        ],
+        "size": [
+          1.903,
+          0.232,
+          0.235
+        ],
+        "center": [
+          -0.001,
+          0,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondBat.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondBat.meshy-candidate.77c64884.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-77c6488457305b4c524a5d72734485ab998b171439a73ca1ca59ec4604f5bedd",
+        "checkedAt": "2026-10-17T09:55:52.080Z"
+      }
+    },
+  },
+  "diamondBatCrackSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondBatCrackSfx.88a94e48.wav",
+    hash: "sha256-88a94e482bae8fe13f086f4c503d15f02f4d5108e695bda9b2c67e0b1d083dae",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 30914,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondBatCrackSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:53.998Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondBatCrackSfx.wav",
+      "outputPath": "public/aura-assets/diamondBatCrackSfx.88a94e48.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondBatCrackSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondCanyonArch": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondCanyonArch.25fbbee8.glb",
+    hash: "sha256-25fbbee8dd4a0cfb594eb1afa20a6449afaa027de60dccc90e092028053ccbdb",
+    bounds: [
+      1.902,
+      1.169,
+      0.963
+    ],
+    sizeBytes: 4353632,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-canyon-arch/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:23:10.126Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondCanyonArch.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondCanyonArch.metadata.fa0b2e609812.json",
+          "public/aura-assets/diamondCanyonArch.meshy-candidate.53ad7e39.png"
+        ],
+        "checkedAt": "2026-10-17T09:23:10.126Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-canyon-arch/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondCanyonArch.25fbbee8.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.585,
+          -0.482
+        ],
+        "max": [
+          0.95,
+          0.584,
+          0.481
+        ],
+        "size": [
+          1.902,
+          1.169,
+          0.963
+        ],
+        "center": [
+          -0.001,
+          -0.001,
+          0
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondCanyonArch.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondCanyonArch.meshy-candidate.53ad7e39.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-53ad7e39c598a3cf17bc66437ca12e07734fd02ab719d78e657265d398bc9707",
+        "checkedAt": "2026-10-17T09:55:52.297Z"
+      }
+    },
+  },
+  "diamondClickSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondClickSfx.6a970d1d.wav",
+    hash: "sha256-6a970d1d51543575e978c9735afa795d6eb6f086faa7cadfc19d9ee834fe39da",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 7982,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondClickSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:54.304Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondClickSfx.wav",
+      "outputPath": "public/aura-assets/diamondClickSfx.6a970d1d.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondClickSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondConfirmSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondConfirmSfx.70982d28.wav",
+    hash: "sha256-70982d2827bd33a15e2ba174d40133aa21bea3b879bcf19e8da5714cb6693843",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 30914,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondConfirmSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:54.592Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondConfirmSfx.wav",
+      "outputPath": "public/aura-assets/diamondConfirmSfx.70982d28.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondConfirmSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondContactSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondContactSfx.437f8f24.wav",
+    hash: "sha256-437f8f2452f1124caebb05a463b7982f301160d33204f9efe1f8d1089b5af99c",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 22094,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondContactSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:54.887Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondContactSfx.wav",
+      "outputPath": "public/aura-assets/diamondContactSfx.437f8f24.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondContactSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondCrowdSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondCrowdSfx.d68cf36a.wav",
+    hash: "sha256-d68cf36aa84536dd799c3558c9c7196029dde79866c92da2a60b8b6f96686e85",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 396944,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondCrowdSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:55.185Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondCrowdSfx.wav",
+      "outputPath": "public/aura-assets/diamondCrowdSfx.d68cf36a.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondCrowdSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondCrowdSwelSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondCrowdSwelSfx.6bb15fd5.wav",
+    hash: "sha256-6bb15fd56d8a2ebbd3cf495219366a09ccbdc0e41baedb355a99205d1bb4c4f1",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 52964,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondCrowdSwelSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:55.630Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondCrowdSwelSfx.wav",
+      "outputPath": "public/aura-assets/diamondCrowdSwelSfx.6bb15fd5.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondCrowdSwelSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondDugout": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondDugout.bfacebd6.glb",
+    hash: "sha256-bfacebd60d24235f7ef06c8c21ec71f9e490a12efbfb64c991a45f55105d9ed3",
+    bounds: [
+      1.903,
+      1.579,
+      1.176
+    ],
+    sizeBytes: 7148444,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-dugout/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:24:29.537Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondDugout.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondDugout.metadata.1730df4c5a28.json",
+          "public/aura-assets/diamondDugout.meshy-candidate.c4296726.png"
+        ],
+        "checkedAt": "2026-10-17T09:24:29.537Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-dugout/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondDugout.bfacebd6.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.784,
+          -0.589
+        ],
+        "max": [
+          0.951,
+          0.794,
+          0.588
+        ],
+        "size": [
+          1.903,
+          1.579,
+          1.176
+        ],
+        "center": [
+          0,
+          0.005,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondDugout.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondDugout.meshy-candidate.c4296726.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-c4296726dc14e10aaca9630e6493e1aa5e268c2b714c3adac4d5eab87916bea1",
+        "checkedAt": "2026-10-17T09:55:52.520Z"
+      }
+    },
+  },
+  "diamondEarthRise": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondEarthRise.cff4f2e5.glb",
+    hash: "sha256-cff4f2e5f1b19f526e0990132a7bc4d24e367e6ace1481cf08d023024b82846c",
+    bounds: [
+      1.901,
+      1.902,
+      1.902
+    ],
+    sizeBytes: 3832148,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-earth-rise/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:22:55.589Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondEarthRise.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondEarthRise.metadata.f9b5d751834b.json",
+          "public/aura-assets/diamondEarthRise.meshy-candidate.07df4de2.png"
+        ],
+        "checkedAt": "2026-10-17T09:22:55.589Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-earth-rise/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondEarthRise.cff4f2e5.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.95,
+          -0.952,
+          -0.954
+        ],
+        "max": [
+          0.951,
+          0.95,
+          0.948
+        ],
+        "size": [
+          1.901,
+          1.902,
+          1.902
+        ],
+        "center": [
+          0,
+          -0.001,
+          -0.003
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondEarthRise.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondEarthRise.meshy-candidate.07df4de2.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-07df4de23058517c1c1cbe5c6cff3978bf95c35fb388e91b6e80b69850782b7f",
+        "checkedAt": "2026-10-17T09:55:52.744Z"
+      }
+    },
+  },
+  "diamondFloodlight": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondFloodlight.63f64b78.glb",
+    hash: "sha256-63f64b78226fa9ed2e38cde33baa6824a315de47621d58e109162839759ceb52",
+    bounds: [
+      0.915,
+      1.903,
+      0.302
+    ],
+    sizeBytes: 4508552,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-floodlight/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:22:39.483Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondFloodlight.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondFloodlight.metadata.65a6bdd3054f.json",
+          "public/aura-assets/diamondFloodlight.meshy-candidate.589fc566.png"
+        ],
+        "checkedAt": "2026-10-17T09:22:39.483Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-floodlight/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondFloodlight.63f64b78.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.458,
+          -0.952,
+          -0.152
+        ],
+        "max": [
+          0.457,
+          0.951,
+          0.15
+        ],
+        "size": [
+          0.915,
+          1.903,
+          0.302
+        ],
+        "center": [
+          0,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondFloodlight.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondFloodlight.meshy-candidate.589fc566.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-589fc566fe25f3dfacb1928aee8a2eda2fd6ed5f634bf37bc49157bedaa12b63",
+        "checkedAt": "2026-10-17T09:55:52.965Z"
+      }
+    },
+  },
+  "diamondFoulPole": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondFoulPole.6867ef1e.glb",
+    hash: "sha256-6867ef1ec3d447447d78c4d1d4832445ced8f41db6f8ed32ffb23c1165653cc3",
+    bounds: [
+      1.127,
+      1.903,
+      0.133
+    ],
+    sizeBytes: 6066376,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-foul-pole/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:23:21.984Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondFoulPole.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondFoulPole.metadata.fe8de17f6f51.json",
+          "public/aura-assets/diamondFoulPole.meshy-candidate.0a5a0ef1.png"
+        ],
+        "checkedAt": "2026-10-17T09:23:21.984Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-foul-pole/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondFoulPole.6867ef1e.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.569,
+          -0.952,
+          -0.069
+        ],
+        "max": [
+          0.558,
+          0.951,
+          0.064
+        ],
+        "size": [
+          1.127,
+          1.903,
+          0.133
+        ],
+        "center": [
+          -0.005,
+          -0.001,
+          -0.002
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondFoulPole.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondFoulPole.meshy-candidate.0a5a0ef1.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-0a5a0ef10c140b9a5619430d528e0cfbad10ee7840de09b5176297503546b5ad",
+        "checkedAt": "2026-10-17T09:55:53.204Z"
+      }
+    },
+  },
+  "diamondFoulSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondFoulSfx.4197695d.wav",
+    hash: "sha256-4197695d5e282f641575269ba8390150d2a1365af5f54ba55ee7df72aa05977b",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 39734,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondFoulSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:55.942Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondFoulSfx.wav",
+      "outputPath": "public/aura-assets/diamondFoulSfx.4197695d.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondFoulSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondGlove": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondGlove.c9c5fa8b.glb",
+    hash: "sha256-c9c5fa8b6b248c9157eeee6710bada79586d381aa0078148d3d875ac58c5ac69",
+    bounds: [
+      1.215,
+      1.341,
+      1.902
+    ],
+    sizeBytes: 5944440,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-glove/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:23:18.927Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondGlove.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondGlove.metadata.b5d46ecb2d23.json",
+          "public/aura-assets/diamondGlove.meshy-candidate.bfe86d37.png"
+        ],
+        "checkedAt": "2026-10-17T09:23:18.927Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-glove/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondGlove.c9c5fa8b.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.612,
+          -0.67,
+          -0.952
+        ],
+        "max": [
+          0.603,
+          0.671,
+          0.95
+        ],
+        "size": [
+          1.215,
+          1.341,
+          1.902
+        ],
+        "center": [
+          -0.004,
+          0.001,
+          -0.001
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondGlove.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondGlove.meshy-candidate.bfe86d37.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-bfe86d371d7695bf3949465e4e55c7493647692d0f39a4a69f5e9366e983dc9a",
+        "checkedAt": "2026-10-17T09:55:53.437Z"
+      }
+    },
+  },
+  "diamondHarborPier": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondHarborPier.97abb691.glb",
+    hash: "sha256-97abb6918baf09074eb9daad6143e9b8d3b88305fc917ccca47d81ec153134e3",
+    bounds: [
+      1.903,
+      0.457,
+      0.715
+    ],
+    sizeBytes: 6040028,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-harbor-pier/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:25:43.967Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondHarborPier.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondHarborPier.metadata.966c3c203fab.json",
+          "public/aura-assets/diamondHarborPier.meshy-candidate.970b0b32.png"
+        ],
+        "checkedAt": "2026-10-17T09:25:43.967Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-harbor-pier/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondHarborPier.97abb691.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.229,
+          -0.355
+        ],
+        "max": [
+          0.951,
+          0.228,
+          0.361
+        ],
+        "size": [
+          1.903,
+          0.457,
+          0.715
+        ],
+        "center": [
+          0,
+          -0.001,
+          0.003
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondHarborPier.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondHarborPier.meshy-candidate.970b0b32.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-970b0b323f52cc0086e5deddd0ad6be2b9c7fc02fe65dbbc6f2e568ef5d27d29",
+        "checkedAt": "2026-10-17T09:55:53.668Z"
+      }
+    },
+  },
+  "diamondHomerBigSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondHomerBigSfx.7d3a6654.wav",
+    hash: "sha256-7d3a66547131d29df72f20b49b11c258d55985550bb5004763eb25cf1979ee38",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 141164,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondHomerBigSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:56.244Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondHomerBigSfx.wav",
+      "outputPath": "public/aura-assets/diamondHomerBigSfx.7d3a6654.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondHomerBigSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondHomerSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondHomerSfx.b9ff0287.wav",
+    hash: "sha256-b9ff02872e287670cece2f24e8a066f122d799ee6014e049c3d73b40a974714a",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 105884,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondHomerSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:56.599Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondHomerSfx.wav",
+      "outputPath": "public/aura-assets/diamondHomerSfx.b9ff0287.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondHomerSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondIvyWall": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondIvyWall.454795f2.glb",
+    hash: "sha256-454795f29682b500e034c6a26bd667a3b3a92f374d8e6020cb516da69fa6118d",
+    bounds: [
+      1.907,
+      0.63,
+      0.233
+    ],
+    sizeBytes: 21796168,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-ivy-wall/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:32:55.182Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondIvyWall.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondIvyWall.metadata.2e929ccf0493.json",
+          "public/aura-assets/diamondIvyWall.meshy-candidate.fe7fae2e.png"
+        ],
+        "checkedAt": "2026-10-17T09:32:55.182Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-ivy-wall/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondIvyWall.454795f2.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.953,
+          -0.324,
+          -0.117
+        ],
+        "max": [
+          0.954,
+          0.305,
+          0.116
+        ],
+        "size": [
+          1.907,
+          0.63,
+          0.233
+        ],
+        "center": [
+          0.001,
+          -0.009,
+          0
+        ],
+        "maxDimension": 1.907,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondIvyWall.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondIvyWall.meshy-candidate.fe7fae2e.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-fe7fae2ec406a989b04115258341566b81839f7f441b91755ab39fb135a61c5b",
+        "checkedAt": "2026-10-17T09:55:53.897Z"
+      }
+    },
+  },
+  "diamondLunarRover": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondLunarRover.18e5fb44.glb",
+    hash: "sha256-18e5fb44ba628692f9c8d05f58c35fb0a147a62cf37619f87d2e0f0c3ccb3a2d",
+    bounds: [
+      1.903,
+      1.364,
+      1.306
+    ],
+    sizeBytes: 8411416,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-lunar-rover/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:25:00.092Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondLunarRover.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondLunarRover.metadata.955ac1d6ca28.json",
+          "public/aura-assets/diamondLunarRover.meshy-candidate.617c8f44.png"
+        ],
+        "checkedAt": "2026-10-17T09:25:00.092Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-lunar-rover/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondLunarRover.18e5fb44.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.682,
+          -0.655
+        ],
+        "max": [
+          0.951,
+          0.682,
+          0.652
+        ],
+        "size": [
+          1.903,
+          1.364,
+          1.306
+        ],
+        "center": [
+          -0.001,
+          0,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondLunarRover.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondLunarRover.meshy-candidate.617c8f44.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-617c8f446b24a7a8b9fc7f491631acbe66b338ac4a625de975b30326be93bed7",
+        "checkedAt": "2026-10-17T09:55:54.141Z"
+      }
+    },
+  },
+  "diamondMittPopSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondMittPopSfx.6850f890.wav",
+    hash: "sha256-6850f890ee2169a3e610b7d5f12d5b104403782cbd31e79f24ffe245f814aaa1",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 19448,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondMittPopSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:56.935Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondMittPopSfx.wav",
+      "outputPath": "public/aura-assets/diamondMittPopSfx.6850f890.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondMittPopSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondMoonDome": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondMoonDome.a3707f2e.glb",
+    hash: "sha256-a3707f2e147a621afd69f70cfb0255354ba38d36268b5dce201de3c7e9211b1b",
+    bounds: [
+      1.905,
+      0.827,
+      1.682
+    ],
+    sizeBytes: 15368780,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-moon-dome/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:23:54.784Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondMoonDome.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondMoonDome.metadata.5f4102d071c7.json",
+          "public/aura-assets/diamondMoonDome.meshy-candidate.751dd5a9.png"
+        ],
+        "checkedAt": "2026-10-17T09:23:54.784Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-moon-dome/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondMoonDome.a3707f2e.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.953,
+          -0.422,
+          -0.841
+        ],
+        "max": [
+          0.952,
+          0.404,
+          0.84
+        ],
+        "size": [
+          1.905,
+          0.827,
+          1.682
+        ],
+        "center": [
+          0,
+          -0.009,
+          0
+        ],
+        "maxDimension": 1.905,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondMoonDome.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondMoonDome.meshy-candidate.751dd5a9.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-751dd5a967fdaf51efb24c49ac90f65aab78e4629f2332f057889b206d31b5fb",
+        "checkedAt": "2026-10-17T09:55:54.378Z"
+      }
+    },
+  },
+  "diamondOrganSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondOrganSfx.f69fb9ee.wav",
+    hash: "sha256-f69fb9eea4b79190bf071b53da420019dd0185ef5fdf18927dc0801f06990f90",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 88244,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondOrganSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:57.226Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondOrganSfx.wav",
+      "outputPath": "public/aura-assets/diamondOrganSfx.f69fb9ee.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondOrganSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondPitchWhooshSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondPitchWhooshSfx.f9b60fb6.wav",
+    hash: "sha256-f9b60fb6928f64f3c63d78429a095a2ecf724eab0f749c6c8487f2184a281aa1",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 26504,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondPitchWhooshSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:57.559Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondPitchWhooshSfx.wav",
+      "outputPath": "public/aura-assets/diamondPitchWhooshSfx.f9b60fb6.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondPitchWhooshSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondQuadSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondQuadSfx.6313fa1b.wav",
+    hash: "sha256-6313fa1b0c94860aee9f273da9eca68eae18a06578847fc015b5b9ce9553758f",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 123524,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondQuadSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:57.857Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondQuadSfx.wav",
+      "outputPath": "public/aura-assets/diamondQuadSfx.6313fa1b.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondQuadSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondRock": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondRock.af699d5e.glb",
+    hash: "sha256-af699d5ef4d57642d60f734d6b88bd650ab83b19e68ab944ce19dfd03267616f",
+    bounds: [
+      1.903,
+      1.335,
+      1.698
+    ],
+    sizeBytes: 1553904,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-rock/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:32:38.326Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondRock.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondRock.metadata.b06884877b76.json",
+          "public/aura-assets/diamondRock.meshy-candidate.212458e9.png"
+        ],
+        "checkedAt": "2026-10-17T09:32:38.326Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-rock/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondRock.af699d5e.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.668,
+          -0.849
+        ],
+        "max": [
+          0.951,
+          0.666,
+          0.849
+        ],
+        "size": [
+          1.903,
+          1.335,
+          1.698
+        ],
+        "center": [
+          -0.001,
+          -0.001,
+          0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondRock.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondRock.meshy-candidate.212458e9.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-212458e92a6fcda8285573199fc573ae8e6b64522a21e9f2d5c3271e748b1dac",
+        "checkedAt": "2026-10-17T09:55:54.609Z"
+      }
+    },
+  },
+  "diamondScoreboard": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondScoreboard.3b0cd49f.glb",
+    hash: "sha256-3b0cd49f04c31f6c6255f8ab4918101a7b2d57d8c6d8a8ce2e833e320b8f599e",
+    bounds: [
+      1.903,
+      1.628,
+      0.621
+    ],
+    sizeBytes: 5616876,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-scoreboard/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:23:04.415Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondScoreboard.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondScoreboard.metadata.c4cd429247be.json",
+          "public/aura-assets/diamondScoreboard.meshy-candidate.30bba8a7.png"
+        ],
+        "checkedAt": "2026-10-17T09:23:04.415Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-scoreboard/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondScoreboard.3b0cd49f.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.815,
+          -0.311
+        ],
+        "max": [
+          0.951,
+          0.813,
+          0.31
+        ],
+        "size": [
+          1.903,
+          1.628,
+          0.621
+        ],
+        "center": [
+          0,
+          -0.001,
+          0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondScoreboard.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondScoreboard.meshy-candidate.30bba8a7.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-30bba8a7b6e543ffb0c054fb27e3d586c490a0a369833706eaf5e4fd4c54956f",
+        "checkedAt": "2026-10-17T09:55:54.827Z"
+      }
+    },
+  },
+  "diamondSlideSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondSlideSfx.5445978c.wav",
+    hash: "sha256-5445978cfbd885f3d48356e0033b9128914f8149f885932d680ab5f2924190b3",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 44144,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondSlideSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:58.194Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondSlideSfx.wav",
+      "outputPath": "public/aura-assets/diamondSlideSfx.5445978c.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondSlideSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondStadium": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondStadium.2aa65131.glb",
+    hash: "sha256-2aa65131cc8143c360db9b815e867e4dff59fdd3bd9d376f6fc16ee47774408c",
+    bounds: [
+      1.904,
+      0.618,
+      1.292
+    ],
+    sizeBytes: 21376324,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-stadium/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:23:20.098Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondStadium.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondStadium.metadata.da3a9a112619.json",
+          "public/aura-assets/diamondStadium.meshy-candidate.21f4e87b.png"
+        ],
+        "checkedAt": "2026-10-17T09:23:20.098Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-stadium/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondStadium.2aa65131.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.303,
+          -0.646
+        ],
+        "max": [
+          0.952,
+          0.315,
+          0.646
+        ],
+        "size": [
+          1.904,
+          0.618,
+          1.292
+        ],
+        "center": [
+          0,
+          0.006,
+          0
+        ],
+        "maxDimension": 1.904,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondStadium.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondStadium.meshy-candidate.21f4e87b.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-21f4e87b5316259b4038756d92a14b383e99853f523078d7c68582423587cff4",
+        "checkedAt": "2026-10-17T09:55:55.060Z"
+      }
+    },
+  },
+  "diamondStrikeoutSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondStrikeoutSfx.3c574e23.wav",
+    hash: "sha256-3c574e2312d2b879684df9339435b95c290e3655ec8e5e30f5c54c3a226c16e3",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 70604,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondStrikeoutSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:58.506Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondStrikeoutSfx.wav",
+      "outputPath": "public/aura-assets/diamondStrikeoutSfx.3c574e23.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondStrikeoutSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondSwingSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondSwingSfx.4411a5a3.wav",
+    hash: "sha256-4411a5a32e31887e1dc8bcaff8a9642cb0153ad4310eb6ce88e86284de1d958a",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 30914,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondSwingSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:58.831Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondSwingSfx.wav",
+      "outputPath": "public/aura-assets/diamondSwingSfx.4411a5a3.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondSwingSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondTower": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondTower.039eb19e.glb",
+    hash: "sha256-039eb19e26bb4d6b63d71a68fe6408323143d3f47cd7e1e0b5535afdd147ff36",
+    bounds: [
+      1.457,
+      1.904,
+      1.177
+    ],
+    sizeBytes: 7438516,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-tower/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:34:43.747Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondTower.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondTower.metadata.c789aaad7fe7.json",
+          "public/aura-assets/diamondTower.meshy-candidate.b6d34f03.png"
+        ],
+        "checkedAt": "2026-10-17T09:34:43.747Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-tower/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondTower.039eb19e.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.726,
+          -0.953,
+          -0.59
+        ],
+        "max": [
+          0.731,
+          0.951,
+          0.587
+        ],
+        "size": [
+          1.457,
+          1.904,
+          1.177
+        ],
+        "center": [
+          0.002,
+          -0.001,
+          -0.002
+        ],
+        "maxDimension": 1.904,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondTower.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondTower.meshy-candidate.b6d34f03.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-b6d34f03782db417446285d3131a803a28b10d79c7b23e5422c729be4ee1cd17",
+        "checkedAt": "2026-10-17T09:55:55.303Z"
+      }
+    },
+  },
+  "diamondTrophy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondTrophy.a1f74f7d.glb",
+    hash: "sha256-a1f74f7d75c31fe9368a7ce0d43ac7f09e1d24c94e97578db6a4941d4fe90482",
+    bounds: [
+      1.469,
+      1.903,
+      0.966
+    ],
+    sizeBytes: 5902180,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-trophy/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:25:55.436Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondTrophy.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondTrophy.metadata.67e8bcd71102.json",
+          "public/aura-assets/diamondTrophy.meshy-candidate.64962840.png"
+        ],
+        "checkedAt": "2026-10-17T09:25:55.436Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-trophy/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondTrophy.a1f74f7d.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.734,
+          -0.952,
+          -0.484
+        ],
+        "max": [
+          0.734,
+          0.951,
+          0.482
+        ],
+        "size": [
+          1.469,
+          1.903,
+          0.966
+        ],
+        "center": [
+          0,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondTrophy.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondTrophy.meshy-candidate.64962840.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-64962840244717a53ee6015d215fae66b445796026eb32f979487e1302cfa66c",
+        "checkedAt": "2026-10-17T09:57:39.452Z"
+      }
+    },
+  },
+  "diamondTyphoonDome": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondTyphoonDome.3805da5a.glb",
+    hash: "sha256-3805da5a2cadaf328eb220971d061589b74ac56abe3c64aee9f68b64818dc669",
+    bounds: [
+      1.901,
+      0.811,
+      1.901
+    ],
+    sizeBytes: 22797236,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/diamond-typhoon-dome/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:29:46.609Z",
+        "evidence": [
+          "aura-evidence/meshy/diamondTyphoonDome.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/diamondTyphoonDome.metadata.f553b3b9ec17.json",
+          "public/aura-assets/diamondTyphoonDome.meshy-candidate.9ea3729c.png"
+        ],
+        "checkedAt": "2026-10-17T09:29:46.609Z"
+      },
+      "sourcePath": "artifacts/meshy/diamond-typhoon-dome/model.opt.glb",
+      "outputPath": "public/aura-assets/diamondTyphoonDome.3805da5a.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.951,
+          -0.405,
+          -0.951
+        ],
+        "max": [
+          0.95,
+          0.406,
+          0.949
+        ],
+        "size": [
+          1.901,
+          0.811,
+          1.901
+        ],
+        "center": [
+          -0.001,
+          0,
+          -0.001
+        ],
+        "maxDimension": 1.901,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondTyphoonDome.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/diamondTyphoonDome.meshy-candidate.9ea3729c.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-9ea3729ced46a850c6e8f4434f900778b4d3f8fde390e41a44849d63c40ea406",
+        "checkedAt": "2026-10-17T09:55:55.716Z"
+      }
+    },
+  },
+  "diamondUmpSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondUmpSfx.8c25f2f1.wav",
+    hash: "sha256-8c25f2f1a34f9cf2d572e8129874006f6ba50531a45a60a633cd4c82a4bceedd",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 26504,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondUmpSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:59.134Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondUmpSfx.wav",
+      "outputPath": "public/aura-assets/diamondUmpSfx.8c25f2f1.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondUmpSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondWalkSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondWalkSfx.a178409a.wav",
+    hash: "sha256-a178409abe103bfd2dee18d901011e5395186c0cebc79e8973714a50aec6c5f3",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 44144,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondWalkSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:59.435Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondWalkSfx.wav",
+      "outputPath": "public/aura-assets/diamondWalkSfx.a178409a.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondWalkSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "diamondWindSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondWindSfx.777b552e.wav",
+    hash: "sha256-777b552ec33867309e0ee2a64af85e6ba9ad0b8f217721f19c3edbe7dcfcc23c",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 308744,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/diamondWindSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:58:59.739Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/diamondWindSfx.wav",
+      "outputPath": "public/aura-assets/diamondWindSfx.777b552e.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/diamondWindSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "fcFloodlightPylonMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/fcFloodlightPylonMeshy.636dc3fc.glb",
+    hash: "sha256-636dc3fcd362a58d33a876063bd33cfc7904bb59d7f06cbeb30f82d4ca6fda8a",
+    bounds: [
+      0.631,
+      1.903,
+      0.239
+    ],
+    sizeBytes: 3945892,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/fc-floodlight-pylon/model.glb",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:19:17.333Z",
+        "evidence": [
+          "aura-evidence/meshy/fcFloodlightPylonMeshy.rights.7fcc7bfad170.json",
+          "aura-evidence/meshy/fcFloodlightPylonMeshy.metadata.74560f2d13f0.json",
+          "public/aura-assets/fcFloodlightPylonMeshy.meshy-candidate.afcf45b1.png"
+        ],
+        "checkedAt": "2026-10-17T09:19:17.333Z"
+      },
+      "sourcePath": "artifacts/meshy/fc-floodlight-pylon/model.glb",
+      "outputPath": "public/aura-assets/fcFloodlightPylonMeshy.636dc3fc.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.315,
+          -0.952,
+          -0.121
+        ],
+        "max": [
+          0.316,
+          0.951,
+          0.118
+        ],
+        "size": [
+          0.631,
+          1.903,
+          0.239
+        ],
+        "center": [
+          0,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/fcFloodlightPylonMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/fcFloodlightPylonMeshy.meshy-candidate.afcf45b1.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-afcf45b1d4f13883cccb12d2b0afae312eb27fe5c87c357427f8c86f497f4b0a",
+        "checkedAt": "2026-10-17T10:04:42.633Z"
+      }
+    },
+  },
+  "fcGlacierDomeMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/fcGlacierDomeMeshy.32b82759.glb",
+    hash: "sha256-32b827592359ba3734fe1553d0bdcac014923101d45c3886c6b097f04c2cb4d5",
+    bounds: [
+      1.818,
+      1.209,
+      1.903
+    ],
+    sizeBytes: 6127400,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/fc-glacier-dome/model.glb",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:14:06.979Z",
+        "evidence": [
+          "aura-evidence/meshy/fcGlacierDomeMeshy.rights.7fcc7bfad170.json",
+          "aura-evidence/meshy/fcGlacierDomeMeshy.metadata.5442f50b721d.json",
+          "public/aura-assets/fcGlacierDomeMeshy.meshy-candidate.7d1165f0.png"
+        ],
+        "checkedAt": "2026-10-17T09:14:06.979Z"
+      },
+      "sourcePath": "artifacts/meshy/fc-glacier-dome/model.glb",
+      "outputPath": "public/aura-assets/fcGlacierDomeMeshy.32b82759.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.91,
+          -0.605,
+          -0.949
+        ],
+        "max": [
+          0.908,
+          0.604,
+          0.954
+        ],
+        "size": [
+          1.818,
+          1.209,
+          1.903
+        ],
+        "center": [
+          -0.001,
+          0,
+          0.003
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/fcGlacierDomeMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "environment",
+      "renderedProbe": {
+        "url": "/aura-assets/fcGlacierDomeMeshy.meshy-candidate.7d1165f0.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-7d1165f012a769c784c0b86a9c531cf65b67b0c0ccb46627fc3f04e9dc64c79f",
+        "checkedAt": "2026-10-17T10:04:42.291Z"
+      }
+    },
+  },
+  "fcHeroTrophyMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/fcHeroTrophyMeshy.b101d73c.glb",
+    hash: "sha256-b101d73c079fd37ba3114d42a002ff2b965f7ca31ab340a90aa245f9866e949a",
+    bounds: [
+      1.024,
+      1.902,
+      0.613
+    ],
+    sizeBytes: 4095716,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/fc-hero-trophy/model.glb",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:14:02.245Z",
+        "evidence": [
+          "aura-evidence/meshy/fcHeroTrophyMeshy.rights.7fcc7bfad170.json",
+          "aura-evidence/meshy/fcHeroTrophyMeshy.metadata.a76ad4ea0310.json",
+          "public/aura-assets/fcHeroTrophyMeshy.meshy-candidate.ef179a3e.png"
+        ],
+        "checkedAt": "2026-10-17T09:14:02.245Z"
+      },
+      "sourcePath": "artifacts/meshy/fc-hero-trophy/model.glb",
+      "outputPath": "public/aura-assets/fcHeroTrophyMeshy.b101d73c.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.512,
+          -0.952,
+          -0.307
+        ],
+        "max": [
+          0.512,
+          0.95,
+          0.306
+        ],
+        "size": [
+          1.024,
+          1.902,
+          0.613
+        ],
+        "center": [
+          0,
+          -0.001,
+          0
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/fcHeroTrophyMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/fcHeroTrophyMeshy.meshy-candidate.ef179a3e.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-ef179a3e21c3f75ebe8007e6bc0536345281f6315764d42b8b25f8c216b13f3c",
+        "checkedAt": "2026-10-17T10:04:41.948Z"
+      }
+    },
+  },
+  "fcMatchBallMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/fcMatchBallMeshy.b97f043f.glb",
+    hash: "sha256-b97f043fb34c695590425933afcce9008aba484d6df9cf14a8b114484d340004",
+    bounds: [
+      1.902,
+      1.902,
+      1.901
+    ],
+    sizeBytes: 2789100,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/fc-match-ball/model.glb",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:14:15.163Z",
+        "evidence": [
+          "aura-evidence/meshy/fcMatchBallMeshy.rights.7fcc7bfad170.json",
+          "aura-evidence/meshy/fcMatchBallMeshy.metadata.af10c738f2aa.json",
+          "public/aura-assets/fcMatchBallMeshy.meshy-candidate.4728e35f.png"
+        ],
+        "checkedAt": "2026-10-17T09:14:15.163Z"
+      },
+      "sourcePath": "artifacts/meshy/fc-match-ball/model.glb",
+      "outputPath": "public/aura-assets/fcMatchBallMeshy.b97f043f.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.951,
+          -0.952,
+          -0.951
+        ],
+        "max": [
+          0.95,
+          0.95,
+          0.95
+        ],
+        "size": [
+          1.902,
+          1.902,
+          1.901
+        ],
+        "center": [
+          0,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/fcMatchBallMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/fcMatchBallMeshy.meshy-candidate.4728e35f.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-4728e35f395a7ab436e9d278b01d2cc3e962433c0545db0da7e2f3a032c7b791",
+        "checkedAt": "2026-10-17T10:04:41.605Z"
+      }
+    },
+  },
+  "fcScoreboardGantryMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/fcScoreboardGantryMeshy.0c6d8221.glb",
+    hash: "sha256-0c6d8221b111f6b1f2be65ba369aa1d15f013acd586c9149e34719a8273eb5c6",
+    bounds: [
+      1.902,
+      1.284,
+      0.246
+    ],
+    sizeBytes: 4603144,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/fc-scoreboard-gantry/model.glb",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:19:26.580Z",
+        "evidence": [
+          "aura-evidence/meshy/fcScoreboardGantryMeshy.rights.7fcc7bfad170.json",
+          "aura-evidence/meshy/fcScoreboardGantryMeshy.metadata.eb87b9f8d696.json",
+          "public/aura-assets/fcScoreboardGantryMeshy.meshy-candidate.cc1b984c.png"
+        ],
+        "checkedAt": "2026-10-17T09:19:26.580Z"
+      },
+      "sourcePath": "artifacts/meshy/fc-scoreboard-gantry/model.glb",
+      "outputPath": "public/aura-assets/fcScoreboardGantryMeshy.0c6d8221.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.642,
+          -0.121
+        ],
+        "max": [
+          0.951,
+          0.642,
+          0.125
+        ],
+        "size": [
+          1.902,
+          1.284,
+          0.246
+        ],
+        "center": [
+          -0.001,
+          0,
+          0.002
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/fcScoreboardGantryMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/fcScoreboardGantryMeshy.meshy-candidate.cc1b984c.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-cc1b984c6b4473047a2d572e876864601211042a5ee3251aeda8a424f2ec7566",
+        "checkedAt": "2026-10-17T10:04:42.974Z"
+      }
+    },
+  },
+  "hoopsAmbientSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsAmbientSfx.3f510d11.wav",
+    hash: "sha256-3f510d1129768227f48a3f54c2fd49470aa67a2975716811adaa6f10d7bac6c7",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 352844,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsAmbientSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:00.160Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsAmbientSfx.wav",
+      "outputPath": "public/aura-assets/hoopsAmbientSfx.3f510d11.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsAmbientSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsAthleteBig": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsAthleteBig.a11d61c5.glb",
+    hash: "sha256-a11d61c552bec0fcfb89dcd9e70df64aa22012e1f58f590f610920f040977155",
+    bounds: [
+      1.675,
+      1.903,
+      0.365
+    ],
+    sizeBytes: 4221972,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-athlete-big/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:22:50.995Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsAthleteBig.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsAthleteBig.metadata.8f9ed3feef85.json",
+          "public/aura-assets/hoopsAthleteBig.meshy-candidate.a51df9f8.png"
+        ],
+        "checkedAt": "2026-10-17T09:22:50.995Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-athlete-big/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsAthleteBig.a11d61c5.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.838,
+          -0.952,
+          -0.184
+        ],
+        "max": [
+          0.837,
+          0.951,
+          0.181
+        ],
+        "size": [
+          1.675,
+          1.903,
+          0.365
+        ],
+        "center": [
+          -0.001,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsAthleteBig.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsAthleteBig.meshy-candidate.a51df9f8.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-a51df9f892d3f2aa0000a1f3e70139973ac943004bc34cb5e6732ee36360d0d5",
+        "checkedAt": "2026-10-17T09:55:55.952Z"
+      }
+    },
+  },
+  "hoopsAthleteGuard": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsAthleteGuard.fbef844e.glb",
+    hash: "sha256-fbef844e5385c6a61742a84708e959903a9b7185d61007812940f228e669baa1",
+    bounds: [
+      1.712,
+      1.903,
+      0.373
+    ],
+    sizeBytes: 4161488,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-athlete-guard/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:22:16.647Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsAthleteGuard.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsAthleteGuard.metadata.36f6ea23d224.json",
+          "public/aura-assets/hoopsAthleteGuard.meshy-candidate.4a147fc2.png"
+        ],
+        "checkedAt": "2026-10-17T09:22:16.647Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-athlete-guard/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsAthleteGuard.fbef844e.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.856,
+          -0.952,
+          -0.185
+        ],
+        "max": [
+          0.856,
+          0.951,
+          0.188
+        ],
+        "size": [
+          1.712,
+          1.903,
+          0.373
+        ],
+        "center": [
+          0,
+          -0.001,
+          0.002
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsAthleteGuard.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsAthleteGuard.meshy-candidate.4a147fc2.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-4a147fc2429f3233f552e16e963951178c0366cf459decde410773b58cd9f19e",
+        "checkedAt": "2026-10-17T09:55:56.174Z"
+      }
+    },
+  },
+  "hoopsBackboard": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsBackboard.4df28ae9.glb",
+    hash: "sha256-4df28ae9bda98492402562b9876b80c684bcfe69e235acea1259504b83d5dfd7",
+    bounds: [
+      1.903,
+      1.503,
+      0.755
+    ],
+    sizeBytes: 1189836,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-backboard/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:32:31.869Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsBackboard.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsBackboard.metadata.6e0302fbbc70.json",
+          "public/aura-assets/hoopsBackboard.meshy-candidate.50256a77.png"
+        ],
+        "checkedAt": "2026-10-17T09:32:31.869Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-backboard/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsBackboard.4df28ae9.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.752,
+          -0.378
+        ],
+        "max": [
+          0.951,
+          0.751,
+          0.378
+        ],
+        "size": [
+          1.903,
+          1.503,
+          0.755
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsBackboard.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsBackboard.meshy-candidate.50256a77.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-50256a77226fc2d4ccbd214d22066c3240f9f40d66f86143549ec1ab0dc7bbf6",
+        "checkedAt": "2026-10-17T09:55:56.398Z"
+      }
+    },
+  },
+  "hoopsBall": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsBall.2aed886a.glb",
+    hash: "sha256-2aed886a35ff619d7a165d971d633400153461d9a87fef3c35030a07568cc003",
+    bounds: [
+      1.902,
+      1.903,
+      1.903
+    ],
+    sizeBytes: 1822980,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-ball/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:22:45.495Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsBall.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsBall.metadata.60e176b76fc6.json",
+          "public/aura-assets/hoopsBall.meshy-candidate.1d5ae05e.png"
+        ],
+        "checkedAt": "2026-10-17T09:22:45.495Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-ball/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsBall.2aed886a.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.952,
+          -0.952
+        ],
+        "max": [
+          0.95,
+          0.951,
+          0.951
+        ],
+        "size": [
+          1.902,
+          1.903,
+          1.903
+        ],
+        "center": [
+          -0.001,
+          0,
+          0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsBall.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsBall.meshy-candidate.1d5ae05e.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-1d5ae05ea4bc226ce8ac55708c0e75fe01ada02022081ebb3fe78244bfed3456",
+        "checkedAt": "2026-10-17T09:56:54.565Z"
+      }
+    },
+  },
+  "hoopsBallCart": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsBallCart.046e8fde.glb",
+    hash: "sha256-046e8fde0aa8e6c9c4cb4e8a3a2ea5f060d6916ab8dfda5dc1c013be7671bfe8",
+    bounds: [
+      1.906,
+      1.31,
+      1.459
+    ],
+    sizeBytes: 8595424,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-ball-cart/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:24:57.449Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsBallCart.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsBallCart.metadata.e4b332777a11.json",
+          "public/aura-assets/hoopsBallCart.meshy-candidate.2fd54fa8.png"
+        ],
+        "checkedAt": "2026-10-17T09:24:57.449Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-ball-cart/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsBallCart.046e8fde.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.955,
+          -0.656,
+          -0.73
+        ],
+        "max": [
+          0.951,
+          0.654,
+          0.729
+        ],
+        "size": [
+          1.906,
+          1.31,
+          1.459
+        ],
+        "center": [
+          -0.002,
+          -0.001,
+          0
+        ],
+        "maxDimension": 1.906,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsBallCart.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsBallCart.meshy-candidate.2fd54fa8.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-2fd54fa89efe1627d67dc570e13cf7d0e011bc84ad69190ad91a05144ffb10ae",
+        "checkedAt": "2026-10-17T09:55:56.846Z"
+      }
+    },
+  },
+  "hoopsBlockSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsBlockSfx.48c91229.wav",
+    hash: "sha256-48c91229537384ad140ffe2064dfbe5f798768e3b89549517761717187cc630e",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 39734,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsBlockSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:00.597Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsBlockSfx.wav",
+      "outputPath": "public/aura-assets/hoopsBlockSfx.48c91229.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsBlockSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsBoardThudSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsBoardThudSfx.b2f87b29.wav",
+    hash: "sha256-b2f87b29f4b1f28e434ec5a5ef411a08595226c01ba37aa332f44dd548208eb3",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 26504,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsBoardThudSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:00.900Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsBoardThudSfx.wav",
+      "outputPath": "public/aura-assets/hoopsBoardThudSfx.b2f87b29.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsBoardThudSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsBrickSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsBrickSfx.e9ad6854.wav",
+    hash: "sha256-e9ad6854c81a5395112a2f281fa4a665f3311563284070e5282c1758ef586f29",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 44144,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsBrickSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:01.206Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsBrickSfx.wav",
+      "outputPath": "public/aura-assets/hoopsBrickSfx.e9ad6854.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsBrickSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsBuzzerSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsBuzzerSfx.84d252a1.wav",
+    hash: "sha256-84d252a1e66e638ec7c9c0896348ab619f0279f60edc50ff2609ca1ab584625e",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 79424,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsBuzzerSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:01.519Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsBuzzerSfx.wav",
+      "outputPath": "public/aura-assets/hoopsBuzzerSfx.84d252a1.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsBuzzerSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsCanopy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsCanopy.0ec25693.glb",
+    hash: "sha256-0ec25693599363e77b44d7b1c0f871437ebf8a64888a3f432559821518da6fb1",
+    bounds: [
+      1.907,
+      0.762,
+      1.137
+    ],
+    sizeBytes: 24823268,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-canopy/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:26:28.963Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsCanopy.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsCanopy.metadata.a50ec0faff39.json",
+          "public/aura-assets/hoopsCanopy.meshy-candidate.179c4875.png"
+        ],
+        "checkedAt": "2026-10-17T09:26:28.963Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-canopy/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsCanopy.0ec25693.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.955,
+          -0.385,
+          -0.563
+        ],
+        "max": [
+          0.952,
+          0.378,
+          0.574
+        ],
+        "size": [
+          1.907,
+          0.762,
+          1.137
+        ],
+        "center": [
+          -0.001,
+          -0.004,
+          0.006
+        ],
+        "maxDimension": 1.907,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsCanopy.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsCanopy.meshy-candidate.179c4875.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-179c48759a6fae026284e915442b3d1b0d27b10eff8e3ded8f8613b2ff151605",
+        "checkedAt": "2026-10-17T09:55:57.077Z"
+      }
+    },
+  },
+  "hoopsChargeTickSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsChargeTickSfx.60c8b381.wav",
+    hash: "sha256-60c8b381ddb01e6aa41535da21e332c38857e5dd7278cf58cae96e03e00bc67d",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 10628,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsChargeTickSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:01.841Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsChargeTickSfx.wav",
+      "outputPath": "public/aura-assets/hoopsChargeTickSfx.60c8b381.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsChargeTickSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsCheckSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsCheckSfx.405a831d.wav",
+    hash: "sha256-405a831d3b901ca15f9a628f96e3136be8a2da626660da946ccf18fd2f610ba3",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 70604,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsCheckSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:02.140Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsCheckSfx.wav",
+      "outputPath": "public/aura-assets/hoopsCheckSfx.405a831d.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsCheckSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsCourtShell": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsCourtShell.5892e83f.glb",
+    hash: "sha256-5892e83f0b0c1f4c6a4b9084f066c896469355e7d7e294c0c85f927aa48a6dfe",
+    bounds: [
+      1.325,
+      0.975,
+      1.902
+    ],
+    sizeBytes: 18376740,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-court-shell/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:22:20.249Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsCourtShell.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsCourtShell.metadata.8dbcb0b25b21.json",
+          "public/aura-assets/hoopsCourtShell.meshy-candidate.f851dbd5.png"
+        ],
+        "checkedAt": "2026-10-17T09:22:20.249Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-court-shell/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsCourtShell.5892e83f.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.663,
+          -0.488,
+          -0.952
+        ],
+        "max": [
+          0.662,
+          0.486,
+          0.95
+        ],
+        "size": [
+          1.325,
+          0.975,
+          1.902
+        ],
+        "center": [
+          0,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsCourtShell.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsCourtShell.meshy-candidate.f851dbd5.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-f851dbd5641cc7adc397fd760ca6d6a31f095f3cd4bba0c8a9a634f9a202640a",
+        "checkedAt": "2026-10-17T09:55:57.319Z"
+      }
+    },
+  },
+  "hoopsCrowdSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsCrowdSfx.3bfb8d46.wav",
+    hash: "sha256-3bfb8d4652078c59aa46f93957a24d2322bd86f2a60846f4fe6aea288c09be5e",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 370484,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsCrowdSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:02.462Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsCrowdSfx.wav",
+      "outputPath": "public/aura-assets/hoopsCrowdSfx.3bfb8d46.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsCrowdSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsDribbleSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsDribbleSfx.fdd2fa5b.wav",
+    hash: "sha256-fdd2fa5b40140e8af5bbcb04f1c2a484bbc63150bf7e3f22c370bc901501ff3b",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 44144,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsDribbleSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:02.897Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsDribbleSfx.wav",
+      "outputPath": "public/aura-assets/hoopsDribbleSfx.fdd2fa5b.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsDribbleSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsDunkSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsDunkSfx.cedd3d6e.wav",
+    hash: "sha256-cedd3d6e6da814144cd0ed9d65ad5f84256ccc44df7f8cf9ffec3325e6268b39",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 141164,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsDunkSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:03.210Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsDunkSfx.wav",
+      "outputPath": "public/aura-assets/hoopsDunkSfx.cedd3d6e.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsDunkSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsEarth": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsEarth.4e92b759.glb",
+    hash: "sha256-4e92b7593b32d48104eabefbd07789b00ef043300c3e117b33bbcd66f447385f",
+    bounds: [
+      1.891,
+      1.903,
+      1.904
+    ],
+    sizeBytes: 5262872,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-earth/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:23:13.470Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsEarth.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsEarth.metadata.5dd1c21a5159.json",
+          "public/aura-assets/hoopsEarth.meshy-candidate.178ced3f.png"
+        ],
+        "checkedAt": "2026-10-17T09:23:13.470Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-earth/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsEarth.4e92b759.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.945,
+          -0.953,
+          -0.956
+        ],
+        "max": [
+          0.946,
+          0.951,
+          0.948
+        ],
+        "size": [
+          1.891,
+          1.903,
+          1.904
+        ],
+        "center": [
+          0.001,
+          -0.001,
+          -0.004
+        ],
+        "maxDimension": 1.904,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsEarth.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsEarth.meshy-candidate.178ced3f.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-178ced3fd87f56ae37bcf6be32f22d2a384aa60144830470f3a8d2e196f5a02e",
+        "checkedAt": "2026-10-17T09:55:57.553Z"
+      }
+    },
+  },
+  "hoopsFanfareSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsFanfareSfx.0b88e74e.wav",
+    hash: "sha256-0b88e74e5c40057ced8b5a19140d2ad4f6f15bd7963668fcd44c4aaf719f0a33",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 97064,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsFanfareSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:03.563Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsFanfareSfx.wav",
+      "outputPath": "public/aura-assets/hoopsFanfareSfx.0b88e74e.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsFanfareSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsFireSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsFireSfx.673a10ce.wav",
+    hash: "sha256-673a10cef5b70724d07b65c7831bfa50e51f02de580709c35624c66e202545e9",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 61784,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsFireSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:03.888Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsFireSfx.wav",
+      "outputPath": "public/aura-assets/hoopsFireSfx.673a10ce.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsFireSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsFloodlight": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsFloodlight.23aef36e.glb",
+    hash: "sha256-23aef36ee2e12512bac669497670a20714d77487239dd5ee465cdc9b0bd5c45b",
+    bounds: [
+      0.661,
+      1.903,
+      0.654
+    ],
+    sizeBytes: 5857308,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-floodlight/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:22:21.116Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsFloodlight.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsFloodlight.metadata.73c2c203de40.json",
+          "public/aura-assets/hoopsFloodlight.meshy-candidate.de068df3.png"
+        ],
+        "checkedAt": "2026-10-17T09:22:21.116Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-floodlight/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsFloodlight.23aef36e.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.337,
+          -0.952,
+          -0.327
+        ],
+        "max": [
+          0.324,
+          0.951,
+          0.327
+        ],
+        "size": [
+          0.661,
+          1.903,
+          0.654
+        ],
+        "center": [
+          -0.007,
+          -0.001,
+          0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsFloodlight.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsFloodlight.meshy-candidate.de068df3.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-de068df3abdea2213a1b4c9b4f557ab75fa6294a58ebe2772b057e0155c20829",
+        "checkedAt": "2026-10-17T09:55:57.779Z"
+      }
+    },
+  },
+  "hoopsGoldChimeSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsGoldChimeSfx.bad48732.wav",
+    hash: "sha256-bad48732d6f5a2d0e7ebe14a1098bbaef5fbb5c72b0f9d6f5616d9309c8dd9f1",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 52964,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsGoldChimeSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:04.204Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsGoldChimeSfx.wav",
+      "outputPath": "public/aura-assets/hoopsGoldChimeSfx.bad48732.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsGoldChimeSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsHeatTickSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsHeatTickSfx.f511096e.wav",
+    hash: "sha256-f511096eef59daed4da0210b302e6a779c074a43e0f262355ec98c7b3194f88f",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 22094,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsHeatTickSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:04.517Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsHeatTickSfx.wav",
+      "outputPath": "public/aura-assets/hoopsHeatTickSfx.f511096e.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsHeatTickSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsHoopRig": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsHoopRig.b6d696b6.glb",
+    hash: "sha256-b6d696b6ae7d75097a33f242045c28c225f91bd90e514c12c8a7148229c7331c",
+    bounds: [
+      1.002,
+      1.903,
+      0.489
+    ],
+    sizeBytes: 5440984,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-hoop-rig/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:22:15.103Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsHoopRig.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsHoopRig.metadata.a68c24ec46a4.json",
+          "public/aura-assets/hoopsHoopRig.meshy-candidate.9da3cfe1.png"
+        ],
+        "checkedAt": "2026-10-17T09:22:15.103Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-hoop-rig/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsHoopRig.b6d696b6.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.504,
+          -0.952,
+          -0.245
+        ],
+        "max": [
+          0.498,
+          0.951,
+          0.243
+        ],
+        "size": [
+          1.002,
+          1.903,
+          0.489
+        ],
+        "center": [
+          -0.003,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsHoopRig.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsHoopRig.meshy-candidate.9da3cfe1.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-9da3cfe14105202e5118471fb357718db150b373de0a6e1350aaf9c47cb5aaa1",
+        "checkedAt": "2026-10-17T09:55:58.009Z"
+      }
+    },
+  },
+  "hoopsLamp": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsLamp.6d8568c3.glb",
+    hash: "sha256-6d8568c3f79be2532b239aaac2717db4321ff533fa629ed7023262e16f116c5b",
+    bounds: [
+      0.738,
+      1.904,
+      0.739
+    ],
+    sizeBytes: 4802496,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-lamp/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:22:27.112Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsLamp.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsLamp.metadata.0dcd27deb25e.json",
+          "public/aura-assets/hoopsLamp.meshy-candidate.a6e67f9f.png"
+        ],
+        "checkedAt": "2026-10-17T09:22:27.112Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-lamp/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsLamp.6d8568c3.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.37,
+          -0.952,
+          -0.37
+        ],
+        "max": [
+          0.369,
+          0.952,
+          0.369
+        ],
+        "size": [
+          0.738,
+          1.904,
+          0.739
+        ],
+        "center": [
+          -0.001,
+          0,
+          0
+        ],
+        "maxDimension": 1.904,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsLamp.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsLamp.meshy-candidate.a6e67f9f.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-a6e67f9f0ecc9066dcc17a07caa28b2de4411c6286ced402e1b86a7ab8c86a3b",
+        "checkedAt": "2026-10-17T09:55:58.235Z"
+      }
+    },
+  },
+  "hoopsOrbitArena": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsOrbitArena.23bcf737.glb",
+    hash: "sha256-23bcf7374252112d0927f1b110e2abff40d31841458490f4a397d2f29c44f70d",
+    bounds: [
+      1.892,
+      1,
+      1.9
+    ],
+    sizeBytes: 20641348,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-orbit-arena/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:23:46.510Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsOrbitArena.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsOrbitArena.metadata.9e6b54b53d9f.json",
+          "public/aura-assets/hoopsOrbitArena.meshy-candidate.10b4a0ea.png"
+        ],
+        "checkedAt": "2026-10-17T09:23:46.510Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-orbit-arena/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsOrbitArena.23bcf737.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.946,
+          -0.5,
+          -0.95
+        ],
+        "max": [
+          0.945,
+          0.501,
+          0.951
+        ],
+        "size": [
+          1.892,
+          1,
+          1.9
+        ],
+        "center": [
+          -0.001,
+          0,
+          0.001
+        ],
+        "maxDimension": 1.9,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsOrbitArena.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsOrbitArena.meshy-candidate.10b4a0ea.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-10b4a0ea991d2d3213be67b895135d8a06deac0ab7159caa1fb7e8350c463091",
+        "checkedAt": "2026-10-17T09:55:58.466Z"
+      }
+    },
+  },
+  "hoopsPalm": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsPalm.4ea91680.glb",
+    hash: "sha256-4ea916806b0257820cf5236d4f83d8692ee7908a3f0cadc049c05d7ddde60233",
+    bounds: [
+      1.184,
+      1.911,
+      1.187
+    ],
+    sizeBytes: 8460560,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-palm/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:25:13.469Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsPalm.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsPalm.metadata.3fee6d750711.json",
+          "public/aura-assets/hoopsPalm.meshy-candidate.e620cbf3.png"
+        ],
+        "checkedAt": "2026-10-17T09:25:13.469Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-palm/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsPalm.4ea91680.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.595,
+          -0.952,
+          -0.61
+        ],
+        "max": [
+          0.588,
+          0.959,
+          0.577
+        ],
+        "size": [
+          1.184,
+          1.911,
+          1.187
+        ],
+        "center": [
+          -0.003,
+          0.003,
+          -0.017
+        ],
+        "maxDimension": 1.911,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsPalm.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsPalm.meshy-candidate.e620cbf3.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-e620cbf369a76ba89d47ea667a4455eb246ad058f059f411604b334f4feaaff7",
+        "checkedAt": "2026-10-17T09:55:58.702Z"
+      }
+    },
+  },
+  "hoopsRim": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsRim.bbf2fecd.glb",
+    hash: "sha256-bbf2fecd54732ef2503530721a592333bf79beb4e77fce019bdd6cd2de912198",
+    bounds: [
+      1.897,
+      0.846,
+      1.903
+    ],
+    sizeBytes: 1387448,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-rim/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:32:22.306Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsRim.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsRim.metadata.ab06d8afa2a9.json",
+          "public/aura-assets/hoopsRim.meshy-candidate.daec0ad7.png"
+        ],
+        "checkedAt": "2026-10-17T09:32:22.306Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-rim/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsRim.bbf2fecd.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.949,
+          -0.433,
+          -0.952
+        ],
+        "max": [
+          0.948,
+          0.413,
+          0.951
+        ],
+        "size": [
+          1.897,
+          0.846,
+          1.903
+        ],
+        "center": [
+          0,
+          -0.01,
+          0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsRim.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsRim.meshy-candidate.daec0ad7.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-daec0ad700015918fb80e30766c43e296906ccfa14d21cfc4e9fe95196ba6be5",
+        "checkedAt": "2026-10-17T09:55:58.931Z"
+      }
+    },
+  },
+  "hoopsRimClankSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsRimClankSfx.7909dddd.wav",
+    hash: "sha256-7909ddddb6a2df92d50ce8d2693d6543fe2b108fa146b83b4a8c3262cd9285cd",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 35324,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsRimClankSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:04.820Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsRimClankSfx.wav",
+      "outputPath": "public/aura-assets/hoopsRimClankSfx.7909dddd.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsRimClankSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsScoreboard": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsScoreboard.cfa1e2f5.glb",
+    hash: "sha256-cfa1e2f5920041d42ef55ce6a7bf27081a62a66f31785716a3d8e412ff7d69e1",
+    bounds: [
+      1.741,
+      1.903,
+      0.788
+    ],
+    sizeBytes: 3601808,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-scoreboard/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:22:26.874Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsScoreboard.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsScoreboard.metadata.f4b89285b360.json",
+          "public/aura-assets/hoopsScoreboard.meshy-candidate.980a6215.png"
+        ],
+        "checkedAt": "2026-10-17T09:22:26.874Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-scoreboard/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsScoreboard.cfa1e2f5.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.871,
+          -0.952,
+          -0.388
+        ],
+        "max": [
+          0.87,
+          0.951,
+          0.4
+        ],
+        "size": [
+          1.741,
+          1.903,
+          0.788
+        ],
+        "center": [
+          0,
+          0,
+          0.006
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsScoreboard.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsScoreboard.meshy-candidate.980a6215.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-980a621519991edb7b175584273be97943720532fde9d8a0f95fb56175873928",
+        "checkedAt": "2026-10-17T09:55:59.156Z"
+      }
+    },
+  },
+  "hoopsSelectChimeSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsSelectChimeSfx.9befa036.wav",
+    hash: "sha256-9befa036dc06f4d712dac7876eb946c012e391ac96aed7ddc49e8b3d204911e2",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 35324,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsSelectChimeSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:05.132Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsSelectChimeSfx.wav",
+      "outputPath": "public/aura-assets/hoopsSelectChimeSfx.9befa036.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsSelectChimeSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsSkyline": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsSkyline.04431e09.glb",
+    hash: "sha256-04431e09cd465530dace8327642850f707b0f31ad49e516cdf2206455a8ee155",
+    bounds: [
+      1.904,
+      1.235,
+      1.868
+    ],
+    sizeBytes: 20850740,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-skyline/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:26:20.386Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsSkyline.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsSkyline.metadata.55db193ef71e.json",
+          "public/aura-assets/hoopsSkyline.meshy-candidate.51001cf0.png"
+        ],
+        "checkedAt": "2026-10-17T09:26:20.386Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-skyline/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsSkyline.04431e09.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.611,
+          -0.934
+        ],
+        "max": [
+          0.951,
+          0.624,
+          0.934
+        ],
+        "size": [
+          1.904,
+          1.235,
+          1.868
+        ],
+        "center": [
+          -0.001,
+          0.006,
+          0
+        ],
+        "maxDimension": 1.904,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsSkyline.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsSkyline.meshy-candidate.51001cf0.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-51001cf034e4298b0a5033aca9ed076d941e2a886f095cfbdd44876434df497f",
+        "checkedAt": "2026-10-17T09:55:59.384Z"
+      }
+    },
+  },
+  "hoopsStealSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsStealSfx.c5bac4af.wav",
+    hash: "sha256-c5bac4af9e917587c4b4e2aa9805e3469a25e12c2e434f4ee427b99412c2aa3d",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 30914,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsStealSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:05.434Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsStealSfx.wav",
+      "outputPath": "public/aura-assets/hoopsStealSfx.c5bac4af.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsStealSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsSwishSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsSwishSfx.fdab5827.wav",
+    hash: "sha256-fdab5827ad885ff1824877f81c5b968341ce228997248b0b168ee0bc3872046f",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 30914,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/sfx/hoopsSwishSfx.wav",
+        "license": "Proprietary - synthesized in-house",
+        "author": "Aura3D audio synth",
+        "checkedAt": "2026-10-17T09:59:05.732Z"
+      },
+      "sourcePath": "artifacts/meshy/sfx/hoopsSwishSfx.wav",
+      "outputPath": "public/aura-assets/hoopsSwishSfx.fdab5827.wav",
+      "license": "Proprietary - synthesized in-house",
+      "author": "Aura3D audio synth",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsSwishSfx.thumb.svg",
+      "quality": "candidate",
+      "role": "audio"
+    },
+  },
+  "hoopsTower": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsTower.f44ad781.glb",
+    hash: "sha256-f44ad781ac87dcf8b911bccc43d6fc84bf4a945734cde9b7c6726f0e9f9df70f",
+    bounds: [
+      0.357,
+      1.904,
+      0.355
+    ],
+    sizeBytes: 5999428,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-tower/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:32:31.550Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsTower.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsTower.metadata.b8ea8d181efb.json",
+          "public/aura-assets/hoopsTower.meshy-candidate.79ca7ad2.png"
+        ],
+        "checkedAt": "2026-10-17T09:32:31.550Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-tower/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsTower.f44ad781.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.179,
+          -0.953,
+          -0.18
+        ],
+        "max": [
+          0.178,
+          0.951,
+          0.175
+        ],
+        "size": [
+          0.357,
+          1.904,
+          0.355
+        ],
+        "center": [
+          0,
+          -0.001,
+          -0.003
+        ],
+        "maxDimension": 1.904,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsTower.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsTower.meshy-candidate.79ca7ad2.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-79ca7ad2b3e3e93d2bfe12d97bf1a46572c282e8dbd7b7c3288eb28ae24dcc13",
+        "checkedAt": "2026-10-17T09:55:59.619Z"
+      }
+    },
+  },
+  "hoopsTrophy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsTrophy.dbc67a0e.glb",
+    hash: "sha256-dbc67a0e39424685192302d324103c3c7d67b18d6f211acd9767ee1fc8aad2fe",
+    bounds: [
+      0.661,
+      1.903,
+      0.664
+    ],
+    sizeBytes: 6464392,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/hoops-trophy/model.opt.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:23:02.927Z",
+        "evidence": [
+          "aura-evidence/meshy/hoopsTrophy.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/hoopsTrophy.metadata.dabbb632306a.json",
+          "public/aura-assets/hoopsTrophy.meshy-candidate.57779a38.png"
+        ],
+        "checkedAt": "2026-10-17T09:23:02.927Z"
+      },
+      "sourcePath": "artifacts/meshy/hoops-trophy/model.opt.glb",
+      "outputPath": "public/aura-assets/hoopsTrophy.dbc67a0e.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.331,
+          -0.952,
+          -0.333
+        ],
+        "max": [
+          0.33,
+          0.951,
+          0.331
+        ],
+        "size": [
+          0.661,
+          1.903,
+          0.664
+        ],
+        "center": [
+          0,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/hoopsTrophy.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/hoopsTrophy.meshy-candidate.57779a38.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-57779a38e4cb56ccf2d150dff48bd315b5dcca2757da1984247016469e96dc17",
+        "checkedAt": "2026-10-17T09:55:59.851Z"
+      }
+    },
+  },
+  "rzAltitudeDomeMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rzAltitudeDomeMeshy.d55978a7.glb",
+    hash: "sha256-d55978a78dd57a3e0f3be99e5c9da0d332adaae2fdd94516e315748a5b990e9e",
+    bounds: [
+      1.899,
+      0.769,
+      1.879
+    ],
+    sizeBytes: 6551144,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/rz-altitude-dome/model.glb",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:15:45.551Z",
+        "evidence": [
+          "aura-evidence/meshy/rzAltitudeDomeMeshy.rights.7fcc7bfad170.json",
+          "aura-evidence/meshy/rzAltitudeDomeMeshy.metadata.ce28dbe0e8bf.json",
+          "public/aura-assets/rzAltitudeDomeMeshy.meshy-candidate.0a42e2b9.png"
+        ],
+        "checkedAt": "2026-10-17T09:15:45.551Z"
+      },
+      "sourcePath": "artifacts/meshy/rz-altitude-dome/model.glb",
+      "outputPath": "public/aura-assets/rzAltitudeDomeMeshy.d55978a7.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.95,
+          -0.384,
+          -0.948
+        ],
+        "max": [
+          0.95,
+          0.385,
+          0.931
+        ],
+        "size": [
+          1.899,
+          0.769,
+          1.879
+        ],
+        "center": [
+          0,
+          0.001,
+          -0.009
+        ],
+        "maxDimension": 1.899,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rzAltitudeDomeMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "environment",
+      "renderedProbe": {
+        "url": "/aura-assets/rzAltitudeDomeMeshy.meshy-candidate.0a42e2b9.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-0a42e2b9bcd2c8eabb4205c01d9c8c11af140c25220b4bcb0f3a3d6096076896",
+        "checkedAt": "2026-10-17T10:04:43.319Z"
+      }
+    },
+  },
+  "rzFloodlightPylonMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rzFloodlightPylonMeshy.8b4b487c.glb",
+    hash: "sha256-8b4b487ca2879f04e128e1e2208bd9a652c030cac2e66328be275c6cf82a2f76",
+    bounds: [
+      0.721,
+      1.903,
+      0.72
+    ],
+    sizeBytes: 4596448,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/rz-floodlight-pylon/model.glb",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:19:21.227Z",
+        "evidence": [
+          "aura-evidence/meshy/rzFloodlightPylonMeshy.rights.7fcc7bfad170.json",
+          "aura-evidence/meshy/rzFloodlightPylonMeshy.metadata.57231529780a.json",
+          "public/aura-assets/rzFloodlightPylonMeshy.meshy-candidate.8cc8595e.png"
+        ],
+        "checkedAt": "2026-10-17T09:19:21.227Z"
+      },
+      "sourcePath": "artifacts/meshy/rz-floodlight-pylon/model.glb",
+      "outputPath": "public/aura-assets/rzFloodlightPylonMeshy.8b4b487c.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.361,
+          -0.952,
+          -0.361
+        ],
+        "max": [
+          0.36,
+          0.951,
+          0.359
+        ],
+        "size": [
+          0.721,
+          1.903,
+          0.72
+        ],
+        "center": [
+          0,
+          0,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rzFloodlightPylonMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/rzFloodlightPylonMeshy.meshy-candidate.8cc8595e.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-8cc8595ecfcf502bfff34ac736f8bae746d4f779772bff2d3c50b5e6702702b7",
+        "checkedAt": "2026-10-17T10:04:44.343Z"
+      }
+    },
+  },
+  "rzFootballMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rzFootballMeshy.b7a28a16.glb",
+    hash: "sha256-b7a28a1681ca08193ae54ba9dc1554ca52630d01ccbbe4efc1c0ab06e5b8fdeb",
+    bounds: [
+      1.9,
+      1.265,
+      1.25
+    ],
+    sizeBytes: 4922756,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/rz-football/model.glb",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:14:02.970Z",
+        "evidence": [
+          "aura-evidence/meshy/rzFootballMeshy.rights.7fcc7bfad170.json",
+          "aura-evidence/meshy/rzFootballMeshy.metadata.cbcb3a473d37.json",
+          "public/aura-assets/rzFootballMeshy.meshy-candidate.dbf48924.png"
+        ],
+        "checkedAt": "2026-10-17T09:14:02.970Z"
+      },
+      "sourcePath": "artifacts/meshy/rz-football/model.glb",
+      "outputPath": "public/aura-assets/rzFootballMeshy.b7a28a16.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.95,
+          -0.633,
+          -0.625
+        ],
+        "max": [
+          0.949,
+          0.632,
+          0.625
+        ],
+        "size": [
+          1.9,
+          1.265,
+          1.25
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.9,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rzFootballMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/rzFootballMeshy.meshy-candidate.dbf48924.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-dbf48924a9faae7518c7eaf0fd623a3ccc968423ebe4ef110f00912796767cc0",
+        "checkedAt": "2026-10-17T10:04:44.003Z"
+      }
+    },
+  },
+  "rzLombardiCupMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rzLombardiCupMeshy.35a24607.glb",
+    hash: "sha256-35a2460780fa005ead8e51dee961b5eb1497e64fcd99c726b30b8ebc85eb535e",
+    bounds: [
+      1.331,
+      1.901,
+      0.752
+    ],
+    sizeBytes: 3379896,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/rz-lombardi-cup/model.glb",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:14:02.392Z",
+        "evidence": [
+          "aura-evidence/meshy/rzLombardiCupMeshy.rights.7fcc7bfad170.json",
+          "aura-evidence/meshy/rzLombardiCupMeshy.metadata.425e9304e732.json",
+          "public/aura-assets/rzLombardiCupMeshy.meshy-candidate.e6fbce17.png"
+        ],
+        "checkedAt": "2026-10-17T09:14:02.392Z"
+      },
+      "sourcePath": "artifacts/meshy/rz-lombardi-cup/model.glb",
+      "outputPath": "public/aura-assets/rzLombardiCupMeshy.35a24607.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.666,
+          -0.952,
+          -0.377
+        ],
+        "max": [
+          0.665,
+          0.949,
+          0.376
+        ],
+        "size": [
+          1.331,
+          1.901,
+          0.752
+        ],
+        "center": [
+          0,
+          -0.001,
+          0
+        ],
+        "maxDimension": 1.901,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rzLombardiCupMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/rzLombardiCupMeshy.meshy-candidate.e6fbce17.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-e6fbce17aaeec8a5196ccc8716dc332b1976a98a3d0928199a38629bcb067fb0",
+        "checkedAt": "2026-10-17T10:04:43.664Z"
+      }
+    },
+  },
+  "rzScoreboardGantryMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rzScoreboardGantryMeshy.074aba14.glb",
+    hash: "sha256-074aba14774630569c0673a163c7c0b8c7df1f1aba6ed69b143dbd7e683cbb6b",
+    bounds: [
+      1.902,
+      0.817,
+      1.233
+    ],
+    sizeBytes: 3867808,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/rz-scoreboard-gantry/model.glb",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:19:54.036Z",
+        "evidence": [
+          "aura-evidence/meshy/rzScoreboardGantryMeshy.rights.7fcc7bfad170.json",
+          "aura-evidence/meshy/rzScoreboardGantryMeshy.metadata.f9726f8a079e.json",
+          "public/aura-assets/rzScoreboardGantryMeshy.meshy-candidate.200ee93e.png"
+        ],
+        "checkedAt": "2026-10-17T09:19:54.036Z"
+      },
+      "sourcePath": "artifacts/meshy/rz-scoreboard-gantry/model.glb",
+      "outputPath": "public/aura-assets/rzScoreboardGantryMeshy.074aba14.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.412,
+          -0.62
+        ],
+        "max": [
+          0.951,
+          0.406,
+          0.613
+        ],
+        "size": [
+          1.902,
+          0.817,
+          1.233
+        ],
+        "center": [
+          0,
+          -0.003,
+          -0.003
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rzScoreboardGantryMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/rzScoreboardGantryMeshy.meshy-candidate.200ee93e.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-200ee93ef08d5dd2cb1884d4e213a253ec4930f0727386945a7d787765130883",
+        "checkedAt": "2026-10-17T10:04:44.684Z"
+      }
     },
   },
 } as const);
