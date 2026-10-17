@@ -7,6 +7,16 @@ import { probeWebGL2Device } from "../quality/DeviceProbe";
 import { registerWebGL2DeviceHost } from "./Counters";
 import type { WebGL2DeviceHost } from "./DeviceHost";
 
+/** IEEE-754 binary16 decode (rgba16f readback → Float32). */
+function halfToFloat(h: number): number {
+  const sign = h & 0x8000 ? -1 : 1;
+  const exp = (h >> 10) & 0x1f;
+  const mantissa = h & 0x03ff;
+  if (exp === 0) return sign * mantissa * 2 ** -24;
+  if (exp === 0x1f) return mantissa !== 0 ? Number.NaN : sign * Number.POSITIVE_INFINITY;
+  return sign * (1 + mantissa / 1024) * 2 ** (exp - 15);
+}
+
 export class WebGL2ReadbackProbe {
   constructor(readonly host: WebGL2DeviceHost) {
     registerWebGL2DeviceHost(host);
@@ -116,7 +126,20 @@ export class WebGL2ReadbackProbe {
       this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, readTarget.framebuffer);
     }
     const pixels = new Float32Array(width * height * 4);
-    this.host.gl.readPixels(x, y, width, height, this.host.gl.RGBA, this.host.gl.FLOAT, pixels);
+    // WebGL2 guarantees only one implementation-chosen (format, type) pair per
+    // framebuffer beyond the RGBA/UNSIGNED_BYTE baseline. ANGLE→Metal reports
+    // HALF_FLOAT for rgba16f attachments, where a fixed RGBA/FLOAT readPixels
+    // raises INVALID_OPERATION and the sticky error is later misattributed to
+    // the LDR present pass. Honor the implementation's preferred combination.
+    const readFormat = this.host.gl.getParameter(this.host.gl.IMPLEMENTATION_COLOR_READ_FORMAT) as number;
+    const readType = this.host.gl.getParameter(this.host.gl.IMPLEMENTATION_COLOR_READ_TYPE) as number;
+    if (readFormat === this.host.gl.RGBA && readType === this.host.gl.HALF_FLOAT) {
+      const raw = new Uint16Array(width * height * 4);
+      this.host.gl.readPixels(x, y, width, height, this.host.gl.RGBA, this.host.gl.HALF_FLOAT, raw);
+      for (let i = 0; i < raw.length; i += 1) pixels[i] = halfToFloat(raw[i]!);
+    } else {
+      this.host.gl.readPixels(x, y, width, height, this.host.gl.RGBA, this.host.gl.FLOAT, pixels);
+    }
     this.host.counters.readbacks += 1;
     if (readTarget && readTarget.sampleCount > 1) {
       this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, readTarget.drawFramebuffer);
