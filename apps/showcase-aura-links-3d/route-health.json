@@ -6,7 +6,7 @@
   "title": "AURA LINKS 3D — Postcard Arcade Golf",
   "category": "sports",
   "classification": "candidate",
-  "publicShowcase": false,
+  "publicShowcase": true,
   "qualityGate": {
     "status": "unreviewed"
   },
