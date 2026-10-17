@@ -111,32 +111,38 @@ export function buildScene(): unknown {
     instances.box({ name: "dress", size: [1, 1, 1], material: dressMat, transforms: pad(CAP.dress), castShadow: true }).runtime(game.runtimeNode("pool-dress")),
     instances.box({ name: "glow", size: [1, 1, 1], material: glowMat, transforms: pad(CAP.glow), castShadow: false }).runtime(game.runtimeNode("pool-glow")),
 
-    // actors — Byte + four specters + echo copies for wrap edges.
-    // `?lite=1` drops the GLB set for remote capture bisection.
-    ...(new URLSearchParams(globalThis.location?.search ?? "").has("lite") ? [] : [
-    model(assets.byte, { name: "byte", targetHeight: 0.62, castShadow: true })
-      .position(wx(st.maze.spawn.x), 0.34, wz(st.maze.spawn.y))
-      .runtime(game.runtimeNode("byte")),
-    model(assets.byte, { name: "byte-echo", targetHeight: 0.62, castShadow: false, visible: false })
-      .position(0, -999, 0)
-      .runtime(game.runtimeNode("byte-echo")),
-    model(assets.specterBlitz, { name: "ghost-blitz", targetHeight: 0.6, castShadow: true }).position(0, -999, 0).runtime(game.runtimeNode("ghost-blitz")),
-    model(assets.specterSly, { name: "ghost-sly", targetHeight: 0.6, castShadow: true }).position(0, -999, 0).runtime(game.runtimeNode("ghost-sly")),
-    model(assets.specterFlick, { name: "ghost-flick", targetHeight: 0.6, castShadow: true }).position(0, -999, 0).runtime(game.runtimeNode("ghost-flick")),
-    model(assets.specterDim, { name: "ghost-dim", targetHeight: 0.6, castShadow: true }).position(0, -999, 0).runtime(game.runtimeNode("ghost-dim")),
-    model(assets.specterBlitz, { name: "ghost-blitz-echo", targetHeight: 0.6, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("ghost-blitz-echo")),
-    model(assets.specterSly, { name: "ghost-sly-echo", targetHeight: 0.6, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("ghost-sly-echo")),
-    model(assets.specterFlick, { name: "ghost-flick-echo", targetHeight: 0.6, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("ghost-flick-echo")),
-    model(assets.specterDim, { name: "ghost-dim-echo", targetHeight: 0.6, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("ghost-dim-echo")),
-
-    // fruit — a model node per kind; visibility toggles
-    model(assets.fruitCherry, { name: "fruit-cherry", targetHeight: 0.5, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("fruit-cherry")),
-    model(assets.fruitStrawberry, { name: "fruit-strawberry", targetHeight: 0.5, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("fruit-strawberry")),
-    model(assets.fruitOrange, { name: "fruit-orange", targetHeight: 0.5, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("fruit-orange")),
-    model(assets.fruitApple, { name: "fruit-apple", targetHeight: 0.5, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("fruit-apple")),
-    model(assets.fruitMelon, { name: "fruit-melon", targetHeight: 0.55, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("fruit-melon")),
-    model(assets.fruitStar, { name: "fruit-star", targetHeight: 0.55, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("fruit-star"))
-    ]),
+    // actors — Byte + four specters + echo copies for wrap edges + six fruit.
+    // `?models=none|core|all` tiers the GLB set for remote capture bisection
+    // (SwiftShader OOMs on the full 11-model set; `lite=1` aliases "none").
+    ...(() => {
+      const q = new URLSearchParams(globalThis.location?.search ?? "");
+      const tier = q.get("models") ?? (q.has("lite") ? "none" : "all");
+      const core = [
+        model(assets.byte, { name: "byte", targetHeight: 0.62, castShadow: true })
+          .position(wx(st.maze.spawn.x), 0.34, wz(st.maze.spawn.y))
+          .runtime(game.runtimeNode("byte")),
+        model(assets.specterBlitz, { name: "ghost-blitz", targetHeight: 0.6, castShadow: true }).position(0, -999, 0).runtime(game.runtimeNode("ghost-blitz")),
+        model(assets.specterSly, { name: "ghost-sly", targetHeight: 0.6, castShadow: true }).position(0, -999, 0).runtime(game.runtimeNode("ghost-sly")),
+        model(assets.specterFlick, { name: "ghost-flick", targetHeight: 0.6, castShadow: true }).position(0, -999, 0).runtime(game.runtimeNode("ghost-flick")),
+        model(assets.specterDim, { name: "ghost-dim", targetHeight: 0.6, castShadow: true }).position(0, -999, 0).runtime(game.runtimeNode("ghost-dim"))
+      ];
+      const extra = [
+        model(assets.byte, { name: "byte-echo", targetHeight: 0.62, castShadow: false, visible: false })
+          .position(0, -999, 0)
+          .runtime(game.runtimeNode("byte-echo")),
+        model(assets.specterBlitz, { name: "ghost-blitz-echo", targetHeight: 0.6, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("ghost-blitz-echo")),
+        model(assets.specterSly, { name: "ghost-sly-echo", targetHeight: 0.6, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("ghost-sly-echo")),
+        model(assets.specterFlick, { name: "ghost-flick-echo", targetHeight: 0.6, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("ghost-flick-echo")),
+        model(assets.specterDim, { name: "ghost-dim-echo", targetHeight: 0.6, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("ghost-dim-echo")),
+        model(assets.fruitCherry, { name: "fruit-cherry", targetHeight: 0.5, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("fruit-cherry")),
+        model(assets.fruitStrawberry, { name: "fruit-strawberry", targetHeight: 0.5, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("fruit-strawberry")),
+        model(assets.fruitOrange, { name: "fruit-orange", targetHeight: 0.5, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("fruit-orange")),
+        model(assets.fruitApple, { name: "fruit-apple", targetHeight: 0.5, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("fruit-apple")),
+        model(assets.fruitMelon, { name: "fruit-melon", targetHeight: 0.55, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("fruit-melon")),
+        model(assets.fruitStar, { name: "fruit-star", targetHeight: 0.55, castShadow: false, visible: false }).position(0, -999, 0).runtime(game.runtimeNode("fruit-star"))
+      ];
+      return tier === "none" ? [] : tier === "core" ? core : [...core, ...extra];
+    })(),
 
     // ghost house door slab + school beacon
     primitives.box({ name: "door", size: [1.02, 0.5, 0.12], material: material.pbr({ color: "#ff9ed2", emissive: "#ff9ed2", emissiveIntensity: 1.6, roughness: 0.4, opacity: 0.75 }) })

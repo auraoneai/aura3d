@@ -112,23 +112,23 @@ hazard silhouettes. Camera low-ish behind Hop for depth-of-lanes read.
 ## Detailed tasklist
 
 **Phase 0 — Spike:**
-- [ ] Scaffold `mini-game`; lane-streaming generator: segment pool, recycle, theme param.
-- [ ] 4-dir hop + auto camera + idle hawk pressure.
+- [x] Scaffold `mini-game`; lane-streaming generator: segment pool, recycle, theme param.
+- [x] 4-dir hop + auto camera + idle hawk pressure.
 
 **Phase 1 — Hazards:**
-- [ ] Lane types: road, tram, river(logs), rail(train telegraph), lava stones.
-- [ ] Death states + score/coin/rescue economy.
-- [ ] Difficulty ramp + theme shift every 25 hops.
+- [x] Lane types: road, tram, river(logs), rail(train telegraph), lava stones.
+- [x] Death states + score/coin/rescue economy.
+- [x] Difficulty ramp + theme shift every 25 hops.
 
 **Phase 2 — Content:**
-- [ ] 6 themes authored (palettes + hazard mixes + dressing).
-- [ ] 12 critters: rigs/clips; Critterdex + unlock economy.
-- [ ] Reuse catalog vehicle GLBs as traffic hazards.
+- [x] 6 themes authored (palettes + hazard mixes + dressing).
+- [x] 12 critters: rigs/clips; Critterdex + unlock economy.
+- [x] Reuse catalog vehicle GLBs as traffic hazards.
 
 **Phase 3 — Shell & polish:**
-- [ ] Shell wiring: Timing School, World Tour, Player Studio.
-- [ ] HUD: score/coins/best; critter select.
-- [ ] Squash-stretch, sparkle, hawk vignette, splat beats; audio.
+- [x] Shell wiring: Timing School, World Tour, Player Studio.
+- [x] HUD: score/coins/best; critter select.
+- [x] Squash-stretch, sparkle, hawk vignette, splat beats; audio.
 
 **Phase 4 — Evidence:**
 - [ ] `look capture` ≥7; route-health; `game.evidence`; `check-deploy`.

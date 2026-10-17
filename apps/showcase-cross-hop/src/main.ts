@@ -1,7 +1,7 @@
 /** Cross Hop — endless lane-hopper showcase (PRD: docs/prd/cross-hop.md). */
 import { game } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
-import { buildScene, bindApp, frame, st, startRun, evidenceExtra } from "./game/core";
+import { buildScene, probeScene, bindApp, frame, st, startRun, evidenceExtra } from "./game/core";
 import { mountUI, tickUI } from "./game/ui";
 import "./styles.css";
 
@@ -40,11 +40,13 @@ const inputOptions = {
   bufferMs: 140
 } as const;
 
+const PROBE = params.get("probe") ? parseInt(params.get("probe")!, 10) : 0;
+
 const g = createGame({
   id: "cross-hop",
   target: "#app",
   diagnostics: { overlay: false, performancePanel: false },
-  scene: buildScene,
+  scene: PROBE > 0 ? () => probeScene(PROBE) : buildScene,
   input: inputOptions,
   hud: { theme: "arcade-neon", widgets: [] },
   touch: {

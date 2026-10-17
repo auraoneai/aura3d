@@ -1,0 +1,36 @@
+{
+  "route": "/apps/showcase-cross-hop/",
+  "generatedAt": "2026-10-17T07:56:54.464Z",
+  "ok": true,
+  "checks": [
+    {
+      "name": "dist/index.html exists",
+      "ok": true
+    },
+    {
+      "name": "has #app mount",
+      "ok": true
+    },
+    {
+      "name": "has #hud root",
+      "ok": true
+    },
+    {
+      "name": "module script present",
+      "ok": true
+    },
+    {
+      "name": "aura-assets dir",
+      "ok": true
+    },
+    {
+      "name": "manifest assets",
+      "ok": true,
+      "detail": "25 assets"
+    },
+    {
+      "name": "typegen exists",
+      "ok": true
+    }
+  ]
+}

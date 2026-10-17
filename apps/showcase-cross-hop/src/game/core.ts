@@ -8,7 +8,7 @@ import {
   COL_MAX, COL_MIN, COL_W, FIELD_HALF, LANE_D, STRIP_W, THEMES,
   themeIndexForRow, type LaneType
 } from "./themes";
-import { laneFor, laneZ, laneMovers, moverHalf, railCycle, railWarning, writeMat, type Lane } from "./world";
+import { laneFor, laneZ, laneMovers, moverHalf, railCycle, railWarning, type Lane } from "./world";
 import { loadProfile, saveProfile, type Profile } from "./persistence";
 
 // ---------------- pool capacities ----------------
@@ -114,21 +114,26 @@ const HOP_DUR = 0.16;
 const HAWK_WARN = 3.0, HAWK_KILL = 5.2;
 
 // scratch buffers — allocated once
+interface PoolSpec { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }
 const XS = new Float32Array(24);
-const POOL = {} as Record<keyof typeof CAP, { mat: Float32Array; col: Float32Array; n: number }>;
+const HIDDEN: PoolSpec = { position: [0, -999, 0], rotation: [0, 0, 0], scale: [0.001, 0.001, 0.001] };
+const POOL = {} as Record<keyof typeof CAP, { specs: PoolSpec[]; cols: string[]; n: number; dirty: number }>;
 for (const k of Object.keys(CAP) as (keyof typeof CAP)[]) {
-  POOL[k] = { mat: new Float32Array(CAP[k] * 16), col: new Float32Array(CAP[k] * 4), n: 0 };
+  POOL[k] = {
+    specs: Array.from({ length: CAP[k] }, () => ({ position: [0, -999, 0] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: [0.001, 0.001, 0.001] as [number, number, number] })),
+    cols: Array.from({ length: CAP[k] }, () => "#ffffff"),
+    n: 0, dirty: 0
+  };
 }
 function P(k: keyof typeof CAP) { return POOL[k]; }
 function inst(k: keyof typeof CAP, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string, ry = 0): void {
   const p = P(k);
   if (p.n >= CAP[k]) return;
-  writeMat(p.mat, p.n, x, y, z, sx, sy, sz, ry);
-  const v = parseInt(color.slice(1), 16);
-  p.col[p.n * 4] = ((v >> 16) & 255) / 255;
-  p.col[p.n * 4 + 1] = ((v >> 8) & 255) / 255;
-  p.col[p.n * 4 + 2] = (v & 255) / 255;
-  p.col[p.n * 4 + 3] = 1;
+  const s = p.specs[p.n];
+  s.position[0] = x; s.position[1] = y; s.position[2] = z;
+  s.rotation[1] = ry;
+  s.scale[0] = sx; s.scale[1] = sy; s.scale[2] = sz;
+  p.cols[p.n] = color;
   p.n++;
 }
 
@@ -193,6 +198,26 @@ function die(kind: Death["kind"], label: string): void {
 }
 
 // -------------------- scene --------------------
+/** Minimal scene for remote-capture bisection: progressively adds layers. */
+export function probeScene(level: number): unknown {
+  const s = scene()
+    .add(looks.preset("outdoor-day", { fogDensityScale: 0.8, exposureEv: 0 }))
+    .camera(camera.perspective({ position: [0, 4, 8], target: [0, 0.5, 0], fov: 46 }));
+  if (level >= 1) {
+    s.add(primitives.box({ name: "p1-box", size: [2, 2, 2], material: material.pbr({ color: "#58a75c" }) }).position(0, 1, 0));
+  }
+  if (level >= 2) {
+    s.add(instances.box({ name: "p2-pool", size: [1, 1, 1], material: material.pbr({ color: "#3a3f46" }), transforms: [{ position: [-2, 0.5, 0], scale: [1, 1, 1] }, { position: [2, 0.5, 0], scale: [1, 1, 1] }] }));
+  }
+  if (level >= 3) {
+    s.add(instances.model(assets.trafficSedan, { name: "p3-cars", transforms: [{ position: [-4, 0, -3], scale: [1, 1, 1] }, { position: [4, 0, -3], scale: [1, 1, 1] }], targetLength: 2.1 }));
+  }
+  if (level >= 4) {
+    s.add(model(assets.hop, { name: "p4-critter", targetHeight: 0.42, castShadow: true }).position(0, 0.13, 2).rotate(0, Math.PI, 0).animate({ clip: "Idle", loop: true }));
+  }
+  return s.toJSON();
+}
+
 export function buildScene(): unknown {
   const lookId = THEMES[0].look as Parameters<typeof looks.preset>[0];
   const s = scene()
@@ -204,7 +229,6 @@ export function buildScene(): unknown {
   const detailMat = material.pbr({ color: "#ffffff", roughness: 0.8, metalness: 0.05 });
   const glowMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.6, roughness: 0.4 });
   const pad = (n: number) => Array.from({ length: n }, () => ({ position: [0, -999, 0] as [number, number, number], scale: [0.001, 0.001, 0.001] as [number, number, number] }));
-  const zero = new Float32Array(16); writeMat(zero, 0, 0, -999, 0, 0.001, 0.001, 0.001);
 
   s.addMany([
     instances.box({ name: "lane-ground", size: [1, 1, 1], material: groundMat, transforms: pad(CAP.ground), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-ground")),
@@ -242,6 +266,7 @@ export function buildScene(): unknown {
 // -------------------- per-frame --------------------
 let app: AuraApp | null = null;
 let nodeOk = true;
+export let nodeErr = "";
 
 export function bindApp(a: AuraApp): void { app = a; }
 
@@ -457,7 +482,7 @@ function syncVisuals(dt: number): void {
     else if (st.hop.dir === "right") h.setRotation(0, Math.PI / 2, 0);
     else if (st.hop.dir === "back") h.setRotation(0, 0, 0);
     else h.setRotation(0, Math.PI, 0);
-  } catch { nodeOk = false; }
+  } catch (e) { nodeOk = false; nodeErr = `player: ${String(e).slice(0, 120)}`; }
 
   // platform carry visual
   const pl = lane(st.playerRow);
@@ -499,7 +524,7 @@ function syncVisuals(dt: number): void {
       }
     }
     if (!podSet) pod.setVisible(false);
-  } catch { /* non-fatal */ }
+  } catch (e) { nodeOk = false; nodeErr = `hawk/pod: ${String(e).slice(0, 120)}`; }
 
   // camera — trailing
   const camZ = pz + 7.6, camY = 6.6 + st.playerRow * 0.004;
@@ -511,13 +536,20 @@ function syncVisuals(dt: number): void {
   if (warn > 0.5) app.output?.setOutputOverlay({ vignette: [0.02, 0.02, 0.06, warn * 0.85] });
   else app.output?.setOutputOverlay(st.mode === "dead" ? { fade: [0, 0, 0, 0.25] } : {});
 
-  // submit pools
+  // submit pools — hide stale slots beyond the live count, then push specs
   for (const k of Object.keys(CAP) as (keyof typeof CAP)[]) {
     const p = P(k);
+    for (let i = p.n; i < p.dirty; i++) {
+      const s = p.specs[i];
+      s.position[0] = HIDDEN.position[0]; s.position[1] = HIDDEN.position[1]; s.position[2] = HIDDEN.position[2];
+      s.rotation[1] = 0;
+      s.scale[0] = HIDDEN.scale[0]; s.scale[1] = HIDDEN.scale[1]; s.scale[2] = HIDDEN.scale[2];
+    }
+    p.dirty = Math.max(p.dirty, p.n);
     try {
-      (nodes.require(`pool-${k === "ground" ? "ground" : k === "detail" ? "detail" : k === "glow" ? "glow" : k === "dressB" ? "dressb" : k}`) as unknown as { setInstanceTransforms(m: Float32Array, n: number, c?: Float32Array): void })
-        .setInstanceTransforms(p.mat, p.n, p.col);
-    } catch { nodeOk = false; }
+      nodes.require(`pool-${k === "dressB" ? "dressb" : k}`)
+        .setInstances(p.specs, p.cols);
+    } catch (e) { nodeOk = false; nodeErr = `pool-${k}: ${String(e).slice(0, 120)}`; }
   }
 
   if (st.messageT > 0) st.messageT -= dt;
@@ -631,6 +663,7 @@ export function evidenceExtra(): Record<string, unknown> {
     lanesBuffered: st.lanes.size,
     events: st.events.slice(-6),
     unlocked: st.profile.unlocked.length + "/" + CRITTERS.length,
-    nodesOk: nodeOk
+    nodesOk: nodeOk,
+    nodeErr
   };
 }

@@ -188,6 +188,28 @@ const apps = [
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
     notes: "Cartoon physics destruction — drag-back slingshot launches, 30 levels across six chapters, five ammo types with mid-air powers, wood/stone/glass material breakage, and three-star scoring."
+  },
+  {
+    id: "showcase-dot-dash-3d",
+    route: "/apps/showcase-dot-dash-3d/",
+    routeHealth: "/apps/showcase-dot-dash-3d/route-health.json",
+    classification: "prototype",
+    publicShowcase: false,
+    primaryAssetStatus: "typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Neon maze chase — Byte outruns four Specter personalities (Blitz, Sly, Flick, Dim) across six circuit mazes; Power Orb chain hunts, fruit schedule, dash, Ghost School target overlays, Circuit Map, Player Studio."
+  },
+  {
+    id: "showcase-cross-hop",
+    route: "/apps/showcase-cross-hop/",
+    routeHealth: "/apps/showcase-cross-hop/route-health.json",
+    classification: "prototype",
+    publicShowcase: false,
+    primaryAssetStatus: "typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Endless lane hopper — four-direction hops across roads, tram lines, rivers, rails, and lava; six remixed themes, twelve unlockable Meshy critters, idle-hawk pressure, coin and rescue-pod economy. Timing School, World Tour, Player Studio, and Critterdex."
   }
 ] as const;
 
@@ -204,7 +226,9 @@ const GAME_APP_IDS = new Set([
   "showcase-red-zone-3d",
   "showcase-aura-links-3d",
   "showcase-bunker-zero",
-  "showcase-slingshot-siege"
+  "showcase-slingshot-siege",
+  "showcase-dot-dash-3d",
+  "showcase-cross-hop"
 ]);
 
 const publicApps = apps.filter((entry) => entry.publicShowcase);

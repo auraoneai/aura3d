@@ -89,7 +89,10 @@ g.start();
 // Remote-capture freeze: stop the production rAF after N ms so headless
 // SwiftShader can composite a still frame (see tools/remote-capture.sh).
 const FREEZE_MS = Number(params.get("freeze") ?? 0);
-if (FREEZE_MS > 0) setTimeout(() => { try { app.pause(); } catch { /* */ } }, FREEZE_MS);
+if (FREEZE_MS > 0) setTimeout(() => {
+  try { g.session?.pause?.("user"); } catch { /* */ }
+  try { app.pause(); } catch { /* */ }
+}, FREEZE_MS);
 
 // The engine beacon __AURA3D_GAME__ embeds `app`/`scene` — circular — which
 // crashes JSON dumps in remote capture harnesses. Re-publish a JSON-safe copy.

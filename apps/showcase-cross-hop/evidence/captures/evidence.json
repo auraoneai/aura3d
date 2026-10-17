@@ -1,0 +1,38 @@
+{
+  "status": "live",
+  "frame": 113,
+  "state": {
+    "mode": "dead",
+    "runKind": "quick",
+    "score": 2,
+    "coins": 0,
+    "best": 2,
+    "row": 2,
+    "bestRow": 2,
+    "critter": "hop",
+    "theme": "Emberline",
+    "dead": "burned"
+  },
+  "movers": 120,
+  "lanesBuffered": 29,
+  "events": [
+    "Quick Play",
+    "Burned — run over at 2"
+  ],
+  "unlocked": "1/12",
+  "nodesOk": true,
+  "nodeErr": "",
+  "input": {
+    "actions": [
+      "up",
+      "down",
+      "left",
+      "right",
+      "reset"
+    ],
+    "buffered": true
+  },
+  "look": {
+    "id": "Emberline"
+  }
+}

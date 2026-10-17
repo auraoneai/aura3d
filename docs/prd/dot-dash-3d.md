@@ -117,21 +117,21 @@ Specters that read at 30m. Each maze recolors the emissive palette.
 ## Detailed tasklist
 
 **Phase 0 — Spike:**
-- [ ] Scaffold `mini-game`; ASCII-grid maze → walls + dots + spawn points.
-- [ ] Grid movement: snap + buffered turns; no wall clipping at speed.
+- [x] Scaffold `mini-game`; ASCII-grid maze → walls + dots + spawn points.
+- [x] Grid movement: snap + buffered turns; no wall clipping at speed.
 
 **Phase 1 — The hunt:**
-- [ ] Specter pathing: per-junction target-tile BFS; chase/scatter wave timer.
-- [ ] Four personalities implemented + Ghost School target-tile overlay.
-- [ ] Power Orb: frightened state, chain-eat scoring, eyes-return-home.
+- [x] Specter pathing: per-junction target-tile BFS; chase/scatter wave timer.
+- [x] Four personalities implemented + Ghost School target-tile overlay.
+- [x] Power Orb: frightened state, chain-eat scoring, eyes-return-home.
 
 **Phase 2 — Mazes & systems:**
-- [ ] 6 maze layouts authored; fruit schedule; lives/respawn; maze progression.
-- [ ] Score/high-score persistence; dash mechanic + toggle.
+- [x] 6 maze layouts authored; fruit schedule; lives/respawn; maze progression.
+- [x] Score/high-score persistence; dash mechanic + toggle.
 
 **Phase 3 — Shell & polish:**
-- [ ] Shell wiring; HUD: score/lives/orb timer.
-- [ ] Trails, fright-flash, orb pulse VFX; per-maze looks; audio loop mix.
+- [x] Shell wiring; HUD: score/lives/orb timer.
+- [x] Trails, fright-flash, orb pulse VFX; per-maze looks; audio loop mix.
 
 **Phase 4 — Evidence:**
 - [ ] `look capture` ≥7; route-health; `game.evidence`; `check-deploy`.
@@ -139,9 +139,9 @@ Specters that read at 30m. Each maze recolors the emissive palette.
 
 ## Ship checklist
 
-- [ ] 6 mazes; classic + 5 variants + Zero-Core exotic.
-- [ ] All 4 Specter personalities live + demonstrable in Ghost School.
-- [ ] Power Orb chain-eat scoring works; fruit bonuses spawn.
-- [ ] Movement buffered-tight; dash optional.
+- [x] 6 mazes; classic + 5 variants + Zero-Core exotic.
+- [x] All 4 Specter personalities live + demonstrable in Ghost School.
+- [x] Power Orb chain-eat scoring works; fruit bonuses spawn.
+- [x] Movement buffered-tight; dash optional.
 - [ ] `validate --release` clean; `check-deploy` green.
 - [ ] Preview + capture timeline shipped.

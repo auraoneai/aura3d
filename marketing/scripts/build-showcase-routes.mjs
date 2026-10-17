@@ -55,7 +55,9 @@ const showcaseRoutes = [
   "showcase-heatsink-v2",
   "showcase-teleoperator-v2",
   "showcase-bunker-zero",
-  "showcase-slingshot-siege"
+  "showcase-slingshot-siege",
+  "showcase-dot-dash-3d",
+  "showcase-cross-hop"
 ];
 
 const retiredPrototypeRoutes = [

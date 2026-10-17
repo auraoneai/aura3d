@@ -25,27 +25,42 @@ const ROW_BEHIND = 8;
 
 export function laneZ(row: number): number { return -row * LANE_D; }
 
+/** Weighted type roll for a single row — consumes draw 1 of the row's rng. */
+function rollLaneType(r: number, seed: number, forceTheme?: number): LaneType {
+  const themeIdx = forceTheme ?? themeIndexForRow(r, seed);
+  const w = THEMES[themeIdx].laneWeights;
+  const rnd = mulberry32(seed * 7919 + r * 104729);
+  let roll = rnd() * (w[0] + w[1] + w[2] + w[3] + w[4] + w[5]);
+  const kinds: LaneType[] = ["meadow", "road", "tram", "river", "rail", "lava"];
+  let type: LaneType = "meadow";
+  for (let i = 0; i < 6; i++) { roll -= w[i]; if (roll <= 0) { type = kinds[i]; break; } }
+  return type;
+}
+
+/**
+ * Final lane type for `row` including the breathing-room rule (never three
+ * non-meadow lanes in a row). Computed by a forward sequential pass O(row) —
+ * NOT recursive (the naive laneFor→laneFor recursion is Fibonacci and hangs
+ * the frame around row ~45).
+ */
+function laneTypeSeq(row: number, seed: number, forceTheme?: number): LaneType {
+  let p1: LaneType = "meadow", p2: LaneType = "meadow", cur: LaneType = "meadow";
+  for (let r = 2; r <= row; r++) {
+    cur = (p1 !== "meadow" && p2 !== "meadow") ? "meadow" : rollLaneType(r, seed, forceTheme);
+    p2 = p1; p1 = cur;
+  }
+  return cur;
+}
+
 /** Deterministic lane descriptor for a row (pure; caller keeps a cache). */
 export function laneFor(row: number, seed: number, difficulty: number, forceTheme?: number): Lane {
   if (row <= 1) {
     return { row, type: "meadow", dir: 1, speed: 0, spacing: 8, moverKind: "none", phase: 0, theme: forceTheme ?? 0, hasCoin: false, coinCol: 0, hasPod: false, podCol: 0 };
   }
   const themeIdx = forceTheme ?? themeIndexForRow(row, seed);
-  const th = THEMES[themeIdx];
   const rnd = mulberry32(seed * 7919 + row * 104729);
-  // forbid stacking >2 of same hard type
-  const prev = row > 1 ? laneTypeOnly(row - 1, seed, difficulty, forceTheme) : "meadow";
-  const prev2 = row > 2 ? laneTypeOnly(row - 2, seed, difficulty, forceTheme) : "meadow";
-  let type: LaneType;
-  if (prev === prev2 && prev !== "meadow") {
-    type = "meadow";
-  } else {
-    const w = th.laneWeights;
-    let roll = rnd() * (w[0] + w[1] + w[2] + w[3] + w[4] + w[5]);
-    type = "meadow";
-    const kinds: LaneType[] = ["meadow", "road", "tram", "river", "rail", "lava"];
-    for (let i = 0; i < 6; i++) { roll -= w[i]; if (roll <= 0) { type = kinds[i]; break; } }
-  }
+  const type = laneTypeSeq(row, seed, forceTheme);
+  rnd(); // draw 1 is the type roll (consumed by rollLaneType semantics)
   const dir = rnd() < 0.5 ? 1 : -1;
   const diff = Math.min(1, difficulty);
   const speed = type === "road" ? (2.4 + rnd() * 3.4) * (1 + diff * 0.9)
@@ -76,10 +91,7 @@ export function laneFor(row: number, seed: number, difficulty: number, forceThem
   };
 }
 
-function laneTypeOnly(row: number, seed: number, difficulty: number, forceTheme?: number): LaneType {
-  // cheap re-derivation of just the type (weights re-rolled identically)
-  return laneFor(row, seed, difficulty, forceTheme).type;
-}
+
 
 /** Mover positions for a lane at time t — writes xs[] and returns count. */
 export function laneMovers(lane: Lane, t: number, xs: Float32Array): number {
