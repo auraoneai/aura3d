@@ -836,14 +836,16 @@ apexGame = racingGame;
 const app = racingGame.app;
 const ev: Record<string, unknown> = { ready: "pending" };
 (window as unknown as Record<string, unknown>).__auraEvidence = ev;
+try {
+  const nodes: any[] = [];
+  const walk = (list: any[] | undefined) => { for (const n of list ?? []) { nodes.push(n); walk(n.children ?? n.nodes); } };
+  walk((((buildScene() as any).snapshot?.())?.nodes) ?? []);
+  ev.models = nodes.filter((n) => n?.kind === "model").map((n) => { try { return { id: n?.asset?.id ?? "?", url: String(n?.asset?.url ?? "").slice(0, 90), prov: createAssetProvenance(n?.asset)?.source, hasHash: Boolean(n?.asset?.hash) }; } catch { return { id: "?", prov: "err" }; } });
+} catch { /* evidence only */ }
 setInterval(() => {
   try {
     ev.diag = (app as { diagnostics?: () => unknown }).diagnostics?.();
     ev.marks = performance.getEntriesByType("mark").filter((m) => m.name.startsWith("a3d")).map((m) => `${m.name}@${Math.round(m.startTime)}`);
-    const nodes: any[] = [];
-    const walk = (list: any[] | undefined) => { for (const n of list ?? []) { nodes.push(n); walk(n.children ?? n.nodes); } };
-    walk(((app as any).getScene?.()?.nodes) ?? []);
-    ev.models = nodes.filter((n) => n?.kind === "model").map((n) => { try { return { id: n?.asset?.id ?? "?", url: String(n?.asset?.url ?? "").slice(0, 90), prov: createAssetProvenance(n?.asset)?.source, hasHash: Boolean(n?.asset?.hash) }; } catch { return { id: "?", prov: "err" }; } });
   } catch { /* evidence only */ }
 }, 500);
 (app as unknown as { ready?: () => Promise<unknown> }).ready?.().then(() => { ev.ready = "ok"; }).catch((e: unknown) => { ev.ready = `err:${(e as Error)?.message ?? e}`; });
