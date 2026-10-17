@@ -175,7 +175,11 @@ const pipsGame = createGame({
     gate: { flash: { color: "#ffd95e", peak: 0.22, ms: 420 } },
     "boss-hit": { punch: { fovDeg: 2.4, ms: 320 } }
   },
-  qualityRebuild: { flags: ["game"] },
+  // A3D_QR_POST is default-on engine-wide, but its LegacyPost lane loses
+  // its render targets after any device lifecycle event (remount, resize)
+  // on ANGLE/Vulkan and kills presentation — repro'd on aura-links-3d too.
+  // Pin it off until the engine-side LDR postprocess defect is fixed.
+  qualityRebuild: { flags: ["game", "-post"] },
   evidence: {
     schema: 1,
     sections: { pipsBigLeap: () => window.__AURA3D_SHOWCASE_PIPS_BIG_LEAP__ ?? { status: "unbound" } }
@@ -563,6 +567,18 @@ function showStudio(show: boolean): void {
 }
 
 function bindShell(): void {
+  // A clicked button keeps DOM focus and would swallow Space/Enter as
+  // click — Space is Jump, so a focused Play button re-fires mid-jump and
+  // restarts the world. Blur every activated button so game keys stay
+  // game keys; intentional re-clicks still work.
+  document.addEventListener(
+    "click",
+    (e) => {
+      const el = (e.target as HTMLElement | null)?.closest?.("button") as HTMLButtonElement | null;
+      el?.blur();
+    },
+    true
+  );
   bind("aura-btn-play", () => { loadWorld(run.world === "academy" ? "w1" : run.world, "quick"); });
   bind("aura-btn-academy", () => loadWorld("academy", "academy"));
   bind("aura-btn-atlas", () => showAtlas(true));

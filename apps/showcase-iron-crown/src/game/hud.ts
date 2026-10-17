@@ -217,6 +217,18 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
   renderBio("kenji");
 
   /* -------- static button wiring -------- */
+  // A clicked button keeps DOM focus and would swallow Space/Enter as
+  // click — Space is Jump, so a focused button re-fires mid-fight and
+  // restarts the bout. Blur every activated button so game keys stay game
+  // keys; intentional re-clicks still work.
+  doc.addEventListener(
+    "click",
+    (e) => {
+      const el = (e.target as HTMLElement | null)?.closest?.("button") as HTMLButtonElement | null;
+      el?.blur();
+    },
+    true
+  );
   doc.querySelectorAll<HTMLButtonElement>("[data-mode-pick]").forEach((btn) => {
     btn.addEventListener("click", () => cb.onMode(btn.dataset.modePick as ModeId));
   });
