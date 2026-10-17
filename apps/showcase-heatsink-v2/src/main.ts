@@ -2068,7 +2068,7 @@ async function boot(): Promise<void> {
     }
 
     // Collision world step → trigger events (cooling/boost/pickup/hazard/gates)
-    collisionWorld.step(step);
+    if (step > 0) collisionWorld.step(step);
     for (const contact of collisionWorld.overlaps({ ids: ["player-hull"] })) {
       const other = contact.a.id === "player-hull" ? contact.b : contact.a;
       const zone = zoneBodies.find((z2) => z2.id === other.id);
