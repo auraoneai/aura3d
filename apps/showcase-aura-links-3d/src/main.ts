@@ -1399,6 +1399,9 @@ function closeMenu(): void {
   $("menu-overlay")?.classList.remove("open");
   $("studio-section")!.style.display = "none";
   $("tour-section")!.style.display = "none";
+  // release focus from the clicked control — a focused button eats the next
+  // Space keyup as a re-click, which would reset the round mid-press
+  (document.activeElement as HTMLElement | null)?.blur?.();
 }
 
 function startModeFromMenu(mode: string): void {
