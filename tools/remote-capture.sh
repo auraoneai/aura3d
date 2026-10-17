@@ -167,7 +167,7 @@ for mf in manifests:
         if key in key_url:
             continue
         depth, end = 0, len(src)
-        for i in range(m.end() - 1, min(len(src), m.end() + 4000)):
+        for i in range(m.end() - 1, len(src)):
             if src[i] == '{':
                 depth += 1
             elif src[i] == '}':

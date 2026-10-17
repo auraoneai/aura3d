@@ -147,9 +147,26 @@ const { chromium } = require(${JSON.stringify(process.env.PLAYWRIGHT_MODULE || "
   const browser = await chromium.launch({
     headless: true,
     ${CHROME_PATH ? `executablePath: ${JSON.stringify(CHROME_PATH)},` : ""}
-    args: ["--no-sandbox", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--disable-gpu-sandbox"]
+    args: [
+      "--no-sandbox",
+      "--use-angle=swiftshader",
+      "--enable-unsafe-swiftshader",
+      "--disable-gpu-sandbox",
+      // SwiftShader rasterizes WebGL on CPU; without this Chromium's GPU
+      // compositor can't pull the surface into page.screenshot under memory
+      // pressure -> DOM renders, canvas stays black, target eventually OOMs.
+      "--disable-gpu-compositing",
+      "--disable-dev-shm-usage",
+      "--disable-extensions",
+      "--mute-audio",
+      "--renderer-process-limit=1",
+      "--js-flags=--max-old-space-size=384"
+    ]
   });
   const page = await browser.newPage({ viewport: { width: ${width}, height: ${height} } });
+  // Decoded audio costs large buffers the box can't spare under contention;
+  // the games treat SFX as best-effort, so drop media fetches entirely.
+  await page.route(/\\.(wav|mp3|ogg|m4a)(\\?|$)/i, (r) => r.abort());
   const console_ = [];
   const errors = [];
   page.on("console", (m) => console_.push(m.type() + ": " + m.text()));
@@ -178,11 +195,27 @@ const { chromium } = require(${JSON.stringify(process.env.PLAYWRIGHT_MODULE || "
   await dump("pre");
   for (let i = 0; i < ${shotCount}; i++) {
     // SwiftShader rasterizes on CPU; a busy WebGL rAF loop can starve the
-    // compositor past the 30s default screenshot timeout.
+    // compositor past the 30s default screenshot timeout. Keep the attempt
+    // short, then fall back to a direct canvas grab — the engine's WebGL2
+    // context runs with preserveDrawingBuffer:true, so toDataURL returns the
+    // real frame without compositor involvement.
     try {
-      await page.screenshot({ path: ${JSON.stringify(outDir)} + "/shot-" + i + ".png", timeout: 120000 });
+      await page.screenshot({ path: ${JSON.stringify(outDir)} + "/shot-" + i + ".png", timeout: 30000 });
     } catch (e) {
       errors.push("shot-" + i + " failed: " + String(e).split("\\n")[0]);
+      try {
+        const dataUrl = await page.evaluate(() => {
+          const c = document.querySelector("canvas");
+          return c ? c.toDataURL("image/png") : null;
+        });
+        if (dataUrl && dataUrl.startsWith("data:image/png")) {
+          const fs2 = require("fs");
+          fs2.writeFileSync(${JSON.stringify(outDir)} + "/shot-" + i + ".png", Buffer.from(dataUrl.slice(22), "base64"));
+          errors.push("shot-" + i + " recovered via canvas.toDataURL");
+        }
+      } catch (e2) {
+        errors.push("shot-" + i + " canvas grab failed: " + String(e2).split("\\n")[0]);
+      }
     }
     await page.waitForTimeout(${shotInterval});
   }
