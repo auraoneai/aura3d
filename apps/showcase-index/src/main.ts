@@ -179,6 +179,17 @@ const apps = [
     notes: "1:1 Aura3D port of TopTennisGame.com with 2-bone IK articulated athletes, 6 courts, Smash Lab, and 32-player World Tour."
   },
   {
+    id: "showcase-roadster-rush",
+    route: "/apps/showcase-roadster-rush/",
+    routeHealth: "/apps/showcase-roadster-rush/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "1:1 Aura3D port of Roadster Rush with 11 typed vehicle GLBs, cold-gas thrusters, barrel rolls, carrier launch ramps, and sky-lane dogfights."
+  },
+  {
     id: "showcase-turbo-ball",
     route: "/apps/showcase-turbo-ball/",
     routeHealth: "/apps/showcase-turbo-ball/route-health.json",
@@ -231,6 +242,7 @@ const GAME_APP_IDS = new Set([
   "showcase-bank-shot",
   "showcase-vault-breakers",
   "showcase-top-tennis",
+  "showcase-roadster-rush",
   "showcase-turbo-ball",
   "showcase-kart-havoc",
   "showcase-bean-brawl-race"

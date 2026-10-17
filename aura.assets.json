@@ -146702,6 +146702,303 @@
           "importedAt": "2026-10-15T19:55:00.000Z"
         }
       }
+    },
+    {
+      "id": "roadsterRushPlayerCar",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/roadsterRushPlayerCar.c7f9617d.glb",
+      "url": "/aura-assets/roadsterRushPlayerCar.c7f9617d.glb",
+      "hash": "sha256-e97ea46a364607f0e45cca7bcb8e95b5f909d62a427447f18822647747e0953e",
+      "sizeBytes": 2260208,
+      "bounds": [
+        2.23,
+        1.27,
+        4.3
+      ],
+      "license": "CC-BY-4.0",
+      "author": "Aura3D Roadster Rush Studio",
+      "provenance": {
+        "sourcePath": "public/aura-assets/roadsterRushPlayerCar.c7f9617d.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Aura3D Roadster Rush Studio",
+        "sourceFamily": "meshy",
+        "attribution": "Roadster Rush hero cold-gas thruster sports car",
+        "retrievedAt": "2026-10-16T21:55:00.000Z",
+        "checkedAt": "2026-10-16T21:55:00.000Z"
+      }
+    },
+    {
+      "id": "roadsterRushSkyCar",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/roadsterRushSkyCar.295dcba7.glb",
+      "url": "/aura-assets/roadsterRushSkyCar.295dcba7.glb",
+      "hash": "sha256-b60183eae657d723efa31ffd8e0fad85962cf1b06c1d99b78250d369db406ce7",
+      "sizeBytes": 2260276,
+      "bounds": [
+        2.23,
+        1.27,
+        4.3
+      ],
+      "license": "CC-BY-4.0",
+      "author": "Aura3D Roadster Rush Studio",
+      "provenance": {
+        "sourcePath": "public/aura-assets/roadsterRushSkyCar.295dcba7.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Aura3D Roadster Rush Studio",
+        "sourceFamily": "meshy",
+        "attribution": "Roadster Rush sky-lane oncoming interceptor car",
+        "retrievedAt": "2026-10-16T21:55:00.000Z",
+        "checkedAt": "2026-10-16T21:55:00.000Z"
+      }
+    },
+    {
+      "id": "roadsterRushSedan",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/roadsterRushSedan.86311da3.glb",
+      "url": "/aura-assets/roadsterRushSedan.86311da3.glb",
+      "hash": "sha256-1844d9abc80de9e94cb0851a585ea65aa441b1eeccc6066e58ca9950fadee254",
+      "sizeBytes": 664780,
+      "bounds": [
+        1.9,
+        1.43,
+        4.64
+      ],
+      "license": "CC-BY-4.0",
+      "author": "Aura3D Roadster Rush Studio",
+      "provenance": {
+        "sourcePath": "public/aura-assets/roadsterRushSedan.86311da3.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Aura3D Roadster Rush Studio",
+        "sourceFamily": "meshy",
+        "attribution": "Roadster Rush freeway traffic crimson sedan",
+        "retrievedAt": "2026-10-16T21:55:00.000Z",
+        "checkedAt": "2026-10-16T21:55:00.000Z"
+      }
+    },
+    {
+      "id": "roadsterRushHatch",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/roadsterRushHatch.44325593.glb",
+      "url": "/aura-assets/roadsterRushHatch.44325593.glb",
+      "hash": "sha256-30c773f5e074468d052897d63a238c776405205b5d0cbf13c4d1a07d2c5157ac",
+      "sizeBytes": 664780,
+      "bounds": [
+        1.82,
+        1.47,
+        4.04
+      ],
+      "license": "CC-BY-4.0",
+      "author": "Aura3D Roadster Rush Studio",
+      "provenance": {
+        "sourcePath": "public/aura-assets/roadsterRushHatch.44325593.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Aura3D Roadster Rush Studio",
+        "sourceFamily": "meshy",
+        "attribution": "Roadster Rush freeway traffic cyan hatchback",
+        "retrievedAt": "2026-10-16T21:55:00.000Z",
+        "checkedAt": "2026-10-16T21:55:00.000Z"
+      }
+    },
+    {
+      "id": "roadsterRushSuv",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/roadsterRushSuv.8be3e7ea.glb",
+      "url": "/aura-assets/roadsterRushSuv.8be3e7ea.glb",
+      "hash": "sha256-65f825848d2bcd830ef6c79e23d75a193df2dbd3f7523f080ff53b8129499244",
+      "sizeBytes": 664780,
+      "bounds": [
+        2,
+        1.82,
+        4.94
+      ],
+      "license": "CC-BY-4.0",
+      "author": "Aura3D Roadster Rush Studio",
+      "provenance": {
+        "sourcePath": "public/aura-assets/roadsterRushSuv.8be3e7ea.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Aura3D Roadster Rush Studio",
+        "sourceFamily": "meshy",
+        "attribution": "Roadster Rush freeway traffic emerald SUV",
+        "retrievedAt": "2026-10-16T21:55:00.000Z",
+        "checkedAt": "2026-10-16T21:55:00.000Z"
+      }
+    },
+    {
+      "id": "roadsterRushTaxi",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/roadsterRushTaxi.0a1f7ba6.glb",
+      "url": "/aura-assets/roadsterRushTaxi.0a1f7ba6.glb",
+      "hash": "sha256-5ca742f77a4c93e505f59369c06c5cb448ba82b7f2ece97a704d14e23fe7d45b",
+      "sizeBytes": 664780,
+      "bounds": [
+        1.92,
+        1.63,
+        4.74
+      ],
+      "license": "CC-BY-4.0",
+      "author": "Aura3D Roadster Rush Studio",
+      "provenance": {
+        "sourcePath": "public/aura-assets/roadsterRushTaxi.0a1f7ba6.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Aura3D Roadster Rush Studio",
+        "sourceFamily": "meshy",
+        "attribution": "Roadster Rush freeway traffic yellow taxi cab",
+        "retrievedAt": "2026-10-16T21:55:00.000Z",
+        "checkedAt": "2026-10-16T21:55:00.000Z"
+      }
+    },
+    {
+      "id": "roadsterRushVan",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/roadsterRushVan.b8e0e67d.glb",
+      "url": "/aura-assets/roadsterRushVan.b8e0e67d.glb",
+      "hash": "sha256-ef6cd5a792602fd8b7d6841b0b28066687e87c011c8c914c4f136cc09edc3395",
+      "sizeBytes": 664780,
+      "bounds": [
+        2.06,
+        2.2,
+        5.34
+      ],
+      "license": "CC-BY-4.0",
+      "author": "Aura3D Roadster Rush Studio",
+      "provenance": {
+        "sourcePath": "public/aura-assets/roadsterRushVan.b8e0e67d.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Aura3D Roadster Rush Studio",
+        "sourceFamily": "meshy",
+        "attribution": "Roadster Rush freeway traffic cobalt van",
+        "retrievedAt": "2026-10-16T21:55:00.000Z",
+        "checkedAt": "2026-10-16T21:55:00.000Z"
+      }
+    },
+    {
+      "id": "roadsterRushPickup",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/roadsterRushPickup.90049094.glb",
+      "url": "/aura-assets/roadsterRushPickup.90049094.glb",
+      "hash": "sha256-c74e3aef84613f658e4c340461d6b6a4b7e85a7152eb84761d63ff8439a49a99",
+      "sizeBytes": 664780,
+      "bounds": [
+        2.02,
+        1.77,
+        5.58
+      ],
+      "license": "CC-BY-4.0",
+      "author": "Aura3D Roadster Rush Studio",
+      "provenance": {
+        "sourcePath": "public/aura-assets/roadsterRushPickup.90049094.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Aura3D Roadster Rush Studio",
+        "sourceFamily": "meshy",
+        "attribution": "Roadster Rush freeway traffic burnt-orange pickup",
+        "retrievedAt": "2026-10-16T21:55:00.000Z",
+        "checkedAt": "2026-10-16T21:55:00.000Z"
+      }
+    },
+    {
+      "id": "roadsterRushBoxtruck",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/roadsterRushBoxtruck.9573d451.glb",
+      "url": "/aura-assets/roadsterRushBoxtruck.9573d451.glb",
+      "hash": "sha256-beb356f929dac3de89d8d71a04a1106d0cab8ff14c337a139a4c65661316cedb",
+      "sizeBytes": 664780,
+      "bounds": [
+        2.43,
+        3,
+        8.14
+      ],
+      "license": "CC-BY-4.0",
+      "author": "Aura3D Roadster Rush Studio",
+      "provenance": {
+        "sourcePath": "public/aura-assets/roadsterRushBoxtruck.9573d451.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Aura3D Roadster Rush Studio",
+        "sourceFamily": "meshy",
+        "attribution": "Roadster Rush freeway traffic box truck",
+        "retrievedAt": "2026-10-16T21:55:00.000Z",
+        "checkedAt": "2026-10-16T21:55:00.000Z"
+      }
+    },
+    {
+      "id": "roadsterRushBus",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/roadsterRushBus.9fd16d90.glb",
+      "url": "/aura-assets/roadsterRushBus.9fd16d90.glb",
+      "hash": "sha256-1618d848bbe68977143b2dab6012fa02f25b169fcd14fe0e4c528503eb1f6168",
+      "sizeBytes": 664780,
+      "bounds": [
+        2.6,
+        3.16,
+        12.22
+      ],
+      "license": "CC-BY-4.0",
+      "author": "Aura3D Roadster Rush Studio",
+      "provenance": {
+        "sourcePath": "public/aura-assets/roadsterRushBus.9fd16d90.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Aura3D Roadster Rush Studio",
+        "sourceFamily": "meshy",
+        "attribution": "Roadster Rush freeway traffic transit bus",
+        "retrievedAt": "2026-10-16T21:55:00.000Z",
+        "checkedAt": "2026-10-16T21:55:00.000Z"
+      }
+    },
+    {
+      "id": "roadsterRushCarrier",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/roadsterRushCarrier.de50f36f.glb",
+      "url": "/aura-assets/roadsterRushCarrier.de50f36f.glb",
+      "hash": "sha256-73ce0880680c5b12a4e3855bc26e8a1cd939d78c1ec6244a5e71e2360bcd04a3",
+      "sizeBytes": 664780,
+      "bounds": [
+        2.61,
+        2.98,
+        16.12
+      ],
+      "license": "CC-BY-4.0",
+      "author": "Aura3D Roadster Rush Studio",
+      "provenance": {
+        "sourcePath": "public/aura-assets/roadsterRushCarrier.de50f36f.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Aura3D Roadster Rush Studio",
+        "sourceFamily": "meshy",
+        "attribution": "Roadster Rush freeway car-carrier ramp truck",
+        "retrievedAt": "2026-10-16T21:55:00.000Z",
+        "checkedAt": "2026-10-16T21:55:00.000Z"
+      }
     }
   ]
 }

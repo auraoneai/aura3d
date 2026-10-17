@@ -1,0 +1,58 @@
+{
+  "base": "/roadster-rush/audio/",
+  "music": {
+    "title": "music/title.mp3",
+    "run": "music/run.mp3",
+    "rocket": "music/rocket.mp3"
+  },
+  "voice": {
+    "start": [
+      "voice/start_0.mp3",
+      "voice/start_1.mp3"
+    ],
+    "roll": [
+      "voice/roll_0.mp3",
+      "voice/roll_1.mp3"
+    ],
+    "closeCall": [
+      "voice/closeCall_0.mp3",
+      "voice/closeCall_1.mp3"
+    ],
+    "airLow": [
+      "voice/airLow_0.mp3"
+    ],
+    "rocket": [
+      "voice/rocket_0.mp3"
+    ],
+    "crash": [
+      "voice/crash_0.mp3",
+      "voice/crash_1.mp3"
+    ],
+    "combo": [
+      "voice/combo_0.mp3",
+      "voice/combo_1.mp3"
+    ],
+    "milestone": [
+      "voice/milestone_0.mp3"
+    ],
+    "sky": [
+      "voice/sky_0.mp3"
+    ]
+  },
+  "lines": {
+    "voice/start_0.mp3": "Traffic is a ground-level problem.",
+    "voice/start_1.mp3": "Let's go! Up and over!",
+    "voice/roll_0.mp3": "Do a barrel roll!",
+    "voice/roll_1.mp3": "Spin to win!",
+    "voice/closeCall_0.mp3": "Whoa, close one!",
+    "voice/closeCall_1.mp3": "Too close!",
+    "voice/airLow_0.mp3": "Air tank low!",
+    "voice/rocket_0.mp3": "Full send!",
+    "voice/crash_0.mp3": "Oof. Insurance is gonna love that.",
+    "voice/crash_1.mp3": "That was a car.",
+    "voice/combo_0.mp3": "Combo!",
+    "voice/combo_1.mp3": "You're on fire!",
+    "voice/milestone_0.mp3": "One kilometer of pure chaos!",
+    "voice/sky_0.mp3": "Incoming roadsters!"
+  }
+}

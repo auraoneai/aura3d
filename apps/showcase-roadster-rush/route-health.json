@@ -1,0 +1,52 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-10-16T22:18:00.000Z",
+  "appId": "showcase-roadster-rush",
+  "route": "/apps/showcase-roadster-rush/",
+  "kind": "showcase",
+  "classification": "candidate",
+  "publicShowcase": true,
+  "claimLevel": "production",
+  "promotionStatus": "public-showcase",
+  "machinePass": true,
+  "rendererMode": "production",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "production",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": true
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.roadsterRushPlayerCar",
+      "quality": "production",
+      "role": "primaryVehicle"
+    },
+    {
+      "typedRef": "assets.roadsterRushSkyCar",
+      "quality": "production",
+      "role": "primaryVehicle"
+    },
+    {
+      "typedRef": "assets.roadsterRushCarrier",
+      "quality": "production",
+      "role": "primaryVehicle"
+    },
+    {
+      "typedRef": "assets.roadsterRushSedan",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.rooftopFloodlightTowerMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.showcaseModernBuildingOne",
+      "quality": "production",
+      "role": "setDressing"
+    }
+  ],
+  "notes": "Aura3D 4.0.1 full 3D endless freeway & sky-lane port of Roadster Rush (roadster-rush.ai.studio) with 11 typed GLB vehicles, cold-gas thruster plumes, carrier ramp launches, sky dogfights, smart idle autopilot, and quick-switcher toolbar."
+}

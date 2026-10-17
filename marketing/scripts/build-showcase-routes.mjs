@@ -50,6 +50,7 @@ const showcaseRoutes = [
   "showcase-aurora-lander",
   "showcase-vault-breakers",
   "showcase-top-tennis",
+  "showcase-roadster-rush",
   "showcase-turbo-ball",
   "showcase-kart-havoc",
   "showcase-bean-brawl-race"
@@ -151,8 +152,10 @@ function assertRequiredEngineSourceHelpers() {
 }
 
 function writeViteConfig(tempDir) {
+  const onlyRoute = process.env.AURA3D_ONLY_ROUTE?.trim();
+  const routesToBuild = onlyRoute ? publicRoutes.filter((r) => r === onlyRoute) : publicRoutes;
   const routeInputs = Object.fromEntries(
-    publicRoutes.map((route) => [route, path.join(repoRoot, "apps", route, "index.html")])
+    routesToBuild.map((route) => [route, path.join(repoRoot, "apps", route, "index.html")])
   );
   const retargetWorkerPath = path.join(repoRoot, "packages", "animation", "src", "pose", "retarget.worker.ts");
   const gamePackageEntry = path.join(repoRoot, "packages", "game", "src", "index.ts");
@@ -244,6 +247,15 @@ function copyRouteHealth() {
     const targetRootDir = path.join(distDir, "toptennis");
     mkdirSync(targetRootDir, { recursive: true });
     cpSync(topTennisPublic, targetRootDir, { recursive: true });
+  }
+  const roadsterRushPublic = path.join(repoRoot, "apps", "showcase-roadster-rush", "public", "roadster-rush");
+  if (existsSync(roadsterRushPublic)) {
+    const targetRouteDir = path.join(distDir, "apps", "showcase-roadster-rush", "roadster-rush");
+    mkdirSync(targetRouteDir, { recursive: true });
+    cpSync(roadsterRushPublic, targetRouteDir, { recursive: true });
+    const targetRootDir = path.join(distDir, "roadster-rush");
+    mkdirSync(targetRootDir, { recursive: true });
+    cpSync(roadsterRushPublic, targetRootDir, { recursive: true });
   }
 }
 
@@ -487,7 +499,7 @@ function main() {
     if (showcaseAssetBaseUrl) {
       removeLocalAuraAssets(distDir);
       rewriteBuiltAuraAssetUrls(distDir, showcaseAssetBaseUrl);
-    } else {
+    } else if (!process.env.AURA3D_ONLY_ROUTE || !existsSync(path.join(distDir, "aura-assets"))) {
       copyAuraAssets();
     }
     assertBuiltRoutes();
