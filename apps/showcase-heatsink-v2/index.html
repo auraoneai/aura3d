@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>THERMAL DRIFT — High-Velocity Combat Drone Racer · Aura3D Showcase</title>
+    <link rel="stylesheet" href="/fonts/aura-fonts.css" />
+    <style>
+      :root {
+        --bg: #05070c;
+        --ink: #f4f2ec;
+        --muted: #8b8f99;
+        --faint: #464a54;
+        --rule: rgba(244, 242, 236, 0.12);
+        --rule-strong: rgba(244, 242, 236, 0.28);
+        --accent: #ff4d1f;
+        --accent-2: #ffb800;
+        --cyan: #35d6ff;
+        --danger: #ff2952;
+        --ok: #5be37d;
+        --coolant: #4fd8e8;
+        --font-display: "DIN Pro", "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-sans: "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mono: "Monument Grotesk Mono", ui-monospace, SFMono-Regular, monospace;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      html, body {
+        width: 100%; height: 100%;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 13px; line-height: 1.4;
+        overflow: hidden; user-select: none;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      #game-stage { position: fixed; inset: 0; width: 100vw; height: 100vh; background: #05070c; }
+      #app { position: absolute; inset: 0; width: 100%; height: 100%; }
+      #app canvas { width: 100% !important; height: 100% !important; display: block; }
+
+      /* ---------- full-screen overlays ---------- */
+      .screen-fx {
+        position: absolute; inset: 0; pointer-events: none; z-index: 4;
+        background:
+          radial-gradient(ellipse 120% 62% at 50% 108%, rgba(53, 214, 255, 0.07), transparent 55%),
+          radial-gradient(ellipse 90% 55% at 50% -8%, rgba(255, 77, 31, 0.05), transparent 60%),
+          linear-gradient(180deg, rgba(4, 6, 10, 0.34) 0%, transparent 16%, transparent 82%, rgba(4, 6, 10, 0.5) 100%);
+      }
+      .speed-lines {
+        position: absolute; inset: -12%; pointer-events: none; z-index: 5; opacity: 0;
+        background:
+          repeating-linear-gradient(90deg, transparent 0 3.2%, rgba(190, 224, 255, 0.14) 3.28% 3.4%, transparent 3.55% 6.8%),
+          repeating-linear-gradient(90deg, transparent 0 7.4%, rgba(255, 140, 60, 0.1) 7.5% 7.62%, transparent 7.8% 11%);
+        -webkit-mask-image: radial-gradient(ellipse 62% 58% at 50% 46%, transparent 42%, #000 88%);
+        mask-image: radial-gradient(ellipse 62% 58% at 50% 46%, transparent 42%, #000 88%);
+        transition: opacity 0.18s ease;
+      }
+      .heat-glaze {
+        position: absolute; inset: 0; pointer-events: none; z-index: 5; opacity: 0;
+        background:
+          radial-gradient(ellipse 95% 42% at 50% 112%, rgba(255, 77, 31, 0.34), transparent 58%),
+          radial-gradient(ellipse 70% 30% at 50% -6%, rgba(255, 41, 82, 0.16), transparent 62%);
+        transition: opacity 0.3s ease;
+      }
+      .damage-vignette {
+        position: absolute; inset: 0; pointer-events: none; z-index: 6; opacity: 0;
+        box-shadow: inset 0 0 140px 30px rgba(255, 41, 82, 0.55);
+        transition: opacity 0.09s linear;
+      }
+
+      /* ---------- top command bar ---------- */
+      .top-command-bar {
+        position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+        z-index: 40; display: flex; align-items: center; gap: 14px;
+        padding: 8px 14px;
+        background: rgba(8, 11, 17, 0.82);
+        border: 1px solid var(--rule);
+        backdrop-filter: blur(14px);
+        border-radius: 3px;
+        max-width: calc(100vw - 24px); flex-wrap: wrap; justify-content: center;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+      .top-command-bar.hidden { opacity: 0; transform: translateX(-50%) translateY(-12px); pointer-events: none; }
+      .brand-chip { display: flex; align-items: baseline; gap: 8px; padding-right: 10px; border-right: 1px solid var(--rule); }
+      .brand-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); align-self: center; }
+      .brand-name { font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: 0.14em; }
+      .brand-tag { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.22em; color: var(--muted); }
+      .bar-group { display: flex; align-items: center; gap: 5px; }
+      .bar-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em; color: var(--muted); margin-right: 4px; }
+      .bar-pill {
+        font-family: var(--font-display); font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em;
+        color: var(--muted); background: transparent; border: 1px solid transparent;
+        padding: 4px 9px; border-radius: 2px; cursor: pointer; transition: all 0.15s ease;
+      }
+      .bar-pill:hover { color: var(--ink); border-color: var(--rule); }
+      .bar-pill.active { color: var(--accent-2); border-color: rgba(255, 184, 0, 0.45); background: rgba(255, 184, 0, 0.08); }
+      .bar-pill.cyan.active { color: var(--cyan); border-color: rgba(53, 214, 255, 0.45); background: rgba(53, 214, 255, 0.08); }
+      .bar-sep { width: 1px; height: 18px; background: var(--rule); }
+
+      /* ---------- HUD ---------- */
+      .hud-r6 { position: absolute; inset: 0; pointer-events: none; z-index: 20; font-family: var(--font-sans); transition: opacity 0.3s ease; }
+      .hud-r6.hidden { opacity: 0; }
+      .r6-top-left { position: absolute; top: 74px; left: 22px; display: flex; flex-direction: column; gap: 8px; }
+      .r6-mode-tag {
+        font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.3em;
+        color: var(--accent); text-shadow: 0 0 14px rgba(255, 77, 31, 0.6); margin-bottom: 2px;
+      }
+      .r6-row { display: flex; gap: 8px; }
+      .r6-chip {
+        background: rgba(8, 11, 17, 0.78); border: 1px solid var(--rule);
+        padding: 7px 12px; border-radius: 3px; backdrop-filter: blur(10px); min-width: 62px;
+      }
+      .r6-chip .k { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.22em; color: var(--muted); }
+      .r6-chip .v { font-family: var(--font-mono); font-size: 19px; font-weight: 600; color: var(--ink); line-height: 1.15; font-variant-numeric: tabular-nums; }
+      .r6-chip .v .of, .r6-chip .pos-of { font-size: 11px; color: var(--muted); }
+      .r6-chip .sub { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.12em; color: var(--muted); }
+      .pos-chip { display: flex; align-items: baseline; gap: 2px; padding-top: 10px; }
+      .pos-p { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--muted); }
+      .pos-num { font-family: var(--font-mono); font-size: 30px; font-weight: 700; color: var(--accent-2); line-height: 1; }
+      .elim-chip .v { color: var(--danger); }
+      .ghost-chip .v { color: var(--cyan); }
+      .r6-hull { display: flex; align-items: center; gap: 9px; background: rgba(8, 11, 17, 0.78); border: 1px solid var(--rule); padding: 7px 12px; border-radius: 3px; backdrop-filter: blur(10px); }
+      .r6-hull .k { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.22em; color: var(--muted); }
+      .r6-hull .bar { flex: 1; height: 5px; background: rgba(244, 242, 236, 0.09); border-radius: 2px; overflow: hidden; min-width: 130px; }
+      .r6-hull .fill { height: 100%; width: 100%; background: linear-gradient(90deg, var(--ok), #a8f0bc); transition: width 0.18s ease, background 0.2s ease; }
+      .r6-hull .fill.warn { background: linear-gradient(90deg, var(--accent-2), #ffd23f); }
+      .r6-hull .fill.crit { background: linear-gradient(90deg, var(--danger), #ff6b8f); }
+      .td-k { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.2em; color: var(--muted); }
+      .td-v { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--accent); }
+
+      .r6-top-right { position: absolute; top: 74px; right: 22px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+      .radar-wrap { background: rgba(8, 11, 17, 0.78); border: 1px solid var(--rule); border-radius: 3px; padding: 9px 11px; backdrop-filter: blur(10px); }
+      .radar-head { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.24em; color: var(--muted); margin-bottom: 6px; }
+      .radar-head .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); animation: blink 2.4s infinite; }
+      #minimap { display: block; }
+      .radar-legend { display: flex; gap: 10px; margin-top: 6px; }
+      .radar-legend .lg { font-family: var(--font-mono); font-size: 7.5px; letter-spacing: 0.16em; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+      .sw { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+      .sw.you { background: var(--accent); } .sw.ai { background: var(--ink); } .sw.gate { background: var(--cyan); }
+      .drone-telemetry-card { background: rgba(8, 11, 17, 0.78); border: 1px solid var(--rule); border-radius: 3px; padding: 8px 12px; backdrop-filter: blur(10px); text-align: right; min-width: 170px; }
+      .dt-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+      .dt-name { font-family: var(--font-display); font-size: 15px; font-weight: 700; letter-spacing: 0.12em; color: var(--cyan); }
+      .dt-sector { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.18em; color: var(--muted); }
+      .dt-tag { font-family: var(--font-mono); font-size: 9px; color: var(--faint); margin-top: 2px; }
+
+      .r6-bot-left { position: absolute; bottom: 66px; left: 22px; display: flex; flex-direction: column; gap: 8px; }
+      .r6-item { background: rgba(8, 11, 17, 0.78); border: 1px solid var(--rule); border-radius: 3px; padding: 7px 12px; backdrop-filter: blur(10px); }
+      .r6-item .k { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.22em; color: var(--muted); }
+      .r6-item .v { font-family: var(--font-display); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent-2); }
+      .r6-item .v.empty { color: var(--faint); }
+      .r6-abilities { display: flex; gap: 6px; }
+      .ab-pill { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; color: var(--ink); background: rgba(8, 11, 17, 0.78); border: 1px solid var(--rule); border-radius: 2px; padding: 5px 8px; backdrop-filter: blur(10px); }
+      .ab-pill b { color: var(--accent-2); margin-right: 5px; }
+      .ab-pill.cooling { color: var(--faint); }
+      .ab-pill.cooling b { color: var(--faint); }
+      .ab-pill.ready-flash { border-color: rgba(91, 227, 125, 0.6); box-shadow: 0 0 12px rgba(91, 227, 125, 0.2); }
+
+      .r6-bot-right { position: absolute; bottom: 66px; right: 22px; display: flex; align-items: flex-end; gap: 14px; }
+      .r6-speed { text-align: right; }
+      .r6-speed .num { font-family: var(--font-mono); font-size: 42px; font-weight: 700; color: var(--ink); line-height: 0.95; font-variant-numeric: tabular-nums; text-shadow: 0 0 22px rgba(53, 214, 255, 0.3); }
+      .r6-speed .u { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.3em; color: var(--muted); margin-top: 3px; }
+      .r6-bars { display: flex; flex-direction: column; gap: 5px; min-width: 168px; }
+      .b-row { display: flex; align-items: center; gap: 8px; }
+      .b-row .k { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.18em; color: var(--muted); width: 34px; text-align: right; }
+      .b-row .bar { flex: 1; height: 4px; background: rgba(244, 242, 236, 0.09); border-radius: 2px; overflow: hidden; }
+      .b-row .fill { height: 100%; width: 50%; background: var(--cyan); transition: width 0.15s linear, background 0.2s ease; }
+      .b-row .fill.heat { background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+      .b-row .fill.heat.overheat { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
+      .b-row .fill.shield { background: var(--cyan); }
+      .b-row .fill.gun { background: var(--accent-2); }
+      .b-row .fill.cool { background: var(--coolant); }
+
+      .xhair { position: absolute; left: 50%; top: 46%; width: 18px; height: 18px; transform: translate(-50%, -50%); opacity: 0.75; }
+      .xhair::before, .xhair::after { content: ""; position: absolute; background: rgba(244, 242, 236, 0.75); }
+      .xhair::before { left: 8px; top: 0; width: 2px; height: 18px; }
+      .xhair::after { top: 8px; left: 0; width: 18px; height: 2px; }
+
+      .lock {
+        position: absolute; width: 54px; height: 54px; border: 1.5px solid var(--accent-2);
+        transform: translate(-50%, -50%) rotate(45deg); opacity: 0; transition: opacity 0.16s ease; z-index: 21;
+        box-shadow: 0 0 18px rgba(255, 184, 0, 0.35), inset 0 0 18px rgba(255, 184, 0, 0.12);
+      }
+      .lock.visible { opacity: 1; animation: lockPulse 0.7s infinite; }
+      .lock span { position: absolute; top: 58px; left: 50%; transform: translateX(-50%) rotate(-45deg); font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.16em; color: var(--accent-2); white-space: nowrap; }
+      @keyframes lockPulse { 0%, 100% { box-shadow: 0 0 18px rgba(255, 184, 0, 0.35); } 50% { box-shadow: 0 0 30px rgba(255, 184, 0, 0.6); } }
+
+      .incoming {
+        position: absolute; top: 16%; left: 50%; transform: translateX(-50%);
+        font-family: var(--font-display); font-size: 13px; font-weight: 700; letter-spacing: 0.22em;
+        color: var(--danger); opacity: 0; transition: opacity 0.15s ease;
+        text-shadow: 0 0 18px rgba(255, 41, 82, 0.8);
+      }
+      .incoming.show { opacity: 1; animation: blink 0.4s infinite; }
+      @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+      .center-msg { position: absolute; top: 34%; left: 50%; transform: translate(-50%, -50%); text-align: center; opacity: 0; transition: opacity 0.25s ease; z-index: 22; }
+      .center-msg.show { opacity: 1; }
+      .center-msg .big { font-family: var(--font-display); font-size: 44px; font-weight: 700; letter-spacing: 0.16em; color: var(--ink); text-shadow: 0 0 34px rgba(53, 214, 255, 0.55), 0 2px 0 rgba(0, 0, 0, 0.4); }
+      .center-msg .big.danger { color: var(--danger); text-shadow: 0 0 34px rgba(255, 41, 82, 0.7); }
+      .center-msg .small { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.3em; color: var(--muted); margin-top: 6px; }
+
+      .banner {
+        position: absolute; top: 24%; left: 50%; transform: translateX(-50%);
+        font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: 0.26em;
+        color: var(--accent-2); text-shadow: 0 0 20px rgba(255, 184, 0, 0.6);
+        opacity: 0; transition: opacity 0.2s ease; z-index: 22; white-space: nowrap;
+      }
+      .banner.show { opacity: 1; }
+      .banner.cool { color: var(--coolant); text-shadow: 0 0 20px rgba(79, 216, 232, 0.6); }
+      .banner.danger { color: var(--danger); text-shadow: 0 0 20px rgba(255, 41, 82, 0.7); }
+
+      .hyper-status {
+        position: absolute; bottom: 24%; left: 50%; transform: translateX(-50%);
+        font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.34em; color: var(--cyan);
+        opacity: 0; transition: opacity 0.2s ease; text-shadow: 0 0 14px rgba(53, 214, 255, 0.8);
+      }
+      .hyper-status.show { opacity: 1; animation: blink 0.55s infinite; }
+
+      /* kill feed */
+      .kill-feed {
+        position: absolute; top: 178px; right: 22px; width: 252px; display: flex; flex-direction: column; gap: 4px;
+        z-index: 20; pointer-events: none;
+      }
+      .feed-item {
+        display: flex; align-items: center; gap: 8px; padding: 5px 9px;
+        background: rgba(8, 11, 17, 0.72); border-left: 2px solid var(--cyan); border-radius: 2px;
+        font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.08em; color: var(--ink);
+        opacity: 0; transform: translateX(14px); transition: opacity 0.2s ease, transform 0.2s ease;
+        backdrop-filter: blur(8px);
+      }
+      .feed-item.show { opacity: 1; transform: translateX(0); }
+      .feed-item .fi-ic { font-size: 10px; flex: 0 0 auto; }
+      .feed-item.kill { border-left-color: var(--accent); }
+      .feed-item.kill .fi-ic { color: var(--accent); }
+      .feed-item.warn { border-left-color: var(--accent-2); }
+      .feed-item.warn .fi-ic { color: var(--accent-2); }
+      .feed-item.cool { border-left-color: var(--coolant); }
+      .feed-item.cool .fi-ic { color: var(--coolant); }
+      .feed-item.danger { border-left-color: var(--danger); }
+      .feed-item.danger .fi-ic { color: var(--danger); }
+
+      /* combo */
+      .combo-badge {
+        position: absolute; top: 30%; right: 8%; text-align: right; opacity: 0;
+        transform: scale(0.9); transition: opacity 0.18s ease, transform 0.18s ease; z-index: 22; pointer-events: none;
+      }
+      .combo-badge.show { opacity: 1; transform: scale(1); }
+      .combo-badge .cx { font-family: var(--font-display); font-size: 38px; font-weight: 700; color: var(--accent-2); text-shadow: 0 0 26px rgba(255, 184, 0, 0.65); line-height: 1; }
+      .combo-badge .cl { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.3em; color: var(--muted); margin-top: 2px; }
+      .combo-badge .cd { height: 3px; background: rgba(255, 184, 0, 0.18); margin-top: 5px; border-radius: 2px; overflow: hidden; }
+      .combo-badge .cd i { display: block; height: 100%; background: var(--accent-2); width: 100%; transform-origin: left; }
+
+      /* meltdown */
+      .meltdown-warning {
+        position: absolute; top: 58%; left: 50%; transform: translate(-50%, -50%);
+        font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: 0.3em;
+        color: var(--danger); opacity: 0; z-index: 23; pointer-events: none; text-align: center;
+        text-shadow: 0 0 30px rgba(255, 41, 82, 0.9);
+      }
+      .meltdown-warning.show { opacity: 1; animation: blink 0.3s infinite; }
+      .meltdown-warning .sub { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.28em; color: var(--ink); margin-top: 6px; }
+
+      /* checkpoint toast */
+      .checkpoint-toast {
+        position: absolute; bottom: 30%; left: 50%; transform: translateX(-50%);
+        font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.3em; color: var(--cyan);
+        opacity: 0; transition: opacity 0.25s ease; z-index: 22; text-shadow: 0 0 16px rgba(53, 214, 255, 0.7);
+      }
+      .checkpoint-toast.show { opacity: 1; }
+
+      .controls-strip {
+        position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+        display: flex; gap: 16px; align-items: center; z-index: 40;
+        font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--muted);
+        background: rgba(8, 11, 17, 0.72); border: 1px solid var(--rule); padding: 6px 14px; border-radius: 3px;
+        backdrop-filter: blur(10px); white-space: nowrap; max-width: calc(100vw - 20px); overflow: hidden;
+        transition: opacity 0.3s ease;
+      }
+      .controls-strip.hidden { opacity: 0; pointer-events: none; }
+      .controls-strip b { color: var(--ink); }
+      .autopilot-badge { color: var(--cyan); cursor: pointer; pointer-events: auto; }
+      .autopilot-badge.manual { color: var(--ok); }
+
+      /* ---------- screens ---------- */
+      .screen {
+        position: absolute; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
+        background: rgba(4, 6, 10, 0.72); backdrop-filter: blur(10px);
+        opacity: 0; pointer-events: none; transition: opacity 0.35s ease;
+      }
+      .screen.show { opacity: 1; pointer-events: auto; }
+      .screen-panel {
+        width: min(860px, calc(100vw - 40px)); max-height: calc(100vh - 60px); overflow: auto;
+        background: rgba(9, 12, 18, 0.94); border: 1px solid var(--rule-strong);
+        padding: 42px 48px; text-align: center;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(244, 242, 236, 0.06);
+      }
+      .scr-kicker { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.42em; color: var(--cyan); margin-bottom: 14px; }
+      .scr-title { font-family: var(--font-display); font-size: 56px; font-weight: 700; letter-spacing: 0.1em; line-height: 1; color: var(--ink); text-shadow: 0 0 44px rgba(255, 77, 31, 0.4); }
+      .scr-title .t-accent { color: var(--accent); }
+      .scr-sub { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.22em; color: var(--muted); margin-top: 12px; }
+      .scr-rules { display: flex; justify-content: center; gap: 22px; margin: 22px 0 8px; flex-wrap: wrap; }
+      .scr-rule { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.16em; color: var(--muted); }
+      .scr-rule b { color: var(--accent-2); }
+      .scr-selectors { display: flex; justify-content: center; gap: 26px; margin: 20px 0 6px; flex-wrap: wrap; }
+      .scr-sel { text-align: left; }
+      .scr-sel .sl-k { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.26em; color: var(--muted); margin-bottom: 7px; }
+      .scr-sel .sl-row { display: flex; gap: 4px; flex-wrap: wrap; max-width: 460px; }
+      .scr-sel .bar-pill { border-color: var(--rule); }
+      .scr-buttons { display: flex; justify-content: center; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
+      .scr-btn {
+        font-family: var(--font-display); font-size: 14px; font-weight: 700; letter-spacing: 0.2em;
+        color: #05070c; background: var(--accent); border: none; padding: 13px 34px; cursor: pointer;
+        border-radius: 2px; transition: all 0.16s ease;
+      }
+      .scr-btn:hover { background: #ff6435; box-shadow: 0 0 26px rgba(255, 77, 31, 0.45); }
+      .scr-btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--rule-strong); }
+      .scr-btn.ghost:hover { border-color: var(--ink); box-shadow: none; }
+      .scr-btn.cyan { background: var(--cyan); }
+      .scr-btn.cyan:hover { background: #5ee0ff; box-shadow: 0 0 26px rgba(53, 214, 255, 0.4); }
+      .scr-foot { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.2em; color: var(--faint); margin-top: 22px; }
+
+      .results-grid { display: flex; justify-content: center; gap: 14px; margin: 26px 0 6px; flex-wrap: wrap; }
+      .res-cell { background: rgba(244, 242, 236, 0.04); border: 1px solid var(--rule); padding: 14px 22px; min-width: 120px; }
+      .res-cell .k { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.24em; color: var(--muted); }
+      .res-cell .v { font-family: var(--font-mono); font-size: 26px; font-weight: 700; color: var(--ink); margin-top: 4px; font-variant-numeric: tabular-nums; }
+      .res-cell .v.hot { color: var(--accent); }
+      .res-cell .v.cool { color: var(--cyan); }
+
+      .pause-items { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; align-items: center; }
+      .settings-row { display: flex; justify-content: center; gap: 18px; margin-top: 18px; flex-wrap: wrap; }
+      .set-toggle { display: flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.14em; color: var(--muted); cursor: pointer; }
+      .set-toggle input { accent-color: var(--accent); }
+
+      .touch-controls { position: absolute; inset: 0; z-index: 30; pointer-events: none; }
+      .touch-controls > * { pointer-events: auto; }
+
+      body[data-a11y-highcontrast="true"] .r6-chip,
+      body[data-a11y-highcontrast="true"] .r6-hull,
+      body[data-a11y-highcontrast="true"] .drone-telemetry-card,
+      body[data-a11y-highcontrast="true"] .radar-wrap,
+      body[data-a11y-highcontrast="true"] .r6-item,
+      body[data-a11y-highcontrast="true"] .ab-pill { background: rgba(0, 0, 0, 0.92); border-color: rgba(244, 242, 236, 0.5); }
+      body[data-a11y-reducedflash="true"] .incoming.show,
+      body[data-a11y-reducedflash="true"] .meltdown-warning.show,
+      body[data-a11y-reducedflash="true"] .hyper-status.show { animation: none; }
+
+      @media (max-width: 900px) {
+        .r6-top-left { top: 120px; }
+        .radar-wrap { display: none; }
+        .kill-feed { top: 150px; width: 200px; }
+        .r6-speed .num { font-size: 30px; }
+        .screen-panel { padding: 28px 22px; }
+        .scr-title { font-size: 38px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="game-stage">
+      <div id="app" aria-label="THERMAL DRIFT 3D combat drone racing viewport"></div>
+      <div class="screen-fx"></div>
+      <div id="speed-lines" class="speed-lines"></div>
+      <div id="heat-glaze" class="heat-glaze"></div>
+      <div id="damage-vignette" class="damage-vignette"></div>
+
+      <nav class="top-command-bar hidden" id="top-bar" aria-label="THERMAL DRIFT Garage, Circuit, and Mode Controls">
+        <div class="brand-chip">
+          <span class="brand-dot"></span>
+          <span class="brand-name">THERMAL DRIFT</span>
+          <span class="brand-tag">SECTOR 09 · NIGHT</span>
+        </div>
+        <div class="bar-group" id="drone-bar"><span class="bar-label">DRONE</span></div>
+        <div class="bar-sep"></div>
+        <div class="bar-group" id="circuit-bar"><span class="bar-label">TRACK</span></div>
+        <div class="bar-sep"></div>
+        <div class="bar-group" id="mode-bar">
+          <span class="bar-label">MODE</span>
+          <button type="button" class="bar-pill active" data-mode="race">RACE</button>
+          <button type="button" class="bar-pill" data-mode="trial">TRIAL</button>
+          <button type="button" class="bar-pill" data-mode="elim">ELIM</button>
+        </div>
+      </nav>
+
+      <div id="hud" class="hud-r6 hidden">
+        <div class="r6-top-left">
+          <div class="r6-mode-tag" id="h-mode">RACE</div>
+          <div class="r6-row">
+            <div class="r6-chip pos-chip">
+              <span class="pos-p">P</span><span class="pos-num" id="h-pos">1</span><span class="pos-of" id="h-posof">/8</span>
+            </div>
+            <div class="r6-chip">
+              <div class="k">LAP</div>
+              <div class="v"><span id="h-lap">1</span><span class="of">/3</span></div>
+            </div>
+            <div class="r6-chip">
+              <div class="k">TIME</div>
+              <div class="v" id="h-time">0:00.0</div>
+              <div class="sub">BEST <span id="h-best">--:--.-</span></div>
+            </div>
+            <div class="r6-chip" id="h-gate-card">
+              <div class="k">GATE</div>
+              <div class="v" id="h-gate">0/4</div>
+              <div class="sub" id="h-gate-name">START</div>
+            </div>
+            <div class="r6-chip elim-chip" id="h-elim-card" style="display: none">
+              <div class="k">ELIM IN</div>
+              <div class="v" id="h-elim-time">20.0s</div>
+              <div class="sub">LAST: <span id="h-elim-last">—</span></div>
+            </div>
+            <div class="r6-chip ghost-chip" id="h-ghost-card" style="display: none">
+              <div class="k">VS GHOST</div>
+              <div class="v" id="h-ghost-delta">—</div>
+              <div class="sub" id="h-ghost-note">NO GHOST YET</div>
+            </div>
+          </div>
+          <div class="r6-hull">
+            <span class="k">HULL</span>
+            <div class="bar"><div class="fill" id="h-hull"></div></div>
+            <span class="td-k">KO</span><span class="td-v" id="h-td">0</span>
+          </div>
+        </div>
+
+        <div class="r6-top-right">
+          <div class="radar-wrap">
+            <div class="radar-head"><span>RADAR</span><span class="dot"></span></div>
+            <canvas id="minimap" width="136" height="136"></canvas>
+            <div class="radar-legend">
+              <span class="lg"><i class="sw you"></i>YOU</span>
+              <span class="lg"><i class="sw ai"></i>RIVAL</span>
+              <span class="lg"><i class="sw gate"></i>GATE</span>
+            </div>
+          </div>
+          <div class="drone-telemetry-card">
+            <div class="dt-head">
+              <span class="dt-name" id="h-drone-name">ORION</span>
+              <span class="dt-sector" id="h-sector-name">MEGACITY AVE</span>
+            </div>
+            <div class="dt-tag" id="h-drone-tag">Balanced. Reliable. Built to race.</div>
+          </div>
+        </div>
+
+        <div class="kill-feed" id="kill-feed"></div>
+
+        <div class="combo-badge" id="combo-badge">
+          <div class="cx" id="combo-x">×2</div>
+          <div class="cl">KILL CHAIN</div>
+          <div class="cd"><i id="combo-decay"></i></div>
+        </div>
+
+        <div class="r6-bot-left">
+          <div class="r6-item">
+            <div class="k">ITEM [E]</div>
+            <div class="v empty" id="h-item">— NONE —</div>
+          </div>
+          <div class="r6-abilities">
+            <span class="ab-pill" id="h-shock"><b>Q</b>SHOCK</span>
+            <span class="ab-pill" id="h-roll"><b>R</b>BARREL</span>
+            <span class="ab-pill" id="h-mine"><b>C</b>MINE</span>
+            <span class="ab-pill" id="h-od"><b>V</b>VENT</span>
+          </div>
+        </div>
+
+        <div class="r6-bot-right">
+          <div class="r6-speed">
+            <div class="num" id="h-speed">0</div>
+            <div class="u">KM/H</div>
+          </div>
+          <div class="r6-bars">
+            <div class="b-row"><span class="k">AB</span><div class="bar"><div class="fill" id="h-ab"></div></div></div>
+            <div class="b-row"><span class="k">HEAT</span><div class="bar"><div class="fill heat" id="h-heat"></div></div></div>
+            <div class="b-row"><span class="k">COOL</span><div class="bar"><div class="fill cool" id="h-cool"></div></div></div>
+            <div class="b-row"><span class="k">SHLD</span><div class="bar"><div class="fill shield" id="h-shield"></div></div></div>
+            <div class="b-row"><span class="k">GUN</span><div class="bar"><div class="fill gun" id="h-gun"></div></div></div>
+          </div>
+        </div>
+
+        <div class="xhair" id="xhair"></div>
+        <div class="lock" id="lock"><span id="lock-label">LOCK · MISSILE</span></div>
+        <div class="incoming" id="incoming">▲ INCOMING FIRE · R TO BARREL ROLL ▲</div>
+        <div class="center-msg" id="msg">
+          <div class="big" id="msg-text">RACE LIVE</div>
+          <div class="small" id="msg-sub">GRAND CIRCUIT · MEGACITY</div>
+        </div>
+        <div class="banner" id="banner">TAKEDOWN</div>
+        <div class="checkpoint-toast" id="gate-toast">CHECKPOINT</div>
+        <div class="meltdown-warning" id="meltdown">
+          CORE MELTDOWN IMMINENT
+          <div class="sub">FIND WATER · VENT [V] · OR CRYO FLUSH [E]</div>
+        </div>
+        <div class="hyper-status" id="hyper-status">HYPERDRIVE ENGAGED</div>
+      </div>
+
+      <div class="controls-strip" id="controls-strip">
+        <span class="autopilot-badge" id="h-autopilot" title="Race state">STANDBY</span>
+        <span><b>WASD</b> FLY</span>
+        <span><b>SHIFT</b> BURN</span>
+        <span><b>SPACE</b> CANNONS</span>
+        <span><b>F</b> MISSILE</span>
+        <span><b>Q/R/C/E/V</b> TECH</span>
+        <span><b>ESC</b> PAUSE</span>
+      </div>
+
+      <!-- TITLE -->
+      <div class="screen show" id="title-screen">
+        <div class="screen-panel">
+          <div class="scr-kicker">AURA3D SHOWCASE · SECTOR 09 RAINLINE</div>
+          <div class="scr-title">THERMAL <span class="t-accent">DRIFT</span></div>
+          <div class="scr-sub">HIGH-VELOCITY COMBAT DRONE RACING · RAIN-SOAKED MEGACITY</div>
+          <div class="scr-rules">
+            <span class="scr-rule"><b>WEAPONS + BOOST</b> BUILD CORE HEAT</span>
+            <span class="scr-rule"><b>WATER ZONES</b> DUMP HEAT · CHARGE COOLANT</span>
+            <span class="scr-rule"><b>100°</b> = CORE MELTDOWN</span>
+            <span class="scr-rule"><b>7 RIVALS</b> SHOOT BACK</span>
+          </div>
+          <div class="scr-selectors">
+            <div class="scr-sel">
+              <div class="sl-k">CHASSIS</div>
+              <div class="sl-row" id="title-drone-row"></div>
+            </div>
+            <div class="scr-sel">
+              <div class="sl-k">CIRCUIT</div>
+              <div class="sl-row" id="title-circuit-row">
+                <button type="button" class="bar-pill cyan active" data-circuit="grand">MEGACITY</button>
+                <button type="button" class="bar-pill cyan" data-circuit="dustfall">DUSTFALL</button>
+                <button type="button" class="bar-pill cyan" data-circuit="vesper">VESPER</button>
+              </div>
+            </div>
+            <div class="scr-sel">
+              <div class="sl-k">MODE</div>
+              <div class="sl-row" id="title-mode-row">
+                <button type="button" class="bar-pill active" data-mode="race">RACE</button>
+                <button type="button" class="bar-pill" data-mode="trial">TRIAL</button>
+                <button type="button" class="bar-pill" data-mode="elim">ELIM</button>
+              </div>
+            </div>
+          </div>
+          <div class="scr-buttons">
+            <button type="button" class="scr-btn" id="btn-start">LAUNCH RACE</button>
+            <button type="button" class="scr-btn ghost" id="btn-demo">AI DEMO FLIGHT</button>
+          </div>
+          <div class="scr-foot">WASD FLY · SHIFT BURN · SPACE CANNONS · F MISSILE · Q SHOCK · R ROLL · C MINE · E ITEM · V HEAT VENT</div>
+        </div>
+      </div>
+
+      <!-- PAUSE -->
+      <div class="screen" id="pause-screen">
+        <div class="screen-panel" style="width: min(560px, calc(100vw - 40px))">
+          <div class="scr-kicker">PAUSED</div>
+          <div class="scr-title" style="font-size: 34px">THERMAL DRIFT</div>
+          <div class="pause-items">
+            <button type="button" class="scr-btn" id="btn-resume">RESUME</button>
+            <button type="button" class="scr-btn ghost" id="btn-restart">RESTART RACE</button>
+            <button type="button" class="scr-btn ghost" id="btn-quit">QUIT TO TITLE</button>
+          </div>
+          <div class="settings-row">
+            <label class="set-toggle"><input type="checkbox" id="set-mute" /> MUTE</label>
+            <label class="set-toggle"><input type="checkbox" id="set-rmotion" /> REDUCE MOTION</label>
+            <label class="set-toggle"><input type="checkbox" id="set-rflash" /> REDUCE FLASH</label>
+            <label class="set-toggle"><input type="checkbox" id="set-hc" /> HIGH CONTRAST</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="screen" id="results-screen">
+        <div class="screen-panel" style="width: min(700px, calc(100vw - 40px))">
+          <div class="scr-kicker" id="res-kicker">RACE COMPLETE</div>
+          <div class="scr-title" style="font-size: 40px" id="res-title">P1 · VICTORY</div>
+          <div class="results-grid">
+            <div class="res-cell"><div class="k">POSITION</div><div class="v" id="res-pos">P1</div></div>
+            <div class="res-cell"><div class="k">RACE TIME</div><div class="v cool" id="res-time">0:00.0</div></div>
+            <div class="res-cell"><div class="k">BEST LAP</div><div class="v" id="res-best">--:--.-</div></div>
+            <div class="res-cell"><div class="k">TAKEDOWNS</div><div class="v hot" id="res-td">0</div></div>
+            <div class="res-cell"><div class="k">MAX CHAIN</div><div class="v" id="res-combo">×0</div></div>
+            <div class="res-cell"><div class="k">PEAK HEAT</div><div class="v hot" id="res-heat">0°</div></div>
+          </div>
+          <div class="scr-buttons">
+            <button type="button" class="scr-btn cyan" id="btn-retry">RETRY</button>
+            <button type="button" class="scr-btn" id="btn-next">NEXT CIRCUIT</button>
+            <button type="button" class="scr-btn ghost" id="btn-title">TITLE</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="touch-controls" id="touch"></div>
+    </main>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

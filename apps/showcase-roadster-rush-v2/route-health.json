@@ -1,0 +1,38 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-10-16T00:00:00.000Z",
+  "appId": "showcase-roadster-rush-v2",
+  "route": "/apps/showcase-roadster-rush-v2/",
+  "classification": "candidate",
+  "publicShowcase": true,
+  "promotionStatus": "public-showcase",
+  "machinePass": true,
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "production",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": true
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assetsV2.apexInterceptor",
+      "quality": "production",
+      "role": "hero"
+    },
+    {
+      "typedRef": "assetsV2.apexRival",
+      "quality": "production",
+      "role": "vehicle"
+    },
+    {
+      "typedRef": "assetsV2.apexBlimp",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assetsV2.apexGunship",
+      "quality": "production",
+      "role": "vehicle"
+    }
+  ]
+}

@@ -42,7 +42,11 @@ const showcaseRoutes = [
   "showcase-top-tennis",
   "showcase-roadster-rush",
   "showcase-heatsink",
-  "showcase-teleoperator"
+  "showcase-teleoperator",
+  "showcase-top-tennis-v2",
+  "showcase-roadster-rush-v2",
+  "showcase-heatsink-v2",
+  "showcase-teleoperator-v2"
 ];
 
 const retiredPrototypeRoutes = [
@@ -241,23 +245,25 @@ function copyRouteHealth() {
     const outputDir = path.join(distDir, "apps", route);
     cpSync(routeHealth, path.join(outputDir, "route-health.json"));
   }
-  const topTennisPublic = path.join(repoRoot, "apps", "showcase-top-tennis", "public", "toptennis");
-  if (existsSync(topTennisPublic)) {
-    const targetRouteDir = path.join(distDir, "apps", "showcase-top-tennis", "toptennis");
-    mkdirSync(targetRouteDir, { recursive: true });
-    cpSync(topTennisPublic, targetRouteDir, { recursive: true });
-    const targetRootDir = path.join(distDir, "toptennis");
-    mkdirSync(targetRootDir, { recursive: true });
-    cpSync(topTennisPublic, targetRootDir, { recursive: true });
-  }
-  const roadsterRushPublic = path.join(repoRoot, "apps", "showcase-roadster-rush", "public", "roadster-rush");
-  if (existsSync(roadsterRushPublic)) {
-    const targetRouteDir = path.join(distDir, "apps", "showcase-roadster-rush", "roadster-rush");
-    mkdirSync(targetRouteDir, { recursive: true });
-    cpSync(roadsterRushPublic, targetRouteDir, { recursive: true });
-    const targetRootDir = path.join(distDir, "roadster-rush");
-    mkdirSync(targetRootDir, { recursive: true });
-    cpSync(roadsterRushPublic, targetRootDir, { recursive: true });
+  /*
+   * Per-route public payloads (audio, textures, css, legacy bundles) are
+   * served at both /apps/<route>/<name>/ and /<name>/ because route code
+   * references them by absolute path. `aura-assets/` is excluded here: it is
+   * mirrored once into dist/aura-assets by copyRouteLocalAuraAssets().
+   */
+  for (const route of publicRoutes) {
+    const routePublic = path.join(repoRoot, "apps", route, "public");
+    if (!existsSync(routePublic)) continue;
+    for (const entry of readdirSync(routePublic, { withFileTypes: true })) {
+      if (!entry.isDirectory() || entry.name === "aura-assets") continue;
+      const source = path.join(routePublic, entry.name);
+      const targetRouteDir = path.join(distDir, "apps", route, entry.name);
+      mkdirSync(targetRouteDir, { recursive: true });
+      cpSync(source, targetRouteDir, { recursive: true });
+      const targetRootDir = path.join(distDir, entry.name);
+      mkdirSync(targetRootDir, { recursive: true });
+      cpSync(source, targetRootDir, { recursive: true });
+    }
   }
 }
 
