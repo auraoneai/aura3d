@@ -35159,7 +35159,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkArch.9a90ebd4.glb",
-    hash: undefined,
+    hash: "sha256-9a90ebd4e8b1497419de91f0c1fddad5770abbd8107e5e13d685fd0e4577fc30",
     bounds: {
       "min": [
         -16,
@@ -35200,7 +35200,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkBarrierA.ac31de34.glb",
-    hash: undefined,
+    hash: "sha256-ac31de343a01d6fa614d2c8a48a7168a71b4b2ee1edec9e31cdf327805502570",
     bounds: {
       "min": [
         -0.49,
@@ -35241,7 +35241,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkBoostPad.e58b4f3c.glb",
-    hash: undefined,
+    hash: "sha256-e58b4f3ccba2ddefe11ae011f2ae5c3b24ee7688c89b67466f1adb32e0058791",
     bounds: {
       "min": [
         -3.1,
@@ -35282,7 +35282,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkCheckpointRing.67ee1db8.glb",
-    hash: undefined,
+    hash: "sha256-67ee1db8b200fc46a3161fd816dcf8ce09daf7ebb4efff5674bccb3bc09894f3",
     bounds: {
       "min": [
         -0.8,
@@ -35323,7 +35323,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkCoolingCanister.0199c8d5.glb",
-    hash: undefined,
+    hash: "sha256-0199c8d53995fac82ce635741325e3d4c4f2c62722cddc647d459ac724febf23",
     bounds: {
       "min": [
         -0.56,
@@ -35364,7 +35364,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkDroneBastion.6a09c499.glb",
-    hash: undefined,
+    hash: "sha256-6a09c499be6dc1400ebc20c03909045eca7b24e8ec04807fa3ef628bfd444e6d",
     bounds: {
       "min": [
         -3.41,
@@ -35405,7 +35405,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkDroneNighthawk.8113ba27.glb",
-    hash: undefined,
+    hash: "sha256-8113ba2745e8838c72e10159c0c86c654de4b7b7abf64d1b2160bd51dd121f88",
     bounds: {
       "min": [
         -3.02,
@@ -35446,7 +35446,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkDroneOrion.988f172d.glb",
-    hash: undefined,
+    hash: "sha256-988f172d50d48550b53dc5152fd7ab7cb1fe6c353299d5068597dda6ad06b03f",
     bounds: {
       "min": [
         -3.84,
@@ -35487,7 +35487,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkDroneRazor.2f28a258.glb",
-    hash: undefined,
+    hash: "sha256-2f28a2585d95d6119e183b5a943a830333e54d0d978b81cab81e34e081893eec",
     bounds: {
       "min": [
         -3.46,
@@ -35528,7 +35528,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkDroneSpectre.f66809c1.glb",
-    hash: undefined,
+    hash: "sha256-f66809c1d473381853c3f627aef9421870f95efd36b133acf6b7b551098b3260",
     bounds: {
       "min": [
         -3.35,
@@ -35569,7 +35569,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkDroneVolt.f1825d10.glb",
-    hash: undefined,
+    hash: "sha256-f1825d100a50359f27e61d3584d76c9a2658811544b24ed2ce7e6b05123dddb7",
     bounds: {
       "min": [
         -3.23,
@@ -35610,7 +35610,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkDroneWraith.c0a00195.glb",
-    hash: undefined,
+    hash: "sha256-c0a001954eab3ce403ccfbad17b2b63bc482bee2224aabe24aac2b001afa6644",
     bounds: {
       "min": [
         -2.97,
@@ -35651,7 +35651,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkExplosiveBarrel.543538b2.glb",
-    hash: undefined,
+    hash: "sha256-543538b232a58e99c5ec188077452015d95b9173a265d3b85cfabe867a106105",
     bounds: {
       "min": [
         -0.69,
@@ -35692,7 +35692,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkGantryStart.7f73743e.glb",
-    hash: undefined,
+    hash: "sha256-7f73743ed9df9f0a38c1fa92ccf9abf89f78bf94e14369202502f8d9edbd6e11",
     bounds: {
       "min": [
         -15,
@@ -35733,7 +35733,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkHoloBillboard.d3d7edc7.glb",
-    hash: undefined,
+    hash: "sha256-d3d7edc7b6babc4b3cec63539f7f38a06bdfa7e6549833bc17232671615baf26",
     bounds: {
       "min": [
         -0.5966,
@@ -35774,7 +35774,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkLavaFall.71c51eb3.glb",
-    hash: undefined,
+    hash: "sha256-71c51eb3dc99a1e72b65cf73559cd065510acf0f2e7e8cdf496dc2f0a55d981d",
     bounds: {
       "min": [
         -5,
@@ -35815,7 +35815,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkOverpass.c6bb161f.glb",
-    hash: undefined,
+    hash: "sha256-c6bb161fecdc3f00f006903a20433d1905804ce99277686cbcfe9a5ff867687b",
     bounds: {
       "min": [
         -40,
@@ -35856,7 +35856,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkShieldPickup.e3b41a15.glb",
-    hash: undefined,
+    hash: "sha256-e3b41a1547dc05425a0543dcf1401c62455c852c8c70d5726fad533726842514",
     bounds: {
       "min": [
         -0.6467,
@@ -35897,7 +35897,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkStatue.7ac4ef8a.glb",
-    hash: undefined,
+    hash: "sha256-7ac4ef8adf061f176b724eef9671e273b249a9f3940cc01b8856f7771c625e15",
     bounds: {
       "min": [
         -2.5,
@@ -35938,7 +35938,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkTowerL.48cef1cc.glb",
-    hash: undefined,
+    hash: "sha256-48cef1cc6f54ab2e2f2d3a57c51279101b90b0364b4ae57fe7aba0bde6a6d1de",
     bounds: {
       "min": [
         -20,
@@ -35979,7 +35979,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkTowerT.3e5f0a0c.glb",
-    hash: undefined,
+    hash: "sha256-3e5f0a0cbf4bbef5e8b0f7cfdb028fd1f18c4044efc079f44f1a3d943cf9c452",
     bounds: {
       "min": [
         -25.5,
@@ -36020,7 +36020,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkTowerX.69d0e56e.glb",
-    hash: undefined,
+    hash: "sha256-69d0e56ed3fec36848c16ddfec4f3953d52a27fab19eefaa5995cb64639d816c",
     bounds: {
       "min": [
         -14.9461,
@@ -36061,7 +36061,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkTunnelFrame.1678ba89.glb",
-    hash: undefined,
+    hash: "sha256-1678ba89fa69338e7d78f9b398d88769ca9e09a6aceb069659d40ebe4013612f",
     bounds: {
       "min": [
         -12.2,
@@ -36102,7 +36102,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkWaterEmitter.7721726f.glb",
-    hash: undefined,
+    hash: "sha256-7721726f89ba22c4163eb50d6ecd2111007933fe19b87137c038f290b4ff9758",
     bounds: {
       "min": [
         -1.1857,
@@ -36143,7 +36143,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkWeaponMine.10baedc3.glb",
-    hash: undefined,
+    hash: "sha256-10baedc3fe86fa6d3320931f5be8a8da682b8267534dcc1cfc272f20ec1f7234",
     bounds: {
       "min": [
         -1.1465,
@@ -36184,7 +36184,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/heatsinkWeaponShockwave.816dd6ed.glb",
-    hash: undefined,
+    hash: "sha256-816dd6ed1465d9f1e870ed919ccbf61cce77736e7a2394960ad015894fdb7f03",
     bounds: {
       "min": [
         -0.6282,
@@ -123270,7 +123270,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/teleopBus.glb",
-    hash: undefined,
+    hash: "sha256-d88cf92faed20719be84a28eb7a6d338a8ab811d93d2a0eb554b7eb5a25eca31",
     bounds: [
       0,
       0,
@@ -123298,7 +123298,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/teleopCablecar.6412a9ca.glb",
-    hash: undefined,
+    hash: "sha256-6412a9cac8abcb7b26156602dde013b87af5d8d7127cca6606f714fc18df16de",
     bounds: {
       "min": [
         -1.4453,
@@ -123339,7 +123339,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/teleopCorvette.e7009c34.glb",
-    hash: undefined,
+    hash: "sha256-e7009c3418b2d0c3163bd1af8737f3986bab9c372aea90ce81dab8fb37197598",
     bounds: {
       "min": [
         -1.0229,
@@ -123380,7 +123380,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/teleopCybercab.08358a58.glb",
-    hash: undefined,
+    hash: "sha256-08358a58dd8d530ccc7b4249db3a9d2e11ccf8ecfac1c9d9d7afea452a1de291",
     bounds: {
       "min": [
         -0.8765,
@@ -123421,7 +123421,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/teleopCybertruck.6aa8f5c4.glb",
-    hash: undefined,
+    hash: "sha256-6aa8f5c420b6362c41b6376fb8d7107e1af536450cff75580b094d201906ec7b",
     bounds: {
       "min": [
         -1.17,
@@ -123462,7 +123462,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/teleopMissions.6996bfa9.glb",
-    hash: undefined,
+    hash: "sha256-6996bfa9c290d2c4a4790c9334a48dc8c1798128fb14a8a4bfc9e2800a60be6a",
     bounds: {
       "min": [
         -0.9988,
@@ -123503,7 +123503,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/teleopPickup.glb",
-    hash: undefined,
+    hash: "sha256-c6821a92aee3107e40d63c8b59fd196933ba5c4dcf12e2f29ada9c87befa066d",
     bounds: [
       0,
       0,
@@ -123531,7 +123531,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/teleopSedan.glb",
-    hash: undefined,
+    hash: "sha256-e6a0699754cc7e4060e19ade2ffade31ecd9bd705d42b55db10a83f2fa1c6184",
     bounds: [
       0,
       0,
@@ -123559,7 +123559,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/teleopSuv.glb",
-    hash: undefined,
+    hash: "sha256-9cda6112545ee857a99aafb702f8b7156abefcb6ea79b654f3035ea090008f95",
     bounds: [
       0,
       0,
@@ -123587,7 +123587,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/teleopTaxi.glb",
-    hash: undefined,
+    hash: "sha256-8d45a7d6e1cb7168190c62ca2b63a7a230a3d26100f5997b80cf60eb006f8221",
     bounds: [
       0,
       0,
@@ -123615,7 +123615,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/teleopVan.glb",
-    hash: undefined,
+    hash: "sha256-82c5b150a1b2c574240876e93d01142194705e8c561a51b2410ab30c1d010cc2",
     bounds: [
       0,
       0,
@@ -123643,7 +123643,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/teleopWaymoHero.6d2a9bfb.glb",
-    hash: undefined,
+    hash: "sha256-6d2a9bfb61613fd1e5a0fd64aa3b8222d237bc58b7486f009d014c61066ee45a",
     bounds: {
       "min": [
         -1.1,
@@ -123684,7 +123684,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: undefined,
     format: "glb",
     url: "/aura-assets/teleopWaymoTraffic.f476abe7.glb",
-    hash: undefined,
+    hash: "sha256-f476abe7f85470beff321bef6c521e425a549c13e1a10cfdd3c41e1f339b4559",
     bounds: {
       "min": [
         -1.1,

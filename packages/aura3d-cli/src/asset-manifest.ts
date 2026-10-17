@@ -102,7 +102,13 @@ export function writeTypedAssets(projectDir: string, manifest = readAssetManifes
         formatField("type", asset.type),
         formatField("format", asset.format),
         formatField("url", asset.url),
-        formatField("hash", asset.hash),
+        // Legacy manifest entries carry a bare `sha256` field instead of the
+        // canonical `sha256-<hex>` hash; normalize it so generated refs never
+        // emit `hash: undefined` (which fails production provenance checks).
+        formatField(
+          "hash",
+          asset.hash ?? (asset.sha256 ? `sha256-${asset.sha256}` : undefined)
+        ),
         formatField("bounds", asset.bounds ?? [0, 0, 0]),
         `    sizeBytes: ${asset.sizeBytes},`,
         formatField("metadata", metadata),

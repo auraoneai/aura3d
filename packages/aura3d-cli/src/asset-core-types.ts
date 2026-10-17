@@ -313,6 +313,9 @@ export interface AuraCliAssetEntry {
   readonly outputPath: string;
   readonly url: string;
   readonly hash: string;
+  // Legacy manifests may carry a bare sha256 digest instead of `hash`;
+  // typegen normalizes it into `hash` (`sha256-<hex>`) for generated refs.
+  readonly sha256?: string;
   readonly sizeBytes: number;
   readonly bounds?: readonly [number, number, number];
   readonly boundsMetadata?: AuraCliAssetBoundsInspection;

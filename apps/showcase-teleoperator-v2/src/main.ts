@@ -520,7 +520,6 @@ function buildGridDispatchSceneV2(): ReturnType<typeof scene> {
     .add(effects.volumetricFog({ name: "fx-karl-volume" }))
     .add(effects.fogVolume({ name: "fx-fogbank" }))
     .add(effects.rain({ name: "fx-drizzle" }))
-    .add(effects.depthOfField({ name: "fx-cinematic-dof" }));
 
   // ── 1. San Francisco peninsula ground, bay water, segmented hilly avenue ──
   const asphaltMat = material.pbr({ color: "#12151d", roughness: 0.62, metalness: 0.24 });
