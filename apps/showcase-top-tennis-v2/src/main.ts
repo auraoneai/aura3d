@@ -24,6 +24,8 @@ import {
   camera,
   createAuraApp,
   createAssetProvenance,
+  flattenSceneSnapshot,
+  isRenderableModelNode,
   createGameAudio,
   decals,
   effects,
@@ -931,10 +933,13 @@ function installAura3DTopTennisRenderer(): void {
       const ev: Record<string, unknown> = { ready: "pending" };
       (window as unknown as Record<string, unknown>).__auraEvidence = ev;
       try {
-        const nodes: any[] = [];
-        const walk = (list: any[] | undefined) => { for (const n of list ?? []) { nodes.push(n); walk(n.children ?? n.nodes); } };
-        walk((((buildTennisScene() as any).snapshot?.() ?? buildTennisScene())?.nodes) ?? []);
-        ev.models = nodes.filter((n) => n?.kind === "model").map((n) => { try { return { id: n?.asset?.id ?? "?", url: String(n?.asset?.url ?? "").slice(0, 90), prov: createAssetProvenance(n?.asset)?.source, hasHash: Boolean(n?.asset?.hash) }; } catch { return { id: "?", prov: "err" }; } });
+        const snapRaw = (buildTennisScene() as any).toJSON?.() ?? (buildTennisScene() as any);
+        const flat = (flattenSceneSnapshot as any)(snapRaw)?.nodes ?? [];
+        ev.flatCount = flat.length;
+        ev.models = (flat as any[]).filter((n) => isRenderableModelNode(n)).map((n) => {
+          try { return { name: n?.name ?? "?", prov: createAssetProvenance(n?.asset)?.source, hasHash: Boolean(n?.asset?.hash) }; } catch { return { name: "?", prov: "err" }; }
+        });
+        ev.inlineModels = (ev.models as any[]).filter((m) => m.prov !== "typed-aura-assets-manifest");
       } catch { /* evidence only */ }
       setInterval(() => {
         try {

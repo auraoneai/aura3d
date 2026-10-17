@@ -449,7 +449,9 @@ export function clampNumber(value: number, min: number, max: number): number {
 
 export function productionRenderErrorMessage(error: unknown): string {
   if (error instanceof Error) {
-    return `${error.name}: ${error.message}`;
+    const details = (error as { details?: Record<string, unknown> }).details;
+    const suffix = details && Object.keys(details).length ? ` ${JSON.stringify(details)}` : "";
+    return `${error.name}: ${error.message}${suffix}`;
   }
   return String(error);
 }

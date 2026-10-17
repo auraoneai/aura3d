@@ -2,6 +2,8 @@ import {
   camera,
   createAuraApp,
   createAssetProvenance,
+  flattenSceneSnapshot,
+  isRenderableModelNode,
   createCameraPathFromPreset,
   createGameAudio,
   createVehicleChassis,
@@ -979,10 +981,13 @@ async function bootGridDispatchV2(): Promise<void> {
   const ev: Record<string, unknown> = { ready: "pending" };
   (window as unknown as Record<string, unknown>).__auraEvidence = ev;
   try {
-    const nodes: any[] = [];
-  const walk = (list: any[] | undefined) => { for (const n of list ?? []) { nodes.push(n); walk(n.children ?? n.nodes); } };
-  walk((((builtScene as any).snapshot?.() ?? builtScene)?.nodes) ?? []);
-  ev.models = nodes.filter((n) => n?.kind === "model").map((n) => { try { return { id: n?.asset?.id ?? "?", url: String(n?.asset?.url ?? "").slice(0, 90), prov: createAssetProvenance(n?.asset)?.source, hasHash: Boolean(n?.asset?.hash) }; } catch { return { id: "?", prov: "err" }; } });
+    const snapRaw = (builtScene as any).toJSON?.() ?? (builtScene as any);
+    const flat = (flattenSceneSnapshot as any)(snapRaw)?.nodes ?? [];
+    ev.flatCount = flat.length;
+    ev.models = (flat as any[]).filter((n) => isRenderableModelNode(n)).map((n) => {
+      try { return { name: n?.name ?? "?", prov: createAssetProvenance(n?.asset)?.source, hasHash: Boolean(n?.asset?.hash) }; } catch { return { name: "?", prov: "err" }; }
+    });
+    ev.inlineModels = (ev.models as any[]).filter((m) => m.prov !== "typed-aura-assets-manifest");
   } catch { /* evidence only */ }
   setInterval(() => {
     try {
