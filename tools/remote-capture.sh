@@ -153,7 +153,10 @@ fi
 APP_SRC="$REPO_ROOT/apps/$ROUTE/src"
 REFS_FILE="$WORK_TMP/asset-refs.txt"
 : > "$REFS_FILE"
-MANIFESTS="$REPO_ROOT/src/aura-assets.ts "$APP_SRC"/aura-assets-*.ts"
+MANIFESTS="$REPO_ROOT/src/aura-assets.ts"
+for mf in "$APP_SRC"/aura-assets*.ts; do
+  [[ -f "$mf" ]] && MANIFESTS="$MANIFESTS $mf"
+done
 # shellcheck disable=SC2086
 python3 - "$APP_SRC" $MANIFESTS > "$REFS_FILE" <<'PY'
 import glob, os, re, sys

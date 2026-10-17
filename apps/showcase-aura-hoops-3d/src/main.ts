@@ -41,10 +41,8 @@ import {
   createTweenEngine,
   createFxParticlePass,
   mountTouchControls,
-  sfx,
-  sfxUrl
 } from "@aura3d/engine/game";
-import { assets } from "../../../src/aura-assets";
+import { assets } from "./aura-assets.route";
 
 type Vec3 = [number, number, number];
 type AnyHandle = AuraRuntimeNodeHandle | undefined;
@@ -437,11 +435,11 @@ function buildHoopNodes(): any[] {
     // Stanchion pole + arm
     primitives.cylinder({ name: "hoop-pole", size: [0.28, 4.0, 0.28], material: material.pbr({ color: "#23262e", metalness: 0.5, roughness: 0.5 }) }).position(0, 2.0, -1.15),
     primitives.box({ name: "hoop-arm", size: [0.16, 0.16, 0.9], material: material.pbr({ color: "#23262e", metalness: 0.5, roughness: 0.5 }) }).position(0, 3.62, -0.72),
-    model(assets.rooftopBackboard, { name: "hoop-backboard", scaleMode: "world", castShadow: true, receiveShadow: true })
+    model(assets.hoopsBackboard, { name: "hoop-backboard", scaleMode: "world", castShadow: true, receiveShadow: true })
       .position(0, 3.35, BOARD_Z)
       .runtime(game.runtimeNode("backboard-assembly")),
     primitives.box({ name: "glass-board", size: [1.8, 1.05, 0.03], material: material.pbr({ color: "#bcd8e8", roughness: 0.15, opacity: 0.28 }) }).position(0, 3.35, BOARD_Z + 0.05),
-    model(assets.rooftopRim, { name: "hoop-rim", scaleMode: "world", castShadow: true })
+    model(assets.hoopsRim, { name: "hoop-rim", scaleMode: "world", castShadow: true })
       .position(RIM[0], RIM[1], RIM[2])
       .runtime(game.runtimeNode("rim-assembly")),
     // Net: two stacked tori + skirt planes for ripple feedback
@@ -456,7 +454,7 @@ function buildHoopNodes(): any[] {
 
 function buildBallNodes(): any[] {
   const nodes: any[] = [
-    model(assets.rooftopBall, { name: "ball-live", scaleMode: "fit", targetMaxDimension: BALL_R * 2, castShadow: true })
+    model(assets.hoopsBall, { name: "ball-live", scaleMode: "fit", targetMaxDimension: BALL_R * 2, castShadow: true })
       .position(0, 1.0, CHECK_SPOT[2])
       .runtime(game.runtimeNode("ball-live")),
     primitives.cylinder({ name: "ball-shadow", size: [0.32, 0.008, 0.32], material: material.pbr({ color: "#000000", opacity: 0.4, roughness: 1 }) }).position(0, 0.012, CHECK_SPOT[2]).runtime(game.runtimeNode("ball-shadow"))
@@ -487,10 +485,10 @@ function buildAthleteAccessories(id: string, team: TeamId): any[] {
 }
 
 function buildAthlete(id: string, _team: TeamId): any[] {
+  const athleteAsset = /1$/.test(id) ? assets.hoopsAthleteBig : assets.hoopsAthleteGuard;
   return [
-    model(assets.rooftopShooterCleanMeshy, { name: id, targetHeight: 1.92, castShadow: true, receiveShadow: true })
+    model(athleteAsset, { name: id, targetHeight: 1.92, castShadow: true, receiveShadow: true })
       .position(0, 0, 6)
-      .animate({ clip: "Idle_Loop", loop: true } as any)
       .runtime(game.runtimeNode(id)),
     ...buildAthleteAccessories(id, _team)
   ];
@@ -555,8 +553,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
   if (v.glbVenue) {
     // Athens: the retired rooftop venue shells are the real rooftop environment.
     nodes.push(
-      model(assets.rooftopVenueV2, { name: "venue-shell", scaleMode: "world", castShadow: false, receiveShadow: true }).position(0, 0.72, 4),
-      model(assets.rooftopCourt, { name: "venue-court-glb", scaleMode: "world", receiveShadow: true, castShadow: false }).position(0, -0.16, 4)
+      model(assets.hoopsCourtShell, { name: "venue-shell", scaleMode: "world", castShadow: false, receiveShadow: true }).position(0, 0.72, 4),
     );
   }
 
@@ -564,13 +561,13 @@ function buildVenueDressing(v: VenueSpec): any[] {
   if (v.id === "rucker" || v.id === "shanghai" || v.id === "athens") {
     const skylineScale = v.id === "shanghai" ? 34 : 22;
     nodes.push(
-      model(assets.showcaseSkylineCity, { name: "skyline", targetMaxDimension: skylineScale * 4, castShadow: false, receiveShadow: false })
+      model(assets.hoopsSkyline, { name: "skyline", targetMaxDimension: skylineScale * 4, castShadow: false, receiveShadow: false })
         .position(0, -0.5, -34)
     );
     if (v.id === "shanghai") {
       nodes.push(
-        model(assets.showcaseModernBuildingOne, { name: "tower-east", targetHeight: 34, castShadow: false }).position(26, 0, -18),
-        model(assets.showcaseVoxelBuilding, { name: "tower-west", targetHeight: 26, castShadow: false }).position(-26, 0, -14)
+        model(assets.hoopsTower, { name: "tower-east", targetHeight: 34, castShadow: false }).position(26, 0, -18),
+        model(assets.hoopsTower, { name: "tower-west", targetHeight: 26, castShadow: false }).position(-26, 0, -14)
       );
       // Riverside water strip beyond the far baseline
       nodes.push(
@@ -586,7 +583,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
       primitives.plane({ name: "ocean-glint", size: [90, 1, 10], material: material.pbr({ color: "#2e8fa8", roughness: 0.3, metalness: 0.4, emissive: "#ff9a3d", emissiveIntensity: 0.12 }) }).position(0, -0.03, -22)
     );
     for (const [x, z, s] of [[-12, -8, 1], [12.5, -10, 1.2], [-14, 12, 0.9], [14, 14, 1.05], [-9, 16, 0.8]] as const) {
-      nodes.push(model(assets.propPineTree, { name: `palm-${x}-${z}`, targetHeight: 6.4 * s, castShadow: true }).position(x, 0, z).rotate(0, vrng() * Math.PI * 2, 0));
+      nodes.push(model(assets.hoopsPalm, { name: `palm-${x}-${z}`, targetHeight: 6.4 * s, castShadow: true }).position(x, 0, z).rotate(0, vrng() * Math.PI * 2, 0));
     }
   }
 
@@ -601,7 +598,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
     }
     for (const [x, z] of [[-13, -4], [13, -4], [-13, 12], [13, 12]] as const) {
       nodes.push(
-        model(assets.rooftopFloodlightTowerMeshy, { name: `flood-${x}-${z}`, targetHeight: 8.6 }).position(x, 0, z).rotate(0, Math.atan2(-x, -z), 0),
+        model(assets.hoopsFloodlight, { name: `flood-${x}-${z}`, targetHeight: 8.6 }).position(x, 0, z).rotate(0, Math.atan2(-x, -z), 0),
         lights.spot({ name: `flood-s-${x}-${z}`, position: [x * 0.9, 8.4, z * 0.9], target: [0, 0, 4], angle: 0.6, penumbra: 0.5, intensity: 2.2, color: "#ffd9a8", distance: 55 })
       );
     }
@@ -609,7 +606,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
 
   if (v.id === "shanghai") {
     for (const [x, z] of [[-9, -3.2], [9, -3.2], [-9, 11.5], [9, 11.5], [-12, 4], [12, 4]] as const) {
-      nodes.push(model(assets.neonStreetLampProp, { name: `neon-lamp-${x}-${z}`, targetHeight: 4.6 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0));
+      nodes.push(model(assets.hoopsLamp, { name: `neon-lamp-${x}-${z}`, targetHeight: 4.6 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0));
     }
     nodes.push(
       lights.point({ name: "neon-fill-a", position: [-8, 5, 4], color: "#39d7ff", intensity: 1.6, distance: 40 }),
@@ -620,9 +617,9 @@ function buildVenueDressing(v: VenueSpec): any[] {
   if (v.id === "orbit") {
     // Dome court over Earth: arena shells as architecture + planet overhead + starfield
     nodes.push(
-      model(assets.neonArena, { name: "orbit-dome", targetMaxDimension: 64, castShadow: false, receiveShadow: false }).position(0, -0.4, 4),
-      model(assets.pulseArena, { name: "orbit-halo", targetMaxDimension: 46, castShadow: false, receiveShadow: false }).position(0, 14, -20),
-      model(assets.gravityPlanetEarth, { name: "planet-earth", targetMaxDimension: 210, castShadow: false, receiveShadow: false })
+      model(assets.hoopsOrbitArena, { name: "orbit-dome", targetMaxDimension: 64, castShadow: false, receiveShadow: false }).position(0, -0.4, 4),
+      model(assets.hoopsCanopy, { name: "orbit-halo", targetMaxDimension: 46, castShadow: false, receiveShadow: false }).position(0, 14, -20),
+      model(assets.hoopsEarth, { name: "planet-earth", targetMaxDimension: 210, castShadow: false, receiveShadow: false })
         .position(-60, 130, -300)
         .runtime(game.runtimeNode("planet-earth"))
     );
@@ -652,26 +649,26 @@ function buildVenueDressing(v: VenueSpec): any[] {
     }
     for (const [x, z] of [[-11, -7], [11, -7], [-11, 13], [11, 13]] as const) {
       nodes.push(
-        model(assets.rooftopFloodlightTowerMeshy, { name: `flood-${x}-${z}`, targetHeight: 9.2 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0),
+        model(assets.hoopsFloodlight, { name: `flood-${x}-${z}`, targetHeight: 9.2 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0),
         lights.spot({ name: `flood-s-${x}-${z}`, position: [x * 0.92, 9.0, z * 0.92], target: [0, 0, 4], angle: 0.55, penumbra: 0.5, intensity: 1.9, color: "#ffd9b0", distance: 55 })
       );
     }
     nodes.push(
-      model(assets.rooftopScoreboardRigMeshy, { name: "scoreboard-rig", targetHeight: 5.4, castShadow: false }).position(0, 4.2, -12.5),
+      model(assets.hoopsScoreboard, { name: "scoreboard-rig", targetHeight: 5.4, castShadow: false }).position(0, 4.2, -12.5),
       primitives.box({ name: "scoreboard-glow", size: [6.4, 2.2, 0.24], material: material.emissive({ color: "#1a0f04", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) }).position(0, 5.4, -12.3).runtime(game.runtimeNode("scoreboard-glow"))
     );
   }
 
   // Courtside dressing shared by all courts: ball rack, trophy case, bench athletes
   nodes.push(
-    model(assets.rooftopBallRackCartMeshy, { name: "ball-rack", targetHeight: 1.15 }).position(-8.9, 0, 9.4).rotate(0, 0.5, 0),
-    model(assets.billiardsTrophyCabinetMeshy, { name: "trophy-case", targetHeight: 1.7, castShadow: false }).position(9.2, 0, -3.4).rotate(0, -0.8, 0).runtime(game.runtimeNode("trophy-case")),
+    model(assets.hoopsBallCart, { name: "ball-rack", targetHeight: 1.15 }).position(-8.9, 0, 9.4).rotate(0, 0.5, 0),
+    model(assets.hoopsTrophy, { name: "trophy-case", targetHeight: 1.7, castShadow: false }).position(9.2, 0, -3.4).rotate(0, -0.8, 0).runtime(game.runtimeNode("trophy-case")),
     // Bench/warm-up athletes — static posed GLBs + one Ready-loop scorer
-    model(assets.rooftopAthleteShooter, { name: "bench-shooter", targetHeight: 1.92, castShadow: true }).position(-8.4, 0, 6.8).rotate(0, Math.PI / 2, 0),
-    model(assets.rooftopAthleteDefender, { name: "bench-defender", targetHeight: 1.92, castShadow: true }).position(-8.4, 0, 8.2).rotate(0, Math.PI / 2, 0),
-    model(assets.rooftopLayupScorer, { name: "warmup-scorer", targetHeight: 1.92, castShadow: true }).position(8.6, 0, 7.4).rotate(0, -Math.PI / 2, 0).animate({ clip: "Ready", loop: true } as any),
-    model(assets.rooftopShooterV2, { name: "warmup-shooter2", targetHeight: 1.92, castShadow: true }).position(-8.6, 0, 4.4).rotate(0, Math.PI / 2, 0).animate({ clip: "Load", loop: true } as any),
-    model(assets.rooftopDefenderV2, { name: "warmup-defender2", targetHeight: 1.92, castShadow: true }).position(8.4, 0, 4.9).rotate(0, -Math.PI / 2, 0).animate({ clip: "Plant", loop: true } as any)
+    model(assets.hoopsAthleteGuard, { name: "bench-shooter", targetHeight: 1.92, castShadow: true }).position(-8.4, 0, 6.8).rotate(0, Math.PI / 2, 0),
+    model(assets.hoopsAthleteBig, { name: "bench-defender", targetHeight: 1.92, castShadow: true }).position(-8.4, 0, 8.2).rotate(0, Math.PI / 2, 0),
+    model(assets.hoopsAthleteBig, { name: "warmup-scorer", targetHeight: 1.92, castShadow: true }).position(8.6, 0, 7.4).rotate(0, -Math.PI / 2, 0),
+    model(assets.hoopsAthleteGuard, { name: "warmup-shooter2", targetHeight: 1.92, castShadow: true }).position(-8.6, 0, 4.4).rotate(0, Math.PI / 2, 0),
+    model(assets.hoopsAthleteBig, { name: "warmup-defender2", targetHeight: 1.92, castShadow: true }).position(8.4, 0, 4.9).rotate(0, -Math.PI / 2, 0)
   );
 
   // Court wear decals
@@ -904,20 +901,20 @@ function setupSystems(): void {
   audio = createGameAudio({
     browserContext: true,
     cues: {
-      swish: { id: "swish", asset: assets.rooftopBucketsSwishSfx as any, volume: 0.85 },
-      rimClank: { id: "rimClank", asset: assets.rooftopBucketsRimClankSfx as any, volume: 0.7 },
-      boardThud: { id: "boardThud", asset: assets.rooftopBucketsBoardThudSfx as any, volume: 0.7 },
-      brickMiss: { id: "brickMiss", asset: assets.rooftopBucketsBrickMissSfx as any, volume: 0.6 },
-      buzzerFail: { id: "buzzerFail", asset: assets.rooftopBucketsBuzzerFailSfx as any, volume: 0.85 },
-      chargeTick: { id: "chargeTick", asset: assets.rooftopBucketsChargeTickSfx as any, volume: 0.4 },
-      fireIgnite: { id: "fireIgnite", asset: assets.rooftopBucketsFireIgniteSfx as any, volume: 0.9 },
-      goldBall: { id: "goldBall", asset: assets.rooftopBucketsGoldBallSfx as any, volume: 0.8 },
-      heatAdvance: { id: "heatAdvance", asset: assets.rooftopBucketsHeatAdvanceSfx as any, volume: 0.65 },
-      ambient: { id: "ambient", asset: assets.rooftopBucketsAmbientRooftopSfx as any, volume: 0.3, loop: true },
-      fanfare: { id: "fanfare", asset: assets.skylineCheckpointFanfareSfx as any, volume: 0.85 },
-      winFanfare: { id: "winFanfare", asset: assets.turboFinishFanfareSfx as any, volume: 0.95 },
-      crowd: { id: "crowd", asset: { url: sfxUrl(sfx.ambience.crowdSports[0]) }, volume: 0.24, loop: true },
-      dribble: { id: "dribble", asset: { url: sfxUrl(sfx.impact.rubberBall.medium[0]) }, volume: 0.34 }
+      swish: { id: "swish", asset: assets.hoopsSwishSfx as any, volume: 0.85 },
+      rimClank: { id: "rimClank", asset: assets.hoopsRimClankSfx as any, volume: 0.7 },
+      boardThud: { id: "boardThud", asset: assets.hoopsBoardThudSfx as any, volume: 0.7 },
+      brickMiss: { id: "brickMiss", asset: assets.hoopsBrickSfx as any, volume: 0.6 },
+      buzzerFail: { id: "buzzerFail", asset: assets.hoopsBuzzerSfx as any, volume: 0.85 },
+      chargeTick: { id: "chargeTick", asset: assets.hoopsChargeTickSfx as any, volume: 0.4 },
+      fireIgnite: { id: "fireIgnite", asset: assets.hoopsFireSfx as any, volume: 0.9 },
+      goldBall: { id: "goldBall", asset: assets.hoopsGoldChimeSfx as any, volume: 0.8 },
+      heatAdvance: { id: "heatAdvance", asset: assets.hoopsHeatTickSfx as any, volume: 0.65 },
+      ambient: { id: "ambient", asset: assets.hoopsAmbientSfx as any, volume: 0.3, loop: true },
+      fanfare: { id: "fanfare", asset: assets.hoopsFanfareSfx as any, volume: 0.85 },
+      winFanfare: { id: "winFanfare", asset: assets.hoopsFanfareSfx as any, volume: 0.95 },
+      crowd: { id: "crowd", asset: assets.hoopsCrowdSfx as any, volume: 0.24, loop: true },
+      dribble: { id: "dribble", asset: assets.hoopsDribbleSfx as any, volume: 0.34 }
     },
     buses: [{ id: "sfx" } as any]
   } as any) as unknown as GameAudioLike;
@@ -2072,12 +2069,7 @@ function publishEvidence(): void {
     touch: touchControls?.evidence?.() ?? null,
     deterministic: { rng: "lcg:0xa3d5", ballSim: "route-local analytic + contact model" },
     assets: [
-      "rooftopShooterCleanMeshy", "rooftopRim", "rooftopBackboard", "rooftopBall",
-      "rooftopVenueV2", "rooftopCourt", "rooftopScoreboardRigMeshy", "rooftopFloodlightTowerMeshy",
-      "rooftopBallRackCartMeshy", "rooftopAthleteShooter", "rooftopAthleteDefender", "rooftopLayupScorer",
-      "rooftopShooterV2", "rooftopDefenderV2", "gravityPlanetEarth", "neonArena", "pulseArena",
-      "neonStreetLampProp", "showcaseSkylineCity", "showcaseModernBuildingOne", "showcaseVoxelBuilding",
-      "propPineTree", "billiardsTrophyCabinetMeshy"
+      "hoopsAthleteGuard", "hoopsRim", "hoopsBackboard", "hoopsBall", "hoopsCourtShell", "hoopsScoreboard", "hoopsFloodlight", "hoopsBallCart", "hoopsAthleteBig", "hoopsSkyline", "hoopsTower", "hoopsEarth", "hoopsOrbitArena", "hoopsCanopy", "hoopsLamp", "hoopsPalm", "hoopsTrophy"
     ]
   };
   (window as any).__AURA3D_GAME_EVIDENCE__ = evidence;

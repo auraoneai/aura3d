@@ -39,11 +39,9 @@ import {
   createRumbleDriver,
   createTweenEngine,
   createFxParticlePass,
-  mountTouchControls,
-  sfx,
-  sfxUrl
+  mountTouchControls
 } from "@aura3d/engine/game";
-import { assets } from "../../../src/aura-assets";
+import { assets } from "./aura-assets.route";
 
 /* ================================================================== *
  *  Types + small math helpers                                         *
@@ -516,7 +514,7 @@ function buildFieldNodes(park: ParkSpec): any[] {
     const [bx, , bz] = BASES[i]!;
     nodes.push(
       primitives.cylinder({ name: `base-dirt-${i}`, size: [4.6, 0.05, 4.6], material: dirt }).position(bx, 0.02, bz),
-      primitives.box({ name: `base-bag-${i}`, size: [0.4, 0.16, 0.4], material: bagMat }).position(bx, 0.14, bz).rotate(0, Math.PI / 4, 0)
+      model(assets.diamondBase, { name: `base-bag-${i}`, targetHeight: 0.16, scaleMode: "fit" }).position(bx, 0.06, bz)
     );
   }
   nodes.push(
@@ -535,8 +533,9 @@ function buildFieldNodes(park: ParkSpec): any[] {
     nodes.push(
       primitives.box({ name: `foul-line-${side}`, size: [0.09, 0.02, len], material: chalkMat() }).position((fx * len) / 2, 0.05, (fz * len) / 2).rotate(0, (side * FOUL_DEG * Math.PI) / 180, 0),
       primitives
-        .cylinder({ name: `foul-pole-${side}`, size: [0.14, 11, 0.14], material: material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: park.night ? 0.9 : 0.25 }) })
-        .position(fx * park.fenceCorner, 5.5, fz * park.fenceCorner)
+        .cylinder({ name: `foul-pole-glow-${side}`, size: [0.14, 11, 0.14], material: material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: park.night ? 0.9 : 0.25 }) })
+        .position(fx * park.fenceCorner, 5.5, fz * park.fenceCorner),
+      model(assets.diamondFoulPole, { name: `foul-pole-${side}`, targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(fx * park.fenceCorner, 0, fz * park.fenceCorner)
     );
   }
 
@@ -561,8 +560,8 @@ function buildFieldNodes(park: ParkSpec): any[] {
   nodes.push(
     primitives.cylinder({ name: "ondeck-l", size: [1.5, 0.02, 1.5], material: chalkMat() }).position(-6.4, 0.04, 2.6),
     primitives.cylinder({ name: "ondeck-r", size: [1.5, 0.02, 1.5], material: chalkMat() }).position(6.4, 0.04, 2.6),
-    primitives.box({ name: "dugout-l", size: [7, 1.1, 2.4], material: material.pbr({ color: "#1a2130", roughness: 0.85 }) }).position(-11, 0.55, 4.6),
-    primitives.box({ name: "dugout-r", size: [7, 1.1, 2.4], material: material.pbr({ color: "#1a2130", roughness: 0.85 }) }).position(11, 0.55, 4.6)
+    model(assets.diamondDugout, { name: "dugout-l", targetHeight: 2.4, role: "setDressing", scaleMode: "fit" }).position(-11, 0, 4.6).rotate(0, Math.PI, 0),
+    model(assets.diamondDugout, { name: "dugout-r", targetHeight: 2.4, role: "setDressing", scaleMode: "fit" }).position(11, 0, 4.6)
   );
 
   return nodes;
@@ -620,7 +619,7 @@ function buildStandsNodes(park: ParkSpec): any[] {
   // Scoreboard + floodlight towers
   const sb = fencePoint(park, 0, 0);
   nodes.push(
-    model(assets.rooftopScoreboardRigMeshy, { name: "scoreboard-rig", targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(sb[0] * 1.06, park.wallH + 0.2, sb[2] * 1.06 - 4).rotate(0, Math.PI, 0).runtime(game.runtimeNode("scoreboard-rig")),
+    model(assets.diamondScoreboard, { name: "scoreboard-rig", targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(sb[0] * 1.06, park.wallH + 0.2, sb[2] * 1.06 - 4).rotate(0, Math.PI, 0).runtime(game.runtimeNode("scoreboard-rig")),
     primitives.box({ name: "scoreboard-screen", size: [10.5, 3.4, 0.4], material: material.emissive({ color: "#0d2436", emissive: "#1b4a66", emissiveIntensity: 0.9 }) }).position(sb[0] * 1.04, park.wallH + 7.4, sb[2] * 1.04 - 3.6).runtime(game.runtimeNode("scoreboard-screen"))
   );
 
@@ -633,7 +632,7 @@ function buildStandsNodes(park: ParkSpec): any[] {
     ];
     towers.forEach(([tx, , tz], i) => {
       nodes.push(
-        model(assets.rooftopFloodlightTowerMeshy, { name: `flood-${i}`, targetHeight: 16, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz).rotate(0, Math.atan2(-tx, 10 - tz) + Math.PI, 0),
+        model(assets.diamondFloodlight, { name: `flood-${i}`, targetHeight: 16, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz).rotate(0, Math.atan2(-tx, 10 - tz) + Math.PI, 0),
         lights.spot({ name: `flood-spot-${i}`, position: [tx * 0.9, 15, tz * 0.9], target: [0, 0, -10], angle: 0.6, penumbra: 0.55, intensity: 2.0, color: park.id === "lunar" ? "#bfe0ff" : "#fff2d4", distance: 160 }),
         effects.lightCone({ name: `flood-cone-${i}`, position: [tx * 0.9, 14.6, tz * 0.9], direction: [-tx * 0.05, -1, (10 - tz) * 0.05], color: "#bfe0ff", intensity: 0.22, length: 15, coneAngle: 0.5, softness: 0.6 } as any)
       );
@@ -648,22 +647,23 @@ function buildParkExtras(park: ParkSpec): any[] {
   switch (park.id) {
     case "sandlot": {
       nodes.push(
+        model(assets.diamondHarborPier, { name: "harbor-pier", targetHeight: 8, role: "setDressing", scaleMode: "fit" }).position(60, -0.3, -118).rotate(0, 0.3, 0),
         primitives.plane({ name: "harbor-water", size: [220, 60] as any, material: material.pbr({ color: "#2e5d7a", roughness: 0.35, metalness: 0.3 }) }).position(60, -0.4, -135),
-        model(assets.siegeWindmillTowerMeshy, { name: "sandlot-windmill", targetHeight: 13, role: "setDressing", scaleMode: "fit" }).position(-42, 0, -72).rotate(0, 0.6, 0),
-        model(assets.siegeWatchtowerMeshy, { name: "sandlot-tower", targetHeight: 12, role: "setDressing", scaleMode: "fit" }).position(48, 0, -58).rotate(0, -0.4, 0),
-        model(assets.propPineTree, { name: "pine-a", targetHeight: 9, role: "setDressing", scaleMode: "fit" }).position(-34, 0, -82),
-        model(assets.propPineTree, { name: "pine-b", targetHeight: 7.5, role: "setDressing", scaleMode: "fit" }).position(38, 0, -84).rotate(0, 1.2, 0),
-        model(assets.neonStreetLampProp, { name: "sandlot-lamp", targetHeight: 5.4, role: "setDressing", scaleMode: "fit" }).position(-14, 0, 16)
+        model(assets.diamondTower, { name: "sandlot-windmill", targetHeight: 13, role: "setDressing", scaleMode: "fit" }).position(-42, 0, -72).rotate(0, 0.6, 0),
+        model(assets.diamondCanyonArch, { name: "sandlot-tower", targetHeight: 12, role: "setDressing", scaleMode: "fit" }).position(48, 0, -58).rotate(0, -0.4, 0),
+        model(assets.diamondRock, { name: "pine-a", targetHeight: 9, role: "setDressing", scaleMode: "fit" }).position(-34, 0, -82),
+        model(assets.diamondRock, { name: "pine-b", targetHeight: 7.5, role: "setDressing", scaleMode: "fit" }).position(38, 0, -84).rotate(0, 1.2, 0),
+        model(assets.diamondFloodlight, { name: "sandlot-lamp", targetHeight: 5.4, role: "setDressing", scaleMode: "fit" }).position(-14, 0, 16)
       );
       break;
     }
     case "skyline": {
       const buildings: [any, number, number, number, number][] = [
-        [assets.showcaseSkylineCity, -72, -95, 46, 0.5],
-        [assets.showcaseModernBuildingOne, 74, -100, 52, -0.4],
-        [assets.showcaseModernOfficeBuilding, -95, -40, 38, 0.9],
-        [assets.showcaseVoxelBuilding, 95, -34, 30, -0.9],
-        [assets.showcaseModernBuildingOne, 0, -150, 60, 0.1]
+        [assets.diamondTower, -72, -95, 46, 0.5],
+        [assets.diamondTower, 74, -100, 52, -0.4],
+        [assets.diamondTower, -95, -40, 38, 0.9],
+        [assets.diamondTower, 95, -34, 30, -0.9],
+        [assets.diamondTower, 0, -150, 60, 0.1]
       ];
       buildings.forEach(([a, x, z, h, r], i) => {
         nodes.push(model(a as any, { name: `skyline-bldg-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, r, 0));
@@ -680,31 +680,31 @@ function buildParkExtras(park: ParkSpec): any[] {
         );
       }
       for (const [lx, lz] of [[-26, 8], [26, 8], [-46, -30], [46, -30]] as const) {
-        nodes.push(model(assets.neonStreetLampProp, { name: `lamp-${lx}`, targetHeight: 6, role: "setDressing", scaleMode: "fit" }).position(lx, 0, lz));
+        nodes.push(model(assets.diamondFloodlight, { name: `lamp-${lx}`, targetHeight: 6, role: "setDressing", scaleMode: "fit" }).position(lx, 0, lz));
       }
       break;
     }
     case "canyon": {
       const rocks: [any, number, number, number, number][] = [
-        [assets.propRockB, -55, -92, 16, 0.3],
-        [assets.propRockB, 52, -98, 20, -0.7],
-        [assets.propRockA, -78, -55, 9, 1.1],
-        [assets.propRockA, 80, -50, 8, -0.4],
-        [assets.propRockB, 0, -142, 26, 0]
+        [assets.diamondRock, -55, -92, 16, 0.3],
+        [assets.diamondRock, 52, -98, 20, -0.7],
+        [assets.diamondRock, -78, -55, 9, 1.1],
+        [assets.diamondRock, 80, -50, 8, -0.4],
+        [assets.diamondRock, 0, -142, 26, 0]
       ];
       rocks.forEach(([a, x, z, h, r], i) => {
         nodes.push(model(a as any, { name: `canyon-rock-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, r, 0));
       });
       for (const [tx, tz] of [[-64, -80], [66, -84], [-88, -20], [88, -16]] as const) {
-        nodes.push(model(assets.propPineTree, { name: `canyon-pine-${tx}`, targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz));
+        nodes.push(model(assets.diamondRock, { name: `canyon-pine-${tx}`, targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz));
       }
       break;
     }
     case "ivy": {
       nodes.push(
-        model(assets.showcaseStadiumSeats, { name: "ivy-grandstand", targetHeight: 14, role: "setDressing", scaleMode: "fit" }).position(0, 0, 26).rotate(0, Math.PI, 0),
-        model(assets.billiardsTrophyCabinetMeshy, { name: "ivy-trophy", targetHeight: 2.4, role: "setDressing", scaleMode: "fit" }).position(-9.5, 1.2, 8.4).rotate(0, 0.9, 0),
-        model(assets.clashDragonStatueMeshy, { name: "ivy-statue", targetHeight: 4.2, role: "primaryWorld", scaleMode: "fit" }).position(14, 0, 10).rotate(0, -2.4, 0),
+        model(assets.diamondStadium, { name: "ivy-grandstand", targetHeight: 14, role: "setDressing", scaleMode: "fit" }).position(0, 0, 26).rotate(0, Math.PI, 0),
+        model(assets.diamondTrophy, { name: "ivy-trophy", targetHeight: 2.4, role: "setDressing", scaleMode: "fit" }).position(-9.5, 1.2, 8.4).rotate(0, 0.9, 0),
+        model(assets.diamondTrophy, { name: "ivy-statue", targetHeight: 4.2, role: "primaryWorld", scaleMode: "fit" }).position(14, 0, 10).rotate(0, -2.4, 0),
         ...Array.from({ length: 7 }, (_, i) => {
           const theta = -36 + i * 12;
           const pm = fencePoint(park, theta, 0);
@@ -715,7 +715,7 @@ function buildParkExtras(park: ParkSpec): any[] {
     }
     case "dome": {
       nodes.push(
-        model(assets.auroraHabitatDomeMeshy, { name: "typhoon-dome-shell", targetHeight: 60, role: "setDressing", scaleMode: "fit" }).position(0, -0.4, -42).rotate(0, Math.PI, 0),
+        model(assets.diamondTyphoonDome, { name: "typhoon-dome-shell", targetHeight: 60, role: "setDressing", scaleMode: "fit" }).position(0, -0.4, -42).rotate(0, Math.PI, 0),
         ...Array.from({ length: 5 }, (_, i) => primitives.box({ name: `dome-rafter-${i}`, size: [1.2, 1.2, 190], material: material.pbr({ color: "#233046", roughness: 0.6, metalness: 0.4 }) }).position(-60 + i * 30, 26, -50)),
         ...Array.from({ length: 4 }, (_, i) => primitives.box({ name: `dome-banner-${i}`, size: [3.2, 7, 0.2], material: material.emissive({ color: "#ffb03a", emissive: i % 2 ? "#35d6ff" : "#ffb03a", emissiveIntensity: 0.7 }) }).position(-18 + i * 12, 14, 18))
       );
@@ -723,10 +723,10 @@ function buildParkExtras(park: ParkSpec): any[] {
     }
     case "lunar": {
       nodes.push(
-        model(assets.gravityPlanetEarth, { name: "lunar-earth", targetHeight: 90, role: "primaryWorld", scaleMode: "fit" }).position(-30, 66, -260),
-        model(assets.lunarRoverMeshy, { name: "lunar-rover", targetHeight: 2.6, role: "setDressing", scaleMode: "fit" }).position(-17, 0, 9).rotate(0, 0.8, 0),
+        model(assets.diamondEarthRise, { name: "lunar-earth", targetHeight: 90, role: "primaryWorld", scaleMode: "fit" }).position(-30, 66, -260),
+        model(assets.diamondLunarRover, { name: "lunar-rover", targetHeight: 2.6, role: "setDressing", scaleMode: "fit" }).position(-17, 0, 9).rotate(0, 0.8, 0),
         ...Array.from({ length: 6 }, (_, i) => primitives.cylinder({ name: `regolith-${i}`, size: [4 + i, 0.5, 4 + i * 0.7], material: material.pbr({ color: "#5d6378", roughness: 1 }) }).position(-90 + i * 38, 0.1, -120 - (i % 2) * 30)),
-        model(assets.siegeWatchtowerMeshy, { name: "lunar-comms", targetHeight: 15, role: "setDressing", scaleMode: "fit" }).position(60, 0, -70).rotate(0, -0.5, 0)
+        model(assets.diamondMoonDome, { name: "lunar-comms", targetHeight: 15, role: "setDressing", scaleMode: "fit" }).position(60, 0, -70).rotate(0, -0.5, 0)
       );
       break;
     }
@@ -757,20 +757,20 @@ const FIELDER_SPOTS: Record<string, Vec3> = {
 
 function buildActorsNodes(): any[] {
   const nodes: any[] = [
-    ...buildAthleteNodes("pitcher", assets.rooftopShooterCleanMeshy),
-    ...buildAthleteNodes("batter", assets.rooftopAthleteShooter),
-    ...FIELDER_IDS.flatMap((id) => buildAthleteNodes(id, assets.rooftopAthleteDefender)),
-    ...Array.from({ length: 3 }, (_, i) => buildAthleteNodes(`runner-${i}`, assets.skylineHeroRunner)),
+    ...buildAthleteNodes("pitcher", assets.diamondAthlete),
+    ...buildAthleteNodes("batter", assets.diamondAthlete),
+    ...FIELDER_IDS.flatMap((id) => buildAthleteNodes(id, assets.diamondAthlete)),
+    ...Array.from({ length: 3 }, (_, i) => buildAthleteNodes(`runner-${i}`, assets.diamondAthlete)).flat(),
     primitives.capsule({ name: "umpire-body", size: [1, 1, 1], material: material.pbr({ color: "#20242e", roughness: 0.8 }) }).position(0.6, 0.85, 3.4).scale(0.55),
     primitives.sphere({ name: "umpire-head", size: [0.22, 0.22, 0.22], material: material.pbr({ color: "#c68a5a", roughness: 0.8 }) }).position(0.6, 1.62, 3.4)
   ];
 
   // The bat — no catalog bat exists; a maple primitive is authored field geometry.
-  nodes.push(primitives.cylinder({ name: "bat", size: [0.075, 0.92, 0.075], material: material.pbr({ color: "#b98a4e", roughness: 0.62 }) }).runtime(game.runtimeNode("bat")));
+  nodes.push(model(assets.diamondBat, { name: "bat", targetHeight: 0.92, scaleMode: "fit" }).runtime(game.runtimeNode("bat")));
 
   // Ball — siegeGolfBall reads as a seamed baseball at 15 cm; shadow + trail
   nodes.push(
-    model(assets.siegeGolfBall, { name: "ball", targetHeight: 0.15, role: "setDressing", scaleMode: "fit" }).position(0, -60, 0).runtime(game.runtimeNode("ball")),
+    model(assets.diamondBall, { name: "ball", targetHeight: 0.15, role: "setDressing", scaleMode: "fit" }).position(0, -60, 0).runtime(game.runtimeNode("ball")),
     primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.006, 0.34], material: material.pbr({ color: "#000000", opacity: 0.4, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow")),
     effects.trail({ name: "ball-ribbon", target: "ball", color: "#f5f1e4", width: 0.1, maxPoints: 40, intensity: 0.85 } as any)
   );
@@ -921,7 +921,7 @@ function boot(): void {
 
   let H: Record<string, AnyHandle> = {};
   function bindHandles(): void {
-    const req = (id: string) => app.nodes.require(id);
+    const req = tryReq;
     H = {
       ball: req("ball"),
       ballShadow: req("ball-shadow"),
@@ -970,22 +970,22 @@ function boot(): void {
   const audio = createGameAudio({
     browserContext: true,
     cues: {
-      crack: { id: "crack", asset: { url: assets.skylineCoinChimeSfx.url }, volume: 0.75 },
-      contact: { id: "contact", asset: { url: assets.skylineCoinChimeSfx.url }, volume: 0.4 },
-      pitch: { id: "pitch", asset: { url: assets.skylineDashWindSfx.url }, volume: 0.4 },
-      pop: { id: "pop", asset: { url: assets.rooftopBucketsSwishSfx.url }, volume: 0.55 },
-      foul: { id: "foul", asset: { url: assets.rooftopBucketsRimClankSfx.url }, volume: 0.5 },
-      strikeout: { id: "strikeout", asset: { url: assets.rooftopBucketsBuzzerFailSfx.url }, volume: 0.6 },
-      homer: { id: "homer", asset: { url: assets.skylineCheckpointFanfareSfx.url }, volume: 0.85 },
-      homerBig: { id: "homerBig", asset: { url: assets.turboFinishFanfareSfx.url }, volume: 0.9 },
-      quad: { id: "quad", asset: { url: assets.blockfallQuadFanfareSfx.url }, volume: 0.9 },
-      crowd: { id: "crowd", asset: { url: assets.rooftopBucketsAmbientRooftopSfx.url }, volume: 0.3, loop: true },
-      uiClick: { id: "uiClick", asset: { url: sfxUrl(sfx.ui.click[0]) }, volume: 0.4 },
-      uiConfirm: { id: "uiConfirm", asset: { url: sfxUrl(sfx.ui.confirm[0]) }, volume: 0.5 },
-      swing: { id: "swing", asset: { url: sfxUrl(sfx.whoosh.swingLight[0]) }, volume: 0.5 },
-      win: { id: "win", asset: { url: sfxUrl(sfx.stinger.win[0]) }, volume: 0.8 },
-      lose: { id: "lose", asset: { url: sfxUrl(sfx.stinger.lose[0]) }, volume: 0.7 },
-      walk: { id: "walk", asset: { url: sfxUrl(sfx.ui.reward[0]) }, volume: 0.5 }
+      crack: { id: "crack", asset: assets.diamondBatCrackSfx as any, volume: 0.75 },
+      contact: { id: "contact", asset: assets.diamondContactSfx as any, volume: 0.4 },
+      pitch: { id: "pitch", asset: assets.diamondPitchWhooshSfx as any, volume: 0.4 },
+      pop: { id: "pop", asset: assets.diamondMittPopSfx as any, volume: 0.55 },
+      foul: { id: "foul", asset: assets.diamondFoulSfx as any, volume: 0.5 },
+      strikeout: { id: "strikeout", asset: assets.diamondStrikeoutSfx as any, volume: 0.6 },
+      homer: { id: "homer", asset: assets.diamondHomerSfx as any, volume: 0.85 },
+      homerBig: { id: "homerBig", asset: assets.diamondHomerBigSfx as any, volume: 0.9 },
+      quad: { id: "quad", asset: assets.diamondQuadSfx as any, volume: 0.9 },
+      crowd: { id: "crowd", asset: assets.diamondCrowdSfx as any, volume: 0.3, loop: true },
+      uiClick: { id: "uiClick", asset: assets.diamondClickSfx as any, volume: 0.4 },
+      uiConfirm: { id: "uiConfirm", asset: assets.diamondConfirmSfx as any, volume: 0.5 },
+      swing: { id: "swing", asset: assets.diamondSwingSfx as any, volume: 0.5 },
+      win: { id: "win", asset: assets.diamondOrganSfx as any, volume: 0.8 },
+      lose: { id: "lose", asset: assets.diamondWindSfx as any, volume: 0.7 },
+      walk: { id: "walk", asset: assets.diamondWalkSfx as any, volume: 0.5 }
     },
     buses: [{ id: "sfx" } as any]
   } as any);
@@ -3117,6 +3117,12 @@ function boot(): void {
       state: () => ({ mode: G.mode, phase: G.phase, park: G.park, inning: G.inning, half: G.half, score: { ...G.score }, outs: G.outs, bases: [...G.bases] })
     };
   });
+
+  const bootParams = new URLSearchParams(window.location.search);
+  const bootPark = bootParams.get("park") as ParkId | null;
+  if (bootPark && PARKS[bootPark]) setPark(bootPark);
+  const bootMode = bootParams.get("mode") as ModeId | null;
+  if (bootMode && bootMode !== "studio") startMode(bootMode);
 
   // Boot flourish
   setTimeout(() => {
