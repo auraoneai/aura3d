@@ -223,6 +223,7 @@ site/
 .webpack-cache/
 *.bundle.js
 *.bundle.js.map
+!apps/showcase-top-tennis/public/toptennis/tour-guest.bundle.js
 
 # ============================================================================
 # Misc
