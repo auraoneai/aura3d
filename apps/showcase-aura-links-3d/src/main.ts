@@ -635,7 +635,7 @@ function updateCardHud(): void {
   $("h-strokes")!.textContent = String(r.strokes);
   const dist = Math.max(0, state.terrain.cupDistance(r.ballPos[0], r.ballPos[2]));
   $("h-dist")!.textContent = `${dist.toFixed(0)}M TO PIN`;
-  const tp = state.card ? state.card.toPar + (r.strokes - hole.par) : 0;
+  const tp = state.card ? state.card.toPar + Math.max(0, r.strokes - hole.par) : 0;
   const el = $("h-topar")!;
   el.textContent = tp === 0 ? "E" : tp > 0 ? `+${tp}` : `${tp}`;
   el.classList.toggle("good", tp <= 0);
