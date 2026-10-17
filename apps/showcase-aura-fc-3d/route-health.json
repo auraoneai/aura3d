@@ -23,32 +23,32 @@
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.rooftopBall",
-      "quality": "production",
+      "typedRef": "assets.fcMatchBallMeshy",
+      "quality": "candidate",
       "role": "primaryBall"
     },
     {
-      "typedRef": "assets.rooftopFloodlightTowerMeshy",
-      "quality": "production",
+      "typedRef": "assets.fcFloodlightPylonMeshy",
+      "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.rooftopScoreboardRigMeshy",
-      "quality": "production",
+      "typedRef": "assets.fcScoreboardGantryMeshy",
+      "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.auroraHabitatDomeMeshy",
-      "quality": "production",
+      "typedRef": "assets.fcGlacierDomeMeshy",
+      "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.billiardsTrophyCabinetMeshy",
-      "quality": "production",
+      "typedRef": "assets.fcHeroTrophyMeshy",
+      "quality": "candidate",
       "role": "setDressing"
     }
   ],
-  "assetHonesty": "Match ball, floodlight towers, scoreboard gantry, glacier dome and trophy case are typed catalog GLBs. Athletes, pitch, goals, stands, crowd and cage are route-local primitives.",
+  "assetHonesty": "Match ball, floodlight pylons, scoreboard gantry, glacier dome and hero trophy are bespoke Meshy GLBs generated for this route (artifacts/meshy/fc-* provenance, admitted via assets import-meshy — no shared/defunct-game assets). Athletes, pitch, goals, stands, crowd and cage are route-local primitives.",
   "globalHandle": "__AURA3D_GAME_EVIDENCE__",
   "readySelector": "body[data-aura3d-ready=\"true\"]",
   "canvasSelector": "#app canvas",

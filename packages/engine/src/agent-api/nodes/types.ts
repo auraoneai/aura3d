@@ -102,20 +102,26 @@ export interface AuraAssetDefinition {
   readonly budget?: import("../../contracts/assets").AuraAssetBudget;
 }
 
+export interface AuraAssetBoundsMetadata {
+  readonly min?: readonly number[];
+  readonly max?: readonly number[];
+  readonly size?: readonly number[];
+  readonly center?: readonly number[];
+  readonly maxDimension?: number;
+  readonly [key: string]: unknown;
+}
+
 export interface AuraAssetMetadata {
+  readonly [key: string]: unknown;
   readonly materials?: readonly string[];
   readonly animations?: readonly string[];
+  readonly animationClips?: readonly string[];
   readonly textures?: readonly string[];
   /** Manifest-relative source path retained by the generated asset map. */
   readonly sourcePath?: string;
   /** Published `/aura-assets/` output path retained by the generated asset map. */
   readonly outputPath?: string;
-  readonly boundsMetadata?: {
-    readonly min?: readonly number[];
-    readonly max?: readonly number[];
-    readonly size?: readonly number[];
-    readonly center?: readonly number[];
-  };
+  readonly boundsMetadata?: AuraAssetBoundsMetadata;
   readonly thumbnailUrl?: string;
   readonly license?: string;
   readonly author?: string;

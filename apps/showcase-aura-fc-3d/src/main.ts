@@ -496,8 +496,8 @@ function boot(): void {
         audio: (audio as any)?.evidence ?? null,
         eventLog: eventLog.snapshot(),
         meshyAssets: [
-          "rooftopBall", "rooftopFloodlightTowerMeshy", "rooftopScoreboardRigMeshy",
-          "auroraHabitatDomeMeshy", "billiardsTrophyCabinetMeshy"
+          "fcMatchBallMeshy", "fcFloodlightPylonMeshy", "fcScoreboardGantryMeshy",
+          "fcGlacierDomeMeshy", "fcHeroTrophyMeshy"
         ],
         modes: ["quick", "demo", "shootout", "touch", "circuit", "studio"],
         venues: VENUE_ORDER,

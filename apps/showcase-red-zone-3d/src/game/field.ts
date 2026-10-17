@@ -167,7 +167,7 @@ export function buildStadiumNodes(venue: Stadium, lite = false): any[] {
   towers.forEach(([x, z], i) => {
     if (!lite) {
       nodes.push(
-        model(assets.rooftopFloodlightTowerMeshy, { name: `flood-tower-${i}`, targetHeight: 14 })
+        model(assets.rzFloodlightPylonMeshy, { name: `flood-tower-${i}`, targetHeight: 14 })
           .position(x, 0, z)
           .rotate(0, Math.atan2(-x, -(z - 50)), 0)
       );
@@ -181,7 +181,7 @@ export function buildStadiumNodes(venue: Stadium, lite = false): any[] {
   // --- broadcast scoreboard gantry (typed catalog asset) ---
   if (!lite) {
     nodes.push(
-      model(assets.rooftopScoreboardRigMeshy, { name: "scoreboard-gantry", targetHeight: 7.5 })
+      model(assets.rzScoreboardGantryMeshy, { name: "scoreboard-gantry", targetHeight: 7.5 })
         .position(0, 5.4, -EZ - 17)
     );
   }
@@ -204,15 +204,15 @@ export function buildStadiumNodes(venue: Stadium, lite = false): any[] {
       primitives.box({ name: `bench-${side}-back-b`, size: [8, 0.9, 0.24], material: material.pbr({ color: "#1d2430", roughness: 0.8 }) }).position(side * (W + 3.2), 0.85, 65)
     );
   }
-  // sideline staff (typed rigged humanoids — reuse rooftop athlete as staff)
+  // sideline dressing: championship cup pedestal by the tunnel + ball rack
   if (!lite) {
     nodes.push(
-      model(assets.rooftopShooterCleanMeshy, { name: "staff-l", targetHeight: 1.82 })
+      model(assets.rzLombardiCupMeshy, { name: "cup-pedestal", targetHeight: 1.9 })
         .position(-W - 3.2, 0, 30).rotate(0, Math.PI / 2.6, 0)
-        .animate({ clip: "Idle_Loop", loop: true } as any),
-      model(assets.rooftopShooterCleanMeshy, { name: "staff-r", targetHeight: 1.82 })
-        .position(W + 3.2, 0, 70).rotate(0, -Math.PI / 2.6, 0)
-        .animate({ clip: "Crouch_Idle_Loop", loop: true } as any)
+        .runtime(game.runtimeNode("cup-pedestal")),
+      model(assets.rzFootballMeshy, { name: "ball-rack", targetHeight: 0.5 })
+        .position(W + 3.2, 0.28, 70).rotate(0, -Math.PI / 2.6, 0)
+        .runtime(game.runtimeNode("ball-rack"))
     );
   }
 
@@ -232,7 +232,7 @@ export function buildStadiumNodes(venue: Stadium, lite = false): any[] {
   // --- venue roof shell for domes (typed habitat dome) ---
   if (dome && !lite) {
     nodes.push(
-      model(assets.auroraHabitatDomeMeshy, { name: "dome-shell", targetHeight: 34 })
+      model(assets.rzAltitudeDomeMeshy, { name: "dome-shell", targetHeight: 34 })
         .position(0, -2, 50).runtime(game.runtimeNode("dome-shell"))
     );
   }
@@ -274,11 +274,9 @@ export function buildStadiumNodes(venue: Stadium, lite = false): any[] {
 
 export function buildPlayNodes(): any[] {
   const nodes: any[] = [
-    // football: prolate spheroid (scaled sphere) + laces stripe + shadow
-    primitives.sphere({ name: "football", size: [0.42, 0.42, 0.66], material: material.pbr({ color: "#7a4a26", roughness: 0.6 }) })
+    // football: typed catalog GLB (real textured ball) + shadow
+    model(assets.rzFootballMeshy, { name: "football", targetHeight: 0.42 })
       .runtime(game.runtimeNode("football")),
-    primitives.torus({ name: "football-laces", size: [0.16, 0.02, 0.02], material: material.pbr({ color: "#e8e3d4", roughness: 0.5 }) })
-      .runtime(game.runtimeNode("football-laces")),
     primitives.cylinder({ name: "football-shadow", size: [0.5, 0.008, 0.5], material: material.pbr({ color: "#000000", opacity: 0.4, roughness: 1 }) })
       .runtime(game.runtimeNode("football-shadow")),
     // ball spiral trail

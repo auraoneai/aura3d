@@ -15,24 +15,30 @@
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.rooftopFloodlightTowerMeshy",
-      "quality": "production",
+      "typedRef": "assets.rzFootballMeshy",
+      "quality": "candidate",
+      "role": "primaryBall"
+    },
+    {
+      "typedRef": "assets.rzFloodlightPylonMeshy",
+      "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.rooftopScoreboardRigMeshy",
-      "quality": "production",
+      "typedRef": "assets.rzScoreboardGantryMeshy",
+      "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.rooftopShooterCleanMeshy",
-      "quality": "production",
-      "role": "supportingCast"
+      "typedRef": "assets.rzLombardiCupMeshy",
+      "quality": "candidate",
+      "role": "setDressing"
     },
     {
-      "typedRef": "assets.auroraHabitatDomeMeshy",
-      "quality": "production",
+      "typedRef": "assets.rzAltitudeDomeMeshy",
+      "quality": "candidate",
       "role": "setDressing"
     }
-  ]
+  ],
+  "assetHonesty": "Game football, floodlight pylons, scoreboard gantry, Lombardi cup and altitude dome are bespoke Meshy GLBs generated for this route (artifacts/meshy/rz-* provenance, admitted via assets import-meshy — no shared/defunct-game assets). Players, field, goalposts, stands and crowd are route-local primitives."
 }

@@ -924,7 +924,7 @@ function onFrameInner() {
     }),
     accessibility: (game as any).accessibility.settings([], { reducedMotion, reducedFlash, highContrast: params.has("highContrast") }),
     touch: touchControls?.evidence?.() ?? null,
-    meshyAssets: ["rooftopFloodlightTowerMeshy", "rooftopScoreboardRigMeshy", "rooftopShooterCleanMeshy", "auroraHabitatDomeMeshy"]
+    meshyAssets: ["rzFloodlightPylonMeshy", "rzScoreboardGantryMeshy", "rzFootballMeshy", "rzLombardiCupMeshy", "rzAltitudeDomeMeshy"]
   });
 }
 
@@ -941,7 +941,7 @@ const bootPublish = () => {
       framesRendered, demo: DEMO,
       eventLog: eventLog.snapshot(),
       diagnostics: diag,
-      meshyAssets: ["rooftopFloodlightTowerMeshy", "rooftopScoreboardRigMeshy", "rooftopShooterCleanMeshy", "auroraHabitatDomeMeshy"]
+      meshyAssets: ["rzFloodlightPylonMeshy", "rzScoreboardGantryMeshy", "rzFootballMeshy", "rzLombardiCupMeshy", "rzAltitudeDomeMeshy"]
     } as any);
   } catch (e) { console.error("[rz3d] evidence boot publish failed", e); }
 };

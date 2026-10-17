@@ -1,10 +1,11 @@
 /**
  * Red Zone 3D — route-local typed-asset manifest.
  *
- * Registers the four shared-catalog GLBs the stadium dressing uses through the
+ * Registers the Meshy GLBs generated specifically for this game through the
  * engine's own `defineAuraAssets`, producing proper branded `AuraAssetRef`s —
  * the same mechanism src/aura-assets.ts uses, kept route-local so this app has
- * no imports outside its own directory.
+ * no imports outside its own directory. Provenance: artifacts/meshy/rz-*
+ * dirs (task.json + rights.json per asset).
  *
  * Keys are intentionally unquoted: the remote-capture serve-tree assembler
  * (tools/remote-capture.sh) globs `apps/<route>/src/aura-assets-*.ts` and
@@ -14,33 +15,40 @@
 import { defineAuraAssets } from "@aura3d/engine";
 
 export const assets = defineAuraAssets({
-  rooftopFloodlightTowerMeshy: {
+  rzFloodlightPylonMeshy: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopFloodlightTowerMeshy.1bfcdd0b.glb",
-    hash: "sha256-1bfcdd0b57f632f8c32f1bbdf5ce5a7e57fe169e61aeb28047711dc333efca30",
-    bounds: [1.8974, 1.434, 1.8967]
+    url: "/aura-assets/rzFloodlightPylonMeshy.8b4b487c.glb",
+    hash: "sha256-8b4b487ca2879f04e128e1e2208bd9a652c030cac2e66328be275c6cf82a2f76",
+    bounds: [0.721, 1.903, 0.72]
   },
-  rooftopScoreboardRigMeshy: {
+  rzScoreboardGantryMeshy: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopScoreboardRigMeshy.866123b7.glb",
-    hash: "sha256-866123b72952441f5abb5abb0343ac6063d09a9cac9fab086bfae8c96888c29c",
-    bounds: [1.905, 1.089, 1.844]
+    url: "/aura-assets/rzScoreboardGantryMeshy.074aba14.glb",
+    hash: "sha256-074aba14774630569c0673a163c7c0b8c7df1f1aba6ed69b143dbd7e683cbb6b",
+    bounds: [1.902, 0.817, 1.233]
   },
-  rooftopShooterCleanMeshy: {
+  rzFootballMeshy: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopShooterCleanMeshy.2be27d6a.glb",
-    hash: "sha256-fcf0841169f4c4add2d0fd64bf3addec20b810b46d237d89e070188a9aaff3b2",
-    bounds: [0.6268, 1.8741, 0.4102]
+    url: "/aura-assets/rzFootballMeshy.b7a28a16.glb",
+    hash: "sha256-b7a28a1681ca08193ae54ba9dc1554ca52630d01ccbbe4efc1c0ab06e5b8fdeb",
+    bounds: [1.9, 1.265, 1.25]
   },
-  auroraHabitatDomeMeshy: {
+  rzLombardiCupMeshy: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/auroraHabitatDomeMeshy.b0e5deb5.glb",
-    hash: "sha256-b0e5deb5455a3763e10a6525c55687ebc05a0ba1cbf012887b7bc5d9a638912f",
-    bounds: [1.704, 1.033, 1.903]
+    url: "/aura-assets/rzLombardiCupMeshy.35a24607.glb",
+    hash: "sha256-35a2460780fa005ead8e51dee961b5eb1497e64fcd99c726b30b8ebc85eb535e",
+    bounds: [1.331, 1.901, 0.752]
+  },
+  rzAltitudeDomeMeshy: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rzAltitudeDomeMeshy.d55978a7.glb",
+    hash: "sha256-d55978a78dd57a3e0f3be99e5c9da0d332adaae2fdd94516e315748a5b990e9e",
+    bounds: [1.899, 0.769, 1.879]
   }
 } as const);
 

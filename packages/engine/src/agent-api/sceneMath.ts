@@ -218,7 +218,21 @@ export function primitiveSize(node: AuraPrimitiveNode): AuraVec3 {
   // Applying the public text size again here shrinks/grows the GPU quad twice.
   if (node.text3D?.backend === "sdf") return [1, 1, 1];
   if (typeof node.size === "number") return [node.size, node.size, node.size];
-  return node.size ?? [1, 1, 1];
+  const size = node.size;
+  if (!size) return [1, 1, 1];
+  if (size.length >= 3) return [size[0] ?? 1, size[1] ?? 1, size[2] ?? 1];
+  // Two-element sizes are a 2D footprint shorthand; missing axes must never
+  // reach the model matrix (undefined * x produced NaN matrices upstream).
+  const s0 = size[0] ?? 1;
+  const s1 = size[1] ?? 1;
+  // `litPlane` spans X/Z (y = 0): [w, d] -> [w, 1, d]. Holds both for ground
+  // planes and planes rotated upright (local Z -> world Y).
+  if (node.primitive === "plane") return [s0, 1, s1];
+  // Torus ring size + tube thickness: [ring, tube] -> [ring, ring, tube].
+  if (node.primitive === "torus") return [s0, s0, s1];
+  // Radially symmetric extrusions: [radius, height] -> [r, h, r].
+  if (node.primitive === "cylinder" || node.primitive === "capsule") return [s0, s1, s0];
+  return [s0, s1, 1];
 }
 
 export function multiply4(a: Float32Array, b: Float32Array): Float32Array {

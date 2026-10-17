@@ -1,1 +1,241 @@
-null
+{
+  "route": "showcase-aura-fc-3d",
+  "engine": "@aura3d/engine",
+  "ready": true,
+  "framesRendered": 18,
+  "look": "interior-industrial",
+  "mode": "demo",
+  "phase": "kickoff",
+  "half": 1,
+  "clock": 0.8,
+  "venue": "munich",
+  "score": [
+    0,
+    0
+  ],
+  "ball": {
+    "position": [
+      0,
+      0.16,
+      0
+    ],
+    "mode": "dead",
+    "lastShot": "none",
+    "freeT": 0
+  },
+  "possessionTeam": null,
+  "possession": [
+    0,
+    0
+  ],
+  "controlledId": null,
+  "userTeam": null,
+  "kicks": 0,
+  "shotsOn": [
+    0,
+    0
+  ],
+  "saves": [
+    0,
+    0
+  ],
+  "corners": [
+    0,
+    0
+  ],
+  "shootout": null,
+  "winner": null,
+  "cameraMode": "broadcast",
+  "camera": {
+    "position": [
+      0,
+      23.5,
+      37.5
+    ],
+    "target": [
+      0,
+      0.4,
+      0
+    ],
+    "fov": 15.5
+  },
+  "paused": false,
+  "athleteCount": 10,
+  "juice": {
+    "backend": "dom",
+    "shake": "none",
+    "rumbleVia": "none",
+    "events": {},
+    "droppedFlashes": 0
+  },
+  "accessibility": {
+    "reducedMotion": false,
+    "reducedFlash": false,
+    "highContrast": false
+  },
+  "touch": {
+    "preset": "dpad-4btn",
+    "genre": "fight",
+    "bound": [
+      "left",
+      "right",
+      "block",
+      "light",
+      "heavy",
+      "special",
+      "jump"
+    ],
+    "visible": false,
+    "sticks": []
+  },
+  "audio": {
+    "kind": "aura-game-audio-evidence",
+    "enabled": true,
+    "muted": false,
+    "unlocked": false,
+    "contextState": "suspended",
+    "cueCount": 9,
+    "busCount": 2,
+    "playedCueCount": 0,
+    "suppressedCueCount": 0,
+    "synthCues": 0,
+    "lastCue": null,
+    "errors": [],
+    "buses": [
+      {
+        "id": "master",
+        "volume": 1,
+        "muted": false
+      },
+      {
+        "id": "sfx",
+        "volume": 1,
+        "muted": false
+      }
+    ],
+    "busLevels": [
+      {
+        "id": "master",
+        "volume": 1,
+        "muted": false,
+        "level": 1
+      },
+      {
+        "id": "sfx",
+        "volume": 1,
+        "muted": false,
+        "level": 1
+      }
+    ],
+    "listenerPosition": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "playingNodes": [],
+    "duckingActive": false,
+    "footplants": 0
+  },
+  "eventLog": {
+    "kind": "aura-game-event-log",
+    "label": "aura-fc-3d events",
+    "count": 0,
+    "events": [],
+    "types": []
+  },
+  "meshyAssets": [
+    "rooftopBall",
+    "rooftopFloodlightTowerMeshy",
+    "rooftopScoreboardRigMeshy",
+    "auroraHabitatDomeMeshy",
+    "billiardsTrophyCabinetMeshy"
+  ],
+  "modes": [
+    "quick",
+    "demo",
+    "shootout",
+    "touch",
+    "circuit",
+    "studio"
+  ],
+  "venues": [
+    "favela",
+    "munich",
+    "lagos",
+    "kyoto",
+    "uyuni",
+    "glacier"
+  ],
+  "clubs": [
+    "aurora",
+    "kings",
+    "iron",
+    "waves",
+    "kites",
+    "stars",
+    "giants",
+    "storm"
+  ],
+  "hud": {
+    "kind": "aura-game-hud-snapshot",
+    "frame": 0,
+    "time": 0,
+    "values": [
+      {
+        "kind": "aura-game-hud-value",
+        "id": "hud:score",
+        "binding": "score",
+        "label": "score",
+        "source": "app-state",
+        "valuePath": "appState.score",
+        "value": "0-0",
+        "formatted": "0-0",
+        "changed": false,
+        "a11yLabel": "score"
+      },
+      {
+        "kind": "aura-game-hud-value",
+        "id": "hud:value:appState-venue",
+        "binding": "value",
+        "label": "venue",
+        "source": "app-state",
+        "valuePath": "appState.venue",
+        "value": "munich",
+        "formatted": "munich",
+        "changed": false,
+        "a11yLabel": "venue"
+      },
+      {
+        "kind": "aura-game-hud-value",
+        "id": "hud:value:appState-mode",
+        "binding": "value",
+        "label": "mode",
+        "source": "app-state",
+        "valuePath": "appState.mode",
+        "value": "demo",
+        "formatted": "demo",
+        "changed": false,
+        "a11yLabel": "mode"
+      },
+      {
+        "kind": "aura-game-hud-value",
+        "id": "hud:value:appState-phase",
+        "binding": "value",
+        "label": "phase",
+        "source": "app-state",
+        "valuePath": "appState.phase",
+        "value": "kickoff",
+        "formatted": "kickoff",
+        "changed": false,
+        "a11yLabel": "phase"
+      }
+    ],
+    "changedIds": [],
+    "events": []
+  },
+  "deterministic": {
+    "ik": "solveArmElbow",
+    "ballSim": "sim.ts",
+    "seed": "lcg:0xf0a7ba11"
+  }
+}

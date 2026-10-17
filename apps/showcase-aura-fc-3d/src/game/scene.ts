@@ -244,7 +244,7 @@ function stadiumNodes(v: VenueSpec): any[] {
   ];
   towers.forEach(([x, z], i) => {
     nodes.push(
-      model(assets.rooftopFloodlightTowerMeshy, { name: `flood-${i}`, targetHeight: 12.5 })
+      model(assets.fcFloodlightPylonMeshy, { name: `flood-${i}`, targetHeight: 12.5 })
         .position(x, 0, z)
         .rotate(0, Math.atan2(-x, -z), 0),
       lights.spot({ name: `flood-spot-${i}`, position: [x * 0.94, 12, z * 0.94], target: [0, 0, 0], angle: 0.52, penumbra: 0.5, intensity: 2.3, color: v.floodColor, distance: 90 }),
@@ -255,7 +255,7 @@ function stadiumNodes(v: VenueSpec): any[] {
 
   /* ---- Scoreboard gantry + emissive screen ---- */
   nodes.push(
-    model(assets.rooftopScoreboardRigMeshy, { name: "fc-gantry", targetHeight: 7.5 })
+    model(assets.fcScoreboardGantryMeshy, { name: "fc-gantry", targetHeight: 7.5 })
       .position(0, 5.4, -(PITCH_HZ + 9.5)),
     primitives.box({ name: "fc-scoreboard-screen", size: [9.5, 3.1, 0.3], material: material.emissive({ color: "#0d2436", emissive: v.accent, emissiveIntensity: 0.35 }) })
       .position(0, 7.2, -(PITCH_HZ + 9.2))
@@ -264,7 +264,7 @@ function stadiumNodes(v: VenueSpec): any[] {
 
   /* ---- Glacier dome + aurora ribbons ---- */
   nodes.push(
-    model(assets.auroraHabitatDomeMeshy, { name: "fc-dome", targetHeight: 26 })
+    model(assets.fcGlacierDomeMeshy, { name: "fc-dome", targetHeight: 26 })
       .position(0, 0, 0)
       .runtime(gameRuntime("fc-dome"))
   );
@@ -284,11 +284,11 @@ function stadiumNodes(v: VenueSpec): any[] {
     primitives.box({ name: "dugout-away", size: [4.4, 1.4, 1.4], material: material.pbr({ color: "#1c2634", roughness: 0.8 }) })
       .position(7, 0.7, PITCH_HZ + 4.0),
     // trophy cabinet by the tunnel (catalog dressing)
-    model(assets.billiardsTrophyCabinetMeshy, { name: "fc-trophy-case", targetHeight: 2.2 })
+    model(assets.fcHeroTrophyMeshy, { name: "fc-trophy-case", targetHeight: 2.2 })
       .position(-PITCH_HX - 4.5, 0.9, -(PITCH_HZ + 3.5))
       .rotate(0, 0.8, 0),
     // spare match balls on a rack
-    model(assets.rooftopBall, { name: "fc-spare-ball", targetHeight: 0.4 })
+    model(assets.fcMatchBallMeshy, { name: "fc-spare-ball", targetHeight: 0.4 })
       .position(PITCH_HX + 3.4, 0.1, PITCH_HZ + 3.6)
   );
 
@@ -309,7 +309,7 @@ function stadiumNodes(v: VenueSpec): any[] {
 function ballNodes(): any[] {
   return [
     // match ball: typed catalog GLB + emissive equator ring so it reads at broadcast distance
-    model(assets.rooftopBall, { name: "fc-ball", targetHeight: BALL_R * 2.2 })
+    model(assets.fcMatchBallMeshy, { name: "fc-ball", targetHeight: BALL_R * 2.2 })
       .runtime(gameRuntime("fc-ball")),
     primitives.sphere({ name: "fc-ball-glow", size: [BALL_R * 2.35, BALL_R * 2.35, BALL_R * 2.35], material: material.emissive({ color: "#f2f6ec", emissive: "#f2f6ec", emissiveIntensity: 0.35, opacity: 0.5 }) })
       .runtime(gameRuntime("fc-ball-glow")),
