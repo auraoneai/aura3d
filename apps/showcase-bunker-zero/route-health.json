@@ -6,27 +6,100 @@
   "classification": "prototype",
   "publicShowcase": false,
   "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
-  "qualityGate": { "status": "unreviewed" },
+  "qualityGate": {
+    "status": "unreviewed"
+  },
   "machinePass": false,
   "renderer": {
-    "path": "createGame → createAuraApp root safe API",
+    "path": "createGame \u2192 createAuraApp root safe API",
     "mode": "production",
     "nativeWebGPU": false,
     "productionRuntimeClaimed": true
   },
   "primaryAssets": [
-    { "typedRef": "assets.gallerySecurityGuardMeshy", "quality": "production", "role": "supportingCast" },
-    { "typedRef": "assets.mechHeroPlayerMeshy", "quality": "production", "role": "supportingCast" },
-    { "typedRef": "assets.mechHangarRivalUnitMeshy", "quality": "production", "role": "primaryCharacter" },
-    { "typedRef": "assets.corridorPulseRifleMeshy", "quality": "production", "role": "primaryWeapon" },
-    { "typedRef": "assets.corridorMuzzleFlameBurstMeshy", "quality": "candidate", "role": "vfx", "generator": "meshy" },
-    { "typedRef": "assets.corridorFireAmmoCrateMeshy", "quality": "candidate", "role": "prop", "generator": "meshy" },
-    { "typedRef": "assets.fpsEnergyCorePickupMeshy", "quality": "candidate", "role": "pickup", "generator": "meshy" },
-    { "typedRef": "assets.fpsSciFiCoverCrateMeshy", "quality": "candidate", "role": "prop", "generator": "meshy" },
-    { "typedRef": "assets.siegeWoodenBarrel", "quality": "production", "role": "prop" },
-    { "typedRef": "assets.deepSunkenReactorCoreMeshy", "quality": "production", "role": "pickup" },
-    { "typedRef": "assets.vaultCenterCoreTargetMeshy", "quality": "production", "role": "pickup" },
-    { "typedRef": "assets.showcaseOrangeIndustrialRobot", "quality": "production", "role": "supportingCast" },
-    { "typedRef": "assets.deepRecoveryCrateStandard", "quality": "production", "role": "prop" }
+    {
+      "typedRef": "assets.bunkerKeyMeshy",
+      "hash": "sha256-bf52947c41273255d6d6f99860848145104de27a421b3292f5a6019054ecb07a",
+      "quality": "candidate",
+      "role": "pickup",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.bunkerGuardMeshy",
+      "hash": "sha256-94733051850e41400d5cc05590545e83cf095ef95ae2fdb47be6db6f0be27c4e",
+      "quality": "candidate",
+      "role": "supportingCast",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.bunkerHoundMeshy",
+      "hash": "sha256-5635dd96fbb15fc9f85913c14d99a2847147e2afbfb59093a456887b641e33a4",
+      "quality": "candidate",
+      "role": "supportingCast",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.bunkerGunnerMeshy",
+      "hash": "sha256-a7ba19199028928fe6079ab758342f94d4b7983e240bba6044047d271d9da4e3",
+      "quality": "candidate",
+      "role": "supportingCast",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.bunkerWardenMeshy",
+      "hash": "sha256-e64afa2d56a1462857857b1ae49abcc80ebad6f0af82a922cb14698071dbc2b9",
+      "quality": "candidate",
+      "role": "primaryEnemy",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.bunkerArmorMeshy",
+      "hash": "sha256-40ab638a9916f9de3af9cd9aef65db1b15aca80d84e19efa025c28f55dbb699f",
+      "quality": "candidate",
+      "role": "pickup",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.bunkerBarrelMeshy",
+      "hash": "sha256-d1eec7e36026d304876d971dd818cac7158aaf8211901294fbc8f03631a5eb99",
+      "quality": "candidate",
+      "role": "prop",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.bunkerCrateMeshy",
+      "hash": "sha256-6699a89d445a4624803ccf8f979f8a179588baf4a426fb0e2c2589626e4f83ae",
+      "quality": "candidate",
+      "role": "prop",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.bunkerTreasureMeshy",
+      "hash": "sha256-21ede839a22a8faadcdccd4588c201fe540f9d8cc51beef495884284051bab9a",
+      "quality": "candidate",
+      "role": "pickup",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.corridorPulseRifleMeshy",
+      "hash": "sha256-de9ae48dedfecba3a57fedef847300205e65edb236421ac659eb2762257bfb32",
+      "quality": "candidate",
+      "role": "primaryWeapon",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.corridorMuzzleFlameBurstMeshy",
+      "hash": "sha256-ae2d35082b235c8becb831c5afd8ef37f7024d939c347cce469e1e11abef2dbd",
+      "quality": "candidate",
+      "role": "vfx",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.corridorFireAmmoCrateMeshy",
+      "hash": "sha256-963c58ca43c83a3e7f7184ae79d9e9d8f17605a01b6c110ddc8b70db33615751",
+      "quality": "candidate",
+      "role": "prop",
+      "generator": "meshy"
+    }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-10-12T00:00:00.000Z",
+  "generatedAt": "2026-10-18T00:00:00.000Z",
   "appId": "showcase-slingshot-siege",
   "route": "/apps/showcase-slingshot-siege/",
   "classification": "prototype",
@@ -19,33 +19,148 @@
     "chapters": 6
   },
   "primaryAssets": [
-    { "typedRef": "assets.siegeCatapultMeshy", "hash": "sha256-5d4a533e53893b4b4893160829ced0763fc51862bc3cd5495e7c360c8c1d8bdd", "quality": "candidate", "role": "prop" },
-    { "typedRef": "assets.siegeWoodenCrate", "hash": "sha256-005914e1a839d87bd840c1ba2b9ee20c805d460abac0c7096a1d762933cf6ba0", "quality": "candidate", "role": "prop" },
-    { "typedRef": "assets.siegeWoodenBarrel", "hash": "sha256-a510ed05dfe71f886e4b113a9146904b910ed412671856b9578f886a334bff8a", "quality": "candidate", "role": "prop" },
-    { "typedRef": "assets.siegeWatchtowerMeshy", "hash": "sha256-fafe21297079d47e41d890704ebb9169eff1672130c26061569e6fe0f8ec35b1", "quality": "candidate", "role": "prop" },
-    { "typedRef": "assets.siegeCastleGatehouseMeshy", "hash": "sha256-9457851c9247777c8f27a3e7f0b8c14c5576cc21eaeff3a3a99faca17c511ba9", "quality": "candidate", "role": "prop" },
-    { "typedRef": "assets.siegeWindmillTowerMeshy", "hash": "sha256-781c80ad94d8d17c5a7712c396aa0d90b4d8a79b73a599b926b7efa7559e5223", "quality": "candidate", "role": "prop" },
-    { "typedRef": "assets.siegeStoneBridgeMeshy", "hash": "sha256-886393a622fd769d762e468c4075d1740a6ff7db8ce1813f31da01c1bf0b372d", "quality": "candidate", "role": "prop" },
-    { "typedRef": "assets.siegePlankSet", "hash": "sha256-a85f12130a9fa2069b5d423065bc5201d7403442e395e522b9b47b82254764ec", "quality": "candidate", "role": "prop" }
+    {
+      "typedRef": "assets.gullsiegeCatapultMeshy",
+      "hash": "sha256-d6a372044f3b2eb835eb22d39d13cb7c497a1972a6e4344279e89a631b25786c",
+      "quality": "candidate",
+      "role": "primaryProp",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.gullsiegeWatchtowerMeshy",
+      "hash": "sha256-546ee76181e8a93ce5188f010381d6f70e403e06263a0e87384aa7b53c0373c9",
+      "quality": "candidate",
+      "role": "prop",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.gullsiegeBridgeMeshy",
+      "hash": "sha256-40b2195ae794b435730fbf35d82a4e1ddcb2209c18913d53fe33c7d9591bd6c1",
+      "quality": "candidate",
+      "role": "prop",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.gullsiegeCrateMeshy",
+      "hash": "sha256-d802d835fa66b9e9a9806db3cdb38ace6345ca439fedfd0f3629a5e673c8f54a",
+      "quality": "candidate",
+      "role": "prop",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.gullsiegeBarrelMeshy",
+      "hash": "sha256-240ded9ac549995a79837fe97e82469f62c0e5d8040cce53b93559de6783a12e",
+      "quality": "candidate",
+      "role": "prop",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.gullsiegePlanksMeshy",
+      "hash": "sha256-1075e2d6057ae36b2f18bae60daa21db310ad50cbdfeb982c59b04c38232b68a",
+      "quality": "candidate",
+      "role": "prop",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.gullsiegeGatehouseMeshy",
+      "hash": "sha256-c54a43ad9312f2cd66b17f53bc6a3dd6a215d4a6c9111a3d8a9ce65132413845",
+      "quality": "candidate",
+      "role": "prop",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.gullsiegeWindmillMeshy",
+      "hash": "sha256-f4ebca18e7a000a7da11a30415ccebfbf0abced29e7e9aa36ac27426c0ce1841",
+      "quality": "candidate",
+      "role": "prop",
+      "generator": "meshy"
+    }
   ],
   "audioAssets": [
-    { "typedRef": "assets.siegeAmbientWindSfx", "hash": "sha256-31de756668775840a1175e0e897f246a6a2eaf0d9e0e6aaf84d88d3cd4d5a2c5", "role": "ambience" },
-    { "typedRef": "assets.siegeWoodCrackSfx", "hash": "sha256-4b684a578aaafd61636e591dec7bd4ac2216f05b70bccd19886fe8f79fb80398", "role": "sfx" },
-    { "typedRef": "assets.siegeTargetDownSfx", "hash": "sha256-4e809a09ed89aaa66a4de01dcaba63adf93238d1666dd043e82894cbd80c9e97", "role": "sfx" },
-    { "typedRef": "assets.siegeUiConfirmSfx", "hash": "sha256-2b7ded10dfd6741fc933688e7be1da9c71efd067420f1b2fd92bc77bd36cc465", "role": "ui" },
-    { "typedRef": "assets.siegeMetalClangSfx", "hash": "sha256-2f9cb4e7fcd2a94e53eafd3edc83631294bf97272de14f6587feb3c4c8bbdb02", "role": "sfx" },
-    { "typedRef": "assets.siegeParChimeSfx", "hash": "sha256-4abc5762de681b1a52a1130ba5720ae798bd3f5ac65a77efd1b21e036e6061a0", "role": "ui" },
-    { "typedRef": "assets.siegeDriveHitSfx", "hash": "sha256-6850b55acb01f0404c913ce37f5439e4cec23587b9b1e2aa04223f6594941c7b", "role": "sfx" },
-    { "typedRef": "assets.siegeBogeyStingSfx", "hash": "sha256-fa7924aefb89c96ef6fe1707882b5f5ec6b277c3160d675fec2d1cc050d303eb", "role": "sfx" }
+    {
+      "typedRef": "assets.gullSiegeDriveHitSfx",
+      "hash": "sha256-07416cd69585acda130ecf16c3b8517dd598b2ab770853060991fa5eb6a3ab7d",
+      "role": "sfx",
+      "quality": "candidate",
+      "generator": "synth"
+    },
+    {
+      "typedRef": "assets.gullSiegeWoodCrackSfx",
+      "hash": "sha256-3425361460545a98ca83431032f48970f30f31bb0ef2845e2f98205eaecfd0bb",
+      "role": "sfx",
+      "quality": "candidate",
+      "generator": "synth"
+    },
+    {
+      "typedRef": "assets.gullSiegeMetalClangSfx",
+      "hash": "sha256-35e407bb915da2c4d5663e46ef06e4cb4205af20c82b65af5456b9c1eaedcab2",
+      "role": "sfx",
+      "quality": "candidate",
+      "generator": "synth"
+    },
+    {
+      "typedRef": "assets.gullSiegeTargetDownSfx",
+      "hash": "sha256-687c91cde8a6470954a20e65d6095b2bdfb8d25eaa4cfe858d87e5c5bb801956",
+      "role": "sfx",
+      "quality": "candidate",
+      "generator": "synth"
+    },
+    {
+      "typedRef": "assets.gullSiegeParChimeSfx",
+      "hash": "sha256-2dcf46a10202cfe5035281a066154bbf750551a28667f2297983ef4142ce8676",
+      "role": "ui",
+      "quality": "candidate",
+      "generator": "synth"
+    },
+    {
+      "typedRef": "assets.gullSiegeBogeyStingSfx",
+      "hash": "sha256-dfdda4b78d774098f0683bd7e429df86c024752c898864092213b182816e5e0e",
+      "role": "sfx",
+      "quality": "candidate",
+      "generator": "synth"
+    },
+    {
+      "typedRef": "assets.gullSiegeUiConfirmSfx",
+      "hash": "sha256-e2f9fb52aff42aafd94c74ee1fe4751afbff09459cf6614a288cdf9d6ce6df0c",
+      "role": "ui",
+      "quality": "candidate",
+      "generator": "synth"
+    },
+    {
+      "typedRef": "assets.gullSiegeAmbientWindSfx",
+      "hash": "sha256-ee6d2f2b6d338fb840efc399f15b12947fdbc795ade97aef206ff5fc6cde84ba",
+      "role": "ambience",
+      "quality": "candidate",
+      "generator": "synth"
+    }
   ],
   "gameplay": {
     "engine": "Rapier via physics.world() standalone controller, manually stepped",
     "levels": 30,
     "chapters": 6,
-    "ammoTypes": ["pebble", "stone", "triple", "squid", "ember"],
-    "modes": ["siege", "map", "studio", "range"],
+    "ammoTypes": [
+      "pebble",
+      "stone",
+      "triple",
+      "squid",
+      "ember"
+    ],
+    "modes": [
+      "siege",
+      "map",
+      "studio",
+      "range"
+    ],
     "deterministicDemo": "?demo=1",
-    "evidenceGlobals": ["__SLINGSHOT_SIEGE__", "__AURA3D_GAME_EVIDENCE__", "__AURA3D_ROUTE__", "__SS_STATE__", "__SS_PUMP__", "__SS_FIRE__", "__SS_LEVEL__"]
+    "evidenceGlobals": [
+      "__SLINGSHOT_SIEGE__",
+      "__AURA3D_GAME_EVIDENCE__",
+      "__AURA3D_ROUTE__",
+      "__SS_STATE__",
+      "__SS_PUMP__",
+      "__SS_FIRE__",
+      "__SS_LEVEL__"
+    ]
   },
   "qualityGate": {
     "status": "unreviewed",
