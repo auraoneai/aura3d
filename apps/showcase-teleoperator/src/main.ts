@@ -33,35 +33,35 @@ const teleopAdmittedAssets = defineAuraAssets({
     format: "glb",
     url: "/aura-assets/teleopWaymoHero.6d2a9bfb.glb",
     hash: "sha256-6d2a9bfb61613fd1e5a0fd64aa3b8222d237bc58b7486f009d014c61066ee45a",
-    bounds: [2.2, 2.4922, 4.5678]
+    bounds: [2.2, 2.521, 4.5678]
   },
   teleopWaymoTraffic: {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopWaymoTraffic.f476abe7.glb",
     hash: "sha256-f476abe7f85470beff321bef6c521e425a549c13e1a10cfdd3c41e1f339b4559",
-    bounds: [2.2016, 2.1402, 4.6207]
+    bounds: [2.2, 2.521, 4.5678]
   },
   teleopCybercab: {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopCybercab.08358a58.glb",
     hash: "sha256-08358a58dd8d530ccc7b4249db3a9d2e11ccf8ecfac1c9d9d7afea452a1de291",
-    bounds: [1.7532, 1.7856, 4.4179]
+    bounds: [1.7532, 1.7973, 4.4179]
   },
   teleopCybertruck: {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopCybertruck.6aa8f5c4.glb",
     hash: "sha256-6aa8f5c420b6362c41b6376fb8d7107e1af536450cff75580b094d201906ec7b",
-    bounds: [2.34, 2.231, 5.693]
+    bounds: [2.34, 2.3452, 5.693]
   },
   teleopCorvette: {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopCorvette.e7009c34.glb",
     hash: "sha256-e7009c3418b2d0c3163bd1af8737f3986bab9c372aea90ce81dab8fb37197598",
-    bounds: [2.0458, 1.5638, 4.6749]
+    bounds: [2.0458, 1.5639, 4.6749]
   },
   teleopMissions: {
     type: "model",
@@ -76,6 +76,48 @@ const teleopAdmittedAssets = defineAuraAssets({
     url: "/aura-assets/teleopCablecar.6412a9ca.glb",
     hash: "sha256-6412a9cac8abcb7b26156602dde013b87af5d8d7127cca6606f714fc18df16de",
     bounds: [2.8885, 4.093, 8.3975]
+  },
+  teleopSedan: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopSedan.glb",
+    hash: "sha256-teleopSedan",
+    bounds: [2.2076, 1.5586, 4.8408]
+  },
+  teleopSuv: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopSuv.glb",
+    hash: "sha256-teleopSuv",
+    bounds: [2.1864, 1.7948, 4.7481]
+  },
+  teleopTaxi: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopTaxi.glb",
+    hash: "sha256-teleopTaxi",
+    bounds: [2.1061, 1.5885, 4.5967]
+  },
+  teleopVan: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopVan.glb",
+    hash: "sha256-teleopVan",
+    bounds: [2.3593, 2.3621, 5.0734]
+  },
+  teleopPickup: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopPickup.glb",
+    hash: "sha256-teleopPickup",
+    bounds: [2.3697, 1.8376, 5.2906]
+  },
+  teleopBus: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopBus.glb",
+    hash: "sha256-teleopBus",
+    bounds: [3.8159, 5.6352, 11.9659]
   },
   heatsinkTowerL: {
     type: "model",
@@ -120,7 +162,7 @@ function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
 
-function rotateLocalOffset(
+export function rotateLocalOffset(
   root: Vec3,
   pitch: number,
   yaw: number,
@@ -166,38 +208,38 @@ interface FleetSpec {
 const PLAYABLE_FLEET: Record<PlayableCarId, FleetSpec> = {
   waymo: {
     id: "waymo",
-    name: "Apex I-PACE",
-    maker: "Apex Driver",
+    name: "Apex Lidar Cruiser",
+    maker: "Apex Autonomous",
     maxDim: 4.58,
-    rideY: 0.35,
+    rideY: 0,
     maxSpeedMps: 38,
     accel: 18,
     isIce: false,
     accent: "#3fd6c6",
-    hasRoofLidar: true,
+    hasRoofLidar: false,
     hasThrusters: false,
-    modeLabel: "AUTO · AURA AUTOPILOT"
+    modeLabel: "AUTO · APEX L5 AUTOPILOT"
   },
   cybercab: {
     id: "cybercab",
     name: "Cyber Coupe",
-    maker: "Tesla FSD",
+    maker: "Aura Autonomous",
     maxDim: 4.42,
-    rideY: 0.36,
+    rideY: 0,
     maxSpeedMps: 40,
     accel: 20,
     isIce: false,
     accent: "#e8c27a",
     hasRoofLidar: false,
     hasThrusters: false,
-    modeLabel: "AUTO · TESLA FSD"
+    modeLabel: "AUTO · NEURAL AUTOPILOT"
   },
   cybertruck: {
     id: "cybertruck",
-    name: "Titan EV FSD",
-    maker: "Tesla FSD",
+    name: "Titan EV Truck",
+    maker: "Aura Heavy Industries",
     maxDim: 5.55,
-    rideY: 0.42,
+    rideY: 0,
     maxSpeedMps: 43,
     accel: 22,
     isIce: false,
@@ -208,10 +250,10 @@ const PLAYABLE_FLEET: Record<PlayableCarId, FleetSpec> = {
   },
   corvette: {
     id: "corvette",
-    name: "Corvette ZR1X",
+    name: "Vortex GT",
     maker: "Manual Override",
     maxDim: 4.66,
-    rideY: 0.34,
+    rideY: 0,
     maxSpeedMps: 54,
     accel: 29,
     isIce: true,
@@ -222,16 +264,16 @@ const PLAYABLE_FLEET: Record<PlayableCarId, FleetSpec> = {
   },
   roadster: {
     id: "roadster",
-    name: "SpaceX Roadster",
-    maker: "SpaceX Package",
+    name: "Apex Interceptor",
+    maker: "Aura Aero Division",
     maxDim: 4.5,
-    rideY: 0.02,
+    rideY: 0,
     maxSpeedMps: 58,
     accel: 34,
     isIce: false,
     accent: "#38bdf8",
     hasRoofLidar: false,
-    hasThrusters: true,
+    hasThrusters: false,
     modeLabel: "COLD-GAS THRUSTERS"
   }
 };
@@ -1020,7 +1062,7 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-car-corvette")),
 
-    model(assets.roadsterRushPlayerCar, {
+    model(assets.teleopMissions, {
       name: "player-car-roadster",
       role: "primaryVehicle",
       scaleMode: "fit",
@@ -1030,14 +1072,14 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-car-roadster")),
 
-    // Apex 5th-Gen Driver Spinning Roof LiDAR Dome + Glowing Teal Ring + Fender Sensor Pods + Lamps + Thrusters
+    // Auxiliary primitive nodes kept hidden (vehicles have baked PBR wheels, lamps, and LiDAR domes)
     primitives
       .cylinder({
         name: "player-lidar-dome",
         size: [0.46, 0.24, 0.46],
         material: material.pbr({ color: "#0f172a", metalness: 0.85, roughness: 0.14 })
       })
-      .position(0, 1.72, -0.8)
+      .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-lidar-dome")),
     primitives
       .torus({
@@ -1045,7 +1087,7 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
         size: [0.28, 0.28, 0.045],
         material: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 2.35 })
       })
-      .position(0, 1.82, -0.8)
+      .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-lidar-ring")),
     primitives
       .box({
@@ -1053,7 +1095,7 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
         size: [0.38, 0.06, 0.08],
         material: material.emissive({ color: "#a5f3fc", emissive: "#38bdf8", emissiveIntensity: 2.1 })
       })
-      .position(0, 1.86, -0.8)
+      .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-lidar-fin")),
     primitives
       .sphere({
@@ -1061,7 +1103,7 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
         size: [0.24, 0.1, 0.16],
         material: material.emissive({ color: "#f0f9ff", emissive: "#bae6fd", emissiveIntensity: 1.8 })
       })
-      .position(-0.72, 0.72, -2.9)
+      .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-headlight-l")),
     primitives
       .sphere({
@@ -1069,7 +1111,7 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
         size: [0.24, 0.1, 0.16],
         material: material.emissive({ color: "#f0f9ff", emissive: "#bae6fd", emissiveIntensity: 1.8 })
       })
-      .position(0.72, 0.72, -2.9)
+      .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-headlight-r")),
     primitives
       .box({
@@ -1077,7 +1119,7 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
         size: [1.62, 0.08, 0.08],
         material: material.emissive({ color: "#ff1e27", emissive: "#ff1e27", emissiveIntensity: 1.95 })
       })
-      .position(0, 0.88, 1.38)
+      .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-tailbar")),
     primitives
       .cylinder({
@@ -1101,11 +1143,11 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
         size: [2.25, 0.014, 4.55],
         material: material.pbr({ color: "#05070b", roughness: 0.96 })
       })
-      .position(0, 0.025, -0.8)
+      .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-contact-shadow"))
   ]);
 
-  // 9. 5 Multiplayer Peer Vehicles (Lightweight GLBs for <2s load + projected .mpTag nameplates)
+  // 9. 5 Multiplayer Peer Vehicles (Textured GLBs + projected .mpTag nameplates)
   s.addMany([
     model(assets.teleopWaymoTraffic, {
       name: "peer-car-0",
@@ -1121,23 +1163,23 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
         size: [0.28, 0.28, 0.045],
         material: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 2.1 })
       })
-      .position(-3.2, 1.85, -24)
+      .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("peer-waymo-lidar-ring")),
 
-    model(assets.teleopCybertruck, {
+    model(assets.teleopCybercab, {
       name: "peer-car-1",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 5.35
+      targetMaxDimension: 4.42
     })
-      .position(7.4, 0.4, -32)
+      .position(7.4, 0, -32)
       .runtime(game.runtimeNode("peer-car-1")),
 
-    model(assets.roadsterRushPlayerCar, {
+    model(assets.teleopMissions, {
       name: "peer-car-2",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 4.45
+      targetMaxDimension: 4.5
     })
       .position(3.4, 0, -48)
       .runtime(game.runtimeNode("peer-car-2")),
@@ -1151,28 +1193,28 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
       .position(-3.2, 0, -42)
       .runtime(game.runtimeNode("peer-car-3")),
 
-    model(assets.roadsterRushTaxi, {
+    model(assets.teleopCorvette, {
       name: "peer-car-4",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 4.65
+      targetMaxDimension: 4.66
     })
       .position(-7.6, 0, -56)
       .runtime(game.runtimeNode("peer-car-4"))
   ]);
 
-  // 10. 10 AI City Traffic Vehicles (3 Sedan, 2 SUV, 2 Van, 2 Pickup, 1 Transit Bus)
+  // 10. 10 AI City Traffic Vehicles (2 Sedan, 2 Taxi, 2 SUV, 1 Van, 2 Pickup, 1 Transit Bus)
   const trafficSpecs = [
-    { id: "traffic-0", asset: assets.roadsterRushSedan, maxDim: 4.6 },
-    { id: "traffic-1", asset: assets.roadsterRushSedan, maxDim: 4.6 },
-    { id: "traffic-2", asset: assets.roadsterRushSedan, maxDim: 4.6 },
-    { id: "traffic-3", asset: assets.roadsterRushSuv, maxDim: 4.9 },
-    { id: "traffic-4", asset: assets.roadsterRushSuv, maxDim: 4.9 },
-    { id: "traffic-5", asset: assets.roadsterRushVan, maxDim: 5.3 },
-    { id: "traffic-6", asset: assets.roadsterRushVan, maxDim: 5.3 },
-    { id: "traffic-7", asset: assets.roadsterRushPickup, maxDim: 5.5 },
-    { id: "traffic-8", asset: assets.roadsterRushPickup, maxDim: 5.5 },
-    { id: "traffic-9", asset: assets.roadsterRushBus, maxDim: 11.8 }
+    { id: "traffic-0", asset: assets.teleopSedan, maxDim: 4.75 },
+    { id: "traffic-1", asset: assets.teleopTaxi, maxDim: 4.6 },
+    { id: "traffic-2", asset: assets.teleopSedan, maxDim: 4.75 },
+    { id: "traffic-3", asset: assets.teleopSuv, maxDim: 4.75 },
+    { id: "traffic-4", asset: assets.teleopSuv, maxDim: 4.75 },
+    { id: "traffic-5", asset: assets.teleopTaxi, maxDim: 4.6 },
+    { id: "traffic-6", asset: assets.teleopVan, maxDim: 5.05 },
+    { id: "traffic-7", asset: assets.teleopPickup, maxDim: 5.25 },
+    { id: "traffic-8", asset: assets.teleopPickup, maxDim: 5.25 },
+    { id: "traffic-9", asset: assets.teleopBus, maxDim: 11.8 }
   ];
 
   for (const spec of trafficSpecs) {
@@ -1434,21 +1476,21 @@ async function bootGridDispatchAura3D(): Promise<void> {
     {
       id: "peer-0",
       handle: "devon_ai",
-      carLabel: "Apex",
+      carLabel: "Apex Cruiser",
       piClass: "S 918",
       piColor: "#3fd6c6",
       accent: "#3fd6c6",
-      laneX: -3.2,
-      targetLaneX: -3.2,
-      zOffset: -24,
-      speed: 14.2,
-      baseSpeed: 14.2,
+      laneX: 7.4,
+      targetLaneX: 7.4,
+      zOffset: -22,
+      speed: 14.8,
+      baseSpeed: 14.8,
       rideY: 0,
       yawOffset: 0,
       isCableCar: false,
-      worldX: -3.2,
-      worldZ: -24,
-      distanceMeters: 24
+      worldX: 7.4,
+      worldZ: -22,
+      distanceMeters: 23
     },
     {
       id: "peer-1",
@@ -1457,36 +1499,36 @@ async function bootGridDispatchAura3D(): Promise<void> {
       piClass: "A 742",
       piColor: "#ffb347",
       accent: "#ffb347",
-      laneX: 7.4,
-      targetLaneX: 7.4,
-      zOffset: -34,
+      laneX: -3.2,
+      targetLaneX: -3.2,
+      zOffset: -38,
       speed: 15.1,
       baseSpeed: 15.1,
-      rideY: 0.4,
+      rideY: 0,
       yawOffset: 0,
       isCableCar: false,
-      worldX: 7.4,
-      worldZ: -34,
-      distanceMeters: 35
+      worldX: -3.2,
+      worldZ: -38,
+      distanceMeters: 38
     },
     {
       id: "peer-2",
       handle: "elena_x",
-      carLabel: "Roadster",
+      carLabel: "Apex Interceptor",
       piClass: "X 999",
       piColor: "#c45bff",
       accent: "#c45bff",
       laneX: 3.4,
       targetLaneX: 3.4,
-      zOffset: -52,
-      speed: 16.4,
-      baseSpeed: 16.4,
+      zOffset: -46,
+      speed: 15.8,
+      baseSpeed: 15.8,
       rideY: 0,
       yawOffset: 0,
       isCableCar: false,
       worldX: 3.4,
-      worldZ: -52,
-      distanceMeters: 52
+      worldZ: -46,
+      distanceMeters: 46
     },
     {
       id: "peer-3",
@@ -1495,36 +1537,36 @@ async function bootGridDispatchAura3D(): Promise<void> {
       piClass: "C 104",
       piColor: "#43d17a",
       accent: "#43d17a",
-      laneX: 3.4,
-      targetLaneX: 3.4,
+      laneX: -3.2,
+      targetLaneX: -3.2,
       zOffset: -19,
-      speed: 9.5,
-      baseSpeed: 9.5,
+      speed: 11.5,
+      baseSpeed: 11.5,
       rideY: 0,
-      yawOffset: 0,
+      yawOffset: Math.PI,
       isCableCar: true,
-      worldX: 3.4,
+      worldX: -3.2,
       worldZ: -19,
       distanceMeters: 19
     },
     {
       id: "peer-4",
       handle: "marcus_v8",
-      carLabel: "Corvette ZR1X",
+      carLabel: "Vortex GT",
       piClass: "S 990",
       piColor: "#ff5a1f",
       accent: "#ff5a1f",
       laneX: -7.6,
       targetLaneX: -7.6,
-      zOffset: -44,
+      zOffset: -31,
       speed: 15.6,
       baseSpeed: 15.6,
       rideY: 0,
       yawOffset: 0,
       isCableCar: false,
       worldX: -7.6,
-      worldZ: -44,
-      distanceMeters: 45
+      worldZ: -31,
+      distanceMeters: 32
     }
   ];
 
@@ -1707,7 +1749,7 @@ async function bootGridDispatchAura3D(): Promise<void> {
     }
 
     if (isOfferOrBoard && cardEl) {
-      const tagText = rideState === "boarding" ? "PICKING UP · KERB LOCKED" : "NEW WAYMO FARE · PICKUP → DROPOFF";
+      const tagText = rideState === "boarding" ? "PICKING UP · KERB LOCKED" : "NEW APEX FARE · PICKUP → DROPOFF";
       const distText = rideState === "boarding" ? "boarding…" : formatDist(distToBeacon);
       cardEl.innerHTML = `
         <div class="tx-head">
@@ -1791,7 +1833,7 @@ async function bootGridDispatchAura3D(): Promise<void> {
       const tipUsd = rideStyle === "comfort" ? 6.5 : 9.0;
       const earned = Math.round(fare.fareUsd + tipUsd);
       sumEl.innerHTML = `
-        <div class="tg">RIDE COMPLETE · WAYMO TELEOP</div>
+        <div class="tg">RIDE COMPLETE · APEX TELEOP</div>
         <div class="st">★★★★★</div>
         <div class="who2">${fare.passenger} · ${fare.pickupName} → ${fare.dropoffName}</div>
         <div class="ln"><span>Base Fare</span><b>$${fare.fareUsd.toFixed(2)}</b></div>
@@ -2396,62 +2438,16 @@ async function bootGridDispatchAura3D(): Promise<void> {
       }
     }
 
-    if (spec.hasRoofLidar) {
-      const domePos = rotateLocalOffset(pRoot, playerPitch, playerYaw, playerRoll, [0, 1.38, -0.1]);
-      const ringPos = rotateLocalOffset(pRoot, playerPitch, playerYaw, playerRoll, [0, 1.48, -0.1]);
-      const finPos = rotateLocalOffset(pRoot, playerPitch, playerYaw, playerRoll, [0, 1.53, -0.1]);
-      playerLidarDome
-        .setPosition(domePos[0], domePos[1], domePos[2])
-        .setRotation(playerPitch, simTime * 16, playerRoll)
-        .setScale([1, 1, 1])
-        .setVisible(true);
-      playerLidarRing
-        .setPosition(ringPos[0], ringPos[1], ringPos[2])
-        .setRotation(Math.PI * 0.5 + playerPitch, simTime * 12, playerRoll)
-        .setScale([1, 1, 1])
-        .setVisible(true);
-      playerLidarFin
-        .setPosition(finPos[0], finPos[1], finPos[2])
-        .setRotation(playerPitch, simTime * 18, playerRoll)
-        .setScale([1, 1, 1])
-        .setVisible(true);
-    } else {
-      playerLidarDome.setScale(HIDDEN_SCALE).setVisible(false);
-      playerLidarRing.setScale(HIDDEN_SCALE).setVisible(false);
-      playerLidarFin.setScale(HIDDEN_SCALE).setVisible(false);
-    }
-
-    const hlL = rotateLocalOffset(pRoot, playerPitch, playerYaw, playerRoll, [-0.72, 0.38, -2.15]);
-    const hlR = rotateLocalOffset(pRoot, playerPitch, playerYaw, playerRoll, [0.72, 0.38, -2.15]);
-    const tbPos = rotateLocalOffset(pRoot, playerPitch, playerYaw, playerRoll, [0, 0.52, 2.15]);
-    playerHeadlightL.setPosition(hlL[0], hlL[1], hlL[2]).setRotation(playerPitch, playerYaw, playerRoll).setVisible(true);
-    playerHeadlightR.setPosition(hlR[0], hlR[1], hlR[2]).setRotation(playerPitch, playerYaw, playerRoll).setVisible(true);
-    playerTailbar.setPosition(tbPos[0], tbPos[1], tbPos[2]).setRotation(playerPitch, playerYaw, playerRoll).setVisible(true);
-
-    const showThrusters = spec.hasThrusters || boostHeld || autopilotLevel === "L5 MAX";
-    if (showThrusters && playerSpeedMps > 6) {
-      const flicker = 0.88 + Math.sin(simTime * 48) * 0.12;
-      const thL = rotateLocalOffset(pRoot, playerPitch, playerYaw, playerRoll, [-0.42, 0.32, 2.55]);
-      const thR = rotateLocalOffset(pRoot, playerPitch, playerYaw, playerRoll, [0.42, 0.32, 2.55]);
-      playerThrusterL
-        .setPosition(thL[0], thL[1], thL[2])
-        .setRotation(playerPitch + Math.PI * 0.5, playerYaw, playerRoll)
-        .setScale([0.75 * flicker, 1.1 * flicker, 0.75 * flicker])
-        .setVisible(true);
-      playerThrusterR
-        .setPosition(thR[0], thR[1], thR[2])
-        .setRotation(playerPitch + Math.PI * 0.5, playerYaw, playerRoll)
-        .setScale([0.75 * flicker, 1.1 * flicker, 0.75 * flicker])
-        .setVisible(true);
-    } else {
-      playerThrusterL.setScale(HIDDEN_SCALE).setVisible(false);
-      playerThrusterR.setScale(HIDDEN_SCALE).setVisible(false);
-    }
-
-    playerShadow
-      .setPosition(pRoot[0], ry(0.025), pRoot[2])
-      .setRotation(0, playerYaw, 0)
-      .setVisible(true);
+    // Keep auxiliary primitive attachments hidden so baked 3D vehicle GLBs render cleanly
+    playerLidarDome.setScale(HIDDEN_SCALE).setVisible(false);
+    playerLidarRing.setScale(HIDDEN_SCALE).setVisible(false);
+    playerLidarFin.setScale(HIDDEN_SCALE).setVisible(false);
+    playerHeadlightL.setScale(HIDDEN_SCALE).setVisible(false);
+    playerHeadlightR.setScale(HIDDEN_SCALE).setVisible(false);
+    playerTailbar.setScale(HIDDEN_SCALE).setVisible(false);
+    playerThrusterL.setScale(HIDDEN_SCALE).setVisible(false);
+    playerThrusterR.setScale(HIDDEN_SCALE).setVisible(false);
+    playerShadow.setScale(HIDDEN_SCALE).setVisible(false);
 
     // 4. Sync Scrolling SF Lane Dashes, Signalized Intersections, Buildings & Streetlamps
     const dashBaseZ = Math.floor(playerZ / DASH_STRIDE_Z) * DASH_STRIDE_Z + DASH_STRIDE_Z;
@@ -2604,11 +2600,7 @@ async function bootGridDispatchAura3D(): Promise<void> {
         .setVisible(true);
 
       if (i === 0) {
-        peerApexLidarRing
-          .setPosition(pvx, pvy + 1.82, pvz - 0.1)
-          .setRotation(Math.PI * 0.5, simTime * 12, 0)
-          .setScale([1, 1, 1])
-          .setVisible(true);
+        peerApexLidarRing.setScale(HIDDEN_SCALE).setVisible(false);
       }
 
       // Project 3D Roof Anchor to 2D Screen for .mpTag

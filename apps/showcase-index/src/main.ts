@@ -77,7 +77,7 @@ const apps = [
     primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "1:1 Aura3D port of THERMAL DRIFT with 7 armed Ramjet racing drones, megacity highway circuits, twin laser cannons, thermal overdrive management, and 26 typed GLBs."
+    notes: "Cyberpunk anti-gravity combat drone racing with 7 armed drones, megacity highway circuits, twin laser cannons, thermal overdrive management, and 26 typed GLBs."
   },
   {
     id: "showcase-teleoperator",
@@ -88,7 +88,7 @@ const apps = [
     primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "1:1 Aura3D port of Grid Dispatch with Apex Lidar Cruiser, Tesla Cyber Coupe, Titan EV, Corvette ZR1X, L5 self-driving robotaxi fares, vector minimap, and multiplayer peer tags."
+    notes: "San Francisco autonomous fleet & street teleoperation with Apex Lidar Cruiser, Cyber Coupe, Titan EV Truck, Vortex GT, L5 self-driving robotaxi fares, vector minimap, and multiplayer peer tags."
   }
 ] as const;
 

@@ -565,23 +565,23 @@ const sfx = new ThermalDriftAudioSynth();
 // 21 Track Architecture, Megacity Towers, Gantries, Hazards & Pickups
 // Together with 7 Drone models + 2 Weapon models = 30 total `model(...)` nodes covering all 26 `heatsink*` assets!
 const SCENERY_ANCHORS: readonly SceneryAnchor[] = [
-  { id: "prop-gantry-start", asset: assets.heatsinkGantryStart, maxDim: 25, s: 68, period: 240, lateralX: 0, baseY: 0.0, yaw: 0 },
-  { id: "prop-arch-a", asset: assets.heatsinkArch, maxDim: 24, s: 36, period: 160, lateralX: 0, baseY: 0.0, yaw: 0 },
-  { id: "prop-arch-b", asset: assets.heatsinkArch, maxDim: 24, s: 116, period: 160, lateralX: 0, baseY: 0.0, yaw: 0 },
-  { id: "prop-overpass", asset: assets.heatsinkOverpass, maxDim: 28, s: 94, period: 220, lateralX: 0, baseY: 4.8, yaw: 0 },
-  { id: "prop-tunnel-a", asset: assets.heatsinkTunnelFrame, maxDim: 25, s: 52, period: 180, lateralX: 0, baseY: 0.0, yaw: 0 },
-  { id: "prop-tunnel-b", asset: assets.heatsinkTunnelFrame, maxDim: 25, s: 142, period: 180, lateralX: 0, baseY: 0.0, yaw: 0 },
+  { id: "prop-gantry-start", asset: assets.heatsinkGantryStart, maxDim: 38, s: 68, period: 240, lateralX: 0, baseY: 0.0, yaw: 0 },
+  { id: "prop-arch-a", asset: assets.heatsinkArch, maxDim: 38, s: 46, period: 160, lateralX: 0, baseY: 0.0, yaw: 0 },
+  { id: "prop-arch-b", asset: assets.heatsinkArch, maxDim: 38, s: 126, period: 160, lateralX: 0, baseY: 0.0, yaw: 0 },
+  { id: "prop-overpass", asset: assets.heatsinkOverpass, maxDim: 56, s: 94, period: 220, lateralX: 0, baseY: 4.8, yaw: 0 },
+  { id: "prop-tunnel-a", asset: assets.heatsinkTunnelFrame, maxDim: 36, s: 58, period: 180, lateralX: 0, baseY: 0.0, yaw: 0 },
+  { id: "prop-tunnel-b", asset: assets.heatsinkTunnelFrame, maxDim: 36, s: 148, period: 180, lateralX: 0, baseY: 0.0, yaw: 0 },
   { id: "prop-statue", asset: assets.heatsinkStatue, maxDim: 22, s: 128, period: 260, lateralX: -19.5, baseY: 0.0, yaw: 0.35 },
-  { id: "prop-tower-l-left", asset: assets.heatsinkTowerL, maxDim: 46, s: 44, period: 150, lateralX: -25.0, baseY: -2.0, yaw: 0.1 },
-  { id: "prop-tower-l-right", asset: assets.heatsinkTowerL, maxDim: 48, s: 118, period: 150, lateralX: 25.5, baseY: -2.0, yaw: -0.15 },
-  { id: "prop-tower-t-left", asset: assets.heatsinkTowerT, maxDim: 52, s: 82, period: 170, lateralX: -27.0, baseY: -2.0, yaw: 0 },
-  { id: "prop-tower-x-right", asset: assets.heatsinkTowerX, maxDim: 54, s: 156, period: 190, lateralX: 27.5, baseY: -2.0, yaw: 0.2 },
-  { id: "prop-billboard-left", asset: assets.heatsinkHoloBillboard, maxDim: 9.5, s: 60, period: 140, lateralX: -15.2, baseY: 5.4, yaw: 0.28 },
-  { id: "prop-billboard-right", asset: assets.heatsinkHoloBillboard, maxDim: 9.5, s: 130, period: 140, lateralX: 15.2, baseY: 5.6, yaw: -0.28 },
-  { id: "prop-lava-fall", asset: assets.heatsinkLavaFall, maxDim: 18, s: 108, period: 210, lateralX: 17.5, baseY: 0.0, yaw: -0.4 },
-  { id: "prop-water-emitter", asset: assets.heatsinkWaterEmitter, maxDim: 14, s: 76, period: 190, lateralX: -15.8, baseY: 0.0, yaw: 0.4 },
+  { id: "prop-tower-l-left", asset: assets.heatsinkTowerL, maxDim: 46, s: 44, period: 150, lateralX: -28.0, baseY: -2.0, yaw: 0.1 },
+  { id: "prop-tower-l-right", asset: assets.heatsinkTowerL, maxDim: 48, s: 118, period: 150, lateralX: 28.5, baseY: -2.0, yaw: -0.15 },
+  { id: "prop-tower-t-left", asset: assets.heatsinkTowerT, maxDim: 52, s: 82, period: 170, lateralX: -29.0, baseY: -2.0, yaw: 0 },
+  { id: "prop-tower-x-right", asset: assets.heatsinkTowerX, maxDim: 54, s: 156, period: 190, lateralX: 29.5, baseY: -2.0, yaw: 0.2 },
+  { id: "prop-billboard-left", asset: assets.heatsinkHoloBillboard, maxDim: 9.5, s: 60, period: 140, lateralX: -16.2, baseY: 5.4, yaw: 0.28 },
+  { id: "prop-billboard-right", asset: assets.heatsinkHoloBillboard, maxDim: 9.5, s: 130, period: 140, lateralX: 16.2, baseY: 5.6, yaw: -0.28 },
+  { id: "prop-lava-fall", asset: assets.heatsinkLavaFall, maxDim: 18, s: 108, period: 210, lateralX: 18.5, baseY: 0.0, yaw: -0.4 },
+  { id: "prop-water-emitter", asset: assets.heatsinkWaterEmitter, maxDim: 14, s: 76, period: 190, lateralX: -16.8, baseY: 0.0, yaw: 0.4 },
   { id: "prop-barrier-left", asset: assets.heatsinkBarrierA, maxDim: 3.8, s: 28, period: 90, lateralX: -9.4, baseY: 0.2, yaw: 0 },
-  { id: "prop-checkpoint-ring", asset: assets.heatsinkCheckpointRing, maxDim: 15.5, s: 86, period: 150, lateralX: 0, baseY: 3.4, yaw: 0, spinSpeed: 0.55 },
+  { id: "prop-checkpoint-ring", asset: assets.heatsinkCheckpointRing, maxDim: 26.0, s: 86, period: 150, lateralX: -11.5, baseY: 1.2, yaw: 0 },
   { id: "prop-boost-pad", asset: assets.heatsinkBoostPad, maxDim: 4.8, s: 42, period: 110, lateralX: -2.4, baseY: 0.12, yaw: 0 },
   { id: "prop-cooling-canister", asset: assets.heatsinkCoolingCanister, maxDim: 2.1, s: 64, period: 125, lateralX: 3.1, baseY: 1.45, yaw: 0, spinSpeed: 1.8 },
   { id: "prop-shield-pickup", asset: assets.heatsinkShieldPickup, maxDim: 2.0, s: 98, period: 135, lateralX: -3.2, baseY: 1.65, yaw: 0, spinSpeed: 2.1 },
@@ -1616,7 +1616,7 @@ async function bootThermalDriftShowcase(): Promise<void> {
       const curveX = trackSample.curvature * (distAhead * distAhead) * 0.0026;
       const slopeY = trackSample.pitchSlope * distAhead * 0.08;
       const worldX = curveX + anchor.lateralX;
-      const worldY = anchor.baseY + slopeY;
+      const worldY = z > -2.5 ? -140 : anchor.baseY + slopeY;
       handle.setPosition(worldX, worldY, z);
       if (anchor.spinSpeed) {
         handle.setRotation(0, anchor.yaw + simTime * anchor.spinSpeed, 0);
@@ -1715,18 +1715,11 @@ async function bootThermalDriftShowcase(): Promise<void> {
 
     const lockedRival = lockedRivalIdx >= 0 ? rivals[lockedRivalIdx] ?? null : null;
 
-    // Update Player Thrusters, Weapon Mount, Shockwave Ring & Shield Bubble
-    const thrusterScaleZ = boostActive || hyperdriveTimer > 0 ? 1.65 : 1.0;
-    thrusterLeftHandle
-      .setPosition(playerX - 0.52, playerY - 0.04, 1.05)
-      .setScale([1, thrusterScaleZ, 1]);
-    thrusterRightHandle
-      .setPosition(playerX + 0.52, playerY - 0.04, 1.05)
-      .setScale([1, thrusterScaleZ, 1]);
-
-    shockwaveEmitterHandle
-      .setPosition(playerX, playerY - 0.32, -0.4)
-      .setRotation(playerPitch, playerYaw, playerRoll);
+    // Keep primitive cylinders & opaque shield sphere hidden so the 3D Drone GLB with its built-in EMIT_Thruster & EMIT_Team materials is 100% unobstructed
+    thrusterLeftHandle.setPosition(0, -60, 0).setVisible(false);
+    thrusterRightHandle.setPosition(0, -60, 0).setVisible(false);
+    shieldBubbleHandle.setPosition(0, -60, 0).setVisible(false);
+    shockwaveEmitterHandle.setPosition(-6.8, 0.35, -34).setRotation(0, simTime * 1.4, 0);
 
     if (shockActiveTimer > 0) {
       const progress = 1 - shockActiveTimer / 0.65;
@@ -1737,12 +1730,6 @@ async function bootThermalDriftShowcase(): Promise<void> {
         .setVisible(true);
     } else {
       shockwaveRingHandle.setPosition(0, -60, 0).setVisible(false);
-    }
-
-    if (shieldEnergy > 25) {
-      shieldBubbleHandle.setPosition(playerX, playerY, -0.4).setVisible(true);
-    } else {
-      shieldBubbleHandle.setPosition(0, -60, 0).setVisible(false);
     }
 
     // Update Dropped Proximity Mine

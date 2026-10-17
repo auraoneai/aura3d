@@ -148220,6 +148220,91 @@
           8.3975
         ]
       }
+    },
+    {
+      "id": "teleopSedan",
+      "name": "teleopSedan",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopSedan.glb",
+      "source": "public/aura-assets/teleopSedan.glb",
+      "sha256": "teleopSedan",
+      "byteLength": 571880,
+      "sizeBytes": 571880,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle"
+    },
+    {
+      "id": "teleopSuv",
+      "name": "teleopSuv",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopSuv.glb",
+      "source": "public/aura-assets/teleopSuv.glb",
+      "sha256": "teleopSuv",
+      "byteLength": 344792,
+      "sizeBytes": 344792,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle"
+    },
+    {
+      "id": "teleopTaxi",
+      "name": "teleopTaxi",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopTaxi.glb",
+      "source": "public/aura-assets/teleopTaxi.glb",
+      "sha256": "teleopTaxi",
+      "byteLength": 616024,
+      "sizeBytes": 616024,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle"
+    },
+    {
+      "id": "teleopVan",
+      "name": "teleopVan",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopVan.glb",
+      "source": "public/aura-assets/teleopVan.glb",
+      "sha256": "teleopVan",
+      "byteLength": 243832,
+      "sizeBytes": 243832,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle"
+    },
+    {
+      "id": "teleopPickup",
+      "name": "teleopPickup",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopPickup.glb",
+      "source": "public/aura-assets/teleopPickup.glb",
+      "sha256": "teleopPickup",
+      "byteLength": 790920,
+      "sizeBytes": 790920,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle"
+    },
+    {
+      "id": "teleopBus",
+      "name": "teleopBus",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopBus.glb",
+      "source": "public/aura-assets/teleopBus.glb",
+      "sha256": "teleopBus",
+      "byteLength": 423176,
+      "sizeBytes": 423176,
+      "license": "CC-BY-4.0",
+      "quality": "approved",
+      "category": "vehicle"
     }
   ]
 }
+

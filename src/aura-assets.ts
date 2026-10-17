@@ -140050,6 +140050,55 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "suitabilityReason": "Roadster Rush freeway car-carrier ramp truck"
     }
   },
+  "teleopSedan": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopSedan.glb",
+    hash: "sha256-teleopSedan",
+    bounds: [2.2076, 1.5586, 4.8408],
+    sizeBytes: 571880
+  },
+  "teleopSuv": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopSuv.glb",
+    hash: "sha256-teleopSuv",
+    bounds: [2.1864, 1.7948, 4.7481],
+    sizeBytes: 344792
+  },
+  "teleopTaxi": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopTaxi.glb",
+    hash: "sha256-teleopTaxi",
+    bounds: [2.1061, 1.5885, 4.5967],
+    sizeBytes: 616024
+  },
+  "teleopVan": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopVan.glb",
+    hash: "sha256-teleopVan",
+    bounds: [2.3593, 2.3621, 5.0734],
+    sizeBytes: 243832
+  },
+  "teleopPickup": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopPickup.glb",
+    hash: "sha256-teleopPickup",
+    bounds: [2.3697, 1.8376, 5.2906],
+    sizeBytes: 790920
+  },
+  "teleopBus": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopBus.glb",
+    hash: "sha256-teleopBus",
+    bounds: [3.8159, 5.6352, 11.9659],
+    sizeBytes: 423176
+  },
 });
 
 export type AuraGeneratedAssets = typeof assets;
+
