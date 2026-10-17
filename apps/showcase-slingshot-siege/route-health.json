@@ -172,5 +172,12 @@
     "Trajectory preview is analytic (no collision sampling)",
     "Windmill rotor uses a small core collider; blades are visual-only",
     "Trajectory Range reloads the level on exit"
-  ]
+  ],
+  "remoteEvidence": {
+    "capturedAt": "2026-10-18T00:00:00.000Z",
+    "environment": "EC2 headless Chromium + SwiftShader (ANGLE)",
+    "captureFlag": "a3d-qr=all,-compiler",
+    "knownIssue": "A3D_QR_COMPILER (default-on) renders black canvas under SwiftShader; post/lighting/materials/assets lanes verified innocent. Suspect engine regression in the compiled render path \u2014 needs GPU-host reproduction.",
+    "status": "scene-mounted frames captured; not full visual review"
+  }
 }
