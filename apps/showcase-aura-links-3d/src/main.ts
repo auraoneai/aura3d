@@ -1721,6 +1721,8 @@ function boot(): void {
     setMode("quick");
     if (Number.isFinite(holeParam) && holeParam >= 1 && holeParam <= 9) startHole(holeParam - 1);
   }
+  const explicitEntry = modeParam || courseParam || params.get("hole") || params.get("still");
+  if (explicitEntry && params.get("menu") !== "1") closeMenu();
 
   // ?still=N — deterministic capture mode: pause the live loop, step N fixed
   // frames through app.step() (runs frame() + a single simulated-time render

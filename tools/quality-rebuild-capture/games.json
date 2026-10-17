@@ -90,7 +90,7 @@
       "timeline": [
         {
           "audio-webm": {
-           "seconds": 60
+            "seconds": 60
           }
         },
         {
@@ -2130,7 +2130,7 @@
       "timeline": [
         {
           "audio-webm": {
-           "seconds": 60
+            "seconds": 60
           }
         },
         {
@@ -4190,7 +4190,7 @@
       "timeline": [
         {
           "audio-webm": {
-           "seconds": 60
+            "seconds": 60
           }
         },
         {
@@ -4633,6 +4633,168 @@
           ]
         }
       ]
+    },
+    {
+      "id": "showcase-aura-links-3d",
+      "title": "Aura Links 3D",
+      "genre": "golf / sports",
+      "appDir": "showcase-aura-links-3d",
+      "deployed": true,
+      "route": "/apps/showcase-aura-links-3d/",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
+      "notes": "Three-click swing: Space starts the meter, Space locks power, Space locks accuracy+spin (dead-centre pure). A/D aim, Q/E club, W/S aim-cam zoom. Shots land via deterministic terrain sampler; camera follows ball in flight.",
+      "wave": 3,
+      "rebuildTier": "S-world",
+      "readyExpr": "(document.body?.dataset?.aura3dReady === 'true' || Boolean(window.__AURA3D_GAME_EVIDENCE__))",
+      "requiredConditions": [
+        {
+          "shot": "03-mid",
+          "expr": "phase === 'swing'",
+          "deadlineMs": 15000
+        },
+        {
+          "shot": "04-action",
+          "expr": "strokes >= 1",
+          "deadlineMs": 20000
+        },
+        {
+          "shot": "04-action",
+          "expr": "phase === 'flight' && ball !== null && ball.carry > 20",
+          "deadlineMs": 20000
+        }
+      ],
+      "acceptance": {
+        "minOverall": 7,
+        "minVisualCategory": 5,
+        "critical": {
+          "environment_world": 7.5,
+          "modeling_assets": 7
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6,
+          "physics_feel": 6
+        }
+      },
+      "budgets": {
+        "transferToPlayableMB": 15,
+        "routeJsGzipKB": 1400,
+        "drawCalls": {
+          "low": 120,
+          "medium": 220,
+          "high": 420,
+          "ultra": 500
+        },
+        "gameLogicCpuMs": 4
+      },
+      "qrFlags": [
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
+      ],
+      "timeline": [
+        {
+          "fps": 5000
+        },
+        {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "hold": "Space",
+          "ms": 80
+        },
+        {
+          "wait": 600
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "hold": "Space",
+          "ms": 80
+        },
+        {
+          "wait": 450
+        },
+        {
+          "hold": "Space",
+          "ms": 80
+        },
+        {
+          "wait": 1300
+        },
+        {
+          "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
+        },
+        {
+          "wait": 2600
+        },
+        {
+          "shot": "05-landing"
+        },
+        {
+          "wait": 1800
+        },
+        {
+          "shot": "06-next-lie"
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "maple",
+          "query": {
+            "course": "mapleHollow"
+          }
+        },
+        {
+          "id": "cinder",
+          "query": {
+            "course": "cinderRim"
+          }
+        },
+        {
+          "id": "mare",
+          "query": {
+            "course": "mareCourse"
+          }
+        },
+        {
+          "id": "rangelab",
+          "query": {
+            "mode": "rangelab"
+          }
+        },
+        {
+          "id": "puttinglab",
+          "query": {
+            "mode": "puttinglab"
+          }
+        }
+      ],
+      "captureContractMigrated": true,
+      "titleDeterministic": null
     }
   ]
 }
