@@ -712,6 +712,11 @@ function updateCamera(dt: number): void {
   const ball = state.ball;
   const inFlight = state.phase === "flight" && ball && (ball.status === "flight" || ball.status === "roll");
 
+  // portrait viewports have a much narrower horizontal fov — pull the lateral
+  // offset in so the golfer/ball stay framed instead of sliding off-screen
+  const aspect = (window.innerWidth || 16) / (window.innerHeight || 9);
+  const side = clamp(aspect / 1.6, 0.3, 1);
+
   if (state.phase === "flight" && inFlight) {
     cam.mode = "flight";
     // chase cam: behind the ball along its velocity, ahead low
@@ -747,8 +752,8 @@ function updateCamera(dt: number): void {
     const yaw = t.lineYaw + r.aimOffset;
     const bx = r.ballPos[0], bz = r.ballPos[2];
     const tx2 = bx + Math.sin(yaw) * 6, tz2 = bz + Math.cos(yaw) * 6;
-    const ex = bx - Math.sin(yaw) * 5.2 - Math.cos(yaw) * 2.2;
-    const ez = bz - Math.cos(yaw) * 5.2 + Math.sin(yaw) * 2.2;
+    const ex = bx - Math.sin(yaw) * 5.2 - Math.cos(yaw) * 2.2 * side;
+    const ez = bz - Math.cos(yaw) * 5.2 + Math.sin(yaw) * 2.2 * side;
     cam.eye = lerp3(cam.eye, [ex, t.height(ex, ez) + 2.1, ez], 1 - Math.pow(0.001, dt));
     cam.target = lerp3(cam.eye, [tx2, t.height(tx2, tz2) + 0.4, tz2], 1 - Math.pow(0.001, dt));
     cam.fov = lerp(cam.fov, 38, 1 - Math.pow(0.02, dt));
@@ -759,8 +764,8 @@ function updateCamera(dt: number): void {
     // elevated aim cam — W/S dollies between behind-ball and high overview
     const back = 7.5 * cam.zoom;
     const h = 3.2 * cam.zoom + 1.4;
-    const ex = bx - Math.sin(yaw) * back - Math.cos(yaw) * 2.0;
-    const ez = bz - Math.cos(yaw) * back + Math.sin(yaw) * 2.0;
+    const ex = bx - Math.sin(yaw) * back - Math.cos(yaw) * 2.0 * side;
+    const ez = bz - Math.cos(yaw) * back + Math.sin(yaw) * 2.0 * side;
     const lookAhead = 14 * cam.zoom;
     const tx2 = bx + Math.sin(yaw) * lookAhead, tz2 = bz + Math.cos(yaw) * lookAhead;
     cam.eye = lerp3(cam.eye, [ex, t.height(ex, ez) + h, ez], 1 - Math.pow(0.002, dt));
