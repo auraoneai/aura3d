@@ -4711,7 +4711,15 @@
           }
         },
         {
-          "wait": 1200
+          "click": "#menu-run"
+        },
+        {
+          "until": "window.__AURA3D_GAME_EVIDENCE__?.phase === 'address'",
+          "timeout": 20000,
+          "capture": "window.__AURA3D_GAME_EVIDENCE__?.phase"
+        },
+        {
+          "wait": 400
         },
         {
           "shot": "02-opening"
@@ -4721,7 +4729,11 @@
           "ms": 80
         },
         {
-          "wait": 600
+          "until": "window.__AURA3D_GAME_EVIDENCE__?.phase === 'swing'",
+          "timeout": 5000
+        },
+        {
+          "wait": 500
         },
         {
           "shot": "03-mid"
@@ -4731,14 +4743,18 @@
           "ms": 80
         },
         {
-          "wait": 450
+          "wait": 420
         },
         {
           "hold": "Space",
           "ms": 80
         },
         {
-          "wait": 1300
+          "until": "window.__AURA3D_GAME_EVIDENCE__?.phase === 'flight'",
+          "timeout": 5000
+        },
+        {
+          "wait": 900
         },
         {
           "shot": "04-action"
@@ -4749,13 +4765,14 @@
           }
         },
         {
-          "wait": 2600
+          "until": "window.__AURA3D_GAME_EVIDENCE__?.phase !== 'flight'",
+          "timeout": 20000
         },
         {
           "shot": "05-landing"
         },
         {
-          "wait": 1800
+          "wait": 1500
         },
         {
           "shot": "06-next-lie"
