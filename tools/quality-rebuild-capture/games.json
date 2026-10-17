@@ -1,1502 +1,1700 @@
 {
-  "$comment": "Per-game routes and real-input timelines for tools/quality-rebuild-capture/capture-games.mjs. Key names are DOM KeyboardEvent.code values. Timelines use only the controls a player has (keyboard, pointer drag, focus/click): no debug hooks, no ?capture= review lenses, so screenshots show the shipped experience. Step vocabulary is documented in README.md. Timeline time 0 is the first step after the 01-title shot.",
-  "schema": "aura3d.quality-rebuild-capture.games/1",
-  "productionOrigin": "https://aura3d.auraone.ai",
-  "defaults": {
-    "titleSettleMs": 1200,
-    "readyTimeoutMs": 30000,
-    "readyFallbackMs": 6000,
-    "fpsSampleMs": 5000,
-    "mobileStopAfterShot": "03-mid",
-    "requiredShots": [
-      "02-opening",
-      "03-mid",
-      "04-action"
-    ]
-  },
-  "games": [
-    {
-      "id": "aura-clash-showcase",
-      "title": "Aura Clash Arena",
-      "genre": "fighting",
-      "appDir": "aura-clash-showcase",
-      "deployed": true,
-      "route": "/apps/aura-clash-showcase/",
-      "altRoutes": [
-        "/showcase/aura-clash/playable/",
-        "/examples/neon-corridor-strike/"
-      ],
-      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
-      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
-      "focus": {
-        "selector": ".aca",
-        "method": "focus"
-      },
-      "notes": "Round auto-starts (1.35s ROUND intro). Controls from src/playable/AuraClashArenaApp.ts actionKeys: A/D move, W jump, S down, Space dash, Shift/Q guard, J light, K heavy, L special (meter-gated), P pause, R reset. Action shot waits for proof.totalHits to increase.",
-      "wave": 1,
-      "rebuildTier": "S-presentation",
-      "artDirection": "apps/aura-clash-showcase/art/direction.ts",
-      "requiredConditions": [
-        {
-          "shot": "04-action",
-          "expr": "combat.hitStopActive === true && fx.liveCount > 0",
-          "deadlineMs": 12000
-        },
-        {
-          "shot": "03-mid",
-          "expr": "framing.subjectHeightFraction >= 0.45 && framing.subjectHeightFraction <= 0.6",
-          "deadlineMs": 12000
-        }
-      ],
-      "acceptance": {
-        "minOverall": 7,
-        "minVisualCategory": 5,
-        "critical": {
-          "lighting": 7.5,
-          "vfx": 7.5,
-          "animation_quality": 7.5,
-          "camera": 7.5
-        },
-        "minNonVisual": {
-          "sound_audio": 6,
-          "controls": 7,
-          "game_feel": 6.5,
-          "loading_transitions": 6
-        }
-      },
-      "budgets": {
-        "transferToPlayableMB": 15,
-        "routeJsGzipKB": 80,
-        "drawCalls": {
-          "low": 150,
-          "medium": 150,
-          "high": 150,
-          "ultra": 300
-        },
-        "gameLogicCpuMs": 4
-      },
-      "qrFlags": [
-        "route-aura-clash",
-        "game",
-        "camera",
-        "lighting",
-        "post",
-        "materials",
-        "vfx",
-        "world",
-        "tiers",
-        "looks"
-      ],
-      "timeline": [
-        {
-          "audio-webm": {
-            "seconds": 60
-          }
-        },
-        {
-          "fps": 5000
-        },
-        {
-          "strip": {
-            "frames": 12,
-            "intervalMs": 100
-          }
-        },
-        {
-          "down": "KeyD"
-        },
-        {
-          "wait": 2000
-        },
-        {
-          "shot": "02-opening"
-        },
-        {
-          "up": "KeyD"
-        },
-        {
-          "repeat": 6,
-          "steps": [
-            {
-              "hold": "KeyD",
-              "ms": 250
-            },
-            {
-              "press": "KeyJ"
-            },
-            {
-              "wait": 220
-            },
-            {
-              "press": "KeyJ"
-            },
-            {
-              "wait": 220
-            },
-            {
-              "press": "KeyK"
-            },
-            {
-              "wait": 380
-            }
-          ]
-        },
-        {
-          "down": "KeyD"
-        },
-        {
-          "press": "KeyJ"
-        },
-        {
-          "wait": 120
-        },
-        {
-          "shot": "03-mid"
-        },
-        {
-          "up": "KeyD"
-        },
-        {
-          "until": "(window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0) > s",
-          "capture": "window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0",
-          "timeout": 6000,
-          "loop": [
-            {
-              "press": "KeyJ"
-            },
-            {
-              "wait": 50
-            },
-            {
-              "press": "KeyK"
-            },
-            {
-              "wait": 50
-            }
-          ]
-        },
-        {
-          "strip": {
-            "frames": 12,
-            "intervalMs": 100
-          }
-        },
-        {
-          "shot": "04-action"
-        },
-        {
-          "webm": {
-            "seconds": 5
-          }
-        },
-        {
-          "press": "KeyL"
-        },
-        {
-          "wait": 320
-        },
-        {
-          "shot": "05-special"
-        }
-      ],
-      "integratedCritical": [
-        "C-05",
-        "C-10",
-        "C-13",
-        "C-15",
-        "C-19",
-        "C-20",
-        "C-21",
-        "C-24",
-        "C-25",
-        "C-27"
-      ],
-      "legacy": {
-        "evidenceGlobal": "__AURA_CLASH_ARENA_PROOF__",
-        "readyExpr": "window.__AURA_CLASH_ARENA_PROOF__?.status === 'running'"
-      },
-      "captureContractMigrated": true,
-      "titleDeterministic": null,
-      "scenarios": [
-        {
-          "id": "02-opening",
-          "query": {
-            "scenario": "02-opening",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "03-mid",
-          "query": {
-            "scenario": "03-mid",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "04-action",
-          "query": {
-            "scenario": "04-action",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "05-special",
-          "query": {
-            "scenario": "05-special",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "quality-medium",
-          "query": {
-            "aura3d-quality": "medium",
-            "aura3d-adaptive": "0"
-          }
-        }
-      ],
-      "hudSelectors": [
-        "#clip-status",
-        "#combo-count",
-        "#combo-flash",
-        "#player-health",
-        "#player-meter",
-        "#render-status",
-        "#rival-health",
-        "#rival-meter",
-        "#round-timer",
-        ".aca-combo"
-      ],
-      "keyboardHintSelectors": [
-        ".aca-controls",
-        ".controls-list",
-        ".controls-strip",
-        "[data-hud='keyboard-hints']"
-      ],
-      "qrFlagVariants": [
-        {
-          "id": "all",
-          "qrFlags": [
-            "route-aura-clash",
-            "game",
-            "camera",
-            "lighting",
-            "post",
-            "materials",
-            "vfx",
-            "world",
-            "tiers",
-            "looks"
-          ]
-        },
-        {
-          "id": "tiers",
-          "qrFlags": [
-            "tiers"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "showcase-blockfall-reactor",
-      "title": "Blockfall Reactor",
-      "genre": "falling-blocks",
-      "appDir": "showcase-blockfall-reactor",
-      "deployed": true,
-      "route": "/apps/showcase-blockfall-reactor/",
-      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
-      "notes": "Boots straight into play (attract mode only after 45s idle). A/D move, W/X/E rotate CW, Z/Q rotate CCW, S soft drop, Space hard drop, C/Shift hold, P pause. Action shot is taken 60ms after a hard drop (lock/impact FX); a line clear is not reliably reachable blind in 15s.",
-      "wave": 4,
-      "rebuildTier": "S-presentation",
-      "artDirection": "apps/showcase-blockfall-reactor/art/direction.ts",
-      "requiredConditions": [
-        {
-          "shot": "04-action",
-          "expr": "board.linesClearedThisRound >= 1 && fx.liveCount > 0",
-          "deadlineMs": 20000
-        },
-        {
-          "shot": "03-mid",
-          "expr": "board.stackHeight >= 4",
-          "deadlineMs": 20000
-        }
-      ],
-      "acceptance": {
-        "minOverall": 7,
-        "minVisualCategory": 5,
-        "critical": {
-          "vfx": 7,
-          "camera": 7,
-          "polish_juice": 7.5
-        },
-        "minNonVisual": {
-          "sound_audio": 6,
-          "controls": 7,
-          "game_feel": 6.5,
-          "loading_transitions": 6
-        }
-      },
-      "budgets": {
-        "transferToPlayableMB": 12,
-        "routeJsGzipKB": 80,
-        "drawCalls": {
-          "low": 120,
-          "medium": 150,
-          "high": 150,
-          "ultra": 300
-        },
-        "gameLogicCpuMs": 4
-      },
-      "qrFlags": [
-        "route-blockfall-reactor",
-        "game",
-        "camera",
-        "lighting",
-        "post",
-        "materials",
-        "vfx",
-        "world",
-        "tiers",
-        "looks"
-      ],
-      "timeline": [
-        {
-          "fps": 5000
-        },
-        {
-          "strip": {
-            "frames": 12,
-            "intervalMs": 100
-          }
-        },
-        {
-          "press": "KeyA"
-        },
-        {
-          "wait": 300
-        },
-        {
-          "press": "KeyW"
-        },
-        {
-          "wait": 500
-        },
-        {
-          "press": "Space"
-        },
-        {
-          "wait": 1200
-        },
-        {
-          "shot": "02-opening"
-        },
-        {
-          "repeat": 5,
-          "steps": [
-            {
-              "press": "KeyD"
-            },
-            {
-              "wait": 150
-            },
-            {
-              "press": "KeyD"
-            },
-            {
-              "wait": 200
-            },
-            {
-              "press": "KeyW"
-            },
-            {
-              "wait": 350
-            },
-            {
-              "press": "Space"
-            },
-            {
-              "wait": 650
-            }
-          ]
-        },
-        {
-          "press": "KeyA"
-        },
-        {
-          "press": "KeyA"
-        },
-        {
-          "press": "KeyA"
-        },
-        {
-          "wait": 200
-        },
-        {
-          "down": "KeyS"
-        },
-        {
-          "wait": 500
-        },
-        {
-          "shot": "03-mid"
-        },
-        {
-          "up": "KeyS"
-        },
-        {
-          "press": "KeyC"
-        },
-        {
-          "wait": 400
-        },
-        {
-          "press": "Space"
-        },
-        {
-          "wait": 60
-        },
-        {
-          "strip": {
-            "frames": 12,
-            "intervalMs": 100
-          }
-        },
-        {
-          "shot": "04-action"
-        },
-        {
-          "webm": {
-            "seconds": 5
-          }
-        }
-      ],
-      "integratedCritical": [
-        "C-05",
-        "C-07",
-        "C-10",
-        "C-13",
-        "C-15",
-        "C-20",
-        "C-24",
-        "C-25",
-        "C-27"
-      ],
-      "legacy": {
-        "evidenceGlobal": "__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__"
-      },
-      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
-      "captureContractMigrated": true,
-      "titleDeterministic": null,
-      "scenarios": [
-        {
-          "id": "02-opening",
-          "query": {
-            "scenario": "02-opening",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "03-mid",
-          "query": {
-            "scenario": "03-mid",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "04-action",
-          "query": {
-            "scenario": "04-action",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "quality-medium",
-          "query": {
-            "aura3d-quality": "medium",
-            "aura3d-adaptive": "0"
-          }
-        }
-      ],
-      "hudSelectors": [
-        "#hud-actions",
-        "#reactor-meter",
-        "#stat-combo",
-        "#stat-score",
-        "#status-mode",
-        "#status-speed",
-        ".hud-panel",
-        ".hud-panel--actions",
-        ".hud-panel--evidence",
-        ".hud-panel--preview"
-      ],
-      "keyboardHintSelectors": [
-        ".controls-strip",
-        ".touch-cluster",
-        ".touch-cluster--left",
-        ".touch-cluster--right",
-        ".touch-cluster--session",
-        ".controls-list",
-        ".controls-strip",
-        "[data-hud='keyboard-hints']"
-      ],
-      "qrFlagVariants": [
-        {
-          "id": "all",
-          "qrFlags": [
-            "route-blockfall-reactor",
-            "game",
-            "camera",
-            "lighting",
-            "post",
-            "materials",
-            "vfx",
-            "world",
-            "tiers",
-            "looks"
-          ]
-        },
-        {
-          "id": "tiers",
-          "qrFlags": [
-            "tiers"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "showcase-aurora-lander",
-      "title": "Aurora Lander",
-      "genre": "lander",
-      "appDir": "showcase-aurora-lander",
-      "deployed": true,
-      "route": "/apps/showcase-aurora-lander/",
-      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
-      "notes": "The boot drop falls untouched, so thrust starts at t=0. W/Up thrust, A/D lateral, Space quick restart, R restart, G ghost, P pause. Action shot waits for a touchdown/crash state (regex on evidence state/phase) to capture landing dust or the crash.",
-      "wave": 3,
-      "rebuildTier": "S-world",
-      "artDirection": "apps/showcase-aurora-lander/art/direction.ts",
-      "requiredConditions": [
-        {
-          "shot": "04-action",
-          "expr": "lander.touchdown === \"landed\"",
-          "deadlineMs": 40000
-        },
-        {
-          "shot": "03-mid",
-          "expr": "lander.altitude < 30 && framing.padInFrame === true",
-          "deadlineMs": 40000
-        }
-      ],
-      "canvasBlankCheck": {
-        "maxDarkFraction": 0.95,
-        "minDistinctColors": 1500,
-        "reason": "night sky"
-      },
-      "acceptance": {
-        "minOverall": 7,
-        "minVisualCategory": 5,
-        "critical": {
-          "environment_world": 7,
-          "atmospheric_effects": 7.5
-        },
-        "minNonVisual": {
-          "sound_audio": 6,
-          "controls": 7,
-          "game_feel": 6.5,
-          "loading_transitions": 6,
-          "physics_feel": 6
-        }
-      },
-      "budgets": {
-        "transferToPlayableMB": 15,
-        "routeJsGzipKB": 80,
-        "drawCalls": {
-          "low": 120,
-          "medium": 150,
-          "high": 150,
-          "ultra": 300
-        },
-        "gameLogicCpuMs": 4
-      },
-      "qrFlags": [
-        "route-aurora-lander",
-        "game",
-        "camera",
-        "lighting",
-        "post",
-        "materials",
-        "vfx",
-        "world",
-        "tiers",
-        "looks"
-      ],
-      "timeline": [
-        {
-          "fps": 5000
-        },
-        {
-          "strip": {
-            "frames": 12,
-            "intervalMs": 100
-          }
-        },
-        {
-          "down": "KeyW"
-        },
-        {
-          "wait": 2000
-        },
-        {
-          "shot": "02-opening"
-        },
-        {
-          "up": "KeyW"
-        },
-        {
-          "repeat": 5,
-          "steps": [
-            {
-              "wait": 350
-            },
-            {
-              "down": "KeyW"
-            },
-            {
-              "down": "KeyD"
-            },
-            {
-              "wait": 550
-            },
-            {
-              "up": "KeyD"
-            },
-            {
-              "wait": 250
-            },
-            {
-              "up": "KeyW"
-            }
-          ]
-        },
-        {
-          "down": "KeyW"
-        },
-        {
-          "wait": 500
-        },
-        {
-          "shot": "03-mid"
-        },
-        {
-          "up": "KeyW"
-        },
-        {
-          "until": "/land|touch|crash|fail|success|complete/i.test(String(window.__AURORA_LANDER_EVIDENCE__?.state ?? window.__AURORA_LANDER_EVIDENCE__?.phase ?? ''))",
-          "timeout": 7000,
-          "loop": [
-            {
-              "wait": 80
-            }
-          ]
-        },
-        {
-          "wait": 150
-        },
-        {
-          "strip": {
-            "frames": 12,
-            "intervalMs": 100
-          }
-        },
-        {
-          "shot": "04-action"
-        },
-        {
-          "webm": {
-            "seconds": 5
-          }
-        }
-      ],
-      "integratedCritical": [
-        "C-05",
-        "C-10",
-        "C-13",
-        "C-15",
-        "C-20",
-        "C-24",
-        "C-25",
-        "C-26",
-        "C-27"
-      ],
-      "legacy": {
-        "evidenceGlobal": "__AURORA_LANDER_EVIDENCE__"
-      },
-      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
-      "captureContractMigrated": true,
-      "titleDeterministic": null,
-      "scenarios": [
-        {
-          "id": "02-opening",
-          "query": {
-            "scenario": "02-opening",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "03-mid",
-          "query": {
-            "scenario": "03-mid",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "04-action",
-          "query": {
-            "scenario": "04-action",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "quality-medium",
-          "query": {
-            "aura3d-quality": "medium",
-            "aura3d-adaptive": "0"
-          }
-        }
-      ],
-      "hudSelectors": [
-        "#hud-altitude",
-        "#hud-attitude",
-        "#hud-banner",
-        "#hud-fuel",
-        "#hud-fuel-fill",
-        "#hud-fuel-label",
-        "#hud-ghost",
-        "#hud-ghost-flag",
-        "#hud-gust",
-        "#hud-gust-flag"
-      ],
-      "keyboardHintSelectors": [
-        "#touch-ghost",
-        "#touch-left",
-        "#touch-pause",
-        "#touch-restart",
-        "#touch-right",
-        "#touch-thrust",
-        ".panel-hint",
-        ".touch-button"
-      ],
-      "qrFlagVariants": [
-        {
-          "id": "all",
-          "qrFlags": [
-            "route-aurora-lander",
-            "game",
-            "camera",
-            "lighting",
-            "post",
-            "materials",
-            "vfx",
-            "world",
-            "tiers",
-            "looks"
-          ]
-        },
-        {
-          "id": "tiers",
-          "qrFlags": [
-            "tiers"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "showcase-vault-breakers",
-      "title": "Vault Breakers",
-      "genre": "pinball",
-      "appDir": "showcase-vault-breakers",
-      "deployed": true,
-      "route": "/apps/showcase-vault-breakers/",
-      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
-      "notes": "Hold Space to pull the plunger, release to serve (1.8s hold matches the thumbnail producer). A/Left left flipper, D/Right right flipper, S nudge, P pause, R reset. Action waits for a score change.",
-      "wave": 2,
-      "rebuildTier": "S-world",
-      "artDirection": "apps/showcase-vault-breakers/art/direction.ts",
-      "requiredConditions": [
-        {
-          "shot": "04-action",
-          "expr": "table.bumperHitsThisBall >= 1 && fx.liveCount > 0",
-          "deadlineMs": 20000
-        },
-        {
-          "shot": "03-mid",
-          "expr": "ball.inPlay === true",
-          "deadlineMs": 20000
-        }
-      ],
-      "acceptance": {
-        "minOverall": 7,
-        "minVisualCategory": 5,
-        "critical": {
-          "modeling_assets": 7.5,
-          "material_quality": 7.5
-        },
-        "minNonVisual": {
-          "sound_audio": 6,
-          "controls": 7,
-          "game_feel": 6.5,
-          "loading_transitions": 6,
-          "physics_feel": 6
-        }
-      },
-      "budgets": {
-        "transferToPlayableMB": 15,
-        "routeJsGzipKB": 80,
-        "drawCalls": {
-          "low": 100,
-          "medium": 100,
-          "high": 100,
-          "ultra": 200
-        },
-        "gameLogicCpuMs": 4
-      },
-      "qrFlags": [
-        "route-vault-breakers",
-        "game",
-        "camera",
-        "lighting",
-        "post",
-        "materials",
-        "vfx",
-        "world",
-        "tiers",
-        "looks"
-      ],
-      "timeline": [
-        {
-          "fps": 5000
-        },
-        {
-          "strip": {
-            "frames": 12,
-            "intervalMs": 100
-          }
-        },
-        {
-          "hold": "Space",
-          "ms": 1800
-        },
-        {
-          "wait": 350
-        },
-        {
-          "shot": "02-opening"
-        },
-        {
-          "repeat": 8,
-          "steps": [
-            {
-              "wait": 400
-            },
-            {
-              "hold": "KeyA",
-              "ms": 180
-            },
-            {
-              "wait": 150
-            },
-            {
-              "hold": "KeyD",
-              "ms": 180
-            }
-          ]
-        },
-        {
-          "down": "KeyA"
-        },
-        {
-          "down": "KeyD"
-        },
-        {
-          "wait": 120
-        },
-        {
-          "shot": "03-mid"
-        },
-        {
-          "up": "KeyA"
-        },
-        {
-          "up": "KeyD"
-        },
-        {
-          "until": "(window.__VAULT_BREAKERS_EVIDENCE__?.score ?? 0) > s",
-          "capture": "window.__VAULT_BREAKERS_EVIDENCE__?.score ?? 0",
-          "timeout": 5000,
-          "loop": [
-            {
-              "hold": "KeyA",
-              "ms": 140
-            },
-            {
-              "wait": 60
-            },
-            {
-              "hold": "KeyD",
-              "ms": 140
-            },
-            {
-              "wait": 60
-            }
-          ]
-        },
-        {
-          "strip": {
-            "frames": 12,
-            "intervalMs": 100
-          }
-        },
-        {
-          "shot": "04-action"
-        },
-        {
-          "webm": {
-            "seconds": 5
-          }
-        }
-      ],
-      "integratedCritical": [
-        "C-05",
-        "C-10",
-        "C-13",
-        "C-15",
-        "C-24",
-        "C-25",
-        "C-27"
-      ],
-      "legacy": {
-        "evidenceGlobal": "__VAULT_BREAKERS_EVIDENCE__"
-      },
-      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
-      "captureContractMigrated": true,
-      "titleDeterministic": null,
-      "scenarios": [
-        {
-          "id": "02-opening",
-          "query": {
-            "scenario": "02-opening",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "03-mid",
-          "query": {
-            "scenario": "03-mid",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "04-action",
-          "query": {
-            "scenario": "04-action",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "quality-medium",
-          "query": {
-            "aura3d-quality": "medium",
-            "aura3d-adaptive": "0"
-          }
-        }
-      ],
-      "hudSelectors": [
-        "#stat-score",
-        "#vb-banner",
-        ".hole-banner",
-        ".power-meter",
-        "[data-hud]",
-        ".hud",
-        "#hud"
-      ],
-      "keyboardHintSelectors": [
-        ".controls-list",
-        ".controls-list",
-        ".controls-strip",
-        "[data-hud='keyboard-hints']"
-      ],
-      "qrFlagVariants": [
-        {
-          "id": "all",
-          "qrFlags": [
-            "route-vault-breakers",
-            "game",
-            "camera",
-            "lighting",
-            "post",
-            "materials",
-            "vfx",
-            "world",
-            "tiers",
-            "looks"
-          ]
-        },
-        {
-          "id": "tiers",
-          "qrFlags": [
-            "tiers"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "showcase-bank-shot",
-      "title": "Bank Shot",
-      "genre": "billiards",
-      "appDir": "showcase-bank-shot",
-      "deployed": true,
-      "route": "/apps/showcase-bank-shot/",
-      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
-      "notes": "A/D aim, W/S top/draw spin, hold Space to charge, release to strike, P pause, R reset. 02-opening is the break ~500ms after release; action waits for a pot (evidence potted/score).",
-      "wave": 1,
-      "rebuildTier": "S-presentation",
-      "artDirection": "apps/showcase-bank-shot/art/direction.ts",
-      "requiredConditions": [
-        {
-          "shot": "04-action",
-          "expr": "table.pottedThisShot >= 1",
-          "deadlineMs": 15000
-        },
-        {
-          "shot": "03-mid",
-          "expr": "balls.maxAngularSpeed > 0",
-          "deadlineMs": 15000
-        }
-      ],
-      "acceptance": {
-        "minOverall": 7,
-        "minVisualCategory": 5,
-        "critical": {
-          "material_quality": 8,
-          "lighting": 8,
-          "shadows": 8
-        },
-        "minNonVisual": {
-          "sound_audio": 6,
-          "controls": 7,
-          "game_feel": 6.5,
-          "loading_transitions": 6,
-          "physics_feel": 6
-        }
-      },
-      "budgets": {
-        "transferToPlayableMB": 12,
-        "routeJsGzipKB": 80,
-        "drawCalls": {
-          "low": 100,
-          "medium": 120,
-          "high": 120,
-          "ultra": 240
-        },
-        "gameLogicCpuMs": 4
-      },
-      "qrFlags": [
-        "route-bank-shot",
-        "game",
-        "camera",
-        "lighting",
-        "post",
-        "materials",
-        "vfx",
-        "world",
-        "tiers",
-        "looks"
-      ],
-      "timeline": [
-        {
-          "audio-webm": {
-            "seconds": 60
-          }
-        },
-        {
-          "fps": 5000
-        },
-        {
-          "strip": {
-            "frames": 12,
-            "intervalMs": 100
-          }
-        },
-        {
-          "wait": 300
-        },
-        {
-          "hold": "Space",
-          "ms": 850
-        },
-        {
-          "wait": 500
-        },
-        {
-          "shot": "02-opening"
-        },
-        {
-          "wait": 4600
-        },
-        {
-          "hold": "KeyD",
-          "ms": 400
-        },
-        {
-          "down": "Space"
-        },
-        {
-          "wait": 700
-        },
-        {
-          "shot": "05-charge"
-        },
-        {
-          "up": "Space"
-        },
-        {
-          "wait": 400
-        },
-        {
-          "shot": "03-mid"
-        },
-        {
-          "until": "(window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.pottedThisShot ?? window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0) > s || (window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.score ?? window.__BANK_SHOT_EVIDENCE__?.score ?? 0) > t",
-          "capture": "window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.pottedThisShot ?? window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0",
-          "capture2": "window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.score ?? window.__BANK_SHOT_EVIDENCE__?.score ?? 0",
-          "timeout": 4000,
-          "loop": [
-            {
-              "wait": 80
-            }
-          ]
-        },
-        {
-          "strip": {
-            "frames": 12,
-            "intervalMs": 100
-          }
-        },
-        {
-          "shot": "04-action"
-        },
-        {
-          "webm": {
-            "seconds": 5
-          }
-        }
-      ],
-      "integratedCritical": [
-        "C-03",
-        "C-05",
-        "C-10",
-        "C-13",
-        "C-15",
-        "C-24",
-        "C-25",
-        "C-27"
-      ],
-      "legacy": {
-        "evidenceGlobal": "__BANK_SHOT_EVIDENCE__"
-      },
-      "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
-      "captureContractMigrated": true,
-      "titleDeterministic": null,
-      "scenarios": [
-        {
-          "id": "02-opening",
-          "query": {
-            "scenario": "02-opening",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "05-charge",
-          "query": {
-            "scenario": "05-charge",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "03-mid",
-          "query": {
-            "scenario": "03-mid",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "04-action",
-          "query": {
-            "scenario": "04-action",
-            "seed": 1,
-            "freezeAt": "end",
-            "cameraPose": "gameplay"
-          }
-        },
-        {
-          "id": "quality-medium",
-          "query": {
-            "aura3d-quality": "medium",
-            "aura3d-adaptive": "0"
-          }
-        }
-      ],
-      "hudSelectors": [
-        "#bs-banner",
-        "#stat-combo",
-        "#stat-score",
-        ".hole-banner",
-        ".power-meter",
-        ".sweet-zone",
-        "[data-hud]",
-        ".hud",
-        "#hud"
-      ],
-      "keyboardHintSelectors": [
-        ".controls-list",
-        ".controls-list",
-        ".controls-strip",
-        "[data-hud='keyboard-hints']"
-      ],
-      "qrFlagVariants": [
-        {
-          "id": "all",
-          "qrFlags": [
-            "route-bank-shot",
-            "game",
-            "camera",
-            "lighting",
-            "post",
-            "materials",
-            "vfx",
-            "world",
-            "tiers",
-            "looks"
-          ]
-        },
-        {
-          "id": "tiers",
-          "qrFlags": [
-            "tiers"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "showcase-aura-links-3d",
-      "title": "Aura Links 3D",
-      "genre": "golf / sports",
-      "appDir": "showcase-aura-links-3d",
-      "deployed": true,
-      "route": "/apps/showcase-aura-links-3d/",
-      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
-      "notes": "Three-click swing: Space starts the meter, Space locks power, Space locks accuracy+spin (dead-centre pure). A/D aim, Q/E club, W/S aim-cam zoom. Shots land via deterministic terrain sampler; camera follows ball in flight.",
-      "wave": 3,
-      "rebuildTier": "S-world",
-      "readyExpr": "(document.body?.dataset?.aura3dReady === 'true' || Boolean(window.__AURA3D_GAME_EVIDENCE__))",
-      "requiredConditions": [
-        {
-          "shot": "03-mid",
-          "expr": "phase === 'swing'",
-          "deadlineMs": 15000
-        },
-        {
-          "shot": "04-action",
-          "expr": "strokes >= 1",
-          "deadlineMs": 20000
-        },
-        {
-          "shot": "04-action",
-          "expr": "phase === 'flight' && ball !== null && ball.carry > 20",
-          "deadlineMs": 20000
-        }
-      ],
-      "acceptance": {
-        "minOverall": 7,
-        "minVisualCategory": 5,
-        "critical": {
-          "environment_world": 7.5,
-          "modeling_assets": 7
-        },
-        "minNonVisual": {
-          "sound_audio": 6,
-          "controls": 7,
-          "game_feel": 6.5,
-          "loading_transitions": 6,
-          "physics_feel": 6
-        }
-      },
-      "budgets": {
-        "transferToPlayableMB": 15,
-        "routeJsGzipKB": 1400,
-        "drawCalls": {
-          "low": 120,
-          "medium": 220,
-          "high": 420,
-          "ultra": 500
-        },
-        "gameLogicCpuMs": 4
-      },
-      "qrFlags": [
-        "game",
-        "camera",
-        "lighting",
-        "post",
-        "materials",
-        "vfx",
-        "world",
-        "tiers",
-        "looks"
-      ],
-      "timeline": [
-        {
-          "fps": 5000
-        },
-        {
-          "strip": {
-            "frames": 12,
-            "intervalMs": 100
-          }
-        },
-        {
-          "click": "#menu-run"
-        },
-        {
-          "until": "window.__AURA3D_GAME_EVIDENCE__?.phase === 'address'",
-          "timeout": 20000,
-          "capture": "window.__AURA3D_GAME_EVIDENCE__?.phase"
-        },
-        {
-          "wait": 400
-        },
-        {
-          "shot": "02-opening"
-        },
-        {
-          "until": "window.__AURA3D_GAME_EVIDENCE__?.phase === 'swing'",
-          "timeout": 15000,
-          "loop": [
-            {
-              "press": "Space"
-            },
-            {
-              "wait": 900
-            }
-          ]
-        },
-        {
-          "wait": 500
-        },
-        {
-          "shot": "03-mid"
-        },
-        {
-          "until": "window.__AURA3D_GAME_EVIDENCE__?.phase === 'flight'",
-          "timeout": 20000,
-          "loop": [
-            {
-              "press": "Space"
-            },
-            {
-              "wait": 800
-            }
-          ]
-        },
-        {
-          "wait": 800
-        },
-        {
-          "shot": "04-action"
-        },
-        {
-          "webm": {
-            "seconds": 5
-          }
-        },
-        {
-          "until": "window.__AURA3D_GAME_EVIDENCE__?.phase !== 'flight'",
-          "timeout": 25000
-        },
-        {
-          "shot": "05-landing"
-        },
-        {
-          "wait": 1200
-        },
-        {
-          "shot": "06-next-lie"
-        }
-      ],
-      "scenarios": [
-        {
-          "id": "maple",
-          "query": {
-            "course": "mapleHollow"
-          }
-        },
-        {
-          "id": "cinder",
-          "query": {
-            "course": "cinderRim"
-          }
-        },
-        {
-          "id": "mare",
-          "query": {
-            "course": "mareCourse"
-          }
-        },
-        {
-          "id": "rangelab",
-          "query": {
-            "mode": "rangelab"
-          }
-        },
-        {
-          "id": "puttinglab",
-          "query": {
-            "mode": "puttinglab"
-          }
-        }
-      ],
-      "captureContractMigrated": true,
-      "titleDeterministic": null
-    }
+ "$comment": "Per-game routes and real-input timelines for tools/quality-rebuild-capture/capture-games.mjs. Key names are DOM KeyboardEvent.code values. Timelines use only the controls a player has (keyboard, pointer drag, focus/click): no debug hooks, no ?capture= review lenses, so screenshots show the shipped experience. Step vocabulary is documented in README.md. Timeline time 0 is the first step after the 01-title shot.",
+ "schema": "aura3d.quality-rebuild-capture.games/1",
+ "productionOrigin": "https://aura3d.auraone.ai",
+ "defaults": {
+  "titleSettleMs": 1200,
+  "readyTimeoutMs": 30000,
+  "readyFallbackMs": 6000,
+  "fpsSampleMs": 5000,
+  "mobileStopAfterShot": "03-mid",
+  "requiredShots": [
+   "02-opening",
+   "03-mid",
+   "04-action"
   ]
+ },
+ "games": [
+  {
+   "id": "aura-clash-showcase",
+   "title": "Aura Clash Arena",
+   "genre": "fighting",
+   "appDir": "aura-clash-showcase",
+   "deployed": true,
+   "route": "/apps/aura-clash-showcase/",
+   "altRoutes": [
+    "/showcase/aura-clash/playable/",
+    "/examples/neon-corridor-strike/"
+   ],
+   "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
+   "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
+   "focus": {
+    "selector": ".aca",
+    "method": "focus"
+   },
+   "notes": "Round auto-starts (1.35s ROUND intro). Controls from src/playable/AuraClashArenaApp.ts actionKeys: A/D move, W jump, S down, Space dash, Shift/Q guard, J light, K heavy, L special (meter-gated), P pause, R reset. Action shot waits for proof.totalHits to increase.",
+   "wave": 1,
+   "rebuildTier": "S-presentation",
+   "artDirection": "apps/aura-clash-showcase/art/direction.ts",
+   "requiredConditions": [
+    {
+     "shot": "04-action",
+     "expr": "combat.hitStopActive === true && fx.liveCount > 0",
+     "deadlineMs": 12000
+    },
+    {
+     "shot": "03-mid",
+     "expr": "framing.subjectHeightFraction >= 0.45 && framing.subjectHeightFraction <= 0.6",
+     "deadlineMs": 12000
+    }
+   ],
+   "acceptance": {
+    "minOverall": 7,
+    "minVisualCategory": 5,
+    "critical": {
+     "lighting": 7.5,
+     "vfx": 7.5,
+     "animation_quality": 7.5,
+     "camera": 7.5
+    },
+    "minNonVisual": {
+     "sound_audio": 6,
+     "controls": 7,
+     "game_feel": 6.5,
+     "loading_transitions": 6
+    }
+   },
+   "budgets": {
+    "transferToPlayableMB": 15,
+    "routeJsGzipKB": 80,
+    "drawCalls": {
+     "low": 150,
+     "medium": 150,
+     "high": 150,
+     "ultra": 300
+    },
+    "gameLogicCpuMs": 4
+   },
+   "qrFlags": [
+    "route-aura-clash",
+    "game",
+    "camera",
+    "lighting",
+    "post",
+    "materials",
+    "vfx",
+    "world",
+    "tiers",
+    "looks"
+   ],
+   "timeline": [
+    {
+     "audio-webm": {
+      "seconds": 60
+     }
+    },
+    {
+     "fps": 5000
+    },
+    {
+     "strip": {
+      "frames": 12,
+      "intervalMs": 100
+     }
+    },
+    {
+     "down": "KeyD"
+    },
+    {
+     "wait": 2000
+    },
+    {
+     "shot": "02-opening"
+    },
+    {
+     "up": "KeyD"
+    },
+    {
+     "repeat": 6,
+     "steps": [
+      {
+       "hold": "KeyD",
+       "ms": 250
+      },
+      {
+       "press": "KeyJ"
+      },
+      {
+       "wait": 220
+      },
+      {
+       "press": "KeyJ"
+      },
+      {
+       "wait": 220
+      },
+      {
+       "press": "KeyK"
+      },
+      {
+       "wait": 380
+      }
+     ]
+    },
+    {
+     "down": "KeyD"
+    },
+    {
+     "press": "KeyJ"
+    },
+    {
+     "wait": 120
+    },
+    {
+     "shot": "03-mid"
+    },
+    {
+     "up": "KeyD"
+    },
+    {
+     "until": "(window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0) > s",
+     "capture": "window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0",
+     "timeout": 6000,
+     "loop": [
+      {
+       "press": "KeyJ"
+      },
+      {
+       "wait": 50
+      },
+      {
+       "press": "KeyK"
+      },
+      {
+       "wait": 50
+      }
+     ]
+    },
+    {
+     "strip": {
+      "frames": 12,
+      "intervalMs": 100
+     }
+    },
+    {
+     "shot": "04-action"
+    },
+    {
+     "webm": {
+      "seconds": 5
+     }
+    },
+    {
+     "press": "KeyL"
+    },
+    {
+     "wait": 320
+    },
+    {
+     "shot": "05-special"
+    }
+   ],
+   "integratedCritical": [
+    "C-05",
+    "C-10",
+    "C-13",
+    "C-15",
+    "C-19",
+    "C-20",
+    "C-21",
+    "C-24",
+    "C-25",
+    "C-27"
+   ],
+   "legacy": {
+    "evidenceGlobal": "__AURA_CLASH_ARENA_PROOF__",
+    "readyExpr": "window.__AURA_CLASH_ARENA_PROOF__?.status === 'running'"
+   },
+   "captureContractMigrated": true,
+   "titleDeterministic": null,
+   "scenarios": [
+    {
+     "id": "02-opening",
+     "query": {
+      "scenario": "02-opening",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "03-mid",
+     "query": {
+      "scenario": "03-mid",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "04-action",
+     "query": {
+      "scenario": "04-action",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "05-special",
+     "query": {
+      "scenario": "05-special",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "quality-medium",
+     "query": {
+      "aura3d-quality": "medium",
+      "aura3d-adaptive": "0"
+     }
+    }
+   ],
+   "hudSelectors": [
+    "#clip-status",
+    "#combo-count",
+    "#combo-flash",
+    "#player-health",
+    "#player-meter",
+    "#render-status",
+    "#rival-health",
+    "#rival-meter",
+    "#round-timer",
+    ".aca-combo"
+   ],
+   "keyboardHintSelectors": [
+    ".aca-controls",
+    ".controls-list",
+    ".controls-strip",
+    "[data-hud='keyboard-hints']"
+   ],
+   "qrFlagVariants": [
+    {
+     "id": "all",
+     "qrFlags": [
+      "route-aura-clash",
+      "game",
+      "camera",
+      "lighting",
+      "post",
+      "materials",
+      "vfx",
+      "world",
+      "tiers",
+      "looks"
+     ]
+    },
+    {
+     "id": "tiers",
+     "qrFlags": [
+      "tiers"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "showcase-blockfall-reactor",
+   "title": "Blockfall Reactor",
+   "genre": "falling-blocks",
+   "appDir": "showcase-blockfall-reactor",
+   "deployed": true,
+   "route": "/apps/showcase-blockfall-reactor/",
+   "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
+   "notes": "Boots straight into play (attract mode only after 45s idle). A/D move, W/X/E rotate CW, Z/Q rotate CCW, S soft drop, Space hard drop, C/Shift hold, P pause. Action shot is taken 60ms after a hard drop (lock/impact FX); a line clear is not reliably reachable blind in 15s.",
+   "wave": 4,
+   "rebuildTier": "S-presentation",
+   "artDirection": "apps/showcase-blockfall-reactor/art/direction.ts",
+   "requiredConditions": [
+    {
+     "shot": "04-action",
+     "expr": "board.linesClearedThisRound >= 1 && fx.liveCount > 0",
+     "deadlineMs": 20000
+    },
+    {
+     "shot": "03-mid",
+     "expr": "board.stackHeight >= 4",
+     "deadlineMs": 20000
+    }
+   ],
+   "acceptance": {
+    "minOverall": 7,
+    "minVisualCategory": 5,
+    "critical": {
+     "vfx": 7,
+     "camera": 7,
+     "polish_juice": 7.5
+    },
+    "minNonVisual": {
+     "sound_audio": 6,
+     "controls": 7,
+     "game_feel": 6.5,
+     "loading_transitions": 6
+    }
+   },
+   "budgets": {
+    "transferToPlayableMB": 12,
+    "routeJsGzipKB": 80,
+    "drawCalls": {
+     "low": 120,
+     "medium": 150,
+     "high": 150,
+     "ultra": 300
+    },
+    "gameLogicCpuMs": 4
+   },
+   "qrFlags": [
+    "route-blockfall-reactor",
+    "game",
+    "camera",
+    "lighting",
+    "post",
+    "materials",
+    "vfx",
+    "world",
+    "tiers",
+    "looks"
+   ],
+   "timeline": [
+    {
+     "fps": 5000
+    },
+    {
+     "strip": {
+      "frames": 12,
+      "intervalMs": 100
+     }
+    },
+    {
+     "press": "KeyA"
+    },
+    {
+     "wait": 300
+    },
+    {
+     "press": "KeyW"
+    },
+    {
+     "wait": 500
+    },
+    {
+     "press": "Space"
+    },
+    {
+     "wait": 1200
+    },
+    {
+     "shot": "02-opening"
+    },
+    {
+     "repeat": 5,
+     "steps": [
+      {
+       "press": "KeyD"
+      },
+      {
+       "wait": 150
+      },
+      {
+       "press": "KeyD"
+      },
+      {
+       "wait": 200
+      },
+      {
+       "press": "KeyW"
+      },
+      {
+       "wait": 350
+      },
+      {
+       "press": "Space"
+      },
+      {
+       "wait": 650
+      }
+     ]
+    },
+    {
+     "press": "KeyA"
+    },
+    {
+     "press": "KeyA"
+    },
+    {
+     "press": "KeyA"
+    },
+    {
+     "wait": 200
+    },
+    {
+     "down": "KeyS"
+    },
+    {
+     "wait": 500
+    },
+    {
+     "shot": "03-mid"
+    },
+    {
+     "up": "KeyS"
+    },
+    {
+     "press": "KeyC"
+    },
+    {
+     "wait": 400
+    },
+    {
+     "press": "Space"
+    },
+    {
+     "wait": 60
+    },
+    {
+     "strip": {
+      "frames": 12,
+      "intervalMs": 100
+     }
+    },
+    {
+     "shot": "04-action"
+    },
+    {
+     "webm": {
+      "seconds": 5
+     }
+    }
+   ],
+   "integratedCritical": [
+    "C-05",
+    "C-07",
+    "C-10",
+    "C-13",
+    "C-15",
+    "C-20",
+    "C-24",
+    "C-25",
+    "C-27"
+   ],
+   "legacy": {
+    "evidenceGlobal": "__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__"
+   },
+   "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
+   "captureContractMigrated": true,
+   "titleDeterministic": null,
+   "scenarios": [
+    {
+     "id": "02-opening",
+     "query": {
+      "scenario": "02-opening",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "03-mid",
+     "query": {
+      "scenario": "03-mid",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "04-action",
+     "query": {
+      "scenario": "04-action",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "quality-medium",
+     "query": {
+      "aura3d-quality": "medium",
+      "aura3d-adaptive": "0"
+     }
+    }
+   ],
+   "hudSelectors": [
+    "#hud-actions",
+    "#reactor-meter",
+    "#stat-combo",
+    "#stat-score",
+    "#status-mode",
+    "#status-speed",
+    ".hud-panel",
+    ".hud-panel--actions",
+    ".hud-panel--evidence",
+    ".hud-panel--preview"
+   ],
+   "keyboardHintSelectors": [
+    ".controls-strip",
+    ".touch-cluster",
+    ".touch-cluster--left",
+    ".touch-cluster--right",
+    ".touch-cluster--session",
+    ".controls-list",
+    ".controls-strip",
+    "[data-hud='keyboard-hints']"
+   ],
+   "qrFlagVariants": [
+    {
+     "id": "all",
+     "qrFlags": [
+      "route-blockfall-reactor",
+      "game",
+      "camera",
+      "lighting",
+      "post",
+      "materials",
+      "vfx",
+      "world",
+      "tiers",
+      "looks"
+     ]
+    },
+    {
+     "id": "tiers",
+     "qrFlags": [
+      "tiers"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "showcase-aurora-lander",
+   "title": "Aurora Lander",
+   "genre": "lander",
+   "appDir": "showcase-aurora-lander",
+   "deployed": true,
+   "route": "/apps/showcase-aurora-lander/",
+   "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
+   "notes": "The boot drop falls untouched, so thrust starts at t=0. W/Up thrust, A/D lateral, Space quick restart, R restart, G ghost, P pause. Action shot waits for a touchdown/crash state (regex on evidence state/phase) to capture landing dust or the crash.",
+   "wave": 3,
+   "rebuildTier": "S-world",
+   "artDirection": "apps/showcase-aurora-lander/art/direction.ts",
+   "requiredConditions": [
+    {
+     "shot": "04-action",
+     "expr": "lander.touchdown === \"landed\"",
+     "deadlineMs": 40000
+    },
+    {
+     "shot": "03-mid",
+     "expr": "lander.altitude < 30 && framing.padInFrame === true",
+     "deadlineMs": 40000
+    }
+   ],
+   "canvasBlankCheck": {
+    "maxDarkFraction": 0.95,
+    "minDistinctColors": 1500,
+    "reason": "night sky"
+   },
+   "acceptance": {
+    "minOverall": 7,
+    "minVisualCategory": 5,
+    "critical": {
+     "environment_world": 7,
+     "atmospheric_effects": 7.5
+    },
+    "minNonVisual": {
+     "sound_audio": 6,
+     "controls": 7,
+     "game_feel": 6.5,
+     "loading_transitions": 6,
+     "physics_feel": 6
+    }
+   },
+   "budgets": {
+    "transferToPlayableMB": 15,
+    "routeJsGzipKB": 80,
+    "drawCalls": {
+     "low": 120,
+     "medium": 150,
+     "high": 150,
+     "ultra": 300
+    },
+    "gameLogicCpuMs": 4
+   },
+   "qrFlags": [
+    "route-aurora-lander",
+    "game",
+    "camera",
+    "lighting",
+    "post",
+    "materials",
+    "vfx",
+    "world",
+    "tiers",
+    "looks"
+   ],
+   "timeline": [
+    {
+     "fps": 5000
+    },
+    {
+     "strip": {
+      "frames": 12,
+      "intervalMs": 100
+     }
+    },
+    {
+     "down": "KeyW"
+    },
+    {
+     "wait": 2000
+    },
+    {
+     "shot": "02-opening"
+    },
+    {
+     "up": "KeyW"
+    },
+    {
+     "repeat": 5,
+     "steps": [
+      {
+       "wait": 350
+      },
+      {
+       "down": "KeyW"
+      },
+      {
+       "down": "KeyD"
+      },
+      {
+       "wait": 550
+      },
+      {
+       "up": "KeyD"
+      },
+      {
+       "wait": 250
+      },
+      {
+       "up": "KeyW"
+      }
+     ]
+    },
+    {
+     "down": "KeyW"
+    },
+    {
+     "wait": 500
+    },
+    {
+     "shot": "03-mid"
+    },
+    {
+     "up": "KeyW"
+    },
+    {
+     "until": "/land|touch|crash|fail|success|complete/i.test(String(window.__AURORA_LANDER_EVIDENCE__?.state ?? window.__AURORA_LANDER_EVIDENCE__?.phase ?? ''))",
+     "timeout": 7000,
+     "loop": [
+      {
+       "wait": 80
+      }
+     ]
+    },
+    {
+     "wait": 150
+    },
+    {
+     "strip": {
+      "frames": 12,
+      "intervalMs": 100
+     }
+    },
+    {
+     "shot": "04-action"
+    },
+    {
+     "webm": {
+      "seconds": 5
+     }
+    }
+   ],
+   "integratedCritical": [
+    "C-05",
+    "C-10",
+    "C-13",
+    "C-15",
+    "C-20",
+    "C-24",
+    "C-25",
+    "C-26",
+    "C-27"
+   ],
+   "legacy": {
+    "evidenceGlobal": "__AURORA_LANDER_EVIDENCE__"
+   },
+   "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
+   "captureContractMigrated": true,
+   "titleDeterministic": null,
+   "scenarios": [
+    {
+     "id": "02-opening",
+     "query": {
+      "scenario": "02-opening",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "03-mid",
+     "query": {
+      "scenario": "03-mid",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "04-action",
+     "query": {
+      "scenario": "04-action",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "quality-medium",
+     "query": {
+      "aura3d-quality": "medium",
+      "aura3d-adaptive": "0"
+     }
+    }
+   ],
+   "hudSelectors": [
+    "#hud-altitude",
+    "#hud-attitude",
+    "#hud-banner",
+    "#hud-fuel",
+    "#hud-fuel-fill",
+    "#hud-fuel-label",
+    "#hud-ghost",
+    "#hud-ghost-flag",
+    "#hud-gust",
+    "#hud-gust-flag"
+   ],
+   "keyboardHintSelectors": [
+    "#touch-ghost",
+    "#touch-left",
+    "#touch-pause",
+    "#touch-restart",
+    "#touch-right",
+    "#touch-thrust",
+    ".panel-hint",
+    ".touch-button"
+   ],
+   "qrFlagVariants": [
+    {
+     "id": "all",
+     "qrFlags": [
+      "route-aurora-lander",
+      "game",
+      "camera",
+      "lighting",
+      "post",
+      "materials",
+      "vfx",
+      "world",
+      "tiers",
+      "looks"
+     ]
+    },
+    {
+     "id": "tiers",
+     "qrFlags": [
+      "tiers"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "showcase-vault-breakers",
+   "title": "Vault Breakers",
+   "genre": "pinball",
+   "appDir": "showcase-vault-breakers",
+   "deployed": true,
+   "route": "/apps/showcase-vault-breakers/",
+   "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
+   "notes": "Hold Space to pull the plunger, release to serve (1.8s hold matches the thumbnail producer). A/Left left flipper, D/Right right flipper, S nudge, P pause, R reset. Action waits for a score change.",
+   "wave": 2,
+   "rebuildTier": "S-world",
+   "artDirection": "apps/showcase-vault-breakers/art/direction.ts",
+   "requiredConditions": [
+    {
+     "shot": "04-action",
+     "expr": "table.bumperHitsThisBall >= 1 && fx.liveCount > 0",
+     "deadlineMs": 20000
+    },
+    {
+     "shot": "03-mid",
+     "expr": "ball.inPlay === true",
+     "deadlineMs": 20000
+    }
+   ],
+   "acceptance": {
+    "minOverall": 7,
+    "minVisualCategory": 5,
+    "critical": {
+     "modeling_assets": 7.5,
+     "material_quality": 7.5
+    },
+    "minNonVisual": {
+     "sound_audio": 6,
+     "controls": 7,
+     "game_feel": 6.5,
+     "loading_transitions": 6,
+     "physics_feel": 6
+    }
+   },
+   "budgets": {
+    "transferToPlayableMB": 15,
+    "routeJsGzipKB": 80,
+    "drawCalls": {
+     "low": 100,
+     "medium": 100,
+     "high": 100,
+     "ultra": 200
+    },
+    "gameLogicCpuMs": 4
+   },
+   "qrFlags": [
+    "route-vault-breakers",
+    "game",
+    "camera",
+    "lighting",
+    "post",
+    "materials",
+    "vfx",
+    "world",
+    "tiers",
+    "looks"
+   ],
+   "timeline": [
+    {
+     "fps": 5000
+    },
+    {
+     "strip": {
+      "frames": 12,
+      "intervalMs": 100
+     }
+    },
+    {
+     "hold": "Space",
+     "ms": 1800
+    },
+    {
+     "wait": 350
+    },
+    {
+     "shot": "02-opening"
+    },
+    {
+     "repeat": 8,
+     "steps": [
+      {
+       "wait": 400
+      },
+      {
+       "hold": "KeyA",
+       "ms": 180
+      },
+      {
+       "wait": 150
+      },
+      {
+       "hold": "KeyD",
+       "ms": 180
+      }
+     ]
+    },
+    {
+     "down": "KeyA"
+    },
+    {
+     "down": "KeyD"
+    },
+    {
+     "wait": 120
+    },
+    {
+     "shot": "03-mid"
+    },
+    {
+     "up": "KeyA"
+    },
+    {
+     "up": "KeyD"
+    },
+    {
+     "until": "(window.__VAULT_BREAKERS_EVIDENCE__?.score ?? 0) > s",
+     "capture": "window.__VAULT_BREAKERS_EVIDENCE__?.score ?? 0",
+     "timeout": 5000,
+     "loop": [
+      {
+       "hold": "KeyA",
+       "ms": 140
+      },
+      {
+       "wait": 60
+      },
+      {
+       "hold": "KeyD",
+       "ms": 140
+      },
+      {
+       "wait": 60
+      }
+     ]
+    },
+    {
+     "strip": {
+      "frames": 12,
+      "intervalMs": 100
+     }
+    },
+    {
+     "shot": "04-action"
+    },
+    {
+     "webm": {
+      "seconds": 5
+     }
+    }
+   ],
+   "integratedCritical": [
+    "C-05",
+    "C-10",
+    "C-13",
+    "C-15",
+    "C-24",
+    "C-25",
+    "C-27"
+   ],
+   "legacy": {
+    "evidenceGlobal": "__VAULT_BREAKERS_EVIDENCE__"
+   },
+   "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
+   "captureContractMigrated": true,
+   "titleDeterministic": null,
+   "scenarios": [
+    {
+     "id": "02-opening",
+     "query": {
+      "scenario": "02-opening",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "03-mid",
+     "query": {
+      "scenario": "03-mid",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "04-action",
+     "query": {
+      "scenario": "04-action",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "quality-medium",
+     "query": {
+      "aura3d-quality": "medium",
+      "aura3d-adaptive": "0"
+     }
+    }
+   ],
+   "hudSelectors": [
+    "#stat-score",
+    "#vb-banner",
+    ".hole-banner",
+    ".power-meter",
+    "[data-hud]",
+    ".hud",
+    "#hud"
+   ],
+   "keyboardHintSelectors": [
+    ".controls-list",
+    ".controls-list",
+    ".controls-strip",
+    "[data-hud='keyboard-hints']"
+   ],
+   "qrFlagVariants": [
+    {
+     "id": "all",
+     "qrFlags": [
+      "route-vault-breakers",
+      "game",
+      "camera",
+      "lighting",
+      "post",
+      "materials",
+      "vfx",
+      "world",
+      "tiers",
+      "looks"
+     ]
+    },
+    {
+     "id": "tiers",
+     "qrFlags": [
+      "tiers"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "showcase-bank-shot",
+   "title": "Bank Shot",
+   "genre": "billiards",
+   "appDir": "showcase-bank-shot",
+   "deployed": true,
+   "route": "/apps/showcase-bank-shot/",
+   "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
+   "notes": "A/D aim, W/S top/draw spin, hold Space to charge, release to strike, P pause, R reset. 02-opening is the break ~500ms after release; action waits for a pot (evidence potted/score).",
+   "wave": 1,
+   "rebuildTier": "S-presentation",
+   "artDirection": "apps/showcase-bank-shot/art/direction.ts",
+   "requiredConditions": [
+    {
+     "shot": "04-action",
+     "expr": "table.pottedThisShot >= 1",
+     "deadlineMs": 15000
+    },
+    {
+     "shot": "03-mid",
+     "expr": "balls.maxAngularSpeed > 0",
+     "deadlineMs": 15000
+    }
+   ],
+   "acceptance": {
+    "minOverall": 7,
+    "minVisualCategory": 5,
+    "critical": {
+     "material_quality": 8,
+     "lighting": 8,
+     "shadows": 8
+    },
+    "minNonVisual": {
+     "sound_audio": 6,
+     "controls": 7,
+     "game_feel": 6.5,
+     "loading_transitions": 6,
+     "physics_feel": 6
+    }
+   },
+   "budgets": {
+    "transferToPlayableMB": 12,
+    "routeJsGzipKB": 80,
+    "drawCalls": {
+     "low": 100,
+     "medium": 120,
+     "high": 120,
+     "ultra": 240
+    },
+    "gameLogicCpuMs": 4
+   },
+   "qrFlags": [
+    "route-bank-shot",
+    "game",
+    "camera",
+    "lighting",
+    "post",
+    "materials",
+    "vfx",
+    "world",
+    "tiers",
+    "looks"
+   ],
+   "timeline": [
+    {
+     "audio-webm": {
+      "seconds": 60
+     }
+    },
+    {
+     "fps": 5000
+    },
+    {
+     "strip": {
+      "frames": 12,
+      "intervalMs": 100
+     }
+    },
+    {
+     "wait": 300
+    },
+    {
+     "hold": "Space",
+     "ms": 850
+    },
+    {
+     "wait": 500
+    },
+    {
+     "shot": "02-opening"
+    },
+    {
+     "wait": 4600
+    },
+    {
+     "hold": "KeyD",
+     "ms": 400
+    },
+    {
+     "down": "Space"
+    },
+    {
+     "wait": 700
+    },
+    {
+     "shot": "05-charge"
+    },
+    {
+     "up": "Space"
+    },
+    {
+     "wait": 400
+    },
+    {
+     "shot": "03-mid"
+    },
+    {
+     "until": "(window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.pottedThisShot ?? window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0) > s || (window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.score ?? window.__BANK_SHOT_EVIDENCE__?.score ?? 0) > t",
+     "capture": "window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.pottedThisShot ?? window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0",
+     "capture2": "window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.score ?? window.__BANK_SHOT_EVIDENCE__?.score ?? 0",
+     "timeout": 4000,
+     "loop": [
+      {
+       "wait": 80
+      }
+     ]
+    },
+    {
+     "strip": {
+      "frames": 12,
+      "intervalMs": 100
+     }
+    },
+    {
+     "shot": "04-action"
+    },
+    {
+     "webm": {
+      "seconds": 5
+     }
+    }
+   ],
+   "integratedCritical": [
+    "C-03",
+    "C-05",
+    "C-10",
+    "C-13",
+    "C-15",
+    "C-24",
+    "C-25",
+    "C-27"
+   ],
+   "legacy": {
+    "evidenceGlobal": "__BANK_SHOT_EVIDENCE__"
+   },
+   "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
+   "captureContractMigrated": true,
+   "titleDeterministic": null,
+   "scenarios": [
+    {
+     "id": "02-opening",
+     "query": {
+      "scenario": "02-opening",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "05-charge",
+     "query": {
+      "scenario": "05-charge",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "03-mid",
+     "query": {
+      "scenario": "03-mid",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "04-action",
+     "query": {
+      "scenario": "04-action",
+      "seed": 1,
+      "freezeAt": "end",
+      "cameraPose": "gameplay"
+     }
+    },
+    {
+     "id": "quality-medium",
+     "query": {
+      "aura3d-quality": "medium",
+      "aura3d-adaptive": "0"
+     }
+    }
+   ],
+   "hudSelectors": [
+    "#bs-banner",
+    "#stat-combo",
+    "#stat-score",
+    ".hole-banner",
+    ".power-meter",
+    ".sweet-zone",
+    "[data-hud]",
+    ".hud",
+    "#hud"
+   ],
+   "keyboardHintSelectors": [
+    ".controls-list",
+    ".controls-list",
+    ".controls-strip",
+    "[data-hud='keyboard-hints']"
+   ],
+   "qrFlagVariants": [
+    {
+     "id": "all",
+     "qrFlags": [
+      "route-bank-shot",
+      "game",
+      "camera",
+      "lighting",
+      "post",
+      "materials",
+      "vfx",
+      "world",
+      "tiers",
+      "looks"
+     ]
+    },
+    {
+     "id": "tiers",
+     "qrFlags": [
+      "tiers"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "showcase-aura-links-3d",
+   "title": "Aura Links 3D",
+   "genre": "golf / sports",
+   "appDir": "showcase-aura-links-3d",
+   "deployed": true,
+   "route": "/apps/showcase-aura-links-3d/",
+   "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
+   "notes": "Three-click swing: Space starts the meter, Space locks power, Space locks accuracy+spin (dead-centre pure). A/D aim, Q/E club, W/S aim-cam zoom. Shots land via deterministic terrain sampler; camera follows ball in flight.",
+   "wave": 3,
+   "rebuildTier": "S-world",
+   "readyExpr": "(document.body?.dataset?.aura3dReady === 'true' || Boolean(window.__AURA3D_GAME_EVIDENCE__))",
+   "requiredConditions": [
+    {
+     "shot": "03-mid",
+     "expr": "phase === 'swing'",
+     "deadlineMs": 15000
+    },
+    {
+     "shot": "04-action",
+     "expr": "strokes >= 1",
+     "deadlineMs": 20000
+    },
+    {
+     "shot": "04-action",
+     "expr": "phase === 'flight' && ball !== null && ball.carry > 20",
+     "deadlineMs": 20000
+    }
+   ],
+   "acceptance": {
+    "minOverall": 7,
+    "minVisualCategory": 5,
+    "critical": {
+     "environment_world": 7.5,
+     "modeling_assets": 7
+    },
+    "minNonVisual": {
+     "sound_audio": 6,
+     "controls": 7,
+     "game_feel": 6.5,
+     "loading_transitions": 6,
+     "physics_feel": 6
+    }
+   },
+   "budgets": {
+    "transferToPlayableMB": 15,
+    "routeJsGzipKB": 1400,
+    "drawCalls": {
+     "low": 120,
+     "medium": 220,
+     "high": 420,
+     "ultra": 500
+    },
+    "gameLogicCpuMs": 4
+   },
+   "qrFlags": [
+    "game",
+    "camera",
+    "lighting",
+    "post",
+    "materials",
+    "vfx",
+    "world",
+    "tiers",
+    "looks"
+   ],
+   "timeline": [
+    {
+     "fps": 5000
+    },
+    {
+     "strip": {
+      "frames": 12,
+      "intervalMs": 100
+     }
+    },
+    {
+     "click": "#menu-run"
+    },
+    {
+     "until": "window.__AURA3D_GAME_EVIDENCE__?.phase === 'address'",
+     "timeout": 20000,
+     "capture": "window.__AURA3D_GAME_EVIDENCE__?.phase"
+    },
+    {
+     "wait": 400
+    },
+    {
+     "shot": "02-opening"
+    },
+    {
+     "until": "window.__AURA3D_GAME_EVIDENCE__?.phase === 'swing'",
+     "timeout": 15000,
+     "loop": [
+      {
+       "press": "Space"
+      },
+      {
+       "wait": 900
+      }
+     ]
+    },
+    {
+     "wait": 500
+    },
+    {
+     "shot": "03-mid"
+    },
+    {
+     "until": "window.__AURA3D_GAME_EVIDENCE__?.phase === 'flight'",
+     "timeout": 20000,
+     "loop": [
+      {
+       "press": "Space"
+      },
+      {
+       "wait": 800
+      }
+     ]
+    },
+    {
+     "wait": 800
+    },
+    {
+     "shot": "04-action"
+    },
+    {
+     "webm": {
+      "seconds": 5
+     }
+    },
+    {
+     "until": "window.__AURA3D_GAME_EVIDENCE__?.phase !== 'flight'",
+     "timeout": 25000
+    },
+    {
+     "shot": "05-landing"
+    },
+    {
+     "wait": 1200
+    },
+    {
+     "shot": "06-next-lie"
+    }
+   ],
+   "scenarios": [
+    {
+     "id": "maple",
+     "query": {
+      "course": "mapleHollow"
+     }
+    },
+    {
+     "id": "cinder",
+     "query": {
+      "course": "cinderRim"
+     }
+    },
+    {
+     "id": "mare",
+     "query": {
+      "course": "mareCourse"
+     }
+    },
+    {
+     "id": "rangelab",
+     "query": {
+      "mode": "rangelab"
+     }
+    },
+    {
+     "id": "puttinglab",
+     "query": {
+      "mode": "puttinglab"
+     }
+    }
+   ],
+   "captureContractMigrated": true,
+   "titleDeterministic": null
+  },
+  {
+   "id": "showcase-iron-crown",
+   "title": "Iron Crown",
+   "genre": "fighting",
+   "appDir": "showcase-iron-crown",
+   "deployed": false,
+   "route": "/apps/showcase-iron-crown/",
+   "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
+   "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || Boolean(window.__AURA3D_SHOWCASE_IRON_CROWN__ || window.__AURA3D_GAME_EVIDENCE__))",
+   "notes": "Attract mode auto-plays CPU-vs-CPU behind the title card. Controls: A/D move, W/Space jump, S crouch, double-tap dash, J light, K heavy, L special (meter), U throw, block hold-away, Esc/Enter pause. Six bespoke Meshy fighter rigs (ironcrownKenji..Sovereign), six stages via #ic-venues buttons.",
+   "wave": 4,
+   "rebuildTier": "S-world",
+   "qrFlags": [
+    "game",
+    "camera",
+    "lighting",
+    "post",
+    "materials",
+    "vfx",
+    "world",
+    "tiers",
+    "looks"
+   ],
+   "timeline": [
+    {
+     "fps": 5000
+    },
+    {
+     "strip": {
+      "frames": 12,
+      "intervalMs": 100
+     }
+    },
+    {
+     "wait": 6000
+    },
+    {
+     "shot": "02-opening"
+    },
+    {
+     "wait": 4000
+    },
+    {
+     "shot": "03-mid"
+    },
+    {
+     "click": "#ic-modes button[data-mode='quick']"
+    },
+    {
+     "wait": 3500
+    },
+    {
+     "down": "KeyD"
+    },
+    {
+     "repeat": 4,
+     "steps": [
+      {
+       "press": "KeyJ"
+      },
+      {
+       "wait": 220
+      },
+      {
+       "press": "KeyK"
+      },
+      {
+       "wait": 380
+      }
+     ]
+    },
+    {
+     "up": "KeyD"
+    },
+    {
+     "shot": "04-action"
+    },
+    {
+     "press": "KeyW"
+    },
+    {
+     "wait": 600
+    },
+    {
+     "webm": {
+      "seconds": 5
+     }
+    },
+    {
+     "press": "KeyL"
+    },
+    {
+     "wait": 400
+    },
+    {
+     "shot": "05-special"
+    }
+   ]
+  },
+  {
+   "id": "showcase-pips-big-leap",
+   "title": "Pip's Big Leap",
+   "genre": "platformer",
+   "appDir": "showcase-pips-big-leap",
+   "deployed": false,
+   "route": "/apps/showcase-pips-big-leap/",
+   "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
+   "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || Boolean(window.__AURA3D_SHOWCASE_PIPS_BIG_LEAP__ || window.__AURA3D_GAME_EVIDENCE__))",
+   "notes": "Click #aura-btn-play (Quick Play) to drop into Whispering Forest. Controls: WASD/arrows camera-relative move, Space jump (hold=glide), double-jump, Shift dive, C/Ctrl pound, Esc pause. Bespoke Meshy hero (pipsPip), Brambleback boss, sunseed/acorn/flag/gate props. World buttons: Forest/Wharf/Clouds/Ember/Palace/Starfall.",
+   "wave": 4,
+   "rebuildTier": "S-world",
+   "qrFlags": [
+    "game",
+    "camera",
+    "lighting",
+    "post",
+    "materials",
+    "vfx",
+    "world",
+    "tiers",
+    "looks"
+   ],
+   "timeline": [
+    {
+     "fps": 5000
+    },
+    {
+     "click": "#aura-btn-play"
+    },
+    {
+     "wait": 4500
+    },
+    {
+     "shot": "02-opening"
+    },
+    {
+     "down": "KeyD"
+    },
+    {
+     "wait": 1200
+    },
+    {
+     "press": "Space"
+    },
+    {
+     "wait": 800
+    },
+    {
+     "press": "Space"
+    },
+    {
+     "wait": 900
+    },
+    {
+     "up": "KeyD"
+    },
+    {
+     "shot": "03-mid"
+    },
+    {
+     "down": "KeyD"
+    },
+    {
+     "repeat": 3,
+     "steps": [
+      {
+       "wait": 700
+      },
+      {
+       "press": "Space"
+      }
+     ]
+    },
+    {
+     "up": "KeyD"
+    },
+    {
+     "shot": "04-action"
+    },
+    {
+     "strip": {
+      "frames": 12,
+      "intervalMs": 100
+     }
+    },
+    {
+     "webm": {
+      "seconds": 5
+     }
+    },
+    {
+     "wait": 800
+    },
+    {
+     "shot": "05-run"
+    }
+   ]
+  }
+ ]
 }
