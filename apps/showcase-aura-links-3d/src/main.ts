@@ -1508,6 +1508,12 @@ function bindUi(): void {
   });
   window.addEventListener("keyup", (ev) => pressedKeys.delete(ev.code));
   window.addEventListener("blur", () => pressedKeys.clear());
+  // a focused button eats the next Space/Enter keyup as a re-click — release
+  // focus after every button click so game keys always reach the listener
+  document.addEventListener("click", (ev) => {
+    const b = (ev.target as HTMLElement).closest?.("button");
+    (b as HTMLElement | null)?.blur?.();
+  });
 }
 
 /* ------------------------------------------------------------------ *
