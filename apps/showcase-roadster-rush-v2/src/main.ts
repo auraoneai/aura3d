@@ -833,6 +833,15 @@ const racingGame = createGame({
 
 apexGame = racingGame;
 const app = racingGame.app;
+const ev: Record<string, unknown> = { ready: "pending" };
+(window as unknown as Record<string, unknown>).__auraEvidence = ev;
+setInterval(() => {
+  try {
+    ev.diag = (app as { diagnostics?: () => unknown }).diagnostics?.();
+    ev.marks = performance.getEntriesByType("mark").filter((m) => m.name.startsWith("a3d")).map((m) => `${m.name}@${Math.round(m.startTime)}`);
+  } catch { /* evidence only */ }
+}, 500);
+(app as unknown as { ready?: () => Promise<unknown> }).ready?.().then(() => { ev.ready = "ok"; }).catch((e: unknown) => { ev.ready = `err:${(e as Error)?.message ?? e}`; });
 const input = racingGame.input;
 if (!input) throw new Error("Apex Overdrive failed to initialize runtime-owned input.");
 racingGame.start();

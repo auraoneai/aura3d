@@ -655,6 +655,15 @@ async function boot(): Promise<void> {
   });
 
   const app = td.app;
+  const ev: Record<string, unknown> = { ready: "pending" };
+  (window as unknown as Record<string, unknown>).__auraEvidence = ev;
+  setInterval(() => {
+    try {
+      ev.diag = (app as { diagnostics?: () => unknown }).diagnostics?.();
+      ev.marks = performance.getEntriesByType("mark").filter((m) => m.name.startsWith("a3d")).map((m) => `${m.name}@${Math.round(m.startTime)}`);
+    } catch { /* evidence only */ }
+  }, 500);
+  (app as unknown as { ready?: () => Promise<unknown> }).ready?.().then(() => { ev.ready = "ok"; }).catch((e: unknown) => { ev.ready = `err:${(e as Error)?.message ?? e}`; });
   const input = td.input!;
   const session = td.session;
   const sessionImpl = td.sessionImpl;

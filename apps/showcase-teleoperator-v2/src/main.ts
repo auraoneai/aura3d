@@ -975,6 +975,15 @@ async function bootGridDispatchV2(): Promise<void> {
     // Enable the real camera/time/feel/effects/game lanes (stub-safe defaults off).
     qualityRebuild: { flags: ["camera", "vfx", "world", "game"] }
   });
+  const ev: Record<string, unknown> = { ready: "pending" };
+  (window as unknown as Record<string, unknown>).__auraEvidence = ev;
+  setInterval(() => {
+    try {
+      ev.diag = (auraApp as { diagnostics?: () => unknown }).diagnostics?.();
+      ev.marks = performance.getEntriesByType("mark").filter((m) => m.name.startsWith("a3d")).map((m) => `${m.name}@${Math.round(m.startTime)}`);
+    } catch { /* evidence only */ }
+  }, 500);
+  (auraApp as unknown as { ready?: () => Promise<unknown> }).ready?.().then(() => { ev.ready = "ok"; }).catch((e: unknown) => { ev.ready = `err:${(e as Error)?.message ?? e}`; });
   const req = (id: string) => auraApp.nodes.require(id);
 
   // ── Aura camera controller (real under A3D_QR_CAMERA) ──

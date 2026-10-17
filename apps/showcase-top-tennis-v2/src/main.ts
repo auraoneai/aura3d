@@ -927,6 +927,16 @@ function installAura3DTopTennisRenderer(): void {
         ...looks.appOptions(LOOK_ID)
       } as any);
 
+      const ev: Record<string, unknown> = { ready: "pending" };
+      (window as unknown as Record<string, unknown>).__auraEvidence = ev;
+      setInterval(() => {
+        try {
+          ev.diag = (auraApp as { diagnostics?: () => unknown } | null)?.diagnostics?.();
+          ev.marks = performance.getEntriesByType("mark").filter((m) => m.name.startsWith("a3d")).map((m) => `${m.name}@${Math.round(m.startTime)}`);
+        } catch { /* evidence only */ }
+      }, 500);
+      (auraApp as unknown as { ready?: () => Promise<unknown> }).ready?.().then(() => { ev.ready = "ok"; }).catch((e: unknown) => { ev.ready = `err:${(e as Error)?.message ?? e}`; });
+
       const req = (id: string) => (auraApp as any).nodes.require(id);
       playerRig = resolveAthleteRig(auraApp, "player");
       rivalRig = resolveAthleteRig(auraApp, "rival");
