@@ -133,14 +133,14 @@ function buildScene() {
           break;
         case "K":
           nodes.push(
-            model(assets.vaultCenterCoreTargetMeshy, { name: `f${slot} key`, material: material.emissive({ color: "#ffd76a", emissive: "#ff9d2a", emissiveIntensity: 1.4, metalness: 0.8, roughness: 0.3 }) })
+            model(assets.bunkerKeyMeshy, { name: `f${slot} key`, material: material.emissive({ color: "#ffd76a", emissive: "#ff9d2a", emissiveIntensity: 1.4, metalness: 0.8, roughness: 0.3 }) })
               .position(wx, 1.1, wz).scale(0.14)
               .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "key"] }))
           );
           break;
         case "t": case "T":
           nodes.push(
-            model(assets.fpsEnergyCorePickupMeshy, {
+            model(assets.bunkerTreasureMeshy, {
               name: `f${slot} treasure ${kI}`,
               material: material.emissive({ color: "#c9a227", emissive: "#ffd76a", emissiveIntensity: ch === "T" ? 2.6 : 1.6, metalness: 0.9, roughness: 0.25 })
             })
@@ -168,7 +168,7 @@ function buildScene() {
           break;
         case "r":
           nodes.push(
-            model(assets.deepSunkenReactorCoreMeshy, { name: `f${slot} armor`, material: material.emissive({ color: "#4a7a9a", emissive: "#3a8aaa", emissiveIntensity: 1.2 }) })
+            model(assets.bunkerArmorMeshy, { name: `f${slot} armor`, material: material.emissive({ color: "#4a7a9a", emissive: "#3a8aaa", emissiveIntensity: 1.2 }) })
               .position(wx, 0.0, wz).scale(0.3)
               .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "armor"] }))
           );
@@ -189,14 +189,14 @@ function buildScene() {
           break;
         case "b":
           nodes.push(
-            model(assets.siegeWoodenBarrel, { name: `f${slot} barrel ${x}-${z}`, material: material.emissive({ color: "#7a2a1a", emissive: "#a43a1a", emissiveIntensity: 0.35, roughness: 0.6 }) })
+            model(assets.bunkerBarrelMeshy, { name: `f${slot} barrel ${x}-${z}`, material: material.emissive({ color: "#7a2a1a", emissive: "#a43a1a", emissiveIntensity: 0.35, roughness: 0.6 }) })
               .position(wx, 0, wz).scale(0.8)
               .runtime(game.runtimeNode(`f${slot}-prop-${x}-${z}`, { tags: ["prop", "barrel"] }))
           );
           break;
         case "c":
           nodes.push(
-            model(assets.deepRecoveryCrateStandard, { name: `f${slot} crate ${x}-${z}` })
+            model(assets.bunkerCrateMeshy, { name: `f${slot} crate ${x}-${z}` })
               .position(wx, 0, wz).scale(0.62)
               .runtime(game.runtimeNode(`f${slot}-prop-${x}-${z}`, { tags: ["prop", "crate"] }))
           );
@@ -208,7 +208,7 @@ function buildScene() {
           break;
         case "g":
           nodes.push(
-            model(assets.gallerySecurityGuardMeshy, { name: `f${slot} guard ${eI}`, targetHeight: 1.8 })
+            model(assets.bunkerGuardMeshy, { name: `f${slot} guard ${eI}`, targetHeight: 1.8 })
               .position(wx, 0, wz)
               .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "guard"] }))
           );
@@ -216,7 +216,7 @@ function buildScene() {
           break;
         case "d":
           nodes.push(
-            model(assets.showcaseOrangeIndustrialRobot, {
+            model(assets.bunkerHoundMeshy, {
               name: `f${slot} hound ${eI}`, targetHeight: 0.95,
               material: material.pbr({ color: "#3a3430", roughness: 0.7, metalness: 0.3 })
             })
@@ -227,7 +227,7 @@ function buildScene() {
           break;
         case "G":
           nodes.push(
-            model(assets.mechHeroPlayerMeshy, {
+            model(assets.bunkerGunnerMeshy, {
               name: `f${slot} gunner ${eI}`, targetHeight: 1.9,
               material: material.pbr({ color: "#4a4640", roughness: 0.55, metalness: 0.55 })
             })
@@ -238,7 +238,7 @@ function buildScene() {
           break;
         case "B":
           nodes.push(
-            model(assets.mechHangarRivalUnitMeshy, {
+            model(assets.bunkerWardenMeshy, {
               name: `f${slot} boss ${eI}`, targetHeight: 3.0,
               material: material.emissive({ color: "#5a4526", emissive: "#c46a1a", emissiveIntensity: 0.4, metalness: 0.7, roughness: 0.4 })
             })

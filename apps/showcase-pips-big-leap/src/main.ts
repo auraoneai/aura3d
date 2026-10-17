@@ -17,10 +17,10 @@ import {
 import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { createLocomotionKit } from "@aura3d/animation";
 import "./styles.css";
-import { assets, PIP_CLIPS } from "./aura-assets.js";
+import { assets, BOSS_CLIPS, PIP_CLIPS } from "./aura-assets.js";
 import { buildWorld, nodeName, tickPlatforms, type BuiltWorld } from "./game/world.js";
 import { createPlayer, stepPlayer, type PlayerState } from "./game/player.js";
-import { createBoss, damageBoss, stepBoss, type BossState } from "./game/boss.js";
+import { createBoss, damageBoss, stepBoss, type BossPhase, type BossState } from "./game/boss.js";
 import { certifyWorld, type WorldCertification } from "./game/certify.js";
 import { createHud } from "./game/hud.js";
 import { loadSave, persistSave, recordSeeds, totalSeeds, type PipSave } from "./game/save.js";
@@ -70,6 +70,9 @@ interface Run {
   gateUnlocked: boolean;
   bossHp: number;
   clipState: string;
+  bossClip: string;
+  /** Transient boss clip (Attack/Hit_Reaction) overrides the phase map while >0. */
+  bossFxT: number;
   save: PipSave;
 }
 
@@ -101,6 +104,8 @@ function makeRun(worldId: WorldId, mode: ModeId): Run {
     gateUnlocked: false,
     bossHp: 3,
     clipState: "",
+    bossClip: "",
+    bossFxT: 0,
     save
   };
 }
@@ -286,6 +291,11 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
       hud.setHearts(run.player.hearts);
       juice("hurt");
       cue("bumper");
+      if (e.kind === "boss-contact" && run.boss && run.boss.phase !== "down") {
+        node(nodeName.boss)?.setAnimation({ clip: BOSS_CLIPS.attack, loop: false });
+        run.bossClip = "attack";
+        run.bossFxT = 0.9;
+      }
       break;
     }
     case "die": {
@@ -361,6 +371,11 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
       damageBoss(run.boss, run.bossEvents);
       run.bossHp = run.boss.hp;
       hud.setBoss(run.bossHp, 3, true);
+      if (run.boss.hp > 0) {
+        node(nodeName.boss)?.setAnimation({ clip: BOSS_CLIPS.hurt, loop: false });
+        run.bossClip = "hurt";
+        run.bossFxT = 0.7;
+      }
       juice("boss-hit");
       cue("thud");
       if (run.boss.hp <= 0) {
@@ -437,10 +452,19 @@ function nextWorldId(id: WorldId): WorldId | null {
 
 // -------------------------------------------------------------- clip state
 
+/** Boss phase → Meshy clip (idle/chase/telegraph/staggered/down). */
+const BOSS_CLIP_FOR: Record<BossPhase, { clip: string; loop?: boolean }> = {
+  dormant: { clip: BOSS_CLIPS.idle },
+  roll: { clip: BOSS_CLIPS.walk },
+  windup: { clip: BOSS_CLIPS.taunt },
+  vulnerable: { clip: BOSS_CLIPS.hurt },
+  down: { clip: BOSS_CLIPS.die, loop: false }
+};
+
 const CLIP_FOR: Record<string, { clip: string; speed?: number; loop?: boolean }> = {
   air: { clip: PIP_CLIPS.fall },
   jump: { clip: PIP_CLIPS.jump, loop: false },
-  glide: { clip: "holding-both" },
+  glide: { clip: PIP_CLIPS.fall },
   dive: { clip: PIP_CLIPS.fall, speed: 1.6 },
   pound: { clip: PIP_CLIPS.crouch },
   swim: { clip: PIP_CLIPS.walk, speed: 0.7 },
@@ -588,10 +612,22 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
     bossVulnerable = frame.vulnerable;
     const bossNode = node(nodeName.boss);
     if (bossNode) {
-      bossNode.setPosition(frame.pos[0], frame.pos[1], frame.pos[2]);
-      bossNode.setRotation(run.boss.phase === "roll" ? run.worldClock * 6 : 0, run.boss.yaw, 0);
+      // The fitted model's feet sit at the node origin; `frame.pos` is the
+      // body centre, so drop by the body radius. "down" keeps sinking so the
+      // defeated beast crumples through the arena floor as before.
+      const feetY = frame.pos[1] - 1.1;
+      const bossY = run.boss.phase === "down" ? feetY : Math.max(run.boss.arena.floorY, feetY);
+      bossNode.setPosition(frame.pos[0], bossY, frame.pos[2]);
+      bossNode.setRotation(0, run.boss.yaw, 0);
       const squash = run.boss.phase === "vulnerable" ? 0.55 : run.boss.phase === "windup" ? 1.12 : 1;
       bossNode.setScale([1, squash, 1]);
+      // Drive the rigged clips: phase map unless a transient attack/hit is playing.
+      run.bossFxT = Math.max(0, run.bossFxT - seconds);
+      if (run.bossFxT <= 0 && run.boss.phase !== run.bossClip) {
+        run.bossClip = run.boss.phase;
+        const clipSpec = BOSS_CLIP_FOR[run.boss.phase];
+        bossNode.setAnimation({ clip: clipSpec.clip, loop: clipSpec.loop ?? true });
+      }
     }
     const spikesOut = run.boss.phase === "roll" || run.boss.phase === "windup" || run.boss.phase === "dormant";
     for (let i = 0; i < 6; i += 1) {
@@ -702,7 +738,8 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
       notes: cert.notes
     },
     save: { worldsDone: Object.keys(save.completed).length, academyDone: save.academyDone, doubleJump: save.doubleJump, studio: save.studio },
-    hero: { assetId: "showcaseKenneyOobiPlatformerHero", hash: assets.pip.hash, clips: Object.values(PIP_CLIPS) }
+    hero: { assetId: "pipsPip", hash: assets.pip.hash, clips: Object.values(PIP_CLIPS) },
+    bossAsset: run.boss ? { assetId: "pipsBrambleback", hash: assets.boss.hash, clips: Object.values(BOSS_CLIPS) } : null
   };
 });
 

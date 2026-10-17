@@ -11,7 +11,7 @@
     "status": "unreviewed"
   },
   "routeGate": {
-    "claim": "2.5D arena fighter (createGame + game.combatWorld + games.fighting). Six fighter archetypes on two certified animated rigs, six stages, best-of-three 60s rounds, cancel chains, throws/tech, meter specials, CPU AI, Combo Lab, Crown Ladder, Versus, Player Studio. Publishes window.__AURA3D_SHOWCASE_IRON_CROWN__. Promotion to publicShowcase flips after human acceptance + look-dev capture pass."
+    "claim": "2.5D arena fighter (createGame + game.combatWorld + games.fighting). Six fighters on bespoke Meshy-generated animated rigs (identical 10-clip set, one shared clip map), six stages, best-of-three 60s rounds, cancel chains, throws/tech, meter specials, CPU AI, Combo Lab, Crown Ladder, Versus, Player Studio. Publishes window.__AURA3D_SHOWCASE_IRON_CROWN__. Promotion to publicShowcase flips after human acceptance + look-dev capture pass."
   },
   "machinePass": true,
   "renderer": {
@@ -22,14 +22,39 @@
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.auraclashPlayerRig",
-      "quality": "production",
+      "typedRef": "assets.ironcrownKenji",
+      "quality": "candidate",
       "role": "primaryCharacter"
     },
     {
-      "typedRef": "assets.auraclashRivalRig",
-      "quality": "production",
+      "typedRef": "assets.ironcrownVolt",
+      "quality": "candidate",
       "role": "primaryCharacter"
+    },
+    {
+      "typedRef": "assets.ironcrownBoulder",
+      "quality": "candidate",
+      "role": "primaryCharacter"
+    },
+    {
+      "typedRef": "assets.ironcrownSeraph",
+      "quality": "candidate",
+      "role": "primaryCharacter"
+    },
+    {
+      "typedRef": "assets.ironcrownJinx",
+      "quality": "candidate",
+      "role": "primaryCharacter"
+    },
+    {
+      "typedRef": "assets.ironcrownSovereign",
+      "quality": "candidate",
+      "role": "primaryCharacter"
+    },
+    {
+      "typedRef": "assets.ironcrownCrown",
+      "quality": "candidate",
+      "role": "set-dressing"
     }
   ],
   "globalHandle": "__AURA3D_SHOWCASE_IRON_CROWN__"

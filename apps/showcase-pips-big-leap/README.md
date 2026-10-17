@@ -1,7 +1,7 @@
 # Pip's Big Leap — 3D Mascot Platformer
 
 A playable mascot platformer for the Aura3D showcase. Pip — an acorn-helmeted
-Kenney Oobi hero — leaps through the Whispering Vale gathering **sun-seeds**,
+sprout hero — leaps through the Whispering Vale gathering **sun-seeds**,
 activating checkpoints, dodging hazards, and opening each world's **Sun-Gate**.
 
 ## Run
@@ -12,6 +12,30 @@ pnpm --filter @aura3d/showcase-pips-big-leap exec vite   # or the monorepo app h
 ```
 
 Route: `/apps/showcase-pips-big-leap/` — mounts into `#app` via `createGame`.
+
+## Assets
+
+Hero, boss, and the interactive props are **bespoke Meshy generations**
+imported into this app's own catalog (`aura.assets.json` →
+`public/aura-assets/`, generated key surface `src/aura-catalog.ts`,
+rights/metadata evidence under `aura-evidence/meshy/`):
+
+| Key | Asset | Notes |
+| --- | --- | --- |
+| `pipsPip` | hero (rigged, `animated.glb`) | clips: Idle, Quick_Walk, RunFast, Regular_Jump, happy_jump_m, Dead, Victory_Cheer |
+| `pipsBrambleback` | W5 boss (rigged, `animated.glb`) | clips: Idle, Quick_Walk, Attack, Hit_Reaction, Dead, Chest_Pound_Taunt |
+| `pipsSunseed` | sun-seed collectible | replaces the old emissive sphere pickups |
+| `pipsGoldenAcorn` | golden acorn collectible | replaces the old capsule pickups |
+| `pipsCheckpointFlag` | checkpoint flag | replaces the old pole + box flag |
+| `pipsSungate` | Sun-Gate arch | replaces the old pillar/lintel frame (emissive ring + seed-lock kept) |
+
+`src/aura-assets.ts` is the facade the game imports: it exposes the Meshy
+catalog plus the **shared repo catalog** entries that were intentionally
+retained — the `backdrop` world-kit GLBs (far environment dressing) and the
+`sidekick`/`helper` NPC runners are shared kits, not the borrowed hero props
+being replaced. Boss thorn-spike satellites, hearts, springs, platforms,
+waters, and the cap/cape studio accessories stay procedural — they are
+gameplay telegraphs and authored course geometry, not borrowed models.
 
 ## Play
 
@@ -65,7 +89,9 @@ heart, three checkpoints, hazards, and a seed-gated Sun-Gate:
   `solvePlatformerMotion`/`validatePlatformerMotion`.
 - `src/game/world.ts` — spec → `AuraSceneBuilder` + collision world
   (`SolidBox`/`HazardBox`/`WaterZone`); runtime nodes for movers, timed pads,
-  pickups, checkpoint flags, gate, boss, hero + cap/cape accessories.
+  pickups, checkpoint flags, gate, boss, hero + cap/cape accessories. Pickups,
+  checkpoint flags, the Sun-Gate and Brambleback mount the bespoke Meshy GLBs
+  via `model()` + `targetHeight`/`targetMaxDimension` auto-fit.
 - `src/game/player.ts` — kinematic AABB controller: axis-separated resolve,
   step-up, mover carry, `game.jumpAssist` coyote+buffer, variable/double jump,
   dive, pound, glide, swim pockets, hazard knockback + i-frames, respawn.

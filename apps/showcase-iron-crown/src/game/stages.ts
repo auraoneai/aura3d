@@ -1,4 +1,5 @@
-import { games, looks, material, primitives, type AuraSceneNode } from "@aura3d/engine";
+import { games, looks, material, model, primitives, type AuraSceneNode } from "@aura3d/engine";
+import { assets } from "../aura-assets";
 
 /**
  * IRON CROWN venues.
@@ -261,11 +262,11 @@ const CROWN = makeStage(
     // Throne backdrop
     prop("box", "cr-throne-base", [0, 0.55, -3.4], [1.6, 1.1, 0.9], "#3a2430", { roughness: 0.7 }),
     prop("box", "cr-throne-back", [0, 2.0, -3.6], [1.3, 3.4, 0.35], "#4a2a3a", { roughness: 0.65 }),
-    // The Iron Crown (torus + spikes, emissive gold)
-    prop("torus", "cr-crown-band", [0, 3.55, -3.55], [0.55, 0.55, 0.55], "#ffd76a", { emissive: 1.5, metallic: 0.9, roughness: 0.25 }),
-    prop("box", "cr-spike-1", [-0.36, 3.95, -3.55], [0.12, 0.5, 0.12], "#ffd76a", { emissive: 1.6, metallic: 0.9, roughness: 0.25 }),
-    prop("box", "cr-spike-2", [0, 4.05, -3.55], [0.14, 0.7, 0.14], "#ffe9b0", { emissive: 1.8, metallic: 0.9, roughness: 0.2 }),
-    prop("box", "cr-spike-3", [0.36, 3.95, -3.55], [0.12, 0.5, 0.12], "#ffd76a", { emissive: 1.6, metallic: 0.9, roughness: 0.25 }),
+    // The Iron Crown itself — bespoke Meshy prop (crown on velvet cushion),
+    // grounded on the throne seat in front of the throne-back.
+    model(assets.ironcrownCrown, { name: "cr-iron-crown", targetMaxDimension: 1.0 })
+      .position(0, 1.1, -3.5)
+      .toJSON(),
     // Banner columns
     prop("cylinder", "cr-col-l", [-4.0, 2.0, -2.4], [0.3, 4.0, 0.3], "#3a2430", { roughness: 0.8 }),
     prop("box", "cr-banner-l", [-4.0, 3.1, -2.05], [0.7, 1.8, 0.05], "#8a1f2a", { roughness: 0.75 }),

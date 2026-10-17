@@ -23,29 +23,29 @@ export type SiegeCue =
   | "wind";
 
 type SiegeAssetKey =
-  | "siegeDriveHitSfx"
-  | "siegeWoodCrackSfx"
-  | "siegeMetalClangSfx"
-  | "siegeTargetDownSfx"
-  | "siegeParChimeSfx"
-  | "siegeBogeyStingSfx"
-  | "siegeUiConfirmSfx"
-  | "siegeAmbientWindSfx";
+  | "gullSiegeDriveHitSfx"
+  | "gullSiegeWoodCrackSfx"
+  | "gullSiegeMetalClangSfx"
+  | "gullSiegeTargetDownSfx"
+  | "gullSiegeParChimeSfx"
+  | "gullSiegeBogeyStingSfx"
+  | "gullSiegeUiConfirmSfx"
+  | "gullSiegeAmbientWindSfx";
 
 const CUE_ASSETS: Record<SiegeCue, SiegeAssetKey> = {
-  launch: "siegeDriveHitSfx",
-  "wood-crack": "siegeWoodCrackSfx",
-  "stone-thud": "siegeMetalClangSfx",
-  "glass-shatter": "siegeTargetDownSfx",
-  "gull-squash": "siegeTargetDownSfx",
-  "gull-scare": "siegeBogeyStingSfx",
-  ability: "siegeParChimeSfx",
-  "windmill-snap": "siegeWoodCrackSfx",
-  "star-chime": "siegeParChimeSfx",
-  "level-clear": "siegeParChimeSfx",
-  "level-fail": "siegeBogeyStingSfx",
-  "ui-confirm": "siegeUiConfirmSfx",
-  wind: "siegeAmbientWindSfx"
+  launch: "gullSiegeDriveHitSfx",
+  "wood-crack": "gullSiegeWoodCrackSfx",
+  "stone-thud": "gullSiegeMetalClangSfx",
+  "glass-shatter": "gullSiegeTargetDownSfx",
+  "gull-squash": "gullSiegeTargetDownSfx",
+  "gull-scare": "gullSiegeBogeyStingSfx",
+  ability: "gullSiegeParChimeSfx",
+  "windmill-snap": "gullSiegeWoodCrackSfx",
+  "star-chime": "gullSiegeParChimeSfx",
+  "level-clear": "gullSiegeParChimeSfx",
+  "level-fail": "gullSiegeBogeyStingSfx",
+  "ui-confirm": "gullSiegeUiConfirmSfx",
+  wind: "gullSiegeAmbientWindSfx"
 };
 
 const CUE_BUS: Record<SiegeCue, "sfx" | "ui" | "ambience"> = {

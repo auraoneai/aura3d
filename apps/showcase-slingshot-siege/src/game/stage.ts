@@ -158,7 +158,7 @@ export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNo
   // ------------------------------------------------------------- slingshot --
   // Hero typed asset — the siege catapult — as the launcher base on the knoll.
   nodes.push(
-    model(assets.siegeCatapultMeshy, { name: "slingshot-base", position: [-7.4, 0.62, 0], rotation: [0, 0.5, 0], targetMaxDimension: 1.5 })
+    model(assets.gullsiegeCatapultMeshy, { name: "slingshot-base", position: [-7.4, 0.62, 0], rotation: [0, 0.5, 0], targetMaxDimension: 1.5 })
       .runtime({ id: SLING_IDS.catapult, tags: ["sling"] }),
     // Y-fork arms.
     primitives.cylinder({ name: "sling-fork-l", material: pbr("#8a5a2e", { roughness: 0.75 }) })
@@ -185,11 +185,11 @@ export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNo
       .position(0, -120, 0).runtime({ id: blockNodeId(i), tags: ["piece"] }));
   }
   for (let i = 0; i < POOL.crates; i += 1) {
-    nodes.push(model(assets.siegeWoodenCrate, { name: crateNodeId(i), position: [0, -120, 0], targetMaxDimension: 0.62, visible: false })
+    nodes.push(model(assets.gullsiegeCrateMeshy, { name: crateNodeId(i), position: [0, -120, 0], targetMaxDimension: 0.62, visible: false })
       .runtime({ id: crateNodeId(i), tags: ["piece"] }));
   }
   for (let i = 0; i < POOL.barrels; i += 1) {
-    nodes.push(model(assets.siegeWoodenBarrel, { name: barrelNodeId(i), position: [0, -120, 0], targetMaxDimension: 0.72, visible: false })
+    nodes.push(model(assets.gullsiegeBarrelMeshy, { name: barrelNodeId(i), position: [0, -120, 0], targetMaxDimension: 0.72, visible: false })
       .runtime({ id: barrelNodeId(i), tags: ["piece"] }));
   }
 
@@ -255,15 +255,15 @@ export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNo
   // Hero typed props placed per chapter (watchtower by the sling, gatehouse
   // behind the fortress, windmill prop in ch3, stone bridge scatter, planks).
   nodes.push(
-    model(assets.siegeWatchtowerMeshy, { name: PROP_IDS.watchtower, position: [-11.5, 0, -3.4], rotation: [0, 0.6, 0], targetMaxDimension: 3.2 })
+    model(assets.gullsiegeWatchtowerMeshy, { name: PROP_IDS.watchtower, position: [-11.5, 0, -3.4], rotation: [0, 0.6, 0], targetMaxDimension: 3.2 })
       .runtime({ id: PROP_IDS.watchtower, tags: ["dressing"] }),
-    model(assets.siegeCastleGatehouseMeshy, { name: PROP_IDS.gatehouse, position: [13.4, 0, -3.2], rotation: [0, -0.5, 0], targetMaxDimension: 3.6 })
+    model(assets.gullsiegeGatehouseMeshy, { name: PROP_IDS.gatehouse, position: [13.4, 0, -3.2], rotation: [0, -0.5, 0], targetMaxDimension: 3.6 })
       .runtime({ id: PROP_IDS.gatehouse, tags: ["dressing"] }),
-    model(assets.siegeWindmillTowerMeshy, { name: PROP_IDS.windmillProp, position: [-11, 0, -4.6], rotation: [0, 0.35, 0], targetMaxDimension: 4.2 })
+    model(assets.gullsiegeWindmillMeshy, { name: PROP_IDS.windmillProp, position: [-11, 0, -4.6], rotation: [0, 0.35, 0], targetMaxDimension: 4.2 })
       .runtime({ id: PROP_IDS.windmillProp, tags: ["dressing"] }),
-    model(assets.siegeStoneBridgeMeshy, { name: PROP_IDS.stoneBridge, position: [14.5, 0.1, 3.4], rotation: [0, -0.7, 0], targetMaxDimension: 3.4 })
+    model(assets.gullsiegeBridgeMeshy, { name: PROP_IDS.stoneBridge, position: [14.5, 0.1, 3.4], rotation: [0, -0.7, 0], targetMaxDimension: 3.4 })
       .runtime({ id: PROP_IDS.stoneBridge, tags: ["dressing"] }),
-    model(assets.siegePlankSet, { name: PROP_IDS.plankScatter, position: [3.2, 0.06, 3.1], rotation: [0, 0.9, 0], targetMaxDimension: 2.6 })
+    model(assets.gullsiegePlanksMeshy, { name: PROP_IDS.plankScatter, position: [3.2, 0.06, 3.1], rotation: [0, 0.9, 0], targetMaxDimension: 2.6 })
       .runtime({ id: PROP_IDS.plankScatter, tags: ["dressing"] })
   );
 

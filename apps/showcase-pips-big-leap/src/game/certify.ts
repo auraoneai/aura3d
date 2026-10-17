@@ -69,7 +69,9 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
       : backdropKey === "readable" ? "showcaseReadablePlatformLevel"
       : backdropKey === "sidescroll" ? "showcaseSideScrollerPlatformLevel"
       : "showcasePlatformerBasicPack";
-    const worldAssetHash = backdropAsset.hash;
+    // Shared-catalog `hash` widened to `string | undefined` in the current
+    // typegen surface; backdrops always carry one — fall back explicitly.
+    const worldAssetHash = backdropAsset.hash ?? "sha256-unavailable";
     const overlay = `apps/showcase-pips-big-leap/src/game/worlds.ts#${spec.id}`;
 
     const walkable = spec.platforms.filter((p) => !p.ghost);
@@ -152,7 +154,7 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
     };
 
     const bound = game.assetBoundPlatformerLevel({
-      characterAsset: "showcaseKenneyOobiPlatformerHero",
+      characterAsset: "pipsPip",
       worldAssetBindings: [{
         worldAsset,
         worldAssetHash,
@@ -188,7 +190,7 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
 
     const contract: PublicPlatformerGeometryContract = {
       worldAssets: [worldAsset],
-      characterAsset: "showcaseKenneyOobiPlatformerHero",
+      characterAsset: "pipsPip",
       worldCertification: "candidate-needs-geometry",
       characterCertification: "certified-platformer-character",
       geometrySource: "compiler-authored-overlay-validated",

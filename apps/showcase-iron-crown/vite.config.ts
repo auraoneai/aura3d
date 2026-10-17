@@ -29,9 +29,10 @@ export default defineConfig({
   plugins: rootConfig.plugins ?? [],
   resolve: { ...rootConfig.resolve, alias: [...gameAlias, ...baseAlias] },
   optimizeDeps: rootConfig.optimizeDeps,
-  // Root public tree serves the shared catalog (/aura-assets, /packs) in dev
-  // and preview.
-  publicDir: path.resolve(appDir, "../../public"),
+  // App-local public tree: the Meshy-imported catalog lives under
+  // public/aura-assets (aura.assets.json outputDir), and public/packs is a
+  // symlink into the shared SFX pack so /packs/game-sfx-core keeps resolving.
+  publicDir: path.resolve(appDir, "public"),
   server: { host: "127.0.0.1", port: 5196, strictPort: false },
   preview: { host: "127.0.0.1", port: 4196, strictPort: false },
   build: {

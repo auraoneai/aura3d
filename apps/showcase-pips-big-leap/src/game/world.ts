@@ -14,7 +14,7 @@ import {
   primitives,
   scene
 } from "@aura3d/engine";
-import { assets, PIP_CLIPS } from "../aura-assets.js";
+import { assets, BOSS_CLIPS, PIP_CLIPS } from "../aura-assets.js";
 import { deriveWorldMotion, type WorldMotion } from "./motion.js";
 import type {
   CheckpointSpec, DecorSpec, HazardBox, HazardSpec, PickupSpec,
@@ -272,18 +272,23 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
     return { spec: w, x: w.x, z: w.z, hx: w.w / 2, hz: w.d / 2, surfaceY: w.y, floorY: w.y - depth };
   });
 
-  // Pickups — spinning collectibles driven per frame.
+  // Pickups — bespoke Meshy sun-seed / golden-acorn models driven per frame.
+  // The runtime auto-fit normalizes each GLB to a target size with its lowest
+  // point at the node origin, so the position lift re-centres the model on the
+  // authored pickup point (which still drives collection triggers).
   const spinNodes: string[] = [];
   for (const s of spec.seeds) {
     builder.add(
-      primitives.sphere({ name: nodeName.seed(s.id), size: 0.48, position: [s.x, s.y, s.z], material: material.emissive({ color: "#ffd95e", emissive: "#ffcf3d", emissiveIntensity: 0.9 }) })
+      model(assets.sunseed, { name: nodeName.seed(s.id), castShadow: true, targetMaxDimension: 0.45 })
+        .position(s.x, s.y - 0.1, s.z)
         .runtime(game.runtimeNode(nodeName.seed(s.id), { tags: ["pickup", "seed"] }))
     );
     spinNodes.push(nodeName.seed(s.id));
   }
   for (const a of spec.acorns) {
     builder.add(
-      primitives.capsule({ name: nodeName.acorn(a.id), size: [0.26, 0.52, 0.26], position: [a.x, a.y, a.z], material: material.pbr({ color: "#a56a34", roughness: 0.6 }) })
+      model(assets.goldenAcorn, { name: nodeName.acorn(a.id), castShadow: true, targetMaxDimension: 0.55 })
+        .position(a.x, a.y - 0.27, a.z)
         .runtime(game.runtimeNode(nodeName.acorn(a.id), { tags: ["pickup", "acorn"] }))
     );
     spinNodes.push(nodeName.acorn(a.id));
@@ -308,13 +313,11 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
     );
   }
 
-  // Checkpoints — pole + flag that flips gold when activated.
+  // Checkpoints — bespoke Meshy leaf-banner flag; flips gold when activated.
   for (const cp of spec.checkpoints) {
     builder.add(
-      primitives.cylinder({ name: `${nodeName.checkpoint(cp.id)}:pole`, size: [0.14, 1.9, 0.14], position: [cp.x, cp.y + 0.95, cp.z], material: material.metal({ color: "#c9c2b4" }) })
-    );
-    builder.add(
-      primitives.box({ name: nodeName.checkpointFlag(cp.id), size: [0.62, 0.42, 0.06], position: [cp.x + 0.36, cp.y + 1.6, cp.z], material: material.pbr({ color: "#7a8a9c", roughness: 0.7 }) })
+      model(assets.checkpointFlag, { name: nodeName.checkpointFlag(cp.id), castShadow: true, targetHeight: 1.9 })
+        .position(cp.x, cp.y, cp.z)
         .runtime(game.runtimeNode(nodeName.checkpointFlag(cp.id), { tags: ["checkpoint"] }))
     );
     builder.add(
@@ -322,11 +325,13 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
     );
   }
 
-  // Sun-Gate — pillars + ring portal + seed-lock heart.
+  // Sun-Gate — bespoke Meshy seed-arch portal + retained emissive ring + lock.
   const g = spec.gate;
-  builder.add(primitives.cylinder({ name: "gate:pole-a", size: [0.36, 2.8, 0.36], position: [g.x - 1.15, g.y + 1.4, g.z], material: material.metal({ color: "#dfb44b" }) }));
-  builder.add(primitives.cylinder({ name: "gate:pole-b", size: [0.36, 2.8, 0.36], position: [g.x + 1.15, g.y + 1.4, g.z], material: material.metal({ color: "#dfb44b" }) }));
-  builder.add(primitives.box({ name: "gate:lintel", size: [2.7, 0.3, 0.4], position: [g.x, g.y + 2.9, g.z], material: material.metal({ color: "#e8c25e" }) }));
+  builder.add(
+    model(assets.sungate, { name: nodeName.gate, castShadow: true, targetHeight: 3.0 })
+      .position(g.x, g.y, g.z)
+      .runtime(game.runtimeNode(nodeName.gate, { tags: ["gate"] }))
+  );
   builder.add(
     primitives.torus({ name: nodeName.gateRing, size: [1.9, 1.9, 0.4], position: [g.x, g.y + 1.5, g.z], material: material.emissive({ color: "#ffcf3d", emissive: "#ffc52e", emissiveIntensity: 0.9 }), castShadow: false })
       .runtime(game.runtimeNode(nodeName.gateRing, { tags: ["gate"] }))
@@ -350,13 +355,13 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
     );
   }
 
-  // Hero — always a runtime node; the camera rigs onto it.
-  const heroScale = 0.95 / assets.pip.bounds[1];
+  // Hero — always a runtime node; the camera rigs onto it. `targetHeight`
+  // auto-fits the bespoke GLB to mascot size with its feet at the node origin
+  // (the player controller drives the node at feet level).
   builder.add(
-    model(assets.pip, { name: nodeName.hero, castShadow: true })
+    model(assets.pip, { name: nodeName.hero, castShadow: true, targetHeight: 0.95 })
       .position(spec.spawn[0], spec.spawn[1], spec.spawn[2])
       .rotate(0, spec.spawnYaw ?? 0, 0)
-      .scale(heroScale)
       .animate({ clip: PIP_CLIPS.idle, loop: true })
       .runtime(game.runtimeNode(nodeName.hero, { tags: ["player"] }))
   );
@@ -371,10 +376,13 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
       .runtime(game.runtimeNode(nodeName.heroCape, { tags: ["player", "studio"] }))
   );
 
-  // Boss (W5) — Brambleback built from primitives; body is runtime-driven.
+  // Boss (W5) — bespoke Meshy Brambleback; body is runtime-driven and the
+  // thorn-spike satellites remain the phase telegraph (out = invulnerable).
   if (spec.boss) {
     builder.add(
-      primitives.sphere({ name: nodeName.boss, size: 2.2, position: [0, 3.7, -69], material: material.pbr({ color: "#3f6d35", roughness: 0.8 }), castShadow: true })
+      model(assets.boss, { name: nodeName.boss, castShadow: true, targetHeight: 2.4 })
+        .position(0, 2.6, -69)
+        .animate({ clip: BOSS_CLIPS.idle, loop: true })
         .runtime(game.runtimeNode(nodeName.boss, { tags: ["boss"] }))
     );
     for (let i = 0; i < 6; i += 1) {

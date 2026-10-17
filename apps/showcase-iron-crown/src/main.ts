@@ -30,11 +30,11 @@ import {
   createFighterNode,
   embeddedClipFor,
   fighterById,
+  fighterDriveClipId,
   FIGHTERS,
   isLoopingFighterClip,
   PALETTE_SWATCHES,
   resolveTypedFighterAssets,
-  RIG_ASSET_KEY,
   type FighterClip,
   type FighterDef,
   type FighterId,
@@ -345,7 +345,7 @@ function makeFighter(side: "p1" | "cpu", def: FighterDef, position: readonly [nu
     coyoteMs: 90,
     jumpBufferMs: 130
   });
-  const anim = createFighterAnimationController(`${side}-${def.id}`, def.rig, typedFighterAssets[RIG_ASSET_KEY[def.rig]]);
+  const anim = createFighterAnimationController(`${side}-${def.id}`, def.asset, typedFighterAssets[def.asset]);
   return {
     side,
     def,
@@ -436,8 +436,8 @@ function bindAnimations(): void {
   const rivalNode: AuraRuntimeNodeHandle = app.nodes.require("rival");
   P1.anim.controller.bindRuntimeNode(playerNode, { defaultClipId: "idle", fallbackClipId: "idle" });
   CPU.anim.controller.bindRuntimeNode(rivalNode, { defaultClipId: "idle", fallbackClipId: "idle" });
-  P1.anim.controller.play("idle", { restart: true, loop: "loop" });
-  CPU.anim.controller.play("idle", { restart: true, loop: "loop" });
+  P1.anim.controller.play(fighterDriveClipId(P1.anim, "idle"), { restart: true, loop: "loop" });
+  CPU.anim.controller.play(fighterDriveClipId(CPU.anim, "idle"), { restart: true, loop: "loop" });
 }
 
 function announceRoundIntro(): void {
@@ -968,12 +968,17 @@ function desiredClip(f: FighterRuntime): FighterClip {
 }
 
 function syncAnim(f: FighterRuntime, clip: FighterClip, dt: number): void {
+  // Drive the embedded GLB clip by its real name so the runtime spec's
+  // animation.clip resolves exactly under A3D_QR_ANIMATION clip-drive.
+  const desired = fighterDriveClipId(f.anim, clip);
   const current = f.anim.controller.snapshot().activeClipId;
-  if (current !== clip) {
-    f.anim.controller.crossFade(clip, 0.07, {
+  if (current !== desired) {
+    f.anim.controller.crossFade(desired, 0.07, {
       restart: !isLoopingFighterClip(clip),
       loop: isLoopingFighterClip(clip) ? "loop" : false,
-      layer: animationLayer(clip)
+      layer: animationLayer(clip),
+      // Dash has no bespoke clip — the fight-walk stand-in plays at 2x.
+      ...(clip === "dash" ? { speed: 2 } : {})
     });
   }
   f.anim.controller.update(dt);
@@ -1225,9 +1230,9 @@ function publishEvidence(
       p1: {
         id: P1.def.id,
         name: P1.def.name,
-        rig: RIG_ASSET_KEY[P1.def.rig],
+        asset: P1.def.asset,
         clip: pClip,
-        embeddedClip: embeddedClipFor(P1.def.rig, pClip).clip,
+        embeddedClip: embeddedClipFor(pClip).clip,
         health: pSnap?.health ?? 0,
         meter: pSnap?.meter ?? 0,
         position: [...P1.body.position] as AuraVec3,
@@ -1237,9 +1242,9 @@ function publishEvidence(
       cpu: {
         id: CPU.def.id,
         name: CPU.def.name,
-        rig: RIG_ASSET_KEY[CPU.def.rig],
+        asset: CPU.def.asset,
         clip: cClip,
-        embeddedClip: embeddedClipFor(CPU.def.rig, cClip).clip,
+        embeddedClip: embeddedClipFor(cClip).clip,
         health: cSnap?.health ?? 0,
         meter: cSnap?.meter ?? 0,
         position: [...CPU.body.position] as AuraVec3,

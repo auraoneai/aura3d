@@ -11,10 +11,12 @@ import {
 /**
  * IRON CROWN roster.
  *
- * Six fighters are expressed as stat/palette/move variants on the two
- * certified animated rigs from the shared library (the only catalog rigs
- * whose embedded clip metadata passes validation — the Meshy clash-fighter
- * GLBs ship empty animation lists and would throw FIGHTER_CLIP_MISSING).
+ * All six fighters mount bespoke Meshy-generated rigs imported into the
+ * app-local catalog (assets.ironcrown<Name>) — no borrowed library rigs.
+ * Every GLB ships the identical 10-clip set (Idle, Walk_Fight_Forward,
+ * Walk_Fight_Back, Left_Jab_from_Guard, Right_Uppercut_from_Guard,
+ * Triple_Combo_Attack, Block1, Hit_Reaction, Dead, Regular_Jump), so one
+ * shared clip map resolves every logical state.
  *
  * Clip-map contract (adapted from the create-aura3d fighting template,
  * Q-06-8 / #488): every required logical state must resolve to a clip that
@@ -23,17 +25,42 @@ import {
  * surface in evidence instead of silently shipping.
  */
 
-export type RigId = "player" | "rival";
 export type FighterId = "kenji" | "volt" | "boulder" | "seraph" | "jinx" | "sovereign";
 
-export const PLAYER_FIGHTER_ASSET = "auraclashPlayerRig" as const;
-export const RIVAL_FIGHTER_ASSET = "auraclashRivalRig" as const;
-export type FighterAssetKey = typeof PLAYER_FIGHTER_ASSET | typeof RIVAL_FIGHTER_ASSET;
-export type TypedFighterAssets = Partial<Record<FighterAssetKey, AuraAssetRef<"model">>>;
+/** Typed catalog keys of the bespoke Meshy fighter rigs (see aura.assets.json). */
+export type FighterAssetKey =
+  | "ironcrownKenji"
+  | "ironcrownVolt"
+  | "ironcrownBoulder"
+  | "ironcrownSeraph"
+  | "ironcrownJinx"
+  | "ironcrownSovereign";
+
+export type TypedFighterAssets = Partial<Record<string, AuraAssetRef<"model">>>;
+
+/** Fighter id → catalog key, same order as the Meshy artifact slugs. */
+export const FIGHTER_ASSETS: Record<FighterId, FighterAssetKey> = {
+  kenji: "ironcrownKenji",
+  volt: "ironcrownVolt",
+  boulder: "ironcrownBoulder",
+  seraph: "ironcrownSeraph",
+  jinx: "ironcrownJinx",
+  sovereign: "ironcrownSovereign"
+};
+
+export const REQUIRED_FIGHTER_ASSETS: readonly FighterAssetKey[] = [
+  "ironcrownKenji",
+  "ironcrownVolt",
+  "ironcrownBoulder",
+  "ironcrownSeraph",
+  "ironcrownJinx",
+  "ironcrownSovereign"
+];
 
 /**
  * Logical states the fight code drives. Wider than the template's set —
- * crouch/throw/ko/win are layered on, resolved to embedded clips per rig.
+ * crouch/throw/ko/win are layered on, resolved through the shared
+ * FIGHTER_CLIP_MAP to embedded GLB clip names.
  */
 export type FighterClip =
   | "idle"
@@ -72,50 +99,26 @@ interface AuraClipMapEntry {
 }
 
 /**
- * Best embedded clip per logical state, per rig. `standIn: true` marks
- * states where the GLB has no bespoke clip (e.g. there is no dedicated
- * throw or win animation — a punch/idle clip sells the pose instead).
+ * Best embedded clip per logical state — shared across the roster because
+ * every bespoke Meshy rig ships the identical 10-clip set. `standIn: true`
+ * marks states where the GLB has no bespoke clip (there is no dedicated
+ * dash/throw/win/crouch animation — a walk/combo/block/jump clip sells the
+ * pose instead).
  */
-const PLAYER_CLIP_MAP: Record<FighterClip, AuraClipMapEntry> = {
-  idle: { clip: "Idle_Loop" },
-  walk: { clip: "Walk_Loop" },
-  jump: { clip: "Jump_Loop" },
-  dash: { clip: "Sprint_Loop" },
-  crouch: { clip: "Crouch_Idle_Loop" },
-  guard: { clip: "Sword_Block" },
-  light: { clip: "Punch_Jab" },
-  heavy: { clip: "Punch_Cross" },
-  special: { clip: "Sword_Attack" },
-  throw: { clip: "Punch_Cross", standIn: true },
-  hitstun: { clip: "Hit_Chest" },
-  ko: { clip: "Death01" },
-  win: { clip: "Jump_Loop", standIn: true }
-};
-
-const RIVAL_CLIP_MAP: Record<FighterClip, AuraClipMapEntry> = {
-  idle: { clip: "Idle_FoldArms_Loop" },
-  walk: { clip: "Zombie_Walk_Fwd_Loop" },
-  jump: { clip: "NinjaJump_Idle_Loop" },
-  dash: { clip: "Shield_Dash_RM" },
-  crouch: { clip: "Idle_FoldArms_Loop", standIn: true },
-  guard: { clip: "Sword_Block" },
-  light: { clip: "Melee_Hook" },
-  heavy: { clip: "Sword_Regular_A" },
-  special: { clip: "Sword_Regular_Combo" },
-  throw: { clip: "Melee_Hook", standIn: true },
-  hitstun: { clip: "Hit_Knockback" },
-  ko: { clip: "LayToIdle" },
-  win: { clip: "Idle_FoldArms_Loop", standIn: true }
-};
-
-export const RIG_CLIP_MAPS: Record<RigId, Record<FighterClip, AuraClipMapEntry>> = {
-  player: PLAYER_CLIP_MAP,
-  rival: RIVAL_CLIP_MAP
-};
-
-export const RIG_ASSET_KEY: Record<RigId, FighterAssetKey> = {
-  player: PLAYER_FIGHTER_ASSET,
-  rival: RIVAL_FIGHTER_ASSET
+export const FIGHTER_CLIP_MAP: Record<FighterClip, AuraClipMapEntry> = {
+  idle: { clip: "Idle" },
+  walk: { clip: "Walk_Fight_Forward" },
+  jump: { clip: "Regular_Jump" },
+  dash: { clip: "Walk_Fight_Forward", standIn: true },
+  crouch: { clip: "Block1", standIn: true },
+  guard: { clip: "Block1" },
+  light: { clip: "Left_Jab_from_Guard" },
+  heavy: { clip: "Right_Uppercut_from_Guard" },
+  special: { clip: "Triple_Combo_Attack" },
+  throw: { clip: "Triple_Combo_Attack", standIn: true },
+  hitstun: { clip: "Hit_Reaction" },
+  ko: { clip: "Dead" },
+  win: { clip: "Regular_Jump", standIn: true }
 };
 
 function validateClipMap(
@@ -175,7 +178,8 @@ export interface FighterDef {
   readonly title: string;
   readonly archetype: string;
   readonly bio: string;
-  readonly rig: RigId;
+  /** Catalog key of this fighter's bespoke Meshy rig. */
+  readonly asset: FighterAssetKey;
   readonly scale: number;
   readonly palette: FighterPalette;
   readonly stats: FighterStats;
@@ -191,7 +195,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     title: "Storm Karateka",
     archetype: "Balanced shoto",
     bio: "The tournament's measuring stick. No weaknesses, no gimmicks — clean footsies, honest damage, and a special that punishes hesitation.",
-    rig: "player",
+    asset: "ironcrownKenji",
     scale: 1,
     palette: { color: "#dfe9ff", emissive: "#2b6cff", emissiveIntensity: 0.22, roughness: 0.5, metallic: 0.12 },
     stats: { maxHealth: 100, defense: 1, damage: 1, walkSpeed: 3.4, jumpVelocity: 8.4, dashSpeed: 7.6, meterGain: 1, reach: 1 },
@@ -204,7 +208,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     title: "Rushdown Boxer",
     archetype: "Fast pressure",
     bio: "Dock-fight money made her fast; Bangkok made her mean. Volt lives inside your guard — her hands never stop and her dash never cools.",
-    rig: "rival",
+    asset: "ironcrownVolt",
     scale: 0.96,
     palette: { color: "#ffd2a8", emissive: "#ff7a2e", emissiveIntensity: 0.24, roughness: 0.46, metallic: 0.08 },
     stats: { maxHealth: 88, defense: 1.12, damage: 0.88, walkSpeed: 4.1, jumpVelocity: 8.8, dashSpeed: 9.6, meterGain: 1.15, reach: 0.92 },
@@ -217,7 +221,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     title: "Iron Grappler",
     archetype: "Heavy grappler",
     bio: "A colosseum wall that learned to walk. Slow feet, anvil hands, and a throw that rearranges spines. One read is all he needs.",
-    rig: "rival",
+    asset: "ironcrownBoulder",
     scale: 1.12,
     palette: { color: "#c8b39a", emissive: "#8a5a2e", emissiveIntensity: 0.16, roughness: 0.62, metallic: 0.2 },
     stats: { maxHealth: 128, defense: 0.78, damage: 1.28, walkSpeed: 2.5, jumpVelocity: 7.4, dashSpeed: 6.2, meterGain: 0.9, reach: 1.12 },
@@ -230,7 +234,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     title: "Spear Saint",
     archetype: "Zoning staff",
     bio: "The monastery's longest reach. Lin writes the fight's geometry with her staff and makes approaching feel like walking uphill in snow.",
-    rig: "player",
+    asset: "ironcrownSeraph",
     scale: 1.02,
     palette: { color: "#cfe8d8", emissive: "#35d0a0", emissiveIntensity: 0.2, roughness: 0.44, metallic: 0.14 },
     stats: { maxHealth: 94, defense: 1.06, damage: 0.94, walkSpeed: 3.1, jumpVelocity: 8.2, dashSpeed: 7.2, meterGain: 1.05, reach: 1.3 },
@@ -243,7 +247,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     title: "The Trickster",
     archetype: "Slippery mix-up",
     bio: "Nobody agrees on what Jinx looks like mid-fight — only that you swung at empty air and ate the counter. Weakest hands on the card, sharpest grin.",
-    rig: "player",
+    asset: "ironcrownJinx",
     scale: 0.92,
     palette: { color: "#e2ccff", emissive: "#9b4dff", emissiveIntensity: 0.28, roughness: 0.42, metallic: 0.1 },
     stats: { maxHealth: 86, defense: 1.16, damage: 0.84, walkSpeed: 3.9, jumpVelocity: 9.2, dashSpeed: 10.4, meterGain: 1.2, reach: 0.95 },
@@ -256,7 +260,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     title: "The Iron Crown",
     archetype: "Final boss",
     bio: "The throne defends itself. Sovereign reads your habits faster than you form them, hits like a decree, and does not know how to kneel.",
-    rig: "rival",
+    asset: "ironcrownSovereign",
     scale: 1.08,
     palette: { color: "#ffe9b0", emissive: "#ffb400", emissiveIntensity: 0.42, roughness: 0.34, metallic: 0.5 },
     stats: { maxHealth: 120, defense: 0.82, damage: 1.18, walkSpeed: 3.3, jumpVelocity: 8.6, dashSpeed: 8.2, meterGain: 1.1, reach: 1.08 },
@@ -286,15 +290,15 @@ export const PALETTE_SWATCHES: readonly { readonly id: string; readonly label: s
 export type PaletteId = (typeof PALETTE_SWATCHES)[number]["id"];
 
 export function resolveTypedFighterAssets(assetManifest: TypedFighterAssets) {
-  const typedFighterAssets: TypedFighterAssets = {
-    [PLAYER_FIGHTER_ASSET]: assetManifest[PLAYER_FIGHTER_ASSET],
-    [RIVAL_FIGHTER_ASSET]: assetManifest[RIVAL_FIGHTER_ASSET]
-  };
-  const missingFighterAssets = [PLAYER_FIGHTER_ASSET, RIVAL_FIGHTER_ASSET].filter((key) => !typedFighterAssets[key]);
+  const typedFighterAssets: TypedFighterAssets = {};
+  for (const key of REQUIRED_FIGHTER_ASSETS) {
+    typedFighterAssets[key] = assetManifest[key];
+  }
+  const missingFighterAssets = REQUIRED_FIGHTER_ASSETS.filter((key) => !typedFighterAssets[key]);
   return {
     typedFighterAssets,
     missingFighterAssets,
-    typedFighterAssetCount: 2 - missingFighterAssets.length
+    typedFighterAssetCount: REQUIRED_FIGHTER_ASSETS.length - missingFighterAssets.length
   };
 }
 
@@ -309,7 +313,8 @@ const CLIP_DURATION: Partial<Record<FighterClip, number>> = {
   win: 1
 };
 
-const LOOPING_CLIPS: ReadonlySet<FighterClip> = new Set(["idle", "walk", "jump", "dash", "crouch", "guard", "win"]);
+/** Only genuine locomotion loops — the Meshy clip set has no loopable jump/dash/guard variants. */
+const LOOPING_CLIPS: ReadonlySet<FighterClip> = new Set(["idle", "walk"]);
 const ATTACK_CLIPS: ReadonlySet<FighterClip> = new Set(["light", "heavy", "special", "throw"]);
 
 export function isLoopingFighterClip(clip: FighterClip): boolean {
@@ -322,6 +327,8 @@ export function animationLayer(clip: FighterClip): "base" | "upper-body" {
 
 export const fighterAnimationClips: readonly AuraNamedAnimationClipDefinition<FighterClip>[] = REQUIRED_FIGHTER_CLIPS.map((id) => ({
   id,
+  /** GLB clip name — lets clipSamples resolve the real embedded clip when this logical state is the active one. */
+  name: FIGHTER_CLIP_MAP[id].clip,
   duration: CLIP_DURATION[id] ?? 1,
   frameRate: 60,
   loop: LOOPING_CLIPS.has(id),
@@ -345,32 +352,35 @@ export const fighterAnimationClips: readonly AuraNamedAnimationClipDefinition<Fi
 export interface FighterAnimationBundle {
   readonly controller: AnimationController<FighterClip>;
   readonly standIns: readonly string[];
+  /** Embedded GLB clip names registered on the controller (empty when the asset ref is missing). */
+  readonly embeddedClips: ReadonlySet<string>;
 }
 
 /**
- * Validate the rig's clip map against embedded metadata, then build the
- * controller with the embedded clip registry so bindRuntimeNode resolves
- * real GLB clip durations.
+ * Validate the shared clip map against the fighter's embedded metadata,
+ * then build the controller with the embedded clip registry so
+ * bindRuntimeNode resolves real GLB clip durations.
  */
 export function createFighterAnimationController(
   label: string,
-  rig: RigId,
+  assetKey: FighterAssetKey,
   asset?: AuraAssetRef<"model">
 ): FighterAnimationBundle {
   let standIns: readonly string[] = [];
+  let availableClips: readonly string[] = [];
   if (asset) {
     const embedded = asset.metadata?.animations;
-    const availableClips = Array.isArray(embedded)
+    availableClips = Array.isArray(embedded)
       ? embedded.filter((clip): clip is string => typeof clip === "string")
       : [];
-    standIns = validateClipMap(RIG_CLIP_MAPS[rig], {
+    standIns = validateClipMap(FIGHTER_CLIP_MAP, {
       availableClips,
       requiredStates: REQUIRED_FIGHTER_CLIPS,
-      label: `${label}:${rig}`
+      label: `${label}:${assetKey}`
     });
   }
   const controller = new AnimationController<FighterClip>({
-    id: `${label}-${rig}-animation-controller`,
+    id: `${label}-${assetKey}-animation-controller`,
     ...(asset ? { clipRegistry: animationClipRegistry(asset) } : {}),
     clips: fighterAnimationClips,
     requiredClips: REQUIRED_FIGHTER_CLIPS,
@@ -380,13 +390,26 @@ export function createFighterAnimationController(
       { id: "upper-body", role: "attack", bodyMask: "upper-body", restartFromFrameZero: true }
     ]
   });
-  return { controller, standIns };
+  return { controller, standIns, embeddedClips: new Set(availableClips) };
 }
 
-/** Resolved embedded clip name for a logical state on a given rig (used for drive:"clips" evidence). */
-export function embeddedClipFor(rig: RigId, state: FighterClip): { readonly clip: string; readonly standIn: boolean } {
-  const entry = RIG_CLIP_MAPS[rig][state];
+/** Resolved embedded clip name for a logical state (used for drive:"clips" evidence). */
+export function embeddedClipFor(state: FighterClip): { readonly clip: string; readonly standIn: boolean } {
+  const entry = FIGHTER_CLIP_MAP[state];
   return { clip: entry.clip, standIn: entry.standIn === true };
+}
+
+/**
+ * Clip id to crossFade to for a logical state: the embedded GLB clip name
+ * when the controller registered the fighter's clip registry — so the
+ * runtime spec's `animation.clip` resolves the real clip exactly — else the
+ * logical id (always registered as a declared clip). The embedded GLB clip
+ * names sit outside the FighterClip union; the cast is safe because they
+ * are registered on this controller's clip map.
+ */
+export function fighterDriveClipId(anim: FighterAnimationBundle, state: FighterClip): FighterClip {
+  const embedded = FIGHTER_CLIP_MAP[state].clip;
+  return (anim.embeddedClips.has(embedded) ? embedded : state) as FighterClip;
 }
 
 function animationClipRegistry(asset: AuraAssetRef<"model">) {
@@ -399,6 +422,15 @@ function animationClipRegistry(asset: AuraAssetRef<"model">) {
     metadata
   };
 }
+
+/**
+ * Canonical fighter render height in metres. The Meshy GLBs embed a ~0.01
+ * armature root scale, so raw loaded bounds are centimetre-tiny —
+ * `model()`'s targetHeight fit normalizes each rig to this height and the
+ * per-fighter `scale` then re-introduces the roster's size spread
+ * (Boulder ≈ 2.0 m, Jinx ≈ 1.66 m, matching the authored GLB proportions).
+ */
+const FIGHTER_RENDER_HEIGHT = 1.8;
 
 /**
  * Mount a fighter's rig. When `tint` is supplied the whole model gets a PBR
@@ -415,16 +447,17 @@ export function createFighterNode(
   typedFighterAssets: TypedFighterAssets,
   tint?: FighterPalette
 ) {
-  const assetKey = RIG_ASSET_KEY[fighter.rig];
+  const assetKey = fighter.asset;
   const asset = typedFighterAssets[assetKey];
   const runtime = game.runtimeNode(nodeId, {
-    tags: ["fighter", fighter.id, fighter.rig, asset ? "typed-asset" : "source-placeholder"]
+    tags: ["fighter", fighter.id, assetKey, asset ? "typed-asset" : "source-placeholder"]
   });
   const palette = tint ?? fighter.palette;
 
   if (asset) {
     return model(asset, {
       name: label,
+      targetHeight: FIGHTER_RENDER_HEIGHT,
       material: material.pbr({
         color: palette.color,
         roughness: palette.roughness,

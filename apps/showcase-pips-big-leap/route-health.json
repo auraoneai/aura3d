@@ -24,11 +24,52 @@
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.showcaseKenneyOobiPlatformerHero",
+      "typedRef": "assets.pipsPip",
       "role": "primaryCharacter",
       "status": "typed-primary-asset",
       "quality": "candidate",
-      "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+      "hash": "sha256-40f519aa21f0c",
+      "provenance": "meshy-generated (artifacts/meshy/pips-pip, animated.glb)"
+    },
+    {
+      "typedRef": "assets.pipsBrambleback",
+      "role": "primaryBoss",
+      "status": "typed-primary-asset",
+      "quality": "candidate",
+      "hash": "sha256-eb18aa7ff3e40",
+      "provenance": "meshy-generated (artifacts/meshy/pips-brambleback, animated.glb)"
+    },
+    {
+      "typedRef": "assets.pipsSunseed",
+      "role": "collectible",
+      "status": "typed-primary-asset",
+      "quality": "candidate",
+      "hash": "sha256-b9b503245011b",
+      "provenance": "meshy-generated (artifacts/meshy/pips-sunseed, model.glb)"
+    },
+    {
+      "typedRef": "assets.pipsGoldenAcorn",
+      "role": "collectible",
+      "status": "typed-primary-asset",
+      "quality": "candidate",
+      "hash": "sha256-16eae286bf078",
+      "provenance": "meshy-generated (artifacts/meshy/pips-golden-acorn, model.glb)"
+    },
+    {
+      "typedRef": "assets.pipsCheckpointFlag",
+      "role": "checkpointProp",
+      "status": "typed-primary-asset",
+      "quality": "candidate",
+      "hash": "sha256-cc2162ee9ecdc",
+      "provenance": "meshy-generated (artifacts/meshy/pips-checkpoint-flag, model.glb)"
+    },
+    {
+      "typedRef": "assets.pipsSungate",
+      "role": "gateProp",
+      "status": "typed-primary-asset",
+      "quality": "candidate",
+      "hash": "sha256-8b44ee223ed35",
+      "provenance": "meshy-generated (artifacts/meshy/pips-sungate, model.glb)"
     },
     {
       "typedRef": "assets.showcaseKenneyVerdantPlatformerWorld",
