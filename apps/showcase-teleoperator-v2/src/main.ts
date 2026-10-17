@@ -981,6 +981,10 @@ async function bootGridDispatchV2(): Promise<void> {
     try {
       ev.diag = (auraApp as { diagnostics?: () => unknown }).diagnostics?.();
       ev.marks = performance.getEntriesByType("mark").filter((m) => m.name.startsWith("a3d")).map((m) => `${m.name}@${Math.round(m.startTime)}`);
+      const nodes: any[] = [];
+      const walk = (list: any[] | undefined) => { for (const n of list ?? []) { nodes.push(n); walk(n.children ?? n.nodes); } };
+      walk(((auraApp as any).getScene?.()?.nodes) ?? []);
+      ev.badAssets = nodes.filter((n) => n?.kind === "model" && n?.asset?.url && !n?.asset?.hash).map((n) => `${n?.asset?.id ?? "?"} -> ${n?.asset?.url}`);
     } catch { /* evidence only */ }
   }, 500);
   (auraApp as unknown as { ready?: () => Promise<unknown> }).ready?.().then(() => { ev.ready = "ok"; }).catch((e: unknown) => { ev.ready = `err:${(e as Error)?.message ?? e}`; });
