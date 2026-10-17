@@ -15,6 +15,7 @@ export const assets = {
   goldenAcorn: catalog.pipsGoldenAcorn,
   checkpointFlag: catalog.pipsCheckpointFlag,
   sungate: catalog.pipsSungate,
+  hawk: shared.heatsinkDroneNighthawk,
   sidekick: shared.showcaseSidekickRunner,
   helper: shared.helperChar,
   robot: shared.showcaseRunnerRobot,
@@ -53,7 +54,8 @@ export const assets = {
     teaHouse: shared.showcaseTeaHouse,
     hound: shared.bunkerHoundMeshy,
     moth: shared.neonCrownMothElite,
-    frostDrone: shared.skylineFrostSentryDroneMeshy
+    frostDrone: shared.skylineFrostSentryDroneMeshy,
+    hawk: shared.heatsinkDroneNighthawk
   }
 } as const;
 

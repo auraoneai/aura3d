@@ -31,6 +31,8 @@ export function model<TAsset extends AuraAssetRef<"model">>(
     targetLength: options.targetLength,
     physics: options.physics,
     hiddenNodeNames: options.hiddenNodeNames,
+    ...(options.materialOverrides !== undefined ? { materialOverrides: options.materialOverrides } : {}),
+    ...(options.variant !== undefined ? { variant: options.variant } : {}),
     wrinkle: options.wrinkle
   });
 }

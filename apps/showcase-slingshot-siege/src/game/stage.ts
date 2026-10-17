@@ -84,12 +84,12 @@ export function blockMaterial(id: SiegeMaterialId): AuraMaterialSpec {
   if (id === "obsidian") {
     return material.pbr({ color: m.color, roughness: 0.35, metallic: 0.35 });
   }
-  return material.pbr({ color: m.color, roughness: id === "wood" ? 0.65 : 0.5, metallic: 0.08 });
+  return material.pbr({ color: m.color, roughness: id === "wood" ? 0.58 : 0.46, metallic: 0.08 });
 }
 
 export function debrisMaterial(matId: string): AuraMaterialSpec {
   const key = (matId in MATERIALS ? matId : "wood") as SiegeMaterialId;
-  return material.pbr({ color: MATERIALS[key].debrisColor, roughness: 0.6 });
+  return material.pbr({ color: MATERIALS[key].debrisColor, roughness: 0.55 });
 }
 
 export function puffMaterial(kind: "dust" | "glass" | "fire" | "poof"): AuraMaterialSpec {
@@ -103,7 +103,7 @@ export function puffMaterial(kind: "dust" | "glass" | "fire" | "poof"): AuraMate
 }
 
 function pbr(color: AuraColor, opts: { roughness?: number; metallic?: number; opacity?: number } = {}): AuraMaterialSpec {
-  return material.pbr({ color, roughness: opts.roughness ?? 0.7, metallic: opts.metallic ?? 0, ...(opts.opacity !== undefined ? { opacity: opts.opacity } : {}) });
+  return material.pbr({ color, roughness: opts.roughness ?? 0.65, metallic: opts.metallic ?? 0, ...(opts.opacity !== undefined ? { opacity: opts.opacity } : {}) });
 }
 function glow(color: AuraColor, intensity = 0.9): AuraMaterialSpec {
   return material.emissive({ color, emissive: color, emissiveIntensity: intensity });
@@ -121,26 +121,28 @@ type StageNode = AuraSceneNode | AuraNodeBuilder<AuraSceneNode>;
 export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNodes {
   const nodes: StageNode[] = [];
 
-  // Chapter look preset — outdoor-day with low fog and bright coastal sun.
+  // Chapter look preset — outdoor-day with zero fog and balanced studio exposure.
   nodes.push(
     looks.preset("outdoor-day", {
-      exposureEv: chapter.look.exposureEv ?? 0.35,
-      fogDensityScale: chapter.look.fogDensityScale ?? 0.18,
+      fogDensityScale: 0,
+      exposureEv: -0.08,
       sun: chapter.look.sun,
       ...(chapter.look.accent ? { accent: chapter.look.accent as AuraColor } : {}),
-      ...(chapter.look.background ? { background: chapter.look.background as AuraColor } : {})
+      background: (chapter.look.background ?? "#2b6cb0") as AuraColor
     }),
-    lights.ambient({ name: "siege-ambient", color: "#fff6e8", intensity: 1.35 }),
-    lights.hemisphere({ name: "siege-hemi", skyColor: "#9fd8ff", groundColor: "#6a8e4e", intensity: 1.25, position: [0, 18, 0] }),
-    lights.directional({ name: "siege-sun", color: "#fff2d6", intensity: 2.2, position: [-10, 24, 16] })
+    lights.ambient({ name: "siege-ambient", color: "#dce8f8", intensity: 0.22 }),
+    lights.hemisphere({ name: "siege-hemi", skyColor: "#5aa0e8", groundColor: "#2d5e2e", intensity: 0.35, position: [0, 18, 0] }),
+    lights.directional({ name: "siege-sun", color: "#ffe6bd", intensity: 0.65, position: [-10, 24, 16] })
   );
 
   // ------------------------------------------------------------- terrain --
   nodes.push(
-    primitives.cylinder({ name: "stage-ground", material: pbr(chapter.ground, { roughness: 0.85 }), castShadow: false, receiveShadow: true })
+    primitives.cylinder({ name: "stage-ground", material: pbr(chapter.ground ?? "#3d8c40", { roughness: 0.72, metallic: 0.04 }), castShadow: false, receiveShadow: true })
       .position(1.5, -0.4, 0).scale([18, 0.35, 14]).runtime({ id: "stage-ground", tags: ["stage"] }),
-    primitives.cylinder({ name: "stage-far-ground", material: pbr(chapter.farGround, { roughness: 0.92 }), castShadow: false, receiveShadow: true })
-      .position(3, -0.55, -1).scale([28, 0.3, 22]).runtime({ id: "stage-far-ground", tags: ["stage"] }),
+    primitives.cylinder({ name: "stage-far-ground", material: pbr(chapter.farGround ?? "#2d6e32", { roughness: 0.78, metallic: 0.04 }), castShadow: false, receiveShadow: true })
+      .position(1.6, -0.5, -0.4).scale([19.6, 0.32, 15.2]).runtime({ id: "stage-far-ground", tags: ["stage"] }),
+    primitives.cylinder({ name: "stage-ocean", material: pbr("#144272", { roughness: 0.35, metallic: 0.12 }), castShadow: false, receiveShadow: true })
+      .position(1.5, -0.62, -2.0).scale([64, 0.24, 52]).runtime({ id: "stage-ocean", tags: ["stage"] }),
     model(assets.gullsiegeBridgeMeshy, { name: "launch-knoll", position: [-7.4, -0.1, 0], rotation: [0, 0, 0] })
       .scale([2.2, 1.1, 2.2]).runtime({ id: "launch-knoll", tags: ["stage"] }),
     model(assets.gullsiegeBridgeMeshy, { name: "fortress-pad", position: [7.2, -0.22, 0], rotation: [0, 0, 0] })
@@ -313,7 +315,7 @@ export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNo
 
 export function buildScene(chapter: ChapterDef, reducedMotion: boolean): ReturnType<typeof scene> {
   const { nodes, cameraSpec } = buildStage(chapter, reducedMotion);
-  let s = scene().background(chapter.look.background ?? "#9fd8ff");
+  let s = scene().background(chapter.look.background ?? "#2b6cb0", { toneMapped: false });
   for (const node of nodes) s = s.add(node);
   s = s.camera(cameraSpec);
   return s;

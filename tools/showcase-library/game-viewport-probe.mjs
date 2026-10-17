@@ -17,10 +17,12 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
 import { readGameChannel } from "./game-channel.mjs";
+import { readPngLuminanceAndTruncationMetrics } from "./png-foreground.mjs";
 
 const repoRoot = resolve(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
 const args = process.argv.slice(2);
 const arg = (f, d) => { const i = args.indexOf(f); return i >= 0 && args[i + 1] ? args[i + 1] : d; };
+const strictAssert = args.includes("--assert");
 
 const route = arg("--route", "showcase-courier-rush");
 const base = arg("--base", "http://localhost:5199");
@@ -39,10 +41,13 @@ async function measure(page) {
     const c = document.querySelector("canvas");
     const r = c?.getBoundingClientRect();
     const de = document.documentElement;
+    const fillsWidth = Boolean(r && r.width >= innerWidth * 0.98);
+    const fillsHeight = Boolean(r && r.height >= innerHeight * 0.98);
     return {
       buffer: c ? `${c.width}x${c.height}` : null,
       css: r ? `${Math.round(r.width)}x${Math.round(r.height)}` : null,
       viewport: `${innerWidth}x${innerHeight}`,
+      canvasFillsViewport: fillsWidth && fillsHeight,
       // Horizontal body overflow is the signature of a canvas that kept its
       // desktop width after the window shrank.
       overflowX: de.scrollWidth - innerWidth,
@@ -69,9 +74,11 @@ async function run(label, { start, end }) {
     afterResize = await measure(page);
   }
   const shotFile = `${label}.png`;
-  await page.screenshot({ path: resolve(outDir, shotFile) });
+  const shotPath = resolve(outDir, shotFile);
+  await page.screenshot({ path: shotPath });
+  const lumaMetrics = readPngLuminanceAndTruncationMetrics(shotPath);
   await context.close();
-  return { label, atStart, afterResize, errors: errors.slice(0, 6), shot: shotFile };
+  return { label, atStart, afterResize, lumaMetrics, errors: errors.slice(0, 6), shot: shotFile };
 }
 
 const results = [
@@ -80,13 +87,38 @@ const results = [
   await run("fresh-desktop", { start: { width: dw, height: dh } }),
 ];
 
+let failed = false;
 for (const r of results) {
-  const bad = (m) => m && (m.overflowX > 2 || (m.buffer && m.css && m.buffer.split("x")[0] !== m.css.split("x")[0]));
-  console.log(`${r.label.padEnd(22)} buffer=${r.atStart.buffer} css=${r.atStart.css} ovfX=${r.atStart.overflowX}` +
-    (r.afterResize ? `  -> afterResize buffer=${r.afterResize.buffer} css=${r.afterResize.css} ovfX=${r.afterResize.overflowX}` : ""));
+  const bad = (m) => m && (
+    !m.canvasFillsViewport ||
+    m.overflowX > 2 ||
+    m.overflowY > 2 ||
+    (m.buffer && m.css && m.buffer.split("x")[0] !== m.css.split("x")[0])
+  );
+  const luma = r.lumaMetrics;
+  console.log(
+    `${r.label.padEnd(22)} buffer=${r.atStart.buffer} css=${r.atStart.css} fills=${r.atStart.canvasFillsViewport} ovf=${r.atStart.overflowX},${r.atStart.overflowY} ` +
+    `luma=${luma.meanLuminance}±${luma.luminanceStdDev} white=${luma.nearWhiteRatio} btmBlk=${luma.bottomBandBlackRatio}` +
+    (r.afterResize ? ` -> afterResize buffer=${r.afterResize.buffer} css=${r.afterResize.css} fills=${r.afterResize.canvasFillsViewport}` : "")
+  );
   if (r.errors.length) console.log(`   errors: ${JSON.stringify(r.errors)}`);
-  const suspect = bad(r.atStart) || (r.afterResize && bad(r.afterResize));
-  if (suspect) console.log(`   !! canvas box does not track viewport`);
+  const suspectViewport = bad(r.atStart) || (r.afterResize && bad(r.afterResize));
+  if (suspectViewport) {
+    console.log(`   !! canvas box does not fill or track viewport`);
+    failed = true;
+  }
+  if (!luma.notWashedOut) {
+    console.log(`   !! washed-out luminance check failed (mean=${luma.meanLuminance}, stdDev=${luma.luminanceStdDev}, nearWhite=${luma.nearWhiteRatio})`);
+    failed = true;
+  }
+  if (!luma.noBlackTruncation) {
+    console.log(`   !! black truncation check failed (bottomBandBlack=${luma.bottomBandBlackRatio}, leftBandBlack=${luma.leftBandBlackRatio})`);
+    failed = true;
+  }
 }
 await browser.close();
 console.log(`shots -> ${outDir}`);
+if (strictAssert && failed) {
+  process.exitCode = 1;
+}
+

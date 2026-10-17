@@ -1,68 +1,144 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-density="compact">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>IRON CROWN — 2.5D Arena Fighter · Aura3D Showcase</title>
+    <link rel="preload" href="./fonts/whitney-regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./fonts/whitney-medium.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="./fonts/fonts.css" />
     <style>
       :root {
         color-scheme: dark;
-        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        font-family: var(--font-ui, "Whitney", -apple-system, BlinkMacSystemFont, sans-serif);
         --ic-gold: #ffd76a;
         --ic-red: #ff4f46;
         --ic-ink: #0c0d12;
       }
       * { box-sizing: border-box; }
-      html, body { margin: 0; padding: 0; min-height: 100%; background: radial-gradient(120% 90% at 50% -10%, #1b1f2e 0%, var(--ic-ink) 62%); color: #e8ebf4; }
-      body { padding: 14px clamp(10px, 2.5vw, 28px) 28px; }
-      .ic-topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-bottom: 10px; }
-      .ic-badge {
-        font-weight: 800; letter-spacing: 0.14em; font-size: 13px; color: var(--ic-ink);
-        background: linear-gradient(135deg, var(--ic-gold), #e8a13c);
-        padding: 6px 12px; border-radius: 999px; text-transform: uppercase; white-space: nowrap;
-        box-shadow: 0 0 18px rgba(255, 215, 106, 0.25);
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #07080d;
+        color: #e8ebf4;
+        font-synthesis: none;
       }
-      .ic-modes { display: flex; flex-wrap: wrap; gap: 8px; }
+      main {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      .ic-topbar {
+        position: fixed;
+        top: 8px;
+        left: 14px;
+        right: 14px;
+        z-index: 55;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 10px;
+        padding: 5px 10px;
+        border-radius: 10px;
+        background: rgba(8, 10, 16, 0.78);
+        border: 1px solid rgba(255, 215, 106, 0.22);
+        backdrop-filter: blur(8px);
+      }
+      .ic-badge {
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        font-size: 12px;
+        color: var(--ic-ink);
+        background: linear-gradient(135deg, var(--ic-gold), #e8a13c);
+        padding: 4px 10px;
+        border-radius: 999px;
+        white-space: nowrap;
+        box-shadow: 0 0 14px rgba(255, 215, 106, 0.22);
+      }
+      .ic-modes { display: flex; flex-wrap: wrap; gap: 4px; }
       .ic-modes button {
-        border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(255, 255, 255, 0.07);
-        color: #e8ebf4; padding: 6px 13px; border-radius: 999px; font-size: 12.5px;
-        letter-spacing: 0.05em; cursor: pointer; transition: background 140ms, border-color 140ms;
+        font-family: inherit;
+        font-weight: 500;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.07);
+        color: #e8ebf4;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 140ms, border-color 140ms;
       }
       .ic-modes button:hover { background: rgba(255, 215, 106, 0.16); border-color: var(--ic-gold); }
-      .ic-modes button[aria-pressed="true"] { background: linear-gradient(135deg, rgba(255, 215, 106, 0.28), rgba(255, 79, 70, 0.18)); border-color: var(--ic-gold); color: #fff; }
-      .ic-venues { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+      .ic-modes button[aria-pressed="true"] {
+        background: linear-gradient(135deg, rgba(255, 215, 106, 0.28), rgba(255, 79, 70, 0.18));
+        border-color: var(--ic-gold);
+        color: #fff;
+      }
+      .ic-venues { display: flex; flex-wrap: wrap; gap: 4px; margin-left: auto; }
       .ic-venues button, .ic-fighters button {
-        border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.04);
-        color: #c7cde2; padding: 5px 10px; border-radius: 8px; font-size: 11.5px; cursor: pointer;
+        font-family: inherit;
+        font-weight: 500;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.04);
+        color: #c7cde2;
+        padding: 4px 8px;
+        border-radius: 7px;
+        font-size: 11.5px;
+        cursor: pointer;
+        white-space: nowrap;
       }
       .ic-venues button:hover, .ic-fighters button:hover { border-color: var(--ic-gold); color: #fff; }
-      .ic-venues button[aria-pressed="true"], .ic-fighters button[aria-pressed="true"] { border-color: var(--ic-gold); color: var(--ic-gold); background: rgba(255, 215, 106, 0.12); }
-      .ic-fighters { display: flex; flex-wrap: wrap; gap: 5px; }
-      . aura3d-controls-hint {
-        margin: 2px 4px 10px; font-size: 12px; color: #9aa3bd; letter-spacing: 0.02em;
+      .ic-venues button[aria-pressed="true"], .ic-fighters button[aria-pressed="true"] {
+        border-color: var(--ic-gold);
+        color: var(--ic-gold);
+        background: rgba(255, 215, 106, 0.12);
       }
+      .ic-fighters { display: flex; flex-wrap: wrap; gap: 4px; }
       .aura3d-controls-hint {
-        margin: 2px 4px 10px; font-size: 12px; color: #9aa3bd; letter-spacing: 0.02em;
+        margin: 0;
+        font-size: 12px;
+        color: #d0d7ec;
       }
-      .aura3d-controls-hint b { color: #d8deef; font-weight: 600; }
+      .aura3d-controls-hint b { color: #ffd76a; font-weight: 500; }
       #app {
-        position: relative; width: 100%; max-width: 1280px; margin: 0 auto;
-        aspect-ratio: 16 / 9; min-height: 340px; border-radius: 18px; overflow: hidden;
-        border: 1px solid rgba(255, 215, 106, 0.22);
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
         background: #07080d;
-        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
       }
-      #app canvas[data-aura3d-canvas] { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+      #app canvas[data-aura3d-canvas] {
+        position: fixed;
+        inset: 0;
+        width: 100vw !important;
+        height: 100vh !important;
+        display: block;
+      }
       /* The mounted renderer canvas adopts id="game" at boot (runtime appends it). */
-      #game { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+      #game {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
       #render-error {
         position: absolute; inset: 0; display: none; place-items: center; text-align: center;
         background: #14161f; color: #f0c9c4; font-size: 14px; line-height: 1.6; padding: 24px; z-index: 90;
       }
       #render-error.on { display: grid; }
       @media (max-width: 720px) {
-        body { padding: 10px 8px 20px; }
-        #app { border-radius: 12px; }
+        .ic-topbar { top: 6px; left: 8px; right: 8px; padding: 4px 8px; }
       }
     </style>
   </head>
@@ -94,12 +170,6 @@
         <button type="button" data-stage="crown-arena" aria-pressed="true">Crown Arena</button>
       </nav>
     </div>
-
-    <p class="aura3d-controls-hint">
-      <b>Move</b> A/D or ←/→ · <b>Crouch</b> S · <b>Jump</b> W / Space · <b>Dash</b> double-tap ·
-      <b>Light</b> J · <b>Heavy</b> K · <b>Special</b> L (full meter) · <b>Throw</b> U ·
-      <b>Block</b> hold away (S = low guard) · <b>Pause</b> Esc / Enter — touch pad on mobile
-    </p>
 
     <main>
       <div id="app" aria-label="Iron Crown fighting game viewport">
@@ -134,7 +204,7 @@
           <div class="fh-footer">
             <div class="fh-mode" id="fh-mode">QUICK BOUT · CROWN ARENA</div>
             <div class="fh-inputs" id="fh-inputs" aria-label="Input display"></div>
-            <div class="fh-hint" id="fh-hint">A/D move · S crouch-block · J light · K heavy · L special · U throw</div>
+            <p class="fh-hint aura3d-controls-hint" id="fh-hint">A/D move · S crouch-block · J light · K heavy · L special · U throw</p>
           </div>
 
           <section class="fh-lab" id="fh-lab" hidden>

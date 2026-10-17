@@ -27,19 +27,19 @@ type SceneNodeArg = Parameters<SceneBuilder["add"]>[0];
 // ---------------------------------------------------------------- palettes
 
 const KIND_STYLE: Record<PlatformKind, { readonly body: string; readonly top: string }> = {
-  grass:     { body: "#6d4f30", top: "#58b04a" },
-  earth:     { body: "#7c5a3a", top: "#a07952" },
-  mushroom:  { body: "#efe4cf", top: "#d96a55" },
-  leaf:      { body: "#37713a", top: "#6cc76e" },
-  dock:      { body: "#6f5233", top: "#a1794a" },
-  wood:      { body: "#7d5a33", top: "#b38954" },
-  rope:      { body: "#8f7350", top: "#cda86e" },
-  cloud:     { body: "#bccbe2", top: "#f4f9ff" },
-  sky:       { body: "#7fa7cf", top: "#c2ddf2" },
-  stone:     { body: "#4f4a46", top: "#786f66" },
+  grass:     { body: "#6b4c35", top: "#3b7a3e" },
+  earth:     { body: "#5c3f28", top: "#8c6342" },
+  mushroom:  { body: "#d9ccb4", top: "#d14b38" },
+  leaf:      { body: "#2f6333", top: "#4f9e52" },
+  dock:      { body: "#6b4c35", top: "#9e7344" },
+  wood:      { body: "#6b4c35", top: "#ad814c" },
+  rope:      { body: "#7d6140", top: "#c49d62" },
+  cloud:     { body: "#96adc8", top: "#dce9f7" },
+  sky:       { body: "#5a82ab", top: "#9ec4e6" },
+  stone:     { body: "#4a4541", top: "#736a61" },
   ember:     { body: "#3f271d", top: "#a8522c" },
   metal:     { body: "#343640", top: "#686e80" },
-  marble:    { body: "#bdb2a2", top: "#efe5d2" },
+  marble:    { body: "#a89d8e", top: "#dfd4c0" },
   gold:      { body: "#7c5f26", top: "#dfb44b" },
   crystal:   { body: "#4f3f85", top: "#9787de" },
   starlight: { body: "#322c58", top: "#c7b6ff" }
@@ -130,7 +130,19 @@ function decorNodes(d: DecorSpec): readonly SceneNodeArg[] {
   switch (d.kind) {
     case "tree":
       return [
-        model(assets.props.pineTree, { name: `${d.id}:tree`, castShadow: true, receiveShadow: true, targetHeight: 3.1 * s })
+        model(assets.props.pineTree, { name: `${d.id}:tree`, castShadow: true, receiveShadow: true, targetHeight: 3.2 * s, scaleMode: "fit" })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
+    case "conifer":
+      return [
+        model(assets.props.conifer, { name: `${d.id}:conifer`, castShadow: true, receiveShadow: true, targetHeight: 3.4 * s, scaleMode: "fit" })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
+    case "hawk":
+      return [
+        model(assets.hawk, { name: `${d.id}:hawk`, castShadow: true, receiveShadow: true, targetMaxDimension: 1.5 * s, scaleMode: "fit" })
           .position(d.x, d.y, d.z)
           .rotate(0, yaw, 0)
       ];
@@ -188,12 +200,14 @@ function decorNodes(d: DecorSpec): readonly SceneNodeArg[] {
           .position(d.x, d.y, d.z)
           .rotate(0, yaw, 0)
       ];
-    case "arch":
+    case "arch": {
+      const archRef = d.id.includes("vista") ? assets.sungate : assets.props.arch;
       return [
-        model(assets.props.arch, { name: `${d.id}:arch`, castShadow: true, receiveShadow: true, targetHeight: 3.4 * s })
+        model(archRef, { name: `${d.id}:arch`, castShadow: true, receiveShadow: true, targetHeight: 3.4 * s, scaleMode: "fit" })
           .position(d.x, d.y, d.z)
           .rotate(0, yaw, 0)
       ];
+    }
     case "crystal":
       return [
         model(assets.props.crystalShard, { name: `${d.id}:crystal`, castShadow: true, receiveShadow: true, targetHeight: 1.9 * s })
@@ -239,13 +253,16 @@ function decorNodes(d: DecorSpec): readonly SceneNodeArg[] {
 
 export function buildWorld(spec: WorldSpec): BuiltWorld {
   const motion = deriveWorldMotion(spec);
-  const builder = scene().background(spec.background ?? "#9cc8e8");
+  const skyColor = spec.background ?? "#1e4d78";
+  const builder = scene().background(skyColor);
 
-  // Look preset — one per world (plus optional overrides node).
-  builder.add(looks.preset(spec.look as Parameters<typeof looks.preset>[0]));
-  if (spec.lookOverrides?.fogDensityScale !== undefined) {
-    builder.add(effects.fog({ density: spec.lookOverrides.fogDensityScale * 0.02, color: spec.background ?? "#9cc8e8" }));
-  }
+  // Look preset — explicitly disable fog whitewash so platforms, trees, and Pip stay crisp.
+  builder.add(
+    looks.preset(spec.look as Parameters<typeof looks.preset>[0], {
+      fogDensityScale: 0,
+      background: skyColor
+    })
+  );
   if (spec.ambientFx === "embers" || spec.ambientFx === "stars") {
     builder.add(effects.bloom({ intensity: 0.28 }));
   }
@@ -273,15 +290,15 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
       name: nodeName.platform(p.id),
       size: [p.w, h, p.d],
       position: [p.x, p.y - h / 2, p.z],
-      material: material.pbr({ color: style.body, roughness: 0.92 }),
+      material: material.pbr({ color: style.body, roughness: 0.75 }),
       castShadow: true,
       receiveShadow: true
     });
     const top = primitives.box({
       name: nodeName.platformTop(p.id),
-      size: [p.w * 0.98, 0.1, p.d * 0.98],
+      size: [p.w * 0.98, 0.12, p.d * 0.98],
       position: [p.x, p.y - 0.05, p.z],
-      material: material.pbr({ color: style.top, roughness: 0.8 }),
+      material: material.pbr({ color: style.top, roughness: 0.75 }),
       receiveShadow: true
     });
     if (p.mover || p.timed) {
@@ -341,7 +358,7 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
   const spinNodes: string[] = [];
   for (const s of spec.seeds) {
     builder.add(
-      model(assets.sunseed, { name: nodeName.seed(s.id), castShadow: true, targetMaxDimension: 0.45 })
+      model(assets.sunseed, { name: nodeName.seed(s.id), castShadow: true, targetMaxDimension: 0.68, scaleMode: "fit" })
         .position(s.x, s.y - 0.1, s.z)
         .runtime(game.runtimeNode(nodeName.seed(s.id), { tags: ["pickup", "seed"] }))
     );
@@ -349,15 +366,15 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
   }
   for (const a of spec.acorns) {
     builder.add(
-      model(assets.goldenAcorn, { name: nodeName.acorn(a.id), castShadow: true, targetMaxDimension: 0.55 })
-        .position(a.x, a.y - 0.27, a.z)
+      model(assets.goldenAcorn, { name: nodeName.acorn(a.id), castShadow: true, targetMaxDimension: 0.65, scaleMode: "fit" })
+        .position(a.x, a.y - 0.2, a.z)
         .runtime(game.runtimeNode(nodeName.acorn(a.id), { tags: ["pickup", "acorn"] }))
     );
     spinNodes.push(nodeName.acorn(a.id));
   }
   for (const hpt of spec.hearts) {
     builder.add(
-      model(assets.props.energyCore, { name: nodeName.heart(hpt.id), castShadow: true, targetMaxDimension: 0.48 })
+      model(assets.props.energyCore, { name: nodeName.heart(hpt.id), castShadow: true, targetMaxDimension: 0.55, scaleMode: "fit" })
         .position(hpt.x, hpt.y - 0.18, hpt.z)
         .runtime(game.runtimeNode(nodeName.heart(hpt.id), { tags: ["pickup", "heart"] }))
     );
@@ -381,7 +398,7 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
   // Checkpoints — bespoke Meshy leaf-banner flag + 3D pedestal base.
   for (const cp of spec.checkpoints) {
     builder.add(
-      model(assets.checkpointFlag, { name: nodeName.checkpointFlag(cp.id), castShadow: true, targetHeight: 1.9 })
+      model(assets.checkpointFlag, { name: nodeName.checkpointFlag(cp.id), castShadow: true, targetHeight: 1.9, scaleMode: "fit" })
         .position(cp.x, cp.y, cp.z)
         .runtime(game.runtimeNode(nodeName.checkpointFlag(cp.id), { tags: ["checkpoint"] }))
     );
@@ -394,7 +411,7 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
   // Sun-Gate — bespoke Meshy seed-arch portal + retained emissive ring + 3D energy core lock.
   const g = spec.gate;
   builder.add(
-    model(assets.sungate, { name: nodeName.gate, castShadow: true, targetHeight: 3.0 })
+    model(assets.sungate, { name: nodeName.gate, castShadow: true, targetHeight: 3.4, scaleMode: "fit" })
       .position(g.x, g.y, g.z)
       .runtime(game.runtimeNode(nodeName.gate, { tags: ["gate"] }))
   );
@@ -414,33 +431,32 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
     const ref = n.who === "sidekick" ? assets.sidekick : assets.helper;
     const clip = n.clip ?? "idle";
     builder.add(
-      model(ref, { name: nodeName.npc(n.id), castShadow: true })
+      model(ref, { name: nodeName.npc(n.id), castShadow: true, targetHeight: 1.35, scaleMode: "fit" })
         .position(n.x, n.y, n.z)
-        .scale(0.9 / ref.bounds[1])
         .rotate(0, Math.PI, 0)
         .animate({ clip, loop: true })
     );
   }
 
-  // Hero — always a runtime node; the camera rigs onto it. `targetHeight`
-  // auto-fits the bespoke GLB to mascot size with its feet at the node origin
-  // (the player controller drives the node at feet level).
+  // Hero — always a runtime node; the camera rigs onto it. `targetHeight: 1.25`
+  // with `scaleMode: "fit"` sizes Pip's bespoke GLB prominently in frame with
+  // his feet grounded on the platform top surface.
   builder.add(
-    model(assets.pip, { name: nodeName.hero, castShadow: true, targetHeight: 1.08 })
+    model(assets.pip, { name: nodeName.hero, castShadow: true, targetHeight: 1.25, scaleMode: "fit" })
       .position(spec.spawn[0], spec.spawn[1], spec.spawn[2])
-      .rotate(0, spec.spawnYaw ?? 0, 0)
+      .rotate(0, spec.spawnYaw ?? Math.PI, 0)
       .animate({ clip: PIP_CLIPS.idle, loop: true })
       .runtime(game.runtimeNode(nodeName.hero, { tags: ["player"] }))
   );
   // Studio accessories — compact 3D golden-acorn crest + glide cape badge so
   // Pip's Meshy squirrel rig remains clearly visible while Player Studio tinting works.
   builder.add(
-    model(assets.goldenAcorn, { name: nodeName.heroCap, castShadow: true, targetMaxDimension: 0.22 })
-      .position(spec.spawn[0], spec.spawn[1] + 0.98, spec.spawn[2])
+    model(assets.goldenAcorn, { name: nodeName.heroCap, castShadow: false, visible: false, targetMaxDimension: 0.16, scaleMode: "fit" })
+      .position(spec.spawn[0], spec.spawn[1] + 1.15, spec.spawn[2])
       .runtime(game.runtimeNode(nodeName.heroCap, { tags: ["player", "studio"] }))
   );
   builder.add(
-    primitives.box({ name: nodeName.heroCape, size: [0.34, 0.04, 0.38], position: [spec.spawn[0], spec.spawn[1] + 0.56, spec.spawn[2] + 0.24], material: material.pbr({ color: "#3f8cff", roughness: 0.6 }), castShadow: true })
+    primitives.box({ name: nodeName.heroCape, size: [0.22, 0.03, 0.24], position: [spec.spawn[0], spec.spawn[1] + 0.52, spec.spawn[2] + 0.16], material: material.pbr({ color: "#3f8cff", roughness: 0.6 }), castShadow: false })
       .runtime(game.runtimeNode(nodeName.heroCape, { tags: ["player", "studio"] }))
   );
 
@@ -448,7 +464,7 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
   // 3D crystal-shard satellites remain the phase telegraph (out = invulnerable).
   if (spec.boss) {
     builder.add(
-      model(assets.boss, { name: nodeName.boss, castShadow: true, targetHeight: 2.4 })
+      model(assets.boss, { name: nodeName.boss, castShadow: true, targetHeight: 2.4, scaleMode: "fit" })
         .position(0, 2.6, -69)
         .animate({ clip: BOSS_CLIPS.idle, loop: true })
         .runtime(game.runtimeNode(nodeName.boss, { tags: ["boss"] }))
@@ -464,7 +480,13 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
     }
   }
 
-  builder.camera(camera.perspective({ position: [0, spec.spawn[1] + 2.4, spec.spawn[2] + 5.5], target: spec.spawn, fov: 55 }));
+  builder.camera(
+    camera.perspective({
+      position: [spec.spawn[0], spec.spawn[1] + 1.95, spec.spawn[2] + 4.2],
+      target: [spec.spawn[0], spec.spawn[1] + 0.95, spec.spawn[2] - 2.4],
+      fov: 52
+    })
+  );
 
   return {
     spec, motion, scene: builder, solids, hazards, waters,

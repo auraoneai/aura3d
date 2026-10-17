@@ -9,7 +9,7 @@ import "./styles.css";
 
 const params = new URLSearchParams(window.location.search);
 if (!params.has("a3d-qr")) {
-  params.set("a3d-qr", "-compiler");
+  params.set("a3d-qr", "game,materials,-compiler");
   try {
     const newUrl = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
     window.history.replaceState(null, "", newUrl);
@@ -82,7 +82,7 @@ const g = createGame({
     dash: { punch: { fovDeg: 1.6, ms: 190 } },
     ready: { punch: { fovDeg: 1.4, ms: 240 }, flash: { color: "#ffffff", peak: 0.1, ms: 220 } }
   },
-  qualityRebuild: { flags: ["game", "-compiler"] },
+  qualityRebuild: { flags: ["game", "materials", "-compiler"] },
   evidence: {
     schema: 1,
     sections: {

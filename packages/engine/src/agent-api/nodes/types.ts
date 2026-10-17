@@ -691,6 +691,8 @@ export interface AuraModelNode extends AuraTransformSpec {
   readonly interaction?: AuraInteractionSpec;
   readonly physics?: AuraNodePhysicsSpec;
   readonly hiddenNodeNames?: readonly string[];
+  readonly materialOverrides?: readonly import("../../contracts/materials").AuraModelMaterialOverride[];
+  readonly variant?: string;
   readonly runtime?: AuraRuntimeNodeSpec;
   /** Wrinkle-detail hook; see `AuraModelOptions.wrinkle`. */
   readonly wrinkle?: WrinkleMapHook;

@@ -200,7 +200,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     palette: { color: "#dfe9ff", emissive: "#2b6cff", emissiveIntensity: 0.22, roughness: 0.5, metallic: 0.12 },
     stats: { maxHealth: 100, defense: 1, damage: 1, walkSpeed: 3.4, jumpVelocity: 8.4, dashSpeed: 7.6, meterGain: 1, reach: 1 },
     special: { name: "Raijin Straight", fx: "arc", color: "#57c8ff" },
-    ai: { preferredRange: 1.35, aggression: 0.55 }
+    ai: { preferredRange: 1.75, aggression: 0.55 }
   },
   {
     id: "volt",
@@ -213,7 +213,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     palette: { color: "#ffd2a8", emissive: "#ff7a2e", emissiveIntensity: 0.24, roughness: 0.46, metallic: 0.08 },
     stats: { maxHealth: 88, defense: 1.12, damage: 0.88, walkSpeed: 4.1, jumpVelocity: 8.8, dashSpeed: 9.6, meterGain: 1.15, reach: 0.92 },
     special: { name: "Volt Combination", fx: "storm", color: "#ffb03c" },
-    ai: { preferredRange: 1.05, aggression: 0.8 }
+    ai: { preferredRange: 1.55, aggression: 0.8 }
   },
   {
     id: "boulder",
@@ -226,7 +226,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     palette: { color: "#c8b39a", emissive: "#8a5a2e", emissiveIntensity: 0.16, roughness: 0.62, metallic: 0.2 },
     stats: { maxHealth: 128, defense: 0.78, damage: 1.28, walkSpeed: 2.5, jumpVelocity: 7.4, dashSpeed: 6.2, meterGain: 0.9, reach: 1.12 },
     special: { name: "Colossus Drop", fx: "slam", color: "#e88b3c" },
-    ai: { preferredRange: 0.95, aggression: 0.5 }
+    ai: { preferredRange: 1.55, aggression: 0.5 }
   },
   {
     id: "seraph",
@@ -239,7 +239,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     palette: { color: "#cfe8d8", emissive: "#35d0a0", emissiveIntensity: 0.2, roughness: 0.44, metallic: 0.14 },
     stats: { maxHealth: 94, defense: 1.06, damage: 0.94, walkSpeed: 3.1, jumpVelocity: 8.2, dashSpeed: 7.2, meterGain: 1.05, reach: 1.3 },
     special: { name: "Avalanche Lance", fx: "lance", color: "#5cffc8" },
-    ai: { preferredRange: 1.9, aggression: 0.4 }
+    ai: { preferredRange: 2.1, aggression: 0.4 }
   },
   {
     id: "jinx",
@@ -252,7 +252,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     palette: { color: "#e2ccff", emissive: "#9b4dff", emissiveIntensity: 0.28, roughness: 0.42, metallic: 0.1 },
     stats: { maxHealth: 86, defense: 1.16, damage: 0.84, walkSpeed: 3.9, jumpVelocity: 9.2, dashSpeed: 10.4, meterGain: 1.2, reach: 0.95 },
     special: { name: "Phantom Parade", fx: "mischief", color: "#c07dff" },
-    ai: { preferredRange: 1.15, aggression: 0.65 }
+    ai: { preferredRange: 1.68, aggression: 0.65 }
   },
   {
     id: "sovereign",
@@ -265,7 +265,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     palette: { color: "#ffe9b0", emissive: "#ffb400", emissiveIntensity: 0.42, roughness: 0.34, metallic: 0.5 },
     stats: { maxHealth: 120, defense: 0.82, damage: 1.18, walkSpeed: 3.3, jumpVelocity: 8.6, dashSpeed: 8.2, meterGain: 1.1, reach: 1.08 },
     special: { name: "Crown Decree", fx: "crown", color: "#ffd76a" },
-    ai: { preferredRange: 1.3, aggression: 0.72 }
+    ai: { preferredRange: 1.8, aggression: 0.72 }
   }
 ] as const;
 

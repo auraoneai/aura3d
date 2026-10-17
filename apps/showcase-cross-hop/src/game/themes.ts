@@ -9,6 +9,8 @@ export interface ThemeDef {
   readonly fogScale: number;
   readonly exposureEv: number;
   readonly palette: {
+    readonly sky: string;
+    readonly horizon: string;
     readonly meadow: string;
     readonly road: string;
     readonly shoulder: string;
@@ -38,9 +40,10 @@ export const THEMES: readonly ThemeDef[] = [
     id: "meadow",
     label: "Meadow Roads",
     look: "outdoor-day",
-    fogScale: 0.22,
-    exposureEv: 0.25,
+    fogScale: 0,
+    exposureEv: -0.15,
     palette: {
+      sky: "#4a7ab5", horizon: "#6da0d6",
       meadow: "#58a75c", road: "#3a3f46", shoulder: "#6fbf6e", water: "#3f8fd2",
       railbed: "#5c564e", lava: "#ff6a2a", crust: "#4a3a33", accent: "#ffd166",
       dressingA: "#3e8e4f", dressingB: "#8a5a3b"
@@ -53,9 +56,10 @@ export const THEMES: readonly ThemeDef[] = [
     id: "downtown",
     label: "Downtown Trams",
     look: "overcast",
-    fogScale: 0.26,
-    exposureEv: 0.2,
+    fogScale: 0,
+    exposureEv: -0.15,
     palette: {
+      sky: "#4f6d92", horizon: "#7391b5",
       meadow: "#7ba05b", road: "#40444c", shoulder: "#8f8f98", water: "#5b7f9e",
       railbed: "#6e6a63", lava: "#ff6a2a", crust: "#4a3a33", accent: "#f2c94c",
       dressingA: "#8d97a3", dressingB: "#5e6773"
@@ -68,9 +72,10 @@ export const THEMES: readonly ThemeDef[] = [
     id: "riverbend",
     label: "Riverbend",
     look: "golden-hour",
-    fogScale: 0.25,
-    exposureEv: 0.22,
+    fogScale: 0,
+    exposureEv: -0.15,
     palette: {
+      sky: "#4d7bb0", horizon: "#76a2d1",
       meadow: "#7caa54", road: "#4a423c", shoulder: "#97b765", water: "#4e8fb8",
       railbed: "#5c5044", lava: "#ff6a2a", crust: "#4a3a33", accent: "#ffb347",
       dressingA: "#4f7d3a", dressingB: "#c98a5a"
@@ -83,9 +88,10 @@ export const THEMES: readonly ThemeDef[] = [
     id: "emberline",
     label: "Emberline",
     look: "night-city",
-    fogScale: 0.34,
-    exposureEv: 0.15,
+    fogScale: 0,
+    exposureEv: -0.15,
     palette: {
+      sky: "#283852", horizon: "#4a5d7a",
       meadow: "#4e5548", road: "#2c2724", shoulder: "#6b5346", water: "#402d26",
       railbed: "#3a2e28", lava: "#ff5a1f", crust: "#352520", accent: "#ff9c41",
       dressingA: "#6e3b26", dressingB: "#2c1e18"
@@ -98,9 +104,10 @@ export const THEMES: readonly ThemeDef[] = [
     id: "neon",
     label: "Neon District",
     look: "neon-arcade",
-    fogScale: 0.32,
-    exposureEv: 0.2,
+    fogScale: 0,
+    exposureEv: -0.15,
     palette: {
+      sky: "#1d2c52", horizon: "#31497d",
       meadow: "#3f5a52", road: "#221d33", shoulder: "#342b52", water: "#2a3f66",
       railbed: "#241f38", lava: "#ff4fd8", crust: "#2c2038", accent: "#37f5ff",
       dressingA: "#37f5ff", dressingB: "#ff4fd8"
@@ -113,9 +120,10 @@ export const THEMES: readonly ThemeDef[] = [
     id: "crittercore",
     label: "Critter Core",
     look: "character-showcase",
-    fogScale: 0.24,
-    exposureEv: 0.28,
+    fogScale: 0,
+    exposureEv: -0.15,
     palette: {
+      sky: "#5282c2", horizon: "#7caae3",
       meadow: "#8fd67c", road: "#7a6cc9", shoulder: "#ffd9ec", water: "#67d6e8",
       railbed: "#a08ecb", lava: "#ff8a5c", crust: "#5b4a8f", accent: "#ffe14f",
       dressingA: "#ff9ed2", dressingB: "#7ce8c9"

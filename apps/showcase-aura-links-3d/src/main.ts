@@ -180,14 +180,15 @@ function terrainToMeshSpec(terrain: HoleTerrain, cols: number, rows: number, lif
   for (let r = 0; r < rows - 1; r++) {
     for (let c = 0; c < cols - 1; c++) {
       const i = r * cols + c;
-      indices.push(i, i + 1, i + cols, i + 1, i + cols + 1, i + cols);
+      // CCW winding when viewed from +Y so gl_FrontFacing is true and sun lighting hits the top surface
+      indices.push(i, i + cols, i + 1, i + 1, i + cols, i + cols + 1);
     }
   }
   return { kind: "aura-custom-geometry" as const, positions, normals, uvs, indices };
 }
 
-/** Ribbon strip conformed to terrain along the hole's intended line. */
-function ribbonAlongPath(terrain: HoleTerrain, path: readonly Vec2[], halfWidth: number, lift: number, step = 4) {
+/** Multi-column ribbon strip conformed to terrain along the hole's intended line. */
+function ribbonAlongPath(terrain: HoleTerrain, path: readonly Vec2[], halfWidth: number, lift: number, step = 2.5, cols = 9) {
   // Resample the polyline at fixed spacing with lateral offsets
   const pts: { x: number; z: number; dx: number; dz: number }[] = [];
   for (let i = 0; i < path.length - 1; i++) {
@@ -209,12 +210,14 @@ function ribbonAlongPath(terrain: HoleTerrain, path: readonly Vec2[], halfWidth:
   const normals: [number, number, number][] = [];
   const uvs: [number, number][] = [];
   const indices: number[] = [];
-  // taper width slightly near tee/green
+  // Subdivide laterally across [-1, 1] so the ribbon follows the +0.15m fairway crown and tee pad without rough poke-through
   pts.forEach((p, i) => {
-    const taper = clamp(Math.min(i, pts.length - 1 - i) / 4, 0.55, 1);
+    const endDist = pts.length - 1 - i;
+    const taper = endDist < 4 ? clamp(endDist / 4, 0.78, 1) : 1;
     const hw = halfWidth * taper;
     const px = -p.dz, pz = p.dx; // lateral normal
-    for (const side of [-1, 1] as const) {
+    for (let c = 0; c < cols; c++) {
+      const side = (c / (cols - 1)) * 2 - 1;
       const x = p.x + px * hw * side;
       const z = p.z + pz * hw * side;
       positions.push([x, terrain.height(x, z) + lift, z]);
@@ -224,20 +227,25 @@ function ribbonAlongPath(terrain: HoleTerrain, path: readonly Vec2[], halfWidth:
       uvs.push([i * step / 10, side * 0.5 + 0.5]);
     }
     if (i > 0) {
-      const a = (i - 1) * 2;
-      indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+      const row0 = (i - 1) * cols;
+      const row1 = i * cols;
+      for (let c = 0; c < cols - 1; c++) {
+        const a = row0 + c;
+        // CCW winding when viewed from +Y
+        indices.push(a, row1 + c, a + 1, a + 1, row1 + c, row1 + c + 1);
+      }
     }
   });
   return { kind: "aura-custom-geometry" as const, positions, normals, uvs, indices };
 }
 
-/** Flat disc conformed to terrain (green, fringe ring handled by inner/outer radii). */
-function discOnTerrain(terrain: HoleTerrain, cx: number, cz: number, radius: number, lift: number, segs = 26, innerRadius = 0) {
+/** Multi-ring disc conformed to terrain (green, fringe ring, and sand bunkers). */
+function discOnTerrain(terrain: HoleTerrain, cx: number, cz: number, radius: number, lift: number, segs = 32, innerRadius = 0) {
   const positions: [number, number, number][] = [];
   const normals: [number, number, number][] = [];
   const uvs: [number, number][] = [];
   const indices: number[] = [];
-  const rings = innerRadius > 0 ? [innerRadius, radius] : [0, radius];
+  const rings = innerRadius > 0 ? [innerRadius, radius] : [0, radius * 0.35, radius * 0.7, radius];
   for (const r of rings) {
     for (let s = 0; s <= segs; s++) {
       const a = (s / segs) * Math.PI * 2;
@@ -250,14 +258,15 @@ function discOnTerrain(terrain: HoleTerrain, cx: number, cz: number, radius: num
       uvs.push([0.5 + Math.cos(a) * r / (radius * 2), 0.5 + Math.sin(a) * r / (radius * 2)]);
     }
   }
-  if (rings.length === 2) {
+  const stride = segs + 1;
+  for (let ri = 0; ri < rings.length - 1; ri++) {
+    const baseA = ri * stride;
+    const baseB = (ri + 1) * stride;
     for (let s = 0; s < segs; s++) {
-      const a0 = s, a1 = s + 1, b0 = segs + 1 + s, b1 = segs + 1 + s + 1;
-      indices.push(a0, b0, a1, a1, b0, b1);
+      const a0 = baseA + s, a1 = baseA + s + 1, b0 = baseB + s, b1 = baseB + s + 1;
+      // CCW winding when viewed from +Y
+      indices.push(a0, a1, b0, a1, b1, b0);
     }
-  } else {
-    // fan: centre vertex 0 → outer ring verts starting at segs+1
-    for (let s = 0; s < segs; s++) indices.push(0, segs + 1 + s, segs + 1 + s + 1);
   }
   return { kind: "aura-custom-geometry" as const, positions, normals, uvs, indices };
 }
@@ -276,143 +285,243 @@ function scatterInDisc(rng: () => number, center: Vec2, radius: number, count: n
   return out;
 }
 
+/** Sample a point along the hole's polyline at normalized parameter u ∈ [0, 1]. */
+function samplePathPoint(path: readonly Vec2[], u: number): { x: number; z: number; nx: number; nz: number } {
+  const clamped = clamp(u, 0, 1);
+  const segCount = Math.max(1, path.length - 1);
+  const f = clamped * segCount;
+  const idx = Math.min(segCount - 1, Math.floor(f));
+  const localT = f - idx;
+  const a = path[idx]!;
+  const b = path[idx + 1] ?? a;
+  const dx = b[0] - a[0];
+  const dz = b[1] - a[1];
+  const len = Math.hypot(dx, dz) || 1;
+  return {
+    x: lerp(a[0], b[0], localT),
+    z: lerp(a[1], b[1], localT),
+    nx: -dz / len,
+    nz: dx / len
+  };
+}
+
 function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain, rng: () => number): any[] {
   const nodes: any[] = [];
-  const pal = course.palette;
   const theme = course.dressing.theme;
   const [cx, cz] = [terrain.cup[0], terrain.cup[2]];
   const [tx, tz] = [terrain.tee[0], terrain.tee[2]];
   const midT = hole.layout.path[Math.floor(hole.layout.path.length / 2)] ?? [0, hole.lengthM * 0.5];
+  const fairHalf = hole.layout.fairwayWidth * 0.5;
 
-  // --- Trees / rocks scattered inside woods discs + edges of bounds ---
-  const treeSpots: Vec2[] = [];
-  for (const w of hole.layout.woods) treeSpots.push(...scatterInDisc(rng, w.center, w.radius, 10, 0.2));
-  // frame the hole: a few trees along the outside of the bounds
-  for (let i = 0; i < 14; i++) {
-    const side = i % 2 ? 1 : -1;
-    const t = rng();
-    const z = lerp(terrain.bounds.minZ + 18, terrain.bounds.maxZ - 14, t);
-    const x = side * (terrain.bounds.maxX - 8 - rng() * 22);
-    treeSpots.push([x, z]);
+  // --- Corridor pine trees along left & right rough + behind the green ---
+  const corridorTrees: { x: number; z: number; h: number; yaw: number }[] = [];
+  const corridorRows = 12;
+  for (let r = 0; r < corridorRows; r++) {
+    const u = 0.09 + (r / (corridorRows - 1)) * 0.84;
+    const p = samplePathPoint(hole.layout.path, u);
+    for (const side of [-1, 1] as const) {
+      const lat1 = fairHalf + 3.8 + rng() * 4.5;
+      const x1 = p.x + p.nx * side * lat1 + (rng() - 0.5) * 2.2;
+      const z1 = p.z + p.nz * side * lat1 + (rng() - 0.5) * 3.0;
+      corridorTrees.push({ x: x1, z: z1, h: 6.8 + rng() * 3.2, yaw: rng() * Math.PI * 2 });
+
+      const lat2 = fairHalf + 10.5 + rng() * 7.5;
+      const x2 = p.x + p.nx * side * lat2 + (rng() - 0.5) * 3.0;
+      const z2 = p.z + p.nz * side * lat2 + (rng() - 0.5) * 4.0;
+      corridorTrees.push({ x: x2, z: z2, h: 8.2 + rng() * 3.8, yaw: rng() * Math.PI * 2 });
+    }
   }
-  if (theme !== "lunar" && theme !== "volcanic" && treeSpots.length) {
-    const t = treeSpots.map(([x, z], i) => ({
-      position: [x, terrain.height(x, z), z] as readonly [number, number, number],
-      rotationY: rng() * Math.PI * 2,
-      scale: (theme === "alpine" ? 2.4 : 3.0) + rng() * 1.6
-    }));
-    const tint = theme === "alpine" ? "#2c4a3a" : theme === "nightCity" ? "#123a30" : theme === "dunes" ? "#3d5a34" : "#2f5a2e";
-    nodes.push((instances as any).model(assets.propPineTree, { name: "flora-trees", transforms: t, colors: t.map(() => tint) }));
+  // Backdrop trees framing behind the green amphitheatre
+  for (let i = 0; i < 8; i++) {
+    const a = -Math.PI * 0.38 + (i / 7) * Math.PI * 0.76;
+    const dist = hole.layout.greenRadius + 16 + (i % 2) * 5;
+    const bx = cx + Math.sin(a) * dist;
+    const bz = cz + Math.cos(a) * dist;
+    corridorTrees.push({ x: bx, z: bz, h: 8.5 + (i % 3) * 1.4, yaw: rng() * Math.PI * 2 });
   }
-  if ((theme === "volcanic" || theme === "lunar" || theme === "dunes") && treeSpots.length) {
-    const rockKey = rng() > 0.5 ? assets.propRockA : assets.propRockB;
-    const t = treeSpots.slice(0, 26).map(([x, z]) => ({
-      position: [x, terrain.height(x, z), z] as readonly [number, number, number],
-      rotationY: rng() * Math.PI * 2,
-      scale: 1.4 + rng() * 2.6
-    }));
-    const tint = theme === "lunar" ? "#8a8d94" : theme === "volcanic" ? "#4c4038" : "#8d8574";
-    nodes.push((instances as any).model(rockKey, { name: "flora-rocks", transforms: t, colors: t.map(() => tint) }));
+
+  if (theme !== "lunar" && theme !== "volcanic") {
+    const pineTransforms = corridorTrees
+      .filter((tr) => {
+        const zKind = terrain.zone(tr.x, tr.z);
+        return zKind !== "sand" && zKind !== "water" && zKind !== "fairway" && zKind !== "green";
+      })
+      .map((tr) => ({
+        position: [tr.x, terrain.height(tr.x, tr.z) - 0.15, tr.z] as [number, number, number],
+        rotation: [0, tr.yaw, 0] as [number, number, number],
+        scale: [tr.h / 7.8, tr.h / 7.8, tr.h / 7.8] as [number, number, number]
+      }));
+    if (pineTransforms.length > 0) {
+      nodes.push(
+        instances.model(assets.propPineTree, {
+          name: "corridor-pines",
+          transforms: pineTransforms,
+          targetHeight: 7.8,
+          castShadow: true
+        })
+      );
+    }
+  }
+
+  // --- Coastal / volcanic / lunar rock outcrops along rough ---
+  const rockSpots: Vec2[] = [];
+  for (const w of hole.layout.woods) rockSpots.push(...scatterInDisc(rng, w.center, w.radius * 0.75, 4, 0.25));
+  if ((theme === "volcanic" || theme === "lunar" || theme === "dunes") && rockSpots.length) {
+    const rockTransforms = rockSpots
+      .slice(0, 14)
+      .filter(([rx, rz]) => {
+        const zKind = terrain.zone(rx, rz);
+        return zKind !== "fairway" && zKind !== "green" && zKind !== "sand" && zKind !== "water";
+      })
+      .map(([rx, rz], i) => {
+        const s = 0.85 + (i % 3) * 0.35;
+        return {
+          position: [rx, terrain.height(rx, rz) - 0.08, rz] as [number, number, number],
+          rotation: [0, rng() * Math.PI * 2, 0] as [number, number, number],
+          scale: [s, s, s] as [number, number, number]
+        };
+      });
+    if (rockTransforms.length > 0) {
+      nodes.push(
+        instances.model(assets.propRockA, {
+          name: "rough-rocks",
+          transforms: rockTransforms,
+          targetHeight: 1.35,
+          castShadow: true
+        })
+      );
+    }
   }
 
   // --- Landmark dressing per theme ---
   if (theme === "dunes") {
+    const clubX = cx - 16;
+    const clubZ = cz + hole.layout.greenRadius + 15;
+    const millX = midT[0] - fairHalf - 16;
+    const millZ = midT[1] + 18;
     nodes.push(
-      model(assets.siegeWindmillTowerMeshy, { name: "landmark-windmill", targetHeight: 11 }).position(terrain.bounds.maxX - 24, 0, midT[1] + 20).rotate(0, -0.5, 0),
-      model(assets.linksClubhousePavilMeshy, { name: "landmark-clubhouse", targetHeight: 8.5 }).position(tx - 28, terrain.height(tx - 28, tz - 20), tz - 20).rotate(0, 0.7, 0)
+      model(assets.siegeWindmillTowerMeshy, { name: "landmark-windmill", targetHeight: 12, role: "setDressing", scaleMode: "fit" })
+        .position(millX, terrain.height(millX, millZ), millZ)
+        .rotate(0, 0.55, 0),
+      model(assets.linksClubhousePavilMeshy, { name: "landmark-clubhouse", targetHeight: 9.5, role: "setDressing", scaleMode: "fit" })
+        .position(clubX, terrain.height(clubX, clubZ), clubZ)
+        .rotate(0, Math.PI + 0.25, 0)
     );
     if (hole.layout.water.length) {
       const w = hole.layout.water[0]!;
+      const brX = w.center[0] - w.radius * 0.55;
+      const brZ = w.center[1];
       nodes.push(
-        model(assets.siegeStoneBridgeMeshy, { name: "landmark-bridge", targetHeight: 3.2 })
-          .position(w.center[0], terrain.height(w.center[0], w.center[1]) + w.radius * 0.1, w.center[1])
+        model(assets.siegeStoneBridgeMeshy, { name: "landmark-bridge", targetHeight: 2.8, role: "setDressing", scaleMode: "fit" })
+          .position(brX, terrain.height(brX, brZ) + 0.15, brZ)
           .rotate(0, 0.2, 0)
       );
     }
   } else if (theme === "parkland") {
+    const clubX = cx - 15;
+    const clubZ = cz + hole.layout.greenRadius + 14;
     nodes.push(
-      model(assets.linksClubhousePavilMeshy, { name: "landmark-clubhouse", targetHeight: 7.5 }).position(tx - 26, terrain.height(tx - 26, tz - 18), tz - 18).rotate(0, 0.9, 0)
+      model(assets.linksClubhousePavilMeshy, { name: "landmark-clubhouse", targetHeight: 8.5, role: "setDressing", scaleMode: "fit" })
+        .position(clubX, terrain.height(clubX, clubZ), clubZ)
+        .rotate(0, Math.PI + 0.2, 0)
     );
   } else if (theme === "volcanic") {
     nodes.push(
-      model(assets.skylineCrystalShardMeshy, { name: "landmark-shard", targetHeight: 14 }).position(terrain.bounds.maxX - 18, terrain.height(terrain.bounds.maxX - 18, midT[1]), midT[1]).rotate(0, 0.4, 0)
+      model(assets.skylineCrystalShardMeshy, { name: "landmark-shard", targetHeight: 14, role: "setDressing", scaleMode: "fit" })
+        .position(terrain.bounds.maxX - 18, terrain.height(terrain.bounds.maxX - 18, midT[1]), midT[1])
+        .rotate(0, 0.4, 0)
     );
   } else if (theme === "alpine") {
     nodes.push(
-      model(assets.turboAlpineVenueBackdrop, { name: "landmark-alps", targetHeight: 60 }).position(cx + 60, 0, cz + 140).rotate(0, Math.PI, 0)
+      model(assets.turboAlpineVenueBackdrop, { name: "landmark-alps", targetHeight: 60, role: "setDressing", scaleMode: "fit" })
+        .position(cx + 60, 0, cz + 140)
+        .rotate(0, Math.PI, 0)
     );
   } else if (theme === "nightCity") {
     const buildings = [assets.showcaseModernBuildingOne, assets.showcaseModernOfficeBuilding, assets.showcaseVoxelBuilding];
     buildings.forEach((b, i) => {
       const bx = terrain.bounds.minX + 30 + i * 46;
       nodes.push(
-        model(b, { name: `landmark-tower-${i}`, targetHeight: 34 + i * 12 }).position(bx, 0, terrain.bounds.maxZ - 6).rotate(0, Math.PI, 0)
+        model(b, { name: `landmark-tower-${i}`, targetHeight: 34 + i * 12, role: "setDressing", scaleMode: "fit" })
+          .position(bx, 0, terrain.bounds.maxZ - 6)
+          .rotate(0, Math.PI, 0)
       );
     });
     // floodlight pylons around the green
     for (const [lx, lz] of [[-18, -8], [18, -8], [-18, 18], [18, 18]] as const) {
       const x = cx + lx, z = cz + lz;
       nodes.push(
-        model(assets.neonStreetLampProp, { name: `lamp-${lx}-${lz}`, targetHeight: 7.5 }).position(x, terrain.height(x, z), z),
+        model(assets.neonStreetLampProp, { name: `lamp-${lx}-${lz}`, targetHeight: 7.5, role: "setDressing", scaleMode: "fit" })
+          .position(x, terrain.height(x, z), z),
         lights.spot({ name: `lamp-spot-${lx}-${lz}`, position: [x, terrain.height(x, z) + 7.2, z], target: [cx, terrain.cup[1], cz], angle: 0.7, penumbra: 0.6, intensity: 1.6, color: "#bfe8ff", distance: 70 })
       );
     }
   } else if (theme === "lunar") {
     nodes.push(
-      model(assets.auroraHabitatDomeMeshy, { name: "landmark-dome", targetHeight: 12 }).position(terrain.bounds.maxX - 20, terrain.height(terrain.bounds.maxX - 20, midT[1]), midT[1]).rotate(0, -0.9, 0),
-      model(assets.lunarRoverMeshy, { name: "landmark-rover", targetHeight: 2.4 }).position(tx + 12, terrain.height(tx + 12, tz + 8), tz + 8).rotate(0, 0.5, 0).runtime(game.runtimeNode("landmark-rover")),
-      model(assets.gravityOrbitalRelayMeshy, { name: "landmark-relay", targetHeight: 9 }).position(terrain.bounds.minX + 16, terrain.height(terrain.bounds.minX + 16, cz + 30), cz + 30)
+      model(assets.auroraHabitatDomeMeshy, { name: "landmark-dome", targetHeight: 12, role: "setDressing", scaleMode: "fit" })
+        .position(terrain.bounds.maxX - 20, terrain.height(terrain.bounds.maxX - 20, midT[1]), midT[1])
+        .rotate(0, -0.9, 0),
+      model(assets.lunarRoverMeshy, { name: "landmark-rover", targetHeight: 2.4, role: "setDressing", scaleMode: "fit" })
+        .position(tx + 12, terrain.height(tx + 12, tz + 8), tz + 8)
+        .rotate(0, 0.5, 0)
+        .runtime(game.runtimeNode("landmark-rover")),
+      model(assets.gravityOrbitalRelayMeshy, { name: "landmark-relay", targetHeight: 9, role: "setDressing", scaleMode: "fit" })
+        .position(terrain.bounds.minX + 16, terrain.height(terrain.bounds.minX + 16, cz + 30), cz + 30)
     );
   }
 
-  // --- Gallery ropes near the green (two low rails) ---
-  const railMat = material.pbr({ color: "#d8d4c4", roughness: 0.6 });
+  // --- Gallery ropes near the green (two low rails oriented along Z beside the green) ---
+  const railMat = material.pbr({ color: "#f0ede2", roughness: 0.55 });
   for (const side of [-1, 1] as const) {
+    const rx = cx + side * (hole.layout.greenRadius + 3.2);
     nodes.push(
-      primitives.box({ name: `gallery-rope-${side}`, size: [hole.layout.greenRadius * 1.8, 0.04, 0.04], material: railMat })
-        .position(cx + side * (hole.layout.greenRadius + 2.2), terrain.height(cx + side * (hole.layout.greenRadius + 2.2), cz) + 0.5, cz)
-        .rotate(0, 0.12 * side, 0)
+      primitives.box({ name: `gallery-rope-${side}`, size: [0.04, 0.04, hole.layout.greenRadius * 1.5], material: railMat })
+        .position(rx, terrain.height(rx, cz) + 0.52, cz)
     );
-    for (const sgn of [-0.8, 0.8]) {
+    for (const sgn of [-0.75, 0.75]) {
+      const pz = cz + sgn * hole.layout.greenRadius;
       nodes.push(
-        primitives.cylinder({ name: `rope-post-${side}-${sgn}`, size: [0.03, 0.55, 0.03], material: railMat })
-          .position(cx + side * (hole.layout.greenRadius + 2.2), terrain.height(cx + side * (hole.layout.greenRadius + 2.2), cz + sgn * hole.layout.greenRadius) + 0.27, cz + sgn * hole.layout.greenRadius)
+        primitives.cylinder({ name: `rope-post-${side}-${sgn}`, size: [0.035, 0.55, 0.035], material: railMat })
+          .position(rx, terrain.height(rx, pz) + 0.27, pz)
       );
     }
   }
 
-  // --- Green-side grandstands + 3D Meshy gallery spectators ---
+  // --- Green-side grandstands + instanced 3D Meshy gallery spectators ---
   for (const side of [-1, 1] as const) {
-    const sx = cx + side * (hole.layout.greenRadius + 9.5);
-    const sz = cz + 2.5;
+    const sx = cx + side * (hole.layout.greenRadius + 10.5);
+    const sz = cz + 3.5;
     const sy = terrain.height(sx, sz);
     nodes.push(
       model(assets.showcaseStadiumSeats, {
         name: `gallery-stand-${side < 0 ? "l" : "r"}`,
-        targetHeight: 4.2,
+        targetHeight: 4.4,
         role: "setDressing",
         scaleMode: "fit"
       })
         .position(sx, sy, sz)
-        .rotate(0, Math.atan2(cx - sx, cz - sz), 0)
+        .rotate(0, Math.atan2(tx - sx, tz - sz) * 0.45 + Math.atan2(cx - sx, cz - sz) * 0.55, 0)
     );
   }
-  for (let i = 0; i < 6; i++) {
-    const a = ((i + 0.5) / 6) * Math.PI * 1.4 - Math.PI * 0.2 + (rng() - 0.5) * 0.15;
-    const r = hole.layout.greenRadius + 3.2 + rng() * 1.6;
+  const fanTransforms = Array.from({ length: 6 }, (_, i) => {
+    const a = ((i + 0.5) / 6) * Math.PI * 1.2 - Math.PI * 0.1 + (rng() - 0.5) * 0.12;
+    const r = hole.layout.greenRadius + 3.6 + rng() * 1.4;
     const x = cx + Math.cos(a) * r;
-    const z = cz + Math.sin(a) * r;
-    nodes.push(
-      model(assets.linksGolferAthleteMeshy, {
-        name: `gallery-fan-${i}`,
-        targetHeight: 1.8,
-        role: "setDressing",
-        scaleMode: "fit"
-      })
-        .position(x, terrain.height(x, z), z)
-        .rotate(0, Math.atan2(cx - x, cz - z), 0)
-    );
-  }
+    const z = cz + Math.abs(Math.sin(a)) * r * 0.85;
+    return {
+      position: [x, terrain.height(x, z), z] as [number, number, number],
+      rotation: [0, Math.atan2(cx - x, cz - z), 0] as [number, number, number],
+      scale: [1, 1, 1] as [number, number, number]
+    };
+  });
+  nodes.push(
+    instances.model(assets.linksGolferAthleteMeshy, {
+      name: "gallery-fans",
+      transforms: fanTransforms,
+      targetHeight: 1.8,
+      castShadow: true
+    })
+  );
 
   return nodes;
 }
@@ -430,61 +539,63 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   const nodes: any[] = [];
 
   // --- Base heightfield (rough) + outer ground shell ---
-  const base = terrainToMeshSpec(terrain, 88, 60, -0.015);
+  const base = terrainToMeshSpec(terrain, 112, 96, -0.04);
   nodes.push(
-    geometry.custom(base, { name: "terrain-rough", material: material.pbr({ color: pal.rough, roughness: 0.95 }) })
+    geometry.custom(base, { name: "terrain-rough", material: material.pbr({ color: pal.rough, roughness: 0.92 }) })
   );
   const outerY = Math.min(terrain.tee[1], terrain.cup[1]) - 6;
   nodes.push(
-    primitives.plane({ name: "outer-ground", size: [terrain.bounds.maxX * 4, terrain.bounds.maxZ * 4, 1], material: material.pbr({ color: theme4(course) === "lunar" ? "#43454c" : theme4(course) === "volcanic" ? "#2e2a26" : pal.rough, roughness: 1 }) }).position(0, outerY, (terrain.bounds.minZ + terrain.bounds.maxZ) / 2)
+    primitives.plane({ name: "outer-ground", size: [terrain.bounds.maxX * 4, terrain.bounds.maxZ * 4, 1], material: material.pbr({ color: theme4(course) === "lunar" ? "#43454c" : theme4(course) === "volcanic" ? "#2e2a26" : pal.rough, roughness: 0.96 }) }).position(0, outerY, (terrain.bounds.minZ + terrain.bounds.maxZ) / 2)
   );
 
-  // --- Fairway ribbon (two mow stripes) ---
-  const fairA = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2, 0.018);
-  const fairB = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 - 2.6, 0.024);
+  // --- Fairway ribbon (two mow stripes conformed across the fairway crown) ---
+  const fairA = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2, 0.035);
+  const fairB = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 - 3.2, 0.05);
   nodes.push(
-    geometry.custom(fairA, { name: "fairway-a", material: material.pbr({ color: pal.fairway, roughness: 0.9 }) }),
-    geometry.custom(fairB, { name: "fairway-b", material: material.pbr({ color: shade(pal.fairway, 1.12), roughness: 0.9 }) })
+    geometry.custom(fairA, { name: "fairway-a", material: material.pbr({ color: pal.fairway, roughness: 0.84 }) }),
+    geometry.custom(fairB, { name: "fairway-b", material: material.pbr({ color: shade(pal.fairway, 1.16), roughness: 0.82 }) })
   );
 
   // --- Green + fringe ---
   const [gx, gz] = [terrain.cup[0], terrain.cup[2]];
-  const green = discOnTerrain(terrain, gx, gz, lay.greenRadius, 0.03);
-  const fringe = discOnTerrain(terrain, gx, gz, lay.greenRadius + 2.4, 0.026, 26, lay.greenRadius * 0.98);
+  const green = discOnTerrain(terrain, gx, gz, lay.greenRadius, 0.065, 36);
+  const fringe = discOnTerrain(terrain, gx, gz, lay.greenRadius + 2.5, 0.055, 36, lay.greenRadius * 0.96);
   nodes.push(
-    geometry.custom(green, { name: "green", material: material.pbr({ color: pal.green, roughness: 0.82 }) }),
-    geometry.custom(fringe, { name: "fringe", material: material.pbr({ color: shade(pal.green, 0.86), roughness: 0.88 }) })
+    geometry.custom(green, { name: "green", material: material.pbr({ color: pal.green, roughness: 0.76 }) }),
+    geometry.custom(fringe, { name: "fringe", material: material.pbr({ color: pal.fringe, roughness: 0.85 }) })
   );
 
   // --- Tee box + markers ---
-  const teeMat = material.pbr({ color: pal.teeBox, roughness: 0.85 });
-  const markMat = material.emissive({ color: pal.accent, emissive: pal.accent, emissiveIntensity: 0.7 });
+  const teeMat = material.pbr({ color: pal.teeBox, roughness: 0.82 });
+  const markMat = material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.85 });
   nodes.push(
-    primitives.box({ name: "tee-box", size: [9, 0.14, 7], material: teeMat }).position(terrain.tee[0], terrain.tee[1] - 0.05, terrain.tee[2]),
-    primitives.sphere({ name: "tee-marker-l", size: [0.18, 0.18, 0.18], material: markMat }).position(terrain.tee[0] - 3.2, terrain.tee[1] + 0.1, terrain.tee[2]),
-    primitives.sphere({ name: "tee-marker-r", size: [0.18, 0.18, 0.18], material: markMat }).position(terrain.tee[0] + 3.2, terrain.tee[1] + 0.1, terrain.tee[2])
+    primitives.box({ name: "tee-box", size: [8.4, 0.12, 6.4], material: teeMat }).position(terrain.tee[0], terrain.tee[1] - 0.03, terrain.tee[2]),
+    primitives.sphere({ name: "tee-marker-l", size: [0.22, 0.22, 0.22], material: markMat }).position(terrain.tee[0] - 3.2, terrain.tee[1] + 0.11, terrain.tee[2]),
+    primitives.sphere({ name: "tee-marker-r", size: [0.22, 0.22, 0.22], material: markMat }).position(terrain.tee[0] + 3.2, terrain.tee[1] + 0.11, terrain.tee[2])
   );
 
-  // --- Bunkers (sand discs sitting in their bowls) ---
+  // --- Bunkers (sand discs sitting in their bowls + crisp lip ring) ---
   lay.bunkers.forEach((b, i) => {
-    const disc = discOnTerrain(terrain, b.center[0], b.center[1], b.radius, 0.045, 20);
+    const disc = discOnTerrain(terrain, b.center[0], b.center[1], b.radius, 0.09, 28);
+    const lip = discOnTerrain(terrain, b.center[0], b.center[1], b.radius + 0.65, 0.075, 28, b.radius * 0.92);
     nodes.push(
-      geometry.custom(disc, { name: `bunker-${i}`, material: material.pbr({ color: pal.sand, roughness: 0.98 }) })
+      geometry.custom(disc, { name: `bunker-${i}`, material: material.pbr({ color: pal.sand, roughness: 0.88 }) }),
+      geometry.custom(lip, { name: `bunker-lip-${i}`, material: material.pbr({ color: shade(pal.sand, 0.78), roughness: 0.92 }) })
     );
   });
 
-  // --- Water (emissive pond surfaces) ---
+  // --- Water (coastal inlet / pond surfaces) ---
   lay.water.forEach((w, i) => {
-    const y = terrain.height(w.center[0], w.center[1]) + 0.32;
+    const y = terrain.height(w.center[0], w.center[1]) + 0.42;
     nodes.push(
-      primitives.cylinder({ name: `pond-${i}`, size: [w.radius * 0.92, 0.05, w.radius * 0.92], material: material.pbr({ color: pal.water, roughness: 0.25, metalness: 0.35, emissive: pal.water, emissiveIntensity: isNight ? 0.5 : 0.12 }) }).position(w.center[0], y, w.center[1])
+      primitives.cylinder({ name: `pond-${i}`, size: [w.radius * 0.95, 0.06, w.radius * 0.95], material: material.pbr({ color: pal.water, roughness: 0.18, metalness: 0.42, emissive: pal.water, emissiveIntensity: isNight ? 0.5 : 0.18 }) }).position(w.center[0], y, w.center[1])
     );
   });
 
   // --- Flag + cup (linksPinFlagMeshy has minY = 0 grounded origin) ---
   nodes.push(
-    model(assets.linksPinFlagMeshy, { name: "flagstick", targetHeight: 2.3 }).position(terrain.cup[0], terrain.cup[1], terrain.cup[2]).runtime(game.runtimeNode("flagstick")),
-    primitives.cylinder({ name: "cup-dark", size: [0.115, 0.06, 0.115], material: material.pbr({ color: "#05070a", roughness: 1 }) }).position(terrain.cup[0], terrain.cup[1] + 0.005, terrain.cup[2])
+    model(assets.linksPinFlagMeshy, { name: "flagstick", targetHeight: 3.1 }).position(terrain.cup[0], terrain.cup[1], terrain.cup[2]).runtime(game.runtimeNode("flagstick")),
+    primitives.cylinder({ name: "cup-dark", size: [0.14, 0.06, 0.14], material: material.pbr({ color: "#05070a", roughness: 1 }) }).position(terrain.cup[0], terrain.cup[1] + 0.005, terrain.cup[2])
   );
 
   // --- Ball + trail + shadow + aim aids ---
@@ -492,11 +603,11 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     model(assets.siegeGolfBall, { name: "golf-ball", targetHeight: BALL_R * 2 }).runtime(game.runtimeNode("golf-ball")),
     primitives.cylinder({ name: "ball-shadow", size: [0.22, 0.008, 0.22], material: material.pbr({ color: "#000000", opacity: 0.38, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow")),
     effects.trail({ name: "ball-ribbon-trail", target: "golf-ball", color: "#ffffff", width: 0.07, maxPoints: 44, intensity: 0.9 } as any),
-    // aim line + predicted landing ring (aim phase only)
-    primitives.box({ name: "aim-line", size: [0.09, 0.02, 26], material: material.emissive({ color: pal.accent, emissive: pal.accent, emissiveIntensity: 1.1, opacity: 0.5 }) }).runtime(game.runtimeNode("aim-line")),
-    primitives.torus({ name: "landing-ring", size: [1.4, 0.05, 0.05], material: material.emissive({ color: "#63e2ff", emissive: "#63e2ff", emissiveIntensity: 1.2 }) }).runtime(game.runtimeNode("landing-ring")),
+    // Crisp white aim line + predicted landing ring (aim phase only)
+    primitives.box({ name: "aim-line", size: [0.14, 0.03, 28], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.35, opacity: 0.88 }) }).runtime(game.runtimeNode("aim-line")),
+    primitives.torus({ name: "landing-ring", size: [1.5, 0.06, 0.06], material: material.emissive({ color: "#63e2ff", emissive: "#63e2ff", emissiveIntensity: 1.25 }) }).runtime(game.runtimeNode("landing-ring")),
     // putt-aim helper
-    primitives.torus({ name: "cup-pulse", size: [0.32, 0.03, 0.03], material: material.emissive({ color: pal.accent, emissive: pal.accent, emissiveIntensity: 1.3 }) }).runtime(game.runtimeNode("cup-pulse"))
+    primitives.torus({ name: "cup-pulse", size: [0.36, 0.035, 0.035], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.35 }) }).runtime(game.runtimeNode("cup-pulse"))
   );
   for (let i = 0; i < TRAIL_COUNT; i++) {
     nodes.push(
@@ -533,17 +644,31 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   // --- Course dressing ---
   nodes.push(...buildDressingNodes(course, hole, terrain, rng));
 
-  // --- Look + grounding (no legacy postprocess effects that break WebGL2 targets on setScene) ---
-  const s = scene()
-    .add(looks.preset(course.look, course.lookOverrides ?? {}))
+  // --- Look + grounding (zero fog so the full hole from tee to green is crystal clear) ---
+  const skyBg = course.lookOverrides?.background ?? (course.look === "outdoor-day" ? "#2d6399" : undefined);
+  const lookOpts = {
+    exposureEv: -0.06,
+    ...(skyBg ? { background: skyBg } : {}),
+    ...(course.lookOverrides ?? {}),
+    fogDensityScale: 0
+  };
+  let s = scene()
+    .add(looks.preset(course.look, lookOpts))
     .addMany(nodes)
     .camera(
       camera.perspective({
-        position: [terrain.tee[0] - 3, terrain.tee[1] + 4.5, terrain.tee[2] - 8],
-        target: [terrain.tee[0], terrain.tee[1] + 0.6, terrain.tee[2] + 8],
-        fov: 42
+        position: [terrain.tee[0] - 2.0, terrain.tee[1] + 5.3, terrain.tee[2] - 8.2],
+        target: [
+          terrain.tee[0] + Math.sin(terrain.lineYaw) * 42,
+          terrain.tee[1] + 0.6,
+          terrain.tee[2] + Math.cos(terrain.lineYaw) * 42
+        ],
+        fov: 40
       })
     );
+  if (skyBg) {
+    s = s.background(skyBg);
+  }
   return s;
 }
 
@@ -701,9 +826,9 @@ function updateModeChips(): void {
 type CamMode = "menu" | "address" | "aim" | "flight" | "green" | "celebrate" | "card";
 const cam = {
   mode: "menu" as CamMode,
-  eye: [0, 4.5, -9] as Vec3,
-  target: [0, 0.6, 6] as Vec3,
-  fov: 42,
+  eye: [-2.0, 7.2, -8.2] as Vec3,
+  target: [1.7, 1.4, 42] as Vec3,
+  fov: 40,
   t: 0,
   orbit: 0,
   zoom: 1
@@ -770,25 +895,25 @@ function updateCamera(dt: number): void {
     cam.mode = "address";
     const yaw = t.lineYaw + r.aimOffset;
     const bx = r.ballPos[0], bz = r.ballPos[2];
-    const tx2 = bx + Math.sin(yaw) * 6, tz2 = bz + Math.cos(yaw) * 6;
-    const ex = bx - Math.sin(yaw) * 5.2 - Math.cos(yaw) * 2.2 * side;
-    const ez = bz - Math.cos(yaw) * 5.2 + Math.sin(yaw) * 2.2 * side;
-    cam.eye = lerp3(cam.eye, [ex, t.height(ex, ez) + 2.1, ez], 1 - Math.pow(0.001, dt));
-    cam.target = lerp3(cam.eye, [tx2, t.height(tx2, tz2) + 0.4, tz2], 1 - Math.pow(0.001, dt));
+    const tx2 = bx + Math.sin(yaw) * 28, tz2 = bz + Math.cos(yaw) * 28;
+    const ex = bx - Math.sin(yaw) * 6.4 - Math.cos(yaw) * 1.9 * side;
+    const ez = bz - Math.cos(yaw) * 6.4 + Math.sin(yaw) * 1.9 * side;
+    cam.eye = lerp3(cam.eye, [ex, t.height(ex, ez) + 3.4, ez], 1 - Math.pow(0.001, dt));
+    cam.target = lerp3(cam.target, [tx2, t.height(tx2, tz2) + 0.6, tz2], 1 - Math.pow(0.001, dt));
     cam.fov = lerp(cam.fov, 38, 1 - Math.pow(0.02, dt));
   } else {
     cam.mode = "aim";
     const yaw = t.lineYaw + r.aimOffset;
     const bx = r.ballPos[0], bz = r.ballPos[2];
     // elevated aim cam — W/S dollies between behind-ball and high overview
-    const back = 7.5 * cam.zoom;
-    const h = 3.2 * cam.zoom + 1.4;
+    const back = 8.2 * cam.zoom;
+    const h = 3.8 * cam.zoom + 1.5;
     const ex = bx - Math.sin(yaw) * back - Math.cos(yaw) * 2.0 * side;
     const ez = bz - Math.cos(yaw) * back + Math.sin(yaw) * 2.0 * side;
-    const lookAhead = 14 * cam.zoom;
+    const lookAhead = 42 * cam.zoom;
     const tx2 = bx + Math.sin(yaw) * lookAhead, tz2 = bz + Math.cos(yaw) * lookAhead;
     cam.eye = lerp3(cam.eye, [ex, t.height(ex, ez) + h, ez], 1 - Math.pow(0.002, dt));
-    cam.target = lerp3(cam.target, [tx2, t.height(tx2, tz2) + 0.5, tz2], 1 - Math.pow(0.002, dt));
+    cam.target = lerp3(cam.target, [tx2, t.height(tx2, tz2) + 0.6, tz2], 1 - Math.pow(0.002, dt));
     cam.fov = lerp(cam.fov, cam.zoom > 1.5 ? 46 : 40, 0.08);
   }
   camApply();
@@ -1074,7 +1199,16 @@ function startHole(idx: number): void {
   resolveHoleHandles();
   cam.t = 0;
   cam.zoom = 1;
-  showMsg(`HOLE ${hole.number} — ${hole.name.toUpperCase()}`, `PAR ${hole.par} · ${hole.lengthM}M`, 2100);
+  const initEx = t.tee[0] - Math.sin(t.lineYaw) * 8.2 - Math.cos(t.lineYaw) * 2.0;
+  const initEz = t.tee[2] - Math.cos(t.lineYaw) * 8.2 + Math.sin(t.lineYaw) * 2.0;
+  const initTx = t.tee[0] + Math.sin(t.lineYaw) * 42;
+  const initTz = t.tee[2] + Math.cos(t.lineYaw) * 42;
+  cam.eye = [initEx, t.height(initEx, initEz) + 5.3, initEz];
+  cam.target = [initTx, t.height(initTx, initTz) + 0.6, initTz];
+  cam.fov = 40;
+  if (framesRendered > 0 || idx > 0) {
+    showMsg(`HOLE ${hole.number} — ${hole.name.toUpperCase()}`, `PAR ${hole.par} · ${hole.lengthM}M`, 2100);
+  }
   pushEvent("hole", `hole ${hole.number}: ${hole.name} · par ${hole.par}`, "info");
   beginAddress();
 }
@@ -1800,7 +1934,8 @@ function boot(): void {
   mountedHoleSig = `${state.course.id}|${state.hole.number}|round`;
   auraApp = createAuraApp("#app", {
     scene: buildHoleScene(state.course, state.hole, state.terrain, null),
-    ...looks.appOptions(state.course.look)
+    ...looks.appOptions(state.course.look),
+    qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
   } as any);
 
   bootStage("audio");

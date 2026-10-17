@@ -66,8 +66,9 @@ const ROUND_SECONDS = 60;
 const ROUNDS_TO_WIN = 2;
 const METER_MAX = 100;
 const THROW_TECH_FRAMES = 9;
-const PLAYER_START: readonly [number, number, number] = [-1.15, 0, 0];
-const RIVAL_START: readonly [number, number, number] = [1.15, 0, 0];
+const MIN_FIGHTER_SEPARATION = 1.45;
+const PLAYER_START: readonly [number, number, number] = [-1.9, 0, 0];
+const RIVAL_START: readonly [number, number, number] = [1.9, 0, 0];
 const APP_SEED = 20261012;
 
 const { typedFighterAssets, missingFighterAssets, typedFighterAssetCount } = resolveTypedFighterAssets(assets);
@@ -177,10 +178,33 @@ function studioPaletteFor(fighter: FighterId): FighterPalette | undefined {
 
 function buildArena(cfg: BoutConfig) {
   const s = cfg.stage;
-  const floorStageNodes = s.stage.nodes.filter((n: any) => {
-    const py = n?.transform?.position?.[1] ?? n?.position?.[1] ?? 0;
-    return py <= 0.35;
-  });
+  const floorStageNodes = s.stage.nodes
+    .filter((n: any) => {
+      const py = n?.transform?.position?.[1] ?? n?.position?.[1] ?? 0;
+      return py <= 0.35;
+    })
+    .map((n: any) => {
+      if (n?.name === "fighting foreground floor plane") {
+        return {
+          ...n,
+          position: [0, -0.055, 0] as [number, number, number],
+          scale: [44, 1, 32] as [number, number, number]
+        };
+      }
+      if (n?.name === "player start lane glow") {
+        return {
+          ...n,
+          position: [PLAYER_START[0], 0.018, 0.02] as [number, number, number]
+        };
+      }
+      if (n?.name === "opponent start lane glow") {
+        return {
+          ...n,
+          position: [RIVAL_START[0], 0.018, 0.02] as [number, number, number]
+        };
+      }
+      return n;
+    });
   return scene()
     .add(looks.preset(s.lookId, s.lookOverrides ?? {}))
     .addMany(floorStageNodes)
@@ -191,7 +215,7 @@ function buildArena(cfg: BoutConfig) {
       effects.bloom({ intensity: 0.3 }),
       lights.directional({ name: "iron crown rim", color: s.accent, intensity: 0.75 }).position(0, 4.2, 3)
     ])
-    .camera(camera.perspective({ position: [0, 1.75, 6.1], target: [0, 0.9, 0], fov: 42 }));
+    .camera(camera.perspective({ position: [0, 1.65, 5.8], target: [0, 0.92, 0], fov: 40 }));
 }
 
 const initialConfig: BoutConfig = {
@@ -281,6 +305,7 @@ if (!app.canvas) {
   const err = document.getElementById("render-error");
   if (err) err.classList.add("on");
 }
+window.requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
 
 /* ================================================================ */
 /* runtime wiring                                                    */
@@ -290,7 +315,23 @@ const combat = game.combatWorld();
 const runtimeEffects = game.effects({ poolSize: 80, reducedMotion, reducedFlash });
 const director = game.cameraDirector({ reducedMotion });
 
-app.camera?.use(camera.rigs.fighting({ fighters: ["player", "rival"] }));
+const baseFightingRig = camera.rigs.fighting({
+  fighters: ["player", "rival"],
+  minDistance: 5.2,
+  maxDistance: 7.8,
+  fov: 40
+});
+app.camera?.use({
+  ...baseFightingRig,
+  update(ctx) {
+    const pose = baseFightingRig.update(ctx);
+    return {
+      ...pose,
+      position: [pose.position[0], pose.position[1] + 0.95, pose.position[2]],
+      target: [pose.target[0], pose.target[1] + 0.92, pose.target[2]]
+    };
+  }
+});
 const feel = gameFeel.create({ app, time: app.time });
 app.feel?.preset("fighting");
 
@@ -407,10 +448,36 @@ function makeFighter(side: "p1" | "cpu", def: FighterDef, position: readonly [nu
 
 function actorDefaults(f: FighterRuntime) {
   return {
-    hurtboxes: [{ id: "body", offset: [0, 0.85, 0] as const, size: [0.6, 1.5, 0.46] as const }],
-    guardboxes: [{ id: "guard", offset: [0.26, 0.92, 0] as const, size: [0.55, 1.42, 0.55] as const }],
-    pushboxes: [{ id: "push", offset: [0, 0.72, 0] as const, size: [0.68, 1.25, 0.5] as const }]
+    hurtboxes: [{ id: "body", offset: [0, 0.85, 0] as const, size: [0.72, 1.5, 0.46] as const }],
+    guardboxes: [{ id: "guard", offset: [0.34, 0.92, 0] as const, size: [0.68, 1.42, 0.55] as const }],
+    pushboxes: [{ id: "push", offset: [0, 0.72, 0] as const, size: [MIN_FIGHTER_SEPARATION, 1.25, 0.5] as const }]
   };
+}
+
+function enforceFighterSeparation(): void {
+  if (!P1 || !CPU || !state) return;
+  const x1 = P1.body.position[0];
+  const x2 = CPU.body.position[0];
+  const dx = x2 - x1;
+  const dist = Math.abs(dx);
+  if (dist < MIN_FIGHTER_SEPARATION) {
+    const sign = dx >= 0 ? 1 : -1;
+    const half = MIN_FIGHTER_SEPARATION * 0.5;
+    const minX = state.config.stage.bounds.minX;
+    const maxX = state.config.stage.bounds.maxX;
+    let mid = (x1 + x2) * 0.5;
+    mid = Math.max(minX + half, Math.min(maxX - half, mid));
+    const nextP1X = mid - sign * half;
+    const nextCpuX = mid + sign * half;
+    P1.body.position = [nextP1X, P1.body.position[1], P1.body.position[2]];
+    CPU.body.position = [nextCpuX, CPU.body.position[1], CPU.body.position[2]];
+    if (P1.body.velocity && sign * P1.body.velocity[0] > 0) {
+      P1.body.velocity = [0, P1.body.velocity[1], P1.body.velocity[2]];
+    }
+    if (CPU.body.velocity && -sign * CPU.body.velocity[0] > 0) {
+      CPU.body.velocity = [0, CPU.body.velocity[1], CPU.body.velocity[2]];
+    }
+  }
 }
 
 function resetPositions(): void {
@@ -418,6 +485,7 @@ function resetPositions(): void {
   P1.body.velocity = [0, 0, 0];
   CPU.body.position = [...RIVAL_START];
   CPU.body.velocity = [0, 0, 0];
+  enforceFighterSeparation();
   syncActors(true);
 }
 
@@ -826,14 +894,19 @@ function driveFighter(f: FighterRuntime, foe: FighterRuntime, intent: Intent, dt
   f.crouching = intent.crouch && !stunned && !busy && f.body.grounded && !ko;
   f.guardIntent = intent.guard && !stunned && !busy && !ko;
 
+  const foeDir = facingTo(f, foe);
+  const dist = Math.abs(foe.body.position[0] - f.body.position[0]);
+  const movingTowardFoe = intent.axis * foeDir > 0;
   const canMove = !ko && !stunned && !busy && !f.crouching && !f.guardIntent;
-  f.body.move(canMove ? intent.axis : 0);
+  const effectiveAxis = canMove && !(movingTowardFoe && dist <= MIN_FIGHTER_SEPARATION + 0.04) ? intent.axis : 0;
+  f.body.move(effectiveAxis);
 
   if (!ko && !stunned && !busy && !f.guardIntent && !f.crouching && intent.jump && f.body.grounded) {
     f.body.jump();
   }
 
-  if (!ko && !stunned && !f.guardIntent && intent.dash !== 0 && f.dashT <= 0) {
+  const dashingTowardFoe = intent.dash * foeDir > 0;
+  if (!ko && !stunned && !f.guardIntent && intent.dash !== 0 && f.dashT <= 0 && !(dashingTowardFoe && dist <= MIN_FIGHTER_SEPARATION + 0.22)) {
     f.dashT = 0.34;
     f.body.dash([intent.dash, 0, 0], f.def.stats.dashSpeed);
     runtimeEffects.dashTrail([f.body.position[0], f.body.position[1] + 0.7, 0], { ownerId: f.nodeId, intensity: 0.5 });
@@ -1271,12 +1344,15 @@ app.onFrame(({ dt }) => {
 
     P1.body.update(simDt);
     CPU.body.update(simDt);
+    enforceFighterSeparation();
     snap();
     syncActors();
     combat.update(simDt);
     snap();
     handleEvents();
     syncBodiesFromActors();
+    enforceFighterSeparation();
+    syncActors();
     resolveThrowTech();
   }
 

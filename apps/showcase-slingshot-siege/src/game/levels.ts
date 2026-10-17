@@ -184,38 +184,38 @@ export const CHAPTERS: readonly ChapterDef[] = [
   {
     id: 0, name: "Driftwood Cove", tagline: "Splinter the driftwood forts",
     chipColor: "#ffb35c",
-    look: { exposureEv: 0.35, fogDensityScale: 0.18, sun: { azimuthDeg: 118, elevationDeg: 52 }, accent: "#ffd9a0", background: "#7ec8ff" },
-    ground: "#6ec454", farGround: "#54a23e"
+    look: { exposureEv: -0.08, fogDensityScale: 0, sun: { azimuthDeg: 118, elevationDeg: 52 }, accent: "#ffd9a0", background: "#2b6cb0" },
+    ground: "#3d8c40", farGround: "#2d6e32"
   },
   {
     id: 1, name: "Quarry Rise", tagline: "Crack the quarry stacks",
     chipColor: "#9fb2c8",
-    look: { exposureEv: 0.35, fogDensityScale: 0.22, sun: { azimuthDeg: 140, elevationDeg: 66 }, accent: "#ffe2b8", background: "#88ccff" },
-    ground: "#b8a888", farGround: "#9a8a6c"
+    look: { exposureEv: -0.08, fogDensityScale: 0, sun: { azimuthDeg: 140, elevationDeg: 58 }, accent: "#ffe2b8", background: "#245d9c" },
+    ground: "#8c7a5b", farGround: "#6e5e44"
   },
   {
     id: 2, name: "Greenhouse Perch", tagline: "Shatter the glass roosts",
     chipColor: "#8fe0b0",
-    look: { exposureEv: 0.38, fogDensityScale: 0.16, sun: { azimuthDeg: 100, elevationDeg: 60 }, accent: "#c8ffd8", background: "#82d4ff" },
-    ground: "#6fcf7a", farGround: "#52b060"
+    look: { exposureEv: -0.08, fogDensityScale: 0, sun: { azimuthDeg: 100, elevationDeg: 54 }, accent: "#c8ffd8", background: "#2b6cb0" },
+    ground: "#3b8a44", farGround: "#2b6b33"
   },
   {
     id: 3, name: "Windmill Gap", tagline: "Dodge the turning blades",
     chipColor: "#ffd166",
-    look: { exposureEv: 0.3, fogDensityScale: 0.2, sun: { azimuthDeg: 215, elevationDeg: 38 }, accent: "#ffb35c", background: "#94d2ff" },
-    ground: "#a8c86a", farGround: "#8aa852"
+    look: { exposureEv: -0.08, fogDensityScale: 0, sun: { azimuthDeg: 215, elevationDeg: 42 }, accent: "#ffb35c", background: "#1e4e8c" },
+    ground: "#4d8c3a", farGround: "#386b28"
   },
   {
     id: 4, name: "Gull Keep", tagline: "Siege the gull king's castle",
     chipColor: "#ff8c69",
-    look: { exposureEv: 0.25, fogDensityScale: 0.22, sun: { azimuthDeg: 235, elevationDeg: 34 }, accent: "#ff9a5c", background: "#8ec6ff" },
-    ground: "#8fb86a", farGround: "#6f9a52"
+    look: { exposureEv: -0.08, fogDensityScale: 0, sun: { azimuthDeg: 235, elevationDeg: 38 }, accent: "#ff9a5c", background: "#1e4e8c" },
+    ground: "#3d8c40", farGround: "#2d6e32"
   },
   {
     id: 5, name: "Moon Roost", tagline: "Low-gravity lunar siege",
     chipColor: "#b0a8ff",
-    look: { exposureEv: 0.2, fogDensityScale: 0.25, sun: { azimuthDeg: 280, elevationDeg: 28 }, accent: "#8090ff", background: "#1c2350" },
-    ground: "#5a5f8a", farGround: "#42466e"
+    look: { exposureEv: -0.08, fogDensityScale: 0, sun: { azimuthDeg: 280, elevationDeg: 32 }, accent: "#8090ff", background: "#121838" },
+    ground: "#484d75", farGround: "#343859"
   }
 ];
 

@@ -24,30 +24,31 @@
 }
 
 :root {
-  --ss-sky: #7ec8ff;
+  --ss-sky: #2b6cb0;
   --ss-ink: #17304d;
   --ss-cream: #fff7e8;
   --ss-gold: #ffbe2e;
   --ss-orange: #ff7a3d;
-  --ss-wood: #c98a4b;
-  --ss-stone: #8f9bb0;
+  --ss-wood: #b87333;
+  --ss-stone: #738296;
   --ss-glass: #8fd8ef;
-  --ss-leaf: #58b44c;
+  --ss-leaf: #3d8c40;
   --ss-danger: #ff4d5a;
   --ss-panel: rgba(23, 48, 77, 0.86);
   --ss-panel-light: rgba(255, 247, 232, 0.94);
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradient(#7ec8ff 0%, #bfe7ff 46%, #8fd07a 46%, #6fbd57 100%); color: var(--ss-ink); font-family: "Aeonik Pro", sans-serif; font-synthesis: none; -webkit-font-smoothing: antialiased; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradient(#1e4e8c 0%, #2b6cb0 46%, #144272 46%, #3d8c40 100%); color: var(--ss-ink); font-family: "Aeonik Pro", sans-serif; font-synthesis: none; -webkit-font-smoothing: antialiased; }
 
-.shell { display: grid; grid-template-rows: auto 1fr auto; height: 100%; }
+.shell { position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: hidden; display: block; }
 
 /* ------------------------------------------------------------- top bar ---- */
 .topbar {
+  position: fixed; top: 0; left: 0; right: 0;
   display: flex; align-items: center; gap: 18px;
   padding: 8px 16px;
-  background: linear-gradient(180deg, #1c3f66 0%, #17304d 100%);
+  background: linear-gradient(180deg, rgba(28, 63, 102, 0.94) 0%, rgba(23, 48, 77, 0.90) 100%);
   border-bottom: 3px solid #0e2238;
   box-shadow: 0 3px 0 rgba(0,0,0,0.18);
   z-index: 20;
@@ -92,8 +93,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 .chapter-chip .stars { margin-left: 4px; font-size: 10px; letter-spacing: 0.05em; }
 
 /* ------------------------------------------------------------- viewport --- */
-.viewport { position: relative; overflow: hidden; }
-.stage { position: absolute; inset: 0; touch-action: none; }
+.viewport { position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: hidden; }
+.stage { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
 .stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 
 .hud { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
@@ -316,9 +317,11 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 
 /* controls hint footer ------------------------------------------------------------- */
 .controls-hint {
+  position: fixed; left: 0; right: 0; bottom: 0;
   display: flex; justify-content: center; gap: 26px; flex-wrap: wrap;
-  padding: 7px 12px; font-size: 11.5px; font-weight: 500; color: #dcebff;
-  background: #0e2238; letter-spacing: 0.03em; z-index: 20;
+  padding: 5px 12px; font-size: 11px; font-weight: 500; color: #dcebff;
+  background: rgba(14, 34, 56, 0.88); letter-spacing: 0.03em; z-index: 20;
+  pointer-events: none;
 }
 .controls-hint b { color: var(--ss-gold); font-weight: 700; }
 

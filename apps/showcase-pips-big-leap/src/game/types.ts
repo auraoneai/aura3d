@@ -92,9 +92,9 @@ export interface DecorSpec {
   /** Procedural prop id — interpreted by world.ts (tree, mushroom, crystal…). */
   readonly id: string;
   readonly kind:
-    | "tree" | "mushroom" | "flower" | "rock" | "windmill" | "sail"
+    | "tree" | "conifer" | "mushroom" | "flower" | "rock" | "windmill" | "sail"
     | "cloud" | "fan" | "vent" | "pillar" | "arch" | "crystal" | "star"
-    | "lantern" | "crate" | "barrel" | "banner";
+    | "lantern" | "crate" | "barrel" | "banner" | "hawk";
   readonly x: number;
   readonly y: number;
   readonly z: number;

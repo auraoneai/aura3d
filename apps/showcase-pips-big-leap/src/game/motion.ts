@@ -68,8 +68,8 @@ export function deriveWorldMotion(world: WorldSpec): WorldMotion {
     runSpeedPerHeight: world.id === "w6" ? 4.4 : 5.4
   });
 
-  const gravity = solution.gravity * gravityScale;
-  const jumpVelocity = solution.jumpVelocity * (world.id === "w6" ? 1.04 : 1);
+  const gravity = clamp(solution.gravity * gravityScale, world.id === "w6" ? -18 : -32, -14);
+  const jumpVelocity = clamp(solution.jumpVelocity * (world.id === "w6" ? 1.04 : 1), 9.6, 13.4);
   const moveSpeed = clamp(world.moveSpeed ?? solution.moveSpeed, 4.4, 6.2);
   const report = validatePlatformerMotion(
     facts,
@@ -84,7 +84,7 @@ export function deriveWorldMotion(world: WorldSpec): WorldMotion {
     airControl: world.airControl ?? 0.72,
     coyoteMs: clamp(solution.coyoteMs, 95, 150),
     jumpBufferMs: clamp(solution.jumpBufferMs, 115, 165),
-    terminalVelocity: Math.min(solution.terminalVelocity, world.id === "w6" ? 11 : 16),
+    terminalVelocity: Math.min(Math.abs(solution.terminalVelocity), world.id === "w6" ? 11 : 16),
     fallGravityMultiplier: solution.fallGravityMultiplier,
     apexHangGravityScale: clamp(solution.apexGravityMultiplier, 0.4, 0.75),
     apexHangThreshold: solution.apexHangThreshold,

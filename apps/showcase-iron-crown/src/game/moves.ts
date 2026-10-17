@@ -43,7 +43,7 @@ export function lightMove(fighter: FighterDef): IronMove {
     knockback: [0.16, 0, 0],
     activeFrames: [4, 8],
     durationFrames: 18,
-    hitboxes: [box("jab", 0.74, 1.02, 0.82, 0.5, r)]
+    hitboxes: [box("jab", 1.02, 1.02, 1.18, 0.5, r)]
   };
 }
 
@@ -63,7 +63,7 @@ export function heavyMove(fighter: FighterDef): IronMove {
     knockback: [0.34, 0.22, 0],
     activeFrames: [9, 15],
     durationFrames: 32,
-    hitboxes: [box("heavy", 0.86, 0.98, 1.05, 0.66, r)]
+    hitboxes: [box("heavy", 1.14, 0.98, 1.38, 0.66, r)]
   };
 }
 
@@ -84,7 +84,7 @@ export function throwMove(fighter: FighterDef): IronMove {
     activeFrames: [6, 10],
     durationFrames: 30,
     blockable: false,
-    hitboxes: [box("throw", 0.55, 0.9, 0.62, 1.1, 1)]
+    hitboxes: [box("throw", 0.94, 0.9, 1.08, 1.1, 1)]
   };
 }
 
@@ -92,12 +92,12 @@ const SPECIAL_TABLE: Record<
   FighterDef["special"]["fx"],
   { readonly damage: number; readonly hitStun: number; readonly reach: [x: number, y: number, w: number, h: number]; readonly active: readonly [number, number]; readonly duration: number; readonly knockback: readonly [number, number, number] }
 > = {
-  arc: { damage: 16, hitStun: 24, reach: [0.95, 1.0, 1.7, 0.9], active: [8, 22], duration: 46, knockback: [0.5, 0.35, 0] },
-  storm: { damage: 14, hitStun: 22, reach: [0.8, 0.95, 1.35, 1.0], active: [5, 20], duration: 40, knockback: [0.42, 0.3, 0] },
-  slam: { damage: 22, hitStun: 30, reach: [0.7, 0.9, 1.5, 1.4], active: [12, 22], duration: 52, knockback: [0.3, 0.9, 0] },
-  lance: { damage: 15, hitStun: 24, reach: [1.35, 0.95, 2.5, 0.55], active: [10, 24], duration: 48, knockback: [0.55, 0.2, 0] },
-  mischief: { damage: 13, hitStun: 26, reach: [0.85, 0.95, 1.4, 1.15], active: [6, 18], duration: 38, knockback: [0.35, 0.55, 0] },
-  crown: { damage: 20, hitStun: 28, reach: [0.95, 1.0, 1.9, 1.15], active: [9, 24], duration: 50, knockback: [0.6, 0.45, 0] }
+  arc: { damage: 16, hitStun: 24, reach: [1.2, 1.0, 2.0, 0.9], active: [8, 22], duration: 46, knockback: [0.5, 0.35, 0] },
+  storm: { damage: 14, hitStun: 22, reach: [1.08, 0.95, 1.78, 1.0], active: [5, 20], duration: 40, knockback: [0.42, 0.3, 0] },
+  slam: { damage: 22, hitStun: 30, reach: [1.02, 0.9, 1.85, 1.4], active: [12, 22], duration: 52, knockback: [0.3, 0.9, 0] },
+  lance: { damage: 15, hitStun: 24, reach: [1.45, 0.95, 2.6, 0.55], active: [10, 24], duration: 48, knockback: [0.55, 0.2, 0] },
+  mischief: { damage: 13, hitStun: 26, reach: [1.12, 0.95, 1.8, 1.15], active: [6, 18], duration: 38, knockback: [0.35, 0.55, 0] },
+  crown: { damage: 20, hitStun: 28, reach: [1.2, 1.0, 2.1, 1.15], active: [9, 24], duration: 50, knockback: [0.6, 0.45, 0] }
 };
 
 export function specialMove(fighter: FighterDef): IronMove {

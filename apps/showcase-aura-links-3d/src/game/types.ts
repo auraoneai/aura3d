@@ -62,8 +62,12 @@ export interface CourseSpec {
   readonly shortName: string;
   readonly tagline: string;
   readonly look: LookId;
-  /** exposure/fog tweaks passed to looks.preset overrides */
-  readonly lookOverrides?: { readonly fogDensityScale?: number; readonly exposureEv?: number };
+  /** exposure/fog/background tweaks passed to looks.preset overrides */
+  readonly lookOverrides?: {
+    readonly fogDensityScale?: number;
+    readonly exposureEv?: number;
+    readonly background?: string;
+  };
   /** gravity in m/s² — Mare = 1.62, everything else 9.81 (Cloud Terrace uses
    *  reduced airDensity instead of touching g) */
   readonly gravity: number;

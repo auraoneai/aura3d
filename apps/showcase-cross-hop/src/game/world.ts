@@ -57,6 +57,12 @@ export function laneFor(row: number, seed: number, difficulty: number, forceThem
   if (row <= 1) {
     return { row, type: "meadow", dir: 1, speed: 0, spacing: 8, moverKind: "none", phase: 0, theme: forceTheme ?? 0, hasCoin: false, coinCol: 0, hasPod: false, podCol: 0 };
   }
+  if (row === 2) {
+    return { row, type: "river", dir: 1, speed: 0.75, spacing: 5.4, moverKind: "log", phase: 14.5, theme: forceTheme ?? 0, hasCoin: true, coinCol: 0, hasPod: false, podCol: 0 };
+  }
+  if (row === 3) {
+    return { row, type: "meadow", dir: 1, speed: 0, spacing: 8, moverKind: "none", phase: 0, theme: forceTheme ?? 0, hasCoin: false, coinCol: 0, hasPod: false, podCol: 0 };
+  }
   const themeIdx = forceTheme ?? themeIndexForRow(row, seed);
   const rnd = mulberry32(seed * 7919 + row * 104729);
   const type = laneTypeSeq(row, seed, forceTheme);
@@ -69,18 +75,22 @@ export function laneFor(row: number, seed: number, difficulty: number, forceThem
     : type === "river" ? (1.2 + rnd() * 1.6) * (1 + diff * 0.5)
     : type === "lava" ? (1.4 + rnd() * 1.8) * (1 + diff * 0.6)
     : 0;
-  const spacing = type === "road" ? Math.max(2.4, 6.5 - diff * 3 - rnd() * 2)
-    : type === "tram" ? 9 - diff * 2
-    : type === "rail" ? 60
-    : type === "river" ? (rnd() < 0.45 ? 3.4 : 5.2) - diff * 0.8
-    : type === "lava" ? 3.2 - diff * 0.6
-    : 6;
-  const moverKind: Lane["moverKind"] = type === "road" ? (rnd() < 0.72 ? "car" : "truck")
+  const spacingDraw = (type === "road" || type === "river") ? rnd() : 0;
+  const kindDraw = (type === "road" || type === "river") ? rnd() : 0;
+  const moverKind: Lane["moverKind"] = type === "road" ? (kindDraw < 0.72 ? "car" : "truck")
     : type === "tram" ? "tram"
     : type === "rail" ? "train"
-    : type === "river" ? (rnd() < 0.55 ? "log" : "pad")
+    : type === "river" ? (kindDraw < 0.55 ? "log" : "pad")
     : type === "lava" ? "stone"
     : "none";
+  const spacing = moverKind === "truck" ? Math.max(5.8, 8.2 - diff * 2.0 - spacingDraw * 1.6)
+    : moverKind === "car" ? Math.max(4.2, 7.0 - diff * 2.4 - spacingDraw * 1.8)
+    : type === "tram" ? Math.max(7.2, 9.5 - diff * 2.0)
+    : type === "rail" ? 60
+    : moverKind === "log" ? Math.max(5.6, (spacingDraw < 0.45 ? 5.8 : 6.8) - diff * 0.6)
+    : moverKind === "pad" ? Math.max(2.6, (spacingDraw < 0.45 ? 3.0 : 4.2) - diff * 0.5)
+    : type === "lava" ? Math.max(2.8, 3.4 - diff * 0.5)
+    : 6;
   const hasCoin = type === "meadow" && row > 4 && rnd() < 0.16;
   const hasPod = type === "meadow" && row > 40 && rnd() < 0.03;
   return {
@@ -140,13 +150,13 @@ const railXs = new Float32Array(4);
 /** Half-length of a mover for platform/collision tests. */
 export function moverHalf(lane: Lane): number {
   switch (lane.moverKind) {
-    case "car": return 1.0;
-    case "truck": return 1.6;
-    case "tram": return 2.3;
-    case "train": return 6.0;
-    case "log": return 2.0;
-    case "pad": return 0.62;
-    case "stone": return 0.72;
+    case "car": return 1.15;
+    case "truck": return 1.85;
+    case "tram": return 2.35;
+    case "train": return 5.6;
+    case "log": return 1.85;
+    case "pad": return 0.52;
+    case "stone": return 0.56;
     default: return 0;
   }
 }

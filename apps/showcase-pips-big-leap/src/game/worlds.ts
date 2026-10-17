@@ -19,8 +19,10 @@ export const WORLDS: readonly WorldSpec[] = [
     shortName: "Academy",
     subtitle: "Headmaster Sprig's obstacle gauntlet — every move Pip knows.",
     look: "outdoor-day",
-    background: "#a8d8f0",
-    spawn: [0, 0.62, 2],
+    lookOverrides: { fogDensityScale: 0 },
+    background: "#2a5c8a",
+    spawn: [0, 0.6, 0.8],
+    spawnYaw: Math.PI,
     lowerBound: -6,
     gateSeeds: 4,
     seedGoal: 6,
@@ -30,10 +32,10 @@ export const WORLDS: readonly WorldSpec[] = [
     unlockHint: "Jump Academy — clear the gauntlet to open the practice gate.",
     platforms: [
       { id: "start", x: 0, y: 0.6, z: 0, w: 8, d: 8, kind: "earth" },
-      { id: "hop-1", x: 0, y: 0.6, z: -6.5, w: 2.6, d: 2.6, kind: "grass" },
-      { id: "hop-2", x: 1.8, y: 0.95, z: -10.2, w: 2.4, d: 2.4, kind: "grass" },
-      { id: "hop-3", x: -1.2, y: 1.35, z: -14, w: 2.4, d: 2.4, kind: "grass" },
-      { id: "dive-pad", x: 0, y: 1.35, z: -18.4, w: 3, d: 2.6, kind: "earth" },
+      { id: "hop-1", x: 0, y: 0.6, z: -6.0, w: 3.0, d: 2.8, kind: "grass" },
+      { id: "hop-2", x: 1.2, y: 0.95, z: -9.8, w: 2.8, d: 2.6, kind: "grass" },
+      { id: "hop-3", x: -1.0, y: 1.35, z: -13.6, w: 2.8, d: 2.6, kind: "grass" },
+      { id: "dive-pad", x: 0, y: 1.35, z: -18.0, w: 3.2, d: 2.8, kind: "earth" },
       { id: "gap-landing", x: 0, y: 1.0, z: -24.5, w: 4.4, d: 3, kind: "grass" },
       { id: "mover-lane", x: 0, y: 1.0, z: -30.5, w: 2.4, d: 2.4, kind: "wood",
         mover: { axis: "x", amplitude: 3.2, period: 3.4 } },
@@ -48,22 +50,22 @@ export const WORLDS: readonly WorldSpec[] = [
       { id: "gate-approach", x: 0, y: 2.4, z: -66, w: 6, d: 5, kind: "grass" }
     ],
     hazards: [
-      { id: "thorns-a", x: 0, y: 0.85, z: -8.4, w: 1.6, d: 1.2, type: "thorns" },
+      { id: "thorns-a", x: -2.0, y: 0.85, z: -8.4, w: 1.4, d: 1.2, type: "thorns" },
       { id: "thorns-b", x: 0.6, y: 1.24, z: -21.4, w: 3.4, d: 1.6, type: "thorns", respawn: true }
     ],
     springs: [{ id: "spring-academy", x: 0, y: 1.3, z: -44, power: 11.5 }],
     waters: [],
     seeds: [
-      { id: "ac-seed-1", x: 1.8, y: 1.6, z: -10.2 },
-      { id: "ac-seed-2", x: -1.2, y: 2.0, z: -14 },
+      { id: "ac-seed-1", x: 1.2, y: 1.6, z: -9.8 },
+      { id: "ac-seed-2", x: -1.0, y: 2.0, z: -13.6 },
       { id: "ac-seed-3", x: 0, y: 1.7, z: -30.5 },
       { id: "ac-seed-4", x: -2.4, y: 1.95, z: -36 },
       { id: "ac-seed-5", x: 0, y: 5.3, z: -47.5 },
       { id: "ac-seed-6", x: 0, y: 4.9, z: -53 }
     ],
     acorns: [
-      { id: "ac-coin-1", x: 0, y: 1.25, z: -6.5 },
-      { id: "ac-coin-2", x: 0, y: 1.65, z: -18.4 },
+      { id: "ac-coin-1", x: 0, y: 1.25, z: -6.0 },
+      { id: "ac-coin-2", x: 0, y: 1.95, z: -18.0 },
       { id: "ac-coin-3", x: 0, y: 1.55, z: -24.5 },
       { id: "ac-coin-4", x: 2.4, y: 1.95, z: -39.5 },
       { id: "ac-coin-5", x: 0, y: 3.2, z: -51 },
@@ -77,14 +79,15 @@ export const WORLDS: readonly WorldSpec[] = [
     ],
     gate: { id: "ac-gate", x: 0, y: 2.4, z: -66 },
     decor: [
-      { id: "ac-tree-1", kind: "tree", x: -3, y: 0.6, z: 1.5, s: 1.2 },
-      { id: "ac-tree-2", kind: "tree", x: 3, y: 0.6, z: 0.5, s: 1.0 },
-      { id: "ac-flower-1", kind: "flower", x: 2.2, y: 0.6, z: -2, s: 0.8 },
-      { id: "ac-rock-1", kind: "rock", x: -2.6, y: 0.6, z: -3, s: 0.9 },
+      { id: "ac-tree-1", kind: "tree", x: -3.2, y: 0.6, z: -1.5, s: 1.25 },
+      { id: "ac-tree-2", kind: "conifer", x: 3.2, y: 0.6, z: -1.2, s: 1.15 },
+      { id: "ac-flower-1", kind: "flower", x: 2.2, y: 0.6, z: -2, s: 0.9 },
+      { id: "ac-rock-1", kind: "rock", x: -2.6, y: 0.6, z: -3, s: 0.95 },
+      { id: "ac-hawk-1", kind: "hawk", x: -2.2, y: 2.6, z: -8.0, s: 1.1, yaw: 0.35 },
       { id: "ac-banner", kind: "banner", x: 0, y: 3.4, z: -66.8, s: 1.4 }
     ],
     backdrops: [{ asset: "verdant", x: -14, y: -1.5, z: -34, scale: 10, yaw: 0.5 }],
-    npcs: [{ id: "ac-npc", x: 1.6, y: 0.6, z: -0.6, who: "helper", clip: "idle" }]
+    npcs: [{ id: "ac-npc", x: 1.45, y: 0.6, z: -0.4, who: "helper", clip: "idle" }]
   },
 
   // ------------------------------------------------- W1 WHISPERING FOREST
@@ -95,8 +98,10 @@ export const WORLDS: readonly WorldSpec[] = [
     shortName: "Forest",
     subtitle: "Mushroom caps and mossy ledges where the first seeds fell.",
     look: "outdoor-day",
-    background: "#b7e0a8",
-    spawn: [0, 0.65, 2],
+    lookOverrides: { fogDensityScale: 0 },
+    background: "#1e4d78",
+    spawn: [0, 0.62, 0.8],
+    spawnYaw: Math.PI,
     lowerBound: -7,
     gateSeeds: 4,
     seedGoal: 6,
@@ -105,11 +110,11 @@ export const WORLDS: readonly WorldSpec[] = [
     ambientFx: "spores",
     platforms: [
       { id: "start", x: 0, y: 0.62, z: 0, w: 9, d: 8, kind: "grass" },
-      { id: "log-1", x: -0.5, y: 0.62, z: -6.4, w: 3, d: 2.4, kind: "earth" },
-      { id: "cap-1", x: 1.6, y: 1.0, z: -10, w: 2.6, d: 2.6, kind: "mushroom" },
-      { id: "cap-2", x: -1.8, y: 1.45, z: -13.6, w: 2.5, d: 2.5, kind: "mushroom" },
-      { id: "cap-3", x: 1.4, y: 1.85, z: -17.2, w: 2.5, d: 2.5, kind: "mushroom" },
-      { id: "fork-main", x: 0, y: 1.85, z: -22, w: 4.6, d: 3.4, kind: "earth" },
+      { id: "log-1", x: 0, y: 0.68, z: -5.8, w: 3.6, d: 2.8, kind: "earth" },
+      { id: "cap-1", x: 0.6, y: 0.98, z: -9.6, w: 3.2, d: 2.8, kind: "mushroom" },
+      { id: "cap-2", x: -0.8, y: 1.32, z: -13.4, w: 3.0, d: 2.8, kind: "mushroom" },
+      { id: "cap-3", x: 0.8, y: 1.65, z: -17.2, w: 3.0, d: 2.8, kind: "mushroom" },
+      { id: "fork-main", x: 0, y: 1.85, z: -22, w: 5.0, d: 3.6, kind: "earth" },
       { id: "fork-left", x: -4.6, y: 2.15, z: -25.5, w: 2.6, d: 2.6, kind: "leaf" },
       { id: "fork-left-2", x: -7.4, y: 2.5, z: -29.5, w: 2.4, d: 2.4, kind: "leaf" },
       { id: "mid-vale", x: 0, y: 1.55, z: -29, w: 5, d: 4, kind: "grass" },
@@ -124,29 +129,29 @@ export const WORLDS: readonly WorldSpec[] = [
       { id: "gate-approach", x: 0, y: 2.6, z: -67.5, w: 7, d: 6, kind: "grass" }
     ],
     hazards: [
-      { id: "thorns-1", x: -0.8, y: 0.86, z: -8.6, w: 1.8, d: 1.4, type: "thorns" },
+      { id: "thorns-1", x: -2.4, y: 0.86, z: -8.2, w: 1.4, d: 1.2, type: "thorns" },
       { id: "thorns-2", x: 0, y: 1.8, z: -25.9, w: 3.2, d: 1.6, type: "thorns" },
       { id: "bog", x: 0, y: 1.79, z: -33.8, w: 5.5, d: 2.2, type: "thorns", respawn: true }
     ],
     springs: [{ id: "spring-w1", x: 0.5, y: 1.9, z: -47.5, power: 11.8 }],
     waters: [],
     seeds: [
-      { id: "w1-seed-1", x: 1.6, y: 1.7, z: -10 },
-      { id: "w1-seed-2", x: -1.8, y: 2.15, z: -13.6 },
+      { id: "w1-seed-1", x: 0.6, y: 1.65, z: -9.6 },
+      { id: "w1-seed-2", x: -0.8, y: 2.0, z: -13.4 },
       { id: "w1-seed-3", x: -7.4, y: 3.2, z: -29.5 },
       { id: "w1-seed-4", x: 2.8, y: 2.25, z: -35 },
       { id: "w1-seed-5", x: -3.8, y: 3.3, z: -44.6 },
       { id: "w1-seed-6", x: 0.5, y: 5.9, z: -50.5 }
     ],
     acorns: [
-      { id: "w1-coin-1", x: -0.5, y: 1.3, z: -6.4 },
-      { id: "w1-coin-2", x: 1.4, y: 2.5, z: -17.2 },
-      { id: "w1-coin-3", x: 0, y: 2.5, z: -22 },
-      { id: "w1-coin-4", x: -4.6, y: 2.85, z: -25.5 },
-      { id: "w1-coin-5", x: 0, y: 2.15, z: -29 },
-      { id: "w1-coin-6", x: -0.6, y: 2.5, z: -41 },
-      { id: "w1-coin-7", x: 0.5, y: 2.55, z: -47.5 },
-      { id: "w1-coin-8", x: 0.2, y: 5.2, z: -56 }
+      { id: "w1-coin-1", x: 0, y: 1.22, z: -2.4 },
+      { id: "w1-coin-2", x: 0, y: 1.32, z: -5.8 },
+      { id: "w1-coin-3", x: 0.8, y: 2.3, z: -17.2 },
+      { id: "w1-coin-4", x: 0, y: 2.5, z: -22 },
+      { id: "w1-coin-5", x: -4.6, y: 2.85, z: -25.5 },
+      { id: "w1-coin-6", x: 0, y: 2.15, z: -29 },
+      { id: "w1-coin-7", x: -0.6, y: 2.5, z: -41 },
+      { id: "w1-coin-8", x: 0.5, y: 2.55, z: -47.5 }
     ],
     hearts: [{ id: "w1-heart", x: -0.6, y: 2.6, z: -41 }],
     checkpoints: [
@@ -156,20 +161,27 @@ export const WORLDS: readonly WorldSpec[] = [
     ],
     gate: { id: "w1-gate", x: 0, y: 2.6, z: -68.5 },
     decor: [
-      { id: "w1-t1", kind: "tree", x: -3.4, y: 0.62, z: 1, s: 1.35 },
-      { id: "w1-t2", kind: "tree", x: 3.6, y: 0.62, z: -0.5, s: 1.15 },
-      { id: "w1-t3", kind: "tree", x: -5.6, y: 0.4, z: -20, s: 1.5 },
-      { id: "w1-t4", kind: "tree", x: 5.8, y: 0.4, z: -32, s: 1.3 },
-      { id: "w1-m1", kind: "mushroom", x: -2.2, y: 0.62, z: -4.5, s: 0.9 },
+      { id: "w1-t1", kind: "tree", x: -3.5, y: 0.62, z: -1.2, s: 1.35 },
+      { id: "w1-t2", kind: "conifer", x: 3.5, y: 0.62, z: -1.4, s: 1.25 },
+      { id: "w1-t3", kind: "conifer", x: -3.8, y: 0.62, z: -6.8, s: 1.3 },
+      { id: "w1-t4", kind: "tree", x: 3.9, y: 0.62, z: -8.2, s: 1.35 },
+      { id: "w1-t5", kind: "tree", x: -4.8, y: 0.8, z: -15.5, s: 1.45 },
+      { id: "w1-t6", kind: "conifer", x: 4.8, y: 0.9, z: -19.5, s: 1.4 },
+      { id: "w1-t7", kind: "tree", x: 5.8, y: 0.4, z: -32, s: 1.3 },
+      { id: "w1-start-flag", kind: "banner", x: -2.2, y: 0.62, z: -2.8, s: 0.95 },
+      { id: "w1-vista-arch", kind: "arch", x: 0, y: 1.85, z: -23.2, s: 1.15 },
+      { id: "w1-hawk-1", kind: "hawk", x: -2.1, y: 2.55, z: -7.4, s: 1.15, yaw: 0.45 },
+      { id: "w1-hawk-2", kind: "hawk", x: 2.4, y: 3.1, z: -14.8, s: 1.1, yaw: -0.45 },
+      { id: "w1-m1", kind: "mushroom", x: -2.5, y: 0.62, z: -3.4, s: 0.95 },
       { id: "w1-m2", kind: "mushroom", x: 2.8, y: 1.55, z: -28, s: 0.7 },
       { id: "w1-m3", kind: "mushroom", x: -3.2, y: 1.9, z: -46.5, s: 1.1 },
-      { id: "w1-f1", kind: "flower", x: 1.8, y: 0.62, z: -3, s: 0.9 },
+      { id: "w1-f1", kind: "flower", x: 1.9, y: 0.62, z: -2.6, s: 0.95 },
       { id: "w1-f2", kind: "flower", x: -1.4, y: 1.55, z: -30, s: 0.8 },
-      { id: "w1-r1", kind: "rock", x: 3, y: 0.62, z: -5.5, s: 1 },
+      { id: "w1-r1", kind: "rock", x: 2.8, y: 0.62, z: -3.2, s: 1.0 },
       { id: "w1-banner", kind: "banner", x: 0, y: 3.6, z: -68.6, s: 1.5 }
     ],
-    backdrops: [{ asset: "verdant", x: -16, y: -1.8, z: -38, scale: 12, yaw: 0.6 }],
-    npcs: [{ id: "w1-npc", x: 1.8, y: 0.62, z: -0.8, who: "sidekick", clip: "idle" }]
+    backdrops: [{ asset: "verdant", x: -14, y: -1.2, z: -28, scale: 11, yaw: 0.55 }],
+    npcs: [{ id: "w1-npc", x: 1.45, y: 0.62, z: -0.4, who: "sidekick", clip: "idle" }]
   },
 
   // --------------------------------------------------- W2 SUNMILL WHARF
@@ -180,9 +192,10 @@ export const WORLDS: readonly WorldSpec[] = [
     shortName: "Wharf",
     subtitle: "Docks, rope walks and windmill blades over the millpond.",
     look: "golden-hour",
-    background: "#f4c87a",
-    spawn: [0, 0.7, 2],
-    spawnYaw: 0,
+    lookOverrides: { fogDensityScale: 0 },
+    background: "#2a5c8a",
+    spawn: [0, 0.68, 0.8],
+    spawnYaw: Math.PI,
     lowerBound: -5.5,
     gateSeeds: 4,
     seedGoal: 6,
@@ -267,9 +280,10 @@ export const WORLDS: readonly WorldSpec[] = [
     shortName: "Clouds",
     subtitle: "Sky-docks strung between cumulus spires and fan towers.",
     look: "alpine-snow",
-    lookOverrides: { fogDensityScale: 0.6 },
-    background: "#bcd2f0",
-    spawn: [0, 0.72, 2],
+    lookOverrides: { fogDensityScale: 0 },
+    background: "#2a5c8a",
+    spawn: [0, 0.7, 0.8],
+    spawnYaw: Math.PI,
     lowerBound: -8,
     gateSeeds: 4,
     seedGoal: 6,
@@ -341,7 +355,7 @@ export const WORLDS: readonly WorldSpec[] = [
       { id: "w3-banner", kind: "banner", x: 0, y: 3.6, z: -74.6, s: 1.5 }
     ],
     backdrops: [{ asset: "sidescroll", x: 18, y: -3, z: -42, scale: 14, yaw: -0.5 }],
-    npcs: [{ id: "w3-npc", x: 1.6, y: 0.7, z: -0.6, who: "sidekick", clip: "idle" }]
+    npcs: [{ id: "w3-npc", x: 1.45, y: 0.7, z: -0.4, who: "sidekick", clip: "idle" }]
   },
 
   // ----------------------------------------------------- W4 EMBER CELLAR
@@ -352,8 +366,10 @@ export const WORLDS: readonly WorldSpec[] = [
     shortName: "Ember",
     subtitle: "Basalt vaults over a lava lake — geyser lifts and ember drifts.",
     look: "interior-industrial",
+    lookOverrides: { fogDensityScale: 0 },
     background: "#2a1512",
-    spawn: [0, 0.72, 2],
+    spawn: [0, 0.7, 0.8],
+    spawnYaw: Math.PI,
     lowerBound: -4.5,
     gateSeeds: 4,
     seedGoal: 6,
@@ -429,7 +445,7 @@ export const WORLDS: readonly WorldSpec[] = [
       { id: "w4-banner", kind: "banner", x: 0, y: 3.7, z: -73.2, s: 1.5 }
     ],
     backdrops: [{ asset: "palace", x: -16, y: -2.5, z: -40, scale: 12, yaw: 0.7 }],
-    npcs: [{ id: "w4-npc", x: 1.8, y: 0.7, z: -0.6, who: "helper", clip: "idle" }]
+    npcs: [{ id: "w4-npc", x: 1.45, y: 0.7, z: -0.4, who: "helper", clip: "idle" }]
   },
 
   // ---------------------------------------------------- W5 HOLLOW PALACE
@@ -440,8 +456,10 @@ export const WORLDS: readonly WorldSpec[] = [
     shortName: "Palace",
     subtitle: "A crown-high climb to Brambleback's throne — and the gate beyond.",
     look: "interior-warm",
+    lookOverrides: { fogDensityScale: 0 },
     background: "#241a2e",
-    spawn: [0, 0.72, 2],
+    spawn: [0, 0.7, 0.8],
+    spawnYaw: Math.PI,
     lowerBound: -6,
     gateSeeds: 4,
     seedGoal: 6,
@@ -529,8 +547,10 @@ export const WORLDS: readonly WorldSpec[] = [
     shortName: "Starfall",
     subtitle: "Low-gravity crystal meadows where the last seeds drift down.",
     look: "polar-night",
+    lookOverrides: { fogDensityScale: 0 },
     background: "#141b3a",
-    spawn: [0, 0.72, 2],
+    spawn: [0, 0.7, 0.8],
+    spawnYaw: Math.PI,
     lowerBound: -9,
     gateSeeds: 4,
     seedGoal: 6,

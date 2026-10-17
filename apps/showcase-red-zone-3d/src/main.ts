@@ -96,7 +96,7 @@ const renderError = document.getElementById("render-error") as HTMLElement | nul
 
 function buildScene(): any {
   const s = scene()
-    .add(looks.preset(LOOK_ID, { fogDensityScale: 0.5, exposureEv: 0.05 }))
+    .add(looks.preset(LOOK_ID, { fogDensityScale: 0, exposureEv: 0.0 }))
     .addMany(buildFieldNodes(userClub.colors.primary, cpuClub.colors.primary))
     .addMany(buildStadiumNodes(currentVenue, LITE))
     .addMany(buildPlayNodes());
@@ -105,8 +105,8 @@ function buildScene(): any {
     s.add(effects.contactShadows({ intensity: 0.75, length: 0.3 } as any))
       .add(effects.motionBlur({ intensity: 0.08 } as any));
   }
-  s.add(effects.bloom({ intensity: 0.24, threshold: 0.78 }))
-    .camera(camera.perspective({ position: [0, 30, -20], target: [0, 0, 50], fov: 24 }));
+  s.add(effects.bloom({ intensity: 0.2, threshold: 0.82 }))
+    .camera(camera.perspective({ position: [0, 14.5, -1.5], target: [0, 2.2, 41], fov: 34 }));
   return s;
 }
 
@@ -115,7 +115,7 @@ try {
   auraApp = createAuraApp(canvas, {
     scene: buildScene(),
     ...looks.appOptions(LOOK_ID),
-    qualityRebuild: { flags: ["game", "-compiler"] },
+    qualityRebuild: { flags: ["game", "-compiler", "-vfxFog"] },
     ...(LITE ? { pixelRatio: 1 } : {})
   } as any);
 } catch (e) {
@@ -351,17 +351,17 @@ function applyVenue() {
   sim.setVenue(v.id);
   snowHandle?.setVisible(v.weather === "snow");
   rainHandle?.setVisible(v.weather === "rain");
-  breathFogHandle?.setVisible(v.breathFog);
+  breathFogHandle?.setVisible(false);
   // Lower dome floor to y=-6.5 when active so its bottom never occludes the turf
   if (v.dome) {
     domeHandle?.setPosition(0, -6.5, 50).setScale([1.3, 1, 1.3]).setVisible(true);
   } else {
     domeHandle?.setPosition(0, -90, 50).setScale([0.0001, 0.0001, 0.0001]).setVisible(false);
   }
-  turfHandle?.setMaterial(material.pbr({ color: v.turf, roughness: 0.92 }));
-  scoreboardHandle?.setMaterial(material.emissive({ color: "#0d2436", emissive: v.accent, emissiveIntensity: 0.5 }));
+  turfHandle?.setMaterial(material.pbr({ color: v.turf, roughness: 0.88, metalness: 0.02 }));
+  scoreboardHandle?.setMaterial(material.emissive({ color: "#0d2436", emissive: v.accent, emissiveIntensity: 0.72 }));
   for (const h of [...hoardingHandles, ...ribbonHandles]) {
-    h?.setMaterial(material.emissive({ color: "#0e2b46", emissive: v.accent, emissiveIntensity: 0.42 }));
+    h?.setMaterial(material.emissive({ color: "#0e2b46", emissive: v.accent, emissiveIntensity: 0.55 }));
   }
   updateVenueBanner(hud, v);
   document.querySelectorAll<HTMLElement>("[data-aura-venue]").forEach((b) => b.classList.toggle("active", b.dataset.auraVenue === v.id));
@@ -394,8 +394,8 @@ function applyRigKits(state: GameState) {
 
 function applyEzColors(state: GameState) {
   if (!state.userTeam || !state.cpuTeam) return;
-  ezHomeHandle?.setMaterial(material.pbr({ color: state.userTeam.colors.primary, roughness: 0.88, opacity: 0.85 }));
-  ezAwayHandle?.setMaterial(material.pbr({ color: state.cpuTeam.colors.primary, roughness: 0.88, opacity: 0.85 }));
+  ezHomeHandle?.setMaterial(material.pbr({ color: state.userTeam.colors.primary, roughness: 0.88, metalness: 0.02, opacity: 0.88 }));
+  ezAwayHandle?.setMaterial(material.pbr({ color: state.cpuTeam.colors.primary, roughness: 0.88, metalness: 0.02, opacity: 0.88 }));
 }
 
 /* ------------------------------------------------------------------ */
@@ -471,7 +471,7 @@ function updateWavers(state: GameState) {
     const side = i % 2 ? -1 : 1;
     const z = 12 + i * 5.6;
     const bounce = cheering ? Math.abs(Math.sin(t * 8.5 + i * 1.3)) * 0.2 : Math.sin(t * 2 + i) * 0.025;
-    h.setPosition(side * (FIELD.HALF_WIDTH + 4.9), 1.15 + bounce, z);
+    h.setPosition(side * (FIELD.HALF_WIDTH + 5.8), 1.15 + bounce, z);
   }
   // Position the 3D Meshy backfield/sideline Referee behind the offense facing the play
   const refZ = clampN(state.los - state.dir * 8.5, -6, 106);

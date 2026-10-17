@@ -42,10 +42,10 @@ export const GHOST_LABEL: Record<GhostId, string> = {
   dim: "DIM"
 };
 export const GHOST_TINT: Record<GhostId, string> = {
-  blitz: "#ff4d5e",
-  sly: "#ff9d3d",
-  flick: "#4dd8ff",
-  dim: "#c46bff"
+  blitz: "#ff2a4b",
+  sly: "#ff881f",
+  flick: "#ff66cc",
+  dim: "#1fe0ff"
 };
 export const GHOST_BLURB: Record<GhostId, string> = {
   blitz: "Hunts your tile directly.",
@@ -241,21 +241,48 @@ function resetBoard(): void {
   resetActors();
 }
 
+function pickCorridorTile(m: ParsedMaze, prefX: number, prefY: number): Tile {
+  if (tileWalkable(m, { x: prefX, y: prefY }, false)) return { x: prefX, y: prefY };
+  let best: Tile = m.aboveDoor;
+  let bestDist = Infinity;
+  for (let y = 1; y < m.height - 1; y++) {
+    for (let x = 1; x < m.width - 1; x++) {
+      if (!tileWalkable(m, { x, y }, false)) continue;
+      if (Math.hypot(x - m.spawn.x, y - m.spawn.y) < 4.5) continue;
+      const d = Math.hypot(x - prefX, y - prefY);
+      if (d < bestDist) {
+        bestDist = d;
+        best = { x, y };
+      }
+    }
+  }
+  return best;
+}
+
 function resetActors(): void {
   const m = st.maze;
   st.player = { px: m.spawn.x, py: m.spawn.y, dir: DIR_LEFT, want: DIR_LEFT, wantT: 0, dashT: 0, dashCd: 0, dashQueued: false };
-  // ghosts start inside the house with rapid staggered release so all 4 3D Meshy specters immediately join the chase!
-  const house = m.houseTiles.map((i) => ({ x: i % m.width, y: (i / m.width) | 0 }));
-  const slots: Record<GhostId, number> = { blitz: 1, sly: 0, flick: 2, dim: 0 };
-  const releases: Record<GhostId, number> = { blitz: 0.05, sly: 0.45, flick: 0.9, dim: 1.35 };
+  // Spawn all 4 specters directly in active maze corridors so Quick Play immediately reads as a live 4-specter chase!
+  const spawns: Record<GhostId, Tile> = {
+    blitz: m.aboveDoor,
+    flick: pickCorridorTile(m, 4, 5),
+    dim: pickCorridorTile(m, 14, 5),
+    sly: pickCorridorTile(m, 13, 13)
+  };
+  const dirs: Record<GhostId, Dir> = {
+    blitz: DIR_LEFT,
+    flick: DIR_RIGHT,
+    dim: DIR_LEFT,
+    sly: DIR_UP
+  };
   st.ghosts = GHOST_ORDER.map((id) => ({
     id,
-    px: house[slots[id]]?.x ?? m.door.x,
-    py: house[slots[id]]?.y ?? m.door.y,
-    dir: DIR_UP,
-    state: "house" as GhostState,
+    px: spawns[id].x,
+    py: spawns[id].y,
+    dir: dirs[id],
+    state: "active" as GhostState,
     target: { ...SCATTER[id] },
-    releaseAt: releases[id],
+    releaseAt: 0,
     frightFlash: false,
     eyesFxT: 0,
     eaten: 0

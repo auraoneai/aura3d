@@ -68,23 +68,36 @@ Genre → recipe row (full table: `../aura3d-art-direction/references/look-recip
    ```
 
 2. The look supplies the sky light, key shadow, fog and grade — do not add
-   `lights.studio()` or `lights.ambient()` on top.
+   `lights.studio()` or high-intensity `lights.ambient()` / `lights.directional()`
+   on top, pass `{ fogDensityScale: 0, exposureEv: -0.1 }` to `looks.preset(...)`
+   (and `"-vfxFog"` in `qualityRebuild.flags`) unless distance fog is explicitly
+   desired, and never set `emissive: "#ffffff"` on instanced pool materials
+   (`instanceColors` multiply `u_baseColor`, not `u_emissiveColor`).
 3. Typed models at real scale for every character, athlete, enemy, vehicle,
    aircraft, creature, weapon, tree, and architectural landmark with readable
    silhouette (`model(assets.<name>, { targetMaxDimension, role })`, emissive
-   3–5 on pickups for sparkle under the post grade); never assemble stick-figure
-   humans or box cars from `primitives.box`, `primitives.sphere`, or
+   3–5 on pickups for sparkle under the post grade, and explicit
+   `material: material.pbr({ color })` on untextured preview GLBs); never assemble
+   stick-figure humans or box cars from `primitives.box`, `primitives.sphere`, or
    `primitives.cylinder` (reserve `primitives.plane`, `primitives.box`,
    `primitives.cylinder`, and `primitives.torus` strictly for ground/court
    surfaces, field lines, UI rings/reticles, laser beams, and invisible physics
-   colliders to keep composition and contrast clean). If the catalog lacks a
+   colliders to keep composition and contrast clean). Ground `model()` actors
+   (`minY = 0` feet origin) at the top surface `y + sy / 2` of centered primitive
+   platforms (`instances.box` / `instances.cylinder`), and wind custom
+   `primitives.mesh` triangles CCW from `+Y`. If the catalog lacks a
    required 3D model, generate a PBR GLB with `meshy`, decimate/compress it
    (`<= 20,000` vertices, `<= 2 MB`, 16-bit `Uint16Array` indices, `<= 1024x1024`
    textures for crisp reflection and palette), and admit it via
    `aura3d assets import-meshy` with a valid 64-character `sha256-...` `hash`
    so the look and lighting render cleanly.
 4. Camera state drives `app.camera` every frame (rig from the genre row) —
-   never write camera position into evidence fields.
+   never write camera position into evidence fields, size `html, body, #app, canvas`
+   to `100vw × 100vh` (`position: fixed; inset: 0`), extend the 3D ground apron
+   deep enough in `+Z`/`-Z` under the camera frustum so the bottom of the frame
+   is never a black void, disable `collision: true` on `camera.rigs.shoulder`
+   when the hero has child runtime nodes, and enforce `>= 1.4m` fighter pushbox
+   separation (`|x| >= 1.8m` at spawn).
 5. Boot directly into live 60 FPS 3D gameplay on Frame 1 with an intelligent AI
    autopilot/demo controller that plays autonomously under the scene's lighting,
    fog, and camera framing and yields instant manual control on the first

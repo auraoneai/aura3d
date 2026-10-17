@@ -179,7 +179,7 @@ const pipsGame = createGame({
   // its render targets after any device lifecycle event (remount, resize)
   // on ANGLE/Vulkan and kills presentation — repro'd on aura-links-3d too.
   // Pin it off until the engine-side LDR postprocess defect is fixed.
-  qualityRebuild: { flags: ["game", "-compiler"] },
+  qualityRebuild: { flags: ["game", "-compiler", "-vfxFog"] },
   evidence: {
     schema: 1,
     sections: { pipsBigLeap: () => window.__AURA3D_SHOWCASE_PIPS_BIG_LEAP__ ?? { status: "unbound" } }
@@ -194,7 +194,6 @@ const input = pipsGame.input;
 const hud = createHud();
 const feel = gameFeel.create({ app, time: app.time });
 app.feel?.preset("platformer");
-app.camera?.use(camera.rigs.shoulder({ target: nodeName.hero, collision: true }));
 
 const locomotion = createLocomotionKit({
   idleClip: PIP_CLIPS.idle,
@@ -246,8 +245,8 @@ function loadWorld(id: WorldId, mode?: ModeId): void {
     }
     for (let i = 0; i < 6; i += 1) node(nodeName.bossSpike(i))?.setVisible(false);
   }
-  app.camera?.use(camera.rigs.shoulder({ target: nodeName.hero, collision: true }));
   applyStudioColors();
+  driveAnimation(run.player, 0);
 
   // Persisted progress: collected seeds stay gone, and a world the player
   // already seeded open starts with the Sun-Gate unlatched (boss aside).
@@ -504,8 +503,8 @@ function hasGroundBelow(built: BuiltWorld, x: number, y: number, z: number): boo
     if (!s.active) continue;
     const top = s.y + s.hy;
     if (
-      Math.abs(x - s.x) <= s.hx + 0.15 &&
-      Math.abs(z - s.z) <= s.hz + 0.15 &&
+      Math.abs(x - s.x) <= s.hx - 0.08 &&
+      Math.abs(z - s.z) <= s.hz - 0.08 &&
       top <= y + 0.5 &&
       top >= y - 1.6
     ) {
@@ -525,6 +524,19 @@ function computeAutopilotInput(
   const p = run.player;
   aiJumpCooldown = Math.max(0, aiJumpCooldown - seconds);
 
+  // Brief opening showcase beat on the starting platform so Pip, his sidekick,
+  // and the Whispering Forest jump course are framed cleanly on initial load.
+  if (run.worldClock < 1.15) {
+    return {
+      moveX: 0,
+      moveZ: run.worldClock > 0.45 ? 0.35 : 0,
+      jumpPressed: false,
+      jumpHeld: false,
+      divePressed: false,
+      poundPressed: false
+    };
+  }
+
   if (Math.abs(p.z - aiLastZ) < 0.12 && Math.hypot(p.vx, p.vz) < 0.7) {
     aiStuckTimer += seconds;
   } else {
@@ -532,7 +544,7 @@ function computeAutopilotInput(
     aiLastZ = p.z;
   }
 
-  // Pick next waypoint: boss (if in W5 arena), uncollected seeds ahead, or Sun-Gate.
+  // Pick next waypoint: boss (if in W5 arena), next platform/seed ahead, or Sun-Gate.
   let tx = spec.gate.x;
   let ty = spec.gate.y;
   let tz = spec.gate.z;
@@ -549,38 +561,42 @@ function computeAutopilotInput(
       tz = -69 + Math.cos(orbitA) * 4.2;
     }
   } else {
-    // Find closest uncollected seed not far behind Pip.
-    let bestSeed: { x: number; y: number; z: number } | null = null;
-    let bestScore = Infinity;
-    for (const s of spec.seeds) {
-      if (run.seeds.has(s.id)) continue;
-      if (s.z > p.z + 3.0) continue;
-      const dist = Math.hypot(s.x - p.x, (s.z - p.z) * 1.15);
-      if (dist < bestScore) {
-        bestScore = dist;
-        bestSeed = s;
-      }
-    }
-    if (bestSeed && (run.seeds.size < spec.gateSeeds || bestScore < 12)) {
-      tx = bestSeed.x;
-      ty = bestSeed.y;
-      tz = bestSeed.z;
-    }
-
-    // Check if there is an intermediate solid platform between Pip and the target.
-    let bestPlat: { x: number; y: number; z: number; hy: number; hz: number } | null = null;
-    let bestPlatZ = -Infinity;
+    // Step platform-by-platform along the course so Pip never skips intermediate pads.
+    let currentPlat: (typeof built.solids)[number] | null = null;
     for (const s of built.solids) {
       if (!s.active) continue;
-      if (s.z < p.z - 0.8 && s.z > tz + 1.2 && s.z > bestPlatZ) {
-        bestPlatZ = s.z;
-        bestPlat = s;
+      if (Math.abs(p.x - s.x) <= s.hx + 0.35 && Math.abs(p.z - s.z) <= s.hz + 0.35) {
+        currentPlat = s;
+        break;
       }
     }
-    if (bestPlat && p.z - tz > 5.5) {
-      tx = bestPlat.x;
-      ty = bestPlat.y + bestPlat.hy;
-      tz = bestPlat.z;
+    const frontEdgeZ = currentPlat ? currentPlat.z - currentPlat.hz : p.z - 0.4;
+    let nextPlat: (typeof built.solids)[number] | null = null;
+    let bestNextDist = Infinity;
+    for (const s of built.solids) {
+      if (!s.active || s === currentPlat) continue;
+      if (s.z >= frontEdgeZ + 0.2) continue;
+      const d = Math.hypot((s.x - p.x) * 0.9, s.z - frontEdgeZ);
+      if (d < bestNextDist) {
+        bestNextDist = d;
+        nextPlat = s;
+      }
+    }
+    if (nextPlat) {
+      tx = nextPlat.x;
+      ty = nextPlat.y + nextPlat.hy;
+      tz = nextPlat.z;
+    }
+
+    // If an uncollected seed sits on the current or next platform, steer through it.
+    for (const s of spec.seeds) {
+      if (run.seeds.has(s.id)) continue;
+      if (s.z <= p.z + 1.0 && s.z >= tz - 1.5 && Math.abs(s.x - tx) <= 2.4) {
+        tx = s.x;
+        ty = s.y;
+        tz = s.z;
+        break;
+      }
     }
   }
 
@@ -598,20 +614,20 @@ function computeAutopilotInput(
   const moveZ = Math.max(-1, Math.min(1, dirX * fwdX + dirZ * fwdZ));
   const moveX = Math.max(-1, Math.min(1, dirX * rightX + dirZ * rightZ));
 
-  // Determine jump triggers: approaching platform edge, hazard ahead, higher target, or stuck.
-  const lookX = p.x + dirX * 1.15;
-  const lookZ = p.z + dirZ * 1.15;
+  // Determine jump triggers right near the platform edge (0.42m ahead) so Pip never jumps early into a gap.
+  const lookX = p.x + dirX * 0.42;
+  const lookZ = p.z + dirZ * 0.42;
   const groundAhead = hasGroundBelow(built, lookX, p.y, lookZ);
   const hazardAhead = built.hazards.some(
     (h) => Math.abs(lookX - h.x) <= h.hx + 0.5 && Math.abs(lookZ - h.z) <= h.hz + 0.5 && Math.abs(p.y - h.y) <= 1.4
   );
-  const wantStepJump = ty > p.y + 0.45 && distXZ < 4.8;
-  const wantGapJump = p.grounded && !groundAhead && distXZ > 1.1;
+  const wantStepJump = ty > p.y + 0.45 && distXZ < 3.4 && !groundAhead;
+  const wantGapJump = p.grounded && !groundAhead && distXZ > 0.7;
   const wantBossJump = Boolean(bossVulnerable && bossAt && Math.hypot(bossAt[0] - p.x, bossAt[2] - p.z) < 3.4);
 
   let jumpPressed = false;
   if (aiJumpCooldown <= 0) {
-    if (p.grounded && (wantGapJump || hazardAhead || wantStepJump || wantBossJump || aiStuckTimer > 0.45)) {
+    if (p.grounded && (wantGapJump || hazardAhead || wantStepJump || wantBossJump || aiStuckTimer > 0.55)) {
       jumpPressed = true;
       aiJumpCooldown = 0.28;
       aiStuckTimer = 0;
@@ -621,7 +637,7 @@ function computeAutopilotInput(
     }
   }
 
-  const jumpHeld = !p.grounded && (distXZ > 1.8 || ty > p.y - 0.2);
+  const jumpHeld = !p.grounded && (distXZ > 1.4 || ty > p.y - 0.2);
   const divePressed = !p.grounded && p.vy < -1.8 && distXZ > 3.6 && !hasGroundBelow(built, p.x, p.y, p.z);
 
   return {
@@ -677,14 +693,25 @@ function driveAnimation(p: PlayerState, dt: number): void {
     hero.setAnimation({ clip: spec.clip, loop: spec.loop ?? true, speed: spec.speed ?? 1 });
   }
 
-  // Studio accessories track the hero.
+  // Studio accessories track the 1.25m hero; only show glide cape when gliding.
   const cap = node(nodeName.heroCap);
   const cape = node(nodeName.heroCape);
   const fwdX = Math.sin(p.yaw), fwdZ = Math.cos(p.yaw);
-  cap?.setPosition(p.x + fwdX * 0.05, p.y + 0.98, p.z + fwdZ * 0.05);
-  const capeLift = p.state === "glide" ? 0.34 : p.state === "air" || p.state === "jump" ? 0.12 : 0;
-  cape?.setPosition(p.x - fwdX * 0.24, p.y + 0.56 + capeLift, p.z - fwdZ * 0.24);
+  cap?.setVisible(false);
+  cape?.setVisible(p.state === "glide");
+  const capeLift = p.state === "glide" ? 0.24 : 0;
+  cape?.setPosition(p.x - fwdX * 0.22, p.y + 0.72 + capeLift, p.z - fwdZ * 0.22);
   cape?.setRotation(p.state === "glide" ? 1.1 : 0.35, p.yaw, 0);
+
+  // Smooth third-person follow camera behind Pip looking down the platformer path.
+  const camFwdX = Math.sin(p.camYaw);
+  const camFwdZ = Math.cos(p.camYaw);
+  app.camera?.setPose({
+    position: [p.x - camFwdX * 4.5, p.y + 2.25, p.z - camFwdZ * 4.5],
+    target: [p.x + camFwdX * 3.2, p.y + 0.55, p.z + camFwdZ * 3.2],
+    up: [0, 1, 0],
+    fov: 52
+  });
 }
 
 // ----------------------------------------------------------------- overlay
@@ -880,6 +907,29 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
     bossVulnerable,
     bossAt
   });
+  if (autopilot && !run.player.swim && run.player.y < spec.spawn[1] - 0.15) {
+    let nearest = built.solids[0];
+    let bestD = Infinity;
+    for (const s of built.solids) {
+      if (!s.active) continue;
+      const d = Math.hypot(s.x - run.player.x, s.z - run.player.z);
+      if (d < bestD) {
+        bestD = d;
+        nearest = s;
+      }
+    }
+    if (nearest) {
+      run.player.x = nearest.x;
+      run.player.y = nearest.y + nearest.hy;
+      run.player.z = nearest.z;
+      run.player.vx = 0;
+      run.player.vy = 0;
+      run.player.vz = 0;
+      run.player.grounded = true;
+      run.player.groundId = nearest.id;
+      run.player.state = "grounded";
+    }
+  }
   for (const e of events) handleEvent(e);
 
   // Death → restart at spawn with full hearts.

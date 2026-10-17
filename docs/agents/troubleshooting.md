@@ -68,3 +68,33 @@
   Track a scene signature (`stageId` / `worldId`) and reset positions,
   visibility, and animations through runtime node handles
   (`app.nodes.require(...)`).
+- Scene looks foggy, washed-out, or characters/floors blow out to pure white:
+  pass `{ fogDensityScale: 0, exposureEv: -0.1 }` to `looks.preset(...)` and
+  include `"-vfxFog"` in `qualityRebuild.flags` unless distance haze is
+  explicitly desired (`looks.preset` emits `density: 24 / far`, which under
+  `A3D_QR_VFX_FOG` creates an `exp2` haze wall at 20–30m). Do not stack
+  duplicate high-intensity `lights.directional`, `lights.ambient`, or
+  `lights.hemisphere` nodes on top of `looks.preset(...)`. Never set
+  `emissive: "#ffffff"` with high `emissiveIntensity` on an instanced pool
+  material (`instances.box` / `primitives.box({ instances })`) because
+  `instanceColors` multiply `u_baseColor`, not `u_emissiveColor`. Always pass an
+  explicit `material: material.pbr({ color })` on untextured Meshy preview GLBs.
+- Character or vehicle sinks halfway into logs, pads, or road lanes, or custom
+  terrain renders dark/unlit: `model(asset, { targetHeight })` normalizes the
+  GLB with `minY = 0` (feet at `position[1]`), whereas `primitives.box` and
+  `primitives.cylinder` (`instances.box` / `instances.cylinder`) are centered on
+  `[-0.5..+0.5]` so a platform at `(y, sy)` has its top surface at
+  `y + sy / 2`. Always place grounded characters and vehicles at
+  `platform.y + platform.sy / 2`. Wind custom procedural `primitives.mesh`
+  triangles counter-clockwise (CCW) when viewed from `+Y` so `gl_FrontFacing`
+  is true and vertex normals receive direct sunlight.
+- Bottom or half of the viewport is solid black, or fighters overlap at round
+  start: size `html, body, #app, canvas` to `100vw × 100vh` (`position: fixed;
+  inset: 0; overflow: hidden`) and extend the 3D ground/stage apron deep enough
+  in `+Z`/`-Z` under the camera frustum so the bottom third of the frame never
+  exposes the clear-color void. Disable `collision: true` on
+  `camera.rigs.shoulder` when the target character has attached child runtime
+  nodes at the same position. In fighting and sports games, enforce a minimum
+  horizontal pushbox separation (`>= 1.4m`) every frame and spawn fighters at
+  `|x| >= 1.8m`.
+

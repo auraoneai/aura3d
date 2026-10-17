@@ -193,9 +193,9 @@ export function buildGolferNodes(fit: GolferFit): any[] {
       role: "setDressing",
       scaleMode: "fit"
     }).runtime(rt("golfer-caddy")),
-    model(assets.linksGolfCartMeshy, {
+    model(assets.rooftopBallRackCartMeshy, {
       name: "golfer-bag",
-      targetHeight: 0.92,
+      targetHeight: 0.96,
       role: "setDressing",
       scaleMode: "fit"
     }).runtime(rt("golfer-bag")),

@@ -98,7 +98,7 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
   const timer = el<HTMLDivElement>(doc, "fh-timer");
   const round = el<HTMLDivElement>(doc, "fh-round");
   const mode = el<HTMLDivElement>(doc, "fh-mode");
-  const hint = el<HTMLDivElement>(doc, "fh-hint");
+  const hint = el<HTMLElement>(doc, "fh-hint");
   const comboP1 = el<HTMLDivElement>(doc, "fh-combo-p1");
   const comboP2 = el<HTMLDivElement>(doc, "fh-combo-p2");
   const announceBox = el<HTMLDivElement>(doc, "fh-announce");
@@ -111,6 +111,20 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
   const frameDataTxt = el<HTMLSpanElement>(doc, "fh-framedata");
   const cancelLine = el<HTMLDivElement>(doc, "fh-cancel");
   const labReset = el<HTMLButtonElement>(doc, "fh-lab-reset");
+  const topBar = doc.querySelector<HTMLElement>(".ic-topbar");
+  const fhTop = doc.querySelector<HTMLElement>(".fh-top");
+  const syncTopbarOffset = (): void => {
+    if (!topBar || !fhTop) return;
+    const rect = topBar.getBoundingClientRect();
+    if (rect.height > 0) {
+      const nextTop = Math.max(46, Math.round(rect.bottom + 8));
+      fhTop.style.top = `${nextTop}px`;
+      lab.style.top = `${nextTop + 72}px`;
+    }
+  };
+  syncTopbarOffset();
+  window.addEventListener("resize", syncTopbarOffset);
+  window.requestAnimationFrame(syncTopbarOffset);
   const menus: Record<Exclude<MenuId, null>, HTMLElement> = {
     mode: el(doc, "menu-mode"),
     versus: el(doc, "menu-versus"),

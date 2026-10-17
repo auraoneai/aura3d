@@ -16,9 +16,9 @@ const lerp3 = (a: [number, number, number], b: [number, number, number], t: numb
 const smooth = (t: number) => t * t * (3 - 2 * t);
 
 export function createDirector() {
-  let eye: [number, number, number] = [0, 30, -20];
-  let target: [number, number, number] = [0, 0, 50];
-  let fov = 24;
+  let eye: [number, number, number] = [0, 14.5, -1.5];
+  let target: [number, number, number] = [0, 2.2, 41];
+  let fov = 34;
   let mode: "menu" | "intro" | "broadcast" | "celebrate" | "lab" = "menu";
   let modeT = 0;
   let orbit = 0;
@@ -44,27 +44,27 @@ export function createDirector() {
     }
 
     const ball = s.ball;
-    const focusX = clamp(ball.x * 0.55, -16, 16);
-    const losBehind = s.los - 24 * s.dir;
+    const focusX = clamp(ball.x * 0.55, -14, 14);
+    const losBehind = s.los - 26.5 * s.dir;
 
     let wantEye: [number, number, number], wantTgt: [number, number, number], wantFov: number;
 
     switch (mode) {
       case "menu": {
         orbit += dt * 0.11;
-        const r = 62;
-        wantEye = [Math.sin(orbit) * r, 26 + Math.sin(orbit * 0.6) * 4, 50 + Math.cos(orbit) * r];
-        wantTgt = [0, 1.4, 50];
-        wantFov = 30;
+        const r = 56;
+        wantEye = [Math.sin(orbit) * r, 22 + Math.sin(orbit * 0.6) * 3, 50 + Math.cos(orbit) * r];
+        wantTgt = [0, 2.0, 50];
+        wantFov = 32;
         break;
       }
       case "intro": {
         const t = smooth(clamp(modeT / 2.2, 0, 1));
-        const start: [number, number, number] = [focusX - 46, 34, s.los - 46 * s.dir];
-        const end: [number, number, number] = [focusX * 0.6, 21, losBehind];
+        const start: [number, number, number] = [focusX * 0.35, 16.0, s.los - 29.5 * s.dir];
+        const end: [number, number, number] = [focusX * 0.45, 14.5, losBehind];
         wantEye = lerp3(start, end, t);
-        wantTgt = lerp3([0, 3, s.los + 14 * s.dir], [s.ballSpotX * 0.5, 0.6, s.los + 9 * s.dir], t);
-        wantFov = lerp(30, 22, t);
+        wantTgt = lerp3([0, 2.6, s.los + 18 * s.dir], [s.ballSpotX * 0.5, 2.2, s.los + 16 * s.dir], t);
+        wantFov = lerp(35, 33, t);
         if (modeT >= 2.2) setMode("broadcast");
         break;
       }
@@ -72,9 +72,9 @@ export function createDirector() {
         // tighter tactical view for drills
         const c = s.carrier ? s.athletes.find((a) => a.id === s.carrier) : undefined;
         const cx = c ? c.x : ball.x, cz = c ? c.z : ball.z;
-        wantEye = [cx * 0.4, 16, cz - 18];
-        wantTgt = [cx * 0.7, 0.8, cz + 7];
-        wantFov = 27;
+        wantEye = [cx * 0.4, 14.5, cz - 22];
+        wantTgt = [cx * 0.7, 1.8, cz + 12];
+        wantFov = 32;
         break;
       }
       case "celebrate": {
@@ -82,30 +82,30 @@ export function createDirector() {
         const cx = clamp(ball.x, -20, 20), cz = clamp(ball.z, -6, 106);
         wantEye = [cx + Math.sin(orbit) * 14, 5.2, cz + Math.cos(orbit) * 14];
         wantTgt = [cx, 1.3, cz];
-        wantFov = 26;
+        wantFov = 28;
         break;
       }
       case "broadcast":
       default: {
         if (s.phase === "preSnap" || s.phase === "patChoice") {
-          // tight on the line — see the whole formation
-          wantEye = [s.ballSpotX * 0.45, 21, s.los - 24 * s.dir];
-          wantTgt = [s.ballSpotX * 0.55, 0.6, s.los + 9 * s.dir];
-          wantFov = 21;
+          // prime-time behind-the-QB broadcast view framing all 14 players, sidelines, goalposts & stadium gantry
+          wantEye = [s.ballSpotX * 0.45, 14.5, s.los - 26.5 * s.dir];
+          wantTgt = [s.ballSpotX * 0.55, 2.2, s.los + 16 * s.dir];
+          wantFov = 33;
         } else if (s.phase === "kickoff") {
-          wantEye = [focusX * 0.4, 30, 50 - 34 * s.dir];
-          wantTgt = [focusX * 0.5, 0, 50];
-          wantFov = 24;
+          wantEye = [focusX * 0.4, 22, 50 - 34 * s.dir];
+          wantTgt = [focusX * 0.5, 1.5, 50];
+          wantFov = 32;
         } else {
           // live: pull back, track ball + a lookahead downfield
-          const ahead = s.dir * 12;
+          const ahead = s.dir * 16;
           const bx = ball.x, bz = ball.z;
-          const camBehind = s.phase === "live" ? bz - 26 * s.dir : losBehind;
-          wantEye = [clamp(bx * 0.5, -14, 14), 23, clamp(camBehind, -60, 170)];
-          wantTgt = [clamp(bx * 0.6, -15, 15), 0.7, clamp(bz + ahead * 0.55, -12, 112)];
-          wantFov = s.phase === "playOver" ? 20 : 18.5;
+          const camBehind = s.phase === "live" ? bz - 27 * s.dir : losBehind;
+          wantEye = [clamp(bx * 0.5, -14, 14), 15.2, clamp(camBehind, -60, 170)];
+          wantTgt = [clamp(bx * 0.6, -15, 15), 2.0, clamp(bz + ahead, -12, 112)];
+          wantFov = s.phase === "playOver" ? 31 : 32;
           // air balls: widen to keep the flight in frame
-          if (ball.kind === "air") wantFov = 23;
+          if (ball.kind === "air") wantFov = 35;
         }
       }
     }

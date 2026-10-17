@@ -47,13 +47,13 @@ function isHeavyFrameAthlete(id: string): boolean {
 /* ------------------------------------------------------------------ */
 
 export function buildAthleteNodes(id: string, kit: FootballKit): any[] {
-  const jersey = material.pbr({ color: kit.jersey, roughness: 0.62, metalness: 0.1 });
-  const pants = material.pbr({ color: kit.pants, roughness: 0.78 });
-  const helmet = material.pbr({ color: kit.helmet, roughness: 0.4, metalness: 0.25 });
-  const visor = material.pbr({ color: kit.visor, roughness: 0.25, metalness: 0.5 });
-  const skin = material.pbr({ color: kit.skin, roughness: 0.8 });
-  const pads = material.pbr({ color: kit.jersey, roughness: 0.65 });
-  const rubber = material.pbr({ color: "#1c1f26", roughness: 0.9 });
+  const jersey = material.pbr({ color: kit.jersey, roughness: 0.5, metalness: 0.12 });
+  const pants = material.pbr({ color: kit.pants, roughness: 0.72, metalness: 0.06 });
+  const helmet = material.pbr({ color: kit.helmet, roughness: 0.32, metalness: 0.28 });
+  const visor = material.pbr({ color: kit.visor, roughness: 0.22, metalness: 0.5 });
+  const skin = material.pbr({ color: kit.skin, roughness: 0.78 });
+  const pads = material.pbr({ color: kit.jersey, roughness: 0.48, metalness: 0.15 });
+  const rubber = material.pbr({ color: "#1c1f26", roughness: 0.88 });
   const heavy = isHeavyFrameAthlete(id);
   const bodyAsset = heavy ? assets.rzDefenderLinemanMeshy : assets.rzQuarterbackMeshy;
 
@@ -66,15 +66,15 @@ export function buildAthleteNodes(id: string, kit: FootballKit): any[] {
     // Primary bespoke 3D Meshy football athlete GLB (grounded at y=0, facing +Z in model space)
     model(bodyAsset, {
       name: `${id}-body`,
-      targetHeight: heavy ? 1.94 : 1.88
+      targetHeight: heavy ? 2.34 : 2.25
     } as any)
       .position(0, 0, 0)
       .scale(HIDDEN)
       .runtime(game.runtimeNode(`${id}-body`)),
     // blob shadow + tactical team/carrier turf ring
-    primitives.cylinder({ name: `${id}-shadow`, size: [1, 0.012, 1], material: material.pbr({ color: "#000000", roughness: 1, opacity: 0.34 }) })
+    primitives.cylinder({ name: `${id}-shadow`, size: [1.18, 0.012, 1.18], material: material.pbr({ color: "#000000", roughness: 1, opacity: 0.42 }) })
       .scale(HIDDEN).runtime(game.runtimeNode(`${id}-shadow`)),
-    primitives.torus({ name: `${id}-ring`, size: [0.66, 0.04, 0.04], material: material.emissive({ color: kit.jersey, emissive: kit.jersey, emissiveIntensity: 0.95 }) })
+    primitives.torus({ name: `${id}-ring`, size: [0.76, 0.048, 0.048], material: material.emissive({ color: kit.jersey, emissive: kit.jersey, emissiveIntensity: 1.05 }) })
       .scale(HIDDEN).runtime(game.runtimeNode(`${id}-ring`)),
     // core jersey chest band + hidden legacy nodes
     primitives.box({ name: `${id}-pelvis`, size: [0.42, 0.26, 0.28], material: pants }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(`${id}-pelvis`)),
@@ -124,8 +124,9 @@ export function hideRig(rig: RigHandles) {
 }
 
 export function retintRig(rig: RigHandles, kit: FootballKit) {
-  rig.torso.setMaterial(material.pbr({ color: kit.jersey, roughness: 0.62, metalness: 0.1 }));
-  rig.ring.setMaterial(material.emissive({ color: kit.jersey, emissive: kit.jersey, emissiveIntensity: 0.95 }));
+  rig.torso.setMaterial(material.pbr({ color: kit.jersey, roughness: 0.5, metalness: 0.12 }));
+  rig.pads.setMaterial(material.pbr({ color: kit.jersey, roughness: 0.48, metalness: 0.15 }));
+  rig.ring.setMaterial(material.emissive({ color: kit.jersey, emissive: kit.jersey, emissiveIntensity: 1.05 }));
 }
 
 /* ------------------------------------------------------------------ */
@@ -325,18 +326,18 @@ export function updateFootballRig(kit: ReturnType<typeof game.racketSports>, rig
     .setScale([1, 1, 1])
     .setVisible(true);
 
-  const hips = W([0, pose.hipY + 0.12, 0]);
-  const chest = W([pose.leanX * 0.7, pose.shoulderY - 0.04, pose.leanZ * 0.7]);
+  const hips = W([0, (pose.hipY + 0.14) * 1.18, 0]);
+  const chest = W([pose.leanX * 0.7, (pose.shoulderY - 0.02) * 1.18, pose.leanZ * 0.7]);
 
   // 2. Slim core team-jersey chest band inside the torso silhouette for club color differentiation
-  kit.orientCylinderBetween(rig.torso, hips, chest, 0.12, 0.11);
+  kit.orientCylinderBetween(rig.torso, hips, chest, 0.15, 0.14);
 
   // 3. Blob shadow + tactical team/carrier turf ring
-  rig.shadow.setPosition(px, 0.012, pz).setScale([1.05, 1, 1.05]).setVisible(true);
+  rig.shadow.setPosition(px, 0.012, pz).setScale([1.1, 1, 1.1]).setVisible(true);
   const pulse = opts.carrier
-    ? 1.08 + Math.sin(a.poseT * 8) * 0.08
+    ? 1.18 + Math.sin(a.poseT * 8) * 0.08
     : opts.active
-      ? 0.94
-      : 0.68;
+      ? 1.02
+      : 0.82;
   rig.ring.setPosition(px, 0.02, pz).setRotation(Math.PI / 2, 0, 0).setScale([pulse, pulse, pulse]).setVisible(true);
 }

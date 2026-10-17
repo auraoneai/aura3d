@@ -120,6 +120,14 @@ Mandatory 3D game & scene anti-failure guardrails:
    - Never omit `hash` in custom `defineAssets(...)` declarations and never place unhashed duplicate GLBs in route-local `apps/<route>/public/aura-assets/` that collide with root `public/aura-assets/`.
 5. Mutate node handles instead of calling `app.setScene()` on every restart:
    - Do not call `app.setScene()` when restarting a round, hole, or bout on the same stage/world; tearing down and remounting the scene disposes live GPU resources, breaks lighting and postprocess continuity, and aborts in-flight GLB loads. Track a scene signature (`stageId` / `worldId`) and reset positions, visibility, and animations through runtime node handles (`app.nodes.require(...)`).
+6. Prevent fog whitewash, overexposure, and instanced emissive blowout:
+   - Pass `{ fogDensityScale: 0, exposureEv: -0.1 }` to `looks.preset(...)` and include `"-vfxFog"` in `qualityRebuild.flags` unless distance haze is explicitly desired (`looks.preset` emits `density: 24 / far`, which under `A3D_QR_VFX_FOG` creates an `exp2` haze wall at 20–30m). Never stack duplicate high-intensity `lights.directional`, `lights.ambient`, or `lights.hemisphere` nodes on top of `looks.preset(...)`.
+   - Never set `emissive: "#ffffff"` with high `emissiveIntensity` on an instanced pool material (`instances.box` / `primitives.box({ instances })`): per-instance `instanceColors` multiply `u_baseColor`, not `u_emissiveColor`, so white emissive blows out every instance to pure white regardless of instance color. Always pass an explicit `material: material.pbr({ color })` on untextured preview GLBs.
+7. Ground `model()` feet on platform top surfaces (`y + sy / 2`) & wind custom meshes CCW:
+   - `model(asset, { targetHeight })` normalizes the GLB with `minY = 0` (feet at `position[1]`), whereas `primitives.box` and `primitives.cylinder` (`instances.box` / `instances.cylinder`) are centered on `[-0.5..+0.5]` so a platform at `(y, sy)` has its top surface at `y + sy / 2`. Always place grounded characters and vehicles at `platform.y + platform.sy / 2` so they never sink into logs, pads, or road lanes. Wind custom `primitives.mesh` triangles CCW when viewed from `+Y`.
+8. Enforce full-viewport `100vw × 100vh` canvas, deep ground apron, and pushbox separation:
+   - Size `html, body, #app, canvas` to `100vw × 100vh` (`position: fixed; inset: 0; overflow: hidden`) and extend the 3D ground/stage apron deep enough in `+Z`/`-Z` under the camera frustum so the bottom third of the viewport never shows a black clear-color void. Disable `collision: true` on `camera.rigs.shoulder` when the target character has attached child runtime nodes, and enforce `>= 1.4m` fighter pushbox separation (`|x| >= 1.8m` at spawn).
+
 
 Claims: use every feature freely. Claim only what a judged capture shows.
 

@@ -688,3 +688,109 @@ function computePngPerceptualSignature(bytes, cropInput, grid, bits) {
   const signature = `perceptual-${grid}x${grid}-${bits}bit-${createHash("sha256").update(cells.join("|")).digest("hex")}`;
   return { signature, grid, bits, width: crop.width, height: crop.height, cells: cells.length };
 }
+
+/**
+ * Regression check metrics for washed-out/fog-blown luminance and half-screen/bottom-band black truncation.
+ */
+export function readPngLuminanceAndTruncationMetrics(path, crop) {
+  const buffer = readFileSync(path);
+  return memoizeAnalysis(
+    "luminance-truncation",
+    buffer,
+    crop,
+    () => computePngLuminanceAndTruncationMetrics(buffer, crop)
+  );
+}
+
+function computePngLuminanceAndTruncationMetrics(bytes, cropInput) {
+  const image = decodePng(bytes);
+  const crop = resolveCrop(image, cropInput);
+  const total = Math.max(1, crop.width * crop.height);
+  let sumLuma = 0;
+  let sumLumaSq = 0;
+  let nearWhiteCount = 0;
+  let hazeCount = 0;
+  let nearBlackCount = 0;
+  let topBandTotal = 0;
+  let topBandBlack = 0;
+  let bottomBandTotal = 0;
+  let bottomBandBlack = 0;
+  let leftBandTotal = 0;
+  let leftBandBlack = 0;
+  const topYEnd = crop.y + Math.floor(crop.height * 0.22);
+  const bottomYStart = crop.y + Math.floor(crop.height * 0.70);
+  const leftXEnd = crop.x + Math.floor(crop.width * 0.35);
+
+  for (let y = crop.y; y < crop.y + crop.height; y += 1) {
+    const inTopBand = y < topYEnd;
+    const inBottomBand = y >= bottomYStart;
+    for (let x = crop.x; x < crop.x + crop.width; x += 1) {
+      const p = pixelAt(image, x, y);
+      const luma = 0.2126 * p.r + 0.7152 * p.g + 0.0722 * p.b;
+      sumLuma += luma;
+      sumLumaSq += luma * luma;
+      const maxCh = Math.max(p.r, p.g, p.b);
+      const minCh = Math.min(p.r, p.g, p.b);
+      const sat = maxCh - minCh;
+      if (luma >= 235 && sat <= 26) {
+        nearWhiteCount += 1;
+      }
+      if (luma >= 180 && sat <= 38) {
+        hazeCount += 1;
+      }
+      const isBlack = p.r <= 12 && p.g <= 12 && p.b <= 14;
+      if (isBlack) {
+        nearBlackCount += 1;
+      }
+      if (inTopBand) {
+        topBandTotal += 1;
+        if (isBlack) topBandBlack += 1;
+      }
+      if (inBottomBand) {
+        bottomBandTotal += 1;
+        if (isBlack) bottomBandBlack += 1;
+      }
+      if (x < leftXEnd) {
+        leftBandTotal += 1;
+        if (isBlack) leftBandBlack += 1;
+      }
+    }
+  }
+
+  const meanLuminance = Number((sumLuma / total).toFixed(2));
+  const variance = Math.max(0, sumLumaSq / total - (sumLuma / total) ** 2);
+  const luminanceStdDev = Number(Math.sqrt(variance).toFixed(2));
+  const nearWhiteRatio = ratio(nearWhiteCount, total);
+  const hazeRatio = ratio(hazeCount, total);
+  const nearBlackRatio = ratio(nearBlackCount, total);
+  const topBandBlackRatio = ratio(topBandBlack, Math.max(1, topBandTotal));
+  const bottomBandBlackRatio = ratio(bottomBandBlack, Math.max(1, bottomBandTotal));
+  const leftBandBlackRatio = ratio(leftBandBlack, Math.max(1, leftBandTotal));
+  const notWashedOut =
+    meanLuminance >= 14 &&
+    meanLuminance <= 158 &&
+    nearWhiteRatio < 0.08 &&
+    hazeRatio < 0.30 &&
+    luminanceStdDev >= 22;
+  const noBlackTruncation =
+    bottomBandBlackRatio < 0.45 &&
+    leftBandBlackRatio < 0.32 &&
+    nearBlackRatio < 0.50;
+
+  return {
+    width: image.width,
+    height: image.height,
+    crop,
+    meanLuminance,
+    luminanceStdDev,
+    nearWhiteRatio,
+    hazeRatio,
+    nearBlackRatio,
+    topBandBlackRatio,
+    bottomBandBlackRatio,
+    leftBandBlackRatio,
+    notWashedOut,
+    noBlackTruncation
+  };
+}
+

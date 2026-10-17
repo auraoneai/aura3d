@@ -73,15 +73,9 @@
         height: 100% !important;
       }
 
-      /* dewy morning glow + faint turf scan overlay */
+      /* dewy morning glow + faint turf scan overlay — disabled to keep 3D course crystal clear */
       .screen-fx {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 6;
-        background:
-          radial-gradient(circle at 50% 30%, rgba(155, 232, 78, 0.05) 0%, rgba(8, 17, 12, 0.05) 50%, rgba(4, 7, 5, 0.5) 100%),
-          repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.012) 0px, rgba(255, 255, 255, 0.012) 1px, transparent 1px, transparent 3px);
+        display: none;
       }
 
       .cup-flash {
@@ -369,17 +363,9 @@
         margin-top: 1px;
       }
 
-      /* Event ticker */
+      /* Event ticker — hidden to keep top-center horizon and stadium unobstructed */
       .hud-ticker {
-        position: absolute;
-        top: 18px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 3px;
-        max-width: 46vw;
+        display: none;
       }
 
       .hud-ticker .tick {

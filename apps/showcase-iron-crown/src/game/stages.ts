@@ -1,4 +1,4 @@
-import { games, model, type AuraSceneNode } from "@aura3d/engine";
+import { games, material, model, primitives, type AuraSceneNode } from "@aura3d/engine";
 import { assets as rootAssets } from "../../../../src/aura-assets";
 import { assets } from "../aura-assets";
 
@@ -23,6 +23,15 @@ export type StageId =
 
 type PresetName = "training-grid" | "rooftop-city" | "neon-dojo" | "industrial-arena";
 
+export interface StagePalette {
+  readonly floor: string;
+  readonly lane: string;
+  readonly aura: string;
+  readonly warning: string;
+  readonly skyline: string;
+  readonly fog: string;
+}
+
 export interface IronStage {
   readonly id: StageId;
   readonly label: string;
@@ -30,6 +39,7 @@ export interface IronStage {
   readonly lookId: "night-city" | "golden-hour" | "outdoor-day" | "overcast" | "alpine-snow" | "arena-fight";
   readonly lookOverrides?: { readonly accent?: string; readonly exposureEv?: number; readonly fogDensityScale?: number };
   readonly preset: PresetName;
+  readonly palette: StagePalette;
   /** Rim-light accent (the fight-lane "aura" colour). */
   readonly accent: string;
   readonly stage: ReturnType<typeof games.fighting.stagePreset>;
@@ -51,20 +61,99 @@ function modelProp(
     .toJSON();
 }
 
+function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraSceneNode[] {
+  const nodes: AuraSceneNode[] = [
+    primitives
+      .box({
+        name: `${id}-obsidian-subfloor`,
+        material: material.pbr({
+          color: palette.floor,
+          roughness: 0.48,
+          metallic: 0.24
+        })
+      })
+      .position(0, -0.14, 0)
+      .scale([44, 0.2, 32])
+      .toJSON()
+  ];
+
+  const plankZs = [-13.2, -11.0, -8.8, -6.6, -4.4, -2.2, 0.0, 2.2, 4.4, 6.6, 8.8, 11.0, 13.2];
+  plankZs.forEach((z, idx) => {
+    const even = idx % 2 === 0;
+    nodes.push(
+      primitives
+        .box({
+          name: `${id}-stone-plank-${idx}`,
+          material: material.pbr({
+            color: even ? palette.floor : palette.skyline,
+            roughness: even ? 0.42 : 0.54,
+            metallic: even ? 0.28 : 0.18
+          })
+        })
+        .position(0, -0.036, z)
+        .scale([38, 0.055, 2.06])
+        .toJSON()
+    );
+  });
+
+  const trimZs = [-12.1, -9.9, -7.7, -5.5, -3.3, -1.32, 1.32, 3.3, 5.5, 7.7, 9.9, 12.1];
+  trimZs.forEach((z, idx) => {
+    const isCombatEdge = Math.abs(Math.abs(z) - 1.32) < 0.1;
+    const trimColor = isCombatEdge ? palette.lane : palette.warning;
+    nodes.push(
+      primitives
+        .box({
+          name: `${id}-gold-trim-z-${idx}`,
+          material: material.pbr({
+            color: trimColor,
+            emissive: trimColor,
+            emissiveIntensity: isCombatEdge ? 0.42 : 0.18,
+            roughness: 0.28,
+            metallic: 0.65
+          })
+        })
+        .position(0, -0.012, z)
+        .scale([36, 0.022, isCombatEdge ? 0.09 : 0.055])
+        .toJSON()
+    );
+  });
+
+  for (const side of [-1, 1] as const) {
+    nodes.push(
+      primitives
+        .box({
+          name: `${id}-ring-border-x-${side > 0 ? "r" : "l"}`,
+          material: material.pbr({
+            color: palette.warning,
+            emissive: palette.warning,
+            emissiveIntensity: 0.25,
+            roughness: 0.3,
+            metallic: 0.62
+          })
+        })
+        .position(side * 3.9, -0.01, 0)
+        .scale([0.08, 0.024, 28])
+        .toJSON()
+    );
+  }
+
+  return nodes;
+}
+
 function makeStage(
   id: StageId,
   label: string,
   venue: string,
   lookId: IronStage["lookId"],
   preset: PresetName,
-  palette: { floor: string; lane: string; aura: string; warning: string; skyline: string; fog: string },
+  palette: StagePalette,
   dressing: readonly AuraSceneNode[],
   lookOverrides?: IronStage["lookOverrides"]
 ): IronStage {
   const stage = games.fighting.stagePreset(preset, {
     id,
     width: 7.8,
-    depth: 2.5,
+    depth: 30,
     safeInset: 0.5,
     palette
   });
@@ -75,6 +164,7 @@ function makeStage(
     lookId,
     lookOverrides,
     preset,
+    palette,
     accent: palette.aura,
     stage,
     issues: games.fighting.validateStage(stage).map((issue) => ({
@@ -83,7 +173,7 @@ function makeStage(
       message: issue.message
     })),
     bounds: { minX: stage.combatBounds.minX, maxX: stage.combatBounds.maxX },
-    dressing
+    dressing: [...buildArenaFloorDeck(id, palette), ...dressing]
   };
 }
 
