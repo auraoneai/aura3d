@@ -25,6 +25,7 @@ import {
   effects,
   game,
   geometry,
+  group,
   instances,
   lights,
   looks,
@@ -318,13 +319,13 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
   // --- Landmark dressing per theme ---
   if (theme === "dunes") {
     nodes.push(
-      model(assets.siegeWindmillTowerMeshy, { name: "landmark-windmill", targetHeight: 11 }).position(terrain.bounds.maxX - 24, 0, midT[1] + 20).rotate(0, -0.5, 0),
-      model(assets.siegeCastleGatehouseMeshy, { name: "landmark-clubhouse", targetHeight: 9 }).position(tx - 30, 0, tz - 24).rotate(0, 0.7, 0)
+      model(assets.heatsinkStatue, { name: "landmark-monument", targetHeight: 11 }).position(terrain.bounds.maxX - 24, 0, midT[1] + 20).rotate(0, -0.5, 0),
+      model(assets.showcaseDataStation, { name: "landmark-clubhouse", targetHeight: 9 }).position(tx - 30, 0, tz - 24).rotate(0, 0.7, 0)
     );
     if (hole.layout.water.length) {
       const w = hole.layout.water[0]!;
       nodes.push(
-        model(assets.siegeStoneBridgeMeshy, { name: "landmark-bridge", targetHeight: 3.2 })
+        model(assets.auroraOutpostPadMeshy, { name: "landmark-bridge", targetHeight: 3.2 })
           .position(w.center[0], terrain.height(w.center[0], w.center[1]) + w.radius * 0.1, w.center[1])
           .rotate(0, 0.2, 0)
       );
@@ -335,11 +336,11 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     );
   } else if (theme === "volcanic") {
     nodes.push(
-      model(assets.skylineCrystalShardMeshy, { name: "landmark-shard", targetHeight: 14 }).position(terrain.bounds.maxX - 18, terrain.height(terrain.bounds.maxX - 18, midT[1]), midT[1]).rotate(0, 0.4, 0)
+      model(assets.showcaseStylizedMiniFloatingIsland, { name: "landmark-island", targetHeight: 14 }).position(terrain.bounds.maxX - 18, terrain.height(terrain.bounds.maxX - 18, midT[1]), midT[1]).rotate(0, 0.4, 0)
     );
   } else if (theme === "alpine") {
     nodes.push(
-      model(assets.turboAlpineVenueBackdrop, { name: "landmark-alps", targetHeight: 60 }).position(cx + 60, 0, cz + 140).rotate(0, Math.PI, 0)
+      model(assets.auroraExtractionBayBackdrop, { name: "landmark-alps", targetHeight: 60 }).position(cx + 60, 0, cz + 140).rotate(0, Math.PI, 0)
     );
   } else if (theme === "nightCity") {
     const buildings = [assets.showcaseModernBuildingOne, assets.showcaseModernOfficeBuilding, assets.showcaseVoxelBuilding];
@@ -353,7 +354,7 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     for (const [lx, lz] of [[-18, -8], [18, -8], [-18, 18], [18, 18]] as const) {
       const x = cx + lx, z = cz + lz;
       nodes.push(
-        model(assets.neonStreetLampProp, { name: `lamp-${lx}-${lz}`, targetHeight: 7.5 }).position(x, terrain.height(x, z), z),
+        model(assets.bankShotBilliardLampMeshy, { name: `lamp-${lx}-${lz}`, targetHeight: 7.5 }).position(x, terrain.height(x, z), z),
         lights.spot({ name: `lamp-spot-${lx}-${lz}`, position: [x, terrain.height(x, z) + 7.2, z], target: [cx, terrain.cup[1], cz], angle: 0.7, penumbra: 0.6, intensity: 1.6, color: "#bfe8ff", distance: 70 })
       );
     }
@@ -361,7 +362,7 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     nodes.push(
       model(assets.auroraHabitatDomeMeshy, { name: "landmark-dome", targetHeight: 12 }).position(terrain.bounds.maxX - 20, terrain.height(terrain.bounds.maxX - 20, midT[1]), midT[1]).rotate(0, -0.9, 0),
       model(assets.lunarRoverMeshy, { name: "landmark-rover", targetHeight: 2.4 }).position(tx + 12, terrain.height(tx + 12, tz + 8), tz + 8).rotate(0, 0.5, 0).runtime(game.runtimeNode("landmark-rover")),
-      model(assets.gravityOrbitalRelayMeshy, { name: "landmark-relay", targetHeight: 9 }).position(terrain.bounds.minX + 16, terrain.height(terrain.bounds.minX + 16, cz + 30), cz + 30)
+      model(assets.auroraLanderProbe, { name: "landmark-relay", targetHeight: 9 }).position(terrain.bounds.minX + 16, terrain.height(terrain.bounds.minX + 16, cz + 30), cz + 30)
     );
   }
 
@@ -463,13 +464,17 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
 
   // --- Flag + cup ---
   nodes.push(
-    model(assets.siegeFlagstickCupMeshy, { name: "flagstick", targetHeight: 2.3 }).position(terrain.cup[0], terrain.cup[1] - 0.06, terrain.cup[2]).runtime(game.runtimeNode("flagstick")),
+    group("flagstick", [
+      primitives.cylinder({ name: "flag-pole", size: [0.03, 2.2, 0.03], material: material.pbr({ color: "#f4f6f0", roughness: 0.35 }) }).position(0, 1.1, 0),
+      primitives.box({ name: "flag-cloth", size: [0.52, 0.3, 0.015], material: material.emissive({ color: "#ff4436", emissive: "#ff4436", emissiveIntensity: 0.4 }) }).position(0.27, 1.95, 0),
+      primitives.sphere({ name: "flag-tip", size: [0.08, 0.08, 0.08], material: material.emissive({ color: "#ffd257", emissive: "#ffd257", emissiveIntensity: 0.5 }) }).position(0, 2.24, 0)
+    ]).position(terrain.cup[0], terrain.cup[1] - 0.06, terrain.cup[2]).runtime(game.runtimeNode("flagstick")),
     primitives.cylinder({ name: "cup-dark", size: [0.115, 0.06, 0.115], material: material.pbr({ color: "#05070a", roughness: 1 }) }).position(terrain.cup[0], terrain.cup[1] + 0.005, terrain.cup[2])
   );
 
   // --- Ball + trail + shadow + aim aids ---
   nodes.push(
-    model(assets.siegeGolfBall, { name: "golf-ball", targetHeight: BALL_R * 2 }).runtime(game.runtimeNode("golf-ball")),
+    primitives.sphere({ name: "golf-ball", size: [BALL_R * 2, BALL_R * 2, BALL_R * 2], material: material.pbr({ color: "#fbfcff", roughness: 0.32 }) }).runtime(game.runtimeNode("golf-ball")),
     primitives.cylinder({ name: "ball-shadow", size: [0.22, 0.008, 0.22], material: material.pbr({ color: "#000000", opacity: 0.38, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow")),
     effects.trail({ name: "ball-ribbon-trail", target: "golf-ball", color: "#ffffff", width: 0.07, maxPoints: 44, intensity: 0.9 } as any),
     // aim line + predicted landing ring (aim phase only)
@@ -1529,17 +1534,17 @@ function setupAudio(): void {
   audio = createGameAudio({
     browserContext: true,
     cues: {
-      drive:    { id: "drive", asset: { url: assets.siegeDriveHitSfx.url }, volume: 0.55 },
+      drive:    { id: "drive", asset: { url: assets.bankShotCueStrikeSfx.url }, volume: 0.55 },
       putt:     { id: "putt", asset: { url: sfxUrl(sfx.sports.ballBounceCourt[0]) }, volume: 0.5 },
       bounce:   { id: "bounce", asset: { url: sfxUrl(sfx.sports.ballBounceCourt[1]) }, volume: 0.4 },
-      cup:      { id: "cup", asset: { url: assets.siegeCupSinkSfx.url }, volume: 0.8 },
-      rattle:   { id: "rattle", asset: { url: assets.siegeMetalClangSfx.url }, volume: 0.45 },
+      cup:      { id: "cup", asset: { url: assets.bankShotPocketDropSfx.url }, volume: 0.8 },
+      rattle:   { id: "rattle", asset: { url: assets.bankShotCushionHitSfx.url }, volume: 0.45 },
       splash:   { id: "splash", asset: { url: sfxUrl(sfx.sports.ballBounceHard[1]) }, volume: 0.5 },
-      parChime: { id: "parChime", asset: { url: assets.siegeParChimeSfx.url }, volume: 0.7 },
-      bogey:    { id: "bogey", asset: { url: assets.siegeBogeyStingSfx.url }, volume: 0.5 },
+      parChime: { id: "parChime", asset: { url: assets.bankShotComboChimeSfx.url }, volume: 0.7 },
+      bogey:    { id: "bogey", asset: { url: assets.bankShotRackFailSfx.url }, volume: 0.5 },
       win:      { id: "win", asset: { url: sfxUrl(sfx.stinger.win[0]) }, volume: 0.85 },
-      ui:       { id: "ui", asset: { url: assets.siegeUiConfirmSfx.url }, volume: 0.4 },
-      wind:     { id: "wind", asset: { url: assets.siegeAmbientWindSfx.url }, volume: 0.25, loop: true }
+      ui:       { id: "ui", asset: { url: assets.blockfallHoldSwapSfx.url }, volume: 0.4 },
+      wind:     { id: "wind", asset: { url: assets.auroraAmbientWindSfx.url }, volume: 0.25, loop: true }
     },
     buses: [{ id: "sfx" } as any]
   } as any) as any;
@@ -1644,7 +1649,7 @@ function publishEvidence(): void {
     eventLog: eventLog.snapshot(),
     touch: touchControls?.evidence?.() ?? null,
     audio: audio?.evidence ? { unlocked: audio.evidence.unlocked, cueCount: audio.evidence.cueCount, playedCueCount: audio.evidence.playedCueCount } : null,
-    catalogAssets: ["siegeGolfBall", "siegeFlagstickCupMeshy", "propPineTree", "propRockA", "propRockB", "siegeWindmillTowerMeshy", "siegeStoneBridgeMeshy", "siegeCastleGatehouseMeshy", "showcaseTeaHouse", "skylineCrystalShardMeshy", "turboAlpineVenueBackdrop", "neonStreetLampProp", "showcaseModernBuildingOne", "showcaseModernOfficeBuilding", "showcaseVoxelBuilding", "auroraHabitatDomeMeshy", "lunarRoverMeshy", "gravityOrbitalRelayMeshy"],
+    catalogAssets: ["propPineTree", "propRockA", "propRockB", "heatsinkStatue", "showcaseDataStation", "auroraOutpostPadMeshy", "showcaseTeaHouse", "showcaseStylizedMiniFloatingIsland", "auroraExtractionBayBackdrop", "bankShotBilliardLampMeshy", "showcaseModernBuildingOne", "showcaseModernOfficeBuilding", "showcaseVoxelBuilding", "auroraHabitatDomeMeshy", "lunarRoverMeshy", "auroraLanderProbe", "bankShotCueStrikeSfx", "bankShotPocketDropSfx", "bankShotCushionHitSfx", "bankShotComboChimeSfx", "bankShotRackFailSfx", "blockfallHoldSwapSfx", "auroraAmbientWindSfx"],
     deterministic: { terrain: "buildHoleTerrain", ball: "stepBall", seed: "lcg" }
   };
   (window as any).__AURA3D_GAME_EVIDENCE__ = evidence;
