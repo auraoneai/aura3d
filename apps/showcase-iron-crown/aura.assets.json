@@ -1,0 +1,4322 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "ironcrownBoulder",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/ironcrownBoulder.6a7745b6.glb",
+      "outputPath": "public/aura-assets/ironcrownBoulder.6a7745b6.glb",
+      "url": "/aura-assets/ironcrownBoulder.6a7745b6.glb",
+      "hash": "sha256-6a7745b60dc89dc595d596de415994ca3926af4e2506610e36dc2a51b234937d",
+      "sizeBytes": 5859188,
+      "bounds": [
+        0.015,
+        0.02,
+        0.007
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.007,
+          0,
+          -0.003
+        ],
+        "max": [
+          0.007,
+          0.02,
+          0.003
+        ],
+        "size": [
+          0.015,
+          0.02,
+          0.007
+        ],
+        "center": [
+          0,
+          0.01,
+          0
+        ],
+        "maxDimension": 0.02,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [
+        "Idle",
+        "Walk_Fight_Forward",
+        "Walk_Fight_Back",
+        "Left_Jab_from_Guard",
+        "Right_Uppercut_from_Guard",
+        "Triple_Combo_Attack",
+        "Block1",
+        "Hit_Reaction",
+        "Dead",
+        "Regular_Jump"
+      ],
+      "animationMetadata": {
+        "clipCount": 10,
+        "clips": [
+          {
+            "index": 0,
+            "name": "Idle",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 4,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 1,
+            "name": "Walk_Fight_Forward",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6666666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 2,
+            "name": "Walk_Fight_Back",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6666666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 3,
+            "name": "Left_Jab_from_Guard",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.7,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 4,
+            "name": "Right_Uppercut_from_Guard",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 5,
+            "name": "Triple_Combo_Attack",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 4.333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 6,
+            "name": "Block1",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 3.466666666666667,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 7,
+            "name": "Hit_Reaction",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 8,
+            "name": "Dead",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 2.966666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 9,
+            "name": "Regular_Jump",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.8333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          }
+        ],
+        "messages": [
+          "Detected 10 embedded animation clips."
+        ]
+      },
+      "humanoid": {
+        "humanoid": true,
+        "status": "humanoid",
+        "confidence": "high",
+        "skinCount": 1,
+        "jointCount": 24,
+        "matchedBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "missingBones": [],
+        "messages": [
+          "Humanoid signals detected from skinned joints."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 24,
+        "skins": [
+          {
+            "index": 0,
+            "name": "Armature",
+            "jointCount": 24,
+            "joints": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 24 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 26,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 10,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Armature"
+        ],
+        "maxDepth": 9,
+        "messages": [
+          "Detected 26 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownBoulder.6a7745b6.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated via the Meshy API under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:34:55.132Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+          "taskId": "01a14936-7a00-74f7-bc3f-6d19dfce5b76",
+          "parentTaskIds": [
+            "01a14921-d325-73d4-93fc-cb0ed0543b73",
+            "01a14924-987a-775d-9d8d-1d5c847ccdc0",
+            "01a14925-625e-7354-b631-c0058247089f",
+            "01a14936-2572-7268-892c-b235d310f29f",
+            "01a14936-7a00-74f7-bc3f-6d19dfce5b76"
+          ],
+          "operation": "animate",
+          "promptHash": "sha256-5c023629a716b2a22eb4e8cd06ed0b2835f33be34297ca26bc669b3165cfb9d3",
+          "createdAt": "2026-10-17T09:11:58.039Z",
+          "finishedAt": "2026-10-17T09:34:55.132Z",
+          "consumedCredits": 55,
+          "localMetadata": "aura-evidence/meshy/ironcrownBoulder.metadata.53a33b921576.json",
+          "rightsEvidence": "aura-evidence/meshy/ironcrownBoulder.rights.968cd708eaf2.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/ironcrownBoulder.rights.968cd708eaf2.json",
+          "aura-evidence/meshy/ironcrownBoulder.metadata.53a33b921576.json",
+          "public/aura-assets/ironcrownBoulder.meshy-candidate.d5eb65ae.png"
+        ],
+        "checkedAt": "2026-10-17T09:34:55.132Z"
+      },
+      "textures": [
+        "BakedMaterial_baseColor"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "head_end",
+        "headfront",
+        "Head",
+        "neck",
+        "LeftHand",
+        "LeftForeArm",
+        "LeftArm",
+        "LeftShoulder",
+        "RightHand",
+        "RightForeArm",
+        "RightArm",
+        "RightShoulder",
+        "Spine",
+        "Spine01",
+        "Spine02",
+        "LeftToeBase",
+        "LeftFoot",
+        "LeftLeg",
+        "LeftUpLeg",
+        "RightToeBase",
+        "RightFoot",
+        "RightLeg",
+        "RightUpLeg",
+        "Hips",
+        "char1",
+        "Armature"
+      ],
+      "thumbnailUrl": "/aura-assets/ironcrownBoulder.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/ironcrownBoulder.meshy-candidate.d5eb65ae.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-d5eb65ae02b6230012407e8a25d0dd1c3b4d4ca46f5a6fe1fa1418a576a78087",
+        "checkedAt": "2026-10-17T09:38:56.950Z"
+      },
+      "animationClips": [
+        {
+          "name": "Idle",
+          "duration": 4,
+          "channelCount": 72
+        },
+        {
+          "name": "Walk_Fight_Forward",
+          "duration": 1.6666666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Walk_Fight_Back",
+          "duration": 1.6666666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Left_Jab_from_Guard",
+          "duration": 1.7,
+          "channelCount": 72
+        },
+        {
+          "name": "Right_Uppercut_from_Guard",
+          "duration": 1,
+          "channelCount": 72
+        },
+        {
+          "name": "Triple_Combo_Attack",
+          "duration": 4.333333333333333,
+          "channelCount": 72
+        },
+        {
+          "name": "Block1",
+          "duration": 3.466666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Hit_Reaction",
+          "duration": 1.6333333333333333,
+          "channelCount": 72
+        },
+        {
+          "name": "Dead",
+          "duration": 2.966666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Regular_Jump",
+          "duration": 1.8333333333333333,
+          "channelCount": 72
+        }
+      ],
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "ironcrownCrown",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/ironcrownCrown.e44eaa1e.glb",
+      "outputPath": "public/aura-assets/ironcrownCrown.e44eaa1e.glb",
+      "url": "/aura-assets/ironcrownCrown.e44eaa1e.glb",
+      "hash": "sha256-e44eaa1ee71c642e06a48d4600e92268d139b669ab3f11bd8c596e440eebb631",
+      "sizeBytes": 17940548,
+      "bounds": [
+        1.896,
+        1.882,
+        1.897
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.95,
+          -0.952,
+          -0.95
+        ],
+        "max": [
+          0.946,
+          0.93,
+          0.947
+        ],
+        "size": [
+          1.896,
+          1.882,
+          1.897
+        ],
+        "center": [
+          -0.002,
+          -0.011,
+          -0.002
+        ],
+        "maxDimension": 1.897,
+        "grounded": false
+      },
+      "materials": [
+        "material-0"
+      ],
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownCrown.e44eaa1e.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated via the Meshy API under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:20:39.885Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+          "taskId": "01a14929-05c5-7371-bcf9-b1c38357a776",
+          "parentTaskIds": [
+            "01a14922-2504-7750-9897-4e24a99e7b31",
+            "01a14929-05c5-7371-bcf9-b1c38357a776"
+          ],
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-1d8d576938708276aaec20cdac0d061340fac723fdca44fdfee9e8d4666cb695",
+          "createdAt": "2026-10-17T09:12:18.773Z",
+          "finishedAt": "2026-10-17T09:20:39.885Z",
+          "consumedCredits": 15,
+          "localMetadata": "aura-evidence/meshy/ironcrownCrown.metadata.ac86dc68c34f.json",
+          "rightsEvidence": "aura-evidence/meshy/ironcrownCrown.rights.968cd708eaf2.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/ironcrownCrown.rights.968cd708eaf2.json",
+          "aura-evidence/meshy/ironcrownCrown.metadata.ac86dc68c34f.json",
+          "public/aura-assets/ironcrownCrown.meshy-candidate.54e34b09.png"
+        ],
+        "checkedAt": "2026-10-17T09:20:39.885Z"
+      },
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "thumbnailUrl": "/aura-assets/ironcrownCrown.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "renderedProbe": {
+        "url": "/aura-assets/ironcrownCrown.meshy-candidate.54e34b09.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-54e34b095bc327c380598425709529635bd7c4e9da370caf51e0ee4a3e4c1aac",
+        "checkedAt": "2026-10-17T09:38:59.195Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "ironcrownJinx",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/ironcrownJinx.e5e3604a.glb",
+      "outputPath": "public/aura-assets/ironcrownJinx.e5e3604a.glb",
+      "url": "/aura-assets/ironcrownJinx.e5e3604a.glb",
+      "hash": "sha256-e5e3604a8f89ec8e1ae10bfca18f555131b4f28f428512b021f98938f395e91d",
+      "sizeBytes": 5833024,
+      "bounds": [
+        0.008,
+        0.017,
+        0.008
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.004,
+          0,
+          -0.004
+        ],
+        "max": [
+          0.004,
+          0.017,
+          0.004
+        ],
+        "size": [
+          0.008,
+          0.017,
+          0.008
+        ],
+        "center": [
+          0,
+          0.008,
+          0
+        ],
+        "maxDimension": 0.017,
+        "grounded": true
+      },
+      "materials": [
+        "Material_1"
+      ],
+      "materialMetadata": [
+        {
+          "name": "Material_1",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [
+        "Idle",
+        "Walk_Fight_Forward",
+        "Walk_Fight_Back",
+        "Left_Jab_from_Guard",
+        "Right_Uppercut_from_Guard",
+        "Triple_Combo_Attack",
+        "Block1",
+        "Hit_Reaction",
+        "Dead",
+        "Regular_Jump"
+      ],
+      "animationMetadata": {
+        "clipCount": 10,
+        "clips": [
+          {
+            "index": 0,
+            "name": "Idle",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ],
+            "duration": 4,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 1,
+            "name": "Walk_Fight_Forward",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ],
+            "duration": 1.7333333333333334,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 2,
+            "name": "Walk_Fight_Back",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ],
+            "duration": 1.7333333333333334,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 3,
+            "name": "Left_Jab_from_Guard",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ],
+            "duration": 1.7666666666666666,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 4,
+            "name": "Right_Uppercut_from_Guard",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ],
+            "duration": 1.0333333333333334,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 5,
+            "name": "Triple_Combo_Attack",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ],
+            "duration": 4.333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 6,
+            "name": "Block1",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ],
+            "duration": 3.466666666666667,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 7,
+            "name": "Hit_Reaction",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ],
+            "duration": 1.6333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 8,
+            "name": "Dead",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ],
+            "duration": 2.966666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 9,
+            "name": "Regular_Jump",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ],
+            "duration": 1.9,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          }
+        ],
+        "messages": [
+          "Detected 10 embedded animation clips."
+        ]
+      },
+      "humanoid": {
+        "humanoid": true,
+        "status": "humanoid",
+        "confidence": "high",
+        "skinCount": 1,
+        "jointCount": 24,
+        "matchedBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "missingBones": [],
+        "messages": [
+          "Humanoid signals detected from skinned joints."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 24,
+        "skins": [
+          {
+            "index": 0,
+            "name": "Armature",
+            "jointCount": 24,
+            "joints": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 24 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 26,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 10,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Armature"
+        ],
+        "maxDepth": 9,
+        "messages": [
+          "Detected 26 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownJinx.e5e3604a.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated via the Meshy API under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:36:34.890Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+          "taskId": "01a14937-8321-7688-984d-8dd89c503ce5",
+          "parentTaskIds": [
+            "01a14921-e793-7755-8e6b-a67f0934bb0b",
+            "01a14924-a2eb-70ea-8380-cce7d4d378eb",
+            "01a14926-8363-73c9-8f00-d834834f231f",
+            "01a14936-7e98-72ec-bcc8-22da0ac42933",
+            "01a14937-8321-7688-984d-8dd89c503ce5"
+          ],
+          "operation": "animate",
+          "promptHash": "sha256-8188c765d942ab305104def09b67a685cfcf3b082f0eec3ef0a6743a4b330607",
+          "createdAt": "2026-10-17T09:12:02.833Z",
+          "finishedAt": "2026-10-17T09:36:34.890Z",
+          "consumedCredits": 55,
+          "localMetadata": "aura-evidence/meshy/ironcrownJinx.metadata.cc203f47c932.json",
+          "rightsEvidence": "aura-evidence/meshy/ironcrownJinx.rights.968cd708eaf2.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/ironcrownJinx.rights.968cd708eaf2.json",
+          "aura-evidence/meshy/ironcrownJinx.metadata.cc203f47c932.json",
+          "public/aura-assets/ironcrownJinx.meshy-candidate.fdeff851.png"
+        ],
+        "checkedAt": "2026-10-17T09:36:34.890Z"
+      },
+      "textures": [
+        "texture_0"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "LeftToeBase",
+        "LeftFoot",
+        "LeftLeg",
+        "LeftUpLeg",
+        "RightToeBase",
+        "RightFoot",
+        "RightLeg",
+        "RightUpLeg",
+        "LeftHand",
+        "LeftForeArm",
+        "LeftArm",
+        "LeftShoulder",
+        "RightHand",
+        "RightForeArm",
+        "RightArm",
+        "RightShoulder",
+        "head_end",
+        "headfront",
+        "Head",
+        "neck",
+        "Spine",
+        "Spine01",
+        "Spine02",
+        "Hips",
+        "char1",
+        "Armature"
+      ],
+      "thumbnailUrl": "/aura-assets/ironcrownJinx.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/ironcrownJinx.meshy-candidate.fdeff851.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-fdeff851c1ca400415d3063c96d094d316eacbbf93e3c3809b4f324406c53897",
+        "checkedAt": "2026-10-17T09:38:57.369Z"
+      },
+      "animationClips": [
+        {
+          "name": "Idle",
+          "duration": 4,
+          "channelCount": 72
+        },
+        {
+          "name": "Walk_Fight_Forward",
+          "duration": 1.7333333333333334,
+          "channelCount": 72
+        },
+        {
+          "name": "Walk_Fight_Back",
+          "duration": 1.7333333333333334,
+          "channelCount": 72
+        },
+        {
+          "name": "Left_Jab_from_Guard",
+          "duration": 1.7666666666666666,
+          "channelCount": 72
+        },
+        {
+          "name": "Right_Uppercut_from_Guard",
+          "duration": 1.0333333333333334,
+          "channelCount": 72
+        },
+        {
+          "name": "Triple_Combo_Attack",
+          "duration": 4.333333333333333,
+          "channelCount": 72
+        },
+        {
+          "name": "Block1",
+          "duration": 3.466666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Hit_Reaction",
+          "duration": 1.6333333333333333,
+          "channelCount": 72
+        },
+        {
+          "name": "Dead",
+          "duration": 2.966666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Regular_Jump",
+          "duration": 1.9,
+          "channelCount": 72
+        }
+      ],
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "ironcrownKenji",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/ironcrownKenji.882e0192.glb",
+      "outputPath": "public/aura-assets/ironcrownKenji.882e0192.glb",
+      "url": "/aura-assets/ironcrownKenji.882e0192.glb",
+      "hash": "sha256-882e01924033f0a0769918a5aaacaedd8fba215424e2b3c7c69db59c13936cdc",
+      "sizeBytes": 6429524,
+      "bounds": [
+        0.012,
+        0.018,
+        0.008
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.006,
+          0,
+          -0.004
+        ],
+        "max": [
+          0.006,
+          0.018,
+          0.004
+        ],
+        "size": [
+          0.012,
+          0.018,
+          0.008
+        ],
+        "center": [
+          0,
+          0.009,
+          0
+        ],
+        "maxDimension": 0.018,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [
+        "Idle",
+        "Walk_Fight_Forward",
+        "Walk_Fight_Back",
+        "Left_Jab_from_Guard",
+        "Right_Uppercut_from_Guard",
+        "Triple_Combo_Attack",
+        "Block1",
+        "Hit_Reaction",
+        "Dead",
+        "Regular_Jump"
+      ],
+      "animationMetadata": {
+        "clipCount": 10,
+        "clips": [
+          {
+            "index": 0,
+            "name": "Idle",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 4,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 1,
+            "name": "Walk_Fight_Forward",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6666666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 2,
+            "name": "Walk_Fight_Back",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6666666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 3,
+            "name": "Left_Jab_from_Guard",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.7,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 4,
+            "name": "Right_Uppercut_from_Guard",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 5,
+            "name": "Triple_Combo_Attack",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 4.333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 6,
+            "name": "Block1",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 3.466666666666667,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 7,
+            "name": "Hit_Reaction",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 8,
+            "name": "Dead",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 2.966666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 9,
+            "name": "Regular_Jump",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.8333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          }
+        ],
+        "messages": [
+          "Detected 10 embedded animation clips."
+        ]
+      },
+      "humanoid": {
+        "humanoid": true,
+        "status": "humanoid",
+        "confidence": "high",
+        "skinCount": 1,
+        "jointCount": 24,
+        "matchedBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "missingBones": [],
+        "messages": [
+          "Humanoid signals detected from skinned joints."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 24,
+        "skins": [
+          {
+            "index": 0,
+            "name": "Armature",
+            "jointCount": 24,
+            "joints": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 24 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 26,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 10,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Armature"
+        ],
+        "maxDepth": 9,
+        "messages": [
+          "Detected 26 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownKenji.882e0192.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated via the Meshy API under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:34:31.036Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+          "taskId": "01a14936-159b-7758-8136-59cf30cd518f",
+          "parentTaskIds": [
+            "01a14921-bf52-74c8-b9e0-9acd46851a2b",
+            "01a14924-1abf-775d-a0c5-1c4b417aa40c",
+            "01a14925-6026-74f0-b470-3d569abd718e",
+            "01a14929-324b-72d6-9518-82ef1a6b4547",
+            "01a14936-159b-7758-8136-59cf30cd518f"
+          ],
+          "operation": "animate",
+          "promptHash": "sha256-ac8b02ff1efc83a5de6020c2afcd5d564afab59f0cfe0dd2448260b44293f93a",
+          "createdAt": "2026-10-17T09:11:53.478Z",
+          "finishedAt": "2026-10-17T09:34:31.036Z",
+          "consumedCredits": 55,
+          "localMetadata": "aura-evidence/meshy/ironcrownKenji.metadata.ad60daad72c2.json",
+          "rightsEvidence": "aura-evidence/meshy/ironcrownKenji.rights.968cd708eaf2.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/ironcrownKenji.rights.968cd708eaf2.json",
+          "aura-evidence/meshy/ironcrownKenji.metadata.ad60daad72c2.json",
+          "public/aura-assets/ironcrownKenji.meshy-candidate.5df2e356.png"
+        ],
+        "checkedAt": "2026-10-17T09:34:31.036Z"
+      },
+      "textures": [
+        "BakedMaterial_baseColor"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "head_end",
+        "headfront",
+        "Head",
+        "neck",
+        "LeftHand",
+        "LeftForeArm",
+        "LeftArm",
+        "LeftShoulder",
+        "RightHand",
+        "RightForeArm",
+        "RightArm",
+        "RightShoulder",
+        "Spine",
+        "Spine01",
+        "Spine02",
+        "LeftToeBase",
+        "LeftFoot",
+        "LeftLeg",
+        "LeftUpLeg",
+        "RightToeBase",
+        "RightFoot",
+        "RightLeg",
+        "RightUpLeg",
+        "Hips",
+        "char1",
+        "Armature"
+      ],
+      "thumbnailUrl": "/aura-assets/ironcrownKenji.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/ironcrownKenji.meshy-candidate.5df2e356.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-5df2e35621017ca68572f5e7027bacaa7f54698d4386ee038e887ebf1d30e80e",
+        "checkedAt": "2026-10-17T09:38:56.543Z"
+      },
+      "animationClips": [
+        {
+          "name": "Idle",
+          "duration": 4,
+          "channelCount": 72
+        },
+        {
+          "name": "Walk_Fight_Forward",
+          "duration": 1.6666666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Walk_Fight_Back",
+          "duration": 1.6666666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Left_Jab_from_Guard",
+          "duration": 1.7,
+          "channelCount": 72
+        },
+        {
+          "name": "Right_Uppercut_from_Guard",
+          "duration": 1,
+          "channelCount": 72
+        },
+        {
+          "name": "Triple_Combo_Attack",
+          "duration": 4.333333333333333,
+          "channelCount": 72
+        },
+        {
+          "name": "Block1",
+          "duration": 3.466666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Hit_Reaction",
+          "duration": 1.6333333333333333,
+          "channelCount": 72
+        },
+        {
+          "name": "Dead",
+          "duration": 2.966666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Regular_Jump",
+          "duration": 1.8333333333333333,
+          "channelCount": 72
+        }
+      ],
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "ironcrownSeraph",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/ironcrownSeraph.1d675519.glb",
+      "outputPath": "public/aura-assets/ironcrownSeraph.1d675519.glb",
+      "url": "/aura-assets/ironcrownSeraph.1d675519.glb",
+      "hash": "sha256-1d675519da646ad8343c324c2a97d17e366b3119b70093673b002cf90aeb45fb",
+      "sizeBytes": 6812564,
+      "bounds": [
+        0.011,
+        0.019,
+        0.007
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.005,
+          0,
+          -0.003
+        ],
+        "max": [
+          0.005,
+          0.019,
+          0.003
+        ],
+        "size": [
+          0.011,
+          0.019,
+          0.007
+        ],
+        "center": [
+          0,
+          0.009,
+          0
+        ],
+        "maxDimension": 0.019,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [
+        "Idle",
+        "Walk_Fight_Forward",
+        "Walk_Fight_Back",
+        "Left_Jab_from_Guard",
+        "Right_Uppercut_from_Guard",
+        "Triple_Combo_Attack",
+        "Block1",
+        "Hit_Reaction",
+        "Dead",
+        "Regular_Jump"
+      ],
+      "animationMetadata": {
+        "clipCount": 10,
+        "clips": [
+          {
+            "index": 0,
+            "name": "Idle",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 4,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 1,
+            "name": "Walk_Fight_Forward",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6666666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 2,
+            "name": "Walk_Fight_Back",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6666666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 3,
+            "name": "Left_Jab_from_Guard",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.7,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 4,
+            "name": "Right_Uppercut_from_Guard",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 5,
+            "name": "Triple_Combo_Attack",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 4.333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 6,
+            "name": "Block1",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 3.466666666666667,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 7,
+            "name": "Hit_Reaction",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 8,
+            "name": "Dead",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 2.966666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 9,
+            "name": "Regular_Jump",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.8333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          }
+        ],
+        "messages": [
+          "Detected 10 embedded animation clips."
+        ]
+      },
+      "humanoid": {
+        "humanoid": true,
+        "status": "humanoid",
+        "confidence": "high",
+        "skinCount": 1,
+        "jointCount": 24,
+        "matchedBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "missingBones": [],
+        "messages": [
+          "Humanoid signals detected from skinned joints."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 24,
+        "skins": [
+          {
+            "index": 0,
+            "name": "Armature",
+            "jointCount": 24,
+            "joints": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 24 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 26,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 10,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Armature"
+        ],
+        "maxDepth": 9,
+        "messages": [
+          "Detected 26 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownSeraph.1d675519.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated via the Meshy API under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:35:27.051Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+          "taskId": "01a14936-f4cc-776b-9961-3bd40d789f3c",
+          "parentTaskIds": [
+            "01a14921-dc2e-7457-8610-944488bd36a5",
+            "01a14924-9d5b-736f-98e7-b8fa8340c7d9",
+            "01a14926-826f-753d-91c2-da3393912241",
+            "01a14936-3efd-77a2-931a-fae24f3c2926",
+            "01a14936-f4cc-776b-9961-3bd40d789f3c"
+          ],
+          "operation": "animate",
+          "promptHash": "sha256-a40688930387f27f2b0ef4af2a368aadf77b9a5dba33c903ef281c3d207ab813",
+          "createdAt": "2026-10-17T09:12:00.908Z",
+          "finishedAt": "2026-10-17T09:35:27.051Z",
+          "consumedCredits": 55,
+          "localMetadata": "aura-evidence/meshy/ironcrownSeraph.metadata.a345b576c622.json",
+          "rightsEvidence": "aura-evidence/meshy/ironcrownSeraph.rights.968cd708eaf2.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/ironcrownSeraph.rights.968cd708eaf2.json",
+          "aura-evidence/meshy/ironcrownSeraph.metadata.a345b576c622.json",
+          "public/aura-assets/ironcrownSeraph.meshy-candidate.51b3e26d.png"
+        ],
+        "checkedAt": "2026-10-17T09:35:27.051Z"
+      },
+      "textures": [
+        "BakedMaterial_baseColor"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "head_end",
+        "headfront",
+        "Head",
+        "neck",
+        "LeftHand",
+        "LeftForeArm",
+        "LeftArm",
+        "LeftShoulder",
+        "RightHand",
+        "RightForeArm",
+        "RightArm",
+        "RightShoulder",
+        "Spine",
+        "Spine01",
+        "Spine02",
+        "LeftToeBase",
+        "LeftFoot",
+        "LeftLeg",
+        "LeftUpLeg",
+        "RightToeBase",
+        "RightFoot",
+        "RightLeg",
+        "RightUpLeg",
+        "Hips",
+        "char1",
+        "Armature"
+      ],
+      "thumbnailUrl": "/aura-assets/ironcrownSeraph.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/ironcrownSeraph.meshy-candidate.51b3e26d.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-51b3e26d654e7578fbead3797bcd5b312430166ea8aded9be1ddf2da62a92c72",
+        "checkedAt": "2026-10-17T09:38:57.159Z"
+      },
+      "animationClips": [
+        {
+          "name": "Idle",
+          "duration": 4,
+          "channelCount": 72
+        },
+        {
+          "name": "Walk_Fight_Forward",
+          "duration": 1.6666666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Walk_Fight_Back",
+          "duration": 1.6666666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Left_Jab_from_Guard",
+          "duration": 1.7,
+          "channelCount": 72
+        },
+        {
+          "name": "Right_Uppercut_from_Guard",
+          "duration": 1,
+          "channelCount": 72
+        },
+        {
+          "name": "Triple_Combo_Attack",
+          "duration": 4.333333333333333,
+          "channelCount": 72
+        },
+        {
+          "name": "Block1",
+          "duration": 3.466666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Hit_Reaction",
+          "duration": 1.6333333333333333,
+          "channelCount": 72
+        },
+        {
+          "name": "Dead",
+          "duration": 2.966666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Regular_Jump",
+          "duration": 1.8333333333333333,
+          "channelCount": 72
+        }
+      ],
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "ironcrownSovereign",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/ironcrownSovereign.ad8cc564.glb",
+      "outputPath": "public/aura-assets/ironcrownSovereign.ad8cc564.glb",
+      "url": "/aura-assets/ironcrownSovereign.ad8cc564.glb",
+      "hash": "sha256-ad8cc56419840e0f3a124418f7839e8f8d5284ad38d0fe7ebebb3649f32975b0",
+      "sizeBytes": 7603420,
+      "bounds": [
+        0.019,
+        0.02,
+        0.016
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.01,
+          0,
+          -0.008
+        ],
+        "max": [
+          0.01,
+          0.02,
+          0.008
+        ],
+        "size": [
+          0.019,
+          0.02,
+          0.016
+        ],
+        "center": [
+          0,
+          0.01,
+          0
+        ],
+        "maxDimension": 0.02,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [
+        "Idle",
+        "Walk_Fight_Forward",
+        "Walk_Fight_Back",
+        "Left_Jab_from_Guard",
+        "Right_Uppercut_from_Guard",
+        "Triple_Combo_Attack",
+        "Block1",
+        "Hit_Reaction",
+        "Dead",
+        "Regular_Jump"
+      ],
+      "animationMetadata": {
+        "clipCount": 10,
+        "clips": [
+          {
+            "index": 0,
+            "name": "Idle",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 4,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 1,
+            "name": "Walk_Fight_Forward",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6666666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 2,
+            "name": "Walk_Fight_Back",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6666666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 3,
+            "name": "Left_Jab_from_Guard",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.7,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 4,
+            "name": "Right_Uppercut_from_Guard",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 5,
+            "name": "Triple_Combo_Attack",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 4.333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 6,
+            "name": "Block1",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 3.466666666666667,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 7,
+            "name": "Hit_Reaction",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 8,
+            "name": "Dead",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 2.966666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 9,
+            "name": "Regular_Jump",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.8333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          }
+        ],
+        "messages": [
+          "Detected 10 embedded animation clips."
+        ]
+      },
+      "humanoid": {
+        "humanoid": true,
+        "status": "humanoid",
+        "confidence": "high",
+        "skinCount": 1,
+        "jointCount": 24,
+        "matchedBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "missingBones": [],
+        "messages": [
+          "Humanoid signals detected from skinned joints."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 24,
+        "skins": [
+          {
+            "index": 0,
+            "name": "Armature",
+            "jointCount": 24,
+            "joints": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 24 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 26,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 10,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Armature"
+        ],
+        "maxDepth": 9,
+        "messages": [
+          "Detected 26 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownSovereign.ad8cc564.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated via the Meshy API under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:35:44.853Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+          "taskId": "01a14937-2459-77f0-8f49-7cece0f0bbe9",
+          "parentTaskIds": [
+            "01a14921-eec4-71d5-ac70-936c6291ab4e",
+            "01a14925-596a-7069-94b7-ebce8db20314",
+            "01a14927-c44f-701c-9b59-3e3fa6ef2a42",
+            "01a14936-bc12-7152-9439-5ae717e72a89",
+            "01a14937-2459-77f0-8f49-7cece0f0bbe9"
+          ],
+          "operation": "animate",
+          "promptHash": "sha256-b3eccf1feea04b15db1f6819f46b20ced843d3354a94ab48ccc1ac19c114c485",
+          "createdAt": "2026-10-17T09:12:04.820Z",
+          "finishedAt": "2026-10-17T09:35:44.853Z",
+          "consumedCredits": 55,
+          "localMetadata": "aura-evidence/meshy/ironcrownSovereign.metadata.34d990cc2ffb.json",
+          "rightsEvidence": "aura-evidence/meshy/ironcrownSovereign.rights.968cd708eaf2.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/ironcrownSovereign.rights.968cd708eaf2.json",
+          "aura-evidence/meshy/ironcrownSovereign.metadata.34d990cc2ffb.json",
+          "public/aura-assets/ironcrownSovereign.meshy-candidate.3931a35c.png"
+        ],
+        "checkedAt": "2026-10-17T09:35:44.853Z"
+      },
+      "textures": [
+        "BakedMaterial_baseColor"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "head_end",
+        "headfront",
+        "Head",
+        "neck",
+        "LeftHand",
+        "LeftForeArm",
+        "LeftArm",
+        "LeftShoulder",
+        "RightHand",
+        "RightForeArm",
+        "RightArm",
+        "RightShoulder",
+        "Spine",
+        "Spine01",
+        "Spine02",
+        "LeftToeBase",
+        "LeftFoot",
+        "LeftLeg",
+        "LeftUpLeg",
+        "RightToeBase",
+        "RightFoot",
+        "RightLeg",
+        "RightUpLeg",
+        "Hips",
+        "char1",
+        "Armature"
+      ],
+      "thumbnailUrl": "/aura-assets/ironcrownSovereign.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/ironcrownSovereign.meshy-candidate.3931a35c.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-3931a35ce2fa243311cab7d70c7d5a0da67cd75ccb745adf70b60549cf9b65e1",
+        "checkedAt": "2026-10-17T09:38:57.575Z"
+      },
+      "animationClips": [
+        {
+          "name": "Idle",
+          "duration": 4,
+          "channelCount": 72
+        },
+        {
+          "name": "Walk_Fight_Forward",
+          "duration": 1.6666666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Walk_Fight_Back",
+          "duration": 1.6666666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Left_Jab_from_Guard",
+          "duration": 1.7,
+          "channelCount": 72
+        },
+        {
+          "name": "Right_Uppercut_from_Guard",
+          "duration": 1,
+          "channelCount": 72
+        },
+        {
+          "name": "Triple_Combo_Attack",
+          "duration": 4.333333333333333,
+          "channelCount": 72
+        },
+        {
+          "name": "Block1",
+          "duration": 3.466666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Hit_Reaction",
+          "duration": 1.6333333333333333,
+          "channelCount": 72
+        },
+        {
+          "name": "Dead",
+          "duration": 2.966666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Regular_Jump",
+          "duration": 1.8333333333333333,
+          "channelCount": 72
+        }
+      ],
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "ironcrownVolt",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/ironcrownVolt.994bcf63.glb",
+      "outputPath": "public/aura-assets/ironcrownVolt.994bcf63.glb",
+      "url": "/aura-assets/ironcrownVolt.994bcf63.glb",
+      "hash": "sha256-994bcf63e6386ec4f5a3c0dbcb132409668666c3b6dc104afdfaf3e1f445a547",
+      "sizeBytes": 5588804,
+      "bounds": [
+        0.009,
+        0.018,
+        0.004
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.005,
+          0,
+          -0.002
+        ],
+        "max": [
+          0.005,
+          0.018,
+          0.002
+        ],
+        "size": [
+          0.009,
+          0.018,
+          0.004
+        ],
+        "center": [
+          0,
+          0.009,
+          0
+        ],
+        "maxDimension": 0.018,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [
+        "Idle",
+        "Walk_Fight_Forward",
+        "Walk_Fight_Back",
+        "Left_Jab_from_Guard",
+        "Right_Uppercut_from_Guard",
+        "Triple_Combo_Attack",
+        "Block1",
+        "Hit_Reaction",
+        "Dead",
+        "Regular_Jump"
+      ],
+      "animationMetadata": {
+        "clipCount": 10,
+        "clips": [
+          {
+            "index": 0,
+            "name": "Idle",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 4,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 1,
+            "name": "Walk_Fight_Forward",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6666666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 2,
+            "name": "Walk_Fight_Back",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6666666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 3,
+            "name": "Left_Jab_from_Guard",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.7,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 4,
+            "name": "Right_Uppercut_from_Guard",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 5,
+            "name": "Triple_Combo_Attack",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 4.333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 6,
+            "name": "Block1",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 3.466666666666667,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 7,
+            "name": "Hit_Reaction",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 8,
+            "name": "Dead",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 2.966666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 9,
+            "name": "Regular_Jump",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.8333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          }
+        ],
+        "messages": [
+          "Detected 10 embedded animation clips."
+        ]
+      },
+      "humanoid": {
+        "humanoid": true,
+        "status": "humanoid",
+        "confidence": "high",
+        "skinCount": 1,
+        "jointCount": 24,
+        "matchedBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "missingBones": [],
+        "messages": [
+          "Humanoid signals detected from skinned joints."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 24,
+        "skins": [
+          {
+            "index": 0,
+            "name": "Armature",
+            "jointCount": 24,
+            "joints": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 24 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 26,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 10,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Armature"
+        ],
+        "maxDepth": 9,
+        "messages": [
+          "Detected 26 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownVolt.994bcf63.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated via the Meshy API under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:35:10.995Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+          "taskId": "01a14936-b675-776e-bc7d-bd5f064fc67b",
+          "parentTaskIds": [
+            "01a14921-ca35-71c0-bc4b-806b06df0214",
+            "01a14924-935b-71f9-a49f-10f7d2b09f50",
+            "01a14925-612f-77af-b37e-0d82e04cb9cb",
+            "01a14936-1754-70f5-bdb2-d72958a1c8c4",
+            "01a14936-b675-776e-bc7d-bd5f064fc67b"
+          ],
+          "operation": "animate",
+          "promptHash": "sha256-02874f31102d5f8000efd69705137b86d72b7a045fc5aef5b78bbb6b70970d4c",
+          "createdAt": "2026-10-17T09:11:55.768Z",
+          "finishedAt": "2026-10-17T09:35:10.995Z",
+          "consumedCredits": 55,
+          "localMetadata": "aura-evidence/meshy/ironcrownVolt.metadata.293efdbc1f68.json",
+          "rightsEvidence": "aura-evidence/meshy/ironcrownVolt.rights.968cd708eaf2.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/ironcrownVolt.rights.968cd708eaf2.json",
+          "aura-evidence/meshy/ironcrownVolt.metadata.293efdbc1f68.json",
+          "public/aura-assets/ironcrownVolt.meshy-candidate.d97a012a.png"
+        ],
+        "checkedAt": "2026-10-17T09:35:10.995Z"
+      },
+      "textures": [
+        "BakedMaterial_baseColor"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "head_end",
+        "headfront",
+        "Head",
+        "neck",
+        "LeftHand",
+        "LeftForeArm",
+        "LeftArm",
+        "LeftShoulder",
+        "RightHand",
+        "RightForeArm",
+        "RightArm",
+        "RightShoulder",
+        "Spine",
+        "Spine01",
+        "Spine02",
+        "LeftToeBase",
+        "LeftFoot",
+        "LeftLeg",
+        "LeftUpLeg",
+        "RightToeBase",
+        "RightFoot",
+        "RightLeg",
+        "RightUpLeg",
+        "Hips",
+        "char1",
+        "Armature"
+      ],
+      "thumbnailUrl": "/aura-assets/ironcrownVolt.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/ironcrownVolt.meshy-candidate.d97a012a.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-d97a012a4c99affb565a7c84cba5e0215cbb71a4cf96d1a22745609b0034e897",
+        "checkedAt": "2026-10-17T09:38:56.741Z"
+      },
+      "animationClips": [
+        {
+          "name": "Idle",
+          "duration": 4,
+          "channelCount": 72
+        },
+        {
+          "name": "Walk_Fight_Forward",
+          "duration": 1.6666666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Walk_Fight_Back",
+          "duration": 1.6666666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Left_Jab_from_Guard",
+          "duration": 1.7,
+          "channelCount": 72
+        },
+        {
+          "name": "Right_Uppercut_from_Guard",
+          "duration": 1,
+          "channelCount": 72
+        },
+        {
+          "name": "Triple_Combo_Attack",
+          "duration": 4.333333333333333,
+          "channelCount": 72
+        },
+        {
+          "name": "Block1",
+          "duration": 3.466666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Hit_Reaction",
+          "duration": 1.6333333333333333,
+          "channelCount": 72
+        },
+        {
+          "name": "Dead",
+          "duration": 2.966666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Regular_Jump",
+          "duration": 1.8333333333333333,
+          "channelCount": 72
+        }
+      ],
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    }
+  ]
+}

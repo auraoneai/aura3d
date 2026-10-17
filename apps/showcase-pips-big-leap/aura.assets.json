@@ -1,0 +1,1734 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-catalog.ts",
+  "assets": [
+    {
+      "id": "pipsBrambleback",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/pipsBrambleback.eb18aa7f.glb",
+      "outputPath": "public/aura-assets/pipsBrambleback.eb18aa7f.glb",
+      "url": "/aura-assets/pipsBrambleback.eb18aa7f.glb",
+      "hash": "sha256-eb18aa7ff3e4008e369201917c96d7395151d6ec031ac084f85a8416a56c716d",
+      "sizeBytes": 7415688,
+      "bounds": [
+        0.022,
+        0.024,
+        0.011
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.011,
+          0,
+          -0.006
+        ],
+        "max": [
+          0.011,
+          0.024,
+          0.006
+        ],
+        "size": [
+          0.022,
+          0.024,
+          0.011
+        ],
+        "center": [
+          0,
+          0.012,
+          0
+        ],
+        "maxDimension": 0.024,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [
+        "Idle",
+        "Attack",
+        "Hit_Reaction",
+        "Dead",
+        "Quick_Walk",
+        "Chest_Pound_Taunt"
+      ],
+      "animationMetadata": {
+        "clipCount": 6,
+        "clips": [
+          {
+            "index": 0,
+            "name": "Idle",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 4,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 1,
+            "name": "Attack",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 2.8,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 2,
+            "name": "Hit_Reaction",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 3,
+            "name": "Dead",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 2.966666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 4,
+            "name": "Quick_Walk",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 3,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 5,
+            "name": "Chest_Pound_Taunt",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 4.833333333333333,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          }
+        ],
+        "messages": [
+          "Detected 6 embedded animation clips."
+        ]
+      },
+      "humanoid": {
+        "humanoid": true,
+        "status": "humanoid",
+        "confidence": "high",
+        "skinCount": 1,
+        "jointCount": 24,
+        "matchedBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "missingBones": [],
+        "messages": [
+          "Humanoid signals detected from skinned joints."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 24,
+        "skins": [
+          {
+            "index": 0,
+            "name": "Armature",
+            "jointCount": 24,
+            "joints": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 24 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 26,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 6,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Armature"
+        ],
+        "maxDepth": 9,
+        "messages": [
+          "Detected 26 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/pipsBrambleback.eb18aa7f.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated via the Meshy API under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:36:30.616Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+          "taskId": "01a14937-ee97-73e5-9402-9c212271f396",
+          "parentTaskIds": [
+            "01a14921-fedb-76ae-b1a0-f7a9fe7848b6",
+            "01a14926-8c5d-7420-a308-bc5baaf951dc",
+            "01a14928-f825-766c-b75b-791ff2be4e71",
+            "01a14937-8916-71f4-9f99-4323a7207915"
+          ],
+          "operation": "animations",
+          "promptHash": "sha256-b4a501e672158b46b8fa94518fc576bc2feaae2b511f836a2400a2474933ab13",
+          "createdAt": "2026-10-17T09:12:08.867Z",
+          "finishedAt": "2026-10-17T09:36:30.616Z",
+          "consumedCredits": 43,
+          "localMetadata": "aura-evidence/meshy/pipsBrambleback.metadata.88da139d2fbd.json",
+          "rightsEvidence": "aura-evidence/meshy/pipsBrambleback.rights.968cd708eaf2.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/pipsBrambleback.rights.968cd708eaf2.json",
+          "aura-evidence/meshy/pipsBrambleback.metadata.88da139d2fbd.json",
+          "public/aura-assets/pipsBrambleback.meshy-candidate.3c4dff50.png"
+        ],
+        "checkedAt": "2026-10-17T09:36:30.616Z"
+      },
+      "textures": [
+        "BakedMaterial_baseColor"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "head_end",
+        "headfront",
+        "Head",
+        "neck",
+        "LeftHand",
+        "LeftForeArm",
+        "LeftArm",
+        "LeftShoulder",
+        "RightHand",
+        "RightForeArm",
+        "RightArm",
+        "RightShoulder",
+        "Spine",
+        "Spine01",
+        "Spine02",
+        "LeftToeBase",
+        "LeftFoot",
+        "LeftLeg",
+        "LeftUpLeg",
+        "RightToeBase",
+        "RightFoot",
+        "RightLeg",
+        "RightUpLeg",
+        "Hips",
+        "char1",
+        "Armature"
+      ],
+      "thumbnailUrl": "/aura-assets/pipsBrambleback.thumb.svg",
+      "quality": "candidate",
+      "role": "enemy",
+      "renderedProbe": {
+        "url": "/aura-assets/pipsBrambleback.meshy-candidate.3c4dff50.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-3c4dff501c0dfd8619b141ad3f1775abb32bc61ed79e4863b73197aac58660b7",
+        "checkedAt": "2026-10-17T09:46:19.895Z"
+      },
+      "animationClips": [
+        {
+          "name": "Idle",
+          "duration": 4,
+          "channelCount": 72
+        },
+        {
+          "name": "Attack",
+          "duration": 2.8,
+          "channelCount": 72
+        },
+        {
+          "name": "Hit_Reaction",
+          "duration": 1.6333333333333333,
+          "channelCount": 72
+        },
+        {
+          "name": "Dead",
+          "duration": 2.966666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Quick_Walk",
+          "duration": 3,
+          "channelCount": 72
+        },
+        {
+          "name": "Chest_Pound_Taunt",
+          "duration": 4.833333333333333,
+          "channelCount": 72
+        }
+      ],
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "pipsCheckpointFlag",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/pipsCheckpointFlag.cc2162ee.glb",
+      "outputPath": "public/aura-assets/pipsCheckpointFlag.cc2162ee.glb",
+      "url": "/aura-assets/pipsCheckpointFlag.cc2162ee.glb",
+      "hash": "sha256-cc2162ee9ecdc966202df492b9c35eaeb1d767e51fa5691cf40c8d9375d21a48",
+      "sizeBytes": 2029932,
+      "bounds": [
+        0.527,
+        1.899,
+        0.362
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.271,
+          -0.951,
+          -0.183
+        ],
+        "max": [
+          0.256,
+          0.948,
+          0.179
+        ],
+        "size": [
+          0.527,
+          1.899,
+          0.362
+        ],
+        "center": [
+          -0.007,
+          -0.002,
+          -0.002
+        ],
+        "maxDimension": 1.899,
+        "grounded": false
+      },
+      "materials": [
+        "material-0"
+      ],
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/pipsCheckpointFlag.cc2162ee.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated via the Meshy API under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:19:05.662Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+          "taskId": "01a14927-d6fd-730c-b415-01607e5978a5",
+          "parentTaskIds": [
+            "01a14922-1543-7512-be51-b28d224d5a93"
+          ],
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-c45ad32e074ef12a5a4a319e9a4d9b827e99d09422a1f613088f1a347ad84225",
+          "createdAt": "2026-10-17T09:12:14.789Z",
+          "finishedAt": "2026-10-17T09:19:05.662Z",
+          "consumedCredits": 15,
+          "localMetadata": "aura-evidence/meshy/pipsCheckpointFlag.metadata.d0e37c495a77.json",
+          "rightsEvidence": "aura-evidence/meshy/pipsCheckpointFlag.rights.968cd708eaf2.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/pipsCheckpointFlag.rights.968cd708eaf2.json",
+          "aura-evidence/meshy/pipsCheckpointFlag.metadata.d0e37c495a77.json",
+          "public/aura-assets/pipsCheckpointFlag.meshy-candidate.40c7021b.png"
+        ],
+        "checkedAt": "2026-10-17T09:19:05.662Z"
+      },
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "thumbnailUrl": "/aura-assets/pipsCheckpointFlag.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/pipsCheckpointFlag.meshy-candidate.40c7021b.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-40c7021b1ea747a157ebd2698b99924d2f5f54aa729516b24d899e9bf33e7203",
+        "checkedAt": "2026-10-17T09:46:31.573Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "pipsGoldenAcorn",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/pipsGoldenAcorn.16eae286.glb",
+      "outputPath": "public/aura-assets/pipsGoldenAcorn.16eae286.glb",
+      "url": "/aura-assets/pipsGoldenAcorn.16eae286.glb",
+      "hash": "sha256-16eae286bf078f653c6704907e3aa6fb6c38c5de4c9a5294fbc24e2a8245b2e7",
+      "sizeBytes": 2542684,
+      "bounds": [
+        1.005,
+        1.899,
+        1.005
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.504,
+          -0.952,
+          -0.504
+        ],
+        "max": [
+          0.5,
+          0.947,
+          0.5
+        ],
+        "size": [
+          1.005,
+          1.899,
+          1.005
+        ],
+        "center": [
+          -0.002,
+          -0.003,
+          -0.002
+        ],
+        "maxDimension": 1.899,
+        "grounded": false
+      },
+      "materials": [
+        "material-0"
+      ],
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/pipsGoldenAcorn.16eae286.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated via the Meshy API under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:18:56.803Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+          "taskId": "01a14927-d060-718d-a58f-a1a31a3b98fc",
+          "parentTaskIds": [
+            "01a14922-0dde-71e3-9886-eed90d5e8075"
+          ],
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-c701645583e1f2268cf96535c85bb5802a7a722103df814e6b93a6c88e729ebc",
+          "createdAt": "2026-10-17T09:12:12.609Z",
+          "finishedAt": "2026-10-17T09:18:56.803Z",
+          "consumedCredits": 15,
+          "localMetadata": "aura-evidence/meshy/pipsGoldenAcorn.metadata.07e12feff11d.json",
+          "rightsEvidence": "aura-evidence/meshy/pipsGoldenAcorn.rights.968cd708eaf2.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/pipsGoldenAcorn.rights.968cd708eaf2.json",
+          "aura-evidence/meshy/pipsGoldenAcorn.metadata.07e12feff11d.json",
+          "public/aura-assets/pipsGoldenAcorn.meshy-candidate.27c4dd6c.png"
+        ],
+        "checkedAt": "2026-10-17T09:18:56.803Z"
+      },
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "thumbnailUrl": "/aura-assets/pipsGoldenAcorn.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/pipsGoldenAcorn.meshy-candidate.27c4dd6c.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-27c4dd6c7b4651bf50a7500d0811360190dead3a9628eac9a21fce47e71129cd",
+        "checkedAt": "2026-10-17T09:46:31.369Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "pipsPip",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/pipsPip.40f519aa.glb",
+      "outputPath": "public/aura-assets/pipsPip.40f519aa.glb",
+      "url": "/aura-assets/pipsPip.40f519aa.glb",
+      "hash": "sha256-40f519aa21f0cd2d934081d5e49abeed258dc7be42d54be59f0ff4c8820dfdeb",
+      "sizeBytes": 5760500,
+      "bounds": [
+        0.007,
+        0.009,
+        0.005
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.003,
+          0,
+          -0.002
+        ],
+        "max": [
+          0.003,
+          0.009,
+          0.002
+        ],
+        "size": [
+          0.007,
+          0.009,
+          0.005
+        ],
+        "center": [
+          0,
+          0.004,
+          0
+        ],
+        "maxDimension": 0.009,
+        "grounded": true
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [
+        "Idle",
+        "RunFast",
+        "Regular_Jump",
+        "happy_jump_m",
+        "Dead",
+        "Victory_Cheer",
+        "Quick_Walk"
+      ],
+      "animationMetadata": {
+        "clipCount": 7,
+        "clips": [
+          {
+            "index": 0,
+            "name": "Idle",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 4,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 1,
+            "name": "RunFast",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 0.4666666666666667,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 2,
+            "name": "Regular_Jump",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.8333333333333333,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 3,
+            "name": "happy_jump_m",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 9.833333333333334,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 4,
+            "name": "Dead",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 2.966666666666667,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 5,
+            "name": "Victory_Cheer",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 9.333333333333334,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 6,
+            "name": "Quick_Walk",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 3,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          }
+        ],
+        "messages": [
+          "Detected 7 embedded animation clips."
+        ]
+      },
+      "humanoid": {
+        "humanoid": true,
+        "status": "humanoid",
+        "confidence": "high",
+        "skinCount": 1,
+        "jointCount": 24,
+        "matchedBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "missingBones": [],
+        "messages": [
+          "Humanoid signals detected from skinned joints."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 24,
+        "skins": [
+          {
+            "index": 0,
+            "name": "Armature",
+            "jointCount": 24,
+            "joints": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 24 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 26,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 7,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Armature"
+        ],
+        "maxDepth": 9,
+        "messages": [
+          "Detected 26 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/pipsPip.40f519aa.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated via the Meshy API under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:36:01.143Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+          "taskId": "01a14937-87e2-7006-b997-efefa081b6d1",
+          "parentTaskIds": [
+            "01a14921-f6a8-76fd-8842-979c0aa89cef",
+            "01a14925-5f1d-75d5-b4c3-7945218e3e8e",
+            "01a14927-c592-712a-8089-0303cc9b54e9",
+            "01a14937-263b-7162-85cc-4370eadc4a49"
+          ],
+          "operation": "animations",
+          "promptHash": "sha256-c473a4ae7eac8c4011d90a912aaf3968b0644eac6ab2d093314312e45c3fd115",
+          "createdAt": "2026-10-17T09:12:06.917Z",
+          "finishedAt": "2026-10-17T09:36:01.143Z",
+          "consumedCredits": 46,
+          "localMetadata": "aura-evidence/meshy/pipsPip.metadata.20932c2fe887.json",
+          "rightsEvidence": "aura-evidence/meshy/pipsPip.rights.968cd708eaf2.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/pipsPip.rights.968cd708eaf2.json",
+          "aura-evidence/meshy/pipsPip.metadata.20932c2fe887.json",
+          "public/aura-assets/pipsPip.meshy-candidate.b6be1123.png"
+        ],
+        "checkedAt": "2026-10-17T09:36:01.143Z"
+      },
+      "textures": [
+        "BakedMaterial_baseColor"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "head_end",
+        "headfront",
+        "Head",
+        "neck",
+        "LeftHand",
+        "LeftForeArm",
+        "LeftArm",
+        "LeftShoulder",
+        "RightHand",
+        "RightForeArm",
+        "RightArm",
+        "RightShoulder",
+        "Spine",
+        "Spine01",
+        "Spine02",
+        "LeftToeBase",
+        "LeftFoot",
+        "LeftLeg",
+        "LeftUpLeg",
+        "RightToeBase",
+        "RightFoot",
+        "RightLeg",
+        "RightUpLeg",
+        "Hips",
+        "char1",
+        "Armature"
+      ],
+      "thumbnailUrl": "/aura-assets/pipsPip.thumb.svg",
+      "quality": "candidate",
+      "role": "hero",
+      "renderedProbe": {
+        "url": "/aura-assets/pipsPip.meshy-candidate.b6be1123.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-b6be1123d3675eef2c3188ac411caca7e77e07bb4b78b642239f1a58456c0f41",
+        "checkedAt": "2026-10-17T09:46:13.309Z"
+      },
+      "animationClips": [
+        {
+          "name": "Idle",
+          "duration": 4,
+          "channelCount": 72
+        },
+        {
+          "name": "RunFast",
+          "duration": 0.4666666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Regular_Jump",
+          "duration": 1.8333333333333333,
+          "channelCount": 72
+        },
+        {
+          "name": "happy_jump_m",
+          "duration": 9.833333333333334,
+          "channelCount": 72
+        },
+        {
+          "name": "Dead",
+          "duration": 2.966666666666667,
+          "channelCount": 72
+        },
+        {
+          "name": "Victory_Cheer",
+          "duration": 9.333333333333334,
+          "channelCount": 72
+        },
+        {
+          "name": "Quick_Walk",
+          "duration": 3,
+          "channelCount": 72
+        }
+      ],
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "pipsSungate",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/pipsSungate.8b44ee22.glb",
+      "outputPath": "public/aura-assets/pipsSungate.8b44ee22.glb",
+      "url": "/aura-assets/pipsSungate.8b44ee22.glb",
+      "hash": "sha256-8b44ee223ed35b811f61f87be60f96fa2454fdf2e30a68bc4bd96eaafefe279f",
+      "sizeBytes": 6681444,
+      "bounds": [
+        1.268,
+        1.897,
+        0.409
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.636,
+          -0.952,
+          -0.207
+        ],
+        "max": [
+          0.632,
+          0.946,
+          0.202
+        ],
+        "size": [
+          1.268,
+          1.897,
+          0.409
+        ],
+        "center": [
+          -0.002,
+          -0.003,
+          -0.003
+        ],
+        "maxDimension": 1.897,
+        "grounded": false
+      },
+      "materials": [
+        "material-0"
+      ],
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/pipsSungate.8b44ee22.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated via the Meshy API under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:20:21.088Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+          "taskId": "01a14929-00e9-705a-a36d-f4ef5fbf1193",
+          "parentTaskIds": [
+            "01a14922-1da7-7551-a36a-270f13a9aa80"
+          ],
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-d3fd35feb957304ef9b4b303f05eb25bf235cc46c3b7dc45a9464a43739abdc0",
+          "createdAt": "2026-10-17T09:12:16.692Z",
+          "finishedAt": "2026-10-17T09:20:21.088Z",
+          "consumedCredits": 15,
+          "localMetadata": "aura-evidence/meshy/pipsSungate.metadata.6d4b9d2da9da.json",
+          "rightsEvidence": "aura-evidence/meshy/pipsSungate.rights.968cd708eaf2.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/pipsSungate.rights.968cd708eaf2.json",
+          "aura-evidence/meshy/pipsSungate.metadata.6d4b9d2da9da.json",
+          "public/aura-assets/pipsSungate.meshy-candidate.45e48287.png"
+        ],
+        "checkedAt": "2026-10-17T09:20:21.088Z"
+      },
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "thumbnailUrl": "/aura-assets/pipsSungate.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/pipsSungate.meshy-candidate.45e48287.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-45e48287513813a75447c230f10e4215fc4e4248d5c56b76d3a49a2c46216e55",
+        "checkedAt": "2026-10-17T09:46:31.773Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "pipsSunseed",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/pipsSunseed.b9b50324.glb",
+      "outputPath": "public/aura-assets/pipsSunseed.b9b50324.glb",
+      "url": "/aura-assets/pipsSunseed.b9b50324.glb",
+      "hash": "sha256-b9b503245011bf10eda48b31fbe865c6ae33bd5ac56c780474922352d8b859fa",
+      "sizeBytes": 3712028,
+      "bounds": [
+        1.899,
+        0.907,
+        0.838
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.951,
+          -0.452,
+          -0.421
+        ],
+        "max": [
+          0.947,
+          0.454,
+          0.418
+        ],
+        "size": [
+          1.899,
+          0.907,
+          0.838
+        ],
+        "center": [
+          -0.002,
+          0.001,
+          -0.001
+        ],
+        "maxDimension": 1.899,
+        "grounded": false
+      },
+      "materials": [
+        "material-0"
+      ],
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/pipsSunseed.b9b50324.glb",
+        "license": "Meshy AI generated asset - project owner subscription",
+        "licenseName": "Meshy AI generated asset - project owner subscription",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated via the Meshy API under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:17:35.188Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+          "taskId": "01a14926-9259-7546-9ed9-5d5c1581024d",
+          "parentTaskIds": [
+            "01a14922-0653-73dc-8469-46371e632aa7"
+          ],
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-53a4ea90177a1ad2706836f9908777b3f689a421ce9f2e937bb7d2bf9e8cf91c",
+          "createdAt": "2026-10-17T09:12:10.798Z",
+          "finishedAt": "2026-10-17T09:17:35.188Z",
+          "consumedCredits": 15,
+          "localMetadata": "aura-evidence/meshy/pipsSunseed.metadata.ae0fd21648ef.json",
+          "rightsEvidence": "aura-evidence/meshy/pipsSunseed.rights.968cd708eaf2.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/pipsSunseed.rights.968cd708eaf2.json",
+          "aura-evidence/meshy/pipsSunseed.metadata.ae0fd21648ef.json",
+          "public/aura-assets/pipsSunseed.meshy-candidate.938a7472.png"
+        ],
+        "checkedAt": "2026-10-17T09:17:35.188Z"
+      },
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "thumbnailUrl": "/aura-assets/pipsSunseed.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/pipsSunseed.meshy-candidate.938a7472.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-938a74720d31b590bdec1fd2e2ea1f77b0334ce3841f9f0e99a5633e79734d71",
+        "checkedAt": "2026-10-17T09:46:31.168Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    }
+  ]
+}

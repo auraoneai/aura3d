@@ -40,57 +40,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Regular_Jump"
       ],
       "animationClips": [
-        {
-          "name": "Idle",
-          "duration": 4,
-          "channelCount": 72
-        },
-        {
-          "name": "Walk_Fight_Forward",
-          "duration": 1.6666666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Walk_Fight_Back",
-          "duration": 1.6666666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Left_Jab_from_Guard",
-          "duration": 1.7,
-          "channelCount": 72
-        },
-        {
-          "name": "Right_Uppercut_from_Guard",
-          "duration": 1,
-          "channelCount": 72
-        },
-        {
-          "name": "Triple_Combo_Attack",
-          "duration": 4.333333333333333,
-          "channelCount": 72
-        },
-        {
-          "name": "Block1",
-          "duration": 3.466666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Hit_Reaction",
-          "duration": 1.6333333333333333,
-          "channelCount": 72
-        },
-        {
-          "name": "Dead",
-          "duration": 2.966666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Regular_Jump",
-          "duration": 1.8333333333333333,
-          "channelCount": 72
-        }
-      ],
+      "Idle",
+      "Walk_Fight_Forward",
+      "Walk_Fight_Back",
+      "Left_Jab_from_Guard",
+      "Right_Uppercut_from_Guard",
+      "Triple_Combo_Attack",
+      "Block1",
+      "Hit_Reaction",
+      "Dead",
+      "Regular_Jump"
+    ],
       "animationMetadata": {
         "clipCount": 10,
         "clips": [
@@ -829,57 +789,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Regular_Jump"
       ],
       "animationClips": [
-        {
-          "name": "Idle",
-          "duration": 4,
-          "channelCount": 72
-        },
-        {
-          "name": "Walk_Fight_Forward",
-          "duration": 1.7333333333333334,
-          "channelCount": 72
-        },
-        {
-          "name": "Walk_Fight_Back",
-          "duration": 1.7333333333333334,
-          "channelCount": 72
-        },
-        {
-          "name": "Left_Jab_from_Guard",
-          "duration": 1.7666666666666666,
-          "channelCount": 72
-        },
-        {
-          "name": "Right_Uppercut_from_Guard",
-          "duration": 1.0333333333333334,
-          "channelCount": 72
-        },
-        {
-          "name": "Triple_Combo_Attack",
-          "duration": 4.333333333333333,
-          "channelCount": 72
-        },
-        {
-          "name": "Block1",
-          "duration": 3.466666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Hit_Reaction",
-          "duration": 1.6333333333333333,
-          "channelCount": 72
-        },
-        {
-          "name": "Dead",
-          "duration": 2.966666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Regular_Jump",
-          "duration": 1.9,
-          "channelCount": 72
-        }
-      ],
+      "Idle",
+      "Walk_Fight_Forward",
+      "Walk_Fight_Back",
+      "Left_Jab_from_Guard",
+      "Right_Uppercut_from_Guard",
+      "Triple_Combo_Attack",
+      "Block1",
+      "Hit_Reaction",
+      "Dead",
+      "Regular_Jump"
+    ],
       "animationMetadata": {
         "clipCount": 10,
         "clips": [
@@ -1483,57 +1403,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Regular_Jump"
       ],
       "animationClips": [
-        {
-          "name": "Idle",
-          "duration": 4,
-          "channelCount": 72
-        },
-        {
-          "name": "Walk_Fight_Forward",
-          "duration": 1.6666666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Walk_Fight_Back",
-          "duration": 1.6666666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Left_Jab_from_Guard",
-          "duration": 1.7,
-          "channelCount": 72
-        },
-        {
-          "name": "Right_Uppercut_from_Guard",
-          "duration": 1,
-          "channelCount": 72
-        },
-        {
-          "name": "Triple_Combo_Attack",
-          "duration": 4.333333333333333,
-          "channelCount": 72
-        },
-        {
-          "name": "Block1",
-          "duration": 3.466666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Hit_Reaction",
-          "duration": 1.6333333333333333,
-          "channelCount": 72
-        },
-        {
-          "name": "Dead",
-          "duration": 2.966666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Regular_Jump",
-          "duration": 1.8333333333333333,
-          "channelCount": 72
-        }
-      ],
+      "Idle",
+      "Walk_Fight_Forward",
+      "Walk_Fight_Back",
+      "Left_Jab_from_Guard",
+      "Right_Uppercut_from_Guard",
+      "Triple_Combo_Attack",
+      "Block1",
+      "Hit_Reaction",
+      "Dead",
+      "Regular_Jump"
+    ],
       "animationMetadata": {
         "clipCount": 10,
         "clips": [
@@ -2137,57 +2017,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Regular_Jump"
       ],
       "animationClips": [
-        {
-          "name": "Idle",
-          "duration": 4,
-          "channelCount": 72
-        },
-        {
-          "name": "Walk_Fight_Forward",
-          "duration": 1.6666666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Walk_Fight_Back",
-          "duration": 1.6666666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Left_Jab_from_Guard",
-          "duration": 1.7,
-          "channelCount": 72
-        },
-        {
-          "name": "Right_Uppercut_from_Guard",
-          "duration": 1,
-          "channelCount": 72
-        },
-        {
-          "name": "Triple_Combo_Attack",
-          "duration": 4.333333333333333,
-          "channelCount": 72
-        },
-        {
-          "name": "Block1",
-          "duration": 3.466666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Hit_Reaction",
-          "duration": 1.6333333333333333,
-          "channelCount": 72
-        },
-        {
-          "name": "Dead",
-          "duration": 2.966666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Regular_Jump",
-          "duration": 1.8333333333333333,
-          "channelCount": 72
-        }
-      ],
+      "Idle",
+      "Walk_Fight_Forward",
+      "Walk_Fight_Back",
+      "Left_Jab_from_Guard",
+      "Right_Uppercut_from_Guard",
+      "Triple_Combo_Attack",
+      "Block1",
+      "Hit_Reaction",
+      "Dead",
+      "Regular_Jump"
+    ],
       "animationMetadata": {
         "clipCount": 10,
         "clips": [
@@ -2791,57 +2631,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Regular_Jump"
       ],
       "animationClips": [
-        {
-          "name": "Idle",
-          "duration": 4,
-          "channelCount": 72
-        },
-        {
-          "name": "Walk_Fight_Forward",
-          "duration": 1.6666666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Walk_Fight_Back",
-          "duration": 1.6666666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Left_Jab_from_Guard",
-          "duration": 1.7,
-          "channelCount": 72
-        },
-        {
-          "name": "Right_Uppercut_from_Guard",
-          "duration": 1,
-          "channelCount": 72
-        },
-        {
-          "name": "Triple_Combo_Attack",
-          "duration": 4.333333333333333,
-          "channelCount": 72
-        },
-        {
-          "name": "Block1",
-          "duration": 3.466666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Hit_Reaction",
-          "duration": 1.6333333333333333,
-          "channelCount": 72
-        },
-        {
-          "name": "Dead",
-          "duration": 2.966666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Regular_Jump",
-          "duration": 1.8333333333333333,
-          "channelCount": 72
-        }
-      ],
+      "Idle",
+      "Walk_Fight_Forward",
+      "Walk_Fight_Back",
+      "Left_Jab_from_Guard",
+      "Right_Uppercut_from_Guard",
+      "Triple_Combo_Attack",
+      "Block1",
+      "Hit_Reaction",
+      "Dead",
+      "Regular_Jump"
+    ],
       "animationMetadata": {
         "clipCount": 10,
         "clips": [
@@ -3445,57 +3245,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Regular_Jump"
       ],
       "animationClips": [
-        {
-          "name": "Idle",
-          "duration": 4,
-          "channelCount": 72
-        },
-        {
-          "name": "Walk_Fight_Forward",
-          "duration": 1.6666666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Walk_Fight_Back",
-          "duration": 1.6666666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Left_Jab_from_Guard",
-          "duration": 1.7,
-          "channelCount": 72
-        },
-        {
-          "name": "Right_Uppercut_from_Guard",
-          "duration": 1,
-          "channelCount": 72
-        },
-        {
-          "name": "Triple_Combo_Attack",
-          "duration": 4.333333333333333,
-          "channelCount": 72
-        },
-        {
-          "name": "Block1",
-          "duration": 3.466666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Hit_Reaction",
-          "duration": 1.6333333333333333,
-          "channelCount": 72
-        },
-        {
-          "name": "Dead",
-          "duration": 2.966666666666667,
-          "channelCount": 72
-        },
-        {
-          "name": "Regular_Jump",
-          "duration": 1.8333333333333333,
-          "channelCount": 72
-        }
-      ],
+      "Idle",
+      "Walk_Fight_Forward",
+      "Walk_Fight_Back",
+      "Left_Jab_from_Guard",
+      "Right_Uppercut_from_Guard",
+      "Triple_Combo_Attack",
+      "Block1",
+      "Hit_Reaction",
+      "Dead",
+      "Regular_Jump"
+    ],
       "animationMetadata": {
         "clipCount": 10,
         "clips": [
