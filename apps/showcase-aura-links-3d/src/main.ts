@@ -549,6 +549,7 @@ function shade(hex: string, k: number): string {
  * ------------------------------------------------------------------ */
 
 let auraApp: ReturnType<typeof createAuraApp> | null = null;
+let mountedHoleSig: string | undefined;
 let golferRig: ReturnType<typeof resolveGolferRig> | null = null;
 let ballHandle: any = null;
 let ballShadowHandle: any = null;
@@ -1043,8 +1044,15 @@ function startHole(idx: number): void {
   state.ball = null;
   state.commit = null;
   trailPts.length = 0;
-  // rebuild the scene for this hole
-  (auraApp as any)?.setScene(buildHoleScene(state.course, hole, t, state.lab));
+  // rebuild the scene for this hole — but setScene disposes the render device
+  // and remounts, which on some GPU stacks leaves the canvas dead (see the
+  // iron-crown/pips-big-leap remount fix). The boot scene already mounts hole 1,
+  // so skip the identical re-mount.
+  const sig = `${state.course.id}|${hole.number}|${state.lab ? "lab" : "round"}`;
+  if (sig !== mountedHoleSig) {
+    mountedHoleSig = sig;
+    (auraApp as any)?.setScene(buildHoleScene(state.course, hole, t, state.lab));
+  }
   resolveHoleHandles();
   cam.t = 0;
   cam.zoom = 1;
@@ -1692,6 +1700,7 @@ function boot(): void {
   state.terrain = buildHoleTerrain(state.course, state.hole);
 
   bootStage("scene-build");
+  mountedHoleSig = `${state.course.id}|${state.hole.number}|round`;
   auraApp = createAuraApp("#app", {
     scene: buildHoleScene(state.course, state.hole, state.terrain, null),
     ...looks.appOptions(state.course.look)
