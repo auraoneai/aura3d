@@ -1184,6 +1184,7 @@ function installAura3DTopTennisRenderer(): void {
           audio: audio?.evidence ? { unlocked: audio.evidence.unlocked, cueCount: audio.evidence.cueCount, playedCueCount: audio.evidence.playedCueCount } : null,
           meshyAssets: ["tennis-trophy", "tennis-umpire-chair", "tennis-mascot", "tennis-ball-cart", "tennis-champion-statue", "tennis-athlete"],
           hud: (game as any).hud.snapshot({
+            bindings: [],
             appState: {
               score: `${state.score?.playerGames ?? 0}-${state.score?.aiGames ?? 0}`,
               points: `${state.score?.playerPoints ?? 0}-${state.score?.aiPoints ?? 0}`,
@@ -1332,15 +1333,6 @@ async function loadAndRunScriptsInOrder(urls: readonly string[]): Promise<void> 
   }
 }
 
-window.addEventListener("error", (e) => {
-  const stack = (e as ErrorEvent).error?.stack;
-  console.log(`[stackdump] ${e.message} :: ${stack ? stack.split("\n").slice(0, 6).join(" <- ") : "nostack"}`);
-});
-window.addEventListener("unhandledrejection", (e) => {
-  const r = (e as PromiseRejectionEvent).reason;
-  console.log(`[stackdump-rej] ${r?.stack ? String(r.stack).split("\n").slice(0, 6).join(" <- ") : String(r)}`);
-});
-
 async function bootTopTennisAura3D(): Promise<void> {
   installOfflineApiMocks();
 
@@ -1396,6 +1388,10 @@ async function bootTopTennisAura3D(): Promise<void> {
   await loadAndRunScriptsInOrder(postRendererScripts);
 
   bindQuickToolbar();
+
+  if (new URLSearchParams(window.location.search).get("play") === "1") {
+    setTimeout(() => document.getElementById("aura-btn-play")?.click(), 1200);
+  }
 }
 
 void bootTopTennisAura3D();
