@@ -1,0 +1,44 @@
+{
+  "showcase-slingshot-siege": {
+    "schema": "slingshot-siege-evidence/1.0",
+    "appId": "showcase-slingshot-siege",
+    "route": "/apps/showcase-slingshot-siege/",
+    "classification": "prototype",
+    "frames": 200,
+    "mode": "siege",
+    "demo": true,
+    "seed": 335518,
+    "level": {
+      "id": 0,
+      "chapter": 0,
+      "name": "First Splinter",
+      "sandbox": false
+    },
+    "cameraState": "follow",
+    "score": 0,
+    "starsEarned": 0,
+    "shotsUsed": 1,
+    "shotsLeft": 2,
+    "currentAmmo": "pebble",
+    "abilityReady": false,
+    "gulls": {
+      "alive": 1,
+      "total": 1
+    },
+    "pieces": {
+      "alive": 7,
+      "total": 7
+    },
+    "windmills": [],
+    "bodies": 46,
+    "joints": 13,
+    "sleepingPct": 0,
+    "simTime": 3.33,
+    "slowmo": false,
+    "physicsBackend": "rapier",
+    "savedStars": 0,
+    "resultOpen": false,
+    "paused": false,
+    "error": null
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "status": "playing",
+  "mode": "descent",
+  "floor": 1,
+  "floorName": "Stone Gatehouse",
+  "player": {
+    "x": 8.49,
+    "z": 4.5,
+    "yaw": 1.571,
+    "hp": 100,
+    "armor": 0,
+    "alive": true,
+    "weapon": "pistol",
+    "mag": 4,
+    "ammo": {
+      "bullets": 48,
+      "rockets": 0
+    },
+    "key": false
+  },
+  "enemiesAlive": 4,
+  "kills": 0,
+  "score": 0,
+  "secrets": "0/2",
+  "time": 13,
+  "simSteps": 781,
+  "events": [
+    "step",
+    "step",
+    "fire:pistol",
+    "fire:pistol",
+    "fire:pistol",
+    "fire:pistol"
+  ],
+  "look": {
+    "id": "night-city",
+    "category": "night"
+  }
+}
