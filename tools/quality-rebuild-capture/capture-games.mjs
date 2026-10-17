@@ -313,6 +313,10 @@ function startStaticServer() {
   // server and marketing build use. Order matters: built output wins.
   const fallbackRoots = [
     path.join(repoRoot, "public"),
+    // App-local catalogs (e.g. showcase-iron-crown) emit root-absolute
+    // /aura-assets/ URLs whose files live in apps/<appDir>/public — mount every
+    // selected game's public tree so those URLs resolve in local-build mode.
+    ...selectedGames.map((g) => path.join(repoRoot, "apps", g.appDir, "public")),
     path.join(repoRoot, "apps", "aura-clash-showcase", "public"),
     path.join(repoRoot, "examples", "neon-corridor-strike", "public"),
     path.join(repoRoot, "marketing", "public")
