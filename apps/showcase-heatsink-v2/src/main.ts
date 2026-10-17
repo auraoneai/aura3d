@@ -34,7 +34,8 @@ import {
   type CombatAi,
   type CombatFrameData,
   type GameCombatEvent,
-  type GameCombatMove
+  type GameCombatMove,
+  createAssetProvenance,
 } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { assets } from "./aura-assets-v2";
@@ -664,7 +665,7 @@ async function boot(): Promise<void> {
       const nodes: any[] = [];
       const walk = (list: any[] | undefined) => { for (const n of list ?? []) { nodes.push(n); walk(n.children ?? n.nodes); } };
       walk(((app as any).getScene?.()?.nodes) ?? []);
-      ev.badAssets = nodes.filter((n) => n?.kind === "model" && n?.asset?.url && !n?.asset?.hash).map((n) => `${n?.asset?.id ?? "?"} -> ${n?.asset?.url}`);
+      ev.models = nodes.filter((n) => n?.kind === "model").map((n) => { try { return { id: n?.asset?.id ?? "?", url: String(n?.asset?.url ?? "").slice(0, 90), prov: createAssetProvenance(n?.asset)?.source, hasHash: Boolean(n?.asset?.hash) }; } catch { return { id: "?", prov: "err" }; } });
     } catch { /* evidence only */ }
   }, 500);
   (app as unknown as { ready?: () => Promise<unknown> }).ready?.().then(() => { ev.ready = "ok"; }).catch((e: unknown) => { ev.ready = `err:${(e as Error)?.message ?? e}`; });
