@@ -116,11 +116,11 @@ export function updateHud(hud: HudRefs, s: GameState) {
   if (bannerUntil && now > bannerUntil) { hud.banner.classList.add("hidden"); bannerUntil = 0; }
   if (bigCallUntil && now > bigCallUntil) { hud.bigCall.classList.remove("show"); bigCallUntil = 0; }
 
-  hud.awayAbbr.textContent = s.cpuTeam.abbr;
-  hud.awayDot.style.background = s.cpuTeam.colors.primary;
+  hud.awayAbbr.textContent = s.cpuTeam?.abbr ?? "";
+  hud.awayDot.style.background = s.cpuTeam?.colors?.primary ?? "transparent";
   hud.awayScore.textContent = String(s.score.away);
-  hud.homeAbbr.textContent = s.userTeam.abbr;
-  hud.homeDot.style.background = s.userTeam.colors.primary;
+  hud.homeAbbr.textContent = s.userTeam?.abbr ?? "";
+  hud.homeDot.style.background = s.userTeam?.colors?.primary ?? "transparent";
   hud.homeScore.textContent = String(s.score.home);
   hud.homePoss.hidden = s.possession !== "user";
   hud.awayPoss.hidden = s.possession !== "cpu";

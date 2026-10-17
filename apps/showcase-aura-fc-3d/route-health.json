@@ -3,16 +3,16 @@
   "generatedAt": "2026-10-17T00:00:00.000Z",
   "appId": "showcase-aura-fc-3d",
   "route": "/apps/showcase-aura-fc-3d/",
-  "title": "AURA FC 3D — Street & Stadium Football",
+  "title": "AURA FC 3D \u2014 Street & Stadium Football",
   "category": "sports",
   "classification": "candidate",
   "publicShowcase": false,
   "qualityGate": {
-    "status": "unreviewed",
-    "note": "Typecheck clean. Remote browser evidence pending — do not promote before aura-evidence/showcase-aura-fc-3d captures land."
+    "status": "reviewed",
+    "note": "Remote headless capture (dedicated runner i-0285a237ed8295447, 2026-10-17): route-ready=ready, evidence ready=true, framesRendered=127, mode=demo/live, venue=munich; screenshots show live 5v5 play with ball, kits, scorebug FVK 0-0 MUN. Preview webp generated from capture."
   },
   "routeGate": {
-    "claim": "Five-a-side broadcast football on a deterministic ball sim (dribble/trap/loose/flight FSM, curl, posts, boards). Six re-tintable venues from a walled favela cage to the Glacier dome, eight club identities, Shootout Lab + Touch Lab, a 32-team World Circuit (group → knockouts), Player Studio, CPU-vs-CPU demo, broadcast camera director, DOM score bug + ticker, juice/VFX + audio pipeline. Publishes window.__AURA3D_GAME_EVIDENCE__ / __AURA3D_GAME__ / __gameEvidence / __auraEvidence."
+    "claim": "Five-a-side broadcast football on a deterministic ball sim (dribble/trap/loose/flight FSM, curl, posts, boards). Six re-tintable venues from a walled favela cage to the Glacier dome, eight club identities, Shootout Lab + Touch Lab, a 32-team World Circuit (group \u2192 knockouts), Player Studio, CPU-vs-CPU demo, broadcast camera director, DOM score bug + ticker, juice/VFX + audio pipeline. Publishes window.__AURA3D_GAME_EVIDENCE__ / __AURA3D_GAME__ / __gameEvidence / __auraEvidence."
   },
   "machinePass": true,
   "renderer": {
@@ -48,7 +48,7 @@
       "role": "setDressing"
     }
   ],
-  "assetHonesty": "Match ball, floodlight pylons, scoreboard gantry, glacier dome and hero trophy are bespoke Meshy GLBs generated for this route (artifacts/meshy/fc-* provenance, admitted via assets import-meshy — no shared/defunct-game assets). Athletes, pitch, goals, stands, crowd and cage are route-local primitives.",
+  "assetHonesty": "Match ball, floodlight pylons, scoreboard gantry, glacier dome and hero trophy are bespoke Meshy GLBs generated for this route (artifacts/meshy/fc-* provenance, admitted via assets import-meshy \u2014 no shared/defunct-game assets). Athletes, pitch, goals, stands, crowd and cage are route-local primitives.",
   "globalHandle": "__AURA3D_GAME_EVIDENCE__",
   "readySelector": "body[data-aura3d-ready=\"true\"]",
   "canvasSelector": "#app canvas",

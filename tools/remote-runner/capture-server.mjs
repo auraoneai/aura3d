@@ -178,6 +178,8 @@ const { chromium } = require(${JSON.stringify(process.env.PLAYWRIGHT_MODULE || "
     try { evidence = await page.evaluate(() => (window.__gameEvidence ?? window.__auraEvidence ?? window.__AURA3D_GAME_EVIDENCE__ ?? null)); } catch (e) {}
     let gameBeacon = null;
     try { gameBeacon = await page.evaluate(() => (window.__AURA3D_GAME__ ?? null)); } catch (e) {}
+    let routeReady = null;
+    try { routeReady = await page.evaluate(() => (window.__AURA3D_ROUTE_READY__ ?? null)); } catch (e) {}
     const metrics = await page.evaluate(() => ({ title: document.title, canvas: !!document.querySelector("canvas"), webgl2: (() => { try { const c = document.createElement("canvas"); return !!c.getContext("webgl2"); } catch (e) { return false; } })() })).catch(() => null);
     const suffix = tag ? "-" + tag : "";
     const fs = require("fs");
@@ -188,6 +190,7 @@ const { chromium } = require(${JSON.stringify(process.env.PLAYWRIGHT_MODULE || "
     w("errors.log", errors.join("\\n"));
     w("evidence.json", safe(evidence));
     w("game-beacon.json", safe(gameBeacon));
+    w("route-ready.json", safe(routeReady));
     w("metrics.json", safe(metrics));
   };
   await page.goto(${JSON.stringify(`http://127.0.0.1:`)} + ${port} + ${JSON.stringify(urlPath)}, { waitUntil: "load", timeout: 45000 });

@@ -350,6 +350,7 @@ function applyVenue() {
 
 const rigKitCache: Record<string, string> = {};
 function applyRigKits(state: GameState) {
+  if (!state.userTeam || !state.cpuTeam) return;
   for (const a of state.athletes) {
     const rig = rigHandles[a.id];
     if (!rig) continue;
@@ -373,6 +374,7 @@ function applyRigKits(state: GameState) {
 }
 
 function applyEzColors(state: GameState) {
+  if (!state.userTeam || !state.cpuTeam) return;
   // end zones wear the two clubs' primaries
   ezHomeHandle?.setMaterial(material.pbr({ color: state.userTeam.colors.primary, roughness: 0.88, opacity: 0.85 }));
   ezAwayHandle?.setMaterial(material.pbr({ color: state.cpuTeam.colors.primary, roughness: 0.88, opacity: 0.85 }));

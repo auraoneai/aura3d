@@ -1,0 +1,191 @@
+{
+  "route": "showcase-red-zone-3d",
+  "engine": "@aura3d/engine",
+  "engineVersion": "4.0.1",
+  "ready": true,
+  "framesRendered": 68,
+  "look": "interior-industrial",
+  "mode": "quickplay",
+  "phase": "live",
+  "venue": "friday",
+  "cameraMode": "broadcast",
+  "demo": true,
+  "teams": {
+    "home": "forge",
+    "away": "steel"
+  },
+  "score": {
+    "home": 0,
+    "away": 0
+  },
+  "quarter": 1,
+  "clock": 57.3,
+  "ot": false,
+  "down": 1,
+  "distance": 10,
+  "los": 25,
+  "firstDownLine": 35,
+  "possession": "user",
+  "direction": 1,
+  "coverage": "cover3",
+  "play": {
+    "id": "mesh-crossers",
+    "name": "Mesh Crossers",
+    "type": "short"
+  },
+  "ball": {
+    "kind": "held",
+    "x": 0,
+    "y": 1.05,
+    "z": 19.39,
+    "holder": "off-qb",
+    "target": null
+  },
+  "carrier": null,
+  "userControlled": "off-qb",
+  "athletesOnField": 14,
+  "labScore": null,
+  "stats": {
+    "passYds": 0,
+    "rushYds": 0,
+    "plays": 1,
+    "turnovers": 0,
+    "sacks": 0,
+    "ints": 0,
+    "fumbles": 0,
+    "tds": 0
+  },
+  "lastGain": 0,
+  "lastCall": "Mesh Crossers — quick game",
+  "studio": {
+    "clubId": "forge",
+    "jersey": "#f2a71b",
+    "pants": "#1c2430",
+    "helmet": "#1c2430",
+    "visor": "#f2a71b"
+  },
+  "juice": {
+    "backend": "dom",
+    "shake": "none",
+    "rumbleVia": "none",
+    "events": {
+      "snap": {
+        "fired": 1,
+        "lastStrength": 1
+      }
+    },
+    "droppedFlashes": 0
+  },
+  "audio": {
+    "unlocked": true,
+    "cueCount": 24,
+    "playedCueCount": 3
+  },
+  "eventLog": {
+    "kind": "aura-game-event-log",
+    "label": "red-zone-3d events",
+    "count": 4,
+    "events": [
+      {
+        "kind": "aura-game-event",
+        "id": "system:1",
+        "type": "system",
+        "label": "quick play kickoff — Ironwood Forge vs Blitzburgh Steel",
+        "tags": [],
+        "severity": "info",
+        "frame": 0,
+        "time": 0.2566000000000058
+      },
+      {
+        "kind": "aura-game-event",
+        "id": "system:2",
+        "type": "system",
+        "label": "demo drive — autopilot engaged",
+        "tags": [],
+        "severity": "info",
+        "frame": 0,
+        "time": 0.25679999999998837
+      },
+      {
+        "kind": "aura-game-event",
+        "id": "playcall:3",
+        "type": "playcall",
+        "label": "pick a play — 1/2/3 · Q audibles",
+        "tags": [],
+        "severity": "info",
+        "frame": 15,
+        "time": 42.325399999999995
+      },
+      {
+        "kind": "aura-game-event",
+        "id": "play:4",
+        "type": "play",
+        "label": "Mesh Crossers — quick game",
+        "tags": [],
+        "severity": "info",
+        "frame": 63,
+        "time": 153.42109999999997
+      }
+    ],
+    "types": [
+      "play",
+      "playcall",
+      "system"
+    ],
+    "last": "[circular]"
+  },
+  "hud": {
+    "kind": "aura-game-hud-snapshot",
+    "frame": 0,
+    "time": 0,
+    "values": [],
+    "changedIds": [],
+    "events": []
+  },
+  "accessibility": {
+    "kind": "aura-game-accessibility-runtime-settings",
+    "reducedMotion": false,
+    "reducedFlash": false,
+    "highContrast": false,
+    "camera": {
+      "reducedMotion": false
+    },
+    "effects": {
+      "reducedMotion": false,
+      "reducedFlash": false
+    },
+    "evidence": [
+      "Camera and effects keep normal motion because reduced-motion is not enabled.",
+      "Effects keep normal flash intensity because reduced-flash is not enabled.",
+      "HUD/menu rendering can use the default contrast theme."
+    ]
+  },
+  "touch": {
+    "preset": "dpad-4btn",
+    "genre": "fight",
+    "bound": [
+      "left",
+      "right",
+      "block",
+      "light",
+      "heavy",
+      "special",
+      "jump"
+    ],
+    "visible": false,
+    "sticks": []
+  },
+  "diagnostics": null,
+  "meshyAssets": [
+    "rzFloodlightPylonMeshy",
+    "rzScoreboardGantryMeshy",
+    "rzFootballMeshy",
+    "rzLombardiCupMeshy",
+    "rzAltitudeDomeMeshy"
+  ],
+  "deterministic": {
+    "rng": "lcg:0x7ed2f00d",
+    "ik": "game.racketSports.solveArmElbow",
+    "seeded": true
+  }
+}

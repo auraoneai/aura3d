@@ -503,6 +503,7 @@ function boot(): void {
         venues: VENUE_ORDER,
         clubs: ["aurora", "kings", "iron", "waves", "kites", "stars", "giants", "storm"],
         hud: (game as any).hud?.snapshot?.({
+          bindings: [],
           appState: {
             score: `${s.score[0]}-${s.score[1]}`,
             venue: s.venue,

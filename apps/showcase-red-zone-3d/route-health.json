@@ -40,5 +40,9 @@
       "role": "setDressing"
     }
   ],
-  "assetHonesty": "Game football, floodlight pylons, scoreboard gantry, Lombardi cup and altitude dome are bespoke Meshy GLBs generated for this route (artifacts/meshy/rz-* provenance, admitted via assets import-meshy — no shared/defunct-game assets). Players, field, goalposts, stands and crowd are route-local primitives."
+  "assetHonesty": "Game football, floodlight pylons, scoreboard gantry, Lombardi cup and altitude dome are bespoke Meshy GLBs generated for this route (artifacts/meshy/rz-* provenance, admitted via assets import-meshy \u2014 no shared/defunct-game assets). Players, field, goalposts, stands and crowd are route-local primitives.",
+  "qualityGate": {
+    "status": "reviewed",
+    "note": "Remote headless capture (i-087c92ec3af45d0d1, 2026-10-17): route-ready=ready, evidence ready=true, framesRendered=67, mode=quickplay/live; screenshots show live 3D gameplay with play-selection cards, scorebug, and lined-up formations. Preview webp generated from capture."
+  }
 }
