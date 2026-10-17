@@ -396,11 +396,28 @@ function newBout(config: BoutConfig): void {
   };
 }
 
+/**
+ * `setScene` disposes the render device and remounts — expensive (all GLBs
+ * reload) and, on some GPU stacks, leaves the canvas dead until the next
+ * present. The arena snapshot is fully determined by stage/fighters/tints,
+ * so a re-bout with the same signature resets actors on the mounted scene
+ * instead of rebuilding it.
+ */
+let mountedArenaSig: string | undefined;
+
+function arenaSignature(cfg: BoutConfig): string {
+  return [cfg.stage.id, cfg.p1.id, cfg.cpu.id, cfg.p1Tint ? JSON.stringify(cfg.p1Tint) : "", cfg.cpuTint ? JSON.stringify(cfg.cpuTint) : ""].join("|");
+}
+
 async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<void> {
   if (paused) setPaused(false);
   newBout(config);
   currentStageId = config.stage.id;
-  await fightingGame.setScene(buildArena(config).toJSON());
+  const sig = arenaSignature(config);
+  if (sig !== mountedArenaSig) {
+    mountedArenaSig = sig;
+    await fightingGame.setScene(buildArena(config).toJSON());
+  }
   P1 = makeFighter("p1", config.p1, PLAYER_START, config.p1Tint);
   CPU = makeFighter("cpu", config.cpu, RIVAL_START, config.cpuTint);
   CPU.brain = createCpuBrain(config.cpu, config.difficulty, APP_SEED + 31);
@@ -1315,6 +1332,7 @@ void (async () => {
     stats: { p1Hits: 0, cpuHits: 0, maxCombo: 0, throws: 0, specials: 0 }
   };
   await fightingGame.ready();
+  mountedArenaSig = arenaSignature(initialConfig);
   P1 = makeFighter("p1", initialConfig.p1, PLAYER_START);
   CPU = makeFighter("cpu", initialConfig.cpu, RIVAL_START);
   CPU.brain = createCpuBrain(initialConfig.cpu, "scrapper", APP_SEED + 1);

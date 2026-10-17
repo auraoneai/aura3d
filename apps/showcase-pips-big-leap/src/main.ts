@@ -212,14 +212,36 @@ const node = (name: string): AuraRuntimeNodeHandle | null => {
 
 // ------------------------------------------------------------- world load
 
+/**
+ * `setScene` disposes the render device and remounts — it reloads every GLB,
+ * aborts in-flight asset fetches, and on some GPU stacks leaves the canvas
+ * dead. Only pay that cost when the world actually changes; a same-world
+ * reload resets the mutated runtime nodes on the mounted scene instead.
+ */
+let mountedWorld: WorldId | undefined = BOOT_WORLD; // the `scene` factory already mounts it
+
 function loadWorld(id: WorldId, mode?: ModeId): void {
   // Mode survives only where it's meaningful: the gauntlet owns "academy",
   // trial follows the player across worlds, everything else is quick play.
   run = makeRun(id, mode ?? (id === "academy" ? "academy" : run.mode === "trial" ? "trial" : "quick"));
   const { spec, built } = ensureWorld(id);
-  // Route swaps through game.setScene so the FX pool, look signature, and
-  // first-presented beacon all re-arm per world.
-  void pipsGame.setScene(built.scene as unknown as AuraSceneSnapshot).catch(() => undefined);
+  if (mountedWorld !== id) {
+    mountedWorld = id;
+    // Route swaps through game.setScene so the FX pool, look signature, and
+    // first-presented beacon all re-arm per world.
+    void pipsGame.setScene(built.scene as unknown as AuraSceneSnapshot).catch(() => undefined);
+  } else {
+    // Same world: undo the node mutations a run leaves behind — collected
+    // pickups, unlocked gate, activated checkpoint flags — without remounting.
+    for (const s of spec.seeds) node(nodeName.seed(s.id))?.setVisible(!run.seeds.has(s.id));
+    for (const a of spec.acorns) node(nodeName.acorn(a.id))?.setVisible(true);
+    for (const h of spec.hearts) node(nodeName.heart(h.id))?.setVisible(true);
+    node(nodeName.gateLock)?.setVisible(!run.gateUnlocked);
+    for (const cp of spec.checkpoints) {
+      (node(nodeName.checkpointFlag(cp.id)) as unknown as { setMaterial(m: unknown): void } | null)?.setMaterial(undefined);
+    }
+    for (let i = 0; i < 6; i += 1) node(nodeName.bossSpike(i))?.setVisible(false);
+  }
   app.camera?.use(camera.rigs.shoulder({ target: nodeName.hero, collision: true }));
   applyStudioColors();
 
