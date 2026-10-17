@@ -63,7 +63,7 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "showcase-rooftop-buckets,showcase-gallery-shift,showcase-deep-recovery,showcase-patrol-wing,showcase-bank-shot,showcase-orbital-defense"
+      games: "showcase-rooftop-buckets,showcase-gallery-shift,showcase-deep-recovery,showcase-patrol-wing,showcase-bank-shot,showcase-orbital-defense,showcase-aura-links-3d"
       bench: false
       qr_flags: "none"
       artifact_suffix: "-gate-none-g3"
@@ -102,7 +102,7 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "showcase-rooftop-buckets,showcase-gallery-shift,showcase-deep-recovery,showcase-patrol-wing,showcase-bank-shot,showcase-orbital-defense"
+      games: "showcase-rooftop-buckets,showcase-gallery-shift,showcase-deep-recovery,showcase-patrol-wing,showcase-bank-shot,showcase-orbital-defense,showcase-aura-links-3d"
       bench: false
       qr_flags: "all"
       artifact_suffix: "-gate-flags-g3"
