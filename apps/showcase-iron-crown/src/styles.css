@@ -265,6 +265,7 @@
 
 /* ---------- menus ---------- */
 #menu-root { position: absolute; inset: 0; pointer-events: none; z-index: 60; }
+[hidden] { display: none !important; }
 .ic-menu {
   position: absolute;
   inset: 0;

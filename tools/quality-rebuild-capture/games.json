@@ -1532,7 +1532,7 @@
      }
     },
     {
-     "wait": 6000
+     "wait": 8000
     },
     {
      "shot": "02-opening"
@@ -1547,7 +1547,7 @@
      "click": "#ic-modes button[data-mode='quick']"
     },
     {
-     "wait": 3500
+     "wait": 9000
     },
     {
      "down": "KeyD"
@@ -1628,7 +1628,7 @@
      "click": "#aura-btn-play"
     },
     {
-     "wait": 4500
+     "wait": 7000
     },
     {
      "shot": "02-opening"
