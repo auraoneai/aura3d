@@ -155,7 +155,7 @@ function buildAthleteNodes(id: string, isPlayer: boolean): any[] {
   const rubber = material.pbr({ color: "#22262e", roughness: 0.9 });
   const stringMat = material.pbr({ color: "#e8e8d8", roughness: 0.4 });
   const limb = (name: string) =>
-    primitives.capsule({ name, size: [1, 1], material: skin }).runtime(game.runtimeNode(name));
+    primitives.capsule({ name, size: [1, 1, 1], material: skin }).runtime(game.runtimeNode(name));
   const joint = (name: string, mat = skin) =>
     primitives.sphere({ name, size: [1, 1, 1], material: mat }).runtime(game.runtimeNode(name));
 
@@ -165,7 +165,7 @@ function buildAthleteNodes(id: string, isPlayer: boolean): any[] {
     primitives.torus({ name: `${id}-ring`, size: [0.62, 0.03], material: material.emissive({ color: isPlayer ? "#d8ff3e" : "#7dfcff", emissive: isPlayer ? "#d8ff3e" : "#7dfcff", emissiveIntensity: 0.9 }) }).runtime(game.runtimeNode(`${id}-ring`)),
     // Core body
     primitives.box({ name: `${id}-shorts`, size: [0.42, 0.26, 0.27], material: material.pbr({ color: isPlayer ? "#1d2433" : "#ece8d8", roughness: 0.8 }) }).runtime(game.runtimeNode(`${id}-shorts`)),
-    primitives.capsule({ name: `${id}-torso`, size: [1, 1], material: kit }).runtime(game.runtimeNode(`${id}-torso`)),
+    primitives.capsule({ name: `${id}-torso`, size: [1, 1, 1], material: kit }).runtime(game.runtimeNode(`${id}-torso`)),
     joint(`${id}-head`, skin),
     primitives.cylinder({ name: `${id}-headband`, size: [1, 1, 1], material: accent }).runtime(game.runtimeNode(`${id}-headband`)),
     // Arms (2-bone IK: shoulder→elbow→hand)
@@ -296,7 +296,7 @@ function buildStadiumNodes(): any[] {
   for (let i = 0; i < WAVER_COUNT; i++) {
     const x = -8.4 + i * (16.8 / (WAVER_COUNT - 1));
     nodes.push(
-      primitives.capsule({ name: `waver-${i}`, size: [1, 1], material: material.pbr({ color: cool[i % cool.length], roughness: 0.85 }) })
+      primitives.capsule({ name: `waver-${i}`, size: [1, 1, 1], material: material.pbr({ color: cool[i % cool.length], roughness: 0.85 }) })
         .position(x, 0.62, i % 2 ? -11.6 : 13.4)
         .runtime(game.runtimeNode(`waver-${i}`))
     );
@@ -336,7 +336,7 @@ function buildStadiumNodes(): any[] {
     model(v2assets.tennisUmpireChair, { name: "umpire-chair", targetHeight: 4.1 })
       .position(-7.1, 0, -0.4)
       .rotate(0, Math.PI / 2, 0),
-    primitives.capsule({ name: "umpire-body", size: [1, 1], material: material.pbr({ color: "#233246", roughness: 0.8 }) }).position(-6.68, 2.1, -0.4).scale(0.5),
+    primitives.capsule({ name: "umpire-body", size: [1, 1, 1], material: material.pbr({ color: "#233246", roughness: 0.8 }) }).position(-6.68, 2.1, -0.4).scale(0.5),
     primitives.sphere({ name: "umpire-head", size: [0.24, 0.24, 0.24], material: material.pbr({ color: "#c68a5a", roughness: 0.8 }) }).position(-6.68, 2.62, -0.4).runtime(game.runtimeNode("umpire-head"))
   );
 

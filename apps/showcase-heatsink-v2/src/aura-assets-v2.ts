@@ -204,6 +204,7 @@ const meshyDefinitions = {
     type: "model",
     format: "glb",
     url: "/aura-assets/td2-drone-pyre.glb",
+    hash: "sha256-3d7e3301",
     optional: true,
     bounds: [4.4, 1.6, 4.6],
     metadata: { license: "Meshy-generated for Thermal Drift v2 (see artifacts/meshy/thermal-drone-pyre/rights.json)" }
@@ -212,6 +213,7 @@ const meshyDefinitions = {
     type: "model",
     format: "glb",
     url: "/aura-assets/td2-drone-boss.glb",
+    hash: "sha256-de441be2",
     optional: true,
     bounds: [5.2, 2.0, 5.4],
     metadata: { license: "Meshy-generated for Thermal Drift v2 (see artifacts/meshy/thermal-boss-drone/rights.json)" }
@@ -220,6 +222,7 @@ const meshyDefinitions = {
     type: "model",
     format: "glb",
     url: "/aura-assets/td2-cooling-tower.glb",
+    hash: "sha256-3ef7cd91",
     optional: true,
     bounds: [4.6, 9.5, 4.6],
     metadata: { license: "Meshy-generated for Thermal Drift v2 (see artifacts/meshy/thermal-cooling-tower/rights.json)" }
@@ -228,6 +231,7 @@ const meshyDefinitions = {
     type: "model",
     format: "glb",
     url: "/aura-assets/td2-tower-neon.glb",
+    hash: "sha256-64f5a787",
     optional: true,
     bounds: [16, 84, 16],
     metadata: { license: "Meshy-generated for Thermal Drift v2 (see artifacts/meshy/thermal-tower-neon/rights.json)" }
