@@ -126,54 +126,110 @@ function solidOf(p: PlatSpec): SolidBox {
 function decorNodes(d: DecorSpec): readonly SceneNodeArg[] {
   const s = d.s ?? 1;
   const yaw = d.yaw ?? 0;
-  const pos = (x: number, y: number, z: number) => [d.x + x * s, d.y + y * s, d.z + z * s] as const;
-  const box = (name: string, size: readonly [number, number, number], at: readonly number[], color: string, emissive?: string) =>
-    primitives.box({ name: `${d.id}:${name}`, size: [size[0] * s, size[1] * s, size[2] * s], position: [at[0], at[1], at[2]], material: emissive ? material.emissive({ color: emissive, emissive, emissiveIntensity: 0.7 }) : material.pbr({ color, roughness: 0.9 }), castShadow: true }).rotate(0, yaw, 0);
-  const ball = (name: string, r: number, at: readonly number[], color: string, emissive?: string) =>
-    primitives.sphere({ name: `${d.id}:${name}`, size: r * 2 * s, position: [at[0], at[1], at[2]], material: emissive ? material.emissive({ color: emissive, emissive, emissiveIntensity: 0.6 }) : material.pbr({ color, roughness: 0.85 }), castShadow: true });
-  const cyl = (name: string, r: number, h: number, at: readonly number[], color: string) =>
-    primitives.cylinder({ name: `${d.id}:${name}`, size: [r * 2 * s, h * s, r * 2 * s], position: [at[0], at[1], at[2]], material: material.pbr({ color, roughness: 0.9 }), castShadow: true }).rotate(0, yaw, 0);
 
   switch (d.kind) {
     case "tree":
-      return [cyl("trunk", 0.16, 1.4, pos(0, 0.7, 0), "#6d4c2c"), ball("canopy", 0.85, pos(0, 1.9, 0), "#4e9c46")];
+      return [
+        model(assets.props.pineTree, { name: `${d.id}:tree`, castShadow: true, receiveShadow: true, targetHeight: 3.1 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "mushroom":
-      return [cyl("stem", 0.14, 0.6, pos(0, 0.3, 0), "#efe4cf"), ball("cap", 0.42, pos(0, 0.68, 0), "#d96a55")];
+      return [
+        model(assets.props.crystalShard, { name: `${d.id}:mushroom`, castShadow: true, receiveShadow: true, targetHeight: 1.05 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "flower":
-      return [cyl("stem", 0.05, 0.5, pos(0, 0.25, 0), "#4e8c3f"), ball("bloom", 0.2, pos(0, 0.58, 0), "#f2b8ff", "#ff9ee2")];
+      return [
+        model(assets.sunseed, { name: `${d.id}:flower`, castShadow: true, targetHeight: 0.72 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "rock":
-      return [ball("body", 0.5, pos(0, 0.28, 0), "#7d7f88")];
+      return [
+        model(assets.props.boulder, { name: `${d.id}:rock`, castShadow: true, receiveShadow: true, targetMaxDimension: 1.15 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "windmill":
       return [
-        cyl("tower", 0.42, 2.6, pos(0, 1.3, 0), "#a1794a"),
-        ball("hub", 0.22, pos(0, 2.75, 0), "#7d5a33"),
-        box("sail-a", [0.16, 2.4, 0.06], pos(0, 2.75, 0), "#e8dcc8"),
-        box("sail-b", [2.4, 0.16, 0.06], pos(0, 2.75, 0), "#e8dcc8")
+        model(assets.props.windmill, { name: `${d.id}:windmill`, castShadow: true, receiveShadow: true, targetHeight: 3.6 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
       ];
     case "sail":
-      return [cyl("mast", 0.07, 1.9, pos(0, 0.95, 0), "#7d5a33"), box("cloth", [1.1, 1.2, 0.05], pos(0.35, 1.2, 0), "#f0e4d0")];
+      return [
+        model(assets.props.watchtower, { name: `${d.id}:sail`, castShadow: true, receiveShadow: true, targetHeight: 2.6 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "cloud":
-      return [ball("a", 0.7, pos(0, 0, 0), "#f4f9ff"), ball("b", 0.5, pos(0.7, 0.12, 0.1), "#e8f1ff"), ball("c", 0.45, pos(-0.65, 0.1, -0.05), "#eef5ff")];
+      return [
+        model(assets.props.rockB, { name: `${d.id}:cloud`, castShadow: false, receiveShadow: false, targetMaxDimension: 1.9 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "fan":
-      return [cyl("post", 0.12, 1.6, pos(0, 0.8, 0), "#686e80"), box("blades", [1.6, 0.18, 0.08], pos(0, 1.7, 0), "#c2ddf2"), box("blades-b", [0.18, 1.6, 0.08], pos(0, 1.7, 0), "#c2ddf2")];
+      return [
+        model(assets.props.turbine, { name: `${d.id}:fan`, castShadow: true, receiveShadow: true, targetHeight: 2.2 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "vent":
-      return [box("base", [0.9, 0.5, 0.9], pos(0, 0.25, 0), "#343640"), box("glow", [0.6, 0.1, 0.6], pos(0, 0.52, 0), "#ff9435", "#ff9435")];
+      return [
+        model(assets.props.brazier, { name: `${d.id}:vent`, castShadow: true, receiveShadow: true, targetHeight: 1.35 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "pillar":
-      return [cyl("shaft", 0.3, 3.2, pos(0, 1.6, 0), d.kind === "pillar" ? "#bdb2a2" : "#4f4a46"), box("cap", [0.8, 0.24, 0.8], pos(0, 3.32, 0), "#8f8474")];
+      return [
+        model(assets.props.pylon, { name: `${d.id}:pillar`, castShadow: true, receiveShadow: true, targetHeight: 3.4 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "arch":
-      return [box("left", [0.4, 3, 0.5], pos(-1.4, 1.5, 0), "#a89c88"), box("right", [0.4, 3, 0.5], pos(1.4, 1.5, 0), "#a89c88"), box("span", [3.2, 0.5, 0.5], pos(0, 3.2, 0), "#c9bda6")];
+      return [
+        model(assets.props.arch, { name: `${d.id}:arch`, castShadow: true, receiveShadow: true, targetHeight: 3.4 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "crystal":
-      return [box("shard", [0.4, 1.6, 0.4], pos(0, 0.8, 0), "#8f7bde", "#a795ff"), box("shard-b", [0.28, 1.0, 0.28], pos(0.5, 0.5, 0.2), "#c7b6ff", "#d6c8ff")];
+      return [
+        model(assets.props.crystalShard, { name: `${d.id}:crystal`, castShadow: true, receiveShadow: true, targetHeight: 1.9 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "star":
-      return [ball("core", 0.22, pos(0, 0.9, 0), "#ffe9a3", "#ffdf7a"), box("ray", [0.7, 0.08, 0.08], pos(0, 0.9, 0), "#ffe9a3", "#ffdf7a")];
+      return [
+        model(assets.props.energyCore, { name: `${d.id}:star`, castShadow: true, targetMaxDimension: 0.9 * s })
+          .position(d.x, d.y + 0.55 * s, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "lantern":
-      return [cyl("post", 0.08, 1.8, pos(0, 0.9, 0), "#4a3b28"), ball("lamp", 0.28, pos(0, 1.95, 0), "#ffd98a", "#ffcf6e")];
+      return [
+        model(assets.props.streetLamp, { name: `${d.id}:lantern`, castShadow: true, receiveShadow: true, targetHeight: 2.3 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "crate":
-      return [box("body", [0.9, 0.9, 0.9], pos(0, 0.45, 0), "#9a7444")];
+      return [
+        model(assets.props.crate, { name: `${d.id}:crate`, castShadow: true, receiveShadow: true, targetMaxDimension: 0.95 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "barrel":
-      return [cyl("body", 0.42, 0.95, pos(0, 0.48, 0), "#8f6a3c")];
+      return [
+        model(assets.props.barrel, { name: `${d.id}:barrel`, castShadow: true, receiveShadow: true, targetHeight: 0.98 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     case "banner":
-      return [cyl("pole-a", 0.06, 2.2, pos(-0.9, 1.1, 0), "#4a3b28"), cyl("pole-b", 0.06, 2.2, pos(0.9, 1.1, 0), "#4a3b28"), box("cloth", [1.7, 0.9, 0.05], pos(0, 1.65, 0), "#f2c94c", "#ffd95e")];
+      return [
+        model(assets.checkpointFlag, { name: `${d.id}:banner`, castShadow: true, receiveShadow: true, targetHeight: 2.2 * s })
+          .position(d.x, d.y, d.z)
+          .rotate(0, yaw, 0)
+      ];
     default:
       return [];
   }
@@ -242,16 +298,25 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
     }
   }
 
-  // Hazards — emissive hurt volumes (lava sheets, thorn brambles…).
+  // Hazards — emissive hurt volumes + 3D GLB crystal/brazier hazard clusters.
   const hazards: HazardBox[] = spec.hazards.map((hz) => {
     const h = hz.h ?? 0.5;
     builder.add(
       primitives.box({
         name: `hazard:${hz.id}`,
-        size: [hz.w, Math.min(h, 0.32), hz.d],
-        position: [hz.x, hz.y - Math.min(h, 0.32) / 2, hz.z],
+        size: [hz.w, Math.min(h, 0.24), hz.d],
+        position: [hz.x, hz.y - Math.min(h, 0.24) / 2, hz.z],
         material: material.emissive({ color: HAZARD_STYLE[hz.type], emissive: HAZARD_STYLE[hz.type], emissiveIntensity: 0.85, roughness: 0.5 })
       })
+    );
+    const hazardRef = hz.type === "lava" ? assets.props.brazier : assets.props.crystalShard;
+    builder.add(
+      model(hazardRef, {
+        name: `hazard:${hz.id}:mesh`,
+        castShadow: true,
+        receiveShadow: true,
+        targetHeight: Math.max(0.55, Math.min(1.1, h * 1.4))
+      }).position(hz.x, hz.y - Math.min(h, 0.24), hz.z)
     );
     return { spec: hz, x: hz.x, y: hz.y - h / 2, z: hz.z, hx: hz.w / 2, hy: h / 2, hz: hz.d / 2 };
   });
@@ -272,10 +337,7 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
     return { spec: w, x: w.x, z: w.z, hx: w.w / 2, hz: w.d / 2, surfaceY: w.y, floorY: w.y - depth };
   });
 
-  // Pickups — bespoke Meshy sun-seed / golden-acorn models driven per frame.
-  // The runtime auto-fit normalizes each GLB to a target size with its lowest
-  // point at the node origin, so the position lift re-centres the model on the
-  // authored pickup point (which still drives collection triggers).
+  // Pickups — bespoke Meshy sun-seed / golden-acorn / energy-core models driven per frame.
   const spinNodes: string[] = [];
   for (const s of spec.seeds) {
     builder.add(
@@ -295,25 +357,28 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
   }
   for (const hpt of spec.hearts) {
     builder.add(
-      primitives.sphere({ name: nodeName.heart(hpt.id), size: 0.4, position: [hpt.x, hpt.y, hpt.z], material: material.emissive({ color: "#ff6a8a", emissive: "#ff5a7a", emissiveIntensity: 0.8 }) })
+      model(assets.props.energyCore, { name: nodeName.heart(hpt.id), castShadow: true, targetMaxDimension: 0.48 })
+        .position(hpt.x, hpt.y - 0.18, hpt.z)
         .runtime(game.runtimeNode(nodeName.heart(hpt.id), { tags: ["pickup", "heart"] }))
     );
     spinNodes.push(nodeName.heart(hpt.id));
   }
 
-  // Springs — base + coil.
+  // Springs — 3D Meshy boost pad + pedestal base.
   for (const spr of spec.springs) {
     const base = [spr.x, spr.y, spr.z] as const;
     builder.add(
-      primitives.cylinder({ name: `${nodeName.spring(spr.id)}:base`, size: [0.84, 0.16, 0.84], position: [base[0], base[1] + 0.08, base[2]], material: material.metal({ color: "#8a8f9c" }) })
+      model(assets.props.pedestal, { name: `${nodeName.spring(spr.id)}:base`, castShadow: true, receiveShadow: true, targetMaxDimension: 0.92 })
+        .position(base[0], base[1], base[2])
     );
     builder.add(
-      primitives.cylinder({ name: nodeName.spring(spr.id), size: [0.68, 0.22, 0.68], position: [base[0], base[1] + 0.26, base[2]], material: material.emissive({ color: "#ff8a5a", emissive: "#ff7a45", emissiveIntensity: 0.65 }) })
+      model(assets.props.boostPad, { name: nodeName.spring(spr.id), castShadow: true, receiveShadow: true, targetMaxDimension: 0.82 })
+        .position(base[0], base[1] + 0.14, base[2])
         .runtime(game.runtimeNode(nodeName.spring(spr.id), { tags: ["spring"] }))
     );
   }
 
-  // Checkpoints — bespoke Meshy leaf-banner flag; flips gold when activated.
+  // Checkpoints — bespoke Meshy leaf-banner flag + 3D pedestal base.
   for (const cp of spec.checkpoints) {
     builder.add(
       model(assets.checkpointFlag, { name: nodeName.checkpointFlag(cp.id), castShadow: true, targetHeight: 1.9 })
@@ -321,11 +386,12 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
         .runtime(game.runtimeNode(nodeName.checkpointFlag(cp.id), { tags: ["checkpoint"] }))
     );
     builder.add(
-      primitives.box({ name: `${nodeName.checkpoint(cp.id)}:pad`, size: [0.7, 0.08, 0.7], position: [cp.x, cp.y + 0.04, cp.z], material: material.emissive({ color: "#9cd7ff", emissive: "#7ac4ff", emissiveIntensity: 0.35 }) })
+      model(assets.props.pedestal, { name: `${nodeName.checkpoint(cp.id)}:pad`, castShadow: true, receiveShadow: true, targetMaxDimension: 0.78 })
+        .position(cp.x, cp.y, cp.z)
     );
   }
 
-  // Sun-Gate — bespoke Meshy seed-arch portal + retained emissive ring + lock.
+  // Sun-Gate — bespoke Meshy seed-arch portal + retained emissive ring + 3D energy core lock.
   const g = spec.gate;
   builder.add(
     model(assets.sungate, { name: nodeName.gate, castShadow: true, targetHeight: 3.0 })
@@ -337,7 +403,8 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
       .runtime(game.runtimeNode(nodeName.gateRing, { tags: ["gate"] }))
   );
   builder.add(
-    primitives.sphere({ name: nodeName.gateLock, size: 0.6, position: [g.x, g.y + 1.5, g.z], material: material.emissive({ color: "#6a4a9c", emissive: "#553a85", emissiveIntensity: 0.5 }), castShadow: false })
+    model(assets.props.energyCore, { name: nodeName.gateLock, castShadow: false, targetMaxDimension: 0.65 })
+      .position(g.x, g.y + 1.25, g.z)
       .runtime(game.runtimeNode(nodeName.gateLock, { tags: ["gate"] }))
   );
 
@@ -359,25 +426,26 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
   // auto-fits the bespoke GLB to mascot size with its feet at the node origin
   // (the player controller drives the node at feet level).
   builder.add(
-    model(assets.pip, { name: nodeName.hero, castShadow: true, targetHeight: 0.95 })
+    model(assets.pip, { name: nodeName.hero, castShadow: true, targetHeight: 1.08 })
       .position(spec.spawn[0], spec.spawn[1], spec.spawn[2])
       .rotate(0, spec.spawnYaw ?? 0, 0)
       .animate({ clip: PIP_CLIPS.idle, loop: true })
       .runtime(game.runtimeNode(nodeName.hero, { tags: ["player"] }))
   );
-  // Studio accessories — acorn cap + glide cape, tinted by Player Studio and
-  // parented to the hero's position each frame by main.ts.
+  // Studio accessories — compact 3D golden-acorn crest + glide cape badge so
+  // Pip's Meshy squirrel rig remains clearly visible while Player Studio tinting works.
   builder.add(
-    primitives.sphere({ name: nodeName.heroCap, size: 0.44, position: [spec.spawn[0], spec.spawn[1] + 0.86, spec.spawn[2]], material: material.pbr({ color: "#c96a2b", roughness: 0.7 }), castShadow: true })
+    model(assets.goldenAcorn, { name: nodeName.heroCap, castShadow: true, targetMaxDimension: 0.22 })
+      .position(spec.spawn[0], spec.spawn[1] + 0.98, spec.spawn[2])
       .runtime(game.runtimeNode(nodeName.heroCap, { tags: ["player", "studio"] }))
   );
   builder.add(
-    primitives.box({ name: nodeName.heroCape, size: [0.5, 0.06, 0.62], position: [spec.spawn[0], spec.spawn[1] + 0.62, spec.spawn[2] + 0.3], material: material.pbr({ color: "#3f8cff", roughness: 0.6 }), castShadow: true })
+    primitives.box({ name: nodeName.heroCape, size: [0.34, 0.04, 0.38], position: [spec.spawn[0], spec.spawn[1] + 0.56, spec.spawn[2] + 0.24], material: material.pbr({ color: "#3f8cff", roughness: 0.6 }), castShadow: true })
       .runtime(game.runtimeNode(nodeName.heroCape, { tags: ["player", "studio"] }))
   );
 
   // Boss (W5) — bespoke Meshy Brambleback; body is runtime-driven and the
-  // thorn-spike satellites remain the phase telegraph (out = invulnerable).
+  // 3D crystal-shard satellites remain the phase telegraph (out = invulnerable).
   if (spec.boss) {
     builder.add(
       model(assets.boss, { name: nodeName.boss, castShadow: true, targetHeight: 2.4 })
@@ -388,7 +456,8 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
     for (let i = 0; i < 6; i += 1) {
       const a = (i / 6) * Math.PI * 2;
       builder.add(
-        primitives.box({ name: nodeName.bossSpike(i), size: [0.34, 0.9, 0.34], position: [Math.cos(a) * 1.05, 4.4, -69 + Math.sin(a) * 1.05], material: material.pbr({ color: "#7a3c2e", roughness: 0.7 }) })
+        model(assets.props.crystalShard, { name: nodeName.bossSpike(i), castShadow: true, targetHeight: 0.9 })
+          .position(Math.cos(a) * 1.05, 4.4, -69 + Math.sin(a) * 1.05)
           .rotate(0, 0, Math.cos(a) * 0.5)
           .runtime(game.runtimeNode(nodeName.bossSpike(i), { tags: ["boss"] }))
       );

@@ -424,10 +424,28 @@ function copyAuraAssetFile(assetUrl) {
 function copyRouteLocalAuraAssets(route) {
   const source = path.join(repoRoot, "apps", route, "public", "aura-assets");
   const target = path.join(distDir, "aura-assets");
+  const rootAuraAssets = path.join(repoRoot, "public", "aura-assets");
   if (!existsSync(source)) throw new Error(`route-local Aura assets are missing: ${source}`);
   assertNoGitLfsPointers(source, `apps/${route}/public/aura-assets`);
   mkdirSync(target, { recursive: true });
-  cpSync(source, target, { recursive: true });
+  const copyMissingOnly = (srcDir, dstDir, rootCheckDir) => {
+    mkdirSync(dstDir, { recursive: true });
+    for (const entry of readdirSync(srcDir, { withFileTypes: true })) {
+      const srcPath = path.join(srcDir, entry.name);
+      const dstPath = path.join(dstDir, entry.name);
+      const rootPath = path.join(rootCheckDir, entry.name);
+      if (entry.isDirectory()) {
+        copyMissingOnly(srcPath, dstPath, rootPath);
+      } else if (!existsSync(dstPath)) {
+        if (existsSync(rootPath)) {
+          copyFileSync(rootPath, dstPath);
+        } else {
+          copyFileSync(srcPath, dstPath);
+        }
+      }
+    }
+  };
+  copyMissingOnly(source, target, rootAuraAssets);
 }
 
 function assertBuiltRoutes() {

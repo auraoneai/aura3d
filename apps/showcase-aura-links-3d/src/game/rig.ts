@@ -20,7 +20,8 @@
  * turn away from the target, back to the line), - = follow-through. It is
  * negated when applied as a standard +Y rotation.
  */
-import { game, material, primitives } from "@aura3d/engine";
+import { game, material, model, primitives } from "@aura3d/engine";
+import { assets } from "../../../../src/aura-assets";
 import type { GolferFit, Vec3 } from "./types";
 
 export type GolferPhase =
@@ -56,12 +57,6 @@ const seg3 = (keys: readonly V3[], u: number): V3 => {
   const i = Math.min(keys.length - 2, Math.floor(f));
   return mix3(keys[i], keys[i + 1], smoothstep(f - i));
 };
-/** Rotate a vec3 about +Y by `a` (same convention as localToWorld). */
-const rotY = (v: V3, a: number): V3 => {
-  const c = Math.cos(a);
-  const s = Math.sin(a);
-  return [v[0] * c + v[2] * s, v[1], -v[0] * s + v[2] * c];
-};
 const norm3 = (v: V3): V3 => {
   const l = Math.hypot(v[0], v[1], v[2]) || 1;
   return [v[0] / l, v[1] / l, v[2] / l];
@@ -77,16 +72,6 @@ const UNI: V3 = [1, 1, 1];
 const HIP_X = 0.55;   // stance centre, ~0.55 m left of the ball-line
 const HIP_Y = 0.87;   // athletic forward bend
 const HIP_Z = -0.02;
-const CHEST_Y = 1.3;
-const CHEST_X = 0.42; // chest leans toward the ball (hip x - chest x = spine tilt)
-const HEAD_X = 0.38;
-const HEAD_Y = 1.52;
-const HEAD_Z = -0.02;
-const SHOULDER_HALF = 0.21;
-const HIP_HALF = 0.1;
-const UPPER_LEN = 0.3;
-const FORE_LEN = 0.28;
-
 const FOOT_L: V3 = [0.46, 0.055, 0.15]; // lead foot — target side (+Z)
 const FOOT_R: V3 = [0.51, 0.055, -0.19]; // trail foot
 const STANCE_MID: V3 = [0.52, 0.012, -0.02];
@@ -165,63 +150,18 @@ const K_PUTT_THRU: SwingKey = {
 export interface GolferRig {
   readonly shadow: any;
   readonly ring: any;
-  readonly shorts: any;
-  readonly torso: any;
-  readonly head: any;
-  readonly cap: any;
-  readonly uarmL: any;
-  readonly farmL: any;
-  readonly handL: any;
-  readonly uarmR: any;
-  readonly farmR: any;
-  readonly handR: any;
-  readonly thighL: any;
-  readonly shinL: any;
-  readonly shoeL: any;
-  readonly thighR: any;
-  readonly shinR: any;
-  readonly shoeR: any;
+  readonly hero: any;
+  readonly caddy: any;
+  readonly bag: any;
+  readonly cart: any;
   readonly clubShaft: any;
   readonly clubHead: any;
   readonly clubGrip: any;
 }
 
-const GOLFER_NODE_NAMES = [
-  "golfer-shadow",
-  "golfer-ring",
-  "golfer-shorts",
-  "golfer-torso",
-  "golfer-head",
-  "golfer-cap",
-  "golfer-uarm-l",
-  "golfer-farm-l",
-  "golfer-hand-l",
-  "golfer-uarm-r",
-  "golfer-farm-r",
-  "golfer-hand-r",
-  "golfer-thigh-l",
-  "golfer-shin-l",
-  "golfer-shoe-l",
-  "golfer-thigh-r",
-  "golfer-shin-r",
-  "golfer-shoe-r",
-  "golfer-club-shaft",
-  "golfer-club-head",
-  "golfer-club-grip"
-] as const;
-
 export function buildGolferNodes(fit: GolferFit): any[] {
-  const polo = material.pbr({ color: fit.polo, roughness: 0.75 });
-  const capMat = material.pbr({ color: fit.cap, roughness: 0.6 });
-  const skin = material.pbr({ color: fit.skin, roughness: 0.8 });
-  const trouser = material.pbr({ color: "#4a4f58", roughness: 0.85 });
-  const rubber = material.pbr({ color: "#22262e", roughness: 0.9 });
   const steel = material.pbr({ color: "#3a3f47", metalness: 0.7, roughness: 0.35 });
   const rt = (name: string) => game.runtimeNode(name);
-  const limb = (name: string, mat: any) =>
-    primitives.capsule({ name, size: [1, 1, 1], material: mat }).runtime(rt(name));
-  const joint = (name: string, mat: any) =>
-    primitives.sphere({ name, size: [1, 1, 1], material: mat }).runtime(rt(name));
 
   return [
     // Blob shadow + "at address" marker ring (hidden until address/idle/putt)
@@ -236,38 +176,36 @@ export function buildGolferNodes(fit: GolferFit): any[] {
       .torus({
         name: "golfer-ring",
         size: [0.62, 0.03, 0.03],
-        material: material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: 0.9 })
+        material: material.emissive({ color: fit.polo || "#ffd76a", emissive: fit.polo || "#ffd76a", emissiveIntensity: 0.9 })
       })
       .scale(HIDDEN)
       .runtime(rt("golfer-ring")),
-    // Core body
-    primitives
-      .box({ name: "golfer-shorts", size: [0.4, 0.24, 0.26], material: material.pbr({ color: "#3c4149", roughness: 0.85 }) })
-      .runtime(rt("golfer-shorts")),
-    limb("golfer-torso", polo),
-    joint("golfer-head", skin),
-    primitives
-      .cylinder({ name: "golfer-cap", size: [1, 1, 1], material: capMat })
-      .runtime(rt("golfer-cap")),
-    // Arms — polo sleeves on upper arms, skin on forearms + hands
-    limb("golfer-uarm-l", polo),
-    limb("golfer-uarm-r", polo),
-    limb("golfer-farm-l", skin),
-    limb("golfer-farm-r", skin),
-    joint("golfer-hand-l", skin),
-    joint("golfer-hand-r", skin),
-    // Legs — trouser capsules + dark shoe boxes
-    limb("golfer-thigh-l", trouser),
-    limb("golfer-thigh-r", trouser),
-    limb("golfer-shin-l", trouser),
-    limb("golfer-shin-r", trouser),
-    primitives
-      .box({ name: "golfer-shoe-l", size: [0.3, 0.11, 0.42], material: rubber })
-      .runtime(rt("golfer-shoe-l")),
-    primitives
-      .box({ name: "golfer-shoe-r", size: [0.3, 0.11, 0.42], material: rubber })
-      .runtime(rt("golfer-shoe-r")),
-    // Club — grip, shaft, head (all re-posed every frame)
+    // 3D Bespoke Meshy-6 Pro Golfer + Caddy + Bag + Golf Cart (minY = 0 grounded)
+    model(assets.linksGolferAthleteMeshy, {
+      name: "golfer-hero",
+      targetHeight: 1.84,
+      role: "primaryCharacter",
+      scaleMode: "fit"
+    }).runtime(rt("golfer-hero")),
+    model(assets.linksGolferAthleteMeshy, {
+      name: "golfer-caddy",
+      targetHeight: 1.8,
+      role: "setDressing",
+      scaleMode: "fit"
+    }).runtime(rt("golfer-caddy")),
+    model(assets.linksGolfCartMeshy, {
+      name: "golfer-bag",
+      targetHeight: 0.92,
+      role: "setDressing",
+      scaleMode: "fit"
+    }).runtime(rt("golfer-bag")),
+    model(assets.linksGolfCartMeshy, {
+      name: "golfer-cart",
+      targetHeight: 1.65,
+      role: "setDressing",
+      scaleMode: "fit"
+    }).runtime(rt("golfer-cart")),
+    // Club — grip, shaft, head (all re-posed every frame along the 3D swing arc)
     primitives
       .cylinder({ name: "golfer-club-shaft", size: [0.03, 1.05, 0.03], material: steel })
       .runtime(rt("golfer-club-shaft")),
@@ -293,22 +231,10 @@ export function resolveGolferRig(app: any): GolferRig {
   return {
     shadow: req("golfer-shadow"),
     ring: req("golfer-ring"),
-    shorts: req("golfer-shorts"),
-    torso: req("golfer-torso"),
-    head: req("golfer-head"),
-    cap: req("golfer-cap"),
-    uarmL: req("golfer-uarm-l"),
-    farmL: req("golfer-farm-l"),
-    handL: req("golfer-hand-l"),
-    uarmR: req("golfer-uarm-r"),
-    farmR: req("golfer-farm-r"),
-    handR: req("golfer-hand-r"),
-    thighL: req("golfer-thigh-l"),
-    shinL: req("golfer-shin-l"),
-    shoeL: req("golfer-shoe-l"),
-    thighR: req("golfer-thigh-r"),
-    shinR: req("golfer-shin-r"),
-    shoeR: req("golfer-shoe-r"),
+    hero: req("golfer-hero"),
+    caddy: req("golfer-caddy"),
+    bag: req("golfer-bag"),
+    cart: req("golfer-cart"),
     clubShaft: req("golfer-club-shaft"),
     clubHead: req("golfer-club-head"),
     clubGrip: req("golfer-club-grip")
@@ -316,33 +242,13 @@ export function resolveGolferRig(app: any): GolferRig {
 }
 
 /* ------------------------------------------------------------------ *
- *  Player Studio fit — cached materials, re-called only on fit change  *
+ *  Player Studio fit — updates address ring and club grip accents      *
  * ------------------------------------------------------------------ */
 
-const fitMaterialCache = new Map<string, unknown>();
-const fitMat = (color: string, roughness: number, extra: Record<string, number> = {}) => {
-  const key = `${color}|${roughness}|${JSON.stringify(extra)}`;
-  let m = fitMaterialCache.get(key);
-  if (!m) {
-    m = material.pbr({ color, roughness, ...extra });
-    fitMaterialCache.set(key, m);
-  }
-  return m;
-};
-
 export function applyGolferFit(rig: GolferRig, fit: GolferFit): void {
-  const polo = fitMat(fit.polo, 0.75);
-  const cap = fitMat(fit.cap, 0.6);
-  const skin = fitMat(fit.skin, 0.8);
-  rig.torso.setMaterial(polo);
-  rig.uarmL.setMaterial(polo);
-  rig.uarmR.setMaterial(polo);
-  rig.cap.setMaterial(cap);
-  rig.head.setMaterial(skin);
-  rig.farmL.setMaterial(skin);
-  rig.farmR.setMaterial(skin);
-  rig.handL.setMaterial(skin);
-  rig.handR.setMaterial(skin);
+  const accent = fit.polo || "#ffd76a";
+  rig.ring?.setMaterial?.(material.emissive({ color: accent, emissive: accent, emissiveIntensity: 0.9 }));
+  rig.clubGrip?.setMaterial?.(material.pbr({ color: fit.cap || "#1a1c22", roughness: 0.85 }));
 }
 
 /* ------------------------------------------------------------------ *
@@ -394,38 +300,31 @@ function golferPose(phase: GolferPhase, t: number): GolferPose {
   const s = smoothstep(u);
   switch (phase) {
     case "backswing":
-      // Club sweeps low/inside then sets over the trail shoulder; coil to ~0.7.
       return swingPose(segKey([K_ADDR, K_MID_BACK, K_TOP], s), {
         coil: lerp(0, 0.7, s),
         hipZ: HIP_Z + lerp(0, -0.045, s),
         hipY: HIP_Y - 0.01 * s
       });
     case "downswing":
-      // Whip down: pow<1 keeps the arc fast off the top into impact.
       return swingPose(segKey([K_TOP, K_MID_DOWN, K_IMPACT], Math.pow(u, 0.75)), {
         coil: lerp(0.7, 0.08, s),
         hipZ: HIP_Z + lerp(-0.045, 0.015, s),
         hipY: HIP_Y - 0.015 + 0.015 * s
       });
     case "follow":
-      // Around and up over the lead shoulder; chest rotates through the line.
       return swingPose(segKey([K_IMPACT, K_MID_THRU, K_FINISH], s), {
         coil: lerp(0.08, -0.9, s),
         hipZ: HIP_Z + lerp(0.015, 0.055, s),
         hipY: lerp(HIP_Y - 0.015, 0.93, s),
         headUp: 0.12 * s,
-        // trail heel releases as weight goes to the lead side
         footR: [FOOT_R[0] - 0.02 * s, FOOT_R[1] + 0.04 * s, FOOT_R[2] + 0.02 * s]
       });
     case "putt":
-      // Compact face-square pendulum, stance a touch more bent.
       return swingPose(segKey([K_PUTT_BACK, K_PUTT_ADDR, K_PUTT_THRU], s), {
         hipY: HIP_Y - 0.03,
         kneeDrive: 0.07
       });
     case "celebrate": {
-      // Both fists pump; a small jump carries the hips. Club raised in the
-      // trail hand.
       const pump = Math.sin(Math.PI * u);
       const handL: V3 = [0.42, 1.12 + 0.34 * pump, 0.2];
       const handR: V3 = [0.46, 1.12 + 0.34 * pump, -0.18];
@@ -445,7 +344,6 @@ function golferPose(phase: GolferPhase, t: number): GolferPose {
       };
     }
     case "walk": {
-      // Gentle bob + counter-swaying arms; club carried in the trail hand.
       const w = Math.sin(u * Math.PI * 2);
       const handL: V3 = [0.5, 0.82, 0.23 + w * 0.05];
       const handR: V3 = [0.55, 0.82, -0.2 - w * 0.05];
@@ -467,7 +365,6 @@ function golferPose(phase: GolferPhase, t: number): GolferPose {
     case "address":
     case "idle":
     default:
-      // Bent forward over the ball, club grounded just behind it, hands low.
       return swingPose(K_ADDR, {
         bob: Math.sin(u * Math.PI * 2) * 0.008
       });
@@ -483,73 +380,55 @@ export function poseGolfer(
   phase: GolferPhase,
   t: number,
   at: Vec3,
-  faceYaw: number
+  faceYaw: number,
+  heightFn?: (x: number, z: number) => number
 ): void {
   const p = golferPose(phase, t);
-  // Local frame: origin at the ball, +Z = shot direction, +X = stance side.
   const W = (v: V3) => golfKit.localToWorld(at, faceYaw, UNI, v);
+  const groundAt = (x: number, z: number) => (heightFn ? heightFn(x, z) : at[1]);
 
   const tw = -p.coil; // spec-convention coil → standard +Y rotation
-  const hip: V3 = [HIP_X, p.hipY, p.hipZ];
+  const stanceW = W([HIP_X, 0, p.hipZ]);
+  const golferGroundY = groundAt(stanceW[0], stanceW[2]);
 
-  // Spine tilts toward the ball and swings with the coil; the shoulder axis
-  // rotates the full wind-up while hips take ~45% (the "X-factor").
-  const spine = rotY([CHEST_X - HIP_X, 0, -0.02 - HIP_Z], tw * 0.55);
-  const chest: V3 = [hip[0] + spine[0], CHEST_Y + p.bob, hip[2] + spine[2]];
-  const axis = rotY([0, 0, 1], tw);
-  const shoulderL: V3 = [
-    chest[0] + axis[0] * SHOULDER_HALF,
-    chest[1] + 0.03,
-    chest[2] + axis[2] * SHOULDER_HALF
-  ];
-  const shoulderR: V3 = [
-    chest[0] - axis[0] * SHOULDER_HALF,
-    chest[1] + 0.03,
-    chest[2] - axis[2] * SHOULDER_HALF
-  ];
-  const head: V3 = [
-    HEAD_X,
-    HEAD_Y + p.bob + p.headUp * 0.6,
-    HEAD_Z + p.headUp * 0.5
-  ];
-
-  const hipsW = W(hip);
-  const chestW = W(chest);
-  const headW = W(head);
-
-  golfKit.orientCylinderBetween(rig.torso, hipsW, chestW, 0.2, 0.155);
-  rig.shorts
-    .setPosition(hipsW[0], hipsW[1], hipsW[2])
-    .setRotation(0, faceYaw - Math.PI / 2 + tw * 0.45, 0)
-    .setScale([1, 1, 1])
-    .setVisible(true);
-  rig.head
-    .setPosition(headW[0], headW[1] + 0.1, headW[2])
-    .setScale([0.21, 0.24, 0.22])
-    .setVisible(true);
-  // Cap: squat cylinder tipped slightly toward the ball — brim overhang reads
-  // as a cap.
-  rig.cap
-    .setPosition(headW[0] - Math.cos(faceYaw) * 0.035, headW[1] + 0.17, headW[2] + Math.sin(faceYaw) * 0.035)
-    .setRotation(0.06, faceYaw - Math.PI / 2, 0)
-    .setScale([0.235, 0.09, 0.25])
+  // 3D Bespoke Meshy Golfer (`linksGolferAthleteMeshy`, targetHeight 1.84, minY = 0 grounded)
+  const heroY = golferGroundY + Math.max(0, p.hipY - HIP_Y) + p.bob;
+  const heroPitch = phase === "celebrate" ? -0.08 : 0.14 - p.headUp * 0.85;
+  const heroYaw = faceYaw - Math.PI / 2 + tw * 0.65;
+  const heroRoll = p.coil * 0.14;
+  rig.hero
+    ?.setPosition(stanceW[0], heroY, stanceW[2])
+    .setRotation(heroPitch, heroYaw, heroRoll)
     .setVisible(true);
 
-  // Arms — 2-bone IK. Hands come from the swing keyframes.
-  const shoulderLW = W(shoulderL);
-  const shoulderRW = W(shoulderR);
-  const handLW = W(p.handL);
-  const handRW = W(p.handR);
-  const elbowL = golfKit.solveArmElbow(shoulderLW, handLW, -1, UPPER_LEN, FORE_LEN);
-  const elbowR = golfKit.solveArmElbow(shoulderRW, handRW, 1, UPPER_LEN, FORE_LEN);
-  golfKit.orientCylinderBetween(rig.uarmL, shoulderLW, elbowL, 0.052);
-  golfKit.orientCylinderBetween(rig.farmL, elbowL, handLW, 0.045);
-  golfKit.orientCylinderBetween(rig.uarmR, shoulderRW, elbowR, 0.052);
-  golfKit.orientCylinderBetween(rig.farmR, elbowR, handRW, 0.045);
-  rig.handL.setPosition(handLW[0], handLW[1], handLW[2]).setScale([0.085, 0.085, 0.085]).setVisible(true);
-  rig.handR.setPosition(handRW[0], handRW[1], handRW[2]).setScale([0.085, 0.085, 0.085]).setVisible(true);
+  // 3D Bespoke Meshy Caddy (`linksGolferAthleteMeshy`, targetHeight 1.80, minY = 0 grounded)
+  const caddyW = W([2.45, 0, -1.65]);
+  const caddyGroundY = groundAt(caddyW[0], caddyW[2]);
+  const caddyPump = phase === "celebrate" ? Math.abs(Math.sin(t * Math.PI * 2)) * 0.14 : 0;
+  rig.caddy
+    ?.setPosition(caddyW[0], caddyGroundY + caddyPump, caddyW[2])
+    .setRotation(0, faceYaw - 0.38, 0)
+    .setVisible(true);
+
+  // 3D Golf Bag (`rooftopBallRackCartMeshy`, targetHeight 1.16, centered origin -> +0.58m half-height)
+  const bagW = W([2.95, 0, -1.35]);
+  const bagGroundY = groundAt(bagW[0], bagW[2]);
+  rig.bag
+    ?.setPosition(bagW[0], bagGroundY + 0.58, bagW[2])
+    .setRotation(0.12, faceYaw - 0.5, 0)
+    .setVisible(true);
+
+  // 3D Bespoke Golf Cart (`linksGolfCartMeshy`, targetHeight 1.65, minY = 0 grounded)
+  const cartW = W([5.2, 0, -3.6]);
+  const cartGroundY = groundAt(cartW[0], cartW[2]);
+  rig.cart
+    ?.setPosition(cartW[0], cartGroundY, cartW[2])
+    .setRotation(0, faceYaw - 0.25, 0)
+    .setVisible(true);
 
   // Club — grip sits between the hands; shaft along grip → clubhead.
+  const handLW = W(p.handL);
+  const handRW = W(p.handR);
   const gripW = p.grip ? W(p.grip) : mix3(handLW, handRW, 0.5);
   const clubHeadW = W(p.clubHead);
   const dir = norm3([clubHeadW[0] - gripW[0], clubHeadW[1] - gripW[1], clubHeadW[2] - gripW[2]]);
@@ -560,42 +439,15 @@ export function poseGolfer(
   golfKit.orientCylinderBetween(rig.clubShaft, gripEnd, neck, 0.02);
   const clubEuler = golfKit.directionToEulerXYZ(dir[0], dir[1], dir[2]);
   rig.clubHead
-    .setPosition(clubHeadW[0], Math.max(0.045, clubHeadW[1]), clubHeadW[2])
+    .setPosition(clubHeadW[0], Math.max(at[1] + 0.04, clubHeadW[1]), clubHeadW[2])
     .setRotation(clubEuler[0], faceYaw + clubEuler[1], clubEuler[2])
     .setScale([1, 1, 1])
     .setVisible(true);
 
-  // Legs — knees drive toward the ball for the athletic flexed stance.
-  const hipAxis = rotY([0, 0, 1], tw * 0.45);
-  for (let i = 0; i < 2; i++) {
-    const side = i === 0 ? 1 : -1; // lead leg first (+Z), trail second
-    const foot = i === 0 ? p.footL : p.footR;
-    const hipJoint: V3 = [
-      hip[0] + hipAxis[0] * HIP_HALF * side,
-      hip[1] - 0.02,
-      hip[2] + hipAxis[2] * HIP_HALF * side
-    ];
-    const knee: V3 = [
-      (hipJoint[0] + foot[0]) * 0.5 - p.kneeDrive,
-      (hipJoint[1] + foot[1]) * 0.5 + 0.02,
-      (hipJoint[2] + foot[2]) * 0.5 + side * 0.025
-    ];
-    const hipW = W(hipJoint);
-    const kneeW = W(knee);
-    const footW = W(foot);
-    golfKit.orientCylinderBetween(i === 0 ? rig.thighL : rig.thighR, hipW, kneeW, 0.075);
-    golfKit.orientCylinderBetween(i === 0 ? rig.shinL : rig.shinR, kneeW, footW, 0.055);
-    (i === 0 ? rig.shoeL : rig.shoeR)
-      .setPosition(footW[0], Math.max(0.055, footW[1]), footW[2])
-      .setRotation(0, faceYaw - Math.PI / 2, 0)
-      .setScale([1, 1, 1])
-      .setVisible(true);
-  }
-
   // Blob shadow under the stance + address marker ring on the ball spot.
   const shadowW = W(STANCE_MID);
   rig.shadow
-    .setPosition(shadowW[0], shadowW[1], shadowW[2])
+    .setPosition(shadowW[0], golferGroundY + 0.015, shadowW[2])
     .setScale([0.9, 1, 0.8])
     .setVisible(true);
   const atAddress = phase === "address" || phase === "idle" || phase === "putt";

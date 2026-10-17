@@ -438,6 +438,10 @@ const FIGHTER_RENDER_HEIGHT = 1.8;
  * ride on this (model() drops `materialOverrides`, so the node-level
  * `material` spec is the public seam).
  */
+export function fighterFacingYaw(facing: 1 | -1): number {
+  return facing > 0 ? Math.PI / 2 : -Math.PI / 2;
+}
+
 export function createFighterNode(
   nodeId: string,
   fighter: FighterDef,
@@ -453,20 +457,25 @@ export function createFighterNode(
     tags: ["fighter", fighter.id, assetKey, asset ? "typed-asset" : "source-placeholder"]
   });
   const palette = tint ?? fighter.palette;
+  const yaw = fighterFacingYaw(facing);
 
   if (asset) {
     return model(asset, {
       name: label,
       targetHeight: FIGHTER_RENDER_HEIGHT,
-      material: material.pbr({
-        color: palette.color,
-        roughness: palette.roughness,
-        metallic: palette.metallic,
-        ...(palette.emissive ? { emissive: palette.emissive, emissiveIntensity: palette.emissiveIntensity } : {})
-      })
+      ...(tint
+        ? {
+            material: material.pbr({
+              color: tint.color,
+              roughness: tint.roughness,
+              metallic: tint.metallic,
+              ...(tint.emissive ? { emissive: tint.emissive, emissiveIntensity: tint.emissiveIntensity } : {})
+            })
+          }
+        : {})
     })
       .position(position[0], position[1], position[2])
-      .rotate(0, facing < 0 ? Math.PI : 0, 0)
+      .rotate(0, yaw, 0)
       .scale(fighter.scale)
       .runtime(runtime);
   }
@@ -477,7 +486,8 @@ export function createFighterNode(
       material: material.pbr({ color: palette.color, roughness: 0.62 })
     })
     .position(position[0], position[1] + 0.82, position[2])
-    .rotate(0, facing < 0 ? Math.PI : 0, 0)
+    .rotate(0, yaw, 0)
     .scale([0.34, 0.74, 0.34])
     .runtime(runtime);
 }
+

@@ -432,18 +432,17 @@ function buildCourtSurfaces(v: VenueSpec): any[] {
 
 function buildHoopNodes(): any[] {
   return [
-    // Stanchion pole + arm
-    primitives.cylinder({ name: "hoop-pole", size: [0.28, 4.0, 0.28], material: material.pbr({ color: "#23262e", metalness: 0.5, roughness: 0.5 }) }).position(0, 2.0, -1.15),
-    primitives.box({ name: "hoop-arm", size: [0.16, 0.16, 0.9], material: material.pbr({ color: "#23262e", metalness: 0.5, roughness: 0.5 }) }).position(0, 3.62, -0.72),
+    // Admitted 3D Meshy hoop stanchion rig + backboard + rim
+    model(assets.hoopsHoopRig, { name: "hoop-rig", targetHeight: 3.95, scaleMode: "fit", castShadow: true, receiveShadow: true })
+      .position(0, 1.98, -1.08)
+      .rotate(0, Math.PI, 0),
     model(assets.hoopsBackboard, { name: "hoop-backboard", scaleMode: "world", castShadow: true, receiveShadow: true })
       .position(0, 3.35, BOARD_Z)
       .runtime(game.runtimeNode("backboard-assembly")),
-    primitives.box({ name: "glass-board", size: [1.8, 1.05, 0.03], material: material.pbr({ color: "#bcd8e8", roughness: 0.15, opacity: 0.28 }) }).position(0, 3.35, BOARD_Z + 0.05),
     model(assets.hoopsRim, { name: "hoop-rim", scaleMode: "world", castShadow: true })
       .position(RIM[0], RIM[1], RIM[2])
       .runtime(game.runtimeNode("rim-assembly")),
     // Net: two stacked tori + skirt planes for ripple feedback
-    // (torus unit: major radius 0.43 × scale, lying in XY — rotated flat here)
     primitives.torus({ name: "net-top", size: [0.47, 0.47, 0.35], material: material.pbr({ color: "#e8e8e0", roughness: 0.7 }) }).position(0, RIM[1] - 0.1, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("net-top")),
     primitives.torus({ name: "net-bottom", size: [0.3, 0.3, 0.28], material: material.pbr({ color: "#e8e8e0", roughness: 0.7 }) }).position(0, RIM[1] - 0.42, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("net-bottom")),
     primitives.cylinder({ name: "net-skirt", size: [0.34, 0.34, 0.34], material: material.pbr({ color: "#e8e8e0", roughness: 0.7, opacity: 0.22 }) }).position(0, RIM[1] - 0.24, 0).runtime(game.runtimeNode("net-skirt")),
@@ -469,77 +468,54 @@ function buildBallNodes(): any[] {
   return nodes;
 }
 
-/** Articulation accessories for one athlete: ring, shadow, jersey shell, headband, kicks. */
+/** Clean ground readability rings & shadow for one 3D Meshy athlete (no primitive body/shoe capsules). */
 function buildAthleteAccessories(id: string, team: TeamId): any[] {
   const ringColor = team === "home" ? "#ff7a1a" : "#39d7ff";
   return [
     primitives.cylinder({ name: `${id}-shadow`, size: [0.62, 0.008, 0.62], material: material.pbr({ color: "#000000", opacity: 0.34, roughness: 1 }) }).runtime(game.runtimeNode(`${id}-shadow`)),
-    primitives.torus({ name: `${id}-ring`, size: [1.16, 1.16, 0.55], material: material.emissive({ color: ringColor, emissive: ringColor, emissiveIntensity: 0.9 }) }).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode(`${id}-ring`)),
-    primitives.capsule({ name: `${id}-jersey`, size: [1, 1, 1], material: material.pbr({ color: team === "home" ? "#ff7a1a" : "#26314f", roughness: 0.72 }) }).runtime(game.runtimeNode(`${id}-jersey`)),
-    primitives.torus({ name: `${id}-headband`, size: [0.26, 0.26, 0.7], material: material.pbr({ color: team === "home" ? "#ffd257" : "#39d7ff", roughness: 0.6 }) }).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode(`${id}-headband`)),
-    primitives.box({ name: `${id}-kick-l`, size: [0.16, 0.1, 0.3], material: material.pbr({ color: "#f2f0e2", roughness: 0.55 }) }).runtime(game.runtimeNode(`${id}-kick-l`)),
-    primitives.box({ name: `${id}-kick-r`, size: [0.16, 0.1, 0.3], material: material.pbr({ color: "#f2f0e2", roughness: 0.55 }) }).runtime(game.runtimeNode(`${id}-kick-r`)),
+    primitives.torus({ name: `${id}-ring`, size: [1.16, 1.16, 0.55], material: material.emissive({ color: ringColor, emissive: ringColor, emissiveIntensity: 0.95 }) }).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode(`${id}-ring`)),
     // Jam aura — hidden until the meter is full
     primitives.cylinder({ name: `${id}-aura`, size: [0.9, 1.9, 0.9], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.9, opacity: 0.16 }) }).scale(HIDDEN).runtime(game.runtimeNode(`${id}-aura`))
   ];
 }
 
 function buildAthlete(id: string, _team: TeamId): any[] {
-  const athleteAsset = /1$/.test(id) ? assets.hoopsAthleteBig : assets.hoopsAthleteGuard;
+  const athleteAsset = /[124]$/.test(id) ? assets.hoopsAthleteBig : assets.hoopsAthleteGuard;
   return [
-    model(athleteAsset, { name: id, targetHeight: 1.92, castShadow: true, receiveShadow: true })
-      .position(0, 0, 6)
+    model(athleteAsset, { name: id, targetHeight: 1.92, scaleMode: "fit", castShadow: true, receiveShadow: true })
+      .position(0, 0.96, 6)
       .runtime(game.runtimeNode(id)),
     ...buildAthleteAccessories(id, _team)
   ];
 }
 
-function buildCrowd(v: VenueSpec): any[] {
-  const nodes: any[] = [];
-  const localRng = makeRng(0xc0ff33 + VENUE_ORDER.indexOf(v.id));
-  const crowdT: any[] = [];
-  const crowdC: string[] = [];
-  const palette = v.id === "venice"
-    ? ["#e8d8b0", "#c96f4a", "#7ec8d8", "#f2f0e2", "#a8563c"]
-    : v.night
-      ? ["#3d5a80", "#98c1d9", "#e0fbfc", "#ff7a1a", "#39d7ff"]
-      : ["#c96f4a", "#d8a75c", "#e8d8b0", "#a8563c", "#3d5a80"];
-  const density = v.crowdDensity;
-  // Behind-hoop bleacher bank + sidelines wrap
-  for (let row = 0; row < 3; row++) {
-    const zBack = -4.4 - row * 1.5;
-    const y = 0.85 + row * 0.55;
-    const cols = Math.round(16 * density) + 4;
-    for (let i = 0; i < cols; i++) {
-      if (localRng() < 0.12) continue;
-      crowdT.push({ position: [-10 + (20 / cols) * i + (localRng() - 0.5) * 0.5, y, zBack + (localRng() - 0.5) * 0.4], scale: [0.34, 0.6 + localRng() * 0.22, 0.34] });
-      crowdC.push(palette[Math.floor(localRng() * palette.length)]);
-    }
-    const sideCols = Math.round(10 * density) + 2;
-    for (let i = 0; i < sideCols; i++) {
-      for (const sx of [-9.6 - row * 1.4, 9.6 + row * 1.4]) {
-        if (localRng() < 0.18) continue;
-        crowdT.push({ position: [sx + (localRng() - 0.5) * 0.4, y, -1 + i * 1.3], scale: [0.34, 0.6 + localRng() * 0.22, 0.34] });
-        crowdC.push(palette[Math.floor(localRng() * palette.length)]);
-      }
-    }
-  }
-  nodes.push(
-    (instances as any).capsule({ name: "crowd-bowl", transforms: crowdT, colors: crowdC, material: material.pbr({ color: "#ffffff", roughness: 0.9 }) })
-  );
-  // Bleacher benches under the far bank
-  for (let row = 0; row < 3; row++) {
-    nodes.push(
-      primitives.box({ name: `bleacher-${row}`, size: [21, 0.5, 1.3], material: material.pbr({ color: v.night ? "#1a2130" : "#2a2f3a", roughness: 0.85 }) }).position(0, 0.45 + row * 0.55, -4.4 - row * 1.5)
-    );
-  }
-  // Front-row wavers (animated in the frame loop)
+function buildCrowd(_v: VenueSpec): any[] {
+  const nodes: any[] = [
+    // Real 3D stadium seating grandstands surrounding the outer court perimeter
+    model(assets.showcaseStadiumSeats, { name: "bleacher-north", targetMaxDimension: 12, scaleMode: "fit", castShadow: false, receiveShadow: true })
+      .position(0, 1.2, -18.5),
+    model(assets.showcaseStadiumSeats, { name: "bleacher-west", targetMaxDimension: 11, scaleMode: "fit", castShadow: false, receiveShadow: true })
+      .position(-19.5, 1.1, 4.0)
+      .rotate(0, Math.PI / 2, 0),
+    model(assets.showcaseStadiumSeats, { name: "bleacher-east", targetMaxDimension: 11, scaleMode: "fit", castShadow: false, receiveShadow: true })
+      .position(19.5, 1.1, 4.0)
+      .rotate(0, -Math.PI / 2, 0),
+    // 3D Referee tracking play along the sideline
+    model(assets.hoopsAthleteGuard, { name: "referee", targetHeight: 1.88, scaleMode: "fit", castShadow: true, receiveShadow: true })
+      .position(-8.2, 0.94, 3.2)
+      .rotate(0, Math.PI / 2, 0)
+      .runtime(game.runtimeNode("referee"))
+  ];
+  // Front-row 3D Meshy courtside spectators (animated in the frame loop)
   for (let i = 0; i < CROWD_WAVERS; i++) {
     const x = -8.4 + i * (16.8 / (CROWD_WAVERS - 1));
+    const z = i % 2 ? -3.4 : 12.6;
+    const yaw = i % 2 ? 0 : Math.PI;
+    const fanAsset = i % 2 === 0 ? assets.hoopsAthleteGuard : assets.hoopsAthleteBig;
     nodes.push(
-      primitives.capsule({ name: `waver-${i}`, size: [1, 1, 1], material: material.pbr({ color: palette[i % palette.length], roughness: 0.85 }) })
-        .position(x, 0.62, i % 2 ? -3.2 : 12.6)
-        .scale([0.34, 0.66, 0.34])
+      model(fanAsset, { name: `waver-${i}`, targetHeight: 1.86, scaleMode: "fit", castShadow: true })
+        .position(x, 0.93, z)
+        .rotate(0, yaw, 0)
         .runtime(game.runtimeNode(`waver-${i}`))
     );
   }
@@ -551,25 +527,22 @@ function buildVenueDressing(v: VenueSpec): any[] {
   const vrng = makeRng(0x9e3779 + VENUE_ORDER.indexOf(v.id) * 77);
 
   if (v.glbVenue) {
-    // Athens: the retired rooftop venue shells are the real rooftop environment.
     nodes.push(
-      model(assets.hoopsCourtShell, { name: "venue-shell", scaleMode: "world", castShadow: false, receiveShadow: true }).position(0, 0.72, 4),
+      model(assets.hoopsCourtShell, { name: "venue-shell", targetMaxDimension: 24, scaleMode: "fit", castShadow: false, receiveShadow: true }).position(0, 0.2, -22),
     );
   }
 
   // Skyline ring — tall silhouettes behind play, per-venue density/tint
   if (v.id === "rucker" || v.id === "shanghai" || v.id === "athens") {
-    const skylineScale = v.id === "shanghai" ? 34 : 22;
     nodes.push(
-      model(assets.hoopsSkyline, { name: "skyline", targetMaxDimension: skylineScale * 4, castShadow: false, receiveShadow: false })
-        .position(0, -0.5, -34)
+      model(assets.hoopsSkyline, { name: "skyline", targetMaxDimension: 26, scaleMode: "fit", castShadow: false, receiveShadow: false })
+        .position(0, -0.5, -56)
     );
     if (v.id === "shanghai") {
       nodes.push(
         model(assets.hoopsTower, { name: "tower-east", targetHeight: 34, castShadow: false }).position(26, 0, -18),
         model(assets.hoopsTower, { name: "tower-west", targetHeight: 26, castShadow: false }).position(-26, 0, -14)
       );
-      // Riverside water strip beyond the far baseline
       nodes.push(
         primitives.plane({ name: "river-strip", size: [80, 1, 12], material: material.pbr({ color: "#0a1826", roughness: 0.2, metalness: 0.6, emissive: "#0d2438", emissiveIntensity: 0.25 }) }).position(0, -0.05, 20)
       );
@@ -577,7 +550,6 @@ function buildVenueDressing(v: VenueSpec): any[] {
   }
 
   if (v.id === "venice") {
-    // Sand surround + palm pines + ocean glint
     nodes.push(
       primitives.plane({ name: "sand-surround", size: [90, 1, 46], material: material.pbr({ color: "#c9ad72", roughness: 0.95 }) }).position(0, -0.04, 6),
       primitives.plane({ name: "ocean-glint", size: [90, 1, 10], material: material.pbr({ color: "#2e8fa8", roughness: 0.3, metalness: 0.4, emissive: "#ff9a3d", emissiveIntensity: 0.12 }) }).position(0, -0.03, -22)
@@ -588,14 +560,9 @@ function buildVenueDressing(v: VenueSpec): any[] {
   }
 
   if (v.id === "manila") {
-    // Covered court: roof canopy on posts + warm practicals
     nodes.push(
-      primitives.box({ name: "roof-canopy", size: [34, 0.4, 30], material: material.pbr({ color: "#2a2620", roughness: 0.8 }) }).position(0, 9.4, 4),
-      primitives.box({ name: "roof-skirt-front", size: [34, 1.1, 0.3], material: material.pbr({ color: "#6b3b26", roughness: 0.75, emissive: "#8a4a2a", emissiveIntensity: 0.2 }) }).position(0, 8.8, 18.4)
+      model(assets.hoopsCanopy, { name: "manila-canopy", targetMaxDimension: 36, scaleMode: "fit", castShadow: false, receiveShadow: true }).position(0, 9.2, 4)
     );
-    for (const [x, z] of [[-15, -6], [15, -6], [-15, 14], [15, 14], [-15, 4], [15, 4]] as const) {
-      nodes.push(primitives.cylinder({ name: `roof-post-${x}-${z}`, size: [0.34, 9.4, 0.34], material: material.pbr({ color: "#3a342c", metalness: 0.4, roughness: 0.55 }) }).position(x, 4.7, z));
-    }
     for (const [x, z] of [[-13, -4], [13, -4], [-13, 12], [13, 12]] as const) {
       nodes.push(
         model(assets.hoopsFloodlight, { name: `flood-${x}-${z}`, targetHeight: 8.6 }).position(x, 0, z).rotate(0, Math.atan2(-x, -z), 0),
@@ -615,7 +582,6 @@ function buildVenueDressing(v: VenueSpec): any[] {
   }
 
   if (v.id === "orbit") {
-    // Dome court over Earth: arena shells as architecture + planet overhead + starfield
     nodes.push(
       model(assets.hoopsOrbitArena, { name: "orbit-dome", targetMaxDimension: 64, castShadow: false, receiveShadow: false }).position(0, -0.4, 4),
       model(assets.hoopsCanopy, { name: "orbit-halo", targetMaxDimension: 46, castShadow: false, receiveShadow: false }).position(0, 14, -20),
@@ -623,7 +589,6 @@ function buildVenueDressing(v: VenueSpec): any[] {
         .position(-60, 130, -300)
         .runtime(game.runtimeNode("planet-earth"))
     );
-    // Starfield — instanced far shell
     const starT: any[] = [];
     for (let i = 0; i < 140; i++) {
       const a = vrng() * Math.PI * 2;
@@ -639,14 +604,6 @@ function buildVenueDressing(v: VenueSpec): any[] {
   }
 
   if (v.id === "rucker") {
-    // Harlem chain-link fencing + flood towers + scoreboard
-    for (const [x, z, w, rot] of [[0, -5.6, 22, 0], [-10.2, 4, 22, Math.PI / 2], [10.2, 4, 22, Math.PI / 2]] as const) {
-      nodes.push(
-        primitives.box({ name: `fence-frame-${x}-${z}`, size: [w, 2.6, 0.08], material: material.pbr({ color: "#2c313a", roughness: 0.7, metalness: 0.4 }) }).position(x, 1.3, z).rotate(0, rot, 0),
-        // plane geometry lives in XZ — pitch it up then yaw it to the fence line
-        primitives.plane({ name: `fence-mesh-${x}-${z}`, size: [w, 1, 2.4], material: material.pbr({ color: "#8d919e", roughness: 0.6, opacity: 0.18 }) }).position(x, 1.4, z).rotate(-Math.PI / 2, rot, 0)
-      );
-    }
     for (const [x, z] of [[-11, -7], [11, -7], [-11, 13], [11, 13]] as const) {
       nodes.push(
         model(assets.hoopsFloodlight, { name: `flood-${x}-${z}`, targetHeight: 9.2 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0),
@@ -659,16 +616,16 @@ function buildVenueDressing(v: VenueSpec): any[] {
     );
   }
 
-  // Courtside dressing shared by all courts: ball rack, trophy case, bench athletes
+  // Courtside dressing shared by all courts: ball rack, trophy case, 3D coaches & bench athletes (grounded at y=0.96)
   nodes.push(
-    model(assets.hoopsBallCart, { name: "ball-rack", targetHeight: 1.15 }).position(-8.9, 0, 9.4).rotate(0, 0.5, 0),
-    model(assets.hoopsTrophy, { name: "trophy-case", targetHeight: 1.7, castShadow: false }).position(9.2, 0, -3.4).rotate(0, -0.8, 0).runtime(game.runtimeNode("trophy-case")),
-    // Bench/warm-up athletes — static posed GLBs + one Ready-loop scorer
-    model(assets.hoopsAthleteGuard, { name: "bench-shooter", targetHeight: 1.92, castShadow: true }).position(-8.4, 0, 6.8).rotate(0, Math.PI / 2, 0),
-    model(assets.hoopsAthleteBig, { name: "bench-defender", targetHeight: 1.92, castShadow: true }).position(-8.4, 0, 8.2).rotate(0, Math.PI / 2, 0),
-    model(assets.hoopsAthleteBig, { name: "warmup-scorer", targetHeight: 1.92, castShadow: true }).position(8.6, 0, 7.4).rotate(0, -Math.PI / 2, 0),
-    model(assets.hoopsAthleteGuard, { name: "warmup-shooter2", targetHeight: 1.92, castShadow: true }).position(-8.6, 0, 4.4).rotate(0, Math.PI / 2, 0),
-    model(assets.hoopsAthleteBig, { name: "warmup-defender2", targetHeight: 1.92, castShadow: true }).position(8.4, 0, 4.9).rotate(0, -Math.PI / 2, 0)
+    model(assets.hoopsBallCart, { name: "ball-rack", targetHeight: 1.15 }).position(-8.9, 0.58, 9.4).rotate(0, 0.5, 0),
+    model(assets.hoopsTrophy, { name: "trophy-case", targetHeight: 1.7, castShadow: false }).position(9.2, 0.85, -3.4).rotate(0, -0.8, 0).runtime(game.runtimeNode("trophy-case")),
+    model(assets.hoopsAthleteBig, { name: "coach-home", targetHeight: 1.94, scaleMode: "fit", castShadow: true }).position(-8.6, 0.97, 5.8).rotate(0, Math.PI / 2, 0),
+    model(assets.hoopsAthleteBig, { name: "coach-away", targetHeight: 1.94, scaleMode: "fit", castShadow: true }).position(8.6, 0.97, 5.8).rotate(0, -Math.PI / 2, 0),
+    model(assets.hoopsAthleteGuard, { name: "bench-shooter", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(-8.6, 0.96, 7.2).rotate(0, Math.PI / 2, 0),
+    model(assets.hoopsAthleteBig, { name: "bench-defender", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(-8.6, 0.96, 8.4).rotate(0, Math.PI / 2, 0),
+    model(assets.hoopsAthleteGuard, { name: "warmup-scorer", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(8.6, 0.96, 7.2).rotate(0, -Math.PI / 2, 0),
+    model(assets.hoopsAthleteBig, { name: "warmup-defender2", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(8.6, 0.96, 8.4).rotate(0, -Math.PI / 2, 0)
   );
 
   // Court wear decals
@@ -697,7 +654,7 @@ function buildCones(): any[] {
 function buildScene(v: VenueSpec): any {
   const s = scene()
     .background(v.bg)
-    .add(looks.preset(v.look, { fogDensityScale: v.night ? 0.4 : 0.55, exposureEv: v.id === "venice" ? 0.1 : 0.04 }))
+    .add(looks.preset(v.look, { fogDensityScale: 0, exposureEv: 0.16 }))
     .camera(camera.perspective({ position: [0, 9.2, 17.4], target: [0, 1.4, 2.4], fov: 34, far: v.orbit ? 900 : 240 }))
     .addMany(buildCourtSurfaces(v))
     .addMany(buildHoopNodes())
@@ -708,13 +665,13 @@ function buildScene(v: VenueSpec): any {
     .addMany(buildAthlete("p0", "home"))
     .addMany(buildAthlete("p1", "home"))
     .addMany(buildAthlete("p2", "home"))
+    .addMany(buildAthlete("p3", "home"))
+    .addMany(buildAthlete("p4", "home"))
     .addMany(buildAthlete("a0", "away"))
     .addMany(buildAthlete("a1", "away"))
     .addMany(buildAthlete("a2", "away"))
-    .add(effects.contactShadows({ intensity: 0.75, length: 0.3 }))
-    .add(effects.bloom({ intensity: v.night ? 0.4 : 0.24, threshold: 0.78 }))
-    .add(effects.vignette({ intensity: 0.2, smoothness: 0.6 }))
-    .add(effects.colorGrade({ contrast: 1.06, saturation: v.id === "venice" ? 1.2 : 1.1 }));
+    .addMany(buildAthlete("a3", "away"))
+    .addMany(buildAthlete("a4", "away"));
   return s;
 }
 
@@ -729,6 +686,7 @@ try {
   auraApp = createAuraApp("#app", {
     scene: buildScene(venue),
     ...looks.appOptions(venue.look),
+    qualityRebuild: { flags: ["game", "-compiler"] },
     diagnostics: false
   } as any);
 } catch (err) {
@@ -741,9 +699,10 @@ const req = (id: string): AnyHandle => {
 };
 
 interface Rig {
-  root: AnyHandle; shadow: AnyHandle; ring: AnyHandle; jersey: AnyHandle; headband: AnyHandle; kickL: AnyHandle; kickR: AnyHandle; aura: AnyHandle;
+  root: AnyHandle; shadow: AnyHandle; ring: AnyHandle; aura: AnyHandle;
 }
 let rigs: Rig[] = [];
+let refereeNode: AnyHandle;
 let ballNode: AnyHandle;
 let ballShadow: AnyHandle;
 let rimHalo: AnyHandle;
@@ -758,17 +717,16 @@ let coneNodes: AnyHandle[] = [];
 let coneRingNodes: AnyHandle[] = [];
 let waverNodes: AnyHandle[] = [];
 
+const ROSTER_IDS = ["p0", "p1", "p2", "p3", "p4", "a0", "a1", "a2", "a3", "a4"] as const;
+
 function resolveHandles(): void {
-  rigs = ["p0", "p1", "p2", "a0", "a1", "a2"].map((id) => ({
+  rigs = ROSTER_IDS.map((id) => ({
     root: req(id),
     shadow: req(`${id}-shadow`),
     ring: req(`${id}-ring`),
-    jersey: req(`${id}-jersey`),
-    headband: req(`${id}-headband`),
-    kickL: req(`${id}-kick-l`),
-    kickR: req(`${id}-kick-r`),
     aura: req(`${id}-aura`)
   }));
+  refereeNode = req("referee");
   ballNode = req("ball-live");
   ballShadow = req("ball-shadow");
   rimHalo = req("rim-halo");
@@ -800,15 +758,23 @@ function makeAthlete(nodeId: string, team: TeamId, index: number): AthleteState 
 
 function resetAthletes(): void {
   athletes = [
-    makeAthlete("p0", "home", 0), makeAthlete("p1", "home", 1), makeAthlete("p2", "home", 2),
-    makeAthlete("a0", "away", 0), makeAthlete("a1", "away", 1), makeAthlete("a2", "away", 2)
+    makeAthlete("p0", "home", 0),
+    makeAthlete("p1", "home", 1),
+    makeAthlete("p2", "home", 2),
+    makeAthlete("p3", "home", 3),
+    makeAthlete("p4", "home", 4),
+    makeAthlete("a0", "away", 0),
+    makeAthlete("a1", "away", 1),
+    makeAthlete("a2", "away", 2),
+    makeAthlete("a3", "away", 3),
+    makeAthlete("a4", "away", 4)
   ];
 }
 
 const homeTeam = () => athletes.filter((a) => a.team === "home");
 const awayTeam = () => athletes.filter((a) => a.team === "away");
 const holderAthlete = (): AthleteState | undefined => athletes.find((a) => a.hasBall);
-const idxOf = (a: AthleteState) => (a.team === "home" ? a.index : 3 + a.index);
+const idxOf = (a: AthleteState) => (a.team === "home" ? a.index : 5 + a.index);
 const nearestDefender = (a: AthleteState): AthleteState | undefined => {
   const foes = a.team === "home" ? awayTeam() : homeTeam();
   let best: AthleteState | undefined; let bd = Infinity;
@@ -986,7 +952,16 @@ const inputCtl = auraApp.input({
 // Direct key fallback so gameplay works even before canvas focus.
 const keysHeld = new Set<string>();
 const keysPressed = new Set<string>();
+let lastManualInputAt = -999;
+
+// Blur any clicked button so Space/Enter never re-clicks UI buttons during play.
+window.addEventListener("click", (ev) => {
+  const btn = (ev.target as HTMLElement | null)?.closest?.("button");
+  if (btn && typeof btn.blur === "function") btn.blur();
+}, true);
+
 window.addEventListener("keydown", (ev) => {
+  lastManualInputAt = game_.time;
   if (!keysHeld.has(ev.code)) keysPressed.add(ev.code);
   keysHeld.add(ev.code);
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(ev.code)) ev.preventDefault();
@@ -1021,9 +996,17 @@ function flashJam(alpha = 0.85): void { jamFlashT = alpha; }
 /* ------------------------------------------------------------------ *
  *  Possession / scoring                                               *
  * ------------------------------------------------------------------ */
+const FIVE_SPOTS: readonly Vec3[] = [
+  [0, 0, CHECK_SPOT[2]],
+  [-4.8, 0, 7.2],
+  [4.8, 0, 7.2],
+  [-6.2, 0, 2.4],
+  [3.1, 0, 3.4]
+];
+
 function spotFor(_team: TeamId, role: number): Vec3 {
-  // Offense spots around the arc; defense mirrors near the hoop.
-  return role === 0 ? [0, 0, CHECK_SPOT[2]] : role === 1 ? [-4.6, 0, 7.6] : [4.6, 0, 7.6];
+  // 5v5 offense spots around the perimeter, wings, and post.
+  return FIVE_SPOTS[role % FIVE_SPOTS.length]!;
 }
 
 function enterCheck(team: TeamId): void {
@@ -1480,11 +1463,11 @@ function aiMove(a: AthleteState, tx: number, tz: number, dt: number, speed: numb
 }
 
 function stepTeammateAI(a: AthleteState, dt: number): void {
-  // Home AI: spacing + timed cuts + screens toward handler
+  // Home 5v5 AI: perimeter/wing/corner/post spacing + timed cuts + screens toward handler
   a.aiT -= dt;
   if (a.cutT > 0) {
     a.cutT -= dt;
-    aiMove(a, RIM[0] + (a.index === 1 ? -0.8 : 0.8), RIM[2] + 1.2, dt, PLAYER_SPEED * 0.92);
+    aiMove(a, RIM[0] + (a.index % 2 === 1 ? -0.9 : 0.9), RIM[2] + 1.2, dt, PLAYER_SPEED * 0.92);
     return;
   }
   if (a.screenT > 0) {
@@ -1494,10 +1477,10 @@ function stepTeammateAI(a: AthleteState, dt: number): void {
     if (holder && def) aiMove(a, def.x + Math.sin(holder.yaw) * 0.4, def.z + Math.cos(holder.yaw) * 0.4, dt, PLAYER_SPEED * 0.8);
     return;
   }
-  const spot: Vec3 = a.index === 1 ? [-5.2, 0, 6.9] : [5.2, 0, 6.9];
-  aiMove(a, spot[0] + Math.sin(game_.time * 0.5 + a.index) * 0.7, spot[2] + Math.cos(game_.time * 0.4 + a.index) * 0.5, dt, PLAYER_SPEED * 0.6);
+  const spot = spotFor("home", a.index);
+  aiMove(a, spot[0] + Math.sin(game_.time * 0.5 + a.index) * 0.7, spot[2] + Math.cos(game_.time * 0.4 + a.index) * 0.5, dt, PLAYER_SPEED * 0.62);
   if (a.aiT <= 0) {
-    a.aiT = 2.6 + rng() * 3.4;
+    a.aiT = 2.4 + rng() * 3.2;
     const roll = rng();
     if (roll < 0.42) { a.cutT = 1.3; pushEvent("ai", "backdoor cut", "info"); }
     else if (roll < 0.6) a.screenT = 2.0;
@@ -1536,8 +1519,8 @@ function stepCpuOffense(a: AthleteState, dt: number): void {
         setClip(a, "Load");
         return;
       }
-      if (roll < 0.24) {
-        // kickout to open teammate
+      if (roll < 0.28) {
+        // kickout to open 5v5 teammate
         const mates = awayTeam().filter((m) => m !== a);
         const recv = mates[Math.floor(rng() * mates.length)];
         if (recv) throwPass(a, recv);
@@ -1551,14 +1534,14 @@ function stepCpuOffense(a: AthleteState, dt: number): void {
     else {
       // Probe the arc
       const px = clamp(a.x * 0.9 + Math.sin(game_.time * 0.7 + a.index) * 0.8, -6.4, 6.4);
-      aiMove(a, px, 6.4 + a.index * 0.6, dt, speed * 0.5);
+      aiMove(a, px, 6.4 + a.index * 0.4, dt, speed * 0.5);
     }
   } else {
-    // Off-ball: cut / space
+    // Off-ball 5v5 spacing & cuts
     a.aiT -= dt;
-    if (a.cutT > 0) { a.cutT -= dt; aiMove(a, RIM[0] + (a.index === 1 ? -1 : 1), RIM[2] + 1.4, dt, speed); return; }
-    const sx = a.index === 1 ? -5.4 : 5.4;
-    aiMove(a, sx + Math.sin(game_.time * 0.6 + a.index * 2) * 0.8, 6.6 + Math.cos(game_.time * 0.5 + a.index) * 0.6, dt, speed * 0.55);
+    if (a.cutT > 0) { a.cutT -= dt; aiMove(a, RIM[0] + (a.index % 2 === 1 ? -1 : 1), RIM[2] + 1.4, dt, speed); return; }
+    const spot = spotFor("away", a.index);
+    aiMove(a, spot[0] + Math.sin(game_.time * 0.6 + a.index * 2) * 0.8, spot[2] + Math.cos(game_.time * 0.5 + a.index) * 0.6, dt, speed * 0.58);
     if (a.aiT <= 0) { a.aiT = 2.4 + rng() * 3; if (rng() < 0.4) a.cutT = 1.4; }
   }
 }
@@ -1593,9 +1576,10 @@ function stepCpuDefense(a: AthleteState, dt: number): void {
     // Collapse on drives
     if (dist2d(holder.x, holder.z, RIM[0], RIM[2]) < 3.4) aiMove(a, holder.x, holder.z, dt, speed);
   } else {
-    // Chase the nearest off-ball home player
-    const mark = homeTeam().filter((m) => !m.hasBall).sort((m, n) => dist2d(m.x, m.z, a.x, a.z) - dist2d(n.x, n.z, a.x, a.z))[0];
-    if (mark) aiMove(a, mark.x * 0.9, mark.z * 0.9 - 0.6, dt, speed * 0.66);
+    // Match up with off-ball home player by index
+    const mark = homeTeam().find((m) => m.index === a.index && !m.hasBall)
+      ?? homeTeam().filter((m) => !m.hasBall).sort((m, n) => dist2d(m.x, m.z, a.x, a.z) - dist2d(n.x, n.z, a.x, a.z))[0];
+    if (mark) aiMove(a, mark.x * 0.9, mark.z * 0.9 - 0.6, dt, speed * 0.68);
   }
 }
 
@@ -1623,7 +1607,7 @@ function attemptSteal(def: AthleteState, holder: AthleteState): void {
 }
 
 /* ------------------------------------------------------------------ *
- *  Player control                                                     *
+ *  Player control + Smart Autopilot                                   *
  * ------------------------------------------------------------------ */
 function controlledAthlete(): AthleteState | undefined {
   const home = homeTeam();
@@ -1648,6 +1632,66 @@ function throwPass(a: AthleteState, recv: AthleteState): void {
   pushEvent("pass", `dime → ${recv.nodeId.toUpperCase()}`, "info");
 }
 
+function stepPlayerAutopilot(me: AthleteState, dt: number): void {
+  // Smart autopilot demo play when user is idle — yields immediately on any manual input
+  if (me.dunkT > 0 || me.stumble > 0) return;
+  if (game_.shotMeter.active && me.shooting) {
+    me.vx = lerp(me.vx, 0, dt * 10);
+    me.vz = lerp(me.vz, 0, dt * 10);
+    if (game_.shotMeter.frames > 3 && game_.shotMeter.t >= game_.shotMeter.perfect - 0.015) {
+      releaseShot(me, 0.96);
+    }
+    return;
+  }
+  if (ball.state === "loose" && game_.phase === "live") {
+    aiMove(me, ball.x, ball.z, dt, PLAYER_SPEED * 0.95);
+    if (dist2d(me.x, me.z, ball.x, ball.z) < 1.3 && ball.y < 2.3) grabLooseBall(me);
+    return;
+  }
+  if (game_.mode === "handleslab") {
+    const nextIdx = game_.cones.order[game_.cones.next];
+    if (nextIdx !== undefined) {
+      const c = CONE_SPOTS[nextIdx]!;
+      aiMove(me, c[0], c[2], dt, PLAYER_SPEED * 0.92);
+    }
+    return;
+  }
+  if (me.hasBall && (game_.possession === "home" || game_.mode === "dunklab")) {
+    if (game_.mustClear) {
+      aiMove(me, me.x * 0.8, ARC_R + 1.4, dt, PLAYER_SPEED * 0.92);
+      return;
+    }
+    const dRim = dist2d(me.x, me.z, RIM[0], RIM[2]);
+    if (dRim < DUNK_RANGE) {
+      startDunk(me, "auto");
+      return;
+    }
+    me.aiT -= dt;
+    if (me.aiT <= 0) {
+      me.aiT = 1.3 + rng() * 1.6;
+      const roll = rng();
+      if (game_.mode !== "dunklab" && roll < 0.28) {
+        const mates = homeTeam().filter((m) => m !== me);
+        const recv = mates[Math.floor(rng() * mates.length)];
+        if (recv) { throwPass(me, recv); return; }
+      }
+      if (game_.mode !== "dunklab" && dRim < 6.4 && roll < 0.58) {
+        openMeter(me);
+        return;
+      }
+      me.tx = RIM[0] + (rng() - 0.5) * 2.0;
+      me.tz = RIM[2] + 1.0 + rng() * 1.1;
+    }
+    aiMove(me, me.tx || RIM[0], me.tz || (RIM[2] + 1.3), dt, PLAYER_SPEED * 0.88);
+  } else if (game_.possession === "away") {
+    const holder = holderAthlete();
+    if (holder) {
+      const dir = angTo(holder.x, holder.z, RIM[0], RIM[2]);
+      aiMove(me, holder.x + Math.sin(dir) * 1.15, holder.z + Math.cos(dir) * 1.15, dt, PLAYER_SPEED * 0.86);
+    }
+  }
+}
+
 function stepPlayerControl(dt: number): void {
   const me = controlledAthlete();
   if (!me) return;
@@ -1656,6 +1700,12 @@ function stepPlayerControl(dt: number): void {
 
   const mx = inputCtl.axis("moveX") + ((held("right", "KeyD", "ArrowRight") ? 1 : 0) - (held("left", "KeyA", "ArrowLeft") ? 1 : 0));
   const mz = inputCtl.axis("moveZ") + ((held("down", "KeyS", "ArrowDown") ? 1 : 0) - (held("up", "KeyW", "ArrowUp") ? 1 : 0));
+  const anyManual = Math.hypot(mx, mz) > 0.05 || (game_.time - lastManualInputAt < 2.8);
+  if (!anyManual) {
+    stepPlayerAutopilot(me, dt);
+    return;
+  }
+
   const sprint = held("sprint", "ShiftLeft", "ShiftRight");
   const spd = (sprint ? SPRINT_SPEED : PLAYER_SPEED) * (me.hasBall ? 0.94 : 1);
 
@@ -1890,8 +1940,8 @@ function syncAthlete(a: AthleteState, dt: number): void {
   const labHidden = (game_.mode === "dunklab" || game_.mode === "handleslab") && (a.team === "away" || a.index > 0);
   r.root.setVisible(!labHidden);
   if (labHidden) {
-    r.shadow?.setVisible(false); r.ring?.setVisible(false); r.jersey?.setVisible(false);
-    r.headband?.setVisible(false); r.kickL?.setVisible(false); r.kickR?.setVisible(false);
+    r.shadow?.setVisible(false);
+    r.ring?.setVisible(false);
     r.aura?.setVisible(false);
     return;
   }
@@ -1909,10 +1959,11 @@ function syncAthlete(a: AthleteState, dt: number): void {
     if (a.y <= 0 && a.vy < 0) { a.y = 0; a.vy = 0; a.jumpT = 0; if (a.clip === "Contest" || a.clip === "Jump") setClip(a, "Idle_Loop"); }
   }
 
-  r.root.setPosition(a.x, a.y, a.z).setRotation(0, a.yaw, 0);
-
   const speed = Math.hypot(a.vx, a.vz);
-  const bob = speed > 0.4 ? Math.abs(Math.sin(game_.time * 10)) * 0.05 : 0;
+  const bob = speed > 0.4 ? Math.abs(Math.sin(game_.time * 10 + a.index)) * 0.05 : 0;
+
+  // Ground the 1.92m Meshy athlete model (centered at origin) so sneakers sit at y=0
+  r.root.setPosition(a.x, a.y + 0.96 + bob, a.z).setRotation(0, a.yaw, 0);
 
   // Clip selection when nothing explicit is playing
   if (!a.shooting && a.dunkT <= 0 && a.jumpT <= 0 && a.stumble <= 0) {
@@ -1921,28 +1972,10 @@ function syncAthlete(a: AthleteState, dt: number): void {
   }
   if (a.stumble > 0) setClip(a, "Crouch");
 
-  // Accessories
+  // Ground rings & shadow
   r.shadow?.setPosition(a.x, 0.012, a.z).setScale([1 - a.y * 0.14, 1, 1 - a.y * 0.14]).setVisible(true);
-  const ringS = a.controlled ? 1.06 : a.hasBall ? 1.0 : 0.8;
-  r.ring?.setPosition(a.x, 0.02, a.z).setScale([ringS, ringS, ringS]).setVisible(game_.phase !== "menu");
-  // Jersey shell rides the torso height (approximate — skinned mesh deforms under it)
-  const torsoY = a.y + 1.14 + bob;
-  r.jersey?.setPosition(a.x, torsoY, a.z).setRotation(0, a.yaw, 0).setScale([0.42, 0.4, 0.3]).setVisible(true);
-  const fitJersey = a.team === "home" ? STUDIO.jersey[game_.fit.jersey]! : game_.awaySquad.color;
-  r.jersey?.setMaterial(material.pbr({ color: fitJersey, roughness: 0.72 }));
-  r.headband?.setPosition(a.x + Math.sin(a.yaw) * 0.02, a.y + 1.76 + bob, a.z + Math.cos(a.yaw) * 0.02).setRotation(Math.PI / 2, 0, a.yaw).setScale([0.24, 0.24, 0.05]).setVisible(true);
-  const hairColor = a.team === "home" ? STUDIO.hair[game_.fit.hair]! : "#1a1410";
-  if (a.team === "home") r.headband?.setMaterial(material.pbr({ color: hairColor, roughness: 0.6 }));
-  const kickColor = a.team === "home" ? STUDIO.kicks[game_.fit.kicks]! : "#22262e";
-  const footSpread = speed > 0.4 ? Math.sin(game_.time * 10) * 0.14 : 0.09;
-  const fwdX = Math.sin(a.yaw), fwdZ = Math.cos(a.yaw);
-  const latX = Math.cos(a.yaw), latZ = -Math.sin(a.yaw);
-  r.kickL?.setPosition(a.x + latX * -0.11 + fwdX * footSpread, a.y + 0.06, a.z + latZ * -0.11 + fwdZ * footSpread).setRotation(0, a.yaw, 0).setVisible(true);
-  r.kickR?.setPosition(a.x + latX * 0.11 - fwdX * footSpread, a.y + 0.06, a.z + latZ * 0.11 - fwdZ * footSpread).setRotation(0, a.yaw, 0).setVisible(true);
-  if (a.team === "home") {
-    const km = material.pbr({ color: kickColor, roughness: 0.55 });
-    r.kickL?.setMaterial(km); r.kickR?.setMaterial(km);
-  }
+  const ringS = a.controlled ? 1.08 : a.hasBall ? 1.0 : 0.8;
+  r.ring?.setPosition(a.x, 0.02, a.z).setScale([ringS, ringS, ringS]).setVisible(true);
   // Jam aura
   const auraOn = game_.jamFull && a.team === "home" && a.hasBall;
   r.aura?.setPosition(a.x, a.y + 0.95, a.z).setScale(auraOn ? [0.9, 1.9, 0.9] : HIDDEN).setVisible(auraOn);
@@ -1952,7 +1985,7 @@ function syncAthlete(a: AthleteState, dt: number): void {
  *  Frame update — phases, sim, HUD, camera, evidence                  *
  * ------------------------------------------------------------------ */
 const cam = {
-  mode: "menu" as "menu" | "broadcast" | "celebrate" | "lab",
+  mode: "broadcast" as "menu" | "broadcast" | "celebrate" | "lab",
   eye: [0, 9.2, 17.4] as Vec3,
   target: [0, 1.4, 2.4] as Vec3,
   fov: 34,
@@ -2069,7 +2102,7 @@ function publishEvidence(): void {
     touch: touchControls?.evidence?.() ?? null,
     deterministic: { rng: "lcg:0xa3d5", ballSim: "route-local analytic + contact model" },
     assets: [
-      "hoopsAthleteGuard", "hoopsRim", "hoopsBackboard", "hoopsBall", "hoopsCourtShell", "hoopsScoreboard", "hoopsFloodlight", "hoopsBallCart", "hoopsAthleteBig", "hoopsSkyline", "hoopsTower", "hoopsEarth", "hoopsOrbitArena", "hoopsCanopy", "hoopsLamp", "hoopsPalm", "hoopsTrophy"
+      "hoopsAthleteGuard", "hoopsAthleteBig", "hoopsHoopRig", "hoopsRim", "hoopsBackboard", "hoopsBall", "hoopsCourtShell", "showcaseStadiumSeats", "hoopsScoreboard", "hoopsFloodlight", "hoopsBallCart", "hoopsSkyline", "hoopsTower", "hoopsEarth", "hoopsOrbitArena", "hoopsCanopy", "hoopsLamp", "hoopsPalm", "hoopsTrophy"
     ]
   };
   (window as any).__AURA3D_GAME_EVIDENCE__ = evidence;
@@ -2107,10 +2140,11 @@ function frame(dtRaw: number): void {
       break;
     case "check": {
       game_.checkT += dt;
+      const autoCheck = (game_.time - lastManualInputAt > 2.8) && game_.checkT > 0.85;
       if (game_.possession === "home") {
         showPrompt("SPACE — CHECK BALL", 0.3);
-        if (pressed("shoot", "Space", "Enter") || game_.checkT > 14) enterLive();
-      } else if (game_.checkT > 1.1) {
+        if (pressed("shoot", "Space", "Enter") || autoCheck || game_.checkT > 6) enterLive();
+      } else if (game_.checkT > 0.9) {
         enterLive();
         const h = holderAthlete();
         if (h) { h.aiPlan = "drive"; h.tx = RIM[0]; h.tz = 2.2; }
@@ -2140,8 +2174,9 @@ function frame(dtRaw: number): void {
         } else {
           if (a.team === "away") stepCpuOffense(a, dt);
           else if (a.team === "home" && !a.controlled) {
-            // Home off-ball defenders shadow their marks
-            const mark = awayTeam().sort((m, n) => defDist(m, a) - defDist(n, a))[0];
+            // Home off-ball defenders shadow their 5v5 marks
+            const mark = awayTeam().find((m) => m.index === a.index)
+              ?? awayTeam().sort((m, n) => defDist(m, a) - defDist(n, a))[0];
             if (mark) aiMove(a, mark.x * 0.92, mark.z * 0.92 - 0.4, dt, PLAYER_SPEED * 0.8);
           }
         }
@@ -2160,7 +2195,6 @@ function frame(dtRaw: number): void {
         }
         if (labMode && ball.looseT > 3.5) resetLabBall();
       }
-      // CPU ball handler auto decisions also tick when phase=live only
       break;
     }
     case "score": {
@@ -2208,6 +2242,13 @@ function frame(dtRaw: number): void {
   stepBallSim(dt);
   for (const a of athletes) syncAthlete(a, dt);
 
+  // 3D Referee tracks ball along sideline
+  if (refereeNode) {
+    const refZ = clamp(ball.z * 0.7, 0.5, 8.8);
+    const refYaw = angTo(-8.2, refZ, ball.x, ball.z);
+    refereeNode.setPosition(-8.2, 0.94 + Math.abs(Math.sin(game_.time * 4.2)) * 0.03, refZ).setRotation(0, refYaw, 0);
+  }
+
   // Ball visuals
   if (ballNode) {
     ballNode.setPosition(ball.x, Math.max(BALL_R, ball.y) - BALL_R, ball.z);
@@ -2230,11 +2271,11 @@ function frame(dtRaw: number): void {
   rimHalo?.setScale([1 + rimShake * 0.12, 1 + rimShake * 0.12, 1]);
   rimNode?.setPosition(RIM[0] + (rng() - 0.5) * rimShake * 0.03, RIM[1] + rimShake * 0.02, RIM[2]);
 
-  // Crowd wavers
+  // 3D Meshy courtside spectators (grounded at y=0.93)
   const cheering = game_.phase === "score" || game_.phase === "gameover" || game_.jamFull;
   for (let i = 0; i < waverNodes.length; i++) {
-    const bounce = cheering ? Math.abs(Math.sin(game_.time * 9 + i * 1.3)) * 0.24 : Math.sin(game_.time * 2.1 + i) * 0.03;
-    waverNodes[i]?.setPosition(-8.4 + i * (16.8 / (CROWD_WAVERS - 1)), 0.62 + bounce, i % 2 ? -3.2 : 12.6);
+    const bounce = cheering ? Math.abs(Math.sin(game_.time * 9 + i * 1.3)) * 0.18 : Math.sin(game_.time * 2.1 + i) * 0.02;
+    waverNodes[i]?.setPosition(-8.4 + i * (16.8 / (CROWD_WAVERS - 1)), 0.93 + bounce, i % 2 ? -3.4 : 12.6);
   }
   planetEarth?.setRotation(0, game_.time * 0.02, 0);
 
@@ -2265,14 +2306,17 @@ auraApp.onFrame(({ dt }) => frame(dt));
  * ------------------------------------------------------------------ */
 function setVenue(vId: VenueId, silent = false): void {
   if (!VENUES[vId]) return;
+  const changed = venue.id !== vId;
   venue = VENUES[vId];
   document.querySelectorAll<HTMLButtonElement>("[data-court]").forEach((b) => b.classList.toggle("active", b.dataset.court === vId));
   document.querySelectorAll<HTMLButtonElement>("[data-court-menu]").forEach((b) => b.classList.toggle("active", b.dataset.courtMenu === vId));
-  try {
-    auraApp.setScene(buildScene(venue));
-    resolveHandles();
-  } catch (e) {
-    console.warn("[hoops] venue swap failed", e);
+  if (changed) {
+    try {
+      auraApp.setScene(buildScene(venue));
+      resolveHandles();
+    } catch (e) {
+      console.warn("[hoops] venue swap failed", e);
+    }
   }
   if (!silent) {
     showMsg(venue.label, venue.lookLabel, 1.8);
@@ -2350,6 +2394,7 @@ function wireMenus(): void {
       }
       menuOverlay?.classList.remove("open");
       startMatch(mode);
+      enterLive();
     });
   });
   document.querySelectorAll<HTMLButtonElement>("[data-diff]").forEach((btn) => {
@@ -2372,7 +2417,7 @@ function wireMenus(): void {
       const m = btn.dataset.modeBtn;
       document.querySelectorAll<HTMLButtonElement>("[data-mode-btn]").forEach((b) => b.classList.toggle("active", b === btn));
       if (m === "menu") { menuOverlay?.classList.add("open"); return; }
-      if (m === "quick") { menuOverlay?.classList.remove("open"); startMatch("quick"); }
+      if (m === "quick") { menuOverlay?.classList.remove("open"); startMatch("quick"); enterLive(); }
       if (m === "dunklab") { menuOverlay?.classList.remove("open"); startMatch("dunklab"); }
     });
   });
@@ -2380,6 +2425,7 @@ function wireMenus(): void {
   el<HTMLElement>("menu-run")?.addEventListener("click", () => {
     menuOverlay?.classList.remove("open");
     startMatch(game_.pendingMode === "studio" ? "quick" : game_.pendingMode);
+    enterLive();
   });
   el<HTMLElement>("studio-apply")?.addEventListener("click", () => {
     buildStudioPills();
@@ -2396,19 +2442,23 @@ setupSystems();
 wireMenus();
 buildStudioPills();
 resetAthletes();
-enterCheck("home");
-game_.phase = "menu";
-if (menuOverlay) menuOverlay.classList.add("open");
 
 const params = new URLSearchParams(window.location.search);
 const venueParam = params.get("court") as VenueId | null;
 if (venueParam && VENUES[venueParam]) setVenue(venueParam, true);
 const modeParam = params.get("mode") as ModeId | null;
-if (modeParam && modeParam !== "studio") {
+const menuParam = params.get("menu") === "1" || modeParam === "studio";
+
+if (menuParam) {
+  enterCheck("home");
+  game_.phase = "menu";
+  menuOverlay?.classList.add("open");
+} else {
   menuOverlay?.classList.remove("open");
-  startMatch(modeParam);
+  startMatch(modeParam ?? "quick");
+  enterLive();
 }
 
 document.body.dataset.aura3dReady = "true";
 pushEvent("system", "aura hoops 3d online — six courts loaded", "success");
-console.info("[aura-hoops-3d] ready", { venue: venue.id, mode: game_.mode });
+console.info("[aura-hoops-3d] ready", { venue: venue.id, mode: game_.mode, phase: game_.phase });

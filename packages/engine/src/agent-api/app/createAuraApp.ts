@@ -422,7 +422,8 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
         // Paused frames render at the app's own simulated clock, so a held frame really is held.
         () => runtimeTime * 1000,
         // T0-28: flags resolve once per app; every (re-)mount's renderer gets these.
-        qrFlags
+        qrFlags,
+        () => disposed || revision !== mountRevision
       )
         .then((controller) => {
           markTiming("a3d:mount:renderer-resolved");

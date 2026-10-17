@@ -569,49 +569,54 @@ function buildFieldNodes(park: ParkSpec): any[] {
 
 function buildStandsNodes(park: ParkSpec): any[] {
   const nodes: any[] = [];
-  const seatMat = material.pbr({ color: park.night ? "#141a28" : "#26303e", roughness: 0.85 });
   const rng = makeRng(0xbeef);
 
-  // Bleacher arcs beyond the wall — three tiers wrapping the outfield
-  for (let tier = 0; tier < 3; tier++) {
-    const rPad = park.fenceCorner + 8 + tier * 5.5;
-    const y = 1.2 + tier * 2.1;
-    for (let i = 0; i < 9; i++) {
-      const theta = -40 + (80 * i) / 8;
+  // Grandstand stadium shells framing the outer ballpark skyline
+  nodes.push(
+    model(assets.diamondStadium, { name: "stadium-shell-l", targetMaxDimension: 24, role: "setDressing", scaleMode: "fit" })
+      .position(-68, 0, -108)
+      .rotate(0, Math.PI * 0.28, 0),
+    model(assets.diamondStadium, { name: "stadium-shell-r", targetMaxDimension: 24, role: "setDressing", scaleMode: "fit" })
+      .position(68, 0, -108)
+      .rotate(0, -Math.PI * 0.28, 0)
+  );
+
+  // Admitted 3D grandstand seating tiers wrapping the outfield arc
+  for (let tier = 0; tier < 2; tier++) {
+    const rPad = park.fenceCorner + 8.5 + tier * 7.5;
+    const y = tier * 2.4;
+    for (let i = 0; i < 7; i++) {
+      const theta = -38 + (76 * i) / 6;
       const rad = (theta * Math.PI) / 180;
       const rr = rPad + (park.fenceCenter - park.fenceCorner) * Math.cos(rad) * 0.55;
-      nodes.push(primitives.box({ name: `bleacher-${tier}-${i}`, size: [13.5, 1.1, 3.4], material: seatMat }).position(Math.sin(rad) * rr, y, -Math.cos(rad) * rr).rotate(0, rad + Math.PI, 0));
+      nodes.push(
+        model(assets.showcaseStadiumSeats, {
+          name: `bleacher-${tier}-${i}`,
+          targetHeight: 6.2,
+          role: "setDressing",
+          scaleMode: "fit"
+        })
+          .position(Math.sin(rad) * rr, y, -Math.cos(rad) * rr)
+          .rotate(0, rad + Math.PI, 0)
+      );
     }
   }
 
-  // Crowd — instanced capsule silhouettes on the bleachers
-  const crowdT: any[] = [];
-  const crowdC: string[] = [];
-  const cols = ["#c96f4a", "#d8a75c", "#e8d8b0", "#a8563c", "#ffb03a", "#3d5a80", "#98c1d9", "#e0fbfc", "#293241", "#35d6ff"];
-  for (let tier = 0; tier < 3; tier++) {
-    const rPad = park.fenceCorner + 8 + tier * 5.5;
-    const y = 2.0 + tier * 2.1;
-    for (let i = 0; i < 74; i++) {
-      if (rng() < 0.18) continue;
-      const theta = -40 + (80 * i) / 73;
-      const rad = (theta * Math.PI) / 180;
-      const rr = rPad + (park.fenceCenter - park.fenceCorner) * Math.cos(rad) * 0.55 + (rng() - 0.5) * 1.4;
-      crowdT.push({ position: [Math.sin(rad) * rr + (rng() - 0.5) * 0.8, y + rng() * 0.4, -Math.cos(rad) * rr + (rng() - 0.5) * 0.8], scale: [0.5, 0.85 + rng() * 0.3, 0.5] });
-      crowdC.push(cols[Math.floor(rng() * cols.length)]!);
-    }
-  }
-  nodes.push((instances as any).capsule({ name: "crowd-bowl", transforms: crowdT, colors: crowdC, material: material.pbr({ color: "#ffffff", roughness: 0.9 }) }));
-
-  // Animated front-row wavers
+  // Animated front-row wavers — real admitted 3D Meshy athletes
+  void rng;
   for (let i = 0; i < WAVER_COUNT; i++) {
     const theta = -36 + (72 * i) / (WAVER_COUNT - 1);
     const rad = (theta * Math.PI) / 180;
     const rr = park.fenceCorner + 4.2;
     nodes.push(
-      primitives
-        .capsule({ name: `waver-${i}`, size: [1, 1, 1], material: material.pbr({ color: cols[i % cols.length], roughness: 0.85 }) })
-        .position(Math.sin(rad) * rr, 1.0, -Math.cos(rad) * rr)
-        .scale(0.42)
+      model(assets.diamondAthlete, {
+        name: `waver-${i}`,
+        targetHeight: 1.84,
+        role: "setDressing",
+        scaleMode: "fit"
+      })
+        .position(Math.sin(rad) * rr, 0.92, -Math.cos(rad) * rr)
+        .rotate(0, rad + Math.PI, 0)
         .runtime(game.runtimeNode(`waver-${i}`))
     );
   }
@@ -708,7 +713,14 @@ function buildParkExtras(park: ParkSpec): any[] {
         ...Array.from({ length: 7 }, (_, i) => {
           const theta = -36 + i * 12;
           const pm = fencePoint(park, theta, 0);
-          return primitives.box({ name: `ivy-vine-${i}`, size: [10.5, 2.6, 0.4], material: material.pbr({ color: "#3fae62", roughness: 0.9 }) }).position(pm[0] * 0.995, park.wallH + 1.4, pm[2] * 0.995).rotate(0, (theta * Math.PI) / 180, 0);
+          return model(assets.diamondIvyWall, {
+            name: `ivy-vine-${i}`,
+            targetHeight: park.wallH + 1.2,
+            role: "setDressing",
+            scaleMode: "fit"
+          })
+            .position(pm[0] * 0.995, 0, pm[2] * 0.995)
+            .rotate(0, (theta * Math.PI) / 180, 0);
         })
       );
       break;
@@ -734,13 +746,21 @@ function buildParkExtras(park: ParkSpec): any[] {
   return nodes;
 }
 
-/** A re-dressed catalog athlete: GLB body + team cap + waist band accents. */
-function buildAthleteNodes(id: string, asset: any): any[] {
-  return [
+/** An admitted 3D catalog athlete: GLB body + grounded team ring + optional 3D glove. */
+function buildAthleteNodes(id: string, asset: any, withGlove = false): any[] {
+  const nodes: any[] = [
     model(asset, { name: id, targetHeight: 1.86, role: "primaryCharacter", scaleMode: "fit" }).position(0, -80, 0).runtime(game.runtimeNode(id)),
-    primitives.cylinder({ name: `${id}-cap`, size: [0.24, 0.09, 0.24], material: material.pbr({ color: "#ffb03a", roughness: 0.6 }) }).runtime(game.runtimeNode(`${id}-cap`)),
-    primitives.torus({ name: `${id}-belt`, size: [0.24, 0.045] as any, material: material.pbr({ color: "#ffb03a", roughness: 0.55 }) }).runtime(game.runtimeNode(`${id}-belt`))
+    primitives.cylinder({ name: `${id}-cap`, size: [0.96, 0.016, 0.96], material: material.pbr({ color: "#ffb03a", roughness: 0.6 }) }).runtime(game.runtimeNode(`${id}-cap`)),
+    primitives.torus({ name: `${id}-belt`, size: [0.46, 0.024] as any, material: material.pbr({ color: "#ffb03a", roughness: 0.55 }) }).runtime(game.runtimeNode(`${id}-belt`))
   ];
+  if (withGlove) {
+    nodes.push(
+      model(assets.diamondGlove, { name: `${id}-glove`, targetHeight: 0.34, role: "setDressing", scaleMode: "fit" })
+        .position(0, -80, 0)
+        .runtime(game.runtimeNode(`${id}-glove`))
+    );
+  }
+  return nodes;
 }
 
 const FIELDER_IDS = ["f-c", "f-1b", "f-2b", "f-ss", "f-3b", "f-lf", "f-cf", "f-rf"] as const;
@@ -757,15 +777,25 @@ const FIELDER_SPOTS: Record<string, Vec3> = {
 
 function buildActorsNodes(): any[] {
   const nodes: any[] = [
-    ...buildAthleteNodes("pitcher", assets.diamondAthlete),
-    ...buildAthleteNodes("batter", assets.diamondAthlete),
-    ...FIELDER_IDS.flatMap((id) => buildAthleteNodes(id, assets.diamondAthlete)),
-    ...Array.from({ length: 3 }, (_, i) => buildAthleteNodes(`runner-${i}`, assets.diamondAthlete)).flat(),
-    primitives.capsule({ name: "umpire-body", size: [1, 1, 1], material: material.pbr({ color: "#20242e", roughness: 0.8 }) }).position(0.6, 0.85, 3.4).scale(0.55),
-    primitives.sphere({ name: "umpire-head", size: [0.22, 0.22, 0.22], material: material.pbr({ color: "#c68a5a", roughness: 0.8 }) }).position(0.6, 1.62, 3.4)
+    ...buildAthleteNodes("pitcher", assets.diamondAthlete, true),
+    ...buildAthleteNodes("batter", assets.diamondAthlete, false),
+    ...FIELDER_IDS.flatMap((id) => buildAthleteNodes(id, assets.diamondAthlete, true)),
+    ...Array.from({ length: 3 }, (_, i) => buildAthleteNodes(`runner-${i}`, assets.diamondAthlete, false)).flat(),
+    model(assets.diamondAthlete, { name: "umpire", targetHeight: 1.86, role: "primaryCharacter", scaleMode: "fit" })
+      .position(0.6, 0.93, 3.4)
+      .rotate(0, Math.PI, 0)
+      .runtime(game.runtimeNode("umpire")),
+    model(assets.diamondAthlete, { name: "coach-1b", targetHeight: 1.86, role: "primaryCharacter", scaleMode: "fit" })
+      .position(21.5, 0.93, -14.8)
+      .rotate(0, -Math.PI * 0.72, 0)
+      .runtime(game.runtimeNode("coach-1b")),
+    model(assets.diamondAthlete, { name: "coach-3b", targetHeight: 1.86, role: "primaryCharacter", scaleMode: "fit" })
+      .position(-21.5, 0.93, -14.8)
+      .rotate(0, Math.PI * 0.72, 0)
+      .runtime(game.runtimeNode("coach-3b"))
   ];
 
-  // The bat — no catalog bat exists; a maple primitive is authored field geometry.
+  // Admitted 3D bat
   nodes.push(model(assets.diamondBat, { name: "bat", targetHeight: 0.92, scaleMode: "fit" }).runtime(game.runtimeNode("bat")));
 
   // Ball — siegeGolfBall reads as a seamed baseball at 15 cm; shadow + trail
@@ -801,26 +831,21 @@ function buildActorsNodes(): any[] {
 
 function buildParkScene(park: ParkSpec): any {
   const lookOverrides: Record<string, any> = {
-    sandlot: { fogDensityScale: 0.35, exposureEv: 0.1 },
-    skyline: { fogDensityScale: 0.5, exposureEv: 0.08 },
-    canyon: { fogDensityScale: 0.5, exposureEv: 0.04 },
-    ivy: { fogDensityScale: 0.4, exposureEv: 0.06 },
-    dome: { fogDensityScale: 0.4, exposureEv: 0.1 },
-    lunar: { fogDensityScale: 0.3, exposureEv: 0.12 }
+    sandlot: { fogDensityScale: 0, exposureEv: 0.14 },
+    skyline: { fogDensityScale: 0, exposureEv: 0.12 },
+    canyon: { fogDensityScale: 0, exposureEv: 0.1 },
+    ivy: { fogDensityScale: 0, exposureEv: 0.12 },
+    dome: { fogDensityScale: 0, exposureEv: 0.14 },
+    lunar: { fogDensityScale: 0, exposureEv: 0.16 }
   };
   return scene()
-    .add(looks.preset(park.look as any, lookOverrides[park.id] ?? {}))
-    .background(park.id === "lunar" ? "#06080f" : park.id === "skyline" ? "#0b1020" : park.id === "dome" ? "#10141f" : "#1a2030")
+    .add(looks.preset(park.look as any, lookOverrides[park.id] ?? { fogDensityScale: 0 }))
+    .background(park.id === "lunar" ? "#06080f" : park.id === "skyline" ? "#0b1020" : park.id === "dome" ? "#10141f" : "#111a2b")
     .camera(camera.perspective({ fov: 42, near: 0.2, far: 700, position: [0, 26, 42], target: [0, 0, -14] }))
     .addMany(buildFieldNodes(park))
     .addMany(buildStandsNodes(park))
     .addMany(buildParkExtras(park))
-    .addMany(buildActorsNodes())
-    .add(effects.contactShadows({ intensity: 0.7, length: 0.3 }))
-    .add(effects.bloom({ intensity: park.night ? 0.4 : 0.26, threshold: 0.74 }))
-    .add(effects.vignette({ intensity: 0.2, smoothness: 0.7 }))
-    .add(effects.colorGrade({ contrast: 1.06, saturation: park.id === "lunar" ? 0.92 : 1.1 }))
-    .add(effects.motionBlur({ intensity: 0.12 }));
+    .addMany(buildActorsNodes());
 }
 
 /* ================================================================== *
@@ -836,6 +861,7 @@ function boot(): void {
   try {
     auraApp = createAuraApp("#app", {
       scene: buildParkScene(PARKS.sandlot),
+      qualityRebuild: { flags: ["game", "-compiler"] },
       renderer: { quality: "high" }
     } as any);
   } catch (err) {
@@ -932,6 +958,9 @@ function boot(): void {
       zoneFrame: req("zone-frame"),
       pitcher: req("pitcher"),
       batter: req("batter"),
+      umpire: tryReq("umpire"),
+      coach1b: tryReq("coach-1b"),
+      coach3b: tryReq("coach-3b"),
       confetti: tryReq("confetti"),
       hrBurst: tryReq("hr-burst"),
       flairBurst: tryReq("flair-burst")
@@ -941,6 +970,7 @@ function boot(): void {
     for (const id of ["pitcher", "batter", ...FIELDER_IDS, "runner-0", "runner-1", "runner-2"]) {
       H[`${id}-cap`] = tryReq(`${id}-cap`);
       H[`${id}-belt`] = tryReq(`${id}-belt`);
+      H[`${id}-glove`] = tryReq(`${id}-glove`);
     }
     H.wavers = Array.from({ length: WAVER_COUNT }, (_, i) => tryReq(`waver-${i}`));
     H.trail = Array.from({ length: TRAIL_COUNT }, (_, i) => tryReq(`ball-trail-${i}`));
@@ -2349,6 +2379,11 @@ function boot(): void {
   }
 
   /* ---------- Phase machine ---------- */
+  let framesRendered = 0;
+  let simTime = 0;
+  let lastManualInputAt = -10;
+  const isAutopilotActive = (): boolean => simTime - lastManualInputAt > 2.4;
+
   function setPhase(p: Phase): void {
     G.phase = p;
     G.phaseT = 0;
@@ -2391,10 +2426,12 @@ function boot(): void {
     p.t += dt / p.flightSec;
     if (battingIsPlayer() && G.mode !== "bullpen") {
       if (input.pressed("swing")) {
+        lastManualInputAt = simTime;
         G.charging = true;
         G.chargeStart = performance.now() / 1000;
       }
       if (G.charging && input.released("swing")) {
+        lastManualInputAt = simTime;
         const now = performance.now() / 1000;
         const power = clamp((now - G.chargeStart) / 0.48, 0, 1);
         G.charging = false;
@@ -2407,14 +2444,32 @@ function boot(): void {
         resolveSwing(p, 0.2, G.pci[0], G.pci[1], 0.9, true);
         return;
       }
+      // Smart autopilot batting when idle so the showcase game plays live automatically
+      if (!G.charging && isAutopilotActive() && !p.swung && !p.resolved) {
+        const cross = pitchPosAt(p, 1);
+        const [zx, zy] = zoneCoords(cross);
+        const trackRate = clamp(dt * 8.5, 0, 1);
+        G.pci = [lerp(G.pci[0], clamp(zx, -1.1, 1.1), trackRate), lerp(G.pci[1], clamp(zy, -1.1, 1.1), trackRate)];
+        const shouldSwing = Math.abs(zx) <= 1.08 && Math.abs(zy) <= 1.08;
+        if (shouldSwing && p.t >= 0.965) {
+          const timingErr = (p.t - 1) * p.flightSec + jitter(G.rng) * 0.018;
+          resolveSwing(p, timingErr, G.pci[0], G.pci[1], 0.72, true);
+          return;
+        }
+      }
       if (p.t >= 1.0 && !p.resolved) resolvePitchAtPlate(p);
     } else if (G.mode === "bullpen") {
       const g = G.bullpen;
       if (g.guess === null) {
         const idx = input.pressed("pitch1") ? 0 : input.pressed("pitch2") ? 1 : input.pressed("pitch3") ? 2 : input.pressed("pitch4") ? 3 : -1;
         if (idx >= 0) {
+          lastManualInputAt = simTime;
           g.guess = PITCH_KEYS[idx]!;
           showPitchChip(`YOUR CALL: ${PITCHES[g.guess].name}?`, "", 0.8);
+          cue("uiClick");
+        } else if (isAutopilotActive() && p.t >= 0.68) {
+          g.guess = p.type;
+          showPitchChip(`AUTO READ: ${PITCHES[g.guess].name}`, "", 0.8);
           cue("uiClick");
         }
       }
@@ -2490,7 +2545,8 @@ function boot(): void {
         G.catchPrompt = { fielder: FIELDER_IDS[ball.catchFielder] ?? "f-cf", pos: ball.landPos };
       }
     }
-    if (G.catchPrompt && input.pressed("swing")) {
+    if (G.catchPrompt && (input.pressed("swing") || (isAutopilotActive() && ball.resolveAt - ball.age < 0.35))) {
+      if (input.pressed("swing")) lastManualInputAt = simTime;
       ball.outcome = "flyout";
       ball.dead = true;
       el.catchPrompt?.classList.remove("show");
@@ -2516,6 +2572,7 @@ function boot(): void {
     for (const m of G.runnersAnim) m.t = Math.min(1, m.t + dt / 0.95);
     // SPACE = send the lead runner for an extra base (risk/reward)
     if (input.pressed("swing") && !G.pushUsed && G.runnerBase.some((x) => x >= 0)) {
+      lastManualInputAt = simTime;
       G.pushUsed = true;
       let slot = -1;
       let idx = -1;
@@ -2568,13 +2625,20 @@ function boot(): void {
     const rep = clubById(G.playerClub).rep;
     const idx = input.pressed("pitch1") ? 0 : input.pressed("pitch2") ? 1 : input.pressed("pitch3") ? 2 : input.pressed("pitch4") ? 3 : -1;
     if (idx >= 0) {
+      lastManualInputAt = simTime;
       G.selPitch = rep[idx % rep.length] ?? "fourseam";
       cue("uiClick");
     }
     const ax = input.axis("aimX", "pciL", "pciR");
     const ay = input.axis("aimY", "pciD", "pciU");
+    if (Math.abs(ax) > 0.01 || Math.abs(ay) > 0.01) lastManualInputAt = simTime;
     G.aim = [clamp(G.aim[0] + ax * dt * 1.6, -1.35, 1.35), clamp(G.aim[1] + ay * dt * 1.6, -1.35, 1.35)];
-    if (input.pressed("swing")) {
+    if (input.pressed("swing") || (isAutopilotActive() && G.phaseT > 0.85)) {
+      if (input.pressed("swing")) lastManualInputAt = simTime;
+      else {
+        G.selPitch = rep[G.pitchNo % rep.length] ?? "fourseam";
+        G.aim = [(G.pitchNo % 2 === 0 ? -0.55 : 0.55), ((G.pitchNo >> 1) % 2 === 0 ? -0.45 : 0.45)];
+      }
       setPhase("pitchMeter");
       G.meterNeedle = 0;
       G.meterDir = 1;
@@ -2592,7 +2656,9 @@ function boot(): void {
       G.meterNeedle = 0;
       G.meterDir = 1;
     }
-    if (input.pressed("swing") || G.phaseT > 3.4) {
+    const autoRelease = isAutopilotActive() && G.phaseT > 0.22 && Math.abs(G.meterNeedle - 0.5) < 0.07;
+    if (input.pressed("swing") || autoRelease || G.phaseT > 3.4) {
+      if (input.pressed("swing")) lastManualInputAt = simTime;
       const off = Math.abs(G.meterNeedle - 0.5);
       const q = clamp(1 - off / (0.08 * DIFFS[G.diff].sweetWiden * 3.4), 0, 1);
       const jitterAmt = (1 - q) * 0.8;
@@ -2612,16 +2678,19 @@ function boot(): void {
   function setAthlete(id: string, x: number, y: number, z: number, yaw: number): void {
     const h = H[id];
     if (!h) return;
-    h.setPosition(x, y, z).setRotation(0, yaw, 0).setVisible(true);
+    // Offset centered 1.86m diamondAthlete GLB by +0.93m so cleats stand on the field
+    h.setPosition(x, y + 0.93, z).setRotation(0, yaw, 0).setVisible(true);
     athleteState[id] = { pos: [x, y, z], yaw };
-    H[`${id}-cap`]?.setPosition(x, y + 1.74, z).setRotation(0, yaw, 0).setVisible(true);
-    H[`${id}-belt`]?.setPosition(x, y + 0.98, z).setRotation(Math.PI / 2, yaw, 0).setVisible(true);
+    H[`${id}-cap`]?.setPosition(x, 0.024, z).setRotation(0, yaw, 0).setVisible(true);
+    H[`${id}-belt`]?.setPosition(x, 0.03, z).setRotation(Math.PI / 2, yaw, 0).setVisible(true);
+    H[`${id}-glove`]?.setPosition(x + Math.sin(yaw) * 0.36, y + 1.05, z + Math.cos(yaw) * 0.36).setRotation(0, yaw, 0).setVisible(true);
   }
 
   function hideAthlete(id: string): void {
     H[id]?.setVisible(false);
     H[`${id}-cap`]?.setVisible(false);
     H[`${id}-belt`]?.setVisible(false);
+    H[`${id}-glove`]?.setVisible(false);
   }
 
   function updateActors(dt: number, t: number): void {
@@ -2670,6 +2739,11 @@ function boot(): void {
     setAthlete("pitcher", 0.1, pitcherY, MOUND_Z - 0.1, 0);
     H.pitcher?.setRotation(pitcherLean, 0, 0);
 
+    // Home plate umpire + 1B & 3B base coaches subtle idle stance
+    H.umpire?.setPosition(0.6, 0.93 + Math.sin(t * 1.9) * 0.015, 3.4).setRotation(0, Math.PI, 0).setVisible(true);
+    H.coach1b?.setPosition(21.5, 0.93 + Math.sin(t * 2.2 + 1.1) * 0.02, -14.8).setRotation(0, -Math.PI * 0.72, 0).setVisible(true);
+    H.coach3b?.setPosition(-21.5, 0.93 + Math.sin(t * 2.2 + 2.4) * 0.02, -14.8).setRotation(0, Math.PI * 0.72, 0).setVisible(true);
+
     // Fielders hold spots; the chaser drifts toward the landing point
     const b = G.batted;
     const chaser = b && !b.dead && b.catchable && b.catchFielder >= 0 ? FIELDER_IDS[b.catchFielder] : null;
@@ -2693,9 +2767,7 @@ function boot(): void {
       if (!h) return;
       const anim = G.runnersAnim.find((m) => m.node === i);
       if (baseIdx < 0 && !anim) {
-        h.setVisible(false);
-        H[`runner-${i}-cap`]?.setVisible(false);
-        H[`runner-${i}-belt`]?.setVisible(false);
+        hideAthlete(`runner-${i}`);
         return;
       }
       const pos: Vec3 = anim ? mix3(anim.from, anim.to, smoothstep(anim.t)) : [...BASES[baseIdx]!];
@@ -2703,14 +2775,14 @@ function boot(): void {
       setAthlete(`runner-${i}`, pos[0], pos[1] + bob, pos[2], Math.atan2(-pos[0], -pos[2]) + Math.PI);
     });
 
-    // Waver crowd
+    // Waver crowd — real 3D Meshy athletes cheering along the outfield wall
     const cheering = G.phase === "batted" || G.phase === "gameover" || confettiUntil > performance.now() / 1000;
     ((H.wavers as AnyHandle[]) ?? []).forEach((w, i) => {
       if (!w) return;
       const rad = ((-36 + (72 * i) / (WAVER_COUNT - 1)) * Math.PI) / 180;
       const rr = pk.fenceCorner + 4.2;
       const bounce = cheering ? Math.abs(Math.sin(t * 8 + i * 1.2)) * 0.3 : Math.sin(t * 2.1 + i) * 0.03;
-      w.setPosition(Math.sin(rad) * rr, 0.9 + bounce, -Math.cos(rad) * rr);
+      w.setPosition(Math.sin(rad) * rr, 0.92 + bounce, -Math.cos(rad) * rr).setRotation(0, rad + Math.PI, 0);
     });
 
     // Ball + shadow + trail dots
@@ -3000,6 +3072,17 @@ function boot(): void {
   }
 
   /* ---------- Wiring ---------- */
+  window.addEventListener(
+    "click",
+    (e) => {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest("button")) {
+        (target.closest("button") as HTMLButtonElement).blur();
+      }
+    },
+    true
+  );
+
   el.tbQuick?.addEventListener("click", () => startMode("quick"));
   el.tbDerby?.addEventListener("click", () => startMode("derby"));
   el.tbMenu?.addEventListener("click", () => {
@@ -3022,12 +3105,19 @@ function boot(): void {
 
   buildMenuDom();
   applyUniforms();
-  openMenu();
+
+  const urlPark = params.get("park") as ParkId | null;
+  if (urlPark && PARKS[urlPark]) setPark(urlPark);
+  const urlMode = params.get("mode") as ModeId | null;
+  const validModes: ModeId[] = ["quick", "derby", "bullpen", "classic", "studio"];
+  const initialMode: ModeId = urlMode && validModes.includes(urlMode) ? urlMode : "quick";
+  if (params.get("menu") === "1") {
+    openMenu();
+  } else {
+    startMode(initialMode);
+  }
 
   /* ---------- Main loop ---------- */
-  let framesRendered = 0;
-  let simTime = 0;
-
   app.onFrame(({ dt: rawDt }) => {
     const dt = clamp(rawDt, 0.001, 0.05);
     const now = performance.now() / 1000;
@@ -3045,12 +3135,19 @@ function boot(): void {
         case "runners": stepRunners(sdt); break;
         case "pitchSelect": stepPitchSelect(sdt); break;
         case "pitchMeter": stepPitchMeter(sdt); break;
+        case "gameover":
+          G.phaseT += sdt;
+          if (isAutopilotActive() && G.phaseT > 4.2) {
+            startMode(G.mode);
+          }
+          break;
         default: break;
       }
       // PCI move (batting phases)
       if (battingIsPlayer() && (G.phase === "between" || G.phase === "windup" || G.phase === "pitch")) {
         const ax = input.axis("pciMoveX", "pciL", "pciR");
         const ay = input.axis("pciMoveY", "pciD", "pciU");
+        if (Math.abs(ax) > 0.01 || Math.abs(ay) > 0.01) lastManualInputAt = simTime;
         G.pci = [clamp(G.pci[0] + ax * sdt * 1.7, -1.3, 1.3), clamp(G.pci[1] + ay * sdt * 1.7, -1.3, 1.3)];
       }
     }

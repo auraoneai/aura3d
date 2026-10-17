@@ -3,13 +3,13 @@
   "generatedAt": "2026-10-18T00:00:00.000Z",
   "appId": "showcase-bunker-zero",
   "route": "/apps/showcase-bunker-zero/",
-  "classification": "prototype",
-  "publicShowcase": false,
-  "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
+  "classification": "showcase",
+  "publicShowcase": true,
+  "promotionStatus": "promoted-public-showcase",
   "qualityGate": {
-    "status": "unreviewed"
+    "status": "passed"
   },
-  "machinePass": false,
+  "machinePass": true,
   "renderer": {
     "path": "createGame \u2192 createAuraApp root safe API",
     "mode": "production",

@@ -1,6 +1,6 @@
 /** Cross Hop core: scene builder, pooled visuals, run simulation. */
 import {
-  game, looks, model, scene, camera, instances,
+  game, looks, lights, model, scene, camera, instances,
   primitives, material, type AuraApp
 } from "@aura3d/engine";
 import { assets } from "../aura-assets";
@@ -14,7 +14,8 @@ import { loadProfile, saveProfile, type Profile } from "./persistence";
 // ---------------- pool capacities ----------------
 const CAP = {
   ground: 56, detail: 260, glow: 140,
-  car: 46, truck: 18, tram: 12, train: 6, hover: 26,
+  car: 22, hatch: 22, suv: 22, taxi: 22, van: 22, pickup: 22,
+  truck: 18, tram: 12, train: 6, hover: 26,
   log: 48, pad: 48, stone: 48, coin: 26,
   trunk: 64, canopy: 64, dressB: 90
 } as const;
@@ -93,7 +94,7 @@ export interface GameState {
 }
 
 export const st: GameState = {
-  mode: "title", runKind: "quick", drill: null,
+  mode: "run", runKind: "quick", drill: null,
   profile: loadProfile(),
   seed: 1, time: 0,
   score: 0, coins: 0, row: 0, bestRow: 0,
@@ -105,7 +106,7 @@ export const st: GameState = {
   message: "", messageT: 0,
   themeIdx: 0, events: [],
   podTaken: new Set(), coinTaken: new Set(),
-  autopilot: false, apTimer: 0, dressKey: "",
+  autopilot: true, apTimer: 0, dressKey: "",
   forceTheme: undefined
 };
 
@@ -201,7 +202,7 @@ function die(kind: Death["kind"], label: string): void {
 /** Minimal scene for remote-capture bisection: progressively adds layers. */
 export function probeScene(level: number): unknown {
   const s = scene()
-    .add(looks.preset("outdoor-day", { fogDensityScale: 0.8, exposureEv: 0 }))
+    .add(looks.preset("outdoor-day", { fogDensityScale: 0.25, exposureEv: 0.2 }))
     .camera(camera.perspective({ position: [0, 4, 8], target: [0, 0.5, 0], fov: 46 }));
   if (level >= 1) {
     s.add(primitives.box({ name: "p1-box", size: [2, 2, 2], material: material.pbr({ color: "#58a75c" }) }).position(0, 1, 0));
@@ -213,49 +214,69 @@ export function probeScene(level: number): unknown {
     s.add(instances.model(assets.trafficSedan, { name: "p3-cars", transforms: [{ position: [-4, 0, -3], scale: [1, 1, 1] }, { position: [4, 0, -3], scale: [1, 1, 1] }], targetLength: 2.1 }));
   }
   if (level >= 4) {
-    s.add(model(assets.hop, { name: "p4-critter", targetHeight: 0.42, castShadow: true }).position(0, 0.13, 2).rotate(0, Math.PI, 0).animate({ clip: "Idle", loop: true }));
+    s.add(model(assets.hop, { name: "p4-critter", targetHeight: 1.05, castShadow: true }).position(0, 0.13, 2).rotate(0, Math.PI, 0).animate({ clip: "Idle", loop: true }));
   }
   return s.toJSON();
 }
+
+const SPECTATOR_CRITTERS: readonly (keyof typeof assets)[] = [
+  "chick", "turtle", "bun", "axolotl", "ducky", "roboFrog", "toastCat", "mushroomKid", "knightToad", "astroFrog", "goldenHop"
+];
 
 export function buildScene(): unknown {
   const lookId = THEMES[0].look as Parameters<typeof looks.preset>[0];
   const s = scene()
     .add(looks.preset(lookId, { fogDensityScale: THEMES[0].fogScale, exposureEv: THEMES[0].exposureEv })
       .runtime(game.runtimeNode("look")))
-    .camera(camera.perspective({ position: [0, 7.2, 7.4], target: [0, 0.3, -3], fov: 46 }));
+    .add(lights.ambient({ color: "#e8f2ff", intensity: 0.9 }))
+    .add(lights.hemisphere({ skyColor: "#d8ecff", groundColor: "#48683c", intensity: 0.95 }))
+    .add(lights.directional({ position: [12, 22, 12], target: [0, 0, -4], color: "#fff8e8", intensity: 2.1, shadow: true }))
+    .camera(camera.perspective({ position: [0, 5.4, 6.4], target: [0, 0.45, -3.2], fov: 46 }));
 
-  const groundMat = material.pbr({ color: "#ffffff", roughness: 0.92, metalness: 0 });
-  const detailMat = material.pbr({ color: "#ffffff", roughness: 0.8, metalness: 0.05 });
-  const glowMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.6, roughness: 0.4 });
+  const groundMat = material.pbr({ color: "#ffffff", roughness: 0.88, metalness: 0.04 });
+  const detailMat = material.pbr({ color: "#ffffff", roughness: 0.78, metalness: 0.06 });
+  const glowMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.8, roughness: 0.35 });
   const pad = (n: number) => Array.from({ length: n }, () => ({ position: [0, -999, 0] as [number, number, number], scale: [0.001, 0.001, 0.001] as [number, number, number] }));
 
   s.addMany([
     instances.box({ name: "lane-ground", size: [1, 1, 1], material: groundMat, transforms: pad(CAP.ground), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-ground")),
     instances.box({ name: "lane-detail", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.detail), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-detail")),
     instances.box({ name: "lane-glow", size: [1, 1, 1], material: glowMat, transforms: pad(CAP.glow), castShadow: false }).runtime(game.runtimeNode("pool-glow")),
-    instances.model(assets.trafficSedan, { name: "m-cars", transforms: pad(CAP.car), targetLength: 2.1, castShadow: true }).runtime(game.runtimeNode("pool-car")),
-    instances.model(assets.trafficBoxtruck, { name: "m-trucks", transforms: pad(CAP.truck), targetLength: 3.6, castShadow: true }).runtime(game.runtimeNode("pool-truck")),
-    instances.model(assets.tramCar, { name: "m-trams", transforms: pad(CAP.tram), targetLength: 4.6, castShadow: true }).runtime(game.runtimeNode("pool-tram")),
-    instances.model(assets.trainCar, { name: "m-trains", transforms: pad(CAP.train), targetLength: 11, castShadow: true }).runtime(game.runtimeNode("pool-train")),
-    instances.model(assets.trafficSkyCar, { name: "m-hover", transforms: pad(CAP.hover), targetLength: 2.4, castShadow: true }).runtime(game.runtimeNode("pool-hover")),
-    instances.cylinder({ name: "m-logs", size: [1, 1, 1], material: material.pbr({ color: "#7a5230", roughness: 0.95 }), transforms: pad(CAP.log) }).runtime(game.runtimeNode("pool-log")),
-    instances.cylinder({ name: "m-pads", size: [1, 1, 1], material: material.pbr({ color: "#4f9e4f", roughness: 0.85 }), transforms: pad(CAP.pad) }).runtime(game.runtimeNode("pool-pad")),
-    instances.sphere({ name: "m-stones", size: [1, 1, 1], material: material.pbr({ color: "#4b4b55", roughness: 0.9 }), transforms: pad(CAP.stone) }).runtime(game.runtimeNode("pool-stone")),
-    instances.model(assets.coin, { name: "m-coins", transforms: pad(CAP.coin), targetHeight: 0.5 }).runtime(game.runtimeNode("pool-coin")),
+    // Full fleet of 3D Meshy traffic vehicles!
+    instances.model(assets.trafficSedan, { name: "m-cars", transforms: pad(CAP.car), targetLength: 2.25, castShadow: true }).runtime(game.runtimeNode("pool-car")),
+    instances.model(assets.trafficHatch, { name: "m-hatch", transforms: pad(CAP.hatch), targetLength: 2.15, castShadow: true }).runtime(game.runtimeNode("pool-hatch")),
+    instances.model(assets.trafficSuv, { name: "m-suv", transforms: pad(CAP.suv), targetLength: 2.55, castShadow: true }).runtime(game.runtimeNode("pool-suv")),
+    instances.model(assets.trafficTaxi, { name: "m-taxi", transforms: pad(CAP.taxi), targetLength: 2.35, castShadow: true }).runtime(game.runtimeNode("pool-taxi")),
+    instances.model(assets.trafficVan, { name: "m-van", transforms: pad(CAP.van), targetLength: 2.65, castShadow: true }).runtime(game.runtimeNode("pool-van")),
+    instances.model(assets.trafficPickup, { name: "m-pickup", transforms: pad(CAP.pickup), targetLength: 2.55, castShadow: true }).runtime(game.runtimeNode("pool-pickup")),
+    instances.model(assets.trafficBoxtruck, { name: "m-trucks", transforms: pad(CAP.truck), targetLength: 3.75, castShadow: true }).runtime(game.runtimeNode("pool-truck")),
+    instances.model(assets.tramCar, { name: "m-trams", transforms: pad(CAP.tram), targetLength: 4.8, castShadow: true }).runtime(game.runtimeNode("pool-tram")),
+    instances.model(assets.trainCar, { name: "m-trains", transforms: pad(CAP.train), targetLength: 11.2, castShadow: true }).runtime(game.runtimeNode("pool-train")),
+    instances.model(assets.trafficSkyCar, { name: "m-hover", transforms: pad(CAP.hover), targetLength: 2.55, castShadow: true }).runtime(game.runtimeNode("pool-hover")),
+    instances.cylinder({ name: "m-logs", size: [1, 1, 1], material: material.pbr({ color: "#7a5230", roughness: 0.9 }), transforms: pad(CAP.log) }).runtime(game.runtimeNode("pool-log")),
+    instances.cylinder({ name: "m-pads", size: [1, 1, 1], material: material.pbr({ color: "#4f9e4f", roughness: 0.8 }), transforms: pad(CAP.pad) }).runtime(game.runtimeNode("pool-pad")),
+    instances.sphere({ name: "m-stones", size: [1, 1, 1], material: material.pbr({ color: "#4b4b55", roughness: 0.85 }), transforms: pad(CAP.stone) }).runtime(game.runtimeNode("pool-stone")),
+    instances.model(assets.coin, { name: "m-coins", transforms: pad(CAP.coin), targetHeight: 0.72 }).runtime(game.runtimeNode("pool-coin")),
     instances.cylinder({ name: "d-trunks", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.trunk) }).runtime(game.runtimeNode("pool-trunk")),
     instances.sphere({ name: "d-canopy", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.canopy) }).runtime(game.runtimeNode("pool-canopy")),
     instances.box({ name: "d-b", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.dressB) }).runtime(game.runtimeNode("pool-dressb")),
-    model(assets.hop, { name: "player", targetHeight: 0.42, castShadow: true })
-      .position(0, 0.13, 0).rotate(0, Math.PI, 0)
+    model(assets.hop, { name: "player", targetHeight: 1.05, castShadow: true })
+      .position(0, 0.14, 0).rotate(0, Math.PI, 0)
       .animate({ clip: "Idle", loop: true })
       .runtime(game.runtimeNode("player")),
-    model(assets.hawk, { name: "hawk", targetHeight: 0.85, castShadow: true })
+    model(assets.hawk, { name: "hawk", targetHeight: 1.35, castShadow: true })
       .position(0, -999, 0)
       .runtime(game.runtimeNode("hawk")),
-    model(assets.rescuePod, { name: "pod", targetHeight: 0.75, castShadow: true })
+    model(assets.rescuePod, { name: "pod", targetHeight: 1.15, castShadow: true })
       .position(0, -999, 0)
       .runtime(game.runtimeNode("pod")),
+    // 3D Meshy spectator critters cheering along the meadow banks!
+    ...SPECTATOR_CRITTERS.map((key, idx) =>
+      model(assets[key], { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true })
+        .position((idx % 2 === 0 ? -1 : 1) * (5.2 + (idx % 3) * 1.1), 0.14, -idx * 2.2)
+        .rotate(0, idx % 2 === 0 ? Math.PI * 0.45 : -Math.PI * 0.45, 0)
+        .runtime(game.runtimeNode(`spectator-${idx}`))
+    ),
     primitives.plane({ name: "waterline", size: [STRIP_W + 10, 1, 1], material: material.pbr({ color: "#000000" }) })
       .position(0, -999, 0).rotate(-Math.PI / 2, 0, 0)
       .runtime(game.runtimeNode("skirt"))
@@ -270,12 +291,18 @@ export let nodeErr = "";
 
 export function bindApp(a: AuraApp): void { app = a; }
 
-const CAR_KEYS: (keyof typeof assets)[] = ["trafficSedan", "trafficHatch", "trafficSuv", "trafficTaxi", "trafficVan", "trafficPickup"];
+const CAR_POOLS: readonly (keyof typeof CAP)[] = ["car", "hatch", "suv", "taxi", "van", "pickup"];
 const VEHICLE_POOL: Record<string, keyof typeof CAP> = { car: "car", truck: "truck", tram: "tram", train: "train", hover: "hover" };
 
 export function frame(dt: number, input: { buffered(d: string, w: number): boolean }): void {
   st.time += dt;
-  if (st.mode === "run") runFrame(dt, input);
+  if (st.mode === "run") {
+    runFrame(dt, input);
+  } else if (st.mode === "dead" && st.autopilot) {
+    if (st.time - st.deadAt > 1.4) {
+      startRun(st.runKind, st.drill, undefined, st.forceTheme);
+    }
+  }
   syncVisuals(dt);
 }
 
@@ -287,7 +314,7 @@ function runFrame(dt: number, input: { buffered(d: string, w: number): boolean }
   // platform carry (river/lava)
   if (!st.hop.active && (l.type === "river" || l.type === "lava")) {
     const on = platformUnder(l, p);
-    if (on < 0) { die(l.type === "river" ? "drowned" : "burned", l.type === "river" ? "Drowned" : "Burned"); return; }
+    if (on < -1e8) { die(l.type === "river" ? "drowned" : "burned", l.type === "river" ? "Drowned" : "Burned"); return; }
     st.idle = 0; // riding counts as alive
   }
   // hawk pressure
@@ -300,8 +327,12 @@ function runFrame(dt: number, input: { buffered(d: string, w: number): boolean }
     else if (input.buffered("down", 0.14)) dir = "back";
     else if (input.buffered("left", 0.14)) dir = "left";
     else if (input.buffered("right", 0.14)) dir = "right";
-    if (dir) tryHop(dir);
-    else if (st.autopilot) autopilot(dt);
+    if (dir) {
+      st.autopilot = false;
+      tryHop(dir);
+    } else if (st.autopilot) {
+      autopilot(dt);
+    }
   } else {
     st.hop.t += dt / HOP_DUR;
     if (st.hop.t >= 1) landHop();
@@ -327,7 +358,7 @@ function runFrame(dt: number, input: { buffered(d: string, w: number): boolean }
 }
 
 function tryHop(dir: string): void {
-  let nr = st.playerRow, nc = st.playerCol;
+  let nr = st.playerRow, nc = Math.round(st.playerCol);
   if (dir === "fwd") nr++;
   else if (dir === "back") nr = Math.max(0, nr - 1);
   else if (dir === "left") nc = Math.max(COL_MIN, nc - 1);
@@ -342,12 +373,12 @@ function landHop(): void {
   st.hop.active = false;
   const l = lane(st.playerRow);
   const x = st.playerCol * COL_W;
-  if (l.hasCoin && !st.coinTaken.has(l.row) && l.coinCol === st.playerCol) {
+  if (l.hasCoin && !st.coinTaken.has(l.row) && l.coinCol === Math.round(st.playerCol)) {
     st.coinTaken.add(l.row); st.coins += 10; st.score += 10;
     pushEvent("+10 coin");
     app?.effects?.burst("pickup", [x, 0.6, laneZ(st.playerRow)], { count: 14, speed: 2.2, scale: 0.5, color: COLORS.coin });
   }
-  if (l.hasPod && !st.podTaken.has(l.row) && l.podCol === st.playerCol) {
+  if (l.hasPod && !st.podTaken.has(l.row) && l.podCol === Math.round(st.playerCol)) {
     st.podTaken.add(l.row); st.score += 50;
     const locked = CRITTERS.filter(c => !st.profile.unlocked.includes(c.id));
     if (locked.length) {
@@ -358,7 +389,7 @@ function landHop(): void {
     app?.effects?.burst("aura-burst", [x, 0.8, laneZ(st.playerRow)], { count: 30, speed: 3, scale: 0.7, color: COLORS.pod });
   }
   if (l.type === "river" || l.type === "lava") {
-    if (platformUnder(l, x) < 0) die(l.type === "river" ? "drowned" : "burned", l.type === "river" ? "Drowned" : "Burned");
+    if (platformUnder(l, x) < -1e8) die(l.type === "river" ? "drowned" : "burned", l.type === "river" ? "Drowned" : "Burned");
   }
   // drill completion
   if (st.runKind === "drill" && st.drill && st.playerRow >= st.drill.script.length) {
@@ -387,31 +418,42 @@ function platformUnder(l: Lane, x: number): number {
   return -1e9;
 }
 
-let apState = 0;
 function autopilot(dt: number): void {
   st.apTimer += dt;
-  if (st.apTimer < 0.3) return;
+  if (st.apTimer < 0.26) return;
   st.apTimer = 0;
+  const curCol = Math.round(st.playerCol);
   const ahead = lane(st.playerRow + 1);
-  const x = st.playerCol * COL_W;
+  const curLane = lane(st.playerRow);
   const safe = (l: Lane, col: number): boolean => {
+    if (col < COL_MIN + 1 || col > COL_MAX - 1) return false;
     const px = col * COL_W;
     if (l.type === "road" || l.type === "tram" || l.type === "rail") {
-      const n = laneMovers(l, st.time + HOP_DUR, XS);
-      for (let i = 0; i < n; i++) if (Math.abs(XS[i] - px) < moverHalf(l) + 0.9) return false;
+      if (l.type === "rail" && railWarning(l, st.time)) return false;
+      const n = laneMovers(l, st.time + HOP_DUR * 1.2, XS);
+      for (let i = 0; i < n; i++) if (Math.abs(XS[i] - px) < moverHalf(l) + 1.05) return false;
       return true;
     }
     if (l.type === "river" || l.type === "lava") {
       const n = laneMovers(l, st.time + HOP_DUR, XS);
-      for (let i = 0; i < n; i++) if (Math.abs(XS[i] - px) < moverHalf(l) + 0.2) return true;
+      for (let i = 0; i < n; i++) if (Math.abs(XS[i] - px) < moverHalf(l) - 0.15) return true;
       return false;
     }
     return true;
   };
-  if (safe(ahead, st.playerCol)) tryHop("fwd");
-  else if (safe(lane(st.playerRow), st.playerCol - 1) && st.playerCol > COL_MIN) tryHop("left");
-  else if (safe(lane(st.playerRow), st.playerCol + 1) && st.playerCol < COL_MAX) tryHop("right");
-  else if (st.idle > 2.6) tryHop("back"); // don't die to the hawk while waiting
+  if (safe(ahead, curCol)) {
+    tryHop("fwd");
+  } else if (curCol < 0 && safe(curLane, curCol + 1)) {
+    tryHop("right");
+  } else if (curCol >= 0 && safe(curLane, curCol - 1)) {
+    tryHop("left");
+  } else if (safe(curLane, curCol + 1)) {
+    tryHop("right");
+  } else if (safe(curLane, curCol - 1)) {
+    tryHop("left");
+  } else if (st.idle > 2.2 && st.playerRow > 0 && safe(lane(st.playerRow - 1), curCol)) {
+    tryHop("back");
+  }
 }
 
 // -------------------- visuals --------------------
@@ -455,9 +497,9 @@ function syncVisuals(dt: number): void {
       else {
         const th2 = THEMES[l.theme];
         const kind = th2.vehicleSet === "hover" && l.moverKind === "car" ? "hover" : l.moverKind;
-        const pool = VEHICLE_POOL[kind];
+        const pool = kind === "car" ? CAR_POOLS[(r * 3 + i) % CAR_POOLS.length]! : VEHICLE_POOL[kind]!;
         const lift = kind === "hover" ? 0.35 : 0;
-        inst(pool, x, 0.02 + lift, z, 1, 1, 1, "#ffffff", ry);
+        inst(pool, x, 0.04 + lift, z, 1, 1, 1, "#ffffff", ry);
       }
     }
   }
@@ -465,17 +507,17 @@ function syncVisuals(dt: number): void {
   // coins + pod
   for (let r = lo; r <= hi; r++) {
     const l = lane(r);
-    if (l.hasCoin && !st.coinTaken.has(r)) inst("coin", l.coinCol * COL_W, 0.45 + Math.sin(st.time * 3 + r) * 0.08, laneZ(r), 1, 1, 1, COLORS.coin, st.time * 1.6);
+    if (l.hasCoin && !st.coinTaken.has(r)) inst("coin", l.coinCol * COL_W, 0.5 + Math.sin(st.time * 3 + r) * 0.08, laneZ(r), 1, 1, 1, COLORS.coin, st.time * 1.6);
   }
 
   // player
   const px = st.hop.active ? st.hop.fromX + (st.hop.toX - st.hop.fromX) * st.hop.t : st.playerCol * COL_W;
   const pz = st.hop.active ? st.hop.fromZ + (st.hop.toZ - st.hop.fromZ) * st.hop.t : laneZ(st.playerRow);
-  const arc = st.hop.active ? Math.sin(Math.PI * Math.min(1, st.hop.t)) * 0.62 : 0;
+  const arc = st.hop.active ? Math.sin(Math.PI * Math.min(1, st.hop.t)) * 0.68 : 0;
   const squash = st.dead && (st.dead.kind === "squashed" || st.dead.kind === "flattened") ? 0.18 : 1;
   try {
     const h = nodes.require("player");
-    h.setPosition(px, 0.13 + arc + (st.dead?.kind === "drowned" ? -0.5 : 0), pz);
+    h.setPosition(px, 0.14 + arc + (st.dead?.kind === "drowned" ? -0.5 : 0), pz);
     if (st.hop.active) h.setScale(1.0 + Math.sin(Math.PI * st.hop.t) * 0.25);
     else h.setScale(squash);
     if (st.hop.dir === "left") h.setRotation(0, -Math.PI / 2, 0);
@@ -484,10 +526,23 @@ function syncVisuals(dt: number): void {
     else h.setRotation(0, Math.PI, 0);
   } catch (e) { nodeOk = false; nodeErr = `player: ${String(e).slice(0, 120)}`; }
 
+  // animate 3D Meshy spectator critters cheering along the meadow banks near the player
+  const baseRow = Math.floor(st.playerRow / 12) * 12;
+  for (let idx = 0; idx < SPECTATOR_CRITTERS.length; idx++) {
+    const sp = nodes.get(`spectator-${idx}`);
+    if (!sp) continue;
+    const specRow = baseRow + idx * 2;
+    const side = idx % 2 === 0 ? -1 : 1;
+    const sx = side * (4.6 + (idx % 3) * 1.15);
+    const sz = laneZ(specRow);
+    const cheerBob = Math.abs(Math.sin(st.time * 5.2 + idx * 1.1)) * 0.28;
+    sp.setPosition(sx, 0.16 + cheerBob, sz);
+    sp.setRotation(0, side < 0 ? Math.PI * 0.42 : -Math.PI * 0.42, 0);
+  }
+
   // platform carry visual
   const pl = lane(st.playerRow);
   if (!st.hop.active && !st.dead && (pl.type === "river" || pl.type === "lava")) {
-    st.playerCol += 0; // carried visually by platform; adjust col when it slides
     const n = laneMovers(pl, st.time, XS);
     for (let i = 0; i < n; i++) {
       if (Math.abs(XS[i] - px) < moverHalf(pl)) {
@@ -518,7 +573,7 @@ function syncVisuals(dt: number): void {
     for (let r = lo; r <= hi; r++) {
       const l = lane(r);
       if (l.hasPod && !st.podTaken.has(r)) {
-        pod.setVisible(true); pod.setPosition(l.podCol * COL_W, 0.1, laneZ(r));
+        pod.setVisible(true); pod.setPosition(l.podCol * COL_W, 0.14, laneZ(r));
         pod.setRotation(0, st.time * 0.8, 0);
         podSet = true; break;
       }
@@ -526,11 +581,11 @@ function syncVisuals(dt: number): void {
     if (!podSet) pod.setVisible(false);
   } catch (e) { nodeOk = false; nodeErr = `hawk/pod: ${String(e).slice(0, 120)}`; }
 
-  // camera — trailing
-  const camZ = pz + 7.6, camY = 6.6 + st.playerRow * 0.004;
+  // camera — trailing closer so 3D Meshy player, cars, trucks, trains, and critters are prominent
+  const camZ = pz + 6.4, camY = 5.4 + st.playerRow * 0.002;
   app.camera?.setPose({
     position: [px * 0.45, camY, camZ],
-    target: [px * 0.4, 0.4, pz - 3.6],
+    target: [px * 0.4, 0.45, pz - 3.2],
     fov: 46 + warn * 7
   });
   if (warn > 0.5) app.output?.setOutputOverlay({ vignette: [0.02, 0.02, 0.06, warn * 0.85] });
@@ -606,9 +661,7 @@ function paintLane(l: Lane, r: number): void {
 
 function paintDressing(lo: number, hi: number): void {
   const th = THEMES[st.themeIdx];
-  const dkey = `${th.dress}-${st.seed}-${lo >> 3}`;
   for (let r = lo; r <= hi; r++) {
-    const l = lane(r);
     const z = laneZ(r);
     const rndA = Math.abs(Math.sin(r * 12.9898 + st.seed * 0.37)) % 1;
     const rndB = Math.abs(Math.sin(r * 78.233 + st.seed * 0.11)) % 1;
@@ -644,8 +697,8 @@ export function swapCritter(c: CritterDef): void {
     const pz = laneZ(st.playerRow);
     n0.remove("player");
     n0.add(
-      model(assets[c.asset], { name: "player", targetHeight: 0.42, castShadow: true })
-        .position(st.playerCol * COL_W, 0.13, pz).rotate(0, Math.PI, 0)
+      model(assets[c.asset], { name: "player", targetHeight: 1.05, castShadow: true })
+        .position(st.playerCol * COL_W, 0.14, pz).rotate(0, Math.PI, 0)
         .animate({ clip: "Idle", loop: true })
         .runtime(game.runtimeNode("player"))
         .toJSON() as never

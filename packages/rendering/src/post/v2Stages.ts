@@ -113,11 +113,11 @@ interface PostV2State {
   readonly postBlackboard: Map<string, unknown>;
 }
 
-const states = new WeakMap<WebGL2RenderingContext, PostV2State>();
+const states = new WeakMap<WebGL2DeviceHost, PostV2State>();
 
 function v2State(host: WebGL2DeviceHost): PostV2State {
   const gl = host.gl;
-  let state = states.get(gl);
+  let state = states.get(host);
   if (!state) {
     const vao = gl.createVertexArray();
     const identityLut = gl.createTexture();
@@ -163,7 +163,7 @@ function v2State(host: WebGL2DeviceHost): PostV2State {
       evValid: false,
       smaa: { area: null, search: null, requested: false }
     };
-    states.set(gl, state);
+    states.set(host, state);
   }
   return state;
 }

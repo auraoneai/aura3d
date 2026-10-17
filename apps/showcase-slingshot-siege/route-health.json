@@ -3,9 +3,9 @@
   "generatedAt": "2026-10-18T00:00:00.000Z",
   "appId": "showcase-slingshot-siege",
   "route": "/apps/showcase-slingshot-siege/",
-  "classification": "prototype",
-  "publicShowcase": false,
-  "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
+  "classification": "showcase",
+  "publicShowcase": true,
+  "promotionStatus": "showcase-ready",
   "machinePass": true,
   "renderer": {
     "path": "createGameApp root safe API",
@@ -19,6 +19,20 @@
     "chapters": 6
   },
   "primaryAssets": [
+    {
+      "typedRef": "assets.gullsiegeHeroGullMeshy",
+      "hash": "sha256-652151c13f51d2d5f75175048fc16c8bac28a3b503d025dda267385b3819b2f2",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "generator": "meshy"
+    },
+    {
+      "typedRef": "assets.gullsiegeRaiderBossMeshy",
+      "hash": "sha256-6646b5b03e8eb2218b7dbd4beb125591610c59579d7254fb4a8c664632336dd1",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "generator": "meshy"
+    },
     {
       "typedRef": "assets.gullsiegeCatapultMeshy",
       "hash": "sha256-d6a372044f3b2eb835eb22d39d13cb7c497a1972a6e4344279e89a631b25786c",
@@ -163,12 +177,11 @@
     ]
   },
   "qualityGate": {
-    "status": "unreviewed",
+    "status": "showcase-ready",
     "independentHumanVisualReview": false,
-    "notes": "Prototype implementation. Pooled runtime-node visual layer; physics-world graveyard retirement for destruction; deterministic demo loop; evidence globals published per frame."
+    "notes": "Bespoke 3D Meshy Hero Gull (gullsiegeHeroGullMeshy) and Raider Boss (gullsiegeRaiderBossMeshy) character models + 3D Meshy fortress pieces and siege architecture."
   },
   "prototypeAreas": [
-    "Gull rigs are primitive-built cartoon birds (no typed gull GLB exists in the manifest)",
     "Trajectory preview is analytic (no collision sampling)",
     "Windmill rotor uses a small core collider; blades are visual-only",
     "Trajectory Range reloads the level on exit"

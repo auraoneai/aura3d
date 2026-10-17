@@ -1,16 +1,10 @@
 /**
  * Red Zone 3D — route-local typed-asset manifest.
  *
- * Registers the Meshy GLBs generated specifically for this game through the
- * engine's own `defineAuraAssets`, producing proper branded `AuraAssetRef`s —
- * the same mechanism src/aura-assets.ts uses, kept route-local so this app has
- * no imports outside its own directory. Provenance: artifacts/meshy/rz-*
- * dirs (task.json + rights.json per asset).
- *
- * Keys are intentionally unquoted: the remote-capture serve-tree assembler
- * (tools/remote-capture.sh) globs `apps/<route>/src/aura-assets-*.ts` and
- * extracts `key: { url }` entries with an unquoted-key regex, then copies each
- * referenced payload from public/ into the capture serve tree.
+ * Registers the Meshy GLBs and WAV SFX used by Red Zone 3D through the
+ * engine's `defineAuraAssets`, with unquoted keys so `tools/remote-capture.sh`
+ * copies every referenced payload from `public/aura-assets/` into the capture
+ * serve tree.
  */
 import { defineAuraAssets } from "@aura3d/engine";
 
@@ -49,6 +43,149 @@ export const assets = defineAuraAssets({
     url: "/aura-assets/rzAltitudeDomeMeshy.d55978a7.glb",
     hash: "sha256-d55978a78dd57a3e0f3be99e5c9da0d332adaae2fdd94516e315748a5b990e9e",
     bounds: [1.899, 0.769, 1.879]
+  },
+  rzQuarterbackMeshy: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rzQuarterbackMeshy.9368c81f.glb",
+    hash: "sha256-f6a533b6904ac8ad044bd2e50a5d9f9de91c7b58397b7f3065cf78ead57bace5",
+    bounds: [0.89, 1.897, 0.505]
+  },
+  rzDefenderLinemanMeshy: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rzDefenderLinemanMeshy.38e261b9.glb",
+    hash: "sha256-62e2855384ce2bb4d9a80d487c14f0b400bf578347489c76e95efa9936b5bb68",
+    bounds: [1.137, 1.895, 1.677]
+  },
+  rzFieldGoalPostMeshy: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rzFieldGoalPostMeshy.2521e08f.glb",
+    hash: "sha256-0f638ea81945e27ae6f911a376b7db9042c0d8b1fde1ca3d1f7dc4cdbb03128c",
+    bounds: [0.55, 1.899, 0.203]
+  },
+  rooftopShooterCleanMeshy: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rooftopShooterCleanMeshy.2be27d6a.glb",
+    hash: "sha256-fcf0841169f4c4add2d0fd64bf3addec20b810b46d237d89e070188a9aaff3b2",
+    bounds: [0.627, 1.874, 0.41]
+  },
+  rooftopDefenderMeshy: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rooftopDefenderMeshy.c53681c7.glb",
+    hash: "sha256-783ec8135ef8aaf1e9d6b2351b37f0573a859b99612370a8fb072660121e6ce6",
+    bounds: [0.831, 1.886, 0.646]
+  },
+  gallerySecurityGuardMeshy: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/gallerySecurityGuardMeshy.e45c9d16.glb",
+    hash: "sha256-4d66273f50e7fe1ba1b814f8c44f665186d9e74292dfce10e7308454dca72bd9",
+    bounds: [0.739, 1.896, 0.483]
+  },
+  hoopsAthleteGuard: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsAthleteGuard.fbef844e.glb",
+    hash: "sha256-fbef844e5385c6a61742a84708e959903a9b7185d61007812940f228e669baa1",
+    bounds: [1.712, 1.903, 0.373]
+  },
+  hoopsAthleteBig: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsAthleteBig.a11d61c5.glb",
+    hash: "sha256-a11d61c552bec0fcfb89dcd9e70df64aa22012e1f58f590f610920f040977155",
+    bounds: [1.675, 1.903, 0.365]
+  },
+  diamondDugout: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondDugout.bfacebd6.glb",
+    hash: "sha256-bfacebd60d24235f7ef06c8c21ec71f9e490a12efbfb64c991a45f55105d9ed3",
+    bounds: [1.903, 1.579, 1.176]
+  },
+  diamondStadium: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondStadium.2aa65131.glb",
+    hash: "sha256-2aa65131072a1c4ae4d32d123994aa94e8650317975325782d9c9207513b155b",
+    bounds: [1.903, 0.562, 1.653]
+  },
+  hoopsBallCart: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsBallCart.046e8fde.glb",
+    hash: "sha256-046e8fde0aa8e6c9c4cb4e8a3a2ea5f060d6916ab8dfda5dc1c013be7671bfe8",
+    bounds: [1.906, 1.31, 1.459]
+  },
+  hoopsCheckSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsCheckSfx.405a831d.wav",
+    hash: "sha256-405a831d3b901ca15f9a628f96e3136be8a2da626660da946ccf18fd2f610ba3"
+  },
+  hoopsBoardThudSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsBoardThudSfx.b2f87b29.wav",
+    hash: "sha256-b2f87b29f4b1f28e434ec5a5ef411a08595226c01ba37aa332f44dd548208eb3"
+  },
+  hoopsRimClankSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsRimClankSfx.7909dddd.wav",
+    hash: "sha256-7909ddddb6a2df92d50ce8d2693d6543fe2b108fa146b83b4a8c3262cd9285cd"
+  },
+  hoopsSwishSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsSwishSfx.fdab5827.wav",
+    hash: "sha256-fdab5827ad885ff1824877f81c5b968341ce228997248b0b168ee0bc3872046f"
+  },
+  hoopsCrowdSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsCrowdSfx.3bfb8d46.wav",
+    hash: "sha256-3bfb8d4652078c59aa46f93957a24d2322bd86f2a60846f4fe6aea288c09be5e"
+  },
+  hoopsFanfareSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsFanfareSfx.0b88e74e.wav",
+    hash: "sha256-0b88e74e5c40057ced8b5a19140d2ad4f6f15bd7963668fcd44c4aaf719f0a33"
+  },
+  hoopsBuzzerSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsBuzzerSfx.84d252a1.wav",
+    hash: "sha256-84d252a1e66e638ec7c9c0896348ab619f0279f60edc50ff2609ca1ab584625e"
+  },
+  hoopsBlockSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsBlockSfx.48c91229.wav",
+    hash: "sha256-48c91229537384ad140ffe2064dfbe5f798768e3b89549517761717187cc630e"
+  },
+  diamondClickSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondClickSfx.6a970d1d.wav",
+    hash: "sha256-6a970d1d51543575e978c9735afa795d6eb6f086faa7cadfc19d9ee834fe39da"
+  },
+  diamondConfirmSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondConfirmSfx.70982d28.wav",
+    hash: "sha256-70982d2827bd33a15e2ba174d40133aa21bea3b879bcf19e8da5714cb6693843"
+  },
+  diamondHomerBigSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondHomerBigSfx.7d3a6654.wav",
+    hash: "sha256-7d3a66547131d29df72f20b49b11c258d55985550bb5004763eb25cf1979ee38"
   }
 } as const);
 

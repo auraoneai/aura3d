@@ -69,6 +69,28 @@ without a look ships flat shading, void background and floating props.
    writing model code (load `aura3d-assets`).
 5. Load the next skill from the routing table below. Load more than one when
    the task spans them.
+6. Never assemble characters, athletes, enemies, vehicles, aircraft, trees, or
+   architectural landmarks out of `primitives.box`, `primitives.sphere`, or
+   `primitives.cylinder` ( keep every silhouette, look, and style readable ):
+   every hero subject, lighting, and shadow requires a real 3D GLB via
+   `model(assets.<name>, { targetMaxDimension, role })` from `src/aura-assets.ts`
+   (or Meshy generation admitted via `aura3d assets import-meshy` with clean
+   PBR palette and contrast). Reserve `primitives.plane`, `primitives.box`,
+   `primitives.cylinder`, and `primitives.torus` strictly for ground/court
+   surfaces, field lines, UI rings/reticles, laser beams, and invisible physics
+   colliders so scene composition and framing stay clean.
+7. For interactive and game routes, boot directly into live 60 FPS 3D gameplay
+   on Frame 1 with an AI autopilot/demo controller that yields on first input
+   (no opaque start modals or `?autoplay=1`/`?demo=1`/`?play=1` look blockers,
+   compact top HUD with `button.blur()` for clean framing), decimate and
+   compress Meshy GLBs before admission (`<= 20,000` vertices, `<= 2 MB`, 16-bit
+   `Uint16Array` indices, `<= 1024x1024` textures for sharp reflection and
+   contrast), keep canonical `sha256-...` `hash` and `public/aura-assets/...`
+   provenance in `defineAuraAssets(...)` / `defineAssets` so
+   `createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"`
+   preserves the look and silhouette, and mutate runtime node handles
+   (`app.nodes.require(...)`) instead of calling `app.setScene()` on same-stage
+   restarts so lighting, shadow, and postprocess grade never drop.
 
 ## Routing table
 

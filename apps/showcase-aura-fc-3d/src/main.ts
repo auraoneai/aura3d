@@ -15,8 +15,9 @@ import {
 } from "@aura3d/engine";
 import {
   createJuice, createOverlayDriver, createRumbleDriver, createTweenEngine,
-  createFxParticlePass, mountTouchControls, sfx, sfxUrl
+  createFxParticlePass, mountTouchControls
 } from "@aura3d/engine/game";
+import { assets } from "./aura-assets-v2";
 import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R } from "./game/sim";
 import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, LOOK_ID } from "./game/scene";
 import { resolveAthlete, applyAthleteKit, poseAthlete, skinFor, type AthleteRig } from "./game/rig";
@@ -43,7 +44,8 @@ function boot(): void {
   try {
     app = createAuraApp("#app", {
       scene: buildFcScene(),
-      ...looks.appOptions(LOOK_ID)
+      ...looks.appOptions(LOOK_ID),
+      qualityRebuild: { flags: ["game", "-compiler"] }
     } as any);
   } catch (e) {
     console.error("[fc3d] createAuraApp failed", e);
@@ -123,22 +125,26 @@ function boot(): void {
   } as any);
 
   let hitStopUntil = 0;
+  let userInteracted = false;
   const audio = createGameAudio({
-    browserContext: true,
+    browserContext: false,
     cues: {
-      kick:    { id: "kick", asset: { url: sfxUrl(sfx.sports.ballBounceHard[0]) }, volume: 0.5 },
-      pass:    { id: "pass", asset: { url: sfxUrl(sfx.sports.ballBounceCourt[0]) }, volume: 0.42 },
-      goal:    { id: "goal", asset: { url: sfxUrl(sfx.stinger.win[0]) }, volume: 0.85 },
-      save:    { id: "save", asset: { url: sfxUrl(sfx.stinger.checkpoint[1]) }, volume: 0.55 },
-      post:    { id: "post", asset: { url: sfxUrl(sfx.sports.netSwish[0]) }, volume: 0.5 },
-      whistle: { id: "whistle", asset: { url: sfxUrl(sfx.stinger.checkpoint[0]) }, volume: 0.55 },
-      fulltime:{ id: "fulltime", asset: { url: sfxUrl(sfx.stinger.win[1]) }, volume: 0.9 },
-      lose:    { id: "lose", asset: { url: sfxUrl(sfx.stinger.lose[0]) }, volume: 0.4 },
-      crowd:   { id: "crowd", asset: { url: sfxUrl(sfx.ambience.crowdSports[0]) }, volume: 0.3, loop: true }
+      kick:    { id: "kick", asset: assets.hoopsBoardThudSfx, volume: 0.5 },
+      pass:    { id: "pass", asset: assets.hoopsCheckSfx, volume: 0.42 },
+      goal:    { id: "goal", asset: assets.hoopsFanfareSfx, volume: 0.85 },
+      save:    { id: "save", asset: assets.diamondConfirmSfx, volume: 0.55 },
+      post:    { id: "post", asset: assets.hoopsRimClankSfx, volume: 0.5 },
+      whistle: { id: "whistle", asset: assets.hoopsBuzzerSfx, volume: 0.55 },
+      fulltime:{ id: "fulltime", asset: assets.diamondHomerBigSfx, volume: 0.9 },
+      lose:    { id: "lose", asset: assets.hoopsBlockSfx, volume: 0.4 },
+      crowd:   { id: "crowd", asset: assets.hoopsCrowdSfx, volume: 0.3, loop: true }
     },
     buses: [{ id: "sfx" } as any]
   } as any);
-  const unlock = () => { void audio?.unlock(); };
+  const unlock = () => {
+    userInteracted = true;
+    void audio?.unlock();
+  };
   window.addEventListener("pointerdown", unlock, { once: true });
   window.addEventListener("keydown", unlock, { once: true });
 
@@ -155,6 +161,11 @@ function boot(): void {
     fulltime:{ cue: "fulltime", shake: 0.4, punch: { fovDeg: 2.4, ms: 300 }, flash: { color: "#ffd76a", peak: 0.2, ms: 240 } }
   };
 
+  const baseRumble = createRumbleDriver();
+  const safeRumble = (opts: any) => {
+    if (userInteracted) return baseRumble(opts);
+  };
+
   const juice = createJuice({
     events: JUICE_EVENTS as any,
     camera: (app as any)?.camera,
@@ -166,7 +177,7 @@ function boot(): void {
     fx,
     overlay: createOverlayDriver({ domElement: fxLayer }),
     tweens: createTweenEngine(),
-    rumble: createRumbleDriver(),
+    rumble: safeRumble as any,
     sound: { cue: (cue: string) => { void audio?.cue(cue); } }
   } as any);
   const juiceFire = (ev: string, at?: Record<string, unknown>) => {
@@ -496,8 +507,10 @@ function boot(): void {
         audio: (audio as any)?.evidence ?? null,
         eventLog: eventLog.snapshot(),
         meshyAssets: [
-          "fcMatchBallMeshy", "fcFloodlightPylonMeshy", "fcScoreboardGantryMeshy",
-          "fcGlacierDomeMeshy", "fcHeroTrophyMeshy"
+          "fcMatchBallMeshy", "fcSoccerStrikerMeshy", "fcGoalkeeperMeshy", "fcSoccerGoalNetMeshy",
+          "fcFloodlightPylonMeshy", "fcScoreboardGantryMeshy",
+          "fcGlacierDomeMeshy", "fcHeroTrophyMeshy", "gallerySecurityGuardMeshy",
+          "diamondDugout", "diamondStadium", "hoopsBallCart"
         ],
         modes: ["quick", "demo", "shootout", "touch", "circuit", "studio"],
         venues: VENUE_ORDER,
@@ -542,9 +555,7 @@ function boot(): void {
         const v = btn.dataset.fcVenue as keyof typeof VENUES;
         modes.venue = v;
         for (const b of venueBtns) b.classList.toggle("active", b === btn);
-        if (sim.state.mode === "menu" || modes.mode === "menu") {
-          sim.state.venue = v;
-        }
+        sim.state.venue = v;
         hud.banner(VENUES[v].label, 1800);
       });
     }
@@ -563,16 +574,16 @@ function boot(): void {
   if (canvas) canvas.dataset.ready = "true";
 
   if (params.has("demo") || params.has("auto")) {
-    // CPU-vs-CPU immediately — remote captures see live play
     modes.startDemo();
-  } else if (params.get("mode") === "quick") {
-    modes.startQuick();
+  } else if (params.get("mode") === "menu") {
+    modes.enterMenu();
   } else if (params.get("mode") === "shootout") {
     modes.startShootoutLab();
   } else if (params.get("mode") === "touch") {
     modes.startTouchLab();
   } else {
-    modes.enterMenu();
+    // Boot immediately into live 5v5 Quick Play (with smart AI assist when idle)
+    modes.startQuick();
   }
 }
 

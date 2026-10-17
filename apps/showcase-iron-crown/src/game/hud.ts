@@ -15,6 +15,8 @@ export type MenuId = "mode" | "versus" | "ladder" | "studio" | "pause" | "result
 export interface HudCallbacks {
   readonly onMode: (mode: ModeId) => void;
   readonly onStage: (stage: StageId) => void;
+  readonly onFighter: (fighter: FighterId) => void;
+  readonly onAutopilotToggle: () => void;
   readonly onVersusFight: (sel: { p1: FighterId; cpu: FighterId; stage: StageId; difficulty: Difficulty }) => void;
   readonly onLadderStart: (fighter: FighterId) => void;
   readonly onStudioApply: (fighter: FighterId, palette: PaletteId) => void;
@@ -70,6 +72,8 @@ export interface Hud {
   showResult(spec: ResultSpec): void;
   setStageButtons(active: StageId): void;
   setModeButtons(active: ModeId): void;
+  setFighterButtons(active: FighterId): void;
+  setAutopilotButton(active: boolean): void;
 }
 
 function el<T extends HTMLElement>(doc: Document, id: string): T {
@@ -238,6 +242,10 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
   doc.querySelectorAll<HTMLButtonElement>("#ic-venues button[data-stage]").forEach((btn) => {
     btn.addEventListener("click", () => cb.onStage(btn.dataset.stage as StageId));
   });
+  doc.querySelectorAll<HTMLButtonElement>("#ic-fighters button[data-fighter]").forEach((btn) => {
+    btn.addEventListener("click", () => cb.onFighter(btn.dataset.fighter as FighterId));
+  });
+  doc.getElementById("ic-autopilot")?.addEventListener("click", () => cb.onAutopilotToggle());
   doc.querySelectorAll<HTMLButtonElement>("[data-menu-close]").forEach((btn) => {
     btn.addEventListener("click", () => cb.onPauseQuit());
   });
@@ -425,9 +433,23 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
       );
     },
     setModeButtons(active) {
-      doc.querySelectorAll<HTMLButtonElement>("#ic-modes button").forEach((b) =>
+      doc.querySelectorAll<HTMLButtonElement>("#ic-modes button[data-mode]").forEach((b) =>
         b.setAttribute("aria-pressed", String(b.dataset.mode === active))
       );
+    },
+    setFighterButtons(active) {
+      selections["fighter-p1"] = active;
+      selections["fighter-ladder"] = active;
+      selections["fighter-studio"] = active;
+      doc.querySelectorAll<HTMLButtonElement>("#ic-fighters button").forEach((b) =>
+        b.setAttribute("aria-pressed", String(b.dataset.fighter === active))
+      );
+      doc.querySelectorAll<HTMLButtonElement>('[data-grid="fighter-p1"] button').forEach((b) =>
+        b.setAttribute("aria-pressed", String(b.dataset.pick === active))
+      );
+    },
+    setAutopilotButton(active) {
+      doc.getElementById("ic-autopilot")?.setAttribute("aria-pressed", String(active));
     }
   };
 }

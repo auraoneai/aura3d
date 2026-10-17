@@ -2,6 +2,18 @@ import { defineAuraAssets } from "@aura3d/engine";
 import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";
 
 type AuraGeneratedAssetDefinitions = {
+  readonly "gullsiegeRaiderBossMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "gullsiegeHeroGullMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "linksClubhousePavilMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "linksPinFlagMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "linksGolfCartMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "linksGolferAthleteMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rzFieldGoalPostMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rzDefenderLinemanMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rzQuarterbackMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "fcSoccerGoalNetMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "fcGoalkeeperMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "fcSoccerStrikerMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "animationPointerPanel": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "auraClashCornerBrazierPylonMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "auraClashStageSpeakerTowerMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -9559,13 +9571,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/bunkerArmorMeshy.40ab638a.glb",
-    hash: "sha256-40ab638a9916f9de3af9cd9aef65db1b15aca80d84e19efa025c28f55dbb699f",
+    hash: "sha256-be9b8bb1f17eec71a4d8391e22defb9a5f20d6e98504387cd4438175761332f7",
     bounds: [
       1.833,
       1.902,
       1.481
     ],
-    sizeBytes: 21979564,
+    sizeBytes: 989184,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -9691,13 +9703,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/bunkerBarrelMeshy.d1eec7e3.glb",
-    hash: "sha256-d1eec7e36026d304876d971dd818cac7158aaf8211901294fbc8f03631a5eb99",
+    hash: "sha256-9235ea2c824c4fed713ec57b119a81550e85cd5db09b008736f10703db3ef196",
     bounds: [
       1.207,
       1.903,
       1.206
     ],
-    sizeBytes: 18572120,
+    sizeBytes: 997844,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -9823,13 +9835,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/bunkerCrateMeshy.6699a89d.glb",
-    hash: "sha256-6699a89d445a4624803ccf8f979f8a179588baf4a426fb0e2c2589626e4f83ae",
+    hash: "sha256-bcc87cf2eafece1ba8682167efefd3a82d250792a1b64617b9db47efe7541722",
     bounds: [
       1.903,
       1.248,
       1.381
     ],
-    sizeBytes: 23134996,
+    sizeBytes: 1084372,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -9955,13 +9967,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/bunkerGuardMeshy.94733051.glb",
-    hash: "sha256-94733051850e41400d5cc05590545e83cf095ef95ae2fdb47be6db6f0be27c4e",
+    hash: "sha256-112aa65bd9320754e9268d232c5b1589f45efab57c2f3fac4797dbb9afb6a74a",
     bounds: [
       1.017,
       1.903,
       0.814
     ],
-    sizeBytes: 21096728,
+    sizeBytes: 1028316,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -10087,13 +10099,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/bunkerGunnerMeshy.a7ba1919.glb",
-    hash: "sha256-a7ba19199028928fe6079ab758342f94d4b7983e240bba6044047d271d9da4e3",
+    hash: "sha256-533e5b950e7523685740b851cf71e9f11d361862eadeeb213b8aa84b7024e732",
     bounds: [
       1.072,
       1.901,
       1.202
     ],
-    sizeBytes: 22082864,
+    sizeBytes: 1017312,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -10219,13 +10231,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/bunkerHoundMeshy.5635dd96.glb",
-    hash: "sha256-5635dd96fbb15fc9f85913c14d99a2847147e2afbfb59093a456887b641e33a4",
+    hash: "sha256-92d7da354ea3740208f43ce7ae76d4703143debf719bc226cf51febabd87ac06",
     bounds: [
       0.616,
       1.116,
       1.904
     ],
-    sizeBytes: 17716212,
+    sizeBytes: 989428,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -10351,13 +10363,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/bunkerKeyMeshy.bf52947c.glb",
-    hash: "sha256-bf52947c41273255d6d6f99860848145104de27a421b3292f5a6019054ecb07a",
+    hash: "sha256-f88ca48864259475694397eb79ec505fb1d22ad5b44210a14499d62975fd0492",
     bounds: [
       1.903,
       0.421,
       1.071
     ],
-    sizeBytes: 24211696,
+    sizeBytes: 1194784,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -10483,13 +10495,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/bunkerTreasureMeshy.21ede839.glb",
-    hash: "sha256-21ede839a22a8faadcdccd4588c201fe540f9d8cc51beef495884284051bab9a",
+    hash: "sha256-5f939e5dc07121d464de9a9113a9143f0e041547a28f4189138c69db8ca14c3f",
     bounds: [
       1.427,
       1.166,
       1.11
     ],
-    sizeBytes: 22483032,
+    sizeBytes: 1146128,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -10615,13 +10627,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/bunkerWardenMeshy.e64afa2d.glb",
-    hash: "sha256-e64afa2d56a1462857857b1ae49abcc80ebad6f0af82a922cb14698071dbc2b9",
+    hash: "sha256-abec5130c1b8b2075c28b92e4b26736ffad8e93854e4e996f011a759c972f090",
     bounds: [
       1.01,
       1.903,
       0.59
     ],
-    sizeBytes: 26987376,
+    sizeBytes: 1037376,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -33656,13 +33668,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/gullsiegeBarrelMeshy.240ded9a.glb",
-    hash: "sha256-240ded9ac549995a79837fe97e82469f62c0e5d8040cce53b93559de6783a12e",
+    hash: "sha256-9b79a25f31b700f5b948d30d37db7b2959a2776a0d8a12c03678623170ff3648",
     bounds: [
       1.903,
       1.549,
       1.902
     ],
-    sizeBytes: 19637936,
+    sizeBytes: 1197288,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -33864,13 +33876,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/gullsiegeBridgeMeshy.40b2195a.glb",
-    hash: "sha256-40b2195ae794b435730fbf35d82a4e1ddcb2209c18913d53fe33c7d9591bd6c1",
+    hash: "sha256-88ac6e6f22ec3632f92e362fca82bd26670f88b37d6fea684d18d3938f54e80e",
     bounds: [
       1.903,
       0.926,
       0.791
     ],
-    sizeBytes: 21021120,
+    sizeBytes: 1169748,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -33996,13 +34008,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/gullsiegeCatapultMeshy.d6a37204.glb",
-    hash: "sha256-d6a372044f3b2eb835eb22d39d13cb7c497a1972a6e4344279e89a631b25786c",
+    hash: "sha256-27923bbe01731662f7028660b9bed1ecc6b2a3bed08ff468a134929b6511f933",
     bounds: [
       1.903,
       1.521,
       0.931
     ],
-    sizeBytes: 19828776,
+    sizeBytes: 1204276,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -34128,13 +34140,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/gullsiegeCrateMeshy.d802d835.glb",
-    hash: "sha256-d802d835fa66b9e9a9806db3cdb38ace6345ca439fedfd0f3629a5e673c8f54a",
+    hash: "sha256-3795b3f2d607d9790c111f57d6f2eb4bfc0d7f138b41559c023846c604e8febc",
     bounds: [
       1.903,
       1.349,
       1.382
     ],
-    sizeBytes: 21313428,
+    sizeBytes: 1286228,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -34336,13 +34348,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/gullsiegeGatehouseMeshy.c54a43ad.glb",
-    hash: "sha256-c54a43ad9312f2cd66b17f53bc6a3dd6a215d4a6c9111a3d8a9ce65132413845",
+    hash: "sha256-2bf39e109daa3dd935ba81d0e3f9483107c39057366681ed7ca0cb8ce1672d7e",
     bounds: [
       1.902,
       1.111,
       0.467
     ],
-    sizeBytes: 21606764,
+    sizeBytes: 1159048,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -34620,13 +34632,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/gullsiegePlanksMeshy.1075e2d6.glb",
-    hash: "sha256-1075e2d6057ae36b2f18bae60daa21db310ad50cbdfeb982c59b04c38232b68a",
+    hash: "sha256-b570e24ce8c1b5429aeca67f3efea864c8f6ef87d368f5da2d4cca1830cd7813",
     bounds: [
       1.902,
       0.363,
       1.716
     ],
-    sizeBytes: 24267392,
+    sizeBytes: 1118288,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -34904,13 +34916,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/gullsiegeWatchtowerMeshy.546ee761.glb",
-    hash: "sha256-546ee76181e8a93ce5188f010381d6f70e403e06263a0e87384aa7b53c0373c9",
+    hash: "sha256-c9af151e2d83350c4789bd5619202555c1dd2a13b896506a3b43d83b7128f8a6",
     bounds: [
       1.096,
       1.902,
       1.272
     ],
-    sizeBytes: 24172612,
+    sizeBytes: 1190360,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -35036,13 +35048,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/gullsiegeWindmillMeshy.f4ebca18.glb",
-    hash: "sha256-f4ebca18e7a000a7da11a30415ccebfbf0abced29e7e9aa36ac27426c0ce1841",
+    hash: "sha256-759e888f6b0efbeb31f7205cfb252c070662317a429bc011299c54c4142ad41f",
     bounds: [
       1.219,
       1.902,
       1.053
     ],
-    sizeBytes: 22533780,
+    sizeBytes: 1176176,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -144639,13 +144651,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondAthlete.4e29f649.glb",
-    hash: "sha256-4e29f6492f811121eccb762928a34d078f156e9ccd3ae390f1e0cbedb4e07160",
+    hash: "sha256-8a16aef9b2e4f7c2342afc82074815cc24d6fb755a3caf2bef3ce7dc137a8832",
     bounds: [
       1.796,
       1.903,
       0.365
     ],
-    sizeBytes: 4861492,
+    sizeBytes: 1101300,
     metadata: {
       "materials": [
         "material-0"
@@ -144771,13 +144783,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondBall.6b449af4.glb",
-    hash: "sha256-6b449af4d538bdac57cc27967326ab1bc82c0fde56366a8759ea45f4164b2974",
+    hash: "sha256-375693212831764d88e26595822ac440533646e3309a7ea826aba07def4de839",
     bounds: [
       1.903,
       1.903,
       1.903
     ],
-    sizeBytes: 1366004,
+    sizeBytes: 1220488,
     metadata: {
       "materials": [
         "material-0"
@@ -144903,13 +144915,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondBase.8531b50b.glb",
-    hash: "sha256-8531b50b212bc4be1b6e9ff909077db35daf4a69e4801ea25c9898226cb938e7",
+    hash: "sha256-d7fa8388a651bf7415330e35735f49e345016d625f76ec09a3d1911f6f8b754c",
     bounds: [
       1.903,
       0.221,
       1.693
     ],
-    sizeBytes: 1083912,
+    sizeBytes: 929560,
     metadata: {
       "materials": [
         "material-0"
@@ -145035,13 +145047,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondBat.c85da7a5.glb",
-    hash: "sha256-c85da7a56621868654de4ef912e3830dad6f462963b63120ff39ce22208f2add",
+    hash: "sha256-9a77a77947a944d8cd4e38c2bf4d40db4ffb82d1c935620bcb648f2745a373ad",
     bounds: [
       1.903,
       0.232,
       0.235
     ],
-    sizeBytes: 884612,
+    sizeBytes: 613816,
     metadata: {
       "materials": [
         "material-0"
@@ -145247,13 +145259,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondCanyonArch.25fbbee8.glb",
-    hash: "sha256-25fbbee8dd4a0cfb594eb1afa20a6449afaa027de60dccc90e092028053ccbdb",
+    hash: "sha256-2a5802f572d6275f57b88796206401d5c8ae62fe8744c1c6ec5f28d4cb2e9c6b",
     bounds: [
       1.902,
       1.169,
       0.963
     ],
-    sizeBytes: 4353632,
+    sizeBytes: 809132,
     metadata: {
       "materials": [
         "material-0"
@@ -145779,13 +145791,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondDugout.bfacebd6.glb",
-    hash: "sha256-bfacebd60d24235f7ef06c8c21ec71f9e490a12efbfb64c991a45f55105d9ed3",
+    hash: "sha256-0cce60147da617b0b6bfdcc2377ff054b788bb1d9be035435fb63de1e9dee7fe",
     bounds: [
       1.903,
       1.579,
       1.176
     ],
-    sizeBytes: 7148444,
+    sizeBytes: 939168,
     metadata: {
       "materials": [
         "material-0"
@@ -145911,13 +145923,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondEarthRise.cff4f2e5.glb",
-    hash: "sha256-cff4f2e5f1b19f526e0990132a7bc4d24e367e6ace1481cf08d023024b82846c",
+    hash: "sha256-640ad7910ba9ea9b1476b7ac62f89b7fb9a4e6910d10f3eb363c7eb4e1516dc3",
     bounds: [
       1.901,
       1.902,
       1.902
     ],
-    sizeBytes: 3832148,
+    sizeBytes: 821048,
     metadata: {
       "materials": [
         "material-0"
@@ -146043,13 +146055,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondFloodlight.63f64b78.glb",
-    hash: "sha256-63f64b78226fa9ed2e38cde33baa6824a315de47621d58e109162839759ceb52",
+    hash: "sha256-c413950fb5a91d0fe1cdb599eab6f60837923b8d78856f3078212c2730e68f17",
     bounds: [
       0.915,
       1.903,
       0.302
     ],
-    sizeBytes: 4508552,
+    sizeBytes: 916020,
     metadata: {
       "materials": [
         "material-0"
@@ -146175,13 +146187,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondFoulPole.6867ef1e.glb",
-    hash: "sha256-6867ef1ec3d447447d78c4d1d4832445ced8f41db6f8ed32ffb23c1165653cc3",
+    hash: "sha256-b73f68d22394105868370eeec5cbcd2918709e363fb4e7847f1f264f9a70ca42",
     bounds: [
       1.127,
       1.903,
       0.133
     ],
-    sizeBytes: 6066376,
+    sizeBytes: 1023500,
     metadata: {
       "materials": [
         "material-0"
@@ -146387,13 +146399,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondGlove.c9c5fa8b.glb",
-    hash: "sha256-c9c5fa8b6b248c9157eeee6710bada79586d381aa0078148d3d875ac58c5ac69",
+    hash: "sha256-15d3cd5d8cf82233ab1840f133190453d8c52938d15cbc8c27983e7f8f43466d",
     bounds: [
       1.215,
       1.341,
       1.902
     ],
-    sizeBytes: 5944440,
+    sizeBytes: 944568,
     metadata: {
       "materials": [
         "material-0"
@@ -146519,13 +146531,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondHarborPier.97abb691.glb",
-    hash: "sha256-97abb6918baf09074eb9daad6143e9b8d3b88305fc917ccca47d81ec153134e3",
+    hash: "sha256-534060a9da248352a64380b13a01ae741062164af4c98dec10ee874ba92b1a11",
     bounds: [
       1.903,
       0.457,
       0.715
     ],
-    sizeBytes: 6040028,
+    sizeBytes: 1013208,
     metadata: {
       "materials": [
         "material-0"
@@ -146811,13 +146823,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondIvyWall.454795f2.glb",
-    hash: "sha256-454795f29682b500e034c6a26bd667a3b3a92f374d8e6020cb516da69fa6118d",
+    hash: "sha256-f38db4c47983145352d52888f821b8a89e72046ef324bd8d2be331caf4e1ced6",
     bounds: [
       1.907,
       0.63,
       0.233
     ],
-    sizeBytes: 21796168,
+    sizeBytes: 638960,
     metadata: {
       "materials": [
         "material-0"
@@ -146943,13 +146955,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondLunarRover.18e5fb44.glb",
-    hash: "sha256-18e5fb44ba628692f9c8d05f58c35fb0a147a62cf37619f87d2e0f0c3ccb3a2d",
+    hash: "sha256-f1e7b956dee1bc2972d38538152ea1b8ddc145265ed8d8b16f048524b95a1ab5",
     bounds: [
       1.903,
       1.364,
       1.306
     ],
-    sizeBytes: 8411416,
+    sizeBytes: 1089288,
     metadata: {
       "materials": [
         "material-0"
@@ -147155,13 +147167,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondMoonDome.a3707f2e.glb",
-    hash: "sha256-a3707f2e147a621afd69f70cfb0255354ba38d36268b5dce201de3c7e9211b1b",
+    hash: "sha256-e02bcc017381c84e012fc6c1580babfe13c2637dd7aef95d2f6a914446bedb23",
     bounds: [
       1.905,
       0.827,
       1.682
     ],
-    sizeBytes: 15368780,
+    sizeBytes: 881948,
     metadata: {
       "materials": [
         "material-0"
@@ -147527,13 +147539,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondRock.af699d5e.glb",
-    hash: "sha256-af699d5ef4d57642d60f734d6b88bd650ab83b19e68ab944ce19dfd03267616f",
+    hash: "sha256-debb9bb132ab6338b9df8b7129315f097f19dc7e5b4b65351b0c09ed5feb67e9",
     bounds: [
       1.903,
       1.335,
       1.698
     ],
-    sizeBytes: 1553904,
+    sizeBytes: 1142612,
     metadata: {
       "materials": [
         "material-0"
@@ -147659,13 +147671,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondScoreboard.3b0cd49f.glb",
-    hash: "sha256-3b0cd49f04c31f6c6255f8ab4918101a7b2d57d8c6d8a8ce2e833e320b8f599e",
+    hash: "sha256-d18f500c31b33454053ae8b5ef5c4784f1e7abf33443e5085fce5edf92ec2cde",
     bounds: [
       1.903,
       1.628,
       0.621
     ],
-    sizeBytes: 5616876,
+    sizeBytes: 1059156,
     metadata: {
       "materials": [
         "material-0"
@@ -147871,13 +147883,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondStadium.2aa65131.glb",
-    hash: "sha256-2aa65131cc8143c360db9b815e867e4dff59fdd3bd9d376f6fc16ee47774408c",
+    hash: "sha256-919f4394e51a6849623d708d216ae560c9fce2a85f04e01a197a74aa2a33983a",
     bounds: [
       1.904,
       0.618,
       1.292
     ],
-    sizeBytes: 21376324,
+    sizeBytes: 1016884,
     metadata: {
       "materials": [
         "material-0"
@@ -148163,13 +148175,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondTower.039eb19e.glb",
-    hash: "sha256-039eb19e26bb4d6b63d71a68fe6408323143d3f47cd7e1e0b5535afdd147ff36",
+    hash: "sha256-5cd8bf7cbbc2d3a7ac7ac83b9dc72d964cf2978d9e3ff3223cec589b1bbb2a78",
     bounds: [
       1.457,
       1.904,
       1.177
     ],
-    sizeBytes: 7438516,
+    sizeBytes: 992728,
     metadata: {
       "materials": [
         "material-0"
@@ -148295,13 +148307,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondTrophy.a1f74f7d.glb",
-    hash: "sha256-a1f74f7d75c31fe9368a7ce0d43ac7f09e1d24c94e97578db6a4941d4fe90482",
+    hash: "sha256-580647c8a7b6fff36d9129af5a07e4bdbe1bd461b96cae31253f234336666465",
     bounds: [
       1.469,
       1.903,
       0.966
     ],
-    sizeBytes: 5902180,
+    sizeBytes: 993780,
     metadata: {
       "materials": [
         "material-0"
@@ -148427,13 +148439,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondTyphoonDome.3805da5a.glb",
-    hash: "sha256-3805da5a2cadaf328eb220971d061589b74ac56abe3c64aee9f68b64818dc669",
+    hash: "sha256-05b03414cb668bf84f061d2cf8996954098256d3da16facf94979389a08b40b5",
     bounds: [
       1.901,
       0.811,
       1.901
     ],
-    sizeBytes: 22797236,
+    sizeBytes: 990960,
     metadata: {
       "materials": [
         "material-0"
@@ -148799,13 +148811,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/fcFloodlightPylonMeshy.636dc3fc.glb",
-    hash: "sha256-636dc3fcd362a58d33a876063bd33cfc7904bb59d7f06cbeb30f82d4ca6fda8a",
+    hash: "sha256-b3934b632eaf01fd38ebaf76e9c1aef4f813d05947c95c5fa574671ec8850364",
     bounds: [
       0.631,
       1.903,
       0.239
     ],
-    sizeBytes: 3945892,
+    sizeBytes: 746692,
     metadata: {
       "materials": [
         "material-0"
@@ -148929,13 +148941,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/fcGlacierDomeMeshy.32b82759.glb",
-    hash: "sha256-32b827592359ba3734fe1553d0bdcac014923101d45c3886c6b097f04c2cb4d5",
+    hash: "sha256-7afa457a17061fe25970c2576b9a61355f9c912158d4efcadd6c4c21587a954e",
     bounds: [
       1.818,
       1.209,
       1.903
     ],
-    sizeBytes: 6127400,
+    sizeBytes: 440024,
     metadata: {
       "materials": [
         "material-0"
@@ -149059,13 +149071,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/fcHeroTrophyMeshy.b101d73c.glb",
-    hash: "sha256-b101d73c079fd37ba3114d42a002ff2b965f7ca31ab340a90aa245f9866e949a",
+    hash: "sha256-194ea9dacaffc30dae8c681bb0a583e6c553b6b77cc03d028a86848270197eb7",
     bounds: [
       1.024,
       1.902,
       0.613
     ],
-    sizeBytes: 4095716,
+    sizeBytes: 882048,
     metadata: {
       "materials": [
         "material-0"
@@ -149189,13 +149201,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/fcMatchBallMeshy.b97f043f.glb",
-    hash: "sha256-b97f043fb34c695590425933afcce9008aba484d6df9cf14a8b114484d340004",
+    hash: "sha256-421d358ea396c6f287a302e21e70625c74e4b710d06a96b995fff9517a038d7c",
     bounds: [
       1.902,
       1.902,
       1.901
     ],
-    sizeBytes: 2789100,
+    sizeBytes: 827248,
     metadata: {
       "materials": [
         "material-0"
@@ -149319,13 +149331,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/fcScoreboardGantryMeshy.0c6d8221.glb",
-    hash: "sha256-0c6d8221b111f6b1f2be65ba369aa1d15f013acd586c9149e34719a8273eb5c6",
+    hash: "sha256-3cd931cca24b1337c9a1c6051e157172dcc3cccafc1cba5e34d38580ae5a7bc3",
     bounds: [
       1.902,
       1.284,
       0.246
     ],
-    sizeBytes: 4603144,
+    sizeBytes: 717676,
     metadata: {
       "materials": [
         "material-0"
@@ -149529,13 +149541,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsAthleteBig.a11d61c5.glb",
-    hash: "sha256-a11d61c552bec0fcfb89dcd9e70df64aa22012e1f58f590f610920f040977155",
+    hash: "sha256-380344f87917ff13614e138637d0fffc089a9747f1dce443a1702cad86bcff55",
     bounds: [
       1.675,
       1.903,
       0.365
     ],
-    sizeBytes: 4221972,
+    sizeBytes: 968256,
     metadata: {
       "materials": [
         "material-0"
@@ -149661,13 +149673,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsAthleteGuard.fbef844e.glb",
-    hash: "sha256-fbef844e5385c6a61742a84708e959903a9b7185d61007812940f228e669baa1",
+    hash: "sha256-b16e464be0ef7ce7a7a65a584f17ffff4ea38dbdbe3c023cafbf6534f0d9b40b",
     bounds: [
       1.712,
       1.903,
       0.373
     ],
-    sizeBytes: 4161488,
+    sizeBytes: 971948,
     metadata: {
       "materials": [
         "material-0"
@@ -149793,13 +149805,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsBackboard.4df28ae9.glb",
-    hash: "sha256-4df28ae9bda98492402562b9876b80c684bcfe69e235acea1259504b83d5dfd7",
+    hash: "sha256-57a4f89dd7752d7b5af43705d419a03a158e697c22bd81ce15e4cf5b85543734",
     bounds: [
       1.903,
       1.503,
       0.755
     ],
-    sizeBytes: 1189836,
+    sizeBytes: 1281464,
     metadata: {
       "materials": [
         "material-0"
@@ -149925,13 +149937,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsBall.2aed886a.glb",
-    hash: "sha256-2aed886a35ff619d7a165d971d633400153461d9a87fef3c35030a07568cc003",
+    hash: "sha256-158f2bb2b516623368509d02854b0f88bb7e0ae7663bf21d659a8ce2a08b9e22",
     bounds: [
       1.902,
       1.903,
       1.903
     ],
-    sizeBytes: 1822980,
+    sizeBytes: 933456,
     metadata: {
       "materials": [
         "material-0"
@@ -150057,13 +150069,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsBallCart.046e8fde.glb",
-    hash: "sha256-046e8fde0aa8e6c9c4cb4e8a3a2ea5f060d6916ab8dfda5dc1c013be7671bfe8",
+    hash: "sha256-c9e3564e4384c63a027afc2a8e0d60d9afcad86c3f28eee903da899f036cc036",
     bounds: [
       1.906,
       1.31,
       1.459
     ],
-    sizeBytes: 8595424,
+    sizeBytes: 1111576,
     metadata: {
       "materials": [
         "material-0"
@@ -150509,13 +150521,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsCanopy.0ec25693.glb",
-    hash: "sha256-0ec25693599363e77b44d7b1c0f871437ebf8a64888a3f432559821518da6fb1",
+    hash: "sha256-e5f282c9921fceb4c4c8ad5955f68a859338fe50ff79f6143d0483c90d998631",
     bounds: [
       1.907,
       0.762,
       1.137
     ],
-    sizeBytes: 24823268,
+    sizeBytes: 899044,
     metadata: {
       "materials": [
         "material-0"
@@ -150801,13 +150813,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsCourtShell.5892e83f.glb",
-    hash: "sha256-5892e83f0b0c1f4c6a4b9084f066c896469355e7d7e294c0c85f927aa48a6dfe",
+    hash: "sha256-5c6102e7737af3a57cc8e073987100901b82b903639b167a0cd6a9398454919c",
     bounds: [
       1.325,
       0.975,
       1.902
     ],
-    sizeBytes: 18376740,
+    sizeBytes: 1035340,
     metadata: {
       "materials": [
         "material-0"
@@ -151173,13 +151185,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsEarth.4e92b759.glb",
-    hash: "sha256-4e92b7593b32d48104eabefbd07789b00ef043300c3e117b33bbcd66f447385f",
+    hash: "sha256-70a846fd2a764cabe1793cdb80217384f69af7bbec91167f66ce0adfd7cc5d15",
     bounds: [
       1.891,
       1.903,
       1.904
     ],
-    sizeBytes: 5262872,
+    sizeBytes: 905576,
     metadata: {
       "materials": [
         "material-0"
@@ -151465,13 +151477,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsFloodlight.23aef36e.glb",
-    hash: "sha256-23aef36ee2e12512bac669497670a20714d77487239dd5ee465cdc9b0bd5c45b",
+    hash: "sha256-f751a281a915828783253f7ff5568ed990240d0c9d42e7b5a1c579ef39e88e12",
     bounds: [
       0.661,
       1.903,
       0.654
     ],
-    sizeBytes: 5857308,
+    sizeBytes: 994516,
     metadata: {
       "materials": [
         "material-0"
@@ -151757,13 +151769,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsHoopRig.b6d696b6.glb",
-    hash: "sha256-b6d696b6ae7d75097a33f242045c28c225f91bd90e514c12c8a7148229c7331c",
+    hash: "sha256-f538cf590d928ffeb3dc30624917cef8cc4466c50c326e13f833be8e469a931c",
     bounds: [
       1.002,
       1.903,
       0.489
     ],
-    sizeBytes: 5440984,
+    sizeBytes: 1030296,
     metadata: {
       "materials": [
         "material-0"
@@ -151889,13 +151901,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsLamp.6d8568c3.glb",
-    hash: "sha256-6d8568c3f79be2532b239aaac2717db4321ff533fa629ed7023262e16f116c5b",
+    hash: "sha256-2eabf8d1b01db0160333d44bc31b7d862662d67661cd6410517a9d7620414235",
     bounds: [
       0.738,
       1.904,
       0.739
     ],
-    sizeBytes: 4802496,
+    sizeBytes: 908424,
     metadata: {
       "materials": [
         "material-0"
@@ -152021,13 +152033,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsOrbitArena.23bcf737.glb",
-    hash: "sha256-23bcf7374252112d0927f1b110e2abff40d31841458490f4a397d2f29c44f70d",
+    hash: "sha256-2c100c2801cf9516f09b0fdfe73324550fcf96672f7e64d894950cbff4d4a509",
     bounds: [
       1.892,
       1,
       1.9
     ],
-    sizeBytes: 20641348,
+    sizeBytes: 961424,
     metadata: {
       "materials": [
         "material-0"
@@ -152153,13 +152165,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsPalm.4ea91680.glb",
-    hash: "sha256-4ea916806b0257820cf5236d4f83d8692ee7908a3f0cadc049c05d7ddde60233",
+    hash: "sha256-556e47b3bb0c48b91f9982dc4e01b68a71ef89a604bd553ccde4ddf908aa0e9d",
     bounds: [
       1.184,
       1.911,
       1.187
     ],
-    sizeBytes: 8460560,
+    sizeBytes: 1002320,
     metadata: {
       "materials": [
         "material-0"
@@ -152285,13 +152297,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsRim.bbf2fecd.glb",
-    hash: "sha256-bbf2fecd54732ef2503530721a592333bf79beb4e77fce019bdd6cd2de912198",
+    hash: "sha256-067ea7bca05a2735cec9806b201b0464e7fabd2aee0c684c68bb49aebc6d0365",
     bounds: [
       1.897,
       0.846,
       1.903
     ],
-    sizeBytes: 1387448,
+    sizeBytes: 1213568,
     metadata: {
       "materials": [
         "material-0"
@@ -152497,13 +152509,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsScoreboard.cfa1e2f5.glb",
-    hash: "sha256-cfa1e2f5920041d42ef55ce6a7bf27081a62a66f31785716a3d8e412ff7d69e1",
+    hash: "sha256-3ad91461562aa35e204ab8c698d1a4269b02880ce4c4ebfb6a557918359f8d0f",
     bounds: [
       1.741,
       1.903,
       0.788
     ],
-    sizeBytes: 3601808,
+    sizeBytes: 825464,
     metadata: {
       "materials": [
         "material-0"
@@ -152709,13 +152721,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsSkyline.04431e09.glb",
-    hash: "sha256-04431e09cd465530dace8327642850f707b0f31ad49e516cdf2206455a8ee155",
+    hash: "sha256-d3edbf33ced02ead82c6d621532e88fe3ad7aab892c43db64138e558e57645e6",
     bounds: [
       1.904,
       1.235,
       1.868
     ],
-    sizeBytes: 20850740,
+    sizeBytes: 958516,
     metadata: {
       "materials": [
         "material-0"
@@ -153001,13 +153013,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsTower.f44ad781.glb",
-    hash: "sha256-f44ad781ac87dcf8b911bccc43d6fc84bf4a945734cde9b7c6726f0e9f9df70f",
+    hash: "sha256-57d7827c41c7e66fdb9f6764f7922a404503f3192097a227e0199a863783ac7a",
     bounds: [
       0.357,
       1.904,
       0.355
     ],
-    sizeBytes: 5999428,
+    sizeBytes: 1063584,
     metadata: {
       "materials": [
         "material-0"
@@ -153133,13 +153145,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsTrophy.dbc67a0e.glb",
-    hash: "sha256-dbc67a0e39424685192302d324103c3c7d67b18d6f211acd9767ee1fc8aad2fe",
+    hash: "sha256-6ebeea22f8224354a8bd5bb4c896fa131e2d496cc66a07604b285bf8a40cc1c4",
     bounds: [
       0.661,
       1.903,
       0.664
     ],
-    sizeBytes: 6464392,
+    sizeBytes: 1032084,
     metadata: {
       "materials": [
         "material-0"
@@ -153265,13 +153277,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/rzAltitudeDomeMeshy.d55978a7.glb",
-    hash: "sha256-d55978a78dd57a3e0f3be99e5c9da0d332adaae2fdd94516e315748a5b990e9e",
+    hash: "sha256-5cd748fa1b008ba63cb584510e25d0673aee9b0762e7acc6846f53f93f1674b0",
     bounds: [
       1.899,
       0.769,
       1.879
     ],
-    sizeBytes: 6551144,
+    sizeBytes: 809200,
     metadata: {
       "materials": [
         "material-0"
@@ -153395,13 +153407,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/rzFloodlightPylonMeshy.8b4b487c.glb",
-    hash: "sha256-8b4b487ca2879f04e128e1e2208bd9a652c030cac2e66328be275c6cf82a2f76",
+    hash: "sha256-415bb63d0b8fc72f02786a8e29f4582e218bad49b013a51e30339da663ec613c",
     bounds: [
       0.721,
       1.903,
       0.72
     ],
-    sizeBytes: 4596448,
+    sizeBytes: 698216,
     metadata: {
       "materials": [
         "material-0"
@@ -153525,13 +153537,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/rzFootballMeshy.b7a28a16.glb",
-    hash: "sha256-b7a28a1681ca08193ae54ba9dc1554ca52630d01ccbbe4efc1c0ab06e5b8fdeb",
+    hash: "sha256-4aa70fad8bc14224356f1cc85efa9f573ab9ce672744777da5c3758b36c82453",
     bounds: [
       1.9,
       1.265,
       1.25
     ],
-    sizeBytes: 4922756,
+    sizeBytes: 868620,
     metadata: {
       "materials": [
         "material-0"
@@ -153655,13 +153667,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/rzLombardiCupMeshy.35a24607.glb",
-    hash: "sha256-35a2460780fa005ead8e51dee961b5eb1497e64fcd99c726b30b8ebc85eb535e",
+    hash: "sha256-efff2739b21ce99676a9f56d63ac622b613c23d8e50fe4e64d301153ae0091ff",
     bounds: [
       1.331,
       1.901,
       0.752
     ],
-    sizeBytes: 3379896,
+    sizeBytes: 853376,
     metadata: {
       "materials": [
         "material-0"
@@ -153785,13 +153797,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/rzScoreboardGantryMeshy.074aba14.glb",
-    hash: "sha256-074aba14774630569c0673a163c7c0b8c7df1f1aba6ed69b143dbd7e683cbb6b",
+    hash: "sha256-36859c1ec698553e7ca72e86ddf0da32b58f60f715eb66fe860ca6eb69b95a92",
     bounds: [
       1.902,
       0.817,
       1.233
     ],
-    sizeBytes: 3867808,
+    sizeBytes: 564300,
     metadata: {
       "materials": [
         "material-0"
@@ -153910,6 +153922,1542 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T10:04:44.684Z"
       }
     },
+  },
+  "fcSoccerStrikerMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/fcSoccerStrikerMeshy.a675e393.glb",
+    hash: "sha256-a675e393d12800bc6f569529e4cd1f3f75aa3730eb1131ca7e9420635cd2b83d",
+    bounds: [
+      0.742,
+      1.891,
+      1.412
+    ],
+    sizeBytes: 1069084,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/fcSoccerStrikerMeshy/model.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T17:17:26.112Z",
+        "evidence": [
+          "aura-evidence/meshy/fcSoccerStrikerMeshy.rights.24613d8fdcf0.json",
+          "aura-evidence/meshy/fcSoccerStrikerMeshy.metadata.605914bd7b0e.json"
+        ],
+        "checkedAt": "2026-10-17T17:17:26.112Z"
+      },
+      "sourcePath": "artifacts/meshy/fcSoccerStrikerMeshy/model.glb",
+      "outputPath": "public/aura-assets/fcSoccerStrikerMeshy.a675e393.glb",
+      "boundsMetadata": {
+            "min": [
+                  -0.373,
+                  0,
+                  -0.705
+            ],
+            "max": [
+                  0.369,
+                  1.891,
+                  0.707
+            ],
+            "size": [
+                  0.742,
+                  1.891,
+                  1.412
+            ],
+            "center": [
+                  -0.002,
+                  0.946,
+                  0.001
+            ],
+            "maxDimension": 1.891,
+            "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/fcSoccerStrikerMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (fcSoccerStrikerMeshy)."
+    }
+  },
+  "fcGoalkeeperMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/fcGoalkeeperMeshy.156eb05c.glb",
+    hash: "sha256-156eb05c663964bb577fe81743d1b387b6261d2cc4e4ac2c355344edb357ecde",
+    bounds: [
+      0.716,
+      1.899,
+      0.561
+    ],
+    sizeBytes: 1131980,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/fcGoalkeeperMeshy/model.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T17:17:46.781Z",
+        "evidence": [
+          "aura-evidence/meshy/fcGoalkeeperMeshy.rights.40e8253b5c7d.json",
+          "aura-evidence/meshy/fcGoalkeeperMeshy.metadata.786de5aaceed.json"
+        ],
+        "checkedAt": "2026-10-17T17:17:46.781Z"
+      },
+      "sourcePath": "artifacts/meshy/fcGoalkeeperMeshy/model.glb",
+      "outputPath": "public/aura-assets/fcGoalkeeperMeshy.156eb05c.glb",
+      "boundsMetadata": {
+            "min": [
+                  -0.357,
+                  0,
+                  -0.282
+            ],
+            "max": [
+                  0.358,
+                  1.899,
+                  0.28
+            ],
+            "size": [
+                  0.716,
+                  1.899,
+                  0.561
+            ],
+            "center": [
+                  0.001,
+                  0.949,
+                  -0.001
+            ],
+            "maxDimension": 1.899,
+            "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/fcGoalkeeperMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (fcGoalkeeperMeshy)."
+    }
+  },
+  "fcSoccerGoalNetMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/fcSoccerGoalNetMeshy.9750a4a6.glb",
+    hash: "sha256-9750a4a66bf380706700241c3aaf53b6dbf53397cae756562633cb538cd40f7f",
+    bounds: [
+      1.897,
+      1.282,
+      0.8
+    ],
+    sizeBytes: 835992,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/fcSoccerGoalNetMeshy/model.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T17:17:36.177Z",
+        "evidence": [
+          "aura-evidence/meshy/fcSoccerGoalNetMeshy.rights.9676465d04d2.json",
+          "aura-evidence/meshy/fcSoccerGoalNetMeshy.metadata.45755535bb99.json"
+        ],
+        "checkedAt": "2026-10-17T17:17:36.177Z"
+      },
+      "sourcePath": "artifacts/meshy/fcSoccerGoalNetMeshy/model.glb",
+      "outputPath": "public/aura-assets/fcSoccerGoalNetMeshy.9750a4a6.glb",
+      "boundsMetadata": {
+            "min": [
+                  -0.95,
+                  0,
+                  -0.399
+            ],
+            "max": [
+                  0.948,
+                  1.282,
+                  0.401
+            ],
+            "size": [
+                  1.897,
+                  1.282,
+                  0.8
+            ],
+            "center": [
+                  -0.001,
+                  0.641,
+                  0.001
+            ],
+            "maxDimension": 1.897,
+            "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/fcSoccerGoalNetMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (fcSoccerGoalNetMeshy)."
+    }
+  },
+  "rzQuarterbackMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rzQuarterbackMeshy.9368c81f.glb",
+    hash: "sha256-9368c81f99e7fb90d1cef924de344c45e8fdc0e90ea538c733f276e84ce04742",
+    bounds: [
+      0.89,
+      1.897,
+      0.505
+    ],
+    sizeBytes: 939320,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/rzQuarterbackMeshy/model.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T17:17:36.326Z",
+        "evidence": [
+          "aura-evidence/meshy/rzQuarterbackMeshy.rights.facad5332ad0.json",
+          "aura-evidence/meshy/rzQuarterbackMeshy.metadata.b6f8a3400217.json"
+        ],
+        "checkedAt": "2026-10-17T17:17:36.326Z"
+      },
+      "sourcePath": "artifacts/meshy/rzQuarterbackMeshy/model.glb",
+      "outputPath": "public/aura-assets/rzQuarterbackMeshy.9368c81f.glb",
+      "boundsMetadata": {
+            "min": [
+                  -0.447,
+                  0,
+                  -0.255
+            ],
+            "max": [
+                  0.443,
+                  1.897,
+                  0.251
+            ],
+            "size": [
+                  0.89,
+                  1.897,
+                  0.505
+            ],
+            "center": [
+                  -0.002,
+                  0.948,
+                  -0.002
+            ],
+            "maxDimension": 1.897,
+            "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rzQuarterbackMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (rzQuarterbackMeshy)."
+    }
+  },
+  "rzDefenderLinemanMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rzDefenderLinemanMeshy.38e261b9.glb",
+    hash: "sha256-38e261b954a9d93ccf4773ad5aae7397ebcae24950567cde1bd827ed3427288d",
+    bounds: [
+      1.137,
+      1.895,
+      1.677
+    ],
+    sizeBytes: 1008840,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/rzDefenderLinemanMeshy/model.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T17:17:52.834Z",
+        "evidence": [
+          "aura-evidence/meshy/rzDefenderLinemanMeshy.rights.c81f4b5b0c40.json",
+          "aura-evidence/meshy/rzDefenderLinemanMeshy.metadata.ae2fa0068a9f.json"
+        ],
+        "checkedAt": "2026-10-17T17:17:52.834Z"
+      },
+      "sourcePath": "artifacts/meshy/rzDefenderLinemanMeshy/model.glb",
+      "outputPath": "public/aura-assets/rzDefenderLinemanMeshy.38e261b9.glb",
+      "boundsMetadata": {
+            "min": [
+                  -0.565,
+                  0,
+                  -0.843
+            ],
+            "max": [
+                  0.572,
+                  1.895,
+                  0.834
+            ],
+            "size": [
+                  1.137,
+                  1.895,
+                  1.677
+            ],
+            "center": [
+                  0.004,
+                  0.947,
+                  -0.005
+            ],
+            "maxDimension": 1.895,
+            "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rzDefenderLinemanMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (rzDefenderLinemanMeshy)."
+    }
+  },
+  "rzFieldGoalPostMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rzFieldGoalPostMeshy.2521e08f.glb",
+    hash: "sha256-2521e08fc7291e2a4775be92eb87392da9e2b2b792bab84e0a1f74bd9b293994",
+    bounds: [
+      0.55,
+      1.899,
+      0.203
+    ],
+    sizeBytes: 559448,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/rzFieldGoalPostMeshy/model.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T17:17:20.498Z",
+        "evidence": [
+          "aura-evidence/meshy/rzFieldGoalPostMeshy.rights.0ac451388fe4.json",
+          "aura-evidence/meshy/rzFieldGoalPostMeshy.metadata.060290e3880a.json"
+        ],
+        "checkedAt": "2026-10-17T17:17:20.498Z"
+      },
+      "sourcePath": "artifacts/meshy/rzFieldGoalPostMeshy/model.glb",
+      "outputPath": "public/aura-assets/rzFieldGoalPostMeshy.2521e08f.glb",
+      "boundsMetadata": {
+            "min": [
+                  -0.277,
+                  0,
+                  -0.101
+            ],
+            "max": [
+                  0.274,
+                  1.899,
+                  0.101
+            ],
+            "size": [
+                  0.55,
+                  1.899,
+                  0.203
+            ],
+            "center": [
+                  -0.002,
+                  0.95,
+                  0
+            ],
+            "maxDimension": 1.899,
+            "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rzFieldGoalPostMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (rzFieldGoalPostMeshy)."
+    }
+  },
+  "linksGolferAthleteMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/linksGolferAthleteMeshy.a39990ad.glb",
+    hash: "sha256-a39990ad0701ef4bc73956ab5b04df3e8023e6df0110b89cf8202e8369c580a1",
+    bounds: [
+      0.699,
+      1.897,
+      0.555
+    ],
+    sizeBytes: 778004,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/linksGolferAthleteMeshy/model.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T17:16:55.807Z",
+        "evidence": [
+          "aura-evidence/meshy/linksGolferAthleteMeshy.rights.3eb083e3c861.json",
+          "aura-evidence/meshy/linksGolferAthleteMeshy.metadata.65726db21f41.json"
+        ],
+        "checkedAt": "2026-10-17T17:16:55.807Z"
+      },
+      "sourcePath": "artifacts/meshy/linksGolferAthleteMeshy/model.glb",
+      "outputPath": "public/aura-assets/linksGolferAthleteMeshy.a39990ad.glb",
+      "boundsMetadata": {
+            "min": [
+                  -0.351,
+                  0,
+                  -0.278
+            ],
+            "max": [
+                  0.348,
+                  1.897,
+                  0.277
+            ],
+            "size": [
+                  0.699,
+                  1.897,
+                  0.555
+            ],
+            "center": [
+                  -0.002,
+                  0.948,
+                  -0.001
+            ],
+            "maxDimension": 1.897,
+            "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/linksGolferAthleteMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (linksGolferAthleteMeshy)."
+    }
+  },
+  "linksGolfCartMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/linksGolfCartMeshy.632bb152.glb",
+    hash: "sha256-632bb15242a15830dd7b742f27356025698f5ec42140c1fc876c087ae75d462c",
+    bounds: [
+      1.896,
+      1.512,
+      0.912
+    ],
+    sizeBytes: 1082044,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/linksGolfCartMeshy/model.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T17:18:39.019Z",
+        "evidence": [
+          "aura-evidence/meshy/linksGolfCartMeshy.rights.f61a034cccf9.json",
+          "aura-evidence/meshy/linksGolfCartMeshy.metadata.732f708655f4.json"
+        ],
+        "checkedAt": "2026-10-17T17:18:39.019Z"
+      },
+      "sourcePath": "artifacts/meshy/linksGolfCartMeshy/model.glb",
+      "outputPath": "public/aura-assets/linksGolfCartMeshy.632bb152.glb",
+      "boundsMetadata": {
+            "min": [
+                  -0.949,
+                  0,
+                  -0.457
+            ],
+            "max": [
+                  0.947,
+                  1.512,
+                  0.455
+            ],
+            "size": [
+                  1.896,
+                  1.512,
+                  0.912
+            ],
+            "center": [
+                  -0.001,
+                  0.756,
+                  -0.001
+            ],
+            "maxDimension": 1.896,
+            "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/linksGolfCartMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (linksGolfCartMeshy)."
+    }
+  },
+  "linksPinFlagMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/linksPinFlagMeshy.60efa4b6.glb",
+    hash: "sha256-60efa4b6bf031f2f32c086ef0c8da3288d003d3a5dd754f55e837a4879d711f3",
+    bounds: [
+      1.076,
+      1.899,
+      1.046
+    ],
+    sizeBytes: 1143212,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/linksPinFlagMeshy/model.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T17:17:12.066Z",
+        "evidence": [
+          "aura-evidence/meshy/linksPinFlagMeshy.rights.4c97a0d6f7bb.json",
+          "aura-evidence/meshy/linksPinFlagMeshy.metadata.8ad2a7b44c1c.json"
+        ],
+        "checkedAt": "2026-10-17T17:17:12.066Z"
+      },
+      "sourcePath": "artifacts/meshy/linksPinFlagMeshy/model.glb",
+      "outputPath": "public/aura-assets/linksPinFlagMeshy.60efa4b6.glb",
+      "boundsMetadata": {
+            "min": [
+                  -0.539,
+                  0,
+                  -0.524
+            ],
+            "max": [
+                  0.537,
+                  1.899,
+                  0.522
+            ],
+            "size": [
+                  1.076,
+                  1.899,
+                  1.046
+            ],
+            "center": [
+                  -0.001,
+                  0.949,
+                  -0.001
+            ],
+            "maxDimension": 1.899,
+            "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/linksPinFlagMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (linksPinFlagMeshy)."
+    }
+  },
+  "linksClubhousePavilMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/linksClubhousePavilMeshy.b0ef4263.glb",
+    hash: "sha256-b0ef4263cf476fe177c355bc5556cdbcd7f0b987a3619019312baa772c6d0d3f",
+    bounds: [
+      1.899,
+      1.005,
+      1.899
+    ],
+    sizeBytes: 973620,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/linksClubhousePavilMeshy/model.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T17:19:12.710Z",
+        "evidence": [
+          "aura-evidence/meshy/linksClubhousePavilMeshy.rights.84840e49f1c4.json",
+          "aura-evidence/meshy/linksClubhousePavilMeshy.metadata.66f1668ecdc8.json"
+        ],
+        "checkedAt": "2026-10-17T17:19:12.710Z"
+      },
+      "sourcePath": "artifacts/meshy/linksClubhousePavilMeshy/model.glb",
+      "outputPath": "public/aura-assets/linksClubhousePavilMeshy.b0ef4263.glb",
+      "boundsMetadata": {
+            "min": [
+                  -0.951,
+                  0,
+                  -0.95
+            ],
+            "max": [
+                  0.949,
+                  1.005,
+                  0.949
+            ],
+            "size": [
+                  1.899,
+                  1.005,
+                  1.899
+            ],
+            "center": [
+                  -0.001,
+                  0.502,
+                  -0.001
+            ],
+            "maxDimension": 1.899,
+            "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/linksClubhousePavilMeshy.thumb.svg",
+      "quality": "production",
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (linksClubhousePavilMeshy)."
+    }
+  },
+  "gullsiegeHeroGullMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/gullsiegeHeroGullMeshy.bcd7da13.glb",
+    hash: "sha256-bcd7da13346408b91efc7b01bd54587ba3ebb01d830ede5f80d0b46ada477793",
+    bounds: [
+      1.397,
+      1.898,
+      1.22
+    ],
+    sizeBytes: 962828,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/gullsiegeHeroGullMeshy/model.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T17:18:01.285Z",
+        "evidence": [
+          "aura-evidence/meshy/gullsiegeHeroGullMeshy.rights.b5e00254174d.json",
+          "aura-evidence/meshy/gullsiegeHeroGullMeshy.metadata.e80eea1ede51.json"
+        ],
+        "checkedAt": "2026-10-17T17:18:01.285Z"
+      },
+      "sourcePath": "artifacts/meshy/gullsiegeHeroGullMeshy/model.glb",
+      "outputPath": "public/aura-assets/gullsiegeHeroGullMeshy.bcd7da13.glb",
+      "boundsMetadata": {
+            "min": [
+                  -0.701,
+                  0,
+                  -0.613
+            ],
+            "max": [
+                  0.695,
+                  1.898,
+                  0.608
+            ],
+            "size": [
+                  1.397,
+                  1.898,
+                  1.22
+            ],
+            "center": [
+                  -0.003,
+                  0.949,
+                  -0.002
+            ],
+            "maxDimension": 1.898,
+            "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/gullsiegeHeroGullMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (gullsiegeHeroGullMeshy)."
+    }
+  },
+  "gullsiegeRaiderBossMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/gullsiegeRaiderBossMeshy.f16f17d6.glb",
+    hash: "sha256-f16f17d64a8f3736e3edf15dae19a8f7db14e78a54579d302607b3287f0d8e9a",
+    bounds: [
+      1.08,
+      1.897,
+      1.215
+    ],
+    sizeBytes: 984572,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/gullsiegeRaiderBossMeshy/model.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T17:18:12.503Z",
+        "evidence": [
+          "aura-evidence/meshy/gullsiegeRaiderBossMeshy.rights.343e6185e996.json",
+          "aura-evidence/meshy/gullsiegeRaiderBossMeshy.metadata.d0cf6ab7a77f.json"
+        ],
+        "checkedAt": "2026-10-17T17:18:12.503Z"
+      },
+      "sourcePath": "artifacts/meshy/gullsiegeRaiderBossMeshy/model.glb",
+      "outputPath": "public/aura-assets/gullsiegeRaiderBossMeshy.f16f17d6.glb",
+      "boundsMetadata": {
+            "min": [
+                  -0.541,
+                  0,
+                  -0.607
+            ],
+            "max": [
+                  0.539,
+                  1.897,
+                  0.608
+            ],
+            "size": [
+                  1.08,
+                  1.897,
+                  1.215
+            ],
+            "center": [
+                  -0.001,
+                  0.949,
+                  0
+            ],
+            "maxDimension": 1.897,
+            "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/gullsiegeRaiderBossMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryCharacter",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (gullsiegeRaiderBossMeshy)."
+    }
   },
 } as const);
 

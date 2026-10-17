@@ -23,10 +23,9 @@ import {
   createRumbleDriver,
   createTweenEngine,
   createFxParticlePass,
-  mountTouchControls,
-  sfx,
-  sfxUrl
+  mountTouchControls
 } from "@aura3d/engine/game";
+import { assets } from "./aura-assets-v2";
 
 import { FIELD, type Club, type GameMode, type GameState, type SimCommand, type Stadium, type StudioState } from "./game/types";
 import { CLUBS, clubById } from "./game/teams";
@@ -82,7 +81,7 @@ let userClub: Club = clubById(params.get("club") ?? "forge");
 let cpuClub: Club = clubById("steel");
 let studio: StudioState = { clubId: userClub.id, jersey: userClub.colors.primary, pants: userClub.colors.pants, helmet: userClub.colors.helmet, visor: userClub.colors.visor };
 let currentMode: GameMode = "idle";
-let inMenu = !DEMO;
+let inMenu = params.get("mode") === "menu";
 let currentSeries: series.Series | null = null;
 let seriesRound = 0;
 let framesRendered = 0;
@@ -104,8 +103,7 @@ function buildScene(): any {
   for (const id of ATHLETE_IDS) s.addMany(buildAthleteNodes(id, { jersey: "#888", pants: "#333", helmet: "#222", visor: "#aaa", skin: "#8a5f42", ring: "#ffb224" }));
   if (!LITE) {
     s.add(effects.contactShadows({ intensity: 0.75, length: 0.3 } as any))
-      .add(effects.motionBlur({ intensity: 0.1 } as any))
-      .add(effects.depthOfField({ intensity: 0.1, focusDistance: 44 } as any));
+      .add(effects.motionBlur({ intensity: 0.08 } as any));
   }
   s.add(effects.bloom({ intensity: 0.24, threshold: 0.78 }))
     .camera(camera.perspective({ position: [0, 30, -20], target: [0, 0, 50], fov: 24 }));
@@ -117,6 +115,7 @@ try {
   auraApp = createAuraApp(canvas, {
     scene: buildScene(),
     ...looks.appOptions(LOOK_ID),
+    qualityRebuild: { flags: ["game", "-compiler"] },
     ...(LITE ? { pixelRatio: 1 } : {})
   } as any);
 } catch (e) {
@@ -143,6 +142,7 @@ const confettiHandle = tryReq("confetti-cannon");
 const pyroL = tryReq("pyro-l");
 const pyroR = tryReq("pyro-r");
 const domeHandle = tryReq("dome-shell");
+const refereeHandle = tryReq("rz-referee");
 const scoreboardHandle = tryReq("scoreboard-screen");
 const ezHomeHandle = tryReq("ez-home");
 const ezAwayHandle = tryReq("ez-away");
@@ -274,9 +274,23 @@ window.addEventListener("keyup", (e) => keys.delete(e.code));
 window.addEventListener("blur", () => keys.clear());
 
 const touchInput = { moveX: 0, moveZ: 0, throwHeld: false, juke: false, truck: false, dive: false, tackle: false, ballHawk: false };
+let userIdleT = 99;
 
 function readCommand(state: GameState): SimCommand {
   if (DEMO) return autopilot.command(state, 1 / 60);
+  const hasInput =
+    keys.size > 0 ||
+    touchInput.moveX !== 0 ||
+    touchInput.moveZ !== 0 ||
+    touchInput.throwHeld ||
+    touchInput.tackle ||
+    touchInput.juke ||
+    touchInput.truck ||
+    touchInput.dive ||
+    touchInput.ballHawk;
+  userIdleT = hasInput ? 0 : userIdleT + 1 / 60;
+  if (userIdleT > 2.2) return autopilot.command(state, 1 / 60);
+
   const cmd: SimCommand = {};
   const mvX = (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0) - (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0) + touchInput.moveX;
   const mvZ = (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0) + touchInput.moveZ;
@@ -301,8 +315,7 @@ function readCommand(state: GameState): SimCommand {
         cmd.throwHeld = space;
         cmd.throwReleased = !space && lastKeys.has("Space");
       } else {
-        // carrier moves (throwHeld ignored while carrying)
-        if (pressed("Space")) cmd.dive = true;           // space+no ball = dive reach
+        if (pressed("Space")) cmd.dive = true;
         if (pressed("KeyJ") || touchInput.juke) cmd.juke = true;
         if (pressed("KeyK") || touchInput.truck) cmd.truck = true;
         if (pressed("KeyL") || touchInput.dive) cmd.dive = true;
@@ -322,6 +335,7 @@ function readCommand(state: GameState): SimCommand {
 }
 
 document.addEventListener("rz-pick-card", ((e: CustomEvent) => {
+  userIdleT = 0;
   if (sim.state.phase === "preSnap" && sim.state.possession === "user") {
     sim.selectCard(e.detail);
     sim.snapNow();
@@ -338,7 +352,12 @@ function applyVenue() {
   snowHandle?.setVisible(v.weather === "snow");
   rainHandle?.setVisible(v.weather === "rain");
   breathFogHandle?.setVisible(v.breathFog);
-  domeHandle?.setVisible(v.dome);
+  // Lower dome floor to y=-6.5 when active so its bottom never occludes the turf
+  if (v.dome) {
+    domeHandle?.setPosition(0, -6.5, 50).setScale([1.3, 1, 1.3]).setVisible(true);
+  } else {
+    domeHandle?.setPosition(0, -90, 50).setScale([0.0001, 0.0001, 0.0001]).setVisible(false);
+  }
   turfHandle?.setMaterial(material.pbr({ color: v.turf, roughness: 0.92 }));
   scoreboardHandle?.setMaterial(material.emissive({ color: "#0d2436", emissive: v.accent, emissiveIntensity: 0.5 }));
   for (const h of [...hoardingHandles, ...ribbonHandles]) {
@@ -375,7 +394,6 @@ function applyRigKits(state: GameState) {
 
 function applyEzColors(state: GameState) {
   if (!state.userTeam || !state.cpuTeam) return;
-  // end zones wear the two clubs' primaries
   ezHomeHandle?.setMaterial(material.pbr({ color: state.userTeam.colors.primary, roughness: 0.88, opacity: 0.85 }));
   ezAwayHandle?.setMaterial(material.pbr({ color: state.cpuTeam.colors.primary, roughness: 0.88, opacity: 0.85 }));
 }
@@ -411,17 +429,14 @@ function updateMarkers(state: GameState) {
     losMarkerHandle?.setScale([0.0001, 0.0001, 0.0001]).setVisible(false);
     fdMarkerHandle?.setScale([0.0001, 0.0001, 0.0001]).setVisible(false);
   }
-  // aim reticle while user QB holds the ball
   const aiming = state.phase === "live" && state.possession === "user" && state.ball.kind === "held" && !state.carrier;
   if (aiming) {
     const pulse = 1 + Math.sin(state.gameT * 9) * 0.1;
     aimRingHandle?.setPosition(state.aim.x, 0.05, state.aim.z).setRotation(Math.PI / 2, 0, 0).setScale([pulse, pulse, pulse]).setVisible(true);
   } else aimRingHandle?.setScale([0.0001, 0.0001, 0.0001]).setVisible(false);
-  // landing indicator while ball is in the air
   if (state.ball.kind === "air") {
     landRingHandle?.setPosition(state.ball.aimX, 0.05, state.ball.aimZ).setRotation(Math.PI / 2, 0, 0).setScale([1, 1, 1]).setVisible(true);
   } else landRingHandle?.setScale([0.0001, 0.0001, 0.0001]).setVisible(false);
-  // lab cones in tackle lab
   const lab = state.mode === "tacklelab";
   labConeA?.setVisible(lab); labConeB?.setVisible(lab);
   if (lab) {
@@ -458,6 +473,11 @@ function updateWavers(state: GameState) {
     const bounce = cheering ? Math.abs(Math.sin(t * 8.5 + i * 1.3)) * 0.2 : Math.sin(t * 2 + i) * 0.025;
     h.setPosition(side * (FIELD.HALF_WIDTH + 4.9), 1.15 + bounce, z);
   }
+  // Position the 3D Meshy backfield/sideline Referee behind the offense facing the play
+  const refZ = clampN(state.los - state.dir * 8.5, -6, 106);
+  const refX = -11.5 + Math.sin(t * 0.6) * 0.8;
+  const refYaw = Math.atan2(state.ball.x - refX, state.ball.z - refZ);
+  refereeHandle?.setPosition(refX, 0, refZ).setRotation(0, refYaw, 0).setScale([1, 1, 1]).setVisible(true);
 }
 
 /* ------------------------------------------------------------------ */
@@ -750,39 +770,48 @@ function setupSystems() {
     slowMo: () => { /* not needed — hit-stop handles it */ }
   };
 
+  let userInteracted = false;
   audio = createGameAudio({
-    browserContext: true,
+    browserContext: false,
     cues: {
-      snap:      { id: "snap", asset: { url: sfxUrl(sfx.sports.ballBounceCourt[0]) }, volume: 0.4 },
-      throw:     { id: "throw", asset: { url: sfxUrl(sfx.sports.netSwish[0]) }, volume: 0.5 },
-      catch:     { id: "catch", asset: { url: sfxUrl(sfx.stinger.checkpoint[0]) }, volume: 0.55 },
-      hit:       { id: "hit", asset: { url: sfxUrl(sfx.impact.flesh.medium[0]) }, volume: 0.55 },
-      bigHit:    { id: "bigHit", asset: { url: sfxUrl(sfx.impact.flesh.heavy[0]) }, volume: 0.7 },
-      td:        { id: "td", asset: { url: sfxUrl(sfx.stinger.win[0]) }, volume: 0.85 },
-      pat:       { id: "pat", asset: { url: sfxUrl(sfx.stinger.checkpoint[1]) }, volume: 0.6 },
-      firstdown: { id: "firstdown", asset: { url: sfxUrl(sfx.stinger.checkpoint[0]) }, volume: 0.45 },
-      sack:      { id: "sack", asset: { url: sfxUrl(sfx.impact.flesh.heavy[1]) }, volume: 0.6 },
-      turnover:  { id: "turnover", asset: { url: sfxUrl(sfx.stinger.lose[0]) }, volume: 0.6 },
-      whistle:   { id: "whistle", asset: { url: sfxUrl(sfx.sports.netSwish[1]) }, volume: 0.4 },
-      quarter:   { id: "quarter", asset: { url: sfxUrl(sfx.stinger.checkpoint[1]) }, volume: 0.5 },
-      ot:        { id: "ot", asset: { url: sfxUrl(sfx.stinger.checkpoint[0]) }, volume: 0.6 },
-      audible:   { id: "audible", asset: { url: sfxUrl(sfx.ui.click[0]) }, volume: 0.4 },
-      confirm:   { id: "confirm", asset: { url: sfxUrl(sfx.ui.confirm[0]) }, volume: 0.45 },
-      win:       { id: "win", asset: { url: sfxUrl(sfx.stinger.win[1]) }, volume: 0.9 },
-      lose:      { id: "lose", asset: { url: sfxUrl(sfx.stinger.lose[1]) }, volume: 0.7 },
-      safety:    { id: "safety", asset: { url: sfxUrl(sfx.stinger.lose[0]) }, volume: 0.6 },
-      tip:       { id: "tip", asset: { url: sfxUrl(sfx.sports.ballBounceCourt[1]) }, volume: 0.4 },
-      whiff:     { id: "whiff", asset: { url: sfxUrl(sfx.sports.netSwish[2]) }, volume: 0.35 },
-      juke:      { id: "juke", asset: { url: sfxUrl(sfx.sports.netSwish[0]) }, volume: 0.4 },
-      truck:     { id: "truck", asset: { url: sfxUrl(sfx.impact.flesh.light[0]) }, volume: 0.5 },
-      dive:      { id: "dive", asset: { url: sfxUrl(sfx.impact.flesh.light[1]) }, volume: 0.45 },
-      crowd:     { id: "crowd", asset: { url: sfxUrl(sfx.ambience.crowdSports[0]) }, volume: 0.3, loop: true }
+      snap:      { id: "snap", asset: assets.hoopsCheckSfx, volume: 0.4 },
+      throw:     { id: "throw", asset: assets.hoopsSwishSfx, volume: 0.5 },
+      catch:     { id: "catch", asset: assets.diamondConfirmSfx, volume: 0.55 },
+      hit:       { id: "hit", asset: assets.hoopsBoardThudSfx, volume: 0.55 },
+      bigHit:    { id: "bigHit", asset: assets.hoopsBlockSfx, volume: 0.7 },
+      td:        { id: "td", asset: assets.hoopsFanfareSfx, volume: 0.85 },
+      pat:       { id: "pat", asset: assets.diamondConfirmSfx, volume: 0.6 },
+      firstdown: { id: "firstdown", asset: assets.diamondConfirmSfx, volume: 0.45 },
+      sack:      { id: "sack", asset: assets.hoopsBlockSfx, volume: 0.6 },
+      turnover:  { id: "turnover", asset: assets.hoopsBuzzerSfx, volume: 0.6 },
+      whistle:   { id: "whistle", asset: assets.hoopsBuzzerSfx, volume: 0.4 },
+      quarter:   { id: "quarter", asset: assets.hoopsBuzzerSfx, volume: 0.5 },
+      ot:        { id: "ot", asset: assets.hoopsFanfareSfx, volume: 0.6 },
+      audible:   { id: "audible", asset: assets.diamondClickSfx, volume: 0.4 },
+      confirm:   { id: "confirm", asset: assets.diamondConfirmSfx, volume: 0.45 },
+      win:       { id: "win", asset: assets.diamondHomerBigSfx, volume: 0.9 },
+      lose:      { id: "lose", asset: assets.hoopsBuzzerSfx, volume: 0.7 },
+      safety:    { id: "safety", asset: assets.hoopsBuzzerSfx, volume: 0.6 },
+      tip:       { id: "tip", asset: assets.hoopsRimClankSfx, volume: 0.4 },
+      whiff:     { id: "whiff", asset: assets.hoopsSwishSfx, volume: 0.35 },
+      juke:      { id: "juke", asset: assets.hoopsSwishSfx, volume: 0.4 },
+      truck:     { id: "truck", asset: assets.hoopsBoardThudSfx, volume: 0.5 },
+      dive:      { id: "dive", asset: assets.hoopsCheckSfx, volume: 0.45 },
+      crowd:     { id: "crowd", asset: assets.hoopsCrowdSfx, volume: 0.3, loop: true }
     },
     buses: [{ id: "sfx" } as any]
   } as any);
-  const unlock = () => { void audio?.unlock(); };
+  const unlock = () => {
+    userInteracted = true;
+    void audio?.unlock();
+  };
   window.addEventListener("pointerdown", unlock, { once: true });
   window.addEventListener("keydown", unlock, { once: true });
+
+  const baseRumble = createRumbleDriver();
+  const safeRumble = (opts: any) => {
+    if (userInteracted) return baseRumble(opts);
+  };
 
   juice = createJuice({
     events: JUICE_EVENTS as any,
@@ -791,7 +820,7 @@ function setupSystems() {
     fx,
     overlay: createOverlayDriver({ domElement: fxLayer }),
     tweens: createTweenEngine(),
-    rumble: createRumbleDriver(),
+    rumble: safeRumble as any,
     sound: { cue: (cue: string) => { void audio?.cue(cue); } }
   } as any);
 
@@ -860,6 +889,13 @@ function watchSeriesEnd(state: GameState) {
 let prevNow = performance.now() / 1000;
 let lastPhaseHud = "";
 
+const MESHY_ASSETS_LIST = [
+  "rzFootballMeshy", "rzQuarterbackMeshy", "rzDefenderLinemanMeshy", "rzFieldGoalPostMeshy",
+  "rzFloodlightPylonMeshy", "rzScoreboardGantryMeshy",
+  "rzLombardiCupMeshy", "rzAltitudeDomeMeshy", "gallerySecurityGuardMeshy",
+  "diamondDugout", "diamondStadium", "hoopsBallCart"
+];
+
 let frameErrorLogged = false;
 function onFrame() {
   try { onFrameInner(); } catch (e) {
@@ -926,7 +962,7 @@ function onFrameInner() {
     }),
     accessibility: (game as any).accessibility.settings([], { reducedMotion, reducedFlash, highContrast: params.has("highContrast") }),
     touch: touchControls?.evidence?.() ?? null,
-    meshyAssets: ["rzFloodlightPylonMeshy", "rzScoreboardGantryMeshy", "rzFootballMeshy", "rzLombardiCupMeshy", "rzAltitudeDomeMeshy"]
+    meshyAssets: MESHY_ASSETS_LIST
   });
 }
 
@@ -943,15 +979,11 @@ const bootPublish = () => {
       framesRendered, demo: DEMO,
       eventLog: eventLog.snapshot(),
       diagnostics: diag,
-      meshyAssets: ["rzFloodlightPylonMeshy", "rzScoreboardGantryMeshy", "rzFootballMeshy", "rzLombardiCupMeshy", "rzAltitudeDomeMeshy"]
+      meshyAssets: MESHY_ASSETS_LIST
     } as any);
   } catch (e) { console.error("[rz3d] evidence boot publish failed", e); }
 };
 bootPublish();
-// watchdog: keep evidence fresh even if the engine frame loop is stalled,
-// and surface renderer diagnostics for remote captures. While the engine
-// hasn't produced a frame yet (slow headless mounts), keep the sim ticking
-// so evidence still shows a live drive.
 setInterval(() => {
   if (framesRendered === 0) {
     try { sim.step(1 / 30, autopilot.command(sim.state, 1 / 30)); } catch { /* best-effort */ }
@@ -964,11 +996,15 @@ console.log("[rz3d] boot ok — demo=" + DEMO + " frames-pending");
 /* Start                                                               */
 /* ------------------------------------------------------------------ */
 
-if (DEMO) {
-  // remote-capture demo: skip menus, auto-start a live game with autopilot
+if (params.get("mode") === "menu") {
+  openMenu();
+} else if (params.get("mode") === "routelab") {
+  startMode("routelab");
+} else if (params.get("mode") === "tacklelab") {
+  startMode("tacklelab");
+} else {
+  // Boot immediately into live 7v7 Quick Play (with smart autopilot assist when idle)
   cpuClub = clubById("steel");
   startMode("quickplay", { cpu: cpuClub });
-  pushEvent("system", "demo drive — autopilot engaged", "info");
-} else {
-  openMenu();
+  pushEvent("system", "live drive — press 1/2/3 or Space to call & snap, or watch AI drive", "info");
 }

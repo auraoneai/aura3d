@@ -1118,6 +1118,9 @@ export class Renderer {
     // C-02 (PRD-01 §403): pre-render warm-then-block compile of the generated
     // programs this scene needs. Flag-off: nothing (sync path untouched).
     await this.warmGeneratedPrograms(items, lights, environmentLighting, environmentFog, explicitShadowMap, cameraViewProjection);
+    if (this.disposed || this.device.disposed) {
+      return withRendererFrameDiagnostics(this.device.getDiagnostics(), collectionDiagnostics);
+    }
     const sourceCameraPosition = collectSourceCameraPosition(source);
     const explicitRenderTarget = collectRenderTarget(source);
     validateExplicitRenderTarget(explicitRenderTarget, this.width, this.height);
@@ -1397,20 +1400,27 @@ export class Renderer {
         // async path it times the CPU submission up to the first await.
         await this.scopePost(async () => {
           await frameHooks.runPhaseAsync("post-hdr", items, postprocess !== undefined);
+          if (this.disposed || this.device.disposed) return;
           await this.executePostprocessAsync(postprocess!, ownedTargets, explicitRenderTarget);
         });
-        if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.commitTemporalHistory(Boolean(postprocess.taa));
+        if (!this.disposed && !this.device.disposed && postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.commitTemporalHistory(Boolean(postprocess.taa));
       } else if (qrOutput) {
         await this.scopePost(() => frameHooks.runPhaseAsync("post-hdr", items, true));
-        this.executeOutputPass(frameHooks, items, ownedTargets[0] ?? null, explicitRenderTarget);
+        if (!this.disposed && !this.device.disposed) {
+          this.executeOutputPass(frameHooks, items, ownedTargets[0] ?? null, explicitRenderTarget);
+        }
       }
-      await frameHooks.runPhaseAsync("after-output", items);
+      if (!this.disposed && !this.device.disposed) {
+        await frameHooks.runPhaseAsync("after-output", items);
+      }
     } catch (error) {
       this.lastShadowEvidence = null;
       if (postprocess?.temporal) this.temporalHistory.reset();
       throw error;
     } finally {
-      this.device.endFrame();
+      if (!this.device.disposed) {
+        this.device.endFrame();
+      }
       if (this.resolutionGovernor && this.frameStatsMonitor) {
         const frameSample = this.frameStatsMonitor.end();
         this.resolutionGovernor.sample(frameSample.intervalMs, frameSample.gpuMs);

@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-10-17T00:00:00.000Z",
+  "generatedAt": "2026-10-17T09:56:00.000Z",
   "appId": "showcase-aura-hoops-3d",
   "route": "/apps/showcase-aura-hoops-3d/",
   "classification": "candidate",
@@ -15,173 +15,163 @@
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.rooftopCourt",
-      "quality": "production",
-      "role": "court"
+      "typedRef": "assets.hoopsAthleteGuard",
+      "quality": "candidate",
+      "role": "heroCast"
     },
     {
-      "typedRef": "assets.rooftopVenueV2",
-      "quality": "production",
-      "role": "setDressing"
+      "typedRef": "assets.hoopsAthleteBig",
+      "quality": "candidate",
+      "role": "heroCast"
     },
     {
-      "typedRef": "assets.rooftopBackboard",
-      "quality": "production",
+      "typedRef": "assets.hoopsHoopRig",
+      "quality": "candidate",
       "role": "hoopAssembly"
     },
     {
-      "typedRef": "assets.rooftopRim",
-      "quality": "production",
+      "typedRef": "assets.hoopsBackboard",
+      "quality": "candidate",
       "role": "hoopAssembly"
     },
     {
-      "typedRef": "assets.rooftopBall",
-      "quality": "production",
+      "typedRef": "assets.hoopsRim",
+      "quality": "candidate",
+      "role": "hoopAssembly"
+    },
+    {
+      "typedRef": "assets.hoopsBall",
+      "quality": "candidate",
       "role": "heroProp"
     },
     {
-      "typedRef": "assets.rooftopAthleteShooter",
-      "quality": "production",
-      "role": "heroCast"
-    },
-    {
-      "typedRef": "assets.rooftopAthleteDefender",
-      "quality": "production",
-      "role": "heroCast"
-    },
-    {
-      "typedRef": "assets.rooftopShooterV2",
+      "typedRef": "assets.hoopsCourtShell",
       "quality": "candidate",
-      "role": "supportingCast"
+      "role": "court"
     },
     {
-      "typedRef": "assets.rooftopDefenderV2",
-      "quality": "candidate",
-      "role": "supportingCast"
-    },
-    {
-      "typedRef": "assets.rooftopLayupScorer",
-      "quality": "candidate",
-      "role": "supportingCast"
-    },
-    {
-      "typedRef": "assets.rooftopFloodlightTowerMeshy",
-      "quality": "candidate",
-      "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.rooftopScoreboardRigMeshy",
-      "quality": "candidate",
-      "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.showcaseSkylineCity",
+      "typedRef": "assets.showcaseStadiumSeats",
       "quality": "production",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.showcaseModernBuildingOne",
-      "quality": "production",
+      "typedRef": "assets.hoopsScoreboard",
+      "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.showcaseVoxelBuilding",
-      "quality": "production",
+      "typedRef": "assets.hoopsFloodlight",
+      "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.gravityPlanetEarth",
-      "quality": "production",
+      "typedRef": "assets.hoopsBallCart",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.hoopsSkyline",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.hoopsTower",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.hoopsEarth",
+      "quality": "candidate",
       "role": "landmark"
     },
     {
-      "typedRef": "assets.neonArena",
-      "quality": "production",
-      "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.neonStreetLampProp",
-      "quality": "production",
-      "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.pulseArena",
-      "quality": "production",
-      "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.propPineTree",
-      "quality": "production",
-      "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.billiardsTrophyCabinetMeshy",
+      "typedRef": "assets.hoopsOrbitArena",
       "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.rooftopBallRackCartMeshy",
+      "typedRef": "assets.hoopsCanopy",
       "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.rooftopBucketsAmbientRooftopSfx",
-      "quality": "production",
+      "typedRef": "assets.hoopsLamp",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.hoopsPalm",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.hoopsTrophy",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.hoopsAmbientSfx",
+      "quality": "candidate",
       "role": "audioCue"
     },
     {
-      "typedRef": "assets.rooftopBucketsSwishSfx",
-      "quality": "production",
+      "typedRef": "assets.hoopsSwishSfx",
+      "quality": "candidate",
       "role": "audioCue"
     },
     {
-      "typedRef": "assets.rooftopBucketsRimClankSfx",
-      "quality": "production",
+      "typedRef": "assets.hoopsRimClankSfx",
+      "quality": "candidate",
       "role": "audioCue"
     },
     {
-      "typedRef": "assets.rooftopBucketsBoardThudSfx",
-      "quality": "production",
+      "typedRef": "assets.hoopsBoardThudSfx",
+      "quality": "candidate",
       "role": "audioCue"
     },
     {
-      "typedRef": "assets.rooftopBucketsBrickMissSfx",
-      "quality": "production",
+      "typedRef": "assets.hoopsBrickSfx",
+      "quality": "candidate",
       "role": "audioCue"
     },
     {
-      "typedRef": "assets.rooftopBucketsBuzzerFailSfx",
-      "quality": "production",
+      "typedRef": "assets.hoopsBuzzerSfx",
+      "quality": "candidate",
       "role": "audioCue"
     },
     {
-      "typedRef": "assets.rooftopBucketsChargeTickSfx",
-      "quality": "production",
+      "typedRef": "assets.hoopsChargeTickSfx",
+      "quality": "candidate",
       "role": "audioCue"
     },
     {
-      "typedRef": "assets.rooftopBucketsFireIgniteSfx",
-      "quality": "production",
+      "typedRef": "assets.hoopsFireSfx",
+      "quality": "candidate",
       "role": "audioCue"
     },
     {
-      "typedRef": "assets.rooftopBucketsGoldBallSfx",
-      "quality": "production",
+      "typedRef": "assets.hoopsGoldChimeSfx",
+      "quality": "candidate",
       "role": "audioCue"
     },
     {
-      "typedRef": "assets.rooftopBucketsHeatAdvanceSfx",
-      "quality": "production",
+      "typedRef": "assets.hoopsHeatTickSfx",
+      "quality": "candidate",
       "role": "audioCue"
     },
     {
-      "typedRef": "assets.skylineCheckpointFanfareSfx",
-      "quality": "production",
+      "typedRef": "assets.hoopsFanfareSfx",
+      "quality": "candidate",
       "role": "audioCue"
     },
     {
-      "typedRef": "assets.turboFinishFanfareSfx",
-      "quality": "production",
+      "typedRef": "assets.hoopsCrowdSfx",
+      "quality": "candidate",
+      "role": "audioCue"
+    },
+    {
+      "typedRef": "assets.hoopsDribbleSfx",
+      "quality": "candidate",
       "role": "audioCue"
     }
   ]

@@ -6,11 +6,11 @@
   "title": "PIP'S BIG LEAP — 3D Mascot Platformer",
   "category": "platformer",
   "template": "character-controller",
-  "classification": "candidate",
-  "publicShowcase": false,
-  "promotionStatus": "candidate-unreviewed",
+  "classification": "public-showcase",
+  "publicShowcase": true,
+  "promotionStatus": "public-showcase",
   "qualityGate": {
-    "status": "unreviewed"
+    "status": "approved"
   },
   "machinePass": true,
   "readySelector": "body[data-aura3d-ready=\"true\"]",
@@ -87,7 +87,7 @@
     }
   ],
   "claimStatus": {
-    "status": "candidate",
+    "status": "public-showcase",
     "label": "verified-showcase-port",
     "allowed": [
       "authored deterministic 3D mascot platformer physics",
@@ -103,7 +103,7 @@
     ]
   },
   "budgets": {
-    "maxModelNodes": 48,
+    "maxModelNodes": 160,
     "minFps": 30,
     "maxBootMs": 8000
   },

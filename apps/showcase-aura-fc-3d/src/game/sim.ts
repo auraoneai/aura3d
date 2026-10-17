@@ -76,6 +76,7 @@ export function createSim(): Sim {
   let dt0 = 1 / 60;
   let labPens = false;          // shootout lab: user takes every penalty
   let keeperRushHeld = false;   // user holds sprint off-ball → GK rushes out
+  let userIdleT = 99;           // seconds since last user input (starts idle for instant live play)
 
   const emit = (e: SimEvent) => events.push(e);
 
@@ -929,12 +930,25 @@ export function createSim(): Sim {
       (state.ball.mode === "loose" || state.ball.mode === "flight") &&
       state.ball.x * state.attackSign[state.userTeam] < -PITCH_HX * 0.25
     );
+    const hasUserInput =
+      Math.hypot(input.move[0], input.move[1]) > 0.05 ||
+      input.sprint ||
+      input.passShort ||
+      input.passDriven ||
+      input.shootHeld ||
+      input.shootReleased ||
+      input.skillStepover ||
+      input.skillChop ||
+      input.switchPlayer ||
+      chargeHeld;
+    userIdleT = hasUserInput ? 0 : userIdleT + dt;
+
     for (const p of state.players as PlayerInternal[]) {
       let cmd: PlayerCommand;
-      if (state.userTeam !== null && p.id === state.controlledId) {
+      if (state.userTeam !== null && p.id === state.controlledId && (userIdleT < 1.8 || state.mode === "touch")) {
         cmd = userCommand(p, input);
       } else {
-        cmd = planCommand(state, p, dt, keeperRushHeld, cfg.difficulty);
+        cmd = planCommand(state, p, dt, keeperRushHeld, Math.max(0.65, cfg.difficulty));
       }
       (p as PlayerInternal).cmd = cmd;
       applyCommand(p, cmd, dt);

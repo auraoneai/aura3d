@@ -532,6 +532,7 @@ export class RendererPostprocessPipeline {
       const v2ModulesEmpty = postprocess.v2 === true && this.host.device.kind === "webgl2"
         ? await import("../post/v2Entry")
         : undefined;
+      if (this.host.device.disposed || (current as { disposed?: boolean }).disposed) return;
       if (v2ModulesEmpty && this.tryExecutePostGraphV2(postprocess, current, passes, outputTarget, v2ModulesEmpty)) return;
       if (outputTarget) {
         this.host.device.setRenderTarget(current);
@@ -548,6 +549,7 @@ export class RendererPostprocessPipeline {
     const v2Modules = postprocess.v2 === true && this.host.device.kind === "webgl2"
       ? await import("../post/v2Entry")
       : undefined;
+    if (this.host.device.disposed || (current as { disposed?: boolean }).disposed) return;
     if (this.tryExecutePostGraphV2(postprocess, current, passes, outputTarget, v2Modules)) return;
     if (await this.executeFusedLdrPostprocessAsync(current, passes, outputTarget, postprocess.execution === "cpu-deterministic", postprocess.depthRange)) return;
     // §6.9/T0-17: flag-on CPU pixel passes are recorded and skipped before the

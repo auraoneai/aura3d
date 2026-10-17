@@ -3,8 +3,9 @@
  *
  * All yard-line geometry lives on a 100×53.3 field (z 0..100, x ±26.65) with
  * 10-yard end zones (z -10..0 and z 100..110). Stadium dressing uses typed
- * catalog assets (floodlight towers, scoreboard rig, seats) plus instanced
- * crowd capsules, per the route's sports/table look recipe.
+ * catalog assets (floodlight towers, scoreboard rig, dugouts, stadium bowl,
+ * referee, trophy, footballs) plus instanced crowd capsules, per the route's
+ * sports/table look recipe.
  */
 import { decals, effects, instances, lights, material, model, primitives, game } from "@aura3d/engine";
 import { assets } from "../aura-assets-v2";
@@ -13,6 +14,7 @@ import { FIELD, type Stadium } from "./types";
 const W = FIELD.HALF_WIDTH;          // 26.65
 const L = FIELD.GOAL_FAR;            // 100
 const EZ = FIELD.ENDZONE_DEPTH;      // 10
+const HIDDEN = 0.0001;
 
 const turf = (color: string) => material.pbr({ color, roughness: 0.92 });
 const white = () => material.pbr({ color: "#f4f7f2", roughness: 0.7 });
@@ -23,25 +25,39 @@ const lineMat = (color: string, opacity = 1) => material.pbr({ color, roughness:
 /* ------------------------------------------------------------------ */
 
 export function buildFieldNodes(clubHome: string, clubAway: string): any[] {
+  // Horizontal XZ planes use size: [widthX, 1, depthZ] and NO X-rotation
   const nodes: any[] = [
     // apron / surrounds
-    primitives.plane({ name: "field-apron", size: [90, 150, 1], material: turf("#1c3a26"), receiveShadow: true })
-      .position(0, -0.02, 50).rotate(-Math.PI / 2, 0, 0),
+    primitives.plane({ name: "field-apron", size: [110, 1, 160], material: turf("#1c3a26"), receiveShadow: true })
+      .position(0, -0.02, 50),
     // main turf
-    primitives.plane({ name: "field-turf", size: [W * 2 + 1.6, L + EZ * 2 + 1.6, 1], material: turf("#2e7d3f"), receiveShadow: true })
-      .position(0, 0, 50).rotate(-Math.PI / 2, 0, 0)
+    primitives.plane({ name: "field-turf", size: [W * 2 + 1.6, 1, L + EZ * 2 + 1.6], material: turf("#2e7d3f"), receiveShadow: true })
+      .position(0, 0, 50)
       .runtime(game.runtimeNode("field-turf")),
     // end zones (club-colored)
-    primitives.plane({ name: "ez-home", size: [W * 2, EZ, 1], material: material.pbr({ color: clubHome, roughness: 0.88, opacity: 0.85 }) })
-      .position(0, 0.004, -EZ / 2).rotate(-Math.PI / 2, 0, 0).runtime(game.runtimeNode("ez-home")),
-    primitives.plane({ name: "ez-away", size: [W * 2, EZ, 1], material: material.pbr({ color: clubAway, roughness: 0.88, opacity: 0.85 }) })
-      .position(0, 0.004, L + EZ / 2).rotate(-Math.PI / 2, 0, 0).runtime(game.runtimeNode("ez-away")),
+    primitives.plane({ name: "ez-home", size: [W * 2, 1, EZ], material: material.pbr({ color: clubHome, roughness: 0.88, opacity: 0.85 }) })
+      .position(0, 0.005, -EZ / 2).runtime(game.runtimeNode("ez-home")),
+    primitives.plane({ name: "ez-away", size: [W * 2, 1, EZ], material: material.pbr({ color: clubAway, roughness: 0.88, opacity: 0.85 }) })
+      .position(0, 0.005, L + EZ / 2).runtime(game.runtimeNode("ez-away")),
     // boundary stripe
     primitives.box({ name: "sideline-l", size: [0.5, 0.02, L + EZ * 2], material: white() }).position(-W - 0.3, 0.012, 50),
     primitives.box({ name: "sideline-r", size: [0.5, 0.02, L + EZ * 2], material: white() }).position(W + 0.3, 0.012, 50),
     primitives.box({ name: "endline-n", size: [W * 2 + 1.6, 0.02, 0.5], material: white() }).position(0, 0.012, -EZ - 0.3),
     primitives.box({ name: "endline-f", size: [W * 2 + 1.6, 0.02, 0.5], material: white() }).position(0, 0.012, L + EZ + 0.3)
   ];
+
+  // Alternating 5-yard horizontal mow stripes across the 100-yard field
+  for (let i = 0; i < 20; i++) {
+    const zCenter = i * 5 + 2.5;
+    const stripeCol = i % 2 === 0 ? "#2b753b" : "#338544";
+    nodes.push(
+      primitives.plane({
+        name: `turf-stripe-${i}`,
+        size: [W * 2 - 0.08, 1, 4.94],
+        material: turf(stripeCol)
+      }).position(0, 0.003, zCenter)
+    );
+  }
 
   // yard lines every 5 (goal lines thicker)
   for (let y = 0; y <= L; y += 5) {
@@ -71,10 +87,15 @@ export function buildFieldNodes(clubHome: string, clubAway: string): any[] {
     (instances as any).box({ name: "hash-marks", transforms: hashT, material: lineMat("#f4f7f2", 0.85) })
   );
 
-  // goal posts — both ends, yellow uprights
+  // goal posts — both ends, bespoke 3D Meshy field goal post (`rzFieldGoalPostMeshy`) + yellow uprights
   for (const z of [-EZ - 0.5, L + EZ + 0.5]) {
     const g = material.pbr({ color: "#f6c945", roughness: 0.4, metalness: 0.5 });
+    const rotY = z < 0 ? 0 : Math.PI;
     nodes.push(
+      model(assets.rzFieldGoalPostMeshy, { name: `goalpost-mesh-${z}` })
+        .position(0, 0, z)
+        .rotate(0, rotY, 0)
+        .scale([11.0, 6.2, 8.0]),
       primitives.cylinder({ name: `post-base-${z}`, size: [0.16, 4.6, 0.16], material: g }).position(0, 2.3, z),
       primitives.cylinder({ name: `post-bar-${z}`, size: [0.12, 6.15, 0.12], material: g })
         .position(0, 4.6, z).rotate(0, 0, Math.PI / 2),
@@ -131,8 +152,6 @@ export function buildStadiumNodes(venue: Stadium, lite = false): any[] {
   for (const end of [-1, 1]) {
     for (let row = 0; row < 7; row++) {
       const y = 2.4 + row * 1.15;
-      const z = end * (L + EZ + 8.5 + row * 1.25);
-      const zc = end === 1 ? z : z + L; // map -1 end to behind z=-EZ
       const zz = end === 1 ? L + EZ + 8.5 + row * 1.25 : -EZ - 8.5 - row * 1.25;
       for (let i = 0; i < 40; i++) {
         const x = -W - 2 + i * ((W * 2 + 4) / 39);
@@ -140,7 +159,6 @@ export function buildStadiumNodes(venue: Stadium, lite = false): any[] {
         crowdC.push(CROWD_PALETTES[Math.floor(rng(ci + 4) * CROWD_PALETTES.length)]!);
         ci += 7;
       }
-      void zc;
     }
   }
   nodes.push(
@@ -182,7 +200,11 @@ export function buildStadiumNodes(venue: Stadium, lite = false): any[] {
   if (!lite) {
     nodes.push(
       model(assets.rzScoreboardGantryMeshy, { name: "scoreboard-gantry", targetHeight: 7.5 })
-        .position(0, 5.4, -EZ - 17)
+        .position(0, 5.4, -EZ - 17),
+      model(assets.diamondStadium, { name: "stadium-arch", targetHeight: 16 })
+        .position(0, -1.5, L + EZ + 22)
+        .rotate(0, Math.PI, 0)
+        .scale([1.4, 1, 1.1])
     );
   }
   nodes.push(
@@ -195,7 +217,7 @@ export function buildStadiumNodes(venue: Stadium, lite = false): any[] {
       .position(0, 1.1, L + EZ + 6.5).runtime(game.runtimeNode("ribbon-r"))
   );
 
-  // --- sideline benches + chain crew ---
+  // --- sideline benches + 3D Meshy dugouts, ball cart, trophy pedestal & Referee ---
   for (const side of [-1, 1]) {
     nodes.push(
       primitives.box({ name: `bench-${side}-a`, size: [8, 0.5, 1.1], material: material.pbr({ color: "#26303e", roughness: 0.75 }) }).position(side * (W + 2.6), 0.25, 35),
@@ -204,15 +226,30 @@ export function buildStadiumNodes(venue: Stadium, lite = false): any[] {
       primitives.box({ name: `bench-${side}-back-b`, size: [8, 0.9, 0.24], material: material.pbr({ color: "#1d2430", roughness: 0.8 }) }).position(side * (W + 3.2), 0.85, 65)
     );
   }
-  // sideline dressing: championship cup pedestal by the tunnel + ball rack
   if (!lite) {
     nodes.push(
+      model(assets.diamondDugout, { name: "sideline-dugout-l", targetHeight: 2.4 })
+        .position(-W - 3.6, 0, 50)
+        .rotate(0, Math.PI / 2, 0),
+      model(assets.diamondDugout, { name: "sideline-dugout-r", targetHeight: 2.4 })
+        .position(W + 3.6, 0, 50)
+        .rotate(0, -Math.PI / 2, 0),
+      model(assets.hoopsBallCart, { name: "sideline-ball-cart", targetHeight: 1.05 })
+        .position(W + 3.0, 0, 42),
       model(assets.rzLombardiCupMeshy, { name: "cup-pedestal", targetHeight: 1.9 })
         .position(-W - 3.2, 0, 30).rotate(0, Math.PI / 2.6, 0)
         .runtime(game.runtimeNode("cup-pedestal")),
       model(assets.rzFootballMeshy, { name: "ball-rack", targetHeight: 0.5 })
         .position(W + 3.2, 0.28, 70).rotate(0, -Math.PI / 2.6, 0)
-        .runtime(game.runtimeNode("ball-rack"))
+        .runtime(game.runtimeNode("ball-rack")),
+      // Rigged 3D Meshy Referee on the field/sideline
+      model(assets.gallerySecurityGuardMeshy, {
+        name: "rz-referee",
+        targetHeight: 1.88,
+        animation: { clip: "Idle_Loop", loop: true, speed: 1.0 }
+      } as any)
+        .position(-9.5, 0, 20)
+        .runtime(game.runtimeNode("rz-referee"))
     );
   }
 
@@ -229,11 +266,13 @@ export function buildStadiumNodes(venue: Stadium, lite = false): any[] {
     );
   }
 
-  // --- venue roof shell for domes (typed habitat dome) ---
-  if (dome && !lite) {
+  // --- venue roof shell for domes (always created when !lite so venue switch can toggle it; lowered to y=-6.5 when active so floor stays below turf) ---
+  if (!lite) {
     nodes.push(
       model(assets.rzAltitudeDomeMeshy, { name: "dome-shell", targetHeight: 34 })
-        .position(0, -2, 50).runtime(game.runtimeNode("dome-shell"))
+        .position(0, dome ? -6.5 : -90, 50)
+        .scale(dome ? [1.3, 1, 1.3] : [HIDDEN, HIDDEN, HIDDEN])
+        .runtime(game.runtimeNode("dome-shell"))
     );
   }
 
@@ -241,7 +280,6 @@ export function buildStadiumNodes(venue: Stadium, lite = false): any[] {
   nodes.push(
     effects.snow({ name: "weather-snow", intensity: 0.55, speed: 0.9, wind: [-0.7, -1.05, -0.2] } as any).runtime(game.runtimeNode("weather-snow")),
     effects.rain({ name: "weather-rain", intensity: 0.5, speed: 1.15, wind: [-0.5, -6.2, -0.3] } as any).runtime(game.runtimeNode("weather-rain")),
-    // breath-fog puffs in cold venues (soft ambient particles over the field)
     effects.particles({ name: "breath-fog", position: [0, 1.1, 50], color: "#cfd8e8", intensity: 0.4, emitter: "fountain", radius: 24, height: 2.2, particleCount: 260, speed: 0.25, gravity: -0.05, sizeOverLife: [0.5, 1.6, 0.4], alphaOverLife: [0, 0.16, 0] } as any)
       .runtime(game.runtimeNode("breath-fog"))
   );
@@ -275,7 +313,7 @@ export function buildStadiumNodes(venue: Stadium, lite = false): any[] {
 export function buildPlayNodes(): any[] {
   const nodes: any[] = [
     // football: typed catalog GLB (real textured ball) + shadow
-    model(assets.rzFootballMeshy, { name: "football", targetHeight: 0.42 })
+    model(assets.rzFootballMeshy, { name: "football", targetHeight: 0.38 })
       .runtime(game.runtimeNode("football")),
     primitives.cylinder({ name: "football-shadow", size: [0.5, 0.008, 0.5], material: material.pbr({ color: "#000000", opacity: 0.4, roughness: 1 }) })
       .runtime(game.runtimeNode("football-shadow")),

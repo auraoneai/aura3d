@@ -40,14 +40,14 @@ export const FLOORS: readonly FloorDef[] = [
     subtitle: "find the brass key · reach the elevator",
     par: 210,
     palette: {
-      wall: "#6e6a5e", wallAlt: "#5a5648", floor: "#3a3833", floorAlt: "#45423a",
-      ceil: "#2a2926", accent: "#ffb648"
+      wall: "#8a8476", wallAlt: "#746e5e", floor: "#524e46", floorAlt: "#635e52",
+      ceil: "#3e3c36", accent: "#ffb648"
     },
     rows: [
       "######################",
-      "#S....##......##....K#",
-      "#......##..g..##.#...#",
-      "#..t..........D..##..#",
+      "#S..w..c...g..b....K#",
+      "#..t..b...d...c..#...#",
+      "#..r..a....g..D..##..#",
       "#..###..####..###.#..#",
       "#..#.........P..#.#..#",
       "#..D..g..##...#..T#..#",
@@ -68,8 +68,8 @@ export const FLOORS: readonly FloorDef[] = [
     subtitle: "the water hides what the guards forgot",
     par: 240,
     palette: {
-      wall: "#4a5a55", wallAlt: "#3d4c48", floor: "#2e3634", floorAlt: "#1e4a52",
-      ceil: "#1f2725", accent: "#59d8c9", floorEmissive: "#1a5e68"
+      wall: "#5c706a", wallAlt: "#4e605b", floor: "#3d4845", floorAlt: "#28626c",
+      ceil: "#2c3633", accent: "#59d8c9", floorEmissive: "#247b88"
     },
     rows: [
       "######################",
@@ -96,8 +96,8 @@ export const FLOORS: readonly FloorDef[] = [
     subtitle: "mind the grates — the forge never sleeps",
     par: 270,
     palette: {
-      wall: "#574a3f", wallAlt: "#6e452e", floor: "#332c26", floorAlt: "#5c2a14",
-      ceil: "#241f1b", accent: "#ff8a3a", floorEmissive: "#7a2f08"
+      wall: "#6e5e50", wallAlt: "#85563b", floor: "#453c34", floorAlt: "#75381c",
+      ceil: "#332c26", accent: "#ff8a3a", floorEmissive: "#9e3e0c"
     },
     rows: [
       "######################",

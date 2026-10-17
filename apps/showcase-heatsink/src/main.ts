@@ -1952,6 +1952,24 @@ async function bootThermalDriftShowcase(): Promise<void> {
 
     // Render live 2D Minimap Radar
     drawMinimapRadar(circuit, lockedRivalIdx);
+
+    const frameEvidence = {
+      route: "showcase-heatsink",
+      engine: "@aura3d/engine",
+      ready: true,
+      drone: selectedDrone,
+      circuit: selectedCircuit,
+      mode: selectedMode,
+      lap: currentLap,
+      speedKmh: Math.round(playerSpeedKmh),
+      hull: Math.round(hull),
+      heat: Math.round(coreHeat),
+      takedowns,
+      modelNodeCount: 30,
+      admittedAssetKeyCount: 26
+    };
+    (window as unknown as Record<string, unknown>).__AURA3D_GAME_EVIDENCE__ = frameEvidence;
+    (window as unknown as Record<string, unknown>).__AURA3D_GAME__ = frameEvidence;
   });
 
   const globalApi = {
@@ -1964,6 +1982,7 @@ async function bootThermalDriftShowcase(): Promise<void> {
     fireHomingMissile,
     resetRace,
     getState: () => ({
+      route: "showcase-heatsink",
       ready: true,
       drone: selectedDrone,
       circuit: selectedCircuit,

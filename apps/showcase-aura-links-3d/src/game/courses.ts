@@ -176,7 +176,7 @@ const stAuroras: CourseSpec = {
   shortName: "ST. AURORAS",
   tagline: "Windswept dunes and morning haar on the old country shore.",
   look: "outdoor-day",
-  lookOverrides: { fogDensityScale: 1.4 },
+  lookOverrides: { fogDensityScale: 0.28, exposureEv: 0.08 },
   gravity: 9.81,
   airDensity: 1.0,
   wind: { baseSpeed: 4.5, gust: 3.0 },

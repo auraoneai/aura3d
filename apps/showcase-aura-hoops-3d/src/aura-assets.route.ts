@@ -34,6 +34,12 @@ type AuraGeneratedRouteAssetDefinitions = {
   readonly "hoopsSwishSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
   readonly "hoopsTower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
   readonly "hoopsTrophy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
+  readonly "hoopsHoopRig": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
+  readonly "hoopsDunkSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; readonly sizeBytes: number; };
+  readonly "hoopsStealSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; readonly sizeBytes: number; };
+  readonly "hoopsBlockSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; readonly sizeBytes: number; };
+  readonly "hoopsCheckSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; readonly sizeBytes: number; };
+  readonly "showcaseStadiumSeats": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAuraAssets({
@@ -276,6 +282,54 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     hash: "sha256-dbc67a0e39424685192302d324103c3c7d67b18d6f211acd9767ee1fc8aad2fe",
     bounds: [0.661,1.903,0.664],
     sizeBytes: 6464392,
+  },
+  "hoopsHoopRig": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsHoopRig.b6d696b6.glb",
+    hash: "sha256-b6d696b6ae7d75097a33f242045c28c225f91bd90e514c12c8a7148229c7331c",
+    bounds: [1.002,1.903,0.489],
+    sizeBytes: 5440984,
+  },
+  "hoopsDunkSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsDunkSfx.cedd3d6e.wav",
+    hash: "sha256-cedd3d6e6da814144cd0ed9d65ad5f84256ccc44df7f8cf9ffec3325e6268b39",
+    bounds: [0,0,0],
+    sizeBytes: 141164,
+  },
+  "hoopsStealSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsStealSfx.c5bac4af.wav",
+    hash: "sha256-c5bac4af9e917587c4b4e2aa9805e3469a25e12c2e434f4ee427b99412c2aa3d",
+    bounds: [0,0,0],
+    sizeBytes: 30914,
+  },
+  "hoopsBlockSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsBlockSfx.48c91229.wav",
+    hash: "sha256-48c91229537384ad140ffe2064dfbe5f798768e3b89549517761717187cc630e",
+    bounds: [0,0,0],
+    sizeBytes: 39734,
+  },
+  "hoopsCheckSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/hoopsCheckSfx.405a831d.wav",
+    hash: "sha256-405a831d3b901ca15f9a628f96e3136be8a2da626660da946ccf18fd2f610ba3",
+    bounds: [0,0,0],
+    sizeBytes: 70604,
+  },
+  "showcaseStadiumSeats": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/showcaseStadiumSeats.afb44897.glb",
+    hash: "sha256-afb44897c52d32e90f42d86e64e541aec7307e09ba18da126f3e9de458cc0ebf",
+    bounds: [43.799,152.996,28.975],
+    sizeBytes: 194740,
   },
 } as const);
 

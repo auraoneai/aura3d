@@ -31,6 +31,7 @@ import {
   embeddedClipFor,
   fighterById,
   fighterDriveClipId,
+  fighterFacingYaw,
   FIGHTERS,
   isLoopingFighterClip,
   PALETTE_SWATCHES,
@@ -74,6 +75,10 @@ const mediaMatches = (query: string) => typeof window.matchMedia === "function" 
 const reducedMotion = mediaMatches("(prefers-reduced-motion: reduce)");
 const highContrast = mediaMatches("(prefers-contrast: more)");
 const reducedFlash = reducedMotion;
+
+const searchParams = new URLSearchParams(window.location.search);
+const freezeRaw = Number(searchParams.get("freeze"));
+const freezeMs = Number.isFinite(freezeRaw) && freezeRaw > 0 ? freezeRaw : null;
 
 const fightingControls = games.fighting.controls();
 
@@ -142,6 +147,9 @@ let studioSelection = { fighter: "kenji" as FighterId, palette: "default" as Pal
 let ladder: LadderState | null = null;
 let currentStageId: StageId = DEFAULT_STAGE;
 let paused = false;
+let autopilot = true;
+let frozenByQuery = false;
+let elapsedMs = 0;
 let frameCount = 0;
 let lastCancelFlashFrame = -999;
 let lastTrailLen = -1;
@@ -169,9 +177,13 @@ function studioPaletteFor(fighter: FighterId): FighterPalette | undefined {
 
 function buildArena(cfg: BoutConfig) {
   const s = cfg.stage;
+  const floorStageNodes = s.stage.nodes.filter((n: any) => {
+    const py = n?.transform?.position?.[1] ?? n?.position?.[1] ?? 0;
+    return py <= 0.35;
+  });
   return scene()
     .add(looks.preset(s.lookId, s.lookOverrides ?? {}))
-    .addMany(s.stage.nodes)
+    .addMany(floorStageNodes)
     .addMany(s.dressing)
     .add(createFighterNode("player", cfg.p1, `${cfg.p1.name} (P1)`, PLAYER_START, 1, typedFighterAssets, cfg.p1Tint))
     .add(createFighterNode("rival", cfg.cpu, `${cfg.cpu.name} (CPU)`, RIVAL_START, -1, typedFighterAssets, cfg.cpuTint))
@@ -242,7 +254,7 @@ const fightingGame = createGame({
   // its render targets after any device lifecycle event (remount, resize)
   // on ANGLE/Vulkan and kills presentation — repro'd on aura-links-3d too.
   // Pin it off until the engine-side LDR postprocess defect is fixed.
-  qualityRebuild: { flags: ["game", "-post"] },
+  qualityRebuild: { flags: ["game", "-compiler"] },
   evidence: {
     schema: 1,
     sections: {
@@ -285,6 +297,8 @@ app.feel?.preset("fighting");
 const hud = createHud(document, {
   onMode: (m) => selectMode(m),
   onStage: (s) => selectStage(s),
+  onFighter: (f) => selectFighter(f),
+  onAutopilotToggle: () => setAutopilot(!autopilot),
   onVersusFight: (sel) =>
     void configureBout({
       mode: "versus",
@@ -323,9 +337,32 @@ const hud = createHud(document, {
   }
 });
 
+function setAutopilot(next: boolean): void {
+  autopilot = next;
+  hud.setAutopilotButton(next);
+  if (state) {
+    hud.setModeLabel(`${modeLabel(state.config.mode)} · ${state.config.stage.label.toUpperCase()}${autopilot ? " · AUTO" : ""}`);
+  }
+}
+
+const MANUAL_FIGHT_KEYS = new Set([
+  "KeyA", "KeyD", "ArrowLeft", "ArrowRight",
+  "KeyW", "ArrowUp", "Space",
+  "KeyS", "ArrowDown",
+  "KeyJ", "KeyK", "KeyL", "KeyU", "KeyQ",
+  "ShiftLeft", "ShiftRight"
+]);
+
 // Escape resumes from the pause/sheet layer even while the app loop is paused.
+// Any gameplay key disengages AI autopilot immediately so Player 1 has full control.
 document.addEventListener("keydown", (ev) => {
-  if (ev.key === "Escape" && paused) setPaused(false);
+  if (ev.key === "Escape" && paused) {
+    setPaused(false);
+    return;
+  }
+  if (autopilot && MANUAL_FIGHT_KEYS.has(ev.code)) {
+    setAutopilot(false);
+  }
 });
 
 function makeFighter(side: "p1" | "cpu", def: FighterDef, position: readonly [number, number, number], tint?: FighterPalette): FighterRuntime {
@@ -417,6 +454,7 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
   if (paused) setPaused(false);
   newBout(config);
   currentStageId = config.stage.id;
+  studioSelection.fighter = config.p1.id;
   const sig = arenaSignature(config);
   if (sig !== mountedArenaSig) {
     mountedArenaSig = sig;
@@ -435,8 +473,10 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
   bindAnimations();
   hud.setNames(config.p1.name, config.cpu.name);
   hud.setPips(0, 0);
-  hud.setModeLabel(`${modeLabel(config.mode)} · ${config.stage.label.toUpperCase()}`);
+  hud.setModeLabel(`${modeLabel(config.mode)} · ${config.stage.label.toUpperCase()}${autopilot ? " · AUTO" : ""}`);
   hud.setStageButtons(config.stage.id);
+  hud.setFighterButtons(config.p1.id);
+  hud.setAutopilotButton(autopilot);
   hud.showMenu(null);
   hud.showLab(config.mode === "lab");
   hud.setHint(
@@ -502,6 +542,18 @@ function openSheet(menu: MenuId): void {
   }
 }
 
+function selectFighter(fighter: FighterId): void {
+  studioSelection.fighter = fighter;
+  hud.setFighterButtons(fighter);
+  const cpu = state.config.cpu.id === fighter ? randomCpu(fighter) : state.config.cpu;
+  void configureBout({
+    ...state.config,
+    p1: fighterById(fighter),
+    cpu,
+    p1Tint: studioPaletteFor(fighter)
+  });
+}
+
 function selectMode(mode: ModeId): void {
   hud.setModeButtons(mode);
   if (mode === "quick") {
@@ -517,19 +569,29 @@ function selectMode(mode: ModeId): void {
     void configureBout({
       mode: "lab",
       p1: fighterById(studioSelection.fighter),
-      cpu: fighterById("volt"),
+      cpu: fighterById(studioSelection.fighter === "volt" ? "boulder" : "volt"),
       stage: stageById(currentStageId),
       difficulty: "novice",
       p1Tint: studioPaletteFor(studioSelection.fighter)
     });
   } else if (mode === "versus") {
-    openSheet("versus");
+    const rivalPool = FIGHTERS.filter((f) => f.id !== studioSelection.fighter);
+    const curIdx = rivalPool.findIndex((f) => f.id === state.config.cpu.id);
+    const nextCpu = rivalPool[(curIdx + 1) % rivalPool.length] ?? randomCpu(studioSelection.fighter);
+    void configureBout({
+      mode: "versus",
+      p1: fighterById(studioSelection.fighter),
+      cpu: nextCpu,
+      stage: stageById(currentStageId),
+      difficulty: "champion",
+      p1Tint: studioPaletteFor(studioSelection.fighter)
+    });
   } else if (mode === "ladder") {
-    hud.setLadderCard("Choose your fighter — 8 rungs stand between you and SOVEREIGN.");
-    hud.renderBracket([]);
-    openSheet("ladder");
+    startLadder(studioSelection.fighter);
   } else if (mode === "studio") {
-    openSheet("studio");
+    const curIdx = PALETTE_SWATCHES.findIndex((p) => p.id === studioSelection.palette);
+    const nextPalette = PALETTE_SWATCHES[(curIdx + 1) % PALETTE_SWATCHES.length]?.id ?? "default";
+    applyStudioPalette(studioSelection.fighter, nextPalette);
   }
 }
 
@@ -584,9 +646,7 @@ function toMainMenu(): void {
     app.resume();
   }
   hud.setModeButtons("quick");
-  void configureBout({ ...initialConfig, stage: stageById(currentStageId) }, "attract").then(() => {
-    hud.showMenu("mode");
-  });
+  void configureBout({ ...initialConfig, stage: stageById(currentStageId) });
 }
 
 function setPaused(next: boolean): void {
@@ -895,6 +955,36 @@ function showBoutResult(p1Won: boolean): void {
     { label: "Throws", value: `${st.throws}` }
   ];
   const cfg = state.config;
+  if (autopilot) {
+    if (cfg.mode === "ladder" && ladder) {
+      const l = ladder;
+      if (p1Won) {
+        advanceLadder(l);
+        renderLadderBracket();
+        if (l.cleared) {
+          startLadder(cfg.p1.id);
+          return;
+        }
+      }
+      const rung = currentRung(l);
+      if (rung) {
+        void configureBout({
+          mode: "ladder",
+          p1: fighterById(l.playerFighter),
+          cpu: fighterById(rung.opponent),
+          stage: stageById(rung.stage),
+          difficulty: rung.difficulty,
+          p1Tint: studioPaletteFor(l.playerFighter)
+        }).then(() => hud.announce(`RUNG ${rung.rung} OF 8`, rung.title, "hold"));
+        return;
+      }
+    }
+    void configureBout({
+      ...cfg,
+      cpu: randomCpu(cfg.p1.id)
+    });
+    return;
+  }
   if (cfg.mode === "ladder" && ladder) {
     const l = ladder;
     if (p1Won) {
@@ -1012,7 +1102,7 @@ function syncNodes(): void {
     const node = app.nodes.require(f.nodeId) as AuraRuntimeNodeHandle;
     node
       .setPosition(f.body.position[0], f.body.position[1], f.body.position[2])
-      .setRotation(0, facing < 0 ? Math.PI : 0, 0);
+      .setRotation(0, fighterFacingYaw(facing), 0);
   }
 }
 
@@ -1036,14 +1126,46 @@ const BINDING_LABELS: Record<string, { label: string; attack?: boolean }> = {
   ShiftLeft: { label: "DSH" }, ShiftRight: { label: "DSH" }, GamepadRB: { label: "DSH" }
 };
 
+function playerHasManualInput(): boolean {
+  return (
+    Math.abs(input.axis("moveX")) > 0.1 ||
+    input.held("crouch") ||
+    input.held("guard") ||
+    input.pressed("jump") ||
+    input.pressed("dash") ||
+    input.pressed("light") ||
+    input.pressed("heavy") ||
+    input.pressed("special") ||
+    input.pressed("throw")
+  );
+}
+
 app.onFrame(({ dt }) => {
-  frameCount += 1;
   if (!P1 || !CPU || !state) return;
+  if (frozenByQuery) {
+    const pSnap = actorSnap("player");
+    const cSnap = actorSnap("rival");
+    publishEvidence(pSnap, cSnap, desiredClip(P1), desiredClip(CPU));
+    return;
+  }
+  frameCount += 1;
+  elapsedMs += dt * 1000;
+  if (freezeMs !== null && elapsedMs >= freezeMs) {
+    frozenByQuery = true;
+    const pSnap = actorSnap("player");
+    const cSnap = actorSnap("rival");
+    publishEvidence(pSnap, cSnap, desiredClip(P1), desiredClip(CPU));
+    return;
+  }
   const s = state;
   snap(); // refresh per-frame combat snapshot cache
 
   if (input.pressed("pause") && (s.phase === "fight" || s.phase === "intro" || s.phase === "roundEnd" || s.phase === "ko")) {
     setPaused(true);
+  }
+
+  if (autopilot && playerHasManualInput()) {
+    setAutopilot(false);
   }
 
   if (s.phase === "attract") {
@@ -1137,7 +1259,7 @@ app.onFrame(({ dt }) => {
 
   if (simActive) {
     const pIntent =
-      s.phase === "attract"
+      s.phase === "attract" || (inFight && autopilot)
         ? (P1.brain ?? (P1.brain = createCpuBrain(P1.def, "scrapper", APP_SEED + 7))).think(aiCtx(P1, CPU), simDt)
         : inFight
           ? playerIntent()
@@ -1233,6 +1355,7 @@ function publishEvidence(
     frame: frameCount,
     mode: s.config.mode,
     phase: s.phase,
+    autopilot,
     stage: {
       id: s.config.stage.id,
       label: s.config.stage.label,
@@ -1324,7 +1447,7 @@ function publishEvidence(
 void (async () => {
   state = {
     config: initialConfig,
-    phase: "attract",
+    phase: "fight",
     phaseT: 0,
     round: 1,
     pipsP1: 0,
@@ -1339,13 +1462,20 @@ void (async () => {
   mountedArenaSig = arenaSignature(initialConfig);
   P1 = makeFighter("p1", initialConfig.p1, PLAYER_START);
   CPU = makeFighter("cpu", initialConfig.cpu, RIVAL_START);
+  P1.brain = createCpuBrain(initialConfig.p1, "scrapper", APP_SEED + 7);
   CPU.brain = createCpuBrain(initialConfig.cpu, "scrapper", APP_SEED + 1);
   combat.reset();
   combat.addActor({ id: "player", team: "p1", position: [...PLAYER_START], facing: 1, health: initialConfig.p1.stats.maxHealth, ...actorDefaults(P1) });
   combat.addActor({ id: "rival", team: "cpu", position: [...RIVAL_START], facing: -1, health: initialConfig.cpu.stats.maxHealth, ...actorDefaults(CPU) });
   bindAnimations();
+  syncNodes();
   hud.setNames(initialConfig.p1.name, initialConfig.cpu.name);
-  hud.setModeLabel("IRON CROWN · ATTRACT");
-  hud.showMenu("mode");
+  hud.setRoundLabel("ROUND 1");
+  hud.setModeLabel(`QUICK BOUT · ${initialConfig.stage.label.toUpperCase()} · AUTO`);
+  hud.showMenu(null);
   hud.setStageButtons(currentStageId);
+  hud.setFighterButtons(initialConfig.p1.id);
+  hud.setAutopilotButton(autopilot);
+  hud.announce("ROUND 1", "FIGHT!", "pop");
 })();
+

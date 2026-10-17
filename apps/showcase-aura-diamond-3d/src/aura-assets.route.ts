@@ -43,6 +43,8 @@ type AuraGeneratedRouteAssetDefinitions = {
   readonly "hoopsPalm": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
   readonly "hoopsSkyline": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
   readonly "hoopsTower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
+  readonly "diamondIvyWall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseStadiumSeats": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAuraAssets({
@@ -357,6 +359,22 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     hash: "sha256-f44ad781ac87dcf8b911bccc43d6fc84bf4a945734cde9b7c6726f0e9f9df70f",
     bounds: [0.357,1.904,0.355],
     sizeBytes: 5999428,
+  },
+  "diamondIvyWall": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondIvyWall.454795f2.glb",
+    hash: "sha256-454795f29682b500e034c6a26bd667a3b3a92f374d8e6020cb516da69fa6118d",
+    bounds: [1.907,0.63,0.233],
+    sizeBytes: 21796168,
+  },
+  "showcaseStadiumSeats": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/showcaseStadiumSeats.afb44897.glb",
+    hash: "sha256-afb44897c52d32e90f42d86e64e541aec7307e09ba18da126f3e9de458cc0ebf",
+    bounds: [43.799,152.996,28.975],
+    sizeBytes: 194740,
   },
 } as const);
 

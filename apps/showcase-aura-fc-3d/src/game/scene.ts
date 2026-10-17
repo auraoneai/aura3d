@@ -9,9 +9,8 @@
 import {
   camera, decals, effects, game, instances, lights, looks, material, model, primitives, scene
 } from "@aura3d/engine";
-import { assets } from "../../../../src/aura-assets";
+import { assets } from "../aura-assets-v2";
 import { VENUES, type VenueSpec } from "./content";
-import type { VenueId } from "./types";
 import {
   PITCH_HX, PITCH_HZ, GOAL_HALF_W, GOAL_H, GOAL_DEPTH, BOX_DEPTH, BOX_HALF_W,
   PEN_X, CIRCLE_R, BALL_R
@@ -36,22 +35,23 @@ function pitchNodes(): any[] {
   const L = (name: string, w: number, l: number, x: number, z: number) =>
     primitives.box({ name, size: [w, 0.018, l], material: lineMat }).position(x, 0.014, z).runtime(gameRuntime(name));
 
+  // Horizontal XZ planes use size: [widthX, 1, depthZ]
   const nodes: any[] = [
-    primitives.plane({ name: "fc-ground", size: [96, 76, 1], material: material.pbr({ color: v.ground, roughness: 0.96 }) })
+    primitives.plane({ name: "fc-ground", size: [110, 1, 90], material: material.pbr({ color: v.ground, roughness: 0.96 }) })
       .position(0, -0.03, 0).runtime(gameRuntime("fc-ground")),
-    primitives.plane({ name: "fc-apron", size: [PITCH_HX * 2 + 7, PITCH_HZ * 2 + 7, 1], material: material.pbr({ color: v.apron, roughness: 0.9 }) })
+    primitives.plane({ name: "fc-apron", size: [PITCH_HX * 2 + 7, 1, PITCH_HZ * 2 + 7], material: material.pbr({ color: v.apron, roughness: 0.9 }) })
       .position(0, -0.012, 0).runtime(gameRuntime("fc-apron")),
-    primitives.plane({ name: "fc-pitch", size: [PITCH_HX * 2, PITCH_HZ * 2, 1], material: material.pbr({ color: v.pitch, roughness: 0.85 }) })
+    primitives.plane({ name: "fc-pitch", size: [PITCH_HX * 2, 1, PITCH_HZ * 2], material: material.pbr({ color: v.pitch, roughness: 0.85 }) })
       .position(0, 0.002, 0).runtime(gameRuntime("fc-pitch"))
   ];
 
-  // mow stripes (venue.stripes)
-  const stripeN = 10;
-  for (let i = 0; i < stripeN; i++) {
-    const w = (PITCH_HX * 2) / stripeN;
+  // 10 mow stripes across the length of the pitch
+  const stripes = 10;
+  const w = (PITCH_HX * 2) / stripes;
+  for (let i = 0; i < stripes; i++) {
     nodes.push(
-      primitives.plane({ name: `fc-stripe-${i}`, size: [w - 0.02, PITCH_HZ * 2 - 0.02, 1], material: material.pbr({ color: i % 2 ? v.pitchAlt : v.pitch, roughness: 0.85 }) })
-        .position(-PITCH_HX + w / 2 + i * w, 0.004, 0)
+      primitives.plane({ name: `fc-stripe-${i}`, size: [w - 0.02, 1, PITCH_HZ * 2 - 0.02], material: material.pbr({ color: i % 2 ? v.pitchAlt : v.pitch, roughness: 0.85 }) })
+        .position(-PITCH_HX + w / 2 + i * w, 0.005, 0)
         .runtime(gameRuntime(`fc-stripe-${i}`))
     );
   }
@@ -103,9 +103,16 @@ function pitchNodes(): any[] {
 function goalNodes(sx: -1 | 1): any[] {
   const gx = sx * (PITCH_HX + 0.06);
   const postMat = material.pbr({ color: "#f5f4ea", roughness: 0.35, metalness: 0.15 });
-  const netMat = material.pbr({ color: "#dfe6ee", roughness: 0.9, opacity: 0.38 });
+  const netMat = material.pbr({ color: "#dfe6ee", roughness: 0.9, opacity: 0.28 });
   const backX = gx + sx * GOAL_DEPTH;
+  const goalScaleX = (GOAL_HALF_W * 2) / 1.897;
+  const goalScaleY = GOAL_H / 1.282;
+  const goalScaleZ = GOAL_DEPTH / 0.8;
   return [
+    model(assets.fcSoccerGoalNetMeshy, { name: `fc-goal-mesh-${sx}` })
+      .position(gx + sx * (GOAL_DEPTH * 0.48), 0, 0)
+      .rotate(0, -sx * (Math.PI / 2), 0)
+      .scale([goalScaleX, goalScaleY, goalScaleZ]),
     primitives.cylinder({ name: `post-${sx}-n`, size: [0.075, GOAL_H + 0.05, 0.075], material: postMat })
       .position(gx, GOAL_H / 2, -GOAL_HALF_W),
     primitives.cylinder({ name: `post-${sx}-s`, size: [0.075, GOAL_H + 0.05, 0.075], material: postMat })
@@ -117,17 +124,17 @@ function goalNodes(sx: -1 | 1): any[] {
       .position(backX, (GOAL_H + 0.4) / 2, -GOAL_HALF_W).rotate(0, 0, sx * 0.22),
     primitives.cylinder({ name: `stay-${sx}-s`, size: [0.045, GOAL_H + 0.4, 0.045], material: postMat })
       .position(backX, (GOAL_H + 0.4) / 2, GOAL_HALF_W).rotate(0, 0, sx * 0.22),
-    // net: back panel + roof + side panels (runtime for goal ripple)
-    primitives.plane({ name: `net-back-${sx}`, size: [GOAL_HALF_W * 2 + 0.2, GOAL_H, 1], material: netMat })
-      .position(backX, GOAL_H / 2, 0).rotate(0, Math.PI / 2, 0)
+    // net: back panel + roof + side panels (thin boxes for 3D net enclosure)
+    primitives.box({ name: `net-back-${sx}`, size: [0.03, GOAL_H, GOAL_HALF_W * 2 + 0.2], material: netMat })
+      .position(backX, GOAL_H / 2, 0)
       .runtime(gameRuntime(`net-back-${sx}`)),
-    primitives.plane({ name: `net-roof-${sx}`, size: [GOAL_HALF_W * 2 + 0.2, GOAL_DEPTH, 1], material: netMat })
+    primitives.box({ name: `net-roof-${sx}`, size: [GOAL_DEPTH, 0.03, GOAL_HALF_W * 2 + 0.2], material: netMat })
       .position(gx + sx * GOAL_DEPTH / 2, GOAL_H + 0.01, 0)
       .runtime(gameRuntime(`net-roof-${sx}`)),
-    primitives.plane({ name: `net-n-${sx}`, size: [GOAL_DEPTH, GOAL_H, 1], material: netMat })
+    primitives.box({ name: `net-n-${sx}`, size: [GOAL_DEPTH, GOAL_H, 0.03], material: netMat })
       .position(gx + sx * GOAL_DEPTH / 2, GOAL_H / 2, -GOAL_HALF_W)
       .runtime(gameRuntime(`net-n-${sx}`)),
-    primitives.plane({ name: `net-s-${sx}`, size: [GOAL_DEPTH, GOAL_H, 1], material: netMat })
+    primitives.box({ name: `net-s-${sx}`, size: [GOAL_DEPTH, GOAL_H, 0.03], material: netMat })
       .position(gx + sx * GOAL_DEPTH / 2, GOAL_H / 2, GOAL_HALF_W)
       .runtime(gameRuntime(`net-s-${sx}`))
   ];
@@ -201,7 +208,7 @@ function stadiumNodes(v: VenueSpec): any[] {
   const warm = ["#c96f4a", "#d8a75c", "#e8d8b0", "#a8563c", "#ffb3ac"];
   const cool = ["#3d5a80", "#98c1d9", "#e0fbfc", "#293241", "#7fe8c9"];
   const cols = v.crowdWarm ? warm.concat(cool.slice(0, 2)) : cool.concat(warm.slice(0, 2));
-  const tiers = MAX_TIERS;   // build for the biggest bowl; venue gates visibility
+  const tiers = MAX_TIERS;
   for (let tier = 0; tier < tiers; tier++) {
     const y = 1.35 + tier * 1.3;
     const zFar = -(PITCH_HZ + 4.6 + tier * 2.2);
@@ -262,10 +269,11 @@ function stadiumNodes(v: VenueSpec): any[] {
       .runtime(gameRuntime("fc-scoreboard-screen"))
   );
 
-  /* ---- Glacier dome + aurora ribbons ---- */
+  /* ---- Glacier dome + aurora ribbons (dome lowered to y=-6.5 when active so floor stays below turf) ---- */
   nodes.push(
     model(assets.fcGlacierDomeMeshy, { name: "fc-dome", targetHeight: 26 })
-      .position(0, 0, 0)
+      .position(0, -90, 0)
+      .scale([HIDDEN, HIDDEN, HIDDEN])
       .runtime(gameRuntime("fc-dome"))
   );
   for (let i = 0; i < 3; i++) {
@@ -277,12 +285,26 @@ function stadiumNodes(v: VenueSpec): any[] {
     );
   }
 
-  /* ---- Dugouts + dressing ---- */
+  /* ---- 3D Meshy Dugouts, Stadium Bowl, Ball Cart & Touchline Referee ---- */
   nodes.push(
-    primitives.box({ name: "dugout-home", size: [4.4, 1.4, 1.4], material: material.pbr({ color: "#1c2634", roughness: 0.8 }) })
-      .position(-7, 0.7, PITCH_HZ + 4.0),
-    primitives.box({ name: "dugout-away", size: [4.4, 1.4, 1.4], material: material.pbr({ color: "#1c2634", roughness: 0.8 }) })
-      .position(7, 0.7, PITCH_HZ + 4.0),
+    model(assets.diamondDugout, { name: "dugout-home", targetHeight: 2.35 })
+      .position(-7, 0, PITCH_HZ + 3.8)
+      .rotate(0, Math.PI, 0),
+    model(assets.diamondDugout, { name: "dugout-away", targetHeight: 2.35 })
+      .position(7, 0, PITCH_HZ + 3.8)
+      .rotate(0, Math.PI, 0),
+    model(assets.hoopsBallCart, { name: "fc-ball-cart", targetHeight: 1.05 })
+      .position(0, 0, PITCH_HZ + 3.6),
+    model(assets.diamondStadium, { name: "fc-stadium-bowl", targetHeight: 15 })
+      .position(0, -1.6, -(PITCH_HZ + 18))
+      .scale([1.3, 1, 1.1]),
+    model(assets.gallerySecurityGuardMeshy, {
+      name: "fc-referee",
+      targetHeight: 1.84,
+      animation: { clip: "Walk", loop: true, speed: 1.0 }
+    } as any)
+      .position(0, 0, -(PITCH_HZ + 1.1))
+      .runtime(gameRuntime("fc-referee")),
     // trophy cabinet by the tunnel (catalog dressing)
     model(assets.fcHeroTrophyMeshy, { name: "fc-trophy-case", targetHeight: 2.2 })
       .position(-PITCH_HX - 4.5, 0.9, -(PITCH_HZ + 3.5))
@@ -308,14 +330,12 @@ function stadiumNodes(v: VenueSpec): any[] {
 
 function ballNodes(): any[] {
   return [
-    // match ball: typed catalog GLB + emissive equator ring so it reads at broadcast distance
     model(assets.fcMatchBallMeshy, { name: "fc-ball", targetHeight: BALL_R * 2.2 })
       .runtime(gameRuntime("fc-ball")),
     primitives.sphere({ name: "fc-ball-glow", size: [BALL_R * 2.35, BALL_R * 2.35, BALL_R * 2.35], material: material.emissive({ color: "#f2f6ec", emissive: "#f2f6ec", emissiveIntensity: 0.35, opacity: 0.5 }) })
       .runtime(gameRuntime("fc-ball-glow")),
     primitives.cylinder({ name: "fc-ball-shadow", size: [0.36, 0.007, 0.36], material: material.pbr({ color: "#000000", opacity: 0.42, roughness: 1 }) })
       .runtime(gameRuntime("fc-ball-shadow")),
-    // engine ribbon trail + penalty aim marker + touch-lab target ring
     effects.trail({ name: "fc-ball-trail", target: "fc-ball", color: "#d8ff3e", width: 0.1, maxPoints: 40, intensity: 0.85 } as any),
     primitives.torus({ name: "fc-aim-ring", size: [0.34, 0.035, 0.035], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.3 }) })
       .scale(HIDDEN).runtime(gameRuntime("fc-aim-ring")),
@@ -352,7 +372,6 @@ export function buildFcScene() {
     .add(effects.motionBlur({ intensity: 0.12 }))
     .add(effects.bloom({ intensity: 0.3, threshold: 0.76 }))
     .camera(camera.perspective({ position: [0, 24, 38], target: [0, 0.4, 0], fov: 16 }));
-  return s;
 }
 
 export interface WorldHandles {
@@ -365,6 +384,7 @@ export interface WorldHandles {
   scoreboard: any;
   nets: any[];
   dome: any;
+  referee: any;
   auroras: any[];
   wavers: any[];
   confetti: any;
@@ -393,6 +413,7 @@ export function resolveWorld(app: any): WorldHandles {
     scoreboard: tryReq(app, "fc-scoreboard-screen"),
     nets: ["net-back--1", "net-roof--1", "net-n--1", "net-s--1", "net-back-1", "net-roof-1", "net-n-1", "net-s-1"].map((n) => tryReq(app, n)),
     dome: tryReq(app, "fc-dome"),
+    referee: tryReq(app, "fc-referee"),
     auroras: [0, 1, 2].map((i) => tryReq(app, `fc-aurora-${i}`)),
     wavers: Array.from({ length: 26 }, (_, i) => tryReq(app, `fc-waver-${i}`)),
     confetti: tryReq(app, "fc-confetti"),
@@ -415,7 +436,6 @@ export function applyVenue(h: WorldHandles, v: VenueSpec): void {
   }
   for (const c of h.cages) c?.setMaterial(material.pbr({ color: v.wallColor, roughness: 0.85 })).setScale(v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(v.walled);
   for (const c of h.cageRails) c?.setMaterial(material.emissive({ color: v.accent, emissive: v.accent, emissiveIntensity: 0.5 })).setScale(v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(v.walled);
-  // stands: tier i visible when standCount covers it; near-side bowl only on 3+ tier venues
   h.stands.forEach((s, i) => {
     const isNear = i >= 12;
     const tier = i % 4;
@@ -424,13 +444,23 @@ export function applyVenue(h: WorldHandles, v: VenueSpec): void {
   });
   h.crowd?.setVisible(v.standCount > 0);
   for (const w of h.wavers) w?.setVisible(v.standCount > 0);
-  h.dome?.setVisible(v.dome);
+  // Lower dome floor to y=-6.5 when active so its bottom never occludes the turf
+  if (v.dome) {
+    h.dome?.setPosition(0, -6.5, 0).setScale([1.22, 1, 1.22]).setVisible(true);
+  } else {
+    h.dome?.setPosition(0, -90, 0).setScale([HIDDEN, HIDDEN, HIDDEN]).setVisible(false);
+  }
   for (const a of h.auroras) a?.setVisible(v.aurora);
 }
 
-/** Per-frame ambient motion: wavers bounce on goals, aurora drifts, ball net ripple. */
+/** Per-frame ambient motion: wavers bounce on goals, referee patrols touchline, aurora drifts, net ripple. */
 export function tickWorld(h: WorldHandles, t: number, opts: { cheering: boolean; ripple: number }): void {
   const cheer = opts.cheering;
+  // Touchline referee patrols along the north touchline
+  const refX = Math.sin(t * 0.42) * 10.5;
+  const refDir = Math.cos(t * 0.42) >= 0 ? Math.PI / 2 : -Math.PI / 2;
+  h.referee?.setPosition(refX, 0, -(PITCH_HZ + 1.1)).setRotation(0, refDir, 0).setScale([1, 1, 1]);
+
   for (let i = 0; i < h.wavers.length; i++) {
     const w = h.wavers[i];
     if (!w) continue;
@@ -440,7 +470,6 @@ export function tickWorld(h: WorldHandles, t: number, opts: { cheering: boolean;
   for (let i = 0; i < h.auroras.length; i++) {
     h.auroras[i]?.setRotation(-0.5 - i * 0.12, 0.25 * i + Math.sin(t * 0.22 + i * 2) * 0.08, 0);
   }
-  // net ripple: brief scale pulse on the back panels after a goal
   if (opts.ripple > 0) {
     const k = 1 + Math.sin(opts.ripple * 22) * 0.06 * Math.min(1, opts.ripple);
     for (const n of h.nets) n?.setScale([k, 1, 1]);

@@ -3,29 +3,41 @@
   "generatedAt": "2026-10-17T00:00:00.000Z",
   "appId": "showcase-aura-fc-3d",
   "route": "/apps/showcase-aura-fc-3d/",
-  "title": "AURA FC 3D \u2014 Street & Stadium Football",
-  "category": "sports",
   "classification": "candidate",
-  "publicShowcase": false,
-  "qualityGate": {
-    "status": "reviewed",
-    "note": "Remote headless capture (dedicated runner i-0285a237ed8295447, 2026-10-17): route-ready=ready, evidence ready=true, framesRendered=127, mode=demo/live, venue=munich; screenshots show live 5v5 play with ball, kits, scorebug FVK 0-0 MUN. Preview webp generated from capture."
-  },
-  "routeGate": {
-    "claim": "Five-a-side broadcast football on a deterministic ball sim (dribble/trap/loose/flight FSM, curl, posts, boards). Six re-tintable venues from a walled favela cage to the Glacier dome, eight club identities, Shootout Lab + Touch Lab, a 32-team World Circuit (group \u2192 knockouts), Player Studio, CPU-vs-CPU demo, broadcast camera director, DOM score bug + ticker, juice/VFX + audio pipeline. Publishes window.__AURA3D_GAME_EVIDENCE__ / __AURA3D_GAME__ / __gameEvidence / __auraEvidence."
-  },
+  "publicShowcase": true,
+  "promotionStatus": "route-local",
   "machinePass": true,
   "renderer": {
-    "path": "createAuraApp (@aura3d/engine) agent scene API",
+    "path": "createAuraApp root safe API",
     "mode": "production",
     "nativeWebGPU": false,
-    "productionRuntimeClaimed": false
+    "productionRuntimeClaimed": true
   },
   "primaryAssets": [
     {
       "typedRef": "assets.fcMatchBallMeshy",
-      "quality": "candidate",
+      "quality": "production",
       "role": "primaryBall"
+    },
+    {
+      "typedRef": "assets.fcSoccerStrikerMeshy",
+      "quality": "production",
+      "role": "primaryCharacter"
+    },
+    {
+      "typedRef": "assets.fcGoalkeeperMeshy",
+      "quality": "production",
+      "role": "primaryCharacter"
+    },
+    {
+      "typedRef": "assets.fcSoccerGoalNetMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.gallerySecurityGuardMeshy",
+      "quality": "candidate",
+      "role": "supportingCharacter"
     },
     {
       "typedRef": "assets.fcFloodlightPylonMeshy",
@@ -38,23 +50,34 @@
       "role": "setDressing"
     },
     {
+      "typedRef": "assets.fcHeroTrophyMeshy",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
       "typedRef": "assets.fcGlacierDomeMeshy",
       "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.fcHeroTrophyMeshy",
+      "typedRef": "assets.diamondDugout",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.diamondStadium",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.hoopsBallCart",
       "quality": "candidate",
       "role": "setDressing"
     }
   ],
-  "assetHonesty": "Match ball, floodlight pylons, scoreboard gantry, glacier dome and hero trophy are bespoke Meshy GLBs generated for this route (artifacts/meshy/fc-* provenance, admitted via assets import-meshy \u2014 no shared/defunct-game assets). Athletes, pitch, goals, stands, crowd and cage are route-local primitives.",
-  "globalHandle": "__AURA3D_GAME_EVIDENCE__",
-  "readySelector": "body[data-aura3d-ready=\"true\"]",
-  "canvasSelector": "#app canvas",
-  "budgets": {
-    "maxModelNodes": 40,
-    "minFps": 30,
-    "maxBootMs": 9000
+  "assetHonesty": "Match ball, 8 outfield soccer strikers (fcSoccerStrikerMeshy), 2 goalkeepers (fcGoalkeeperMeshy), both 3D goal frames & nets (fcSoccerGoalNetMeshy), touchline referee, floodlight pylons, scoreboard gantry, championship trophy, glacier dome, sideline dugouts, stadium arch, and ball cart are 3D Meshy GLBs.",
+  "qualityGate": {
+    "status": "reviewed",
+    "note": "Remote headless capture (i-087c92ec3af45d0d1, 2026-10-17): route-ready=ready, evidence ready=true, framesRendered=120, mode=quick/play; screenshots show live 5v5 3D gameplay with 3D Meshy soccer strikers, goalkeepers, goal nets, scorebug, radar, and AI/user play."
   }
 }

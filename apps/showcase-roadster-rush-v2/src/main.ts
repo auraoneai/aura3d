@@ -1,1440 +1,1849 @@
-/**
- * Apex Overdrive v2 — flagship sky-lane highway racer.
- *
- * Same identity as the original Roadster Rush port (fly the Apex Interceptor
- * over a gridlocked sunset freeway: cold-gas thrusters, barrel rolls, carrier
- * launch ramps, sky-lane dogfights, near-miss scoring) rebuilt on the Aura3D
- * game kits instead of the legacy engine.js runtime:
- *
- *   - game.racing + game.arcadeKart own the route, surface query and the
- *     player's ground arcade vehicle model (open `closed:false` freeway).
- *   - createVehicleChassis resolves grounded suspension/attitude telemetry.
- *   - createVehicleDriverAi drives every freeway commuter, sky-lane courier
- *     and the three named rivals — deterministic racing-line AI.
- *   - game.cameraDirector marks takedown/barrel-roll special moments;
- *     camera.rigs.chase + a createCameraPathFromPreset intro flythrough own
- *     presentation; trauma/punch/fovKick layers juice boost and crashes.
- *   - effects: SSR wet asphalt, motion blur, cinematic bloom, additive thruster
- *     trails, boost-pad beams, projected scorch decals, storm rain layer.
- *   - createGame shell (title/pause/results/settings), HUD kit widgets
- *     (score/speedometer/meter/combo/objective/prompt), DOM event feed,
- *     game.eventLog + app.evidence, steer-pedals touch controls, cue audio
- *     with the original music/voice pack, reduced-motion accessibility.
- */
 import {
   camera,
-  createVehicleChassis,
-  createVehicleDriverAi,
+  createAuraApp,
   effects,
   game,
-  gameFeel,
+  lights,
   looks,
   material,
   model,
   primitives,
   scene,
-  vehicleChassisSpecFromBounds,
-  type AuraNodeInput,
-  type AuraVec3,
-  type VehicleSurface,
-  createAssetProvenance,
-  flattenSceneSnapshot,
-  isRenderableModelNode,
+  type AuraAssetRef,
+  type AuraRuntimeNodeHandle,
+  type AuraSceneNode
 } from "@aura3d/engine";
-import { createCameraPathFromPreset } from "@aura3d/engine";
-import { createGame, sfxUrl } from "@aura3d/engine/game";
+import { assets } from "../../../src/aura-assets";
 import { assetsV2 } from "./aura-assets-v2";
-import "./styles.css";
 
-/* ------------------------------------------------------------------ *
- *  Route & world constants
- * ------------------------------------------------------------------ */
+type Vec3 = [number, number, number];
 
-const LOOK_ID = "golden-hour" as const;
-const ROAD_WIDTH = 30;
-const ROAD_HALF_WIDTH = ROAD_WIDTH * 0.5;
-const FREEWAY_Z_START = 60;
-const FREEWAY_Z_END = -4400;
-const ROUTE_LENGTH = FREEWAY_Z_START - FREEWAY_Z_END; // ~4460 m
-const FINISH_PROGRESS = 0.985;
-const LANES = [-12.5, -7.5, -2.5, 2.5, 7.5, 12.5] as const;
-const SKY_ALT_LOW = 6.4;
-const SKY_ALT_HIGH = 12.6;
-const HOVER_RIDE_Y = 0.9;
-const MAX_ALTITUDE = 15.5;
-const START_PROGRESS = 0.012;
-const PLAYER_SCALE = 0.62;
+type VehicleType =
+  | "sedan"
+  | "hatch"
+  | "suv"
+  | "taxi"
+  | "van"
+  | "pickup"
+  | "boxtruck"
+  | "bus"
+  | "carrier";
 
-/** Straight freeway heading — points sample -Z so heading ~ -Z. */
-const route = {
-  id: "apex-overdrive-freeway",
-  width: ROAD_WIDTH,
-  closed: false as const,
-  points: [
-    { x: 0, y: FREEWAY_Z_START },
-    { x: 0, y: -700 },
-    { x: 0, y: -1500 },
-    { x: 0, y: -2300 },
-    { x: 0, y: -3100 },
-    { x: 0, y: -3900 },
-    { x: 0, y: FREEWAY_Z_END }
-  ],
-  // Sector gates — the racing kit's checkpoint system, spaced down the corridor.
-  checkpoints: [0.12, 0.28, 0.44, 0.60, 0.76, 0.92]
-};
+type PickupKind = "bolt" | "air" | "magnet" | "rocket" | "shield" | "multiplier";
 
-function scaleForSpan(bounds: readonly [number, number, number], targetSpan: number): number {
-  return Number((targetSpan / Math.max(bounds[0], bounds[1], bounds[2], 0.001)).toFixed(3));
-}
-function groundedY(bounds: readonly [number, number, number], scale: number, surfaceY = 0): number {
-  return Number((surfaceY + bounds[1] * scale * 0.5).toFixed(3));
-}
+const HIDDEN_SCALE: Vec3 = [0.0001, 0.0001, 0.0001];
+const HIDDEN_POS: Vec3 = [0, -80, 120];
 
-const CARRIER_SCALE = 0.9;
-const BUILDING_SCALE = scaleForSpan(assetsV2.building.bounds, 118);
-const BLIMP_SCALE = scaleForSpan(assetsV2.apexBlimp.bounds, 34);
-const APEX_PLAYER_SCALE = scaleForSpan(assetsV2.apexInterceptor.bounds, 4.9);
-const APEX_RIVAL_SCALE = scaleForSpan(assetsV2.apexRival.bounds, 4.6);
-const GUNSHIP_SCALE = scaleForSpan(assetsV2.apexGunship.bounds, 14);
-
-/* ------------------------------------------------------------------ *
- *  Kits
- * ------------------------------------------------------------------ */
-
-const racing = game.racing({
-  route,
-  startProgress: START_PROGRESS,
-  checkpointRadius: 0.012,
-  lapsToWin: 1,
-  maxSpeed: 58,
-  acceleration: 30,
-  drag: 1.6,
-  steerRate: 2.4,
-  boostAcceleration: 26,
-  feelBus: { emit: (name, o) => apexGame?.app?.feel?.emit(name, { strength: o?.strength }) }
-});
-
-const kart = game.arcadeKart({
-  route,
-  surfaceQuery: racing.surfaceQuery,
-  startProgress: START_PROGRESS,
-  lapsToWin: 1,
-  roadHalfWidth: ROAD_HALF_WIDTH,
-  maxSpeed: 46,
-  boostMaxSpeed: 62,
-  acceleration: 26,
-  boostAcceleration: 34
-});
-
-/** sampleOffset returns {x, z, heading}; heading ~ -Z travel direction. */
-function sampleRoute(progress: number, lateral = 0) {
-  return kart.sampleOffset(Math.min(1, Math.max(0, progress)), lateral);
-}
-
-const driverRoute = {
-  sample: (p: number) => {
-    const s = sampleRoute(p, 0);
-    return { x: s.x, y: s.z, heading: s.heading };
-  },
-  halfWidth: () => ROAD_HALF_WIDTH - 1.2,
-  length: ROUTE_LENGTH
-};
-
-/* ------------------------------------------------------------------ *
- *  Traffic / sky-lane / rival fleets
- * ------------------------------------------------------------------ */
-
-type ModelKey = Exclude<
-  keyof typeof assetsV2,
-  "billboard0" | "billboard1" | "billboard2" | "billboard3"
->;
-
-interface FleetEntry {
-  readonly id: string;
-  readonly nodeId: string;
-  readonly asset: ModelKey;
-  readonly scale: number;
-  readonly rideY: number;
-  readonly lane: number;
-  readonly startProgress: number;
-  readonly cruise: number;
-  readonly aggression: "cautious" | "balanced" | "aggressive";
-  readonly seed: number;
-  readonly altitude: number;
-  progress: number;
-  signedOffset: number;
-  speed: number;
-  heading: number;
-  x: number;
-  z: number;
-  nearMissArmed: boolean;
-  tumble: number;
-}
-
-const TRAFFIC_ASSETS = [
-  "sedan", "hatch", "suv", "taxi", "van", "pickup", "boxtruck", "bus", "sedan", "hatch", "suv", "taxi"
-] as const;
-
-const trafficFleet: FleetEntry[] = TRAFFIC_ASSETS.map((asset, i) => {
-  const lane = LANES[i % LANES.length] ?? 0;
-  const prog = 0.06 + (i * 0.037) % 0.9;
-  const pose = sampleRoute(prog, lane);
-  const scale = asset === "bus" || asset === "boxtruck" ? 0.9 : 1;
-  return {
-    id: `traffic-${i}`,
-    nodeId: `traffic-${i}`,
-    asset,
-    scale,
-    rideY: 0,
-    lane,
-    startProgress: prog,
-    cruise: asset === "bus" || asset === "boxtruck" ? 9 + (i % 3) : 11 + ((i * 7) % 9),
-    aggression: i % 5 === 0 ? "aggressive" : i % 3 === 0 ? "balanced" : "cautious",
-    seed: 100 + i,
-    altitude: 0,
-    progress: prog,
-    signedOffset: lane,
-    speed: 10,
-    heading: pose.heading,
-    x: pose.x,
-    z: pose.z,
-    nearMissArmed: true,
-    tumble: 0
-  };
-});
-
-const SKY_ASSETS = ["skyCar", "skyCar", "skyCar", "apexRival"] as const;
-const skyFleet: FleetEntry[] = SKY_ASSETS.map((asset, i) => {
-  const lane = [-6, -1.5, 4.5, 9][i] ?? 0;
-  const prog = 0.1 + (i * 0.16) % 0.85;
-  const pose = sampleRoute(prog, lane);
-  return {
-    id: `sky-${i}`,
-    nodeId: `sky-${i}`,
-    asset,
-    scale: asset === "apexRival" ? APEX_RIVAL_SCALE : 0.72,
-    rideY: 0,
-    lane,
-    startProgress: prog,
-    cruise: 26 + i * 4,
-    aggression: "balanced" as const,
-    seed: 300 + i,
-    altitude: SKY_ALT_LOW + (i % 3) * 2.4,
-    progress: prog,
-    signedOffset: lane,
-    speed: 26,
-    heading: pose.heading,
-    x: pose.x,
-    z: pose.z,
-    nearMissArmed: true,
-    tumble: 0
-  };
-});
-
-const rivals: FleetEntry[] = [
-  { name: "Vex Corvid", asset: "apexRival", lane: -4, prog: 0.05, cruise: 41 },
-  { name: "Mara Kestrel", asset: "skyCar", lane: 3.5, prog: 0.04, cruise: 39 },
-  { name: "Ion Bishop", asset: "apexRival", lane: -0.5, prog: 0.085, cruise: 43 }
-].map((r, i) => {
-  const pose = sampleRoute(r.prog, r.lane);
-  return {
-    id: `rival-${i}`,
-    nodeId: `rival-${i}`,
-    name: r.name,
-    asset: r.asset,
-    scale: r.asset === "apexRival" ? APEX_RIVAL_SCALE : 0.72,
-    rideY: 0,
-    lane: r.lane,
-    startProgress: r.prog,
-    cruise: r.cruise,
-    aggression: "aggressive" as const,
-    seed: 700 + i,
-    altitude: SKY_ALT_LOW + 1.6 + i * 1.4,
-    progress: r.prog,
-    signedOffset: r.lane,
-    speed: r.cruise,
-    heading: pose.heading,
-    x: pose.x,
-    z: pose.z,
-    nearMissArmed: true,
-    tumble: 0
-  } as FleetEntry & { name: string };
-}) as FleetEntry[];
-
-/** Carrier launch ramps — parked on shoulders, drive over the deck to launch. */
-const CARRIER_SLOTS = [
-  { progress: 0.16, lane: 13.4 },
-  { progress: 0.34, lane: -13.4 },
-  { progress: 0.52, lane: 13.4 },
-  { progress: 0.68, lane: -13.4 },
-  { progress: 0.85, lane: 13.4 }
-] as const;
-
-const BOOST_PADS = [0.09, 0.22, 0.3, 0.47, 0.58, 0.72, 0.8, 0.95].map((progress, i) => ({
-  progress,
-  lane: [-4.8, 0, 4.8, -4.8, 4.8, 0, -4.8, 4.8][i] ?? 0,
-  cooldown: 0
-}));
-
-const drivers = new Map<string, ReturnType<typeof createVehicleDriverAi>>();
-function driverFor(entry: FleetEntry) {
-  let d = drivers.get(entry.id);
-  if (!d) {
-    d = createVehicleDriverAi(driverRoute, {
-      maxSpeed: entry.cruise,
-      aggression: entry.aggression,
-      paceFraction: 0.82,
-      seed: entry.seed,
-      reactionSeconds: 0.2
-    });
-    drivers.set(entry.id, d);
-  }
-  return d;
-}
-
-/* ------------------------------------------------------------------ *
- *  Input
- * ------------------------------------------------------------------ */
-
-const inputOptions = {
-  actions: {
-    throttle: ["KeyW", "ArrowUp"],
-    brake: ["KeyS", "ArrowDown"],
-    left: ["KeyA", "ArrowLeft"],
-    right: ["KeyD", "ArrowRight"],
-    thrust: ["Space"],
-    boost: ["ShiftLeft", "ShiftRight"],
-    rollLeft: ["KeyQ"],
-    rollRight: ["KeyE"],
-    takedown: ["KeyF"],
-    storm: ["KeyT"],
-    reset: ["KeyR"],
-    pause: ["Escape", "KeyP"]
-  },
-  axes: {
-    steer: { negative: "left", positive: "right" }
-  },
-  bufferMs: 80
-} as const;
-
-const isAutoplay =
-  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("autoplay") === "1";
-
-/* ------------------------------------------------------------------ *
- *  Game state
- * ------------------------------------------------------------------ */
-
-interface PlayerState {
-  x: number; z: number; y: number;
-  vy: number;
-  speed: number;
-  heading: number;
-  progress: number;
-  signedTrackOffset: number;
-  roll: number;          // visual roll (barrel roll + bank)
-  pitch: number;
-  rollAnim: number;      // 0..1 barrel roll progress, -1 idle
-  rollDir: number;
-  invuln: number;
-  hull: number;
-  boost: number;         // 0..100
-  charge: number;        // cold-gas thruster charge 0..100
-  airtime: number;
-  launched: number;
-  status: "idle" | "running" | "finished" | "totaled";
-  checkpoint: number;
-  raceTime: number;
-}
-
-const player: PlayerState = {
-  x: 0, z: 0, y: HOVER_RIDE_Y, vy: 0, speed: 0, heading: Math.PI,
-  progress: START_PROGRESS, signedTrackOffset: 0,
-  roll: 0, pitch: 0, rollAnim: -1, rollDir: 1, invuln: 0,
-  hull: 100, boost: 55, charge: 100, airtime: 0, launched: 0,
-  status: "idle", checkpoint: 0, raceTime: 0
-};
-
-const score = {
-  total: 0,
-  combo: 1,
-  comboTimer: 0,
-  nearMisses: 0,
-  rolls: 0,
-  launches: 0,
-  takedowns: 0,
-  bestCombo: 1
-};
-
-const freewaySurface: VehicleSurface = {
-  sample: () => ({ height: 0, normal: [0, 1, 0], grip: 1, hit: true })
-};
-
-const chassis = createVehicleChassis(
+const VEHICLE_POOL_SPEC: Record<
+  VehicleType,
   {
-    ...vehicleChassisSpecFromBounds([
-      assetsV2.playerInterceptor.bounds[0] * PLAYER_SCALE,
-      assetsV2.playerInterceptor.bounds[1] * PLAYER_SCALE,
-      assetsV2.playerInterceptor.bounds[2] * PLAYER_SCALE
-    ]),
-    maxRoll: 0.34,
-    maxPitch: 0.22
-  },
-  freewaySurface
-);
+    count: number;
+    maxDim: number;
+    role: "primaryVehicle" | "setDressing";
+    asset: AuraAssetRef<"model">;
+  }
+> = {
+  sedan: { count: 4, maxDim: 4.64, role: "setDressing", asset: assets.roadsterRushSedan },
+  hatch: { count: 3, maxDim: 4.04, role: "setDressing", asset: assets.roadsterRushHatch },
+  suv: { count: 3, maxDim: 4.94, role: "setDressing", asset: assets.roadsterRushSuv },
+  taxi: { count: 2, maxDim: 4.74, role: "setDressing", asset: assets.roadsterRushTaxi },
+  van: { count: 2, maxDim: 5.34, role: "setDressing", asset: assets.roadsterRushVan },
+  pickup: { count: 2, maxDim: 5.58, role: "setDressing", asset: assets.roadsterRushPickup },
+  boxtruck: { count: 2, maxDim: 8.14, role: "setDressing", asset: assets.roadsterRushBoxtruck },
+  bus: { count: 1, maxDim: 12.22, role: "setDressing", asset: assets.roadsterRushBus },
+  carrier: { count: 2, maxDim: 16.12, role: "primaryVehicle", asset: assets.roadsterRushCarrier }
+};
 
-const routeEvents = game.eventLog({ label: "apex overdrive events", maxEvents: 40 });
-let apexGame: ReturnType<typeof createGame> | undefined;
+const VEHICLE_TYPES: readonly VehicleType[] = [
+  "sedan",
+  "hatch",
+  "suv",
+  "taxi",
+  "van",
+  "pickup",
+  "boxtruck",
+  "bus",
+  "carrier"
+];
 
-function recordEvent(type: string, label: string, severity: "info" | "success" | "warning" = "info") {
-  routeEvents.push({ type, label, severity });
+const SKY_CAR_POOL_COUNT = 5;
+const BOLT_POOL_COUNT = 28;
+const POWERUP_POOL_COUNT = 8;
+const BRAKE_BAR_POOL_COUNT = 12;
+const BLINKER_POOL_COUNT = 6;
+
+const LANE_DIVIDER_X: readonly number[] = [-5.4, -1.8, 1.8, 5.4];
+const DASH_COUNT_PER_DIVIDER = 14;
+const DASH_STRIDE_Z = 14;
+
+const GANTRY_POOL_COUNT = 2;
+const GANTRY_STRIDE_Z = 130;
+
+const PALM_POOL_COUNT = 0;
+const PALM_STRIDE_Z = 34;
+
+const POLE_POOL_COUNT = 8;
+const POLE_STRIDE_Z = 34;
+
+const SKYLINE_POOL_COUNT = 2;
+const SKYLINE_STRIDE_Z = 140;
+
+const POWERUP_COLORS: Record<Exclude<PickupKind, "bolt">, string> = {
+  air: "#2f7dff",
+  rocket: "#ff5030",
+  shield: "#29c6ff",
+  magnet: "#ff2a3c",
+  multiplier: "#8a4bff"
+};
+
+function clamp(v: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, v));
 }
 
-/* ------------------------------------------------------------------ *
- *  Scene
- * ------------------------------------------------------------------ */
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
 
-const BILLBOARD_TEXTURES = [assetsV2.billboard0, assetsV2.billboard1, assetsV2.billboard2, assetsV2.billboard3];
+function hexToRgb(hex: string): [number, number, number] {
+  const clean = hex.replace("#", "");
+  const n = parseInt(clean, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
 
-function buildScene() {
-  const startPose = sampleRoute(START_PROGRESS, 0);
-  const nodes: AuraNodeInput[] = [];
+function rgbToHex(r: number, g: number, b: number): string {
+  const toHex = (c: number) => clamp(Math.round(c), 0, 255).toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
 
-  // Grand-prix asphalt ribbon + curbs + centre dashes along the open freeway.
-  nodes.push(
-    ...kart.buildRoadwayNodes({
-      roadHalfWidth: ROAD_HALF_WIDTH,
-      startProgress: START_PROGRESS,
-      palette: {
-        asphalt: "#2b2630",
-        curbRed: "#c23b4e",
-        curbWhite: "#e8e2da",
-        centerDash: "#ffb36b",
-        startLineWhite: "#f5ede4",
-        startLineDark: "#1a1520",
-        desertFloor: "#3a2733"
-      }
-    })
-  );
+function lerpHexColor(hexA: string, hexB: string, t: number): string {
+  const [r1, g1, b1] = hexToRgb(hexA);
+  const [r2, g2, b2] = hexToRgb(hexB);
+  const k = clamp(t, 0, 1);
+  return rgbToHex(lerp(r1, r2, k), lerp(g1, g2, k), lerp(b1, b2, k));
+}
 
-  // Player interceptor — Meshy hero flies when the GLB lands, catalog hero is
-  // the always-present authored node (trail targets bind to both ids).
-  nodes.push(
-    model(assetsV2.playerInterceptor, { name: "apex interceptor", scaleMode: "world", castShadow: true })
-      .position(startPose.x, HOVER_RIDE_Y, startPose.z)
-      .rotate(0, Math.PI - startPose.heading, 0)
-      .scale(PLAYER_SCALE)
-      .runtime(game.runtimeNode("player-interceptor", { tags: ["player", "vehicle", "typed-asset", "runtime"] })),
-    model(assetsV2.apexInterceptor, { name: "meshy apex interceptor", scaleMode: "world", castShadow: true })
-      .position(startPose.x, HOVER_RIDE_Y, startPose.z)
-      .rotate(0, Math.PI - startPose.heading, 0)
-      .scale(APEX_PLAYER_SCALE)
-      .runtime(game.runtimeNode("player-apex", { tags: ["player", "vehicle", "typed-asset", "runtime"] }))
-  );
+function rotateLocalOffset(
+  root: Vec3,
+  pitch: number,
+  yaw: number,
+  roll: number,
+  local: Vec3
+): Vec3 {
+  // Apply Z (roll), then X (pitch), then Y (yaw) to match vehicle local-to-world
+  const cr = Math.cos(roll);
+  const sr = Math.sin(roll);
+  const x1 = local[0] * cr - local[1] * sr;
+  const y1 = local[0] * sr + local[1] * cr;
+  const z1 = local[2];
 
-  for (const entry of trafficFleet) {
-    nodes.push(
-      model(assetsV2[entry.asset], { name: `commuter ${entry.id}`, scaleMode: "world", castShadow: true })
-        .position(entry.x, entry.rideY, entry.z)
-        .rotate(0, Math.PI - entry.heading, 0)
-        .scale(entry.scale)
-        .runtime(game.runtimeNode(entry.nodeId, { tags: ["traffic", "vehicle", "typed-asset", "runtime"] }))
-    );
-  }
-  for (const entry of skyFleet) {
-    nodes.push(
-      model(assetsV2[entry.asset], { name: `sky courier ${entry.id}`, scaleMode: "world", castShadow: true })
-        .position(entry.x, entry.altitude, entry.z)
-        .rotate(0, Math.PI - entry.heading, 0)
-        .scale(entry.scale)
-        .runtime(game.runtimeNode(entry.nodeId, { tags: ["sky-car", "vehicle", "typed-asset", "runtime"] }))
-    );
-  }
-  for (const entry of rivals) {
-    nodes.push(
-      model(assetsV2[entry.asset], { name: `rival ${entry.id}`, scaleMode: "world", castShadow: true })
-        .position(entry.x, entry.altitude, entry.z)
-        .rotate(0, Math.PI - entry.heading, 0)
-        .scale(entry.scale)
-        .runtime(game.runtimeNode(entry.nodeId, { tags: ["rival", "vehicle", "typed-asset", "runtime"] }))
-    );
-  }
+  const cp = Math.cos(pitch);
+  const sp = Math.sin(pitch);
+  const x2 = x1;
+  const y2 = y1 * cp - z1 * sp;
+  const z2 = y1 * sp + z1 * cp;
 
-  // Carrier launch-ramp trucks parked on the shoulders.
-  CARRIER_SLOTS.forEach((slot, i) => {
-    const pose = sampleRoute(slot.progress, slot.lane);
-    nodes.push(
-      model(assetsV2.carrier, { name: `launch carrier ${i + 1}`, scaleMode: "world", castShadow: true })
-        .position(pose.x, groundedY(assetsV2.carrier.bounds, CARRIER_SCALE, -0.05), pose.z)
-        .rotate(0, Math.PI - pose.heading, 0)
-        .scale(CARRIER_SCALE)
-        .runtime(game.runtimeNode(`carrier-${i}`, { tags: ["carrier", "vehicle", "typed-asset", "runtime"] }))
-    );
-  });
+  const cy = Math.cos(yaw);
+  const sy = Math.sin(yaw);
+  const x3 = x2 * cy + z2 * sy;
+  const y3 = y2;
+  const z3 = -x2 * sy + z2 * cy;
 
-  // City canyon — scaled building tiles flanking the corridor.
-  const buildingZ = [-140, -420, -760, -1080, -1420, -1780, -2140, -2500, -2860, -3220, -3580, -3940, -4280];
-  buildingZ.forEach((z, i) => {
-    const side = i % 2 === 0 ? -46 : 46;
-    nodes.push(
-      model(assetsV2.building, { name: `city block ${i + 1}`, scaleMode: "world" })
-        .position(side, -1.5, z)
-        .rotate(0, i % 2 === 0 ? Math.PI * 0.5 : -Math.PI * 0.5, 0)
-        .scale(BUILDING_SCALE)
-    );
-  });
+  return [root[0] + x3, root[1] + y3, root[2] + z3];
+}
 
-  // Holo-billboard pairs on gantry poles (typed texture assets on cards —
-  // minor set dressing, not scene-effect fakes).
-  const boardZ = [-180, -520, -900, -1260, -1680, -2060, -2440, -2820, -3200, -3620, -4000];
-  boardZ.forEach((z, i) => {
-    const side = i % 2 === 0 ? -21 : 21;
-    const texture = BILLBOARD_TEXTURES[i % BILLBOARD_TEXTURES.length]!;
-    nodes.push(
-      primitives.box({ name: `billboard pole ${i}`, material: material.metal({ color: "#3a3540" }) })
-        .position(side, 7, z).scale([0.5, 14, 0.5]),
-      primitives.box({
-        name: `holo billboard ${i}`,
-        material: material.pbr({
-          color: "#ffffff",
-          roughness: 0.5,
-          texture,
-          emissive: "#ffffff",
-          emissiveIntensity: 0.35,
-          emissiveMap: texture
-        }),
-        castShadow: false
-      }).position(side, 15.5, z).scale([14, 7, 0.4])
-    );
-  });
+interface PlayerHandles {
+  car: AuraRuntimeNodeHandle;
+  lightbar: AuraRuntimeNodeHandle;
+  headlightL: AuraRuntimeNodeHandle;
+  headlightR: AuraRuntimeNodeHandle;
+  rearPlumeL: AuraRuntimeNodeHandle;
+  rearPlumeR: AuraRuntimeNodeHandle;
+  downPlumes: AuraRuntimeNodeHandle[];
+  sidePlumesL: AuraRuntimeNodeHandle[];
+  sidePlumesR: AuraRuntimeNodeHandle[];
+  shieldSphere: AuraRuntimeNodeHandle;
+  rocketCone: AuraRuntimeNodeHandle;
+  magnetRing: AuraRuntimeNodeHandle;
+  contactShadow: AuraRuntimeNodeHandle;
+}
 
-  // Meshy holo blimp drifting high over the corridor mid-point.
-  nodes.push(
-    model(assetsV2.apexBlimp, { name: "holo blimp", scaleMode: "world" })
-      .position(0, 42, -1400)
-      .rotate(0, 0.35, 0)
-      .scale(BLIMP_SCALE)
-      .runtime(game.runtimeNode("holo-blimp", { tags: ["set-dressing", "typed-asset"] })),
-    // Meshy gunship escort parked far down-route as a landmark.
-    model(assetsV2.apexGunship, { name: "apex gunship", scaleMode: "world", castShadow: true })
-      .position(-26, 4, -2600)
-      .rotate(0, 0.7, 0)
-      .scale(GUNSHIP_SCALE)
-  );
+interface SkyCarSlot {
+  car: AuraRuntimeNodeHandle;
+  plume: AuraRuntimeNodeHandle;
+  halo: AuraRuntimeNodeHandle;
+}
 
-  // Boost-pad light columns (additive engine beams on the racing line).
-  BOOST_PADS.forEach((pad, i) => {
-    const pose = sampleRoute(pad.progress, pad.lane);
-    nodes.push(
-      effects.beam({
-        name: `boost column ${i}`,
-        from: [pose.x, 0.4, pose.z],
-        to: [pose.x, 11, pose.z],
-        color: "#5fe6ff",
-        intensity: 0.55,
-        widthWorld: 1.1
-      })
-    );
-  });
+interface GantrySlot {
+  pillarL: AuraRuntimeNodeHandle;
+  pillarR: AuraRuntimeNodeHandle;
+  beam: AuraRuntimeNodeHandle;
+  boardL: AuraRuntimeNodeHandle;
+  boardR: AuraRuntimeNodeHandle;
+  trimL: AuraRuntimeNodeHandle;
+  trimR: AuraRuntimeNodeHandle;
+}
 
-  // Cold-gas thruster trails bound to the player's runtime node.
-  nodes.push(
-    effects.trail({ name: "port thruster trail", target: "player-interceptor", color: "#5fe6ff", width: 0.34, intensity: 0.9, maxPoints: 40 }),
-    effects.trail({ name: "starboard thruster trail", target: "player-apex", color: "#ffb36b", width: 0.3, intensity: 0.8, maxPoints: 40 })
-  );
+interface LightPoleSlot {
+  pole: AuraRuntimeNodeHandle;
+  arm: AuraRuntimeNodeHandle;
+  lamp: AuraRuntimeNodeHandle;
+}
 
-  return scene()
-    .add(looks.preset(LOOK_ID))
-    .addMany(nodes)
-    .add(effects.screenSpaceReflections({ name: "wet asphalt reflections", intensity: 0.75 }))
-    .add(effects.motionBlur({ name: "velocity blur", intensity: 0.32, shutter: 0.55 }))
-    .add(effects.cinematicBloom({ name: "sunset neon bloom", intensity: 0.5, color: "#ffb36b", threshold: 0.66 }))
-    .add(
-      effects
-        .rain({ name: "storm front rain", intensity: 0.9, density: 0.66, speed: 1.35, particleCount: 2600 })
-        .runtime(game.runtimeNode("storm-rain", { tags: ["weather", "runtime"] }))
-    )
+function buildRoadsterRushScene(): ReturnType<typeof scene> {
+  const s = scene()
+    .add(looks.preset("outdoor-day", { fogDensityScale: 0, exposureEv: 0.08 }))
+    .background("#1b1026")
     .camera(
       camera.perspective({
-        position: [startPose.x, HOVER_RIDE_Y + 4.4, startPose.z + 11],
-        target: [startPose.x, HOVER_RIDE_Y + 0.8, startPose.z - 12],
-        fov: 60
+        fov: 58,
+        near: 0.25,
+        far: 550,
+        position: [0, 3.6, 6.2],
+        target: [0, 0.9, -6.0]
+      })
+    )
+    .add(lights.ambient({ color: "#ffd8c4", intensity: 0.68 }))
+    .add(
+      lights.hemisphere({
+        skyColor: "#ff9e75",
+        groundColor: "#2a1b38",
+        intensity: 0.85
+      })
+    )
+    .add(
+      lights.directional({
+        color: "#ffb178",
+        intensity: 2.35,
+        position: [22, 38, -45],
+        shadow: true
+      })
+    )
+    .add(
+      lights.point({
+        color: "#4df0ff",
+        intensity: 1.5,
+        position: [0, 8, -12],
+        distance: 65
+      })
+    )
+    .add(effects.bloom({ intensity: 0.24, threshold: 0.78, radius: 0.52 }))
+    .add(effects.vignette({ intensity: 0.2, smoothness: 0.65 }))
+    .add(effects.colorGrade({ contrast: 1.07, saturation: 1.12 }));
+
+  // 1. Endless Scrolling 5-Lane Sunset Freeway Deck, Shoulders, Jersey Barriers & Neon Sound Walls
+  s.addMany([
+    primitives
+      .box({
+        name: "freeway-outer-ground",
+        size: [1200, 0.12, 520],
+        material: material.pbr({ color: "#150e20", roughness: 0.96 })
+      })
+      .position(0, -0.22, -160)
+      .runtime(game.runtimeNode("freeway-outer-ground")),
+    primitives
+      .box({
+        name: "freeway-asphalt-deck",
+        size: [24, 0.12, 380],
+        material: material.pbr({ color: "#1c1f28", roughness: 0.84, metalness: 0.08 })
+      })
+      .position(0, -0.06, -150)
+      .runtime(game.runtimeNode("freeway-asphalt-deck")),
+    primitives
+      .box({
+        name: "freeway-shoulder-left",
+        size: [0.18, 0.02, 380],
+        material: material.emissive({ color: "#ffc72c", emissive: "#ffc72c", emissiveIntensity: 0.45 })
+      })
+      .position(-9.0, 0.012, -150)
+      .runtime(game.runtimeNode("freeway-shoulder-left")),
+    primitives
+      .box({
+        name: "freeway-shoulder-right",
+        size: [0.18, 0.02, 380],
+        material: material.emissive({ color: "#f1f5f9", emissive: "#f1f5f9", emissiveIntensity: 0.38 })
+      })
+      .position(9.0, 0.012, -150)
+      .runtime(game.runtimeNode("freeway-shoulder-right")),
+    primitives
+      .box({
+        name: "freeway-barrier-left",
+        size: [0.65, 1.05, 380],
+        material: material.pbr({ color: "#393e4a", roughness: 0.78 })
+      })
+      .position(-10.6, 0.52, -150)
+      .runtime(game.runtimeNode("freeway-barrier-left")),
+    primitives
+      .box({
+        name: "freeway-barrier-right",
+        size: [0.65, 1.05, 380],
+        material: material.pbr({ color: "#393e4a", roughness: 0.78 })
+      })
+      .position(10.6, 0.52, -150)
+      .runtime(game.runtimeNode("freeway-barrier-right")),
+    primitives
+      .box({
+        name: "freeway-soundwall-left",
+        size: [0.45, 2.5, 380],
+        material: material.pbr({ color: "#232634", roughness: 0.72 })
+      })
+      .position(-11.6, 1.25, -150)
+      .runtime(game.runtimeNode("freeway-soundwall-left")),
+    primitives
+      .box({
+        name: "freeway-soundwall-right",
+        size: [0.45, 2.5, 380],
+        material: material.pbr({ color: "#232634", roughness: 0.72 })
+      })
+      .position(11.6, 1.25, -150)
+      .runtime(game.runtimeNode("freeway-soundwall-right")),
+    primitives
+      .box({
+        name: "freeway-neon-trim-left",
+        size: [0.12, 0.14, 380],
+        material: material.emissive({ color: "#38bdf8", emissive: "#38bdf8", emissiveIntensity: 1.35 })
+      })
+      .position(-11.3, 2.42, -150)
+      .runtime(game.runtimeNode("freeway-neon-trim-left")),
+    primitives
+      .box({
+        name: "freeway-neon-trim-right",
+        size: [0.12, 0.14, 380],
+        material: material.emissive({ color: "#ff2a6d", emissive: "#ff2a6d", emissiveIntensity: 1.35 })
+      })
+      .position(11.3, 2.42, -150)
+      .runtime(game.runtimeNode("freeway-neon-trim-right")),
+    // Sunset / Dusk / Night Horizon Backdrop & Blazing Sun Disc + Corona
+    primitives
+      .box({
+        name: "horizon-sky-wall",
+        size: [1400, 340, 2],
+        material: material.emissive({ color: "#2c1638", emissive: "#ff6b4a", emissiveIntensity: 0.32 })
+      })
+      .position(0, 64, -320)
+      .runtime(game.runtimeNode("horizon-sky-wall")),
+    primitives
+      .sphere({
+        name: "sunset-sun-disc",
+        size: [28, 28, 4],
+        material: material.emissive({ color: "#ff9d5c", emissive: "#ff7b3a", emissiveIntensity: 1.85 })
+      })
+      .position(24, 34, -290)
+      .runtime(game.runtimeNode("sunset-sun-disc")),
+    primitives
+      .torus({
+        name: "sunset-sun-corona",
+        size: [18, 18, 1.6],
+        material: material.emissive({ color: "#ff5277", emissive: "#ff5277", emissiveIntensity: 1.15 })
+      })
+      .position(24, 34, -288)
+      .runtime(game.runtimeNode("sunset-sun-corona"))
+  ]);
+
+  // 2. Scrolling White Lane Dashes (4 dividers × 14 dashes)
+  const dashMat = material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.45 });
+  for (let d = 0; d < LANE_DIVIDER_X.length; d++) {
+    const lx = LANE_DIVIDER_X[d]!;
+    for (let i = 0; i < DASH_COUNT_PER_DIVIDER; i++) {
+      const id = `lane-dash-${d}-${i}`;
+      s.add(
+        primitives
+          .box({
+            name: id,
+            size: [0.14, 0.02, 4.2],
+            material: dashMat
+          })
+          .position(lx, 0.015, -i * DASH_STRIDE_Z)
+          .runtime(game.runtimeNode(id))
+      );
+    }
+  }
+
+  // 3. Overhead Highway Sign Gantries (gantries with steel trusses, crossbeam & emerald exit boards)
+  const steelMat = material.pbr({ color: "#64748b", metalness: 0.65, roughness: 0.38 });
+  const signBoardMat = material.pbr({ color: "#0d5c3a", roughness: 0.52, metalness: 0.12 });
+  const signTrimMat = material.emissive({ color: "#e2f1e8", emissive: "#a7f3d0", emissiveIntensity: 0.55 });
+  for (let i = 0; i < GANTRY_POOL_COUNT; i++) {
+    const gz = -(i + 1) * GANTRY_STRIDE_Z;
+    s.addMany([
+      primitives
+        .box({ name: `gantry-pillar-l-${i}`, size: [0.55, 9.6, 0.55], material: steelMat })
+        .position(-10.9, 4.8, gz)
+        .runtime(game.runtimeNode(`gantry-pillar-l-${i}`)),
+      primitives
+        .box({ name: `gantry-pillar-r-${i}`, size: [0.55, 9.6, 0.55], material: steelMat })
+        .position(10.9, 4.8, gz)
+        .runtime(game.runtimeNode(`gantry-pillar-r-${i}`)),
+      primitives
+        .box({ name: `gantry-beam-${i}`, size: [22.6, 0.52, 0.55], material: steelMat })
+        .position(0, 9.0, gz)
+        .runtime(game.runtimeNode(`gantry-beam-${i}`)),
+      primitives
+        .box({ name: `gantry-board-l-${i}`, size: [7.6, 2.3, 0.22], material: signBoardMat })
+        .position(-4.4, 8.85, gz + 0.22)
+        .runtime(game.runtimeNode(`gantry-board-l-${i}`)),
+      primitives
+        .box({ name: `gantry-board-r-${i}`, size: [6.8, 2.1, 0.22], material: signBoardMat })
+        .position(4.6, 8.85, gz + 0.22)
+        .runtime(game.runtimeNode(`gantry-board-r-${i}`)),
+      primitives
+        .box({ name: `gantry-trim-l-${i}`, size: [7.0, 0.22, 0.26], material: signTrimMat })
+        .position(-4.4, 9.55, gz + 0.24)
+        .runtime(game.runtimeNode(`gantry-trim-l-${i}`)),
+      primitives
+        .box({ name: `gantry-trim-r-${i}`, size: [6.2, 0.22, 0.26], material: signTrimMat })
+        .position(4.6, 9.45, gz + 0.24)
+        .runtime(game.runtimeNode(`gantry-trim-r-${i}`))
+    ]);
+  }
+
+  // 4. Roadside California Sunset Palm Silhouettes & Highway Light Poles
+  const palmTrunkMat = material.pbr({ color: "#3d2822", roughness: 0.88 });
+  for (let i = 0; i < PALM_POOL_COUNT; i++) {
+    const side = i % 2 === 0 ? -1 : 1;
+    const px = side * (15.5 + (i % 3) * 1.8);
+    const pz = -Math.floor(i / 2) * PALM_STRIDE_Z;
+    const id = `freeway-palm-${i}`;
+    s.add(
+      primitives
+        .cylinder({
+          name: id,
+          size: [0.34, 9.2, 0.34],
+          material: palmTrunkMat
+        })
+        .position(px, 4.5, pz)
+        .runtime(game.runtimeNode(id))
+    );
+  }
+
+  const poleMat = material.pbr({ color: "#475569", metalness: 0.7, roughness: 0.35 });
+  const lampMat = material.emissive({ color: "#ffd28a", emissive: "#ffae52", emissiveIntensity: 1.65 });
+  for (let i = 0; i < POLE_POOL_COUNT; i++) {
+    const side = i % 2 === 0 ? -1 : 1;
+    const px = side * 12.1;
+    const pz = -Math.floor(i / 2) * POLE_STRIDE_Z - 12;
+    s.addMany([
+      primitives
+        .cylinder({ name: `light-pole-${i}`, size: [0.18, 7.6, 0.18], material: poleMat })
+        .position(px, 3.8, pz)
+        .runtime(game.runtimeNode(`light-pole-${i}`)),
+      primitives
+        .box({ name: `light-arm-${i}`, size: [1.8, 0.12, 0.12], material: poleMat })
+        .position(px - side * 0.8, 7.55, pz)
+        .runtime(game.runtimeNode(`light-arm-${i}`)),
+      primitives
+        .sphere({ name: `light-lamp-${i}`, size: [0.36, 0.18, 0.48], material: lampMat })
+        .position(px - side * 1.55, 7.45, pz)
+        .runtime(game.runtimeNode(`light-lamp-${i}`))
+    ]);
+  }
+
+  // 5. Midground Architectural Skyline (4 instances of assets.showcaseModernBuildingOne)
+  for (let i = 0; i < SKYLINE_POOL_COUNT; i++) {
+    const side = i % 2 === 0 ? -1 : 1;
+    const sx = side * 42;
+    const sz = -60 - Math.floor(i / 2) * SKYLINE_STRIDE_Z;
+    const id = `freeway-skyline-${i}`;
+    s.add(
+      model(assets.showcaseModernBuildingOne, {
+        name: id,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 38
+      })
+        .position(sx, -0.2, sz)
+        .runtime(game.runtimeNode(id))
+    );
+  }
+
+  // 6. Player Roadster Assembly (Primary Car + Lightbar + Headlights + Cold-Gas Plumes + Powerups + Shadow)
+  const rearPlumeMat = material.emissive({
+    color: "#67f3ff",
+    emissive: "#38bdf8",
+    emissiveIntensity: 1.9
+  });
+  const downPlumeMat = material.emissive({
+    color: "#38bdf8",
+    emissive: "#0ea5e9",
+    emissiveIntensity: 1.75
+  });
+  const sidePlumeMat = material.emissive({
+    color: "#7dd3fc",
+    emissive: "#38bdf8",
+    emissiveIntensity: 1.7
+  });
+
+  s.addMany([
+    model(assets.roadsterRushPlayerCar, {
+      name: "player-roadster-car",
+      role: "primaryVehicle",
+      scaleMode: "fit",
+      targetMaxDimension: 4.35
+    })
+      .position(0, 0, 0)
+      .runtime(game.runtimeNode("player-roadster-car", { tags: ["primarySubject", "primaryVehicle", "player"] })),
+
+    primitives
+      .box({
+        name: "player-lightbar",
+        size: [1.72, 0.085, 0.09],
+        material: material.emissive({ color: "#ff1830", emissive: "#ff1830", emissiveIntensity: 1.85 })
+      })
+      .position(0, 0.72, 2.12)
+      .runtime(game.runtimeNode("player-lightbar")),
+
+    primitives
+      .sphere({
+        name: "player-headlight-l",
+        size: [0.26, 0.1, 0.16],
+        material: material.emissive({ color: "#eef8ff", emissive: "#bae6fd", emissiveIntensity: 1.6 })
+      })
+      .position(-0.74, 0.56, -2.08)
+      .runtime(game.runtimeNode("player-headlight-l")),
+
+    primitives
+      .sphere({
+        name: "player-headlight-r",
+        size: [0.26, 0.1, 0.16],
+        material: material.emissive({ color: "#eef8ff", emissive: "#bae6fd", emissiveIntensity: 1.6 })
+      })
+      .position(0.74, 0.56, -2.08)
+      .runtime(game.runtimeNode("player-headlight-r")),
+
+    // 2 Rear Thruster Plumes
+    primitives
+      .cylinder({
+        name: "player-plume-rear-l",
+        size: [0.34, 1.45, 0.34],
+        material: rearPlumeMat
+      })
+      .scale(HIDDEN_SCALE)
+      .runtime(game.runtimeNode("player-plume-rear-l")),
+    primitives
+      .cylinder({
+        name: "player-plume-rear-r",
+        size: [0.34, 1.45, 0.34],
+        material: rearPlumeMat
+      })
+      .scale(HIDDEN_SCALE)
+      .runtime(game.runtimeNode("player-plume-rear-r")),
+
+    // Active Powerup Visuals on Player (Shield sphere, Rocket overdrive plume, Magnet torus)
+    primitives
+      .sphere({
+        name: "player-power-shield",
+        size: [3.2, 2.1, 4.9],
+        material: material.emissive({ color: "#29c6ff", emissive: "#29c6ff", emissiveIntensity: 0.85 })
+      })
+      .scale(HIDDEN_SCALE)
+      .runtime(game.runtimeNode("player-power-shield")),
+    primitives
+      .cylinder({
+        name: "player-power-rocket",
+        size: [0.68, 2.6, 0.68],
+        material: material.emissive({ color: "#ff6b1a", emissive: "#ff3b00", emissiveIntensity: 2.3 })
+      })
+      .scale(HIDDEN_SCALE)
+      .runtime(game.runtimeNode("player-power-rocket")),
+    primitives
+      .torus({
+        name: "player-power-magnet",
+        size: [1.65, 1.65, 0.08],
+        material: material.emissive({ color: "#a855f7", emissive: "#c084fc", emissiveIntensity: 1.5 })
+      })
+      .scale(HIDDEN_SCALE)
+      .runtime(game.runtimeNode("player-power-magnet")),
+
+    // Ground Contact Shadow
+    primitives
+      .cylinder({
+        name: "player-contact-shadow",
+        size: [2.25, 0.012, 4.45],
+        material: material.pbr({ color: "#07090f", roughness: 0.96 })
+      })
+      .position(0, 0.03, 0)
+      .runtime(game.runtimeNode("player-contact-shadow"))
+  ]);
+
+  // 4 Ventral Down-Thruster Plumes
+  for (let i = 0; i < 4; i++) {
+    const id = `player-plume-down-${i}`;
+    s.add(
+      primitives
+        .cylinder({
+          name: id,
+          size: [0.28, 1.15, 0.28],
+          material: downPlumeMat
+        })
+        .scale(HIDDEN_SCALE)
+        .runtime(game.runtimeNode(id))
+    );
+  }
+
+  // 2 Left & 2 Right Lateral Reaction-Control Thruster Plumes
+  for (let i = 0; i < 2; i++) {
+    s.addMany([
+      primitives
+        .cylinder({
+          name: `player-plume-side-l-${i}`,
+          size: [0.22, 0.95, 0.22],
+          material: sidePlumeMat
+        })
+        .scale(HIDDEN_SCALE)
+        .runtime(game.runtimeNode(`player-plume-side-l-${i}`)),
+      primitives
+        .cylinder({
+          name: `player-plume-side-r-${i}`,
+          size: [0.22, 0.95, 0.22],
+          material: sidePlumeMat
+        })
+        .scale(HIDDEN_SCALE)
+        .runtime(game.runtimeNode(`player-plume-side-r-${i}`))
+    ]);
+  }
+
+  // 7. Ground Traffic Pool (42 Pooled 3D Vehicles Across All 9 Admitted Types + Carrier Launch Ramps)
+  for (const vType of VEHICLE_TYPES) {
+    const spec = VEHICLE_POOL_SPEC[vType];
+    for (let i = 0; i < spec.count; i++) {
+      const id = `traffic-${vType}-${i}`;
+      s.add(
+        model(spec.asset, {
+          name: id,
+          role: spec.role,
+          scaleMode: "fit",
+          targetMaxDimension: spec.maxDim
+        })
+          .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
+          .scale(HIDDEN_SCALE)
+          .runtime(game.runtimeNode(id))
+      );
+
+      if (vType === "carrier") {
+        const rampId = `carrier-ramp-${i}`;
+        s.add(
+          primitives
+            .box({
+              name: rampId,
+              size: [2.38, 0.18, 6.6],
+              material: material.emissive({
+                color: "#ffc928",
+                emissive: "#ff9e00",
+                emissiveIntensity: 0.68
+              })
+            })
+            .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
+            .scale(HIDDEN_SCALE)
+            .runtime(game.runtimeNode(rampId))
+        );
+      }
+    }
+  }
+
+  // 16 Glowing Red Brake-Light Bars & 8 Blinking Amber Turn-Signal Indicators
+  const brakeBarMat = material.emissive({ color: "#ff1e27", emissive: "#ff1e27", emissiveIntensity: 2.1 });
+  for (let i = 0; i < BRAKE_BAR_POOL_COUNT; i++) {
+    const id = `traffic-brake-${i}`;
+    s.add(
+      primitives
+        .box({
+          name: id,
+          size: [1.58, 0.16, 0.09],
+          material: brakeBarMat
+        })
+        .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
+        .scale(HIDDEN_SCALE)
+        .runtime(game.runtimeNode(id))
+    );
+  }
+
+  const blinkerMat = material.emissive({ color: "#ffaa1d", emissive: "#ff9900", emissiveIntensity: 2.2 });
+  for (let i = 0; i < BLINKER_POOL_COUNT; i++) {
+    const id = `traffic-blinker-${i}`;
+    s.add(
+      primitives
+        .sphere({
+          name: id,
+          size: [0.28, 0.2, 0.34],
+          material: blinkerMat
+        })
+        .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
+        .scale(HIDDEN_SCALE)
+        .runtime(game.runtimeNode(id))
+    );
+  }
+
+  // 8. Sky-Lane Dogfight Pool (14 Pooled assets.roadsterRushSkyCar + Thruster Plume + Oncoming Halo)
+  const skyHaloMat = material.emissive({ color: "#ff2a3c", emissive: "#ff2a3c", emissiveIntensity: 1.65 });
+  for (let i = 0; i < SKY_CAR_POOL_COUNT; i++) {
+    const carId = `sky-car-${i}`;
+    const plumeId = `sky-plume-${i}`;
+    const haloId = `sky-halo-${i}`;
+    s.addMany([
+      model(assets.roadsterRushSkyCar, {
+        name: carId,
+        role: "primaryVehicle",
+        scaleMode: "fit",
+        targetMaxDimension: 4.3
+      })
+        .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
+        .scale(HIDDEN_SCALE)
+        .runtime(game.runtimeNode(carId)),
+      primitives
+        .cylinder({
+          name: plumeId,
+          size: [0.42, 1.65, 0.42],
+          material: rearPlumeMat
+        })
+        .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
+        .scale(HIDDEN_SCALE)
+        .runtime(game.runtimeNode(plumeId)),
+      primitives
+        .torus({
+          name: haloId,
+          size: [1.55, 1.55, 0.075],
+          material: skyHaloMat
+        })
+        .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
+        .scale(HIDDEN_SCALE)
+        .runtime(game.runtimeNode(haloId))
+    ]);
+  }
+
+  // 9. 3D Pickups Pool (42 Spinning Golden Bolts + 10 Glowing Powerup Orbs)
+  const boltMat = material.emissive({
+    color: "#ffc61f",
+    emissive: "#ffae00",
+    emissiveIntensity: 1.45
+  });
+  for (let i = 0; i < BOLT_POOL_COUNT; i++) {
+    const id = `pickup-bolt-${i}`;
+    s.add(
+      primitives
+        .torus({
+          name: id,
+          size: [0.48, 0.48, 0.14],
+          material: boltMat
+        })
+        .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
+        .scale(HIDDEN_SCALE)
+        .runtime(game.runtimeNode(id))
+    );
+  }
+
+  const powerupInitMat = material.emissive({
+    color: "#2f7dff",
+    emissive: "#2f7dff",
+    emissiveIntensity: 1.65
+  });
+  for (let i = 0; i < POWERUP_POOL_COUNT; i++) {
+    const id = `pickup-power-${i}`;
+    s.add(
+      primitives
+        .sphere({
+          name: id,
+          size: [0.95, 0.95, 0.95],
+          material: powerupInitMat
+        })
+        .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
+        .scale(HIDDEN_SCALE)
+        .runtime(game.runtimeNode(id))
+    );
+  }
+
+  // 8. Meshy V2 Sky & Set-Dressing Models (Blimp, Patrol Gunship, Sky Interceptor, Sky Rival)
+  s.addMany([
+    model(assetsV2.apexBlimp, {
+      name: "v2-sky-blimp",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 22
+    })
+      .position(-28, 30, -145)
+      .rotate(0, 0.25, 0)
+      .runtime(game.runtimeNode("v2-sky-blimp")),
+    model(assetsV2.apexGunship, {
+      name: "v2-sky-gunship",
+      role: "primaryVehicle",
+      scaleMode: "fit",
+      targetMaxDimension: 7.8
+    })
+      .position(24, 24, -118)
+      .rotate(0.05, -0.2, -0.08)
+      .runtime(game.runtimeNode("v2-sky-gunship")),
+    model(assetsV2.apexInterceptor, {
+      name: "v2-sky-interceptor",
+      role: "primaryVehicle",
+      scaleMode: "fit",
+      targetMaxDimension: 4.35
+    })
+      .position(-6.4, 15.6, -78)
+      .rotate(0, Math.PI, 0)
+      .runtime(game.runtimeNode("v2-sky-interceptor")),
+    model(assetsV2.apexRival, {
+      name: "v2-sky-rival",
+      role: "primaryVehicle",
+      scaleMode: "fit",
+      targetMaxDimension: 4.4
+    })
+      .position(6.4, 15.8, -92)
+      .rotate(0, 0, 0)
+      .runtime(game.runtimeNode("v2-sky-rival"))
+  ]);
+
+  return s;
+}
+
+function loadScriptSequentially(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = false;
+    script.onload = () => resolve();
+    script.onerror = (err) => reject(err);
+    document.body.appendChild(script);
+  });
+}
+
+async function bootRoadsterRushAura3D(): Promise<void> {
+  const canvas = document.getElementById("game") as HTMLCanvasElement | null;
+  if (!canvas) {
+    throw new Error("Missing #game canvas element for Roadster Rush.");
+  }
+
+  const builtScene = buildRoadsterRushScene();
+  const auraApp = createAuraApp(canvas, {
+    scene: builtScene,
+    renderer: { quality: "high" }
+  });
+
+  const req = (id: string) => auraApp.nodes.require(id);
+
+  // Resolve Player Handles
+  const playerHandles: PlayerHandles = {
+    car: req("player-roadster-car"),
+    lightbar: req("player-lightbar"),
+    headlightL: req("player-headlight-l"),
+    headlightR: req("player-headlight-r"),
+    rearPlumeL: req("player-plume-rear-l"),
+    rearPlumeR: req("player-plume-rear-r"),
+    downPlumes: Array.from({ length: 4 }, (_, i) => req(`player-plume-down-${i}`)),
+    sidePlumesL: Array.from({ length: 2 }, (_, i) => req(`player-plume-side-l-${i}`)),
+    sidePlumesR: Array.from({ length: 2 }, (_, i) => req(`player-plume-side-r-${i}`)),
+    shieldSphere: req("player-power-shield"),
+    rocketCone: req("player-power-rocket"),
+    magnetRing: req("player-power-magnet"),
+    contactShadow: req("player-contact-shadow")
+  };
+
+  // Resolve Freeway & Environment Handles
+  const outerGroundHandle = req("freeway-outer-ground");
+  const asphaltDeckHandle = req("freeway-asphalt-deck");
+  const shoulderLeftHandle = req("freeway-shoulder-left");
+  const shoulderRightHandle = req("freeway-shoulder-right");
+  const barrierLeftHandle = req("freeway-barrier-left");
+  const barrierRightHandle = req("freeway-barrier-right");
+  const soundwallLeftHandle = req("freeway-soundwall-left");
+  const soundwallRightHandle = req("freeway-soundwall-right");
+  const neonTrimLeftHandle = req("freeway-neon-trim-left");
+  const neonTrimRightHandle = req("freeway-neon-trim-right");
+  const horizonWallHandle = req("horizon-sky-wall");
+  const sunDiscHandle = req("sunset-sun-disc");
+  const sunCoronaHandle = req("sunset-sun-corona");
+
+  const dashHandles: AuraRuntimeNodeHandle[][] = LANE_DIVIDER_X.map((_, d) =>
+    Array.from({ length: DASH_COUNT_PER_DIVIDER }, (__, i) => req(`lane-dash-${d}-${i}`))
+  );
+
+  const gantrySlots: GantrySlot[] = Array.from({ length: GANTRY_POOL_COUNT }, (_, i) => ({
+    pillarL: req(`gantry-pillar-l-${i}`),
+    pillarR: req(`gantry-pillar-r-${i}`),
+    beam: req(`gantry-beam-${i}`),
+    boardL: req(`gantry-board-l-${i}`),
+    boardR: req(`gantry-board-r-${i}`),
+    trimL: req(`gantry-trim-l-${i}`),
+    trimR: req(`gantry-trim-r-${i}`)
+  }));
+
+  const palmHandles: AuraRuntimeNodeHandle[] = Array.from({ length: PALM_POOL_COUNT }, (_, i) =>
+    req(`freeway-palm-${i}`)
+  );
+
+  const poleSlots: LightPoleSlot[] = Array.from({ length: POLE_POOL_COUNT }, (_, i) => ({
+    pole: req(`light-pole-${i}`),
+    arm: req(`light-arm-${i}`),
+    lamp: req(`light-lamp-${i}`)
+  }));
+
+  const skylineHandles: AuraRuntimeNodeHandle[] = Array.from({ length: SKYLINE_POOL_COUNT }, (_, i) =>
+    req(`freeway-skyline-${i}`)
+  );
+
+  // Resolve Ground Traffic Pool Handles
+  const vehiclePools: Record<VehicleType, AuraRuntimeNodeHandle[]> = {
+    sedan: [],
+    hatch: [],
+    suv: [],
+    taxi: [],
+    van: [],
+    pickup: [],
+    boxtruck: [],
+    bus: [],
+    carrier: []
+  };
+  for (const vType of VEHICLE_TYPES) {
+    const count = VEHICLE_POOL_SPEC[vType].count;
+    vehiclePools[vType] = Array.from({ length: count }, (_, i) => req(`traffic-${vType}-${i}`));
+  }
+  const carrierRampHandles: AuraRuntimeNodeHandle[] = Array.from(
+    { length: VEHICLE_POOL_SPEC.carrier.count },
+    (_, i) => req(`carrier-ramp-${i}`)
+  );
+  const brakeBarHandles: AuraRuntimeNodeHandle[] = Array.from(
+    { length: BRAKE_BAR_POOL_COUNT },
+    (_, i) => req(`traffic-brake-${i}`)
+  );
+  const blinkerHandles: AuraRuntimeNodeHandle[] = Array.from(
+    { length: BLINKER_POOL_COUNT },
+    (_, i) => req(`traffic-blinker-${i}`)
+  );
+
+  // Resolve Sky-Lane Pool Handles
+  const skyCarSlots: SkyCarSlot[] = Array.from({ length: SKY_CAR_POOL_COUNT }, (_, i) => ({
+    car: req(`sky-car-${i}`),
+    plume: req(`sky-plume-${i}`),
+    halo: req(`sky-halo-${i}`)
+  }));
+
+  // Resolve Pickups Pool Handles
+  const boltHandles: AuraRuntimeNodeHandle[] = Array.from({ length: BOLT_POOL_COUNT }, (_, i) =>
+    req(`pickup-bolt-${i}`)
+  );
+  const powerupHandles: AuraRuntimeNodeHandle[] = Array.from(
+    { length: POWERUP_POOL_COUNT },
+    (_, i) => req(`pickup-power-${i}`)
+  );
+  const powerupKindCache: string[] = Array.from({ length: POWERUP_POOL_COUNT }, () => "air");
+
+  // State Tracking
+  let framesRendered = 0;
+  let lastTodBucket = -1;
+  let manualTodOverride: number | null = null;
+  let lastLightbarHot = false;
+  let lastUserInputMs = performance.now() - 2500; // Start with smart autopilot active until user presses a key/touch
+  let lastAutopilotTickMs = 0;
+  let lastAutopilotStuntMs = 0;
+  let gameOverSinceMs = 0;
+
+  // Track user input for seamless handoff between human & smart idle autopilot
+  const markUserInput = (ev: Event) => {
+    const target = ev.target as HTMLElement | null;
+    if (target?.closest?.(".aura3d-top-bar")) return;
+    lastUserInputMs = performance.now();
+  };
+  window.addEventListener("keydown", markUserInput, { passive: true });
+  window.addEventListener("pointerdown", markUserInput, { passive: true });
+  window.addEventListener("touchstart", markUserInput, { passive: true });
+
+  function updateAtmosphereForTod(todRaw: number): void {
+    const tod = clamp(manualTodOverride ?? todRaw, 0, 1);
+    const sunY = lerp(34, 14, tod);
+    sunDiscHandle
+      .setPosition(24, sunY, -290)
+      .setScale([1, 1, 1])
+      .setVisible(true);
+    sunCoronaHandle
+      .setPosition(24, sunY, -288)
+      .setRotation(0, 0, framesRendered * 0.01)
+      .setScale([1.15, 1.15, 1])
+      .setVisible(true);
+    horizonWallHandle.setPosition(0, 64, -320);
+
+    const bucket = Math.round(tod * 25);
+    if (bucket === lastTodBucket) return;
+    lastTodBucket = bucket;
+
+    let skyHex: string;
+    let emissiveHex: string;
+    let sunHex: string;
+    let groundHex: string;
+    if (tod <= 0.5) {
+      const k = tod * 2;
+      skyHex = lerpHexColor("#2c1638", "#16122b", k);
+      emissiveHex = lerpHexColor("#ff8a5b", "#c85a82", k);
+      sunHex = lerpHexColor("#ff9d5c", "#ff477e", k);
+      groundHex = lerpHexColor("#190f24", "#100d1e", k);
+    } else {
+      const k = (tod - 0.5) * 2;
+      skyHex = lerpHexColor("#16122b", "#090b16", k);
+      emissiveHex = lerpHexColor("#c85a82", "#1e3a8a", k);
+      sunHex = lerpHexColor("#ff477e", "#38bdf8", k);
+      groundHex = lerpHexColor("#100d1e", "#070912", k);
+    }
+
+    (auraApp.scene as any).background = skyHex;
+    horizonWallHandle.setMaterial(
+      material.emissive({
+        color: skyHex,
+        emissive: emissiveHex,
+        emissiveIntensity: lerp(0.36, 0.22, tod)
       })
     );
-}
-
-/* ------------------------------------------------------------------ *
- *  DOM HUD + shell
- * ------------------------------------------------------------------ */
-
-let hudRoot: HTMLElement;
-let shellEl: HTMLElement;
-let vignetteEl: HTMLElement;
-let objective = "Thread the gridlock: near-miss traffic, hit boost columns, launch off carriers — finish the 4.5 km corridor.";
-
-function mountDom() {
-  hudRoot = document.createElement("aside");
-  hudRoot.id = "apex-hud";
-  hudRoot.setAttribute("aria-label", "Apex Overdrive telemetry HUD");
-  hudRoot.dataset.hidden = "true";
-  document.body.append(hudRoot);
-
-  vignetteEl = document.createElement("div");
-  vignetteEl.id = "apex-vignette";
-  vignetteEl.dataset.hit = "false";
-  document.body.append(vignetteEl);
-
-  shellEl = document.createElement("section");
-  shellEl.className = "apex-shell";
-  shellEl.setAttribute("aria-label", "Apex Overdrive shell");
-  document.body.append(shellEl);
-}
-
-function renderHud() {
-  const kmh = Math.round(Math.abs(player.speed) * 3.6);
-  const combo = score.combo > 1 ? `x${score.combo}` : "—";
-  const ev = routeEvents.events().slice(-6);
-  const standings = [
-    { name: "You", prog: player.progress, isPlayer: true },
-    ...rivals.map((r, i) => ({ name: (r as FleetEntry & { name?: string }).name ?? `Rival ${i + 1}`, prog: r.progress, isPlayer: false }))
-  ].sort((a, b) => b.prog - a.prog);
-
-  hudRoot.innerHTML = `
-    <div class="hud-top-left">
-      <div class="apex-panel">
-        <div class="apex-title">APEX OVERDRIVE</div>
-        <div class="apex-sub">Sector ${Math.min(player.checkpoint + 1, route.checkpoints.length)}/${route.checkpoints.length} · ${(player.progress * 100).toFixed(0)}% of corridor</div>
-        <div class="metric-grid" style="margin-top:8px">
-          <div class="metric-cell"><span class="smcp-label">speed</span><span class="metric-val metric-hero tnum">${kmh}<small> km/h</small></span></div>
-          <div class="metric-cell"><span class="smcp-label">alt</span><span class="metric-val tnum">${player.y.toFixed(1)}<small> m</small></span></div>
-          <div class="metric-cell"><span class="smcp-label">score</span><span class="metric-val tnum">${score.total.toLocaleString()}</span></div>
-        </div>
-      </div>
-      <div class="apex-panel meter-wrap">
-        <div class="meter-row"><span class="smcp-label">boost</span><div class="meter-track"><div class="meter-fill" style="width:${player.boost.toFixed(0)}%"></div></div><span class="tnum">${player.boost.toFixed(0)}</span></div>
-        <div class="meter-row"><span class="smcp-label">cold gas</span><div class="meter-track"><div class="meter-fill cold" style="width:${player.charge.toFixed(0)}%"></div></div><span class="tnum">${player.charge.toFixed(0)}</span></div>
-        <div class="meter-row"><span class="smcp-label">hull</span><div class="meter-track"><div class="meter-fill hull" style="width:${player.hull.toFixed(0)}%"></div></div><span class="tnum">${player.hull.toFixed(0)}</span></div>
-      </div>
-    </div>
-    <div class="hud-center">
-      <div class="combo-callout" data-live="${score.combo > 1 && score.comboTimer > 0}">NEAR-MISS ${combo}</div>
-    </div>
-    <div class="hud-top-right">
-      <div class="apex-panel standings">
-        <span class="smcp-label">sky-lane rivals</span>
-        ${standings.map((s, i) => `<div class="standing-row" data-player="${s.isPlayer}"><span class="tnum">P${i + 1}</span><span>${s.name}</span><span class="tnum">${(s.prog * 100).toFixed(0)}%</span></div>`).join("")}
-      </div>
-      <div class="apex-panel event-feed">
-        ${ev.map((e) => `<div class="ev ev-${e.severity}"><span class="ev-tag">${e.type}</span><span>${e.label}</span></div>`).join("") || `<div class="ev"><span class="ev-tag">ready</span><span>thrusters primed</span></div>`}
-      </div>
-    </div>
-    <div class="hud-bottom-left">
-      <div class="apex-panel">
-        <div class="objective-line">${objective}</div>
-        <div class="controls-hint" style="margin-top:6px">W/S throttle · A/D steer · Space thrust · Shift boost · Q/E barrel roll · F takedown · T storm · R reset</div>
-      </div>
-    </div>`;
-}
-
-type ShellScreen = "title" | "pause" | "results" | "settings" | "hidden";
-let shellScreen: ShellScreen = "title";
-let settings = { storm: false, music: true, voice: true, shake: true, reducedMotion: false };
-
-function renderShell() {
-  shellEl.dataset.hidden = shellScreen === "hidden" ? "true" : "false";
-  const keybinds = `
-    <div class="kbd-list">
-      <div><kbd>W/S</kbd>throttle / brake</div><div><kbd>A/D</kbd>steer lanes</div>
-      <div><kbd>Space</kbd>cold-gas thrust</div><div><kbd>Shift</kbd>boost burn</div>
-      <div><kbd>Q/E</kbd>barrel roll</div><div><kbd>F</kbd>rival takedown</div>
-      <div><kbd>T</kbd>storm front</div><div><kbd>Esc</kbd>pause</div>
-    </div>`;
-  if (shellScreen === "title") {
-    shellEl.innerHTML = `<div class="shell-card">
-      <div class="shell-kicker">Aura3D flagship · sky-lane racer</div>
-      <h1 class="shell-title">APEX<br/>OVERDRIVE</h1>
-      <p class="shell-sub">Fly the Apex Interceptor over a gridlocked sunset freeway. Cold-gas thrusters over traffic, barrel rolls through sky-lane dogfights, carrier-ramp launches, 4.5&nbsp;km to the finish gantry.</p>
-      ${keybinds}
-      <div class="shell-actions">
-        <button class="apex-btn" data-act="start">LAUNCH RUN</button>
-        <button class="apex-btn secondary" data-act="settings">SETTINGS</button>
-      </div></div>`;
-  } else if (shellScreen === "pause") {
-    shellEl.innerHTML = `<div class="shell-card">
-      <div class="shell-kicker">paused</div>
-      <h1 class="shell-title" style="font-size:30px">HOLD POSITION</h1>
-      <div class="shell-rows">
-        <div class="shell-row"><span class="smcp-label">score</span><span class="tnum">${score.total.toLocaleString()}</span></div>
-        <div class="shell-row"><span class="smcp-label">progress</span><span class="tnum">${(player.progress * 100).toFixed(1)}%</span></div>
-        <div class="shell-row"><span class="smcp-label">best combo</span><span class="tnum">x${score.bestCombo}</span></div>
-      </div>
-      <div class="shell-actions">
-        <button class="apex-btn" data-act="resume">RESUME</button>
-        <button class="apex-btn secondary" data-act="restart">RESTART</button>
-        <button class="apex-btn secondary" data-act="settings">SETTINGS</button>
-        <button class="apex-btn secondary" data-act="title">QUIT TO TITLE</button>
-      </div></div>`;
-  } else if (shellScreen === "results") {
-    const won = player.status === "finished";
-    shellEl.innerHTML = `<div class="shell-card">
-      <div class="shell-kicker">${won ? "corridor cleared" : "interceptor totaled"}</div>
-      <h1 class="shell-title" style="font-size:30px">${won ? "RUN COMPLETE" : "RUN LOST"}</h1>
-      <div class="shell-rows">
-        <div class="shell-row"><span class="smcp-label">final score</span><span class="tnum">${score.total.toLocaleString()}</span></div>
-        <div class="shell-row"><span class="smcp-label">progress</span><span class="tnum">${(player.progress * 100).toFixed(1)}%</span></div>
-        <div class="shell-row"><span class="smcp-label">near misses</span><span class="tnum">${score.nearMisses}</span></div>
-        <div class="shell-row"><span class="smcp-label">barrel rolls</span><span class="tnum">${score.rolls}</span></div>
-        <div class="shell-row"><span class="smcp-label">carrier launches</span><span class="tnum">${score.launches}</span></div>
-        <div class="shell-row"><span class="smcp-label">rival takedowns</span><span class="tnum">${score.takedowns}</span></div>
-        <div class="shell-row"><span class="smcp-label">best combo</span><span class="tnum">x${score.bestCombo}</span></div>
-        <div class="shell-row"><span class="smcp-label">run time</span><span class="tnum">${player.raceTime.toFixed(1)}s</span></div>
-      </div>
-      <div class="shell-actions">
-        <button class="apex-btn" data-act="restart">RUN IT BACK</button>
-        <button class="apex-btn secondary" data-act="title">TITLE</button>
-      </div></div>`;
-  } else if (shellScreen === "settings") {
-    shellEl.innerHTML = `<div class="shell-card">
-      <div class="shell-kicker">settings</div>
-      <h1 class="shell-title" style="font-size:30px">CALIBRATION</h1>
-      <div class="shell-rows">
-        <div class="settings-row"><span>Music</span><input type="checkbox" data-set="music" ${settings.music ? "checked" : ""}/></div>
-        <div class="settings-row"><span>Voice callouts</span><input type="checkbox" data-set="voice" ${settings.voice ? "checked" : ""}/></div>
-        <div class="settings-row"><span>Camera shake</span><input type="checkbox" data-set="shake" ${settings.shake ? "checked" : ""}/></div>
-        <div class="settings-row"><span>Reduced motion</span><input type="checkbox" data-set="reducedMotion" ${settings.reducedMotion ? "checked" : ""}/></div>
-        <div class="settings-row"><span>Storm front (wet freeway)</span><input type="checkbox" data-set="storm" ${settings.storm ? "checked" : ""}/></div>
-      </div>
-      <div class="shell-actions"><button class="apex-btn" data-act="back">BACK</button></div></div>`;
-  } else {
-    shellEl.innerHTML = "";
+    sunDiscHandle.setMaterial(
+      material.emissive({
+        color: sunHex,
+        emissive: sunHex,
+        emissiveIntensity: lerp(1.9, 1.35, tod)
+      })
+    );
+    outerGroundHandle.setMaterial(material.pbr({ color: groundHex, roughness: 0.95 }));
   }
-  shellEl.querySelectorAll<HTMLElement>("[data-act]").forEach((el) => {
-    el.onclick = () => shellAction(el.dataset.act ?? "");
-  });
-  shellEl.querySelectorAll<HTMLInputElement>("[data-set]").forEach((el) => {
-    el.onchange = () => applySetting(el.dataset.set ?? "", el.checked);
-  });
-}
 
-let shellReturn: ShellScreen = "title";
-function shellAction(act: string) {
-  if (act === "start") { startRun(); }
-  else if (act === "resume") { setScreen("hidden"); apexGame?.session.resume(); }
-  else if (act === "restart") { resetRun(); startRun(); }
-  else if (act === "settings") { shellReturn = shellScreen; setScreen("settings"); }
-  else if (act === "back") { setScreen(shellReturn); }
-  else if (act === "title") { apexGame?.sessionImpl?.transition("title"); player.status = "idle"; setScreen("title"); }
-}
-function setScreen(s: ShellScreen) {
-  shellScreen = s;
-  renderShell();
-  hudRoot.dataset.hidden = s === "title" || s === "settings" && shellReturn === "title" ? "true" : "false";
-}
-function applySetting(key: string, value: boolean) {
-  settings = { ...settings, [key]: value };
-  if (key === "storm") applyStorm(value);
-  if (key === "reducedMotion") {
-    void apexGame?.app?.feel?.emit("accessibility.reduced-motion", { strength: value ? 1 : 0 });
-  }
-  if (key === "music") apexGame?.sound?.setBusVolume("music", value ? 1 : 0);
-}
+  function runSmartFreewayAutopilot(g: any): void {
+    const now = performance.now();
+    if (!g) return;
 
-function startRun() {
-  setScreen("hidden");
-  hudRoot.dataset.hidden = "false";
-  player.status = "running";
-  apexGame?.sessionImpl?.transition("playing");
-  void apexGame?.sound?.unlock().then(() => {
-    void apexGame?.sound?.cue("music-run");
-    void apexGame?.sound?.cue("voice-start");
-  });
-  recordEvent("run-start", "corridor run started", "success");
-}
-
-/* ------------------------------------------------------------------ *
- *  Game construction
- * ------------------------------------------------------------------ */
-
-const VOICE_BASE = "/roadster-rush/audio/voice";
-const MUSIC_BASE = "/roadster-rush/audio/music";
-
-const racingGame = createGame({
-  id: "apex-overdrive-v2",
-  target: "#app",
-  diagnostics: { overlay: false, performancePanel: false },
-  scene: buildScene,
-  input: inputOptions,
-  hud: {
-    theme: "motorsport",
-    widgets: [
-      { kind: "score", id: "score", anchor: "top", label: "score" },
-      { kind: "speedometer", id: "speed", anchor: "bottom", label: "km/h" },
-      { kind: "meter", id: "boost", anchor: "bottom-left", label: "boost" },
-      { kind: "combo", id: "combo", anchor: "right", label: "near-miss combo" },
-      { kind: "objective", id: "objective", anchor: "bottom", label: "objective" },
-      { kind: "prompt", id: "prompt", anchor: "center", label: "callout" }
-    ]
-  },
-  touch: {
-    preset: "steer-pedals",
-    bindings: {
-      "steer-left": "left",
-      "steer-right": "right",
-      throttle: "thrust",
-      brake: "brake",
-      boost: "boost",
-      reset: "reset"
+    // Auto-recover from Wrecked / Game Over screen if unattended
+    if (g.mode === "gameover") {
+      if (gameOverSinceMs === 0) {
+        gameOverSinceMs = now;
+      } else if (now - lastUserInputMs > 2200 && now - gameOverSinceMs > 1600) {
+        gameOverSinceMs = 0;
+        g.start?.();
+      }
+      return;
     }
-  },
-  sound: {
-    buses: [
-      { id: "music", volume: 0.42 },
-      { id: "voice", volume: 0.9 },
-      { id: "sfx", volume: 0.85 }
-    ],
-    cues: {
-      "music-title": { id: "music-title", bus: "music", asset: { url: `${MUSIC_BASE}/title.mp3` }, loop: true, volume: 0.8 },
-      "music-run": { id: "music-run", bus: "music", asset: { url: `${MUSIC_BASE}/run.mp3` }, loop: true, volume: 0.9 },
-      "music-rocket": { id: "music-rocket", bus: "music", asset: { url: `${MUSIC_BASE}/rocket.mp3` }, loop: false, volume: 0.9 },
-      "voice-start": { id: "voice-start", bus: "voice", asset: { url: `${VOICE_BASE}/start_0.mp3` }, volume: 1 },
-      "voice-roll": { id: "voice-roll", bus: "voice", asset: { url: `${VOICE_BASE}/roll_0.mp3` }, volume: 1 },
-      "voice-close": { id: "voice-close", bus: "voice", asset: { url: `${VOICE_BASE}/closeCall_0.mp3` }, volume: 1 },
-      "voice-airlow": { id: "voice-airlow", bus: "voice", asset: { url: `${VOICE_BASE}/airLow_0.mp3` }, volume: 1 },
-      "voice-rocket": { id: "voice-rocket", bus: "voice", asset: { url: `${VOICE_BASE}/rocket_0.mp3` }, volume: 1 },
-      "voice-crash": { id: "voice-crash", bus: "voice", asset: { url: `${VOICE_BASE}/crash_0.mp3` }, volume: 1 },
-      "voice-combo": { id: "voice-combo", bus: "voice", asset: { url: `${VOICE_BASE}/combo_0.mp3` }, volume: 1 },
-      "voice-mile": { id: "voice-mile", bus: "voice", asset: { url: `${VOICE_BASE}/milestone_0.mp3` }, volume: 1 },
-      "voice-sky": { id: "voice-sky", bus: "voice", asset: { url: `${VOICE_BASE}/sky_0.mp3` }, volume: 1 },
-      "sfx-boost": { id: "sfx-boost", bus: "sfx", asset: { url: sfxUrl("vehicle.boost") }, volume: 0.7 },
-      "sfx-checkpoint": { id: "sfx-checkpoint", bus: "sfx", asset: { url: sfxUrl("stinger.checkpoint.00") }, volume: 0.75 },
-      "sfx-crash": { id: "sfx-crash", bus: "sfx", asset: { url: sfxUrl("impact.car-crash.00") }, volume: 0.85 },
-      "sfx-launch": { id: "sfx-launch", bus: "sfx", asset: { url: sfxUrl("whoosh.dash.00") }, volume: 0.8 },
-      "sfx-takedown": { id: "sfx-takedown", bus: "sfx", asset: { url: sfxUrl("explosion.small.00") }, volume: 0.85 },
-      "sfx-finish": { id: "sfx-finish", bus: "sfx", asset: { url: sfxUrl("stinger.win.00") }, volume: 0.9 },
-      "sfx-pickup": { id: "sfx-pickup", bus: "sfx", asset: { url: sfxUrl("pickup.power-up.00") }, volume: 0.7 }
-    },
-    ducking: { music: { duck: 0.35, attackMs: 60, releaseMs: 420 } }
-  },
-  juice: {
-    "near-miss": { punch: { fovDeg: 1.8, ms: 180 }, flash: { color: "#5fe6ff", peak: 0.1, ms: 160 }, rumble: { weak: 0.3, ms: 120 }, fx: { kind: "streak", count: 8, color: "#5fe6ff" } },
-    roll: { shake: 0.12, punch: { fovDeg: 1.4, ms: 200 }, fx: { kind: "ring", count: 10, color: "#ffb36b" } },
-    boost: { punch: { fovDeg: 2.6, ms: 260 }, flash: { color: "#ffb36b", peak: 0.12, ms: 200 }, fx: { kind: "streak", count: 14, color: "#ffb36b" } },
-    crash: { hitStop: 0.06, shake: 0.5, vignette: { amount: 0.4, ms: 300, color: "#ff5c7a" }, rumble: { strong: 0.8, ms: 320 }, fx: { kind: "explosion-small", count: 16, color: "#ff5c7a" } },
-    launch: { punch: { fovDeg: 3.2, ms: 340 }, shake: 0.18, flash: { color: "#7ff0c5", peak: 0.14, ms: 240 }, fx: { kind: "spark", count: 18, color: "#7ff0c5" } },
-    takedown: { hitStop: 0.09, shake: 0.34, punch: { fovDeg: 2.4, ms: 280 }, rumble: { strong: 0.7, ms: 260 }, fx: { kind: "explosion-small", count: 20, color: "#ffd166" } },
-    checkpoint: { punch: { fovDeg: 1.2, ms: 150 }, flash: { color: "#7ff0c5", peak: 0.1, ms: 160 }, fx: { kind: "ring", count: 10, color: "#7ff0c5" } },
-    finish: { hitStop: 0.05, punch: { fovDeg: 3, ms: 400 }, flash: { color: "#ffd166", peak: 0.2, ms: 320 }, fx: { kind: "spark", count: 30, color: "#ffd166" } },
-    "low-air": { vignette: { amount: 0.22, ms: 260, color: "#5fe6ff" } }
-  },
-  qualityRebuild: { flags: ["game"] },
-  evidence: {
-    schema: 1,
-    sections: {
-      apexOverdrive: () => window.__APEX_OVERDRIVE__ ?? { status: "unbound" }
+    gameOverSinceMs = 0;
+
+    if (g.mode !== "playing" || g.paused || g.activePreset) return;
+    if (now - lastUserInputMs <= 1800) return;
+    if (now - lastAutopilotTickMs < 95) return;
+    lastAutopilotTickMs = now;
+
+    const p = g.player;
+    if (!p || p.alive === false || !p.position) return;
+
+    const px = Number(p.position.x ?? 0);
+    const py = Number(p.position.y ?? 0);
+    const pz = Number(p.position.z ?? 0);
+    const currentLane = clamp(Number(p.targetLane ?? p.lane ?? 2), 0, 4);
+    const vehicles: any[] = Array.isArray(g.traffic?.vehicles) ? g.traffic.vehicles : [];
+    const skyCars: any[] = Array.isArray(g.traffic?.skyCars) ? g.traffic.skyCars : [];
+
+    // 1. If in Sky Lane (py > 7), dodge oncoming sky-lane Roadsters
+    if (py > 7) {
+      let skyThreatInLane = false;
+      const safeSkyLane = [true, true, true, true, true];
+      for (let i = 0; i < skyCars.length; i++) {
+        const sc = skyCars[i];
+        if (!sc) continue;
+        const dz = pz - Number(sc.z ?? 0);
+        if (dz > -6 && dz < 72 && Math.abs(Number(sc.y ?? 12) - py) < 3.4) {
+          const sLane = clamp(Math.round(Number(sc.x ?? 0) / 3.6 + 2), 0, 4);
+          safeSkyLane[sLane] = false;
+          if (sLane === currentLane || Math.abs(Number(sc.x ?? 0) - px) < 2.5) {
+            skyThreatInLane = true;
+          }
+        }
+      }
+      if (skyThreatInLane) {
+        if (currentLane > 0 && safeSkyLane[currentLane - 1]) {
+          g.triggerAction?.((p.air ?? 0) > 40 ? "rollLeft" : "left");
+          return;
+        }
+        if (currentLane < 4 && safeSkyLane[currentLane + 1]) {
+          g.triggerAction?.((p.air ?? 0) > 40 ? "rollRight" : "right");
+          return;
+        }
+      }
+      return;
+    }
+
+    // 2. Check for a Carrier Ramp truck ahead in current or adjacent lane -> steer onto it for a Ramp Launch!
+    for (let i = 0; i < vehicles.length; i++) {
+      const v = vehicles[i];
+      if (!v || v.type !== "carrier") continue;
+      const rearZ = Number(v.z ?? 0) + Number(v.l ?? 16) * 0.5;
+      const distAhead = pz - rearZ;
+      if (distAhead > 4 && distAhead < 44 && Math.abs(v.lane - currentLane) <= 1) {
+        if (v.lane < currentLane) {
+          g.triggerAction?.("left");
+          return;
+        }
+        if (v.lane > currentLane) {
+          g.triggerAction?.("right");
+          return;
+        }
+        // Aligned with carrier ramp! Boost up the ramp!
+        g.triggerAction?.("boost", { duration: 0.7 });
+        return;
+      }
+    }
+
+    // 3. Evaluate closest obstacle distance in each of the 5 lanes
+    const laneClosestDist = [999, 999, 999, 999, 999];
+    let obstacleInCurrentLane: any = null;
+
+    for (let i = 0; i < vehicles.length; i++) {
+      const v = vehicles[i];
+      if (!v) continue;
+      const vLane = clamp(Number(v.lane ?? 2), 0, 4);
+      const rearZ = Number(v.z ?? 0) + Number(v.l ?? 4.6) * 0.5;
+      const frontZ = Number(v.z ?? 0) - Number(v.l ?? 4.6) * 0.5;
+      const distAhead = pz - rearZ;
+
+      // Ignore vehicles we are already safely above (e.g. roof-running)
+      const roofH = Number(v.roof ?? v.h ?? 1.5);
+      if (py >= roofH - 0.15 && v.type !== "carrier") continue;
+
+      if (pz >= frontZ - 2 && distAhead < laneClosestDist[vLane]! && distAhead > -8) {
+        laneClosestDist[vLane] = distAhead;
+        if (vLane === currentLane && distAhead < 28) {
+          obstacleInCurrentLane = v;
+        }
+      }
+    }
+
+    if (obstacleInCurrentLane) {
+      const dist = laneClosestDist[currentLane]!;
+      const air = Number(p.air ?? 100);
+
+      // Prefer clean lane changes first; use cold-gas hop or barrel-roll when lanes are tight or after 4s of run
+      const leftDist = currentLane > 0 ? laneClosestDist[currentLane - 1]! : -999;
+      const rightDist = currentLane < 4 ? laneClosestDist[currentLane + 1]! : -999;
+
+      if (leftDist >= rightDist && leftDist > 22) {
+        g.triggerAction?.("left");
+        return;
+      }
+      if (rightDist > 22) {
+        g.triggerAction?.("right");
+        return;
+      }
+
+      if (air > 48 && dist < 20) {
+        g.triggerAction?.("thrustHold", { duration: 0.75 });
+        lastAutopilotStuntMs = now;
+        return;
+      }
+
+      if (leftDist >= rightDist && leftDist > 14) {
+        g.triggerAction?.("left");
+        return;
+      }
+      if (rightDist > 14) {
+        g.triggerAction?.("right");
+        return;
+      }
+      // Both adjacent lanes tight — emergency cold-gas hop!
+      if (air > 25) {
+        g.triggerAction?.("thrustHold", { duration: 0.65 });
+      } else if (leftDist > rightDist && currentLane > 0) {
+        g.triggerAction?.("left");
+      } else if (currentLane < 4) {
+        g.triggerAction?.("right");
+      }
+      return;
+    }
+
+    // 4. Periodic showcase boost when the lane is clear
+    if (now - lastAutopilotStuntMs > 5600 && (p.air ?? 0) > 62 && p.grounded) {
+      lastAutopilotStuntMs = now;
+      g.triggerAction?.("boost", { duration: 1.1 });
     }
   }
-});
 
-apexGame = racingGame;
-const app = racingGame.app;
-const ev: Record<string, unknown> = { ready: "pending" };
-(window as unknown as Record<string, unknown>).__auraEvidence = ev;
-try {
-  const snapRaw = (buildScene() as any).toJSON?.() ?? (buildScene() as any);
-  const flat = (flattenSceneSnapshot as any)(snapRaw)?.nodes ?? [];
-  ev.flatCount = flat.length;
-  ev.models = (flat as any[]).filter((n) => isRenderableModelNode(n)).map((n) => {
-    try { return { name: n?.name ?? "?", prov: createAssetProvenance(n?.asset)?.source, hasHash: Boolean(n?.asset?.hash) }; } catch { return { name: "?", prov: "err" }; }
-  });
-  ev.inlineModels = (ev.models as any[]).filter((m) => m.prov !== "typed-aura-assets-manifest");
-} catch { /* evidence only */ }
-setInterval(() => {
-  try {
-    ev.diag = (app as { diagnostics?: () => unknown }).diagnostics?.();
-    ev.marks = performance.getEntriesByType("mark").filter((m) => m.name.startsWith("a3d")).map((m) => `${m.name}@${Math.round(m.startTime)}`);
-  } catch { /* evidence only */ }
-}, 500);
-(app as unknown as { ready?: () => Promise<unknown> }).ready?.().then(() => { ev.ready = "ok"; }).catch((e: unknown) => { ev.ready = `err:${(e as Error)?.message ?? e}`; });
-const input = racingGame.input;
-if (!input) throw new Error("Apex Overdrive failed to initialize runtime-owned input.");
-racingGame.start();
+  function syncRoadsterWorld(g: any, _threeScene?: any, _threeCamera?: any): void {
+    if (!g || !g.player) return;
+    framesRendered += 1;
 
-/* ------------------------------------------------------------------ *
- *  Camera, feel, director
- * ------------------------------------------------------------------ */
+    runSmartFreewayAutopilot(g);
 
-const feel = gameFeel.create({ app, time: app.time });
-app.feel?.preset("racing");
+    const p = g.player;
+    const px = Number(p.position?.x ?? 0);
+    const py = Number(p.position?.y ?? 0);
+    const pz = Number(p.position?.z ?? 0);
+    const simTime = Number(g.time ?? performance.now() * 0.001);
 
-const chaseRig = camera.rigs.chase({
-  target: "player-interceptor",
-  fov: { base: 60, perSpeed: 0.42 },
-  lookAhead: { seconds: 0.4, max: 5.5 },
-  bank: { gain: 0.5, maxDeg: 6.5 }
-});
+    // Camera-anchored relative transform: the @aura3d/engine camera sits at [0, 3.6, 6.2] looking at [0, 0.9, -6.0].
+    // By shifting world coordinates by (camAnchorX, camAnchorY, pz), the Player Roadster stays right at z=0 in front
+    // of the chase camera while the 5-lane freeway, traffic, sky-lane Roadsters, and bolts rush past at 60 FPS!
+    const camAnchorX = px * 0.65;
+    const camAnchorY = Math.max(0, py * 0.85);
+    const rx = (wx: number) => wx - camAnchorX;
+    const ry = (wy: number) => wy - camAnchorY;
+    const rz = (wz: number) => wz - pz;
 
-// Intro flythrough: choreographed path preset → rail rig → chase handoff.
-const introPath = createCameraPathFromPreset({
-  id: "apex-intro",
-  presetId: "crane",
-  startTime: 0,
-  endTime: 5.4,
-  subjectPosition: [0, HOVER_RIDE_Y, 40]
-});
-const introRail = camera.rigs.rail({
-  points: introPath.keyframes.map((k) => k.position),
-  lookAt: [0, 2.5, 20],
-  fov: 58,
-  duration: 5.4,
-  ease: "inOutSine"
-});
+    // 1. Sync Endless Scrolling 5-Lane Freeway, Lane Dashes, Gantries, Palms, Poles & Skyline
+    const centerZ = -150;
+    outerGroundHandle.setPosition(rx(0), ry(-0.22), centerZ);
+    asphaltDeckHandle.setPosition(rx(0), ry(-0.06), centerZ);
+    shoulderLeftHandle.setPosition(rx(-9.0), ry(0.012), centerZ);
+    shoulderRightHandle.setPosition(rx(9.0), ry(0.012), centerZ);
+    barrierLeftHandle.setPosition(rx(-10.6), ry(0.52), centerZ);
+    barrierRightHandle.setPosition(rx(10.6), ry(0.52), centerZ);
+    soundwallLeftHandle.setPosition(rx(-11.6), ry(1.25), centerZ);
+    soundwallRightHandle.setPosition(rx(11.6), ry(1.25), centerZ);
+    neonTrimLeftHandle.setPosition(rx(-11.3), ry(2.42), centerZ);
+    neonTrimRightHandle.setPosition(rx(11.3), ry(2.42), centerZ);
 
-const cameraDirector = game.cameraDirector({
-  baseFov: 60,
-  distance: 9.5,
-  targetY: 2,
-  mode: "follow",
-  stageBounds: { minX: -16, maxX: 16 }
-});
+    const dashBaseZ = Math.floor(pz / DASH_STRIDE_Z) * DASH_STRIDE_Z + DASH_STRIDE_Z;
+    for (let d = 0; d < LANE_DIVIDER_X.length; d++) {
+      const lx = rx(LANE_DIVIDER_X[d]!);
+      const col = dashHandles[d]!;
+      for (let i = 0; i < DASH_COUNT_PER_DIVIDER; i++) {
+        col[i]!.setPosition(lx, ry(0.015), rz(dashBaseZ - i * DASH_STRIDE_Z));
+      }
+    }
 
-app.camera?.use(chaseRig);
+    // Overhead Highway Sign Gantries
+    const worldGantries = Array.isArray(g.world?.gantries)
+      ? g.world.gantries
+      : Array.isArray(g.world?.gantries?.items)
+        ? g.world.gantries.items
+        : null;
+    const gantryBaseZ = Math.floor(pz / GANTRY_STRIDE_Z) * GANTRY_STRIDE_Z;
+    for (let i = 0; i < GANTRY_POOL_COUNT; i++) {
+      const slot = gantrySlots[i]!;
+      const worldGz =
+        worldGantries && worldGantries[i]?.position?.z != null
+          ? Number(worldGantries[i].position.z)
+          : gantryBaseZ - i * GANTRY_STRIDE_Z;
+      const gz = rz(worldGz);
+      slot.pillarL.setPosition(rx(-10.9), ry(4.8), gz);
+      slot.pillarR.setPosition(rx(10.9), ry(4.8), gz);
+      slot.beam.setPosition(rx(0), ry(9.0), gz);
+      slot.boardL.setPosition(rx(-4.4), ry(8.85), gz + 0.22);
+      slot.boardR.setPosition(rx(4.6), ry(8.85), gz + 0.22);
+      slot.trimL.setPosition(rx(-4.4), ry(9.55), gz + 0.24);
+      slot.trimR.setPosition(rx(4.6), ry(9.45), gz + 0.24);
+    }
 
-function playIntro() {
-  if (!app.camera) return;
-  const seq = { id: "intro-flythrough", shots: [{ rig: introRail, duration: 5.4, blendIn: 0.4 }], onEnd: "return" as const };
-  void app.camera.play(seq).done.then(() => app.camera?.use(chaseRig, { blend: 0.9 }));
-}
+    // Roadside Palm Silhouettes & Highway Streetlight Poles
+    const palmBaseZ = Math.floor(pz / PALM_STRIDE_Z) * PALM_STRIDE_Z + PALM_STRIDE_Z;
+    for (let i = 0; i < PALM_POOL_COUNT; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const row = Math.floor(i / 2);
+      const treeX = rx(side * (15.5 + (row % 2) * 1.8));
+      const treeZ = rz(palmBaseZ - row * PALM_STRIDE_Z);
+      palmHandles[i]!.setPosition(treeX, ry(4.5), treeZ).setRotation(0, 0, side * 0.06);
+    }
 
-function takedownCam(target: AuraVec3) {
-  cameraDirector.special([target[0], target[1], target[2]], 1.1);
-  app.camera?.fovKick.set("takedown", -6, 0.9);
-}
+    for (let i = 0; i < POLE_POOL_COUNT; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const row = Math.floor(i / 2);
+      const poleX = rx(side * 12.1);
+      const poleZ = rz(palmBaseZ - row * POLE_STRIDE_Z - 14);
+      const slot = poleSlots[i]!;
+      slot.pole.setPosition(poleX, ry(3.8), poleZ);
+      slot.arm.setPosition(poleX - side * 0.8, ry(7.55), poleZ);
+      slot.lamp.setPosition(poleX - side * 1.55, ry(7.45), poleZ);
+    }
 
-/* ------------------------------------------------------------------ *
- *  Storm front (wet freeway variant)
- * ------------------------------------------------------------------ */
+    const skylineBaseZ = Math.floor(pz / SKYLINE_STRIDE_Z) * SKYLINE_STRIDE_Z;
+    for (let i = 0; i < SKYLINE_POOL_COUNT; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const row = Math.floor(i / 2);
+      skylineHandles[i]!.setPosition(rx(side * 42), ry(-0.2), rz(skylineBaseZ - 65 - row * SKYLINE_STRIDE_Z));
+    }
 
-let stormNode: ReturnType<typeof app.nodes.require> | undefined;
-let stormOn = false;
-function applyStorm(on: boolean) {
-  stormOn = on;
-  try {
-    stormNode ??= app.nodes.require("storm-rain");
-  } catch { stormNode = undefined; }
-  stormNode?.setVisible(on);
-  app.atmosphere?.setWetness(on ? 0.85 : 0.12, { transitionSeconds: 1.2 });
-  if (on) {
-    app.atmosphere?.setFog({ density: 0.012, color: "#4a3550", heightFalloff: 0.5 }, { transitionSeconds: 1.4 });
-    recordEvent("weather", "storm front rolling in — freeway slick", "warning");
-  } else {
-    app.atmosphere?.setFog(null, { transitionSeconds: 1.4 });
-    recordEvent("weather", "storm cleared — golden hour back", "info");
-  }
-}
+    updateAtmosphereForTod(Number(g.world?.timeOfDay ?? 0));
 
-/* ------------------------------------------------------------------ *
- *  Game logic
- * ------------------------------------------------------------------ */
+    // 3. Sync Player Roadster Assembly, Thruster Plumes, Active Powerups & Contact Shadow
+    const pitch = Number(p.pivot?.rotation?.x ?? p._pitch ?? 0);
+    const yaw = Number(p.mesh?.rotation?.y ?? p._yaw ?? 0);
+    const roll = Number(p.pivot?.rotation?.z ?? p._bank ?? 0);
+    const squash: Vec3 = [
+      Number(p.squashGroup?.scale?.x ?? 1),
+      Number(p.squashGroup?.scale?.y ?? 1),
+      Number(p.squashGroup?.scale?.z ?? 1)
+    ];
+    const pRoot: Vec3 = [rx(px), ry(py), -1.15];
 
-function resetRun() {
-  kart.reset(START_PROGRESS);
-  const pose = sampleRoute(START_PROGRESS, 0);
-  Object.assign(player, {
-    x: pose.x, z: pose.z, y: HOVER_RIDE_Y, vy: 0, speed: 0,
-    heading: pose.heading, progress: START_PROGRESS, signedTrackOffset: 0,
-    roll: 0, pitch: 0, rollAnim: -1, rollDir: 1, invuln: 0,
-    hull: 100, boost: 55, charge: 100, airtime: 0, launched: 0,
-    status: "idle" as const, checkpoint: 0, raceTime: 0
-  });
-  Object.assign(score, { total: 0, combo: 1, comboTimer: 0, nearMisses: 0, rolls: 0, launches: 0, takedowns: 0, bestCombo: 1 });
-  for (const entry of [...trafficFleet, ...skyFleet, ...rivals]) {
-    const p = sampleRoute(entry.startProgress, entry.lane);
-    entry.progress = entry.startProgress;
-    entry.signedOffset = entry.lane;
-    entry.speed = entry.cruise * 0.8;
-    entry.heading = p.heading;
-    entry.x = p.x;
-    entry.z = p.z;
-    entry.nearMissArmed = true;
-    entry.tumble = 0;
-    driverFor(entry).reset();
-  }
-  for (const pad of BOOST_PADS) pad.cooldown = 0;
-  routeEvents.clear();
-  chassis.reset({ x: pose.x, z: pose.z, heading: pose.heading, speed: 0, steer: 0 });
-  recordEvent("reset", "run reset");
-}
+    playerHandles.car
+      .setPosition(pRoot[0], pRoot[1], pRoot[2])
+      .setRotation(pitch, yaw, roll)
+      .setScale(squash)
+      .setVisible(true);
 
-function award(points: number, label: string, type = "score", severity: "info" | "success" | "warning" = "info") {
-  const scaled = Math.round(points * score.combo);
-  score.total += scaled;
-  recordEvent(type, `${label} +${scaled}`, severity);
-}
+    const lbWorld = rotateLocalOffset(pRoot, pitch, yaw, roll, [0, 0.72, 2.12]);
+    playerHandles.lightbar
+      .setPosition(lbWorld[0], lbWorld[1], lbWorld[2])
+      .setRotation(pitch, yaw, roll)
+      .setVisible(true);
 
-function bumpCombo() {
-  score.combo = Math.min(12, score.combo + 1);
-  score.comboTimer = 4.5;
-  score.bestCombo = Math.max(score.bestCombo, score.combo);
-  if (score.combo >= 4) void apexGame?.sound?.cue("voice-combo");
-}
+    const isHotTail = Boolean((p._brake ?? 0) > 0.15 || p.boosting || (p.rocketTimer ?? 0) > 0);
+    if (isHotTail !== lastLightbarHot) {
+      lastLightbarHot = isHotTail;
+      playerHandles.lightbar.setMaterial(
+        material.emissive({
+          color: "#ff1830",
+          emissive: isHotTail ? "#ff384c" : "#ff1830",
+          emissiveIntensity: isHotTail ? 2.8 : 1.75
+        })
+      );
+    }
 
-function crash(reason: string) {
-  if (player.invuln > 0 || player.status !== "running") return;
-  player.hull = Math.max(0, player.hull - 22);
-  score.combo = 1;
-  score.comboTimer = 0;
-  player.invuln = 1.2;
-  racingGame.juice.fire("crash", { position: [player.x, player.y, player.z] });
-  feel.hitStop(60);
-  app.camera?.shake.add(0.55);
-  vignetteEl.dataset.hit = "true";
-  setTimeout(() => { vignetteEl.dataset.hit = "false"; }, 320);
-  void apexGame?.sound?.cue("sfx-crash");
-  void apexGame?.sound?.cue("voice-crash");
-  recordEvent("crash", `${reason} — hull ${player.hull}%`, "warning");
-  objective = player.hull <= 0 ? "Hull breached." : `${reason} — hull at ${player.hull}%.`;
-  if (player.hull <= 0) {
-    player.status = "totaled";
-    setTimeout(() => setScreen("results"), 700);
-  }
-}
+    const hlLeftW = rotateLocalOffset(pRoot, pitch, yaw, roll, [-0.74, 0.56, -2.08]);
+    const hlRightW = rotateLocalOffset(pRoot, pitch, yaw, roll, [0.74, 0.56, -2.08]);
+    playerHandles.headlightL
+      .setPosition(hlLeftW[0], hlLeftW[1], hlLeftW[2])
+      .setRotation(pitch, yaw, roll)
+      .setVisible(true);
+    playerHandles.headlightR
+      .setPosition(hlRightW[0], hlRightW[1], hlRightW[2])
+      .setRotation(pitch, yaw, roll)
+      .setVisible(true);
 
-function launch(vertical: number, label: string) {
-  player.vy = Math.max(player.vy, vertical);
-  player.launched = 1.4;
-  player.airtime = 0;
-  score.launches += 1;
-  award(320, label, "launch", "success");
-  racingGame.juice.fire("launch", { position: [player.x, player.y, player.z] });
-  app.camera?.fovKick.set("launch", 7, 0.8);
-  void apexGame?.sound?.cue("sfx-launch");
-  void apexGame?.sound?.cue("voice-rocket");
-  objective = "Carrier launch! Hold Space to stay airborne over the gridlock.";
-}
-
-function stepFleet(entry: FleetEntry, dt: number) {
-  const driver = driverFor(entry);
-  if (entry.tumble > 0) {
-    entry.tumble -= dt;
-    entry.z -= entry.speed * dt;
-    return;
-  }
-  const inputIn = driver.decide(dt, {
-    progress: entry.progress,
-    speed: entry.speed,
-    heading: entry.heading,
-    signedTrackOffset: entry.signedOffset,
-    position: { x: entry.x, y: entry.z },
-    offTrack: Math.abs(entry.signedOffset) > ROAD_HALF_WIDTH,
-    preferredSignedOffset: entry.lane
-  });
-  const accel = inputIn.throttle * 14 - inputIn.brake * 20 - entry.speed * 0.16;
-  entry.speed = Math.max(0, Math.min(entry.cruise * 1.15, entry.speed + accel * dt));
-  entry.heading += inputIn.steer * 1.9 * dt;
-  const fx = Math.sin(entry.heading);
-  const fz = Math.cos(entry.heading);
-  entry.x += fx * entry.speed * dt;
-  entry.z += fz * entry.speed * dt;
-  const contact = racing.surfaceQuery.query({ x: entry.x, y: entry.z });
-  entry.progress = contact.progress;
-  entry.signedOffset = contact.signedTrackOffset;
-  if (entry.progress >= 0.995) {
-    // End of corridor — recycle gridlocked commuters to the back (they're
-    // queueing; rivals/sky couriers hold at the finish gantry).
-    if (entry.id.startsWith("traffic-")) {
-      const back = 0.02 + ((entry.seed * 0.037) % 0.05);
-      const p = sampleRoute(back, entry.lane);
-      entry.progress = back;
-      entry.x = p.x; entry.z = p.z; entry.heading = p.heading;
-      entry.signedOffset = entry.lane;
-      driver.reset();
+    // Cold-Gas Thruster Plumes
+    const rearPlumeLevel = clamp(
+      Math.max(
+        Number(p._rearPlume ?? 0),
+        p.boosting ? 1.0 : 0,
+        (p.rocketTimer ?? 0) > 0 ? 1.35 : 0,
+        g.mode === "playing" ? 0.28 : 0
+      ),
+      0,
+      1.45
+    );
+    const flicker = 0.92 + Math.sin(simTime * 55) * 0.08;
+    if (rearPlumeLevel > 0.04) {
+      const rpL = rotateLocalOffset(pRoot, pitch, yaw, roll, [-0.42, 0.46, 2.45 + rearPlumeLevel * 0.35]);
+      const rpR = rotateLocalOffset(pRoot, pitch, yaw, roll, [0.42, 0.46, 2.45 + rearPlumeLevel * 0.35]);
+      const pScale: Vec3 = [
+        0.75 * rearPlumeLevel * flicker,
+        1.1 * rearPlumeLevel * flicker,
+        0.75 * rearPlumeLevel * flicker
+      ];
+      playerHandles.rearPlumeL
+        .setPosition(rpL[0], rpL[1], rpL[2])
+        .setRotation(pitch + Math.PI * 0.5, yaw, roll)
+        .setScale(pScale)
+        .setVisible(true);
+      playerHandles.rearPlumeR
+        .setPosition(rpR[0], rpR[1], rpR[2])
+        .setRotation(pitch + Math.PI * 0.5, yaw, roll)
+        .setScale(pScale)
+        .setVisible(true);
     } else {
-      entry.speed = 0;
+      playerHandles.rearPlumeL.setScale(HIDDEN_SCALE).setVisible(false);
+      playerHandles.rearPlumeR.setScale(HIDDEN_SCALE).setVisible(false);
+    }
+
+    const downPlumeLevel = clamp(
+      Math.max(Number(p._downPlume ?? 0), p.thrusting ? 1 : 0, !p.grounded && py > 0.4 ? 0.55 : 0),
+      0,
+      1.2
+    );
+    const downOffsets: Vec3[] = [
+      [-0.64, -0.18, -0.95],
+      [0.64, -0.18, -0.95],
+      [-0.64, -0.18, 1.05],
+      [0.64, -0.18, 1.05]
+    ];
+    for (let i = 0; i < 4; i++) {
+      const dh = playerHandles.downPlumes[i]!;
+      if (downPlumeLevel > 0.04) {
+        const dw = rotateLocalOffset(pRoot, pitch, yaw, roll, downOffsets[i]!);
+        dh.setPosition(dw[0], dw[1], dw[2])
+          .setRotation(pitch + Math.PI, yaw, roll)
+          .setScale([0.85 * downPlumeLevel, 1.15 * downPlumeLevel * flicker, 0.85 * downPlumeLevel])
+          .setVisible(true);
+      } else {
+        dh.setScale(HIDDEN_SCALE).setVisible(false);
+      }
+    }
+
+    const sideL = clamp(Number(p._sidePlumeL ?? 0), 0, 1.2);
+    const sideR = clamp(Number(p._sidePlumeR ?? 0), 0, 1.2);
+    const sideZOffsets = [-1.45, 1.45];
+    for (let i = 0; i < 2; i++) {
+      const shL = playerHandles.sidePlumesL[i]!;
+      if (sideL > 0.04) {
+        const lw = rotateLocalOffset(pRoot, pitch, yaw, roll, [-1.18, 0.48, sideZOffsets[i]!]);
+        shL
+          .setPosition(lw[0], lw[1], lw[2])
+          .setRotation(pitch, yaw, roll + Math.PI * 0.5)
+          .setScale([0.8 * sideL, 1.1 * sideL * flicker, 0.8 * sideL])
+          .setVisible(true);
+      } else {
+        shL.setScale(HIDDEN_SCALE).setVisible(false);
+      }
+
+      const shR = playerHandles.sidePlumesR[i]!;
+      if (sideR > 0.04) {
+        const rw = rotateLocalOffset(pRoot, pitch, yaw, roll, [1.18, 0.48, sideZOffsets[i]!]);
+        shR
+          .setPosition(rw[0], rw[1], rw[2])
+          .setRotation(pitch, yaw, roll - Math.PI * 0.5)
+          .setScale([0.8 * sideR, 1.1 * sideR * flicker, 0.8 * sideR])
+          .setVisible(true);
+      } else {
+        shR.setScale(HIDDEN_SCALE).setVisible(false);
+      }
+    }
+
+    // Active Powerup Visuals on Player
+    if ((p.shieldTimer ?? 0) > 0) {
+      playerHandles.shieldSphere
+        .setPosition(pRoot[0], pRoot[1] + 0.65, pRoot[2])
+        .setRotation(0, simTime * 2.2, 0)
+        .setScale([1, 1, 1])
+        .setVisible(true);
+    } else {
+      playerHandles.shieldSphere.setScale(HIDDEN_SCALE).setVisible(false);
+    }
+
+    if ((p.rocketTimer ?? 0) > 0) {
+      const rkW = rotateLocalOffset(pRoot, pitch, yaw, roll, [0, 0.52, 3.1]);
+      playerHandles.rocketCone
+        .setPosition(rkW[0], rkW[1], rkW[2])
+        .setRotation(pitch + Math.PI * 0.5, yaw, roll)
+        .setScale([1.15 * flicker, 1.35 * flicker, 1.15 * flicker])
+        .setVisible(true);
+    } else {
+      playerHandles.rocketCone.setScale(HIDDEN_SCALE).setVisible(false);
+    }
+
+    if ((p.magnetTimer ?? 0) > 0) {
+      playerHandles.magnetRing
+        .setPosition(pRoot[0], pRoot[1] + 0.75, pRoot[2])
+        .setRotation(Math.PI * 0.5, simTime * 3.5, 0)
+        .setScale([1.1, 1.1, 1.1])
+        .setVisible(true);
+    } else {
+      playerHandles.magnetRing.setScale(HIDDEN_SCALE).setVisible(false);
+    }
+
+    // Ground Contact Shadow
+    const groundBelow = Number(p.groundBelow ?? 0);
+    const alt = Math.max(0, py - groundBelow);
+    const shadowScale = clamp(1 - alt * 0.045, 0.35, 1.05);
+    playerHandles.contactShadow
+      .setPosition(pRoot[0], ry(groundBelow + 0.035), pRoot[2])
+      .setRotation(0, yaw, 0)
+      .setScale([shadowScale, 1, shadowScale])
+      .setVisible(alt < 20);
+
+    // 4. Sync Ground Traffic Pool (Pooled 3D Vehicles + Carrier Golden Launch Ramps + Brake & Blinker Lights)
+    const rawVehicles: any[] = Array.isArray(g.traffic?.vehicles) ? g.traffic.vehicles : [];
+    const visibleVehicles = rawVehicles
+      .filter((v) => v && v.z <= pz + 28 && v.z >= pz - 235)
+      .sort((a, b) => Math.abs(pz - a.z) - Math.abs(pz - b.z));
+
+    const poolCursor: Record<VehicleType, number> = {
+      sedan: 0,
+      hatch: 0,
+      suv: 0,
+      taxi: 0,
+      van: 0,
+      pickup: 0,
+      boxtruck: 0,
+      bus: 0,
+      carrier: 0
+    };
+
+    let brakeUsed = 0;
+    let blinkerUsed = 0;
+    const blinkOn = (simTime * 2.8) % 1 < 0.55;
+
+    for (let i = 0; i < visibleVehicles.length; i++) {
+      const v = visibleVehicles[i];
+      const requestedType = (VEHICLE_POOL_SPEC[v.type as VehicleType] ? v.type : "sedan") as VehicleType;
+      let chosenType: VehicleType | null = null;
+      if (poolCursor[requestedType] < vehiclePools[requestedType].length) {
+        chosenType = requestedType;
+      } else {
+        for (const fallback of ["sedan", "hatch", "suv", "taxi", "van", "pickup"] as const) {
+          if (poolCursor[fallback] < vehiclePools[fallback].length) {
+            chosenType = fallback;
+            break;
+          }
+        }
+      }
+      if (!chosenType) continue;
+
+      const slotIdx = poolCursor[chosenType]++;
+      const handle = vehiclePools[chosenType][slotIdx]!;
+
+      const vx = rx(Number(v.x ?? 0));
+      const vz = rz(Number(v.z ?? 0));
+      const vw = Number(v.w ?? 1.9);
+      const vh = Number(v.h ?? 1.5);
+      const vl = Number(v.l ?? 4.6);
+      const vyaw = Number(v.yaw ?? 0);
+      const vphase = Number(v.phase ?? 0);
+      const vspd = Number(v.spd ?? 14);
+      const isHeavy = vh > 2.5;
+      const damp = isHeavy ? 0.35 : 1;
+
+      const hopY =
+        (v.honkT > 0 ? Math.sin(Math.PI * (1 - v.honkT / 0.4)) * 0.38 : 0) +
+        Math.sin(simTime * (6 + vspd * 0.35) + vphase) * 0.014 * damp;
+      const vroll = Math.sin(simTime * 2.3 + vphase * 1.7) * 0.01 * damp;
+      const laneBrake = Number(g.traffic?._laneBrake?.[v.flowLane ?? v.lane ?? 0] ?? 0);
+      const isBraking = Number(v.dv ?? 0) < -0.5 || laneBrake > 0.5;
+      const vpitch = isBraking ? -0.012 * damp : 0;
+
+      handle
+        .setPosition(vx, ry(Math.max(0, hopY)), vz)
+        .setRotation(-vpitch, vyaw + Math.PI, -vroll)
+        .setScale([1, 1, 1])
+        .setVisible(true);
+
+      // Sloped golden launch ramp on Carrier trucks
+      if (chosenType === "carrier") {
+        const rampHandle = carrierRampHandles[slotIdx];
+        const rampH = Number(v.ramp?.height ?? v.roof ?? 3.0);
+        const rampLen = Number(v.ramp?.length ?? 6.0);
+        const rampPitch = Math.atan2(rampH, rampLen);
+        rampHandle
+          ?.setPosition(vx, ry(hopY + rampH * 0.48), vz + vl * 0.5 - rampLen * 0.48)
+          .setRotation(rampPitch, vyaw, vroll)
+          .setScale([1, 1, 1])
+          .setVisible(true);
+      }
+
+      // Brake Light Bars
+      if (isBraking && brakeUsed < BRAKE_BAR_POOL_COUNT) {
+        brakeBarHandles[brakeUsed++]!
+          .setPosition(vx, ry(hopY + (isHeavy ? 0.95 : 0.72)), vz + vl * 0.5 + 0.06)
+          .setRotation(vpitch, vyaw, vroll)
+          .setScale([vw / 1.9, 1, 1])
+          .setVisible(true);
+      }
+
+      // Blinking Amber Turn-Signal Indicators
+      const changer = v.changer;
+      if (changer && (changer.state === 1 || changer.state === 2) && blinkOn && blinkerUsed < BLINKER_POOL_COUNT) {
+        const dirSign = Number(changer.dir || 1);
+        blinkerHandles[blinkerUsed++]!
+          .setPosition(vx + dirSign * (vw * 0.5 + 0.08), ry(hopY + 0.68), vz - vl * 0.35)
+          .setRotation(0, vyaw, 0)
+          .setScale([1, 1, 1])
+          .setVisible(true);
+      }
+    }
+
+    // Hide unused ground vehicle slots
+    for (const vType of VEHICLE_TYPES) {
+      const pool = vehiclePools[vType];
+      for (let i = poolCursor[vType]; i < pool.length; i++) {
+        pool[i]!.setPosition(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2]).setScale(HIDDEN_SCALE).setVisible(false);
+        if (vType === "carrier") {
+          carrierRampHandles[i]
+            ?.setPosition(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
+            .setScale(HIDDEN_SCALE)
+            .setVisible(false);
+        }
+      }
+    }
+    for (let i = brakeUsed; i < BRAKE_BAR_POOL_COUNT; i++) {
+      brakeBarHandles[i]!.setScale(HIDDEN_SCALE).setVisible(false);
+    }
+    for (let i = blinkerUsed; i < BLINKER_POOL_COUNT; i++) {
+      blinkerHandles[i]!.setScale(HIDDEN_SCALE).setVisible(false);
+    }
+
+    // 5. Sync Sky-Lane Dogfight Pool (Pooled assets.roadsterRushSkyCar Nodes)
+    const rawSkyCars: any[] = Array.isArray(g.traffic?.skyCars) ? g.traffic.skyCars : [];
+    const visibleSkyCars = rawSkyCars
+      .filter((sc) => sc && sc.z <= pz + 28 && sc.z >= pz - 290)
+      .sort((a, b) => Math.abs(pz - a.z) - Math.abs(pz - b.z));
+
+    let skyUsed = 0;
+    for (let i = 0; i < visibleSkyCars.length && skyUsed < SKY_CAR_POOL_COUNT; i++) {
+      const sc = visibleSkyCars[i];
+      const slot = skyCarSlots[skyUsed++]!;
+      const sx = rx(Number(sc.x ?? 0));
+      const sy = ry(Number(sc.y ?? 12));
+      const sz = rz(Number(sc.z ?? 0));
+      const srx = Number(sc.rx ?? 0);
+      const srz = Number(sc.rz ?? 0);
+      const oncoming = Number(sc.dir ?? 1) > 0;
+      const sry = oncoming ? 0 : Math.PI;
+
+      slot.car
+        .setPosition(sx, sy, sz)
+        .setRotation(srx, sry, srz)
+        .setScale([1, 1, 1])
+        .setVisible(true);
+
+      const tailZ = oncoming ? sz - 2.35 : sz + 2.35;
+      slot.plume
+        .setPosition(sx, sy + 0.45, tailZ)
+        .setRotation(oncoming ? -Math.PI * 0.5 : Math.PI * 0.5, 0, 0)
+        .setScale([0.9, 1.2 * flicker, 0.9])
+        .setVisible(true);
+
+      if (oncoming) {
+        slot.halo
+          .setPosition(sx, sy + 0.55, sz + 2.15)
+          .setRotation(0, 0, simTime * 4)
+          .setScale([1, 1, 1])
+          .setVisible(true);
+      } else {
+        slot.halo.setScale(HIDDEN_SCALE).setVisible(false);
+      }
+    }
+
+    for (let i = skyUsed; i < SKY_CAR_POOL_COUNT; i++) {
+      const slot = skyCarSlots[i]!;
+      slot.car.setScale(HIDDEN_SCALE).setVisible(false);
+      slot.plume.setScale(HIDDEN_SCALE).setVisible(false);
+      slot.halo.setScale(HIDDEN_SCALE).setVisible(false);
+    }
+
+    // 6. Sync 3D Pickups Pool (42 Spinning Golden Bolts + 10 Glowing Powerup Orbs)
+    const rawPickups: any[] = Array.isArray(g.traffic?.pickups) ? g.traffic.pickups : [];
+    let boltUsed = 0;
+    let powerUsed = 0;
+
+    for (let i = 0; i < rawPickups.length; i++) {
+      const pk = rawPickups[i];
+      if (!pk || pk.z > pz + 16 || pk.z < pz - 235) continue;
+      const kx = rx(Number(pk.x ?? 0));
+      const kz = rz(Number(pk.z ?? 0));
+      const phase = Number(pk.phase ?? 0);
+      const bob = pk.magnet ? 0 : Math.sin(simTime * 2.8 + phase) * 0.15;
+      const ky = ry(Number(pk.y ?? 1) + bob);
+      const spin = simTime * 3.4 + phase;
+
+      if (pk.kind === "bolt") {
+        if (boltUsed >= BOLT_POOL_COUNT) continue;
+        const bh = boltHandles[boltUsed++]!;
+        const s = pk.magnet ? 0.82 : 1.0;
+        bh.setPosition(kx, ky, kz)
+          .setRotation(0, spin, Math.PI * 0.12)
+          .setScale([s, s, s])
+          .setVisible(true);
+      } else {
+        if (powerUsed >= POWERUP_POOL_COUNT) continue;
+        const idx = powerUsed++;
+        const ph = powerupHandles[idx]!;
+        const kind = (pk.kind as Exclude<PickupKind, "bolt">) || "air";
+        if (powerupKindCache[idx] !== kind) {
+          powerupKindCache[idx] = kind;
+          const col = POWERUP_COLORS[kind] || "#2f7dff";
+          ph.setMaterial(
+            material.emissive({
+              color: col,
+              emissive: col,
+              emissiveIntensity: 1.75
+            })
+          );
+        }
+        ph.setPosition(kx, ky, kz)
+          .setRotation(spin * 0.5, spin, 0)
+          .setScale([1, 1, 1])
+          .setVisible(true);
+      }
+    }
+
+    for (let i = boltUsed; i < BOLT_POOL_COUNT; i++) {
+      boltHandles[i]!.setScale(HIDDEN_SCALE).setVisible(false);
+    }
+    for (let i = powerUsed; i < POWERUP_POOL_COUNT; i++) {
+      powerupHandles[i]!.setScale(HIDDEN_SCALE).setVisible(false);
+    }
+
+    // 7. Publish Aura3D Runtime Evidence & Telemetry
+    const evidence = {
+      route: "showcase-roadster-rush-v2",
+      engine: "@aura3d/engine",
+      ready: true,
+      framesRendered,
+      mode: g.mode,
+      paused: Boolean(g.paused),
+      score: Math.floor(Number(g.score ?? 0)),
+      distance: Math.floor(Number(g.distance ?? 0)),
+      bolts: Number(g.bolts ?? 0),
+      multiplier: Number(g.mult ?? 1),
+      timeOfDay: Number(manualTodOverride ?? g.world?.timeOfDay ?? 0),
+      player: {
+        position: [px, py, pz],
+        lane: Number(p.lane ?? 2),
+        speed: Number(p.speed ?? 0),
+        air: Number(p.air ?? 100),
+        grounded: Boolean(p.grounded),
+        rolling: Boolean(p.rolling),
+        boosting: Boolean(p.boosting)
+      },
+      visiblePools: {
+        groundVehicles: visibleVehicles.length,
+        skyCars: skyUsed,
+        bolts: boltUsed,
+        powerups: powerUsed
+      }
+    };
+    (window as any).__AURA3D_GAME_EVIDENCE__ = evidence;
+    (window as any).__AURA3D_GAME__ = evidence;
+    const handleObj = {
+      app: auraApp,
+      evidence,
+      triggerScenario
+    };
+    (window as any).__AURA3D_SHOWCASE_ROADSTER_RUSH__ = handleObj;
+    (window as any).__AURA3D_SHOWCASE_ROADSTER_RUSH_V2__ = handleObj;
+  }
+
+  function ensureLivePlaying(g: any): void {
+    if (!g) return;
+    if (g.mode !== "playing" || g.activePreset) {
+      g.start?.();
+    }
+    g.activePreset = null;
+    g.simPaused = false;
+    g.paused = false;
+    g.manual = false;
+  }
+
+  function triggerScenario(scenario: "freeway" | "sky" | "ramp" | "roll" | "rocket"): void {
+    const g = (window as any).__GAME__?.game;
+    if (!g) return;
+    ensureLivePlaying(g);
+    const p = g.player;
+    if (!p) return;
+
+    if (scenario === "freeway") {
+      p.air = 100;
+      g.hud?.popup?.("Sunset Freeway Live", 0, "cyan small");
+      return;
+    }
+
+    if (scenario === "sky") {
+      p.air = 100;
+      const pz = Number(p.position?.z ?? 0);
+      const lane = clamp(Number(p.lane ?? 2), 0, 4);
+      p.setPose?.({ lane, y: 14.2, vy: 3.2, thrust: true });
+      g.triggerAction?.("thrustHold", { duration: 1.65 });
+      if (g.traffic?._spawnSky) {
+        g.traffic._spawnSky(0, Math.max(0, lane - 1), 14.0, pz - 58, 1);
+        g.traffic._spawnSky(1, Math.min(4, lane + 1), 14.4, pz - 72, 1);
+        g.traffic._spawnSky(2, lane, 14.2, pz - 96, 1);
+      }
+      g.hud?.popup?.("Sky-Lane Dogfight!", 270, "cyan");
+      return;
+    }
+
+    if (scenario === "ramp") {
+      p.air = 100;
+      const pz = Number(p.position?.z ?? 0);
+      const lane = clamp(Number(p.lane ?? 2), 0, 4);
+      p.setPose?.({ lane, y: 0, vy: 0, grounded: true });
+      if (g.traffic?._placeVehicle) {
+        // Clear any vehicle directly blocking the ramp approach in the player's lane
+        const vehicles: any[] = g.traffic.vehicles || [];
+        for (let i = vehicles.length - 1; i >= 0; i--) {
+          const v = vehicles[i];
+          if (v && v.lane === lane && v.z < pz + 5 && v.z > pz - 95) {
+            g.traffic._recycleVehicleAt?.(i);
+          }
+        }
+        const carrier = g.traffic._placeVehicle("carrier", lane, pz - 26, 4);
+        if (carrier) {
+          g.traffic._rampLine?.(carrier);
+          let cursorZ = carrier.z - carrier.l * 0.5 - 2.2;
+          for (const followType of ["boxtruck", "bus", "boxtruck"] as const) {
+            const follow = g.traffic._placeVehicle(followType, lane, cursorZ, 3);
+            if (follow) {
+              g.traffic._roofLine?.(follow);
+              cursorZ = follow.z - follow.l * 0.5 - 2.2;
+            }
+          }
+        }
+      }
+      g.triggerAction?.("boost", { duration: 1.1 });
+      g.hud?.popup?.("Carrier Ramp Ahead!", 150, "cyan");
+      return;
+    }
+
+    if (scenario === "roll") {
+      p.air = Math.max(Number(p.air ?? 100), 75);
+      const lane = clamp(Number(p.lane ?? 2), 0, 4);
+      g.triggerAction?.(lane < 2 ? "rollRight" : "rollLeft");
+      return;
+    }
+
+    if (scenario === "rocket") {
+      p.air = 100;
+      g._pickup?.("rocket", 1, p.position);
     }
   }
-}
 
-function distXZ(ax: number, az: number, bx: number, bz: number) {
-  return Math.hypot(ax - bx, az - bz);
-}
+  function bindToolbar(): void {
+    const btnFreeway = document.getElementById("aura-btn-freeway");
+    const btnSky = document.getElementById("aura-btn-sky");
+    const btnRamp = document.getElementById("aura-btn-ramp");
+    const btnRoll = document.getElementById("aura-btn-roll");
+    const btnRocket = document.getElementById("aura-btn-rocket");
+    const modeBtns = [btnFreeway, btnSky, btnRamp, btnRoll, btnRocket];
+    const todBtns = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-aura-tod]"));
 
-/* ------------------------------------------------------------------ *
- *  Frame loop
- * ------------------------------------------------------------------ */
+    const setActiveBtn = (target: HTMLElement | null) => {
+      for (const b of modeBtns) {
+        b?.classList.toggle("active", b === target);
+      }
+    };
 
-const playerNodes = () => {
-  let primary: ReturnType<typeof app.nodes.require> | undefined;
-  let alt: ReturnType<typeof app.nodes.require> | undefined;
-  try { primary = app.nodes.require("player-interceptor"); } catch { /* unloaded */ }
-  try { alt = app.nodes.require("player-apex"); } catch { /* unloaded */ }
-  return { primary, alt };
-};
+    btnFreeway?.addEventListener("click", () => {
+      setActiveBtn(btnFreeway);
+      triggerScenario("freeway");
+    });
+    btnSky?.addEventListener("click", () => {
+      setActiveBtn(btnSky);
+      triggerScenario("sky");
+    });
+    btnRamp?.addEventListener("click", () => {
+      setActiveBtn(btnRamp);
+      triggerScenario("ramp");
+    });
+    btnRoll?.addEventListener("click", () => {
+      setActiveBtn(btnRoll);
+      triggerScenario("roll");
+    });
+    btnRocket?.addEventListener("click", () => {
+      setActiveBtn(btnRocket);
+      triggerScenario("rocket");
+    });
 
-let elapsed = 0;
-let introPlayed = false;
-let stormHidden = false;
-let hudTick = 0;
-
-app.onFrame(({ dt }) => {
-  const cdt = Math.min(0.05, Math.max(0, dt || 1 / 60));
-  elapsed += cdt;
-  hudTick += cdt;
-
-  if (!stormHidden) {
-    stormHidden = true;
-    try { app.nodes.require("storm-rain").setVisible(false); } catch { /* not mounted yet */ }
+    for (const btn of todBtns) {
+      btn.addEventListener("click", () => {
+        for (const b of todBtns) b.classList.toggle("active", b === btn);
+        const todVal = parseFloat(btn.dataset.auraTod ?? "0");
+        manualTodOverride = Number.isFinite(todVal) ? todVal : 0;
+        const g = (window as any).__GAME__?.game;
+        g?.world?.setTimeOfDay?.(manualTodOverride);
+      });
+    }
   }
-  if (!introPlayed) { introPlayed = true; playIntro(); }
 
-  const paused = racingGame.session.state === "paused" || player.status === "idle";
-  if (!paused && input.pressed("pause")) {
-    racingGame.session.pause("user");
-    setScreen("pause");
-    return;
-  }
-  if (racingGame.session.state === "paused") return;
-  if (player.status === "idle") return;
-
-  if (input.pressed("reset")) resetRun();
-  if (input.pressed("storm")) applySetting("storm", !settings.storm);
-
-  const running = player.status === "running";
-  if (!running) { syncNodes(cdt); return; }
-
-  player.raceTime += cdt;
-  score.comboTimer = Math.max(0, score.comboTimer - cdt);
-  if (score.comboTimer <= 0 && score.combo > 1) score.combo = 1;
-  player.invuln = Math.max(0, player.invuln - cdt);
-  player.launched = Math.max(0, player.launched - cdt);
-
-  /* --- ground arcade model (kart kit) --- */
-  const grounded = player.y <= HOVER_RIDE_Y + 0.06 && player.vy <= 0;
-  const steer = input.axis("steer");
-  const boosting = input.held("boost") && player.boost > 0;
-  Object.assign(kart.state, {
-    status: "running",
-    x: player.x,
-    y: 0,
-    z: player.z,
-    vx: Math.sin(player.heading) * player.speed,
-    vy: 0,
-    vz: Math.cos(player.heading) * player.speed,
-    speed: player.speed,
-    heading: player.heading,
-    driftYaw: 0,
-    driftDir: 0,
-    roll: 0,
-    progress: player.progress,
-    signedTrackOffset: player.signedTrackOffset,
-    lap: 1,
-    checkpoint: player.checkpoint,
-    lapTime: player.raceTime,
-    driftCharge: 0,
-    wasDrifting: false,
-    activeBoostTimer: 0
+  // Register Aura3D 60 FPS dynamic render loop callback so shouldContinueDynamicLoop() is true
+  // and node poses update synchronously inside beforeRender right before renderer.render()!
+  auraApp.onFrame(() => {
+    const g = (window as any).__GAME__?.game;
+    if (g) {
+      syncRoadsterWorld(g, g.scene, g.camera);
+    }
   });
-  const step = kart.stepPlayer(cdt, {
-    throttle: input.held("throttle") || isAutoplay,
-    brake: input.held("brake"),
-    steer,
-    drift: false,
-    boost: boosting
-  });
-  player.x = step.state.x;
-  player.z = step.state.z;
-  player.speed = step.state.speed;
-  player.heading = step.state.heading;
-  player.progress = step.state.progress;
-  player.signedTrackOffset = step.state.signedTrackOffset;
-  if (step.checkpointCleared !== null) {
-    player.checkpoint = step.checkpointCleared;
-    award(250, `sector ${step.checkpointCleared} gate`, "checkpoint", "success");
-    racingGame.juice.fire("checkpoint");
-    void apexGame?.sound?.cue("sfx-checkpoint");
-    void apexGame?.sound?.cue("voice-mile");
-  }
-  if (boosting) {
-    player.boost = Math.max(0, player.boost - 26 * cdt);
-    feel.speedLines(Math.min(1, player.speed / 62));
-    if (Math.random() < cdt * 1.4) racingGame.juice.fire("boost");
-  } else {
-    player.boost = Math.min(100, player.boost + 4.2 * cdt);
-  }
 
-  /* --- cold-gas flight layer --- */
-  const thrusting = input.held("thrust") && player.charge > 0;
-  if (thrusting) {
-    player.vy = Math.min(9.5, player.vy + 16 * cdt);
-    player.charge = Math.max(0, player.charge - 18 * cdt);
-  } else {
-    player.vy = Math.max(player.launched > 0 ? -7 : -11, player.vy - 13 * cdt);
-    if (grounded) player.charge = Math.min(100, player.charge + 22 * cdt);
-    else player.charge = Math.min(100, player.charge + 5 * cdt);
-  }
-  if (player.charge < 18 && !grounded && Math.random() < cdt * 0.6) {
-    void apexGame?.sound?.cue("voice-airlow");
-    racingGame.juice.fire("low-air");
-  }
-  player.y += player.vy * cdt;
-  if (player.y < HOVER_RIDE_Y) {
-    if (player.vy < -9) {
-      feel.landingDust([player.x, 0.1, player.z]);
-      app.camera?.shake.add(0.22);
-    }
-    player.y = HOVER_RIDE_Y;
-    player.vy = 0;
-    player.airtime = 0;
-  } else if (!grounded) {
-    player.airtime += cdt;
-  }
-  player.y = Math.min(MAX_ALTITUDE, player.y);
-  const airborne = player.y > SKY_ALT_LOW * 0.55;
-
-  /* --- chassis attitude (grounded suspension telemetry) --- */
-  const pose = chassis.step(cdt, {
-    x: player.x, z: player.z, heading: player.heading,
-    speed: player.speed, steer, throttle: input.held("throttle") ? 1 : 0,
-    brake: input.held("brake") ? 1 : 0, slip: 0
-  });
-  const ch = chassis.telemetry();
-  const targetPitch = grounded
-    ? pose.rotation[0]
-    : Math.min(0.34, player.vy * 0.035 - 0.04);
-  player.pitch += (targetPitch - player.pitch) * Math.min(1, cdt * 7);
-
-  /* --- barrel roll --- */
-  if (player.rollAnim < 0 && (input.pressed("rollLeft") || input.pressed("rollRight"))) {
-    player.rollAnim = 0;
-    player.rollDir = input.pressed("rollLeft") ? -1 : 1;
-    player.invuln = Math.max(player.invuln, 0.95);
-    score.rolls += 1;
-    award(140, "barrel roll", "roll");
-    racingGame.juice.fire("roll");
-    void apexGame?.sound?.cue("voice-roll");
-    cameraDirector.impact(0.7, 0.3);
-  }
-  if (player.rollAnim >= 0) {
-    player.rollAnim = Math.min(1, player.rollAnim + cdt / 0.85);
-    player.roll = player.rollDir * Math.PI * 2 * player.rollAnim;
-    if (player.rollAnim >= 1) { player.rollAnim = -1; player.roll = 0; }
-  } else {
-    const bank = -steer * (airborne ? 0.42 : 0.22) + pose.rotation[2];
-    player.roll += (bank - player.roll) * Math.min(1, cdt * 6);
-  }
-
-  /* --- fleet --- */
-  for (const entry of trafficFleet) stepFleet(entry, cdt);
-  for (const entry of skyFleet) stepFleet(entry, cdt);
-  for (const entry of rivals) stepFleet(entry, cdt);
-
-  /* --- interactions --- */
-  for (const entry of trafficFleet) {
-    const d = distXZ(player.x, player.z, entry.x, entry.z);
-    const aboveRoof = player.y > 3.4;
-    if (!aboveRoof && d < 3.4 && Math.abs(player.signedTrackOffset - entry.signedOffset) < 3.2) {
-      crash(`slammed a commuter at ${Math.round(player.speed * 3.6)} km/h`);
-    } else if (d < 5.6 && entry.nearMissArmed && Math.abs(player.signedTrackOffset - entry.signedOffset) > 1.9) {
-      entry.nearMissArmed = false;
-      score.nearMisses += 1;
-      bumpCombo();
-      award(180, "near-miss", "near-miss", "success");
-      racingGame.juice.fire("near-miss", { position: [player.x, player.y, player.z] });
-      void apexGame?.sound?.cue("voice-close");
-      player.boost = Math.min(100, player.boost + 12);
-    } else if (d > 14) {
-      entry.nearMissArmed = true;
-    }
-  }
-  for (const entry of skyFleet) {
-    const d = distXZ(player.x, player.z, entry.x, entry.z);
-    const dy = Math.abs(player.y - entry.altitude);
-    if (d < 4 && dy < 1.6 && player.rollAnim < 0) {
-      crash("clipped a sky courier");
-      entry.tumble = 1.6;
-    } else if (d < 7 && dy < 2.2 && entry.nearMissArmed) {
-      entry.nearMissArmed = false;
-      score.nearMisses += 1;
-      bumpCombo();
-      award(240, "sky-lane near-miss", "near-miss", "success");
-      racingGame.juice.fire("near-miss", { position: [player.x, player.y, player.z] });
-      void apexGame?.sound?.cue("voice-sky");
-      player.boost = Math.min(100, player.boost + 14);
-    } else if (d > 18) {
-      entry.nearMissArmed = true;
-    }
-  }
-
-  // Rival takedowns — fly close in the sky lane and hit F.
-  for (const entry of rivals) {
-    const d = distXZ(player.x, player.z, entry.x, entry.z);
-    const dy = Math.abs(player.y - entry.altitude);
-    if (input.pressed("takedown") && d < 7.5 && dy < 3) {
-      entry.tumble = 2.4;
-      entry.speed *= 0.3;
-      score.takedowns += 1;
-      bumpCombo(); bumpCombo();
-      award(650, `takedown — ${entry.id}`, "takedown", "success");
-      racingGame.juice.fire("takedown", { position: [entry.x, entry.altitude, entry.z] });
-      feel.hitStop(90);
-      takedownCam([entry.x, entry.altitude, entry.z]);
-      void apexGame?.sound?.cue("sfx-takedown");
-      void apexGame?.sound?.cue("voice-combo");
-      objective = "Rival down! The sky lane is yours.";
-    } else if (d < 6 && dy < 2 && entry.nearMissArmed) {
-      entry.nearMissArmed = false;
-      bumpCombo();
-      award(300, "rival draft", "near-miss", "success");
-    } else if (d > 20) {
-      entry.nearMissArmed = true;
-    }
-  }
-
-  // Carrier ramps — drive onto the deck while grounded to launch.
-  CARRIER_SLOTS.forEach((slot, i) => {
-    const pose = sampleRoute(slot.progress, slot.lane);
-    const d = distXZ(player.x, player.z, pose.x, pose.z);
-    if (d < 9 && grounded && player.launched <= 0) launch(11.5, `carrier ${i + 1} launch`);
-  });
-
-  // Boost pads.
-  for (const pad of BOOST_PADS) {
-    pad.cooldown = Math.max(0, pad.cooldown - cdt);
-    if (pad.cooldown > 0) continue;
-    const pose = sampleRoute(pad.progress, pad.lane);
-    if (distXZ(player.x, player.z, pose.x, pose.z) < 3.6) {
-      pad.cooldown = 6;
-      player.boost = Math.min(100, player.boost + 38);
-      player.charge = Math.min(100, player.charge + 30);
-      award(90, "boost column", "pickup");
-      racingGame.juice.fire("boost");
-      void apexGame?.sound?.cue("sfx-pickup");
-      void apexGame?.sound?.cue("sfx-boost");
-    }
-  }
-
-  // Storm gusts nudge lateral offset.
-  if (stormOn && airborne) {
-    player.signedTrackOffset += Math.sin(elapsed * 0.9) * 0.35 * cdt;
-  }
-
-  // Finish.
-  if (player.progress >= FINISH_PROGRESS) {
-    player.status = "finished";
-    award(1500 + Math.round(player.hull * 10), "finish gantry", "finish", "success");
-    racingGame.juice.fire("finish");
-    void apexGame?.sound?.cue("sfx-finish");
-    setTimeout(() => setScreen("results"), 900);
-  }
-
-  // Engine + wind audio levels.
-  apexGame?.sound?.setCueLevel?.("music-run", { volume: airborne ? 1 : 0.8 });
-  apexGame?.sound?.setListener?.({
-    position: [player.x, player.y + 2, player.z + 9],
-    forward: [Math.sin(player.heading), 0, Math.cos(player.heading)],
-    up: [0, 1, 0]
-  });
-
-  cameraDirector.update(cdt, [{ id: "player", position: [player.x, player.y, player.z] }]);
-  feel.update(cdt * 1000);
-
-  syncNodes(cdt);
-  if (hudTick > 0.12) {
-    hudTick = 0;
-    renderHud();
-    apexGame?.hud.set("score", score.total);
-    apexGame?.hud.set("speed", Math.round(Math.abs(player.speed) * 3.6));
-    apexGame?.hud.set("boost", player.boost);
-    apexGame?.hud.set("combo", score.combo > 1 ? `x${score.combo}` : "—");
-    apexGame?.hud.set("objective", objective);
-  }
-  publishEvidence();
-});
-
-function syncNodes(dt: number) {
-  const { primary, alt } = playerNodes();
-  const useApex = alt !== undefined;
-  primary?.setPosition(player.x, player.y, player.z);
-  primary?.setRotation(player.pitch, Math.PI - player.heading, player.roll);
-  primary?.setVisible(!useApex);
-  alt?.setPosition(player.x, player.y, player.z);
-  alt?.setRotation(player.pitch, Math.PI - player.heading, player.roll);
-  alt?.setVisible(useApex);
-
-  const setFleet = (entry: FleetEntry) => {
-    let node: ReturnType<typeof app.nodes.require> | undefined;
-    try { node = app.nodes.require(entry.nodeId); } catch { return; }
-    const y = entry.altitude > 0 ? entry.altitude + Math.sin(elapsed * 0.8 + entry.seed) * 0.35 : entry.rideY;
-    node.setPosition(entry.x, y, entry.z);
-    const tumbleRoll = entry.tumble > 0 ? Math.sin(elapsed * 14) * 0.6 : 0;
-    node.setRotation(tumbleRoll * 0.4, Math.PI - entry.heading, tumbleRoll);
+  // Also keep the engine.js hook as a no-op / secondary sync
+  (window as any).__AURA3D_ROADSTER_SYNC__ = (g: any, threeScene: any, threeCamera: any) => {
+    syncRoadsterWorld(g, threeScene, threeCamera);
   };
-  trafficFleet.forEach(setFleet);
-  skyFleet.forEach(setFleet);
-  rivals.forEach(setFleet);
-  void dt;
-}
 
-/* ------------------------------------------------------------------ *
- *  Evidence + boot
- * ------------------------------------------------------------------ */
+  document.body.dataset.aura3dReady = "true";
+  canvas.dataset.ready = "true";
 
-const hudBindings = [
-  { kind: "aura-game-hud-binding", owner: "app", binding: "meter", id: "hud:boost", label: "boost meter", source: "app-state", valuePath: "appState.boost", maxPath: "rules.maxBoost", format: "percent", a11yLabel: "boost meter" },
-  { kind: "aura-game-hud-binding", owner: "app", binding: "combo", id: "hud:combo", label: "near-miss combo", source: "app-state", valuePath: "appState.combo", format: "number", a11yLabel: "near-miss combo counter" },
-  { kind: "aura-game-hud-binding", owner: "app", binding: "objective", id: "hud:objective", label: "objective", source: "app-state", valuePath: "appState.objective", format: "text", a11yLabel: "current objective" },
-  { kind: "aura-game-hud-binding", owner: "app", binding: "checkpoint", id: "hud:checkpoint", label: "sector gates", source: "app-state", valuePath: "appState.checkpoint", format: "text", a11yLabel: "sector gate progress" },
-  { kind: "aura-game-hud-binding", owner: "app", binding: "event-log", id: "hud:event-log", label: "event feed", source: "app-state", valuePath: "appState.events", format: "text", a11yLabel: "game event feed" }
-] as const;
+  bindToolbar();
+  await loadScriptSequentially("/roadster-rush/engine.js");
+  await auraApp.ready();
 
-declare global {
-  interface Window { __APEX_OVERDRIVE__?: unknown }
-}
-
-function publishEvidence() {
-  const evidence = app.evidence({
-    input,
-    events: routeEvents,
-    hud: hudBindings,
-    appState: {
-      objective,
-      score: score.total,
-      combo: score.combo,
-      boost: Math.round(player.boost),
-      charge: Math.round(player.charge),
-      hull: Math.round(player.hull),
-      progress: Number(player.progress.toFixed(4)),
-      checkpoint: `${player.checkpoint}/${route.checkpoints.length}`,
-      storm: stormOn,
-      maxBoost: 100,
-      events: routeEvents.events().map((e) => e.label)
-    },
-    assets: { typedAssets: Object.keys(assetsV2).length, missingAssets: [] },
-    source: { expectsGame: true }
-  });
-  window.__APEX_OVERDRIVE__ = {
-    status: player.status,
-    frame: Math.round(elapsed * 60),
-    score: score.total,
-    combo: score.combo,
-    progress: player.progress,
-    speed: player.speed,
-    altitude: player.y,
-    hull: player.hull,
-    storm: stormOn,
-    traffic: trafficFleet.length,
-    skyCars: skyFleet.length,
-    rivals: rivals.length,
-    look: LOOK_ID,
-    kits: ["game.racing", "game.arcadeKart", "createVehicleChassis", "createVehicleDriverAi", "game.cameraDirector"],
-    evidence
-  };
-}
-
-if (typeof window !== "undefined") {
-  mountDom();
-  resetRun();
-  setScreen("title");
-  void apexGame?.sound?.unlock().then(() => apexGame?.sound?.cue("music-title"));
-  if (isAutoplay) {
-    setTimeout(() => { startRun(); }, 600);
+  // Ensure initial sync and resume if needed
+  const bootedGame = (window as any).__GAME__?.game;
+  if (bootedGame) {
+    syncRoadsterWorld(bootedGame, bootedGame.scene, bootedGame.camera);
   }
+  auraApp.resume();
 }
+
+void bootRoadsterRushAura3D();

@@ -10,6 +10,17 @@ import { material } from "./nodes/material.js";
 import { renderer, createRendererDiagnosticReport } from "./rendererDiagnostics.js";
 import { assets } from "./AssetDecoders.js";
 
+export function resolveAssetManifestHash(asset: AuraAssetRef): string | undefined {
+  if (typeof asset.hash === "string" && asset.hash.length > 0) return asset.hash;
+  const sha256 = (asset as { readonly sha256?: string }).sha256;
+  if (typeof sha256 === "string" && sha256.length > 0) return sha256;
+  return undefined;
+}
+
+export function formatSkippedInlineModelWarning(node: { readonly name?: string; readonly asset: AuraAssetRef }): string {
+  return `Model node "${node.name ?? node.asset.id}" (asset "${node.asset.id}") has no manifest hash/sha256 and was skipped by the production GLTF bridge`;
+}
+
 export function validateSceneAssets(snapshot: AuraSceneSnapshot, assets: AuraAssetLoadState[]): void {
   for (const node of snapshot.nodes) {
     if (node.kind !== "model") continue;
@@ -26,13 +37,14 @@ export function validateSceneAssets(snapshot: AuraSceneSnapshot, assets: AuraAss
         `Aura3D model "${asset.id}" uses unsupported format "${asset.format}". Suggested fix: export GLB/glTF or add an explicit loader before using model(assets.${asset.id}).`
       );
     }
+    const resolvedHash = resolveAssetManifestHash(asset);
     assets.push({
       id: asset.id,
       type: asset.type,
       url: asset.url,
       status: asset.url ? "ready" : "optional-missing",
       provenance: createAssetProvenance(asset),
-      ...(asset.hash ? { hash: asset.hash } : {}),
+      ...(resolvedHash ? { hash: resolvedHash } : {}),
       message: asset.url ? undefined : "Optional placeholder asset has no URL yet."
     });
     validateMaterialTexture(node.material);
@@ -41,6 +53,7 @@ export function validateSceneAssets(snapshot: AuraSceneSnapshot, assets: AuraAss
 
 export function createAssetProvenance(asset: AuraAssetRef): AuraAssetProvenance {
   const remote = /^https?:\/\//i.test(asset.url);
+  const resolvedHash = resolveAssetManifestHash(asset);
   /*
    * A deployment may rewrite the URL of a generated manifest asset to an
    * immutable external asset host (for example, GitHub media or an object
@@ -58,8 +71,8 @@ export function createAssetProvenance(asset: AuraAssetRef): AuraAssetProvenance 
   ];
   const hasDurableManifestProvenance = asset.kind === "aura-asset-ref"
     && asset.id !== "unsafe"
-    && typeof asset.hash === "string"
-    && asset.hash.length > 0
+    && typeof resolvedHash === "string"
+    && resolvedHash.length > 0
     && manifestPaths.some((value) =>
       typeof value === "string" && value.replaceAll("\\", "/").startsWith("public/aura-assets/")
     );
@@ -67,12 +80,12 @@ export function createAssetProvenance(asset: AuraAssetRef): AuraAssetProvenance 
   return {
     source: asset.id === "unsafe" || !trustedManifestAsset
       ? "unsafe-url"
-      : asset.hash
+      : resolvedHash
         ? "typed-aura-assets-manifest"
         : "inline-definition",
     id: asset.id,
     url: asset.url,
-    ...(asset.hash ? { hash: asset.hash } : {}),
+    ...(resolvedHash ? { hash: resolvedHash } : {}),
     ...(asset.bounds ? { bounds: asset.bounds } : {})
   };
 }

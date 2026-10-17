@@ -25,6 +25,35 @@ export const assets = {
     readable: shared.showcaseReadablePlatformLevel,
     sidescroll: shared.showcaseSideScrollerPlatformLevel,
     basicpack: shared.showcasePlatformerBasicPack
+  },
+  props: {
+    pineTree: shared.propPineTree,
+    conifer: shared.propConifer,
+    boulder: shared.propBoulder,
+    rockA: shared.propRockA,
+    rockB: shared.propRockB,
+    windmill: shared.gullsiegeWindmillMeshy,
+    watchtower: shared.gullsiegeWatchtowerMeshy,
+    gatehouse: shared.gullsiegeGatehouseMeshy,
+    bridge: shared.gullsiegeBridgeMeshy,
+    planks: shared.gullsiegePlanksMeshy,
+    crate: shared.gullsiegeCrateMeshy,
+    barrel: shared.gullsiegeBarrelMeshy,
+    crystalShard: shared.skylineCrystalShardMeshy,
+    energyCore: shared.fpsEnergyCorePickupMeshy,
+    treasure: shared.bunkerTreasureMeshy,
+    brazier: shared.auraClashCornerBrazierPylonMeshy,
+    streetLamp: shared.neonStreetLampProp,
+    boostPad: shared.heatsinkBoostPad,
+    arch: shared.heatsinkArch,
+    pedestal: shared.galleryShiftPedestal,
+    turbine: shared.reactorFusionTurbineMeshy,
+    pylon: shared.blockfallReactorContainmentPylonMeshy,
+    dragonStatue: shared.clashDragonStatueMeshy,
+    teaHouse: shared.showcaseTeaHouse,
+    hound: shared.bunkerHoundMeshy,
+    moth: shared.neonCrownMothElite,
+    frostDrone: shared.skylineFrostSentryDroneMeshy
   }
 } as const;
 

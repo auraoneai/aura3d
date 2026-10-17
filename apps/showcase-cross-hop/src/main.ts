@@ -6,8 +6,17 @@ import { mountUI, tickUI } from "./game/ui";
 import "./styles.css";
 
 const params = new URLSearchParams(window.location.search);
-const AUTOPLAY = params.get("autoplay") === "1";
-const AUTOSTART = params.get("autostart") === "1" || AUTOPLAY;
+if (!params.has("a3d-qr")) {
+  params.set("a3d-qr", "-compiler");
+  try {
+    const newUrl = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
+    window.history.replaceState(null, "", newUrl);
+  } catch {
+    // ignore history errors
+  }
+}
+const AUTOPLAY = params.get("autoplay") !== "0";
+const AUTOSTART = params.get("autostart") !== "0";
 
 // Sanitize the engine's __AURA3D_GAME__ beacon — it embeds the live `app`
 // object (circular via app.post) which breaks remote capture serialization.
@@ -78,7 +87,7 @@ const g = createGame({
     rescue: { punch: { fovDeg: 2.6, ms: 320 }, flash: { color: "#ff9ed2", peak: 0.22, ms: 300 }, rumble: { strong: 0.6, ms: 300 } },
     theme: { punch: { fovDeg: 2, ms: 280 }, flash: { color: "#ffffff", peak: 0.14, ms: 240 } }
   },
-  qualityRebuild: { flags: ["game"] },
+  qualityRebuild: { flags: ["game", "-compiler"] },
   evidence: {
     schema: 1,
     sections: {
@@ -109,6 +118,7 @@ if (AUTOSTART) {
     params.get("seed") ? parseInt(params.get("seed")!, 10) : undefined,
     themeParam !== null ? parseInt(themeParam, 10) : undefined
   );
+  tickUI();
 }
 
 let frames = 0;

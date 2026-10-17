@@ -20,14 +20,27 @@ import { MATERIALS } from "./game/materials";
 import { SiegeSim, type VisualUpdate } from "./game/sim";
 import {
   blockMaterial, blockNodeId, bladeNodeId, buildScene, debrisMaterial, debrisNodeId, dotNodeId,
-  gullPartId, millHubNodeId, millPoleNodeId, crateNodeId, barrelNodeId, projectileNodeId,
+  gullPartId, millHubNodeId, millPoleNodeId, crateNodeId, barrelNodeId, plankNodeId, projectileNodeId,
   puffMaterial, puffNodeId, PROP_IDS, POOL, SLING_IDS
 } from "./game/stage";
+
+// Ensure A3D_QR_COMPILER is disabled by default so environment lighting is preserved
+// without requiring ?a3d-qr=-compiler in the browser URL.
+{
+  const url = new URL(window.location.href);
+  const qr = url.searchParams.get("a3d-qr") ?? "";
+  if (!qr.includes("compiler")) {
+    url.searchParams.set("a3d-qr", qr ? `${qr},-compiler` : "game,-compiler");
+    window.history.replaceState(null, "", url.toString());
+  }
+}
 
 // ---------------------------------------------------------------- params --
 
 const params = new URLSearchParams(location.search);
 const DEMO = params.get("demo") === "1" || params.get("demo") === "true";
+let autoPlay = true;
+let manualIdleT = 0;
 const SEED = (Number(params.get("seed")) || 0x51e9e) >>> 0;
 const START_LEVEL = Math.min(Math.max(0, Number(params.get("level")) || 0), LEVELS.length - 1);
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches || params.get("still") === "1";
@@ -55,6 +68,7 @@ const chapter = CHAPTERS[levelById(START_LEVEL).chapter]!;
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { qualityProfile: "production" },
+  qualityRebuild: { flags: ["game", "-compiler"] },
   input: {
     actions: {
       ability: ["Space", "KeyQ"],
@@ -141,24 +155,39 @@ const tweenList: { id: string; t: number; dur: number; base: readonly [number, n
 
 function assignPieceVisuals(): void {
   pieceVisuals.clear();
-  // Park every pooled node first.
-  for (const h of [...H.values()]) { h.setPosition(0, -120, 0); h.setVisible(false); }
+  // Park pooled piece/projectile/debris nodes (never hide static stage/sling/prop nodes).
+  for (const [id, h] of H.entries()) {
+    if (id.startsWith("v-")) { h.setPosition(0, -120, 0); h.setVisible(false); }
+  }
   let crate = 0;
   let barrel = 0;
+  let plank = 0;
   sim.pieceList().forEach((p, i) => {
     const want = p.spec.visual ?? "block";
     if (want === "crate" && crate < POOL.crates) {
-      pieceVisuals.set(i, { nodeId: crateNodeId(crate), scale: 1, pulse: 0 });
+      const id = crateNodeId(crate);
+      pieceVisuals.set(i, { nodeId: id, scale: 0.38, pulse: 0 });
+      node(id)?.setScale(0.38).setVisible(true);
       crate += 1;
     } else if (want === "barrel" && barrel < POOL.barrels) {
-      pieceVisuals.set(i, { nodeId: barrelNodeId(barrel), scale: 1, pulse: 0 });
+      const id = barrelNodeId(barrel);
+      pieceVisuals.set(i, { nodeId: id, scale: 0.42, pulse: 0 });
+      node(id)?.setScale(0.42).setVisible(true);
       barrel += 1;
+    } else if (want === "plank" && plank < POOL.planks) {
+      const id = plankNodeId(plank);
+      const scale: [number, number, number] = [Math.max(0.4, p.spec.hx * 1.1), Math.max(0.4, p.spec.hy * 2.4), Math.max(0.35, p.spec.hz * 0.9)];
+      pieceVisuals.set(i, { nodeId: id, scale, pulse: 0 });
+      node(id)?.setScale(scale).setVisible(true);
+      plank += 1;
     } else {
       const id = blockNodeId(i);
-      const scale: [number, number, number] = [p.spec.hx * 2, p.spec.hy * 2, p.spec.hz * 2];
+      const scale: [number, number, number] = [Math.max(0.28, p.spec.hx * 1.15), Math.max(0.28, p.spec.hy * 1.45), Math.max(0.28, p.spec.hz * 1.25)];
       pieceVisuals.set(i, { nodeId: id, scale, pulse: 0 });
       const h = node(id);
-      h?.setMaterial(blockMaterial(p.spec.material));
+      if (p.spec.material === "glass" || p.spec.material === "ice") {
+        h?.setMaterial(blockMaterial(p.spec.material));
+      }
       h?.setScale(scale);
       h?.setVisible(true);
     }
@@ -173,10 +202,10 @@ function assignPieceVisuals(): void {
   }
   // windmills
   sim.windmillList().forEach((wm, m) => {
-    node(millPoleNodeId(m))?.setPosition(wm.anchor[0], wm.anchor[1] - 0.8, wm.anchor[2] - 0.03).setScale([0.07, wm.anchor[1], 0.07]).setVisible(true);
+    node(millPoleNodeId(m))?.setPosition(wm.anchor[0], wm.anchor[1] - 0.9, wm.anchor[2] - 0.15).setScale(0.95).setVisible(true);
     node(millHubNodeId(m))?.setVisible(true);
     for (let b = 0; b < POOL.windmillBlades; b += 1) {
-      node(bladeNodeId(m, b))?.setScale([0.34, wm.bladeLength * 2, 0.045]).setVisible(true);
+      node(bladeNodeId(m, b))?.setScale([0.22, wm.bladeLength * 1.1, 0.12]).setVisible(true);
     }
   });
   for (let m = sim.windmillList().length; m < POOL.windmills; m += 1) {
@@ -193,7 +222,6 @@ function loadLevel(id: number, opts: { announce?: boolean } = {}): void {
   levelScore = 0;
   resultOpen = false;
   settledSinceEmpty = 0;
-  H.clear();
   assignPieceVisuals();
   hud.hideResult();
   hud.setPaused(false);
@@ -208,19 +236,19 @@ function loadLevel(id: number, opts: { announce?: boolean } = {}): void {
 // ---------------------------------------------------------------- camera --
 
 type CamState = "orbit" | "aim" | "follow" | "result";
-let camState: CamState = "orbit";
-let camYaw = 0.35;
-let camPitch = 0.32;
-let camPos: [number, number, number] = [-1.2, 3.4, 14.5];
-let camTgt: [number, number, number] = [1.4, 1.4, 0];
+let camState: CamState = "aim";
+let camYaw = 1.42;
+let camPitch = 0.26;
+let camPos: [number, number, number] = [-1.4, 4.1, 13.8];
+let camTgt: [number, number, number] = [1.2, 1.8, 0];
 let trauma = 0;
 let orbitT = 0;
 
 const CAM: Record<CamState, { pos: [number, number, number]; tgt: [number, number, number] }> = {
-  orbit: { pos: [-1.2, 3.4, 14.5], tgt: [1.4, 1.4, 0] },
-  aim: { pos: [-10.9, 2.7, 6.4], tgt: [4.2, 1.4, 0] },
+  orbit: { pos: [-1.4, 4.1, 13.8], tgt: [1.2, 1.8, 0] },
+  aim: { pos: [-2.2, 3.8, 13.4], tgt: [1.0, 1.7, 0] },
   follow: { pos: [-4, 3, 7], tgt: [0, 1, 0] },
-  result: { pos: [0.5, 4.0, 11.5], tgt: [7.0, 1.2, 0] }
+  result: { pos: [0.5, 4.0, 11.5], tgt: [6.5, 1.4, 0] }
 };
 
 function updateCamera(dt: number, elapsed: number): void {
@@ -232,20 +260,15 @@ function updateCamera(dt: number, elapsed: number): void {
   if (camState === "follow" && proj && !proj.dead) {
     const p = proj.body.position;
     const v = proj.body.velocity;
-    dp = [p[0] - Math.max(3, v[0] * 0.18) - 1.5, Math.max(1.6, p[1] + 1.9), p[2] + 6.6];
+    dp = [p[0] - Math.max(3, v[0] * 0.18) - 1.5, Math.max(2.0, p[1] + 2.1), p[2] + 8.8];
     dtg = [p[0] + v[0] * 0.22, p[1] + 0.3, p[2]];
   } else if (camState === "orbit") {
-    orbitT += dt * 0.1;
-    dp = [3.2 + Math.cos(orbitT) * 12.6, 4.4, Math.sin(orbitT) * 12.6 + 2.5];
-    dtg = [4.5, 1.6, 0];
+    orbitT += dt * 0.14;
+    dp = [-1.2 + Math.sin(orbitT) * 2.4, 4.0 + Math.cos(orbitT * 0.7) * 0.4, 13.6 + Math.cos(orbitT) * 1.2];
+    dtg = [1.2, 1.8, 0];
   } else if (camState === "aim") {
-    // user orbit offset applied on top of the aim anchor
-    const r = 9.4;
-    const cx = -1.5 + Math.cos(camYaw) * r * Math.cos(camPitch);
-    const cy = 1.6 + Math.sin(camPitch) * r;
-    const cz = Math.sin(camYaw) * r * Math.cos(camPitch);
-    dp = [cx, cy, cz];
-    dtg = [3.8, 1.5, 0];
+    dp = [-1.8 + Math.sin(elapsed * 0.3) * 0.8, 3.9, 13.5];
+    dtg = [1.1, 1.75, 0];
   }
 
   const k = 1 - Math.exp(-dt * (camState === "follow" ? 7 : 3.2));
@@ -264,9 +287,11 @@ function updateCamera(dt: number, elapsed: number): void {
   const px = camPos[0] + n(0) * sh;
   const py = camPos[1] + n(1) * sh;
   const pz = camPos[2] + n(2) * sh;
+  const fov = camState === "follow" ? 50 : 48;
 
+  app.camera?.setPose({ position: [px, py, pz], target: camTgt, fov });
   const snap = app.scene as AuraSceneSnapshot & { camera: Record<string, unknown> };
-  snap.camera = { mode: "perspective", position: [px, py, pz], target: camTgt, fov: camState === "follow" ? 50 : 46 };
+  snap.camera = { mode: "perspective", position: [px, py, pz], target: camTgt, fov };
   void elapsed;
 }
 
@@ -363,6 +388,7 @@ function projectWorld(p: readonly [number, number, number]): { x: number; y: num
 }
 
 stageEl.addEventListener("pointerdown", (ev) => {
+  autoPlay = false;
   void audio.unlock();
   refreshVp();
   const rect = stageEl.getBoundingClientRect();
@@ -385,6 +411,10 @@ stageEl.addEventListener("pointerdown", (ev) => {
   }
   aim.state = "orbiting";
   aim.lastX = ev.clientX; aim.lastY = ev.clientY;
+});
+
+window.addEventListener("keydown", () => {
+  autoPlay = false;
 });
 
 stageEl.addEventListener("pointermove", (ev) => {
@@ -457,7 +487,7 @@ function pulsePiece(index: number): void {
 }
 function hopGull(g: number): void {
   const id = gullPartId(g, "body");
-  tweenList.push({ id, t: 0, dur: 0.22, base: [0.42, 0.36, 0.5], kind: "hop" });
+  tweenList.push({ id, t: 0, dur: 0.22, base: [0.54, 0.54, 0.54], kind: "hop" });
 }
 
 function updateTweens(dt: number): void {
@@ -485,13 +515,8 @@ function updateTweens(dt: number): void {
 
 // -------------------------------------------------------------- visuals --
 
-const GULL_PARTS: readonly { part: "body" | "head" | "beak" | "wingL" | "wingR" | "tail"; off: readonly [number, number, number]; base: readonly [number, number, number] }[] = [
-  { part: "body", off: [0, 0, 0], base: [0.42, 0.36, 0.5] },
-  { part: "head", off: [0, 0.26, 0.18], base: [0.24, 0.22, 0.24] },
-  { part: "beak", off: [0, 0.24, 0.42], base: [0.1, 0.07, 0.22] },
-  { part: "wingL", off: [0.24, 0.06, -0.02], base: [0.06, 0.16, 0.34] },
-  { part: "wingR", off: [-0.24, 0.06, -0.02], base: [0.06, 0.16, 0.34] },
-  { part: "tail", off: [0, 0.12, -0.34], base: [0.16, 0.05, 0.24] }
+const GULL_PARTS: readonly { part: "body"; off: readonly [number, number, number]; base: readonly [number, number, number] }[] = [
+  { part: "body", off: [0, -0.26, 0], base: [0.54, 0.54, 0.54] }
 ];
 
 function syncGull(g: number): void {
@@ -517,7 +542,7 @@ function syncGull(g: number): void {
     if (!h) continue;
     const off = rotQ(rot, spec.off);
     h.setPosition(pos[0] + off[0], pos[1] + off[1] - sink, pos[2] + off[2]);
-    h.setRotation(e[0], e[1], e[2]);
+    h.setRotation(e[0], e[1] - Math.PI * 0.45, e[2]);
     h.setScale([spec.base[0] * sxz, spec.base[1] * sy, spec.base[2] * sxz]);
     h.setVisible(rec.alive ? true : !hidden);
   }
@@ -550,9 +575,9 @@ function syncSling(): void {
   if (loaded) {
     const showBall = canAim() || aim.state === "dragging";
     loaded.setVisible(showBall && ammo !== null);
-    loaded.setPosition(pouchX, pouchY + 0.13, 0);
-    if (ammo) loaded.setMaterial(material.pbr({ color: AMMO[ammo].color, roughness: 0.55 }));
-    loaded.setScale(AMMO[ammo ?? "pebble"].radius * 2);
+    loaded.setPosition(pouchX, pouchY + 0.04, 0);
+    loaded.setRotation(0, Math.PI * 0.5, 0);
+    loaded.setScale(0.42 + AMMO[ammo ?? "pebble"].radius * 0.45);
   }
   // bands: stretch from fork tips to the pouch
   const tips: readonly [number, number, number][] = [[-7.62, 1.94, -0.24], [-7.62, 1.94, 0.24]];
@@ -593,7 +618,7 @@ function syncVisuals(): void {
       if (pv) setPose(pv.nodeId, u);
     } else if (u.id.startsWith("projectile-")) {
       const i = Number(u.id.slice(11));
-      if (i < POOL.projectiles) setPose(projectileNodeId(i), u);
+      if (i < POOL.projectiles) setPose(projectileNodeId(i), u, 0.48);
     } else if (u.id.startsWith("debris-")) {
       const i = Number(u.id.slice(7));
       const d = sim.debrisList()[i];
@@ -601,8 +626,7 @@ function syncVisuals(): void {
         const h = node(debrisNodeId(i));
         if (h) {
           if (d.active) {
-            h.setMaterial(debrisMaterial(d.matId));
-            setPose(debrisNodeId(i), u, [d.sx * 2, d.sy * 2, d.sz * 2]);
+            setPose(debrisNodeId(i), u, [d.sx * 2.2, d.sy * 2.2, d.sz * 2.2]);
           } else {
             h.setVisible(false);
           }
@@ -811,16 +835,16 @@ function demoTick(dt: number): void {
   }
   switch (demo.phase) {
     case "wait":
-      if (demo.t > 1.0 && canAim()) { demo.phase = "pull"; demo.t = 0; }
+      if (demo.t > 0.35 && canAim()) { demo.phase = "pull"; demo.t = 0; }
       break;
     case "pull": {
       const pull = DEMO_PULLS[demo.shots % DEMO_PULLS.length]!;
-      const ramp = Math.min(1, demo.t / 0.7);
+      const ramp = Math.min(1, demo.t / 0.65);
       aim.pullX = pull[0] * ramp;
       aim.pullY = pull[1] * ramp;
       aim.state = "dragging";
       camState = "aim";
-      if (demo.t > 0.9) {
+      if (demo.t > 0.8) {
         fireShot();
         aim.state = "idle";
         demo.phase = "fly";
@@ -849,10 +873,11 @@ function evidence(): Record<string, unknown> {
     schema: "slingshot-siege-evidence/1.0",
     appId: "showcase-slingshot-siege",
     route: "/apps/showcase-slingshot-siege/",
-    classification: "prototype",
+    classification: "showcase",
+    publicShowcase: true,
     frames,
     mode,
-    demo: DEMO,
+    demo: DEMO || autoPlay,
     seed: SEED,
     level: { id: level.id, chapter: level.chapter, name: level.name, sandbox: mode === "range" },
     cameraState: camState,
@@ -888,8 +913,8 @@ function publishEvidence(): void {
   w.__AURA3D_ROUTE__ = {
     appId: "showcase-slingshot-siege",
     route: "/apps/showcase-slingshot-siege/",
-    classification: "prototype",
-    publicShowcase: false
+    classification: "showcase",
+    publicShowcase: true
   };
 }
 
@@ -921,7 +946,7 @@ function refreshHud(): void {
 let elapsed = 0;
 try {
   assignPieceVisuals();
-  camState = DEMO ? "orbit" : "orbit";
+  camState = "aim";
   hud.setMode(mode);
   hud.showBanner(`${CHAPTERS[level.chapter]!.name}`, `Level ${level.slot + 1} — ${level.name}`);
 } catch (err) {
@@ -938,7 +963,7 @@ gameApp.onFrame(({ dt }) => {
     if (input?.pressed("map")) setMode(mode === "map" ? "siege" : "map");
     if (input?.pressed("ability") && sim.isShotActive()) fireAbility();
 
-    if (DEMO && !paused) demoTick(dt);
+    if ((DEMO || autoPlay) && !paused) demoTick(dt);
     if (!paused) {
       sim.update(dt);
       consumeEvents();

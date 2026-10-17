@@ -180,10 +180,14 @@ export function importMeshyAsset(options: ImportMeshyOptions): ImportMeshyResult
     "npx @aura3d/cli assets validate --asset " + options.name + " --require-license",
     "npx @aura3d/cli assets validate --asset " + options.name + " --release --require-license"
   ];
+  const admissionAdvisories = admission.checks
+    .filter((check) => check.verdict === "advisory" && (check.id === "glb-file-size" || check.id === "vertex-budget"))
+    .map((check) => "Admission advisory: " + check.id + ":" + check.detail);
   const admissionMessages = [
     "Meshy " + profile + " admission: " + (admission.routeReady ? "checks complete" : admission.blockers.length > 0 ? "candidate blockers found" : "candidate evidence remains unproven") + ".",
     ...admission.blockers.map((message) => "Admission blocker: " + message),
     ...admission.unproven.map((message) => "Admission unproven: " + message),
+    ...admissionAdvisories,
     ...admission.nextActions.map((message) => "Admission next: " + message)
   ];
   return {

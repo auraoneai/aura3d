@@ -319,7 +319,7 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
   if (theme === "dunes") {
     nodes.push(
       model(assets.siegeWindmillTowerMeshy, { name: "landmark-windmill", targetHeight: 11 }).position(terrain.bounds.maxX - 24, 0, midT[1] + 20).rotate(0, -0.5, 0),
-      model(assets.siegeCastleGatehouseMeshy, { name: "landmark-clubhouse", targetHeight: 9 }).position(tx - 30, 0, tz - 24).rotate(0, 0.7, 0)
+      model(assets.linksClubhousePavilMeshy, { name: "landmark-clubhouse", targetHeight: 8.5 }).position(tx - 28, terrain.height(tx - 28, tz - 20), tz - 20).rotate(0, 0.7, 0)
     );
     if (hole.layout.water.length) {
       const w = hole.layout.water[0]!;
@@ -331,7 +331,7 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     }
   } else if (theme === "parkland") {
     nodes.push(
-      model(assets.showcaseTeaHouse, { name: "landmark-clubhouse", targetHeight: 6.5 }).position(tx - 26, terrain.height(tx - 26, tz - 18), tz - 18).rotate(0, 0.9, 0)
+      model(assets.linksClubhousePavilMeshy, { name: "landmark-clubhouse", targetHeight: 7.5 }).position(tx - 26, terrain.height(tx - 26, tz - 18), tz - 18).rotate(0, 0.9, 0)
     );
   } else if (theme === "volcanic") {
     nodes.push(
@@ -381,18 +381,38 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     }
   }
 
-  // --- Spectator cluster on tour/final vibes (instanced capsules) ---
-  const crowdT: any[] = [];
-  const crowdC: string[] = [];
-  const crowdCols = ["#3d5a80", "#98c1d9", "#e0fbfc", "#c96f4a", "#d8a75c", "#e8d8b0"];
-  for (let i = 0; i < 26; i++) {
-    const a = rng() * Math.PI * 2;
-    const r = hole.layout.greenRadius + 3.4 + rng() * 3.2;
-    const x = cx + Math.cos(a) * r, z = cz + Math.sin(a) * r;
-    crowdT.push({ position: [x, terrain.height(x, z) + 0.42, z], scale: [0.34, 0.62 + rng() * 0.2, 0.34] });
-    crowdC.push(crowdCols[Math.floor(rng() * crowdCols.length)]);
+  // --- Green-side grandstands + 3D Meshy gallery spectators ---
+  for (const side of [-1, 1] as const) {
+    const sx = cx + side * (hole.layout.greenRadius + 9.5);
+    const sz = cz + 2.5;
+    const sy = terrain.height(sx, sz);
+    nodes.push(
+      model(assets.showcaseStadiumSeats, {
+        name: `gallery-stand-${side < 0 ? "l" : "r"}`,
+        targetHeight: 4.2,
+        role: "setDressing",
+        scaleMode: "fit"
+      })
+        .position(sx, sy, sz)
+        .rotate(0, Math.atan2(cx - sx, cz - sz), 0)
+    );
   }
-  nodes.push((instances as any).capsule({ name: "gallery-crowd", transforms: crowdT, colors: crowdC, material: material.pbr({ color: "#ffffff", roughness: 0.9 }) }));
+  for (let i = 0; i < 6; i++) {
+    const a = ((i + 0.5) / 6) * Math.PI * 1.4 - Math.PI * 0.2 + (rng() - 0.5) * 0.15;
+    const r = hole.layout.greenRadius + 3.2 + rng() * 1.6;
+    const x = cx + Math.cos(a) * r;
+    const z = cz + Math.sin(a) * r;
+    nodes.push(
+      model(assets.linksGolferAthleteMeshy, {
+        name: `gallery-fan-${i}`,
+        targetHeight: 1.8,
+        role: "setDressing",
+        scaleMode: "fit"
+      })
+        .position(x, terrain.height(x, z), z)
+        .rotate(0, Math.atan2(cx - x, cz - z), 0)
+    );
+  }
 
   return nodes;
 }
@@ -461,9 +481,9 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     );
   });
 
-  // --- Flag + cup ---
+  // --- Flag + cup (linksPinFlagMeshy has minY = 0 grounded origin) ---
   nodes.push(
-    model(assets.siegeFlagstickCupMeshy, { name: "flagstick", targetHeight: 2.3 }).position(terrain.cup[0], terrain.cup[1] - 0.06, terrain.cup[2]).runtime(game.runtimeNode("flagstick")),
+    model(assets.linksPinFlagMeshy, { name: "flagstick", targetHeight: 2.3 }).position(terrain.cup[0], terrain.cup[1], terrain.cup[2]).runtime(game.runtimeNode("flagstick")),
     primitives.cylinder({ name: "cup-dark", size: [0.115, 0.06, 0.115], material: material.pbr({ color: "#05070a", roughness: 1 }) }).position(terrain.cup[0], terrain.cup[1] + 0.005, terrain.cup[2])
   );
 
@@ -513,12 +533,10 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   // --- Course dressing ---
   nodes.push(...buildDressingNodes(course, hole, terrain, rng));
 
-  // --- Look + grounding + post ---
+  // --- Look + grounding (no legacy postprocess effects that break WebGL2 targets on setScene) ---
   const s = scene()
     .add(looks.preset(course.look, course.lookOverrides ?? {}))
     .addMany(nodes)
-    .add(effects.contactShadows({ intensity: 0.75, length: 0.3 }))
-    .add(effects.bloom({ intensity: isNight ? 0.42 : 0.22, threshold: 0.75 } as any))
     .camera(
       camera.perspective({
         position: [terrain.tee[0] - 3, terrain.tee[1] + 4.5, terrain.tee[2] - 8],
@@ -1217,6 +1235,12 @@ let fxCtlRef: any = null;
 
 let golferPhase: "idle" | "address" | "backswing" | "downswing" | "follow" | "celebrate" | "walk" | "putt" = "address";
 let golferPhaseT = 0;
+let simTime = 0;
+let lastManualInputAt = -10;
+let addressEnteredAt = 0;
+let roundOverEnteredAt = 0;
+let lastObservedPhase = "";
+const isStillMode = new URLSearchParams(window.location.search).has("still");
 const pressedKeys = new Set<string>();
 const justPressed = new Set<string>();
 
@@ -1230,11 +1254,23 @@ function golferAt(): { pos: Vec3; yaw: number } {
 
 function frame(dt: number): void {
   framesRendered += 1;
+  simTime += dt;
   if (framesRendered === 1) console.log("[links] first frame tick", dt);
   publishEvidence();
   const now = performance.now();
   const r = state.round;
   const t = state.terrain;
+
+  if (state.phase !== lastObservedPhase) {
+    lastObservedPhase = state.phase;
+    if (state.phase === "address") {
+      addressEnteredAt = simTime;
+      golferPhase = "address";
+      golferPhaseT = 0;
+    } else if (state.phase === "roundover") {
+      roundOverEnteredAt = simTime;
+    }
+  }
 
   if (bannerTimer && now > bannerTimer) { $("banner")?.classList.remove("show"); bannerTimer = 0; }
   if (msgTimer && now > msgTimer) { $("msg")?.classList.remove("show"); msgTimer = 0; }
@@ -1257,6 +1293,33 @@ function frame(dt: number): void {
     }
     if (state.phase === "roundover" && justPressed.has("Enter")) {
       openMenu();
+    }
+  }
+
+  // --- smart autopilot when idle (hands over immediately on any key/pointer input) ---
+  if (state.phase !== "menu" && !isStillMode && simTime - lastManualInputAt > 2.2) {
+    if (r && t && state.phase === "address" && simTime - addressEnteredAt > 1.35) {
+      const targetYaw = Math.atan2(t.cup[0] - r.ballPos[0], t.cup[2] - r.ballPos[2]);
+      let diff = targetYaw - t.lineYaw;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      r.aimOffset = clamp(diff, -0.55, 0.55);
+      startSwing();
+    } else if (r && t && state.phase === "swing") {
+      const st = state.swing.state();
+      const cupDist = t.cupDistance(r.ballPos[0], r.ballPos[2]);
+      const club = currentClub();
+      const targetPower = club.putter
+        ? clamp(cupDist / 22, 0.28, 0.88)
+        : clamp(cupDist / Math.max(12, club.carry * 0.94), 0.42, 0.92);
+      if (st.phase === "power" && st.meter >= targetPower) {
+        state.swing.press();
+      } else if (st.phase === "accuracy" && Math.abs(st.meter) <= 0.055) {
+        const s = state.swing.press();
+        if (s.phase === "committed") commitSwing();
+      }
+    } else if (state.phase === "roundover" && simTime - roundOverEnteredAt > 3.2) {
+      startRound();
     }
   }
 
@@ -1368,7 +1431,14 @@ function frame(dt: number): void {
       const g = golferAt();
       if (state.phase !== "swing") golferPhaseT = clamp(golferPhaseT + dt, 0, 1);
       const phase = state.phase === "flight" && state.commit?.club.putter ? "putt" : golferPhase;
-      poseGolfer(golferRig, phase, state.phase === "swing" ? state.swing.state().meter : golferPhaseT, g.pos, g.yaw);
+      poseGolfer(
+        golferRig,
+        phase,
+        state.phase === "swing" ? state.swing.state().meter : golferPhaseT,
+        g.pos,
+        g.yaw,
+        (x, z) => t.height(x, z)
+      );
     }
 
     // flag flutter + cup pulse
@@ -1516,17 +1586,22 @@ function bindUi(): void {
   // keys
   window.addEventListener("keydown", (ev) => {
     if (ev.repeat) return;
+    lastManualInputAt = simTime;
     pressedKeys.add(ev.code);
     justPressed.add(ev.code);
   });
   window.addEventListener("keyup", (ev) => pressedKeys.delete(ev.code));
   window.addEventListener("blur", () => pressedKeys.clear());
   // a focused button eats the next Space/Enter keyup as a re-click — release
-  // focus after every button click so game keys always reach the listener
-  document.addEventListener("click", (ev) => {
-    const b = (ev.target as HTMLElement).closest?.("button");
-    (b as HTMLElement | null)?.blur?.();
-  });
+  // focus after every button click in capture phase so game keys always reach the listener
+  document.addEventListener(
+    "click",
+    (ev) => {
+      const b = (ev.target as HTMLElement | null)?.closest?.("button");
+      (b as HTMLElement | null)?.blur?.();
+    },
+    true
+  );
 }
 
 /* ------------------------------------------------------------------ *
@@ -1590,9 +1665,9 @@ function setupFxAndTouch(): void {
     const keyFor = (b: string): string =>
       ({ left: "KeyA", right: "KeyD", up: "KeyW", down: "KeyS", hit: "Space", light: "Space", jump: "Space", special: "KeyE", block: "KeyQ", heavy: "KeyM" } as Record<string, string>)[b] ?? b;
     const sink = {
-      press: (b: string) => { const c = keyFor(b); pressedKeys.add(c); justPressed.add(c); },
+      press: (b: string) => { lastManualInputAt = simTime; const c = keyFor(b); pressedKeys.add(c); justPressed.add(c); },
       release: (b: string) => pressedKeys.delete(keyFor(b)),
-      setAction: (a: string, held: boolean) => { const c = keyFor(a); if (held) { pressedKeys.add(c); justPressed.add(c); } else pressedKeys.delete(c); }
+      setAction: (a: string, held: boolean) => { lastManualInputAt = simTime; const c = keyFor(a); if (held) { pressedKeys.add(c); justPressed.add(c); } else pressedKeys.delete(c); }
     };
     touchControls = mountTouchControls(sink as any, {
       preset: "dpad-4btn",
@@ -1652,7 +1727,29 @@ function publishEvidence(): void {
     eventLog: eventLog.snapshot(),
     touch: touchControls?.evidence?.() ?? null,
     audio: audio?.evidence ? { unlocked: audio.evidence.unlocked, cueCount: audio.evidence.cueCount, playedCueCount: audio.evidence.playedCueCount } : null,
-    catalogAssets: ["siegeGolfBall", "siegeFlagstickCupMeshy", "propPineTree", "propRockA", "propRockB", "siegeWindmillTowerMeshy", "siegeStoneBridgeMeshy", "siegeCastleGatehouseMeshy", "showcaseTeaHouse", "skylineCrystalShardMeshy", "turboAlpineVenueBackdrop", "neonStreetLampProp", "showcaseModernBuildingOne", "showcaseModernOfficeBuilding", "showcaseVoxelBuilding", "auroraHabitatDomeMeshy", "lunarRoverMeshy", "gravityOrbitalRelayMeshy"],
+    catalogAssets: [
+      "linksGolferAthleteMeshy",
+      "linksGolfCartMeshy",
+      "linksPinFlagMeshy",
+      "linksClubhousePavilMeshy",
+      "rooftopBallRackCartMeshy",
+      "showcaseStadiumSeats",
+      "siegeGolfBall",
+      "propPineTree",
+      "propRockA",
+      "propRockB",
+      "siegeWindmillTowerMeshy",
+      "siegeStoneBridgeMeshy",
+      "skylineCrystalShardMeshy",
+      "turboAlpineVenueBackdrop",
+      "neonStreetLampProp",
+      "showcaseModernBuildingOne",
+      "showcaseModernOfficeBuilding",
+      "showcaseVoxelBuilding",
+      "auroraHabitatDomeMeshy",
+      "lunarRoverMeshy",
+      "gravityOrbitalRelayMeshy"
+    ],
     deterministic: { terrain: "buildHoleTerrain", ball: "stepBall", seed: "lcg" }
   };
   (window as any).__AURA3D_GAME_EVIDENCE__ = evidence;
@@ -1741,7 +1838,7 @@ function boot(): void {
     console.error("[links] mount failed:", String(e), (e as Error)?.stack ?? ""));
   (auraApp as any).onFrame(({ dt }: { dt: number }) => frame(clamp(dt, 0.001, 0.05)));
 
-  // URL-param start modes (evidence probes)
+  // URL-param start modes (evidence probes) — boots immediately into live Quick Play unless ?menu=1
   const modeParam = params.get("mode");
   const holeParam = Number(params.get("hole"));
   if (modeParam === "rangelab") setMode("rangelab");
@@ -1753,8 +1850,7 @@ function boot(): void {
     setMode("quick");
     if (Number.isFinite(holeParam) && holeParam >= 1 && holeParam <= 9) startHole(holeParam - 1);
   }
-  const explicitEntry = modeParam || courseParam || params.get("hole") || params.get("still");
-  if (explicitEntry && params.get("menu") !== "1") closeMenu();
+  if (params.get("menu") !== "1") closeMenu();
 
   // ?still=N — deterministic capture mode: pause the live loop, step N fixed
   // frames through app.step() (runs frame() + a single simulated-time render

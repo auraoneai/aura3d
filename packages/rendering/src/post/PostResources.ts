@@ -53,17 +53,20 @@ export class PostResources {
   acquire(key: PostTargetKey): RenderTarget {
     const id = keyOf(key);
     const cached = this.free.get(id);
-    const fromCache = Boolean(cached && cached.length > 0);
-    const target = fromCache
-      ? cached!.pop()!
-      : this.pool().acquire({
-          width: key.width,
-          height: key.height,
-          format: key.format as never,
-          samples: key.samples,
-          depth: key.depth
-        });
-    if (!fromCache) this.allocations += 1;
+    while (cached && cached.length > 0) {
+      const candidate = cached.pop()!;
+      if ((candidate as { disposed?: boolean }).disposed) continue;
+      this.live.add(candidate);
+      return candidate;
+    }
+    const target = this.pool().acquire({
+      width: key.width,
+      height: key.height,
+      format: key.format as never,
+      samples: key.samples,
+      depth: key.depth
+    });
+    this.allocations += 1;
     this.live.add(target);
     return target;
   }
@@ -71,6 +74,7 @@ export class PostResources {
   /** Release one live target back to the free list (safe to call per frame). */
   release(target: RenderTarget): void {
     if (!this.live.delete(target)) return;
+    if ((target as { disposed?: boolean }).disposed) return;
     const key = this.keyForTarget(target);
     const list = this.free.get(key) ?? [];
     list.push(target);

@@ -9,7 +9,8 @@ import { createModelMatrix, createViewProjection, shouldNormalizeModelNode } fro
 import { applyProductionActorFootPlanting, applyProductionActorMorphTargets, attachProductionActorEvidence, createProductionRuntimeMetadata, productionActorModelBounds, resolveProductionActorRuntimeState } from "./actors.js";
 import { resolveCameraFrame } from "./camera.js";
 import { createSceneLabelOcclusionTest } from "./labels.js";
-import { productionRenderErrorMessage } from "./observations.js";
+import { createAssetProvenance, formatSkippedInlineModelWarning } from "../diagnostics.js";
+import { isRenderableModelNode, productionRenderErrorMessage } from "./observations.js";
 import { composeModelInstanceMatrices, getRootPerformanceQuality, getRootRenderSource, includeRootSourceMetadata } from "../RootRuntimeSupport.js";
 import { resolveSdfTextFrameOpacity, resolveWrinkleMapStrength, warnOnInstancingFallback, type CameraLike, type CollectedLight, type EnvironmentLightingOptions, type ProductionRendererInput, type RenderItem, type RenderSource } from "@aura3d/rendering";
 import { identityMat4 } from "@aura3d/scene/math";
@@ -160,6 +161,11 @@ export function createProductionRuntimeRendererInput(
   prd01ModelMatrixCache?.beginFrame();
   const viewProjectionMatrix = createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
   const cameraPosition = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes).eye;
+  for (const node of groups.flatten(snapshot.nodes)) {
+    if (isRenderableModelNode(node) && createAssetProvenance(node.asset).source === "inline-definition") {
+      runtimeWarnings.add(formatSkippedInlineModelWarning(node));
+    }
+  }
   for (const [actorIndex, entry] of actorEntries.entries()) {
     let currentState = resolveProductionActorRuntimeState(entry, runtimeNodes);
     let currentNode = currentState.node;

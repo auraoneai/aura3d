@@ -2,7 +2,7 @@
 
 import type { AuraBackend, AuraCreateAppRendererOptions, AuraLightNode, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, WebGLSceneRenderer } from "../nodes/types.js";
 import { colorToAcesInputClearColor, colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
-import { createAssetProvenance } from "../diagnostics.js";
+import { createAssetProvenance, formatSkippedInlineModelWarning } from "../diagnostics.js";
 import { groups } from "../nodes/groups.js";
 import { primitive } from "../nodes/primitives.js";
 import { createRendererDiagnosticReport } from "../rendererDiagnostics.js";
@@ -43,9 +43,13 @@ export async function createProductionRuntimeSceneRenderer(
 ): Promise<WebGLSceneRenderer> {
   const flags = qrFlags ?? resolveQrFlags({});
   const flattened = groups.flatten(snapshot.nodes);
-  const modelNodes = flattened.filter((node): node is AuraModelNode =>
-    isRenderableModelNode(node) && createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"
+  const renderableModelNodes = flattened.filter(isRenderableModelNode);
+  const modelNodes = renderableModelNodes.filter((node) =>
+    createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"
   );
+  const skippedInlineModelWarnings = renderableModelNodes
+    .filter((node) => createAssetProvenance(node.asset).source === "inline-definition")
+    .map((node) => formatSkippedInlineModelWarning(node));
   /*
    * Loaded here rather than imported at module scope (WS-2.2). This function is only reached when the
    * scene contains a typed GLB, so the glTF loader is downloaded exactly when it is needed.
@@ -111,7 +115,7 @@ export async function createProductionRuntimeSceneRenderer(
     // M2 streaming distances measure against the live camera eye; refreshed
     // every render so residency follows the camera instead of mount intent.
     let latestCameraEye: AuraVec3 = resolveCameraFrame(snapshot, snapshot.camera, 0, runtimeNodes).eye;
-    const runtimeWarnings = new Set<string>();
+    const runtimeWarnings = new Set<string>(skippedInlineModelWarnings);
     // C1 textured upgrade: fire-and-forget after mount. Scalar first frames stay
     // fast; outcomes land in textureUpgradeWarnings, which render() never clears
     // (per-frame runtimeWarnings are rebuilt every frame).
@@ -288,7 +292,7 @@ export async function createProductionRuntimeSceneRenderer(
           ...latestFeatures
             .filter((feature) => feature.state !== "supported")
             .map((feature) => `Production runtime feature ${feature.id} is ${feature.state}: ${feature.detail}`),
-          ...runtimeWarnings,
+          ...new Set([...skippedInlineModelWarnings, ...runtimeWarnings]),
           ...textureUpgradeWarnings,
           ...streamingWarnings,
           ...hdriWarnings

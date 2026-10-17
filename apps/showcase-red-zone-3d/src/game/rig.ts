@@ -1,13 +1,15 @@
 /**
- * Red Zone 3D — primitive-built football athletes.
+ * Red Zone 3D — Bespoke 3D Meshy football athletes (`rzQuarterbackMeshy` & `rzDefenderLinemanMeshy`).
  *
- * Same approach as the tennis route's buildAthleteNodes/updateAthleteRig:
- * capsule limbs, box cleats, sphere helmeted head with a facemask bar and
- * shoulder pads, shadow disc, and an active-player ring — all posed each
- * frame through game.racketSports 2-bone IK helpers. No racket; helmets and
- * pads make the footballers read as footballers.
+ * Each of the 14 football athletes on the field uses a bespoke, grounded 3D Meshy
+ * football athlete GLB (`assets.rzDefenderLinemanMeshy` for offensive center,
+ * defensive linemen, and linebackers; `assets.rzQuarterbackMeshy` for quarterbacks,
+ * running backs, wide receivers, tight ends, and defensive backs), animated per-frame
+ * with stance crouch, stride bounce, route/tackle forward lean, facing yaw, contact
+ * shadow, core team-jersey chest band, and tactical team/carrier turf rings.
  */
-import { game, material, primitives } from "@aura3d/engine";
+import { game, material, model, primitives } from "@aura3d/engine";
+import { assets } from "../aura-assets-v2";
 import type { AthleteState, Club, StudioState, Vec3 } from "./types";
 
 const HIDDEN = 0.0001;
@@ -32,36 +34,55 @@ export const kitFor = (club: Club, studio?: StudioState, isUser?: boolean): Foot
   ring: club.colors.accent
 });
 
+function isHeavyFrameAthlete(id: string): boolean {
+  return (
+    id === "off-c" ||
+    id.startsWith("def-dl") ||
+    id.startsWith("def-lb")
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /* Node construction (called once at scene build — 14 athletes)         */
 /* ------------------------------------------------------------------ */
 
 export function buildAthleteNodes(id: string, kit: FootballKit): any[] {
-  const jersey = material.pbr({ color: kit.jersey, roughness: 0.72 });
+  const jersey = material.pbr({ color: kit.jersey, roughness: 0.62, metalness: 0.1 });
   const pants = material.pbr({ color: kit.pants, roughness: 0.78 });
   const helmet = material.pbr({ color: kit.helmet, roughness: 0.4, metalness: 0.25 });
   const visor = material.pbr({ color: kit.visor, roughness: 0.25, metalness: 0.5 });
   const skin = material.pbr({ color: kit.skin, roughness: 0.8 });
   const pads = material.pbr({ color: kit.jersey, roughness: 0.65 });
   const rubber = material.pbr({ color: "#1c1f26", roughness: 0.9 });
+  const heavy = isHeavyFrameAthlete(id);
+  const bodyAsset = heavy ? assets.rzDefenderLinemanMeshy : assets.rzQuarterbackMeshy;
+
   const limb = (name: string, mat: any) =>
-    primitives.capsule({ name, size: [1, 1, 1], material: mat }).runtime(game.runtimeNode(name));
+    primitives.capsule({ name, size: [1, 1, 1], material: mat }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(name));
   const joint = (name: string, mat: any) =>
-    primitives.sphere({ name, size: [1, 1, 1], material: mat }).runtime(game.runtimeNode(name));
+    primitives.sphere({ name, size: [1, 1, 1], material: mat }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(name));
 
   return [
-    // blob shadow + active ring
-    primitives.cylinder({ name: `${id}-shadow`, size: [1, 0.012, 1], material: material.pbr({ color: "#000000", roughness: 1, opacity: 0.32 }) })
+    // Primary bespoke 3D Meshy football athlete GLB (grounded at y=0, facing +Z in model space)
+    model(bodyAsset, {
+      name: `${id}-body`,
+      targetHeight: heavy ? 1.94 : 1.88
+    } as any)
+      .position(0, 0, 0)
+      .scale(HIDDEN)
+      .runtime(game.runtimeNode(`${id}-body`)),
+    // blob shadow + tactical team/carrier turf ring
+    primitives.cylinder({ name: `${id}-shadow`, size: [1, 0.012, 1], material: material.pbr({ color: "#000000", roughness: 1, opacity: 0.34 }) })
       .scale(HIDDEN).runtime(game.runtimeNode(`${id}-shadow`)),
-    primitives.torus({ name: `${id}-ring`, size: [0.6, 0.035, 0.035], material: material.emissive({ color: kit.ring, emissive: kit.ring, emissiveIntensity: 0.9 }) })
+    primitives.torus({ name: `${id}-ring`, size: [0.66, 0.04, 0.04], material: material.emissive({ color: kit.jersey, emissive: kit.jersey, emissiveIntensity: 0.95 }) })
       .scale(HIDDEN).runtime(game.runtimeNode(`${id}-ring`)),
-    // core: shorts(pelvis) / torso jersey / shoulder pads / helmet+visor+facemask
-    primitives.box({ name: `${id}-pelvis`, size: [0.44, 0.28, 0.3], material: pants }).scale(HIDDEN).runtime(game.runtimeNode(`${id}-pelvis`)),
+    // core jersey chest band + hidden legacy nodes
+    primitives.box({ name: `${id}-pelvis`, size: [0.42, 0.26, 0.28], material: pants }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(`${id}-pelvis`)),
     limb(`${id}-torso`, jersey),
-    primitives.box({ name: `${id}-pads`, size: [0.62, 0.2, 0.4], material: pads }).scale(HIDDEN).runtime(game.runtimeNode(`${id}-pads`)),
+    primitives.box({ name: `${id}-pads`, size: [0.6, 0.19, 0.38], material: pads }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(`${id}-pads`)),
     joint(`${id}-head`, helmet),
-    primitives.box({ name: `${id}-visor`, size: [0.24, 0.07, 0.05], material: visor }).scale(HIDDEN).runtime(game.runtimeNode(`${id}-visor`)),
-    primitives.cylinder({ name: `${id}-mask`, size: [1, 1, 1], material: material.pbr({ color: "#c9cdd4", roughness: 0.35, metalness: 0.6 }) }).scale(HIDDEN).runtime(game.runtimeNode(`${id}-mask`)),
+    primitives.box({ name: `${id}-visor`, size: [0.24, 0.07, 0.05], material: visor }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(`${id}-visor`)),
+    primitives.cylinder({ name: `${id}-mask`, size: [1, 1, 1], material: material.pbr({ color: "#c9cdd4", roughness: 0.35, metalness: 0.6 }) }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(`${id}-mask`)),
     // arms
     limb(`${id}-uarm-l`, jersey), limb(`${id}-uarm-r`, jersey),
     limb(`${id}-farm-l`, skin), limb(`${id}-farm-r`, skin),
@@ -69,12 +90,13 @@ export function buildAthleteNodes(id: string, kit: FootballKit): any[] {
     // legs
     limb(`${id}-thigh-l`, pants), limb(`${id}-thigh-r`, pants),
     limb(`${id}-shin-l`, pants), limb(`${id}-shin-r`, pants),
-    primitives.box({ name: `${id}-shoe-l`, size: [0.3, 0.11, 0.44], material: rubber }).scale(HIDDEN).runtime(game.runtimeNode(`${id}-shoe-l`)),
-    primitives.box({ name: `${id}-shoe-r`, size: [0.3, 0.11, 0.44], material: rubber }).scale(HIDDEN).runtime(game.runtimeNode(`${id}-shoe-r`))
+    primitives.box({ name: `${id}-shoe-l`, size: [0.28, 0.1, 0.42], material: rubber }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(`${id}-shoe-l`)),
+    primitives.box({ name: `${id}-shoe-r`, size: [0.28, 0.1, 0.42], material: rubber }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(`${id}-shoe-r`))
   ];
 }
 
 export interface RigHandles {
+  body: any;
   shadow: any; ring: any; pelvis: any; torso: any; pads: any;
   head: any; visor: any; mask: any;
   uarmL: any; uarmR: any; farmL: any; farmR: any; handL: any; handR: any;
@@ -84,6 +106,7 @@ export interface RigHandles {
 export function resolveRig(app: any, id: string): RigHandles {
   const req = (n: string) => app.nodes.require(`${id}-${n}`);
   return {
+    body: req("body"),
     shadow: req("shadow"), ring: req("ring"), pelvis: req("pelvis"), torso: req("torso"), pads: req("pads"),
     head: req("head"), visor: req("visor"), mask: req("mask"),
     uarmL: req("uarm-l"), uarmR: req("uarm-r"), farmL: req("farm-l"), farmR: req("farm-r"),
@@ -94,22 +117,15 @@ export function resolveRig(app: any, id: string): RigHandles {
 }
 
 export function hideRig(rig: RigHandles) {
-  for (const h of Object.values(rig)) (h as any).setScale([HIDDEN, HIDDEN, HIDDEN]).setVisible(false);
+  for (const h of Object.values(rig)) {
+    (h as any)?.setScale?.([HIDDEN, HIDDEN, HIDDEN]);
+    (h as any)?.setVisible?.(false);
+  }
 }
 
 export function retintRig(rig: RigHandles, kit: FootballKit) {
-  rig.torso.setMaterial(material.pbr({ color: kit.jersey, roughness: 0.72 }));
-  rig.pads.setMaterial(material.pbr({ color: kit.jersey, roughness: 0.65 }));
-  rig.pelvis.setMaterial(material.pbr({ color: kit.pants, roughness: 0.78 }));
-  rig.thighL.setMaterial(material.pbr({ color: kit.pants, roughness: 0.78 }));
-  rig.thighR.setMaterial(material.pbr({ color: kit.pants, roughness: 0.78 }));
-  rig.shinL.setMaterial(material.pbr({ color: kit.pants, roughness: 0.78 }));
-  rig.shinR.setMaterial(material.pbr({ color: kit.pants, roughness: 0.78 }));
-  rig.uarmL.setMaterial(material.pbr({ color: kit.jersey, roughness: 0.72 }));
-  rig.uarmR.setMaterial(material.pbr({ color: kit.jersey, roughness: 0.72 }));
-  rig.head.setMaterial(material.pbr({ color: kit.helmet, roughness: 0.4, metalness: 0.25 }));
-  rig.visor.setMaterial(material.pbr({ color: kit.visor, roughness: 0.25, metalness: 0.5 }));
-  rig.ring.setMaterial(material.emissive({ color: kit.ring, emissive: kit.ring, emissiveIntensity: 0.9 }));
+  rig.torso.setMaterial(material.pbr({ color: kit.jersey, roughness: 0.62, metalness: 0.1 }));
+  rig.ring.setMaterial(material.emissive({ color: kit.jersey, emissive: kit.jersey, emissiveIntensity: 0.95 }));
 }
 
 /* ------------------------------------------------------------------ */
@@ -149,7 +165,6 @@ function evalPose(a: AthleteState): PoseOut {
   const t = a.poseT;
   switch (a.pose) {
     case "stance3": {
-      // 3-point: one hand on the turf
       return {
         hipY: 0.62, shoulderY: 1.0, headY: 1.24, leanZ: 0.5, leanX: 0, torsoYaw: 0,
         legs: [
@@ -186,7 +201,6 @@ function evalPose(a: AthleteState): PoseOut {
       };
     }
     case "throw": {
-      // windup → release over ~0.55s
       const k = clamp(t / 0.55, 0, 1);
       const wind = k < 0.55 ? k / 0.55 : 1 - (k - 0.55) / 0.45;
       return {
@@ -283,7 +297,6 @@ function evalPose(a: AthleteState): PoseOut {
       const k = clamp(speed / 7.5, 0.2, 1);
       const p = runPose(a.runPhase * 2.4, k, false);
       if (a.hasBall) {
-        // ball-carry tuck: right forearm pins the rock to the chest
         p.right = [0.24, 1.28, 0.24];
       }
       return p;
@@ -303,59 +316,27 @@ export function updateFootballRig(kit: ReturnType<typeof game.racketSports>, rig
   const uni: Vec3 = [1, 1, 1];
   const W = (local: Vec3) => kit.localToWorld(root, yaw, uni, local);
 
-  const hips = W([0, pose.hipY, 0]);
-  const chest = W([pose.leanX, pose.shoulderY, pose.leanZ]);
-  const head = W([pose.leanX * 1.3, pose.headY, pose.leanZ * 1.35]);
+  // 1. Ground and orient the bespoke 3D Meshy football athlete GLB (`rig.body`)
+  // In Red Zone 3D, a.yaw=0 is +Z, a.yaw=PI is -Z, which matches model +Z forward directly
+  const groundY = a.pose === "down" ? 0.08 : Math.max(0, pose.hipY - 0.92);
+  rig.body
+    ?.setPosition(px, groundY, pz)
+    .setRotation(pose.leanZ * 0.45, yaw + pose.torsoYaw * 0.35, pose.leanX * 0.35)
+    .setScale([1, 1, 1])
+    .setVisible(true);
 
-  kit.orientCylinderBetween(rig.torso, hips, chest, 0.23, 0.19);
-  rig.pelvis.setPosition(hips[0], hips[1], hips[2]).setRotation(0, yaw + pose.torsoYaw * 0.4, 0).setScale([1, 1, 1]).setVisible(true);
-  // shoulder pads ride just above the chest anchor
-  const padsC = W([pose.leanX, pose.shoulderY + 0.08, pose.leanZ]);
-  rig.pads.setPosition(padsC[0], padsC[1], padsC[2]).setRotation(0, yaw + pose.torsoYaw, 0).setScale([1, 1, 1]).setVisible(true);
-  // helmet: sphere + visor plate + facemask bar, all facing yaw
-  rig.head.setPosition(head[0], head[1] + 0.1, head[2]).setScale([0.26, 0.28, 0.28]).setVisible(true);
-  const faceDir = kit.localDirToWorld(yaw + pose.torsoYaw, [0, 0, 1]);
-  const visorC: Vec3 = [head[0] + faceDir[0] * 0.2, head[1] + 0.1, head[2] + faceDir[2] * 0.2];
-  rig.visor.setPosition(visorC[0], visorC[1], visorC[2]).setRotation(0, yaw + pose.torsoYaw, 0).setScale([1, 1, 1]).setVisible(true);
-  const maskA: Vec3 = [head[0] + faceDir[0] * 0.24 - faceDir[2] * 0.11, head[1] + 0.02, head[2] + faceDir[2] * 0.24 + faceDir[0] * 0.11];
-  const maskB: Vec3 = [head[0] + faceDir[0] * 0.24 + faceDir[2] * 0.11, head[1] + 0.02, head[2] + faceDir[2] * 0.24 - faceDir[0] * 0.11];
-  kit.orientCylinderBetween(rig.mask, maskA, maskB, 0.018);
+  const hips = W([0, pose.hipY + 0.12, 0]);
+  const chest = W([pose.leanX * 0.7, pose.shoulderY - 0.04, pose.leanZ * 0.7]);
 
-  // arms — 2-bone IK from shoulders beside chest
-  const shOff = 0.28;
-  const shoulderR = W([shOff, pose.shoulderY + 0.04, pose.leanZ]);
-  const shoulderL = W([-shOff, pose.shoulderY + 0.04, pose.leanZ]);
-  const handR = W(pose.right);
-  const handL = W(pose.left);
-  const elbowR = kit.solveArmElbow(shoulderR, handR, 1, 0.3, 0.285);
-  const elbowL = kit.solveArmElbow(shoulderL, handL, -1, 0.3, 0.285);
-  kit.orientCylinderBetween(rig.uarmR, shoulderR, elbowR, 0.06);
-  kit.orientCylinderBetween(rig.farmR, elbowR, handR, 0.05);
-  kit.orientCylinderBetween(rig.uarmL, shoulderL, elbowL, 0.06);
-  kit.orientCylinderBetween(rig.farmL, elbowL, handL, 0.05);
-  rig.handR.setPosition(handR[0], handR[1], handR[2]).setScale([0.08, 0.08, 0.08]).setVisible(true);
-  rig.handL.setPosition(handL[0], handL[1], handL[2]).setScale([0.08, 0.08, 0.08]).setVisible(true);
+  // 2. Slim core team-jersey chest band inside the torso silhouette for club color differentiation
+  kit.orientCylinderBetween(rig.torso, hips, chest, 0.12, 0.11);
 
-  // legs — 2-bone IK
-  for (let i = 0; i < 2; i++) {
-    const leg = pose.legs[i]!;
-    const hipL = W(leg.hip);
-    const kneeL = W(leg.knee);
-    const footL = W(leg.foot);
-    const thigh = i === 0 ? rig.thighL : rig.thighR;
-    const shin = i === 0 ? rig.shinL : rig.shinR;
-    const shoe = i === 0 ? rig.shoeL : rig.shoeR;
-    kit.orientCylinderBetween(thigh, hipL, kneeL, 0.085);
-    kit.orientCylinderBetween(shin, kneeL, footL, 0.062);
-    shoe.setPosition(footL[0], Math.max(0.055, footL[1]), footL[2]).setRotation(0, yaw, 0).setScale([1, 1, 1]).setVisible(true);
-  }
-
-  // blob shadow + active ring
+  // 3. Blob shadow + tactical team/carrier turf ring
   rig.shadow.setPosition(px, 0.012, pz).setScale([1.05, 1, 1.05]).setVisible(true);
-  if (opts.active || opts.carrier) {
-    const pulse = opts.carrier ? 1.05 + Math.sin(a.poseT * 8) * 0.08 : 0.92;
-    rig.ring.setPosition(px, 0.02, pz).setRotation(Math.PI / 2, 0, 0).setScale([pulse, pulse, pulse]).setVisible(true);
-  } else {
-    rig.ring.setScale([HIDDEN, HIDDEN, HIDDEN]).setVisible(false);
-  }
+  const pulse = opts.carrier
+    ? 1.08 + Math.sin(a.poseT * 8) * 0.08
+    : opts.active
+      ? 0.94
+      : 0.68;
+  rig.ring.setPosition(px, 0.02, pz).setRotation(Math.PI / 2, 0, 0).setScale([pulse, pulse, pulse]).setVisible(true);
 }

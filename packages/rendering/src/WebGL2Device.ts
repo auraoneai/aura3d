@@ -1310,6 +1310,9 @@ export class WebGL2Device implements RenderDevice {
 
   setRenderTarget(target: RenderTarget | null): void {
     this.host.lifecycle.assertAlive();
+    if (this.host.activeRenderTarget?.disposed) {
+      this.host.activeRenderTarget = null;
+    }
     if (this.host.activeRenderTarget && this.host.activeRenderTarget !== target) {
       this.resolveMultisampleTarget(this.host.activeRenderTarget);
     }
@@ -1337,6 +1340,9 @@ export class WebGL2Device implements RenderDevice {
 
   getRenderTarget(): RenderTarget | null {
     this.host.lifecycle.assertAlive();
+    if (this.host.activeRenderTarget?.disposed) {
+      this.host.activeRenderTarget = null;
+    }
     return this.host.activeRenderTarget;
   }
 
@@ -1604,6 +1610,8 @@ export class WebGL2Device implements RenderDevice {
       this.host.probe.depthReadbackProgram = null;
     }
     this.host.textureRegistry.textures.clear();
+    this.host.activeRenderTarget = null;
+    this.host.lifecycle.frameActive = false;
     this.host.disposed = true;
   }
 

@@ -90,6 +90,7 @@ export interface AuraAssetDefinition {
   readonly format: string;
   readonly url: string;
   readonly hash?: string;
+  readonly sha256?: string;
   readonly bounds?: AuraVec3;
   readonly sizeBytes?: number;
   readonly optional?: boolean;

@@ -124,6 +124,7 @@ export interface AssetInspectionReport {
   readonly file: string;
   readonly format: string;
   readonly sizeBytes: number;
+  readonly vertexCount?: number;
   readonly bounds?: readonly [number, number, number];
   readonly boundsMetadata?: AuraCliAssetBoundsInspection;
   readonly materials: readonly string[];

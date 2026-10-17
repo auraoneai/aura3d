@@ -1,5 +1,8 @@
 {
+  "appId": "showcase-dot-dash-3d",
   "route": "/apps/showcase-dot-dash-3d/",
+  "classification": "showcase",
+  "publicShowcase": true,
   "generatedAt": "2026-10-17T07:33:13.794Z",
   "ok": true,
   "checks": [

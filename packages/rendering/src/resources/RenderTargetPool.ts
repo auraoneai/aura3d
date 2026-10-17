@@ -56,9 +56,15 @@ export class RenderTargetPool implements RenderTargetPoolLike {
   acquire(desc: RenderTargetPoolDesc): RenderTarget {
     const key = poolKey(desc);
     const bucket = this.idle.get(key);
-    const entry = bucket?.pop();
-    if (bucket && bucket.length === 0) this.idle.delete(key);
-    if (entry) return entry.target;
+    while (bucket && bucket.length > 0) {
+      const entry = bucket.pop()!;
+      if (bucket.length === 0) this.idle.delete(key);
+      if ((entry.target as { disposed?: boolean }).disposed) {
+        this.owned.delete(entry.target);
+        continue;
+      }
+      return entry.target;
+    }
     const target = this.device.createRenderTarget(toRenderTargetDescriptor(desc));
     this.owned.add(target);
     this.createdCount += 1;
@@ -69,6 +75,10 @@ export class RenderTargetPool implements RenderTargetPoolLike {
     // Only pool targets this pool created; foreign targets are ignored, never
     // disposed — callers may hand us targets they do not own.
     if (!this.owned.has(target)) return;
+    if ((target as { disposed?: boolean }).disposed) {
+      this.owned.delete(target);
+      return;
+    }
     const desc = this.descFor(target);
     let bucket = this.idle.get(poolKey(desc));
     if (!bucket) {

@@ -100,6 +100,25 @@ export function createMeshyAdmissionReport(options: {
   if (limits.minTriangles !== undefined && triangles > 0) {
     checks.push({ id: "triangle-floor", verdict: triangles >= limits.minTriangles ? "pass" : "fail", detail: triangles >= limits.minTriangles ? triangles + " triangles meet the " + profile + " structural floor of " + limits.minTriangles : triangles + " triangles are below the " + profile + " structural floor of " + limits.minTriangles + "; inspect silhouette and topology", measured: triangles, limit: limits.minTriangles });
   }
+  const vertices = Math.max((geometry as { readonly vertices?: number }).vertices ?? 0, inspection.vertexCount ?? 0);
+  if (vertices > 50_000) {
+    checks.push({
+      id: "vertex-budget",
+      verdict: "advisory",
+      detail: vertices + " vertices exceed the 50,000 vertex guardrail; simplify meshes with MeshoptSimplifier to <= 20,000 vertices and compress textures to 1024x1024 before route use",
+      measured: vertices,
+      limit: 50_000
+    });
+  }
+  if (inspection.sizeBytes > 10 * 1024 * 1024) {
+    checks.push({
+      id: "glb-file-size",
+      verdict: "advisory",
+      detail: "GLB size " + (inspection.sizeBytes / (1024 * 1024)).toFixed(2) + " MB exceeds the 10 MB guardrail; simplify meshes with MeshoptSimplifier to <= 20,000 vertices and compress textures to 1024x1024 before route use",
+      measured: inspection.sizeBytes,
+      limit: 10 * 1024 * 1024
+    });
+  }
 
   const textureCount = inspection.textures.length;
   checks.push({ id: "texture-count", verdict: textureCount <= limits.maxTextures ? "pass" : "fail", detail: textureCount <= limits.maxTextures ? textureCount + " texture(s) are within the " + profile + " candidate limit of " + limits.maxTextures : textureCount + " textures exceed the " + profile + " candidate limit of " + limits.maxTextures, measured: textureCount, limit: limits.maxTextures });
@@ -126,13 +145,19 @@ export function createMeshyAdmissionReport(options: {
   checks.push({ id: "rendered-candidate-evidence", verdict: options.hasThumbnailEvidence ? "pass" : "unproven", detail: options.hasThumbnailEvidence ? "a local Meshy thumbnail was retained as candidate-only rendered evidence" : "no local Meshy thumbnail was retained; provider success is not rendered route evidence", measured: options.hasThumbnailEvidence ?? false });
   const blockers = checks.filter((check) => check.verdict === "fail").map((check) => check.id + ":" + check.detail);
   const unproven = checks.filter((check) => check.verdict === "unproven").map((check) => check.id + ":" + check.detail);
-  const nextActions = profile === "humanoid"
-    ? ["Inspect humanoid pose/topology/deformation and verify animation clips in a real route.", "Retain route renders and independent human review before release quality."]
-    : profile === "vehicle"
-      ? ["Verify vehicle orientation, wheel/body separation, collider plan, and gameplay-camera readability.", "Retain route renders and independent human review before release quality."]
-      : profile === "environment"
-        ? ["Verify environment modular seams, walkable scale, repeated-instance cost, collision, navigation, and occlusion in route.", "Retain route renders and independent human review before release quality."]
-        : ["Verify prop origin/grounding, collision plan, material readability, and gameplay-camera silhouette.", "Retain route renders and independent human review before release quality."];
+  const decimationActions = (inspection.sizeBytes > 10 * 1024 * 1024 || vertices > 50_000)
+    ? ["Decimate/simplify meshes with MeshoptSimplifier to <= 20,000 vertices and compress textures to 1024x1024 before route use."]
+    : [];
+  const nextActions = [
+    ...decimationActions,
+    ...(profile === "humanoid"
+      ? ["Inspect humanoid pose/topology/deformation and verify animation clips in a real route.", "Retain route renders and independent human review before release quality."]
+      : profile === "vehicle"
+        ? ["Verify vehicle orientation, wheel/body separation, collider plan, and gameplay-camera readability.", "Retain route renders and independent human review before release quality."]
+        : profile === "environment"
+          ? ["Verify environment modular seams, walkable scale, repeated-instance cost, collision, navigation, and occlusion in route.", "Retain route renders and independent human review before release quality."]
+          : ["Verify prop origin/grounding, collision plan, material readability, and gameplay-camera silhouette.", "Retain route renders and independent human review before release quality."])
+  ];
   return { schema: "aura3d.meshy-admission/1.0", profile, candidateQuality: true, routeReady: blockers.length === 0 && unproven.length === 0, checks, blockers, unproven, nextActions };
 }
 

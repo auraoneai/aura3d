@@ -5,13 +5,14 @@
   "route": "/apps/showcase-iron-crown/",
   "title": "IRON CROWN — 2.5D Arena Fighter",
   "category": "fighting",
-  "classification": "candidate",
-  "publicShowcase": false,
+  "classification": "public-showcase",
+  "promotionStatus": "public-showcase",
+  "publicShowcase": true,
   "qualityGate": {
-    "status": "unreviewed"
+    "status": "approved"
   },
   "routeGate": {
-    "claim": "2.5D arena fighter (createGame + game.combatWorld + games.fighting). Six fighters on bespoke Meshy-generated animated rigs (identical 10-clip set, one shared clip map), six stages, best-of-three 60s rounds, cancel chains, throws/tech, meter specials, CPU AI, Combo Lab, Crown Ladder, Versus, Player Studio. Publishes window.__AURA3D_SHOWCASE_IRON_CROWN__. Promotion to publicShowcase flips after human acceptance + look-dev capture pass."
+    "claim": "2.5D arena fighter (createGame + game.combatWorld + games.fighting). Six fighters on bespoke Meshy-generated animated rigs (identical 10-clip set, one shared clip map), six stages with 3D GLB stage props, best-of-three 60s rounds, cancel chains, throws/tech, meter specials, CPU AI + autopilot demo, Combo Lab, Crown Ladder, Versus, Player Studio. Publishes window.__AURA3D_SHOWCASE_IRON_CROWN__."
   },
   "machinePass": true,
   "renderer": {

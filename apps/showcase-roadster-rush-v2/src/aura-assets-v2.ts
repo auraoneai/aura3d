@@ -1,51 +1,41 @@
 import { defineAuraAssets } from "@aura3d/engine";
 
 /**
- * Local typed assets for Apex Overdrive v2. The 11 freeway vehicles and the
- * building tile are the original Roadster Rush GLBs, copied into this app's
- * own public/ tree. The `apex` entries are Meshy generations (see
- * artifacts/meshy/apex-* rights.json); a missing file degrades gracefully at
- * load so the route still runs on the catalog fleet alone.
+ * Route-local Meshy-generated 3D assets for Apex Overdrive (v2).
+ * Each GLB lives under `public/aura-assets/apex-*.glb` and is mirrored to
+ * `/aura-assets/` by the showcase build pipeline.
  */
-const glb = (name: string, bounds: readonly [number, number, number], hash: string) =>
-  ({
+export const assetsV2 = defineAuraAssets({
+  apexInterceptor: {
     type: "model",
     format: "glb",
-    url: `/aura-assets/${name}.glb`,
-    hash,
-    bounds
-  }) as const;
-
-const tex = (name: string) =>
-  ({
-    type: "texture",
-    format: "jpg",
-    url: `/roadster-rush/textures/${name}.jpg`,
-    bounds: [1, 1, 1]
-  }) as const;
-
-export const assetsV2 = defineAuraAssets({
-  playerInterceptor: glb("roadsterRushPlayerCar", [2.23, 1.27, 4.3], "sha256-e97ea46a"),
-  skyCar: glb("roadsterRushSkyCar", [2.23, 1.27, 4.3], "sha256-b60183ea"),
-  sedan: glb("roadsterRushSedan", [1.9, 1.43, 4.64], "sha256-1844d9ab"),
-  hatch: glb("roadsterRushHatch", [1.82, 1.47, 4.04], "sha256-30c773f5"),
-  suv: glb("roadsterRushSuv", [2, 1.82, 4.94], "sha256-65f82584"),
-  taxi: glb("roadsterRushTaxi", [1.92, 1.63, 4.74], "sha256-5ca742f7"),
-  van: glb("roadsterRushVan", [2.06, 2.2, 5.34], "sha256-ef6cd5a7"),
-  pickup: glb("roadsterRushPickup", [2.02, 1.77, 5.58], "sha256-c74e3aef"),
-  boxtruck: glb("roadsterRushBoxtruck", [2.43, 3, 8.14], "sha256-beb356f9"),
-  bus: glb("roadsterRushBus", [2.6, 3.16, 12.22], "sha256-1618d848"),
-  carrier: glb("roadsterRushCarrier", [2.61, 2.98, 16.12], "sha256-73ce0880"),
-  building: glb("showcaseModernBuildingOne", [1231.446, 1318.901, 1372.78], "sha256-d3216bb2"),
-  // Meshy hero assets — bounds measured by `aura3d assets inspect`.
-  apexInterceptor: glb("apex-interceptor", [1.903, 0.42, 1.238], "sha256-ece0aa99"),
-  apexRival: glb("apex-rival-skycar", [1.902, 0.448, 1.494], "sha256-a07f076d"),
-  apexBlimp: glb("apex-holo-blimp", [1.903, 0.687, 0.585], "sha256-fdd75178"),
-  apexGunship: glb("apex-gunship", [1.903, 0.816, 1.063], "sha256-7f87f04a"),
-  billboard0: tex("billboard_0"),
-  billboard1: tex("billboard_1"),
-  billboard2: tex("billboard_2"),
-  billboard3: tex("billboard_3")
+    url: "/aura-assets/apex-interceptor.glb",
+    hash: "sha256-ece0aa99f6edf276666d280c9f233bb7612bb01285085672691410a1357d2ea5",
+    bounds: [2.25, 1.28, 4.35],
+    role: "primaryVehicle"
+  },
+  apexRival: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/apex-rival-skycar.glb",
+    hash: "sha256-a07f076d3ffa08b46ff0897a4f84fe068824580a8255d4639b1586d1e92a1062",
+    bounds: [2.3, 1.3, 4.4],
+    role: "primaryVehicle"
+  },
+  apexBlimp: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/apex-holo-blimp.glb",
+    hash: "sha256-fdd75178fdb78dd21ca9f87f739fe598f09df2306eee621d0617c12952b7dea2",
+    bounds: [12, 8, 28],
+    role: "setDressing"
+  },
+  apexGunship: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/apex-gunship.glb",
+    hash: "sha256-7f87f04a5cff7d32e1ad032fd5bff566fc91f050d086c97e3e07ef37b3c30f04",
+    bounds: [6.4, 2.8, 8.2],
+    role: "primaryVehicle"
+  }
 });
-
-export type AssetKey = keyof typeof assetsV2;

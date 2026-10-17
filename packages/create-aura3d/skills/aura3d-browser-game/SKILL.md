@@ -69,15 +69,38 @@ Genre → recipe row (full table: `../aura3d-art-direction/references/look-recip
 
 2. The look supplies the sky light, key shadow, fog and grade — do not add
    `lights.studio()` or `lights.ambient()` on top.
-3. Typed models at real scale for hero/collectibles (emissive 3–5 on pickups
-   reads as sparkle under the post grade); platforms/track from the best
-   typed catalog kit.
+3. Typed models at real scale for every character, athlete, enemy, vehicle,
+   aircraft, creature, weapon, tree, and architectural landmark with readable
+   silhouette (`model(assets.<name>, { targetMaxDimension, role })`, emissive
+   3–5 on pickups for sparkle under the post grade); never assemble stick-figure
+   humans or box cars from `primitives.box`, `primitives.sphere`, or
+   `primitives.cylinder` (reserve `primitives.plane`, `primitives.box`,
+   `primitives.cylinder`, and `primitives.torus` strictly for ground/court
+   surfaces, field lines, UI rings/reticles, laser beams, and invisible physics
+   colliders to keep composition and contrast clean). If the catalog lacks a
+   required 3D model, generate a PBR GLB with `meshy`, decimate/compress it
+   (`<= 20,000` vertices, `<= 2 MB`, 16-bit `Uint16Array` indices, `<= 1024x1024`
+   textures for crisp reflection and palette), and admit it via
+   `aura3d assets import-meshy` with a valid 64-character `sha256-...` `hash`
+   so the look and lighting render cleanly.
 4. Camera state drives `app.camera` every frame (rig from the genre row) —
    never write camera position into evidence fields.
-5. Wire HUD and events through `game.eventLog` and `game.hud.*` — DOM HUD only,
-   no in-world counters, no debug overlay in shipped frames.
-6. Make reset real: restart after normal play and after win or fail returns
-   score, timer, bodies, input, and animation to baseline.
+5. Boot directly into live 60 FPS 3D gameplay on Frame 1 with an intelligent AI
+   autopilot/demo controller that plays autonomously under the scene's lighting,
+   fog, and camera framing and yields instant manual control on the first
+   `keydown`, pointer, touch, or gamepad input. Never hide the 3D canvas or
+   atmosphere behind an opaque full-screen HTML start menu, character select
+   modal, or briefing overlay on load, and never require `?autoplay=1`,
+   `?demo=1`, or `?play=1`. Wire HUD and events through `game.eventLog` and
+   `game.hud.*` in a compact, non-blocking top HUD bar that keeps the frame
+   readable, and always call `button.blur()` after button clicks so `Space` or
+   `Enter` gameplay keys never re-trigger focused HUD buttons.
+6. Make reset real without tearing down the scene: restart after normal play and
+   after win or fail returns score, timer, bodies, input, and animation to
+   baseline by mutating runtime node handles (`app.nodes.require(...)`). Do not
+   call `app.setScene()` when restarting a round, hole, or bout on the same
+   stage/world (`stageId` / `worldId`); remounting disposes live GPU resources,
+   breaks shadow and postprocess continuity, and aborts in-flight GLB loads.
 7. Genre gates (mechanics, from the game example standards):
 
    | Genre | Must have |

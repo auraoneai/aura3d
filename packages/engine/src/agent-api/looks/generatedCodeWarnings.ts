@@ -5,9 +5,10 @@
 // `look/*` strings app.diagnostics().look.lint reports (§7.2).
 
 import type { AuraSceneSnapshot } from "../nodes/types.js";
-import { createAssetProvenance } from "../diagnostics.js";
+import { createAssetProvenance, formatSkippedInlineModelWarning } from "../diagnostics.js";
 import { groups } from "../nodes/groups.js";
 import { createProductionPrimitiveTextureIntent } from "../compiler/textures.js";
+import { isRenderableModelNode } from "../compiler/observations.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import type { AuraLookLintContext } from "../../contracts/looks.js";
 import { environmentProbeFactorySlot } from "@aura3d/rendering/contracts";
@@ -50,7 +51,20 @@ export function collectGeneratedCodeWarnings(
         effectsPixelBacked: []
       }
   };
-  return lookLint(snapshot, lintContext).map((finding: { message: string }) => finding.message);
+  return [
+    ...lookLint(snapshot, lintContext).map((finding: { message: string }) => finding.message),
+    ...collectSkippedInlineModelWarnings(snapshot)
+  ];
+}
+
+function collectSkippedInlineModelWarnings(snapshot: AuraSceneSnapshot): string[] {
+  const warnings: string[] = [];
+  for (const node of groups.flatten(snapshot.nodes)) {
+    if (isRenderableModelNode(node) && createAssetProvenance(node.asset).source === "inline-definition") {
+      warnings.push(formatSkippedInlineModelWarning(node));
+    }
+  }
+  return warnings;
 }
 
 /** 1.0 behaviour — the original collectGeneratedCodeWarnings body, verbatim. */
@@ -77,5 +91,6 @@ function legacyWarnings(snapshot: AuraSceneSnapshot): string[] {
       warnings.push(`Model uses unsafeModelUrl("${node.asset.url}"). Suggested fix: run assets add and use typed assets.`);
     }
   }
+  warnings.push(...collectSkippedInlineModelWarnings(snapshot));
   return warnings;
 }

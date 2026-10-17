@@ -1,5 +1,8 @@
 {
+  "appId": "showcase-cross-hop",
   "route": "/apps/showcase-cross-hop/",
+  "classification": "showcase",
+  "publicShowcase": true,
   "generatedAt": "2026-10-17T07:56:54.464Z",
   "ok": true,
   "checks": [

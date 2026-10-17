@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.skills/1.0",
-  "cliVersion": "3.0.1",
+  "cliVersion": "4.0.0",
   "docsBase": "https://github.com/auraoneai/aura3d/blob/main/",
   "coreSet": [
     "aura3d-core",

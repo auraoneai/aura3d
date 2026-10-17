@@ -21,11 +21,11 @@ export const TUNNEL_SPEED_RATIO = 0.55;   // ghosts slow on wrap-edge cells
 export const DASH_MULT = 1.9;
 export const DASH_TIME = 0.26;
 export const DASH_COOLDOWN = 1.7;
-export const READY_TIME = 1.7;
+export const READY_TIME = 0.25;
 export const DEATH_TIME = 1.6;
 export const CLEAR_TIME = 2.4;
-export const FRUIT_LIFE = 9.0;
-export const FRUIT_TRIGGERS = [70, 170];
+export const FRUIT_LIFE = 14.0;
+export const FRUIT_TRIGGERS = [12, 65, 130];
 export const EAT_RADIUS = 0.46;
 export const TOUCH_RADIUS = 0.56;
 export const FRIGHT_BASE = 6.0;
@@ -143,6 +143,7 @@ export interface Sim {
   clearT: number;
   camera: "follow" | "overhead";
   school: boolean;             // ghost-school overlay mode
+  autopilot: boolean;
   events: SimEvents;
   msg: string;
   msgT: number;
@@ -153,7 +154,7 @@ export interface Sim {
 }
 
 export const st: Sim = {
-  mode: "title",
+  mode: "play",
   runKind: "quick",
   mazeId: "classic",
   maze: parseMaze(MAZES.classic),
@@ -171,14 +172,15 @@ export const st: Sim = {
   chain: 0,
   wave: 0,
   waveT: 0,
-  fruitActive: false,
-  fruitT: 0,
+  fruitActive: true,
+  fruitT: FRUIT_LIFE,
   fruitStage: 0,
   readyT: 0,
   deathT: 0,
   clearT: 0,
   camera: "follow",
   school: false,
+  autopilot: true,
   events: freshEvents(),
   msg: "",
   msgT: 0,
@@ -211,12 +213,12 @@ export function startRun(kind: RunKind, mazeId: MazeId): void {
     st.lives = 3;
   }
   resetBoard();
-  st.mode = "ready";
-  st.readyT = READY_TIME;
+  st.mode = "play";
+  st.readyT = 0;
   st.camera = st.profile.cameraDefault;
   st.profile.mazesPlayed += 1;
   saveProfile(st.profile);
-  pushMsg(kind === "school" ? `Ghost School — ${MAZES[mazeId].title}` : `${MAZES[mazeId].title} — READY!`);
+  pushMsg(kind === "school" ? `Ghost School — ${MAZES[mazeId].title}` : `${MAZES[mazeId].title} — GO!`);
 }
 
 function resetBoard(): void {
@@ -231,7 +233,8 @@ function resetBoard(): void {
   st.chain = 0;
   st.wave = 0;
   st.waveT = 0;
-  st.fruitActive = false;
+  st.fruitActive = true;
+  st.fruitT = FRUIT_LIFE;
   st.fruitStage = 0;
   st.time = 0;
   st.rng = mulberry32((Date.now() % 0xffffffff) >>> 0);
@@ -241,10 +244,10 @@ function resetBoard(): void {
 function resetActors(): void {
   const m = st.maze;
   st.player = { px: m.spawn.x, py: m.spawn.y, dir: DIR_LEFT, want: DIR_LEFT, wantT: 0, dashT: 0, dashCd: 0, dashQueued: false };
-  // ghosts start inside the house, staggered release: Blitz exits at once.
+  // ghosts start inside the house with rapid staggered release so all 4 3D Meshy specters immediately join the chase!
   const house = m.houseTiles.map((i) => ({ x: i % m.width, y: (i / m.width) | 0 }));
   const slots: Record<GhostId, number> = { blitz: 1, sly: 0, flick: 2, dim: 0 };
-  const releases: Record<GhostId, number> = { blitz: 0.4, sly: 3.2, flick: 6.0, dim: 9.0 };
+  const releases: Record<GhostId, number> = { blitz: 0.05, sly: 0.45, flick: 0.9, dim: 1.35 };
   st.ghosts = GHOST_ORDER.map((id) => ({
     id,
     px: house[slots[id]]?.x ?? m.door.x,
@@ -331,6 +334,83 @@ function advance(m: ParsedMaze, mv: Mover, dist: number, ghost: boolean, decide:
 
 // ------------------------------------------------------------ player step ---
 
+function autopilotDecide(m: ParsedMaze, tile: Tile): Dir {
+  const p = st.player;
+  let opts = exits(m, tile, p.dir, false, false);
+  if (opts.length === 0) opts = exits(m, tile, p.dir, false, true);
+  if (opts.length === 0) return DIR_NONE;
+
+  // Score each candidate neighbor tile: avoid active ghosts, seek frightened ghosts / orbs / fruit / dots
+  const distFromHere = bfsDistances(m, tile, false);
+  // Find nearest desirable target (frightened ghost > orb > fruit > dot)
+  let targetTile: Tile | null = null;
+  let bestTargetDist = Infinity;
+
+  if (st.fright > 0.8) {
+    for (const g of st.ghosts) {
+      if (g.state === "active") {
+        const gt = { x: Math.round(normX(m, g.px)), y: Math.round(normY(m, g.py)) };
+        const d = distFromHere[idx(m.width, gt.x, gt.y)] ?? -1;
+        if (d >= 0 && d < bestTargetDist) { bestTargetDist = d; targetTile = gt; }
+      }
+    }
+  }
+  if (!targetTile && st.fruitActive) {
+    const d = distFromHere[idx(m.width, m.fruitTile.x, m.fruitTile.y)] ?? -1;
+    if (d >= 0 && d <= 8) { bestTargetDist = d; targetTile = m.fruitTile; }
+  }
+  if (!targetTile) {
+    for (let y = 0; y < m.height; y++) {
+      for (let x = 0; x < m.width; x++) {
+        const i = idx(m.width, x, y);
+        if (st.orbs[i] || st.dots[i]) {
+          const d = distFromHere[i]!;
+          const weight = st.orbs[i] ? Math.max(0, d - 3) : d;
+          if (d >= 0 && weight < bestTargetDist) {
+            bestTargetDist = weight;
+            targetTile = { x, y };
+          }
+        }
+      }
+    }
+  }
+
+  const distToTarget = targetTile ? bfsDistances(m, targetTile, false) : null;
+  let bestOpt = opts[0]!;
+  let bestScore = -Infinity;
+
+  for (const o of opts) {
+    let score = 0;
+    if (distToTarget) {
+      const td = distToTarget[idx(m.width, o.x, o.y)] ?? 50;
+      score -= td * 2.5;
+    }
+    if (st.dots[idx(m.width, o.x, o.y)]) score += 4;
+    if (st.orbs[idx(m.width, o.x, o.y)]) score += 12;
+
+    // Penalize moving toward dangerous active ghosts
+    if (st.fright <= 0.4) {
+      for (const g of st.ghosts) {
+        if (g.state !== "active") continue;
+        const gx = normX(m, g.px), gy = normY(m, g.py);
+        const gd = Math.hypot(o.x - gx, o.y - gy);
+        if (gd < 2.2) score -= 200;
+        else if (gd < 4.0) score -= 45 / gd;
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestOpt = o;
+    }
+  }
+
+  if (p.dashCd <= 0 && st.profile.dashEnabled && st.rng() < 0.18) {
+    p.dashQueued = true;
+  }
+
+  return dirToward(tile, bestOpt) ?? p.dir;
+}
+
 function movePlayer(m: ParsedMaze, dt: number): void {
   const p = st.player;
   const speed = PLAYER_SPEED * (p.dashT > 0 ? DASH_MULT : 1);
@@ -343,6 +423,11 @@ function movePlayer(m: ParsedMaze, dt: number): void {
   }
   p.dashQueued = false;
   advance(m, p, speed * dt, false, (tile) => {
+    if (st.autopilot) {
+      const aiDir = autopilotDecide(m, tile);
+      p.want = aiDir;
+      return aiDir;
+    }
     // buffered turn: adopt want if legal, else continue
     if (!isZero(p.want) && !sameDir(p.want, p.dir)) {
       const n = stepTile(m, tile, p.want, false);
@@ -520,6 +605,12 @@ const WANT_LIFE = 0.45;
 
 export function input(dt: number, ctl: { held(a: string): boolean; consume(a: string): boolean; pressed(a: string): boolean }): void {
   const p = st.player;
+  const userPressed =
+    ctl.pressed("left") || ctl.pressed("right") || ctl.pressed("up") || ctl.pressed("down") ||
+    ctl.held("left") || ctl.held("right") || ctl.held("up") || ctl.held("down");
+  if (userPressed) {
+    st.autopilot = false;
+  }
   // buffered turn: a fresh press queues the direction and it stays buffered
   // briefly after release so mid-corridor taps still take at the next junction.
   if (ctl.pressed("left")) { p.want = DIR_LEFT; p.wantT = WANT_LIFE; }
@@ -533,11 +624,11 @@ export function input(dt: number, ctl: { held(a: string): boolean; consume(a: st
     (sameDir(p.want, DIR_UP) && ctl.held("up")) ||
     (sameDir(p.want, DIR_DOWN) && ctl.held("down"));
   if (wantHeld) p.wantT = WANT_LIFE;
-  else {
+  else if (!st.autopilot) {
     p.wantT -= dt;
     if (p.wantT <= 0) p.want = p.dir;
   }
-  if (ctl.consume("dash")) p.dashQueued = true;
+  if (ctl.consume("dash")) { st.autopilot = false; p.dashQueued = true; }
   if (ctl.consume("camera")) {
     st.camera = st.camera === "follow" ? "overhead" : "follow";
     pushMsg(`Camera: ${st.camera}`);
@@ -550,8 +641,13 @@ export function frame(dt: number, ctl: { held(a: string): boolean; consume(a: st
 
   switch (st.mode) {
     case "title":
+      return;
     case "gameover":
     case "win":
+      if (st.autopilot) {
+        st.time += dt;
+        if (st.time > 1.5) startRun("quick", st.mazeId);
+      }
       return;
     case "ready":
       st.readyT -= dt;
@@ -562,11 +658,15 @@ export function frame(dt: number, ctl: { held(a: string): boolean; consume(a: st
     case "dying":
       st.deathT -= dt;
       if (st.deathT <= 0) {
-        if (st.lives <= 0) { gameOver(); return; }
+        if (st.lives <= 0) {
+          if (st.autopilot) { startRun("quick", st.mazeId); return; }
+          gameOver();
+          return;
+        }
         resetActors();
-        st.mode = "ready";
-        st.readyT = READY_TIME * 0.75;
-        pushMsg("READY!");
+        st.mode = "play";
+        st.readyT = 0;
+        pushMsg("GO!");
       }
       st.time += dt;
       return;

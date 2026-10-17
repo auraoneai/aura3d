@@ -76,7 +76,15 @@ when a catalog candidate already passes the rubric.
    texture limit. Non-indexed geometry leaves the triangle check `unproven`.
    Omitting `--profile` infers it from `--role` (`character` to humanoid,
    `vehicle` to vehicle, `world`/`environment`/`track` to environment, else
-   prop). Remesh defaults to 30,000; about 10,000 rigs well.
+   prop). Remesh defaults to 30,000; about 10,000 rigs well. Raw Meshy exports
+   often contain `200,000–1,750,000` vertices and `20–65 MB` of uncompressed 4K
+   PNG textures, which stall main-thread glTF parsing and exhaust GPU memory
+   when multiple models share one scene look and lighting setup. Before
+   admission into `public/aura-assets/`, always simplify every generated Meshy
+   GLB (`MeshoptSimplifier` to `<= 20,000` vertices for props/vehicles, 16-bit
+   `Uint16Array` indices, de-interleaved `byteStride === 0` buffers) and
+   compress textures to `<= 1024x1024` (`~0.5–2.0 MB` per GLB) so silhouettes,
+   shadows, palette, and PBR reflections load fast.
 7. Admit the local output with rights evidence.
 
    ```bash
@@ -88,7 +96,14 @@ when a catalog candidate already passes the rubric.
    Use `--file` when the run has several GLBs. Import defaults to
    `--quality candidate` and refuses release certification. Read the
    admission `blockers` and `unproven` lists; `routeReady: false` is a result
-   to report.
+   to report. Ensure the admitted entry in `aura.assets.json` /
+   `src/aura-assets.ts` carries a valid 64-character `sha256-...` `hash` and
+   `public/aura-assets/...` provenance for clean look and silhouette so
+   `createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"`
+   preserves lighting and contrast; never omit `hash` in custom
+   `defineAuraAssets(...)` / `defineAssets` declarations (keeps shadow and
+   reflection intact) or place unhashed duplicate GLBs in
+   `apps/<route>/public/aura-assets/`.
 8. Rig handoff: after importing a rigged humanoid, inspect it and map clips
    before any code names them, then load `aura3d-character-animation`.
 

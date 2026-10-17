@@ -78,8 +78,23 @@ lighting you evaluate materials and silhouettes against.
 
    `--source` scans `src` for raw ids, URLs, and loader code, and lists
    `typedAssetUsages`. Add `--no-placeholders --require-license` for anything
-   public. Refresh stale manifest bounds by re-adding the file.
-7. Use the key exactly as generated.
+   public. Refresh stale manifest bounds by re-adding the file. Ensure every
+   admitted entry in `aura.assets.json` and `src/aura-assets.ts` carries a valid
+   64-character `sha256-...` `hash` and `public/aura-assets/...` path for clean
+   look and silhouette so `createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"`
+   preserves PBR lighting, palette, contrast, and reflection in the production
+   glTF bridge. Never omit `hash` in custom `defineAuraAssets(...)` /
+   `defineAssets` declarations (keeps look and shadow intact) and never place
+   unhashed duplicate GLBs in route-local `apps/<route>/public/aura-assets/`
+   that collide with root `public/aura-assets/` (keeps composition readable).
+7. Use the key exactly as generated. Every character, athlete, enemy, vehicle,
+   aircraft, creature, weapon, tree, and architectural landmark must mount a
+   real 3D GLB via `model(assets.<name>, { targetMaxDimension, role })` for a
+   readable silhouette — never build stick-figure humans or box cars from
+   `primitives.box`, `primitives.sphere`, or `primitives.cylinder` (reserve
+   `primitives.plane`, `primitives.box`, `primitives.cylinder`, and
+   `primitives.torus` strictly for ground/court surfaces, field lines, UI
+   rings/reticles, laser beams, and invisible physics colliders).
 
    ```ts
    import { createAuraApp, groundedRenderedAssetPlacement, looks, model, scene } from "@aura3d/engine";
@@ -107,6 +122,11 @@ lighting you evaluate materials and silhouettes against.
 - bounds are extreme, pivot is bad, or orientation is unknown and public APIs
   cannot correct it;
 - the hash duplicates another asset without an explanation;
+- a generated Meshy GLB has not been decimated and compressed before admission
+  (`> 20,000` vertices for props/vehicles, `> 2 MB` file size, 32-bit indices
+  instead of 16-bit `Uint16Array` with `byteStride === 0`, or uncompressed
+  `> 1024x1024` textures that stall glTF parsing and exhaust GPU memory across
+  the scene's look, lighting, and atmosphere);
 - it is placeholder-like, or only a generated thumbnail proves it is readable.
 
 ## Stop and report

@@ -30,11 +30,6 @@
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.rooftopShooterCleanMeshy",
-      "quality": "production",
-      "role": "supportingCast"
-    },
-    {
       "typedRef": "v2assets.tennisTrophy",
       "quality": "candidate",
       "role": "setDressing",

@@ -179,7 +179,7 @@ const pipsGame = createGame({
   // its render targets after any device lifecycle event (remount, resize)
   // on ANGLE/Vulkan and kills presentation — repro'd on aura-links-3d too.
   // Pin it off until the engine-side LDR postprocess defect is fixed.
-  qualityRebuild: { flags: ["game", "-post"] },
+  qualityRebuild: { flags: ["game", "-compiler"] },
   evidence: {
     schema: 1,
     sections: { pipsBigLeap: () => window.__AURA3D_SHOWCASE_PIPS_BIG_LEAP__ ?? { status: "unbound" } }
@@ -468,12 +468,170 @@ function completeWorld(): void {
   const nextBtn = document.getElementById("pbl-next-world") as HTMLButtonElement | null;
   if (nextBtn) nextBtn.disabled = !next;
   hud.banner("SUN-GATE OPENED!", spec.title, 3);
+  if (autopilot) {
+    window.setTimeout(() => {
+      if (autopilot && run.complete) {
+        loadWorld(next ?? "w1", run.mode);
+      }
+    }, 2400);
+  }
 }
 
 function nextWorldId(id: WorldId): WorldId | null {
   const order = ["academy", "w1", "w2", "w3", "w4", "w5", "w6"] as const;
   const i = order.indexOf(id);
   return i >= 0 && i < order.length - 1 ? order[i + 1] : null;
+}
+
+// --------------------------------------------------------- AI autopilot
+
+let autopilot = true;
+let aiJumpCooldown = 0;
+let aiStuckTimer = 0;
+let aiLastZ = 0;
+
+function setAutopilot(next: boolean): void {
+  autopilot = next;
+  const btn = document.getElementById("aura-btn-auto");
+  if (btn) {
+    btn.classList.toggle("active", autopilot);
+    btn.textContent = autopilot ? "Auto" : "Manual";
+  }
+}
+
+function hasGroundBelow(built: BuiltWorld, x: number, y: number, z: number): boolean {
+  for (const s of built.solids) {
+    if (!s.active) continue;
+    const top = s.y + s.hy;
+    if (
+      Math.abs(x - s.x) <= s.hx + 0.15 &&
+      Math.abs(z - s.z) <= s.hz + 0.15 &&
+      top <= y + 0.5 &&
+      top >= y - 1.6
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function computeAutopilotInput(
+  built: BuiltWorld,
+  spec: BuiltWorld["spec"],
+  seconds: number,
+  bossVulnerable: boolean,
+  bossAt?: readonly [number, number, number]
+): import("./game/player.js").PlayerInput {
+  const p = run.player;
+  aiJumpCooldown = Math.max(0, aiJumpCooldown - seconds);
+
+  if (Math.abs(p.z - aiLastZ) < 0.12 && Math.hypot(p.vx, p.vz) < 0.7) {
+    aiStuckTimer += seconds;
+  } else {
+    aiStuckTimer = 0;
+    aiLastZ = p.z;
+  }
+
+  // Pick next waypoint: boss (if in W5 arena), uncollected seeds ahead, or Sun-Gate.
+  let tx = spec.gate.x;
+  let ty = spec.gate.y;
+  let tz = spec.gate.z;
+
+  if (run.boss && run.boss.hp > 0 && p.z < -52 && bossAt) {
+    if (bossVulnerable) {
+      tx = bossAt[0];
+      ty = bossAt[1] + 1.1;
+      tz = bossAt[2];
+    } else {
+      const orbitA = run.worldClock * 1.6;
+      tx = Math.sin(orbitA) * 4.2;
+      ty = 2.0;
+      tz = -69 + Math.cos(orbitA) * 4.2;
+    }
+  } else {
+    // Find closest uncollected seed not far behind Pip.
+    let bestSeed: { x: number; y: number; z: number } | null = null;
+    let bestScore = Infinity;
+    for (const s of spec.seeds) {
+      if (run.seeds.has(s.id)) continue;
+      if (s.z > p.z + 3.0) continue;
+      const dist = Math.hypot(s.x - p.x, (s.z - p.z) * 1.15);
+      if (dist < bestScore) {
+        bestScore = dist;
+        bestSeed = s;
+      }
+    }
+    if (bestSeed && (run.seeds.size < spec.gateSeeds || bestScore < 12)) {
+      tx = bestSeed.x;
+      ty = bestSeed.y;
+      tz = bestSeed.z;
+    }
+
+    // Check if there is an intermediate solid platform between Pip and the target.
+    let bestPlat: { x: number; y: number; z: number; hy: number; hz: number } | null = null;
+    let bestPlatZ = -Infinity;
+    for (const s of built.solids) {
+      if (!s.active) continue;
+      if (s.z < p.z - 0.8 && s.z > tz + 1.2 && s.z > bestPlatZ) {
+        bestPlatZ = s.z;
+        bestPlat = s;
+      }
+    }
+    if (bestPlat && p.z - tz > 5.5) {
+      tx = bestPlat.x;
+      ty = bestPlat.y + bestPlat.hy;
+      tz = bestPlat.z;
+    }
+  }
+
+  const dx = tx - p.x;
+  const dz = tz - p.z;
+  const distXZ = Math.hypot(dx, dz);
+  const dirX = distXZ > 0.05 ? dx / distXZ : 0;
+  const dirZ = distXZ > 0.05 ? dz / distXZ : -1;
+
+  // Convert desired world direction (dirX, dirZ) into camera-relative moveX, moveZ.
+  const fwdX = Math.sin(p.camYaw);
+  const fwdZ = Math.cos(p.camYaw);
+  const rightX = -fwdZ;
+  const rightZ = fwdX;
+  const moveZ = Math.max(-1, Math.min(1, dirX * fwdX + dirZ * fwdZ));
+  const moveX = Math.max(-1, Math.min(1, dirX * rightX + dirZ * rightZ));
+
+  // Determine jump triggers: approaching platform edge, hazard ahead, higher target, or stuck.
+  const lookX = p.x + dirX * 1.15;
+  const lookZ = p.z + dirZ * 1.15;
+  const groundAhead = hasGroundBelow(built, lookX, p.y, lookZ);
+  const hazardAhead = built.hazards.some(
+    (h) => Math.abs(lookX - h.x) <= h.hx + 0.5 && Math.abs(lookZ - h.z) <= h.hz + 0.5 && Math.abs(p.y - h.y) <= 1.4
+  );
+  const wantStepJump = ty > p.y + 0.45 && distXZ < 4.8;
+  const wantGapJump = p.grounded && !groundAhead && distXZ > 1.1;
+  const wantBossJump = Boolean(bossVulnerable && bossAt && Math.hypot(bossAt[0] - p.x, bossAt[2] - p.z) < 3.4);
+
+  let jumpPressed = false;
+  if (aiJumpCooldown <= 0) {
+    if (p.grounded && (wantGapJump || hazardAhead || wantStepJump || wantBossJump || aiStuckTimer > 0.45)) {
+      jumpPressed = true;
+      aiJumpCooldown = 0.28;
+      aiStuckTimer = 0;
+    } else if (!p.grounded && p.vy < -0.4 && p.jumpsLeft > 0 && !hasGroundBelow(built, p.x, p.y, p.z)) {
+      jumpPressed = true;
+      aiJumpCooldown = 0.32;
+    }
+  }
+
+  const jumpHeld = !p.grounded && (distXZ > 1.8 || ty > p.y - 0.2);
+  const divePressed = !p.grounded && p.vy < -1.8 && distXZ > 3.6 && !hasGroundBelow(built, p.x, p.y, p.z);
+
+  return {
+    moveX,
+    moveZ,
+    jumpPressed,
+    jumpHeld,
+    divePressed,
+    poundPressed: false
+  };
 }
 
 // -------------------------------------------------------------- clip state
@@ -523,9 +681,9 @@ function driveAnimation(p: PlayerState, dt: number): void {
   const cap = node(nodeName.heroCap);
   const cape = node(nodeName.heroCape);
   const fwdX = Math.sin(p.yaw), fwdZ = Math.cos(p.yaw);
-  cap?.setPosition(p.x + fwdX * 0.05, p.y + 0.88, p.z + fwdZ * 0.05);
+  cap?.setPosition(p.x + fwdX * 0.05, p.y + 0.98, p.z + fwdZ * 0.05);
   const capeLift = p.state === "glide" ? 0.34 : p.state === "air" || p.state === "jump" ? 0.12 : 0;
-  cape?.setPosition(p.x - fwdX * 0.26, p.y + 0.6 + capeLift, p.z - fwdZ * 0.26);
+  cape?.setPosition(p.x - fwdX * 0.24, p.y + 0.56 + capeLift, p.z - fwdZ * 0.24);
   cape?.setRotation(p.state === "glide" ? 1.1 : 0.35, p.yaw, 0);
 }
 
@@ -584,6 +742,7 @@ function bindShell(): void {
   bind("aura-btn-atlas", () => showAtlas(true));
   bind("aura-btn-studio", () => showStudio(true));
   bind("aura-btn-trial", () => loadWorld(run.world === "academy" ? "w1" : run.world, "trial"));
+  bind("aura-btn-auto", () => setAutopilot(!autopilot));
   document.querySelectorAll("[data-aura-venue]").forEach((el) => {
     el.addEventListener("click", () => {
       const id = (el as HTMLElement).dataset.auraVenue as WorldId;
@@ -606,7 +765,16 @@ function bindShell(): void {
 
 // ------------------------------------------------------------------ frame
 
+const MANUAL_PLAY_KEYS = new Set([
+  "KeyA", "KeyD", "KeyW", "KeyS",
+  "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+  "Space", "ShiftLeft", "ShiftRight", "KeyC", "ControlLeft", "ControlRight"
+]);
+
 window.addEventListener("keydown", (event) => {
+  if (autopilot && MANUAL_PLAY_KEYS.has(event.code)) {
+    setAutopilot(false);
+  }
   if (event.code !== "Escape") return;
   const atlasEl = document.getElementById("pbl-atlas");
   const studioEl = document.getElementById("pbl-studio");
@@ -680,14 +848,33 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
   // first. createGame mounts touch but doesn't tick it per frame; `update`
   // exists on the concrete mount but not the public TouchControls contract.
   (pipsGame.touch as { update?: () => void } | null)?.update?.();
-  const events = stepPlayer(run.player, built, {
-    moveX: input?.axis("moveX") ?? 0,
-    moveZ: input?.axis("moveZ") ?? 0,
-    jumpPressed: input?.pressed("jump") ?? false,
-    jumpHeld: input?.held("jump") ?? false,
-    divePressed: input?.pressed("dive") ?? false,
-    poundPressed: input?.pressed("pound") ?? false
-  }, seconds, {
+  const manualMoveX = input?.axis("moveX") ?? 0;
+  const manualMoveZ = input?.axis("moveZ") ?? 0;
+  const manualJumpPressed = input?.pressed("jump") ?? false;
+  const manualJumpHeld = input?.held("jump") ?? false;
+  const manualDivePressed = input?.pressed("dive") ?? false;
+  const manualPoundPressed = input?.pressed("pound") ?? false;
+  if (
+    autopilot &&
+    (Math.abs(manualMoveX) > 0.15 ||
+      Math.abs(manualMoveZ) > 0.15 ||
+      manualJumpPressed ||
+      manualDivePressed ||
+      manualPoundPressed)
+  ) {
+    setAutopilot(false);
+  }
+  const playerInput = autopilot
+    ? computeAutopilotInput(built, spec, seconds, bossVulnerable, bossAt)
+    : {
+        moveX: manualMoveX,
+        moveZ: manualMoveZ,
+        jumpPressed: manualJumpPressed,
+        jumpHeld: manualJumpHeld,
+        divePressed: manualDivePressed,
+        poundPressed: manualPoundPressed
+      };
+  const events = stepPlayer(run.player, built, playerInput, seconds, {
     doubleJump: save.doubleJump,
     assist: run.assist,
     bossVulnerable,
@@ -729,6 +916,7 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
   window.__AURA3D_SHOWCASE_PIPS_BIG_LEAP__ = {
     status: "running",
     paused: false,
+    autopilot,
     appId: "showcase-pips-big-leap",
     route: "/apps/showcase-pips-big-leap/",
     world: { id: run.world, title: spec.title, look: spec.look },
@@ -795,3 +983,14 @@ document.body.setAttribute("data-aura3d-ready", "true");
 window.addEventListener("error", () => {
   document.getElementById("render-error")?.removeAttribute("hidden");
 });
+
+try {
+  const freezeMs = Number(new URLSearchParams(window.location.search).get("freeze"));
+  if (Number.isFinite(freezeMs) && freezeMs > 0) {
+    window.setTimeout(() => {
+      run.paused = true;
+    }, freezeMs);
+  }
+} catch {
+  // Ignore URL parsing errors.
+}

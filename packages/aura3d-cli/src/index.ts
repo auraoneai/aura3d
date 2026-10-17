@@ -926,6 +926,7 @@ export function inspectAsset(options: InspectAssetOptions): AssetInspectionRepor
     file: normalizeRelativePath(relative(projectDir, sourcePath)),
     format,
     sizeBytes: statSync(sourcePath).size,
+    ...(inspection.vertexCount !== undefined ? { vertexCount: inspection.vertexCount } : {}),
     bounds: inspection.bounds,
     boundsMetadata: inspection.boundsMetadata,
     materials: inspection.materials,
@@ -2101,6 +2102,7 @@ function defaultAttachPoint(slot: string): string {
 }
 
 interface AssetInspection {
+  readonly vertexCount?: number;
   readonly bounds?: readonly [number, number, number];
   readonly boundsMetadata?: AuraCliAssetBoundsInspection;
   readonly materials: readonly string[];
@@ -2140,7 +2142,7 @@ function inspectAssetFile(path: string, format: string): AssetInspection {
 
 interface GltfJson {
   readonly asset?: { readonly extras?: unknown };
-  readonly accessors?: readonly { readonly min?: readonly number[]; readonly max?: readonly number[] }[];
+  readonly accessors?: readonly { readonly count?: number; readonly min?: readonly number[]; readonly max?: readonly number[] }[];
   readonly materials?: readonly {
     readonly name?: string;
     readonly alphaMode?: string;
@@ -2222,7 +2224,12 @@ function inspectGltf(json: GltfJson, baseDir?: string, bin?: Buffer): AssetInspe
     }
   }
   const boundsMetadata = extractBoundsDetails(json);
+  const vertexCount = positionAccessors(json).reduce(
+    (sum, accessor) => sum + (typeof accessor.count === "number" && Number.isFinite(accessor.count) ? accessor.count : 0),
+    0
+  );
   return {
+    vertexCount,
     bounds: boundsMetadata?.size,
     boundsMetadata,
     materials: (json.materials ?? []).map((material, index) => material.name ?? `material-${index}`),
@@ -2866,17 +2873,37 @@ function readOptionalForegroundBounds(record: Record<string, unknown> | undefine
   return { x, y, width, height };
 }
 
+const GLB_COMPLEXITY_BYTE_LIMIT = 10 * 1024 * 1024;
+const GLB_COMPLEXITY_VERTEX_LIMIT = 50_000;
+
+function createGlbComplexityWarnings(sizeBytes: number, vertexCount: number | undefined, format: string): readonly string[] {
+  const warnings: string[] = [];
+  if (format === "glb" && sizeBytes > GLB_COMPLEXITY_BYTE_LIMIT) {
+    warnings.push(
+      `asset exceeds 10 MB (${(sizeBytes / (1024 * 1024)).toFixed(2)} MB); simplify meshes with MeshoptSimplifier to <= 20,000 vertices and compress textures to 1024x1024 before route use`
+    );
+  }
+  if ((format === "glb" || format === "gltf") && (vertexCount ?? 0) > GLB_COMPLEXITY_VERTEX_LIMIT) {
+    warnings.push(
+      `asset has ${vertexCount} vertices (> 50,000 limit); simplify meshes with MeshoptSimplifier to <= 20,000 vertices and compress textures to 1024x1024 before route use`
+    );
+  }
+  return warnings;
+}
+
 function createAssetWarnings(path: string, inspection: AssetInspection): readonly string[] {
   const warnings: string[] = [];
   const size = statSync(path).size;
+  const format = extname(path).slice(1).toLowerCase();
+  warnings.push(...createGlbComplexityWarnings(size, inspection.vertexCount, format));
   if (size > 25 * 1024 * 1024) warnings.push("asset exceeds 25 MB; consider compression before deployment");
   // Bounds are only meaningful on geometry-bearing formats — audio/texture
   // files can never produce them, so warning (and release-blocking) on them
   // is noise, matching the format scoping the texture/orientation warnings
   // below already use.
-  if (!inspection.bounds && ["glb", "gltf"].includes(extname(path).slice(1).toLowerCase())) warnings.push("bounds could not be extracted");
-  if (inspection.textures.length === 0 && ["glb", "gltf"].includes(extname(path).slice(1).toLowerCase())) warnings.push("no texture references detected");
-  if (inspection.orientation.source === "unknown" && ["glb", "gltf"].includes(extname(path).slice(1).toLowerCase())) warnings.push("orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis");
+  if (!inspection.bounds && ["glb", "gltf"].includes(format)) warnings.push("bounds could not be extracted");
+  if (inspection.textures.length === 0 && ["glb", "gltf"].includes(format)) warnings.push("no texture references detected");
+  if (inspection.orientation.source === "unknown" && ["glb", "gltf"].includes(format)) warnings.push("orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis");
   if (inspection.materialMetadata.some((material) => !material.visible || !material.readable)) warnings.push("one or more materials are invisible or unreadable");
   return warnings;
 }
@@ -3157,6 +3184,13 @@ function createDerivedMetadataDriftWarnings(outputPath: string, asset: AuraCliAs
       if (inspection.hierarchy[key] !== asset.hierarchy[key]) {
         warnings.push(`${asset.id}: manifest hierarchy.${key}=${String(asset.hierarchy[key])} but the asset file reports ${String(inspection.hierarchy[key])}.`);
       }
+    }
+  }
+  const existingWarnings = new Set(asset.warnings ?? []);
+  const sizeBytes = statSync(outputPath).size;
+  for (const complexityWarning of createGlbComplexityWarnings(sizeBytes, inspection.vertexCount, asset.format)) {
+    if (!existingWarnings.has(complexityWarning)) {
+      warnings.push(`${asset.id}: ${complexityWarning}`);
     }
   }
   return warnings;

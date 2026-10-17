@@ -8,8 +8,15 @@ export const auraAssetRefBrand: unique symbol = Symbol("AuraAssetRef");
 export function defineAuraAssets<const T extends Record<string, AuraAssetDefinition>>(definitions: T): AuraAssetMap<T> {
   const refs: Record<string, AuraAssetRef> = {};
   for (const [id, definition] of Object.entries(definitions)) {
+    const sha256 = (definition as { readonly sha256?: string }).sha256;
+    const normalizedHash = typeof definition.hash === "string" && definition.hash.length > 0
+      ? definition.hash
+      : typeof sha256 === "string" && sha256.length > 0
+        ? sha256
+        : undefined;
     refs[id] = {
       ...definition,
+      ...(normalizedHash ? { hash: normalizedHash } : {}),
       kind: "aura-asset-ref",
       id,
       [auraAssetRefBrand]: {

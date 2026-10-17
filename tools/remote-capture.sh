@@ -92,6 +92,7 @@ mkdir -p "$SERVE/apps/$ROUTE" "$SERVE/aura-assets"
 # the dist out like marketing/dist: shared /assets at root, route entry at
 # /apps/<route>/index.html.
 cp -R "$DIST_DIR"/. "$SERVE/"
+rm -f "$SERVE/assets"/*.map 2>/dev/null || true
 # The vite publicDir copies the whole repo public/ into every dist — that
 # drags in other routes' payloads (packs/, previews/, toptennis-v2/…). Keep
 # only what any route can actually request: bundles, decoders, environments,
@@ -102,9 +103,12 @@ for entry in "$SERVE"/*; do
     *) rm -rf "$entry" ;;
   esac
 done
+for app_entry in "$SERVE/apps"/*; do
+  [[ "$(basename "$app_entry")" == "$ROUTE" ]] || rm -rf "$app_entry"
+done
 # dev-route-build emits the route html at apps/<route>/index.html already;
-# a flat dist (index.html at root) also works — normalize it into place.
-if [[ -f "$DIST_DIR/index.html" ]]; then
+# a flat dist (index.html at root) also works — normalize it into place only when apps/<route>/index.html is absent.
+if [[ ! -f "$SERVE/apps/$ROUTE/index.html" && -f "$DIST_DIR/index.html" ]]; then
   cp "$DIST_DIR/index.html" "$SERVE/apps/$ROUTE/index.html"
 fi
 [[ -f "$SERVE/apps/$ROUTE/index.html" ]] || { echo "remote-capture: no route index.html found in $DIST_DIR" >&2; exit 2; }
@@ -115,11 +119,14 @@ fi
 # /aura-environments/*) never reach the dist. Supply them from repo public/
 # whenever the dist did not already provide them (~23MB total).
 PUBLIC_ROOT="$REPO_ROOT/public"
-for shared in hdri fonts aura-decoders aura-environments; do
+for shared in hdri fonts aura-decoders aura-environments probes; do
   if [[ ! -d "$SERVE/$shared" && -d "$PUBLIC_ROOT/$shared" ]]; then
     cp -R "$PUBLIC_ROOT/$shared" "$SERVE/$shared"
   fi
 done
+if grep -rq "/packs/" "$REPO_ROOT/apps/$ROUTE/src" 2>/dev/null && [[ -d "$PUBLIC_ROOT/packs" ]]; then
+  cp -R "$PUBLIC_ROOT/packs" "$SERVE/packs"
+fi
 [[ -f "$SERVE/favicon.svg" ]] || cp "$PUBLIC_ROOT/favicon.svg" "$SERVE/favicon.svg" 2>/dev/null || true
 
 # The vite publicDir copies the whole repo public/ into the dist root. Keep
@@ -127,6 +134,9 @@ done
 if [[ -d "$SERVE/aura-assets" ]]; then
   rm -rf "$SERVE/aura-assets"
   mkdir -p "$SERVE/aura-assets"
+fi
+if [[ -d "$PUBLIC_ROOT/aura-assets/Textures" ]]; then
+  cp -R "$PUBLIC_ROOT/aura-assets/Textures" "$SERVE/aura-assets/Textures"
 fi
 
 # route-local public payloads (e.g. public/<slug>/, public/aura-assets/) are
@@ -145,11 +155,7 @@ if [[ -d "$APP_PUBLIC" ]]; then
 fi
 
 # aura-assets: resolve only the typed keys the app source actually imports
-# (assets.<key>, v2assets.<key>, …) against the manifest url fields. The bundled
-# manifest embeds every catalog URL, so scanning dist over-matches. Keys are
-# also reachable via string literals (cue maps like `"siegeDriveHitSfx"`), so
-# candidates = member accesses ∪ bare quoted identifiers checked against the
-# manifest's key set in one pass.
+# (assets.<key>, v2assets.<key>, …) against the manifest url fields.
 APP_SRC="$REPO_ROOT/apps/$ROUTE/src"
 REFS_FILE="$WORK_TMP/asset-refs.txt"
 : > "$REFS_FILE"
@@ -165,9 +171,9 @@ manifests = [m for m in sys.argv[2:] if os.path.isfile(m)]
 key_url = {}
 for mf in manifests:
     src = open(mf, encoding="utf-8", errors="ignore").read()
-    for m in re.finditer(r'["\']([A-Za-z0-9_]+)["\']\s*:\s*\{', src):
-        key = m.group(1)
-        if key in key_url:
+    for m in re.finditer(r'(?:["\']([A-Za-z0-9_]+)["\']|(?<![A-Za-z0-9_])([A-Za-z0-9_]+))\s*:\s*\{', src):
+        key = m.group(1) or m.group(2)
+        if not key or key in key_url:
             continue
         depth, end = 0, len(src)
         for i in range(m.end() - 1, len(src)):
@@ -182,6 +188,7 @@ for mf in manifests:
         if u:
             key_url[key] = u.group(1)
 cands = set()
+direct_urls = set()
 for f in glob.glob(os.path.join(app_src, "**/*"), recursive=True):
     if not os.path.isfile(f):
         continue
@@ -191,13 +198,15 @@ for f in glob.glob(os.path.join(app_src, "**/*"), recursive=True):
         continue
     cands.update(re.findall(r'[A-Za-z0-9_]*assets\.([A-Za-z0-9_]+)', s))
     cands.update(re.findall(r'["\']([A-Za-z0-9_]+)["\']', s))
+    direct_urls.update(re.findall(r'(/aura-assets/[A-Za-z0-9._/-]+\.(?:glb|gltf|png|jpg|jpeg|webp|svg|ktx2|mp3|wav|ogg|m4a))', s))
+urls_out = set(direct_urls)
 for key in sorted(cands):
     u = key_url.get(key)
     if u and u.startswith("/"):
-        print(u.lstrip("/"))
+        urls_out.add(u)
+for u in sorted(urls_out):
+    print(u.lstrip("/"))
 PY
-# NOTE: do NOT grep the dist for aura-assets/ URLs — the bundled manifest
-# embeds every catalog key and would re-select the whole 1.2GB dir.
 while IFS= read -r ref; do
   [[ -n "$ref" && -f "$PUBLIC_ROOT/$ref" && ! -f "$SERVE/$ref" ]] || continue
   mkdir -p "$SERVE/$(dirname "$ref")" 2>/dev/null || true

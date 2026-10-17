@@ -49,7 +49,9 @@ export async function startProductionRender(
    */
   pausedRenderTime: () => number = () => 0,
   /** T0-28: the app's flags, resolved once in `createAuraApp`; absent → resolved here (legacy callers). */
-  appQrFlags?: QrFlags
+  appQrFlags?: QrFlags,
+  /** True when a newer `setScene()` or `dispose()` superseded this mount while awaiting asset/renderer setup. */
+  isCancelled: () => boolean = () => false
 ): Promise<WebGLRenderController> {
   // Use the same ownership rule as initial mount and setScene. A compatibility
   // source continues supplying arena/fighter geometry when public nodes are
@@ -75,6 +77,22 @@ export async function startProductionRender(
     options.animation?.mixer
   );
   const renderer = await createProductionSceneRenderer(canvas, snapshot, options.renderer, runtimeNodes, qrFlags, { strict: options.strict, onDegradation: options.onDegradation });
+  if (isCancelled()) {
+    renderer.dispose();
+    return {
+      update() { /* cancelled mount */ },
+      render() { /* cancelled mount */ },
+      setPerformanceQuality() { /* cancelled mount */ },
+      diagnostics: () => undefined,
+      renderAsync: () => Promise.resolve(),
+      busy: () => false,
+      whenIdle: () => Promise.resolve(),
+      resetTemporalHistory() { /* cancelled mount */ },
+      pause() { /* cancelled mount */ },
+      resume() { /* cancelled mount */ },
+      dispose() { /* already disposed */ }
+    };
+  }
   diagnosticsState.renderer = renderer.diagnostics;
   const sceneWantsFrames = shouldContinuouslyRender(snapshot);
   const labelLayer = createSceneLabelLayer(canvas, snapshot);

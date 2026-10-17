@@ -8,7 +8,16 @@ import type { MazeId } from "./game/mazes";
 import "./styles.css";
 
 const params = new URLSearchParams(window.location.search);
-const AUTOSTART = params.get("autostart") === "1" || params.get("autoplay") === "1";
+if (!params.has("a3d-qr")) {
+  params.set("a3d-qr", "-compiler");
+  try {
+    const newUrl = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
+    window.history.replaceState(null, "", newUrl);
+  } catch {
+    // ignore history errors
+  }
+}
+const AUTOSTART = params.get("autostart") !== "0";
 const PROBE = params.get("probe"); // capture-bisect: "dom" mounts the shell without the engine
 
 if (PROBE === "dom") {
@@ -73,7 +82,7 @@ const g = createGame({
     dash: { punch: { fovDeg: 1.6, ms: 190 } },
     ready: { punch: { fovDeg: 1.4, ms: 240 }, flash: { color: "#ffffff", peak: 0.1, ms: 220 } }
   },
-  qualityRebuild: { flags: ["game"] },
+  qualityRebuild: { flags: ["game", "-compiler"] },
   evidence: {
     schema: 1,
     sections: {
@@ -124,11 +133,12 @@ const tryHum = (): void => {
 document.addEventListener("pointerdown", tryHum, { once: false });
 document.addEventListener("keydown", tryHum, { once: false });
 
-// autostart for remote captures / QA
+// Boot directly into live gameplay by default (autopilot yields on user input)
 if (AUTOSTART) {
   const mode = params.get("mode");
   const maze = (params.get("maze") ?? "classic") as MazeId;
   startRun(mode === "school" ? "school" : mode === "circuit" ? "circuit" : "quick", maze);
+  tickUI();
 }
 
 // trail effect handle
