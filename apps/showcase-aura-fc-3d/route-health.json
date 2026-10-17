@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-10-17T00:00:00.000Z",
+  "appId": "showcase-aura-fc-3d",
+  "route": "/apps/showcase-aura-fc-3d/",
+  "title": "AURA FC 3D — Street & Stadium Football",
+  "category": "sports",
+  "classification": "candidate",
+  "publicShowcase": false,
+  "qualityGate": {
+    "status": "unreviewed",
+    "note": "Typecheck clean. Remote browser evidence pending — do not promote before aura-evidence/showcase-aura-fc-3d captures land."
+  },
+  "routeGate": {
+    "claim": "Five-a-side broadcast football on a deterministic ball sim (dribble/trap/loose/flight FSM, curl, posts, boards). Six re-tintable venues from a walled favela cage to the Glacier dome, eight club identities, Shootout Lab + Touch Lab, a 32-team World Circuit (group → knockouts), Player Studio, CPU-vs-CPU demo, broadcast camera director, DOM score bug + ticker, juice/VFX + audio pipeline. Publishes window.__AURA3D_GAME_EVIDENCE__ / __AURA3D_GAME__ / __gameEvidence / __auraEvidence."
+  },
+  "machinePass": true,
+  "renderer": {
+    "path": "createAuraApp (@aura3d/engine) agent scene API",
+    "mode": "production",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.rooftopBall",
+      "quality": "production",
+      "role": "primaryBall"
+    },
+    {
+      "typedRef": "assets.rooftopFloodlightTowerMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.rooftopScoreboardRigMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.auroraHabitatDomeMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.billiardsTrophyCabinetMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    }
+  ],
+  "assetHonesty": "Match ball, floodlight towers, scoreboard gantry, glacier dome and trophy case are typed catalog GLBs. Athletes, pitch, goals, stands, crowd and cage are route-local primitives.",
+  "globalHandle": "__AURA3D_GAME_EVIDENCE__",
+  "readySelector": "body[data-aura3d-ready=\"true\"]",
+  "canvasSelector": "#app canvas",
+  "budgets": {
+    "maxModelNodes": 40,
+    "minFps": 30,
+    "maxBootMs": 9000
+  }
+}

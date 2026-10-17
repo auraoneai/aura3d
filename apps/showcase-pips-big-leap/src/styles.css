@@ -1,0 +1,354 @@
+/* Pip's Big Leap — shell + HUD theme (storybook-meadow). */
+
+:root {
+  --pbl-ink: #2a1f14;
+  --pbl-cream: #fff6e0;
+  --pbl-sun: #ffd95e;
+  --pbl-leaf: #5fb44a;
+  --pbl-sky: #a8d8f0;
+  --pbl-panel: rgba(32, 26, 16, 0.82);
+  --pbl-edge: rgba(255, 217, 94, 0.4);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #1a2418;
+  font-family: "Avenir Next", "Trebuchet MS", Inter, system-ui, sans-serif;
+  color: var(--pbl-cream);
+}
+
+#app, .game-shell {
+  position: fixed;
+  inset: 0;
+}
+
+#app canvas { display: block; width: 100%; height: 100%; }
+
+.render-error {
+  position: fixed;
+  inset: 40% 20% auto 20%;
+  z-index: 40;
+  padding: 18px 22px;
+  border-radius: 14px;
+  background: var(--pbl-panel);
+  border: 1px solid var(--pbl-edge);
+  text-align: center;
+  font-size: 15px;
+}
+
+/* ------------------------------------------------------------- top bar */
+
+.aura3d-top-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: linear-gradient(180deg, rgba(26, 20, 10, 0.88), rgba(26, 20, 10, 0.55) 78%, transparent);
+  pointer-events: auto;
+}
+
+.aura3d-top-bar .aura-badge {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--pbl-sun);
+  border: 1px solid var(--pbl-edge);
+  border-radius: 6px;
+  padding: 4px 7px;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+
+.aura3d-top-bar .aura-sep {
+  width: 1px; height: 18px;
+  background: var(--pbl-edge);
+  margin: 0 6px;
+}
+
+.aura3d-top-bar button {
+  appearance: none;
+  border: 1px solid rgba(255, 246, 224, 0.25);
+  background: rgba(255, 246, 224, 0.08);
+  color: var(--pbl-cream);
+  font: 600 11px/1 "Avenir Next", Inter, sans-serif;
+  letter-spacing: 0.04em;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.aura3d-top-bar button:hover { background: rgba(255, 217, 94, 0.2); transform: translateY(-1px); }
+.aura3d-top-bar button.active { background: var(--pbl-sun); color: var(--pbl-ink); border-color: var(--pbl-sun); }
+.aura3d-top-bar button.venue { font-size: 10px; padding: 5px 8px; opacity: 0.9; }
+.aura3d-top-bar button.venue.active { opacity: 1; }
+
+.aura3d-controls-hint {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  font: 600 10.5px/1.3 "Avenir Next", Inter, sans-serif;
+  letter-spacing: 0.06em;
+  color: rgba(255, 246, 224, 0.75);
+  background: rgba(26, 20, 10, 0.55);
+  border-radius: 8px;
+  padding: 6px 12px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ HUD */
+
+.pbl-hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+
+.pbl-tl {
+  position: absolute;
+  top: 46px; left: 14px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.pbl-mode-tag {
+  display: inline-block;
+  align-self: flex-start;
+  font: 800 10px/1 "Avenir Next", Inter, sans-serif;
+  letter-spacing: 0.16em;
+  color: var(--pbl-ink);
+  background: var(--pbl-sun);
+  border-radius: 6px;
+  padding: 5px 9px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+
+.pbl-row { display: flex; gap: 6px; }
+
+.pbl-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--pbl-panel);
+  border: 1px solid rgba(255, 246, 224, 0.18);
+  border-radius: 9px;
+  padding: 6px 11px;
+  font: 700 12px/1 "Avenir Next", Inter, sans-serif;
+}
+
+.pbl-chip .k { font-size: 9px; letter-spacing: 0.12em; color: rgba(255, 246, 224, 0.6); }
+.pbl-chip .v { color: var(--pbl-sun); letter-spacing: 0.04em; }
+
+.pbl-hearts { font-size: 15px; letter-spacing: 0.1em; }
+.pbl-hearts .on { color: #ff6a8a; text-shadow: 0 0 8px rgba(255, 106, 138, 0.7); }
+.pbl-hearts .off { color: rgba(255, 246, 224, 0.25); }
+
+.pbl-seed-chip .v { color: #ffcf3d; }
+
+.pbl-objective {
+  max-width: 300px;
+  font: 600 11.5px/1.45 "Avenir Next", Inter, sans-serif;
+  color: rgba(255, 246, 224, 0.85);
+  background: rgba(26, 20, 10, 0.5);
+  border-left: 3px solid var(--pbl-sun);
+  border-radius: 0 8px 8px 0;
+  padding: 7px 10px;
+}
+
+.pbl-boss-wrap {
+  position: absolute;
+  top: 46px; left: 50%;
+  transform: translateX(-50%);
+  width: min(420px, 60vw);
+  text-align: center;
+}
+
+.pbl-boss-name {
+  font: 800 12px/1 "Avenir Next", Inter, sans-serif;
+  letter-spacing: 0.3em;
+  color: #ff8a5a;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+  margin-bottom: 6px;
+}
+
+.pbl-boss-bar {
+  height: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 138, 90, 0.6);
+  background: rgba(26, 20, 10, 0.7);
+  overflow: hidden;
+}
+
+.pbl-boss-fill {
+  height: 100%; width: 100%;
+  background: linear-gradient(90deg, #ff5a26, #ffb03a);
+  border-radius: 8px;
+  transition: width 0.35s ease;
+}
+
+.pbl-banner {
+  position: absolute;
+  top: 26%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.92);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+}
+
+.pbl-banner.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+.pbl-banner .big {
+  font: 900 clamp(28px, 5vw, 52px)/1 "Avenir Next", Inter, sans-serif;
+  letter-spacing: 0.08em;
+  color: var(--pbl-sun);
+  text-shadow: 0 3px 0 #7a5a1e, 0 8px 30px rgba(0,0,0,0.55);
+}
+
+.pbl-banner .small {
+  margin-top: 8px;
+  font: 700 clamp(12px, 1.6vw, 16px)/1.4 "Avenir Next", Inter, sans-serif;
+  color: var(--pbl-cream);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+}
+
+.pbl-toast {
+  position: absolute;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  font: 700 13px/1.3 "Avenir Next", Inter, sans-serif;
+  color: var(--pbl-cream);
+  background: var(--pbl-panel);
+  border: 1px solid var(--pbl-edge);
+  border-radius: 10px;
+  padding: 9px 16px;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.pbl-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* -------------------------------------------------------------- overlays */
+
+.pbl-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(14, 11, 6, 0.62);
+  backdrop-filter: blur(6px);
+}
+
+.pbl-overlay[hidden] { display: none; }
+
+.pbl-panel {
+  width: min(430px, 92vw);
+  max-height: 84vh;
+  overflow: auto;
+  background: linear-gradient(170deg, rgba(46, 36, 20, 0.97), rgba(28, 22, 12, 0.97));
+  border: 1px solid var(--pbl-edge);
+  border-radius: 18px;
+  padding: 26px 28px;
+  text-align: center;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.55);
+}
+
+.pbl-panel.pbl-wide { width: min(680px, 94vw); }
+
+.pbl-panel h2 {
+  margin: 0 0 6px;
+  font: 900 26px/1 "Avenir Next", Inter, sans-serif;
+  letter-spacing: 0.1em;
+  color: var(--pbl-sun);
+}
+
+.pbl-sub { margin: 0 0 18px; font-size: 13px; color: rgba(255, 246, 224, 0.75); }
+.pbl-help { margin: 16px 0 0; font-size: 10.5px; color: rgba(255, 246, 224, 0.5); letter-spacing: 0.03em; }
+
+.pbl-btns { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; }
+
+.pbl-btns button {
+  appearance: none;
+  border: 1px solid var(--pbl-edge);
+  background: rgba(255, 217, 94, 0.12);
+  color: var(--pbl-cream);
+  font: 700 12.5px/1 "Avenir Next", Inter, sans-serif;
+  letter-spacing: 0.04em;
+  padding: 11px 18px;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.pbl-btns button:hover:not(:disabled) { background: rgba(255, 217, 94, 0.28); transform: translateY(-1px); }
+.pbl-btns button:disabled { opacity: 0.4; cursor: default; }
+.pbl-btns button:first-child { background: var(--pbl-sun); color: var(--pbl-ink); }
+
+.pbl-stats { display: flex; flex-direction: column; gap: 5px; margin: 0 0 18px; }
+.pbl-stat { font: 600 13px/1.4 "Avenir Next", Inter, sans-serif; color: rgba(255, 246, 224, 0.9); }
+
+/* ---------------------------------------------------------------- atlas */
+
+.pbl-atlas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+  text-align: left;
+}
+
+.pbl-atlas-card {
+  appearance: none;
+  border: 1px solid rgba(255, 246, 224, 0.2);
+  background: rgba(255, 246, 224, 0.06);
+  border-radius: 13px;
+  padding: 13px 14px;
+  color: var(--pbl-cream);
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.pbl-atlas-card:hover { background: rgba(255, 217, 94, 0.14); border-color: var(--pbl-edge); transform: translateY(-2px); }
+.pbl-atlas-card.done { border-color: rgba(95, 211, 138, 0.55); }
+.pbl-atlas-card .n { font: 900 20px/1 "Avenir Next"; color: var(--pbl-sun); }
+.pbl-atlas-card .t { font: 800 11px/1.2 "Avenir Next"; letter-spacing: 0.08em; margin-top: 4px; }
+.pbl-atlas-card .s { font: 500 10.5px/1.4 "Avenir Next"; color: rgba(255, 246, 224, 0.65); margin-top: 4px; }
+.pbl-atlas-card .p { font: 800 10px/1 "Avenir Next"; color: #5fd38a; margin-top: 8px; letter-spacing: 0.06em; }
+.pbl-atlas-card .sd { font: 600 10.5px/1 "Avenir Next"; color: #ffcf3d; margin-top: 4px; }
+.pbl-atlas-total { grid-column: 1 / -1; text-align: center; font: 800 12px/1 "Avenir Next"; letter-spacing: 0.12em; color: var(--pbl-sun); padding-top: 4px; }
+
+/* --------------------------------------------------------------- studio */
+
+.pbl-studio-row {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.pbl-studio-row .k { font: 800 10px/1 "Avenir Next"; letter-spacing: 0.14em; color: rgba(255, 246, 224, 0.6); width: 44px; }
+
+.pbl-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.pbl-swatch {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 246, 224, 0.25);
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.15s;
+}
+
+.pbl-swatch:hover { transform: scale(1.1); }
+.pbl-swatch.active { border-color: var(--pbl-sun); box-shadow: 0 0 0 2px rgba(255, 217, 94, 0.4); }
+
+@media (max-width: 720px) {
+  .aura3d-top-bar { flex-wrap: wrap; gap: 4px; padding: 6px 8px; }
+  .aura3d-controls-hint { display: none; }
+  .pbl-tl { top: 82px; }
+}

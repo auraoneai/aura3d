@@ -1,0 +1,20 @@
+{
+  "name": "indoor",
+  "source": "room",
+  "faceSize": 256,
+  "mipCount": 5,
+  "format": "E5B9G9R9_UFLOAT_PACK32",
+  "specular": "indoor.specular.ktx2",
+  "sh9": "indoor.sh9.f32",
+  "sha256": {
+    "specular": "a862e519defc6dcd93d66ebd98fc0fba4c67cffa7e9181e9e4c1f2dd88187ca3",
+    "sh9": "7d4625b73b8c04a00c52c5379c3b9bb9944b026a938eb0ba3e029947aff8914f"
+  },
+  "license": "CC0",
+  "tags": [
+    "neutral",
+    "stand-in"
+  ],
+  "bakedBy": "aura3d environments bake",
+  "samplesPerTexel": 128
+}

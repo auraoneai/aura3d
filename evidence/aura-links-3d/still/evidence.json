@@ -1,0 +1,134 @@
+{
+  "route": "showcase-aura-links-3d",
+  "engine": "@aura3d/engine",
+  "engineVersion": "4.0.1",
+  "ready": true,
+  "framesRendered": 120,
+  "mode": "quick",
+  "phase": "address",
+  "cameraMode": "aim",
+  "course": "stAuroras",
+  "hole": 1,
+  "par": 4,
+  "strokes": 0,
+  "putts": 0,
+  "lie": "tee",
+  "club": "driver",
+  "aimYaw": 0.0407936828678654,
+  "wind": {
+    "yaw": 2.2810624838252145,
+    "speed": 5.509567142699279
+  },
+  "ball": null,
+  "card": {
+    "toPar": 0,
+    "totalStrokes": 0
+  },
+  "lab": null,
+  "tour": null,
+  "fit": {
+    "polo": "#2f6ea3",
+    "cap": "#14200f",
+    "skin": "#c68a5a",
+    "trail": "#ffd257"
+  },
+  "difficulty": "pro",
+  "juice": {
+    "backend": "dom",
+    "shake": "none",
+    "rumbleVia": "none",
+    "events": {},
+    "droppedFlashes": 0
+  },
+  "accessibility": {
+    "reducedMotion": false,
+    "reducedFlash": false,
+    "highContrast": false
+  },
+  "eventLog": {
+    "kind": "aura-game-event-log",
+    "label": "aura-links-3d events",
+    "count": 2,
+    "events": [
+      {
+        "kind": "aura-game-event",
+        "id": "system:1",
+        "type": "system",
+        "label": "aura links 3d online",
+        "tags": [],
+        "severity": "success",
+        "frame": 0,
+        "time": 3.026
+      },
+      {
+        "kind": "aura-game-event",
+        "id": "hole:2",
+        "type": "hole",
+        "label": "hole 1: Dune Slack · par 4",
+        "tags": [],
+        "severity": "info",
+        "frame": 0,
+        "time": 3.362600000023842
+      }
+    ],
+    "types": [
+      "hole",
+      "system"
+    ],
+    "last": {
+      "kind": "aura-game-event",
+      "id": "hole:2",
+      "type": "hole",
+      "label": "hole 1: Dune Slack · par 4",
+      "tags": [],
+      "severity": "info",
+      "frame": 0,
+      "time": 3.362600000023842
+    }
+  },
+  "touch": {
+    "preset": "dpad-4btn",
+    "genre": "fight",
+    "bound": [
+      "left",
+      "right",
+      "block",
+      "light",
+      "heavy",
+      "special",
+      "jump"
+    ],
+    "visible": false,
+    "sticks": []
+  },
+  "audio": {
+    "unlocked": false,
+    "cueCount": 11,
+    "playedCueCount": 0
+  },
+  "catalogAssets": [
+    "siegeGolfBall",
+    "siegeFlagstickCupMeshy",
+    "propPineTree",
+    "propRockA",
+    "propRockB",
+    "siegeWindmillTowerMeshy",
+    "siegeStoneBridgeMeshy",
+    "siegeCastleGatehouseMeshy",
+    "showcaseTeaHouse",
+    "skylineCrystalShardMeshy",
+    "turboAlpineVenueBackdrop",
+    "neonStreetLampProp",
+    "showcaseModernBuildingOne",
+    "showcaseModernOfficeBuilding",
+    "showcaseVoxelBuilding",
+    "auroraHabitatDomeMeshy",
+    "lunarRoverMeshy",
+    "gravityOrbitalRelayMeshy"
+  ],
+  "deterministic": {
+    "terrain": "buildHoleTerrain",
+    "ball": "stepBall",
+    "seed": "lcg"
+  }
+}

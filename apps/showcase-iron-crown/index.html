@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IRON CROWN — 2.5D Arena Fighter · Aura3D Showcase</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        --ic-gold: #ffd76a;
+        --ic-red: #ff4f46;
+        --ic-ink: #0c0d12;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; min-height: 100%; background: radial-gradient(120% 90% at 50% -10%, #1b1f2e 0%, var(--ic-ink) 62%); color: #e8ebf4; }
+      body { padding: 14px clamp(10px, 2.5vw, 28px) 28px; }
+      .ic-topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-bottom: 10px; }
+      .ic-badge {
+        font-weight: 800; letter-spacing: 0.14em; font-size: 13px; color: var(--ic-ink);
+        background: linear-gradient(135deg, var(--ic-gold), #e8a13c);
+        padding: 6px 12px; border-radius: 999px; text-transform: uppercase; white-space: nowrap;
+        box-shadow: 0 0 18px rgba(255, 215, 106, 0.25);
+      }
+      .ic-modes { display: flex; flex-wrap: wrap; gap: 8px; }
+      .ic-modes button {
+        border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(255, 255, 255, 0.07);
+        color: #e8ebf4; padding: 6px 13px; border-radius: 999px; font-size: 12.5px;
+        letter-spacing: 0.05em; cursor: pointer; transition: background 140ms, border-color 140ms;
+      }
+      .ic-modes button:hover { background: rgba(255, 215, 106, 0.16); border-color: var(--ic-gold); }
+      .ic-modes button[aria-pressed="true"] { background: linear-gradient(135deg, rgba(255, 215, 106, 0.28), rgba(255, 79, 70, 0.18)); border-color: var(--ic-gold); color: #fff; }
+      .ic-venues { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+      .ic-venues button {
+        border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.04);
+        color: #c7cde2; padding: 5px 10px; border-radius: 8px; font-size: 11.5px; cursor: pointer;
+      }
+      .ic-venues button:hover { border-color: var(--ic-gold); color: #fff; }
+      .ic-venues button[aria-pressed="true"] { border-color: var(--ic-gold); color: var(--ic-gold); }
+      .aura3d-controls-hint {
+        margin: 2px 4px 10px; font-size: 12px; color: #9aa3bd; letter-spacing: 0.02em;
+      }
+      .aura3d-controls-hint b { color: #d8deef; font-weight: 600; }
+      #app {
+        position: relative; width: 100%; max-width: 1280px; margin: 0 auto;
+        aspect-ratio: 16 / 9; min-height: 340px; border-radius: 18px; overflow: hidden;
+        border: 1px solid rgba(255, 215, 106, 0.22);
+        background: #07080d;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+      }
+      #app canvas[data-aura3d-canvas] { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+      /* The mounted renderer canvas adopts id="game" at boot (runtime appends it). */
+      #game { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+      #render-error {
+        position: absolute; inset: 0; display: none; place-items: center; text-align: center;
+        background: #14161f; color: #f0c9c4; font-size: 14px; line-height: 1.6; padding: 24px; z-index: 90;
+      }
+      #render-error.on { display: grid; }
+      @media (max-width: 720px) {
+        body { padding: 10px 8px 20px; }
+        #app { border-radius: 12px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ic-topbar">
+      <span class="ic-badge">Iron Crown · Aura3D Showcase</span>
+      <nav class="ic-modes" id="ic-modes" aria-label="Game modes">
+        <button type="button" data-mode="quick" aria-pressed="true">Quick Bout</button>
+        <button type="button" data-mode="lab" aria-pressed="false">Combo Lab</button>
+        <button type="button" data-mode="ladder" aria-pressed="false">Crown Ladder</button>
+        <button type="button" data-mode="versus" aria-pressed="false">Versus</button>
+        <button type="button" data-mode="studio" aria-pressed="false">Player Studio</button>
+      </nav>
+      <nav class="ic-venues" id="ic-venues" aria-label="Stage select">
+        <button type="button" data-stage="neo-tokyo-rooftop">Neo-Tokyo</button>
+        <button type="button" data-stage="bangkok-dock">Bangkok</button>
+        <button type="button" data-stage="colosseum-ruins">Colosseum</button>
+        <button type="button" data-stage="desert-airbase">Airbase</button>
+        <button type="button" data-stage="himalayan-monastery">Monastery</button>
+        <button type="button" data-stage="crown-arena" aria-pressed="true">Crown Arena</button>
+      </nav>
+    </div>
+
+    <p class="aura3d-controls-hint">
+      <b>Move</b> A/D or ←/→ · <b>Crouch</b> S · <b>Jump</b> W / Space · <b>Dash</b> double-tap ·
+      <b>Light</b> J · <b>Heavy</b> K · <b>Special</b> L (full meter) · <b>Throw</b> U ·
+      <b>Block</b> hold away (S = low guard) · <b>Pause</b> Esc / Enter — touch pad on mobile
+    </p>
+
+    <main>
+      <div id="app" aria-label="Iron Crown fighting game viewport">
+        <canvas id="game" aria-label="Iron Crown 3D fight scene"></canvas>
+
+        <!-- Fight HUD (DOM layer above the WebGL canvas) -->
+        <div id="fight-hud" aria-live="polite">
+          <div class="fh-top">
+            <section class="fh-plate fh-plate-p1">
+              <div class="fh-name" id="fh-name-p1">KENJI</div>
+              <div class="fh-health"><div class="fh-health-fill" id="fh-health-p1"></div><div class="fh-health-chip" id="fh-health-chip-p1"></div></div>
+              <div class="fh-meter"><div class="fh-meter-fill" id="fh-meter-p1"></div><span class="fh-meter-txt" id="fh-meter-txt-p1"></span></div>
+              <div class="fh-pips" id="fh-pips-p1"><i></i><i></i></div>
+            </section>
+            <section class="fh-clock">
+              <div class="fh-timer" id="fh-timer">60</div>
+              <div class="fh-round" id="fh-round">ROUND 1</div>
+            </section>
+            <section class="fh-plate fh-plate-p2">
+              <div class="fh-name" id="fh-name-p2">RIVAL</div>
+              <div class="fh-health fh-health-right"><div class="fh-health-fill" id="fh-health-p2"></div><div class="fh-health-chip" id="fh-health-chip-p2"></div></div>
+              <div class="fh-meter fh-meter-right"><div class="fh-meter-fill" id="fh-meter-p2"></div><span class="fh-meter-txt" id="fh-meter-txt-p2"></span></div>
+              <div class="fh-pips fh-pips-right" id="fh-pips-p2"><i></i><i></i></div>
+            </section>
+          </div>
+
+          <div class="fh-combo fh-combo-p1" id="fh-combo-p1"><b>0</b><span>HITS</span></div>
+          <div class="fh-combo fh-combo-p2" id="fh-combo-p2"><b>0</b><span>HITS</span></div>
+
+          <div class="fh-announce" id="fh-announce"><span id="fh-announce-main"></span><em id="fh-announce-sub"></em></div>
+
+          <div class="fh-footer">
+            <div class="fh-mode" id="fh-mode">QUICK BOUT · CROWN ARENA</div>
+            <div class="fh-inputs" id="fh-inputs" aria-label="Input display"></div>
+            <div class="fh-hint" id="fh-hint">A/D move · S crouch-block · J light · K heavy · L special · U throw</div>
+          </div>
+
+          <section class="fh-lab" id="fh-lab" hidden>
+            <header>COMBO LAB</header>
+            <div class="fh-lab-row"><label>Dummy</label>
+              <div class="fh-lab-stance" id="fh-lab-stance">
+                <button type="button" data-stance="stand" aria-pressed="true">Stand</button>
+                <button type="button" data-stance="crouch" aria-pressed="false">Crouch</button>
+                <button type="button" data-stance="guard" aria-pressed="false">Guard</button>
+                <button type="button" data-stance="cpu" aria-pressed="false">CPU</button>
+              </div>
+            </div>
+            <div class="fh-lab-row fh-cancel" id="fh-cancel">Cancel chain: LIGHT → HEAVY → SPECIAL</div>
+            <div class="fh-lab-row"><button type="button" id="fh-framedata-toggle" aria-pressed="false">Frame data</button><span id="fh-framedata" class="fh-framedata"></span></div>
+            <div class="fh-lab-row"><button type="button" id="fh-lab-reset">Reset positions</button></div>
+          </section>
+        </div>
+
+        <!-- Menus -->
+        <div id="menu-root">
+          <section class="ic-menu" id="menu-mode" hidden>
+            <h1>IRON <span>CROWN</span></h1>
+            <p class="ic-menu-tag">Six fighters. Eight rungs. One throne.</p>
+            <div class="ic-menu-col">
+              <button type="button" data-mode-pick="quick">Quick Bout<small>One fight, any venue</small></button>
+              <button type="button" data-mode-pick="ladder">Crown Ladder<small>8-rung gauntlet to the throne</small></button>
+              <button type="button" data-mode-pick="versus">Versus<small>Pick fighter, rival &amp; venue</small></button>
+              <button type="button" data-mode-pick="lab">Combo Lab<small>Frame data · cancel chains · dummy</small></button>
+              <button type="button" data-mode-pick="studio">Player Studio<small>Palette forge &amp; fighter bios</small></button>
+            </div>
+          </section>
+
+          <section class="ic-menu ic-menu-sheet" id="menu-versus" hidden>
+            <h2>VERSUS SETUP</h2>
+            <div class="ic-vs-grid">
+              <div><h3>PLAYER 1</h3><div class="ic-pick" data-grid="fighter-p1"></div></div>
+              <div><h3>OPPONENT</h3><div class="ic-pick" data-grid="fighter-cpu"></div></div>
+            </div>
+            <h3>VENUE</h3>
+            <div class="ic-pick ic-pick-stage" data-grid="stage"></div>
+            <h3>DIFFICULTY</h3>
+            <div class="ic-pick" data-grid="difficulty"></div>
+            <div class="ic-menu-actions">
+              <button type="button" id="versus-fight" class="ic-primary">FIGHT</button>
+              <button type="button" data-menu-close>Back</button>
+            </div>
+          </section>
+
+          <section class="ic-menu ic-menu-sheet" id="menu-ladder" hidden>
+            <h2>CROWN LADDER</h2>
+            <div id="ladder-card" class="ic-ladder-card"></div>
+            <h3 id="ladder-fighter-title">CHOOSE YOUR FIGHTER</h3>
+            <div class="ic-pick" data-grid="fighter-ladder"></div>
+            <ol class="ic-bracket" id="ladder-bracket"></ol>
+            <div class="ic-menu-actions">
+              <button type="button" id="ladder-start" class="ic-primary">BEGIN ASCENT</button>
+              <button type="button" data-menu-close>Back</button>
+            </div>
+          </section>
+
+          <section class="ic-menu ic-menu-sheet" id="menu-studio" hidden>
+            <h2>PLAYER STUDIO</h2>
+            <h3>FIGHTER</h3>
+            <div class="ic-pick" data-grid="fighter-studio"></div>
+            <div class="ic-studio-row">
+              <div>
+                <h3>PALETTE FORGE</h3>
+                <div class="ic-pick" data-grid="palette"></div>
+              </div>
+              <div class="ic-bio" id="studio-bio"></div>
+            </div>
+            <div class="ic-menu-actions">
+              <button type="button" id="studio-apply" class="ic-primary">APPLY PALETTE</button>
+              <button type="button" id="studio-fight">Fight with this look</button>
+              <button type="button" data-menu-close>Back</button>
+            </div>
+          </section>
+
+          <section class="ic-menu ic-menu-pause" id="menu-pause" hidden>
+            <h2>PAUSED</h2>
+            <div class="ic-menu-col">
+              <button type="button" id="pause-resume" class="ic-primary">Resume</button>
+              <button type="button" id="pause-rematch">Rematch</button>
+              <button type="button" id="pause-quit">Quit to menu</button>
+            </div>
+          </section>
+
+          <section class="ic-menu ic-menu-result" id="menu-result" hidden>
+            <h2 id="result-title">VICTORY</h2>
+            <p id="result-sub"></p>
+            <div class="ic-result-stats" id="result-stats"></div>
+            <div class="ic-menu-actions">
+              <button type="button" id="result-primary" class="ic-primary">REMATCH</button>
+              <button type="button" id="result-alt">Change fighter</button>
+              <button type="button" id="result-menu">Main menu</button>
+            </div>
+          </section>
+        </div>
+
+        <div id="render-error"><div>IRON CROWN needs WebGL2.<br />Please use a recent Chrome, Edge, Firefox, or Safari.</div></div>
+      </div>
+    </main>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

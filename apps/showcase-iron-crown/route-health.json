@@ -1,0 +1,36 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-10-17T00:00:00.000Z",
+  "appId": "showcase-iron-crown",
+  "route": "/apps/showcase-iron-crown/",
+  "title": "IRON CROWN — 2.5D Arena Fighter",
+  "category": "fighting",
+  "classification": "candidate",
+  "publicShowcase": false,
+  "qualityGate": {
+    "status": "unreviewed"
+  },
+  "routeGate": {
+    "claim": "2.5D arena fighter (createGame + game.combatWorld + games.fighting). Six fighter archetypes on two certified animated rigs, six stages, best-of-three 60s rounds, cancel chains, throws/tech, meter specials, CPU AI, Combo Lab, Crown Ladder, Versus, Player Studio. Publishes window.__AURA3D_SHOWCASE_IRON_CROWN__. Promotion to publicShowcase flips after human acceptance + look-dev capture pass."
+  },
+  "machinePass": true,
+  "renderer": {
+    "path": "createGame (@aura3d/engine/game) root safe API",
+    "mode": "production",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.auraclashPlayerRig",
+      "quality": "production",
+      "role": "primaryCharacter"
+    },
+    {
+      "typedRef": "assets.auraclashRivalRig",
+      "quality": "production",
+      "role": "primaryCharacter"
+    }
+  ],
+  "globalHandle": "__AURA3D_SHOWCASE_IRON_CROWN__"
+}

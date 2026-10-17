@@ -1,0 +1,1047 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Aura Links 3D — Postcard Golf Worldwide · Aura3D Showcase</title>
+    <meta
+      name="description"
+      content="Aura Links 3D: three-click arcade golf on the Aura3D engine — six storybook courses from Scottish dunes to a lunar crater, Range & Putting Labs, and a 32-player Pro Circuit."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/fonts/aura-fonts.css" />
+    <style>
+      :root {
+        --bg: #08110c;
+        --turf: #12251a;
+        --ink: #f2f6ea;
+        --muted: #8fa098;
+        --faint: #3f4f45;
+        --rule: rgba(242, 246, 234, 0.14);
+        --rule-strong: rgba(242, 246, 234, 0.3);
+        --accent: #ffd257;
+        --accent-2: #9be84e;
+        --cyan: #63e2ff;
+        --danger: #ff5c5c;
+        --ok: #7de37f;
+        --font-display: "DIN Pro", "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-sans: "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mono: "Monument Grotesk Mono", ui-monospace, SFMono-Regular, monospace;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 13px;
+        line-height: 1.4;
+        overflow: hidden;
+        user-select: none;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      #game-stage {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        background:
+          radial-gradient(120% 90% at 50% 0%, #15241b 0%, #0b1610 58%, #060c08 100%);
+      }
+
+      #app {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      #app canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      /* dewy morning glow + faint turf scan overlay */
+      .screen-fx {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 6;
+        background:
+          radial-gradient(circle at 50% 30%, rgba(155, 232, 78, 0.05) 0%, rgba(8, 17, 12, 0.05) 50%, rgba(4, 7, 5, 0.5) 100%),
+          repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.012) 0px, rgba(255, 255, 255, 0.012) 1px, transparent 1px, transparent 3px);
+      }
+
+      .cup-flash {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 7;
+        opacity: 0;
+        transition: opacity 0.16s ease-out;
+        background: radial-gradient(circle at 50% 55%, transparent 0 40%, rgba(155, 232, 78, 0.2) 78%, rgba(255, 210, 87, 0.32) 100%);
+      }
+
+      /* ---------- Aura3D top bar ---------- */
+      .aura3d-top-bar {
+        position: fixed;
+        top: 12px;
+        right: 14px;
+        z-index: 60;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+        max-width: calc(100vw - 28px);
+        padding: 6px 10px;
+        border-radius: 14px;
+        background: linear-gradient(180deg, rgba(16, 26, 19, 0.92), rgba(9, 15, 11, 0.92));
+        border: 1px solid rgba(155, 232, 78, 0.36);
+        backdrop-filter: blur(12px) saturate(1.2);
+        font-size: 12px;
+        color: var(--ink);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      }
+
+      .aura3d-top-bar .aura-badge {
+        font-family: var(--font-display);
+        font-weight: 700;
+        letter-spacing: 0.09em;
+        color: #14200f;
+        padding: 3px 9px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent-2), var(--accent));
+        font-size: 11px;
+        text-transform: uppercase;
+        box-shadow: 0 2px 10px rgba(155, 232, 78, 0.4);
+      }
+
+      .aura3d-top-bar .bar-label {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        letter-spacing: 0.16em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin: 0 2px 0 6px;
+      }
+
+      .aura3d-top-bar button {
+        appearance: none;
+        border: 1px solid rgba(242, 246, 234, 0.22);
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 11px;
+        font-weight: 500;
+        height: 26px;
+        padding: 0 10px;
+        border-radius: 9px;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .aura3d-top-bar button:hover {
+        transform: translateY(-1px);
+        border-color: rgba(155, 232, 78, 0.6);
+      }
+
+      .aura3d-top-bar button.active {
+        background: linear-gradient(135deg, var(--accent-2), var(--accent));
+        border-color: var(--accent-2);
+        color: #14200f;
+        font-weight: 600;
+      }
+
+      .aura3d-top-bar button.course.active {
+        background: linear-gradient(135deg, var(--cyan), #7ef0c8);
+        border-color: var(--cyan);
+        color: #06222b;
+      }
+
+      .bar-sep {
+        width: 1px;
+        height: 18px;
+        background: rgba(242, 246, 234, 0.14);
+        margin: 0 2px;
+      }
+
+      /* ---------- Controls hint ---------- */
+      .aura3d-controls-hint {
+        position: fixed;
+        bottom: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 58;
+        padding: 7px 16px;
+        border-radius: 999px;
+        background: rgba(7, 12, 9, 0.82);
+        border: 1px solid var(--rule);
+        backdrop-filter: blur(10px);
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      .aura3d-controls-hint b {
+        color: var(--accent);
+        font-weight: 500;
+      }
+
+      /* ---------- HUD ---------- */
+      #hud {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 15;
+        font-family: var(--font-mono);
+      }
+
+      .hud-top-left {
+        position: absolute;
+        top: 18px;
+        left: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .hud-mode-tag {
+        align-self: flex-start;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        padding: 3px 9px;
+        background: rgba(155, 232, 78, 0.18);
+        border-left: 2px solid var(--accent-2);
+        color: var(--accent-2);
+        text-transform: uppercase;
+      }
+
+      .card-box {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        background: rgba(6, 11, 8, 0.7);
+        border: 1px solid var(--rule);
+        backdrop-filter: blur(8px);
+      }
+
+      .cb-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 7px 13px 6px;
+        min-width: 62px;
+        border-left: 1px solid var(--rule);
+      }
+
+      .cb-cell:first-child {
+        border-left: none;
+      }
+
+      .cb-cell .cb-k {
+        font-size: 9px;
+        letter-spacing: 0.18em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+
+      .cb-cell .cb-v {
+        font-family: var(--font-display);
+        font-size: 26px;
+        font-weight: 600;
+        line-height: 1.05;
+        color: var(--ink);
+      }
+
+      .cb-cell .cb-v.good {
+        color: var(--accent-2);
+      }
+
+      .cb-cell .cb-v.bad {
+        color: var(--danger);
+      }
+
+      .cb-cell .cb-s {
+        font-size: 8px;
+        letter-spacing: 0.12em;
+        color: var(--accent);
+        height: 12px;
+      }
+
+      /* Wind + club + lie strip */
+      .shot-strip {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(6, 11, 8, 0.64);
+        border: 1px solid var(--rule);
+        padding: 6px 12px;
+        backdrop-filter: blur(8px);
+      }
+
+      .shot-strip .wind {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      #h-wind-arrow {
+        display: inline-block;
+        font-size: 15px;
+        color: var(--cyan);
+        transition: transform 0.2s ease;
+        transform-origin: 50% 50%;
+      }
+
+      .shot-strip .k {
+        font-size: 9px;
+        letter-spacing: 0.18em;
+        color: var(--muted);
+      }
+
+      .shot-strip .v {
+        font-size: 13px;
+        color: var(--ink);
+        letter-spacing: 0.06em;
+      }
+
+      .shot-strip .v.club {
+        color: var(--accent);
+      }
+
+      .shot-strip .v.lie-rough { color: #b7d98a; }
+      .shot-strip .v.lie-sand { color: #f0d68a; }
+      .shot-strip .v.lie-green { color: var(--accent-2); }
+      .shot-strip .v.lie-water { color: var(--cyan); }
+      .shot-strip .v.lie-oob { color: var(--danger); }
+
+      .shot-strip .sep {
+        width: 1px;
+        height: 18px;
+        background: var(--rule);
+      }
+
+      /* Course / tour chips top-right */
+      .hud-top-right {
+        position: absolute;
+        top: 62px;
+        right: 22px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+      }
+
+      .hud-chip {
+        background: rgba(6, 11, 8, 0.66);
+        border: 1px solid var(--rule);
+        border-right: 2px solid var(--cyan);
+        padding: 5px 10px;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        color: var(--ink);
+        text-transform: uppercase;
+        backdrop-filter: blur(8px);
+      }
+
+      .hud-chip .sub {
+        display: block;
+        font-size: 8px;
+        color: var(--muted);
+        letter-spacing: 0.12em;
+        margin-top: 1px;
+      }
+
+      /* Event ticker */
+      .hud-ticker {
+        position: absolute;
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        max-width: 46vw;
+      }
+
+      .hud-ticker .tick {
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        padding: 2px 12px;
+        background: rgba(6, 11, 8, 0.78);
+        border: 1px solid var(--rule);
+        color: var(--muted);
+        text-transform: uppercase;
+        opacity: 0;
+        transform: translateY(-4px);
+        transition: opacity 0.16s, transform 0.16s;
+      }
+
+      .hud-ticker .tick.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .hud-ticker .tick.tick-success {
+        color: var(--accent);
+        border-color: rgba(255, 210, 87, 0.4);
+      }
+
+      .hud-ticker .tick.tick-warning {
+        color: var(--danger);
+        border-color: rgba(255, 92, 92, 0.4);
+      }
+
+      /* Center message + banner + prompts */
+      .center-msg {
+        position: absolute;
+        top: 26%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.18s ease;
+      }
+
+      .center-msg.show {
+        opacity: 1;
+      }
+
+      .center-msg .big {
+        font-family: var(--font-display);
+        font-size: 42px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: var(--ink);
+        text-shadow: 0 2px 22px rgba(0, 0, 0, 0.85);
+      }
+
+      .center-msg .small {
+        font-size: 11px;
+        letter-spacing: 0.26em;
+        color: var(--accent);
+        margin-top: 3px;
+      }
+
+      .action-prompt {
+        position: absolute;
+        bottom: 148px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        padding: 5px 16px;
+        background: rgba(155, 232, 78, 0.14);
+        border: 1px solid var(--accent-2);
+        color: var(--accent);
+        text-transform: uppercase;
+        opacity: 0;
+        transition: opacity 0.15s ease;
+      }
+
+      .action-prompt.show {
+        opacity: 1;
+      }
+
+      .banner {
+        position: absolute;
+        top: 112px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        letter-spacing: 0.24em;
+        padding: 4px 16px;
+        background: rgba(6, 11, 8, 0.8);
+        border-top: 1px solid var(--accent);
+        border-bottom: 1px solid var(--accent);
+        color: var(--accent);
+        opacity: 0;
+        transition: opacity 0.18s ease;
+        text-transform: uppercase;
+      }
+
+      .banner.show {
+        opacity: 1;
+      }
+
+      /* ---------- Three-click swing meter ---------- */
+      .swing-meter {
+        position: absolute;
+        bottom: 74px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 300px;
+        opacity: 0;
+        transition: opacity 0.1s ease;
+      }
+
+      .swing-meter.show {
+        opacity: 1;
+      }
+
+      .swing-meter .sm-track {
+        position: relative;
+        height: 16px;
+        background: rgba(6, 11, 8, 0.85);
+        border: 1px solid var(--rule-strong);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      .swing-meter .sm-fill {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 0%;
+        background: linear-gradient(90deg, var(--accent-2), var(--accent) 70%, #ff9d3d 92%, var(--danger) 100%);
+      }
+
+      .swing-meter .sm-green {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        background: linear-gradient(180deg, rgba(125, 227, 127, 0.75), rgba(125, 227, 127, 0.4));
+        border-left: 1px solid var(--ok);
+        border-right: 1px solid var(--ok);
+      }
+
+      .swing-meter .sm-perfect {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: rgba(255, 255, 255, 0.85);
+      }
+
+      .swing-meter .sm-needle {
+        position: absolute;
+        top: -2px;
+        bottom: -2px;
+        width: 3px;
+        left: 0%;
+        background: var(--ink);
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+      }
+
+      .swing-meter .sm-spin-draw,
+      .swing-meter .sm-spin-fade {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 22%;
+        opacity: 0.5;
+      }
+
+      .swing-meter .sm-spin-draw {
+        left: 0;
+        background: linear-gradient(90deg, rgba(99, 226, 255, 0.5), transparent);
+      }
+
+      .swing-meter .sm-spin-fade {
+        right: 0;
+        background: linear-gradient(270deg, rgba(255, 157, 61, 0.5), transparent);
+      }
+
+      .swing-meter .sm-label {
+        text-align: center;
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        color: var(--muted);
+        margin-top: 5px;
+        text-transform: uppercase;
+      }
+
+      .swing-meter .sm-readout {
+        display: flex;
+        justify-content: space-between;
+        font-size: 9px;
+        letter-spacing: 0.12em;
+        color: var(--accent);
+        margin-top: 3px;
+        min-height: 12px;
+      }
+
+      /* ---------- Menu overlay ---------- */
+      #menu-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(4, 7, 5, 0.72);
+        backdrop-filter: blur(10px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+
+      #menu-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .menu-panel {
+        width: min(880px, calc(100vw - 32px));
+        max-height: calc(100vh - 64px);
+        overflow-y: auto;
+        background: linear-gradient(180deg, rgba(18, 26, 20, 0.96), rgba(9, 14, 10, 0.96));
+        border: 1px solid rgba(155, 232, 78, 0.3);
+        border-radius: 18px;
+        padding: 26px 28px 22px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+      }
+
+      .menu-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+
+      .menu-head h1 {
+        font-family: var(--font-display);
+        font-size: 30px;
+        letter-spacing: 0.1em;
+        color: var(--ink);
+      }
+
+      .menu-head h1 em {
+        color: var(--accent-2);
+        font-style: normal;
+      }
+
+      .menu-head .menu-sub {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+
+      .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .mode-card {
+        appearance: none;
+        text-align: left;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--rule);
+        border-radius: 12px;
+        padding: 13px 14px;
+        color: var(--ink);
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .mode-card:hover {
+        border-color: var(--accent-2);
+        background: rgba(155, 232, 78, 0.1);
+        transform: translateY(-1px);
+      }
+
+      .mode-card .mc-name {
+        font-family: var(--font-display);
+        font-size: 15px;
+        letter-spacing: 0.08em;
+        color: var(--accent);
+        text-transform: uppercase;
+      }
+
+      .mode-card .mc-desc {
+        font-size: 10.5px;
+        color: var(--muted);
+        margin-top: 4px;
+        line-height: 1.35;
+      }
+
+      .menu-section {
+        margin-bottom: 16px;
+      }
+
+      .menu-section .ms-label {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        letter-spacing: 0.22em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 7px;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .menu-pill {
+        appearance: none;
+        border: 1px solid var(--rule-strong);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--ink);
+        font-size: 11px;
+        font-family: var(--font-sans);
+        letter-spacing: 0.05em;
+        padding: 6px 13px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 0.14s;
+        text-transform: uppercase;
+      }
+
+      .menu-pill:hover {
+        border-color: var(--accent-2);
+      }
+
+      .menu-pill.active {
+        background: linear-gradient(135deg, var(--accent-2), var(--accent));
+        border-color: var(--accent-2);
+        color: #14200f;
+        font-weight: 600;
+      }
+
+      .swatch {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .swatch.active {
+        border-color: var(--ink);
+        box-shadow: 0 0 0 2px var(--bg), 0 0 12px rgba(155, 232, 78, 0.5);
+      }
+
+      .menu-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .menu-cta {
+        appearance: none;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 22px;
+        font-family: var(--font-display);
+        font-size: 14px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: linear-gradient(135deg, var(--accent-2), var(--accent));
+        color: #14200f;
+        font-weight: 700;
+      }
+
+      .menu-cta.ghost {
+        background: transparent;
+        border: 1px solid var(--rule-strong);
+        color: var(--ink);
+        font-weight: 500;
+      }
+
+      /* Tour bracket */
+      .bracket {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        font-family: var(--font-mono);
+      }
+
+      .bracket-round {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .bracket-round .br-title {
+        font-size: 9px;
+        letter-spacing: 0.18em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 2px;
+      }
+
+      .bracket-cell {
+        font-size: 9px;
+        letter-spacing: 0.04em;
+        padding: 3px 6px;
+        border: 1px solid var(--rule);
+        border-radius: 5px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.03);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .bracket-cell.you {
+        border-color: var(--accent-2);
+        color: var(--accent);
+      }
+
+      .bracket-cell.done {
+        text-decoration: line-through;
+        opacity: 0.5;
+      }
+
+      .bracket-cell.alive {
+        color: var(--ink);
+      }
+
+      /* render error */
+      #render-error[hidden] {
+        display: none;
+      }
+
+      #render-error {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        text-align: center;
+        padding: 24px;
+      }
+
+      .touch-controls {
+        display: none;
+      }
+
+      @media (max-width: 760px) {
+        .aura3d-controls-hint {
+          display: none;
+        }
+        .aura3d-top-bar {
+          left: 8px;
+          right: 8px;
+          top: 8px;
+          justify-content: center;
+        }
+        .hud-top-right {
+          top: 108px;
+        }
+        .menu-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .bracket {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="game-stage">
+      <div id="app" aria-label="Aura Links 3D golf viewport"></div>
+      <div class="screen-fx"></div>
+      <div id="cup-flash" class="cup-flash"></div>
+
+      <nav class="aura3d-top-bar" aria-label="Aura3D Aura Links 3D quick switcher">
+        <span class="aura-badge">AURA3D ENGINE</span>
+        <span class="bar-label">MODE</span>
+        <button type="button" class="bar-mode" data-mode-btn="quick">QUICK PLAY</button>
+        <button type="button" class="bar-mode" data-mode-btn="rangelab">RANGE LAB</button>
+        <button type="button" class="bar-mode" data-mode-btn="menu">MODES &amp; TOUR</button>
+        <div class="bar-sep"></div>
+        <span class="bar-label">COURSE</span>
+        <button type="button" class="course" data-course="stAuroras">ST AURORAS</button>
+        <button type="button" class="course" data-course="mapleHollow">MAPLE</button>
+        <button type="button" class="course" data-course="cinderRim">CINDER</button>
+        <button type="button" class="course" data-course="cloudTerrace">CLOUD</button>
+        <button type="button" class="course" data-course="neonBay">NEON BAY</button>
+        <button type="button" class="course" data-course="mareCourse">MARE</button>
+      </nav>
+
+      <div id="hud">
+        <div class="hud-top-left">
+          <div class="hud-mode-tag" id="h-mode">QUICK PLAY</div>
+          <div class="card-box">
+            <div class="cb-cell">
+              <span class="cb-k">HOLE</span>
+              <span class="cb-v" id="h-hole">1</span>
+              <span class="cb-s" id="h-par">PAR 4</span>
+            </div>
+            <div class="cb-cell">
+              <span class="cb-k">STROKES</span>
+              <span class="cb-v" id="h-strokes">0</span>
+              <span class="cb-s" id="h-dist">0M</span>
+            </div>
+            <div class="cb-cell">
+              <span class="cb-k">SCORE</span>
+              <span class="cb-v good" id="h-topar">E</span>
+              <span class="cb-s" id="h-thru">THRU 0</span>
+            </div>
+          </div>
+          <div class="shot-strip">
+            <span class="wind">
+              <span class="k">WIND</span>
+              <span id="h-wind-arrow">➤</span>
+              <span class="v" id="h-wind-speed">0.0</span>
+            </span>
+            <span class="sep"></span>
+            <span class="k">CLUB</span>
+            <span class="v club" id="h-club">DRIVER</span>
+            <span class="sep"></span>
+            <span class="k">LIE</span>
+            <span class="v" id="h-lie">TEE</span>
+          </div>
+        </div>
+
+        <div class="hud-top-right">
+          <div class="hud-chip" id="h-course-chip">ST. AURORAS LINKS<span class="sub" id="h-look-chip">MORNING DEW LOOK</span></div>
+          <div class="hud-chip" id="h-tour-chip" style="display:none">PRO CIRCUIT<span class="sub" id="h-tour-round">ROUND OF 32</span></div>
+          <div class="hud-chip" id="h-lab-chip" style="display:none">LAB<span class="sub" id="h-lab-line">SCORE 0 · STREAK 0</span></div>
+        </div>
+
+        <div class="hud-ticker" id="h-ticker"></div>
+
+        <div class="center-msg" id="msg">
+          <div class="big" id="msg-text">AURA LINKS 3D</div>
+          <div class="small" id="msg-sub">SIX COURSES · ONE CARD UNDER PAR</div>
+        </div>
+        <div class="banner" id="banner">BIRDIE</div>
+        <div class="action-prompt" id="prompt">SPACE — START SWING</div>
+
+        <div class="swing-meter" id="swing-meter">
+          <div class="sm-track">
+            <div class="sm-spin-draw"></div>
+            <div class="sm-spin-fade"></div>
+            <div class="sm-fill" id="sw-fill"></div>
+            <div class="sm-green" id="sw-green"></div>
+            <div class="sm-perfect" id="sw-perfect"></div>
+            <div class="sm-needle" id="sw-needle"></div>
+          </div>
+          <div class="sm-readout"><span id="sw-readout-l"></span><span id="sw-readout-r"></span></div>
+          <div class="sm-label" id="sw-label">SPACE ×3 — POWER · ACCURACY · SPIN</div>
+        </div>
+      </div>
+
+      <!-- Menu / Modes & Tour overlay -->
+      <div id="menu-overlay" class="open">
+        <div class="menu-panel">
+          <div class="menu-head">
+            <h1>AURA <em>LINKS</em> 3D</h1>
+            <span class="menu-sub">STROKE PLAY · NINE-HOLE CARD</span>
+          </div>
+
+          <div class="menu-grid">
+            <button type="button" class="mode-card" data-start="quick">
+              <div class="mc-name">Quick Play</div>
+              <div class="mc-desc">9-hole round at the selected course. Three-click swing, read the wind.</div>
+            </button>
+            <button type="button" class="mode-card" data-start="rangelab">
+              <div class="mc-name">Range Lab</div>
+              <div class="mc-desc">Distance &amp; spin drills on the practice tee — land it in the rings.</div>
+            </button>
+            <button type="button" class="mode-card" data-start="puttinglab">
+              <div class="mc-name">Putting Lab</div>
+              <div class="mc-desc">Green-read practice. Rolling breaks, downhill sliders, cup work.</div>
+            </button>
+            <button type="button" class="mode-card" data-start="tour">
+              <div class="mc-name">Pro Circuit</div>
+              <div class="mc-desc">32-player medal bracket across all six courses — five cuts to the trophy.</div>
+            </button>
+            <button type="button" class="mode-card" data-start="skins">
+              <div class="mc-name">Skins Match</div>
+              <div class="mc-desc">9 holes vs the CPU — every hole is a skin, ties roll the pot.</div>
+            </button>
+            <button type="button" class="mode-card" data-start="studio">
+              <div class="mc-name">Player Studio</div>
+              <div class="mc-desc">Fit your golfer: polo, cap, skin tone and ball-trail colour.</div>
+            </button>
+          </div>
+
+          <div class="menu-section" id="studio-section" style="display:none">
+            <div class="ms-label">POLO</div>
+            <div class="pill-row" id="studio-polo"></div>
+            <div class="ms-label" style="margin-top:10px">CAP</div>
+            <div class="pill-row" id="studio-cap"></div>
+            <div class="ms-label" style="margin-top:10px">SKIN</div>
+            <div class="pill-row" id="studio-skin"></div>
+            <div class="ms-label" style="margin-top:10px">BALL TRAIL</div>
+            <div class="pill-row" id="studio-trail"></div>
+            <div class="menu-actions">
+              <button type="button" class="menu-cta" id="studio-apply">APPLY FIT</button>
+            </div>
+          </div>
+
+          <div class="menu-section" id="tour-section" style="display:none">
+            <div class="ms-label">PRO CIRCUIT FIELD</div>
+            <div class="bracket" id="bracket"></div>
+          </div>
+
+          <div class="menu-section">
+            <div class="ms-label">DIFFICULTY</div>
+            <div class="pill-row" id="difficulty-row">
+              <button type="button" class="menu-pill" data-diff="amateur">AMATEUR</button>
+              <button type="button" class="menu-pill active" data-diff="pro">PRO</button>
+              <button type="button" class="menu-pill" data-diff="legend">LEGEND</button>
+            </div>
+          </div>
+
+          <div class="menu-section">
+            <div class="ms-label">COURSE</div>
+            <div class="pill-row" id="course-row">
+              <button type="button" class="menu-pill active" data-course-menu="stAuroras">ST. AURORAS</button>
+              <button type="button" class="menu-pill" data-course-menu="mapleHollow">MAPLE HOLLOW</button>
+              <button type="button" class="menu-pill" data-course-menu="cinderRim">CINDER RIM</button>
+              <button type="button" class="menu-pill" data-course-menu="cloudTerrace">CLOUD TERRACE</button>
+              <button type="button" class="menu-pill" data-course-menu="neonBay">NEON BAY</button>
+              <button type="button" class="menu-pill" data-course-menu="mareCourse">MARE COURSE</button>
+            </div>
+          </div>
+
+          <div class="menu-actions">
+            <button type="button" class="menu-cta ghost" id="menu-close">CLOSE</button>
+            <button type="button" class="menu-cta" id="menu-run">TEE OFF</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="aura3d-controls-hint" id="aura-controls-hint">
+        AIM: <b>A/D</b> · CLUB: <b>Q/E</b> · SWING: <b>SPACE ×3</b> · AIM CAM: <b>W/S</b> · MULLIGAN: <b>M</b> · MENU: <b>ESC</b>
+      </div>
+
+      <div class="touch-controls" id="touch"></div>
+
+      <div id="render-error" hidden>
+        <div>
+          <h2 style="font-family:var(--font-display);letter-spacing:0.1em">AURA LINKS 3D NEEDS WEBGL2</h2>
+          <p style="color:var(--muted);margin-top:8px">Enable graphics acceleration in your browser, then reload.</p>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

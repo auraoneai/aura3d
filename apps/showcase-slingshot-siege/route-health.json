@@ -1,0 +1,61 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-10-12T00:00:00.000Z",
+  "appId": "showcase-slingshot-siege",
+  "route": "/apps/showcase-slingshot-siege/",
+  "classification": "prototype",
+  "publicShowcase": false,
+  "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
+  "machinePass": true,
+  "renderer": {
+    "path": "createGameApp root safe API",
+    "mode": "production with safe-basic fallback",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": false
+  },
+  "look": {
+    "preset": "outdoor-day",
+    "perChapterOverrides": true,
+    "chapters": 6
+  },
+  "primaryAssets": [
+    { "typedRef": "assets.siegeCatapultMeshy", "hash": "sha256-5d4a533e53893b4b4893160829ced0763fc51862bc3cd5495e7c360c8c1d8bdd", "quality": "candidate", "role": "prop" },
+    { "typedRef": "assets.siegeWoodenCrate", "hash": "sha256-005914e1a839d87bd840c1ba2b9ee20c805d460abac0c7096a1d762933cf6ba0", "quality": "candidate", "role": "prop" },
+    { "typedRef": "assets.siegeWoodenBarrel", "hash": "sha256-a510ed05dfe71f886e4b113a9146904b910ed412671856b9578f886a334bff8a", "quality": "candidate", "role": "prop" },
+    { "typedRef": "assets.siegeWatchtowerMeshy", "hash": "sha256-fafe21297079d47e41d890704ebb9169eff1672130c26061569e6fe0f8ec35b1", "quality": "candidate", "role": "prop" },
+    { "typedRef": "assets.siegeCastleGatehouseMeshy", "hash": "sha256-9457851c9247777c8f27a3e7f0b8c14c5576cc21eaeff3a3a99faca17c511ba9", "quality": "candidate", "role": "prop" },
+    { "typedRef": "assets.siegeWindmillTowerMeshy", "hash": "sha256-781c80ad94d8d17c5a7712c396aa0d90b4d8a79b73a599b926b7efa7559e5223", "quality": "candidate", "role": "prop" },
+    { "typedRef": "assets.siegeStoneBridgeMeshy", "hash": "sha256-886393a622fd769d762e468c4075d1740a6ff7db8ce1813f31da01c1bf0b372d", "quality": "candidate", "role": "prop" },
+    { "typedRef": "assets.siegePlankSet", "hash": "sha256-a85f12130a9fa2069b5d423065bc5201d7403442e395e522b9b47b82254764ec", "quality": "candidate", "role": "prop" }
+  ],
+  "audioAssets": [
+    { "typedRef": "assets.siegeAmbientWindSfx", "hash": "sha256-31de756668775840a1175e0e897f246a6a2eaf0d9e0e6aaf84d88d3cd4d5a2c5", "role": "ambience" },
+    { "typedRef": "assets.siegeWoodCrackSfx", "hash": "sha256-4b684a578aaafd61636e591dec7bd4ac2216f05b70bccd19886fe8f79fb80398", "role": "sfx" },
+    { "typedRef": "assets.siegeTargetDownSfx", "hash": "sha256-4e809a09ed89aaa66a4de01dcaba63adf93238d1666dd043e82894cbd80c9e97", "role": "sfx" },
+    { "typedRef": "assets.siegeUiConfirmSfx", "hash": "sha256-2b7ded10dfd6741fc933688e7be1da9c71efd067420f1b2fd92bc77bd36cc465", "role": "ui" },
+    { "typedRef": "assets.siegeMetalClangSfx", "hash": "sha256-2f9cb4e7fcd2a94e53eafd3edc83631294bf97272de14f6587feb3c4c8bbdb02", "role": "sfx" },
+    { "typedRef": "assets.siegeParChimeSfx", "hash": "sha256-4abc5762de681b1a52a1130ba5720ae798bd3f5ac65a77efd1b21e036e6061a0", "role": "ui" },
+    { "typedRef": "assets.siegeDriveHitSfx", "hash": "sha256-6850b55acb01f0404c913ce37f5439e4cec23587b9b1e2aa04223f6594941c7b", "role": "sfx" },
+    { "typedRef": "assets.siegeBogeyStingSfx", "hash": "sha256-fa7924aefb89c96ef6fe1707882b5f5ec6b277c3160d675fec2d1cc050d303eb", "role": "sfx" }
+  ],
+  "gameplay": {
+    "engine": "Rapier via physics.world() standalone controller, manually stepped",
+    "levels": 30,
+    "chapters": 6,
+    "ammoTypes": ["pebble", "stone", "triple", "squid", "ember"],
+    "modes": ["siege", "map", "studio", "range"],
+    "deterministicDemo": "?demo=1",
+    "evidenceGlobals": ["__SLINGSHOT_SIEGE__", "__AURA3D_GAME_EVIDENCE__", "__AURA3D_ROUTE__", "__SS_STATE__", "__SS_PUMP__", "__SS_FIRE__", "__SS_LEVEL__"]
+  },
+  "qualityGate": {
+    "status": "unreviewed",
+    "independentHumanVisualReview": false,
+    "notes": "Prototype implementation. Pooled runtime-node visual layer; physics-world graveyard retirement for destruction; deterministic demo loop; evidence globals published per frame."
+  },
+  "prototypeAreas": [
+    "Gull rigs are primitive-built cartoon birds (no typed gull GLB exists in the manifest)",
+    "Trajectory preview is analytic (no collision sampling)",
+    "Windmill rotor uses a small core collider; blades are visual-only",
+    "Trajectory Range reloads the level on exit"
+  ]
+}

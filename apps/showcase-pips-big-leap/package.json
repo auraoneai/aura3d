@@ -1,0 +1,13 @@
+{
+  "name": "@aura3d/showcase-pips-big-leap",
+  "version": "4.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*",
+    "@aura3d/animation": "workspace:*"
+  }
+}

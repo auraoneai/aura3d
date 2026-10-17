@@ -1,0 +1,88 @@
+{
+  "route": "/apps/showcase-dot-dash-3d/",
+  "generatedAt": "2026-10-17T06:23:57.156Z",
+  "ok": true,
+  "checks": [
+    {
+      "name": "dist/index.html exists",
+      "ok": true
+    },
+    {
+      "name": "has #app mount",
+      "ok": true
+    },
+    {
+      "name": "has shell root",
+      "ok": true
+    },
+    {
+      "name": "module script present",
+      "ok": true
+    },
+    {
+      "name": "aura-assets dir",
+      "ok": true
+    },
+    {
+      "name": "manifest assets",
+      "ok": true,
+      "detail": "11 assets"
+    },
+    {
+      "name": "asset byte",
+      "ok": true
+    },
+    {
+      "name": "asset specterBlitz",
+      "ok": true
+    },
+    {
+      "name": "asset specterSly",
+      "ok": true
+    },
+    {
+      "name": "asset specterFlick",
+      "ok": true
+    },
+    {
+      "name": "asset specterDim",
+      "ok": true
+    },
+    {
+      "name": "asset fruitCherry",
+      "ok": true
+    },
+    {
+      "name": "asset fruitStrawberry",
+      "ok": true
+    },
+    {
+      "name": "asset fruitOrange",
+      "ok": true
+    },
+    {
+      "name": "asset fruitApple",
+      "ok": true
+    },
+    {
+      "name": "asset fruitMelon",
+      "ok": true
+    },
+    {
+      "name": "asset fruitStar",
+      "ok": true
+    },
+    {
+      "name": "typegen exists",
+      "ok": true
+    },
+    {
+      "name": "evidence global",
+      "ok": true
+    },
+    {
+      "name": "six mazes",
+      "ok": true
+    }
+  ]
+}

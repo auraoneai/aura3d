@@ -1,0 +1,1226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Aura Diamond 3D — Baseball at Golden Hour · Aura3D Showcase</title>
+    <meta name="description" content="Aura Diamond 3D: broadcast-grade 3D baseball — real at-bats with PCI hitting, 4 pitch arsenals, 6 ballparks from Harbor Sandlot to Lunar Park, a 10-out Derby Lab, Bullpen Lab pitch-recognition drills, and a 32-team World Classic." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/fonts/aura-fonts.css" />
+    <style>
+      :root {
+        --bg: #0d1020;
+        --ink: #f2eee3;
+        --muted: #9aa0b4;
+        --faint: #4a4f63;
+        --rule: rgba(242, 238, 227, 0.14);
+        --chalk: #f5f1e4;
+        --amber: #ffb03a;
+        --cyan: #35d6ff;
+        --grass: #2e6b3f;
+        --clay: #a8593a;
+        --danger: #ff5252;
+        --ok: #5be37d;
+        --font-display: "DIN Pro", "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-sans: "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mono: "Monument Grotesk Mono", ui-monospace, SFMono-Regular, monospace;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 13px;
+        line-height: 1.4;
+        overflow: hidden;
+        user-select: none;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      #app {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      #app canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      #render-error {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        text-align: center;
+        font-family: var(--font-mono);
+        font-size: 14px;
+        color: var(--muted);
+        background: var(--bg);
+        z-index: 80;
+      }
+
+      /* ============ Aura3D top bar (quick switcher) ============ */
+      .aura3d-top-bar {
+        position: fixed;
+        top: 12px;
+        right: 14px;
+        z-index: 60;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+        max-width: min(78vw, 760px);
+        padding: 6px 10px;
+        border-radius: 14px;
+        background: linear-gradient(180deg, rgba(20, 24, 44, 0.92), rgba(10, 12, 24, 0.92));
+        border: 1px solid rgba(255, 176, 58, 0.34);
+        backdrop-filter: blur(12px) saturate(1.2);
+        font-size: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      }
+
+      .aura3d-top-bar .aura-badge {
+        font-family: var(--font-display);
+        font-weight: 700;
+        letter-spacing: 0.09em;
+        color: #221503;
+        padding: 3px 9px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--amber), #ffcf6e);
+        font-size: 11px;
+        text-transform: uppercase;
+        box-shadow: 0 2px 10px rgba(255, 176, 58, 0.35);
+      }
+
+      .aura3d-top-bar .bar-sep {
+        width: 1px;
+        height: 18px;
+        background: var(--rule);
+        margin: 0 2px;
+      }
+
+      .aura3d-top-bar button {
+        appearance: none;
+        border: 1px solid rgba(242, 238, 227, 0.22);
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 11.5px;
+        font-weight: 500;
+        height: 26px;
+        padding: 0 10px;
+        border-radius: 9px;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
+        white-space: nowrap;
+      }
+
+      .aura3d-top-bar button:hover {
+        transform: translateY(-1px);
+        border-color: rgba(255, 176, 58, 0.55);
+      }
+
+      .aura3d-top-bar button.active {
+        background: linear-gradient(135deg, var(--amber), #ffcf6e);
+        border-color: var(--amber);
+        color: #221503;
+        font-weight: 700;
+      }
+
+      .aura3d-controls-hint {
+        position: fixed;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 45;
+        padding: 5px 14px;
+        border-radius: 999px;
+        background: rgba(10, 12, 24, 0.84);
+        border: 1px solid var(--rule);
+        color: #e8e2cf;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.03em;
+        pointer-events: none;
+        white-space: nowrap;
+        backdrop-filter: blur(8px);
+      }
+
+      /* ============ HUD ============ */
+      #hud {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 30;
+        font-family: var(--font-mono);
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+
+      #hud.on {
+        opacity: 1;
+      }
+
+      .hud-top-left {
+        position: absolute;
+        top: 14px;
+        left: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+
+      .hud-mode-tag {
+        align-self: flex-start;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        padding: 3px 9px;
+        background: rgba(255, 176, 58, 0.16);
+        border-left: 2px solid var(--amber);
+        color: var(--amber);
+        text-transform: uppercase;
+      }
+
+      /* Linescore */
+      .hud-linescore {
+        background: rgba(10, 12, 24, 0.72);
+        border: 1px solid var(--rule);
+        backdrop-filter: blur(8px);
+        border-collapse: collapse;
+      }
+
+      .hud-linescore th,
+      .hud-linescore td {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        padding: 3px 7px;
+        text-align: center;
+        color: var(--muted);
+        border-bottom: 1px solid rgba(242, 238, 227, 0.07);
+        min-width: 20px;
+      }
+
+      .hud-linescore th {
+        color: var(--faint);
+        font-size: 9px;
+        letter-spacing: 0.08em;
+      }
+
+      .hud-linescore td.tname {
+        text-align: left;
+        color: var(--ink);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        max-width: 110px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .hud-linescore td.cur {
+        color: var(--amber);
+        font-weight: 700;
+      }
+
+      .hud-linescore td.runs {
+        color: var(--ink);
+        font-weight: 700;
+        border-left: 1px solid var(--rule);
+      }
+
+      .hud-linescore tr.batting td.tname::after {
+        content: " ◂";
+        color: var(--amber);
+      }
+
+      /* Count / outs / bases row */
+      .hud-status-row {
+        display: flex;
+        gap: 7px;
+        align-items: stretch;
+      }
+
+      .hud-chip {
+        background: rgba(10, 12, 24, 0.72);
+        border: 1px solid var(--rule);
+        backdrop-filter: blur(8px);
+        padding: 5px 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .hud-chip .k {
+        font-size: 9px;
+        letter-spacing: 0.16em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+
+      .hud-chip .v {
+        font-family: var(--font-display);
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--ink);
+        line-height: 1.1;
+      }
+
+      .hud-count-dots {
+        display: flex;
+        gap: 4px;
+        margin-top: 3px;
+      }
+
+      .hud-count-dots i {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        border: 1px solid var(--faint);
+        display: inline-block;
+      }
+
+      .hud-count-dots i.b.on {
+        background: var(--ok);
+        border-color: var(--ok);
+      }
+
+      .hud-count-dots i.s.on {
+        background: var(--amber);
+        border-color: var(--amber);
+      }
+
+      .hud-count-dots i.o.on {
+        background: var(--danger);
+        border-color: var(--danger);
+      }
+
+      /* Bases mini-map */
+      .hud-bases {
+        width: 52px;
+        height: 42px;
+        position: relative;
+        margin: 2px auto 0;
+      }
+
+      .hud-bases i {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        border: 1.5px solid var(--faint);
+        transform: rotate(45deg);
+        background: rgba(10, 12, 24, 0.6);
+      }
+
+      .hud-bases i.on {
+        background: var(--amber);
+        border-color: var(--amber);
+        box-shadow: 0 0 8px rgba(255, 176, 58, 0.6);
+      }
+
+      .hud-bases .b1 {
+        right: 2px;
+        top: 15px;
+      }
+
+      .hud-bases .b2 {
+        left: 20px;
+        top: 1px;
+      }
+
+      .hud-bases .b3 {
+        left: 2px;
+        top: 15px;
+      }
+
+      /* Pitch read chip (top center-left) */
+      .hud-pitch-read {
+        position: absolute;
+        top: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .hud-pitch-read .chip {
+        background: rgba(10, 12, 24, 0.78);
+        border: 1px solid var(--rule);
+        border-top: 2px solid var(--cyan);
+        padding: 5px 14px;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        color: var(--cyan);
+        text-transform: uppercase;
+        opacity: 0;
+        transition: opacity 0.18s;
+      }
+
+      .hud-pitch-read .chip.show {
+        opacity: 1;
+      }
+
+      .hud-pitch-read .chip.guess-correct {
+        border-top-color: var(--ok);
+        color: var(--ok);
+      }
+
+      .hud-pitch-read .chip.guess-wrong {
+        border-top-color: var(--danger);
+        color: var(--danger);
+      }
+
+      /* PCI feedback + exit velo readout */
+      .hud-contact {
+        position: absolute;
+        bottom: 118px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      .hud-contact.show {
+        opacity: 1;
+      }
+
+      .hud-contact .grade {
+        font-family: var(--font-display);
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-shadow: 0 2px 16px rgba(0, 0, 0, 0.85);
+      }
+
+      .hud-contact .grade.perfect { color: var(--amber); }
+      .hud-contact .grade.good { color: var(--ok); }
+      .hud-contact .grade.early { color: var(--cyan); }
+      .hud-contact .grade.late { color: #ff9a3d; }
+      .hud-contact .grade.whiff { color: var(--danger); }
+
+      .hud-contact .data {
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        background: rgba(10, 12, 24, 0.7);
+        padding: 2px 10px;
+      }
+
+      /* Strike-zone aim diagram (pitching) */
+      .hud-zone {
+        position: absolute;
+        bottom: 118px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 110px;
+        height: 132px;
+        border: 1.5px solid rgba(242, 238, 227, 0.4);
+        background: rgba(10, 12, 24, 0.55);
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      .hud-zone.show {
+        opacity: 1;
+      }
+
+      .hud-zone .pci-dot,
+      .hud-zone .aim-dot,
+      .hud-zone .pitch-dot {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .hud-zone .pci-dot {
+        border: 2px solid var(--amber);
+        box-shadow: 0 0 8px rgba(255, 176, 58, 0.7);
+        background: rgba(255, 176, 58, 0.25);
+        width: 22px;
+        height: 22px;
+      }
+
+      .hud-zone .aim-dot {
+        border: 2px solid var(--cyan);
+        background: rgba(53, 214, 255, 0.3);
+        width: 14px;
+        height: 14px;
+      }
+
+      .hud-zone .pitch-dot {
+        background: var(--chalk);
+        box-shadow: 0 0 6px rgba(245, 241, 228, 0.9);
+        width: 8px;
+        height: 8px;
+      }
+
+      /* Pitch release meter */
+      .hud-meter {
+        position: absolute;
+        bottom: 76px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 220px;
+        height: 10px;
+        background: rgba(10, 12, 24, 0.7);
+        border: 1px solid var(--rule);
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+
+      .hud-meter.show {
+        opacity: 1;
+      }
+
+      .hud-meter .sweet {
+        position: absolute;
+        left: 42%;
+        width: 16%;
+        top: 0;
+        bottom: 0;
+        background: rgba(91, 227, 125, 0.3);
+        border-left: 1px solid var(--ok);
+        border-right: 1px solid var(--ok);
+      }
+
+      .hud-meter .needle {
+        position: absolute;
+        top: -3px;
+        bottom: -3px;
+        width: 3px;
+        background: var(--amber);
+        box-shadow: 0 0 8px rgba(255, 176, 58, 0.8);
+      }
+
+      /* Derby / lab score cards (right side) */
+      .hud-lab-card {
+        position: absolute;
+        top: 60px;
+        right: 16px;
+        display: none;
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-end;
+      }
+
+      .hud-lab-card.show {
+        display: flex;
+      }
+
+      .hud-lab-card .big {
+        font-family: var(--font-display);
+        font-size: 42px;
+        font-weight: 700;
+        line-height: 0.95;
+        color: var(--amber);
+        text-shadow: 0 2px 16px rgba(0, 0, 0, 0.8);
+      }
+
+      .hud-lab-card .row {
+        background: rgba(10, 12, 24, 0.72);
+        border: 1px solid var(--rule);
+        padding: 4px 12px;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        color: var(--ink);
+        text-transform: uppercase;
+      }
+
+      /* Catch prompt */
+      .hud-catch-prompt {
+        position: absolute;
+        top: 38%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: var(--font-display);
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        color: var(--cyan);
+        text-shadow: 0 0 18px rgba(53, 214, 255, 0.8), 0 2px 12px rgba(0, 0, 0, 0.9);
+        opacity: 0;
+        transition: opacity 0.1s;
+        animation: catchpulse 0.5s ease-in-out infinite alternate;
+      }
+
+      .hud-catch-prompt.show {
+        opacity: 1;
+      }
+
+      @keyframes catchpulse {
+        from { transform: translate(-50%, -50%) scale(1); }
+        to { transform: translate(-50%, -50%) scale(1.06); }
+      }
+
+      /* Center message + banner */
+      .hud-center-msg {
+        position: absolute;
+        top: 26%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.18s;
+      }
+
+      .hud-center-msg.show {
+        opacity: 1;
+      }
+
+      .hud-center-msg .big {
+        font-family: var(--font-display);
+        font-size: 40px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: var(--ink);
+        text-shadow: 0 2px 20px rgba(0, 0, 0, 0.85);
+      }
+
+      .hud-center-msg .small {
+        font-size: 12px;
+        letter-spacing: 0.24em;
+        color: var(--amber);
+        margin-top: 3px;
+        text-transform: uppercase;
+      }
+
+      .hud-banner {
+        position: absolute;
+        top: 112px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        letter-spacing: 0.24em;
+        padding: 4px 16px;
+        background: rgba(10, 12, 24, 0.8);
+        border-top: 1px solid var(--amber);
+        border-bottom: 1px solid var(--amber);
+        color: var(--amber);
+        opacity: 0;
+        transition: opacity 0.18s;
+        white-space: nowrap;
+      }
+
+      .hud-banner.show {
+        opacity: 1;
+      }
+
+      /* Event ticker */
+      #event-ticker {
+        position: fixed;
+        left: 16px;
+        bottom: 46px;
+        z-index: 40;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        pointer-events: none;
+        max-width: 340px;
+      }
+
+      .tick {
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.04em;
+        color: #cfd2c8;
+        background: rgba(10, 12, 24, 0.74);
+        border-left: 2px solid rgba(255, 176, 58, 0.5);
+        padding: 3px 10px;
+        border-radius: 3px;
+        opacity: 0;
+        transform: translateX(-8px);
+        transition: opacity 0.25s, transform 0.25s;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .tick.show {
+        opacity: 0.94;
+        transform: translateX(0);
+      }
+
+      .tick-success {
+        border-left-color: var(--ok);
+        color: #d8f5c0;
+      }
+
+      .tick-warn {
+        border-left-color: var(--danger);
+        color: #ffb3ac;
+      }
+
+      /* ============ Menu overlay ============ */
+      #menu {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(120% 100% at 50% 10%, rgba(30, 26, 48, 0.72) 0%, rgba(10, 11, 22, 0.9) 60%, rgba(6, 7, 14, 0.96) 100%);
+        backdrop-filter: blur(6px);
+        overflow-y: auto;
+        transition: opacity 0.28s;
+      }
+
+      #menu.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .menu-inner {
+        width: min(920px, calc(100vw - 36px));
+        padding: 34px 0 40px;
+      }
+
+      .menu-title {
+        font-family: var(--font-display);
+        font-size: clamp(38px, 6vw, 62px);
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        line-height: 0.95;
+        color: var(--chalk);
+        text-shadow: 0 4px 30px rgba(255, 176, 58, 0.22);
+      }
+
+      .menu-title em {
+        font-style: normal;
+        color: var(--amber);
+      }
+
+      .menu-sub {
+        margin-top: 8px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+
+      .menu-grid {
+        margin-top: 26px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+        gap: 10px;
+      }
+
+      .mode-card {
+        appearance: none;
+        text-align: left;
+        border: 1px solid var(--rule);
+        background: linear-gradient(180deg, rgba(26, 30, 52, 0.85), rgba(14, 16, 30, 0.88));
+        color: var(--ink);
+        padding: 14px 14px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: transform 0.14s, border-color 0.15s, box-shadow 0.15s;
+      }
+
+      .mode-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 176, 58, 0.6);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      }
+
+      .mode-card.active {
+        border-color: var(--amber);
+        background: linear-gradient(180deg, rgba(255, 176, 58, 0.16), rgba(20, 22, 40, 0.9));
+        box-shadow: 0 0 0 1px rgba(255, 176, 58, 0.35), 0 8px 26px rgba(255, 176, 58, 0.14);
+      }
+
+      .mode-card .mc-k {
+        font-family: var(--font-mono);
+        font-size: 9.5px;
+        letter-spacing: 0.22em;
+        color: var(--amber);
+        text-transform: uppercase;
+      }
+
+      .mode-card .mc-t {
+        font-family: var(--font-display);
+        font-size: 19px;
+        font-weight: 700;
+        margin-top: 4px;
+        letter-spacing: 0.04em;
+      }
+
+      .mode-card .mc-d {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 5px;
+        line-height: 1.35;
+      }
+
+      .menu-section {
+        margin-top: 22px;
+      }
+
+      .menu-section > .k {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.22em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .pill {
+        appearance: none;
+        border: 1px solid var(--rule);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--ink);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: border-color 0.14s, background 0.14s, color 0.14s;
+      }
+
+      .pill:hover {
+        border-color: rgba(255, 176, 58, 0.55);
+      }
+
+      .pill.active {
+        background: linear-gradient(135deg, var(--amber), #ffcf6e);
+        border-color: var(--amber);
+        color: #221503;
+        font-weight: 700;
+      }
+
+      .club-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+        gap: 8px;
+      }
+
+      .club-card {
+        appearance: none;
+        text-align: left;
+        border: 1px solid var(--rule);
+        background: rgba(16, 19, 36, 0.8);
+        color: var(--ink);
+        padding: 10px 12px;
+        border-radius: 9px;
+        cursor: pointer;
+        transition: border-color 0.14s, background 0.14s;
+      }
+
+      .club-card:hover {
+        border-color: rgba(255, 176, 58, 0.55);
+      }
+
+      .club-card.active {
+        border-color: var(--amber);
+        background: rgba(255, 176, 58, 0.12);
+      }
+
+      .club-card .cc-name {
+        font-family: var(--font-display);
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .club-card .cc-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        flex: none;
+      }
+
+      .club-card .cc-tag {
+        font-size: 10.5px;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+
+      .club-card .cc-rep {
+        font-family: var(--font-mono);
+        font-size: 9.5px;
+        color: var(--faint);
+        margin-top: 4px;
+        letter-spacing: 0.06em;
+      }
+
+      /* Bracket panel */
+      #bracket-panel {
+        margin-top: 18px;
+        border: 1px solid var(--rule);
+        background: rgba(10, 12, 24, 0.66);
+        border-radius: 10px;
+        padding: 12px 14px;
+        display: none;
+      }
+
+      #bracket-panel.show {
+        display: block;
+      }
+
+      #bracket-panel .bp-rounds {
+        display: flex;
+        gap: 14px;
+        overflow-x: auto;
+      }
+
+      #bracket-panel .bp-round {
+        min-width: 150px;
+      }
+
+      #bracket-panel .bp-round .r-name {
+        font-family: var(--font-mono);
+        font-size: 9.5px;
+        letter-spacing: 0.18em;
+        color: var(--amber);
+        margin-bottom: 6px;
+      }
+
+      #bracket-panel .bp-game {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--muted);
+        padding: 3px 0;
+        white-space: nowrap;
+      }
+
+      #bracket-panel .bp-game .w {
+        color: var(--ok);
+        font-weight: 700;
+      }
+
+      #bracket-panel .bp-game.me {
+        color: var(--ink);
+      }
+
+      #bracket-panel .bp-game.me .w {
+        color: var(--amber);
+      }
+
+      /* Studio swatches */
+      .swatch {
+        width: 26px;
+        height: 26px;
+        border-radius: 7px;
+        border: 2px solid transparent;
+        cursor: pointer;
+      }
+
+      .swatch.active {
+        border-color: var(--chalk);
+        box-shadow: 0 0 10px rgba(255, 176, 58, 0.5);
+      }
+
+      .menu-actions {
+        margin-top: 26px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .big-play {
+        appearance: none;
+        border: none;
+        background: linear-gradient(135deg, var(--amber), #ffcf6e);
+        color: #221503;
+        font-family: var(--font-display);
+        font-size: 17px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        padding: 13px 34px;
+        border-radius: 12px;
+        cursor: pointer;
+        text-transform: uppercase;
+        box-shadow: 0 8px 28px rgba(255, 176, 58, 0.35);
+        transition: transform 0.14s, box-shadow 0.15s;
+      }
+
+      .big-play:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 34px rgba(255, 176, 58, 0.5);
+      }
+
+      .ghost-btn {
+        appearance: none;
+        border: 1px solid var(--rule);
+        background: transparent;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        padding: 12px 18px;
+        border-radius: 12px;
+        cursor: pointer;
+      }
+
+      .ghost-btn:hover {
+        color: var(--ink);
+        border-color: var(--rule);
+      }
+
+      .menu-footnote {
+        margin-top: 18px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--faint);
+        letter-spacing: 0.08em;
+      }
+
+      /* Game-over card inside menu */
+      #gameover-card {
+        display: none;
+        margin-top: 22px;
+        border: 1px solid rgba(255, 176, 58, 0.4);
+        background: rgba(26, 20, 8, 0.55);
+        border-radius: 10px;
+        padding: 14px 16px;
+      }
+
+      #gameover-card.show {
+        display: block;
+      }
+
+      #gameover-card .go-title {
+        font-family: var(--font-display);
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: var(--amber);
+      }
+
+      #gameover-card .go-line {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--ink);
+        margin-top: 6px;
+      }
+
+      @media (max-width: 760px) {
+        .aura3d-controls-hint {
+          display: none;
+        }
+        .aura3d-top-bar {
+          max-width: calc(100vw - 20px);
+        }
+        .hud-top-left {
+          transform: scale(0.85);
+          transform-origin: top left;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" aria-label="Aura Diamond 3D baseball viewport"></div>
+    <div id="render-error" hidden>Aura Diamond 3D needs WebGL 2. Enable graphics acceleration in your browser, then reload.</div>
+
+    <!-- Top quick-switcher bar -->
+    <nav class="aura3d-top-bar" aria-label="Aura Diamond 3D quick switcher">
+      <span class="aura-badge">AURA3D ENGINE</span>
+      <button type="button" id="tb-quick" title="3-inning exhibition vs CPU">Quick Play</button>
+      <button type="button" id="tb-derby" title="10-out home run derby">Derby Lab</button>
+      <button type="button" id="tb-menu" title="Modes, World Classic &amp; Player Studio">Modes &amp; Tour</button>
+      <span class="bar-sep"></span>
+      <button type="button" data-park="sandlot">Harbor</button>
+      <button type="button" data-park="skyline">Midtown</button>
+      <button type="button" data-park="canyon">Canyon</button>
+      <button type="button" data-park="ivy">Ivy</button>
+      <button type="button" data-park="dome">Dome</button>
+      <button type="button" data-park="lunar">Lunar</button>
+    </nav>
+
+    <div class="aura3d-controls-hint" id="controls-hint">
+      PCI: WASD · SWING: SPACE (HOLD=POWER) · PITCH: 1-4 + AIM + SPACE · PUSH/RETREAT: SPACE
+    </div>
+
+    <!-- Broadcast HUD -->
+    <div id="hud" aria-hidden="true">
+      <div class="hud-top-left">
+        <div class="hud-mode-tag" id="h-mode">QUICK PLAY</div>
+        <table class="hud-linescore" id="h-linescore" aria-label="Line score"></table>
+        <div class="hud-status-row">
+          <div class="hud-chip">
+            <div class="k">Count</div>
+            <div class="v" id="h-count">0-0</div>
+            <div class="hud-count-dots">
+              <i class="b" id="cd-b0"></i><i class="b" id="cd-b1"></i><i class="b" id="cd-b2"></i><i class="b" id="cd-b3"></i>
+              <i class="s" id="cd-s0"></i><i class="s" id="cd-s1"></i><i class="s" id="cd-s2"></i>
+            </div>
+          </div>
+          <div class="hud-chip">
+            <div class="k">Outs</div>
+            <div class="hud-count-dots" style="margin-top:7px">
+              <i class="o" id="cd-o0"></i><i class="o" id="cd-o1"></i><i class="o" id="cd-o2"></i>
+            </div>
+            <div class="k" style="margin-top:6px">Inn <span id="h-inn">1</span> <span id="h-half">▲</span></div>
+          </div>
+          <div class="hud-chip">
+            <div class="k">Bases</div>
+            <div class="hud-bases">
+              <i class="b1" id="hb-1"></i><i class="b2" id="hb-2"></i><i class="b3" id="hb-3"></i>
+            </div>
+          </div>
+          <div class="hud-chip" id="h-matchup-chip">
+            <div class="k">Matchup</div>
+            <div class="v" id="h-matchup" style="font-size:13px">— vs —</div>
+            <div class="k" id="h-pitcher-rep">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-pitch-read">
+        <div class="chip" id="h-pitch-chip">4-SEAM · 94 MPH</div>
+      </div>
+
+      <div class="hud-zone" id="h-zone">
+        <div class="pci-dot" id="hz-pci" style="left:50%;top:50%"></div>
+        <div class="aim-dot" id="hz-aim" style="left:50%;top:50%"></div>
+        <div class="pitch-dot" id="hz-pitch" style="left:50%;top:-20px"></div>
+      </div>
+
+      <div class="hud-meter" id="h-meter">
+        <div class="sweet"></div>
+        <div class="needle" id="h-meter-needle" style="left:0%"></div>
+      </div>
+
+      <div class="hud-contact" id="h-contact">
+        <div class="grade" id="h-contact-grade">PERFECT</div>
+        <div class="data" id="h-contact-data">102.4 MPH · 28° · 412 FT</div>
+      </div>
+
+      <div class="hud-catch-prompt" id="h-catch-prompt">◉ SPACE — CATCH</div>
+
+      <div class="hud-lab-card" id="h-derby-card">
+        <div class="big" id="h-derby-hr">0</div>
+        <div class="row">HOME RUNS</div>
+        <div class="row">OUTS <span id="h-derby-outs">0</span>/10</div>
+        <div class="row">LONGEST <span id="h-derby-long">—</span></div>
+        <div class="row">TOTAL <span id="h-derby-total">0</span> FT</div>
+      </div>
+
+      <div class="hud-lab-card" id="h-bullpen-card">
+        <div class="big" id="h-bullpen-score">0/0</div>
+        <div class="row">PITCH READS</div>
+        <div class="row">STREAK <span id="h-bullpen-streak">0</span></div>
+        <div class="row">PITCH <span id="h-bullpen-round">1</span>/12</div>
+      </div>
+
+      <div class="hud-center-msg" id="h-msg">
+        <div class="big" id="h-msg-big">PLAY BALL</div>
+        <div class="small" id="h-msg-small">HARBOR SANDLOT</div>
+      </div>
+      <div class="hud-banner" id="h-banner">HOME RUN</div>
+    </div>
+
+    <div id="event-ticker" role="log" aria-live="off" aria-label="Game event ticker"></div>
+
+    <!-- Menu / modes overlay -->
+    <div id="menu">
+      <div class="menu-inner">
+        <div class="menu-title">AURA <em>DIAMOND</em> 3D</div>
+        <div class="menu-sub">The duel + the home run · six ballparks · one crown</div>
+
+        <div id="gameover-card">
+          <div class="go-title" id="go-title">FINAL</div>
+          <div class="go-line" id="go-line">—</div>
+        </div>
+
+        <div class="menu-grid">
+          <button type="button" class="mode-card" data-mode="quick">
+            <div class="mc-k">Exhibition</div>
+            <div class="mc-t">Quick Play</div>
+            <div class="mc-d">3-inning game vs the CPU. Real at-bats, extras if tied, mercy at +10.</div>
+          </button>
+          <button type="button" class="mode-card" data-mode="derby">
+            <div class="mc-k">Skill Lab</div>
+            <div class="mc-t">Derby Lab</div>
+            <div class="mc-d">10 outs. Infinite moonshots. Chase distance at every park — 500-ft bombs on the Moon.</div>
+          </button>
+          <button type="button" class="mode-card" data-mode="bullpen">
+            <div class="mc-k">Skill Lab</div>
+            <div class="mc-t">Bullpen Lab</div>
+            <div class="mc-d">Pitch-recognition drills. Read the seams, call the pitch (1–4) before it crosses.</div>
+          </button>
+          <button type="button" class="mode-card" data-mode="classic">
+            <div class="mc-k">Modes &amp; Tour</div>
+            <div class="mc-t">World Classic</div>
+            <div class="mc-d">32-team bracket. Survive five single-inning showdowns to lift the trophy.</div>
+          </button>
+          <button type="button" class="mode-card" data-mode="studio" id="mc-studio">
+            <div class="mc-k">Modes &amp; Tour</div>
+            <div class="mc-t">Player Studio</div>
+            <div class="mc-d">Uniform colors, bat skins and walk-up flair — set your look below.</div>
+          </button>
+        </div>
+
+        <div class="menu-section">
+          <div class="k">Ballpark</div>
+          <div class="pill-row" id="menu-parks"></div>
+        </div>
+
+        <div class="menu-section">
+          <div class="k">Your Club</div>
+          <div class="club-grid" id="menu-clubs"></div>
+        </div>
+
+        <div class="menu-section">
+          <div class="k">Difficulty</div>
+          <div class="pill-row" id="menu-diff">
+            <button type="button" class="pill" data-diff="rookie">Rookie</button>
+            <button type="button" class="pill active" data-diff="pro">Pro</button>
+            <button type="button" class="pill" data-diff="legend">Legend</button>
+          </div>
+        </div>
+
+        <div class="menu-section" id="studio-section">
+          <div class="k">Player Studio — Uniform · Bat Skin · Walk-Up Flair</div>
+          <div class="pill-row" id="studio-colors" style="margin-bottom:8px"></div>
+          <div class="pill-row" id="studio-bats" style="margin-bottom:8px"></div>
+          <div class="pill-row" id="studio-flair"></div>
+        </div>
+
+        <div id="bracket-panel"></div>
+
+        <div class="menu-actions">
+          <button type="button" class="big-play" id="menu-play">▶ Play Ball</button>
+          <button type="button" class="ghost-btn" id="menu-close">Close</button>
+        </div>
+        <div class="menu-footnote">WASD PCI/aim · SPACE swing/release/push · 1–4 pitch select · deterministic sim · Aura3D engine</div>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "outdoor",
+  "source": "hdr",
+  "faceSize": 256,
+  "mipCount": 5,
+  "format": "E5B9G9R9_UFLOAT_PACK32",
+  "specular": "outdoor.specular.ktx2",
+  "sh9": "outdoor.sh9.f32",
+  "sha256": {
+    "specular": "9697a425bba444f4dc4e3dc7565a57a800df5baa5cfc4e406dbddbafde40e5b8",
+    "sh9": "a55741d5aa636a07ebcd18c7da865196df920827e3455f072947005ece079e04"
+  },
+  "license": "CC0",
+  "tags": [
+    "stand-in"
+  ],
+  "bakedBy": "aura3d environments bake",
+  "samplesPerTexel": 128
+}

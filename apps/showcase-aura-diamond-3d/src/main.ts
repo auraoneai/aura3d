@@ -1,0 +1,3133 @@
+/**
+ * Aura Diamond 3D — broadcast-grade 3D baseball on the Aura3D engine.
+ *
+ * LOOK BRIEF (art-direction §sports/diamond):
+ *   Warm americana-meets-neon: deep dusk keys, stadium floods, chalk lines
+ *   glowing. Six ballparks — Harbor Sandlot (golden hour), Midtown Skyline
+ *   (night rooftop, window targets), Canyon Rim (overcast, deep alleys),
+ *   Ivy Classic (brick + vines), Typhoon Dome (indoor), Lunar Park
+ *   (polar-night, 1/6 gravity, 500-ft moonshots).
+ *
+ * ARCHITECTURE
+ *   All game logic lives in this file: a deterministic baseball sim (pitch
+ *   movement curves → PCI×timing contact → launch/exit-velo ball flight →
+ *   fence/field interaction), a full 3-inning game state machine with extras
+ *   and a +10 mercy rule, Derby/Bullpen labs, a 32-team World Classic bracket
+ *   and Player Studio cosmetics. The scene is rebuilt per ballpark through
+ *   `app.setScene`; runtime node handles are re-bound after each rebuild.
+ *   Athletes are typed catalog GLBs re-dressed with team-color cap/belt
+ *   accents; bat/bases/mound/walls are authored field geometry (no catalog
+ *   bat exists). The DOM HUD is wired every frame to the ids in index.html.
+ */
+import {
+  camera,
+  createAuraApp,
+  createGameAudio,
+  effects,
+  game,
+  instances,
+  lights,
+  looks,
+  material,
+  model,
+  primitives,
+  scene
+} from "@aura3d/engine";
+import {
+  createJuice,
+  createOverlayDriver,
+  createRumbleDriver,
+  createTweenEngine,
+  createFxParticlePass,
+  mountTouchControls,
+  sfx,
+  sfxUrl
+} from "@aura3d/engine/game";
+import { assets } from "../../../src/aura-assets";
+
+/* ================================================================== *
+ *  Types + small math helpers                                         *
+ * ================================================================== */
+
+type Vec3 = [number, number, number];
+type AnyHandle = any;
+
+type ParkId = "sandlot" | "skyline" | "canyon" | "ivy" | "dome" | "lunar";
+type ModeId = "quick" | "derby" | "bullpen" | "classic" | "studio";
+type DiffId = "rookie" | "pro" | "legend";
+type PitchId = "fourseam" | "curve" | "slider" | "changeup";
+type Phase =
+  | "menu"
+  | "between"
+  | "windup"
+  | "pitch"
+  | "batted"
+  | "runners"
+  | "pitchSelect"
+  | "pitchMeter"
+  | "gameover";
+type CamMode = "menuOrbit" | "batting" | "pitching" | "track" | "celebrate";
+
+const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
+const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
+const smoothstep = (t: number): number => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
+const mix3 = (a: Vec3, b: Vec3, t: number): Vec3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+const mphToMs = (mph: number): number => mph * 0.44704;
+const mToFt = (m: number): number => m * 3.28084;
+
+/** Deterministic 32-bit LCG — same family as the other showcase routes. */
+function makeRng(seed: number): () => number {
+  let s = seed >>> 0;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 0xffffffff;
+  };
+}
+
+/** Signed jitter in [-1,1] from a uniform rng. */
+const jitter = (rng: () => number): number => rng() + rng() - 1;
+
+/* ================================================================== *
+ *  Field geometry (metres, compact-but-proportional diamond)          *
+ * ================================================================== */
+
+const MOUND_Z = -16.5;
+const MOUND_TOP = 0.28;
+const RELEASE_PT: Vec3 = [0.42, MOUND_TOP + 1.62, MOUND_Z + 0.6];
+const ZONE_HW = 0.56; // half-width of the effective strike zone (m)
+const ZONE_CY = 1.05; // zone centre height (m)
+const ZONE_HH = 0.55; // zone half-height (m)
+const BASE_PATH = 12.73; // home→1B legs at 45°, ~18 m paths
+const BASES: readonly Vec3[] = [
+  [BASE_PATH, 0.09, -BASE_PATH], // 1B
+  [0, 0.09, -BASE_PATH * 2], // 2B
+  [-BASE_PATH, 0.09, -BASE_PATH] // 3B
+];
+const HOME_PLATE: Vec3 = [0, 0.05, 0.4];
+const FOUL_DEG = 45;
+const TRAIL_COUNT = 16;
+const WAVER_COUNT = 18;
+const HIDDEN_SCALE = 0.0001;
+
+/* ================================================================== *
+ *  Ballparks                                                          *
+ * ================================================================== */
+
+interface ParkSpec {
+  readonly id: ParkId;
+  readonly name: string;
+  readonly short: string;
+  readonly look: string;
+  readonly grass: string;
+  readonly grassAlt: string;
+  readonly dirt: string;
+  readonly wall: string;
+  readonly wallTop: string;
+  readonly wallH: number;
+  readonly fenceCorner: number; // metres down the lines
+  readonly fenceCenter: number; // metres to dead centre
+  readonly fenceSegments: number;
+  readonly gravity: number;
+  readonly flood: boolean;
+  readonly night: boolean;
+  readonly tag: string;
+}
+
+const PARKS: Record<ParkId, ParkSpec> = {
+  sandlot: {
+    id: "sandlot",
+    name: "HARBOR SANDLOT",
+    short: "Harbor",
+    look: "golden-hour",
+    grass: "#3e6b3a",
+    grassAlt: "#355f33",
+    dirt: "#a8593a",
+    wall: "#4a5158",
+    wallTop: "#2c3138",
+    wallH: 1.4,
+    fenceCorner: 76,
+    fenceCenter: 96,
+    fenceSegments: 15,
+    gravity: 9.81,
+    flood: false,
+    night: false,
+    tag: "Golden-hour pickup diamond by the water."
+  },
+  skyline: {
+    id: "skyline",
+    name: "MIDTOWN SKYLINE",
+    short: "Midtown",
+    look: "night-city",
+    grass: "#274b3a",
+    grassAlt: "#214234",
+    dirt: "#6b4a38",
+    wall: "#1a2130",
+    wallTop: "#35d6ff",
+    wallH: 1.2,
+    fenceCorner: 82,
+    fenceCenter: 102,
+    fenceSegments: 15,
+    gravity: 9.81,
+    flood: true,
+    night: true,
+    tag: "Rooftop park — office windows are live targets."
+  },
+  canyon: {
+    id: "canyon",
+    name: "CANYON RIM",
+    short: "Canyon",
+    look: "overcast",
+    grass: "#6b5a3a",
+    grassAlt: "#5f5033",
+    dirt: "#9c5c3d",
+    wall: "#7a4630",
+    wallTop: "#5d3524",
+    wallH: 2.0,
+    fenceCorner: 88,
+    fenceCenter: 118,
+    fenceSegments: 15,
+    gravity: 9.81,
+    flood: false,
+    night: false,
+    tag: "Deep alleys carved into red rock."
+  },
+  ivy: {
+    id: "ivy",
+    name: "IVY CLASSIC",
+    short: "Ivy",
+    look: "outdoor-day",
+    grass: "#2e6b3f",
+    grassAlt: "#285f37",
+    dirt: "#a8593a",
+    wall: "#6e3226",
+    wallTop: "#2e6b3f",
+    wallH: 3.1,
+    fenceCorner: 80,
+    fenceCenter: 100,
+    fenceSegments: 15,
+    gravity: 9.81,
+    flood: true,
+    night: false,
+    tag: "Brick walls, green vines, a century of ghosts."
+  },
+  dome: {
+    id: "dome",
+    name: "TYPHOON DOME",
+    short: "Dome",
+    look: "interior-industrial",
+    grass: "#2f6ea3",
+    grassAlt: "#2a6494",
+    dirt: "#4d5a68",
+    wall: "#233046",
+    wallTop: "#ffb03a",
+    wallH: 2.4,
+    fenceCorner: 78,
+    fenceCenter: 98,
+    fenceSegments: 15,
+    gravity: 9.81,
+    flood: true,
+    night: true,
+    tag: "Indoor thunder — no weather, no mercy."
+  },
+  lunar: {
+    id: "lunar",
+    name: "LUNAR PARK",
+    short: "Lunar",
+    look: "polar-night",
+    grass: "#4a4f63",
+    grassAlt: "#3f4457",
+    dirt: "#5d6378",
+    wall: "#8894a8",
+    wallTop: "#7dfcff",
+    wallH: 1.6,
+    fenceCorner: 110,
+    fenceCenter: 152,
+    fenceSegments: 15,
+    gravity: 1.63,
+    flood: true,
+    night: true,
+    tag: "One-sixth gravity. Every fly ball is a launch window."
+  }
+};
+
+const PARK_ORDER: readonly ParkId[] = ["sandlot", "skyline", "canyon", "ivy", "dome", "lunar"];
+
+/** Fence radius at foul-cone angle θ (deg, 0 = dead centre). */
+function fenceRadius(park: ParkSpec, thetaDeg: number): number {
+  const f = clamp(Math.abs(thetaDeg) / FOUL_DEG, 0, 1);
+  return lerp(park.fenceCenter, park.fenceCorner, Math.pow(f, 0.82));
+}
+
+/** Point on the fence arc; θ=0 is dead centre (-Z). */
+function fencePoint(park: ParkSpec, thetaDeg: number, y = 0): Vec3 {
+  const r = fenceRadius(park, thetaDeg);
+  const rad = (thetaDeg * Math.PI) / 180;
+  return [Math.sin(rad) * r, y, -Math.cos(rad) * r];
+}
+
+/* ================================================================== *
+ *  Clubs + pitcher repertoires + pitch specs                          *
+ * ================================================================== */
+
+interface PitchSpec {
+  readonly id: PitchId;
+  readonly name: string;
+  readonly short: string;
+  readonly mph: readonly [number, number];
+  readonly breakX: number; // metres of lateral break at the plate
+  readonly breakY: number; // vertical break (negative = drop)
+  readonly breakPow: number; // >1 = late break
+}
+
+const PITCHES: Record<PitchId, PitchSpec> = {
+  fourseam: { id: "fourseam", name: "4-SEAM", short: "4FB", mph: [91, 97], breakX: 0.06, breakY: -0.18, breakPow: 1.15 },
+  curve: { id: "curve", name: "CURVE", short: "CB", mph: [73, 80], breakX: -0.16, breakY: -0.92, breakPow: 2.4 },
+  slider: { id: "slider", name: "SLIDER", short: "SL", mph: [82, 88], breakX: 0.52, breakY: -0.4, breakPow: 2.1 },
+  changeup: { id: "changeup", name: "CHANGE", short: "CH", mph: [77, 83], breakX: -0.1, breakY: -0.52, breakPow: 1.7 }
+};
+
+const PITCH_KEYS: readonly PitchId[] = ["fourseam", "curve", "slider", "changeup"];
+
+interface ClubSpec {
+  readonly id: string;
+  readonly name: string;
+  readonly abbr: string;
+  readonly color: string;
+  readonly tag: string;
+  readonly rep: readonly PitchId[];
+  readonly power: number;
+  readonly contact: number;
+  readonly pitching: number;
+}
+
+const CLUBS: readonly ClubSpec[] = [
+  { id: "wash", name: "Harbor Wash", abbr: "HBW", color: "#2e8fa8", tag: "Patient contact club — a line-drive machine.", rep: ["fourseam", "changeup", "curve"], power: 0.42, contact: 0.8, pitching: 0.6 },
+  { id: "liners", name: "Midtown Skyliners", abbr: "MSC", color: "#ffb03a", tag: "Window-shattering power bats.", rep: ["fourseam", "slider", "changeup"], power: 0.88, contact: 0.56, pitching: 0.64 },
+  { id: "riders", name: "Canyon Rim Riders", abbr: "CRR", color: "#a8593a", tag: "Gap hunters — they live in the deep alleys.", rep: ["curve", "slider", "fourseam"], power: 0.62, contact: 0.7, pitching: 0.68 },
+  { id: "classics", name: "Ivy Classics", abbr: "IVC", color: "#2e6b3f", tag: "Small-ball artisans. Death by a thousand singles.", rep: ["curve", "changeup"], power: 0.36, contact: 0.86, pitching: 0.56 },
+  { id: "zephyrs", name: "Typhoon Zephyrs", abbr: "TYZ", color: "#35d6ff", tag: "Ace factory — filthiest bullpen on the circuit.", rep: ["fourseam", "slider", "curve", "changeup"], power: 0.62, contact: 0.62, pitching: 0.92 },
+  { id: "orbiters", name: "Lunar Orbiters", abbr: "LNO", color: "#c8cfe0", tag: "Moon-ball power — every swing opens a launch window.", rep: ["fourseam", "curve"], power: 0.95, contact: 0.46, pitching: 0.55 },
+  { id: "comets", name: "Neon Comets", abbr: "NEC", color: "#ff42c8", tag: "Speed demons — legs turn singles into doubles.", rep: ["slider", "changeup"], power: 0.55, contact: 0.72, pitching: 0.62 },
+  { id: "seals", name: "Golden Bay Seals", abbr: "GBS", color: "#d4b06a", tag: "Golden-hour heroes — the balanced nine.", rep: ["fourseam", "curve", "changeup"], power: 0.6, contact: 0.66, pitching: 0.62 }
+];
+
+const clubById = (id: string): ClubSpec => CLUBS.find((c) => c.id === id) ?? CLUBS[7]!;
+
+interface DiffSpec {
+  readonly label: string;
+  readonly pciScale: number;
+  readonly cpuVeloMul: number;
+  readonly cpuContactSigma: number;
+  readonly cpuChase: number;
+  readonly cpuPower: number;
+  readonly sweetWiden: number;
+}
+
+const DIFFS: Record<DiffId, DiffSpec> = {
+  rookie: { label: "ROOKIE", pciScale: 1.28, cpuVeloMul: 0.9, cpuContactSigma: 0.11, cpuChase: 0.3, cpuPower: 0.55, sweetWiden: 1.4 },
+  pro: { label: "PRO", pciScale: 1.0, cpuVeloMul: 1.0, cpuContactSigma: 0.08, cpuChase: 0.2, cpuPower: 0.72, sweetWiden: 1.0 },
+  legend: { label: "LEGEND", pciScale: 0.82, cpuVeloMul: 1.07, cpuContactSigma: 0.055, cpuChase: 0.12, cpuPower: 0.88, sweetWiden: 0.72 }
+};
+
+/* ================================================================== *
+ *  Player Studio options                                              *
+ * ================================================================== */
+
+const STUDIO_COLORS: readonly { id: string; label: string; color: string }[] = [
+  { id: "amber", label: "Amber Home", color: "#ffb03a" },
+  { id: "cyan", label: "Comet Teal", color: "#35d6ff" },
+  { id: "crimson", label: "Crimson Sox", color: "#e5484d" },
+  { id: "ivy", label: "Ivy Green", color: "#3fae62" },
+  { id: "midnight", label: "Midnight Navy", color: "#4a6fd8" },
+  { id: "chalk", label: "Chalk White", color: "#f2eee3" }
+];
+
+const STUDIO_BATS: readonly { id: string; label: string; color: string; emissive: number }[] = [
+  { id: "ash", label: "Natural Ash", color: "#b98a4e", emissive: 0 },
+  { id: "blackout", label: "Blackout Maple", color: "#1d2028", emissive: 0 },
+  { id: "ember", label: "Ember Grain", color: "#c2542a", emissive: 0.35 },
+  { id: "neon", label: "Neon Teal", color: "#35d6ff", emissive: 0.9 },
+  { id: "lunar", label: "Lunar White", color: "#dfe6ee", emissive: 0.25 },
+  { id: "gilded", label: "Gilded", color: "#ffd76a", emissive: 0.55 }
+];
+
+const STUDIO_FLAIR: readonly { id: string; label: string }[] = [
+  { id: "fireworks", label: "Fireworks" },
+  { id: "spark", label: "Spark Storm" },
+  { id: "bass", label: "Bass Drop" },
+  { id: "moondust", label: "Moon Dust" },
+  { id: "none", label: "No Flair" }
+];
+
+/* ================================================================== *
+ *  World Classic — 32 national squads                                 *
+ * ================================================================== */
+
+interface ClassicTeam {
+  readonly name: string;
+  readonly abbr: string;
+  readonly rating: number;
+}
+
+const WORLD_TEAMS: readonly ClassicTeam[] = [
+  { name: "Aura Select", abbr: "AUR", rating: 0.72 },
+  { name: "Harbor City", abbr: "HBC", rating: 0.66 },
+  { name: "Midtown", abbr: "MID", rating: 0.78 },
+  { name: "Canyon Rim", abbr: "CYN", rating: 0.7 },
+  { name: "Ivy Borough", abbr: "IVY", rating: 0.6 },
+  { name: "Typhoon Bay", abbr: "TYP", rating: 0.82 },
+  { name: "Tranquility Base", abbr: "TRQ", rating: 0.86 },
+  { name: "Neon District", abbr: "NEO", rating: 0.68 },
+  { name: "Santo Domingo", abbr: "SDO", rating: 0.84 },
+  { name: "Osaka", abbr: "OSK", rating: 0.83 },
+  { name: "Seoul", abbr: "SEO", rating: 0.77 },
+  { name: "Havana", abbr: "HAV", rating: 0.74 },
+  { name: "San Juan", abbr: "SJU", rating: 0.73 },
+  { name: "Caracas", abbr: "CAR", rating: 0.71 },
+  { name: "Monterrey", abbr: "MTY", rating: 0.69 },
+  { name: "Tapei City", abbr: "TPE", rating: 0.67 },
+  { name: "Sydney", abbr: "SYD", rating: 0.62 },
+  { name: "Amsterdam", abbr: "AMS", rating: 0.58 },
+  { name: "Roma", abbr: "ROM", rating: 0.55 },
+  { name: "Berlin", abbr: "BER", rating: 0.52 },
+  { name: "London", abbr: "LDN", rating: 0.57 },
+  { name: "Paris", abbr: "PAR", rating: 0.5 },
+  { name: "Cape Town", abbr: "CAP", rating: 0.54 },
+  { name: "Auckland", abbr: "AKL", rating: 0.56 },
+  { name: "Toronto", abbr: "TOR", rating: 0.65 },
+  { name: "México City", abbr: "MEX", rating: 0.72 },
+  { name: "Panamá", abbr: "PAN", rating: 0.61 },
+  { name: "Managua", abbr: "MAN", rating: 0.59 },
+  { name: "Curaçao", abbr: "CUR", rating: 0.63 },
+  { name: "Melbourne", abbr: "MEL", rating: 0.53 },
+  { name: "Vancouver", abbr: "VAN", rating: 0.51 },
+  { name: "Reykjavík", abbr: "REY", rating: 0.48 }
+];
+
+interface BracketGame {
+  a: number;
+  b: number;
+  scoreA: number;
+  scoreB: number;
+  winner: number;
+  me: boolean;
+  played: boolean;
+}
+
+interface BracketState {
+  player: number; // WORLD_TEAMS index of the player's squad (always 0 = Aura Select)
+  rounds: BracketGame[][];
+  round: number;
+  alive: boolean;
+  champion: number | null;
+}
+
+const CLASSIC_ROUND_NAMES = ["ROUND OF 32", "ROUND OF 16", "QUARTER-FINAL", "SEMI-FINAL", "FINAL"];
+
+/* ================================================================== *
+ *  Pitch + contact sim types                                          *
+ * ================================================================== */
+
+interface LivePitch {
+  type: PitchId;
+  spec: PitchSpec;
+  t: number;
+  flightSec: number;
+  mph: number;
+  start: Vec3;
+  target: Vec3; // pre-break target on the plate plane (z=0)
+  breakX: number;
+  breakY: number;
+  releaseQ: number; // release-meter quality 0..1
+  resolved: boolean;
+  swung: boolean;
+}
+
+interface BattedBall {
+  pos: Vec3;
+  vel: Vec3;
+  evMph: number;
+  launchDeg: number;
+  sprayDeg: number;
+  hangT: number;
+  landPos: Vec3;
+  landDist: number;
+  landTheta: number;
+  maxY: number;
+  crossedFence: boolean;
+  hrCrossed: boolean;
+  wallHit: boolean;
+  outcome: string | null;
+  dead: boolean;
+  age: number;
+  resolveAt: number;
+  fromCpu: boolean;
+  catchable: boolean;
+  catchFielder: number;
+  catchProb: number;
+  windowHit: boolean;
+}
+
+/* ================================================================== *
+ *  Scene construction                                                 *
+ * ================================================================== */
+
+const chalkMat = () => material.pbr({ color: "#f5f1e4", roughness: 0.6, emissive: "#f5f1e4", emissiveIntensity: 0.18 });
+
+function buildFieldNodes(park: ParkSpec): any[] {
+  const nodes: any[] = [];
+  const grass = material.pbr({ color: park.grass, roughness: 0.94 });
+  const grassAlt = material.pbr({ color: park.grassAlt, roughness: 0.94 });
+  const dirt = material.pbr({ color: park.dirt, roughness: 0.96 });
+  const wallMat = material.pbr({ color: park.wall, roughness: 0.7 });
+  const wallTopMat = material.emissive({ color: park.wallTop, emissive: park.wallTop, emissiveIntensity: park.night ? 0.85 : 0.2 });
+  const bagMat = material.pbr({ color: "#ece8d8", roughness: 0.65 });
+
+  // Ground, mow stripes, infield dirt, home circle, mound
+  nodes.push(
+    primitives.plane({ name: "field-grass", size: [340, 340] as any, material: grass }).position(0, -0.02, -60),
+    ...Array.from({ length: 9 }, (_, i) =>
+      primitives
+        .plane({ name: `mow-${i}`, size: [340 / 9, 340] as any, material: i % 2 ? grass : grassAlt })
+        .position(-170 + (340 / 9) * (i + 0.5), -0.005 - 0.001 * i, -60)
+    ),
+    primitives.cylinder({ name: "infield-dirt", size: [26, 0.05, 26], material: dirt }).position(0, 0.012, -BASE_PATH - 1.5),
+    primitives.cylinder({ name: "home-dirt", size: [7.4, 0.06, 7.4], material: dirt }).position(0, 0.018, 0.4),
+    primitives.cylinder({ name: "mound", size: [5.6, MOUND_TOP, 5.6], material: dirt }).position(0, MOUND_TOP / 2 + 0.02, MOUND_Z),
+    primitives.box({ name: "mound-rubber", size: [0.6, 0.03, 0.16], material: bagMat }).position(0, MOUND_TOP + 0.045, MOUND_Z - 0.35)
+  );
+
+  // Base paths — thin dirt strips between the bases
+  for (const [x0, z0, x1, z1] of [
+    [0.9, -0.9, BASE_PATH - 0.4, -BASE_PATH + 0.4],
+    [BASE_PATH - 0.4, -BASE_PATH - 0.4, 0.9, -BASE_PATH * 2 + 0.9],
+    [-0.9, -BASE_PATH * 2 + 0.9, -BASE_PATH + 0.4, -BASE_PATH - 0.4],
+    [-BASE_PATH + 0.4, -BASE_PATH + 0.4, -0.9, -0.9]
+  ] as const) {
+    const mx = (x0 + x1) / 2;
+    const mz = (z0 + z1) / 2;
+    const len = Math.hypot(x1 - x0, z1 - z0);
+    const yaw = Math.atan2(x1 - x0, z1 - z0);
+    nodes.push(primitives.box({ name: `basepath-${mx.toFixed(1)}-${mz.toFixed(1)}`, size: [2.4, 0.04, len], material: dirt }).position(mx, 0.025, mz).rotate(0, yaw, 0));
+  }
+
+  // Base dirt circles + bags + home plate + boxes
+  for (let i = 0; i < 3; i++) {
+    const [bx, , bz] = BASES[i]!;
+    nodes.push(
+      primitives.cylinder({ name: `base-dirt-${i}`, size: [4.6, 0.05, 4.6], material: dirt }).position(bx, 0.02, bz),
+      primitives.box({ name: `base-bag-${i}`, size: [0.4, 0.16, 0.4], material: bagMat }).position(bx, 0.14, bz).rotate(0, Math.PI / 4, 0)
+    );
+  }
+  nodes.push(
+    primitives.box({ name: "home-plate", size: [0.44, 0.03, 0.44], material: bagMat }).position(0, 0.045, 0).rotate(0, Math.PI / 4, 0),
+    primitives.box({ name: "batters-box-l", size: [0.06, 0.02, 1.7], material: chalkMat() }).position(-1.15, 0.05, 0.35),
+    primitives.box({ name: "batters-box-r", size: [0.06, 0.02, 1.7], material: chalkMat() }).position(1.15, 0.05, 0.35),
+    primitives.box({ name: "batters-box-back", size: [2.3, 0.02, 0.06], material: chalkMat() }).position(0, 0.05, 1.2),
+    primitives.box({ name: "catchers-box-back", size: [1.4, 0.02, 0.06], material: chalkMat() }).position(0, 0.05, 2.1)
+  );
+
+  // Foul lines + poles
+  for (const side of [-1, 1]) {
+    const len = park.fenceCorner * 1.02;
+    const fx = Math.sin((side * FOUL_DEG * Math.PI) / 180);
+    const fz = -Math.cos((side * FOUL_DEG * Math.PI) / 180);
+    nodes.push(
+      primitives.box({ name: `foul-line-${side}`, size: [0.09, 0.02, len], material: chalkMat() }).position((fx * len) / 2, 0.05, (fz * len) / 2).rotate(0, (side * FOUL_DEG * Math.PI) / 180, 0),
+      primitives
+        .cylinder({ name: `foul-pole-${side}`, size: [0.14, 11, 0.14], material: material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: park.night ? 0.9 : 0.25 }) })
+        .position(fx * park.fenceCorner, 5.5, fz * park.fenceCorner)
+    );
+  }
+
+  // Outfield wall — segmented arc from foul pole to foul pole
+  const segs = park.fenceSegments;
+  for (let i = 0; i < segs; i++) {
+    const t0 = -FOUL_DEG + (2 * FOUL_DEG * i) / segs;
+    const t1 = -FOUL_DEG + (2 * FOUL_DEG * (i + 1)) / segs;
+    const tm = (t0 + t1) / 2;
+    const p0 = fencePoint(park, t0, 0);
+    const p1 = fencePoint(park, t1, 0);
+    const pm = fencePoint(park, tm, 0);
+    const segLen = Math.hypot(p1[0] - p0[0], p1[2] - p0[2]) + 0.35;
+    const yaw = Math.atan2(p1[0] - p0[0], p1[2] - p0[2]);
+    nodes.push(
+      primitives.box({ name: `wall-${i}`, size: [segLen, park.wallH, 0.5], material: wallMat }).position(pm[0], park.wallH / 2, pm[2]).rotate(0, yaw + Math.PI / 2, 0),
+      primitives.box({ name: `wall-cap-${i}`, size: [segLen, 0.14, 0.56], material: wallTopMat }).position(pm[0], park.wallH + 0.07, pm[2]).rotate(0, yaw + Math.PI / 2, 0)
+    );
+  }
+
+  // On-deck circles + dugout rails
+  nodes.push(
+    primitives.cylinder({ name: "ondeck-l", size: [1.5, 0.02, 1.5], material: chalkMat() }).position(-6.4, 0.04, 2.6),
+    primitives.cylinder({ name: "ondeck-r", size: [1.5, 0.02, 1.5], material: chalkMat() }).position(6.4, 0.04, 2.6),
+    primitives.box({ name: "dugout-l", size: [7, 1.1, 2.4], material: material.pbr({ color: "#1a2130", roughness: 0.85 }) }).position(-11, 0.55, 4.6),
+    primitives.box({ name: "dugout-r", size: [7, 1.1, 2.4], material: material.pbr({ color: "#1a2130", roughness: 0.85 }) }).position(11, 0.55, 4.6)
+  );
+
+  return nodes;
+}
+
+function buildStandsNodes(park: ParkSpec): any[] {
+  const nodes: any[] = [];
+  const seatMat = material.pbr({ color: park.night ? "#141a28" : "#26303e", roughness: 0.85 });
+  const rng = makeRng(0xbeef);
+
+  // Bleacher arcs beyond the wall — three tiers wrapping the outfield
+  for (let tier = 0; tier < 3; tier++) {
+    const rPad = park.fenceCorner + 8 + tier * 5.5;
+    const y = 1.2 + tier * 2.1;
+    for (let i = 0; i < 9; i++) {
+      const theta = -40 + (80 * i) / 8;
+      const rad = (theta * Math.PI) / 180;
+      const rr = rPad + (park.fenceCenter - park.fenceCorner) * Math.cos(rad) * 0.55;
+      nodes.push(primitives.box({ name: `bleacher-${tier}-${i}`, size: [13.5, 1.1, 3.4], material: seatMat }).position(Math.sin(rad) * rr, y, -Math.cos(rad) * rr).rotate(0, rad + Math.PI, 0));
+    }
+  }
+
+  // Crowd — instanced capsule silhouettes on the bleachers
+  const crowdT: any[] = [];
+  const crowdC: string[] = [];
+  const cols = ["#c96f4a", "#d8a75c", "#e8d8b0", "#a8563c", "#ffb03a", "#3d5a80", "#98c1d9", "#e0fbfc", "#293241", "#35d6ff"];
+  for (let tier = 0; tier < 3; tier++) {
+    const rPad = park.fenceCorner + 8 + tier * 5.5;
+    const y = 2.0 + tier * 2.1;
+    for (let i = 0; i < 74; i++) {
+      if (rng() < 0.18) continue;
+      const theta = -40 + (80 * i) / 73;
+      const rad = (theta * Math.PI) / 180;
+      const rr = rPad + (park.fenceCenter - park.fenceCorner) * Math.cos(rad) * 0.55 + (rng() - 0.5) * 1.4;
+      crowdT.push({ position: [Math.sin(rad) * rr + (rng() - 0.5) * 0.8, y + rng() * 0.4, -Math.cos(rad) * rr + (rng() - 0.5) * 0.8], scale: [0.5, 0.85 + rng() * 0.3, 0.5] });
+      crowdC.push(cols[Math.floor(rng() * cols.length)]!);
+    }
+  }
+  nodes.push((instances as any).capsule({ name: "crowd-bowl", transforms: crowdT, colors: crowdC, material: material.pbr({ color: "#ffffff", roughness: 0.9 }) }));
+
+  // Animated front-row wavers
+  for (let i = 0; i < WAVER_COUNT; i++) {
+    const theta = -36 + (72 * i) / (WAVER_COUNT - 1);
+    const rad = (theta * Math.PI) / 180;
+    const rr = park.fenceCorner + 4.2;
+    nodes.push(
+      primitives
+        .capsule({ name: `waver-${i}`, size: [1, 1, 1], material: material.pbr({ color: cols[i % cols.length], roughness: 0.85 }) })
+        .position(Math.sin(rad) * rr, 1.0, -Math.cos(rad) * rr)
+        .scale(0.42)
+        .runtime(game.runtimeNode(`waver-${i}`))
+    );
+  }
+
+  // Scoreboard + floodlight towers
+  const sb = fencePoint(park, 0, 0);
+  nodes.push(
+    model(assets.rooftopScoreboardRigMeshy, { name: "scoreboard-rig", targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(sb[0] * 1.06, park.wallH + 0.2, sb[2] * 1.06 - 4).rotate(0, Math.PI, 0).runtime(game.runtimeNode("scoreboard-rig")),
+    primitives.box({ name: "scoreboard-screen", size: [10.5, 3.4, 0.4], material: material.emissive({ color: "#0d2436", emissive: "#1b4a66", emissiveIntensity: 0.9 }) }).position(sb[0] * 1.04, park.wallH + 7.4, sb[2] * 1.04 - 3.6).runtime(game.runtimeNode("scoreboard-screen"))
+  );
+
+  if (park.flood) {
+    const towers: Vec3[] = [
+      [-park.fenceCorner * 0.72, 0, -park.fenceCorner * 0.55 - 6],
+      [park.fenceCorner * 0.72, 0, -park.fenceCorner * 0.55 - 6],
+      [-park.fenceCorner * 0.5, 0, 14],
+      [park.fenceCorner * 0.5, 0, 14]
+    ];
+    towers.forEach(([tx, , tz], i) => {
+      nodes.push(
+        model(assets.rooftopFloodlightTowerMeshy, { name: `flood-${i}`, targetHeight: 16, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz).rotate(0, Math.atan2(-tx, 10 - tz) + Math.PI, 0),
+        lights.spot({ name: `flood-spot-${i}`, position: [tx * 0.9, 15, tz * 0.9], target: [0, 0, -10], angle: 0.6, penumbra: 0.55, intensity: 2.0, color: park.id === "lunar" ? "#bfe0ff" : "#fff2d4", distance: 160 }),
+        effects.lightCone({ name: `flood-cone-${i}`, position: [tx * 0.9, 14.6, tz * 0.9], direction: [-tx * 0.05, -1, (10 - tz) * 0.05], color: "#bfe0ff", intensity: 0.22, length: 15, coneAngle: 0.5, softness: 0.6 } as any)
+      );
+    });
+  }
+
+  return nodes;
+}
+
+function buildParkExtras(park: ParkSpec): any[] {
+  const nodes: any[] = [];
+  switch (park.id) {
+    case "sandlot": {
+      nodes.push(
+        primitives.plane({ name: "harbor-water", size: [220, 60] as any, material: material.pbr({ color: "#2e5d7a", roughness: 0.35, metalness: 0.3 }) }).position(60, -0.4, -135),
+        model(assets.siegeWindmillTowerMeshy, { name: "sandlot-windmill", targetHeight: 13, role: "setDressing", scaleMode: "fit" }).position(-42, 0, -72).rotate(0, 0.6, 0),
+        model(assets.siegeWatchtowerMeshy, { name: "sandlot-tower", targetHeight: 12, role: "setDressing", scaleMode: "fit" }).position(48, 0, -58).rotate(0, -0.4, 0),
+        model(assets.propPineTree, { name: "pine-a", targetHeight: 9, role: "setDressing", scaleMode: "fit" }).position(-34, 0, -82),
+        model(assets.propPineTree, { name: "pine-b", targetHeight: 7.5, role: "setDressing", scaleMode: "fit" }).position(38, 0, -84).rotate(0, 1.2, 0),
+        model(assets.neonStreetLampProp, { name: "sandlot-lamp", targetHeight: 5.4, role: "setDressing", scaleMode: "fit" }).position(-14, 0, 16)
+      );
+      break;
+    }
+    case "skyline": {
+      const buildings: [any, number, number, number, number][] = [
+        [assets.showcaseSkylineCity, -72, -95, 46, 0.5],
+        [assets.showcaseModernBuildingOne, 74, -100, 52, -0.4],
+        [assets.showcaseModernOfficeBuilding, -95, -40, 38, 0.9],
+        [assets.showcaseVoxelBuilding, 95, -34, 30, -0.9],
+        [assets.showcaseModernBuildingOne, 0, -150, 60, 0.1]
+      ];
+      buildings.forEach(([a, x, z, h, r], i) => {
+        nodes.push(model(a as any, { name: `skyline-bldg-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, r, 0));
+      });
+      for (let i = 0; i < 4; i++) {
+        const theta = -24 + i * 16;
+        const pm = fencePoint(park, theta, 0);
+        nodes.push(
+          primitives
+            .box({ name: `window-target-${i}`, size: [7.5, 4.6, 0.5], material: material.emissive({ color: "#16324a", emissive: "#35d6ff", emissiveIntensity: 0.55 }) })
+            .position(pm[0] * 1.18, 9.5 + i * 2.2, pm[2] * 1.18 - 3)
+            .rotate(0, (theta * Math.PI) / 180, 0)
+            .runtime(game.runtimeNode(`window-target-${i}`))
+        );
+      }
+      for (const [lx, lz] of [[-26, 8], [26, 8], [-46, -30], [46, -30]] as const) {
+        nodes.push(model(assets.neonStreetLampProp, { name: `lamp-${lx}`, targetHeight: 6, role: "setDressing", scaleMode: "fit" }).position(lx, 0, lz));
+      }
+      break;
+    }
+    case "canyon": {
+      const rocks: [any, number, number, number, number][] = [
+        [assets.propRockB, -55, -92, 16, 0.3],
+        [assets.propRockB, 52, -98, 20, -0.7],
+        [assets.propRockA, -78, -55, 9, 1.1],
+        [assets.propRockA, 80, -50, 8, -0.4],
+        [assets.propRockB, 0, -142, 26, 0]
+      ];
+      rocks.forEach(([a, x, z, h, r], i) => {
+        nodes.push(model(a as any, { name: `canyon-rock-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, r, 0));
+      });
+      for (const [tx, tz] of [[-64, -80], [66, -84], [-88, -20], [88, -16]] as const) {
+        nodes.push(model(assets.propPineTree, { name: `canyon-pine-${tx}`, targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz));
+      }
+      break;
+    }
+    case "ivy": {
+      nodes.push(
+        model(assets.showcaseStadiumSeats, { name: "ivy-grandstand", targetHeight: 14, role: "setDressing", scaleMode: "fit" }).position(0, 0, 26).rotate(0, Math.PI, 0),
+        model(assets.billiardsTrophyCabinetMeshy, { name: "ivy-trophy", targetHeight: 2.4, role: "setDressing", scaleMode: "fit" }).position(-9.5, 1.2, 8.4).rotate(0, 0.9, 0),
+        model(assets.clashDragonStatueMeshy, { name: "ivy-statue", targetHeight: 4.2, role: "primaryWorld", scaleMode: "fit" }).position(14, 0, 10).rotate(0, -2.4, 0),
+        ...Array.from({ length: 7 }, (_, i) => {
+          const theta = -36 + i * 12;
+          const pm = fencePoint(park, theta, 0);
+          return primitives.box({ name: `ivy-vine-${i}`, size: [10.5, 2.6, 0.4], material: material.pbr({ color: "#3fae62", roughness: 0.9 }) }).position(pm[0] * 0.995, park.wallH + 1.4, pm[2] * 0.995).rotate(0, (theta * Math.PI) / 180, 0);
+        })
+      );
+      break;
+    }
+    case "dome": {
+      nodes.push(
+        model(assets.auroraHabitatDomeMeshy, { name: "typhoon-dome-shell", targetHeight: 60, role: "setDressing", scaleMode: "fit" }).position(0, -0.4, -42).rotate(0, Math.PI, 0),
+        ...Array.from({ length: 5 }, (_, i) => primitives.box({ name: `dome-rafter-${i}`, size: [1.2, 1.2, 190], material: material.pbr({ color: "#233046", roughness: 0.6, metalness: 0.4 }) }).position(-60 + i * 30, 26, -50)),
+        ...Array.from({ length: 4 }, (_, i) => primitives.box({ name: `dome-banner-${i}`, size: [3.2, 7, 0.2], material: material.emissive({ color: "#ffb03a", emissive: i % 2 ? "#35d6ff" : "#ffb03a", emissiveIntensity: 0.7 }) }).position(-18 + i * 12, 14, 18))
+      );
+      break;
+    }
+    case "lunar": {
+      nodes.push(
+        model(assets.gravityPlanetEarth, { name: "lunar-earth", targetHeight: 90, role: "primaryWorld", scaleMode: "fit" }).position(-30, 66, -260),
+        model(assets.lunarRoverMeshy, { name: "lunar-rover", targetHeight: 2.6, role: "setDressing", scaleMode: "fit" }).position(-17, 0, 9).rotate(0, 0.8, 0),
+        ...Array.from({ length: 6 }, (_, i) => primitives.cylinder({ name: `regolith-${i}`, size: [4 + i, 0.5, 4 + i * 0.7], material: material.pbr({ color: "#5d6378", roughness: 1 }) }).position(-90 + i * 38, 0.1, -120 - (i % 2) * 30)),
+        model(assets.siegeWatchtowerMeshy, { name: "lunar-comms", targetHeight: 15, role: "setDressing", scaleMode: "fit" }).position(60, 0, -70).rotate(0, -0.5, 0)
+      );
+      break;
+    }
+  }
+  return nodes;
+}
+
+/** A re-dressed catalog athlete: GLB body + team cap + waist band accents. */
+function buildAthleteNodes(id: string, asset: any): any[] {
+  return [
+    model(asset, { name: id, targetHeight: 1.86, role: "primaryCharacter", scaleMode: "fit" }).position(0, -80, 0).runtime(game.runtimeNode(id)),
+    primitives.cylinder({ name: `${id}-cap`, size: [0.24, 0.09, 0.24], material: material.pbr({ color: "#ffb03a", roughness: 0.6 }) }).runtime(game.runtimeNode(`${id}-cap`)),
+    primitives.torus({ name: `${id}-belt`, size: [0.24, 0.045] as any, material: material.pbr({ color: "#ffb03a", roughness: 0.55 }) }).runtime(game.runtimeNode(`${id}-belt`))
+  ];
+}
+
+const FIELDER_IDS = ["f-c", "f-1b", "f-2b", "f-ss", "f-3b", "f-lf", "f-cf", "f-rf"] as const;
+const FIELDER_SPOTS: Record<string, Vec3> = {
+  "f-c": [0, 0, 2.4],
+  "f-1b": [14.2, 0, -14.2],
+  "f-2b": [7.4, 0, -19.5],
+  "f-ss": [-8.2, 0, -19.5],
+  "f-3b": [-14.2, 0, -14.2],
+  "f-lf": [-30, 0, -52],
+  "f-cf": [0, 0, -68],
+  "f-rf": [30, 0, -52]
+};
+
+function buildActorsNodes(): any[] {
+  const nodes: any[] = [
+    ...buildAthleteNodes("pitcher", assets.rooftopShooterCleanMeshy),
+    ...buildAthleteNodes("batter", assets.rooftopAthleteShooter),
+    ...FIELDER_IDS.flatMap((id) => buildAthleteNodes(id, assets.rooftopAthleteDefender)),
+    ...Array.from({ length: 3 }, (_, i) => buildAthleteNodes(`runner-${i}`, assets.skylineHeroRunner)),
+    primitives.capsule({ name: "umpire-body", size: [1, 1, 1], material: material.pbr({ color: "#20242e", roughness: 0.8 }) }).position(0.6, 0.85, 3.4).scale(0.55),
+    primitives.sphere({ name: "umpire-head", size: [0.22, 0.22, 0.22], material: material.pbr({ color: "#c68a5a", roughness: 0.8 }) }).position(0.6, 1.62, 3.4)
+  ];
+
+  // The bat — no catalog bat exists; a maple primitive is authored field geometry.
+  nodes.push(primitives.cylinder({ name: "bat", size: [0.075, 0.92, 0.075], material: material.pbr({ color: "#b98a4e", roughness: 0.62 }) }).runtime(game.runtimeNode("bat")));
+
+  // Ball — siegeGolfBall reads as a seamed baseball at 15 cm; shadow + trail
+  nodes.push(
+    model(assets.siegeGolfBall, { name: "ball", targetHeight: 0.15, role: "setDressing", scaleMode: "fit" }).position(0, -60, 0).runtime(game.runtimeNode("ball")),
+    primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.006, 0.34], material: material.pbr({ color: "#000000", opacity: 0.4, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow")),
+    effects.trail({ name: "ball-ribbon", target: "ball", color: "#f5f1e4", width: 0.1, maxPoints: 40, intensity: 0.85 } as any)
+  );
+
+  for (let i = 0; i < TRAIL_COUNT; i++) {
+    nodes.push(
+      primitives.sphere({ name: `ball-trail-${i}`, size: [0.09, 0.09, 0.09], material: material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: 0.5 }) }).scale(HIDDEN_SCALE).runtime(game.runtimeNode(`ball-trail-${i}`))
+    );
+  }
+
+  // Strike-zone helpers: PCI ring (batting) + aim dot (pitching) + landing ring
+  nodes.push(
+    primitives.torus({ name: "pci-ring", size: [0.42, 0.045] as any, material: material.emissive({ color: "#ffb03a", emissive: "#ffb03a", emissiveIntensity: 1.1 }) }).runtime(game.runtimeNode("pci-ring")),
+    primitives.sphere({ name: "aim-dot", size: [0.16, 0.16, 0.16], material: material.emissive({ color: "#35d6ff", emissive: "#35d6ff", emissiveIntensity: 1.2 }) }).runtime(game.runtimeNode("aim-dot")),
+    primitives.torus({ name: "land-ring", size: [0.5, 0.04] as any, material: material.emissive({ color: "#7dfcff", emissive: "#7dfcff", emissiveIntensity: 1.15 }) }).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("land-ring")),
+    primitives.torus({ name: "zone-frame", size: [0.62, 0.03] as any, material: material.emissive({ color: "#f5f1e4", emissive: "#f5f1e4", emissiveIntensity: 0.3 }) }).position(0, ZONE_CY, 0.1).runtime(game.runtimeNode("zone-frame"))
+  );
+
+  // Celebration particle fountains (hidden until fired)
+  nodes.push(
+    effects.particles({ name: "confetti", emitter: "fountain", position: [0, 4, 0], color: "#ffd76a", intensity: 1, visible: false, particleCount: 260, speed: 1.2, radius: 3.2, gravity: -1.2 } as any).runtime(game.runtimeNode("confetti")),
+    effects.particles({ name: "hr-burst", emitter: "fountain", position: [0, 1.2, -2], color: "#ffb03a", intensity: 1, visible: false, particleCount: 200, speed: 1.6, radius: 1.6, gravity: -2.4 } as any).runtime(game.runtimeNode("hr-burst")),
+    effects.particles({ name: "flair-burst", emitter: "fountain", position: [-0.8, 1.4, 0.4], color: "#35d6ff", intensity: 1, visible: false, particleCount: 160, speed: 1.1, radius: 0.8, gravity: -0.8 } as any).runtime(game.runtimeNode("flair-burst"))
+  );
+
+  return nodes;
+}
+
+function buildParkScene(park: ParkSpec): any {
+  const lookOverrides: Record<string, any> = {
+    sandlot: { fogDensityScale: 0.35, exposureEv: 0.1 },
+    skyline: { fogDensityScale: 0.5, exposureEv: 0.08 },
+    canyon: { fogDensityScale: 0.5, exposureEv: 0.04 },
+    ivy: { fogDensityScale: 0.4, exposureEv: 0.06 },
+    dome: { fogDensityScale: 0.4, exposureEv: 0.1 },
+    lunar: { fogDensityScale: 0.3, exposureEv: 0.12 }
+  };
+  return scene()
+    .add(looks.preset(park.look as any, lookOverrides[park.id] ?? {}))
+    .background(park.id === "lunar" ? "#06080f" : park.id === "skyline" ? "#0b1020" : park.id === "dome" ? "#10141f" : "#1a2030")
+    .camera(camera.perspective({ fov: 42, near: 0.2, far: 700, position: [0, 26, 42], target: [0, 0, -14] }))
+    .addMany(buildFieldNodes(park))
+    .addMany(buildStandsNodes(park))
+    .addMany(buildParkExtras(park))
+    .addMany(buildActorsNodes())
+    .add(effects.contactShadows({ intensity: 0.7, length: 0.3 }))
+    .add(effects.bloom({ intensity: park.night ? 0.4 : 0.26, threshold: 0.74 }))
+    .add(effects.vignette({ intensity: 0.2, smoothness: 0.7 }))
+    .add(effects.colorGrade({ contrast: 1.06, saturation: park.id === "lunar" ? 0.92 : 1.1 }))
+    .add(effects.motionBlur({ intensity: 0.12 }));
+}
+
+/* ================================================================== *
+ *  Boot                                                               *
+ * ================================================================== */
+
+const getEl = <T extends HTMLElement>(id: string): T | null => document.getElementById(id) as T | null;
+
+function boot(): void {
+  const mountPoint = document.getElementById("app");
+  const renderError = getEl("render-error");
+  let auraApp: ReturnType<typeof createAuraApp>;
+  try {
+    auraApp = createAuraApp("#app", {
+      scene: buildParkScene(PARKS.sandlot),
+      renderer: { quality: "high" }
+    } as any);
+  } catch (err) {
+    if (renderError) {
+      renderError.hidden = false;
+      renderError.textContent = `Aura Diamond 3D failed to start: ${String(err)}`;
+    }
+    return;
+  }
+  if (!mountPoint) return;
+  const app = auraApp;
+
+  /* ---------- DOM refs ---------- */
+  const el = {
+    hud: getEl("hud"),
+    mode: getEl("h-mode"),
+    linescore: getEl("h-linescore"),
+    count: getEl("h-count"),
+    inn: getEl("h-inn"),
+    half: getEl("h-half"),
+    matchup: getEl("h-matchup"),
+    pitcherRep: getEl("h-pitcher-rep"),
+    pitchChip: getEl("h-pitch-chip"),
+    zone: getEl("h-zone"),
+    pciDot: getEl("hz-pci"),
+    aimDot: getEl("hz-aim"),
+    pitchDot: getEl("hz-pitch"),
+    meter: getEl("h-meter"),
+    needle: getEl("h-meter-needle"),
+    contact: getEl("h-contact"),
+    contactGrade: getEl("h-contact-grade"),
+    contactData: getEl("h-contact-data"),
+    catchPrompt: getEl("h-catch-prompt"),
+    derbyCard: getEl("h-derby-card"),
+    derbyHr: getEl("h-derby-hr"),
+    derbyOuts: getEl("h-derby-outs"),
+    derbyLong: getEl("h-derby-long"),
+    derbyTotal: getEl("h-derby-total"),
+    bullpenCard: getEl("h-bullpen-card"),
+    bullpenScore: getEl("h-bullpen-score"),
+    bullpenStreak: getEl("h-bullpen-streak"),
+    bullpenRound: getEl("h-bullpen-round"),
+    msg: getEl("h-msg"),
+    msgBig: getEl("h-msg-big"),
+    msgSmall: getEl("h-msg-small"),
+    banner: getEl("h-banner"),
+    ticker: getEl("event-ticker"),
+    menu: getEl("menu"),
+    menuParks: getEl("menu-parks"),
+    menuClubs: getEl("menu-clubs"),
+    menuDiff: getEl("menu-diff"),
+    studioColors: getEl("studio-colors"),
+    studioBats: getEl("studio-bats"),
+    studioFlair: getEl("studio-flair"),
+    studioSection: getEl("studio-section"),
+    bracketPanel: getEl("bracket-panel"),
+    menuPlay: getEl("menu-play"),
+    menuClose: getEl("menu-close"),
+    goCard: getEl("gameover-card"),
+    goTitle: getEl("go-title"),
+    goLine: getEl("go-line"),
+    tbQuick: getEl("tb-quick"),
+    tbDerby: getEl("tb-derby"),
+    tbMenu: getEl("tb-menu"),
+    controlsHint: getEl("controls-hint")
+  };
+  const countDots = {
+    b: [0, 1, 2, 3].map((i) => getEl(`cd-b${i}`)),
+    s: [0, 1, 2].map((i) => getEl(`cd-s${i}`)),
+    o: [0, 1, 2].map((i) => getEl(`cd-o${i}`))
+  };
+  const baseDots = [getEl("hb-1"), getEl("hb-2"), getEl("hb-3")];
+
+  /* ---------- Systems ---------- */
+  const eventLog = game.eventLog({ label: "aura-diamond events", maxEvents: 48 });
+  const tryReq = (id: string): AnyHandle => {
+    try {
+      return app.nodes.require(id);
+    } catch {
+      return null;
+    }
+  };
+
+  let H: Record<string, AnyHandle> = {};
+  function bindHandles(): void {
+    const req = (id: string) => app.nodes.require(id);
+    H = {
+      ball: req("ball"),
+      ballShadow: req("ball-shadow"),
+      bat: req("bat"),
+      pci: req("pci-ring"),
+      aim: req("aim-dot"),
+      landRing: req("land-ring"),
+      zoneFrame: req("zone-frame"),
+      pitcher: req("pitcher"),
+      batter: req("batter"),
+      confetti: tryReq("confetti"),
+      hrBurst: tryReq("hr-burst"),
+      flairBurst: tryReq("flair-burst")
+    };
+    for (const id of FIELDER_IDS) H[id] = req(id);
+    for (let i = 0; i < 3; i++) H[`runner-${i}`] = req(`runner-${i}`);
+    for (const id of ["pitcher", "batter", ...FIELDER_IDS, "runner-0", "runner-1", "runner-2"]) {
+      H[`${id}-cap`] = tryReq(`${id}-cap`);
+      H[`${id}-belt`] = tryReq(`${id}-belt`);
+    }
+    H.wavers = Array.from({ length: WAVER_COUNT }, (_, i) => tryReq(`waver-${i}`));
+    H.trail = Array.from({ length: TRAIL_COUNT }, (_, i) => tryReq(`ball-trail-${i}`));
+    H.windows = Array.from({ length: 4 }, (_, i) => tryReq(`window-target-${i}`));
+  }
+  bindHandles();
+
+  /* ---------- Input ---------- */
+  const input = app.input({
+    actions: {
+      swing: ["Space"],
+      pitch1: ["Digit1", "Numpad1"],
+      pitch2: ["Digit2", "Numpad2"],
+      pitch3: ["Digit3", "Numpad3"],
+      pitch4: ["Digit4", "Numpad4"],
+      pciL: ["KeyA", "ArrowLeft"],
+      pciR: ["KeyD", "ArrowRight"],
+      pciU: ["KeyW", "ArrowUp"],
+      pciD: ["KeyS", "ArrowDown"],
+      retreat: ["KeyX"],
+      menu: ["Escape"]
+    },
+    bufferMs: { swing: 140 } as any
+  });
+
+  /* ---------- Audio ---------- */
+  const audio = createGameAudio({
+    browserContext: true,
+    cues: {
+      crack: { id: "crack", asset: { url: assets.skylineCoinChimeSfx.url }, volume: 0.75 },
+      contact: { id: "contact", asset: { url: assets.skylineCoinChimeSfx.url }, volume: 0.4 },
+      pitch: { id: "pitch", asset: { url: assets.skylineDashWindSfx.url }, volume: 0.4 },
+      pop: { id: "pop", asset: { url: assets.rooftopBucketsSwishSfx.url }, volume: 0.55 },
+      foul: { id: "foul", asset: { url: assets.rooftopBucketsRimClankSfx.url }, volume: 0.5 },
+      strikeout: { id: "strikeout", asset: { url: assets.rooftopBucketsBuzzerFailSfx.url }, volume: 0.6 },
+      homer: { id: "homer", asset: { url: assets.skylineCheckpointFanfareSfx.url }, volume: 0.85 },
+      homerBig: { id: "homerBig", asset: { url: assets.turboFinishFanfareSfx.url }, volume: 0.9 },
+      quad: { id: "quad", asset: { url: assets.blockfallQuadFanfareSfx.url }, volume: 0.9 },
+      crowd: { id: "crowd", asset: { url: assets.rooftopBucketsAmbientRooftopSfx.url }, volume: 0.3, loop: true },
+      uiClick: { id: "uiClick", asset: { url: sfxUrl(sfx.ui.click[0]) }, volume: 0.4 },
+      uiConfirm: { id: "uiConfirm", asset: { url: sfxUrl(sfx.ui.confirm[0]) }, volume: 0.5 },
+      swing: { id: "swing", asset: { url: sfxUrl(sfx.whoosh.swingLight[0]) }, volume: 0.5 },
+      win: { id: "win", asset: { url: sfxUrl(sfx.stinger.win[0]) }, volume: 0.8 },
+      lose: { id: "lose", asset: { url: sfxUrl(sfx.stinger.lose[0]) }, volume: 0.7 },
+      walk: { id: "walk", asset: { url: sfxUrl(sfx.ui.reward[0]) }, volume: 0.5 }
+    },
+    buses: [{ id: "sfx" } as any]
+  } as any);
+  const unlockAudio = () => void audio.unlock();
+  window.addEventListener("pointerdown", unlockAudio, { once: true });
+  window.addEventListener("keydown", unlockAudio, { once: true });
+  const cue = (id: string) => {
+    try {
+      void (audio as any).cue(id);
+    } catch {
+      /* audio is best-effort */
+    }
+  };
+
+  /* ---------- Juice / FX ---------- */
+  const params = new URLSearchParams(window.location.search);
+  const reducedMotion = params.has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false);
+  const reducedFlash = params.has("reducedFlash") || (window.matchMedia?.("(prefers-reduced-flash: reduce)")?.matches ?? false);
+
+  let fxLayer = document.getElementById("fx-layer");
+  if (!fxLayer) {
+    fxLayer = document.createElement("div");
+    fxLayer.id = "fx-layer";
+    fxLayer.setAttribute("aria-hidden", "true");
+    fxLayer.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:26;background:transparent;";
+    document.body.appendChild(fxLayer);
+  }
+  let hitStopUntil = 0;
+  const fxCtl = (game as any).effects({ app, reducedMotion, reducedFlash });
+  const FX_KIND: Record<string, string> = {
+    spark: "hit-spark",
+    dust: "ground-dust",
+    ring: "ring-shockwave",
+    streak: "dash-trail",
+    burst: "aura-burst",
+    flash: "super-flash"
+  };
+  const fx = createFxParticlePass({
+    burst: (kind: string, position: any, o: any) => {
+      try {
+        fxCtl.spawn(FX_KIND[kind] ?? "hit-spark", position, { radius: Math.max(0.2, (o?.count ?? 10) / 24), color: o?.color, intensity: 1 });
+      } catch {
+        /* fx best-effort */
+      }
+    }
+  } as any);
+  const JUICE_EVENTS: Record<string, any> = {
+    crack: { fx: { kind: "spark", count: 14, color: "#ffd76a", speed: 4 }, cue: "crack", shake: 0.35, punch: { fovDeg: 2.4, ms: 200 }, rumble: { ms: 50, strong: 0.5, weak: 0.8 } },
+    homer: { fx: { kind: "ring", count: 26, color: "#ffb03a", speed: 6.5 }, cue: "homer", hitStop: 0.09, shake: 0.55, punch: { fovDeg: 3.6, dolly: -0.5, ms: 320 }, flash: { color: "#ffb03a", peak: 0.22, ms: 180 } },
+    strikeout: { cue: "strikeout", flash: { color: "#ff5252", peak: 0.12, ms: 130 } },
+    pop: { cue: "pop", punch: { fovDeg: 1.2, ms: 140 } },
+    foul: { cue: "foul", flash: { color: "#ff9a3d", peak: 0.1, ms: 110 } },
+    pitch: { cue: "pitch" },
+    swing: { cue: "swing", punch: { fovDeg: 0.8, ms: 100 } },
+    walkoff: { cue: "homerBig", shake: 0.5, punch: { fovDeg: 3.2, ms: 380 }, flash: { color: "#ffd76a", peak: 0.24, ms: 260 } },
+    win: { cue: "win", shake: 0.4, flash: { color: "#5be37d", peak: 0.2, ms: 220 } },
+    lose: { cue: "lose", flash: { color: "#ff5252", peak: 0.16, ms: 200 } },
+    flair: { fx: { kind: "burst", count: 18, color: "#35d6ff", speed: 3 }, cue: "quad" }
+  };
+  const juice = createJuice({
+    events: JUICE_EVENTS as any,
+    camera: (app as any).camera,
+    session: { reducedMotion, reducedFlash, hitStop: (s: number) => (hitStopUntil = performance.now() / 1000 + s), slowMo: () => {} } as any,
+    fx,
+    overlay: createOverlayDriver({ domElement: fxLayer }),
+    tweens: createTweenEngine(),
+    rumble: createRumbleDriver(),
+    sound: { cue }
+  } as any);
+  const juiceFire = (ev: string, at?: Record<string, unknown>) => {
+    try {
+      (juice as any).fire(ev, at);
+    } catch {
+      /* juice best-effort */
+    }
+  };
+  let touchControls: any = null;
+  try {
+    touchControls = mountTouchControls(
+      input as any,
+      { preset: "dpad-4btn", bindings: { "stick.left": "pciL", "stick.right": "pciR", "stick.up": "pciU", "stick.down": "pciD", light: "swing", heavy: "swing", jump: "swing", special: "swing" }, haptics: { ms: 14 } } as any,
+      { doc: document as any, root: document.body as any, coarsePointer: () => window.matchMedia?.("(pointer: coarse)")?.matches ?? false } as any
+    );
+  } catch {
+    /* touch controls optional */
+  }
+
+  /* ---------- Game state ---------- */
+  interface GameState {
+    mode: ModeId;
+    pendingMode: ModeId;
+    phase: Phase;
+    park: ParkId;
+    diff: DiffId;
+    playerClub: string;
+    cpuClub: string;
+    inning: number;
+    inningsTotal: number;
+    half: "top" | "bottom";
+    outs: number;
+    balls: number;
+    strikes: number;
+    bases: [boolean, boolean, boolean];
+    score: { player: number; cpu: number };
+    linescore: { player: number[]; cpu: number[] };
+    pitchNo: number;
+    pitch: LivePitch | null;
+    batted: BattedBall | null;
+    phaseT: number;
+    pci: [number, number];
+    aim: [number, number];
+    selPitch: PitchId;
+    meterNeedle: number;
+    meterDir: number;
+    chargeStart: number;
+    charging: boolean;
+    lastTimingErr: number | null;
+    lastGrade: string;
+    lastEV: number;
+    lastLA: number;
+    lastDistFt: number;
+    lastBallPos: Vec3;
+    derby: { outs: number; hrs: number; longest: number; totalFt: number; done: boolean };
+    bullpen: { round: number; correct: number; streak: number; bestStreak: number; guess: PitchId | null; queue: PitchId[]; done: boolean };
+    studio: { color: string; bat: string; flair: string; swings: number };
+    classic: BracketState | null;
+    catchPrompt: { fielder: string; pos: Vec3 } | null;
+    runnersAnim: { node: number; from: Vec3; to: Vec3; t: number }[];
+    runnerBase: number[];
+    batterRunning: boolean;
+    pushUsed: boolean;
+    pendingOutSlot: number;
+    windowFlash: number;
+    gameNo: number;
+    bannerT: number;
+    msgT: number;
+    cam: { mode: CamMode; eye: Vec3; target: Vec3; fov: number; orbit: number };
+    seed: number;
+    rng: () => number;
+    over: boolean;
+    result: string;
+    lastBatColor: string;
+    lastFieldColor: string;
+  }
+
+  const G: GameState = {
+    mode: "quick",
+    pendingMode: "quick",
+    phase: "menu",
+    park: "sandlot",
+    diff: "pro",
+    playerClub: "seals",
+    cpuClub: "liners",
+    inning: 1,
+    inningsTotal: 3,
+    half: "top",
+    outs: 0,
+    balls: 0,
+    strikes: 0,
+    bases: [false, false, false],
+    score: { player: 0, cpu: 0 },
+    linescore: { player: [], cpu: [] },
+    pitchNo: 0,
+    pitch: null,
+    batted: null,
+    phaseT: 0,
+    pci: [0, 0],
+    aim: [0, 0],
+    selPitch: "fourseam",
+    meterNeedle: 0,
+    meterDir: 1,
+    chargeStart: 0,
+    charging: false,
+    lastTimingErr: null,
+    lastGrade: "",
+    lastEV: 0,
+    lastLA: 0,
+    lastDistFt: 0,
+    lastBallPos: [0, -60, 0],
+    derby: { outs: 0, hrs: 0, longest: 0, totalFt: 0, done: false },
+    bullpen: { round: 0, correct: 0, streak: 0, bestStreak: 0, guess: null, queue: [], done: false },
+    studio: { color: "#ffb03a", bat: "ash", flair: "fireworks", swings: 0 },
+    classic: null,
+    catchPrompt: null,
+    runnersAnim: [],
+    runnerBase: [-1, -1, -1],
+    batterRunning: false,
+    pushUsed: false,
+    pendingOutSlot: -1,
+    windowFlash: 0,
+    gameNo: 0,
+    bannerT: 0,
+    msgT: 0,
+    cam: { mode: "menuOrbit", eye: [0, 26, 42], target: [0, 1, -14], fov: 42, orbit: 0 },
+    seed: 0xd1a03d,
+    rng: makeRng(0xd1a03d),
+    over: false,
+    result: "",
+    lastBatColor: "",
+    lastFieldColor: ""
+  };
+
+  const park = (): ParkSpec => PARKS[G.park];
+  const battingIsPlayer = (): boolean => G.half === "top";
+  const battingClub = (): ClubSpec => (battingIsPlayer() ? clubById(G.playerClub) : clubById(G.cpuClub));
+  const fieldingClub = (): ClubSpec => (battingIsPlayer() ? clubById(G.cpuClub) : clubById(G.playerClub));
+  const battingTeamKey = (): "player" | "cpu" => (battingIsPlayer() ? "player" : "cpu");
+  const playerPitchingTurn = (): boolean => (G.mode === "quick" || G.mode === "classic") && G.half === "bottom";
+
+  /* ---------- Event ticker + banners ---------- */
+  function tick(label: string, severity: "info" | "success" | "warning" = "info", value?: number): void {
+    const rec = eventLog.push({ type: "game", label, severity, value, time: performance.now() / 1000, frame: framesRendered });
+    const t = el.ticker;
+    if (t) {
+      const item = document.createElement("div");
+      item.className = `tick${severity === "success" ? " tick-success" : severity === "warning" ? " tick-warn" : ""}`;
+      item.textContent = rec.label;
+      t.prepend(item);
+      while (t.children.length > 5) t.lastElementChild?.remove();
+      requestAnimationFrame(() => item.classList.add("show"));
+    }
+  }
+
+  function showBanner(text: string, dur = 1.8): void {
+    if (el.banner) {
+      el.banner.textContent = text;
+      el.banner.classList.add("show");
+    }
+    G.bannerT = dur;
+  }
+
+  function showMsg(big: string, small: string, dur = 2.2): void {
+    if (el.msgBig) el.msgBig.textContent = big;
+    if (el.msgSmall) el.msgSmall.textContent = small;
+    el.msg?.classList.add("show");
+    G.msgT = dur;
+  }
+
+  let contactHideAt = 0;
+  let pitchChipHideAt = 0;
+  let flairOnUntil = 0;
+  let confettiUntil = 0;
+  let hrBurstUntil = 0;
+
+  function showContact(grade: string, data: string, dur = 1.4): void {
+    if (el.contactGrade) {
+      el.contactGrade.textContent = grade;
+      el.contactGrade.className = `grade ${grade.toLowerCase().replace(/\s.*/, "")}`;
+    }
+    if (el.contactData) el.contactData.textContent = data;
+    el.contact?.classList.add("show");
+    contactHideAt = performance.now() / 1000 + dur;
+  }
+
+  function showPitchChip(text: string, cls = "", dur = 1.7): void {
+    const c = el.pitchChip;
+    if (!c) return;
+    c.textContent = text;
+    c.className = `chip show ${cls}`.trim();
+    pitchChipHideAt = performance.now() / 1000 + dur;
+  }
+
+  /* ---------- Linescore ---------- */
+  let linescoreCache = "";
+  function renderLinescore(): void {
+    const table = el.linescore;
+    if (!table) return;
+    const cols = Math.max(G.inningsTotal, G.inning);
+    const head = `<tr><th></th>${Array.from({ length: cols }, (_, i) => `<th>${i + 1}</th>`).join("")}<th>R</th></tr>`;
+    const rowFor = (key: "player" | "cpu") => {
+      const c = key === "player" ? clubById(G.playerClub) : clubById(G.cpuClub);
+      const batting = battingTeamKey() === key && !G.over ? " class=\"batting\"" : "";
+      const cells = Array.from({ length: cols }, (_, i) => {
+        const v = G.linescore[key][i];
+        return `<td${i === G.inning - 1 && batting ? " class=\"cur\"" : ""}>${v ?? ""}</td>`;
+      }).join("");
+      return `<tr${batting}><td class="tname">${c.abbr}</td>${cells}<td class="runs">${G.score[key]}</td></tr>`;
+    };
+    const html = head + rowFor("player") + rowFor("cpu");
+    if (html !== linescoreCache) {
+      linescoreCache = html;
+      table.innerHTML = html;
+    }
+  }
+
+  /* ---------- Game flow ---------- */
+  function resetCount(): void {
+    G.balls = 0;
+    G.strikes = 0;
+  }
+
+  function resetField(): void {
+    G.bases = [false, false, false];
+    G.runnerBase = [-1, -1, -1];
+    G.batted = null;
+    G.pitch = null;
+    G.catchPrompt = null;
+    G.batterRunning = false;
+    G.pushUsed = false;
+    G.pendingOutSlot = -1;
+    G.runnersAnim = [];
+    resetCount();
+  }
+
+  function resetMatch(mode: ModeId): void {
+    G.gameNo += 1;
+    G.rng = makeRng((G.seed + G.gameNo * 7919) >>> 0);
+    G.inning = 1;
+    G.half = "top";
+    G.inningsTotal = mode === "classic" ? 1 : 3;
+    G.outs = 0;
+    G.score = { player: 0, cpu: 0 };
+    G.linescore = { player: [], cpu: [] };
+    G.pitchNo = 0;
+    G.derby = { outs: 0, hrs: 0, longest: 0, totalFt: 0, done: false };
+    G.bullpen = { round: 0, correct: 0, streak: 0, bestStreak: 0, guess: null, queue: [], done: false };
+    G.studio.swings = 0;
+    G.over = false;
+    G.result = "";
+    resetField();
+    if (mode === "bullpen") {
+      const pool: PitchId[] = ["fourseam", "curve", "slider", "changeup"];
+      const q = Array.from({ length: 12 }, (_, i) => pool[i % 4]!);
+      for (let i = q.length - 1; i > 0; i--) {
+        const j = Math.floor(G.rng() * (i + 1));
+        [q[i], q[j]] = [q[j]!, q[i]!];
+      }
+      G.bullpen.queue = q;
+    }
+  }
+
+  function startClassicBracket(): void {
+    const rng = makeRng(0xc1a551 + G.gameNo * 131);
+    const order = Array.from({ length: WORLD_TEAMS.length }, (_, i) => i).filter((i) => i !== 0);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [order[i], order[j]] = [order[j]!, order[i]!];
+    }
+    order.unshift(0); // player's squad "Aura Select" opens the bracket
+    const bracket: BracketState = { player: 0, rounds: [], round: 0, alive: true, champion: null };
+    bracket.rounds.push(
+      Array.from({ length: 16 }, (_, g) => ({
+        a: order[g * 2]!,
+        b: order[g * 2 + 1]!,
+        scoreA: -1,
+        scoreB: -1,
+        winner: -1,
+        me: order[g * 2] === 0 || order[g * 2 + 1] === 0,
+        played: false
+      }))
+    );
+    G.classic = bracket;
+  }
+
+  function simOtherClassicGames(): void {
+    const b = G.classic;
+    if (!b) return;
+    const round = b.rounds[b.round];
+    if (!round) return;
+    for (const gm of round) {
+      if (gm.me || gm.played) continue;
+      const ra = WORLD_TEAMS[gm.a]!.rating;
+      const rb = WORLD_TEAMS[gm.b]!.rating;
+      const aWins = G.rng() < ra / (ra + rb);
+      const hi = 2 + Math.floor(G.rng() * 4);
+      const lo = Math.floor(G.rng() * 2.4);
+      gm.scoreA = aWins ? hi : lo;
+      gm.scoreB = aWins ? lo : hi;
+      gm.winner = aWins ? gm.a : gm.b;
+      gm.played = true;
+    }
+  }
+
+  /** Resolve the player's classic game result + advance (or end) the bracket. */
+  function advanceClassicRound(playerWon: boolean, playerScore: number, cpuScore: number): void {
+    const b = G.classic;
+    if (!b) return;
+    const round = b.rounds[b.round]!;
+    const meGame = round.find((g) => g.me);
+    if (meGame) {
+      if (meGame.a === b.player) {
+        meGame.scoreA = playerScore;
+        meGame.scoreB = cpuScore;
+      } else {
+        meGame.scoreA = cpuScore;
+        meGame.scoreB = playerScore;
+      }
+      meGame.winner = playerWon ? b.player : meGame.a === b.player ? meGame.b : meGame.a;
+      meGame.played = true;
+    }
+    simOtherClassicGames();
+    if (b.round >= 4) {
+      b.champion = playerWon ? b.player : (meGame?.winner ?? -1);
+      b.alive = playerWon;
+      return;
+    }
+    const winners = round.map((g) => g.winner);
+    const nextRound: BracketGame[] = [];
+    for (let i = 0; i < winners.length; i += 2) {
+      const a = winners[i]!;
+      const bb = winners[i + 1]!;
+      nextRound.push({ a, b: bb, scoreA: -1, scoreB: -1, winner: -1, me: a === b.player || bb === b.player, played: false });
+    }
+    b.rounds.push(nextRound);
+    b.round += 1;
+    b.alive = playerWon;
+    if (!playerWon) {
+      // sim the rest of the bracket for completeness
+      while (b.round <= 4) {
+        simOtherClassicGames();
+        const r2 = b.rounds[b.round]!;
+        const w2 = r2.map((g) => g.winner);
+        if (b.round === 4) {
+          b.champion = w2[0] ?? -1;
+          break;
+        }
+        const nr: BracketGame[] = [];
+        for (let i = 0; i < w2.length; i += 2) nr.push({ a: w2[i]!, b: w2[i + 1]!, scoreA: -1, scoreB: -1, winner: -1, me: false, played: false });
+        b.rounds.push(nr);
+        b.round += 1;
+      }
+    }
+  }
+
+  function renderBracket(): void {
+    const panel = el.bracketPanel;
+    const b = G.classic;
+    if (!panel) return;
+    if (!b || G.pendingMode !== "classic") {
+      panel.classList.remove("show");
+      return;
+    }
+    const cols = b.rounds
+      .map((round, r) => {
+        const gamesHtml = round
+          .map((g) => {
+            const ta = WORLD_TEAMS[g.a]!;
+            const tb = WORLD_TEAMS[g.b]!;
+            const score = g.played ? ` ${g.scoreA}·${g.scoreB}` : "";
+            const wAbbr = g.played ? WORLD_TEAMS[g.winner]!.abbr : "";
+            const cls = `bp-game${g.me ? " me" : ""}`;
+            return `<div class="${cls}">${g.played ? `<span class="w">${wAbbr}</span> ` : ""}${ta.abbr} v ${tb.abbr}${score}</div>`;
+          })
+          .join("");
+        return `<div class="bp-round"><div class="r-name">${CLASSIC_ROUND_NAMES[r] ?? `R${r}`}</div>${gamesHtml}</div>`;
+      })
+      .join("");
+    const status =
+      b.champion !== null && b.champion !== undefined && b.champion >= 0
+        ? `<div class="bp-round"><div class="r-name">CHAMPION</div><div class="bp-game me"><span class="w">${WORLD_TEAMS[b.champion]!.abbr}</span> ${WORLD_TEAMS[b.champion]!.name}</div></div>`
+        : "";
+    panel.innerHTML = `<div class="bp-rounds">${cols}${status}</div>`;
+    panel.classList.add("show");
+  }
+
+  /* ---------- Mode + menu plumbing ---------- */
+  const MODE_TAGS: Record<ModeId, string> = {
+    quick: "QUICK PLAY",
+    derby: "DERBY LAB",
+    bullpen: "BULLPEN LAB",
+    classic: "WORLD CLASSIC",
+    studio: "PLAYER STUDIO"
+  };
+
+  function setModeTag(): void {
+    if (el.mode) el.mode.textContent = MODE_TAGS[G.mode];
+  }
+
+  function startMode(mode: ModeId): void {
+    // World Classic continuity: if a bracket is mid-run and the player is
+    // still alive, the next game picks up the pending fixture.
+    const resumeClassic = mode === "classic" && G.classic !== null && G.classic.alive && G.classic.champion === null && G.result.startsWith("advanced");
+    G.mode = mode;
+    G.pendingMode = mode;
+    if (mode === "classic" && !resumeClassic) startClassicBracket();
+    resetMatch(mode);
+    setModeTag();
+    if (mode === "classic") {
+      const b = G.classic;
+      const meGame = b?.rounds[b.round]?.find((g) => g.me && !g.played);
+      const oppIdx = meGame ? (meGame.a === b!.player ? meGame.b : meGame.a) : -1;
+      const opp = oppIdx >= 0 ? WORLD_TEAMS[oppIdx]! : WORLD_TEAMS[1]!;
+      const others = CLUBS.filter((c) => c.id !== G.playerClub);
+      G.cpuClub = others[Math.floor(G.rng() * others.length)]!.id;
+      showMsg("WORLD CLASSIC", `${CLASSIC_ROUND_NAMES[b?.round ?? 0]} — AUR vs ${opp.abbr}`, 2.6);
+      tick(`world classic — ${(CLASSIC_ROUND_NAMES[b?.round ?? 0] ?? "").toLowerCase()} vs ${opp.name}`, "info");
+      renderBracket();
+    } else if (mode === "derby") {
+      showMsg("DERBY LAB", `${park().name} — 10 OUTS`, 2.4);
+      tick("derby lab — chase the fence", "info");
+    } else if (mode === "bullpen") {
+      showMsg("BULLPEN LAB", "READ 12 PITCHES — CALL 1-4", 2.6);
+      tick("bullpen lab — pitch recognition", "info");
+    } else if (mode === "studio") {
+      showMsg("PLAYER STUDIO", "FREE SWINGS — SHOW THE LOOK", 2.4);
+      tick(`studio session — flair: ${G.studio.flair}`, "info");
+    } else {
+      const others = CLUBS.filter((c) => c.id !== G.playerClub);
+      G.cpuClub = others[Math.floor(G.rng() * others.length)]!.id;
+      showMsg("PLAY BALL", `${clubById(G.playerClub).abbr} vs ${clubById(G.cpuClub).abbr} — ${park().name}`, 2.4);
+      tick(`quick play — ${clubById(G.playerClub).name} vs ${clubById(G.cpuClub).name}`, "info");
+    }
+    applyUniforms();
+    el.menu?.classList.add("hidden");
+    el.hud?.classList.add("on");
+    el.goCard?.classList.remove("show");
+    setPhase("between");
+    cue("uiConfirm");
+    cue("crowd");
+    if (mode === "studio") fireFlair();
+  }
+
+  function openMenu(): void {
+    el.menu?.classList.remove("hidden");
+    el.hud?.classList.remove("on");
+    renderBracket();
+  }
+
+  function closeMenu(): void {
+    el.menu?.classList.add("hidden");
+    if (!G.over) el.hud?.classList.add("on");
+  }
+
+  function endGame(playerWon: boolean | null, reason: string): void {
+    G.over = true;
+    G.result = reason;
+    setPhase("gameover");
+    const isDerby = G.mode === "derby";
+    const isBullpen = G.mode === "bullpen";
+    if (el.goTitle) {
+      el.goTitle.textContent = isDerby ? "DERBY COMPLETE" : isBullpen ? "BULLPEN COMPLETE" : G.mode === "studio" ? "SESSION WRAP" : G.mode === "classic" && playerWon === null ? "BRACKET UPDATE" : playerWon === null ? "FINAL" : playerWon ? "YOU WIN" : "FINAL — DEFEAT";
+    }
+    if (el.goLine) {
+      if (isDerby) {
+        el.goLine.textContent = `${G.derby.hrs} HR · LONGEST ${G.derby.longest} FT · ${G.derby.totalFt} FT TOTAL — ${park().name}`;
+      } else if (isBullpen) {
+        el.goLine.textContent = `${G.bullpen.correct}/12 READS · BEST STREAK ${G.bullpen.bestStreak} — ${park().name}`;
+      } else if (G.mode === "studio") {
+        el.goLine.textContent = `${G.studio.swings} swings logged — look: ${G.studio.color} / ${G.studio.bat} / ${G.studio.flair}`;
+      } else if (G.mode === "classic") {
+        const b = G.classic;
+        el.goLine.textContent =
+          b?.champion === b?.player ? `CHAMPIONS — ${reason}. The Classic is yours.` : b?.champion !== null && b?.champion !== undefined ? `${reason} — ${WORLD_TEAMS[b.champion]?.name ?? "the field"} takes the crown` : `${reason}`;
+      } else {
+        el.goLine.textContent = `${clubById(G.playerClub).name} ${G.score.player} — ${G.score.cpu} ${clubById(G.cpuClub).name} · ${reason}`;
+      }
+    }
+    el.goCard?.classList.add("show");
+    renderBracket();
+    openMenu();
+    if (playerWon === true) {
+      cue("win");
+      juiceFire("win", {});
+      fireConfetti();
+    } else if (playerWon === false) {
+      cue("lose");
+      juiceFire("lose", {});
+    }
+    tick(reason, playerWon === true ? "success" : playerWon === false ? "warning" : "info");
+  }
+
+  /* ---------- Park switching ---------- */
+  function setPark(id: ParkId): void {
+    if (!PARKS[id] || G.park === id) return;
+    G.park = id;
+    try {
+      app.setScene(buildParkScene(PARKS[id]));
+      bindHandles();
+      G.lastBatColor = "";
+      G.lastFieldColor = "";
+      applyUniforms();
+      tick(`ballpark — ${PARKS[id].name.toLowerCase()}`, "info");
+      showBanner(PARKS[id].name, 1.8);
+    } catch (err) {
+      console.warn("[diamond] park rebuild failed", err);
+    }
+    document.querySelectorAll<HTMLButtonElement>("[data-park]").forEach((b) => b.classList.toggle("active", b.dataset.park === id));
+    document.querySelectorAll<HTMLButtonElement>("#menu-parks .pill").forEach((b) => b.classList.toggle("active", (b as HTMLElement).dataset.parkId === id));
+  }
+
+  /* ---------- Uniforms / studio ---------- */
+  const uniformCache = new Map<string, unknown>();
+  function uniformMaterial(color: string): any {
+    let m = uniformCache.get(color);
+    if (!m) {
+      m = material.pbr({ color, roughness: 0.5 });
+      uniformCache.set(color, m);
+    }
+    return m;
+  }
+
+  function applyUniforms(): void {
+    const batterColor = G.mode === "studio" ? G.studio.color : battingClub().color;
+    const fieldColor = fieldingClub().color;
+    for (const id of ["pitcher", ...FIELDER_IDS]) {
+      H[`${id}-cap`]?.setMaterial(uniformMaterial(fieldColor));
+      H[`${id}-belt`]?.setMaterial(uniformMaterial(fieldColor));
+    }
+    for (const id of ["batter", "runner-0", "runner-1", "runner-2"]) {
+      H[`${id}-cap`]?.setMaterial(uniformMaterial(batterColor));
+      H[`${id}-belt`]?.setMaterial(uniformMaterial(batterColor));
+    }
+    G.lastBatColor = batterColor;
+    G.lastFieldColor = fieldColor;
+    const batSpec = STUDIO_BATS.find((b) => b.id === G.studio.bat) ?? STUDIO_BATS[0]!;
+    H.bat?.setMaterial(batSpec.emissive > 0 ? material.emissive({ color: batSpec.color, emissive: batSpec.color, emissiveIntensity: batSpec.emissive }) : material.pbr({ color: batSpec.color, roughness: 0.55 }));
+  }
+
+  /** Keep uniforms honest when the half flips (batter takes fielding colors). */
+  function refreshUniformsByHalf(): void {
+    const batterColor = G.mode === "studio" ? G.studio.color : battingClub().color;
+    const fieldColor = fieldingClub().color;
+    if (batterColor !== G.lastBatColor || fieldColor !== G.lastFieldColor) applyUniforms();
+  }
+
+  function fireFlair(): void {
+    if (G.studio.flair === "none") return;
+    H.flairBurst?.setVisible(true);
+    flairOnUntil = performance.now() / 1000 + 2.2;
+    juiceFire("flair", { position: [-0.8, 1.4, 0.4] });
+    if (G.studio.flair === "bass") cue("quad");
+  }
+
+  function fireConfetti(): void {
+    confettiUntil = performance.now() / 1000 + 5;
+    H.confetti?.setVisible(true);
+  }
+  function fireHrBurst(): void {
+    hrBurstUntil = performance.now() / 1000 + 2.4;
+    H.hrBurst?.setVisible(true);
+  }
+
+  /* ---------- Pitch construction ---------- */
+  function makePitch(type: PitchId, aimX: number, aimY: number, opts: { meatball?: boolean; releaseQ?: number } = {}): LivePitch {
+    const spec = PITCHES[type];
+    const rng = G.rng;
+    const diffMul = opts.meatball ? 0.72 : DIFFS[G.diff].cpuVeloMul;
+    const mph = (spec.mph[0] + rng() * (spec.mph[1] - spec.mph[0])) * diffMul;
+    const dist = Math.abs(RELEASE_PT[2]);
+    const flightSec = dist / mphToMs(mph);
+    return {
+      type,
+      spec,
+      t: 0,
+      flightSec,
+      mph,
+      start: [...RELEASE_PT],
+      target: [aimX * ZONE_HW, ZONE_CY + aimY * ZONE_HH, 0],
+      breakX: opts.meatball ? spec.breakX * 0.3 : spec.breakX * (0.85 + rng() * 0.3) * (battingIsPlayer() ? 1 : -1),
+      breakY: opts.meatball ? spec.breakY * 0.3 : spec.breakY * (0.85 + rng() * 0.3),
+      releaseQ: opts.releaseQ ?? 1,
+      resolved: false,
+      swung: false
+    };
+  }
+
+  function pitchPosAt(p: LivePitch, t: number): Vec3 {
+    const tt = clamp(t, 0, 1);
+    const s = Math.pow(tt, p.spec.breakPow);
+    const x = lerp(p.start[0], p.target[0], tt) + p.breakX * s;
+    const y = Math.max(0.05, lerp(p.start[1], p.target[1], tt) + p.breakY * s - 0.18 * tt * tt);
+    const z = lerp(p.start[2], 0, tt);
+    if (t <= 1) return [x, y, z];
+    const ex = t - 1;
+    return [x + p.breakX * ex * 2.4, Math.max(0.35, y - ex * 1.6), ex * 8.5];
+  }
+
+  function zoneCoords(p: Vec3): [number, number] {
+    return [p[0] / ZONE_HW, (p[1] - ZONE_CY) / ZONE_HH];
+  }
+
+  function inZone(p: Vec3): boolean {
+    const [zx, zy] = zoneCoords(p);
+    return Math.abs(zx) <= 1 && Math.abs(zy) <= 1;
+  }
+
+  /* ---------- CPU pitch selection ---------- */
+  function cpuChoosePitch(): void {
+    const rep = fieldingClub().rep;
+    const rng = G.rng;
+    const ahead = G.strikes >= 2 || G.strikes > G.balls;
+    let aimX = 0;
+    let aimY = 0;
+    const meatball = G.mode === "derby" || G.mode === "studio";
+    if (meatball) {
+      aimX = jitter(rng) * 0.3;
+      aimY = jitter(rng) * 0.35;
+    } else if (ahead) {
+      const corner = Math.floor(rng() * 4);
+      aimX = (corner % 2 === 0 ? -1 : 1) * (0.85 + rng() * 0.45);
+      aimY = corner < 2 ? -0.95 - rng() * 0.4 : 0.95 + rng() * 0.35;
+    } else {
+      aimX = jitter(rng) * 0.75;
+      aimY = jitter(rng) * 0.6;
+      if (G.diff === "rookie" && rng() < 0.3) {
+        aimX *= 0.4;
+        aimY *= 0.4;
+      }
+    }
+    const weights = rep.map((_, i) => Math.pow(0.62, i));
+    let pick = rep[0]!;
+    let roll = rng() * weights.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < rep.length; i++) {
+      roll -= weights[i]!;
+      if (roll <= 0) {
+        pick = rep[i]!;
+        break;
+      }
+    }
+    if (meatball) pick = "fourseam";
+    if (G.mode === "bullpen") {
+      pick = G.bullpen.queue[G.bullpen.round % Math.max(1, G.bullpen.queue.length)] ?? "fourseam";
+      aimX = jitter(rng) * 0.6;
+      aimY = jitter(rng) * 0.55;
+    }
+    G.pitch = makePitch(pick, aimX, aimY, { meatball });
+    G.pitchNo += 1;
+    setPhase("windup");
+  }
+
+  /* ---------- Contact + batted-ball resolution ---------- */
+  function resolveSwing(p: LivePitch, timingErr: number, pciX: number, pciY: number, power: number, isPlayer: boolean): void {
+    p.swung = true;
+    p.resolved = true;
+    const cross = pitchPosAt(p, 1);
+    const [bx, by] = zoneCoords(cross);
+    const pciScale = isPlayer ? DIFFS[G.diff].pciScale : 1;
+    const radius = (power > 0.5 ? 0.85 : 1.0) * pciScale;
+    const dist = Math.hypot(pciX - bx, pciY - by);
+    const q = 1 - clamp(dist / (radius * 1.15), 0, 1);
+    const timingAbs = Math.abs(timingErr);
+    const whiffWindow = 0.155;
+
+    if (timingAbs > whiffWindow || dist > radius * 1.5) {
+      G.lastGrade = "WHIFF";
+      G.lastTimingErr = timingErr;
+      showContact("WHIFF", `${p.mph.toFixed(0)} MPH ${p.spec.name}`, 1.0);
+      tick("swing and a miss", "warning");
+      cue("swing");
+      registerStrike();
+      return;
+    }
+
+    let grade = "GOOD";
+    if (q > 0.78 && timingAbs < 0.05) grade = "PERFECT";
+    else if (timingErr < -0.07 || (q < 0.4 && timingErr < 0)) grade = "EARLY";
+    else if (timingErr > 0.07 || (q < 0.4 && timingErr > 0)) grade = "LATE";
+    G.lastGrade = grade;
+
+    const qualityBonus = grade === "PERFECT" ? 1 : grade === "GOOD" ? 0.78 : 0.55;
+    const club = battingClub();
+    const evMph = clamp(58 + q * 34 + qualityBonus * 12 + power * 11 + (isPlayer ? club.power * 8 : DIFFS[G.diff].cpuPower * 10) + jitter(G.rng) * 6, 48, 118);
+    const vDiff = pciY - by; // pci above ball → top contact → grounder
+    const la = clamp(26 + vDiff * -30 + (grade === "PERFECT" ? 6 : 0) + power * 5 + jitter(G.rng) * 7, -4, 54);
+    let spray = clamp(timingErr * 340 + jitter(G.rng) * 9, -58, 58);
+    if (grade === "EARLY") spray -= 8;
+    if (grade === "LATE") spray += 8;
+    const foul = Math.abs(spray) > FOUL_DEG;
+    const contactPos: Vec3 = [clamp(pciX, -1.4, 1.4) * 0.28 + cross[0] * 0.4, clamp(cross[1] - timingErr * 1.4, 0.45, 1.9), 0.35 - timingErr * 1.2];
+
+    const ev = mphToMs(evMph);
+    const laRad = (la * Math.PI) / 180;
+    const sprayRad = (spray * Math.PI) / 180;
+    const vel: Vec3 = [ev * Math.cos(laRad) * Math.sin(sprayRad), ev * Math.sin(laRad), -ev * Math.cos(laRad) * Math.cos(sprayRad)];
+
+    const ball = simBattedLanding(contactPos, vel);
+    ball.evMph = evMph;
+    ball.launchDeg = la;
+    ball.sprayDeg = spray;
+    ball.fromCpu = !isPlayer;
+    ball.maxY = contactPos[1];
+    G.lastEV = evMph;
+    G.lastLA = la;
+    G.lastDistFt = Math.round(mToFt(ball.landDist));
+    G.lastTimingErr = timingErr;
+
+    // Assist-catch eligibility: only on the player's fielding turn.
+    if (!isPlayerHitBallEligible(ball)) {
+      ball.catchable = false;
+    }
+    if (!isPlayer && ball.catchable) {
+      let best = 0;
+      let bestD = Infinity;
+      FIELDER_IDS.forEach((id, i) => {
+        const s = FIELDER_SPOTS[id]!;
+        const d = Math.hypot(s[0] - ball.landPos[0], s[2] - ball.landPos[2]);
+        if (d < bestD) {
+          bestD = d;
+          best = i;
+        }
+      });
+      ball.catchFielder = best;
+    }
+
+    showContact(grade, `${evMph.toFixed(1)} MPH · ${la.toFixed(0)}° · ${Math.round(mToFt(ball.landDist))} FT`, foul ? 1.0 : 1.6);
+    cue(isPlayer ? "crack" : "contact");
+    juiceFire("crack", { position: contactPos });
+
+    G.batted = ball;
+    G.batterRunning = true; // sprint to first during the flight
+    if (foul) {
+      ball.outcome = "foul";
+      ball.resolveAt = Math.min(ball.hangT, 1.4);
+    }
+    setPhase("batted");
+    tick(`${isPlayer ? "you" : club.abbr} put it in play — ${evMph.toFixed(0)} mph`, "info");
+  }
+
+  /** Catch-assist eligibility: CPU hit, fair, catchable hang time, in play. */
+  function isPlayerHitBallEligible(ball: BattedBall): boolean {
+    if (!ball.fromCpu) return false;
+    if (Math.abs(ball.landTheta) > FOUL_DEG || ball.hrCrossed || ball.wallHit) {
+      ball.catchable = false;
+      return true;
+    }
+    const fair = Math.abs(ball.landTheta) <= FOUL_DEG;
+    const inPlay = fair && ball.landDist < fenceRadius(park(), ball.landTheta) - 2;
+    ball.catchable = inPlay && ball.hangT > 1.3 && ball.landDist > 20;
+    return true;
+  }
+
+  /** Integrate a batted ball to its landing (also used for prediction). */
+  function simBattedLanding(pos0: Vec3, vel0: Vec3): BattedBall {
+    const g = park().gravity;
+    const k = park().id === "lunar" ? 0.0022 : 0.0042;
+    const pos: Vec3 = [...pos0];
+    const vel: Vec3 = [...vel0];
+    const dt = 1 / 120;
+    let t = 0;
+    let crossedFence = false;
+    let hrCrossed = false;
+    let wallHit = false;
+    let landPos: Vec3 = [...pos0];
+    let landTheta = 0;
+    let landDist = 0;
+    let maxY = pos0[1];
+    while (t < 14) {
+      const sp = Math.hypot(vel[0], vel[1], vel[2]);
+      vel[0] -= k * sp * vel[0] * dt;
+      vel[1] -= (g + k * sp * vel[1]) * dt;
+      vel[2] -= k * sp * vel[2] * dt;
+      pos[0] += vel[0] * dt;
+      pos[1] += vel[1] * dt;
+      pos[2] += vel[2] * dt;
+      t += dt;
+      if (pos[1] > maxY) maxY = pos[1];
+      const r = Math.hypot(pos[0], pos[2]);
+      const theta = (Math.atan2(pos[0], -pos[2]) * 180) / Math.PI;
+      const fenceR = Math.abs(theta) <= FOUL_DEG + 4 ? fenceRadius(park(), theta) : Infinity;
+      if (!crossedFence && r >= fenceR) {
+        crossedFence = true;
+        if (pos[1] > park().wallH && Math.abs(theta) <= FOUL_DEG) {
+          hrCrossed = true;
+        } else {
+          // In-park rebound off the wall — kick it back into play
+          wallHit = true;
+          const nx = pos[0] / r;
+          const nz = pos[2] / r;
+          const dot = vel[0] * nx + vel[2] * nz;
+          vel[0] = (vel[0] - 2 * dot * nx) * 0.42;
+          vel[2] = (vel[2] - 2 * dot * nz) * 0.42;
+          vel[1] *= 0.6;
+          pos[0] = nx * fenceR * 0.985;
+          pos[2] = nz * fenceR * 0.985;
+        }
+      }
+      // Behind-the-plate fouls die against the backstop
+      if (pos[2] > 5 && pos[1] < 3) {
+        landPos = [pos[0], Math.max(0.045, pos[1]), pos[2]];
+        landTheta = theta;
+        landDist = r;
+        break;
+      }
+      if (pos[1] <= 0.045) {
+        landPos = [pos[0], 0.045, pos[2]];
+        landTheta = theta;
+        landDist = r;
+        break;
+      }
+    }
+    return {
+      pos: [...pos0],
+      vel: [...vel0],
+      evMph: 0,
+      launchDeg: 0,
+      sprayDeg: 0,
+      hangT: t,
+      landPos,
+      landDist,
+      landTheta,
+      maxY,
+      crossedFence,
+      hrCrossed,
+      wallHit,
+      outcome: null,
+      dead: false,
+      age: 0,
+      resolveAt: t,
+      fromCpu: false,
+      catchable: false,
+      catchFielder: -1,
+      catchProb: 0,
+      windowHit: false
+    };
+  }
+
+  function classifyBatted(ball: BattedBall): void {
+    const p = park();
+    const theta = ball.landTheta;
+    if (ball.outcome) return;
+    if (Math.abs(theta) > FOUL_DEG) {
+      ball.outcome = "foul";
+      return;
+    }
+    if (ball.hrCrossed || (ball.landDist >= fenceRadius(p, theta) - 1 && ball.maxY > p.wallH && ball.hangT > 2.0)) {
+      ball.outcome = "homerun";
+      return;
+    }
+    if (ball.wallHit || ball.landDist >= fenceRadius(p, theta) - 3) {
+      ball.outcome = "double";
+      return;
+    }
+    if (ball.landDist < 26 || ball.launchDeg < 10) {
+      ball.outcome = G.rng() < 0.66 ? "groundout" : "single";
+      return;
+    }
+    const pCatch = clamp(0.16 + (ball.hangT - 1.1) * 0.3 - Math.max(0, ball.evMph - 82) * 0.009, 0.04, 0.93);
+    ball.catchProb = pCatch;
+    if (G.rng() < pCatch) {
+      ball.outcome = "flyout";
+      return;
+    }
+    ball.outcome = ball.landDist > 0.72 * fenceRadius(p, theta) ? (G.rng() < 0.14 ? "triple" : "double") : "single";
+  }
+
+  /* ---------- Count / outs / inning ---------- */
+  function nextBatter(next: Phase = "between"): void {
+    resetCount();
+    G.pitch = null;
+    G.batted = null;
+    G.catchPrompt = null;
+    G.charging = false;
+    G.batterRunning = false;
+    G.pendingOutSlot = -1;
+    if (!G.over) setPhase(next);
+  }
+
+  /** Same batter stays up — count preserved (foul balls, mid-count pitches). */
+  function continueAtBat(): void {
+    G.pitch = null;
+    G.batted = null;
+    G.catchPrompt = null;
+    G.charging = false;
+    if (!G.over) setPhase("between");
+  }
+
+  function registerStrike(): void {
+    // Lab modes don't track a traditional count
+    if (G.mode === "derby") {
+      G.derby.outs += 1;
+      showBanner(`OUT ${G.derby.outs}/10`, 1.4);
+      tick(`derby out ${G.derby.outs} — swing and a miss`, "warning");
+      cue("strikeout");
+      if (G.derby.outs >= 10) {
+        endGame(null, `derby: ${G.derby.hrs} HR, longest ${G.derby.longest} ft`);
+        return;
+      }
+      nextBatter();
+      return;
+    }
+    if (G.mode === "studio") {
+      nextBatter();
+      return;
+    }
+    G.strikes += 1;
+    if (G.strikes >= 3) {
+      recordOut(battingIsPlayer() ? "STRUCK OUT" : "STRIKEOUT — YOU GOT HIM");
+      cue("strikeout");
+      juiceFire("strikeout", {});
+      showBanner("STRIKEOUT", 1.5);
+      nextBatter();
+      return;
+    }
+    // Ball rides through to the mitt — the pitch stays alive visually.
+    showBanner("STRIKE", 0.9);
+  }
+
+  function registerBall(): void {
+    if (G.mode === "derby" || G.mode === "studio") {
+      // pitch rides to the mitt; cleanup happens in stepPitch
+      return;
+    }
+    G.balls += 1;
+    if (G.balls >= 4) {
+      tick("ball four — take your base", "info");
+      cue("walk");
+      showBanner("WALK", 1.4);
+      applyRunnerPlan(planRunnerMoves("walk"));
+      nextBatter("runners");
+      return;
+    }
+    showBanner("BALL", 0.9);
+  }
+
+  function recordOut(label: string): void {
+    G.outs += 1;
+    tick(`${label.toLowerCase()} — out ${G.outs}`, "warning");
+    if (G.outs >= 3) endHalf();
+  }
+
+  function endHalf(): void {
+    const key = battingTeamKey();
+    G.linescore[key][G.inning - 1] = G.linescore[key][G.inning - 1] ?? 0;
+    const diff = Math.abs(G.score.player - G.score.cpu);
+    const mercy = diff >= 10 && (G.inning >= 2 || G.half === "bottom");
+    const scheduled = G.inningsTotal;
+
+    if (G.half === "bottom") {
+      if (mercy) {
+        concludeMatch(G.score.player > G.score.cpu, `mercy rule — ${Math.max(G.score.player, G.score.cpu)}-${Math.min(G.score.player, G.score.cpu)} after ${G.inning}`);
+        return;
+      }
+      if (G.inning >= scheduled && G.score.player !== G.score.cpu) {
+        finishRegulation();
+        return;
+      }
+      // extras: keep playing until someone leads after a full inning
+      G.inning += 1;
+      G.half = "top";
+    } else {
+      // Top ends → bottom begins. Walk-off skip: home already leads late.
+      if (G.inning >= scheduled && G.score.cpu > G.score.player) {
+        finishRegulation();
+        return;
+      }
+      if (mercy && G.inning >= 2) {
+        concludeMatch(G.score.player > G.score.cpu, `mercy rule — ${Math.max(G.score.player, G.score.cpu)}-${Math.min(G.score.player, G.score.cpu)}`);
+        return;
+      }
+      G.half = "bottom";
+    }
+    G.outs = 0;
+    G.bases = [false, false, false];
+    G.runnerBase = [-1, -1, -1];
+    resetCount();
+    refreshUniformsByHalf();
+    showBanner(`${G.half === "top" ? "TOP" : "BOTTOM"} ${G.inning} — ${clubById(G.playerClub).abbr} ${G.score.player} · ${clubById(G.cpuClub).abbr} ${G.score.cpu}`, 2.0);
+    setPhase("between");
+  }
+
+  function finishRegulation(): void {
+    concludeMatch(G.score.player > G.score.cpu, `final after ${G.inning}`);
+  }
+
+  /** Route game end through the World Classic bracket when applicable. */
+  function concludeMatch(playerWon: boolean, reason: string): void {
+    const b = G.classic;
+    if (G.mode === "classic" && b) {
+      // Capture the opponent *before* advancing — the next round has no me-game.
+      const meGame = b.rounds[b.round]?.find((g) => g.me);
+      const oppIdx = meGame ? (meGame.a === b.player ? meGame.b : meGame.a) : -1;
+      advanceClassicRound(playerWon, G.score.player, G.score.cpu);
+      if (b.champion !== null) {
+        endGame(b.champion === b.player, b.champion === b.player ? "world classic champions" : `${WORLD_TEAMS[b.champion]?.name ?? "field"} takes the crown`);
+        return;
+      }
+      if (!playerWon) {
+        endGame(false, `${(oppIdx >= 0 ? WORLD_TEAMS[oppIdx]?.abbr : null) ?? "opponent"} bounced you ${G.score.cpu}-${G.score.player}`);
+        return;
+      }
+      endGame(null, `${reason} — advanced, ${CLASSIC_ROUND_NAMES[b.round] ?? "next round"} awaits`);
+      G.over = false; // bracket stays open; menu offers the next round
+      return;
+    }
+    endGame(playerWon, reason);
+  }
+
+  /* ---------- Bases / scoring ---------- */
+  function addRun(n = 1): void {
+    const key = battingTeamKey();
+    G.score[key] += n;
+    G.linescore[key][G.inning - 1] = (G.linescore[key][G.inning - 1] ?? 0) + n;
+  }
+
+  /** Compute runner moves (batter → bases) for an outcome; returns anim list. */
+  function planRunnerMoves(outcome: string): { node: number; from: Vec3; to: Vec3; t: number }[] {
+    const b = G.bases;
+    const prev = [...b];
+    const moves: { node: number; from: Vec3; to: Vec3; t: number }[] = [];
+    const bw = (baseIdx: number): Vec3 => [...BASES[baseIdx]!] as Vec3;
+    const slotFor = (baseIdx: number): number => G.runnerBase.indexOf(baseIdx);
+    const pushMove = (fromIdx: number, toIdx: number) => {
+      if (fromIdx >= 0 && prev[fromIdx]) moves.push({ node: slotFor(fromIdx), from: bw(fromIdx), to: toIdx === 3 ? HOME_PLATE : bw(toIdx), t: 0 });
+      else if (fromIdx === -1) moves.push({ node: -1, from: HOME_PLATE, to: toIdx === 3 ? HOME_PLATE : bw(toIdx), t: 0 });
+    };
+
+    switch (outcome) {
+      case "single": {
+        const [r1, r2, r3] = [b[0], b[1], b[2]];
+        if (r3) addRun();
+        const r2Scores = r2 && G.rng() < 0.55;
+        if (r2Scores) addRun();
+        b[0] = true; // batter takes 1B
+        b[1] = r1; // runner on 1B takes 2B
+        b[2] = r2 && !r2Scores; // runner on 2B scores or holds at 3B
+        if (r3) pushMove(2, 3);
+        if (r2) pushMove(1, r2Scores ? 3 : 2);
+        if (r1) pushMove(0, 1);
+        pushMove(-1, 0);
+        break;
+      }
+      case "double": {
+        const [r1, r2, r3] = [b[0], b[1], b[2]];
+        if (r3) addRun();
+        if (r2) addRun();
+        const r1Scores = r1 && G.rng() < 0.5;
+        if (r1Scores) addRun();
+        b[0] = false;
+        b[1] = true; // batter takes 2B
+        b[2] = r1 && !r1Scores; // runner on 1B scores or holds at 3B
+        if (r3) pushMove(2, 3);
+        if (r2) pushMove(1, 3);
+        if (r1) pushMove(0, r1Scores ? 3 : 2);
+        pushMove(-1, 1);
+        break;
+      }
+      case "triple": {
+        addRun((b[0] ? 1 : 0) + (b[1] ? 1 : 0) + (b[2] ? 1 : 0));
+        for (let i = 0; i < 3; i++) if (prev[i]) pushMove(i, 3);
+        b[0] = false;
+        b[1] = false;
+        b[2] = true;
+        pushMove(-1, 2);
+        break;
+      }
+      case "homerun": {
+        addRun((b[0] ? 1 : 0) + (b[1] ? 1 : 0) + (b[2] ? 1 : 0) + 1);
+        for (let i = 0; i < 3; i++) if (prev[i]) pushMove(i, 3);
+        pushMove(-1, 3);
+        b[0] = false;
+        b[1] = false;
+        b[2] = false;
+        break;
+      }
+      case "walk": {
+        const [r1, r2, r3] = [b[0], b[1], b[2]];
+        const loaded = r1 && r2 && r3;
+        if (loaded) addRun();
+        if (loaded) pushMove(2, 3);
+        if (r1 && r2) pushMove(1, 2);
+        if (r1) pushMove(0, 1);
+        b[0] = true;
+        b[1] = r2 || r1;
+        b[2] = (r1 && r2) || r3;
+        pushMove(-1, 0);
+        break;
+      }
+      case "flyout": {
+        // Tag-up sac fly: runner on 3rd scores on a deep fly
+        const deep = (G.batted?.landDist ?? 0) > 62;
+        if (b[2] && deep && G.outs < 3) {
+          addRun();
+          b[2] = false;
+          pushMove(2, 3);
+          showBanner("SACRIFICE FLY", 1.6);
+        }
+        break;
+      }
+      default:
+        break;
+    }
+    return moves;
+  }
+
+  function applyRunnerPlan(moves: { node: number; from: Vec3; to: Vec3; t: number }[]): void {
+    // Runner slots are persistent identities — track slot→base through each move.
+    const slotBase = [...G.runnerBase];
+    G.runnersAnim = [];
+    for (const m of moves) {
+      const toIdx = m.to === HOME_PLATE ? 3 : BASES.findIndex((b) => b[0] === m.to[0] && b[2] === m.to[2]);
+      let slot = m.node;
+      if (slot < 0) {
+        // The batter claims the first free runner slot for his trip around.
+        slot = slotBase.findIndex((b) => b < 0);
+        if (slot < 0) continue;
+      }
+      if (m.from[0] !== m.to[0] || m.from[2] !== m.to[2]) {
+        G.runnersAnim.push({ node: slot, from: m.from, to: m.to, t: 0 });
+      }
+      slotBase[slot] = toIdx >= 3 || toIdx < 0 ? -1 : toIdx;
+    }
+    G.runnerBase = slotBase;
+    G.pushUsed = false;
+  }
+
+  /* ---------- Pitch outcome resolution ---------- */
+  function resolvePitchAtPlate(p: LivePitch): void {
+    if (p.resolved) return;
+    p.resolved = true;
+    const cross = pitchPosAt(p, 1);
+    if (G.mode === "bullpen") {
+      const g = G.bullpen;
+      const guess = g.guess;
+      const correct = guess === p.type;
+      g.round += 1;
+      if (guess) {
+        if (correct) {
+          g.correct += 1;
+          g.streak += 1;
+          g.bestStreak = Math.max(g.bestStreak, g.streak);
+        } else {
+          g.streak = 0;
+        }
+      }
+      showPitchChip(`IT WAS ${p.spec.name} · ${p.mph.toFixed(0)} MPH`, guess ? (correct ? "guess-correct" : "guess-wrong") : "", 1.8);
+      tick(correct ? `read: ${p.spec.name.toLowerCase()} — correct` : `it was ${p.spec.name.toLowerCase()}`, correct ? "success" : "warning");
+      cue(correct ? "uiConfirm" : "foul");
+      if (g.round >= 12) {
+        endGame(null, `bullpen complete — ${g.correct}/12`);
+        return;
+      }
+      g.guess = null;
+      G.pitch = null;
+      setPhase("between");
+      return;
+    }
+    if (inZone(cross)) {
+      tick(`called strike — ${p.spec.name.toLowerCase()} ${p.mph.toFixed(0)}mph`, "warning");
+      registerStrike();
+    } else {
+      tick(`ball — ${p.spec.name.toLowerCase()} ${p.mph.toFixed(0)}mph`, "info");
+      registerBall();
+    }
+  }
+
+  /* ---------- CPU batting ---------- */
+  function cpuDecideSwing(p: LivePitch): void {
+    if (p.resolved || p.swung) return;
+    const diff = DIFFS[G.diff];
+    const cross = pitchPosAt(p, 1);
+    const [zx, zy] = zoneCoords(cross);
+    const inZ = Math.abs(zx) <= 1 && Math.abs(zy) <= 1;
+    const swingP = inZ ? 0.66 : diff.cpuChase;
+    if (G.rng() < swingP) {
+      const sigma = diff.cpuContactSigma;
+      const timingErr = jitter(G.rng) * sigma * (inZ ? 1 : 1.8);
+      const pciOff = 0.45 * (1.15 - diff.cpuPower);
+      resolveSwing(p, timingErr, zx + jitter(G.rng) * pciOff * 2, zy + jitter(G.rng) * pciOff * 2, 0.25, false);
+    }
+  }
+
+  /* ---------- Outcome application ---------- */
+  function applyOutcome(ball: BattedBall): void {
+    const isPlayerHit = battingIsPlayer();
+    const o = ball.outcome ?? "single";
+    const distFt = Math.round(mToFt(ball.landDist));
+    G.lastDistFt = distFt;
+
+    if (G.mode === "derby") {
+      if (o === "homerun") {
+        G.derby.hrs += 1;
+        G.derby.longest = Math.max(G.derby.longest, distFt);
+        G.derby.totalFt += distFt;
+        showBanner(`HOME RUN — ${distFt} FT`, 2.2);
+        cue(distFt > 420 ? "homerBig" : "homer");
+        juiceFire("homer", { position: ball.landPos });
+        fireHrBurst();
+        tick(`derby HR #${G.derby.hrs} — ${distFt} ft`, "success", distFt);
+      } else {
+        G.derby.outs += 1;
+        showBanner(`OUT ${G.derby.outs}/10`, 1.4);
+        tick(`derby out ${G.derby.outs} — ${o}`, "warning");
+        cue("foul");
+      }
+      if (G.derby.outs >= 10) {
+        endGame(null, `derby: ${G.derby.hrs} HR, longest ${G.derby.longest} ft`);
+        return;
+      }
+      nextBatter();
+      return;
+    }
+
+    if (G.mode === "studio") {
+      G.studio.swings += 1;
+      if (o === "homerun") {
+        showBanner(`${distFt} FT MOONSHOT`, 2.0);
+        cue("homer");
+        fireHrBurst();
+      }
+      nextBatter();
+      return;
+    }
+
+    const landDist = ball.landDist;
+    const landPos = ball.landPos;
+    const crossed = ball.crossedFence;
+    switch (o) {
+      case "homerun": {
+        const runs = 1 + G.bases.filter(Boolean).length;
+        showBanner(`HOME RUN — ${distFt} FT`, 2.6);
+        cue(distFt > 420 || park().id === "lunar" ? "homerBig" : "homer");
+        juiceFire("homer", { position: landPos });
+        fireHrBurst();
+        applyRunnerPlan(planRunnerMoves("homerun"));
+        tick(`${isPlayerHit ? "you" : clubById(G.cpuClub).abbr} go deep — ${distFt} ft (${runs} RBI)`, "success", distFt);
+        if (park().id === "skyline" && ball.landTheta > -30 && ball.landTheta < 30 && crossed) {
+          G.windowFlash = performance.now() / 1000 + 2;
+          showBanner("WINDOW SHOT — GLASS RAINING IN MIDTOWN", 2.4);
+          tick("window shot! the skyline notices", "success");
+        }
+        nextBatter("runners");
+        break;
+      }
+      case "triple":
+        showBanner("TRIPLE", 2.0);
+        applyRunnerPlan(planRunnerMoves("triple"));
+        cue("pop");
+        tick(`triple — ${distFt} ft into the alley`, "success");
+        nextBatter("runners");
+        break;
+      case "double":
+        showBanner("DOUBLE", 1.8);
+        applyRunnerPlan(planRunnerMoves("double"));
+        cue("pop");
+        tick(`double — ${distFt} ft`, "success");
+        nextBatter("runners");
+        break;
+      case "single":
+        showBanner("SINGLE", 1.5);
+        applyRunnerPlan(planRunnerMoves("single"));
+        cue("pop");
+        tick(`single — ${distFt} ft`, "success");
+        nextBatter("runners");
+        break;
+      case "groundout":
+        showBanner("GROUND OUT", 1.6);
+        cue("pop");
+        recordOut(isPlayerHit ? "grounded out" : "ground ball — out at first");
+        nextBatter("runners");
+        break;
+      case "flyout":
+        showBanner("FLY OUT", 1.6);
+        applyRunnerPlan(planRunnerMoves("flyout"));
+        cue("pop");
+        recordOut(isPlayerHit ? "fly out" : "fly ball — tracked down");
+        nextBatter(G.over ? "between" : "runners");
+        break;
+      case "foul":
+        showBanner("FOUL", 1.1);
+        cue("foul");
+        juiceFire("foul", {});
+        if (G.strikes < 2) G.strikes += 1;
+        tick("fouled back", "warning");
+        continueAtBat();
+        break;
+      default:
+        nextBatter();
+        break;
+    }
+    void landDist;
+  }
+
+  /* ---------- Phase machine ---------- */
+  function setPhase(p: Phase): void {
+    G.phase = p;
+    G.phaseT = 0;
+  }
+
+  function stepBetween(dt: number): void {
+    G.phaseT += dt;
+    const wait = G.mode === "bullpen" ? 1.5 : 1.15;
+    if (G.phaseT < wait) return;
+    if (playerPitchingTurn()) {
+      setPhase("pitchSelect");
+      G.selPitch = clubById(G.playerClub).rep[0] ?? "fourseam";
+      G.aim = [0, 0];
+      showBanner("YOUR PITCH — 1-4 SELECT · WASD AIM · SPACE", 2.4);
+    } else {
+      cpuChoosePitch();
+    }
+  }
+
+  function stepWindup(dt: number): void {
+    G.phaseT += dt;
+    if (G.phaseT >= 0.62 && G.pitch) {
+      setPhase("pitch");
+      cue("pitch");
+      juiceFire("pitch", {});
+      if (G.mode === "bullpen") {
+        showPitchChip("READ THE RELEASE — CALL 1-4", "", 0.9);
+      } else if (battingIsPlayer()) {
+        showPitchChip(`${G.pitch.spec.name} · ${G.pitch.mph.toFixed(0)} MPH`, "", 1.2);
+      }
+    }
+  }
+
+  function stepPitch(dt: number): void {
+    const p = G.pitch;
+    if (!p) {
+      setPhase("between");
+      return;
+    }
+    p.t += dt / p.flightSec;
+    if (battingIsPlayer() && G.mode !== "bullpen") {
+      if (input.pressed("swing")) {
+        G.charging = true;
+        G.chargeStart = performance.now() / 1000;
+      }
+      if (G.charging && input.released("swing")) {
+        const now = performance.now() / 1000;
+        const power = clamp((now - G.chargeStart) / 0.48, 0, 1);
+        G.charging = false;
+        const timingErr = (p.t - 1) * p.flightSec;
+        resolveSwing(p, timingErr, G.pci[0], G.pci[1], power, true);
+        return;
+      }
+      if (G.charging && p.t > 1.13) {
+        G.charging = false;
+        resolveSwing(p, 0.2, G.pci[0], G.pci[1], 0.9, true);
+        return;
+      }
+      if (p.t >= 1.0 && !p.resolved) resolvePitchAtPlate(p);
+    } else if (G.mode === "bullpen") {
+      const g = G.bullpen;
+      if (g.guess === null) {
+        const idx = input.pressed("pitch1") ? 0 : input.pressed("pitch2") ? 1 : input.pressed("pitch3") ? 2 : input.pressed("pitch4") ? 3 : -1;
+        if (idx >= 0) {
+          g.guess = PITCH_KEYS[idx]!;
+          showPitchChip(`YOUR CALL: ${PITCHES[g.guess].name}?`, "", 0.8);
+          cue("uiClick");
+        }
+      }
+      if (p.t >= 1.0 && !p.resolved) resolvePitchAtPlate(p);
+    } else {
+      if (p.t >= 0.74 && !p.swung) cpuDecideSwing(p);
+      if (p.t >= 1.0 && !p.resolved) resolvePitchAtPlate(p);
+    }
+    // Resolved pitches ride through to the mitt, then the next beat starts.
+    if (p.resolved && p.t > 1.22) {
+      G.pitch = null;
+      if (!G.over && G.phase === "pitch") setPhase("between");
+    } else if (!p.resolved && p.t > 1.3) {
+      p.resolved = true;
+      G.pitch = null;
+      if (G.phase === "pitch") setPhase("between");
+    }
+  }
+
+  function stepBatted(dt: number): void {
+    const ball = G.batted;
+    if (!ball) {
+      setPhase("between");
+      return;
+    }
+    ball.age += dt;
+    const g = park().gravity;
+    const k = park().id === "lunar" ? 0.0022 : 0.0042;
+    const sp = Math.hypot(ball.vel[0], ball.vel[1], ball.vel[2]);
+    ball.vel[0] -= k * sp * ball.vel[0] * dt;
+    ball.vel[1] -= (g + k * sp * ball.vel[1]) * dt;
+    ball.vel[2] -= k * sp * ball.vel[2] * dt;
+    ball.pos[0] += ball.vel[0] * dt;
+    ball.pos[1] += ball.vel[1] * dt;
+    ball.pos[2] += ball.vel[2] * dt;
+    if (ball.pos[1] > ball.maxY) ball.maxY = ball.pos[1];
+    const r = Math.hypot(ball.pos[0], ball.pos[2]);
+    const theta = (Math.atan2(ball.pos[0], -ball.pos[2]) * 180) / Math.PI;
+    const fenceR = Math.abs(theta) <= FOUL_DEG + 4 ? fenceRadius(park(), theta) : Infinity;
+    if (!ball.crossedFence && r >= fenceR) {
+      ball.crossedFence = true;
+      if (ball.pos[1] > park().wallH && Math.abs(theta) <= FOUL_DEG) {
+        ball.hrCrossed = true;
+      } else {
+        ball.wallHit = true;
+        const nx = ball.pos[0] / r;
+        const nz = ball.pos[2] / r;
+        const dot = ball.vel[0] * nx + ball.vel[2] * nz;
+        ball.vel[0] = (ball.vel[0] - 2 * dot * nx) * 0.42;
+        ball.vel[2] = (ball.vel[2] - 2 * dot * nz) * 0.42;
+        ball.vel[1] *= 0.6;
+        ball.pos[0] = nx * fenceR * 0.985;
+        ball.pos[2] = nz * fenceR * 0.985;
+      }
+    }
+    // Skyline window target check
+    if (park().id === "skyline" && ball.crossedFence && !ball.windowHit && !ball.dead) {
+      for (let i = 0; i < 4; i++) {
+        const tp = fencePoint(park(), -24 + i * 16, 0);
+        if (Math.hypot(ball.pos[0] - tp[0] * 1.18, ball.pos[2] - (tp[2] * 1.18 - 3)) < 5 && ball.pos[1] > 6 && ball.pos[1] < 16) {
+          ball.windowHit = true;
+          G.windowFlash = performance.now() / 1000 + 2;
+          showBanner("WINDOW SHOT — MIDTOWN PAYS", 2.2);
+          tick("window shot! glass rains on midtown", "success");
+          cue("quad");
+        }
+      }
+    }
+    // Assist-catch prompt
+    if (ball.fromCpu && !ball.dead && ball.catchable) {
+      const tLand = ball.resolveAt - ball.age;
+      if (tLand < 0.85 && tLand > 0 && !G.catchPrompt) {
+        G.catchPrompt = { fielder: FIELDER_IDS[ball.catchFielder] ?? "f-cf", pos: ball.landPos };
+      }
+    }
+    if (G.catchPrompt && input.pressed("swing")) {
+      ball.outcome = "flyout";
+      ball.dead = true;
+      el.catchPrompt?.classList.remove("show");
+      showBanner("CAN'T MISS — WEB GEM", 1.8);
+      cue("pop");
+      tick("you tracked it down — assist catch", "success");
+      G.catchPrompt = null;
+      applyOutcome(ball);
+      return;
+    }
+    const landed = ball.pos[1] <= 0.05 || ball.age >= ball.resolveAt + 0.6 || (ball.crossedFence && ball.wallHit === false && ball.pos[1] <= park().wallH * 0.5 && ball.vel[1] < 0 && r >= fenceR + 4);
+    if (landed && !ball.dead) {
+      ball.dead = true;
+      classifyBatted(ball);
+      el.catchPrompt?.classList.remove("show");
+      G.catchPrompt = null;
+      applyOutcome(ball);
+    }
+  }
+
+  function stepRunners(dt: number): void {
+    G.phaseT += dt;
+    for (const m of G.runnersAnim) m.t = Math.min(1, m.t + dt / 0.95);
+    // SPACE = send the lead runner for an extra base (risk/reward)
+    if (input.pressed("swing") && !G.pushUsed && G.runnerBase.some((x) => x >= 0)) {
+      G.pushUsed = true;
+      let slot = -1;
+      let idx = -1;
+      for (let i = 0; i < 3; i++) {
+        const b = G.runnerBase[i]!;
+        if (b > idx) {
+          idx = b;
+          slot = i;
+        }
+      }
+      if (slot >= 0) {
+        const toIdx = Math.min(3, idx + 1);
+        G.runnersAnim.push({ node: slot, from: [...BASES[idx]!] as Vec3, to: toIdx === 3 ? HOME_PLATE : ([...BASES[toIdx]!] as Vec3), t: 0 });
+        if (G.rng() < 0.78) {
+          if (toIdx === 3) {
+            addRun();
+            G.runnerBase[slot] = -1;
+            G.bases[idx] = false;
+            showBanner("EXTRA BASE — RUN SCORES", 1.7);
+            tick("aggressive running — took home", "success");
+          } else {
+            G.runnerBase[slot] = toIdx;
+            G.bases[idx] = false;
+            G.bases[toIdx] = true;
+            showBanner("TOOK THE EXTRA BASE", 1.4);
+            tick("aggressive running — extra 90 feet", "success");
+          }
+        } else {
+          // He slides in — the out call lands when the play ends
+          G.pendingOutSlot = slot;
+          G.bases[idx] = false;
+          showBanner("THROWN OUT STRETCHING", 1.6);
+          recordOut("gunned down stretching");
+          tick("thrown out stretching", "warning");
+        }
+      }
+    }
+    if (G.phaseT >= 1.35) {
+      if (G.pendingOutSlot >= 0) {
+        G.runnerBase[G.pendingOutSlot] = -1;
+        G.pendingOutSlot = -1;
+      }
+      G.runnersAnim = [];
+      if (!G.over) setPhase("between");
+    }
+  }
+
+  function stepPitchSelect(dt: number): void {
+    G.phaseT += dt;
+    const rep = clubById(G.playerClub).rep;
+    const idx = input.pressed("pitch1") ? 0 : input.pressed("pitch2") ? 1 : input.pressed("pitch3") ? 2 : input.pressed("pitch4") ? 3 : -1;
+    if (idx >= 0) {
+      G.selPitch = rep[idx % rep.length] ?? "fourseam";
+      cue("uiClick");
+    }
+    const ax = input.axis("aimX", "pciL", "pciR");
+    const ay = input.axis("aimY", "pciD", "pciU");
+    G.aim = [clamp(G.aim[0] + ax * dt * 1.6, -1.35, 1.35), clamp(G.aim[1] + ay * dt * 1.6, -1.35, 1.35)];
+    if (input.pressed("swing")) {
+      setPhase("pitchMeter");
+      G.meterNeedle = 0;
+      G.meterDir = 1;
+      cue("uiClick");
+    }
+  }
+
+  function stepPitchMeter(dt: number): void {
+    G.phaseT += dt;
+    G.meterNeedle += G.meterDir * dt * 1.9;
+    if (G.meterNeedle >= 1) {
+      G.meterNeedle = 1;
+      G.meterDir = -1;
+    } else if (G.meterNeedle <= 0) {
+      G.meterNeedle = 0;
+      G.meterDir = 1;
+    }
+    if (input.pressed("swing") || G.phaseT > 3.4) {
+      const off = Math.abs(G.meterNeedle - 0.5);
+      const q = clamp(1 - off / (0.08 * DIFFS[G.diff].sweetWiden * 3.4), 0, 1);
+      const jitterAmt = (1 - q) * 0.8;
+      G.pitch = makePitch(G.selPitch, G.aim[0] + jitter(G.rng) * jitterAmt, G.aim[1] + jitter(G.rng) * jitterAmt, { releaseQ: q });
+      G.pitchNo += 1;
+      setPhase("windup");
+      if (q > 0.82) {
+        showBanner("PERFECT RELEASE", 1.1);
+        cue("uiConfirm");
+      }
+    }
+  }
+
+  /* ---------- Athlete visuals ---------- */
+  const athleteState: Record<string, { pos: Vec3; yaw: number }> = {};
+
+  function setAthlete(id: string, x: number, y: number, z: number, yaw: number): void {
+    const h = H[id];
+    if (!h) return;
+    h.setPosition(x, y, z).setRotation(0, yaw, 0).setVisible(true);
+    athleteState[id] = { pos: [x, y, z], yaw };
+    H[`${id}-cap`]?.setPosition(x, y + 1.74, z).setRotation(0, yaw, 0).setVisible(true);
+    H[`${id}-belt`]?.setPosition(x, y + 0.98, z).setRotation(Math.PI / 2, yaw, 0).setVisible(true);
+  }
+
+  function hideAthlete(id: string): void {
+    H[id]?.setVisible(false);
+    H[`${id}-cap`]?.setVisible(false);
+    H[`${id}-belt`]?.setVisible(false);
+  }
+
+  function updateActors(dt: number, t: number): void {
+    const pk = park();
+    const playerBatting = battingIsPlayer();
+
+    // Batter at the plate; sprints to first during flight, then a runner
+    // slot takes over on the basepaths (the box stays empty between hitters)
+    const batterX = -0.82;
+    const batterZ = 0.28;
+    if (G.phase === "batted" && G.batted && G.batterRunning) {
+      const b = G.batted;
+      const prog = clamp(b.age / Math.max(0.4, b.resolveAt * 0.5), 0, 1);
+      const dest = BASES[0]!;
+      const bx = lerp(batterX, dest[0], prog * 0.9);
+      const bz = lerp(batterZ, dest[2], prog * 0.9);
+      setAthlete("batter", bx, Math.abs(Math.sin(prog * Math.PI * 4)) * 0.1, bz, Math.PI * 0.75);
+    } else if (G.phase === "runners" && G.batterRunning) {
+      hideAthlete("batter");
+    } else {
+      setAthlete("batter", batterX, 0, batterZ, Math.PI + 0.35 + Math.sin(t * 1.8) * 0.02);
+    }
+
+    // Bat — swings along the arc when contact happens
+    const batter = athleteState.batter?.pos ?? [batterX, 0, batterZ];
+    if (G.phase === "pitch" && G.pitch?.swung) {
+      const sweep = clamp((G.pitch.t - 0.9) * 6, 0, 1);
+      const a = lerp(-1.9, 1.1, sweep);
+      H.bat?.setPosition(batter[0] + Math.sin(a) * 0.52, 1.15, batter[2] + Math.cos(a) * 0.52).setRotation(Math.PI / 2 - 0.2, a, 0).setScale([1, 1, 1]).setVisible(true);
+    } else {
+      const charge = G.charging ? 0.5 + Math.sin(t * 14) * 0.06 : 1;
+      // Bat rests on the shoulder for both halves — whoever is up holds lumber.
+      H.bat?.setPosition(batter[0] - 0.1, 1.32 * charge + 0.55, batter[2] + 0.12).setRotation(0.85, Math.PI + 0.3, 0.4).setVisible(G.phase !== "menu" && G.phase !== "gameover");
+    }
+
+    // Pitcher — windup lean then follow-through
+    let pitcherLean = 0;
+    let pitcherY = MOUND_TOP;
+    if (G.phase === "windup" && G.pitch) {
+      const w = clamp(G.phaseT / 0.62, 0, 1);
+      pitcherLean = lerp(-0.34, 0.24, w);
+      pitcherY = MOUND_TOP + Math.sin(w * Math.PI) * 0.12;
+    } else if (G.phase === "pitch" && G.pitch && G.pitch.t < 0.35) {
+      pitcherLean = lerp(0.24, 0.05, G.pitch.t / 0.35);
+    }
+    setAthlete("pitcher", 0.1, pitcherY, MOUND_Z - 0.1, 0);
+    H.pitcher?.setRotation(pitcherLean, 0, 0);
+
+    // Fielders hold spots; the chaser drifts toward the landing point
+    const b = G.batted;
+    const chaser = b && !b.dead && b.catchable && b.catchFielder >= 0 ? FIELDER_IDS[b.catchFielder] : null;
+    FIELDER_IDS.forEach((id, i) => {
+      const spot = FIELDER_SPOTS[id]!;
+      let x = spot[0];
+      let z = spot[2];
+      let y = spot[1] + Math.sin(t * 2.1 + i * 1.4) * 0.025;
+      if (chaser === id && b) {
+        const drift = clamp(b.age / Math.max(0.2, b.resolveAt), 0, 1) * 0.6;
+        x = lerp(spot[0], b.landPos[0], drift);
+        z = lerp(spot[2], b.landPos[2], drift);
+        if (G.catchPrompt) y += Math.abs(Math.sin(t * 12)) * 0.06;
+      }
+      setAthlete(id, x, y, z, Math.atan2(-x, -z) + Math.PI);
+    });
+
+    // Runners on bases — an in-flight anim keeps a scorer visible past home
+    G.runnerBase.forEach((baseIdx, i) => {
+      const h = H[`runner-${i}`];
+      if (!h) return;
+      const anim = G.runnersAnim.find((m) => m.node === i);
+      if (baseIdx < 0 && !anim) {
+        h.setVisible(false);
+        H[`runner-${i}-cap`]?.setVisible(false);
+        H[`runner-${i}-belt`]?.setVisible(false);
+        return;
+      }
+      const pos: Vec3 = anim ? mix3(anim.from, anim.to, smoothstep(anim.t)) : [...BASES[baseIdx]!];
+      const bob = anim ? Math.abs(Math.sin(anim.t * Math.PI * 4)) * 0.12 : Math.sin(t * 2 + i) * 0.02;
+      setAthlete(`runner-${i}`, pos[0], pos[1] + bob, pos[2], Math.atan2(-pos[0], -pos[2]) + Math.PI);
+    });
+
+    // Waver crowd
+    const cheering = G.phase === "batted" || G.phase === "gameover" || confettiUntil > performance.now() / 1000;
+    ((H.wavers as AnyHandle[]) ?? []).forEach((w, i) => {
+      if (!w) return;
+      const rad = ((-36 + (72 * i) / (WAVER_COUNT - 1)) * Math.PI) / 180;
+      const rr = pk.fenceCorner + 4.2;
+      const bounce = cheering ? Math.abs(Math.sin(t * 8 + i * 1.2)) * 0.3 : Math.sin(t * 2.1 + i) * 0.03;
+      w.setPosition(Math.sin(rad) * rr, 0.9 + bounce, -Math.cos(rad) * rr);
+    });
+
+    // Ball + shadow + trail dots
+    let ballWorld: Vec3 = G.lastBallPos;
+    if (G.phase === "pitch" && G.pitch) {
+      ballWorld = pitchPosAt(G.pitch, G.pitch.t);
+    } else if (G.phase === "windup" && G.pitch) {
+      ballWorld = [RELEASE_PT[0], RELEASE_PT[1] - Math.sin(clamp(G.phaseT / 0.62, 0, 1) * Math.PI) * 0.3, RELEASE_PT[2]];
+    } else if ((G.phase === "batted" || G.phase === "runners") && G.batted) {
+      ballWorld = [G.batted.pos[0], Math.max(0.05, G.batted.pos[1]), G.batted.pos[2]];
+    } else if (G.phase === "between" || G.phase === "pitchSelect" || G.phase === "pitchMeter") {
+      ballWorld = [0.3, MOUND_TOP + 1.1, MOUND_Z + 0.4]; // in the pitcher's glove
+    }
+    G.lastBallPos = ballWorld;
+    H.ball?.setPosition(ballWorld[0], ballWorld[1], ballWorld[2]).setVisible(ballWorld[1] > -30);
+    const shScale = clamp(1.15 - ballWorld[1] * 0.02, 0.4, 1.1);
+    H.ballShadow?.setPosition(ballWorld[0], 0.04, ballWorld[2]).setScale([shScale, 1, shScale]).setVisible(ballWorld[1] > -30 && ballWorld[1] < 60);
+
+    ((H.trail as AnyHandle[]) ?? []).forEach((th, i) => {
+      if (!th) return;
+      const ageT = i / TRAIL_COUNT;
+      if (G.phase === "batted" && G.batted && ballWorld[1] > -30) {
+        const back = ageT * 0.55;
+        const px = ballWorld[0] - G.batted.vel[0] * back;
+        const py = Math.max(0.05, ballWorld[1] - G.batted.vel[1] * back + 4.9 * back * back);
+        const pz = ballWorld[2] - G.batted.vel[2] * back;
+        const s = Math.max(0.2, 1 - ageT);
+        th.setPosition(px, py, pz).setScale([s, s, s]).setVisible(true);
+      } else if (G.phase === "pitch" && G.pitch) {
+        const pt = clamp(G.pitch.t - ageT * 0.3, 0, 1.2);
+        const pp = pitchPosAt(G.pitch, pt);
+        const s = Math.max(0.2, 0.8 - ageT * 0.6);
+        th.setPosition(pp[0], pp[1], pp[2]).setScale([s, s, s]).setVisible(true);
+      } else {
+        th.setScale(HIDDEN_SCALE).setVisible(false);
+      }
+    });
+
+    // PCI ring (batting) + aim dot (pitching) + landing ring + zone frame
+    const pciVisible = (playerBatting && (G.phase === "pitch" || G.phase === "between" || G.phase === "windup") && G.mode !== "bullpen") || G.mode === "studio" || G.mode === "derby";
+    const pciX = clamp(G.pci[0], -1.25, 1.25) * ZONE_HW;
+    const pciY = ZONE_CY + clamp(G.pci[1], -1.25, 1.25) * ZONE_HH;
+    H.pci?.setPosition(pciX, pciY, 0.06).setRotation(0, 0, 0).setVisible(pciVisible);
+    const aimVisible = playerPitchingTurn() && (G.phase === "pitchSelect" || G.phase === "pitchMeter");
+    H.aim?.setPosition(G.aim[0] * ZONE_HW, ZONE_CY + G.aim[1] * ZONE_HH, 0.08).setVisible(aimVisible);
+    const landVisible = G.phase === "batted" && G.batted && !G.batted.dead && Math.abs(G.batted.landTheta) <= FOUL_DEG;
+    if (landVisible && G.batted) {
+      H.landRing?.setPosition(G.batted.landPos[0], 0.06, G.batted.landPos[2]).setRotation(Math.PI / 2, t * 2, 0).setVisible(true);
+    } else {
+      H.landRing?.setVisible(false);
+    }
+    H.zoneFrame?.setVisible(pciVisible || aimVisible);
+
+    // Skyline window flash on a target hit
+    const win = (H.windows as AnyHandle[]) ?? [];
+    if (G.windowFlash > performance.now() / 1000) {
+      win.forEach((w) => w?.setMaterial(material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: 2.2 })));
+    } else if (win.length && win[0]) {
+      win.forEach((w) => w?.setMaterial(material.emissive({ color: "#16324a", emissive: "#35d6ff", emissiveIntensity: 0.55 })));
+    }
+
+    // Particle toggles
+    const now = performance.now() / 1000;
+    if (confettiUntil && now > confettiUntil) {
+      H.confetti?.setVisible(false);
+      confettiUntil = 0;
+    }
+    if (hrBurstUntil && now > hrBurstUntil) {
+      H.hrBurst?.setVisible(false);
+      hrBurstUntil = 0;
+    }
+    if (flairOnUntil && now > flairOnUntil) {
+      H.flairBurst?.setVisible(false);
+      flairOnUntil = 0;
+    }
+
+    if (el.catchPrompt) el.catchPrompt.classList.toggle("show", !!G.catchPrompt && G.phase === "batted");
+
+    void dt;
+  }
+
+  /* ---------- Camera director ---------- */
+  function updateCamera(dt: number): void {
+    const c = G.cam;
+    const pk = park();
+    let eye: Vec3 = c.eye;
+    let target: Vec3 = c.target;
+    let fov = 42;
+    if (G.phase === "menu" || (G.over && G.phase === "gameover")) {
+      c.mode = G.over ? "celebrate" : "menuOrbit";
+      c.orbit += dt * (G.over ? 0.3 : 0.1);
+      if (G.over) {
+        eye = [Math.sin(c.orbit) * 16, 6.5, Math.cos(c.orbit) * 16 + 2];
+        target = [0, 1.4, -4];
+        fov = 44;
+      } else {
+        const r = pk.fenceCenter * 0.62;
+        eye = [Math.sin(c.orbit) * r, 20 + Math.sin(c.orbit * 0.6) * 4, Math.cos(c.orbit) * r * 0.7 + 14];
+        target = [0, 2, -18];
+        fov = 40;
+      }
+    } else if (G.phase === "batted" && G.batted) {
+      c.mode = "track";
+      const bp = G.batted.pos;
+      eye = [clamp(bp[0] * 0.35, -8, 8), 17 + Math.min(14, bp[1] * 0.4), 19 + Math.min(10, -bp[2] * 0.14)];
+      target = [bp[0], Math.max(0.5, bp[1]), bp[2]];
+      fov = 46;
+    } else if (playerPitchingTurn() && (G.phase === "pitchSelect" || G.phase === "pitchMeter" || G.phase === "windup" || (G.phase === "pitch" && G.pitch && !G.pitch.swung))) {
+      c.mode = "pitching";
+      eye = [G.aim[0] * 2.2, 4.6, -27.5];
+      target = [G.aim[0] * 0.5, 1.2, 2];
+      fov = 47;
+    } else {
+      c.mode = "batting";
+      const drift = clamp(G.pci[0] * 0.9, -1.2, 1.2);
+      const pitchPush = G.phase === "pitch" && G.pitch ? G.pitch.t * 1.4 : 0;
+      eye = [drift, 5.4 - pitchPush * 0.4, 13.2 - pitchPush];
+      target = [drift * 0.4, 1.15 + (G.pitch?.t ?? 0) * 0.1, -9.5];
+      fov = 44;
+    }
+    const k = 1 - Math.pow(0.001, dt);
+    c.eye = mix3(c.eye, eye, k);
+    c.target = mix3(c.target, target, k);
+    c.fov = lerp(c.fov, fov, k);
+    try {
+      (app as any).camera?.setPose?.({ position: c.eye, target: c.target, fov: c.fov });
+    } catch {
+      /* camera override best-effort */
+    }
+  }
+
+  /* ---------- HUD ---------- */
+  const hudCache: Record<string, string> = {};
+  const setText = (elRef: HTMLElement | null, key: string, v: string) => {
+    if (!elRef) return;
+    if (hudCache[key] === v) return;
+    hudCache[key] = v;
+    elRef.textContent = v;
+  };
+
+  function updateHud(): void {
+    const inGame = G.phase !== "menu" && !G.over;
+    el.hud?.classList.toggle("on", inGame);
+    renderLinescore();
+    setText(el.count, "count", `${G.balls}-${G.strikes}`);
+    countDots.b.forEach((d, i) => d?.classList.toggle("on", i < G.balls));
+    countDots.s.forEach((d, i) => d?.classList.toggle("on", i < G.strikes));
+    countDots.o.forEach((d, i) => d?.classList.toggle("on", i < G.outs));
+    setText(el.inn, "inn", String(G.inning));
+    setText(el.half, "half", G.half === "top" ? "▲" : "▼");
+    baseDots.forEach((d, i) => d?.classList.toggle("on", G.bases[i] ?? false));
+    const bc = battingClub();
+    const fc = fieldingClub();
+    setText(el.matchup, "matchup", `${bc.abbr} vs ${fc.abbr}`);
+    setText(el.pitcherRep, "prep", fc.rep.map((p) => PITCHES[p].short).join(" · "));
+    if (el.pitchChip && performance.now() / 1000 > pitchChipHideAt) el.pitchChip.classList.remove("show");
+    const showZone = (battingIsPlayer() && (G.phase === "pitch" || G.phase === "between" || G.phase === "windup") && G.mode !== "bullpen") || (playerPitchingTurn() && (G.phase === "pitchSelect" || G.phase === "pitchMeter"));
+    el.zone?.classList.toggle("show", showZone);
+    if (showZone) {
+      const toPct = (zx: number, zy: number): [string, string] => [`${(clamp(zx, -1.3, 1.3) / 2.6 + 0.5) * 100}%`, `${(0.5 - clamp(zy, -1.3, 1.3) / 2.6) * 100}%`];
+      const [pl, pt] = toPct(G.pci[0], G.pci[1]);
+      if (el.pciDot) {
+        el.pciDot.style.left = pl;
+        el.pciDot.style.top = pt;
+        el.pciDot.style.display = battingIsPlayer() && G.mode !== "bullpen" ? "" : "none";
+      }
+      const [al, at] = toPct(G.aim[0], G.aim[1]);
+      if (el.aimDot) {
+        el.aimDot.style.left = al;
+        el.aimDot.style.top = at;
+        el.aimDot.style.display = playerPitchingTurn() ? "" : "none";
+      }
+      if (el.pitchDot && G.pitch && G.phase === "pitch") {
+        const pp = pitchPosAt(G.pitch, Math.min(G.pitch.t, 1));
+        const [zx, zy] = zoneCoords(pp);
+        const [dl, dt2] = toPct(zx, zy);
+        el.pitchDot.style.left = dl;
+        el.pitchDot.style.top = dt2;
+        el.pitchDot.style.display = "";
+      } else if (el.pitchDot) {
+        el.pitchDot.style.display = "none";
+      }
+    }
+    el.meter?.classList.toggle("show", G.phase === "pitchMeter");
+    if (el.needle && G.phase === "pitchMeter") el.needle.style.left = `${G.meterNeedle * 100}%`;
+    if (el.contact && performance.now() / 1000 > contactHideAt) el.contact.classList.remove("show");
+    el.derbyCard?.classList.toggle("show", G.mode === "derby");
+    if (G.mode === "derby") {
+      setText(el.derbyHr, "dhr", String(G.derby.hrs));
+      setText(el.derbyOuts, "douts", String(G.derby.outs));
+      setText(el.derbyLong, "dlong", G.derby.longest > 0 ? `${G.derby.longest} FT` : "—");
+      setText(el.derbyTotal, "dtotal", String(G.derby.totalFt));
+    }
+    el.bullpenCard?.classList.toggle("show", G.mode === "bullpen");
+    if (G.mode === "bullpen") {
+      setText(el.bullpenScore, "bps", `${G.bullpen.correct}/${Math.max(1, G.bullpen.round)}`);
+      setText(el.bullpenStreak, "bpst", String(G.bullpen.streak));
+      setText(el.bullpenRound, "bpr", String(Math.min(12, G.bullpen.round + 1)));
+    }
+    if (G.bannerT > 0) {
+      G.bannerT -= 1 / 60;
+      if (G.bannerT <= 0) el.banner?.classList.remove("show");
+    }
+    if (G.msgT > 0) {
+      G.msgT -= 1 / 60;
+      if (G.msgT <= 0) el.msg?.classList.remove("show");
+    }
+  }
+
+  /* ---------- Menus ---------- */
+  function buildMenuDom(): void {
+    if (el.menuParks) {
+      el.menuParks.innerHTML = PARK_ORDER.map((id) => `<button type="button" class="pill${id === G.park ? " active" : ""}" data-park-id="${id}">${PARKS[id].short}</button>`).join("");
+      el.menuParks.querySelectorAll<HTMLButtonElement>("[data-park-id]").forEach((b) => b.addEventListener("click", () => setPark(b.dataset.parkId as ParkId)));
+    }
+    if (el.menuClubs) {
+      el.menuClubs.innerHTML = CLUBS.map(
+        (c) =>
+          `<button type="button" class="club-card${c.id === G.playerClub ? " active" : ""}" data-club="${c.id}"><div class="cc-name"><span class="cc-dot" style="background:${c.color}"></span>${c.name}</div><div class="cc-tag">${c.tag}</div><div class="cc-rep">${c.rep.map((p) => PITCHES[p].short).join(" · ")} · PWR ${(c.power * 100) | 0} · CON ${(c.contact * 100) | 0}</div></button>`
+      ).join("");
+      el.menuClubs.querySelectorAll<HTMLButtonElement>("[data-club]").forEach((b) =>
+        b.addEventListener("click", () => {
+          G.playerClub = b.dataset.club ?? G.playerClub;
+          el.menuClubs?.querySelectorAll(".club-card").forEach((x) => x.classList.toggle("active", (x as HTMLElement).dataset.club === G.playerClub));
+          const others = CLUBS.filter((c) => c.id !== G.playerClub);
+          G.cpuClub = others[Math.floor(G.rng() * others.length)]!.id;
+          applyUniforms();
+          cue("uiClick");
+        })
+      );
+    }
+    if (el.studioColors) {
+      el.studioColors.innerHTML = STUDIO_COLORS.map((c) => `<button type="button" class="pill${c.color === G.studio.color ? " active" : ""}" data-sc="${c.id}" style="border-color:${c.color}55">${c.label}</button>`).join("");
+      el.studioColors.querySelectorAll<HTMLButtonElement>("[data-sc]").forEach((b) =>
+        b.addEventListener("click", () => {
+          const c = STUDIO_COLORS.find((x) => x.id === b.dataset.sc);
+          if (c) {
+            G.studio.color = c.color;
+            applyUniforms();
+            el.studioColors?.querySelectorAll("[data-sc]").forEach((x) => x.classList.toggle("active", (x as HTMLElement).dataset.sc === c.id));
+            cue("uiClick");
+          }
+        })
+      );
+    }
+    if (el.studioBats) {
+      el.studioBats.innerHTML = STUDIO_BATS.map((b2) => `<button type="button" class="pill${b2.id === G.studio.bat ? " active" : ""}" data-sb="${b2.id}">${b2.label}</button>`).join("");
+      el.studioBats.querySelectorAll<HTMLButtonElement>("[data-sb]").forEach((b) =>
+        b.addEventListener("click", () => {
+          G.studio.bat = b.dataset.sb ?? G.studio.bat;
+          applyUniforms();
+          el.studioBats?.querySelectorAll("[data-sb]").forEach((x) => x.classList.toggle("active", (x as HTMLElement).dataset.sb === G.studio.bat));
+          cue("uiClick");
+        })
+      );
+    }
+    if (el.studioFlair) {
+      el.studioFlair.innerHTML = STUDIO_FLAIR.map((f) => `<button type="button" class="pill${f.id === G.studio.flair ? " active" : ""}" data-sf="${f.id}">${f.label}</button>`).join("");
+      el.studioFlair.querySelectorAll<HTMLButtonElement>("[data-sf]").forEach((b) =>
+        b.addEventListener("click", () => {
+          G.studio.flair = b.dataset.sf ?? G.studio.flair;
+          el.studioFlair?.querySelectorAll("[data-sf]").forEach((x) => x.classList.toggle("active", (x as HTMLElement).dataset.sf === G.studio.flair));
+          cue("uiClick");
+          fireFlair();
+        })
+      );
+    }
+    document.querySelectorAll<HTMLButtonElement>(".mode-card[data-mode]").forEach((b) => {
+      b.classList.toggle("active", b.dataset.mode === G.pendingMode);
+      b.addEventListener("click", () => {
+        G.pendingMode = (b.dataset.mode as ModeId) ?? "quick";
+        document.querySelectorAll<HTMLButtonElement>(".mode-card[data-mode]").forEach((x) => x.classList.toggle("active", x === b));
+        if (G.pendingMode === "studio") el.studioSection?.scrollIntoView({ behavior: "smooth", block: "center" });
+        if (G.pendingMode === "classic" && !G.classic) startClassicBracket();
+        renderBracket();
+        cue("uiClick");
+      });
+    });
+    el.menuDiff?.querySelectorAll<HTMLButtonElement>("[data-diff]").forEach((b) => {
+      b.classList.toggle("active", b.dataset.diff === G.diff);
+      b.addEventListener("click", () => {
+        G.diff = (b.dataset.diff as DiffId) ?? "pro";
+        el.menuDiff?.querySelectorAll("[data-diff]").forEach((x) => x.classList.toggle("active", x === b));
+        cue("uiClick");
+      });
+    });
+  }
+
+  /* ---------- Wiring ---------- */
+  el.tbQuick?.addEventListener("click", () => startMode("quick"));
+  el.tbDerby?.addEventListener("click", () => startMode("derby"));
+  el.tbMenu?.addEventListener("click", () => {
+    if (el.menu?.classList.contains("hidden")) openMenu();
+    else closeMenu();
+    cue("uiClick");
+  });
+  document.querySelectorAll<HTMLButtonElement>(".aura3d-top-bar [data-park]").forEach((b) => {
+    b.classList.toggle("active", b.dataset.park === G.park);
+    b.addEventListener("click", () => setPark(b.dataset.park as ParkId));
+  });
+  el.menuPlay?.addEventListener("click", () => startMode(G.pendingMode));
+  el.menuClose?.addEventListener("click", closeMenu);
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Escape") {
+      if (el.menu?.classList.contains("hidden")) openMenu();
+      else closeMenu();
+    }
+  });
+
+  buildMenuDom();
+  applyUniforms();
+  openMenu();
+
+  /* ---------- Main loop ---------- */
+  let framesRendered = 0;
+  let simTime = 0;
+
+  app.onFrame(({ dt: rawDt }) => {
+    const dt = clamp(rawDt, 0.001, 0.05);
+    const now = performance.now() / 1000;
+    const sdt = hitStopUntil > now ? dt * 0.12 : dt;
+    simTime += sdt;
+    framesRendered += 1;
+    input.update(sdt);
+
+    if (G.phase !== "menu") {
+      switch (G.phase) {
+        case "between": stepBetween(sdt); break;
+        case "windup": stepWindup(sdt); break;
+        case "pitch": stepPitch(sdt); break;
+        case "batted": stepBatted(sdt); break;
+        case "runners": stepRunners(sdt); break;
+        case "pitchSelect": stepPitchSelect(sdt); break;
+        case "pitchMeter": stepPitchMeter(sdt); break;
+        default: break;
+      }
+      // PCI move (batting phases)
+      if (battingIsPlayer() && (G.phase === "between" || G.phase === "windup" || G.phase === "pitch")) {
+        const ax = input.axis("pciMoveX", "pciL", "pciR");
+        const ay = input.axis("pciMoveY", "pciD", "pciU");
+        G.pci = [clamp(G.pci[0] + ax * sdt * 1.7, -1.3, 1.3), clamp(G.pci[1] + ay * sdt * 1.7, -1.3, 1.3)];
+      }
+    }
+
+    updateActors(sdt, simTime);
+    updateCamera(sdt);
+    updateHud();
+    touchControls?.update?.();
+
+    if (framesRendered === 4) {
+      document.body.dataset.aura3dReady = "true";
+      document.querySelector("#app canvas")?.setAttribute("data-ready", "true");
+    }
+
+    const p = G.pitch;
+    const evidence = {
+      route: "showcase-aura-diamond-3d",
+      engine: "@aura3d/engine",
+      engineVersion: "4.0.1",
+      ready: framesRendered > 4,
+      framesRendered,
+      look: park().look,
+      mode: G.mode,
+      phase: G.phase,
+      cameraMode: G.cam.mode,
+      park: G.park,
+      gravity: park().gravity,
+      inning: G.inning,
+      half: G.half,
+      outs: G.outs,
+      count: `${G.balls}-${G.strikes}`,
+      bases: [...G.bases],
+      score: { ...G.score },
+      pitchType: p?.spec.name ?? null,
+      pitchMph: p ? Number(p.mph.toFixed(1)) : null,
+      pitchT: p ? Number(p.t.toFixed(3)) : null,
+      pci: [Number(G.pci[0].toFixed(3)), Number(G.pci[1].toFixed(3))],
+      aim: [Number(G.aim[0].toFixed(3)), Number(G.aim[1].toFixed(3))],
+      selPitch: G.selPitch,
+      lastGrade: G.lastGrade,
+      lastTimingErrMs: G.lastTimingErr !== null ? Number((G.lastTimingErr * 1000).toFixed(1)) : null,
+      exitVelo: G.lastEV ? Number(G.lastEV.toFixed(1)) : null,
+      launchDeg: G.lastLA ? Number(G.lastLA.toFixed(1)) : null,
+      lastDistFt: G.lastDistFt,
+      derbyOuts: G.derby.outs,
+      derbyHrs: G.derby.hrs,
+      derbyLongest: G.derby.longest,
+      bullpen: { round: G.bullpen.round, correct: G.bullpen.correct, streak: G.bullpen.streak, bestStreak: G.bullpen.bestStreak },
+      classic: G.classic ? { round: G.classic.round, alive: G.classic.alive, champion: G.classic.champion } : null,
+      clubs: { player: G.playerClub, cpu: G.cpuClub },
+      difficulty: G.diff,
+      over: G.over,
+      result: G.result,
+      eventLog: eventLog.snapshot(),
+      deterministic: { rng: "lcg-32", seed: G.seed + G.gameNo * 7919 },
+      audio: (audio as any).evidence ? { unlocked: (audio as any).evidence.unlocked, cueCount: (audio as any).evidence.cueCount, playedCueCount: (audio as any).evidence.playedCueCount } : null,
+      touch: touchControls?.evidence?.() ?? null
+    };
+    (window as any).__AURA3D_GAME_EVIDENCE__ = evidence;
+    (window as any).__AURA3D_GAME__ = evidence;
+    (window as any).__AURA3D_GAME_DIAMOND__ = {
+      start: (m: ModeId) => startMode(m),
+      setPark,
+      state: () => ({ mode: G.mode, phase: G.phase, park: G.park, inning: G.inning, half: G.half, score: { ...G.score }, outs: G.outs, bases: [...G.bases] })
+    };
+  });
+
+  // Boot flourish
+  setTimeout(() => {
+    if (G.phase === "menu") showMsg("AURA DIAMOND 3D", "SIX BALLPARKS — ONE CROWN", 3.2);
+  }, 600);
+}
+
+if (typeof window !== "undefined") {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else {
+    boot();
+  }
+}

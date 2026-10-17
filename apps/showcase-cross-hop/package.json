@@ -1,0 +1,23 @@
+{
+  "name": "@aura3d/showcase-cross-hop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D Cross Hop showcase, an endless lane-hopping game with 6 remixed themes, 12 typed-asset critters, 5 hazard lane types, and a full shell (Quick Play, Timing School, World Tour, Player Studio).",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5182",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "evidence:route-health": "node scripts/write-route-health.mjs",
+    "preview": "vite preview --host 127.0.0.1 --port 5182"
+  },
+  "dependencies": {
+    "@aura3d/engine": "file:../.."
+  },
+  "devDependencies": {
+    "@gltf-transform/cli": "^4.5.1",
+    "@playwright/test": "1.59.1",
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-10-17T00:00:00.000Z",
+  "appId": "showcase-aura-hoops-3d",
+  "route": "/apps/showcase-aura-hoops-3d/",
+  "classification": "candidate",
+  "publicShowcase": true,
+  "promotionStatus": "public-showcase",
+  "machinePass": true,
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "production",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": true
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.rooftopCourt",
+      "quality": "production",
+      "role": "court"
+    },
+    {
+      "typedRef": "assets.rooftopVenueV2",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.rooftopBackboard",
+      "quality": "production",
+      "role": "hoopAssembly"
+    },
+    {
+      "typedRef": "assets.rooftopRim",
+      "quality": "production",
+      "role": "hoopAssembly"
+    },
+    {
+      "typedRef": "assets.rooftopBall",
+      "quality": "production",
+      "role": "heroProp"
+    },
+    {
+      "typedRef": "assets.rooftopAthleteShooter",
+      "quality": "production",
+      "role": "heroCast"
+    },
+    {
+      "typedRef": "assets.rooftopAthleteDefender",
+      "quality": "production",
+      "role": "heroCast"
+    },
+    {
+      "typedRef": "assets.rooftopShooterV2",
+      "quality": "candidate",
+      "role": "supportingCast"
+    },
+    {
+      "typedRef": "assets.rooftopDefenderV2",
+      "quality": "candidate",
+      "role": "supportingCast"
+    },
+    {
+      "typedRef": "assets.rooftopLayupScorer",
+      "quality": "candidate",
+      "role": "supportingCast"
+    },
+    {
+      "typedRef": "assets.rooftopFloodlightTowerMeshy",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.rooftopScoreboardRigMeshy",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.showcaseSkylineCity",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.showcaseModernBuildingOne",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.showcaseVoxelBuilding",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.gravityPlanetEarth",
+      "quality": "production",
+      "role": "landmark"
+    },
+    {
+      "typedRef": "assets.neonArena",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.neonStreetLampProp",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.pulseArena",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.propPineTree",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.billiardsTrophyCabinetMeshy",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.rooftopBallRackCartMeshy",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsAmbientRooftopSfx",
+      "quality": "production",
+      "role": "audioCue"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsSwishSfx",
+      "quality": "production",
+      "role": "audioCue"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsRimClankSfx",
+      "quality": "production",
+      "role": "audioCue"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsBoardThudSfx",
+      "quality": "production",
+      "role": "audioCue"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsBrickMissSfx",
+      "quality": "production",
+      "role": "audioCue"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsBuzzerFailSfx",
+      "quality": "production",
+      "role": "audioCue"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsChargeTickSfx",
+      "quality": "production",
+      "role": "audioCue"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsFireIgniteSfx",
+      "quality": "production",
+      "role": "audioCue"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsGoldBallSfx",
+      "quality": "production",
+      "role": "audioCue"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsHeatAdvanceSfx",
+      "quality": "production",
+      "role": "audioCue"
+    },
+    {
+      "typedRef": "assets.skylineCheckpointFanfareSfx",
+      "quality": "production",
+      "role": "audioCue"
+    },
+    {
+      "typedRef": "assets.turboFinishFanfareSfx",
+      "quality": "production",
+      "role": "audioCue"
+    }
+  ]
+}

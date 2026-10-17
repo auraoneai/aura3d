@@ -1,0 +1,15 @@
+{
+  "schema": "aura3d.meshy-metadata/1.0",
+  "metadata": {
+    "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+    "taskId": "01a14867-3963-7038-a069-ef23740e2f3b",
+    "parentTaskIds": [
+      "01a14866-9e4a-77b3-8282-ecabe2121629",
+      "01a14867-3963-7038-a069-ef23740e2f3b",
+      "01a14878-0352-719a-9404-384faa00c2bb"
+    ],
+    "operation": "text-to-3d-refine",
+    "promptHash": "sha256-694e42616c77e4a9739cde75baaad5fd00894907ad2dc76890aabf7141c6b1a9",
+    "consumedCredits": 10
+  }
+}

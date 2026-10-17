@@ -1,0 +1,1324 @@
+import {
+  camera,
+  effects,
+  game,
+  gameFeel,
+  games,
+  lights,
+  looks,
+  scene,
+  type AuraRuntimeNodeHandle,
+  type AuraVec3,
+  type GameCombatWorldSnapshot,
+  type GameInputController
+} from "@aura3d/engine";
+import { createGame, sfxUrl } from "@aura3d/engine/game";
+import { assets } from "./aura-assets";
+import {
+  createCpuBrain,
+  dummyIntent,
+  IDLE_INTENT,
+  seededRng,
+  type CpuBrain,
+  type Difficulty,
+  type DummyStance,
+  type Intent
+} from "./game/ai";
+import {
+  animationLayer,
+  createFighterAnimationController,
+  createFighterNode,
+  embeddedClipFor,
+  fighterById,
+  FIGHTERS,
+  isLoopingFighterClip,
+  PALETTE_SWATCHES,
+  resolveTypedFighterAssets,
+  RIG_ASSET_KEY,
+  type FighterClip,
+  type FighterDef,
+  type FighterId,
+  type FighterPalette,
+  type PaletteId
+} from "./game/fighters";
+import { frameDataLine, moveFor, specialChip, type AttackKind } from "./game/moves";
+import { DEFAULT_STAGE, stageById, type IronStage, type StageId } from "./game/stages";
+import { advanceLadder, createLadder, currentRung, type LadderState } from "./game/ladder";
+import { createHud, type MenuId, type ModeId } from "./game/hud";
+import "./styles.css";
+
+type IronCrownWindow = Window & {
+  __AURA3D_GAME__?: { readonly state?: string };
+  __AURA3D_GAME_DEBUG__?: unknown;
+  __AURA3D_GAME_EVIDENCE__?: unknown;
+  __AURA3D_GAME_RUNTIME__?: unknown;
+  __AURA3D_SHOWCASE_IRON_CROWN__?: unknown;
+};
+
+const gameWindow = window as IronCrownWindow;
+
+/* ================================================================ */
+/* constants                                                         */
+/* ================================================================ */
+
+const ROUND_SECONDS = 60;
+const ROUNDS_TO_WIN = 2;
+const METER_MAX = 100;
+const THROW_TECH_FRAMES = 9;
+const PLAYER_START: readonly [number, number, number] = [-1.15, 0, 0];
+const RIVAL_START: readonly [number, number, number] = [1.15, 0, 0];
+const APP_SEED = 20261012;
+
+const { typedFighterAssets, missingFighterAssets, typedFighterAssetCount } = resolveTypedFighterAssets(assets);
+const mediaMatches = (query: string) => typeof window.matchMedia === "function" && window.matchMedia(query).matches;
+const reducedMotion = mediaMatches("(prefers-reduced-motion: reduce)");
+const highContrast = mediaMatches("(prefers-contrast: more)");
+const reducedFlash = reducedMotion;
+
+const fightingControls = games.fighting.controls();
+
+const inputOptions = {
+  actions: {
+    ...fightingControls.actions,
+    guard: ["KeyQ", "GamepadLB"],
+    heavy: ["KeyK", "GamepadY"],
+    throw: ["KeyU", "GamepadLT"],
+    pause: ["Escape", "GamepadStart"]
+  },
+  axes: fightingControls.axes,
+  bufferMs: 160,
+  gamepad: true
+} as const;
+
+/* ================================================================ */
+/* state                                                             */
+/* ================================================================ */
+
+type Phase = "attract" | "intro" | "fight" | "ko" | "roundEnd" | "boutEnd";
+
+interface BoutConfig {
+  mode: ModeId;
+  p1: FighterDef;
+  cpu: FighterDef;
+  stage: IronStage;
+  difficulty: Difficulty;
+  p1Tint?: FighterPalette;
+  cpuTint?: FighterPalette;
+}
+
+interface FighterRuntime {
+  side: "p1" | "cpu";
+  def: FighterDef;
+  nodeId: "player" | "rival";
+  body: ReturnType<typeof game.kinematicBody>;
+  anim: ReturnType<typeof createFighterAnimationController>;
+  brain: CpuBrain | null;
+  attack: { kind: AttackKind; connected: boolean } | null;
+  guardIntent: boolean;
+  lastThrowFrame: number;
+  dashT: number;
+  lastTapDir: -1 | 0 | 1;
+  lastTapAt: number;
+  crouching: boolean;
+  tint?: FighterPalette;
+}
+
+interface BoutState {
+  config: BoutConfig;
+  phase: Phase;
+  phaseT: number;
+  round: number;
+  pipsP1: number;
+  pipsCpu: number;
+  timer: number;
+  koTimer: number;
+  roundWinner: "p1" | "cpu" | "draw" | null;
+  slowmo: number;
+  stats: { p1Hits: number; cpuHits: number; maxCombo: number; throws: number; specials: number };
+}
+
+const lab = { stance: "stand" as DummyStance, frameData: false };
+let studioSelection = { fighter: "kenji" as FighterId, palette: "default" as PaletteId };
+let ladder: LadderState | null = null;
+let currentStageId: StageId = DEFAULT_STAGE;
+let paused = false;
+let frameCount = 0;
+let lastCancelFlashFrame = -999;
+let lastTrailLen = -1;
+
+let P1: FighterRuntime;
+let CPU: FighterRuntime;
+let state: BoutState;
+
+const rng = seededRng(APP_SEED);
+function randomCpu(exclude: FighterId): FighterDef {
+  const pool = FIGHTERS.filter((f) => f.id !== exclude && f.id !== "sovereign");
+  return pool[Math.floor(rng() * pool.length)] ?? fighterById("volt");
+}
+function studioPaletteFor(fighter: FighterId): FighterPalette | undefined {
+  if (studioSelection.fighter !== fighter || studioSelection.palette === "default") return undefined;
+  const sw = PALETTE_SWATCHES.find((p) => p.id === studioSelection.palette);
+  if (!sw) return undefined;
+  const def = fighterById(fighter);
+  return { ...def.palette, color: sw.color, emissive: sw.emissive || def.palette.emissive };
+}
+
+/* ================================================================ */
+/* scene                                                             */
+/* ================================================================ */
+
+function buildArena(cfg: BoutConfig) {
+  const s = cfg.stage;
+  return scene()
+    .add(looks.preset(s.lookId, s.lookOverrides ?? {}))
+    .addMany(s.stage.nodes)
+    .addMany(s.dressing)
+    .add(createFighterNode("player", cfg.p1, `${cfg.p1.name} (P1)`, PLAYER_START, 1, typedFighterAssets, cfg.p1Tint))
+    .add(createFighterNode("rival", cfg.cpu, `${cfg.cpu.name} (CPU)`, RIVAL_START, -1, typedFighterAssets, cfg.cpuTint))
+    .addMany([
+      effects.bloom({ intensity: 0.3 }),
+      lights.directional({ name: "iron crown rim", color: s.accent, intensity: 0.75 }).position(0, 4.2, 3)
+    ])
+    .camera(camera.perspective({ position: [0, 1.75, 6.1], target: [0, 0.9, 0], fov: 42 }));
+}
+
+const initialConfig: BoutConfig = {
+  mode: "quick",
+  p1: fighterById("kenji"),
+  cpu: fighterById("volt"),
+  stage: stageById(DEFAULT_STAGE),
+  difficulty: "scrapper"
+};
+
+/* ================================================================ */
+/* createGame mount                                                  */
+/* ================================================================ */
+
+const fightingGame = createGame({
+  id: "showcase-iron-crown",
+  target: "#app",
+  autoStart: true,
+  diagnostics: { overlay: false, performancePanel: false },
+  input: inputOptions,
+  loop: { fixedDt: 1 / 60 },
+  scene: () => buildArena(initialConfig),
+  hud: { theme: "fighting", widgets: [] },
+  touch: {
+    preset: "dpad-4btn",
+    bindings: {
+      left: "left",
+      right: "right",
+      block: "guard",
+      light: "light",
+      heavy: "heavy",
+      special: "special",
+      jump: "jump"
+    }
+  },
+  sound: {
+    cues: {
+      hit: { id: "hit", asset: { url: sfxUrl("impact.flesh.medium.00") }, volume: 0.72 },
+      blocked: { id: "blocked", asset: { url: sfxUrl("impact.metal.light.00") }, volume: 0.6 },
+      special: { id: "special", asset: { url: sfxUrl("impact.energy.heavy.00") }, volume: 0.85 },
+      dash: { id: "dash", asset: { url: sfxUrl("whoosh.dash.00") }, volume: 0.5 },
+      throw: { id: "throw", asset: { url: sfxUrl("impact.flesh.heavy.00") }, volume: 0.7 },
+      tech: { id: "tech", asset: { url: sfxUrl("impact.metal.medium.00") }, volume: 0.7 },
+      ko: { id: "ko", asset: { url: sfxUrl("explosion.medium.00") }, volume: 0.85 },
+      "ko-voice": { id: "ko-voice", asset: { url: sfxUrl("creature.announcer.ko.00") }, volume: 0.9 },
+      win: { id: "win", asset: { url: sfxUrl("ui.reward.00") }, volume: 0.8 },
+      round: { id: "round", asset: { url: sfxUrl("creature.announcer.round.00") }, volume: 0.8 },
+      fight: { id: "fight", asset: { url: sfxUrl("creature.announcer.fight.00") }, volume: 0.9 },
+      denied: { id: "denied", asset: { url: sfxUrl("ui.error.00") }, volume: 0.5 }
+    }
+  },
+  juice: {
+    hit: { hitStop: 0.05, shake: 0.3, punch: { fovDeg: 1.8, ms: 160 }, rumble: { strong: 0.5, ms: 140 } },
+    blocked: { shake: 0.12, rumble: { weak: 0.4, ms: 90 } },
+    special: { hitStop: 0.07, punch: { fovDeg: 2.6, ms: 260 }, flash: { color: "#ffd76a", peak: 0.22, ms: 240 }, rumble: { strong: 0.75, ms: 260 } },
+    dash: { punch: { fovDeg: 1.1, ms: 120 } },
+    ko: { hitStop: 0.12, shake: 0.65, punch: { fovDeg: 3.2, ms: 500 }, flash: { color: "#ff4f46", peak: 0.3, ms: 420 }, rumble: { strong: 1, ms: 600 } }
+  },
+  qualityRebuild: { flags: ["game"] },
+  evidence: {
+    schema: 1,
+    sections: {
+      ironCrown: () => ({
+        showcase: "__AURA3D_SHOWCASE_IRON_CROWN__",
+        handle: gameWindow.__AURA3D_SHOWCASE_IRON_CROWN__ ?? { status: "booting" }
+      })
+    }
+  }
+});
+
+const app = fightingGame.app;
+fightingGame.start();
+const input = fightingGame.input as GameInputController;
+if (!input) throw new Error("Iron Crown: createGame failed to create runtime-owned input.");
+
+// The live renderer canvas adopts id="game" (the static placeholder is removed).
+document.getElementById("game")?.remove();
+if (app.canvas instanceof HTMLCanvasElement) {
+  app.canvas.id = "game";
+  app.canvas.setAttribute("aria-label", "Iron Crown 3D fight scene");
+}
+if (!app.canvas) {
+  const err = document.getElementById("render-error");
+  if (err) err.classList.add("on");
+}
+
+/* ================================================================ */
+/* runtime wiring                                                    */
+/* ================================================================ */
+
+const combat = game.combatWorld();
+const runtimeEffects = game.effects({ poolSize: 80, reducedMotion, reducedFlash });
+const director = game.cameraDirector({ reducedMotion });
+
+app.camera?.use(camera.rigs.fighting({ fighters: ["player", "rival"] }));
+const feel = gameFeel.create({ app, time: app.time });
+app.feel?.preset("fighting");
+
+const hud = createHud(document, {
+  onMode: (m) => selectMode(m),
+  onStage: (s) => selectStage(s),
+  onVersusFight: (sel) =>
+    void configureBout({
+      mode: "versus",
+      p1: fighterById(sel.p1),
+      cpu: fighterById(sel.cpu),
+      stage: stageById(sel.stage),
+      difficulty: sel.difficulty,
+      p1Tint: studioPaletteFor(sel.p1)
+    }),
+  onLadderStart: (fighter) => startLadder(fighter),
+  onStudioApply: (fighter, palette) => applyStudioPalette(fighter, palette),
+  onStudioFight: (fighter, palette) => {
+    studioSelection = { fighter, palette };
+    void configureBout({
+      mode: "quick",
+      p1: fighterById(fighter),
+      cpu: randomCpu(fighter),
+      stage: stageById(currentStageId),
+      difficulty: "scrapper",
+      p1Tint: studioPaletteFor(fighter)
+    });
+  },
+  onPauseResume: () => setPaused(false),
+  onPauseRematch: () => {
+    setPaused(false);
+    void configureBout(state.config);
+  },
+  onPauseQuit: () => toMainMenu(),
+  onLabStance: (stance) => {
+    lab.stance = stance as DummyStance;
+  },
+  onLabReset: () => resetPositions(),
+  onFrameData: (on) => {
+    lab.frameData = on;
+    if (!on) hud.setFrameData(null);
+  }
+});
+
+// Escape resumes from the pause/sheet layer even while the app loop is paused.
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape" && paused) setPaused(false);
+});
+
+function makeFighter(side: "p1" | "cpu", def: FighterDef, position: readonly [number, number, number], tint?: FighterPalette): FighterRuntime {
+  const nodeId = side === "p1" ? "player" : "rival";
+  const body = game.kinematicBody({
+    id: nodeId,
+    position,
+    bounds: {
+      minX: state.config.stage.bounds.minX,
+      maxX: state.config.stage.bounds.maxX,
+      minZ: -0.2,
+      maxZ: 0.2
+    },
+    groundY: 0,
+    gravity: 26,
+    maxSpeed: def.stats.walkSpeed,
+    jumpVelocity: def.stats.jumpVelocity,
+    groundAccel: 42,
+    groundDecel: 55,
+    airControl: 0.55,
+    coyoteMs: 90,
+    jumpBufferMs: 130
+  });
+  const anim = createFighterAnimationController(`${side}-${def.id}`, def.rig, typedFighterAssets[RIG_ASSET_KEY[def.rig]]);
+  return {
+    side,
+    def,
+    nodeId,
+    body,
+    anim,
+    brain: null,
+    attack: null,
+    guardIntent: false,
+    lastThrowFrame: -999,
+    dashT: 0,
+    lastTapDir: 0,
+    lastTapAt: -1,
+    crouching: false,
+    tint
+  };
+}
+
+function actorDefaults(f: FighterRuntime) {
+  return {
+    hurtboxes: [{ id: "body", offset: [0, 0.85, 0] as const, size: [0.6, 1.5, 0.46] as const }],
+    guardboxes: [{ id: "guard", offset: [0.26, 0.92, 0] as const, size: [0.55, 1.42, 0.55] as const }],
+    pushboxes: [{ id: "push", offset: [0, 0.72, 0] as const, size: [0.68, 1.25, 0.5] as const }]
+  };
+}
+
+function resetPositions(): void {
+  P1.body.position = [...PLAYER_START];
+  P1.body.velocity = [0, 0, 0];
+  CPU.body.position = [...RIVAL_START];
+  CPU.body.velocity = [0, 0, 0];
+  syncActors(true);
+}
+
+function newBout(config: BoutConfig): void {
+  state = {
+    config,
+    phase: "intro",
+    phaseT: 0,
+    round: 1,
+    pipsP1: 0,
+    pipsCpu: 0,
+    timer: ROUND_SECONDS,
+    koTimer: 0,
+    roundWinner: null,
+    slowmo: 1,
+    stats: { p1Hits: 0, cpuHits: 0, maxCombo: 0, throws: 0, specials: 0 }
+  };
+}
+
+async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<void> {
+  if (paused) setPaused(false);
+  newBout(config);
+  currentStageId = config.stage.id;
+  await fightingGame.setScene(buildArena(config).toJSON());
+  P1 = makeFighter("p1", config.p1, PLAYER_START, config.p1Tint);
+  CPU = makeFighter("cpu", config.cpu, RIVAL_START, config.cpuTint);
+  CPU.brain = createCpuBrain(config.cpu, config.difficulty, APP_SEED + 31);
+  combat.reset();
+  combat.addActor({ id: "player", team: "p1", position: [...PLAYER_START], facing: 1, health: config.p1.stats.maxHealth, ...actorDefaults(P1) });
+  combat.addActor({ id: "rival", team: "cpu", position: [...RIVAL_START], facing: -1, health: config.cpu.stats.maxHealth, ...actorDefaults(CPU) });
+  director.update(0, [
+    { id: "player", position: [...PLAYER_START] },
+    { id: "rival", position: [...RIVAL_START] }
+  ]);
+  bindAnimations();
+  hud.setNames(config.p1.name, config.cpu.name);
+  hud.setPips(0, 0);
+  hud.setModeLabel(`${modeLabel(config.mode)} · ${config.stage.label.toUpperCase()}`);
+  hud.setStageButtons(config.stage.id);
+  hud.showMenu(null);
+  hud.showLab(config.mode === "lab");
+  hud.setHint(
+    config.mode === "lab"
+      ? "Dummy stance panel is live — land LIGHT → HEAVY → SPECIAL."
+      : "A/D move · S crouch-block · J light · K heavy · L special · U throw"
+  );
+  if (postPhase === "attract") {
+    state.phase = "attract";
+    hud.setModeLabel("IRON CROWN · ATTRACT");
+  } else {
+    announceRoundIntro();
+  }
+}
+
+function bindAnimations(): void {
+  const playerNode: AuraRuntimeNodeHandle = app.nodes.require("player");
+  const rivalNode: AuraRuntimeNodeHandle = app.nodes.require("rival");
+  P1.anim.controller.bindRuntimeNode(playerNode, { defaultClipId: "idle", fallbackClipId: "idle" });
+  CPU.anim.controller.bindRuntimeNode(rivalNode, { defaultClipId: "idle", fallbackClipId: "idle" });
+  P1.anim.controller.play("idle", { restart: true, loop: "loop" });
+  CPU.anim.controller.play("idle", { restart: true, loop: "loop" });
+}
+
+function announceRoundIntro(): void {
+  state.phase = "intro";
+  state.phaseT = 0;
+  hud.setRoundLabel(state.config.mode === "lab" ? "COMBO LAB" : `ROUND ${state.round}`);
+  const sub =
+    state.config.mode === "lab"
+      ? "cancel: light → heavy → special"
+      : state.config.mode === "ladder" && ladder
+        ? (currentRung(ladder)?.title ?? "")
+        : "FIRST TO TWO";
+  hud.announce(state.config.mode === "lab" ? "COMBO LAB" : `ROUND ${state.round}`, sub, "pop");
+  void fightingGame.sound?.cue("round");
+}
+
+function modeLabel(mode: ModeId): string {
+  switch (mode) {
+    case "quick":
+      return "QUICK BOUT";
+    case "lab":
+      return "COMBO LAB";
+    case "ladder":
+      return "CROWN LADDER";
+    case "versus":
+      return "VERSUS";
+    case "studio":
+      return "PLAYER STUDIO";
+  }
+}
+
+/* ================================================================ */
+/* modes + menus                                                     */
+/* ================================================================ */
+
+function openSheet(menu: MenuId): void {
+  hud.showMenu(menu);
+  if (!paused) {
+    paused = true;
+    app.pause();
+  }
+}
+
+function selectMode(mode: ModeId): void {
+  hud.setModeButtons(mode);
+  if (mode === "quick") {
+    void configureBout({
+      mode: "quick",
+      p1: fighterById(studioSelection.fighter),
+      cpu: randomCpu(studioSelection.fighter),
+      stage: stageById(currentStageId),
+      difficulty: "scrapper",
+      p1Tint: studioPaletteFor(studioSelection.fighter)
+    });
+  } else if (mode === "lab") {
+    void configureBout({
+      mode: "lab",
+      p1: fighterById(studioSelection.fighter),
+      cpu: fighterById("volt"),
+      stage: stageById(currentStageId),
+      difficulty: "novice",
+      p1Tint: studioPaletteFor(studioSelection.fighter)
+    });
+  } else if (mode === "versus") {
+    openSheet("versus");
+  } else if (mode === "ladder") {
+    hud.setLadderCard("Choose your fighter — 8 rungs stand between you and SOVEREIGN.");
+    hud.renderBracket([]);
+    openSheet("ladder");
+  } else if (mode === "studio") {
+    openSheet("studio");
+  }
+}
+
+function selectStage(id: StageId): void {
+  currentStageId = id;
+  hud.setStageButtons(id);
+  // Quick-switch rebuilds the arena everywhere except on the result card.
+  if (state.phase !== "boutEnd") {
+    void configureBout({ ...state.config, stage: stageById(id) }, state.phase === "attract" ? "attract" : undefined).then(() => {
+      if (state.phase === "attract") hud.setModeLabel(`IRON CROWN · ${stageById(id).label.toUpperCase()}`);
+    });
+  }
+}
+
+function startLadder(fighter: FighterId): void {
+  ladder = createLadder(fighter);
+  const rung = currentRung(ladder);
+  if (!rung) return;
+  renderLadderBracket();
+  hud.setModeButtons("ladder");
+  void configureBout({
+    mode: "ladder",
+    p1: fighterById(fighter),
+    cpu: fighterById(rung.opponent),
+    stage: stageById(rung.stage),
+    difficulty: rung.difficulty,
+    p1Tint: studioPaletteFor(fighter)
+  }).then(() => hud.announce(`RUNG ${rung.rung} OF 8`, rung.title, "hold"));
+}
+
+function renderLadderBracket(): void {
+  if (!ladder) return;
+  const l = ladder;
+  hud.renderBracket(
+    l.rungs.map((r, i) => ({
+      label: `${r.rung} ${fighterById(r.opponent).name.split(" ")[0]}`,
+      state: i < l.cursor ? "won" : i === l.cursor ? "current" : "pending"
+    }))
+  );
+}
+
+function applyStudioPalette(fighter: FighterId, palette: PaletteId): void {
+  studioSelection = { fighter, palette };
+  const f = fighterById(fighter);
+  hud.announce("PALETTE APPLIED", `${f.name} · ${palette.toUpperCase()}`, "pop");
+  void configureBout({ ...state.config, p1: f, p1Tint: studioPaletteFor(fighter) });
+}
+
+function toMainMenu(): void {
+  if (paused) {
+    paused = false;
+    app.resume();
+  }
+  hud.setModeButtons("quick");
+  void configureBout({ ...initialConfig, stage: stageById(currentStageId) }, "attract").then(() => {
+    hud.showMenu("mode");
+  });
+}
+
+function setPaused(next: boolean): void {
+  paused = next;
+  if (next) {
+    hud.showMenu("pause");
+    app.pause();
+  } else {
+    hud.showMenu(null);
+    app.resume();
+  }
+}
+
+/* ================================================================ */
+/* combat helpers                                                    */
+/* ================================================================ */
+
+function facingTo(self: FighterRuntime, foe: FighterRuntime): 1 | -1 {
+  return foe.body.position[0] >= self.body.position[0] ? 1 : -1;
+}
+
+let combatSnapCache: ReturnType<typeof combat.snapshot> | null = null;
+function snap() {
+  combatSnapCache = combat.snapshot();
+  return combatSnapCache;
+}
+
+function actorSnap(id: string): GameCombatWorldSnapshot["actors"][number] | undefined {
+  return combatSnapCache?.actors.find((a) => a.id === id) ?? combat.snapshot().actors.find((a) => a.id === id);
+}
+
+function isAttacking(f: FighterRuntime): boolean {
+  return snap().activeAttacks.some((a) => a.attackerId === f.nodeId);
+}
+
+const TIER: Record<AttackKind, number> = { light: 1, throw: 1.5, heavy: 2, special: 3 };
+
+function tryAttack(f: FighterRuntime, foe: FighterRuntime, kind: AttackKind): void {
+  const asnap = actorSnap(f.nodeId);
+  if (!asnap || asnap.knockedOut || asnap.stun > 0) return;
+  if (isAttacking(f)) {
+    // Cancel chain: only from a CONNECTED attack into a higher tier
+    // (light → throw/heavy → special, all the way down the chain).
+    const last = f.attack;
+    if (!last || !last.connected || TIER[kind] <= TIER[last.kind]) return;
+  }
+  if (kind === "special") {
+    if (asnap.meter < METER_MAX) {
+      if (f.side === "p1") {
+        void fightingGame.sound?.cue("denied");
+        hud.announce("NO METER", "", "pop");
+      }
+      return;
+    }
+    combat.setActor(f.nodeId, { meter: 0 });
+    state.stats.specials += 1;
+    const pos = f.body.position;
+    runtimeEffects.auraBurst([pos[0], pos[1] + 0.9, 0], { ownerId: f.nodeId, intensity: 0.85, color: f.def.special.color });
+    runtimeEffects.ringShockwave([pos[0] + facingTo(f, foe) * 0.5, pos[1] + 0.9, 0], { ownerId: f.nodeId, intensity: 0.7, color: f.def.special.color });
+    director.special([pos[0], pos[1] + 0.9, 0], 0.5);
+    fightingGame.juice.fire("special");
+    void fightingGame.sound?.cue("special");
+    if (f.side === "p1") hud.announce(f.def.special.name.toUpperCase(), "", "pop");
+    app.feel?.emit("special", { strength: 0.7 });
+  }
+  if (kind === "throw") {
+    f.lastThrowFrame = snap().frame;
+    state.stats.throws += 1;
+    void fightingGame.sound?.cue("throw");
+  }
+  combat.beginAttack(f.nodeId, moveFor(kind, f.def));
+  f.attack = { kind, connected: false };
+  if (state.config.mode === "lab" && f.side === "p1" && lab.frameData) {
+    hud.setFrameData(frameDataLine(moveFor(kind, f.def)));
+  }
+}
+
+function syncActors(force = false): void {
+  for (const f of [P1, CPU]) {
+    const foe = f === P1 ? CPU : P1;
+    const asnap = actorSnap(f.nodeId);
+    if (!asnap) continue;
+    const facing = f.attack ? asnap.facing : facingTo(f, foe);
+    combat.setActor(f.nodeId, {
+      position: [f.body.position[0], f.body.position[1], f.body.position[2]],
+      facing,
+      guarding: f.guardIntent && f.body.grounded && !f.attack,
+      guardboxes: [{ id: "guard", offset: [facing * 0.26, 0.92, 0], size: [0.55, 1.42, 0.55] }],
+      hurtboxes: [{ id: "body", offset: [0, f.crouching ? 0.55 : 0.85, 0], size: [0.6, f.crouching ? 1.0 : 1.5, 0.46] }],
+      ...(force ? { health: f.def.stats.maxHealth, meter: 0, guard: 100 } : {})
+    });
+    if (asnap.meter > METER_MAX) combat.setActor(f.nodeId, { meter: METER_MAX });
+    // clear attack bookkeeping once the engine's attack expires
+    if (f.attack && !snap().activeAttacks.some((a) => a.attackerId === f.nodeId)) f.attack = null;
+  }
+}
+
+function syncBodiesFromActors(): void {
+  for (const f of [P1, CPU]) {
+    const asnap = actorSnap(f.nodeId);
+    if (!asnap) continue;
+    const dx = asnap.position[0] - f.body.position[0];
+    const dz = asnap.position[2] - f.body.position[2];
+    if (Math.abs(dx) > 0.001 || Math.abs(dz) > 0.001) {
+      f.body.position = [asnap.position[0], f.body.position[1], asnap.position[2]];
+    }
+  }
+}
+
+/* ================================================================ */
+/* intents                                                           */
+/* ================================================================ */
+
+function playerIntent(): Intent {
+  const axis = input.axis("moveX");
+  const foeDir = facingTo(P1, CPU);
+  const holdingAway = axis !== 0 && Math.sign(axis) === -foeDir;
+  const crouch = input.held("crouch");
+  // Block = dedicated guard key OR holding away (away+crouch = low block).
+  const guard = input.held("guard") || holdingAway;
+
+  let dash: -1 | 0 | 1 = 0;
+  if (input.pressed("dash")) dash = foeDir;
+  const tapNow = input.pressed("moveLeft") ? -1 : input.pressed("moveRight") ? 1 : 0;
+  if (tapNow !== 0) {
+    const now = performance.now() / 1000;
+    if (P1.lastTapDir === tapNow && now - P1.lastTapAt < 0.28) dash = tapNow as -1 | 1;
+    P1.lastTapDir = tapNow as -1 | 1;
+    P1.lastTapAt = now;
+  }
+
+  let attack: AttackKind | undefined;
+  if (input.buffered("special", 180)) attack = "special";
+  else if (input.buffered("throw", 160)) attack = "throw";
+  else if (input.buffered("heavy", 160)) attack = "heavy";
+  else if (input.buffered("light", 160)) attack = "light";
+  if (attack) input.consume(attack);
+
+  const jump = input.pressed("jump") || input.buffered("jump", 140);
+
+  return { axis, crouch, guard, jump, dash, attack };
+}
+
+function aiCtx(self: FighterRuntime, foe: FighterRuntime) {
+  const sSnap = actorSnap(self.nodeId);
+  const fSnap = actorSnap(foe.nodeId);
+  return {
+    selfX: self.body.position[0],
+    foeX: foe.body.position[0],
+    foeAirborne: !foe.body.grounded,
+    foeStunned: (fSnap?.stun ?? 0) > 0,
+    foeAttacking: isAttacking(foe),
+    selfStunned: (sSnap?.stun ?? 0) > 0,
+    selfAttacking: isAttacking(self),
+    meter: sSnap?.meter ?? 0,
+    foeHealthPct: fSnap ? fSnap.health / foe.def.stats.maxHealth : 1
+  };
+}
+
+function cpuIntent(dt: number): Intent {
+  if (state.config.mode === "lab" && lab.stance !== "cpu") {
+    return dummyIntent(lab.stance, null, aiCtx(CPU, P1), dt);
+  }
+  if (!CPU.brain) return IDLE_INTENT;
+  return CPU.brain.think(aiCtx(CPU, P1), dt);
+}
+
+/* ================================================================ */
+/* drive + combat events                                             */
+/* ================================================================ */
+
+function driveFighter(f: FighterRuntime, foe: FighterRuntime, intent: Intent, dt: number): void {
+  const asnap = actorSnap(f.nodeId);
+  const ko = asnap?.knockedOut ?? false;
+  const stunned = (asnap?.stun ?? 0) > 0;
+  const busy = f.attack !== null && isAttacking(f);
+  f.crouching = intent.crouch && !stunned && !busy && f.body.grounded && !ko;
+  f.guardIntent = intent.guard && !stunned && !busy && !ko;
+
+  const canMove = !ko && !stunned && !busy && !f.crouching && !f.guardIntent;
+  f.body.move(canMove ? intent.axis : 0);
+
+  if (!ko && !stunned && !busy && !f.guardIntent && !f.crouching && intent.jump && f.body.grounded) {
+    f.body.jump();
+  }
+
+  if (!ko && !stunned && !f.guardIntent && intent.dash !== 0 && f.dashT <= 0) {
+    f.dashT = 0.34;
+    f.body.dash([intent.dash, 0, 0], f.def.stats.dashSpeed);
+    runtimeEffects.dashTrail([f.body.position[0], f.body.position[1] + 0.7, 0], { ownerId: f.nodeId, intensity: 0.5 });
+    fightingGame.juice.fire("dash");
+    void fightingGame.sound?.cue("dash");
+  }
+  f.dashT = Math.max(0, f.dashT - dt);
+
+  if (!ko && !stunned && !f.guardIntent && intent.attack) {
+    tryAttack(f, foe, intent.attack);
+  }
+}
+
+const combo = {
+  p1: { count: 0, timer: 0 },
+  cpu: { count: 0, timer: 0 }
+};
+
+function handleEvents(): void {
+  for (const ev of combat.consumeEvents()) {
+    const attacker = ev.attackerId === "player" ? P1 : CPU;
+    const target = ev.targetId === "player" ? P1 : ev.targetId === "rival" ? CPU : undefined;
+    if (ev.type === "hit" && target) {
+      const tSnap = actorSnap(target.nodeId);
+      const raw = ev.damage ?? 0;
+      const effective = raw * target.def.stats.defense;
+      if (tSnap && Math.abs(effective - raw) > 0.01) {
+        const corrected = tSnap.health - (effective - raw);
+        combat.setActor(target.nodeId, { health: Math.max(0, corrected) });
+        if (corrected <= 0) {
+          combat.setActor(target.nodeId, { knockedOut: true });
+          onKnockout(target.side === "p1" ? "cpu" : "p1");
+        }
+      }
+      if (attacker.attack) attacker.attack.connected = true;
+      runtimeEffects.hitSpark(ev.position, { ownerId: ev.attackerId, intensity: 1.05 });
+      director.impact(0.42, 0.16);
+      fightingGame.juice.fire("hit");
+      void fightingGame.sound?.cue("hit");
+      app.feel?.emit(ev.moveId?.includes("special") ? "hit-special" : ev.moveId?.includes("heavy") ? "hit-heavy" : "hit-light", { strength: 0.6 });
+      if (ev.knockback) {
+        target.body.applyKnockback([ev.knockback[0] * 3.0, Math.abs(ev.knockback[1]) * 2.4, 0]);
+      }
+      const tMeter = (actorSnap(target.nodeId)?.meter ?? 0) + raw * 0.45 * target.def.stats.meterGain;
+      combat.setActor(target.nodeId, { meter: Math.min(METER_MAX, tMeter) });
+      combo[attacker.side].count += 1;
+      combo[attacker.side].timer = 1.35;
+      combo[target.side].count = 0;
+      state.stats.maxCombo = Math.max(state.stats.maxCombo, combo[attacker.side].count);
+      if (attacker.side === "p1") state.stats.p1Hits += 1;
+      else state.stats.cpuHits += 1;
+      if (state.config.mode === "lab" && attacker.side === "p1" && attacker.attack?.kind === "special" && snap().frame - lastCancelFlashFrame > 90) {
+        lastCancelFlashFrame = snap().frame;
+        hud.cancelFlash();
+      }
+    }
+    if (ev.type === "blocked" && target) {
+      runtimeEffects.blockSpark(ev.position, { ownerId: ev.attackerId, intensity: 0.7 });
+      director.impact(0.16, 0.12);
+      fightingGame.juice.fire("blocked");
+      void fightingGame.sound?.cue("blocked");
+      app.feel?.emit("block", { strength: 0.3 });
+      if (attacker.attack) attacker.attack.connected = true; // chains off block too
+      if (ev.moveId?.endsWith("-special")) {
+        const tSnap = actorSnap(target.nodeId);
+        if (tSnap) {
+          const chip = specialChip(moveFor("special", attacker.def)) * target.def.stats.defense;
+          combat.setActor(target.nodeId, { health: Math.max(1, tSnap.health - chip) });
+        }
+      }
+    }
+    if (ev.type === "knockout" && ev.targetId) {
+      onKnockout(ev.targetId === "player" ? "cpu" : "p1");
+    }
+  }
+}
+
+function onKnockout(winner: "p1" | "cpu"): void {
+  if (state.phase !== "fight") return;
+  state.phase = "ko";
+  state.koTimer = 0;
+  state.roundWinner = winner;
+  state.slowmo = reducedMotion ? 1 : 0.28;
+  fightingGame.session.slowMo(0.28, 1400);
+  hud.announce("K.O.", "", "hold");
+  void fightingGame.sound?.cue("ko");
+  void fightingGame.sound?.cue("ko-voice");
+  director.impact(0.7, 0.5);
+  runtimeEffects.impactFlash([0, 1.2, -0.4], { intensity: 1.1, color: "#ffd76a" });
+  fightingGame.juice.fire("ko");
+  app.feel?.emit("ko", { strength: 1 });
+}
+
+function endRound(winner: "p1" | "cpu" | "draw"): void {
+  if (winner === "p1") state.pipsP1 += 1;
+  if (winner === "cpu") state.pipsCpu += 1;
+  hud.setPips(state.pipsP1, state.pipsCpu);
+  const boutOver = state.pipsP1 >= ROUNDS_TO_WIN || state.pipsCpu >= ROUNDS_TO_WIN;
+  if (boutOver) {
+    state.phase = "boutEnd";
+    state.phaseT = 0;
+    const p1Won = state.pipsP1 >= ROUNDS_TO_WIN;
+    void fightingGame.sound?.cue(p1Won ? "win" : "ko");
+    hud.announce(p1Won ? "YOU WIN" : "YOU LOSE", state.config.mode === "ladder" ? "the crown waits" : "", "hold");
+    window.setTimeout(() => showBoutResult(p1Won), 1600);
+  } else {
+    state.phase = "roundEnd";
+    state.phaseT = 0;
+    hud.announce(winner === "draw" ? "DRAW" : winner === "p1" ? "ROUND WON" : "ROUND LOST", winner === "draw" ? "again!" : "", "pop");
+  }
+}
+
+function showBoutResult(p1Won: boolean): void {
+  const st = state.stats;
+  const stats = [
+    { label: "Hits", value: `${st.p1Hits} / ${st.cpuHits}` },
+    { label: "Max combo", value: `${st.maxCombo}` },
+    { label: "Specials", value: `${st.specials}` },
+    { label: "Throws", value: `${st.throws}` }
+  ];
+  const cfg = state.config;
+  if (cfg.mode === "ladder" && ladder) {
+    const l = ladder;
+    if (p1Won) {
+      advanceLadder(l);
+      renderLadderBracket();
+      if (l.cleared) {
+        hud.showResult({
+          title: "IRON CROWN CLAIMED",
+          sub: `${cfg.p1.name} takes the throne — all 8 rungs cleared.`,
+          stats,
+          primary: { label: "DEFEND THE CROWN", run: () => startLadder(cfg.p1.id) },
+          alt: { label: "Main menu", run: () => toMainMenu() }
+        });
+        return;
+      }
+      const next = currentRung(l);
+      hud.showResult({
+        title: `RUNG ${l.cursor} CLEARED`,
+        sub: next ? `Next: ${fighterById(next.opponent).name} — ${next.title}` : "",
+        stats,
+        primary: {
+          label: "NEXT RUNG",
+          run: () => {
+            const rung = currentRung(l);
+            if (!rung) return;
+            void configureBout({
+              mode: "ladder",
+              p1: fighterById(l.playerFighter),
+              cpu: fighterById(rung.opponent),
+              stage: stageById(rung.stage),
+              difficulty: rung.difficulty,
+              p1Tint: studioPaletteFor(l.playerFighter)
+            }).then(() => hud.announce(`RUNG ${rung.rung} OF 8`, rung.title, "hold"));
+          }
+        },
+        alt: { label: "Retire", run: () => toMainMenu() }
+      });
+      return;
+    }
+    hud.showResult({
+      title: "THE CROWN HOLDS",
+      sub: `Rung ${l.cursor + 1} stopped the ascent.`,
+      stats,
+      primary: {
+        label: "RETRY RUNG",
+        run: () => {
+          const rung = currentRung(l);
+          if (!rung) return;
+          void configureBout({
+            mode: "ladder",
+            p1: fighterById(l.playerFighter),
+            cpu: fighterById(rung.opponent),
+            stage: stageById(rung.stage),
+            difficulty: rung.difficulty,
+            p1Tint: studioPaletteFor(l.playerFighter)
+          });
+        }
+      },
+      alt: { label: "Abandon run", run: () => toMainMenu() }
+    });
+    return;
+  }
+  hud.showResult({
+    title: p1Won ? "VICTORY" : "DEFEAT",
+    sub: p1Won ? `${cfg.p1.name} stands tall on ${cfg.stage.label}.` : `${cfg.cpu.name} takes it on ${cfg.stage.label}.`,
+    stats,
+    primary: { label: "REMATCH", run: () => void configureBout(state.config) },
+    alt: { label: "Change fighter", run: () => openSheet("versus") }
+  });
+}
+
+/* ================================================================ */
+/* animation + nodes                                                 */
+/* ================================================================ */
+
+function desiredClip(f: FighterRuntime): FighterClip {
+  const asnap = actorSnap(f.nodeId);
+  if (!asnap) return "idle";
+  if (asnap.knockedOut) return "ko";
+  if (f.attack && snap().activeAttacks.some((a) => a.attackerId === f.nodeId)) return f.attack.kind;
+  if (asnap.stun > 0) return "hitstun";
+  if (!f.body.grounded) return "jump";
+  if (f.dashT > 0.12) return "dash";
+  if (f.crouching) return "crouch";
+  if (asnap.guarding) return "guard";
+  if (state.phase === "boutEnd") {
+    const winner = state.pipsP1 >= ROUNDS_TO_WIN ? "p1" : state.pipsCpu >= ROUNDS_TO_WIN ? "cpu" : null;
+    if (winner === f.side) return "win";
+  }
+  if (Math.abs(f.body.velocity?.[0] ?? 0) > 0.35) return "walk";
+  return "idle";
+}
+
+function syncAnim(f: FighterRuntime, clip: FighterClip, dt: number): void {
+  const current = f.anim.controller.snapshot().activeClipId;
+  if (current !== clip) {
+    f.anim.controller.crossFade(clip, 0.07, {
+      restart: !isLoopingFighterClip(clip),
+      loop: isLoopingFighterClip(clip) ? "loop" : false,
+      layer: animationLayer(clip)
+    });
+  }
+  f.anim.controller.update(dt);
+}
+
+function syncNodes(): void {
+  for (const f of [P1, CPU]) {
+    const asnap = actorSnap(f.nodeId);
+    const facing = asnap?.facing ?? 1;
+    const node = app.nodes.require(f.nodeId) as AuraRuntimeNodeHandle;
+    node
+      .setPosition(f.body.position[0], f.body.position[1], f.body.position[2])
+      .setRotation(0, facing < 0 ? Math.PI : 0, 0);
+  }
+}
+
+/* ================================================================ */
+/* frame loop                                                        */
+/* ================================================================ */
+
+const inputTrail: { label: string; attack?: boolean }[] = [];
+const seenInput = new Set<string>();
+
+const BINDING_LABELS: Record<string, { label: string; attack?: boolean }> = {
+  KeyA: { label: "◀" }, ArrowLeft: { label: "◀" }, GamepadDPadLeft: { label: "◀" }, "Touch:left": { label: "◀" }, TouchLeft: { label: "◀" },
+  KeyD: { label: "▶" }, ArrowRight: { label: "▶" }, GamepadDPadRight: { label: "▶" }, "Touch:right": { label: "▶" }, TouchRight: { label: "▶" },
+  KeyS: { label: "▼" }, ArrowDown: { label: "▼" }, GamepadDPadDown: { label: "▼" },
+  KeyW: { label: "▲" }, ArrowUp: { label: "▲" }, Space: { label: "▲" }, GamepadA: { label: "▲" }, "Touch:jump": { label: "▲" }, TouchJump: { label: "▲" },
+  KeyJ: { label: "L", attack: true }, GamepadX: { label: "L", attack: true }, "Touch:light": { label: "L", attack: true }, TouchLight: { label: "L", attack: true },
+  KeyK: { label: "H", attack: true }, GamepadY: { label: "H", attack: true }, "Touch:heavy": { label: "H", attack: true }, TouchHeavy: { label: "H", attack: true },
+  KeyL: { label: "SP", attack: true }, GamepadB: { label: "SP", attack: true }, "Touch:special": { label: "SP", attack: true }, TouchSpecial: { label: "SP", attack: true },
+  KeyU: { label: "TH", attack: true }, GamepadLT: { label: "TH", attack: true },
+  KeyQ: { label: "BLK" }, GamepadLB: { label: "BLK" }, "Touch:guard": { label: "BLK" }, TouchGuard: { label: "BLK" },
+  ShiftLeft: { label: "DSH" }, ShiftRight: { label: "DSH" }, GamepadRB: { label: "DSH" }
+};
+
+app.onFrame(({ dt }) => {
+  frameCount += 1;
+  if (!P1 || !CPU || !state) return;
+  const s = state;
+  snap(); // refresh per-frame combat snapshot cache
+
+  if (input.pressed("pause") && (s.phase === "fight" || s.phase === "intro" || s.phase === "roundEnd" || s.phase === "ko")) {
+    setPaused(true);
+  }
+
+  if (s.phase === "attract") {
+    // setActor() can never clear knockedOut (it latches true), so a downed
+    // attract fighter needs a full world reset — just healing is not enough.
+    if (actorSnap("player")?.knockedOut || actorSnap("rival")?.knockedOut) {
+      combat.reset([
+        { id: "player", team: "p1", position: [...PLAYER_START], facing: 1, health: P1.def.stats.maxHealth, ...actorDefaults(P1) },
+        { id: "rival", team: "cpu", position: [...RIVAL_START], facing: -1, health: CPU.def.stats.maxHealth, ...actorDefaults(CPU) }
+      ]);
+      resetPositions();
+      P1.attack = null;
+      CPU.attack = null;
+      snap();
+    } else {
+      for (const f of [P1, CPU]) {
+        const asnap = actorSnap(f.nodeId);
+        if (asnap && asnap.health < 30) combat.setActor(f.nodeId, { health: 60 });
+      }
+    }
+  }
+
+  const simDt = dt * s.slowmo;
+  s.slowmo = Math.min(1, s.slowmo + dt * 1.4);
+
+  // input trail (throttled DOM writes)
+  for (const ev of input.recorded().slice(-8)) {
+    const key = `${ev.frame}:${ev.binding}:${ev.type}`;
+    if (ev.type === "press" && !seenInput.has(key)) {
+      if (seenInput.size > 500) seenInput.clear();
+      seenInput.add(key);
+      const mapped = BINDING_LABELS[ev.binding];
+      if (mapped) {
+        inputTrail.push(mapped);
+        if (inputTrail.length > 10) inputTrail.shift();
+      }
+    }
+  }
+  if (inputTrail.length !== lastTrailLen) {
+    lastTrailLen = inputTrail.length;
+    hud.setInputs(inputTrail);
+  }
+
+  const inFight = s.phase === "fight";
+
+  if (s.phase === "intro") {
+    s.phaseT += dt;
+    if (s.phaseT > 1.35) {
+      s.phase = "fight";
+      hud.announce("FIGHT!", "", "pop");
+      void fightingGame.sound?.cue("fight");
+    }
+  } else if (s.phase === "ko") {
+    s.koTimer += dt;
+    if (s.koTimer > 1.7) endRound(s.roundWinner ?? "draw");
+  } else if (s.phase === "roundEnd") {
+    s.phaseT += dt;
+    if (s.phaseT > 1.5) {
+      s.round += 1;
+      combat.reset();
+      combat.addActor({ id: "player", team: "p1", position: [...PLAYER_START], facing: 1, health: P1.def.stats.maxHealth, ...actorDefaults(P1) });
+      combat.addActor({ id: "rival", team: "cpu", position: [...RIVAL_START], facing: -1, health: CPU.def.stats.maxHealth, ...actorDefaults(CPU) });
+      resetPositions();
+      P1.attack = null;
+      CPU.attack = null;
+      s.timer = ROUND_SECONDS;
+      announceRoundIntro();
+    }
+  } else if (inFight) {
+    if (s.config.mode !== "lab") {
+      s.timer -= simDt;
+      if (s.timer <= 0) {
+        const pSnap = actorSnap("player");
+        const cSnap = actorSnap("rival");
+        const pPct = pSnap ? pSnap.health / P1.def.stats.maxHealth : 0;
+        const cPct = cSnap ? cSnap.health / CPU.def.stats.maxHealth : 0;
+        const winner = Math.abs(pPct - cPct) < 0.001 ? "draw" : pPct > cPct ? "p1" : "cpu";
+        hud.announce("TIME UP", "", "pop");
+        endRound(winner);
+      }
+    }
+    if (s.config.mode === "lab") {
+      const cSnap = actorSnap("rival");
+      if (cSnap && cSnap.health < CPU.def.stats.maxHealth * 0.35) {
+        combat.setActor("rival", { health: CPU.def.stats.maxHealth });
+      }
+    }
+  }
+
+  const simActive = inFight || s.phase === "attract" || s.phase === "ko" || s.phase === "roundEnd";
+
+  if (simActive) {
+    const pIntent =
+      s.phase === "attract"
+        ? (P1.brain ?? (P1.brain = createCpuBrain(P1.def, "scrapper", APP_SEED + 7))).think(aiCtx(P1, CPU), simDt)
+        : inFight
+          ? playerIntent()
+          : IDLE_INTENT;
+    const cIntent = s.phase === "attract" || s.phase === "ko" || s.phase === "roundEnd" ? cpuIntent(simDt) : inFight ? cpuIntent(simDt) : IDLE_INTENT;
+
+    driveFighter(P1, CPU, pIntent, simDt);
+    driveFighter(CPU, P1, cIntent, simDt);
+
+    P1.body.update(simDt);
+    CPU.body.update(simDt);
+    snap();
+    syncActors();
+    combat.update(simDt);
+    snap();
+    handleEvents();
+    syncBodiesFromActors();
+    resolveThrowTech();
+  }
+
+  runtimeEffects.update(simDt);
+  feel.update(dt * 1000);
+  director.update(simDt, [
+    { id: "player", position: P1.body.position },
+    { id: "rival", position: CPU.body.position }
+  ]);
+
+  const pClip = desiredClip(P1);
+  const cClip = desiredClip(CPU);
+  syncAnim(P1, pClip, simDt);
+  syncAnim(CPU, cClip, simDt);
+  syncNodes();
+
+  for (const side of ["p1", "cpu"] as const) {
+    if (combo[side].timer > 0) {
+      combo[side].timer -= dt;
+      if (combo[side].timer <= 0) combo[side].count = 0;
+    }
+    hud.combo(side === "cpu" ? "p2" : "p1", combo[side].count);
+  }
+
+  const pSnap = actorSnap("player");
+  const cSnap = actorSnap("rival");
+  if (pSnap) hud.setBars("p1", pSnap.health / P1.def.stats.maxHealth, pSnap.meter / METER_MAX);
+  if (cSnap) hud.setBars("p2", cSnap.health / CPU.def.stats.maxHealth, cSnap.meter / METER_MAX);
+  hud.setTimer(s.config.mode === "lab" ? null : Math.max(0, s.timer));
+
+  publishEvidence(pSnap, cSnap, pClip, cClip);
+});
+
+function resolveThrowTech(): void {
+  const csnap = snap();
+  const pThrow = csnap.activeAttacks.find((a) => a.attackerId === "player" && a.moveId.includes("throw"));
+  const cThrow = csnap.activeAttacks.find((a) => a.attackerId === "rival" && a.moveId.includes("throw"));
+  if (!pThrow || !cThrow || Math.abs(pThrow.frame - cThrow.frame) > THROW_TECH_FRAMES) return;
+  const pHealth = actorSnap("player")?.health ?? P1.def.stats.maxHealth;
+  const cHealth = actorSnap("rival")?.health ?? CPU.def.stats.maxHealth;
+  const pMeter = actorSnap("player")?.meter ?? 0;
+  const cMeter = actorSnap("rival")?.meter ?? 0;
+  const mid = (P1.body.position[0] + CPU.body.position[0]) / 2;
+  P1.body.position = [mid - 0.95, 0, 0] as [number, number, number];
+  CPU.body.position = [mid + 0.95, 0, 0] as [number, number, number];
+  P1.body.applyKnockback([-2.4, 1.2, 0]);
+  CPU.body.applyKnockback([2.4, 1.2, 0]);
+  P1.attack = null;
+  CPU.attack = null;
+  combat.reset([
+    { id: "player", team: "p1", position: [...P1.body.position], facing: facingTo(P1, CPU), health: pHealth, meter: pMeter, ...actorDefaults(P1) },
+    { id: "rival", team: "cpu", position: [...CPU.body.position], facing: facingTo(CPU, P1), health: cHealth, meter: cMeter, ...actorDefaults(CPU) }
+  ]);
+  snap();
+  runtimeEffects.blockSpark([mid, 1.0, 0], { intensity: 0.9, color: "#8ee6ff" });
+  hud.announce("THROW TECH", "", "pop");
+  void fightingGame.sound?.cue("tech");
+}
+
+/* ================================================================ */
+/* evidence                                                          */
+/* ================================================================ */
+
+function publishEvidence(
+  pSnap: GameCombatWorldSnapshot["actors"][number] | undefined,
+  cSnap: GameCombatWorldSnapshot["actors"][number] | undefined,
+  pClip: FighterClip,
+  cClip: FighterClip
+): void {
+  const s = state;
+  gameWindow.__AURA3D_SHOWCASE_IRON_CROWN__ = {
+    schema: "iron-crown/1.0",
+    app: "showcase-iron-crown",
+    route: "/apps/showcase-iron-crown/",
+    title: "IRON CROWN — 2.5D Arena Fighter",
+    frame: frameCount,
+    mode: s.config.mode,
+    phase: s.phase,
+    stage: {
+      id: s.config.stage.id,
+      label: s.config.stage.label,
+      preset: s.config.stage.preset,
+      look: s.config.stage.lookId,
+      issues: s.config.stage.issues
+    },
+    bout: {
+      round: s.round,
+      timer: Math.max(0, s.timer),
+      pips: { p1: s.pipsP1, cpu: s.pipsCpu },
+      winner: s.roundWinner,
+      stats: s.stats
+    },
+    fighters: {
+      p1: {
+        id: P1.def.id,
+        name: P1.def.name,
+        rig: RIG_ASSET_KEY[P1.def.rig],
+        clip: pClip,
+        embeddedClip: embeddedClipFor(P1.def.rig, pClip).clip,
+        health: pSnap?.health ?? 0,
+        meter: pSnap?.meter ?? 0,
+        position: [...P1.body.position] as AuraVec3,
+        grounded: P1.body.grounded,
+        tint: P1.tint?.color ?? "default"
+      },
+      cpu: {
+        id: CPU.def.id,
+        name: CPU.def.name,
+        rig: RIG_ASSET_KEY[CPU.def.rig],
+        clip: cClip,
+        embeddedClip: embeddedClipFor(CPU.def.rig, cClip).clip,
+        health: cSnap?.health ?? 0,
+        meter: cSnap?.meter ?? 0,
+        position: [...CPU.body.position] as AuraVec3,
+        grounded: CPU.body.grounded,
+        brain: s.config.difficulty
+      }
+    },
+    combat: snap(),
+    ladder: ladder ? { rung: ladder.cursor + 1, cleared: ladder.cleared } : null,
+    lab: s.config.mode === "lab" ? { stance: lab.stance, frameData: lab.frameData } : null,
+    studio: { fighter: studioSelection.fighter, palette: studioSelection.palette },
+    assets: {
+      typed: typedFighterAssetCount,
+      missing: missingFighterAssets,
+      clipStandIns: { p1: P1.anim.standIns, cpu: CPU.anim.standIns }
+    },
+    a11y: { reducedMotion, reducedFlash, highContrast },
+    ready: true
+  };
+  gameWindow.__AURA3D_GAME_RUNTIME__ = {
+    kind: "createGame",
+    beacon: gameWindow.__AURA3D_GAME__ ?? { state: "unbound" },
+    frame: app.runtime.frame,
+    showcase: "iron-crown"
+  };
+  gameWindow.__AURA3D_GAME_DEBUG__ = game.debug.overlay({
+    runtime: app.runtime,
+    input,
+    bodies: [P1.body, CPU.body],
+    combat,
+    effects: runtimeEffects,
+    camera: director,
+    colliders: [
+      game.collider.capsule({ id: "player-body", center: P1.body.position, radius: 0.32, height: 1.7, tags: ["fighter", "player"] }),
+      game.collider.capsule({ id: "rival-body", center: CPU.body.position, radius: 0.32, height: 1.7, tags: ["fighter", "rival"] })
+    ],
+    warnings: s.config.stage.issues.map((i) => i.message)
+  });
+  gameWindow.__AURA3D_GAME_EVIDENCE__ = app.evidence({
+    input,
+    bodies: [P1.body, CPU.body],
+    combat,
+    effects: runtimeEffects,
+    camera: director,
+    animation: { controllers: 2, activeClips: [pClip, cClip] },
+    assets: { typedAssets: typedFighterAssetCount, missingAssets: missingFighterAssets },
+    stage: { id: s.config.stage.id, bounds: s.config.stage.bounds, warnings: s.config.stage.issues.map((i) => i.message) },
+    source: { mode: "mounted-runtime", label: "showcase-iron-crown" }
+  });
+}
+
+/* ================================================================ */
+/* boot                                                              */
+/* ================================================================ */
+
+void (async () => {
+  state = {
+    config: initialConfig,
+    phase: "attract",
+    phaseT: 0,
+    round: 1,
+    pipsP1: 0,
+    pipsCpu: 0,
+    timer: ROUND_SECONDS,
+    koTimer: 0,
+    roundWinner: null,
+    slowmo: 1,
+    stats: { p1Hits: 0, cpuHits: 0, maxCombo: 0, throws: 0, specials: 0 }
+  };
+  await fightingGame.ready();
+  P1 = makeFighter("p1", initialConfig.p1, PLAYER_START);
+  CPU = makeFighter("cpu", initialConfig.cpu, RIVAL_START);
+  CPU.brain = createCpuBrain(initialConfig.cpu, "scrapper", APP_SEED + 1);
+  combat.reset();
+  combat.addActor({ id: "player", team: "p1", position: [...PLAYER_START], facing: 1, health: initialConfig.p1.stats.maxHealth, ...actorDefaults(P1) });
+  combat.addActor({ id: "rival", team: "cpu", position: [...RIVAL_START], facing: -1, health: initialConfig.cpu.stats.maxHealth, ...actorDefaults(CPU) });
+  bindAnimations();
+  hud.setNames(initialConfig.p1.name, initialConfig.cpu.name);
+  hud.setModeLabel("IRON CROWN · ATTRACT");
+  hud.showMenu("mode");
+  hud.setStageButtons(currentStageId);
+})();

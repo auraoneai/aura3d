@@ -1,0 +1,20 @@
+{
+  "name": "@aura3d/showcase-aura-diamond-3d",
+  "version": "4.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura Diamond 3D — 3-inning broadcast baseball on Aura3D: PCI hitting, 4-pitch arsenals, 6 ballparks (incl. 1/6-gravity Lunar Park), Derby Lab, Bullpen Lab, 32-team World Classic and Player Studio.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

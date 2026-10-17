@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Bunker Zero — Retro Corridor FPS on Aura3D</title>
+    <meta name="description" content="Bunker Zero: a six-floor retro corridor shooter in the Wolfenstein mold — grid mazes, push-wall secrets, three enemy archetypes and the Iron Warden, rendered by the Aura3D engine." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      :root {
+        --bz-amber: #ffb648;
+        --bz-blood: #ff3b30;
+        --bz-steel: #9fb4c8;
+        --bz-bone: #f3ecd9;
+        --bz-ink: #0a0d12;
+      }
+      body, html {
+        margin: 0; padding: 0;
+        background: #05070a;
+        color: var(--bz-bone);
+        font-family: "Whitney", "Graphik", sans-serif;
+        overscroll-behavior: none;
+      }
+      #app { position: fixed; inset: 0; }
+      #app canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+      .aura3d-top-bar {
+        position: fixed; top: 12px; right: 14px; z-index: 60;
+        display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+        padding: 6px 10px; border-radius: 14px;
+        background: linear-gradient(180deg, rgba(16, 20, 26, 0.94), rgba(8, 10, 14, 0.94));
+        border: 1px solid rgba(255, 182, 72, 0.3);
+        backdrop-filter: blur(12px) saturate(1.15);
+        font-size: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+      }
+      .aura3d-top-bar .aura-badge {
+        font-family: "DIN Pro", sans-serif; font-weight: 700; letter-spacing: 0.09em;
+        color: #140d02; padding: 3px 9px; border-radius: 8px;
+        background: linear-gradient(135deg, #ffb648, #e08b2a);
+        font-size: 11px; text-transform: uppercase;
+        box-shadow: 0 2px 10px rgba(255,182,72,0.3);
+      }
+      .aura3d-top-bar button {
+        appearance: none; border: 1px solid rgba(243, 236, 217, 0.2);
+        background: rgba(255,255,255,0.06); color: var(--bz-bone);
+        font-family: "Whitney", sans-serif; font-size: 12px; font-weight: 500;
+        height: 26px; padding: 0 10px; border-radius: 9px; cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
+      }
+      .aura3d-top-bar button:hover { transform: translateY(-1px); }
+      .aura3d-top-bar button.active {
+        background: linear-gradient(135deg, #ffb648, #e08b2a);
+        border-color: #ffb648; color: #140d02; font-weight: 600;
+      }
+      .aura3d-top-bar button.floor-btn { font-family: "Monument Grotesk Mono", monospace; min-width: 30px; padding: 0 6px; }
+
+      .aura3d-controls-hint {
+        position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
+        z-index: 45; padding: 5px 14px; border-radius: 999px;
+        background: rgba(8, 10, 14, 0.85); border: 1px solid rgba(243, 236, 217, 0.15);
+        color: #d8d2c0; font-family: "Monument Grotesk Mono", monospace;
+        font-size: 11px; letter-spacing: 0.03em; pointer-events: none;
+        white-space: nowrap; backdrop-filter: blur(8px);
+      }
+
+      /* ---- FPS HUD ---- */
+      #bz-hud { position: fixed; inset: 0; z-index: 30; pointer-events: none; font-family: "Monument Grotesk Mono", monospace; }
+      #bz-hud.hidden { display: none; }
+      #bz-crosshair {
+        position: absolute; left: 50%; top: 50%; width: 18px; height: 18px;
+        transform: translate(-50%, -50%);
+      }
+      #bz-crosshair::before, #bz-crosshair::after {
+        content: ""; position: absolute; background: rgba(255, 220, 160, 0.85);
+        box-shadow: 0 0 4px rgba(0,0,0,0.8);
+      }
+      #bz-crosshair::before { left: 8px; top: 0; width: 2px; height: 18px; }
+      #bz-crosshair::after { left: 0; top: 8px; width: 18px; height: 2px; }
+      #bz-crosshair.hit::before, #bz-crosshair.hit::after { background: #ff6a4d; }
+
+      #bz-status {
+        position: absolute; left: 50%; bottom: 44px; transform: translateX(-50%);
+        display: flex; gap: 22px; align-items: flex-end;
+        padding: 8px 18px; border-radius: 6px;
+        background: linear-gradient(180deg, rgba(10,13,18,0.78), rgba(6,8,11,0.88));
+        border: 1px solid rgba(255,182,72,0.25);
+      }
+      .bz-stat { text-align: center; min-width: 56px; }
+      .bz-stat .bz-label { display: block; font-size: 9px; letter-spacing: 0.16em; color: #8a94a2; text-transform: uppercase; }
+      .bz-stat .bz-value { display: block; font-size: 22px; font-weight: 700; color: var(--bz-bone); line-height: 1.15; }
+      .bz-stat .bz-value.low { color: var(--bz-blood); }
+      .bz-stat .bz-value.amber { color: var(--bz-amber); }
+
+      #bz-floor-tag {
+        position: absolute; top: 14px; left: 16px; z-index: 30;
+        font-family: "DIN Pro", sans-serif; font-weight: 700; font-size: 13px;
+        letter-spacing: 0.14em; text-transform: uppercase; color: var(--bz-amber);
+        background: rgba(8,10,14,0.72); border: 1px solid rgba(255,182,72,0.3);
+        padding: 5px 12px; border-radius: 6px;
+      }
+      #bz-floor-tag small { display: block; font-family: "Monument Grotesk Mono", monospace; font-weight: 400; font-size: 10px; letter-spacing: 0.08em; color: #9aa4b0; text-transform: none; margin-top: 2px; }
+
+      #bz-vignette {
+        position: fixed; inset: 0; z-index: 28; pointer-events: none;
+        background: radial-gradient(ellipse at center, transparent 42%, rgba(140, 10, 4, 0.55) 100%);
+        opacity: 0; transition: opacity 0.12s linear;
+      }
+      #bz-vignette.low { animation: bz-pulse 1.1s ease-in-out infinite; }
+      @keyframes bz-pulse { 0%,100% { opacity: 0.18; } 50% { opacity: 0.5; } }
+
+      #bz-banner {
+        position: fixed; left: 50%; top: 34%; transform: translateX(-50%);
+        z-index: 40; text-align: center; pointer-events: none;
+        font-family: "DIN Pro", sans-serif; font-weight: 700;
+        font-size: 30px; letter-spacing: 0.3em; text-transform: uppercase;
+        color: var(--bz-bone); text-shadow: 0 2px 24px rgba(255,182,72,0.4), 0 1px 2px #000;
+        opacity: 0; transition: opacity 0.4s;
+      }
+      #bz-banner.show { opacity: 1; }
+      #bz-banner small { display: block; font-size: 12px; letter-spacing: 0.2em; color: var(--bz-amber); margin-top: 8px; }
+
+      #bz-feed {
+        position: fixed; left: 16px; bottom: 48px; z-index: 32;
+        display: flex; flex-direction: column; gap: 4px; pointer-events: none;
+        font-family: "Monument Grotesk Mono", monospace; font-size: 10.5px;
+      }
+      .bz-tick {
+        color: #d8d2c0; background: rgba(8,10,14,0.72); padding: 3px 10px;
+        border-left: 2px solid rgba(255,182,72,0.5); border-radius: 3px;
+        white-space: nowrap; letter-spacing: 0.04em;
+      }
+      .bz-tick.warn { border-left-color: var(--bz-blood); color: #ffb3ac; }
+
+      /* ---- Menus ---- */
+      #bz-menu {
+        position: fixed; inset: 0; z-index: 70; display: none;
+        background: rgba(4, 6, 9, 0.82); backdrop-filter: blur(10px);
+        align-items: center; justify-content: center;
+      }
+      #bz-menu.open { display: flex; }
+      .bz-panel {
+        width: min(640px, 92vw); max-height: 84vh; overflow: auto;
+        background: linear-gradient(180deg, #10141a, #090b0f);
+        border: 1px solid rgba(255,182,72,0.35); border-radius: 12px;
+        padding: 26px 30px; box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      }
+      .bz-panel h2 { font-family: "DIN Pro", sans-serif; letter-spacing: 0.2em; text-transform: uppercase; font-size: 20px; margin: 0 0 4px; color: var(--bz-amber); }
+      .bz-panel h3 { font-family: "DIN Pro", sans-serif; letter-spacing: 0.14em; text-transform: uppercase; font-size: 13px; margin: 22px 0 10px; color: #9aa4b0; }
+      .bz-panel p { color: #b8bfca; font-size: 13px; line-height: 1.5; margin: 6px 0; }
+      .bz-floors { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .bz-floor-card {
+        text-align: left; appearance: none; cursor: pointer;
+        background: rgba(255,255,255,0.04); border: 1px solid rgba(243,236,217,0.14);
+        border-radius: 8px; padding: 10px 12px; color: var(--bz-bone);
+        font-family: "Whitney", sans-serif;
+      }
+      .bz-floor-card:hover { border-color: rgba(255,182,72,0.5); }
+      .bz-floor-card strong { display: block; font-size: 13px; }
+      .bz-floor-card small { color: #8a94a2; font-family: "Monument Grotesk Mono", monospace; font-size: 10px; letter-spacing: 0.06em; }
+      .bz-floor-card .medal { float: right; font-size: 14px; }
+      .bz-swatchrow { display: flex; gap: 8px; }
+      .bz-swatch { width: 34px; height: 34px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; }
+      .bz-swatch.active { border-color: var(--bz-amber); }
+      .bz-panel input[type="text"] {
+        width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(243,236,217,0.2); border-radius: 8px;
+        color: var(--bz-bone); padding: 9px 12px; font-family: "Monument Grotesk Mono", monospace; font-size: 13px;
+      }
+      .bz-panel .bz-close {
+        float: right; appearance: none; background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(243,236,217,0.2); color: var(--bz-bone);
+        border-radius: 8px; padding: 6px 14px; cursor: pointer; font-size: 12px;
+      }
+      .bz-kv { display: flex; justify-content: space-between; font-family: "Monument Grotesk Mono", monospace; font-size: 11px; color: #9aa4b0; padding: 3px 0; border-bottom: 1px dashed rgba(255,255,255,0.07); }
+
+      .render-error {
+        position: fixed; inset: 0; z-index: 100; display: flex;
+        align-items: center; justify-content: center; text-align: center;
+        background: #090b0f; color: var(--bz-bone); padding: 40px;
+        font-size: 15px; line-height: 1.6;
+      }
+      @media (max-width: 760px) { .aura3d-controls-hint { display: none; } #bz-status { gap: 12px; padding: 6px 10px; } .bz-stat .bz-value { font-size: 17px; } }
+      @media (prefers-reduced-motion: reduce) { #bz-vignette.low { animation: none; } }
+    </style>
+  </head>
+  <body>
+    <div class="aura3d-top-bar" role="toolbar" aria-label="Aura3D Bunker Zero quick switcher">
+      <span class="aura-badge">AURA3D ENGINE</span>
+      <button type="button" id="bz-btn-play" class="active" title="Drop into the descent from floor one">Quick Play</button>
+      <button type="button" id="bz-btn-killhouse" title="Timed target gallery">Kill House</button>
+      <button type="button" id="bz-btn-menu" title="Descent map, player studio and tour">Modes &amp; Tour</button>
+      <button type="button" class="floor-btn" data-aura-floor="0">F1</button>
+      <button type="button" class="floor-btn" data-aura-floor="1">F2</button>
+      <button type="button" class="floor-btn" data-aura-floor="2">F3</button>
+      <button type="button" class="floor-btn" data-aura-floor="3">F4</button>
+      <button type="button" class="floor-btn" data-aura-floor="4">F5</button>
+      <button type="button" class="floor-btn" data-aura-floor="5">F6</button>
+    </div>
+
+    <div class="aura3d-controls-hint" id="bz-controls-hint">
+      WASD MOVE · MOUSE AIM · CLICK/SPACE FIRE · R RELOAD · E USE · 1–4/WHEEL WEAPONS · M MAP
+    </div>
+
+    <main id="app" class="game-shell" aria-label="Bunker Zero game"></main>
+
+    <div id="bz-hud" class="hidden" aria-hidden="true">
+      <div id="bz-crosshair"></div>
+      <div id="bz-status">
+        <div class="bz-stat"><span class="bz-label">Health</span><span class="bz-value" id="bz-hp">100</span></div>
+        <div class="bz-stat"><span class="bz-label">Armor</span><span class="bz-value amber" id="bz-armor">0</span></div>
+        <div class="bz-stat"><span class="bz-label" id="bz-weapon-name">PISTOL</span><span class="bz-value" id="bz-ammo">8 / 24</span></div>
+        <div class="bz-stat"><span class="bz-label">Score</span><span class="bz-value" id="bz-score">0</span></div>
+        <div class="bz-stat"><span class="bz-label">Kills</span><span class="bz-value" id="bz-kills">0/0</span></div>
+        <div class="bz-stat"><span class="bz-label">Time</span><span class="bz-value" id="bz-time">0:00</span></div>
+      </div>
+    </div>
+    <div id="bz-floor-tag">FLOOR 1 — STONE GATEHOUSE<small>find the brass key · reach the elevator</small></div>
+    <div id="bz-vignette"></div>
+    <div id="bz-banner"></div>
+    <div id="bz-feed"></div>
+
+    <div id="bz-menu" role="dialog" aria-label="Bunker Zero modes and tour">
+      <div class="bz-panel">
+        <button type="button" class="bz-close" id="bz-menu-close">CLOSE ✕</button>
+        <h2>Bunker Zero</h2>
+        <p>Six floors down. Find each floor's brass key, ride the elevator deeper, and put down the Iron Warden in the silo. Push cracked walls for treasure — the bunker rewards the curious.</p>
+        <h3>Descent Map</h3>
+        <div class="bz-floors" id="bz-floor-list"></div>
+        <h3>Player Studio</h3>
+        <p style="margin-bottom:8px">DOG TAG</p>
+        <input type="text" id="bz-dogtag" maxlength="14" value="RAZOR-6" aria-label="Dog tag name" />
+        <p style="margin:12px 0 8px">CAMO TINT (viewmodel)</p>
+        <div class="bz-swatchrow" id="bz-camo-row">
+          <button type="button" class="bz-swatch active" data-tint="#ffb648" style="background:#ffb648" aria-label="amber"></button>
+          <button type="button" class="bz-swatch" data-tint="#7dfcff" style="background:#7dfcff" aria-label="cyan"></button>
+          <button type="button" class="bz-swatch" data-tint="#9be84e" style="background:#9be84e" aria-label="olive"></button>
+          <button type="button" class="bz-swatch" data-tint="#ff6a9e" style="background:#ff6a9e" aria-label="crimson"></button>
+        </div>
+        <h3>Tour Record</h3>
+        <div id="bz-tour-stats"></div>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

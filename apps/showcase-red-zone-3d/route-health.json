@@ -1,0 +1,38 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-10-17T00:00:00.000Z",
+  "appId": "showcase-red-zone-3d",
+  "route": "/apps/showcase-red-zone-3d/",
+  "classification": "prototype",
+  "publicShowcase": false,
+  "promotionStatus": "route-local",
+  "machinePass": true,
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "production",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": true
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.rooftopFloodlightTowerMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.rooftopScoreboardRigMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.rooftopShooterCleanMeshy",
+      "quality": "production",
+      "role": "supportingCast"
+    },
+    {
+      "typedRef": "assets.auroraHabitatDomeMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>PIP'S BIG LEAP — 3D Mascot Platformer · Aura3D Showcase</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <div class="aura3d-top-bar" role="toolbar" aria-label="Aura3D Pip's Big Leap Quick Switcher">
+      <span class="aura-badge">AURA3D ENGINE</span>
+      <button type="button" id="aura-btn-play" class="active" title="Drop into World 1 — Whispering Forest">Quick Play</button>
+      <button type="button" id="aura-btn-academy" title="Jump Academy — skill gauntlet for every move">Jump Academy</button>
+      <button type="button" id="aura-btn-atlas" title="Vale Atlas — world map with seed counts">Vale Atlas</button>
+      <button type="button" id="aura-btn-studio" title="Player Studio — cap &amp; cape colors">Player Studio</button>
+      <button type="button" id="aura-btn-trial" title="Time Trial — race the medal clocks">Time Trial</button>
+      <span class="aura-sep" aria-hidden="true"></span>
+      <button type="button" data-aura-venue="w1" class="venue active" title="World 1 — Whispering Forest">Forest</button>
+      <button type="button" data-aura-venue="w2" class="venue" title="World 2 — Sunmill Wharf">Wharf</button>
+      <button type="button" data-aura-venue="w3" class="venue" title="World 3 — Cloudspan Wharf">Clouds</button>
+      <button type="button" data-aura-venue="w4" class="venue" title="World 4 — Ember Cellar">Ember</button>
+      <button type="button" data-aura-venue="w5" class="venue" title="World 5 — Hollow Palace">Palace</button>
+      <button type="button" data-aura-venue="w6" class="venue" title="World 6 — Starfall Garden">Starfall</button>
+    </div>
+
+    <div class="aura3d-controls-hint" id="aura-controls-hint">
+      MOVE: WASD / ARROWS · JUMP: SPACE (HOLD = GLIDE) · DOUBLE-JUMP: W2+ · DIVE: SHIFT (AIR) · POUND: C / CTRL (AIR) · PAUSE: ESC
+    </div>
+
+    <main class="game-shell" aria-label="Pip's Big Leap game">
+      <div id="app"></div>
+      <div id="render-error" class="render-error" hidden>
+        Pip's Big Leap needs WebGL 2. Enable graphics acceleration in your browser, then reload.
+      </div>
+
+      <!-- In-game HUD -->
+      <div id="pbl-hud" class="pbl-hud" aria-live="polite">
+        <div class="pbl-tl">
+          <div id="pbl-mode-tag" class="pbl-mode-tag">QUICK PLAY</div>
+          <div class="pbl-row">
+            <div class="pbl-chip pbl-hearts" id="pbl-hearts" aria-label="Hearts">♥♥♥</div>
+            <div class="pbl-chip"><span class="k">WORLD</span><span class="v" id="pbl-world">WHISPERING FOREST</span></div>
+          </div>
+          <div class="pbl-row">
+            <div class="pbl-chip pbl-seed-chip"><span class="k">SUN-SEEDS</span><span class="v" id="pbl-seeds">0/6</span></div>
+            <div class="pbl-chip"><span class="k">ACORNS</span><span class="v" id="pbl-acorns">0</span></div>
+            <div class="pbl-chip" id="pbl-timer-chip"><span class="k">TIME</span><span class="v" id="pbl-timer">0:00.0</span></div>
+          </div>
+          <div id="pbl-objective" class="pbl-objective">Gather sun-seeds and reach the Sun-Gate.</div>
+        </div>
+        <div id="pbl-boss-wrap" class="pbl-boss-wrap" hidden>
+          <div class="pbl-boss-name">BRAMBLEBACK</div>
+          <div class="pbl-boss-bar"><div id="pbl-boss-fill" class="pbl-boss-fill"></div></div>
+        </div>
+        <div id="pbl-banner" class="pbl-banner"><div class="big" id="pbl-banner-big"></div><div class="small" id="pbl-banner-small"></div></div>
+        <div id="pbl-toast" class="pbl-toast"></div>
+      </div>
+
+      <!-- Pause menu -->
+      <div id="pbl-pause" class="pbl-overlay" hidden>
+        <div class="pbl-panel">
+          <h2>PAUSED</h2>
+          <p class="pbl-sub">Pip is catching his breath.</p>
+          <div class="pbl-btns">
+            <button type="button" id="pbl-resume">Resume</button>
+            <button type="button" id="pbl-restart">Restart World</button>
+            <button type="button" id="pbl-pause-atlas">Vale Atlas</button>
+            <button type="button" id="pbl-pause-studio">Player Studio</button>
+          </div>
+          <p class="pbl-help">SPACE jump (hold at apex = cape glide) · SHIFT mid-air dive · C/CTRL ground pound · double-jump unlocks in World 2</p>
+        </div>
+      </div>
+
+      <!-- Vale Atlas overlay -->
+      <div id="pbl-atlas" class="pbl-overlay" hidden>
+        <div class="pbl-panel pbl-wide">
+          <h2>VALE ATLAS</h2>
+          <p class="pbl-sub">The Whispering Vale — six worlds, thirty-six sun-seeds.</p>
+          <div id="pbl-atlas-grid" class="pbl-atlas-grid"></div>
+          <div class="pbl-btns"><button type="button" id="pbl-atlas-close">Back to the Vale</button></div>
+        </div>
+      </div>
+
+      <!-- Player Studio overlay -->
+      <div id="pbl-studio" class="pbl-overlay" hidden>
+        <div class="pbl-panel">
+          <h2>PLAYER STUDIO</h2>
+          <p class="pbl-sub">Dress Pip's acorn cap and glide cape.</p>
+          <div class="pbl-studio-row"><span class="k">CAP</span><div id="pbl-cap-swatches" class="pbl-swatches"></div></div>
+          <div class="pbl-studio-row"><span class="k">CAPE</span><div id="pbl-cape-swatches" class="pbl-swatches"></div></div>
+          <div class="pbl-btns"><button type="button" id="pbl-studio-close">Done</button></div>
+        </div>
+      </div>
+
+      <!-- World complete overlay -->
+      <div id="pbl-complete" class="pbl-overlay" hidden>
+        <div class="pbl-panel">
+          <h2 id="pbl-complete-title">SUN-GATE OPENED</h2>
+          <p class="pbl-sub" id="pbl-complete-sub">Whispering Forest is bright again.</p>
+          <div class="pbl-stats" id="pbl-complete-stats"></div>
+          <div class="pbl-btns">
+            <button type="button" id="pbl-next-world">Next World</button>
+            <button type="button" id="pbl-complete-retry">Replay</button>
+            <button type="button" id="pbl-complete-atlas">Vale Atlas</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

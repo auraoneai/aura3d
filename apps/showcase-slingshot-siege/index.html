@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="Aura3D Slingshot Siege prototype: a Saturday-morning-cartoon physics destruction sandbox. Pull the pouch, lob five ammo types, squash every gull, topple every tower." />
+    <title>Aura3D - Slingshot Siege</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="shell" aria-label="Slingshot Siege">
+      <section class="viewport" aria-label="3D battlefield">
+        <div id="app" class="stage" data-testid="slingshot-siege-stage"></div>
+        <div id="hud" class="hud" aria-label="Slingshot Siege HUD"></div>
+        <div id="render-error" class="render-error is-hidden" role="alert" aria-live="assertive">
+          <div class="render-error-card">
+            <h2>Renderer unavailable</h2>
+            <p id="render-error-detail">Slingshot Siege needs a WebGL2-capable browser to run its Rapier physics stage.</p>
+          </div>
+        </div>
+      </section>
+
+      <footer id="controls-hint" class="controls-hint" aria-label="Controls">
+        <span><b>Drag</b> the pouch to aim, <b>release</b> to launch</span>
+        <span><b>Tap / Space</b> mid-flight for the ammo power</span>
+        <span><b>Drag</b> empty sky to orbit the fortress</span>
+        <span><b>R</b> reset &middot; <b>M</b> map &middot; <b>P</b> pause</span>
+      </footer>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

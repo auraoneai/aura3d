@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-10-16T00:00:00.000Z",
+  "appId": "showcase-aura-links-3d",
+  "route": "/apps/showcase-aura-links-3d/",
+  "title": "AURA LINKS 3D — Postcard Arcade Golf",
+  "category": "sports",
+  "classification": "candidate",
+  "publicShowcase": false,
+  "qualityGate": {
+    "status": "unreviewed"
+  },
+  "routeGate": {
+    "claim": "Three-click arcade golf on a deterministic ball-flight sim (launch/spin/wind → terrain bounce/roll → cup). Six authored courses × 9 holes from Scottish dunes to a 1/6-gravity lunar mare: certified terrain sampler drives both physics and visuals. Shot-shaping via accuracy/spin clicks, lie/wind penalties, stroke play with skins tiebreak, Range Lab + Putting Lab, 32-player Pro Circuit, Player Studio. Publishes window.__AURA3D_SHOWCASE_AURA_LINKS_3D__ and __AURA3D_GAME_EVIDENCE__."
+  },
+  "machinePass": true,
+  "renderer": {
+    "path": "createAuraApp (@aura3d/engine) agent scene API",
+    "mode": "production",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.siegeGolfBall",
+      "quality": "production",
+      "role": "primaryBall"
+    },
+    {
+      "typedRef": "assets.siegeFlagstickCupMeshy",
+      "quality": "production",
+      "role": "holeMarker"
+    }
+  ],
+  "globalHandle": "__AURA3D_SHOWCASE_AURA_LINKS_3D__",
+  "readySelector": "body[data-aura3d-ready=\"true\"]",
+  "canvasSelector": "#app canvas",
+  "budgets": {
+    "maxModelNodes": 48,
+    "minFps": 30,
+    "maxBootMs": 9000
+  }
+}

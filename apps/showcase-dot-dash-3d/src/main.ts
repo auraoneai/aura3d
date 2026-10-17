@@ -1,0 +1,196 @@
+/** Dot Dash 3D — neon maze-chase showcase (PRD: docs/prd/dot-dash-3d.md). */
+import { game } from "@aura3d/engine";
+import { createGame, sfxUrl } from "@aura3d/engine/game";
+import { buildScene, bindApp, syncVisuals, wx, wz } from "./game/world";
+import { st, frame, startRun, evidenceExtra, GHOST_LABEL } from "./game/sim";
+import { mountUI, tickUI, isPaused } from "./game/hud";
+import type { MazeId } from "./game/mazes";
+import "./styles.css";
+
+const params = new URLSearchParams(window.location.search);
+const AUTOSTART = params.get("autostart") === "1" || params.get("autoplay") === "1";
+const PROBE = params.get("probe"); // capture-bisect: "dom" mounts the shell without the engine
+
+if (PROBE === "dom") {
+  document.addEventListener("DOMContentLoaded", () => {
+    import("./game/hud").then(({ mountUI, tickUI }) => {
+      mountUI();
+      tickUI();
+      (window as unknown as Record<string, unknown>).__AURA3D_DOT_DASH__ = { status: "probe-dom" };
+    });
+  });
+} else {
+
+const inputOptions = {
+  actions: {
+    up: ["KeyW", "ArrowUp"],
+    down: ["KeyS", "ArrowDown"],
+    left: ["KeyA", "ArrowLeft"],
+    right: ["KeyD", "ArrowRight"],
+    dash: ["Space"],
+    camera: ["KeyV"],
+    reset: ["KeyR"]
+  },
+  bufferMs: 140
+} as const;
+
+const g = createGame({
+  id: "dot-dash-3d",
+  target: "#app",
+  diagnostics: { overlay: false, performancePanel: false },
+  scene: buildScene,
+  input: inputOptions,
+  hud: { theme: "arcade-neon", widgets: [] },
+  touch: {
+    preset: "dpad-2btn",
+    bindings: {
+      "stick.up": "up", "stick.down": "down", "stick.left": "left", "stick.right": "right",
+      left: "left", right: "right", jump: "dash", dash: "dash"
+    }
+  },
+  sound: {
+    cues: {
+      dot: { id: "dot", asset: { url: sfxUrl("ui.score-tick.00") }, volume: 0.16 },
+      orb: { id: "orb", asset: { url: sfxUrl("pickup.power-up.00") }, volume: 0.8 },
+      ghost: { id: "ghost", asset: { url: sfxUrl("pickup.combo-up.00") }, volume: 0.85 },
+      fruit: { id: "fruit", asset: { url: sfxUrl("pickup.gem.00") }, volume: 0.8 },
+      fruitSpawn: { id: "fruitSpawn", asset: { url: sfxUrl("ui.unlock.00") }, volume: 0.55 },
+      death: { id: "death", asset: { url: sfxUrl("stinger.lose.00") }, volume: 0.8 },
+      clear: { id: "clear", asset: { url: sfxUrl("stinger.win.00") }, volume: 0.8 },
+      ready: { id: "ready", asset: { url: sfxUrl("stinger.level-start.00") }, volume: 0.6 },
+      dash: { id: "dash", asset: { url: sfxUrl("whoosh.dash.00") }, volume: 0.6 },
+      eyes: { id: "eyes", asset: { url: sfxUrl("whoosh.pass-by-small.00") }, volume: 0.45 },
+      hum: { id: "hum", asset: { url: sfxUrl("ambience.space-hum") }, volume: 0.22, loop: true },
+      ui: { id: "ui", asset: { url: sfxUrl("ui.click.00") }, volume: 0.5 }
+    }
+  },
+  juice: {
+    orb: { punch: { fovDeg: 2.4, ms: 300 }, flash: { color: "#45e8ff", peak: 0.22, ms: 320 }, rumble: { weak: 0.5, ms: 220 } },
+    ghost: { punch: { fovDeg: 1.8, ms: 200 }, flash: { color: "#ffffff", peak: 0.16, ms: 200 }, rumble: { weak: 0.4, ms: 140 } },
+    fruit: { punch: { fovDeg: 1.6, ms: 240 }, flash: { color: "#ffd23d", peak: 0.18, ms: 260 } },
+    death: { hitStop: 0.09, shake: 0.6, flash: { color: "#ff4d5e", peak: 0.4, ms: 480 }, rumble: { strong: 0.9, ms: 400 } },
+    clear: { punch: { fovDeg: 2.8, ms: 520 }, flash: { color: "#ffd23d", peak: 0.24, ms: 480 }, rumble: { weak: 0.6, ms: 380 } },
+    dash: { punch: { fovDeg: 1.6, ms: 190 } },
+    ready: { punch: { fovDeg: 1.4, ms: 240 }, flash: { color: "#ffffff", peak: 0.1, ms: 220 } }
+  },
+  qualityRebuild: { flags: ["game"] },
+  evidence: {
+    schema: 1,
+    sections: {
+      dotDash: () => (window as unknown as Record<string, unknown>).__AURA3D_DOT_DASH__ ?? { status: "unbound" }
+    }
+  }
+});
+
+const app = g.app;
+bindApp(app);
+g.start();
+
+// Remote-capture freeze: stop the production rAF after N ms so headless
+// SwiftShader can composite a still frame (see tools/remote-capture.sh).
+const FREEZE_MS = Number(params.get("freeze") ?? 0);
+if (FREEZE_MS > 0) setTimeout(() => { try { app.pause(); } catch { /* */ } }, FREEZE_MS);
+
+// The engine beacon __AURA3D_GAME__ embeds `app`/`scene` — circular — which
+// crashes JSON dumps in remote capture harnesses. Re-publish a JSON-safe copy.
+setInterval(() => {
+  const w = window as unknown as Record<string, unknown>;
+  const b = w.__AURA3D_GAME__ as Record<string, unknown> | undefined;
+  if (!b || typeof b !== "object") return;
+  if (b.app !== undefined || b.scene !== undefined || b.session !== undefined) {
+    w.__AURA3D_GAME__ = { route: b.route, state: b.state, frame: b.frame, firstFrameAt: b.firstFrameAt, sessionStartedAt: b.sessionStartedAt };
+  }
+}, 200);
+
+const rawInput = g.input;
+const input = {
+  held: (a: string) => (rawInput ? rawInput.held(a) : false),
+  consume: (a: string) => (rawInput ? rawInput.consume(a) : false),
+  pressed: (a: string) => (rawInput ? rawInput.pressed(a) : false)
+};
+
+const eventLog = game.eventLog({ label: "dot dash events", maxEvents: 40 });
+mountUI();
+
+// ambient hum loop — start on first user gesture (audio unlock)
+let humStarted = false;
+const tryHum = (): void => {
+  if (humStarted) return;
+  try { g.sound?.cue("hum"); humStarted = true; } catch { /* audio locked */ }
+};
+document.addEventListener("pointerdown", tryHum, { once: false });
+document.addEventListener("keydown", tryHum, { once: false });
+
+// autostart for remote captures / QA
+if (AUTOSTART) {
+  const mode = params.get("mode");
+  const maze = (params.get("maze") ?? "classic") as MazeId;
+  startRun(mode === "school" ? "school" : mode === "circuit" ? "circuit" : "quick", maze);
+}
+
+// trail effect handle
+let trail: { stop(o?: { immediate?: boolean }): void } | null = null;
+function ensureTrail(): void {
+  if (trail || st.mode !== "play") return;
+  try {
+    trail = app.effects?.spawn("streak", { node: "byte" }, { color: st.profile.trailColor }) ?? null;
+  } catch { trail = null; }
+}
+function killTrail(): void {
+  try { trail?.stop({ immediate: true }); } catch { /* */ }
+  trail = null;
+}
+
+let frames = 0;
+let lastMode = st.mode;
+
+app.onFrame(({ dt }) => {
+  const d = Math.min(Math.max(dt, 1 / 240), 0.05);
+  frames++;
+
+  if (!isPaused()) {
+    frame(d, input);
+    const ev = st.events;
+    // ---- sfx + juice on discrete events
+    if (ev.dot) g.sound?.cue("dot");
+    if (ev.orb) { g.sound?.cue("orb"); g.juice?.fire("orb"); }
+    if (ev.ghostEat) {
+      g.sound?.cue("ghost"); g.juice?.fire("ghost");
+      eventLog.push({ type: "ghost-eat", label: `${GHOST_LABEL[ev.ghostEat.ghost]} +${ev.ghostEat.points}` });
+    }
+    if (ev.fruit) { g.sound?.cue("fruit"); g.juice?.fire("fruit"); eventLog.push({ type: "fruit", label: `${ev.fruit.kind} +${ev.fruit.points}` }); }
+    if (ev.fruitSpawn) g.sound?.cue("fruitSpawn");
+    if (ev.dash) { g.sound?.cue("dash"); g.juice?.fire("dash"); }
+    if (ev.ready) g.sound?.cue("ready");
+    if (ev.eyesHome) g.sound?.cue("eyes");
+    if (ev.death) {
+      g.sound?.cue("death"); g.juice?.fire("death");
+      killTrail();
+      try {
+        app.effects?.burst("debris", [wx(st.player.px), 0.5, wz(st.player.py)], { count: 30, speed: 4, scale: 0.7, color: "#ff4d5e" });
+      } catch { /* effects optional */ }
+      eventLog.push({ type: "death", label: `caught @${st.score}` });
+    }
+    if (ev.clear) { g.sound?.cue("clear"); g.juice?.fire("clear"); }
+
+    // player trail — attach during play, drop on death/title
+    if (st.mode === "play") ensureTrail();
+    else if (st.mode !== lastMode && trail) killTrail();
+    if (trail && st.mode === "dying") killTrail();
+
+    syncVisuals(d);
+  }
+  lastMode = st.mode;
+
+  tickUI();
+
+  (window as unknown as Record<string, unknown>).__AURA3D_DOT_DASH__ = {
+    status: "live",
+    frame: frames,
+    paused: isPaused(),
+    ...evidenceExtra(),
+    input: { actions: Object.keys(inputOptions.actions), buffered: true }
+  };
+  (window as unknown as Record<string, unknown>).__gameEvidence = (window as unknown as Record<string, unknown>).__AURA3D_DOT_DASH__;
+});
+}

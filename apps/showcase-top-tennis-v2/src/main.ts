@@ -864,15 +864,15 @@ function installAura3DTopTennisRenderer(): void {
       cues: {
         ballHit:    { id: "ballHit", asset: { url: "/toptennis-v2/assets/audio/racket.wav" }, volume: 0.5 },
         racketHit:  { id: "racketHit", asset: { url: "/toptennis-v2/assets/audio/racket.wav" }, volume: 0.55 },
-        ballBounce: { id: "ballBounce", asset: { url: sfxUrl(sfx.ballBounceCourt[0]) }, volume: 0.45 },
-        netLet:     { id: "netLet", asset: { url: sfxUrl(sfx.netSwish[0]) }, volume: 0.5 },
-        aceSting:   { id: "aceSting", asset: { url: sfxUrl(sfx.checkpoint[0]) }, volume: 0.7 },
-        pointWon:   { id: "pointWon", asset: { url: sfxUrl(sfx.checkpoint[1]) }, volume: 0.5 },
-        gameSting:  { id: "gameSting", asset: { url: sfxUrl(sfx.win[0]) }, volume: 0.8 },
-        matchSting: { id: "matchSting", asset: { url: sfxUrl(sfx.win[1]) }, volume: 0.9 },
-        outCall:    { id: "outCall", asset: { url: sfxUrl(sfx.lose[0]) }, volume: 0.35 },
-        smashWhoosh:{ id: "smashWhoosh", asset: { url: sfxUrl(sfx.ballBounceHard[1]) }, volume: 0.6 },
-        crowd:      { id: "crowd", asset: { url: sfxUrl(sfx.crowdSports[0]) }, volume: 0.32, loop: true }
+        ballBounce: { id: "ballBounce", asset: { url: sfxUrl(sfx.sports.ballBounceCourt[0]) }, volume: 0.45 },
+        netLet:     { id: "netLet", asset: { url: sfxUrl(sfx.sports.netSwish[0]) }, volume: 0.5 },
+        aceSting:   { id: "aceSting", asset: { url: sfxUrl(sfx.stinger.checkpoint[0]) }, volume: 0.7 },
+        pointWon:   { id: "pointWon", asset: { url: sfxUrl(sfx.stinger.checkpoint[1]) }, volume: 0.5 },
+        gameSting:  { id: "gameSting", asset: { url: sfxUrl(sfx.stinger.win[0]) }, volume: 0.8 },
+        matchSting: { id: "matchSting", asset: { url: sfxUrl(sfx.stinger.win[1]) }, volume: 0.9 },
+        outCall:    { id: "outCall", asset: { url: sfxUrl(sfx.stinger.lose[0]) }, volume: 0.35 },
+        smashWhoosh:{ id: "smashWhoosh", asset: { url: sfxUrl(sfx.sports.ballBounceHard[1]) }, volume: 0.6 },
+        crowd:      { id: "crowd", asset: { url: sfxUrl(sfx.ambience.crowdSports[0]) }, volume: 0.32, loop: true }
       },
       buses: [{ id: "sfx" } as any]
     } as any);
@@ -1331,6 +1331,15 @@ async function loadAndRunScriptsInOrder(urls: readonly string[]): Promise<void> 
     document.body.appendChild(script);
   }
 }
+
+window.addEventListener("error", (e) => {
+  const stack = (e as ErrorEvent).error?.stack;
+  console.log(`[stackdump] ${e.message} :: ${stack ? stack.split("\n").slice(0, 6).join(" <- ") : "nostack"}`);
+});
+window.addEventListener("unhandledrejection", (e) => {
+  const r = (e as PromiseRejectionEvent).reason;
+  console.log(`[stackdump-rej] ${r?.stack ? String(r.stack).split("\n").slice(0, 6).join(" <- ") : String(r)}`);
+});
 
 async function bootTopTennisAura3D(): Promise<void> {
   installOfflineApiMocks();

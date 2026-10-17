@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#05060f" />
+    <meta
+      name="description"
+      content="Aura3D Dot Dash 3D showcase, a neon maze-chase arcade game: dash through six glowing circuits gobbling light-dots while four Specters hunt with distinct AI personalities."
+    />
+    <title>Dot Dash 3D — Neon Maze Chase · Aura3D Showcase</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div class="aura3d-top-bar" role="toolbar" aria-label="Dot Dash 3D shell">
+      <span class="aura-badge">AURA3D ENGINE</span>
+      <button type="button" id="dd-btn-play" class="active" title="Quick Play — Classic Grid, 3 lives">Quick Play</button>
+      <button type="button" id="dd-btn-school" title="Ghost School — slow-mo practice with live target-tile overlays">Ghost School</button>
+      <button type="button" id="dd-btn-circuit" title="Circuit Map — maze select and high scores">Circuit Map</button>
+      <button type="button" id="dd-btn-studio" title="Player Studio — orb and trail colors">Player Studio</button>
+      <span class="aura-sep" aria-hidden="true"></span>
+      <button type="button" data-venue="classic" class="venue active" title="Maze 1 — Classic Grid">Classic</button>
+      <button type="button" data-venue="spiral" class="venue" title="Maze 2 — Spiral Circuit">Spiral</button>
+      <button type="button" data-venue="twin" class="venue" title="Maze 3 — Twin-Tower Loop">Twin</button>
+      <button type="button" data-venue="garden" class="venue" title="Maze 4 — Garden Overgrown">Garden</button>
+      <button type="button" data-venue="foundry" class="venue" title="Maze 5 — Night Foundry">Foundry</button>
+      <button type="button" data-venue="zerocore" class="venue" title="Maze 6 — Zero-Core (exotic)">Zero-Core</button>
+      <span class="aura-sep" aria-hidden="true"></span>
+      <button type="button" id="dd-btn-dash" class="toggle on" title="Dash toggle — Space burst (optional mechanic)">Dash ON</button>
+      <button type="button" id="dd-btn-cam" class="toggle" title="Camera toggle — tilted follow vs overhead">Tilt Cam</button>
+    </div>
+
+    <div class="aura3d-controls-hint" id="dd-controls-hint">
+      MOVE: WASD / ARROWS (buffered turns) · DASH: SPACE · CAMERA: V · PAUSE: ESC
+    </div>
+
+    <main class="game-shell" aria-label="Dot Dash 3D game">
+      <div id="app"></div>
+      <div id="render-error" class="render-error" hidden>
+        Dot Dash 3D needs WebGL 2. Enable graphics acceleration in your browser, then reload.
+      </div>
+
+      <!-- In-game HUD -->
+      <div id="dd-hud" class="dd-hud" aria-live="polite">
+        <div class="dd-tl">
+          <div id="dd-mode-tag" class="dd-mode-tag">QUICK PLAY</div>
+          <div class="dd-row">
+            <div class="dd-chip"><span class="k">SCORE</span><span class="v" id="dd-score">000000</span></div>
+            <div class="dd-chip"><span class="k">HI</span><span class="v" id="dd-hiscore">000000</span></div>
+          </div>
+          <div class="dd-row">
+            <div class="dd-chip"><span class="k">LIVES</span><span class="v dd-lives" id="dd-lives">●●●</span></div>
+            <div class="dd-chip"><span class="k">DOTS</span><span class="v" id="dd-dots">0</span></div>
+            <div class="dd-chip" id="dd-fruit-chip"><span class="k">FRUIT</span><span class="v" id="dd-fruit">—</span></div>
+          </div>
+          <div class="dd-row">
+            <div class="dd-chip dd-orb-chip" id="dd-orb-chip" hidden>
+              <span class="k">ORB</span>
+              <span class="dd-orb-track"><span class="dd-orb-fill" id="dd-orb-fill"></span></span>
+            </div>
+            <div class="dd-chip dd-dash-chip" id="dd-dash-chip"><span class="k">DASH</span><span class="dd-dash-track"><span class="dd-dash-fill" id="dd-dash-fill"></span></span></div>
+          </div>
+          <div id="dd-objective" class="dd-objective">Eat every light-dot. Dodge the Specters.</div>
+        </div>
+        <div id="dd-school-legend" class="dd-school-legend" hidden>
+          <div class="dd-school-title">GHOST SCHOOL — live target tiles</div>
+          <div class="dd-school-row"><span class="dd-dot" style="background:#ff4040"></span>BLITZ — hunts your tile</div>
+          <div class="dd-school-row"><span class="dd-dot" style="background:#ff9ad5"></span>SLY — aims 4 ahead of you</div>
+          <div class="dd-school-row"><span class="dd-dot" style="background:#45e8ff"></span>FLICK — mirrors Blitz through you</div>
+          <div class="dd-school-row"><span class="dd-dot" style="background:#ffb340"></span>DIM — chases, then breaks to corner</div>
+        </div>
+        <div id="dd-banner" class="dd-banner"><div class="big" id="dd-banner-big"></div><div class="small" id="dd-banner-small"></div></div>
+        <div id="dd-toast" class="dd-toast"></div>
+      </div>
+
+      <!-- Title menu -->
+      <div id="dd-title" class="dd-overlay">
+        <div class="dd-panel">
+          <h2>DOT DASH <span style="color:var(--dd-gold)">3D</span></h2>
+          <p class="dd-sub">Six neon mazes. Four hungry specters. One very fast orb.</p>
+          <div class="dd-btns">
+            <button type="button" id="dd-t-quick">Quick Play</button>
+            <button type="button" id="dd-t-school">Ghost School</button>
+            <button type="button" id="dd-t-circuit">Circuit Map</button>
+            <button type="button" id="dd-t-studio">Player Studio</button>
+          </div>
+          <p class="dd-help">WASD / arrows move · SPACE dash · V camera · ESC menu</p>
+        </div>
+      </div>
+
+      <!-- Pause menu -->
+      <div id="dd-pause" class="dd-overlay" hidden>
+        <div class="dd-panel">
+          <h2>PAUSED</h2>
+          <p class="dd-sub">The Grid hums on without you.</p>
+          <div class="dd-btns">
+            <button type="button" id="dd-resume">Resume</button>
+            <button type="button" id="dd-restart">Restart Maze</button>
+            <button type="button" id="dd-pause-circuit">Circuit Map</button>
+            <button type="button" id="dd-pause-studio">Player Studio</button>
+          </div>
+          <p class="dd-help">WASD / arrows move · SPACE dash · V camera · ESC resume</p>
+        </div>
+      </div>
+
+      <!-- Circuit Map overlay -->
+      <div id="dd-circuit" class="dd-overlay" hidden>
+        <div class="dd-panel dd-wide">
+          <h2>CIRCUIT MAP</h2>
+          <p class="dd-sub">Six mazes deep in the machine. Clear them all.</p>
+          <div id="dd-circuit-grid" class="dd-circuit-grid"></div>
+          <div class="dd-btns"><button type="button" id="dd-circuit-close">Back to the Grid</button></div>
+        </div>
+      </div>
+
+      <!-- Player Studio overlay -->
+      <div id="dd-studio" class="dd-overlay" hidden>
+        <div class="dd-panel">
+          <h2>PLAYER STUDIO</h2>
+          <p class="dd-sub">Tune Byte's spark-orb core and dash trail.</p>
+          <div class="dd-studio-row"><span class="k">ORB</span><div id="dd-orb-swatches" class="dd-swatches"></div></div>
+          <div class="dd-studio-row"><span class="k">TRAIL</span><div id="dd-trail-swatches" class="dd-swatches"></div></div>
+          <div class="dd-btns"><button type="button" id="dd-studio-close">Done</button></div>
+        </div>
+      </div>
+
+      <!-- Maze clear overlay -->
+      <div id="dd-clear" class="dd-overlay" hidden>
+        <div class="dd-panel">
+          <h2 id="dd-clear-title">MAZE CLEARED</h2>
+          <p class="dd-sub" id="dd-clear-sub">The circuit is dark.</p>
+          <div class="dd-stats" id="dd-clear-stats"></div>
+          <div class="dd-btns">
+            <button type="button" id="dd-next-maze">Next Maze</button>
+            <button type="button" id="dd-clear-retry">Replay</button>
+            <button type="button" id="dd-clear-circuit">Circuit Map</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game over overlay -->
+      <div id="dd-gameover" class="dd-overlay" hidden>
+        <div class="dd-panel">
+          <h2>SIGNAL LOST</h2>
+          <p class="dd-sub" id="dd-gameover-sub">The Specters drank your light.</p>
+          <div class="dd-stats" id="dd-gameover-stats"></div>
+          <div class="dd-btns">
+            <button type="button" id="dd-go-retry">Retry Maze</button>
+            <button type="button" id="dd-go-circuit">Circuit Map</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

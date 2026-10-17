@@ -43,10 +43,19 @@ const showcaseRoutes = [
   "showcase-roadster-rush",
   "showcase-heatsink",
   "showcase-teleoperator",
+  "showcase-iron-crown",
+  "showcase-pips-big-leap",
+  "showcase-aura-hoops-3d",
+  "showcase-aura-diamond-3d",
+  "showcase-aura-fc-3d",
+  "showcase-red-zone-3d",
+  "showcase-aura-links-3d",
   "showcase-top-tennis-v2",
   "showcase-roadster-rush-v2",
   "showcase-heatsink-v2",
-  "showcase-teleoperator-v2"
+  "showcase-teleoperator-v2",
+  "showcase-bunker-zero",
+  "showcase-slingshot-siege"
 ];
 
 const retiredPrototypeRoutes = [

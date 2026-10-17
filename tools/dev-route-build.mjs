@@ -88,7 +88,8 @@ export default {
     target: "es2022",
     outDir: ${JSON.stringify(resolvedOutDir)},
     emptyOutDir: true,
-    sourcemap: false,
+    sourcemap: true,
+    minify: process.env.AURA3D_BUILD_NO_MINIFY === "1" ? false : "esbuild",
     chunkSizeWarningLimit: 1800,
     rollupOptions: {
       input: { ${JSON.stringify(route)}: ${JSON.stringify(input)} }

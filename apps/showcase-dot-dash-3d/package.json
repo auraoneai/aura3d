@@ -1,0 +1,21 @@
+{
+  "name": "@aura3d/showcase-dot-dash-3d",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D Dot Dash 3D showcase, a neon maze-chase arcade game: grid-snapped buffered movement, four Specter AI personalities, Power Orb hunts, six maze circuits, and typed Meshy assets.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5181 --strictPort",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "evidence:route-health": "node scripts/write-route-health.mjs",
+    "preview": "vite preview --host 127.0.0.1 --port 5181 --strictPort"
+  },
+  "dependencies": {
+    "@aura3d/engine": "file:../.."
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

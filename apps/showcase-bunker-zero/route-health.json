@@ -1,0 +1,32 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-10-18T00:00:00.000Z",
+  "appId": "showcase-bunker-zero",
+  "route": "/apps/showcase-bunker-zero/",
+  "classification": "prototype",
+  "publicShowcase": false,
+  "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
+  "qualityGate": { "status": "unreviewed" },
+  "machinePass": false,
+  "renderer": {
+    "path": "createGame → createAuraApp root safe API",
+    "mode": "production",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": true
+  },
+  "primaryAssets": [
+    { "typedRef": "assets.gallerySecurityGuardMeshy", "quality": "production", "role": "supportingCast" },
+    { "typedRef": "assets.mechHeroPlayerMeshy", "quality": "production", "role": "supportingCast" },
+    { "typedRef": "assets.mechHangarRivalUnitMeshy", "quality": "production", "role": "primaryCharacter" },
+    { "typedRef": "assets.corridorPulseRifleMeshy", "quality": "production", "role": "primaryWeapon" },
+    { "typedRef": "assets.corridorMuzzleFlameBurstMeshy", "quality": "candidate", "role": "vfx", "generator": "meshy" },
+    { "typedRef": "assets.corridorFireAmmoCrateMeshy", "quality": "candidate", "role": "prop", "generator": "meshy" },
+    { "typedRef": "assets.fpsEnergyCorePickupMeshy", "quality": "candidate", "role": "pickup", "generator": "meshy" },
+    { "typedRef": "assets.fpsSciFiCoverCrateMeshy", "quality": "candidate", "role": "prop", "generator": "meshy" },
+    { "typedRef": "assets.siegeWoodenBarrel", "quality": "production", "role": "prop" },
+    { "typedRef": "assets.deepSunkenReactorCoreMeshy", "quality": "production", "role": "pickup" },
+    { "typedRef": "assets.vaultCenterCoreTargetMeshy", "quality": "production", "role": "pickup" },
+    { "typedRef": "assets.showcaseOrangeIndustrialRobot", "quality": "production", "role": "supportingCast" },
+    { "typedRef": "assets.deepRecoveryCrateStandard", "quality": "production", "role": "prop" }
+  ]
+}

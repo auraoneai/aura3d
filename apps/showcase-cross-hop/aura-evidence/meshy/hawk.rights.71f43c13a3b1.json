@@ -1,0 +1,8 @@
+{
+  "schema": "aura3d.meshy-rights/1.0",
+  "rights": {
+    "licenseName": "Meshy AI generated asset - project owner subscription",
+    "licenseUrl": "https://www.meshy.ai/terms",
+    "licenseRaw": "Generated via the Meshy API (text-to-3d preview/refine/remesh) under the Aura3D project owner's Meshy subscription, from original text prompts authored for this project. No third-party brand, product, or likeness was requested. Use governed by the owner's Meshy plan terms."
+  }
+}

@@ -836,6 +836,14 @@ const app = racingGame.app;
 const input = racingGame.input;
 if (!input) throw new Error("Apex Overdrive failed to initialize runtime-owned input.");
 racingGame.start();
+setInterval(() => {
+  try {
+    const d = (app as any).diagnostics?.();
+    const cv = document.querySelector("canvas");
+    const r = cv?.getBoundingClientRect?.();
+    console.log("[diag]", JSON.stringify({ backend: d?.backend, drawCalls: d?.drawCalls, renderSize: d?.renderSize, errors: (d?.errors ?? []).slice(0, 2), warn: (d?.warnings ?? []).slice(0, 2), rect: r ? [Math.round(r.width), Math.round(r.height)] : null }));
+  } catch (e) { console.log("[diag-fail]", String(e)); }
+}, 2500);
 
 /* ------------------------------------------------------------------ *
  *  Camera, feel, director

@@ -1,0 +1,134 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-10-18T00:00:00.000Z",
+  "appId": "showcase-aura-diamond-3d",
+  "route": "/apps/showcase-aura-diamond-3d/",
+  "classification": "candidate",
+  "publicShowcase": true,
+  "promotionStatus": "public-showcase",
+  "machinePass": true,
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "production",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": true
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseStadiumSeats",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.rooftopScoreboardRigMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.rooftopFloodlightTowerMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.rooftopShooterCleanMeshy",
+      "quality": "production",
+      "role": "supportingCast"
+    },
+    {
+      "typedRef": "assets.rooftopAthleteShooter",
+      "quality": "production",
+      "role": "supportingCast"
+    },
+    {
+      "typedRef": "assets.rooftopAthleteDefender",
+      "quality": "production",
+      "role": "supportingCast"
+    },
+    {
+      "typedRef": "assets.skylineHeroRunner",
+      "quality": "production",
+      "role": "supportingCast"
+    },
+    {
+      "typedRef": "assets.siegeGolfBall",
+      "quality": "production",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.siegeWindmillTowerMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.siegeWatchtowerMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.propPineTree",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.propRockA",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.propRockB",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.showcaseSkylineCity",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.showcaseModernBuildingOne",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.showcaseModernOfficeBuilding",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.showcaseVoxelBuilding",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.neonStreetLampProp",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.billiardsTrophyCabinetMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.clashDragonStatueMeshy",
+      "quality": "production",
+      "role": "landmark"
+    },
+    {
+      "typedRef": "assets.auroraHabitatDomeMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.gravityPlanetEarth",
+      "quality": "production",
+      "role": "landmark"
+    },
+    {
+      "typedRef": "assets.lunarRoverMeshy",
+      "quality": "production",
+      "role": "setDressing"
+    }
+  ],
+  "notes": "Field geometry (mound, bases, plate, foul lines, outfield wall arc, dugouts, PCI ring, bat) is authored from primitives — the catalog has no baseball bat/base assets. Crowd is an instanced capsule bowl plus 18 runtime wavers. Athletes are catalog GLBs re-dressed with team-color cap/belt accent primitives."
+}

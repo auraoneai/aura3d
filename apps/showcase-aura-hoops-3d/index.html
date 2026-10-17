@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase</title>
+    <meta
+      name="description"
+      content="Aura Hoops 3D: NBA-Jam-pace 3v3 streetball on the Aura3D engine — check-ball, shot meter, Jam Meter dunk packages, six world courts, Dunk Lab, Handles Lab and a 32-team Street Tour."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/fonts/aura-fonts.css" />
+    <style>
+      :root {
+        --bg: #0b0d12;
+        --asphalt: #171a21;
+        --ink: #f5efe2;
+        --muted: #8d919e;
+        --faint: #454a56;
+        --rule: rgba(245, 239, 226, 0.14);
+        --rule-strong: rgba(245, 239, 226, 0.3);
+        --accent: #ff7a1a;
+        --accent-2: #ffd257;
+        --cyan: #39d7ff;
+        --danger: #ff3b5c;
+        --ok: #66e37f;
+        --font-display: "DIN Pro", "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-sans: "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mono: "Monument Grotesk Mono", ui-monospace, SFMono-Regular, monospace;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 13px;
+        line-height: 1.4;
+        overflow: hidden;
+        user-select: none;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      #game-stage {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        background:
+          radial-gradient(120% 90% at 50% 0%, #1b2130 0%, #0d1017 58%, #07090d 100%);
+      }
+
+      #app {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      #app canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      /* Warm street glow + faint asphalt scan overlay */
+      .screen-fx {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 6;
+        background:
+          radial-gradient(circle at 50% 30%, rgba(255, 122, 26, 0.05) 0%, rgba(11, 13, 18, 0.05) 50%, rgba(5, 6, 9, 0.5) 100%),
+          repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.012) 0px, rgba(255, 255, 255, 0.012) 1px, transparent 1px, transparent 3px);
+      }
+
+      .jam-flash {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 7;
+        opacity: 0;
+        transition: opacity 0.16s ease-out;
+        background: radial-gradient(circle at 50% 55%, transparent 0 40%, rgba(255, 122, 26, 0.2) 78%, rgba(255, 210, 87, 0.32) 100%);
+      }
+
+      /* ---------- Aura3D top bar ---------- */
+      .aura3d-top-bar {
+        position: fixed;
+        top: 12px;
+        right: 14px;
+        z-index: 60;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+        max-width: calc(100vw - 28px);
+        padding: 6px 10px;
+        border-radius: 14px;
+        background: linear-gradient(180deg, rgba(24, 22, 18, 0.92), rgba(13, 12, 10, 0.92));
+        border: 1px solid rgba(255, 122, 26, 0.36);
+        backdrop-filter: blur(12px) saturate(1.2);
+        font-size: 12px;
+        color: var(--ink);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      }
+
+      .aura3d-top-bar .aura-badge {
+        font-family: var(--font-display);
+        font-weight: 700;
+        letter-spacing: 0.09em;
+        color: #1a1206;
+        padding: 3px 9px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        font-size: 11px;
+        text-transform: uppercase;
+        box-shadow: 0 2px 10px rgba(255, 122, 26, 0.4);
+      }
+
+      .aura3d-top-bar .bar-label {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        letter-spacing: 0.16em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin: 0 2px 0 6px;
+      }
+
+      .aura3d-top-bar button {
+        appearance: none;
+        border: 1px solid rgba(245, 239, 226, 0.22);
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 11px;
+        font-weight: 500;
+        height: 26px;
+        padding: 0 10px;
+        border-radius: 9px;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .aura3d-top-bar button:hover {
+        transform: translateY(-1px);
+        border-color: rgba(255, 122, 26, 0.6);
+      }
+
+      .aura3d-top-bar button.active {
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        border-color: var(--accent);
+        color: #1a1206;
+        font-weight: 600;
+      }
+
+      .aura3d-top-bar button.court.active {
+        background: linear-gradient(135deg, var(--cyan), #7ef0c8);
+        border-color: var(--cyan);
+        color: #06222b;
+      }
+
+      .bar-sep {
+        width: 1px;
+        height: 18px;
+        background: rgba(245, 239, 226, 0.14);
+        margin: 0 2px;
+      }
+
+      /* ---------- Controls hint ---------- */
+      .aura3d-controls-hint {
+        position: fixed;
+        bottom: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 58;
+        padding: 7px 16px;
+        border-radius: 999px;
+        background: rgba(10, 11, 15, 0.82);
+        border: 1px solid var(--rule);
+        backdrop-filter: blur(10px);
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      .aura3d-controls-hint b {
+        color: var(--accent-2);
+        font-weight: 500;
+      }
+
+      /* ---------- HUD ---------- */
+      #hud {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 15;
+        font-family: var(--font-mono);
+      }
+
+      .hud-top-left {
+        position: absolute;
+        top: 18px;
+        left: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .hud-mode-tag {
+        align-self: flex-start;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        padding: 3px 9px;
+        background: rgba(255, 122, 26, 0.2);
+        border-left: 2px solid var(--accent);
+        color: var(--accent);
+        text-transform: uppercase;
+      }
+
+      .scoreboard {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        background: rgba(8, 9, 12, 0.7);
+        border: 1px solid var(--rule);
+        backdrop-filter: blur(8px);
+      }
+
+      .sb-team {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 7px 14px 6px;
+        min-width: 88px;
+      }
+
+      .sb-team .sb-name {
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+
+      .sb-team .sb-score {
+        font-family: var(--font-display);
+        font-size: 34px;
+        font-weight: 600;
+        line-height: 0.95;
+        color: var(--ink);
+      }
+
+      .sb-team.home .sb-score {
+        color: var(--accent);
+      }
+
+      .sb-team.away .sb-score {
+        color: var(--cyan);
+      }
+
+      .sb-team .sb-poss {
+        font-size: 9px;
+        letter-spacing: 0.1em;
+        color: var(--accent-2);
+        height: 12px;
+      }
+
+      .sb-mid {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 6px 12px;
+        border-left: 1px solid var(--rule);
+        border-right: 1px solid var(--rule);
+      }
+
+      .sb-mid .sb-target {
+        font-size: 9px;
+        letter-spacing: 0.16em;
+        color: var(--accent-2);
+        text-transform: uppercase;
+      }
+
+      .sb-mid .sb-clock {
+        font-family: var(--font-display);
+        font-size: 15px;
+        color: var(--ink);
+      }
+
+      .sb-mid .sb-venue {
+        font-size: 8px;
+        letter-spacing: 0.14em;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      .jam-meter-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(8, 9, 12, 0.64);
+        border: 1px solid var(--rule);
+        padding: 6px 10px;
+        backdrop-filter: blur(8px);
+      }
+
+      .jam-meter-wrap .k {
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        color: var(--muted);
+      }
+
+      .jam-meter-wrap .bar {
+        width: 150px;
+        height: 7px;
+        background: rgba(245, 239, 226, 0.1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .jam-meter-wrap .fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0%;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        transition: width 0.1s linear;
+      }
+
+      .jam-meter-wrap.full .fill {
+        animation: jamPulse 0.5s ease-in-out infinite alternate;
+      }
+
+      .jam-meter-wrap .ready {
+        font-size: 9px;
+        letter-spacing: 0.16em;
+        color: var(--accent-2);
+        display: none;
+      }
+
+      .jam-meter-wrap.full .ready {
+        display: inline;
+      }
+
+      @keyframes jamPulse {
+        from { filter: brightness(1); }
+        to { filter: brightness(1.7); }
+      }
+
+      /* Shot meter */
+      .shot-meter {
+        position: absolute;
+        bottom: 86px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 220px;
+        opacity: 0;
+        transition: opacity 0.08s ease;
+      }
+
+      .shot-meter.show {
+        opacity: 1;
+      }
+
+      .shot-meter .sm-track {
+        position: relative;
+        height: 14px;
+        background: rgba(8, 9, 12, 0.8);
+        border: 1px solid var(--rule-strong);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      .shot-meter .sm-green {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        background: linear-gradient(180deg, rgba(102, 227, 127, 0.75), rgba(102, 227, 127, 0.45));
+        border-left: 1px solid var(--ok);
+        border-right: 1px solid var(--ok);
+      }
+
+      .shot-meter .sm-perfect {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.85);
+      }
+
+      .shot-meter .sm-needle {
+        position: absolute;
+        top: -2px;
+        bottom: -2px;
+        width: 3px;
+        background: var(--ink);
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+      }
+
+      .shot-meter .sm-label {
+        text-align: center;
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        color: var(--muted);
+        margin-top: 4px;
+        text-transform: uppercase;
+      }
+
+      /* Top right venue / tour chip */
+      .hud-top-right {
+        position: absolute;
+        top: 62px;
+        right: 22px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+      }
+
+      .hud-chip {
+        background: rgba(8, 9, 12, 0.66);
+        border: 1px solid var(--rule);
+        border-right: 2px solid var(--cyan);
+        padding: 5px 10px;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        color: var(--ink);
+        text-transform: uppercase;
+        backdrop-filter: blur(8px);
+      }
+
+      .hud-chip .sub {
+        display: block;
+        font-size: 8px;
+        color: var(--muted);
+        letter-spacing: 0.12em;
+        margin-top: 1px;
+      }
+
+      /* Event ticker */
+      .hud-ticker {
+        position: absolute;
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        max-width: 46vw;
+      }
+
+      .hud-ticker .tick {
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        padding: 2px 12px;
+        background: rgba(8, 9, 12, 0.78);
+        border: 1px solid var(--rule);
+        color: var(--muted);
+        text-transform: uppercase;
+        opacity: 0;
+        transform: translateY(-4px);
+        transition: opacity 0.16s, transform 0.16s;
+      }
+
+      .hud-ticker .tick.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .hud-ticker .tick.tick-success {
+        color: var(--accent-2);
+        border-color: rgba(255, 210, 87, 0.4);
+      }
+
+      .hud-ticker .tick.tick-warning {
+        color: var(--danger);
+        border-color: rgba(255, 59, 92, 0.4);
+      }
+
+      /* Center message + banner + prompts */
+      .center-msg {
+        position: absolute;
+        top: 26%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.18s ease;
+      }
+
+      .center-msg.show {
+        opacity: 1;
+      }
+
+      .center-msg .big {
+        font-family: var(--font-display);
+        font-size: 42px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: var(--ink);
+        text-shadow: 0 2px 22px rgba(0, 0, 0, 0.85);
+      }
+
+      .center-msg .small {
+        font-size: 11px;
+        letter-spacing: 0.26em;
+        color: var(--accent-2);
+        margin-top: 3px;
+      }
+
+      .action-prompt {
+        position: absolute;
+        bottom: 128px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        padding: 5px 16px;
+        background: rgba(255, 122, 26, 0.16);
+        border: 1px solid var(--accent);
+        color: var(--accent-2);
+        text-transform: uppercase;
+        opacity: 0;
+        transition: opacity 0.15s ease;
+      }
+
+      .action-prompt.show {
+        opacity: 1;
+      }
+
+      .banner {
+        position: absolute;
+        top: 112px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        letter-spacing: 0.24em;
+        padding: 4px 16px;
+        background: rgba(8, 9, 12, 0.8);
+        border-top: 1px solid var(--accent-2);
+        border-bottom: 1px solid var(--accent-2);
+        color: var(--accent-2);
+        opacity: 0;
+        transition: opacity 0.18s ease;
+        text-transform: uppercase;
+      }
+
+      .banner.show {
+        opacity: 1;
+      }
+
+      /* ---------- Menu overlay ---------- */
+      #menu-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(5, 6, 9, 0.72);
+        backdrop-filter: blur(10px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+
+      #menu-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .menu-panel {
+        width: min(880px, calc(100vw - 32px));
+        max-height: calc(100vh - 64px);
+        overflow-y: auto;
+        background: linear-gradient(180deg, rgba(20, 20, 26, 0.96), rgba(10, 10, 14, 0.96));
+        border: 1px solid rgba(255, 122, 26, 0.3);
+        border-radius: 18px;
+        padding: 26px 28px 22px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+      }
+
+      .menu-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+
+      .menu-head h1 {
+        font-family: var(--font-display);
+        font-size: 30px;
+        letter-spacing: 0.1em;
+        color: var(--ink);
+      }
+
+      .menu-head h1 em {
+        color: var(--accent);
+        font-style: normal;
+      }
+
+      .menu-head .menu-sub {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+
+      .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .mode-card {
+        appearance: none;
+        text-align: left;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--rule);
+        border-radius: 12px;
+        padding: 13px 14px;
+        color: var(--ink);
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .mode-card:hover {
+        border-color: var(--accent);
+        background: rgba(255, 122, 26, 0.1);
+        transform: translateY(-1px);
+      }
+
+      .mode-card .mc-name {
+        font-family: var(--font-display);
+        font-size: 15px;
+        letter-spacing: 0.08em;
+        color: var(--accent-2);
+        text-transform: uppercase;
+      }
+
+      .mode-card .mc-desc {
+        font-size: 10.5px;
+        color: var(--muted);
+        margin-top: 4px;
+        line-height: 1.35;
+      }
+
+      .menu-section {
+        margin-bottom: 16px;
+      }
+
+      .menu-section .ms-label {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        letter-spacing: 0.22em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 7px;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .menu-pill {
+        appearance: none;
+        border: 1px solid var(--rule-strong);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--ink);
+        font-size: 11px;
+        font-family: var(--font-sans);
+        letter-spacing: 0.05em;
+        padding: 6px 13px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 0.14s;
+        text-transform: uppercase;
+      }
+
+      .menu-pill:hover {
+        border-color: var(--accent);
+      }
+
+      .menu-pill.active {
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        border-color: var(--accent);
+        color: #1a1206;
+        font-weight: 600;
+      }
+
+      .swatch {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .swatch.active {
+        border-color: var(--ink);
+        box-shadow: 0 0 0 2px var(--bg), 0 0 12px rgba(255, 122, 26, 0.5);
+      }
+
+      .menu-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .menu-cta {
+        appearance: none;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 22px;
+        font-family: var(--font-display);
+        font-size: 14px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #1a1206;
+        font-weight: 700;
+      }
+
+      .menu-cta.ghost {
+        background: transparent;
+        border: 1px solid var(--rule-strong);
+        color: var(--ink);
+        font-weight: 500;
+      }
+
+      /* Tour bracket */
+      .bracket {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        font-family: var(--font-mono);
+      }
+
+      .bracket-round {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .bracket-round .br-title {
+        font-size: 9px;
+        letter-spacing: 0.18em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 2px;
+      }
+
+      .bracket-cell {
+        font-size: 9px;
+        letter-spacing: 0.04em;
+        padding: 3px 6px;
+        border: 1px solid var(--rule);
+        border-radius: 5px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.03);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .bracket-cell.you {
+        border-color: var(--accent);
+        color: var(--accent-2);
+      }
+
+      .bracket-cell.done {
+        text-decoration: line-through;
+        opacity: 0.5;
+      }
+
+      .bracket-cell.alive {
+        color: var(--ink);
+      }
+
+      /* render error */
+      #render-error {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        text-align: center;
+        padding: 24px;
+      }
+
+      .touch-controls {
+        display: none;
+      }
+
+      @media (max-width: 760px) {
+        .aura3d-controls-hint {
+          display: none;
+        }
+        .aura3d-top-bar {
+          left: 8px;
+          right: 8px;
+          top: 8px;
+          justify-content: center;
+        }
+        .hud-top-right {
+          top: 108px;
+        }
+        .menu-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .bracket {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="game-stage">
+      <div id="app" aria-label="Aura Hoops 3D streetball viewport"></div>
+      <div class="screen-fx"></div>
+      <div id="jam-flash" class="jam-flash"></div>
+
+      <nav class="aura3d-top-bar" aria-label="Aura3D Aura Hoops 3D quick switcher">
+        <span class="aura-badge">AURA3D ENGINE</span>
+        <span class="bar-label">MODE</span>
+        <button type="button" class="bar-mode" data-mode-btn="quick">QUICK PLAY</button>
+        <button type="button" class="bar-mode" data-mode-btn="dunklab">DUNK LAB</button>
+        <button type="button" class="bar-mode" data-mode-btn="menu">MODES &amp; TOUR</button>
+        <div class="bar-sep"></div>
+        <span class="bar-label">COURT</span>
+        <button type="button" class="court" data-court="rucker">RUCKER</button>
+        <button type="button" class="court" data-court="venice">VENICE</button>
+        <button type="button" class="court" data-court="athens">ATHENS</button>
+        <button type="button" class="court" data-court="manila">MANILA</button>
+        <button type="button" class="court" data-court="shanghai">SHANGHAI</button>
+        <button type="button" class="court" data-court="orbit">ORBIT</button>
+      </nav>
+
+      <div id="hud">
+        <div class="hud-top-left">
+          <div class="hud-mode-tag" id="h-mode">QUICK PLAY</div>
+          <div class="scoreboard">
+            <div class="sb-team home">
+              <span class="sb-name" id="h-home-name">HOME</span>
+              <span class="sb-score" id="h-home-score">0</span>
+              <span class="sb-poss" id="h-home-poss">● BALL</span>
+            </div>
+            <div class="sb-mid">
+              <span class="sb-target" id="h-target">FIRST TO 11</span>
+              <span class="sb-clock" id="h-clock">STREET</span>
+              <span class="sb-venue" id="h-venue">RUCKER PARK</span>
+            </div>
+            <div class="sb-team away">
+              <span class="sb-name" id="h-away-name">AWAY</span>
+              <span class="sb-score" id="h-away-score">0</span>
+              <span class="sb-poss" id="h-away-poss"></span>
+            </div>
+          </div>
+          <div class="jam-meter-wrap" id="h-jam-wrap">
+            <span class="k">JAM</span>
+            <div class="bar"><div class="fill" id="h-jam"></div></div>
+            <span class="ready" id="h-jam-ready">JAM READY · ATTACK THE RIM</span>
+          </div>
+        </div>
+
+        <div class="hud-top-right">
+          <div class="hud-chip" id="h-court-chip">RUCKER PARK · HARLEM<span class="sub" id="h-look-chip">GOLDEN HOUR LOOK</span></div>
+          <div class="hud-chip" id="h-tour-chip" style="display:none">STREET TOUR<span class="sub" id="h-tour-round">ROUND OF 32</span></div>
+          <div class="hud-chip" id="h-lab-chip" style="display:none">LAB<span class="sub" id="h-lab-line">SCORE 0 · STREAK 0</span></div>
+        </div>
+
+        <div class="hud-ticker" id="h-ticker"></div>
+
+        <div class="center-msg" id="msg">
+          <div class="big" id="msg-text">AURA HOOPS 3D</div>
+          <div class="small" id="msg-sub">PICKUP RUNS WORLDWIDE</div>
+        </div>
+        <div class="banner" id="banner">BUCKET</div>
+        <div class="action-prompt" id="prompt">SPACE — CHECK BALL</div>
+
+        <div class="shot-meter" id="shot-meter">
+          <div class="sm-track">
+            <div class="sm-green" id="sm-green"></div>
+            <div class="sm-perfect" id="sm-perfect"></div>
+            <div class="sm-needle" id="sm-needle"></div>
+          </div>
+          <div class="sm-label" id="sm-label">RELEASE IN THE GREEN</div>
+        </div>
+      </div>
+
+      <!-- Menu / Modes & Tour overlay -->
+      <div id="menu-overlay" class="open">
+        <div class="menu-panel">
+          <div class="menu-head">
+            <h1>AURA <em>HOOPS</em> 3D</h1>
+            <span class="menu-sub">3V3 STREETBALL · STREET RULES</span>
+          </div>
+
+          <div class="menu-grid">
+            <button type="button" class="mode-card" data-start="quick">
+              <div class="mc-name">Quick Play</div>
+              <div class="mc-desc">3v3 first-to-11 vs the CPU. Check ball, winner's ball, 1s and 2s.</div>
+            </button>
+            <button type="button" class="mode-card" data-start="dunklab">
+              <div class="mc-name">Dunk Lab</div>
+              <div class="mc-desc">Free-run rim attack + shot-meter drills. Jam Meter always loaded.</div>
+            </button>
+            <button type="button" class="mode-card" data-start="handleslab">
+              <div class="mc-name">Handles Lab</div>
+              <div class="mc-desc">Dribble-cone slalom. Chain crosses (J) and hesi (K) through every gate.</div>
+            </button>
+            <button type="button" class="mode-card" data-start="tour">
+              <div class="mc-name">Street Tour</div>
+              <div class="mc-desc">32-crew bracket. Five wins to the crown — difficulty climbs each round.</div>
+            </button>
+            <button type="button" class="mode-card" data-start="blacktop">
+              <div class="mc-name">Blacktop</div>
+              <div class="mc-desc">Casual first-to-21 run. Longer game, looser D, pure buckets.</div>
+            </button>
+            <button type="button" class="mode-card" data-start="studio">
+              <div class="mc-name">Player Studio</div>
+              <div class="mc-desc">Fit your crew: jersey, kicks, skin and hair — applied to your squad.</div>
+            </button>
+          </div>
+
+          <div class="menu-section" id="studio-section" style="display:none">
+            <div class="ms-label">JERSEY</div>
+            <div class="pill-row" id="studio-jersey"></div>
+            <div class="ms-label" style="margin-top:10px">KICKS</div>
+            <div class="pill-row" id="studio-kicks"></div>
+            <div class="ms-label" style="margin-top:10px">SKIN</div>
+            <div class="pill-row" id="studio-skin"></div>
+            <div class="ms-label" style="margin-top:10px">HAIR</div>
+            <div class="pill-row" id="studio-hair"></div>
+            <div class="menu-actions">
+              <button type="button" class="menu-cta" id="studio-apply">APPLY FIT</button>
+            </div>
+          </div>
+
+          <div class="menu-section" id="tour-section" style="display:none">
+            <div class="ms-label">STREET TOUR BRACKET</div>
+            <div class="bracket" id="bracket"></div>
+          </div>
+
+          <div class="menu-section">
+            <div class="ms-label">DIFFICULTY</div>
+            <div class="pill-row" id="difficulty-row">
+              <button type="button" class="menu-pill" data-diff="playground">PLAYGROUND</button>
+              <button type="button" class="menu-pill active" data-diff="pro">PRO</button>
+              <button type="button" class="menu-pill" data-diff="legend">LEGEND</button>
+            </div>
+          </div>
+
+          <div class="menu-section">
+            <div class="ms-label">COURT</div>
+            <div class="pill-row" id="court-row">
+              <button type="button" class="menu-pill active" data-court-menu="rucker">RUCKER PARK</button>
+              <button type="button" class="menu-pill" data-court-menu="venice">VENICE BEACH</button>
+              <button type="button" class="menu-pill" data-court-menu="athens">ATHENS ROOFTOP</button>
+              <button type="button" class="menu-pill" data-court-menu="manila">MANILA COVERED</button>
+              <button type="button" class="menu-pill" data-court-menu="shanghai">SHANGHAI RIVERSIDE</button>
+              <button type="button" class="menu-pill" data-court-menu="orbit">ORBIT COURT</button>
+            </div>
+          </div>
+
+          <div class="menu-actions">
+            <button type="button" class="menu-cta ghost" id="menu-close">CLOSE</button>
+            <button type="button" class="menu-cta" id="menu-run">RUN IT</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="aura3d-controls-hint" id="aura-controls-hint">
+        MOVE: <b>WASD</b> · SPRINT: <b>SHIFT</b> · CROSS/HESI: <b>J/K</b> · PASS/OOP: <b>E</b> · SHOOT/BLOCK: <b>SPACE</b> · STEAL: <b>K</b>
+      </div>
+
+      <div class="touch-controls" id="touch"></div>
+
+      <div id="render-error" hidden>
+        <div>
+          <h2 style="font-family:var(--font-display);letter-spacing:0.1em">AURA HOOPS 3D NEEDS WEBGL2</h2>
+          <p style="color:var(--muted);margin-top:8px">Enable graphics acceleration in your browser, then reload.</p>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

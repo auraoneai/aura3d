@@ -705,7 +705,7 @@ function buildGridDispatchSceneV2(): ReturnType<typeof scene> {
       size: [0.16, 0.85, 0.16],
       material: material.pbr({ color: "#fbbf24", metalness: 0.4, roughness: 0.5 }),
       transforms: bollardTransforms,
-      colors: ["#fbbf24", "#d97706"]
+      colors: bollardTransforms.map((_, i) => (i % 2 === 0 ? "#fbbf24" : "#d97706"))
     }).runtime(game.runtimeNode("sf-bollards"))
   );
 
@@ -975,6 +975,13 @@ async function bootGridDispatchV2(): Promise<void> {
     // Enable the real camera/time/feel/effects/game lanes (stub-safe defaults off).
     qualityRebuild: { flags: ["camera", "vfx", "world", "game"] }
   });
+  setInterval(() => {
+    try {
+      const d = (auraApp as any).diagnostics?.();
+      const r = canvas.getBoundingClientRect?.();
+      console.log("[diag]", JSON.stringify({ backend: d?.backend, drawCalls: d?.drawCalls, renderSize: d?.renderSize, errors: (d?.errors ?? []).slice(0, 2), warn: (d?.warnings ?? []).slice(0, 2), rect: r ? [Math.round(r.width), Math.round(r.height)] : null }));
+    } catch (e) { console.log("[diag-fail]", String(e)); }
+  }, 2500);
 
   const req = (id: string) => auraApp.nodes.require(id);
 

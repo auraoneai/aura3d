@@ -1,0 +1,73 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-10-16T00:00:00.000Z",
+  "appId": "showcase-pips-big-leap",
+  "route": "/apps/showcase-pips-big-leap/",
+  "title": "PIP'S BIG LEAP — 3D Mascot Platformer",
+  "category": "platformer",
+  "template": "character-controller",
+  "classification": "candidate",
+  "publicShowcase": false,
+  "promotionStatus": "candidate-unreviewed",
+  "qualityGate": {
+    "status": "unreviewed"
+  },
+  "machinePass": true,
+  "readySelector": "body[data-aura3d-ready=\"true\"]",
+  "canvasSelector": "canvas",
+  "globalHandle": "__AURA3D_SHOWCASE_PIPS_BIG_LEAP__",
+  "renderer": {
+    "path": "createGame root safe API",
+    "mode": "production",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": true
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseKenneyOobiPlatformerHero",
+      "role": "primaryCharacter",
+      "status": "typed-primary-asset",
+      "quality": "candidate",
+      "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+    },
+    {
+      "typedRef": "assets.showcaseKenneyVerdantPlatformerWorld",
+      "role": "primaryWorld",
+      "status": "typed-secondary-asset",
+      "quality": "candidate",
+      "hash": "sha256-ac8f17eb"
+    },
+    {
+      "typedRef": "assets.showcaseRunnerRobot",
+      "role": "setDressing",
+      "status": "typed-secondary-asset",
+      "quality": "candidate",
+      "hash": "sha256-252b3a16"
+    }
+  ],
+  "claimStatus": {
+    "status": "candidate",
+    "label": "verified-showcase-port",
+    "allowed": [
+      "authored deterministic 3D mascot platformer physics",
+      "game.platformer / jumpAssist / kinematic helpers exercised per world",
+      "certified surface contract per world via certifyPlatformerPresentation",
+      "six themed worlds plus Jump Academy and Starfall low-gravity",
+      "Brambleback 3-hit pattern boss in Hollow Palace"
+    ],
+    "notAllowed": [
+      "physics-engine parity or Rapier-backed character collider claims",
+      "production rendering, PBR parity, HDR/IBL, or WebGPU claims",
+      "public showcase promotion before independent exact-artifact review"
+    ]
+  },
+  "budgets": {
+    "maxModelNodes": 48,
+    "minFps": 30,
+    "maxBootMs": 8000
+  },
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_PIPS_BIG_LEAP__",
+    "sourceReview": "apps/showcase-pips-big-leap/src/main.ts"
+  }
+}

@@ -89,6 +89,105 @@ const apps = [
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
     notes: "San Francisco autonomous fleet & street teleoperation with Apex Lidar Cruiser, Cyber Coupe, Titan EV Truck, Vortex GT, L5 self-driving robotaxi fares, vector minimap, and multiplayer peer tags."
+  },
+  {
+    id: "showcase-iron-crown",
+    route: "/apps/showcase-iron-crown/",
+    routeHealth: "/apps/showcase-iron-crown/route-health.json",
+    classification: "candidate",
+    publicShowcase: false,
+    primaryAssetStatus: "typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "2.5D arena fighter — six fighters across six stages, best-of-3 rounds with metered specials, Crown Ladder bracket, Combo Lab, and Player Studio palettes."
+  },
+  {
+    id: "showcase-pips-big-leap",
+    route: "/apps/showcase-pips-big-leap/",
+    routeHealth: "/apps/showcase-pips-big-leap/route-health.json",
+    classification: "candidate",
+    publicShowcase: false,
+    primaryAssetStatus: "typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "3D mascot platformer — Pip leaps six worlds collecting sun-seeds with double-jump, dive, glide, and ground-pound, Jump Academy gauntlet, time trials, and a Brambleback boss."
+  },
+  {
+    id: "showcase-aura-hoops-3d",
+    route: "/apps/showcase-aura-hoops-3d/",
+    routeHealth: "/apps/showcase-aura-hoops-3d/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
+    primaryAssetStatus: "typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "3v3 streetball — ankle-breaker jukes, alley-oops, and a press-hold-release shot meter across six courts from Rucker asphalt to the Orbit dome. Dunk Lab, Handles Lab, 8 squads, 32-team Street Tour."
+  },
+  {
+    id: "showcase-aura-diamond-3d",
+    route: "/apps/showcase-aura-diamond-3d/",
+    routeHealth: "/apps/showcase-aura-diamond-3d/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
+    primaryAssetStatus: "typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Three-inning baseball — PCI × timing at-bats, four pitch types, and launch-angle moonshots across six ballparks from Harbor Sandlot to Lunar Park. Derby Lab, Bullpen Lab, 8 clubs, 32-team World Classic."
+  },
+  {
+    id: "showcase-aura-fc-3d",
+    route: "/apps/showcase-aura-fc-3d/",
+    routeHealth: "/apps/showcase-aura-fc-3d/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
+    primaryAssetStatus: "typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "5v5 street-and-stadium soccer — driven passes, curling finishers, and skill moves across six pitches from the Favela Cage to the Glacier Arena. Shootout Lab, Touch Lab, 8 clubs, 32-team World Circuit."
+  },
+  {
+    id: "showcase-red-zone-3d",
+    route: "/apps/showcase-red-zone-3d/",
+    routeHealth: "/apps/showcase-red-zone-3d/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
+    primaryAssetStatus: "typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "7v7 arcade football — play-calling, QB reads, and hit-stick defense across six stadiums from Friday Night Lights to the Altitude Bowl. Route Lab, Tackle Lab, 8 clubs, 32-team Gridiron Series."
+  },
+  {
+    id: "showcase-aura-links-3d",
+    route: "/apps/showcase-aura-links-3d/",
+    routeHealth: "/apps/showcase-aura-links-3d/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
+    primaryAssetStatus: "typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Three-click arcade golf — ball-flight sim with wind, lies and shot-shaping across six courses from Scottish dunes to the lunar Mare crater. Range Lab, Putting Lab, Skins match, and a 32-player Pro Circuit."
+  },
+  {
+    id: "showcase-bunker-zero",
+    route: "/apps/showcase-bunker-zero/",
+    routeHealth: "/apps/showcase-bunker-zero/route-health.json",
+    classification: "prototype",
+    publicShowcase: false,
+    primaryAssetStatus: "typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Retro corridor FPS — six floors from Stone Gatehouse to the Bunker Zero silo, four weapons, three enemy types plus the Iron Warden, push-wall secrets, keys and par medals."
+  },
+  {
+    id: "showcase-slingshot-siege",
+    route: "/apps/showcase-slingshot-siege/",
+    routeHealth: "/apps/showcase-slingshot-siege/route-health.json",
+    classification: "prototype",
+    publicShowcase: false,
+    primaryAssetStatus: "typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Cartoon physics destruction — drag-back slingshot launches, 30 levels across six chapters, five ammo types with mid-air powers, wood/stone/glass material breakage, and three-star scoring."
   }
 ] as const;
 
@@ -96,7 +195,16 @@ const GAME_APP_IDS = new Set([
   "showcase-top-tennis",
   "showcase-roadster-rush",
   "showcase-heatsink",
-  "showcase-teleoperator"
+  "showcase-teleoperator",
+  "showcase-iron-crown",
+  "showcase-pips-big-leap",
+  "showcase-aura-hoops-3d",
+  "showcase-aura-diamond-3d",
+  "showcase-aura-fc-3d",
+  "showcase-red-zone-3d",
+  "showcase-aura-links-3d",
+  "showcase-bunker-zero",
+  "showcase-slingshot-siege"
 ]);
 
 const publicApps = apps.filter((entry) => entry.publicShowcase);

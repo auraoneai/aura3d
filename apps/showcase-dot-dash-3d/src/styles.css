@@ -1,0 +1,323 @@
+/* Dot Dash 3D — neon "Tron garden" shell chrome. */
+
+:root {
+  --dd-bg: #05060f;
+  --dd-ink: #dfe7ff;
+  --dd-dim: #8f9bc7;
+  --dd-cyan: #45e8ff;
+  --dd-pink: #ff9ad5;
+  --dd-gold: #ffd95e;
+  --dd-red: #ff4040;
+  --dd-panel: rgba(9, 12, 30, 0.92);
+  --dd-edge: rgba(69, 232, 255, 0.28);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--dd-bg);
+  color: var(--dd-ink);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* ------------------------------------------------------------- top bar */
+
+.aura3d-top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: linear-gradient(180deg, rgba(5, 6, 15, 0.96), rgba(5, 6, 15, 0.72));
+  border-bottom: 1px solid var(--dd-edge);
+  backdrop-filter: blur(6px);
+  flex-wrap: wrap;
+}
+
+.aura-badge {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--dd-cyan);
+  border: 1px solid var(--dd-edge);
+  border-radius: 4px;
+  padding: 3px 6px;
+  margin-right: 4px;
+}
+
+.aura3d-top-bar button {
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--dd-dim);
+  background: rgba(20, 26, 52, 0.6);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px 9px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.aura3d-top-bar button:hover { color: var(--dd-ink); border-color: var(--dd-edge); }
+.aura3d-top-bar button.active { color: #06121a; background: var(--dd-cyan); }
+.aura3d-top-bar button.venue { font-size: 10px; padding: 4px 7px; }
+.aura3d-top-bar button.venue.active { background: var(--dd-pink); color: #1a0612; }
+.aura3d-top-bar button.toggle { border-color: var(--dd-edge); color: var(--dd-dim); }
+.aura3d-top-bar button.toggle.on { color: var(--dd-gold); border-color: var(--dd-gold); }
+
+.aura-sep { width: 1px; height: 18px; background: var(--dd-edge); margin: 0 4px; }
+
+.aura3d-controls-hint {
+  position: fixed;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--dd-dim);
+  background: rgba(5, 6, 15, 0.7);
+  border: 1px solid var(--dd-edge);
+  border-radius: 6px;
+  padding: 4px 10px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ game area */
+
+.game-shell { position: fixed; inset: 0; }
+
+#app { position: absolute; inset: 0; }
+#app canvas { display: block; }
+
+.render-error {
+  position: absolute;
+  inset: 40% 20%;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: var(--dd-panel);
+  border: 1px solid var(--dd-red);
+  border-radius: 10px;
+  padding: 24px;
+}
+.render-error[hidden] { display: none; }
+
+/* ------------------------------------------------------------------ HUD */
+
+.dd-hud { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+
+.dd-tl {
+  position: absolute;
+  top: 46px;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dd-mode-tag {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--dd-pink);
+}
+
+.dd-row { display: flex; gap: 6px; }
+
+.dd-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--dd-panel);
+  border: 1px solid var(--dd-edge);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.dd-chip .k { font-size: 9px; font-weight: 800; letter-spacing: 0.12em; color: var(--dd-dim); }
+.dd-chip .v { font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--dd-ink); }
+.dd-lives { color: var(--dd-gold) !important; letter-spacing: 0.1em; }
+
+.dd-orb-chip { border-color: var(--dd-cyan); }
+.dd-orb-track, .dd-dash-track {
+  display: inline-block;
+  width: 64px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(69, 232, 255, 0.12);
+  overflow: hidden;
+}
+.dd-orb-fill { display: block; height: 100%; width: 0%; background: var(--dd-cyan); }
+.dd-dash-fill { display: block; height: 100%; width: 100%; background: var(--dd-gold); }
+.dd-dash-chip.cooling .dd-dash-fill { background: var(--dd-dim); }
+
+.dd-objective {
+  font-size: 11px;
+  color: var(--dd-dim);
+  max-width: 300px;
+}
+
+.dd-school-legend {
+  position: absolute;
+  top: 46px;
+  right: 12px;
+  background: var(--dd-panel);
+  border: 1px solid var(--dd-edge);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 11px;
+}
+.dd-school-legend[hidden] { display: none; }
+.dd-school-title { font-size: 9px; font-weight: 800; letter-spacing: 0.14em; color: var(--dd-cyan); margin-bottom: 6px; }
+.dd-school-row { display: flex; align-items: center; gap: 7px; margin: 3px 0; color: var(--dd-ink); }
+.dd-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+.dd-banner {
+  position: absolute;
+  top: 30%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.dd-banner.show { opacity: 1; }
+.dd-banner .big {
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: var(--dd-gold);
+  text-shadow: 0 0 24px rgba(255, 217, 94, 0.55), 0 2px 0 #000;
+}
+.dd-banner .small { font-size: 14px; color: var(--dd-ink); letter-spacing: 0.08em; margin-top: 4px; }
+
+.dd-toast {
+  position: absolute;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dd-cyan);
+  background: var(--dd-panel);
+  border: 1px solid var(--dd-edge);
+  border-radius: 6px;
+  padding: 6px 12px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+.dd-toast.show { opacity: 1; }
+
+/* ------------------------------------------------------------- overlays */
+
+.dd-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 4, 12, 0.72);
+  backdrop-filter: blur(4px);
+}
+.dd-overlay[hidden] { display: none; }
+
+.dd-panel {
+  background: var(--dd-panel);
+  border: 1px solid var(--dd-edge);
+  border-radius: 12px;
+  padding: 26px 30px;
+  text-align: center;
+  min-width: 320px;
+  max-width: 92vw;
+  box-shadow: 0 0 44px rgba(69, 232, 255, 0.12);
+}
+.dd-panel.dd-wide { min-width: 560px; }
+
+.dd-panel h2 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  letter-spacing: 0.14em;
+  color: var(--dd-cyan);
+}
+.dd-sub { margin: 0 0 16px; font-size: 12px; color: var(--dd-dim); }
+.dd-help { margin: 14px 0 0; font-size: 10px; color: var(--dd-dim); letter-spacing: 0.06em; }
+
+.dd-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.dd-btns button {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--dd-ink);
+  background: rgba(69, 232, 255, 0.14);
+  border: 1px solid var(--dd-edge);
+  border-radius: 8px;
+  padding: 9px 16px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+.dd-btns button:hover { background: var(--dd-cyan); color: #06121a; }
+.dd-btns button:disabled { opacity: 0.35; cursor: default; }
+.dd-btns button:disabled:hover { background: rgba(69, 232, 255, 0.14); color: var(--dd-ink); }
+
+.dd-stats { margin: 0 0 16px; }
+.dd-stat { font-size: 12px; color: var(--dd-ink); margin: 3px 0; font-variant-numeric: tabular-nums; }
+.dd-stat b { color: var(--dd-gold); }
+
+/* Circuit map */
+
+.dd-circuit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.dd-maze-card {
+  background: rgba(20, 26, 52, 0.7);
+  border: 1px solid var(--dd-edge);
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+.dd-maze-card:hover { border-color: var(--dd-cyan); background: rgba(69, 232, 255, 0.08); }
+.dd-maze-card .m-name { font-size: 13px; font-weight: 800; letter-spacing: 0.06em; color: var(--dd-ink); }
+.dd-maze-card .m-desc { font-size: 10px; color: var(--dd-dim); margin: 4px 0 8px; min-height: 26px; }
+.dd-maze-card .m-best { font-size: 11px; color: var(--dd-gold); font-variant-numeric: tabular-nums; }
+.dd-maze-card .m-fruit { font-size: 10px; color: var(--dd-pink); }
+
+/* Player Studio */
+
+.dd-studio-row { display: flex; align-items: center; gap: 12px; margin: 10px 0; text-align: left; }
+.dd-studio-row .k { font-size: 10px; font-weight: 800; letter-spacing: 0.14em; color: var(--dd-dim); width: 44px; }
+.dd-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+.dd-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.dd-swatch.active { border-color: #fff; box-shadow: 0 0 12px rgba(255, 255, 255, 0.5); }
+
+@media (max-width: 900px) {
+  .dd-panel.dd-wide { min-width: 92vw; }
+  .dd-circuit-grid { grid-template-columns: repeat(2, 1fr); }
+  .dd-banner .big { font-size: 28px; }
+}
