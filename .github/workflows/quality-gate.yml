@@ -33,7 +33,7 @@ jobs:
     name: Capture benchmark, none (macos-14)
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "showcase-orbital-defense"
+      games: "aura-clash-showcase"
       bench: true
       qr_flags: "none"
       artifact_suffix: "-gate-none-bench"
@@ -43,7 +43,7 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "aura-clash-showcase,showcase-blockfall-reactor,showcase-skyline-runner,showcase-turbo-drift-circuit,showcase-siege-golf,showcase-aurora-lander"
+      games: "aura-clash-showcase,showcase-blockfall-reactor,showcase-aurora-lander"
       bench: false
       qr_flags: "none"
       artifact_suffix: "-gate-none-g1"
@@ -53,7 +53,7 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "showcase-neon-swarm,showcase-gravity-post,showcase-courier-rush,showcase-pulse-tunnel,showcase-mech-hangar,showcase-vault-breakers"
+      games: "showcase-vault-breakers,showcase-bank-shot"
       bench: false
       qr_flags: "none"
       artifact_suffix: "-gate-none-g2"
@@ -63,7 +63,7 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "showcase-rooftop-buckets,showcase-gallery-shift,showcase-deep-recovery,showcase-patrol-wing,showcase-bank-shot,showcase-orbital-defense,showcase-aura-links-3d"
+      games: "showcase-aura-links-3d"
       bench: false
       qr_flags: "none"
       artifact_suffix: "-gate-none-g3"
@@ -72,7 +72,7 @@ jobs:
     name: Capture benchmark, flags=all, report-only (macos-14)
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "showcase-orbital-defense"
+      games: "aura-clash-showcase"
       bench: true
       qr_flags: "all"
       artifact_suffix: "-gate-flags-bench"
@@ -82,7 +82,7 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "aura-clash-showcase,showcase-blockfall-reactor,showcase-skyline-runner,showcase-turbo-drift-circuit,showcase-siege-golf,showcase-aurora-lander"
+      games: "aura-clash-showcase,showcase-blockfall-reactor,showcase-aurora-lander"
       bench: false
       qr_flags: "all"
       artifact_suffix: "-gate-flags-g1"
@@ -92,7 +92,7 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "showcase-neon-swarm,showcase-gravity-post,showcase-courier-rush,showcase-pulse-tunnel,showcase-mech-hangar,showcase-vault-breakers"
+      games: "showcase-vault-breakers,showcase-bank-shot"
       bench: false
       qr_flags: "all"
       artifact_suffix: "-gate-flags-g2"
@@ -102,7 +102,7 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "showcase-rooftop-buckets,showcase-gallery-shift,showcase-deep-recovery,showcase-patrol-wing,showcase-bank-shot,showcase-orbital-defense,showcase-aura-links-3d"
+      games: "showcase-aura-links-3d"
       bench: false
       qr_flags: "all"
       artifact_suffix: "-gate-flags-g3"
