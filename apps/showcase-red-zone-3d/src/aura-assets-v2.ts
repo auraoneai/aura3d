@@ -48,14 +48,14 @@ export const assets = defineAuraAssets({
     type: "model",
     format: "glb",
     url: "/aura-assets/rzQuarterbackMeshy.9368c81f.glb",
-    hash: "sha256-994dd75d8633947aaf5b5fbad26dd34ff26a8637314f9ea1a36f545215d68c9c",
+    hash: "sha256-7999d60e829f92473394f12aa013cb52c5cdaa8dbe34f5e9c817be138b483891",
     bounds: [0.89, 1.897, 0.505]
   },
   rzDefenderLinemanMeshy: {
     type: "model",
     format: "glb",
     url: "/aura-assets/rzDefenderLinemanMeshy.38e261b9.glb",
-    hash: "sha256-f360df55224ede22af147575f7e1aa1c9754892b8c2910491cad48562d673f25",
+    hash: "sha256-dc3ffd55e0ae2eb250a7580c437e958987fc466e31c65bcd0c54b208221b440c",
     bounds: [1.147, 1.896, 1.672]
   },
   rzFieldGoalPostMeshy: {
@@ -90,15 +90,15 @@ export const assets = defineAuraAssets({
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsAthleteGuard.fbef844e.glb",
-    hash: "sha256-096224803e4344d6175341e59a24ed6a37ad070deb746b99fe8a0958824ccf62",
-    bounds: [1.479, 1.903, 0.373]
+    hash: "sha256-b1468563ab80b4419d86a38c60c368018793626ae7efd13472dcf02c76aa7926",
+    bounds: [0.905, 1.903, 0.404]
   },
   hoopsAthleteBig: {
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsAthleteBig.a11d61c5.glb",
-    hash: "sha256-f429285ef40b8f4cb82981f1054a8821a97f543d68430afa743061eb6f4367bf",
-    bounds: [1.069, 1.903, 0.365]
+    hash: "sha256-ba0008e3f395992ff7518ad2a346858640fc03e924e1d257632d16371c576830",
+    bounds: [0.878, 1.903, 0.429]
   },
   diamondDugout: {
     type: "model",

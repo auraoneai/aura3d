@@ -73,7 +73,7 @@ const BOARD_Z = -0.35;
 const BOARD_HALF_W = 0.9;
 const BOARD_Y0 = 2.82;
 const BOARD_Y1 = 3.9;
-const BALL_R = 0.12;
+const BALL_R = 0.13;
 const ARC_R = 6.75; // street "two" line
 const CHECK_SPOT: Vec3 = [0, 0, 8.6];
 const COURT_X = 7.6;
@@ -84,7 +84,7 @@ const SPRINT_SPEED = 6.9;
 const DUNK_RANGE = 2.4;
 const GRAVITY = -10.4; // snappier NBA-Jam arc than textbook 9.81
 const HIDDEN = 0.0001;
-const CROWD_WAVERS = 18;
+const CROWD_WAVERS = 0;
 const TRAIL_COUNT = 14;
 const CONE_COUNT = 10;
 
@@ -266,6 +266,9 @@ interface AthleteState {
   tx: number; // AI target
   tz: number;
   clip: string;
+  clipSince: number;
+  wpPauseT: number;
+  actionUntil: number;
   meterT: number; // CPU shot meter progress
   shooting: boolean;
   dunkT: number; // dunk animation progress
@@ -456,10 +459,10 @@ function buildHoopNodes(): any[] {
 
 function buildBallNodes(): any[] {
   const nodes: any[] = [
-    model(assets.hoopsBall, { name: "ball-live", scaleMode: "fit", targetMaxDimension: BALL_R * 2, castShadow: true })
-      .position(0, 1.0, CHECK_SPOT[2])
+    model(assets.hoopsBall, { name: "ball-live", scaleMode: "fit", targetMaxDimension: 0.34, castShadow: true })
+      .position(0, 0.98, CHECK_SPOT[2])
       .runtime(game.runtimeNode("ball-live")),
-    primitives.cylinder({ name: "ball-shadow", size: [0.32, 0.008, 0.32], material: material.pbr({ color: "#000000", opacity: 0.4, roughness: 1 }) }).position(0, 0.012, CHECK_SPOT[2]).runtime(game.runtimeNode("ball-shadow"))
+    primitives.cylinder({ name: "ball-shadow", size: [0.36, 0.008, 0.36], material: material.pbr({ color: "#000000", opacity: 0.42, roughness: 1 }) }).position(0, 0.012, CHECK_SPOT[2]).runtime(game.runtimeNode("ball-shadow"))
   ];
   for (let i = 0; i < TRAIL_COUNT; i++) {
     nodes.push(
@@ -487,7 +490,7 @@ function buildAthlete(id: string, _team: TeamId): any[] {
   return [
     model(athleteAsset, { name: id, targetHeight: 1.92, scaleMode: "fit", castShadow: true, receiveShadow: true })
       .position(0, 0.96, 6)
-      .animate({ clip: "Idle_Loop", loop: true, speed: 1.0 })
+      .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
       .runtime(game.runtimeNode(id)),
     ...buildAthleteAccessories(id, _team)
   ];
@@ -503,28 +506,8 @@ function buildCrowd(_v: VenueSpec): any[] {
       .rotate(0, Math.PI / 2, 0),
     model(assets.showcaseStadiumSeats, { name: "bleacher-east", targetMaxDimension: 11, scaleMode: "fit", castShadow: false, receiveShadow: true })
       .position(19.5, 1.1, 4.0)
-      .rotate(0, -Math.PI / 2, 0),
-    // 3D Referee tracking play along the sideline
-    model(assets.hoopsAthleteGuard, { name: "referee", targetHeight: 1.88, scaleMode: "fit", castShadow: true, receiveShadow: true })
-      .position(-8.2, 0.94, 3.2)
-      .rotate(0, Math.PI / 2, 0)
-      .animate({ clip: "Ready", loop: true, speed: 1.0 })
-      .runtime(game.runtimeNode("referee"))
+      .rotate(0, -Math.PI / 2, 0)
   ];
-  // Front-row 3D Meshy courtside spectators (animated in the frame loop)
-  for (let i = 0; i < CROWD_WAVERS; i++) {
-    const x = -8.4 + i * (16.8 / (CROWD_WAVERS - 1));
-    const z = i % 2 ? -3.4 : 12.6;
-    const yaw = i % 2 ? 0 : Math.PI;
-    const fanAsset = i % 2 === 0 ? assets.hoopsAthleteGuard : assets.hoopsAthleteBig;
-    nodes.push(
-      model(fanAsset, { name: `waver-${i}`, targetHeight: 1.86, scaleMode: "fit", castShadow: true })
-        .position(x, 0.93, z)
-        .rotate(0, yaw, 0)
-        .animate({ clip: "Idle_Loop", loop: true, speed: 1.08 })
-        .runtime(game.runtimeNode(`waver-${i}`))
-    );
-  }
   return nodes;
 }
 
@@ -622,16 +605,10 @@ function buildVenueDressing(v: VenueSpec): any[] {
     );
   }
 
-  // Courtside dressing shared by all courts: ball rack, trophy case, 3D coaches & bench athletes (grounded at y=0.96)
+  // Courtside dressing shared by all courts: ball rack and trophy case (no static sideline athlete clones)
   nodes.push(
     model(assets.hoopsBallCart, { name: "ball-rack", targetHeight: 1.15 }).position(-8.9, 0.58, 9.4).rotate(0, 0.5, 0),
-    model(assets.hoopsTrophy, { name: "trophy-case", targetHeight: 1.7, castShadow: false }).position(9.2, 0.85, -3.4).rotate(0, -0.8, 0).runtime(game.runtimeNode("trophy-case")),
-    model(assets.hoopsAthleteBig, { name: "coach-home", targetHeight: 1.94, scaleMode: "fit", castShadow: true }).position(-8.6, 0.97, 5.8).rotate(0, Math.PI / 2, 0).animate({ clip: "Ready", loop: true, speed: 1.0 }),
-    model(assets.hoopsAthleteBig, { name: "coach-away", targetHeight: 1.94, scaleMode: "fit", castShadow: true }).position(8.6, 0.97, 5.8).rotate(0, -Math.PI / 2, 0).animate({ clip: "Ready", loop: true, speed: 1.0 }),
-    model(assets.hoopsAthleteGuard, { name: "bench-shooter", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(-8.6, 0.96, 7.2).rotate(0, Math.PI / 2, 0).animate({ clip: "Idle_Loop", loop: true, speed: 1.0 }),
-    model(assets.hoopsAthleteBig, { name: "bench-defender", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(-8.6, 0.96, 8.4).rotate(0, Math.PI / 2, 0).animate({ clip: "Idle_Loop", loop: true, speed: 1.0 }),
-    model(assets.hoopsAthleteGuard, { name: "warmup-scorer", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(8.6, 0.96, 7.2).rotate(0, -Math.PI / 2, 0).animate({ clip: "Idle_Loop", loop: true, speed: 1.0 }),
-    model(assets.hoopsAthleteBig, { name: "warmup-defender2", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(8.6, 0.96, 8.4).rotate(0, -Math.PI / 2, 0).animate({ clip: "Idle_Loop", loop: true, speed: 1.0 })
+    model(assets.hoopsTrophy, { name: "trophy-case", targetHeight: 1.7, castShadow: false }).position(9.2, 0.85, -3.4).rotate(0, -0.8, 0).runtime(game.runtimeNode("trophy-case"))
   );
 
   // Court wear decals
@@ -775,13 +752,19 @@ resolveHandles();
 /* ------------------------------------------------------------------ *
  *  Athlete entities                                                   *
  * ------------------------------------------------------------------ */
+const lerpAngle = (a: number, b: number, t: number) => {
+  const diff = Math.atan2(Math.sin(b - a), Math.cos(b - a));
+  return a + diff * t;
+};
+
 function makeAthlete(nodeId: string, team: TeamId, index: number): AthleteState {
   return {
     nodeId, team, index,
     x: 0, y: 0, z: 6, vx: 0, vz: 0, yaw: team === "home" ? Math.PI : 0, vy: 0,
     hasBall: false, controlled: false, stumble: 0, jumpT: 0, blockArm: 0, pokeCd: 0,
-    screenT: 0, cutT: 0, aiT: 1 + index * 0.7, aiPlan: "idle", tx: 0, tz: 6,
-    clip: "", meterT: 0, shooting: false, dunkT: 0, dunkKind: ""
+    screenT: 0, cutT: 0, aiT: 0.4 + index * 0.45, aiPlan: "idle", tx: 0, tz: 6,
+    clip: "", clipSince: -10, wpPauseT: 0, actionUntil: 0,
+    meterT: 0, shooting: false, dunkT: 0, dunkKind: ""
   };
 }
 
@@ -811,8 +794,21 @@ const nearestDefender = (a: AthleteState): AthleteState | undefined => {
   return best;
 };
 
+const LOCOMOTION_CLIPS = new Set(["Idle_Loop", "Crouch_Idle_Loop", "Ready", "Walk_Loop", "Run", "Sprint_Loop"]);
+
 function setClip(a: AthleteState, clip: string, speed = 1.0): void {
+  const isInitial = a.clip === "";
+  if (a.clip === clip) {
+    const r = rigs[idxOf(a)];
+    if (r?.root) setNodeClip(a.nodeId, r.root, clip, speed);
+    return;
+  }
+  const isLocomotion = LOCOMOTION_CLIPS.has(clip) && LOCOMOTION_CLIPS.has(a.clip);
+  if (!isInitial && isLocomotion && (game_.time - a.clipSince) < 0.35) {
+    return;
+  }
   a.clip = clip;
+  a.clipSince = isInitial ? -10 : game_.time;
   const r = rigs[idxOf(a)];
   const h = r?.root as any;
   if (!h) return;
@@ -1036,13 +1032,32 @@ function spotFor(_team: TeamId, role: number): Vec3 {
   return FIVE_SPOTS[role % FIVE_SPOTS.length]!;
 }
 
+function pickOffBallWaypoint(a: AthleteState): void {
+  const base = spotFor(a.team, a.index);
+  const sign = base[0] < 0 ? -1 : base[0] > 0 ? 1 : (a.index % 2 === 0 ? 1 : -1);
+  const candidates: Vec3[] = [
+    [base[0], 0, base[2]],
+    [clamp(base[0] + sign * 1.4, -COURT_X + 0.8, COURT_X - 0.8), 0, clamp(base[2] - 2.8, 1.2, COURT_Z1 - 0.8)],
+    [clamp(base[0] * 0.45, -COURT_X + 0.8, COURT_X - 0.8), 0, clamp(base[2] - 1.8, 1.6, COURT_Z1 - 0.8)],
+    [clamp(-base[0] * 0.65, -COURT_X + 0.8, COURT_X - 0.8), 0, clamp(base[2] + 0.6, 2.4, COURT_Z1 - 0.8)],
+    [sign * 1.35, 0, 1.55]
+  ];
+  // Pick a candidate at least 2.2m away from current position so the cut is a clean Run
+  const far = candidates.filter((c) => dist2d(a.x, a.z, c[0], c[2]) > 2.2);
+  const pool = far.length > 0 ? far : candidates;
+  const pick = pool[Math.floor(rng() * pool.length)]!;
+  a.tx = pick[0];
+  a.tz = pick[2];
+  a.aiT = 1.6 + rng() * 1.2;
+}
+
 function enterCheck(team: TeamId): void {
   game_.phase = "check";
   game_.possession = team;
   game_.checkT = 0;
   game_.mustClear = false;
   closeMeter();
-  athletes.forEach((a) => { a.shooting = false; a.meterT = 0; });
+  athletes.forEach((a) => { a.shooting = false; a.meterT = 0; a.actionUntil = 0; });
   ball.state = "parked";
   ball.scored = false; ball.hitRim = false; ball.hitBoard = false; ball.blocked = false;
   const off = team === "home" ? homeTeam() : awayTeam();
@@ -1053,15 +1068,23 @@ function enterCheck(team: TeamId): void {
     a.hasBall = i === 0; a.controlled = team === "home" && i === 0;
     a.shooting = false; a.dunkT = 0; a.meterT = 0;
     a.yaw = angTo(a.x, a.z, RIM[0], RIM[2]);
+    a.wpPauseT = 0.1 + i * 0.18;
+    if (i === 0) {
+      a.tx = a.x; a.tz = a.z;
+    } else {
+      pickOffBallWaypoint(a);
+    }
   });
   def.forEach((a, i) => {
     const s = spotFor(team, i);
     a.x = s[0] * 0.55; a.z = s[2] - 2.6; a.y = 0; a.vx = 0; a.vz = 0;
     a.hasBall = false; a.controlled = team === "away" && i === 0;
     a.yaw = angTo(a.x, a.z, s[0], s[2]);
+    a.tx = a.x; a.tz = a.z;
+    a.wpPauseT = 0.15 + i * 0.15;
   });
   const h = holderAthlete();
-  if (h) { ball.x = h.x; ball.y = 1.05; ball.z = h.z + 0.3; ball.holder = idxOf(h); }
+  if (h) { ball.x = h.x; ball.y = 0.98; ball.z = h.z + 0.28; ball.holder = idxOf(h); }
   showPrompt(team === "home" ? "SPACE — CHECK BALL" : "CPU CHECKING…", 1.4);
   pushEvent("check", team === "home" ? "check ball — your rock" : "check ball — cpu ball", "info");
   juiceFire("check", {});
@@ -1203,6 +1226,7 @@ function openMeter(a: AthleteState): void {
   const center = 0.72;
   game_.shotMeter = { active: true, t: 0, g0: center - halfW, g1: center + halfW, perfect: center, frames: 0, tapRelease: false };
   a.shooting = true;
+  a.yaw = angTo(a.x, a.z, RIM[0], RIM[2]);
   if (a.jumpT <= 0) {
     a.jumpT = 0.0001;
     a.vy = 2.8;
@@ -1229,6 +1253,7 @@ function solveLaunch(from: Vec3, target: Vec3, arcBoost = 0.9): Vec3 {
 
 function releaseShot(a: AthleteState, quality: number): void {
   // quality ∈ [0,1] timing accuracy → aim error mapping
+  a.yaw = angTo(a.x, a.z, RIM[0], RIM[2]);
   const from: Vec3 = [a.x, 2.0 + a.y, a.z];
   const d = dist2d(a.x, a.z, RIM[0], RIM[2]);
   const isTwo = d > ARC_R;
@@ -1259,7 +1284,7 @@ function releaseShot(a: AthleteState, quality: number): void {
   a.shooting = false;
   closeMeter();
   setClip(a, "Release", 1.5);
-  window.setTimeout(() => { if (a.clip === "Release") setClip(a, "FollowThrough", 1.25); }, 240);
+  a.actionUntil = game_.time + 0.42;
   game_.phase = "shot";
   juiceFire("release", { position: from });
   pushEvent("shot", perfect ? "release — PERFECT" : inGreen ? "release — green" : `release — ${(quality * 100) | 0}%`, perfect || inGreen ? "success" : "info");
@@ -1323,7 +1348,7 @@ function finishDunk(a: AthleteState): void {
   }
   a.dunkT = 0;
   a.dunkKind = "";
-  setClip(a, "Idle_Loop");
+  setClip(a, "Crouch_Idle_Loop");
 }
 
 /* ------------------------------------------------------------------ *
@@ -1462,21 +1487,32 @@ function stepBallSim(dt: number): void {
   }
 
   if (ball.state === "held" || ball.state === "dribbleAir" || ball.state === "parked") {
-    const h = athletes[ball.holder];
+    const h = athletes[ball.holder] ?? holderAthlete();
     if (h && h.hasBall) {
-      ball.dribbleT += dt;
-      const moving = Math.hypot(h.vx, h.vz) > 0.4;
-      const bounce = moving || game_.phase === "live"
-        ? Math.abs(Math.sin(ball.dribbleT * 7.4)) * 0.82
-        : 0.82;
-      const side: Vec3 = [Math.cos(h.yaw) * 0.34, 0, -Math.sin(h.yaw) * 0.34];
-      const fwd: Vec3 = [Math.sin(h.yaw) * 0.3, 0, Math.cos(h.yaw) * 0.3];
-      const targetY = 0.12 + bounce + h.y * 0.4;
+      ball.holder = idxOf(h);
+      ball.dribbleT = game_.time;
+      const moving = Math.hypot(h.vx, h.vz) > 0.25;
+      const cycleDur = moving ? 0.34 : 0.42;
+      const dribblePhase = (game_.time / cycleDur) * Math.PI;
+      const sinWave = Math.abs(Math.cos(dribblePhase));
+      const bounce01 = Math.pow(sinWave, 0.72);
+      const handY = 0.98 + h.y;
+      const floorY = BALL_R;
       const prevY = ball.y;
-      ball.x = h.x + side[0] + fwd[0];
-      ball.z = h.z + side[2] + fwd[2];
-      ball.y = lerp(ball.y, targetY, clamp(dt * 14, 0, 1));
-      if (moving && prevY > 0.4 && ball.y <= 0.2) cue("dribble");
+      const right = 0.28;
+      const fwd = moving ? 0.32 : 0.26;
+      const rx = Math.cos(h.yaw) * right + Math.sin(h.yaw) * fwd;
+      const rz = -Math.sin(h.yaw) * right + Math.cos(h.yaw) * fwd;
+      if (h.shooting) {
+        ball.x = h.x + Math.sin(h.yaw) * 0.22;
+        ball.z = h.z + Math.cos(h.yaw) * 0.22;
+        ball.y = 1.65 + h.y + game_.shotMeter.t * 0.35;
+      } else {
+        ball.x = h.x + rx;
+        ball.z = h.z + rz;
+        ball.y = lerp(floorY, handY, bounce01);
+      }
+      if (!h.shooting && prevY > 0.28 && ball.y <= 0.22) cue("dribble");
     }
   }
 }
@@ -1486,43 +1522,70 @@ function stepBallSim(dt: number): void {
  * ------------------------------------------------------------------ */
 function aiMove(a: AthleteState, tx: number, tz: number, dt: number, speed: number): void {
   const d = dist2d(a.x, a.z, tx, tz);
-  if (d < 0.12) { a.vx = lerp(a.vx, 0, dt * 8); a.vz = lerp(a.vz, 0, dt * 8); return; }
+  if (d < 0.45) {
+    a.vx = lerp(a.vx, 0, clamp(dt * 12, 0, 1));
+    a.vz = lerp(a.vz, 0, clamp(dt * 12, 0, 1));
+    if (Math.hypot(a.vx, a.vz) < 0.08) {
+      a.vx = 0;
+      a.vz = 0;
+    }
+    const holder = holderAthlete();
+    const lookX = holder && holder !== a ? holder.x : RIM[0];
+    const lookZ = holder && holder !== a ? holder.z : RIM[2];
+    a.yaw = lerpAngle(a.yaw, angTo(a.x, a.z, lookX, lookZ), clamp(dt * 6, 0, 1));
+    return;
+  }
   const dx = (tx - a.x) / d, dz = (tz - a.z) / d;
   const acc = a.stumble > 0 ? 0.15 : 1;
-  a.vx = lerp(a.vx, dx * speed * acc, clamp(dt * 7, 0, 1));
-  a.vz = lerp(a.vz, dz * speed * acc, clamp(dt * 7, 0, 1));
-  a.yaw = angTo(0, 0, a.vx || 0.001, a.vz || 0.001);
+  a.vx = lerp(a.vx, dx * speed * acc, clamp(dt * 8, 0, 1));
+  a.vz = lerp(a.vz, dz * speed * acc, clamp(dt * 8, 0, 1));
+  a.yaw = angTo(0, 0, a.vx || dx, a.vz || dz);
+}
+
+function stepOffBallWaypoints(a: AthleteState, dt: number, speed: number): void {
+  a.aiT -= dt;
+  const d = dist2d(a.x, a.z, a.tx, a.tz);
+  if (d < 0.48) {
+    a.wpPauseT += dt;
+    aiMove(a, a.tx, a.tz, dt, speed);
+    if (a.wpPauseT >= 2.4) {
+      a.wpPauseT = 0;
+      pickOffBallWaypoint(a);
+    }
+    return;
+  }
+  a.wpPauseT = 0;
+  if (a.aiT <= 0) {
+    pickOffBallWaypoint(a);
+  }
+  aiMove(a, a.tx, a.tz, dt, speed);
 }
 
 function stepTeammateAI(a: AthleteState, dt: number): void {
-  // Home 5v5 AI: perimeter/wing/corner/post spacing + timed cuts + screens toward handler
-  a.aiT -= dt;
+  // Home 5v5 AI: discrete waypoint cuts + timed rim cuts + screens
   if (a.cutT > 0) {
     a.cutT -= dt;
     aiMove(a, RIM[0] + (a.index % 2 === 1 ? -0.9 : 0.9), RIM[2] + 1.2, dt, PLAYER_SPEED * 0.92);
+    if (a.cutT <= 0) pickOffBallWaypoint(a);
     return;
   }
   if (a.screenT > 0) {
     a.screenT -= dt;
     const holder = holderAthlete();
     const def = holder ? nearestDefender(holder) : undefined;
-    if (holder && def) aiMove(a, def.x + Math.sin(holder.yaw) * 0.4, def.z + Math.cos(holder.yaw) * 0.4, dt, PLAYER_SPEED * 0.8);
+    if (holder && def) {
+      aiMove(a, def.x + Math.sin(holder.yaw) * 0.4, def.z + Math.cos(holder.yaw) * 0.4, dt, PLAYER_SPEED * 0.82);
+    }
+    if (a.screenT <= 0) pickOffBallWaypoint(a);
     return;
   }
-  const spot = spotFor("home", a.index);
-  aiMove(a, spot[0] + Math.sin(game_.time * 0.5 + a.index) * 0.7, spot[2] + Math.cos(game_.time * 0.4 + a.index) * 0.5, dt, PLAYER_SPEED * 0.62);
-  if (a.aiT <= 0) {
-    a.aiT = 2.4 + rng() * 3.2;
-    const roll = rng();
-    if (roll < 0.42) { a.cutT = 1.3; pushEvent("ai", "backdoor cut", "info"); }
-    else if (roll < 0.6) a.screenT = 2.0;
-  }
+  stepOffBallWaypoints(a, dt, PLAYER_SPEED * 0.82);
 }
 
 function stepCpuOffense(a: AthleteState, dt: number): void {
   const diff = DIFFS[game_.diff];
   const squad = game_.awaySquad;
-  const speed = PLAYER_SPEED * 0.72 * diff.cpuSpeed * (0.8 + squad.speed * 0.04);
+  const speed = PLAYER_SPEED * 0.82 * diff.cpuSpeed * (0.85 + squad.speed * 0.03);
   if (a.hasBall) {
     // CPU ball-handler: drive / pullup / pass
     const dRim = dist2d(a.x, a.z, RIM[0], RIM[2]);
@@ -1541,8 +1604,8 @@ function stepCpuOffense(a: AthleteState, dt: number): void {
       startDunk(a, "POWER JAM");
       return;
     }
-    if (a.aiT <= 0) {
-      a.aiT = 1.6 + rng() * 2.4 - diff.react;
+    if (a.aiT <= 0 || dist2d(a.x, a.z, a.tx, a.tz) < 0.5) {
+      a.aiT = 1.6 + rng() * 1.4 - diff.react * 0.5;
       const roll = rng();
       if (dRim < 5.6 && (defD > 2.1 || roll < 0.3)) {
         a.aiPlan = "pullup";
@@ -1559,28 +1622,25 @@ function stepCpuOffense(a: AthleteState, dt: number): void {
         return;
       }
       a.aiPlan = "drive";
-      a.tx = RIM[0] + (rng() - 0.5) * 2.2;
-      a.tz = RIM[2] + 1.4 + rng() * 1.2;
+      a.tx = RIM[0] + (rng() - 0.5) * 2.8;
+      a.tz = RIM[2] + 1.3 + rng() * 1.8;
     }
-    if (a.aiPlan === "drive") aiMove(a, a.tx, a.tz, dt, speed);
-    else {
-      // Probe the arc
-      const px = clamp(a.x * 0.9 + Math.sin(game_.time * 0.7 + a.index) * 0.8, -6.4, 6.4);
-      aiMove(a, px, 6.4 + a.index * 0.4, dt, speed * 0.5);
-    }
+    aiMove(a, a.tx, a.tz, dt, speed);
   } else {
-    // Off-ball 5v5 spacing & cuts
-    a.aiT -= dt;
-    if (a.cutT > 0) { a.cutT -= dt; aiMove(a, RIM[0] + (a.index % 2 === 1 ? -1 : 1), RIM[2] + 1.4, dt, speed); return; }
-    const spot = spotFor("away", a.index);
-    aiMove(a, spot[0] + Math.sin(game_.time * 0.6 + a.index * 2) * 0.8, spot[2] + Math.cos(game_.time * 0.5 + a.index) * 0.6, dt, speed * 0.58);
-    if (a.aiT <= 0) { a.aiT = 2.4 + rng() * 3; if (rng() < 0.4) a.cutT = 1.4; }
+    // Off-ball 5v5 discrete waypoint cuts
+    if (a.cutT > 0) {
+      a.cutT -= dt;
+      aiMove(a, RIM[0] + (a.index % 2 === 1 ? -1 : 1), RIM[2] + 1.4, dt, speed);
+      if (a.cutT <= 0) pickOffBallWaypoint(a);
+      return;
+    }
+    stepOffBallWaypoints(a, dt, PLAYER_SPEED * 0.82);
   }
 }
 
 function stepCpuDefense(a: AthleteState, dt: number): void {
   const diff = DIFFS[game_.diff];
-  const speed = PLAYER_SPEED * 0.8 * diff.cpuSpeed;
+  const speed = PLAYER_SPEED * 0.82 * diff.cpuSpeed;
   const holder = holderAthlete();
   if (!holder || holder.team !== "home") return;
   const foes = awayTeam().sort((m, n) => dist2d(m.x, m.z, holder.x, holder.z) - dist2d(n.x, n.z, holder.x, holder.z));
@@ -1603,15 +1663,36 @@ function stepCpuDefense(a: AthleteState, dt: number): void {
       attemptSteal(a, holder);
     }
   } else if (help) {
-    // Zone the paint
-    aiMove(a, lerp(a.x, RIM[0], 0.06), lerp(a.z, RIM[2] + 2.2, 0.06) , dt, speed * 0.7);
-    // Collapse on drives
-    if (dist2d(holder.x, holder.z, RIM[0], RIM[2]) < 3.4) aiMove(a, holder.x, holder.z, dt, speed);
+    // Collapse on drives or patrol discrete paint help spots
+    if (dist2d(holder.x, holder.z, RIM[0], RIM[2]) < 3.4) {
+      aiMove(a, holder.x, holder.z, dt, speed);
+    } else {
+      a.aiT -= dt;
+      if (a.aiT <= 0 || dist2d(a.x, a.z, a.tx, a.tz) < 0.48) {
+        a.wpPauseT += dt;
+        if (a.wpPauseT >= 0.6 || a.aiT <= 0) {
+          a.wpPauseT = 0;
+          a.aiT = 1.8 + rng() * 1.0;
+          const side = a.x <= 0 ? 1.6 : -1.6;
+          a.tx = clamp(holder.x * 0.35 + side, -2.4, 2.4);
+          a.tz = 2.0 + (rng() * 1.4);
+        }
+      }
+      aiMove(a, a.tx, a.tz, dt, speed);
+    }
   } else {
-    // Match up with off-ball home player by index
+    // Match up with off-ball home player by index using their discrete target
     const mark = homeTeam().find((m) => m.index === a.index && !m.hasBall)
       ?? homeTeam().filter((m) => !m.hasBall).sort((m, n) => dist2d(m.x, m.z, a.x, a.z) - dist2d(n.x, n.z, a.x, a.z))[0];
-    if (mark) aiMove(a, mark.x * 0.9, mark.z * 0.9 - 0.6, dt, speed * 0.68);
+    if (mark) {
+      const wantX = mark.x * 0.88;
+      const wantZ = mark.z * 0.88 - 0.65;
+      if (dist2d(a.tx, a.tz, wantX, wantZ) > 0.75) {
+        a.tx = wantX;
+        a.tz = wantZ;
+      }
+      aiMove(a, a.tx, a.tz, dt, speed);
+    }
   }
 }
 
@@ -1620,7 +1701,7 @@ const defDist = (a: AthleteState, b: AthleteState) => dist2d(a.x, a.z, b.x, b.z)
 function attemptSteal(def: AthleteState, holder: AthleteState): void {
   const base = def.team === "away" ? 0.34 * DIFFS[game_.diff].contest : 0.42;
   setClip(def, "Punch_Jab");
-  window.setTimeout(() => { if (def.clip === "Punch_Jab") setClip(def, "Idle_Loop"); }, 420);
+  def.actionUntil = game_.time + 0.42;
   if (rng() < base) {
     holder.hasBall = false;
     ball.state = "loose";
@@ -1741,6 +1822,10 @@ function stepPlayerControl(dt: number): void {
     pressed("hesi", "KeyK") ||
     held("shoot", "Space", "Enter");
 
+  if (anyManual) {
+    lastManualInputAt = game_.time;
+  }
+
   if (game_.autopilot && !anyManual && (game_.time - lastManualInputAt >= 2.2)) {
     stepPlayerAutopilot(me, dt);
     return;
@@ -1764,7 +1849,8 @@ function stepPlayerControl(dt: number): void {
   } else {
     me.vx = lerp(me.vx, 0, clamp(dt * 10, 0, 1));
     me.vz = lerp(me.vz, 0, clamp(dt * 10, 0, 1));
-    if (me.hasBall) me.yaw = lerp(me.yaw, angTo(me.x, me.z, RIM[0], RIM[2]), dt * 4);
+    if (Math.hypot(me.vx, me.vz) < 0.08) { me.vx = 0; me.vz = 0; }
+    if (me.hasBall) me.yaw = lerpAngle(me.yaw, angTo(me.x, me.z, RIM[0], RIM[2]), clamp(dt * 4, 0, 1));
   }
 
   // Ankle-breaker / hesi timing taps (offense w/ ball)
@@ -1780,6 +1866,7 @@ function stepPlayerControl(dt: number): void {
         me.vx += Math.sin(lat) * 4.6; me.vz += Math.cos(lat) * 4.6;
         juiceFire("juke", { position: [me.x, 1, me.z] });
         setClip(me, "Attack", 1.45);
+        me.actionUntil = game_.time + 0.42;
         if (def && d < 1.7 && rng() < 0.6) {
           def.stumble = 0.9;
           showBanner("ANKLE BREAKER");
@@ -2011,31 +2098,39 @@ function syncAthlete(a: AthleteState, dt: number): void {
       a.vy = 0;
       a.jumpT = 0;
       if (a.clip === "Contest" || a.clip === "Jump_Loop" || a.clip === "Shoot") {
-        setClip(a, "Idle_Loop", 1.0);
+        setClip(a, a.hasBall ? "Crouch_Idle_Loop" : "Ready", 1.0);
       }
     }
   }
 
+  // Deterministic action clip completion (Release -> FollowThrough -> locomotion)
+  if (a.actionUntil > 0 && game_.time >= a.actionUntil) {
+    if (a.clip === "Release") {
+      setClip(a, "FollowThrough", 1.25);
+      a.actionUntil = game_.time + 0.28;
+    } else {
+      a.actionUntil = 0;
+      a.clipSince = -10;
+    }
+  }
+
   const speed = Math.hypot(a.vx, a.vz);
-  const bob = speed > 0.4 ? Math.abs(Math.sin(game_.time * 11 + a.index * 1.3)) * 0.055 : 0;
+  const bob = 0;
 
   // Ground the 1.92m Meshy athlete model (centered at origin, H*0.5 = 0.96) so sneakers sit at y=0
   r.root.setPosition(a.x, 0.96 + a.y + bob, a.z).setRotation(0, a.yaw, 0);
 
-  // Clip selection when nothing explicit is playing
-  if (!a.shooting && a.dunkT <= 0 && a.jumpT <= 0 && a.stumble <= 0 && a.clip !== "Release" && a.clip !== "FollowThrough") {
-    if (speed > 4.6) {
+  // Clip selection with hysteresis when nothing explicit is playing
+  if (!a.shooting && a.dunkT <= 0 && a.jumpT <= 0 && a.stumble <= 0 && a.actionUntil <= 0) {
+    const idleClip = "Ready";
+    if (speed > 5.2 || (a.clip === "Sprint_Loop" && speed > 4.6)) {
       setClip(a, "Sprint_Loop", 1.35);
-    } else if (speed > 1.3) {
+    } else if (speed > 0.85 || ((a.clip === "Run" || a.clip === "Sprint_Loop") && speed > 0.65)) {
       setClip(a, "Run", 1.2);
-    } else if (speed > 0.35) {
+    } else if (speed > 0.35 || ((a.clip === "Walk_Loop" || a.clip === "Run") && speed >= 0.20)) {
       setClip(a, "Walk_Loop", 1.1);
-    } else if (a.hasBall && game_.phase === "live") {
-      setClip(a, "Crouch_Idle_Loop", 1.0);
-    } else if (game_.phase === "live" && a.team !== game_.possession) {
-      setClip(a, "Ready", 1.0);
     } else {
-      setClip(a, "Idle_Loop", 1.0);
+      setClip(a, idleClip, 1.0);
     }
   }
   if (a.stumble > 0) setClip(a, "Crouch_Idle_Loop", 1.2);
@@ -2161,6 +2256,14 @@ function publishEvidence(): void {
     jamFull: game_.jamFull,
     ball: { state: ball.state, position: [Number(ball.x.toFixed(2)), Number(ball.y.toFixed(2)), Number(ball.z.toFixed(2))], scored: ball.scored },
     holder: holder?.nodeId ?? null,
+    athleteClips: athletes.map((a) => ({
+      id: a.nodeId,
+      clip: a.clip,
+      speed: Number(Math.hypot(a.vx, a.vz).toFixed(2)),
+      x: Number(a.x.toFixed(2)),
+      z: Number(a.z.toFixed(2)),
+      hasBall: a.hasBall
+    })),
     difficulty: game_.diff,
     squads: { home: game_.homeSquad.id, away: game_.awaySquad.id },
     tour: { active: game_.tour.active, round: game_.tour.round, champion: game_.tour.champion, eliminated: game_.tour.eliminated },
@@ -2181,8 +2284,6 @@ function publishEvidence(): void {
 /* ------------------------------------------------------------------ *
  *  Main loop                                                          *
  * ------------------------------------------------------------------ */
-let lastRefZ = 3.2;
-
 function frame(dtRaw: number): void {
   const now = game_.time;
   const frozen = hitStopUntil > now;
@@ -2240,9 +2341,26 @@ function frame(dtRaw: number): void {
         if (game_.shotMeter.t >= 1) { game_.shotMeter.t = 0; } // wraps — late release = brick territory
       }
       stepPlayerControl(dt);
+      const playIsActive =
+        game_.autopilot ||
+        (game_.time - lastManualInputAt < 1.2) ||
+        Math.hypot(me?.vx ?? 0, me?.vz ?? 0) > 0.15 ||
+        Boolean(me?.shooting) ||
+        (me?.dunkT ?? 0) > 0 ||
+        ball.state !== "held" ||
+        game_.possession === "away";
       // AI
       for (const a of athletes) {
         if (a.controlled) continue;
+        if (!playIsActive) {
+          a.vx = lerp(a.vx, 0, clamp(dt * 12, 0, 1));
+          a.vz = lerp(a.vz, 0, clamp(dt * 12, 0, 1));
+          if (Math.hypot(a.vx, a.vz) < 0.08) {
+            a.vx = 0;
+            a.vz = 0;
+          }
+          continue;
+        }
         if (game_.mode === "dunklab" || game_.mode === "handleslab") {
           if (a.team === "away") continue; // parked off-court in labs
           if (!a.hasBall) stepTeammateAI(a, dt);
@@ -2254,10 +2372,18 @@ function frame(dtRaw: number): void {
         } else {
           if (a.team === "away") stepCpuOffense(a, dt);
           else if (a.team === "home" && !a.controlled) {
-            // Home off-ball defenders shadow their 5v5 marks
+            // Home off-ball defenders shadow their 5v5 marks using discrete target updates
             const mark = awayTeam().find((m) => m.index === a.index)
               ?? awayTeam().sort((m, n) => defDist(m, a) - defDist(n, a))[0];
-            if (mark) aiMove(a, mark.x * 0.92, mark.z * 0.92 - 0.4, dt, PLAYER_SPEED * 0.8);
+            if (mark) {
+              const wantX = mark.x * 0.9;
+              const wantZ = mark.z * 0.9 - 0.55;
+              if (dist2d(a.tx, a.tz, wantX, wantZ) > 0.75) {
+                a.tx = wantX;
+                a.tz = wantZ;
+              }
+              aiMove(a, a.tx, a.tz, dt, PLAYER_SPEED * 0.82);
+            }
           }
         }
       }
@@ -2322,21 +2448,15 @@ function frame(dtRaw: number): void {
   stepBallSim(dt);
   for (const a of athletes) syncAthlete(a, dt);
 
-  // 3D Referee tracks ball along sideline
-  if (refereeNode) {
-    const refZ = clamp(ball.z * 0.7, 0.5, 8.8);
-    const refSpd = Math.abs(refZ - lastRefZ) / Math.max(0.001, dt);
-    lastRefZ = refZ;
-    const refYaw = angTo(-8.2, refZ, ball.x, ball.z);
-    const refBob = refSpd > 0.3 ? Math.abs(Math.sin(game_.time * 8)) * 0.035 : 0;
-    refereeNode.setPosition(-8.2, 0.94 + refBob, refZ).setRotation(0, refYaw, 0);
-    setNodeClip("referee", refereeNode, refSpd > 0.3 ? "Walk_Loop" : "Ready", 1.05);
-  }
-
   // Ball visuals
   if (ballNode) {
-    ballNode.setPosition(ball.x, Math.max(BALL_R, ball.y) - BALL_R, ball.z);
-    if (ball.state === "flight" || ball.state === "loose") ballNode.setRotation(ball.flightT * 6, 0, ball.flightT * 4);
+    ballNode.setPosition(ball.x, Math.max(BALL_R, ball.y), ball.z);
+    if (ball.state === "flight" || ball.state === "loose" || ball.state === "pass") {
+      ballNode.setRotation(ball.flightT * 6, 0, ball.flightT * 4);
+    } else {
+      const h = holderAthlete();
+      ballNode.setRotation(game_.time * 5.2, h?.yaw ?? 0, 0);
+    }
   }
   ballShadow?.setPosition(ball.x, 0.014, ball.z).setScale([clamp(1.1 - ball.y * 0.12, 0.3, 1.05), 1, clamp(1.1 - ball.y * 0.12, 0.3, 1.05)]).setVisible(true);
   for (let i = 0; i < TRAIL_COUNT; i++) {
@@ -2354,16 +2474,6 @@ function frame(dtRaw: number): void {
   netSkirt?.setScale([1 + netPulse * 0.3, 1 + netPulse * 0.55, 1 + netPulse * 0.3]);
   rimHalo?.setScale([1 + rimShake * 0.12, 1 + rimShake * 0.12, 1]);
   rimNode?.setPosition(RIM[0] + (rng() - 0.5) * rimShake * 0.03, RIM[1] + rimShake * 0.02, RIM[2]);
-
-  // 3D Meshy courtside spectators (grounded at y=0.93)
-  const cheering = game_.phase === "score" || game_.phase === "gameover" || game_.jamFull;
-  for (let i = 0; i < waverNodes.length; i++) {
-    const w = waverNodes[i];
-    if (!w) continue;
-    const bounce = cheering ? Math.abs(Math.sin(game_.time * 9 + i * 1.3)) * 0.12 : 0;
-    w.setPosition(-8.4 + i * (16.8 / (CROWD_WAVERS - 1)), 0.93 + bounce, i % 2 ? -3.4 : 12.6);
-    setNodeClip(`waver-${i}`, w, cheering ? "Jump_Loop" : "Idle_Loop", cheering ? 1.2 : 1.08);
-  }
   planetEarth?.setRotation(0, game_.time * 0.02, 0);
 
   // Cones

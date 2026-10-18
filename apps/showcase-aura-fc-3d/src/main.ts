@@ -19,7 +19,7 @@ import {
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets-v2";
 import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R } from "./game/sim";
-import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, LOOK_ID } from "./game/scene";
+import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, LOOK_ID, BALL_PATCH_OFFSETS } from "./game/scene";
 import { resolveAthlete, applyAthleteKit, poseAthlete, skinFor, type AthleteRig } from "./game/rig";
 import { createHud, clubFor } from "./game/hud";
 import { createModes } from "./game/modes";
@@ -92,9 +92,21 @@ function boot(): void {
     gamepad: true
   });
 
+  const heldKeys = new Set<string>();
+  const pressedKeys = new Set<string>();
+  const releasedKeys = new Set<string>();
   window.addEventListener("keydown", (e) => {
+    if (!heldKeys.has(e.code)) pressedKeys.add(e.code);
+    heldKeys.add(e.code);
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
   }, { passive: false });
+  window.addEventListener("keyup", (e) => {
+    heldKeys.delete(e.code);
+    releasedKeys.add(e.code);
+  });
+  window.addEventListener("blur", () => {
+    heldKeys.clear();
+  });
 
   /* -------------------------- juice + audio -------------------------- */
   const params = new URLSearchParams(window.location.search);
@@ -211,9 +223,9 @@ function boot(): void {
   type CamMode = "menu" | "intro" | "broadcast" | "goal" | "penalty" | "lab" | "celebrate";
   const cam = {
     mode: "menu" as CamMode,
-    eye: [0, 24, 38] as Vec3,
-    target: [0, 0.4, 0] as Vec3,
-    fov: 16,
+    eye: [0, 22.5, 38.5] as Vec3,
+    target: [0, 0.8, -1.5] as Vec3,
+    fov: 54,
     modeT: 0,
     orbitA: 0,
     followX: 0,
@@ -241,19 +253,19 @@ function boot(): void {
 
     const b = s.ball;
     const bSpeed = Math.hypot(b.vx, b.vz) * (b.mode === "flight" ? 1 : 0.2);
-    cam.fovKick = lerp(cam.fovKick, clamp(bSpeed / 26, 0, 1) * 2.4, 1 - Math.pow(0.02, dt));
-    cam.followX = lerp(cam.followX, clamp(b.x * 0.3, -9, 9), 1 - Math.pow(0.06, dt));
+    cam.fovKick = lerp(cam.fovKick, clamp(bSpeed / 26, 0, 1) * 1.4, 1 - Math.pow(0.02, dt));
+    cam.followX = lerp(cam.followX, clamp(b.x * 0.18, -5.5, 5.5), 1 - Math.pow(0.06, dt));
 
     if (cam.mode === "menu") {
-      const r = 34;
-      cam.eye = [Math.sin(cam.orbitA * 0.11) * r, 15 + Math.sin(cam.orbitA * 0.07) * 2.4, Math.cos(cam.orbitA * 0.11) * r];
+      const r = 38;
+      cam.eye = [Math.sin(cam.orbitA * 0.11) * r, 18 + Math.sin(cam.orbitA * 0.07) * 2.4, Math.cos(cam.orbitA * 0.11) * r];
       cam.target = [0, 1.1, 0];
-      cam.fov = 26;
+      cam.fov = 46;
     } else if (cam.mode === "intro") {
       const t = smooth(clamp(cam.modeT / 2.2, 0, 1));
-      cam.eye = mix3([-30, 18, -36], [0, 24, 38], t);
-      cam.target = mix3([0, 4, -8], [0, 0.4, 0], t);
-      cam.fov = lerp(24, 16, t);
+      cam.eye = mix3([-24, 19, 34], [0, 22.5, 38.5], t);
+      cam.target = mix3([0, 2.0, -2], [0, 0.8, -1.5], t);
+      cam.fov = lerp(48, 54, t);
       if (cam.modeT > 2.2) cam.mode = "broadcast";
     } else if (cam.mode === "goal") {
       // push toward the celebrating scorer / the net that billowed
@@ -261,36 +273,34 @@ function boot(): void {
       const gx = Math.sign(b.x || 1) * (PITCH_HX + 0.8);
       const px = scorer ? scorer.x : gx, pz = scorer ? scorer.z : b.z;
       const t = clamp(cam.modeT / 2.6, 0, 1);
-      cam.eye = [lerp(px * 0.4, px - 5.5, t), lerp(7, 2.6, t), lerp(pz * 0.5, pz + 7.5, t)];
+      cam.eye = [lerp(px * 0.4, px - 5.5, t), lerp(10, 3.6, t), lerp(pz * 0.5, pz + 9.5, t)];
       cam.target = [px, 1.1, pz];
-      cam.fov = lerp(20, 26, t);
+      cam.fov = lerp(42, 36, t);
       if (cam.modeT > 2.8) cam.mode = "broadcast";
     } else if (cam.mode === "penalty") {
       // behind the taker, tight on the mouth
       const aim = s.shootout?.aim ?? [0, 0.8];
       cam.eye = [PEN_X - 6.5, 3.6, aim[0] * 0.35];
       cam.target = [PITCH_HX - 0.4, 1.0 + aim[1] * 0.4, aim[0]];
-      cam.fov = 24;
+      cam.fov = 34;
     } else if (cam.mode === "lab") {
       const me = s.players.find((p) => p.id === s.controlledId) ?? s.players[0];
       if (me) {
         cam.eye = [lerp(cam.eye[0], me.x - 7, 1 - Math.pow(0.03, dt)), 7.5, lerp(cam.eye[2], me.z + 12, 1 - Math.pow(0.03, dt))];
         cam.target = [me.x + 1.2, 0.6, me.z];
       }
-      cam.fov = 30;
+      cam.fov = 38;
     } else if (cam.mode === "celebrate") {
       const scorer = s.players.find((p) => p.id === s.lastScorer) ?? s.players[0];
       const cx = scorer?.x ?? 0, cz = scorer?.z ?? 0;
       cam.eye = [cx + Math.sin(cam.orbitA * 0.4) * 8.5, 3.4, cz + Math.cos(cam.orbitA * 0.4) * 8.5];
       cam.target = [cx, 1.2, cz];
-      cam.fov = 26;
+      cam.fov = 34;
     } else {
-      // broadcast: long-lens side view, pans and subtly zooms with the ball
-      const attacking = Math.abs(b.x) > PITCH_HX * 0.66;
-      const push = attacking ? -2.4 : 0;
-      cam.eye = [cam.followX, 23.5 + push * -0.4, 37.5 + push];
-      cam.target = [cam.followX * 0.5 + b.x * 0.12, 0.4, b.z * 0.22];
-      cam.fov = 15.5 + cam.fovKick + (attacking ? -1.4 : 0);
+      // broadcast: wide stadium view framing BOTH goalposts at x = -30 and x = +30
+      cam.eye = [b.x * 0.18, 22.5, 38.5];
+      cam.target = [b.x * 0.12, 0.8, -1.5];
+      cam.fov = 54;
     }
     (app as any).camera?.setPose?.({ position: cam.eye, target: cam.target, fov: cam.fov });
   }
@@ -383,19 +393,28 @@ function boot(): void {
       const now = performance.now() / 1000;
       const frozen = hitStopUntil > now;
 
-      inputFrame.move = [input.axis("moveX"), input.axis("moveZ")];
-      inputFrame.sprint = input.held("sprint");
-      inputFrame.passShort = input.pressed("pass");
-      inputFrame.passDriven = input.pressed("driven");
-      inputFrame.shootHeld = input.held("shoot");
-      inputFrame.shootReleased = input.released("shoot");
-      inputFrame.skillStepover = input.pressed("skillA");
-      inputFrame.skillChop = input.pressed("skillB");
-      inputFrame.switchPlayer = input.pressed("switch");
-      if (appReady && input.pressed("pause")) {
+      const keyMoveX = (heldKeys.has("KeyD") || heldKeys.has("ArrowRight") ? 1 : 0) - (heldKeys.has("KeyA") || heldKeys.has("ArrowLeft") ? 1 : 0);
+      const keyMoveZ = (heldKeys.has("KeyS") || heldKeys.has("ArrowDown") ? 1 : 0) - (heldKeys.has("KeyW") || heldKeys.has("ArrowUp") ? 1 : 0);
+      const axX = input.axis("moveX");
+      const axZ = input.axis("moveZ");
+      inputFrame.move = [
+        Math.abs(keyMoveX) > Math.abs(axX) ? keyMoveX : axX,
+        Math.abs(keyMoveZ) > Math.abs(axZ) ? keyMoveZ : axZ
+      ];
+      inputFrame.sprint = heldKeys.has("ShiftLeft") || heldKeys.has("ShiftRight") || input.held("sprint");
+      inputFrame.passShort = pressedKeys.has("KeyE") || input.pressed("pass");
+      inputFrame.passDriven = pressedKeys.has("KeyR") || input.pressed("driven");
+      inputFrame.shootHeld = heldKeys.has("Space") || input.held("shoot");
+      inputFrame.shootReleased = releasedKeys.has("Space") || input.released("shoot");
+      inputFrame.skillStepover = pressedKeys.has("KeyJ") || input.pressed("skillA");
+      inputFrame.skillChop = pressedKeys.has("KeyK") || input.pressed("skillB");
+      inputFrame.switchPlayer = pressedKeys.has("KeyQ") || input.pressed("switch");
+      if (appReady && (pressedKeys.has("KeyP") || pressedKeys.has("Escape") || input.pressed("pause"))) {
         const paused = sim.togglePause();
         hud.banner(paused ? "PAUSED" : "PLAY ON", 1400);
       }
+      pressedKeys.clear();
+      releasedKeys.clear();
 
       const events = (!appReady || frozen) ? [] : sim.step(dt, inputFrame);
       consumeEvents(events);
@@ -430,12 +449,25 @@ function boot(): void {
         }
       }
 
-      /* ---- ball ---- */
+      /* ---- ball (crisp white sphere + 6 high-contrast black pentagon patches + fcMatchBallMeshy rotating together) ---- */
       const b = s.ball;
-      world.ball?.setPosition(b.x, Math.max(BALL_R * 1.05, b.y), b.z).setRotation(t * 2.4, t * 3.1, 0);
-      world.ballGlow?.setPosition(b.x, Math.max(BALL_R * 1.05, b.y), b.z).setScale([1, 1, 1]);
-      const shScale = clamp(1 - b.y * 0.12, 0.3, 1.05);
-      world.ballShadow?.setPosition(b.x, 0.015, b.z).setScale([shScale, 1, shScale]);
+      const by = Math.max(0.38, b.y);
+      const rx = b.rotX ?? 0;
+      const rz = b.rotZ ?? 0;
+      const cx = Math.cos(rx), sx = Math.sin(rx);
+      const cz = Math.cos(rz), sz = Math.sin(rz);
+      world.ball?.setPosition(b.x, by, b.z).setRotation(rx, 0, rz).setScale([1, 1, 1]).setVisible(true);
+      world.ballMesh?.setPosition(b.x, by, b.z).setRotation(rx, 0, rz).setScale([1, 1, 1]).setVisible(true);
+      for (let i = 0; i < BALL_PATCH_OFFSETS.length; i++) {
+        const [ox, oy, oz] = BALL_PATCH_OFFSETS[i]!;
+        const y1 = oy * cx - oz * sx;
+        const z1 = oy * sx + oz * cx;
+        const x2 = ox * cz - y1 * sz;
+        const y2 = ox * sz + y1 * cz;
+        world.ballPatches[i]?.setPosition(b.x + x2, by + y2, b.z + z1).setScale([1, 1, 1]).setVisible(true);
+      }
+      const shScale = clamp(1 - (by - 0.38) * 0.12, 0.35, 1.08);
+      world.ballShadow?.setPosition(b.x, 0.015, b.z).setScale([shScale, 1, shScale]).setVisible(true);
 
       /* ---- aim ring (shootout) + lab ring (touch lab) ---- */
       if (s.phase === "shootout" && s.shootout && s.shootout.takerTeam === s.userTeam && s.shootout.stage === "aim") {
@@ -476,6 +508,10 @@ function boot(): void {
       });
 
       /* ---- evidence ---- */
+      const athleteClips: Record<string, string> = {};
+      for (const p of s.players as PlayerState[]) {
+        athleteClips[p.id] = rigs.get(p.id)?.activeClip ?? "Idle_Loop";
+      }
       const evidence = {
         route: "showcase-aura-fc-3d",
         engine: "@aura3d/engine",
@@ -488,7 +524,7 @@ function boot(): void {
         clock: Math.round(s.clock * 10) / 10,
         venue: s.venue,
         score: [...s.score],
-        ball: { position: [b.x, b.y, b.z], mode: b.mode, lastShot: b.lastShot, freeT: Math.round(b.freeT * 100) / 100 },
+        ball: { position: [b.x, by, b.z], radius: 0.38, rotX: rx, rotZ: rz, mode: b.mode, lastShot: b.lastShot, freeT: Math.round(b.freeT * 100) / 100 },
         possessionTeam: s.possessionTeam,
         possession: [Math.round(s.possession[0] * 10) / 10, Math.round(s.possession[1] * 10) / 10],
         controlledId: s.controlledId,
@@ -502,8 +538,22 @@ function boot(): void {
         winner: s.winner,
         cameraMode: cam.mode,
         camera: { position: [...cam.eye], target: [...cam.target], fov: cam.fov },
+        goalpostsInView: {
+          leftGoalWorld: [-PITCH_HX, 0, 0],
+          rightGoalWorld: [PITCH_HX, 0, 0]
+        },
         paused: s.paused,
         athleteCount: s.players.length,
+        athleteClips,
+        athletes: s.players.map((p) => ({
+          id: p.id,
+          team: p.team,
+          role: p.role,
+          x: Math.round(p.x * 100) / 100,
+          z: Math.round(p.z * 100) / 100,
+          speed: Math.round(p.speed * 100) / 100,
+          clip: athleteClips[p.id]
+        })),
         juice: (juice as any)?.snapshot?.() ?? null,
         accessibility: a11y ? { reducedMotion: a11y.reducedMotion, reducedFlash: a11y.reducedFlash, highContrast: a11y.highContrast } : null,
         touch: touchControls?.evidence?.() ?? null,

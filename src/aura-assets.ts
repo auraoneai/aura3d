@@ -9967,13 +9967,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/bunkerGuardMeshy.94733051.glb",
-    hash: "sha256-112aa65bd9320754e9268d232c5b1589f45efab57c2f3fac4797dbb9afb6a74a",
-    bounds: [
-      1.017,
-      1.903,
-      0.814
-    ],
-    sizeBytes: 1028316,
+    hash: "sha256-853b41b8a86669c75b4d9f70099abc10b28775c2b2d5840978eb26b4f9caad66",
+    bounds: [1.012, 1.9, 0.813],
+    sizeBytes: 1524104,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -10099,13 +10095,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/bunkerGunnerMeshy.a7ba1919.glb",
-    hash: "sha256-533e5b950e7523685740b851cf71e9f11d361862eadeeb213b8aa84b7024e732",
-    bounds: [
-      1.072,
-      1.901,
-      1.202
-    ],
-    sizeBytes: 1017312,
+    hash: "sha256-523d8102193383d32b574decc0ead9111740a51021cb63b77fd6a85c89ca512e",
+    bounds: [1.07, 1.892, 1.201],
+    sizeBytes: 1497260,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -10231,13 +10223,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/bunkerHoundMeshy.5635dd96.glb",
-    hash: "sha256-92d7da354ea3740208f43ce7ae76d4703143debf719bc226cf51febabd87ac06",
-    bounds: [
-      0.616,
-      1.116,
-      1.904
-    ],
-    sizeBytes: 989428,
+    hash: "sha256-ecd4874870aa5e371d9cda0426eb7d92498a05343a08a68d2e6921121dcc7513",
+    bounds: [0.616, 1.116, 1.903],
+    sizeBytes: 1508208,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -10627,13 +10615,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/bunkerWardenMeshy.e64afa2d.glb",
-    hash: "sha256-abec5130c1b8b2075c28b92e4b26736ffad8e93854e4e996f011a759c972f090",
-    bounds: [
-      1.01,
-      1.903,
-      0.59
-    ],
-    sizeBytes: 1037376,
+    hash: "sha256-91166e4f62623ef6e9910c30f82ff2afa3f94c2b05e0081cebaa84c272612405",
+    bounds: [1.007, 1.902, 0.588],
+    sizeBytes: 1499948,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -144651,13 +144635,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/diamondAthlete.4e29f649.glb",
-    hash: "sha256-8a16aef9b2e4f7c2342afc82074815cc24d6fb755a3caf2bef3ce7dc137a8832",
-    bounds: [
-      1.796,
-      1.903,
-      0.365
-    ],
-    sizeBytes: 1101300,
+    hash: "sha256-47101736778411c780e093e8adb648eb80d7c4db8e2566b57e037778577592aa",
+    bounds: [0.938, 1.903, 0.364],
+    sizeBytes: 1630948,
     metadata: {
       "materials": [
         "material-0"
@@ -149541,13 +149521,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsAthleteBig.a11d61c5.glb",
-    hash: "sha256-380344f87917ff13614e138637d0fffc089a9747f1dce443a1702cad86bcff55",
-    bounds: [
-      1.675,
-      1.903,
-      0.365
-    ],
-    sizeBytes: 968256,
+    hash: "sha256-ba0008e3f395992ff7518ad2a346858640fc03e924e1d257632d16371c576830",
+    bounds: [0.878, 1.903, 0.429],
+    sizeBytes: 1491928,
     metadata: {
       "materials": [
         "material-0"
@@ -149673,13 +149649,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsAthleteGuard.fbef844e.glb",
-    hash: "sha256-b16e464be0ef7ce7a7a65a584f17ffff4ea38dbdbe3c023cafbf6534f0d9b40b",
-    bounds: [
-      1.712,
-      1.903,
-      0.373
-    ],
-    sizeBytes: 971948,
+    hash: "sha256-b1468563ab80b4419d86a38c60c368018793626ae7efd13472dcf02c76aa7926",
+    bounds: [0.905, 1.903, 0.404],
+    sizeBytes: 1494272,
     metadata: {
       "materials": [
         "material-0"
@@ -153927,13 +153899,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/fcSoccerStrikerMeshy.a675e393.glb",
-    hash: "sha256-a675e393d12800bc6f569529e4cd1f3f75aa3730eb1131ca7e9420635cd2b83d",
-    bounds: [
-      0.742,
-      1.891,
-      1.412
-    ],
-    sizeBytes: 1069084,
+    hash: "sha256-8c056f070844d7384ee8ae2675dc8c32458d6d5d5010b21977be9dff096699b0",
+    bounds: [0.742, 1.891, 0.755],
+    sizeBytes: 1639852,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -154055,13 +154023,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/fcGoalkeeperMeshy.156eb05c.glb",
-    hash: "sha256-156eb05c663964bb577fe81743d1b387b6261d2cc4e4ac2c355344edb357ecde",
-    bounds: [
-      0.716,
-      1.899,
-      0.561
-    ],
-    sizeBytes: 1131980,
+    hash: "sha256-5e36f3be8a97ce264b3d572f50cf76f9813fd54c70deebe6657800287755f854",
+    bounds: [0.716, 1.899, 0.561],
+    sizeBytes: 1705960,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -154311,13 +154275,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/rzQuarterbackMeshy.9368c81f.glb",
-    hash: "sha256-9368c81f99e7fb90d1cef924de344c45e8fdc0e90ea538c733f276e84ce04742",
-    bounds: [
-      0.89,
-      1.897,
-      0.505
-    ],
-    sizeBytes: 939320,
+    hash: "sha256-7999d60e829f92473394f12aa013cb52c5cdaa8dbe34f5e9c817be138b483891",
+    bounds: [0.89, 1.897, 0.505],
+    sizeBytes: 1293916,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -154439,13 +154399,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/rzDefenderLinemanMeshy.38e261b9.glb",
-    hash: "sha256-38e261b954a9d93ccf4773ad5aae7397ebcae24950567cde1bd827ed3427288d",
-    bounds: [
-      1.137,
-      1.895,
-      1.677
-    ],
-    sizeBytes: 1008840,
+    hash: "sha256-dc3ffd55e0ae2eb250a7580c437e958987fc466e31c65bcd0c54b208221b440c",
+    bounds: [1.147, 1.896, 1.672],
+    sizeBytes: 1423628,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -154695,13 +154651,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/linksGolferAthleteMeshy.a39990ad.glb",
-    hash: "sha256-a39990ad0701ef4bc73956ab5b04df3e8023e6df0110b89cf8202e8369c580a1",
-    bounds: [
-      0.699,
-      1.897,
-      0.555
-    ],
-    sizeBytes: 778004,
+    hash: "sha256-960fb13c0821f603a9bf647c68ef6aa1a3f097f3b9c6bae137556f5219bc303d",
+    bounds: [0.701, 1.897, 0.555],
+    sizeBytes: 1123524,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -155207,13 +155159,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/gullsiegeHeroGullMeshy.bcd7da13.glb",
-    hash: "sha256-bcd7da13346408b91efc7b01bd54587ba3ebb01d830ede5f80d0b46ada477793",
-    bounds: [
-      1.397,
-      1.898,
-      1.22
-    ],
-    sizeBytes: 962828,
+    hash: "sha256-4793954ad28df5c072b4cfc5602657f653a405c641a55470816f7915a9d53ad3",
+    bounds: [1.396, 1.898, 1.219],
+    sizeBytes: 1391008,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -155335,13 +155283,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/gullsiegeRaiderBossMeshy.f16f17d6.glb",
-    hash: "sha256-f16f17d64a8f3736e3edf15dae19a8f7db14e78a54579d302607b3287f0d8e9a",
-    bounds: [
-      1.08,
-      1.897,
-      1.215
-    ],
-    sizeBytes: 984572,
+    hash: "sha256-98c512e6b3c6d7c4dc8918ab63fffef0bb811daad8ce2f89ff71ab7ff8689a0b",
+    bounds: [1.08, 1.897, 1.215],
+    sizeBytes: 1416400,
     metadata: {
       "materials": [
         "BakedMaterial"

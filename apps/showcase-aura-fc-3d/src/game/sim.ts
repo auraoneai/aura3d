@@ -86,7 +86,7 @@ export function createSim(): Sim {
     mode: "menu", phase: "idle", phaseT: 0,
     half: 1, clock: 0, score: [0, 0], attackSign: [1, -1],
     ball: {
-      x: 0, y: BALL_R, z: 0, vx: 0, vy: 0, vz: 0, spin: 0,
+      x: 0, y: BALL_R, z: 0, vx: 0, vy: 0, vz: 0, rotX: 0, rotZ: 0, spin: 0,
       mode: "dead", ownerId: null, lastTouchTeam: null, intendedTargetId: null,
       shotPower: 0, freeT: 99, controlT: 0, lastShot: "none", trail: [],
       kickerId: null, lastToucherId: null
@@ -103,10 +103,10 @@ export function createSim(): Sim {
   /* ----------------------- roster / kickoff ----------------------- */
 
   const ROSTER: [string, [number, number], import("./types").Role][] = [
-    ["gk", [-23.2, 0], "GK"],
-    ["df0", [-13.5, -7.2], "DF"],
-    ["df1", [-13.5, 7.2], "DF"],
-    ["mf", [-5.5, 0], "MF"],
+    ["gk", [-27.5, 0], "GK"],
+    ["df0", [-14.5, -7.5], "DF"],
+    ["df1", [-14.5, 7.5], "DF"],
+    ["mf", [-6.0, 0], "MF"],
     ["fw", [0.8, 0], "FW"]
   ];
 
@@ -613,6 +613,8 @@ export function createSim(): Sim {
       b.x = lerp(b.x, tx, Math.min(1, dt * 13));
       b.z = lerp(b.z, tz, Math.min(1, dt * 13));
       b.y = BALL_R; b.vx = o.vx; b.vz = o.vz; b.vy = 0; b.spin = 0;
+      b.rotX += (b.vz / BALL_R) * dt;
+      b.rotZ -= (b.vx / BALL_R) * dt;
       state.possessionTeam = o.team;
       return true;
     }
@@ -631,6 +633,8 @@ export function createSim(): Sim {
       b.vz += pz * mag * dt * 60 * 0.016;
     }
     b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
+    b.rotX += (b.vz / BALL_R) * dt;
+    b.rotZ -= (b.vx / BALL_R) * dt;
 
     // ground
     if (b.y <= BALL_R) {
@@ -1045,10 +1049,17 @@ export function createSim(): Sim {
       p.kickT = Math.max(p.kickT, 0.22);
     }
 
-    const mv: [number, number] = Math.hypot(input.move[0], input.move[1]) > 0.05
-      ? input.move
-      : (mine && input.shootHeld ? [state.attackSign[p.team], 0] : [0, 0]);
-    const cmd: PlayerCommand = { move: mv, sprint: input.sprint };
+    const hasDir = Math.hypot(input.move[0], input.move[1]) > 0.05;
+    let mv: [number, number];
+    if (hasDir) {
+      mv = input.move;
+    } else if (mine) {
+      mv = [state.attackSign[p.team], Math.sin(state.clock * 1.6) * 0.32];
+    } else {
+      const dx = b.x - p.x, dz = b.z - p.z, d = Math.hypot(dx, dz) || 1;
+      mv = [dx / d, dz / d];
+    }
+    const cmd: PlayerCommand = { move: mv, sprint: true };
     if (mine) {
       if (input.passShort) cmd.pass = "short";
       else if (input.passDriven) cmd.pass = "driven";
@@ -1066,11 +1077,6 @@ export function createSim(): Sim {
     } else {
       charge = 0; chargeHeld = false;
       if (input.skillChop && defending) cmd.slide = true;
-      if ((input.shootHeld || input.shootReleased) && Math.hypot(cmd.move[0], cmd.move[1]) < 0.05) {
-        const dx = b.x - p.x, dz = b.z - p.z, d = Math.hypot(dx, dz) || 1;
-        cmd.move = [dx / d, dz / d];
-        cmd.sprint = true;
-      }
     }
     return cmd;
   }

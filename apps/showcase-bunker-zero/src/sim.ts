@@ -70,7 +70,17 @@ export interface PushWall {
   progress: number;                 // 0 closed → 2 (cells slid)
   state: "closed" | "sliding" | "open";
 }
-export interface Rocket { x: number; z: number; dx: number; dz: number; t: number; fromEnemy: boolean; }
+export interface Rocket {
+  x: number; y: number; z: number;
+  dx: number; dz: number;
+  vx: number; vz: number;
+  speed: number;
+  dmg: number;
+  splash: number;
+  kind: "bullet" | "mg" | "rocket";
+  t: number;
+  fromEnemy: boolean;
+}
 export interface Prop { cx: number; cz: number; kind: "barrel" | "crate" | "column"; hp: number; alive: boolean; }
 
 export interface PlayerState {
@@ -103,6 +113,7 @@ export interface Sim {
     shake: number;
     bossEnraging: boolean;
     muzzle: number;
+    projectilesSpawned: number;
     explosions: { x: number; z: number; t: number }[];
     shots: { x: number; z: number; t: number }[];
     summons: string[];
@@ -164,7 +175,7 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
       case "D": doors.push({ cx: s.cx, cz: s.cz, open: 0, target: 0 }); break;
       case "P": pushWalls.push({ cx: s.cx, cz: s.cz, dx: 0, dz: 0, progress: 0, state: "closed" }); break;
       case "b": props.push({ cx: s.cx, cz: s.cz, kind: "barrel", hp: 10, alive: true }); break;
-      case "c": props.push({ cx: s.cx, cz: s.cz, kind: "crate", hp: 999, alive: true }); break;
+      case "c": props.push({ cx: s.cx, cz: s.cz, kind: "crate", hp: 35, alive: true }); break;
       case "o": props.push({ cx: s.cx, cz: s.cz, kind: "column", hp: 999, alive: true }); break;
     }
   }
@@ -189,7 +200,7 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
     finished: false, medal: "none",
     killhouseLeft: opts.mode === "killhouse" ? def.par : 0, wave: 1,
     msg: "", msgT: 0, events, rng, shake: 0,
-    bossEnraging: false, muzzle: 0, explosions: [], shots: [], summons: [], dtRemainder: 0
+    bossEnraging: false, muzzle: 0, projectilesSpawned: 0, explosions: [], shots: [], summons: [], dtRemainder: 0
   };
 
   // ---------------------------------------------------------------- grid queries
@@ -197,14 +208,17 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
   const cellSolid = (cx: number, cz: number) => isSolid(gridAt(cx, cz));
   const cellBlocked = (cx: number, cz: number) => {
     const ch = gridAt(cx, cz);
+    if (ch === "b" || ch === "c") {
+      const pr = props.find((pp) => pp.cx === cx && pp.cz === cz);
+      if (!pr || !pr.alive) return false;
+    }
     if (isBlocked(ch)) return true;
     if (ch === "D") {
       const d = doors.find((dd) => dd.cx === cx && dd.cz === cz);
-      if (d && d.open < 0.7) return true;
+      if (d && d.open < 0.45) return true;
     }
     return false;
   };
-  const worldBlocked = (x: number, z: number) => cellBlocked(Math.floor(x / CELL), Math.floor(z / CELL));
 
   function hasLOS(x0: number, z0: number, x1: number, z1: number): boolean {
     const dx = x1 - x0, dz = z1 - z0;
@@ -234,9 +248,6 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
   const emit = (s: string) => ev(s);
   const say = (s: string, t = 2.2) => { state.msg = s; state.msgT = t; };
 
-  function enemiesInCell(cx: number, cz: number) {
-    return enemies.filter((e) => e.state !== "dead" && Math.floor(e.x / CELL) === cx && Math.floor(e.z / CELL) === cz);
-  }
   function moveWithCollision(e: { x: number; z: number }, dx: number, dz: number, r: number) {
     // axis-separated slide against walls + props
     const tryMove = (nx: number, nz: number) => {
@@ -294,7 +305,7 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
       e.state = "pain"; e.painT = ENEMIES[e.kind].pain; e.stateT = 0;
       // knock toward damage dir a touch
       const n = Math.hypot(dx, dz) || 1;
-      moveWithCollision(e, (dx / n) * 0.12, (dz / n) * 0.12, 0.28);
+      moveWithCollision(e, (dx / n) * 0.16, (dz / n) * 0.16, 0.28);
     }
   }
 
@@ -318,51 +329,51 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
   function igniteBarrel(pr: Prop) {
     if (!pr.alive) return;
     pr.alive = false;
+    grid[pr.cz * w + pr.cx] = ".";
     const x = cellCenter(pr.cx), z = cellCenter(pr.cz);
     emit("barrel:explode");
     splashDamage(x, z, 2.6, 90, true);
     state.explosions.push({ x, z, t: 0 });
   }
 
-  function hitscan(dmg: number, spread: number, range: number, meleeArc: boolean) {
-    const yaw = p.yaw + (rng() - 0.5) * 2 * spread;
-    const dx = Math.sin(yaw), dz = -Math.cos(yaw);
-    // find first enemy along ray (cheap: project each enemy onto ray)
-    let bestT = Infinity; let bestE: Enemy | null = null;
-    for (const e of enemies) {
-      if (e.state === "dead") continue;
-      const ex = e.x - p.x, ez = e.z - p.z;
-      const t = ex * dx + ez * dz;
-      if (t < 0.3 || t > range) continue;
-      const perp = Math.abs(ex * dz - ez * dx);
-      const radius = meleeArc ? 0.75 : e.kind === "boss" ? 0.9 : 0.55;
-      if (perp < radius && t < bestT && hasLOS(p.x, p.z, e.x, e.z)) { bestT = t; bestE = e; }
-    }
-    // wall distance caps the shot
-    let wallT = range;
-    for (let d = 0.4; d < range; d += 0.5) {
-      if (cellSolid(Math.floor((p.x + dx * d) / CELL), Math.floor((p.z + dz * d) / CELL))) { wallT = d; break; }
-    }
-    // barrels
-    for (const pr of props) {
-      if (!pr.alive || pr.kind !== "barrel") continue;
-      const bx = cellCenter(pr.cx) - p.x, bz = cellCenter(pr.cz) - p.z;
-      const t = bx * dx + bz * dz;
-      if (t < 0.4 || t > Math.min(range, wallT)) continue;
-      const perp = Math.abs(bx * dz - bz * dx);
-      if (perp < 0.8 && hasLOS(p.x, p.z, cellCenter(pr.cx), cellCenter(pr.cz))) { igniteBarrel(pr); return; }
-    }
-    if (bestE && bestT < wallT) hitEnemy(bestE, dmg, dx, dz);
-    else state.shots.push({ x: p.x + dx * Math.min(wallT, range), z: p.z + dz * Math.min(wallT, range), t: 0 });
+  const MAX_ROCKETS = 18;
+  function spawnProjectile(opts: {
+    x: number; y: number; z: number;
+    dx: number; dz: number;
+    speed: number; dmg: number; splash: number;
+    kind: "bullet" | "mg" | "rocket";
+    fromEnemy: boolean;
+  }) {
+    const n = Math.hypot(opts.dx, opts.dz) || 1;
+    const ndx = opts.dx / n, ndz = opts.dz / n;
+    if (state.rockets.length >= MAX_ROCKETS) state.rockets.shift();
+    state.rockets.push({
+      x: opts.x, y: opts.y, z: opts.z,
+      dx: ndx, dz: ndz,
+      vx: ndx * opts.speed, vz: ndz * opts.speed,
+      speed: opts.speed,
+      dmg: opts.dmg,
+      splash: opts.splash,
+      kind: opts.kind,
+      t: 0,
+      fromEnemy: opts.fromEnemy
+    });
+    if (!opts.fromEnemy) state.projectilesSpawned++;
   }
 
   function fireRocketAt(x: number, z: number, dx: number, dz: number, fromEnemy: boolean) {
-    const n = Math.hypot(dx, dz) || 1;
-    state.rockets.push({ x, z, dx: dx / n, dz: dz / n, t: 0, fromEnemy });
+    spawnProjectile({
+      x, y: 1.18, z, dx, dz,
+      speed: 12,
+      dmg: WEAPONS.rocket.dmg,
+      splash: WEAPONS.rocket.splash,
+      kind: "rocket",
+      fromEnemy
+    });
     emit(fromEnemy ? "boss:rocket" : "player:rocket");
   }
 
-  function dealDamage(toPlayer: boolean, amount: number, srcX = 0, srcZ = 0) {
+  function dealDamage(toPlayer: boolean, amount: number, _srcX = 0, _srcZ = 0) {
     if (!toPlayer || !p.alive) return;
     const absorbed = Math.min(p.armor, amount * 0.6);
     p.armor -= absorbed;
@@ -373,7 +384,7 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
     if (p.hp <= 0) { p.hp = 0; p.alive = false; emit("player:death"); }
   }
 
-  function tryFire(input: SimInput) {
+  function tryFire(_input: SimInput) {
     const wpn = WEAPONS[p.weapon];
     if (p.reloading > 0 || p.fireT > 0 || p.switchT > 0) return;
     if (wpn.ammo !== "none" && p.mag <= 0) {
@@ -382,7 +393,7 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
       return;
     }
     p.fireT = wpn.rate;
-    state.shake = Math.min(1, state.shake + (p.weapon === "rocket" ? 0.5 : p.weapon === "mg" ? 0.08 : 0.18));
+    state.shake = Math.min(1, state.shake + (p.weapon === "rocket" ? 0.5 : p.weapon === "mg" ? 0.1 : 0.2));
     if (wpn.ammo !== "none") p.mag--;
     emit(`fire:${p.weapon}`);
     if (p.weapon === "knife") {
@@ -402,14 +413,31 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
         if (Math.hypot(cellCenter(pr.cx) - p.x, cellCenter(pr.cz) - p.z) < wpn.range + 0.4) igniteBarrel(pr);
       }
       alertEnemies(p.x, p.z, 4);
-    } else if (p.weapon === "rocket") {
-      fireRocketAt(p.x + Math.sin(p.yaw) * 0.6, p.z - Math.cos(p.yaw) * 0.6, Math.sin(p.yaw), -Math.cos(p.yaw), false);
-      alertEnemies(p.x, p.z, NOISE_RANGE);
     } else {
-      hitscan(wpn.dmg, wpn.spread, wpn.range, false);
+      const spreadYaw = p.yaw + (rng() - 0.5) * 2 * wpn.spread;
+      const fx = Math.sin(p.yaw), fz = -Math.cos(p.yaw);
+      const rx = Math.cos(p.yaw), rz = Math.sin(p.yaw);
+      const dirX = Math.sin(spreadYaw), dirZ = -Math.cos(spreadYaw);
+      const spawnX = p.x + fx * 0.55 + rx * 0.14;
+      const spawnY = 1.18 + Math.tan(p.pitch) * 0.3;
+      const spawnZ = p.z + fz * 0.55 + rz * 0.14;
+      const isRocket = p.weapon === "rocket";
+      spawnProjectile({
+        x: spawnX,
+        y: spawnY,
+        z: spawnZ,
+        dx: dirX,
+        dz: dirZ,
+        speed: isRocket ? 12 : 18,
+        dmg: wpn.dmg,
+        splash: isRocket ? wpn.splash : 0,
+        kind: isRocket ? "rocket" : p.weapon === "mg" ? "mg" : "bullet",
+        fromEnemy: false
+      });
+      if (isRocket) emit("player:rocket");
       alertEnemies(p.x, p.z, NOISE_RANGE);
     }
-    state.muzzle = 0.07;
+    state.muzzle = 0.12;
   }
 
   function startReload() {
@@ -448,7 +476,15 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
   function tryUse() {
     const pcx = Math.floor(p.x / CELL), pcz = Math.floor(p.z / CELL);
     const fx = Math.sin(p.yaw), fz = -Math.cos(p.yaw);
-    // push-walls: face the P cell within 1.5 cells
+    // open any nearby door
+    for (const d of doors) {
+      if (Math.hypot(d.cx + 0.5 - p.x / CELL, d.cz + 0.5 - p.z / CELL) < 2.2) {
+        d.target = 1;
+        d.open = Math.max(d.open, 0.75);
+        emit("door:open");
+      }
+    }
+    // push-walls: face the P cell within 1.6 cells
     for (const pw of pushWalls) {
       if (pw.state !== "closed") continue;
       const pcx2 = pw.cx - pcx, pcz2 = pw.cz - pcz;
@@ -539,7 +575,7 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
     }
   }
 
-  function tickBoss(e: Enemy, dt: number, dist: number, sees: boolean) {
+  function tickBoss(e: Enemy, dt: number, _dist: number, _sees: boolean) {
     // Iron Warden: volley of 3 rockets → vent (vulnerable 2.5s) → repeat;
     // summons 2 guards at 66% / 33% hp.
     if (e.vulnerableT > 0) {
@@ -578,28 +614,92 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
     }
   }
 
-  // ---------------------------------------------------------------- rockets
+  // ---------------------------------------------------------------- projectiles & rockets
   function tickRockets(dt: number) {
+    const subSteps = 3;
+    const subDt = dt / subSteps;
     for (const r of state.rockets) {
       r.t += dt;
-      const nx = r.x + r.dx * 11 * dt, nz = r.z + r.dz * 11 * dt;
-      const hitWall = cellSolid(Math.floor(nx / CELL), Math.floor(nz / CELL));
-      let boom = hitWall || r.t > 6;
-      if (!boom && r.fromEnemy) {
-        if (Math.hypot(p.x - nx, p.z - nz) < 0.7 && p.alive) boom = true;
-      } else if (!boom) {
-        for (const e of enemies) {
-          if (e.state === "dead") continue;
-          if (Math.hypot(e.x - nx, e.z - nz) < 0.7) { boom = true; break; }
+      let impacted = false;
+      let hitEnemyTarget: Enemy | null = null;
+      let hitPropTarget: Prop | null = null;
+      let hitPlayerTarget = false;
+
+      for (let s = 0; s < subSteps; s++) {
+        const nx = r.x + r.vx * subDt;
+        const nz = r.z + r.vz * subDt;
+        const cx = Math.floor(nx / CELL), cz = Math.floor(nz / CELL);
+        const doorInCell = doors.find((dd) => dd.cx === cx && dd.cz === cz);
+        const hitDoor = doorInCell ? doorInCell.open < 0.45 : false;
+        const hitWall = cellSolid(cx, cz) || hitDoor;
+
+        if (hitWall) {
+          r.x = nx; r.z = nz;
+          impacted = true;
+          break;
         }
+        if (r.fromEnemy) {
+          if (Math.hypot(p.x - nx, p.z - nz) < 0.7 && p.alive) {
+            r.x = nx; r.z = nz;
+            hitPlayerTarget = true;
+            impacted = true;
+            break;
+          }
+        } else {
+          for (const e of enemies) {
+            if (e.state === "dead") continue;
+            const hitR = e.kind === "boss" ? 0.95 : 0.72;
+            if (Math.hypot(e.x - nx, e.z - nz) < hitR) {
+              hitEnemyTarget = e;
+              break;
+            }
+          }
+          if (hitEnemyTarget) {
+            r.x = nx; r.z = nz;
+            impacted = true;
+            break;
+          }
+          for (const pr of props) {
+            if (!pr.alive || (pr.kind !== "barrel" && pr.kind !== "crate")) continue;
+            if (Math.hypot(cellCenter(pr.cx) - nx, cellCenter(pr.cz) - nz) < 0.75) {
+              hitPropTarget = pr;
+              break;
+            }
+          }
+          if (hitPropTarget) {
+            r.x = nx; r.z = nz;
+            impacted = true;
+            break;
+          }
+        }
+        r.x = nx; r.z = nz;
       }
-      r.x = nx; r.z = nz;
-      if (boom) {
+
+      if (impacted || r.t > 4.5) {
         r.t = -1;
-        state.explosions.push({ x: r.x, z: r.z, t: 0 });
-        splashDamage(r.x, r.z, WEAPONS.rocket.splash, WEAPONS.rocket.dmg, !r.fromEnemy);
-        if (r.fromEnemy) dealDamage(true, 20 + rng() * 15);
-        emit("rocket:boom");
+        if (r.kind === "rocket" || r.fromEnemy) {
+          state.explosions.push({ x: r.x, z: r.z, t: 0 });
+          splashDamage(r.x, r.z, r.splash || WEAPONS.rocket.splash, r.dmg || WEAPONS.rocket.dmg, !r.fromEnemy);
+          if (r.fromEnemy || hitPlayerTarget) dealDamage(true, 20 + rng() * 15);
+          emit("rocket:boom");
+        } else {
+          state.shots.push({ x: r.x, z: r.z, t: 0 });
+          if (hitPropTarget) {
+            if (hitPropTarget.kind === "barrel") {
+              igniteBarrel(hitPropTarget);
+            } else {
+              hitPropTarget.hp -= r.dmg;
+              if (hitPropTarget.hp <= 0) {
+                hitPropTarget.alive = false;
+                grid[hitPropTarget.cz * w + hitPropTarget.cx] = ".";
+                state.explosions.push({ x: r.x, z: r.z, t: 0.25 });
+              }
+            }
+          } else if (hitEnemyTarget) {
+            hitEnemy(hitEnemyTarget, r.dmg, r.dx, r.dz);
+            state.explosions.push({ x: r.x, z: r.z, t: 0.28 });
+          }
+        }
       }
     }
     state.rockets = state.rockets.filter((r) => r.t >= 0);
@@ -627,13 +727,15 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
   }
 
   // ---------------------------------------------------------------- doors
-  function tickDoors(dt: number) {
+  function tickDoors(dt: number, wantsOpen = false) {
     for (const d of doors) {
-      const near = Math.abs(d.cx + 0.5 - p.x / CELL) < 1.4 && Math.abs(d.cz + 0.5 - p.z / CELL) < 1.4;
-      const enemyNear = enemies.some((e) => e.state !== "dead" && Math.abs(e.x / CELL - d.cx - 0.5) < 1.2 && Math.abs(e.z / CELL - d.cz - 0.5) < 1.2);
+      const dist = Math.hypot(d.cx + 0.5 - p.x / CELL, d.cz + 0.5 - p.z / CELL);
+      const near = dist < 1.85;
+      const enemyNear = enemies.some((e) => e.state !== "dead" && Math.hypot(e.x / CELL - d.cx - 0.5, e.z / CELL - d.cz - 0.5) < 1.4);
       d.target = near || enemyNear ? 1 : 0;
+      if (near && wantsOpen) d.open = Math.max(d.open, 0.75);
       const prev = d.open;
-      d.open += (d.target - d.open) * Math.min(1, dt * 5);
+      d.open += (d.target - d.open) * Math.min(1, dt * 8);
       if (d.open > 0.98) d.open = 1;
       if (prev < 0.05 && d.open >= 0.05) emit("door:open");
     }
@@ -687,6 +789,10 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
 
     if (p.reloading > 0) { p.reloading -= dt; if (p.reloading <= 0) finishReload(); }
 
+    const wantsOpenDoor = input.moveZ > 0 || input.fire || input.firePressed || input.use;
+    tickDoors(dt, wantsOpenDoor);
+    tickPushWalls(dt);
+
     if (p.alive && !state.finished) {
       // ---- look
       p.yaw += input.turn;
@@ -700,14 +806,15 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
       }
       if (input.reload) startReload();
       // ---- fire
-      const wantsFire = WEAPONS[p.weapon].auto ? input.fire : input.firePressed;
+      const wantsFire = input.fire || input.firePressed;
       if (wantsFire) tryFire(input);
       if (input.use) tryUse();
-      // ---- move
-      const speed = 4.6;
-      const sin = Math.sin(p.yaw), cos = Math.cos(p.yaw);
-      const mx = (input.moveX * cos + input.moveZ * sin) * speed * dt;
-      const mz = (-input.moveX * sin + input.moveZ * cos) * speed * dt;
+      // ---- move (forward = (sin(yaw), -cos(yaw)), right = (cos(yaw), sin(yaw)))
+      const speed = 5.2;
+      const fx = Math.sin(p.yaw), fz = -Math.cos(p.yaw);
+      const rx = Math.cos(p.yaw), rz = Math.sin(p.yaw);
+      const mx = (input.moveX * rx + input.moveZ * fx) * speed * dt;
+      const mz = (input.moveX * rz + input.moveZ * fz) * speed * dt;
       const px = p.x, pz = p.z;
       moveWithCollision(p, mx, mz, PLAYER_R);
       if (Math.hypot(p.x - px, p.z - pz) > 0.01) {
@@ -716,8 +823,6 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
       }
     }
 
-    tickDoors(dt);
-    tickPushWalls(dt);
     tickRockets(dt);
     for (const e of enemies) tickEnemy(e, dt);
     tickPickups();
@@ -725,6 +830,8 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
     tickKillhouse();
     for (const ex of state.explosions) ex.t += dt;
     for (const s of state.shots) s.t += dt;
+    state.explosions = state.explosions.filter((ex) => ex.t < 0.65);
+    state.shots = state.shots.filter((s) => s.t < 0.35);
   }
 
   return { state, tick, cellBlocked, cellSolid, hasLOS, dealDamage, fireRocket: fireRocketAt };

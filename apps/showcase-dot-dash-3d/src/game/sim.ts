@@ -26,7 +26,7 @@ export const DEATH_TIME = 1.6;
 export const CLEAR_TIME = 2.4;
 export const FRUIT_LIFE = 14.0;
 export const FRUIT_TRIGGERS = [12, 65, 130];
-export const EAT_RADIUS = 0.46;
+export const EAT_RADIUS = 0.58;
 export const TOUCH_RADIUS = 0.56;
 export const FRIGHT_BASE = 6.0;
 export const WAVE_SCHEDULE = [6, 18, 6, 18, 5, 18, 5, Infinity]; // scatter/chase alternating
@@ -330,24 +330,49 @@ interface Mover { px: number; py: number; dir: Dir }
  * mover.dir (return the dir to continue in). Returns true if still moving.
  */
 function advance(m: ParsedMaze, mv: Mover, dist: number, ghost: boolean, decide: (tile: Tile) => Dir): void {
-  let guard = 8;
+  let guard = 12;
   while (dist > 1e-6 && guard-- > 0) {
+    if (!isZero(mv.dir)) {
+      if (mv.dir.x !== 0) mv.py = Math.round(mv.py);
+      if (mv.dir.z !== 0) mv.px = Math.round(mv.px);
+    }
     const cx = Math.round(mv.px), cy = Math.round(mv.py);
     const onCenter = Math.abs(mv.px - cx) < 1e-3 && Math.abs(mv.py - cy) < 1e-3;
     if (onCenter) {
-      mv.px = cx; mv.py = cy;
-      const d = decide({ x: cx, y: cy });
+      mv.px = normX(m, cx);
+      mv.py = normY(m, cy);
+      const ncx = Math.round(mv.px), ncy = Math.round(mv.py);
+      mv.px = ncx;
+      mv.py = ncy;
+      if (!ghost) eatThings();
+      const d = decide({ x: ncx, y: ncy });
       mv.dir = d;
       if (isZero(d)) return;
     }
-    // raw target center along current dir (unnormalized)
-    const tx = cx + mv.dir.x, ty = cy + mv.dir.z;
-    // legality: the cell we're moving into must be traversable
-    const legality = stepTile(m, { x: cx, y: cy }, mv.dir, ghost);
-    if (!legality) { mv.dir = DIR_NONE; return; }
+    // Compute the exact next tile center along mv.dir from the current continuous position
+    let tx: number, ty: number;
+    if (onCenter) {
+      tx = Math.round(mv.px) + mv.dir.x;
+      ty = Math.round(mv.py) + mv.dir.z;
+    } else {
+      tx = mv.dir.x > 0 ? Math.ceil(mv.px - 1e-6) : mv.dir.x < 0 ? Math.floor(mv.px + 1e-6) : Math.round(mv.px);
+      ty = mv.dir.z > 0 ? Math.ceil(mv.py - 1e-6) : mv.dir.z < 0 ? Math.floor(mv.py + 1e-6) : Math.round(mv.py);
+    }
+    const fromX = Math.round(normX(m, tx - mv.dir.x));
+    const fromY = Math.round(normY(m, ty - mv.dir.z));
+    const legality = stepTile(m, { x: fromX, y: fromY }, mv.dir, ghost);
+    if (!legality) {
+      mv.px = fromX;
+      mv.py = fromY;
+      mv.dir = DIR_NONE;
+      if (!ghost) eatThings();
+      return;
+    }
     const remain = Math.hypot(tx - mv.px, ty - mv.py);
-    if (remain < 1e-6) { // exactly at next center already (post-wrap), iterate
-      mv.px = normX(m, mv.px); mv.py = normY(m, mv.py);
+    if (remain < 1e-6) {
+      mv.px = normX(m, tx);
+      mv.py = normY(m, ty);
+      if (!ghost) eatThings();
       continue;
     }
     const step = Math.min(remain, dist);
@@ -355,10 +380,10 @@ function advance(m: ParsedMaze, mv: Mover, dist: number, ghost: boolean, decide:
     mv.py += mv.dir.z * step;
     dist -= step;
     if (step >= remain - 1e-9) {
-      // landed on a tile center — normalize wrap, loop decides
-      mv.px = normX(m, mv.px);
-      mv.py = normY(m, mv.py);
+      mv.px = normX(m, tx);
+      mv.py = normY(m, ty);
     }
+    if (!ghost) eatThings();
   }
 }
 
@@ -452,20 +477,55 @@ function movePlayer(m: ParsedMaze, dt: number): void {
     st.events.dash = true;
   }
   p.dashQueued = false;
+
+  if (!st.autopilot && !isZero(p.want)) {
+    const rawCx = Math.round(p.px), rawCy = Math.round(p.py);
+    const cx = Math.round(normX(m, rawCx)), cy = Math.round(normY(m, rawCy));
+    // 1. Instant mid-corridor reversal
+    if (!isZero(p.dir) && sameDir(p.want, reverseDir(p.dir))) {
+      const onCenter = Math.abs(p.px - rawCx) < 1e-3 && Math.abs(p.py - rawCy) < 1e-3;
+      if (!onCenter || stepTile(m, { x: cx, y: cy }, p.want, false)) {
+        p.dir = p.want;
+      }
+    } else if (!sameDir(p.want, p.dir)) {
+      // 2. Corner-snap / pre-turn assist within 0.32 tiles of a junction center
+      const distToCenter = Math.hypot(p.px - rawCx, p.py - rawCy);
+      if (distToCenter < 0.32 && stepTile(m, { x: cx, y: cy }, p.want, false)) {
+        p.px = cx;
+        p.py = cy;
+        eatThings();
+        p.dir = p.want;
+      }
+    }
+  }
+
   advance(m, p, speed * dt, false, (tile) => {
     if (st.autopilot) {
       const aiDir = autopilotDecide(m, tile);
       p.want = aiDir;
       return aiDir;
     }
-    // buffered turn: adopt want if legal, else continue
+    // buffered turn: adopt want if legal
     if (!isZero(p.want) && !sameDir(p.want, p.dir)) {
       const n = stepTile(m, tile, p.want, false);
       if (n) return p.want;
     }
     const fwd = stepTile(m, tile, p.dir, false);
-    return fwd ? p.dir : DIR_NONE;
+    if (fwd) return p.dir;
+    // 3. Auto-guide around 1-way corners when blocked along p.dir while input is active
+    if (p.wantT > 0) {
+      const open = exits(m, tile, p.dir, false, false);
+      if (open.length === 1) {
+        const cornerDir = dirToward(tile, open[0]!);
+        if (cornerDir) {
+          p.want = cornerDir;
+          return cornerDir;
+        }
+      }
+    }
+    return DIR_NONE;
   });
+  eatThings();
 }
 
 // ------------------------------------------------------------- ghost step ---
@@ -649,17 +709,24 @@ export function input(dt: number, ctl: { held(a: string): boolean; consume(a: st
   else if (ctl.pressed("up") || ctl.held("up")) { p.want = DIR_UP; p.wantT = WANT_LIFE; }
   else if (ctl.pressed("down") || ctl.held("down")) { p.want = DIR_DOWN; p.wantT = WANT_LIFE; }
 
-  // If Chomp is stopped against a wall (or starting from spawn) when the user presses a key,
-  // ensure p.dir is set to a walkable corridor direction so Chomp moves immediately.
+  // If Byte is stopped against a wall (or starting from spawn) when the user presses a key,
+  // snap to the tile center and set p.dir to a walkable corridor direction without drifting off-center.
   if (userPressed && !isZero(p.want)) {
-    const curTile = { x: Math.round(p.px), y: Math.round(p.py) };
-    if (stepTile(st.maze, curTile, p.want, false)) {
+    const rawCx = Math.round(p.px), rawCy = Math.round(p.py);
+    const curTile = { x: Math.round(normX(st.maze, rawCx)), y: Math.round(normY(st.maze, rawCy)) };
+    if (!isZero(p.dir) && sameDir(p.want, reverseDir(p.dir))) {
       p.dir = p.want;
-    } else if (!stepTile(st.maze, curTile, p.dir, false)) {
-      if (stepTile(st.maze, curTile, DIR_LEFT, false)) p.dir = DIR_LEFT;
-      else if (stepTile(st.maze, curTile, DIR_RIGHT, false)) p.dir = DIR_RIGHT;
-      else if (stepTile(st.maze, curTile, DIR_UP, false)) p.dir = DIR_UP;
-      else if (stepTile(st.maze, curTile, DIR_DOWN, false)) p.dir = DIR_DOWN;
+    } else if (isZero(p.dir)) {
+      p.px = curTile.x;
+      p.py = curTile.y;
+      if (stepTile(st.maze, curTile, p.want, false)) {
+        p.dir = p.want;
+      } else {
+        if (stepTile(st.maze, curTile, DIR_LEFT, false)) p.dir = DIR_LEFT;
+        else if (stepTile(st.maze, curTile, DIR_RIGHT, false)) p.dir = DIR_RIGHT;
+        else if (stepTile(st.maze, curTile, DIR_UP, false)) p.dir = DIR_UP;
+        else if (stepTile(st.maze, curTile, DIR_DOWN, false)) p.dir = DIR_DOWN;
+      }
     }
   }
 
@@ -892,6 +959,9 @@ function advanceMaze(): void {
 
 // -------------------------------------------------------------- evidence ---
 export function evidenceExtra(): Record<string, unknown> {
+  const px = +normX(st.maze, st.player.px).toFixed(2);
+  const pz = +normY(st.maze, st.player.py).toFixed(2);
+  const totalDots = st.maze.dots.length;
   return {
     mode: st.mode,
     runKind: st.runKind,
@@ -901,8 +971,10 @@ export function evidenceExtra(): Record<string, unknown> {
     score: st.score,
     lives: st.lives,
     best: st.profile.best,
+    totalDots,
     dotsLeft: st.dotsLeft,
-    dotsEaten: st.dotsEaten,
+    dotsEaten: totalDots - st.dotsLeft,
+    playerTile: [px, pz],
     fright: +st.fright.toFixed(2),
     wave: st.wave,
     wavePhase: st.wave % 2 === 0 ? "scatter" : "chase",
@@ -910,7 +982,7 @@ export function evidenceExtra(): Record<string, unknown> {
     camera: st.camera,
     school: st.school,
     fruitActive: st.fruitActive,
-    player: { x: +normX(st.maze, st.player.px).toFixed(2), y: +normY(st.maze, st.player.py).toFixed(2), dir: st.player.dir },
+    player: { x: px, y: pz, dir: st.player.dir },
     dash: { active: st.player.dashT > 0, cooldown: +st.player.dashCd.toFixed(2), enabled: st.profile.dashEnabled },
     ghosts: st.ghosts.map((g) => ({
       id: g.id,

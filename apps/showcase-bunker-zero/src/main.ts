@@ -19,7 +19,11 @@ import {
 } from "./sim";
 
 declare global {
-  interface Window { __gameEvidence?: unknown; __AURA3D_ROUTE_READY__?: unknown }
+  interface Window {
+    __gameEvidence?: unknown;
+    __AURA3D_GAME_EVIDENCE__?: unknown;
+    __AURA3D_ROUTE_READY__?: unknown;
+  }
 }
 
 // Ensure A3D_QR_COMPILER is disabled by default so environment lighting is preserved
@@ -40,6 +44,7 @@ let appReady = false;
 const LOOK_ID = "night-city" as const;
 const EYE = 1.55;
 const FLOOR_SPAN = 300;
+const MAX_ROCKETS = 18;
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
   { def: KILL_HOUSE, slot: 6 }
@@ -300,10 +305,19 @@ function buildScene() {
     nodes.push(
       model(assets.corridorMuzzleFlameBurstMeshy, { name: `boom ${i}`, material: material.emissive({ color: "#ff7a2a", emissive: "#ff5a1a", emissiveIntensity: 4 }) })
         .position(0, -50, 0).scale(0.6)
-        .runtime(game.runtimeNode(`boom-${i}`, { tags: ["vfx"] })),
-      model(assets.corridorFireAmmoBoltMeshy, { name: `rocket ${i}`, material: material.emissive({ color: "#ffd27a", emissive: "#ff7a1a", emissiveIntensity: 7 }) })
+        .runtime(game.runtimeNode(`boom-${i}`, { tags: ["vfx"] }))
+    );
+  for (let i = 0; i < MAX_ROCKETS; i++)
+    nodes.push(
+      model(assets.corridorFireAmmoBoltMeshy, { name: `rocket ${i}`, material: material.emissive({ color: "#ffd27a", emissive: "#ff7a1a", emissiveIntensity: 8.5 }) })
         .position(0, -50, 0).scale(0.28)
-        .runtime(game.runtimeNode(`rocket-${i}`, { tags: ["vfx"] }))
+        .runtime(game.runtimeNode(`rocket-${i}`, { tags: ["vfx"] })),
+      primitives.sphere({
+        name: `tracer ${i}`,
+        size: [0.14, 0.14, 0.46],
+        position: [0, -50, 0],
+        material: material.emissive({ color: "#fff4b8", emissive: "#ffaa2a", emissiveIntensity: 9.0, roughness: 0.2 })
+      }).runtime(game.runtimeNode(`tracer-${i}`, { tags: ["vfx"] }))
     );
 
   return b
@@ -437,7 +451,8 @@ const playerLight = req("player-light");
 const playerAheadLight = req("player-ahead-light");
 const sparkNodes = Array.from({ length: 8 }, (_, i) => req(`spark-${i}`));
 const boomNodes = Array.from({ length: 6 }, (_, i) => req(`boom-${i}`));
-const rocketNodes = Array.from({ length: 6 }, (_, i) => req(`rocket-${i}`));
+const rocketNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`rocket-${i}`));
+const tracerNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`tracer-${i}`));
 
 function startFloor(idx: number, m: "descent" | "killhouse") {
   mode = m;
@@ -500,15 +515,21 @@ function feed(s: string, warn = false) {
 }
 
 // ---------------------------------------------------------------------------
-// pointer lock + mouse
+// pointer lock + mouse + capture-phase keyboard tracking
 const canvas = document.querySelector<HTMLCanvasElement>("#app canvas")!;
 let pointerLocked = false;
-let mouseFire = false;
+let pointerFireHeld = false;
+let pointerFirePressed = false;
 let pendingWheel = 0;
+const keysHeld = new Set<string>();
+const keysPressed = new Set<string>();
+
 canvas.addEventListener("click", () => {
   if (!DEMO) {
     autoPilot = false;
-    if (!pointerLocked) canvas.requestPointerLock();
+    if (!pointerLocked) {
+      try { canvas.requestPointerLock(); } catch { /* ignore */ }
+    }
   }
   void mg.sound?.unlock();
   void mg.sound?.cue("ambience");
@@ -517,17 +538,47 @@ document.addEventListener("pointerlockchange", () => { pointerLocked = document.
 document.addEventListener("mousemove", (e) => {
   if (!pointerLocked || DEMO) return;
   autoPilot = false;
-  yawDelta -= e.movementX * 0.0024;
+  yawDelta += e.movementX * 0.0024;
   pitchDelta -= e.movementY * 0.002;
 });
-document.addEventListener("mousedown", (e) => { if (pointerLocked && e.button === 0) { autoPilot = false; mouseFire = true; } });
-document.addEventListener("mouseup", (e) => { if (e.button === 0) mouseFire = false; });
-document.addEventListener("wheel", (e) => { if (pointerLocked) { autoPilot = false; pendingWheel += Math.sign(e.deltaY); } });
-document.addEventListener("keydown", (e) => {
+window.addEventListener("mousedown", (e) => {
+  if (e.button !== 0) return;
+  const target = e.target as HTMLElement | null;
+  if (target && (target.closest(".aura3d-top-bar") || target.closest("#bz-menu"))) return;
+  if (!DEMO) autoPilot = false;
+  pointerFireHeld = true;
+  pointerFirePressed = true;
+}, { capture: true });
+window.addEventListener("mouseup", (e) => {
+  if (e.button === 0) pointerFireHeld = false;
+}, { capture: true });
+document.addEventListener("wheel", (e) => {
+  if (!DEMO) autoPilot = false;
+  pendingWheel += Math.sign(e.deltaY);
+});
+
+const onKeyDown = (e: KeyboardEvent) => {
+  if ((document.activeElement as HTMLElement | null)?.tagName === "INPUT") return;
   if (e.code === "Escape" && pointerLocked) document.exitPointerLock();
-  if (!DEMO && /^(Key[WASDERF]|Arrow|Space|Enter|Digit[1234])/.test(e.code)) {
-    autoPilot = false;
+  if (/^(Key[WASDQERFJ]|Arrow(Up|Down|Left|Right)|Space|Enter|Digit[1234]|Shift(Left|Right))$/.test(e.code)) {
+    if (!DEMO) autoPilot = false;
+    if (!keysHeld.has(e.code)) keysPressed.add(e.code);
+    keysHeld.add(e.code);
+    if (e.code === "Space" || e.code.startsWith("Arrow")) e.preventDefault();
   }
+};
+const onKeyUp = (e: KeyboardEvent) => {
+  keysHeld.delete(e.code);
+};
+window.addEventListener("keydown", onKeyDown, { capture: true });
+document.addEventListener("keydown", onKeyDown, { capture: true });
+window.addEventListener("keyup", onKeyUp, { capture: true });
+document.addEventListener("keyup", onKeyUp, { capture: true });
+window.addEventListener("blur", () => {
+  keysHeld.clear();
+  keysPressed.clear();
+  pointerFireHeld = false;
+  pointerFirePressed = false;
 });
 
 let yawDelta = 0, pitchDelta = 0;
@@ -595,29 +646,35 @@ function syncScenePose(inp: SimInput) {
   playerLight.setPosition(p.x + ox, eyeY + 0.4, p.z);
   playerAheadLight.setPosition(p.x + ox + fx * 6.5, eyeY + 0.6, p.z + fz * 6.5);
 
-  // ---- viewmodel (with recoil kick on fire)
+  // ---- viewmodel (with crisp recoil kickback on fire)
   const bob = Math.sin(sim.state.time * 9) * 0.018 * moveMag;
-  const recoil = sim.state.muzzle > 0 ? 0.08 : 0;
+  const muzzleFrac = Math.min(1, (sim.state.muzzle ?? 0) / 0.12);
+  const recoil = muzzleFrac * 0.12;
   const rx = Math.cos(p.yaw), rz = Math.sin(p.yaw);
   const vmx = p.x + ox + fx * (0.62 - recoil) + rx * 0.26;
-  const vmy = EYE - 0.34 + bob - p.pitch * 0.12 + recoil * 0.35;
+  const vmy = EYE - 0.34 + bob - p.pitch * 0.12 + recoil * 0.38;
   const vmz = p.z + fz * (0.62 - recoil) + rz * 0.26;
   for (const [id, node] of Object.entries(vmNodes) as [WeaponId, typeof vmNodes.knife][]) {
     if (id === p.weapon && p.alive) {
       node.setPosition(vmx, vmy, vmz);
-      node.setRotation((id === "knife" ? -0.6 : 0) - recoil * 1.4, -p.yaw + Math.PI / 2, id === "knife" ? 0.5 : 0);
+      node.setRotation((id === "knife" ? -0.6 : 0) - recoil * 1.5, -p.yaw + Math.PI / 2, id === "knife" ? 0.5 : 0);
       node.setVisible(true);
     } else node.setVisible(false);
   }
 
   // ---- muzzle flash + light
   if (sim.state.muzzle > 0) {
-    const mx = p.x + ox + fx * 1.0 + rx * 0.26, my = EYE - 0.22, mz = p.z + fz * 1.0 + rz * 0.26;
+    const mx = p.x + ox + fx * 0.95 + rx * 0.22, my = EYE - 0.22, mz = p.z + fz * 0.95 + rz * 0.22;
     muzzleFlash.setPosition(mx, my, mz);
-    muzzleFlash.setRotation(0, -p.yaw + Math.PI / 2, 0);
-    muzzleFlash.setScale(0.24 + sim.state.rng() * 0.12);
+    muzzleFlash.setRotation(0, -p.yaw + Math.PI / 2, sim.state.time * 25);
+    muzzleFlash.setScale(0.28 + sim.state.rng() * 0.14);
     muzzleFlash.setVisible(true);
     muzzleLight.setPosition(mx, my, mz);
+  } else if (sim.state.rockets.length > 0) {
+    const lead = sim.state.rockets[sim.state.rockets.length - 1];
+    muzzleFlash.setVisible(false);
+    muzzleFlash.setPosition(0, -50, 0);
+    muzzleLight.setPosition(lead.x + ox, lead.y ?? 1.18, lead.z);
   } else {
     muzzleFlash.setVisible(false);
     muzzleFlash.setPosition(0, -50, 0);
@@ -702,11 +759,30 @@ function syncScenePose(inp: SimInput) {
     node.setVisible(pr.alive);
   }
 
-  // ---- rockets + explosions + sparks
+  // ---- 3D ammo projectiles (rockets + plasma/bullet bolts + glowing tracer cores)
   const rockets = sim.state.rockets;
   for (let i = 0; i < rocketNodes.length; i++) {
-    if (i < rockets.length) rocketNodes[i].setPosition(rockets[i].x + ox, 1.3, rockets[i].z), rocketNodes[i].setVisible(true);
-    else rocketNodes[i].setPosition(0, -50, 0);
+    if (i < rockets.length) {
+      const r = rockets[i];
+      const ry = r.y ?? 1.18;
+      const vx = r.vx ?? r.dx * 18;
+      const vz = r.vz ?? r.dz * 18;
+      const projYaw = Math.atan2(vx, vz);
+      const isRocket = r.kind === "rocket" || r.fromEnemy;
+      rocketNodes[i].setPosition(r.x + ox, ry, r.z);
+      rocketNodes[i].setRotation(0, projYaw, r.t * 16);
+      rocketNodes[i].setScale(isRocket ? 0.36 : 0.28);
+      rocketNodes[i].setVisible(true);
+      tracerNodes[i].setPosition(r.x + ox - r.dx * 0.16, ry, r.z - r.dz * 0.16);
+      tracerNodes[i].setRotation(0, projYaw, 0);
+      tracerNodes[i].setScale(isRocket ? [1.25, 1.25, 1.4] : [0.95, 0.95, 1.15]);
+      tracerNodes[i].setVisible(true);
+    } else {
+      rocketNodes[i].setVisible(false);
+      rocketNodes[i].setPosition(0, -50, 0);
+      tracerNodes[i].setVisible(false);
+      tracerNodes[i].setPosition(0, -50, 0);
+    }
   }
   const exps = sim.state.explosions;
   for (let i = 0; i < boomNodes.length; i++) {
@@ -721,9 +797,9 @@ function syncScenePose(inp: SimInput) {
   if (exps.every((e) => e.t > 0.55)) boomLight.setPosition(0, -50, 0);
   const shots = sim.state.shots;
   for (let i = 0; i < sparkNodes.length; i++) {
-    if (i < shots.length && shots[i].t < 0.2) {
-      sparkNodes[i].setPosition(shots[i].x + ox, 1.2, shots[i].z);
-      sparkNodes[i].setScale(Math.max(0.15, 0.5 - shots[i].t * 2));
+    if (i < shots.length && shots[i].t < 0.25) {
+      sparkNodes[i].setPosition(shots[i].x + ox, 1.18, shots[i].z);
+      sparkNodes[i].setScale(Math.max(0.18, 0.55 - shots[i].t * 2));
       sparkNodes[i].setVisible(true);
     } else sparkNodes[i].setVisible(false), sparkNodes[i].setPosition(0, -50, 0);
   }
@@ -737,41 +813,86 @@ app.onFrame(({ dt }) => {
   if (!appReady || !sim) return;
   const p = sim.state.player;
 
+  const forwardHeld = input.held("forward") || keysHeld.has("KeyW") || keysHeld.has("ArrowUp");
+  const backHeld = input.held("back") || keysHeld.has("KeyS") || keysHeld.has("ArrowDown");
+  const leftHeld = input.held("strafeLeft") || keysHeld.has("KeyA");
+  const rightHeld = input.held("strafeRight") || keysHeld.has("KeyD");
+  const turnLeftHeld = input.held("turnLeft") || keysHeld.has("ArrowLeft") || keysHeld.has("KeyQ");
+  const turnRightHeld = input.held("turnRight") || keysHeld.has("ArrowRight") || keysHeld.has("KeyE");
+  const fireHeld = input.held("fire") || keysHeld.has("Space") || keysHeld.has("Enter") || keysHeld.has("KeyJ") || keysHeld.has("KeyF") || pointerFireHeld;
+  const fireJustPressed = input.pressed("fire") || keysPressed.has("Space") || keysPressed.has("Enter") || keysPressed.has("KeyJ") || keysPressed.has("KeyF") || pointerFirePressed;
+  const reloadPressed = input.pressed("reload") || keysPressed.has("KeyR");
+  const usePressed = input.pressed("use") || keysPressed.has("KeyE") || keysPressed.has("KeyF");
+  const wpnPick: WeaponId | undefined =
+    (input.pressed("weapon1") || keysPressed.has("Digit1")) ? "knife" :
+    (input.pressed("weapon2") || keysPressed.has("Digit2")) ? "pistol" :
+    (input.pressed("weapon3") || keysPressed.has("Digit3")) ? "mg" :
+    (input.pressed("weapon4") || keysPressed.has("Digit4")) ? "rocket" : undefined;
+
+  const moveZ = ((forwardHeld ? 1 : 0) - (backHeld ? 1 : 0)) || input.axis("moveZ");
+  const moveX = ((rightHeld ? 1 : 0) - (leftHeld ? 1 : 0)) || input.axis("moveX");
+  const turnDir = ((turnRightHeld ? 1 : 0) - (turnLeftHeld ? 1 : 0)) || input.axis("turn");
+
   const userActive =
-    Math.abs(input.axis("moveX")) > 0.01 ||
-    Math.abs(input.axis("moveZ")) > 0.01 ||
-    Math.abs(input.axis("turn")) > 0.01 ||
-    input.held("fire") || mouseFire ||
-    input.pressed("reload") || input.pressed("use");
+    Math.abs(moveX) > 0.01 ||
+    Math.abs(moveZ) > 0.01 ||
+    Math.abs(turnDir) > 0.01 ||
+    fireHeld || fireJustPressed ||
+    reloadPressed || usePressed || wpnPick !== undefined;
   if (userActive && !DEMO) {
     autoPilot = false;
   }
 
   // ---- input → SimInput
   const useAuto = DEMO || autoPilot;
+  const totalTurn = yawDelta + turnDir * 2.4 * dt;
+  const totalPitch = pitchDelta;
   const inp: SimInput = useAuto
     ? demoInput(dt)
     : {
-        moveX: input.axis("moveX"),
-        moveZ: input.axis("moveZ"),
-        turn: yawDelta - input.axis("turn") * 2.4 * dt,
-        pitchDelta,
-        fire: input.held("fire") || mouseFire,
-        firePressed: input.pressed("fire") || mouseFire,
-        reload: input.pressed("reload"),
-        use: input.pressed("use"),
-        weapon: input.pressed("weapon1") ? "knife" : input.pressed("weapon2") ? "pistol" : input.pressed("weapon3") ? "mg" : input.pressed("weapon4") ? "rocket" : undefined,
+        moveX,
+        moveZ,
+        turn: totalTurn,
+        pitchDelta: totalPitch,
+        fire: fireHeld,
+        firePressed: fireJustPressed,
+        reload: reloadPressed,
+        use: usePressed,
+        weapon: wpnPick,
         weaponDelta: pendingWheel !== 0 ? Math.sign(pendingWheel) : 0
       };
-  yawDelta = 0; pitchDelta = 0; pendingWheel = 0;
+  yawDelta = 0;
+  pitchDelta = 0;
+  pendingWheel = 0;
+  keysPressed.clear();
+  pointerFirePressed = false;
 
   // ---- tick (fixed 60Hz substeps for demo determinism)
   if (DEMO) {
     demoAcc += dt;
     while (demoAcc >= 1 / 60) { sim.tick(1 / 60, inp); demoAcc -= 1 / 60; simSteps++; }
   } else {
-    let remaining = Math.min(0.1, dt);
-    while (remaining > 0) { const st = Math.min(1 / 60, remaining); sim.tick(st, inp); remaining -= st; simSteps++; }
+    const totalStepDt = Math.min(0.1, Math.max(1 / 240, dt));
+    let remaining = totalStepDt;
+    let firstSub = true;
+    while (remaining > 0) {
+      const st = Math.min(1 / 60, remaining);
+      const frac = st / totalStepDt;
+      const subInp: SimInput = useAuto ? inp : {
+        ...inp,
+        turn: inp.turn * frac,
+        pitchDelta: inp.pitchDelta * frac,
+        firePressed: firstSub ? inp.firePressed : false,
+        reload: firstSub ? inp.reload : false,
+        use: firstSub ? inp.use : false,
+        weapon: firstSub ? inp.weapon : undefined,
+        weaponDelta: firstSub ? inp.weaponDelta : 0
+      };
+      sim.tick(st, subInp);
+      remaining -= st;
+      firstSub = false;
+      simSteps++;
+    }
   }
 
   // ---- drain events → audio + juice + feed
@@ -870,15 +991,15 @@ function fmtTime(t: number) {
 }
 
 // ---------------------------------------------------------------------------
-let evCount = 0;
 function publishEvidence() {
-  evCount++;
-  if (evCount % 6) return; // ~10Hz
   const p = sim.state.player;
-  window.__gameEvidence = {
+  const payload = {
     status: "playing",
     mode, floor: floorIdx + 1,
     floorName: sim.state.floor.name,
+    playerPos: [+(p.x.toFixed(2)), +(p.z.toFixed(2))],
+    projectilesSpawned: sim.state.projectilesSpawned,
+    activeProjectiles: sim.state.rockets.length,
     player: {
       x: +(p.x.toFixed(2)), z: +(p.z.toFixed(2)), yaw: +p.yaw.toFixed(3),
       hp: Math.ceil(p.hp), armor: Math.ceil(p.armor), alive: p.alive,
@@ -891,6 +1012,14 @@ function publishEvidence() {
     simSteps,
     events: sim.state.events.slice(-12),
     look: { id: LOOK_ID, category: looks.describe(LOOK_ID).category }
+  };
+  window.__gameEvidence = payload;
+  const prevEv = (window.__AURA3D_GAME_EVIDENCE__ && typeof window.__AURA3D_GAME_EVIDENCE__ === "object")
+    ? (window.__AURA3D_GAME_EVIDENCE__ as Record<string, unknown>)
+    : {};
+  window.__AURA3D_GAME_EVIDENCE__ = {
+    ...prevEv,
+    ...payload
   };
 }
 

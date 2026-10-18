@@ -263,16 +263,19 @@ const director = createDirector();
 /* ------------------------------------------------------------------ */
 
 const keys = new Set<string>();
+const pendingPressed = new Set<string>();
 let lastKeys = new Set<string>();
-const pressed = (code: string) => keys.has(code) && !lastKeys.has(code);
+const pressed = (code: string) => pendingPressed.has(code) || (keys.has(code) && !lastKeys.has(code));
+const activeKey = (code: string) => keys.has(code) || pendingPressed.has(code);
 
 window.addEventListener("keydown", (e) => {
   if ((e.target as HTMLElement)?.tagName === "INPUT" || (e.target as HTMLElement)?.tagName === "SELECT") return;
   keys.add(e.code);
+  pendingPressed.add(e.code);
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
 });
 window.addEventListener("keyup", (e) => keys.delete(e.code));
-window.addEventListener("blur", () => keys.clear());
+window.addEventListener("blur", () => { keys.clear(); pendingPressed.clear(); });
 
 const touchInput = { moveX: 0, moveZ: 0, throwHeld: false, juke: false, truck: false, dive: false, tackle: false, ballHawk: false };
 let userIdleT = 99;
@@ -281,6 +284,7 @@ function readCommand(state: GameState): SimCommand {
   if (autopilotMode) return autopilot.command(state, 1 / 60);
   const hasInput =
     keys.size > 0 ||
+    pendingPressed.size > 0 ||
     touchInput.moveX !== 0 ||
     touchInput.moveZ !== 0 ||
     touchInput.throwHeld ||
@@ -292,18 +296,18 @@ function readCommand(state: GameState): SimCommand {
   userIdleT = hasInput ? 0 : userIdleT + 1 / 60;
 
   const cmd: SimCommand = {};
-  const mvX = (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0) - (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0) + touchInput.moveX;
-  const mvZ = (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0) + touchInput.moveZ;
+  const mvX = (activeKey("KeyD") || activeKey("ArrowRight") ? 1 : 0) - (activeKey("KeyA") || activeKey("ArrowLeft") ? 1 : 0) + touchInput.moveX;
+  const mvZ = (activeKey("KeyW") || activeKey("ArrowUp") ? 1 : 0) - (activeKey("KeyS") || activeKey("ArrowDown") ? 1 : 0) + touchInput.moveZ;
   cmd.moveX = clampN(mvX, -1, 1);
   cmd.moveZ = clampN(mvZ, -1, 1);
-  const space = keys.has("Space") || touchInput.throwHeld || touchInput.tackle;
+  const space = activeKey("Space") || touchInput.throwHeld || touchInput.tackle;
 
   if (state.phase === "preSnap") {
     if (pressed("Digit1") || pressed("Numpad1")) cmd.pickCard = 0;
     else if (pressed("Digit2") || pressed("Numpad2")) cmd.pickCard = 1;
     else if (pressed("Digit3") || pressed("Numpad3")) cmd.pickCard = 2;
     if (pressed("KeyQ")) cmd.audible = true;
-    if (pressed("Space") || keys.has("Space") || pressed("Enter") || Math.hypot(cmd.moveX, cmd.moveZ) > 0.05) cmd.snap = true;
+    if (pressed("Space") || activeKey("Space") || pressed("Enter") || Math.hypot(cmd.moveX, cmd.moveZ) > 0.05) cmd.snap = true;
   } else if (state.phase === "patChoice") {
     if (pressed("Digit1") || pressed("Numpad1") || pressed("KeyK")) cmd.patKick = true;
     if (pressed("Digit2") || pressed("Numpad2") || pressed("KeyJ")) cmd.patGo = true;
@@ -313,7 +317,12 @@ function readCommand(state: GameState): SimCommand {
       const holding = state.ball.kind === "held" && state.ball.holder === state.userControlled;
       if (holding) {
         cmd.throwHeld = space;
+        cmd.throwPressed = (pressed("Space") || pressed("KeyE")) && state.snapT > 0.1;
         cmd.throwReleased = !space && lastKeys.has("Space");
+        if (pressed("Digit1") || pressed("Numpad1")) { cmd.throwReceiverIndex = 0; cmd.throwPressed = true; }
+        else if (pressed("Digit2") || pressed("Numpad2")) { cmd.throwReceiverIndex = 1; cmd.throwPressed = true; }
+        else if (pressed("Digit3") || pressed("Numpad3")) { cmd.throwReceiverIndex = 2; cmd.throwPressed = true; }
+        else if (pressed("Digit4") || pressed("Numpad4")) { cmd.throwReceiverIndex = 3; cmd.throwPressed = true; }
       } else {
         if (pressed("Space")) cmd.dive = true;
         if (pressed("KeyJ") || touchInput.juke) cmd.juke = true;
@@ -923,6 +932,7 @@ function onFrameInner() {
     sim.step(dt, cmd);
   }
   lastKeys = new Set(keys);
+  pendingPressed.clear();
 
   // visual updates
   applyRigKits(state);
@@ -954,6 +964,13 @@ function onFrameInner() {
     lastPhaseHud = state.phase;
   }
 
+  const athleteClips: Record<string, string> = {};
+  for (const id of ATHLETE_IDS) {
+    const r = rigHandles[id] as any;
+    const clip = r?.activeClip || r?.lastClip;
+    if (clip) athleteClips[id] = clip;
+  }
+
   // evidence — every frame, all four globals
   publishEvidence(state, director, {
     framesRendered,
@@ -973,7 +990,8 @@ function onFrameInner() {
     }),
     accessibility: (game as any).accessibility.settings([], { reducedMotion, reducedFlash, highContrast: params.has("highContrast") }),
     touch: touchControls?.evidence?.() ?? null,
-    meshyAssets: MESHY_ASSETS_LIST
+    meshyAssets: MESHY_ASSETS_LIST,
+    athleteClips
   });
 }
 
@@ -998,13 +1016,20 @@ banner(hud, "Loading 3D Stadium & Athletes...", 60);
 const bootPublish = () => {
   try {
     const diag = (auraApp as any)?.diagnostics?.() ?? null;
+    const athleteClips: Record<string, string> = {};
+    for (const id of ATHLETE_IDS) {
+      const r = rigHandles[id] as any;
+      const clip = r?.activeClip || r?.lastClip;
+      if (clip) athleteClips[id] = clip;
+    }
     publishEvidence(sim.state, director, {
       framesRendered,
       ready: appReady,
       demo: autopilotMode,
       eventLog: eventLog.snapshot(),
       diagnostics: diag,
-      meshyAssets: MESHY_ASSETS_LIST
+      meshyAssets: MESHY_ASSETS_LIST,
+      athleteClips
     } as any);
   } catch (e) { console.error("[rz3d] evidence boot publish failed", e); }
 };

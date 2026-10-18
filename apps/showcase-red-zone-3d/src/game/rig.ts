@@ -55,7 +55,7 @@ export function buildAthleteNodes(id: string, kit: FootballKit): any[] {
   const pads = material.pbr({ color: kit.jersey, roughness: 0.48, metalness: 0.15 });
   const rubber = material.pbr({ color: "#1c1f26", roughness: 0.88 });
   const heavy = isHeavyFrameAthlete(id);
-  const bodyAsset = heavy ? assets.rzDefenderLinemanMeshy : assets.rzQuarterbackMeshy;
+  const bodyAsset = assets.rzQuarterbackMeshy;
 
   const limb = (name: string, mat: any) =>
     primitives.capsule({ name, size: [1, 1, 1], material: mat }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(name));
@@ -67,7 +67,7 @@ export function buildAthleteNodes(id: string, kit: FootballKit): any[] {
     model(bodyAsset, {
       name: `${id}-body`,
       targetHeight: heavy ? 2.34 : 2.25,
-      animation: { clip: "Idle_Loop", loop: true, speed: 1 }
+      animation: { clip: "Ready", loop: true, speed: 1.0 }
     } as any)
       .position(0, 0, 0)
       .scale(HIDDEN)
@@ -104,6 +104,7 @@ export interface RigHandles {
   thighL: any; thighR: any; shinL: any; shinR: any; shoeL: any; shoeR: any;
   activeClip?: string;
   activeSpeed?: number;
+  lastClipChangeAt?: number;
 }
 
 export function resolveRig(app: any, id: string): RigHandles {
@@ -116,8 +117,9 @@ export function resolveRig(app: any, id: string): RigHandles {
     handL: req("hand-l"), handR: req("hand-r"),
     thighL: req("thigh-l"), thighR: req("thigh-r"), shinL: req("shin-l"), shinR: req("shin-r"),
     shoeL: req("shoe-l"), shoeR: req("shoe-r"),
-    activeClip: "Idle_Loop",
-    activeSpeed: 1
+    activeClip: "Ready",
+    activeSpeed: 1.0,
+    lastClipChangeAt: -10
   };
 }
 
@@ -329,19 +331,19 @@ export function updateFootballRig(kit: ReturnType<typeof game.racketSports>, rig
   const speedNorm = clamp(planarSpeed / 7.5, 0, 1);
   const anim = a.pose === "throw"
     ? "throw"
-    : (a.pose === "tackle" || a.pose === "down" || a.pose === "block")
+    : (a.pose === "tackle" || a.pose === "down")
       ? "tackle"
       : (a.pose === "catch" || a.pose === "reach" || a.pose === "jump")
         ? "catch"
         : a.pose === "celebrate"
           ? "celebrate"
-          : a.pose === "stance3" && speedNorm <= 0.08
+          : (a.pose === "stance3" || a.pose === "stance2" || speedNorm <= 0.06)
             ? "set"
-            : speedNorm > 0.55
+            : speedNorm > 0.68
               ? "sprint"
-              : (speedNorm > 0.08 || a.pose === "run" || a.pose === "backpedal")
+              : speedNorm > 0.35
                 ? "run"
-                : "idle";
+                : "walk";
 
   let clip = "Ready";
   const loop = true;
@@ -352,50 +354,51 @@ export function updateFootballRig(kit: ReturnType<typeof game.racketSports>, rig
     speed = 1.55;
   } else if (anim === "tackle") {
     clip = "Attack";
-    speed = 1.5;
-  } else if (anim === "catch") {
+    speed = 1.55;
+  } else if (anim === "catch" || anim === "celebrate") {
     clip = "Jump_Loop";
     speed = 1.4;
-  } else if (anim === "celebrate") {
-    clip = "Jump_Loop";
-    speed = 1.35;
-  } else if (anim === "set" && speedNorm <= 0.08) {
-    clip = "Crouch_Idle_Loop";
-    speed = 1.0;
-  } else if (speedNorm > 0.55 || anim === "sprint") {
-    clip = "Sprint_Loop";
-    speed = 1.15 + speedNorm * 0.55;
-  } else if (speedNorm > 0.08 || anim === "run") {
-    clip = "Run";
-    speed = 1.0 + speedNorm * 0.45;
-  } else {
+  } else if (anim === "set" || speedNorm <= 0.06) {
     clip = "Ready";
     speed = 1.0;
+  } else if (anim === "sprint" || speedNorm > 0.68) {
+    clip = "Sprint_Loop";
+    speed = 1.38;
+  } else if (anim === "run" || speedNorm > 0.35) {
+    clip = "Run";
+    speed = 1.25;
+  } else {
+    clip = "Walk_Loop";
+    speed = 1.15;
   }
 
-  if (rig.activeClip !== clip || Math.abs((rig.activeSpeed ?? 1) - speed) > 0.18) {
-    rig.activeClip = clip;
-    rig.activeSpeed = speed;
-    rig.body?.setAnimation?.({ clip, loop, speed });
+  const now = performance.now() / 1000;
+  const LOCOMOTION_CLIPS = new Set(["Crouch_Idle_Loop", "Idle_Loop", "Ready", "Walk_Loop", "Run", "Sprint_Loop"]);
+  if (rig.activeClip !== clip) {
+    const lastChange = rig.lastClipChangeAt ?? -10;
+    const bothLocomotion = LOCOMOTION_CLIPS.has(rig.activeClip ?? "") && LOCOMOTION_CLIPS.has(clip);
+    const leavingOrEnteringIdle = rig.activeClip === "Ready" || rig.activeClip === "Crouch_Idle_Loop" || rig.activeClip === "Idle_Loop" || clip === "Ready";
+    if (!bothLocomotion || leavingOrEnteringIdle || (now - lastChange) >= 0.24) {
+      rig.activeClip = clip;
+      rig.activeSpeed = speed;
+      rig.lastClipChangeAt = now;
+      rig.body?.setAnimation?.({ clip, loop, speed });
+    }
   }
 
   // 2. Ground and orient the bespoke 3D Meshy football athlete GLB (`rig.body`)
-  // In Red Zone 3D, a.yaw=0 is +Z, a.yaw=PI is -Z, which matches model +Z forward directly
-  const p = a.runPhase * 2.4;
-  const strideBob = speedNorm > 0.08 ? Math.abs(Math.sin(p)) * 0.065 * speedNorm : 0;
-  const groundY = a.pose === "down" ? 0.08 : strideBob;
-  const pitch = a.pose === "tackle" ? 0.28 : pose.leanZ * 0.45 + speedNorm * 0.12;
+  // Zero strideBob, pitch, and roll so the rigid mesh never shakes or vibrates in place
+  const strideBob = 0;
+  const pitch = 0;
+  const roll = 0;
+  const heavyScale: Vec3 = isHeavyFrameAthlete(a.id) ? [1.14, 1.0, 1.14] : [1, 1, 1];
   rig.body
-    ?.setPosition(px, groundY, pz)
-    .setRotation(pitch, yaw + pose.torsoYaw * 0.35, pose.leanX * 0.35)
-    .setScale([1, 1, 1])
+    ?.setPosition(px, strideBob, pz)
+    .setRotation(pitch, yaw, roll)
+    .setScale(heavyScale)
     .setVisible(true);
 
-  const hips = W([0, (pose.hipY + 0.14) * 1.18, 0]);
-  const chest = W([pose.leanX * 0.7, (pose.shoulderY - 0.02) * 1.18, pose.leanZ * 0.7]);
-
-  // 3. Slim core team-jersey chest band inside the torso silhouette for club color differentiation
-  kit.orientCylinderBetween(rig.torso, hips, chest, 0.15, 0.14);
+  rig.torso?.setPosition(0, -20, 0).setScale(HIDDEN).setVisible(false);
 
   // 4. Blob shadow + tactical team/carrier turf ring
   rig.shadow.setPosition(px, 0.012, pz).setScale([1.1, 1, 1.1]).setVisible(true);

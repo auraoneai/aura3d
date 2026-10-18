@@ -117,10 +117,60 @@ setInterval(() => {
 }, 200);
 
 const rawInput = g.input;
+const keysHeld = new Set<string>();
+const keysPressed = new Set<string>();
+const ACTION_CODES: Record<string, readonly string[]> = {
+  up: ["KeyW", "ArrowUp"],
+  down: ["KeyS", "ArrowDown"],
+  left: ["KeyA", "ArrowLeft"],
+  right: ["KeyD", "ArrowRight"],
+  dash: ["Space"],
+  camera: ["KeyV"],
+  reset: ["KeyR"]
+};
+const onCaptureKeyDown = (e: KeyboardEvent): void => {
+  if ((document.activeElement as HTMLElement | null)?.tagName === "INPUT") return;
+  if (/^(Key[WASDVR]|Arrow(Up|Down|Left|Right)|Space)$/.test(e.code)) {
+    if (!keysHeld.has(e.code)) keysPressed.add(e.code);
+    keysHeld.add(e.code);
+    if (e.code === "Space" || e.code.startsWith("Arrow")) e.preventDefault();
+  }
+};
+const onCaptureKeyUp = (e: KeyboardEvent): void => {
+  keysHeld.delete(e.code);
+};
+window.addEventListener("keydown", onCaptureKeyDown, { capture: true });
+document.addEventListener("keydown", onCaptureKeyDown, { capture: true });
+window.addEventListener("keyup", onCaptureKeyUp, { capture: true });
+document.addEventListener("keyup", onCaptureKeyUp, { capture: true });
+window.addEventListener("blur", () => {
+  keysHeld.clear();
+  keysPressed.clear();
+});
+
+const hasCode = (set: Set<string>, action: string): boolean => {
+  const codes = ACTION_CODES[action];
+  if (!codes) return false;
+  for (const c of codes) if (set.has(c)) return true;
+  return false;
+};
+const consumeCode = (action: string): boolean => {
+  const codes = ACTION_CODES[action];
+  if (!codes) return false;
+  let found = false;
+  for (const c of codes) {
+    if (keysPressed.has(c)) {
+      keysPressed.delete(c);
+      found = true;
+    }
+  }
+  return found;
+};
+
 const input = {
-  held: (a: string) => (rawInput ? rawInput.held(a) : false),
-  consume: (a: string) => (rawInput ? rawInput.consume(a) : false),
-  pressed: (a: string) => (rawInput ? rawInput.pressed(a) : false)
+  held: (a: string) => (rawInput ? rawInput.held(a) : false) || hasCode(keysHeld, a),
+  consume: (a: string) => (rawInput ? rawInput.consume(a) : false) || consumeCode(a),
+  pressed: (a: string) => (rawInput ? rawInput.pressed(a) : false) || hasCode(keysPressed, a)
 };
 
 const eventLog = game.eventLog({ label: "dot dash events", maxEvents: 40 });
@@ -174,6 +224,7 @@ app.onFrame(({ dt }) => {
 
   if (!isPaused()) {
     frame(d, input);
+    keysPressed.clear();
     const ev = st.events;
     // ---- sfx + juice on discrete events
     if (ev.dot) g.sound?.cue("dot");
@@ -208,13 +259,22 @@ app.onFrame(({ dt }) => {
 
   tickUI();
 
-  (window as unknown as Record<string, unknown>).__AURA3D_DOT_DASH__ = {
+  const w = window as unknown as Record<string, unknown>;
+  const payload = {
     status: "live",
     frame: frames,
     paused: isPaused(),
     ...evidenceExtra(),
     input: { actions: Object.keys(inputOptions.actions), buffered: true }
   };
-  (window as unknown as Record<string, unknown>).__gameEvidence = (window as unknown as Record<string, unknown>).__AURA3D_DOT_DASH__;
+  w.__AURA3D_DOT_DASH__ = payload;
+  w.__gameEvidence = payload;
+  const prevEv = (w.__AURA3D_GAME_EVIDENCE__ && typeof w.__AURA3D_GAME_EVIDENCE__ === "object")
+    ? (w.__AURA3D_GAME_EVIDENCE__ as Record<string, unknown>)
+    : {};
+  w.__AURA3D_GAME_EVIDENCE__ = {
+    ...prevEv,
+    ...payload
+  };
 });
 }

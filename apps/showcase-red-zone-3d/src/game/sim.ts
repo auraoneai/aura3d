@@ -463,17 +463,23 @@ export function createSim(opts: SimOptions) {
     const cmdZ = cmd.moveZ ?? 0;
     if (ctl && !ctl.down) {
       const mag = clamp(Math.hypot(cmdX, cmdZ), 0, 1);
+      const isUserQbWithBall =
+        s.possession === "user" &&
+        ctl.slot === "qb" &&
+        s.ball.kind === "held" &&
+        s.ball.holder === ctl.id;
       if (mag > 0.05) {
-        const spd = moveSpeed(ctl) * (0.55 + 0.45 * mag);
+        const spd = moveSpeed(ctl) * (0.65 + 0.35 * mag);
         const mx = cmdX / (mag || 1);
         const mz = (cmdZ * s.dir) / (mag || 1);
         ctl.tx = ctl.x + mx * 6;
         ctl.tz = ctl.z + mz * 6;
         steerTo(ctl, dt, spd);
         if (ctl.pose !== "throw" && ctl.pose !== "reach") ctl.pose = "run";
-      } else if (!(s.possession === "user" && ctl.slot === "qb" && s.ball.kind === "held" && s.ball.holder === ctl.id && !s.carrier && s.snapT < 0.75)) {
+      } else if (!isUserQbWithBall) {
         ctl.vx *= Math.pow(0.0001, dt); ctl.vz *= Math.pow(0.0001, dt);
         ctl.x += ctl.vx * dt; ctl.z += ctl.vz * dt;
+        ctl.speed = Math.hypot(ctl.vx, ctl.vz);
         if (ctl.pose === "run" || ctl.pose === "backpedal") ctl.pose = "idle";
       }
       clampField(ctl);
@@ -526,16 +532,30 @@ export function createSim(opts: SimOptions) {
   function steerTo(a: AthleteState, dt: number, speed: number) {
     const dx = a.tx - a.x, dz = a.tz - a.z;
     const d = Math.hypot(dx, dz);
-    if (d < 0.05) { a.vx *= Math.pow(0.001, dt); a.vz *= Math.pow(0.001, dt); return; }
+    if (d < 0.25) {
+      a.vx *= Math.pow(0.0005, dt);
+      a.vz *= Math.pow(0.0005, dt);
+      a.speed = Math.hypot(a.vx, a.vz);
+      return;
+    }
     const ux = dx / d, uz = dz / d;
-    const targetVx = ux * speed, targetVz = uz * speed;
+    const arriveScale = d < 0.9 ? clamp(d / 0.9, 0.25, 1) : 1;
+    const targetVx = ux * speed * arriveScale, targetVz = uz * speed * arriveScale;
     const accel = a.ai === "user" ? 68 : 34;
     a.vx += clamp(targetVx - a.vx, -accel * dt, accel * dt);
     a.vz += clamp(targetVz - a.vz, -accel * dt, accel * dt);
     a.x += a.vx * dt;
     a.z += a.vz * dt;
-    if (Math.hypot(a.vx, a.vz) > 0.5) a.yaw = Math.atan2(a.vx, a.vz);
-    a.runPhase += Math.hypot(a.vx, a.vz) * dt * 1.6;
+    const curSpd = Math.hypot(a.vx, a.vz);
+    a.speed = curSpd;
+    if (curSpd > 0.65) {
+      const targetYaw = Math.atan2(a.vx, a.vz);
+      let dyaw = targetYaw - a.yaw;
+      while (dyaw > Math.PI) dyaw -= Math.PI * 2;
+      while (dyaw < -Math.PI) dyaw += Math.PI * 2;
+      a.yaw += dyaw * Math.min(1, dt * 10);
+    }
+    a.runPhase += curSpd * dt * 1.6;
   }
 
   function clampField(a: AthleteState) {
@@ -549,7 +569,8 @@ export function createSim(opts: SimOptions) {
     const s = state;
     const q = qb();
     if (!q || s.ball.kind !== "held" || s.ball.holder !== q.id || q.down) return;
-    if (s.carrier === q.id) return; // QB already tucked and ran
+    const pastLos = s.dir === 1 ? q.z > s.los + 2.5 : q.z < s.los - 2.5;
+    if (s.carrier === q.id && pastLos) return; // QB already tucked and ran past LOS
     const userBall = s.possession === "user";
 
     if (!userBall) {
@@ -578,15 +599,23 @@ export function createSim(opts: SimOptions) {
       return;
     }
 
-    // User QB — automatic initial 3-step pocket dropback on snap when WASD is not held
+    // User QB — brief 3-step pocket dropback on snap, then active pocket/scramble progression if WASD is not held
     const mvx = cmd.moveX ?? 0, mvz = (cmd.moveZ ?? 0) * s.dir;
     const mMag = Math.hypot(mvx, mvz);
-    if (mMag <= 0.05 && s.snapT < 0.75) {
-      const dropZ = s.los - 4.8 * s.dir;
-      if (Math.abs(q.z - dropZ) > 0.35) {
+    if (mMag <= 0.05) {
+      if (s.snapT < 0.42) {
+        const dropZ = s.los - 3.6 * s.dir;
         q.tx = q.x;
         q.tz = dropZ;
         steerTo(q, dt, QB_DROP_SPEED);
+        q.pose = "run";
+      } else {
+        // Automatic pocket climb / scramble forward when no directional key is held
+        const open = cpuChooseTarget();
+        const laneX = open ? clamp(open.x * 0.25, -6, 6) : Math.sin(s.snapT * 1.4) * 2.5;
+        q.tx = laneX;
+        q.tz = q.z + s.dir * 8;
+        steerTo(q, dt, moveSpeed(q) * 0.9);
         q.pose = "run";
       }
     }
@@ -595,23 +624,49 @@ export function createSim(opts: SimOptions) {
     const dirZ = mMag > 0.05 ? mvz / mMag : s.dir;
     s.aim.x = clamp(q.x + dirX * 11, -FIELD.HALF_WIDTH, FIELD.HALF_WIDTH);
     s.aim.z = clamp(q.z + dirZ * 11, -14, 116);
-    const best = nearestReceiverTo(s.aim.x, s.aim.z, 14);
+    const best = nearestReceiverTo(s.aim.x, s.aim.z, 18) ?? cpuChooseTarget();
     if (best) { s.aim.x = best.x; s.aim.z = best.z; s.aim.target = best.id; }
     else s.aim.target = undefined;
 
-    if (cmd.throwHeld && s.snapT > 0.2) {
-      s.throwCharge = clamp(s.throwCharge + dt / 0.85, 0, 1);
+    if (cmd.throwReceiverIndex !== undefined && s.snapT > 0.08 && throwCooldown <= 0) {
+      const slotOrder = ["wl", "sl", "sr", "wr", "rb"];
+      const preferredSlot = slotOrder[cmd.throwReceiverIndex];
+      const bySlot = preferredSlot
+        ? s.athletes.find((a) => a.unit === "offense" && a.slot === preferredSlot && !a.down)
+        : undefined;
+      const target = bySlot ?? best ?? cpuChooseTarget();
+      throwBall(q, 0.78, target);
+      s.throwCharge = 0;
+      throwCooldown = 0.4;
+      return;
+    }
+
+    if (cmd.throwPressed && s.snapT > 0.1 && throwCooldown <= 0) {
+      const target = best ?? cpuChooseTarget();
+      throwBall(q, 0.78, target);
+      s.throwCharge = 0;
+      throwCooldown = 0.4;
+      return;
+    }
+
+    if (cmd.throwHeld && s.snapT > 0.12) {
+      s.throwCharge = clamp(s.throwCharge + dt / 0.65, 0, 1);
       q.pose = "throw";
     }
-    if (cmd.throwReleased && s.throwCharge > 0.08) {
-      throwBall(q, s.throwCharge);
+    if (cmd.throwReleased && s.throwCharge > 0.05 && throwCooldown <= 0) {
+      const target = best ?? cpuChooseTarget();
+      throwBall(q, Math.max(0.65, s.throwCharge), target);
       s.throwCharge = 0;
+      throwCooldown = 0.4;
+      return;
     } else if (!cmd.throwHeld) s.throwCharge = 0;
 
     // scramble past LOS → becomes carrier
     if (s.dir === 1 ? q.z > s.los + 0.4 : q.z < s.los - 0.4) {
-      s.carrier = q.id;
-      ev.call("play", "QB tucks it and runs!", "info");
+      if (s.carrier !== q.id) {
+        s.carrier = q.id;
+        ev.call("play", "QB tucks it and runs!", "info");
+      }
     }
   }
 
@@ -752,20 +807,37 @@ export function createSim(opts: SimOptions) {
       if (!isBlocker || b.id === s.userControlled) continue;
       if (!b.engaged) {
         const d = nearestDefenderTo(b.x, b.z);
-        if (d && dist2d(d.x, d.z, b.x, b.z) < 2.4 && !d.down) {
+        if (d && dist2d(d.x, d.z, b.x, b.z) < 2.6 && !d.down) {
           b.engaged = d.id;
-          blockShed[d.id] = 1.2 + rng() * 1.8 * b.attrs.power;
+          d.engaged = b.id;
+          blockShed[d.id] = 1.4 + rng() * 1.8 * b.attrs.power;
+        } else {
+          // Pass-pro step forward/lateral toward nearest rusher
+          b.tx = b.x;
+          b.tz = b.z + s.dir * 1.8;
+          steerTo(b, dt, 2.8);
+          b.pose = "block";
         }
       }
       if (b.engaged) {
         const d = byId(b.engaged);
         if (!d || d.down) { b.engaged = undefined; continue; }
-        b.tx = d.x; b.tz = d.z;
-        steerTo(b, dt, 3.4);
+        // Drive engaged block smoothly upfield without zero-distance oscillation
+        b.tx = b.x + (d.x - b.x) * 0.35;
+        b.tz = b.z + s.dir * 2.2;
+        steerTo(b, dt, 2.6);
         b.pose = "block";
-        d.vx *= Math.pow(0.02, dt); d.vz *= Math.pow(0.02, dt);
+        d.x = lerp(d.x, b.x + Math.sin(b.yaw) * 0.75, Math.min(1, dt * 6));
+        d.z = lerp(d.z, b.z + s.dir * 0.85, Math.min(1, dt * 6));
+        d.vx = b.vx;
+        d.vz = b.vz;
+        d.speed = b.speed;
         blockShed[d.id] = (blockShed[d.id] ?? 1) - dt;
-        if (blockShed[d.id] <= 0) { b.engaged = undefined; d.stunT = 0.2; }
+        if (blockShed[d.id] <= 0) {
+          b.engaged = undefined;
+          d.engaged = undefined;
+          d.stunT = 0.2;
+        }
       }
     }
   }
@@ -781,7 +853,10 @@ export function createSim(opts: SimOptions) {
       if (d.stunT > 0) { d.stunT -= dt; d.pose = "down"; continue; }
       if (d.engaged) {
         const b = byId(d.engaged);
-        if (b && !b.down) { d.pose = "block"; continue; }
+        if (b && !b.down) {
+          d.pose = "block";
+          continue;
+        }
         d.engaged = undefined;
       }
       if (d.id === s.userControlled) {
@@ -850,18 +925,22 @@ export function createSim(opts: SimOptions) {
             d.tx = tgt.x + tgt.vx * 0.12;
             d.tz = tgt.z + s.dir * trail;
             steerTo(d, dt, moveSpeed(d) * (dist2d(d.x, d.z, tgt.x, tgt.z) > 4 ? 1.02 : 0.9));
-            d.pose = "backpedal";
+            d.pose = "run";
             continue;
           }
         }
         const drop = ZONE_DROPS[s.coverage]?.[d.slot];
         if (drop && !d.slot.startsWith("dl")) {
-          d.tx = s.ballSpotX + drop[0];
-          d.tz = s.los + drop[1] * s.dir;
-          steerTo(d, dt, moveSpeed(d) * 0.85);
-          d.pose = "backpedal";
-          const near = nearestReceiverTo(d.x, d.z, 6);
-          if (near && s.snapT > 1.2) { d.tx = near.x; d.tz = near.z; }
+          const near = nearestReceiverTo(d.x, d.z, 10);
+          if (near && s.snapT > 0.75) {
+            d.tx = near.x + near.vx * 0.15;
+            d.tz = near.z + s.dir * 1.4;
+          } else {
+            d.tx = s.ballSpotX + drop[0];
+            d.tz = s.los + drop[1] * s.dir;
+          }
+          steerTo(d, dt, moveSpeed(d) * 0.88);
+          d.pose = "run";
           continue;
         }
       }
@@ -1153,7 +1232,7 @@ export function createSim(opts: SimOptions) {
   function stepPlayOver(dt: number) {
     const s = state;
     playOverT += dt;
-    const wait = s.mode === "routelab" || s.mode === "tacklelab" ? 1.15 : 1.9;
+    const wait = 0.85;
     if (playOverT < wait) return;
 
     if (s.mode === "tacklelab" || s.mode === "routelab") { labNextRep(); return; }

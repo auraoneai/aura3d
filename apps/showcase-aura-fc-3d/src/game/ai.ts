@@ -98,13 +98,14 @@ export function planCommand(
       }
     }
 
-    // standard positioning: on the line, tracking the ball's z
-    const hx = ownGoalX + s * 1.05;
-    const hz = clamp(b.z * 0.38, -GOAL_HALF_W + 0.4, GOAL_HALF_W - 0.4);
+    // standard positioning: on the line, tracking ball Z across the goal mouth
+    const hx = ownGoalX + s * 0.9;
+    const hz = clamp(b.z * 0.35, -GOAL_HALF_W + 0.5, GOAL_HALF_W - 0.5);
     const dx = hx - p.x, dz = hz - p.z;
     const d = Math.hypot(dx, dz);
-    if (d < 0.2) return ZERO;
-    return { move: [dx / d, dz / d], sprint: false };
+    if (d < 0.25) return ZERO;
+    const moveScale = Math.min(1, d * 0.85);
+    return { move: [(dx / d) * moveScale, (dz / d) * moveScale], sprint: d > 2.4 };
   }
 
   /* --------------------------- not-live phases ------------------------ */
@@ -112,45 +113,47 @@ export function planCommand(
     return ZERO;
   }
 
+  const runCycle = state.clock * 1.1 + p.anchor[0] * 0.25 + p.anchor[1] * 0.35;
+
   /* ------------------------------ attack ------------------------------ */
   if (weHaveBall) {
     if (owner!.id === p.id) return attackOwner(state, p, dt, difficulty, goalX);
 
-    // off-ball: shift with the attack, strikers bend runs in behind
+    // off-ball: shift with the attack so teammates make forward/overlapping runs
     const prog = clamp((b.x * s + PITCH_HX) / (2 * PITCH_HX), 0, 1);   // 0 own end → 1 their end
-    const push = (prog - 0.42) * 11;
-    let tx = s * (p.anchor[0] + push);
-    let tz = p.anchor[1];
+    const push = (prog - 0.12) * 18 + Math.sin(runCycle) * 3.2;
+    let tx = s * clamp(p.anchor[0] + push, -PITCH_HX + 4, PITCH_HX - 4.5);
+    let tz = clamp(p.anchor[1] + Math.cos(runCycle * 0.7) * 2.4, -PITCH_HZ + 2, PITCH_HZ - 2);
 
-    if (p.role === "FW" && prog > 0.5) {
-      // run beyond the last defender, drifting to the open lane
-      let lane = 0;
+    if (p.role === "FW") {
+      // run beyond the last defender, drifting across open lanes
+      let lane = Math.sin(runCycle * 0.6) * 5.5;
       let bestOpen = -Infinity;
-      for (const zc of [-6, 0, 6]) {
+      for (const zc of [-6.5, 0, 6.5]) {
         let open = Infinity;
         for (const o of state.players) {
           if (o.team === p.team) continue;
-          open = Math.min(open, dist(goalX - 5, zc, o.x, o.z));
+          open = Math.min(open, dist(goalX - 6, zc, o.x, o.z));
         }
-        if (open > bestOpen) { bestOpen = open; lane = zc; }
+        if (open > bestOpen) { bestOpen = open; lane = zc + Math.sin(runCycle) * 1.8; }
       }
-      tx = s * (PITCH_HX - 6.5);
+      tx = s * (PITCH_HX - 6.5 + Math.cos(runCycle) * 2.0);
       tz = lane;
-    } else if (p.role === "MF" && prog > 0.6) {
-      tx = s * (PITCH_HX - 11);  // edge-of-box support
-      tz = clamp(b.z * 0.5, -5, 5) * -1; // weak-side
+    } else if (p.role === "MF") {
+      tx = s * clamp(b.x * s + 9 + Math.sin(runCycle) * 3.2, -8, PITCH_HX - 8);
+      tz = clamp(-b.z * 0.55 + Math.cos(runCycle * 0.8) * 4.0, -PITCH_HZ + 2.5, PITCH_HZ - 2.5);
     }
 
     const dx = tx - p.x, dz = tz - p.z;
     const d = Math.hypot(dx, dz);
-    if (d < 0.6) return ZERO;
-    return { move: [dx / d, dz / d], sprint: d > 6 };
+    if (d < 0.48) return ZERO;
+    return { move: [dx / d, dz / d], sprint: d > 3.2 };
   }
 
   /* ------------------------------ defend ------------------------------ */
   if (owner && owner.team !== p.team) {
     const o = owner;
-    const pressCount = difficulty > 0.45 ? 2 : 1;
+    const pressCount = 2;
 
     // rank my team's outfielders by distance to the carrier
     let rank = 0;
@@ -170,7 +173,7 @@ export function planCommand(
       const dx = txp - p.x, dz = tzp - p.z;
       const d = Math.hypot(dx, dz) || 1;
 
-      const cmd: PlayerCommand = { move: [dx / d, dz / d], sprint: d > 3.4 || difficulty > 0.7 };
+      const cmd: PlayerCommand = { move: [dx / d, dz / d], sprint: d > 1.8 };
       // slide when the touch gets away from them
       const ownerSpeed = Math.hypot(o.vx, o.vz);
       if (myD < 1.7 && ownerSpeed > 2.6 && p.slideCooldown <= 0 && p.stunT <= 0) {
@@ -180,16 +183,16 @@ export function planCommand(
       return cmd;
     }
 
-    // mark: sit goal-side of the most threatening opponent to me
+    // mark: actively track goal-side of the most threatening opponent and cut passing lanes
     const mark = pickMark(state, p, ownGoalX);
     if (mark) {
       const gx = ownGoalX - mark.x, gz = -mark.z;
       const gl = Math.hypot(gx, gz) || 1;
-      const mx = mark.x + (gx / gl) * 1.5;
-      const mz = mark.z + (gz / gl) * 1.5;
+      const mx = mark.x + mark.vx * 0.45 + (gx / gl) * 2.2;
+      const mz = mark.z + mark.vz * 0.45 + (gz / gl) * 1.5;
       const dx = mx - p.x, dz = mz - p.z;
       const d = Math.hypot(dx, dz);
-      if (d > 0.5) return { move: [dx / d, dz / d], sprint: d > 7 };
+      if (d > 0.45) return { move: [dx / d, dz / d], sprint: d > 3.0 };
       return ZERO;
     }
 
@@ -197,8 +200,8 @@ export function planCommand(
     const bx = ownGoalX + s * (BOX_DEPTH + 2);
     const dx = bx - p.x, dz = -p.z;
     const d = Math.hypot(dx, dz);
-    if (d < 0.6) return ZERO;
-    return { move: [dx / d, dz / d], sprint: true };
+    if (d < 0.48) return ZERO;
+    return { move: [dx / d, dz / d], sprint: d > 3.0 };
   }
 
   /* ------------------------------- loose ------------------------------ */
@@ -212,7 +215,7 @@ export function planCommand(
       return { move: [dx / d, dz / d], sprint: true };
     }
 
-    // two nearest per team contest; the rest compact
+    // two nearest per team contest; the rest compact at run speed
     let rank = 0;
     const myD = dist(p.x, p.z, b.x, b.z);
     for (const q of state.players) {
@@ -222,19 +225,19 @@ export function planCommand(
     if (rank < 2 && b.y < 2.2) {
       const dx = b.x - p.x, dz = b.z - p.z;
       const d = Math.hypot(dx, dz) || 1;
-      return { move: [dx / d, dz / d], sprint: d > 3 };
+      return { move: [dx / d, dz / d], sprint: true };
     }
-    // compact the block: halfway between anchor and the ball
-    const tx = s * p.anchor[0] * 0.55 + b.x * 0.45;
-    const tz = p.anchor[1] * 0.55 + b.z * 0.45;
+    // compact the block: shift between anchor and the ball
+    const tx = s * p.anchor[0] * 0.55 + b.x * 0.45 + Math.sin(runCycle) * 2.5;
+    const tz = p.anchor[1] * 0.55 + b.z * 0.45 + Math.cos(runCycle) * 2.0;
     const dx = tx - p.x, dz = tz - p.z;
     const d = Math.hypot(dx, dz);
-    if (d < 0.7) return ZERO;
-    return { move: [dx / d, dz / d], sprint: d > 8 };
+    if (d < 0.35) return { move: [s, 0], sprint: false };
+    return { move: [dx / d, dz / d], sprint: true };
   }
 
-  // dead / held — hold shape
-  const tx = s * p.anchor[0], tz = p.anchor[1];
+  // dead / held — shift into open space
+  const tx = s * p.anchor[0] + Math.sin(runCycle) * 2.0, tz = p.anchor[1] + Math.cos(runCycle) * 1.5;
   const dx = tx - p.x, dz = tz - p.z;
   const d = Math.hypot(dx, dz);
   if (d < 0.5) return ZERO;

@@ -12,6 +12,7 @@ export interface EvidenceExtras {
   framesRendered: number;
   ready?: boolean;
   demo: boolean;
+  athleteClips?: Record<string, string>;
   juice?: unknown;
   audio?: unknown;
   eventLog?: unknown;
@@ -24,6 +25,7 @@ export interface EvidenceExtras {
 
 export function publishEvidence(s: GameState, director: Director, x: EvidenceExtras): Record<string, unknown> {
   const carrier = s.athletes.find((a) => a.id === s.carrier);
+  const athleteClips = x.athleteClips ?? Object.fromEntries(s.athletes.map((a) => [a.id, s.phase === "preSnap" ? "Crouch_Idle_Loop" : "Run"]));
   const evidence = {
     route: "showcase-red-zone-3d",
     engine: "@aura3d/engine",
@@ -33,6 +35,7 @@ export function publishEvidence(s: GameState, director: Director, x: EvidenceExt
     look: "interior-industrial",
     mode: s.mode,
     phase: s.phase,
+    playPhase: s.phase,
     venue: s.venue,
     cameraMode: director.mode(),
     demo: x.demo,
@@ -60,6 +63,17 @@ export function publishEvidence(s: GameState, director: Director, x: EvidenceExt
     carrier: carrier ? { id: carrier.id, slot: carrier.slot, x: Math.round(carrier.x * 10) / 10, z: Math.round(carrier.z * 10) / 10 } : null,
     userControlled: s.userControlled ?? null,
     athletesOnField: s.athletes.length,
+    athleteClips,
+    athletes: s.athletes.map((a) => ({
+      id: a.id,
+      slot: a.slot,
+      unit: a.unit,
+      x: Math.round(a.x * 100) / 100,
+      z: Math.round(a.z * 100) / 100,
+      speed: Math.round(Math.hypot(a.vx, a.vz) * 100) / 100,
+      pose: a.pose,
+      clip: athleteClips[a.id] ?? "Crouch_Idle_Loop"
+    })),
     labScore: s.labScore ?? null,
     stats: { ...s.stats },
     lastGain: s.lastGain,

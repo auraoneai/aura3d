@@ -101,40 +101,42 @@ function pitchNodes(): any[] {
 }
 
 function goalNodes(sx: -1 | 1): any[] {
-  const gx = sx * (PITCH_HX + 0.06);
-  const postMat = material.pbr({ color: "#f5f4ea", roughness: 0.35, metalness: 0.15 });
-  const netMat = material.pbr({ color: "#dfe6ee", roughness: 0.9, opacity: 0.28 });
+  const gx = sx * PITCH_HX;
+  const postMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.45, roughness: 0.2, metalness: 0.1 });
+  const netMat = material.pbr({ color: "#ffffff", emissive: "#e2e8f0", emissiveIntensity: 0.22, roughness: 0.85, opacity: 0.42 });
   const backX = gx + sx * GOAL_DEPTH;
   const goalScaleX = (GOAL_HALF_W * 2) / 1.897;
   const goalScaleY = GOAL_H / 1.282;
   const goalScaleZ = GOAL_DEPTH / 0.8;
   return [
-    model(assets.fcSoccerGoalNetMeshy, { name: `fc-goal-mesh-${sx}` })
+    model(assets.fcSoccerGoalNetMeshy, { name: `fc-goal-mesh-${sx}`, targetMaxDimension: 8.8 } as any)
       .position(gx + sx * (GOAL_DEPTH * 0.48), 0, 0)
       .rotate(0, -sx * (Math.PI / 2), 0)
       .scale([goalScaleX, goalScaleY, goalScaleZ]),
-    primitives.cylinder({ name: `post-${sx}-n`, size: [0.075, GOAL_H + 0.05, 0.075], material: postMat })
+    primitives.cylinder({ name: `post-${sx}-n`, size: [0.24, GOAL_H + 0.18, 0.24], material: postMat })
       .position(gx, GOAL_H / 2, -GOAL_HALF_W),
-    primitives.cylinder({ name: `post-${sx}-s`, size: [0.075, GOAL_H + 0.05, 0.075], material: postMat })
+    primitives.cylinder({ name: `post-${sx}-s`, size: [0.24, GOAL_H + 0.18, 0.24], material: postMat })
       .position(gx, GOAL_H / 2, GOAL_HALF_W),
-    primitives.cylinder({ name: `bar-${sx}`, size: [0.07, GOAL_HALF_W * 2 + 0.14, 0.07], material: postMat })
-      .position(gx, GOAL_H + 0.02, 0).rotate(Math.PI / 2, 0, 0),
+    primitives.cylinder({ name: `bar-${sx}`, size: [0.24, GOAL_HALF_W * 2 + 0.36, 0.24], material: postMat })
+      .position(gx, GOAL_H + 0.04, 0).rotate(Math.PI / 2, 0, 0),
     // back frame stays
-    primitives.cylinder({ name: `stay-${sx}-n`, size: [0.045, GOAL_H + 0.4, 0.045], material: postMat })
+    primitives.cylinder({ name: `stay-${sx}-n`, size: [0.14, GOAL_H + 0.4, 0.14], material: postMat })
       .position(backX, (GOAL_H + 0.4) / 2, -GOAL_HALF_W).rotate(0, 0, sx * 0.22),
-    primitives.cylinder({ name: `stay-${sx}-s`, size: [0.045, GOAL_H + 0.4, 0.045], material: postMat })
+    primitives.cylinder({ name: `stay-${sx}-s`, size: [0.14, GOAL_H + 0.4, 0.14], material: postMat })
       .position(backX, (GOAL_H + 0.4) / 2, GOAL_HALF_W).rotate(0, 0, sx * 0.22),
+    primitives.box({ name: `base-back-${sx}`, size: [0.18, 0.14, GOAL_HALF_W * 2 + 0.24], material: postMat })
+      .position(backX, 0.07, 0),
     // net: back panel + roof + side panels (thin boxes for 3D net enclosure)
-    primitives.box({ name: `net-back-${sx}`, size: [0.03, GOAL_H, GOAL_HALF_W * 2 + 0.2], material: netMat })
+    primitives.box({ name: `net-back-${sx}`, size: [0.05, GOAL_H, GOAL_HALF_W * 2 + 0.2], material: netMat })
       .position(backX, GOAL_H / 2, 0)
       .runtime(gameRuntime(`net-back-${sx}`)),
-    primitives.box({ name: `net-roof-${sx}`, size: [GOAL_DEPTH, 0.03, GOAL_HALF_W * 2 + 0.2], material: netMat })
+    primitives.box({ name: `net-roof-${sx}`, size: [GOAL_DEPTH, 0.05, GOAL_HALF_W * 2 + 0.2], material: netMat })
       .position(gx + sx * GOAL_DEPTH / 2, GOAL_H + 0.01, 0)
       .runtime(gameRuntime(`net-roof-${sx}`)),
-    primitives.box({ name: `net-n-${sx}`, size: [GOAL_DEPTH, GOAL_H, 0.03], material: netMat })
+    primitives.box({ name: `net-n-${sx}`, size: [GOAL_DEPTH, GOAL_H, 0.05], material: netMat })
       .position(gx + sx * GOAL_DEPTH / 2, GOAL_H / 2, -GOAL_HALF_W)
       .runtime(gameRuntime(`net-n-${sx}`)),
-    primitives.box({ name: `net-s-${sx}`, size: [GOAL_DEPTH, GOAL_H, 0.03], material: netMat })
+    primitives.box({ name: `net-s-${sx}`, size: [GOAL_DEPTH, GOAL_H, 0.05], material: netMat })
       .position(gx + sx * GOAL_DEPTH / 2, GOAL_H / 2, GOAL_HALF_W)
       .runtime(gameRuntime(`net-s-${sx}`))
   ];
@@ -328,15 +330,37 @@ function stadiumNodes(v: VenueSpec): any[] {
   return nodes;
 }
 
+export const BALL_PATCH_OFFSETS: readonly [number, number, number][] = [
+  [0.24, 0, 0],
+  [-0.24, 0, 0],
+  [0, 0.24, 0],
+  [0, -0.24, 0],
+  [0, 0, 0.24],
+  [0, 0, -0.24]
+];
+
 function ballNodes(): any[] {
+  const whiteLeather = material.pbr({ color: "#f8fafc", roughness: 0.25, metalness: 0.04 });
+  const blackPentagon = material.pbr({ color: "#111827", roughness: 0.32, metalness: 0.05 });
+  const patches = BALL_PATCH_OFFSETS.map(([ox, oy, oz], i) =>
+    primitives.sphere({ name: `fc-ball-patch-${i}`, size: [0.36, 0.36, 0.36], material: blackPentagon })
+      .position(ox, 0.38 + oy, oz)
+      .runtime(gameRuntime(`fc-ball-patch-${i}`))
+  );
   return [
-    model(assets.fcMatchBallMeshy, { name: "fc-ball", targetHeight: BALL_R * 2.2 })
+    primitives.sphere({ name: "fc-ball", size: [0.76, 0.76, 0.76], material: whiteLeather })
+      .position(0, 0.38, 0)
       .runtime(gameRuntime("fc-ball")),
-    primitives.sphere({ name: "fc-ball-glow", size: [BALL_R * 2.35, BALL_R * 2.35, BALL_R * 2.35], material: material.emissive({ color: "#f2f6ec", emissive: "#f2f6ec", emissiveIntensity: 0.35, opacity: 0.5 }) })
+    model(assets.fcMatchBallMeshy, { name: "fc-ball-mesh", targetHeight: 0.72 })
+      .position(0, 0.38, 0)
+      .runtime(gameRuntime("fc-ball-mesh")),
+    ...patches,
+    primitives.sphere({ name: "fc-ball-glow", size: [0.001, 0.001, 0.001], material: material.pbr({ color: "#f8fafc", roughness: 0.3 }) })
+      .scale(HIDDEN)
       .runtime(gameRuntime("fc-ball-glow")),
-    primitives.cylinder({ name: "fc-ball-shadow", size: [0.36, 0.007, 0.36], material: material.pbr({ color: "#000000", opacity: 0.42, roughness: 1 }) })
+    primitives.cylinder({ name: "fc-ball-shadow", size: [0.82, 0.01, 0.82], material: material.pbr({ color: "#000000", opacity: 0.45, roughness: 1 }) })
       .runtime(gameRuntime("fc-ball-shadow")),
-    effects.trail({ name: "fc-ball-trail", target: "fc-ball", color: "#d8ff3e", width: 0.1, maxPoints: 40, intensity: 0.85 } as any),
+    effects.trail({ name: "fc-ball-trail", target: "fc-ball", color: "#d8ff3e", width: 0.12, maxPoints: 40, intensity: 0.85 } as any),
     primitives.torus({ name: "fc-aim-ring", size: [0.34, 0.035, 0.035], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.3 }) })
       .scale(HIDDEN).runtime(gameRuntime("fc-aim-ring")),
     primitives.torus({ name: "fc-lab-ring", size: [1.15, 0.09, 0.09], material: material.emissive({ color: "#7dfcff", emissive: "#7dfcff", emissiveIntensity: 1.15 }) })
@@ -371,7 +395,7 @@ export function buildFcScene() {
     .add(effects.contactShadows({ intensity: 0.75, length: 0.3 }))
     .add(effects.motionBlur({ intensity: 0.12 }))
     .add(effects.bloom({ intensity: 0.3, threshold: 0.76 }))
-    .camera(camera.perspective({ position: [0, 24, 38], target: [0, 0.4, 0], fov: 16 }));
+    .camera(camera.perspective({ position: [0, 22.5, 38.5], target: [0, 0.8, -1.5], fov: 54 }));
 }
 
 export interface WorldHandles {
@@ -388,7 +412,7 @@ export interface WorldHandles {
   auroras: any[];
   wavers: any[];
   confetti: any;
-  ball: any; ballGlow: any; ballShadow: any;
+  ball: any; ballMesh: any; ballPatches: any[]; ballGlow: any; ballShadow: any;
   aimRing: any; labRing: any;
 }
 
@@ -417,7 +441,11 @@ export function resolveWorld(app: any): WorldHandles {
     auroras: [0, 1, 2].map((i) => tryReq(app, `fc-aurora-${i}`)),
     wavers: Array.from({ length: 26 }, (_, i) => tryReq(app, `fc-waver-${i}`)),
     confetti: tryReq(app, "fc-confetti"),
-    ball: tryReq(app, "fc-ball"), ballGlow: tryReq(app, "fc-ball-glow"), ballShadow: tryReq(app, "fc-ball-shadow"),
+    ball: tryReq(app, "fc-ball"),
+    ballMesh: tryReq(app, "fc-ball-mesh"),
+    ballPatches: Array.from({ length: 6 }, (_, i) => tryReq(app, `fc-ball-patch-${i}`)),
+    ballGlow: tryReq(app, "fc-ball-glow"),
+    ballShadow: tryReq(app, "fc-ball-shadow"),
     aimRing: tryReq(app, "fc-aim-ring"), labRing: tryReq(app, "fc-lab-ring")
   };
 }

@@ -25,6 +25,7 @@ export interface AthleteRig {
   trimColor: string;
   activeClip?: string;
   activeSpeed?: number;
+  lastClipChangeAt?: number;
 }
 
 export interface AthleteKit {
@@ -66,8 +67,8 @@ export function athleteNodes(id: string): RigNode[] {
   return [
     model(bodyAsset, {
       name: `${id}-body`,
-      targetHeight: isKeeper ? 1.92 : isPower ? 1.86 : 1.82,
-      animation: { clip: "Idle_Loop", loop: true, speed: 1 }
+      targetHeight: isKeeper ? 2.32 : isPower ? 2.26 : 2.22,
+      animation: { clip: "Ready", loop: true, speed: 1 }
     } as any)
       .position(0, 0, 0)
       .runtime(game.runtimeNode(`${id}-body`)),
@@ -104,7 +105,8 @@ export function resolveAthlete(app: any, id: string): AthleteRig {
     jerseyColor: "#1d63ff",
     trimColor: "#d8ff3e",
     activeClip: "Idle_Loop",
-    activeSpeed: 1
+    activeSpeed: 1,
+    lastClipChangeAt: -10
   };
 }
 
@@ -355,6 +357,8 @@ export function poseAthlete(rig: AthleteRig, p: PlayerState, t: number, opts?: {
 
   // 1. Drive real skeletal animation clip on the rigged GLB (`rig.body.setAnimation`)
   const speedNorm = clamp(p.speed / 6.4, 0, 1);
+  const walkThresh = p.isKeeper ? 0.28 : 0.14;
+  const runThresh = p.isKeeper ? 0.45 : 0.28;
   const anim = p.diveT > 0 && p.isKeeper
     ? "dive"
     : p.slideT > 0
@@ -363,13 +367,15 @@ export function poseAthlete(rig: AthleteRig, p: PlayerState, t: number, opts?: {
         ? "celebrate"
         : p.kickT > 0.02
           ? "kick"
-          : speedNorm > 0.55
+          : speedNorm > 0.72
             ? "sprint"
-            : speedNorm > 0.08
+            : speedNorm > runThresh
               ? "run"
-              : "idle";
+              : speedNorm > walkThresh
+                ? "walk"
+                : "idle";
 
-  let clip = p.isKeeper ? "Ready" : "Idle_Loop";
+  let clip = "Ready";
   const loop = true;
   let speed = 1.0;
 
@@ -385,44 +391,49 @@ export function poseAthlete(rig: AthleteRig, p: PlayerState, t: number, opts?: {
   } else if (anim === "celebrate") {
     clip = "Jump_Loop";
     speed = 1.35;
-  } else if (speedNorm > 0.55 || anim === "sprint") {
+  } else if (anim === "sprint") {
     clip = "Sprint_Loop";
-    speed = 1.15 + speedNorm * 0.55;
-  } else if (speedNorm > 0.08 || anim === "run") {
+    speed = 1.35;
+  } else if (anim === "run") {
     clip = "Run";
-    speed = 1.0 + speedNorm * 0.45;
+    speed = 1.22;
+  } else if (anim === "walk") {
+    clip = "Walk_Loop";
+    speed = 1.12;
   } else {
-    clip = p.isKeeper ? "Ready" : "Idle_Loop";
+    clip = "Ready";
     speed = 1.0;
   }
 
-  if (rig.activeClip !== clip || Math.abs((rig.activeSpeed ?? 1) - speed) > 0.18) {
-    rig.activeClip = clip;
-    rig.activeSpeed = speed;
-    rig.body?.setAnimation?.({ clip, loop, speed });
+  const LOCOMOTION_CLIPS = new Set(["Idle_Loop", "Ready", "Walk_Loop", "Run", "Sprint_Loop"]);
+  if (rig.activeClip !== clip) {
+    const lastChange = rig.lastClipChangeAt ?? -10;
+    const bothLocomotion = LOCOMOTION_CLIPS.has(rig.activeClip ?? "") && LOCOMOTION_CLIPS.has(clip);
+    const enteringOrLeavingIdle = rig.activeClip === "Ready" || rig.activeClip === "Idle_Loop" || clip === "Ready";
+    if (!bothLocomotion || enteringOrLeavingIdle || (t - lastChange) >= 0.24) {
+      rig.activeClip = clip;
+      rig.activeSpeed = speed;
+      rig.lastClipChangeAt = t;
+      rig.body?.setAnimation?.({ clip, loop, speed });
+    }
   }
 
   // 2. Ground and orient the bespoke 3D Meshy soccer athlete GLB (`rig.body`)
   // Model forward is +Z; sim yaw=0 is +X, yaw=PI/2 is +Z -> modelY = PI/2 - p.yaw
-  const pPhase = p.gait * Math.PI;
-  const strideBob = speedNorm > 0.08 ? Math.abs(Math.sin(pPhase)) * 0.065 * speedNorm : 0;
-  const modelY = Math.PI / 2 - p.yaw + pose.torsoYaw * 0.35;
-  const groundY = p.slideT > 0 ? 0.08 : p.diveT > 0 ? 0.16 : strideBob;
-  const pitch = p.slideT > 0 ? -0.28 : pose.leanX * 0.65 + speedNorm * 0.12;
-  const diveRoll = p.diveT > 0 ? -p.diveDir * 0.95 : pose.leanZ * 0.45;
+  const strideBob = 0;
+  const pitch = 0;
+  const diveRoll = (anim === "dive" && p.isKeeper) ? -p.diveDir * 0.95 : 0;
+  const modelY = Math.PI / 2 - p.yaw;
+  const groundY = (anim === "dive" && p.isKeeper) ? 0.16 : strideBob;
   rig.body
     ?.setPosition(p.x, groundY, p.z)
     .setRotation(pitch, modelY, diveRoll)
     .setScale([1, 1, 1])
     .setVisible(true);
 
-  const hipY = pose.hipY, shY = pose.shY;
-  const lx = pose.leanX, lz = pose.leanZ;
-
-  // 3. Slim core team-kit chest band inside the torso silhouette for club color differentiation
-  const hips = W([0, hipY + 0.12, 0]);
-  const chest = W([lx * 0.7, shY - 0.04, lz * 0.7]);
-  kit.orientCylinderBetween(rig.torso, hips, chest, 0.115, 0.105);
+  void pose;
+  void W;
+  rig.torso?.setVisible?.(false);
 
   // 4. Shadow + tactical team/controlled turf ring
   rig.shadow.setPosition(p.x, 0.014, p.z).setScale([1, 1, 1]).setVisible(true);

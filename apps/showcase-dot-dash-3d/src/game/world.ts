@@ -91,22 +91,22 @@ const pad = (n: number) => Array.from({ length: n }, () => ({ position: [0, -999
 export function buildScene(): unknown {
   const s = scene()
     .add(effects.bloom({ name: "arcade-bloom", intensity: 0.22, threshold: 0.82, radius: 0.35 }))
-    .add(looks.preset("neon-arcade", { fogDensityScale: 0, exposureEv: 0.0, background: "#121f3d", accent: "#22d3ee" }).runtime(game.runtimeNode("look")))
-    .add(lights.ambient({ color: "#9eb8ff", intensity: 0.72 }))
-    .add(lights.hemisphere({ skyColor: "#b8d4ff", groundColor: "#16264c", intensity: 0.68 }))
-    .add(lights.directional({ position: [8, 22, 12], target: [0, 0, 0], color: "#eef4ff", intensity: 1.18, shadow: true }))
+    .add(looks.preset("neon-arcade", { fogDensityScale: 0, exposureEv: 0.05, background: "#1e325c", accent: "#22d3ee" }).runtime(game.runtimeNode("look")))
+    .add(lights.ambient({ color: "#b4ccff", intensity: 0.92 }))
+    .add(lights.hemisphere({ skyColor: "#cce0ff", groundColor: "#243b6b", intensity: 0.85 }))
+    .add(lights.directional({ position: [8, 22, 12], target: [0, 0, 0], color: "#eef4ff", intensity: 1.25, shadow: true }))
     .camera(camera.perspective({ position: [0, 18.5, 13.5], target: [0, 0, 0.5], fov: 46 }));
 
   // IMPORTANT: In Aura3D's instanced shader, v_instanceColor multiplies u_baseColor (color), NOT u_emissiveColor!
   // Never set emissive: "#ffffff" on instanced pools, or every instance emits pure white regardless of instance color.
-  const wallMat = material.pbr({ color: "#ffffff", roughness: 0.45, metalness: 0.2 });
-  const railMat = material.pbr({ color: "#ffffff", emissive: "#22d3ee", emissiveIntensity: 0.45, roughness: 0.28, metalness: 0.1 });
-  const dotMat = material.pbr({ color: "#ffffff", emissive: "#ffaa00", emissiveIntensity: 0.42, roughness: 0.25, metalness: 0.1 });
+  const wallMat = material.pbr({ color: "#ffffff", emissive: "#183464", emissiveIntensity: 0.38, roughness: 0.42, metalness: 0.18 });
+  const railMat = material.pbr({ color: "#ffffff", emissive: "#22d3ee", emissiveIntensity: 0.48, roughness: 0.28, metalness: 0.1 });
+  const dotMat = material.pbr({ color: "#ffffff", emissive: "#ffaa00", emissiveIntensity: 0.45, roughness: 0.25, metalness: 0.1 });
   const orbMat = material.pbr({ color: "#ffffff", emissive: "#ff3df0", emissiveIntensity: 0.55, roughness: 0.2, metalness: 0.15 });
   const markerMat = material.pbr({ color: "#ffffff", roughness: 0.4, metalness: 0.05 });
   const eyesMat = material.pbr({ color: "#ffffff", roughness: 0.25, metalness: 0.05 });
-  const dressMat = material.pbr({ color: "#ffffff", roughness: 0.55, metalness: 0.18 });
-  const glowMat = material.pbr({ color: "#ffffff", emissive: "#22d3ee", emissiveIntensity: 0.35, roughness: 0.35 });
+  const dressMat = material.pbr({ color: "#ffffff", emissive: "#162d57", emissiveIntensity: 0.32, roughness: 0.5, metalness: 0.18 });
+  const glowMat = material.pbr({ color: "#ffffff", emissive: "#22d3ee", emissiveIntensity: 0.38, roughness: 0.35 });
 
   const byteMat = material.pbr({ color: "#ffcb1f", emissive: "#ff9900", emissiveIntensity: 0.22, roughness: 0.28, metalness: 0.08 });
   const blitzMat = material.pbr({ color: "#ff2a4b", emissive: "#ff1a3b", emissiveIntensity: 0.18, roughness: 0.32, metalness: 0.06 });
@@ -122,8 +122,8 @@ export function buildScene(): unknown {
   const starMat = material.pbr({ color: "#ffd700", emissive: "#ffaa00", emissiveIntensity: 0.25, roughness: 0.22, metalness: 0.35 });
 
   s.addMany([
-    // ground slab — rich midnight sapphire arcade deck (never reflects a blinding white hotspot and never reads as pitch-black)
-    primitives.box({ name: "board", size: [34.0, 0.32, 30.0], material: material.pbr({ color: "#16264c", emissive: "#0d1b38", emissiveIntensity: 0.28, roughness: 0.72, metalness: 0.12 }) })
+    // ground slab — rich sapphire arcade deck (never reflects a blinding white hotspot and never reads as pitch-black)
+    primitives.box({ name: "board", size: [46.0, 0.32, 36.0], material: material.pbr({ color: "#223a6e", emissive: "#172b54", emissiveIntensity: 0.45, roughness: 0.68, metalness: 0.12 }) })
       .position(0, -0.18, 0)
       .runtime(game.runtimeNode("board")),
     // instanced pools
@@ -141,28 +141,28 @@ export function buildScene(): unknown {
       const q = new URLSearchParams(globalThis.location?.search ?? "");
       const tier = q.get("models") ?? (q.has("lite") ? "none" : "all");
       const core = [
-        model(assets.byte, { name: "byte", targetHeight: 1.15, castShadow: true, material: byteMat })
-          .position(wx(st.maze.spawn.x), 0.56, wz(st.maze.spawn.y))
+        model(assets.byte, { name: "byte", targetHeight: 0.72, castShadow: true, material: byteMat })
+          .position(wx(st.maze.spawn.x), 0.36, wz(st.maze.spawn.y))
           .runtime(game.runtimeNode("byte")),
-        model(assets.specterBlitz, { name: "ghost-blitz", targetHeight: 1.12, castShadow: true, material: blitzMat }).position(0, 0.54, -3).runtime(game.runtimeNode("ghost-blitz")),
-        model(assets.specterSly, { name: "ghost-sly", targetHeight: 1.12, castShadow: true, material: slyMat }).position(4, 0.54, 3).runtime(game.runtimeNode("ghost-sly")),
-        model(assets.specterFlick, { name: "ghost-flick", targetHeight: 1.12, castShadow: true, material: flickMat }).position(-5, 0.54, -5).runtime(game.runtimeNode("ghost-flick")),
-        model(assets.specterDim, { name: "ghost-dim", targetHeight: 1.12, castShadow: true, material: dimMat }).position(5, 0.54, -5).runtime(game.runtimeNode("ghost-dim"))
+        model(assets.specterBlitz, { name: "ghost-blitz", targetHeight: 0.74, castShadow: true, material: blitzMat }).position(0, 0.36, -3).runtime(game.runtimeNode("ghost-blitz")),
+        model(assets.specterSly, { name: "ghost-sly", targetHeight: 0.74, castShadow: true, material: slyMat }).position(4, 0.36, 3).runtime(game.runtimeNode("ghost-sly")),
+        model(assets.specterFlick, { name: "ghost-flick", targetHeight: 0.74, castShadow: true, material: flickMat }).position(-5, 0.36, -5).runtime(game.runtimeNode("ghost-flick")),
+        model(assets.specterDim, { name: "ghost-dim", targetHeight: 0.74, castShadow: true, material: dimMat }).position(5, 0.36, -5).runtime(game.runtimeNode("ghost-dim"))
       ];
       const extra = [
-        model(assets.byte, { name: "byte-echo", targetHeight: 1.15, castShadow: false, visible: false, material: byteMat })
+        model(assets.byte, { name: "byte-echo", targetHeight: 0.72, castShadow: false, visible: false, material: byteMat })
           .position(0, -999, 0)
           .runtime(game.runtimeNode("byte-echo")),
-        model(assets.specterBlitz, { name: "ghost-blitz-echo", targetHeight: 1.12, castShadow: false, visible: false, material: blitzMat }).position(0, -999, 0).runtime(game.runtimeNode("ghost-blitz-echo")),
-        model(assets.specterSly, { name: "ghost-sly-echo", targetHeight: 1.12, castShadow: false, visible: false, material: slyMat }).position(0, -999, 0).runtime(game.runtimeNode("ghost-sly-echo")),
-        model(assets.specterFlick, { name: "ghost-flick-echo", targetHeight: 1.12, castShadow: false, visible: false, material: flickMat }).position(0, -999, 0).runtime(game.runtimeNode("ghost-flick-echo")),
-        model(assets.specterDim, { name: "ghost-dim-echo", targetHeight: 1.12, castShadow: false, visible: false, material: dimMat }).position(0, -999, 0).runtime(game.runtimeNode("ghost-dim-echo")),
-        model(assets.fruitCherry, { name: "fruit-cherry", targetHeight: 0.95, castShadow: true, visible: false, material: cherryMat }).position(0, -999, 0).runtime(game.runtimeNode("fruit-cherry")),
-        model(assets.fruitStrawberry, { name: "fruit-strawberry", targetHeight: 0.95, castShadow: true, visible: false, material: strawberryMat }).position(0, -999, 0).runtime(game.runtimeNode("fruit-strawberry")),
-        model(assets.fruitOrange, { name: "fruit-orange", targetHeight: 0.95, castShadow: true, visible: false, material: orangeMat }).position(0, -999, 0).runtime(game.runtimeNode("fruit-orange")),
-        model(assets.fruitApple, { name: "fruit-apple", targetHeight: 0.95, castShadow: true, visible: false, material: appleMat }).position(0, -999, 0).runtime(game.runtimeNode("fruit-apple")),
-        model(assets.fruitMelon, { name: "fruit-melon", targetHeight: 1.0, castShadow: true, visible: false, material: melonMat }).position(0, -999, 0).runtime(game.runtimeNode("fruit-melon")),
-        model(assets.fruitStar, { name: "fruit-star", targetHeight: 1.05, castShadow: true, visible: false, material: starMat }).position(0, -999, 0).runtime(game.runtimeNode("fruit-star")),
+        model(assets.specterBlitz, { name: "ghost-blitz-echo", targetHeight: 0.74, castShadow: false, visible: false, material: blitzMat }).position(0, -999, 0).runtime(game.runtimeNode("ghost-blitz-echo")),
+        model(assets.specterSly, { name: "ghost-sly-echo", targetHeight: 0.74, castShadow: false, visible: false, material: slyMat }).position(0, -999, 0).runtime(game.runtimeNode("ghost-sly-echo")),
+        model(assets.specterFlick, { name: "ghost-flick-echo", targetHeight: 0.74, castShadow: false, visible: false, material: flickMat }).position(0, -999, 0).runtime(game.runtimeNode("ghost-flick-echo")),
+        model(assets.specterDim, { name: "ghost-dim-echo", targetHeight: 0.74, castShadow: false, visible: false, material: dimMat }).position(0, -999, 0).runtime(game.runtimeNode("ghost-dim-echo")),
+        model(assets.fruitCherry, { name: "fruit-cherry", targetHeight: 0.68, castShadow: true, visible: false, material: cherryMat }).position(0, -999, 0).runtime(game.runtimeNode("fruit-cherry")),
+        model(assets.fruitStrawberry, { name: "fruit-strawberry", targetHeight: 0.68, castShadow: true, visible: false, material: strawberryMat }).position(0, -999, 0).runtime(game.runtimeNode("fruit-strawberry")),
+        model(assets.fruitOrange, { name: "fruit-orange", targetHeight: 0.68, castShadow: true, visible: false, material: orangeMat }).position(0, -999, 0).runtime(game.runtimeNode("fruit-orange")),
+        model(assets.fruitApple, { name: "fruit-apple", targetHeight: 0.68, castShadow: true, visible: false, material: appleMat }).position(0, -999, 0).runtime(game.runtimeNode("fruit-apple")),
+        model(assets.fruitMelon, { name: "fruit-melon", targetHeight: 0.72, castShadow: true, visible: false, material: melonMat }).position(0, -999, 0).runtime(game.runtimeNode("fruit-melon")),
+        model(assets.fruitStar, { name: "fruit-star", targetHeight: 0.74, castShadow: true, visible: false, material: starMat }).position(0, -999, 0).runtime(game.runtimeNode("fruit-star")),
         // 3D Meshy arcade prize & guardian statues flanking the maze perimeter
         model(assets.fruitCherry, { name: "trophy-cherry", targetHeight: 1.35, castShadow: true, material: cherryMat }).position(-10.8, 0.85, 6.0).runtime(game.runtimeNode("trophy-cherry")),
         model(assets.fruitStrawberry, { name: "trophy-strawberry", targetHeight: 1.35, castShadow: true, material: strawberryMat }).position(10.8, 0.85, 6.0).runtime(game.runtimeNode("trophy-strawberry")),
@@ -197,14 +197,14 @@ let builtFor: MazeId | "" = "";
 function paintMaze(m: ParsedMaze): void {
   const def = m.def;
   const P = def.palette;
-  const wallColor = def.id === "classic" ? "#102444" : P.wall;
+  const wallColor = def.id === "classic" ? "#20427a" : P.wall;
   const edgeColor = def.id === "classic" ? "#22d3ee" : P.edge;
   for (let y = 0; y < m.height; y++) {
     for (let x = 0; x < m.width; x++) {
       const i = idx(m.width, x, y);
       const X = wx(x), Z = wz(y);
       if (m.wall[i]) {
-        inst("wall", X, 0.32, Z, 1.0, 0.64, 1.0, wallColor);
+        inst("wall", X, 0.32, Z, 0.94, 0.64, 0.94, wallColor);
         // glowing top rail along each corridor-adjacent face
         for (const [dx, dy, ex, ez, sx, sz] of [
           [0, -1, 0, -0.485, 0.96, 0.05],
@@ -225,7 +225,7 @@ function paintMaze(m: ParsedMaze): void {
   const d = m.door;
   for (const i of m.houseTiles) {
     const hx = i % m.width, hy = (i / m.width) | 0;
-    inst("dress", wx(hx), 0.0, wz(hy), 0.96, 0.02, 0.96, "#141833");
+    inst("dress", wx(hx), 0.0, wz(hy), 0.96, 0.02, 0.96, "#1f325c");
   }
   try {
     app?.nodes?.require("door").setPosition(wx(d.x), 0.28, wz(d.y) + 0.46);
@@ -235,7 +235,7 @@ function paintMaze(m: ParsedMaze): void {
 /** Perimeter dressing per maze theme — neon pedestals under 3D Meshy trophies & guardians. */
 function paintDressing(m: ParsedMaze): void {
   const P = m.def.palette;
-  const wallColor = m.def.id === "classic" ? "#102444" : P.wall;
+  const wallColor = m.def.id === "classic" ? "#20427a" : P.wall;
   const accentColor = m.def.id === "classic" ? "#22d3ee" : P.accent;
   const pedestals: readonly [number, number][] = [
     [-10.8, 9.2], [10.8, 9.2],
@@ -312,21 +312,21 @@ export function syncVisuals(_dt: number): void {
     const pp = normPos(m);
     const moving = st.autopilot || st.hasMoved;
     const chomp = moving ? Math.abs(Math.sin(st.time * 14)) : Math.sin(st.time * 4) * 0.25;
-    const bob = moving ? chomp * 0.14 : Math.sin(st.time * 4) * 0.03;
-    const pitch = moving ? Math.sin(st.time * 14) * 0.2 : 0;
+    const bob = moving ? chomp * 0.08 : Math.sin(st.time * 4) * 0.025;
+    const pitch = moving ? Math.sin(st.time * 14) * 0.16 : 0;
     const dead = st.mode === "dying";
     const byte = nodes.require("byte");
-    byte.setPosition(wx(pp.x), 0.54 + (dead ? 0 : bob), wz(pp.y));
+    byte.setPosition(wx(pp.x), 0.36 + (dead ? 0 : bob), wz(pp.y));
     byte.setRotation(dead ? 0 : pitch, yawOf(st.player.dir) + Math.PI, dead ? Math.sin(st.time * 20) * 0.5 : 0);
     if (dead) {
-      byte.setScale(Math.max(0.05, st.deathT / 1.6));
+      byte.setScale(Math.max(0.05, (st.deathT / 1.6) * 0.76));
     } else if (st.player.dashT > 0) {
-      const ds = 1.2 + Math.sin(st.time * 40) * 0.08;
-      byte.setScale([ds * 1.08, ds * 0.92, ds * 1.08]);
+      const ds = 0.82 + Math.sin(st.time * 40) * 0.05;
+      byte.setScale([ds * 1.06, ds * 0.94, ds * 1.06]);
     } else if (moving) {
-      byte.setScale([1.12 * (1 + chomp * 0.1), 1.12 * (1 - chomp * 0.08), 1.12 * (1 + chomp * 0.1)]);
+      byte.setScale([0.76 * (1 + chomp * 0.08), 0.76 * (1 - chomp * 0.06), 0.76 * (1 + chomp * 0.08)]);
     } else {
-      byte.setScale(1.12);
+      byte.setScale(0.76);
     }
     byte.setVisible(!dead || Math.sin(st.time * 24) > -0.2);
     // wrap echo copy
@@ -334,16 +334,17 @@ export function syncVisuals(_dt: number): void {
     const echo = nodes.require("byte-echo");
     if (ex) {
       echo.setVisible(!dead);
-      echo.setPosition(wx(ex.x), 0.54 + bob, wz(ex.y));
+      echo.setPosition(wx(ex.x), 0.36 + bob, wz(ex.y));
       echo.setRotation(dead ? 0 : pitch, yawOf(st.player.dir) + Math.PI, 0);
+      echo.setScale(0.76);
     } else echo.setVisible(false);
 
     // specters — distinct arcade colors, switching to fright blue/flash when Power Orb is active
     for (const g of st.ghosts) {
       const h = nodes.require(`ghost-${g.id}`);
       const gp = normGhostPos(g);
-      const wob = Math.sin(st.time * 7 + g.px) * 0.055;
-      h.setPosition(wx(gp.x), 0.54 + wob, wz(gp.y));
+      const wob = Math.sin(st.time * 7 + g.px) * 0.04;
+      h.setPosition(wx(gp.x), 0.36 + wob, wz(gp.y));
       const frightened = st.fright > 0 && g.state === "active";
       const matState: "normal" | "fright" | "flash" = frightened
         ? (st.fright < 1.8 && Math.sin(st.time * 18) > 0 ? "flash" : "fright")
@@ -370,15 +371,16 @@ export function syncVisuals(_dt: number): void {
       h.setRotation(frightened ? Math.sin(st.time * 10) * 0.3 : 0, yaw + Math.PI, frightened ? Math.sin(st.time * 13) * 0.2 : 0);
       const hidden = g.state === "eyes" || g.state === "entering";
       h.setVisible(!hidden);
-      h.setScale(frightened ? 0.92 + Math.sin(st.time * 14) * 0.08 : g.state === "house" ? 1.0 : 1.12);
+      h.setScale(frightened ? 0.68 + Math.sin(st.time * 14) * 0.05 : g.state === "house" ? 0.72 : 0.76);
       // wrap echoes for ghosts
       const gx = echoOffset(m, gp.x, gp.y);
       const ge = nodes.get(`ghost-${g.id}-echo`);
       if (ge) {
         if (gx && !hidden) {
           ge.setVisible(true);
-          ge.setPosition(wx(gx.x), 0.54 + wob, wz(gx.y));
+          ge.setPosition(wx(gx.x), 0.36 + wob, wz(gx.y));
           ge.setRotation(0, yawOf(g.dir) + Math.PI, 0);
+          ge.setScale(0.76);
         } else ge.setVisible(false);
       }
     }
@@ -389,8 +391,9 @@ export function syncVisuals(_dt: number): void {
       if (!node) continue;
       if (st.fruitActive && m.def.fruit === kind) {
         node.setVisible(true);
-        node.setPosition(wx(m.fruitTile.x), 0.5 + Math.sin(st.time * 4) * 0.08, wz(m.fruitTile.y));
+        node.setPosition(wx(m.fruitTile.x), 0.38 + Math.sin(st.time * 4) * 0.06, wz(m.fruitTile.y));
         node.setRotation(0, st.time * 1.6, 0);
+        node.setScale(0.74);
       } else node.setVisible(false);
     }
 

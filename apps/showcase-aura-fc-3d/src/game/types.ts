@@ -76,6 +76,8 @@ export interface BallState {
   vx: number;
   vy: number;
   vz: number;
+  rotX: number;
+  rotZ: number;
   spin: number;                   // sidespin rad/s — curl
   mode: BallMode;
   ownerId: string | null;

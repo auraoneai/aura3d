@@ -251,6 +251,7 @@ export interface SimCommand {
   throwHeld?: boolean;
   throwPressed?: boolean;
   throwReleased?: boolean;
+  throwReceiverIndex?: number;
   juke?: boolean;
   truck?: boolean;
   dive?: boolean;
