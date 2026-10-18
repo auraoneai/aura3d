@@ -5,8 +5,10 @@ type AuraGeneratedAssetDefinitions = {
   readonly "bsBike": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "bsGate": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "bsRoof": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "bsSign": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "bsSpeeder": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "bsTower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "bsVents": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
@@ -409,6 +411,139 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       }
     },
   },
+  "bsSign": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/bsSign.d8433f18.glb",
+    hash: "sha256-d8433f18508ea8879af132389b2fa3a21b433391047ffddd56a982942c262fcb",
+    bounds: [
+      1.903,
+      1.659,
+      0.521
+    ],
+    sizeBytes: 707756,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/bsSign.d8433f18.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated with Meshy text-to-3D on an AuraOne-held account. Output rights governed by the Meshy terms of service. Generated content, not CC0, not third-party catalog material.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-18T19:05:23.934Z",
+        "evidence": [
+          "aura-evidence/meshy/bsSign.rights.7f1579e03390.json",
+          "aura-evidence/meshy/bsSign.metadata.b57fc43c1102.json",
+          "public/aura-assets/bsSign.meshy-candidate.9cf860e0.png"
+        ],
+        "checkedAt": "2026-10-18T19:05:23.934Z"
+      },
+      "sourcePath": "public/aura-assets/bsSign.d8433f18.glb",
+      "outputPath": "public/aura-assets/bsSign.d8433f18.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.83,
+          -0.266
+        ],
+        "max": [
+          0.951,
+          0.829,
+          0.256
+        ],
+        "size": [
+          1.903,
+          1.659,
+          0.521
+        ],
+        "center": [
+          -0.001,
+          -0.001,
+          -0.005
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/bsSign.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/bsSign.meshy-candidate.9cf860e0.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-9cf860e02e11b35fda6f37846539a6937ad69abaf8c30824863412502cc58f2a",
+        "checkedAt": "2026-10-18T19:07:55.795Z"
+      }
+    },
+  },
   "bsSpeeder": {
     type: "model",
     format: "glb",
@@ -672,6 +807,139 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "manual-inspection",
         "sha256": "sha256-0f263aa8f7406719f27ecea460620715fa6de3e48628e92ffd7967a3d789bccf",
         "checkedAt": "2026-10-18T03:20:27.927Z"
+      }
+    },
+  },
+  "bsVents": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/bsVents.14ee73a1.glb",
+    hash: "sha256-14ee73a1c5c40ebf3acd6a703333f3841172e09857d80beae0cb8c7a5298a368",
+    bounds: [
+      1.857,
+      1.613,
+      1.574
+    ],
+    sizeBytes: 790116,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/bsVents.14ee73a1.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated with Meshy text-to-3D on an AuraOne-held account. Output rights governed by the Meshy terms of service. Generated content, not CC0, not third-party catalog material.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-18T19:06:13.716Z",
+        "evidence": [
+          "aura-evidence/meshy/bsVents.rights.7f1579e03390.json",
+          "aura-evidence/meshy/bsVents.metadata.05a5ec670946.json",
+          "public/aura-assets/bsVents.meshy-candidate.f24fbebc.png"
+        ],
+        "checkedAt": "2026-10-18T19:06:13.716Z"
+      },
+      "sourcePath": "public/aura-assets/bsVents.14ee73a1.glb",
+      "outputPath": "public/aura-assets/bsVents.14ee73a1.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.906,
+          -0.807,
+          -0.777
+        ],
+        "max": [
+          0.951,
+          0.806,
+          0.797
+        ],
+        "size": [
+          1.857,
+          1.613,
+          1.574
+        ],
+        "center": [
+          0.022,
+          -0.001,
+          0.01
+        ],
+        "maxDimension": 1.857,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/bsVents.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/bsVents.meshy-candidate.f24fbebc.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-f24fbebc5fb2a239f329fedccc84cdc4430a72cea001cc1afffcfc4d3a97785c",
+        "checkedAt": "2026-10-18T19:08:11.344Z"
       }
     },
   },

@@ -19,7 +19,9 @@
  * anchor node. This engine build culls render items beyond the camera's TARGET
  * PLANE, so the rig's target sits ~120 m ahead of the coupe along its heading
  * (well past the far edge of readable content) and the far plane exceeds that
- * distance. The track ahead never falls off the cull.
+ * distance. The track ahead never falls off the cull. The eye itself hugs the
+ * coupe — 7 m back, 2 m above its centre, fov 55 — so the Meshy hero model
+ * owns the lower-centre of every frame (framing math in buildScene).
  */
 import {
   camera,
@@ -125,10 +127,10 @@ const MAST_SLOTS = 9;
 const TOWER_SLOTS = 5;
 
 // ── dressing cadences (all pools sized to stay ≤ MAX_GPU_INSTANCES 64) ───────
-const RAIL_STEP = 24; // guardrail segments: ceil(662/24)·2 sides = 56
+const RAIL_STEP = 24; // guardrail slot pitch; rails fill alternate slots → 28
 const SEAM_STEP = 15; // deck expansion seams: ceil(662/15) = 45
 const TICK_STEP = 24; // centreline distance ticks: ceil(662/24) = 28
-const WET_STEP = 24; // wet-edge glow segments: 28 · 2 sides = 56
+const WET_STEP = 24; // wet-edge slot pitch; short dashes, 28 · 2 sides = 56
 const CHEVRONS_PER_GATE = 3; // × 2 strokes × 10 gates = 60
 const ARM_CLEARANCE_Y = 9.6; // mast-arm height: ≥ 6 m above any jump apex
 // Masts that carry an overhead deck arm (subset of MAST_SLOTS, both sides).
@@ -302,6 +304,130 @@ const TRACK = buildTrackSamples();
 const TRACK_SAMPLES = TRACK.samples;
 const TRACK_LENGTH = TRACK.length;
 const TRACK_SPACING = TRACK.spacing;
+
+// ── hero set pieces: the Meshy landmarks that own the frame ──────────────────
+// Two dock cranes and three container-barge clusters are the modelled
+// mid-ground that says "decommissioned harbour barrage" at a glance. Every
+// constant the scene factory reads lives above createGame — buildScene runs
+// the instant the game is constructed (the BESTS_KEY TDZ lesson).
+const craneAsset = assets.vnCrane;
+const cargoAsset = assets.vnCargo;
+
+/** targetMaxDimension value that sizes an asset's vertical bounds to worldHeight. */
+function extentForHeight(bounds: readonly [number, number, number], worldHeight: number): number {
+  const maxDim = Math.max(bounds[0]!, bounds[1]!, bounds[2]!);
+  return (worldHeight * maxDim) / bounds[1]!;
+}
+
+// vnCrane bounds [1.887, 1.700, 0.406]: the lattice tower occupies the +X end
+// of the long axis and the jib spans the whole −X direction (reach ≈ 89% of
+// the extent, verified against the admitted mesh). Sizing the tower to 21 m
+// gives a 23.3 m extent → a 20.8 m jib that overhangs the deck past the
+// centreline from a tower grounded just outside the wall foot.
+const CRANE_TOWER_HEIGHT = 21; // m — the scale landmark (18–24 m band)
+const CRANE_LATERAL = 18.5; // tower axis, 2.5 m outside the wall foot (16)
+const CRANE_BASE_TOP = 0.5; // plinth top the tower stands on, above the waterline
+const CRANE_YAW_TRIM = 0; // add Math.PI/2 here if a capture shows the jib along-track
+const CRANE_EXTENT = extentForHeight(craneAsset.bounds, CRANE_TOWER_HEIGHT);
+// model() centres the normalised cube on the node: ground the tower at half
+// its world height above the plinth (bounds ratios, never raw scale).
+const CRANE_SINK =
+  (craneAsset.bounds[1]! / Math.max(craneAsset.bounds[0]!, craneAsset.bounds[1]!, craneAsset.bounds[2]!)) *
+  CRANE_EXTENT /
+  2;
+
+// Crane 1 rides the long start straight on the interior (basin) side — the
+// wall-ride signature section: boost + hard right puts the coupe on the wall
+// directly under the jib, so one frame reads coupe + wall + crane together.
+// Crane 2 anchors the far return leg on the open-sea side.
+const CRANE_STATIONS: readonly { readonly s: number; readonly sigma: 1 | -1 }[] = [
+  { s: 45, sigma: 1 },
+  { s: 0.58 * TRACK_LENGTH, sigma: -1 }
+];
+
+// vnCargo bounds [1.903, 1.511, 0.780]: each instance is a 2-high stack on a
+// single container footprint. One extent sizes the long axis to a 20-ft box.
+const CARGO_EXTENT = 5.9; // long axis ≈ 5.9 m, stack height ≈ 4.7 m
+const BARGE_TOP = WATER_Y + 1.3; // barge deck the stacks ground on (0.2 m draft)
+const CARGO_HALF_HEIGHT =
+  (cargoAsset.bounds[1]! / Math.max(cargoAsset.bounds[0]!, cargoAsset.bounds[1]!, cargoAsset.bounds[2]!)) *
+  CARGO_EXTENT /
+  2;
+const CARGO_HEIGHT = 2 * CARGO_HALF_HEIGHT;
+
+// Multiplicative tints over the baked container texture (varied box colours).
+// MUST stay above createGame: cargoColors() runs inside the scene factory
+// during module evaluation, and a const declared below it is still in its
+// temporal dead zone then — the BESTS_KEY lesson, hit again by CARGO_TINTS.
+const CARGO_TINTS: readonly AuraColor[] = [
+  "#d8cfc0",
+  "#b9c6cc",
+  "#cdb69c",
+  "#c3c7b6",
+  "#d4c4af",
+  "#b6bfc5",
+  "#cab8a1",
+  "#ccd1cd",
+  "#c1bdb1",
+  "#d7c7b1"
+];
+
+// Container clusters: one deep in the infield basin (world-anchored — nothing
+// track-following about open water) and two outside the deck via trackAt/
+// rightOf. Stack entries are [localX, localZ, tier, yaw] in the barge frame,
+// yaws on multiples of ~90° with a few degrees of stack jitter.
+interface CargoCluster {
+  readonly sFrac: number | null; // null → world-anchored infield cluster
+  readonly world: readonly [number, number] | null;
+  readonly sigma: 1 | -1;
+  readonly lateral: number; // track clusters: metres outside the deck
+  readonly bargeYaw: number; // world clusters: absolute; track clusters: relative to psi
+  readonly bargeSize: readonly [number, number]; // barge [length, width]
+  readonly stacks: readonly (readonly [number, number, number, number])[];
+}
+
+const CARGO_CLUSTERS: readonly CargoCluster[] = [
+  {
+    sFrac: null,
+    world: [8, -8], // infield basin, ≥ 70 m clear of every leg
+    sigma: 1,
+    lateral: 0,
+    bargeYaw: 0.22,
+    bargeSize: [17, 9.5],
+    stacks: [
+      [-3.3, -1.6, 0, 0.1],
+      [3.2, -1.5, 0, -0.07],
+      [-0.1, -1.2, 1, Math.PI / 2 + 0.08], // crosswise topper bridging both stacks
+      [0.4, 2.2, 0, Math.PI / 2 - 0.12]
+    ]
+  },
+  {
+    sFrac: 0.3,
+    world: null,
+    sigma: -1, // open-sea side of the east leg
+    lateral: 27,
+    bargeYaw: 0.4,
+    bargeSize: [15, 8.5],
+    stacks: [
+      [-2.9, -1.3, 0, 0.08],
+      [2.8, -1.2, 0, -0.1],
+      [0.1, 1.9, 0, Math.PI / 2 + 0.06]
+    ]
+  },
+  {
+    sFrac: 0.72,
+    world: null,
+    sigma: -1, // open-sea side of the west leg
+    lateral: 30,
+    bargeYaw: -0.45,
+    bargeSize: [14, 8],
+    stacks: [
+      [-2.7, -1.1, 0, -0.06],
+      [2.6, -1.0, 0, 0.09],
+      [0, 1.7, 0, Math.PI / 2 - 0.08]
+    ]
+  }
+];
 
 function wrapAngle(a: number): number {
   let v = a % (Math.PI * 2);
@@ -1221,6 +1347,17 @@ function buildScene(): ReturnType<typeof scene> {
       transforms: plinthTransforms()
     }).runtime(game.runtimeNode("vn-plinths", { tags: ["plinths", "static"] })),
 
+    // Barge hulls under the container clusters — structure, not subject: they
+    // ground the stacks on the waterline and catch their shadows.
+    instances.box({
+      name: "container barges",
+      size: 1,
+      material: plinthMaterial,
+      castShadow: true,
+      receiveShadow: true,
+      transforms: bargeTransforms()
+    }).runtime(game.runtimeNode("vn-barges", { tags: ["barge", "static"] })),
+
     // Typed GLB scenery — instanced pools.
     instances.model(assets.vnBarrier, {
       name: "parapet barriers",
@@ -1243,6 +1380,26 @@ function buildScene(): ReturnType<typeof scene> {
       instancingAware: true,
       castShadow: true
     }).runtime(game.runtimeNode("vn-towers", { tags: ["tower", "scenery"] })),
+
+    // Hero landmarks: decommissioned dock cranes whose jibs straddle the deck
+    // (the coupe drives under the arm) and container stacks on moored barges —
+    // the mid-ground modelled objects that make the frame read "harbour".
+    instances.model(craneAsset, {
+      name: "dock cranes",
+      targetMaxDimension: CRANE_EXTENT,
+      transforms: craneTransforms(),
+      instancingAware: true,
+      castShadow: true
+    }).runtime(game.runtimeNode("vn-cranes", { tags: ["crane", "scenery"] })),
+    instances.model(cargoAsset, {
+      name: "container stacks",
+      targetMaxDimension: CARGO_EXTENT,
+      transforms: cargoTransforms(),
+      colors: cargoColors(),
+      material: material.pbr({ color: "#e0d8ca", roughness: 0.82, metalness: 0.08 }),
+      instancingAware: true,
+      castShadow: true
+    }).runtime(game.runtimeNode("vn-cargo", { tags: ["cargo", "scenery"] })),
 
     // Checkpoint gates (pool is recoloured per checkpoint).
     instances.model(assets.vnGate, {
@@ -1292,14 +1449,29 @@ function buildScene(): ReturnType<typeof scene> {
     // One camera, one frustum. The target plane sits ~120 m AHEAD of the coupe
     // (past the far edge of readable content) because this engine build culls
     // every render item beyond the camera target; the far plane (280) exceeds
-    // that distance so the track ahead survives the cull at any speed.
+    // that distance so the track ahead survives the cull at any speed. Those
+    // two facts are load-bearing and unchanged.
+    //
+    // Hero framing (authored constants only — the rig is never mutated at
+    // runtime): the eye rides 7.0 m behind the anchor and 0.9 m above it, i.e.
+    // 2.0 m above the coupe's centre (bounds [0.909, 0.535, 1.901] at extent
+    // 4.4 → 1.24 m tall, 4.4 m long), fov 55. Framing math: depression of the
+    // coupe from the view axis φ = atan(2.0/7.0) − atan(0.9/127) = 15.5°;
+    // silhouette extent = h·cosφ + l·sinφ = 2.37 m at d = 7.28 m → the coupe
+    // spans ~5%→39% of frame height in the lower-centre (the rear-tall read
+    // is ~16%, the full roofline-to-bumper diagonal ~31%; frame height at the
+    // coupe is 2·d·tan(27.5°) = 7.58 m). Jump clearance: 0.61 × 7.58 = 4.6 m
+    // of rise budget above the roof — more than the 3–4 m apex even if the
+    // smoothed eye lagged a full jump behind. The old rig (9.6 m back, 4.1 m
+    // up, fov 60) put the coupe's centre 29.9° below axis against a 30°
+    // half-frame: a half-clipped sliver at the bottom edge.
     .camera(
       camera.follow({
         targetNode: "chase-anchor",
         offsetMode: "target-yaw",
-        offset: [0, 4.1, -9.6],
-        targetOffset: [0, 7.5, 120],
-        fov: 60,
+        offset: [0, 0.9, -7],
+        targetOffset: [0, 0, 120],
+        fov: 55,
         near: 0.1,
         far: 280,
         smoothing: 0.12
@@ -1467,7 +1639,9 @@ function chevronTransforms(): AuraTransformSpec[] {
   return transforms;
 }
 
-/** Wet-edge glow: faint amber strips along both deck/wall-base junctions. */
+/** Wet-edge glow: short broken amber dashes along both deck/wall-base
+ *  junctions — tide stains, not continuous strips. At chase-cam distance the
+ *  old full-length strips read as geometry noise; dashes read as marking. */
 function wetEdgeTransforms(): AuraTransformSpec[] {
   const transforms: AuraTransformSpec[] = [];
   const count = Math.ceil(TRACK_LENGTH / WET_STEP);
@@ -1479,42 +1653,49 @@ function wetEdgeTransforms(): AuraTransformSpec[] {
       transforms.push({
         position: [at.x + right[0] * sigma * (DECK_HALF - 0.1), 0.013, at.z + right[1] * sigma * (DECK_HALF - 0.1)],
         rotation: [0, at.psi, 0],
-        scale: [0.15, 0.022, WET_STEP * 1.02]
+        scale: [0.15, 0.022, WET_STEP * 0.45]
       });
     }
   }
   return transforms;
 }
 
-/** Guardrail handrail: a continuous thin steel strip along both wall lips. */
+/**
+ * Guardrail handrail: intermittent steel sections along both wall lips — a
+ * decommissioned barrage keeps its rail in stretches. Rails fill alternate
+ * RAIL_STEP slots (half the old instance count, 28), and each section keeps
+ * the 24 m slot pitch so curved legs never chord away from the parapet. At
+ * the closer hero camera, discrete passing sections read as structure while
+ * the old continuous rail read as noise.
+ */
 function railTransforms(): AuraTransformSpec[] {
   const transforms: AuraTransformSpec[] = [];
-  const count = Math.ceil(TRACK_LENGTH / RAIL_STEP);
+  const slots = Math.ceil(TRACK_LENGTH / RAIL_STEP);
   const lateral = DECK_HALF + WALL_R + 0.15; // just inside the parapet barriers
   for (let side = 0; side < 2; side += 1) {
     const sigma = side === 0 ? 1 : -1;
-    for (let i = 0; i < count; i += 1) {
-      const at = trackAt((i * TRACK_LENGTH) / count + (side === 0 ? 0 : RAIL_STEP / 2));
+    for (let i = 0; i < slots; i += 2) {
+      const at = trackAt((i * TRACK_LENGTH) / slots + (side === 0 ? 0 : RAIL_STEP / 2));
       const right = rightOf(at.psi);
       transforms.push({
         position: [at.x + right[0] * sigma * lateral, WALL_R + 0.55, at.z + right[1] * sigma * lateral],
         rotation: [0, at.psi, 0],
-        scale: [0.12, 0.14, RAIL_STEP * 1.03]
+        scale: [0.12, 0.14, RAIL_STEP * 0.92]
       });
     }
   }
   return transforms;
 }
 
-/** Guardrail posts, staggered against the rail joints. */
+/** Guardrail posts: one per remaining rail section, set just off its centre. */
 function railPostTransforms(): AuraTransformSpec[] {
   const transforms: AuraTransformSpec[] = [];
-  const count = Math.ceil(TRACK_LENGTH / RAIL_STEP);
+  const slots = Math.ceil(TRACK_LENGTH / RAIL_STEP);
   const lateral = DECK_HALF + WALL_R + 0.15;
   for (let side = 0; side < 2; side += 1) {
     const sigma = side === 0 ? 1 : -1;
-    for (let i = 0; i < count; i += 1) {
-      const at = trackAt((i * TRACK_LENGTH) / count + (side === 0 ? RAIL_STEP / 2 : 0));
+    for (let i = 0; i < slots; i += 2) {
+      const at = trackAt((i * TRACK_LENGTH) / slots + (side === 0 ? RAIL_STEP * 0.18 : RAIL_STEP / 2 + RAIL_STEP * 0.18));
       const right = rightOf(at.psi);
       transforms.push({
         position: [at.x + right[0] * sigma * lateral, WALL_R + 0.28, at.z + right[1] * sigma * lateral],
@@ -1643,6 +1824,22 @@ function plinthTransforms(): AuraTransformSpec[] {
       scale: [9, height, 9]
     });
   }
+  // Crane bases: heavy blocks rising from the sea to just above the deck lip,
+  // so each tower grounds beside the barrage rather than standing on water.
+  for (const station of CRANE_STATIONS) {
+    const at = trackAt(station.s);
+    const right = rightOf(at.psi);
+    const height = CRANE_BASE_TOP - WATER_Y;
+    transforms.push({
+      position: [
+        at.x + right[0] * station.sigma * CRANE_LATERAL,
+        WATER_Y + height / 2,
+        at.z + right[1] * station.sigma * CRANE_LATERAL
+      ],
+      rotation: [0, at.psi, 0],
+      scale: [5, height, 5]
+    });
+  }
   return transforms;
 }
 
@@ -1692,6 +1889,95 @@ function towerTransforms(): AuraTransformSpec[] {
     });
   }
   return transforms;
+}
+
+/**
+ * Dock cranes: the tower grounds on its plinth just outside the wall foot and
+ * the jib is yawed square to the track so the arm overhangs the deck past the
+ * centreline (jib reach ≈ 20.8 m from the tower axis at CRANE_TOWER_HEIGHT 21,
+ * against a 18.5 m lateral — coverage spans u −2 to +18.5). The crane GLB
+ * carries its tower at the +X end of the jib axis, and under the engine's
+ * Ry(yaw) local −X points to the driver's right, so psi + π (interior-side
+ * towers) or psi (exterior-side) aims the jib across the deck from either
+ * side. The pool spans both stations, so its bounds always reach the near
+ * region and it survives the target-plane cull like the gate pool does.
+ */
+function craneTransforms(): AuraTransformSpec[] {
+  return CRANE_STATIONS.map(({ s, sigma }) => {
+    const at = trackAt(s);
+    const right = rightOf(at.psi);
+    return {
+      position: [
+        at.x + right[0] * sigma * CRANE_LATERAL,
+        CRANE_BASE_TOP + CRANE_SINK,
+        at.z + right[1] * sigma * CRANE_LATERAL
+      ],
+      rotation: [0, at.psi + (sigma > 0 ? Math.PI : 0) + CRANE_YAW_TRIM, 0]
+    };
+  });
+}
+
+/** World anchor (position + barge yaw + barge size) for every cargo cluster. */
+function cargoAnchors(): { x: number; z: number; yaw: number; cluster: CargoCluster }[] {
+  return CARGO_CLUSTERS.map((cluster) => {
+    if (cluster.sFrac === null) {
+      return { x: cluster.world![0], z: cluster.world![1], yaw: cluster.bargeYaw, cluster };
+    }
+    const at = trackAt(cluster.sFrac * TRACK_LENGTH);
+    const right = rightOf(at.psi);
+    return {
+      x: at.x + right[0] * cluster.sigma * cluster.lateral,
+      z: at.z + right[1] * cluster.sigma * cluster.lateral,
+      yaw: at.psi + cluster.bargeYaw,
+      cluster
+    };
+  });
+}
+
+/** Barge hulls: flat deck at BARGE_TOP, 0.2 m of draft below the waterline. */
+function bargeTransforms(): AuraTransformSpec[] {
+  return cargoAnchors().map((anchor) => {
+    const hull = BARGE_TOP - WATER_Y + 0.2; // deck-to-keel, keel 0.2 m submerged
+    return {
+      position: [anchor.x, BARGE_TOP - hull / 2, anchor.z],
+      rotation: [0, anchor.yaw, 0],
+      scale: [anchor.cluster.bargeSize[0], hull, anchor.cluster.bargeSize[1]]
+    };
+  });
+}
+
+/** Container stacks grounded on their barge; stack yaws sit near multiples of 90°. */
+function cargoTransforms(): AuraTransformSpec[] {
+  const transforms: AuraTransformSpec[] = [];
+  for (const anchor of cargoAnchors()) {
+    const cos = Math.cos(anchor.yaw);
+    const sin = Math.sin(anchor.yaw);
+    for (const [du, dw, tier, yaw] of anchor.cluster.stacks) {
+      // Barge-local (x', z') → world, engine yaw convention: local X image is
+      // (cos yaw, sin yaw), local Z image is (−sin yaw, cos yaw).
+      transforms.push({
+        position: [
+          anchor.x + du * cos - dw * sin,
+          BARGE_TOP + CARGO_HALF_HEIGHT + tier * CARGO_HEIGHT,
+          anchor.z + du * sin + dw * cos
+        ],
+        rotation: [0, anchor.yaw + yaw, 0]
+      });
+    }
+  }
+  return transforms;
+}
+
+function cargoColors(): AuraColor[] {
+  const colors: AuraColor[] = [];
+  let i = 0;
+  for (const anchor of cargoAnchors()) {
+    for (let k = 0; k < anchor.cluster.stacks.length; k += 1) {
+      colors.push(CARGO_TINTS[i % CARGO_TINTS.length]!);
+      i += 1;
+    }
+  }
+  return colors;
 }
 
 function gateTransforms(): AuraTransformSpec[] {
@@ -2241,7 +2527,7 @@ function publish(): void {
     medal: phase === "finished" ? medal : "",
     gameOver: phase === "finished",
     look: { id: LOOK_ID },
-    assetIds: ["vnCoupe", "vnGate", "vnBarrier", "vnMast", "vnTower"]
+    assetIds: ["vnCoupe", "vnGate", "vnBarrier", "vnMast", "vnTower", "vnCrane", "vnCargo"]
   };
   window.__AURA3D_ARCADE_STATE__ = state;
   window.__AURA3D_VECTOR_NINE__ = state;

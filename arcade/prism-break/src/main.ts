@@ -63,8 +63,10 @@ const RING_COLORS: readonly AuraColor[] = ["#4de8ff", "#7be0ff", "#b987d0", "#ff
 // single draw call. All dressing is authored in the ARENA_Z offset frame like
 // every other node, sits at y ≤ 0.05 on the floor, and stays within the arena
 // bounds so the culling frustum never sees it at negative Z. Emissive caps are
-// deliberate: the rim-bloom lesson showed 0.9 swallows the frame, so guide
-// dressing holds at ≤ 0.2 and only the small central pulse ring goes above.
+// deliberate: the rim-bloom lesson showed 0.9 swallows the frame, and the
+// hero-presence pass pulled the flat rings/seams down another ~30% so the 3D
+// objects pop above the floor pattern — guide dressing holds at ≤ 0.11 and only
+// the pylon's halo/pulse rings go above.
 
 // Guide rings: concentric machined grooves, each tinted toward the zone colour
 // of the band it sits in. Instance colours multiply the base colour; the
@@ -121,6 +123,60 @@ const MAX_STRIKES = 5;
 const STRIKE_COOLDOWN_MS = 1100;
 const WAVES_TOTAL = 12; // 12 authored waves, then endless
 
+// ── hero presence: bigger Meshy objects, rim monuments, ball trails ──────────
+// The captures read "geometry, not game": from the straight-down ortho the
+// modeled pieces sat small against the floor pattern. The knobs below push the
+// GLBs to dominate the frame. VISUAL SCALE ONLY — every collision constant
+// above stays untouched (the ball's rebound radius is BALL_R in the sim, never
+// its rendered extent).
+//
+// Scale semantics this relies on (agent-api sceneMath): an instances.model
+// node with no target* is normalised by AURA_NORMALIZED_MODEL_MAX_DIMENSION
+// (1.55) over the asset's largest raw extent, so one uniform instance scale s
+// renders the asset at a world max dimension of exactly s·1.55, and per-axis
+// extents of s·1.55·(bounds[n] / maxBounds). brickScale() divides its world
+// targets by the raw bounds — that cancels the per-axis normalisation but
+// leaves the common 1.55/maxBounds factor, so the shipped bricks rendered at
+// 81% of the numbers the ring layout was authored for. BRICK_ENLARGE multiplies
+// back through: +20% over shipped, i.e. tangential fill 84% of the chord and
+// radial fill 0.39 of the 0.40 ring pitch — bigger gems, gaps preserved.
+const BRICK_ENLARGE = 1.2;
+const BRICK_EMISSIVE_INTENSITY = 0.8; // 0.7 shipped; 0.85 is the bloom ceiling
+const PADDLE_WIDEN = 1.15; // segments merge into a continuous arced paddle
+const BALL_VISUAL_SCALE = 2.8; // rendered crystal vs collision radius — visual only
+
+// Rim monuments: the prismPylon GLB instanced at the four frame diagonals,
+// between the rim torus (outer edge ≈3.70) and the frame edge, grounded on the
+// floor. Uniform scale = height / 1.55 (the pylon's height is its max extent).
+// Worst projected axis coordinate ≈3.1 — well inside the ±4.3 ortho extent, so
+// the camera stays at 4.3 and the heroes stay large in frame.
+const MONUMENT_Y = 0.03; // lifted a hair off the floor to avoid base z-fighting
+const MONUMENTS: readonly {
+  readonly angle: number;
+  readonly radius: number;
+  readonly height: number;
+  readonly yaw: number;
+}[] = [
+  { angle: Math.PI * 0.25, radius: 4.02, height: 1.75, yaw: 0.42 },
+  { angle: Math.PI * 0.75, radius: 3.96, height: 1.42, yaw: -0.5 },
+  { angle: Math.PI * 1.25, radius: 4.08, height: 1.62, yaw: 0.55 },
+  { angle: Math.PI * 1.75, radius: 3.94, height: 1.32, yaw: -0.38 }
+];
+const NORMALIZED_MAX_DIM = 1.55; // engine's AURA_NORMALIZED_MODEL_MAX_DIMENSION
+
+// Ball trails: one prismCore instanced pool, 16 beads per ball across 3 balls
+// (48 ≤ 64 → a single draw call). Beads sample each ball's position history
+// and shrink toward the tail, so a static frame still shows the ball's path.
+// Instance colours tint per ball index (cyan / magenta / amber) — the split
+// reads instantly — while the material keeps one shared emissive.
+const TRAIL_BEADS = 16;
+const TRAIL_SLOTS = TRAIL_BEADS * MAX_BALLS; // 48
+const TRAIL_Y = 0.24; // just under the ball's hover line, clear of the floor
+const TRAIL_HEAD_SIZE = 0.36; // ≈ half the ball's rendered crystal
+const TRAIL_TAIL_SIZE = 0.09;
+const TRAIL_TINTS: readonly AuraColor[] = ["#4de8ff", "#ff7ab8", "#ffd166"];
+const PARKED_INSTANCE: AuraTransformSpec = { position: [0, -60, 0], scale: 0 };
+
 // Meshy bounds (metres) from aura.assets.json — used to scale each GLB to the
 // size the layout actually wants rather than trusting the export.
 const BRICK_BOUNDS = assets.prismBrick.bounds;
@@ -156,6 +212,8 @@ interface PrismBreakEvidence {
   readonly assetIds: readonly string[];
   /** Floor-dressing + atmosphere instance count across the four marking pools. */
   readonly floorDressingInstances: number;
+  /** Live trail beads currently drawn (≤ TRAIL_BEADS × MAX_BALLS). */
+  readonly trailInstanceCount: number;
 }
 
 declare global {
@@ -200,8 +258,13 @@ const ballNodes: AuraRuntimeNodeHandle[] = [];
 // already be initialised in module-eval order (the TDZ trap).
 let linesNode: AuraRuntimeNodeHandle | undefined;
 let pulseNode: AuraRuntimeNodeHandle | undefined;
+let trailNode: AuraRuntimeNodeHandle | undefined;
 let sceneTime = 0;
 let bezelAngle = 0;
+
+// Per-ball trail history, newest first, capped at TRAIL_BEADS. Slots at or
+// beyond balls.length are always kept empty, so their beads park off-screen.
+const ballTrail: { x: number; z: number }[][] = Array.from({ length: MAX_BALLS }, () => []);
 
 const prismGame = createGame({
   id: "prism-break",
@@ -312,6 +375,8 @@ function cycleSplit(): void {
   if (gameOver) return;
   if (balls.length >= MAX_BALLS) {
     balls = balls.slice(0, 1);
+    resetTrail(1);
+    resetTrail(2);
     paddleHalfWidth = BASE_PADDLE_HALF_WIDTH;
     gameEvents.push({ type: "recall", label: "recall shards" });
     return;
@@ -327,17 +392,26 @@ function cycleSplit(): void {
     vx: source.vx * cos - source.vz * sin,
     vz: source.vx * sin + source.vz * cos
   });
+  // The new shard starts with a clean trail — never inherit the source's path.
+  resetTrail(balls.length - 1);
   paddleHalfWidth = Math.max(0.16, paddleHalfWidth * SPLIT_SHRINK);
   gameEvents.push({ type: "split", label: `split to ${balls.length}` });
 }
 
 // ── simulation ───────────────────────────────────────────────────────────────
 function stepBalls(dt: number): void {
-  for (const ball of balls) {
+  for (const [index, ball] of balls.entries()) {
     ball.x += ball.vx * dt;
     ball.z += ball.vz * dt;
     resolveBricks(ball);
     resolveRim(ball);
+    // Trail history is recorded per simulation step, newest first; the pool is
+    // rebuilt from it in render(). Absent balls keep an empty history.
+    const history = ballTrail[index];
+    if (history) {
+      history.unshift({ x: ball.x, z: ball.z });
+      if (history.length > TRAIL_BEADS) history.length = TRAIL_BEADS;
+    }
   }
 }
 
@@ -469,6 +543,12 @@ function restartRun(): void {
 
 function resetBalls(): void {
   balls = [spawnBall()];
+  for (let index = 0; index < MAX_BALLS; index += 1) resetTrail(index);
+}
+
+function resetTrail(index: number): void {
+  const history = ballTrail[index];
+  if (history) history.length = 0;
 }
 
 function spawnBall(): Ball {
@@ -538,20 +618,21 @@ function buildScene() {
   });
 
   // Floor dressing materials. One emissive per pool (instance colours tint the
-  // base colour only); intensities stay well under the rim-bloom threshold.
+  // base colour only); intensities stay well under the rim-bloom threshold and
+  // were cut ~30% so the enlarged 3D pieces read above the floor pattern.
   const dressingMaterial = material.pbr({
     color: "#ffffff",
     roughness: 0.55,
     metalness: 0.25,
     emissive: "#9fdcff",
-    emissiveIntensity: 0.15
+    emissiveIntensity: 0.1
   });
   const seamMaterial = material.pbr({
     color: "#e8f2f8",
     roughness: 0.4,
     metalness: 0.5,
     emissive: "#7fd8ff",
-    emissiveIntensity: 0.13
+    emissiveIntensity: 0.09
   });
   const haloMaterial = material.pbr({
     color: "#bfe8f7",
@@ -636,6 +717,27 @@ function buildScene() {
       position: [0, 0.5, ARENA_Z],
       castShadow: true
     }),
+    // Rim monuments: the same pylon GLB, instanced four times at the frame
+    // diagonals. Real modeled objects at the corners give the arena
+    // physicality and frame the play ring. Static pool — transforms are set
+    // once here; grounded on the floor with varied height and yaw. Kept on the
+    // GLB's baked material so the monuments match the centre pylon exactly.
+    instances.model(assets.prismPylon, {
+      name: "rim monuments",
+      transforms: MONUMENTS.map(
+        (slot): AuraTransformSpec => ({
+          position: [
+            Math.cos(slot.angle) * slot.radius,
+            MONUMENT_Y,
+            Math.sin(slot.angle) * slot.radius + ARENA_Z
+          ],
+          rotation: [0, slot.angle + Math.PI / 2 + slot.yaw, 0],
+          scale: slot.height / NORMALIZED_MAX_DIM
+        })
+      ),
+      castShadow: true,
+      instancingAware: true
+    }),
     instances.model(assets.prismBrick, {
       name: "prism bricks",
       transforms: brickTransforms(),
@@ -645,7 +747,7 @@ function buildScene() {
         roughness: 0.3,
         metalness: 0.45,
         emissive: "#1d5f8c",
-        emissiveIntensity: 0.7
+        emissiveIntensity: BRICK_EMISSIVE_INTENSITY
       }),
       instancingAware: true
     }).runtime(game.runtimeNode("prism-bricks", { tags: ["bricks", "runtime"] })),
@@ -656,12 +758,28 @@ function buildScene() {
     ...Array.from({ length: MAX_BALLS }, (_, index) =>
       model(assets.prismCore, {
         name: `prism core ${index}`,
-        targetMaxDimension: BALL_R * 2,
+        // Rendered extent only — the sim's rebound radius stays BALL_R.
+        targetMaxDimension: BALL_R * 2 * BALL_VISUAL_SCALE,
         position: [0, BALL_Y, 0],
         material: material.neon({ color: "#8ff4ff", emissive: "#4de8ff", emissiveIntensity: 1.1 }),
         castShadow: true
       }).runtime(game.runtimeNode(`ball-${index}`, { tags: ["ball", "runtime"] }))
-    )
+    ),
+    // Trail beads: mini crystals from the ball's own GLB, one pool for all
+    // balls (48 ≤ 64 → one draw). Updated every frame from ball history in
+    // render(); one shared emissive, per-ball tints via instance colours.
+    instances.model(assets.prismCore, {
+      name: "prism trails",
+      transforms: trailTransforms(),
+      colors: trailColors(),
+      material: material.neon({
+        color: "#ffffff",
+        emissive: "#cfeeff",
+        emissiveIntensity: 0.5
+      }),
+      castShadow: false,
+      instancingAware: true
+    }).runtime(game.runtimeNode("prism-trails", { tags: ["trail", "runtime"] }))
   ];
 
   return scene()
@@ -687,6 +805,7 @@ function mountNodes(): void {
   brickNode = app.nodes.require("prism-bricks");
   linesNode = app.nodes.require("prism-lines");
   pulseNode = app.nodes.require("prism-pulse");
+  trailNode = app.nodes.require("prism-trails");
   ballNodes.length = 0;
   for (let index = 0; index < MAX_BALLS; index += 1) {
     ballNodes.push(app.nodes.require(`ball-${index}`));
@@ -697,11 +816,15 @@ function mountNodes(): void {
 }
 
 function brickScale(brick: Brick): AuraVec3 {
-  const width = brick.arc * brick.radius * 0.86;
+  // BRICK_ENLARGE (+20%) is measured against what actually rendered before —
+  // see the hero-presence notes at the constants for why the bounds division
+  // alone lands at 81% of these targets. Gaps survive: 84% of chord spacing
+  // tangentially, 0.39 of the 0.40 ring pitch radially.
+  const width = brick.arc * brick.radius * 0.86 * BRICK_ENLARGE;
   return [
     Math.max(0.02, width / BRICK_BOUNDS[0]),
-    Math.max(0.02, 0.26 / BRICK_BOUNDS[1]),
-    Math.max(0.02, 0.40 / BRICK_BOUNDS[2])
+    Math.max(0.02, (0.26 * BRICK_ENLARGE) / BRICK_BOUNDS[1]),
+    Math.max(0.02, (0.40 * BRICK_ENLARGE) / BRICK_BOUNDS[2])
   ];
 }
 
@@ -718,11 +841,13 @@ function brickTransforms(): AuraTransformSpec[] {
       continue;
     }
     const angle = paddleAngle + (slot - (count - 1) / 2) * step;
-    const width = Math.max(0.10, step * PADDLE_R * 0.86);
+    // PADDLE_WIDEN (+15%) lets the beveled gems kiss their neighbours, so the
+    // nine segments read as one continuous arced paddle instead of confetti.
+    const width = Math.max(0.10, step * PADDLE_R * 0.86 * PADDLE_WIDEN);
     transforms.push({
       position: [Math.cos(angle) * PADDLE_R, PADDLE_Y, Math.sin(angle) * PADDLE_R + ARENA_Z],
       rotation: [0, angle - Math.PI / 2, 0],
-      scale: [width, 0.30, 0.46]
+      scale: [width, 0.3 * PADDLE_WIDEN, 0.46 * PADDLE_WIDEN]
     });
   }
 
@@ -785,7 +910,52 @@ function render(): void {
     node.setVisible(true).setPosition(ball.x, BALL_Y, ball.z + ARENA_Z);
   });
 
+  // Trail beads follow the ball history recorded this frame.
+  syncTrail();
+
   renderHud();
+}
+
+// ── ball trails ──────────────────────────────────────────────────────────────
+// Mini crystals from the ball's own GLB (uniform instance scale s renders this
+// asset at a world max dimension of s·1.55 — see the hero-presence notes).
+// Sizes fade from TRAIL_HEAD_SIZE at the newest sample to TRAIL_TAIL_SIZE at
+// the oldest, so the trail reads as motion even in a static capture. The pool
+// is exactly TRAIL_SLOTS; unused beads park off-screen at scale 0.
+function trailTransforms(): AuraTransformSpec[] {
+  const transforms: AuraTransformSpec[] = [];
+  for (let index = 0; index < MAX_BALLS; index += 1) {
+    const history = ballTrail[index];
+    for (let bead = 0; bead < TRAIL_BEADS; bead += 1) {
+      const point = index < balls.length ? history[bead] : undefined;
+      if (!point) {
+        transforms.push(PARKED_INSTANCE);
+        continue;
+      }
+      const fade = bead / (TRAIL_BEADS - 1);
+      const size = TRAIL_HEAD_SIZE + (TRAIL_TAIL_SIZE - TRAIL_HEAD_SIZE) * fade;
+      transforms.push({
+        position: [point.x, TRAIL_Y, point.z + ARENA_Z],
+        scale: size / NORMALIZED_MAX_DIM
+      });
+    }
+  }
+  return transforms;
+}
+
+// Instance colours multiply the shared material's base colour, never its
+// emissive — per-ball glow is not available, so the tint rides the diffuse and
+// the one emissive stays a soft near-white that every hue survives.
+function trailColors(): AuraColor[] {
+  const colors: AuraColor[] = [];
+  for (let index = 0; index < MAX_BALLS; index += 1) {
+    for (let bead = 0; bead < TRAIL_BEADS; bead += 1) colors.push(TRAIL_TINTS[index]!);
+  }
+  return colors;
+}
+
+function syncTrail(): void {
+  trailNode?.setInstances(trailTransforms(), trailColors());
 }
 
 // ── atmosphere ───────────────────────────────────────────────────────────────
@@ -1090,7 +1260,11 @@ function publish(): void {
     look: { id: LOOK_ID },
     assetIds: ["prismBrick", "prismCore", "prismPaddle", "prismPylon"],
     floorDressingInstances:
-      GUIDE_RINGS.length + 1 /* halo */ + PULSE_RADII.length + SEAM_COUNT + TICK_COUNT
+      GUIDE_RINGS.length + 1 /* halo */ + PULSE_RADII.length + SEAM_COUNT + TICK_COUNT,
+    trailInstanceCount: ballTrail.reduce(
+      (count, history) => count + Math.min(history.length, TRAIL_BEADS),
+      0
+    )
   };
 }
 

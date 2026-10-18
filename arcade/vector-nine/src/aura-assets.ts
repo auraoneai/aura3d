@@ -3,7 +3,9 @@ import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";
 
 type AuraGeneratedAssetDefinitions = {
   readonly "vnBarrier": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "vnCargo": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "vnCoupe": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "vnCrane": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "vnGate": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "vnMast": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "vnTower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -143,6 +145,139 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       }
     },
   },
+  "vnCargo": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/vnCargo.8a392251.glb",
+    hash: "sha256-8a392251da39ccaf77a8756834536ec71a5e1f8c721c44d29aab373ce12d6c51",
+    bounds: [
+      1.903,
+      1.511,
+      0.78
+    ],
+    sizeBytes: 1196164,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/vnCargo.8a392251.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated with Meshy text-to-3D on an AuraOne-held account. Output rights governed by the Meshy terms of service. Generated content, not CC0, not third-party catalog material.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-18T19:06:47.990Z",
+        "evidence": [
+          "aura-evidence/meshy/vnCargo.rights.7f1579e03390.json",
+          "aura-evidence/meshy/vnCargo.metadata.e727a7676ef3.json",
+          "public/aura-assets/vnCargo.meshy-candidate.9702d4a8.png"
+        ],
+        "checkedAt": "2026-10-18T19:06:47.990Z"
+      },
+      "sourcePath": "public/aura-assets/vnCargo.8a392251.glb",
+      "outputPath": "public/aura-assets/vnCargo.8a392251.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.755,
+          -0.382
+        ],
+        "max": [
+          0.951,
+          0.756,
+          0.398
+        ],
+        "size": [
+          1.903,
+          1.511,
+          0.78
+        ],
+        "center": [
+          -0.001,
+          0,
+          0.008
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/vnCargo.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/vnCargo.meshy-candidate.9702d4a8.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-9702d4a80818dc4c41c2e72e0938b6b1e2b43405739a7821b1024bc639b13db9",
+        "checkedAt": "2026-10-18T19:08:46.372Z"
+      }
+    },
+  },
   "vnCoupe": {
     type: "model",
     format: "glb",
@@ -273,6 +408,139 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "manual-inspection",
         "sha256": "sha256-15ec6616cffffd7afab790cf61a82027557cadc6ab31fbb01f5635640cc4f049",
         "checkedAt": "2026-10-18T08:22:17.821Z"
+      }
+    },
+  },
+  "vnCrane": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/vnCrane.4abd79a4.glb",
+    hash: "sha256-4abd79a4b265e7562c71e9f0b7f3e62dec095e4f68623c93e6cd0fb308175597",
+    bounds: [
+      1.887,
+      1.7,
+      0.406
+    ],
+    sizeBytes: 866880,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/vnCrane.4abd79a4.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated with Meshy text-to-3D on an AuraOne-held account. Output rights governed by the Meshy terms of service. Generated content, not CC0, not third-party catalog material.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-18T19:05:40.715Z",
+        "evidence": [
+          "aura-evidence/meshy/vnCrane.rights.7f1579e03390.json",
+          "aura-evidence/meshy/vnCrane.metadata.e3afe8739c2a.json",
+          "public/aura-assets/vnCrane.meshy-candidate.8d4d3490.png"
+        ],
+        "checkedAt": "2026-10-18T19:05:40.715Z"
+      },
+      "sourcePath": "public/aura-assets/vnCrane.4abd79a4.glb",
+      "outputPath": "public/aura-assets/vnCrane.4abd79a4.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.937,
+          -0.862,
+          -0.204
+        ],
+        "max": [
+          0.95,
+          0.837,
+          0.202
+        ],
+        "size": [
+          1.887,
+          1.7,
+          0.406
+        ],
+        "center": [
+          0.006,
+          -0.012,
+          -0.001
+        ],
+        "maxDimension": 1.887,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/vnCrane.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/vnCrane.meshy-candidate.8d4d3490.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-8d4d34904c0445c0d531ab23cbe6434dc1c0ff144621e89862d6e6640ff94d38",
+        "checkedAt": "2026-10-18T19:08:38.770Z"
       }
     },
   },

@@ -17,10 +17,14 @@
  * the camera's target plane.
  *
  * SKYLINE PARALLAX: the world scrolls past the bike in four depth planes —
- * roofs (z ≈ 1, full speed), the near tower line (z ≈ 4.2, ×0.35), a denser
- * hazy tower band (z ≈ 6, ×0.28) and far building silhouettes with lit
- * windows (z ≈ 9, ×0.15), with a moon and a low glow band pinned behind them.
- * Every layer wraps like the roofs do; every layer stays wholly at z > 0.
+ * roofs with their hero dressing (z ≈ 1-2: neon billboards at z 1.6, AC vents
+ * on the roof bodies, all full speed ×1.0), the near tower line (z ≈ 4.2,
+ * ×0.35), a denser hazy tower band (z ≈ 6, ×0.28) and far building silhouettes
+ * with lit windows (z ≈ 9, ×0.15), with a moon and a low glow band pinned
+ * behind them. Every layer wraps like the roofs do; every layer stays wholly
+ * at z > 0. The camera frames it tight (orthographicSize 3.3) so the Meshy
+ * hero objects — speeder, billboards, vents, roofs — dominate the frame and
+ * the instanced boxes read only as far backdrop.
  */
 import {
   camera,
@@ -101,8 +105,9 @@ const SKY_B_Z_STAGGER = 0.35;
 const SKY_B_BASE_HEIGHT = 7.5; // per-instance uniform scale varies the height
 const SKY_B_BURY = 3.2;
 // The glow band and moon are pinned (infinitely far things do not parallax).
+// Moon y keeps the whole disc inside the frame top (camera y + ortho size).
 const GLOW_BAND_Z = 7.2;
-const MOON_POSITION: readonly [number, number, number] = [-4.4, 5.2, 9.6];
+const MOON_POSITION: readonly [number, number, number] = [-4.4, 4.4, 9.6];
 const MOON_DIAMETER = 1.05;
 // Cone HUD thresholds (display only — the mechanic itself is untouched).
 const CONE_WARN_DEG = 40;
@@ -117,6 +122,31 @@ const ROOF_Y_RATIO = assets.bsRoof.bounds[1] / Math.max(...assets.bsRoof.bounds)
 // seats the cyan edge-light strips on the near corner of the front towers.
 const ROOF_Z_RATIO = assets.bsRoof.bounds[2] / Math.max(...assets.bsRoof.bounds);
 const TOWER_WIDTH_RATIO = assets.bsTower.bounds[0] / Math.max(...assets.bsTower.bounds);
+
+// ── hero props (Meshy GLBs bsSign + bsVents) ────────────────────────────────
+// Same seating math as ROOF_Y_RATIO: heights as a fraction of each asset's max
+// dimension (both assets are wider than tall — max dim is the x extent), so the
+// sign pole base / vent base sits exactly on the roof top surface, never
+// floating and never buried.
+const SIGN_Y_RATIO = assets.bsSign.bounds[1] / Math.max(...assets.bsSign.bounds); // ≈ 0.872
+const VENT_Y_RATIO = assets.bsVents.bounds[1] / Math.max(...assets.bsVents.bounds); // ≈ 0.869
+
+// Rooftop neon billboards — the mid-frame 3D landmarks that break the "boxes"
+// read. Three signs ride the roof scroll (parallax ×1.0, wrapping with their
+// host segments) at z = PLAY_Z + 0.6: in front of the tower line, behind the
+// bike. Deterministic tables so a restart rebuilds the identical skyline.
+// Heights = SIGN_Y_RATIO × extent ≈ 2.5 / 2.9 / 3.2 m tall.
+const SIGN_BASE_EXTENT = 3.3; // world max dimension (width) before per-instance variety
+const SIGN_SEGMENTS: readonly number[] = [1, 4, 7];
+const SIGN_SCALE: readonly number[] = [0.86, 1.0, 1.12];
+const SIGN_Z = PLAY_Z + 0.6;
+// Industrial AC vent units — small rooftop dressing that makes each roof read
+// as a modelled surface. Seven units on the segments the signs do not use.
+const VENT_BASE_EXTENT = 1.0;
+const VENT_SEGMENTS: readonly number[] = [0, 2, 3, 5, 6, 8, 9];
+const VENT_OFFSET: readonly number[] = [-1.1, 0.9, -0.6, 1.0, -0.9, 0.5, 1.0];
+const VENT_SCALE: readonly number[] = [0.9, 1.2, 0.8, 1.4, 1.0, 1.25, 0.85]; // extents 0.8-1.4 m
+const VENT_Z_FORWARD = 0.5; // sits on the roof body, behind the front lip strips
 
 interface BackspinState {
   readonly frame: number;
@@ -187,6 +217,9 @@ let skyWindowCoolNode: AuraRuntimeNodeHandle | undefined;
 let skyTowerFarNode: AuraRuntimeNodeHandle | undefined;
 let roofStripNode: AuraRuntimeNodeHandle | undefined;
 let towerEdgeNode: AuraRuntimeNodeHandle | undefined;
+// Hero-prop pools (billboards + vents) ride the roof layer the same way.
+let signBillboardNode: AuraRuntimeNodeHandle | undefined;
+let roofVentNode: AuraRuntimeNodeHandle | undefined;
 
 const segmentX: number[] = [];
 const gateX: number[] = [];
@@ -621,7 +654,9 @@ function skyAWindowTransforms(tone: "warm" | "cool"): AuraTransformSpec[] {
       if (y > h - SKY_A_BURY - 0.32) break;
       for (let col = 0; col < cols; col += 1) {
         const v = hash01(i * 97 + row * 13 + col * 7 + toneSalt);
-        const lit = tone === "warm" ? v < 0.055 : v >= 0.055 && v < 0.105;
+        // lit density thinned for the tighter hero zoom — windows are ~27%
+        // larger on screen than at orthographicSize 4.2, so fewer stay lit
+        const lit = tone === "warm" ? v < 0.045 : v >= 0.045 && v < 0.085;
         if (!lit) continue;
         perBuilding[i]!.push({
           position: [(skyAX[i] ?? 0) - w / 2 + ((col + 0.5) * w) / cols, y, frontZ],
@@ -691,6 +726,46 @@ function towerEdgeTransforms(): AuraTransformSpec[] {
     transforms.push({
       position: [(towerX[i] ?? 0) + half - 0.035, h / 2 - TOWER_BURY + 0.35, TOWER_Z + i * 0.15 + half],
       scale: [0.06, h * 0.72, 0.06]
+    });
+  }
+  return transforms;
+}
+
+// Neon billboards seated on their host roof's top surface: the base sits at
+// GROUND_Y - drop (the roof top), the centre raised by half the scaled height
+// exactly like the roofs' own sinking math, so the pole never floats or buries.
+function signTransforms(): AuraTransformSpec[] {
+  const transforms: AuraTransformSpec[] = [];
+  for (let i = 0; i < SIGN_SEGMENTS.length; i += 1) {
+    const seg = SIGN_SEGMENTS[i] ?? 0;
+    const scale = SIGN_SCALE[i] ?? 1;
+    const extent = SIGN_BASE_EXTENT * scale;
+    const roofTop = GROUND_Y - (ROOF_DROP[seg] ?? 0);
+    transforms.push({
+      position: [segmentX[seg] ?? 0, roofTop + (SIGN_Y_RATIO * extent) / 2, SIGN_Z],
+      scale
+    });
+  }
+  return transforms;
+}
+
+// Vent units on the roof body (behind the front lip strips, same scroll and
+// wrap as their host segment). Sunk by the vent bounds ratio so each unit sits
+// flush on the roof surface at whatever drop that segment carries.
+function ventTransforms(): AuraTransformSpec[] {
+  const transforms: AuraTransformSpec[] = [];
+  for (let i = 0; i < VENT_SEGMENTS.length; i += 1) {
+    const seg = VENT_SEGMENTS[i] ?? 0;
+    const scale = VENT_SCALE[i] ?? 1;
+    const extent = VENT_BASE_EXTENT * scale;
+    const roofTop = GROUND_Y - (ROOF_DROP[seg] ?? 0);
+    transforms.push({
+      position: [
+        (segmentX[seg] ?? 0) + (VENT_OFFSET[i] ?? 0),
+        roofTop + (VENT_Y_RATIO * extent) / 2,
+        PLAY_Z + (ROOF_STAGGER[seg] ?? 0) + VENT_Z_FORWARD
+      ],
+      scale
     });
   }
   return transforms;
@@ -834,19 +909,43 @@ function buildScene() {
       }),
       transforms: towerEdgeTransforms()
     }).runtime(game.runtimeNode("tower-edges", { tags: ["tower", "runtime"] })),
+    // ── hero props: rooftop neon billboards + AC vents riding the roof layer ──
+    // Modelled 3D landmarks at z = PLAY_Z + 0.6 / on the roof body — in front
+    // of the tower line, behind the bike line, scrolling at the roofs' ×1.0.
+    // Pool sizes 3 and 7, both far under MAX_GPU_INSTANCES (64).
+    instances.model(assets.bsSign, {
+      name: "rooftop neon billboards",
+      targetMaxDimension: SIGN_BASE_EXTENT,
+      transforms: signTransforms(),
+      material: material.pbr({
+        color: "#cdd9f0",
+        roughness: 0.5,
+        metalness: 0.35,
+        emissive: "#2fd8ff",
+        emissiveIntensity: 0.4
+      }),
+      instancingAware: true
+    }).runtime(game.runtimeNode("sign-billboards", { tags: ["roof", "runtime"] })),
+    instances.model(assets.bsVents, {
+      name: "rooftop vent units",
+      targetMaxDimension: VENT_BASE_EXTENT,
+      transforms: ventTransforms(),
+      material: material.pbr({ color: "#8fa0bd", roughness: 0.74, metalness: 0.3 }),
+      instancingAware: true
+    }).runtime(game.runtimeNode("roof-vents", { tags: ["roof", "runtime"] })),
     // bsSpeeder is the wheel-less hover speeder (the first hero generation
     // came back as a wheeled motorcycle — Meshy pulls "bike" toward wheels, so
     // the regenerated prompt describes geometry only and never says motorcycle).
     model(assets.bsSpeeder, {
       name: "hoverbike",
-      targetMaxDimension: 1.5,
+      targetMaxDimension: 1.9,
       position: [BIKE_X, GROUND_Y + 0.45, PLAY_Z],
       material: material.pbr({
         color: "#dfe9ff",
         roughness: 0.25,
         metalness: 0.6,
         emissive: "#37d6ff",
-        emissiveIntensity: 0.55
+        emissiveIntensity: 0.5
       }),
       castShadow: true
     }).runtime(game.runtimeNode("bike", { tags: ["bike", "runtime"] }))
@@ -859,11 +958,15 @@ function buildScene() {
     // well inside the frustum, which avoids the depth clipping that a tilted
     // perspective camera causes in this engine version. Target plane z=0 with
     // all content at z >= PLAY_Z: nothing is ever culled past the target.
+    // orthographicSize 3.3 (hero zoom): frame y ∈ [−1.5, 5.1], x ≈ ±5.9 — the
+    // ride line sits in the lower third, the 1.9 m speeder is ~29% of frame
+    // height, and gates (top y 1.6) plus a mid-air bike (top y ≈ 3.9) both
+    // clear the frame top (5.1) with margin.
     .camera(
       camera.orthographic({
         position: [0, 1.8, 16],
         target: [0, 1.8, 0],
-        orthographicSize: 4.2,
+        orthographicSize: 3.3,
         near: 0.1,
         far: 60
       })
@@ -883,6 +986,8 @@ function mountNodes(): void {
   skyTowerFarNode = app.nodes.require("sky-b-towers");
   roofStripNode = app.nodes.require("roof-strips");
   towerEdgeNode = app.nodes.require("tower-edges");
+  signBillboardNode = app.nodes.require("sign-billboards");
+  roofVentNode = app.nodes.require("roof-vents");
   bikeNode = app.nodes.require("bike");
   applyCanyonSilhouette();
 }
@@ -920,6 +1025,10 @@ function render(): void {
   skyTowerFarNode?.setInstances(skyBTowerTransforms());
   roofStripNode?.setInstances(roofStripTransforms());
   towerEdgeNode?.setInstances(towerEdgeTransforms());
+  // Hero props reseat on their host roofs each frame — the drop tables move
+  // them with the canyon silhouette, the segment positions scroll them.
+  signBillboardNode?.setInstances(signTransforms());
+  roofVentNode?.setInstances(ventTransforms());
   bikeNode
     ?.setVisible(true)
     .setPosition(BIKE_X, GROUND_Y + 0.45 + height, PLAY_Z)
@@ -1227,7 +1336,7 @@ function publish(): void {
     air: +air.toFixed(2),
     gameOver,
     look: { id: LOOK_ID },
-    assetIds: ["bsSpeeder", "bsGate", "bsRoof", "bsTower"]
+    assetIds: ["bsSpeeder", "bsGate", "bsRoof", "bsTower", "bsSign", "bsVents"]
   };
 }
 
