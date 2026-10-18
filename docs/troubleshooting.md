@@ -1,0 +1,24 @@
+# Troubleshooting
+
+- **Missing canvas**: ensure the selector passed to `createAuraApp("#app", ...)` exists or pass a real canvas element.
+- **Missing asset**: run `assets add` and import the generated `assets` object from `src/aura-assets.ts`.
+- **Failed GLB/glTF load**: run `assets validate` and check file paths and canonical 64-character `sha256-...` `hash` provenance in `aura.assets.json` / `src/aura-assets.ts`.
+- **Deployment missing files**: run `check-deploy` and upload hashed assets under `public/aura-assets/`.
+- **Scene pops in with missing characters/props on first frames, or AI steals manual controls on load**:
+  - Gate Frame 1 on `await app.ready()` before fading out `#boot-gate` (`opacity: 0; pointer-events: none` then remove) and before starting the gameplay simulation loop so lighting, shadow, and GLB silhouettes are fully mounted on Frame 1.
+  - Default `autopilot` / AI demo mode to `false` (immediate manual control on Frame 1 once `#boot-gate` clears); enable AI autopilot only when `?autoplay=1` or `?demo=1` is present in the URL or when the user clicks the HUD `Auto` toggle button (`button.blur()` so `Space`/`Enter` never re-trigger focused HUD controls).
+- **Characters slide across the floor like rigid statues or horizontal props look stretched vertically**:
+  - Ensure humanoid and creature GLBs are rigged (`skins > 0`) and drive skeletal clips every state change via `handle.setAnimation({ clip, loop: true, speed })` (or `AnimationController`) synced to locomotion (`idle`, `walk`, `run`, `attack`, `swing`) so character-region pixels animate under the key shadow.
+  - Use `targetHeight` only for upright humanoids and `targetMaxDimension` for horizontal vehicles, rackets, paddles, weapons, barriers, and wide props so aspect ratios never stretch vertically.
+- **Characters, athletes, enemies, vehicles, aircraft, trees, or landmarks look like stick-figure humans or box cars**:
+  - Never assemble primary subjects out of `primitives.box`, `primitives.sphere`, or `primitives.cylinder`. Mount a real 3D GLB via `model(assets.<name>, { targetMaxDimension, role })` from `src/aura-assets.ts` (or generate a bespoke PBR 3D model with `meshy` and admit it via `aura3d assets import-meshy`). Reserve `primitives.plane`, `primitives.box`, `primitives.cylinder`, and `primitives.torus` strictly for ground/court surfaces, field lines, UI rings/reticles, laser beams, and invisible physics colliders.
+- **Meshy GLB stalls main-thread glTF parsing or exhausts GPU memory**:
+  - Simplify every generated Meshy GLB (`MeshoptSimplifier` to `<= 20,000` vertices for props/vehicles, 16-bit `Uint16Array` indices, de-interleaved `byteStride === 0` buffers) and compress textures to `<= 1024x1024` (`~0.5–2.0 MB` per GLB) before admission into `public/aura-assets/`.
+- **Restarting a round, hole, or bout flashes, drops textures, or aborts in-flight GLB loads**:
+  - Do not call `app.setScene()` when restarting on the same stage/world (`stageId` / `worldId`); track a scene signature and reset positions, visibility, and animations through runtime node handles (`app.nodes.require(...)`).
+- **Scene looks foggy, washed-out, or frame pacing drops under heavy post-processing**:
+  - Pass `{ fogDensityScale: 0, exposureEv: -0.1 }` to `looks.preset(...)` and include `qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }` alongside `...looks.appOptions(...)` on fast action/arcade routes unless distance haze is explicitly desired. Never stack duplicate high-intensity `lights.directional`, `lights.ambient`, or `lights.hemisphere` nodes on top of `looks.preset(...)`, and never set `emissive: "#ffffff"` with high `emissiveIntensity` on an instanced pool material (`instances.box` / `primitives.box({ instances })`).
+- **Character or vehicle sinks halfway into logs, pads, or road lanes, or custom terrain renders dark/unlit**:
+  - `model(asset, { targetHeight })` normalizes the GLB with `minY = 0` (feet at `position[1]`), whereas `primitives.box` and `primitives.cylinder` (`instances.box` / `instances.cylinder`) are centered on `[-0.5..+0.5]` so a platform at `(y, sy)` has its top surface at `y + sy / 2`. Always place grounded characters and vehicles at `platform.y + platform.sy / 2`, and wind custom procedural `primitives.mesh` triangles CCW when viewed from `+Y`.
+- **Bottom or half of the viewport is solid black, or fighters overlap at round start**:
+  - Size `html, body, #app, canvas` to `100vw × 100vh` (`position: fixed; inset: 0; overflow: hidden`), extend the 3D ground/stage apron deep enough in `+Z`/`-Z` under the camera frustum, disable `collision: true` on `camera.rigs.shoulder` when the target character has attached child runtime nodes, and enforce `>= 1.4m` fighter pushbox separation (`|x| >= 1.8m` at spawn).
