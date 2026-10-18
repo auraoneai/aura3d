@@ -326,6 +326,13 @@ function wallAngle(absU: number): number {
 }
 
 // ── game state (declared before createGame — its scene factory runs at once) ─
+// lastCarS and BESTS_KEY must also precede the top-level init calls at the
+// bottom of this file: loadBests()/resetRun() execute during module evaluation,
+// and a `let`/`const` they read still in its temporal dead zone throws
+// "Cannot access … before initialization" and kills the boot gate.
+const BESTS_KEY = "vector-nine.bests.v1";
+let lastCarS = 0;
+
 interface GateDef {
   readonly index: number;
   readonly s: number;
@@ -487,7 +494,9 @@ const vectorNine = createGame({
         id: "music",
         bus: "music",
         volume: 0.5,
-        play: (context, destination) => playMusicPad(context, destination)
+        // The sound option is not contextually typed, so the callback params
+        // are annotated here; at runtime the engine passes its audio context.
+        play: (context: PadContext, destination: AudioNode) => playMusicPad(context, destination)
       },
       engine: { id: "engine", bus: "sfx", asset: { url: sfxUrl("vehicle.thruster.layer0.on") }, volume: 0, loop: true },
       engineHigh: { id: "engineHigh", bus: "sfx", asset: { url: sfxUrl("vehicle.thruster.layer2.on") }, volume: 0, loop: true },
@@ -850,6 +859,15 @@ function respawn(withPenalty: boolean): void {
 }
 
 // ── events: checkpoints, timers, medals ──────────────────────────────────────
+/** Checkpoint sequence for the active event: Time Attack uses its circuit's
+ *  gate subset; Score Attack sweeps gates 1..9 then finishes across the start
+ *  line (gate 0), exactly one lap. Free Ride has no order. */
+function activeOrder(): number[] {
+  if (eventIndex === 0) return [...CIRCUITS[circuitIndex]!.checkpoints];
+  if (eventIndex === 2) return GATES.slice(1).map((gate) => gate.index);
+  return [];
+}
+
 function stepEventRules(dt: number): void {
   lapTime += dt;
   if (eventIndex === 1) {
@@ -860,7 +878,7 @@ function stepEventRules(dt: number): void {
   // Gate crossing (works across the s-wrap).
   const circuit = CIRCUITS[circuitIndex]!;
   const isTimeAttack = eventIndex === 0;
-  const order = isTimeAttack ? circuit.checkpoints : GATES.map((g) => g.index);
+  const order = activeOrder();
   const nextGate = checkpointIndex < order.length ? order[checkpointIndex]! : circuit.finishGate;
   const gate = GATES[nextGate]!;
   if (crossedS(carS, gate.s) && Math.abs(carU - gate.u) < 4.4 && !airborne) {
@@ -893,8 +911,6 @@ function crossedS(nowS: number, gateS: number): boolean {
   if (a <= b) return gateS > a && gateS <= b;
   return gateS > a || gateS <= b;
 }
-
-let lastCarS = 0;
 
 function finish(timedOut: boolean): void {
   phase = "finished";
@@ -969,13 +985,12 @@ function resetRun(nextEvent: number, nextCircuit: number, withToast: boolean): v
 
 function nextCircuitGate(): GateDef | null {
   if (eventIndex === 1) return null;
-  const circuit = CIRCUITS[circuitIndex]!;
-  const order = eventIndex === 0 ? circuit.checkpoints : GATES.map((g) => g.index);
-  return GATES[order[0]!]!;
+  const order = activeOrder();
+  return order.length > 0 ? GATES[order[0]!]! : GATES[CIRCUITS[circuitIndex]!.finishGate]!;
 }
 
 // ── persistence (local best-run table only) ─────────────────────────────────
-const BESTS_KEY = "vector-nine.bests.v1";
+// BESTS_KEY is declared with the game state above — see the TDZ note there.
 
 interface BestsShape {
   ta?: (number | null)[];
@@ -1078,7 +1093,7 @@ function buildScene(): ReturnType<typeof scene> {
       name: "parapet barriers",
       targetMaxDimension: 2.7,
       transforms: barrierTransforms(),
-      material: material.pbr({ color: "#c9c2b8", roughness: 0.9 }),
+      material: material.pbr({ color: "#a89f90", roughness: 0.9 }),
       instancingAware: true
     }).runtime(game.runtimeNode("vn-barriers", { tags: ["barrier", "scenery"] })),
     instances.model(assets.vnMast, {
@@ -1115,13 +1130,14 @@ function buildScene(): ReturnType<typeof scene> {
       castShadow: true
     }).runtime(game.runtimeNode("vn-coupe", { tags: ["coupe", "hero"] })),
 
-    // Invisible camera anchor: the follow rig reads its position/yaw each frame.
+    // Camera anchor: a 1 cm box riding inside the coupe (primitives carry no
+    // `visible` flag; sub-surface scale makes it unworthy of a pixel). The
+    // follow rig reads its position/yaw every frame regardless of drawing.
     primitives.box({
       name: "chase anchor",
       size: 0.01,
       position: [GATES[0]!.x, 1, GATES[0]!.z],
-      material: material.pbr({ color: "#000000" }),
-      visible: false
+      material: material.pbr({ color: "#000000" })
     }).runtime(game.runtimeNode("chase-anchor", { tags: ["anchor", "camera"] })),
 
     // Next-checkpoint marker ring (authored in XY; yaw faces it down the track).
@@ -1134,7 +1150,11 @@ function buildScene(): ReturnType<typeof scene> {
   ];
 
   return scene()
-    .add(looks.preset(LOOK_ID, { exposureEv: -0.15 }))
+    // fogDensityScale 0.45: the preset's full 30–180 m fog whitewashes the
+    // frame to flat grey once the chase view opens up at speed (measured mean
+    // luminance 211, neutral RGB). Halve it and pull exposure — the golden
+    // haze mood stays, the far deck stays readable.
+    .add(looks.preset(LOOK_ID, { exposureEv: -0.25, fogDensityScale: 0.45 }))
     .addMany(nodes)
     // One camera, one frustum. The target plane sits ~120 m AHEAD of the coupe
     // (past the far edge of readable content) because this engine build culls
@@ -1235,10 +1255,11 @@ function plinthTransforms(): AuraTransformSpec[] {
     const at = trackAt((i * TRACK_LENGTH) / MAST_SLOTS + 30);
     const right = rightOf(at.psi);
     const sigma = i % 2 === 0 ? 1 : -1;
+    const height = WALL_R - WATER_Y; // plinth rises out of the sea to the mast base
     transforms.push({
-      position: [at.x + right[0] * sigma * (radius - 4.5), WALL_R - 0.5, at.z + right[1] * sigma * (radius - 4.5)],
+      position: [at.x + right[0] * sigma * (radius - 4.5), WATER_Y + height / 2, at.z + right[1] * sigma * (radius - 4.5)],
       rotation: [0, at.psi, 0],
-      scale: [2.2, 1, 2.2]
+      scale: [2.2, height, 2.2]
     });
   }
   for (let i = 0; i < TOWER_SLOTS; i += 1) {
@@ -1314,7 +1335,7 @@ function gateTransforms(): AuraTransformSpec[] {
 
 function gateColors(): AuraColor[] {
   const circuit = CIRCUITS[circuitIndex]!;
-  const order = eventIndex === 0 ? circuit.checkpoints : GATES.map((g) => g.index);
+  const order = activeOrder();
   const nextGate = checkpointIndex < order.length ? order[checkpointIndex]! : circuit.finishGate;
   return GATES.map((gate) => {
     if (eventIndex === 1) return "#8d8578"; // Free Ride: all lit low

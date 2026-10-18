@@ -11,9 +11,9 @@ vehicles, worlds, art, audio and code are ours. Read the originality rules befor
 
 | # | Game | Genre | Reference (mechanics only) | Status |
 |---|---|---|---|---|
-| 01 | **Vector Nine** | 3D stunt-driving arena | `aymeric.dev/roadster` | to build |
-| 02 | **Backspin** | One-button trick chainer, 2.5D | `roadster.rocks` | to build |
-| 03 | **Prism Break** | Circular brick-breaker | `brick-party.html` | built, in polish |
+| 01 | **Vector Nine** | 3D stunt-driving arena | `aymeric.dev/roadster` | built, captured |
+| 02 | **Backspin** | One-button trick chainer, 2.5D | `roadster.rocks` | built, captured |
+| 03 | **Prism Break** | Circular brick-breaker | `brick-party.html` | built, captured |
 
 ### 01 — Vector Nine
 Thruster-assisted stunt driving: jump, hover, boost, drift, air rotation, driving up walls,
@@ -212,6 +212,38 @@ Note: `license` will be empty. That is honest — Meshy output is not CC0. Do no
 - **Instance colors multiply base color, not emissive.** Per-instance glow is not available; keep
   one emissive on the material and tint via instance color. A pink instance color under a blue
   emissive reads as dark purple.
+
+### Traps found finishing the slate (2026-10-18)
+
+- **Meshy remesh exports are vertex-split ~4×.** A remesh at 15k triangles arrived with 30k
+  vertices (≈2.2 verts/tri, near-soup index buffer). `simplify` stalls on it (no shared edges to
+  collapse — not an error-bound problem: even error 0.5 with borders unlocked does nothing) and
+  `weld` merges nothing (positions are already unique). **Fix: rebuild the vertex buffer keyed by
+  quantized position (1e-5), keeping the first attribute tuple per position, then remap indices.**
+  30,151 → 7,012 verts, zero degenerate triangles. See the coupe-remesh pipeline.
+- **"Motorcycle"/"bike" is a wheel prior — confirmed twice.** The second-generation prompt still
+  said "racing motorcycle with no wheels" and came back wheeled anyway. The fix that worked:
+  describe geometry only and never name the vehicle class — "hover speeder… completely flat
+  underside, absolutely no wheels and no wheel arches, two glowing cyan circular lift discs
+  recessed flush into the underside". (`bsSpeeder`.)
+- **model() node scale is a world-space extent — compute object tops from asset bounds.** A roof
+  scaled to `targetMaxDimension: 4` with bounds [1.899, 0.802, 1.823] is 0.422 × 4 ≈ 1.69 tall.
+  Mounting it centred at `GROUND_Y − 0.5` put its top at +0.345 — *above* the ride line — and
+  buried the bike inside the mesh (bike visible only with roofs hidden). Sink mounts so the top
+  surface sits where you want it: `y = rideTop − (boundsY / maxBounds) × extent / 2`.
+- **Bright Meshy textures blow out under night looks.** `material.pbr({ color: "#8fa0bd" })`
+  multiplies the baked texture into the palette without replacing it.
+- **Background jobs inherit the shell's cwd.** A background `meshy make … -o artifacts/meshy/…`
+  run after `cd arcade/<app>` lands its output inside that app dir. Always `cd` to the repo root
+  in the same command that launches a background job, and verify the `-o` directory at the
+  canonical path before trusting exit 0.
+- **shrink-glb.mjs gained `SIMPLIFY_LOCK_BORDER=false`** (let the simplifier cross UV-seam
+  borders). It did not unlock the remesh-split case above, but it is the right knob when a
+  normal asset stalls just over the ceiling.
+- **A faint 1px diagonal "line" seen once in a Prism Break capture is not reproducible** —
+  no band concentrates above the noise floor at either diagonal slope across 6 frames and 2
+  builds, and no scene primitive matches. Treated as a transient Metal rasterization artifact;
+  bisect again only if it reappears.
 
 ---
 
