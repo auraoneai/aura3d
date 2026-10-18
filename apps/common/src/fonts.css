@@ -1,0 +1,35 @@
+/* Licensed shell fonts, shared by standalone app shells.
+   Files are committed in-repo (public/fonts/graphik) — never reference the
+   external font library from product surfaces. */
+@font-face {
+  font-family: "Graphik";
+  src: url("/fonts/graphik/Graphik-Regular-Web.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Graphik";
+  src: url("/fonts/graphik/Graphik-RegularItalic-Web.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Graphik";
+  src: url("/fonts/graphik/Graphik-Medium-Web.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Graphik";
+  src: url("/fonts/graphik/Graphik-Semibold-Web.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+html {
+  font-synthesis: none;
+}

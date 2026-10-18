@@ -270,7 +270,7 @@ document.querySelectorAll<HTMLAnchorElement>(".showcase-card").forEach((card, in
 
   const launch = document.createElement("em");
   launch.className = "showcase-card__launch";
-  launch.innerHTML = "Open live experience <span aria-hidden=\"true\">↗</span>";
+  launch.textContent = "Open live experience";
   card.append(launch);
 });
 

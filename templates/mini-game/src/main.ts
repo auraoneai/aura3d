@@ -316,7 +316,7 @@ function movingLiftY(time: number): number {
 function createHud(): HTMLElement {
   const root = document.createElement("aside");
   root.id = "mini-game-hud";
-  root.style.cssText = "position:absolute;left:16px;top:16px;z-index:5;min-width:260px;font:600 13px/1.35 Inter,system-ui,sans-serif;color:#f5fbff;background:rgba(6,18,26,.66);border:1px solid rgba(160,210,240,.34);border-radius:8px;padding:12px;pointer-events:none";
+  root.style.cssText = "position:absolute;left:16px;top:16px;z-index:5;min-width:260px;font:500 13px/1.35 Graphik,system-ui,sans-serif;color:#1c2530;background:rgba(255,255,255,.92);border:1px solid rgba(28,37,48,.18);border-radius:8px;padding:12px;pointer-events:none";
   document.body.append(root);
   return root;
 }

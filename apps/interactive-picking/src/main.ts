@@ -560,7 +560,7 @@ function renderUi(root: HTMLElement, runtime: CurrentRoutesInteractivePickingRun
   root.innerHTML = `
     <section class="panel" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
       <div>
-        <h1>Aura3D 4.0 · Interactive Ray Picking</h1>
+        <h1>Aura3D 4.0 interactive ray picking</h1>
         <p>Scene ray picking for 3D PBR gallery artifacts and thresholded point clouds.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button" style="min-width:96px;width:auto;padding:8px 14px;border-radius:999px;">${escapeHtml(runtime.status)}</button>

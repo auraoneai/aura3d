@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Aura Clash fighting game poster">
+  <defs>
+    <radialGradient id="g" cx="50%" cy="42%" r="62%">
+      <stop offset="0" stop-color="#34ff9d" stop-opacity="0.34"/>
+      <stop offset="0.42" stop-color="#071a12" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="#020504"/>
+    </radialGradient>
+    <linearGradient id="blade" x1="0" x2="1">
+      <stop offset="0" stop-color="#34ff9d"/>
+      <stop offset="1" stop-color="#68dfff"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="16" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#g)"/>
+  <path d="M0 720h1600" stroke="#34ff9d" stroke-width="4" opacity=".5"/>
+  <path d="M180 760h1240" stroke="#68dfff" stroke-width="2" opacity=".28"/>
+  <g opacity=".22" stroke="#34ff9d">
+    <path d="M120 720 360 380M260 720 500 360M1340 720 1100 380M1480 720 1240 360"/>
+    <path d="M280 700h1040M330 650h940M390 600h820M460 550h680"/>
+  </g>
+  <g filter="url(#glow)">
+    <text x="100" y="240" fill="#f4fff6" font-family="Arial Black, Impact, sans-serif" font-size="132" letter-spacing="-8">AURA CLASH</text>
+    <rect x="102" y="270" width="760" height="16" fill="url(#blade)" opacity=".9"/>
+    <text x="108" y="330" fill="#a7ffd0" font-family="ui-monospace, Menlo, monospace" font-size="28" letter-spacing="7">TYPED GLB FIGHTERS · BROWSER GAME SHOWCASE</text>
+  </g>
+  <g transform="translate(310 430)">
+    <ellipse cx="150" cy="315" rx="120" ry="28" fill="#34ff9d" opacity=".24" filter="url(#glow)"/>
+    <rect x="105" y="90" width="90" height="210" rx="38" fill="#163c31" stroke="#34ff9d"/>
+    <circle cx="150" cy="55" r="54" fill="#eafff2"/>
+    <path d="M88 130 20 230" stroke="#34ff9d" stroke-width="34" stroke-linecap="round"/>
+    <path d="M212 130 292 220" stroke="#b7fff4" stroke-width="34" stroke-linecap="round"/>
+    <path d="M135 300 115 410" stroke="#06130f" stroke-width="46" stroke-linecap="round"/>
+    <path d="M170 300 220 408" stroke="#06130f" stroke-width="46" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(1030 430)">
+    <ellipse cx="150" cy="315" rx="120" ry="28" fill="#68dfff" opacity=".2" filter="url(#glow)"/>
+    <rect x="105" y="90" width="90" height="210" rx="38" fill="#102936" stroke="#68dfff"/>
+    <circle cx="150" cy="55" r="54" fill="#f8fff9"/>
+    <path d="M88 130 18 220" stroke="#68dfff" stroke-width="34" stroke-linecap="round"/>
+    <path d="M212 130 294 230" stroke="#fff1a0" stroke-width="34" stroke-linecap="round"/>
+    <path d="M135 300 95 410" stroke="#030707" stroke-width="46" stroke-linecap="round"/>
+    <path d="M170 300 240 408" stroke="#030707" stroke-width="46" stroke-linecap="round"/>
+  </g>
+  <text x="800" y="628" text-anchor="middle" fill="#fff1a0" font-family="Arial Black, Impact, sans-serif" font-size="96">VS</text>
+  <text x="800" y="820" text-anchor="middle" fill="#dfffee" font-family="ui-monospace, Menlo, monospace" font-size="28" letter-spacing="5">PLAYABLE · EVIDENCE · ACCESSIBILITY · DEPLOY CHECK</text>
+</svg>

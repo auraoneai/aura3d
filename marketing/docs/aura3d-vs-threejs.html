@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="/marketing/src/styles.css" />
 </head>
 <body>
-<nav class="nav"><div class="wrap nav-inner"><a href="/" class="brand"><svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,.12)"/><ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" opacity=".6" transform="rotate(-22 12 12)"/><circle cx="12" cy="12" r="1.6" fill="#4ade9d"/></svg><span>Aura3D</span></a><div class="nav-links"><a class="nav-link" href="/docs/api.html">Agent API</a><a class="nav-link" href="/apps/showcase-index/">Examples</a><a class="nav-link" href="/docs/templates.html">Templates</a><a class="nav-link" href="/docs/assets.html">Assets</a><a class="nav-link" href="/docs/deployment.html">Deploy</a></div><div class="nav-actions"><span class="nav-version">v4.0.1</span><a class="btn btn-ghost" href="/">Home</a><a class="btn btn-primary" href="/docs/agent-quickstart.html">Start building <span class="arr"></span></a></div></div></nav>
+<nav class="nav"><div class="wrap nav-inner"><a href="/" class="brand"><svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,.12)"/><ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" opacity=".6" transform="rotate(-22 12 12)"/><circle cx="12" cy="12" r="1.6" fill="#4ade9d"/></svg><span>Aura3D</span></a><div class="nav-links"><a class="nav-link" href="/docs/api.html">Agent API</a><a class="nav-link" href="/apps/showcase-index/">Examples</a><a class="nav-link" href="/docs/templates.html">Templates</a><a class="nav-link" href="/docs/assets.html">Assets</a><a class="nav-link" href="/docs/deployment.html">Deploy</a></div><div class="nav-actions"><span class="nav-version">v4.0.1</span><a class="btn btn-ghost" href="/">Home</a><a class="btn btn-primary" href="/docs/agent-quickstart.html">Start building</a></div></div></nav>
 
 <main class="compare-page">
   <header class="compare-hero">
@@ -23,7 +23,7 @@
       <span class="hero-tag"><span class="pill">4.0.0 LIVE</span><b>Aura3D 4.0.1</b><span class="mute">MIT open-source TypeScript 3D engine</span></span>
       <h1>Stop assembling renderer parts.<br /><em>Stop wiring 14 fragile npm packages to ship a 3D scene.</em></h1>
       <p class="compare-hero-lede">Three.js is a legendary low-level rendering kernel—not a complete application engine. The moment you step beyond a spinning cube, raw Three.js forces your team to hand-wire <code>WebGLRenderer</code>, <code>PerspectiveCamera</code>, <code>OrbitControls</code>, <code>GLTFLoader</code>, <code>DRACOLoader</code>, <code>KTX2Loader</code>, <code>RGBELoader</code>, <code>EffectComposer</code>, <code>PMREMGenerator</code>, <code>Rapier3D</code>, <code>Recast</code>, manual resize observers, and recursive <code>dispose()</code> loops. <strong>Aura3D 4.0.1 (<code>@aura3d/engine@4.0.1</code>)</strong> boots a deterministic WebGPU compute + WebGL2 rendering pipeline in <strong>18 lines of TypeScript</strong> with compile-time typed assets, physical PBR, HDR post-processing, rigid-body physics, Recast crowd steering, Gaussian splats, portal worlds, and automated Playwright certification.</p>
-      <div class="hero-cta"><a class="btn btn-primary" href="/apps/showcase-index/">Launch 50 live experiences <span class="arr"></span></a><a class="btn btn-ghost" href="/docs/agent-quickstart.html">Build your first scene</a></div>
+      <div class="hero-cta"><a class="btn btn-primary" href="/apps/showcase-index/">Launch 50 live experiences</a><a class="btn btn-ghost" href="/docs/agent-quickstart.html">Build your first scene</a></div>
       <div class="compare-facts">
         <div><strong>15 / 15</strong><span>selected correctness workloads</span></div>
         <div><strong>18 lines</strong><span>vs. ~120 lines of raw Three.js boilerplate</span></div>
@@ -129,7 +129,7 @@
         <div class="migration-col">
           <div class="migration-head">
             <span>Raw Three.js (<code>three@0.185.1</code> + 6 addons)</span>
-            <span class="migration-tag">~120 lines · manual lifecycle</span>
+            <span class="migration-tag">~120 lines, manual lifecycle</span>
           </div>
           <pre class="code"><code><span class="c">// 7+ imports, untyped string URLs, manual WASM decoders,</span>
 <span class="c">// manual PMREM/HDRI setup, manual EffectComposer, manual resize &amp; dispose</span>
@@ -176,7 +176,7 @@ controls.enableDamping = <span class="n">true</span>;
         <div class="migration-col aura">
           <div class="migration-head">
             <span>Aura3D 4.0.1 (<code>@aura3d/engine@4.0.1</code>)</span>
-            <span class="migration-tag">18 lines · typed &amp; verified</span>
+            <span class="migration-tag">18 lines, typed &amp; verified</span>
           </div>
           <pre class="code"><code><span class="k">import</span> { createAuraApp, environment, light, model, orbitCamera, post } <span class="k">from</span> <span class="s">'@aura3d/engine'</span>;
 <span class="k">import</span> { assets } <span class="k">from</span> <span class="s">'./aura-assets'</span>;
@@ -229,10 +229,10 @@ controls.enableDamping = <span class="n">true</span>;
     <p class="compare-note">The set proves these named outcomes, not universal visual parity, renderer-feature parity, performance non-inferiority, physical-device XR, general TSL ergonomics, or the breadth of Three.js’s ecosystem. Native WebGPU passed on host hardware; the clean Linux container without GPU passthrough passed 23 of 24 browser assertions.</p>
   </div></section>
 
-  <section class="compare-cta"><div class="wrap"><span class="eyebrow">Build now</span><h2>Less assembly.<br />More application.</h2><p>Give your team and coding agents a typed, inspectable path from asset to interactive, deployable browser 3D.</p><div class="hero-cta"><a class="btn btn-primary" href="/docs/agent-quickstart.html">Build the first scene <span class="arr"></span></a><a class="btn btn-ghost" href="/apps/showcase-index/">Launch the examples</a></div></div></section>
+  <section class="compare-cta"><div class="wrap"><span class="eyebrow">Build now</span><h2>Less assembly.<br />More application.</h2><p>Give your team and coding agents a typed, inspectable path from asset to interactive, deployable browser 3D.</p><div class="hero-cta"><a class="btn btn-primary" href="/docs/agent-quickstart.html">Build the first scene</a><a class="btn btn-ghost" href="/apps/showcase-index/">Launch the examples</a></div></div></section>
 </main>
 
-<footer><div class="wrap"><div class="foot-bottom"><span>© 2026 Aura3D · @aura3d/engine v4.0.1 · MIT licensed</span><span>Comparison locked to Three.js 0.185.1 · no universal score</span></div></div></footer>
+<footer><div class="wrap"><div class="foot-bottom"><span>© 2026 Aura3D, @aura3d/engine v4.0.1, MIT licensed</span><span>Comparison locked to Three.js 0.185.1, no universal score</span></div></div></footer>
 <script type="module" src="/marketing/src/main.ts"></script>
 </body>
 </html>

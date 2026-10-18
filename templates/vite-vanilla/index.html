@@ -4,7 +4,34 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Aura3D Vanilla Starter</title>
-    <style>html, body { margin: 0; height: 100%; background: #2b2f36; } canvas { display: block; width: 100vw; height: 100vh; }</style>
+    <style>
+      /* Licensed UI face, committed with the template (public/fonts/graphik).
+         The dark canvas backdrop is scene content; any DOM chrome is light. */
+      @font-face {
+        font-family: "Graphik";
+        src: url("/fonts/graphik/Graphik-Regular-Web.woff2") format("woff2");
+        font-weight: 400; font-style: normal; font-display: swap;
+      }
+      @font-face {
+        font-family: "Graphik";
+        src: url("/fonts/graphik/Graphik-RegularItalic-Web.woff2") format("woff2");
+        font-weight: 400; font-style: italic; font-display: swap;
+      }
+      @font-face {
+        font-family: "Graphik";
+        src: url("/fonts/graphik/Graphik-Medium-Web.woff2") format("woff2");
+        font-weight: 500; font-style: normal; font-display: swap;
+      }
+      :root { color-scheme: light; }
+      html, body { margin: 0; height: 100%; background: #2b2f36; }
+      body {
+        font-family: "Graphik", system-ui, -apple-system, sans-serif;
+        font-synthesis: none;
+        font-size: 13px;
+        color: #1c2530;
+      }
+      canvas { display: block; width: 100vw; height: 100vh; }
+    </style>
   </head>
   <body>
     <canvas id="app" width="960" height="540"></canvas>

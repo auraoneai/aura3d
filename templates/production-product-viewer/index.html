@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>A3D Product Viewer</title>
     <style>
-      body{margin:0;background:#0a0d10;color:#eef2f6;font-family:Inter,system-ui,sans-serif}.shell{display:grid;grid-template-columns:minmax(640px,1fr) 360px;min-height:100vh}canvas{width:100%;height:100vh;display:block;background:#07090c}.panel{display:grid;align-content:start;gap:12px;padding:18px;background:#111820;border-left:1px solid #27313b}.panel h1{font-size:18px;margin:0}.panel p{margin:0;color:#aab5c4;font-size:13px;line-height:1.4}.panel label{display:grid;gap:6px;font-size:12px;color:#d8e0eb}.panel button{border:1px solid #41506a;border-radius:6px;background:#1f6feb;color:white;font:inherit;font-weight:700;padding:10px 12px}.metrics{display:grid;gap:8px}.metrics span{border:1px solid #27313b;border-radius:6px;padding:8px;color:#c9d4e2;font-size:12px}@media(max-width:860px){.shell{grid-template-columns:1fr}canvas{height:auto;aspect-ratio:1}.panel{border-left:0;border-top:1px solid #27313b}}
+      /* Licensed UI face, committed with the template (public/fonts/graphik). */
+      @font-face{font-family:"Graphik";src:url("/fonts/graphik/Graphik-Regular-Web.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+      @font-face{font-family:"Graphik";src:url("/fonts/graphik/Graphik-RegularItalic-Web.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+      @font-face{font-family:"Graphik";src:url("/fonts/graphik/Graphik-Medium-Web.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+      :root{color-scheme:light}
+      body{margin:0;background:#f4f6f9;color:#1c2530;font-family:"Graphik",system-ui,-apple-system,sans-serif;font-synthesis:none;font-size:13px;line-height:1.45}.shell{display:grid;grid-template-columns:minmax(640px,1fr) 360px;min-height:100vh}canvas{width:100%;height:100vh;display:block;background:#07090c}.panel{display:grid;align-content:start;gap:12px;padding:18px;background:#ffffff;border-left:1px solid #d8dde5}.panel h1{font-size:18px;font-weight:600;margin:0}.panel p{margin:0;color:#566272;font-size:13px;line-height:1.4}.panel label{display:grid;gap:6px;font-size:12px;color:#1c2530}.panel button{border:1px solid #1f6feb;border-radius:6px;background:#1f6feb;color:white;font:inherit;font-weight:500;min-height:32px;padding:6px 12px}.metrics{display:grid;gap:8px}.metrics span{border:1px solid #d8dde5;border-radius:6px;padding:8px;color:#1c2530;background:#f7f9fb;font-size:12px}@media(max-width:860px){.shell{grid-template-columns:1fr}canvas{height:auto;aspect-ratio:1}.panel{border-left:0;border-top:1px solid #d8dde5}}
     </style>
   </head>
   <body>

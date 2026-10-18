@@ -818,7 +818,7 @@ function renderUi(root: HTMLElement, runtime: CurrentRoutesWebXRInteractionsRunt
     <section class="panel" style="display:flex;flex-direction:column;gap:14px;">
       <div class="panel-heading" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
         <div>
-          <h1>Aura3D 4.0 · WebXR Spatial Interactions</h1>
+          <h1>Aura3D 4.0 WebXR spatial interactions</h1>
           <p>Public WebXR session controller for VR controller input, spatial manipulation, hand tracking, and AR hit-test placement using injected session evidence.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}" style="flex-shrink:0;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;color:#f8fafc;">${runtime.statusLabel}</span>

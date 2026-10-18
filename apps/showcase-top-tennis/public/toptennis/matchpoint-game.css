@@ -10,12 +10,12 @@
   --mp-paper: #f4f2e9;
   --mp-lime: #dbf77b;
   --mp-muted: #bccac6;
-  font-family: Whitney, Arial, sans-serif;
+  font-family: Graphik, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 :is(.mode-menu, .roster-dialog, .appearance-dialog, .online-panel, .tournament-draw-dialog) :is(button, input, select, textarea) {
-  font-family: Whitney, Arial, sans-serif;
+  font-family: Graphik, Arial, sans-serif;
 }
 
 :is(.mode-menu, .roster-dialog, .appearance-dialog, .online-panel) :is(h1, h2),

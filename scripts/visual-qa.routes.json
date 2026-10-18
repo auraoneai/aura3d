@@ -1,0 +1,187 @@
+{
+  "$comment": [
+    "Visual-QA routes for the aura3d marketing surface scope: marketing landing,",
+    "all 15 docs pages, the showcase index, and all 20 production showcase game",
+    "routes (list sourced from marketing/scripts/build-showcase-routes.mjs const",
+    "showcaseRoutes). Everything serves from ONE static dir: marketing/dist,",
+    "(vite build outputs /, /docs/*.html, and /apps/<route>/ into it).",
+    "Run: node scripts/visual-qa.mjs --static-dir marketing/dist (port 3180)."
+  ],
+  "baseUrl": "http://127.0.0.1:3180",
+  "identity": {
+    "path": "/",
+    "marker": "<title>Aura3D: AI-Native TypeScript 3D SDK for Browser 3D Apps</title>"
+  },
+  "widths": [
+    1440,
+    390
+  ],
+  "shots": [
+    {
+      "name": "marketing-home",
+      "path": "/"
+    },
+    {
+      "name": "docs-index",
+      "path": "/docs/index.html"
+    },
+    {
+      "name": "docs-agent-quickstart",
+      "path": "/docs/agent-quickstart.html"
+    },
+    {
+      "name": "docs-agent-rules",
+      "path": "/docs/agent-rules.html"
+    },
+    {
+      "name": "docs-api",
+      "path": "/docs/api.html"
+    },
+    {
+      "name": "docs-assets",
+      "path": "/docs/assets.html"
+    },
+    {
+      "name": "docs-aura3d-vs-threejs",
+      "path": "/docs/aura3d-vs-threejs.html"
+    },
+    {
+      "name": "docs-claims",
+      "path": "/docs/claims.html"
+    },
+    {
+      "name": "docs-claude",
+      "path": "/docs/claude.html"
+    },
+    {
+      "name": "docs-cursor",
+      "path": "/docs/cursor.html"
+    },
+    {
+      "name": "docs-deployment",
+      "path": "/docs/deployment.html"
+    },
+    {
+      "name": "docs-evidence",
+      "path": "/docs/evidence.html"
+    },
+    {
+      "name": "docs-prompt-recipes",
+      "path": "/docs/prompt-recipes.html"
+    },
+    {
+      "name": "docs-templates",
+      "path": "/docs/templates.html"
+    },
+    {
+      "name": "docs-aura-clash",
+      "path": "/docs/aura-clash.html",
+      "noScroll": true
+    },
+    {
+      "name": "docs-aura-clash-showcase",
+      "path": "/docs/aura-clash-showcase.html",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-index",
+      "path": "/apps/showcase-index/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-top-tennis",
+      "path": "/apps/showcase-top-tennis/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-roadster-rush",
+      "path": "/apps/showcase-roadster-rush/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-heatsink",
+      "path": "/apps/showcase-heatsink/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-teleoperator",
+      "path": "/apps/showcase-teleoperator/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-iron-crown",
+      "path": "/apps/showcase-iron-crown/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-pips-big-leap",
+      "path": "/apps/showcase-pips-big-leap/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-aura-hoops-3d",
+      "path": "/apps/showcase-aura-hoops-3d/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-aura-diamond-3d",
+      "path": "/apps/showcase-aura-diamond-3d/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-aura-fc-3d",
+      "path": "/apps/showcase-aura-fc-3d/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-red-zone-3d",
+      "path": "/apps/showcase-red-zone-3d/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-aura-links-3d",
+      "path": "/apps/showcase-aura-links-3d/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-top-tennis-v2",
+      "path": "/apps/showcase-top-tennis-v2/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-roadster-rush-v2",
+      "path": "/apps/showcase-roadster-rush-v2/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-heatsink-v2",
+      "path": "/apps/showcase-heatsink-v2/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-teleoperator-v2",
+      "path": "/apps/showcase-teleoperator-v2/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-bunker-zero",
+      "path": "/apps/showcase-bunker-zero/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-slingshot-siege",
+      "path": "/apps/showcase-slingshot-siege/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-dot-dash-3d",
+      "path": "/apps/showcase-dot-dash-3d/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-cross-hop",
+      "path": "/apps/showcase-cross-hop/",
+      "noScroll": true
+    }
+  ]
+}

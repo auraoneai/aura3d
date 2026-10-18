@@ -216,14 +216,21 @@ function createRenderItems(playerX: number, pickupScale: number): RenderItem[] {
 function installStyles(): void {
   const style = document.createElement("style");
   style.textContent = `
-    html, body, #app { margin: 0; min-height: 100%; background: #0f151c; color: #edf4f8; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    /* Licensed UI face, committed with the template (public/fonts/graphik). */
+    @font-face { font-family: "Graphik"; src: url("/fonts/graphik/Graphik-Regular-Web.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+    @font-face { font-family: "Graphik"; src: url("/fonts/graphik/Graphik-RegularItalic-Web.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+    @font-face { font-family: "Graphik"; src: url("/fonts/graphik/Graphik-Medium-Web.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+    :root { color-scheme: light; }
+    html, body, #app { margin: 0; min-height: 100%; background: #f4f6f9; color: #1c2530; font-family: "Graphik", system-ui, -apple-system, sans-serif; font-synthesis: none; font-size: 13px; line-height: 1.45; }
     .shell { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) 22rem; }
+    /* Dark canvas backdrop is scene content; the side panel is light chrome. */
     canvas { width: 100%; height: 100vh; display: block; background: #0d131a; outline: none; }
-    section { border-left: 1px solid #2a3842; background: #151e25; padding: 1.25rem; display: grid; align-content: start; gap: 1rem; }
+    section { border-left: 1px solid #d8dde5; background: #ffffff; padding: 1.25rem; display: grid; align-content: start; gap: 1rem; }
     h1, p { margin: 0; }
-    p { color: #bbcad4; }
-    pre { margin: 0; white-space: pre-wrap; color: #b8e4b3; font-size: 0.78rem; line-height: 1.4; }
-    @media (max-width: 780px) { .shell { grid-template-columns: 1fr; } canvas { height: 64vh; } section { border-left: 0; border-top: 1px solid #2a3842; } }
+    h1 { font-size: 1.375rem; font-weight: 500; }
+    p { color: #566272; }
+    pre { margin: 0; white-space: pre-wrap; color: #0d5c3f; font-size: 12px; line-height: 1.4; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    @media (max-width: 780px) { .shell { grid-template-columns: 1fr; } canvas { height: 64vh; } section { border-left: 0; border-top: 1px solid #d8dde5; } }
   `;
   document.head.append(style);
 }

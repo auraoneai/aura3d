@@ -283,10 +283,10 @@ function ensureCompactWowHudStyles(): void {
     .hud {
       max-width: 280px !important;
       padding: 13px 14px !important;
-      background: rgba(8, 13, 23, 0.78) !important;
+      background: rgba(255, 255, 255, 0.94) !important;
       backdrop-filter: blur(12px) !important;
       -webkit-backdrop-filter: blur(12px) !important;
-      border-color: rgba(164, 214, 255, 0.2) !important;
+      border-color: rgba(28, 37, 48, 0.18) !important;
     }
     .hud h1 {
       margin: 8px 0 4px !important;
@@ -294,7 +294,7 @@ function ensureCompactWowHudStyles(): void {
       line-height: 1.15 !important;
     }
     .hud p {
-      font-size: 11.5px !important;
+      font-size: 12px !important;
       line-height: 1.35 !important;
     }
     .hud .actions {
@@ -304,7 +304,7 @@ function ensureCompactWowHudStyles(): void {
     .hud button {
       min-height: 28px !important;
       padding: 0 9px !important;
-      font-size: 11px !important;
+      font-size: 12px !important;
     }
     .hud dl {
       margin-top: 9px !important;
@@ -314,11 +314,11 @@ function ensureCompactWowHudStyles(): void {
       padding: 6px 8px !important;
     }
     .hud dt {
-      font-size: 9.5px !important;
+      font-size: 12px !important;
     }
     .hud dd {
       margin-top: 2px !important;
-      font-size: 11.5px !important;
+      font-size: 12px !important;
     }
   `;
   document.head.appendChild(style);

@@ -479,7 +479,7 @@ function assertBuiltRoutes() {
     }
   }
 
-  const redirectHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=/apps/showcase-index/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><title>Aura3D Showcase</title><script>window.location.replace("/apps/showcase-index/");</script></head><body style="background:#06080f;color:#f3f5f8;font-family:sans-serif;padding:24px">Redirecting to <a href="/apps/showcase-index/" style="color:#4de2ff">Aura3D Showcase Index</a>...</body></html>\n`;
+  const redirectHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=/apps/showcase-index/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><title>Aura3D Showcase</title><script>window.location.replace("/apps/showcase-index/");</script></head><body style="background:#fbfbf8;color:#1a1e26;font-family:sans-serif;padding:24px">Redirecting to <a href="/apps/showcase-index/" style="color:#0e6b7c">Aura3D Showcase Index</a>...</body></html>\n`;
 
   for (const route of retiredPrototypeRoutes) {
     const retiredDir = path.join(distDir, "apps", route);

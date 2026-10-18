@@ -155,7 +155,7 @@ function installProductStudioStyles(): void {
       overflow: hidden;
       background: #151716;
       color: #f2f0e8;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: "Graphik", system-ui, -apple-system, "Segoe UI", sans-serif;
     }
 
     button, input {

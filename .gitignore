@@ -323,6 +323,10 @@ test-data/
 !public/aura-assets/Textures/
 !public/aura-assets/Textures/*.png
 
+# Brand touch icon (SEO/apple-touch-icon) is a source asset, not a build artifact.
+!marketing/public/apple-touch-icon.png
+!public/apple-touch-icon.png
+
 fixtures/
 # PRD-15 lane fixtures (codemod inputs/outputs, C-30 lean template scenes).
 !tests/qr/prd15/fixtures/

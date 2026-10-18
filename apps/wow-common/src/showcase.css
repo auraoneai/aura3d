@@ -1,15 +1,48 @@
+/* Wow/sample showcase shell — light chrome over the cinematic viewport.
+   The fullscreen canvas keeps its own dark backdrop (content, not chrome);
+   the HUD card is light-first chrome: Graphik, 12px floor, 400/500 weights. */
+@font-face {
+  font-family: "Graphik";
+  src: url("/fonts/graphik/Graphik-Regular-Web.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Graphik";
+  src: url("/fonts/graphik/Graphik-RegularItalic-Web.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Graphik";
+  src: url("/fonts/graphik/Graphik-Medium-Web.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Graphik";
+  src: url("/fonts/graphik/Graphik-Semibold-Web.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  color-scheme: dark;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #020407;
-  color: #f5f7fb;
+  color-scheme: light;
+  font-family: "Graphik", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  background: #f4f6f9;
+  color: #1c2530;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   overflow: hidden;
-  background: #020407;
+  background: #f4f6f9;
 }
 
 #viewport {
@@ -18,6 +51,7 @@ body {
   display: block;
   width: 100vw;
   height: 100vh;
+  /* Dark backdrop behind the cinematic scene is content, not chrome. */
   background: #020407;
   touch-action: none;
   transform-origin: 55% 52%;
@@ -51,48 +85,54 @@ html[data-chrome="hidden"] #app {
 
 .hud {
   box-sizing: border-box;
-  padding: 18px;
-  border: 1px solid rgba(210, 224, 246, 0.24);
+  padding: 16px;
+  border: 1px solid rgba(28, 37, 48, 0.16);
   border-radius: 8px;
-  background: rgba(8, 11, 18, 0.58);
-  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.38);
-  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.14);
+  backdrop-filter: blur(14px);
+  font-size: 13px;
+  color: #1c2530;
 }
 
 .hud.is-error {
-  border-color: rgba(255, 120, 135, 0.45);
+  border-color: rgba(178, 34, 52, 0.4);
 }
 
 .state {
   display: inline-flex;
-  padding: 5px 10px;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 10px;
   border-radius: 999px;
-  background: #2d6f51;
-  color: #eafff5;
+  background: #e3f3ea;
+  color: #0d5c3f;
   font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
+  font-weight: 500;
 }
 
 .state.is-error {
-  background: #8a2f3d;
+  background: #fdecee;
+  color: #9b2233;
 }
 
 h1 {
   margin: 12px 0 6px;
-  font-size: 24px;
+  font-size: 22px;
+  font-weight: 600;
   letter-spacing: 0;
 }
 
 p {
   margin: 0;
-  color: #d4deef;
+  color: #566272;
+  font-size: 13px;
   line-height: 1.45;
 }
 
 .credit {
   margin-top: 8px;
-  color: #aab5c4;
+  color: #566272;
   font-size: 12px;
 }
 
@@ -105,24 +145,23 @@ dl {
 
 dl div {
   min-width: 0;
-  border: 1px solid rgba(210, 224, 246, 0.2);
+  border: 1px solid rgba(28, 37, 48, 0.14);
   border-radius: 6px;
-  padding: 9px 10px;
-  background: rgba(4, 7, 12, 0.58);
+  padding: 7px 10px;
+  background: #f7f9fb;
 }
 
 dt {
-  color: #a6b3c8;
-  font-size: 11px;
-  text-transform: uppercase;
+  color: #566272;
+  font-size: 12px;
 }
 
 dd {
   margin: 3px 0 0;
   overflow: hidden;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 800;
+  color: #1c2530;
+  font-size: 14px;
+  font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -132,5 +171,5 @@ pre {
   overflow: auto;
   margin: 14px 0 0;
   white-space: pre-wrap;
-  color: #ffd7d7;
+  color: #9b2233;
 }

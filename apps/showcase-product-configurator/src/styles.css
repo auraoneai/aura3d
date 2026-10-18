@@ -1,8 +1,8 @@
+@import url("/apps/common/src/fonts.css");
+
 :root {
   color-scheme: dark;
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: "Graphik", system-ui, -apple-system, "Segoe UI", sans-serif;
   --surface-primary: #070a0c;
   --surface-secondary: rgba(17, 23, 26, 0.78);
   --surface-elevated: rgba(23, 32, 36, 0.9);

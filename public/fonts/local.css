@@ -1,0 +1,41 @@
+/* Shared showcase-local fonts — honest declarations of the committed
+   licensed files (see /fonts/ in this public dir).
+   Text face: Graphik Web. Code face: TT Commons Pro Mono (true monospace).
+   Aeonik Fono is proportional and is deliberately NOT wired as a mono face. */
+
+@font-face {
+  font-family: "Graphik Web";
+  src: url("/fonts/graphik/Graphik-Regular-Web.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Graphik Web";
+  src: url("/fonts/graphik/Graphik-RegularItalic-Web.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Graphik Web";
+  src: url("/fonts/graphik/Graphik-Medium-Web.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Graphik Web";
+  src: url("/fonts/graphik/Graphik-Semibold-Web.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TT Commons Pro Mono";
+  src: url("/fonts/tt-commons-mono/TT-Commons-Pro-Mono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
