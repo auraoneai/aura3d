@@ -921,7 +921,8 @@ async function bootThermalDriftShowcase(): Promise<void> {
   const auraApp = createAuraApp("#app", {
     scene: buildThermalDriftScene(),
     renderer: {
-      quality: "high"
+      quality: "high",
+      qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
     },
     diagnostics: false
   });
@@ -1061,9 +1062,17 @@ async function bootThermalDriftShowcase(): Promise<void> {
   });
 
   const pressedKeys = new Set<string>();
-  let lastManualInputTime = -10;
+  const urlParams = new URLSearchParams(window.location.search);
+  let autopilot = urlParams.get("autoplay") === "1" || urlParams.get("demo") === "1";
   let pointerFireHeld = false;
   let pointerBoostHeld = false;
+
+  if (hudAutopilot) {
+    hudAutopilot.addEventListener("click", () => {
+      autopilot = !autopilot;
+      (hudAutopilot as HTMLElement).blur?.();
+    });
+  }
 
   function showBanner(text: string, duration = 1.6): void {
     if (hudBanner) {
@@ -1337,19 +1346,14 @@ async function bootThermalDriftShowcase(): Promise<void> {
       const dId = DRONE_ORDER[idx];
       if (dId) selectDrone(dId);
     } else if (ev.code === "KeyQ") {
-      lastManualInputTime = simTime;
       triggerShockwave();
     } else if (ev.code === "KeyR") {
-      lastManualInputTime = simTime;
       triggerBarrelRoll();
     } else if (ev.code === "KeyC") {
-      lastManualInputTime = simTime;
       dropProximityMine();
     } else if (ev.code === "KeyE") {
-      lastManualInputTime = simTime;
       useHeldItem();
     } else if (ev.code === "KeyF") {
-      lastManualInputTime = simTime;
       fireHomingMissile();
     }
   });
@@ -1360,7 +1364,6 @@ async function bootThermalDriftShowcase(): Promise<void> {
 
   const stageEl = document.getElementById("app");
   stageEl?.addEventListener("mousedown", (ev) => {
-    lastManualInputTime = simTime;
     if (ev.button === 0) pointerFireHeld = true;
     if (ev.button === 2) pointerBoostHeld = true;
   });
@@ -1435,6 +1438,9 @@ async function bootThermalDriftShowcase(): Promise<void> {
     minimapCtx.stroke();
   }
 
+  // Wait for all GLB assets & scene nodes to finish loading before starting simulation or setting ready flags
+  await auraApp.ready();
+
   // Main 60 FPS Combat & Racing Frame Loop
   auraApp.onFrame(({ dt }) => {
     const step = clamp(dt, 1 / 240, 0.05);
@@ -1454,20 +1460,11 @@ async function bootThermalDriftShowcase(): Promise<void> {
       pressedKeys.has("ShiftLeft") || pressedKeys.has("ShiftRight") || pointerBoostHeld;
     const manualFire = pressedKeys.has("Space") || pointerFireHeld;
 
-    if (
-      Math.abs(manualSteer) > 0.05 ||
-      Math.abs(manualPitch) > 0.05 ||
-      manualBoost ||
-      manualFire
-    ) {
-      lastManualInputTime = simTime;
-    }
-
-    const autopilotActive = simTime - lastManualInputTime > 1.2;
+    const autopilotActive = autopilot;
     if (hudAutopilot) {
       hudAutopilot.textContent = autopilotActive
         ? "AI DEMO FLIGHT: ACTIVE"
-        : "PILOT CONTROL: MANUAL";
+        : "PILOT CONTROL: MANUAL (AUTO OFF)";
       hudAutopilot.classList.toggle("manual", !autopilotActive);
     }
 
@@ -1568,7 +1565,9 @@ async function bootThermalDriftShowcase(): Promise<void> {
     }
 
     // Lateral & vertical flight physics
-    const centrifugalPull = -trackSample.curvature * 5.5;
+    const centrifugalPull = autopilotActive
+      ? -trackSample.curvature * 5.5
+      : -trackSample.curvature * 1.5 - playerX * (Math.abs(steerCmd) < 0.05 ? 0.65 : 0);
     playerVx = lerp(playerVx, steerCmd * 15.5 + centrifugalPull, clamp(step * 7.5, 0, 1));
     playerVy = lerp(playerVy, pitchCmd * 6.5, clamp(step * 7.5, 0, 1));
     playerX = clamp(playerX + playerVx * step, -TRACK_HALF_WIDTH + 1.6, TRACK_HALF_WIDTH - 1.6);
@@ -1957,6 +1956,7 @@ async function bootThermalDriftShowcase(): Promise<void> {
       route: "showcase-heatsink",
       engine: "@aura3d/engine",
       ready: true,
+      autopilot,
       drone: selectedDrone,
       circuit: selectedCircuit,
       mode: selectedMode,
@@ -1984,6 +1984,7 @@ async function bootThermalDriftShowcase(): Promise<void> {
     getState: () => ({
       route: "showcase-heatsink",
       ready: true,
+      autopilot,
       drone: selectedDrone,
       circuit: selectedCircuit,
       mode: selectedMode,
@@ -1998,7 +1999,10 @@ async function bootThermalDriftShowcase(): Promise<void> {
   };
 
   (window as unknown as Record<string, unknown>).__AURA3D_SHOWCASE_HEATSINK__ = globalApi;
+  auraApp.step(1 / 60);
+  document.getElementById("boot")?.classList.add("done");
   document.body.dataset.aura3dReady = "true";
+  auraApp.resume();
 }
 
 void bootThermalDriftShowcase();

@@ -322,11 +322,14 @@ const STUDIO = {
   hair: ["#1a1410", "#3a2c20", "#5e503f", "#0d0d12", "#7a4a2a", "#c7c7cf"]
 };
 
+const initialParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+
 const game_ = {
   mode: "quick" as ModeId,
   phase: "menu" as Phase,
   venue: "rucker" as VenueId,
   diff: "pro" as DiffId,
+  autopilot: initialParams.get("autoplay") === "1" || initialParams.get("demo") === "1",
   target: 11,
   scoreHome: 0,
   scoreAway: 0,
@@ -335,7 +338,7 @@ const game_ = {
   mustClear: false,
   jam: 0.35,
   jamFull: false,
-  shotMeter: { active: false, t: 0, g0: 0.66, g1: 0.78, perfect: 0.72, frames: 0 },
+  shotMeter: { active: false, t: 0, g0: 0.66, g1: 0.78, perfect: 0.72, frames: 0, tapRelease: false },
   homeSquad: SQUADS[0]!,
   awaySquad: SQUADS[4]!,
   lab: { score: 0, streak: 0, best: 0, attempts: 0, style: 0 },
@@ -484,6 +487,7 @@ function buildAthlete(id: string, _team: TeamId): any[] {
   return [
     model(athleteAsset, { name: id, targetHeight: 1.92, scaleMode: "fit", castShadow: true, receiveShadow: true })
       .position(0, 0.96, 6)
+      .animate({ clip: "Idle_Loop", loop: true, speed: 1.0 })
       .runtime(game.runtimeNode(id)),
     ...buildAthleteAccessories(id, _team)
   ];
@@ -504,6 +508,7 @@ function buildCrowd(_v: VenueSpec): any[] {
     model(assets.hoopsAthleteGuard, { name: "referee", targetHeight: 1.88, scaleMode: "fit", castShadow: true, receiveShadow: true })
       .position(-8.2, 0.94, 3.2)
       .rotate(0, Math.PI / 2, 0)
+      .animate({ clip: "Ready", loop: true, speed: 1.0 })
       .runtime(game.runtimeNode("referee"))
   ];
   // Front-row 3D Meshy courtside spectators (animated in the frame loop)
@@ -516,6 +521,7 @@ function buildCrowd(_v: VenueSpec): any[] {
       model(fanAsset, { name: `waver-${i}`, targetHeight: 1.86, scaleMode: "fit", castShadow: true })
         .position(x, 0.93, z)
         .rotate(0, yaw, 0)
+        .animate({ clip: "Idle_Loop", loop: true, speed: 1.08 })
         .runtime(game.runtimeNode(`waver-${i}`))
     );
   }
@@ -620,12 +626,12 @@ function buildVenueDressing(v: VenueSpec): any[] {
   nodes.push(
     model(assets.hoopsBallCart, { name: "ball-rack", targetHeight: 1.15 }).position(-8.9, 0.58, 9.4).rotate(0, 0.5, 0),
     model(assets.hoopsTrophy, { name: "trophy-case", targetHeight: 1.7, castShadow: false }).position(9.2, 0.85, -3.4).rotate(0, -0.8, 0).runtime(game.runtimeNode("trophy-case")),
-    model(assets.hoopsAthleteBig, { name: "coach-home", targetHeight: 1.94, scaleMode: "fit", castShadow: true }).position(-8.6, 0.97, 5.8).rotate(0, Math.PI / 2, 0),
-    model(assets.hoopsAthleteBig, { name: "coach-away", targetHeight: 1.94, scaleMode: "fit", castShadow: true }).position(8.6, 0.97, 5.8).rotate(0, -Math.PI / 2, 0),
-    model(assets.hoopsAthleteGuard, { name: "bench-shooter", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(-8.6, 0.96, 7.2).rotate(0, Math.PI / 2, 0),
-    model(assets.hoopsAthleteBig, { name: "bench-defender", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(-8.6, 0.96, 8.4).rotate(0, Math.PI / 2, 0),
-    model(assets.hoopsAthleteGuard, { name: "warmup-scorer", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(8.6, 0.96, 7.2).rotate(0, -Math.PI / 2, 0),
-    model(assets.hoopsAthleteBig, { name: "warmup-defender2", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(8.6, 0.96, 8.4).rotate(0, -Math.PI / 2, 0)
+    model(assets.hoopsAthleteBig, { name: "coach-home", targetHeight: 1.94, scaleMode: "fit", castShadow: true }).position(-8.6, 0.97, 5.8).rotate(0, Math.PI / 2, 0).animate({ clip: "Ready", loop: true, speed: 1.0 }),
+    model(assets.hoopsAthleteBig, { name: "coach-away", targetHeight: 1.94, scaleMode: "fit", castShadow: true }).position(8.6, 0.97, 5.8).rotate(0, -Math.PI / 2, 0).animate({ clip: "Ready", loop: true, speed: 1.0 }),
+    model(assets.hoopsAthleteGuard, { name: "bench-shooter", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(-8.6, 0.96, 7.2).rotate(0, Math.PI / 2, 0).animate({ clip: "Idle_Loop", loop: true, speed: 1.0 }),
+    model(assets.hoopsAthleteBig, { name: "bench-defender", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(-8.6, 0.96, 8.4).rotate(0, Math.PI / 2, 0).animate({ clip: "Idle_Loop", loop: true, speed: 1.0 }),
+    model(assets.hoopsAthleteGuard, { name: "warmup-scorer", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(8.6, 0.96, 7.2).rotate(0, -Math.PI / 2, 0).animate({ clip: "Idle_Loop", loop: true, speed: 1.0 }),
+    model(assets.hoopsAthleteBig, { name: "warmup-defender2", targetHeight: 1.92, scaleMode: "fit", castShadow: true }).position(8.6, 0.96, 8.4).rotate(0, -Math.PI / 2, 0).animate({ clip: "Idle_Loop", loop: true, speed: 1.0 })
   );
 
   // Court wear decals
@@ -678,6 +684,7 @@ function buildScene(v: VenueSpec): any {
 /* ------------------------------------------------------------------ *
  *  App boot                                                           *
  * ------------------------------------------------------------------ */
+let appReady = false;
 let framesRendered = 0;
 let venue: VenueSpec = VENUES.rucker;
 let auraApp: ReturnType<typeof createAuraApp>;
@@ -686,7 +693,7 @@ try {
   auraApp = createAuraApp("#app", {
     scene: buildScene(venue),
     ...looks.appOptions(venue.look),
-    qualityRebuild: { flags: ["game", "-compiler"] },
+    qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
     diagnostics: false
   } as any);
 } catch (err) {
@@ -718,8 +725,30 @@ let coneRingNodes: AnyHandle[] = [];
 let waverNodes: AnyHandle[] = [];
 
 const ROSTER_IDS = ["p0", "p1", "p2", "p3", "p4", "a0", "a1", "a2", "a3", "a4"] as const;
+const lastClipByActor = new Map<string, string>();
+const lastSpeedByActor = new Map<string, number>();
+
+function setNodeClip(id: string, handle: AnyHandle, clip: string, speed = 1.0): void {
+  if (!handle) return;
+  const prevClip = lastClipByActor.get(id);
+  const prevSpeed = lastSpeedByActor.get(id) ?? 1.0;
+  if (prevClip === clip && Math.abs(prevSpeed - speed) < 0.05) return;
+  lastClipByActor.set(id, clip);
+  lastSpeedByActor.set(id, speed);
+  try {
+    if (typeof handle.setAnimation === "function") {
+      handle.setAnimation({ clip, loop: true, speed });
+      return;
+    }
+    handle.play?.(clip, { loop: true, speed });
+  } catch {
+    /* animation switch best-effort */
+  }
+}
 
 function resolveHandles(): void {
+  lastClipByActor.clear();
+  lastSpeedByActor.clear();
   rigs = ROSTER_IDS.map((id) => ({
     root: req(id),
     shadow: req(`${id}-shadow`),
@@ -752,7 +781,7 @@ function makeAthlete(nodeId: string, team: TeamId, index: number): AthleteState 
     x: 0, y: 0, z: 6, vx: 0, vz: 0, yaw: team === "home" ? Math.PI : 0, vy: 0,
     hasBall: false, controlled: false, stumble: 0, jumpT: 0, blockArm: 0, pokeCd: 0,
     screenT: 0, cutT: 0, aiT: 1 + index * 0.7, aiPlan: "idle", tx: 0, tz: 6,
-    clip: "Idle_Loop", meterT: 0, shooting: false, dunkT: 0, dunkKind: ""
+    clip: "", meterT: 0, shooting: false, dunkT: 0, dunkKind: ""
   };
 }
 
@@ -782,14 +811,12 @@ const nearestDefender = (a: AthleteState): AthleteState | undefined => {
   return best;
 };
 
-function setClip(a: AthleteState, clip: string): void {
-  if (a.clip === clip) return;
+function setClip(a: AthleteState, clip: string, speed = 1.0): void {
   a.clip = clip;
   const r = rigs[idxOf(a)];
   const h = r?.root as any;
   if (!h) return;
-  if (typeof h.crossFadeTo === "function") { try { h.crossFadeTo(clip, 0.18); return; } catch { /* fall through */ } }
-  h.play?.(clip, { loop: true });
+  setNodeClip(a.nodeId, h, clip, speed);
 }
 
 /* ------------------------------------------------------------------ *
@@ -1174,14 +1201,19 @@ function openMeter(a: AthleteState): void {
   const diffF = game_.diff === "playground" ? 1.15 : game_.diff === "legend" ? 0.9 : 1;
   const halfW = 0.075 * distF * contest * diffF;
   const center = 0.72;
-  game_.shotMeter = { active: true, t: 0, g0: center - halfW, g1: center + halfW, perfect: center, frames: 0 };
+  game_.shotMeter = { active: true, t: 0, g0: center - halfW, g1: center + halfW, perfect: center, frames: 0, tapRelease: false };
   a.shooting = true;
-  setClip(a, "Load");
+  if (a.jumpT <= 0) {
+    a.jumpT = 0.0001;
+    a.vy = 2.8;
+  }
+  setClip(a, "Shoot", 1.35);
   if (shotMeter) shotMeter.classList.add("show");
 }
 
 function closeMeter(): void {
   game_.shotMeter.active = false;
+  game_.shotMeter.tapRelease = false;
   if (shotMeter) shotMeter.classList.remove("show");
 }
 
@@ -1226,8 +1258,8 @@ function releaseShot(a: AthleteState, quality: number): void {
   a.hasBall = false;
   a.shooting = false;
   closeMeter();
-  setClip(a, "Release");
-  window.setTimeout(() => { if (a.clip === "Release") setClip(a, "FollowThrough"); }, 240);
+  setClip(a, "Release", 1.5);
+  window.setTimeout(() => { if (a.clip === "Release") setClip(a, "FollowThrough", 1.25); }, 240);
   game_.phase = "shot";
   juiceFire("release", { position: from });
   pushEvent("shot", perfect ? "release — PERFECT" : inGreen ? "release — green" : `release — ${(quality * 100) | 0}%`, perfect || inGreen ? "success" : "info");
@@ -1242,7 +1274,7 @@ function releaseShot(a: AthleteState, quality: number): void {
       ball.blocked = true;
       juiceFire("block", { position: [ball.x, ball.y, ball.z] });
       pushEvent("block", "REJECTED", "warning");
-      setClip(def, "Contest");
+      setClip(def, "Contest", 1.35);
     }
   }
 }
@@ -1259,7 +1291,7 @@ function startDunk(a: AthleteState, kind: string): void {
   a.dunkKind = pkg;
   a.hasBall = false;
   Object.assign(ball, { state: "dunk" as BallState, holder: idxOf(a), x: a.x, y: 1.4, z: a.z, vx: 0, vy: 0, vz: 0, shotValue: 1 as const, shooter: idxOf(a), scored: false });
-  setClip(a, "Jump");
+  setClip(a, "Jump_Loop", 1.45);
   if (jammed) {
     game_.jam = 0;
     game_.jamFull = false;
@@ -1700,13 +1732,21 @@ function stepPlayerControl(dt: number): void {
 
   const mx = inputCtl.axis("moveX") + ((held("right", "KeyD", "ArrowRight") ? 1 : 0) - (held("left", "KeyA", "ArrowLeft") ? 1 : 0));
   const mz = inputCtl.axis("moveZ") + ((held("down", "KeyS", "ArrowDown") ? 1 : 0) - (held("up", "KeyW", "ArrowUp") ? 1 : 0));
-  const anyManual = Math.hypot(mx, mz) > 0.05 || (game_.time - lastManualInputAt < 2.8);
-  if (!anyManual) {
+  const moveMag = Math.hypot(mx, mz);
+  const anyManual =
+    moveMag > 0.05 ||
+    pressed("shoot", "Space", "Enter") ||
+    pressed("pass", "KeyE") ||
+    pressed("cross", "KeyJ") ||
+    pressed("hesi", "KeyK") ||
+    held("shoot", "Space", "Enter");
+
+  if (game_.autopilot && !anyManual && (game_.time - lastManualInputAt >= 2.2)) {
     stepPlayerAutopilot(me, dt);
     return;
   }
 
-  const sprint = held("sprint", "ShiftLeft", "ShiftRight");
+  const sprint = held("sprint", "ShiftLeft", "ShiftRight") || moveMag > 0.85;
   const spd = (sprint ? SPRINT_SPEED : PLAYER_SPEED) * (me.hasBall ? 0.94 : 1);
 
   if (me.dunkT > 0 || me.stumble > 0) {
@@ -1715,13 +1755,16 @@ function stepPlayerControl(dt: number): void {
     // Rooted while the meter runs
     me.vx = lerp(me.vx, 0, dt * 10);
     me.vz = lerp(me.vz, 0, dt * 10);
-  } else {
-    const len = Math.hypot(mx, mz) || 1;
+  } else if (moveMag > 0.05) {
+    const len = moveMag || 1;
     const cx = clamp(mx / len, -1, 1), cz = clamp(mz / len, -1, 1);
-    me.vx = lerp(me.vx, cx * spd, clamp(dt * 9, 0, 1));
-    me.vz = lerp(me.vz, cz * spd, clamp(dt * 9, 0, 1));
-    if (Math.hypot(me.vx, me.vz) > 0.5) me.yaw = angTo(0, 0, me.vx, me.vz);
-    else if (me.hasBall) me.yaw = lerp(me.yaw, angTo(me.x, me.z, RIM[0], RIM[2]), dt * 3);
+    me.vx = lerp(me.vx, cx * spd, clamp(dt * 11, 0, 1));
+    me.vz = lerp(me.vz, cz * spd, clamp(dt * 11, 0, 1));
+    if (Math.hypot(me.vx, me.vz) > 0.35) me.yaw = angTo(0, 0, me.vx, me.vz);
+  } else {
+    me.vx = lerp(me.vx, 0, clamp(dt * 10, 0, 1));
+    me.vz = lerp(me.vz, 0, clamp(dt * 10, 0, 1));
+    if (me.hasBall) me.yaw = lerp(me.yaw, angTo(me.x, me.z, RIM[0], RIM[2]), dt * 4);
   }
 
   // Ankle-breaker / hesi timing taps (offense w/ ball)
@@ -1736,7 +1779,7 @@ function stepPlayerControl(dt: number): void {
         const lat = me.yaw + Math.PI / 2;
         me.vx += Math.sin(lat) * 4.6; me.vz += Math.cos(lat) * 4.6;
         juiceFire("juke", { position: [me.x, 1, me.z] });
-        setClip(me, "Attack");
+        setClip(me, "Attack", 1.45);
         if (def && d < 1.7 && rng() < 0.6) {
           def.stumble = 0.9;
           showBanner("ANKLE BREAKER");
@@ -1777,7 +1820,7 @@ function stepPlayerControl(dt: number): void {
       }
     }
     // Shoot: press-hold-release meter OR rim-run dunk
-    if (pressed("shoot", "Space")) {
+    if (pressed("shoot", "Space", "Enter")) {
       const dRim = dist2d(me.x, me.z, RIM[0], RIM[2]);
       const driving = dRim < DUNK_RANGE && Math.hypot(me.vx, me.vz) > 1.4 && (me.vz < 0 || dRim < 1.4);
       if (driving || (game_.jamFull && dRim < DUNK_RANGE)) {
@@ -1788,7 +1831,7 @@ function stepPlayerControl(dt: number): void {
     }
   } else if (me.hasBall && inLab) {
     // Labs: same shot/dunk surface
-    if (pressed("shoot", "Space")) {
+    if (pressed("shoot", "Space", "Enter")) {
       const dRim = dist2d(me.x, me.z, RIM[0], RIM[2]);
       if (dRim < DUNK_RANGE + 0.4) {
         const kind = game_.mode === "dunklab" ? DUNK_PACKAGES[Math.floor(rng() * 3)] : "auto";
@@ -1807,10 +1850,10 @@ function stepPlayerControl(dt: number): void {
       });
       if (mates[0]) { switchControl(mates[0]); pushEvent("defense", "switched defender", "info"); }
     }
-    if (pressed("shoot", "Space") && me.jumpT <= 0) {
+    if (pressed("shoot", "Space", "Enter") && me.jumpT <= 0) {
       me.jumpT = 0.0001;
       me.vy = 5.6;
-      setClip(me, "Contest");
+      setClip(me, "Contest", 1.35);
       pushEvent("defense", "block attempt", "info");
     }
     if (pressed("hesi", "KeyK") || pressed("cross", "KeyJ")) {
@@ -1822,23 +1865,30 @@ function stepPlayerControl(dt: number): void {
     }
   }
 
-  // Meter release — only after the key has actually been seen held a couple
-  // of frames, so a buffered/lagged press can't instantly fire a 0% shot.
+  // Meter release — supports both hold-and-release and quick tap of Space
   if (game_.shotMeter.active && me.shooting) {
-    const shootHeld = held("shoot", "Space");
-    if (!shootHeld && game_.shotMeter.frames > 3) {
-      const t = game_.shotMeter.t;
-      const c = game_.shotMeter.perfect;
-      const hw = (game_.shotMeter.g1 - game_.shotMeter.g0) / 2;
-      const q = clamp(1 - Math.abs(t - c) / Math.max(hw * 2.2, 0.001), 0, 1);
-      releaseShot(me, q);
+    const shootHeld = held("shoot", "Space", "Enter");
+    if (!shootHeld && game_.shotMeter.frames > 1) {
+      if (game_.shotMeter.t < 0.48) {
+        // Quick tap: let the jumper rise to the release window then fire automatically
+        game_.shotMeter.tapRelease = true;
+      } else {
+        const t = game_.shotMeter.t;
+        const c = game_.shotMeter.perfect;
+        const hw = (game_.shotMeter.g1 - game_.shotMeter.g0) / 2;
+        const q = clamp(1 - Math.abs(t - c) / Math.max(hw * 2.2, 0.001), 0, 1);
+        releaseShot(me, q);
+      }
+    }
+    if (game_.shotMeter.tapRelease && game_.shotMeter.t >= game_.shotMeter.perfect - 0.02) {
+      releaseShot(me, 0.94);
     }
   }
 
   // Rebound grab (loose ball, any live phase)
   if (ball.state === "loose" && game_.phase === "live") {
     const d3 = Math.hypot(ball.x - me.x, ball.z - me.z);
-    if (d3 < 1.35 && ball.y < 2.3 && pressed("shoot", "Space")) {
+    if (d3 < 1.35 && ball.y < 2.3 && pressed("shoot", "Space", "Enter")) {
       grabLooseBall(me);
     }
   }
@@ -1956,21 +2006,39 @@ function syncAthlete(a: AthleteState, dt: number): void {
     a.jumpT += dt;
     a.vy += GRAVITY * dt;
     a.y = Math.max(0, a.y + a.vy * dt);
-    if (a.y <= 0 && a.vy < 0) { a.y = 0; a.vy = 0; a.jumpT = 0; if (a.clip === "Contest" || a.clip === "Jump") setClip(a, "Idle_Loop"); }
+    if (a.y <= 0 && a.vy < 0) {
+      a.y = 0;
+      a.vy = 0;
+      a.jumpT = 0;
+      if (a.clip === "Contest" || a.clip === "Jump_Loop" || a.clip === "Shoot") {
+        setClip(a, "Idle_Loop", 1.0);
+      }
+    }
   }
 
   const speed = Math.hypot(a.vx, a.vz);
-  const bob = speed > 0.4 ? Math.abs(Math.sin(game_.time * 10 + a.index)) * 0.05 : 0;
+  const bob = speed > 0.4 ? Math.abs(Math.sin(game_.time * 11 + a.index * 1.3)) * 0.055 : 0;
 
-  // Ground the 1.92m Meshy athlete model (centered at origin) so sneakers sit at y=0
-  r.root.setPosition(a.x, a.y + 0.96 + bob, a.z).setRotation(0, a.yaw, 0);
+  // Ground the 1.92m Meshy athlete model (centered at origin, H*0.5 = 0.96) so sneakers sit at y=0
+  r.root.setPosition(a.x, 0.96 + a.y + bob, a.z).setRotation(0, a.yaw, 0);
 
   // Clip selection when nothing explicit is playing
-  if (!a.shooting && a.dunkT <= 0 && a.jumpT <= 0 && a.stumble <= 0) {
-    if (a.hasBall && game_.phase === "live") setClip(a, speed > 4.8 ? "Sprint_Loop" : speed > 0.6 ? "Run" : "Crouch_Idle_Loop");
-    else setClip(a, speed > 4.8 ? "Sprint_Loop" : speed > 0.6 ? "Run" : "Idle_Loop");
+  if (!a.shooting && a.dunkT <= 0 && a.jumpT <= 0 && a.stumble <= 0 && a.clip !== "Release" && a.clip !== "FollowThrough") {
+    if (speed > 4.6) {
+      setClip(a, "Sprint_Loop", 1.35);
+    } else if (speed > 1.3) {
+      setClip(a, "Run", 1.2);
+    } else if (speed > 0.35) {
+      setClip(a, "Walk_Loop", 1.1);
+    } else if (a.hasBall && game_.phase === "live") {
+      setClip(a, "Crouch_Idle_Loop", 1.0);
+    } else if (game_.phase === "live" && a.team !== game_.possession) {
+      setClip(a, "Ready", 1.0);
+    } else {
+      setClip(a, "Idle_Loop", 1.0);
+    }
   }
-  if (a.stumble > 0) setClip(a, "Crouch");
+  if (a.stumble > 0) setClip(a, "Crouch_Idle_Loop", 1.2);
 
   // Ground rings & shadow
   r.shadow?.setPosition(a.x, 0.012, a.z).setScale([1 - a.y * 0.14, 1, 1 - a.y * 0.14]).setVisible(true);
@@ -2077,8 +2145,9 @@ function publishEvidence(): void {
     route: "showcase-aura-hoops-3d",
     engine: "@aura3d/engine",
     engineVersion: "4.0.1",
-    ready: document.body.dataset.aura3dReady === "true",
+    ready: appReady && document.body.dataset.aura3dReady === "true",
     framesRendered,
+    autopilot: game_.autopilot,
     look: venue.look,
     mode: game_.mode,
     phase: game_.phase,
@@ -2112,6 +2181,8 @@ function publishEvidence(): void {
 /* ------------------------------------------------------------------ *
  *  Main loop                                                          *
  * ------------------------------------------------------------------ */
+let lastRefZ = 3.2;
+
 function frame(dtRaw: number): void {
   const now = game_.time;
   const frozen = hitStopUntil > now;
@@ -2140,10 +2211,19 @@ function frame(dtRaw: number): void {
       break;
     case "check": {
       game_.checkT += dt;
-      const autoCheck = (game_.time - lastManualInputAt > 2.8) && game_.checkT > 0.85;
+      const autoCheck = game_.autopilot && game_.checkT > 0.85;
+      const manualCheck =
+        pressed("shoot", "Space", "Enter") ||
+        pressed("pass", "KeyE") ||
+        pressed("cross", "KeyJ") ||
+        pressed("hesi", "KeyK") ||
+        held("up", "KeyW", "ArrowUp") ||
+        held("down", "KeyS", "ArrowDown") ||
+        held("left", "KeyA", "ArrowLeft") ||
+        held("right", "KeyD", "ArrowRight");
       if (game_.possession === "home") {
-        showPrompt("SPACE — CHECK BALL", 0.3);
-        if (pressed("shoot", "Space", "Enter") || autoCheck || game_.checkT > 6) enterLive();
+        showPrompt("SPACE / WASD — CHECK BALL", 0.3);
+        if (manualCheck || autoCheck) enterLive();
       } else if (game_.checkT > 0.9) {
         enterLive();
         const h = holderAthlete();
@@ -2245,8 +2325,12 @@ function frame(dtRaw: number): void {
   // 3D Referee tracks ball along sideline
   if (refereeNode) {
     const refZ = clamp(ball.z * 0.7, 0.5, 8.8);
+    const refSpd = Math.abs(refZ - lastRefZ) / Math.max(0.001, dt);
+    lastRefZ = refZ;
     const refYaw = angTo(-8.2, refZ, ball.x, ball.z);
-    refereeNode.setPosition(-8.2, 0.94 + Math.abs(Math.sin(game_.time * 4.2)) * 0.03, refZ).setRotation(0, refYaw, 0);
+    const refBob = refSpd > 0.3 ? Math.abs(Math.sin(game_.time * 8)) * 0.035 : 0;
+    refereeNode.setPosition(-8.2, 0.94 + refBob, refZ).setRotation(0, refYaw, 0);
+    setNodeClip("referee", refereeNode, refSpd > 0.3 ? "Walk_Loop" : "Ready", 1.05);
   }
 
   // Ball visuals
@@ -2274,8 +2358,11 @@ function frame(dtRaw: number): void {
   // 3D Meshy courtside spectators (grounded at y=0.93)
   const cheering = game_.phase === "score" || game_.phase === "gameover" || game_.jamFull;
   for (let i = 0; i < waverNodes.length; i++) {
-    const bounce = cheering ? Math.abs(Math.sin(game_.time * 9 + i * 1.3)) * 0.18 : Math.sin(game_.time * 2.1 + i) * 0.02;
-    waverNodes[i]?.setPosition(-8.4 + i * (16.8 / (CROWD_WAVERS - 1)), 0.93 + bounce, i % 2 ? -3.4 : 12.6);
+    const w = waverNodes[i];
+    if (!w) continue;
+    const bounce = cheering ? Math.abs(Math.sin(game_.time * 9 + i * 1.3)) * 0.12 : 0;
+    w.setPosition(-8.4 + i * (16.8 / (CROWD_WAVERS - 1)), 0.93 + bounce, i % 2 ? -3.4 : 12.6);
+    setNodeClip(`waver-${i}`, w, cheering ? "Jump_Loop" : "Idle_Loop", cheering ? 1.2 : 1.08);
   }
   planetEarth?.setRotation(0, game_.time * 0.02, 0);
 
@@ -2299,7 +2386,15 @@ function frame(dtRaw: number): void {
   keysPressed.clear();
 }
 
-auraApp.onFrame(({ dt }) => frame(dt));
+auraApp.onFrame(({ dt }) => {
+  if (!appReady) {
+    for (const a of athletes) syncAthlete(a, 0);
+    updateCamera(0.016);
+    syncHud();
+    return;
+  }
+  frame(dt);
+});
 
 /* ------------------------------------------------------------------ *
  *  Menu / toolbar wiring                                              *
@@ -2378,6 +2473,20 @@ function buildStudioPills(): void {
 }
 
 function wireMenus(): void {
+  const autoBtn = el<HTMLButtonElement>("tb-auto");
+  const syncAutoBtn = (): void => {
+    if (!autoBtn) return;
+    autoBtn.classList.toggle("active", game_.autopilot);
+    autoBtn.textContent = game_.autopilot ? "AUTO: ON" : "AUTO";
+  };
+  syncAutoBtn();
+  autoBtn?.addEventListener("click", () => {
+    game_.autopilot = !game_.autopilot;
+    syncAutoBtn();
+    showBanner(game_.autopilot ? "CPU AUTOPILOT ON" : "MANUAL CONTROLS ACTIVE");
+    pushEvent("system", game_.autopilot ? "autopilot enabled" : "manual controls active", "info");
+  });
+
   // Mode cards
   document.querySelectorAll<HTMLButtonElement>("[data-start]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -2459,6 +2568,15 @@ if (menuParam) {
   enterLive();
 }
 
-document.body.dataset.aura3dReady = "true";
-pushEvent("system", "aura hoops 3d online — six courts loaded", "success");
-console.info("[aura-hoops-3d] ready", { venue: venue.id, mode: game_.mode, phase: game_.phase });
+void Promise.resolve((auraApp as any).ready?.()).then(() => {
+  resolveHandles();
+  for (const a of athletes) syncAthlete(a, 0);
+  updateCamera(0.016);
+  syncHud();
+  appReady = true;
+  document.body.dataset.aura3dReady = "true";
+  document.querySelector("#app canvas")?.setAttribute("data-ready", "true");
+  publishEvidence();
+  pushEvent("system", "aura hoops 3d online — six courts loaded", "success");
+  console.info("[aura-hoops-3d] ready", { venue: venue.id, mode: game_.mode, phase: game_.phase });
+});

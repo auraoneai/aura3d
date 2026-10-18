@@ -66,7 +66,8 @@ export function buildAthleteNodes(id: string, kit: FootballKit): any[] {
     // Primary bespoke 3D Meshy football athlete GLB (grounded at y=0, facing +Z in model space)
     model(bodyAsset, {
       name: `${id}-body`,
-      targetHeight: heavy ? 2.34 : 2.25
+      targetHeight: heavy ? 2.34 : 2.25,
+      animation: { clip: "Idle_Loop", loop: true, speed: 1 }
     } as any)
       .position(0, 0, 0)
       .scale(HIDDEN)
@@ -101,6 +102,8 @@ export interface RigHandles {
   head: any; visor: any; mask: any;
   uarmL: any; uarmR: any; farmL: any; farmR: any; handL: any; handR: any;
   thighL: any; thighR: any; shinL: any; shinR: any; shoeL: any; shoeR: any;
+  activeClip?: string;
+  activeSpeed?: number;
 }
 
 export function resolveRig(app: any, id: string): RigHandles {
@@ -112,14 +115,18 @@ export function resolveRig(app: any, id: string): RigHandles {
     uarmL: req("uarm-l"), uarmR: req("uarm-r"), farmL: req("farm-l"), farmR: req("farm-r"),
     handL: req("hand-l"), handR: req("hand-r"),
     thighL: req("thigh-l"), thighR: req("thigh-r"), shinL: req("shin-l"), shinR: req("shin-r"),
-    shoeL: req("shoe-l"), shoeR: req("shoe-r")
+    shoeL: req("shoe-l"), shoeR: req("shoe-r"),
+    activeClip: "Idle_Loop",
+    activeSpeed: 1
   };
 }
 
 export function hideRig(rig: RigHandles) {
-  for (const h of Object.values(rig)) {
-    (h as any)?.setScale?.([HIDDEN, HIDDEN, HIDDEN]);
-    (h as any)?.setVisible?.(false);
+  for (const h of [rig.body, rig.shadow, rig.ring, rig.pelvis, rig.torso, rig.pads,
+    rig.head, rig.visor, rig.mask, rig.uarmL, rig.uarmR, rig.farmL, rig.farmR,
+    rig.handL, rig.handR, rig.thighL, rig.thighR, rig.shinL, rig.shinR, rig.shoeL, rig.shoeR]) {
+    h?.setScale?.([HIDDEN, HIDDEN, HIDDEN]);
+    h?.setVisible?.(false);
   }
 }
 
@@ -317,22 +324,80 @@ export function updateFootballRig(kit: ReturnType<typeof game.racketSports>, rig
   const uni: Vec3 = [1, 1, 1];
   const W = (local: Vec3) => kit.localToWorld(root, yaw, uni, local);
 
-  // 1. Ground and orient the bespoke 3D Meshy football athlete GLB (`rig.body`)
+  // 1. Drive real skeletal animation clip on the rigged GLB (`rig.body.setAnimation`)
+  const planarSpeed = Math.hypot(a.vx, a.vz);
+  const speedNorm = clamp(planarSpeed / 7.5, 0, 1);
+  const anim = a.pose === "throw"
+    ? "throw"
+    : (a.pose === "tackle" || a.pose === "down" || a.pose === "block")
+      ? "tackle"
+      : (a.pose === "catch" || a.pose === "reach" || a.pose === "jump")
+        ? "catch"
+        : a.pose === "celebrate"
+          ? "celebrate"
+          : a.pose === "stance3" && speedNorm <= 0.08
+            ? "set"
+            : speedNorm > 0.55
+              ? "sprint"
+              : (speedNorm > 0.08 || a.pose === "run" || a.pose === "backpedal")
+                ? "run"
+                : "idle";
+
+  let clip = "Ready";
+  const loop = true;
+  let speed = 1.0;
+
+  if (anim === "throw") {
+    clip = "Release";
+    speed = 1.55;
+  } else if (anim === "tackle") {
+    clip = "Attack";
+    speed = 1.5;
+  } else if (anim === "catch") {
+    clip = "Jump_Loop";
+    speed = 1.4;
+  } else if (anim === "celebrate") {
+    clip = "Jump_Loop";
+    speed = 1.35;
+  } else if (anim === "set" && speedNorm <= 0.08) {
+    clip = "Crouch_Idle_Loop";
+    speed = 1.0;
+  } else if (speedNorm > 0.55 || anim === "sprint") {
+    clip = "Sprint_Loop";
+    speed = 1.15 + speedNorm * 0.55;
+  } else if (speedNorm > 0.08 || anim === "run") {
+    clip = "Run";
+    speed = 1.0 + speedNorm * 0.45;
+  } else {
+    clip = "Ready";
+    speed = 1.0;
+  }
+
+  if (rig.activeClip !== clip || Math.abs((rig.activeSpeed ?? 1) - speed) > 0.18) {
+    rig.activeClip = clip;
+    rig.activeSpeed = speed;
+    rig.body?.setAnimation?.({ clip, loop, speed });
+  }
+
+  // 2. Ground and orient the bespoke 3D Meshy football athlete GLB (`rig.body`)
   // In Red Zone 3D, a.yaw=0 is +Z, a.yaw=PI is -Z, which matches model +Z forward directly
-  const groundY = a.pose === "down" ? 0.08 : Math.max(0, pose.hipY - 0.92);
+  const p = a.runPhase * 2.4;
+  const strideBob = speedNorm > 0.08 ? Math.abs(Math.sin(p)) * 0.065 * speedNorm : 0;
+  const groundY = a.pose === "down" ? 0.08 : strideBob;
+  const pitch = a.pose === "tackle" ? 0.28 : pose.leanZ * 0.45 + speedNorm * 0.12;
   rig.body
     ?.setPosition(px, groundY, pz)
-    .setRotation(pose.leanZ * 0.45, yaw + pose.torsoYaw * 0.35, pose.leanX * 0.35)
+    .setRotation(pitch, yaw + pose.torsoYaw * 0.35, pose.leanX * 0.35)
     .setScale([1, 1, 1])
     .setVisible(true);
 
   const hips = W([0, (pose.hipY + 0.14) * 1.18, 0]);
   const chest = W([pose.leanX * 0.7, (pose.shoulderY - 0.02) * 1.18, pose.leanZ * 0.7]);
 
-  // 2. Slim core team-jersey chest band inside the torso silhouette for club color differentiation
+  // 3. Slim core team-jersey chest band inside the torso silhouette for club color differentiation
   kit.orientCylinderBetween(rig.torso, hips, chest, 0.15, 0.14);
 
-  // 3. Blob shadow + tactical team/carrier turf ring
+  // 4. Blob shadow + tactical team/carrier turf ring
   rig.shadow.setPosition(px, 0.012, pz).setScale([1.1, 1, 1.1]).setVisible(true);
   const pulse = opts.carrier
     ? 1.18 + Math.sin(a.poseT * 8) * 0.08

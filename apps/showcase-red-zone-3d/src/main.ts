@@ -54,11 +54,12 @@ const ATHLETE_IDS = [
 /* ------------------------------------------------------------------ */
 
 const params = new URLSearchParams(location.search);
-const DEMO = params.has("demo") || params.has("auto");
+let autopilotMode = params.get("autoplay") === "1" || params.get("demo") === "1";
+let appReady = false;
 const LITE = params.has("lite");
 
 // capture probe: log every fetch so remote captures reveal missing files
-if (params.has("demo") || params.has("probe")) {
+if (autopilotMode || params.has("probe")) {
   const of = window.fetch.bind(window);
   window.fetch = (async (input: any, init?: any) => {
     const url = typeof input === "string" ? input : input?.url ?? String(input);
@@ -106,7 +107,7 @@ function buildScene(): any {
       .add(effects.motionBlur({ intensity: 0.08 } as any));
   }
   s.add(effects.bloom({ intensity: 0.2, threshold: 0.82 }))
-    .camera(camera.perspective({ position: [0, 14.5, -1.5], target: [0, 2.2, 41], fov: 34 }));
+    .camera(camera.perspective({ position: [0, 14.5, -1.5], target: [0, 2.2, 41], fov: 33 }));
   return s;
 }
 
@@ -115,7 +116,7 @@ try {
   auraApp = createAuraApp(canvas, {
     scene: buildScene(),
     ...looks.appOptions(LOOK_ID),
-    qualityRebuild: { flags: ["game", "-compiler", "-vfxFog"] },
+    qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
     ...(LITE ? { pixelRatio: 1 } : {})
   } as any);
 } catch (e) {
@@ -277,7 +278,7 @@ const touchInput = { moveX: 0, moveZ: 0, throwHeld: false, juke: false, truck: f
 let userIdleT = 99;
 
 function readCommand(state: GameState): SimCommand {
-  if (DEMO) return autopilot.command(state, 1 / 60);
+  if (autopilotMode) return autopilot.command(state, 1 / 60);
   const hasInput =
     keys.size > 0 ||
     touchInput.moveX !== 0 ||
@@ -289,7 +290,6 @@ function readCommand(state: GameState): SimCommand {
     touchInput.dive ||
     touchInput.ballHawk;
   userIdleT = hasInput ? 0 : userIdleT + 1 / 60;
-  if (userIdleT > 2.2) return autopilot.command(state, 1 / 60);
 
   const cmd: SimCommand = {};
   const mvX = (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0) - (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0) + touchInput.moveX;
@@ -303,7 +303,7 @@ function readCommand(state: GameState): SimCommand {
     else if (pressed("Digit2") || pressed("Numpad2")) cmd.pickCard = 1;
     else if (pressed("Digit3") || pressed("Numpad3")) cmd.pickCard = 2;
     if (pressed("KeyQ")) cmd.audible = true;
-    if (pressed("Space") || pressed("Enter")) cmd.snap = true;
+    if (pressed("Space") || keys.has("Space") || pressed("Enter") || Math.hypot(cmd.moveX, cmd.moveZ) > 0.05) cmd.snap = true;
   } else if (state.phase === "patChoice") {
     if (pressed("Digit1") || pressed("Numpad1") || pressed("KeyK")) cmd.patKick = true;
     if (pressed("Digit2") || pressed("Numpad2") || pressed("KeyJ")) cmd.patGo = true;
@@ -734,6 +734,13 @@ document.getElementById("aura-btn-play")?.addEventListener("click", () => { pend
 document.getElementById("aura-btn-routelab")?.addEventListener("click", () => startMode("routelab"));
 document.getElementById("aura-btn-tacklelab")?.addEventListener("click", () => startMode("tacklelab"));
 document.getElementById("aura-btn-menu")?.addEventListener("click", () => { if (inMenu) closeMenu(); else openMenu(); });
+const autoBtn = document.getElementById("aura-btn-auto");
+autoBtn?.classList.toggle("active", autopilotMode);
+autoBtn?.addEventListener("click", () => {
+  autopilotMode = !autopilotMode;
+  autoBtn.classList.toggle("active", autopilotMode);
+  banner(hud, autopilotMode ? "AI AUTOPILOT ON" : "MANUAL CONTROL", 1.8);
+});
 document.querySelectorAll<HTMLElement>("[data-aura-venue]").forEach((b) => {
   b.addEventListener("click", () => {
     currentVenue = stadiumById(b.dataset.auraVenue!);
@@ -911,7 +918,7 @@ function onFrameInner() {
   const state = sim.state;
   const frozen = hitStopUntil > now && !reducedMotion;
 
-  if (!frozen) {
+  if (appReady && !frozen) {
     const cmd = readCommand(state);
     sim.step(dt, cmd);
   }
@@ -927,13 +934,16 @@ function onFrameInner() {
 
   // play-card sheet visibility
   const sheet = sim.getSheet();
-  const showCards = state.phase === "preSnap" && state.possession === "user" && !inMenu && (state.mode === "quickplay" || state.mode === "series" || state.mode === "routelab");
+  const showCards = appReady && state.phase === "preSnap" && state.possession === "user" && !inMenu && (state.mode === "quickplay" || state.mode === "series" || state.mode === "routelab");
   renderPlayCards(hud, sheet ? [...sheet] : [], sim.getSelectedCard(), Boolean(showCards && sheet));
 
   // camera + HUD
-  const pose = director.update(dt, state, inMenu);
+  const pose = director.update(appReady ? dt : 0, state, inMenu);
   try { (auraApp as any)?.camera?.setPose?.(pose); } catch { /* camera layer best-effort */ }
   updateHud(hud, state);
+  if (!appReady) {
+    banner(hud, "Loading 3D Stadium & Athletes...", 5);
+  }
 
   // series bookkeeping on game end
   watchSeriesEnd(state);
@@ -947,7 +957,8 @@ function onFrameInner() {
   // evidence — every frame, all four globals
   publishEvidence(state, director, {
     framesRendered,
-    demo: DEMO,
+    ready: appReady,
+    demo: autopilotMode,
     juice: (juice as any)?.snapshot?.() ?? null,
     audio: audio?.evidence ? { unlocked: audio.evidence.unlocked, cueCount: audio.evidence.cueCount, playedCueCount: audio.evidence.playedCueCount } : null,
     eventLog: eventLog.snapshot(),
@@ -966,32 +977,6 @@ function onFrameInner() {
   });
 }
 
-(auraApp as any).onFrame(onFrame);
-
-document.body.dataset.aura3dReady = "true";
-canvas.dataset.ready = "true";
-
-// first-frame evidence for capture harnesses (in case rAF is delayed)
-const bootPublish = () => {
-  try {
-    const diag = (auraApp as any)?.diagnostics?.() ?? null;
-    publishEvidence(sim.state, director, {
-      framesRendered, demo: DEMO,
-      eventLog: eventLog.snapshot(),
-      diagnostics: diag,
-      meshyAssets: MESHY_ASSETS_LIST
-    } as any);
-  } catch (e) { console.error("[rz3d] evidence boot publish failed", e); }
-};
-bootPublish();
-setInterval(() => {
-  if (framesRendered === 0) {
-    try { sim.step(1 / 30, autopilot.command(sim.state, 1 / 30)); } catch { /* best-effort */ }
-  }
-  bootPublish();
-}, 500);
-console.log("[rz3d] boot ok — demo=" + DEMO + " frames-pending");
-
 /* ------------------------------------------------------------------ */
 /* Start                                                               */
 /* ------------------------------------------------------------------ */
@@ -1003,8 +988,35 @@ if (params.get("mode") === "menu") {
 } else if (params.get("mode") === "tacklelab") {
   startMode("tacklelab");
 } else {
-  // Boot immediately into live 7v7 Quick Play (with smart autopilot assist when idle)
   cpuClub = clubById("steel");
   startMode("quickplay", { cpu: cpuClub });
-  pushEvent("system", "live drive — press 1/2/3 or Space to call & snap, or watch AI drive", "info");
+  pushEvent("system", "live drive — press WASD or Space to snap & drive, or 1/2/3 to call play", "info");
 }
+
+banner(hud, "Loading 3D Stadium & Athletes...", 60);
+
+const bootPublish = () => {
+  try {
+    const diag = (auraApp as any)?.diagnostics?.() ?? null;
+    publishEvidence(sim.state, director, {
+      framesRendered,
+      ready: appReady,
+      demo: autopilotMode,
+      eventLog: eventLog.snapshot(),
+      diagnostics: diag,
+      meshyAssets: MESHY_ASSETS_LIST
+    } as any);
+  } catch (e) { console.error("[rz3d] evidence boot publish failed", e); }
+};
+bootPublish();
+
+(auraApp as any).onFrame(onFrame);
+
+void Promise.resolve((auraApp as any).ready?.()).finally(() => {
+  appReady = true;
+  document.body.dataset.aura3dReady = "true";
+  canvas.dataset.ready = "true";
+  banner(hud, currentMode === "routelab" ? "ROUTE LAB" : currentMode === "tacklelab" ? "TACKLE LAB" : `${userClub.name} vs ${cpuClub.name}`, 2.0);
+  bootPublish();
+  console.log("[rz3d] boot ok — ready=true demo=" + autopilotMode);
+});

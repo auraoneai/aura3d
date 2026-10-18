@@ -1095,6 +1095,142 @@ function loadScriptSequentially(src: string): Promise<void> {
   });
 }
 
+const topTennisUrlParams = new URLSearchParams(window.location.search);
+let autoplay =
+  topTennisUrlParams.get("autoplay") === "1" || topTennisUrlParams.get("demo") === "1";
+let appReady = false;
+let auraAppInstance: ReturnType<typeof createAuraApp> | null = null;
+const manualKeysHeld = new Set<string>();
+let autoServeTimer = 0;
+
+function installManualAndAutoplayControls(): void {
+  window.addEventListener("keydown", (ev) => {
+    if (
+      ev.target instanceof HTMLElement &&
+      ["INPUT", "SELECT", "TEXTAREA"].includes(ev.target.tagName)
+    ) {
+      return;
+    }
+    manualKeysHeld.add(ev.code);
+    if (ev.code === "KeyJ" || ev.code === "KeyK" || ev.code === "KeyL") {
+      const ctrl = (window as any).__TOP_TENNIS_CONTROL__;
+      const eng = ctrl?.getEngine?.();
+      const st = ctrl?.getState?.();
+      if (eng && st && st.mode === "playing" && !st.paused) {
+        const shot = ev.code === "KeyJ" ? "short" : ev.code === "KeyL" ? "lob" : "deep";
+        eng.selectShot?.(shot, "player");
+        eng.requestSwing?.("player", st.time, ev.code === "KeyK");
+      }
+    }
+  });
+
+  window.addEventListener("keyup", (ev) => {
+    manualKeysHeld.delete(ev.code);
+  });
+}
+
+function stepTopTennisPlayerControl(state: any, dt: number): void {
+  if (!state || state.mode !== "playing" || state.paused) return;
+  const ctrl = (window as any).__TOP_TENNIS_CONTROL__;
+  const eng = ctrl?.getEngine?.();
+  const p = state.player;
+  const b = state.ball;
+  if (!p || !b) return;
+
+  const mx =
+    (manualKeysHeld.has("KeyD") || manualKeysHeld.has("ArrowRight") ? 1 : 0) -
+    (manualKeysHeld.has("KeyA") || manualKeysHeld.has("ArrowLeft") ? 1 : 0);
+  const my =
+    (manualKeysHeld.has("KeyS") || manualKeysHeld.has("ArrowDown") ? 1 : 0) -
+    (manualKeysHeld.has("KeyW") || manualKeysHeld.has("ArrowUp") ? 1 : 0);
+
+  if (!autoplay) {
+    // Allow immediate baseline movement & skeletal leg stride during serve setup as well as rally
+    if (
+      (state.phase === "serve" || state.phase === "serveToss") &&
+      state.server === "player" &&
+      (mx !== 0 || my !== 0)
+    ) {
+      const len = Math.hypot(mx, my) || 1;
+      p.vx = (mx / len) * 1.35;
+      p.vy = (my / len) * 1.05;
+      p.x = clamp((p.x ?? 0) + p.vx * dt, -0.95, 0.95);
+      p.y = clamp((p.y ?? 1.035) + p.vy * dt, 0.72, 1.12);
+      p.moveBlend = Math.min(1, (p.moveBlend ?? 0) + dt * 9.5);
+      p.stride = ((p.stride ?? 0) + dt * 11.5) % (Math.PI * 2);
+      if (state.phase === "serve") {
+        b.x = p.x + 0.035;
+        b.y = p.y - 0.04;
+      }
+    }
+    // Assist completing the overhead serve swing at toss apex after user initiates toss
+    if (
+      state.phase === "serveToss" &&
+      state.server === "player" &&
+      state.serveAttempt?.swingAt === null &&
+      b.z >= 0.8 &&
+      b.vz <= 0.55
+    ) {
+      eng?.requestSwing?.("player", state.time, false);
+    }
+    return;
+  }
+
+  // Autoplay === true (only when ?autoplay=1, ?demo=1, or Auto HUD toggle is active)
+  if (state.phase === "serve" && state.server === "player") {
+    autoServeTimer += dt;
+    if (autoServeTimer >= 0.45) {
+      autoServeTimer = 0;
+      eng?.requestSwing?.("player", state.time, false);
+    }
+    return;
+  }
+  autoServeTimer = 0;
+
+  if (
+    state.phase === "serveToss" &&
+    state.server === "player" &&
+    state.serveAttempt?.swingAt === null &&
+    b.z >= 0.82 &&
+    b.vz <= 0.55
+  ) {
+    eng?.requestSwing?.("player", state.time, false);
+    return;
+  }
+
+  if (state.phase === "rally" && b.active && b.lastHit === "ai" && b.vy > 0) {
+    const targetX = clamp(b.targetX ?? b.x ?? 0, -0.92, 0.92);
+    const targetY = clamp(Math.max(0.68, (b.targetY ?? 0.82) + 0.08), 0.62, 1.06);
+    const dx = targetX - p.x;
+    const dy = targetY - p.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist > 0.04) {
+      const spd = Math.min(1.32, dist * 6.5);
+      p.vx = (dx / dist) * spd;
+      p.vy = (dy / dist) * spd;
+      p.x = clamp(p.x + p.vx * dt, -1.02, 1.02);
+      p.y = clamp(p.y + p.vy * dt, 0.18, 1.18);
+      p.moveBlend = Math.min(1, (p.moveBlend ?? 0) + dt * 9);
+      p.stride = ((p.stride ?? 0) + dt * 11) % (Math.PI * 2);
+    } else {
+      p.vx *= 0.8;
+      p.vy *= 0.8;
+      p.moveBlend = Math.max(0, (p.moveBlend ?? 0) - dt * 6);
+    }
+    const ballDist = Math.hypot((b.x - p.x) * 1.05, b.y - p.y);
+    if (
+      (!b.isServe || b.bounceCount >= 1) &&
+      ballDist <= 0.34 &&
+      b.y > 0.12 &&
+      p.swing <= 0 &&
+      p.swingCooldown <= 0
+    ) {
+      eng?.selectShot?.("deep", "player");
+      eng?.requestSwing?.("player", state.time, false);
+    }
+  }
+}
+
 function installAura3DTopTennisRenderer(): void {
   let auraApp: ReturnType<typeof createAuraApp> | null = null;
   let playerRig: AthleteRigHandles | null = null;
@@ -1178,8 +1314,10 @@ function installAura3DTopTennisRenderer(): void {
     createRenderer(canvas: HTMLCanvasElement) {
       auraApp = createAuraApp(canvas, {
         scene: buildTennisScene(),
-        renderer: { quality: "high" }
+        renderer: { quality: "high" },
+        qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
       });
+      auraAppInstance = auraApp;
 
       const req = (id: string) => auraApp!.nodes.require(id);
       playerRig = resolveAthleteRig(auraApp, "player");
@@ -1203,9 +1341,6 @@ function installAura3DTopTennisRenderer(): void {
       markHandles = Array.from({ length: MARK_COUNT }, (_, i) => req(`court-mark-${i}`));
       spectatorHandles = Array.from({ length: SPECTATOR_COUNT }, (_, i) => req(`spectator-${i}`));
 
-      document.body.dataset.aura3dReady = "true";
-      canvas.dataset.ready = "true";
-
       function applyVenueMaterials(venue: string): void {
         const key = VENUE_PALETTES[venue] ? venue : "hard";
         if (currentVenueKey === key) return;
@@ -1224,8 +1359,12 @@ function installAura3DTopTennisRenderer(): void {
       }
 
       function render(state: any, serveCue?: any, _tournamentPresentation?: any): void {
-        if (!state || !auraApp) return;
+        if (!state || !auraApp || !appReady) {
+          delete canvas.dataset.ready;
+          return;
+        }
         framesRendered += 1;
+        stepTopTennisPlayerControl(state, 1 / 60);
 
         const venue = state.venue || "hard";
         const isMoon = venue === "moon";
@@ -1400,6 +1539,7 @@ function installAura3DTopTennisRenderer(): void {
           engine: "@aura3d/engine",
           ready: true,
           framesRendered,
+          autoplay,
           mode: state.mode,
           phase: state.phase,
           venue,
@@ -1476,8 +1616,18 @@ function isMoonVenue(v: string): boolean {
 function bindQuickToolbar(): void {
   const playBtn = document.getElementById("aura-btn-play");
   const practiceBtn = document.getElementById("aura-btn-practice");
+  const autoBtn = document.getElementById("aura-btn-auto") as HTMLButtonElement | null;
   const menuBtn = document.getElementById("aura-btn-menu");
   const venueBtns = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-aura-venue]"));
+
+  if (autoBtn) {
+    autoBtn.classList.toggle("active", autoplay);
+    autoBtn.addEventListener("click", () => {
+      autoplay = !autoplay;
+      autoBtn.classList.toggle("active", autoplay);
+      autoBtn.blur();
+    });
+  }
 
   function setActiveModeBtn(active: HTMLElement | null): void {
     for (const btn of [playBtn, practiceBtn, menuBtn]) {
@@ -1612,6 +1762,7 @@ async function loadAndRunScriptsInOrder(urls: readonly string[]): Promise<void> 
 
 async function bootTopTennisAura3D(): Promise<void> {
   installOfflineApiMocks();
+  installManualAndAutoplayControls();
 
   const cssFiles = [
     "/toptennis-v2/brand.css",
@@ -1666,7 +1817,24 @@ async function bootTopTennisAura3D(): Promise<void> {
   ];
   await loadAndRunScriptsInOrder(postRendererScripts);
 
+  if (auraAppInstance) {
+    await auraAppInstance.ready();
+  }
+
+  appReady = true;
   bindQuickToolbar();
+
+  const canvas = document.getElementById("game") as HTMLCanvasElement | null;
+  const st = (window as any).__TOP_TENNIS_CONTROL__?.getState?.();
+  if (st && (window as any).TennisScene) {
+    auraAppInstance?.step(1 / 60);
+    auraAppInstance?.resume();
+  }
+  document.getElementById("boot")?.classList.add("done");
+  document.body.dataset.aura3dReady = "true";
+  if (canvas) {
+    canvas.dataset.ready = "true";
+  }
 }
 
 void bootTopTennisAura3D();

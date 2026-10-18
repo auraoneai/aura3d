@@ -174,13 +174,18 @@ export function createSim(opts: SimOptions) {
     }
     s.ballSpotX = 0;
     s.ball = { kind: "dead", x: s.ballSpotX, y: 0.32, z: s.los, vx: 0, vy: 0, vz: 0, aimX: 0, aimZ: 0, flightT: 0, eta: 0 };
-    s.userControlled = poss === "cpu" ? "def-s" : undefined;
+    s.userControlled = poss === "cpu" ? "def-s" : "off-qb";
     s.carrier = undefined;
-    s.qbId = undefined;
+    s.qbId = "off-qb";
     s.coverage = "cover2";
+    s.clockRunning = false;
     turnoverDuringPlay = false;
-    huddleDone = false; cpuCallDone = false; preSnapT = 0; selectedCard = 0;
+    huddleDone = true; cpuCallDone = false; preSnapT = 0; selectedCard = 0;
     lineup();
+    if (poss === "user") {
+      refreshSheet();
+      pickPlay(selectedCard);
+    }
   }
 
   /* ---------------- lineup ---------------- */
@@ -224,6 +229,8 @@ export function createSim(opts: SimOptions) {
     }
     s.ball.x = px; s.ball.z = s.los; s.ball.y = 0.32;
     s.aim.x = px; s.aim.z = s.los + 6 * s.dir;
+    s.userControlled = s.possession === "cpu" ? "def-s" : "off-qb";
+    s.qbId = "off-qb";
   }
 
   const byId = (id: string | undefined) => (id ? state.athletes.find((a) => a.id === id) : undefined);
@@ -238,7 +245,17 @@ export function createSim(opts: SimOptions) {
       const shorts = playsByType("short"), deeps = playsByType("deep");
       sheet = [shorts[Math.floor(rng() * shorts.length)]!, deeps[Math.floor(rng() * deeps.length)]!, shorts[Math.floor(rng() * shorts.length)]!];
     } else {
-      sheet = drawPlaySheet(offClub(), rng);
+      const drawn = [...drawPlaySheet(offClub(), rng)];
+      // Ensure default card 0 is a pass play so snapping via WASD/Space keeps the QB in dropback/scramble
+      if (drawn[0]?.type === "run") {
+        const passIdx = drawn.findIndex((p) => p.type !== "run");
+        if (passIdx > 0) {
+          const tmp = drawn[0]!;
+          drawn[0] = drawn[passIdx]!;
+          drawn[passIdx] = tmp;
+        }
+      }
+      sheet = [drawn[0]!, drawn[1]!, drawn[2]!] as const;
     }
   }
 
@@ -389,16 +406,13 @@ export function createSim(opts: SimOptions) {
   function stepPreSnap(dt: number, cmd: SimCommand) {
     const s = state;
     preSnapT += dt;
-    if (!huddleDone && preSnapT > 0.8) {
-      huddleDone = true;
-      s.clockRunning = s.mode === "quickplay" || s.mode === "series";
-    }
-    if (!huddleDone) return;
+    huddleDone = true;
 
     if (s.possession === "user") {
+      s.clockRunning = false;
       if (!sheet) {
         refreshSheet();
-        ev.call("playcall", "pick a play — 1/2/3 · Q audibles", "info");
+        pickPlay(selectedCard);
       }
       if (cmd.audible) {
         selectedCard = (selectedCard + 1) % 3;
@@ -410,12 +424,19 @@ export function createSim(opts: SimOptions) {
         pickPlay(cmd.pickCard);
         ev.cue("confirm");
         snap();
+        stepLive(dt, cmd);
         return;
       }
-      const timeout = s.mode === "routelab" ? 12 : 7;
-      if (cmd.snap || preSnapT > timeout) {
-        if (!s.play) pickPlay(selectedCard);
+      const hasMoveInput = Math.hypot(cmd.moveX ?? 0, cmd.moveZ ?? 0) > 0.05;
+      if (cmd.snap || hasMoveInput) {
+        if (!s.play || (hasMoveInput && s.play.def.type === "run")) {
+          // Ensure QB stays the ball carrier in dropback/scramble when snapping via movement keys
+          const passCardIdx = sheet?.findIndex((p) => p.type !== "run") ?? 0;
+          pickPlay(passCardIdx >= 0 ? passCardIdx : selectedCard);
+        }
         snap();
+        stepLive(dt, cmd);
+        return;
       }
     } else {
       if (!cpuCallDone && preSnapT > 1.0 + rng() * 1.4) {
@@ -443,14 +464,14 @@ export function createSim(opts: SimOptions) {
     if (ctl && !ctl.down) {
       const mag = clamp(Math.hypot(cmdX, cmdZ), 0, 1);
       if (mag > 0.05) {
-        const spd = moveSpeed(ctl) * (0.4 + 0.6 * mag);
+        const spd = moveSpeed(ctl) * (0.55 + 0.45 * mag);
         const mx = cmdX / (mag || 1);
         const mz = (cmdZ * s.dir) / (mag || 1);
         ctl.tx = ctl.x + mx * 6;
         ctl.tz = ctl.z + mz * 6;
         steerTo(ctl, dt, spd);
         if (ctl.pose !== "throw" && ctl.pose !== "reach") ctl.pose = "run";
-      } else {
+      } else if (!(s.possession === "user" && ctl.slot === "qb" && s.ball.kind === "held" && s.ball.holder === ctl.id && !s.carrier && s.snapT < 0.75)) {
         ctl.vx *= Math.pow(0.0001, dt); ctl.vz *= Math.pow(0.0001, dt);
         ctl.x += ctl.vx * dt; ctl.z += ctl.vz * dt;
         if (ctl.pose === "run" || ctl.pose === "backpedal") ctl.pose = "idle";
@@ -508,7 +529,7 @@ export function createSim(opts: SimOptions) {
     if (d < 0.05) { a.vx *= Math.pow(0.001, dt); a.vz *= Math.pow(0.001, dt); return; }
     const ux = dx / d, uz = dz / d;
     const targetVx = ux * speed, targetVz = uz * speed;
-    const accel = 34;
+    const accel = a.ai === "user" ? 68 : 34;
     a.vx += clamp(targetVx - a.vx, -accel * dt, accel * dt);
     a.vz += clamp(targetVz - a.vz, -accel * dt, accel * dt);
     a.x += a.vx * dt;
@@ -557,9 +578,19 @@ export function createSim(opts: SimOptions) {
       return;
     }
 
-    // User QB — aim reticle rides ahead of movement; Space charges the throw
+    // User QB — automatic initial 3-step pocket dropback on snap when WASD is not held
     const mvx = cmd.moveX ?? 0, mvz = (cmd.moveZ ?? 0) * s.dir;
     const mMag = Math.hypot(mvx, mvz);
+    if (mMag <= 0.05 && s.snapT < 0.75) {
+      const dropZ = s.los - 4.8 * s.dir;
+      if (Math.abs(q.z - dropZ) > 0.35) {
+        q.tx = q.x;
+        q.tz = dropZ;
+        steerTo(q, dt, QB_DROP_SPEED);
+        q.pose = "run";
+      }
+    }
+
     const dirX = mMag > 0.05 ? mvx / mMag : 0;
     const dirZ = mMag > 0.05 ? mvz / mMag : s.dir;
     s.aim.x = clamp(q.x + dirX * 11, -FIELD.HALF_WIDTH, FIELD.HALF_WIDTH);
@@ -1196,7 +1227,12 @@ export function createSim(opts: SimOptions) {
       s.firstDownLine = s.los + s.toGo * s.dir;
       if (s.down === 4) ev.call("down", `4th & ${Math.ceil(s.toGo)} — pressure down`, "warn");
     }
+    preSnapT = 0; huddleDone = true; cpuCallDone = false; selectedCard = 0;
     lineup();
+    if (s.possession === "user") {
+      refreshSheet();
+      pickPlay(selectedCard);
+    }
     s.phase = "preSnap";
   }
 

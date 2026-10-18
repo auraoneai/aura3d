@@ -45,7 +45,7 @@ function boot(): void {
     app = createAuraApp("#app", {
       scene: buildFcScene(),
       ...looks.appOptions(LOOK_ID),
-      qualityRebuild: { flags: ["game", "-compiler"] }
+      qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
     } as any);
   } catch (e) {
     console.error("[fc3d] createAuraApp failed", e);
@@ -338,6 +338,10 @@ function boot(): void {
 
   let framesRendered = 0;
   let lastVenue = "";
+  let appReady = false;
+  let autopilot = params.get("autoplay") === "1" || params.get("demo") === "1";
+  sim.setAutopilot(autopilot);
+
   const inputFrame: UserInputFrame = {
     move: [0, 0], sprint: false, passShort: false, passDriven: false,
     shootHeld: false, shootReleased: false,
@@ -370,8 +374,6 @@ function boot(): void {
     }
   }
 
-  const TRAIL_MAX = 18;
-
   function frame() {
     const f = (frame: { dt: number }) => {
       const dt = clamp(frame.dt || 1 / 60, 0.001, 0.05);
@@ -390,23 +392,23 @@ function boot(): void {
       inputFrame.skillStepover = input.pressed("skillA");
       inputFrame.skillChop = input.pressed("skillB");
       inputFrame.switchPlayer = input.pressed("switch");
-      if (input.pressed("pause")) {
+      if (appReady && input.pressed("pause")) {
         const paused = sim.togglePause();
         hud.banner(paused ? "PAUSED" : "PLAY ON", 1400);
       }
 
-      const events = frozen ? [] : sim.step(frozen ? 0.0001 : dt, inputFrame);
+      const events = (!appReady || frozen) ? [] : sim.step(dt, inputFrame);
       consumeEvents(events);
 
       const s = sim.state;
-      const ctx = modes.frame(dt, inputFrame);
+      const ctx = appReady ? modes.frame(dt, inputFrame) : {};
 
       // venue retint when it changes
       if (s.venue !== lastVenue) {
         lastVenue = s.venue;
         applyVenue(world, VENUES[s.venue]);
         refreshKits();
-        hud.banner(VENUES[s.venue].label, 2400);
+        if (appReady) hud.banner(VENUES[s.venue].label, 2400);
       }
 
       /* ---- render athletes ---- */
@@ -417,8 +419,6 @@ function boot(): void {
         if (!rig) continue;
         seen.add(p.id);
         poseAthlete(rig, p, t, { ballX: s.ball.x, ballZ: s.ball.z, hasBall: s.ball.ownerId === p.id });
-        // keeper gloves hint: brighter hands
-        if (p.isKeeper) { /* kit applied already */ }
       }
       for (const [id, rig] of rigs) {
         if (!seen.has(id)) {
@@ -453,10 +453,12 @@ function boot(): void {
       }
 
       /* ---- ambient world tick ---- */
-      tickWorld(world, t, {
-        cheering: s.phase === "goal" || s.phase === "ended" && s.winner !== null,
-        ripple: s.goalFlashT
-      });
+      if (appReady) {
+        tickWorld(world, t, {
+          cheering: s.phase === "goal" || s.phase === "ended" && s.winner !== null,
+          ripple: s.goalFlashT
+        });
+      }
 
       /* ---- camera ---- */
       updateCamera(dt);
@@ -468,7 +470,7 @@ function boot(): void {
       const away = clubFor(modes.cfg?.awayClub ?? "iron");
       hud.update(s, {
         home, away,
-        tag: ctx.tag ?? modes.cfg?.circuitTag,
+        tag: !appReady ? "Loading 3D Stadium & Athletes..." : (ctx.tag ?? modes.cfg?.circuitTag),
         labLabel: ctx.labLabel, labScore: ctx.labScore, labBest: ctx.labBest,
         charge: sim.chargeLevel > 0 ? sim.chargeLevel : null
       });
@@ -477,7 +479,7 @@ function boot(): void {
       const evidence = {
         route: "showcase-aura-fc-3d",
         engine: "@aura3d/engine",
-        ready: true,
+        ready: appReady,
         framesRendered,
         look: LOOK_ID,
         mode: modes.mode,
@@ -491,6 +493,7 @@ function boot(): void {
         possession: [Math.round(s.possession[0] * 10) / 10, Math.round(s.possession[1] * 10) / 10],
         controlledId: s.controlledId,
         userTeam: s.userTeam,
+        autopilot,
         kicks: s.kicks,
         shotsOn: [...s.shotsOn],
         saves: [...s.saves],
@@ -546,10 +549,24 @@ function boot(): void {
     const demoBtn = document.getElementById("fc-btn-demo");
     const venueBtns = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-fc-venue]"));
 
-    playBtn?.addEventListener("click", () => modes.startQuick());
-    labBtn?.addEventListener("click", () => modes.startShootoutLab());
+    playBtn?.addEventListener("click", () => {
+      autopilot = false;
+      sim.setAutopilot(false);
+      demoBtn?.classList.remove("primary");
+      modes.startQuick();
+    });
+    labBtn?.addEventListener("click", () => {
+      autopilot = false;
+      sim.setAutopilot(false);
+      modes.startShootoutLab();
+    });
     menuBtn?.addEventListener("click", () => modes.enterMenu());
-    demoBtn?.addEventListener("click", () => modes.startDemo());
+    demoBtn?.addEventListener("click", () => {
+      autopilot = true;
+      sim.setAutopilot(true);
+      demoBtn.classList.add("primary");
+      modes.startDemo();
+    });
     for (const btn of venueBtns) {
       btn.addEventListener("click", () => {
         const v = btn.dataset.fcVenue as keyof typeof VENUES;
@@ -570,10 +587,8 @@ function boot(): void {
   /* -------------------------- boot mode -------------------------- */
 
   hud.setVisible(true);
-  document.body.dataset.aura3dReady = "true";
-  if (canvas) canvas.dataset.ready = "true";
 
-  if (params.has("demo") || params.has("auto")) {
+  if (autopilot) {
     modes.startDemo();
   } else if (params.get("mode") === "menu") {
     modes.enterMenu();
@@ -582,9 +597,20 @@ function boot(): void {
   } else if (params.get("mode") === "touch") {
     modes.startTouchLab();
   } else {
-    // Boot immediately into live 5v5 Quick Play (with smart AI assist when idle)
     modes.startQuick();
   }
+  hud.banner("Loading 3D Stadium & Athletes...", 60000);
+
+  Promise.resolve((app as any).ready?.())
+    .catch((err) => console.warn("[fc3d] app.ready warning", err))
+    .finally(() => {
+      appReady = true;
+      document.body.dataset.aura3dReady = "true";
+      if (canvas) canvas.dataset.ready = "true";
+      const home = clubFor(modes.cfg?.homeClub ?? modes.studio.club);
+      const away = clubFor(modes.cfg?.awayClub ?? "iron");
+      hud.banner(`${home.name} vs ${away.name}`, 2400, "gold");
+    });
 }
 
 boot();

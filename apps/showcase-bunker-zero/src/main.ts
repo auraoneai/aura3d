@@ -33,8 +33,10 @@ declare global {
   }
 }
 
-const DEMO = new URLSearchParams(location.search).has("demo");
-let autoPilot = true;
+const bootParams = new URLSearchParams(location.search);
+const DEMO = bootParams.get("demo") === "1" || bootParams.has("demo");
+let autoPilot = bootParams.get("autoplay") === "1" || DEMO;
+let appReady = false;
 const LOOK_ID = "night-city" as const;
 const EYE = 1.55;
 const FLOOR_SPAN = 300;
@@ -223,6 +225,7 @@ function buildScene() {
           nodes.push(
             model(assets.bunkerGuardMeshy, { name: `f${slot} guard ${eI}`, targetHeight: 1.9 })
               .position(wx, 0, wz)
+              .animate({ clip: "Walk_Loop", loop: true, speed: 1.05 })
               .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "guard"] }))
           );
           eI++;
@@ -233,6 +236,7 @@ function buildScene() {
               name: `f${slot} hound ${eI}`, targetHeight: 1.05
             })
               .position(wx, 0, wz)
+              .animate({ clip: "Walk_Loop", loop: true, speed: 1.35 })
               .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "dog"] }))
           );
           eI++;
@@ -243,6 +247,7 @@ function buildScene() {
               name: `f${slot} gunner ${eI}`, targetHeight: 2.0
             })
               .position(wx, 0, wz)
+              .animate({ clip: "Walk_Loop", loop: true, speed: 1.0 })
               .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "gunner"] }))
           );
           eI++;
@@ -253,6 +258,7 @@ function buildScene() {
               name: `f${slot} boss ${eI}`, targetHeight: 3.1
             })
               .position(wx, 0, wz)
+              .animate({ clip: "Idle_Loop", loop: true, speed: 0.95 })
               .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "boss"] }))
           );
           eI++;
@@ -364,7 +370,7 @@ const inputOptions = {
     strafeRight: ["KeyD"],
     turnLeft: ["ArrowLeft"],
     turnRight: ["ArrowRight"],
-    fire: ["Space"],
+    fire: ["Space", "KeyF", "Enter"],
     reload: ["KeyR"],
     use: ["KeyE"],
     weapon1: ["Digit1"], weapon2: ["Digit2"], weapon3: ["Digit3"], weapon4: ["Digit4"],
@@ -395,7 +401,7 @@ const mg = createGame({
     secret: { punch: { fovDeg: 1.6, ms: 280 }, flash: { color: "#ffb648", peak: 0.12, ms: 300 } },
     win: { punch: { fovDeg: 2.6, ms: 420 }, flash: { color: "#ffd76a", peak: 0.2, ms: 500 } }
   },
-  qualityRebuild: { flags: ["game", "-compiler"] },
+  qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
   evidence: { schema: 1, sections: { bunkerZero: () => window.__gameEvidence ?? { status: "unbound" } } }
 });
 const app = mg.app;
@@ -411,10 +417,17 @@ let floorIdx = 0;
 let camoTint = "#ffb648";
 let dogtag = "RAZOR-6";
 const nodeCache = new Map<string, ReturnType<typeof app.nodes.require>>();
+const enemyAnimCache = new Map<string, string>();
 function req(id: string) {
   let n = nodeCache.get(id);
   if (!n) { n = app.nodes.require(id); nodeCache.set(id, n); }
   return n;
+}
+function setEnemyClip(id: string, node: ReturnType<typeof app.nodes.require>, clip: string, speed: number) {
+  const key = `${clip}:${speed.toFixed(2)}`;
+  if (enemyAnimCache.get(id) === key) return;
+  enemyAnimCache.set(id, key);
+  node.setAnimation({ clip, loop: true, speed });
 }
 const vmNodes = { knife: req("vm-knife"), pistol: req("vm-pistol"), mg: req("vm-mg"), rocket: req("vm-rocket") };
 const muzzleFlash = req("muzzle-flash");
@@ -433,6 +446,9 @@ function startFloor(idx: number, m: "descent" | "killhouse") {
   sim = createSim(def, { ox: (m === "killhouse" ? 6 : idx) * FLOOR_SPAN, mode: m, seed: 1337 + idx * 97 + (m === "killhouse" ? 7 : 0) });
   hideAllRuntime();
   bindFloor();
+  syncScenePose({ moveX: 0, moveZ: 0, turn: 0, pitchDelta: 0, fire: false, firePressed: false, reload: false, use: false });
+  renderHud();
+  publishEvidence();
   lastEventIdx = 0;
   banner(`FLOOR ${def.id + 1} — ${def.name.toUpperCase()}`, def.subtitle);
   if (m === "killhouse") banner("KILL HOUSE", "clear the floor before the clock runs out");
@@ -448,7 +464,14 @@ function hideAllRuntime() {
 function bindFloor() {
   // lazily grab handles for this floor's entities
   const slot = sim.state.mode === "killhouse" ? 6 : floorIdx;
-  for (const e of sim.state.enemies) req(`f${slot}-en-${e.sx}-${e.sz}`);
+  enemyAnimCache.clear();
+  for (const e of sim.state.enemies) {
+    const id = `f${slot}-en-${e.sx}-${e.sz}`;
+    const node = req(id);
+    const initClip = e.kind === "boss" ? "Idle_Loop" : "Walk_Loop";
+    const initSpeed = e.kind === "dog" ? 1.35 : 1.05;
+    setEnemyClip(id, node, initClip, initSpeed);
+  }
   for (const pk of sim.state.pickups) req(`f${slot}-pk-${pk.cx}-${pk.cz}`);
   for (const d of sim.state.doors) req(`f${slot}-door-${d.cx}-${d.cz}`);
   for (const pw of sim.state.pushWalls) { req(`f${slot}-pw-${pw.cx}-${pw.cz}`); req(`f${slot}-crack-${pw.cx}-${pw.cz}`); }
@@ -482,11 +505,9 @@ const canvas = document.querySelector<HTMLCanvasElement>("#app canvas")!;
 let pointerLocked = false;
 let mouseFire = false;
 let pendingWheel = 0;
-let manualIdleT = 0;
 canvas.addEventListener("click", () => {
   if (!DEMO) {
     autoPilot = false;
-    manualIdleT = 0;
     if (!pointerLocked) canvas.requestPointerLock();
   }
   void mg.sound?.unlock();
@@ -496,25 +517,23 @@ document.addEventListener("pointerlockchange", () => { pointerLocked = document.
 document.addEventListener("mousemove", (e) => {
   if (!pointerLocked || DEMO) return;
   autoPilot = false;
-  manualIdleT = 0;
   yawDelta -= e.movementX * 0.0024;
   pitchDelta -= e.movementY * 0.002;
 });
-document.addEventListener("mousedown", (e) => { if (pointerLocked && e.button === 0) { autoPilot = false; manualIdleT = 0; mouseFire = true; } });
+document.addEventListener("mousedown", (e) => { if (pointerLocked && e.button === 0) { autoPilot = false; mouseFire = true; } });
 document.addEventListener("mouseup", (e) => { if (e.button === 0) mouseFire = false; });
-document.addEventListener("wheel", (e) => { if (pointerLocked) { autoPilot = false; manualIdleT = 0; pendingWheel += Math.sign(e.deltaY); } });
+document.addEventListener("wheel", (e) => { if (pointerLocked) { autoPilot = false; pendingWheel += Math.sign(e.deltaY); } });
 document.addEventListener("keydown", (e) => {
   if (e.code === "Escape" && pointerLocked) document.exitPointerLock();
-  if (!DEMO && /^(Key[WASDER]|Arrow|Space|Digit[1234])/.test(e.code)) {
+  if (!DEMO && /^(Key[WASDERF]|Arrow|Space|Enter|Digit[1234])/.test(e.code)) {
     autoPilot = false;
-    manualIdleT = 0;
   }
 });
 
 let yawDelta = 0, pitchDelta = 0;
 
 // ---------------------------------------------------------------------------
-// demo / autopilot driver — active 60 FPS gameplay on boot, yields on user input
+// demo / autopilot driver — active 60 FPS gameplay ONLY when ?autoplay=1 or ?demo=1
 let demoT = 0;
 function demoInput(dt: number): SimInput {
   demoT += dt;
@@ -559,64 +578,13 @@ function findCellCenter(s: Sim, ch: string): [number, number] | null {
   return null;
 }
 
-// ---------------------------------------------------------------------------
-// per-frame: read input → tick sim → drive nodes/camera/HUD
-let lastEventIdx = 0;
-let simSteps = 0;
-app.onFrame(({ dt }) => {
-  if (!sim) return;
+function syncScenePose(inp: SimInput) {
   const p = sim.state.player;
-
-  const userActive =
-    Math.abs(input.axis("moveX")) > 0.01 ||
-    Math.abs(input.axis("moveZ")) > 0.01 ||
-    Math.abs(input.axis("turn")) > 0.01 ||
-    input.held("fire") || mouseFire ||
-    input.pressed("reload") || input.pressed("use");
-  if (userActive && !DEMO) {
-    autoPilot = false;
-    manualIdleT = 0;
-  } else if (!DEMO && !pointerLocked) {
-    manualIdleT += dt;
-    if (manualIdleT > 10) autoPilot = true;
-  }
-
-  // ---- input → SimInput
-  const useAuto = DEMO || autoPilot;
-  const inp: SimInput = useAuto
-    ? demoInput(dt)
-    : {
-        moveX: input.axis("moveX"),
-        moveZ: input.axis("moveZ"),
-        turn: yawDelta - input.axis("turn") * 2.4 * dt,
-        pitchDelta,
-        fire: input.held("fire") || mouseFire,
-        firePressed: input.pressed("fire") || mouseFire,
-        reload: input.pressed("reload"),
-        use: input.pressed("use"),
-        weapon: input.pressed("weapon1") ? "knife" : input.pressed("weapon2") ? "pistol" : input.pressed("weapon3") ? "mg" : input.pressed("weapon4") ? "rocket" : undefined,
-        weaponDelta: pendingWheel !== 0 ? Math.sign(pendingWheel) : 0
-      };
-  yawDelta = 0; pitchDelta = 0; pendingWheel = 0;
-
-  // ---- tick (fixed 60Hz substeps for demo determinism)
-  if (DEMO) {
-    demoAcc += dt;
-    while (demoAcc >= 1 / 60) { sim.tick(1 / 60, inp); demoAcc -= 1 / 60; simSteps++; }
-  } else {
-    let remaining = Math.min(0.1, dt);
-    while (remaining > 0) { const st = Math.min(1 / 60, remaining); sim.tick(st, inp); remaining -= st; simSteps++; }
-  }
-
-  // ---- drain events → audio + juice + feed
-  const evs = sim.state.events;
-  for (; lastEventIdx < evs.length; lastEventIdx++) handleEvent(evs[lastEventIdx]);
-  if (evs.length > 60) { sim.state.events.splice(0, evs.length - 40); lastEventIdx = Math.min(lastEventIdx, sim.state.events.length); }
-
   // ---- camera: eye pose + shake + tactical flashlight tracking
   const shake = sim.state.shake + (p.hurtT > 0 ? 0.3 : 0);
   const shakeYaw = shake * Math.sin(sim.state.time * 91) * 0.012;
-  const eyeY = EYE + Math.sin(sim.state.time * 8.4) * 0.02 * (Math.abs(inp.moveZ) + Math.abs(inp.moveX));
+  const moveMag = Math.min(1, Math.abs(inp.moveZ) + Math.abs(inp.moveX));
+  const eyeY = EYE + Math.sin(sim.state.time * 8.4) * 0.024 * moveMag;
   const ox = sim.state.ox;
   const fx = Math.sin(p.yaw + shakeYaw), fz = -Math.cos(p.yaw + shakeYaw);
   app.camera?.setPose({
@@ -627,16 +595,17 @@ app.onFrame(({ dt }) => {
   playerLight.setPosition(p.x + ox, eyeY + 0.4, p.z);
   playerAheadLight.setPosition(p.x + ox + fx * 6.5, eyeY + 0.6, p.z + fz * 6.5);
 
-  // ---- viewmodel
-  const bob = Math.sin(sim.state.time * 9) * 0.015 * Math.min(1, Math.abs(inp.moveZ) + Math.abs(inp.moveX));
+  // ---- viewmodel (with recoil kick on fire)
+  const bob = Math.sin(sim.state.time * 9) * 0.018 * moveMag;
+  const recoil = sim.state.muzzle > 0 ? 0.08 : 0;
   const rx = Math.cos(p.yaw), rz = Math.sin(p.yaw);
-  const vmx = p.x + ox + fx * 0.62 + rx * 0.26;
-  const vmy = EYE - 0.34 + bob - p.pitch * 0.12;
-  const vmz = p.z + fz * 0.62 + rz * 0.26;
+  const vmx = p.x + ox + fx * (0.62 - recoil) + rx * 0.26;
+  const vmy = EYE - 0.34 + bob - p.pitch * 0.12 + recoil * 0.35;
+  const vmz = p.z + fz * (0.62 - recoil) + rz * 0.26;
   for (const [id, node] of Object.entries(vmNodes) as [WeaponId, typeof vmNodes.knife][]) {
     if (id === p.weapon && p.alive) {
       node.setPosition(vmx, vmy, vmz);
-      node.setRotation(id === "knife" ? -0.6 : 0, -p.yaw + Math.PI / 2, id === "knife" ? 0.5 : 0);
+      node.setRotation((id === "knife" ? -0.6 : 0) - recoil * 1.4, -p.yaw + Math.PI / 2, id === "knife" ? 0.5 : 0);
       node.setVisible(true);
     } else node.setVisible(false);
   }
@@ -655,20 +624,45 @@ app.onFrame(({ dt }) => {
     muzzleLight.setPosition(0, -50, 0);
   }
 
-  // ---- enemies
+  // ---- enemies (skeletal animation + procedural stride cadence)
   const slot = sim.state.mode === "killhouse" ? 6 : floorIdx;
   for (const e of sim.state.enemies) {
-    const node = req(`f${slot}-en-${e.sx}-${e.sz}`);
+    const id = `f${slot}-en-${e.sx}-${e.sz}`;
+    const node = req(id);
     if (e.state === "dead") {
       if (e.deathT < 4) {
+        setEnemyClip(id, node, "Idle_Loop", 0.2);
         node.setPosition(e.x + ox, Math.max(-0.6, -e.deathT * 0.2), e.z);
         node.setRotation(Math.min(Math.PI / 2, e.deathT * 4), e.facing, 0);
         node.setVisible(true);
       } else node.setVisible(false);
       continue;
     }
-    node.setPosition(e.x + ox, e.state === "attack" && e.kind === "boss" ? Math.sin(sim.state.time * 30) * 0.03 : 0, e.z);
-    node.setRotation(0, -e.facing, 0);
+    let clip = "Idle_Loop";
+    let speed = 1.0;
+    let strideBob = Math.sin(sim.state.time * 3.2 + e.sx) * 0.015;
+    let strideRoll = 0;
+    if (e.state === "patrol") {
+      clip = "Walk_Loop";
+      speed = e.kind === "dog" ? 1.35 : 1.08;
+      strideBob = Math.abs(Math.sin(sim.state.time * 7.5 + e.sx)) * 0.045;
+      strideRoll = Math.sin(sim.state.time * 7.5 + e.sx) * 0.04;
+    } else if (e.state === "chase") {
+      clip = e.kind === "dog" ? "Sprint_Loop" : "Run";
+      speed = e.kind === "dog" ? 1.6 : 1.3;
+      strideBob = Math.abs(Math.sin(sim.state.time * 11.0 + e.sx)) * 0.065;
+      strideRoll = Math.sin(sim.state.time * 11.0 + e.sx) * 0.055;
+    } else if (e.state === "attack") {
+      clip = e.kind === "dog" ? "Attack" : "Shoot";
+      speed = 1.45;
+      strideBob = e.kind === "boss" ? Math.sin(sim.state.time * 30) * 0.035 : 0.02;
+    } else if (e.state === "pain") {
+      clip = "Contest";
+      speed = 1.4;
+    }
+    setEnemyClip(id, node, clip, speed);
+    node.setPosition(e.x + ox, strideBob, e.z);
+    node.setRotation(0, -e.facing, strideRoll);
     node.setVisible(true);
   }
 
@@ -733,6 +727,59 @@ app.onFrame(({ dt }) => {
       sparkNodes[i].setVisible(true);
     } else sparkNodes[i].setVisible(false), sparkNodes[i].setPosition(0, -50, 0);
   }
+}
+
+// ---------------------------------------------------------------------------
+// per-frame: read input → tick sim → drive nodes/camera/HUD
+let lastEventIdx = 0;
+let simSteps = 0;
+app.onFrame(({ dt }) => {
+  if (!appReady || !sim) return;
+  const p = sim.state.player;
+
+  const userActive =
+    Math.abs(input.axis("moveX")) > 0.01 ||
+    Math.abs(input.axis("moveZ")) > 0.01 ||
+    Math.abs(input.axis("turn")) > 0.01 ||
+    input.held("fire") || mouseFire ||
+    input.pressed("reload") || input.pressed("use");
+  if (userActive && !DEMO) {
+    autoPilot = false;
+  }
+
+  // ---- input → SimInput
+  const useAuto = DEMO || autoPilot;
+  const inp: SimInput = useAuto
+    ? demoInput(dt)
+    : {
+        moveX: input.axis("moveX"),
+        moveZ: input.axis("moveZ"),
+        turn: yawDelta - input.axis("turn") * 2.4 * dt,
+        pitchDelta,
+        fire: input.held("fire") || mouseFire,
+        firePressed: input.pressed("fire") || mouseFire,
+        reload: input.pressed("reload"),
+        use: input.pressed("use"),
+        weapon: input.pressed("weapon1") ? "knife" : input.pressed("weapon2") ? "pistol" : input.pressed("weapon3") ? "mg" : input.pressed("weapon4") ? "rocket" : undefined,
+        weaponDelta: pendingWheel !== 0 ? Math.sign(pendingWheel) : 0
+      };
+  yawDelta = 0; pitchDelta = 0; pendingWheel = 0;
+
+  // ---- tick (fixed 60Hz substeps for demo determinism)
+  if (DEMO) {
+    demoAcc += dt;
+    while (demoAcc >= 1 / 60) { sim.tick(1 / 60, inp); demoAcc -= 1 / 60; simSteps++; }
+  } else {
+    let remaining = Math.min(0.1, dt);
+    while (remaining > 0) { const st = Math.min(1 / 60, remaining); sim.tick(st, inp); remaining -= st; simSteps++; }
+  }
+
+  // ---- drain events → audio + juice + feed
+  const evs = sim.state.events;
+  for (; lastEventIdx < evs.length; lastEventIdx++) handleEvent(evs[lastEventIdx]);
+  if (evs.length > 60) { sim.state.events.splice(0, evs.length - 40); lastEventIdx = Math.min(lastEventIdx, sim.state.events.length); }
+
+  syncScenePose(inp);
 
   // ---- floor transitions
   if (sim.state.finished && !transitionPending) {
@@ -887,6 +934,7 @@ startFloor(0, "descent");
 setModeButtons();
 elHud.classList.remove("hidden");
 void mg.ready().then(() => {
+  appReady = true;
   document.body.dataset.aura3dReady = "true";
   window.__AURA3D_ROUTE_READY__ = { ready: true };
 }).catch((err: unknown) => {

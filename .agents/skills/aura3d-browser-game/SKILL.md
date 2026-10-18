@@ -67,54 +67,42 @@ Genre → recipe row (full table: `../aura3d-art-direction/references/look-recip
    });
    ```
 
-2. The look supplies the sky light, key shadow, fog and grade — do not add
-   `lights.studio()` or high-intensity `lights.ambient()` / `lights.directional()`
-   on top, pass `{ fogDensityScale: 0, exposureEv: -0.1 }` to `looks.preset(...)`
-   (and `"-vfxFog"` in `qualityRebuild.flags`) unless distance fog is explicitly
-   desired, and never set `emissive: "#ffffff"` on instanced pool materials
-   (`instanceColors` multiply `u_baseColor`, not `u_emissiveColor`).
-3. Typed models at real scale for every character, athlete, enemy, vehicle,
-   aircraft, creature, weapon, tree, and architectural landmark with readable
-   silhouette (`model(assets.<name>, { targetMaxDimension, role })`, emissive
-   3–5 on pickups for sparkle under the post grade, and explicit
-   `material: material.pbr({ color })` on untextured preview GLBs); never assemble
-   stick-figure humans or box cars from `primitives.box`, `primitives.sphere`, or
-   `primitives.cylinder` (reserve `primitives.plane`, `primitives.box`,
-   `primitives.cylinder`, and `primitives.torus` strictly for ground/court
-   surfaces, field lines, UI rings/reticles, laser beams, and invisible physics
-   colliders to keep composition and contrast clean). Ground `model()` actors
-   (`minY = 0` feet origin) at the top surface `y + sy / 2` of centered primitive
-   platforms (`instances.box` / `instances.cylinder`), and wind custom
-   `primitives.mesh` triangles CCW from `+Y`. If the catalog lacks a
-   required 3D model, generate a PBR GLB with `meshy`, decimate/compress it
-   (`<= 20,000` vertices, `<= 2 MB`, 16-bit `Uint16Array` indices, `<= 1024x1024`
-   textures for crisp reflection and palette), and admit it via
-   `aura3d assets import-meshy` with a valid 64-character `sha256-...` `hash`
-   so the look and lighting render cleanly.
-4. Camera state drives `app.camera` every frame (rig from the genre row) —
-   never write camera position into evidence fields, size `html, body, #app, canvas`
+2. The look supplies sky light, key shadow, fog, and grade — never stack extra
+   `lights.studio()` / `lights.directional()` on top, pass `{ fogDensityScale: 0,
+   exposureEv: -0.1 }` to `looks.preset(...)` and
+   `qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }` on fast
+   arcade routes so contrast and frame pacing stay crisp, and never set
+   `emissive: "#ffffff"` on instanced pool materials (`instanceColors` multiply
+   `u_baseColor`, not `u_emissiveColor`).
+3. Mount typed 3D GLBs for every character, athlete, enemy, vehicle, weapon,
+   tree, and landmark (`model(assets.<name>, { targetMaxDimension, role })`,
+   emissive 3–5 on pickups, and explicit `material: material.pbr({ color })` on
+   untextured preview GLBs); use `targetHeight` only for upright humanoids and
+   `targetMaxDimension` for vehicles, rackets, paddles, weapons, and wide props
+   so silhouettes never stretch vertically. Drive rigged characters (`skins > 0`)
+   with `handle.setAnimation({ clip, loop: true, speed })` synced to locomotion
+   (`idle`, `walk`, `run`, `attack`) for real pixel motion under the key shadow
+   instead of sliding rigid statues. Never build stick-figure humans or box cars
+   from primitives; ground `model()` actors (`minY = 0`) at `y + sy / 2` of
+   centered platforms; wind custom `primitives.mesh` triangles CCW from `+Y`; and
+   decimate/compress Meshy GLBs (`<= 20,000` vertices, `<= 2 MB`, 16-bit indices,
+   `<= 1024x1024` textures, valid 64-char `sha256-...` `hash` for clean look).
+4. Camera state drives `app.camera` every frame — size `html, body, #app, canvas`
    to `100vw × 100vh` (`position: fixed; inset: 0`), extend the 3D ground apron
-   deep enough in `+Z`/`-Z` under the camera frustum so the bottom of the frame
-   is never a black void, disable `collision: true` on `camera.rigs.shoulder`
-   when the hero has child runtime nodes, and enforce `>= 1.4m` fighter pushbox
-   separation (`|x| >= 1.8m` at spawn).
-5. Boot directly into live 60 FPS 3D gameplay on Frame 1 with an intelligent AI
-   autopilot/demo controller that plays autonomously under the scene's lighting,
-   fog, and camera framing and yields instant manual control on the first
-   `keydown`, pointer, touch, or gamepad input. Never hide the 3D canvas or
-   atmosphere behind an opaque full-screen HTML start menu, character select
-   modal, or briefing overlay on load, and never require `?autoplay=1`,
-   `?demo=1`, or `?play=1`. Wire HUD and events through `game.eventLog` and
-   `game.hud.*` in a compact, non-blocking top HUD bar that keeps the frame
-   readable, and always call `button.blur()` after button clicks so `Space` or
-   `Enter` gameplay keys never re-trigger focused HUD buttons.
-6. Make reset real without tearing down the scene: restart after normal play and
-   after win or fail returns score, timer, bodies, input, and animation to
-   baseline by mutating runtime node handles (`app.nodes.require(...)`). Do not
-   call `app.setScene()` when restarting a round, hole, or bout on the same
-   stage/world (`stageId` / `worldId`); remounting disposes live GPU resources,
-   breaks shadow and postprocess continuity, and aborts in-flight GLB loads.
-7. Genre gates (mechanics, from the game example standards):
+   deep in `+Z`/`-Z` so the bottom frame is never a black void, disable
+   `collision: true` on `camera.rigs.shoulder` when the hero has child nodes, and
+   enforce `>= 1.4m` fighter pushbox separation (`|x| >= 1.8m` at spawn).
+5. Gate Frame 1 on `await app.ready()` before fading `#boot-gate` (`opacity: 0;
+   pointer-events: none` then remove) and starting simulation so lighting,
+   shadow, and GLB silhouettes never pop in. Default `autopilot` to `false`
+   (immediate manual control on Frame 1) unless `?autoplay=1` or `?demo=1` is in
+   the URL or the user clicks the HUD `Auto` toggle button (`button.blur()` so
+   `Space`/`Enter` never re-trigger focused HUD controls), and wire HUD/events
+   through `game.eventLog` and `game.hud.*` in a compact top bar.
+6. Reset without tearing down the scene: mutate runtime node handles
+   (`app.nodes.require(...)`) instead of calling `app.setScene()` on same-stage
+   (`stageId` / `worldId`) restarts so shadow and postprocess grade never drop.
+7. Genre gates (plan for 60 seconds of meaningful play):
 
    | Genre | Must have |
    | --- | --- |
@@ -124,13 +112,11 @@ Genre → recipe row (full table: `../aura3d-art-direction/references/look-recip
    | fighting | strikes/blocks, hit reactions, round + KO state, both fighters readable |
    | character controller | walk/run/jump clips playing, camera shoulder follow, locomotion direction matches travel |
 
-   Plan for 60 seconds of meaningful play.
-
 8. `npx @aura3d/cli@latest assets validate --no-placeholders --require-license`
    and `assets validate-game`; racing/platformer also
    `assets certify-game-geometry --asset track --category racing`.
 9. Runtime evidence: pause, step one frame, then `game.evidence` over input,
-   bodies, events, HUD, app state — see `aura3d-evidence-review` (one link).
+   bodies, events, HUD, and look state — see `aura3d-evidence-review` (one link).
 
 ## Look-dev loop
 

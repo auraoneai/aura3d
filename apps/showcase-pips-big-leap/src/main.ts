@@ -179,7 +179,7 @@ const pipsGame = createGame({
   // its render targets after any device lifecycle event (remount, resize)
   // on ANGLE/Vulkan and kills presentation — repro'd on aura-links-3d too.
   // Pin it off until the engine-side LDR postprocess defect is fixed.
-  qualityRebuild: { flags: ["game", "-compiler", "-vfxFog"] },
+  qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
   evidence: {
     schema: 1,
     sections: { pipsBigLeap: () => window.__AURA3D_SHOWCASE_PIPS_BIG_LEAP__ ?? { status: "unbound" } }
@@ -199,8 +199,8 @@ const locomotion = createLocomotionKit({
   idleClip: PIP_CLIPS.idle,
   walkClip: PIP_CLIPS.walk,
   runClip: PIP_CLIPS.run,
-  walkSpeed: 1.4,
-  runSpeed: 4.6
+  walkSpeed: 0.8,
+  runSpeed: 2.6
 });
 
 // ------------------------------------------------------------ node handles
@@ -226,6 +226,7 @@ let mountedWorld: WorldId | undefined = BOOT_WORLD; // the `scene` factory alrea
 function loadWorld(id: WorldId, mode?: ModeId): void {
   // Mode survives only where it's meaningful: the gauntlet owns "academy",
   // trial follows the player across worlds, everything else is quick play.
+  userEngaged = false;
   run = makeRun(id, mode ?? (id === "academy" ? "academy" : run.mode === "trial" ? "trial" : "quick"));
   const { spec, built } = ensureWorld(id);
   if (mountedWorld !== id) {
@@ -246,6 +247,7 @@ function loadWorld(id: WorldId, mode?: ModeId): void {
     for (let i = 0; i < 6; i += 1) node(nodeName.bossSpike(i))?.setVisible(false);
   }
   applyStudioColors();
+  run.clipState = "";
   driveAnimation(run.player, 0);
 
   // Persisted progress: collected seeds stay gone, and a world the player
@@ -484,17 +486,24 @@ function nextWorldId(id: WorldId): WorldId | null {
 
 // --------------------------------------------------------- AI autopilot
 
-let autopilot = true;
+const params = new URLSearchParams(window.location.search);
+let autopilot = params.get("autoplay") === "1" || params.get("demo") === "1";
+let appReady = false;
+let userEngaged = false;
 let aiJumpCooldown = 0;
 let aiStuckTimer = 0;
 let aiLastZ = 0;
 
 function setAutopilot(next: boolean): void {
   autopilot = next;
+  if (autopilot) {
+    userEngaged = true;
+  }
   const btn = document.getElementById("aura-btn-auto");
   if (btn) {
     btn.classList.toggle("active", autopilot);
-    btn.textContent = autopilot ? "Auto" : "Manual";
+    btn.setAttribute("aria-pressed", autopilot ? "true" : "false");
+    btn.textContent = "Auto";
   }
 }
 
@@ -662,13 +671,13 @@ const BOSS_CLIP_FOR: Record<BossPhase, { clip: string; loop?: boolean }> = {
 };
 
 const CLIP_FOR: Record<string, { clip: string; speed?: number; loop?: boolean }> = {
-  air: { clip: PIP_CLIPS.fall },
-  jump: { clip: PIP_CLIPS.jump, loop: false },
-  glide: { clip: PIP_CLIPS.fall },
+  air: { clip: PIP_CLIPS.fall, speed: 1.15 },
+  jump: { clip: PIP_CLIPS.jump, loop: false, speed: 1.25 },
+  glide: { clip: PIP_CLIPS.fall, speed: 0.9 },
   dive: { clip: PIP_CLIPS.fall, speed: 1.6 },
-  pound: { clip: PIP_CLIPS.crouch },
-  swim: { clip: PIP_CLIPS.walk, speed: 0.7 },
-  hurt: { clip: PIP_CLIPS.hurt, loop: false },
+  pound: { clip: PIP_CLIPS.crouch, speed: 1.2 },
+  swim: { clip: PIP_CLIPS.walk, speed: 0.85 },
+  hurt: { clip: PIP_CLIPS.hurt, loop: false, speed: 1.15 },
   dead: { clip: PIP_CLIPS.die, loop: false },
   celebrate: { clip: PIP_CLIPS.celebrate, loop: false }
 };
@@ -686,10 +695,10 @@ function driveAnimation(p: PlayerState, dt: number): void {
   if (key !== run.clipState) {
     run.clipState = key;
     const spec: { clip: string; speed?: number; loop?: boolean } =
-      key === "idle" ? { clip: PIP_CLIPS.idle, speed: 1 }
-      : key === "walk" ? { clip: PIP_CLIPS.walk, speed: Math.max(0.6, planar / 2.2) }
-      : key === "run" ? { clip: PIP_CLIPS.run, speed: Math.max(0.8, planar / 4.4) }
-      : CLIP_FOR[key] ?? { clip: PIP_CLIPS.idle };
+      key === "idle" ? { clip: PIP_CLIPS.idle, speed: 1.15 }
+      : key === "walk" ? { clip: PIP_CLIPS.walk, speed: 1.35 }
+      : key === "run" ? { clip: PIP_CLIPS.run, speed: 1.35 }
+      : CLIP_FOR[key] ?? { clip: PIP_CLIPS.idle, speed: 1.15 };
     hero.setAnimation({ clip: spec.clip, loop: spec.loop ?? true, speed: spec.speed ?? 1 });
   }
 
@@ -799,8 +808,11 @@ const MANUAL_PLAY_KEYS = new Set([
 ]);
 
 window.addEventListener("keydown", (event) => {
-  if (autopilot && MANUAL_PLAY_KEYS.has(event.code)) {
-    setAutopilot(false);
+  if (MANUAL_PLAY_KEYS.has(event.code)) {
+    userEngaged = true;
+    if (autopilot) {
+      setAutopilot(false);
+    }
   }
   if (event.code !== "Escape") return;
   const atlasEl = document.getElementById("pbl-atlas");
@@ -812,6 +824,9 @@ window.addEventListener("keydown", (event) => {
 });
 
 app.onFrame(({ dt }: { readonly dt: number }) => {
+  if (!appReady) {
+    return;
+  }
   const seconds = Math.min(0.05, dt);
   const { built, spec, cert } = ensureWorld(run.world);
   if (run.paused) {
@@ -881,76 +896,92 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
   const manualJumpHeld = input?.held("jump") ?? false;
   const manualDivePressed = input?.pressed("dive") ?? false;
   const manualPoundPressed = input?.pressed("pound") ?? false;
-  if (
-    autopilot &&
-    (Math.abs(manualMoveX) > 0.15 ||
-      Math.abs(manualMoveZ) > 0.15 ||
-      manualJumpPressed ||
-      manualDivePressed ||
-      manualPoundPressed)
-  ) {
-    setAutopilot(false);
+  const hasManualInput =
+    Math.abs(manualMoveX) > 0.15 ||
+    Math.abs(manualMoveZ) > 0.15 ||
+    manualJumpPressed ||
+    manualJumpHeld ||
+    manualDivePressed ||
+    manualPoundPressed;
+  if (hasManualInput) {
+    userEngaged = true;
+    if (autopilot) {
+      setAutopilot(false);
+    }
   }
-  const playerInput = autopilot
-    ? computeAutopilotInput(built, spec, seconds, bossVulnerable, bossAt)
-    : {
-        moveX: manualMoveX,
-        moveZ: manualMoveZ,
-        jumpPressed: manualJumpPressed,
-        jumpHeld: manualJumpHeld,
-        divePressed: manualDivePressed,
-        poundPressed: manualPoundPressed
-      };
-  const events = stepPlayer(run.player, built, playerInput, seconds, {
-    doubleJump: save.doubleJump,
-    assist: run.assist,
-    bossVulnerable,
-    bossAt
-  });
-  if (autopilot && !run.player.swim && run.player.y < spec.spawn[1] - 0.15) {
-    let nearest = built.solids[0];
-    let bestD = Infinity;
-    for (const s of built.solids) {
-      if (!s.active) continue;
-      const d = Math.hypot(s.x - run.player.x, s.z - run.player.z);
-      if (d < bestD) {
-        bestD = d;
-        nearest = s;
+
+  if (autopilot || userEngaged) {
+    const playerInput = autopilot
+      ? computeAutopilotInput(built, spec, seconds, bossVulnerable, bossAt)
+      : {
+          moveX: manualMoveX,
+          moveZ: manualMoveZ,
+          jumpPressed: manualJumpPressed,
+          jumpHeld: manualJumpHeld,
+          divePressed: manualDivePressed,
+          poundPressed: manualPoundPressed
+        };
+    const events = stepPlayer(run.player, built, playerInput, seconds, {
+      doubleJump: save.doubleJump,
+      assist: run.assist,
+      bossVulnerable,
+      bossAt
+    });
+    if (autopilot && !run.player.swim && run.player.y < spec.spawn[1] - 0.15) {
+      let nearest = built.solids[0];
+      let bestD = Infinity;
+      for (const s of built.solids) {
+        if (!s.active) continue;
+        const d = Math.hypot(s.x - run.player.x, s.z - run.player.z);
+        if (d < bestD) {
+          bestD = d;
+          nearest = s;
+        }
+      }
+      if (nearest) {
+        run.player.x = nearest.x;
+        run.player.y = nearest.y + nearest.hy;
+        run.player.z = nearest.z;
+        run.player.vx = 0;
+        run.player.vy = 0;
+        run.player.vz = 0;
+        run.player.grounded = true;
+        run.player.groundId = nearest.id;
+        run.player.state = "grounded";
       }
     }
-    if (nearest) {
-      run.player.x = nearest.x;
-      run.player.y = nearest.y + nearest.hy;
-      run.player.z = nearest.z;
-      run.player.vx = 0;
-      run.player.vy = 0;
-      run.player.vz = 0;
-      run.player.grounded = true;
-      run.player.groundId = nearest.id;
-      run.player.state = "grounded";
-    }
-  }
-  for (const e of events) handleEvent(e);
+    for (const e of events) handleEvent(e);
 
-  // Death → restart at spawn with full hearts.
-  if (run.player.state === "dead" && run.deadTimer > 0) {
-    run.deadTimer -= seconds;
-    if (run.deadTimer <= 0) {
-      const fresh = createPlayer(built);
-      run.player.x = fresh.x; run.player.y = fresh.y; run.player.z = fresh.z;
-      run.player.vx = 0; run.player.vy = 0; run.player.vz = 0;
-      run.player.yaw = fresh.yaw; run.player.camYaw = fresh.camYaw;
-      run.player.hearts = 3;
-      run.player.state = "grounded";
-      run.player.invuln = 1.6;
-      run.player.checkpoint = fresh.checkpoint;
-      hud.setHearts(3);
-      hud.toast("Pip's back up!", 1.4);
+    // Death → restart at spawn with full hearts.
+    if (run.player.state === "dead" && run.deadTimer > 0) {
+      run.deadTimer -= seconds;
+      if (run.deadTimer <= 0) {
+        const fresh = createPlayer(built);
+        run.player.x = fresh.x; run.player.y = fresh.y; run.player.z = fresh.z;
+        run.player.vx = 0; run.player.vy = 0; run.player.vz = 0;
+        run.player.yaw = fresh.yaw; run.player.camYaw = fresh.camYaw;
+        run.player.hearts = 3;
+        run.player.state = "grounded";
+        run.player.invuln = 1.6;
+        run.player.checkpoint = fresh.checkpoint;
+        hud.setHearts(3);
+        hud.toast("Pip's back up!", 1.4);
+      }
     }
+
+    if (!run.complete && run.player.state !== "dead") run.levelTime += seconds;
+  } else {
+    // Before first user input (when autopilot is OFF), keep Pip planted on the
+    // starting platform in a clean Idle skeletal loop while pickups and moving
+    // platforms animate in place.
+    run.player.vx = 0;
+    run.player.vy = 0;
+    run.player.vz = 0;
+    run.player.grounded = true;
+    run.player.state = "grounded";
   }
 
-  // World clock + platform motion + pickup spin.
-  if (!run.complete && run.player.state !== "dead") run.levelTime += seconds;
+  // Platform motion + pickup spin always animate in place.
   tickPlatforms(built, run.worldClock, (name) => node(name));
   for (const n of built.spinNodes) {
     const h = node(n);
@@ -1022,6 +1053,7 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
 // -------------------------------------------------------------------- wire
 
 bindShell();
+setAutopilot(autopilot);
 hud.setMode(run.mode);
 hud.setHearts(3);
 hud.setWorld(worldSpec(run.world).title);
@@ -1029,18 +1061,25 @@ hud.setSeeds(0, worldSpec(run.world).seedGoal);
 hud.renderAtlas(save);
 hud.renderStudio(save, () => {});
 loadWorld(BOOT_WORLD, "quick");
-document.body.setAttribute("data-aura3d-ready", "true");
+
+void app.ready().then(async () => {
+  await pipsGame.ready();
+  run.clipState = "";
+  driveAnimation(run.player, 0);
+  appReady = true;
+  document.body.dataset.aura3dReady = "true";
+  try {
+    const freezeMs = Number(params.get("freeze"));
+    if (Number.isFinite(freezeMs) && freezeMs > 0) {
+      window.setTimeout(() => {
+        run.paused = true;
+      }, freezeMs);
+    }
+  } catch {
+    // Ignore URL parsing errors.
+  }
+});
+
 window.addEventListener("error", () => {
   document.getElementById("render-error")?.removeAttribute("hidden");
 });
-
-try {
-  const freezeMs = Number(new URLSearchParams(window.location.search).get("freeze"));
-  if (Number.isFinite(freezeMs) && freezeMs > 0) {
-    window.setTimeout(() => {
-      run.paused = true;
-    }, freezeMs);
-  }
-} catch {
-  // Ignore URL parsing errors.
-}

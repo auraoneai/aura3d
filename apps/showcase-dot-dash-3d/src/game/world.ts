@@ -310,12 +310,24 @@ export function syncVisuals(_dt: number): void {
   // ---- actors
   try {
     const pp = normPos(m);
-    const bob = Math.sin(st.time * 9) * 0.05;
+    const moving = st.autopilot || st.hasMoved;
+    const chomp = moving ? Math.abs(Math.sin(st.time * 14)) : Math.sin(st.time * 4) * 0.25;
+    const bob = moving ? chomp * 0.14 : Math.sin(st.time * 4) * 0.03;
+    const pitch = moving ? Math.sin(st.time * 14) * 0.2 : 0;
     const dead = st.mode === "dying";
     const byte = nodes.require("byte");
     byte.setPosition(wx(pp.x), 0.54 + (dead ? 0 : bob), wz(pp.y));
-    byte.setRotation(0, yawOf(st.player.dir) + Math.PI, dead ? Math.sin(st.time * 20) * 0.5 : 0);
-    byte.setScale(st.player.dashT > 0 ? 1.18 + Math.sin(st.time * 40) * 0.08 : dead ? Math.max(0.05, st.deathT / 1.6) : 1.12);
+    byte.setRotation(dead ? 0 : pitch, yawOf(st.player.dir) + Math.PI, dead ? Math.sin(st.time * 20) * 0.5 : 0);
+    if (dead) {
+      byte.setScale(Math.max(0.05, st.deathT / 1.6));
+    } else if (st.player.dashT > 0) {
+      const ds = 1.2 + Math.sin(st.time * 40) * 0.08;
+      byte.setScale([ds * 1.08, ds * 0.92, ds * 1.08]);
+    } else if (moving) {
+      byte.setScale([1.12 * (1 + chomp * 0.1), 1.12 * (1 - chomp * 0.08), 1.12 * (1 + chomp * 0.1)]);
+    } else {
+      byte.setScale(1.12);
+    }
     byte.setVisible(!dead || Math.sin(st.time * 24) > -0.2);
     // wrap echo copy
     const ex = echoOffset(m, pp.x, pp.y);
@@ -323,7 +335,7 @@ export function syncVisuals(_dt: number): void {
     if (ex) {
       echo.setVisible(!dead);
       echo.setPosition(wx(ex.x), 0.54 + bob, wz(ex.y));
-      echo.setRotation(0, yawOf(st.player.dir) + Math.PI, 0);
+      echo.setRotation(dead ? 0 : pitch, yawOf(st.player.dir) + Math.PI, 0);
     } else echo.setVisible(false);
 
     // specters — distinct arcade colors, switching to fright blue/flash when Power Orb is active

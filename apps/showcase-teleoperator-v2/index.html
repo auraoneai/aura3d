@@ -1235,9 +1235,33 @@
           max-width: calc(100vw - 240px);
         }
       }
+      #boot.boot {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: radial-gradient(circle at 50% 42%, #131c29 0%, #070b10 100%);
+        color: #f8fafc;
+        font-family: var(--font-display, sans-serif);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        transition: opacity 0.25s ease;
+      }
+      #boot.boot.done {
+        opacity: 0;
+        pointer-events: none;
+      }
     </style>
   </head>
   <body class="teleop waymo play mpOn mpRoom">
+    <div id="boot" class="boot">
+      <div style="font-size:18px;font-weight:700;color:#3fd6c6;">GRID DISPATCH · SAN FRANCISCO</div>
+      <div style="font-size:11px;opacity:0.78;">LOADING AURA3D FLEET &amp; TELEOP CORRIDOR...</div>
+    </div>
     <div id="view">
       <canvas id="c" width="1280" height="800" aria-label="Grid Dispatch San Francisco 3D street view"></canvas>
     </div>
@@ -1320,7 +1344,7 @@
         <button type="button" data-car="corvette">Vortex GT</button>
         <button type="button" data-car="roadster">Apex Interceptor</button>
         <span class="dock-sep" aria-hidden="true"></span>
-        <button type="button" id="dockAutopilotBtn" class="active" title="Cycle Driver Assist (I key)">L5 Self-Driving</button>
+        <button type="button" id="dockAutopilotBtn" title="Cycle Driver Assist (I key)">Manual Override</button>
       </div>
       <div class="dock-row">
         <span class="dock-label">Cam</span>
@@ -1365,18 +1389,18 @@
         <div id="gear">D</div>
       </div>
       <div id="aids">
-        <i id="aDA" class="da drive" title="Driving level (I)">
+        <i id="aDA" class="da take" title="Driving level (I)">
           <svg viewBox="0 0 20 14" aria-hidden="true">
             <path d="M3.5 5.2Q10-.6 16.5 5.2M6.3 7.3Q10 4.2 13.7 7.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
             <rect x="5" y="8.6" width="10" height="4.6" rx="2" fill="currentColor" />
           </svg>
-          <b id="aDAl">L5</b>
+          <b id="aDAl">MAN</b>
         </i>
         <i id="aABS" class="act" title="Toggle ABS">ABS</i>
         <i id="aTCS" class="act" title="Toggle Traction Control">TCS</i>
         <i id="aESP" class="act" title="Toggle Stability Control">ESP</i>
       </div>
-      <div id="gmode">AUTO · AURA AUTOPILOT</div>
+      <div id="gmode">MANUAL · PILOT OVERRIDE</div>
     </div>
 
     <script type="module" src="./src/main.ts"></script>

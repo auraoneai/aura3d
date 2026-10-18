@@ -23,6 +23,8 @@ export interface AthleteRig {
   kitKey: string;
   jerseyColor: string;
   trimColor: string;
+  activeClip?: string;
+  activeSpeed?: number;
 }
 
 export interface AthleteKit {
@@ -64,7 +66,8 @@ export function athleteNodes(id: string): RigNode[] {
   return [
     model(bodyAsset, {
       name: `${id}-body`,
-      targetHeight: isKeeper ? 1.92 : isPower ? 1.86 : 1.82
+      targetHeight: isKeeper ? 1.92 : isPower ? 1.86 : 1.82,
+      animation: { clip: "Idle_Loop", loop: true, speed: 1 }
     } as any)
       .position(0, 0, 0)
       .runtime(game.runtimeNode(`${id}-body`)),
@@ -99,7 +102,9 @@ export function resolveAthlete(app: any, id: string): AthleteRig {
     thighR: req("thigh-r"), shinR: req("shin-r"), shoeR: req("shoe-r"),
     kitKey: "",
     jerseyColor: "#1d63ff",
-    trimColor: "#d8ff3e"
+    trimColor: "#d8ff3e",
+    activeClip: "Idle_Loop",
+    activeSpeed: 1
   };
 }
 
@@ -348,26 +353,78 @@ export function poseAthlete(rig: AthleteRig, p: PlayerState, t: number, opts?: {
     }
   }
 
-  // 1. Ground and orient the bespoke 3D Meshy soccer athlete GLB (`rig.body`)
+  // 1. Drive real skeletal animation clip on the rigged GLB (`rig.body.setAnimation`)
+  const speedNorm = clamp(p.speed / 6.4, 0, 1);
+  const anim = p.diveT > 0 && p.isKeeper
+    ? "dive"
+    : p.slideT > 0
+      ? "tackle"
+      : p.celebrateT > 0.2
+        ? "celebrate"
+        : p.kickT > 0.02
+          ? "kick"
+          : speedNorm > 0.55
+            ? "sprint"
+            : speedNorm > 0.08
+              ? "run"
+              : "idle";
+
+  let clip = p.isKeeper ? "Ready" : "Idle_Loop";
+  const loop = true;
+  let speed = 1.0;
+
+  if (anim === "kick") {
+    clip = "Shoot";
+    speed = 1.6;
+  } else if (anim === "tackle") {
+    clip = "Attack";
+    speed = 1.5;
+  } else if (anim === "dive") {
+    clip = "Jump_Loop";
+    speed = 1.4;
+  } else if (anim === "celebrate") {
+    clip = "Jump_Loop";
+    speed = 1.35;
+  } else if (speedNorm > 0.55 || anim === "sprint") {
+    clip = "Sprint_Loop";
+    speed = 1.15 + speedNorm * 0.55;
+  } else if (speedNorm > 0.08 || anim === "run") {
+    clip = "Run";
+    speed = 1.0 + speedNorm * 0.45;
+  } else {
+    clip = p.isKeeper ? "Ready" : "Idle_Loop";
+    speed = 1.0;
+  }
+
+  if (rig.activeClip !== clip || Math.abs((rig.activeSpeed ?? 1) - speed) > 0.18) {
+    rig.activeClip = clip;
+    rig.activeSpeed = speed;
+    rig.body?.setAnimation?.({ clip, loop, speed });
+  }
+
+  // 2. Ground and orient the bespoke 3D Meshy soccer athlete GLB (`rig.body`)
   // Model forward is +Z; sim yaw=0 is +X, yaw=PI/2 is +Z -> modelY = PI/2 - p.yaw
+  const pPhase = p.gait * Math.PI;
+  const strideBob = speedNorm > 0.08 ? Math.abs(Math.sin(pPhase)) * 0.065 * speedNorm : 0;
   const modelY = Math.PI / 2 - p.yaw + pose.torsoYaw * 0.35;
-  const groundY = p.slideT > 0 ? 0.08 : p.diveT > 0 ? 0.16 : Math.max(0, pose.hipY - HIP_Y);
+  const groundY = p.slideT > 0 ? 0.08 : p.diveT > 0 ? 0.16 : strideBob;
+  const pitch = p.slideT > 0 ? -0.28 : pose.leanX * 0.65 + speedNorm * 0.12;
   const diveRoll = p.diveT > 0 ? -p.diveDir * 0.95 : pose.leanZ * 0.45;
   rig.body
     ?.setPosition(p.x, groundY, p.z)
-    .setRotation(pose.leanX * 0.65, modelY, diveRoll)
+    .setRotation(pitch, modelY, diveRoll)
     .setScale([1, 1, 1])
     .setVisible(true);
 
   const hipY = pose.hipY, shY = pose.shY;
   const lx = pose.leanX, lz = pose.leanZ;
 
-  // 2. Slim core team-kit chest band inside the torso silhouette for club color differentiation
+  // 3. Slim core team-kit chest band inside the torso silhouette for club color differentiation
   const hips = W([0, hipY + 0.12, 0]);
   const chest = W([lx * 0.7, shY - 0.04, lz * 0.7]);
   kit.orientCylinderBetween(rig.torso, hips, chest, 0.115, 0.105);
 
-  // 3. Shadow + tactical team/controlled turf ring
+  // 4. Shadow + tactical team/controlled turf ring
   rig.shadow.setPosition(p.x, 0.014, p.z).setScale([1, 1, 1]).setVisible(true);
   const pulse = p.controlled ? 1.05 + Math.sin(t * 6) * 0.08 : 0.66;
   rig.ring.setPosition(p.x, 0.03, p.z).setRotation(Math.PI / 2, 0, 0)

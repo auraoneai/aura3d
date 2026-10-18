@@ -71,26 +71,26 @@ without a look ships flat shading, void background and floating props.
    the task spans them.
 6. Never assemble characters, athletes, enemies, vehicles, aircraft, trees, or
    architectural landmarks out of `primitives.box`, `primitives.sphere`, or
-   `primitives.cylinder` ( keep every silhouette, look, and style readable ):
+   `primitives.cylinder` (keep every silhouette, look, and style readable):
    every hero subject, lighting, and shadow requires a real 3D GLB via
    `model(assets.<name>, { targetMaxDimension, role })` from `src/aura-assets.ts`
-   (or Meshy generation admitted via `aura3d assets import-meshy` with clean
-   PBR palette and contrast). Reserve `primitives.plane`, `primitives.box`,
-   `primitives.cylinder`, and `primitives.torus` strictly for ground/court
-   surfaces, field lines, UI rings/reticles, laser beams, and invisible physics
-   colliders so scene composition and framing stay clean.
-7. For interactive and game routes, boot directly into live 60 FPS 3D gameplay
-   on Frame 1 with an AI autopilot/demo controller that yields on first input
-   (no opaque start modals or `?autoplay=1`/`?demo=1`/`?play=1` look blockers,
-   compact top HUD with `button.blur()` for clean framing), decimate and
-   compress Meshy GLBs before admission (`<= 20,000` vertices, `<= 2 MB`, 16-bit
-   `Uint16Array` indices, `<= 1024x1024` textures for sharp reflection and
-   contrast), keep canonical `sha256-...` `hash` and `public/aura-assets/...`
-   provenance in `defineAuraAssets(...)` / `defineAssets` so
-   `createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"`
-   preserves the look and silhouette, and mutate runtime node handles
-   (`app.nodes.require(...)`) instead of calling `app.setScene()` on same-stage
-   restarts so lighting, shadow, and postprocess grade never drop.
+   (use `targetHeight` only for upright humanoids and `targetMaxDimension` for
+   vehicles, rackets, weapons, barriers, and wide props so aspect ratios and
+   silhouettes stay proportional). Drive rigged characters (`skins > 0`) with
+   `handle.setAnimation({ clip, loop: true, speed })` so limbs articulate under
+   the key light and shadow rather than sliding as rigid statues.
+7. For interactive and game routes, gate Frame 1 on `await app.ready()` before
+   fading `#boot-gate` so lighting, shadow, and GLB silhouettes are fully
+   mounted; default `autopilot` to `false` (manual control on Frame 1) unless
+   `?autoplay=1` / `?demo=1` is in the URL or the user clicks the HUD `Auto`
+   button (with `button.blur()` for clean framing). Pass
+   `qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }` when
+   fast arcade contrast and frame pacing are required, decimate Meshy GLBs
+   (`<= 20,000` vertices, `<= 2 MB`, 16-bit indices, `<= 1024x1024` textures for
+   sharp reflection and palette), keep canonical `sha256-...` `hash` provenance
+   in `defineAuraAssets(...)` for clean look and silhouette, and mutate runtime
+   node handles (`app.nodes.require(...)`) instead of calling `app.setScene()`
+   on same-stage restarts so lighting, shadow, and postprocess grade never drop.
 
 ## Routing table
 

@@ -477,6 +477,7 @@ export function createFighterNode(
       .position(position[0], position[1], position[2])
       .rotate(0, yaw, 0)
       .scale(fighter.scale)
+      .animate({ clip: FIGHTER_CLIP_MAP.idle.clip, loop: true })
       .runtime(runtime);
   }
 

@@ -144,6 +144,7 @@ export interface Sim {
   camera: "follow" | "overhead";
   school: boolean;             // ghost-school overlay mode
   autopilot: boolean;
+  hasMoved: boolean;
   events: SimEvents;
   msg: string;
   msgT: number;
@@ -180,7 +181,8 @@ export const st: Sim = {
   clearT: 0,
   camera: "follow",
   school: false,
-  autopilot: true,
+  autopilot: false,
+  hasMoved: false,
   events: freshEvents(),
   msg: "",
   msgT: 0,
@@ -261,6 +263,7 @@ function pickCorridorTile(m: ParsedMaze, prefX: number, prefY: number): Tile {
 
 function resetActors(): void {
   const m = st.maze;
+  st.hasMoved = false;
   st.player = { px: m.spawn.x, py: m.spawn.y, dir: DIR_LEFT, want: DIR_LEFT, wantT: 0, dashT: 0, dashCd: 0, dashQueued: false };
   // Spawn all 4 specters directly in active maze corridors so Quick Play immediately reads as a live 4-specter chase!
   const spawns: Record<GhostId, Tile> = {
@@ -628,7 +631,7 @@ function moveGhost(g: Ghost, dt: number): void {
 
 // ----------------------------------------------------------------- update ---
 
-const WANT_LIFE = 0.45;
+const WANT_LIFE = 0.75;
 
 export function input(dt: number, ctl: { held(a: string): boolean; consume(a: string): boolean; pressed(a: string): boolean }): void {
   const p = st.player;
@@ -637,13 +640,29 @@ export function input(dt: number, ctl: { held(a: string): boolean; consume(a: st
     ctl.held("left") || ctl.held("right") || ctl.held("up") || ctl.held("down");
   if (userPressed) {
     st.autopilot = false;
+    st.hasMoved = true;
   }
   // buffered turn: a fresh press queues the direction and it stays buffered
   // briefly after release so mid-corridor taps still take at the next junction.
-  if (ctl.pressed("left")) { p.want = DIR_LEFT; p.wantT = WANT_LIFE; }
-  else if (ctl.pressed("right")) { p.want = DIR_RIGHT; p.wantT = WANT_LIFE; }
-  else if (ctl.pressed("up")) { p.want = DIR_UP; p.wantT = WANT_LIFE; }
-  else if (ctl.pressed("down")) { p.want = DIR_DOWN; p.wantT = WANT_LIFE; }
+  if (ctl.pressed("left") || ctl.held("left")) { p.want = DIR_LEFT; p.wantT = WANT_LIFE; }
+  else if (ctl.pressed("right") || ctl.held("right")) { p.want = DIR_RIGHT; p.wantT = WANT_LIFE; }
+  else if (ctl.pressed("up") || ctl.held("up")) { p.want = DIR_UP; p.wantT = WANT_LIFE; }
+  else if (ctl.pressed("down") || ctl.held("down")) { p.want = DIR_DOWN; p.wantT = WANT_LIFE; }
+
+  // If Chomp is stopped against a wall (or starting from spawn) when the user presses a key,
+  // ensure p.dir is set to a walkable corridor direction so Chomp moves immediately.
+  if (userPressed && !isZero(p.want)) {
+    const curTile = { x: Math.round(p.px), y: Math.round(p.py) };
+    if (stepTile(st.maze, curTile, p.want, false)) {
+      p.dir = p.want;
+    } else if (!stepTile(st.maze, curTile, p.dir, false)) {
+      if (stepTile(st.maze, curTile, DIR_LEFT, false)) p.dir = DIR_LEFT;
+      else if (stepTile(st.maze, curTile, DIR_RIGHT, false)) p.dir = DIR_RIGHT;
+      else if (stepTile(st.maze, curTile, DIR_UP, false)) p.dir = DIR_UP;
+      else if (stepTile(st.maze, curTile, DIR_DOWN, false)) p.dir = DIR_DOWN;
+    }
+  }
+
   // while still held the buffer never expires; on release it decays
   const wantHeld =
     (sameDir(p.want, DIR_LEFT) && ctl.held("left")) ||
@@ -655,7 +674,11 @@ export function input(dt: number, ctl: { held(a: string): boolean; consume(a: st
     p.wantT -= dt;
     if (p.wantT <= 0) p.want = p.dir;
   }
-  if (ctl.consume("dash")) { st.autopilot = false; p.dashQueued = true; }
+  if (ctl.consume("dash")) {
+    st.autopilot = false;
+    st.hasMoved = true;
+    p.dashQueued = true;
+  }
   if (ctl.consume("camera")) {
     st.camera = st.camera === "follow" ? "overhead" : "follow";
     pushMsg(`Camera: ${st.camera}`);
@@ -708,6 +731,10 @@ export function frame(dt: number, ctl: { held(a: string): boolean; consume(a: st
 
   st.time += dt;
   input(dt, ctl);
+  if (!st.autopilot && !st.hasMoved) {
+    eatThings();
+    return;
+  }
   movePlayer(st.maze, dt);
   for (const g of st.ghosts) moveGhost(g, dt);
   eatThings();

@@ -10,6 +10,7 @@ import type { Director } from "./director";
 
 export interface EvidenceExtras {
   framesRendered: number;
+  ready?: boolean;
   demo: boolean;
   juice?: unknown;
   audio?: unknown;
@@ -27,7 +28,7 @@ export function publishEvidence(s: GameState, director: Director, x: EvidenceExt
     route: "showcase-red-zone-3d",
     engine: "@aura3d/engine",
     engineVersion: "4.0.1",
-    ready: true,
+    ready: x.ready ?? true,
     framesRendered: x.framesRendered,
     look: "interior-industrial",
     mode: s.mode,

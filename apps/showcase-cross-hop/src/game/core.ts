@@ -106,7 +106,7 @@ export const st: GameState = {
   message: "", messageT: 0,
   themeIdx: 0, events: [],
   podTaken: new Set(), coinTaken: new Set(),
-  autopilot: true, apTimer: 0, dressKey: "",
+  autopilot: false, apTimer: 0, dressKey: "",
   forceTheme: undefined
 };
 
@@ -118,14 +118,14 @@ const HAWK_WARN = 3.0, HAWK_KILL = 5.2;
  * Exact top-surface Y of a lane or its active platform in world units:
  * - Meadow / Road / Tram ground strip: center y = 0, sy = 0.24 -> top = 0.12
  * - Rail: railbed + ties + rails -> top = 0.13
- * - River log: center y = 0.08, sy = 0.22 -> top = 0.19
- * - River lilypad: center y = 0.04, sy = 0.08 -> top = 0.08
+ * - River log: center y = 0.08, sy = 0.22 -> top = 0.22
+ * - River lilypad: raised so critter base stays >= 0.17 -> top = 0.12
  * - Lava stone: center y = 0.06, sy = 0.20 -> top = 0.16
  */
 const CRITTER_FOOT_OFFSET = 0.05;
 
 function surfaceTopY(l: Lane): number {
-  if (l.type === "river") return l.moverKind === "log" ? 0.22 : 0.08;
+  if (l.type === "river") return l.moverKind === "log" ? 0.22 : 0.12;
   if (l.type === "lava") return 0.16;
   if (l.type === "rail") return 0.13;
   return 0.12;
@@ -328,6 +328,7 @@ export function buildScene(): unknown {
       model(assets[key], { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true })
         .position((idx % 2 === 0 ? -1 : 1) * (7.8 + (idx % 3) * 1.1), 0.12, -idx * 2.2)
         .rotate(0, idx % 2 === 0 ? Math.PI * 0.45 : -Math.PI * 0.45, 0)
+        .animate({ clip: "Idle", loop: true })
         .runtime(game.runtimeNode(`spectator-${idx}`))
     ),
     primitives.box({
@@ -347,6 +348,7 @@ export function buildScene(): unknown {
 let app: AuraApp | null = null;
 let nodeOk = true;
 export let nodeErr = "";
+let activePlayerClip = "Idle";
 
 export function bindApp(a: AuraApp): void { app = a; }
 
@@ -357,8 +359,14 @@ export function frame(dt: number, input: { buffered(d: string, w: number): boole
   st.time += dt;
   if (st.mode === "run") {
     runFrame(dt, input);
-  } else if (st.mode === "dead" && st.autopilot) {
-    if (st.time - st.deadAt > 1.4) {
+  } else if (st.mode === "dead") {
+    const manualRestart =
+      input.buffered("up", 0.14) ||
+      input.buffered("down", 0.14) ||
+      input.buffered("left", 0.14) ||
+      input.buffered("right", 0.14);
+    if (manualRestart || (st.autopilot && st.time - st.deadAt > 1.4)) {
+      if (manualRestart) st.autopilot = false;
       startRun(st.runKind, st.drill, undefined, st.forceTheme);
     }
   }
@@ -368,7 +376,11 @@ export function frame(dt: number, input: { buffered(d: string, w: number): boole
 function runFrame(dt: number, input: { buffered(d: string, w: number): boolean }): void {
   let p = st.playerCol * COL_W;
   const l = lane(st.playerRow);
-  st.idle += dt;
+  if (st.playerRow === 0 && !st.autopilot) {
+    st.idle = 0;
+  } else {
+    st.idle += dt;
+  }
 
   // platform carry (river/lava)
   if (!st.hop.active && (l.type === "river" || l.type === "lava")) {
@@ -424,8 +436,43 @@ function tryHop(dir: string): void {
   else if (dir === "back") nr = Math.max(0, nr - 1);
   else if (dir === "left") nc = Math.max(COL_MIN, nc - 1);
   else if (dir === "right") nc = Math.min(COL_MAX, nc + 1);
+  let targetLane = lane(nr);
+  if (dir === "fwd" && targetLane.type === "rail") {
+    const nNow = laneMovers(targetLane, st.time + HOP_DUR, XS);
+    const nSoon = laneMovers(targetLane, st.time + HOP_DUR + 1.2, XS);
+    let railBusy = railWarning(targetLane, st.time);
+    for (let i = 0; i < nNow; i++) if (Math.abs(XS[i] - nc * COL_W) < moverHalf(targetLane) + 1.8) railBusy = true;
+    for (let i = 0; i < nSoon; i++) if (Math.abs(XS[i] - nc * COL_W) < moverHalf(targetLane) + 1.8) railBusy = true;
+    if (railBusy && lane(nr + 1).type === "grass") {
+      nr += 1;
+      targetLane = lane(nr);
+    }
+  }
+  if (targetLane.type === "river" || targetLane.type === "lava") {
+    const n = laneMovers(targetLane, st.time + HOP_DUR, XS);
+    if (n > 0) {
+      const targetX = nc * COL_W;
+      let hasMoverUnder = false;
+      let bestX = targetX;
+      let bestDist = Infinity;
+      for (let i = 0; i < n; i++) {
+        const d = Math.abs(XS[i] - targetX);
+        if (d < moverHalf(targetLane) - 0.08) {
+          hasMoverUnder = true;
+          break;
+        }
+        if (d < bestDist && Math.abs(XS[i]) <= FIELD_HALF - 0.5) {
+          bestDist = d;
+          bestX = XS[i];
+        }
+      }
+      if (!hasMoverUnder && bestDist < Infinity) {
+        nc = bestX / COL_W;
+      }
+    }
+  }
   const fromY = playerBaseY(lane(st.playerRow));
-  const toY = playerBaseY(lane(nr));
+  const toY = playerBaseY(targetLane);
   st.hop = { active: true, t: 0, fromX: st.playerCol * COL_W, fromY, fromZ: laneZ(st.playerRow), toX: nc * COL_W, toY, toZ: laneZ(nr), dir };
   st.playerRow = nr; st.playerCol = nc;
   st.idle = 0;
@@ -479,7 +526,7 @@ function landHop(): void {
 
 function platformUnder(l: Lane, x: number): number {
   const n = laneMovers(l, st.time, XS);
-  for (let i = 0; i < n; i++) if (Math.abs(XS[i] - x) < moverHalf(l)) return XS[i];
+  for (let i = 0; i < n; i++) if (Math.abs(XS[i] - x) < moverHalf(l) + 0.25) return XS[i];
   return -1e9;
 }
 
@@ -554,7 +601,7 @@ function swapLook(ti: number): void {
 
 const TRUCK_TINTS = ["#d8e0ea", "#e2dad0", "#d4e0e6"] as const;
 
-function syncVisuals(dt: number): void {
+export function syncVisuals(dt: number): void {
   if (!app) return;
   const nodes = app.nodes;
   if (!nodes) return;
@@ -607,7 +654,7 @@ function syncVisuals(dt: number): void {
     const n = laneMovers(pl, st.time, XS);
     const curX = st.playerCol * COL_W;
     for (let i = 0; i < n; i++) {
-      if (Math.abs(XS[i] - curX) < moverHalf(pl)) {
+      if (Math.abs(XS[i] - curX) < moverHalf(pl) + 0.25) {
         st.playerCol = XS[i] / COL_W;
         break;
       }
@@ -619,17 +666,22 @@ function syncVisuals(dt: number): void {
   const pz = st.hop.active ? st.hop.fromZ + (st.hop.toZ - st.hop.fromZ) * st.hop.t : laneZ(st.playerRow);
   const baseY = st.hop.active ? st.hop.fromY + (st.hop.toY - st.hop.fromY) * st.hop.t : playerBaseY(pl);
   const arc = st.hop.active ? Math.sin(Math.PI * Math.min(1, st.hop.t)) * 0.68 : 0;
-  const deathOffset = st.dead?.kind === "drowned" ? -0.38 : st.dead?.kind === "burned" ? -0.24 : 0;
+  const deathOffset = 0;
   const squash = st.dead && (st.dead.kind === "squashed" || st.dead.kind === "flattened") ? 0.18 : 1;
   try {
     const h = nodes.require("player");
-    h.setPosition(px, baseY + arc + deathOffset, pz);
+    h.setPosition(px, Math.max(0.17, baseY + arc + deathOffset), pz);
     if (st.hop.active) h.setScale(1.0 + Math.sin(Math.PI * st.hop.t) * 0.25);
     else h.setScale(squash);
     if (st.hop.dir === "left") h.setRotation(0, -Math.PI / 2, 0);
     else if (st.hop.dir === "right") h.setRotation(0, Math.PI / 2, 0);
     else if (st.hop.dir === "back") h.setRotation(0, 0, 0);
     else h.setRotation(0, Math.PI, 0);
+    const targetClip = st.hop.active ? "Regular_Jump" : "Idle";
+    if (targetClip !== activePlayerClip) {
+      activePlayerClip = targetClip;
+      h.setAnimation({ clip: targetClip, loop: true, speed: targetClip === "Regular_Jump" ? 2.2 : 1.0 });
+    }
   } catch (e) { nodeOk = false; nodeErr = `player: ${String(e).slice(0, 120)}`; }
 
   // animate 3D Meshy spectator critters cheering along the outer meadow banks beside the playfield

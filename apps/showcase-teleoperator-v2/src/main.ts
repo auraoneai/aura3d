@@ -1384,7 +1384,10 @@ async function bootGridDispatchAura3D(): Promise<void> {
   const builtScene = buildGridDispatchScene();
   const auraApp = createAuraApp(canvas, {
     scene: builtScene,
-    renderer: { quality: "high" }
+    renderer: {
+      quality: "high",
+      qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
+    }
   });
 
   const req = (id: string) => auraApp.nodes.require(id);
@@ -1466,10 +1469,12 @@ async function bootGridDispatchAura3D(): Promise<void> {
   const trafficHandles = Array.from({ length: 10 }, (_, i) => req(`traffic-${i}`));
 
   // Live Simulation State
+  const urlParams = new URLSearchParams(window.location.search);
   let framesRendered = 0;
   let simTime = 0;
   let activeCarId: PlayableCarId = "waymo";
-  let autopilotLevel: AutopilotLevel = "L5";
+  let autopilotLevel: AutopilotLevel =
+    urlParams.get("autoplay") === "1" || urlParams.get("demo") === "1" ? "L5" : "MAN";
   let weatherPreset: WeatherPreset = "noon";
   let camMode: 0 | 1 | 2 | 3 = 0;
   let useMph = true;
@@ -1481,7 +1486,7 @@ async function bootGridDispatchAura3D(): Promise<void> {
   let playerX = 3.4;
   let playerY = 0;
   let playerZ = 0;
-  let playerSpeedMps = 14.5; // Starts cruising smoothly at ~32 MPH in L5
+  let playerSpeedMps = 11.5; // Starts cruising smoothly in manual or L5
   let playerSteer = 0;
   let playerYaw = 0;
   let playerPitch = 0;
@@ -2281,6 +2286,10 @@ async function bootGridDispatchAura3D(): Promise<void> {
     material.pbr({ color: "#e8c27a", metalness: 0.65, roughness: 0.26 })
   );
 
+  // Wait for all GLB assets & scene nodes to finish loading before starting simulation or setting ready flags
+  await auraApp.ready();
+  setAutopilotLevel(autopilotLevel);
+
   // Main 60 FPS Simulation & Render Sync Loop (Required by @aura3d/engine)
   let lastHudDomUpdateSec = -1;
   let lastSignalPhase = -1;
@@ -2291,8 +2300,7 @@ async function bootGridDispatchAura3D(): Promise<void> {
     simTime += safeDt;
 
     const spec = PLAYABLE_FLEET[activeCarId];
-    const manualActive =
-      autopilotLevel === "MAN" || simTime - lastManualInputTime < 3.5;
+    const manualActive = autopilotLevel === "MAN";
 
     // 1. Update Apex Fare Lifecycle & L5 Autonomous Navigation
     const distToBeacon = Math.max(0, playerZ - beaconWorldZ);
@@ -2407,10 +2415,13 @@ async function bootGridDispatchAura3D(): Promise<void> {
         powerRatio = 0.05;
         regenRatio = 0.88;
       } else {
-        // EV Regenerative coasting
-        playerSpeedMps = Math.max(0, playerSpeedMps - 4.8 * safeDt);
-        powerRatio = clamp((playerSpeedMps / spec.maxSpeedMps) * 0.6, 0.04, 0.7);
-        regenRatio = playerSpeedMps > 2 ? 0.54 : 0.12;
+        // EV urban cruise coasting floor so the vehicle keeps rolling until S/ArrowDown is pressed
+        playerSpeedMps =
+          playerSpeedMps > 9.5
+            ? Math.max(9.5, playerSpeedMps - 3.2 * safeDt)
+            : Math.min(9.5, playerSpeedMps + 4.0 * safeDt);
+        powerRatio = clamp((playerSpeedMps / spec.maxSpeedMps) * 0.6, 0.18, 0.7);
+        regenRatio = 0.22;
       }
       // Keep beacon ahead if player passes it in manual mode without stopping
       if (playerZ < beaconWorldZ - 12) {
@@ -2767,6 +2778,7 @@ async function bootGridDispatchAura3D(): Promise<void> {
   });
 
   auraApp.step(1 / 60);
+  document.getElementById("boot")?.classList.add("done");
   document.body.dataset.aura3dReady = "true";
   canvas.dataset.ready = "true";
   auraApp.resume();

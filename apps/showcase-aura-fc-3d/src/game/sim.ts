@@ -50,6 +50,8 @@ export interface Sim {
   readonly state: MatchState;
   /** 0..1 while the user is charging a shot — drives the HUD meter. */
   readonly chargeLevel: number;
+  readonly autopilot: boolean;
+  setAutopilot(on: boolean): void;
   step(dt: number, input: UserInputFrame): SimEvent[];
   startMatch(cfg: MatchConfig): void;
   togglePause(): boolean;
@@ -76,7 +78,7 @@ export function createSim(): Sim {
   let dt0 = 1 / 60;
   let labPens = false;          // shootout lab: user takes every penalty
   let keeperRushHeld = false;   // user holds sprint off-ball → GK rushes out
-  let userIdleT = 99;           // seconds since last user input (starts idle for instant live play)
+  let autopilot = false;        // autopilot is OFF by default unless ?autoplay=1 / ?demo=1 or toggled
 
   const emit = (e: SimEvent) => events.push(e);
 
@@ -140,7 +142,7 @@ export function createSim(): Sim {
       let ax = p.anchor[0], az = p.anchor[1];
       if (kickoffShift && p.role === "FW") ax -= 5.5; // strikers start near the centre spot
       if (kickoffShift && p.role === "MF") ax -= 2;
-      p.x = s * ax; p.z = az; p.vx = 0; p.vz = 0;
+      p.x = s * ax; p.z = az; p.vx = 0; p.vz = 0; p.speed = 0;
       p.yaw = s > 0 ? 0 : Math.PI;
       p.slideT = 0; p.skillT = 0; p.diveT = 0; p.stunT = 0; p.holdT = 0;
       p.kickT = 0; p.celebrateT = 0; p.trapT = 0;
@@ -151,10 +153,22 @@ export function createSim(): Sim {
     toAnchors("all", true);
     const b = state.ball;
     b.x = 0; b.y = BALL_R; b.z = 0; b.vx = 0; b.vy = 0; b.vz = 0; b.spin = 0;
-    b.mode = "dead"; b.ownerId = null; b.intendedTargetId = null; b.freeT = 0;
+    b.mode = "dribble"; b.ownerId = null; b.intendedTargetId = null; b.freeT = 0;
     b.lastShot = "none"; b.trail.length = 0;
     state.phase = "kickoff"; state.phaseT = 0; state.kickoffTeam = team;
+    const fw = nearestOf(team, 0, 0, false);
+    if (fw) {
+      fw.x = -state.attackSign[team] * 0.42;
+      fw.z = 0;
+      fw.vx = 0;
+      fw.vz = 0;
+      fw.speed = 0;
+      giveBall(fw, false);
+      b.x = 0;
+      b.z = 0;
+    }
     pickControlled();
+    setControlled(state.controlledId);
     emit({ type: "kickoff", team, label: `kickoff — ${team === 0 ? "home" : "away"}`, severity: "info" });
   }
 
@@ -766,8 +780,9 @@ export function createSim(): Sim {
     const ml = len2(mv[0], mv[1]);
     const dir: [number, number] = ml > 1 ? [mv[0] / ml, mv[1] / ml] : [mv[0], mv[1]];
     const skillBoost = p.skillT > 0 && p.skill === "stepover" ? 1.25 : 1;
-    p.vx = lerp(p.vx, dir[0] * cap * Math.min(1, ml) * skillBoost, Math.min(1, dt * ACCEL));
-    p.vz = lerp(p.vz, dir[1] * cap * Math.min(1, ml) * skillBoost, Math.min(1, dt * ACCEL));
+    const accelRate = p.controlled && ml > 0.05 ? Math.max(ACCEL, 28) : ACCEL;
+    p.vx = lerp(p.vx, dir[0] * cap * Math.min(1, ml) * skillBoost, Math.min(1, dt * accelRate));
+    p.vz = lerp(p.vz, dir[1] * cap * Math.min(1, ml) * skillBoost, Math.min(1, dt * accelRate));
     p.x += p.vx * dt; p.z += p.vz * dt;
     p.x = clamp(p.x, -PITCH_HX - 0.6, PITCH_HX + 0.6);
     p.z = clamp(p.z, -PITCH_HZ - 0.4, PITCH_HZ + 0.4);
@@ -851,12 +866,47 @@ export function createSim(): Sim {
     state.phaseT += dt;
     state.goalFlashT = Math.max(0, state.goalFlashT - dt);
 
+    const hasUserInput =
+      Math.hypot(input.move[0], input.move[1]) > 0.05 ||
+      input.sprint ||
+      input.passShort ||
+      input.passDriven ||
+      input.shootHeld ||
+      input.shootReleased ||
+      input.skillStepover ||
+      input.skillChop ||
+      input.switchPlayer ||
+      chargeHeld;
+
     switch (state.phase) {
       case "kickoff":
-        if (state.phaseT > 1.35) {
-          state.phase = "live"; state.phaseT = 0;
-          const fw = nearestOf(state.kickoffTeam, 0, 0, false);
-          giveBall(fw, false);
+        if (state.userTeam !== null && !autopilot && state.kickoffTeam === state.userTeam) {
+          if (hasUserInput) {
+            state.phase = "live";
+            state.phaseT = 0;
+            if (!b.ownerId) {
+              const fw = nearestOf(state.kickoffTeam, 0, 0, false);
+              giveBall(fw, false);
+            }
+          } else {
+            // Wait in static formation until the user moves/passes/shoots or enables autopilot
+            for (const p of state.players as PlayerInternal[]) {
+              applyCommand(p, { move: [0, 0], sprint: false }, dt);
+            }
+            return events;
+          }
+        } else if (state.phaseT > 1.0 || hasUserInput) {
+          state.phase = "live";
+          state.phaseT = 0;
+          if (!b.ownerId) {
+            const fw = nearestOf(state.kickoffTeam, 0, 0, false);
+            giveBall(fw, false);
+          }
+        } else {
+          for (const p of state.players as PlayerInternal[]) {
+            applyCommand(p, { move: [0, 0], sprint: false }, dt);
+          }
+          return events;
         }
         break;
       case "live":
@@ -922,7 +972,7 @@ export function createSim(): Sim {
     state.clock += dt;
     if (state.clock >= clockLimit() && state.phase === "live") timeUp();
 
-    // commands: AI for everyone except the controlled player
+    // commands: AI for everyone except the controlled player (when autopilot is off)
     keeperRushHeld = Boolean(
       state.userTeam !== null &&
       input.sprint &&
@@ -930,22 +980,10 @@ export function createSim(): Sim {
       (state.ball.mode === "loose" || state.ball.mode === "flight") &&
       state.ball.x * state.attackSign[state.userTeam] < -PITCH_HX * 0.25
     );
-    const hasUserInput =
-      Math.hypot(input.move[0], input.move[1]) > 0.05 ||
-      input.sprint ||
-      input.passShort ||
-      input.passDriven ||
-      input.shootHeld ||
-      input.shootReleased ||
-      input.skillStepover ||
-      input.skillChop ||
-      input.switchPlayer ||
-      chargeHeld;
-    userIdleT = hasUserInput ? 0 : userIdleT + dt;
 
     for (const p of state.players as PlayerInternal[]) {
       let cmd: PlayerCommand;
-      if (state.userTeam !== null && p.id === state.controlledId && (userIdleT < 1.8 || state.mode === "touch")) {
+      if (state.userTeam !== null && !autopilot && p.id === state.controlledId) {
         cmd = userCommand(p, input);
       } else {
         cmd = planCommand(state, p, dt, keeperRushHeld, Math.max(0.65, cfg.difficulty));
@@ -1001,26 +1039,38 @@ export function createSim(): Sim {
     const defending = !mine && (state.possessionTeam !== state.userTeam || b.mode === "loose" || b.mode === "flight");
 
     // charge the shot while held
-    if (mine && input.shootHeld) { charge = clamp(charge + dt0 / 0.8, 0.1, 1); chargeHeld = true; }
+    if (mine && input.shootHeld) {
+      charge = clamp(charge + dt0 / 0.55, 0.25, 1);
+      chargeHeld = true;
+      p.kickT = Math.max(p.kickT, 0.22);
+    }
 
-    const cmd: PlayerCommand = { move: input.move, sprint: input.sprint };
+    const mv: [number, number] = Math.hypot(input.move[0], input.move[1]) > 0.05
+      ? input.move
+      : (mine && input.shootHeld ? [state.attackSign[p.team], 0] : [0, 0]);
+    const cmd: PlayerCommand = { move: mv, sprint: input.sprint };
     if (mine) {
       if (input.passShort) cmd.pass = "short";
       else if (input.passDriven) cmd.pass = "driven";
       else if (input.skillStepover) cmd.skill = "stepover";
       else if (input.skillChop) cmd.skill = "chop";
-      if (input.shootReleased && chargeHeld) {
+      if ((input.shootReleased && chargeHeld) || (input.shootHeld && charge >= 0.85)) {
         const lateral = clamp(input.move[1], -1, 1);
         const lift = clamp(-input.move[0], -1, 1);
         cmd.shoot = charge;
         cmd.shootAim = { lateral, lift };
         charge = 0; chargeHeld = false;
       } else if (input.shootReleased) {
-        cmd.shoot = 0.35; cmd.shootAim = { lateral: clamp(input.move[1], -1, 1), lift: 0 };
+        cmd.shoot = 0.45; cmd.shootAim = { lateral: clamp(input.move[1], -1, 1), lift: 0 };
       }
     } else {
       charge = 0; chargeHeld = false;
       if (input.skillChop && defending) cmd.slide = true;
+      if ((input.shootHeld || input.shootReleased) && Math.hypot(cmd.move[0], cmd.move[1]) < 0.05) {
+        const dx = b.x - p.x, dz = b.z - p.z, d = Math.hypot(dx, dz) || 1;
+        cmd.move = [dx / d, dz / d];
+        cmd.sprint = true;
+      }
     }
     return cmd;
   }
@@ -1030,6 +1080,8 @@ export function createSim(): Sim {
   return {
     state,
     get chargeLevel() { return chargeHeld ? charge : 0; },
+    get autopilot() { return autopilot; },
+    setAutopilot(on: boolean) { autopilot = on; },
     step(dt: number, input: UserInputFrame): SimEvent[] {
       dt0 = dt;
       // player switching
@@ -1039,12 +1091,12 @@ export function createSim(): Sim {
       // auto-switch: follow the ball carrier on defense
       if (state.userTeam !== null) {
         const cur = findPlayer(state.controlledId);
-        const b = state.ball;
         const ownerP = owner();
         if (ownerP && ownerP.team === state.userTeam && state.controlledId !== ownerP.id) {
           setControlled(ownerP.id);
         } else if (!cur || (state.possessionTeam !== state.userTeam && cur.isKeeper)) {
           pickControlled();
+          setControlled(state.controlledId);
         }
       }
       return step(dt, input);

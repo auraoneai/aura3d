@@ -944,14 +944,26 @@ function beginAddress(): void {
   r.aimOffset = 0;
   state.phase = "address";
   state.swing.reset();
+  golferPhase = "address";
+  golferPhaseT = 0;
   setPrompt("SPACE — SWING · A/D AIM · Q/E CLUB");
   $("swing-meter")?.classList.remove("show");
   updateCardHud();
+  if (golferRig) {
+    const g = golferAt();
+    poseGolfer(golferRig, "address", 0, g.pos, g.yaw, (x, z) => t.height(x, z));
+    golferRig.golferBody?.setAnimation?.({ clip: "Ready", loop: true, speed: 1 });
+  }
+  ballHandle?.setPosition(r.ballPos[0], Math.max(r.ballPos[1], t.height(r.ballPos[0], r.ballPos[2]) + BALL_R * 0.6), r.ballPos[2]);
+  updateCamera(0);
 }
 
 function startSwing(): void {
   state.phase = "swing";
   state.swing.press(); // idle → power
+  golferPhase = "backswing";
+  golferPhaseT = 0;
+  golferRig?.golferBody?.setAnimation?.({ clip: "Load", loop: true, speed: 1.45 });
   $("swing-meter")?.classList.add("show");
   $("sw-label")!.textContent = "SPACE — SET POWER";
   setPrompt(null);
@@ -986,7 +998,6 @@ function commitSwing(): void {
   if (club.putter) r.putts += 1;
   state.phase = "flight";
   $("swing-meter")?.classList.remove("show");
-  const s2 = state.swing.state();
   const qual = Math.abs(commit.accuracy);
   const spinTxt = commit.spin < -0.25 ? "DRAW" : commit.spin > 0.25 ? "FADE" : "PURE";
   pushEvent("shot", `${club.label} · ${(commit.power * 100) | 0}% · ${qual < 0.14 ? "PURE" : qual < 0.4 ? "GOOD" : "OFF"} · ${spinTxt}`, qual < 0.4 ? "success" : "warning");
@@ -995,6 +1006,7 @@ function commitSwing(): void {
   // golfer: committed swing
   golferPhase = "follow";
   golferPhaseT = 0;
+  golferRig?.golferBody?.setAnimation?.({ clip: "FollowThrough", loop: true, speed: 1.15 });
   updateCardHud();
 }
 
@@ -1374,7 +1386,10 @@ let lastManualInputAt = -10;
 let addressEnteredAt = 0;
 let roundOverEnteredAt = 0;
 let lastObservedPhase = "";
-const isStillMode = new URLSearchParams(window.location.search).has("still");
+const bootUrlParams = new URLSearchParams(window.location.search);
+const isStillMode = bootUrlParams.has("still");
+let autopilot = bootUrlParams.get("autoplay") === "1" || bootUrlParams.get("demo") === "1";
+let appReady = false;
 const pressedKeys = new Set<string>();
 const justPressed = new Set<string>();
 
@@ -1387,6 +1402,7 @@ function golferAt(): { pos: Vec3; yaw: number } {
 }
 
 function frame(dt: number): void {
+  if (!appReady) return;
   framesRendered += 1;
   simTime += dt;
   if (framesRendered === 1) console.log("[links] first frame tick", dt);
@@ -1418,9 +1434,9 @@ function frame(dt: number): void {
       if (justPressed.has("KeyQ")) { r.clubIdx = (r.clubIdx + CLUB_ORDER.length - 1) % CLUB_ORDER.length; void audio?.cue("ui"); updateCardHud(); }
       if (justPressed.has("KeyE")) { r.clubIdx = (r.clubIdx + 1) % CLUB_ORDER.length; void audio?.cue("ui"); updateCardHud(); }
       if (justPressed.has("KeyM")) { applyMulligan(); }
-      if (justPressed.has("Space")) { startSwing(); }
+      if (justPressed.has("Space") || justPressed.has("Enter")) { startSwing(); }
     } else if (r && state.phase === "swing") {
-      if (justPressed.has("Space")) {
+      if (justPressed.has("Space") || justPressed.has("Enter")) {
         const s = state.swing.press();
         if (s.phase === "committed") commitSwing();
       }
@@ -1430,8 +1446,8 @@ function frame(dt: number): void {
     }
   }
 
-  // --- smart autopilot when idle (hands over immediately on any key/pointer input) ---
-  if (state.phase !== "menu" && !isStillMode && simTime - lastManualInputAt > 2.2) {
+  // --- autopilot ONLY when explicitly enabled via ?autoplay=1 or ?demo=1 ---
+  if (autopilot && state.phase !== "menu" && !isStillMode && simTime - lastManualInputAt > 2.2) {
     if (r && t && state.phase === "address" && simTime - addressEnteredAt > 1.35) {
       const targetYaw = Math.atan2(t.cup[0] - r.ballPos[0], t.cup[2] - r.ballPos[2]);
       let diff = targetYaw - t.lineYaw;
@@ -1439,40 +1455,62 @@ function frame(dt: number): void {
       while (diff < -Math.PI) diff += Math.PI * 2;
       r.aimOffset = clamp(diff, -0.55, 0.55);
       startSwing();
-    } else if (r && t && state.phase === "swing") {
-      const st = state.swing.state();
-      const cupDist = t.cupDistance(r.ballPos[0], r.ballPos[2]);
-      const club = currentClub();
-      const targetPower = club.putter
-        ? clamp(cupDist / 22, 0.28, 0.88)
-        : clamp(cupDist / Math.max(12, club.carry * 0.94), 0.42, 0.92);
-      if (st.phase === "power" && st.meter >= targetPower) {
-        state.swing.press();
-      } else if (st.phase === "accuracy" && Math.abs(st.meter) <= 0.055) {
-        const s = state.swing.press();
-        if (s.phase === "committed") commitSwing();
-      }
     } else if (state.phase === "roundover" && simTime - roundOverEnteredAt > 3.2) {
       startRound();
     }
   }
 
   // --- aim/club continuous ---
+  let isTurningAim = false;
   if (r && t && (state.phase === "address" || state.phase === "swing")) {
     const aimIn = (pressedKeys.has("KeyA") || pressedKeys.has("ArrowLeft") ? 1 : 0) - (pressedKeys.has("KeyD") || pressedKeys.has("ArrowRight") ? 1 : 0);
     const zoomIn = (pressedKeys.has("KeyW") || pressedKeys.has("ArrowUp") ? 1 : 0) - (pressedKeys.has("KeyS") || pressedKeys.has("ArrowDown") ? 1 : 0);
-    r.aimOffset = clamp(r.aimOffset + aimIn * dt * 0.85, -0.55, 0.55);
+    isTurningAim = aimIn !== 0;
+    r.aimOffset = clamp(r.aimOffset + aimIn * dt * 1.1, -0.75, 0.75);
     cam.zoom = clamp(cam.zoom - zoomIn * dt * 1.4, 0.7, 2.6);
+    if (state.phase === "address") {
+      golferPhase = isTurningAim ? "walk" : "address";
+      golferRig?.golferBody?.setAnimation?.({
+        clip: isTurningAim ? "Walk_Loop" : "Ready",
+        loop: true,
+        speed: isTurningAim ? 1.15 : 1
+      });
+    }
   }
 
-  // --- swing meter tick ---
-  if (state.phase === "swing") {
-    const s = state.swing.tick(dt);
-    if (s.phase === "committed") commitSwing();
-    else {
-      const st = state.swing.state();
+  // --- swing meter tick (single-Space smoothly progresses Load -> Attack -> FollowThrough) ---
+  if (state.phase === "swing" && r && t) {
+    const cupDist = t.cupDistance(r.ballPos[0], r.ballPos[2]);
+    const club = currentClub();
+    const targetPower = club.putter
+      ? clamp(cupDist / 22, 0.35, 0.88)
+      : clamp(cupDist / Math.max(12, club.carry * 0.94), 0.65, 0.92);
+    const s = state.swing.tick(dt * 3.0);
+    if (s.phase === "committed") {
+      commitSwing();
+    } else {
+      let st = state.swing.state();
+      if (st.phase === "power" && st.meter >= targetPower) {
+        st = state.swing.press();
+        golferRig?.golferBody?.setAnimation?.({ clip: "Attack", loop: true, speed: 1.85 });
+      } else if (st.phase === "accuracy" && st.meter <= 0.04) {
+        const committed = state.swing.press();
+        if (committed.phase === "committed") {
+          commitSwing();
+          updateSwingMeter();
+          updateCamera(dt);
+          touchControls?.update?.();
+          justPressed.clear();
+          return;
+        }
+      }
       golferPhase = st.phase === "power" ? "backswing" : "downswing";
       golferPhaseT = st.phase === "power" ? st.meter : (1 - st.meter) / 2;
+      golferRig?.golferBody?.setAnimation?.({
+        clip: st.phase === "power" ? "Load" : "Attack",
+        loop: true,
+        speed: st.phase === "power" ? 1.45 : 1.85
+      });
     }
     updateSwingMeter();
   }
@@ -1949,29 +1987,7 @@ function boot(): void {
   bootStage("resolve-handles");
   resolveHoleHandles();
 
-  document.body.dataset.aura3dReady = "true";
-  bootStage("ready");
   pushEvent("system", "aura links 3d online", "success");
-
-  console.log("[links] visibility:", document.visibilityState, "hidden:", document.hidden);
-  requestAnimationFrame(() => console.log("[links] raf tick — RAF is live"));
-  window.setTimeout(() => console.log("[links] raf after 2s:", (window as any).__rafFired ?? "none"), 2000);
-  requestAnimationFrame(() => { (window as any).__rafFired = true; });
-  // Evidence pump: publishes state even when RAF is throttled (headless capture)
-  window.setInterval(() => publishEvidence(), 500);
-  (auraApp as any).ready?.()?.then(() => {
-    bootStage("mounted");
-    const rr = (window as any).__AURA3D_ROUTE_READY__;
-    const diag = (auraApp as any).diagnostics?.() ?? rr?.diagnostics;
-    console.log("[links] route-state:", rr?.status ?? "?",
-      "backend:", (auraApp as any).backend ?? "?",
-      "drawCalls:", diag?.drawCalls ?? "?",
-      "errors:", JSON.stringify(diag?.errors ?? []),
-      "warnings:", JSON.stringify((diag?.warnings ?? []).slice(0, 4)));
-    (auraApp as any).resume?.();
-  }).catch((e: any) =>
-    console.error("[links] mount failed:", String(e), (e as Error)?.stack ?? ""));
-  (auraApp as any).onFrame(({ dt }: { dt: number }) => frame(clamp(dt, 0.001, 0.05)));
 
   // URL-param start modes (evidence probes) — boots immediately into live Quick Play unless ?menu=1
   const modeParam = params.get("mode");
@@ -1987,6 +2003,33 @@ function boot(): void {
   }
   if (params.get("menu") !== "1") closeMenu();
 
+  console.log("[links] visibility:", document.visibilityState, "hidden:", document.hidden);
+  requestAnimationFrame(() => console.log("[links] raf tick — RAF is live"));
+  window.setTimeout(() => console.log("[links] raf after 2s:", (window as any).__rafFired ?? "none"), 2000);
+  requestAnimationFrame(() => { (window as any).__rafFired = true; });
+  // Evidence pump: publishes state even when RAF is throttled (headless capture)
+  window.setInterval(() => publishEvidence(), 500);
+  (auraApp as any).onFrame(({ dt }: { dt: number }) => {
+    if (!appReady) return;
+    frame(clamp(dt, 0.001, 0.05));
+  });
+  void (auraApp as any).ready?.()?.then(() => {
+    appReady = true;
+    document.body.dataset.aura3dReady = "true";
+    bootStage("ready");
+    bootStage("mounted");
+    const rr = (window as any).__AURA3D_ROUTE_READY__;
+    const diag = (auraApp as any).diagnostics?.() ?? rr?.diagnostics;
+    console.log("[links] route-state:", rr?.status ?? "?",
+      "backend:", (auraApp as any).backend ?? "?",
+      "drawCalls:", diag?.drawCalls ?? "?",
+      "errors:", JSON.stringify(diag?.errors ?? []),
+      "warnings:", JSON.stringify((diag?.warnings ?? []).slice(0, 4)));
+    (auraApp as any).resume?.();
+    publishEvidence();
+  }).catch((e: any) =>
+    console.error("[links] mount failed:", String(e), (e as Error)?.stack ?? ""));
+
   // ?still=N — deterministic capture mode: pause the live loop, step N fixed
   // frames through app.step() (runs frame() + a single simulated-time render
   // each), then publish evidence. Headless captures get a static canvas even
@@ -1996,6 +2039,8 @@ function boot(): void {
     const n = Math.min(900, Math.max(1, Number(stillParam) || 60));
     void (async () => {
       await (auraApp as any).ready?.();
+      appReady = true;
+      document.body.dataset.aura3dReady = "true";
       (auraApp as any).pause?.();
       for (let i = 0; i < n; i += 1) (auraApp as any).step?.(1 / 60);
       publishEvidence();

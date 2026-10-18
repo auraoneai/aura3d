@@ -1,13 +1,13 @@
 /** Cross Hop — endless lane-hopper showcase (PRD: docs/prd/cross-hop.md). */
 import { game } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
-import { buildScene, probeScene, bindApp, frame, st, startRun, evidenceExtra } from "./game/core";
+import { buildScene, probeScene, bindApp, frame, syncVisuals, st, startRun, evidenceExtra } from "./game/core";
 import { mountUI, tickUI } from "./game/ui";
 import "./styles.css";
 
 const params = new URLSearchParams(window.location.search);
 if (!params.has("a3d-qr")) {
-  params.set("a3d-qr", "-compiler");
+  params.set("a3d-qr", "-compiler,-post,-vfxFog");
   try {
     const newUrl = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
     window.history.replaceState(null, "", newUrl);
@@ -15,7 +15,7 @@ if (!params.has("a3d-qr")) {
     // ignore history errors
   }
 }
-const AUTOPLAY = params.get("autoplay") !== "0";
+const AUTOPLAY = params.get("autoplay") === "1" || params.get("demo") === "1";
 const AUTOSTART = params.get("autostart") !== "0";
 
 // Sanitize the engine's __AURA3D_GAME__ beacon — it embeds the live `app`
@@ -40,7 +40,7 @@ Object.defineProperty(window, "__AURA3D_GAME__", {
 
 const inputOptions = {
   actions: {
-    up: ["KeyW", "ArrowUp"],
+    up: ["KeyW", "ArrowUp", "Space", "Enter"],
     down: ["KeyS", "ArrowDown"],
     left: ["KeyA", "ArrowLeft"],
     right: ["KeyD", "ArrowRight"],
@@ -87,7 +87,7 @@ const g = createGame({
     rescue: { punch: { fovDeg: 2.6, ms: 320 }, flash: { color: "#ff9ed2", peak: 0.22, ms: 300 }, rumble: { strong: 0.6, ms: 300 } },
     theme: { punch: { fovDeg: 2, ms: 280 }, flash: { color: "#ffffff", peak: 0.14, ms: 240 } }
   },
-  qualityRebuild: { flags: ["game", "-compiler"] },
+  qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
   evidence: {
     schema: 1,
     sections: {
@@ -109,6 +109,8 @@ const eventLog = game.eventLog({ label: "cross hop events", maxEvents: 40 });
 
 mountUI(document.getElementById("hud") ?? document.body);
 
+let appReady = false;
+
 if (AUTOSTART) {
   st.autopilot = AUTOPLAY;
   const themeParam = params.get("theme");
@@ -118,13 +120,21 @@ if (AUTOSTART) {
     params.get("seed") ? parseInt(params.get("seed")!, 10) : undefined,
     themeParam !== null ? parseInt(themeParam, 10) : undefined
   );
+  syncVisuals(0);
   tickUI();
 }
+
+void g.ready().then(() => {
+  appReady = true;
+  syncVisuals(0);
+  document.body.dataset.aura3dReady = "true";
+});
 
 let frames = 0;
 let prevDead = false, prevHop = false, prevCoins = 0, prevTheme = 0;
 
 app.onFrame(({ dt }) => {
+  if (!appReady) return;
   const d = Math.min(Math.max(dt, 1 / 240), 0.05);
   frames++;
 

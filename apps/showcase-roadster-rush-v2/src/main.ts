@@ -813,7 +813,10 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const builtScene = buildRoadsterRushScene();
   const auraApp = createAuraApp(canvas, {
     scene: builtScene,
-    renderer: { quality: "high" }
+    renderer: {
+      quality: "high",
+      qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
+    }
   });
 
   const req = (id: string) => auraApp.nodes.require(id);
@@ -925,24 +928,15 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const powerupKindCache: string[] = Array.from({ length: POWERUP_POOL_COUNT }, () => "air");
 
   // State Tracking
+  const urlParams = new URLSearchParams(window.location.search);
+  let autopilot = urlParams.get("autoplay") === "1" || urlParams.get("demo") === "1";
   let framesRendered = 0;
   let lastTodBucket = -1;
   let manualTodOverride: number | null = null;
   let lastLightbarHot = false;
-  let lastUserInputMs = performance.now() - 2500; // Start with smart autopilot active until user presses a key/touch
   let lastAutopilotTickMs = 0;
   let lastAutopilotStuntMs = 0;
   let gameOverSinceMs = 0;
-
-  // Track user input for seamless handoff between human & smart idle autopilot
-  const markUserInput = (ev: Event) => {
-    const target = ev.target as HTMLElement | null;
-    if (target?.closest?.(".aura3d-top-bar")) return;
-    lastUserInputMs = performance.now();
-  };
-  window.addEventListener("keydown", markUserInput, { passive: true });
-  window.addEventListener("pointerdown", markUserInput, { passive: true });
-  window.addEventListener("touchstart", markUserInput, { passive: true });
 
   function updateAtmosphereForTod(todRaw: number): void {
     const tod = clamp(manualTodOverride ?? todRaw, 0, 1);
@@ -1000,13 +994,13 @@ async function bootRoadsterRushAura3D(): Promise<void> {
 
   function runSmartFreewayAutopilot(g: any): void {
     const now = performance.now();
-    if (!g) return;
+    if (!g || !autopilot) return;
 
-    // Auto-recover from Wrecked / Game Over screen if unattended
+    // Auto-recover from Wrecked / Game Over screen if autopilot is active
     if (g.mode === "gameover") {
       if (gameOverSinceMs === 0) {
         gameOverSinceMs = now;
-      } else if (now - lastUserInputMs > 2200 && now - gameOverSinceMs > 1600) {
+      } else if (now - gameOverSinceMs > 1600) {
         gameOverSinceMs = 0;
         g.start?.();
       }
@@ -1015,7 +1009,6 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     gameOverSinceMs = 0;
 
     if (g.mode !== "playing" || g.paused || g.activePreset) return;
-    if (now - lastUserInputMs <= 1800) return;
     if (now - lastAutopilotTickMs < 95) return;
     lastAutopilotTickMs = now;
 
@@ -1651,6 +1644,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       route: "showcase-roadster-rush-v2",
       engine: "@aura3d/engine",
       ready: true,
+      autopilot,
       framesRendered,
       mode: g.mode,
       paused: Boolean(g.paused),
@@ -1776,8 +1770,18 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     const btnRamp = document.getElementById("aura-btn-ramp");
     const btnRoll = document.getElementById("aura-btn-roll");
     const btnRocket = document.getElementById("aura-btn-rocket");
+    const btnAuto = document.getElementById("aura-btn-auto") as HTMLButtonElement | null;
     const modeBtns = [btnFreeway, btnSky, btnRamp, btnRoll, btnRocket];
     const todBtns = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-aura-tod]"));
+
+    if (btnAuto) {
+      btnAuto.classList.toggle("active", autopilot);
+      btnAuto.addEventListener("click", () => {
+        autopilot = !autopilot;
+        btnAuto.classList.toggle("active", autopilot);
+        btnAuto.blur();
+      });
+    }
 
     const setActiveBtn = (target: HTMLElement | null) => {
       for (const b of modeBtns) {
@@ -1817,8 +1821,19 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     }
   }
 
-  // Register Aura3D 60 FPS dynamic render loop callback so shouldContinueDynamicLoop() is true
-  // and node poses update synchronously inside beforeRender right before renderer.render()!
+  bindToolbar();
+
+  // Wait for all GLB assets & scene nodes to finish loading before starting simulation or setting ready flags
+  await auraApp.ready();
+
+  // Keep the engine.js hook as a secondary sync
+  (window as any).__AURA3D_ROADSTER_SYNC__ = (g: any, threeScene: any, threeCamera: any) => {
+    syncRoadsterWorld(g, threeScene, threeCamera);
+  };
+
+  await loadScriptSequentially("/roadster-rush/engine.js");
+
+  // Register Aura3D 60 FPS dynamic render loop callback after assets & simulation are ready
   auraApp.onFrame(() => {
     const g = (window as any).__GAME__?.game;
     if (g) {
@@ -1826,23 +1841,16 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     }
   });
 
-  // Also keep the engine.js hook as a no-op / secondary sync
-  (window as any).__AURA3D_ROADSTER_SYNC__ = (g: any, threeScene: any, threeCamera: any) => {
-    syncRoadsterWorld(g, threeScene, threeCamera);
-  };
-
-  document.body.dataset.aura3dReady = "true";
-  canvas.dataset.ready = "true";
-
-  bindToolbar();
-  await loadScriptSequentially("/roadster-rush/engine.js");
-  await auraApp.ready();
-
-  // Ensure initial sync and resume if needed
+  // Ensure initial live playing state and first synchronous world sync
   const bootedGame = (window as any).__GAME__?.game;
   if (bootedGame) {
+    ensureLivePlaying(bootedGame);
     syncRoadsterWorld(bootedGame, bootedGame.scene, bootedGame.camera);
   }
+  auraApp.step(1 / 60);
+  document.getElementById("boot")?.classList.add("done");
+  document.body.dataset.aura3dReady = "true";
+  canvas.dataset.ready = "true";
   auraApp.resume();
 }
 

@@ -18,8 +18,8 @@ const smooth = (t: number) => t * t * (3 - 2 * t);
 export function createDirector() {
   let eye: [number, number, number] = [0, 14.5, -1.5];
   let target: [number, number, number] = [0, 2.2, 41];
-  let fov = 34;
-  let mode: "menu" | "intro" | "broadcast" | "celebrate" | "lab" = "menu";
+  let fov = 33;
+  let mode: "menu" | "intro" | "broadcast" | "celebrate" | "lab" = "broadcast";
   let modeT = 0;
   let orbit = 0;
   let prevPhase = "";
@@ -36,8 +36,7 @@ export function createDirector() {
     if (inMenu || s.phase === "idle") setMode("menu");
     else if (s.mode === "routelab" || s.mode === "tacklelab") setMode("lab");
     else if (s.phase === "gameOver" && mode !== "celebrate") setMode("celebrate");
-    else if (s.phase === "preSnap" && prevPhase === "" && mode !== "broadcast" && mode !== "intro") setMode("intro");
-    else if (s.phase !== "gameOver" && (mode === "menu" || mode === "celebrate")) setMode("broadcast");
+    else if (s.phase !== "gameOver" && (mode === "menu" || mode === "celebrate" || mode === "intro")) setMode("broadcast");
     if (s.phase !== prevPhase) {
       if (s.phase === "live" && mode === "intro") setMode("broadcast");
       prevPhase = s.phase;
@@ -124,7 +123,7 @@ export function createDirector() {
     pose: () => ({ position: eye, target, fov }),
     mode: () => mode,
     setMenu: () => setMode("menu"),
-    kickIntro: () => setMode("intro")
+    kickIntro: () => setMode("broadcast")
   };
 }
 

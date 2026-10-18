@@ -82,7 +82,7 @@ const g = createGame({
     dash: { punch: { fovDeg: 1.6, ms: 190 } },
     ready: { punch: { fovDeg: 1.4, ms: 240 }, flash: { color: "#ffffff", peak: 0.1, ms: 220 } }
   },
-  qualityRebuild: { flags: ["game", "materials", "-compiler"] },
+  qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
   evidence: {
     schema: 1,
     sections: {
@@ -92,6 +92,8 @@ const g = createGame({
 });
 
 const app = g.app;
+let appReady = false;
+st.autopilot = params.get("autoplay") === "1" || params.get("demo") === "1";
 bindApp(app);
 g.start();
 
@@ -133,13 +135,21 @@ const tryHum = (): void => {
 document.addEventListener("pointerdown", tryHum, { once: false });
 document.addEventListener("keydown", tryHum, { once: false });
 
-// Boot directly into live gameplay by default (autopilot yields on user input)
+// Boot directly into live gameplay by default (autopilot off unless ?autoplay=1 or ?demo=1)
 if (AUTOSTART) {
   const mode = params.get("mode");
   const maze = (params.get("maze") ?? "classic") as MazeId;
   startRun(mode === "school" ? "school" : mode === "circuit" ? "circuit" : "quick", maze);
+  syncVisuals(0);
   tickUI();
 }
+
+void g.ready().then(() => {
+  appReady = true;
+  document.body.dataset.aura3dReady = "true";
+  syncVisuals(0);
+  tickUI();
+}).catch(() => { /* mount error handled by engine */ });
 
 // trail effect handle
 let trail: { stop(o?: { immediate?: boolean }): void } | null = null;
@@ -158,6 +168,7 @@ let frames = 0;
 let lastMode = st.mode;
 
 app.onFrame(({ dt }) => {
+  if (!appReady) return;
   const d = Math.min(Math.max(dt, 1 / 240), 0.05);
   frames++;
 

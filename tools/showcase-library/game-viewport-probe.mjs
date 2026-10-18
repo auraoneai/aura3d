@@ -17,12 +17,13 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
 import { readGameChannel } from "./game-channel.mjs";
-import { readPngLuminanceAndTruncationMetrics } from "./png-foreground.mjs";
+import { readPngDifferenceMetrics, readPngLuminanceAndTruncationMetrics } from "./png-foreground.mjs";
 
 const repoRoot = resolve(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
 const args = process.argv.slice(2);
 const arg = (f, d) => { const i = args.indexOf(f); return i >= 0 && args[i + 1] ? args[i + 1] : d; };
 const strictAssert = args.includes("--assert");
+const runFilmstrip = !args.includes("--no-filmstrip");
 
 const route = arg("--route", "showcase-courier-rush");
 const base = arg("--base", "http://localhost:5199");
@@ -32,30 +33,41 @@ const outDir = resolve(repoRoot, arg("--out", `tests/reports/game-viewport-probe
 mkdirSync(outDir, { recursive: true });
 
 const browser = await chromium.launch({
-  args: ["--enable-unsafe-webgpu", "--ignore-gpu-blocklist", "--use-gl=angle"],
+  args: ["--enable-unsafe-webgpu", "--ignore-gpu-blocklist", "--use-gl=angle", "--use-angle=swiftshader"],
 });
 
 async function measure(page) {
   const channel = await readGameChannel(page);
-  const base = await page.evaluate(() => {
+  const baseMetrics = await page.evaluate(() => {
     const c = document.querySelector("canvas");
     const r = c?.getBoundingClientRect();
     const de = document.documentElement;
     const fillsWidth = Boolean(r && r.width >= innerWidth * 0.98);
     const fillsHeight = Boolean(r && r.height >= innerHeight * 0.98);
+    const w = window;
+    let autopilot = false;
+    for (const k of Object.keys(w)) {
+      if (k.startsWith("__AURA3D_SHOWCASE_") && w[k] && typeof w[k] === "object") {
+        const s = w[k].state ?? w[k];
+        if (typeof s.autopilot === "boolean") autopilot = s.autopilot;
+        else if (typeof s.autoDemo === "boolean") autopilot = s.autoDemo;
+        else if (typeof s.autoPlay === "boolean") autopilot = s.autoPlay;
+        else if (typeof s.mode === "string" && s.mode === "L5") autopilot = true;
+      }
+    }
     return {
+      ready: document.body?.dataset?.aura3dReady === "true",
+      autopilot,
       buffer: c ? `${c.width}x${c.height}` : null,
       css: r ? `${Math.round(r.width)}x${Math.round(r.height)}` : null,
       viewport: `${innerWidth}x${innerHeight}`,
       canvasFillsViewport: fillsWidth && fillsHeight,
-      // Horizontal body overflow is the signature of a canvas that kept its
-      // desktop width after the window shrank.
       overflowX: de.scrollWidth - innerWidth,
       overflowY: de.scrollHeight - innerHeight,
       dpr: devicePixelRatio,
     };
   }).catch((e) => ({ error: String(e).slice(0, 160) }));
-  return { ...base, game: { beacon: channel.beacon, migrated: channel.migrated } };
+  return { ...baseMetrics, game: { beacon: channel.beacon, migrated: channel.migrated } };
 }
 
 async function run(label, { start, end }) {
@@ -79,6 +91,95 @@ async function run(label, { start, end }) {
   const lumaMetrics = readPngLuminanceAndTruncationMetrics(shotPath);
   await context.close();
   return { label, atStart, afterResize, lumaMetrics, errors: errors.slice(0, 6), shot: shotFile };
+}
+
+async function captureFilmstrip(viewport) {
+  const context = await browser.newContext({ viewport, deviceScaleFactor: 1 });
+  const page = await context.newPage();
+  await page.addInitScript(() => {
+    const origGetContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type, attrs) {
+      if (type === "webgl" || type === "webgl2" || type === "experimental-webgl") {
+        attrs = Object.assign({}, attrs, { preserveDrawingBuffer: true });
+      }
+      return origGetContext.call(this, type, attrs);
+    };
+  });
+
+  await page.goto(`${base}/apps/${route}/`, { waitUntil: "domcontentloaded", timeout: 60_000 });
+  const loadingState = await measure(page);
+  const shot0 = resolve(outDir, "0_loading.png");
+  await page.screenshot({ path: shot0 });
+
+  await page.waitForFunction(() => document.body?.dataset?.aura3dReady === "true", null, { timeout: 30_000 }).catch(() => {});
+  await page.waitForTimeout(350);
+  const readyState = await measure(page);
+  const shot1 = resolve(outDir, "1_ready.png");
+  await page.screenshot({ path: shot1 });
+
+  // Wait 600ms with zero input to verify autoplay is off by default
+  await page.waitForTimeout(600);
+  const idleCheckState = await measure(page);
+
+  // Simulate movement keys for ~1s -> capture 2_move_1s.png
+  await page.keyboard.down("KeyD");
+  await page.keyboard.down("KeyW");
+  await page.keyboard.down("ArrowRight");
+  await page.keyboard.down("ArrowUp");
+  await page.waitForTimeout(1000);
+  const shot2 = resolve(outDir, "2_move_1s.png");
+  await page.screenshot({ path: shot2 });
+
+  // Continue movement with direction change / stride for ~2s more -> capture 3_move_3s.png
+  await page.keyboard.up("KeyD");
+  await page.keyboard.up("ArrowRight");
+  await page.keyboard.down("KeyA");
+  await page.keyboard.down("ArrowLeft");
+  await page.keyboard.press("Space");
+  await page.waitForTimeout(2000);
+  const shot3 = resolve(outDir, "3_move_3s.png");
+  await page.screenshot({ path: shot3 });
+
+  // Trigger primary action keys up to ~6s -> capture 4_action_6s.png
+  await page.keyboard.up("KeyA");
+  await page.keyboard.up("ArrowLeft");
+  await page.keyboard.down("KeyD");
+  await page.keyboard.press("Space");
+  await page.keyboard.press("KeyJ");
+  await page.keyboard.press("KeyE");
+  await page.keyboard.press("KeyF");
+  await page.waitForTimeout(2800);
+  await page.keyboard.up("KeyD");
+  await page.keyboard.up("KeyW");
+  await page.keyboard.up("ArrowUp");
+  const shot4 = resolve(outDir, "4_action_6s.png");
+  await page.screenshot({ path: shot4 });
+
+  const characterCrop = {
+    x: Math.round(viewport.width * 0.15),
+    y: Math.round(viewport.height * 0.16),
+    width: Math.round(viewport.width * 0.70),
+    height: Math.round(viewport.height * 0.70),
+  };
+  const moveDiff = readPngDifferenceMetrics(shot2, shot3, characterCrop, 10);
+  const actionDiff = readPngDifferenceMetrics(shot3, shot4, characterCrop, 10);
+  const luma1 = readPngLuminanceAndTruncationMetrics(shot1);
+  const luma2 = readPngLuminanceAndTruncationMetrics(shot2);
+  const luma3 = readPngLuminanceAndTruncationMetrics(shot3);
+  const luma4 = readPngLuminanceAndTruncationMetrics(shot4);
+
+  await context.close();
+  return {
+    loadingState,
+    readyState,
+    idleCheckState,
+    autoplayOffByDefault: !readyState.autopilot && !idleCheckState.autopilot,
+    characterMotionPixelsMove: moveDiff.nonBlankPixels,
+    characterMotionPixelsAction: actionDiff.nonBlankPixels,
+    framesLumaOk: luma1.notWashedOut && luma2.notWashedOut && luma3.notWashedOut && luma4.notWashedOut,
+    framesNoBlackTruncation: luma1.noBlackTruncation && luma2.noBlackTruncation && luma3.noBlackTruncation && luma4.noBlackTruncation,
+    canvasFillsViewport: Boolean(readyState.canvasFillsViewport),
+  };
 }
 
 const results = [
@@ -116,9 +217,32 @@ for (const r of results) {
     failed = true;
   }
 }
+
+if (runFilmstrip) {
+  const fsRes = await captureFilmstrip({ width: dw, height: dh });
+  console.log(
+    `filmstrip              ready=${fsRes.readyState.ready} autoplayOff=${fsRes.autoplayOffByDefault} ` +
+    `moveDeltaPx=${fsRes.characterMotionPixelsMove} actionDeltaPx=${fsRes.characterMotionPixelsAction} ` +
+    `lumaOk=${fsRes.framesLumaOk} noBlk=${fsRes.framesNoBlackTruncation} fills=${fsRes.canvasFillsViewport}`
+  );
+  if (!fsRes.autoplayOffByDefault) {
+    console.log(`   !! autoplay is ON by default (expected OFF unless ?autoplay=1 or ?demo=1)`);
+    failed = true;
+  }
+  if (fsRes.characterMotionPixelsMove < 400 && fsRes.characterMotionPixelsAction < 400) {
+    console.log(`   !! character region pixels did not change enough during movement/action (move=${fsRes.characterMotionPixelsMove}, action=${fsRes.characterMotionPixelsAction})`);
+    failed = true;
+  }
+  if (!fsRes.framesLumaOk || !fsRes.framesNoBlackTruncation || !fsRes.canvasFillsViewport) {
+    console.log(`   !! filmstrip frame failed luminance/truncation/viewport check`);
+    failed = true;
+  }
+}
+
 await browser.close();
 console.log(`shots -> ${outDir}`);
 if (strictAssert && failed) {
   process.exitCode = 1;
 }
+
 

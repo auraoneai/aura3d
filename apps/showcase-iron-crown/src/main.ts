@@ -67,8 +67,8 @@ const ROUNDS_TO_WIN = 2;
 const METER_MAX = 100;
 const THROW_TECH_FRAMES = 9;
 const MIN_FIGHTER_SEPARATION = 1.45;
-const PLAYER_START: readonly [number, number, number] = [-1.9, 0, 0];
-const RIVAL_START: readonly [number, number, number] = [1.9, 0, 0];
+const PLAYER_START: readonly [number, number, number] = [-2.2, 0, 0];
+const RIVAL_START: readonly [number, number, number] = [2.2, 0, 0];
 const APP_SEED = 20261012;
 
 const { typedFighterAssets, missingFighterAssets, typedFighterAssetCount } = resolveTypedFighterAssets(assets);
@@ -77,18 +77,28 @@ const reducedMotion = mediaMatches("(prefers-reduced-motion: reduce)");
 const highContrast = mediaMatches("(prefers-contrast: more)");
 const reducedFlash = reducedMotion;
 
-const searchParams = new URLSearchParams(window.location.search);
-const freezeRaw = Number(searchParams.get("freeze"));
+const params = new URLSearchParams(window.location.search);
+const freezeRaw = Number(params.get("freeze"));
 const freezeMs = Number.isFinite(freezeRaw) && freezeRaw > 0 ? freezeRaw : null;
+let autoDemo = params.get("autoplay") === "1" || params.get("demo") === "1";
+let appReady = false;
+let userEngaged = false;
 
 const fightingControls = games.fighting.controls();
 
 const inputOptions = {
   actions: {
     ...fightingControls.actions,
+    moveLeft: ["KeyA", "ArrowLeft", "GamepadDPadLeft"],
+    moveRight: ["KeyD", "ArrowRight", "GamepadDPadRight"],
+    jump: ["KeyW", "ArrowUp", "GamepadDPadUp", "GamepadA"],
+    crouch: ["KeyS", "ArrowDown", "GamepadDPadDown"],
     guard: ["KeyQ", "GamepadLB"],
-    heavy: ["KeyK", "GamepadY"],
+    light: ["KeyJ", "Space", "KeyZ", "GamepadX"],
+    heavy: ["KeyK", "KeyX", "GamepadY"],
+    special: ["KeyL", "KeyC", "GamepadB"],
     throw: ["KeyU", "GamepadLT"],
+    dash: ["ShiftLeft", "ShiftRight", "GamepadRB"],
     pause: ["Escape", "GamepadStart"]
   },
   axes: fightingControls.axes,
@@ -120,6 +130,10 @@ interface FighterRuntime {
   anim: ReturnType<typeof createFighterAnimationController>;
   brain: CpuBrain | null;
   attack: { kind: AttackKind; connected: boolean } | null;
+  attackAnim: { kind: AttackKind; timer: number } | null;
+  appliedClip: string;
+  appliedLoop: boolean;
+  appliedSpeed: number;
   guardIntent: boolean;
   lastThrowFrame: number;
   dashT: number;
@@ -148,7 +162,6 @@ let studioSelection = { fighter: "kenji" as FighterId, palette: "default" as Pal
 let ladder: LadderState | null = null;
 let currentStageId: StageId = DEFAULT_STAGE;
 let paused = false;
-let autopilot = true;
 let frozenByQuery = false;
 let elapsedMs = 0;
 let frameCount = 0;
@@ -278,7 +291,7 @@ const fightingGame = createGame({
   // its render targets after any device lifecycle event (remount, resize)
   // on ANGLE/Vulkan and kills presentation — repro'd on aura-links-3d too.
   // Pin it off until the engine-side LDR postprocess defect is fixed.
-  qualityRebuild: { flags: ["game", "-compiler"] },
+  qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
   evidence: {
     schema: 1,
     sections: {
@@ -339,7 +352,7 @@ const hud = createHud(document, {
   onMode: (m) => selectMode(m),
   onStage: (s) => selectStage(s),
   onFighter: (f) => selectFighter(f),
-  onAutopilotToggle: () => setAutopilot(!autopilot),
+  onAutopilotToggle: () => setAutopilot(!autoDemo),
   onVersusFight: (sel) =>
     void configureBout({
       mode: "versus",
@@ -379,30 +392,36 @@ const hud = createHud(document, {
 });
 
 function setAutopilot(next: boolean): void {
-  autopilot = next;
+  autoDemo = next;
   hud.setAutopilotButton(next);
   if (state) {
-    hud.setModeLabel(`${modeLabel(state.config.mode)} · ${state.config.stage.label.toUpperCase()}${autopilot ? " · AUTO" : ""}`);
+    hud.setModeLabel(`${modeLabel(state.config.mode)} · ${state.config.stage.label.toUpperCase()}${autoDemo ? " · AUTO" : ""}`);
   }
 }
 
 const MANUAL_FIGHT_KEYS = new Set([
   "KeyA", "KeyD", "ArrowLeft", "ArrowRight",
-  "KeyW", "ArrowUp", "Space",
+  "KeyW", "ArrowUp",
   "KeyS", "ArrowDown",
-  "KeyJ", "KeyK", "KeyL", "KeyU", "KeyQ",
+  "KeyJ", "Space", "KeyZ",
+  "KeyK", "KeyX",
+  "KeyL", "KeyC",
+  "KeyU", "KeyQ",
   "ShiftLeft", "ShiftRight"
 ]);
 
 // Escape resumes from the pause/sheet layer even while the app loop is paused.
 // Any gameplay key disengages AI autopilot immediately so Player 1 has full control.
-document.addEventListener("keydown", (ev) => {
+window.addEventListener("keydown", (ev) => {
   if (ev.key === "Escape" && paused) {
     setPaused(false);
     return;
   }
-  if (autopilot && MANUAL_FIGHT_KEYS.has(ev.code)) {
-    setAutopilot(false);
+  if (MANUAL_FIGHT_KEYS.has(ev.code)) {
+    userEngaged = true;
+    if (autoDemo) {
+      setAutopilot(false);
+    }
   }
 });
 
@@ -414,11 +433,13 @@ function makeFighter(side: "p1" | "cpu", def: FighterDef, position: readonly [nu
     bounds: {
       minX: state.config.stage.bounds.minX,
       maxX: state.config.stage.bounds.maxX,
+      minY: 0,
+      maxY: 3.4,
       minZ: -0.2,
       maxZ: 0.2
     },
     groundY: 0,
-    gravity: 26,
+    gravity: -26,
     maxSpeed: def.stats.walkSpeed,
     jumpVelocity: def.stats.jumpVelocity,
     groundAccel: 42,
@@ -436,6 +457,10 @@ function makeFighter(side: "p1" | "cpu", def: FighterDef, position: readonly [nu
     anim,
     brain: null,
     attack: null,
+    attackAnim: null,
+    appliedClip: "",
+    appliedLoop: true,
+    appliedSpeed: 1,
     guardIntent: false,
     lastThrowFrame: -999,
     dashT: 0,
@@ -481,6 +506,7 @@ function enforceFighterSeparation(): void {
 }
 
 function resetPositions(): void {
+  userEngaged = false;
   P1.body.position = [...PLAYER_START];
   P1.body.velocity = [0, 0, 0];
   CPU.body.position = [...RIVAL_START];
@@ -490,9 +516,10 @@ function resetPositions(): void {
 }
 
 function newBout(config: BoutConfig): void {
+  userEngaged = false;
   state = {
     config,
-    phase: "intro",
+    phase: "fight",
     phaseT: 0,
     round: 1,
     pipsP1: 0,
@@ -530,6 +557,7 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
   }
   P1 = makeFighter("p1", config.p1, PLAYER_START, config.p1Tint);
   CPU = makeFighter("cpu", config.cpu, RIVAL_START, config.cpuTint);
+  P1.brain = createCpuBrain(config.p1, "scrapper", APP_SEED + 7);
   CPU.brain = createCpuBrain(config.cpu, config.difficulty, APP_SEED + 31);
   combat.reset();
   combat.addActor({ id: "player", team: "p1", position: [...PLAYER_START], facing: 1, health: config.p1.stats.maxHealth, ...actorDefaults(P1) });
@@ -539,18 +567,19 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
     { id: "rival", position: [...RIVAL_START] }
   ]);
   bindAnimations();
+  syncNodes();
   hud.setNames(config.p1.name, config.cpu.name);
   hud.setPips(0, 0);
-  hud.setModeLabel(`${modeLabel(config.mode)} · ${config.stage.label.toUpperCase()}${autopilot ? " · AUTO" : ""}`);
+  hud.setModeLabel(`${modeLabel(config.mode)} · ${config.stage.label.toUpperCase()}${autoDemo ? " · AUTO" : ""}`);
   hud.setStageButtons(config.stage.id);
   hud.setFighterButtons(config.p1.id);
-  hud.setAutopilotButton(autopilot);
+  hud.setAutopilotButton(autoDemo);
   hud.showMenu(null);
   hud.showLab(config.mode === "lab");
   hud.setHint(
     config.mode === "lab"
       ? "Dummy stance panel is live — land LIGHT → HEAVY → SPECIAL."
-      : "A/D move · S crouch-block · J light · K heavy · L special · U throw"
+      : "A/D move · W jump · S crouch-block · J/Space light · K heavy · L special · U throw"
   );
   if (postPhase === "attract") {
     state.phase = "attract";
@@ -561,16 +590,22 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
 }
 
 function bindAnimations(): void {
-  const playerNode: AuraRuntimeNodeHandle = app.nodes.require("player");
-  const rivalNode: AuraRuntimeNodeHandle = app.nodes.require("rival");
-  P1.anim.controller.bindRuntimeNode(playerNode, { defaultClipId: "idle", fallbackClipId: "idle" });
-  CPU.anim.controller.bindRuntimeNode(rivalNode, { defaultClipId: "idle", fallbackClipId: "idle" });
+  const playerNode = app.nodes.get("player") as AuraRuntimeNodeHandle | undefined;
+  const rivalNode = app.nodes.get("rival") as AuraRuntimeNodeHandle | undefined;
+  playerNode?.setAnimationPose?.(undefined);
+  playerNode?.setAnimationBinding?.(undefined);
+  rivalNode?.setAnimationPose?.(undefined);
+  rivalNode?.setAnimationBinding?.(undefined);
+  P1.appliedClip = "";
+  CPU.appliedClip = "";
   P1.anim.controller.play(fighterDriveClipId(P1.anim, "idle"), { restart: true, loop: "loop" });
   CPU.anim.controller.play(fighterDriveClipId(CPU.anim, "idle"), { restart: true, loop: "loop" });
+  syncAnim(P1, "idle", 0);
+  syncAnim(CPU, "idle", 0);
 }
 
 function announceRoundIntro(): void {
-  state.phase = "intro";
+  state.phase = "fight";
   state.phaseT = 0;
   hud.setRoundLabel(state.config.mode === "lab" ? "COMBO LAB" : `ROUND ${state.round}`);
   const sub =
@@ -578,7 +613,7 @@ function announceRoundIntro(): void {
       ? "cancel: light → heavy → special"
       : state.config.mode === "ladder" && ladder
         ? (currentRung(ladder)?.title ?? "")
-        : "FIRST TO TWO";
+        : "FIGHT!";
   hud.announce(state.config.mode === "lab" ? "COMBO LAB" : `ROUND ${state.round}`, sub, "pop");
   void fightingGame.sound?.cue("round");
 }
@@ -762,11 +797,7 @@ function tryAttack(f: FighterRuntime, foe: FighterRuntime, kind: AttackKind): vo
     if (!last || !last.connected || TIER[kind] <= TIER[last.kind]) return;
   }
   if (kind === "special") {
-    if (asnap.meter < METER_MAX) {
-      if (f.side === "p1") {
-        void fightingGame.sound?.cue("denied");
-        hud.announce("NO METER", "", "pop");
-      }
+    if (f.side === "cpu" && asnap.meter < METER_MAX) {
       return;
     }
     combat.setActor(f.nodeId, { meter: 0 });
@@ -787,6 +818,9 @@ function tryAttack(f: FighterRuntime, foe: FighterRuntime, kind: AttackKind): vo
   }
   combat.beginAttack(f.nodeId, moveFor(kind, f.def));
   f.attack = { kind, connected: false };
+  const holdDuration = kind === "special" ? 0.85 : kind === "heavy" || kind === "throw" ? 0.62 : 0.52;
+  f.attackAnim = { kind, timer: holdDuration };
+  f.appliedClip = "";
   if (state.config.mode === "lab" && f.side === "p1" && lab.frameData) {
     hud.setFrameData(frameDataLine(moveFor(kind, f.def)));
   }
@@ -801,7 +835,7 @@ function syncActors(force = false): void {
     combat.setActor(f.nodeId, {
       position: [f.body.position[0], f.body.position[1], f.body.position[2]],
       facing,
-      guarding: f.guardIntent && f.body.grounded && !f.attack,
+      guarding: (f.guardIntent || f.crouching) && f.body.grounded && !f.attack,
       guardboxes: [{ id: "guard", offset: [facing * 0.26, 0.92, 0], size: [0.55, 1.42, 0.55] }],
       hurtboxes: [{ id: "body", offset: [0, f.crouching ? 0.55 : 0.85, 0], size: [0.6, f.crouching ? 1.0 : 1.5, 0.46] }],
       ...(force ? { health: f.def.stats.maxHealth, meter: 0, guard: 100 } : {})
@@ -1028,7 +1062,7 @@ function showBoutResult(p1Won: boolean): void {
     { label: "Throws", value: `${st.throws}` }
   ];
   const cfg = state.config;
-  if (autopilot) {
+  if (autoDemo) {
     if (cfg.mode === "ladder" && ladder) {
       const l = ladder;
       if (p1Won) {
@@ -1137,8 +1171,14 @@ function desiredClip(f: FighterRuntime): FighterClip {
   const asnap = actorSnap(f.nodeId);
   if (!asnap) return "idle";
   if (asnap.knockedOut) return "ko";
-  if (f.attack && snap().activeAttacks.some((a) => a.attackerId === f.nodeId)) return f.attack.kind;
   if (asnap.stun > 0) return "hitstun";
+  if (f.attack && snap().activeAttacks.some((a) => a.attackerId === f.nodeId)) return f.attack.kind;
+  if (f.attackAnim && f.attackAnim.timer > 0) {
+    const moving = Math.abs(f.body.velocity?.[0] ?? 0) > 0.45;
+    if (!moving && f.body.grounded && !f.crouching) {
+      return f.attackAnim.kind;
+    }
+  }
   if (!f.body.grounded) return "jump";
   if (f.dashT > 0.12) return "dash";
   if (f.crouching) return "crouch";
@@ -1147,13 +1187,55 @@ function desiredClip(f: FighterRuntime): FighterClip {
     const winner = state.pipsP1 >= ROUNDS_TO_WIN ? "p1" : state.pipsCpu >= ROUNDS_TO_WIN ? "cpu" : null;
     if (winner === f.side) return "win";
   }
-  if (Math.abs(f.body.velocity?.[0] ?? 0) > 0.35) return "walk";
+  if (Math.abs(f.body.velocity?.[0] ?? 0) > 0.25) return "walk";
   return "idle";
 }
 
+function clipPlaybackSpec(f: FighterRuntime, clip: FighterClip): { clip: string; loop: boolean; speed: number } {
+  const baseEmbedded = embeddedClipFor(clip).clip;
+  if (clip === "walk") {
+    const foe = f === P1 ? CPU : P1;
+    const facing = foe ? facingTo(f, foe) : 1;
+    const vx = f.body.velocity?.[0] ?? 0;
+    const movingBack = vx * facing < -0.15 && f.anim.embeddedClips.has("Walk_Fight_Back");
+    return {
+      clip: movingBack ? "Walk_Fight_Back" : baseEmbedded,
+      loop: true,
+      speed: 1.45
+    };
+  }
+  switch (clip) {
+    case "idle":
+      return { clip: baseEmbedded, loop: true, speed: 1.15 };
+    case "dash":
+      return { clip: baseEmbedded, loop: true, speed: 2.2 };
+    case "jump":
+      return { clip: baseEmbedded, loop: false, speed: 1.35 };
+    case "crouch":
+    case "guard":
+      return { clip: baseEmbedded, loop: true, speed: 1.1 };
+    case "light":
+      return { clip: baseEmbedded, loop: false, speed: 2.6 };
+    case "heavy":
+      return { clip: baseEmbedded, loop: false, speed: 1.85 };
+    case "special":
+      return { clip: baseEmbedded, loop: false, speed: 2.8 };
+    case "throw":
+      return { clip: baseEmbedded, loop: false, speed: 2.4 };
+    case "hitstun":
+      return { clip: baseEmbedded, loop: false, speed: 1.6 };
+    case "ko":
+      return { clip: baseEmbedded, loop: false, speed: 1.2 };
+    case "win":
+      return { clip: baseEmbedded, loop: true, speed: 1.1 };
+  }
+}
+
 function syncAnim(f: FighterRuntime, clip: FighterClip, dt: number): void {
-  // Drive the embedded GLB clip by its real name so the runtime spec's
-  // animation.clip resolves exactly under A3D_QR_ANIMATION clip-drive.
+  if (f.attackAnim && dt > 0) {
+    f.attackAnim.timer = Math.max(0, f.attackAnim.timer - dt);
+    if (f.attackAnim.timer <= 0) f.attackAnim = null;
+  }
   const desired = fighterDriveClipId(f.anim, clip);
   const current = f.anim.controller.snapshot().activeClipId;
   if (current !== desired) {
@@ -1161,20 +1243,28 @@ function syncAnim(f: FighterRuntime, clip: FighterClip, dt: number): void {
       restart: !isLoopingFighterClip(clip),
       loop: isLoopingFighterClip(clip) ? "loop" : false,
       layer: animationLayer(clip),
-      // Dash has no bespoke clip — the fight-walk stand-in plays at 2x.
       ...(clip === "dash" ? { speed: 2 } : {})
     });
   }
   f.anim.controller.update(dt);
+
+  const spec = clipPlaybackSpec(f, clip);
+  const runtimeNode = app.nodes.get(f.nodeId) as AuraRuntimeNodeHandle | undefined;
+  if (runtimeNode && (f.appliedClip !== spec.clip || f.appliedLoop !== spec.loop || f.appliedSpeed !== spec.speed)) {
+    runtimeNode.setAnimation({ clip: spec.clip, loop: spec.loop, speed: spec.speed });
+    f.appliedClip = spec.clip;
+    f.appliedLoop = spec.loop;
+    f.appliedSpeed = spec.speed;
+  }
 }
 
 function syncNodes(): void {
   for (const f of [P1, CPU]) {
     const asnap = actorSnap(f.nodeId);
-    const facing = asnap?.facing ?? 1;
-    const node = app.nodes.require(f.nodeId) as AuraRuntimeNodeHandle;
+    const facing = asnap?.facing ?? (f === P1 ? 1 : -1);
+    const node = app.nodes.get(f.nodeId) as AuraRuntimeNodeHandle | undefined;
     node
-      .setPosition(f.body.position[0], f.body.position[1], f.body.position[2])
+      ?.setPosition(f.body.position[0], f.body.position[1], f.body.position[2])
       .setRotation(0, fighterFacingYaw(facing), 0);
   }
 }
@@ -1190,10 +1280,10 @@ const BINDING_LABELS: Record<string, { label: string; attack?: boolean }> = {
   KeyA: { label: "◀" }, ArrowLeft: { label: "◀" }, GamepadDPadLeft: { label: "◀" }, "Touch:left": { label: "◀" }, TouchLeft: { label: "◀" },
   KeyD: { label: "▶" }, ArrowRight: { label: "▶" }, GamepadDPadRight: { label: "▶" }, "Touch:right": { label: "▶" }, TouchRight: { label: "▶" },
   KeyS: { label: "▼" }, ArrowDown: { label: "▼" }, GamepadDPadDown: { label: "▼" },
-  KeyW: { label: "▲" }, ArrowUp: { label: "▲" }, Space: { label: "▲" }, GamepadA: { label: "▲" }, "Touch:jump": { label: "▲" }, TouchJump: { label: "▲" },
-  KeyJ: { label: "L", attack: true }, GamepadX: { label: "L", attack: true }, "Touch:light": { label: "L", attack: true }, TouchLight: { label: "L", attack: true },
-  KeyK: { label: "H", attack: true }, GamepadY: { label: "H", attack: true }, "Touch:heavy": { label: "H", attack: true }, TouchHeavy: { label: "H", attack: true },
-  KeyL: { label: "SP", attack: true }, GamepadB: { label: "SP", attack: true }, "Touch:special": { label: "SP", attack: true }, TouchSpecial: { label: "SP", attack: true },
+  KeyW: { label: "▲" }, ArrowUp: { label: "▲" }, GamepadA: { label: "▲" }, "Touch:jump": { label: "▲" }, TouchJump: { label: "▲" },
+  KeyJ: { label: "L", attack: true }, Space: { label: "L", attack: true }, KeyZ: { label: "L", attack: true }, GamepadX: { label: "L", attack: true }, "Touch:light": { label: "L", attack: true }, TouchLight: { label: "L", attack: true },
+  KeyK: { label: "H", attack: true }, KeyX: { label: "H", attack: true }, GamepadY: { label: "H", attack: true }, "Touch:heavy": { label: "H", attack: true }, TouchHeavy: { label: "H", attack: true },
+  KeyL: { label: "SP", attack: true }, KeyC: { label: "SP", attack: true }, GamepadB: { label: "SP", attack: true }, "Touch:special": { label: "SP", attack: true }, TouchSpecial: { label: "SP", attack: true },
   KeyU: { label: "TH", attack: true }, GamepadLT: { label: "TH", attack: true },
   KeyQ: { label: "BLK" }, GamepadLB: { label: "BLK" }, "Touch:guard": { label: "BLK" }, TouchGuard: { label: "BLK" },
   ShiftLeft: { label: "DSH" }, ShiftRight: { label: "DSH" }, GamepadRB: { label: "DSH" }
@@ -1201,20 +1291,38 @@ const BINDING_LABELS: Record<string, { label: string; attack?: boolean }> = {
 
 function playerHasManualInput(): boolean {
   return (
-    Math.abs(input.axis("moveX")) > 0.1 ||
+    Math.abs(input.axis("moveX")) > 0.05 ||
     input.held("crouch") ||
     input.held("guard") ||
     input.pressed("jump") ||
+    input.buffered("jump", 140) ||
     input.pressed("dash") ||
     input.pressed("light") ||
+    input.buffered("light", 160) ||
     input.pressed("heavy") ||
+    input.buffered("heavy", 160) ||
     input.pressed("special") ||
-    input.pressed("throw")
+    input.buffered("special", 180) ||
+    input.pressed("throw") ||
+    input.buffered("throw", 160)
   );
 }
 
 app.onFrame(({ dt }) => {
   if (!P1 || !CPU || !state) return;
+  if (!appReady) {
+    syncAnim(P1, "idle", 0);
+    syncAnim(CPU, "idle", 0);
+    syncNodes();
+    director.update(0, [
+      { id: "player", position: P1.body.position },
+      { id: "rival", position: CPU.body.position }
+    ]);
+    const pSnap = actorSnap("player");
+    const cSnap = actorSnap("rival");
+    publishEvidence(pSnap, cSnap, "idle", "idle");
+    return;
+  }
   if (frozenByQuery) {
     const pSnap = actorSnap("player");
     const cSnap = actorSnap("rival");
@@ -1237,8 +1345,11 @@ app.onFrame(({ dt }) => {
     setPaused(true);
   }
 
-  if (autopilot && playerHasManualInput()) {
-    setAutopilot(false);
+  if (playerHasManualInput()) {
+    userEngaged = true;
+    if (autoDemo) {
+      setAutopilot(false);
+    }
   }
 
   if (s.phase === "attract") {
@@ -1283,10 +1394,11 @@ app.onFrame(({ dt }) => {
   }
 
   const inFight = s.phase === "fight";
+  const roundLive = autoDemo || userEngaged;
 
   if (s.phase === "intro") {
     s.phaseT += dt;
-    if (s.phaseT > 1.35) {
+    if (s.phaseT > 1.35 || userEngaged) {
       s.phase = "fight";
       hud.announce("FIGHT!", "", "pop");
       void fightingGame.sound?.cue("fight");
@@ -1308,7 +1420,7 @@ app.onFrame(({ dt }) => {
       announceRoundIntro();
     }
   } else if (inFight) {
-    if (s.config.mode !== "lab") {
+    if (s.config.mode !== "lab" && roundLive) {
       s.timer -= simDt;
       if (s.timer <= 0) {
         const pSnap = actorSnap("player");
@@ -1332,12 +1444,27 @@ app.onFrame(({ dt }) => {
 
   if (simActive) {
     const pIntent =
-      s.phase === "attract" || (inFight && autopilot)
+      s.phase === "attract" || (inFight && autoDemo)
         ? (P1.brain ?? (P1.brain = createCpuBrain(P1.def, "scrapper", APP_SEED + 7))).think(aiCtx(P1, CPU), simDt)
         : inFight
           ? playerIntent()
           : IDLE_INTENT;
-    const cIntent = s.phase === "attract" || s.phase === "ko" || s.phase === "roundEnd" ? cpuIntent(simDt) : inFight ? cpuIntent(simDt) : IDLE_INTENT;
+    if (
+      pIntent.axis !== 0 ||
+      pIntent.crouch ||
+      pIntent.guard ||
+      pIntent.jump ||
+      pIntent.dash !== 0 ||
+      pIntent.attack !== undefined
+    ) {
+      userEngaged = true;
+    }
+    const cIntent =
+      s.phase === "attract" || s.phase === "ko" || s.phase === "roundEnd"
+        ? cpuIntent(simDt)
+        : inFight && (autoDemo || userEngaged)
+          ? cpuIntent(simDt)
+          : IDLE_INTENT;
 
     driveFighter(P1, CPU, pIntent, simDt);
     driveFighter(CPU, P1, cIntent, simDt);
@@ -1431,7 +1558,8 @@ function publishEvidence(
     frame: frameCount,
     mode: s.config.mode,
     phase: s.phase,
-    autopilot,
+    autopilot: autoDemo,
+    userEngaged,
     stage: {
       id: s.config.stage.id,
       label: s.config.stage.label,
@@ -1452,7 +1580,7 @@ function publishEvidence(
         name: P1.def.name,
         asset: P1.def.asset,
         clip: pClip,
-        embeddedClip: embeddedClipFor(pClip).clip,
+        embeddedClip: P1.appliedClip || embeddedClipFor(pClip).clip,
         health: pSnap?.health ?? 0,
         meter: pSnap?.meter ?? 0,
         position: [...P1.body.position] as AuraVec3,
@@ -1464,7 +1592,7 @@ function publishEvidence(
         name: CPU.def.name,
         asset: CPU.def.asset,
         clip: cClip,
-        embeddedClip: embeddedClipFor(cClip).clip,
+        embeddedClip: CPU.appliedClip || embeddedClipFor(cClip).clip,
         health: cSnap?.health ?? 0,
         meter: cSnap?.meter ?? 0,
         position: [...CPU.body.position] as AuraVec3,
@@ -1482,7 +1610,7 @@ function publishEvidence(
       clipStandIns: { p1: P1.anim.standIns, cpu: CPU.anim.standIns }
     },
     a11y: { reducedMotion, reducedFlash, highContrast },
-    ready: true
+    ready: appReady
   };
   gameWindow.__AURA3D_GAME_RUNTIME__ = {
     kind: "createGame",
@@ -1520,38 +1648,49 @@ function publishEvidence(
 /* boot                                                              */
 /* ================================================================ */
 
-void (async () => {
-  state = {
-    config: initialConfig,
-    phase: "fight",
-    phaseT: 0,
-    round: 1,
-    pipsP1: 0,
-    pipsCpu: 0,
-    timer: ROUND_SECONDS,
-    koTimer: 0,
-    roundWinner: null,
-    slowmo: 1,
-    stats: { p1Hits: 0, cpuHits: 0, maxCombo: 0, throws: 0, specials: 0 }
-  };
+state = {
+  config: initialConfig,
+  phase: "fight",
+  phaseT: 0,
+  round: 1,
+  pipsP1: 0,
+  pipsCpu: 0,
+  timer: ROUND_SECONDS,
+  koTimer: 0,
+  roundWinner: null,
+  slowmo: 1,
+  stats: { p1Hits: 0, cpuHits: 0, maxCombo: 0, throws: 0, specials: 0 }
+};
+mountedArenaSig = arenaSignature(initialConfig);
+P1 = makeFighter("p1", initialConfig.p1, PLAYER_START);
+CPU = makeFighter("cpu", initialConfig.cpu, RIVAL_START);
+P1.brain = createCpuBrain(initialConfig.p1, "scrapper", APP_SEED + 7);
+CPU.brain = createCpuBrain(initialConfig.cpu, "scrapper", APP_SEED + 1);
+combat.reset();
+combat.addActor({ id: "player", team: "p1", position: [...PLAYER_START], facing: 1, health: initialConfig.p1.stats.maxHealth, ...actorDefaults(P1) });
+combat.addActor({ id: "rival", team: "cpu", position: [...RIVAL_START], facing: -1, health: initialConfig.cpu.stats.maxHealth, ...actorDefaults(CPU) });
+director.update(0, [
+  { id: "player", position: [...PLAYER_START] },
+  { id: "rival", position: [...RIVAL_START] }
+]);
+hud.setNames(initialConfig.p1.name, initialConfig.cpu.name);
+hud.setRoundLabel("ROUND 1");
+hud.setModeLabel(`QUICK BOUT · ${initialConfig.stage.label.toUpperCase()}${autoDemo ? " · AUTO" : ""}`);
+hud.showMenu(null);
+hud.setStageButtons(currentStageId);
+hud.setFighterButtons(initialConfig.p1.id);
+hud.setAutopilotButton(autoDemo);
+
+void app.ready().then(async () => {
   await fightingGame.ready();
-  mountedArenaSig = arenaSignature(initialConfig);
-  P1 = makeFighter("p1", initialConfig.p1, PLAYER_START);
-  CPU = makeFighter("cpu", initialConfig.cpu, RIVAL_START);
-  P1.brain = createCpuBrain(initialConfig.p1, "scrapper", APP_SEED + 7);
-  CPU.brain = createCpuBrain(initialConfig.cpu, "scrapper", APP_SEED + 1);
-  combat.reset();
-  combat.addActor({ id: "player", team: "p1", position: [...PLAYER_START], facing: 1, health: initialConfig.p1.stats.maxHealth, ...actorDefaults(P1) });
-  combat.addActor({ id: "rival", team: "cpu", position: [...RIVAL_START], facing: -1, health: initialConfig.cpu.stats.maxHealth, ...actorDefaults(CPU) });
   bindAnimations();
   syncNodes();
-  hud.setNames(initialConfig.p1.name, initialConfig.cpu.name);
-  hud.setRoundLabel("ROUND 1");
-  hud.setModeLabel(`QUICK BOUT · ${initialConfig.stage.label.toUpperCase()} · AUTO`);
-  hud.showMenu(null);
-  hud.setStageButtons(currentStageId);
-  hud.setFighterButtons(initialConfig.p1.id);
-  hud.setAutopilotButton(autopilot);
+  director.update(0, [
+    { id: "player", position: [...PLAYER_START] },
+    { id: "rival", position: [...RIVAL_START] }
+  ]);
+  appReady = true;
+  document.body.dataset.aura3dReady = "true";
   hud.announce("ROUND 1", "FIGHT!", "pop");
-})();
+});
 

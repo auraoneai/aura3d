@@ -220,7 +220,7 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
   function mkEnemy(kind: EnemyKind, cx: number, cz: number, x: number, z: number): Enemy {
     return {
       id: `${kind}-${cx}-${cz}`, kind, cx, cz, sx: cx, sz: cz, x, z,
-      hp: ENEMIES[kind].hp, state: "idle", facing: rng() * Math.PI * 2,
+      hp: ENEMIES[kind].hp, state: kind === "boss" ? "idle" : "patrol", facing: rng() * Math.PI * 2,
       stateT: 0, attackCd: 0.5 + rng(), burstLeft: 0, painT: 0, pathT: 0,
       deathT: 0, phase: 0, volleyLeft: 0, vulnerableT: 0
     };

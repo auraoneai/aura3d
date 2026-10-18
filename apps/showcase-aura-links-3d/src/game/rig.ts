@@ -152,6 +152,8 @@ export interface GolferRig {
   readonly ring: any;
   readonly hero: any;
   readonly caddy: any;
+  readonly golferBody: any;
+  readonly caddyBody: any;
   readonly bag: any;
   readonly cart: any;
   readonly clubShaft: any;
@@ -182,17 +184,23 @@ export function buildGolferNodes(fit: GolferFit): any[] {
       .runtime(rt("golfer-ring")),
     // 3D Bespoke Meshy-6 Pro Golfer + Caddy + Bag + Golf Cart (minY = 0 grounded)
     model(assets.linksGolferAthleteMeshy, {
-      name: "golfer-hero",
+      name: "golfer-body",
       targetHeight: 1.84,
       role: "primaryCharacter",
-      scaleMode: "fit"
-    }).runtime(rt("golfer-hero")),
+      scaleMode: "fit",
+      animation: { clip: "Ready", loop: true, speed: 1 }
+    } as any)
+      .animate({ clip: "Ready", loop: true, speed: 1 })
+      .runtime(rt("golfer-body")),
     model(assets.linksGolferAthleteMeshy, {
-      name: "golfer-caddy",
+      name: "caddy-body",
       targetHeight: 1.8,
       role: "setDressing",
-      scaleMode: "fit"
-    }).runtime(rt("golfer-caddy")),
+      scaleMode: "fit",
+      animation: { clip: "Idle_Loop", loop: true, speed: 0.9 }
+    } as any)
+      .animate({ clip: "Idle_Loop", loop: true, speed: 0.9 })
+      .runtime(rt("caddy-body")),
     model(assets.rooftopBallRackCartMeshy, {
       name: "golfer-bag",
       targetHeight: 0.96,
@@ -226,13 +234,24 @@ export function buildGolferNodes(fit: GolferFit): any[] {
   ];
 }
 
+let lastGolferAnimKey = "";
+let lastCaddyAnimKey = "";
+
 export function resolveGolferRig(app: any): GolferRig {
   const req = (n: string) => app.nodes.require(n);
+  const golferBody = req("golfer-body");
+  const caddyBody = req("caddy-body");
+  golferBody?.setAnimation?.({ clip: "Ready", loop: true, speed: 1 });
+  caddyBody?.setAnimation?.({ clip: "Idle_Loop", loop: true, speed: 0.9 });
+  lastGolferAnimKey = "Ready:1";
+  lastCaddyAnimKey = "Idle_Loop:0.9";
   return {
     shadow: req("golfer-shadow"),
     ring: req("golfer-ring"),
-    hero: req("golfer-hero"),
-    caddy: req("golfer-caddy"),
+    hero: golferBody,
+    caddy: caddyBody,
+    golferBody,
+    caddyBody,
     bag: req("golfer-bag"),
     cart: req("golfer-cart"),
     clubShaft: req("golfer-club-shaft"),
@@ -390,6 +409,29 @@ export function poseGolfer(
   const tw = -p.coil; // spec-convention coil → standard +Y rotation
   const stanceW = W([HIP_X, 0, p.hipZ]);
   const golferGroundY = groundAt(stanceW[0], stanceW[2]);
+
+  // Skeletal animation selection for rigged `linksGolferAthleteMeshy`
+  const heroAnim =
+    phase === "walk" ? { clip: "Walk_Loop", speed: 1.1 } :
+    phase === "backswing" ? { clip: "Load", speed: 1.4 } :
+    phase === "downswing" ? { clip: "Attack", speed: 1.8 } :
+    phase === "follow" || phase === "putt" ? { clip: "FollowThrough", speed: 1.2 } :
+    phase === "celebrate" ? { clip: "Jump_Loop", speed: 1.2 } :
+    { clip: "Ready", speed: 1.0 };
+  const heroKey = `${heroAnim.clip}:${heroAnim.speed}`;
+  if (heroKey !== lastGolferAnimKey) {
+    lastGolferAnimKey = heroKey;
+    rig.golferBody?.setAnimation?.({ clip: heroAnim.clip, loop: true, speed: heroAnim.speed });
+  }
+
+  const caddyAnim = phase === "celebrate"
+    ? { clip: "Contest", speed: 1.15 }
+    : { clip: "Idle_Loop", speed: 0.9 };
+  const caddyKey = `${caddyAnim.clip}:${caddyAnim.speed}`;
+  if (caddyKey !== lastCaddyAnimKey) {
+    lastCaddyAnimKey = caddyKey;
+    rig.caddyBody?.setAnimation?.({ clip: caddyAnim.clip, loop: true, speed: caddyAnim.speed });
+  }
 
   // 3D Bespoke Meshy Golfer (`linksGolferAthleteMeshy`, targetHeight 1.84, minY = 0 grounded)
   const heroY = golferGroundY + Math.max(0, p.hipY - HIP_Y) + p.bob;

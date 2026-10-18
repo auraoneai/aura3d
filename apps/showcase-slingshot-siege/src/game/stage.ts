@@ -202,13 +202,21 @@ export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNo
     primitives.box({ name: "sling-band-r", material: pbr("#d94f30", { roughness: 0.6 }) })
       .position(-7.5, 1.7, 0.16).scale([0.05, 0.05, 0.05]).runtime({ id: SLING_IDS.bandR, tags: ["sling"] }),
     model(assets.gullsiegeHeroGullMeshy, { name: "sling-loaded", position: [-7.4, 1.62, 0], rotation: [0, Math.PI * 0.5, 0] })
-      .scale(0.46).runtime({ id: SLING_IDS.loaded, tags: ["sling"] }),
+      .scale(0.46)
+      .animate({ clip: "Ready", loop: true, speed: 1.0 })
+      .runtime({ id: SLING_IDS.loaded, tags: ["sling"] }),
     model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-0", position: [-8.35, 0.25, 0.52], rotation: [0, Math.PI * 0.42, 0] })
-      .scale(0.52).runtime({ id: "ammo-wait-0", tags: ["stage"] }),
+      .scale(0.52)
+      .animate({ clip: "Idle_Loop", loop: true, speed: 0.95 })
+      .runtime({ id: "ammo-wait-0", tags: ["stage"] }),
     model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-1", position: [-8.95, 0.2, -0.42], rotation: [0, Math.PI * 0.48, 0] })
-      .scale(0.48).runtime({ id: "ammo-wait-1", tags: ["stage"] }),
+      .scale(0.48)
+      .animate({ clip: "Idle_Loop", loop: true, speed: 1.05 })
+      .runtime({ id: "ammo-wait-1", tags: ["stage"] }),
     model(assets.gullsiegeHeroGullMeshy, { name: "ammo-wait-2", position: [-9.45, 0.16, 0.28], rotation: [0, Math.PI * 0.45, 0] })
-      .scale(0.45).runtime({ id: "ammo-wait-2", tags: ["stage"] })
+      .scale(0.45)
+      .animate({ clip: "Idle_Loop", loop: true, speed: 0.9 })
+      .runtime({ id: "ammo-wait-2", tags: ["stage"] })
   );
 
   // ------------------------------------------------------- piece pools ------
@@ -236,14 +244,18 @@ export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNo
   for (let g = 0; g < POOL.gullRigs; g += 1) {
     nodes.push(
       model(assets.gullsiegeRaiderBossMeshy, { name: gullPartId(g, "body"), position: [0, -120, 0], rotation: [0, -Math.PI * 0.45, 0] })
-        .scale([0.54, 0.54, 0.54]).runtime({ id: gullPartId(g, "body"), tags: ["gull"] })
+        .scale([0.54, 0.54, 0.54])
+        .animate({ clip: "Idle_Loop", loop: true, speed: 0.95 + (g % 3) * 0.08 })
+        .runtime({ id: gullPartId(g, "body"), tags: ["gull"] })
     );
   }
 
   // ------------------------------------------------- projectiles + debris ---
   for (let i = 0; i < POOL.projectiles; i += 1) {
     nodes.push(model(assets.gullsiegeHeroGullMeshy, { name: projectileNodeId(i), position: [0, -120, 0], rotation: [0, Math.PI * 0.5, 0] })
-      .scale(0.48).runtime({ id: projectileNodeId(i), tags: ["projectile"] }));
+      .scale(0.48)
+      .animate({ clip: "Jump_Loop", loop: true, speed: 1.45 })
+      .runtime({ id: projectileNodeId(i), tags: ["projectile"] }));
   }
   for (let i = 0; i < POOL.debris; i += 1) {
     nodes.push(model(assets.gullsiegePlanksMeshy, { name: debrisNodeId(i), position: [0, -120, 0] })

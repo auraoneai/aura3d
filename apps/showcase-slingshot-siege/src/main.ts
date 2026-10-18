@@ -39,8 +39,8 @@ import {
 
 const params = new URLSearchParams(location.search);
 const DEMO = params.get("demo") === "1" || params.get("demo") === "true";
-let autoPlay = true;
-let manualIdleT = 0;
+let autoPlay = params.get("autoplay") === "1" || DEMO;
+let appReady = false;
 const SEED = (Number(params.get("seed")) || 0x51e9e) >>> 0;
 const START_LEVEL = Math.min(Math.max(0, Number(params.get("level")) || 0), LEVELS.length - 1);
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches || params.get("still") === "1";
@@ -68,10 +68,10 @@ const chapter = CHAPTERS[levelById(START_LEVEL).chapter]!;
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { qualityProfile: "production" },
-  qualityRebuild: { flags: ["game", "-compiler", "-vfxFog", "-vfx.fog", "-vfx"] },
+  qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
   input: {
     actions: {
-      ability: ["Space", "KeyQ"],
+      ability: ["Space", "KeyQ", "Enter"],
       reset: ["KeyR"],
       pause: ["KeyP", "Escape"],
       map: ["Tab", "KeyM"]
@@ -92,12 +92,21 @@ const IS_TOUCH = matchMedia("(pointer: coarse)").matches;
 // --------------------------------------------------------------- handles --
 
 const H = new Map<string, AuraRuntimeNodeHandle>();
+const animCache = new Map<string, string>();
 function node(id: string): AuraRuntimeNodeHandle | undefined {
   if (!H.has(id)) {
     const h = app.nodes.get(id) as AuraRuntimeNodeHandle | undefined;
     if (h) H.set(id, h);
   }
   return H.get(id);
+}
+function setNodeAnim(id: string, clip: string, speed = 1): void {
+  const h = node(id);
+  if (!h) return;
+  const key = `${clip}:${speed.toFixed(2)}`;
+  if (animCache.get(id) === key) return;
+  animCache.set(id, key);
+  h.setAnimation({ clip, loop: true, speed });
 }
 function setPose(id: string, u: VisualUpdate, scale?: number | readonly [number, number, number]): void {
   const h = node(id);
@@ -413,8 +422,15 @@ stageEl.addEventListener("pointerdown", (ev) => {
   aim.lastX = ev.clientX; aim.lastY = ev.clientY;
 });
 
-window.addEventListener("keydown", () => {
+const heldKeys = new Set<string>();
+const justPressedKeys = new Set<string>();
+window.addEventListener("keydown", (ev) => {
   autoPlay = false;
+  if (!heldKeys.has(ev.code)) justPressedKeys.add(ev.code);
+  heldKeys.add(ev.code);
+});
+window.addEventListener("keyup", (ev) => {
+  heldKeys.delete(ev.code);
 });
 
 stageEl.addEventListener("pointermove", (ev) => {
@@ -487,6 +503,7 @@ function pulsePiece(index: number): void {
 }
 function hopGull(g: number): void {
   const id = gullPartId(g, "body");
+  setNodeAnim(id, "Contest", 1.35);
   tweenList.push({ id, t: 0, dur: 0.22, base: [0.54, 0.54, 0.54], kind: "hop" });
 }
 
@@ -537,12 +554,16 @@ function syncGull(g: number): void {
     sink = Math.min(1, t / 0.14) * 0.12;
   }
   const hidden = rec.squashAge > 1.05;
+  const bodyId = gullPartId(g, "body");
+  setNodeAnim(bodyId, rec.alive ? "Idle_Loop" : "Contest", rec.alive ? 0.95 + (g % 3) * 0.08 : 1.4);
+  const idleBob = rec.alive ? Math.sin(elapsed * 2.8 + g * 1.3) * 0.035 : 0;
+  const idleYaw = rec.alive ? Math.sin(elapsed * 1.9 + g * 0.9) * 0.08 : 0;
   for (const spec of GULL_PARTS) {
     const h = node(gullPartId(g, spec.part));
     if (!h) continue;
     const off = rotQ(rot, spec.off);
-    h.setPosition(pos[0] + off[0], pos[1] + off[1] - sink, pos[2] + off[2]);
-    h.setRotation(e[0], e[1] - Math.PI * 0.45, e[2]);
+    h.setPosition(pos[0] + off[0], pos[1] + off[1] - sink + idleBob, pos[2] + off[2]);
+    h.setRotation(e[0], e[1] - Math.PI * 0.45 + idleYaw, e[2]);
     h.setScale([spec.base[0] * sxz, spec.base[1] * sy, spec.base[2] * sxz]);
     h.setVisible(rec.alive ? true : !hidden);
   }
@@ -572,12 +593,19 @@ function syncSling(): void {
   node(SLING_IDS.pouch)?.setPosition(pouchX, pouchY, 0).setRotation(0, 0, 0);
   const loaded = node(SLING_IDS.loaded);
   const ammo = currentAmmo();
+  const isPulling = aim.state === "dragging" || Math.hypot(aim.pullX, aim.pullY) > 0.1;
   if (loaded) {
     const showBall = canAim() || aim.state === "dragging";
     loaded.setVisible(showBall && ammo !== null);
-    loaded.setPosition(pouchX, pouchY + 0.04, 0);
-    loaded.setRotation(0, Math.PI * 0.5, 0);
+    setNodeAnim(SLING_IDS.loaded, isPulling ? "Load" : "Ready", isPulling ? 1.35 : 1.0);
+    const bob = isPulling ? 0 : Math.sin(elapsed * 3.2) * 0.025;
+    const pitchTilt = isPulling ? Math.atan2(-aim.pullY, Math.max(0.2, -aim.pullX)) * 0.45 : 0;
+    loaded.setPosition(pouchX, pouchY + 0.04 + bob, 0);
+    loaded.setRotation(pitchTilt, Math.PI * 0.5, 0);
     loaded.setScale(0.42 + AMMO[ammo ?? "pebble"].radius * 0.45);
+  }
+  for (let wIdx = 0; wIdx < 3; wIdx += 1) {
+    setNodeAnim(`ammo-wait-${wIdx}`, "Idle_Loop", 0.95 + wIdx * 0.05);
   }
   // bands: stretch from fork tips to the pouch
   const tips: readonly [number, number, number][] = [[-7.62, 1.94, -0.24], [-7.62, 1.94, 0.24]];
@@ -618,7 +646,11 @@ function syncVisuals(): void {
       if (pv) setPose(pv.nodeId, u);
     } else if (u.id.startsWith("projectile-")) {
       const i = Number(u.id.slice(11));
-      if (i < POOL.projectiles) setPose(projectileNodeId(i), u, 0.48);
+      if (i < POOL.projectiles) {
+        const pid = projectileNodeId(i);
+        setPose(pid, u, 0.48);
+        if (u.visible) setNodeAnim(pid, "Jump_Loop", 1.5);
+      }
     } else if (u.id.startsWith("debris-")) {
       const i = Number(u.id.slice(7));
       const d = sim.debrisList()[i];
@@ -947,6 +979,10 @@ let elapsed = 0;
 try {
   assignPieceVisuals();
   camState = "aim";
+  syncVisuals();
+  syncSling();
+  updateCamera(0, 0);
+  refreshVp();
   hud.setMode(mode);
   hud.showBanner(`${CHAPTERS[level.chapter]!.name}`, `Level ${level.slot + 1} — ${level.name}`);
 } catch (err) {
@@ -954,6 +990,7 @@ try {
 }
 
 gameApp.onFrame(({ dt }) => {
+  if (!appReady) return;
   frames += 1;
   elapsed += dt;
   try {
@@ -961,7 +998,52 @@ gameApp.onFrame(({ dt }) => {
     if (input?.pressed("reset")) { audio.cue("ui-confirm"); loadLevel(level.id); }
     if (input?.pressed("pause")) { paused = !paused; hud.setPaused(paused); }
     if (input?.pressed("map")) setMode(mode === "map" ? "siege" : "map");
-    if (input?.pressed("ability") && sim.isShotActive()) fireAbility();
+
+    // Keyboard aiming (WASD / Arrow keys) and launching (Space / Enter / KeyE / KeyF)
+    const aimUp = heldKeys.has("KeyW") || heldKeys.has("ArrowUp");
+    const aimDown = heldKeys.has("KeyS") || heldKeys.has("ArrowDown");
+    const aimLeft = heldKeys.has("KeyA") || heldKeys.has("ArrowLeft");
+    const aimRight = heldKeys.has("KeyD") || heldKeys.has("ArrowRight");
+    if (canAim() && (aimUp || aimDown || aimLeft || aimRight)) {
+      if (aim.pullX === 0 && aim.pullY === 0) {
+        aim.pullX = -1.35;
+        aim.pullY = -0.52;
+      }
+      if (aimUp) aim.pullY = Math.max(-1.25, aim.pullY - dt * 1.15);
+      if (aimDown) aim.pullY = Math.min(-0.08, aim.pullY + dt * 1.15);
+      if (aimLeft) aim.pullX = Math.max(-PULL_MAX, aim.pullX - dt * 1.15);
+      if (aimRight) aim.pullX = Math.min(-0.55, aim.pullX + dt * 1.15);
+      const len = Math.hypot(aim.pullX, aim.pullY);
+      if (len > PULL_MAX) {
+        aim.pullX *= PULL_MAX / len;
+        aim.pullY *= PULL_MAX / len;
+      }
+      aim.state = "dragging";
+      camState = "aim";
+      hud.setShotMeter(Math.min(1, len / PULL_MAX));
+    }
+
+    const launchPressed =
+      justPressedKeys.has("Space") ||
+      justPressedKeys.has("Enter") ||
+      justPressedKeys.has("KeyE") ||
+      justPressedKeys.has("KeyF");
+    if (launchPressed) {
+      if (sim.isShotActive()) {
+        fireAbility();
+      } else if (canAim()) {
+        if (Math.hypot(aim.pullX, aim.pullY) < 0.35) {
+          aim.pullX = -1.45;
+          aim.pullY = -0.58;
+        }
+        fireShot();
+        aim.state = "idle";
+        hud.setShotMeter(0);
+      }
+    } else if (input?.pressed("ability") && sim.isShotActive()) {
+      fireAbility();
+    }
+    justPressedKeys.clear();
 
     if ((DEMO || autoPlay) && !paused) demoTick(dt);
     if (!paused) {
@@ -1006,10 +1088,14 @@ gameApp.onFrame(({ dt }) => {
   } catch { /* optional */ }
   if (app.deviceLost?.()) show("The WebGL context was lost during startup.");
   void app.ready().then(() => {
+    appReady = true;
+    document.body.dataset.aura3dReady = "true";
     const diag = app.diagnostics?.();
     const errs = (diag as { errors?: readonly { message?: string }[] } | undefined)?.errors ?? [];
     const fatal = errs.find((e) => (e.message ?? "").length > 0);
     if (fatal?.message) show(`Renderer mount reported: ${fatal.message}`);
+    publishEvidence();
+    refreshHud();
   }).catch(() => show("Renderer mount failed — WebGL2 is required."));
 }
 
