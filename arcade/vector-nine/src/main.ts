@@ -124,6 +124,22 @@ const BARRIER_STEP = 26;
 const MAST_SLOTS = 9;
 const TOWER_SLOTS = 5;
 
+// ── dressing cadences (all pools sized to stay ≤ MAX_GPU_INSTANCES 64) ───────
+const RAIL_STEP = 24; // guardrail segments: ceil(662/24)·2 sides = 56
+const SEAM_STEP = 15; // deck expansion seams: ceil(662/15) = 45
+const TICK_STEP = 24; // centreline distance ticks: ceil(662/24) = 28
+const WET_STEP = 24; // wet-edge glow segments: 28 · 2 sides = 56
+const CHEVRONS_PER_GATE = 3; // × 2 strokes × 10 gates = 60
+const ARM_CLEARANCE_Y = 9.6; // mast-arm height: ≥ 6 m above any jump apex
+// Masts that carry an overhead deck arm (subset of MAST_SLOTS, both sides).
+// Declared here — above createGame — because buildScene runs the moment
+// createGame is invoked and reads it (the BESTS_KEY TDZ lesson).
+const ARM_MASTS: readonly number[] = [0, 2, 3, 5, 6, 8];
+// Golden-hour key light: sunPosition(12°, 35°) in the look preset — the low
+// sun sits toward +X/+Z. The sea glitter and headland silhouettes key off it.
+const SUN_AZ_RAD = (35 * Math.PI) / 180;
+const SUN_DIR: readonly [number, number] = [Math.sin(SUN_AZ_RAD), Math.cos(SUN_AZ_RAD)];
+
 // ── evidence ─────────────────────────────────────────────────────────────────
 interface VectorNineState {
   readonly frame: number;
@@ -730,7 +746,7 @@ function stepVehicle(dt: number): void {
       score += Math.round(gain);
     }
   } else if (wallStyleRun > 12) {
-    showToast(`WALL RIDE +${Math.round(wallStyleRun)}`);
+    showToast(`Wall ride +${Math.round(wallStyleRun)}`);
     wallStyleRun = 0;
   }
 
@@ -792,7 +808,7 @@ function land(): void {
     combo = Math.min(9, combo + 1);
     const gain = Math.round(base * combo * (perfect ? 1.5 : 1));
     score += gain;
-    showToast(perfect ? `PERFECT +${gain}` : `${trickName(airRotation)} +${gain}`);
+    showToast(perfect ? `Perfect +${gain}` : `${trickName(airRotation)} +${gain}`);
   }
   void vectorNine.sound?.cue("land");
   if (perfect) {
@@ -826,12 +842,12 @@ function crash(reason: string): void {
   gameEvents.push({ type: "crash", label: reason, severity: "warning" });
   if (eventIndex === 0) {
     lapTime += CRASH_PENALTY_S;
-    showToast(`CRASH +${CRASH_PENALTY_S}s PENALTY`);
+    showToast(`Crash, +${CRASH_PENALTY_S}s penalty`);
     respawn(false);
   } else {
     stunT = 1.2;
     carV *= 0.25;
-    showToast("CRASH — COMBO LOST");
+    showToast("Crash, combo lost");
   }
 }
 
@@ -853,7 +869,7 @@ function respawn(withPenalty: boolean): void {
   flux = Math.max(flux, 45);
   if (withPenalty && eventIndex === 0) {
     lapTime += RESPAWN_PENALTY_S;
-    showToast(`RESPAWN +${RESPAWN_PENALTY_S}s`);
+    showToast(`Respawn +${RESPAWN_PENALTY_S}s`);
   }
   gameEvents.push({ type: "respawn", label: "respawn at gate" });
 }
@@ -1041,6 +1057,33 @@ function buildScene(): ReturnType<typeof scene> {
     emissiveIntensity: 0.22
   });
   const markerMaterial = material.neon({ color: "#173a4a", emissive: "#59e0ff", emissiveIntensity: 0.85 });
+  const steelMaterial = material.pbr({ color: "#33383e", roughness: 0.55, metalness: 0.62 });
+  const seamMaterial = material.pbr({ color: "#6e6559", roughness: 0.97 });
+  const wetGlowMaterial = material.pbr({
+    color: "#33260f",
+    roughness: 0.6,
+    emissive: "#ffb46b",
+    emissiveIntensity: 0.22
+  });
+  const chevronMaterial = material.pbr({
+    color: "#e8a13c",
+    roughness: 0.75,
+    emissive: "#ff9a2e",
+    emissiveIntensity: 0.15
+  });
+  const lampMaterial = material.pbr({
+    color: "#2c2620",
+    roughness: 0.5,
+    emissive: "#ffc27a",
+    emissiveIntensity: 0.3
+  });
+  const headlandMaterial = material.pbr({ color: "#4a4036", roughness: 1, metalness: 0 });
+  const glitterMaterial = material.pbr({
+    color: "#8a5a34",
+    roughness: 1,
+    emissive: "#ffb46b",
+    emissiveIntensity: 0.28
+  });
 
   const nodes: AuraNodeInput[] = [
     // Sea — a wide apron so no floor edge ever crosses the frame.
@@ -1053,20 +1096,23 @@ function buildScene(): ReturnType<typeof scene> {
       receiveShadow: true
     }),
 
-    // Deck: one box per segment, two instanced pools (each ≤ 64).
+    // Deck: one box per segment, two instanced pools (each ≤ 64). Instance
+    // colors add a slow weathered-slab mottle so the big flat read breaks up.
     instances.box({
       name: "barrage deck a",
       size: 1,
       material: deckMaterial,
       receiveShadow: true,
-      transforms: deckTransforms(0, Math.ceil(TRACK_SAMPLES.length / 2))
+      transforms: deckTransforms(0, Math.ceil(TRACK_SAMPLES.length / 2)),
+      colors: deckColors(0, Math.ceil(TRACK_SAMPLES.length / 2))
     }).runtime(game.runtimeNode("vn-deck-a", { tags: ["deck", "static"] })),
     instances.box({
       name: "barrage deck b",
       size: 1,
       material: deckMaterial,
       receiveShadow: true,
-      transforms: deckTransforms(Math.ceil(TRACK_SAMPLES.length / 2), TRACK_SAMPLES.length)
+      transforms: deckTransforms(Math.ceil(TRACK_SAMPLES.length / 2), TRACK_SAMPLES.length),
+      colors: deckColors(Math.ceil(TRACK_SAMPLES.length / 2), TRACK_SAMPLES.length)
     }).runtime(game.runtimeNode("vn-deck-b", { tags: ["deck", "static"] })),
 
     // Quarter-pipe walls: 4 facets per side, each its own instanced pool.
@@ -1079,6 +1125,93 @@ function buildScene(): ReturnType<typeof scene> {
       material: laneMaterial,
       transforms: laneTransforms()
     }).runtime(game.runtimeNode("vn-lane", { tags: ["lane", "static"] })),
+
+    // ── deck dressing ────────────────────────────────────────────────────────
+    // Expansion seams crossing the flat deck every ~15 m.
+    instances.box({
+      name: "deck seams",
+      size: 1,
+      material: seamMaterial,
+      transforms: seamTransforms()
+    }).runtime(game.runtimeNode("vn-seams", { tags: ["seam", "static"] })),
+
+    // Runway-style distance ticks along the centreline.
+    instances.box({
+      name: "centreline ticks",
+      size: 1,
+      material: laneMaterial,
+      transforms: tickTransforms()
+    }).runtime(game.runtimeNode("vn-ticks", { tags: ["tick", "static"] })),
+
+    // Painted chevrons before every gate: a >>> aiming at the gate line.
+    instances.box({
+      name: "gate chevrons",
+      size: 1,
+      material: chevronMaterial,
+      transforms: chevronTransforms()
+    }).runtime(game.runtimeNode("vn-chevrons", { tags: ["chevron", "static"] })),
+
+    // Wet-edge glow: faint amber strip where the deck meets each wall base.
+    instances.box({
+      name: "wet edge glow",
+      size: 1,
+      material: wetGlowMaterial,
+      transforms: wetEdgeTransforms()
+    }).runtime(game.runtimeNode("vn-wet-edge", { tags: ["wet", "static"] })),
+
+    // ── foreground anchors (near-field speed cues) ───────────────────────────
+    // Guardrail: a steel handrail riding both wall lips, breaking the flat
+    // deck horizon, plus its posts.
+    instances.box({
+      name: "guardrails",
+      size: 1,
+      material: steelMaterial,
+      transforms: railTransforms()
+    }).runtime(game.runtimeNode("vn-rails", { tags: ["rail", "static"] })),
+    instances.box({
+      name: "guardrail posts",
+      size: 1,
+      material: steelMaterial,
+      transforms: railPostTransforms()
+    }).runtime(game.runtimeNode("vn-rail-posts", { tags: ["rail", "static"] })),
+
+    // Overhead mast arms jutting over the deck with hanging amber lamps —
+    // the classic passing-overhead speed cue. Arms sit at ARM_CLEARANCE_Y,
+    // far above any jump apex, and cast long low-sun shadows across the deck.
+    instances.box({
+      name: "mast arms",
+      size: 1,
+      material: steelMaterial,
+      castShadow: true,
+      transforms: armTransforms()
+    }).runtime(game.runtimeNode("vn-arms", { tags: ["arm", "scenery"] })),
+    instances.box({
+      name: "arm lamps",
+      size: 1,
+      material: lampMaterial,
+      transforms: lampTransforms()
+    }).runtime(game.runtimeNode("vn-lamps", { tags: ["lamp", "scenery"] })),
+
+    // ── far atmosphere ───────────────────────────────────────────────────────
+    // Sun-glitter: broken warm strips on the water along the sun azimuth.
+    // One instanced pool, so its bounds span the near region and survive the
+    // camera's target-plane cull the same way the gate pool does.
+    instances.plane({
+      name: "sun glitter",
+      size: 1,
+      material: glitterMaterial,
+      transforms: glitterTransforms()
+    }).runtime(game.runtimeNode("vn-glitter", { tags: ["glitter", "static"] })),
+
+    // Distant headlands: dark silhouettes in the haze, one instanced pool
+    // (pool bounds span the near region — see the cull note above). Kept
+    // inside the camera far plane (280 m): beyond it nothing renders at all.
+    instances.box({
+      name: "headlands",
+      size: 1,
+      material: headlandMaterial,
+      transforms: headlandTransforms()
+    }).runtime(game.runtimeNode("vn-headlands", { tags: ["headland", "static"] })),
 
     // Plinths for masts and towers, rising from the water.
     instances.box({
@@ -1175,13 +1308,33 @@ function buildScene(): ReturnType<typeof scene> {
 }
 
 // ── static instance layouts ──────────────────────────────────────────────────
+/** Deterministic per-segment mottle for the deck: warm/cool drift around 1.0. */
+function slabTint(i: number): AuraColor {
+  const hash = Math.sin(i * 12.9898) * 43758.5453;
+  const w = hash - Math.floor(hash); // 0..1
+  const r = 0.965 + 0.06 * w;
+  const g = 0.955 + 0.05 * (1 - w);
+  const b = 0.94 + 0.07 * ((w * 7) % 1);
+  const to2 = (v: number) => Math.round(Math.min(1, Math.max(0, v)) * 255).toString(16).padStart(2, "0");
+  return `#${to2(r)}${to2(g)}${to2(b)}`;
+}
+
+function deckColors(from: number, to: number): AuraColor[] {
+  const colors: AuraColor[] = [];
+  for (let i = from; i < to; i += 1) colors.push(slabTint(i));
+  return colors;
+}
+
 function deckTransforms(from: number, to: number): AuraTransformSpec[] {
   const width = 2 * (DECK_HALF + WALL_R);
   const transforms: AuraTransformSpec[] = [];
   for (let i = from; i < to; i += 1) {
     const at = TRACK_SAMPLES[i % TRACK_SAMPLES.length]!;
+    // Adjacent slabs overlap 6% to seal curve joints; with per-slab tints the
+    // overlap would z-fight between two colours, so alternate a 6 mm drop —
+    // the joint resolves to one owner deterministically.
     transforms.push({
-      position: [at.x, -DECK_THICK / 2, at.z],
+      position: [at.x, -DECK_THICK / 2 - (i % 2) * 0.006, at.z],
       rotation: [0, at.psi, 0],
       scale: [width, DECK_THICK, TRACK_SPACING * 1.06]
     });
@@ -1247,6 +1400,221 @@ function laneTransforms(): AuraTransformSpec[] {
   }
   return transforms;
 }
+
+/** World point (and tangent heading) at track station s, lateral offset u. */
+function trackWorld(s: number, u: number): { x: number; z: number; psi: number } {
+  const at = trackAt(s);
+  const right = rightOf(at.psi);
+  return { x: at.x + right[0] * u, z: at.z + right[1] * u, psi: at.psi };
+}
+
+/** A flat painted stroke on the deck from track point a to track point b. */
+function deckStroke(a: { x: number; z: number }, b: { x: number; z: number }, y: number, width: number): AuraTransformSpec {
+  const dx = b.x - a.x;
+  const dz = b.z - a.z;
+  const len = Math.hypot(dx, dz);
+  return {
+    position: [(a.x + b.x) / 2, y, (a.z + b.z) / 2],
+    rotation: [0, Math.atan2(-dx, dz), 0],
+    scale: [width, 0.02, len * 1.04]
+  };
+}
+
+/** Expansion seams: thin darker strips crossing the flat deck every ~15 m. */
+function seamTransforms(): AuraTransformSpec[] {
+  const transforms: AuraTransformSpec[] = [];
+  const count = Math.ceil(TRACK_LENGTH / SEAM_STEP);
+  for (let i = 0; i < count; i += 1) {
+    const at = trackAt(i * SEAM_STEP + SEAM_STEP * 0.5);
+    transforms.push({
+      position: [at.x, 0.012, at.z],
+      rotation: [0, at.psi, 0],
+      scale: [2 * DECK_HALF + 0.5, 0.035, 0.16]
+    });
+  }
+  return transforms;
+}
+
+/** Runway-style distance ticks beside the centreline, every ~24 m. */
+function tickTransforms(): AuraTransformSpec[] {
+  const transforms: AuraTransformSpec[] = [];
+  const count = Math.ceil(TRACK_LENGTH / TICK_STEP);
+  for (let i = 0; i < count; i += 1) {
+    const at = trackAt(i * TICK_STEP);
+    const major = i % 4 === 0; // hecatometre marks read wider, like runway stripes
+    transforms.push({
+      position: [at.x, 0.026, at.z],
+      rotation: [0, at.psi, 0],
+      scale: [major ? 2.6 : 1.5, 0.02, 0.32]
+    });
+  }
+  return transforms;
+}
+
+/** Painted >>> chevrons on approach to each gate, apex on the gate line. */
+function chevronTransforms(): AuraTransformSpec[] {
+  const transforms: AuraTransformSpec[] = [];
+  for (const gate of GATES) {
+    for (let k = 0; k < CHEVRONS_PER_GATE; k += 1) {
+      const s = gate.s - 6 - (CHEVRONS_PER_GATE - 1 - k) * 2.6;
+      const apex = trackWorld(s, gate.u);
+      const backL = trackWorld(s - 0.62, gate.u - 0.85);
+      const backR = trackWorld(s - 0.62, gate.u + 0.85);
+      transforms.push(deckStroke(backL, apex, 0.032, 0.42));
+      transforms.push(deckStroke(apex, backR, 0.032, 0.42));
+    }
+  }
+  return transforms;
+}
+
+/** Wet-edge glow: faint amber strips along both deck/wall-base junctions. */
+function wetEdgeTransforms(): AuraTransformSpec[] {
+  const transforms: AuraTransformSpec[] = [];
+  const count = Math.ceil(TRACK_LENGTH / WET_STEP);
+  for (let side = 0; side < 2; side += 1) {
+    const sigma = side === 0 ? 1 : -1;
+    for (let i = 0; i < count; i += 1) {
+      const at = trackAt((i * TRACK_LENGTH) / count + (side === 0 ? 0 : WET_STEP / 2));
+      const right = rightOf(at.psi);
+      transforms.push({
+        position: [at.x + right[0] * sigma * (DECK_HALF - 0.1), 0.013, at.z + right[1] * sigma * (DECK_HALF - 0.1)],
+        rotation: [0, at.psi, 0],
+        scale: [0.15, 0.022, WET_STEP * 1.02]
+      });
+    }
+  }
+  return transforms;
+}
+
+/** Guardrail handrail: a continuous thin steel strip along both wall lips. */
+function railTransforms(): AuraTransformSpec[] {
+  const transforms: AuraTransformSpec[] = [];
+  const count = Math.ceil(TRACK_LENGTH / RAIL_STEP);
+  const lateral = DECK_HALF + WALL_R + 0.15; // just inside the parapet barriers
+  for (let side = 0; side < 2; side += 1) {
+    const sigma = side === 0 ? 1 : -1;
+    for (let i = 0; i < count; i += 1) {
+      const at = trackAt((i * TRACK_LENGTH) / count + (side === 0 ? 0 : RAIL_STEP / 2));
+      const right = rightOf(at.psi);
+      transforms.push({
+        position: [at.x + right[0] * sigma * lateral, WALL_R + 0.55, at.z + right[1] * sigma * lateral],
+        rotation: [0, at.psi, 0],
+        scale: [0.12, 0.14, RAIL_STEP * 1.03]
+      });
+    }
+  }
+  return transforms;
+}
+
+/** Guardrail posts, staggered against the rail joints. */
+function railPostTransforms(): AuraTransformSpec[] {
+  const transforms: AuraTransformSpec[] = [];
+  const count = Math.ceil(TRACK_LENGTH / RAIL_STEP);
+  const lateral = DECK_HALF + WALL_R + 0.15;
+  for (let side = 0; side < 2; side += 1) {
+    const sigma = side === 0 ? 1 : -1;
+    for (let i = 0; i < count; i += 1) {
+      const at = trackAt((i * TRACK_LENGTH) / count + (side === 0 ? RAIL_STEP / 2 : 0));
+      const right = rightOf(at.psi);
+      transforms.push({
+        position: [at.x + right[0] * sigma * lateral, WALL_R + 0.28, at.z + right[1] * sigma * lateral],
+        rotation: [0, at.psi, 0],
+        scale: [0.1, 0.85, 0.1]
+      });
+    }
+  }
+  return transforms;
+}
+
+/**
+ * Overhead mast arms: a horizontal arm reaches over the deck from every other
+ * light mast, alternating sides with the masts themselves. Positioned through
+ * trackAt/rightOf so they follow the loop.
+ */
+function armTransforms(): AuraTransformSpec[] {
+  const transforms: AuraTransformSpec[] = [];
+  const mastLateral = DECK_HALF + WALL_R + 4;
+  for (const i of ARM_MASTS) {
+    const at = trackAt((i * TRACK_LENGTH) / MAST_SLOTS + 30);
+    const right = rightOf(at.psi);
+    const sigma = i % 2 === 0 ? 1 : -1; // the mast's own side (see mastTransforms)
+    const lateral = mastLateral - 6; // arm of length 12 spans lateral 8..20
+    transforms.push({
+      position: [at.x + right[0] * sigma * lateral, ARM_CLEARANCE_Y, at.z + right[1] * sigma * lateral],
+      rotation: [0, at.psi, 0],
+      scale: [12, 0.3, 0.3]
+    });
+  }
+  return transforms;
+}
+
+/** Amber lamps hanging from the mast arms, three per arm. */
+function lampTransforms(): AuraTransformSpec[] {
+  const transforms: AuraTransformSpec[] = [];
+  const mastLateral = DECK_HALF + WALL_R + 4;
+  for (const i of ARM_MASTS) {
+    const at = trackAt((i * TRACK_LENGTH) / MAST_SLOTS + 30);
+    const right = rightOf(at.psi);
+    const sigma = i % 2 === 0 ? 1 : -1;
+    for (const inward of [5, 8, 11]) {
+      const lateral = mastLateral - inward;
+      transforms.push({
+        position: [at.x + right[0] * sigma * lateral, ARM_CLEARANCE_Y - 0.29, at.z + right[1] * sigma * lateral],
+        rotation: [0, at.psi, 0],
+        scale: [0.26, 0.54, 0.26]
+      });
+    }
+  }
+  return transforms;
+}
+
+/**
+ * Sun glitter: broken warm strips lying on the water along the sun azimuth
+ * (the low sun's reflection path). Laid as instances.plane so one pool's
+ * bounds span the near region and survive the target-plane cull.
+ */
+function glitterTransforms(): AuraTransformSpec[] {
+  const yaw = SUN_AZ_RAD - Math.PI / 2; // long axis along the sun direction
+  const perpendicular: readonly [number, number] = [Math.cos(SUN_AZ_RAD), -Math.sin(SUN_AZ_RAD)];
+  const strips: readonly { readonly offset: number; readonly dist: number; readonly len: number; readonly width: number }[] = [
+    { offset: -36, dist: 95, len: 240, width: 10 },
+    { offset: -14, dist: 70, len: 300, width: 14 },
+    { offset: 10, dist: 105, len: 260, width: 9 },
+    { offset: 30, dist: 60, len: 200, width: 7 },
+    { offset: -52, dist: 140, len: 160, width: 6 },
+    { offset: 0, dist: 150, len: 190, width: 5 }
+  ];
+  return strips.map((strip, i) => ({
+    position: [
+      SUN_DIR[0] * strip.dist + perpendicular[0] * strip.offset,
+      WATER_Y + 0.07 + i * 0.005,
+      SUN_DIR[1] * strip.dist + perpendicular[1] * strip.offset
+    ],
+    rotation: [-Math.PI / 2, yaw, 0],
+    scale: [strip.len, strip.width, 1]
+  }));
+}
+
+/**
+ * Distant headlands: dark silhouettes fading into the golden haze. Radius is
+ * bounded by the camera far plane (280 m) — anything farther never renders.
+ */
+function headlandTransforms(): AuraTransformSpec[] {
+  const headlands: readonly { readonly bearing: number; readonly radius: number; readonly width: number; readonly height: number; readonly depth: number }[] = [
+    { bearing: 0.52, radius: 236, width: 150, height: 40, depth: 55 }, // backs the sun-glitter path
+    { bearing: 1.25, radius: 226, width: 95, height: 28, depth: 45 },
+    { bearing: 2.05, radius: 248, width: 180, height: 46, depth: 70 },
+    { bearing: 2.95, radius: 224, width: 110, height: 30, depth: 48 },
+    { bearing: 4.02, radius: 244, width: 160, height: 38, depth: 60 },
+    { bearing: 5.05, radius: 232, width: 120, height: 32, depth: 50 }
+  ];
+  return headlands.map((hill) => ({
+    position: [Math.sin(hill.bearing) * hill.radius, WATER_Y + hill.height / 2 - 1.5, Math.cos(hill.bearing) * hill.radius],
+    rotation: [0, hill.bearing, 0],
+    scale: [hill.width, hill.height, hill.depth]
+  }));
+}
+
 
 function plinthTransforms(): AuraTransformSpec[] {
   const transforms: AuraTransformSpec[] = [];
@@ -1429,7 +1797,7 @@ function updateAudioLevels(): void {
 function setMuted(next: boolean): void {
   muted = next;
   vectorNine.sound?.setMuted(next);
-  showToast(next ? "SOUND OFF" : "SOUND ON");
+  showToast(next ? "Sound off" : "Sound on");
 }
 
 function setVolume(next: number): void {
@@ -1437,82 +1805,179 @@ function setVolume(next: number): void {
   vectorNine.sound?.setBusVolume("master", next);
 }
 
-// ── HUD ──────────────────────────────────────────────────────────────────────
+// ── HUD (motorsport-grade, system fonts only) ────────────────────────────────
 let hudRoot: HTMLElement | undefined;
 let controlsRoot: HTMLElement | undefined;
-let speedEl: HTMLElement | undefined;
+let tlEventEl: HTMLElement | undefined;
+let tlTimeEl: HTMLElement | undefined;
+let tlGateEl: HTMLElement | undefined;
+let tlPipsEl: HTMLElement | undefined;
+let tlStatusEl: HTMLElement | undefined;
+let paceEl: HTMLElement | undefined;
+let speedNumEl: HTMLElement | undefined;
+let rpmFillEl: HTMLElement | undefined;
+let speedoStateEl: HTMLElement | undefined;
 let fluxFillEl: HTMLElement | undefined;
-let fluxLabelEl: HTMLElement | undefined;
-let bodyEl: HTMLElement | undefined;
+let fluxBarEl: HTMLElement | undefined;
+let fluxPctEl: HTMLElement | undefined;
+let fluxTagEl: HTMLElement | undefined;
+let centerStatusEl: HTMLElement | undefined;
+let promptEl: HTMLElement | undefined;
+let lastPipSignature = "";
+let lastPaceSignature = "";
+
+const HUD_FONT = `-apple-system, "SF Pro Display", "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif`;
+const HUD_MONO = `ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace`;
+
+function hudStyles(): string {
+  return `
+#vn-tl,#vn-tr,#vn-speedo,#vn-flux-wrap,#vn-prompt{position:absolute;z-index:6;pointer-events:none;
+  font-family:${HUD_FONT};color:#e9e4d8;letter-spacing:.01em;
+  -webkit-user-select:none;user-select:none}
+.vn-panel{background:rgba(10,14,24,0.60);-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px);
+  border:1px solid rgba(255,182,72,0.26);border-radius:10px}
+#vn-tl{left:16px;top:14px;padding:10px 14px 9px;min-width:196px}
+#vn-tr{right:16px;top:14px;width:236px;display:flex;flex-direction:column;gap:8px;pointer-events:auto}
+.vn-eyebrow{font-size:10px;font-weight:700;letter-spacing:.32em;color:#ffb648}
+.vn-event{margin-top:3px;font-size:12px;font-weight:600;color:#f2ead9}
+.vn-clock{margin-top:4px;font:700 24px/1 ${HUD_MONO};font-variant-numeric:tabular-nums;color:#ffffff}
+.vn-clock small{font:600 10px/1 ${HUD_FONT};letter-spacing:.22em;color:#9aa4b2;margin-left:6px}
+.vn-gate{margin-top:3px;font:600 10px/1.4 ${HUD_MONO};font-variant-numeric:tabular-nums;color:#9aa4b2}
+.vn-pips{display:flex;gap:5px;margin-top:7px;align-items:center}
+.vn-pip{width:7px;height:7px;border-radius:50%;background:rgba(233,228,216,0.16)}
+.vn-pip.done{background:#ffb648;box-shadow:0 0 6px rgba(255,182,72,0.55)}
+.vn-pip.next{background:transparent;border:1.5px solid #59e0ff;box-shadow:0 0 7px rgba(89,224,255,0.6);animation:vnpulse 1.1s ease-in-out infinite}
+.vn-pip.fin{border-radius:2px}
+@keyframes vnpulse{50%{opacity:.35}}
+.vn-tl-status{margin-top:7px;font-size:11px;color:#c9c2b2;min-height:14px}
+.vn-tr-panel{padding:9px 11px}
+.vn-btnrow{display:flex;gap:5px;flex-wrap:wrap}
+.vn-btn{font:600 10px/1 ${HUD_FONT};letter-spacing:.06em;color:#e9e4d8;cursor:pointer;
+  background:rgba(233,228,216,0.07);border:1px solid rgba(233,228,216,0.18);border-radius:6px;
+  padding:5px 8px;transition:background .15s,border-color .15s}
+.vn-btn:hover{background:rgba(255,182,72,0.14);border-color:rgba(255,182,72,0.5)}
+.vn-btn.on{background:rgba(255,182,72,0.22);border-color:rgba(255,182,72,0.65);color:#ffd9a0}
+.vn-keys{margin-top:7px;font-size:9.5px;line-height:1.7;color:#8b93a1}
+.vn-vol{display:flex;align-items:center;gap:7px;margin-top:8px}
+.vn-vol label{font:600 9px/1 ${HUD_FONT};letter-spacing:.18em;color:#9aa4b2}
+.vn-vol input{flex:1;accent-color:#ffb648;height:3px;cursor:pointer}
+.vn-pace-head{display:flex;justify-content:space-between;align-items:baseline}
+.vn-pace-title{font-size:10px;font-weight:700;letter-spacing:.26em;color:#9aa4b2}
+.vn-pace-proj{font:700 13px/1 ${HUD_MONO};font-variant-numeric:tabular-nums;color:#ffffff}
+.vn-pace-rows{margin-top:6px;display:flex;flex-direction:column;gap:2px}
+.vn-pace-row{display:flex;justify-content:space-between;font:600 10.5px/1.5 ${HUD_MONO};
+  font-variant-numeric:tabular-nums;opacity:.34;transition:opacity .2s}
+.vn-pace-row.live{opacity:1}
+.vn-pace-row .medal{letter-spacing:.14em}
+.vn-pace-best{margin-top:6px;font:600 10px/1 ${HUD_MONO};font-variant-numeric:tabular-nums;color:#8b93a1}
+.vn-score-big{font:700 26px/1 ${HUD_MONO};font-variant-numeric:tabular-nums;color:#ffffff}
+.vn-score-sub{margin-top:3px;font:600 10.5px/1.5 ${HUD_MONO};font-variant-numeric:tabular-nums;color:#9aa4b2}
+#vn-speedo{right:16px;bottom:16px;padding:10px 16px 12px;text-align:right}
+.vn-speed-row{display:flex;align-items:baseline;justify-content:flex-end;gap:7px}
+#vn-speed-num{font:700 46px/1 ${HUD_MONO};font-variant-numeric:tabular-nums;color:#ffffff;
+  text-shadow:0 0 18px rgba(255,214,150,0.25)}
+.vn-speed-unit{font:600 11px/1 ${HUD_FONT};letter-spacing:.2em;color:#9aa4b2}
+#vn-rpm{position:relative;width:176px;height:7px;margin-top:8px;border-radius:4px;
+  background:rgba(233,228,216,0.10);overflow:hidden}
+#vn-rpm-fill{height:100%;width:0%;border-radius:4px;
+  background:linear-gradient(90deg,#3ec2e8 0%,#ffd166 62%,#ff5d7d 100%);transition:width .08s linear}
+#vn-rpm::after{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,transparent 0 20.5px,rgba(10,14,24,0.85) 20.5px 22px)}
+#vn-speedo.boosting #vn-rpm-fill{box-shadow:0 0 12px rgba(255,182,72,0.8)}
+.vn-speed-state{margin-top:6px;display:flex;justify-content:flex-end;gap:6px}
+.vn-chip{font:700 9px/1 ${HUD_FONT};letter-spacing:.22em;padding:3px 7px;border-radius:4px;
+  color:#ffd9a0;background:rgba(255,182,72,0.16);border:1px solid rgba(255,182,72,0.4);
+  opacity:0;transition:opacity .15s}
+.vn-chip.on{opacity:1}
+.vn-chip.air{color:#9ceeff;background:rgba(89,224,255,0.13);border-color:rgba(89,224,255,0.4)}
+#vn-flux-wrap{left:50%;bottom:16px;transform:translateX(-50%);width:min(58vw,620px);text-align:center}
+.vn-flux-label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+#vn-flux-tag{font:700 10px/1 ${HUD_FONT};letter-spacing:.3em;color:#8fd8ef}
+#vn-flux-wrap.wall #vn-flux-tag{color:#ffb648}
+#vn-flux-wrap.low #vn-flux-tag{color:#ff8ba0}
+#vn-flux-pct{font:700 13px/1 ${HUD_MONO};font-variant-numeric:tabular-nums;color:#e9e4d8}
+#vn-flux-bar{position:relative;height:15px;border-radius:7px;background:rgba(10,14,24,0.72);
+  border:1px solid rgba(233,228,216,0.14);overflow:hidden}
+#vn-flux-fill{height:100%;width:100%;border-radius:6px;
+  background:linear-gradient(90deg,#2fb9dd,#59e0ff);transition:width .1s linear}
+#vn-flux-wrap.wall #vn-flux-fill{background:linear-gradient(90deg,#59e0ff,#ffb648);
+  box-shadow:0 0 16px rgba(255,182,72,0.55)}
+#vn-flux-wrap.low #vn-flux-fill{background:linear-gradient(90deg,#ff5d7d,#be123c);
+  box-shadow:0 0 16px rgba(255,93,125,0.55);animation:vnlow .5s ease-in-out infinite alternate}
+@keyframes vnlow{to{filter:brightness(1.45)}}
+#vn-flux-segs{position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 calc(100%/24 - 2px),rgba(7,11,20,0.92) calc(100%/24 - 2px) calc(100%/24))}
+#vn-center-status{margin-bottom:8px;min-height:22px;font:700 15px/1.3 ${HUD_FONT};color:#ffd9a0;
+  text-shadow:0 0 14px rgba(255,182,72,0.4)}
+#vn-center-status .count{font:800 54px/1 ${HUD_MONO};font-variant-numeric:tabular-nums;
+  color:#ffb648;text-shadow:0 0 28px rgba(255,182,72,0.65);animation:vnpulse 1s ease-in-out infinite}
+#vn-center-status .dim{font-weight:600;font-size:11.5px;color:#9aa4b2;text-shadow:none;letter-spacing:.04em}
+#vn-center-status .go{font:800 40px/1 ${HUD_FONT};letter-spacing:.14em;color:#7be0ff;
+  text-shadow:0 0 30px rgba(89,224,255,0.7)}
+#vn-prompt{left:50%;bottom:104px;transform:translateX(-50%);padding:8px 14px;
+  display:flex;gap:14px;align-items:center;white-space:nowrap;opacity:0;visibility:hidden;
+  transition:opacity .25s,visibility .25s}
+#vn-prompt.show{opacity:1;visibility:visible}
+.vn-kbd-row{display:flex;gap:6px;align-items:center;font-size:10.5px;color:#c9c2b2}
+.vn-kbd{font:700 9.5px/1 ${HUD_MONO};color:#ffd9a0;background:rgba(255,182,72,0.10);
+  border:1px solid rgba(255,182,72,0.45);border-bottom-width:2px;border-radius:5px;padding:3px 6px}
+.vn-kbd.cy{color:#9ceeff;background:rgba(89,224,255,0.10);border-color:rgba(89,224,255,0.45)}
+@media (max-width:820px){#vn-prompt{display:none}#vn-tr{width:188px}#vn-speedo{padding:8px 12px 10px}}
+`;
+}
 
 function buildHud(): void {
-  if (hudRoot || controlsRoot) return;
+  if (hudRoot) return;
 
+  const style = document.createElement("style");
+  style.textContent = hudStyles();
+  document.head.append(style);
+
+  // Top-left: identity, event, lap clock, checkpoint pips.
   hudRoot = document.createElement("aside");
-  hudRoot.id = "vector-nine-hud";
-  hudRoot.style.cssText = [
-    "position:absolute",
-    "left:18px",
-    "top:16px",
-    "z-index:5",
-    "width:280px",
-    "font:600 13px/1.5 Inter, system-ui, sans-serif",
-    "color:#f2ead9",
-    "background:rgba(9,14,30,0.78)",
-    "border:1px solid rgba(255,182,72,0.35)",
-    "border-radius:12px",
-    "padding:14px 16px",
-    "pointer-events:none",
-    "letter-spacing:0.01em"
-  ].join(";");
+  hudRoot.id = "vn-tl";
+  hudRoot.className = "vn-panel";
   hudRoot.innerHTML = [
-    `<div style="font-size:15px;letter-spacing:0.22em;color:#ffb648">VECTOR NINE</div>`,
-    `<div id="vn-speed" style="margin-top:8px;font:700 30px/1.1 ui-monospace, SFMono-Regular, Menlo, monospace">0 <span style="font-size:13px;opacity:0.7">km/h</span></div>`,
-    `<div style="margin-top:8px;font-size:11px;letter-spacing:0.14em;opacity:0.8">FLUX <span id="vn-flux-label">100%</span></div>`,
-    `<div style="margin-top:3px;height:10px;border-radius:5px;background:rgba(255,255,255,0.09);overflow:hidden"><div id="vn-flux" style="height:100%;width:100%;background:#59e0ff;border-radius:5px"></div></div>`,
-    `<div id="vn-body" style="margin-top:8px"></div>`
+    `<div class="vn-eyebrow">VECTOR NINE</div>`,
+    `<div class="vn-event" id="vn-tl-event">TIME ATTACK · EBB RUN</div>`,
+    `<div class="vn-clock"><span id="vn-tl-time">0:00.00</span><small>LAP</small></div>`,
+    `<div class="vn-gate" id="vn-tl-gate">gate 1/5</div>`,
+    `<div class="vn-pips" id="vn-tl-pips"></div>`,
+    `<div class="vn-tl-status" id="vn-tl-status"></div>`
   ].join("");
   document.body.append(hudRoot);
-  speedEl = hudRoot.querySelector<HTMLElement>("#vn-speed") ?? undefined;
-  fluxFillEl = hudRoot.querySelector<HTMLElement>("#vn-flux") ?? undefined;
-  fluxLabelEl = hudRoot.querySelector<HTMLElement>("#vn-flux-label") ?? undefined;
-  bodyEl = hudRoot.querySelector<HTMLElement>("#vn-body") ?? undefined;
+  tlEventEl = hudRoot.querySelector<HTMLElement>("#vn-tl-event") ?? undefined;
+  tlTimeEl = hudRoot.querySelector<HTMLElement>("#vn-tl-time") ?? undefined;
+  tlGateEl = hudRoot.querySelector<HTMLElement>("#vn-tl-gate") ?? undefined;
+  tlPipsEl = hudRoot.querySelector<HTMLElement>("#vn-tl-pips") ?? undefined;
+  tlStatusEl = hudRoot.querySelector<HTMLElement>("#vn-tl-status") ?? undefined;
 
-  controlsRoot = document.createElement("section");
-  controlsRoot.id = "vector-nine-controls";
-  controlsRoot.style.cssText = [
-    "position:absolute",
-    "right:18px",
-    "top:16px",
-    "z-index:6",
-    "width:220px",
-    "font:600 12px/1.5 Inter, system-ui, sans-serif",
-    "color:#f2ead9",
-    "background:rgba(9,14,30,0.78)",
-    "border:1px solid rgba(89,224,255,0.28)",
-    "border-radius:12px",
-    "padding:12px 14px",
-    "text-align:right"
-  ].join(";");
-  controlsRoot.innerHTML = [
-    `<div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap">`,
-    `<button type="button" data-event="0" style="${buttonStyle()}">Time Attack</button>`,
-    `<button type="button" data-event="1" style="${buttonStyle()}">Free Ride</button>`,
-    `<button type="button" data-event="2" style="${buttonStyle()}">Score Attack</button>`,
+  // Top-right: event controls, sound, then the pace / score panel.
+  controlsRoot = document.createElement("aside");
+  controlsRoot.id = "vn-tr";
+  const controlsPanel = document.createElement("div");
+  controlsPanel.className = "vn-panel vn-tr-panel";
+  controlsPanel.innerHTML = [
+    `<div class="vn-btnrow">`,
+    `<button type="button" class="vn-btn" data-event="0">TIME ATTACK</button>`,
+    `<button type="button" class="vn-btn" data-event="1">FREE RIDE</button>`,
+    `<button type="button" class="vn-btn" data-event="2">SCORE ATTACK</button>`,
     `</div>`,
-    `<div style="margin-top:8px"><button type="button" data-action="circuit" style="${buttonStyle()}">Circuit: Ebb Run</button></div>`,
-    `<div style="margin-top:8px;display:flex;gap:6px;justify-content:flex-end;align-items:center">`,
-    `<button type="button" data-action="mute" style="${buttonStyle()}">Sound</button>`,
-    `<button type="button" data-action="restart" style="${buttonStyle()}">Restart</button>`,
+    `<div class="vn-btnrow" style="margin-top:6px">`,
+    `<button type="button" class="vn-btn" data-action="circuit" style="flex:1">CIRCUIT · EBB RUN</button>`,
+    `<button type="button" class="vn-btn" data-action="mute">SOUND</button>`,
+    `<button type="button" class="vn-btn" data-action="restart">RESTART</button>`,
     `</div>`,
-    `<div style="margin-top:8px;font-size:11px;opacity:0.75">Volume</div>`,
-    `<input id="vn-volume" type="range" min="0" max="100" value="90" style="width:100%;accent-color:#ffb648" />`,
-    `<div style="margin-top:8px;font-size:10.5px;opacity:0.62;text-align:left;line-height:1.6">`,
-    `W/S throttle · A/D steer · Shift boost<br />Space jump / hold hover · X drift<br />`,
-    `Air: W/S pitch · A/D roll · Q/E spin<br />Enter respawn · R restart · 1/2/3 event · N circuit`,
-    `</div>`
+    `<div class="vn-vol"><label>VOL</label><input id="vn-volume" type="range" min="0" max="100" value="90" /></div>`,
+    `<div class="vn-keys">N circuit · R restart · M sound<br />Enter respawn · 1/2/3 event</div>`
   ].join("");
+  controlsRoot.append(controlsPanel);
+  const pacePanel = document.createElement("div");
+  pacePanel.className = "vn-panel vn-tr-panel";
+  pacePanel.innerHTML = `<div id="vn-pace"></div>`;
+  controlsRoot.append(pacePanel);
   document.body.append(controlsRoot);
+  paceEl = pacePanel.querySelector<HTMLElement>("#vn-pace") ?? undefined;
 
   controlsRoot.querySelectorAll("button").forEach((button) => {
     button.addEventListener("click", () => {
@@ -1533,18 +1998,111 @@ function buildHud(): void {
     setVolume(Number(volumeInput.value) / 100);
   });
   volumeInput?.addEventListener("change", () => volumeInput.blur());
+
+  // Bottom-right: the speedo with rpm-style sweep.
+  const speedo = document.createElement("div");
+  speedo.id = "vn-speedo";
+  speedo.className = "vn-panel";
+  speedo.innerHTML = [
+    `<div class="vn-speed-row"><span id="vn-speed-num">0</span><span class="vn-speed-unit">KM/H</span></div>`,
+    `<div id="vn-rpm"><div id="vn-rpm-fill"></div></div>`,
+    `<div class="vn-speed-state">`,
+    `<span class="vn-chip" id="vn-chip-boost">BOOST</span>`,
+    `<span class="vn-chip air" id="vn-chip-air">AIR</span>`,
+    `<span class="vn-chip" id="vn-chip-wall">WALL</span>`,
+    `</div>`
+  ].join("");
+  document.body.append(speedo);
+  speedNumEl = speedo.querySelector<HTMLElement>("#vn-speed-num") ?? undefined;
+  rpmFillEl = speedo.querySelector<HTMLElement>("#vn-rpm-fill") ?? undefined;
+  speedoStateEl = speedo;
+
+  // Bottom-centre: the FLUX GRIP bar — the visual star.
+  const fluxWrap = document.createElement("div");
+  fluxWrap.id = "vn-flux-wrap";
+  fluxWrap.innerHTML = [
+    `<div id="vn-center-status"></div>`,
+    `<div class="vn-flux-label"><span id="vn-flux-tag">FLUX GRIP</span><span id="vn-flux-pct">100%</span></div>`,
+    `<div id="vn-flux-bar"><div id="vn-flux-fill"></div><div id="vn-flux-segs"></div></div>`
+  ].join("");
+  document.body.append(fluxWrap);
+  fluxFillEl = fluxWrap.querySelector<HTMLElement>("#vn-flux-fill") ?? undefined;
+  fluxBarEl = fluxWrap;
+  fluxPctEl = fluxWrap.querySelector<HTMLElement>("#vn-flux-pct") ?? undefined;
+  fluxTagEl = fluxWrap.querySelector<HTMLElement>("#vn-flux-tag") ?? undefined;
+  centerStatusEl = fluxWrap.querySelector<HTMLElement>("#vn-center-status") ?? undefined;
+
+  // Bottom-centre prompt bar (idle/countdown), with kbd chips.
+  const prompt = document.createElement("div");
+  prompt.id = "vn-prompt";
+  prompt.className = "vn-panel";
+  prompt.innerHTML = [
+    `<span class="vn-kbd-row"><span class="vn-kbd">W</span> throttle</span>`,
+    `<span class="vn-kbd-row"><span class="vn-kbd">SHIFT</span> boost</span>`,
+    `<span class="vn-kbd-row"><span class="vn-kbd cy">SPACE</span> jump · hold hover</span>`,
+    `<span class="vn-kbd-row"><span class="vn-kbd">X</span> drift</span>`
+  ].join("");
+  document.body.append(prompt);
+  promptEl = prompt;
 }
 
-function buttonStyle(): string {
+function formatClock(t: number): string {
+  const m = Math.floor(t / 60);
+  const s = t - m * 60;
+  return `${m}:${s.toFixed(2).padStart(5, "0")}`;
+}
+
+function pipRowHtml(): string {
+  if (eventIndex === 1) return `<span class="vn-gate" style="margin:0">free run · no gates</span>`;
+  const total = activeOrder().length + 1;
+  const pips: string[] = [];
+  for (let i = 0; i < total; i += 1) {
+    const cls = i < checkpointIndex ? "vn-pip done" : i === checkpointIndex ? "vn-pip next" : "vn-pip";
+    pips.push(`<span class="${cls}${i === total - 1 ? " fin" : ""}"></span>`);
+  }
+  return pips.join("");
+}
+
+function paceHtml(): string {
+  if (eventIndex === 0) {
+    const circuit = CIRCUITS[circuitIndex]!;
+    const startS = GATES[circuit.finishGate]!.s;
+    const frac = (((carS - startS) % TRACK_LENGTH) + TRACK_LENGTH) % TRACK_LENGTH / TRACK_LENGTH;
+    const projected = phase === "racing" && frac > 0.03 ? lapTime / frac : null;
+    const names = ["GOLD", "SILVER", "BRONZE"] as const;
+    const colors = ["#ffd166", "#ccd5df", "#d29a6a"] as const;
+    const bestAchievable = projected === null
+      ? 2
+      : projected <= circuit.medals[0] ? 0 : projected <= circuit.medals[1] ? 1 : 2;
+    const rows = circuit.medals
+      .map((target, i) => {
+        const live = projected !== null && i === bestAchievable && projected <= circuit.medals[2]!;
+        return `<div class="vn-pace-row${live ? " live" : ""}">` +
+          `<span class="medal" style="color:${colors[i]}">${live ? "▸ " : ""}${names[i]}</span>` +
+          `<span>${formatClock(target)}</span></div>`;
+      })
+      .join("");
+    const best = bestTimePerCircuit[circuitIndex];
+    return [
+      `<div class="vn-pace-head"><span class="vn-pace-title">MEDAL PACE</span>` +
+        `<span class="vn-pace-proj">${projected === null ? "—" : formatClock(projected)}</span></div>`,
+      `<div class="vn-pace-rows">${rows}</div>`,
+      `<div class="vn-pace-best">BEST ${best !== null ? formatClock(best) : "—"}</div>`
+    ].join("");
+  }
+  if (eventIndex === 2) {
+    return [
+      `<div class="vn-pace-head"><span class="vn-pace-title">SCORE ATTACK</span>` +
+        `<span class="vn-pace-proj">${Math.max(0, SCORE_WINDOW - lapTime).toFixed(1)}s</span></div>`,
+      `<div class="vn-score-big" style="margin-top:4px">${score.toLocaleString()}</div>`,
+      `<div class="vn-score-sub">combo ×${combo} · best ${bestScore !== null ? bestScore.toLocaleString() : "—"}</div>`
+    ].join("");
+  }
   return [
-    "font:600 11px/1.4 Inter, system-ui, sans-serif",
-    "color:#f2ead9",
-    "background:rgba(255,182,72,0.12)",
-    "border:1px solid rgba(255,182,72,0.4)",
-    "border-radius:7px",
-    "padding:5px 9px",
-    "cursor:pointer"
-  ].join(";");
+    `<div class="vn-pace-head"><span class="vn-pace-title">FREE RIDE</span></div>`,
+    `<div class="vn-score-big" style="margin-top:4px">${score.toLocaleString()}</div>`,
+    `<div class="vn-score-sub">combo ×${combo} · no clock, no fail</div>`
+  ].join("");
 }
 
 function renderHud(): void {
@@ -1553,73 +2111,105 @@ function renderHud(): void {
   hudFrame = frameCount;
 
   const circuit = CIRCUITS[circuitIndex]!;
-  const speedKph = Math.round(Math.abs(carV) * 3.6);
-  if (speedEl) speedEl.innerHTML = `${speedKph} <span style="font-size:13px;opacity:0.7">km/h</span>`;
 
+  // Speedo: tabular readout + rpm-style sweep + state chips.
+  if (speedNumEl) speedNumEl.textContent = String(Math.round(Math.abs(carV) * 3.6));
+  if (rpmFillEl) rpmFillEl.style.width = `${Math.min(100, (Math.abs(carV) / V_MAX_BOOST) * 100)}%`;
+  if (speedoStateEl) {
+    speedoStateEl.classList.toggle("boosting", boostActive);
+    const boostChip = speedoStateEl.querySelector<HTMLElement>("#vn-chip-boost");
+    const airChip = speedoStateEl.querySelector<HTMLElement>("#vn-chip-air");
+    const wallChip = speedoStateEl.querySelector<HTMLElement>("#vn-chip-wall");
+    if (boostChip) boostChip.classList.toggle("on", boostActive);
+    if (airChip) airChip.classList.toggle("on", airborne);
+    if (wallChip) wallChip.classList.toggle("on", wallRiding);
+  }
+
+  // Flux grip bar: segmented, cyan → amber on the wall, red under 18%.
   const fluxPct = Math.round((flux / FLUX_MAX) * 100);
-  if (fluxFillEl) {
-    fluxFillEl.style.width = `${fluxPct}%`;
-    fluxFillEl.style.background = wallRiding ? "#ffb648" : fluxPct < 18 ? "#ff5d6e" : "#59e0ff";
+  if (fluxFillEl) fluxFillEl.style.width = `${fluxPct}%`;
+  if (fluxPctEl) fluxPctEl.textContent = `${fluxPct}%${wallRiding ? " GRIP" : ""}`;
+  if (fluxTagEl) fluxTagEl.textContent = wallRiding ? "FLUX · WALL GRIP" : fluxPct < 18 ? "FLUX LOW" : "FLUX GRIP";
+  if (fluxBarEl) {
+    fluxBarEl.classList.toggle("wall", wallRiding);
+    fluxBarEl.classList.toggle("low", fluxPct < 18 && !wallRiding);
   }
-  if (fluxLabelEl) {
-    fluxLabelEl.textContent = wallRiding ? `${fluxPct}% GRIP` : `${fluxPct}%`;
+
+  // Top-left: event, clock, gate line, pips.
+  if (tlEventEl) {
+    tlEventEl.textContent =
+      eventIndex === 0 ? `TIME ATTACK · ${circuit.name.toUpperCase()}` : EVENT_NAMES[eventIndex]!.toUpperCase();
+  }
+  if (tlTimeEl) tlTimeEl.textContent = eventIndex === 1 ? "—" : formatClock(lapTime);
+  if (tlGateEl) {
+    if (eventIndex === 0) {
+      const total = circuit.checkpoints.length + 1;
+      tlGateEl.textContent = `GATE ${Math.min(checkpointIndex + 1, total)}/${total}`;
+    } else if (eventIndex === 2) {
+      tlGateEl.textContent = `GATE ${Math.min(checkpointIndex + 1, GATE_COUNT)}/${GATE_COUNT}`;
+    } else {
+      tlGateEl.textContent = "OPEN DECK";
+    }
+  }
+  if (tlPipsEl) {
+    const pipSignature = `${eventIndex}:${circuitIndex}:${checkpointIndex}`;
+    if (pipSignature !== lastPipSignature) {
+      lastPipSignature = pipSignature;
+      tlPipsEl.innerHTML = pipRowHtml();
+    }
+  }
+  if (tlStatusEl) {
+    tlStatusEl.textContent =
+      airborne && phase === "racing" ? "air · W/S pitch · A/D roll · Q/E spin" : "";
   }
 
-  if (!bodyEl) return;
-  const statusLine =
-    phase === "countdown"
-      ? `<span style="color:#ffd166;font-size:16px">${Math.min(3, Math.max(1, Math.ceil(countdownT)))}</span>`
-      : phase === "finished"
-        ? `<span style="color:#ffd166">${finishedLine()}</span>`
-        : toastT > 0 && toast
-          ? `<span style="color:#ffb648">${toast}</span>`
-          : wallRiding
-            ? `<span style="color:#ffb648">FLUX GRIP · ${Math.round((wallTheta * 180) / Math.PI)}° on the wall</span>`
-            : `<span style="opacity:0.6">Boost and wall grip share one pool</span>`;
-
-  const eventLine =
-    eventIndex === 0
-      ? `${EVENT_NAMES[0]} · ${circuit.name}`
-      : EVENT_NAMES[eventIndex];
-
-  const timingLine =
-    eventIndex === 0
-      ? `Time <strong>${lapTime.toFixed(2)}s</strong> · Gate ${Math.min(checkpointIndex + 1, circuit.checkpoints.length + 1)}/${circuit.checkpoints.length + 1}`
-      : eventIndex === 2
-        ? `Score <strong>${score.toLocaleString()}</strong> · ×${combo} · ${Math.max(0, SCORE_WINDOW - lapTime).toFixed(1)}s left`
-        : `Style <strong>${score.toLocaleString()}</strong> · ×${combo}`;
-
-  const bestLine =
-    eventIndex === 0
-      ? `Best ${circuit.name}: ${bestTimePerCircuit[circuitIndex] !== null ? `${bestTimePerCircuit[circuitIndex]!.toFixed(2)}s` : "—"} · G ${circuit.medals[0]}s · S ${circuit.medals[1]}s · B ${circuit.medals[2]}s`
-      : eventIndex === 2
-        ? `Best score: ${bestScore !== null ? bestScore.toLocaleString() : "—"}`
-        : `Free run — no clock, no fail`;
-
-  bodyEl.innerHTML = [
-    `<div>${eventLine}</div>`,
-    `<div style="margin-top:4px">${timingLine}</div>`,
-    `<div style="margin-top:4px;color:#8fb4d8;font-size:12px">${bestLine}</div>`,
-    `<div style="margin-top:6px">${statusLine}</div>`
-  ].join("");
-
+  // Top-right: medal pace / event stats, then control states.
+  if (paceEl) {
+    const paceSignature = `${eventIndex}:${circuitIndex}:${phase}:${Math.floor(lapTime * 2)}:${score >> 3}:${combo}`;
+    if (paceSignature !== lastPaceSignature) {
+      lastPaceSignature = paceSignature;
+      paceEl.innerHTML = paceHtml();
+    }
+  }
   if (controlsRoot) {
     const circuitButton = controlsRoot.querySelector<HTMLButtonElement>('[data-action="circuit"]');
-    if (circuitButton) circuitButton.textContent = `Circuit: ${circuit.name}`;
+    if (circuitButton) circuitButton.textContent = `CIRCUIT · ${circuit.name.toUpperCase()}`;
     controlsRoot.querySelectorAll<HTMLButtonElement>("button[data-event]").forEach((button) => {
-      const active = Number(button.getAttribute("data-event")) === eventIndex;
-      button.style.background = active ? "rgba(255,182,72,0.45)" : "rgba(255,182,72,0.12)";
+      button.classList.toggle("on", Number(button.getAttribute("data-event")) === eventIndex);
     });
     const muteButton = controlsRoot.querySelector<HTMLButtonElement>('[data-action="mute"]');
-    if (muteButton) muteButton.textContent = muted ? "Unmute" : "Mute";
+    if (muteButton) muteButton.textContent = muted ? "MUTED" : "SOUND";
+  }
+
+  // Centre status: countdown > GO > toast > finish > wall grip > idle hint.
+  if (centerStatusEl) {
+    if (phase === "countdown") {
+      centerStatusEl.innerHTML = `<span class="count">${Math.min(3, Math.max(1, Math.ceil(countdownT)))}</span>`;
+    } else if (phase === "finished") {
+      centerStatusEl.innerHTML = `<span style="color:#ffd166">${finishedLine().toUpperCase()}</span>`;
+    } else if (lapTime < 0.9) {
+      centerStatusEl.innerHTML = `<span class="go">GO</span>`;
+    } else if (toastT > 0 && toast) {
+      centerStatusEl.innerHTML = `<span style="color:#ffd9a0">${toast}</span>`;
+    } else if (wallRiding) {
+      centerStatusEl.innerHTML = `<span style="color:#ffb648">WALL GRIP · ${Math.round((wallTheta * 180) / Math.PI)}°</span>`;
+    } else {
+      centerStatusEl.innerHTML = `<span class="dim">BOOST AND WALL GRIP SHARE ONE POOL</span>`;
+    }
+  }
+
+  // Prompt bar: countdown and idle only.
+  if (promptEl) {
+    const idle = phase === "countdown" || (phase === "racing" && Math.abs(carV) < 2 && lapTime > 1);
+    promptEl.classList.toggle("show", idle);
   }
 }
 
 function finishedLine(): string {
   if (eventIndex === 0) {
-    return medal === "DNF" ? `TIMED OUT — press R` : `FINISH ${lapTime.toFixed(2)}s · ${medal} — press R`;
+    return medal === "DNF" ? `Timed out, press R` : `Finish ${lapTime.toFixed(2)}s (${medal}), press R`;
   }
-  if (eventIndex === 2) return `TIME — ${score.toLocaleString()} pts — press R`;
+  if (eventIndex === 2) return `Time ${score.toLocaleString()} pts, press R`;
   return "Session ended — press R";
 }
 

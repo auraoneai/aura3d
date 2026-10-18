@@ -22,6 +22,7 @@ import {
   primitives,
   scene,
   type AuraColor,
+  type AuraCustomGeometrySpec,
   type AuraNodeInput,
   type AuraRuntimeNodeHandle,
   type AuraTransformSpec,
@@ -55,6 +56,60 @@ const RINGS = [2.35, 1.95, 1.55, 1.15] as const;
 const BRICK_SLOTS = 96; // fixed instanced capacity; dead bricks park at scale 0
 const RING_COLORS: readonly AuraColor[] = ["#4de8ff", "#7be0ff", "#b987d0", "#ff7ab8"];
 
+// ── floor dressing & atmosphere ───────────────────────────────────────────────
+// Instanced markings ONLY — rings, seams and ticks are exactly what primitives
+// are for; no hero object is ever assembled from them. Every pool below stays
+// ≤ 64 instances (MAX_GPU_INSTANCES batches at 64), so each pool renders as a
+// single draw call. All dressing is authored in the ARENA_Z offset frame like
+// every other node, sits at y ≤ 0.05 on the floor, and stays within the arena
+// bounds so the culling frustum never sees it at negative Z. Emissive caps are
+// deliberate: the rim-bloom lesson showed 0.9 swallows the frame, so guide
+// dressing holds at ≤ 0.2 and only the small central pulse ring goes above.
+
+// Guide rings: concentric machined grooves, each tinted toward the zone colour
+// of the band it sits in. Instance colours multiply the base colour; the
+// material carries the single shared emissive.
+const GUIDE_RINGS: readonly { readonly radius: number; readonly color: AuraColor }[] = [
+  { radius: 0.62, color: "#9a6aa8" }, // inner sanctum — magenta zone
+  { radius: 0.92, color: "#8d77b5" }, // violet approach
+  { radius: 1.35, color: "#7f74c4" }, // band between brick rings 3→2
+  { radius: 1.75, color: "#6bb5d4" }, // band between brick rings 2→1
+  { radius: 2.15, color: "#59a8d8" }, // band between brick rings 1→0
+  { radius: 2.65, color: "#63cfe4" }, // paddle orbit lane
+  { radius: 3.13, color: "#438fb4" } // rim approach
+];
+const GUIDE_RING_Y = 0.012;
+
+// Radial seams every 30° so the floor reads machined rather than poured.
+const SEAM_COUNT = 12;
+const SEAM_INNER_R = 0.72;
+const SEAM_OUTER_R = 2.52;
+const SEAM_Y = 0.014;
+const SEAM_THICKNESS = 0.018;
+const SEAM_HEIGHT = 0.012;
+
+// Watch-bezel tick ring riding the crest of the rim torus, rotating slowly.
+// The rim torus at RIM_R has a tube of ≈0.35, so its crest sits at y ≈ 0.39.
+const TICK_COUNT = 24;
+const TICK_R = RIM_R;
+const TICK_Y = 0.393;
+const TICK_LEN = 0.15;
+const TICK_LEN_MAJOR = 0.22;
+const TICK_WIDTH = 0.02;
+const TICK_HEIGHT = 0.014;
+const TICK_EVERY_MAJOR = 3;
+const BEZEL_SPEED = 0.09; // rad/s — one full sweep ≈ 70 s
+
+// Pylon base: one soft static halo band plus two counter-breathing pulse rings
+// whose frequency tracks the wave number. The pulse rides instance transforms
+// (the proven cheap path the brick pool already uses every frame) — the shared
+// material keeps a single fixed emissive, and the breathing radius plus the
+// tint oscillation read as a pulsing glow without any per-frame rebuild.
+const HALO_SCALE = 0.46; // halo band spans ≈0.19 → 0.46 around the pylon foot
+const HALO_Y = 0.012;
+const PULSE_RADII: readonly [number, number] = [0.27, 0.41];
+const PULSE_BASE_Y = 0.026;
+
 const BASE_PADDLE_HALF_WIDTH = 0.30; // radians
 const PADDLE_SLOTS = 9; // fixed instanced capacity for the segmented paddle
 const SPLIT_SHRINK = 0.8;
@@ -64,6 +119,7 @@ const SPEED_PER_WAVE = 0.24;
 const MAX_SPEED = 9.2;
 const MAX_STRIKES = 5;
 const STRIKE_COOLDOWN_MS = 1100;
+const WAVES_TOTAL = 12; // 12 authored waves, then endless
 
 // Meshy bounds (metres) from aura.assets.json — used to scale each GLB to the
 // size the layout actually wants rather than trusting the export.
@@ -98,6 +154,8 @@ interface PrismBreakEvidence {
   readonly gameOver: boolean;
   readonly look: { readonly id: string };
   readonly assetIds: readonly string[];
+  /** Floor-dressing + atmosphere instance count across the four marking pools. */
+  readonly floorDressingInstances: number;
 }
 
 declare global {
@@ -136,6 +194,14 @@ let frameCount = 0;
 
 let brickNode: AuraRuntimeNodeHandle | undefined;
 const ballNodes: AuraRuntimeNodeHandle[] = [];
+
+// Atmosphere handles + clocks. Declared with the other state above createGame:
+// the scene factory runs during createGame, and anything render code reads must
+// already be initialised in module-eval order (the TDZ trap).
+let linesNode: AuraRuntimeNodeHandle | undefined;
+let pulseNode: AuraRuntimeNodeHandle | undefined;
+let sceneTime = 0;
+let bezelAngle = 0;
 
 const prismGame = createGame({
   id: "prism-break",
@@ -194,6 +260,12 @@ app.onFrame(({ dt }) => {
   const step = Math.min(dt, 0.05);
   feel.update(step * 1000);
   frameCount += 1;
+  sceneTime += step;
+  bezelAngle = (bezelAngle + BEZEL_SPEED * step) % (Math.PI * 2);
+  // Score count-up: the displayed value eases toward the real one so every
+  // brick lands as a small roll rather than a jump. Restart snaps back to 0.
+  const scoreGap = score - displayScore;
+  displayScore = scoreGap > 0 ? (scoreGap < 1 ? score : displayScore + scoreGap * Math.min(1, step * 6)) : score;
   // Restart is read before the game-over early return. Handling it inside
   // stepInput() meant a lost run could never be restarted, because stepInput
   // is skipped once gameOver is true.
@@ -465,6 +537,37 @@ function buildScene() {
     emissiveIntensity: 0.2
   });
 
+  // Floor dressing materials. One emissive per pool (instance colours tint the
+  // base colour only); intensities stay well under the rim-bloom threshold.
+  const dressingMaterial = material.pbr({
+    color: "#ffffff",
+    roughness: 0.55,
+    metalness: 0.25,
+    emissive: "#9fdcff",
+    emissiveIntensity: 0.15
+  });
+  const seamMaterial = material.pbr({
+    color: "#e8f2f8",
+    roughness: 0.4,
+    metalness: 0.5,
+    emissive: "#7fd8ff",
+    emissiveIntensity: 0.13
+  });
+  const haloMaterial = material.pbr({
+    color: "#bfe8f7",
+    roughness: 0.65,
+    metalness: 0.1,
+    emissive: "#7fd4f0",
+    emissiveIntensity: 0.2
+  });
+  const pulseMaterial = material.pbr({
+    color: "#dff6ff",
+    roughness: 0.5,
+    metalness: 0.2,
+    emissive: "#66e8ff",
+    emissiveIntensity: 0.3
+  });
+
   const nodes: AuraNodeInput[] = [
     primitives.plane({
       name: "arena floor",
@@ -485,6 +588,48 @@ function buildScene() {
       position: [0, 0.04, ARENA_Z],
       material: rimMaterial
     }),
+    // ── floor dressing (4 instanced pools ≈ 4 draw calls) ───────────────────
+    // Concentric guide rings, zone-tinted per band via instance colours. The
+    // annulus is authored at unit radius in the XZ plane and scaled per
+    // instance, so ring width grows gently with radius (a machined inlay read).
+    instances.custom(annulusSpec(0.978), {
+      name: "floor guide rings",
+      position: [0, 0, ARENA_Z],
+      transforms: GUIDE_RINGS.map(
+        (ring): AuraTransformSpec => ({
+          position: [0, GUIDE_RING_Y, 0],
+          scale: [ring.radius, 1, ring.radius]
+        })
+      ),
+      colors: GUIDE_RINGS.map((ring) => ring.color),
+      material: dressingMaterial
+    }),
+    // Soft glow halo under the centre pylon — a wide, dim band at its foot.
+    instances.custom(annulusSpec(0.42), {
+      name: "pylon halo",
+      position: [0, HALO_Y, ARENA_Z],
+      transforms: [{ scale: [HALO_SCALE, 1, HALO_SCALE] }],
+      colors: ["#9fd8ec"],
+      material: haloMaterial
+    }),
+    // Two counter-breathing pulse rings at the pylon base; the material's
+    // single emissive stays fixed and the pulse rides instance transforms.
+    instances.custom(annulusSpec(0.95), {
+      name: "pylon pulse rings",
+      position: [0, PULSE_BASE_Y, ARENA_Z],
+      transforms: pulseTransforms(0),
+      colors: pulseColors(0),
+      material: pulseMaterial
+    }).runtime(game.runtimeNode("prism-pulse", { tags: ["atmosphere", "runtime"] })),
+    // Radial seams (12, static) + the rotating bezel tick ring (24) share one
+    // box pool — 36 instances, one draw call, one material.
+    instances.box({
+      name: "floor seams and bezel ticks",
+      position: [0, 0, ARENA_Z],
+      transforms: lineTransforms(0),
+      colors: lineColors(),
+      material: seamMaterial
+    }).runtime(game.runtimeNode("prism-lines", { tags: ["atmosphere", "runtime"] })),
     model(assets.prismPylon, {
       name: "prism pylon",
       targetHeight: 1.0,
@@ -540,11 +685,14 @@ function buildScene() {
 
 function mountNodes(): void {
   brickNode = app.nodes.require("prism-bricks");
+  linesNode = app.nodes.require("prism-lines");
+  pulseNode = app.nodes.require("prism-pulse");
   ballNodes.length = 0;
   for (let index = 0; index < MAX_BALLS; index += 1) {
     ballNodes.push(app.nodes.require(`ball-${index}`));
   }
   syncBricks();
+  syncAtmosphere();
   resetBalls();
 }
 
@@ -625,6 +773,8 @@ function render(): void {
   // The paddle moves every frame, so the shared instanced pool is re-uploaded
   // every frame. That is one draw call for paddle + bricks together.
   syncBricks();
+  // Dressing pools: bezel rotation + pylon pulse, same cheap instance path.
+  syncAtmosphere();
 
   ballNodes.forEach((node, index) => {
     const ball = balls[index];
@@ -638,45 +788,292 @@ function render(): void {
   renderHud();
 }
 
+// ── atmosphere ───────────────────────────────────────────────────────────────
+// Flat XZ annulus authored at unit radius, +Y-facing (the same CCW-from-above
+// winding as the engine's floor plane, so the top face is never back-culled),
+// with explicit up normals. Scaled per instance to the wanted radius.
+function annulusSpec(innerRatio: number, segments = 96): AuraCustomGeometrySpec {
+  const positions: [number, number, number][] = [];
+  const normals: [number, number, number][] = [];
+  const indices: number[] = [];
+  for (let step = 0; step < segments; step += 1) {
+    const a0 = (step / segments) * Math.PI * 2;
+    const a1 = ((step + 1) / segments) * Math.PI * 2;
+    const base = positions.length;
+    positions.push(
+      [Math.cos(a0), 0, Math.sin(a0)],
+      [Math.cos(a0) * innerRatio, 0, Math.sin(a0) * innerRatio],
+      [Math.cos(a1), 0, Math.sin(a1)],
+      [Math.cos(a1) * innerRatio, 0, Math.sin(a1) * innerRatio]
+    );
+    normals.push([0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0]);
+    indices.push(base, base + 1, base + 2, base + 1, base + 3, base + 2);
+  }
+  return {
+    kind: "aura-custom-geometry",
+    positions,
+    normals,
+    indices,
+    bounds: { min: [-1, 0, -1], max: [1, 0, 1] }
+  };
+}
+
+// Seams are static; ticks ride `bezelAngle`. A yaw of -angle points a box's
+// local +X along the radial direction (cos angle, 0, sin angle).
+function lineTransforms(bezel: number): AuraTransformSpec[] {
+  const transforms: AuraTransformSpec[] = [];
+  const seamMid = (SEAM_INNER_R + SEAM_OUTER_R) / 2;
+  const seamLength = SEAM_OUTER_R - SEAM_INNER_R;
+  for (let index = 0; index < SEAM_COUNT; index += 1) {
+    const angle = (index / SEAM_COUNT) * Math.PI * 2;
+    transforms.push({
+      position: [Math.cos(angle) * seamMid, SEAM_Y, Math.sin(angle) * seamMid],
+      rotation: [0, -angle, 0],
+      scale: [seamLength, SEAM_HEIGHT, SEAM_THICKNESS]
+    });
+  }
+  for (let index = 0; index < TICK_COUNT; index += 1) {
+    const angle = bezel + (index / TICK_COUNT) * Math.PI * 2;
+    const major = index % TICK_EVERY_MAJOR === 0;
+    transforms.push({
+      position: [Math.cos(angle) * TICK_R, TICK_Y, Math.sin(angle) * TICK_R],
+      rotation: [0, -angle, 0],
+      scale: [major ? TICK_LEN_MAJOR : TICK_LEN, TICK_HEIGHT, TICK_WIDTH]
+    });
+  }
+  return transforms;
+}
+
+function lineColors(): AuraColor[] {
+  const colors: AuraColor[] = [];
+  for (let index = 0; index < SEAM_COUNT; index += 1) colors.push("#a9c9dc");
+  for (let index = 0; index < TICK_COUNT; index += 1) {
+    colors.push(index % TICK_EVERY_MAJOR === 0 ? "#9fe8ff" : "#6fb4cf");
+  }
+  return colors;
+}
+
+// The two pulse rings breathe in counter-phase; the tint oscillation rides the
+// same instance-colour channel (it multiplies the base colour, never the
+// emissive — per-instance glow is not available).
+function pulseTransforms(phase: number): AuraTransformSpec[] {
+  return PULSE_RADII.map((radius, index): AuraTransformSpec => {
+    const breathe = index === 0 ? 1 + 0.05 * Math.sin(phase) : 1 - 0.065 * Math.sin(phase);
+    const scale = radius * breathe;
+    return { position: [0, index * 0.005, 0], scale: [scale, 1, scale] };
+  });
+}
+
+function pulseColors(phase: number): AuraColor[] {
+  const tint = 0.5 + 0.5 * Math.sin(phase);
+  return [mixHex("#7fc9e6", "#c9f4ff", tint), mixHex("#c9f4ff", "#7fc9e6", tint)];
+}
+
+// Instance colour strings must be #rrggbb — the fallback colour parser only
+// accepts 6-digit hex and silently dims anything else.
+function mixHex(from: string, to: string, t: number): AuraColor {
+  const a = Number.parseInt(from.slice(1), 16);
+  const b = Number.parseInt(to.slice(1), 16);
+  const channel = (shift: number): string => {
+    const start = (a >> shift) & 0xff;
+    const end = (b >> shift) & 0xff;
+    return Math.round(start + (end - start) * t)
+      .toString(16)
+      .padStart(2, "0");
+  };
+  return `#${channel(16)}${channel(8)}${channel(0)}`;
+}
+
+function syncAtmosphere(): void {
+  linesNode?.setInstances(lineTransforms(bezelAngle), lineColors());
+  // Pulse frequency climbs with the wave number — the arena's heartbeat
+  // quickens as the run gets deeper.
+  const pulseHz = 0.55 + Math.min(wave, 12) * 0.16;
+  const phase = sceneTime * pulseHz * Math.PI * 2;
+  pulseNode?.setInstances(pulseTransforms(phase), pulseColors(phase));
+}
+
 // ── HUD ──────────────────────────────────────────────────────────────────────
-let hudRoot: HTMLElement | undefined;
+// A designed arcade frame rather than a utilitarian panel: a dark glass plate
+// top-left (over the apron, never over the rim circle that owns the central
+// ~60% of the frame), a key-chip prompt bar bottom-centre, and a translucent
+// game-over banner. System font stacks only (the locally licensed Graphik plus
+// system fallbacks — nothing external). Every layer is pointer-events:none.
+interface HudHandles {
+  readonly score: HTMLElement;
+  readonly wavePips: HTMLElement;
+  readonly waveValue: HTMLElement;
+  readonly strikePips: HTMLElement;
+  readonly strikeValue: HTMLElement;
+  readonly shardPips: HTMLElement;
+  readonly shardValue: HTMLElement;
+  readonly arcFill: HTMLElement;
+  readonly arcValue: HTMLElement;
+  readonly bricksLabel: HTMLElement;
+  readonly banner: HTMLElement;
+}
+
+let hudHandles: HudHandles | undefined;
+let displayScore = 0;
+const hudCache = {
+  score: -1,
+  wave: -1,
+  strikes: -1,
+  balls: -1,
+  arcPct: -1,
+  alive: -1,
+  gameOver: false
+};
+
+const HUD_STYLE = [
+  "#prism-break-hud{position:absolute;left:16px;top:14px;z-index:5;min-width:280px;max-width:322px;padding:14px;border-radius:10px;background:rgba(6,9,20,0.66);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(77,232,255,0.32);box-shadow:inset 0 0 0 1px rgba(158,236,255,0.07),0 10px 30px rgba(0,0,0,0.35);font-family:'Graphik',system-ui,-apple-system,'Segoe UI',sans-serif;color:#d7e9f5;pointer-events:none;user-select:none}",
+  "#prism-break-hud .pb-title{font-size:14px;font-weight:700;letter-spacing:0.32em;line-height:1;background:linear-gradient(93deg,#4de8ff 5%,#9d8cf5 55%,#ff7ab8 95%);-webkit-background-clip:text;background-clip:text;color:transparent}",
+  "#prism-break-hud .pb-subtitle{margin-top:5px;font-size:8px;font-weight:600;letter-spacing:0.3em;color:rgba(160,196,222,0.55)}",
+  "#prism-break-hud .pb-score-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:11px}",
+  "#prism-break-hud .pb-score{font-size:24px;font-weight:700;line-height:1;color:#eef8ff;font-variant-numeric:tabular-nums;letter-spacing:0.02em;text-shadow:0 0 14px rgba(77,232,255,0.28)}",
+  "#prism-break-hud .pb-label{font-size:9px;font-weight:600;letter-spacing:0.22em;color:rgba(151,190,214,0.78)}",
+  "#prism-break-hud .pb-rows{margin-top:11px;display:grid;gap:7px}",
+  "#prism-break-hud .pb-row{display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:8px}",
+  "#prism-break-hud .pb-pips{display:flex;gap:3px;align-items:center}",
+  "#prism-break-hud .pb-pip{width:7px;height:7px;border-radius:2px;background:rgba(120,150,180,0.16);box-shadow:inset 0 0 0 1px rgba(150,190,220,0.22)}",
+  "#prism-break-hud .pb-pip.on{background:#4de8ff;box-shadow:0 0 6px rgba(77,232,255,0.85)}",
+  "#prism-break-hud .pb-pip.strike{border-radius:50%}",
+  "#prism-break-hud .pb-pip.strike.on{background:#ff5d7d;box-shadow:0 0 7px rgba(255,93,125,0.95)}",
+  "#prism-break-hud .pb-shards{display:flex;gap:5px;font-size:11px;line-height:1}",
+  "#prism-break-hud .pb-shard{color:rgba(130,160,190,0.28)}",
+  "#prism-break-hud .pb-shard.on{color:#7ff0ff;text-shadow:0 0 8px rgba(77,232,255,0.9)}",
+  "#prism-break-hud .pb-meter{position:relative;height:4px;border-radius:2px;background:rgba(120,150,180,0.16);overflow:hidden}",
+  "#prism-break-hud .pb-meter-fill{position:absolute;top:0;bottom:0;left:0;width:100%;border-radius:2px;background:#4de8ff;box-shadow:0 0 8px rgba(77,232,255,0.55);transition:width 160ms ease,background 240ms ease}",
+  "#prism-break-hud .pb-value{font-size:11px;color:#cfe6f2;font-variant-numeric:tabular-nums;min-width:30px;text-align:right}",
+  "#prism-break-hud .pb-footer{margin-top:11px;padding-top:9px;border-top:1px solid rgba(120,160,190,0.14);font-size:8px;font-weight:600;letter-spacing:0.26em;color:rgba(151,190,214,0.55)}",
+  "#prism-break-prompt{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:5;display:flex;gap:16px;align-items:center;padding:8px 14px;border-radius:8px;background:rgba(6,9,20,0.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(77,232,255,0.22);box-shadow:inset 0 0 0 1px rgba(158,236,255,0.05);font-family:'Graphik',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.16em;color:#a8c6da;pointer-events:none;user-select:none;white-space:nowrap}",
+  ".pb-kbd{display:inline-block;min-width:14px;text-align:center;padding:3px 6px;margin-right:7px;border-radius:4px;border:1px solid rgba(77,232,255,0.4);color:#bfeeff;background:rgba(77,232,255,0.08);font-size:9px;letter-spacing:0.08em;box-shadow:inset 0 0 6px rgba(77,232,255,0.1)}",
+  "#prism-break-over{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translateY(8px);z-index:6;padding:20px 36px;border-radius:12px;text-align:center;background:rgba(6,9,20,0.72);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,122,184,0.35);box-shadow:inset 0 0 0 1px rgba(255,158,200,0.08),0 18px 50px rgba(0,0,0,0.5);font-family:'Graphik',system-ui,-apple-system,'Segoe UI',sans-serif;opacity:0;transition:opacity 420ms ease,transform 420ms ease;pointer-events:none;user-select:none}",
+  "#prism-break-over.on{opacity:1;transform:translate(-50%,-50%) translateY(0)}",
+  "#prism-break-over .pb-over-title{font-size:17px;font-weight:700;letter-spacing:0.3em;color:#ffd9e8;text-shadow:0 0 18px rgba(255,93,125,0.45)}",
+  "#prism-break-over .pb-over-sub{margin-top:9px;font-size:10px;font-weight:600;letter-spacing:0.2em;color:#a8c6da}"
+].join("");
+
+function mountHud(): HudHandles {
+  const style = document.createElement("style");
+  style.textContent = HUD_STYLE;
+  document.head.append(style);
+
+  const root = document.createElement("aside");
+  root.id = "prism-break-hud";
+  root.innerHTML = [
+    '<div class="pb-title">PRISM BREAK</div>',
+    '<div class="pb-subtitle">NEON ARENA · CIRCULAR BREAKER</div>',
+    '<div class="pb-score-row"><span class="pb-label">SCORE</span><span class="pb-score">0</span></div>',
+    '<div class="pb-rows">',
+    '<div class="pb-row"><span class="pb-label">WAVE</span><span class="pb-pips pb-wave-pips"></span><span class="pb-value pb-wave-value">01</span></div>',
+    `<div class="pb-row"><span class="pb-label">STRIKES</span><span class="pb-pips pb-strike-pips"></span><span class="pb-value pb-strike-value">0/${MAX_STRIKES}</span></div>`,
+    `<div class="pb-row"><span class="pb-label">SHARDS</span><span class="pb-shards"></span><span class="pb-value pb-shard-value">1/${MAX_BALLS}</span></div>`,
+    '<div class="pb-row"><span class="pb-label">PADDLE</span><span class="pb-meter"><span class="pb-meter-fill"></span></span><span class="pb-value pb-arc-value">34°</span></div>',
+    "</div>",
+    '<div class="pb-footer">— BRICKS STANDING</div>'
+  ].join("");
+  document.body.append(root);
+
+  const prompt = document.createElement("div");
+  prompt.id = "prism-break-prompt";
+  prompt.innerHTML = [
+    "<span><span class=\"pb-kbd\">A</span><span class=\"pb-kbd\">D</span>ORBIT</span>",
+    "<span><span class=\"pb-kbd\">SPACE</span>SPLIT</span>",
+    "<span><span class=\"pb-kbd\">R</span>RESTART</span>"
+  ].join("");
+  document.body.append(prompt);
+
+  const banner = document.createElement("div");
+  banner.id = "prism-break-over";
+  banner.innerHTML =
+    '<div class="pb-over-title">RUN OVER</div><div class="pb-over-sub"><span class="pb-kbd">R</span>RESTART</div>';
+  document.body.append(banner);
+
+  const pick = (selector: string): HTMLElement => root.querySelector<HTMLElement>(selector)!;
+  return {
+    score: pick(".pb-score"),
+    wavePips: pick(".pb-wave-pips"),
+    waveValue: pick(".pb-wave-value"),
+    strikePips: pick(".pb-strike-pips"),
+    strikeValue: pick(".pb-strike-value"),
+    shardPips: pick(".pb-shards"),
+    shardValue: pick(".pb-shard-value"),
+    arcFill: pick(".pb-meter-fill"),
+    arcValue: pick(".pb-arc-value"),
+    bricksLabel: pick(".pb-footer"),
+    banner
+  };
+}
+
+function pipMarkup(className: string, on: boolean): string {
+  return `<span class="${className}${on ? " on" : ""}"></span>`;
+}
 
 function renderHud(): void {
-  if (!hudRoot) {
-    hudRoot = document.createElement("aside");
-    hudRoot.id = "prism-break-hud";
-    hudRoot.style.cssText = [
-      "position:absolute",
-      "left:18px",
-      "top:16px",
-      "z-index:5",
-      "min-width:260px",
-      "font:600 13px/1.45 Inter, system-ui, sans-serif",
-      "color:#eaf6ff",
-      "background:rgba(6,9,20,0.74)",
-      "border:1px solid rgba(77,232,255,0.32)",
-      "border-radius:10px",
-      "padding:12px 14px",
-      "pointer-events:none",
-      "letter-spacing:0.01em"
-    ].join(";");
-    document.body.append(hudRoot);
+  hudHandles ??= mountHud();
+  const hud = hudHandles;
+
+  const shownScore = Math.round(displayScore);
+  if (shownScore !== hudCache.score) {
+    hud.score.textContent = shownScore.toLocaleString("en-US");
+    hudCache.score = shownScore;
   }
 
-  const alive = bricks.filter((brick) => brick.alive).length;
-  const strikesPips = "●".repeat(strikes) + "○".repeat(Math.max(0, MAX_STRIKES - strikes));
-  const shardLabel = balls.length === 1 ? "1 core" : `${balls.length} shards`;
+  if (wave !== hudCache.wave) {
+    hudCache.wave = wave;
+    hud.waveValue.textContent = String(wave).padStart(2, "0");
+    let pips = "";
+    for (let index = 0; index < WAVES_TOTAL; index += 1) {
+      pips += pipMarkup("pb-pip", index < Math.min(wave, WAVES_TOTAL));
+    }
+    hud.wavePips.innerHTML = pips;
+  }
 
-  hudRoot.innerHTML = [
-    `<div style="font-size:15px;letter-spacing:0.18em;color:#4de8ff">PRISM BREAK</div>`,
-    `<div style="margin-top:6px">Score <strong>${score.toLocaleString()}</strong></div>`,
-    `<div>Wave ${wave} · ${alive} bricks left</div>`,
-    `<div>${shardLabel} · arc ${Math.round((paddleHalfWidth * 2 * 180) / Math.PI)}°</div>`,
-    `<div style="color:#ff8aa2">Strikes ${strikesPips}</div>`,
-    gameOver
-      ? `<div style="margin-top:6px;color:#ffd166">Run over — press R</div>`
-      : `<div style="margin-top:6px;opacity:0.62">A/D or pointer to orbit · Space to split</div>`
-  ].join("");
+  if (strikes !== hudCache.strikes) {
+    hudCache.strikes = strikes;
+    hud.strikeValue.textContent = `${strikes}/${MAX_STRIKES}`;
+    let pips = "";
+    for (let index = 0; index < MAX_STRIKES; index += 1) {
+      pips += pipMarkup("pb-pip strike", index < strikes);
+    }
+    hud.strikePips.innerHTML = pips;
+  }
+
+  const ballCount = balls.length;
+  if (ballCount !== hudCache.balls) {
+    hudCache.balls = ballCount;
+    hud.shardValue.textContent = `${ballCount}/${MAX_BALLS}`;
+    let glyphs = "";
+    for (let index = 0; index < MAX_BALLS; index += 1) {
+      glyphs += `<span class="pb-shard${index < ballCount ? " on" : ""}">◆</span>`;
+    }
+    hud.shardPips.innerHTML = glyphs;
+  }
+
+  // Paddle-arc meter: 100% is the base 34° arc; the fill turns amber as splits
+  // shrink the defence.
+  const arcPct = Math.round((paddleHalfWidth / BASE_PADDLE_HALF_WIDTH) * 100);
+  if (arcPct !== hudCache.arcPct) {
+    hudCache.arcPct = arcPct;
+    const arcDeg = Math.round((paddleHalfWidth * 2 * 180) / Math.PI);
+    hud.arcValue.textContent = `${arcDeg}°`;
+    hud.arcFill.style.width = `${Math.min(100, Math.max(0, arcPct))}%`;
+    const color = arcPct >= 80 ? "#4de8ff" : arcPct >= 55 ? "#ffd166" : "#ff9e5c";
+    hud.arcFill.style.background = color;
+    hud.arcFill.style.boxShadow = `0 0 8px ${arcPct >= 80 ? "rgba(77,232,255,0.55)" : "rgba(255,177,90,0.55)"}`;
+  }
+
+  const alive = bricks.reduce((count, brick) => count + (brick.alive ? 1 : 0), 0);
+  if (alive !== hudCache.alive) {
+    hudCache.alive = alive;
+    hud.bricksLabel.textContent = `${alive} BRICKS STANDING`;
+  }
+
+  if (gameOver !== hudCache.gameOver) {
+    hudCache.gameOver = gameOver;
+    hud.banner.classList.toggle("on", gameOver);
+  }
 }
 
 function publish(): void {
@@ -691,7 +1088,9 @@ function publish(): void {
     totalBricks: bricks.length,
     gameOver,
     look: { id: LOOK_ID },
-    assetIds: ["prismBrick", "prismCore", "prismPaddle", "prismPylon"]
+    assetIds: ["prismBrick", "prismCore", "prismPaddle", "prismPylon"],
+    floorDressingInstances:
+      GUIDE_RINGS.length + 1 /* halo */ + PULSE_RADII.length + SEAM_COUNT + TICK_COUNT
   };
 }
 
