@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Prism Break — Aura3D Arcade</title>
+    <meta name="description" content="Prism Break: a circular brick-breaker. The paddle orbits the rim, bricks fill concentric rings, and the core splits into shards that shrink your defence." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%234de8ff' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23ff7ab8'/%3E%3C/svg%3E" />
+    <style>
+      :root { color-scheme: dark; }
+      html, body, #app { width: 100vw; height: 100vh; margin: 0; overflow: hidden; }
+      html, body { position: fixed; inset: 0; background: #05070c; }
+      #app { position: relative; }
+      #app canvas { display: block; width: 100vw !important; height: 100vh !important; }
+
+      /* Frame 1 is gated on app.ready(): the gate only clears once lighting,
+         shadows and the GLB silhouettes can actually be drawn. */
+      #boot-gate {
+        position: fixed; inset: 0; z-index: 50;
+        display: grid; place-items: center;
+        background: radial-gradient(circle at 50% 45%, #0b1224 0%, #05070c 62%);
+        transition: opacity 300ms ease;
+      }
+      #boot-gate .mark {
+        font: 700 13px/1.4 Inter, system-ui, sans-serif;
+        letter-spacing: 0.42em;
+        color: #4de8ff;
+        text-transform: uppercase;
+        opacity: 0.9;
+      }
+      #boot-gate .ring {
+        width: 46px; height: 46px; margin: 0 auto 18px;
+        border: 2px solid rgba(77, 232, 255, 0.22);
+        border-top-color: #4de8ff;
+        border-radius: 50%;
+        animation: spin 900ms linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="boot-gate">
+      <div style="text-align:center">
+        <div class="ring"></div>
+        <div class="mark">Prism Break</div>
+      </div>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

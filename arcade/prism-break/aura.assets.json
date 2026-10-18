@@ -1,0 +1,660 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "prismBrick",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/prismBrick.1bbce861.glb",
+      "outputPath": "public/aura-assets/prismBrick.1bbce861.glb",
+      "url": "/aura-assets/prismBrick.1bbce861.glb",
+      "hash": "sha256-1bbce8610c29469f1613611dfc32851bec5b8103a7f6e4a8a1e49412a54dc2e8",
+      "sizeBytes": 773600,
+      "bounds": [
+        1.902,
+        0.982,
+        1.903
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.49,
+          -0.952
+        ],
+        "max": [
+          0.951,
+          0.492,
+          0.951
+        ],
+        "size": [
+          1.902,
+          0.982,
+          1.903
+        ],
+        "center": [
+          0,
+          0.001,
+          0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materials": [
+        "material-0"
+      ],
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/prismBrick.1bbce861.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated with Meshy text-to-3D (preview + refine) on a Meshy account held by AuraOne. Output rights are governed by the Meshy terms of service. This is generated content, not CC0 and not third-party catalog material.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-18T00:09:38.391Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a14c57-061a-74b7-8966-13485d601eee",
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-7ba8e45f7aa63a5332ee020acc5c4ba3db3a6a4f085721a8dc82ab84ed3e5d13",
+          "createdAt": "2026-10-18T00:08:54.058Z",
+          "finishedAt": "2026-10-18T00:09:38.391Z",
+          "consumedCredits": 10,
+          "localMetadata": "aura-evidence/meshy/prismBrick.metadata.a4aec8c5d123.json",
+          "rightsEvidence": "aura-evidence/meshy/prismBrick.rights.3ded8fed26f3.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/prismBrick.rights.3ded8fed26f3.json",
+          "aura-evidence/meshy/prismBrick.metadata.a4aec8c5d123.json",
+          "public/aura-assets/prismBrick.meshy-candidate.c2a5c2d6.png"
+        ],
+        "checkedAt": "2026-10-18T00:09:38.391Z"
+      },
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "thumbnailUrl": "/aura-assets/prismBrick.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/prismBrick.meshy-candidate.c2a5c2d6.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-c2a5c2d65530ef5f372283b399656b3152d977186154430f4c1ff739f4759f56",
+        "checkedAt": "2026-10-18T00:21:52.277Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "prismCore",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/prismCore.bcc559d5.glb",
+      "outputPath": "public/aura-assets/prismCore.bcc559d5.glb",
+      "url": "/aura-assets/prismCore.bcc559d5.glb",
+      "hash": "sha256-bcc559d507978872a136d17133f1260fbb88fe65160655768551b1759f3f33bd",
+      "sizeBytes": 886160,
+      "bounds": [
+        1.83,
+        1.843,
+        1.898
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.916,
+          -0.922,
+          -0.948
+        ],
+        "max": [
+          0.915,
+          0.921,
+          0.95
+        ],
+        "size": [
+          1.83,
+          1.843,
+          1.898
+        ],
+        "center": [
+          0,
+          -0.001,
+          0.001
+        ],
+        "maxDimension": 1.898,
+        "grounded": false
+      },
+      "materials": [
+        "material-0"
+      ],
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/prismCore.bcc559d5.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated with Meshy text-to-3D (preview + refine) on a Meshy account held by AuraOne. Output rights are governed by the Meshy terms of service. This is generated content, not CC0 and not third-party catalog material.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-18T00:09:43.439Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a14c57-067f-7251-9574-16494c38ed31",
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-43a1f6da644719c462f535bb865925c708080afd39dc70849ee0daef87bbf7a4",
+          "createdAt": "2026-10-18T00:08:54.154Z",
+          "finishedAt": "2026-10-18T00:09:43.439Z",
+          "consumedCredits": 10,
+          "localMetadata": "aura-evidence/meshy/prismCore.metadata.e273fecfcf1d.json",
+          "rightsEvidence": "aura-evidence/meshy/prismCore.rights.3ded8fed26f3.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/prismCore.rights.3ded8fed26f3.json",
+          "aura-evidence/meshy/prismCore.metadata.e273fecfcf1d.json",
+          "public/aura-assets/prismCore.meshy-candidate.19597042.png"
+        ],
+        "checkedAt": "2026-10-18T00:09:43.439Z"
+      },
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "thumbnailUrl": "/aura-assets/prismCore.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/prismCore.meshy-candidate.19597042.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-19597042808edb789657d1f0c81f654385ae4e68d1c489b2af707bcbfd7bea0e",
+        "checkedAt": "2026-10-18T00:21:50.893Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "prismPaddle",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/prismPaddle.ddcd50f5.glb",
+      "outputPath": "public/aura-assets/prismPaddle.ddcd50f5.glb",
+      "url": "/aura-assets/prismPaddle.ddcd50f5.glb",
+      "hash": "sha256-ddcd50f595fb3f101f8657b45960d4112917aed85dcd470c7abb51e176a3f14e",
+      "sizeBytes": 903680,
+      "bounds": [
+        1.903,
+        0.393,
+        1.886
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.187,
+          -0.944
+        ],
+        "max": [
+          0.951,
+          0.206,
+          0.942
+        ],
+        "size": [
+          1.903,
+          0.393,
+          1.886
+        ],
+        "center": [
+          0,
+          0.009,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materials": [
+        "material-0"
+      ],
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/prismPaddle.ddcd50f5.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated with Meshy text-to-3D (preview + refine) on a Meshy account held by AuraOne. Output rights are governed by the Meshy terms of service. This is generated content, not CC0 and not third-party catalog material.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-18T00:09:44.484Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a14c57-05f0-73e5-b4a9-ddace1011f9d",
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-12bb93e92941acc3a767e59c6a083c340a9087e151938a185b694edb5e05c3cd",
+          "createdAt": "2026-10-18T00:08:54.015Z",
+          "finishedAt": "2026-10-18T00:09:44.484Z",
+          "consumedCredits": 10,
+          "localMetadata": "aura-evidence/meshy/prismPaddle.metadata.2b9c7014fcf4.json",
+          "rightsEvidence": "aura-evidence/meshy/prismPaddle.rights.3ded8fed26f3.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/prismPaddle.rights.3ded8fed26f3.json",
+          "aura-evidence/meshy/prismPaddle.metadata.2b9c7014fcf4.json",
+          "public/aura-assets/prismPaddle.meshy-candidate.6fb31b78.png"
+        ],
+        "checkedAt": "2026-10-18T00:09:44.484Z"
+      },
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "thumbnailUrl": "/aura-assets/prismPaddle.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/prismPaddle.meshy-candidate.6fb31b78.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-6fb31b782351f32a911c0a2ec527c2f34caecbe89d9bf3ac58711c1b0b8dc7fa",
+        "checkedAt": "2026-10-18T00:21:49.345Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "prismPylon",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/prismPylon.70973618.glb",
+      "outputPath": "public/aura-assets/prismPylon.70973618.glb",
+      "url": "/aura-assets/prismPylon.70973618.glb",
+      "hash": "sha256-709736187f9f7c9397d680dc8c6c750761671eaffa28b2e54398a0766d3aeaf5",
+      "sizeBytes": 962024,
+      "bounds": [
+        0.59,
+        1.902,
+        0.51
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.296,
+          -0.952,
+          -0.255
+        ],
+        "max": [
+          0.294,
+          0.95,
+          0.255
+        ],
+        "size": [
+          0.59,
+          1.902,
+          0.51
+        ],
+        "center": [
+          -0.001,
+          -0.001,
+          0
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materials": [
+        "material-0"
+      ],
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/prismPylon.70973618.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated with Meshy text-to-3D (preview + refine) on a Meshy account held by AuraOne. Output rights are governed by the Meshy terms of service. This is generated content, not CC0 and not third-party catalog material.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-18T00:09:18.993Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a14c56-ca45-75e2-94cf-63d7083741b6",
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-338c70694523a2e7f8c694aa4791f86bb8c850078f50ac813cb5d9f1ac191403",
+          "createdAt": "2026-10-18T00:08:38.748Z",
+          "finishedAt": "2026-10-18T00:09:18.993Z",
+          "consumedCredits": 10,
+          "localMetadata": "aura-evidence/meshy/prismPylon.metadata.9395d25a87de.json",
+          "rightsEvidence": "aura-evidence/meshy/prismPylon.rights.3ded8fed26f3.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/prismPylon.rights.3ded8fed26f3.json",
+          "aura-evidence/meshy/prismPylon.metadata.9395d25a87de.json",
+          "public/aura-assets/prismPylon.meshy-candidate.c0e46afa.png"
+        ],
+        "checkedAt": "2026-10-18T00:09:18.993Z"
+      },
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "thumbnailUrl": "/aura-assets/prismPylon.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/prismPylon.meshy-candidate.c0e46afa.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-c0e46afa486bcfc5475adc434a78725b846f3c04ecac6485c06a483e2716c4da",
+        "checkedAt": "2026-10-18T00:21:53.668Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    }
+  ]
+}
