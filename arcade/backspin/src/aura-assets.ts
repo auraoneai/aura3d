@@ -2,12 +2,147 @@ import { defineAuraAssets } from "@aura3d/engine";
 import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";
 
 type AuraGeneratedAssetDefinitions = {
+  readonly "bsBike": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "bsGate": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "bsRoof": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "bsSpeeder": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "bsTower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
+  "bsBike": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/bsBike.7f27adb8.glb",
+    hash: "sha256-7f27adb83d7ec6b0a6b4848460fd8fdf2a154c5c1d1df4b576d877a935e6f56e",
+    bounds: [
+      1.902,
+      0.882,
+      0.418
+    ],
+    sizeBytes: 973856,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/bsBike.7f27adb8.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated with Meshy text-to-3D on an AuraOne-held account. Output rights governed by the Meshy terms of service. Generated content, not CC0, not third-party catalog material.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-18T03:24:37.777Z",
+        "evidence": [
+          "aura-evidence/meshy/bsBike.rights.7f1579e03390.json",
+          "aura-evidence/meshy/bsBike.metadata.65bd3caeab93.json",
+          "public/aura-assets/bsBike.meshy-candidate.3af4a414.png"
+        ],
+        "checkedAt": "2026-10-18T03:24:37.777Z"
+      },
+      "sourcePath": "public/aura-assets/bsBike.7f27adb8.glb",
+      "outputPath": "public/aura-assets/bsBike.7f27adb8.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.951,
+          -0.448,
+          -0.208
+        ],
+        "max": [
+          0.951,
+          0.434,
+          0.21
+        ],
+        "size": [
+          1.902,
+          0.882,
+          0.418
+        ],
+        "center": [
+          0,
+          -0.007,
+          0.001
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/bsBike.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/bsBike.meshy-candidate.3af4a414.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-3af4a414815689006d3424bbcf8e393653e263b1716b52dbba8a402c37e874e7",
+        "checkedAt": "2026-10-18T08:08:00.135Z"
+      }
+    },
+  },
   "bsGate": {
     type: "model",
     format: "glb",
@@ -271,6 +406,139 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "manual-inspection",
         "sha256": "sha256-9f8a33815502dee3e7c3ac843eee10d756757700bea3af36e8abc020612a7eac",
         "checkedAt": "2026-10-18T03:20:11.124Z"
+      }
+    },
+  },
+  "bsSpeeder": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/bsSpeeder.db8057b9.glb",
+    hash: "sha256-db8057b90b24c0089df1622cadc5b6d32117366c13973017aea9842a05ea4dab",
+    bounds: [
+      1.901,
+      0.435,
+      0.83
+    ],
+    sizeBytes: 789640,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/bsSpeeder.db8057b9.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated with Meshy text-to-3D on an AuraOne-held account. Output rights governed by the Meshy terms of service. Generated content, not CC0, not third-party catalog material.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-18T08:30:34.902Z",
+        "evidence": [
+          "aura-evidence/meshy/bsSpeeder.rights.7f1579e03390.json",
+          "aura-evidence/meshy/bsSpeeder.metadata.13d792123504.json",
+          "public/aura-assets/bsSpeeder.meshy-candidate.87f7cc04.png"
+        ],
+        "checkedAt": "2026-10-18T08:30:34.902Z"
+      },
+      "sourcePath": "public/aura-assets/bsSpeeder.db8057b9.glb",
+      "outputPath": "public/aura-assets/bsSpeeder.db8057b9.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.951,
+          -0.218,
+          -0.416
+        ],
+        "max": [
+          0.95,
+          0.217,
+          0.415
+        ],
+        "size": [
+          1.901,
+          0.435,
+          0.83
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.901,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/bsSpeeder.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/bsSpeeder.meshy-candidate.87f7cc04.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-87f7cc04dbb161246a8f718efec1a9d8151d2cb2c139248aadbc3139721da924",
+        "checkedAt": "2026-10-18T08:33:24.337Z"
       }
     },
   },

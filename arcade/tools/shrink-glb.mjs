@@ -14,6 +14,11 @@
  *   TARGET_VERTS  vertex ceiling after weld  (default 16000)
  *   MAX_TEX       texture edge in pixels     (default 1024)
  *   TEX_QUALITY   JPEG quality               (default 80)
+ *   SIMPLIFY_ERROR        simplifier error bound (default 0.02)
+ *   SIMPLIFY_LOCK_BORDER  false lets the simplifier collapse UV-seam border
+ *                         edges. Hard-surface shells with many UV islands
+ *                         (vehicles, machines) stall above the ceiling with
+ *                         borders locked; unlock only if the default stalls.
  */
 import { mkdir, stat, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
@@ -27,6 +32,7 @@ const TARGET_VERTS = Number(process.env.TARGET_VERTS ?? 16000);
 const MAX_TEX = Number(process.env.MAX_TEX ?? 1024);
 const TEX_QUALITY = Number(process.env.TEX_QUALITY ?? 80);
 const SIMPLIFY_ERROR = Number(process.env.SIMPLIFY_ERROR ?? 0.02);
+const SIMPLIFY_LOCK_BORDER = process.env.SIMPLIFY_LOCK_BORDER !== "false";
 
 const [inputArg, outputArg] = process.argv.slice(2);
 if (!inputArg || !outputArg) {
@@ -66,7 +72,9 @@ for (; passes < 6; passes += 1) {
   const current = countVerts(doc).verts;
   if (current <= TARGET_VERTS) break;
   const ratio = Math.max(0.04, (TARGET_VERTS / current) * 0.9);
-  await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio, error: SIMPLIFY_ERROR }));
+  await doc.transform(
+    simplify({ simplifier: MeshoptSimplifier, ratio, error: SIMPLIFY_ERROR, lockBorder: SIMPLIFY_LOCK_BORDER })
+  );
   await doc.transform(weld({ tolerance: 0.0001 }), prune());
 }
 
