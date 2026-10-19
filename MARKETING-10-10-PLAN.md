@@ -592,26 +592,37 @@ Do not add analytics that collect personal data without consent. Use aggregate e
 
 A release is 10/10-ready only when all of these are true:
 
-- [ ] No horizontal scroll at 360, 390, 768, 1024, or 1440.
-- [ ] Every nav destination is reachable at every width; no overlap at 1024.
-- [ ] Mobile game cards show image, chips, title, description, and action.
-- [ ] Wheel/trackpad scrolls the page over every media block until Play is clicked.
-- [ ] No WebGL engine request before user intent; initial transfer <1.5MB.
-- [ ] LCP <2.5s on mobile; Lighthouse ≥80 mobile / ≥90 desktop; a11y ≥95; SEO 100.
-- [ ] OG and Twitter images return 200, are 1200×630, <300KB, and validate.
-- [ ] The exact install command shown on the page succeeds from a clean temp directory.
-- [ ] Copy button copies exactly the displayed command, including the version.
-- [ ] Code tabs work or are gone.
-- [ ] Search has a visible placeholder and returns results.
-- [ ] No mislabeled panels, duplicate entries, or empty bordered grid cells.
-- [ ] One version story across nav, hero, packages, schema, npm `dist-tags.latest`, and the GitHub Latest release: **4.0.2**.
-- [ ] Body text contrast ≥4.5:1; large text ≥3:1; logo/favicon ≥3:1.
-- [ ] All tap targets ≥44×44px.
-- [ ] `<main>` landmark and skip link exist; focus visible everywhere.
-- [ ] Zero console errors and zero failed requests in a full-scroll run.
-- [ ] Source commit, `marketing/dist`, and live HTML are in sync.
-- [ ] Desktop page ≤11,000px; mobile page ≤18,000px.
-- [ ] Every CTA has a unique, working destination.
+- [x] No horizontal scroll at 360, 390, 768, 1024, or 1440.
+- [x] Every nav destination is reachable at every width; no overlap at 1024.
+- [x] Mobile game cards show image, chips, title, description, and action.
+- [x] Wheel/trackpad scrolls the page over every media block until Play is clicked.
+- [x] No WebGL engine request before user intent; initial transfer <1.5MB.
+- [ ] LCP <2.5s on mobile; Lighthouse ≥80 mobile / ≥90 desktop; a11y ≥95; SEO 100. **Measured: Lighthouse 93/100/100/100 mobile and 100/100/100/100 desktop; LCP 2.9s mobile (misses the 2.5s target), 0.7s desktop.**
+- [x] OG and Twitter images return 200, are 1200×630, <300KB, and validate.
+- [x] The exact install command shown on the page succeeds from a clean temp directory.
+- [x] Copy button copies exactly the displayed command, including the version.
+- [x] Code tabs work or are gone.
+- [x] Search has a visible placeholder and returns results.
+- [x] No mislabeled panels, duplicate entries, or empty bordered grid cells.
+- [x] One version story across nav, hero, packages, schema, npm `dist-tags.latest`, and the GitHub Latest release: **4.0.2**.
+- [x] Body text contrast ≥4.5:1; large text ≥3:1; logo/favicon ≥3:1.
+- [x] All tap targets ≥44×44px.
+- [x] `<main>` landmark and skip link exist; focus visible everywhere.
+- [x] Zero console errors and zero failed requests in a full-scroll run.
+- [x] Source commit, `marketing/dist`, and live HTML are in sync.
+- [x] Desktop page ≤11,000px; mobile page ≤18,000px.
+- [x] Every CTA has a unique, working destination.
+
+### Execution evidence (2026-10-19)
+
+- Release commit `c96f3deff` (followed by `.vercelignore` deployment hygiene in `736764379`); marketing build reports package version 4.0.2 and 20 showcase routes.
+- Local production preview: `marketing/scripts/qa-home.mjs` PASS, 118 hard checks, 0 failures, 0 advisories at 360/390/768/1024/1440.
+- Live `https://aura3d.auraone.ai/`: same harness PASS (0/0), HTML byte-identical to `marketing/dist/index.html`, 21× `4.0.2`, 2 inlined styles, 0 render-blocking stylesheet links.
+- Lighthouse 13.4.0: mobile performance 93, accessibility 100, best practices 100, SEO 100, CLS 0, TBT 0ms, LCP 2.9s; desktop 100 across all four categories, LCP 0.7s.
+- OG and Twitter: HTTP 200, 1200×630 PNG, 94,734 bytes each; hero poster serves a 480w candidate and is preloaded with `fetchpriority=high`.
+- npm: all 24 public packages at 4.0.2 with `dist-tags.latest=4.0.2`; `create-aura3d@4.0.2` scaffold → install → typecheck → build → preview HTTP 200 in a clean directory.
+- GitHub: `v4.0.2` is the Latest release; `v4.0.1` carries a note that npm publication was skipped and 4.0.2 supersedes it.
+- Budgets are enforced in the marketing build by `marketing/scripts/check-budget.mjs` (initial module JS gzip, HTML gzip, hero poster size, responsive candidate, no stylesheet link, no iframe `src` before intent), so the release CI fails on regressions.
 
 ---
 

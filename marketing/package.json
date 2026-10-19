@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 7782 --strictPort",
     "previews:sync": "node scripts/sync-final-previews.mjs",
-    "build": "node scripts/check-version.mjs && node scripts/check-site.mjs && pnpm --dir ../apps/aura-clash-showcase build && vite build && node scripts/build-showcase-routes.mjs && node scripts/inline-home-css.mjs",
+    "build": "node scripts/check-version.mjs && node scripts/check-site.mjs && pnpm --dir ../apps/aura-clash-showcase build && vite build && node scripts/build-showcase-routes.mjs && node scripts/inline-home-css.mjs && node scripts/check-budget.mjs",
     "preview": "vite preview --host 127.0.0.1 --port 7782 --strictPort",
     "check:site": "node scripts/check-site.mjs",
+    "check:budget": "node scripts/check-budget.mjs",
     "check:version": "node scripts/check-version.mjs",
     "check:version:registry": "node scripts/check-version.mjs --registry"
   },
