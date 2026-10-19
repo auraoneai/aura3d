@@ -327,6 +327,11 @@ test-data/
 !marketing/public/apple-touch-icon.png
 !public/apple-touch-icon.png
 
+# Brand/social renders are source assets produced by the committed generator
+# store-assets/brand/social/generate.mjs — they must travel with the repo.
+!store-assets/brand/social/
+!store-assets/brand/social/*.png
+
 fixtures/
 # PRD-15 lane fixtures (codemod inputs/outputs, C-30 lean template scenes).
 !tests/qr/prd15/fixtures/
