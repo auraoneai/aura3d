@@ -62,6 +62,9 @@ jobs:
       - name: Validate publishable packages from tracked source
         run: pnpm verify:npm-release
 
+      - name: Verify marketing version truth
+        run: pnpm --dir marketing check:version
+
       - name: Verify requested package version
         if: github.event_name == 'workflow_dispatch'
         env:
@@ -225,3 +228,6 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify published version truth
+        run: node marketing/scripts/check-version.mjs --registry

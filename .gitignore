@@ -332,6 +332,13 @@ test-data/
 !store-assets/brand/social/
 !store-assets/brand/social/*.png
 
+# Served copies of the same social cards; the generator writes both trees, and
+# the deploy must not depend on a local-only file.
+!marketing/public/store-assets/
+!marketing/public/store-assets/brand/
+!marketing/public/store-assets/brand/social/
+!marketing/public/store-assets/brand/social/*.png
+
 fixtures/
 # PRD-15 lane fixtures (codemod inputs/outputs, C-30 lean template scenes).
 !tests/qr/prd15/fixtures/
@@ -405,6 +412,7 @@ tests/browser/fixtures/*
 !tests/browser/fixtures/c1-extension/
 !tests/browser/fixtures/c1-extension/**
 .local-evidence/
+/artifacts/
 # Local AI-agent control files; public guidance lives in llms.txt and docs/agents/.
 AGENTS.md
 **/AGENTS.md

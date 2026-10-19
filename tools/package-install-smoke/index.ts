@@ -7,6 +7,7 @@ import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, 
 import { dirname, join, relative } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
+import ts from "typescript";
 
 interface PackageInstallSmokeReport {
   readonly exactPackages?: ExactPackageSmoke;
@@ -220,15 +221,24 @@ export function findUnresolvedInternalAuraImports(packageRoot: string): string[]
   const findings = new Set<string>();
   for (const file of walkJavaScriptFiles(distRoot)) {
     const source = readFileSync(file, "utf8");
-    const patterns = [
-      /\b(?:from\s*|import\s*\(\s*)["'](@aura3d\/[^"']+)["']/g,
-      /\bimport\s*["'](@aura3d\/[^"']+)["']/g
-    ];
-    for (const pattern of patterns) {
-      for (const match of source.matchAll(pattern)) {
-        findings.add(`${relative(packageRoot, file)} -> ${match[1]}`);
+    const sourceFile = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, false, ts.ScriptKind.JS);
+    const record = (specifier: string | undefined): void => {
+      if (!specifier || !specifier.startsWith("@aura3d/")) return;
+      findings.add(`${relative(packageRoot, file)} -> ${specifier}`);
+    };
+    const visit = (node: ts.Node): void => {
+      if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+        if (node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) record(node.moduleSpecifier.text);
+      } else if (ts.isCallExpression(node)) {
+        const dynamicImport = node.expression.kind === ts.SyntaxKind.ImportKeyword;
+        const requireCall = ts.isIdentifier(node.expression) && node.expression.text === "require";
+        if ((dynamicImport || requireCall) && node.arguments.length === 1 && ts.isStringLiteral(node.arguments[0])) {
+          record(node.arguments[0].text);
+        }
       }
-    }
+      ts.forEachChild(node, visit);
+    };
+    visit(sourceFile);
   }
   return [...findings].sort();
 }
@@ -253,7 +263,7 @@ const scene = await import(${JSON.stringify(`${packageName}/scene`)});
 const math = await import(${JSON.stringify(`${packageName}/math`)});
 const assets = await import(${JSON.stringify(`${packageName}/assets`)});
 
-assert.equal(typeof root.Engine, "function");
+assert.equal(typeof root.createAuraApp, "function");
 assert.equal(typeof rendering.Geometry?.litCube, "function");
 assert.equal(typeof rendering.PBRMaterial, "function");
 assert.equal(typeof rendering.Renderer, "function");
@@ -283,7 +293,7 @@ assert.equal(typeof root.games?.createMiniGolfState, "function");
 assert.equal(typeof root.character?.primitiveHumanoid, "function");
 assert.equal(typeof root.character?.lowPolyHumanoid, "function");
 assert.equal(typeof root.charts?.barGrid3D, "function");
-assert.equal(typeof root.performance?.budgetFor, "function");
+assert.equal(typeof root.collectAuraSceneEvidence, "function");
 assert.equal(typeof root.sceneKits?.physicsPlayground, "function");
 assert.equal(typeof root.sceneKits?.productViewer, "function");
 assert.equal(typeof root.defineAuraAssets, "function");
@@ -361,7 +371,7 @@ console.log(JSON.stringify({
 
 function viteSmokeSource(packageName: string): string {
   return `
-import { camera, character, charts, city, collectAuraSceneEvidence, createAuraApp, defineAuraAssets, effects, games, lights, performance, prefabs, scene, sceneKits, timeline } from ${JSON.stringify(packageName)};
+import { camera, character, charts, city, collectAuraSceneEvidence, createAuraApp, defineAuraAssets, effects, games, lights, prefabs, scene, sceneKits, timeline } from ${JSON.stringify(packageName)};
 import { Geometry, PBRMaterial, Renderer, createExternalParityEnvironmentLighting } from ${JSON.stringify(`${packageName}/rendering`)};
 import { Scene as CoreScene } from ${JSON.stringify(`${packageName}/scene`)};
 import { GLTFLoader, createRenderableScene, loadRenderableAsset } from ${JSON.stringify(`${packageName}/assets/browser`)};
@@ -432,7 +442,6 @@ globalThis.__AURA3D_PACKAGE_VITE_SMOKE__ = {
   loadRenderableAsset: typeof loadRenderableAsset,
   createRenderableScene: typeof createRenderableScene,
   helperBudgetCount: helperEvidence.performance.budgets.length,
-  neonBudget: performance.budgetFor("neonTunnel")?.maxDrawCalls,
   characterConnected: character.visualQA(character.primitiveHumanoid()).connected,
   effectCount: helperScene.toJSON().nodes.filter((node) => node.kind === "effect").length,
   sceneKitCount: sceneKitCases.length,

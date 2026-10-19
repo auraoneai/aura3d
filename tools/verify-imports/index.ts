@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, extname, join } from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import ts from "typescript";
 
@@ -19,7 +19,12 @@ export interface ImportSmokeEntry {
   readonly ok: boolean;
   readonly exportCount?: number;
   readonly error?: string;
+  readonly skipped?: string;
 }
+
+// Static assets such as `./game/styles.css` are valid package exports for
+// bundlers but are not importable ESM modules, so Node cannot smoke-test them.
+const importableExtensions = new Set([".js", ".mjs", ".cjs"]);
 
 export interface ImportSmokeReport {
   readonly ok: boolean;
@@ -67,6 +72,10 @@ export async function verifyPublicImports(root = process.cwd()): Promise<ImportS
     }
     if (!existsSync(target)) {
       entries.push({ subpath, specifier, ok: false, error: `Export target does not exist: ${target}` });
+      continue;
+    }
+    if (!importableExtensions.has(extname(target))) {
+      entries.push({ subpath, specifier, ok: true, skipped: "non-module asset export" });
       continue;
     }
 
@@ -128,11 +137,38 @@ function scanWorkspaceImports(sourceRoot: string): ReadonlySet<string> {
   const imports = new Set<string>();
   for (const path of listTypeScriptFiles(sourceRoot)) {
     const source = readFileSync(path, "utf8");
-    const importedFiles = ts.preProcessFile(source, true, true).importedFiles;
-    for (const importedFile of importedFiles) {
-      const match = importedFile.fileName.match(/^(@aura3d\/[^/]+)/);
+    const sourceFile = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true);
+    const record = (specifier: string | undefined, typeOnly: boolean): void => {
+      if (!specifier || typeOnly) return;
+      const match = specifier.match(/^(@aura3d\/[^/]+)/);
       if (match?.[1]) imports.add(match[1]);
-    }
+    };
+    const visit = (node: ts.Node): void => {
+      if (ts.isImportDeclaration(node)) {
+        const clause = node.importClause;
+        let valueBinding = false;
+        if (clause?.namedBindings && ts.isNamedImports(clause.namedBindings)) {
+          valueBinding = clause.namedBindings.elements.some((element) => !element.isTypeOnly);
+        } else if (clause?.namedBindings) {
+          valueBinding = true;
+        }
+        if (ts.isStringLiteral(node.moduleSpecifier)) {
+          record(node.moduleSpecifier.text, clause?.isTypeOnly === true || (clause?.namedBindings !== undefined && !valueBinding));
+        }
+      } else if (ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+        const namedBindings = node.exportClause;
+        const allTypeOnly =
+          namedBindings !== undefined &&
+          ts.isNamedExports(namedBindings) &&
+          namedBindings.elements.every((element) => element.isTypeOnly);
+        record(node.moduleSpecifier.text, node.isTypeOnly || allTypeOnly);
+      } else if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+        const argument = node.arguments[0];
+        if (argument && ts.isStringLiteral(argument)) record(argument.text, false);
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(sourceFile);
   }
   return imports;
 }

@@ -26,21 +26,37 @@ interface ApprovedSubpathExport {
   readonly import: string;
 }
 
-const approvedSubpathExports: Record<string, Readonly<Record<string, ApprovedSubpathExport>>> = {
+interface ApprovedAssetSubpathExport {
+  readonly asset: string;
+}
+
+type ApprovedSubpath = ApprovedSubpathExport | ApprovedAssetSubpathExport;
+
+const approvedSubpathExports: Record<string, Readonly<Record<string, ApprovedSubpath>>> = {
+  "@aura3d/animation": {
+    "./pose": { types: "./dist/contracts/pose.d.ts", import: "./dist/contracts/pose.js" },
+    "./lanes": { types: "./dist/lanes/index.d.ts", import: "./dist/lanes/index.js" },
+    "./contracts": { types: "./dist/contracts/index.d.ts", import: "./dist/contracts/index.js" }
+  },
   "@aura3d/assets": {
     "./browser": { types: "./dist/browser-index.d.ts", import: "./dist/browser-index.js" },
-    "./gltf-runtime": { types: "./dist/gltf-runtime.d.ts", import: "./dist/gltf-runtime.js" }
+    "./gltf-runtime": { types: "./dist/gltf-runtime.d.ts", import: "./dist/gltf-runtime.js" },
+    "./vite": { types: "./dist/vite/auraDecoders.d.ts", import: "./dist/vite/auraDecoders.js" }
   },
   "@aura3d/physics": {
     "./solverless": { types: "./dist/solverless.d.ts", import: "./dist/solverless.js" },
     "./world": { types: "./dist/world.d.ts", import: "./dist/world.js" }
   },
   "@aura3d/rendering": {
-    "./lean-runtime": { types: "./dist/lean-runtime.d.ts", import: "./dist/lean-runtime.js" },
-    "./lean-core-runtime": { types: "./dist/lean-core-runtime.d.ts", import: "./dist/lean-core-runtime.js" },
+    "./lanes": { types: "./dist/lanes/index.d.ts", import: "./dist/lanes/index.js" },
     "./webgpu": { types: "./dist/webgpu.d.ts", import: "./dist/webgpu.js" },
+    "./production-runtime": { types: "./dist/production-runtime/index.d.ts", import: "./dist/production-runtime/index.js" },
     "./extension-scalar-atlas": { types: "./dist/extension-scalar-atlas.d.ts", import: "./dist/extension-scalar-atlas.js" },
-    "./reflection-surfaces": { types: "./dist/reflection-surfaces.d.ts", import: "./dist/reflection-surfaces.js" }
+    "./reflection-surfaces": { types: "./dist/reflection-surfaces.d.ts", import: "./dist/reflection-surfaces.js" },
+    "./contracts": { types: "./dist/contracts/index.d.ts", import: "./dist/contracts/index.js" },
+    "./contracts/*": { types: "./dist/contracts/*.d.ts", import: "./dist/contracts/*.js" },
+    "./reference": { types: "./dist/reference/index.d.ts", import: "./dist/reference/index.js" },
+    "./world": { types: "./dist/world/index.d.ts", import: "./dist/world/index.js" }
   },
   "@aura3d/scene": {
     "./math": { types: "./dist/MathTypes.d.ts", import: "./dist/MathTypes.js" }
@@ -49,7 +65,17 @@ const approvedSubpathExports: Record<string, Readonly<Record<string, ApprovedSub
     // Existing v3.0.0 internal runtime contract; validate exact emitted targets.
     "./production-runtime": { types: "./dist/production-runtime/index.d.ts", import: "./dist/production-runtime/index.js" },
     "./advanced-runtime": { types: "./dist/advanced-runtime/index.d.ts", import: "./dist/advanced-runtime/index.js" },
-    "./animation-studio": { types: "./dist/animation-studio/index.d.ts", import: "./dist/animation-studio/index.js" }
+    "./animation-studio": { types: "./dist/animation-studio/index.d.ts", import: "./dist/animation-studio/index.js" },
+    "./contracts": { types: "./dist/contracts/index.d.ts", import: "./dist/contracts/index.js" },
+    "./renderer": { types: "./dist/renderer/index.d.ts", import: "./dist/renderer/index.js" },
+    "./devtools": { types: "./dist/devtools/index.d.ts", import: "./dist/devtools/index.js" },
+    "./lanes": { types: "./dist/lanes/index.d.ts", import: "./dist/lanes/index.js" }
+  },
+  "@aura3d/game": {
+    "./capture": { types: "./dist/capture/index.d.ts", import: "./dist/capture/index.js" },
+    "./art": { types: "./dist/art/index.d.ts", import: "./dist/art/index.js" },
+    "./util": { types: "./dist/util/index.d.ts", import: "./dist/util/index.js" },
+    "./styles.css": { asset: "./src/styles.css" }
   },
   "@aura3d/three-compat": {
     "./controls": { types: "./dist/controls/index.d.ts", import: "./dist/controls/index.js" },
@@ -62,10 +88,14 @@ const approvedSubpathExports: Record<string, Readonly<Record<string, ApprovedSub
 const standaloneRootPackages = new Set([
   "@aura3d/asset-index",
   "@aura3d/cli",
+  "@aura3d/core",
+  "@aura3d/debug",
+  "@aura3d/product-studio",
   "@aura3d/react",
   "@aura3d/three-compat",
   "@aura3d/navigation-recast",
-  "@aura3d/physics-rapier"
+  "@aura3d/physics-rapier",
+  "create-aura3d"
 ]);
 
 function readJson(path: string): PackageJson {
@@ -99,6 +129,9 @@ export function verifyExports(root = process.cwd(), options: VerifyExportsOption
     const manifestPath = join(dir, "package.json");
     const indexPath = join(dir, "src", "index.ts");
     if (!existsSync(manifestPath)) {
+      // Untracked legacy build directories (dist/node_modules only) are not
+      // packages; skip them rather than failing the release inventory.
+      if (!existsSync(join(dir, "src"))) continue;
       violations.push({ packageName: dir, message: "Missing package.json." });
       continue;
     }
@@ -134,6 +167,12 @@ export function verifyExports(root = process.cwd(), options: VerifyExportsOption
       }
       for (const [subpath, expectedExport] of Object.entries(approvedSubpaths)) {
         const subpathExport = exportsMap[subpath];
+        if ("asset" in expectedExport) {
+          if (subpathExport !== expectedExport.asset) {
+            violations.push({ packageName: name, message: `Package subpath export ${subpath} must point to ${expectedExport.asset}.` });
+          }
+          continue;
+        }
         if (typeof subpathExport !== "object" || subpathExport === null) {
           violations.push({ packageName: name, message: `Package subpath export ${subpath} must be an explicit object export.` });
           continue;

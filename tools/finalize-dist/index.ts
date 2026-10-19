@@ -44,6 +44,7 @@ for (const packageName of packageNames) {
   if (!existsSync(source)) {
     throw new Error(`Missing emitted source directory for ${packageName}: ${source}`);
   }
+  pruneStaleEmittedFiles(source, packageSource);
 
   const rootPackageDist = join(rootDist, packageName);
   const localPackageDist = join(packageRoot, packageName, "dist");
@@ -109,8 +110,23 @@ function assertWorkerUrlsEmitted(): void {
   if (problems.length > 0) throw new Error(`finalize-dist worker URL check failed:\n  ${problems.join("\n  ")}`);
 }
 
-function walkWorkerSources(dir: string, out: string[] = []): string[] {
-  if (!existsSync(dir)) return out;
+function pruneStaleEmittedFiles(emittedDir: string, sourceDir: string, dir = emittedDir): void {
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) {
+      pruneStaleEmittedFiles(emittedDir, sourceDir, path);
+      continue;
+    }
+    const relativePath = relative(emittedDir, path);
+    const emitted = /(\.d\.ts|\.js|\.mjs|\.cjs)(\.map)?$/.exec(relativePath);
+    if (!emitted) continue;
+    const base = relativePath.slice(0, emitted.index);
+    const hasSource = [".ts", ".tsx", ".mts", ".cts"].some((extension) => existsSync(join(sourceDir, `${base}${extension}`)));
+    if (!hasSource) rmSync(path, { force: true });
+  }
+}
+
+function walkWorkerSources(dir: string, out: string[] = []): string[] {  if (!existsSync(dir)) return out;
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
     if (statSync(path).isDirectory()) walkWorkerSources(path, out);

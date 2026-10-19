@@ -1,243 +1,396 @@
 import "./styles.css";
 
 // ─────────────────────────────────────────────────────────────
-// Example loading policy
+// Homepage interactions
 // ─────────────────────────────────────────────────────────────
-// Marketing pages should feel instant. Only the hero route boots immediately.
-// Lower examples show lightweight posters first; feature demos lazy-load near
-// the viewport; heavy gallery tiles stay static and open as full examples.
+// Demos are poster-first. No iframe gets a src until a visitor
+// presses Play; that same action enables pointer input. Page scroll
+// is never captured before Play.
+
+type DemoState = "idle" | "interactive";
 
 const APP_BASE = (window as unknown as { APP_BASE?: string }).APP_BASE
   ?? window.location.origin;
 
-function exampleUrl(iframe: HTMLIFrameElement, chromeOverride?: string): string | null {
-  const route = iframe.dataset.route;
-  if (!route) return null;
-  const chrome = chromeOverride ?? iframe.dataset.chrome ?? "hidden";
-  const hash = iframe.dataset.hash;
-  const sep = route.includes("?") ? "&" : "?";
-  const hashPart = hash ? `#${hash}` : "";
-  return `${APP_BASE}${route}${sep}chrome=${chrome}${hashPart}`;
+function track(event: string, detail: Record<string, unknown> = {}): void {
+  window.dispatchEvent(new CustomEvent("aura:analytics", {
+    detail: { event, ...detail }
+  }));
 }
 
-function loadExample(iframe: HTMLIFrameElement): void {
-  if (iframe.src) return;
-  const url = exampleUrl(iframe);
-  if (!url) return;
-  iframe.src = url;
-  iframe.dataset.loaded = "true";
+function isVisible(element: HTMLElement): boolean {
+  return element.getClientRects().length > 0;
 }
 
-function openExample(iframe: HTMLIFrameElement): void {
-  // Posters are intentionally lightweight, but a deliberate click is an intent
-  // to use the example. Keep the route's controls and option panels visible in
-  // the opened experience; `chrome=hidden` is only for embedded previews.
-  const url = exampleUrl(iframe, "visible");
-  if (!url) return;
-  window.open(url, "_blank", "noopener,noreferrer");
+// ─────────────────────────────────────────────────────────────
+// Mobile navigation drawer
+// ─────────────────────────────────────────────────────────────
+
+const header = document.querySelector<HTMLElement>(".home-header");
+const menuToggle = document.querySelector<HTMLButtonElement>(".home-menu-toggle");
+const navMenu = document.getElementById("home-nav-menu");
+let menuOpen = false;
+
+function menuFocusables(): HTMLElement[] {
+  if (!navMenu) return [];
+  return [
+    ...navMenu.querySelectorAll<HTMLElement>("a[href], button:not([disabled])"),
+    ...document.querySelectorAll<HTMLElement>(".home-nav-actions a[href], .home-nav-actions button")
+  ].filter(isVisible);
 }
 
-function posterTitle(iframe: HTMLIFrameElement): string {
-  const customTitle = iframe.dataset.posterTitle?.trim();
-  if (customTitle) return customTitle;
-  return iframe.title
-    .replace(/^Aura3D\s*·\s*/i, "")
-    .replace(/\s*·\s*/g, " ")
-    .trim() || "Live Aura3D example";
-}
+function setMenu(open: boolean, returnFocus = false): void {
+  if (!menuToggle || !navMenu) return;
+  menuOpen = open;
+  menuToggle.setAttribute("aria-expanded", String(open));
+  menuToggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  document.body.classList.toggle("menu-open", open);
 
-function attachPoster(iframe: HTMLIFrameElement, mode: "lazy" | "static"): void {
-  const host = iframe.parentElement;
-  if (!host || host.querySelector(":scope > .example-poster")) return;
-
-  host.classList.add("example-host");
-  iframe.classList.add("example-frame");
-  if (mode === "static") iframe.classList.add("example-frame-static");
-
-  const posterKicker = iframe.dataset.posterKicker ?? (mode === "static" ? "preview" : "lazy live demo");
-  const posterDescription = iframe.dataset.posterDescription
-    ?? (mode === "static"
-      ? "Open the full route when you want the live 3D app."
-      : "Poster first. The live scene starts when this panel is near the viewport.");
-  const posterAction = iframe.dataset.posterAction ?? "Open live example";
-  const posterImage = iframe.dataset.posterImage?.trim();
-
-  const poster = document.createElement("div");
-  poster.className = `example-poster example-poster-${mode}`;
-  poster.innerHTML = `
-    <div class="example-poster-image" aria-hidden="true"></div>
-    <div class="example-poster-orb" aria-hidden="true"></div>
-    <div class="example-poster-grid" aria-hidden="true"></div>
-    <div class="example-poster-copy">
-      <span class="example-poster-kicker">${posterKicker}</span>
-      <strong>${posterTitle(iframe)}</strong>
-      <span>${posterDescription}</span>
-    </div>
-    <button class="example-poster-action" type="button">${posterAction}</button>
-  `;
-
-  if (posterImage) {
-    const image = poster.querySelector<HTMLElement>(".example-poster-image");
-    image?.style.setProperty("--example-poster-image", `url("${posterImage.replace(/"/g, "%22")}")`);
-    poster.dataset.hasImage = "true";
+  if (open) {
+    track("nav_open");
+    window.requestAnimationFrame(() => {
+      navMenu.querySelector<HTMLElement>("a[href]")?.focus();
+    });
+  } else if (returnFocus) {
+    menuToggle.focus();
   }
+}
 
-  const action = poster.querySelector<HTMLButtonElement>(".example-poster-action");
-  action?.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    openExample(iframe);
+menuToggle?.addEventListener("click", () => setMenu(!menuOpen));
+
+header?.addEventListener("click", (event) => {
+  const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+  if (!link) return;
+  track("nav_link_click", {
+    label: (link.textContent ?? "").trim(),
+    href: link.getAttribute("href") ?? ""
   });
+  if (menuOpen) setMenu(false);
+});
 
-  host.appendChild(poster);
-}
-
-const exampleFrames = [...document.querySelectorAll<HTMLIFrameElement>("iframe[data-route]")];
-
-for (const iframe of exampleFrames) {
-  const isHero = iframe.classList.contains("hero-canvas");
-  const isStaticPreview = iframe.classList.contains("tile-canvas") || iframe.dataset.preview === "static";
-
-  if (isHero) {
-    loadExample(iframe);
-    continue;
+document.addEventListener("keydown", (event) => {
+  if (menuOpen) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setMenu(false, true);
+      return;
+    }
+    if (event.key === "Tab") {
+      const nodes = menuFocusables();
+      if (nodes.length === 0) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      const active = document.activeElement;
+      if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      } else if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      }
+    }
+    return;
   }
 
-  attachPoster(iframe, isStaticPreview ? "static" : "lazy");
-}
-
-const loadObserver = new IntersectionObserver((entries) => {
-  for (const entry of entries) {
-    if (!entry.isIntersecting) continue;
-    const iframe = entry.target as HTMLIFrameElement;
-    loadExample(iframe);
-    loadObserver.unobserve(iframe);
-  }
-}, { rootMargin: "180px 0px", threshold: 0.01 });
-
-for (const iframe of exampleFrames) {
-  const isHero = iframe.classList.contains("hero-canvas");
-  const isStaticPreview = iframe.classList.contains("tile-canvas") || iframe.dataset.preview === "static";
-  if (!isHero && !isStaticPreview) loadObserver.observe(iframe);
-}
-
-// ─────────────────────────────────────────────────────────────
-// Commands — copy to clipboard
-// ─────────────────────────────────────────────────────────────
-
-const copyBtn = document.getElementById("copyBtn");
-const copyLabel = document.getElementById("copyLabel");
-copyBtn?.addEventListener("click", async () => {
-  try {
-    await navigator.clipboard.writeText("npx create-aura3d@latest my-scene --template product-viewer");
-    copyBtn.classList.add("copied");
-    if (copyLabel) copyLabel.textContent = "Copied";
-    setTimeout(() => {
-      copyBtn.classList.remove("copied");
-      if (copyLabel) copyLabel.textContent = "Copy";
-    }, 1800);
-  } catch (_err) {
-    /* ignore — clipboard write may be blocked in dev */
+  if (event.key === "Escape") {
+    const openStages = demos.filter((stage) => stage.dataset.demoState === "interactive");
+    if (openStages.length === 0) return;
+    event.preventDefault();
+    for (const stage of openStages) closeDemo(stage, false);
+    const play = openStages[0].querySelector<HTMLButtonElement>("[data-demo-play]");
+    play?.focus();
   }
 });
 
-document.querySelectorAll<HTMLButtonElement>("[data-copy][data-copy-text]").forEach((button) => {
-  const original = button.textContent ?? "Copy";
-  button.addEventListener("click", async () => {
+window.addEventListener("resize", () => {
+  if (menuOpen && window.innerWidth > 1100) setMenu(false);
+}, { passive: true });
+
+// ─────────────────────────────────────────────────────────────
+// Click-to-play demos
+// ─────────────────────────────────────────────────────────────
+
+const demos = [...document.querySelectorAll<HTMLElement>("[data-demo]")];
+let activeDemo: HTMLElement | null = null;
+
+function demoFrame(stage: HTMLElement): HTMLIFrameElement | null {
+  return stage.querySelector<HTMLIFrameElement>("[data-demo-frame]");
+}
+
+function demoPlayButton(stage: HTMLElement): HTMLButtonElement | null {
+  return stage.querySelector<HTMLButtonElement>("[data-demo-play]");
+}
+
+function setDemoState(stage: HTMLElement, state: DemoState): void {
+  stage.dataset.demoState = state;
+  const launch = stage.querySelector<HTMLElement>(".stage-launch");
+  const controls = stage.querySelector<HTMLElement>("[data-demo-controls]");
+  if (launch) launch.hidden = state !== "idle";
+  if (controls) controls.hidden = state === "idle";
+}
+
+function demoUrl(route: string): string {
+  const separator = route.includes("?") ? "&" : "?";
+  return `${APP_BASE}${route}${separator}chrome=hidden`;
+}
+
+function playDemo(stage: HTMLElement): void {
+  const frame = demoFrame(stage);
+  const route = stage.dataset.demoRoute;
+  if (!frame || !route) return;
+
+  if (activeDemo && activeDemo !== stage) closeDemo(activeDemo, false);
+
+  frame.allowFullscreen = true;
+  frame.src = demoUrl(route);
+  frame.tabIndex = 0;
+  setDemoState(stage, "interactive");
+  activeDemo = stage;
+
+  track("cta_play_game", {
+    game: stage.dataset.demoName ?? "Aura3D demo",
+    route,
+    placement: stage.dataset.demoKind ?? "game-card"
+  });
+
+  window.requestAnimationFrame(() => {
+    frame.focus();
+  });
+}
+
+function closeDemo(stage: HTMLElement, returnFocus = true): void {
+  const state = stage.dataset.demoState;
+  const frame = demoFrame(stage);
+  if (state !== "interactive") return;
+
+  if (frame) {
+    frame.removeAttribute("src");
+    frame.tabIndex = -1;
+  }
+  setDemoState(stage, "idle");
+  if (activeDemo === stage) activeDemo = null;
+  track("demo_close", { game: stage.dataset.demoName ?? "Aura3D demo" });
+  if (returnFocus) demoPlayButton(stage)?.focus();
+}
+
+for (const stage of demos) {
+  const frame = demoFrame(stage);
+  const route = stage.dataset.demoRoute;
+
+  stage.querySelector<HTMLButtonElement>("[data-demo-play]")?.addEventListener("click", () => {
+    playDemo(stage);
+  });
+
+  stage.querySelector<HTMLButtonElement>("[data-demo-close]")?.addEventListener("click", () => {
+    closeDemo(stage);
+  });
+
+  for (const link of stage.querySelectorAll<HTMLAnchorElement>("[data-demo-open]")) {
+    link.addEventListener("click", () => {
+      track("demo_fullscreen", {
+        game: stage.dataset.demoName ?? "Aura3D demo",
+        route: route ?? ""
+      });
+    });
+  }
+
+  frame?.addEventListener("load", () => {
+    if (!frame.src) return;
     try {
-      await navigator.clipboard.writeText(button.dataset.copyText ?? "");
-      button.classList.add("copied");
-      button.textContent = "Copied";
-      setTimeout(() => {
-        button.classList.remove("copied");
-        button.textContent = original;
-      }, 1600);
-    } catch (_err) {
-      /* ignore — clipboard write may be blocked in dev */
+      frame.contentWindow?.document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+        event.preventDefault();
+        closeDemo(stage, true);
+      });
+    } catch {
+      // Cross-origin demo: the visible Close demo control remains available.
     }
   });
-});
-
-// ─────────────────────────────────────────────────────────────
-// Docs search
-// ─────────────────────────────────────────────────────────────
-
-const docsSearchInput = document.querySelector<HTMLInputElement>("[data-docs-search-input]");
-const docsSearchResults = document.querySelector<HTMLElement>("[data-docs-search-results]");
-const docsSearchLinks = [...document.querySelectorAll<HTMLAnchorElement>("[data-search-terms]")];
-
-function updateDocsSearch(query: string): void {
-  const normalized = query.trim().toLowerCase();
-  for (const link of docsSearchLinks) {
-    const terms = `${link.textContent ?? ""} ${link.dataset.searchTerms ?? ""}`.toLowerCase();
-    link.hidden = normalized.length > 0 && !terms.includes(normalized);
-  }
-  if (docsSearchResults) docsSearchResults.dataset.active = normalized.length > 0 ? "true" : "false";
 }
 
-docsSearchInput?.addEventListener("input", () => updateDocsSearch(docsSearchInput.value));
-
 // ─────────────────────────────────────────────────────────────
-// Split-code tabs (cosmetic — switches the active tab style)
+// Copy buttons
 // ─────────────────────────────────────────────────────────────
 
-const tabs = document.querySelectorAll<HTMLSpanElement>(".split-code-tab");
-tabs.forEach((tab) => {
-  tab.addEventListener("click", () => {
-    for (const t of tabs) t.classList.remove("active");
-    tab.classList.add("active");
-  });
-});
-
-// ─────────────────────────────────────────────────────────────
-// Clickable live example tiles
-// ─────────────────────────────────────────────────────────────
-
-document.querySelectorAll<HTMLElement>("[data-link]").forEach((tile) => {
-  const href = tile.dataset.link;
-  if (!href) return;
-  tile.addEventListener("click", () => {
-    window.location.href = href;
-  });
-  tile.addEventListener("keydown", (event) => {
-    if (event.key !== "Enter" && event.key !== " ") return;
-    event.preventDefault();
-    window.location.href = href;
-  });
-});
-
-// Aura3D clickable template cards
-const templateCardTargets = new Map<string, string>([
-  ["product-viewer", "/docs/templates.html#product-viewer"],
-  ["cinematic-scene", "/docs/templates.html#cinematic-scene"],
-  ["mini-game", "/docs/templates.html#mini-game"],
-  ["agent setup", "/docs/agent-rules.html"]
-]);
-
-document.querySelectorAll<HTMLElement>(".pkg-name").forEach((label) => {
-  const name = label.textContent?.trim() ?? "";
-  const target = templateCardTargets.get(name);
-  const card = label.parentElement;
-  if (!target || !(card instanceof HTMLElement)) return;
-  card.classList.add("click-card");
-  card.setAttribute("role", "link");
-  card.setAttribute("tabindex", "0");
-  card.setAttribute("aria-label", `Open ${name} documentation`);
-  if (!card.querySelector(".pkg-card-cta")) {
-    const cta = document.createElement("a");
-    cta.className = "pkg-card-cta";
-    cta.href = target;
-    cta.textContent = name === "agent setup" ? "Open agent rules" : "Open template docs";
-    card.appendChild(cta);
+async function writeClipboard(text: string): Promise<boolean> {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fall through to the textarea fallback.
+    }
   }
-  const open = (event: Event): void => {
-    if (event.target instanceof Element && event.target.closest("a,button")) return;
-    window.location.href = target;
-  };
-  card.addEventListener("click", open);
-  card.addEventListener("keydown", (event) => {
-    if (event.key !== "Enter" && event.key !== " ") return;
-    event.preventDefault();
-    window.location.href = target;
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.top = "-1000px";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } catch {
+    copied = false;
+  }
+  textarea.remove();
+  return copied;
+}
+
+for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy-text], [data-copy-target]")) {
+  let resetTimer: number | undefined;
+
+  button.addEventListener("click", async () => {
+    const targetSelector = button.dataset.copyTarget;
+    const target = targetSelector ? document.querySelector<HTMLElement>(targetSelector) : null;
+    const text = target
+      ? (target.textContent ?? "").trim()
+      : (button.dataset.copyText ?? "");
+    const label = button.querySelector<HTMLElement>("[data-copy-label]");
+    const originalLabel = button.dataset.copyLabel ?? label?.textContent ?? "Copy";
+    button.dataset.copyLabel = originalLabel;
+
+    const copied = await writeClipboard(text);
+    if (label) label.textContent = copied ? "Copied" : "Copy failed";
+    button.classList.toggle("is-copied", copied);
+
+    if (copied) {
+      if (button.classList.contains("copy-btn")) {
+        track("cta_install_copy", { command: text });
+      } else {
+        track("code_copy", { target: targetSelector ?? "inline" });
+      }
+    }
+
+    if (resetTimer) window.clearTimeout(resetTimer);
+    resetTimer = window.setTimeout(() => {
+      if (label) label.textContent = originalLabel;
+      button.classList.remove("is-copied");
+    }, 1800);
   });
+}
+
+// ─────────────────────────────────────────────────────────────
+// Docs search — results appear only after typing
+// ─────────────────────────────────────────────────────────────
+
+const searchRoot = document.querySelector<HTMLElement>("[data-docs-search]");
+const searchInput = searchRoot?.querySelector<HTMLInputElement>("[data-docs-search-input]");
+const searchResults = searchRoot?.querySelector<HTMLElement>("[data-docs-search-results]");
+const searchStatus = searchRoot?.querySelector<HTMLElement>("[data-docs-search-status]");
+const searchEmpty = searchRoot?.querySelector<HTMLElement>("[data-docs-search-empty]");
+const searchItems = searchRoot
+  ? [...searchRoot.querySelectorAll<HTMLElement>("[data-search-item]")]
+  : [];
+let searchTrackTimer: number | undefined;
+
+function updateSearch(): void {
+  if (!searchInput || !searchResults || !searchStatus) return;
+  const rawQuery = searchInput.value.trim();
+  const query = rawQuery.toLowerCase();
+
+  if (!query) {
+    searchResults.hidden = true;
+    searchStatus.textContent = "";
+    if (searchEmpty) searchEmpty.hidden = true;
+    for (const item of searchItems) item.hidden = false;
+    if (searchTrackTimer) window.clearTimeout(searchTrackTimer);
+    return;
+  }
+
+  let matches = 0;
+  for (const item of searchItems) {
+    const link = item.querySelector<HTMLAnchorElement>("a[href]");
+    const haystack = `${link?.textContent ?? ""} ${link?.dataset.searchTerms ?? ""}`.toLowerCase();
+    const match = haystack.includes(query);
+    item.hidden = !match;
+    if (match) matches += 1;
+  }
+
+  searchResults.hidden = false;
+  if (searchEmpty) searchEmpty.hidden = matches > 0;
+  searchStatus.textContent = matches === 0
+    ? `No docs match “${rawQuery}”.`
+    : `${matches} ${matches === 1 ? "doc matches" : "docs match"} “${rawQuery}”.`;
+
+  if (searchTrackTimer) window.clearTimeout(searchTrackTimer);
+  searchTrackTimer = window.setTimeout(() => {
+    track("docs_search_query", { query: rawQuery, results: matches });
+  }, 500);
+}
+
+searchInput?.addEventListener("input", updateSearch);
+
+// ─────────────────────────────────────────────────────────────
+// Lightweight analytics bridge + scroll depth
+// ─────────────────────────────────────────────────────────────
+
+for (const element of document.querySelectorAll<HTMLElement>("[data-analytics]")) {
+  element.addEventListener("click", () => {
+    track(element.dataset.analytics ?? "interaction", {
+      label: (element.textContent ?? "").trim()
+    });
+  });
+}
+
+document.addEventListener("click", (event) => {
+  const anchor = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
+  if (!anchor) return;
+  const href = anchor.getAttribute("href") ?? "";
+  if (!/^https?:\/\//.test(href)) return;
+  try {
+    const host = new URL(href, window.location.href).hostname;
+    if (host === "github.com" || host === "www.npmjs.com" || host === "opensource.org") {
+      track("outbound_click", {
+        href,
+        label: (anchor.textContent ?? "").trim()
+      });
+    }
+  } catch {
+    // Ignore malformed URLs.
+  }
 });
+
+const scrollDepths = [25, 50, 75, 100];
+const depthsReached = new Set<number>();
+let scrollTicking = false;
+
+function measureScrollDepth(): void {
+  if (scrollTicking) return;
+  scrollTicking = true;
+  window.requestAnimationFrame(() => {
+    scrollTicking = false;
+    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+    const percent = scrollable <= 0 ? 100 : Math.round((window.scrollY / scrollable) * 100);
+    for (const depth of scrollDepths) {
+      if (percent < depth || depthsReached.has(depth)) continue;
+      depthsReached.add(depth);
+      track("scroll_depth", { percent: depth });
+    }
+  });
+}
+
+window.addEventListener("scroll", measureScrollDepth, { passive: true });
+measureScrollDepth();
+
+// ─────────────────────────────────────────────────────────────
+// Restrained reveal (skipped for reduced motion)
+// ─────────────────────────────────────────────────────────────
+
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const revealElements = [...document.querySelectorAll<HTMLElement>("[data-reveal]")];
+
+if (!reducedMotion && "IntersectionObserver" in window && revealElements.length > 0) {
+  document.body.classList.add("reveal-ready");
+  const revealObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add("is-in");
+      revealObserver.unobserve(entry.target);
+    }
+  }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+  for (const element of revealElements) revealObserver.observe(element);
+}
