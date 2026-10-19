@@ -57,6 +57,22 @@ if (scaffoldCommand && !scaffoldCommand.includes("--template product-viewer")) {
   failures.push(`homepage scaffold command lost its template: ${scaffoldCommand}`);
 }
 
+const showcaseIndex = readFileSync(resolve(repoRoot, "apps/showcase-index/index.html"), "utf8");
+const showcaseVersions = new Set(
+  [...showcaseIndex.matchAll(/(?:@aura3d\/[a-z-]+@|create-aura3d@|\bv|(?:Playable game|Aura3D)\s*,?\s*)(\d+\.\d+\.\d+)/g)].map(
+    (match) => match[1]
+  )
+);
+for (const version of showcaseVersions) {
+  if (version !== canonical) failures.push(`showcase index claims ${version}; canonical is ${canonical}`);
+}
+checks.push({
+  label: "showcase index version claims",
+  actual: [...showcaseVersions].join(", ") || "none",
+  expected: canonical,
+  ok: showcaseVersions.size === 0 || [...showcaseVersions].every((version) => version === canonical)
+});
+
 if (registry) {
   const npmLatest = (packageName) =>
     execFileSync("npm", ["view", packageName, "dist-tags.latest", "--json"], {
