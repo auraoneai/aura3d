@@ -111,8 +111,8 @@ env:
 
 jobs:
   games:
-    name: Game captures (macos-14, ANGLE Metal)
-    runs-on: macos-14
+    name: Game captures (macos-15, ANGLE Metal)
+    runs-on: macos-15
     timeout-minutes: 120
     env:
       QRC_GAMES: ${{ inputs.games || '' }}
@@ -186,9 +186,9 @@ jobs:
           test "${{ steps.capture.outcome }}" = "success"
 
   threejs-benchmark:
-    name: three.js benchmark (macos-14, ANGLE Metal)
+    name: three.js benchmark (macos-15, ANGLE Metal)
     if: ${{ inputs.bench || github.event_name != 'workflow_call' && github.event_name != 'workflow_dispatch' }}
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 90
     env:
       # Contract for benchmarks/quality-rebuild/ci.sh: write results under QR_BENCH_OUT and launch
