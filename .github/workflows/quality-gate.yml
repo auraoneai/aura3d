@@ -1,6 +1,6 @@
 name: Quality Gate
 
-# PRD-12 T3.3. The pixel gate: bench + game captures on macos-14 (ANGLE Metal),
+# PRD-12 T3.3. The pixel gate: bench + game captures on macos-15 (ANGLE Metal),
 # analytic pixel specs under the GPU-string guard, then metrics and verdicts on
 # ubuntu-latest. No secrets — the gate measures and blocks; it never asserts
 # quality claims. Human review is a separate workflow (quality-review.yml).
@@ -25,12 +25,12 @@ jobs:
   #   flags — qr_flags=all, the in-development flag set. REPORT-ONLY: its jobs
   #           still conclude truthfully red or green, and flag-captures-report
   #           prints each result, but no gate job needs them.
-  # Game-capture shards are 3 x macos-14 jobs per arm. The org has 5 macOS
+  # Game-capture shards are 3 x macos-15 jobs per arm. The org has 5 macOS
   # runners, so on pull_request they starved every other lane (#839). They run
   # on every main push, workflow_call and dispatch; PRs get the bench + analytic
   # pixel gate.
   capture-bench:
-    name: Capture benchmark, none (macos-14)
+    name: Capture benchmark, none (macos-15)
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
       games: "aura-clash-showcase"
@@ -39,7 +39,7 @@ jobs:
       artifact_suffix: "-gate-none-bench"
 
   capture-games-1:
-    name: Capture games shard 1, none (macos-14)
+    name: Capture games shard 1, none (macos-15)
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
@@ -49,7 +49,7 @@ jobs:
       artifact_suffix: "-gate-none-g1"
 
   capture-games-2:
-    name: Capture games shard 2, none (macos-14)
+    name: Capture games shard 2, none (macos-15)
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
@@ -59,7 +59,7 @@ jobs:
       artifact_suffix: "-gate-none-g2"
 
   capture-games-3:
-    name: Capture games shard 3, none (macos-14)
+    name: Capture games shard 3, none (macos-15)
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
@@ -69,7 +69,7 @@ jobs:
       artifact_suffix: "-gate-none-g3"
 
   flag-capture-bench:
-    name: Capture benchmark, flags=all, report-only (macos-14)
+    name: Capture benchmark, flags=all, report-only (macos-15)
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
       games: "aura-clash-showcase"
@@ -78,7 +78,7 @@ jobs:
       artifact_suffix: "-gate-flags-bench"
 
   flag-capture-games-1:
-    name: Capture games shard 1, flags=all, report-only (macos-14)
+    name: Capture games shard 1, flags=all, report-only (macos-15)
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
@@ -88,7 +88,7 @@ jobs:
       artifact_suffix: "-gate-flags-g1"
 
   flag-capture-games-2:
-    name: Capture games shard 2, flags=all, report-only (macos-14)
+    name: Capture games shard 2, flags=all, report-only (macos-15)
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
@@ -98,7 +98,7 @@ jobs:
       artifact_suffix: "-gate-flags-g2"
 
   flag-capture-games-3:
-    name: Capture games shard 3, flags=all, report-only (macos-14)
+    name: Capture games shard 3, flags=all, report-only (macos-15)
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
@@ -134,8 +134,8 @@ jobs:
           } | tee -a "$GITHUB_STEP_SUMMARY"
 
   analytic-pixels:
-    name: Analytic pixel specs (macos-14, GPU-guarded)
-    runs-on: macos-14
+    name: Analytic pixel specs (macos-15, GPU-guarded)
+    runs-on: macos-15
     timeout-minutes: 45
     steps:
       - name: Checkout
