@@ -3,7 +3,7 @@ name: QR PRD-05 assets browser
 # Lane 05 workflow (PRD-05 §13 P1 + 05-BROWSERS): compressed-GLB browser
 # gate — the shared corpus loads through the vendored C-16 decoder registry
 # (meshopt + draco + KTX2), same-origin only.
-#   - macos-14: chromium (ANGLE Metal reference), webkit, firefox —
+#   - macos-15: chromium (ANGLE Metal reference), webkit, firefox —
 #     decode correctness re-verified on all three engines. The macos job
 #     fails if the probe renderer string is SwiftShader.
 #   - windows-latest: non-visual BC-selection job — decoder-failure path,
@@ -44,7 +44,7 @@ on:
   workflow_dispatch:
     inputs:
       suite:
-        description: "specs = the lane browser gates; bench = benchmark-scene capture on macos-14 (ANGLE Metal)"
+        description: "specs = the lane browser gates; bench = benchmark-scene capture on macos-15 (ANGLE Metal)"
         type: choice
         options: [specs, bench, phases]
         default: specs
@@ -65,9 +65,9 @@ on:
         required: false
         default: "none;core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler"
       bench_runner:
-        description: "suite=bench: azure-gpu (self-hosted NVIDIA L4/T4, ANGLE Vulkan) | macos-14 (ANGLE Metal). Never compare frames across runner types."
+        description: "suite=bench: azure-gpu (self-hosted NVIDIA L4/T4, ANGLE Vulkan) | macos-15 (ANGLE Metal). Never compare frames across runner types."
         type: choice
-        options: [azure-gpu, macos-14]
+        options: [azure-gpu, macos-15]
         default: azure-gpu
 
 concurrency:
@@ -80,7 +80,7 @@ env:
 jobs:
   browser:
     if: github.event_name != 'workflow_dispatch' || inputs.suite == 'specs'
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -158,18 +158,18 @@ jobs:
             tests/reports/prd05-assets-*.json
           if-no-files-found: warn
 
-  # Lane-05 visual proof on the GitHub GPU path (macos-14, ANGLE Metal):
+  # Lane-05 visual proof on the GitHub GPU path (macos-15, ANGLE Metal):
   # benchmark scenes × flag sets through benchmarks/quality-rebuild/ci.sh
   # (one build, one runner, per-set out dirs + bisect-summary.json). PNGs
   # and report.json upload as an artifact; look at them before claiming
   # anything. Frames compare only within this runner type.
   bench:
     if: github.event_name == 'workflow_dispatch' && inputs.suite == 'bench'
-    runs-on: ${{ inputs.bench_runner == 'macos-14' && 'macos-14' || fromJSON('["self-hosted","azure-gpu"]') }}
+    runs-on: ${{ inputs.bench_runner == 'macos-15' && 'macos-15' || fromJSON('["self-hosted","azure-gpu"]') }}
     timeout-minutes: 90
     env:
       QR_BENCH_OUT: benchmarks/quality-rebuild/out
-      QR_BENCH_CHROME_ARGS: ${{ inputs.bench_runner == 'macos-14' && '--use-angle=metal --enable-gpu --ignore-gpu-blocklist' || '--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist' }}
+      QR_BENCH_CHROME_ARGS: ${{ inputs.bench_runner == 'macos-15' && '--use-angle=metal --enable-gpu --ignore-gpu-blocklist' || '--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist' }}
       QR_BENCH_SCENES: ${{ inputs.bench_scenes }}
       QR_BENCH_ENGINES: ${{ inputs.bench_engines }}
       QR_BENCH_FLAG_SETS: ${{ inputs.bench_flag_sets }}
@@ -212,10 +212,10 @@ jobs:
   # scenes publish __QR_READY__ inside 30 s; the JSON reports are the output.
   phases:
     if: github.event_name == 'workflow_dispatch' && inputs.suite == 'phases'
-    runs-on: ${{ inputs.bench_runner == 'macos-14' && 'macos-14' || fromJSON('["self-hosted","azure-gpu"]') }}
+    runs-on: ${{ inputs.bench_runner == 'macos-15' && 'macos-15' || fromJSON('["self-hosted","azure-gpu"]') }}
     timeout-minutes: 60
     env:
-      PRD05_CHROMIUM_ARGS: ${{ inputs.bench_runner == 'macos-14' && '--use-angle=metal --enable-gpu --ignore-gpu-blocklist' || '--use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist' }}
+      PRD05_CHROMIUM_ARGS: ${{ inputs.bench_runner == 'macos-15' && '--use-angle=metal --enable-gpu --ignore-gpu-blocklist' || '--use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist' }}
       PRD05_PHASE_FLAG_SETS: ${{ inputs.phase_flag_sets }}
     steps:
       - uses: actions/checkout@v4
