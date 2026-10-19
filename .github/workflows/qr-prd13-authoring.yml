@@ -51,8 +51,8 @@ jobs:
   # forbidOnly and retries: 0; nothing here is continue-on-error. The report
   # uploads on every outcome; the job result is the spec result.
   browser:
-    name: Browser specs (macos-14, ANGLE Metal)
-    runs-on: macos-14
+    name: Browser specs (macos-15, ANGLE Metal)
+    runs-on: macos-15
     timeout-minutes: 120
     env:
       PRD13_CHROMIUM_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
