@@ -19,6 +19,8 @@ aura-evidence/
 .git/
 test-results/
 playwright-report/
+tests/reports/
+.local-evidence/
 benchmark/
 archive/
 downloads/
