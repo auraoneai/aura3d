@@ -1,7 +1,7 @@
 name: QR PRD-10 World
 
 # Lane 10 (world building & environment systems) gate. Unit + ownership checks
-# run on ubuntu; browser specs run on macos-14 (Chromium, ANGLE Metal). The
+# run on ubuntu; browser specs run on macos-15 (Chromium, ANGLE Metal). The
 # `capture` job runs a GitLab flags-bisect pipeline (`none;world`) on the
 # `prd10-*` scenes, waits for it, and fails on its result.
 
@@ -84,7 +84,7 @@ jobs:
       - run: node tools/qr-ownership/check.mjs
 
   browser:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       # S8 bakes a real foliage mesh (LFS): fetch only that blob.
@@ -133,7 +133,7 @@ jobs:
     # T1.14 / 10-CI / P-04 + T0-33 evidence: the prd10 scenes (plus base
     # controls 09/17) are captured under `none` and `world` with --strict
     # (software rasterizers fail), then every scene must be `ready`, draw, and
-    # report no error in BOTH arms. Two GPU legs: GitHub macos-14 (ANGLE Metal)
+    # report no error in BOTH arms. Two GPU legs: GitHub macos-15 (ANGLE Metal)
     # and the self-hosted Azure L4 (ANGLE Vulkan). Frames are compared only
     # within one leg. GitLab capture is `capture-gitlab` (workflow_dispatch).
     # A qr/** branch push leaves capture to its pull_request run so one head
@@ -144,7 +144,7 @@ jobs:
       matrix:
         include:
           - leg: macos14
-            runner: macos-14
+            runner: macos-15
             chrome_args: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
           - leg: azure-l4
             runner: [self-hosted, azure-gpu]
