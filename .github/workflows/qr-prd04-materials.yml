@@ -1,7 +1,7 @@
 name: QR PRD-04 materials
 
 # Lane 04 workflow (PRD-04 §13 P1-13): unit tests + ChunkHarness conformance +
-# flag-`none`/flag-set scene captures on macos-14 (Chromium, ANGLE Metal) — the
+# flag-`none`/flag-set scene captures on macos-15 (Chromium, ANGLE Metal) — the
 # same runner class as quality-rebuild-capture.yml / qr-contracts.yml.
 # Artifacts: tests/reports/material-conformance.json + tests/reports/prd04/.
 
@@ -115,12 +115,12 @@ jobs:
         run: node tools/qr-ownership/check.mjs
 
   browser:
-    runs-on: macos-14
+    runs-on: macos-15
     permissions:
       contents: read
       actions: read # 04-S1: download the latest main sentinel capture artifact
     env:
-      PRD04_PERF_TIER: macos-14
+      PRD04_PERF_TIER: macos-15
       PRD04_SENTINEL_BASELINE_DIR: tests/reports/prd04/sentinels/baseline
     steps:
       - uses: actions/checkout@v4
@@ -137,7 +137,7 @@ jobs:
       - run: pnpm exec playwright install chromium
       - name: "04-S1: fetch sentinel baseline (latest main prd04-sentinels-none artifact)"
         # CONTRACTS §6.1 / CI-ROUTING: the S1 baseline is the latest GitHub
-        # macos-14 flag-off sentinel capture on main. With none yet, the step
+        # macos-15 flag-off sentinel capture on main. With none yet, the step
         # leaves the directory empty and sentinel-identity.spec.ts FAILS with
         # "no baseline" — the step never passes S1 by itself.
         env:
@@ -194,15 +194,15 @@ jobs:
 
   browser-all:
     name: Browser conformance (flags=all)
-    runs-on: macos-14
+    runs-on: macos-15
     env:
       # P-22: the integrated probes (integrated-acceptance §16.2/§16.3,
       # scene-perf S16 all-vs-all,-materials) pin their flags per URL and are
       # selected here by title (`qr_flags=all`), never skipped. WGSL twins need a
-      # WebGPU adapter and fail (not skip) without one; this macos-14 job is the
+      # WebGPU adapter and fail (not skip) without one; this macos-15 job is the
       # WebGPU runner (`--enable-unsafe-webgpu`).
       PRD04_FLAGS: "all"
-      PRD04_PERF_TIER: macos-14
+      PRD04_PERF_TIER: macos-15
       PRD04_CHROMIUM_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist --enable-unsafe-webgpu"
     steps:
       - uses: actions/checkout@v4
@@ -231,7 +231,7 @@ jobs:
 
   capture:
     name: Lane captures (flags=${{ github.event_name == 'workflow_dispatch' && inputs.flags || 'none' }})
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
