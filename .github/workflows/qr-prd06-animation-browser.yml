@@ -2,7 +2,7 @@ name: QR prd06 animation browser
 
 # Lane 06 (PRD-06 T0.0) — the lane animation-matrix: lane unit impl tests on
 # ubuntu and the tests/qr/prd06 browser specs plus the animated-character
-# baseline on macos-14 across chromium/webkit/firefox. Public-repo-safe steps
+# baseline on macos-15 across chromium/webkit/firefox. Public-repo-safe steps
 # only; no cloud credentials.
 
 on:
@@ -50,10 +50,10 @@ concurrency:
 
 jobs:
   unit:
-    # §13 fixed micro-budgets are specified "Node on GH macos-14" — the timing
+    # §13 fixed micro-budgets are specified "Node on GH macos-15" — the timing
     # gates are calibrated to that runner class; ubuntu shared vCPUs measure
     # ~1.7x slower and fail the gate on otherwise-correct code.
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       # Real GLBs — LFS-tracked; without this the checkout serves pointer text
       # and clip-fixture tests fall back to the synthetic manifest.
@@ -77,7 +77,7 @@ jobs:
         run: pnpm exec tsx --tsconfig tsconfig.base.json tools/bundle-size/lit-scene.ts
 
   browser:
-    runs-on: macos-14
+    runs-on: macos-15
     strategy:
       fail-fast: false
       matrix:
