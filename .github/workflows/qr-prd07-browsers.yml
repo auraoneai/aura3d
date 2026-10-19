@@ -1,6 +1,6 @@
 name: qr-prd07-browsers
 # PRD-07 §19 / 07-BROWSERS — the lane browser suite on the non-Chromium
-# engines (macos-14 WebKit + Firefox): shader compile matrix,
+# engines (macos-15 WebKit + Firefox): shader compile matrix,
 # particles-production, sky-background, fog background match and the
 # GPU-sim fallback path. Same specs as prd07-vfx.yml's browser job, selected
 # via PRD07_BROWSER in tests/qr/prd07/playwright.config.ts.
@@ -35,7 +35,7 @@ concurrency:
 
 jobs:
   browsers:
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 45
     strategy:
       fail-fast: false

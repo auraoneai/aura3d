@@ -22,7 +22,7 @@ on:
   push:
     branches: [main]
     # Same scope as the PR trigger: every main merge used to queue three
-    # macos-14 jobs here (18 queued on 2026-10-11) and starve the org's 5 macOS
+    # macos-15 jobs here (18 queued on 2026-10-11) and starve the org's 5 macOS
     # slots. Main commits outside these paths are covered by the nightly.
     paths:
       - "packages/rendering/src/**"
@@ -92,8 +92,8 @@ jobs:
           fi
 
   lane-browser:
-    name: Lane browser specs (macos-14, ANGLE Metal)
-    runs-on: macos-14
+    name: Lane browser specs (macos-15, ANGLE Metal)
+    runs-on: macos-15
     timeout-minutes: 40
     if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'lane:prd11')
     steps:
@@ -124,8 +124,8 @@ jobs:
           retention-days: 30
 
   lane-captures:
-    name: Lane scene captures + perf-gate (macos-14)
-    runs-on: macos-14
+    name: Lane scene captures + perf-gate (macos-15)
+    runs-on: macos-15
     timeout-minutes: 60
     if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'lane:prd11')
     env:
@@ -161,7 +161,7 @@ jobs:
           retention-days: 30
 
   # Real-GPU twin of lane-captures (NVIDIA L4, ANGLE Vulkan) for T0-35 and the
-  # S-rows; macos-14 is a paravirtual GPU. Same capture + perf-gate, own artifact.
+  # S-rows; macos-15 is a paravirtual GPU. Same capture + perf-gate, own artifact.
   # Frames are never compared across providers or runner types.
   lane-captures-gpu:
     name: Lane scene captures + perf-gate (azure-gpu L4)
@@ -201,7 +201,7 @@ jobs:
 
   webgpu-smoke:
     name: WebGPU smoke
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 20
     if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'lane:prd11')
     steps:

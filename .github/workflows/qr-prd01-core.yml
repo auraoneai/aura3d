@@ -1,7 +1,7 @@
 # QR lane 01 — rendering core / color / HDR / PBR (PRD-01 §16.4)
 #
 # Mirrors .github/workflows/qr-contracts.yml conventions: lint + unit gates on
-# ubuntu, browser conformance on macos-14, evidence upload for the browser run.
+# ubuntu, browser conformance on macos-15, evidence upload for the browser run.
 #
 # PRD-16 01-CI / P-07: runs on main pushes and nightly (not only qr/** branches),
 # triggers on every lane-01 owned rendering dir, never cancels main runs, and has
@@ -215,8 +215,8 @@ jobs:
           retention-days: 7
 
   browser:
-    name: Browser conformance (macos-14 / chromium)
-    runs-on: macos-14
+    name: Browser conformance (macos-15 / chromium)
+    runs-on: macos-15
     needs: build-harness
     steps:
       - uses: actions/checkout@v4
@@ -252,8 +252,8 @@ jobs:
     # `prd01-draw-throughput` content, 60 s orbit compiles, plus the unit
     # budgets (pipeline cache, 10k instances = 1 draw, VAO eviction at 1,000
     # buffers, 576-box consolidateStatic). Counters report uploaded always.
-    name: Perf (macos-14 / chromium)
-    runs-on: macos-14
+    name: Perf (macos-15 / chromium)
+    runs-on: macos-15
     needs: build-harness
     steps:
       - uses: actions/checkout@v4

@@ -3,7 +3,7 @@ name: QR-03 post quality
 # Lane 03 (PRD-03) postprocessing quality gate. PR- and push-triggered on
 # lane-03-owned paths only (other lanes' edits under packages/rendering do not
 # run this workflow), plus a nightly checkpoint run. Unit checks on ubuntu,
-# lane browser specs on macos-14 with ANGLE Metal (PRD-03 §15.2).
+# lane browser specs on macos-15 with ANGLE Metal (PRD-03 §15.2).
 # `@integrated` specs are skipped in PR runs; they run at checkpoints with
 # qr_flags=all. No secrets.
 
@@ -113,8 +113,8 @@ jobs:
         run: git diff --name-only origin/main...HEAD | xargs -r node tools/qr-ownership/check.mjs
 
   browser:
-    name: Lane 03 browser specs (macos-14, ANGLE Metal)
-    runs-on: macos-14
+    name: Lane 03 browser specs (macos-15, ANGLE Metal)
+    runs-on: macos-15
     # 03-S11 adds the 18-game × 300-frame readback sweep to post-no-readback.
     timeout-minutes: 90
     env:
@@ -201,7 +201,7 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - name: Lane 03 post specs on the GPU (@integrated skipped)
         run: |
-          # qr-prd03-wgsl-compile runs only on the macos-14 job above: the
+          # qr-prd03-wgsl-compile runs only on the macos-15 job above: the
           # azure-gpu (L4, Linux, ANGLE Vulkan) pool exposes no WebGPU adapter
           # (navigator.gpu absent / requestAdapter() null, run 38127246424),
           # and the spec fails without one by design (P-22). It is not

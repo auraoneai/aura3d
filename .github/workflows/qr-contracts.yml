@@ -2,7 +2,7 @@ name: QR contracts
 
 # Aura3D Quality Rebuild contract gate (CONTRACTS.md §1.1, §3.8). Runs the
 # unit conformance suites everywhere and the browser conformance specs on
-# macos-14 (Chromium, ANGLE Metal) — the same runner class as
+# macos-15 (Chromium, ANGLE Metal) — the same runner class as
 # quality-rebuild-capture.yml.
 
 on:
@@ -42,7 +42,7 @@ jobs:
       - run: node tools/qr-ownership/check.mjs
 
   browser:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

@@ -87,13 +87,13 @@ on:
   workflow_dispatch:
     inputs:
       ic0_baseline_run:
-        description: "07-IC0: run id of the earlier GitHub macos-14 prd07-vfx run whose prd07-ic0-<id> artifact is the IC-0 baseline"
+        description: "07-IC0: run id of the earlier GitHub macos-15 prd07-vfx run whose prd07-ic0-<id> artifact is the IC-0 baseline"
         required: false
         default: ""
 
 jobs:
   unit:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -130,7 +130,7 @@ jobs:
       - run: pnpm exec tsc -p tsconfig.build.json --noEmit
 
   bake:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -145,7 +145,7 @@ jobs:
           done
 
   browser:
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 45
     env:
       QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
@@ -182,7 +182,7 @@ jobs:
           fi
 
   capture:
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 90
     env:
       QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
@@ -253,7 +253,7 @@ jobs:
             fi
           done
 
-  # 07 T0-34 (PRD-16 §2.4/§2.5) — vfx attribution on GitHub macos-14 (GitLab
+  # 07 T0-34 (PRD-16 §2.4/§2.5) — vfx attribution on GitHub macos-15 (GitLab
   # quota is exhausted). The `$ALL` and `$ALL,-vfx` arms capture the same
   # scenes; vfx-attribution.mjs fails on any scene broken only with vfx on.
   # Each arm stays --strict, so this job is red while `$ALL` is red for any
@@ -261,7 +261,7 @@ jobs:
   # Runs on main pushes, the nightly and dispatch, not on PRs (macOS budget).
   vfx-attribution:
     if: github.event_name != 'pull_request'
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 120
     env:
       QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
@@ -322,7 +322,7 @@ jobs:
           if-no-files-found: warn
 
   games:
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 120
     env:
       QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
@@ -396,7 +396,7 @@ jobs:
           if-no-files-found: error
 
   # 07-IC0 (PRD-07 §22.3) — flag-off identity on all 18 base scenes and all
-  # 18 games against the IC-0 baseline run (same provider: GitHub macos-14,
+  # 18 games against the IC-0 baseline run (same provider: GitHub macos-15,
   # program lead ruling 2026-10-10). The noise floor is measured in this job
   # from a second flag-off pass (sentinels.json: never assumed). Without a
   # baseline run id (input `ic0_baseline_run` or repo variable
@@ -404,7 +404,7 @@ jobs:
   # are the baseline candidate. Nightly and dispatch only (macOS budget).
   ic0:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 240
     permissions:
       contents: read
@@ -476,7 +476,7 @@ jobs:
     # (particles-production) and the sky scenes (sky-background,
     # sky-daynight-identity). PRD07_MOBILE=1 drives the viewport/profile in
     # tests/qr/prd07/playwright.config.ts.
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 45
     env:
       PRD07_MOBILE: "1"

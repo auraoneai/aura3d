@@ -1,7 +1,7 @@
 name: QR GPU suites
 
 # Track 0 / lane-12 GPU suites on a configurable runner (program-lead ruling
-# 2026-10-11): GitLab macOS is out (quota), GitHub macos-14 (Metal) is the
+# 2026-10-11): GitLab macOS is out (quota), GitHub macos-15 (Metal) is the
 # default, and `runner: azure-gpu` targets the self-hosted GPU scale set
 # (labels self-hosted + azure-gpu) once it exists. Same suites as the GitLab
 # qr:benchmark / qr:games jobs, driven by benchmarks/quality-rebuild/ci.sh and
@@ -11,7 +11,7 @@ name: QR GPU suites
 #   suite=flags-bisect  ci.sh, one build, every ';'-separated bench_flag_sets
 #   suite=games         capture-games.mjs (games, viewports, qr_flags)
 #
-# Never compare frames across runner types or providers (macos-14 vs GitLab vs
+# Never compare frames across runner types or providers (macos-15 vs GitLab vs
 # azure-gpu): each provider keeps its own baselines (IC-0 per provider).
 # Honest failures: a red `none` control, a missing summary or a missing
 # artifact fails the job; nothing here is masked.
@@ -25,9 +25,9 @@ on:
         options: [benchmark, flags-bisect, games, promote, gameplay, examples]
         default: flags-bisect
       runner:
-        description: "azure-gpu (self-hosted NVIDIA, Vulkan ANGLE) | macos-14 (Metal)"
+        description: "azure-gpu (self-hosted NVIDIA, Vulkan ANGLE) | macos-15 (Metal)"
         type: choice
-        options: [azure-gpu, track0, macos-14]
+        options: [azure-gpu, track0, macos-15]
         default: azure-gpu
       gpu_class:
         description: "azure-gpu only: l4 | t4 pin a class (needs gpu-l4/gpu-t4 runner labels; baselines); any = first free GPU runner (within-job comparisons such as flags-bisect)"
@@ -185,7 +185,7 @@ jobs:
         run: |
           set -euo pipefail
           case "$RUNNER_KIND" in
-            macos-14) args="--use-angle=metal --enable-gpu --ignore-gpu-blocklist" ;;
+            macos-15) args="--use-angle=metal --enable-gpu --ignore-gpu-blocklist" ;;
             # Linux NVIDIA (verified by the program lead on gcp-gpu-1..6; no
             # Xvfb): Vulkan ANGLE. vars.QR_AZURE_GPU_CHROME_ARGS overrides.
             azure-gpu|track0) args="${QR_AZURE_GPU_CHROME_ARGS:---headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist}" ;;

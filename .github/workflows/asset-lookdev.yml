@@ -1,7 +1,7 @@
 name: Asset look-dev
 
 # PRD-05 §6.7 — the apps/asset-lookdev stage driven by capture.mjs on
-# macos-14 Chromium/ANGLE Metal (SwiftShader aborts the run before capture).
+# macos-15 Chromium/ANGLE Metal (SwiftShader aborts the run before capture).
 # Dispatched by `aura3d assets lookdev <id...>` (or by hand) with a CSV of
 # manifest asset ids; artifacts land in tests/reports/lookdev/<id>/ —
 # contact.jpg, debug.jpg, gameplay.jpg, metrics.json, review.json per asset.
@@ -46,7 +46,7 @@ env:
 
 jobs:
   capture:
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4

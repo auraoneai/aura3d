@@ -8,7 +8,7 @@ on:
       runner:
         description: Existing GPU pool or hosted Metal runner
         type: choice
-        options: [azure-gpu, track0, macos-14]
+        options: [azure-gpu, track0, macos-15]
         default: azure-gpu
       lane:
         description: Focused lane to rerun
@@ -31,7 +31,7 @@ concurrency:
 jobs:
   focused-gpu:
     if: github.repository == 'auraoneai/aura3d'
-    runs-on: ${{ inputs.runner == 'macos-14' && 'macos-14' || (inputs.runner == 'track0' && fromJSON('["self-hosted","track0","gpu-l4"]')) || fromJSON('["self-hosted","azure-gpu"]') }}
+    runs-on: ${{ inputs.runner == 'macos-15' && 'macos-15' || (inputs.runner == 'track0' && fromJSON('["self-hosted","track0","gpu-l4"]')) || fromJSON('["self-hosted","azure-gpu"]') }}
     timeout-minutes: 100
     strategy:
       fail-fast: false

@@ -8,7 +8,7 @@ name: QR PRD-10 ready time
 #   capture — the production build through ci.sh (flags-bisect), the same
 #             path as the Track 0 rounds, for the real READY times per set.
 # Runner: self-hosted azure-gpu (NVIDIA, Vulkan ANGLE). Frames from this
-# runner are never compared with macos-14 or GitLab frames. Nothing is
+# runner are never compared with macos-15 or GitLab frames. Nothing is
 # masked: a timeout is reported as a timeout, and a missing result or
 # artifact fails the job.
 

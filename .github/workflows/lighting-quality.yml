@@ -126,7 +126,7 @@ jobs:
 
   browser:
     name: browser conformance (prd02)
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -161,7 +161,7 @@ jobs:
 
   lane-capture:
     name: lane capture + baselines
-    runs-on: macos-14
+    runs-on: macos-15
     # 02-BASE opens a baseline PR on update_baseline dispatches.
     permissions:
       contents: write
@@ -224,7 +224,7 @@ jobs:
 
   # Lane-02 GPU job (program-lead ruling 2026-10-11): the prd02 browser specs
   # and the lane capture on the self-hosted NVIDIA scale set (labels
-  # self-hosted + azure-gpu, Vulkan ANGLE), alongside the macos-14 jobs.
+  # self-hosted + azure-gpu, Vulkan ANGLE), alongside the macos-15 jobs.
   # Dispatch-only, so PR code (forks included) never reaches the self-hosted
   # runner. Chrome args follow qr-azure-gpu.yml (#956):
   # vars.QR_AZURE_GPU_CHROME_ARGS, else the Vulkan ANGLE default below.

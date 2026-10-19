@@ -2,7 +2,7 @@ name: Agent output eval
 
 # T0.5 — the 12 §18.3 prompts x 3 seeds eval matrix (PRD-13 §6.7):
 #   pack (ubuntu) -> agent cells (ubuntu, Claude Code via Kiro Prism, 45-min
-#   wall clock each) -> capture (macos-14, the T0.1 capture tool in --source
+#   wall clock each) -> capture (macos-15, the T0.1 capture tool in --source
 #   mode against the agent-built dist/ dirs, flags none and all) -> panel
 #   packet artifact for the G-PANEL judges.
 #
@@ -147,8 +147,8 @@ jobs:
           if-no-files-found: warn
 
   capture:
-    name: Capture agent output (macos-14, flags ${{ matrix.qr_flags }})
-    runs-on: macos-14
+    name: Capture agent output (macos-15, flags ${{ matrix.qr_flags }})
+    runs-on: macos-15
     timeout-minutes: 180
     needs: agent
     # Capture the cells that did build even when another cell failed; the
