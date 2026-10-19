@@ -277,7 +277,7 @@ jobs:
   # add it and then push, or dispatch on the branch. A PR without the label
   # skips this job; the main push run is the gate of record.
   # Provider (program-lead ruling 2026-10-11, GitLab quota exhausted): the
-  # flags-bisect runs on GitHub macos-14 by default; set the repository
+  # flags-bisect runs on GitHub macos-15 by default; set the repository
   # variable QR_ALLFLAGS_PROVIDER=gitlab to route it to GitLab again. Exactly
   # one of allflags-smoke-github / allflags-smoke runs. Both fail on any
   # infrastructure error (quota, missing artifacts) — never green.
@@ -292,7 +292,7 @@ jobs:
     with:
       suite: flags-bisect
       # Self-hosted NVIDIA GPU runners (L4 class) by default; vars.QR_GPU_RUNNER
-      # = macos-14 falls back to GitHub Metal (separate baselines per provider).
+      # = macos-15 falls back to GitHub Metal (separate baselines per provider).
       runner: ${{ vars.QR_GPU_RUNNER || 'azure-gpu' }}
       # flags-bisect compares arms inside one job on one GPU, so any class works.
       gpu_class: any
