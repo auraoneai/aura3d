@@ -191,9 +191,15 @@ export function dispatchActorAnimation(
     runtimeWarnings.add(`${ANIMATION_EMPTY_POSE}: typed GLB actor "${entry.actor.id}" (node "${nodeId}") rejected an animation pose with 0 bones and 0 morph targets; falling back to clip playback.`);
   }
   if (animationPose) {
+    // Overlay poses ride on top of the evaluated clip (route pose after clip
+    // evaluation); replace poses own the rig and pause clip playback.
+    const overlay = animationPose.mode === "overlay";
+    if (overlay) {
+      applyProductionActorAnimation(entry, node, state.animationBinding, time, runtimeWarnings, modelMatrix, refreshAfterMovement, runtimeNodes);
+    }
     try {
       entry.actor.applyRetargetedPose(animationPose, state.animationPoseTime ?? time);
-      entry.rootMotionCursors = undefined;
+      if (!overlay) entry.rootMotionCursors = undefined;
     } catch (error) {
       runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply bound pose: ${productionRenderErrorMessage(error)}`);
     }

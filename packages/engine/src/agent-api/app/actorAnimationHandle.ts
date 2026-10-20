@@ -7,6 +7,7 @@
 // same rejection on the render side, and flags resolve from URL/env per §5.2.
 
 import type { AnimationPose } from "@aura3d/animation";
+import { composeMat4, decomposeMat4, eulerXYZFromQuat, multiplyMat4, quatFromEulerXYZ, type Mat4 } from "@aura3d/scene";
 import {
   addPrd06ActorConstraint,
   addPrd06ActorSpringBones,
@@ -25,6 +26,7 @@ import {
   type AuraActorAnimationApi,
   type AuraActorAnimationStateSnapshot,
   type AuraAnimationDiagnostics,
+  type AuraBoneAttachSpec,
   type AuraBoneMaskSpec,
   type AuraBoneSocket,
   type AuraResolvedClipInfo
@@ -255,8 +257,17 @@ export type ActorAnimationApplySource = () => GLTFSceneAnimationApplyResult | nu
 /** Bone name → the scene node's current world matrix (a fresh copy each call). */
 export type ActorBoneMatrixSource = (bone: string) => readonly number[] | Float32Array | null | undefined;
 
+/**
+ * Bone name → the scene node's world matrix frozen at actor load (the GLB's
+ * bind pose, before any clip/pose has been applied). Rigs whose bind rotations
+ * are not identity need this to compute bone-space offsets and bind directions
+ * instead of hand-measured constants.
+ */
+export type ActorBindMatrixSource = ActorBoneMatrixSource;
+
 const actorAnimationApplySources = new Map<string, ActorAnimationApplySource>();
 const actorBoneMatrixSources = new Map<string, ActorBoneMatrixSource>();
+const actorBindMatrixSources = new Map<string, ActorBindMatrixSource>();
 
 /** T3.6 — C-19 code, warn-once per (nodeId, bone) when the actor is loaded. */
 export const ANIMATION_SOCKET_UNKNOWN_BONE = "ANIMATION_SOCKET_UNKNOWN_BONE";
@@ -279,11 +290,106 @@ export function registerActorBoneMatrixSource(actorId: string, source: ActorBone
   return registerSource(actorBoneMatrixSources, actorId, source);
 }
 
+/** Registered from the `prd06.animation` actor extension's `onLoad` (bind-pose snapshot). */
+export function registerActorBindMatrixSource(actorId: string, source: ActorBindMatrixSource): () => void {
+  return registerSource(actorBindMatrixSources, actorId, source);
+}
+
+/** The bone's frozen bind-pose world matrix for a loaded actor, else null. */
+export function actorBindMatrixFor(actorId: string, bone: string): Float32Array | null {
+  const value = actorBindMatrixSources.get(actorId)?.(bone);
+  return value ? Float32Array.from(value).subarray(0, 16) : null;
+}
+
 /** Test seam: drop every state source between specs. */
 export function resetActorAnimationStateSources(): void {
   actorAnimationApplySources.clear();
   actorBoneMatrixSources.clear();
+  actorBindMatrixSources.clear();
   socketUnknownBoneWarned.clear();
+}
+
+/* ------------------------------------------------------------------------ */
+/* Bone attachments — socket a runtime node to a bone. The render pipeline    */
+/* resolves each attachment right after the owning actor's clip/pose apply,   */
+/* so the target node's transform is derived from the CURRENT frame's bone    */
+/* world matrix (rigid through fast swings, no onFrame lag).                  */
+/* ------------------------------------------------------------------------ */
+
+export interface RegisteredBoneAttachment {
+  readonly targetId: string;
+  readonly bone: string;
+  /** Bone-space offset TRS composed once at registration. */
+  readonly offset: readonly number[];
+  readonly scale: number;
+}
+
+const actorBoneAttachments = new Map<string, Set<RegisteredBoneAttachment>>();
+
+/**
+ * Register one bone attachment for `actorId`. The render pass composes
+ * `modelMatrix × boneWorldMatrix × offset` and writes the decomposed
+ * position/rotation onto the target runtime node handle each frame.
+ */
+export function registerActorBoneAttachment(
+  actorId: string,
+  attachment: RegisteredBoneAttachment
+): () => void {
+  let set = actorBoneAttachments.get(actorId);
+  if (set === undefined) {
+    set = new Set();
+    actorBoneAttachments.set(actorId, set);
+  }
+  set.add(attachment);
+  return () => {
+    set!.delete(attachment);
+    if (set!.size === 0) actorBoneAttachments.delete(actorId);
+  };
+}
+
+/** Drop every bone attachment registered for `actorId`. */
+export function clearActorBoneAttachments(actorId: string): void {
+  actorBoneAttachments.delete(actorId);
+}
+
+/** Test seam: drop all attachments. */
+export function resetActorBoneAttachments(): void {
+  actorBoneAttachments.clear();
+}
+
+/**
+ * Resolve every attachment registered for `actorId` against the actor's
+ * current-frame bone matrices and write the composed world transform onto each
+ * target runtime node. Called by the render input after the actor's clip/pose
+ * pipeline has applied and world transforms are current. Bone matrices live in
+ * the actor's own scene space, so the composition is
+ * `modelMatrix × boneWorld × offset` — the target must be a root-level node
+ * (its parent chain is the identity scene root, world == local).
+ */
+export function resolveActorBoneAttachments(
+  actorId: string,
+  modelMatrix: readonly number[],
+  runtimeNodes: { get(id: string): { setPosition(x: number, y: number, z: number): unknown; setRotation(x: number, y: number, z: number): unknown; setScale(scale: number): unknown } | undefined } | undefined
+): number {
+  const attachments = actorBoneAttachments.get(actorId);
+  if (attachments === undefined || runtimeNodes === undefined) return 0;
+  let resolved = 0;
+  for (const attachment of attachments) {
+    const boneMatrix = actorBoneMatrixSources.get(actorId)?.(attachment.bone);
+    const target = runtimeNodes.get(attachment.targetId);
+    if (boneMatrix === null || boneMatrix === undefined || target === undefined) continue;
+    const world = multiplyMat4(
+      modelMatrix as Mat4,
+      multiplyMat4(boneMatrix as Mat4, attachment.offset as Mat4)
+    );
+    const { position, rotation } = decomposeMat4(world);
+    target.setPosition(position[0], position[1], position[2]);
+    const euler = eulerXYZFromQuat(rotation);
+    target.setRotation(euler[0], euler[1], euler[2]);
+    target.setScale(attachment.scale);
+    resolved += 1;
+  }
+  return resolved;
 }
 
 /**
@@ -548,6 +654,10 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
       const value = actorBoneMatrixSources.get(this.nodeId)?.(bone);
       return value ? Float32Array.from(value).subarray(0, 16) : null;
     };
+    const bindMatrix = (): Float32Array | null => {
+      const value = actorBindMatrixSources.get(this.nodeId)?.(bone);
+      return value ? Float32Array.from(value).subarray(0, 16) : null;
+    };
     // T3.6 — `valid: false` + `ANIMATION_SOCKET_UNKNOWN_BONE` once per
     // (node, bone), and only after the actor is loaded (pre-load calls stay
     // silent — the bone cannot be judged unknown yet).
@@ -576,10 +686,38 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
         }
         return current;
       },
+      bindWorldMatrix: (out?: Float32Array) => {
+        const current = bindMatrix();
+        if (!current) return out ?? new Float32Array(16);
+        if (out) {
+          out.set(current);
+          return out;
+        }
+        return current;
+      },
       get valid() {
         return probe() !== null;
       }
     };
+  }
+
+  override attach(spec: AuraBoneAttachSpec): () => void {
+    // Degrade to a no-op disposer while the flag is off — the attachment
+    // registry is only read by the flag-on render path.
+    if (!qrAnimationFlags().on("A3D_QR_ANIMATION")) return () => { /* stub no-op */ };
+    const targetId = typeof spec.target === "string" ? spec.target : spec.target.id;
+    const rotation = spec.rotation ?? [0, 0, 0];
+    const offset = composeMat4(
+      spec.position ?? [0, 0, 0],
+      quatFromEulerXYZ(rotation[0], rotation[1], rotation[2]),
+      [1, 1, 1]
+    );
+    return registerActorBoneAttachment(this.nodeId, {
+      targetId,
+      bone: spec.socket,
+      offset,
+      scale: spec.scale ?? 1
+    });
   }
 }
 

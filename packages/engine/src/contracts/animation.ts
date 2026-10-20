@@ -14,7 +14,22 @@ export interface AuraBoneMaskSpec { readonly include?: readonly string[]; readon
 export interface AuraRootMotionSpec { readonly bone?: string; readonly axes?: readonly ("x" | "y" | "z" | "yaw")[]; readonly mode: "apply" | "extract-only"; }
 export interface AuraResolvedClipInfo { readonly name: string; readonly duration: number; readonly channelCount: number; readonly hasRootMotionCandidate: boolean; }
 export interface AuraActorAnimationStateSnapshot { readonly activeClip: string | null; readonly tracksApplied: number; readonly activeActions: readonly { readonly clip: string; readonly layer: string; readonly weight: number; readonly time: number }[]; readonly timeScale: number; }
-export interface AuraBoneSocket { readonly bone: string; worldMatrix(out?: Float32Array): Float32Array; readonly valid: boolean; }
+export interface AuraBoneSocket { readonly bone: string; worldMatrix(out?: Float32Array): Float32Array; readonly bindWorldMatrix: (out?: Float32Array) => Float32Array; readonly valid: boolean; }
+/**
+ * C-19 socket attachment — pin a scene node to a bone so the engine resolves
+ * the node's transform from the bone's world matrix every frame, after the
+ * clip/pose pipeline has run (no one-frame lag, rigid through fast swings).
+ * `position`/`rotation`/`scale` are an offset composed in bone space; the
+ * target should be a root-level runtime node the route no longer drives.
+ */
+export interface AuraBoneAttachSpec {
+  readonly socket: string;
+  readonly target: string | AuraRuntimeNodeHandle;
+  readonly position?: readonly [number, number, number];
+  /** XYZ Euler radians in bone space. */
+  readonly rotation?: readonly [number, number, number];
+  readonly scale?: number;
+}
 export interface AuraActorAnimationApi {
   crossFadeTo(clip: string, seconds: number, options?: { transition?: "crossfade" | "inertialize"; warp?: boolean }): this;
   playLayer(layer: string, clip: string, options?: { weight?: number; fadeIn?: number; mask?: AuraBoneMaskSpec; blendMode?: "override" | "additive" }): this;
@@ -22,6 +37,7 @@ export interface AuraActorAnimationApi {
   resolveAnimationClips(): Promise<readonly AuraResolvedClipInfo[]>;
   animationState(): AuraActorAnimationStateSnapshot | undefined;
   socket(bone: string): AuraBoneSocket;
+  attach(spec: AuraBoneAttachSpec): () => void;
   readonly ik: { add(spec: unknown): () => void; clear(): void };          // concrete specs: PRD 06 TwoBoneIk/LookAt/Ccd/FootIk
   readonly springBones: { add(spec: unknown): () => void; clear(): void };
   /**
@@ -69,7 +85,10 @@ export class StubActorAnimationApi implements AuraActorAnimationApi {
     return { activeClip: this.clip, tracksApplied: 0, activeActions: [], timeScale: 1 };
   }
   socket(bone: string): AuraBoneSocket {
-    return { bone, worldMatrix: (out?: Float32Array) => out ?? new Float32Array(16), valid: false };
+    return { bone, worldMatrix: (out?: Float32Array) => out ?? new Float32Array(16), bindWorldMatrix: (out?: Float32Array) => out ?? new Float32Array(16), valid: false };
+  }
+  attach(_spec: AuraBoneAttachSpec): () => void {
+    return () => { /* noop */ };
   }
   readonly ik = { add: (_spec: unknown) => () => { /* noop */ }, clear: () => { /* noop */ } };
   readonly springBones = { add: (_spec: unknown) => () => { /* noop */ }, clear: () => { /* noop */ } };

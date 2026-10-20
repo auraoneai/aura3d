@@ -79,7 +79,8 @@ export function cloneRuntimeAnimationPose(pose: AnimationPose): AnimationPose {
           rotation: pose.rootMotion.rotation ? { ...pose.rootMotion.rotation } : undefined
         }
       : undefined,
-    metadata: pose.metadata ? { ...pose.metadata } : undefined
+    metadata: pose.metadata ? { ...pose.metadata } : undefined,
+    mode: pose.mode
   };
 }
 

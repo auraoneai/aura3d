@@ -15,6 +15,7 @@ import { composeModelInstanceMatrices, getRootPerformanceQuality, getRootRenderS
 import { resolveSdfTextFrameOpacity, resolveWrinkleMapStrength, warnOnInstancingFallback, type CameraLike, type CollectedLight, type EnvironmentLightingOptions, type ProductionRendererInput, type RenderItem, type RenderSource } from "@aura3d/rendering";
 import { identityMat4 } from "@aura3d/scene/math";
 import { applyProductionActorAnimation, applySpecRootMotionTransform } from "./animation.js";
+import { resolveActorBoneAttachments } from "../app/actorAnimationHandle.js";
 import { createProductionRuntimeEnvironmentFog } from "./fog.js";
 import { createProductionRuntimePostprocess } from "./postprocess.js";
 import { authoredPostContextFor } from "../postBridge.js";
@@ -180,9 +181,24 @@ export function createProductionRuntimeRendererInput(
     // refresh its matrix before the clip plays so the solve uses this frame, not the last.
     applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings, degrade);
     if (currentState.animationPose) {
+      // Overlay poses evaluate the clip first and write their bones on top, so
+      // omitted bones keep the clip's motion (route pose after clip evaluation
+      // — the structural fix for poses being overwritten by later clip eval).
+      const overlay = currentState.animationPose.mode === "overlay";
+      if (overlay) {
+        applyProductionActorAnimation(entry, currentNode, currentState.animationBinding, time, runtimeWarnings, modelMatrix, () => {
+          currentState = resolveProductionActorRuntimeState(entry, runtimeNodes);
+          currentNode = currentState.node;
+          const actorBoundsRefresh = productionActorModelBounds(currentNode.asset, entry.actor);
+          const actorNormalizeRefresh = shouldNormalizeModelNode(currentNode);
+          modelMatrix = [...(prd01ModelMatrixCache?.modelMatrix(currentNode, actorBoundsRefresh, actorNormalizeRefresh, time) ?? createModelMatrix(currentNode, actorBoundsRefresh, actorNormalizeRefresh, time))];
+          applySpecRootMotionTransform(entry, modelMatrix);
+          applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings, degrade);
+        }, runtimeNodes);
+      }
       try {
         entry.actor.applyRetargetedPose(currentState.animationPose, currentState.animationPoseTime ?? time);
-        entry.rootMotionCursors = undefined;
+        if (!overlay) entry.rootMotionCursors = undefined;
       } catch (error) {
         if (degrade) degrade({ code: "pose-apply-failed", nodeId: entry.actor.id, message: `Typed GLB actor "${entry.actor.id}" failed to apply bound pose: ${productionRenderErrorMessage(error)}`, cause: error });
         else runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply bound pose: ${productionRenderErrorMessage(error)}`);
@@ -196,6 +212,9 @@ export function createProductionRuntimeRendererInput(
       applySpecRootMotionTransform(entry, modelMatrix);
       applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings, degrade);
     }, runtimeNodes);
+    // Bone attachments resolve against the just-applied pose: current-frame
+    // bone world matrices, before this or any later entry collects render items.
+    resolveActorBoneAttachments(entry.actor.id, modelMatrix, runtimeNodes);
     applyProductionActorMorphTargets(entry, currentState.morphTargets, runtimeWarnings, degrade);
     // Wrinkle detail (E1 face-rig demo): resolve morph weights through the model's hook.
     // Absent hook (or empty weights) resolves to 0 = today's rendering exactly.

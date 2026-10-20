@@ -51,6 +51,14 @@ export interface AnimationPose {
   readonly morphTargets?: Record<string, number>;
   readonly rootMotion?: AnimationRootMotion;
   readonly metadata?: Record<string, unknown>;
+  /**
+   * How the render pipeline composes this pose with the node's clip.
+   * "replace" (default) — the pose owns the whole rig and clip playback pauses.
+   * "overlay" — the clip evaluates first and this pose's bones are written on
+   * top, so bones the pose omits keep the clip's motion (an upper-body pose
+   * layered over a run cycle, evaluated after the clip every frame).
+   */
+  readonly mode?: "replace" | "overlay";
 }
 
 export interface AnimationClipPlaybackState<TClipId extends string = string> {

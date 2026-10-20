@@ -6,7 +6,7 @@
 
 // ── Contract surface (intended "." members per PRD-15 T5.1; not deprecated) ──
 export { StubActorAnimationApi } from "../contracts/animation.js";
-export type { AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraAnimationDiagnostics, AuraBoneMaskSpec, AuraBoneSocket, AuraCreateAppAnimationOptions, AuraResolvedClipInfo, AuraRootMotionSpec } from "../contracts/animation.js";
+export type { AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraAnimationDiagnostics, AuraBoneAttachSpec, AuraBoneMaskSpec, AuraBoneSocket, AuraCreateAppAnimationOptions, AuraResolvedClipInfo, AuraRootMotionSpec } from "../contracts/animation.js";
 export { appExtensionsAll, registerAppExtension } from "../contracts/app.js";
 export type { AppExtension, AuraAppExtensionMap } from "../contracts/app.js";
 export { auditArtDirection } from "../contracts/art.js";

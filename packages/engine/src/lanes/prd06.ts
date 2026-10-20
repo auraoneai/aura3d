@@ -62,6 +62,8 @@ import {
   qrAnimationFlags,
   registerActorAnimationApplySource,
   registerActorBoneMatrixSource,
+  registerActorBindMatrixSource,
+  clearActorBoneAttachments,
   registerActorClipInfoSource,
   registerPrd06AnimationActor
 } from "../agent-api/app/actorAnimationHandle.js";
@@ -123,6 +125,23 @@ function createActorBoneMatrixLookup(actor: TypedGLBActor): (bone: string) => Fl
   };
 }
 
+/**
+ * The bind-pose variant of the bone lookup: the same nodes frozen once at
+ * actor load — before any clip or pose has applied — so rigs with non-identity
+ * bind rotations can be measured exactly (`socket(bone).bindWorldMatrix()`).
+ */
+function createActorBindMatrixLookup(actor: TypedGLBActor): (bone: string) => Float32Array | null {
+  const nodesByName = new Map<string, SceneNode>();
+  actor.pipeline.resources.scene.traverse((node) => {
+    if (node.name && !nodesByName.has(node.name)) nodesByName.set(node.name, node);
+  });
+  const frozen = new Map<string, Float32Array>();
+  for (const [name, node] of nodesByName) {
+    frozen.set(name, Float32Array.from(node.transform.worldMatrix));
+  }
+  return (bone: string) => frozen.get(bone) ?? null;
+}
+
 const actorClipInfoDisposers = new Map<string, () => void>();
 const actorAnimationStateDisposers = new Map<string, (() => void)[]>();
 
@@ -138,7 +157,8 @@ registerTypedGLBActorExtension({
     actorClipInfoDisposers.set(`${actor.id}:actor`, registerPrd06AnimationActor(actor));
     actorAnimationStateDisposers.set(actor.id, [
       registerActorAnimationApplySource(actor.id, () => actor.animation.snapshot().lastApply),
-      registerActorBoneMatrixSource(actor.id, createActorBoneMatrixLookup(actor))
+      registerActorBoneMatrixSource(actor.id, createActorBoneMatrixLookup(actor)),
+      registerActorBindMatrixSource(actor.id, createActorBindMatrixLookup(actor))
     ]);
     // T2.8 §9.7 — shader warm-up: precompile the skinned/morph programs and
     // withhold those items from collectRenderItems until linked.
@@ -171,6 +191,7 @@ registerTypedGLBActorExtension({
     }
     for (const disposeSource of actorAnimationStateDisposers.get(actor.id) ?? []) disposeSource();
     actorAnimationStateDisposers.delete(actor.id);
+    clearActorBoneAttachments(actor.id);
   }
 });
 

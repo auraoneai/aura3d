@@ -211,6 +211,24 @@ describe("dispatchActorAnimation (T0.1)", () => {
     dispatchActorAnimation(entry, {}, node, 0, second, IDENTITY_MAT4, () => undefined);
     expect([...second].some((w) => w.startsWith(ANIMATION_EMPTY_POSE))).toBe(false);
   });
+
+  it("evaluates the clip first and layers an overlay pose on top (pose after clip)", () => {
+    const calls = { applyRetargetedPose: [] as unknown[], playClip: [] as unknown[] };
+    const entry = fakeActorEntry(calls);
+    const overlayPose: AnimationPose = { ...BONE_POSE, mode: "overlay" };
+    dispatchActorAnimation(
+      entry,
+      { animationPose: overlayPose, animationPoseTime: 0.25 },
+      FAKE_NODE,
+      1000,
+      new Set(),
+      IDENTITY_MAT4,
+      () => undefined
+    );
+    // The clip evaluated, and the pose still wrote its bones over the result.
+    expect(calls.playClip).toHaveLength(1);
+    expect(calls.applyRetargetedPose).toEqual([[overlayPose, 0.25]]);
+  });
 });
 
 describe("clipSamples dispatch (T0.3, flag-gated)", () => {
