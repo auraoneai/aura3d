@@ -34,6 +34,16 @@ const repoRoot = path.resolve(marketingDir, "..");
 const distDir = path.join(marketingDir, "dist");
 const rootViteConfig = path.join(repoRoot, "vite.config.ts");
 const engineSourceEntry = path.join(repoRoot, "packages", "engine", "src", "agent-api", "index.ts");
+/*
+ * The app alias must point at the public entry, not agent-api/index.ts.
+ * public/index.ts evaluates `src/lanes/index.ts`, which is what registers the
+ * C-38 app extensions (`member: "camera"`, time, feel, lighting, ...). Aliasing
+ * the agent-api entry left `appExtensionsAll()` empty in every built route, so
+ * `app.camera` was undefined and `app.camera?.setPose()` silently did nothing:
+ * shipped games rendered one static camera pose. Verified against the built
+ * bundle: `prd08.camera"` was absent from the route chunk.
+ */
+const enginePublicEntry = path.join(repoRoot, "packages", "engine", "src", "public", "index.ts");
 // PRD-15 split the agent API: the game presentation helpers now live in nodes/game.
 const engineGameSource = path.join(repoRoot, "packages", "engine", "src", "agent-api", "nodes", "game", "index.ts");
 
@@ -213,7 +223,7 @@ export default {
     alias: [
       { find: /^@aura3d\\/engine\\/game$/, replacement: ${JSON.stringify(gamePackageEntry)} },
       { find: /^@aura3d\\/game$/, replacement: ${JSON.stringify(gamePackageEntry)} },
-      { find: /^@aura3d\\/engine$/, replacement: ${JSON.stringify(engineSourceEntry)} },
+      { find: /^@aura3d\\/engine$/, replacement: ${JSON.stringify(enginePublicEntry)} },
       ...rootAliases.filter((entry) => entry.find !== "@aura3d/engine")
     ],
     dedupe: ["@aura3d/engine"]
@@ -523,7 +533,7 @@ function main() {
       copyAuraAssets();
     }
     assertBuiltRoutes();
-    console.log(`Built ${showcaseRoutes.length} showcase routes and ${evidenceRoutes.length} evidence routes with local @aura3d/engine agent-api source for package version ${expectedEngineVersion}.`);
+    console.log(`Built ${showcaseRoutes.length} showcase routes and ${evidenceRoutes.length} evidence routes with the local @aura3d/engine public source (lanes included) for package version ${expectedEngineVersion}.`);
   } finally {
     rmSync(tempDir, { force: true, recursive: true });
   }

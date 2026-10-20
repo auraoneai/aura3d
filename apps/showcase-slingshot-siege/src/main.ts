@@ -299,8 +299,16 @@ function updateCamera(dt: number, elapsed: number): void {
   const fov = camState === "follow" ? 50 : 51;
 
   app.camera?.setPose({ position: [px, py, pz], target: camTgt, fov });
-  const snap = app.scene as AuraSceneSnapshot & { camera: Record<string, unknown> };
-  snap.camera = { mode: "perspective", position: [px, py, pz], target: camTgt, fov };
+  /*
+   * Mutate the live spec in place: replacing `app.scene.camera` swaps the
+   * object the camera lane binds against while the renderer keeps its own
+   * reference, and `refreshVp` below reads the spec for world→screen.
+   */
+  const cam = app.scene.camera as unknown as Record<string, unknown>;
+  cam.mode = "perspective";
+  cam.position = [px, py, pz];
+  cam.target = camTgt;
+  cam.fov = fov;
   void elapsed;
 }
 

@@ -43,5 +43,5 @@
       "role": "setDressing"
     }
   ],
-  "notes": "Aura3D 4.0.2 original rocket-roadster odyssey inspired by the public Roadster Hours description (the Crayon client is access-restricted, so no source was copied): Sunbreak Coast, Redline Canyon and Halo Skyway routes with checkpoints, traffic clearing, trailer-roof riding, chained aerial tricks, tuning upgrades and saved career progress. Verified by typecheck and the production route build; browser visual QA was not run in this CPU-only environment."
+  "notes": "Aura3D 4.0.2 original rocket-roadster odyssey inspired by the public Roadster Hours description (the Crayon client is access-restricted, so no source was copied): Sunbreak Coast, Redline Canyon and Halo Skyway routes with checkpoints, traffic clearing, trailer-roof riding, chained aerial tricks, tuning upgrades and saved career progress. The chase camera drives the C-22 lane controller (`app.camera.setPose`) and writes the live scene camera spec so the built route renders the followed pose. Verified by typecheck, the production route build, and a headless lane-camera test; browser visual QA was not run in this CPU-only environment."
 }

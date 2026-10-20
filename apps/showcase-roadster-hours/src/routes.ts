@@ -167,7 +167,7 @@ export const ROUTES: Record<RouteId, RouteDef> = {
     index: 1,
     name: "Redline Canyon",
     tagline: "Arched mesas and dust-lit drops",
-    offsetX: 900,
+    offsetX: 2400,
     length: 2600,
     baseY: 46,
     killY: CANYON_FLOOR + 2,
@@ -201,7 +201,7 @@ export const ROUTES: Record<RouteId, RouteDef> = {
     index: 2,
     name: "Halo Skyway",
     tagline: "Floating expressways under a cyan halo",
-    offsetX: 1800,
+    offsetX: 4800,
     length: 3000,
     baseY: 78,
     killY: 18,
@@ -536,9 +536,12 @@ function addCoastScenery(s: SceneBuilder, route: RouteDef): void {
     const height = 18 + rng() * 30;
     const width = 20 + rng() * 28;
     const depth = 26 + rng() * 38;
+    // A random yaw turns the box; use its bounding radius so no corner reaches
+    // the roadway regardless of rotation.
+    const clearance = HALF_WIDTH + 9 + Math.hypot(width, depth) / 2;
     cliffs.push(
       tf(
-        [pose.x + side * (32 + rng() * 40), SEA_LEVEL + height / 2 - 2, -progress],
+        [pose.x + side * (clearance + rng() * 26), SEA_LEVEL + height / 2 - 2, -progress],
         [0, rng() * Math.PI, 0],
         [width, height, depth]
       )
@@ -610,20 +613,6 @@ function addCoastScenery(s: SceneBuilder, route: RouteDef): void {
     );
   }
 
-  const clouds: Transform[] = [];
-  for (let i = 0; i < 7; i++) {
-    const progress = 80 + i * 300;
-    const side = i % 2 === 0 ? -1 : 1;
-    const pose = roadPose(route, progress);
-    clouds.push(
-      tf(
-        [pose.x + side * (120 + rng() * 220), 150 + rng() * 80, -progress - rng() * 120],
-        [0, rng() * 0.6, 0],
-        [150 + rng() * 120, 5 + rng() * 8, 60 + rng() * 50]
-      )
-    );
-  }
-
   s.addMany([
     boxInstances("coast-cliffs-light", [1, 1, 1], material.pbr({ color: theme.stone, roughness: 0.92 }), cliffs.slice(0, 24), true),
     boxInstances("coast-cliffs-warm", [1, 1, 1], material.pbr({ color: theme.stoneAlt, roughness: 0.94 }), cliffs.slice(24)),
@@ -638,8 +627,7 @@ function addCoastScenery(s: SceneBuilder, route: RouteDef): void {
     boxInstances("coast-palm-trunks", [1, 1, 1], material.pbr({ color: "#5a4436", roughness: 0.9 }), trunks),
     boxInstances("coast-palm-fronds", [1, 1, 1], material.pbr({ color: theme.foliage, roughness: 0.88 }), fronds),
     boxInstances("coast-piers", [1, 1, 1], material.pbr({ color: theme.stoneAlt, roughness: 0.9 }), piers),
-    boxInstances("coast-headlands", [1, 1, 1], material.pbr({ color: theme.stone, roughness: 0.95 }), headlands),
-    boxInstances("coast-clouds", [1, 1, 1], material.pbr({ color: theme.cloud, roughness: 1 }), clouds)
+    boxInstances("coast-headlands", [1, 1, 1], material.pbr({ color: theme.stone, roughness: 0.95 }), headlands)
   ]);
 
   s.addMany([
@@ -682,8 +670,11 @@ function addCanyonScenery(s: SceneBuilder, route: RouteDef): void {
     const height = 34 + rng() * 74;
     const width = 28 + rng() * 42;
     const depth = 34 + rng() * 52;
+    // Same clearance rule as the coast cliffs: the rotated wall's nearest
+    // corner must stay outside the road edge.
+    const clearance = HALF_WIDTH + 12 + Math.hypot(width, depth) / 2;
     const entry = tf(
-      [pose.x + side * (36 + rng() * 58), CANYON_FLOOR + height / 2, -progress],
+      [pose.x + side * (clearance + rng() * 30), CANYON_FLOOR + height / 2, -progress],
       [0, rng() * Math.PI, 0],
       [width, height, depth]
     );
@@ -722,25 +713,11 @@ function addCanyonScenery(s: SceneBuilder, route: RouteDef): void {
     );
   }
 
-  const dustBanks: Transform[] = [];
-  for (let i = 0; i < 8; i++) {
-    const progress = 120 + i * 290;
-    const pose = roadPose(route, progress);
-    dustBanks.push(
-      tf(
-        [pose.x + (i % 2 === 0 ? -1 : 1) * (120 + rng() * 90), 130 + rng() * 50, -progress],
-        [0, rng() * 0.5, 0],
-        [160 + rng() * 90, 4 + rng() * 6, 60 + rng() * 40]
-      )
-    );
-  }
-
   s.addMany([
     boxInstances("canyon-walls-dark", [1, 1, 1], material.pbr({ color: theme.stoneAlt, roughness: 0.95 }), wallsDark),
     boxInstances("canyon-walls-light", [1, 1, 1], material.pbr({ color: theme.stone, roughness: 0.93 }), wallsLight),
     boxInstances("canyon-mesas", [1, 1, 1], material.pbr({ color: theme.stone, roughness: 0.9 }), mesas),
-    boxInstances("canyon-spires", [1, 1, 1], material.pbr({ color: theme.stoneAlt, roughness: 0.94 }), spires),
-    boxInstances("canyon-dust", [1, 1, 1], material.pbr({ color: theme.cloud, roughness: 1 }), dustBanks)
+    boxInstances("canyon-spires", [1, 1, 1], material.pbr({ color: theme.stoneAlt, roughness: 0.94 }), spires)
   ]);
 
   for (let i = 0; i < 5; i++) {

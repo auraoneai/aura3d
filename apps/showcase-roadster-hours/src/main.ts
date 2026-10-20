@@ -376,11 +376,34 @@ async function bootRoadsterHours(): Promise<void> {
   const keys = new Set<string>();
   const pressed = new Set<string>();
 
+  /*
+   * The pose goes through both paths on purpose: the C-22 lane controller
+   * (`app.camera.setPose`) when it is installed, and a direct in-place write to
+   * the live scene camera spec, which is the object the production renderer
+   * resolves every frame. The direct write keeps the chase camera correct if
+   * the camera lane is disabled or a build omits the lane extensions (a
+   * previous showcase build aliased the agent-api entry and did exactly that).
+   */
   const cameraRig = app as unknown as {
     camera?: {
       setPose?: (pose: { position: Vec3; target: Vec3; fov: number }) => void;
     };
   };
+  type LiveCameraSpec = {
+    mode?: string;
+    position?: readonly number[];
+    target?: readonly number[];
+    fov?: number;
+  };
+  function applyCameraPose(position: Vec3, target: Vec3, fov: number): void {
+    cameraRig.camera?.setPose?.({ position, target, fov });
+    const spec = (app.scene as unknown as { camera?: LiveCameraSpec }).camera;
+    if (!spec) return;
+    spec.mode = "perspective";
+    spec.position = [position[0], position[1], position[2]];
+    spec.target = [target[0], target[1], target[2]];
+    spec.fov = fov;
+  }
 
   let camEye: Vec3 = [P.x, P.y + 7, P.z + 14];
   let camTarget: Vec3 = [P.x, P.y + 1.5, P.z - 20];
@@ -1161,7 +1184,7 @@ async function bootRoadsterHours(): Promise<void> {
       camTarget[2] + (target[2] - camTarget[2]) * k
     ];
     camFov += (fov - camFov) * k;
-    cameraRig.camera?.setPose?.({ position: camEye, target: camTarget, fov: camFov });
+    applyCameraPose(camEye, camTarget, camFov);
   }
 
   function updateCamera(dt: number): void {
