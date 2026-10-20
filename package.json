@@ -240,7 +240,7 @@
     "eslint": "^9.26.0",
     "meshoptimizer": "1.2.0",
     "mikktspace": "1.1.1",
-    "playwright": "1.49.1",
+    "playwright": "1.59.1",
     "react": "^19.2.8",
     "react-dom": "19.2.8",
     "sharp": "0.33.5",

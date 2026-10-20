@@ -162,7 +162,10 @@ describe("builder pattern coverage", () => {
       .split("\n")
       .filter(Boolean);
     const builderNamed = files.filter((file) => /(?:build|blender-build|build-review|register)-[^/]*\.(?:mjs|ts|py)$/i.test(file));
-    expect(builderNamed.length).toBeGreaterThan(50);
+    // Corpus sanity bound: 19 builder scripts remain after the arcade-slate
+    // removal (c41705be2); keep a lower bound that still fails on an empty
+    // detection rather than pinning the retired 50+-script corpus.
+    expect(builderNamed.length).toBeGreaterThan(10);
     for (const file of builderNamed) {
       expect(isBuilderScriptPath(file), file).toBe(true);
     }
