@@ -1,8 +1,32 @@
 # Changelog
 
-Version: 4.0.0
+Version: 4.0.3
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.0.3 (2026-10-20)
+
+Round-2 showcase motion fixes plus the engine capabilities they needed.
+
+### Engine — runtime-node animation composition (PRD-06 follow-through)
+
+- **`AnimationPose.mode: "overlay"`** — a pose with `mode: "overlay"` evaluates the node's clip first and writes only its own bones on top, every frame, after clip evaluation. A live pose no longer has to suppress clip playback: routes can layer procedural upper-body poses (dribble arms, grips) over run/idle clips while the clip keeps the legs (`docs/animation/runtime-support.md`, `tests/unit/agent-api/production-actor-dispatch.test.ts`).
+- **`node.animation.attach({ socket, target, position, rotation, scale })`** — bone-socket attachment for props: the render pipeline composes `modelMatrix × boneWorld × offset` from the current frame's bone matrix and writes the decomposed transform onto the target root-level node each frame — rigid through fast swings, no on-frame lag (`tests/unit/agent-api/actor-bone-attach.test.ts`).
+- **`socket(bone).bindWorldMatrix()`** — each bone's world matrix frozen at GLB load, so routes derive exact bind geometry (segment lengths, bone-space palm offsets) from rigs with non-identity bind rotations instead of hand-measured constants.
+
+### Showcase games — "make the motion read as real sports"
+
+- **Aura Hoops 3D** — one phase-coupled dribble cycle drives palm and ball together (ride down, throw, floor, meet the same hand every bounce; palm travel ~0.57 m against the ball's ~0.77 m); the moving handler dribbles via an overlay pose over the run clip; arm geometry derived at runtime from bind-pose sockets.
+- **Aura Diamond 3D** — bat socketed to the right forearm at the calibrated hand offset (knob in both hands, stance on the back shoulder); load → stride → rotation through the zone → wrap-around follow-through with contact solved onto the predicted pitch position; exactly one crouched catcher behind the plate with a socketed mitt; camera holds the whole batter and bat through the swing.
+- **Aura FC 3D** — contrasting fixed kits (deep red vs sky, keepers yellow/purple, team rings, shorts/socks blocks) and foot-driven kick physics: the swing carries the ball to its contact frame, launch profiles per kick type on lofted arcs, restitution 0.55 bounces, rolling friction, travel-axis spin, ball riding the grass at fixed size.
+- **Aura Links 3D** — real golf swing from a pure grip-trajectory solve with the club bone-socketed to the forearm and both hands on the shaft; backswing above the shoulders, clubhead 0.003 m from the ball at the impact frame, launch fired exactly at impact; camera holds through the strike.
+- **Slingshot Siege** — clamped back-pull draw with fork-plane sag, visibly stretching bands, trajectory preview + power meter from the one shared solver, under-damped snap-back release, and deterministic auto-aim autoplay.
+
+### Tooling and CI
+
+- `tools/filmstrip/capture-films.mjs` + `showcase-filmstrip.yml`: real-time filmstrip verification (live page, never paused) in CI against the local build and production; `side-by-side.mjs` composes the user's reference screenshots against the after footage.
+- Stale-corpus CI failures cleared (regenerated `derived-ids.txt`, removed tests of deleted arcade-slate apps, re-sized the admission-gates corpus bound, pinned `playwright` to `1.59.1` matching `@playwright/test`).
+- Marketing build can degrade gitignored local-only advanced-gallery fixtures behind `AURA3D_ALLOW_MISSING_FIXTURES=1` for CI builds; production builds unchanged.
 
 ## 4.0.0 (2026-10-15)
 

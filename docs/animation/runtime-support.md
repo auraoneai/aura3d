@@ -66,6 +66,42 @@ The public controller/source layer supports:
 This is enough to drive deterministic gameplay state, hitbox events, source
 evidence, and tests.
 
+## Runtime-Node Pose Composition and Bone Attachments (4.0.3)
+
+Three runtime-node animation additions shipped in 4.0.3 for gameplay posing.
+All three require the default-on `A3D_QR_ANIMATION` flag and degrade to
+no-ops on model nodes that have not loaded.
+
+- **Overlay poses** — `handle.setAnimationPose({ bones, mode: "overlay" })`.
+  A pose without `mode` (or `mode: "replace"`) owns the whole rig and pauses
+  the node's clip. With `mode: "overlay"` the node's clip evaluates first
+  and only the bones the pose names are written on top, every frame, after
+  clip evaluation — so a route can hold an upper-body pose (procedural arm
+  IK, a dribble or grip) over a run or idle clip while the clip keeps the
+  legs and body. Bones the pose omits keep the clip's motion.
+- **Bone attachments** — `handle.animation.attach({ socket, target,
+  position?, rotation?, scale? })` returns a disposer. The render pipeline
+  composes `modelMatrix × boneWorld × offset` from the current frame's bone
+  matrix — after the clip/pose pipeline applies — and writes the decomposed
+  transform onto the target runtime node each frame. Use it to pin a prop
+  (bat, club, weapon) to a bone so it stays rigid through fast swings. The
+  target must be a root-level node and the route must stop setting its
+  transform while attached; the engine owns it.
+- **Bind-pose sockets** — `handle.animation.socket(bone)` now exposes
+  `bindWorldMatrix()` alongside the live `worldMatrix()`: the bone's world
+  matrix frozen at GLB load (before any clip or pose has applied). Rigs
+  whose bind rotations are not identity need it to derive exact bind
+  directions and bone-space offsets at runtime instead of hand-measured
+  constants. Both matrices are in the actor's own scene space; compose with
+  the actor node's transform for world space.
+
+Verified by `tests/unit/agent-api/production-actor-dispatch.test.ts` (clip
+evaluates before an overlay pose writes its bones) and
+`tests/unit/agent-api/actor-bone-attach.test.ts` (attachment composition and
+disposal), plus the showcase routes that drive them
+(`showcase-aura-hoops-3d`, `showcase-aura-diamond-3d`,
+`showcase-aura-links-3d`).
+
 ## Renderer-Backed Boundary
 
 Do not claim root `createAuraApp` visibly renders skinned GLB animation, morph
