@@ -28,7 +28,7 @@ concurrency:
 jobs:
   film:
     name: Film ${{ inputs.mode || 'local' }}
-    timeout-minutes: 90
+    timeout-minutes: 200
     runs-on: ubuntu-latest
     env:
       MODE: ${{ inputs.mode || 'local' }}
