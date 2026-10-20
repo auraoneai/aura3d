@@ -322,7 +322,7 @@
     ".github/workflows/",
     "playwright.config.ts",
     ".gitattributes",
-    "AURA3D-VERIFICATION-MATRIX.md",
+    "aura3d-verification-matrix.md",
     "docs/project/claim-guidelines.md",
     "docs/project/parity/",
     "docs/project/threejs-superiority-status.md"

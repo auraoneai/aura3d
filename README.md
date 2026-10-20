@@ -230,7 +230,7 @@ Aura3D is built for public, inspectable software. Generated projects keep their 
 
 ## Current Release 4.0.0
 
-Aura3D 4.0.1 is published across all **24 active public packages** on npm (all pre-4.0 versions `< 4.0.0` and the 5 retired pre-4.0 compatibility packages `@aura3d/lean`, `@aura3d/three-compat`, `@aura3d/materials`, `@aura3d/environments`, and `@aura3d/editor` are deprecated in full on npm in favor of `@aura3d/engine@4.0.1`). See the [GitHub release](https://github.com/auraoneai/aura3d/releases/tag/v4.0.1) for release assets and package details, and [`docs/MIGRATION-4.0.md`](docs/MIGRATION-4.0.md) for the 4.0 consolidation guide.
+Aura3D 4.0.1 is published across all **24 active public packages** on npm (all pre-4.0 versions `< 4.0.0` and the 5 retired pre-4.0 compatibility packages `@aura3d/lean`, `@aura3d/three-compat`, `@aura3d/materials`, `@aura3d/environments`, and `@aura3d/editor` are deprecated in full on npm in favor of `@aura3d/engine@4.0.1`). See the [GitHub release](https://github.com/auraoneai/aura3d/releases/tag/v4.0.1) for release assets and package details, and [`docs/migration-4.0.md`](docs/migration-4.0.md) for the 4.0 consolidation guide.
 
 Aura3D 4.0.1 is the consolidated browser 3D engine release for the agent era — prompt it, prove it, ship it. It unifies the public runtime surface on `@aura3d/engine@4.0.1`, upgrades all 19 browser 3D games and showcases with custom Meshy PBR GLB assets and interactive gameplay loops, ships the full post-processing, atmospheric, particle, weather, ribbon, and game-feel effects suite (`effects.*`), and exports the resident WebGPU compute particle pipeline alongside the WebGL2 runtime. Claims remain scoped to the public API and evidence described in the release documentation.
 
@@ -730,7 +730,7 @@ Maintained scene-kit families include physics playgrounds, particle fountains, s
 - **Typed Asset Pipeline:** [`docs/assets.md`](docs/assets.md), [`docs/agents/asset-workflow.md`](docs/agents/asset-workflow.md)
 - **Aura Clash Showcase Evidence:** [`docs/aura-clash-showcase.md`](docs/aura-clash-showcase.md), [`docs/examples/aura-clash.md`](docs/examples/aura-clash.md)
 - **Troubleshooting & Diagnostics:** [`docs/troubleshooting.md`](docs/troubleshooting.md), [`docs/agents/troubleshooting.md`](docs/agents/troubleshooting.md)
-- **4.0.0 Migration & Consolidation Guide:** [`docs/MIGRATION-4.0.md`](docs/MIGRATION-4.0.md)
+- **4.0.0 Migration & Consolidation Guide:** [`docs/migration-4.0.md`](docs/migration-4.0.md)
 - **4.0.0 Release Notes:** [`docs/project/aura3d-400-release-notes.md`](docs/project/aura3d-400-release-notes.md)
 - **Build a Browser Game (End-to-End Guide):** [`docs/guides/build-a-browser-game.md`](docs/guides/build-a-browser-game.md)
 - **Public API Reference:** [`docs/api/public-api.md`](docs/api/public-api.md)

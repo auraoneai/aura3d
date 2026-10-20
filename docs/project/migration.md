@@ -8,7 +8,7 @@ Current release: Aura3D 4.0.0.
 
 Migration support is optional and lives outside the default `@aura3d/engine`
 runtime install path. For upgrading from Aura3D 3.x to the single-package
-`@aura3d/engine@4.0.0` surface, see [docs/MIGRATION-4.0.md](../MIGRATION-4.0.md).
+`@aura3d/engine@4.0.0` surface, see [docs/migration-4.0.md](../migration-4.0.md).
 Use the separate compatibility package when a migration workflow needs
 Three.js-shaped APIs:
 

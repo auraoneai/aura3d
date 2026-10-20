@@ -1,5 +1,5 @@
 /**
- * #867 (games, SCORES.md column C): with the lane flags on, 15 of 18 games
+ * #867 (games, scores.md column C): with the lane flags on, 15 of 18 games
  * threw `MaterialBindingError: Missing shader attribute a_uv / a_tangent`
  * (a_joints/a_weights on skinned). The generated program's feature set must
  * follow what the geometry carries, as in three.js: no uv → no uv maps,

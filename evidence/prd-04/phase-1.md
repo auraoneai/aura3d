@@ -46,7 +46,7 @@ macos-14 run whose run id is recorded in the session report.
 ## Fixture corpus (P1-9)
 
 `fixtures/asset-corpus/` gained ten Khronos conformance GLBs (licenses in
-`KHRONOS-LICENSES.md` + per-asset `provenance` in
+`khronos-licenses.md` + per-asset `provenance` in
 `benchmarks/quality-rebuild/scenes/prd04/assets.ts`), the two KTX2 encodings of
 DamagedHelmet (`uastc`/`etc1s`, gltf-transform 4.5.1 + toktx 4.4.0 — commands
 recorded in `assets.ts`), and `textures/metal-plates-013-1k/` (Poly Haven CC0,

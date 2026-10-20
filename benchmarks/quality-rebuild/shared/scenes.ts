@@ -408,7 +408,7 @@ const baseSpecs = {
   }
 ,
   "19-room-environment-parity": {
-    // E3 step 6 (E3-STAGE2B-TRACE.md §5): the smallest decisive neutral-room
+    // E3 step 6 (e3-stage2b-trace.md §5): the smallest decisive neutral-room
     // parity capture. No lights and NO environment node: the Aura side hits
     // the marked-fallback neutral room (renderer/Background.ts, analytic r185
     // room via buildNeutralRoomLegacyProbe; under qr_flags=compiler,lighting

@@ -20,7 +20,7 @@ the archive.
 - Known limits: [`status/known-limits.md`](./status/known-limits.md)
 - Public API: [`docs/api/public-api.md`](../api/public-api.md)
 - Release notes (4.0.0): [`aura3d-400-release-notes.md`](./aura3d-400-release-notes.md)
-- Migration to 4.0: [`docs/MIGRATION-4.0.md`](../MIGRATION-4.0.md)
+- Migration to 4.0: [`docs/migration-4.0.md`](../migration-4.0.md)
 - Migration to 2.0 (archived): [`docs/migration/2.0.md`](../migration/2.0.md)
 
 ## Architecture

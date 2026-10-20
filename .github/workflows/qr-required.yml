@@ -1,7 +1,7 @@
 # qr-required — §2.5 mandatory all-flags gate (PRD-16). Every PR, every main push.
 #
 # Lane 12 authors; lane 15 flips it to a required check via the main ruleset
-# (process/OWNER-ACTIONS.md) once the skeleton is green on main.
+# (process/owner-actions.md) once the skeleton is green on main.
 #
 #   paths          — which lane jobs a PR must run (lanes' workflows become
 #                    workflow_call and hang off this; until then the outputs

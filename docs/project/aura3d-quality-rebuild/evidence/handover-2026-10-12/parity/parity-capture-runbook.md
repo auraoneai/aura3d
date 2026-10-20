@@ -2,7 +2,7 @@
 
 Prepared on `claude/live-fix-e3-parity-spec` (base: E3-2b tip). The parent
 dispatches the GPU runs **after #1362 merges**; nothing in this branch
-dispatches a workflow. Design rationale: `E3-STAGE2B-TRACE.md` §5 in this
+dispatches a workflow. Design rationale: `e3-stage2b-trace.md` §5 in this
 directory.
 
 ## What was added

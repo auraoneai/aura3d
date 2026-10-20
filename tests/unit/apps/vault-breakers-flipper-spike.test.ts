@@ -4,7 +4,7 @@ import { physics } from "@aura3d/engine";
 /**
  * VB-01 flipper-contact spike (PRD M3 entry gate) — PASSED, joint mode GO.
  *
- * Verdict and tuning history: apps/showcase-vault-breakers/SPIKE-FLIPPER.md.
+ * Verdict and tuning history: apps/showcase-vault-breakers/spike-flipper.md.
  *
  * Headline finding: the vendored Rapier adapter degrades two simultaneously
  * active motorised hinges whose motor speeds have OPPOSITE signs (the first
