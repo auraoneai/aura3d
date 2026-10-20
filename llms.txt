@@ -13,7 +13,7 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 - Showcase game: https://aura3d.auraone.ai/showcase/aura-clash/
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml
 - Crawl policy: https://aura3d.auraone.ai/robots.txt (public content allow-all; build internals and source maps disallowed)
-- Last updated: 2026-10-19
+- Last updated: 2026-10-20
 
 ## Pages
 
@@ -224,6 +224,7 @@ label the result `prototype`.
 | Scene Kit | API | Status |
 | --- | --- | --- |
 | Material lab | `sceneKits.materialLab()` | root-proven (partial advanced coat extensions) |
+
 
 
 
