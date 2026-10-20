@@ -240,6 +240,11 @@ function loadLevel(id: number, opts: { announce?: boolean } = {}): void {
     hud.showBanner(`${ch.name}`, `Level ${level.slot + 1} — ${level.name}`);
   }
   aim.state = "idle";
+  aim.pullX = 0;
+  aim.pullY = 0;
+  snap.t = -1;
+  visualPullX = 0;
+  visualPullY = 0;
 }
 
 // ---------------------------------------------------------------- camera --
@@ -315,8 +320,24 @@ function updateCamera(dt: number, elapsed: number): void {
 // ------------------------------------------------------------------ aim --
 
 const SLING_REST: readonly [number, number, number] = [-7.4, 1.68, 0];
-const PULL_POWER = 5.6;
-const PULL_MAX = 1.7;
+/** Fork prong tips (world) — the band anchors. The prongs themselves never move. */
+const FORK_TIPS: readonly (readonly [number, number, number])[] = [[-7.79, 1.89, -0.22], [-7.79, 1.89, 0.22]];
+/** Aim pivot in the fork gap: launch direction runs pouch → pivot, so the shot
+ *  leaves along the line the stretched bands actually describe. */
+const LAUNCH_PIVOT: readonly [number, number, number] = [-7.1, 1.98, 0];
+const PULL_POWER = 7.5; // world launch speed per unit of draw (full draw = 12.75)
+const PULL_MAX = 1.7; // full-draw distance in world units
+/** Extra fork-plane dip at full draw — a real slingshot pouch sags as it goes back. */
+const DRAW_SAG = 0.16;
+/** The pouch never drops below the knoll collider top (0.6) + projectile radius. */
+const POUCH_FLOOR_Y = 1.0;
+/** Unstretched band length (fork tip → seated pouch) — the taper reference. */
+const BAND_REST_LEN = 0.47;
+/** Snap-back spring: critically-under-damped decay — crosses rest at ~130ms,
+ *  overshoots ~20% forward, settles by ~320ms. */
+const SNAP_DAMP = 6.5;
+const SNAP_FREQ = 12;
+const SNAP_DUR = 0.32;
 
 const aim = {
   state: "idle" as "idle" | "dragging" | "orbiting",
@@ -330,9 +351,76 @@ const aim = {
   lastX: 0,
   lastY: 0
 };
+/** Release spring: t >= 0 while the empty pouch is snapping back to rest. */
+const snap = { t: -1, px: 0, py: 0 };
+/** The pull the pouch is visually at this frame (draw value or snap spring). */
+let visualPullX = 0;
+let visualPullY = 0;
 
-function launchVelocity(): [number, number, number] {
-  return [-aim.pullX * PULL_POWER, -aim.pullY * PULL_POWER, 0];
+/** Clamp a raw pull into a legal draw: behind the fork plane, never far above
+ *  it, length ≤ full draw. Forward/up drags flatten against the fork instead
+ *  of pushing the pouch through it (which used to launch shots backwards). */
+function clampPull(x: number, y: number): [number, number] {
+  const px = Math.min(0, x);
+  const py = Math.min(0.12, Math.max(-1.1, y));
+  const len = Math.hypot(px, py);
+  if (len > PULL_MAX) return [px * (PULL_MAX / len), py * (PULL_MAX / len)];
+  return [px, py];
+}
+
+/** Pouch world pose for a draw — pulls back and dips below the fork plane. */
+function pouchAt(px: number, py: number): [number, number, number] {
+  const t = Math.min(1, Math.hypot(px, py) / PULL_MAX);
+  const sag = -DRAW_SAG * Math.pow(t, 1.3);
+  return [SLING_REST[0] + px, Math.max(POUCH_FLOOR_Y, SLING_REST[1] + py + sag), 0];
+}
+
+interface AimSolution {
+  readonly drawT: number;
+  readonly pouch: readonly [number, number, number];
+  readonly dir: readonly [number, number, number];
+  readonly speed: number;
+}
+
+/** The one launch solver: the trajectory preview, the fired shot, and the
+ *  evidence beacon all read from here so arc and flight can never diverge. */
+function solveDraw(px: number, py: number): AimSolution {
+  const pouch = pouchAt(px, py);
+  const drawT = Math.min(1, Math.hypot(px, py) / PULL_MAX);
+  const dx = LAUNCH_PIVOT[0] - pouch[0];
+  const dy = LAUNCH_PIVOT[1] - pouch[1];
+  const dl = Math.hypot(dx, dy) || 1;
+  return { drawT, pouch, dir: [dx / dl, dy / dl, 0], speed: drawT * PULL_MAX * PULL_POWER };
+}
+
+function aimSolution(): AimSolution {
+  return solveDraw(aim.pullX, aim.pullY);
+}
+
+/** Begin the band snap-back from the current draw. */
+function beginSnap(): void {
+  snap.t = 0;
+  snap.px = aim.pullX;
+  snap.py = aim.pullY;
+}
+
+/** Advance the release spring; returns the visual pull for this frame. */
+function updateSnap(dt: number): void {
+  if (snap.t < 0) {
+    visualPullX = aim.pullX;
+    visualPullY = aim.pullY;
+    return;
+  }
+  snap.t += dt;
+  if (snap.t >= SNAP_DUR) {
+    snap.t = -1;
+    visualPullX = 0;
+    visualPullY = 0;
+    return;
+  }
+  const f = Math.max(-0.22, Math.exp(-SNAP_DAMP * snap.t) * Math.cos(SNAP_FREQ * snap.t));
+  visualPullX = snap.px * f;
+  visualPullY = snap.py * f;
 }
 
 function currentAmmo(): AmmoId | null {
@@ -447,14 +535,12 @@ stageEl.addEventListener("pointermove", (ev) => {
     const rect = stageEl.getBoundingClientRect();
     const dx = ev.clientX - rect.left - aim.downX;
     const dy = ev.clientY - rect.top - aim.downY;
-    // screen-space pull → world pull (left/down drag = back/up launch)
-    let px = dx * 0.0095;
-    let py = dy * 0.0095;
-    const len = Math.hypot(px, py);
-    if (len > PULL_MAX) { px *= PULL_MAX / len; py *= PULL_MAX / len; }
+    // screen-space drag → world draw: left/back drags the pouch behind the fork,
+    // down drags it DOWN below the fork plane (screen +y is world -y here) —
+    // the pouch follows the finger and the launch is the exact opposite.
+    const [px, py] = clampPull(dx * 0.0095, -dy * 0.0095);
     aim.pullX = px;
     aim.pullY = py;
-    hud.setShotMeter(len / PULL_MAX);
   } else if (aim.state === "orbiting") {
     camYaw -= (ev.clientX - aim.lastX) * 0.005;
     camPitch = Math.min(0.9, Math.max(0.08, camPitch + (ev.clientY - aim.lastY) * 0.004));
@@ -472,10 +558,11 @@ function endPointer(ev: PointerEvent): void {
     if (len > 0.22) {
       fireShot();
     } else {
+      // cancelled draw — the bands still spring home
+      beginSnap();
       aim.pullX = 0; aim.pullY = 0;
     }
     aim.state = "idle";
-    hud.setShotMeter(0);
     return;
   }
   aim.state = "idle";
@@ -487,14 +574,16 @@ stageEl.addEventListener("pointercancel", endPointer);
 function fireShot(): void {
   const ammo = currentAmmo();
   if (!ammo) return;
-  const v = launchVelocity();
-  const origin: [number, number, number] = [SLING_REST[0] + aim.pullX * 0.7, SLING_REST[1] + aim.pullY * 0.7, 0];
-  if (sim.launch(ammo, origin, v)) {
+  const sol = aimSolution();
+  const v: [number, number, number] = [sol.dir[0] * sol.speed, sol.dir[1] * sol.speed, 0];
+  if (sol.speed > 0.5 && sim.launch(ammo, sol.pouch, v)) {
     shotsUsed += 1;
-    aim.pullX = 0; aim.pullY = 0;
     camState = "follow";
     audio.cue("launch");
   }
+  // fired or refused — either way the draw releases and the bands snap home
+  beginSnap();
+  aim.pullX = 0; aim.pullY = 0;
 }
 
 function fireAbility(): void {
@@ -595,19 +684,21 @@ function syncWindmill(m: number): void {
   }
 }
 
-function syncSling(): void {
-  const pouchX = SLING_REST[0] + aim.pullX;
-  const pouchY = SLING_REST[1] + aim.pullY;
+function syncSling(dt: number): void {
+  updateSnap(dt);
+  const pouch = pouchAt(visualPullX, visualPullY);
+  const pouchX = pouch[0];
+  const pouchY = pouch[1];
   node(SLING_IDS.pouch)?.setPosition(pouchX, pouchY, 0).setRotation(0, 0, 0);
   const loaded = node(SLING_IDS.loaded);
   const ammo = currentAmmo();
-  const isPulling = aim.state === "dragging" || Math.hypot(aim.pullX, aim.pullY) > 0.1;
+  const isPulling = aim.state === "dragging" || snap.t >= 0;
   if (loaded) {
     const showBall = canAim() || aim.state === "dragging";
     loaded.setVisible(showBall && ammo !== null);
     setNodeAnim(SLING_IDS.loaded, isPulling ? "Load" : "Ready", isPulling ? 1.35 : 1.0);
     const bob = isPulling ? 0 : Math.sin(elapsed * 3.2) * 0.025;
-    const pitchTilt = isPulling ? Math.atan2(-aim.pullY, Math.max(0.2, -aim.pullX)) * 0.45 : 0;
+    const pitchTilt = isPulling ? Math.atan2(-visualPullY, Math.max(0.2, -visualPullX)) * 0.45 : 0;
     loaded.setPosition(pouchX, pouchY + 0.04 + bob, 0);
     loaded.setRotation(pitchTilt, Math.PI * 0.5, 0);
     loaded.setScale(0.42 + AMMO[ammo ?? "pebble"].radius * 0.45);
@@ -615,34 +706,38 @@ function syncSling(): void {
   for (let wIdx = 0; wIdx < 3; wIdx += 1) {
     setNodeAnim(`ammo-wait-${wIdx}`, "Idle_Loop", 0.95 + wIdx * 0.05);
   }
-  // bands: stretch from fork tips to the pouch
-  const tips: readonly [number, number, number][] = [[-7.62, 1.94, -0.24], [-7.62, 1.94, 0.24]];
+  // bands: two stretched segments, re-aimed every frame from fork tip → pouch.
+  // They thin as they elongate so the draw reads as real elastic tension.
   [SLING_IDS.bandL, SLING_IDS.bandR].forEach((id, i) => {
     const h = node(id);
     if (!h) return;
-    const tip = tips[i]!;
-    const d: [number, number, number] = [pouchX - tip[0], pouchY + 0.06 - tip[1], 0 - tip[2]];
+    const tip = FORK_TIPS[i]!;
+    const d: [number, number, number] = [pouchX - tip[0], pouchY + 0.06 - tip[1], -tip[2]];
     const len = Math.max(0.05, Math.hypot(d[0], d[1], d[2]));
+    const taper = Math.min(1.15, Math.max(0.5, Math.sqrt(BAND_REST_LEN / len)));
     h.setPosition((tip[0] + pouchX) / 2, (tip[1] + pouchY + 0.06) / 2, tip[2] / 2);
     const yaw = Math.atan2(d[0], d[2]);
     const pitch = -Math.asin(Math.max(-1, Math.min(1, d[1] / len)));
     h.setRotation(pitch, yaw, 0);
-    h.setScale([0.045, 0.045, len]);
+    h.setScale([0.05 * taper, 0.05 * taper, len]);
   });
-  // trajectory dots while dragging
-  const dragging = aim.state === "dragging" && Math.hypot(aim.pullX, aim.pullY) > 0.2;
-  const v = launchVelocity();
+  // power meter + trajectory preview while a draw is live
+  const sol = aimSolution();
+  const drawing = aim.state === "dragging" && sol.drawT > 0.05;
+  hud.setShotMeter(drawing ? sol.drawT : 0);
   const g = sim.level.gravity ?? [0, -9.81, 0];
   for (let i = 0; i < POOL.dots; i += 1) {
     const h = node(dotNodeId(i));
     if (!h) continue;
-    if (!dragging) { h.setVisible(false); continue; }
+    if (!drawing) { h.setVisible(false); continue; }
+    // identical solver to fireShot: ballistic from the pouch along the launch dir
     const t = 0.09 + i * 0.11;
-    const px = SLING_REST[0] + v[0] * t;
-    const py = SLING_REST[1] + v[1] * t + 0.5 * g[1] * t * t;
-    const pz = 0;
+    const vx = sol.dir[0] * sol.speed;
+    const vy = sol.dir[1] * sol.speed;
+    const px = sol.pouch[0] + vx * t;
+    const py = sol.pouch[1] + vy * t + 0.5 * g[1] * t * t;
     const fade = 1 - i / POOL.dots;
-    h.setPosition(px, py, pz).setScale(0.04 + fade * 0.05).setVisible(py > -0.2);
+    h.setPosition(px, py, 0).setScale(0.04 + fade * 0.05).setVisible(py > -0.2);
   }
 }
 
@@ -859,8 +954,30 @@ function endLevel(won: boolean): void {
 
 // -------------------------------------------------------------- demo ----
 
-const demo = { phase: "wait" as "wait" | "pull" | "fly" | "settle", t: 0, shots: 0 };
-const DEMO_PULLS: readonly [number, number][] = [[-1.5, -0.62], [-1.4, -0.35], [-1.6, -0.8], [-1.3, -0.5]];
+const demo = { phase: "wait" as "wait" | "draw" | "hold" | "fly" | "settle", t: 0, shots: 0, pull: [-1.3, -0.9] as [number, number] };
+
+/** Auto-aim: bisect the draw length whose ballistic arc (same solver as the
+ *  preview) lands on the target structure. Deterministic — no randomness. */
+function demoAimAt(target: readonly [number, number]): void {
+  const g = Math.max(1, Math.abs(sim.level.gravity?.[1] ?? 9.81));
+  const phi = 0.72; // pull angle below horizontal → ~45° launch arc
+  const land = (len: number): number => {
+    const s = solveDraw(-Math.cos(phi) * len, -Math.sin(phi) * len);
+    const vx = s.dir[0] * s.speed;
+    const vy = s.dir[1] * s.speed;
+    const t = (vy + Math.sqrt(Math.max(0, vy * vy + 2 * g * (s.pouch[1] - target[1])))) / g;
+    return s.pouch[0] + vx * t;
+  };
+  let hi = PULL_MAX;
+  if (land(hi) >= target[0]) {
+    let lo = 0.3;
+    for (let i = 0; i < 22; i += 1) {
+      const mid = (lo + hi) / 2;
+      if (land(mid) < target[0]) lo = mid; else hi = mid;
+    }
+  }
+  demo.pull = [-Math.cos(phi) * hi, -Math.sin(phi) * hi];
+}
 
 function demoTick(dt: number): void {
   demo.t += dt;
@@ -874,17 +991,36 @@ function demoTick(dt: number): void {
     return;
   }
   switch (demo.phase) {
-    case "wait":
-      if (demo.t > 0.35 && canAim()) { demo.phase = "pull"; demo.t = 0; }
+    case "wait": {
+      if (demo.t > 0.35 && canAim()) {
+        // auto-aim at the first live gull, else any standing piece, else the fort
+        const gull = sim.gullList().find((gm) => gm.alive);
+        const piece = sim.pieceList().find((p) => p.alive);
+        const at = gull?.body.position ?? piece?.body.position ?? [7.2, 1, 0];
+        demoAimAt([at[0], at[1]]);
+        demo.phase = "draw";
+        demo.t = 0;
+      }
       break;
-    case "pull": {
-      const pull = DEMO_PULLS[demo.shots % DEMO_PULLS.length]!;
-      const ramp = Math.min(1, demo.t / 0.65);
-      aim.pullX = pull[0] * ramp;
-      aim.pullY = pull[1] * ramp;
+    }
+    case "draw": {
+      // visible ~1s draw: the pouch pulls back-and-down with the preview arc growing
+      const k = Math.min(1, demo.t / 1.0);
+      const ramp = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+      aim.pullX = demo.pull[0] * ramp;
+      aim.pullY = demo.pull[1] * ramp;
       aim.state = "dragging";
       camState = "aim";
-      if (demo.t > 0.8) {
+      if (demo.t >= 1.0) { demo.phase = "hold"; demo.t = 0; }
+      break;
+    }
+    case "hold": {
+      // ~0.5s hold at full draw — meter full, arc steady, tiny sway for life
+      const wob = 1 + Math.sin(demo.t * 9) * 0.02;
+      aim.pullX = demo.pull[0] * wob;
+      aim.pullY = demo.pull[1] * wob;
+      aim.state = "dragging";
+      if (demo.t >= 0.5) {
         fireShot();
         aim.state = "idle";
         demo.phase = "fly";
@@ -926,6 +1062,17 @@ function evidence(): Record<string, unknown> {
     shotsUsed,
     shotsLeft: Math.max(0, level.ammo.length - shotsUsed),
     currentAmmo: currentAmmo(),
+    aim: (() => {
+      // live draw state — a capture can film one full draw-hold-release cycle off this
+      const s = solveDraw(visualPullX, visualPullY);
+      return {
+        drawing: aim.state === "dragging",
+        drawT: Number(s.drawT.toFixed(3)),
+        pouchPos: [Number(s.pouch[0].toFixed(3)), Number(s.pouch[1].toFixed(3)), Number(s.pouch[2].toFixed(3))] as [number, number, number],
+        power: Number(s.speed.toFixed(2)),
+        launchDir: [Number(s.dir[0].toFixed(4)), Number(s.dir[1].toFixed(4)), Number(s.dir[2].toFixed(4))] as [number, number, number]
+      };
+    })(),
     abilityReady: sim.isShotActive() && !!sim.activeProjectile() && !sim.activeProjectile()!.abilityUsed,
     gulls: { alive: sim.gullsAlive(), total: sim.gullList().length },
     pieces: { alive: sim.piecesAlive(), total: sim.pieceList().length },
@@ -988,7 +1135,7 @@ try {
   assignPieceVisuals();
   camState = "aim";
   syncVisuals();
-  syncSling();
+  syncSling(0);
   updateCamera(0, 0);
   refreshVp();
   hud.setMode(mode);
@@ -1017,18 +1164,13 @@ gameApp.onFrame(({ dt }) => {
         aim.pullX = -1.35;
         aim.pullY = -0.52;
       }
-      if (aimUp) aim.pullY = Math.max(-1.25, aim.pullY - dt * 1.15);
+      if (aimUp) aim.pullY = Math.max(-1.1, aim.pullY - dt * 1.15);
       if (aimDown) aim.pullY = Math.min(-0.08, aim.pullY + dt * 1.15);
       if (aimLeft) aim.pullX = Math.max(-PULL_MAX, aim.pullX - dt * 1.15);
       if (aimRight) aim.pullX = Math.min(-0.55, aim.pullX + dt * 1.15);
-      const len = Math.hypot(aim.pullX, aim.pullY);
-      if (len > PULL_MAX) {
-        aim.pullX *= PULL_MAX / len;
-        aim.pullY *= PULL_MAX / len;
-      }
+      [aim.pullX, aim.pullY] = clampPull(aim.pullX, aim.pullY);
       aim.state = "dragging";
       camState = "aim";
-      hud.setShotMeter(Math.min(1, len / PULL_MAX));
     }
 
     const launchPressed =
@@ -1046,7 +1188,6 @@ gameApp.onFrame(({ dt }) => {
         }
         fireShot();
         aim.state = "idle";
-        hud.setShotMeter(0);
       }
     } else if (input?.pressed("ability") && sim.isShotActive()) {
       fireAbility();
@@ -1069,7 +1210,7 @@ gameApp.onFrame(({ dt }) => {
     }
     updateTweens(dt);
     syncVisuals();
-    syncSling();
+    syncSling(dt);
     updateCamera(dt, elapsed);
     refreshVp();
     if (frames % 4 === 0) refreshHud();
