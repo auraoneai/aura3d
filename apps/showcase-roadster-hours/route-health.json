@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-10-19T18:30:00.000Z",
+  "appId": "showcase-roadster-hours",
+  "route": "/apps/showcase-roadster-hours/",
+  "kind": "showcase",
+  "classification": "candidate",
+  "publicShowcase": true,
+  "claimLevel": "production",
+  "promotionStatus": "public-showcase",
+  "machinePass": true,
+  "rendererMode": "production",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "production",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": true
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.roadsterRushPlayerCar",
+      "quality": "production",
+      "role": "primaryVehicle"
+    },
+    {
+      "typedRef": "assets.roadsterRushCarrier",
+      "quality": "production",
+      "role": "primaryVehicle"
+    },
+    {
+      "typedRef": "assets.roadsterRushSedan",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.roadsterRushBoxtruck",
+      "quality": "production",
+      "role": "setDressing"
+    },
+    {
+      "typedRef": "assets.roadsterRushBus",
+      "quality": "production",
+      "role": "setDressing"
+    }
+  ],
+  "notes": "Aura3D 4.0.2 original rocket-roadster odyssey inspired by the public Roadster Hours description (the Crayon client is access-restricted, so no source was copied): Sunbreak Coast, Redline Canyon and Halo Skyway routes with checkpoints, traffic clearing, trailer-roof riding, chained aerial tricks, tuning upgrades and saved career progress. Verified by typecheck and the production route build; browser visual QA was not run in this CPU-only environment."
+}
