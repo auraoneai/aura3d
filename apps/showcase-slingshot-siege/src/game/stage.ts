@@ -287,7 +287,9 @@ export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNo
     { x: 15.2, y: -0.25, z: -9.6, s: 2.2, ry: 1.7, kind: "B" },
     { x: -6.0, y: -0.08, z: -5.4, s: 7.2, ry: 2.5, kind: "A" },
     { x: 9.4, y: -0.08, z: -4.8, s: 7.8, ry: 0.9, kind: "A" },
-    { x: -5.6, y: 0, z: 3.6, s: 3.4, ry: 0.6, kind: "A" },
+    // Kept clear of the aim sight-line: at its old spot (-5.6, 3.6) this rock sat
+    // directly between the aim camera and the slingshot at x -7.4.
+    { x: -11.6, y: -0.2, z: -3.0, s: 3.4, ry: 0.6, kind: "A" },
     { x: 8.1, y: 0, z: 2.9, s: 2.8, ry: 1.9, kind: "A" }
   ];
   rockPlacements.forEach((place, i) => {
@@ -422,7 +424,9 @@ export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNo
   // -------------------------------------------------- chapter dressing ------
   // Hero typed 3D Meshy props placed right around the slingshot and fortress so they frame every shot!
   nodes.push(
-    model(assets.gullsiegeWatchtowerMeshy, { name: PROP_IDS.watchtower, position: [-9.4, 0, -2.2], rotation: [0, 0.5, 0] })
+    // Off to the far left-front so it frames the launch knoll without standing
+    // between the camera and the slingshot.
+    model(assets.gullsiegeWatchtowerMeshy, { name: PROP_IDS.watchtower, position: [-12.4, 0, 4.2], rotation: [0, 0.5, 0] })
       .scale(1.85).runtime({ id: PROP_IDS.watchtower, tags: ["dressing"] }),
     model(assets.gullsiegeGatehouseMeshy, { name: PROP_IDS.gatehouse, position: [9.8, 0, -2.4], rotation: [0, -0.45, 0] })
       .scale(2.1).runtime({ id: PROP_IDS.gatehouse, tags: ["dressing"] }),
@@ -444,9 +448,9 @@ export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNo
       .scale(0.42).runtime({ id: "fg-crate-b", tags: ["dressing"] }),
     model(assets.gullsiegeBarrelMeshy, { name: "fg-barrel", position: [-4.0, 0, 4.95], rotation: [0, 0.2, 0] })
       .scale(0.5).runtime({ id: "fg-barrel", tags: ["dressing"] }),
-    model(assets.gullsiegeCrateMeshy, { name: "fg-sling-crate", position: [-6.0, 0, 1.8], rotation: [0, 0.7, 0] })
+    model(assets.gullsiegeCrateMeshy, { name: "fg-sling-crate", position: [-10.2, 0, 3.6], rotation: [0, 0.7, 0] })
       .scale(0.42).runtime({ id: "fg-sling-crate", tags: ["dressing"] }),
-    model(assets.gullsiegeBarrelMeshy, { name: "fg-sling-barrel", position: [-5.4, 0, 2.1], rotation: [0, 0.5, 0] })
+    model(assets.gullsiegeBarrelMeshy, { name: "fg-sling-barrel", position: [-9.6, 0, 4.1], rotation: [0, 0.5, 0] })
       .scale(0.38).runtime({ id: "fg-sling-barrel", tags: ["dressing"] }),
     primitives.cylinder({ name: "fg-banner-pole", material: pbr("#7a4e26", { roughness: 0.82 }), castShadow: true })
       .position(6.3, 1.35, 5.15).scale([0.06, 2.7, 0.06]),
@@ -487,9 +491,9 @@ export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNo
 
   // ---------------------------------------------------------- camera spec ---
   const cameraSpec = camera.perspective({
-    position: [-1.6, 3.55, 14.0],
-    target: [0.4, 1.5, 0],
-    fov: 51
+    position: [-2.5, 4.0, 15.5],
+    target: [-0.5, 1.5, 0],
+    fov: 55
   });
 
   return { nodes, cameraSpec };

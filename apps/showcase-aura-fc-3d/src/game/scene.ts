@@ -13,7 +13,7 @@ import { assets } from "../aura-assets-v2";
 import { VENUES, type VenueSpec } from "./content";
 import {
   PITCH_HX, PITCH_HZ, GOAL_HALF_W, GOAL_H, GOAL_DEPTH, BOX_DEPTH, BOX_HALF_W,
-  PEN_X, CIRCLE_R, BALL_R
+  PEN_X, CIRCLE_R, BALL_R, BALL_VIS_R
 } from "./dims";
 import { athleteNodes } from "./rig";
 
@@ -318,7 +318,7 @@ function stadiumNodes(v: VenueSpec): any[] {
       .position(-PITCH_HX - 4.5, 0.9, -(PITCH_HZ + 3.5))
       .rotate(0, 0.8, 0),
     // spare match balls on a rack, tucked behind the away dugout
-    model(assets.fcMatchBallMeshy, { name: "fc-spare-ball", targetHeight: 0.4 })
+    model(assets.fcMatchBallMeshy, { name: "fc-spare-ball", targetHeight: BALL_VIS_R * 2 })
       .position(34.0, 0.1, -15.5)
   );
 
@@ -336,37 +336,17 @@ function stadiumNodes(v: VenueSpec): any[] {
   return nodes;
 }
 
-export const BALL_PATCH_OFFSETS: readonly [number, number, number][] = [
-  [0.24, 0, 0],
-  [-0.24, 0, 0],
-  [0, 0.24, 0],
-  [0, -0.24, 0],
-  [0, 0, 0.24],
-  [0, 0, -0.24]
-];
-
 function ballNodes(): any[] {
-  const whiteLeather = material.pbr({ color: "#f8fafc", roughness: 0.25, metalness: 0.04 });
-  const blackPentagon = material.pbr({ color: "#111827", roughness: 0.32, metalness: 0.05 });
-  const patches = BALL_PATCH_OFFSETS.map(([ox, oy, oz], i) =>
-    primitives.sphere({ name: `fc-ball-patch-${i}`, size: [0.36, 0.36, 0.36], material: blackPentagon })
-      .position(ox, 0.38 + oy, oz)
-      .runtime(gameRuntime(`fc-ball-patch-${i}`))
-  );
+  // One admitted GLB at regulation size. The old build layered a white sphere,
+  // six patch spheres and the GLB together, which read as two merged balls and
+  // made the ball ~2.4x regulation diameter.
   return [
-    primitives.sphere({ name: "fc-ball", size: [0.76, 0.76, 0.76], material: whiteLeather })
-      .position(0, 0.38, 0)
-      .runtime(gameRuntime("fc-ball")),
-    model(assets.fcMatchBallMeshy, { name: "fc-ball-mesh", targetHeight: 0.72 })
-      .position(0, 0.38, 0)
+    model(assets.fcMatchBallMeshy, { name: "fc-ball-mesh", targetHeight: BALL_VIS_R * 2 })
+      .position(0, BALL_VIS_R, 0)
       .runtime(gameRuntime("fc-ball-mesh")),
-    ...patches,
-    primitives.sphere({ name: "fc-ball-glow", size: [0.001, 0.001, 0.001], material: material.pbr({ color: "#f8fafc", roughness: 0.3 }) })
-      .scale(HIDDEN)
-      .runtime(gameRuntime("fc-ball-glow")),
-    primitives.cylinder({ name: "fc-ball-shadow", size: [0.82, 0.01, 0.82], material: material.pbr({ color: "#000000", opacity: 0.32, roughness: 1 }) })
+    primitives.cylinder({ name: "fc-ball-shadow", size: [BALL_VIS_R * 2.3, 0.01, BALL_VIS_R * 2.3], material: material.pbr({ color: "#000000", opacity: 0.32, roughness: 1 }) })
       .runtime(gameRuntime("fc-ball-shadow")),
-    effects.trail({ name: "fc-ball-trail", target: "fc-ball", color: "#d8ff3e", width: 0.12, maxPoints: 40, intensity: 0.85 } as any),
+    effects.trail({ name: "fc-ball-trail", target: "fc-ball-mesh", color: "#d8ff3e", width: 0.08, maxPoints: 40, intensity: 0.85 } as any),
     primitives.torus({ name: "fc-aim-ring", size: [0.34, 0.035, 0.035], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.3 }) })
       .scale(HIDDEN).runtime(gameRuntime("fc-aim-ring")),
     primitives.torus({ name: "fc-lab-ring", size: [1.15, 0.09, 0.09], material: material.emissive({ color: "#7dfcff", emissive: "#7dfcff", emissiveIntensity: 1.15 }) })
@@ -404,7 +384,7 @@ export function buildFcScene() {
     .add(effects.contactShadows({ intensity: 0.85, length: 0.32 }))
     .add(effects.motionBlur({ intensity: 0.1 }))
     .add(effects.bloom({ intensity: 0.22, threshold: 0.82 }))
-    .camera(camera.perspective({ position: [0, 22.5, 38.5], target: [0, 0.8, -1.5], fov: 54 }));
+    .camera(camera.perspective({ position: [0, 11.5, 23.5], target: [0, 0.9, -1], fov: 40 }));
 }
 
 export interface WorldHandles {
@@ -421,7 +401,7 @@ export interface WorldHandles {
   auroras: any[];
   wavers: any[];
   confetti: any;
-  ball: any; ballMesh: any; ballPatches: any[]; ballGlow: any; ballShadow: any;
+  ballMesh: any; ballShadow: any;
   aimRing: any; labRing: any;
 }
 
@@ -450,10 +430,7 @@ export function resolveWorld(app: any): WorldHandles {
     auroras: [0, 1, 2].map((i) => tryReq(app, `fc-aurora-${i}`)),
     wavers: Array.from({ length: 26 }, (_, i) => tryReq(app, `fc-waver-${i}`)),
     confetti: tryReq(app, "fc-confetti"),
-    ball: tryReq(app, "fc-ball"),
     ballMesh: tryReq(app, "fc-ball-mesh"),
-    ballPatches: Array.from({ length: 6 }, (_, i) => tryReq(app, `fc-ball-patch-${i}`)),
-    ballGlow: tryReq(app, "fc-ball-glow"),
     ballShadow: tryReq(app, "fc-ball-shadow"),
     aimRing: tryReq(app, "fc-aim-ring"), labRing: tryReq(app, "fc-lab-ring")
   };

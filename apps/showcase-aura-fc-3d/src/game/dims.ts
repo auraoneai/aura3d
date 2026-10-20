@@ -10,7 +10,8 @@ export const BOX_DEPTH = 7.5;      // penalty area depth
 export const BOX_HALF_W = 8.5;
 export const PEN_X = PITCH_HX - 7; // penalty spot
 export const CIRCLE_R = 4.5;
-export const BALL_R = 0.38;
+export const BALL_R = 0.16;        // sim radius — physics contact
+export const BALL_VIS_R = 0.21;    // rendered radius — 0.42 m ball so it reads at gameplay camera; keep the node lifted to stay tangent to the grass
 
 export const HALF_LEN = 90;        // seconds per half (arcade)
 export const ET_LEN = 45;          // golden-goal extra time

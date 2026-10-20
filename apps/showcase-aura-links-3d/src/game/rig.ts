@@ -444,7 +444,9 @@ export function poseGolfer(
     .setVisible(true);
 
   // 3D Bespoke Meshy Caddy (`linksGolferAthleteMeshy`, targetHeight 1.80, minY = 0 grounded)
-  const caddyW = W([2.45, 0, -1.65]);
+  // Props stand ahead of the tee and off the shot line — the old rear-right
+  // cluster sat between the chase camera and the golfer and hid the swing.
+  const caddyW = W([3.1, 0, 2.2]);
   const caddyGroundY = groundAt(caddyW[0], caddyW[2]);
   const caddyPump = phase === "celebrate" ? Math.abs(Math.sin(t * Math.PI * 2)) * 0.14 : 0;
   rig.caddy
@@ -453,7 +455,7 @@ export function poseGolfer(
     .setVisible(true);
 
   // 3D Golf Bag (`rooftopBallRackCartMeshy`, targetHeight 1.16, centered origin -> +0.58m half-height)
-  const bagW = W([2.95, 0, -1.35]);
+  const bagW = W([3.6, 0, 2.7]);
   const bagGroundY = groundAt(bagW[0], bagW[2]);
   rig.bag
     ?.setPosition(bagW[0], bagGroundY + 0.58, bagW[2])
@@ -461,7 +463,7 @@ export function poseGolfer(
     .setVisible(true);
 
   // 3D Bespoke Golf Cart (`linksGolfCartMeshy`, targetHeight 1.65, minY = 0 grounded)
-  const cartW = W([5.2, 0, -3.6]);
+  const cartW = W([6.4, 0, 3.0]);
   const cartGroundY = groundAt(cartW[0], cartW[2]);
   rig.cart
     ?.setPosition(cartW[0], cartGroundY, cartW[2])

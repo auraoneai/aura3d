@@ -106,7 +106,9 @@ interface AuraClipMapEntry {
  * pose instead).
  */
 export const FIGHTER_CLIP_MAP: Record<FighterClip, AuraClipMapEntry> = {
-  idle: { clip: "Idle" },
+  // The bare "Idle" clip leaves both fighters' hands hanging at their sides.
+  // The guard pose reads as an intentional combat stance between exchanges.
+  idle: { clip: "Block1", standIn: true },
   walk: { clip: "Walk_Fight_Forward" },
   jump: { clip: "Regular_Jump" },
   dash: { clip: "Walk_Fight_Forward", standIn: true },

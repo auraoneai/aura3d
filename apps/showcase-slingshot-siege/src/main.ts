@@ -248,14 +248,14 @@ type CamState = "orbit" | "aim" | "follow" | "result";
 let camState: CamState = "aim";
 let camYaw = 1.42;
 let camPitch = 0.26;
-let camPos: [number, number, number] = [-1.6, 3.55, 14.0];
-let camTgt: [number, number, number] = [0.4, 1.5, 0];
+let camPos: [number, number, number] = [-2.5, 4.0, 15.5];
+let camTgt: [number, number, number] = [-0.5, 1.5, 0];
 let trauma = 0;
 let orbitT = 0;
 
 const CAM: Record<CamState, { pos: [number, number, number]; tgt: [number, number, number] }> = {
-  orbit: { pos: [-1.3, 3.8, 14.1], tgt: [0.5, 1.5, 0] },
-  aim: { pos: [-1.6, 3.55, 14.0], tgt: [0.4, 1.5, 0] },
+  orbit: { pos: [-2.6, 4.1, 15.4], tgt: [-0.5, 1.5, 0] },
+  aim: { pos: [-2.5, 4.0, 15.5], tgt: [-0.5, 1.5, 0] },
   follow: { pos: [-4, 3, 7], tgt: [0, 1, 0] },
   result: { pos: [0.8, 3.8, 11.8], tgt: [6.4, 1.55, 0] }
 };
@@ -273,11 +273,11 @@ function updateCamera(dt: number, elapsed: number): void {
     dtg = [p[0] + v[0] * 0.22, p[1] + 0.3, p[2]];
   } else if (camState === "orbit") {
     orbitT += dt * 0.14;
-    dp = [-1.2 + Math.sin(orbitT) * 2.2, 3.7 + Math.cos(orbitT * 0.7) * 0.35, 13.9 + Math.cos(orbitT) * 1.1];
-    dtg = [0.5, 1.5, 0];
+    dp = [-2.5 + Math.sin(orbitT) * 1.6, 4.1 + Math.cos(orbitT * 0.7) * 0.3, 15.3 + Math.cos(orbitT) * 0.9];
+    dtg = [-0.5, 1.5, 0];
   } else if (camState === "aim") {
-    dp = [-1.5 + Math.sin(elapsed * 0.3) * 0.55, 3.55, 14.0];
-    dtg = [0.5, 1.5, 0];
+    dp = [-2.5 + Math.sin(elapsed * 0.3) * 0.4, 4.0, 15.5];
+    dtg = [-0.5, 1.5, 0];
   }
 
   const k = 1 - Math.exp(-dt * (camState === "follow" ? 7 : 3.2));
@@ -296,7 +296,7 @@ function updateCamera(dt: number, elapsed: number): void {
   const px = camPos[0] + n(0) * sh;
   const py = camPos[1] + n(1) * sh;
   const pz = camPos[2] + n(2) * sh;
-  const fov = camState === "follow" ? 50 : 51;
+  const fov = camState === "follow" ? 50 : 55;
 
   app.camera?.setPose({ position: [px, py, pz], target: camTgt, fov });
   /*

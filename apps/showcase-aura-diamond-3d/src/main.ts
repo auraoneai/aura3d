@@ -106,6 +106,11 @@ const FOUL_DEG = 45;
 const TRAIL_COUNT = 16;
 const WAVER_COUNT = 18;
 const HIDDEN_SCALE = 0.0001;
+/** Long enough for the bat arc to read at broadcast camera distance. */
+const SWING_DUR = 0.55;
+/** Bat GLB is 0.92 m long with the barrel at local -X (handle at +X). */
+const BAT_HALF = 0.51;
+const BAT_GRIP = 0.12;
 
 /* ================================================================== *
  *  Ballparks                                                          *
@@ -803,7 +808,7 @@ function buildAthleteNodes(id: string, asset: any, initialClip = "Ready"): any[]
 
 const FIELDER_IDS = ["f-c", "f-1b", "f-2b", "f-ss", "f-3b", "f-lf", "f-cf", "f-rf"] as const;
 const FIELDER_SPOTS: Record<string, Vec3> = {
-  "f-c": [0, 0, 2.4],
+  "f-c": [0.45, 0, 2.35],
   "f-1b": [14.2, 0, -14.2],
   "f-2b": [7.4, 0, -19.5],
   "f-ss": [-8.2, 0, -19.5],
@@ -821,11 +826,6 @@ function buildActorsNodes(): any[] {
       buildAthleteNodes(id, assets.diamondAthlete, id === "f-lf" || id === "f-cf" || id === "f-rf" ? "Ready" : "Crouch_Idle_Loop")
     ),
     ...Array.from({ length: 3 }, (_, i) => buildAthleteNodes(`runner-${i}`, assets.diamondAthlete, "Crouch_Idle_Loop")).flat(),
-    model(assets.diamondAthlete, { name: "umpire", targetHeight: 1.88, role: "primaryCharacter", scaleMode: "fit" })
-      .position(0.6, 0.94, 3.4)
-      .rotate(0, Math.PI, 0)
-      .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
-      .runtime(game.runtimeNode("umpire")),
     model(assets.diamondAthlete, { name: "coach-1b", targetHeight: 1.88, role: "primaryCharacter", scaleMode: "fit" })
       .position(21.5, 0.94, -14.8)
       .rotate(0, -Math.PI * 0.72, 0)
@@ -839,14 +839,19 @@ function buildActorsNodes(): any[] {
     // Hidden dugout glove reference so route asset validation sees diamondGlove without floating mitts in front of fielders
     model(assets.diamondGlove, { name: "dugout-glove-ref", targetMaxDimension: 0.34, role: "setDressing", scaleMode: "fit", visible: false })
       .position(0, -80, 0)
-      .scale(HIDDEN_SCALE)
+      .scale(HIDDEN_SCALE),
+    // Catcher's mitt on the crouched catcher's glove hand so the figure behind the plate reads as a catcher
+    model(assets.diamondGlove, { name: "catcher-mitt", targetMaxDimension: 0.36, role: "setDressing", scaleMode: "fit" })
+      .position(0, 0.62, 2.02)
+      .rotate(0, Math.PI, 0.3)
+      .runtime(game.runtimeNode("catcher-mitt"))
   ];
 
-  // Admitted 3D bat — diamondBat is horizontal along X (bounds [1.903, 0.232, 0.235]), so scale by targetMaxDimension: 0.92
+  // Admitted 3D bat — diamondBat is horizontal along X (bounds [1.903, 0.232, 0.235]), so scale by targetMaxDimension: 1.02
   nodes.push(
-    model(assets.diamondBat, { name: "bat", targetMaxDimension: 0.92, scaleMode: "fit" })
-      .position(-0.43, 1.48, -0.18)
-      .rotate(0, Math.PI / 2 - 0.6, 0.85)
+    model(assets.diamondBat, { name: "bat", targetMaxDimension: 1.02, scaleMode: "fit" })
+      .position(-0.32, 1.86, -0.06)
+      .rotate(0, Math.PI / 2 - 0.5, 1.12)
       .runtime(game.runtimeNode("bat"))
   );
 
@@ -882,13 +887,15 @@ function buildActorsNodes(): any[] {
 }
 
 function buildParkScene(park: ParkSpec): any {
+  // fogDensityScale 0 removes the preset's volumetric fog: at stadium
+  // distances even a heavily scaled density washed the stands out in white.
   const lookOverrides: Record<string, any> = {
-    sandlot: { fogDensityScale: 0.22, exposureEv: 0.14 },
-    skyline: { fogDensityScale: 0.18, exposureEv: 0.12 },
-    canyon: { fogDensityScale: 0.26, exposureEv: 0.1 },
-    ivy: { fogDensityScale: 0.2, exposureEv: 0.12 },
-    dome: { fogDensityScale: 0.18, exposureEv: 0.14 },
-    lunar: { fogDensityScale: 0.16, exposureEv: 0.16 }
+    sandlot: { fogDensityScale: 0, exposureEv: 0.14 },
+    skyline: { fogDensityScale: 0, exposureEv: 0.12 },
+    canyon: { fogDensityScale: 0, exposureEv: 0.1 },
+    ivy: { fogDensityScale: 0, exposureEv: 0.12 },
+    dome: { fogDensityScale: 0, exposureEv: 0.14 },
+    lunar: { fogDensityScale: 0, exposureEv: 0.16 }
   };
   // Match each look's own horizon instead of the old near-black navy slab.
   const backdrop: Record<ParkId, string> = {
@@ -900,7 +907,7 @@ function buildParkScene(park: ParkSpec): any {
     lunar: "#04070d"
   };
   return scene()
-    .add(looks.preset(park.look as any, lookOverrides[park.id] ?? { fogDensityScale: 0.2 }))
+    .add(looks.preset(park.look as any, lookOverrides[park.id] ?? { fogDensityScale: 0 }))
     .background(backdrop[park.id])
     .add(effects.contactShadows({ intensity: 0.75, length: 0.3 }))
     .add(effects.vignette({ intensity: 0.16, smoothness: 0.7 }))
@@ -1047,9 +1054,9 @@ function boot(): void {
       zoneFrame: req("zone-frame"),
       pitcher: req("pitcher"),
       batter: req("batter"),
-      umpire: tryReq("umpire"),
       coach1b: tryReq("coach-1b"),
       coach3b: tryReq("coach-3b"),
+      catcherMitt: tryReq("catcher-mitt"),
       confetti: tryReq("confetti"),
       hrBurst: tryReq("hr-burst"),
       flairBurst: tryReq("flair-burst")
@@ -2528,7 +2535,7 @@ function boot(): void {
 
   function triggerSwing(power = 0.84): void {
     lastManualInputAt = simTime;
-    G.swingTimer = 0.42;
+    G.swingTimer = SWING_DUR;
     G.batterSwingT = 0.02;
     G.charging = false;
     G.manualSwingQueued = false;
@@ -2570,7 +2577,7 @@ function boot(): void {
     }
     if (swingHit) {
       lastManualInputAt = simTime;
-      G.swingTimer = 0.42;
+      G.swingTimer = SWING_DUR;
       G.batterSwingT = 0.02;
       cue("swing");
     }
@@ -2628,7 +2635,7 @@ function boot(): void {
         triggerSwing(0.86);
         return;
       }
-      G.swingTimer = 0.42;
+      G.swingTimer = SWING_DUR;
       G.batterSwingT = 0.02;
       cue("swing");
     }
@@ -2684,7 +2691,7 @@ function boot(): void {
         G.pci = [lerp(G.pci[0], clamp(zx, -1.1, 1.1), trackRate), lerp(G.pci[1], clamp(zy, -1.1, 1.1), trackRate)];
         const shouldSwing = Math.abs(zx) <= 1.08 && Math.abs(zy) <= 1.08;
         if (shouldSwing && p.t >= 0.965) {
-          G.swingTimer = 0.42;
+          G.swingTimer = SWING_DUR;
           G.batterSwingT = 0.02;
           const timingErr = (p.t - 1) * p.flightSec + jitter(G.rng) * 0.018;
           resolveSwing(p, timingErr, G.pci[0], G.pci[1], 0.72, true);
@@ -2712,7 +2719,7 @@ function boot(): void {
       if (p.t >= 0.74 && !p.swung) {
         cpuDecideSwing(p);
         if ((p as LivePitch).swung) {
-          G.swingTimer = 0.42;
+          G.swingTimer = SWING_DUR;
           G.batterSwingT = 0.02;
         }
       }
@@ -2917,9 +2924,9 @@ function boot(): void {
   /* ---------- Athlete visuals ---------- */
   const athleteState: Record<string, { pos: Vec3; yaw: number }> = {};
   const batState = {
-    position: [-0.43, 1.48, -0.18] as Vec3,
-    rotation: [0, Math.PI / 2 - 0.6, 0.85] as Vec3,
-    handPosition: [-0.6, 1.18, 0.01] as Vec3,
+    position: [-0.32, 1.86, -0.06] as Vec3,
+    rotation: [0, Math.PI / 2 - 0.5, 1.12] as Vec3,
+    handPosition: [-0.64, 1.42, 0.18] as Vec3,
     attachedToHands: true,
     swingT: 0
   };
@@ -2960,14 +2967,14 @@ function boot(): void {
     } else if (G.phase === "runners" && G.batterRunning) {
       hideAthlete("batter");
     } else {
-      let batterClip = "Ready";
+      let batterClip = "Load";
       let batterSpeed = 1.0;
-      if (G.swingTimer > 0.08) {
+      if (G.swingTimer > SWING_DUR * 0.45) {
         batterClip = "Attack";
-        batterSpeed = 1.65;
+        batterSpeed = 1.35;
       } else if (G.swingTimer > 0) {
         batterClip = "FollowThrough";
-        batterSpeed = 1.45;
+        batterSpeed = 1.2;
       } else if (G.batterStepTimer > 0) {
         batterClip = "Walk_Loop";
         batterSpeed = 1.25;
@@ -2975,37 +2982,74 @@ function boot(): void {
       setAthlete("batter", batterX, 0, batterZ, Math.PI + 0.35, batterClip, batterSpeed);
     }
 
-    // Bat — anchored directly to the batter's hands (handle at local -X, barrel at local +X, length ~0.92m)
+    // Bat — anchored directly to the batter's hands (barrel at local -X, handle at local +X, length ~0.92m)
     const batter = athleteState.batter?.pos ?? [batterX, 0, batterZ];
     const batterYaw = athleteState.batter?.yaw ?? Math.PI + 0.35;
     const swingingNow = G.swingTimer > 0 || (G.phase === "pitch" && Boolean(G.pitch?.swung));
     G.batterSwingT = swingingNow
       ? G.swingTimer > 0
-        ? clamp(1 - G.swingTimer / 0.42, 0, 1)
+        ? clamp(1 - G.swingTimer / SWING_DUR, 0, 1)
         : clamp(((G.pitch?.t ?? 0.9) - 0.85) * 5, 0, 1)
       : 0;
 
     const swingEase = smoothstep(G.batterSwingT);
-    const localHandX = swingingNow ? lerp(-0.08, 0.04, Math.sin(swingEase * Math.PI)) : -0.08;
-    const localHandY = swingingNow ? lerp(1.12, 1.04, Math.sin(swingEase * Math.PI)) : 1.12;
-    const localHandZ = swingingNow ? lerp(0.22, 0.32, Math.sin(swingEase * Math.PI)) : 0.22;
-    const handX = batter[0] + localHandX * Math.cos(batterYaw) + localHandZ * Math.sin(batterYaw);
-    const handY = batter[1] + localHandY;
-    const handZ = batter[2] - localHandX * Math.sin(batterYaw) + localHandZ * Math.cos(batterYaw);
+    // Default grip: chest height, held on the camera side of the torso so the
+    // bat silhouettes clear of the pinstripes from the batting camera. During
+    // the swing the hands drive forward through the contact zone.
+    const localHandX = swingingNow ? lerp(-0.16, 0.25, Math.sin(swingEase * Math.PI)) : -0.16;
+    const localHandY = swingingNow ? lerp(1.52, 1.46, Math.sin(swingEase * Math.PI)) : 1.52;
+    const localHandZ = swingingNow ? lerp(-0.3, 0.28, Math.sin(swingEase * Math.PI)) : -0.3;
+    let handX = batter[0] + localHandX * Math.cos(batterYaw) + localHandZ * Math.sin(batterYaw);
+    let handY = batter[1] + localHandY;
+    let handZ = batter[2] - localHandX * Math.sin(batterYaw) + localHandZ * Math.cos(batterYaw);
 
-    // Sweep batYaw through a 155° (2.7 rad) horizontal arc across home plate (from Math.PI - 0.55 to Math.PI + 2.15)
+    // The rig has no hand bone, so extend the forearm past the wrist by
+    // ~0.24 m along the upper-arm→forearm axis to get the grip point. The
+    // matrices are only trusted when they land near this batter.
+    const forearmSocket = H.batter?.animation?.socket?.("RightForearm");
+    if (forearmSocket?.valid) {
+      const fm = forearmSocket.worldMatrix();
+      const upperSocket = H.batter?.animation?.socket?.("RightUpperArm");
+      const um = upperSocket?.valid ? upperSocket.worldMatrix() : null;
+      let dx = 0;
+      let dy = -1;
+      let dz = 0;
+      if (um) {
+        dx = fm[12]! - um[12]!;
+        dy = fm[13]! - um[13]!;
+        dz = fm[14]! - um[14]!;
+        const len = Math.hypot(dx, dy, dz) || 1;
+        dx /= len;
+        dy /= len;
+        dz /= len;
+      }
+      const sx = fm[12]! + dx * 0.24;
+      const sy = fm[13]! + dy * 0.24;
+      const sz = fm[14]! + dz * 0.24;
+      if (Math.hypot(sx - batterX, sy - 1.0, sz - batterZ) < 2.2 && sy > 0.35 && sy < 2.35) {
+        handX = sx;
+        handY = sy;
+        handZ = sz;
+      }
+    }
+
+    // Rest: barrel up hugging the back shoulder toward the camera side so the
+    // grip reads against the sky. Swing: sweep over the plate, then lift into
+    // the follow-through so the bat never reads as lying near the ground.
+    const restYaw = 0.55;
+    const restPitch = 1.05;
     const batYaw = swingingNow
-      ? lerp(Math.PI - 0.55, Math.PI + 2.15, swingEase)
+      ? lerp(restYaw, Math.PI + 2.05, swingEase)
       : sprintingToFirst
         ? batterYaw + 0.35
-        : Math.PI - 0.55;
+        : restYaw;
     const batPitch = swingingNow
-      ? lerp(0.72, 0.02, clamp(G.batterSwingT * 2.1, 0, 1)) + Math.max(0, G.batterSwingT - 0.55) * 0.32
+      ? lerp(restPitch, 0.22, clamp(G.batterSwingT * 2.1, 0, 1)) + Math.max(0, G.batterSwingT - 0.5) * 1.2
       : sprintingToFirst
         ? -0.25
         : G.charging
-          ? 0.84
-          : 0.72;
+          ? restPitch + 0.14
+          : restPitch;
 
     const batDir: Vec3 = [
       Math.sin(batYaw) * Math.cos(batPitch),
@@ -3013,11 +3057,13 @@ function boot(): void {
       Math.cos(batYaw) * Math.cos(batPitch)
     ];
     const batPos: Vec3 = [
-      handX + batDir[0] * 0.22,
-      handY + batDir[1] * 0.22,
-      handZ + batDir[2] * 0.22
+      handX + batDir[0] * (BAT_HALF - BAT_GRIP),
+      handY + batDir[1] * (BAT_HALF - BAT_GRIP),
+      handZ + batDir[2] * (BAT_HALF - BAT_GRIP)
     ];
-    const batRot: Vec3 = [0, batYaw - Math.PI / 2, batPitch];
+    // The bat renders barrel-first along -batDir with the +90° yaw pair, so the
+    // negated pair flips it end-for-end: grip at the hands, barrel along batDir.
+    const batRot: Vec3 = [0, batYaw - Math.PI / 2, -batPitch];
     const batVisible = !sprintingToFirst && G.phase !== "menu" && G.phase !== "gameover" && !(G.phase === "runners" && G.batterRunning);
     H.bat?.setPosition(batPos[0], batPos[1], batPos[2]).setRotation(batRot[0], batRot[1], batRot[2]).setVisible(batVisible);
     batState.position = [Number(batPos[0].toFixed(3)), Number(batPos[1].toFixed(3)), Number(batPos[2].toFixed(3))];
@@ -3038,11 +3084,9 @@ function boot(): void {
     }
     setAthlete("pitcher", 0.1, MOUND_TOP, MOUND_Z - 0.1, 0, pitcherClip, pitcherSpeed);
 
-    // Home plate umpire + 1B & 3B base coaches grounded at y = 0.94 with calm Ready stance
-    if (H.umpire) {
-      H.umpire.setPosition(0.6, 0.94, 3.4).setRotation(0, Math.PI, 0).setVisible(true);
-      setActorAnimation("umpire", H.umpire, "Ready", 1.0);
-    }
+    // 1B & 3B base coaches grounded at y = 0.94 with calm Ready stance. The
+    // home-plate umpire was removed: two figures behind the batter read as a
+    // crowd and the catcher alone is enough to sell the pitch.
     if (H.coach1b) {
       H.coach1b.setPosition(21.5, 0.94, -14.8).setRotation(0, -Math.PI * 0.72, 0).setVisible(true);
       setActorAnimation("coach-1b", H.coach1b, "Ready", 1.0);
@@ -3073,7 +3117,8 @@ function boot(): void {
       let z = spot[2];
       const y = spot[1];
       let yaw = Math.atan2(-x, -z);
-      let clip = "Ready";
+      // The catcher must read as a catcher, not a second batter standing at the plate.
+      let clip = id === "f-c" ? "Crouch_Idle_Loop" : "Ready";
       let speed = 1.0;
 
       const distToLanding = b ? Math.hypot(spot[0] - b.landPos[0], spot[2] - b.landPos[2]) : Infinity;
@@ -3097,6 +3142,14 @@ function boot(): void {
       }
       setAthlete(id, x, y, z, yaw, clip, speed);
     });
+
+    // Catcher's mitt — pinned to the crouched catcher's glove side (their left,
+    // world -x) at target height; the crouch loop keeps the hands near this spot.
+    if (H.catcherMitt) {
+      const c = H["f-c"];
+      const cp = c ? c.position : [-0.5, 0, 2.35];
+      H.catcherMitt.setPosition(cp[0] - 0.3, 0.55, cp[2] - 0.38).setVisible(true);
+    }
 
     // Runners on bases — advancing runners play Sprint_Loop while moving, standing runners play Ready
     G.runnerBase.forEach((baseIdx, i) => {
@@ -3237,9 +3290,9 @@ function boot(): void {
       c.mode = "batting";
       const drift = clamp(G.pci[0] * 0.9, -1.2, 1.2);
       const pitchPush = G.phase === "pitch" && G.pitch ? G.pitch.t * 1.4 : 0;
-      eye = [drift, 5.4 - pitchPush * 0.4, 13.2 - pitchPush];
-      target = [drift * 0.4, 1.15 + (G.pitch?.t ?? 0) * 0.1, -9.5];
-      fov = 44;
+      eye = [drift - 0.5, 6.4 - pitchPush * 0.35, 11.6 - pitchPush * 0.8];
+      target = [-0.5 + drift * 0.4, 1.15 + (G.pitch?.t ?? 0) * 0.1, -7.2];
+      fov = 40;
     }
     const k = 1 - Math.pow(0.001, dt);
     c.eye = mix3(c.eye, eye, k);

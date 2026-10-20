@@ -18,8 +18,8 @@ import {
   createFxParticlePass, mountTouchControls
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets-v2";
-import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R } from "./game/sim";
-import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, LOOK_ID, BALL_PATCH_OFFSETS } from "./game/scene";
+import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R, BALL_VIS_R } from "./game/sim";
+import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, LOOK_ID } from "./game/scene";
 import { resolveAthlete, applyAthleteKit, poseAthlete, skinFor, type AthleteRig } from "./game/rig";
 import { createHud, clubFor } from "./game/hud";
 import { createModes } from "./game/modes";
@@ -254,7 +254,7 @@ function boot(): void {
     const b = s.ball;
     const bSpeed = Math.hypot(b.vx, b.vz) * (b.mode === "flight" ? 1 : 0.2);
     cam.fovKick = lerp(cam.fovKick, clamp(bSpeed / 26, 0, 1) * 1.4, 1 - Math.pow(0.02, dt));
-    cam.followX = lerp(cam.followX, clamp(b.x * 0.18, -5.5, 5.5), 1 - Math.pow(0.06, dt));
+    cam.followX = lerp(cam.followX, clamp(b.x * 0.6, -13, 13), 1 - Math.pow(0.06, dt));
 
     if (cam.mode === "menu") {
       const r = 38;
@@ -297,10 +297,14 @@ function boot(): void {
       cam.target = [cx, 1.2, cz];
       cam.fov = 34;
     } else {
-      // broadcast: wide stadium view framing BOTH goalposts at x = -30 and x = +30
-      cam.eye = [b.x * 0.18, 22.5, 38.5];
-      cam.target = [b.x * 0.12, 0.8, -1.5];
-      cam.fov = 54;
+      // broadcast: tighter side-follow rig. The old wide framing showed the
+      // whole stadium but left players ~20px tall; now the camera rides the
+      // ball so dribbles, tackles and shots read at gameplay scale. The eye
+      // also eases toward the ball across the touchline so near-side play
+      // stays inside the frame instead of falling off the bottom edge.
+      cam.eye = [cam.followX, 11.5, 23.5 + clamp(b.z * 0.55, -6, 6)];
+      cam.target = [b.x * 0.8, 0.9, -1 + clamp(b.z * 0.3, -4, 4)];
+      cam.fov = 40;
     }
     (app as any).camera?.setPose?.({ position: cam.eye, target: cam.target, fov: cam.fov });
   }
@@ -449,24 +453,13 @@ function boot(): void {
         }
       }
 
-      /* ---- ball (crisp white sphere + 6 high-contrast black pentagon patches + fcMatchBallMeshy rotating together) ---- */
+      /* ---- ball: one admitted GLB at regulation size ---- */
       const b = s.ball;
-      const by = Math.max(0.38, b.y);
+      const by = Math.max(BALL_VIS_R, b.y + (BALL_VIS_R - BALL_R));
       const rx = b.rotX ?? 0;
       const rz = b.rotZ ?? 0;
-      const cx = Math.cos(rx), sx = Math.sin(rx);
-      const cz = Math.cos(rz), sz = Math.sin(rz);
-      world.ball?.setPosition(b.x, by, b.z).setRotation(rx, 0, rz).setScale([1, 1, 1]).setVisible(true);
       world.ballMesh?.setPosition(b.x, by, b.z).setRotation(rx, 0, rz).setScale([1, 1, 1]).setVisible(true);
-      for (let i = 0; i < BALL_PATCH_OFFSETS.length; i++) {
-        const [ox, oy, oz] = BALL_PATCH_OFFSETS[i]!;
-        const y1 = oy * cx - oz * sx;
-        const z1 = oy * sx + oz * cx;
-        const x2 = ox * cz - y1 * sz;
-        const y2 = ox * sz + y1 * cz;
-        world.ballPatches[i]?.setPosition(b.x + x2, by + y2, b.z + z1).setScale([1, 1, 1]).setVisible(true);
-      }
-      const shScale = clamp(1 - (by - 0.38) * 0.12, 0.35, 1.08);
+      const shScale = clamp(1 - (by - BALL_VIS_R) * 0.12, 0.35, 1.08);
       world.ballShadow?.setPosition(b.x, 0.015, b.z).setScale([shScale, 1, shScale]).setVisible(true);
 
       /* ---- aim ring (shootout) + lab ring (touch lab) ---- */
@@ -524,7 +517,7 @@ function boot(): void {
         clock: Math.round(s.clock * 10) / 10,
         venue: s.venue,
         score: [...s.score],
-        ball: { position: [b.x, by, b.z], radius: 0.38, rotX: rx, rotZ: rz, mode: b.mode, lastShot: b.lastShot, freeT: Math.round(b.freeT * 100) / 100 },
+        ball: { position: [b.x, by, b.z], radius: BALL_VIS_R, rotX: rx, rotZ: rz, mode: b.mode, lastShot: b.lastShot, freeT: Math.round(b.freeT * 100) / 100 },
         possessionTeam: s.possessionTeam,
         possession: [Math.round(s.possession[0] * 10) / 10, Math.round(s.possession[1] * 10) / 10],
         controlledId: s.controlledId,

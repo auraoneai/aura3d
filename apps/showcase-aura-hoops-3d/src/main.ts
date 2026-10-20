@@ -53,6 +53,75 @@ const smoothstep = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t)
 const dist2d = (ax: number, az: number, bx: number, bz: number) => Math.hypot(ax - bx, az - bz);
 const angTo = (ax: number, az: number, bx: number, bz: number) => Math.atan2(bx - ax, bz - az);
 
+type Quat = { x: number; y: number; z: number; w: number };
+const unit = (v: Vec3): Vec3 => {
+  const l = Math.hypot(v[0], v[1], v[2]) || 1;
+  return [v[0] / l, v[1] / l, v[2] / l];
+};
+const qMul = (a: Quat, b: Quat): Quat => ({
+  x: a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
+  y: a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+  z: a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
+  w: a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z
+});
+const qConj = (q: Quat): Quat => ({ x: -q.x, y: -q.y, z: -q.z, w: q.w });
+const qX = (angle: number): Quat => ({ x: Math.sin(angle / 2), y: 0, z: 0, w: Math.cos(angle / 2) });
+const qFromTo = (from: Vec3, to: Vec3): Quat => {
+  const d = from[0] * to[0] + from[1] * to[1] + from[2] * to[2];
+  if (d < -0.999999) {
+    const axis: Vec3 = Math.abs(from[0]) < 0.9 ? [0, -from[2], from[1]] : [-from[1], from[0], 0];
+    const u = unit(axis);
+    return { x: u[0], y: u[1], z: u[2], w: 0 };
+  }
+  const cx = from[1] * to[2] - from[2] * to[1];
+  const cy = from[2] * to[0] - from[0] * to[2];
+  const cz = from[0] * to[1] - from[1] * to[0];
+  const w = 1 + d;
+  const l = Math.hypot(cx, cy, cz, w) || 1;
+  return { x: cx / l, y: cy / l, z: cz / l, w: w / l };
+};
+const qFromMat4 = (m: ArrayLike<number>): Quat => {
+  const m11 = m[0]!, m12 = m[4]!, m13 = m[8]!;
+  const m21 = m[1]!, m22 = m[5]!, m23 = m[9]!;
+  const m31 = m[2]!, m32 = m[6]!, m33 = m[10]!;
+  const trace = m11 + m22 + m33;
+  if (trace > 0) {
+    const s = 0.5 / Math.sqrt(trace + 1);
+    return { x: (m32 - m23) * s, y: (m13 - m31) * s, z: (m21 - m12) * s, w: 0.25 / s };
+  }
+  if (m11 > m22 && m11 > m33) {
+    const s = 2 * Math.sqrt(1 + m11 - m22 - m33);
+    return { x: 0.25 * s, y: (m12 + m21) / s, z: (m13 + m31) / s, w: (m32 - m23) / s };
+  }
+  if (m22 > m33) {
+    const s = 2 * Math.sqrt(1 + m22 - m11 - m33);
+    return { x: (m12 + m21) / s, y: 0.25 * s, z: (m23 + m32) / s, w: (m13 - m31) / s };
+  }
+  const s = 2 * Math.sqrt(1 + m33 - m11 - m22);
+  return { x: (m13 + m31) / s, y: (m23 + m32) / s, z: 0.25 * s, w: (m21 - m12) / s };
+};
+const solveElbow = (shoulder: Vec3, palm: Vec3, l1: number, l2: number, pole: Vec3 = [-1, 0, -0.2]): Vec3 => {
+  const raw = Math.hypot(palm[0] - shoulder[0], palm[1] - shoulder[1], palm[2] - shoulder[2]) || 1;
+  const dist = clamp(raw, 1e-4, l1 + l2 - 1e-4);
+  const ux = (palm[0] - shoulder[0]) / raw;
+  const uy = (palm[1] - shoulder[1]) / raw;
+  const uz = (palm[2] - shoulder[2]) / raw;
+  const a = (l1 * l1 - l2 * l2 + dist * dist) / (2 * dist);
+  const h = Math.sqrt(Math.max(0, l1 * l1 - a * a));
+  // Elbow pole points outward and slightly back so the bend stays clear of the ribs.
+  let px = pole[0], py = pole[1], pz = pole[2];
+  const pd = px * ux + py * uy + pz * uz;
+  px -= ux * pd;
+  py -= uy * pd;
+  pz -= uz * pd;
+  const pl = Math.hypot(px, py, pz) || 1;
+  return [
+    shoulder[0] + ux * a + (px / pl) * h,
+    shoulder[1] + uy * a + (py / pl) * h,
+    shoulder[2] + uz * a + (pz / pl) * h
+  ];
+};
+
 /** Deterministic 32-bit LCG — all gameplay randomness flows through this. */
 function makeRng(seed: number): () => number {
   let s = seed >>> 0;
@@ -368,6 +437,7 @@ const ball: Ball = {
   hitRim: false, hitBoard: false, scored: false, swishOnly: false,
   shotValue: 1, shooter: -1, blocked: false, looseT: 0
 };
+let dribbleHand: { x: number; y: number; z: number; socket: boolean; forearmValid: boolean; socketApi: boolean; raw?: [number, number, number]; point?: [number, number, number] } | null = null;
 
 /* ------------------------------------------------------------------ *
  *  Event log → ticker                                                 *
@@ -486,7 +556,7 @@ function buildHoopNodes(): any[] {
 
 function buildBallNodes(): any[] {
   const nodes: any[] = [
-    model(assets.hoopsBall, { name: "ball-live", scaleMode: "fit", targetMaxDimension: 0.34, castShadow: true })
+    model(assets.hoopsBall, { name: "ball-live", scaleMode: "fit", targetMaxDimension: 0.26, castShadow: true })
       .position(0, 0.98, CHECK_SPOT[2])
       .runtime(game.runtimeNode("ball-live")),
     primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.008, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) }).position(0, 0.012, CHECK_SPOT[2]).runtime(game.runtimeNode("ball-shadow"))
@@ -736,6 +806,32 @@ let waverNodes: AnyHandle[] = [];
 const ROSTER_IDS = ["p0", "p1", "p2", "p3", "p4", "a0", "a1", "a2", "a3", "a4"] as const;
 const lastClipByActor = new Map<string, string>();
 const lastSpeedByActor = new Map<string, number>();
+const dribblePoseOn = new Set<string>();
+const livePoseOn = new Set<string>();
+const dribbleAims = new Map<string, Vec3>();
+// Bind-space skeleton measurements: shoulder→elbow, and elbow→palm centroid
+// measured from the GLB's forearm-weighted vertices (the rig has no hand bone).
+const UPPER_ARM_LEN = Math.hypot(-0.05, -0.25, 0.01);
+const FOREARM_LEN = Math.hypot(-0.151, -0.249, 0.124);
+const RIGHT_UPPER_ARM_BIND = unit([-0.05, -0.25, 0.01]);
+const RIGHT_FOREARM_BIND = unit([-0.151, -0.249, 0.124]);
+const LEFT_UPPER_ARM_BIND = unit([0.05, -0.25, 0.01]);
+const LEFT_FOREARM_BIND = unit([0.151, -0.249, 0.124]);
+// The GLB's Idle/Ready clips carry no arm keys, so stationary athletes hold the
+// A-pose bind with stiff straight arms. This full-body stance is the crouch
+// frame from Crouch_Idle_Loop; procedural arm IK is layered on top each frame.
+const stanceLegs = () => ({
+  Hips: { position: { x: 0, y: 0.882, z: 0 } },
+  Spine: { rotation: qX(0.105) },
+  Chest: { rotation: qX(0.07) },
+  Head: { rotation: qX(-0.122) },
+  LeftUpperLeg: { rotation: qX(-0.208) },
+  LeftLowerLeg: { rotation: qX(0.276) },
+  LeftFoot: { rotation: qX(-0.07) },
+  RightUpperLeg: { rotation: qX(-0.208) },
+  RightLowerLeg: { rotation: qX(0.276) },
+  RightFoot: { rotation: qX(-0.07) }
+});
 
 function setNodeClip(id: string, handle: AnyHandle, clip: string, speed = 1.0): void {
   if (!handle) return;
@@ -758,6 +854,9 @@ function setNodeClip(id: string, handle: AnyHandle, clip: string, speed = 1.0): 
 function resolveHandles(): void {
   lastClipByActor.clear();
   lastSpeedByActor.clear();
+  dribblePoseOn.clear();
+  livePoseOn.clear();
+  dribbleAims.clear();
   rigs = ROSTER_IDS.map((id) => ({
     root: req(id),
     shadow: req(`${id}-shadow`),
@@ -1391,6 +1490,7 @@ let rimShake = 0;
 const trailHist: Vec3[] = [];
 
 function stepBallSim(dt: number): void {
+  dribbleHand = null;
   if (ball.state === "flight" || ball.state === "loose" || ball.state === "pass") {
     const prev: Vec3 = [ball.x, ball.y, ball.z];
     ball.flightT += dt;
@@ -1524,27 +1624,61 @@ function stepBallSim(dt: number): void {
       ball.holder = idxOf(h);
       ball.dribbleT = game_.time;
       const moving = Math.hypot(h.vx, h.vz) > 0.25;
-      const cycleDur = moving ? 0.34 : 0.42;
+      const cycleDur = moving ? 0.30 : 0.36;
       const dribblePhase = (game_.time / cycleDur) * Math.PI;
       const sinWave = Math.abs(Math.cos(dribblePhase));
       const bounce01 = Math.pow(sinWave, 0.72);
-      const handY = 0.98 + h.y;
-      const floorY = BALL_R;
-      const prevY = ball.y;
       const right = 0.28;
       const fwd = moving ? 0.32 : 0.26;
       const rx = Math.cos(h.yaw) * right + Math.sin(h.yaw) * fwd;
       const rz = -Math.sin(h.yaw) * right + Math.cos(h.yaw) * fwd;
+      let handX = h.x + rx;
+      let handZ = h.z + rz;
+      let handY = 0.98 + h.y;
+      let handFromSocket = false;
+      // syncAthlete drives the right arm with two-bone IK and records the palm
+      // point it aimed for. Using that solved point (rather than re-deriving it
+      // from the previous frame's forearm matrix) keeps the ball glued to the
+      // hand at the top of every bounce.
+      const aim = dribbleAims.get(h.nodeId);
+      const rig = rigs[ball.holder]?.root as AnyHandle;
+      if (aim) {
+        // Palm heel sits just outside the ball's crown so the hand reads as
+        // guiding the bounce without the ball clipping into the fingers.
+        const ox = aim[0] - h.x;
+        const oz = aim[2] - h.z;
+        const olen = Math.hypot(ox, oz) || 1;
+        handX = aim[0] + (ox / olen) * 0.04 + h.vx * 0.05;
+        handZ = aim[2] + (oz / olen) * 0.04 + h.vz * 0.05;
+        handY = aim[1];
+        handFromSocket = true;
+        dribbleHand = { x: handX, y: handY, z: handZ, socket: true, forearmValid: true, socketApi: true, raw: [aim[0], aim[1], aim[2]], point: [aim[0], aim[1], aim[2]] };
+      } else {
+        dribbleHand = { x: handX, y: handY, z: handZ, socket: false, forearmValid: false, socketApi: typeof rig?.animation?.socket === "function" };
+      }
+      // Real floor bounce: the palm pumps down over the ball and meets it again
+      // at the top of the bounce, so contact and rhythm read as one motion.
+      const floorY = BALL_R + 0.03;
+      const highY = Math.max(floorY + 0.30, handY - BALL_R + 0.02);
+      const prevY = ball.y;
+      const dribbleY = lerp(floorY, highY, bounce01);
       if (h.shooting) {
         ball.x = h.x + Math.sin(h.yaw) * 0.22;
         ball.z = h.z + Math.cos(h.yaw) * 0.22;
         ball.y = 1.65 + h.y + game_.shotMeter.t * 0.35;
+      } else if (game_.phase === "check" && aim) {
+        // Check ball: held between both hands, no bounce before the live phase.
+        ball.x = aim[0];
+        ball.y = aim[1];
+        ball.z = aim[2];
       } else {
-        ball.x = h.x + rx;
-        ball.z = h.z + rz;
-        ball.y = lerp(floorY, handY, bounce01);
+        // Ball stays under the animated hand; it only meets the floor at the
+        // bottom of the dribble cycle, so contact and bounce read as one motion.
+        ball.x = handX;
+        ball.z = handZ;
+        ball.y = dribbleY;
       }
-      if (!h.shooting && prevY > 0.28 && ball.y <= 0.22) cue("dribble");
+      if (!h.shooting && game_.phase !== "check" && prevY > 0.28 && ball.y <= 0.22) cue("dribble");
     }
   }
 }
@@ -2154,7 +2288,7 @@ function syncAthlete(a: AthleteState, dt: number): void {
 
   // Clip selection with hysteresis when nothing explicit is playing
   if (!a.shooting && a.dunkT <= 0 && a.jumpT <= 0 && a.stumble <= 0 && a.actionUntil <= 0) {
-    const idleClip = "Ready";
+    const idleClip = a.hasBall ? "Crouch_Idle_Loop" : "Ready";
     if (speed > 5.2 || (a.clip === "Sprint_Loop" && speed > 4.6)) {
       setClip(a, "Sprint_Loop", 1.35);
     } else if (speed > 0.85 || ((a.clip === "Run" || a.clip === "Sprint_Loop") && speed > 0.65)) {
@@ -2166,6 +2300,110 @@ function syncAthlete(a: AthleteState, dt: number): void {
     }
   }
   if (a.stumble > 0) setClip(a, "Crouch_Idle_Loop", 1.2);
+
+  // Stationary athletes get a deliberate full-body stance with procedural arms.
+  // The rig's Idle/Ready clips carry no arm keys, so letting those clips own a
+  // standing player leaves both arms in the A-pose bind (mannequin hands). A
+  // live pose suppresses clip dispatch entirely, so the stance specifies every
+  // major bone instead of inheriting the last clip frame.
+  const stanceNow = speed < 0.35 && !a.shooting && a.dunkT <= 0 && a.jumpT <= 0 &&
+    a.stumble <= 0 && a.actionUntil <= 0;
+  const dribbleNow = stanceNow && a.hasBall && ball.holder === idxOf(a);
+  const checkHold = dribbleNow && game_.phase === "check";
+  if (stanceNow) {
+    const cycle = speed > 0.25 ? 0.30 : 0.36;
+    const pulse = Math.pow(Math.abs(Math.cos((game_.time / cycle) * Math.PI)), 0.72);
+    const bones: Record<string, { rotation?: Quat; position?: { x: number; y: number; z: number } }> = stanceLegs();
+    if (dribbleNow) {
+      // Lean over the ball; the torso dips hard into each push because the arm
+      // alone cannot reach the low bounce (arm 0.58m from a 1.44m shoulder).
+      // The extra waist bend lowers the shoulder ~0.15m at the floor beat so
+      // the hand visibly travels with the ball instead of hovering.
+      bones.Spine = { rotation: qX(checkHold ? 0.16 : 0.34 + 0.24 * (1 - pulse)) };
+      bones.Chest = { rotation: qX(checkHold ? 0.10 : 0.24 + 0.16 * (1 - pulse)) };
+      bones.Head = { rotation: qX(-0.22) };
+    }
+    const chest = r.root.animation?.socket?.("Chest");
+    const upperR = r.root.animation?.socket?.("RightUpperArm");
+    const upperL = r.root.animation?.socket?.("LeftUpperArm");
+    let aimed: Vec3 | undefined;
+    if (chest?.valid && upperR?.valid && upperL?.valid) {
+      const chestRot = qFromMat4(chest.worldMatrix());
+      const shoulderOf = (upper: { worldMatrix(): ArrayLike<number> }): Vec3 => {
+        const m = upper.worldMatrix();
+        return [m[12]!, m[13]!, m[14]!];
+      };
+      const shoulderR = shoulderOf(upperR);
+      const shoulderL = shoulderOf(upperL);
+      // Palm targets live in the same actor-local frame as the bones (local +x
+      // is the character's left, +z is forward). The dribbling palm travels
+      // down with the bounce so the hand pushes the ball to the floor and rises
+      // with it, instead of hanging at the hip while the ball bounces alone.
+      const palmR: Vec3 = checkHold
+        ? [shoulderR[0] - 0.06, shoulderR[1] - 0.46, shoulderR[2] + 0.20]
+        : dribbleNow
+          ? [shoulderR[0] - 0.06, shoulderR[1] - lerp(0.62, 0.06, pulse), shoulderR[2] + lerp(0.26, 0.30, pulse)]
+          : [shoulderR[0] + 0.02, shoulderR[1] - 0.46, shoulderR[2] + 0.04];
+      const palmL: Vec3 = checkHold
+        ? [shoulderL[0] - 0.04, shoulderL[1] - 0.42, shoulderL[2] + 0.10]
+        : dribbleNow
+          ? [shoulderL[0] - 0.04, shoulderL[1] - 0.34, shoulderL[2] + 0.16]
+          : [shoulderL[0] - 0.02, shoulderL[1] - 0.46, shoulderL[2] + 0.04];
+      const arm = (side: -1 | 1, shoulder: Vec3, palm: Vec3) => {
+        // Dribbling elbow stays tucked into the ribs and drives down with the
+        // pound; idle arms hang close so nobody reads as a stiff A-pose.
+        const flare = dribbleNow ? 0.22 : 0.18;
+        const elbow = solveElbow(shoulder, palm, UPPER_ARM_LEN, FOREARM_LEN, [side < 0 ? -flare : flare, -1, dribbleNow ? 0.06 : 0]);
+        const upperWorld = qFromTo(
+          side < 0 ? RIGHT_UPPER_ARM_BIND : LEFT_UPPER_ARM_BIND,
+          unit([elbow[0] - shoulder[0], elbow[1] - shoulder[1], elbow[2] - shoulder[2]])
+        );
+        const foreWorld = qFromTo(
+          side < 0 ? RIGHT_FOREARM_BIND : LEFT_FOREARM_BIND,
+          unit([palm[0] - elbow[0], palm[1] - elbow[1], palm[2] - elbow[2]])
+        );
+        return { upperLocal: qMul(qConj(chestRot), upperWorld), foreLocal: qMul(qConj(upperWorld), foreWorld) };
+      };
+      const rightArm = arm(-1, shoulderR, palmR);
+      const leftArm = arm(1, shoulderL, palmL);
+      bones.RightUpperArm = { rotation: rightArm.upperLocal };
+      bones.RightForearm = { rotation: rightArm.foreLocal };
+      bones.LeftUpperArm = { rotation: leftArm.upperLocal };
+      bones.LeftForearm = { rotation: leftArm.foreLocal };
+      if (dribbleNow) {
+        const cy = Math.cos(a.yaw);
+        const sn = Math.sin(a.yaw);
+        // At the check the ball sits on the right hip, outside the palm so the
+        // 3/4 camera can see it; live it tracks that palm through the bounce.
+        const aimPalm: Vec3 = checkHold
+          ? [palmR[0] - 0.05, palmR[1] + 0.04, palmR[2] + 0.02]
+          : palmR;
+        aimed = [
+          a.x + cy * aimPalm[0] + sn * aimPalm[2],
+          0.96 + a.y + aimPalm[1],
+          a.z - sn * aimPalm[0] + cy * aimPalm[2]
+        ];
+      }
+    } else {
+      bones.RightUpperArm = { rotation: { x: -0.089, y: -0.066, z: -0.041, w: 0.993 } };
+      bones.RightForearm = { rotation: qX(-0.122) };
+      bones.LeftUpperArm = { rotation: { x: -0.089, y: 0.066, z: 0.041, w: 0.993 } };
+      bones.LeftForearm = { rotation: qX(-0.122) };
+    }
+    r.root.setAnimationPose({ bones });
+    livePoseOn.add(a.nodeId);
+    if (dribbleNow && aimed) {
+      dribblePoseOn.add(a.nodeId);
+      dribbleAims.set(a.nodeId, aimed);
+    } else {
+      dribblePoseOn.delete(a.nodeId);
+      dribbleAims.delete(a.nodeId);
+    }
+  } else if (livePoseOn.delete(a.nodeId)) {
+    r.root.setAnimationPose(undefined);
+    dribblePoseOn.delete(a.nodeId);
+    dribbleAims.delete(a.nodeId);
+  }
 
   // Ground rings & shadow
   r.shadow?.setPosition(a.x, 0.012, a.z).setScale([1 - a.y * 0.14, 1, 1 - a.y * 0.14]).setVisible(true);
@@ -2207,14 +2445,28 @@ function updateCamera(dt: number): void {
       fov: 26
     };
   } else {
-    // Broadcast: high behind-the-offense, drifting with the ball
-    const bx = ball.x * 0.42 + (holder?.x ?? 0) * 0.2;
-    const bz = Math.max(ball.z, holder?.z ?? 6);
-    want = {
-      eye: [bx, 8.4 + (game_.phase === "shot" ? 0.6 : 0), bz + 9.6],
-      target: [lerp(bx, RIM[0], 0.42), 1.5, lerp(bz, RIM[2], 0.42)],
-      fov: 32 + cam.punch
-    };
+    // Strong 3/4 sideline chase. A camera parked directly behind the handler
+    // sits on the same line as the ball (the handler holds it out in front),
+    // so the hand and ball collapse onto the same screen pixels. Swinging the
+    // eye well to the handler's right separates the near-side palm and ball
+    // in profile. During a shot the ball becomes the focus so the flight stays
+    // framed instead of leaving the tighter view.
+    const shotNow = game_.phase === "shot" || game_.phase === "score";
+    if (shotNow) {
+      want = {
+        eye: [ball.x + 7.6, 4.9 + cam.punch * 0.2, ball.z + 5.2],
+        target: [ball.x - 0.2, Math.max(1.5, ball.y), ball.z - 0.8],
+        fov: 44 + cam.punch
+      };
+    } else {
+      const hx = holder?.x ?? ball.x;
+      const hz = Math.max(holder?.z ?? ball.z, ball.z);
+      want = {
+        eye: [hx + 5.6, 3.0, hz + 4.2],
+        target: [hx - 0.2, 1.1, hz - 0.9],
+        fov: 38 + cam.punch
+      };
+    }
   }
   const k = 1 - Math.pow(0.02, dt);
   cam.eye = [lerp(cam.eye[0], want.eye[0], k), lerp(cam.eye[1], want.eye[1], k), lerp(cam.eye[2], want.eye[2], k)];
@@ -2287,6 +2539,8 @@ function publishEvidence(): void {
     jamMeter: Number(game_.jam.toFixed(3)),
     jamFull: game_.jamFull,
     ball: { state: ball.state, position: [Number(ball.x.toFixed(2)), Number(ball.y.toFixed(2)), Number(ball.z.toFixed(2))], scored: ball.scored },
+    dribbleHand: dribbleHand ? { x: Number(dribbleHand.x.toFixed(2)), y: Number(dribbleHand.y.toFixed(2)), z: Number(dribbleHand.z.toFixed(2)), socket: dribbleHand.socket, forearmValid: dribbleHand.forearmValid, socketApi: dribbleHand.socketApi, raw: dribbleHand.raw, point: dribbleHand.point } : null,
+    dribblePose: holder ? dribblePoseOn.has(holder.nodeId) : false,
     holder: holder?.nodeId ?? null,
     athleteClips: athletes.map((a) => ({
       id: a.nodeId,

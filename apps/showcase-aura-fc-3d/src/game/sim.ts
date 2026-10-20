@@ -19,7 +19,7 @@ import { planCommand } from "./ai";
 
 export {
   PITCH_HX, PITCH_HZ, GOAL_HALF_W, GOAL_H, GOAL_DEPTH, BOX_DEPTH, BOX_HALF_W,
-  PEN_X, CIRCLE_R, BALL_R
+  PEN_X, CIRCLE_R, BALL_R, BALL_VIS_R
 } from "./dims";
 import {
   PITCH_HX, PITCH_HZ, GOAL_HALF_W, GOAL_H, PEN_X, BALL_R,
