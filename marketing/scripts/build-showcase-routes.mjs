@@ -67,8 +67,7 @@ const showcaseRoutes = [
   "showcase-bunker-zero",
   "showcase-slingshot-siege",
   "showcase-dot-dash-3d",
-  "showcase-cross-hop",
-  "showcase-roadster-hours"
+  "showcase-cross-hop"
 ];
 
 const retiredPrototypeRoutes = [
