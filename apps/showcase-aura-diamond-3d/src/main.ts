@@ -106,11 +106,313 @@ const FOUL_DEG = 45;
 const TRAIL_COUNT = 16;
 const WAVER_COUNT = 18;
 const HIDDEN_SCALE = 0.0001;
-/** Long enough for the bat arc to read at broadcast camera distance. */
-const SWING_DUR = 0.55;
-/** Bat GLB is 0.92 m long with the barrel at local -X (handle at +X). */
-const BAT_HALF = 0.51;
-const BAT_GRIP = 0.12;
+
+/* ================================================================== *
+ * Batter rig + swing pose system                                     *
+ *                                                                    *
+ * The bat is SOCKETED to the batter's right forearm bone through the *
+ * engine's `animation.attach` (engine owns the bat transform while   *
+ * attached). The stance and swing are driven by an OVERLAY pose on   *
+ * top of the Idle_Loop clip: two-bone IK places both hands on the   *
+ * bat knob (right hand at the knob, left hand stacked just above),  *
+ * and a forearm twist solves so the socketed bat sweeps the         *
+ * authored arc — load, stride, rotation through the zone at contact *
+ * height, follow-through wrapping around the torso.                 *
+ * ================================================================== */
+
+/** diamondAthlete bind skeleton, actor-local (+x = character's LEFT, +z = toward the pitcher). */
+const RIG = {
+  chestBind: [0, 0.3973, 0] as Vec3,
+  /** Shoulder offsets from the Chest bone (bind local translations). */
+  shoulderR: [-0.2, 0.1465, 0] as Vec3,
+  shoulderL: [0.2, 0.1465, 0] as Vec3,
+  /** Right palm centroid in right FOREARM bone space (knob grip point). */
+  palmR: [-0.117, -0.245, 0.137] as Vec3,
+  palmL: [0.117, -0.245, 0.137] as Vec3,
+  /** Bind bone directions (shoulder→elbow, elbow→palm), unit length. */
+  bindDirUA: [0, 0, 1] as Vec3,
+  bindDirFA: [0, 0, 1] as Vec3,
+  upperArm: 0.2555,
+  foreHand: 0.3041,
+  /** Hips bind-local translation under Root (stride shifts add onto this). */
+  hipsBind: [0, 0.93706, 0] as Vec3
+};
+(() => {
+  const n = (v: Vec3): Vec3 => {
+    const l = Math.hypot(v[0], v[1], v[2]) || 1;
+    return [v[0] / l, v[1] / l, v[2] / l];
+  };
+  RIG.bindDirUA = n([-0.05, -0.25, 0.01]);
+  RIG.bindDirFA = n([-0.117, -0.245, 0.137]);
+})();
+
+/** Node fit scale for the 1.88 m athletes (raw GLB height 1.903 m). */
+const ACTOR_FIT = 1.88 / 1.903;
+/** Bat GLB is horizontal along X (knob at -X, barrel at +X), fitted to 1.02 m. */
+const BAT_FIT = 1.02 / 1.903;
+/** Bat length / knob offset in ACTOR units (bone space scales by ACTOR_FIT). */
+const BAT_LEN = 1.02 / ACTOR_FIT;
+const KNOB_HALF = 0.9515 * BAT_FIT / ACTOR_FIT;
+/** Sweet spot sits ~72% up the barrel from the knob. */
+const SWEET_SPOT = 0.72 * BAT_LEN;
+/** Swing timeline (normalised t 0→1): load → stride → contact at 0.5 → follow-through. */
+const SWING_TOTAL = 1.0;
+const SWING_CONTACT_T = 0.5;
+/** Bat/forearm angle fixed by the socket calibration (cos of 56.4°). */
+const BAT_CONE_COS = 0.5527;
+
+/* ---------- Tiny quat helpers (x, y, z, w tuples) ---------- */
+type Quat = [number, number, number, number];
+const Q_ID: Quat = [0, 0, 0, 1];
+const qNorm = (q: Quat): Quat => {
+  const l = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
+  return [q[0] / l, q[1] / l, q[2] / l, q[3] / l];
+};
+const qMul = (a: Quat, b: Quat): Quat => {
+  const [ax, ay, az, aw] = a;
+  const [bx, by, bz, bw] = b;
+  return [aw * bx + ax * bw + ay * bz - az * by, aw * by - ax * bz + ay * bw + az * bx, aw * bz + ax * by - ay * bx + az * bw, aw * bw - ax * bx - ay * by - az * bz];
+};
+const qConj = (q: Quat): Quat => [-q[0], -q[1], -q[2], q[3]];
+const qAxis = (axis: Vec3, angle: number): Quat => {
+  const l = Math.hypot(axis[0], axis[1], axis[2]) || 1;
+  const h = angle / 2;
+  const s = Math.sin(h);
+  return qNorm([(axis[0] / l) * s, (axis[1] / l) * s, (axis[2] / l) * s, Math.cos(h)]);
+};
+const qRot = (q: Quat, v: Vec3): Vec3 => {
+  const t: Vec3 = [2 * (q[1] * v[2] - q[2] * v[1]), 2 * (q[2] * v[0] - q[0] * v[2]), 2 * (q[0] * v[1] - q[1] * v[0])];
+  const c: Vec3 = [q[1] * t[2] - q[2] * t[1], q[2] * t[0] - q[0] * t[2], q[0] * t[1] - q[1] * t[0]];
+  return [v[0] + t[0] * q[3] + c[0], v[1] + t[1] * q[3] + c[1], v[2] + t[2] * q[3] + c[2]];
+};
+/** Robust rotation taking normalized vector a to normalized vector b. */
+const qFromTo = (a: Vec3, b: Vec3): Quat => {
+  const d = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  if (d > 0.99999) return Q_ID;
+  if (d < -0.99999) {
+    const axis: Vec3 = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+    const alt = Math.hypot(axis[0], axis[2]) < 1e-6 ? ([0, 0, 1] as Vec3) : ([1, 0, 0] as Vec3);
+    const c: Vec3 = [a[1] * alt[2] - a[2] * alt[1], a[2] * alt[0] - a[0] * alt[2], a[0] * alt[1] - a[1] * alt[0]];
+    return qAxis(c, Math.PI);
+  }
+  return qNorm([a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0], 1 + d]);
+};
+/** Quat → XYZ-intrinsic Euler radians (engine `eulerXYZFromQuat` convention). */
+const qToEulerXYZ = (q: Quat): Vec3 => {
+  const [x, y, z, w] = qNorm(q);
+  const m13 = 2 * (x * z + y * w);
+  const pitch = Math.asin(clamp(m13, -1, 1));
+  if (Math.abs(m13) >= 0.9999999) {
+    const m32 = 2 * (y * z + x * w);
+    const m22 = 2 * (x * x + w * w);
+    return [Math.atan2(m32, m22), pitch, 0];
+  }
+  const m11 = 1 - 2 * (y * y + z * z);
+  const m12 = 2 * (x * y - z * w);
+  const m23 = 2 * (y * z - x * w);
+  const m33 = 1 - 2 * (x * x + y * y);
+  return [Math.atan2(-m23, m33), pitch, Math.atan2(-m12, m11)];
+};
+const unit3 = (v: Vec3): Vec3 => {
+  const l = Math.hypot(v[0], v[1], v[2]) || 1;
+  return [v[0] / l, v[1] / l, v[2] / l];
+};
+const rotY = (angle: number, v: Vec3): Vec3 => {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  return [v[0] * c + v[2] * s, v[1], -v[0] * s + v[2] * c];
+};
+
+/** One swing keyframe: knob target, bat direction, chest yaw, hips shift, elbow pole. */
+interface SwingKey {
+  readonly t: number;
+  readonly K: Vec3;
+  readonly D: Vec3;
+  readonly phi: number;
+  readonly hip: Vec3;
+}
+
+/** Stance: hands high at the back shoulder, bat diagonal up-and-back over it. */
+const STANCE_KEY: SwingKey = {
+  t: 0,
+  K: [-0.26, 0.585, 0.2],
+  D: unit3([0.15, 0.85, -0.5]),
+  phi: 0.2,
+  hip: [0, 0, 0]
+};
+/** Contact bat direction (toward the plate, level, slightly pitcher-side). */
+const CONTACT_DIR: Vec3 = unit3([-0.99, -0.06, 0.12]);
+/** Elbow poles: arms hang naturally; the contact pole comes from the per-swing solve. */
+const POLE_STANCE_R: Vec3 = unit3([-0.3, -1, -0.3]);
+const POLE_STANCE_L: Vec3 = unit3([0.3, -1, -0.3]);
+/** Left hand stacks just above the right on the knob. */
+const GRIP_SPREAD = 0.09;
+/** Batter stance yaw — right-handed box, right (back) shoulder toward the catcher. */
+const BATTER_YAW = Math.PI - 0.35;
+/** Pitch progress when the ball reaches the bat's contact plane (z≈0.32). */
+const CONTACT_PLANE_T = 1 - 0.32 / Math.abs(RELEASE_PT[2]);
+/** Windup length before the pitch releases into flight. */
+const WINDUP_RELEASE_T = 0.52;
+
+/** Two-bone IK: elbow position for shoulder→target with an elbow-hint pole. */
+function solveTwoBone(shoulder: Vec3, target: Vec3, pole: Vec3, l1: number, l2: number): Vec3 {
+  const to: Vec3 = [target[0] - shoulder[0], target[1] - shoulder[1], target[2] - shoulder[2]];
+  const dRaw = Math.hypot(to[0], to[1], to[2]);
+  const d = clamp(dRaw, Math.abs(l1 - l2) + 1e-4, l1 + l2 - 1e-4);
+  const n: Vec3 = dRaw < 1e-6 ? [0, 0, 1] : [to[0] / dRaw, to[1] / dRaw, to[2] / dRaw];
+  const a = (l1 * l1 - l2 * l2 + d * d) / (2 * d);
+  const h = Math.sqrt(Math.max(0, l1 * l1 - a * a));
+  const pd = pole[0] * n[0] + pole[1] * n[1] + pole[2] * n[2];
+  let b: Vec3 = [pole[0] - n[0] * pd, pole[1] - n[1] * pd, pole[2] - n[2] * pd];
+  const bl = Math.hypot(b[0], b[1], b[2]);
+  b = bl < 1e-5 ? unit3([n[1], n[2], n[0]]) : [b[0] / bl, b[1] / bl, b[2] / bl];
+  return [shoulder[0] + n[0] * a + b[0] * h, shoulder[1] + n[1] * a + b[1] * h, shoulder[2] + n[2] * a + b[2] * h];
+}
+
+/** Socket rotation (bone space) calibrated so the stance reads bat-up-over-the-shoulder. */
+function stanceAttachQuat(): Quat {
+  const sr = rotY(STANCE_KEY.phi, RIG.shoulderR);
+  const shoulder = [RIG.chestBind[0] + sr[0], RIG.chestBind[1] + sr[1], RIG.chestBind[2] + sr[2]] as Vec3;
+  const elbow = solveTwoBone(shoulder, STANCE_KEY.K, POLE_STANCE_R, RIG.upperArm, RIG.foreHand);
+  const faDir = unit3([STANCE_KEY.K[0] - elbow[0], STANCE_KEY.K[1] - elbow[1], STANCE_KEY.K[2] - elbow[2]]);
+  const qFa = qFromTo(RIG.bindDirFA, faDir);
+  return qMul(qConj(qFa), qFromTo([1, 0, 0], STANCE_KEY.D));
+}
+
+/** Fixed socket constants: bone-space offset TRS placing the KNOB at the right palm. */
+const BAT_ATTACH_ROT: Quat = stanceAttachQuat();
+const BAT_ATTACH_EULER: Vec3 = qToEulerXYZ(BAT_ATTACH_ROT);
+const BAT_ATTACH_POS: Vec3 = [
+  RIG.palmR[0] + qRot(BAT_ATTACH_ROT, [KNOB_HALF, 0, 0])[0],
+  RIG.palmR[1] + qRot(BAT_ATTACH_ROT, [KNOB_HALF, 0, 0])[1],
+  RIG.palmR[2] + qRot(BAT_ATTACH_ROT, [KNOB_HALF, 0, 0])[2]
+];
+
+interface PoseSolve {
+  readonly bones: {
+    Hips: { position: Vec3 };
+    Spine: { rotation: Quat };
+    Chest: { rotation: Quat };
+    RightUpperArm: { rotation: Quat };
+    RightForearm: { rotation: Quat };
+    LeftUpperArm: { rotation: Quat };
+    LeftForearm: { rotation: Quat };
+  };
+  readonly tau: number;
+  readonly qFa: Quat;
+  readonly elbow: Vec3;
+  readonly batDir: Vec3;
+  readonly sweetActor: Vec3;
+  readonly tipActor: Vec3;
+  readonly palmActor: Vec3;
+}
+
+/**
+ * Solve the batter pose for (knob target K, bat direction D, chest yaw phi,
+ * hips shift). Both arms IK onto the knob (right hand at the knob, left hand
+ * GRIP_SPREAD up the bat); a forearm twist rotates the socketed bat onto D.
+ */
+function solveBatterPose(K: Vec3, D: Vec3, phi: number, hip: Vec3, poleR: Vec3, prevTau: number): PoseSolve {
+  const chest: Vec3 = [RIG.chestBind[0] + hip[0], RIG.chestBind[1] + hip[1], RIG.chestBind[2] + hip[2]];
+  const sr = rotY(phi, RIG.shoulderR);
+  const sl = rotY(phi, RIG.shoulderL);
+  const shRt: Vec3 = [chest[0] + sr[0], chest[1] + sr[1], chest[2] + sr[2]];
+  const shLt: Vec3 = [chest[0] + sl[0], chest[1] + sl[1], chest[2] + sl[2]];
+
+  const eR = solveTwoBone(shRt, K, poleR, RIG.upperArm, RIG.foreHand);
+  const targetL: Vec3 = [K[0] + D[0] * GRIP_SPREAD, K[1] + D[1] * GRIP_SPREAD, K[2] + D[2] * GRIP_SPREAD];
+  const eL = solveTwoBone(shLt, targetL, POLE_STANCE_L, RIG.upperArm, RIG.foreHand);
+
+  const faDir = unit3([K[0] - eR[0], K[1] - eR[1], K[2] - eR[2]]);
+  const qUaR = qFromTo(RIG.bindDirUA, unit3([eR[0] - shRt[0], eR[1] - shRt[1], eR[2] - shRt[2]]));
+  const qFaZt = qFromTo(RIG.bindDirFA, faDir);
+  // Twist about the forearm axis so the socketed bat lands on D (exact azimuth
+  // alignment of the perpendicular projections), unwrapped against prevTau.
+  const A = qRot(qMul(qFaZt, BAT_ATTACH_ROT), [1, 0, 0]);
+  const aDot = A[0] * faDir[0] + A[1] * faDir[1] + A[2] * faDir[2];
+  const dDot = D[0] * faDir[0] + D[1] * faDir[1] + D[2] * faDir[2];
+  const aPerp: Vec3 = [A[0] - faDir[0] * aDot, A[1] - faDir[1] * aDot, A[2] - faDir[2] * aDot];
+  const dPerp: Vec3 = [D[0] - faDir[0] * dDot, D[1] - faDir[1] * dDot, D[2] - faDir[2] * dDot];
+  const cr: Vec3 = [aPerp[1] * dPerp[2] - aPerp[2] * dPerp[1], aPerp[2] * dPerp[0] - aPerp[0] * dPerp[2], aPerp[0] * dPerp[1] - aPerp[1] * dPerp[0]];
+  let tau = Math.atan2(cr[0] * faDir[0] + cr[1] * faDir[1] + cr[2] * faDir[2], aPerp[0] * dPerp[0] + aPerp[1] * dPerp[1] + aPerp[2] * dPerp[2]);
+  while (tau - prevTau > Math.PI) tau -= 2 * Math.PI;
+  while (tau - prevTau < -Math.PI) tau += 2 * Math.PI;
+  const qFa = qMul(qAxis(faDir, tau), qFaZt);
+
+  const qChest = qAxis([0, 1, 0], phi);
+  const qUaL = qFromTo(RIG.bindDirUA, unit3([eL[0] - shLt[0], eL[1] - shLt[1], eL[2] - shLt[2]]));
+  const qFaL = qFromTo(RIG.bindDirFA, unit3([targetL[0] - eL[0], targetL[1] - eL[1], targetL[2] - eL[2]]));
+
+  const batDir = qRot(qMul(qFa, BAT_ATTACH_ROT), [1, 0, 0]);
+  const palm: Vec3 = [eR[0] + qRot(qFa, RIG.palmR)[0], eR[1] + qRot(qFa, RIG.palmR)[1], eR[2] + qRot(qFa, RIG.palmR)[2]];
+  return {
+    bones: {
+      Hips: { position: [RIG.hipsBind[0] + hip[0], RIG.hipsBind[1] + hip[1], RIG.hipsBind[2] + hip[2]] },
+      // Pin the spine so the chest FK the socket was calibrated against is exact.
+      Spine: { rotation: Q_ID },
+      Chest: { rotation: qChest },
+      RightUpperArm: { rotation: qMul(qConj(qChest), qUaR) },
+      RightForearm: { rotation: qMul(qConj(qUaR), qFa) },
+      LeftUpperArm: { rotation: qMul(qConj(qChest), qUaL) },
+      LeftForearm: { rotation: qMul(qConj(qUaL), qFaL) }
+    },
+    tau,
+    qFa,
+    elbow: eR,
+    batDir,
+    palmActor: palm,
+    sweetActor: [palm[0] + batDir[0] * SWEET_SPOT, palm[1] + batDir[1] * SWEET_SPOT, palm[2] + batDir[2] * SWEET_SPOT],
+    tipActor: [palm[0] + batDir[0] * BAT_LEN, palm[1] + batDir[1] * BAT_LEN, palm[2] + batDir[2] * BAT_LEN]
+  };
+}
+
+/** Per-swing contact configuration: sweet spot EXACTLY on the ball, on the cone. */
+interface ContactConfig {
+  readonly K: Vec3;
+  readonly pole: Vec3;
+  readonly phi: number;
+  readonly hipY: number;
+  readonly dir: Vec3;
+}
+
+/**
+ * Search chest yaw + elbow orbit so the forearm sits on the bat cone with the
+ * elbow at true upper-arm length — the twist then lands the sweet spot exactly
+ * on the ball. Low pitches drop the hips (knee bend). Falls back to a chest-
+ * pointed bat direction when the zone edge is out of reach.
+ */
+function buildContactConfig(ballActor: Vec3, hipY: number): ContactConfig {
+  for (const mix of [0, 0.35, 0.65]) {
+    const dir: Vec3 = mix === 0 ? CONTACT_DIR : unit3([CONTACT_DIR[0] * (1 - mix) + unit3([ballActor[0] - RIG.chestBind[0], ballActor[1] - RIG.chestBind[1], ballActor[2] - RIG.chestBind[2]])[0] * mix, CONTACT_DIR[1] * (1 - mix) + unit3([ballActor[0] - RIG.chestBind[0], ballActor[1] - RIG.chestBind[1], ballActor[2] - RIG.chestBind[2]])[1] * mix, CONTACT_DIR[2] * (1 - mix) + unit3([ballActor[0] - RIG.chestBind[0], ballActor[1] - RIG.chestBind[1], ballActor[2] - RIG.chestBind[2]])[2] * mix]);
+    const palm: Vec3 = [ballActor[0] - dir[0] * SWEET_SPOT, ballActor[1] - dir[1] * SWEET_SPOT, ballActor[2] - dir[2] * SWEET_SPOT];
+    // orthonormal basis perpendicular to dir, seeded from world-down
+    const side = unit3([dir[0] * dir[1], -1 + dir[1] * dir[1], dir[2] * dir[1]]);
+    const side2 = unit3([dir[1] * side[2] - dir[2] * side[1], dir[2] * side[0] - dir[0] * side[2], dir[0] * side[1] - dir[1] * side[0]]);
+    let best: { err: number; E: Vec3; S: Vec3; phi: number } | null = null;
+    for (let pg = 0; pg < 41; pg++) {
+      const phi = -1.35 + (1.5 * pg) / 40;
+      const chest: Vec3 = [RIG.chestBind[0], RIG.chestBind[1] + hipY, RIG.chestBind[2] + 0.1];
+      const sr = rotY(phi, RIG.shoulderR);
+      const S: Vec3 = [chest[0] + sr[0], chest[1] + sr[1], chest[2] + sr[2]];
+      const d = Math.hypot(palm[0] - S[0], palm[1] - S[1], palm[2] - S[2]);
+      if (d > RIG.upperArm + RIG.foreHand - 1e-3 || d < Math.abs(RIG.upperArm - RIG.foreHand) + 1e-3) continue;
+      for (let gg = 0; gg < 48; gg++) {
+        const gam = (2 * Math.PI * gg) / 48;
+        const csg = Math.cos(gam) * Math.sqrt(1 - BAT_CONE_COS * BAT_CONE_COS);
+        const sng = Math.sin(gam) * Math.sqrt(1 - BAT_CONE_COS * BAT_CONE_COS);
+        const fa = unit3([dir[0] * BAT_CONE_COS + (side[0] * csg + side2[0] * sng), dir[1] * BAT_CONE_COS + (side[1] * csg + side2[1] * sng), dir[2] * BAT_CONE_COS + (side[2] * csg + side2[2] * sng)]);
+        const E: Vec3 = [palm[0] - fa[0] * RIG.foreHand, palm[1] - fa[1] * RIG.foreHand, palm[2] - fa[2] * RIG.foreHand];
+        const err = Math.abs(Math.hypot(E[0] - S[0], E[1] - S[1], E[2] - S[2]) - RIG.upperArm);
+        if (!best || err < best.err) best = { err, E, S, phi };
+      }
+    }
+    if (best) {
+      return { K: palm, pole: unit3([best.E[0] - best.S[0], best.E[1] - best.S[1], best.E[2] - best.S[2]]), phi: best.phi, hipY, dir };
+    }
+  }
+  // Zone edge out of geometric reach: level swing through the zone anyway.
+  return { K: [ballActor[0] - CONTACT_DIR[0] * SWEET_SPOT, ballActor[1] - CONTACT_DIR[1] * SWEET_SPOT, ballActor[2] - CONTACT_DIR[2] * SWEET_SPOT], pole: POLE_STANCE_R, phi: -0.6, hipY, dir: CONTACT_DIR };
+}
 
 /* ================================================================== *
  *  Ballparks                                                          *
@@ -808,7 +1110,9 @@ function buildAthleteNodes(id: string, asset: any, initialClip = "Ready"): any[]
 
 const FIELDER_IDS = ["f-c", "f-1b", "f-2b", "f-ss", "f-3b", "f-lf", "f-cf", "f-rf"] as const;
 const FIELDER_SPOTS: Record<string, Vec3> = {
-  "f-c": [0.45, 0, 2.35],
+  // The single catcher crouches behind the plate, offset to the camera-right
+  // of the batter so it never crosses the batting-camera line.
+  "f-c": [0.55, 0, 2.45],
   "f-1b": [14.2, 0, -14.2],
   "f-2b": [7.4, 0, -19.5],
   "f-ss": [-8.2, 0, -19.5],
@@ -821,7 +1125,7 @@ const FIELDER_SPOTS: Record<string, Vec3> = {
 function buildActorsNodes(): any[] {
   const nodes: any[] = [
     ...buildAthleteNodes("pitcher", assets.diamondAthlete, "Crouch_Idle_Loop"),
-    ...buildAthleteNodes("batter", assets.diamondAthlete, "Crouch_Idle_Loop"),
+    ...buildAthleteNodes("batter", assets.diamondAthlete, "Idle_Loop"),
     ...FIELDER_IDS.flatMap((id) =>
       buildAthleteNodes(id, assets.diamondAthlete, id === "f-lf" || id === "f-cf" || id === "f-rf" ? "Ready" : "Crouch_Idle_Loop")
     ),
@@ -840,19 +1144,27 @@ function buildActorsNodes(): any[] {
     model(assets.diamondGlove, { name: "dugout-glove-ref", targetMaxDimension: 0.34, role: "setDressing", scaleMode: "fit", visible: false })
       .position(0, -80, 0)
       .scale(HIDDEN_SCALE),
-    // Catcher's mitt on the crouched catcher's glove hand so the figure behind the plate reads as a catcher
+    // Catcher's mitt — socketed to the crouched catcher's left forearm at runtime
     model(assets.diamondGlove, { name: "catcher-mitt", targetMaxDimension: 0.36, role: "setDressing", scaleMode: "fit" })
-      .position(0, 0.62, 2.02)
+      .position(0.25, 0.55, 2.1)
       .rotate(0, Math.PI, 0.3)
       .runtime(game.runtimeNode("catcher-mitt"))
   ];
 
-  // Admitted 3D bat — diamondBat is horizontal along X (bounds [1.903, 0.232, 0.235]), so scale by targetMaxDimension: 1.02
+  // Bat — socketed to the batter's right forearm (knob at the palm); authored
+  // transform is only a sane first frame before the socket takes ownership.
   nodes.push(
     model(assets.diamondBat, { name: "bat", targetMaxDimension: 1.02, scaleMode: "fit" })
-      .position(-0.32, 1.86, -0.06)
-      .rotate(0, Math.PI / 2 - 0.5, 1.12)
-      .runtime(game.runtimeNode("bat"))
+      .position(-0.51, 1.52, 0.18)
+      .rotate(0, BATTER_YAW + 0.15, 1.0)
+      .runtime(game.runtimeNode("bat")),
+    // Hidden root-level probe pinned to the same bone to calibrate the
+    // actor fit scale / normalization shift for world⇄actor conversions.
+    primitives
+      .sphere({ name: "bat-cal", size: [0.02, 0.02, 0.02], material: material.pbr({ color: "#000000", opacity: 0.0, roughness: 1 }) })
+      .position(0, -80, 0)
+      .scale(HIDDEN_SCALE)
+      .runtime(game.runtimeNode("bat-cal"))
   );
 
   // Ball — siegeGolfBall reads as a seamed baseball at 15 cm; shadow + trail
@@ -1048,6 +1360,7 @@ function boot(): void {
       ball: req("ball"),
       ballShadow: req("ball-shadow"),
       bat: req("bat"),
+      batCal: tryReq("bat-cal"),
       pci: req("pci-ring"),
       aim: req("aim-dot"),
       landRing: req("land-ring"),
@@ -1235,8 +1548,6 @@ function boot(): void {
     meterDir: number;
     chargeStart: number;
     charging: boolean;
-    swingTimer: number;
-    batterSwingT: number;
     manualSwingQueued: boolean;
     batterStepTimer: number;
     batterAimX: number;
@@ -1301,8 +1612,6 @@ function boot(): void {
     meterDir: 1,
     chargeStart: 0,
     charging: false,
-    swingTimer: 0,
-    batterSwingT: 0,
     manualSwingQueued: false,
     batterStepTimer: 0,
     batterAimX: 0,
@@ -1709,6 +2018,8 @@ function boot(): void {
       G.lastBatColor = "";
       G.lastFieldColor = "";
       applyUniforms();
+      // Scene rebuilds recreate the actors — re-socket the bat to the new rig.
+      attachBatSocket();
       tick(`ballpark — ${PARKS[id].name.toLowerCase()}`, "info");
       showBanner(PARKS[id].name, 1.8);
     } catch (err) {
@@ -2382,11 +2693,43 @@ function boot(): void {
     const inZ = Math.abs(zx) <= 1 && Math.abs(zy) <= 1;
     const swingP = inZ ? 0.66 : diff.cpuChase;
     if (G.rng() < swingP) {
+      // The swing animation leads the contact resolution: compress the
+      // pre-contact phases so the barrel arrives with the ball.
+      const remaining = (CONTACT_PLANE_T - p.t) * p.flightSec;
       const sigma = diff.cpuContactSigma;
       const timingErr = jitter(G.rng) * sigma * (inZ ? 1 : 1.8);
       const pciOff = 0.45 * (1.15 - diff.cpuPower);
-      resolveSwing(p, timingErr, zx + jitter(G.rng) * pciOff * 2, zy + jitter(G.rng) * pciOff * 2, 0.25, false);
+      startBatterSwing({
+        pitch: p,
+        power: 0.25,
+        isPlayer: false,
+        timingErr,
+        pciX: zx + jitter(G.rng) * pciOff * 2,
+        pciY: zy + jitter(G.rng) * pciOff * 2,
+        durPre: clamp(remaining, 0.12, SWING_CONTACT_T * SWING_TOTAL),
+        durPost: (1 - SWING_CONTACT_T) * SWING_TOTAL
+      });
     }
+  }
+
+  /**
+   * Autopilot swing: start it so the swing's contact phase lands exactly when
+   * the pitch reaches the plane. Fast flights need the load to begin during
+   * the windup (delay > 0); slow flights start in flight.
+   */
+  function maybeStartAutoSwing(p: LivePitch, zx: number, zy: number, delay = 0): void {
+    const timeToPlane = delay + (CONTACT_PLANE_T - p.t) * p.flightSec;
+    if (timeToPlane > SWING_CONTACT_T * SWING_TOTAL + 1e-4) return; // too early — wait
+    startBatterSwing({
+      pitch: p,
+      power: 0.72,
+      isPlayer: true,
+      timingErr: jitter(G.rng) * 0.018,
+      pciX: zx,
+      pciY: zy,
+      durPre: clamp(timeToPlane, 0.15, SWING_CONTACT_T * SWING_TOTAL),
+      durPost: (1 - SWING_CONTACT_T) * SWING_TOTAL
+    });
   }
 
   /* ---------- Outcome application ---------- */
@@ -2535,22 +2878,27 @@ function boot(): void {
 
   function triggerSwing(power = 0.84): void {
     lastManualInputAt = simTime;
-    G.swingTimer = SWING_DUR;
-    G.batterSwingT = 0.02;
     G.charging = false;
     G.manualSwingQueued = false;
     cue("swing");
-    if (G.pitch && !G.pitch.swung && !G.pitch.resolved) {
-      // Fast-forward approaching pitch into the strike zone so manual swing / movement makes solid fair contact
-      G.pitch.t = Math.max(G.pitch.t, 0.98);
-      G.pitch.target[0] = clamp(G.pitch.target[0], -0.2, 0.2);
-      G.pitch.target[1] = clamp(G.pitch.target[1], ZONE_CY - 0.16, ZONE_CY + 0.16);
-      G.pitch.breakX *= 0.2;
-      G.pitch.breakY *= 0.2;
-      const cross = pitchPosAt(G.pitch, 1);
+    const p = G.pitch;
+    if (p && !p.swung && !p.resolved) {
+      // Fast-forward the approaching pitch into the strike zone so manual
+      // swing / movement makes solid fair contact, then let the swing
+      // animation meet the ball at the contact plane.
+      p.target[0] = clamp(p.target[0], -0.2, 0.2);
+      p.target[1] = clamp(p.target[1], ZONE_CY - 0.16, ZONE_CY + 0.16);
+      p.breakX *= 0.2;
+      p.breakY *= 0.2;
+      const cross = pitchPosAt(p, 1);
       const [bx, by] = zoneCoords(cross);
       G.pci = [bx, by];
-      resolveSwing(G.pitch, 0.0, bx, by, power, true);
+      const durPre = clamp((CONTACT_PLANE_T - p.t) * p.flightSec, 0.1, SWING_CONTACT_T * SWING_TOTAL);
+      p.t = Math.max(p.t, CONTACT_PLANE_T - (durPre / p.flightSec) * 1.0001);
+      startBatterSwing({ pitch: p, power, isPlayer: true, timingErr: 0, pciX: bx, pciY: by, durPre, durPost: (1 - SWING_CONTACT_T) * SWING_TOTAL });
+    } else {
+      // Practice swing between pitches.
+      startBatterSwing({ power, isPlayer: true, durPre: 0.42, durPost: 0.45 });
     }
   }
 
@@ -2577,9 +2925,7 @@ function boot(): void {
     }
     if (swingHit) {
       lastManualInputAt = simTime;
-      G.swingTimer = SWING_DUR;
-      G.batterSwingT = 0.02;
-      cue("swing");
+      triggerSwing(0.84);
     }
 
     if (playerPitchingTurn()) {
@@ -2594,7 +2940,8 @@ function boot(): void {
     }
 
     if (isAutopilotActive()) {
-      const wait = G.mode === "bullpen" ? 1.5 : 1.15;
+      // ≥1.5 s of readable stance before the next pitch sequence begins
+      const wait = G.mode === "bullpen" ? 1.5 : 1.4;
       if (G.phaseT < wait) return;
       cpuChoosePitch();
       return;
@@ -2635,11 +2982,24 @@ function boot(): void {
         triggerSwing(0.86);
         return;
       }
-      G.swingTimer = SWING_DUR;
-      G.batterSwingT = 0.02;
-      cue("swing");
+      // No live pitch yet — a practice swing through the zone.
+      triggerSwing(0.84);
     }
-    if (G.phaseT >= 0.52 && G.pitch) {
+    // Autopilot batting: fast flights need the load to start BEFORE release so
+    // the swing's contact phase lands with the ball at the plate.
+    if (isAutopilotActive() && battingIsPlayer() && G.mode !== "bullpen" && G.pitch && !swingDrive.active) {
+      const preNeed = SWING_CONTACT_T * SWING_TOTAL;
+      const earlyStart = clamp(preNeed - CONTACT_PLANE_T * G.pitch.flightSec, 0, 0.25);
+      if (G.phaseT >= WINDUP_RELEASE_T - earlyStart) {
+        const cross = pitchPosAt(G.pitch, 1);
+        const [zx, zy] = zoneCoords(cross);
+        if (Math.abs(zx) <= 1.08 && Math.abs(zy) <= 1.08) {
+          G.pci = [clamp(zx, -1.1, 1.1), clamp(zy, -1.1, 1.1)];
+          maybeStartAutoSwing(G.pitch, G.pci[0], G.pci[1], Math.max(0, WINDUP_RELEASE_T - G.phaseT));
+        }
+      }
+    }
+    if (G.phaseT >= WINDUP_RELEASE_T && G.pitch) {
       setPhase("pitch");
       cue("pitch");
       juiceFire("pitch", {});
@@ -2690,13 +3050,7 @@ function boot(): void {
         const trackRate = clamp(dt * 8.5, 0, 1);
         G.pci = [lerp(G.pci[0], clamp(zx, -1.1, 1.1), trackRate), lerp(G.pci[1], clamp(zy, -1.1, 1.1), trackRate)];
         const shouldSwing = Math.abs(zx) <= 1.08 && Math.abs(zy) <= 1.08;
-        if (shouldSwing && p.t >= 0.965) {
-          G.swingTimer = SWING_DUR;
-          G.batterSwingT = 0.02;
-          const timingErr = (p.t - 1) * p.flightSec + jitter(G.rng) * 0.018;
-          resolveSwing(p, timingErr, G.pci[0], G.pci[1], 0.72, true);
-          return;
-        }
+        if (shouldSwing && !swingDrive.active) maybeStartAutoSwing(p, zx, zy);
       }
       if (p.t >= 1.0 && !p.resolved) resolvePitchAtPlate(p);
     } else if (G.mode === "bullpen") {
@@ -2716,12 +3070,8 @@ function boot(): void {
       }
       if (p.t >= 1.0 && !p.resolved) resolvePitchAtPlate(p);
     } else {
-      if (p.t >= 0.74 && !p.swung) {
+      if (p.t >= 0.3 && !p.swung && !swingDrive.active) {
         cpuDecideSwing(p);
-        if ((p as LivePitch).swung) {
-          G.swingTimer = SWING_DUR;
-          G.batterSwingT = 0.02;
-        }
       }
       if (p.t >= 1.0 && !p.resolved) resolvePitchAtPlate(p);
     }
@@ -2923,12 +3273,18 @@ function boot(): void {
 
   /* ---------- Athlete visuals ---------- */
   const athleteState: Record<string, { pos: Vec3; yaw: number }> = {};
+  /** Live bat/swing evidence, refreshed every frame by the socketed swing driver. */
   const batState = {
-    position: [-0.32, 1.86, -0.06] as Vec3,
-    rotation: [0, Math.PI / 2 - 0.5, 1.12] as Vec3,
-    handPosition: [-0.64, 1.42, 0.18] as Vec3,
-    attachedToHands: true,
+    position: [0, -60, 0] as Vec3,
+    socketed: false,
     swingT: 0
+  };
+  const swingEvidence = {
+    phase: "stance" as "stance" | "load" | "stride" | "contact" | "follow-through" | "recover",
+    t: 0,
+    dur: 0,
+    batTipWorld: [0, 0, 0] as Vec3,
+    sweetWorld: [0, 0, 0] as Vec3
   };
 
   function setAthlete(id: string, x: number, y: number, z: number, yaw: number, clip = "Crouch_Idle_Loop", speed = 1.0): void {
@@ -2944,17 +3300,296 @@ function boot(): void {
     H[id]?.setVisible(false);
   }
 
+  /* ---------- Bat socket + swing driver ---------- */
+
+  /** Right elbow in actor scene space under the STANCE overlay (calibration anchor). */
+  function stanceElbowActor(): Vec3 {
+    const sr = rotY(STANCE_KEY.phi, RIG.shoulderR);
+    const shoulder: Vec3 = [RIG.chestBind[0] + sr[0], RIG.chestBind[1] + sr[1], RIG.chestBind[2] + sr[2]];
+    return solveTwoBone(shoulder, STANCE_KEY.K, POLE_STANCE_R, RIG.upperArm, RIG.foreHand);
+  }
+
+  /**
+   * Bat bone socket. The engine owns the bat transform while attached
+   * (`animation.attach` to the right forearm, knob at the palm). A hidden
+   * probe node attached to the same bone calibrates the actor fit scale and
+   * normalization shift so world⇄actor conversions are exact.
+   */
+  const batSocket = {
+    stage: "idle" as "idle" | "attaching" | "attached" | "fallback",
+    frames: 0,
+    s: ACTOR_FIT,
+    n: [0, 0, 0] as Vec3,
+    disposeBat: null as (() => void) | null,
+    disposeCal: null as (() => void) | null,
+    disposeMitt: null as (() => void) | null
+  };
+
+  function attachBatSocket(): void {
+    batSocket.disposeBat?.();
+    batSocket.disposeCal?.();
+    batSocket.disposeMitt?.();
+    batSocket.disposeBat = null;
+    batSocket.disposeCal = null;
+    batSocket.disposeMitt = null;
+    batSocket.stage = "attaching";
+    batSocket.frames = 0;
+    batSocket.s = ACTOR_FIT;
+    batSocket.n = [0, 0, 0];
+    try {
+      batSocket.disposeBat =
+        H.batter?.animation?.attach?.({
+          socket: "RightForearm",
+          target: "bat",
+          position: BAT_ATTACH_POS,
+          rotation: BAT_ATTACH_EULER,
+          scale: 1
+        }) ?? null;
+      // Hidden calibration probe: same bone, identity offset → live elbow in world.
+      batSocket.disposeCal =
+        H.batter?.animation?.attach?.({
+          socket: "RightForearm",
+          target: "bat-cal",
+          position: [0, 0, 0],
+          rotation: [0, 0, 0],
+          scale: HIDDEN_SCALE
+        }) ?? null;
+      // Catcher's mitt rides the crouched catcher's left forearm (glove hand).
+      batSocket.disposeMitt =
+        H["f-c"]?.animation?.attach?.({
+          socket: "LeftForearm",
+          target: "catcher-mitt",
+          position: [RIG.palmL[0] + 0.03, RIG.palmL[1] - 0.02, RIG.palmL[2] + 0.02],
+          rotation: [-0.5, 2.9, 0.15],
+          scale: 1
+        }) ?? null;
+    } catch {
+      /* sockets are best-effort; the fallback compose below keeps the bat on the hands */
+    }
+  }
+
+  /** Resolve the calibration once the engine has written the probe transforms. */
+  function stepBatSocketCalibration(batterPos: Vec3, batterYaw: number): void {
+    if (batSocket.stage !== "attaching") return;
+    batSocket.frames += 1;
+    const pBat = H.bat?.position;
+    const pCal = H.batCal?.position;
+    if (batSocket.frames < 3 || !pBat || !pCal) {
+      if (batSocket.frames > 120) batSocket.stage = "fallback";
+      return;
+    }
+    const offsetLen = Math.hypot(BAT_ATTACH_POS[0], BAT_ATTACH_POS[1], BAT_ATTACH_POS[2]);
+    const dx = pBat[0] - pCal[0];
+    const dy = pBat[1] - pCal[1];
+    const dz = pBat[2] - pCal[2];
+    const s = Math.hypot(dx, dy, dz) / (offsetLen || 1);
+    if (s < 0.5 || s > 2 || !Number.isFinite(s)) {
+      if (batSocket.frames > 120) batSocket.stage = "fallback";
+      return;
+    }
+    // pCal = nodePos + Ry(yaw)·(s·(elbowActor + n)) → solve n against the stance elbow.
+    const loc = rotY(-batterYaw, [pCal[0] - batterPos[0], pCal[1] - batterPos[1], pCal[2] - batterPos[2]]);
+    const elbow = stanceElbowActor();
+    batSocket.s = s;
+    batSocket.n = [loc[0] / s - elbow[0], loc[1] / s - elbow[1], loc[2] / s - elbow[2]];
+    batSocket.disposeCal?.();
+    batSocket.disposeCal = null;
+    H.batCal?.setVisible(false);
+    batSocket.stage = "attached";
+  }
+
+  const actorFromWorld = (p: Vec3, pos: Vec3, yaw: number): Vec3 => {
+    const d: Vec3 = [p[0] - pos[0], p[1] - pos[1], p[2] - pos[2]];
+    const loc = rotY(-yaw, d);
+    return [(loc[0] - batSocket.n[0]) / batSocket.s, (loc[1] - batSocket.n[1]) / batSocket.s, (loc[2] - batSocket.n[2]) / batSocket.s];
+  };
+  const worldFromActor = (p: Vec3, pos: Vec3, yaw: number): Vec3 => {
+    const sc: Vec3 = [p[0] * batSocket.s + batSocket.n[0], p[1] * batSocket.s + batSocket.n[1], p[2] * batSocket.s + batSocket.n[2]];
+    const r = rotY(yaw, sc);
+    return [pos[0] + r[0], pos[1] + r[1], pos[2] + r[2]];
+  };
+
+  /** Swing state — the pose driver reads this every frame. */
+  const swingDrive = {
+    active: false,
+    t: 0,
+    ratePre: 2, // t per second before contact (1/durPre)
+    ratePost: 2, // t per second after contact (1/durPost)
+    resolved: true,
+    holdT: 0,
+    recover: 0,
+    contact: null as ContactConfig | null,
+    power: 0.84,
+    isPlayer: true,
+    timingErr: 0,
+    pciX: 0,
+    pciY: 0,
+    pitch: null as LivePitch | null,
+    prevTau: 0,
+    predictedBallWorld: [0.18, ZONE_CY + 0.01, 0.32] as Vec3
+  };
+
+  /** Nominal contact anchor for practice swings (zone-centre pitch crossing). */
+  const nominalContactWorld = (): Vec3 => [0.18, ZONE_CY + 0.01, 0.32];
+
+  function startBatterSwing(opts: { pitch?: LivePitch | null; power?: number; isPlayer?: boolean; timingErr?: number; pciX?: number; pciY?: number; durPre?: number; durPost?: number }): void {
+    if (swingDrive.active && swingDrive.t < SWING_CONTACT_T + 0.2) return;
+    const pitch = opts.pitch ?? null;
+    let ballWorld: Vec3 = nominalContactWorld();
+    if (pitch) {
+      // Predict the pitch's position when it reaches the contact plane (z≈0.32).
+      ballWorld = pitchPosAt(pitch, CONTACT_PLANE_T);
+    }
+    swingDrive.predictedBallWorld = ballWorld;
+    const ballActor = actorFromWorld(ballWorld, [ -0.82 + G.batterAimX, 0.94, 0.28 + G.batterAimZ ], BATTER_YAW);
+    const hipY = -clamp((0.121 - ballActor[1]) * 0.9 + 0.03, 0.03, 0.18);
+    swingDrive.contact = buildContactConfig(ballActor, hipY);
+    swingDrive.pitch = pitch;
+    swingDrive.power = opts.power ?? 0.84;
+    swingDrive.isPlayer = opts.isPlayer ?? true;
+    swingDrive.timingErr = opts.timingErr ?? 0;
+    swingDrive.pciX = opts.pciX ?? 0;
+    swingDrive.pciY = opts.pciY ?? 0;
+    const durPre = clamp(opts.durPre ?? SWING_CONTACT_T * SWING_TOTAL, 0.1, 0.6);
+    const durPost = clamp(opts.durPost ?? (1 - SWING_CONTACT_T) * SWING_TOTAL, 0.35, 0.8);
+    swingDrive.ratePre = SWING_CONTACT_T / durPre;
+    swingDrive.ratePost = (1 - SWING_CONTACT_T) / durPost;
+    swingDrive.active = true;
+    swingDrive.t = 0;
+    swingDrive.resolved = !pitch;
+    swingDrive.holdT = 0;
+    swingDrive.recover = 0;
+    swingDrive.prevTau = 0;
+  }
+
+  /** Swing keyframes with the per-swing contact config spliced in at t=0.5. */
+  function swingKeys(): SwingKey[] {
+    const c = swingDrive.contact;
+    const contact: SwingKey = c
+      ? { t: SWING_CONTACT_T, K: c.K, D: c.dir, phi: c.phi, hip: [0, c.hipY, 0.1] }
+      : { t: SWING_CONTACT_T, K: [-0.24, 0.16, 0.22], D: CONTACT_DIR, phi: -0.6, hip: [0, -0.03, 0.1] };
+    return [
+      { t: 0, K: STANCE_KEY.K, D: STANCE_KEY.D, phi: STANCE_KEY.phi, hip: [0, 0, 0] },
+      { t: 0.26, K: [-0.3, 0.63, 0.1], D: unit3([0.05, 0.9, -0.44]), phi: 0.62, hip: [0, 0, -0.04] },
+      { t: 0.4, K: [-0.3, 0.42, 0.14], D: unit3([-0.2, -0.45, -0.87]), phi: 0.45, hip: [0, -0.015, 0.1] },
+      contact,
+      { t: 0.62, K: [-0.16, 0.34, 0.2], D: unit3([-0.55, 0.1, 0.83]), phi: -0.95, hip: [0, contact.hip[1], 0.1] },
+      { t: 0.85, K: [0.08, 0.64, 0.02], D: unit3([0.55, 0.72, -0.42]), phi: -1.55, hip: [0, -0.02, 0.1] },
+      { t: 1, K: [0.08, 0.64, 0.02], D: unit3([0.55, 0.72, -0.42]), phi: -1.55, hip: [0, -0.02, 0.1] }
+    ];
+  }
+
+  function sampleSwing(t: number): { K: Vec3; D: Vec3; phi: number; hip: Vec3; pole: Vec3 } {
+    const keys = swingKeys();
+    const finish = keys[keys.length - 1]!;
+    const pick = (t01: number) => {
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (t01 >= keys[i]!.t && t01 <= keys[i + 1]!.t) {
+          const a = keys[i]!;
+          const b = keys[i + 1]!;
+          const u = smoothstep((t01 - a.t) / (b.t - a.t || 1));
+          return {
+            K: [lerp(a.K[0], b.K[0], u), lerp(a.K[1], b.K[1], u), lerp(a.K[2], b.K[2], u)] as Vec3,
+            D: unit3([lerp(a.D[0], b.D[0], u), lerp(a.D[1], b.D[1], u), lerp(a.D[2], b.D[2], u)]),
+            phi: lerp(a.phi, b.phi, u),
+            hip: [lerp(a.hip[0], b.hip[0], u), lerp(a.hip[1], b.hip[1], u), lerp(a.hip[2], b.hip[2], u)] as Vec3
+          };
+        }
+      }
+      return { K: finish.K, D: finish.D, phi: finish.phi, hip: finish.hip };
+    };
+    const s = pick(clamp(t, 0, 1));
+    // Blend the elbow pole toward the calibrated contact pole around contact.
+    const cp = swingDrive.contact?.pole ?? POLE_STANCE_R;
+    const w = clamp(smoothstep((t - 0.28) / 0.16) * (1 - smoothstep((t - 0.62) / 0.16)), 0, 1);
+    return { ...s, pole: unit3([lerp(POLE_STANCE_R[0], cp[0], w), lerp(POLE_STANCE_R[1], cp[1], w), lerp(POLE_STANCE_R[2], cp[2], w)]) };
+  }
+
+  /**
+   * Drive the batter pose for this frame and report bat geometry (world).
+   * Returns null when the overlay should be cleared (running / hidden).
+   */
+  function updateBatterPose(dt: number, now: number, batterPos: Vec3, batterYaw: number): { tipWorld: Vec3; sweetWorld: Vec3; palmWorld: Vec3 } | null {
+    if (!H.batter || typeof H.batter.setAnimationPose !== "function") return null;
+    let sampled = sampleSwing(swingDrive.active ? swingDrive.t : 0);
+    if (swingDrive.active && swingDrive.recover > 0) {
+      // Blend the high finish back down into the stance.
+      const stance = sampleSwing(0);
+      const u = smoothstep(swingDrive.recover);
+      sampled = {
+        K: [lerp(sampled.K[0], stance.K[0], u), lerp(sampled.K[1], stance.K[1], u), lerp(sampled.K[2], stance.K[2], u)] as Vec3,
+        D: unit3([lerp(sampled.D[0], stance.D[0], u), lerp(sampled.D[1], stance.D[1], u), lerp(sampled.D[2], stance.D[2], u)]),
+        phi: lerp(sampled.phi, stance.phi, u),
+        hip: [lerp(sampled.hip[0], stance.hip[0], u), lerp(sampled.hip[1], stance.hip[1], u), lerp(sampled.hip[2], stance.hip[2], u)] as Vec3,
+        pole: stance.pole
+      };
+    }
+    if (!swingDrive.active) {
+      // Stance idle life: a subtle sway of the hands and chest.
+      sampled = {
+        ...sampled,
+        K: [sampled.K[0] + 0.006 * Math.sin(now * 1.3 + 1), sampled.K[1] + 0.009 * Math.sin(now * 1.7), sampled.K[2] + 0.005 * Math.sin(now * 1.1)] as Vec3,
+        phi: sampled.phi + 0.016 * Math.sin(now * 0.9)
+      };
+    }
+    const pose = solveBatterPose(sampled.K, sampled.D, sampled.phi, sampled.hip, sampled.pole, swingDrive.prevTau);
+    swingDrive.prevTau = pose.tau;
+    try {
+      H.batter.setAnimationPose({ bones: pose.bones as unknown as Record<string, { position?: { x: number; y: number; z: number }; rotation?: { x: number; y: number; z: number; w: number } }>, mode: "overlay" });
+    } catch {
+      /* pose application is best-effort; the clip still plays */
+    }
+
+    // Fallback (socket unavailable): compose the bat transform route-side from
+    // the same bone-space math the engine applies — never a world-authored spot.
+    if (batSocket.stage === "fallback" && H.bat) {
+      const knobOffset = qRot(pose.qFa, BAT_ATTACH_POS);
+      const origin: Vec3 = [pose.elbow[0] + knobOffset[0], pose.elbow[1] + knobOffset[1], pose.elbow[2] + knobOffset[2]];
+      const world = worldFromActor(origin, batterPos, batterYaw);
+      const qWorld = qMul(qAxis([0, 1, 0], batterYaw), qMul(pose.qFa, BAT_ATTACH_ROT));
+      const eul = qToEulerXYZ(qWorld);
+      H.bat.setPosition(world[0], world[1], world[2]).setRotation(eul[0], eul[1], eul[2]);
+    }
+
+    return {
+      tipWorld: worldFromActor(pose.tipActor, batterPos, batterYaw),
+      sweetWorld: worldFromActor(pose.sweetActor, batterPos, batterYaw),
+      palmWorld: worldFromActor(pose.palmActor, batterPos, batterYaw)
+    };
+  }
+
   function updateActors(dt: number, t: number): void {
     const pk = park();
     const playerBatting = battingIsPlayer();
-    G.swingTimer = Math.max(0, G.swingTimer - dt);
     G.batterStepTimer = Math.max(0, G.batterStepTimer - dt);
     G.fielderThrowTimer = Math.max(0, G.fielderThrowTimer - dt);
+
+    // Advance the swing timeline; resolve contact exactly when the bat meets the ball.
+    if (swingDrive.active) {
+      const prevT = swingDrive.t;
+      swingDrive.t = clamp(swingDrive.t + dt * (swingDrive.t < SWING_CONTACT_T ? swingDrive.ratePre : swingDrive.ratePost), 0, 1);
+      if (prevT < SWING_CONTACT_T && swingDrive.t >= SWING_CONTACT_T && !swingDrive.resolved) {
+        swingDrive.resolved = true;
+        const p = swingDrive.pitch;
+        if (p && !p.swung && !p.resolved) {
+          resolveSwing(p, swingDrive.timingErr, swingDrive.pciX, swingDrive.pciY, swingDrive.power, swingDrive.isPlayer);
+        }
+      }
+      if (swingDrive.t >= 1) {
+        swingDrive.holdT += dt;
+        if (swingDrive.holdT > 0.22) swingDrive.recover = clamp(swingDrive.recover + dt / 0.35, 0, 1);
+        if (swingDrive.recover >= 1) {
+          swingDrive.active = false;
+          swingDrive.contact = null;
+        }
+      }
+    }
 
     // Batter at the plate; completes the swing follow-through at home plate, then sprints down the 1B line
     const batterX = -0.82 + G.batterAimX;
     const batterZ = 0.28 + G.batterAimZ;
     const sprintingToFirst = G.phase === "batted" && Boolean(G.batted) && G.batterRunning && G.batted!.age >= 0.22;
+    let batGeom: { tipWorld: Vec3; sweetWorld: Vec3; palmWorld: Vec3 } | null = null;
     if (sprintingToFirst && G.batted) {
       const b = G.batted;
       const runAge = Math.max(0, b.age - 0.22);
@@ -2964,113 +3599,48 @@ function boot(): void {
       const bz = lerp(batterZ, dest[2], prog * 0.92);
       const runYaw = Math.atan2(dest[0] - batterX, dest[2] - batterZ);
       setAthlete("batter", bx, 0, bz, runYaw, prog < 0.98 ? "Sprint_Loop" : "Ready", prog < 0.98 ? 1.5 : 1.0);
+      try {
+        H.batter?.setAnimationPose?.(undefined);
+      } catch {
+        /* clearing the pose is best-effort */
+      }
     } else if (G.phase === "runners" && G.batterRunning) {
       hideAthlete("batter");
     } else {
-      let batterClip = "Load";
-      let batterSpeed = 1.0;
-      if (G.swingTimer > SWING_DUR * 0.45) {
-        batterClip = "Attack";
-        batterSpeed = 1.35;
-      } else if (G.swingTimer > 0) {
-        batterClip = "FollowThrough";
-        batterSpeed = 1.2;
-      } else if (G.batterStepTimer > 0) {
-        batterClip = "Walk_Loop";
-        batterSpeed = 1.25;
-      }
-      setAthlete("batter", batterX, 0, batterZ, Math.PI + 0.35, batterClip, batterSpeed);
+      // Stance/swing: the clip only animates the legs; the overlay owns the grip.
+      const batterClip = G.batterStepTimer > 0 ? "Walk_Loop" : "Idle_Loop";
+      const batterSpeed = G.batterStepTimer > 0 ? 1.25 : 1.0;
+      setAthlete("batter", batterX, 0, batterZ, BATTER_YAW, batterClip, batterSpeed);
+      stepBatSocketCalibration([batterX, 0.94, batterZ], BATTER_YAW);
+      batGeom = updateBatterPose(dt, t, [batterX, 0.94, batterZ], BATTER_YAW);
     }
 
-    // Bat — anchored directly to the batter's hands (barrel at local -X, handle at local +X, length ~0.92m)
-    const batter = athleteState.batter?.pos ?? [batterX, 0, batterZ];
-    const batterYaw = athleteState.batter?.yaw ?? Math.PI + 0.35;
-    const swingingNow = G.swingTimer > 0 || (G.phase === "pitch" && Boolean(G.pitch?.swung));
-    G.batterSwingT = swingingNow
-      ? G.swingTimer > 0
-        ? clamp(1 - G.swingTimer / SWING_DUR, 0, 1)
-        : clamp(((G.pitch?.t ?? 0.9) - 0.85) * 5, 0, 1)
-      : 0;
-
-    const swingEase = smoothstep(G.batterSwingT);
-    // Default grip: chest height, held on the camera side of the torso so the
-    // bat silhouettes clear of the pinstripes from the batting camera. During
-    // the swing the hands drive forward through the contact zone.
-    const localHandX = swingingNow ? lerp(-0.16, 0.25, Math.sin(swingEase * Math.PI)) : -0.16;
-    const localHandY = swingingNow ? lerp(1.52, 1.46, Math.sin(swingEase * Math.PI)) : 1.52;
-    const localHandZ = swingingNow ? lerp(-0.3, 0.28, Math.sin(swingEase * Math.PI)) : -0.3;
-    let handX = batter[0] + localHandX * Math.cos(batterYaw) + localHandZ * Math.sin(batterYaw);
-    let handY = batter[1] + localHandY;
-    let handZ = batter[2] - localHandX * Math.sin(batterYaw) + localHandZ * Math.cos(batterYaw);
-
-    // The rig has no hand bone, so extend the forearm past the wrist by
-    // ~0.24 m along the upper-arm→forearm axis to get the grip point. The
-    // matrices are only trusted when they land near this batter.
-    const forearmSocket = H.batter?.animation?.socket?.("RightForearm");
-    if (forearmSocket?.valid) {
-      const fm = forearmSocket.worldMatrix();
-      const upperSocket = H.batter?.animation?.socket?.("RightUpperArm");
-      const um = upperSocket?.valid ? upperSocket.worldMatrix() : null;
-      let dx = 0;
-      let dy = -1;
-      let dz = 0;
-      if (um) {
-        dx = fm[12]! - um[12]!;
-        dy = fm[13]! - um[13]!;
-        dz = fm[14]! - um[14]!;
-        const len = Math.hypot(dx, dy, dz) || 1;
-        dx /= len;
-        dy /= len;
-        dz /= len;
-      }
-      const sx = fm[12]! + dx * 0.24;
-      const sy = fm[13]! + dy * 0.24;
-      const sz = fm[14]! + dz * 0.24;
-      if (Math.hypot(sx - batterX, sy - 1.0, sz - batterZ) < 2.2 && sy > 0.35 && sy < 2.35) {
-        handX = sx;
-        handY = sy;
-        handZ = sz;
-      }
-    }
-
-    // Rest: barrel up hugging the back shoulder toward the camera side so the
-    // grip reads against the sky. Swing: sweep over the plate, then lift into
-    // the follow-through so the bat never reads as lying near the ground.
-    const restYaw = 0.55;
-    const restPitch = 1.05;
-    const batYaw = swingingNow
-      ? lerp(restYaw, Math.PI + 2.05, swingEase)
-      : sprintingToFirst
-        ? batterYaw + 0.35
-        : restYaw;
-    const batPitch = swingingNow
-      ? lerp(restPitch, 0.22, clamp(G.batterSwingT * 2.1, 0, 1)) + Math.max(0, G.batterSwingT - 0.5) * 1.2
-      : sprintingToFirst
-        ? -0.25
-        : G.charging
-          ? restPitch + 0.14
-          : restPitch;
-
-    const batDir: Vec3 = [
-      Math.sin(batYaw) * Math.cos(batPitch),
-      Math.sin(batPitch),
-      Math.cos(batYaw) * Math.cos(batPitch)
-    ];
-    const batPos: Vec3 = [
-      handX + batDir[0] * (BAT_HALF - BAT_GRIP),
-      handY + batDir[1] * (BAT_HALF - BAT_GRIP),
-      handZ + batDir[2] * (BAT_HALF - BAT_GRIP)
-    ];
-    // The bat renders barrel-first along -batDir with the +90° yaw pair, so the
-    // negated pair flips it end-for-end: grip at the hands, barrel along batDir.
-    const batRot: Vec3 = [0, batYaw - Math.PI / 2, -batPitch];
+    // Bat — the engine owns its transform while socketed; the route only toggles visibility.
     const batVisible = !sprintingToFirst && G.phase !== "menu" && G.phase !== "gameover" && !(G.phase === "runners" && G.batterRunning);
-    H.bat?.setPosition(batPos[0], batPos[1], batPos[2]).setRotation(batRot[0], batRot[1], batRot[2]).setVisible(batVisible);
-    batState.position = [Number(batPos[0].toFixed(3)), Number(batPos[1].toFixed(3)), Number(batPos[2].toFixed(3))];
-    batState.rotation = [Number(batRot[0].toFixed(3)), Number(batRot[1].toFixed(3)), Number(batRot[2].toFixed(3))];
-    batState.handPosition = [Number(handX.toFixed(3)), Number(handY.toFixed(3)), Number(handZ.toFixed(3))];
-    batState.attachedToHands = true;
-    batState.swingT = Number(G.batterSwingT.toFixed(3));
+    H.bat?.setVisible(batVisible);
+    const liveBatPos = H.bat?.position;
+    if (liveBatPos && batSocket.stage !== "idle") {
+      batState.position = [Number(liveBatPos[0].toFixed(3)), Number(liveBatPos[1].toFixed(3)), Number(liveBatPos[2].toFixed(3))];
+    }
+    batState.socketed = batSocket.stage === "attached";
+    batState.swingT = swingDrive.active ? Number(swingDrive.t.toFixed(3)) : swingDrive.recover > 0 ? 1 : 0;
+    swingEvidence.phase = !swingDrive.active
+      ? "stance"
+      : swingDrive.t < 0.26
+        ? "load"
+        : swingDrive.t < 0.4
+          ? "stride"
+          : swingDrive.t < 0.56
+            ? "contact"
+            : swingDrive.recover > 0
+              ? "recover"
+              : "follow-through";
+    swingEvidence.t = Number(swingDrive.t.toFixed(3));
+    swingEvidence.dur = Number((SWING_CONTACT_T / swingDrive.ratePre + (1 - SWING_CONTACT_T) / swingDrive.ratePost).toFixed(3));
+    if (batGeom) {
+      swingEvidence.batTipWorld = batGeom.tipWorld.map((v) => Number(v.toFixed(3))) as Vec3;
+      swingEvidence.sweetWorld = batGeom.sweetWorld.map((v) => Number(v.toFixed(3))) as Vec3;
+    }
 
     // Pitcher — windup Telegraph, brief pitch Release (<0.32), else calm Ready on the mound
     let pitcherClip = "Ready";
@@ -3143,13 +3713,9 @@ function boot(): void {
       setAthlete(id, x, y, z, yaw, clip, speed);
     });
 
-    // Catcher's mitt — pinned to the crouched catcher's glove side (their left,
-    // world -x) at target height; the crouch loop keeps the hands near this spot.
-    if (H.catcherMitt) {
-      const c = H["f-c"];
-      const cp = c ? c.position : [-0.5, 0, 2.35];
-      H.catcherMitt.setPosition(cp[0] - 0.3, 0.55, cp[2] - 0.38).setVisible(true);
-    }
+    // Catcher's mitt rides the catcher's left forearm through the bone socket
+    // (attached in attachBatSocket); only its visibility is route-owned.
+    H.catcherMitt?.setVisible(batSocket.stage === "attached" || batSocket.stage === "attaching" || batSocket.stage === "fallback");
 
     // Runners on bases — advancing runners play Sprint_Loop while moving, standing runners play Ready
     G.runnerBase.forEach((baseIdx, i) => {
@@ -3290,8 +3856,11 @@ function boot(): void {
       c.mode = "batting";
       const drift = clamp(G.pci[0] * 0.9, -1.2, 1.2);
       const pitchPush = G.phase === "pitch" && G.pitch ? G.pitch.t * 1.4 : 0;
+      // Frames the WHOLE batter and bat through the swing: the follow-through
+      // tip reaches y≈2.4 m, x≈[-1.8, 0.5] — NDC extents stay under ±0.3 x /
+      // ±0.65 y at fov 40°, ~3x inside the frustum at this 11.6 m standoff.
       eye = [drift - 0.5, 6.4 - pitchPush * 0.35, 11.6 - pitchPush * 0.8];
-      target = [-0.5 + drift * 0.4, 1.15 + (G.pitch?.t ?? 0) * 0.1, -7.2];
+      target = [-0.5 + drift * 0.4, 1.28 + (G.pitch?.t ?? 0) * 0.1, -7.2];
       fov = 40;
     }
     const k = 1 - Math.pow(0.001, dt);
@@ -3525,6 +4094,9 @@ function boot(): void {
   void Promise.resolve((app as any).ready?.()).then(() => {
     bindHandles();
     applyUniforms();
+    // Socket the bat to the (now loaded) batter rig; the calibration probe
+    // resolves the actor fit scale within a couple of frames.
+    attachBatSocket();
     updateActors(0.016, simTime);
     updateCamera(0.016);
     updateHud();
@@ -3623,10 +4195,18 @@ function boot(): void {
       result: G.result,
       bat: {
         position: [...batState.position],
-        rotation: [...batState.rotation],
-        handPosition: [...batState.handPosition],
-        attachedToHands: batState.attachedToHands,
+        socketed: batState.socketed,
+        socketStage: batSocket.stage,
         swingT: batState.swingT
+      },
+      swing: {
+        phase: swingEvidence.phase,
+        t: swingEvidence.t,
+        dur: swingEvidence.dur,
+        batTipWorld: [...swingEvidence.batTipWorld],
+        sweetSpotWorld: [...swingEvidence.sweetWorld],
+        predictedContactWorld: [...swingDrive.predictedBallWorld],
+        contactMet: swingDrive.resolved
       },
       ball: {
         position: G.lastBallPos.map((n) => Number(n.toFixed(3))),
