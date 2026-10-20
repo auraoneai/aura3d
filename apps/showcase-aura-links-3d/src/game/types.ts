@@ -347,6 +347,12 @@ export interface GolferFit {
  *   export interface GolferRig { <node handles> }
  *   export function buildGolferNodes(fit: GolferFit): any[]   // engine node builders
  *   export function resolveGolferRig(app: any): GolferRig
- *   export type GolferPhase = "address"|"backswing"|"downswing"|"follow"|"celebrate"|"walk"|"idle"|"putt"
- *   export function poseGolfer(rig: GolferRig, phase: GolferPhase, t: number, at: Vec3, faceYaw: number): void
+ *   export type GolferPhase = "address"|"backswing"|"top"|"downswing"|"follow"|
+ *     "celebrate"|"walk"|"idle"|"putt"|"putt-address"|"putt-back"|"putt-through"
+ *   export function poseGolfer(rig: GolferRig, phase: GolferPhase, t: number, at: Vec3, faceYaw: number, heightFn?): void
+ *   export function golferTelemetry(): { phase, t, clubHeadWorld, gripWorld, ballWorld, impactDistance, attached }
+ * plus swingMath.ts (pure, no engine imports):
+ *   evaluateSwing(phase, t) → trajectory key; solveSwing(key, root) → bone
+ *   rotations + club telemetry; clubAttachOffsets(...) → bone-space offsets
+ *   for animation.attach (club socketed to the right forearm palm)
  */

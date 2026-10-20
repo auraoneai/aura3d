@@ -82,7 +82,7 @@ import {
   stepBall,
   suggestClub
 } from "./game/sim";
-import { applyGolferFit, buildGolferNodes, poseGolfer, resolveGolferRig } from "./game/rig";
+import { applyGolferFit, buildGolferNodes, golferTelemetry, poseGolfer, resolveGolferRig, type GolferPhase } from "./game/rig";
 
 /* ------------------------------------------------------------------ *
  *  Small math helpers                                                 *
@@ -1149,7 +1149,12 @@ function updateCamera(dt: number): void {
   const aspect = (window.innerWidth || 16) / (window.innerHeight || 9);
   const side = clamp(aspect / 1.6, 0.3, 1);
 
-  if (state.phase === "flight" && inFlight) {
+  // Keep the golfer AND the ball framed through the strike: for the first
+  // moments after impact the swing-cam still holds (the viewer sees the
+  // clubhead hit the ball), then the chase cam takes over.
+  const strikeHold = state.phase === "flight" && inFlight && simTime - impactAt < 0.55;
+
+  if (state.phase === "flight" && inFlight && !strikeHold) {
     cam.mode = "flight";
     // chase cam: behind the ball along its velocity, ahead low
     const v = ball.vel;
@@ -1179,11 +1184,12 @@ function updateCamera(dt: number): void {
     cam.eye = [r.ballPos[0] - ux * back, t.height(r.ballPos[0] - ux * back, r.ballPos[2] - uz * back) + 1.35 + d * 0.05, r.ballPos[2] - uz * back];
     cam.target = [t.cup[0], t.cup[1] + 0.15, t.cup[2]];
     cam.fov = 34;
-  } else if (state.phase === "swing") {
+  } else if (state.phase === "swing" || strikeHold) {
     cam.mode = "address";
     const yaw = t.lineYaw + r.aimOffset;
     const bx = r.ballPos[0], bz = r.ballPos[2];
-    // Low 3/4 view that keeps the full stance, club and swing arc in frame.
+    // Low 3/4 view that keeps the full stance, club and swing arc in frame —
+    // and through the strike the ball leaving the tee.
     const tx2 = bx + Math.sin(yaw) * 2.8, tz2 = bz + Math.cos(yaw) * 2.8;
     const ex = bx - Math.sin(yaw) * 4.4 - Math.cos(yaw) * 2.5 * side;
     const ez = bz - Math.cos(yaw) * 4.4 + Math.sin(yaw) * 2.5 * side;
@@ -1214,6 +1220,134 @@ function lerp3(a: Vec3, b: Vec3, t: number): Vec3 {
 }
 
 /* ------------------------------------------------------------------ *
+ *  Visual swing drive — the REAL swing timeline                        *
+ *                                                                     *
+ *  The three-click meter only sets shot parameters. The animation is  *
+ *  its own timeline: takeaway → full backswing → committed pause at   *
+ *  the top → accelerating downswing → IMPACT (ball launches exactly   *
+ *  then — the clubhead is ON the ball at the bottom of the arc) →     *
+ *  full follow-through → hold the finish watching the shot.           *
+ * ------------------------------------------------------------------ */
+
+const SWING_TIMING = {
+  backswingS: 0.92,  // takeaway + full backswing to the top
+  topHoldMinS: 0.14, // committed pause at the top before the release
+  topHoldMaxS: 2.6,  // auto-release if the meter never commits
+  downswingS: 0.30,  // accelerating strike — impact at the END of this
+  followS: 0.55,     // full wrap: hands finish high over the lead shoulder
+  settleS: 0.45,     // relax toward address after holding the finish
+  puttBackS: 0.5,
+  puttDownS: 0.28,
+  puttFollowS: 0.4
+} as const;
+
+type DrivePhase = "idle" | "backswing" | "top" | "downswing" | "follow" | "settle";
+const swingDrive = {
+  phase: "idle" as DrivePhase,
+  t: 0, // seconds inside the current phase
+  putt: false,
+  committed: false,
+  impactFired: true,
+  topHold: 0
+};
+let pendingCommit: import("./game/types").ShotCommit | null = null;
+/** simTime of the last ball strike (camera keeps the golfer framed past it) */
+let impactAt = -10;
+
+/** drive → (pose phase, normalized t) for poseGolfer */
+function drivePose(): [GolferPhase, number] {
+  const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+  if (swingDrive.putt) {
+    switch (swingDrive.phase) {
+      case "backswing": return ["putt-back", clamp01(swingDrive.t / SWING_TIMING.puttBackS)];
+      case "top": return ["putt-address", 0];
+      // the putter strikes the ball at u=0.5 (the KP_IMPACT key) — the
+      // downswing phase ends exactly there, follow finishes the stroke
+      case "downswing": return ["putt-through", 0.5 * clamp01(swingDrive.t / SWING_TIMING.puttDownS)];
+      case "follow": return ["putt-through", 0.5 + 0.5 * clamp01(swingDrive.t / SWING_TIMING.puttFollowS)];
+      case "settle": return ["putt-through", 1];
+      default: return ["putt-address", 0];
+    }
+  }
+  switch (swingDrive.phase) {
+    case "backswing": return ["backswing", clamp01(swingDrive.t / SWING_TIMING.backswingS)];
+    case "top": return ["top", 0];
+    case "downswing": return ["downswing", clamp01(swingDrive.t / SWING_TIMING.downswingS)];
+    case "follow": return ["follow", clamp01(swingDrive.t / SWING_TIMING.followS)];
+    case "settle": return ["follow", 1]; // hold the finish while the ball flies
+    default: return ["address", 0];
+  }
+}
+
+function advanceSwingDrive(dt: number): void {
+  // the follow-through/settle keep animating while the ball is in flight
+  if (state.phase !== "swing" && !(state.phase === "flight" && swingDrive.phase !== "idle")) return;
+  swingDrive.t += dt;
+  for (let guard = 0; guard < 4; guard++) {
+    switch (swingDrive.phase) {
+      case "backswing": {
+        const dur = swingDrive.putt ? SWING_TIMING.puttBackS : SWING_TIMING.backswingS;
+        if (swingDrive.t >= dur) {
+          swingDrive.phase = "top";
+          swingDrive.t = 0;
+          swingDrive.topHold = 0;
+          continue;
+        }
+        return;
+      }
+      case "top": {
+        swingDrive.topHold += dt;
+        const ready = swingDrive.committed && swingDrive.topHold >= SWING_TIMING.topHoldMinS;
+        const overdue = swingDrive.topHold >= SWING_TIMING.topHoldMaxS;
+        if (ready || overdue) {
+          if (!swingDrive.committed) {
+            // meter never committed — auto-commit a mid shot so the swing completes
+            commitSwing();
+          }
+          swingDrive.phase = "downswing";
+          swingDrive.t = 0;
+          continue;
+        }
+        return;
+      }
+      case "downswing": {
+        const dur = swingDrive.putt ? SWING_TIMING.puttDownS : SWING_TIMING.downswingS;
+        if (swingDrive.t >= dur) {
+          // IMPACT — the clubhead crosses the ball at the bottom of the arc
+          if (!swingDrive.impactFired) {
+            swingDrive.impactFired = true;
+            impactAt = simTime;
+            fireImpact();
+          }
+          swingDrive.phase = "follow";
+          swingDrive.t = 0;
+          continue;
+        }
+        return;
+      }
+      case "follow": {
+        const dur = swingDrive.putt ? SWING_TIMING.puttFollowS : SWING_TIMING.followS;
+        if (swingDrive.t >= dur) {
+          swingDrive.phase = "settle";
+          swingDrive.t = 0;
+          continue;
+        }
+        return;
+      }
+      case "settle": {
+        if (swingDrive.t >= SWING_TIMING.settleS) {
+          swingDrive.phase = "idle";
+          swingDrive.t = 0;
+        }
+        return;
+      }
+      default:
+        return;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ *
  *  Shot lifecycle                                                     *
  * ------------------------------------------------------------------ */
 
@@ -1234,15 +1368,18 @@ function beginAddress(): void {
   r.aimOffset = 0;
   state.phase = "address";
   state.swing.reset();
-  golferPhase = "address";
-  golferPhaseT = 0;
+  swingDrive.phase = "idle";
+  swingDrive.t = 0;
+  swingDrive.impactFired = true;
+  swingDrive.committed = false;
+  pendingCommit = null;
+  heroCelebrate = false;
   setPrompt("SPACE — SWING · A/D AIM · Q/E CLUB");
   $("swing-meter")?.classList.remove("show");
   updateCardHud();
   if (golferRig) {
     const g = golferAt();
     poseGolfer(golferRig, "address", 0, g.pos, g.yaw, (x, z) => t.height(x, z));
-    golferRig.golferBody?.setAnimation?.({ clip: "Ready", loop: true, speed: 1 });
   }
   ballHandle?.setPosition(r.ballPos[0], Math.max(r.ballPos[1], t.height(r.ballPos[0], r.ballPos[2]) + BALL_R * 0.6), r.ballPos[2]);
   updateCamera(0);
@@ -1251,26 +1388,52 @@ function beginAddress(): void {
 function startSwing(): void {
   state.phase = "swing";
   state.swing.press(); // idle → power
-  golferPhase = "backswing";
-  golferPhaseT = 0;
-  golferRig?.golferBody?.setAnimation?.({ clip: "Load", loop: true, speed: 1.45 });
+  swingDrive.phase = "backswing";
+  swingDrive.t = 0;
+  swingDrive.putt = currentClub().putter === true;
+  swingDrive.committed = false;
+  swingDrive.impactFired = false;
+  swingDrive.topHold = 0;
+  pendingCommit = null;
   $("swing-meter")?.classList.add("show");
   $("sw-label")!.textContent = "SPACE — SET POWER";
   setPrompt(null);
 }
 
+/**
+ * The meter finished — lock the shot parameters. The ball does NOT launch
+ * yet: the downswing is still in flight and launchBall fires from the
+ * impact event (fireImpact), when the clubhead reaches the ball.
+ */
 function commitSwing(): void {
   const r = state.round!;
-  const t = state.terrain!;
   const s = state.swing.state();
   const club = currentClub();
-  const commit = {
+  pendingCommit = {
     club,
     power: s.power ?? 0.8,
     accuracy: s.accuracy ?? 0.5,
     spin: s.spin ?? 0,
     aimYaw: aimYaw()
   };
+  r.strokes += 1;
+  if (club.putter) r.putts += 1;
+  swingDrive.committed = true;
+  updateCardHud();
+}
+
+/**
+ * IMPACT — the clubhead strikes the ball at the bottom of the swing arc.
+ * Called from advanceSwingDrive at the instant the downswing completes (the
+ * swing solve puts the clubhead exactly on the ball at that frame); the ball
+ * leaves the tee now, not before and not on a timer.
+ */
+function fireImpact(): void {
+  const r = state.round!;
+  const t = state.terrain!;
+  if (!pendingCommit) return;
+  const commit = pendingCommit;
+  pendingCommit = null;
   state.commit = commit;
   const lie = r.strokes === 0 ? "tee" : t.zone(r.ballPos[0], r.ballPos[2]);
   const env = {
@@ -1284,20 +1447,18 @@ function commitSwing(): void {
   // launchBall spawns on the tee — reposition for non-tee lies (sim contract)
   state.ball = { ...launchBall(commit, env), pos: [...r.ballPos] as Vec3 };
   r.prevPos = [...r.ballPos] as Vec3;
-  r.strokes += 1;
-  if (club.putter) r.putts += 1;
   state.phase = "flight";
   $("swing-meter")?.classList.remove("show");
   const qual = Math.abs(commit.accuracy);
   const spinTxt = commit.spin < -0.25 ? "DRAW" : commit.spin > 0.25 ? "FADE" : "PURE";
-  pushEvent("shot", `${club.label} · ${(commit.power * 100) | 0}% · ${qual < 0.14 ? "PURE" : qual < 0.4 ? "GOOD" : "OFF"} · ${spinTxt}`, qual < 0.4 ? "success" : "warning");
+  pushEvent("shot", `${clubLabel(commit.club.id)} · ${(commit.power * 100) | 0}% · ${qual < 0.14 ? "PURE" : qual < 0.4 ? "GOOD" : "OFF"} · ${spinTxt}`, qual < 0.4 ? "success" : "warning");
   juiceFire("hit", { position: r.ballPos });
-  void audio?.cue(club.putter ? "putt" : "drive");
-  // golfer: committed swing
-  golferPhase = "follow";
-  golferPhaseT = 0;
-  golferRig?.golferBody?.setAnimation?.({ clip: "FollowThrough", loop: true, speed: 1.15 });
+  void audio?.cue(commit.club.putter ? "putt" : "drive");
   updateCardHud();
+}
+
+function clubLabel(id: import("./game/types").ClubId): string {
+  return CLUBS[id]?.label ?? id;
 }
 
 const trailPts: Vec3[] = [];
@@ -1360,8 +1521,7 @@ function onHoled(): void {
     window.setTimeout(() => { flash.style.opacity = "0"; }, 220);
   }
   juiceFire("holed", { position: state.terrain!.cup });
-  golferPhase = "celebrate";
-  golferPhaseT = 0;
+  heroCelebrate = true;
   if (state.mode === "puttinglab") {
     const lab = state.lab!;
     state.lab = { ...lab, hits: lab.hits + 1, streak: lab.streak + 1, attempts: lab.attempts + 1, best: Math.max(lab.best, lab.streak + 1) };
@@ -1669,8 +1829,7 @@ let fxCtlRef: any = null;
  *  Per-frame update                                                   *
  * ------------------------------------------------------------------ */
 
-let golferPhase: "idle" | "address" | "backswing" | "downswing" | "follow" | "celebrate" | "walk" | "putt" = "address";
-let golferPhaseT = 0;
+let heroCelebrate = false;
 let simTime = 0;
 let lastManualInputAt = -10;
 let addressEnteredAt = 0;
@@ -1705,8 +1864,6 @@ function frame(dt: number): void {
     lastObservedPhase = state.phase;
     if (state.phase === "address") {
       addressEnteredAt = simTime;
-      golferPhase = "address";
-      golferPhaseT = 0;
     } else if (state.phase === "roundover") {
       roundOverEnteredAt = simTime;
     }
@@ -1758,17 +1915,9 @@ function frame(dt: number): void {
     isTurningAim = aimIn !== 0;
     r.aimOffset = clamp(r.aimOffset + aimIn * dt * 1.1, -0.75, 0.75);
     cam.zoom = clamp(cam.zoom - zoomIn * dt * 1.4, 0.7, 2.6);
-    if (state.phase === "address") {
-      golferPhase = isTurningAim ? "walk" : "address";
-      golferRig?.golferBody?.setAnimation?.({
-        clip: isTurningAim ? "Walk_Loop" : "Ready",
-        loop: true,
-        speed: isTurningAim ? 1.15 : 1
-      });
-    }
   }
 
-  // --- swing meter tick (single-Space smoothly progresses Load -> Attack -> FollowThrough) ---
+  // --- swing meter tick (sets shot params only; the swing drive animates) ---
   if (state.phase === "swing" && r && t) {
     const cupDist = t.cupDistance(r.ballPos[0], r.ballPos[2]);
     const club = currentClub();
@@ -1779,31 +1928,21 @@ function frame(dt: number): void {
     if (s.phase === "committed") {
       commitSwing();
     } else {
-      let st = state.swing.state();
+      const st = state.swing.state();
       if (st.phase === "power" && st.meter >= targetPower) {
-        st = state.swing.press();
-        golferRig?.golferBody?.setAnimation?.({ clip: "Attack", loop: true, speed: 1.85 });
+        state.swing.press();
       } else if (st.phase === "accuracy" && st.meter <= 0.04) {
         const committed = state.swing.press();
         if (committed.phase === "committed") {
           commitSwing();
-          updateSwingMeter();
-          updateCamera(dt);
-          touchControls?.update?.();
-          justPressed.clear();
-          return;
         }
       }
-      golferPhase = st.phase === "power" ? "backswing" : "downswing";
-      golferPhaseT = st.phase === "power" ? st.meter : (1 - st.meter) / 2;
-      golferRig?.golferBody?.setAnimation?.({
-        clip: st.phase === "power" ? "Load" : "Attack",
-        loop: true,
-        speed: st.phase === "power" ? 1.45 : 1.85
-      });
     }
     updateSwingMeter();
   }
+
+  // --- visual swing drive: backswing → top → downswing → IMPACT → follow ---
+  advanceSwingDrive(dt);
 
   // --- ball step ---
   if (state.phase === "flight" && state.ball && t && state.commit) {
@@ -1888,19 +2027,30 @@ function frame(dt: number): void {
       }
     });
 
-    // golfer pose
+    // golfer pose — the swing drive owns the animation through the shot
     if (golferRig) {
       const g = golferAt();
-      if (state.phase !== "swing") golferPhaseT = clamp(golferPhaseT + dt, 0, 1);
-      const phase = state.phase === "flight" && state.commit?.club.putter ? "putt" : golferPhase;
-      poseGolfer(
-        golferRig,
-        phase,
-        state.phase === "swing" ? state.swing.state().meter : golferPhaseT,
-        g.pos,
-        g.yaw,
-        (x, z) => t.height(x, z)
-      );
+      let phase: GolferPhase;
+      let u = 0;
+      if (heroCelebrate) {
+        phase = "celebrate";
+        u = clamp((simTime - impactAt) / 1.4, 0, 1);
+      } else if (state.phase === "swing") {
+        [phase, u] = drivePose();
+      } else if (state.phase === "address") {
+        phase = isTurningAim ? "walk" : "address";
+      } else if (state.phase === "flight" || state.phase === "between") {
+        // the follow-through plays out (drive animates through flight), then
+        // the golfer holds the finish watching the shot before relaxing
+        if (swingDrive.phase !== "idle") {
+          [phase, u] = drivePose();
+        } else {
+          phase = "idle";
+        }
+      } else {
+        phase = "idle";
+      }
+      poseGolfer(golferRig, phase, u, g.pos, g.yaw, (x, z) => t.height(x, z));
     }
 
     // flag flutter + cup pulse
@@ -2172,6 +2322,22 @@ function publishEvidence(): void {
     windSpeed: state.wind.speed,
     windYaw: state.wind.yaw,
     ball: state.ball ? { pos: state.ball.pos, status: state.ball.status, carry: state.ball.carry } : null,
+    swing: (() => {
+      const tl = golferTelemetry();
+      return {
+        drivePhase: swingDrive.phase,
+        phase: tl.phase,
+        t: swingDrive.t,
+        putt: swingDrive.putt,
+        committed: swingDrive.committed,
+        impactFired: swingDrive.impactFired,
+        impactDistance: tl.impactDistance,
+        clubHeadWorld: tl.clubHeadWorld,
+        gripWorld: tl.gripWorld,
+        ballWorld: tl.ballWorld,
+        clubAttached: tl.attached
+      };
+    })(),
     ballStatus: state.ball?.status ?? null,
     ballX: state.ball?.pos[0] ?? null,
     ballY: state.ball?.pos[1] ?? null,

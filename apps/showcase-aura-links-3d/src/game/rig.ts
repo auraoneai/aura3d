@@ -1,147 +1,83 @@
 /**
- * Aura Links 3D — articulated primitive golfer rig + swing pose driver.
+ * Aura Links 3D — rigged golfer driver (linksGolferAthleteMeshy GLB).
  *
- * Same technique as showcase-top-tennis-v2 `updateAthleteRig`: every limb is a
- * unit capsule/cylinder oriented world-space between two joints via
- * `golfKit.orientCylinderBetween`, elbows come from the 2-bone
- * `golfKit.solveArmElbow` solver, and all authoring happens in a golfer-local
- * frame mapped through `golfKit.localToWorld`.
+ * The GLB is a real skinned character (15 joints: Root Hips Spine Chest Head
+ * L/R UpperLeg LowerLeg Foot L/R UpperArm Forearm; 23 clips). This module
+ * makes it perform an actual golf swing using the engine's PRD-06 animation
+ * APIs:
+ *
+ *   - `animation.attach` sockets the three club parts to the RIGHT forearm
+ *     bone (calibrated palm offset in bone space; no hand bones on this rig),
+ *     so the club is rigidly gripped and follows every arm rotation.
+ *   - `setAnimationPose({ mode: "overlay" })` writes the swing solve's bone
+ *     rotations on top of the playing "Ready" clip (legs keep the clip), so
+ *     takeaway → backswing → downswing → impact → follow-through all come
+ *     from the skeleton instead of tilting the whole model.
+ *   - The left arm is IK'd onto the shaft a hand-span above the right palm,
+ *     so BOTH hands stay on the grip through the whole motion.
+ *
+ * The swing itself is authored in `swingMath.ts` (pure, offline-traceable):
+ * a grip trajectory + shaft direction per key, with the impact key derived
+ * from the ball so the clubhead strikes the ball exactly at the bottom of
+ * the arc. `poseGolfer` evaluates that trajectory each frame and publishes
+ * telemetry (`golferTelemetry`) for the impact event + evidence capture.
  *
  * LOCAL FRAME ("shot frame", metres):
  *   origin = the ball / address spot (`at`)
  *   +Z     = intended shot direction (faceYaw = 0 → world +Z)
- *   +X     = the golfer's stance side — a right-handed golfer stands ~0.55 m
- *            left of the ball-line (viewer's left looking down the line)
+ *   +X     = the golfer's stance side (~0.52 m left of the ball-line)
  *   +Y     = up
  * The golfer faces -X toward the ball: lead (left) arm/foot sit on the +Z
- * (target) side, trail (right) side toward -Z.
- *
- * `coil` below is torso wind-up in spec convention: + = backswing (shoulders
- * turn away from the target, back to the line), - = follow-through. It is
- * negated when applied as a standard +Y rotation.
+ * (target) side, trail (right) side toward -Z — a right-handed stance.
  */
 import { game, material, model, primitives } from "@aura3d/engine";
 import { assets } from "../../../../src/aura-assets";
 import type { GolferFit, Vec3 } from "./types";
+import {
+  BALL_SHOT,
+  CLUB_PARTS,
+  clubAttachOffsets,
+  eulerXYZFromQuat,
+  evaluateSwing,
+  makeRoot,
+  qMul,
+  qRotate,
+  quatFromEulerXYZ,
+  solveSwing,
+  toShot,
+  vDist,
+  type Quat,
+  type RootFrame,
+  type SwingPosePhase
+} from "./swingMath";
 
 export type GolferPhase =
   | "address"
   | "backswing"
+  | "top"
   | "downswing"
   | "follow"
   | "celebrate"
   | "walk"
   | "idle"
-  | "putt";
+  | "putt"
+  | "putt-address"
+  | "putt-back"
+  | "putt-through";
 
 const golfKit = game.racketSports("aura-links-golfer");
 
-/* ------------------------------------------------------------------ *
- *  Small math helpers (mutable tuples; Vec3 stays readonly)            *
- * ------------------------------------------------------------------ */
-
-type V3 = [number, number, number];
-
-const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-const smoothstep = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
-const mix3 = (a: V3, b: V3, t: number): V3 => [
-  lerp(a[0], b[0], t),
-  lerp(a[1], b[1], t),
-  lerp(a[2], b[2], t)
-];
-/** Piecewise-smooth interpolation across a keyframe list, u ∈ [0,1]. */
-const seg3 = (keys: readonly V3[], u: number): V3 => {
-  if (keys.length <= 1) return [keys[0][0], keys[0][1], keys[0][2]];
-  const f = clamp01(u) * (keys.length - 1);
-  const i = Math.min(keys.length - 2, Math.floor(f));
-  return mix3(keys[i], keys[i + 1], smoothstep(f - i));
-};
-const norm3 = (v: V3): V3 => {
-  const l = Math.hypot(v[0], v[1], v[2]) || 1;
-  return [v[0] / l, v[1] / l, v[2] / l];
-};
-
-/* ------------------------------------------------------------------ *
- *  Body + stance constants (local frame, ball at origin)               *
- * ------------------------------------------------------------------ */
-
 const HIDDEN = 0.0001;
-const UNI: V3 = [1, 1, 1];
+const UNI: [number, number, number] = [1, 1, 1];
+const STANCE_MID: [number, number, number] = [0.52, 0.012, -0.02];
 
-const HIP_X = 0.55;   // stance centre, ~0.55 m left of the ball-line
-const HIP_Y = 0.87;   // athletic forward bend
-const HIP_Z = -0.02;
-const FOOT_L: V3 = [0.46, 0.055, 0.15]; // lead foot — target side (+Z)
-const FOOT_R: V3 = [0.51, 0.055, -0.19]; // trail foot
-const STANCE_MID: V3 = [0.52, 0.012, -0.02];
-
-/** One swing keyframe: clubhead position + both hand positions. */
-interface SwingKey {
-  readonly head: V3;
-  readonly handL: V3;
-  readonly handR: V3;
-}
-const segKey = (keys: readonly SwingKey[], u: number): SwingKey => ({
-  head: seg3(keys.map((k) => k.head), u),
-  handL: seg3(keys.map((k) => k.handL), u),
-  handR: seg3(keys.map((k) => k.handR), u)
-});
-
-/* Swing arc keyframes — club grounded behind ball → over trail shoulder →
- * impact → high over lead shoulder. Hands stay glued on the grip line. */
-const K_ADDR: SwingKey = {
-  head: [0.0, 0.045, -0.03],
-  handL: [0.27, 0.97, -0.02],
-  handR: [0.29, 0.88, 0.0]
-};
-const K_MID_BACK: SwingKey = {
-  head: [0.48, 0.6, -0.52],
-  handL: [0.36, 0.95, -0.16],
-  handR: [0.38, 0.86, -0.12]
-};
-const K_TOP: SwingKey = {
-  head: [0.42, 1.55, -0.85],
-  handL: [0.55, 1.33, -0.26],
-  handR: [0.57, 1.24, -0.19]
-};
-const K_MID_DOWN: SwingKey = {
-  head: [0.52, 0.8, -0.42],
-  handL: [0.42, 1.02, -0.12],
-  handR: [0.44, 0.93, -0.08]
-};
-const K_IMPACT: SwingKey = {
-  head: [0.0, 0.045, 0.02],
-  handL: [0.25, 0.95, 0.06],
-  handR: [0.27, 0.86, 0.08]
-};
-const K_MID_THRU: SwingKey = {
-  head: [0.22, 1.02, 0.58],
-  handL: [0.32, 1.06, 0.24],
-  handR: [0.34, 0.98, 0.18]
-};
-const K_FINISH: SwingKey = {
-  head: [0.28, 1.6, 0.75],
-  handL: [0.42, 1.42, 0.3],
-  handR: [0.46, 1.33, 0.22]
-};
-
-/* Putting pendulum — compact back/through around a slightly lower stance. */
-const K_PUTT_BACK: SwingKey = {
-  head: [0.02, 0.045, -0.2],
-  handL: [0.26, 0.9, -0.07],
-  handR: [0.28, 0.81, -0.05]
-};
-const K_PUTT_ADDR: SwingKey = {
-  head: [0.0, 0.045, -0.01],
-  handL: [0.26, 0.88, -0.01],
-  handR: [0.28, 0.79, 0.01]
-};
-const K_PUTT_THRU: SwingKey = {
-  head: [0.02, 0.045, 0.2],
-  handL: [0.26, 0.9, 0.07],
-  handR: [0.28, 0.81, 0.09]
-};
+/** phases driven by the swing solve (overlay pose + gripped club) */
+const SWING_PHASES = new Set<string>([
+  "address", "idle", "backswing", "top", "downswing", "follow",
+  "putt", "putt-address", "putt-back", "putt-through"
+]);
+const posePhase = (phase: GolferPhase): SwingPosePhase =>
+  phase === "putt" ? "putt-address" : (phase as SwingPosePhase);
 
 /* ------------------------------------------------------------------ *
  *  Rig handles + builders                                             *
@@ -162,7 +98,7 @@ export interface GolferRig {
 }
 
 export function buildGolferNodes(fit: GolferFit): any[] {
-  const steel = material.pbr({ color: "#3a3f47", metalness: 0.7, roughness: 0.35 });
+  const steel = material.pbr({ color: "#c8ccd4", metalness: 0.85, roughness: 0.28 });
   const rt = (name: string) => game.runtimeNode(name);
 
   return [
@@ -213,29 +149,51 @@ export function buildGolferNodes(fit: GolferFit): any[] {
       role: "setDressing",
       scaleMode: "fit"
     }).runtime(rt("golfer-cart")),
-    // Club — grip, shaft, head (all re-posed every frame along the 3D swing arc)
+    // Club — grip, shaft, head. Native geometry along local +Y; the bone
+    // attachment (RightForearm) owns the world transform of all three parts,
+    // laid out along the shaft per swingMath.CLUB_PARTS.
     primitives
-      .cylinder({ name: "golfer-club-shaft", size: [0.03, 1.05, 0.03], material: steel })
+      .cylinder({ name: "golfer-club-grip", size: [0.03, 0.3, 0.03], material: material.pbr({ color: "#1a1c22", roughness: 0.9 }) })
+      .runtime(rt("golfer-club-grip")),
+    primitives
+      .cylinder({ name: "golfer-club-shaft", size: [0.016, 0.76, 0.016], material: steel })
       .runtime(rt("golfer-club-shaft")),
     primitives
       .box({
         name: "golfer-club-head",
-        size: [0.16, 0.09, 0.09],
-        material: material.pbr({ color: "#8a919c", metalness: 0.75, roughness: 0.3 })
+        size: [0.058, 0.055, 0.17],
+        material: material.pbr({ color: "#a7adba", metalness: 0.8, roughness: 0.32 })
       })
-      .runtime(rt("golfer-club-head")),
-    primitives
-      .cylinder({
-        name: "golfer-club-grip",
-        size: [0.035, 0.28, 0.035],
-        material: material.pbr({ color: "#1a1c22", roughness: 0.9 })
-      })
-      .runtime(rt("golfer-club-grip"))
+      .runtime(rt("golfer-club-head"))
   ];
 }
 
+/* ------------------------------------------------------------------ *
+ *  Attach calibration + telemetry state                               *
+ * ------------------------------------------------------------------ */
+
+let attachDisposers: (() => void)[] = [];
+let lastOffsets: readonly { readonly id: string; readonly position: readonly number[]; readonly rotation: readonly number[] }[] = [];
+let calibGroundDy: number | null = null;
 let lastGolferAnimKey = "";
 let lastCaddyAnimKey = "";
+let telemetry: {
+  phase: GolferPhase;
+  t: number;
+  clubHeadWorld: Vec3;
+  gripWorld: Vec3;
+  ballWorld: Vec3 | null;
+  impactDistance: number | null;
+  attached: boolean;
+} = {
+  phase: "address",
+  t: 0,
+  clubHeadWorld: [0, 0, 0],
+  gripWorld: [0, 0, 0],
+  ballWorld: null,
+  impactDistance: null,
+  attached: false
+};
 
 export function resolveGolferRig(app: any): GolferRig {
   const req = (n: string) => app.nodes.require(n);
@@ -245,6 +203,11 @@ export function resolveGolferRig(app: any): GolferRig {
   caddyBody?.setAnimation?.({ clip: "Idle_Loop", loop: true, speed: 0.9 });
   lastGolferAnimKey = "Ready:1";
   lastCaddyAnimKey = "Idle_Loop:0.9";
+  // scene rebuild — drop stale bone attachments; poseGolfer recalibrates
+  for (const dispose of attachDisposers) dispose();
+  attachDisposers = [];
+  calibGroundDy = null;
+  telemetry = { ...telemetry, attached: false };
   return {
     shadow: req("golfer-shadow"),
     ring: req("golfer-ring"),
@@ -260,6 +223,73 @@ export function resolveGolferRig(app: any): GolferRig {
   };
 }
 
+/** Latest swing state for the evidence capture (world space). */
+export function golferTelemetry() {
+  return telemetry;
+}
+
+/**
+ * Socket the club parts onto the right forearm. Offsets are calibrated from
+ * the address frame so the clubhead rests on the ball at address; they only
+ * depend on the skeleton, so one calibration per scene holds (re-run when the
+ * stance/ball ground delta changes, i.e. per lie).
+ */
+function calibrateClub(rig: GolferRig, root: RootFrame, groundDy: number): void {
+  for (const dispose of attachDisposers) dispose();
+  attachDisposers = [];
+  const addr = solveSwing(evaluateSwing("address", 0), root);
+  const offsets = clubAttachOffsets(addr.rightForearmWorld, addr.rightElbowModel, addr.grip, addr.shaftDir, root);
+  const parts: Record<string, any> = {
+    "golfer-club-grip": rig.clubGrip,
+    "golfer-club-shaft": rig.clubShaft,
+    "golfer-club-head": rig.clubHead
+  };
+  for (const part of offsets) {
+    const handle = parts[part.id];
+    if (!handle) continue;
+    // deterministic first placement (also the fallback when the flag is off)
+    placeClubPart(handle, root, addr, part);
+    const dispose = (rig.hero as any)?.animation?.attach?.({
+      socket: "RightForearm",
+      target: part.id,
+      position: [...part.position] as [number, number, number],
+      rotation: [...part.rotation] as [number, number, number]
+    });
+    if (typeof dispose === "function") attachDisposers.push(dispose);
+  }
+  lastOffsets = offsets;
+  calibGroundDy = groundDy;
+  telemetry = { ...telemetry, attached: attachDisposers.length > 0 };
+}
+
+/**
+ * Fallback/manual placement of one club part from the solved swing frame —
+ * the same transform the engine's bone attachment derives (elbow +
+ * foreWorld·offset for position, foreWorld ∘ offset for rotation), so the
+ * club stays glued even while the attachment registry is unavailable, and
+ * doubles as the initial placement at calibration time.
+ */
+function placeClubPart(
+  handle: any,
+  root: RootFrame,
+  solved: ReturnType<typeof solveSwing>,
+  part: { readonly id: string; readonly position: readonly number[]; readonly rotation: readonly number[] }
+): void {
+  const offsetM = qRotate(solved.rightForearmWorld, [part.position[0], part.position[1], part.position[2]]);
+  const centreM = toShot(root, [
+    solved.rightElbowModel[0] + offsetM[0],
+    solved.rightElbowModel[1] + offsetM[1],
+    solved.rightElbowModel[2] + offsetM[2]
+  ]);
+  const worldQuat = qMul(
+    solved.rightForearmWorld,
+    quatFromEulerXYZ(part.rotation[0], part.rotation[1], part.rotation[2])
+  );
+  const worldEuler = eulerXYZFromQuat(worldQuat);
+  handle?.setPosition?.(centreM[0], centreM[1], centreM[2]);
+  handle?.setRotation?.(worldEuler[0], worldEuler[1], worldEuler[2]);
+}
+
 /* ------------------------------------------------------------------ *
  *  Player Studio fit — updates address ring and club grip accents      *
  * ------------------------------------------------------------------ */
@@ -271,128 +301,13 @@ export function applyGolferFit(rig: GolferRig, fit: GolferFit): void {
 }
 
 /* ------------------------------------------------------------------ *
- *  Pose evaluation — per-phase keyframes for the club arc + hands      *
+ *  poseGolfer — per-frame swing driver                                *
  * ------------------------------------------------------------------ */
 
-interface GolferPose {
-  readonly clubHead: V3;
-  readonly handL: V3;
-  readonly handR: V3;
-  /** grip point on the club; defaults to the hand midpoint */
-  readonly grip?: V3;
-  /** torso wind-up: + backswing / - follow-through (spec convention) */
-  readonly coil: number;
-  readonly hipY: number;
-  /** weight shift along the stance line: - trail side / + lead side */
-  readonly hipZ: number;
-  /** head lift while tracking the shot (follow-through) */
-  readonly headUp: number;
-  /** breathing/bob offset added to chest + head */
-  readonly bob: number;
-  readonly footL: V3;
-  readonly footR: V3;
-  /** forward knee drive (stance flex), metres toward the ball */
-  readonly kneeDrive: number;
-}
-
-const BASE_POSE = {
-  coil: 0,
-  hipY: HIP_Y,
-  hipZ: HIP_Z,
-  headUp: 0,
-  bob: 0,
-  footL: FOOT_L,
-  footR: FOOT_R,
-  kneeDrive: 0.1
-};
-
-const swingPose = (key: SwingKey, extra: Partial<GolferPose>): GolferPose => ({
-  clubHead: key.head,
-  handL: key.handL,
-  handR: key.handR,
-  ...BASE_POSE,
-  ...extra
-});
-
-function golferPose(phase: GolferPhase, t: number): GolferPose {
-  const u = clamp01(t);
-  const s = smoothstep(u);
-  switch (phase) {
-    case "backswing":
-      return swingPose(segKey([K_ADDR, K_MID_BACK, K_TOP], s), {
-        coil: lerp(0, 0.7, s),
-        hipZ: HIP_Z + lerp(0, -0.045, s),
-        hipY: HIP_Y - 0.01 * s
-      });
-    case "downswing":
-      return swingPose(segKey([K_TOP, K_MID_DOWN, K_IMPACT], Math.pow(u, 0.75)), {
-        coil: lerp(0.7, 0.08, s),
-        hipZ: HIP_Z + lerp(-0.045, 0.015, s),
-        hipY: HIP_Y - 0.015 + 0.015 * s
-      });
-    case "follow":
-      return swingPose(segKey([K_IMPACT, K_MID_THRU, K_FINISH], s), {
-        coil: lerp(0.08, -0.9, s),
-        hipZ: HIP_Z + lerp(0.015, 0.055, s),
-        hipY: lerp(HIP_Y - 0.015, 0.93, s),
-        headUp: 0.12 * s,
-        footR: [FOOT_R[0] - 0.02 * s, FOOT_R[1] + 0.04 * s, FOOT_R[2] + 0.02 * s]
-      });
-    case "putt":
-      return swingPose(segKey([K_PUTT_BACK, K_PUTT_ADDR, K_PUTT_THRU], s), {
-        hipY: HIP_Y - 0.03,
-        kneeDrive: 0.07
-      });
-    case "celebrate": {
-      const pump = Math.sin(Math.PI * u);
-      const handL: V3 = [0.42, 1.12 + 0.34 * pump, 0.2];
-      const handR: V3 = [0.46, 1.12 + 0.34 * pump, -0.18];
-      return {
-        clubHead: [handR[0] + 0.05, handR[1] + 0.85, handR[2] - 0.05],
-        handL,
-        handR,
-        grip: handR,
-        coil: 0.15 * pump,
-        hipY: 0.92 + 0.06 * pump,
-        hipZ: HIP_Z,
-        headUp: 0.06,
-        bob: 0,
-        footL: FOOT_L,
-        footR: FOOT_R,
-        kneeDrive: 0.09 - 0.02 * pump
-      };
-    }
-    case "walk": {
-      const w = Math.sin(u * Math.PI * 2);
-      const handL: V3 = [0.5, 0.82, 0.23 + w * 0.05];
-      const handR: V3 = [0.55, 0.82, -0.2 - w * 0.05];
-      return {
-        clubHead: [handR[0] + 0.1, 0.16, handR[2] + 0.14],
-        handL,
-        handR,
-        grip: handR,
-        coil: 0,
-        hipY: 0.92 + w * 0.02,
-        hipZ: HIP_Z,
-        headUp: 0.02,
-        bob: 0,
-        footL: [FOOT_L[0], FOOT_L[1] + Math.max(0, w) * 0.03, FOOT_L[2] + w * 0.07],
-        footR: [FOOT_R[0], FOOT_R[1] + Math.max(0, -w) * 0.03, FOOT_R[2] - w * 0.07],
-        kneeDrive: 0.12
-      };
-    }
-    case "address":
-    case "idle":
-    default:
-      return swingPose(K_ADDR, {
-        bob: Math.sin(u * Math.PI * 2) * 0.008
-      });
-  }
-}
-
-/* ------------------------------------------------------------------ *
- *  poseGolfer — map the local pose into world space + drive handles    *
- * ------------------------------------------------------------------ */
+const clipFor = (phase: GolferPhase): { clip: string; speed: number } =>
+  phase === "walk" ? { clip: "Walk_Loop", speed: 1.1 } :
+  phase === "celebrate" ? { clip: "Jump_Loop", speed: 1.2 } :
+  { clip: "Ready", speed: 1 };
 
 export function poseGolfer(
   rig: GolferRig,
@@ -402,28 +317,31 @@ export function poseGolfer(
   faceYaw: number,
   heightFn?: (x: number, z: number) => number
 ): void {
-  const p = golferPose(phase, t);
-  const W = (v: V3) => golfKit.localToWorld(at, faceYaw, UNI, v);
-  const groundAt = (x: number, z: number) => (heightFn ? heightFn(x, z) : at[1]);
+  const W = (v: readonly number[]) => golfKit.localToWorld(at, faceYaw, UNI, v as any);
+  const stanceW = W([0.52, 0, -0.02]);
+  const stanceGround = heightFn ? heightFn(stanceW[0], stanceW[2]) : at[1];
+  const groundDy = stanceGround - at[1];
+  const root = makeRoot(groundDy);
 
-  const tw = -p.coil; // spec-convention coil → standard +Y rotation
-  const stanceW = W([HIP_X, 0, p.hipZ]);
-  const golferGroundY = groundAt(stanceW[0], stanceW[2]);
+  // --- hero: place the model, upright — the swing comes from the bones ----
+  rig.hero
+    ?.setPosition(stanceW[0], stanceGround, stanceW[2])
+    .setRotation(0, faceYaw - Math.PI / 2, 0)
+    .setVisible(true);
 
-  // Skeletal animation selection for rigged `linksGolferAthleteMeshy`
-  const heroAnim =
-    phase === "walk" ? { clip: "Walk_Loop", speed: 1.1 } :
-    phase === "backswing" ? { clip: "Load", speed: 1.4 } :
-    phase === "downswing" ? { clip: "Attack", speed: 1.8 } :
-    phase === "follow" || phase === "putt" ? { clip: "FollowThrough", speed: 1.2 } :
-    phase === "celebrate" ? { clip: "Jump_Loop", speed: 1.2 } :
-    { clip: "Ready", speed: 1.0 };
+  // --- club attach calibration (once per lie) -----------------------------
+  const swingPhase = SWING_PHASES.has(phase);
+  if (swingPhase && (calibGroundDy === null || Math.abs(groundDy - calibGroundDy) > 0.03)) {
+    calibrateClub(rig, root, groundDy);
+  }
+
+  // --- animation clip + overlay pose --------------------------------------
+  const heroAnim = clipFor(phase);
   const heroKey = `${heroAnim.clip}:${heroAnim.speed}`;
   if (heroKey !== lastGolferAnimKey) {
     lastGolferAnimKey = heroKey;
     rig.golferBody?.setAnimation?.({ clip: heroAnim.clip, loop: true, speed: heroAnim.speed });
   }
-
   const caddyAnim = phase === "celebrate"
     ? { clip: "Contest", speed: 1.15 }
     : { clip: "Idle_Loop", speed: 0.9 };
@@ -433,71 +351,91 @@ export function poseGolfer(
     rig.caddyBody?.setAnimation?.({ clip: caddyAnim.clip, loop: true, speed: caddyAnim.speed });
   }
 
-  // 3D Bespoke Meshy Golfer (`linksGolferAthleteMeshy`, targetHeight 1.84, minY = 0 grounded)
-  const heroY = golferGroundY + Math.max(0, p.hipY - HIP_Y) + p.bob;
-  const heroPitch = phase === "celebrate" ? -0.08 : 0.14 - p.headUp * 0.85;
-  const heroYaw = faceYaw - Math.PI / 2 + tw * 0.65;
-  const heroRoll = p.coil * 0.14;
-  rig.hero
-    ?.setPosition(stanceW[0], heroY, stanceW[2])
-    .setRotation(heroPitch, heroYaw, heroRoll)
-    .setVisible(true);
+  if (swingPhase) {
+    const breathe = phase === "address" || phase === "idle" || phase === "putt-address" || phase === "putt"
+      ? Math.sin(performance.now() / 1400) * 0.012
+      : 0;
+    const key = evaluateSwing(posePhase(phase), t);
+    const solved = solveSwing(key, root, breathe);
+    // Build the overlay pose. Hips and Root also carry POSITION so the clip's
+    // own hips translation cannot desync the rendered skeleton from the club
+    // solve (the bone attachment reads the same skeleton).
+    const bones: Record<string, { position?: { x: number; y: number; z: number }; rotation: Quat }> = {};
+    for (const [bone, q] of Object.entries(solved.bones)) {
+      bones[bone] = { rotation: { x: q.x, y: q.y, z: q.z, w: q.w } };
+    }
+    bones.Root = { rotation: { ...bones.Root!.rotation }, position: { x: 0, y: 0, z: 0 } };
+    bones.Hips = { rotation: bones.Hips!.rotation, position: { x: solved.hipsPos[0], y: solved.hipsPos[1], z: solved.hipsPos[2] } };
+    rig.golferBody?.setAnimationPose?.({ bones, mode: "overlay" } as any);
 
-  // 3D Bespoke Meshy Caddy (`linksGolferAthleteMeshy`, targetHeight 1.80, minY = 0 grounded)
-  // Props stand ahead of the tee and off the shot line — the old rear-right
-  // cluster sat between the chase camera and the golfer and hid the swing.
+    // While the bone attachment is unavailable (animation lane flag off),
+    // drive the club parts from the same solve so the swing still reads.
+    if (!telemetry.attached && lastOffsets.length > 0) {
+      const parts: Record<string, any> = {
+        "golfer-club-grip": rig.clubGrip,
+        "golfer-club-shaft": rig.clubShaft,
+        "golfer-club-head": rig.clubHead
+      };
+      for (const part of lastOffsets) {
+        placeClubPart(parts[part.id], root, solved, part);
+      }
+    }
+
+    // telemetry (world space) — the impact predicate reads clubHeadWorld
+    const headW = W(solved.clubHead);
+    const gripW = W(solved.grip);
+    const ballW = W(BALL_SHOT);
+    telemetry = {
+      phase,
+      t,
+      clubHeadWorld: [headW[0], headW[1], headW[2]],
+      gripWorld: [gripW[0], gripW[1], gripW[2]],
+      ballWorld: [ballW[0], ballW[1], ballW[2]],
+      impactDistance: vDist(solved.clubHead, BALL_SHOT),
+      attached: telemetry.attached
+    };
+  } else {
+    // walk / celebrate: clip owns the body, club stays socketed in the hand
+    rig.golferBody?.setAnimationPose?.(undefined);
+    telemetry = { ...telemetry, phase, t };
+  }
+
+  // --- Caddy + bag + cart (set dressing, out of the camera lane) ----------
   const caddyW = W([3.1, 0, 2.2]);
-  const caddyGroundY = groundAt(caddyW[0], caddyW[2]);
+  const caddyGroundY = heightFn ? heightFn(caddyW[0], caddyW[2]) : at[1];
   const caddyPump = phase === "celebrate" ? Math.abs(Math.sin(t * Math.PI * 2)) * 0.14 : 0;
   rig.caddy
     ?.setPosition(caddyW[0], caddyGroundY + caddyPump, caddyW[2])
     .setRotation(0, faceYaw - 0.38, 0)
     .setVisible(true);
 
-  // 3D Golf Bag (`rooftopBallRackCartMeshy`, targetHeight 1.16, centered origin -> +0.58m half-height)
   const bagW = W([3.6, 0, 2.7]);
-  const bagGroundY = groundAt(bagW[0], bagW[2]);
+  const bagGroundY = heightFn ? heightFn(bagW[0], bagW[2]) : at[1];
   rig.bag
     ?.setPosition(bagW[0], bagGroundY + 0.58, bagW[2])
     .setRotation(0.12, faceYaw - 0.5, 0)
     .setVisible(true);
 
-  // 3D Bespoke Golf Cart (`linksGolfCartMeshy`, targetHeight 1.65, minY = 0 grounded)
   const cartW = W([6.4, 0, 3.0]);
-  const cartGroundY = groundAt(cartW[0], cartW[2]);
+  const cartGroundY = heightFn ? heightFn(cartW[0], cartW[2]) : at[1];
   rig.cart
     ?.setPosition(cartW[0], cartGroundY, cartW[2])
     .setRotation(0, faceYaw - 0.25, 0)
     .setVisible(true);
 
-  // Club — grip sits between the hands; shaft along grip → clubhead.
-  const handLW = W(p.handL);
-  const handRW = W(p.handR);
-  const gripW = p.grip ? W(p.grip) : mix3(handLW, handRW, 0.5);
-  const clubHeadW = W(p.clubHead);
-  const dir = norm3([clubHeadW[0] - gripW[0], clubHeadW[1] - gripW[1], clubHeadW[2] - gripW[2]]);
-  const butt: V3 = [gripW[0] - dir[0] * 0.13, gripW[1] - dir[1] * 0.13, gripW[2] - dir[2] * 0.13];
-  const gripEnd: V3 = [gripW[0] + dir[0] * 0.08, gripW[1] + dir[1] * 0.08, gripW[2] + dir[2] * 0.08];
-  const neck: V3 = [clubHeadW[0] - dir[0] * 0.04, clubHeadW[1] - dir[1] * 0.04, clubHeadW[2] - dir[2] * 0.04];
-  golfKit.orientCylinderBetween(rig.clubGrip, butt, gripEnd, 0.026);
-  golfKit.orientCylinderBetween(rig.clubShaft, gripEnd, neck, 0.02);
-  const clubEuler = golfKit.directionToEulerXYZ(dir[0], dir[1], dir[2]);
-  rig.clubHead
-    .setPosition(clubHeadW[0], Math.max(at[1] + 0.04, clubHeadW[1]), clubHeadW[2])
-    .setRotation(clubEuler[0], faceYaw + clubEuler[1], clubEuler[2])
-    .setScale([1, 1, 1])
-    .setVisible(true);
-
   // Blob shadow under the stance + address marker ring on the ball spot.
   const shadowW = W(STANCE_MID);
   rig.shadow
-    .setPosition(shadowW[0], golferGroundY + 0.015, shadowW[2])
+    .setPosition(shadowW[0], stanceGround + 0.015, shadowW[2])
     .setScale([0.9, 1, 0.8])
     .setVisible(true);
-  const atAddress = phase === "address" || phase === "idle" || phase === "putt";
+  const atAddress = phase === "address" || phase === "idle" || phase === "putt" || phase === "putt-address";
   rig.ring
     .setPosition(at[0], at[1] + 0.02, at[2])
     .setRotation(Math.PI / 2, 0, 0)
     .setScale(atAddress ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN])
     .setVisible(atAddress);
 }
+
+/** club part ids owned by the bone attachment (for diagnostics) */
+export const CLUB_PART_IDS: readonly string[] = CLUB_PARTS.map((p) => p.id);
