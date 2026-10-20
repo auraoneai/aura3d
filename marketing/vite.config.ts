@@ -123,6 +123,12 @@ function copyDir(sourceDir: string, targetDir: string): void {
 }
 
 function copyAdvancedGalleryAssets(outDir: string): void {
+  // The asset-corpus fixtures live outside git (.gitignore fixtures/ with a
+  // tracked allow-list), so remote builds without the local corpus (CI
+  // filmstrip runs) may not have them. Default behavior stays a hard error —
+  // only AURA3D_ALLOW_MISSING_FIXTURES=1 degrades to skip-with-warning, and
+  // production deploys never set it (they build on a corpus-complete machine).
+  const allowMissing = process.env.AURA3D_ALLOW_MISSING_FIXTURES === "1";
   const fixtureFiles = [
     "fixtures/advanced-gallery/assets/water-cinematic-marina-blender/water-cinematic-marina-blender.glb",
     "fixtures/threejs-parity/assets/physics/duck.glb",
@@ -154,16 +160,26 @@ function copyAdvancedGalleryAssets(outDir: string): void {
     "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
     "fixtures/advanced-gallery/environments/hdri/data_galaxy_deep_space_1k.hdr"
   ];
+  const missing: string[] = [];
   for (const fixtureFile of fixtureFiles) {
     const source = resolve(repoRoot, fixtureFile);
-    if (!existsSync(source)) throw new Error(`Advanced-gallery production asset is missing: ${source}`);
+    if (!existsSync(source)) {
+      if (allowMissing) { missing.push(fixtureFile); continue; }
+      throw new Error(`Advanced-gallery production asset is missing: ${source}`);
+    }
     const target = resolve(outDir, fixtureFile);
     mkdirSync(dirname(target), { recursive: true });
     copyFileSync(source, target);
   }
+  if (missing.length > 0) {
+    console.warn(`[marketing-build] skipped ${missing.length} advanced-gallery fixtures absent from this machine (AURA3D_ALLOW_MISSING_FIXTURES=1)`);
+  }
 
   const smartCitySource = resolve(repoRoot, "fixtures/advanced-gallery/assets/smart-city-district");
-  if (!existsSync(smartCitySource)) throw new Error(`Advanced-gallery smart-city asset directory is missing: ${smartCitySource}`);
+  if (!existsSync(smartCitySource)) {
+    if (allowMissing) { console.warn("[marketing-build] skipped smart-city-district fixtures (absent)"); return; }
+    throw new Error(`Advanced-gallery smart-city asset directory is missing: ${smartCitySource}`);
+  }
   copyDir(smartCitySource, resolve(outDir, "fixtures/advanced-gallery/assets/smart-city-district"));
 }
 

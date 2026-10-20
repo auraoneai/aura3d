@@ -58,6 +58,11 @@ jobs:
 
       - name: Build showcase routes (local mode only)
         if: env.MODE == 'local'
+        env:
+          # The advanced-gallery corpus fixtures are gitignored local-only
+          # files; the six filmed games do not use them. Production deploys
+          # build on a corpus-complete machine and never set this flag.
+          AURA3D_ALLOW_MISSING_FIXTURES: "1"
         run: pnpm --dir marketing build
 
       - name: Visual QA (marketing surface + all 20 game routes, local mode only)
