@@ -10,10 +10,14 @@ export function mountUI(host: HTMLElement): void {
   root.id = "ch-hud";
   root.innerHTML = `
     <div id="ch-top">
-      <div id="ch-score">0</div>
+      <div id="ch-score-wrap">
+        <span class="ch-cap">SCORE</span>
+        <div id="ch-score">0</div>
+      </div>
+      <div id="ch-theme"></div>
       <div id="ch-meta">
-        <span id="ch-coins">0</span><span id="ch-best">BEST 0</span>
-        <span id="ch-theme"></span>
+        <span id="ch-coins" class="ch-pill">◈ 0</span>
+        <span id="ch-best" class="ch-pill">BEST 0</span>
       </div>
     </div>
     <div id="ch-msg"></div>

@@ -58,19 +58,26 @@ const hash2 = (x: number, z: number) => {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
 };
 
+// Hostiles are cool-lit and faintly self-lit so their silhouettes separate
+// from the warm brown corridors at 1440x900.
+const HOSTILE_OVERRIDES = [
+  { color: "#cfe3f2", colorMode: "multiply" as const, roughness: 0.58, metallic: 0.18, emissive: "#2d6274", emissiveIntensity: 0.4 }
+];
+
 // ---------------------------------------------------------------------------
 // scene graph — everything exists from boot; runtime nodes move per frame
 function cellX(slot: number, cx: number) { return cellCenter(cx) + slot * FLOOR_SPAN; }
 
 function buildScene() {
-  const b = scene().add(looks.preset(LOOK_ID, { fogDensityScale: 0.32, exposureEv: 0.55 }));
+  const b = scene().add(looks.preset(LOOK_ID, { fogDensityScale: 0.28, exposureEv: 0.42 }));
   const nodes: AuraNodeBuilder<AuraSceneNode>[] = [
-    lights.ambient({ name: "bunker ambient", color: "#dce6f7", intensity: 1.55 }),
-    lights.hemisphere({ name: "bunker hemi", skyColor: "#9cc0ee", groundColor: "#5c4d3c", intensity: 1.4, position: [0, 12, 0] }),
-    lights.directional({ name: "bunker key light", color: "#fff2d8", intensity: 2.1, position: [18, 34, 14] }),
-    lights.point({ name: "player tactical light", color: "#fff4dc", intensity: 6.8, distance: 32, decay: 1.15, position: [4.5, EYE + 0.3, 4.5] })
+    lights.ambient({ name: "bunker ambient", color: "#c2d6ee", intensity: 0.9 }),
+    lights.hemisphere({ name: "bunker hemi", skyColor: "#8fb8e6", groundColor: "#4a3a2e", intensity: 1.0, position: [0, 12, 0] }),
+    lights.directional({ name: "bunker key light", color: "#d9e8ff", intensity: 1.5, position: [18, 34, 14] }),
+    lights.directional({ name: "bunker warm bounce", color: "#ff9a5a", intensity: 0.55, position: [-14, 7, -10] }),
+    lights.point({ name: "player tactical light", color: "#fff4dc", intensity: 5.6, distance: 32, decay: 1.15, position: [4.5, EYE + 0.3, 4.5] })
       .runtime(game.runtimeNode("player-light", { tags: ["vfx"] })),
-    lights.point({ name: "player ahead light", color: "#ffd89a", intensity: 4.8, distance: 26, decay: 1.2, position: [10.5, EYE + 0.5, 4.5] })
+    lights.point({ name: "player ahead light", color: "#ffd89a", intensity: 4.0, distance: 26, decay: 1.2, position: [10.5, EYE + 0.5, 4.5] })
       .runtime(game.runtimeNode("player-ahead-light", { tags: ["vfx"] }))
   ];
 
@@ -85,6 +92,8 @@ function buildScene() {
     const altInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const altCol: string[] = [];
     const faltInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+    const stripInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+    const ceilInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
 
     for (let z = 0; z < h; z++) for (let x = 0; x < w; x++) {
       const ch = rows[z][x];
@@ -100,15 +109,53 @@ function buildScene() {
       } else if (ch === ",") {
         faltInst.push({ position: [wx, 0.04, wz], scale: [CELL, 0.08, CELL] });
       }
+      // Ceiling work lights over open corridor cells.
+      if (ch !== "#" && ch !== "%" && ch !== " " && ch !== "P" && (x * 7 + z * 13) % 9 === 0) {
+        ceilInst.push({ position: [wx, wallH - 0.06, wz], scale: [1.55, 0.035, 0.2] });
+      }
+    }
+
+    // Emissive baseboard trim on every wall face that opens onto a corridor.
+    // One instanced draw per floor, no per-frame work.
+    for (let z = 0; z < h; z++) for (let x = 0; x < w; x++) {
+      const ch = rows[z][x];
+      if (ch !== "#" && ch !== "%") continue;
+      const wx = cellX(slot, x), wz = cellCenter(z);
+      for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        const nx = x + dx, nz = z + dz;
+        const nch = rows[nz]?.[nx] ?? " ";
+        if (nch === "#" || nch === "%" || nch === " " || nch === "P") continue;
+        stripInst.push({
+          position: [wx + dx * (CELL / 2 + 0.012), 0.14, wz + dz * (CELL / 2 + 0.012)],
+          scale: dx !== 0 ? [0.045, 0.07, 2.15] : [2.15, 0.07, 0.045]
+        });
+      }
     }
     nodes.push(
       // structural walls — one instanced draw call per material group
       primitives.box({ name: `f${slot} walls`, material: wallMat, instances: wallInst, instanceColors: wallCol }),
       primitives.box({ name: `f${slot} accent`, material: altMat, instances: altInst, instanceColors: altCol }),
-      // slab floor + high vaulted ceiling so directional/sky fill illuminates the corridors
-      primitives.box({ name: `f${slot} floor`, size: [w * CELL, 0.3, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, -0.15, h * CELL / 2], material: material.pbr({ color: shade(def.palette.floor, 0.15), roughness: 0.78, metalness: 0.08 }) }),
-      primitives.box({ name: `f${slot} ceil`, size: [w * CELL, 0.24, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, wallH + 4.5, h * CELL / 2], material: material.emissive({ color: shade(def.palette.ceil, 0.2), emissive: def.palette.accent, emissiveIntensity: 0.18, roughness: 0.85 }) })
+      // slab floor + sealed ceiling: the ceiling now meets the wall tops so the
+      // corridors read as enclosed rooms instead of an open-topped flat plane.
+      primitives.box({ name: `f${slot} floor`, size: [w * CELL, 0.3, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, -0.15, h * CELL / 2], material: material.pbr({ color: shade(def.palette.floor, 0.1), roughness: 0.62, metalness: 0.12 }) }),
+      primitives.box({ name: `f${slot} ceil`, size: [w * CELL, 0.24, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, wallH + 0.14, h * CELL / 2], material: material.emissive({ color: shade(def.palette.ceil, 0.14), emissive: def.palette.accent, emissiveIntensity: 0.12, roughness: 0.9 }) }),
+      primitives.box({
+        name: `f${slot} wall-trim`,
+        material: material.emissive({ color: def.palette.accent, emissive: def.palette.accent, emissiveIntensity: 1.25, roughness: 0.32, metalness: 0.35 }),
+        instances: stripInst,
+        castShadow: false,
+        receiveShadow: false
+      })
     );
+    if (ceilInst.length) {
+      nodes.push(primitives.box({
+        name: `f${slot} work-lights`,
+        material: material.emissive({ color: "#ffe6bc", emissive: def.palette.accent, emissiveIntensity: 0.85, roughness: 0.3 }),
+        instances: ceilInst,
+        castShadow: false,
+        receiveShadow: false
+      }));
+    }
     if (faltInst.length) {
       nodes.push(primitives.box({
         name: `f${slot} floor-alt`, instances: faltInst,
@@ -228,43 +275,55 @@ function buildScene() {
           break;
         case "g":
           nodes.push(
-            model(assets.bunkerGuardMeshy, { name: `f${slot} guard ${eI}`, targetHeight: 1.9 })
+            model(assets.bunkerGuardMeshy, { name: `f${slot} guard ${eI}`, targetHeight: 1.9, materialOverrides: HOSTILE_OVERRIDES })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.05 })
-              .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "guard"] }))
+              .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "guard"] })),
+            primitives.sphere({ name: `f${slot} guard eyes ${eI}`, material: material.emissive({ color: "#ffe09a", emissive: "#ff9a2a", emissiveIntensity: 2.6, roughness: 0.22 }), castShadow: false, receiveShadow: false })
+              .position(wx, 1.66, wz).scale([0.16, 0.055, 0.16])
+              .runtime(game.runtimeNode(`f${slot}-eye-${x}-${z}`, { tags: ["enemy", "marker"] }))
           );
           eI++;
           break;
         case "d":
           nodes.push(
             model(assets.bunkerHoundMeshy, {
-              name: `f${slot} hound ${eI}`, targetHeight: 1.05
+              name: `f${slot} hound ${eI}`, targetHeight: 1.05, materialOverrides: HOSTILE_OVERRIDES
             })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.35 })
-              .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "dog"] }))
+              .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "dog"] })),
+            primitives.sphere({ name: `f${slot} hound eyes ${eI}`, material: material.emissive({ color: "#ffcf7a", emissive: "#ff8a2a", emissiveIntensity: 2.8, roughness: 0.22 }), castShadow: false, receiveShadow: false })
+              .position(wx, 0.8, wz).scale([0.13, 0.045, 0.13])
+              .runtime(game.runtimeNode(`f${slot}-eye-${x}-${z}`, { tags: ["enemy", "marker"] }))
           );
           eI++;
           break;
         case "G":
           nodes.push(
             model(assets.bunkerGunnerMeshy, {
-              name: `f${slot} gunner ${eI}`, targetHeight: 2.0
+              name: `f${slot} gunner ${eI}`, targetHeight: 2.0, materialOverrides: HOSTILE_OVERRIDES
             })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.0 })
-              .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "gunner"] }))
+              .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "gunner"] })),
+            primitives.sphere({ name: `f${slot} gunner eyes ${eI}`, material: material.emissive({ color: "#ffd36a", emissive: "#ff7a1a", emissiveIntensity: 2.6, roughness: 0.22 }), castShadow: false, receiveShadow: false })
+              .position(wx, 1.76, wz).scale([0.17, 0.058, 0.17])
+              .runtime(game.runtimeNode(`f${slot}-eye-${x}-${z}`, { tags: ["enemy", "marker"] }))
           );
           eI++;
           break;
         case "B":
           nodes.push(
             model(assets.bunkerWardenMeshy, {
-              name: `f${slot} boss ${eI}`, targetHeight: 3.1
+              name: `f${slot} boss ${eI}`, targetHeight: 3.1, materialOverrides: HOSTILE_OVERRIDES
             })
               .position(wx, 0, wz)
               .animate({ clip: "Idle_Loop", loop: true, speed: 0.95 })
-              .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "boss"] }))
+              .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "boss"] })),
+            primitives.sphere({ name: `f${slot} boss eyes ${eI}`, material: material.emissive({ color: "#ffb648", emissive: "#ff5a1a", emissiveIntensity: 3.2, roughness: 0.22 }), castShadow: false, receiveShadow: false })
+              .position(wx, 2.62, wz).scale([0.26, 0.075, 0.26])
+              .runtime(game.runtimeNode(`f${slot}-eye-${x}-${z}`, { tags: ["enemy", "marker"] }))
           );
           eI++;
           break;
@@ -287,12 +346,12 @@ function buildScene() {
       .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-rocket", { tags: ["viewmodel"] })),
     model(assets.corridorMuzzleFlameBurstMeshy, {
-      name: "muzzle flash", material: material.emissive({ color: "#ffd27a", emissive: "#ff9a2a", emissiveIntensity: 5, roughness: 0.3 })
-    }).position(0, -50, 0).scale(0.3)
+      name: "muzzle flash", material: material.emissive({ color: "#ffd27a", emissive: "#ff9a2a", emissiveIntensity: 2.2, roughness: 0.3 })
+    }).position(0, -50, 0).scale(0.14)
       .runtime(game.runtimeNode("muzzle-flash", { tags: ["vfx"] })),
-    lights.point({ name: "muzzle light", color: "#ffb648", intensity: 0, distance: 12, decay: 2, position: [0, -50, 0] })
+    lights.point({ name: "muzzle light", color: "#ffb648", intensity: 0, distance: 6, decay: 2, position: [0, -50, 0] })
       .runtime(game.runtimeNode("muzzle-light", { tags: ["vfx"] })),
-    lights.point({ name: "boom light", color: "#ff6a2a", intensity: 0, distance: 18, decay: 2, position: [0, -50, 0] })
+    lights.point({ name: "boom light", color: "#ff6a2a", intensity: 0, distance: 10, decay: 2, position: [0, -50, 0] })
       .runtime(game.runtimeNode("boom-light", { tags: ["vfx"] }))
   );
   for (let i = 0; i < 8; i++)
@@ -322,10 +381,11 @@ function buildScene() {
 
   return b
     .addMany(nodes)
-    .add(effects.fog({ color: "#1c2432", density: 0.011 }))
-    .add(effects.filmGrain({ intensity: 0.03 }))
-    .add(effects.vignette({ intensity: 0.18 }))
-    .add(effects.bloom({ threshold: 1.0, intensity: 0.42 }))
+    .add(effects.contactShadows({ intensity: 0.55, length: 0.35 }))
+    .add(effects.fog({ color: "#1a2230", density: 0.0095 }))
+    .add(effects.filmGrain({ intensity: 0.02 }))
+    .add(effects.vignette({ intensity: 0.2 }))
+    .add(effects.bloom({ threshold: 0.96, intensity: 0.3 }))
     .camera(camera.perspective({ position: [4.5, EYE, 4.5], target: [12.5, EYE, 4.5], fov: 72 }));
 }
 
@@ -648,7 +708,7 @@ function syncScenePose(inp: SimInput) {
 
   // ---- viewmodel (with crisp recoil kickback on fire)
   const bob = Math.sin(sim.state.time * 9) * 0.018 * moveMag;
-  const muzzleFrac = Math.min(1, (sim.state.muzzle ?? 0) / 0.12);
+  const muzzleFrac = Math.min(1, (sim.state.muzzle ?? 0) / 0.06);
   const recoil = muzzleFrac * 0.12;
   const rx = Math.cos(p.yaw), rz = Math.sin(p.yaw);
   const vmx = p.x + ox + fx * (0.62 - recoil) + rx * 0.26;
@@ -667,7 +727,7 @@ function syncScenePose(inp: SimInput) {
     const mx = p.x + ox + fx * 0.95 + rx * 0.22, my = EYE - 0.22, mz = p.z + fz * 0.95 + rz * 0.22;
     muzzleFlash.setPosition(mx, my, mz);
     muzzleFlash.setRotation(0, -p.yaw + Math.PI / 2, sim.state.time * 25);
-    muzzleFlash.setScale(0.28 + sim.state.rng() * 0.14);
+    muzzleFlash.setScale(0.11 + sim.state.rng() * 0.05);
     muzzleFlash.setVisible(true);
     muzzleLight.setPosition(mx, my, mz);
   } else if (sim.state.rockets.length > 0) {
@@ -686,7 +746,9 @@ function syncScenePose(inp: SimInput) {
   for (const e of sim.state.enemies) {
     const id = `f${slot}-en-${e.sx}-${e.sz}`;
     const node = req(id);
+    const eye = req(`f${slot}-eye-${e.sx}-${e.sz}`);
     if (e.state === "dead") {
+      eye.setVisible(false);
       if (e.deathT < 4) {
         setEnemyClip(id, node, "Idle_Loop", 0.2);
         node.setPosition(e.x + ox, Math.max(-0.6, -e.deathT * 0.2), e.z);
@@ -721,6 +783,9 @@ function syncScenePose(inp: SimInput) {
     node.setPosition(e.x + ox, strideBob, e.z);
     node.setRotation(0, -e.facing, strideRoll);
     node.setVisible(true);
+    const eyeY = e.kind === "dog" ? 0.8 : e.kind === "boss" ? 2.62 : e.kind === "gunner" ? 1.76 : 1.66;
+    eye.setPosition(e.x + ox, eyeY + strideBob, e.z);
+    eye.setVisible(true);
   }
 
   // ---- pickups (bob + spin)
@@ -1055,7 +1120,7 @@ $("bz-tour-stats").innerHTML = [
   `<div class="bz-kv"><span>WEAPONS</span><span>knife · pistol · MG · rockets</span></div>`,
   `<div class="bz-kv"><span>ENEMIES</span><span>guard · hound · gunner · IRON WARDEN</span></div>`,
   `<div class="bz-kv"><span>SECRETS</span><span>2 push-walls per floor</span></div>`,
-  `<div class="bz-kv"><span>ENGINE</span><span>Aura3D ${"4.0.1"} · night-city look</span></div>`
+  `<div class="bz-kv"><span>ENGINE</span><span>Aura3D 4.0.2 · night-city look</span></div>`
 ].join("");
 
 // ---------------------------------------------------------------------------

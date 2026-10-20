@@ -68,8 +68,8 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
         name: `${id}-obsidian-subfloor`,
         material: material.pbr({
           color: palette.floor,
-          roughness: 0.48,
-          metallic: 0.24
+          roughness: 0.4,
+          metallic: 0.32
         })
       })
       .position(0, -0.14, 0)
@@ -86,8 +86,10 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
           name: `${id}-stone-plank-${idx}`,
           material: material.pbr({
             color: even ? palette.floor : palette.skyline,
-            roughness: even ? 0.42 : 0.54,
-            metallic: even ? 0.28 : 0.18
+            roughness: even ? 0.34 : 0.46,
+            metallic: even ? 0.36 : 0.24,
+            clearcoat: even ? 0.18 : 0.08,
+            clearcoatRoughness: 0.42
           })
         })
         .position(0, -0.036, z)
@@ -133,6 +135,129 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
         })
         .position(side * 3.9, -0.01, 0)
         .scale([0.08, 0.024, 28])
+        .toJSON()
+    );
+  }
+
+  // Elliptical ring apron: two inlaid light lines frame the fight lane and
+  // read as a real arena ring instead of an unmarked slab.
+  const ringSegments = 56;
+  const ringA: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const ringB: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  for (let i = 0; i < ringSegments; i += 1) {
+    const a = (i / ringSegments) * Math.PI * 2;
+    const tx = -Math.sin(a) * 4.35;
+    const tz = Math.cos(a) * 2.95;
+    const yaw = -Math.atan2(tz, tx);
+    ringA.push({ position: [Math.cos(a) * 4.35, -0.003, Math.sin(a) * 2.95], rotation: [0, yaw, 0], scale: [0.46, 0.012, 0.06] });
+    const tx2 = -Math.sin(a) * 3.5;
+    const tz2 = Math.cos(a) * 2.3;
+    ringB.push({ position: [Math.cos(a) * 3.5, -0.004, Math.sin(a) * 2.3], rotation: [0, -Math.atan2(tz2, tx2), 0], scale: [0.34, 0.01, 0.035] });
+  }
+  nodes.push(
+    primitives
+      .box({
+        name: `${id}-stage-ring`,
+        material: material.emissive({ color: palette.warning, emissive: palette.warning, emissiveIntensity: 0.62, roughness: 0.28, metalness: 0.5 }),
+        instances: ringA,
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON(),
+    primitives
+      .box({
+        name: `${id}-stage-ring-inner`,
+        material: material.emissive({ color: palette.lane, emissive: palette.lane, emissiveIntensity: 0.3, roughness: 0.3, metalness: 0.45 }),
+        instances: ringB,
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON()
+  );
+
+  // Floor medallion + 12-spoke crown star centred in the apron.
+  const star: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  for (let i = 0; i < 12; i += 1) {
+    const a = (i / 12) * Math.PI * 2;
+    star.push({
+      position: [0, -0.002, 0.95],
+      rotation: [0, -a, 0],
+      scale: [i % 3 === 0 ? 1.5 : 1.05, 0.011, i % 3 === 0 ? 0.07 : 0.042]
+    });
+  }
+  nodes.push(
+    primitives
+      .cylinder({
+        name: `${id}-stage-medallion`,
+        material: material.pbr({ color: palette.skyline, roughness: 0.32, metallic: 0.42, clearcoat: 0.24, clearcoatRoughness: 0.3 }),
+        castShadow: false,
+        receiveShadow: true
+      })
+      .position(0, -0.006, 0.95)
+      .scale([3.1, 0.014, 2.15])
+      .toJSON(),
+    primitives
+      .cylinder({
+        name: `${id}-stage-medallion-hub`,
+        material: material.emissive({ color: palette.warning, emissive: palette.warning, emissiveIntensity: 0.36, roughness: 0.25, metalness: 0.55 }),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .position(0, 0.001, 0.95)
+      .scale([0.62, 0.012, 0.62])
+      .toJSON(),
+    primitives
+      .box({
+        name: `${id}-stage-star`,
+        material: material.emissive({ color: palette.warning, emissive: palette.warning, emissiveIntensity: 0.22, roughness: 0.3, metalness: 0.5 }),
+        instances: star,
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON()
+  );
+
+  // Low apron lip across the near edge of the ring and two approach rails
+  // carry the eye into the bottom third of the frame.
+  nodes.push(
+    primitives
+      .box({
+        name: `${id}-ring-lip-front`,
+        material: material.pbr({ color: palette.skyline, roughness: 0.3, metallic: 0.55, clearcoat: 0.2 })
+      })
+      .position(0, 0.028, 3.28)
+      .scale([13.4, 0.075, 0.2])
+      .toJSON(),
+    primitives
+      .box({
+        name: `${id}-ring-lip-back`,
+        material: material.pbr({ color: palette.skyline, roughness: 0.32, metallic: 0.5 })
+      })
+      .position(0, 0.022, -2.9)
+      .scale([12.2, 0.06, 0.18])
+      .toJSON(),
+    primitives
+      .box({
+        name: `${id}-ring-lip-glow`,
+        material: material.emissive({ color: palette.lane, emissive: palette.lane, emissiveIntensity: 0.3, roughness: 0.3, metalness: 0.4 }),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .position(0, 0.067, 3.28)
+      .scale([13.4, 0.012, 0.06])
+      .toJSON()
+  );
+  for (const side of [-1, 1] as const) {
+    nodes.push(
+      primitives
+        .box({
+          name: `${id}-approach-rail-${side > 0 ? "r" : "l"}`,
+          material: material.emissive({ color: palette.lane, emissive: palette.lane, emissiveIntensity: 0.2, roughness: 0.32, metalness: 0.4 }),
+          castShadow: false,
+          receiveShadow: false
+        })
+        .position(side * 3.35, -0.002, 5.05)
+        .scale([0.055, 0.012, 3.5])
         .toJSON()
     );
   }
@@ -299,16 +424,121 @@ const MONASTERY = makeStage(
 );
 
 /* ------------------------------------------------------------------ */
+/* Crown Arena theatre dressing                                         */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Back-of-house structure for the throne venue: a dark arena wall, three
+ * rings of crowd silhouettes, and two lighting trusses. Everything sits
+ * behind the fight plane so the fighters keep a clean silhouette.
+ */
+function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
+  const nodes: AuraSceneNode[] = [];
+  const steel = material.pbr({ color: "#17131c", roughness: 0.44, metallic: 0.62 });
+  const darkCloth = material.pbr({ color: "#120b12", roughness: 0.92 });
+
+  nodes.push(
+    primitives.box({ name: "cr-back-wall", material: darkCloth, castShadow: false })
+      .position(0, 3.9, -12.2).scale([34, 7.8, 0.8]).toJSON(),
+    primitives.box({ name: "cr-back-wall-band", material: material.emissive({ color: palette.warning, emissive: palette.warning, emissiveIntensity: 0.34, roughness: 0.34, metalness: 0.5 }), castShadow: false, receiveShadow: false })
+      .position(0, 6.0, -11.75).scale([27, 0.08, 0.04]).toJSON()
+  );
+
+  // Tiered crowd decks.
+  const tierZ = [-7.0, -8.2, -9.4];
+  for (let row = 0; row < tierZ.length; row += 1) {
+    nodes.push(
+      primitives.box({ name: `cr-crowd-deck-${row}`, material: steel, castShadow: false })
+        .position(0, 0.48 + row * 0.52, tierZ[row]).scale([28, 0.5, 1.35]).toJSON()
+    );
+  }
+
+  const bodies: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+  const heads: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+  const bodyColors: string[] = [];
+  const headColors: string[] = [];
+  const crowdTint = ["#171018", "#24141b", "#120d13", "#2c1820"];
+  for (let row = 0; row < tierZ.length; row += 1) {
+    let col = 0;
+    for (let x = -11.4; x <= 11.4; x += 0.78) {
+      const jitter = ((Math.sin((col + 1) * 12.9898 + row * 78.233) * 43758.5453) % 1 + 1) % 1;
+      const px = x + (jitter - 0.5) * 0.22;
+      const py = 0.74 + row * 0.52;
+      bodies.push({ position: [px, py, tierZ[row]], scale: [0.42, 0.52, 0.34] });
+      heads.push({ position: [px, py + 0.46, tierZ[row]], scale: [0.26, 0.3, 0.26] });
+      bodyColors.push(crowdTint[(col + row) % crowdTint.length]!);
+      headColors.push(crowdTint[(col + row + 2) % crowdTint.length]!);
+      col += 1;
+    }
+  }
+  nodes.push(
+    primitives.box({ name: "cr-crowd-bodies", material: material.pbr({ color: "#ffffff", roughness: 0.94 }), instances: bodies, instanceColors: bodyColors, castShadow: false, receiveShadow: false }).toJSON(),
+    primitives.sphere({ name: "cr-crowd-heads", material: material.pbr({ color: "#ffffff", roughness: 0.9 }), instances: heads, instanceColors: headColors, castShadow: false, receiveShadow: false }).toJSON()
+  );
+
+  // Sparse phone/arena lights in the stands.
+  const crowdLights: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+  const crowdLightColors: string[] = [];
+  for (let i = 0; i < 42; i += 1) {
+    const row = i % tierZ.length;
+    const spread = ((Math.sin((i + 3) * 7.31) * 24634.6345) % 1 + 1) % 1;
+    crowdLights.push({ position: [-11.2 + spread * 22.4, 1.34 + row * 0.52, tierZ[row] - 0.1], scale: [0.075, 0.075, 0.03] });
+    crowdLightColors.push(i % 5 === 0 ? palette.aura : i % 3 === 0 ? "#8ee6ff" : palette.warning);
+  }
+  nodes.push(
+    primitives.box({ name: "cr-crowd-lights", material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.15, roughness: 0.3 }), instances: crowdLights, instanceColors: crowdLightColors, castShadow: false, receiveShadow: false }).toJSON()
+  );
+
+  // Lighting trusses and warm lens cans.
+  for (const side of [-1, 1] as const) {
+    const x = side * 6.3;
+    nodes.push(
+      primitives.box({ name: `cr-truss-post-${side > 0 ? "r" : "l"}`, material: steel, castShadow: false })
+        .position(x, 2.5, -5.6).scale([0.16, 5.0, 0.16]).toJSON(),
+      primitives.box({ name: `cr-truss-foot-${side > 0 ? "r" : "l"}`, material: steel, castShadow: false })
+        .position(x, 0.12, -5.6).scale([0.72, 0.24, 0.72]).toJSON(),
+      primitives.sphere({ name: `cr-truss-lens-${side > 0 ? "r" : "l"}`, material: material.emissive({ color: palette.warning, emissive: palette.warning, emissiveIntensity: 1.1, roughness: 0.24 }), castShadow: false, receiveShadow: false })
+        .position(x, 4.9, -5.55).scale([0.15, 0.15, 0.15]).toJSON()
+    );
+  }
+  nodes.push(
+    primitives.box({ name: "cr-truss-beam", material: steel, castShadow: false })
+      .position(0, 4.95, -5.6).scale([12.8, 0.14, 0.14]).toJSON()
+  );
+  for (const x of [-3.6, 0, 3.6] as const) {
+    nodes.push(
+      primitives.cylinder({ name: `cr-lamp-can-${x}`, material: steel, castShadow: false })
+        .position(x, 4.72, -5.35).scale([0.16, 0.28, 0.16]).toJSON(),
+      primitives.cylinder({ name: `cr-lamp-lens-${x}`, material: material.emissive({ color: "#ffe8b0", emissive: palette.warning, emissiveIntensity: 1.4, roughness: 0.2 }), castShadow: false, receiveShadow: false })
+        .position(x, 4.56, -5.35).scale([0.11, 0.03, 0.11]).toJSON()
+    );
+  }
+
+  // Dark drape wings close the frame and hide the endless floor edge.
+  for (const side of [-1, 1] as const) {
+    nodes.push(
+      primitives.box({ name: `cr-drape-${side > 0 ? "r" : "l"}`, material: darkCloth, castShadow: false })
+        .position(side * 14.4, 3.1, -7.8).scale([0.7, 6.2, 9.4]).toJSON()
+    );
+  }
+
+  return nodes;
+}
+
+/* ------------------------------------------------------------------ */
 /* 6 · Crown Arena — the throne room. Gold, crimson, the crown itself.  */
 /* ------------------------------------------------------------------ */
+const CROWN_PALETTE: StagePalette = { floor: "#241421", lane: "#ffd76a", aura: "#ff4f46", warning: "#ffd76a", skyline: "#3a1b2c", fog: "#0c060c" };
+
 const CROWN = makeStage(
   "crown-arena",
   "Crown Arena",
   "The throne · final venue",
   "arena-fight",
   "neon-dojo",
-  { floor: "#160c14", lane: "#ffd76a", aura: "#ff4f46", warning: "#ffd76a", skyline: "#2a1024", fog: "#0c060c" },
+  CROWN_PALETTE,
   [
+    ...buildCrownTheater(CROWN_PALETTE),
     // Throne pedestal + club throne + trophy arch
     modelProp(rootAssets.galleryShiftPedestal, "cr-throne-pedestal", [0, 0, -2.5], 1.35, 0),
     modelProp(rootAssets.billiardsClubChairMeshy, "cr-throne-chair", [0, 0, -3.2], 2.1, 0),

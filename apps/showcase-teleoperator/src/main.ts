@@ -1350,10 +1350,8 @@ async function bootGridDispatchAura3D(): Promise<void> {
   const builtScene = buildGridDispatchScene();
   const auraApp = createAuraApp(canvas, {
     scene: builtScene,
-    renderer: {
-      quality: "high",
-      qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
-    }
+    renderer: { quality: "high" },
+    qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
   });
 
   const req = (id: string) => auraApp.nodes.require(id);
@@ -2701,7 +2699,7 @@ async function bootGridDispatchAura3D(): Promise<void> {
     const evidence = {
       route: "showcase-teleoperator",
       engine: "@aura3d/engine",
-      version: "4.0.1",
+      version: "4.0.2",
       ready: true,
       framesRendered,
       vehicle: activeCarId,

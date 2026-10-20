@@ -437,7 +437,7 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
       if (isRocket) emit("player:rocket");
       alertEnemies(p.x, p.z, NOISE_RANGE);
     }
-    state.muzzle = 0.12;
+    state.muzzle = 0.06;
   }
 
   function startReload() {

@@ -37,19 +37,9 @@
       "role": "holeMarker"
     },
     {
-      "typedRef": "assets.linksClubhousePavilMeshy",
-      "quality": "production",
-      "role": "setDressing"
-    },
-    {
       "typedRef": "assets.rooftopBallRackCartMeshy",
       "quality": "production",
       "role": "prop"
-    },
-    {
-      "typedRef": "assets.showcaseStadiumSeats",
-      "quality": "production",
-      "role": "setDressing"
     },
     {
       "typedRef": "assets.siegeGolfBall",

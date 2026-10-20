@@ -206,7 +206,7 @@ let trail: { stop(o?: { immediate?: boolean }): void } | null = null;
 function ensureTrail(): void {
   if (trail || st.mode !== "play") return;
   try {
-    trail = app.effects?.spawn("streak", { node: "byte" }, { color: st.profile.trailColor }) ?? null;
+    trail = app.effects?.spawn("streak", { node: "byte" }, { color: st.profile.trailColor, scale: 1.22 }) ?? null;
   } catch { trail = null; }
 }
 function killTrail(): void {
@@ -242,7 +242,7 @@ app.onFrame(({ dt }) => {
       g.sound?.cue("death"); g.juice?.fire("death");
       killTrail();
       try {
-        app.effects?.burst("debris", [wx(st.player.px), 0.5, wz(st.player.py)], { count: 30, speed: 4, scale: 0.7, color: "#ff4d5e" });
+        app.effects?.burst("debris", [wx(st.player.px), 0.5, wz(st.player.py)], { count: 44, speed: 6.2, scale: 0.95, color: "#ff5a6e" });
       } catch { /* effects optional */ }
       eventLog.push({ type: "death", label: `caught @${st.score}` });
     }

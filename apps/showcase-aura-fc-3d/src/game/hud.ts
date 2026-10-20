@@ -67,11 +67,11 @@ const css = `
 .fc-charge > i { display: block; height: 100%; background: linear-gradient(90deg,#d8ff3e,#ffd76a,#ff9a3d); }
 .fc-charge-l { text-align: center; font-size: 9.5px; letter-spacing: .22em; color: #d8ff3e; margin-top: 3px; font-weight: 700; }
 .fc-ticker { position: absolute; left: 18px; bottom: 46px; display: flex; flex-direction: column;
-  gap: 4px; max-width: 330px; }
-.fc-tick { font-family: "Monument Grotesk Mono", monospace; font-size: 10.5px; letter-spacing: .03em;
-  color: #cfd6c8; background: rgba(7,16,22,.74); border-left: 2px solid rgba(216,255,62,.5);
-  padding: 3px 10px; border-radius: 3px; opacity: 0; transform: translateX(-8px);
-  transition: opacity .25s, transform .25s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  gap: 4px; max-width: 340px; }
+.fc-tick { font-family: "Monument Grotesk Mono", monospace; font-size: 11px; letter-spacing: .04em;
+  color: #cfd6c8; background: rgba(7,16,22,.8); border-left: 2px solid rgba(216,255,62,.5);
+  padding: 4px 10px; border-radius: 3px; opacity: 0; transform: translateX(-8px); line-height: 1.35;
+  transition: opacity .25s, transform .25s; white-space: normal; overflow-wrap: anywhere; }
 .fc-tick.show { opacity: .93; transform: translateX(0); }
 .fc-tick-warn { border-left-color: #ff3b30; color: #ffb3ac; }
 .fc-tick-success { border-left-color: #d8ff3e; color: #e8f5c0; }
@@ -108,6 +108,27 @@ function el(tag: string, cls?: string, parent?: HTMLElement): HTMLElement {
   if (cls) e.className = cls;
   parent?.appendChild(e);
   return e;
+}
+
+/** Broadcast phrasing for the recurring sim events; unknown labels upper-case. */
+const TICK_COPY: Record<string, string> = {
+  "slide tackle wins it": "SLIDE TACKLE — POSSESSION WON",
+  "slide tackle": "SLIDE TACKLE — CHALLENGE",
+  "keeper save": "SAVE — KEEPER DENIES",
+  "off the post": "OFF THE POST — INCHES AWAY",
+  "off the bar": "OFF THE CROSSBAR — INCHES AWAY",
+  "off the boards": "OFF THE BOARDS — STILL LIVE",
+  "corner": "CORNER — SET-PIECE CHANCE",
+  "goal kick": "GOAL KICK — PLAY RESUMES",
+  "kick-in": "KICK-IN — RESTART",
+  "bounce": "BOUNCE — LOOSE BALL",
+  "penalty taken": "PENALTY — TAKEN",
+  "step-over": "STEP-OVER — INTO SPACE",
+  "chop — cuts it back": "CHOP — CUTS IT BACK"
+};
+
+function tickerText(ev: SimEvent): string {
+  return TICK_COPY[ev.label] ?? ev.label.toUpperCase();
 }
 
 export function createHud(host: HTMLElement): Hud {
@@ -189,12 +210,17 @@ export function createHud(host: HTMLElement): Hud {
       bannerTimer = window.setTimeout(() => { bannerEl.className = "fc-banner"; }, ms);
     },
     ticker(ev) {
+      const key = `${ev.type}|${ev.label}`;
+      // Consecutive/duplicate events used to stack identical "slide tackle"
+      // rows; keep one live row per event signature.
+      if (Array.from(ticker.children).some((n) => (n as HTMLElement).dataset.tickKey === key)) return;
       const item = el("span", `fc-tick fc-tick-${ev.severity ?? "info"}`);
-      item.textContent = ev.label;
+      item.dataset.tickKey = key;
+      item.textContent = tickerText(ev);
       ticker.prepend(item);
       requestAnimationFrame(() => item.classList.add("show"));
-      while (ticker.children.length > 5) ticker.lastElementChild?.remove();
-      window.setTimeout(() => { item.classList.remove("show"); window.setTimeout(() => item.remove(), 300); }, 5200);
+      while (ticker.children.length > 4) ticker.lastElementChild?.remove();
+      window.setTimeout(() => { item.classList.remove("show"); window.setTimeout(() => item.remove(), 300); }, 7000);
     },
     update(state, ctx) {
       homeName.textContent = ctx.home.short;

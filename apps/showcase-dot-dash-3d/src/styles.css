@@ -35,7 +35,11 @@ html, body {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
+  padding:
+    calc(6px + env(safe-area-inset-top, 0px))
+    calc(10px + env(safe-area-inset-right, 0px))
+    6px
+    calc(10px + env(safe-area-inset-left, 0px));
   background: linear-gradient(180deg, rgba(5, 6, 15, 0.96), rgba(5, 6, 15, 0.72));
   border-bottom: 1px solid var(--dd-edge);
   backdrop-filter: blur(6px);
@@ -78,7 +82,7 @@ html, body {
 
 .aura3d-controls-hint {
   position: fixed;
-  bottom: 8px;
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   z-index: 25;
@@ -121,59 +125,68 @@ html, body {
 
 .dd-tl {
   position: absolute;
-  top: 46px;
-  left: 12px;
+  top: calc(62px + env(safe-area-inset-top, 0px));
+  left: max(16px, env(safe-area-inset-left, 0px));
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  max-width: min(400px, 34vw);
 }
 
 .dd-mode-tag {
-  font-size: 10px;
+  align-self: flex-start;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.18em;
   color: var(--dd-pink);
+  text-shadow: 0 1px 8px rgba(5, 6, 15, 0.9);
 }
 
-.dd-row { display: flex; gap: 6px; }
+.dd-row { display: flex; gap: 8px; align-items: stretch; }
 
 .dd-chip {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: var(--dd-panel);
+  gap: 8px;
+  background: linear-gradient(180deg, rgba(9, 14, 34, 0.94), rgba(9, 12, 30, 0.82));
   border: 1px solid var(--dd-edge);
-  border-radius: 6px;
-  padding: 4px 8px;
+  border-radius: 8px;
+  padding: 6px 11px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-.dd-chip .k { font-size: 9px; font-weight: 800; letter-spacing: 0.12em; color: var(--dd-dim); }
-.dd-chip .v { font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--dd-ink); }
-.dd-lives { color: var(--dd-gold) !important; letter-spacing: 0.1em; }
+.dd-chip .k { font-size: 10px; font-weight: 800; letter-spacing: 0.12em; color: var(--dd-dim); }
+.dd-chip .v { font-size: clamp(15px, 1.15vw, 17px); font-weight: 800; font-variant-numeric: tabular-nums; color: var(--dd-ink); line-height: 1.05; }
+.dd-score-chip { border-color: rgba(69, 232, 255, 0.5); padding-right: 14px; }
+.dd-score-chip .v { font-size: clamp(24px, 2vw, 30px); color: #ffffff; letter-spacing: 0.035em; text-shadow: 0 0 18px rgba(69, 232, 255, 0.3); }
+.dd-hi-chip .v { color: var(--dd-gold); }
+.dd-lives { color: var(--dd-gold) !important; letter-spacing: 0.1em; font-size: clamp(17px, 1.4vw, 21px) !important; }
 
 .dd-orb-chip { border-color: var(--dd-cyan); }
 .dd-orb-track, .dd-dash-track {
   display: inline-block;
-  width: 64px;
-  height: 8px;
-  border-radius: 4px;
+  width: clamp(70px, 6vw, 88px);
+  height: 9px;
+  border-radius: 5px;
   background: rgba(69, 232, 255, 0.12);
   overflow: hidden;
 }
-.dd-orb-fill { display: block; height: 100%; width: 0%; background: var(--dd-cyan); }
-.dd-dash-fill { display: block; height: 100%; width: 100%; background: var(--dd-gold); }
-.dd-dash-chip.cooling .dd-dash-fill { background: var(--dd-dim); }
+.dd-orb-fill { display: block; height: 100%; width: 0%; background: var(--dd-cyan); box-shadow: 0 0 10px rgba(69, 232, 255, 0.7); }
+.dd-dash-fill { display: block; height: 100%; width: 100%; background: var(--dd-gold); box-shadow: 0 0 10px rgba(255, 217, 94, 0.55); }
+.dd-dash-chip.cooling .dd-dash-fill { background: var(--dd-dim); box-shadow: none; }
 
 .dd-objective {
-  font-size: 11px;
-  color: var(--dd-dim);
-  max-width: 300px;
+  font-size: clamp(11px, 0.85vw, 13px);
+  line-height: 1.35;
+  color: #b9c5ea;
+  max-width: 340px;
+  text-shadow: 0 1px 8px rgba(5, 6, 15, 0.95);
 }
 
 .dd-school-legend {
   position: absolute;
-  top: 46px;
-  right: 12px;
+  top: calc(62px + env(safe-area-inset-top, 0px));
+  right: max(16px, env(safe-area-inset-right, 0px));
   background: var(--dd-panel);
   border: 1px solid var(--dd-edge);
   border-radius: 8px;
@@ -316,8 +329,26 @@ html, body {
 }
 .dd-swatch.active { border-color: #fff; box-shadow: 0 0 12px rgba(255, 255, 255, 0.5); }
 
+@media (max-width: 1100px) {
+  .dd-tl,
+  .dd-school-legend { top: calc(104px + env(safe-area-inset-top, 0px)); }
+  .dd-tl { max-width: min(380px, 48vw); }
+}
+
 @media (max-width: 900px) {
   .dd-panel.dd-wide { min-width: 92vw; }
   .dd-circuit-grid { grid-template-columns: repeat(2, 1fr); }
   .dd-banner .big { font-size: 28px; }
+  .dd-tl { max-width: calc(100vw - 32px); }
+  .dd-score-chip .v { font-size: 24px; }
+  .dd-objective { max-width: 300px; }
+}
+
+@media (max-width: 680px) {
+  .dd-tl { top: calc(136px + env(safe-area-inset-top, 0px)); gap: 6px; }
+  .dd-chip { padding: 5px 8px; gap: 6px; }
+  .dd-chip .v { font-size: 14px; }
+  .dd-score-chip .v { font-size: 22px; }
+  .dd-school-legend { display: none; }
+  .aura3d-controls-hint { display: none; }
 }

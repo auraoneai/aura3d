@@ -76,11 +76,25 @@ export function buildFieldNodes(clubHome: string, clubAway: string): any[] {
         .position(0, 0.012, y)
     );
   }
-  // midfield accent
+  // Midfield crest — painted concentric rings with a five-spoke star. Every
+  // layer sits above the 50-yard line (top = 0.022) so nothing z-fights, and
+  // the hollow rings avoid the old filled-disc "coin" read.
+  const crestGold = material.pbr({ color: "#dfb055", roughness: 0.66, metalness: 0.06 });
+  const crestCream = material.pbr({ color: "#f2ead9", roughness: 0.7, metalness: 0.03 });
   nodes.push(
-    primitives.cylinder({ name: "midfield-logo", size: [5.4, 0.014, 5.4], material: material.emissive({ color: "#f2a71b", emissive: "#f2a71b", emissiveIntensity: 0.28, opacity: 0.72 }) }).position(0, 0.008, 50),
-    primitives.cylinder({ name: "midfield-logo-inner", size: [3.6, 0.016, 3.6], material: lineMat("#12355c", 0.9) }).position(0, 0.01, 50)
+    primitives.torus({ name: "midfield-ring-outer", size: [7.4, 7.4, 0.14], material: crestGold })
+      .position(0, 0.032, 50).rotate(Math.PI / 2, 0, 0),
+    primitives.torus({ name: "midfield-ring-inner", size: [5.05, 5.05, 0.12], material: crestCream })
+      .position(0, 0.032, 50).rotate(Math.PI / 2, 0, 0)
   );
+  for (let i = 0; i < 5; i++) {
+    const a = -Math.PI / 2 + i * (Math.PI * 2 / 5);
+    nodes.push(
+      primitives.box({ name: `midfield-star-${i}`, size: [0.46, 0.012, 1.7], material: crestGold })
+        .position(Math.cos(a) * 0.62, 0.034, 50 + Math.sin(a) * 0.62)
+        .rotate(0, Math.PI / 2 - a, 0)
+    );
+  }
 
   // hash marks: instanced boxes at x=±10.4 every yard 1..99
   const hashT: any[] = [];

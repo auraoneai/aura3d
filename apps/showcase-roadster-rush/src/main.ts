@@ -772,10 +772,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const builtScene = buildRoadsterRushScene();
   const auraApp = createAuraApp(canvas, {
     scene: builtScene,
-    renderer: {
-      quality: "high",
-      qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
-    }
+    renderer: { quality: "high" },
+    qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
   });
 
   const req = (id: string) => auraApp.nodes.require(id);

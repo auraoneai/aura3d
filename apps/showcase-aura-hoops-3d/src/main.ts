@@ -116,25 +116,25 @@ interface VenueSpec {
 const VENUES: Record<VenueId, VenueSpec> = {
   rucker: {
     id: "rucker", label: "RUCKER PARK · HARLEM", sub: "GOLDEN HOUR LOOK",
-    look: "golden-hour", lookLabel: "GOLDEN HOUR LOOK", bg: "#1b1620",
+    look: "golden-hour", lookLabel: "GOLDEN HOUR LOOK", bg: "#c98a5a",
     floor: "#2f3237", paint: "#b3541e", line: "#f2ead6", apron: "#22252b",
     accent: "#ff7a1a", crowdDensity: 1, night: false, orbit: false, covered: false, glbVenue: false
   },
   venice: {
     id: "venice", label: "VENICE BEACH · LA", sub: "SUNSET LOOK",
-    look: "golden-hour", lookLabel: "SUNSET LOOK", bg: "#241a24",
+    look: "golden-hour", lookLabel: "SUNSET LOOK", bg: "#c98a5a",
     floor: "#3b6f7e", paint: "#e8e0c8", line: "#fdf6e3", apron: "#c9ad72",
     accent: "#ff9a3d", crowdDensity: 0.55, night: false, orbit: false, covered: false, glbVenue: false
   },
   athens: {
     id: "athens", label: "ATHENS ROOFTOP", sub: "OUTDOOR DAY LOOK",
-    look: "outdoor-day", lookLabel: "OUTDOOR DAY LOOK", bg: "#26354c",
+    look: "outdoor-day", lookLabel: "OUTDOOR DAY LOOK", bg: "#9db8cf",
     floor: "#3a4048", paint: "#2f5f9e", line: "#f5f0e0", apron: "#2c313a",
     accent: "#39d7ff", crowdDensity: 0.8, night: false, orbit: false, covered: false, glbVenue: true
   },
   manila: {
     id: "manila", label: "MANILA COVERED", sub: "INTERIOR WARM LOOK",
-    look: "interior-warm", lookLabel: "INTERIOR WARM LOOK", bg: "#14120e",
+    look: "interior-warm", lookLabel: "INTERIOR WARM LOOK", bg: "#1c1712",
     floor: "#5a4a34", paint: "#8a3b2a", line: "#f5ecd4", apron: "#3c332a",
     accent: "#ffd257", crowdDensity: 0.85, night: true, orbit: false, covered: true, glbVenue: false
   },
@@ -146,7 +146,7 @@ const VENUES: Record<VenueId, VenueSpec> = {
   },
   orbit: {
     id: "orbit", label: "ORBIT COURT · LEO", sub: "NEON ARCADE LOOK",
-    look: "neon-arcade", lookLabel: "NEON ARCADE LOOK", bg: "#03040a",
+    look: "neon-arcade", lookLabel: "NEON ARCADE LOOK", bg: "#0a0d18",
     floor: "#141a2e", paint: "#233a66", line: "#7dfcff", apron: "#0a0d1a",
     accent: "#7dfcff", crowdDensity: 0.5, night: true, orbit: true, covered: false, glbVenue: false
   }
@@ -438,22 +438,49 @@ function buildCourtSurfaces(v: VenueSpec): any[] {
 
 function buildHoopNodes(): any[] {
   return [
-    // Admitted 3D Meshy hoop stanchion rig + backboard + rim
-    model(assets.hoopsHoopRig, { name: "hoop-rig", targetHeight: 3.95, scaleMode: "fit", castShadow: true, receiveShadow: true })
+    // Admitted 3D Meshy hoop stanchion rig + backboard + rim. The source GLBs
+    // carry AI-generated camo base-colour/MR maps; override them with clean,
+    // venue-neutral hardware materials so the rim assembly reads as equipment
+    // instead of an overexposed orange smear.
+    model(assets.hoopsHoopRig, {
+      name: "hoop-rig",
+      targetHeight: 3.95,
+      scaleMode: "fit",
+      castShadow: true,
+      receiveShadow: true,
+      materialOverrides: [
+        { color: "#2f3439", colorMode: "replace", replaceTextures: true, roughness: 0.52, metallic: 0.58, envMapIntensity: 0.8 }
+      ]
+    })
       .position(0, 1.98, -1.08)
       .rotate(0, Math.PI, 0),
-    model(assets.hoopsBackboard, { name: "hoop-backboard", scaleMode: "world", castShadow: true, receiveShadow: true })
+    model(assets.hoopsBackboard, {
+      name: "hoop-backboard",
+      scaleMode: "world",
+      castShadow: true,
+      receiveShadow: true,
+      materialOverrides: [
+        { color: "#eef3f7", colorMode: "replace", replaceTextures: true, roughness: 0.34, metallic: 0.02, clearcoat: 0.45, clearcoatRoughness: 0.22, envMapIntensity: 0.7 }
+      ]
+    })
       .position(0, 3.35, BOARD_Z)
       .runtime(game.runtimeNode("backboard-assembly")),
-    model(assets.hoopsRim, { name: "hoop-rim", scaleMode: "world", castShadow: true })
+    model(assets.hoopsRim, {
+      name: "hoop-rim",
+      scaleMode: "world",
+      castShadow: true,
+      materialOverrides: [
+        { color: "#c65a1e", colorMode: "replace", replaceTextures: true, roughness: 0.38, metallic: 0.42, envMapIntensity: 0.85 }
+      ]
+    })
       .position(RIM[0], RIM[1], RIM[2])
       .runtime(game.runtimeNode("rim-assembly")),
     // Net: two stacked tori + skirt planes for ripple feedback
     primitives.torus({ name: "net-top", size: [0.47, 0.47, 0.35], material: material.pbr({ color: "#e8e8e0", roughness: 0.7 }) }).position(0, RIM[1] - 0.1, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("net-top")),
     primitives.torus({ name: "net-bottom", size: [0.3, 0.3, 0.28], material: material.pbr({ color: "#e8e8e0", roughness: 0.7 }) }).position(0, RIM[1] - 0.42, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("net-bottom")),
     primitives.cylinder({ name: "net-skirt", size: [0.34, 0.34, 0.34], material: material.pbr({ color: "#e8e8e0", roughness: 0.7, opacity: 0.22 }) }).position(0, RIM[1] - 0.24, 0).runtime(game.runtimeNode("net-skirt")),
-    // Rim readability halo
-    primitives.torus({ name: "rim-halo", size: [0.74, 0.74, 0.55], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 1.1, opacity: 0.8 }) }).position(0, RIM[1] + 0.01, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("rim-halo"))
+    // Quiet warm rim light in place of the old oversized emissive saucer.
+    primitives.torus({ name: "rim-halo", size: [0.58, 0.58, 0.16], material: material.emissive({ color: "#5a2f14", emissive: "#ff8a3d", emissiveIntensity: 0.35, opacity: 0.28 }) }).position(0, RIM[1] + 0.015, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("rim-halo"))
   ];
 }
 
@@ -462,7 +489,7 @@ function buildBallNodes(): any[] {
     model(assets.hoopsBall, { name: "ball-live", scaleMode: "fit", targetMaxDimension: 0.34, castShadow: true })
       .position(0, 0.98, CHECK_SPOT[2])
       .runtime(game.runtimeNode("ball-live")),
-    primitives.cylinder({ name: "ball-shadow", size: [0.36, 0.008, 0.36], material: material.pbr({ color: "#000000", opacity: 0.42, roughness: 1 }) }).position(0, 0.012, CHECK_SPOT[2]).runtime(game.runtimeNode("ball-shadow"))
+    primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.008, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) }).position(0, 0.012, CHECK_SPOT[2]).runtime(game.runtimeNode("ball-shadow"))
   ];
   for (let i = 0; i < TRAIL_COUNT; i++) {
     nodes.push(
@@ -476,10 +503,13 @@ function buildBallNodes(): any[] {
 
 /** Clean ground readability rings & shadow for one 3D Meshy athlete (no primitive body/shoe capsules). */
 function buildAthleteAccessories(id: string, team: TeamId): any[] {
-  const ringColor = team === "home" ? "#ff7a1a" : "#39d7ff";
+  // Muted team tints, not broadcast target markers: a thin painted ring with a
+  // whisper of emissive so it survives shade without reading as a reticle.
+  const ringColor = team === "home" ? "#8a3f16" : "#17465c";
+  const ringEmissive = team === "home" ? "#ff7a1a" : "#39d7ff";
   return [
-    primitives.cylinder({ name: `${id}-shadow`, size: [0.62, 0.008, 0.62], material: material.pbr({ color: "#000000", opacity: 0.34, roughness: 1 }) }).runtime(game.runtimeNode(`${id}-shadow`)),
-    primitives.torus({ name: `${id}-ring`, size: [1.16, 1.16, 0.55], material: material.emissive({ color: ringColor, emissive: ringColor, emissiveIntensity: 0.95 }) }).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode(`${id}-ring`)),
+    primitives.cylinder({ name: `${id}-shadow`, size: [0.58, 0.008, 0.58], material: material.pbr({ color: "#000000", opacity: 0.24, roughness: 1 }) }).runtime(game.runtimeNode(`${id}-shadow`)),
+    primitives.torus({ name: `${id}-ring`, size: [0.82, 0.82, 0.34], material: material.emissive({ color: ringColor, emissive: ringEmissive, emissiveIntensity: 0.26, opacity: 0.42 }) }).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode(`${id}-ring`)),
     // Jam aura — hidden until the meter is full
     primitives.cylinder({ name: `${id}-aura`, size: [0.9, 1.9, 0.9], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.9, opacity: 0.16 }) }).scale(HIDDEN).runtime(game.runtimeNode(`${id}-aura`))
   ];
@@ -638,6 +668,8 @@ function buildScene(v: VenueSpec): any {
   const s = scene()
     .background(v.bg)
     .add(looks.preset(v.look, { fogDensityScale: 0, exposureEv: 0.16 }))
+    .add(effects.contactShadows({ intensity: 0.7, length: 0.28 }))
+    .add(effects.vignette({ intensity: 0.16, smoothness: 0.7 }))
     .camera(camera.perspective({ position: [0, 9.2, 17.4], target: [0, 1.4, 2.4], fov: 34, far: v.orbit ? 900 : 240 }))
     .addMany(buildCourtSurfaces(v))
     .addMany(buildHoopNodes())
@@ -2137,8 +2169,8 @@ function syncAthlete(a: AthleteState, dt: number): void {
 
   // Ground rings & shadow
   r.shadow?.setPosition(a.x, 0.012, a.z).setScale([1 - a.y * 0.14, 1, 1 - a.y * 0.14]).setVisible(true);
-  const ringS = a.controlled ? 1.08 : a.hasBall ? 1.0 : 0.8;
-  r.ring?.setPosition(a.x, 0.02, a.z).setScale([ringS, ringS, ringS]).setVisible(true);
+  const ringS = a.controlled ? 1.06 : a.hasBall ? 1.0 : 0.82;
+  r.ring?.setPosition(a.x, 0.018, a.z).setScale([ringS, ringS, ringS]).setVisible(true);
   // Jam aura
   const auraOn = game_.jamFull && a.team === "home" && a.hasBall;
   r.aura?.setPosition(a.x, a.y + 0.95, a.z).setScale(auraOn ? [0.9, 1.9, 0.9] : HIDDEN).setVisible(auraOn);
@@ -2239,7 +2271,7 @@ function publishEvidence(): void {
   const evidence = {
     route: "showcase-aura-hoops-3d",
     engine: "@aura3d/engine",
-    engineVersion: "4.0.1",
+    engineVersion: "4.0.2",
     ready: appReady && document.body.dataset.aura3dReady === "true",
     framesRendered,
     autopilot: game_.autopilot,

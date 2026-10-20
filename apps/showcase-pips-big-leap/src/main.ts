@@ -228,6 +228,7 @@ function loadWorld(id: WorldId, mode?: ModeId): void {
   // trial follows the player across worlds, everything else is quick play.
   userEngaged = false;
   run = makeRun(id, mode ?? (id === "academy" ? "academy" : run.mode === "trial" ? "trial" : "quick"));
+  resetCameraRig();
   const { spec, built } = ensureWorld(id);
   if (mountedWorld !== id) {
     mountedWorld = id;
@@ -682,6 +683,58 @@ const CLIP_FOR: Record<string, { clip: string; speed?: number; loop?: boolean }>
   celebrate: { clip: PIP_CLIPS.celebrate, loop: false }
 };
 
+// ------------------------------------------------------- camera occlusion
+
+/** Shortest allowed boom (4.5m * 0.3 ≈ 1.35m behind Pip). */
+const CAM_MIN_CLEARANCE = 0.3;
+/** Hysteresis state: shorten almost instantly, relax back out gently. */
+const cameraRig = { clearance: 1, ready: false };
+
+function resetCameraRig(): void {
+  cameraRig.clearance = 1;
+  cameraRig.ready = false;
+}
+
+/**
+ * Sweep Pip's head -> desired lens against the obstacle cylinders baked at
+ * world-build time and return the furthest boom fraction that stays in front
+ * of the first blocker. Pure math over a short list — no scene raycasts.
+ */
+function cameraClearance(p: PlayerState, built: BuiltWorld, camX: number, camZ: number, camY: number): number {
+  const sx = p.x;
+  const sz = p.z;
+  const sy = p.y + 1.05;
+  const dx = camX - sx;
+  const dz = camZ - sz;
+  const len2 = dx * dx + dz * dz;
+  if (len2 < 1e-6) return 1;
+  let best = 1;
+  for (const o of built.cameraObstacles) {
+    const top = o.baseY + o.height;
+    if (sy > top && camY > top) continue;
+    const r = o.radius + 0.22;
+    const ox = sx - o.x;
+    const oz = sz - o.z;
+    const b = 2 * (ox * dx + oz * dz);
+    const c = ox * ox + oz * oz - r * r;
+    const disc = b * b - 4 * len2 * c;
+    if (disc <= 0) continue;
+    const root = Math.sqrt(disc);
+    const t0 = (-b - root) / (2 * len2);
+    const t1 = (-b + root) / (2 * len2);
+    const lo = Math.max(0, Math.min(t0, t1));
+    const hi = Math.min(1, Math.max(t0, t1));
+    if (lo > hi) continue;
+    // Height along the boom rises from Pip's head to the lens; if the
+    // blocked stretch sits entirely above the canopy it does not matter.
+    const yLo = sy + (camY - sy) * lo;
+    const yHi = sy + (camY - sy) * hi;
+    if (Math.min(yLo, yHi) > top) continue;
+    best = Math.min(best, Math.max(CAM_MIN_CLEARANCE, lo - 0.05));
+  }
+  return best;
+}
+
 function driveAnimation(p: PlayerState, dt: number): void {
   const hero = node(nodeName.hero);
   if (!hero) return;
@@ -712,11 +765,28 @@ function driveAnimation(p: PlayerState, dt: number): void {
   cape?.setPosition(p.x - fwdX * 0.22, p.y + 0.72 + capeLift, p.z - fwdZ * 0.22);
   cape?.setRotation(p.state === "glide" ? 1.1 : 0.35, p.yaw, 0);
 
-  // Smooth third-person follow camera behind Pip looking down the platformer path.
+  // Smooth third-person follow camera behind Pip looking down the platformer
+  // path. A trunk/boulder between Pip and the lens shortens the boom instead
+  // of blacking out the frame; controls and camYaw are untouched.
   const camFwdX = Math.sin(p.camYaw);
   const camFwdZ = Math.cos(p.camYaw);
+  const built = ensureWorld(run.world).built;
+  const camY = p.y + 2.25;
+  const desiredX = p.x - camFwdX * 4.5;
+  const desiredZ = p.z - camFwdZ * 4.5;
+  const targetClearance = cameraClearance(p, built, desiredX, desiredZ, camY);
+  if (!cameraRig.ready || dt <= 0) {
+    cameraRig.clearance = targetClearance;
+    cameraRig.ready = true;
+  } else {
+    // Snap in fast to avoid clipping through a trunk, ease back out so the
+    // framing never pops when the tree line clears.
+    const rate = targetClearance < cameraRig.clearance ? 24 : 5.5;
+    cameraRig.clearance += (targetClearance - cameraRig.clearance) * (1 - Math.exp(-rate * dt));
+  }
+  const boom = 4.5 * Math.max(CAM_MIN_CLEARANCE, cameraRig.clearance);
   app.camera?.setPose({
-    position: [p.x - camFwdX * 4.5, p.y + 2.25, p.z - camFwdZ * 4.5],
+    position: [p.x - camFwdX * boom, camY, p.z - camFwdZ * boom],
     target: [p.x + camFwdX * 3.2, p.y + 0.55, p.z + camFwdZ * 3.2],
     up: [0, 1, 0],
     fov: 52

@@ -287,18 +287,24 @@ function stadiumNodes(v: VenueSpec): any[] {
     );
   }
 
-  /* ---- 3D Meshy Dugouts, Stadium Bowl, Ball Cart & Touchline Referee ---- */
+  /* ---- 3D Meshy dugouts, stadium bowl, ball cart & touchline referee ---- */
+  // Dugouts used to sit between the camera and the near touchline, filling
+  // the bottom HUD with brown boxes. Park them outside the goal lines so the
+  // broadcast view keeps a clean run-up to the pitch.
   nodes.push(
-    model(assets.diamondDugout, { name: "dugout-home", targetHeight: 2.35 })
-      .position(-7, 0, PITCH_HZ + 3.8)
-      .rotate(0, Math.PI, 0),
-    model(assets.diamondDugout, { name: "dugout-away", targetHeight: 2.35 })
-      .position(7, 0, PITCH_HZ + 3.8)
-      .rotate(0, Math.PI, 0),
-    model(assets.hoopsBallCart, { name: "fc-ball-cart", targetHeight: 1.05 })
-      .position(0, 0, PITCH_HZ + 3.6),
-    model(assets.diamondStadium, { name: "fc-stadium-bowl", targetHeight: 15 })
-      .position(0, -1.6, -(PITCH_HZ + 18))
+    model(assets.diamondDugout, { name: "dugout-home", targetHeight: 2.1 })
+      .position(-35.5, 0, -8)
+      .rotate(0, Math.PI / 2, 0),
+    model(assets.diamondDugout, { name: "dugout-away", targetHeight: 2.1 })
+      .position(35.5, 0, -8)
+      .rotate(0, -Math.PI / 2, 0),
+    model(assets.hoopsBallCart, { name: "fc-ball-cart", targetHeight: 1.0 })
+      .position(34.5, 0, -14.5),
+    // No soccer-specific stand exists in the Aura FC registry; the shared
+    // diamond stadium now sits low and far behind the authored bleacher bowl
+    // so its roof is a distant band instead of a lid on the frame.
+    model(assets.diamondStadium, { name: "fc-stadium-bowl", targetHeight: 8.5 })
+      .position(0, -2.6, -(PITCH_HZ + 40))
       .scale([1.3, 1, 1.1]),
     model(assets.gallerySecurityGuardMeshy, {
       name: "fc-referee",
@@ -311,9 +317,9 @@ function stadiumNodes(v: VenueSpec): any[] {
     model(assets.fcHeroTrophyMeshy, { name: "fc-trophy-case", targetHeight: 2.2 })
       .position(-PITCH_HX - 4.5, 0.9, -(PITCH_HZ + 3.5))
       .rotate(0, 0.8, 0),
-    // spare match balls on a rack
+    // spare match balls on a rack, tucked behind the away dugout
     model(assets.fcMatchBallMeshy, { name: "fc-spare-ball", targetHeight: 0.4 })
-      .position(PITCH_HX + 3.4, 0.1, PITCH_HZ + 3.6)
+      .position(34.0, 0.1, -15.5)
   );
 
   /* ---- Pitch scuff decals ---- */
@@ -358,7 +364,7 @@ function ballNodes(): any[] {
     primitives.sphere({ name: "fc-ball-glow", size: [0.001, 0.001, 0.001], material: material.pbr({ color: "#f8fafc", roughness: 0.3 }) })
       .scale(HIDDEN)
       .runtime(gameRuntime("fc-ball-glow")),
-    primitives.cylinder({ name: "fc-ball-shadow", size: [0.82, 0.01, 0.82], material: material.pbr({ color: "#000000", opacity: 0.45, roughness: 1 }) })
+    primitives.cylinder({ name: "fc-ball-shadow", size: [0.82, 0.01, 0.82], material: material.pbr({ color: "#000000", opacity: 0.32, roughness: 1 }) })
       .runtime(gameRuntime("fc-ball-shadow")),
     effects.trail({ name: "fc-ball-trail", target: "fc-ball", color: "#d8ff3e", width: 0.12, maxPoints: 40, intensity: 0.85 } as any),
     primitives.torus({ name: "fc-aim-ring", size: [0.34, 0.035, 0.035], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.3 }) })
@@ -384,6 +390,9 @@ export const ATHLETE_IDS = [
 /** Full scene graph — look preset first (per look-recipes), then world. */
 export function buildFcScene() {
   const s = scene()
+    // Interior-industrial has no fog and a near-black backdrop; open the roof
+    // onto a cold night-sky tone instead of a void once the stand is pulled back.
+    .background("#0d1a24")
     .add(looks.preset(LOOK_ID, { fogDensityScale: 0.5, exposureEv: 0.08 }))
     .addMany(pitchNodes())
     .addMany(goalNodes(-1))
@@ -392,9 +401,9 @@ export function buildFcScene() {
     .addMany(ballNodes());
   for (const id of ATHLETE_IDS) s.addMany(athleteNodes(id));
   return s
-    .add(effects.contactShadows({ intensity: 0.75, length: 0.3 }))
-    .add(effects.motionBlur({ intensity: 0.12 }))
-    .add(effects.bloom({ intensity: 0.3, threshold: 0.76 }))
+    .add(effects.contactShadows({ intensity: 0.85, length: 0.32 }))
+    .add(effects.motionBlur({ intensity: 0.1 }))
+    .add(effects.bloom({ intensity: 0.22, threshold: 0.82 }))
     .camera(camera.perspective({ position: [0, 22.5, 38.5], target: [0, 0.8, -1.5], fov: 54 }));
 }
 

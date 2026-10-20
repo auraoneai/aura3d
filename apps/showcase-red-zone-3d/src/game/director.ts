@@ -16,9 +16,9 @@ const lerp3 = (a: [number, number, number], b: [number, number, number], t: numb
 const smooth = (t: number) => t * t * (3 - 2 * t);
 
 export function createDirector() {
-  let eye: [number, number, number] = [0, 14.5, -1.5];
-  let target: [number, number, number] = [0, 2.2, 41];
-  let fov = 33;
+  let eye: [number, number, number] = [0, 18.5, -6];
+  let target: [number, number, number] = [0, 1.4, 45];
+  let fov = 42;
   let mode: "menu" | "intro" | "broadcast" | "celebrate" | "lab" = "broadcast";
   let modeT = 0;
   let orbit = 0;
@@ -54,16 +54,16 @@ export function createDirector() {
         const r = 56;
         wantEye = [Math.sin(orbit) * r, 22 + Math.sin(orbit * 0.6) * 3, 50 + Math.cos(orbit) * r];
         wantTgt = [0, 2.0, 50];
-        wantFov = 32;
+        wantFov = 40;
         break;
       }
       case "intro": {
         const t = smooth(clamp(modeT / 2.2, 0, 1));
-        const start: [number, number, number] = [focusX * 0.35, 16.0, s.los - 29.5 * s.dir];
-        const end: [number, number, number] = [focusX * 0.45, 14.5, losBehind];
+        const start: [number, number, number] = [focusX * 0.35, 18.5, s.los - 38 * s.dir];
+        const end: [number, number, number] = [focusX * 0.45, 18.5, losBehind];
         wantEye = lerp3(start, end, t);
-        wantTgt = lerp3([0, 2.6, s.los + 18 * s.dir], [s.ballSpotX * 0.5, 2.2, s.los + 16 * s.dir], t);
-        wantFov = lerp(35, 33, t);
+        wantTgt = lerp3([0, 1.5, s.los + 22 * s.dir], [s.ballSpotX * 0.5, 1.4, s.los + 20 * s.dir], t);
+        wantFov = lerp(42, 41, t);
         if (modeT >= 2.2) setMode("broadcast");
         break;
       }
@@ -87,24 +87,25 @@ export function createDirector() {
       case "broadcast":
       default: {
         if (s.phase === "preSnap" || s.phase === "patChoice") {
-          // prime-time behind-the-QB broadcast view framing all 14 players, sidelines, goalposts & stadium gantry
-          wantEye = [s.ballSpotX * 0.45, 14.5, s.los - 26.5 * s.dir];
-          wantTgt = [s.ballSpotX * 0.55, 2.2, s.los + 16 * s.dir];
-          wantFov = 33;
+          // Wide, high behind-the-QB framing: all 14 players plus the far
+          // stand roof and a slice of night sky stay in the 16:10 frame.
+          wantEye = [s.ballSpotX * 0.45, 18.5, s.los - 32 * s.dir];
+          wantTgt = [s.ballSpotX * 0.55, 1.4, s.los + 20 * s.dir];
+          wantFov = 41;
         } else if (s.phase === "kickoff") {
-          wantEye = [focusX * 0.4, 22, 50 - 34 * s.dir];
-          wantTgt = [focusX * 0.5, 1.5, 50];
-          wantFov = 32;
+          wantEye = [focusX * 0.4, 22, 50 - 50 * s.dir];
+          wantTgt = [focusX * 0.5, 1.2, 50 + 4 * s.dir];
+          wantFov = 42;
         } else {
           // live: pull back, track ball + a lookahead downfield
-          const ahead = s.dir * 16;
+          const ahead = s.dir * 20;
           const bx = ball.x, bz = ball.z;
-          const camBehind = s.phase === "live" ? bz - 27 * s.dir : losBehind;
-          wantEye = [clamp(bx * 0.5, -14, 14), 15.2, clamp(camBehind, -60, 170)];
-          wantTgt = [clamp(bx * 0.6, -15, 15), 2.0, clamp(bz + ahead, -12, 112)];
-          wantFov = s.phase === "playOver" ? 31 : 32;
+          const camBehind = s.phase === "live" ? bz - 36 * s.dir : losBehind;
+          wantEye = [clamp(bx * 0.5, -14, 14), 18.5, clamp(camBehind, -60, 170)];
+          wantTgt = [clamp(bx * 0.6, -15, 15), 1.4, clamp(bz + ahead, -12, 118)];
+          wantFov = s.phase === "playOver" ? 40 : 41;
           // air balls: widen to keep the flight in frame
-          if (ball.kind === "air") wantFov = 35;
+          if (ball.kind === "air") wantFov = 44;
         }
       }
     }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "route": "/showcase/heatsink/",
+  "route": "/apps/showcase-heatsink/",
   "title": "HEATSINK — High-Velocity Combat Drone Racer",
   "category": "racing",
   "template": "racing-starter",

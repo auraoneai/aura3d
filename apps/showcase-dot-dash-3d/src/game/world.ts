@@ -23,6 +23,15 @@ const FRIGHT_COLOR = "#2b3dff";
 const FRIGHT_FLASH = "#e8ecff";
 const EYES_COLOR = "#dbe9ff";
 
+/** Shared camera pose so build + follow sync can never drift apart. */
+const CAMERA_RIG = {
+  position: [0, 17.2, 13.8] as [number, number, number],
+  target: [0, 0, 0] as [number, number, number],
+  fov: 48,
+  followX: 0.16,
+  followZ: 0.12
+} as const;
+
 const GHOST_EMISSIVE: Record<GhostId, string> = {
   blitz: "#ff1a3b",
   flick: "#ff33aa",
@@ -90,12 +99,18 @@ const pad = (n: number) => Array.from({ length: n }, () => ({ position: [0, -999
 // ---------------------------------------------------------------------------
 export function buildScene(): unknown {
   const s = scene()
-    .add(effects.bloom({ name: "arcade-bloom", intensity: 0.22, threshold: 0.82, radius: 0.35 }))
-    .add(looks.preset("neon-arcade", { fogDensityScale: 0, exposureEv: 0.05, background: "#1e325c", accent: "#22d3ee" }).runtime(game.runtimeNode("look")))
+    // Punchier neon without clipping the maze: lift mid-tones, keep whites in
+    // the rails/orbs, and add a soft frame to focus the eye on the board.
+    .add(effects.bloom({ name: "arcade-bloom", intensity: 0.36, threshold: 0.74, radius: 0.4 }))
+    .add(effects.vignette({ intensity: 0.22, smoothness: 0.65 }))
+    // Gentle haze so the far maze rows settle into the deck tone without
+    // dimming hazards at the top of the board.
+    .add(effects.fog({ color: "#101a3f", density: 0.0035 }))
+    .add(looks.preset("neon-arcade", { fogDensityScale: 0, exposureEv: 0.05, background: "#0d1736", accent: "#22d3ee" }).runtime(game.runtimeNode("look")))
     .add(lights.ambient({ color: "#b4ccff", intensity: 0.92 }))
     .add(lights.hemisphere({ skyColor: "#cce0ff", groundColor: "#243b6b", intensity: 0.85 }))
     .add(lights.directional({ position: [8, 22, 12], target: [0, 0, 0], color: "#eef4ff", intensity: 1.25, shadow: true }))
-    .camera(camera.perspective({ position: [0, 18.5, 13.5], target: [0, 0, 0.5], fov: 46 }));
+    .camera(camera.perspective({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }));
 
   // IMPORTANT: In Aura3D's instanced shader, v_instanceColor multiplies u_baseColor (color), NOT u_emissiveColor!
   // Never set emissive: "#ffffff" on instanced pools, or every instance emits pure white regardless of instance color.
@@ -122,8 +137,9 @@ export function buildScene(): unknown {
   const starMat = material.pbr({ color: "#ffd700", emissive: "#ffaa00", emissiveIntensity: 0.25, roughness: 0.22, metalness: 0.35 });
 
   s.addMany([
-    // ground slab — rich sapphire arcade deck (never reflects a blinding white hotspot and never reads as pitch-black)
-    primitives.box({ name: "board", size: [46.0, 0.32, 36.0], material: material.pbr({ color: "#223a6e", emissive: "#172b54", emissiveIntensity: 0.45, roughness: 0.68, metalness: 0.12 }) })
+    // ground slab — sapphire arcade deck with a low-gloss sheen so the key
+    // light rakes across it instead of reading as flat navy.
+    primitives.box({ name: "board", size: [46.0, 0.32, 36.0], material: material.pbr({ color: "#223a6e", emissive: "#172b54", emissiveIntensity: 0.38, roughness: 0.42, metalness: 0.28 }) })
       .position(0, -0.18, 0)
       .runtime(game.runtimeNode("board")),
     // instanced pools
@@ -185,6 +201,19 @@ export function buildScene(): unknown {
     primitives.cylinder({ name: "school-beam", size: [0.35, 3.2, 0.35], material: material.pbr({ color: "#22d3ee", emissive: "#22d3ee", emissiveIntensity: 0.65, roughness: 0.4, opacity: 0.45 }) })
       .position(0, -999, 0)
       .runtime(game.runtimeNode("school-beam"))
+  ]);
+
+  // ------------------------------------------------------------ deck rim
+  // The fixed chase camera looks steeply down, so anything raised behind the
+  // board falls outside the frustum. Frame the playfield with lit rim strips at
+  // deck level instead: they are always visible and cost four boxes.
+  const deckEdgeMat = material.emissive({ color: "#07242a", emissive: "#22d3ee", emissiveIntensity: 1.05 });
+  const deckEdgePinkMat = material.emissive({ color: "#25081f", emissive: "#ff3df0", emissiveIntensity: 0.95 });
+  s.addMany([
+    primitives.box({ name: "deck-edge-n", size: [46.6, 0.06, 0.16], material: deckEdgeMat, castShadow: false }).position(0, 0.02, -18.2),
+    primitives.box({ name: "deck-edge-s", size: [46.6, 0.06, 0.16], material: deckEdgePinkMat, castShadow: false }).position(0, 0.02, 18.2),
+    primitives.box({ name: "deck-edge-w", size: [0.16, 0.06, 36.6], material: deckEdgePinkMat, castShadow: false }).position(-23.2, 0.02, 0),
+    primitives.box({ name: "deck-edge-e", size: [0.16, 0.06, 36.6], material: deckEdgeMat, castShadow: false }).position(23.2, 0.02, 0)
   ]);
   return s.toJSON();
 }
@@ -416,16 +445,17 @@ export function syncVisuals(_dt: number): void {
     }
   } catch { st.nodesOk = false; }
 
-  // camera — keep full arcade maze readable in both overhead and follow modes
+  // camera — slightly lower/wider than the old rig so the lit deck and neon
+  // horizon fill the frame; the whole maze and every hazard stay in view.
   const pp2 = normPos(m);
   if (st.camera === "overhead") {
-    app.camera?.setPose({ position: [0, 18.5, 13.5], target: [0, 0, 0.5], fov: 46 });
+    app.camera?.setPose({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov });
   } else {
-    const bx = wx(pp2.x) * 0.16, bz = wz(pp2.y) * 0.12;
+    const bx = wx(pp2.x) * CAMERA_RIG.followX, bz = wz(pp2.y) * CAMERA_RIG.followZ;
     app.camera?.setPose({
-      position: [bx, 18.5, 13.5 + bz],
-      target: [bx * 0.75, 0, 0.5 + bz * 0.65],
-      fov: 46
+      position: [bx, CAMERA_RIG.position[1], CAMERA_RIG.position[2] + bz],
+      target: [bx * 0.75, 0, CAMERA_RIG.target[2] + bz * 0.65],
+      fov: CAMERA_RIG.fov
     });
   }
   app.output?.setOutputOverlay(

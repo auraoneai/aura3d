@@ -5,15 +5,64 @@ html, body { margin: 0; padding: 0; height: 100%; background: #0b0e14; overflow:
 #ch-hud { position: absolute; inset: 0; pointer-events: none; }
 #ch-hud .ch-panel { pointer-events: auto; }
 
-#ch-top { position: absolute; top: 18px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
-#ch-score { font-size: 54px; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -1px; }
-#ch-meta { display: flex; gap: 16px; font-size: 13px; font-weight: 600; color: #ffd94a; }
-#ch-meta #ch-theme { color: #7ce8c9; }
-#ch-meta #ch-best { color: #9db4d0; }
+#ch-top {
+  position: absolute;
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  left: calc(18px + env(safe-area-inset-left, 0px));
+  right: calc(18px + env(safe-area-inset-right, 0px));
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 12px;
+  text-shadow: 0 2px 10px rgba(0,0,0,.5);
+}
+#ch-score-wrap {
+  justify-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 148px;
+  padding: 7px 15px 10px;
+  background: linear-gradient(180deg, rgba(10, 16, 28, .76), rgba(10, 16, 28, .42));
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.28);
+  backdrop-filter: blur(5px);
+}
+.ch-cap { font-size: 10px; font-weight: 800; letter-spacing: .22em; color: #a9bed8; }
+#ch-score { font-size: clamp(42px, 4vw, 60px); font-weight: 900; color: #fff; line-height: .95; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+#ch-theme {
+  justify-self: center;
+  align-self: start;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .16em;
+  color: #7ce8c9;
+  background: rgba(8, 14, 24, .58);
+  border: 1px solid rgba(124, 232, 201, .35);
+  border-radius: 999px;
+  padding: 5px 11px;
+  white-space: nowrap;
+}
+#ch-meta { justify-self: end; display: flex; align-items: center; gap: 8px; }
+.ch-pill {
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #ffd94a;
+  background: rgba(8, 12, 22, .62);
+  border: 1px solid rgba(255, 255, 255, .13);
+  border-radius: 999px;
+  padding: 8px 12px;
+  white-space: nowrap;
+  backdrop-filter: blur(5px);
+}
+#ch-meta #ch-best { color: #cfe3ff; }
 
-#ch-msg { position: absolute; top: 110px; left: 0; right: 0; text-align: center; font-size: 18px; font-weight: 700; color: #ffd94a; text-shadow: 0 2px 8px #000; }
-#ch-ticker { position: absolute; bottom: 64px; left: 0; right: 0; text-align: center; font-size: 12px; color: #cfe3ff; opacity: .8; }
-#ch-help { position: absolute; bottom: 12px; right: 14px; font-size: 11px; color: rgba(255,255,255,.45); }
+#ch-msg { position: absolute; top: calc(120px + env(safe-area-inset-top, 0px)); left: 0; right: 0; text-align: center; font-size: 18px; font-weight: 700; color: #ffd94a; text-shadow: 0 2px 8px #000; }
+#ch-ticker { position: absolute; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); left: 0; right: 0; text-align: center; font-size: 12px; color: #cfe3ff; opacity: .8; }
+#ch-help { position: absolute; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); right: calc(14px + env(safe-area-inset-right, 0px)); font-size: 11px; color: rgba(255,255,255,.45); }
 
 .ch-panel {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
@@ -47,3 +96,21 @@ html, body { margin: 0; padding: 0; height: 100%; background: #0b0e14; overflow:
 
 #ch-dead h2 { color: #ff6b6b; }
 #ch-dead p { color: #cfe3ff; font-size: 16px; }
+
+@media (max-width: 760px) {
+  #ch-top { grid-template-columns: 1fr auto; gap: 8px; }
+  #ch-theme { grid-column: 1 / -1; grid-row: 2; justify-self: start; margin-top: 0; }
+  #ch-score-wrap { min-width: 116px; padding: 6px 12px 9px; }
+  #ch-score { font-size: 42px; }
+  .ch-pill { font-size: 11px; padding: 7px 10px; }
+  #ch-msg { top: calc(136px + env(safe-area-inset-top, 0px)); font-size: 16px; }
+  #ch-help { display: none; }
+}
+
+@media (max-width: 520px) {
+  #ch-top { left: calc(12px + env(safe-area-inset-left, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); }
+  #ch-score { font-size: 36px; }
+  .ch-pill { font-size: 10px; padding: 6px 9px; }
+  .ch-panel h1 { font-size: 44px; letter-spacing: 3px; }
+  .ch-panel button { min-width: 200px; }
+}

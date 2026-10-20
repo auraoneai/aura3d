@@ -85,6 +85,19 @@ export interface WaterZone {
   readonly floorY: number;
 }
 
+/**
+ * Coarse cylinder used only by the follow camera to shorten its boom when a
+ * trunk/boulder would sit between Pip and the lens. This is plain data built
+ * once at world build time — never a per-frame raycast.
+ */
+export interface CameraObstacle {
+  readonly x: number;
+  readonly z: number;
+  readonly baseY: number;
+  readonly radius: number;
+  readonly height: number;
+}
+
 export interface BuiltWorld {
   readonly spec: WorldSpec;
   readonly motion: WorldMotion;
@@ -100,6 +113,7 @@ export interface BuiltWorld {
   readonly spinNodes: readonly string[];
   readonly movingSolids: readonly SolidBox[];
   readonly timedSolids: readonly SolidBox[];
+  readonly cameraObstacles: readonly CameraObstacle[];
   readonly bossArenaZ: number | null;
 }
 
@@ -129,8 +143,12 @@ function decorNodes(d: DecorSpec): readonly SceneNodeArg[] {
 
   switch (d.kind) {
     case "tree":
+      // One coherent low-poly tree family: the old photoreal `pineTree` GLB
+      // read as a different art style (and its wide fir canopy filled the
+      // third-person lens). "tree" keeps its id/height but shares the flat
+      // conifer silhouette used by every other trunk in the course.
       return [
-        model(assets.props.pineTree, { name: `${d.id}:tree`, castShadow: true, receiveShadow: true, targetHeight: 3.2 * s, scaleMode: "fit" })
+        model(assets.props.conifer, { name: `${d.id}:tree`, castShadow: true, receiveShadow: true, targetHeight: 3.2 * s, scaleMode: "fit" })
           .position(d.x, d.y, d.z)
           .rotate(0, yaw, 0)
       ];
@@ -251,33 +269,61 @@ function decorNodes(d: DecorSpec): readonly SceneNodeArg[] {
 
 // ---------------------------------------------------------------- world build
 
+/**
+ * Only trunks, boulders, and course-side architecture tall enough to intersect
+ * the raised boom become camera obstacles. Radii are slightly wider than the
+ * visible trunk so the lens never clips into the canopy skirt.
+ */
+function cameraObstacleFor(d: DecorSpec): CameraObstacle | null {
+  const s = d.s ?? 1;
+  switch (d.kind) {
+    case "tree":
+    case "conifer":
+      return { x: d.x, z: d.z, baseY: d.y, radius: 1.25 * s, height: 3.4 * s };
+    case "rock":
+      return { x: d.x, z: d.z, baseY: d.y, radius: 0.7 * s, height: 1.05 * s };
+    case "windmill":
+      return { x: d.x, z: d.z, baseY: d.y, radius: 1.2 * s, height: 3.6 * s };
+    case "sail":
+      return { x: d.x, z: d.z, baseY: d.y, radius: 1.0 * s, height: 2.6 * s };
+    case "pillar":
+      return { x: d.x, z: d.z, baseY: d.y, radius: 0.75 * s, height: 3.4 * s };
+    case "arch":
+      return { x: d.x, z: d.z, baseY: d.y, radius: 1.35 * s, height: 3.4 * s };
+    case "crystal":
+      return { x: d.x, z: d.z, baseY: d.y, radius: 0.7 * s, height: 1.9 * s };
+    default:
+      return null;
+  }
+}
+
 export function buildWorld(spec: WorldSpec): BuiltWorld {
   const motion = deriveWorldMotion(spec);
   const skyColor = spec.background ?? "#1e4d78";
   const builder = scene().background(skyColor);
 
-  // Look preset — explicitly disable fog whitewash so platforms, trees, and Pip stay crisp.
+  // Look preset — fog itself is authored below so its color tracks the sky
+  // exactly instead of the preset's generic haze tint.
   builder.add(
     looks.preset(spec.look as Parameters<typeof looks.preset>[0], {
       fogDensityScale: 0,
       background: skyColor
     })
   );
+  // Light depth haze: dissolves the course edge into the sky and gives the
+  // conifer line aerial perspective without graying the foreground.
+  builder.add(effects.fog({ color: skyColor, density: 0.0075 }));
+  // Grounding for Pip, pickups, and the course props (legacy-post safe).
+  builder.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
   if (spec.ambientFx === "embers" || spec.ambientFx === "stars") {
     builder.add(effects.bloom({ intensity: 0.28 }));
   }
   if (spec.ambientFx === "snow") builder.add(effects.snow({}));
 
-  // Backdrop GLBs — far dressing, non-colliding.
-  for (const b of spec.backdrops) {
-    const ref = assets.backdrop[b.asset];
-    builder.add(
-      model(ref, { name: `backdrop:${spec.id}:${b.asset}`, castShadow: false, receiveShadow: false })
-        .position(b.x, b.y, b.z)
-        .rotate(0, b.yaw ?? 0, 0)
-        .scale(b.scale)
-    );
-  }
+  // NOTE: the Kenney "world" backdrop GLBs ship with kit-space bounds that
+  // scale into enormous near-field slabs (the floating moss patch in the
+  // previous build). The fog + tree line now own the horizon, so those
+  // backdrops are intentionally not mounted.
 
   // Platforms.
   const solids: SolidBox[] = [];
@@ -426,7 +472,12 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
   );
 
   // Decor + NPCs.
-  for (const d of spec.decor) for (const node of decorNodes(d)) builder.add(node);
+  const cameraObstacles: CameraObstacle[] = [];
+  for (const d of spec.decor) {
+    const obstacle = cameraObstacleFor(d);
+    if (obstacle) cameraObstacles.push(obstacle);
+    for (const node of decorNodes(d)) builder.add(node);
+  }
   for (const n of spec.npcs) {
     const ref = n.who === "sidekick" ? assets.sidekick : assets.helper;
     const clip = n.clip ?? "idle";
@@ -493,6 +544,7 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
     seeds: spec.seeds, acorns: spec.acorns, hearts: spec.hearts,
     springs: spec.springs, checkpoints: spec.checkpoints,
     spinNodes, movingSolids: moving, timedSolids: timed,
+    cameraObstacles,
     bossArenaZ: spec.boss ? -69 : null
   };
 }

@@ -41,15 +41,28 @@
         left: 14px;
         right: 14px;
         z-index: 55;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 6px 10px;
-        padding: 5px 10px;
+        display: grid;
+        gap: 5px;
+        padding: 7px 12px 6px;
         border-radius: 10px;
-        background: rgba(8, 10, 16, 0.78);
+        background: rgba(8, 10, 16, 0.82);
         border: 1px solid rgba(255, 215, 106, 0.22);
         backdrop-filter: blur(8px);
+      }
+      .ic-row { display: flex; align-items: center; gap: 8px 12px; min-width: 0; flex-wrap: wrap; }
+      .ic-row-primary { justify-content: space-between; }
+      .ic-row-select {
+        justify-content: space-between;
+        padding-top: 5px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .ic-picker { display: flex; align-items: center; gap: 7px; min-width: 0; flex-wrap: wrap; }
+      .ic-group-label {
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        color: #8f97af;
+        text-transform: uppercase;
       }
       .ic-badge {
         font-weight: 600;
@@ -82,7 +95,7 @@
         border-color: var(--ic-gold);
         color: #fff;
       }
-      .ic-venues { display: flex; flex-wrap: wrap; gap: 4px; margin-left: auto; }
+      .ic-venues { display: flex; flex-wrap: wrap; gap: 4px; }
       .ic-venues button, .ic-fighters button {
         font-family: inherit;
         font-weight: 500;
@@ -138,37 +151,50 @@
       }
       #render-error.on { display: grid; }
       @media (max-width: 720px) {
-        .ic-topbar { top: 6px; left: 8px; right: 8px; padding: 4px 8px; }
+        .ic-topbar { top: 6px; left: 8px; right: 8px; padding: 4px 8px; gap: 4px; }
+        .ic-row { gap: 5px 8px; }
+        .ic-group-label { display: none; }
+        .ic-row-select { padding-top: 4px; }
       }
     </style>
   </head>
   <body>
     <div class="ic-topbar">
-      <span class="ic-badge">Iron Crown · Aura3D Showcase</span>
-      <nav class="ic-modes" id="ic-modes" aria-label="Game modes">
-        <button type="button" data-mode="quick" aria-pressed="true">Quick Bout</button>
-        <button type="button" data-mode="lab" aria-pressed="false">Combo Lab</button>
-        <button type="button" data-mode="ladder" aria-pressed="false">Crown Ladder</button>
-        <button type="button" data-mode="versus" aria-pressed="false">Versus</button>
-        <button type="button" data-mode="studio" aria-pressed="false">Player Studio</button>
-        <button type="button" id="ic-autopilot" aria-pressed="false" title="AI autopilot demo (yields on first key press)">Auto</button>
-      </nav>
-      <nav class="ic-fighters" id="ic-fighters" aria-label="Fighter select">
-        <button type="button" data-fighter="kenji" aria-pressed="true">Kenji</button>
-        <button type="button" data-fighter="volt" aria-pressed="false">Volt</button>
-        <button type="button" data-fighter="boulder" aria-pressed="false">Boulder</button>
-        <button type="button" data-fighter="seraph" aria-pressed="false">Seraph</button>
-        <button type="button" data-fighter="jinx" aria-pressed="false">Jinx</button>
-        <button type="button" data-fighter="sovereign" aria-pressed="false">Sovereign</button>
-      </nav>
-      <nav class="ic-venues" id="ic-venues" aria-label="Stage select">
-        <button type="button" data-stage="neo-tokyo-rooftop">Neo-Tokyo</button>
-        <button type="button" data-stage="bangkok-dock">Bangkok</button>
-        <button type="button" data-stage="colosseum-ruins">Colosseum</button>
-        <button type="button" data-stage="desert-airbase">Airbase</button>
-        <button type="button" data-stage="himalayan-monastery">Monastery</button>
-        <button type="button" data-stage="crown-arena" aria-pressed="true">Crown Arena</button>
-      </nav>
+      <div class="ic-row ic-row-primary">
+        <span class="ic-badge">Iron Crown · Aura3D Showcase</span>
+        <nav class="ic-modes" id="ic-modes" aria-label="Game modes">
+          <button type="button" data-mode="quick" aria-pressed="true">Quick Bout</button>
+          <button type="button" data-mode="lab" aria-pressed="false">Combo Lab</button>
+          <button type="button" data-mode="ladder" aria-pressed="false">Crown Ladder</button>
+          <button type="button" data-mode="versus" aria-pressed="false">Versus</button>
+          <button type="button" data-mode="studio" aria-pressed="false">Player Studio</button>
+          <button type="button" id="ic-autopilot" aria-pressed="false" title="AI autopilot demo (yields on first key press)">Auto</button>
+        </nav>
+      </div>
+      <div class="ic-row ic-row-select">
+        <div class="ic-picker">
+          <span class="ic-group-label">Fighter</span>
+          <nav class="ic-fighters" id="ic-fighters" aria-label="Fighter select">
+            <button type="button" data-fighter="kenji" aria-pressed="true">Kenji</button>
+            <button type="button" data-fighter="volt" aria-pressed="false">Volt</button>
+            <button type="button" data-fighter="boulder" aria-pressed="false">Boulder</button>
+            <button type="button" data-fighter="seraph" aria-pressed="false">Seraph</button>
+            <button type="button" data-fighter="jinx" aria-pressed="false">Jinx</button>
+            <button type="button" data-fighter="sovereign" aria-pressed="false">Sovereign</button>
+          </nav>
+        </div>
+        <div class="ic-picker">
+          <span class="ic-group-label">Venue</span>
+          <nav class="ic-venues" id="ic-venues" aria-label="Stage select">
+            <button type="button" data-stage="neo-tokyo-rooftop">Neo-Tokyo</button>
+            <button type="button" data-stage="bangkok-dock">Bangkok</button>
+            <button type="button" data-stage="colosseum-ruins">Colosseum</button>
+            <button type="button" data-stage="desert-airbase">Airbase</button>
+            <button type="button" data-stage="himalayan-monastery">Monastery</button>
+            <button type="button" data-stage="crown-arena" aria-pressed="true">Crown Arena</button>
+          </nav>
+        </div>
+      </div>
     </div>
 
     <main>
@@ -179,20 +205,25 @@
         <div id="fight-hud" aria-live="polite">
           <div class="fh-top">
             <section class="fh-plate fh-plate-p1">
-              <div class="fh-name" id="fh-name-p1">KENJI</div>
+              <div class="fh-name-row">
+                <div class="fh-name" id="fh-name-p1">KENJI</div>
+                <div class="fh-pips" id="fh-pips-p1"><i></i><i></i></div>
+              </div>
               <div class="fh-health"><div class="fh-health-fill" id="fh-health-p1"></div><div class="fh-health-chip" id="fh-health-chip-p1"></div></div>
-              <div class="fh-meter"><div class="fh-meter-fill" id="fh-meter-p1"></div><span class="fh-meter-txt" id="fh-meter-txt-p1"></span></div>
-              <div class="fh-pips" id="fh-pips-p1"><i></i><i></i></div>
+              <div class="fh-meter"><div class="fh-meter-fill" id="fh-meter-p1"></div><span class="fh-meter-tag">SUPER</span><span class="fh-meter-txt" id="fh-meter-txt-p1"></span></div>
             </section>
             <section class="fh-clock">
-              <div class="fh-timer" id="fh-timer">60</div>
               <div class="fh-round" id="fh-round">ROUND 1</div>
+              <div class="fh-timer" id="fh-timer">60</div>
+              <div class="fh-clock-label">CLOCK</div>
             </section>
             <section class="fh-plate fh-plate-p2">
-              <div class="fh-name" id="fh-name-p2">RIVAL</div>
+              <div class="fh-name-row">
+                <div class="fh-name" id="fh-name-p2">RIVAL</div>
+                <div class="fh-pips fh-pips-right" id="fh-pips-p2"><i></i><i></i></div>
+              </div>
               <div class="fh-health fh-health-right"><div class="fh-health-fill" id="fh-health-p2"></div><div class="fh-health-chip" id="fh-health-chip-p2"></div></div>
-              <div class="fh-meter fh-meter-right"><div class="fh-meter-fill" id="fh-meter-p2"></div><span class="fh-meter-txt" id="fh-meter-txt-p2"></span></div>
-              <div class="fh-pips fh-pips-right" id="fh-pips-p2"><i></i><i></i></div>
+              <div class="fh-meter fh-meter-right"><div class="fh-meter-fill" id="fh-meter-p2"></div><span class="fh-meter-tag">SUPER</span><span class="fh-meter-txt" id="fh-meter-txt-p2"></span></div>
             </section>
           </div>
 

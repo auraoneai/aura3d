@@ -1,7 +1,7 @@
 # IRON CROWN — 2.5D Arena Fighter
 
-A complete, playable browser fighting game built on the public Aura3D 4.0.1
-game runtime — the melee entry the 4.0.1 showcase lineup was missing.
+A complete, playable browser fighting game built on the public Aura3D 4.0.2
+game runtime — the melee entry the 4.0.2 showcase lineup was missing.
 
 - **Route:** `/apps/showcase-iron-crown/`
 - **Evidence global:** `window.__AURA3D_SHOWCASE_IRON_CROWN__`
@@ -117,7 +117,7 @@ three.js, GLTFLoader, or hand-rolled GL.
 ## API gaps and workarounds (honest notes)
 
 - **PRD names ≠ installed API.** The PRD's `FightingCharacterController` and
-  `HitboxWorld` are not exported by 4.0.1; the public surface is
+  `HitboxWorld` are not exported by 4.0.2; the public surface is
   `game.kinematicBody` + `game.combatWorld`, which this app uses.
 - **Unsigned hitboxes.** `resolveAttack` mirrors hitbox X offsets by
   `attacker.facing` and multiplies knockback by facing, so all hitbox

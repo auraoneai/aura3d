@@ -1,6 +1,6 @@
 /** Cross Hop core: scene builder, pooled visuals, run simulation. */
 import {
-  game, looks, lights, model, scene, camera, instances,
+  game, looks, lights, effects, model, scene, camera, instances,
   primitives, material, type AuraApp
 } from "@aura3d/engine";
 import { assets } from "../aura-assets";
@@ -17,7 +17,7 @@ const CAP = {
   car: 22, hatch: 22, suv: 22, taxi: 22, van: 22, pickup: 22,
   truck: 18, tram: 12, train: 6, hover: 26,
   log: 48, pad: 48, stone: 48, coin: 26,
-  trunk: 64, canopy: 64, dressB: 90
+  trunk: 200, canopy: 140, dressB: 150
 } as const;
 
 export type Mode = "title" | "run" | "dead";
@@ -64,6 +64,10 @@ const COLORS = {
   coin: "#ffd94a", pod: "#ff9ed2", carBody: "#e05555", water: "#3f8fd2",
   glow: "#ff8a3d", railSignal: "#ff3355"
 };
+
+/** Matte warm grade shared by the player, hawk, and spectator critters so the
+ *  Meshy animals sit in the same flat storybook palette as the lanes. */
+const CRITTER_MAT = material.pbr({ color: "#fff1df", roughness: 0.93, metalness: 0 });
 
 // ---------------- game state ----------------
 export interface GameState {
@@ -123,6 +127,22 @@ const HAWK_WARN = 3.0, HAWK_KILL = 5.2;
  * - Lava stone: center y = 0.06, sy = 0.20 -> top = 0.16
  */
 const CRITTER_FOOT_OFFSET = 0.05;
+
+/** Tighter chase rig: closer/lower lens and a wider FOV so the critter,
+ *  near lane edges, and the horizon all share the frame. */
+const CAM = {
+  y: 3.85,
+  back: 5.3,
+  targetY: 0.55,
+  ahead: 4.4,
+  fov: 50,
+  followX: 0.42,
+  targetX: 0.36
+} as const;
+
+/** Coins sit inside a single lane tile instead of hovering at critter height. */
+const COIN_HEIGHT = 0.46;
+const COIN_LIFT = 0.26;
 
 function surfaceTopY(l: Lane): number {
   if (l.type === "river") return l.moverKind === "log" ? 0.22 : 0.12;
@@ -244,7 +264,10 @@ function buildLookGroup(th: (typeof THEMES)[number]) {
         };
       }
       return child;
-    });
+    })
+    // Theme-matched haze (not the preset's generic fog) so the far lanes and
+    // horizon melt together without bleaching the critters or signage.
+    .concat([effects.fog({ name: "cross-hop depth haze", color: th.palette.horizon, density: 0.0055 }).toJSON()]);
   return {
     ...group,
     background: th.palette.sky,
@@ -283,8 +306,21 @@ export function buildScene(): unknown {
   const s = scene()
     .background(th0.palette.sky)
     .add(buildLookGroup(th0))
+    // Soft grounding for critters, coins, and traffic (legacy-post safe).
+    .add(effects.contactShadows({ intensity: 0.7, length: 0.3 }))
+    // Gentle neon life on coins/pods without blowing out the flat world.
+    .add(effects.bloom({ intensity: 0.16, threshold: 0.86, radius: 0.3 }))
+    .add(effects.vignette({ intensity: 0.16, smoothness: 0.65 }))
     .add(lights.ambient({ color: "#dce8f5", intensity: 0.42 }))
-    .camera(camera.perspective({ position: [0, 5.4, 6.4], target: [0, 0.45, -3.2], fov: 46 }));
+    // Warm sun key from camera-left + cool rim from the far horizon give the
+    // flat diorama depth and unify the textured critters with the lanes.
+    .add(lights.directional({ position: [-9, 10, 9], target: [0, 0, -4], color: "#ffd8a6", intensity: 0.78 }))
+    .add(lights.directional({ position: [7, 7, -15], target: [0, 0, -2], color: "#8fc8ff", intensity: 0.46 }))
+    .camera(camera.perspective({
+      position: [0, CAM.y, CAM.back],
+      target: [0, CAM.targetY, -CAM.ahead],
+      fov: CAM.fov
+    }));
 
   const groundMat = material.pbr({ color: "#ffffff", roughness: 0.88, metalness: 0.04 });
   const detailMat = material.pbr({ color: "#ffffff", roughness: 0.78, metalness: 0.06 });
@@ -292,6 +328,41 @@ export function buildScene(): unknown {
   const pad = (n: number) => Array.from({ length: n }, () => ({ position: [0, -999, 0] as [number, number, number], scale: [0.001, 0.001, 0.001] as [number, number, number] }));
 
   s.addMany([
+    // A wide meadow/ground plane beneath the lane strips so the course reads
+    // as one landscape rather than separate floating bands. Theme re-tints it.
+    primitives.plane({
+      name: "world-floor",
+      size: [1, 1, 1],
+      material: material.pbr({ color: th0.palette.dressingA, roughness: 0.96, metalness: 0 }),
+      castShadow: false,
+      receiveShadow: true
+    }).position(0, -0.16, -20).rotate(-Math.PI / 2, 0, 0).scale([220, 220, 1]).runtime(game.runtimeNode("world-floor")),
+    // two-plane sky: deep zenith above a lighter horizon band
+    primitives.box({
+      name: "sky-backdrop",
+      size: [220, 80, 1],
+      material: material.pbr({ color: th0.palette.sky, emissive: th0.palette.sky, emissiveIntensity: 0.45, roughness: 0.96, metalness: 0 }),
+      castShadow: false,
+      receiveShadow: false
+    })
+      .position(0, 22, -56)
+      .runtime(game.runtimeNode("skirt")),
+    primitives.box({
+      name: "sky-horizon",
+      size: [220, 22, 1],
+      material: material.pbr({ color: th0.palette.horizon, emissive: th0.palette.horizon, emissiveIntensity: 0.4, roughness: 0.96, metalness: 0 }),
+      castShadow: false,
+      receiveShadow: false
+    })
+      .position(0, 4, -54)
+      .runtime(game.runtimeNode("skirt-horizon")),
+    primitives.sphere({
+      name: "sun-disc",
+      size: [3.2, 3.2, 3.2],
+      material: material.emissive({ color: "#5a3f1f", emissive: "#ffd89a", emissiveIntensity: 1.15, roughness: 0.5 }),
+      castShadow: false,
+      receiveShadow: false
+    }).position(-17, 6.4, -46).runtime(game.runtimeNode("sun")),
     instances.box({ name: "lane-ground", size: [1, 1, 1], material: groundMat, transforms: pad(CAP.ground), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-ground")),
     instances.box({ name: "lane-detail", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.detail), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-detail")),
     instances.box({ name: "lane-glow", size: [1, 1, 1], material: glowMat, transforms: pad(CAP.glow), castShadow: false }).runtime(game.runtimeNode("pool-glow")),
@@ -309,15 +380,15 @@ export function buildScene(): unknown {
     instances.box({ name: "m-logs", size: [1, 1, 1], material: material.pbr({ color: "#8b5a2b", roughness: 0.88 }), transforms: pad(CAP.log), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-log")),
     instances.cylinder({ name: "m-pads", size: [1, 1, 1], material: material.pbr({ color: "#4f9e4f", roughness: 0.8 }), transforms: pad(CAP.pad), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-pad")),
     instances.cylinder({ name: "m-stones", size: [1, 1, 1], material: material.pbr({ color: "#4b4b55", roughness: 0.85 }), transforms: pad(CAP.stone), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-stone")),
-    instances.model(assets.coin, { name: "m-coins", transforms: pad(CAP.coin), targetHeight: 0.72 }).runtime(game.runtimeNode("pool-coin")),
+    instances.model(assets.coin, { name: "m-coins", transforms: pad(CAP.coin), targetHeight: COIN_HEIGHT }).runtime(game.runtimeNode("pool-coin")),
     instances.cylinder({ name: "d-trunks", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.trunk) }).runtime(game.runtimeNode("pool-trunk")),
     instances.sphere({ name: "d-canopy", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.canopy) }).runtime(game.runtimeNode("pool-canopy")),
     instances.box({ name: "d-b", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.dressB) }).runtime(game.runtimeNode("pool-dressb")),
-    model(assets.hop, { name: "player", targetHeight: 1.05, castShadow: true })
+    model(assets.hop, { name: "player", targetHeight: 1.05, castShadow: true, material: CRITTER_MAT })
       .position(0, 0.17, 0).rotate(0, Math.PI, 0)
       .animate({ clip: "Idle", loop: true })
       .runtime(game.runtimeNode("player")),
-    model(assets.hawk, { name: "hawk", targetHeight: 1.35, castShadow: true })
+    model(assets.hawk, { name: "hawk", targetHeight: 1.35, castShadow: true, material: CRITTER_MAT })
       .position(0, -999, 0)
       .runtime(game.runtimeNode("hawk")),
     model(assets.rescuePod, { name: "pod", targetHeight: 1.15, castShadow: true })
@@ -325,21 +396,12 @@ export function buildScene(): unknown {
       .runtime(game.runtimeNode("pod")),
     // 3D Meshy spectator critters cheering along the outer meadow banks!
     ...SPECTATOR_CRITTERS.map((key, idx) =>
-      model(assets[key], { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true })
-        .position((idx % 2 === 0 ? -1 : 1) * (7.8 + (idx % 3) * 1.1), 0.12, -idx * 2.2)
+      model(assets[key], { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true, material: CRITTER_MAT })
+        .position((idx % 2 === 0 ? -1 : 1) * (13.8 + (idx % 3) * 1.1), 0.12, -idx * 2.2)
         .rotate(0, idx % 2 === 0 ? Math.PI * 0.45 : -Math.PI * 0.45, 0)
         .animate({ clip: "Idle", loop: true })
         .runtime(game.runtimeNode(`spectator-${idx}`))
-    ),
-    primitives.box({
-      name: "sky-backdrop",
-      size: [180, 65, 1],
-      material: material.pbr({ color: th0.palette.sky, emissive: th0.palette.sky, emissiveIntensity: 0.32, roughness: 0.96, metalness: 0 }),
-      castShadow: false,
-      receiveShadow: false
-    })
-      .position(0, 14, -33)
-      .runtime(game.runtimeNode("skirt"))
+    )
   ]);
   return s.toJSON();
 }
@@ -440,10 +502,12 @@ function tryHop(dir: string): void {
   if (dir === "fwd" && targetLane.type === "rail") {
     const nNow = laneMovers(targetLane, st.time + HOP_DUR, XS);
     const nSoon = laneMovers(targetLane, st.time + HOP_DUR + 1.2, XS);
-    let railBusy = railWarning(targetLane, st.time);
+    let railBusy = railWarning(targetLane, st.time) > 0;
     for (let i = 0; i < nNow; i++) if (Math.abs(XS[i] - nc * COL_W) < moverHalf(targetLane) + 1.8) railBusy = true;
     for (let i = 0; i < nSoon; i++) if (Math.abs(XS[i] - nc * COL_W) < moverHalf(targetLane) + 1.8) railBusy = true;
-    if (railBusy && lane(nr + 1).type === "grass") {
+    // Type-only compatibility with the legacy "grass" spelling; the lane
+    // vocabulary is "meadow" now, so this branch stays inert as before.
+    if (railBusy && (lane(nr + 1).type as string) === "grass") {
       nr += 1;
       targetLane = lane(nr);
     }
@@ -578,22 +642,41 @@ function swapLook(ti: number): void {
   if (!app) return;
   const th = THEMES[ti];
   try {
-    const n0 = app.nodes as unknown as { remove(id: string): void; add(n: never): void };
+    const n0 = app.nodes as unknown as { remove(id: string): void; add(n: never): void; require(id: string): { setMaterial?(m: unknown): void; setVisible?(v: boolean): void } };
     n0.remove("look");
     n0.add(buildLookGroup(th) as never);
     n0.remove("skirt");
     n0.add(
       primitives.box({
         name: "sky-backdrop",
-        size: [180, 65, 1],
-        material: material.pbr({ color: th.palette.sky, emissive: th.palette.sky, emissiveIntensity: 0.32, roughness: 0.96, metalness: 0 }),
+        size: [220, 80, 1],
+        material: material.pbr({ color: th.palette.sky, emissive: th.palette.sky, emissiveIntensity: 0.45, roughness: 0.96, metalness: 0 }),
         castShadow: false,
         receiveShadow: false
       })
-        .position(st.playerCol * COL_W * 0.4, 14, laneZ(st.playerRow) - 32)
+        .position(st.playerCol * COL_W * 0.4, 22, laneZ(st.playerRow) - 56)
         .runtime(game.runtimeNode("skirt"))
         .toJSON() as never
     );
+    n0.remove("skirt-horizon");
+    n0.add(
+      primitives.box({
+        name: "sky-horizon",
+        size: [220, 22, 1],
+        material: material.pbr({ color: th.palette.horizon, emissive: th.palette.horizon, emissiveIntensity: 0.4, roughness: 0.96, metalness: 0 }),
+        castShadow: false,
+        receiveShadow: false
+      })
+        .position(st.playerCol * COL_W * 0.4, 4, laneZ(st.playerRow) - 54)
+        .runtime(game.runtimeNode("skirt-horizon"))
+        .toJSON() as never
+    );
+    // Re-tint the landscape and hide the sun disc in indoor/night themes.
+    const terrain = th.dress === "trees" || th.dress === "reeds" || th.dress === "candy"
+      ? th.palette.dressingA
+      : th.palette.dressingB;
+    n0.require("world-floor")?.setMaterial?.(material.pbr({ color: terrain, roughness: 0.96, metalness: 0 }));
+    n0.require("sun")?.setVisible?.(th.dress === "trees" || th.dress === "reeds" || th.dress === "candy");
     try { (app as unknown as { lighting?: { setEnvironmentIntensity?(n:number):void } }).lighting?.setEnvironmentIntensity?.(0.58); } catch { /* no-op */ }
     LOOK_HOLD.add(ti);
   } catch { /* look swap best-effort */ }
@@ -633,7 +716,7 @@ export function syncVisuals(dt: number): void {
         const pool = kind === "car" ? CAR_POOLS[(r * 3 + i) % CAR_POOLS.length]! : VEHICLE_POOL[kind]!;
         const roadTopY = l.type === "rail" ? 0.13 : l.type === "tram" ? 0.128 : 0.12;
         const lift = kind === "hover" ? 0.32 : 0;
-        const tint = pool === "truck" ? TRUCK_TINTS[(r + i) % TRUCK_TINTS.length]! : "#edf2f7";
+        const tint = pool === "truck" ? TRUCK_TINTS[(r + i) % TRUCK_TINTS.length]! : "#f4ead9";
         inst(pool, x, roadTopY + lift, z, 1, 1, 1, tint, ry);
       }
     }
@@ -643,8 +726,8 @@ export function syncVisuals(dt: number): void {
   for (let r = lo; r <= hi; r++) {
     const l = lane(r);
     if (l.hasCoin && !st.coinTaken.has(r)) {
-      const coinBase = surfaceTopY(l) + 0.34;
-      inst("coin", l.coinCol * COL_W, coinBase + Math.sin(st.time * 3 + r) * 0.06, laneZ(r), 1, 1, 1, COLORS.coin, st.time * 1.6);
+      const coinBase = surfaceTopY(l) + COIN_LIFT;
+      inst("coin", l.coinCol * COL_W, coinBase + Math.sin(st.time * 3 + r) * 0.035, laneZ(r), 1, 1, 1, COLORS.coin, st.time * 1.6);
     }
   }
 
@@ -691,7 +774,7 @@ export function syncVisuals(dt: number): void {
     if (!sp) continue;
     const specRow = baseRow + idx * 2;
     const side = idx % 2 === 0 ? -1 : 1;
-    const sx = side * (7.8 + (idx % 3) * 1.15);
+    const sx = side * (13.8 + (idx % 3) * 1.15);
     const sz = laneZ(specRow);
     const specTopY = surfaceTopY(lane(specRow));
     const cheerBob = Math.abs(Math.sin(st.time * 5.2 + idx * 1.1)) * 0.22;
@@ -699,10 +782,17 @@ export function syncVisuals(dt: number): void {
     sp.setRotation(0, side < 0 ? Math.PI * 0.42 : -Math.PI * 0.42, 0);
   }
 
-  // keep sky backdrop positioned behind the far lane horizon so the top of the frame is never pitch-black
+  // Keep the two-plane sky, sun, and landscape under the course anchored to
+  // the run so the horizon never falls out of frame.
   try {
-    const sk = nodes.get("skirt");
-    if (sk) sk.setPosition(px * 0.4, 14, pz - 32);
+    const sky = nodes.get("skirt");
+    if (sky) sky.setPosition(px * 0.4, 22, pz - 56);
+    const horizon = nodes.get("skirt-horizon");
+    if (horizon) horizon.setPosition(px * 0.4, 4, pz - 54);
+    const sun = nodes.get("sun");
+    if (sun) sun.setPosition(px * 0.3 - 17, 6.4, pz - 46);
+    const floor = nodes.get("world-floor");
+    if (floor) floor.setPosition(px * 0.3, -0.16, pz - 20);
   } catch { /* no-op */ }
 
   // hawk
@@ -734,12 +824,13 @@ export function syncVisuals(dt: number): void {
     if (!podSet) pod.setVisible(false);
   } catch (e) { nodeOk = false; nodeErr = `hawk/pod: ${String(e).slice(0, 120)}`; }
 
-  // camera — trailing closer so 3D Meshy player, cars, trucks, trains, and critters are prominent
-  const camZ = pz + 6.4, camY = 5.4 + st.playerRow * 0.002;
+  // camera — tighter, lower chase rig: the critter reads larger, lane edges
+  // frame the shot, and the horizon replaces the empty foreground.
+  const camZ = pz + CAM.back, camY = CAM.y + st.playerRow * 0.0012;
   app.camera?.setPose({
-    position: [px * 0.45, camY, camZ],
-    target: [px * 0.4, 0.45, pz - 3.2],
-    fov: 46 + warn * 7
+    position: [px * CAM.followX, camY, camZ],
+    target: [px * CAM.targetX, CAM.targetY, pz - CAM.ahead],
+    fov: CAM.fov + warn * 6
   });
   if (warn > 0.5) app.output?.setOutputOverlay({ vignette: [0.02, 0.02, 0.06, warn * 0.85] });
   else app.output?.setOutputOverlay(st.mode === "dead" ? { fade: [0, 0, 0, 0.25] } : {});
@@ -819,27 +910,50 @@ function paintLane(l: Lane, r: number): void {
 
 function paintDressing(lo: number, hi: number): void {
   const th = THEMES[st.themeIdx];
+  const pal = th.palette;
+  const fenceX = FIELD_HALF + 2.1;
+  const softTheme = th.dress === "trees" || th.dress === "reeds" || th.dress === "candy";
   for (let r = lo; r <= hi; r++) {
     const z = laneZ(r);
     const rndA = Math.abs(Math.sin(r * 12.9898 + st.seed * 0.37)) % 1;
     const rndB = Math.abs(Math.sin(r * 78.233 + st.seed * 0.11)) % 1;
     const side = rndA < 0.5 ? -1 : 1;
-    const off = 8.6 + rndB * 4;
+    // Scenery lives beyond the fence line so it never hides a car, train, or hazard.
+    const off = 15.9 + rndB * 3.2;
     if (th.dress === "trees" || th.dress === "reeds" || th.dress === "candy") {
-      if (rndA < 0.5) {
-        inst("trunk", side * off, 0.7, z, 0.22, 1.4, 0.22, th.palette.dressingB);
-        inst("canopy", side * off, 1.8, z, 1.1, 0.9, 1.1, th.palette.dressingA);
-        inst("trunk", -side * (off + 2.4), 0.7, z, 0.22, 1.4, 0.22, th.palette.dressingB);
-        inst("canopy", -side * (off + 2.4), 1.8, z, 1.1, 0.9, 1.1, th.palette.dressingA);
+      if (rndA < 0.55) {
+        inst("trunk", side * off, 0.7, z, 0.22, 1.4, 0.22, pal.dressingB);
+        inst("canopy", side * off, 1.8, z, 1.1, 0.9, 1.1, pal.dressingA);
+        inst("trunk", -side * (off + 2.4), 0.7, z, 0.22, 1.4, 0.22, pal.dressingB);
+        inst("canopy", -side * (off + 2.4), 1.8, z, 1.1, 0.9, 1.1, pal.dressingA);
       }
     } else if (th.dress === "city" || th.dress === "neon") {
       const h = 2.2 + rndB * 3.4;
-      inst("dressB", side * (off + 2), h / 2, z, 1.8, h, 1.8, th.palette.dressingB);
-      if (th.dress === "neon" && rndB < 0.4) inst("glow", side * (off + 2) - 0.95, h / 2, z, 0.06, h * 0.5, 0.4, th.palette.accent);
-      inst("dressB", -side * (off + 4.5), (h * 0.7) / 2, z, 2.2, h * 0.7, 2.2, th.palette.dressingA);
+      inst("dressB", side * (off + 2), h / 2, z, 1.8, h, 1.8, pal.dressingB);
+      if (th.dress === "neon" && rndB < 0.4) inst("glow", side * (off + 2) - 0.95, h / 2, z, 0.06, h * 0.5, 0.4, pal.accent);
+      inst("dressB", -side * (off + 4.5), (h * 0.7) / 2, z, 2.2, h * 0.7, 2.2, pal.dressingA);
     } else if (th.dress === "basalt") {
-      inst("dressB", side * off, 0.5 + rndB, z, 0.9, 1 + rndB * 2, 0.9, th.palette.dressingB);
+      inst("dressB", side * off, 0.5 + rndB, z, 0.9, 1 + rndB * 2, 0.9, pal.dressingB);
       if (rndA < 0.3) inst("glow", -side * (off + 1.5), 0.3, z, 0.3, 0.3, 0.3, "#ff5a1f");
+    }
+
+    // Low split-rail fence just outside the traffic envelope: frames the
+    // playfield in the foreground without crossing any lane.
+    if (r % 2 === 0) {
+      for (const sdd of [-1, 1] as const) {
+        inst("trunk", sdd * fenceX, 0.35, z, 0.12, 0.7, 0.12, pal.dressingB);
+        inst("dressB", sdd * fenceX, 0.54, z - LANE_D * 0.55, 0.07, 0.07, LANE_D * 1.15, pal.shoulder);
+      }
+    }
+    // Grass tufts / low shrubs soften the fence line and the empty verge.
+    if (rndA < 0.8) {
+      const tw = 0.34 + rndB * 0.24;
+      inst("canopy", (r % 2 === 0 ? -1 : 1) * (fenceX + 0.9 + rndB * 0.8), 0.14 + tw * 0.4, z, tw, tw * 0.6, tw, softTheme ? pal.meadow : pal.dressingA);
+    }
+    // Occasional roadside sign gives midground scale and a pop of accent.
+    if (r % 12 === 5) {
+      inst("trunk", side * (fenceX + 0.55), 0.62, z, 0.1, 1.24, 0.1, pal.dressingB);
+      inst("dressB", side * (fenceX + 0.55), 1.28, z, 1.35, 0.55, 0.08, pal.accent);
     }
   }
 }
@@ -856,7 +970,7 @@ export function swapCritter(c: CritterDef): void {
     const py = playerBaseY(lane(st.playerRow));
     n0.remove("player");
     n0.add(
-      model(assets[c.asset], { name: "player", targetHeight: 1.05, castShadow: true })
+      model(assets[c.asset], { name: "player", targetHeight: 1.05, castShadow: true, material: CRITTER_MAT })
         .position(st.playerCol * COL_W, py, pz).rotate(0, Math.PI, 0)
         .animate({ clip: "Idle", loop: true })
         .runtime(game.runtimeNode("player"))

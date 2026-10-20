@@ -556,12 +556,22 @@ function buildFieldNodes(park: ParkSpec): any[] {
     );
   }
 
-  // On-deck circles + dugout rails
+  // On-deck rings + side dugouts. Keep the circles as painted chalk outlines
+  // (a filled disc read as an oversized white target in the foreground) and
+  // push the dugout boxes to the side touchlines so they frame instead of
+  // blocking the lower third of the broadcast camera.
+  const ondeckMat = material.pbr({ color: "#eee6d2", roughness: 1, opacity: 0.5 });
   nodes.push(
-    primitives.cylinder({ name: "ondeck-l", size: [1.5, 0.02, 1.5], material: chalkMat() }).position(-6.4, 0.04, 2.6),
-    primitives.cylinder({ name: "ondeck-r", size: [1.5, 0.02, 1.5], material: chalkMat() }).position(6.4, 0.04, 2.6),
-    model(assets.diamondDugout, { name: "dugout-l", targetHeight: 2.4, role: "setDressing", scaleMode: "fit" }).position(-11, 0, 4.6).rotate(0, Math.PI, 0),
-    model(assets.diamondDugout, { name: "dugout-r", targetHeight: 2.4, role: "setDressing", scaleMode: "fit" }).position(11, 0, 4.6)
+    primitives.torus({ name: "ondeck-l", size: [1.5, 1.5, 0.26], material: ondeckMat }).position(-7.1, 0.028, 2.2).rotate(Math.PI / 2, 0, 0),
+    primitives.torus({ name: "ondeck-r", size: [1.5, 1.5, 0.26], material: ondeckMat }).position(7.1, 0.028, 2.2).rotate(Math.PI / 2, 0, 0),
+    model(assets.diamondDugout, {
+      name: "dugout-l", targetHeight: 2.0, role: "setDressing", scaleMode: "fit",
+      materialOverrides: [{ color: "#4b5259", colorMode: "replace", replaceTextures: true, roughness: 0.82, metallic: 0.08 }]
+    }).position(-28, 0, -6).rotate(0, Math.PI / 2, 0),
+    model(assets.diamondDugout, {
+      name: "dugout-r", targetHeight: 2.0, role: "setDressing", scaleMode: "fit",
+      materialOverrides: [{ color: "#4b5259", colorMode: "replace", replaceTextures: true, roughness: 0.82, metallic: 0.08 }]
+    }).position(28, 0, -6).rotate(0, -Math.PI / 2, 0)
   );
 
   return nodes;
@@ -673,16 +683,21 @@ function buildStandsNodes(park: ParkSpec): any[] {
 
 function buildParkExtras(park: ParkSpec): any[] {
   const nodes: any[] = [];
+  // Photoreal rock GLBs carry warm AI textures that fight the flat-shaded
+  // players. Knock them back to a restrained desert palette and reduce their
+  // silhouettes so the field stays the subject.
+  const rockOverride = [{ color: "#745845", colorMode: "replace" as const, replaceTextures: true, roughness: 0.96, metallic: 0 }];
+  const rockOverrideAlt = [{ color: "#82644e", colorMode: "replace" as const, replaceTextures: true, roughness: 0.94, metallic: 0 }];
   switch (park.id) {
     case "sandlot": {
       nodes.push(
         model(assets.diamondHarborPier, { name: "harbor-pier", targetHeight: 8, role: "setDressing", scaleMode: "fit" }).position(60, -0.3, -118).rotate(0, 0.3, 0),
         primitives.plane({ name: "harbor-water", size: [220, 60] as any, material: material.pbr({ color: "#2e5d7a", roughness: 0.35, metalness: 0.3 }) }).position(60, -0.4, -135),
         model(assets.diamondTower, { name: "sandlot-windmill", targetHeight: 13, role: "setDressing", scaleMode: "fit" }).position(-42, 0, -72).rotate(0, 0.6, 0),
-        model(assets.diamondCanyonArch, { name: "sandlot-tower", targetHeight: 12, role: "setDressing", scaleMode: "fit" }).position(48, 0, -58).rotate(0, -0.4, 0),
-        model(assets.diamondRock, { name: "pine-a", targetHeight: 9, role: "setDressing", scaleMode: "fit" }).position(-34, 0, -82),
-        model(assets.diamondRock, { name: "pine-b", targetHeight: 7.5, role: "setDressing", scaleMode: "fit" }).position(38, 0, -84).rotate(0, 1.2, 0),
-        model(assets.diamondFloodlight, { name: "sandlot-lamp", targetHeight: 5.4, role: "setDressing", scaleMode: "fit" }).position(-14, 0, 16)
+        model(assets.diamondCanyonArch, { name: "sandlot-tower", targetHeight: 12, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(48, 0, -58).rotate(0, -0.4, 0),
+        model(assets.diamondRock, { name: "pine-a", targetHeight: 7, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverride }).position(-34, 0, -82),
+        model(assets.diamondRock, { name: "pine-b", targetHeight: 6.5, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(38, 0, -84).rotate(0, 1.2, 0),
+        model(assets.diamondFloodlight, { name: "sandlot-lamp", targetHeight: 5.4, role: "setDressing", scaleMode: "fit" }).position(-28, 0, -4)
       );
       break;
     }
@@ -715,17 +730,23 @@ function buildParkExtras(park: ParkSpec): any[] {
     }
     case "canyon": {
       const rocks: [any, number, number, number, number][] = [
-        [assets.diamondRock, -55, -92, 16, 0.3],
-        [assets.diamondRock, 52, -98, 20, -0.7],
-        [assets.diamondRock, -78, -55, 9, 1.1],
-        [assets.diamondRock, 80, -50, 8, -0.4],
-        [assets.diamondRock, 0, -142, 26, 0]
+        [assets.diamondRock, -60, -96, 13, 0.3],
+        [assets.diamondRock, 56, -100, 15, -0.7],
+        [assets.diamondRock, -92, -58, 7.5, 1.1],
+        [assets.diamondRock, 94, -54, 6.5, -0.4],
+        [assets.diamondRock, 0, -142, 22, 0]
       ];
       rocks.forEach(([a, x, z, h, r], i) => {
-        nodes.push(model(a as any, { name: `canyon-rock-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, r, 0));
+        nodes.push(model(a as any, {
+          name: `canyon-rock-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit",
+          materialOverrides: i % 2 ? rockOverrideAlt : rockOverride
+        }).position(x, 0, z).rotate(0, r, 0));
       });
-      for (const [tx, tz] of [[-64, -80], [66, -84], [-88, -20], [88, -16]] as const) {
-        nodes.push(model(assets.diamondRock, { name: `canyon-pine-${tx}`, targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz));
+      for (const [tx, tz] of [[-108, -40], [110, -44], [-88, -20], [88, -16]] as const) {
+        nodes.push(model(assets.diamondRock, {
+          name: `canyon-pine-${tx}`, targetHeight: 8.5, role: "setDressing", scaleMode: "fit",
+          materialOverrides: rockOverride
+        }).position(tx, 0, tz));
       }
       break;
     }
@@ -832,7 +853,7 @@ function buildActorsNodes(): any[] {
   // Ball — siegeGolfBall reads as a seamed baseball at 15 cm; shadow + trail
   nodes.push(
     model(assets.diamondBall, { name: "ball", targetHeight: 0.15, role: "setDressing", scaleMode: "fit" }).position(0, -60, 0).runtime(game.runtimeNode("ball")),
-    primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.006, 0.34], material: material.pbr({ color: "#000000", opacity: 0.4, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow")),
+    primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.006, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow")),
     effects.trail({ name: "ball-ribbon", target: "ball", color: "#f5f1e4", width: 0.1, maxPoints: 40, intensity: 0.85 } as any)
   );
 
@@ -862,16 +883,27 @@ function buildActorsNodes(): any[] {
 
 function buildParkScene(park: ParkSpec): any {
   const lookOverrides: Record<string, any> = {
-    sandlot: { fogDensityScale: 0, exposureEv: 0.14 },
-    skyline: { fogDensityScale: 0, exposureEv: 0.12 },
-    canyon: { fogDensityScale: 0, exposureEv: 0.1 },
-    ivy: { fogDensityScale: 0, exposureEv: 0.12 },
-    dome: { fogDensityScale: 0, exposureEv: 0.14 },
-    lunar: { fogDensityScale: 0, exposureEv: 0.16 }
+    sandlot: { fogDensityScale: 0.22, exposureEv: 0.14 },
+    skyline: { fogDensityScale: 0.18, exposureEv: 0.12 },
+    canyon: { fogDensityScale: 0.26, exposureEv: 0.1 },
+    ivy: { fogDensityScale: 0.2, exposureEv: 0.12 },
+    dome: { fogDensityScale: 0.18, exposureEv: 0.14 },
+    lunar: { fogDensityScale: 0.16, exposureEv: 0.16 }
+  };
+  // Match each look's own horizon instead of the old near-black navy slab.
+  const backdrop: Record<ParkId, string> = {
+    sandlot: "#c98a5a",
+    skyline: "#070a12",
+    canyon: "#8f9aa3",
+    ivy: "#9db8cf",
+    dome: "#101216",
+    lunar: "#04070d"
   };
   return scene()
-    .add(looks.preset(park.look as any, lookOverrides[park.id] ?? { fogDensityScale: 0 }))
-    .background(park.id === "lunar" ? "#06080f" : park.id === "skyline" ? "#0b1020" : park.id === "dome" ? "#10141f" : "#111a2b")
+    .add(looks.preset(park.look as any, lookOverrides[park.id] ?? { fogDensityScale: 0.2 }))
+    .background(backdrop[park.id])
+    .add(effects.contactShadows({ intensity: 0.75, length: 0.3 }))
+    .add(effects.vignette({ intensity: 0.16, smoothness: 0.7 }))
     .camera(camera.perspective({ fov: 42, near: 0.2, far: 700, position: [0, 26, 42], target: [0, 0, -14] }))
     .addMany(buildFieldNodes(park))
     .addMany(buildStandsNodes(park))
@@ -1364,14 +1396,16 @@ function boot(): void {
   function renderLinescore(): void {
     const table = el.linescore;
     if (!table) return;
-    const cols = Math.max(G.inningsTotal, G.inning);
+    const cols = Math.max(3, G.inningsTotal, G.inning);
     const head = `<tr><th></th>${Array.from({ length: cols }, (_, i) => `<th>${i + 1}</th>`).join("")}<th>R</th></tr>`;
     const rowFor = (key: "player" | "cpu") => {
       const c = key === "player" ? clubById(G.playerClub) : clubById(G.cpuClub);
       const batting = battingTeamKey() === key && !G.over ? " class=\"batting\"" : "";
       const cells = Array.from({ length: cols }, (_, i) => {
         const v = G.linescore[key][i];
-        return `<td${i === G.inning - 1 && batting ? " class=\"cur\"" : ""}>${v ?? ""}</td>`;
+        // Unplayed innings stay blank in broadcast convention; a spent
+        // scoreless inning is a stored 0 and still reads as 0.
+        return `<td${i === G.inning - 1 && batting ? " class=\"cur\"" : ""}>${v ?? "–"}</td>`;
       }).join("");
       return `<tr${batting}><td class="tname">${c.abbr}</td>${cells}<td class="runs">${G.score[key]}</td></tr>`;
     };
@@ -3498,7 +3532,7 @@ function boot(): void {
     const evidence = {
       route: "showcase-aura-diamond-3d",
       engine: "@aura3d/engine",
-      engineVersion: "4.0.1",
+      engineVersion: "4.0.2",
       ready: appReady && framesRendered > 2,
       framesRendered,
       autopilot: G.autopilot,

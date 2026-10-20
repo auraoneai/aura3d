@@ -62,13 +62,43 @@ export function bigCall(hud: HudRefs, text: string, seconds = 2.1) {
   hud.announce.textContent = text;
 }
 
+const TICK_LIFETIME_MS = 7000;
+
+/** Broadcast phrasing for sim lines; raw "sack — -2 yards" reads like a log. */
+function formatTick(label: string): string {
+  let text = label.trim().replace(/\s+/g, " ");
+  const yardage = text.match(/^(.*?)\s*[—–-]\s*([+-]?\d+)\s*yards?$/i);
+  if (yardage) {
+    const head = yardage[1]!.trim().toUpperCase();
+    const gain = Number(yardage[2]);
+    const amount = `${Math.abs(gain)} YARD${Math.abs(gain) === 1 ? "" : "S"}`;
+    return `${head} — ${amount} ${gain < 0 ? "LOSS" : gain > 0 ? "GAIN" : "NO GAIN"}`;
+  }
+  const completion = text.match(/^complete to\s+(\S+)\s*[—–-]\s*(\d+)\s*yards?$/i);
+  if (completion) return `COMPLETE — ${completion[1]!.toUpperCase()} · ${completion[2]} YARDS`;
+  const dime = text.match(/^dime!\s*(\S+)\s+for\s+(\d+)$/i);
+  if (dime) return `DIME — ${dime[1]!.toUpperCase()} · ${dime[2]} YARDS`;
+  return text.replace(/\s*[—–]\s*/g, " — ").toUpperCase();
+}
+
 export function ticker(hud: HudRefs, label: string, severity: "info" | "success" | "warn" = "info") {
+  const text = formatTick(label);
+  if (text.length === 0) return;
+  const key = `${severity}|${text}`;
+  // Repeat calls (e.g. several "slide tackle" lines in one drive) used to
+  // stack identical rows and never expire. Keep one live row per signature.
+  if (Array.from(hud.ticker.children).some((n) => (n as HTMLElement).dataset.tickKey === key)) return;
   const item = document.createElement("span");
   item.className = `rz-tick rz-tick-${severity}`;
-  item.textContent = label;
+  item.dataset.tickKey = key;
+  item.textContent = text;
   hud.ticker.prepend(item);
-  while (hud.ticker.children.length > 5) hud.ticker.lastElementChild?.remove();
+  while (hud.ticker.children.length > 4) hud.ticker.lastElementChild?.remove();
   requestAnimationFrame(() => item.classList.add("show"));
+  window.setTimeout(() => {
+    item.classList.remove("show");
+    window.setTimeout(() => item.remove(), 300);
+  }, TICK_LIFETIME_MS);
 }
 
 /** Route-diagram mini-SVG for a play card. */

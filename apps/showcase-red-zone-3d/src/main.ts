@@ -97,17 +97,23 @@ const renderError = document.getElementById("render-error") as HTMLElement | nul
 
 function buildScene(): any {
   const s = scene()
+    // Interior-industrial's default backdrop is near-black; a pulled-back
+    // broadcast camera now sees above the far stand, so give that band a cold
+    // night-sky tone and a breath of haze for depth.
+    .background("#0e2030")
     .add(looks.preset(LOOK_ID, { fogDensityScale: 0, exposureEv: 0.0 }))
     .addMany(buildFieldNodes(userClub.colors.primary, cpuClub.colors.primary))
     .addMany(buildStadiumNodes(currentVenue, LITE))
     .addMany(buildPlayNodes());
   for (const id of ATHLETE_IDS) s.addMany(buildAthleteNodes(id, { jersey: "#888", pants: "#333", helmet: "#222", visor: "#aaa", skin: "#8a5f42", ring: "#ffb224" }));
   if (!LITE) {
-    s.add(effects.contactShadows({ intensity: 0.75, length: 0.3 } as any))
-      .add(effects.motionBlur({ intensity: 0.08 } as any));
+    s.add(effects.contactShadows({ intensity: 0.85, length: 0.32 } as any))
+      .add(effects.motionBlur({ intensity: 0.08 } as any))
+      .add(effects.fog({ density: 0.0019, color: "#0e1c26", intensity: 0.06 } as any))
+      .add(effects.vignette({ intensity: 0.14, smoothness: 0.7 } as any));
   }
-  s.add(effects.bloom({ intensity: 0.2, threshold: 0.82 }))
-    .camera(camera.perspective({ position: [0, 14.5, -1.5], target: [0, 2.2, 41], fov: 33 }));
+  s.add(effects.bloom({ intensity: 0.18, threshold: 0.85 }))
+    .camera(camera.perspective({ position: [0, 21, -38], target: [0, 0.8, 44], fov: 43 }));
   return s;
 }
 

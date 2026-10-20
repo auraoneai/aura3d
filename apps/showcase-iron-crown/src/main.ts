@@ -225,10 +225,54 @@ function buildArena(cfg: BoutConfig) {
     .add(createFighterNode("player", cfg.p1, `${cfg.p1.name} (P1)`, PLAYER_START, 1, typedFighterAssets, cfg.p1Tint))
     .add(createFighterNode("rival", cfg.cpu, `${cfg.cpu.name} (CPU)`, RIVAL_START, -1, typedFighterAssets, cfg.cpuTint))
     .addMany([
-      effects.bloom({ intensity: 0.3 }),
-      lights.directional({ name: "iron crown rim", color: s.accent, intensity: 0.75 }).position(0, 4.2, 3)
+      effects.contactShadows({ intensity: 0.75, length: 0.3 }),
+      effects.vignette({ intensity: 0.16, smoothness: 0.65 }),
+      effects.bloom({ intensity: 0.24, threshold: 0.86 }),
+      effects.lightCone({
+        name: "crown key cone left",
+        position: [-6.3, 4.8, -5.5],
+        direction: [0.65, -0.42, 0.63],
+        color: s.palette.warning,
+        intensity: 0.24,
+        length: 8.5,
+        coneAngle: 0.34,
+        softness: 0.6
+      }),
+      effects.lightCone({
+        name: "crown key cone right",
+        position: [6.3, 4.8, -5.5],
+        direction: [-0.65, -0.42, 0.63],
+        color: s.accent,
+        intensity: 0.2,
+        length: 8.5,
+        coneAngle: 0.32,
+        softness: 0.6
+      }),
+      lights.directional({ name: "iron crown rim", color: s.accent, intensity: 0.75 }).position(0, 4.2, 3),
+      lights.spot({
+        name: "crown ring key",
+        position: [-3.9, 5.4, 1.6],
+        target: [0, 0.5, 0],
+        angle: 0.46,
+        penumbra: 0.85,
+        distance: 15,
+        decay: 1.3,
+        intensity: 12,
+        color: s.palette.warning
+      }),
+      lights.spot({
+        name: "crown ring fill",
+        position: [3.9, 5.4, 1.6],
+        target: [0, 0.5, 0],
+        angle: 0.46,
+        penumbra: 0.85,
+        distance: 15,
+        decay: 1.3,
+        intensity: 9,
+        color: s.accent
+      })
     ])
-    .camera(camera.perspective({ position: [0, 1.65, 5.8], target: [0, 0.92, 0], fov: 40 }));
+    .camera(camera.perspective({ position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
 }
 
 const initialConfig: BoutConfig = {
@@ -330,8 +374,8 @@ const director = game.cameraDirector({ reducedMotion });
 
 const baseFightingRig = camera.rigs.fighting({
   fighters: ["player", "rival"],
-  minDistance: 5.2,
-  maxDistance: 7.8,
+  minDistance: 4.9,
+  maxDistance: 7.0,
   fov: 40
 });
 app.camera?.use({
@@ -340,8 +384,8 @@ app.camera?.use({
     const pose = baseFightingRig.update(ctx);
     return {
       ...pose,
-      position: [pose.position[0], pose.position[1] + 0.95, pose.position[2]],
-      target: [pose.target[0], pose.target[1] + 0.92, pose.target[2]]
+      position: [pose.position[0], pose.position[1] + 0.82, pose.position[2] - 0.15],
+      target: [pose.target[0], pose.target[1] + 0.72, pose.target[2]]
     };
   }
 });
