@@ -96,5 +96,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: showcase-filmstrips-${{ env.MODE }}-${{ github.run_id }}
-          path: films-${MODE}/
+          path: films-${{ env.MODE }}/
           retention-days: 30
