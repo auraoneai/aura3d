@@ -430,7 +430,7 @@ export function createModes(deps: {
     const T = clamp(Math.hypot(to[0] - b.x, to[1] - b.z) / 11, 0.7, 1.9);
     b.vx = (to[0] - b.x) / T; b.vz = (to[1] - b.z) / T;
     b.vy = 4.9 * T * 0.7;
-    b.mode = "flight"; b.ownerId = null; b.kickerId = null; b.freeT = 0; b.intendedTargetId = null;
+    b.mode = "flight"; b.ownerId = null; b.kickerId = null; b.freeT = 0; b.intendedTargetId = null; b.rolling = false;
     lab.feedT = 0;
   }
 

@@ -52,7 +52,8 @@ export interface PlayerState {
   slideT: number;                 // >0 while sliding (seconds remaining)
   slideDir: [number, number];     // unit slide direction
   slideCooldown: number;
-  kickT: number;                  // kick animation timer
+  kickT: number;                  // kick animation timer (counts to 0)
+  kickDur: number;                // total duration of the current/last kick swing (s)
   kickPower: number;              // last kick power for anim
   skillT: number;
   skill: SkillKind;
@@ -79,6 +80,10 @@ export interface BallState {
   rotX: number;
   rotZ: number;
   spin: number;                   // sidespin rad/s — curl
+  rolling: boolean;               // on the ground, rolling (friction regime, no bounces)
+  lastKickPower: number;          // power of the last completed strike (evidence)
+  lastKickFootDist: number;       // kicking-foot ↔ ball distance at the contact frame (m)
+  lastKickT: number;              // simT stamp of the last completed strike (-1 = none)
   mode: BallMode;
   ownerId: string | null;
   lastTouchTeam: TeamId | null;
@@ -110,6 +115,7 @@ export interface MatchState {
   mode: ModeId;
   phase: MatchPhase;
   phaseT: number;
+  simT: number;                   // monotonic sim clock (never resets — kick timing evidence)
   half: 1 | 2 | 3;                // 3 = golden-goal extra
   clock: number;                  // seconds elapsed in current half
   score: [number, number];

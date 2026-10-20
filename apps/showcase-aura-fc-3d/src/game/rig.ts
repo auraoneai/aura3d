@@ -16,6 +16,7 @@ export interface AthleteRig {
   body: RigNode;
   shadow: RigNode; ring: RigNode;
   shorts: RigNode; torso: RigNode; head: RigNode; hair: RigNode;
+  sockL: RigNode; sockR: RigNode;
   uarmL: RigNode; farmL: RigNode; handL: RigNode;
   uarmR: RigNode; farmR: RigNode; handR: RigNode;
   thighL: RigNode; shinL: RigNode; shoeL: RigNode;
@@ -41,6 +42,50 @@ export interface AthleteKit {
 const SKIN_TONES = ["#c68a5a", "#8a5f42", "#e0b48a", "#6e4a30", "#d09a6a"] as const;
 const HIDDEN: [number, number, number] = [0.0001, 0.0001, 0.0001];
 
+/* ------------------------------------------------------------------ */
+/*  Team kits                                                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Match kit palette — FIXED per side so both teams are always strongly
+ * contrasted (different hue AND different value) and identity stays stable
+ * for the whole match, whatever clubs the fixture names.
+ *
+ * The striker/goalkeeper GLBs are single-mesh + single-material with one
+ * all-over garment colour family in their atlas (measured: shirt, shorts and
+ * socks all sample into the same green family — there is no separate
+ * shorts/sock region to tint), so team identity is baked as a whole-mesh
+ * colour replace and shorts + socks contrast is added as separate kit blocks
+ * that ride the athlete (see poseAthlete).
+ *
+ * Outfield red (#b2352f, hue ≈4°, mid-dark) vs sky (#d9e8f7, hue ≈212°,
+ * very light): ~150° hue apart with a large light/dark split. Keepers wear
+ * a third colour each — yellow (hue ≈48°) and purple (hue ≈266°).
+ */
+export interface TeamKit {
+  readonly shirt: string;
+  readonly shorts: string;
+  readonly socks: string;
+  readonly gkShirt: string;
+  readonly gkShorts: string;
+  readonly gkSocks: string;
+}
+
+export const TEAM_KITS: readonly [TeamKit, TeamKit] = [
+  { shirt: "#b2352f", shorts: "#f2f0e2", socks: "#b2352f", gkShirt: "#e5c433", gkShorts: "#17191f", gkSocks: "#e5c433" },
+  { shirt: "#d9e8f7", shorts: "#16233e", socks: "#f2f0e2", gkShirt: "#8a54d1", gkShorts: "#14161c", gkSocks: "#8a54d1" }
+];
+
+/** Kit for one athlete id: "h-*" is team 0, "a-*" team 1, "*-gk" keeps goal. */
+export function teamKitForId(id: string): { team: 0 | 1; keeper: boolean; shirt: string; shorts: string; socks: string } {
+  const team: 0 | 1 = id.startsWith("a-") ? 1 : 0;
+  const keeper = id.endsWith("-gk");
+  const kit = TEAM_KITS[team];
+  return keeper
+    ? { team, keeper, shirt: kit.gkShirt, shorts: kit.gkShorts, socks: kit.gkSocks }
+    : { team, keeper, shirt: kit.shirt, shorts: kit.shorts, socks: kit.socks };
+}
+
 export function skinFor(id: string): string {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
@@ -59,16 +104,25 @@ export function athleteNodes(id: string): RigNode[] {
   const isKeeper = id.endsWith("-gk");
   const isPower = isPowerFrameRole(id);
   const bodyAsset = isKeeper ? assets.fcGoalkeeperMeshy : assets.fcSoccerStrikerMeshy;
+  // Team identity is baked onto the GLB at mount: the atlas's single garment
+  // family is replaced with the side's shirt colour (flat, normal map kept) —
+  // this is the only whole-mesh contrast the engine's actor pipeline supports.
+  const kit = teamKitForId(id);
 
   const limb = (name: string) =>
     primitives.capsule({ name, size: [1, 1, 1], material: ph }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(name));
   const joint = (name: string) =>
     primitives.sphere({ name, size: [1, 1, 1], material: ph }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(name));
+  const sock = (name: string) =>
+    primitives.box({ name, size: [0.15, 0.26, 0.15], material: ph }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(name));
   return [
     model(bodyAsset, {
       name: `${id}-body`,
       targetHeight: isKeeper ? 2.32 : isPower ? 2.26 : 2.22,
-      animation: { clip: "Ready", loop: true, speed: 1 }
+      animation: { clip: "Ready", loop: true, speed: 1 },
+      materialOverrides: [
+        { color: kit.shirt, colorMode: "replace", replaceTextures: true, roughness: 0.62, metallic: 0.04 }
+      ]
     } as any)
       .position(0, 0, 0)
       .runtime(game.runtimeNode(`${id}-body`)),
@@ -76,7 +130,9 @@ export function athleteNodes(id: string): RigNode[] {
       .runtime(game.runtimeNode(`${id}-shadow`)),
     primitives.torus({ name: `${id}-ring`, size: [0.68, 0.04, 0.04], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.1 }) })
       .runtime(game.runtimeNode(`${id}-ring`)),
-    primitives.box({ name: `${id}-shorts`, size: [0.24, 0.16, 0.18], material: ph }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(`${id}-shorts`)),
+    primitives.box({ name: `${id}-shorts`, size: [0.36, 0.24, 0.27], material: ph }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(`${id}-shorts`)),
+    sock(`${id}-sock-l`),
+    sock(`${id}-sock-r`),
     limb(`${id}-torso`),
     joint(`${id}-head`),
     primitives.cylinder({ name: `${id}-hair`, size: [1, 1, 1], material: ph }).position(0, -20, 0).scale(HIDDEN).runtime(game.runtimeNode(`${id}-hair`)),
@@ -97,12 +153,13 @@ export function resolveAthlete(app: any, id: string): AthleteRig {
     body: req("body"),
     shadow: req("shadow"), ring: req("ring"),
     shorts: req("shorts"), torso: req("torso"), head: req("head"), hair: req("hair"),
+    sockL: req("sock-l"), sockR: req("sock-r"),
     uarmL: req("uarm-l"), farmL: req("farm-l"), handL: req("hand-l"),
     uarmR: req("uarm-r"), farmR: req("farm-r"), handR: req("hand-r"),
     thighL: req("thigh-l"), shinL: req("shin-l"), shoeL: req("shoe-l"),
     thighR: req("thigh-r"), shinR: req("shin-r"), shoeR: req("shoe-r"),
     kitKey: "",
-    jerseyColor: "#1d63ff",
+    jerseyColor: teamKitForId(id).shirt,
     trimColor: "#d8ff3e",
     activeClip: "Idle_Loop",
     activeSpeed: 1,
@@ -110,17 +167,18 @@ export function resolveAthlete(app: any, id: string): AthleteRig {
   };
 }
 
-/** Retint when the kit key changes (club switch / studio edit). */
+/** Retint the kit blocks + team ring when the kit key changes. */
 export function applyAthleteKit(rig: AthleteRig, kit: AthleteKit): void {
   const key = `${kit.jersey}|${kit.shorts}|${kit.socks}|${kit.boots}|${kit.skin}|${kit.trim}|${kit.keeper}`;
   if (rig.kitKey === key) return;
   rig.kitKey = key;
   rig.jerseyColor = kit.jersey;
   rig.trimColor = kit.trim || "#d8ff3e";
-  const jersey = material.pbr({ color: kit.jersey, roughness: 0.55, metalness: 0.1 });
-  const shorts = material.pbr({ color: kit.shorts, roughness: 0.68 });
-  rig.torso.setMaterial(jersey);
+  const shorts = material.pbr({ color: kit.shorts, roughness: 0.7 });
+  const socks = material.pbr({ color: kit.socks, roughness: 0.75 });
   rig.shorts.setMaterial(shorts);
+  rig.sockL.setMaterial(socks);
+  rig.sockR.setMaterial(socks);
   rig.ring.setMaterial(material.emissive({ color: kit.jersey, emissive: kit.jersey, emissiveIntensity: 0.95 }));
 }
 
@@ -179,15 +237,28 @@ function runTargets(p: PlayerState, t: number, hasBall: boolean): LimbTargets {
   };
 }
 
+/**
+ * Kick swing, scaled by power: a tap is a compact flick, a full shot carries a
+ * deep backswing and a long follow-through. The boot sweeps through the ball
+ * position at k = 0.74 — the same contact fraction the sim launches at
+ * (KICK_CONTACT_FRAC in sim.ts), so the ball leaves the foot on screen.
+ */
+const KICK_POSE_CONTACT = 0.74;
 function kickTargets(p: PlayerState, base: LimbTargets): LimbTargets {
-  const k = clamp(1 - p.kickT / 0.32, 0, 1);
-  const swing = k < 0.35
-    ? lerp(0, -0.42, k / 0.35)
-    : lerp(-0.42, 0.52, (k - 0.35) / 0.65);
-  const lift = Math.sin(k * Math.PI) * (0.22 + p.kickPower * 0.24);
+  const dur = p.kickDur > 0.05 ? p.kickDur : 0.32;
+  const k = clamp(1 - p.kickT / dur, 0, 1);
+  const amp = 0.55 + p.kickPower * 0.85;
+  const back = -0.55 * amp;
+  const through = 0.95 * amp;
+  const strike = 0.34;                       // boot meets the ball (m ahead of hip)
+  let swing: number;
+  if (k < 0.35) swing = lerp(0, back, k / 0.35);                    // wind-up
+  else if (k < KICK_POSE_CONTACT) swing = lerp(back, strike, (k - 0.35) / (KICK_POSE_CONTACT - 0.35)); // strike
+  else swing = lerp(strike, through, (k - KICK_POSE_CONTACT) / (1 - KICK_POSE_CONTACT));               // follow-through
+  const lift = Math.sin(k * Math.PI) * (0.06 + p.kickPower * 0.18);
   return {
     ...base,
-    footR: [swing, 0.06 + lift, HIP_HALF * 0.85],
+    footR: [swing, 0.06 + lift, HIP_HALF * 1.1],
     footL: [-0.05, 0.055, -(HIP_HALF + 0.03)],
     handL: [0.22, SH_Y - 0.24, -(SH_HALF + 0.18)],
     handR: [-0.24, SH_Y - 0.30, SH_HALF + 0.14],
@@ -381,7 +452,9 @@ export function poseAthlete(rig: AthleteRig, p: PlayerState, t: number, opts?: {
 
   if (anim === "kick") {
     clip = "Shoot";
-    speed = 1.6;
+    // the swing length scales with power in the sim (kickDur); the clip speed
+    // mirrors it — big shots play a slower, bigger swing than quick taps
+    speed = clamp(2.05 - p.kickPower * 0.85, 1.1, 2.05);
   } else if (anim === "tackle") {
     clip = "Attack";
     speed = 1.5;
@@ -431,20 +504,45 @@ export function poseAthlete(rig: AthleteRig, p: PlayerState, t: number, opts?: {
     .setScale([1, 1, 1])
     .setVisible(true);
 
-  void pose;
-  void W;
+  // 3. Kit blocks ride the pose: shorts at the hips, socks just above each
+  //    boot — they give the shorts/socks colour contrast the single-material
+  //    GLB atlas cannot carry, and track the swing through the kick.
+  if (anim !== "dive" || !p.isKeeper) {
+    const shortsW = W([pose.leanX * 0.4, Math.max(0.32, pose.hipY - 0.04), 0]);
+    rig.shorts
+      ?.setPosition(shortsW[0], shortsW[1], shortsW[2])
+      .setRotation(0, modelY, 0)
+      .setScale([1, 1, 1])
+      .setVisible(true);
+  } else {
+    rig.shorts?.setVisible(false);
+  }
+  const sockLW = W([pose.footL[0] * 0.85, Math.max(0.05, pose.footL[1]) + 0.13, pose.footL[2]]);
+  rig.sockL
+    ?.setPosition(sockLW[0], sockLW[1], sockLW[2])
+    .setRotation(0, modelY, 0)
+    .setScale([1, 1, 1])
+    .setVisible(true);
+  const sockRW = W([pose.footR[0] * 0.85, Math.max(0.05, pose.footR[1]) + 0.13, pose.footR[2]]);
+  rig.sockR
+    ?.setPosition(sockRW[0], sockRW[1], sockRW[2])
+    .setRotation(0, modelY, 0)
+    .setScale([1, 1, 1])
+    .setVisible(true);
+
   rig.torso?.setVisible?.(false);
 
-  // 4. Shadow + tactical team/controlled turf ring
+  // 4. Shadow + team turf ring — every athlete wears their side's colour at
+  //    gameplay-camera distance; the controlled player pulses.
   rig.shadow.setPosition(p.x, 0.014, p.z).setScale([1, 1, 1]).setVisible(true);
-  const pulse = p.controlled ? 1.05 + Math.sin(t * 6) * 0.08 : 0.66;
+  const pulse = p.controlled ? 1.05 + Math.sin(t * 6) * 0.08 : 0.72;
   rig.ring.setPosition(p.x, 0.03, p.z).setRotation(Math.PI / 2, 0, 0)
     .setScale([pulse, pulse, pulse])
     .setVisible(true);
 }
 
 export function hideAthlete(rig: AthleteRig): void {
-  for (const h of [rig.body, rig.shadow, rig.ring, rig.shorts, rig.torso, rig.head, rig.hair,
+  for (const h of [rig.body, rig.shadow, rig.ring, rig.shorts, rig.sockL, rig.sockR, rig.torso, rig.head, rig.hair,
     rig.uarmL, rig.uarmR, rig.farmL, rig.farmR, rig.handL, rig.handR,
     rig.thighL, rig.thighR, rig.shinL, rig.shinR, rig.shoeL, rig.shoeR]) {
     h?.setVisible?.(false);

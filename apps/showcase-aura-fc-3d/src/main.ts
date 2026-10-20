@@ -20,10 +20,10 @@ import {
 import { assets } from "./aura-assets-v2";
 import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R, BALL_VIS_R } from "./game/sim";
 import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, LOOK_ID } from "./game/scene";
-import { resolveAthlete, applyAthleteKit, poseAthlete, skinFor, type AthleteRig } from "./game/rig";
+import { resolveAthlete, applyAthleteKit, poseAthlete, skinFor, teamKitForId, type AthleteRig } from "./game/rig";
 import { createHud, clubFor } from "./game/hud";
 import { createModes } from "./game/modes";
-import { CLUBS, VENUES, VENUE_ORDER } from "./game/content";
+import { VENUES, VENUE_ORDER } from "./game/content";
 import type { UserInputFrame, PlayerState, SimEvent } from "./game/types";
 
 type Vec3 = [number, number, number];
@@ -60,8 +60,7 @@ function boot(): void {
   for (const id of ATHLETE_IDS) rigs.set(id, resolveAthlete(app, id));
 
   const sim = createSim();
-  const hud = createHud(shell);
-  const modes = createModes({
+  const hud = createHud(shell);  const modes = createModes({
     sim,
     host: shell,
     banner: (text, ms, cls) => hud.banner(text, ms, cls),
@@ -310,43 +309,25 @@ function boot(): void {
   }
 
   /* -------------------------- kits -------------------------- */
-
-  function kitsNow(): { home: AthleteKitLike; away: AthleteKitLike } {
-    const c = modes.cfg;
-    const homeId = c?.homeClub ?? modes.studio.club;
-    const awayId = c?.awayClub ?? "iron";
-    return { home: kitFor(homeId, false), away: kitFor(awayId, true) };
-  }
-
-  interface AthleteKitLike { jersey: string; shorts: string; socks: string; boots: string; skin: string; trim: string; keeper: boolean }
-  function kitFor(clubId: string, isAway: boolean): AthleteKitLike {
-    const club = clubFor(clubId);
-    // studio edits only ever apply to the user's club; studio overrides land on "home" when it's the user's pick
-    const isStudioClub = clubId === modes.studio.club;
-    const jersey = club.primary;
-    const shorts = club.secondary;
-    const socks = club.socks;
-    const boots = isStudioClub ? modes.studio.boots : "#22262e";
-    const trim = club.keeper;
-    void isAway;
-    return { jersey, shorts, socks, boots, skin: "#c68a5a", trim, keeper: false };
-  }
-  function keeperKitFor(clubId: string): AthleteKitLike {
-    const club = clubFor(clubId);
-    return { jersey: club.keeper, shorts: club.secondary, socks: club.keeper, boots: "#1a1d24", skin: "#8a5f42", trim: club.trim, keeper: true };
-  }
+  //
+  // Team identity is FIXED per side (rig.ts TEAM_KITS): the GLB body carries a
+  // baked whole-mesh team colour and the shorts/socks kit blocks + turf rings
+  // are retinted per athlete here. Both teams are always strongly contrasted
+  // (hue + value) with distinct keeper kits, whatever the fixture names.
 
   function refreshKits(): void {
-    const { home, away } = kitsNow();
     for (const p of sim.state.players as PlayerState[]) {
       const rig = rigs.get(p.id);
       if (!rig) continue;
-      const base = p.team === 0 ? home : away;
-      const kit = p.isKeeper ? keeperKitFor(p.team === 0 ? (modes.cfg?.homeClub ?? modes.studio.club) : (modes.cfg?.awayClub ?? "iron")) : base;
-      applyAthleteKit(rig, { ...kit, skin: skinFor(p.id) });
+      const kit = teamKitForId(p.id);
+      applyAthleteKit(rig, {
+        jersey: kit.shirt, shorts: kit.shorts, socks: kit.socks,
+        boots: "#22262e", skin: skinFor(p.id), trim: kit.shirt, keeper: kit.keeper
+      });
     }
   }
   modes.onKitsChanged = refreshKits;
+  refreshKits();   // kit blocks + rings carry team colours from the first frame
 
   /* -------------------------- frame loop -------------------------- */
 
@@ -449,7 +430,7 @@ function boot(): void {
           for (const h of Object.values(rig)) (h as any)?.setVisible?.(false);
         } else {
           for (const h of Object.values(rig)) (h as any)?.setVisible?.(true);
-          rigs.get(id)!.ring.setVisible(s.players.find((p) => p.id === id)?.controlled ?? false);
+          // team rings stay on for every athlete — poseAthlete scales/pulses them
         }
       }
 
@@ -505,6 +486,34 @@ function boot(): void {
       for (const p of s.players as PlayerState[]) {
         athleteClips[p.id] = rigs.get(p.id)?.activeClip ?? "Idle_Loop";
       }
+      // ball physics state machine, numeric for capture verification
+      const hvLen = Math.hypot(b.vx, b.vz);
+      const bpState: string =
+        b.mode === "held" ? "held"
+        : b.mode === "dead" ? "dead"
+        : b.mode === "flight" ? "kicked"
+        : b.mode === "loose" ? (hvLen > 0.13 ? "rolling" : "dead")
+        : "attached"; // dribble / controlled — glued to the kicking-side foot
+      const spinAxis: Vec3 | null = Math.hypot(b.vx, b.vz) > 0.15
+        ? [b.vz / (hvLen || 1), 0, -b.vx / (hvLen || 1)]   // normalize(cross(up, velocity))
+        : null;
+      const kickAge = b.lastKickT >= 0 ? s.simT - b.lastKickT : -1;
+      const ballPhysics = {
+        state: bpState,
+        position: [Math.round(b.x * 1000) / 1000, Math.round(b.y * 1000) / 1000, Math.round(b.z * 1000) / 1000] as Vec3,
+        velocity: [Math.round(b.vx * 100) / 100, Math.round(b.vy * 100) / 100, Math.round(b.vz * 100) / 100] as Vec3,
+        speed: Math.round(Math.hypot(b.vx, b.vy, b.vz) * 100) / 100,
+        spinAxis,
+        rolling: b.rolling,
+        onGrass: b.y <= BALL_R + 1e-3,               // centre = grass + radius, never sunk
+        radius: BALL_VIS_R,                            // fixed — never rescaled
+        lastKick: kickAge >= 0 && kickAge < 60 ? {
+          power: Math.round(b.lastKickPower * 100) / 100,
+          kind: b.lastShot,
+          footBallDistAtContact: Math.round(b.lastKickFootDist * 1000) / 1000,
+          t: Math.round(kickAge * 100) / 100
+        } : null
+      };
       const evidence = {
         route: "showcase-aura-fc-3d",
         engine: "@aura3d/engine",
@@ -518,6 +527,7 @@ function boot(): void {
         venue: s.venue,
         score: [...s.score],
         ball: { position: [b.x, by, b.z], radius: BALL_VIS_R, rotX: rx, rotZ: rz, mode: b.mode, lastShot: b.lastShot, freeT: Math.round(b.freeT * 100) / 100 },
+        ballPhysics,
         possessionTeam: s.possessionTeam,
         possession: [Math.round(s.possession[0] * 10) / 10, Math.round(s.possession[1] * 10) / 10],
         controlledId: s.controlledId,
@@ -538,15 +548,25 @@ function boot(): void {
         paused: s.paused,
         athleteCount: s.players.length,
         athleteClips,
-        athletes: s.players.map((p) => ({
-          id: p.id,
-          team: p.team,
-          role: p.role,
-          x: Math.round(p.x * 100) / 100,
-          z: Math.round(p.z * 100) / 100,
-          speed: Math.round(p.speed * 100) / 100,
-          clip: athleteClips[p.id]
-        })),
+        athletes: s.players.map((p) => {
+          const kit = teamKitForId(p.id);
+          return {
+            id: p.id,
+            team: p.team,
+            role: p.role,
+            kit: {
+              team: p.team,
+              role: p.isKeeper ? "gk" as const : "outfield" as const,
+              body: kit.shirt,
+              shorts: kit.shorts,
+              socks: kit.socks
+            },
+            x: Math.round(p.x * 100) / 100,
+            z: Math.round(p.z * 100) / 100,
+            speed: Math.round(p.speed * 100) / 100,
+            clip: athleteClips[p.id]
+          };
+        }),
         juice: (juice as any)?.snapshot?.() ?? null,
         accessibility: a11y ? { reducedMotion: a11y.reducedMotion, reducedFlash: a11y.reducedFlash, highContrast: a11y.highContrast } : null,
         touch: touchControls?.evidence?.() ?? null,
