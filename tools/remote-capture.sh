@@ -4,6 +4,9 @@
 #
 # Usage:
 #   tools/remote-capture.sh <route> <distDir> <outDir> [urlPath] [waitMs] [shots]
+# Film mode (real-time filmstrip off the live page — never paused/stepped):
+#   CAPTURE_FILM=1 CAPTURE_FRAMES=24 CAPTURE_FRAME_INTERVAL=110 CAPTURE_READY_EXPR='window.__AURA3D_GAME__?.phase==="live"' \
+#   tools/remote-capture.sh <route> <distDir> <outDir> [urlPath] [waitMs]
 #
 # Example:
 #   tools/remote-capture.sh showcase-bunker-zero /tmp/dist-bunker-zero ./evidence/bunker-zero "/apps/showcase-bunker-zero/?demo=1" 8000 4
@@ -45,20 +48,49 @@ URL_PATH="${4:-/apps/${1:-}/}"
 WAIT_MS="${5:-7000}"
 SHOTS="${6:-4}"
 
+# Production mode: DIST_DIR "prod" skips upload and films the public site
+# ($4 then carries the full URL or the usual /apps path on aura3d.auraone.ai).
+if [[ "${DIST_DIR}" == "prod" ]]; then PROD=1; else PROD=0; fi
+
 if [[ -z "$ROUTE" || -z "$DIST_DIR" || -z "$OUT_DIR" ]]; then
-  echo "usage: tools/remote-capture.sh <route> <distDir> <outDir> [urlPath] [waitMs] [shots]" >&2
+  echo "usage: tools/remote-capture.sh <route> <distDir|prod> <outDir> [urlPath] [waitMs] [shots]" >&2
   exit 2
 fi
-if [[ ! -f "$INSTANCE_FILE" ]]; then
-  echo "remote-capture: runner not provisioned ($INSTANCE_FILE missing)" >&2
-  exit 3
-fi
-INSTANCE_ID="$(tr -d '[:space:]' < "$INSTANCE_FILE")"
-if [[ ! -d "$DIST_DIR" ]]; then
-  echo "remote-capture: dist dir missing: $DIST_DIR (build with: node tools/dev-route-build.mjs $ROUTE <distDir>)" >&2
-  exit 2
+if [[ "$PROD" != "1" ]]; then
+  if [[ ! -f "$INSTANCE_FILE" ]]; then
+    echo "remote-capture: runner not provisioned ($INSTANCE_FILE missing)" >&2
+    exit 3
+  fi
+  INSTANCE_ID="$(tr -d '[:space:]' < "$INSTANCE_FILE")"
+  if [[ ! -d "$DIST_DIR" ]]; then
+    echo "remote-capture: dist dir missing: $DIST_DIR (build with: node tools/dev-route-build.mjs $ROUTE <distDir>)" >&2
+    exit 2
+  fi
 fi
 mkdir -p "$OUT_DIR"
+
+if [[ "$PROD" == "1" ]]; then
+  # Public-URL film capture — no serve tree, absolute URL.
+  if [[ "$URL_PATH" != http* ]]; then
+    URL_PATH="https://aura3d.auraone.ai${URL_PATH}"
+  fi
+  ensure_forward
+  FILM_QS="film=1&frames=${CAPTURE_FRAMES:-24}&frameInterval=${CAPTURE_FRAME_INTERVAL:-110}"
+  if [[ -n "${CAPTURE_READY_EXPR:-}" ]]; then
+    FILM_QS="$FILM_QS&readyExpr=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$CAPTURE_READY_EXPR")"
+  fi
+  echo "remote-capture: filming production $URL_PATH" >&2
+  curl -fsS --max-time 600 -X POST \
+    "http://127.0.0.1:${LOCAL_PORT}/capture/prod-${ROUTE}?absUrl=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$URL_PATH")&waitMs=${WAIT_MS}&${FILM_QS}" \
+    -o "$OUT_DIR/capture-result.json"
+  LIST_JSON=$(curl -fsS --max-time 30 "http://127.0.0.1:${LOCAL_PORT}/out/prod-${ROUTE}" || echo '{"files":[]}')
+  for name in $(python3 -c "import json,sys;print(' '.join(f['name'] for f in json.loads(sys.argv[1]).get('files',[])))" "$LIST_JSON"); do
+    curl -fsS --max-time 120 "http://127.0.0.1:${LOCAL_PORT}/out/prod-${ROUTE}/${name}" -o "$OUT_DIR/$name" || echo "remote-capture: failed to fetch $name" >&2
+  done
+  echo "remote-capture: artifacts in $OUT_DIR" >&2
+  ls -la "$OUT_DIR" >&2
+  exit 0
+fi
 
 health() {
   health_on "$LOCAL_PORT"
@@ -228,9 +260,19 @@ curl -fsS --max-time 600 -T "$TARBALL" \
   "http://127.0.0.1:${LOCAL_PORT}/work/${ROUTE}" >/dev/null
 
 echo "remote-capture: capturing $URL_PATH" >&2
-curl -fsS --max-time 240 -X POST \
-  "http://127.0.0.1:${LOCAL_PORT}/capture/${ROUTE}?url=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$URL_PATH")&waitMs=${WAIT_MS}&shots=${SHOTS}" \
-  -o "$OUT_DIR/capture-result.json"
+if [[ "${CAPTURE_FILM:-0}" == "1" ]]; then
+  FILM_QS="film=1&frames=${CAPTURE_FRAMES:-24}&frameInterval=${CAPTURE_FRAME_INTERVAL:-110}"
+  if [[ -n "${CAPTURE_READY_EXPR:-}" ]]; then
+    FILM_QS="$FILM_QS&readyExpr=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$CAPTURE_READY_EXPR")"
+  fi
+  curl -fsS --max-time 600 -X POST \
+    "http://127.0.0.1:${LOCAL_PORT}/capture/${ROUTE}?url=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$URL_PATH")&waitMs=${WAIT_MS}&${FILM_QS}" \
+    -o "$OUT_DIR/capture-result.json"
+else
+  curl -fsS --max-time 240 -X POST \
+    "http://127.0.0.1:${LOCAL_PORT}/capture/${ROUTE}?url=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$URL_PATH")&waitMs=${WAIT_MS}&shots=${SHOTS}" \
+    -o "$OUT_DIR/capture-result.json"
+fi
 
 # pull artifacts
 FILES=$(python3 -c "import json,sys;print(' '.join(f['name'] for f in json.load(open('$OUT_DIR/capture-result.json')).get('files',[])))" 2>/dev/null || true)

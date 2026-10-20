@@ -368,20 +368,18 @@ export function resetActorBoneAttachments(): void {
  */
 export function resolveActorBoneAttachments(
   actorId: string,
-  modelMatrix: readonly number[],
+  modelMatrix: ArrayLike<number>,
   runtimeNodes: { get(id: string): { setPosition(x: number, y: number, z: number): unknown; setRotation(x: number, y: number, z: number): unknown; setScale(scale: number): unknown } | undefined } | undefined
 ): number {
   const attachments = actorBoneAttachments.get(actorId);
   if (attachments === undefined || runtimeNodes === undefined) return 0;
   let resolved = 0;
+  const model = Array.from(modelMatrix) as unknown as Mat4;
   for (const attachment of attachments) {
     const boneMatrix = actorBoneMatrixSources.get(actorId)?.(attachment.bone);
     const target = runtimeNodes.get(attachment.targetId);
     if (boneMatrix === null || boneMatrix === undefined || target === undefined) continue;
-    const world = multiplyMat4(
-      modelMatrix as Mat4,
-      multiplyMat4(boneMatrix as Mat4, attachment.offset as Mat4)
-    );
+    const world = multiplyMat4(model, multiplyMat4(boneMatrix as Mat4, attachment.offset as Mat4));
     const { position, rotation } = decomposeMat4(world);
     target.setPosition(position[0], position[1], position[2]);
     const euler = eulerXYZFromQuat(rotation);

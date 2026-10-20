@@ -1,0 +1,77 @@
+name: Showcase Filmstrip
+
+# Real-time filmstrip verification of the showcase games' motion fixes
+# (dribble, bat swing, kick physics, golf swing, slingshot draw) against the
+# full local marketing build and, after deploy, the production site. Runs the
+# browser on the CI runner per the machine policy (no local browser
+# automation). The page is never paused or stepped — frames are grabbed off
+# the live canvas at ~9fps while the game plays at normal speed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "local (serve marketing/dist) or prod (film aura3d.auraone.ai)"
+        required: false
+        default: local
+        type: choice
+        options: [local, prod]
+      games:
+        description: "comma list (empty = all six)"
+        required: false
+        default: ""
+
+concurrency:
+  group: showcase-filmstrip-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  film:
+    name: Film ${{ inputs.mode || 'local' }}
+    timeout-minutes: 90
+    runs-on: ubuntu-latest
+    env:
+      MODE: ${{ inputs.mode || 'local' }}
+      GAMES: ${{ inputs.games }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with: { version: 11.1.3 }
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Install ffmpeg
+        run: sudo apt-get update -y && sudo apt-get install -y ffmpeg
+
+      - name: Build showcase routes (local mode only)
+        if: env.MODE == 'local'
+        run: pnpm --dir marketing build
+
+      - name: Film games
+        run: |
+          ARGS=""
+          if [ -n "$GAMES" ]; then ARGS="--games $GAMES"; fi
+          if [ "$MODE" = "prod" ]; then ARGS="$ARGS --prod"; fi
+          node tools/filmstrip/capture-films.mjs --dist marketing/dist \
+            --out films-${MODE} $ARGS
+
+      - name: Upload filmstrips
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: showcase-filmstrips-${{ env.MODE }}-${{ github.run_id }}
+          path: films-${MODE}/
+          retention-days: 30

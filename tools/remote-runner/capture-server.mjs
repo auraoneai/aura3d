@@ -128,18 +128,28 @@ async function runCapture(id, params) {
   const workDir = path.join(ROOT, id);
   const serveDir = path.join(workDir, "serve");
   const outDir = path.join(workDir, "out");
-  if (!existsSync(serveDir)) throw new Error(`no serve tree for id ${id} — PUT /work/${id} first`);
+  const absUrl = params.absUrl || "";
+  if (!absUrl && !existsSync(serveDir)) throw new Error(`no serve tree for id ${id} — PUT /work/${id} first`);
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
 
-  const staticServer = await serveStatic(serveDir, 0);
-  const port = staticServer.address().port;
+  const staticServer = absUrl ? null : await serveStatic(serveDir, 0);
+  const port = staticServer ? staticServer.address().port : 0;
   const urlPath = params.url || "/";
   const width = Number(params.w || 1600);
   const height = Number(params.h || 900);
   const waitMs = Number(params.waitMs || 6000);
   const shotCount = Math.min(8, Math.max(1, Number(params.shots || 3)));
   const shotInterval = Number(params.shotInterval || 1500);
+  // Film mode: grab `frames` canvas frames from the LIVE page (never paused,
+  // never stepped) at ~frameInterval ms via canvas.toDataURL — the engine's
+  // WebGL2 context runs with preserveDrawingBuffer:true so each grab is a true
+  // presented frame. Evidence is sampled alongside every frame so motion can
+  // be verified numerically (ball/palm/club positions per frame).
+  const film = params.film === "1" || params.film === "true";
+  const filmFrames = Math.min(90, Math.max(12, Number(params.frames || 24)));
+  const filmInterval = Math.min(1000, Math.max(40, Number(params.frameInterval || 110)));
+  const filmReady = params.readyExpr || ""; // optional JS boolean expression polled before filming
 
   const captureScript = `
 const { chromium } = require(${JSON.stringify(process.env.PLAYWRIGHT_MODULE || "playwright-core")});
@@ -193,9 +203,43 @@ const { chromium } = require(${JSON.stringify(process.env.PLAYWRIGHT_MODULE || "
     w("route-ready.json", safe(routeReady));
     w("metrics.json", safe(metrics));
   };
-  await page.goto(${JSON.stringify(`http://127.0.0.1:`)} + ${port} + ${JSON.stringify(urlPath)}, { waitUntil: "load", timeout: 45000 });
+  const targetUrl = ${JSON.stringify(absUrl)} || (${JSON.stringify(`http://127.0.0.1:`)} + ${port} + ${JSON.stringify(urlPath)});
+  await page.goto(targetUrl, { waitUntil: "load", timeout: 45000 });
   await page.waitForTimeout(${waitMs});
   await dump("pre");
+  if (${film ? "true" : "false"}) {
+    // ---- filmstrip: real-time frames off the live compositor ----
+    const fs3 = require("fs");
+    const readyExpr = ${JSON.stringify(filmReady)};
+    if (readyExpr) {
+      await page.waitForFunction(new Function("return (" + readyExpr + ")"), null, { timeout: 120000, polling: 250 }).catch((e) => errors.push("readyExpr never true: " + String(e).split("\\n")[0]));
+    }
+    const t0 = Date.now();
+    const samples = [];
+    for (let i = 0; i < ${filmFrames}; i++) {
+      const grab = await page.evaluate(() => {
+        const c = document.querySelector("canvas");
+        const ev = (window.__AURA3D_GAME_EVIDENCE__ ?? window.__AURA3D_GAME__ ?? null);
+        let dataUrl = null;
+        try { dataUrl = c ? c.toDataURL("image/png") : null; } catch (e) {}
+        return { dataUrl, evidence: ev ? JSON.parse(JSON.stringify(ev)) : null, t: performance.now() };
+      });
+      samples.push({ i, wallMs: Date.now() - t0, pageT: grab.t, evidence: grab.evidence });
+      if (grab.dataUrl && grab.dataUrl.startsWith("data:image/png")) {
+        fs3.writeFileSync(${JSON.stringify(outDir)} + "/film-" + String(i).padStart(2, "0") + ".png", Buffer.from(grab.dataUrl.slice(22), "base64"));
+      } else {
+        errors.push("film-" + i + " grab failed");
+      }
+      // Sleep the remainder of the frame budget WITHOUT stopping the game —
+      // the rAF loop keeps running at full speed the whole time.
+      const elapsed = Date.now() - t0 - i * ${filmInterval};
+      await new Promise((r) => setTimeout(r, Math.max(0, ${filmInterval} - elapsed)));
+    }
+    fs3.writeFileSync(${JSON.stringify(outDir)} + "/film-samples.json", JSON.stringify(samples, null, 1));
+    await dump("");
+    await browser.close();
+    process.exit(0);
+  }
   for (let i = 0; i < ${shotCount}; i++) {
     // SwiftShader rasterizes on CPU; a busy WebGL rAF loop can starve the
     // compositor past the 30s default screenshot timeout. Keep the attempt
@@ -252,7 +296,7 @@ const { chromium } = require(${JSON.stringify(process.env.PLAYWRIGHT_MODULE || "
     });
   });
   writeFileSync(path.join(outDir, "capture.stderr.log"), `${result.stdout || ""}\n${result.stderr || ""}`);
-  staticServer.close();
+  staticServer?.close();
   if (result.status !== 0) throw new Error(`capture failed (exit ${result.status}): ${(result.stderr || "").slice(0, 500)}`);
   return { port, shots: readdirSync(outDir).filter((f) => f.endsWith(".png")) };
 }
