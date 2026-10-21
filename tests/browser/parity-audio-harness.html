@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>parity-audio harness</title>
+  </head>
+  <body>
+    <!--
+      parity-audio (L9) harness: an intentionally empty same-origin page so the
+      spec can `page.evaluate` `import("/packages/audio/src/index.js")` and drive
+      `OfflineAudioContext` renders. No renderer, no canvas — Web Audio only.
+    -->
+    <main data-testid="parity-audio-harness">OfflineAudioContext parity harness</main>
+  </body>
+</html>

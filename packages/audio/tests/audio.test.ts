@@ -370,12 +370,18 @@ test("animation audio waveform review data and mixer defaults expose route evide
   assert.equal(evidence.unlocked, true);
 });
 
-test("distance attenuation matches panner models at the boundaries", () => {
+test("distance attenuation matches the Web Audio panner formulas, including past maxDistance", () => {
+  // Web Audio §6.4: inverse/exponential clamp d to [ref, ∞) — maxDistance is a
+  // linear-only clamp. Past maxDistance the inverse model keeps decaying
+  // (1/(1+9999) ≈ 1e-4); it is NOT forced to 0.
   assert.equal(computeDistanceAttenuation(0.5, { refDistance: 1 }), 1);
-  assert.equal(computeDistanceAttenuation(10_000, { maxDistance: 100 }), 0);
+  assert.ok(Math.abs(computeDistanceAttenuation(10_000, { maxDistance: 100 }) - 1 / 10_000) < 1e-9);
+  assert.equal(computeDistanceAttenuation(10_000, { maxDistance: 100, model: "linear" }), 0);
   assert.ok(Math.abs(computeDistanceAttenuation(4, { refDistance: 1, rolloffFactor: 1 }) - 1 / 4) < 1e-9);
   assert.equal(computeDistanceAttenuation(55, { refDistance: 10, maxDistance: 100, rolloffFactor: 1, model: "linear" }), 0.5);
   assert.ok(computeDistanceAttenuation(2, { refDistance: 1, rolloffFactor: 2, model: "exponential" }) < 0.26);
+  // linear rolloff is clamped to [0, 1] in the spec model.
+  assert.equal(computeDistanceAttenuation(100, { refDistance: 1, maxDistance: 100, rolloffFactor: 2, model: "linear" }), 0);
 });
 
 test("doppler shift is 1 at rest and rises on approach", () => {
