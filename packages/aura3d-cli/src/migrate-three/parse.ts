@@ -18,14 +18,41 @@ export interface ThreeConstruct {
   readonly specifier?: string;
 }
 
-const NEW_THREE = /\bnew\s+THREE\.([A-Za-z0-9_]+)\s*\(([^)]*)\)/g;
-const NEW_BARE = /\bnew\s+([A-Za-z0-9_]+)\s*\(([^)]*)\)/g;
-const EULER_ORDER = /\bnew\s+(?:THREE\.)?Euler\s*\(([^)]*)\)/g;
+// Args allow ONE level of nested parens so `new THREE.InstancedMesh(new
+// THREE.BoxGeometry(...), mat, n)` and `new UnrealBloomPass(new THREE.Vector2
+// (...), s, r, t)` capture the full argument list instead of truncating at the
+// first `)` and leaving dangling args behind.
+const ARGS_ONE_NEST = "([^()]*(?:\\([^()]*\\)[^()]*)*)";
+const NEW_THREE = new RegExp(`\\bnew\\s+THREE\\.([A-Za-z0-9_]+)\\s*\\(${ARGS_ONE_NEST}\\)`, "g");
+const NEW_BARE = new RegExp(`\\bnew\\s+([A-Za-z0-9_]+)\\s*\\(${ARGS_ONE_NEST}\\)`, "g");
+const EULER_ORDER = new RegExp(`\\bnew\\s+(?:THREE\\.)?Euler\\s*\\(${ARGS_ONE_NEST}\\)`, "g");
 const LOADER_LOAD = /\b([A-Za-z0-9_]+)\.load\s*\(/g;
-const LOADER_DECL = /\b(?:const|let|var)\s+([A-Za-z0-9_]+)\s*=\s*new\s+THREE\.([A-Za-z0-9_]+)/g;
+const LOADER_DECL = /\b(?:const|let|var)\s+([A-Za-z0-9_]+)\s*=\s*new\s+(?:THREE\.)?([A-Za-z0-9_]+)/g;
 const THREE_IMPORT = /\bfrom\s+["'](three(?:\/[^"']*)?)["']/g;
 
-const LOADER_NAMES = new Set(["GLTFLoader", "RGBELoader", "TextureLoader", "CubeTextureLoader", "EXRLoader"]);
+const LOADER_NAMES = new Set([
+  "GLTFLoader",
+  "RGBELoader",
+  "TextureLoader",
+  "CubeTextureLoader",
+  "EXRLoader",
+  "AudioLoader",
+  "FileLoader",
+  "ImageBitmapLoader",
+  "DataTextureLoader",
+  "FontLoader",
+  "FBXLoader",
+  "MMDLoader",
+  "PLYLoader",
+  "STLLoader",
+  "USDZLoader",
+  "ThreeMFLoader",
+  "VOXLoader",
+  "ColladaLoader",
+  "TDSLoader",
+  "AMFLoader",
+  "IFCLoader"
+]);
 
 export function parseThreeSource(source: string): ThreeConstruct[] {
   const constructs: ThreeConstruct[] = [];
@@ -54,7 +81,9 @@ export function parseThreeSource(source: string): ThreeConstruct[] {
     for (const m of text.matchAll(LOADER_LOAD)) {
       const name = m[1] ?? "";
       const resolved = varTypes.get(name) ?? (LOADER_NAMES.has(name) ? name : undefined);
-      if (resolved) constructs.push({ construct: `${resolved}.load`, line, args: "" });
+      // only real loader types qualify — `mat.load()` must not become
+      // `ShaderMaterial.load` just because `mat` was a `new`.
+      if (resolved && LOADER_NAMES.has(resolved)) constructs.push({ construct: `${resolved}.load`, line, args: "" });
     }
     // bare `new X(...)` for names a bare-THREE import could declare
     for (const m of text.matchAll(NEW_BARE)) {

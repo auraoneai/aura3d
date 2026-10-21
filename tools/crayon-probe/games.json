@@ -1,0 +1,16 @@
+{
+  "schema": "a3d-crayon-probe-games/1",
+  "$comment": "The ten Crayon Arcade candidates from docs/workflows/crayon-game-reverse-engineering.md. Fill `url` with the game's play-page URL (https://app.usecrayon.ai/play/<project-id>) before probing — entries without a url are skipped. Module-shape/three-source columns are the doc's measurements; the probe records P-1..P-4 per game into evidence/crayon-probes/<id>.json.",
+  "games": [
+    { "id": "strange-orbit", "title": "Strange Orbit", "url": "", "moduleBytes": 19300, "moduleShape": "external blob, 1 line", "threeSource": "importmap (inferred)", "priority": 1 },
+    { "id": "splat-rush", "title": "Splat Rush", "url": "", "moduleBytes": 43212, "moduleShape": "external blob, 1 line", "threeSource": "importmap (inferred)", "priority": 2 },
+    { "id": "saiyan-snake-way", "title": "Saiyan through the Snake way!", "url": "", "moduleBytes": 513393, "moduleShape": "external blob, 211 lines", "threeSource": "inlined (inferred)", "priority": 3 },
+    { "id": "drift-and-deliver", "title": "Drift & Deliver", "url": "", "moduleBytes": 1332481, "moduleShape": "external blob, 1 line", "threeSource": "inlined (inferred)", "priority": 4 },
+    { "id": "heatsink", "title": "HEATSINK", "url": "", "moduleBytes": 1641373, "moduleShape": "external blob, 722 lines", "threeSource": "inlined (measured, r186 webgpu)", "priority": 5 },
+    { "id": "where-the-wind-wanders", "title": "Where the Wind Wanders", "url": "", "moduleBytes": 645204, "moduleShape": "external blob, 1 line", "threeSource": "inlined (inferred)", "priority": 6 },
+    { "id": "ninja-runner", "title": "Ninja Runner", "url": "", "moduleShape": "unknown", "threeSource": "unknown", "priority": 7 },
+    { "id": "roadster-hours", "title": "Roadster Hours", "url": "", "moduleShape": "dynamic import, not in DOM", "threeSource": "unknown", "priority": 8 },
+    { "id": "last-train-to-the-sea", "title": "Last Train to the Sea", "url": "", "moduleBytes": 1391655, "moduleShape": "external blob, 1 line", "threeSource": "inlined (inferred)", "priority": 9 },
+    { "id": "silt-and-signal", "title": "Silt & Signal", "url": "", "moduleShape": "dynamic import, not in DOM", "threeSource": "unknown", "priority": 10 }
+  ]
+}

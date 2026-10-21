@@ -168,6 +168,26 @@ While the frame is still open, run the four runtime probes in
 game answers all four, and those answers decide whether SH-01 and SH-02 are
 really P0 for that title.
 
+The automated runner is [`tools/crayon-probe/`](../../tools/crayon-probe/index.ts)
+(**remote runner only** — it drives a real browser against live endpoints;
+provision once with `tools/remote-runner/provision.sh`, then run over the SSM
+port-forward). It opens one CDP session per game, tries importmap → heap
+snapshot → DOM/global evidence in order, and writes
+`evidence/crayon-probes/<game>.json` with `yes`/`no`/`inconclusive` per probe —
+never a fabricated `yes`:
+
+```bash
+pnpm exec tsx --tsconfig tsconfig.base.json tools/crayon-probe/index.ts \
+  --manifest tools/crayon-probe/games.json            # whole roster
+pnpm exec tsx --tsconfig tsconfig.base.json tools/crayon-probe/index.ts \
+  --game strange-orbit --url https://app.usecrayon.ai/play/<project-id>
+```
+
+`tools/crayon-probe/games.json` is the ten-game roster; fill in the play-page
+URLs as they are confirmed. Evidence that already exists under
+`evidence/crayon-probes/` is authoritative — a probe reporting `inconclusive`
+keeps the gate red; it does not soften it.
+
 ### Stage 4 — Static semantics
 
 ```bash
@@ -214,16 +234,16 @@ needs. If the parity item is not built, the mapping is a plan, not a port.
 
 | Crayon mechanic | Aura3D surface | Status | Parity gate |
 | --- | --- | --- | --- |
-| Vehicle + track + laps | `game.racing`, `game.arcadeKart` | ships | SM-02, SG-03, SH-05 |
-| Combat + projectiles | `templates/arena-shooter` pooled-bolt pattern | template, not a kit | SG-01, SH-02 |
+| Vehicle + track + laps | `game.racing`, `game.arcadeKart` | ships | SM-02 (PARTIAL, L3), SG-03 (GAP, L2), SH-05 (PARTIAL, L7) |
+| Combat + projectiles | `templates/arena-shooter` pooled-bolt pattern | template, not a kit | SG-01 (PARTIAL, L5), SH-02 (PARTIAL, L1 — `material.custom` spec frozen) |
 | Heat / resource meter | `game.simulation` state + HUD binding | compose | — |
-| Drift scoring | arcade kart velocity model | compose | SM-01 |
-| Traffic / AI | racing kit AI + spawner | compose | SG-01, SG-02 |
-| Endless runner lanes | `game.platformer` + `game.planarCollisionWorld` | **no runner kit** | SG-05, SM-02 |
-| 3D collect / wander | `game.locomotion` + character controller | compose | SA-04 |
-| HUD / score / lives | `packages/game/src/hud/HudKit.ts` | ships | ST-01 (canvas text) |
+| Drift scoring | arcade kart velocity model | compose | SM-01 (PARTIAL, L3) |
+| Traffic / AI | racing kit AI + spawner | compose | SG-01 (PARTIAL, L5), SG-02 (PARTIAL internal, L5 — probe-gated) |
+| Endless runner lanes | `game.platformer` + `game.planarCollisionWorld` | **no runner kit** | SG-05 (PARTIAL, L2), SM-02 (PARTIAL, L3) |
+| 3D collect / wander | `game.locomotion` + character controller | compose | SA-04 (PARTIAL, L8) |
+| HUD / score / lives | `packages/game/src/hud/HudKit.ts` | ships | ST-01 (GAP, L4 — only if text must live in a texture; DOM HUD is unaffected) |
 | Touch controls | `game.touchControls` | ships | — |
-| Stylised VFX | `effects.flipbook` + custom pass | flipbook ships; custom pass missing | SH-03 |
+| Stylised VFX | `effects.flipbook` + custom pass | flipbook ships; `app.addPostPass` is the live GPU custom pass | SH-03 (PARTIAL, L1 — `effects.shaderPass` lands there) |
 
 The right-hand column is the contract with
 [`threejs-parity-gaps.md`](./threejs-parity-gaps.md). Do not start a build while a
@@ -287,11 +307,31 @@ pnpm check:release
 Before any build, read [`threejs-parity-gaps.md`](./threejs-parity-gaps.md). The
 gate is:
 
-| Tier | Items | Meaning |
-| --- | --- | --- |
-| **P0** | SH-02 custom shaders, SH-03 custom pass, SG-03 geometry breadth, SG-05 geometry authoring, SM-01 math, SM-02 curves, ST-01/02 textures | No port can look like the source without these |
-| **P1** | SH-01 TSL subset, SH-05 renderer facade, SH-07 PMREM, SG-01/02 instancing, SG-06/07 lines/points, SA-01/04 animation, AU-01/02/04 audio, SR-01/02/05/08 | Required by at least one title |
-| **P2** | WebXR, CubeCamera, exporters, CSM, full addon ecosystem | Does not block the ten |
+| Tier | Items | Current verdict (lane) | Meaning |
+| --- | --- | --- | --- |
+| **P0** | SH-02 custom shaders | PARTIAL (L1) — `AuraCustomMaterialSpec` frozen; `PortableShaderMaterial` internal | No port can look like the source without these |
+| | SH-03 custom pass | PARTIAL (L1) — `app.addPostPass({fragment:{glsl}})` is the live GPU path; `effects.shaderPass` lands L1 | |
+| | SG-03 geometry breadth | GAP (L2) — union widened/frozen, generators not implemented | |
+| | SG-05 geometry authoring | PARTIAL (L2) — number-array custom geometry only | |
+| | SM-01 math breadth | PARTIAL (L3) | |
+| | SM-02 curves | PARTIAL (L3) — frozen `Curve` interface in `@aura3d/engine/math` | |
+| | ST-01/02 textures | GAP (L4) / PARTIAL (L4) — `AuraTextureRef` frozen, no `texture.*` factories | |
+| **P1** | SH-01 TSL subset | GAP — probe-gated on P-1 (L1) | Required by at least one title |
+| | SH-05 renderer facade | PARTIAL (L7) | |
+| | SH-07 PMREM | **CLOSED** — `environments.capture`/`hdri`/`neutral` ship | |
+| | SG-01/02 instancing | PARTIAL (L5); SG-02 probe-gated on P-2 | |
+| | SG-06/07/08 lines/points/sprites | PARTIAL internal (L6) | |
+| | SA-01/04 animation | MOSTLY CLOSED / PARTIAL (L8) | |
+| | AU-01/02 audio | PARTIAL (L9 — AU-02 has the double-attenuation fix) | |
+| | AU-04 AudioLoader | **CLOSED** — `AS/AudioLoader` ships; codemod row only | |
+| | SR-01/03/05 runtime | PARTIAL (L7) | |
+| | SR-02 fog / SR-08 disposal / SR-09 colour mgmt | MOSTLY CLOSED / CLOSED-capability / **CLOSED** | |
+| **P2** | SC-04 WebXR | PARTIAL — Phase 4 | Does not block the ten |
+| | SC-01 Cube/Array/Stereo camera | GAP (public, L7 — CubeCamera is P1) | |
+| | AD-05 exporters | **EXCLUDED** by contract — bake offline | |
+| | AD-12 CSM | **CLOSED (internal)** — `lights.directional({shadow:{cascades}})` + codemod row | |
+| | SC-03 helpers | GAP (L6, P2) — deleted with three-compat | |
+| | AD-04 loaders (FBX/MMD/PLY/STL/USDZ/3MF/VOX), AD-09/10/11/13 | **EXCLUDED** by contract | |
 
 A game starts only when every item marked `●` in the parity matrix has a passing
 fixture. "Mechanically correct, visually prototype" is the failure mode this gate
@@ -326,8 +366,10 @@ controls.
 **RE seeds.** `tram`, `wing`, `balance`, `passenger`, `tip`, `lantern`, `town`,
 `ticket`, `decor`, `dayNight`.
 
-**Parity gate.** SG-03 (town extrusion, rails), SM-02 (route), ST-01 (sky/HUD),
-SH-02 (clouds), SH-03 (grade), SA-04 (passengers), AU-02.
+**Parity gate.** SG-03 (town extrusion, rails — GAP, L2), SM-02 (route — PARTIAL, L3),
+ST-01 (sky/HUD — GAP, L4), SH-02 (clouds — PARTIAL, L1), SH-03 (grade — PARTIAL, L1;
+`app.addPostPass` is the live GPU path), SA-04 (passengers — PARTIAL, L8),
+AU-02 (PARTIAL, L9).
 
 **Aura3D mapping.** No vehicle-adventure kit exists. Compose `game.racing` chassis
 (arcadeKart) with `game.simulation` for tips/lanterns, `HudKit`, and
@@ -366,8 +408,9 @@ wind letters; no fail state; the "quiet moments" are the reward.
 
 **RE seeds.** `wind`, `letter`, `valley`, `breeze`, `grass`, `collect`.
 
-**Parity gate.** SH-02 (grass/wind), SG-01 (grass instancing), SM-02 (valley
-path), ST-01, SR-02 (depth fog).
+**Parity gate.** SH-02 (grass/wind — PARTIAL, L1), SG-01 (grass instancing —
+PARTIAL, L5), SM-02 (valley path — PARTIAL, L3), ST-01 (GAP, L4),
+SR-02 (depth fog — MOSTLY CLOSED; per-material `fog` flag is the L7 tail).
 
 **Aura3D mapping.** `game.locomotion` + character controller; `instances.*` for
 grass; `particles` for wind; no combat, no timer.
@@ -401,7 +444,9 @@ destination planet; the path is the level, the clock is the enemy.
 
 **RE seeds.** `snake`, `time`, `speed`, `distance`, `gate`, `checkpoint`, `finish`.
 
-**Parity gate.** SM-02 (serpentine curve), SG-03 (`TubeGeometry`), SG-05, SR-01.
+**Parity gate.** SM-02 (serpentine curve — PARTIAL, L3; frozen `Curve`
+interface already in `@aura3d/engine/math`), SG-03 (`TubeGeometry` — GAP, L2),
+SG-05 (PARTIAL, L2), SR-01 (PARTIAL, L7).
 
 **Aura3D mapping.** On-rails mover over a `curve.catmullRom`; `game.platformer`
 lane logic only if the path branches. No runner kit needed for a single path.
@@ -436,8 +481,10 @@ Ramjet has a heat budget; shoot rivals; win only if you do not melt first.
 **RE seeds.** `overheat`, `heat`, `drone`, `ramjet`, `rival`, `weapon`, `lap`,
 `checkpoint`, `boost`, `cool`.
 
-**Parity gate.** SH-02, SH-03, SG-02 (city batching), SG-03, SG-05, SM-02, ST-01,
-SH-07, SR-02.
+**Parity gate.** SH-02 (PARTIAL, L1), SH-03 (PARTIAL, L1 — `app.addPostPass`
+live), SG-02 (city batching — PARTIAL internal, L5; **probe-gated on P-2**),
+SG-03 (GAP, L2), SG-05 (PARTIAL, L2), SM-02 (PARTIAL, L3), ST-01 (GAP, L4),
+SR-02 (MOSTLY CLOSED). SH-07 is **CLOSED** — no longer a gate.
 
 **Aura3D mapping.** `game.racing` + `arcadeKart` flight variant; pooled projectiles
 from the arena-shooter template; heat as a `game.simulation` resource; city props
@@ -477,8 +524,9 @@ Declared controls: W/S accelerate/reverse, A/D steer, E/Q rise/fall.
 **RE seeds.** `hover`, `bike`, `companion`, `world`, `aqueduct`, `water`, `voice`,
 `scene`, `crossing`, `altitude`.
 
-**Parity gate.** SH-02 (water), SH-03, SM-02, SG-03 (aqueducts), SA-04, AU-02,
-SR-02. Phase 3.
+**Parity gate.** SH-02 (water — PARTIAL, L1), SH-03 (PARTIAL, L1),
+SM-02 (PARTIAL, L3), SG-03 (aqueducts — GAP, L2), SA-04 (PARTIAL, L8),
+AU-02 (PARTIAL, L9), SR-02 (MOSTLY CLOSED). Phase 3.
 
 **Aura3D mapping.** `game.racing` hover variant + `water` + a timeline for voiced
 scenes; `game.simulation` for crossing restoration.
@@ -512,7 +560,9 @@ courier runs before the clock.
 
 **RE seeds.** `drift`, `courier`, `delivery`, `corner`, `combo`, `timer`, `traffic`.
 
-**Parity gate.** SH-02, SH-03, SG-02, SG-03, SM-02, SH-07.
+**Parity gate.** SH-02 (PARTIAL, L1), SH-03 (PARTIAL, L1 — `app.addPostPass`
+live), SG-02 (PARTIAL internal, L5 — **probe-gated on P-2**), SG-03 (GAP, L2),
+SM-02 (PARTIAL, L3). SH-07 is **CLOSED** — no longer a gate.
 
 **Aura3D mapping.** `arcadeKart` drift model + delivery objective +
 `game.simulation` timer; city via instances.
@@ -551,8 +601,9 @@ loops; boost through stardust; limited recovery.
 **RE seeds.** `lap`, `ring`, `lane`, `crystal`, `gravity`, `opal`, `boost`,
 `stunt`, `recover`, `difficulty`.
 
-**Parity gate.** SM-02, SG-03 (ring/tube), SG-05 (painted ring mesh), ST-01
-(painted texture), SG-01.
+**Parity gate.** SM-02 (PARTIAL, L3), SG-03 (ring/tube — GAP, L2),
+SG-05 (painted ring mesh — PARTIAL, L2), ST-01 (painted texture — GAP, L4),
+SG-01 (PARTIAL, L5).
 
 **Aura3D mapping.** `game.racing` + custom ring track; gravity zones as triggers
 that reorient the up vector; stunts as timed input windows.
@@ -590,7 +641,9 @@ the air A/D spin and a fresh W/S press flips; Esc pauses.
 **RE seeds.** `roadster`, `nitro`, `thrust`, `traffic`, `trick`, `flip`, `spin`,
 `tune`, `zone`.
 
-**Parity gate.** SH-02, SH-03, SG-02, SM-02, SH-07. Phase 3.
+**Parity gate.** SH-02 (PARTIAL, L1), SH-03 (PARTIAL, L1), SG-02 (PARTIAL
+internal, L5 — **probe-gated on P-2**), SM-02 (PARTIAL, L3). SH-07 is
+**CLOSED** — no longer a gate. Phase 3.
 
 **Aura3D mapping.** `arcadeKart` + flight mode; trick scoring; upgrade state in
 `game.simulation`.
@@ -625,7 +678,8 @@ colour gates; never burst.
 
 **RE seeds.** `splat`, `paint`, `gate`, `color`, `burst`, `ramp`, `speed`.
 
-**Parity gate.** ST-01 (canvas colour), SM-02 (ramp), SG-03 (ring gates). Phase 0.
+**Parity gate.** ST-01 (canvas colour — GAP, L4), SM-02 (ramp — PARTIAL, L3),
+SG-03 (ring gates — GAP, L2). Phase 0.
 
 **Aura3D mapping.** No runner kit. One-lane auto-run with lateral input, pooled
 ramp segments, gate spawner, colour state machine.
@@ -660,7 +714,8 @@ stronger forms. Controls: WASD, Shift, 1–3, or swipe/tap.
 **RE seeds.** `ninja`, `clone`, `form`, `spin`, `attack`, `gap`, `roof`, `water`,
 `unlock`, `energy`.
 
-**Parity gate.** SA-04 (clones), SH-02 (energy), SG-05, SM-02, AU-02. Phase 2.
+**Parity gate.** SA-04 (clones — PARTIAL, L8), SH-02 (energy — PARTIAL, L1),
+SG-05 (PARTIAL, L2), SM-02 (PARTIAL, L3), AU-02 (PARTIAL, L9). Phase 2.
 
 **Aura3D mapping.** Runner kit does not exist. Build `game.runner` from
 `game.platformer` + `game.planarCollisionWorld`; combat via pooled bolts;
