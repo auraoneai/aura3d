@@ -21,6 +21,8 @@ import { qrPrimitiveGeometryOptions } from "./geometry.js";
 import { createProductionRuntimeRendererInput } from "./renderInput.js";
 import { createProductionRuntimeShadowOptions, describeProductionSpotShadow } from "./shadows.js";
 import { upgradeProductionPrimitiveTextures } from "./textures.js";
+import { createProductionRuntimeBackgroundImage } from "./backgroundImage.js";
+import { createProductionParitySurfaces } from "./paritySurfaces.js";
 import { camera } from "../nodes/camera.js";
 import { geometry } from "../nodes/geometry.js";
 import { material } from "../nodes/material.js";
@@ -162,6 +164,18 @@ export async function createProductionRuntimeSceneRenderer(
         });
     }
     const productionRuntimeLights = createProductionRuntimeCollectedLights(snapshot, flags);
+    // threejs-parity L7/SG-10: `scene().background({ texture | cube })` —
+    // async decode like the C1/B3 upgrades; feeds `source.environmentBackground`
+    // without ever touching `environmentLighting` (no implicit IBL).
+    const backgroundImage = createProductionRuntimeBackgroundImage(snapshot, (message) => {
+      runtimeWarnings.add(message);
+    });
+    // threejs-parity L7/SC-01+AD-15: `cameras.cube`/`surfaces.mirror` captures.
+    const paritySurfaces = createProductionParitySurfaces(productionRenderer, (message) => {
+      runtimeWarnings.add(message);
+    });
+    const prepareParitySurfaces = (source: ProductionRendererInput["source"], time: number): ProductionRendererInput["source"] =>
+      paritySurfaces.prepare(source, snapshot, runtimeNodes, time, canvas.width / Math.max(1, canvas.height));
 
     // T3.11 (C-36): compile once at mount. With A3D_QR_COMPILER off the contract
     // stub returns `source: null` and every call below keeps the legacy path
@@ -323,13 +337,20 @@ export async function createProductionRuntimeSceneRenderer(
     let preparedFrame: { readonly time: number; readonly input: ProductionRendererInput } | undefined;
     const buildFrame = (time: number): ProductionRendererInput => {
       latestCameraEye = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes).eye;
+      const wrapWithBackgroundImage = (input: ProductionRendererInput): ProductionRendererInput => {
+        const background = backgroundImage?.current();
+        // A resolved authored image background replaces the compiled/legacy
+        // source's environmentBackground; unset → the frame flows unchanged.
+        if (!background) return input;
+        return { ...input, source: { ...input.source, environmentBackground: background } };
+      };
       if (compiled) {
         // C-36 real path: per-frame update on the mounted compiled scene.
         updateCompiledScene(compiledScene, snapshot, runtimeNodes as AuraRuntimeNodeRegistry, time, flags);
-        return compiled.lastInput! as ProductionRendererInput;
+        return wrapWithBackgroundImage(compiled.lastInput! as ProductionRendererInput);
       }
       runtimeWarnings.clear();
-      return createProductionRuntimeRendererInput(
+      return wrapWithBackgroundImage(createProductionRuntimeRendererInput(
         snapshot,
         canvas,
         actorEntries,
@@ -339,7 +360,7 @@ export async function createProductionRuntimeSceneRenderer(
         runtimeWarnings,
         currentEnvironmentLighting,
         productionRuntimeLights
-      );
+      ));
     };
   /*
    * #1175: PRD-10 world terrain/water/grass nodes are real renderable content
@@ -372,7 +393,7 @@ export async function createProductionRuntimeSceneRenderer(
       render(time) {
         const input = takePreparedFrame(time);
         validateFrameInput(input);
-        latestDeviceDiagnostics = productionRenderer.render(input.source, input.camera);
+        latestDeviceDiagnostics = productionRenderer.render(prepareParitySurfaces(input.source, time), input.camera);
         getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
         latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);
         return latestDeviceDiagnostics.drawCalls;
@@ -380,13 +401,19 @@ export async function createProductionRuntimeSceneRenderer(
       async renderAsync(time) {
         const input = takePreparedFrame(time);
         validateFrameInput(input);
-        latestDeviceDiagnostics = await productionRenderer.renderAsync(input.source, input.camera);
+        latestDeviceDiagnostics = await productionRenderer.renderAsync(prepareParitySurfaces(input.source, time), input.camera);
         getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
         latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);
         return latestDeviceDiagnostics.drawCalls;
       },
       viewProjection(time) {
         return createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
+      },
+      // threejs-parity L7/SR-07: `app.precompile` — compiles the generated
+      // programs this frame's draw records need, without presenting pixels.
+      async precompile(time = 0) {
+        const input = buildFrame(time);
+        return productionRenderer.precompile(input.source, input.camera);
       },
       // PRD-01 C-05 seam (Q-15-1): the lane's `Renderer` when the backend is WebGL2.
       get auraRenderer() {
@@ -409,6 +436,8 @@ export async function createProductionRuntimeSceneRenderer(
       },
       dispose() {
         disposeHdriEnvironment?.();
+        backgroundImage?.dispose();
+        paritySurfaces.dispose();
         productionRenderer.dispose();
         if (compiled) {
           (runtimeNodes as { detachCompiled?: (scene: unknown) => void } | undefined)?.detachCompiled?.(compiledScene);

@@ -66,6 +66,13 @@ export interface MaterialDescriptor {
   readonly requiredAttributes?: readonly string[];
   readonly requiredUniforms?: readonly string[];
   readonly uniformSchema?: readonly MaterialUniformDescriptor[];
+  /**
+   * threejs-parity L7/SR-02: three's `material.fog` — `false` opts the draw
+   * out of scene/environment fog (ForwardPass selects a fog-free program on
+   * the generated path and binds fog-disabled uniforms on the legacy one).
+   * Defaults to true.
+   */
+  readonly fog?: boolean;
 }
 
 export const DEFAULT_RENDER_STATE: RenderState = {
@@ -89,6 +96,8 @@ export class Material {
   public readonly requiredAttributes: readonly string[];
   public readonly requiredUniforms: readonly string[];
   public readonly uniformSchema: readonly MaterialUniformDescriptor[];
+  /** threejs-parity L7/SR-02: three's `material.fog` (default true). */
+  public readonly fog: boolean;
   protected readonly parameters = new Map<string, UniformValue>();
   private dirty = true;
   private revision = 0;
@@ -109,6 +118,7 @@ export class Material {
     this.requiredAttributes = descriptor.requiredAttributes ?? [];
     this.uniformSchema = validateUniformSchema(descriptor.uniformSchema ?? deriveRequiredUniformSchema(descriptor.requiredUniforms ?? []));
     this.requiredUniforms = descriptor.requiredUniforms ?? this.uniformSchema.filter((uniform) => uniform.required !== false).map((uniform) => uniform.name);
+    this.fog = descriptor.fog !== false;
     for (const [key, value] of Object.entries(descriptor.parameters ?? {})) {
       this.setParameter(key, value);
     }

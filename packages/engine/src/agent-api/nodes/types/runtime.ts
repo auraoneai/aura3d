@@ -573,6 +573,11 @@ export interface WebGLRenderController {
   onDeviceLost?(listener: () => void): () => void;
   onDeviceRestored?(listener: () => void): () => void;
   deviceLost?(): boolean;
+  /**
+   * threejs-parity L7/SR-07: `app.precompile` — warms generated programs for
+   * the current frame's draw records without presenting pixels.
+   */
+  precompile?(time?: number): Promise<AuraPrecompileResult>;
   /** PRD-01 C-05 seam (Q-15-1): the lane Renderer, forwarded from WebGLSceneRenderer.auraRenderer. */
   readonly auraRenderer?: unknown;
 }
@@ -703,6 +708,12 @@ export interface WebGLSceneRenderer {
   viewProjection(time: number): Float32Array;
   /** Resize renderer-owned attachments after the canvas backing store changes. */
   resize?(width: number, height: number): void;
+  /**
+   * threejs-parity L7/SR-07: `renderer.precompile` — warms generated programs
+   * for a frame's draw records without presenting pixels. Forwarded from the
+   * renderer itself, not the compiled controller's frame path.
+   */
+  precompile?(time?: number): Promise<AuraPrecompileResult>;
   /**
    * WS-2.6 — device-loss hooks, when this renderer is backed by a real WebGL2 device.
    *

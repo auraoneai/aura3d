@@ -26,6 +26,8 @@ export interface InstancedPBRMaterialOptions {
   readonly environmentBrdfLutTexture?: TextureBinding;
   readonly emissiveColor?: readonly [number, number, number];
   readonly emissiveStrength?: number;
+  /** threejs-parity L7/SR-02: three's `material.fog` — `false` opts this draw out of scene fog. */
+  readonly fog?: boolean;
 }
 
 export interface InstancedPBRProceduralEnvironmentMapOptions {
@@ -63,6 +65,7 @@ export class InstancedPBRMaterial extends Material {
       name: options.name ?? "instanced-pbr",
       shaderKey: DEFAULT_INSTANCED_PBR_SHADER_NAME,
       renderState: options.renderState,
+      fog: options.fog,
       parameters: {
         u_baseColor: baseColor,
         u_alphaCutoff: 0,

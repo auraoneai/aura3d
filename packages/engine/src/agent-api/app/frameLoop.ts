@@ -318,6 +318,8 @@ export async function startProductionRender(
       if (disposed || animationHandle || options.autoStart === false || typeof requestAnimationFrame === "undefined") return;
       if (sceneWantsFrames || requiresFrames()) animationHandle = requestAnimationFrame(scheduleFrame);
     },
+    // threejs-parity L7/SR-07: forward the backing renderer's program warm-up.
+    precompile: renderer.precompile ? (time?: number) => renderer.precompile!(time) : undefined,
     // WS-2.6 — forward device-loss subscription from whichever renderer backs this controller.
     onDeviceLost: renderer.onDeviceLost ? (listener: () => void) => renderer.onDeviceLost!(listener) : undefined,
     onDeviceRestored: renderer.onDeviceRestored ? (listener: () => void) => renderer.onDeviceRestored!(listener) : undefined,

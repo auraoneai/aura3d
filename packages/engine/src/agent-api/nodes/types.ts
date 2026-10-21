@@ -207,6 +207,12 @@ export interface AuraMaterialSpec {
   /** P3 physical-extension bounded warnings, stamped by `material.physical` (muse3jsparity-PRD): surfaced by capability diagnostics, never silent. */
   readonly physicalWarnings?: readonly string[];
   readonly envMapIntensity?: number;
+  /**
+   * threejs-parity L7/SC-01: bind a `cameras.cube` capture as this material's
+   * environment map (three's `material.envMap = cubeRenderTarget.texture`).
+   * `cubeCamera` names the authored `cameras.cube` node.
+   */
+  readonly envMap?: { readonly cubeCamera: string };
   readonly normal?: AuraMaterialTextureInput;
   readonly normalScale?: number;
   readonly roughnessMap?: AuraMaterialTextureInput;
@@ -748,7 +754,11 @@ export type AuraSceneNode =
   | AuraLineNode
   | AuraPointsNode
   | AuraSpriteNode
-  | AuraBatchedNode;
+  | AuraBatchedNode
+  // threejs-parity L7 (SC-01/AD-15): cube-camera + mirror surface nodes compile
+  // through `compiler/paritySurfaces.ts` into renderer-owned captures.
+  | import("./cameras.js").AuraCubeCameraNode
+  | import("./surfaces.js").AuraMirrorSurfaceNode;
 
 export interface AuraModelNode extends AuraTransformSpec {
   readonly kind: "model";
@@ -1588,9 +1598,36 @@ export interface AuraRendererRuntimeObservation {
   }[];
 }
 
+/**
+ * threejs-parity L7/SG-10: `scene().background({ texture | cube })` — three's
+ * `scene.background = Texture | CubeTexture`. Painted by the renderer's
+ * environment-background pass; never enables IBL (unlike `scene.environment`).
+ */
+export type AuraSceneBackgroundImage =
+  | {
+      /** Equirect 2D texture background — url string or texture asset ref. */
+      readonly texture: AuraMaterialTextureInput | string;
+      readonly intensity?: number;
+      /** Background rotation in radians (three's `backgroundRotation`). */
+      readonly rotation?: number;
+    }
+  | {
+      /** Cubemap background — exactly six faces, px nx py ny pz nz order. */
+      readonly cube: {
+        readonly faces: readonly (AuraAssetRef<"texture"> | string)[];
+        readonly intensity?: number;
+        readonly rotation?: number;
+      };
+    };
+
 export interface AuraSceneSnapshot {
   readonly schema: "aura3d-scene-snapshot/1.0";
   readonly background: AuraColor;
+  /**
+   * threejs-parity L7/SG-10: texture/cube background (three's `scene.background`).
+   * Wins over the `background` clear colour once its bitmaps decode.
+   */
+  readonly backgroundImage?: AuraSceneBackgroundImage;
   /**
    * PRD-01 C-05: `scene().background(color, { toneMapped: false })` opt-out —
    * the background shows the authored sRGB colour exactly instead of being

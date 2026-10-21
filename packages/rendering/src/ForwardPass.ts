@@ -354,6 +354,9 @@ export class ForwardPass extends BaseRenderPass {
   }
 
   private drawItem(device: RenderDevice, item: RenderItem): void {
+    // threejs-parity L7/SG-09: three's Object3D.onBeforeRender fires
+    // immediately before the draw call.
+    item.onBeforeRender?.(item);
     const material = item.material ?? new UnlitMaterial();
     const baseMaterial = getBaseMaterial(material);
     this.applyLightUniforms(material);
@@ -424,8 +427,11 @@ export class ForwardPass extends BaseRenderPass {
     applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms, { conjunction: e3Conjunction, generated });
     if (generated) applyGeneratedEnvironmentMapUniforms(this.options.environmentLighting, item, shader, uniforms, drawFlags);
     if (generated) applyGeneratedProceduralEnvironmentUniforms(this.options.environmentLighting, item, shader, uniforms, prd02Ibl);
-    applyEnvironmentFogUniforms(this.options.environmentFog, item, shader, uniforms);
-    if (generated) applyGeneratedFogUniforms(this.options.environmentFog, shader, uniforms);
+    // threejs-parity L7/SR-02: three's `material.fog === false` — the draw
+    // binds fog-disabled uniforms while other scene materials keep fog.
+    const itemFog = baseMaterial.fog === false ? false : this.options.environmentFog;
+    applyEnvironmentFogUniforms(itemFog, item, shader, uniforms);
+    if (generated) applyGeneratedFogUniforms(itemFog, shader, uniforms);
     applyForwardShadowMapUniforms(
       selectForwardShadowMap(this.options.shadowMap, item, this.options.cameraViewMatrix, this.options.cameraPosition),
       item,
@@ -627,6 +633,9 @@ export class ForwardPass extends BaseRenderPass {
     return normalizeProgramFeatures({
       ...record,
       ...axes,
+      // threejs-parity L7/SR-02: `material.fog === false` selects a fog-free
+      // program variant so the draw carries no FOG_* defines at all.
+      ...(material.fog === false ? { fog: "none" as const } : {}),
       // Phase 6: instancing is item-driven — a material's own feature record
       // only declares it when authored instanced; the draw's program must
       // cover the union (attribute matrices are the only generated path).
@@ -1948,6 +1957,8 @@ function sortForwardRenderItems(
     return {
       item,
       bucket: queue !== "opaque" ? "transparent" : isTransmissionRenderItem(item) ? "transmission" : "opaque",
+      // threejs-parity L7/SG-09: three sorts on `object.renderOrder` first.
+      renderOrder: item.renderOrder ?? 0,
       depth: cameraPosition ? distanceSquaredFromCamera(item, cameraPosition) : 0,
       pipelineKey: renderItemPipelineKey(item),
       batchKey: renderItemPipelineKey(item),
@@ -2001,7 +2012,11 @@ export function splitForwardItems(
     }
   }
   // Transparents are drawn back-to-front (farther first), matching the queue sort.
-  transparent.sort((a, b) => b.sortDepth - a.sortDepth);
+  // threejs-parity L7/SG-09: `renderOrder` remains the primary sort key.
+  transparent.sort((a, b) => {
+    const orderDelta = (a.item.renderOrder ?? 0) - (b.item.renderOrder ?? 0);
+    return orderDelta !== 0 ? orderDelta : b.sortDepth - a.sortDepth;
+  });
   return { opaque, transmission, transparent };
 }
 

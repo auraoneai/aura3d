@@ -261,6 +261,12 @@ export type { RenderSource };
 export interface RendererInput {
   readonly source: RenderSource | Iterable<RenderItem> | Scene;
   readonly camera?: CameraLike;
+  /**
+   * threejs-parity L7/SH-06: render into `target` instead of the canvas
+   * (three's `setRenderTarget` + `render`). The frame executes at the
+   * target's own dimensions; the viewport is restored afterwards.
+   */
+  readonly target?: RenderTarget;
 }
 
 export type RendererCameraPolicy = "identity" | "auto-frame" | "require";
@@ -572,6 +578,38 @@ export class Renderer {
     return this.device.getDiagnostics();
   }
 
+  /**
+   * threejs-parity L7/SR-07: `renderer.precompile` — compiles (and awaits) the
+   * generated programs a source needs before first render, without submitting
+   * a frame. Returns the number of programs this call compiled and wall time.
+   */
+  async precompile(
+    sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene,
+    camera?: CameraLike
+  ): Promise<{ readonly compiledPrograms: number; readonly durationMs: number }> {
+    this.assertAlive();
+    const startedAt = typeof performance !== "undefined" ? performance.now() : Date.now();
+    const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
+    sceneFromSource(source)?.updateWorldTransforms();
+    const resolvedCamera = resolveCamera(source, inputCamera, { width: this.width, height: this.height }, { allowSceneCamera: true });
+    const cameraViewProjection = resolvedCamera?.viewProjectionMatrix;
+    const collected = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera);
+    const before = this.device.getDiagnostics().programCompileCount ?? 0;
+    await this.warmGeneratedPrograms(
+      collected.items,
+      collectRenderLights(source),
+      collectEnvironmentLighting(source),
+      collectEnvironmentFog(source),
+      collectForwardShadowMap(source),
+      cameraViewProjection
+    );
+    const after = this.device.getDiagnostics().programCompileCount ?? before;
+    return {
+      compiledPrograms: Math.max(0, after - before),
+      durationMs: (typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt
+    };
+  }
+
   /** C-28 (#91): run `fn` under the frameStats "post" scope when a monitor exists. */
   private scopePost<T>(fn: () => T): T {
     return this.frameStatsMonitor ? this.frameStatsMonitor.scope("post", fn) : fn();
@@ -636,7 +674,7 @@ export class Renderer {
     const devicePixelRatio = resolveCanvasPixelRatio({
       devicePixelRatio: globalThis.devicePixelRatio ?? 1,
       tier: this.qualityTier ?? this.liveQualityTier()?.settings ?? { maxPixelRatio: Number.POSITIVE_INFINITY },
-      explicit: options.devicePixelRatio,
+      explicit: options.devicePixelRatio ?? this.pixelRatioOverride,
       resolution: this.resolutionOptions
     });
     if (![cssWidth, cssHeight, devicePixelRatio].every(Number.isFinite) || cssWidth <= 0 || cssHeight <= 0 || devicePixelRatio <= 0) {
@@ -690,6 +728,87 @@ export class Renderer {
   }
 
   /**
+   * threejs-parity L7/SH-05: `setPixelRatio` — overrides the device pixel
+   * ratio used by `resizeToDisplay` (a `devicePixelRatio` option there still
+   * wins for that call). Applies immediately on a canvas-backed renderer;
+   * stored for the next resize otherwise.
+   */
+  private pixelRatioOverride?: number;
+  setPixelRatio(ratio: number): void {
+    this.assertAlive();
+    if (!Number.isFinite(ratio) || ratio <= 0) {
+      throw new RenderDeviceError("Pixel ratio must be a positive finite number", "INVALID_PIXEL_RATIO", { ratio });
+    }
+    this.pixelRatioOverride = ratio;
+    if (this.canvas) this.resizeToDisplay();
+  }
+
+  get pixelRatio(): number {
+    return this.pixelRatioOverride ?? this.resolutionReport.pixelRatio;
+  }
+
+  /**
+   * threejs-parity L7/SH-05: `setClearColor` — the default clear used when the
+   * scene has no background (three's `setClearColor(color, alpha)`).
+   */
+  setClearColor(color: readonly [number, number, number] | readonly [number, number, number, number], alpha?: number): void {
+    this.assertAlive();
+    const [r, g, b, a] = color;
+    const resolved: readonly [number, number, number, number] = [r ?? 0, g ?? 0, b ?? 0, alpha ?? a ?? 1];
+    if (!resolved.every((v) => Number.isFinite(v) && v >= 0 && v <= 1)) {
+      throw new RenderDeviceError("Clear color channels must be finite numbers in [0, 1]", "INVALID_CLEAR_COLOR", { color: [...color], alpha });
+    }
+    this.clearColor = resolved;
+  }
+
+  get clearColorValue(): readonly [number, number, number, number] {
+    return this.clearColor;
+  }
+
+  /**
+   * threejs-parity L7/SR-05: three's `WebGLRenderer.info` — per-frame render
+   * counters plus live resource gauges from the device diagnostics.
+   */
+  private submittedFrames = 0;
+  get info(): {
+    readonly render: {
+      readonly calls: number;
+      readonly triangles: number;
+      readonly points: number;
+      readonly lines: number;
+      readonly frame: number;
+    };
+    readonly memory: {
+      readonly geometries: number;
+      readonly textures: number;
+      readonly renderTargets?: number;
+      readonly programs?: number;
+    };
+    readonly approximateGpuMemoryBytes?: number;
+  } {
+    const d = this.device.getDiagnostics();
+    const memoryBytes = (d.bufferBytes ?? 0) + (d.textureBytes ?? 0);
+    return {
+      render: {
+        calls: d.drawCalls,
+        triangles: (d as { readonly triangles?: number }).triangles ?? 0,
+        points: (d as { readonly points?: number }).points ?? 0,
+        lines: (d as { readonly lines?: number }).lines ?? 0,
+        frame: this.submittedFrames
+      },
+      memory: {
+        geometries: d.buffers,
+        textures: d.textures ?? 0,
+        ...(d.renderTargets !== undefined ? { renderTargets: d.renderTargets } : {}),
+        programs: d.shaders
+      },
+      ...(d.approximateGpuMemoryBytes !== undefined || memoryBytes > 0
+        ? { approximateGpuMemoryBytes: d.approximateGpuMemoryBytes ?? memoryBytes }
+        : {})
+    };
+  }
+
+  /**
    * Feeds one frame's timings to the resolution governor (C-28 `gpuMs` wins
    * over the CPU interval when lane 11's timer queries provide it).
    */
@@ -728,12 +847,52 @@ export class Renderer {
     this.temporalHistory.commit();
   }
   resetTemporalHistory(_reason = "explicit-reset"): void { this.temporalHistory.reset(); this.lastTemporalCameraPosition = undefined; }
+  /**
+   * threejs-parity L7/SH-06: a `{ target }` (or `source.renderTarget`) frame
+   * executes at the target's own dimensions — three's `setRenderTarget` +
+   * `render` semantics. Viewport state restores when the frame exits.
+   */
+  private adoptExplicitTargetSize<T>(source: RenderSource | Iterable<RenderItem> | Scene, run: () => T): T {
+    const target = collectRenderTarget(source);
+    if (!target || (target.width === this.width && target.height === this.height)) return run();
+    const prevWidth = this.width;
+    const prevHeight = this.height;
+    this.width = target.width;
+    this.height = target.height;
+    // Stale temporal history at the old size would misproject; drop it.
+    this.temporalHistory.dispose();
+    try {
+      return run();
+    } finally {
+      this.width = prevWidth;
+      this.height = prevHeight;
+    }
+  }
+
+  private async adoptExplicitTargetSizeAsync<T>(source: RenderSource | Iterable<RenderItem> | Scene, run: () => Promise<T>): Promise<T> {
+    const target = collectRenderTarget(source);
+    if (!target || (target.width === this.width && target.height === this.height)) return run();
+    const prevWidth = this.width;
+    const prevHeight = this.height;
+    this.width = target.width;
+    this.height = target.height;
+    this.temporalHistory.dispose();
+    try {
+      return await run();
+    } finally {
+      this.width = prevWidth;
+      this.height = prevHeight;
+    }
+  }
+
   render(input: RendererInput): RenderDeviceDiagnostics;
   render(source: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
   render(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
     // T0-28: ambient `rendererQrFlags()` readers (Lighting, Background, post…)
     // see this renderer's flags for the duration of the synchronous frame.
-    return withRendererQrFlags(this.device, () => this.renderFrame(sourceOrInput, camera));
+    return withRendererQrFlags(this.device, () =>
+      this.adoptExplicitTargetSize(normalizeRendererInput(sourceOrInput, camera).source, () => this.renderFrame(sourceOrInput, camera))
+    );
   }
 
   private renderFrame(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
@@ -771,7 +930,7 @@ export class Renderer {
     this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, explicitShadowMap, cameraViewProjection);
     const sourceCameraPosition = collectSourceCameraPosition(source);
     const explicitRenderTarget = collectRenderTarget(source);
-    validateExplicitRenderTarget(explicitRenderTarget, this.width, this.height);
+    validateExplicitRenderTarget(explicitRenderTarget);
     let cameraPosition = sourceCameraPosition ?? resolvedCamera?.cameraPosition;
     // C-05/T0-07: decide the frame's output route before the hooks exist, so
     // contributors see the same v2/legacy resource names the graph writes.
@@ -1076,6 +1235,7 @@ export class Renderer {
         target.dispose();
       }
     }
+    this.submittedFrames += 1;
     this.submittedShadowFrameId += 1;
     if (this.lastShadowEvidence) this.lastShadowEvidence = { ...this.lastShadowEvidence, submissionFrameId: this.submittedShadowFrameId };
     return withRendererFrameDiagnostics(this.device.getDiagnostics(), collectionDiagnostics, createPostprocessDiagnostics(postprocess, ownedTargets, this.width, this.height, {
@@ -1087,6 +1247,14 @@ export class Renderer {
   renderAsync(input: RendererInput): Promise<RenderDeviceDiagnostics>;
   renderAsync(source: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): Promise<RenderDeviceDiagnostics>;
   async renderAsync(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): Promise<RenderDeviceDiagnostics> {
+    // threejs-parity L7/SH-06: `{ target }` frames run at the target's size.
+    return this.adoptExplicitTargetSizeAsync(
+      normalizeRendererInput(sourceOrInput, camera).source,
+      () => this.renderAsyncFrame(sourceOrInput, camera)
+    );
+  }
+
+  private async renderAsyncFrame(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): Promise<RenderDeviceDiagnostics> {
     this.assertAlive();
     this.frameStatsMonitor?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
     // T0-06: reset the per-frame sync-compile bound for this render.
@@ -1123,7 +1291,7 @@ export class Renderer {
     }
     const sourceCameraPosition = collectSourceCameraPosition(source);
     const explicitRenderTarget = collectRenderTarget(source);
-    validateExplicitRenderTarget(explicitRenderTarget, this.width, this.height);
+    validateExplicitRenderTarget(explicitRenderTarget);
     let cameraPosition = sourceCameraPosition ?? resolvedCamera?.cameraPosition;
     // C-05/T0-07: decide the frame's output route before the hooks exist, so
     // contributors see the same v2/legacy resource names the graph writes.
@@ -1435,6 +1603,7 @@ export class Renderer {
         target.dispose();
       }
     }
+    this.submittedFrames += 1;
     this.submittedShadowFrameId += 1;
     if (this.lastShadowEvidence) this.lastShadowEvidence = { ...this.lastShadowEvidence, submissionFrameId: this.submittedShadowFrameId };
     return withRendererFrameDiagnostics(this.device.getDiagnostics(), collectionDiagnostics, createPostprocessDiagnostics(postprocess, ownedTargets, this.width, this.height, {
@@ -1905,34 +2074,42 @@ function inferInitialCanvasDimension(canvas: HTMLCanvasElement | OffscreenCanvas
 function collectRenderTarget(source: RenderSource | Iterable<RenderItem> | Scene): RenderTarget | undefined {
   return source instanceof Scene || isIterable(source) ? undefined : source.renderTarget;
 }
-function validateExplicitRenderTarget(target: RenderTarget | undefined, width: number, height: number): void {
+function validateExplicitRenderTarget(target: RenderTarget | undefined): void {
   if (!target) return;
   if (target.disposed) {
     throw new RenderDeviceError("Renderer renderTarget must be a live render target.", "RENDER_TARGET_DISPOSED", {
       renderTarget: target.label
     });
   }
-  if (target.width !== width || target.height !== height) {
-    throw new RenderDeviceError("Renderer renderTarget dimensions must match the renderer viewport.", "RENDER_TARGET_VIEWPORT_MISMATCH", {
-      renderTarget: target.label,
-      targetWidth: target.width,
-      targetHeight: target.height,
-      rendererWidth: width,
-      rendererHeight: height
-    });
-  }
+  // threejs-parity L7/SH-06: no viewport-dimensions check — a `{ target }`
+  // frame executes at the target's own size (`adoptExplicitTargetSize`).
 }
 function normalizeRendererInput(
   sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene,
   camera?: CameraLike
 ): RendererInput {
   if (isRendererInput(sourceOrInput)) {
-    return { source: sourceOrInput.source, camera: camera ?? sourceOrInput.camera };
+    const target = sourceOrInput.target;
+    const source = target ? withExplicitRenderTarget(sourceOrInput.source, target) : sourceOrInput.source;
+    return { source, camera: camera ?? sourceOrInput.camera };
   }
   return { source: sourceOrInput, ...(camera ? { camera } : {}) };
 }
 function isRendererInput(value: RendererInput | RenderSource | Iterable<RenderItem> | Scene): value is RendererInput {
   return !(value instanceof Scene) && !isIterable(value) && isRecord(value) && "source" in value;
+}
+/**
+ * threejs-parity L7/SH-06: fold a `{ target }` render input into the source's
+ * `renderTarget` carry — Scene wraps as `{ scene }`, iterables as
+ * `{ renderItems }`, a RenderSource keeps every other authored field.
+ */
+function withExplicitRenderTarget(
+  source: RenderSource | Iterable<RenderItem> | Scene,
+  target: RenderTarget
+): RenderSource | Iterable<RenderItem> | Scene {
+  if (source instanceof Scene) return { scene: source, renderTarget: target };
+  if (isIterable(source)) return { renderItems: source, renderTarget: target };
+  return { ...source, renderTarget: target };
 }
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -1999,7 +2176,7 @@ function collectRenderItemsWithDiagnostics(
   if (explicitItems.length > 0) {
     const explicitFrustum = explicitCullingFrustum(source, cameraViewProjection, camera);
     cullingFrustum ??= explicitFrustum;
-    const visibleItems = cullExplicitRenderItems(explicitItems, explicitFrustum, diagnostics, culledShadowCasters);
+    const visibleItems = cullExplicitRenderItems(explicitItems, explicitFrustum, diagnostics, culledShadowCasters, camera?.layerMask);
     const optimizedItems = applyRendererOwnedStaticBatching(source, applyRendererOwnedStaticMeshConsolidation(source, visibleItems));
     const projectedItems = applyViewProjection(optimizedItems, cameraViewProjection);
     items.push(...projectedItems);
@@ -2025,7 +2202,11 @@ function collectSceneRenderItems(
     });
   }
   const items: RenderItem[] = [];
+  const cameraLayerMask = camera?.layerMask;
   for (const { node, renderable } of renderables) {
+    // threejs-parity L7/SG-10: three's camera.layers test — a node whose
+    // layers do not intersect the camera mask is absent from the frame.
+    if (cameraLayerMask !== undefined && (node.layerMask & cameraLayerMask) === 0) continue;
     const geometry = lookupRenderResource(source.geometryLibrary!, renderable.geometry);
     const material = lookupRenderResource(source.materialLibrary!, renderable.material);
     if (!geometry) {
@@ -2054,7 +2235,9 @@ function collectSceneRenderItems(
       diagnostics.submittedObjects += 1;
       if (camera) diagnostics.frustumTestedObjects += 1;
     }
-    const culled = camera !== undefined && !camera.frustum.intersectsBox(bounds.toMathBox());
+    // threejs-parity L7/SG-09: `node.frustumCulled === false` skips the test
+    // (three.js `object.frustumCulled` semantics).
+    const culled = camera !== undefined && node.frustumCulled !== false && !camera.frustum.intersectsBox(bounds.toMathBox());
     if (culled && diagnostics) diagnostics.culledObjects += 1;
     if (culled && !culledShadowCasters) continue;
     if (!culled && diagnostics) diagnostics.visibleObjects += 1;
@@ -2063,6 +2246,15 @@ function collectSceneRenderItems(
       material,
       label: node.name,
       modelMatrix,
+      // threejs-parity L7/SG-09: carry the node's parity fields onto the item
+      // so sort/cull/onBeforeRender behave like three's Object3D.
+      renderOrder: node.renderOrder,
+      layerMask: node.layerMask,
+      frustumCulled: node.frustumCulled,
+      userData: node.userData,
+      ...(node.onBeforeRender
+        ? { onBeforeRender: () => node.onBeforeRender!(undefined, node) }
+        : {}),
       normalMatrix: normalMatrixFromModel(modelMatrix),
       modelViewProjectionMatrix: multiplyMat4(cameraViewProjection ?? identityMat4(), modelMatrix),
       ...(renderable.skinning ? { skinning: renderable.skinning } : {}),

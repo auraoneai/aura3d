@@ -240,6 +240,7 @@ export type { AuraFootPlantingGround, AuraFootPlantingGroundLike, AuraFootPlanti
 export { createFrameEncoder, createInMemoryFrameEncoderAdapter, defaultContainerForCodec, defaultFrameEncoderMimeType, supportsFrameEncoderCodec } from "./FrameEncoder.js";
 export type { CreateFrameEncoderOptions, EncodedVideoArtifact, EncodedVideoChunk, FrameEncoder, FrameEncoderAdapter, FrameEncoderCapability, FrameEncoderCodec, FrameEncoderContainer, FrameEncoderFrame, FrameEncoderOutputMode, FrameEncoderStatus } from "./FrameEncoder.js";
 export { FrameLoop, createFrameLoop, type FrameLoopCallback, type FrameLoopFrame, type FrameLoopOptions, type FrameLoopSnapshot, type FrameLoopSource } from "./FrameLoop";
+export { Clock, type AuraClockOptions } from "./Clock.js";
 export { gameKits } from "./game-kits";
 export { createFightingGameKit, fighting, fighterRuntimeNode, type FightingActorState, type FightingControls, type FightingGameKit, type FightingGameKitOptions, type FightingGameSnapshot, type FightingStageOptions } from "./game-kits/fighting";
 export { arcadeKart, buildGrandPrixRoadwayNodes, createArcadeKartGameKit, type ArcadeKartGameKit, type ArcadeKartGameKitOptions, type ArcadeKartPlayerState, type ArcadeKartRivalSpec, type ArcadeKartStepControls, type ArcadeKartStepResult, type GrandPrixRoadwayOptions } from "./game-kits/arcadeKart";
@@ -337,8 +338,8 @@ export { enforceFrameBudget, planScatterInstances, scatterWindOffset } from "./S
 export type { FrameBudgetDecision, FrameBudgetInput, ScatterPlan, ScatterPlanOptions } from "./Scatter.js";
 export { AURA_NORMALIZED_MODEL_MAX_DIMENSION, boundsFromAsset, boundsFromSize, boundsHeight, boundsMaxDimension, boundsSize, groundedAssetPlacement, groundedPlacement, groundedRenderedAssetPlacement, groundedYOffset, normalizedRenderScaleForTargetHeight, normalizedRenderScaleForTargetMaxDimension, normalizedScaleForTargetHeight, normalizedScaleForTargetMaxDimension, resolveSubjectPlacementFacts } from "./SceneGroundingUtils.js";
 export type { AssetGroundedPlacement, GroundedPlacement, GroundedPlacementOptions, RenderGroundedAssetPlacement, RenderGroundedPlacementOptions, SceneAssetBoundsMetadata, SceneAssetLike, SceneBounds, SubjectPlacementFacts, SubjectPlacementRequest, Vec3 } from "./SceneGroundingUtils.js";
-export { groundProbe, raycastPhysicsWorld, raycastSceneTargets, raycastSceneTargetsAll, sceneQueryTargets, sphereCastPhysicsWorld, sphereCastSceneTargets } from "./SceneQueries.js";
-export type { PhysicsQueryWorld, SceneQueryHit, SceneQueryTarget, SceneRay } from "./SceneQueries.js";
+export { groundProbe, raycast, raycastFirst, raycastPhysicsWorld, raycastSceneTargets, raycastSceneTargetsAll, sceneQueryTargets, sphereCastPhysicsWorld, sphereCastSceneTargets } from "./SceneQueries.js";
+export type { PhysicsQueryWorld, SceneQueryHit, SceneQueryTarget, SceneRay, SceneRaycastCamera, SceneRaycastInput, SceneRaycastOptions } from "./SceneQueries.js";
 export { createSceneSequencer, createSceneSequencerPlayback, sampleSceneSequencer } from "./SceneSequencer.js";
 export type { LegacySceneSequencer, LegacySceneSequencerSnapshot, SceneSequencer, SceneSequencerPlan, SceneSequencerPlaybackController, SceneSequencerPlaybackSnapshot, SceneSequencerSample, SceneSequencerSceneBinding } from "./SceneSequencer.js";
 export { createShotCompositionGuide, evaluateShotComposition } from "./ShotCompositionRules.js";
@@ -411,6 +412,10 @@ export type { CreateGameAssetReadinessManifestOptions, GameAssetAnimationClipRea
 export { CSS2D_OUT_OF_SCOPE, collectLabelTelemetry, labelTelemetryRoleFor, summarizeTextBuckets, tuneLabelCollision } from "./LabelTelemetry.js";
 export type { LabelCollisionTuning, LabelTelemetry, LabelTelemetryByRole, LabelTelemetryRole, TextBucketSummary } from "./LabelTelemetry.js";
 export { camera } from "./nodes/camera.js";
+export { cameras } from "./nodes/cameras.js";
+export type { AuraCubeCameraNode, AuraCubeCameraOptions } from "./nodes/cameras.js";
+export { surfaces } from "./nodes/surfaces.js";
+export type { AuraMirrorOptions, AuraMirrorSurfaceNode } from "./nodes/surfaces.js";
 export { instances } from "./nodes/instances.js";
 export { lights } from "./nodes/lights.js";
 export { looks } from "./looks/looks.js";

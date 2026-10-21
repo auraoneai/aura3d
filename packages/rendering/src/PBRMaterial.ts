@@ -52,6 +52,8 @@ export interface PBRMaterialOptions {
   readonly iridescenceThicknessMinimum?: number;
   readonly iridescenceThicknessMaximum?: number;
   readonly dispersion?: number;
+  /** threejs-parity L7/SR-02: three's `material.fog` — `false` opts this draw out of scene fog. */
+  readonly fog?: boolean;
 }
 
 export interface PBRProceduralEnvironmentMapOptions {
@@ -129,6 +131,7 @@ export class PBRMaterial extends Material {
       name: options.name ?? "pbr",
       shaderKey: DEFAULT_PBR_SHADER_NAME,
       renderState: options.renderState,
+      fog: options.fog,
       parameters: {
         u_baseColor: baseColor,
         u_metallic: options.metallic ?? 0,
