@@ -107,12 +107,16 @@ function serveDir(dir) {
   });
 }
 
-async function filmGame(browser, baseUrl, key, cfg, outDir) {
+async function filmGame(baseUrl, key, cfg, outDir) {
   const url = `${baseUrl}/apps/${cfg.route}/?autoplay=1`;
   const frames = Math.max(12, cfg.frames || Number(arg("frames", 48)));
   const gameDir = path.join(outDir, key);
   fs.mkdirSync(gameDir, { recursive: true });
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  // Dedicated throwaway browser per game, launched exactly like the visual-QA
+  // harness (bare launch — the EC2-era SwiftShader flags produce black frames
+  // on this runner, and WebGL game routes wedge a shared GPU process anyway).
+  const browser = await chromium.launch({ timeout: 45000 });
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 2 });
   const page = await context.newPage();
   const console_ = [];
   const errors = [];
@@ -122,7 +126,7 @@ async function filmGame(browser, baseUrl, key, cfg, outDir) {
   await page.route(/\.(wav|mp3|ogg|m4a)(\?|$)/i, (r) => r.abort());
   const t0 = Date.now();
   try {
-    await page.goto(url, { waitUntil: "load", timeout: 60000 });
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
     await page.waitForSelector("canvas", { timeout: 60000 });
     // settle: boot gate, GLB loads, autopilot starts
     await page.waitForTimeout(15000);
@@ -200,7 +204,7 @@ async function filmGame(browser, baseUrl, key, cfg, outDir) {
   } finally {
     fs.writeFileSync(path.join(gameDir, "console.log"), console_.join("\n"));
     fs.writeFileSync(path.join(gameDir, "errors.log"), errors.join("\n"));
-    await context.close();
+    await browser.close();
   }
   return { key, url, frames, errors: errors.length };
 }
@@ -217,24 +221,17 @@ async function filmGame(browser, baseUrl, key, cfg, outDir) {
     baseUrl = `http://127.0.0.1:${served.port}`;
     console.log(`serving ${dist} on ${baseUrl}`);
   }
-  const browser = await chromium.launch({
-    headless: true,
-    args: ["--no-sandbox", "--use-angle=swiftshader", "--enable-unsafe-swiftshader",
-      "--disable-gpu-sandbox", "--disable-gpu-compositing", "--disable-dev-shm-usage",
-      "--disable-extensions", "--mute-audio", "--renderer-process-limit=1"]
-  });
   try {
     const results = [];
     for (const key of GAME_KEYS) {
       const cfg = GAMES[key];
       if (!cfg) throw new Error(`unknown game key: ${key}`);
       console.log(`filming ${key} (${cfg.route})…`);
-      results.push(await filmGame(browser, baseUrl, key, cfg, outDir));
+      results.push(await filmGame(baseUrl, key, cfg, outDir));
     }
     fs.writeFileSync(path.join(outDir, "film-report.json"), JSON.stringify({ mode: PROD ? "prod" : "local", base: baseUrl, results }, null, 1));
     console.log(JSON.stringify(results));
   } finally {
-    await browser.close();
     served?.server.close();
   }
 })().catch((e) => { console.error(e); process.exit(1); });
