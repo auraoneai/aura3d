@@ -12,6 +12,12 @@ export interface AudioContextLike {
   createPanner(): PannerNode;
   createBiquadFilter(): BiquadFilterNode;
   createConvolver(): ConvolverNode;
+  /**
+   * Optional like the other non-essential factories on the package's wider
+   * `SoundGraphContext`: real contexts provide it; minimal fakes may not.
+   * `AudioAnalyser` throws a clear error when it is absent.
+   */
+  createAnalyser?(): AnalyserNode;
 }
 
 export interface AudioContextManagerOptions {

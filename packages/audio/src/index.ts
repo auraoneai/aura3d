@@ -46,7 +46,9 @@ export { AudioContextManager } from "./AudioContextManager";
 export type { AudioContextLike, AudioContextManagerOptions, AudioContextState } from "./AudioContextManager";
 export type { AudioEffect } from "./AudioEffect";
 export { AudioListener } from "./AudioListener";
-export type { Vec3Like } from "./AudioListener";
+export type { AudioListenerOptions, Vec3Like } from "./AudioListener";
+export { AudioAnalyser, createAudioAnalyser } from "./AudioAnalyser";
+export type { AudioAnalyserOptions } from "./AudioAnalyser";
 export { AudioMixer, createAudioMixerEvidence, createAnimationAudioMixer } from "./AudioMixer";
 export type { AudioMixerBusEvidence, AudioMixerEvidence, AnimationAudioMixer, AnimationAudioMixerOptions } from "./AudioMixer";
 export { AudioSource } from "./AudioSource";
@@ -54,12 +56,14 @@ export type { AudioSourceOptions, AudioSourceState } from "./AudioSource";
 export {
   PositionalEmitter,
   applyOcclusionToGain,
+  computeConeGain,
   computeDistanceAttenuation,
   computeDopplerShift,
   occlusionLowpassFrequency,
   resolveOcclusion
 } from "./PositionalEmitter";
 export type {
+  ConeOptions,
   DistanceAttenuationModel,
   DistanceAttenuationOptions,
   DopplerOptions,

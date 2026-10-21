@@ -103,9 +103,15 @@ export class FakePanner extends FakeNode {
   refDistance = 1;
   maxDistance = 10_000;
   rolloffFactor = 1;
+  coneInnerAngle = 360;
+  coneOuterAngle = 360;
+  coneOuterGain = 0;
   positionX = fakeParam(0);
   positionY = fakeParam(0);
   positionZ = fakeParam(0);
+  orientationX = fakeParam(1);
+  orientationY = fakeParam(0);
+  orientationZ = fakeParam(0);
   velocity?: [number, number, number];
   constructor() {
     super("panner");
@@ -115,8 +121,40 @@ export class FakePanner extends FakeNode {
     this.positionY.value = y;
     this.positionZ.value = z;
   }
+  setOrientation(x: number, y: number, z: number): void {
+    this.orientationX.value = x;
+    this.orientationY.value = y;
+    this.orientationZ.value = z;
+  }
   setVelocity(x: number, y: number, z: number): void {
     this.velocity = [x, y, z];
+  }
+}
+
+/** Minimal AnalyserNode stand-in: deterministic fill so tests can round-trip data. */
+export class FakeAnalyser extends FakeNode {
+  fftSize = 2048;
+  minDecibels = -100;
+  maxDecibels = -30;
+  smoothingTimeConstant = 0.8;
+  /** Written by getByteFrequencyData/getByteTimeDomainData when set. */
+  fillFrequency?: (target: Uint8Array) => void;
+  fillTimeDomain?: (target: Uint8Array) => void;
+  lastFrequencyTarget?: Uint8Array;
+  lastTimeDomainTarget?: Uint8Array;
+  constructor() {
+    super("analyser");
+  }
+  get frequencyBinCount(): number {
+    return this.fftSize / 2;
+  }
+  getByteFrequencyData(target: Uint8Array): void {
+    this.lastFrequencyTarget = target;
+    this.fillFrequency ? this.fillFrequency(target) : target.fill(64);
+  }
+  getByteTimeDomainData(target: Uint8Array): void {
+    this.lastTimeDomainTarget = target;
+    this.fillTimeDomain ? this.fillTimeDomain(target) : target.fill(128);
   }
 }
 
@@ -129,12 +167,25 @@ export class FakeBiquad extends FakeNode {
   }
 }
 
+/** Minimal `AudioListener` (DOM) stand-in: the nine pose params `syncListener` ramps. */
+export class FakeListener {
+  positionX = fakeParam(0);
+  positionY = fakeParam(0);
+  positionZ = fakeParam(0);
+  forwardX = fakeParam(0);
+  forwardY = fakeParam(0);
+  forwardZ = fakeParam(-1);
+  upX = fakeParam(0);
+  upY = fakeParam(1);
+  upZ = fakeParam(0);
+}
+
 export class FakeContext implements SoundGraphContext {
   state = "running";
   destination = new FakeNode("destination") as unknown as AudioNode;
   currentTime = 0;
   created: FakeNode[] = [];
-  listener?: unknown;
+  listener = new FakeListener();
 
   tick(seconds: number): void {
     this.currentTime += seconds;
@@ -158,6 +209,9 @@ export class FakeContext implements SoundGraphContext {
   }
   createConvolver(): ConvolverNode {
     return this.track(new FakeNode("convolver")) as unknown as ConvolverNode;
+  }
+  createAnalyser(): AnalyserNode {
+    return this.track(new FakeAnalyser()) as unknown as AnalyserNode;
   }
   createDynamicsCompressor(): DynamicsCompressorNode {
     return this.track(new FakeCompressor()) as unknown as DynamicsCompressorNode;
