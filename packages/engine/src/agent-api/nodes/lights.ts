@@ -88,6 +88,12 @@ export const lights = {
       // CCR-02-2 additive field.
       ...(options.twoSided !== undefined ? { twoSided: options.twoSided } : {})
     } as AuraLightNode),
+  /**
+   * threejs-parity L7/AD-16 (P2): three's `RectAreaLight` — an alias over the
+   * `rect` area light (width × height, position + target, twoSided).
+   */
+  rectArea: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly width?: number; readonly height?: number; readonly twoSided?: boolean } = {}) =>
+    lights.rect(options),
   softbox: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly width?: number; readonly height?: number; readonly twoSided?: boolean } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",

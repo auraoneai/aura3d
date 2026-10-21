@@ -57,4 +57,21 @@ export interface RenderItem {
   readonly lodLevel?: number;                                         // PRD 05 (active MSFT_lod level; look-dev LOD strip)
   readonly cameraFade?: number;                                       // PRD 08 (C-22 cut fade)
   readonly instanceEmissive?: Float32Array | readonly number[];       // PRD 11 (C-27 batching)
+  // threejs-parity L7 (SG-09/SR-04): fields mirroring three's Object3D for
+  // items produced from scene nodes or authored specs.
+  /** three's `Object3D.renderOrder` — primary sort key inside a bucket. */
+  readonly renderOrder?: number;
+  /** three's `Object3D.frustumCulled` — `false` skips the frustum test. */
+  readonly frustumCulled?: boolean;
+  /** three's `Layers.mask` — intersected against `camera.layerMask`. */
+  readonly layerMask?: number;
+  /** three's `Object3D.userData` — free-form author metadata. */
+  readonly userData?: Record<string, unknown>;
+  /** three's `Object3D.onBeforeRender` — invoked immediately before the draw. */
+  readonly onBeforeRender?: (item: RenderItem) => void;
+  /**
+   * threejs-parity L7/SC-01: name of the authored `cameras.cube` node whose
+   * latest capture binds as `environmentCube` (three's `material.envMap`).
+   */
+  readonly cubeCameraEnvMap?: string;
 }

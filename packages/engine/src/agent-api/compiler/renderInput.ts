@@ -261,7 +261,11 @@ export function createProductionRuntimeRendererInput(
       const nativeMatrices = modelInstanceAttach.instanceTransforms;
       const localItem = localActorItems?.[itemIndex];
       if (nativeMatrices && !localItem) throw new Error("Instanced GLB mesh collection changed within one frame");
-      return { ...item, label: `actor-${actorIndex}:mesh-${itemIndex}:${item.label ?? "mesh"}`, castShadow: currentNode.castShadow, ...modelInstanceAttach,
+      return { ...item, label: `actor-${actorIndex}:mesh-${itemIndex}:${item.label ?? "mesh"}`, castShadow: currentNode.castShadow,
+        // threejs-parity L7/SG-09: spec parity fields (see primitive path below).
+        renderOrder: currentNode.renderOrder, frustumCulled: currentNode.frustumCulled,
+        layerMask: currentNode.layers, userData: currentNode.userData,
+        ...modelInstanceAttach,
         ...(nativeMatrices && localItem ? {
           modelMatrix: identityMat4(),
           instanceTransforms: composeModelInstanceMatrices(nativeMatrices, localItem.modelMatrix ?? identityMat4())
@@ -311,6 +315,16 @@ export function createProductionRuntimeRendererInput(
       label: `primitive-${primitiveIndex}:${resource.name}:${currentState.node.name ?? currentState.node.primitive}`,
       castShadow: currentState.node.castShadow,
       includeInAutoFrame: false,
+      // threejs-parity L7/SG-09: spec parity fields ride the item so layer
+      // gating, frustumCulled=false, and renderOrder sorting reach the draw.
+      renderOrder: currentState.node.renderOrder,
+      frustumCulled: currentState.node.frustumCulled,
+      layerMask: currentState.node.layers,
+      userData: currentState.node.userData,
+      // L7/SC-01: `material.*({ envMap: { cubeCamera } })` → environmentCube.
+      ...(currentState.node.material?.envMap?.cubeCamera
+        ? { cubeCameraEnvMap: currentState.node.material.envMap.cubeCamera }
+        : {}),
       ...(currentState.node.instances ? { instanceTransforms: prd01InstanceTransforms(currentState.node.instances, currentState.node), instanceColors: prd01InstanceColors(currentState.node.instanceColors, currentState.node.instances.length) } : {})
     });
   }

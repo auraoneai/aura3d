@@ -1,5 +1,6 @@
 import { ValidationError } from "@aura3d/core";
 import { Bounds3 } from "./Bounds.js";
+import { Layers } from "./Layers.js";
 import { cloneMat4, invertMat4, multiplyMat4 } from "./MathTypes.js";
 import type { Renderable } from "./Renderable.js";
 import { TransformNode } from "./TransformNode.js";
@@ -23,8 +24,25 @@ export class SceneNode {
   readonly id: string;
   name: string;
   visible = true;
-  layerMask = 1;
+  /**
+   * threejs-parity L7/SG-10: the node's layer set. `layerMask` stays the
+   * numeric view (back-compat with SceneQuery/SceneSerializer); `layers`
+   * gives three's `object.layers` API — `set`/`enable`/`disable`/`test`.
+   */
+  readonly layers = new Layers();
   renderOrder = 0;
+  /**
+   * threejs-parity L7/SG-09: when false the node is never frustum-culled
+   * (three's `object.frustumCulled = false` — used for skinned bounds and
+   * intentionally always-drawn overlays).
+   */
+  frustumCulled = true;
+  /**
+   * threejs-parity L7 (P2): three's `object.onBeforeRender` — invoked by the
+   * renderer just before the item's draw submits. `renderer` is intentionally
+   * opaque here so `@aura3d/scene` does not import the rendering package.
+   */
+  onBeforeRender?: (renderer: unknown, node: SceneNode) => void;
   disposed = false;
   userData: Record<string, unknown> = {};
   renderable?: Renderable;
@@ -33,6 +51,14 @@ export class SceneNode {
   worldBounds = new Bounds3();
   readonly children: SceneNode[] = [];
   parent: SceneNode | null = null;
+
+  get layerMask(): number {
+    return this.layers.mask;
+  }
+
+  set layerMask(mask: number) {
+    this.layers.mask = mask;
+  }
 
   constructor(options: SceneNodeOptions = {}) {
     this.id = options.id ?? `node-${nextSceneNodeId++}`;
@@ -67,6 +93,15 @@ export class SceneNode {
 
   removeFromParent(): boolean {
     return this.parent?.removeChild(this) ?? false;
+  }
+
+  /**
+   * threejs-parity L7: three's `object.attach(child)` — reparent while keeping
+   * the child's world transform. Equivalent to `addChild(child, {
+   * preserveWorldTransform: true })`.
+   */
+  attach(child: SceneNode): this {
+    return this.addChild(child, { preserveWorldTransform: true });
   }
 
   isAncestorOf(candidate: SceneNode): boolean {

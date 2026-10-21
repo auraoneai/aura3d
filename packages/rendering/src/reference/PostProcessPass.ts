@@ -2,7 +2,7 @@ import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
 import { RenderDeviceError, type RenderDevice, type RenderTarget } from "../RenderDevice";
 import { OUTLINE_LUMA_SCALE, createOutlineGradientBound } from "../postprocess/NativeLdrEffectLuts";
 
-export type ToneMappingOperator = "linear" | "reinhard" | "aces" | "filmic" | "uncharted2" | "agx" | "neutral";
+export type ToneMappingOperator = "linear" | "reinhard" | "aces" | "filmic" | "uncharted2" | "agx" | "neutral" | "cineon";
 export type PostProcessColorSpace = "linear" | "srgb";
 export type DepthTextureFormat = "depth24";
 export type ToneMappingPresetName = "natural" | "cinematic" | "vibrant" | "realistic" | "stylized";
@@ -2514,7 +2514,9 @@ function applyToneMapping(value: number, exposure: number, whitePoint: number, o
             ? uncharted2(exposed)
             : operator === "agx"
               ? agx(exposed)
-              : neutral(exposed);
+              : operator === "cineon"
+                ? cineon(exposed)
+                : neutral(exposed);
 }
 
 function decodeColorByte(value: number, colorSpace: PostProcessColorSpace): number {
@@ -2587,6 +2589,12 @@ function agx(value: number): number {
 function neutral(value: number): number {
   const x = Math.max(0, value);
   return Math.min(1, (x * (1 + x / 7.5)) / (1 + x));
+}
+
+/** threejs-parity L7-02: scalar Cineon — mirrors `post/ToneOperators.ts:cineonToneMapping`. */
+function cineon(value: number): number {
+  const c = Math.max(0, value - 0.004);
+  return Math.pow((c * (6.2 * c + 0.5)) / (c * (6.2 * c + 1.7) + 0.06), 2.2);
 }
 
 function createToneMappingPreset(

@@ -36,12 +36,17 @@ export function cullExplicitRenderItems(
   frustum: Frustum | undefined,
   diagnostics: RenderCollectionDiagnostics,
   /** 02-S5: receives culled items with `castShadow !== false`. */
-  culledShadowCasters?: RenderItem[]
+  culledShadowCasters?: RenderItem[],
+  /** threejs-parity L7/SG-10: `camera.layers.mask` — items outside are dropped. */
+  cameraLayerMask?: number
 ): readonly RenderItem[] {
+  const passesLayers = (item: RenderItem): boolean =>
+    cameraLayerMask === undefined || ((item.layerMask ?? 1) & cameraLayerMask) !== 0;
   if (!frustum) {
-    diagnostics.submittedObjects += items.length;
-    diagnostics.visibleObjects += items.length;
-    return items;
+    const kept = items.filter(passesLayers);
+    diagnostics.submittedObjects += kept.length;
+    diagnostics.visibleObjects += kept.length;
+    return kept;
   }
   const visible: RenderItem[] = [];
   // 11-S5: one plane pack per call and a reused 6-float box, instead of a Box3
@@ -51,8 +56,9 @@ export function cullExplicitRenderItems(
   const box = new Float64Array(6);
   const verdict = new Uint8Array(1);
   for (const item of items) {
+    if (!passesLayers(item)) continue;
     diagnostics.submittedObjects += 1;
-    if (!isFrustumCullableRenderItem(item)) {
+    if (item.frustumCulled === false || !isFrustumCullableRenderItem(item)) {
       diagnostics.visibleObjects += 1;
       visible.push(item);
       continue;

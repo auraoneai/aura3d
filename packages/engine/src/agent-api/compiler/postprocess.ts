@@ -19,19 +19,13 @@ import {
 
 /**
  * threejs-parity (§5.0 B-01): `AuraToneMappingOperator` admits "cineon" so the
- * public option compiles, but the renderer's ToneMappingOperator union only
- * names operators with a shipped GLSL chunk. "cineon" fails closed here until
- * lane L7-02 lands the operator.
+ * public option compiles, and the renderer's ToneMappingOperator union now
+ * names every operator with a shipped GLSL chunk (L7-02 landed Cineon in
+ * `output/ToneMappingOperators.glsl.ts`). "none" still maps to pass-through.
  */
-type RendererToneMappingOperator = "linear" | "reinhard" | "aces" | "agx" | "neutral";
+type RendererToneMappingOperator = "linear" | "reinhard" | "aces" | "agx" | "neutral" | "cineon";
 function toneMappingOperatorFor(op: string | undefined): RendererToneMappingOperator | undefined {
   if (op === undefined || op === "none") return undefined;
-  if (op === "cineon") {
-    throw new AuraRuntimeError(
-      "parity-not-implemented",
-      'Aura3D toneMapping "cineon" is not yet implemented (A3D_PARITY_RUNTIME). See docs/workflows/threejs-parity-gaps.md.'
-    );
-  }
   return op as RendererToneMappingOperator;
 }
 

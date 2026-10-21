@@ -394,6 +394,8 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
       emissiveStrength: Math.max(0, materialSpec?.emissiveIntensity ?? (materialSpec?.emissive ? 1.35 : 0)),
       environmentIntensity,
       envMapIntensity,
+      // threejs-parity L7/SR-02: forward the frozen `AuraMaterialSpec.fog` opt-out.
+      fog: materialSpec?.fog,
       renderState: {
         blend: opacity < 0.999,
         depthWrite: opacity >= 0.999,
@@ -425,6 +427,8 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
     ...(materialSpec?.attenuationDistance === undefined ? {} : { volumeAttenuationDistance: Math.max(0, materialSpec.attenuationDistance) }),
     environmentIntensity,
     envMapIntensity,
+    // threejs-parity L7/SR-02: forward the frozen `AuraMaterialSpec.fog` opt-out.
+    fog: materialSpec?.fog,
     renderState: {
       blend: opacity < 0.999,
       depthWrite: opacity >= 0.999,

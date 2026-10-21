@@ -1,6 +1,6 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraColor, AuraSceneNode, AuraPhysicsWorldController, AuraCameraSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraSceneSnapshot } from "./types.js";
+import type { AuraColor, AuraSceneBackgroundImage, AuraSceneNode, AuraPhysicsWorldController, AuraCameraSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraSceneSnapshot } from "./types.js";
 import { AURA_NORMALIZED_MODEL_MAX_DIMENSION, boundsFromAsset, boundsHeight, boundsMaxDimension, boundsSize } from "../SceneGroundingUtils.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { camera } from "./camera.js";
@@ -56,14 +56,34 @@ export class AuraSceneBuilder {
   private backgroundColor: AuraColor = DEFAULT_SCENE_BACKGROUND;
   private backgroundExplicit = false;
   private backgroundToneMapped = true;
+  // threejs-parity L7/SG-10: `background({ texture | cube })` — three's
+  // `scene.background` accepting a texture/cubemap (never enables IBL).
+  private backgroundImageSpec: AuraSceneBackgroundImage | undefined;
   private cameraSpec: AuraCameraSpec = camera.orbit();
   private timelineSpec: AuraTimelineSpec | undefined;
   private physicsController: AuraPhysicsWorldController | undefined;
   private diagnosticsEnabled = false;
 
-  /** PRD-01 C-05: tone-mapped with the scene by default; `{ toneMapped: false }` shows the authored colour exactly. */
-  background(color: AuraColor, options: { readonly toneMapped?: boolean } = {}): this {
-    this.backgroundColor = color;
+  /**
+   * PRD-01 C-05 + threejs-parity L7/SG-10: tone-mapped with the scene by
+   * default; `{ toneMapped: false }` shows the authored colour exactly.
+   *
+   * Also accepts `{ texture: urlOrAssetRef }` or `{ cube: { faces } }` —
+   * three's `scene.background = Texture | CubeTexture`. The image paints via
+   * the renderer's environment-background pass; it does NOT enable IBL.
+   */
+  background(
+    color: AuraColor | AuraSceneBackgroundImage,
+    options: { readonly toneMapped?: boolean } = {}
+  ): this {
+    if (color !== null && typeof color === "object" && ("texture" in color || "cube" in color)) {
+      this.backgroundImageSpec = color;
+      this.backgroundExplicit = true;
+      this.backgroundToneMapped = options.toneMapped !== false;
+      return this;
+    }
+    this.backgroundColor = color as AuraColor;
+    this.backgroundImageSpec = undefined;
     this.backgroundExplicit = true;
     this.backgroundToneMapped = options.toneMapped !== false;
     return this;
@@ -104,6 +124,7 @@ export class AuraSceneBuilder {
     return {
       schema: "aura3d-scene-snapshot/1.0",
       background: this.backgroundExplicit ? this.backgroundColor : (looksFlagOn() ? lookBackdrop(this.nodes) : undefined) ?? this.backgroundColor,
+      ...(this.backgroundImageSpec ? { backgroundImage: this.backgroundImageSpec } : {}),
       ...(this.backgroundToneMapped ? {} : { backgroundToneMapped: false as const }),
       camera: this.cameraSpec,
       timeline: this.timelineSpec,

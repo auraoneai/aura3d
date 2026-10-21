@@ -473,6 +473,16 @@ export interface RenderDevice {
    *  Optional (PRD-07 P6-T4): offscreen mini-passes that divert mid-frame need
    *  it to restore the caller's binding; when absent they must stay off. */
   getRenderTarget?(): RenderTarget | null;
+  /**
+   * threejs-parity L7/SC-01 (P2, Array/Stereo cameras): raster viewport rect
+   * in target pixels. `beginFrame` resets it to the full frame. Optional —
+   * devices without it keep full-frame rasterization.
+   */
+  setViewport?(x: number, y: number, width: number, height: number): void;
+  /** threejs-parity L7/SC-01 (P2): scissor rect in target pixels; gated by `setScissorTest`. */
+  setScissor?(x: number, y: number, width: number, height: number): void;
+  /** threejs-parity L7/SC-01 (P2): enables/disables scissor clipping (three's `setScissorTest`). */
+  setScissorTest?(enabled: boolean): void;
   writeRenderTargetPixels?(target: RenderTarget, pixels: Uint8Array): void;
   presentRenderTarget?(source: RenderTarget): void;
   presentLdrPostprocess?(source: RenderTarget, options: LdrPostprocessPresentationOptions): void;
@@ -652,6 +662,10 @@ export class MockRenderDevice implements RenderDevice {
   private frameActive = false;
   private viewportWidth = 0;
   private viewportHeight = 0;
+  /** threejs-parity L7/SC-01: per-frame viewport/scissor rects (target pixels). */
+  private viewportRect: { readonly x: number; readonly y: number; readonly width: number; readonly height: number } = { x: 0, y: 0, width: 0, height: 0 };
+  private scissorRect: { readonly x: number; readonly y: number; readonly width: number; readonly height: number } = { x: 0, y: 0, width: 0, height: 0 };
+  private scissorTestEnabled = false;
   private clearColor: readonly [number, number, number, number] = [0, 0, 0, 1];
   /** C-28 (PRD 11): per-frame fields; zeroed by resetFrameCounters(). Live gauges come from getDiagnostics(). */
   private frameCounters = { drawCalls: 0, bufferCreates: 0, textureUploads: 0, readbacks: 0, renderTargetsCreated: 0, programCompiles: 0 };
@@ -1013,7 +1027,36 @@ export class MockRenderDevice implements RenderDevice {
     this.frameActive = true;
     this.viewportWidth = width;
     this.viewportHeight = height;
+    // threejs-parity L7/SC-01: viewport/scissor state is per-frame —
+    // `beginFrame` resets it to the full frame rect, scissor test off.
+    this.viewportRect = { x: 0, y: 0, width, height };
+    this.scissorRect = { x: 0, y: 0, width, height };
+    this.scissorTestEnabled = false;
     this.drawCommands.length = 0;
+  }
+
+  /** threejs-parity L7/SC-01 (P2): raster viewport override, target pixels. */
+  setViewport(x: number, y: number, width: number, height: number): void {
+    this.assertAlive();
+    if (width <= 0 || height <= 0) {
+      throw new RenderDeviceError("Viewport dimensions must be positive", "INVALID_VIEWPORT", { width, height });
+    }
+    this.viewportRect = { x, y, width, height };
+  }
+
+  /** threejs-parity L7/SC-01 (P2): scissor rect, target pixels. */
+  setScissor(x: number, y: number, width: number, height: number): void {
+    this.assertAlive();
+    if (width < 0 || height < 0) {
+      throw new RenderDeviceError("Scissor dimensions must be non-negative", "INVALID_SCISSOR", { width, height });
+    }
+    this.scissorRect = { x, y, width, height };
+  }
+
+  /** threejs-parity L7/SC-01 (P2): scissor-test toggle. */
+  setScissorTest(enabled: boolean): void {
+    this.assertAlive();
+    this.scissorTestEnabled = enabled;
   }
 
   clear(color: readonly [number, number, number, number]): void {
@@ -1158,6 +1201,9 @@ export class MockRenderDevice implements RenderDevice {
       ["frameActive", this.frameActive],
       ["viewportWidth", this.viewportWidth],
       ["viewportHeight", this.viewportHeight],
+      ["viewport", `${this.viewportRect.x},${this.viewportRect.y},${this.viewportRect.width},${this.viewportRect.height}`],
+      ["scissor", `${this.scissorRect.x},${this.scissorRect.y},${this.scissorRect.width},${this.scissorRect.height}`],
+      ["scissorTest", this.scissorTestEnabled],
       ["clearR", this.clearColor[0]],
       ["clearG", this.clearColor[1]],
       ["clearB", this.clearColor[2]],

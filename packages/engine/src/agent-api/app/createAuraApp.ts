@@ -6,6 +6,7 @@ import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/
 import { createDiagnosticsOverlay, renderDiagnosticPreviewToCanvas, shouldRenderOverlay } from "../public/devtools.js";
 import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } from "../diagnostics.js";
 import { createRuntimeScenePhysics, eulerToQuat, physics, resolveNodePhysicsShape } from "../nodes/physics.js";
+import { colorToLinearRgba } from "../colorUtils.js";
 import { scene } from "../nodes/scene.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
 import { renderer } from "../rendererDiagnostics.js";
@@ -495,9 +496,58 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   // region parity:L7 — SR-01/03/05/07 + SH-05 runtime members land here:
   // `app.info`, `app.setPixelRatio`, `app.setClearColor`, `app.precompile`
   // (owner lane L7, do not edit outside this region).
+  // SH-05: overrides requested before the mount settles (or across remounts)
+  // must re-apply to the next renderer — remember them and re-push on mount.
+  let parityL7PixelRatio: number | undefined;
+  let parityL7ClearColor: { readonly color: readonly [number, number, number] | readonly [number, number, number, number]; readonly alpha?: number } | undefined;
+  let parityL7AppliedTo: unknown;
+  const parityL7AuraRenderer = (): {
+    readonly info?: import("../nodes/types/runtime.js").AuraRendererInfo;
+    setPixelRatio?(ratio: number): void;
+    setClearColor?(color: readonly [number, number, number] | readonly [number, number, number, number], alpha?: number): void;
+  } | undefined => {
+    const r = (productionController?.auraRenderer ?? undefined) as
+      | {
+          readonly info?: import("../nodes/types/runtime.js").AuraRendererInfo;
+          setPixelRatio?(ratio: number): void;
+          setClearColor?(color: readonly [number, number, number] | readonly [number, number, number, number], alpha?: number): void;
+        }
+      | undefined;
+    // A remount swaps the renderer instance; re-push the stored overrides the
+    // first time the new one is observed.
+    if (r && r !== parityL7AppliedTo) {
+      parityL7AppliedTo = r;
+      if (parityL7PixelRatio !== undefined) r.setPixelRatio?.(parityL7PixelRatio);
+      if (parityL7ClearColor !== undefined) r.setClearColor?.(parityL7ClearColor.color, parityL7ClearColor.alpha);
+    }
+    return r;
+  };
+  // Re-apply deferred overrides the moment a renderer appears.
+  void productionMountSettled.then(() => { if (!disposed) parityL7AuraRenderer(); });
   // endregion parity:L7
   const app: AuraApp & { resetRuntimeClock(): void } = {
     canvas,
+    // region parity:L7 (continued) — the members themselves must live in the
+    // object literal; the helpers above stay in the lane-owned block.
+    get info() {
+      return parityL7AuraRenderer()?.info;
+    },
+    setPixelRatio(ratio: number) {
+      parityL7PixelRatio = ratio;
+      parityL7AuraRenderer()?.setPixelRatio?.(ratio);
+    },
+    setClearColor(color, alpha) {
+      const rgba = colorToLinearRgba(color);
+      parityL7ClearColor = { color: rgba, alpha };
+      parityL7AuraRenderer()?.setClearColor?.(rgba, alpha);
+    },
+    async precompile() {
+      await productionMountSettled;
+      const startedAt = performanceNow();
+      const result = await productionController?.precompile?.();
+      return result ?? { compiledPrograms: 0, durationMs: performanceNow() - startedAt };
+    },
+    // endregion parity:L7
     get scene() {
       return snapshot;
     },

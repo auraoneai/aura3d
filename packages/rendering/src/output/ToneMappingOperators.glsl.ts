@@ -112,6 +112,13 @@ vec3 AgXToneMapping( vec3 color ) {
   return clamp( color, 0.0, 1.0 );
 }
 
+// threejs-parity L7-02: Cineon (r185 CineonToneMapping, exposure removed).
+// Mirrors post/ToneOperators.ts:cineonToneMapping.
+vec3 CineonToneMapping( vec3 color ) {
+  color = max( vec3( 0.0 ), color - 0.004 );
+  return pow( ( color * ( 6.2 * color + 0.5 ) ) / ( color * ( 6.2 * color + 1.7 ) + 0.06 ), vec3( 2.2 ) );
+}
+
 // Khronos PBR Neutral (r185 body; exposure removed).
 vec3 NeutralToneMapping( vec3 color ) {
   const float StartCompression = 0.8 - 0.04;
@@ -201,7 +208,8 @@ export const TONE_MAP_OPERATOR_FUNCTIONS: Readonly<Record<string, string>> = {
   reinhard: "ReinhardToneMapping",
   aces: "ACESFilmicToneMapping",
   agx: "AgXToneMapping",
-  neutral: "NeutralToneMapping"
+  neutral: "NeutralToneMapping",
+  cineon: "CineonToneMapping"
 };
 
 /** Compose the output fragment for one variant key. */

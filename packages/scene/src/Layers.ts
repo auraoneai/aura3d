@@ -9,8 +9,25 @@ export class Layers {
     this.mask |= 1 << validateChannel(channel);
   }
 
+  enableAll(): void {
+    this.mask = 0xffffffff;
+  }
+
+  toggle(channel: number): void {
+    this.mask ^= 1 << validateChannel(channel);
+  }
+
   disable(channel: number): void {
     this.mask &= ~(1 << validateChannel(channel));
+  }
+
+  disableAll(): void {
+    this.mask = 0;
+  }
+
+  /** three's `layers.isEnabled` is spelled `test` per channel here. */
+  isEnabled(channel: number): boolean {
+    return (this.mask & (1 << validateChannel(channel))) !== 0;
   }
 
   test(other: Layers): boolean {
