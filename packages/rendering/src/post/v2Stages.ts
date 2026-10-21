@@ -332,6 +332,19 @@ export function mergedCustomPasses(pipeline: PostPipelineOptions): readonly Post
   return out;
 }
 
+/**
+ * SH-03: `order` is an ascending sort key inside an insertion anchor; absent
+ * keys keep registration order (Array.prototype.sort is stable). Shared by
+ * the HDR driver and the LDR tail so the `after-tonemap` anchor orders the
+ * same way.
+ */
+const postPassOrderKey = (pass: PostPassDescriptor): number =>
+  typeof pass.order === "number" && Number.isFinite(pass.order) ? pass.order : Number.MAX_SAFE_INTEGER;
+
+export function sortCustomPassesAtAnchor(passes: readonly PostPassDescriptor[], anchor: PostPassDescriptor["insertAt"]): readonly PostPassDescriptor[] {
+  return passes.filter((pass) => pass.insertAt === anchor).sort((a, b) => postPassOrderKey(a) - postPassOrderKey(b));
+}
+
 /** Minimal frame context for descriptor `enabled`/`uniforms` callbacks. */
 function customPassFrameContext(
   state: PostV2State,
@@ -527,7 +540,7 @@ export function runV2HdrStages(
   const wantsAutoExposure = autoExposure !== undefined && autoExposure !== false;
   const customs = mergedCustomPasses(pipeline);
   const customsAt = (anchor: PostPassDescriptor["insertAt"]): readonly PostPassDescriptor[] =>
-    customs.filter((pass) => pass.insertAt === anchor);
+    sortCustomPassesAtAnchor(customs, anchor);
   const hdrCustoms = customs.filter((pass) => pass.insertAt !== "after-tonemap");
   // TAA and motion blur silently degrade without temporal surfaces; the
   // engine-side AA resolve already reported the coverage fallback.
@@ -1094,7 +1107,7 @@ export function runV2LdrTail(
   const grain = pipeline.filmGrain as { intensity?: number; size?: number; luminanceResponse?: number } | undefined;
   const aaFxaa = pipeline.antiAliasing === "fxaa";
   const aaSmaa = pipeline.antiAliasing === "smaa";
-  const displayCustoms = mergedCustomPasses(pipeline).filter((pass) => pass.insertAt === "after-tonemap");
+  const displayCustoms = sortCustomPassesAtAnchor(mergedCustomPasses(pipeline), "after-tonemap");
   const rcas = (pipeline.renderScale ?? 1) < 1 ? 0.2 : 0;
 
   // §6.1 fuse: FXAA + S10b + S12 in a single draw — only when nothing sits

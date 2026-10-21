@@ -17,6 +17,13 @@ export interface PostPassDescriptor extends RegistryEntry {
   readonly fragment: { readonly glsl: string; readonly wgsl?: string };
   readonly uniforms?: (frame: FrameContributorContext) => Readonly<Record<string, number | readonly number[]>>;
   readonly enabled?: (frame: FrameContributorContext) => boolean;
+  /**
+   * threejs-parity SH-03 (additive): deterministic ordering inside the chosen
+   * `insertAt` anchor — ascending sort, stable for equal/absent keys so
+   * registration order is preserved when `order` is omitted. The engine maps
+   * its named `AuraPostPassOrder` slots onto numbers before registering.
+   */
+  readonly order?: number;
   readonly gpuOnly: true;                      // CPU passes are rejected: POSTPROCESS_PASS_NOT_GPU:<id>
 }
 

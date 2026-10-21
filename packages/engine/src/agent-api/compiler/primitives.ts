@@ -9,7 +9,8 @@ import { primitive } from "../nodes/primitives.js";
 import { createModelMatrix, primitiveSize, shouldNormalizeModelNode } from "../sceneMath.js";
 import { selectAuraRootLodLevel } from "../RootGeometry.js";
 import { evaluateDistancePrioritizedMipResidency, type TextureStreamingCandidate, type TextureStreamingResidency } from "@aura3d/assets/browser";
-import { createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, createProductionPbrHdrPipelineFromRadiance, type EnvironmentLightingOptions } from "@aura3d/rendering";
+import { PortableShaderMaterial, createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, createProductionPbrHdrPipelineFromRadiance, type EnvironmentLightingOptions } from "@aura3d/rendering";
+import { applyCustomUniformWrites, createCustomShaderMaterial, customUniformWritesFor } from "./customMaterial.js";
 import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
 import { AuraRuntimeError } from "./errors.js";
 import { blankProductionPrimitiveTextureState, createSdfTextPrimitiveResource } from "./textures.js";
@@ -136,6 +137,17 @@ export function resolveProductionPrimitiveRuntimeState(
     readonly instances?: AuraPrimitiveNode["instances"];
     readonly instanceColors?: AuraPrimitiveNode["instanceColors"];
   }) | undefined;
+  // parity:L1 (SH-02): staged `handle.setUniform` writes land on the compiled
+  // portable material here — `setParameter` updates uniform state only, never
+  // the shader key, so no program is recompiled.
+  const uniformWrites = customUniformWritesFor(runtimeId);
+  if (uniformWrites?.size) {
+    for (const resource of entry.resources) {
+      if (resource.material instanceof PortableShaderMaterial) {
+        applyCustomUniformWrites(resource.material, uniformWrites);
+      }
+    }
+  }
   if (!runtimeSnapshot) return { node: entry.node, visible: true };
   return {
     node: {
@@ -332,8 +344,13 @@ export function resolveProductionPrimitiveScalars(node: AuraPrimitiveNode): Prod
   };
 }
 
-export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial | InstancedPBRMaterial {
+export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial | InstancedPBRMaterial | PortableShaderMaterial {
   const materialSpec = node.material;
+  // parity:L1 (SH-02): `material.custom(spec)` routes to the portable-shader
+  // adapter — a validated `PortableShaderMaterial`, never a PBR downgrade.
+  if (materialSpec?.kind === "custom" && materialSpec.custom) {
+    return createCustomShaderMaterial(materialSpec.custom, `primitive-${node.primitive}${node.name ? `-${node.name}` : ""}`);
+  }
   const { baseColor, opacity, emissiveColor, clearcoat, sheenColor, declaresExtension, transmission, thicknessRange, sheen, iridescence, anisotropy, environmentIntensity, envMapIntensity } =
     resolveProductionPrimitiveScalars(node);
   /*

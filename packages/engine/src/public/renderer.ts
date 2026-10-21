@@ -16,9 +16,14 @@ export type { MeshOptions, Object3DOptions, RenderableDescriptor } from "@aura3d
 export { Geometry, Material, PBRMaterial, UnlitMaterial, TexturedPBRMaterial, TexturedUnlitMaterial, SkinnedLitMaterial, InstancedPBRMaterial, TextureBinding } from "@aura3d/rendering";
 export type { RenderMaterial } from "@aura3d/rendering";
 
-// threejs-parity (docs/workflows/threejs-parity-gaps.md §5.0): reserved as
-// type-only exports until their lanes ship the value exports.
-export type { PortableShaderMaterial, ShaderPreprocessor, RenderTarget, Texture, Sampler } from "@aura3d/rendering";
+// threejs-parity SH-02/SH-10 (docs/workflows/threejs-parity-gaps.md §5.0, lane
+// L1): `material.custom(spec)` compiles to `PortableShaderMaterial`; the public
+// mutable `#include` registry is `registerShaderChunk(name, glsl, wgsl?)` —
+// distinct from the contract-level `ShaderChunk` object registry in
+// `@aura3d/rendering/contracts` (which stamps name/owner/stage metadata).
+export { PortableShaderMaterial, ShaderPreprocessor, registerShaderChunk } from "@aura3d/rendering";
+export type { PortableShaderSources, PortableShaderStagePair, PortableShaderUniform, PortableShaderMaterialOptions } from "@aura3d/rendering";
+export type { RenderTarget, Texture, Sampler } from "@aura3d/rendering";
 
 /** @deprecated 3.1.0, removed 4.0.0. Alias of Renderer. */
 export { Renderer as A3DRenderer } from "@aura3d/rendering";

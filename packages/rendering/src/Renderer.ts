@@ -969,6 +969,9 @@ export class Renderer {
           cameraPosition,
           cameraViewMatrix: resolvedCamera?.viewMatrix,
           cameraViewProjectionMatrix: rasterViewProjection,
+          // SH-02: `material.custom` frame built-ins (u_projectionMatrix, u_time).
+          auraFrameCamera: resolvedCamera?.projectionMatrix ? { projectionMatrix: resolvedCamera.projectionMatrix } : undefined,
+          timeSeconds: typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000,
           outputColorSpace: "linear",
           shaderLibrary: this.shaderLibrary,
           backgroundCoverage: coverage,
@@ -1009,6 +1012,9 @@ export class Renderer {
           cameraPosition,
           cameraViewMatrix: resolvedCamera?.viewMatrix,
           cameraViewProjectionMatrix: rasterViewProjection,
+          // SH-02: `material.custom` frame built-ins (u_projectionMatrix, u_time).
+          auraFrameCamera: resolvedCamera?.projectionMatrix ? { projectionMatrix: resolvedCamera.projectionMatrix } : undefined,
+          timeSeconds: typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000,
           outputColorSpace: postprocess ? "linear" : "srgb",
           shaderLibrary: this.shaderLibrary
         }));
@@ -1321,6 +1327,9 @@ export class Renderer {
           cameraPosition,
           cameraViewMatrix: resolvedCamera?.viewMatrix,
           cameraViewProjectionMatrix: rasterViewProjection,
+          // SH-02: `material.custom` frame built-ins (u_projectionMatrix, u_time).
+          auraFrameCamera: resolvedCamera?.projectionMatrix ? { projectionMatrix: resolvedCamera.projectionMatrix } : undefined,
+          timeSeconds: typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000,
           outputColorSpace: "linear",
           shaderLibrary: this.shaderLibrary,
           backgroundCoverage: coverage,
@@ -1361,6 +1370,9 @@ export class Renderer {
           cameraPosition,
           cameraViewMatrix: resolvedCamera?.viewMatrix,
           cameraViewProjectionMatrix: rasterViewProjection,
+          // SH-02: `material.custom` frame built-ins (u_projectionMatrix, u_time).
+          auraFrameCamera: resolvedCamera?.projectionMatrix ? { projectionMatrix: resolvedCamera.projectionMatrix } : undefined,
+          timeSeconds: typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000,
           outputColorSpace: postprocess ? "linear" : "srgb",
           shaderLibrary: this.shaderLibrary
         }));
@@ -2437,7 +2449,7 @@ function resolveCamera(
   camera?: CameraLike,
   viewport?: { readonly width: number; readonly height: number },
   options: { readonly allowSceneCamera?: boolean } = {}
-): { readonly viewProjectionMatrix: Mat4; readonly viewMatrix?: Mat4; readonly camera?: Camera; readonly cameraPosition?: readonly [number, number, number] } | undefined {
+): { readonly viewProjectionMatrix: Mat4; readonly viewMatrix?: Mat4; readonly projectionMatrix?: Mat4; readonly camera?: Camera; readonly cameraPosition?: readonly [number, number, number] } | undefined {
   const resolved = camera ?? (options.allowSceneCamera === false ? undefined : resolveSceneCamera(source));
   if (!resolved) {
     return undefined;
@@ -2452,6 +2464,8 @@ function resolveCamera(
     return {
       viewProjectionMatrix: toMat4(resolved.viewProjectionMatrix, "viewProjectionMatrix"),
       ...(viewMatrix ? { viewMatrix } : {}),
+      // threejs-parity SH-02: custom-shader `u_projectionMatrix` source.
+      ...(resolved.projectionMatrix ? { projectionMatrix: toMat4(resolved.projectionMatrix, "projectionMatrix") } : {}),
       ...(resolved instanceof Camera
         ? { camera: resolved, cameraPosition: cameraWorldPosition(resolved) }
         : viewMatrix
@@ -2461,9 +2475,11 @@ function resolveCamera(
   }
   if (resolved.projectionMatrix && resolved.viewMatrix) {
     const viewMatrix = toMat4(resolved.viewMatrix, "viewMatrix");
+    const projectionMatrix = toMat4(resolved.projectionMatrix, "projectionMatrix");
     return {
-      viewProjectionMatrix: multiplyMat4(toMat4(resolved.projectionMatrix, "projectionMatrix"), viewMatrix),
+      viewProjectionMatrix: multiplyMat4(projectionMatrix, viewMatrix),
       viewMatrix,
+      projectionMatrix,
       ...(resolved instanceof Camera
         ? { camera: resolved, cameraPosition: cameraWorldPosition(resolved) }
         : { cameraPosition: cameraPositionFromViewMatrix(viewMatrix) })

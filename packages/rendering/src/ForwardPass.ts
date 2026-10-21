@@ -298,6 +298,10 @@ export class ForwardPass extends BaseRenderPass {
   private static nextRenderStateId = 1;
   private static readonly requiredAttributeIds = new WeakMap<readonly string[], number>();
   private static nextRequiredAttributeId = 1;
+  // threejs-parity SH-02: frame target dims for `u_resolution`, captured in
+  // execute() because drawItem() does not carry the pass context.
+  private frameWidth = 0;
+  private frameHeight = 0;
 
   constructor(private readonly options: ForwardPassOptions) {
     super(
@@ -310,6 +314,8 @@ export class ForwardPass extends BaseRenderPass {
 
   execute(context: RenderPassContext): void {
     this.skinningPaletteUploads.beginFrame();
+    this.frameWidth = context.width;
+    this.frameHeight = context.height;
     this.beginFramePools(context.device);
     this.clusteredLighting = resolveForwardClusteredLighting(this.options.lights, context.width, context.height, this.options.cameraViewProjectionMatrix);
     const flags = rendererQrFlags(context.device);
@@ -437,6 +443,10 @@ export class ForwardPass extends BaseRenderPass {
     applyAlphaCutoffUniform(item, shader, uniforms);
     applyWrinkleUniform(item, shader, uniforms);
     applyTransformUniforms(item, shader, uniforms);
+    // threejs-parity SH-02: the frame-scoped built-ins `material.custom` shaders
+    // may declare (u_time/u_resolution/u_viewMatrix/u_projectionMatrix) — bound
+    // only when the program actually reflects them, mirroring applyCameraUniforms.
+    applyCustomShaderFrameUniforms(this.options, this.frameWidth, this.frameHeight, shader, uniforms);
     bindVelocityUniforms?.(item, uniforms);
     if (generated && this.lastProgramFeatures) {
       // C-02 `ShaderFeature.bindUniforms` for the features this draw selected.
@@ -1901,6 +1911,35 @@ function applyTransformUniforms(
         ? toMat4Uniform(item.normalMatrix, "normalMatrix", item.label)
         : new Float32Array(normalMatrixFromModel(toMat4Values(modelMatrix ?? identityMatrix(), "modelMatrix", item.label)))
     );
+  }
+}
+
+/**
+ * threejs-parity SH-02 — frame-scoped built-ins for `material.custom` programs
+ * (`u_time`, `u_resolution`, `u_viewMatrix`, `u_projectionMatrix`). Every bind
+ * is guarded by reflection so non-custom programs render exactly as before;
+ * when a value is unavailable the uniform simply stays unbound (the adapter
+ * documents which names are populated).
+ */
+function applyCustomShaderFrameUniforms(
+  options: ForwardPassOptions,
+  frameWidth: number,
+  frameHeight: number,
+  shader: RenderShaderProgram,
+  uniforms: Map<string, UniformValue>
+): void {
+  const reflected = shader.reflection.uniforms;
+  if (reflected.has("u_time") && !uniforms.has("u_time")) {
+    uniforms.set("u_time", options.timeSeconds ?? 0);
+  }
+  if (reflected.has("u_resolution") && !uniforms.has("u_resolution")) {
+    uniforms.set("u_resolution", [Math.max(1, frameWidth), Math.max(1, frameHeight)]);
+  }
+  if (reflected.has("u_viewMatrix") && !uniforms.has("u_viewMatrix")) {
+    uniforms.set("u_viewMatrix", toMat4Uniform(options.cameraViewMatrix ?? identityMatrix(), "cameraViewMatrix"));
+  }
+  if (reflected.has("u_projectionMatrix") && !uniforms.has("u_projectionMatrix")) {
+    uniforms.set("u_projectionMatrix", toMat4Uniform(options.auraFrameCamera?.projectionMatrix ?? identityMatrix(), "auraFrameCamera.projectionMatrix"));
   }
 }
 

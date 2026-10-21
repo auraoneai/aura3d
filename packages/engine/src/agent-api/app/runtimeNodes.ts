@@ -1,6 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAnimationSpec, AuraApp, AuraMaterialSpec, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeRegistry, AuraRuntimeNodeSpec, AuraSceneNode, AuraSceneSnapshot, AuraVec3 } from "../nodes/types.js";
+import type { AuraAnimationSpec, AuraApp, AuraCustomMaterialSpec, AuraMaterialSpec, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeRegistry, AuraRuntimeNodeSpec, AuraSceneNode, AuraSceneSnapshot, AuraUniformValue, AuraVec3 } from "../nodes/types.js";
 import type { AuraNodeBuilder } from "../nodes/builder.js";
 import { animation } from "../nodes/animation.js";
 import { effects } from "../nodes/effects.composite.js";
@@ -15,6 +15,7 @@ import type { CompiledScene } from "../../contracts/compiler.js";
 import { asRuntimeCompiled } from "../../contracts/compiler.js";
 import { nodeHandleExtensionsAll } from "../../contracts/runtimeNodes.js";
 import type { AuraNodeKindMap } from "../../contracts/compiler.js";
+import { assertCustomUniformWrite, recordCustomUniformWrite } from "../compiler/customMaterial.js";
 
 /**
  * C-37 (PRD 15 T3.12): how the registry mutates the live scene.
@@ -397,6 +398,16 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
     // region parity:L1 — SH-02 `setUniform(name, value)`: write into the
     // material's uniform block without recompiling (frozen in
     // nodes/types/runtime.ts; owner lane L1, do not edit outside this region).
+    // The write is staged in `customMaterial.ts`'s per-runtime store; the
+    // production compiler applies it to the live `PortableShaderMaterial` each
+    // frame via `Material.setParameter` — the shader key never changes, so no
+    // program is recompiled (program count stays flat across updates).
+    setUniform(name: string, value: AuraUniformValue): AuraRuntimeNodeHandle {
+      assertCustomUniformWrite(("material" in node ? node.material : undefined) as { readonly kind?: string; readonly custom?: AuraCustomMaterialSpec } | undefined, name, value);
+      recordCustomUniformWrite(runtime.id, name, value);
+      bumpVersion();
+      return this;
+    },
     // endregion parity:L1
     // region parity:L2 — SG-05 `setGeometry(spec)` / `updateAttribute(name,
     // update)`: per-frame partial upload, no realloc when vertex count is

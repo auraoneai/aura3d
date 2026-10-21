@@ -8,6 +8,7 @@
 import type { AuraModelNode } from "../nodes/types.js";
 import type { AuraModelMaterialOverride } from "../../contracts/materials.js";
 import { lowerModelMaterialOverrides } from "../../production-runtime/ModelMaterialOverrides.js";
+import { assertAuraCustomMaterialSpec } from "./customMaterial.js";
 
 // C-15 seam fields: declared on `AuraModelOptions` (PR 0a) but not yet forwarded onto the
 // snapshot node by `model()` — that two-line builder change is lane-15's; the bridge reads
@@ -19,6 +20,16 @@ type ModelNodeMaterialSeams = AuraModelNode & {
 
 export function applyModelTintBridge(node: AuraModelNode): Record<string, unknown> {
   const seams = node as ModelNodeMaterialSeams;
+  // parity:L1 (SH-02) dispatch: a `material.custom` spec on a model node is
+  // validated through the portable-shader adapter, but GLB material-slot
+  // replacement is not wired — skip the PBR override lowering rather than
+  // silently downgrading the spec to tint overrides.
+  if (node.material?.kind === "custom") {
+    assertAuraCustomMaterialSpec(node.material.custom, `model(${node.name ?? node.asset.id}).material`);
+    return {
+      ...(seams.variant !== undefined ? { materialVariant: seams.variant } : {})
+    };
+  }
   const materialOverrides = lowerModelMaterialOverrides(node.material, seams.materialOverrides);
   return {
     ...(materialOverrides.length > 0 ? { materialOverrides } : {}),

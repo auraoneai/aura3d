@@ -1,7 +1,8 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 // PRD-04 P2-10 (R15): presets record their defaulted fields via AURA_PRESET_DEFAULTS.
 
-import type { AuraEditableMaterialParameters, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraMaterialInspectorPanel, AuraMaterialSpec, AuraMaterialVisualQAResult, AuraProceduralTextureSpec, AuraSceneNode } from "../nodes/types.js";
+import type { AuraCustomMaterialSpec, AuraEditableMaterialParameters, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraMaterialInspectorPanel, AuraMaterialSpec, AuraMaterialVisualQAResult, AuraProceduralTextureSpec, AuraSceneNode } from "../nodes/types.js";
+import { assertAuraCustomMaterialSpec } from "../compiler/customMaterial.js";
 import { PHYSICAL_SPEC_KEYS, createMaterialCapabilityDiagnostics, createMaterialInspector, proceduralTexture } from "../nodes/materialTools.js";
 import { neon } from "../nodes/neon.js";
 import { createPhysicalMaterialSpec } from "../../material-physical/PhysicalMaterialSpec.js";
@@ -47,6 +48,17 @@ function presetFrom(defaults: AuraMaterialSpec, options: AuraMaterialSpec, base:
 }
 
 export const material = lazyNamespace(() => ({
+  /**
+   * threejs-parity SH-02 (L1): three-style custom shader material. `spec.glsl`
+   * is required (GLSL is authoritative — `createAuraApp` mounts WebGL2);
+   * `spec.wgsl` is optional and runs only on the WebGPU backend. Validation is
+   * synchronous: a malformed or WGSL-only spec throws `invalid-material-spec`
+   * here rather than at mount.
+   */
+  custom: (spec: AuraCustomMaterialSpec): AuraMaterialSpec => {
+    assertAuraCustomMaterialSpec(spec);
+    return { kind: "custom", custom: spec };
+  },
   pbr: (options: AuraMaterialSpec = {}): AuraMaterialSpec => resolveMaterialSpecDefaults({
     color: "#d7dee8",
     roughness: 0.55,

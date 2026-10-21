@@ -88,7 +88,7 @@ describe("PortableShaderMaterial", () => {
 
     expect(library.getRevision()).toBe(before + 1);
     expect(library.compileSource(instance.shaderKey).fragment).toContain("0.60");
-    expect(instance.sources.wgsl.fragment).toContain("0.60");
+    expect(instance.sources.wgsl?.fragment).toContain("0.60");
   });
 
   it("rejects partial or schema-divergent reloads without replacing the live shader", () => {
