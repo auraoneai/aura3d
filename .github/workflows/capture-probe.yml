@@ -1,0 +1,32 @@
+name: Capture Probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "game URL to probe"
+        required: false
+        default: "https://aura3d.auraone.ai/apps/showcase-aura-hoops-3d/?autoplay=1"
+
+jobs:
+  probe:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 11.1.3 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: node tools/filmstrip/probe-capture.mjs
+        env:
+          PROBE_URL: ${{ inputs.url }}
+          PROBE_OUT: probes
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: capture-probe-${{ github.run_id }}
+          path: probes/
+          retention-days: 7
