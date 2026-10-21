@@ -20,6 +20,7 @@ export interface ApiDocsReport {
 
 const defaultOutputPath = "docs/api/public-api.md";
 const defaultReportPath = "tests/reports/api-docs.json";
+const defaultAppendixPath = "docs/api/public-api.appendix.md";
 
 export function collectPublicPackageApis(root = process.cwd()): readonly PublicPackageApi[] {
   const packagesRoot = join(root, "packages");
@@ -119,7 +120,12 @@ function apiDocsPackageSortKey(packageName: string): string {
   return packageName;
 }
 
-export function renderApiDocs(packages: readonly PublicPackageApi[]): string {
+export function readApiDocsAppendix(root = process.cwd(), appendixPath = defaultAppendixPath): string | undefined {
+  const absoluteAppendixPath = join(root, appendixPath);
+  return existsSync(absoluteAppendixPath) ? readFileSync(absoluteAppendixPath, "utf8") : undefined;
+}
+
+export function renderApiDocs(packages: readonly PublicPackageApi[], appendix?: string): string {
   const lines: string[] = [
     "# Aura3D Public API Reference",
     "",
@@ -160,12 +166,13 @@ export function renderApiDocs(packages: readonly PublicPackageApi[]): string {
   }
 
   lines.push("");
-  return `${lines.join("\n")}`;
+  const rendered = `${lines.join("\n")}`;
+  return appendix ? `${rendered}\n${appendix.trimEnd()}\n` : rendered;
 }
 
 export function validateApiDocs(root = process.cwd(), outputPath = defaultOutputPath): ApiDocsReport {
   const packages = collectPublicPackageApis(root);
-  const rendered = renderApiDocs(packages);
+  const rendered = renderApiDocs(packages, readApiDocsAppendix(root));
   const absoluteOutputPath = join(root, outputPath);
   const current = existsSync(absoluteOutputPath) ? readFileSync(absoluteOutputPath, "utf8") : "";
   const violations: string[] = [];
@@ -189,7 +196,7 @@ export function validateApiDocs(root = process.cwd(), outputPath = defaultOutput
 }
 
 export function writeApiDocs(root = process.cwd(), outputPath = defaultOutputPath): void {
-  const rendered = renderApiDocs(collectPublicPackageApis(root));
+  const rendered = renderApiDocs(collectPublicPackageApis(root), readApiDocsAppendix(root));
   const absoluteOutputPath = join(root, outputPath);
   mkdirSync(dirname(absoluteOutputPath), { recursive: true });
   writeFileSync(absoluteOutputPath, rendered);

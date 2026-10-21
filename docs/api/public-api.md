@@ -13,40 +13,40 @@ pnpm verify:api-docs
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/animation` | `4.0.0` | `packages/animation/src/index.ts` | 46 |
-| `@aura3d/apps` | `4.0.0` | `packages/apps/src/index.ts` | 10 |
-| `@aura3d/asset-index` | `4.0.0` | `packages/asset-index/src/index.ts` | 35 |
-| `@aura3d/assets` | `4.0.0` | `packages/assets/src/index.ts` | 82 |
-| `@aura3d/assets/gltf-runtime` | `4.0.0` | `packages/assets/src/gltf-runtime.ts` | 4 |
-| `@aura3d/audio` | `4.0.0` | `packages/audio/src/index.ts` | 47 |
-| `@aura3d/cli` | `4.0.0` | `packages/aura3d-cli/src/index.ts` | 37 |
-| `@aura3d/controls` | `4.0.0` | `packages/controls/src/index.ts` | 46 |
-| `@aura3d/core` | `4.0.0` | `packages/core/src/index.ts` | 14 |
-| `create-aura3d` | `4.0.0` | `packages/create-aura3d/src/index.ts` | 16 |
-| `@aura3d/debug` | `4.0.0` | `packages/debug/src/index.ts` | 30 |
-| `@aura3d/ecs` | `4.0.0` | `packages/ecs/src/index.ts` | 25 |
-| `@aura3d/editor-runtime` | `4.0.0` | `packages/editor-runtime/src/index.ts` | 82 |
-| `@aura3d/engine` | `4.0.0` | `packages/engine/src/index.ts` | 21 |
-| `@aura3d/input` | `4.0.0` | `packages/input/src/index.ts` | 48 |
-| `@aura3d/math` | `4.0.0` | `packages/math/src/index.ts` | 18 |
-| `@aura3d/navigation-recast` | `4.0.0` | `packages/navigation-recast/src/index.ts` | 16 |
-| `@aura3d/physics` | `4.0.0` | `packages/physics/src/index.ts` | 24 |
-| `@aura3d/physics-rapier` | `4.0.0` | `packages/physics-rapier/src/index.ts` | 26 |
-| `@aura3d/physics/solverless` | `4.0.0` | `packages/physics/src/solverless.ts` | 13 |
-| `@aura3d/physics/world` | `4.0.0` | `packages/physics/src/world.ts` | 2 |
-| `@aura3d/product-studio` | `4.0.0` | `packages/product-studio/src/index.ts` | 12 |
-| `@aura3d/react` | `4.0.0` | `packages/react/src/index.ts` | 39 |
-| `@aura3d/rendering` | `4.0.0` | `packages/rendering/src/index.ts` | 387 |
-| `@aura3d/rendering/extension-scalar-atlas` | `4.0.0` | `packages/rendering/src/extension-scalar-atlas.ts` | 2 |
-| `@aura3d/rendering/reflection-surfaces` | `4.0.0` | `packages/rendering/src/reflection-surfaces.ts` | 4 |
-| `@aura3d/rendering/webgpu` | `4.0.0` | `packages/rendering/src/webgpu.ts` | 8 |
-| `@aura3d/scene` | `4.0.0` | `packages/scene/src/index.ts` | 21 |
-| `@aura3d/scripting` | `4.0.0` | `packages/scripting/src/index.ts` | 39 |
-| `@aura3d/workflows` | `4.0.0` | `packages/workflows/src/index.ts` | 12 |
+| `@aura3d/animation` | `4.0.3` | `packages/animation/src/index.ts` | 46 |
+| `@aura3d/apps` | `4.0.3` | `packages/apps/src/index.ts` | 10 |
+| `@aura3d/asset-index` | `4.0.3` | `packages/asset-index/src/index.ts` | 35 |
+| `@aura3d/assets` | `4.0.3` | `packages/assets/src/index.ts` | 82 |
+| `@aura3d/assets/gltf-runtime` | `4.0.3` | `packages/assets/src/gltf-runtime.ts` | 4 |
+| `@aura3d/audio` | `4.0.3` | `packages/audio/src/index.ts` | 47 |
+| `@aura3d/cli` | `4.0.3` | `packages/aura3d-cli/src/index.ts` | 37 |
+| `@aura3d/controls` | `4.0.3` | `packages/controls/src/index.ts` | 46 |
+| `@aura3d/core` | `4.0.3` | `packages/core/src/index.ts` | 14 |
+| `create-aura3d` | `4.0.3` | `packages/create-aura3d/src/index.ts` | 16 |
+| `@aura3d/debug` | `4.0.3` | `packages/debug/src/index.ts` | 30 |
+| `@aura3d/ecs` | `4.0.3` | `packages/ecs/src/index.ts` | 25 |
+| `@aura3d/editor-runtime` | `4.0.3` | `packages/editor-runtime/src/index.ts` | 82 |
+| `@aura3d/engine` | `4.0.3` | `packages/engine/src/index.ts` | 21 |
+| `@aura3d/input` | `4.0.3` | `packages/input/src/index.ts` | 48 |
+| `@aura3d/math` | `4.0.3` | `packages/math/src/index.ts` | 18 |
+| `@aura3d/navigation-recast` | `4.0.3` | `packages/navigation-recast/src/index.ts` | 16 |
+| `@aura3d/physics` | `4.0.3` | `packages/physics/src/index.ts` | 24 |
+| `@aura3d/physics-rapier` | `4.0.3` | `packages/physics-rapier/src/index.ts` | 26 |
+| `@aura3d/physics/solverless` | `4.0.3` | `packages/physics/src/solverless.ts` | 13 |
+| `@aura3d/physics/world` | `4.0.3` | `packages/physics/src/world.ts` | 2 |
+| `@aura3d/product-studio` | `4.0.3` | `packages/product-studio/src/index.ts` | 12 |
+| `@aura3d/react` | `4.0.3` | `packages/react/src/index.ts` | 39 |
+| `@aura3d/rendering` | `4.0.3` | `packages/rendering/src/index.ts` | 387 |
+| `@aura3d/rendering/extension-scalar-atlas` | `4.0.3` | `packages/rendering/src/extension-scalar-atlas.ts` | 2 |
+| `@aura3d/rendering/reflection-surfaces` | `4.0.3` | `packages/rendering/src/reflection-surfaces.ts` | 4 |
+| `@aura3d/rendering/webgpu` | `4.0.3` | `packages/rendering/src/webgpu.ts` | 8 |
+| `@aura3d/scene` | `4.0.3` | `packages/scene/src/index.ts` | 21 |
+| `@aura3d/scripting` | `4.0.3` | `packages/scripting/src/index.ts` | 39 |
+| `@aura3d/workflows` | `4.0.3` | `packages/workflows/src/index.ts` | 12 |
 
 ## @aura3d/animation
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/animation/package.json`
 - Public entrypoint: `packages/animation/src/index.ts`
 
@@ -103,7 +103,7 @@ export type { ThreeCompatAnimatedAssetDiagnostic } from "./threejs-compatibility
 
 ## @aura3d/apps
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/apps/package.json`
 - Public entrypoint: `packages/apps/src/index.ts`
 
@@ -124,7 +124,7 @@ export async function createA3DApp(options: A3DAppOptions = {}): Promise<A3DApp>
 
 ## @aura3d/asset-index
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/asset-index/package.json`
 - Public entrypoint: `packages/asset-index/src/index.ts`
 
@@ -170,7 +170,7 @@ export function defaultAdapters(): SourceAdapter[] { return [ createAnimationSta
 
 ## @aura3d/assets
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/assets/package.json`
 - Public entrypoint: `packages/assets/src/index.ts`
 
@@ -263,7 +263,7 @@ export * from "./TextureStreaming.js";
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/assets/package.json`
 - Public entrypoint: `packages/assets/src/gltf-runtime.ts`
 
@@ -278,7 +278,7 @@ export type { ProductionGLTFRenderPipeline } from "./asset-corpus/ProductionGLTF
 
 ## @aura3d/audio
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/audio/package.json`
 - Public entrypoint: `packages/audio/src/index.ts`
 
@@ -336,7 +336,7 @@ export type { ListenerLike } from "./game-sound/listenerSync";
 
 ## @aura3d/cli
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/aura3d-cli/package.json`
 - Public entrypoint: `packages/aura3d-cli/src/index.ts`
 
@@ -384,7 +384,7 @@ export function initAgentSetup(options: { readonly projectDir?: string;
 
 ## @aura3d/controls
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/controls/package.json`
 - Public entrypoint: `packages/controls/src/index.ts`
 
@@ -441,7 +441,7 @@ export { PointerLockControls as PointerLockControlsEngine } from "./engine/Point
 
 ## @aura3d/core
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/core/package.json`
 - Public entrypoint: `packages/core/src/index.ts`
 
@@ -466,7 +466,7 @@ export * from "./VersionedSerialization.js";
 
 ## create-aura3d
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/create-aura3d/package.json`
 - Public entrypoint: `packages/create-aura3d/src/index.ts`
 
@@ -493,7 +493,7 @@ export { AURA_AGENT_CLIENTS, AURA_SKILLS_LEDGER, findBundledSkillsDir, readSkill
 
 ## @aura3d/debug
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/debug/package.json`
 - Public entrypoint: `packages/debug/src/index.ts`
 
@@ -534,7 +534,7 @@ export type { DebugReport } from "./ReportExporter.js";
 
 ## @aura3d/ecs
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/ecs/package.json`
 - Public entrypoint: `packages/ecs/src/index.ts`
 
@@ -570,7 +570,7 @@ export * from "./systems/index.js";
 
 ## @aura3d/editor-runtime
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/editor-runtime/package.json`
 - Public entrypoint: `packages/editor-runtime/src/index.ts`
 
@@ -663,7 +663,7 @@ export type { SceneTransformTargetLike, TransformLike, TransformTarget } from ".
 
 ## @aura3d/engine
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `package.json`
 - Public entrypoint: `packages/engine/src/index.ts`
 
@@ -695,7 +695,7 @@ export * from "./lanes/index.js";
 
 ## @aura3d/input
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/input/package.json`
 - Public entrypoint: `packages/input/src/index.ts`
 
@@ -754,7 +754,7 @@ export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFol
 
 ## @aura3d/math
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/math/package.json`
 - Public entrypoint: `packages/math/src/index.ts`
 
@@ -783,7 +783,7 @@ export * from "./Curves.js";
 
 ## @aura3d/navigation-recast
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/navigation-recast/package.json`
 - Public entrypoint: `packages/navigation-recast/src/index.ts`
 
@@ -810,7 +810,7 @@ export async function createRecastNavigation(options: RecastNavigationOptions = 
 
 ## @aura3d/physics
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/index.ts`
 
@@ -845,7 +845,7 @@ export * from "./PhysicsDebugDraw.js";
 
 ## @aura3d/physics-rapier
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/physics-rapier/package.json`
 - Public entrypoint: `packages/physics-rapier/src/index.ts`
 
@@ -882,7 +882,7 @@ export async function createCollidersFromSidecar( world: RapierPhysicsWorld, sou
 
 ## @aura3d/physics/solverless
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/solverless.ts`
 
@@ -906,7 +906,7 @@ export type { MeshSurfaceQuery, MeshSurfaceQueryOptions, SurfaceSample } from ".
 
 ## @aura3d/physics/world
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/world.ts`
 
@@ -919,7 +919,7 @@ export type { PhysicsBackend, PhysicsBackendPreference, PhysicsBackendSelection,
 
 ## @aura3d/product-studio
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/product-studio/package.json`
 - Public entrypoint: `packages/product-studio/src/index.ts`
 
@@ -942,7 +942,7 @@ export type * from "./ProductShowcaseLayout";
 
 ## @aura3d/react
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/react/package.json`
 - Public entrypoint: `packages/react/src/index.ts`
 
@@ -992,7 +992,7 @@ export function productViewerScene(asset: AuraAssetRef<"model">, material?: Aura
 
 ## @aura3d/rendering
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/index.ts`
 
@@ -1390,7 +1390,7 @@ export type { ProjectedDecalBasis, ProjectedDecalGeometryResult, ProjectedDecalR
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/extension-scalar-atlas.ts`
 
@@ -1403,7 +1403,7 @@ export type { ExtensionScalarAtlas, ExtensionScalarAtlasSlot, ExtensionScalarPix
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/reflection-surfaces.ts`
 
@@ -1418,7 +1418,7 @@ export type { ReflectionSurface, ReflectionSurfaceKind, ReflectionSurfaceOptions
 
 ## @aura3d/rendering/webgpu
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/webgpu.ts`
 
@@ -1437,7 +1437,7 @@ export { Texture } from "./Texture";
 
 ## @aura3d/scene
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/scene/package.json`
 - Public entrypoint: `packages/scene/src/index.ts`
 
@@ -1469,7 +1469,7 @@ export * from "./SceneSerializer.js";
 
 ## @aura3d/scripting
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/scripting/package.json`
 - Public entrypoint: `packages/scripting/src/index.ts`
 
@@ -1519,7 +1519,7 @@ export type { VisualNode, VisualPort, VisualPortDirection, VisualPortType } from
 
 ## @aura3d/workflows
 
-- Version: `4.0.0`
+- Version: `4.0.3`
 - Package manifest: `packages/workflows/package.json`
 - Public entrypoint: `packages/workflows/src/index.ts`
 
@@ -1538,4 +1538,173 @@ export { workflows as externalParityWorkflows } from "./workflow-foundation/inde
 export { PRODUCTION_WORKFLOWS, createProductionAssetPreflight, createProductionRendererDefaults, createProductionVisualQAResult, createProductionWorkflowPlan, listProductionWorkflowDefinitions, runProductionExample } from "./production-runtime";
 export type { ProductionAssetPreflightInput, ProductionAssetPreflightResult, ProductionExampleAsset, ProductionExampleDefinition, ProductionExampleEnvironment, ProductionExampleRuntime, ProductionExampleRuntimeMetrics, ProductionRendererDefaults, ProductionVisualQAInput, ProductionVisualQAResult, ProductionWorkflowDefinition, ProductionWorkflowId, ProductionWorkflowPlan } from "./production-runtime";
 export type * from "./WorkflowTypes";
+```
+
+---
+
+## Reserved and planned exports (threejs-parity)
+
+**Status legend.** This appendix is hand-maintained for the parity workstream
+and appended verbatim by `tools/api-docs` — edit this file, then run
+`pnpm verify:api-docs -- --write`. Verdicts: `closed/public` (real GPU path
+today), `partial/internal` (exists internally, not public), `gap/public`
+(frozen contract, no implementation), `excluded` (deliberately out of scope —
+never shipped). Lane verdicts live in
+`docs/workflows/threejs-parity-gaps.md`.
+
+Nothing in this section is importable today unless a row says otherwise.
+Items marked **landing** are owned by a parity lane and merge with that lane —
+the codemod (`aura3d migrate three`) emits `parityPending` markers that name
+the same target so generated code and this doc stay in sync.
+
+### `curve.*` — SM-02 (lane L3, landing)
+
+```ts
+// @aura3d/engine — planned namespace over the frozen Curve<V> interface
+// (M/Curves.ts exports CatmullRomCurve3 + CubicBezierCurve3 as math classes).
+curve.catmullRom({ points, closed?, curveType? })
+curve.cubicBezier({ v0, v1, v2, v3 })   // + quadraticBezier, line, spline,
+curve.path()                            //   ellipse, arc, CurvePath,
+curve.shape()                           //   Path/Shape with holes
+```
+
+### `texture.*` — ST-01/02/07 (lane L4, landing)
+
+```ts
+// @aura3d/engine — planned; AuraTextureRef fields are frozen.
+texture.load(url, opts): Promise<TextureHandle>
+texture.data / canvas / video / compressed / depth / cube / dataArray
+// handle: colorSpace, flipY, wrapS/wrapT, repeat/offset/rotation/center,
+//         anisotropy, min/magFilter, generateMipmaps, needsUpdate, dispose
+```
+
+### `lines.*`, `points.*`, `sprites.*` — SG-06/07/08 (lane L6, landing)
+
+```ts
+// @aura3d/engine — planned scene nodes.
+lines.line({ points })
+lines.loop / lines.segments / lines.fat({ dashed })
+points({ positions, size, sizeAttenuation?, map?, alphaTest? })
+sprites({ map?, center?, rotation?, sizeAttenuation? })
+```
+
+### `batched.*` — SG-02 (lane L5, probe-gated on P-2)
+
+```ts
+// @aura3d/engine — planned; promotion to ● needs a BatchedMesh probe hit.
+batched.mesh({ maxInstances, maxVertices, material? })
+```
+
+### `instances.mesh` — SG-01 (lane L5, landing)
+
+```ts
+// @aura3d/engine — extends the live instances.* factories with a handle:
+//   setMatrixAt / setColorAt / count / needsUpdate over the GPU instance
+//   buffer write path.
+```
+
+### `helpers.*` — SC-03 (lane L6, P2)
+
+```ts
+// @aura3d/engine — planned debug helpers over lines.*.
+helpers.axes / grid / polarGrid / box / box3 / camera / arrow / plane
+helpers.directionalLight / pointLight / spotLight / skeleton
+```
+
+### `surfaces.*` — AD-15 (lane L7)
+
+```ts
+// @aura3d/engine — planned over R/PlanarReflection.
+surfaces.mirror({ size, resolution?, tint? })
+```
+
+### `Clock`, `raycast`, cameras — SR-01/03, SC-01 (lane L7)
+
+```ts
+// @aura3d/engine — planned.
+new Clock()                        // getDelta/getElapsedTime/start/stop
+raycast({ origin, direction } | { camera, ndc }, { firstHitOnly?, recursive?, layers?, near?, far? })
+cameras.cube({ resolution, near, far })   // via Renderer.renderProbeFace
+cameras.array / cameras.stereo            // P2 — needs viewport/scissor
+```
+
+### `material.custom` — SH-02 (lane L1, spec frozen)
+
+```ts
+// @aura3d/engine — AuraCustomMaterialSpec is frozen in contracts.
+material.custom({
+  glsl: { fragment },        // required — WebGL2 is the live backend
+  wgsl?,                     // optional — WebGPU only (A3D_QR_WEBGPU)
+  uniforms?, defines?, transparent?, depthWrite?, side?, blending?, patch?
+})
+```
+
+### `effects.shaderPass` — SH-03 (lane L1)
+
+```ts
+// @aura3d/engine — planned scene node. TODAY'S live GPU path for a custom
+// pass is already public:
+app.addPostPass({ name, insertAt, fragment: { glsl }, uniforms? })  // ships
+effects.shaderPass({ /* same shape */ })                           // landing
+```
+
+### Geometry breadth / authoring — SG-03/04/05 (lane L2, landing)
+
+```ts
+// kinds exist in the frozen AuraBuiltinPrimitive union; generators land L2.
+primitives.cone / circle / ring / tube / lathe / extrude / shape /
+           torusKnot / polyhedron({variant}) / roundedBox   // landing
+geometry.dynamic(spec)                    // typed-array attributes — landing
+geometry.edges(src, thresholdAngle?)      // landing
+geometry.wireframe(src)                   // landing
+geometry.merge / toNonIndexed             // AD-06 — landing
+```
+
+### Math breadth — SM-01/04, AD-14 (lane L3, landing)
+
+```ts
+// @aura3d/engine/math — planned additions to the live math classes.
+Line3, Triangle, Spherical, Cylindrical, MathUtils,
+Color.setHSL/getHSL/offsetHSL/lerpHSL, SphericalHarmonics3, Octree
+// all 6 Euler orders; finish Box3/Sphere/Plane/Ray/Frustum/Matrix3 method set
+```
+
+### Runtime surface — SH-05/06, SR-04/05/07, SG-09 (lane L7, landing)
+
+```ts
+app.setPixelRatio / setClearColor / info / precompile      // typed, unassigned
+RenderTarget + renderer.render({ target })               // type reserved on
+                                                         // @aura3d/engine/renderer
+node handle: renderOrder, frustumCulled, layers, userData, traverse,
+             getWorldPosition/Quaternion, attach         // fields frozen
+```
+
+### Animation — SA-02/03/04/06, SM-03 (lane L8)
+
+```ts
+// @aura3d/engine(/animation) — planned; AN/* internals exist.
+AnimationObjectGroup, characters.clone (cloneSkinned),
+PropertyBinding parser (node.prop[index], morphTargetInfluences[name]),
+KeyframeTrack typed factories, AnimationUtils.subclip/optimize/merge/
+  makeClipAdditive
+```
+
+### Audio — AU-01/02/03 (lane L9, partial)
+
+```ts
+// @aura3d/engine/audio — AudioSource/PositionalEmitter/AudioListener ship;
+// lane L9 fixes AU-02 double attenuation, wires the listener to ctx.listener,
+// adds panner distanceModel/cone and AudioAnalyser.
+```
+
+### Excluded by contract — never lands
+
+```ts
+// AD-04 loaders: FBXLoader MMDLoader PLYLoader STLLoader USDZLoader
+//   ThreeMFLoader VOXLoader ColladaLoader TDSLoader AMFLoader IFCLoader
+// AD-05 exporters: GLTFExporter OBJExporter PLYExporter STLExporter
+//   USDZExporter DRACOExporter ColladaExporter
+// AD-09 effects/*, AD-10 modifiers (bake offline),
+// AD-11 GPUComputationRenderer (waits on SH-04 WebGPU compute),
+// AD-13 webxr/inspector/transpiler/libs/offscreen
 ```

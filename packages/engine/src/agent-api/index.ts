@@ -219,6 +219,7 @@ export { lazySystems } from "./public/devtools.js";
 export { performance } from "./performanceEvidence.js";
 export { renderer, createRendererDiagnosticReport, resolveRendererSceneCategory } from "./rendererDiagnostics.js";
 export { createAuraRouteHealthSnapshot } from "./public/devtools.js";
+export type { AuraRouteHealthSnapshotOptions } from "./public/devtools.js";
 export { createRuntimeNodeImportedAssetEvidence } from "./RuntimeNodeHandle.js";
 export { cloneRuntimeAnimationPose, cloneRuntimeImportedAssetEvidence, sanitizeRuntimeMorphWeight } from "./runtimeEvidence.js";
 export { collectAuraSceneEvidence } from "./sceneEvidence.js";

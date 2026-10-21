@@ -9,4 +9,5 @@ export {
 } from "../devtools/diagnosticPreview.js";
 export { lazySystems } from "../devtools/lazySystems.js";
 export { createAuraRouteHealthSnapshot } from "../devtools/routeHealth.js";
+export type { AuraRouteHealthSnapshotOptions } from "../devtools/routeHealth.js";
 export { sceneKitPerformanceBudgets } from "../devtools/sceneKitBudgets.js";
