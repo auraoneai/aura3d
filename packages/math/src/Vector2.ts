@@ -52,6 +52,31 @@ export class Vector2 {
     return this.subtract(v).length();
   }
 
+  distanceToSquared(v: Vector2): number {
+    return this.subtract(v).lengthSquared();
+  }
+
+  /** this + v*s (three.js `addScaledVector`). */
+  addScaled(v: Vector2, s: number): Vector2 {
+    return new Vector2(this.x + v.x * s, this.y + v.y * s);
+  }
+
+  negate(): Vector2 {
+    return new Vector2(-this.x, -this.y);
+  }
+
+  /** Per-component floor to min / ceiling to max (three.js `clamp`). */
+  clampTo(min: Vector2, max: Vector2): Vector2 {
+    return new Vector2(
+      Math.max(min.x, Math.min(max.x, this.x)),
+      Math.max(min.y, Math.min(max.y, this.y))
+    );
+  }
+
+  static fromArray(array: ArrayLike<number>, offset = 0): Vector2 {
+    return new Vector2(array[offset]!, array[offset + 1]!);
+  }
+
   lerp(v: Vector2, t: number): Vector2 {
     return new Vector2(this.x + (v.x - this.x) * t, this.y + (v.y - this.y) * t);
   }

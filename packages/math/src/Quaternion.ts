@@ -1,7 +1,8 @@
 import { Vector3 } from "./Vector3.js";
 import type { Matrix4 } from "./Matrix4.js";
 
-export type EulerOrder = "XYZ";
+/** Intrinsic rotation order, matching three.js `Euler` orders. */
+export type EulerOrder = "XYZ" | "YXZ" | "ZXY" | "ZYX" | "YZX" | "XZY";
 
 export class Quaternion {
   static readonly identity = Object.freeze(new Quaternion(0, 0, 0, 1));
@@ -36,8 +37,11 @@ export class Quaternion {
     return new Quaternion(cross.x, cross.y, cross.z, 1 + dot).normalize();
   }
 
+  /**
+   * Quaternion for the given intrinsic Euler rotations, applied in `order`
+   * (all six three.js orders — same formulas as `Quaternion.setFromEuler`).
+   */
   static fromEuler(x: number, y: number, z: number, order: EulerOrder = "XYZ"): Quaternion {
-    if (order !== "XYZ") throw new RangeError(`Unsupported Euler order: ${order}`);
     if (![x, y, z].every(Number.isFinite)) throw new RangeError("Euler angles must be finite.");
     const c1 = Math.cos(x / 2);
     const c2 = Math.cos(y / 2);
@@ -45,12 +49,60 @@ export class Quaternion {
     const s1 = Math.sin(x / 2);
     const s2 = Math.sin(y / 2);
     const s3 = Math.sin(z / 2);
-    return new Quaternion(
-      s1 * c2 * c3 + c1 * s2 * s3,
-      c1 * s2 * c3 - s1 * c2 * s3,
-      c1 * c2 * s3 + s1 * s2 * c3,
-      c1 * c2 * c3 - s1 * s2 * s3
-    ).normalize();
+    let q: Quaternion;
+    switch (order) {
+      case "XYZ":
+        q = new Quaternion(
+          s1 * c2 * c3 + c1 * s2 * s3,
+          c1 * s2 * c3 - s1 * c2 * s3,
+          c1 * c2 * s3 + s1 * s2 * c3,
+          c1 * c2 * c3 - s1 * s2 * s3
+        );
+        break;
+      case "YXZ":
+        q = new Quaternion(
+          s1 * c2 * c3 + c1 * s2 * s3,
+          c1 * s2 * c3 - s1 * c2 * s3,
+          c1 * c2 * s3 - s1 * s2 * c3,
+          c1 * c2 * c3 + s1 * s2 * s3
+        );
+        break;
+      case "ZXY":
+        q = new Quaternion(
+          s1 * c2 * c3 - c1 * s2 * s3,
+          c1 * s2 * c3 + s1 * c2 * s3,
+          c1 * c2 * s3 + s1 * s2 * c3,
+          c1 * c2 * c3 - s1 * s2 * s3
+        );
+        break;
+      case "ZYX":
+        q = new Quaternion(
+          s1 * c2 * c3 - c1 * s2 * s3,
+          c1 * s2 * c3 + s1 * c2 * s3,
+          c1 * c2 * s3 - s1 * s2 * c3,
+          c1 * c2 * c3 + s1 * s2 * s3
+        );
+        break;
+      case "YZX":
+        q = new Quaternion(
+          s1 * c2 * c3 + c1 * s2 * s3,
+          c1 * s2 * c3 + s1 * c2 * s3,
+          c1 * c2 * s3 - s1 * s2 * c3,
+          c1 * c2 * c3 - s1 * s2 * s3
+        );
+        break;
+      case "XZY":
+        q = new Quaternion(
+          s1 * c2 * c3 - c1 * s2 * s3,
+          c1 * s2 * c3 - s1 * c2 * s3,
+          c1 * c2 * s3 + s1 * s2 * c3,
+          c1 * c2 * c3 + s1 * s2 * s3
+        );
+        break;
+      default:
+        throw new RangeError(`Unsupported Euler order: ${String(order)}`);
+    }
+    return q.normalize();
   }
 
   static fromRotationMatrix(matrix: Matrix4): Quaternion {

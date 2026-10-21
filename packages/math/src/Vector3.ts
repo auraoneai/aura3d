@@ -1,3 +1,4 @@
+import type { Matrix3 } from "./Matrix3.js";
 import type { Matrix4 } from "./Matrix4.js";
 import type { Quaternion } from "./Quaternion.js";
 
@@ -69,6 +70,61 @@ export class Vector3 {
 
   distanceTo(v: Vector3): number {
     return this.subtract(v).length();
+  }
+
+  distanceToSquared(v: Vector3): number {
+    return this.subtract(v).lengthSquared();
+  }
+
+  /** this + v*s (three.js `addScaledVector`). */
+  addScaled(v: Vector3, s: number): Vector3 {
+    return new Vector3(this.x + v.x * s, this.y + v.y * s, this.z + v.z * s);
+  }
+
+  negate(): Vector3 {
+    return new Vector3(-this.x, -this.y, -this.z);
+  }
+
+  /** Per-component floor to min / ceiling to max (three.js `clamp`). */
+  clampTo(min: Vector3, max: Vector3): Vector3 {
+    return new Vector3(
+      Math.max(min.x, Math.min(max.x, this.x)),
+      Math.max(min.y, Math.min(max.y, this.y)),
+      Math.max(min.z, Math.min(max.z, this.z))
+    );
+  }
+
+  /**
+   * Transforms this direction by `matrix` (upper-left 3x3) and normalizes
+   * (three.js `Vector3.transformDirection`).
+   */
+  transformDirection(matrix: Matrix4): Vector3 {
+    const m = matrix.elements;
+    const x = this.x, y = this.y, z = this.z;
+    return new Vector3(
+      m[0] * x + m[4] * y + m[8] * z,
+      m[1] * x + m[5] * y + m[9] * z,
+      m[2] * x + m[6] * y + m[10] * z
+    ).normalize();
+  }
+
+  /** Transforms this vector by a 3x3 matrix (three.js `Vector3.applyMatrix3`). */
+  applyMatrix3(matrix: Matrix3): Vector3 {
+    const m = matrix.elements;
+    const x = this.x, y = this.y, z = this.z;
+    return new Vector3(
+      m[0] * x + m[3] * y + m[6] * z,
+      m[1] * x + m[4] * y + m[7] * z,
+      m[2] * x + m[5] * y + m[8] * z
+    );
+  }
+
+  getComponent(index: 0 | 1 | 2 | number): number {
+    return index === 0 ? this.x : index === 1 ? this.y : this.z;
+  }
+
+  static fromArray(array: ArrayLike<number>, offset = 0): Vector3 {
+    return new Vector3(array[offset]!, array[offset + 1]!, array[offset + 2]!);
   }
 
   lerp(v: Vector3, t: number): Vector3 {
