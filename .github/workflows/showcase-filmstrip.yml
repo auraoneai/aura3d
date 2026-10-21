@@ -20,6 +20,12 @@ on:
         description: "comma list (empty = all six)"
         required: false
         default: ""
+      qa:
+        description: "run the visual QA tail after filming"
+        required: false
+        default: "0"
+        type: choice
+        options: ["0", "1"]
 
 concurrency:
   group: showcase-filmstrip-${{ github.run_id }}
@@ -79,12 +85,12 @@ jobs:
       # canvas-grab fallback for the same class). Non-blocking: the manifest
       # uploads for manual review; blank-page and HTTP gates still record.
       - name: Visual QA (marketing surface + all 20 game routes, local mode only)
-        if: env.MODE == 'local'
+        if: env.MODE == 'local' && inputs.qa == '1'
         continue-on-error: true
         run: node scripts/visual-qa.mjs --static-dir marketing/dist --port 3180 --out artifacts/visual-qa
 
       - name: Upload visual QA
-        if: always() && env.MODE == 'local'
+        if: always() && env.MODE == 'local' && inputs.qa == '1'
         uses: actions/upload-artifact@v4
         with:
           name: showcase-visual-qa-${{ github.run_id }}
