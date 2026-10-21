@@ -16,8 +16,59 @@
 import { Geometry } from "../Geometry";
 import type { AuraPrimitiveTessellation } from "../contracts/geometry";
 import type { AuraQualityTierSettings } from "../contracts/quality";
+import { coneParityMesh } from "./Cone";
+import { circleParityMesh } from "./Circle";
+import { ringParityMesh } from "./Ring";
+import { torusKnotParityMesh } from "./TorusKnot";
+import { polyhedronParityMesh } from "./Polyhedron";
+import { roundedBoxParityMesh } from "./RoundedBox";
+import { tubeParityMesh } from "./Tube";
+import { latheParityMesh } from "./Lathe";
+import { extrudeParityMesh } from "./Extrude";
+import { shapeParityMesh } from "./Shape";
+import { parityMeshToGeometry } from "./Support";
 
-export type AuraPrimitiveKind = "box" | "sphere" | "plane" | "cylinder" | "capsule" | "torus";
+export type AuraPrimitiveKind =
+  | "box" | "sphere" | "plane" | "cylinder" | "capsule" | "torus"
+  | "cone" | "circle" | "ring" | "tube" | "lathe" | "extrude" | "shape"
+  | "torusKnot" | "polyhedron" | "roundedBox";
+
+/**
+ * threejs-parity SG-03 — rendering-side mirror of the frozen
+ * `AuraPrimitiveParams` (`AA/nodes/types.ts`), so the widened generator union
+ * reads three's constructor args without an engine dependency edge. Every
+ * field optional; generators apply three's own defaults.
+ */
+export interface AuraParityPrimitiveParams extends AuraPrimitiveTessellation {
+  readonly radius?: number;
+  readonly height?: number;
+  readonly innerRadius?: number;
+  readonly outerRadius?: number;
+  readonly thetaStart?: number;
+  readonly thetaLength?: number;
+  readonly thetaSegments?: number;
+  readonly phiStart?: number;
+  readonly phiLength?: number;
+  readonly phiSegments?: number;
+  readonly segments?: number;
+  readonly tubeRadius?: number;
+  readonly p?: number;
+  readonly q?: number;
+  readonly detail?: number;
+  readonly variant?: "tetrahedron" | "octahedron" | "icosahedron" | "dodecahedron";
+  readonly path?: unknown;
+  readonly extrudePath?: unknown;
+  readonly points?: readonly (readonly number[])[];
+  readonly shape?: unknown;
+  readonly depth?: number;
+  readonly steps?: number;
+  readonly bevelEnabled?: boolean;
+  readonly bevelThickness?: number;
+  readonly bevelSize?: number;
+  readonly bevelOffset?: number;
+  readonly bevelSegments?: number;
+  readonly closed?: boolean;
+}
 
 const halve = (segments: number | undefined, fallback: number, min: number): number =>
   Math.max(min, Math.floor((segments ?? fallback) / 2));
@@ -48,7 +99,7 @@ export function clearPrimitiveGeometryCache(): void {
  */
 export function createPrimitiveGeometry(
   primitive: AuraPrimitiveKind,
-  params: AuraPrimitiveTessellation | undefined,
+  params: AuraParityPrimitiveParams | undefined,
   tier: Pick<AuraQualityTierSettings, "primitiveSegments">,
   effectiveDimensions?: readonly [number, number, number]
 ): Geometry {
@@ -115,6 +166,114 @@ export function createPrimitiveGeometry(
       key = `box|${width}|${height}|${depth}`;
       build = () => Geometry.box({ widthSegments: width, heightSegments: height, depthSegments: depth });
       break;
+    }
+
+    // ── SG-03 / L2-01+02: three-parity generators (exact buffer order) ────
+    case "cone": {
+      const radial = seg(params?.radialSegments, 32, 3);
+      const heightSegs = Math.max(1, Math.floor(params?.heightSegments ?? 1));
+      const radius = params?.radius ?? params?.radiusBottom ?? 1;
+      const height = params?.height ?? 1;
+      const openEnded = params?.openEnded ?? false;
+      const thetaStart = params?.thetaStart ?? 0;
+      const thetaLength = params?.thetaLength ?? Math.PI * 2;
+      key = `cone|${radial}|${heightSegs}|${radius}|${height}|${openEnded}|${thetaStart}|${thetaLength}`;
+      build = () =>
+        parityMeshToGeometry(coneParityMesh({ radius, height, radialSegments: radial, heightSegments: heightSegs, openEnded, thetaStart, thetaLength }));
+      break;
+    }
+    case "circle": {
+      const segments = seg(params?.thetaSegments ?? params?.radialSegments, 32, 3);
+      const radius = params?.radius ?? 1;
+      const thetaStart = params?.thetaStart ?? 0;
+      const thetaLength = params?.thetaLength ?? Math.PI * 2;
+      key = `circle|${segments}|${radius}|${thetaStart}|${thetaLength}`;
+      build = () => parityMeshToGeometry(circleParityMesh({ radius, segments, thetaStart, thetaLength }));
+      break;
+    }
+    case "ring": {
+      const thetaSegments = seg(params?.thetaSegments ?? params?.radialSegments, 32, 3);
+      const phiSegments = Math.max(1, Math.floor(params?.phiSegments ?? 1));
+      const innerRadius = params?.innerRadius ?? 0.5;
+      const outerRadius = params?.outerRadius ?? params?.radius ?? 1;
+      const thetaStart = params?.thetaStart ?? 0;
+      const thetaLength = params?.thetaLength ?? Math.PI * 2;
+      key = `ring|${thetaSegments}|${phiSegments}|${innerRadius}|${outerRadius}|${thetaStart}|${thetaLength}`;
+      build = () =>
+        parityMeshToGeometry(ringParityMesh({ innerRadius, outerRadius, thetaSegments, phiSegments, thetaStart, thetaLength }));
+      break;
+    }
+    case "torusKnot": {
+      const tubular = seg(params?.tubularSegments, 64, 3);
+      const radial = seg(params?.radialSegments, 8, 3);
+      const radius = params?.radius ?? 1;
+      const tube = params?.tubeRadius ?? params?.tube ?? 0.4;
+      const p = params?.p ?? 2;
+      const q = params?.q ?? 3;
+      key = `torusKnot|${tubular}|${radial}|${radius}|${tube}|${p}|${q}`;
+      build = () =>
+        parityMeshToGeometry(torusKnotParityMesh({ radius, tube, tubularSegments: tubular, radialSegments: radial, p, q }));
+      break;
+    }
+    case "polyhedron": {
+      const variant = params?.variant ?? "icosahedron";
+      const radius = params?.radius ?? 1;
+      const detail = half ? Math.max(0, Math.floor((params?.detail ?? 0) / 2)) : Math.floor(params?.detail ?? 0);
+      key = `polyhedron|${variant}|${radius}|${detail}`;
+      build = () => parityMeshToGeometry(polyhedronParityMesh({ radius, detail, variant }));
+      break;
+    }
+    case "roundedBox": {
+      const segments = Math.max(1, Math.floor(params?.widthSegments ?? params?.radialSegments ?? 2));
+      const radius = params?.radius ?? 0.1;
+      const [w, h, d] = effectiveDimensions ?? [1, 1, 1];
+      key = `roundedBox|${segments}|${radius}|${w}|${h}|${d}`;
+      build = () =>
+        parityMeshToGeometry(roundedBoxParityMesh({ width: Math.abs(w), height: Math.abs(h), depth: Math.abs(d), segments, radius }));
+      break;
+    }
+    case "tube": {
+      if (params?.path === undefined) {
+        throw new Error('createPrimitiveGeometry: "tube" requires params.path (a Curve or point list)');
+      }
+      const tubular = seg(params?.tubularSegments, 64, 3);
+      const radial = seg(params?.radialSegments, 8, 3);
+      const radius = params?.radius ?? 1;
+      const closed = params?.closed ?? false;
+      // Data-dependent (curve object) — no param-keyed cache entry.
+      return parityMeshToGeometry(tubeParityMesh({ path: params.path, tubularSegments: tubular, radius, radialSegments: radial, closed }));
+    }
+    case "lathe": {
+      const points = (params?.points ?? []).map((p) => [p[0] ?? 0, p[1] ?? 0] as const);
+      if (points.length < 2) {
+        throw new Error('createPrimitiveGeometry: "lathe" requires params.points (a 2D profile of at least two points)');
+      }
+      const segments = seg(params?.radialSegments, 12, 3);
+      const phiStart = params?.phiStart ?? 0;
+      const phiLength = params?.phiLength ?? Math.PI * 2;
+      return parityMeshToGeometry(latheParityMesh({ points, segments, phiStart, phiLength }));
+    }
+    case "extrude": {
+      if (params?.shape === undefined) {
+        throw new Error('createPrimitiveGeometry: "extrude" requires params.shape');
+      }
+      return parityMeshToGeometry(extrudeParityMesh({
+        shape: params.shape,
+        steps: Math.max(1, Math.floor(params?.steps ?? 1)),
+        depth: params?.depth ?? 1,
+        bevelEnabled: params?.bevelEnabled ?? true,
+        bevelThickness: params?.bevelThickness,
+        bevelSize: params?.bevelSize,
+        bevelOffset: params?.bevelOffset,
+        bevelSegments: Math.max(0, Math.floor(params?.bevelSegments ?? 3)),
+        extrudePath: params?.extrudePath
+      }));
+    }
+    case "shape": {
+      if (params?.shape === undefined) {
+        throw new Error('createPrimitiveGeometry: "shape" requires params.shape (a Shape or point list)');
+      }
+      return parityMeshToGeometry(shapeParityMesh({ shape: params.shape }));
     }
     default:
       throw new Error(`createPrimitiveGeometry: unknown primitive "${String(primitive)}"`);

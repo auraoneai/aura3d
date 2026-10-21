@@ -24,6 +24,18 @@ export const instances = lazyNamespace(() => ({
   cylinder: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("cylinder", options),
   capsule: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("capsule", options),
   torus: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("torus", options),
+  // ── threejs-parity L2-01 (SG-03): instanced widened kinds share the params
+  // block with their `primitives.*` siblings.
+  cone: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("cone", options),
+  circle: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("circle", options),
+  ring: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("ring", options),
+  tube: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("tube", options),
+  lathe: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("lathe", options),
+  extrude: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("extrude", options),
+  shape: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("shape", options),
+  torusKnot: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("torusKnot", options),
+  polyhedron: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("polyhedron", options),
+  roundedBox: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("roundedBox", options),
   custom: (
     spec: AuraCustomGeometrySpec,
     options: Omit<AuraPrimitiveOptions, "geometry"> & {
