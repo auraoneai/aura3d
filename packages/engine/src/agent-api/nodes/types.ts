@@ -742,9 +742,9 @@ export type AuraSceneNode =
   | AuraInteractionNode
   | AuraLabelNode
   | AuraEnvironmentNode
-  // threejs-parity (§5.0): frozen at B; each kind compiles to a
-  // `parity-not-implemented` (A3D_PARITY_LINES / A3D_PARITY_BATCHING) validate
-  // error until lanes L5/L6 land real handlers.
+  // threejs-parity (§5.0): line/points/sprite compile to a
+  // `parity-not-implemented` (A3D_PARITY_LINES) validate error until L6 lands;
+  // `batched` is live under A3D_PARITY_BATCHING (parity-L5 `batchedNodeHandler`).
   | AuraLineNode
   | AuraPointsNode
   | AuraSpriteNode
@@ -2630,14 +2630,32 @@ export interface AuraSpriteNode extends AuraTransformSpec {
   readonly runtime?: AuraRuntimeNodeSpec;
 }
 
-/** SG-02 (L5): `batched.mesh({...})` — multi-geometry instancing. Compile → `parity-not-implemented` until L5 lands. */
+/**
+ * SG-02 (L5): `batched.mesh({...})` — multi-geometry instancing. Rendered by
+ * `batchedNodeHandler` under `A3D_PARITY_BATCHING` (flag off → the flag-off
+ * `parityPending` default keeps the `parity-not-implemented` validate error).
+ */
 export interface AuraBatchedNode extends AuraTransformSpec {
   readonly kind: "batched";
   readonly name?: string;
+  /**
+   * Stable id binding the node to its `BatchedMeshState` (builder clones
+   * spread-copy the node, so the id — not object identity — is the key).
+   * `batched.mesh` generates one; authored nodes may omit it (then
+   * `runtime.id` binds, else a fresh id materializes at compile).
+   */
+  readonly batchedId?: string;
   readonly maxInstances: number;
   readonly maxVertices?: number;
   readonly maxIndices?: number;
   readonly material?: AuraMaterialSpec;
+  /**
+   * Draw route: "auto" = packed multi-draw on the generated-program path,
+   * per-geometry instancing elsewhere; "multi-draw"/"loop" request the packed
+   * route explicitly (degrading to "instanced" when unavailable); "instanced"
+   * forces one draw per geometry.
+   */
+  readonly multiDraw?: "auto" | "multi-draw" | "loop" | "instanced";
   /** Initial geometry pool entries (primitives by name, or custom geometry). */
   readonly geometries?: readonly (AuraBuiltinPrimitive | AuraCustomGeometrySpec)[];
   readonly instances?: readonly AuraTransformSpec[];

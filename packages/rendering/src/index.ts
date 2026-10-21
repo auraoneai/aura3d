@@ -1244,9 +1244,15 @@ export {
   planBatches,
   BatchedGeometryPool,
   DRAW_DATA_TEXELS_PER_DRAW,
+  DRAW_DATA_VISIBLE_BIT,
+  DRAW_DATA_GEOMETRY_ID_SHIFT,
   DrawDataTexture,
+  packDrawDataFlags,
+  unpackDrawDataFlags,
   buildMultiDrawBatch,
   multiDrawCommands,
+  refreshMultiDrawBatch,
+  synthesizeMultiDrawItems,
   submitMultiDrawBatch,
   PRD11_DRAWID_CHUNK,
   PRD11_DRAWID_DEPTH_FEATURE,
@@ -1268,7 +1274,8 @@ export type {
   DrawDataEntry,
   MultiDrawBatch,
   PackedDrawCommand,
-  Prd11MultiDrawItem
+  Prd11MultiDrawItem,
+  SynthesizeMultiDrawItemsOptions
 } from "./batching/index.js";
 
 // PRD-15 T5.4 restore — names dropped by the §6.1 curation that the

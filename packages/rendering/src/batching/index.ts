@@ -20,15 +20,22 @@ export {
 } from "./BatchedGeometryPool";
 export {
   DRAW_DATA_TEXELS_PER_DRAW,
+  DRAW_DATA_VISIBLE_BIT,
+  DRAW_DATA_GEOMETRY_ID_SHIFT,
   DrawDataTexture,
+  packDrawDataFlags,
+  unpackDrawDataFlags,
   type DrawDataEntry
 } from "./DrawDataTexture";
 export {
   buildMultiDrawBatch,
   multiDrawCommands,
+  refreshMultiDrawBatch,
+  synthesizeMultiDrawItems,
   submitMultiDrawBatch,
   type MultiDrawBatch,
-  type PackedDrawCommand
+  type PackedDrawCommand,
+  type SynthesizeMultiDrawItemsOptions
 } from "./MultiDrawBatch";
 export {
   PRD11_DRAWID_CHUNK,

@@ -10,6 +10,8 @@ import type { RenderSource } from "../contracts/renderSource";
 import { toMat4 } from "./RenderShared";
 import { skinnedItemLocalBounds } from "./SkinnedBounds";
 import { planBatches, type BatchPlan, type PlanBatchesOptions, type InstancedBatch } from "../batching/StaticMergePlanner";
+import { buildMultiDrawBatch, refreshMultiDrawBatch, synthesizeMultiDrawItems, type MultiDrawBatch } from "../batching/MultiDrawBatch";
+import { qrGeneratedProgramsOn } from "./qrSubFlags";
 import { MaterialInstance } from "../MaterialInstance";
 import { rendererQrFlags } from "./FrameGraph";
 import { Frustum } from "@aura3d/math";
@@ -273,6 +275,14 @@ export interface Prd11BatchPlanReport {
   readonly reasonsNotBatched: Readonly<Record<string, number>>;
   readonly planBuildMs: number;
   readonly planVersion: number;
+  /**
+   * L5 (parity-L5): the multi-draw route this plan emitted — "multi-draw" =
+   * marker items enqueued for `device.multiDrawElementsInstanced` (extension
+   * merges; its absence loops one draw per member at the device), "none" =
+   * no groups planned, "unavailable" = planner left members pending because
+   * the generated-program path is off.
+   */
+  readonly multiDrawMode?: "multi-draw" | "none" | "unavailable";
 }
 
 const EMPTY_BATCH_REPORT: Prd11BatchPlanReport = {
@@ -346,22 +356,41 @@ export class BatchPlanCache {
   private synthesized: RenderItem[] = [];
   private plan: BatchPlan | null = null;
   private version = 0;
+  /** Packed batches built for the current plan (multi-draw route, L5). */
+  private multiDrawBatches: MultiDrawBatch[] = [];
   lastReport: Prd11BatchPlanReport = EMPTY_BATCH_REPORT;
+
+  /**
+   * L5-03: `multiDrawAvailable` resolves per call — explicit option wins;
+   * otherwise the generated-program path (A3D_QR_CORE_GENERATOR / lobe route)
+   * decides, since the marker items only fetch draw data through generated
+   * features. When unavailable, group members passthrough as ordinary draws
+   * (the honest one-draw-per-geometry fallback) instead of silently merging.
+   */
+  private multiDrawAvailable(options: PlanBatchesOptions): boolean {
+    return options.multiDrawAvailable ?? qrGeneratedProgramsOn(rendererQrFlags());
+  }
 
   apply(items: readonly RenderItem[], options: PlanBatchesOptions = {}): RenderItem[] {
     const signature = structuralSignature(items);
     if (signature === this.signature && this.plan) {
       for (const batch of this.plan.instancedBatches) refreshInstancedBatch(batch);
+      for (const batch of this.multiDrawBatches) refreshMultiDrawBatch(batch);
       latestBatchPlanReport = this.lastReport;
       return this.synthesized;
     }
     const startedAt = typeof performance !== "undefined" ? performance.now() : Date.now();
-    const plan = planBatches(items, options);
+    const multiDrawAvailable = this.multiDrawAvailable(options);
+    const plan = planBatches(items, { ...options, multiDrawAvailable });
     const buildMs = (typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt;
     this.version += 1;
     this.plan = plan;
     this.signature = signature;
-    this.synthesized = [...synthesizeInstancedItems(plan.instancedBatches), ...plan.passthrough];
+    // L5: multi-draw groups become marker items over packed pools + draw-data
+    // rows (one texture per group; DrawSubmit enqueues consecutive markers).
+    this.multiDrawBatches = plan.multiDrawGroups.map((group) => buildMultiDrawBatch(group));
+    const multiDrawItems = this.multiDrawBatches.flatMap((batch) => synthesizeMultiDrawItems(batch, { mode: "multi-draw" }));
+    this.synthesized = [...synthesizeInstancedItems(plan.instancedBatches), ...multiDrawItems, ...plan.passthrough];
     this.lastReport = {
       inputItems: items.length,
       outputDraws: plan.stats.instancedDraws + plan.stats.passthroughItems + plan.stats.multiDrawMembers,
@@ -369,7 +398,8 @@ export class BatchPlanCache {
       multiDrawBatches: plan.multiDrawGroups.length,
       reasonsNotBatched: plan.reasonsNotBatched,
       planBuildMs: buildMs,
-      planVersion: this.version
+      planVersion: this.version,
+      multiDrawMode: plan.multiDrawGroups.length > 0 ? "multi-draw" : multiDrawAvailable ? "none" : "unavailable"
     };
     latestBatchPlanReport = this.lastReport;
     return this.synthesized;

@@ -17,6 +17,27 @@ import type { UniformValue } from "../RenderDevice";
 
 export const DRAW_DATA_TEXELS_PER_DRAW = 6;
 
+/**
+ * Meta texel `.w` bit layout (parity-L5 / SG-02): bit 0 = visible, bits 1+
+ * = packed `PackedGeometryEntry.geometryId`. Shaders read
+ * `(floatBitsToUint(meta.w) & 1u) != 0u` for visibility and `meta.w >> 1`
+ * for the geometry id; `baseVertex`/`firstIndex`/`indexCount` stay in
+ * `meta.xyz` as floats.
+ */
+export const DRAW_DATA_VISIBLE_BIT = 1;
+export const DRAW_DATA_GEOMETRY_ID_SHIFT = 1;
+
+/** Pack `meta.w` for a draw row: bit 0 visible, upper bits the pooled geometry id. */
+export function packDrawDataFlags(visible: boolean, geometryId = 0): number {
+  return (visible ? DRAW_DATA_VISIBLE_BIT : 0) | (Math.max(0, geometryId | 0) << DRAW_DATA_GEOMETRY_ID_SHIFT);
+}
+
+/** Inverse of {@link packDrawDataFlags} (tests + shader-side verification). */
+export function unpackDrawDataFlags(flags: number): { readonly visible: boolean; readonly geometryId: number } {
+  const bits = flags >>> 0;
+  return { visible: (bits & DRAW_DATA_VISIBLE_BIT) !== 0, geometryId: bits >>> DRAW_DATA_GEOMETRY_ID_SHIFT };
+}
+
 export interface DrawDataEntry {
   /** Column-major mat4. */
   readonly model: ArrayLike<number>;
@@ -70,15 +91,22 @@ export class DrawDataTexture {
       format: "rgba32f",
       colorSpace: "linear",
       label: "a3d-prd11-draw-data",
-      data: this.data
+      data: this.data,
+      dynamic: true // rows rewrite per frame — `update()`-driven re-upload (L5)
     };
   }
 
-  /** Materializes/re-uploads only when marked dirty; the Texture itself is CPU data until the device binds it. */
+  /**
+   * Materializes once, then `update()`s in place on dirty rows — the returned
+   * `Texture` object is STABLE across row rewrites (markers/uniforms hold it
+   * by identity; the device re-uploads on `revision`).
+   */
   upload(): Texture {
-    if (!this.texture || this.dirty) {
-      this.texture?.dispose();
+    if (!this.texture) {
       this.texture = new Texture(this.descriptor());
+      this.dirty = false;
+    } else if (this.dirty) {
+      this.texture.update(this.data);
       this.dirty = false;
     }
     return this.texture;
