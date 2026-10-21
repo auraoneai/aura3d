@@ -23224,10 +23224,212 @@
       "kind": "value",
       "from": ".",
       "to": ".",
-      "disposition": "planned",
-      "reason": "threejs-parity \u00a75.0 reserved root name: texture.* namespace \u2014 lane L4 (ST-01)",
-      "consumers": [],
-      "owners": []
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01): public texture.* namespace with GPU-backed factories \u2014 implemented as TextureHandle over the device Texture.",
+      "consumers": [
+        "examples/parity-texture-lab/main.ts",
+        "tests/browser/parity-texture.spec.ts",
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
+    },
+    {
+      "name": "TextureHandle",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01/ST-02): live texture handle type behind the texture.* factories.",
+      "consumers": [
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
+    },
+    {
+      "name": "AuraTextureRef",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01/ST-02): frozen texture.* option/ref contract consumed by the public namespace and compiler.",
+      "consumers": [
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
+    },
+    {
+      "name": "AuraTextureWrapMode",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01/ST-02): frozen texture.* option/ref contract consumed by the public namespace and compiler.",
+      "consumers": [
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
+    },
+    {
+      "name": "AuraTextureMinFilter",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01/ST-02): frozen texture.* option/ref contract consumed by the public namespace and compiler.",
+      "consumers": [
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
+    },
+    {
+      "name": "AuraTextureMagFilter",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01/ST-02): frozen texture.* option/ref contract consumed by the public namespace and compiler.",
+      "consumers": [
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
+    },
+    {
+      "name": "AuraTextureColorSpace",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01/ST-02): frozen texture.* option/ref contract consumed by the public namespace and compiler.",
+      "consumers": [
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
+    },
+    {
+      "name": "AuraTextureDataOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01/ST-02): frozen texture.* option/ref contract consumed by the public namespace and compiler.",
+      "consumers": [
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
+    },
+    {
+      "name": "AuraTextureCanvasOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01/ST-02): frozen texture.* option/ref contract consumed by the public namespace and compiler.",
+      "consumers": [
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
+    },
+    {
+      "name": "AuraTextureVideoOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01/ST-02): frozen texture.* option/ref contract consumed by the public namespace and compiler.",
+      "consumers": [
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
+    },
+    {
+      "name": "AuraTextureCompressedOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01/ST-02): frozen texture.* option/ref contract consumed by the public namespace and compiler.",
+      "consumers": [
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
+    },
+    {
+      "name": "AuraTextureDepthOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01/ST-02): frozen texture.* option/ref contract consumed by the public namespace and compiler.",
+      "consumers": [
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
+    },
+    {
+      "name": "AuraTextureCubeOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01/ST-02): frozen texture.* option/ref contract consumed by the public namespace and compiler.",
+      "consumers": [
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
+    },
+    {
+      "name": "AuraTextureDataArrayOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01/ST-02): frozen texture.* option/ref contract consumed by the public namespace and compiler.",
+      "consumers": [
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
+    },
+    {
+      "name": "AuraTextureLoadOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity lane L4 (ST-01/ST-02): frozen texture.* option/ref contract consumed by the public namespace and compiler.",
+      "consumers": [
+        "tests/unit/parity/texture.test.ts"
+      ],
+      "owners": [
+        "??"
+      ]
     },
     {
       "name": "timeline",

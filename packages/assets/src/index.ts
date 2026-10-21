@@ -311,6 +311,16 @@ export { createTextureMipGenerationStage, generateTextureMipChain, resolveAnisot
 export type { AnisotropyRequest, AnisotropyResolution, TextureMipGenerationInput, TextureMipGenerationResult, TextureMipGenerationStageOptions, TextureMipLevel } from "./TexturePipeline";
 export { TextureLoader } from "./TextureLoader";
 export type { TextureDescriptorAsset } from "./TextureLoader";
+// threejs-parity ST-04/AD-03 (lane L4): three-signature real loaders.
+export { FileLoader } from "./FileLoader";
+export type { FileLoaderResponseType } from "./FileLoader";
+export { ImageBitmapLoader } from "./ImageBitmapLoader";
+export type { ImageBitmapLoaderOptions } from "./ImageBitmapLoader";
+export { DataTextureLoader } from "./DataTextureLoader";
+export { EXRLoader, EXRLoaderThreeCompat, parseEXR } from "./EXRLoader";
+export type { AuraEXRDataType, AuraEXROutputFormat, AuraEXRParseOptions, AuraEXRTextureData } from "./EXRLoader";
+export { fetchBytes } from "./LoaderFetch";
+export type { AuraLoaderProgress } from "./LoaderFetch";
 export { WorkerAssetJobs } from "./WorkerAssetJobs";
 export type { WorkerAssetJob, WorkerAssetJobRunner } from "./WorkerAssetJobs";
 export * from "./HDRLoader.js";

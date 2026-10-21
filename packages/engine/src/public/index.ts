@@ -203,3 +203,6 @@ export type {
   RacketVec3
 } from "../agent-api/index.js";
 
+// threejs-parity ST-01 (lane L4): the `texture.*` namespace + live handle type.
+export { texture, TextureHandle } from "../agent-api/index.js";
+export type { AuraTextureRef, AuraTextureWrapMode, AuraTextureMinFilter, AuraTextureMagFilter, AuraTextureColorSpace, AuraTextureDataOptions, AuraTextureCanvasOptions, AuraTextureVideoOptions, AuraTextureCompressedOptions, AuraTextureDepthOptions, AuraTextureCubeOptions, AuraTextureDataArrayOptions, AuraTextureLoadOptions } from "../agent-api/index.js";

@@ -1,5 +1,5 @@
 import type { AuraQualityTier } from "./contracts/quality";
-import { resolveSamplerAnisotropy as resolveTierSamplerAnisotropy } from "./contracts/sampling";
+import { resolveSamplerAnisotropy as resolveTierSamplerAnisotropy, type AuraTextureSampling, type AuraTextureWrap } from "./contracts/sampling";
 
 export type TextureMagFilter = "nearest" | "linear";
 export type TextureMinFilter =
@@ -87,6 +87,58 @@ export class Sampler {
       maxAnisotropy: anisotropy
     });
   }
+
+  /**
+   * threejs-parity ST-02/ST-04 (L4): build a sampler from an
+   * `AuraTextureSampling` descriptor — the shape `texture.*` handles and
+   * `material.sampling`/`slotSampling` carry. Per-axis `wrapS`/`wrapT` win
+   * over the shared `wrap`; `minFilter`/`magFilter` (three names or numeric
+   * enum) win over the legacy `filter` shorthand
+   * ("trilinear"/"bilinear"/"nearest").
+   */
+  static fromSampling(
+    sampling: AuraTextureSampling | undefined,
+    options: { readonly anisotropy?: number; readonly defaultWrap?: TextureAddressMode } = {}
+  ): Sampler {
+    const fallbackWrap = options.defaultWrap ?? "clamp-to-edge";
+    const legacyFilter = sampling?.filter;
+    const legacyMin: TextureMinFilter = legacyFilter === "nearest"
+      ? "nearest"
+      : legacyFilter === "bilinear"
+        ? "linear"
+        : "linear-mipmap-linear";
+    const legacyMag: TextureMagFilter = legacyFilter === "nearest" ? "nearest" : "linear";
+    return new Sampler({
+      minFilter: threeToMinFilter(sampling?.minFilter) ?? legacyMin,
+      magFilter: threeToMagFilter(sampling?.magFilter) ?? legacyMag,
+      addressU: auraWrapMode(sampling?.wrapS ?? sampling?.wrap) ?? fallbackWrap,
+      addressV: auraWrapMode(sampling?.wrapT ?? sampling?.wrap) ?? fallbackWrap,
+      maxAnisotropy: sampling?.anisotropy ?? options.anisotropy ?? 1
+    });
+  }
+
+  /**
+   * threejs-parity ST-02/ST-04 (L4): a three `Texture` sampler view —
+   * `{ wrapS, wrapT, minFilter, magFilter, anisotropy }` where wrap/filter
+   * fields accept three's numeric enums (RepeatWrapping 1000, ClampToEdgeWrapping
+   * 1001, MirroredRepeatWrapping 1002, NearestFilter 1003 …
+   * LinearMipmapLinearFilter 1008) or the matching Aura strings.
+   */
+  static fromThree(info: {
+    readonly wrapS?: number | AuraTextureWrap;
+    readonly wrapT?: number | AuraTextureWrap;
+    readonly minFilter?: number | TextureMinFilter;
+    readonly magFilter?: number | TextureMagFilter;
+    readonly anisotropy?: number;
+  } | undefined): Sampler {
+    return new Sampler({
+      minFilter: threeToMinFilter(info?.minFilter) ?? "linear-mipmap-linear",
+      magFilter: threeToMagFilter(info?.magFilter) ?? "linear",
+      addressU: threeToWrapMode(info?.wrapS) ?? "repeat",
+      addressV: threeToWrapMode(info?.wrapT) ?? "repeat",
+      maxAnisotropy: info?.anisotropy ?? 1
+    });
+  }
 }
 
 // glTF sampler enums: CLAMP_TO_EDGE 33071, MIRRORED_REPEAT 33648, REPEAT 10497.
@@ -103,6 +155,57 @@ const GLTF_MIN_FILTERS: Readonly<Record<number, TextureMinFilter>> = {
   9986: "nearest-mipmap-linear",
   9987: "linear-mipmap-linear"
 };
+
+// threejs-parity ST-04 (L4): three.js numeric enums (three/src/constants.js).
+// RepeatWrapping 1000, ClampToEdgeWrapping 1001, MirroredRepeatWrapping 1002;
+// NearestFilter 1003, NearestMipmapNearest 1004, NearestMipmapLinear 1005,
+// LinearFilter 1006, LinearMipmapNearest 1007, LinearMipmapLinear 1008.
+const THREE_WRAP_MODES: Readonly<Record<number, TextureAddressMode>> = {
+  1000: "repeat",
+  1001: "clamp-to-edge",
+  1002: "mirror-repeat"
+};
+const THREE_MIN_FILTERS: Readonly<Record<number, TextureMinFilter>> = {
+  1003: "nearest",
+  1004: "nearest-mipmap-nearest",
+  1005: "nearest-mipmap-linear",
+  1006: "linear",
+  1007: "linear-mipmap-nearest",
+  1008: "linear-mipmap-linear"
+};
+const THREE_MAG_FILTERS: Readonly<Record<number, TextureMagFilter>> = {
+  1003: "nearest",
+  1006: "linear"
+};
+
+/** threejs-parity ST-04 (L4): Aura wrap name → device address mode. */
+export function auraWrapMode(wrap: AuraTextureWrap | TextureAddressMode | undefined): TextureAddressMode | undefined {
+  if (wrap === undefined) return undefined;
+  if (wrap === "clamp" || wrap === "clamp-to-edge") return "clamp-to-edge";
+  if (wrap === "mirror" || wrap === "mirror-repeat") return "mirror-repeat";
+  return "repeat";
+}
+
+/** threejs-parity ST-04 (L4): three wrap enum or Aura name → device address mode. */
+export function threeToWrapMode(wrap: number | AuraTextureWrap | TextureAddressMode | undefined): TextureAddressMode | undefined {
+  if (wrap === undefined) return undefined;
+  if (typeof wrap === "number") return THREE_WRAP_MODES[wrap];
+  return auraWrapMode(wrap);
+}
+
+/** threejs-parity ST-04 (L4): three min-filter enum or name → `TextureMinFilter`. */
+export function threeToMinFilter(filter: number | TextureMinFilter | undefined): TextureMinFilter | undefined {
+  if (filter === undefined) return undefined;
+  if (typeof filter === "number") return THREE_MIN_FILTERS[filter];
+  return filter;
+}
+
+/** threejs-parity ST-04 (L4): three mag-filter enum or name → `TextureMagFilter`. */
+export function threeToMagFilter(filter: number | TextureMagFilter | undefined): TextureMagFilter | undefined {
+  if (filter === undefined) return undefined;
+  if (typeof filter === "number") return THREE_MAG_FILTERS[filter];
+  return filter;
+}
 
 /** Device-quantized sampler anisotropy steps (muse3jsparity-PRD C3). */
 export const SAMPLER_ANISOTROPY_STEPS = [1, 2, 4, 8, 16] as const;

@@ -409,7 +409,7 @@ export type {
   Rgba8EnvironmentMapSource,
   RgbeEnvironmentMapSource
 } from "./EnvironmentMapResources";
-export { DEFAULT_SAMPLER_ANISOTROPY, resolveSamplerAnisotropy, SAMPLER_ANISOTROPY_STEPS, Sampler } from "./Sampler";
+export { auraWrapMode, DEFAULT_SAMPLER_ANISOTROPY, resolveSamplerAnisotropy, SAMPLER_ANISOTROPY_STEPS, Sampler, threeToMagFilter, threeToMinFilter, threeToWrapMode } from "./Sampler";
 export type { SamplerAnisotropyRequest, SamplerAnisotropyResolution, SamplerDescriptor, TextureAddressMode, TextureFilter, TextureMagFilter, TextureMinFilter } from "./Sampler";
 export { UniformLayout } from "./UniformLayout";
 export type { UniformFieldDescriptor, UniformFieldLayout, UniformFieldType } from "./UniformLayout";

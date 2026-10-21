@@ -79,6 +79,9 @@ export class WebGL2TextureRegistry {
     }
     const cached = this.textures.get(texture);
     if (cached) {
+      // ST-03 (L4): live sources (video) may mark a new frame before the
+      // revision comparison runs.
+      texture.pollContentRevision?.();
       // C-18: `update()` bumped the revision — re-upload in place instead of
       // reallocating a new WebGL texture (E39/T0.10a).
       if (this.textureUploadRevisions.get(texture) !== texture.revision) {
@@ -100,7 +103,7 @@ export class WebGL2TextureRegistry {
       this.uploadCubeTexture(texture, handle);
       this.textureUploadModes.set(texture, "cube");
       this.textures.set(texture, handle);
-      this.textureUploadRevisions.set(texture, texture.revision);
+      this.recordTextureUploaded(texture);
       return handle;
     }
     // A texture object is permanently assigned to the first target it binds
@@ -131,7 +134,7 @@ export class WebGL2TextureRegistry {
           this.host.gl.texParameteri(this.host.gl.TEXTURE_2D, this.host.gl.TEXTURE_MAX_LEVEL, uploadLevels.length - 1);
           this.textureUploadModes.set(texture, "compressed");
           this.textures.set(texture, handle);
-          this.textureUploadRevisions.set(texture, texture.revision);
+          this.recordTextureUploaded(texture);
           return handle;
         }
       }
@@ -146,7 +149,7 @@ export class WebGL2TextureRegistry {
       this.uploadRgba8FallbackTexture(texture, fallbackLevels);
       this.textureUploadModes.set(texture, "fallback");
       this.textures.set(texture, handle);
-      this.textureUploadRevisions.set(texture, texture.revision);
+      this.recordTextureUploaded(texture);
       return handle;
     }
     if (texture.format === "depth24") {
@@ -156,8 +159,18 @@ export class WebGL2TextureRegistry {
       });
     }
     if (texture.source) {
+      // threejs-parity ST-02/ST-03 (L4): per-texture flipY + generateMipmaps on
+      // canvas/video/image uploads — UNPACK_FLIP_Y is global GL state, so it is
+      // restored to the engine convention (false) right after the call.
+      this.host.gl.pixelStorei(this.host.gl.UNPACK_FLIP_Y_WEBGL, texture.flipY);
       this.host.gl.texImage2D(this.host.gl.TEXTURE_2D, 0, rgba8TextureInternalFormat(this.host.gl, texture), this.host.gl.RGBA, this.host.gl.UNSIGNED_BYTE, texture.source);
-      this.host.gl.generateMipmap(this.host.gl.TEXTURE_2D);
+      this.host.gl.pixelStorei(this.host.gl.UNPACK_FLIP_Y_WEBGL, false);
+      if (texture.generateMipmaps) {
+        this.host.gl.generateMipmap(this.host.gl.TEXTURE_2D);
+      } else {
+        this.host.gl.texParameteri(this.host.gl.TEXTURE_2D, this.host.gl.TEXTURE_BASE_LEVEL, 0);
+        this.host.gl.texParameteri(this.host.gl.TEXTURE_2D, this.host.gl.TEXTURE_MAX_LEVEL, 0);
+      }
     } else if (texture.mipLevels.length > 0) {
       const uploadFormat = textureUploadFormat(this.host.gl, texture);
       const uploadLevels = completeUploadLevels(texture.textureLevels);
@@ -266,13 +279,19 @@ export class WebGL2TextureRegistry {
         this.host.gl.texParameteri(this.host.gl.TEXTURE_2D, this.host.gl.TEXTURE_MAX_LEVEL, 0);
         this.host.gl.texParameteri(this.host.gl.TEXTURE_2D, this.host.gl.TEXTURE_MIN_FILTER, this.host.gl.NEAREST);
         this.host.gl.texParameteri(this.host.gl.TEXTURE_2D, this.host.gl.TEXTURE_MAG_FILTER, this.host.gl.NEAREST);
-      } else {
+      } else if (texture.generateMipmaps) {
         this.host.gl.generateMipmap(this.host.gl.TEXTURE_2D);
+      } else {
+        // threejs-parity ST-02 (L4): no mip chain requested — pin the level
+        // range so mipmap-filtering samplers still resolve to a complete
+        // texture instead of sampling an incomplete one.
+        this.host.gl.texParameteri(this.host.gl.TEXTURE_2D, this.host.gl.TEXTURE_BASE_LEVEL, 0);
+        this.host.gl.texParameteri(this.host.gl.TEXTURE_2D, this.host.gl.TEXTURE_MAX_LEVEL, 0);
       }
     }
     this.textureUploadModes.set(texture, texture.format);
     this.textures.set(texture, handle);
-    this.textureUploadRevisions.set(texture, texture.revision);
+    this.recordTextureUploaded(texture);
     return handle;
   }
 
@@ -291,11 +310,12 @@ export class WebGL2TextureRegistry {
     // here wiped the attachment the first time it was sampled (#1249 GPU:
     // the first OutputPass present read 0).
     const noCpuContent = !texture.dynamic && !texture.data && !texture.source && texture.mipLevels.length === 0;
-    if (noCpuContent || mode === "cube" || mode === "compressed" || mode === "fallback" || mode === "depth-render-target") {
+    // Explicit mip chains have no revision-safe path here (Texture.update
+    // rejects them); recording keeps them out of this branch like cube paths.
+    if (noCpuContent || texture.mipLevels.length > 0 || mode === "cube" || mode === "compressed" || mode === "fallback" || mode === "depth-render-target") {
       // These modes re-upload through their own paths; only record the revision
       // so we do not re-enter every bind.
-      this.textureUploadRevisions.set(texture, texture.revision);
-      texture.pendingUpdateRegion = null;
+      this.recordTextureUploaded(texture);
       return;
     }
     this.host.stateCache.invalidate();
@@ -322,6 +342,17 @@ export class WebGL2TextureRegistry {
           uploadFormat.type,
           layerData ? texturePixelUploadData(layerData as TexturePixelData, texture.format) : null
         );
+      }
+    } else if (texture.source) {
+      // threejs-parity ST-03 (L4): canvas/video/image revision upload — the
+      // whole live source is re-copied (video per-frame, canvas on
+      // `needsUpdate`), honoring per-texture flipY and mip regeneration.
+      this.host.gl.bindTexture(this.host.gl.TEXTURE_2D, handle);
+      this.host.gl.pixelStorei(this.host.gl.UNPACK_FLIP_Y_WEBGL, texture.flipY);
+      this.host.gl.texImage2D(this.host.gl.TEXTURE_2D, 0, rgba8TextureInternalFormat(this.host.gl, texture), this.host.gl.RGBA, this.host.gl.UNSIGNED_BYTE, texture.source);
+      this.host.gl.pixelStorei(this.host.gl.UNPACK_FLIP_Y_WEBGL, false);
+      if (texture.generateMipmaps) {
+        this.host.gl.generateMipmap(this.host.gl.TEXTURE_2D);
       }
     } else if (texture.dynamic) {
       this.host.gl.bindTexture(this.host.gl.TEXTURE_2D, handle);
@@ -356,8 +387,19 @@ export class WebGL2TextureRegistry {
         texture.data ? texturePixelUploadData(texture.data, texture.format) : null
       );
     }
-    texture.pendingUpdateRegion = null;
+    this.recordTextureUploaded(texture);
+  }
+
+  /**
+   * threejs-parity ST-02/ST-03 (L4): record that `texture.revision` has been
+   * fully uploaded — resets the pending region and the user-facing
+   * `needsUpdate` dirty flag so a canvas/video texture only re-uploads after
+   * the next mark.
+   */
+  private recordTextureUploaded(texture: Texture): void {
     this.textureUploadRevisions.set(texture, texture.revision);
+    texture.pendingUpdateRegion = null;
+    texture.needsUpdate = false;
   }
 
   uploadCubeTexture(texture: Texture, handle: WebGLTexture): void {

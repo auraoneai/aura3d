@@ -41,12 +41,27 @@ import { setPrd01ColorParsing } from "../compiler/color.js";
 import { collectGeneratedCodeWarnings } from "../looks/generatedCodeWarnings.js";
 import { material } from "../nodes/material.js";
 import { assets } from "../AssetDecoders.js";
+import { registerAppAssetEventHandlers } from "../assetEvents.js";
 import { round } from "../GameRuntime.js";
 
 export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptions): AuraApp {
   // region parity:L4 — ST-06 options `options.onAssetProgress` /
   // `options.onAssetError` are wired to the asset manager here (owner lane L4,
   // do not edit outside this region).
+  //
+  // Asset events (texture.load, loader helpers) broadcast to registered apps
+  // — three's `DefaultLoadingManager` shape. The closures read the
+  // function-scoped `disposed` flag declared below, so events emitted after
+  // `app.dispose()` are dropped for this app (the registry entry lingers —
+  // disposed apps keep a tombstoned pair; see assetEvents.ts).
+  registerAppAssetEventHandlers({
+    ...(options.onAssetProgress
+      ? { onAssetProgress: (event) => { if (!disposed) options.onAssetProgress!(event); } }
+      : {}),
+    ...(options.onAssetError
+      ? { onAssetError: (event) => { if (!disposed) options.onAssetError!(event); } }
+      : {})
+  });
   // endregion parity:L4
   // T0-12: mount-phase timing marks consumed by the bench harness's
   // payload.extra.mountTiming (see markTiming in ./platform).
