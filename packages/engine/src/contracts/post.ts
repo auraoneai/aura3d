@@ -33,7 +33,10 @@ export interface AuraCustomPostPass { readonly name: string; readonly insertAt: 
   /** threejs-parity SH-03: `false` keeps the pass registered but skips execution. */
   readonly enabled?: boolean;
 }
-export interface AuraPostSurface { addPostPass(p: AuraCustomPostPass): () => void; setQualityTier(t: AuraQualityTier | "auto"): void; }
+export interface AuraPostSurface { addPostPass(p: AuraCustomPostPass): () => void; setQualityTier(t: AuraQualityTier | "auto"): void;
+  /** SH-03: mutate one numeric uniform of a registered custom pass by name; staged onto the live descriptor — no re-registration or shader rebuild. Optional on stub surfaces. */
+  setPassUniform?(passName: string, key: string, value: number | readonly number[]): void;
+}
 export interface AuraPostDiagnostics { readonly tier: AuraQualityTier; readonly antiAlias: AuraAntiAliasMode; readonly renderPixels: number; readonly pixelRatio: number; readonly renderScale: number; readonly stages: PostGraphReport["stages"]; readonly skipped: PostGraphReport["skipped"]; readonly velocityCoverage: { readonly items: number; readonly withVelocity: number }; }
 // effects factories (bloom, ambientOcclusion, antiAlias, colorGrade, vignette, filmGrain, chromaticAberration, depthOfField, motionBlur): field lists frozen in PRD 03 §APIs; unknown fields throw AuraRuntimeError("POST_FIELD_UNSUPPORTED") before first frame when A3D_QR_POST is on, warn (option-ignored) when off.
 

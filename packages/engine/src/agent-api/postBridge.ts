@@ -36,7 +36,7 @@ import {
   type QrFlags
 } from "@aura3d/rendering/contracts";
 import type { BloomOptionsV2, PostTierResolution } from "@aura3d/rendering";
-import type { AuraCustomPostPass, AuraPostSurface } from "../contracts/post.js";
+import type { AuraCustomPostPass, AuraPostPassOrder, AuraPostSurface } from "../contracts/post.js";
 import type { AuraOutputOptions } from "../contracts/output.js";
 import { AuraRuntimeError, groups, type AuraApp, type AuraCreateAppOptions, type AuraEffectNode, type AuraSceneSnapshot } from "./index.js";
 import { expandPostPreset, presetCapabilityDegraded } from "./postPresets.js";
@@ -403,22 +403,50 @@ function spaceForAnchor(insertAt: PostInsertAt): PostSpace {
 }
 
 /**
+ * SH-03: `AuraPostPassOrder` named slots map to fixed ordering keys inside the
+ * chosen `insertAt` anchor — bloom slots sort before tonemap slots, so a pass
+ * ordered "before-bloom" always precedes one ordered "after-tonemap" sharing
+ * the anchor. Numbers are absolute keys (sorted ascending); omitted `order`
+ * keeps registration order (`v2Stages` sorts stably).
+ */
+const ORDER_SLOT_KEYS: Record<Exclude<AuraPostPassOrder, number>, number> = {
+  "before-bloom": 10,
+  "after-bloom": 20,
+  "before-tonemap": 30,
+  "after-tonemap": 40
+};
+
+const descriptorOrder = (order: AuraPostPassOrder | undefined): number | undefined =>
+  typeof order === "number" ? order : order ? ORDER_SLOT_KEYS[order] : undefined;
+
+/** SH-03 `setPassUniform` store: descriptor id → key → value, merged over authored uniforms. */
+const passUniformOverrides = new Map<string, Map<string, number | readonly number[]>>();
+
+/**
  * `AuraCustomPostPass` → `PostPassDescriptor`. Custom fragments are GPU-only by
  * contract (`AuraCustomPostPass` carries fragment/uniforms, never a cpu run).
  */
 function customPassToDescriptor(pass: AuraCustomPostPass): PostPassDescriptor {
   customPassSequence += 1;
+  const id = `prd03.custom.${pass.name || `pass-${customPassSequence}`}`;
   const uniforms = pass.uniforms;
+  const order = descriptorOrder(pass.order);
   return {
-    id: `prd03.custom.${pass.name || `pass-${customPassSequence}`}`,
+    id,
     owner: "prd03",
     flag: "A3D_QR_POST",
     space: spaceForAnchor(pass.insertAt),
     insertAt: pass.insertAt,
     inputs: pass.inputs ?? ["color"],
     fragment: { glsl: pass.fragment.glsl, ...(pass.fragment.wgsl ? { wgsl: pass.fragment.wgsl } : {}) },
-    uniforms: uniforms ? () => uniforms : undefined,
-    enabled: () => true,
+    uniforms: () => {
+      const overrides = passUniformOverrides.get(id);
+      return overrides?.size ? { ...uniforms, ...Object.fromEntries(overrides) } : uniforms ?? {};
+    },
+    // SH-03: `enabled:false` stays registered but skips execution (v2Stages /
+    // WebGPU both evaluate this callback each frame).
+    enabled: () => pass.enabled !== false,
+    ...(order !== undefined ? { order } : {}),
     gpuOnly: true
   };
 }
@@ -441,7 +469,42 @@ export class Prd03PostSurface implements AuraPostSurface {
 
   addPostPass(pass: AuraCustomPostPass): () => void {
     if (!this.flags.on("A3D_QR_POST")) return () => { /* stub chain: release is a no-op */ };
-    return registerPostPass(customPassToDescriptor(pass));
+    const descriptor = customPassToDescriptor(pass);
+    const release = registerPostPass(descriptor);
+    return () => {
+      // SH-03: removing a pass leaves no residue — registry entry AND staged
+      // setPassUniform overrides both go away.
+      passUniformOverrides.delete(descriptor.id);
+      release();
+    };
+  }
+
+  /**
+   * SH-03: mutate one numeric uniform of a registered custom pass
+   * (`app.post.setPassUniform("invert", "strength", 0.5)`). The value is staged
+   * onto the pass's `uniforms` callback output on the next frame — no
+   * re-registration, no shader rebuild. `key` need not be pre-declared.
+   */
+  setPassUniform(passName: string, key: string, value: number | readonly number[]): void {
+    if (typeof passName !== "string" || !passName.trim()) {
+      throw new AuraRuntimeError("invalid-material-spec", "setPassUniform requires a pass name");
+    }
+    if (typeof key !== "string" || !key.trim()) {
+      throw new AuraRuntimeError("invalid-material-spec", `setPassUniform(${passName}) requires a uniform key`);
+    }
+    const valid = typeof value === "number"
+      ? Number.isFinite(value)
+      : Array.isArray(value) && value.length > 0 && value.length <= 4 && value.every(Number.isFinite);
+    if (!valid) {
+      throw new AuraRuntimeError("invalid-material-spec", `setPassUniform(${passName}, ${key}) expects a finite number or a 1–4 number array`);
+    }
+    const id = `prd03.custom.${passName}`;
+    let overrides = passUniformOverrides.get(id);
+    if (!overrides) {
+      overrides = new Map();
+      passUniformOverrides.set(id, overrides);
+    }
+    overrides.set(key, value);
   }
 
   setQualityTier(tier: AuraQualityTier | "auto"): void {

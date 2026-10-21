@@ -19,7 +19,13 @@ export interface PortableShaderStagePair {
 
 export interface PortableShaderSources {
   readonly glsl: PortableShaderStagePair;
-  readonly wgsl: PortableShaderStagePair;
+  /**
+   * threejs-parity SH-02: optional. `createAuraApp` mounts WebGL2 where GLSL
+   * is authoritative; omitting `wgsl` produces a WebGL2-only material — the
+   * WebGPU device fails closed (`WGSL_PROGRAM_MISSING`) rather than silently
+   * rasterizing the GLSL program.
+   */
+  readonly wgsl?: PortableShaderStagePair;
 }
 
 export interface PortableShaderUniform extends MaterialUniformDescriptor {
@@ -162,17 +168,25 @@ export class PortableShaderMaterial extends Material {
     super.dispose();
   }
 
-  private sourcePair(sources: PortableShaderSources): ShaderSourcePair {
+  /**
+   * Protected (SH-02): the engine adapter publishes this exact pair into the
+   * global shader-source registry so the renderer-owned library resolves it.
+   */
+  protected sourcePair(sources: PortableShaderSources): ShaderSourcePair {
     return {
       name: this.shaderKey,
       marker: this.marker,
       vertex: withMarker(sources.glsl.vertex, this.marker),
       fragment: withMarker(sources.glsl.fragment, this.marker),
-      webgpu: {
-        vertex: withMarker(sources.wgsl.vertex, this.marker),
-        fragment: withMarker(sources.wgsl.fragment, this.marker)
-      },
-      portableBindings: this.bindings
+      ...(sources.wgsl
+        ? {
+          webgpu: {
+            vertex: withMarker(sources.wgsl.vertex, this.marker),
+            fragment: withMarker(sources.wgsl.fragment, this.marker)
+          },
+          portableBindings: this.bindings
+        }
+        : {})
     };
   }
 }
@@ -222,11 +236,15 @@ function validatePortableShaderSources(
   for (const uniform of uniforms) {
     if (uniform.required !== false && !reflected.uniforms.has(uniform.name)) diagnostics.push(`GLSL is missing schema uniform ${uniform.name}`);
   }
-  for (const [stage, source] of Object.entries(sources.wgsl)) {
-    if (!source.includes(WGSL_BINDINGS_MARKER)) diagnostics.push(`WGSL ${stage} stage is missing ${WGSL_BINDINGS_MARKER}`);
+  // SH-02: WGSL is optional; when present both stages must carry the bindings
+  // marker and their entry points. An absent WGSL pair simply compiles WebGL2-only.
+  if (sources.wgsl) {
+    for (const [stage, source] of Object.entries(sources.wgsl)) {
+      if (!source.includes(WGSL_BINDINGS_MARKER)) diagnostics.push(`WGSL ${stage} stage is missing ${WGSL_BINDINGS_MARKER}`);
+    }
+    if (!/@vertex\b/.test(sources.wgsl.vertex)) diagnostics.push("WGSL vertex stage is missing an @vertex entry point");
+    if (!/@fragment\b/.test(sources.wgsl.fragment)) diagnostics.push("WGSL fragment stage is missing an @fragment entry point");
   }
-  if (!/@vertex\b/.test(sources.wgsl.vertex)) diagnostics.push("WGSL vertex stage is missing an @vertex entry point");
-  if (!/@fragment\b/.test(sources.wgsl.fragment)) diagnostics.push("WGSL fragment stage is missing an @fragment entry point");
   return diagnostics;
 }
 

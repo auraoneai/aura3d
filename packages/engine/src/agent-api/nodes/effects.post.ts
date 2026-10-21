@@ -2,6 +2,9 @@
 
 import type { AuraEffectNode } from "../nodes/types.js";
 import { AuraNodeBuilder } from "../nodes/builder.js";
+import type { AuraCustomPostPass, AuraPostPassOrder } from "../../contracts/post.js";
+import type { PostInsertAt } from "@aura3d/rendering/contracts";
+import { AuraRuntimeError } from "../compiler/errors.js";
 
 /**
  * Phase-3 v2 effect option fields (`vignette`, `film-grain`,
@@ -161,4 +164,94 @@ export const postEffectBuilders = {
       intensity: options.intensity ?? 0.0015,
       postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored")
     } as unknown as AuraEffectNode),
+
+  /**
+   * threejs-parity SH-03 (L1): three-style custom fullscreen shader pass.
+   * Returns a frozen `AuraCustomPostPass` for `app.post.addPostPass(...)` —
+   * the frozen `AuraEffectType` union has no shader-pass kind, so the factory
+   * emits the contract object directly rather than an effect node.
+   *
+   * `options.fragment`/`options.glsl` accept the fragment GLSL (required —
+   * the live post graph is GLSL-first); `options.wgsl` is the optional WebGPU
+   * stage. `insertAt` defaults from a named `order` slot ("before-bloom" →
+   * "after-taa", "after-bloom"/"before-tonemap" → "before-tonemap",
+   * "after-tonemap" → "after-tonemap", number → "before-tonemap").
+   */
+  shaderPass: (options: AuraShaderPassOptions): AuraCustomPostPass => {
+    if (typeof options !== "object" || options === null) {
+      throw new AuraRuntimeError("invalid-material-spec", "effects.shaderPass requires an options object");
+    }
+    const glsl = options.glsl ?? options.fragment?.glsl;
+    if (typeof glsl !== "string" || !glsl.trim()) {
+      throw new AuraRuntimeError("invalid-material-spec", "effects.shaderPass requires GLSL fragment source (`glsl` or `fragment.glsl`)");
+    }
+    const wgsl = options.wgsl ?? options.fragment?.wgsl;
+    if (wgsl !== undefined && (typeof wgsl !== "string" || !wgsl.trim())) {
+      throw new AuraRuntimeError("invalid-material-spec", "effects.shaderPass `wgsl` must be a non-empty string when provided");
+    }
+    const order = options.order;
+    if (order !== undefined && typeof order !== "number" && !["before-bloom", "after-bloom", "before-tonemap", "after-tonemap"].includes(order)) {
+      throw new AuraRuntimeError("invalid-material-spec", `effects.shaderPass order ${String(order)} is not a named slot or number`);
+    }
+    if (typeof order === "number" && !Number.isFinite(order)) {
+      throw new AuraRuntimeError("invalid-material-spec", "effects.shaderPass numeric order must be finite");
+    }
+    const insertAt = options.insertAt ?? (
+      order === "before-bloom" ? "after-taa"
+        : order === "after-bloom" || order === "before-tonemap" || typeof order === "number" ? "before-tonemap"
+          : order === "after-tonemap" ? "after-tonemap"
+            : "before-tonemap"
+    );
+    if (!["after-depth", "before-taa", "after-taa", "before-tonemap", "after-tonemap"].includes(insertAt)) {
+      throw new AuraRuntimeError("invalid-material-spec", `effects.shaderPass insertAt ${String(insertAt)} is not a v2 anchor`);
+    }
+    const uniforms = options.uniforms;
+    if (uniforms !== undefined) {
+      if (typeof uniforms !== "object" || uniforms === null) {
+        throw new AuraRuntimeError("invalid-material-spec", "effects.shaderPass uniforms must be a record of number|number[] values");
+      }
+      for (const [key, value] of Object.entries(uniforms)) {
+        const ok = typeof value === "number" ? Number.isFinite(value)
+          : Array.isArray(value) && value.length > 0 && value.length <= 4 && value.every(Number.isFinite);
+        if (!ok) {
+          throw new AuraRuntimeError("invalid-material-spec", `effects.shaderPass uniform "${key}" must be a finite number or 1–4 number array`);
+        }
+      }
+    }
+    const inputs = options.inputs ?? ["color"];
+    for (const input of inputs) {
+      if (!["color", "depth", "velocity"].includes(input)) {
+        throw new AuraRuntimeError("invalid-material-spec", `effects.shaderPass input ${String(input)} is not color|depth|velocity`);
+      }
+    }
+    return {
+      name: options.name ?? `shader-pass-${customShaderPassSequence++}`,
+      insertAt,
+      fragment: { glsl, ...(wgsl !== undefined ? { wgsl } : {}) },
+      ...(uniforms ? { uniforms } : {}),
+      ...(options.inputs ? { inputs } : {}),
+      ...(order !== undefined ? { order } : {}),
+      ...(options.enabled !== undefined ? { enabled: options.enabled } : {})
+    };
+  },
 };
+
+let customShaderPassSequence = 0;
+
+/** SH-03 `effects.shaderPass` options — mirrors `AuraCustomPostPass` with friendlier source shorthands. */
+export interface AuraShaderPassOptions {
+  readonly name?: string;
+  /** Fragment GLSL shorthand (same as `fragment.glsl`). */
+  readonly glsl?: string;
+  /** WGSL fragment shorthand (same as `fragment.wgsl`). */
+  readonly wgsl?: string;
+  readonly fragment?: { readonly glsl?: string; readonly wgsl?: string };
+  /** Numeric pass uniforms, bound by name at draw time. */
+  readonly uniforms?: Readonly<Record<string, number | readonly number[]>>;
+  readonly inputs?: readonly ("color" | "depth" | "velocity")[];
+  /** v2 anchor — defaults from a named `order` slot when omitted. */
+  readonly insertAt?: PostInsertAt;
+  readonly order?: AuraPostPassOrder;
+  /** `false` keeps the pass registered but skips execution. */
+  readonly enabled?: boolean;
+}

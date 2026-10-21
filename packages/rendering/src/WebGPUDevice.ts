@@ -38,6 +38,9 @@ import {
 } from "./webgpu/WebGPUPostShaders";
 import { DEFAULT_DEPTH_SHADER_MARKER } from "./ShaderLibraryCore";
 import { reflectShaderSources } from "./ShaderReflection";
+import { recordPostSkipped, recordPostStage } from "./renderer/postSkipped";
+import { registeredPostPasses, type PostPassDescriptor } from "./contracts/post";
+import type { FrameContributorContext } from "./contracts/frameGraph";
 import type { Sampler, TextureMagFilter, TextureMinFilter } from "./Sampler";
 import { Texture, bytesPerPixel, isCompressedTextureFormat, type TextureFormat } from "./Texture";
 import { isTextureBinding, TextureBinding } from "./TextureBinding";
@@ -1370,8 +1373,27 @@ export class WebGPUDevice implements RenderDevice {
     const owned: RenderTarget[] = [];
     let current = source;
     const track = (target: RenderTarget): void => { owned.push(target); current = target; };
+    /*
+     * threejs-parity SH-03/SH-06: C-13 custom passes registered via
+     * `registerPostPass` (`app.post.addPostPass` / `effects.shaderPass`) run on
+     * the native WebGPU chain too. Anchor resolution mirrors the v2 graph's
+     * named slots onto this chain's pass order; a registered pass missing its
+     * WGSL fragment is recorded `WGSL_PROGRAM_MISSING:<id>` and skipped — never
+     * silently, never as a GLSL fallback.
+     */
+    const customAt = this.webgpuCustomPassPositions(options.passes);
+    const runCustomsAt = (position: number): void => {
+      const customs = customAt.get(position);
+      if (!customs?.length) return;
+      for (const custom of customs) {
+        const out = this.executeWebGPUCustomPass(custom, current);
+        if (out) track(out);
+      }
+    };
     try {
-      for (const pass of options.passes) {
+      for (let passIndex = 0; passIndex < options.passes.length; passIndex += 1) {
+        runCustomsAt(passIndex);
+        const pass = options.passes[passIndex]!;
         if (pass.name === "bloom") track(this.executeWebGPUBloom(current, pass.options));
         else if (pass.name === "color-grade") track(this.executeWebGPUColorGrade(current, pass.options));
         else if (pass.name === "fxaa") track(this.executeWebGPUFxaa(current));
@@ -1396,6 +1418,7 @@ export class WebGPUDevice implements RenderDevice {
           current = target;
         }
       }
+      runCustomsAt(options.passes.length);
       const target = options.outputTarget ?? null;
       if (target === current) throw new RenderDeviceError("Native WebGPU presentation source/output alias", "INVALID_RESOURCE");
       this.runWebGPUFullscreenPass({ label: "webgpu-post-present", fragment: WEBGPU_NATIVE_COPY_FRAGMENT, entryPoint: "fs_copy",
@@ -1431,6 +1454,135 @@ export class WebGPUDevice implements RenderDevice {
       return out;
     } catch (error) { out.dispose(); throw error; }
   }
+
+  /**
+   * SH-03: maps each registered custom pass's `insertAt` anchor onto a position
+   * in this native chain — `position` runs BEFORE `options.passes[position]` and
+   * `options.passes.length` runs after the last pass (before the present copy).
+   * Deterministic fallbacks keep passes attached when their anchor stage is not
+   * in the submitted chain. Passes sharing a position sort by `order` ascending
+   * (stable — registration order preserved for omitted keys).
+   */
+  private webgpuCustomPassPositions(passes: readonly { readonly name: string }[]): Map<number, PostPassDescriptor[]> {
+    const positions = new Map<number, PostPassDescriptor[]>();
+    const customs = registeredPostPasses();
+    if (!customs.length) return positions;
+    const indexOf = (...names: readonly string[]): number => passes.findIndex((pass) => names.includes(pass.name));
+    const anchorPosition = (insertAt: PostPassDescriptor["insertAt"]): number => {
+      switch (insertAt) {
+        case "after-depth": return 0;
+        case "before-taa": {
+          const taa = indexOf("taa");
+          if (taa >= 0) return taa;
+          const bloom = indexOf("bloom");
+          return bloom >= 0 ? bloom : 0;
+        }
+        case "after-taa": {
+          const taa = indexOf("taa");
+          if (taa >= 0) return taa + 1;
+          const bloom = indexOf("bloom");
+          return bloom >= 0 ? bloom + 1 : 0;
+        }
+        case "before-tonemap": {
+          const tone = indexOf("tone-mapping");
+          return tone >= 0 ? tone : passes.length;
+        }
+        case "after-tonemap": {
+          const tone = indexOf("tone-mapping");
+          return tone >= 0 ? tone + 1 : passes.length;
+        }
+        default: return passes.length;
+      }
+    };
+    const orderKey = (pass: PostPassDescriptor): number =>
+      typeof pass.order === "number" && Number.isFinite(pass.order) ? pass.order : Number.MAX_SAFE_INTEGER;
+    for (const pass of [...customs].sort((a, b) => orderKey(a) - orderKey(b))) {
+      const position = anchorPosition(pass.insertAt);
+      const list = positions.get(position) ?? [];
+      list.push(pass);
+      positions.set(position, list);
+    }
+    return positions;
+  }
+
+  /**
+   * SH-03/SH-06: one C-13 custom pass as a native WGSL fullscreen draw.
+   *
+   * Bind convention (fixed by runWebGPUFullscreenPass): binding 0 = uniform
+   * buffer (`vec4f` array — `values[0]` is `vec4(texelSize, timeSeconds, 0)`,
+   * declared uniforms follow in registration order, one vec4 each), binding 1 =
+   * linear sampler, binding 2 = `u_color`, binding 3 = `u_depthLinear` (only
+   * when `inputs` declares "depth"), binding 4 = `u_velocity` (only for
+   * "velocity"). The authored `fragment.wgsl` is a complete fragment stage;
+   * its `@fragment` entry point is detected or defaults to `fs_main`.
+   *
+   * Returns null when the pass is disabled or has no WGSL (recorded as
+   * `WGSL_PROGRAM_MISSING:<id>` in the post skipped-reasons channel).
+   */
+  private executeWebGPUCustomPass(pass: PostPassDescriptor, source: RenderTarget): RenderTarget | null {
+    const timeSeconds = typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000;
+    const frameContext = {
+      device: this,
+      width: source.width,
+      height: source.height,
+      timeSeconds,
+      frameIndex: 0
+    } as unknown as FrameContributorContext;
+    if (pass.enabled && !pass.enabled(frameContext)) return null;
+    const wgsl = pass.fragment.wgsl;
+    if (typeof wgsl !== "string" || !wgsl.trim()) {
+      recordPostSkipped(`WGSL_PROGRAM_MISSING:${pass.id}`);
+      return null;
+    }
+    const src = this.requireRenderTarget(source);
+    const srcView = src.nativeView;
+    if (!srcView) {
+      throw new RenderDeviceError("WebGPU custom pass source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
+    }
+    recordPostStage(`custom:${pass.id}@${pass.insertAt}`);
+    const wantsDepth = pass.inputs.includes("depth");
+    const wantsVelocity = pass.inputs.includes("velocity");
+    const target = this.createRenderTarget({
+      width: src.width,
+      height: src.height,
+      format: pass.space === "display" ? "rgba8" : "rgba16f",
+      label: `a3d-webgpu-custom-${pass.id}`
+    });
+    const views: unknown[] = [srcView];
+    if (wantsDepth) views.push(this.requireRenderTarget(this.webgpuPostBlankTarget()).nativeView);
+    if (wantsVelocity) views.push(this.requireRenderTarget(this.webgpuPostBlankTarget()).nativeView);
+    const declared = pass.uniforms?.(frameContext) ?? {};
+    const packed: number[] = [1 / src.width, 1 / src.height, timeSeconds, 0];
+    for (const value of Object.values(declared)) {
+      const scalars = Array.isArray(value) ? [...value] : [value];
+      for (let offset = 0; offset < Math.max(1, scalars.length); offset += 4) {
+        for (let lane = 0; lane < 4; lane += 1) packed.push(Number.isFinite(scalars[offset + lane]) ? scalars[offset + lane]! : 0);
+      }
+    }
+    const entryPoint = wgsl.match(/@fragment\s*fn\s+([A-Za-z_]\w*)/)?.[1] ?? "fs_main";
+    try {
+      this.runWebGPUFullscreenPass({
+        label: `webgpu-custom:${pass.id}`,
+        fragment: wgsl,
+        entryPoint,
+        uniforms: new Float32Array(packed),
+        views,
+        target
+      });
+      return target;
+    } catch (error) {
+      target.dispose();
+      throw error;
+    }
+  }
+
+  /** 1×1 stand-in for declared depth/velocity inputs this chain cannot supply (matches the WebGL2 blankTex fallback). */
+  private webgpuPostBlankTarget(): RenderTarget {
+    this.webgpuPostBlank ??= this.createRenderTarget({ width: 1, height: 1, format: "rgba8", label: "a3d-webgpu-custom-blank" });
+    return this.webgpuPostBlank;
+  }
+
+  private webgpuPostBlank: RenderTarget | null = null;
 
   private runWebGPUFullscreenPass(args: {
     readonly label: string;

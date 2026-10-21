@@ -12,6 +12,10 @@ export class AuraRuntimeError extends Error {
     // threejs-parity (docs/workflows/threejs-parity-gaps.md §5.0): a parity
     // node kind / material / API whose lane has not landed yet fails closed.
     | "parity-not-implemented"
+    // SH-02 (L1): `material.custom(spec)` / `handle.setUniform` contract
+    // violations — malformed spec, WGSL-only input, reserved uniform names,
+    // invalid uniform values, unsupported render-state combinations.
+    | "invalid-material-spec"
     // CCR-03-8 (additive): PRD-03 §7.1 — v2 post-bridge field rejection.
     | "POST_FIELD_UNSUPPORTED"
     // T4.1 (PRD-15): strict degrade() throws the C-36 degradation codes,

@@ -564,7 +564,17 @@ export {
   DEFAULT_UNLIT_SHADER_MARKER,
   DEFAULT_UNLIT_SHADER_NAME,
   ShaderLibrary,
-  createDefaultShaderLibrary
+  createDefaultShaderLibrary,
+  // threejs-parity SH-10 (L1): public mutable `#include` chunk registry.
+  registerShaderChunk,
+  globalShaderChunkRevision,
+  globalShaderChunkNames,
+  // SH-02: the engine adapter's process-wide portable shader-source store.
+  registerGlobalShaderSource,
+  unregisterGlobalShaderSource,
+  globalShaderSource,
+  globalShaderChunkEntries,
+  globalShaderWgslChunkSource
 } from "./ShaderLibrary";
 export type { CompiledShaderSource, ShaderSourcePair } from "./ShaderLibrary";
 export type { ShaderVariantDescriptor } from "./ShaderLibrary";

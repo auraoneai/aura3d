@@ -10,7 +10,7 @@ import type { AuraSceneBuilder, scene } from "../scene.js";
 import type { PhysicsContinuousCollisionDescriptor } from "@aura3d/physics";
 import type { GameAppRuntimeOptions } from "../../GameAppRuntime";
 import type { createGameInput, GameInputOptions } from "../../GameRuntime";
-import type { SdfTextOcclusionPolicy, Geometry, InstancedPBRMaterial, PBRMaterial, TexturedPBRMaterial, CollectedLight } from "@aura3d/rendering";
+import type { SdfTextOcclusionPolicy, Geometry, InstancedPBRMaterial, PBRMaterial, PortableShaderMaterial, TexturedPBRMaterial, CollectedLight } from "@aura3d/rendering";
 import type { TypedGLBActor, TypedGLBActorEvidence } from "../../../production-runtime/TypedGLBActor.js";
 import type { animation } from "../animation.js";
 import type { effects } from "../effects.composite.js";
@@ -401,6 +401,8 @@ export interface AuraApp {
   capture?(options?: { readonly type?: "image-bitmap" | "png-blob" }): Promise<ImageBitmap | Blob>;
   onRendererError?(listener: (e: { readonly code: string; readonly message: string; readonly cause?: unknown }) => void): () => void;
   addPostPass?(p: import("../../../contracts/post").AuraCustomPostPass): () => void;
+  /** SH-03 (L1): mutate a custom post-pass uniform without rebuilding the pass. */
+  setPassUniform?(passName: string, key: string, value: number | readonly number[]): void;
   setQualityTier?(t: import("@aura3d/rendering/contracts").AuraQualityTier | "auto"): void;
   cutCamera?(): void;
   precompile?(snapshot?: AuraSceneSnapshot): Promise<AuraPrecompileResult>;
@@ -605,7 +607,8 @@ export interface ProductionRuntimePrimitiveEntry {
 
 export interface ProductionRuntimePrimitiveResource {
   readonly geometry: Geometry;
-  readonly material: PBRMaterial | InstancedPBRMaterial;
+  /** SH-02 (L1): `PortableShaderMaterial` when `node.material` is a `material.custom` spec. */
+  readonly material: PBRMaterial | InstancedPBRMaterial | PortableShaderMaterial;
   readonly bounds: GltfBounds;
   readonly name: string;
   /** Source material spec (for the C1 textured upgrade); undefined when the node carries none. */

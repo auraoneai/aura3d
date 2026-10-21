@@ -73,11 +73,14 @@ export class ShaderLibrary {
   }
 
   getRevision(): number {
-    return this.revision;
+    // threejs-parity SH-10: globally registered chunks (`registerShaderChunk`)
+    // feed every library's include map, so their revision is folded in here —
+    // registering a chunk bumps the effective revision of every ShaderLibrary.
+    return this.revision + globalShaderChunkRevision();
   }
 
   registerChunk(name: string, source: string): void {
-    if (this.chunks.has(name)) {
+    if (this.chunks.has(name) || globalShaderChunkSource(name) !== undefined) {
       throw new Error(`Shader chunk is already registered: ${name}`);
     }
     this.chunks.set(name, source);
@@ -86,7 +89,11 @@ export class ShaderLibrary {
   }
 
   get(name: string): ShaderSourcePair {
-    const shader = this.shaders.get(name);
+    // threejs-parity SH-02: engine-compiled custom materials publish their
+    // shader pair process-wide (`registerGlobalShaderSource`) so the
+    // renderer-owned library — which the material never sees — resolves the
+    // same `aura3d/portable/…` key at compileSource time.
+    const shader = this.shaders.get(name) ?? globalShaderSource(name);
     if (!shader) {
       throw new Error(`Shader is not registered: ${name}`);
     }
@@ -95,7 +102,11 @@ export class ShaderLibrary {
 
   compileSource(name: string, options: ShaderPreprocessOptions = {}): CompiledShaderSource {
     const shader = this.get(name);
-    const includes = new Map([...this.chunks, ...(options.includes ?? new Map())]);
+    // Include precedence (lowest → highest): global `registerShaderChunk`
+    // chunks, this library's own chunks (built-ins + registerChunk), then
+    // per-call `options.includes` — the SH-09 patch map lands in the last tier
+    // so a patched name replaces the registered source for that compile only.
+    const includes = new Map([...globalShaderChunkEntries(), ...this.chunks, ...(options.includes ?? new Map())]);
     const preprocessOptions = { ...options, includes };
     const vertex = this.preprocessor.preprocess(shader.vertex, preprocessOptions).source;
     const fragment = this.preprocessor.preprocess(shader.fragment, preprocessOptions).source;
@@ -903,3 +914,95 @@ export function createLeanCoreShaderLibrary(): ShaderLibrary {
 }
 
 export const DEFAULT_TEXTURED_PBR_EXTENSION_ATLAS_VARIANT = "extension-scalar-atlas";
+
+/* ------------------------------------------------------------------------ */
+/* threejs-parity SH-02/SH-10 — process-wide shader chunk + source registry   */
+/*                                                                          */
+/* `material.custom(spec)` compiles to `PortableShaderMaterial` inside the   */
+/* engine adapter (`agent-api/compiler/customMaterial.ts`); the material     */
+/* registers its pair here so the renderer-owned ShaderLibrary (which the    */
+/* adapter never sees) resolves the same `aura3d/portable/…` key.            */
+/*                                                                          */
+/* `registerShaderChunk(name, glsl, wgsl?)` is the public, mutable chunk     */
+/* surface (SH-10): registered GLSL lands in every library's `#include`      */
+/* map (below instance chunks and per-compile `includes`/patch overrides),   */
+/* registration bumps a revision folded into `ShaderLibrary.getRevision()`,  */
+/* and duplicate/built-in names throw. The optional `wgsl` half is kept      */
+/* separate — WGSL stages are expanded once by the engine adapter (no        */
+/* WGSL preprocessor runs at compileSource time).                           */
+/* ------------------------------------------------------------------------ */
+
+const globalShaderChunks = new Map<string, string>();
+const globalShaderWgslChunks = new Map<string, string>();
+const globalShaderSourcesByName = new Map<string, ShaderSourcePair>();
+let globalChunkRevision = 0;
+let builtinChunkNames: Set<string> | null = null;
+
+const builtinChunkNameSet = (): Set<string> =>
+  builtinChunkNames ??= new Set(SHADER_CHUNKS.map((chunk) => chunk.name));
+
+const assertChunkName = (name: string): void => {
+  if (typeof name !== "string" || !/^[A-Za-z_][A-Za-z0-9_-]*$/.test(name)) {
+    throw new Error(`Shader chunk name is invalid: ${String(name)}`);
+  }
+};
+
+/** SH-10: register a `#include <name>` chunk for every ShaderLibrary. Duplicate and built-in names throw. */
+export function registerShaderChunk(name: string, glsl: string, wgsl?: string): void {
+  assertChunkName(name);
+  if (typeof glsl !== "string" || !glsl.trim()) {
+    throw new Error(`Shader chunk ${name} requires non-empty GLSL source`);
+  }
+  if (wgsl !== undefined && typeof wgsl !== "string") {
+    throw new Error(`Shader chunk ${name} WGSL source must be a string`);
+  }
+  if (builtinChunkNameSet().has(name) || globalShaderChunks.has(name)) {
+    throw new Error(`Shader chunk is already registered: ${name}`);
+  }
+  globalShaderChunks.set(name, glsl);
+  if (wgsl !== undefined) globalShaderWgslChunks.set(name, wgsl);
+  globalChunkRevision += 1;
+}
+
+export function globalShaderChunkRevision(): number {
+  return globalChunkRevision;
+}
+
+/** GLSL chunk source by name (global registry only; built-ins live on the library). */
+export function globalShaderChunkSource(name: string): string | undefined {
+  return globalShaderChunks.get(name);
+}
+
+/** WGSL chunk source for `name` — the registered `wgsl` half wins, else the GLSL source doubles as a shared snippet. */
+export function globalShaderWgslChunkSource(name: string): string | undefined {
+  return globalShaderWgslChunks.get(name) ?? globalShaderChunks.get(name);
+}
+
+export function globalShaderChunkEntries(): IterableIterator<[string, string]> {
+  return globalShaderChunks.entries();
+}
+
+/** All globally registered chunk names (diagnostics/tests). */
+export function globalShaderChunkNames(): readonly string[] {
+  return [...globalShaderChunks.keys()];
+}
+
+/** SH-02: publish a portable shader source pair so any ShaderLibrary resolves it. Idempotent per name. */
+export function registerGlobalShaderSource(pair: ShaderSourcePair): void {
+  const existing = globalShaderSourcesByName.get(pair.name);
+  if (existing) {
+    if (existing.marker !== pair.marker || existing.vertex !== pair.vertex || existing.fragment !== pair.fragment) {
+      throw new Error(`Global shader source ${pair.name} is already registered with different source`);
+    }
+    return;
+  }
+  globalShaderSourcesByName.set(pair.name, pair);
+}
+
+export function unregisterGlobalShaderSource(name: string): boolean {
+  return globalShaderSourcesByName.delete(name);
+}
+
+export function globalShaderSource(name: string): ShaderSourcePair | undefined {
+  return globalShaderSourcesByName.get(name);
+}
