@@ -133,7 +133,6 @@ async function filmGame(browser, baseUrl, key, cfg, outDir) {
     }
     const grabStart = Date.now();
     const samples = [];
-    let canvasBox = null;
     for (let i = 0; i < frames; i++) {
       const grab = await page.evaluate(() => {
         const c = document.querySelector("canvas");
@@ -148,29 +147,41 @@ async function filmGame(browser, baseUrl, key, cfg, outDir) {
         const buf = Buffer.from(grab.dataUrl.slice(22), "base64");
         // Black-frame guard: under SwiftShader the engine's game-flag render
         // path can leave the drawing buffer un-presented to toDataURL; a
-        // uniformly black grab is not evidence. Compositor shot as fallback.
+        // uniformly black grab is not evidence.
         const head = buf.subarray(32, 1600);
         let nonBlack = 0;
         for (let b = 0; b < head.length; b += 13) {
           if (head[b] > 24 || head[b + 1] > 24 || head[b + 2] > 24) nonBlack += 1;
         }
-        if (nonBlack > 3 || grab.dataUrl.length > 60000) {
+        if (nonBlack > 3) {
           fs.writeFileSync(path.join(gameDir, `film-${String(i).padStart(2, "0")}.png`), buf);
           wrote = true;
         }
       }
       if (!wrote) {
-        try {
-          canvasBox ??= await page.locator("canvas").boundingBox();
-          await page.screenshot({
-            path: path.join(gameDir, `film-${String(i).padStart(2, "0")}.png`),
-            clip: canvasBox ?? undefined,
-            timeout: 30000
-          });
-          wrote = true;
-        } catch {
-          errors.push(`film-${i} grab failed (toDataURL black + screenshot failed)`);
+        // Compositor fallback — FULL-PAGE (clipped screenshots of the canvas
+        // region come back black under SwiftShader; the unclipped page shot
+        // is the path the visual-QA harness uses and it carries real pixels,
+        // HUD included, which the rubric wants anyway).
+        for (let attempt = 0; attempt < 2 && !wrote; attempt += 1) {
+          try {
+            await page.screenshot({
+              path: path.join(gameDir, `film-${String(i).padStart(2, "0")}.png`),
+              timeout: 45000
+            });
+            const shot = fs.readFileSync(path.join(gameDir, `film-${String(i).padStart(2, "0")}.png`));
+            const head = shot.subarray(64, 2048);
+            let nonBlack = 0;
+            for (let b = 0; b < head.length; b += 17) {
+              if (head[b] > 26 || head[b + 1] > 26 || head[b + 2] > 26) nonBlack += 1;
+            }
+            if (nonBlack > 3) wrote = true;
+            else if (attempt === 0) await new Promise((r) => setTimeout(r, 300));
+          } catch {
+            errors.push(`film-${i} screenshot attempt ${attempt} failed`);
+          }
         }
+        if (!wrote) errors.push(`film-${i} grab failed (toDataURL + screenshot both black/failed)`);
       }
       const elapsed = Date.now() - grabStart - i * FRAME_INTERVAL;
       await new Promise((r) => setTimeout(r, Math.max(0, FRAME_INTERVAL - elapsed)));
