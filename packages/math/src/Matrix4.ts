@@ -237,4 +237,22 @@ export class Matrix4 {
     const m = this.elements;
     return new Vector3(m[12], m[13], m[14]);
   }
+
+  /** three.js `getMaxScaleOnAxis` — sqrt of the largest column length squared. */
+  maxScaleOnAxis(): number {
+    const m = this.elements;
+    const scaleXSq = m[0] * m[0] + m[1] * m[1] + m[2] * m[2];
+    const scaleYSq = m[4] * m[4] + m[5] * m[5] + m[6] * m[6];
+    const scaleZSq = m[8] * m[8] + m[9] * m[9] + m[10] * m[10];
+    return Math.sqrt(Math.max(scaleXSq, scaleYSq, scaleZSq));
+  }
+
+  equals(matrix: Matrix4): boolean {
+    const a = this.elements;
+    const b = matrix.elements;
+    for (let i = 0; i < 16; i += 1) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
 }

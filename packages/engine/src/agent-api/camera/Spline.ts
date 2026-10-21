@@ -7,8 +7,18 @@
  * - An arc-length LUT (`samples`, default 256) gives `pointAt(u)` /
  *   `tangentAt(u)` where `u ∈ [0,1]` is constant-speed within ~2 %.
  *   Control points are passed through exactly (centripetal CR interpolates).
+ *
+ * Curve evaluation and the arc-length machinery now come from
+ * `@aura3d/math` (`CatmullRomCurve3` + `CurveBase.getUtoTmapping`). `alpha`
+ * maps onto three's curve types — 0 → "catmullrom" (uniform, tension 0.5),
+ * 0.5 → "centripetal", 1 → "chordal"; any other alpha evaluates through the
+ * exported `catmullRom` segment helper (kept for API compatibility) with an
+ * engine-side LUT. Open splines reproduce this module's clamped-endpoint
+ * behaviour by duplicating the end points of the curve (the padded end spans
+ * are zero-length, so arc length is unchanged).
  */
 
+import { CatmullRomCurve3, catmullRomSegment, Vector3 as MathVector3, type CatmullRomCurveType } from "@aura3d/math";
 import type { AuraVec3 } from "../index.js";
 
 export interface AuraSplineOptions {
@@ -25,12 +35,25 @@ function dist(a: AuraVec3, b: AuraVec3): number {
   return Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
 }
 
+/** Map an engine alpha onto a three.js `CatmullRomCurve3` curveType (else null). */
+function curveTypeFor(alpha: number): CatmullRomCurveType | null {
+  if (Math.abs(alpha - 0.5) <= EPSILON) return "centripetal";
+  if (Math.abs(alpha - 1) <= EPSILON) return "chordal";
+  if (Math.abs(alpha) <= EPSILON) return "catmullrom"; // uniform knots ≡ tension 0.5
+  return null;
+}
+
 export class AuraCameraSpline {
   private readonly points: readonly AuraVec3[];
   private readonly closed: boolean;
   private readonly alpha: number;
   private readonly lut: readonly number[];
   private readonly length: number;
+  /**
+   * Math-package curve for standard alphas — padded points for open splines
+   * (see module docstring); `undefined` for exotic alpha.
+   */
+  private readonly curve?: CatmullRomCurve3;
   readonly segments: number;
 
   constructor(points: readonly AuraVec3[], options: AuraSplineOptions = {}) {
@@ -42,18 +65,30 @@ export class AuraCameraSpline {
     this.alpha = options.alpha ?? 0.5;
     this.segments = this.closed ? this.points.length : this.points.length - 1;
     const samples = Math.max(8, Math.floor(options.samples ?? 256));
-    const lut = new Array<number>(samples + 1);
-    lut[0] = 0;
-    let acc = 0;
-    let prev = this.evaluateParam(0);
-    for (let i = 1; i <= samples; i += 1) {
-      const p = this.evaluateParam(i / samples);
-      acc += dist(prev, p);
-      lut[i] = acc;
-      prev = p;
+
+    const curveType = curveTypeFor(this.alpha);
+    if (curveType !== null) {
+      const v3 = this.points.map((p) => new MathVector3(p[0], p[1], p[2]));
+      const curvePoints = this.closed ? v3 : [v3[0]!, ...v3, v3[v3.length - 1]!];
+      const curve = new CatmullRomCurve3(curvePoints, this.closed, curveType);
+      curve.arcLengthDivisions = samples;
+      this.curve = curve;
+      this.lut = curve.getLengths();
+      this.length = this.lut[this.lut.length - 1]!;
+    } else {
+      const lut = new Array<number>(samples + 1);
+      lut[0] = 0;
+      let acc = 0;
+      let prev = this.evaluateParam(0);
+      for (let i = 1; i <= samples; i += 1) {
+        const p = this.evaluateParam(i / samples);
+        acc += dist(prev, p);
+        lut[i] = acc;
+        prev = p;
+      }
+      this.lut = lut;
+      this.length = acc;
     }
-    this.lut = lut;
-    this.length = acc;
   }
 
   get totalLength(): number {
@@ -101,21 +136,37 @@ export class AuraCameraSpline {
     return len <= EPSILON ? [0, 0, 1] : [v[0] / len, v[1] / len, v[2] / len];
   }
 
+  /** Engine param `s` → padded-curve param `t'` (identity for closed). */
+  private mapParam(s: number): number {
+    if (this.closed) return s;
+    const paddedSpans = this.segments + 2;
+    return (s * this.segments + 1) / paddedSpans;
+  }
+
+  /** Padded-curve param `t'` → engine param `s` (identity for closed). */
+  private unmapParam(tPrime: number): number {
+    if (this.closed) return tPrime;
+    const paddedSpans = this.segments + 2;
+    return Math.max(0, Math.min(1, (tPrime * paddedSpans - 1) / this.segments));
+  }
+
   /** Arc-length fraction `u` → raw curve parameter `s ∈ [0,1]`. */
   private paramAt(u: number): number {
-    const target = Math.max(0, Math.min(1, u)) * this.length;
+    const clamped = Math.max(0, Math.min(1, u));
+    if (this.curve) return this.unmapParam(this.curve.getUtoTmapping(clamped));
+    const target = clamped * this.length;
     if (this.length <= EPSILON) return 0;
     const lut = this.lut;
     let lo = 0;
     let hi = lut.length - 1;
     while (lo < hi) {
       const mid = (lo + hi) >> 1;
-      if (lut[mid] < target) lo = mid + 1;
+      if (lut[mid]! < target) lo = mid + 1;
       else hi = mid;
     }
     const i = Math.max(1, lo);
-    const before = lut[i - 1];
-    const after = lut[i];
+    const before = lut[i - 1]!;
+    const after = lut[i]!;
     const span = after - before;
     const frac = span <= EPSILON ? 0 : (target - before) / span;
     return Math.min(1, (i - 1 + frac) / (lut.length - 1));
@@ -123,12 +174,16 @@ export class AuraCameraSpline {
 
   private pointIndex(i: number): AuraVec3 {
     const n = this.points.length;
-    if (this.closed) return this.points[((i % n) + n) % n];
-    return this.points[Math.max(0, Math.min(n - 1, i))];
+    if (this.closed) return this.points[((i % n) + n) % n]!;
+    return this.points[Math.max(0, Math.min(n - 1, i))]!;
   }
 
   /** Raw curve parameter `s ∈ [0,1]` → position (uniform over segments). */
   private evaluateParam(s: number): AuraVec3 {
+    if (this.curve) {
+      const p = this.curve.getPoint(this.mapParam(Math.max(0, Math.min(1, s))));
+      return [p.x, p.y, p.z];
+    }
     const nSeg = this.segments;
     const scaled = Math.max(0, Math.min(1, s)) * nSeg;
     const seg = Math.min(nSeg - 1, Math.floor(scaled));
@@ -150,22 +205,15 @@ export function catmullRom(
   t: number,
   alpha = 0.5
 ): AuraVec3 {
-  const k = (a: AuraVec3, b: AuraVec3) => Math.pow(Math.max(dist(a, b), EPSILON), alpha);
-  const t0 = 0;
-  const t1 = t0 + k(p0, p1);
-  const t2 = t1 + k(p1, p2);
-  const t3 = t2 + k(p2, p3);
-  const tt = t1 + (t2 - t1) * t;
-  const mix = (a: AuraVec3, b: AuraVec3, ta: number, tb: number): AuraVec3 => {
-    const w = tb - ta <= EPSILON ? 0.5 : (tt - ta) / (tb - ta);
-    return [a[0] + (b[0] - a[0]) * w, a[1] + (b[1] - a[1]) * w, a[2] + (b[2] - a[2]) * w];
-  };
-  const a1 = mix(p0, p1, t0, t1);
-  const a2 = mix(p1, p2, t1, t2);
-  const a3 = mix(p2, p3, t2, t3);
-  const b1 = mix(a1, a2, t0, t2);
-  const b2 = mix(a2, a3, t1, t3);
-  return mix(b1, b2, t1, t2);
+  const p = catmullRomSegment(
+    new MathVector3(p0[0], p0[1], p0[2]),
+    new MathVector3(p1[0], p1[1], p1[2]),
+    new MathVector3(p2[0], p2[1], p2[2]),
+    new MathVector3(p3[0], p3[1], p3[2]),
+    t,
+    alpha
+  );
+  return [p.x, p.y, p.z];
 }
 
 /**

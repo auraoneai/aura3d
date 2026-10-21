@@ -13,6 +13,7 @@
  * mask into the target terrain's height source before upload and bumps the
  * record's `gridVersion` so the Path S runtime re-uploads the height texture.
  */
+import { CatmullRomCurve3, Vector3 as MathVector3 } from "@aura3d/math";
 import type { AuraMaterialSpec, AuraSceneNode } from "../index.js";
 import { defineAuraCustomGeometry, geometry } from "../index.js";
 import type { AuraWorldNodeBase } from "./types.js";
@@ -42,26 +43,14 @@ const lerp = (a: V3, b: V3, t: number): V3 => [
 ];
 
 // -------------------------------------------------- Catmull-Rom sampling ---
-// Centripetal (alpha = 0.5) formulation: segment knots are spaced by
-// sqrt(|P_{i+1} - P_i|), which prevents the cusps uniform CR produces when
-// control points bunch up.
+// Curve evaluation now lives in `@aura3d/math` (`CatmullRomCurve3`,
+// "centripetal" = alpha 0.5) — three-parity Hermite form, same curve this
+// module used to evaluate inline. Open splines keep the historical
+// clamped-endpoint behaviour by duplicating the end points: the padded curve's
+// real spans evaluate with the identical four-point neighbourhoods (and the
+// added end spans are zero-length, so arc length is unchanged).
 
-function catmullRomPoint(p0: V3, p1: V3, p2: V3, p3: V3, u: number): V3 {
-  const d01 = Math.max(Math.sqrt(len(sub(p1, p0))), 1e-6);
-  const d12 = Math.max(Math.sqrt(len(sub(p2, p1))), 1e-6);
-  const d23 = Math.max(Math.sqrt(len(sub(p3, p2))), 1e-6);
-  const t0 = 0;
-  const t1 = t0 + d01;
-  const t2 = t1 + d12;
-  const t3 = t2 + d23;
-  const t = t1 + u * (t2 - t1);
-  const a1 = add(scale(p0, (t1 - t) / (t1 - t0)), scale(p1, (t - t0) / (t1 - t0)));
-  const a2 = add(scale(p1, (t2 - t) / (t2 - t1)), scale(p2, (t - t1) / (t2 - t1)));
-  const a3 = add(scale(p2, (t3 - t) / (t3 - t2)), scale(p3, (t - t2) / (t3 - t2)));
-  const b1 = add(scale(a1, (t2 - t) / (t2 - t0)), scale(a2, (t - t0) / (t2 - t0)));
-  const b2 = add(scale(a2, (t3 - t) / (t3 - t1)), scale(a3, (t - t1) / (t3 - t1)));
-  return add(scale(b1, (t2 - t) / (t2 - t1)), scale(b2, (t - t1) / (t2 - t1)));
-}
+const toV3 = (p: MathVector3): V3 => [p.x, p.y, p.z];
 
 // --------------------------------------------------------------- handle ----
 
@@ -104,17 +93,20 @@ export function worldSpline(points: readonly (readonly [number, number, number])
   // table. All queries then operate on the table — deterministic and O(1)-ish.
   const pts = points.map((p): V3 => [p[0], p[1], p[2]]);
   const spanCount = closed ? pts.length : pts.length - 1;
-  const at = (i: number): V3 => closed ? pts[((i % pts.length) + pts.length) % pts.length]! : pts[Math.max(0, Math.min(pts.length - 1, i))]!;
+  const v3 = pts.map((p) => new MathVector3(p[0], p[1], p[2]));
+  const curvePoints = closed ? v3 : [v3[0]!, ...v3, v3[v3.length - 1]!];
+  const curve = new CatmullRomCurve3(curvePoints, closed, "centripetal");
+  // Engine span s, sub-step u → curve parameter t'. Closed maps 1:1; open
+  // shifts one padded span and rescales over pts.length + 1 spans.
+  const curveT = (s: number, u: number): number =>
+    closed ? (s + u) / spanCount : (s + 1 + u) / (spanCount + 2);
 
   const samples: V3[] = [];
-  const segStart: number[] = []; // sample index at each span start
   for (let s = 0; s < spanCount; s += 1) {
-    segStart.push(samples.length);
-    const p0 = at(s - 1), p1 = at(s), p2 = at(s + 1), p3 = at(s + 2);
     const n = s === spanCount - 1 ? SAMPLES_PER_SPAN + 1 : SAMPLES_PER_SPAN;
     for (let i = 0; i < n; i += 1) {
       const u = i / SAMPLES_PER_SPAN;
-      samples.push(catmullRomPoint(p0, p1, p2, p3, Math.min(u, 1)));
+      samples.push(toV3(curve.getPoint(curveT(s, Math.min(u, 1)))));
     }
   }
   // arc-length table
