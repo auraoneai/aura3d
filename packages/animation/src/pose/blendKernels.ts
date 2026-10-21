@@ -10,7 +10,7 @@
 
 import { cloneAnimationValue, normalizeQuat, slerpQuat, type AnimationValue } from "../Keyframe.js";
 
-export type PoseBlendChannel = "scalar" | "vector3" | "quaternion" | "number-array";
+export type PoseBlendChannel = "scalar" | "vector3" | "quaternion" | "number-array" | "color";
 
 export interface PoseBlendAccumulatorLike {
   value: AnimationValue;
@@ -28,7 +28,7 @@ export function blendBaseValue(
   const t = weight / total;
   if (channel === "scalar") {
     current.value = (current.value as number) + ((value as number) - (current.value as number)) * t;
-  } else if (channel === "vector3") {
+  } else if (channel === "vector3" || channel === "color") {
     const a = current.value as [number, number, number];
     const b = value as [number, number, number];
     current.value = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
@@ -56,7 +56,7 @@ export function additiveContributionValue(channel: string, value: AnimationValue
   if (channel === "scalar") {
     return (value as number) * weight;
   }
-  if (channel === "vector3") {
+  if (channel === "vector3" || channel === "color") {
     const vector = value as [number, number, number];
     return [vector[0] * weight, vector[1] * weight, vector[2] * weight];
   }
@@ -78,7 +78,7 @@ export function applyAdditiveValue(channel: string, base: AnimationValue, delta:
   if (channel === "scalar") {
     return (base as number) + (delta as number);
   }
-  if (channel === "vector3") {
+  if (channel === "vector3" || channel === "color") {
     const a = base as [number, number, number];
     const b = delta as [number, number, number];
     return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];

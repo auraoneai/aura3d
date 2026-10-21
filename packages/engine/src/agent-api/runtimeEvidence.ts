@@ -116,3 +116,22 @@ export function sanitizeRuntimeMorphWeight(weight: number): number {
   if (!Number.isFinite(weight)) return 0;
   return Math.max(0, Math.min(1, weight));
 }
+
+/**
+ * SA-05 (lane L8): runtime-node tag that opts morph weights out of the [0, 1]
+ * clamp — negative influences and exaggeration past 1.0 (three permits any
+ * finite `morphTargetInfluences` entry) pass through to the actor. Non-finite
+ * weights still sanitize to 0.
+ */
+export const AURA_UNCLAMPED_MORPH_WEIGHTS_TAG = "aura:morph-unclamped";
+
+export function sanitizeRuntimeMorphWeightUnclamped(weight: number): number {
+  return Number.isFinite(weight) ? weight : 0;
+}
+
+/** Picks the morph-weight sanitizer for a runtime node's tag set (SA-05 opt-in). */
+export function runtimeMorphWeightSanitizer(tags: readonly string[] | undefined): (weight: number) => number {
+  return tags?.includes(AURA_UNCLAMPED_MORPH_WEIGHTS_TAG) === true
+    ? sanitizeRuntimeMorphWeightUnclamped
+    : sanitizeRuntimeMorphWeight;
+}

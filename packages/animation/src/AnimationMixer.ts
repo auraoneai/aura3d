@@ -38,6 +38,37 @@ export type AnimationApplyError = {
   readonly message: string;
 };
 
+/**
+ * Low-level playback events the mixer dispatches via {@link AnimationMixer.addEventListener}
+ * (three's `AnimationMixer` "finished"/"loop" contract, SA-01). Clip marker
+ * events remain on {@link AnimationMixer.onEvent}.
+ */
+export type AnimationMixerPlaybackEventType = "finished" | "loop";
+
+export interface AnimationMixerFinishedEvent {
+  readonly type: "finished";
+  readonly action: AnimationAction;
+  /** `1` when the playhead crossed the clip end, `-1` when it crossed the start (negative timeScale). */
+  readonly direction: number;
+}
+
+export interface AnimationMixerLoopEvent {
+  readonly type: "loop";
+  readonly action: AnimationAction;
+  /** Signed count of clip boundaries wrapped during this update (negative in reverse). */
+  readonly loopDelta: number;
+}
+
+export type AnimationMixerPlaybackEvent = AnimationMixerFinishedEvent | AnimationMixerLoopEvent;
+
+export type AnimationMixerPlaybackEventListener = (event: AnimationMixerPlaybackEvent) => void;
+
+/** three's event-map overload: listeners narrow to the event matching `type`. */
+export interface AnimationMixerPlaybackEventMap {
+  readonly finished: AnimationMixerFinishedEvent;
+  readonly loop: AnimationMixerLoopEvent;
+}
+
 type MixerLayer = Pick<AnimationLayer, "name" | "weight" | "additive" | "mask" | "actions" | "capturesTarget" | "snapshot">;
 type WeightedAccumulator = { value: AnimationValue; weight: number; type: string };
 type TargetAccumulator = { type: string; base?: WeightedAccumulator; additive?: AnimationValue };
@@ -50,6 +81,7 @@ export class AnimationMixer {
   private readonly values = new Map<string, AnimationValue>();
   private applyErrors: AnimationApplyError[] = [];
   private readonly eventListeners = new Set<(event: AnimationEvent) => void>();
+  private readonly playbackListeners = new Map<AnimationMixerPlaybackEventType, Set<AnimationMixerPlaybackEventListener>>();
   private disposed = false;
   private warnedEmptyUpdate = false;
   private inertialTransition: { from: AnimationAction; to: AnimationAction; elapsed: number; halfLife: number } | undefined;
@@ -93,8 +125,8 @@ export class AnimationMixer {
 
   setTimeScale(timeScale: number): void {
     this.assertAlive();
-    if (!Number.isFinite(timeScale) || timeScale < 0) {
-      throw new Error("AnimationMixer.setTimeScale: timeScale must be finite and non-negative.");
+    if (!Number.isFinite(timeScale)) {
+      throw new Error("AnimationMixer.setTimeScale: timeScale must be finite.");
     }
     this.timeScale = timeScale;
   }
@@ -149,11 +181,11 @@ export class AnimationMixer {
 
   update(delta: number): readonly AnimationEvent[] {
     this.assertAlive();
-    if (!Number.isFinite(delta) || delta < 0) {
-      throw new Error("AnimationMixer.update: delta must be finite and non-negative.");
+    if (!Number.isFinite(delta)) {
+      throw new Error("AnimationMixer.update: delta must be finite.");
     }
-    if (!Number.isFinite(this.timeScale) || this.timeScale < 0) {
-      throw new Error("AnimationMixer.update: timeScale must be finite and non-negative; call AnimationMixer.setTimeScale with a valid value.");
+    if (!Number.isFinite(this.timeScale)) {
+      throw new Error("AnimationMixer.update: timeScale must be finite; call AnimationMixer.setTimeScale with a valid value.");
     }
     for (const layer of this.layers) {
       if (!Number.isFinite(layer.weight) || layer.weight < 0) {
@@ -178,6 +210,13 @@ export class AnimationMixer {
       const actionEvents = action.update(delta * this.timeScale);
       if (actionEvents.length > 0) {
         events.push(...actionEvents);
+      }
+      const signals = action.consumePlaybackSignals();
+      if (signals.loopDelta !== 0) {
+        this.dispatchPlaybackEvent({ type: "loop", action, loopDelta: signals.loopDelta });
+      }
+      if (signals.finishedDirection !== 0) {
+        this.dispatchPlaybackEvent({ type: "finished", action, direction: signals.finishedDirection });
       }
       if (!action.playing && action.weight <= 0) {
         continue;
@@ -256,6 +295,56 @@ export class AnimationMixer {
     return () => this.eventListeners.delete(listener);
   }
 
+  /**
+   * three's `mixer.addEventListener("finished" | "loop", listener)` — fires when
+   * any registered action crosses its final repetition ("finished", once per
+   * finish) or wraps a loop boundary ("loop", with the signed `loopDelta`).
+   * Returns an unsubscribe callback.
+   */
+  addEventListener<K extends AnimationMixerPlaybackEventType>(
+    type: K,
+    listener: (event: AnimationMixerPlaybackEventMap[K]) => void
+  ): () => void {
+    this.assertAlive();
+    if (type !== "finished" && type !== "loop") {
+      throw new Error(`AnimationMixer.addEventListener: unknown event type "${String(type)}"; expected "finished" or "loop".`);
+    }
+    if (typeof listener !== "function") {
+      throw new Error(`AnimationMixer.addEventListener: listener for "${type}" must be a function.`);
+    }
+    let listeners = this.playbackListeners.get(type);
+    if (!listeners) {
+      listeners = new Set();
+      this.playbackListeners.set(type, listeners);
+    }
+    listeners.add(listener as AnimationMixerPlaybackEventListener);
+    return () => this.removeEventListener(type, listener as AnimationMixerPlaybackEventListener);
+  }
+
+  removeEventListener<K extends AnimationMixerPlaybackEventType>(
+    type: K,
+    listener: (event: AnimationMixerPlaybackEventMap[K]) => void
+  ): void {
+    const listeners = this.playbackListeners.get(type);
+    if (!listeners) {
+      return;
+    }
+    listeners.delete(listener as AnimationMixerPlaybackEventListener);
+    if (listeners.size === 0) {
+      this.playbackListeners.delete(type);
+    }
+  }
+
+  private dispatchPlaybackEvent(event: AnimationMixerPlaybackEvent): void {
+    const listeners = this.playbackListeners.get(event.type);
+    if (!listeners) {
+      return;
+    }
+    for (const listener of Array.from(listeners)) {
+      listener(event);
+    }
+  }
+
   snapshot(): AnimationMixerSnapshot {
     const values: Record<string, AnimationValue> = {};
     for (const [target, value] of this.values) {
@@ -277,6 +366,7 @@ export class AnimationMixer {
     this.values.clear();
     this.applyErrors = [];
     this.eventListeners.clear();
+    this.playbackListeners.clear();
     this.inertialTransition = undefined;
     this.disposed = true;
   }
@@ -374,7 +464,7 @@ function blendBase(current: WeightedAccumulator, type: string, value: AnimationV
   const t = weight / total;
   if (type === "scalar") {
     current.value = (current.value as number) + ((value as number) - (current.value as number)) * t;
-  } else if (type === "vector3") {
+  } else if (type === "vector3" || type === "color") {
     const a = current.value as [number, number, number];
     const b = value as [number, number, number];
     current.value = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
@@ -422,7 +512,7 @@ function additiveContribution(type: string, value: AnimationValue, weight: numbe
   if (type === "scalar") {
     return (value as number) * weight;
   }
-  if (type === "vector3") {
+  if (type === "vector3" || type === "color") {
     const vector = value as [number, number, number];
     return [vector[0] * weight, vector[1] * weight, vector[2] * weight];
   }
@@ -443,7 +533,7 @@ function applyAdditive(type: string, base: AnimationValue, delta: AnimationValue
   if (type === "scalar") {
     return (base as number) + (delta as number);
   }
-  if (type === "vector3") {
+  if (type === "vector3" || type === "color") {
     const a = base as [number, number, number];
     const b = delta as [number, number, number];
     return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -466,7 +556,7 @@ function additiveNeutral(type: string, value: AnimationValue): AnimationValue {
   if (type === "scalar") {
     return 0;
   }
-  if (type === "vector3") {
+  if (type === "vector3" || type === "color") {
     return [0, 0, 0];
   }
   if (type === "number-array") {

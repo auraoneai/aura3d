@@ -15,6 +15,22 @@ export * from "./RootMotion.js";
 export * from "./MotionQuality.js";
 export * from "./LocomotionController.js";
 export * from "./SceneAnimationBridge.js";
+export * from "./PropertyBinding.js";
+export * from "./AnimationObjectGroup.js";
+export {
+  AnimationUtils,
+  arraySlice,
+  convertArray,
+  isTypedArray,
+  getKeyframeOrder,
+  sortedArray,
+  subclip,
+  optimize,
+  merge,
+  makeClipAdditive,
+  isClipAdditive,
+  type AdditiveReference
+} from "./AnimationUtils.js";
 export * from "./ECSAnimationBridge.js";
 export * from "./IK.js";
 export * from "./FootIk.js";

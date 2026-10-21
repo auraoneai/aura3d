@@ -9,7 +9,7 @@ import type { Mat4 } from "@aura3d/scene";
 import type { ProductionImportedAssetRenderMetadata, RenderItem } from "@aura3d/rendering";
 import type { TypedGLBActor, TypedGLBActorEvidence } from "../../production-runtime/TypedGLBActor.js";
 import { animation } from "../nodes/animation.js";
-import { createRuntimeNodeImportedAssetEvidence } from "../runtimeEvidence.js";
+import { AURA_UNCLAMPED_MORPH_WEIGHTS_TAG, createRuntimeNodeImportedAssetEvidence } from "../runtimeEvidence.js";
 import { model } from "../nodes/model.js";
 import { resolveAnimationSeconds } from "./animation.js";
 import { scene } from "../nodes/scene.js";
@@ -116,7 +116,10 @@ export function applyProductionActorMorphTargets(
 ): void {
   if (!morphTargets || Object.keys(morphTargets).length === 0) return;
   try {
-    const result = entry.actor.applyMorphTargets(morphTargets);
+    // SA-05: nodes tagged `aura:morph-unclamped` pass finite out-of-range
+    // influences through to the actor; all other nodes keep the [0,1] clamp.
+    const unclamped = entry.node.runtime?.tags?.includes(AURA_UNCLAMPED_MORPH_WEIGHTS_TAG) === true;
+    const result = entry.actor.applyMorphTargets(morphTargets, unclamped ? { clampWeights: false } : undefined);
     for (const missing of result.missingTargets) {
       runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" has no morph target "${missing}".`);
     }
