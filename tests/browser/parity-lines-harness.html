@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>parity-lines (L6) harness</title>
+    <style>
+      html, body { margin: 0; padding: 0; background: #0a0c10; color: #dfe4ea; font: 12px/1.4 monospace; }
+      #log { padding: 8px; white-space: pre-wrap; }
+      .row { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; }
+      figure { margin: 0; }
+      figcaption { padding: 2px 0; }
+      canvas { display: block; border: 1px solid #333; image-rendering: pixelated; }
+    </style>
+  </head>
+  <body>
+    <div id="log">parity-lines harness loading…</div>
+    <div class="row" id="mount"></div>
+    <script type="module" src="./parity-lines-harness.ts"></script>
+  </body>
+</html>

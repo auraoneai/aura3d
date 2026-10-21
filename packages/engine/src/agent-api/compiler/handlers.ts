@@ -10,6 +10,7 @@ import type { AnyNodeHandler, AuraNodeKindMap, NodeHandler } from "../../contrac
 import { nodeHandlerFor } from "../../contracts/compiler.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { AuraRuntimeError } from "./errors.js";
+import { lineNodeHandler, pointsNodeHandler, spriteNodeHandler } from "./lines.js";
 
 export type NodeKindHandlers = {
   readonly [K in keyof AuraNodeKindMap]: NodeHandler<{ readonly kind: K & string }>;
@@ -64,9 +65,13 @@ export const nodeHandlers: NodeKindHandlers = {
   water: bridgeCompiled("water"),
   scatter: bridgeCompiled("scatter"),
   grass: bridgeCompiled("grass"),
-  line: parityPending("line", "A3D_PARITY_LINES"),
-  points: parityPending("points", "A3D_PARITY_LINES"),
-  sprite: parityPending("sprite", "A3D_PARITY_LINES"),
+  // threejs-parity L6 (§5.6): real handlers landed for lines/points/sprites.
+  // They are typed for the concrete node kinds (cast inside) and keep the
+  // fail-closed contract themselves — compile() re-asserts A3D_PARITY_LINES
+  // and throws the same `parity-not-implemented` error when the flag is off.
+  line: lineNodeHandler as NodeHandler<{ readonly kind: "line" }>,
+  points: pointsNodeHandler as NodeHandler<{ readonly kind: "points" }>,
+  sprite: spriteNodeHandler as NodeHandler<{ readonly kind: "sprite" }>,
   batched: parityPending("batched", "A3D_PARITY_BATCHING")
 };
 
