@@ -1,10 +1,12 @@
 # Reverse-Engineering Crayon Arcade Games into Aura3D
 
 Validated flow for the ten candidate games from `app.usecrayon.ai`, using REA 6.7.0
-(`/opt/homebrew/bin/rea`) plus the Aura3D game kits.
+(`/opt/homebrew/bin/rea`), raw loopback CDP for the game frame, and the Aura3D game
+kits.
 
-Every number and claim below was observed on 2026-10-21 against the live site.
-Nothing here is inferred from filenames or marketing copy.
+Every measured number below was observed on 2026-10-21 against the live site.
+Values that are inferred are labeled **inferred**; nothing is inferred from
+filenames or marketing copy.
 
 **Two documents, one pipeline.**
 
@@ -76,9 +78,11 @@ HTTP/2 403
 ```
 
 The same request succeeds **inside the browser page**. So never `curl` the game
-payload; every read goes through a real browser context. This is why REA's
-loopback-CDP provider is the correct tool and why REA refuses non-loopback
-endpoints by design.
+payload; every read goes through a real browser context. Loopback CDP is the right
+transport for this, but it has to be **raw** CDP: REA's browser tools only accept
+HTTP(S) page targets, and the game lives in an `about:srcdoc` frame (Stage 1).
+REA still covers the page-level captures and all static analysis of the extracted
+files.
 
 ### Measured inventory (the ten)
 
@@ -109,7 +113,8 @@ minified line.
 
 ## 2. The flow
 
-Eight stages (0–7). Stages 0–5 are REA; stages 6–7 are Aura3D.
+Eight stages (0–7). Stages 0–5 are reverse engineering: raw CDP for the game
+frame, REA for the page and for local analysis. Stages 6–7 are Aura3D.
 
 ### Stage 0 — Prerequisites
 
@@ -124,49 +129,102 @@ rea --version                      # expect 6.7.0
 REA only accepts loopback: `http://127.0.0.1:9222` or the `ws://` browser URL.
 A Docker or remote browser will not work — the endpoint must be on this machine.
 
-### Stage 1 — Discover targets
+### Stage 1 — Discover targets (raw CDP, not REA)
+
+REA's browser tools accept only HTTP(S) page targets inside an allowed origin.
+`about:srcdoc` is rejected with `target_unavailable` / `target_not_allowed` by
+`list-browser-targets`, `analyze-web-bundle`, `inspect-web-page`, and
+`capture-web-screenshot` — CLI and MCP alike. Discovery of the game frame is raw
+CDP:
 
 ```bash
-rea list-browser-targets http://127.0.0.1:9222 \
-  --allowed-origins https://app.usecrayon.ai --format json
+curl -s http://127.0.0.1:9222/json/list | node -e 'let s="";
+process.stdin.on("data",d=>s+=d).on("end",()=>{
+  for (const t of JSON.parse(s)) console.log(t.type, t.id, t.url);
+})'
 ```
 
-You will see the `page` (the shell) **and** an `iframe` with `about:srcdoc`.
-Note both IDs.
+You will see a `page` with the app URL and an `iframe` with `about:srcdoc`. Keep
+the iframe ID — that is the game. REA is then used on the **page** (captures,
+scenarios, screenshots) and on **local files** (static analysis). It never touches
+the frame.
 
-### Stage 2 — Capture the frame, not the page
+### Stage 2 — Extract from the frame (CDP evaluate)
 
-```bash
-NODE_OPTIONS=--max-old-space-size=8192 \
-rea analyze-web-bundle http://127.0.0.1:9222 <iframe_target_id> \
-  --allowed-origins https://app.usecrayon.ai \
-  --allowed-origins https://api.usecrayon.ai \
-  --observation-ms 3000 --format json > frame.json
+`analyze-web-bundle` cannot see the frame, and running it on the page analyzes the
+shell: in the recorded HEATSINK capture `target_url` is the app page,
+`scripts_observed` is 11, and the largest script is **1,372,740 B**. That is the
+vendor chunk — the 1.34 MB analyzer workload, and the OOM. It contains no game
+code.
+
+Attach to the iframe target and evaluate in its own context:
+
+```js
+// probe.mjs — Node 18+, no dependencies
+const CDP = "http://127.0.0.1:9222";
+const list = await (await fetch(`${CDP}/json/list`)).json();
+const frame = list.find(t => t.type === "iframe" && t.url === "about:srcdoc");
+if (!frame) throw new Error("no srcdoc frame");
+const ws = new WebSocket(frame.webSocketDebuggerUrl);
+let seq = 0;
+const pending = new Map();
+ws.onmessage = e => {
+  const m = JSON.parse(e.data);
+  if (pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); }
+};
+const send = (method, params) => new Promise(resolve => {
+  const id = ++seq; pending.set(id, resolve);
+  ws.send(JSON.stringify({ id, method, params }));
+});
+await new Promise(resolve => { ws.onopen = resolve; });
+await send("Runtime.enable", {});
+const { result } = await send("Runtime.evaluate", {
+  awaitPromise: true, returnByValue: true,
+  expression: `(async () => {
+    const scripts = [...document.querySelectorAll('script[type="module"]')];
+    const out = [];
+    for (const s of scripts) {
+      let text = null;
+      if (s.src.startsWith('blob:')) {
+        try { text = await (await fetch(s.src)).text(); } catch {}
+      }
+      out.push({ src: s.src || null, inlineBytes: s.textContent.length,
+                 blobBytes: text ? text.length : null, sample: text?.slice(0, 160) });
+    }
+    const blobs = performance.getEntriesByType('resource')
+      .map(r => r.name).filter(n => n.startsWith('blob:'));
+    return JSON.stringify({ title: document.title, scripts: out, blobs });
+  })()`
+});
+console.log(result.result.value);
+ws.close();
 ```
 
-Targeting the **frame** keeps the bundle at 120–320 KB instead of 1.34 MB. This
-single choice is the difference between a 45-second run and a crash.
+Run it, then fetch the chosen blob inside the same context and write the text to
+`game-module.mjs`. Returning 1.6 MB through `Runtime.evaluate` is fine.
 
-### Stage 3 — Extract the game unit
+### Stage 3 — Classify the module
 
 Three shapes occur. Handle all three or you will silently get 0 bytes:
 
-1. **External blob module** — `<script type="module" src="blob:...">`. Fetch the
-   blob inside the frame's own JS context and write the text out.
+1. **External blob module** — `<script type="module" src="blob:...">`. Fetch it
+   inside the frame (Stage 2). Nine of the twelve measured games.
 2. **Inline module** — no `src`; read `textContent`.
-3. **Dynamic import** — no script element and no blob entry in
-   `performance.getEntriesByType("resource")`. The DOM probe returns nothing.
-   Use Stage 2's CDP script enumeration (`analyze-web-bundle` lists scripts from
-   the debugger, including blob/data/inline) or `rea export-web-scripts`.
+3. **Dynamic import** — no script element and no blob resource entry.
+   `analyze-web-bundle` cannot help (it cannot see the frame). Enable
+   `Debugger.enable` + `Runtime.enable` on the iframe session and collect
+   `Debugger.scriptParsed` events while the game boots; the module appears as a
+   `blob:` or `data:` script URL. Fetch that URL from the frame's context.
 
 Also record the frame's `importmap` — it is the stack fingerprint, but not proof
 of what actually renders (see §1).
 
 While the frame is still open, run the four runtime probes in
 [`threejs-parity-gaps.md`](./threejs-parity-gaps.md) §9: node-material usage,
-`BatchedMesh`, `EffectComposer`, and GLSL `ShaderMaterial`. One CDP session per
-game answers all four, and those answers decide whether SH-01 and SH-02 are
-really P0 for that title.
+`BatchedMesh`, `EffectComposer`, and GLSL `ShaderMaterial`. They need
+`Runtime.evaluate` on the iframe session — REA is passive by contract and cannot
+do this. One session per game answers all four and decides whether SH-01 and
+SH-02 are really P0 for that title.
 
 The automated runner is [`tools/crayon-probe/`](../../tools/crayon-probe/index.ts)
 (**remote runner only** — it drives a real browser against live endpoints;
@@ -190,11 +248,17 @@ keeps the gate red; it does not soften it.
 
 ### Stage 4 — Static semantics
 
+Stage 2 already wrote `game-module.mjs`. Analyze the extracted files locally —
+this is where REA is strongest and where the frame limitation does not apply:
+
 ```bash
-rea export-web-scripts /abs/frame.json /abs/game-scripts      # absent dir
-rea analyze-javascript-application /abs/game-scripts --json   # module graph
-rea trace-javascript-semantics '<workflow json>'               # see --schema
+rea analyze-javascript-application /abs/extracted --json          # module graph
+rea trace-javascript-semantics '<workflow json>'                   # see --schema
 ```
+
+`export-web-scripts` is only useful when you have a bundle capture from an
+HTTP(S) page; it cannot export the frame. Do not point it at a frame analysis
+that does not exist.
 
 Trace **seeds**, not whole files. For the racing games the productive seeds are
 `overheat`, `checkpoint`, `lap`, `traffic`, `boost`, `trafficSpawn`, `HUD`.
@@ -207,25 +271,109 @@ rea analyze-javascript-application /abs/game-scripts \
   --max-heap-mb 4096 --max-semantic-nodes 200000 --json
 ```
 
-### Stage 5 — Build a parity fixture (not a screenshot)
+### Stage 5 — Build a parity fixture (observable behaviour)
 
-One declared scenario, capture the input → state transition:
+REA has three capture surfaces and they are not interchangeable:
 
-```bash
-rea capture-browser-scenario /abs/scenario.json --format json > before.json
+| Artifact | Produced by | Compare slot (MCP) |
+| --- | --- | --- |
+| Passive inspection: `target`, `dom`, `accessibility`, `scripts`, `network`, `console`, `storage` | `inspect-web-page` | `before.inspection` / `after.inspection` |
+| Controlled scenario: `steps`, `events`, `completeness` | `capture-browser-scenario` | `before_scenario` / `after_scenario` |
+| Self-verifying PNG artifact | `capture-web-screenshot` | `compare-web-screenshots` |
+
+`compare-web-captures` takes both inspection and scenario data in one MCP call;
+the CLI takes two positional files and detects the shape. A scenario record is
+**not** an inspection — putting one in `before` fails validation because
+`inspection` must contain the passive sections above.
+
+A minimal scenario, with the exact 6.7.0 fields:
+
+```json
+{
+  "browser": {
+    "mode": "connect",
+    "cdp_endpoint": "http://127.0.0.1:9222",
+    "target_id": "<page_target_id>"
+  },
+  "start_url": { "url": "https://app.usecrayon.ai/play/<project_id>" },
+  "actions": [
+    { "step_id": "boot", "action": "wait_for_timeout", "duration_ms": 2500 },
+    { "step_id": "start", "action": "click", "locator": { "kind": "role", "role": "button", "name": "Play" } },
+    { "step_id": "hud", "action": "wait_for", "locator": { "kind": "css", "selector": "[data-testid='hud']" }, "state": "visible" }
+  ],
+  "capture": {
+    "after_each_step": ["screenshot", "url"],
+    "at_end": ["screenshot", "dom", "accessibility", "storage"],
+    "events": ["console", "page-errors", "network"]
+  }
+}
 ```
 
-Connect mode navigates to `start_url` and runs declared actions. Capture again
-after the Aura3D port, then diff:
+Role, name, test ID, and CSS selector values are illustrative — read the shell's
+accessibility tree and DOM with `inspect-web-page` first and use labels that
+actually exist. A locator that does not resolve fails the step, and the failure is
+the fixture doing its job.
+
+- Browser modes: `launch` (`executable_path`) or `connect` (`cdp_endpoint` +
+  `target_id`). Headless defaults to true.
+- Actions: `goto` (`destination`, `wait_until` = `commit` | `domcontentloaded` |
+  `load`), `click`, `fill`, `press`, `select_option`, `check` / `uncheck`,
+  `wait_for` (`state` = `attached` | `detached` | `visible` | `hidden`),
+  `wait_for_timeout` (`duration_ms`). Every action needs a unique `step_id`.
+- Locators: `test_id` (`value`), `role` (`role` + `name`), `css` (`selector`).
+- Capture sections: `screenshot`, `dom`, `accessibility`, `url`, `history`,
+  `storage`. Events: `console`, `page-errors`, `network`, `websockets`, `frames`,
+  `workers`, `popups`, `downloads`.
+
+Capture before the port, capture after, then diff:
 
 ```bash
+rea capture-browser-scenario /abs/before-scenario.json --format json > before.json
+rea capture-browser-scenario /abs/after-scenario.json  --format json > after.json
 rea compare-web-captures before.json after.json --format json
 ```
 
-Comparison is normalized (step timing, event sequence, and local network IDs are
-ignored) and reports per-artifact diffs. This is the closest thing to a
-mechanical parity gate and it is the only stage that proves *behaviour* rather
-than structure.
+For the visual gate, compare the two screenshot artifacts, not raw PNGs:
+
+```bash
+rea compare-web-screenshots /abs/before-shot.json /abs/after-shot.json \
+  --channel-threshold 8
+```
+
+**The frame is outside this surface.** The scenario schema has no frame selector,
+and `about:srcdoc` targets are rejected. Locator actions resolve on the shell
+page, and scenario keyboard events go to the page's focused element — they cannot
+be aimed at a frame element. Drive in-game input through the iframe session with
+`Input.dispatchKeyEvent` / `Input.dispatchMouseEvent`, or Playwright's
+`frameLocator`. Treat the REA scenario as the **shell-level** fixture (load,
+start, pause, restart) and the raw CDP script as the **in-game** fixture.
+
+Input on the iframe session was verified against HEATSINK — the frame's own
+`keydown`/`keyup` listeners received both events:
+
+```js
+// same send() helper as Stage 2, on the iframe target
+await send("Input.dispatchKeyEvent", {
+  type: "keyDown", code: "KeyW", key: "w",
+  windowsVirtualKeyCode: 87, nativeVirtualKeyCode: 87
+});
+await new Promise(r => setTimeout(r, 1200));
+await send("Input.dispatchKeyEvent", {
+  type: "keyUp", code: "KeyW", key: "w",
+  windowsVirtualKeyCode: 87, nativeVirtualKeyCode: 87
+});
+```
+
+**Assert only what is observable.** REA does not evaluate JavaScript, so a
+fixture cannot read `lap`, `heat`, or `pickupCount` from game memory. It can read
+HUD text through DOM/accessibility, the URL, storage, console events, and pixels.
+Write acceptance as "HUD shows `LAP 2/7`", not "lap === 2". Where the original
+game has no DOM HUD (canvas-only), the observable artifact is the screenshot, and
+the assertion must be a frame-to-frame structural comparison — not identity.
+
+Comparison is normalized (step timing, event order, local network IDs) and reports
+per-artifact diffs. `start_url` host differences between Crayon and the Aura3D
+route are expected; do not score them as failures.
 
 ### Stage 6 — Map to Aura3D
 
@@ -278,10 +426,13 @@ pnpm check:release
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
-| MCP `analyze_web_bundle` → *"MCP server process exited"*, V8 stack | 1.34 MB minified AST exceeds the server's heap and the MCP transport | Use the CLI, not MCP |
+| MCP `analyze_web_bundle` → *"MCP server process exited"*, V8 stack | The page's 1,372,740 B vendor chunk exceeds the server heap. It is shell code, not game code | Use the CLI with a raised heap for the shell; extract the game with CDP (Stage 2) |
 | CLI exit 134, `Scavenge ... 4080 MB` | 4 GB default heap | `NODE_OPTIONS=--max-old-space-size=8192` (peak observed 7.3 GB) |
 | 45 s → 0-byte output | Same OOM, output truncated | same |
 | `403 client_not_allowed` | Origin gate on `api.usecrayon.ai` | Browser context only; never curl |
+| `target_unavailable`, `reason: target_not_allowed`, *"must be an HTTP(S) page in the selected origin scope"* | REA browser tools (`list-browser-targets`, `analyze-web-bundle`, `inspect-web-page`, `capture-web-screenshot`) reject the game's `about:srcdoc` iframe | Discover it with raw `/json/list`; drive it with `Runtime.evaluate` and `Input.dispatch*`, or Playwright `frameLocator` |
+| Scenario locator never matches the game | Locators resolve in the shell page, not the srcdoc frame | Keep REA for shell-level steps; send in-game input through the frame session |
+| Parity assertion reads `undefined` | REA is passive and never evaluates JavaScript | Assert HUD text, DOM/accessibility, URL, storage, or pixels; read internal state with a separate CDP probe |
 | Module extract returns 0 bytes | Dynamic import, no DOM script, no blob perf entry | Stage 2 CDP enumeration |
 | `source_maps: not_requested`, no maps found | Publisher ships none | Drop `--fetch-source-maps` |
 
@@ -623,7 +774,7 @@ bloom; no realism.
 
 **Acceptance.** Full seven-lap race on Racer with one branch choice, one gravity
 fold, one landed stunt. Capture diff passes on lap count, checkpoint order, and
-finish time. This is the Phase 0 exit fixture.
+finish time. This is the Phase A exit fixture.
 
 **Effort.** M — small source, but the ring/gravity model is custom.
 
@@ -749,16 +900,16 @@ because their parity is not first.
 
 | Order | Game | Why now | Effort |
 | --- | --- | --- | --- |
-| 1 | **Strange Orbit** | Smallest source (19 KB), importmap-readable, full racing kit — proves Stage 0–7 end to end and exits Phase 0 | M |
+| 1 | **Strange Orbit** | Smallest source (19 KB), importmap-readable, full racing kit — proves Stage 0–7 end to end and exits Phase A | M |
 | 2 | **Splat Rush** | 43 KB, one mechanic, no custom shader — proves the loop and the HUD | S |
 | 3 | **Saiyan Snake Way** | 211 readable lines; proves curves + tube geometry | M |
 | 4 | **Drift & Deliver** | Best kit fit; proves drift scoring and city instancing | M |
-| 5 | **HEATSINK** | Highest demand × best fit; exits Phase 1 (shaders + post + batching) | L |
+| 5 | **HEATSINK** | Highest demand × best fit; exits Phase B (shaders + post + batching) | L |
 | 6 | **Where the Wind Wanders** | Proves grass instancing and wind, no combat | M |
 | 7 | **Ninja Runner** | Forces the runner-kit decision and clone animation | L |
 | 8 | **Roadster Hours** | Proves hybrid drive/fly and trick scoring | L |
 | 9 | **Last Train to the Sea** | Catalog #1; needs the vehicle-adventure composition | XL |
-| 10 | **Silt & Signal** | Seven worlds + voice + water; the Phase 3 showcase | XL |
+| 10 | **Silt & Signal** | Seven worlds + voice + water; the Phase D showcase | XL |
 
 Games 5–10 are not blocked on each other; run them in parallel once their parity
 phase is green, with disjoint file ownership per the repo's parallel-agent rules.

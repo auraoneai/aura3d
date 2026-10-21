@@ -261,7 +261,7 @@ codemod row). The "Remaining work" column is what §5 and §6 implement.
 | SC-01 Cube/Array/Stereo camera | P2 (CubeCamera P1) | GAP (public) | `CubeCameraReflectionCapture` (`R/index.ts:1189`); `createStereoCameraRig` `:808`; no viewport/scissor in `R/RenderDevice.ts` | `cameras.cube({resolution, near, far})` → cube render target via `Renderer.renderProbeFace` (`R/Renderer.ts:536`); viewport/scissor for Array/Stereo (P2) | L7 |
 | SC-02 controls | P2 | **CLOSED** | `packages/controls/src/index.ts:1-14` (all 9 three controls + extras) | Codemod rows for the 8 unmapped controls | L10 |
 | SC-03 helpers | P2 | GAP (deleted with compat) | no `*Helper` class in `packages/` | `helpers.axes/grid/box/camera/light/skeleton/arrow` over `lines.*` (after L6) | L6 (P2) |
-| SC-04 WebXR | P2 | PARTIAL | `packages/input/src/WebXRSessionController.ts:160` | XR render target + enter-VR/AR button helper | — (Phase 4) |
+| SC-04 WebXR | P2 | PARTIAL | `packages/input/src/WebXRSessionController.ts:160` | XR render target + enter-VR/AR button helper | — (post-D) |
 
 ### 3.8 Runtime systems (SR)
 
@@ -734,7 +734,7 @@ fixture green", even if other lanes are still running.
 | `parity-audio` | `tests/unit/audio/*.test.ts`, `tests/browser/parity-audio.spec.ts` | Single attenuation; cone; analyser | vitest + remote |
 | `parity-runtime` | `tests/browser/parity-runtime.spec.ts` | Fog opt-out, background, cube camera, mirror | remote Playwright |
 | `parity-disposal` | `tests/browser/parity-disposal.spec.ts` | 20 cycles within 5% | remote Playwright |
-| `crayon-capture` | REA `compare_web_captures` (external MCP) + `tools/webgpu-visual-parity/` | Declared scenario matches | remote |
+| `crayon-capture` | REA `compare_web_captures` on the shell + raw-CDP in-frame probe + `tools/webgpu-visual-parity/` | Declared scenario matches observable artifacts (HUD text, URL, storage, pixels) | remote |
 
 Browser fixtures follow the `tests/browser/portable-custom-materials.spec.ts`
 pattern: `startExampleDevServer()`, an `examples/<lab>/main.ts` page exposing
@@ -752,7 +752,22 @@ count, **parity IDs claimed**, custom passes, and known limits. Add a
 
 None have been run. Record answers in this table, citing the evidence files.
 
-| Probe | Question | Method (CDP, per game) | Changes |
+These probes **cannot run through REA**, for two independent reasons:
+
+1. REA's browser tools accept only HTTP(S) page targets. The game is an
+   `about:srcdoc` iframe and is rejected with `target_unavailable` /
+   `reason: target_not_allowed`.
+2. REA is passive by contract — `inspect-web-page` explicitly does not evaluate
+   JavaScript, and the scenario action set has no `evaluate`.
+
+Run each probe with raw CDP `Runtime.evaluate` on the iframe's own session
+(`/json/list` → `webSocketDebuggerUrl` for the `iframe` target), after the scene
+has booted. Store the returned JSON under `evidence/crayon-probes/<game>.json`.
+The probe script is in
+[`crayon-game-reverse-engineering.md`](./crayon-game-reverse-engineering.md)
+Stage 2.
+
+| Probe | Question | Method (CDP `Runtime.evaluate`, per game) | Changes |
 | --- | --- | --- | --- |
 | P-1 | Do games author node materials (TSL)? | `scene.traverse`: `material.constructor.name` ends in `NodeMaterial` **and** `fragmentNode`/`colorNode`/`positionNode` is non-null | If ≥ 3 games: start L1-11, promote SH-01 to ● for them |
 | P-2 | Is `BatchedMesh` used? | `scene.traverse` for `isBatchedMesh` | Promote SG-02 to ● per game |
