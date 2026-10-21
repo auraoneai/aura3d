@@ -2609,7 +2609,7 @@ export interface AuraLayerMask {
   disable(channel: number): void;
   disableAll(): void;
   toggle(channel: number): void;
-  test(layers: AuraLayerMask): boolean;
+  test(layers: AuraLayerMask | { mask: number }): boolean;
   isEnabled(channel: number): boolean;
 }
 

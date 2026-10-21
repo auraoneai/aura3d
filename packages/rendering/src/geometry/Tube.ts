@@ -29,6 +29,12 @@ export function tubeParityMesh(params: TubeParityParams): ParityMesh {
   const closed = params.closed ?? false;
 
   const frames = path.computeFrenetFrames(tubularSegments, closed);
+  // computeFrenetFrames returns null for curves without a 3D frame model
+  // (e.g. 2D paths); a tube path is always 3D but the frozen Curve interface
+  // keeps null in the type. Fail loudly rather than write NaN geometry.
+  if (!frames) {
+    throw new Error("tubeParityMesh: path curve does not provide Frenet frames (requires a 3D curve).");
+  }
 
   const indices: number[] = [];
   const vertices: number[] = [];

@@ -186,7 +186,7 @@ export function extrudeParityMesh(params: ExtrudeParityParams): ParityMesh {
 
   let extrudePts: readonly Vector3[] | undefined;
   let extrudeByPath = false;
-  let splineTube: FrenetFrame | undefined;
+  let splineTube: FrenetFrame | null | undefined;
   let pathCurve: Curve<Vector3> | undefined;
 
   if (extrudePath !== undefined && extrudePath !== null) {

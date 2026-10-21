@@ -167,22 +167,22 @@ export interface AuraRuntimeNodeHandle {
   effects(): readonly AuraRuntimeNodeEffectAttachment[];
   snapshot(): AuraRuntimeNodeSnapshot;
   // ── threejs-parity (§5.0, task B-01) — frozen handle members; optional until the owning lane lands (C-38 convention).
-  /** SG-09 (L7): three's Object3D.renderOrder — draw-order override applied at collect time. */
-  renderOrder?: number;
-  /** SG-09 (L7): three's Object3D.frustumCulled. */
-  frustumCulled?: boolean;
+  /** SG-09 (L7): three's Object3D.renderOrder — draw-order override applied at collect time. Default 0. */
+  renderOrder: number;
+  /** SG-09 (L7): three's Object3D.frustumCulled. Default true. */
+  frustumCulled: boolean;
   /** SG-09/SR-04 (L7): three's Object3D.layers — bitmask tested against the camera's mask. */
-  readonly layers?: AuraLayerMask;
+  readonly layers: AuraLayerMask;
   /** SG-09 (L7): three's Object3D.userData — free-form author metadata. */
-  readonly userData?: Record<string, unknown>;
+  readonly userData: Record<string, unknown>;
   /** SG-09 (L7): depth-first visit of this node's subtree (self included). */
-  traverse?(callback: (handle: AuraRuntimeNodeHandle) => boolean | void): void;
+  traverse(callback: (handle: AuraRuntimeNodeHandle) => boolean | void): void;
   /** SG-09 (L7): world-space transforms resolved through the parent chain. */
-  getWorldPosition?(): AuraVec3;
-  getWorldQuaternion?(): import("../../../contracts/sceneGraph").AuraQuat;
-  getWorldScale?(): AuraVec3;
+  getWorldPosition(): AuraVec3;
+  getWorldQuaternion(): import("../../../contracts/sceneGraph").AuraQuat;
+  getWorldScale(): AuraVec3;
   /** SG-09 (L7): re-parent `child` under this node preserving its world transform (three's Object3D.attach). */
-  attach?(child: AuraRuntimeNodeHandle): this;
+  attach(child: AuraRuntimeNodeHandle): this;
   /** SH-02 (L1): write a `material.custom` uniform without recompiling the program. */
   setUniform?(name: string, value: AuraUniformValue): this;
   /** SG-05 (L2): replace the node's geometry; reallocates only when vertex count changes. */

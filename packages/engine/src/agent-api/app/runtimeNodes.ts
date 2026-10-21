@@ -540,16 +540,18 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
     // `getWorldPosition/Quaternion/Scale`, `attach`, `morphTargetDictionary`
     // (SA-05, lane L8) (owner lane L7, do not edit outside this region).
     get renderOrder() {
-      return node.renderOrder;
+      // three.js Object3D.renderOrder defaults to 0; unset spec stays undefined internally.
+      return node.renderOrder ?? 0;
     },
-    set renderOrder(next: number | undefined) {
+    set renderOrder(next: number) {
       node.renderOrder = next;
       bumpVersion();
     },
     get frustumCulled() {
-      return node.frustumCulled;
+      // three.js Object3D.frustumCulled defaults to true.
+      return node.frustumCulled ?? true;
     },
-    set frustumCulled(next: boolean | undefined) {
+    set frustumCulled(next: boolean) {
       node.frustumCulled = next;
       bumpVersion();
     },
@@ -576,7 +578,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
           if (!parityL7ValidChannel(channel)) return;
           this.mask = this.mask ^ (1 << channel);
         },
-        test(layers: AuraLayerMask) { return (this.mask & layers.mask) !== 0; },
+        test(layers: AuraLayerMask | { mask: number }) { return (this.mask & layers.mask) !== 0; },
         isEnabled(channel: number) {
           return parityL7ValidChannel(channel) && (this.mask & (1 << channel)) !== 0;
         }

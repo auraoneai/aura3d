@@ -427,7 +427,7 @@ export class Curve3Adapter implements Curve<Vector3> {
     return lengths[lengths.length - 1]!;
   }
 
-  getLengths(divisions = this.arcLengthDivisions): readonly number[] {
+  getLengths(divisions = this.arcLengthDivisions): number[] {
     if (this.cacheArcLengths && this.cacheArcLengths.length === divisions + 1 && !this.needsUpdate) {
       return this.cacheArcLengths;
     }
@@ -483,7 +483,7 @@ export class Curve3Adapter implements Curve<Vector3> {
     return (i + segmentFraction) / (il - 1);
   }
 
-  getSpacedPoints(divisions = 5): readonly Vector3[] {
+  getSpacedPoints(divisions = 5): Vector3[] {
     const points: Vector3[] = [];
     for (let i = 0; i <= divisions; i += 1) {
       points.push(this.getPointAt(i / divisions));
@@ -491,7 +491,7 @@ export class Curve3Adapter implements Curve<Vector3> {
     return points;
   }
 
-  getPoints(divisions = 5): readonly Vector3[] {
+  getPoints(divisions = 5): Vector3[] {
     const points: Vector3[] = [];
     for (let i = 0; i <= divisions; i += 1) {
       points.push(this.getPoint(i / divisions));
