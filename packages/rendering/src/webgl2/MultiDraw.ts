@@ -741,7 +741,35 @@ function sameUniformsExceptDrawId(a: DrawCommand["uniforms"], b: DrawCommand["un
   if (sizeA !== sizeB) return false;
   for (const [name, value] of a) {
     if (name === "u_drawId") continue;
-    if (!b.has(name) || b.get(name) !== value) return false;
+    if (!b.has(name)) return false;
+    if (!uniformValueEqual(b.get(name), value)) return false;
   }
   return true;
+}
+
+/**
+ * L5: one merged call binds `first`'s uniform set for every member — values
+ * may only differ in `u_drawId` (which a `gl_DrawID` program replaces with
+ * the hardware index). Array-likes compare element-wise so two commands
+ * carrying identical CONTENT in different buffers still merge; every other
+ * value compares by identity.
+ */
+function uniformValueEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (typeof a === "number" || typeof b === "number") return a === b;
+  const la = a as ArrayLike<number> | null;
+  const lb = b as ArrayLike<number> | null;
+  if (
+    la !== null && lb !== null &&
+    typeof la === "object" && typeof lb === "object" &&
+    typeof la.length === "number" && typeof lb.length === "number" &&
+    !(a instanceof Map)
+  ) {
+    if (la.length !== lb.length) return false;
+    for (let i = 0; i < la.length; i += 1) {
+      if (la[i] !== lb[i]) return false;
+    }
+    return true;
+  }
+  return false;
 }

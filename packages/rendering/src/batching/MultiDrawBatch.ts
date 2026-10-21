@@ -15,7 +15,7 @@ import type { DrawCommand, PrimitiveTopology, RenderBuffer, RenderDevice, Render
 import type { VertexFormat } from "../VertexFormat";
 import type { RenderCommandState } from "../RenderDevice";
 import { BatchedGeometryPool, type PackedGeometryEntry } from "./BatchedGeometryPool";
-import { DrawDataTexture } from "./DrawDataTexture";
+import { DrawDataTexture, packDrawDataFlags } from "./DrawDataTexture";
 import type { MultiDrawGroup } from "./StaticMergePlanner";
 import type { RenderItem } from "../contracts/renderItem";
 import { MaterialInstance } from "../MaterialInstance";
@@ -81,10 +81,83 @@ export function buildMultiDrawBatch(group: MultiDrawGroup, pool = new BatchedGeo
     drawData.setDraw(drawIndex, {
       model: modelOf(item),
       baseColor: colorOf(item),
-      meta: [entry.firstIndex, entry.baseVertex, entry.indexCount, 0]
+      // meta.w = visible bit | geometryId (parity-L5). Planner members are
+      // always visible; a `batchedVisible` marker lets batched.mesh hide rows.
+      meta: [
+        entry.firstIndex,
+        entry.baseVertex,
+        entry.indexCount,
+        packDrawDataFlags(batchedVisible(item), entry.geometryId)
+      ]
     });
   });
   return { group, entries, drawData, pool };
+}
+
+function batchedVisible(item: RenderItem): boolean {
+  return (item as RenderItem & { readonly batchedVisible?: boolean }).batchedVisible !== false;
+}
+
+/**
+ * Signature-hit refresh (mirrors `refreshInstancedBatch`): member
+ * matrices/colours may change while the item SET is unchanged — rewrite the
+ * draw rows in place and let `upload()` mark the texture dirty for the next
+ * bind. Cheap: no re-pack, no texture object churn.
+ */
+export function refreshMultiDrawBatch(batch: MultiDrawBatch): void {
+  batch.group.members.forEach((item, drawIndex) => {
+    const entry = batch.entries[drawIndex]!;
+    batch.drawData.setDraw(drawIndex, {
+      model: modelOf(item),
+      baseColor: colorOf(item),
+      meta: [
+        entry.firstIndex,
+        entry.baseVertex,
+        entry.indexCount,
+        packDrawDataFlags(batchedVisible(item), entry.geometryId)
+      ]
+    });
+  });
+  batch.drawData.upload();
+}
+
+const SHARED_IDENTITY_MODEL = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+
+export interface SynthesizeMultiDrawItemsOptions {
+  /** Marker mode — `"multi-draw"` enqueues for `device.multiDrawElementsInstanced`; `"loop"` binds `u_drawId` per draw. */
+  readonly mode?: "multi-draw" | "loop";
+  /** Bounds override for the pooled `Geometry` (BatchedMesh supplies its own). */
+  readonly bounds?: { readonly min: readonly [number, number, number]; readonly max: readonly [number, number, number] };
+}
+
+/**
+ * Synthesize the `RenderItem`s a `MultiDrawBatch` renders as: one item per
+ * member, all sharing the pool's materialized `Geometry`, each addressing its
+ * slice through `drawRange` and its per-draw data through the
+ * `multiDraw` marker (`drawIndex` selects the `DrawDataTexture` row). The
+ * shared `modelMatrix` is the folded node×instance transform — the value the
+ * uniform path needs — while the draw-data row carries the same matrix for
+ * the `a3d_draw_id` fetch.
+ */
+export function synthesizeMultiDrawItems(batch: MultiDrawBatch, options: SynthesizeMultiDrawItemsOptions = {}): RenderItem[] {
+  const pooledGeometry = batch.pool.asGeometry(options.bounds);
+  const drawDataTexture = batch.drawData.upload();
+  const mode = options.mode ?? "multi-draw";
+  const items: RenderItem[] = [];
+  batch.group.members.forEach((member, drawIndex) => {
+    const entry = batch.entries[drawIndex]!;
+    const range = entry.firstIndex >= 0
+      ? { start: entry.firstIndex, count: entry.indexCount }
+      : { start: entry.baseVertex, count: entry.vertexCount };
+    items.push({
+      ...member,
+      geometry: pooledGeometry,
+      drawRange: range,
+      modelMatrix: SHARED_IDENTITY_MODEL,
+      multiDraw: { mode, drawIndex, drawData: drawDataTexture }
+    } as RenderItem);
+  });
+  return items;
 }
 
 /**

@@ -6,15 +6,22 @@
  * `INSTANCE_CAPACITY_EXCEEDED` when `count > capacity` (capacity = the
  * declared `instances.length`, matching C-07).
  *
- * Real path (C-07 `InstanceBufferLike.setMatrices/setColors`) needs a read
- * accessor on the C-37 seam — request Q-15-2. Until it lands, and whenever the
- * `A3D_QR_GAME` flag is off, the member delegates to the C-37 stub: it
- * decomposes the matrices back into `node.instances`/`instanceColors` so the
- * existing per-frame instanced-node update re-uploads them (still 1 draw per
- * kind; extra CPU measured in §17).
+ * L5-01 (parity-L5): for `kind:"batched"` nodes (created by `batched.mesh` /
+ * `instances.mesh`) the member writes the dense `BatchedMeshState` stores
+ * directly — the same flat arrays the renderer uploads through the C-07
+ * `InstanceBufferLike.setMatrices/setColors` contract each frame. No
+ * matrix→spec decomposition on that path.
+ *
+ * For `kind:"primitive"` nodes the C-37 stub still applies: `renderInput`
+ * consumes `AuraTransformSpec` instances, so the write decomposes back into
+ * `node.instances`/`instanceColors` and the existing per-frame instanced-node
+ * update re-uploads them (still 1 draw per kind). A dense `instanceTransforms`
+ * field on primitive nodes is the remaining seam for a fully-direct primitive
+ * path.
  */
-import type { AuraApp, AuraPrimitiveNode, AuraRuntimeNodeHandle, AuraSceneNode, AuraTransformSpec } from "../../index.js";
+import type { AuraApp, AuraBatchedNode, AuraPrimitiveNode, AuraRuntimeNodeHandle, AuraSceneNode, AuraTransformSpec } from "../../index.js";
 import type { NodeHandleExtension } from "../../../contracts/runtimeNodes.js";
+import { batchedStateForNode } from "../batched.js";
 
 export type SceneNodeWithRuntime = AuraSceneNode & {
   instances?: readonly AuraTransformSpec[];
@@ -103,6 +110,48 @@ function instancedNodeFor(handle: AuraRuntimeNodeHandle, app: AuraApp): SceneNod
   return node as SceneNodeWithRuntime & AuraPrimitiveNode;
 }
 
+/** L5-01: a `kind:"batched"` node addressable by this handle (`batchedId` or `runtime.id`). */
+function batchedNodeFor(handle: AuraRuntimeNodeHandle, app: AuraApp): AuraBatchedNode | undefined {
+  return (app.scene.nodes as readonly AuraSceneNode[]).find(
+    (n): n is AuraBatchedNode =>
+      n.kind === "batched" && (n.batchedId === handle.id || n.runtime?.id === handle.id)
+  );
+}
+
+/**
+ * Direct dense write for batched/instanced-mesh nodes: contiguous copy into
+ * the same `Float32Array`s uploaded via `InstanceBufferLike` each frame —
+ * this IS the GPU-write path (the buffers upload verbatim), versus the
+ * primitive stub's decompose→spec→re-upload round trip.
+ */
+export function directBatchedSetInstanceTransforms(
+  handle: AuraRuntimeNodeHandle,
+  app: AuraApp,
+  matrices: Float32Array,
+  count: number,
+  colors?: Float32Array
+): AuraRuntimeNodeHandle {
+  const node = batchedNodeFor(handle, app);
+  if (!node) {
+    throw new Error(`INSTANCE_NODE_REQUIRED: node "${handle.id}" is not a batched/instanced node (created by batched.mesh or instances.mesh).`);
+  }
+  batchedStateForNode(node).writeInstanceMatrices(matrices, count, colors);
+  return handle;
+}
+
+function setInstanceTransformsMember(
+  handle: AuraRuntimeNodeHandle,
+  app: AuraApp,
+  matrices: Float32Array,
+  count: number,
+  colors?: Float32Array
+): AuraRuntimeNodeHandle {
+  if (batchedNodeFor(handle, app)) {
+    return directBatchedSetInstanceTransforms(handle, app, matrices, count, colors);
+  }
+  return stubSetInstanceTransforms(handle, app, matrices, count, colors);
+}
+
 /**
  * C-37 stub member — used when `A3D_QR_GAME` is off (and inside the real
  * extension until Q-15-2 lands the InstanceBufferLike accessor). Rebuilds the
@@ -172,17 +221,13 @@ export const instanceTransformsExtension: NodeHandleExtension<"setInstanceTransf
   owner: "prd09",
   flag: INSTANCE_TRANSFORMS_FLAG,
   member: "setInstanceTransforms",
-  appliesTo: ["primitive"],
+  appliesTo: ["primitive", "batched"],
   create(handle, app) {
-    // Until Q-15-2 lands the C-07 buffer accessor there is no real path — the
-    // extension always delegates to the stub, which preserves draw count = 1
-    // per kind. When the flag is off the member IS the stub (same function).
-    if (!qrFlagsOf(app).some((f) => f === INSTANCE_TRANSFORMS_FLAG || f === "all" || f.startsWith("A3D_QR_GAME"))) {
-      // Flag off: identical observable behaviour through the stub path.
-      return (matrices: Float32Array, count: number, colors?: Float32Array) =>
-        stubSetInstanceTransforms(handle, app, matrices, count, colors);
-    }
+    qrFlagsOf(app); // keep the per-app diagnostics read warm (cache fill)
+    // Batched/instanced-mesh nodes always take the dense write (L5-01);
+    // primitive nodes keep the C-37 stub (spec lowering) flag on or off —
+    // identical observable behaviour either way.
     return (matrices: Float32Array, count: number, colors?: Float32Array) =>
-      stubSetInstanceTransforms(handle, app, matrices, count, colors);
+      setInstanceTransformsMember(handle, app, matrices, count, colors);
   }
 };

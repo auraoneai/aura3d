@@ -199,8 +199,8 @@ codemod row). The "Remaining work" column is what §5 and §6 implement.
 
 | ID | Pri | Verdict | Evidence | Remaining work | Lane |
 | --- | --- | --- | --- | --- | --- |
-| SG-01 InstancedMesh | P1 | PARTIAL | `S/Object3D.ts:93-133`; `AA/nodes/game/instanceTransforms.ts:1-14,170` (stub behind `A3D_QR_GAME`, matrices converted to specs) | Real GPU instance-buffer write path; `setMatrixAt`/`setColorAt`/`count`/`needsUpdate` handle | L5 |
-| SG-02 BatchedMesh | P1 (probe-gated) | PARTIAL (internal) | `R/batching/*`; `R/renderer/CullingBatching.ts:402` ("multiDrawAvailable is always false"); `R/batching/StaticMergePlanner.ts:97,324` | Wire batching into the production path; per-instance visibility + geometry id; `batched.*` namespace. **Promotion to ● needs probe P-2** | L5 |
+| SG-01 InstancedMesh | P1 | **DONE (L5)** | `AA/nodes/instancedMesh.ts`; `AA/nodes/batched.ts` (`BatchedMeshState` dense store); `AA/nodes/game/instanceTransforms.ts:directBatchedSetInstanceTransforms` writes the retained `matrices`/`colors` flat arrays the renderer uploads verbatim (L5-01); `instances.mesh` handle: `setMatrixAt`/`getMatrixAt`/`setColorAt`/`count`/`needsUpdate`/`computeBoundingSphere` | none for the public API; primitive-node `instances` still use the spec path by design | L5 |
+| SG-02 BatchedMesh | P1 (probe-gated) | **DONE (L5) — promotion P-2 gated** | `AA/nodes/batched.ts` (`batched.mesh` handle + real `batchedNodeHandler` under `A3D_PARITY_BATCHING`); `R/renderer/CullingBatching.ts` `BatchPlanCache.apply` routes `plan.multiDrawGroups` → `buildMultiDrawBatch` + `synthesizeMultiDrawItems`; `R/batching/*` pooled arenas, `DrawDataTexture` flags (visible bit + geometryId), stable texture object; `DrawSubmit` enqueues marker runs → `multiDrawElementsInstanced`; honest fallback = per-geometry instanced items with `fallbackReason` + `multiDrawMode:"unavailable"` in `renderer.batching` diagnostics | **Promotion to ● still needs probe P-2** (runtime `isBatchedMesh` evidence per game — L5-05); implementation does not wait on it | L5 |
 | SG-03 geometry breadth | **P0** | GAP | `AA/nodes/types.ts:442` (6 kinds); `R/geometry/Primitives.ts:20`; internal pieces `AA/world/spline.ts:215-302` | cone, circle, ring, tube, lathe, extrude, shape, torusKnot, polyhedron(tetra/octa/icosa/dodeca), roundedBox | L2 |
 | SG-04 Edges/Wireframe | P1 | GAP | `R/Geometry.ts:93` line topology only | `geometry.edges(src, thresholdAngle)`, `geometry.wireframe(src)` | L2 |
 | SG-05 geometry authoring | **P0** | PARTIAL | `AA/RootGeometry.ts:6-14,84`; `R/MeshConsolidation.ts:109,233` | Typed arrays, `colors`, `groups`, `drawRange`, per-frame `handle.setGeometry()` / `updateAttribute()`, `computeNormals/Bounds`, `applyMatrix4`, `merge` | L2 |
@@ -807,8 +807,8 @@ Tick only with evidence: a test path, a CI run ID, or a probe JSON.
 - [ ] SH-06 public `RenderTarget` + `render({target})`
 - [ ] SH-08 Cineon
 - [ ] SH-10 `registerShaderChunk`
-- [ ] SG-01 `instances.mesh` handle on a real GPU write path
-- [ ] SG-02 `batched.mesh` (or closed by P-2 as unused)
+- [x] SG-01 `instances.mesh` handle on a real GPU write path (parity-L5)
+- [x] SG-02 `batched.mesh` implemented (parity-L5); promotion to ● still gated on probe P-2 (L5-05)
 - [ ] SG-04 edges / wireframe
 - [ ] SG-06 / AD-08 `lines.*` incl. fat + dashed
 - [ ] SG-07 `points` attenuation/map/alphaTest

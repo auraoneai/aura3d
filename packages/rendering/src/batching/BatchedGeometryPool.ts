@@ -10,12 +10,21 @@
  * arenas once per build — buffers are never re-uploaded per frame.
  */
 
-import type { Geometry } from "../Geometry";
+import { Geometry } from "../Geometry";
+import type { Bounds3 } from "../Geometry";
+import { IndexBuffer } from "../IndexBuffer";
 import type { RenderBuffer, RenderDevice } from "../RenderDevice";
+import { VertexBuffer } from "../VertexBuffer";
 import type { VertexFormat } from "../VertexFormat";
 
 export interface PackedGeometryEntry {
   readonly geometry: Geometry;
+  /**
+   * Stable insertion-order id (0, 1, 2, …). BatchedMesh/instancing lanes use
+   * this as the draw-data `geometryId` — the meta texel carries it so the
+   * shader can select per-geometry behavior without a second texture.
+   */
+  readonly geometryId: number;
   /** First element index of this member inside the shared index arena. */
   readonly firstIndex: number;
   readonly indexCount: number;
@@ -69,13 +78,13 @@ export class BatchedGeometryPool {
         this.indexData.push(data[i]! + baseVertex);
       }
       entry = {
-        geometry, firstIndex, indexCount: data.length,
+        geometry, geometryId: this.entries.size, firstIndex, indexCount: data.length,
         baseVertex, vertexCount: geometry.vertexBuffer.vertexCount,
         indexType: "uint16" // final type resolved at upload (needsUint32 upgrades all)
       };
     } else {
       entry = {
-        geometry, firstIndex: -1, indexCount: 0,
+        geometry, geometryId: this.entries.size, firstIndex: -1, indexCount: 0,
         baseVertex, vertexCount: geometry.vertexBuffer.vertexCount,
         indexType: "uint16"
       };
@@ -83,6 +92,7 @@ export class BatchedGeometryPool {
     this.entries.set(geometry, entry);
     this.totalVertices += geometry.vertexBuffer.vertexCount;
     this.dirty = true;
+    this.materialized = null; // arena contents changed — rematerialize on next asGeometry
     return entry;
   }
 
@@ -91,6 +101,51 @@ export class BatchedGeometryPool {
     return entry
       ? { ...entry, indexType: this.needsUint32 ? "uint32" : entry.indexType }
       : undefined;
+  }
+
+  /** Packed members in insertion order (geometryId === list index). */
+  geometries(): readonly Geometry[] {
+    return [...this.entries.keys()];
+  }
+
+  /**
+   * Materialize the shared arenas as a single `Geometry` — the shape a
+   * `RenderItem.geometry` needs. Member draws select their slice with
+   * `drawRange` (`firstIndex`/`indexCount` in the shared index arena, or
+   * `baseVertex`/`vertexCount` for unindexed members). Cached until the next
+   * `pack`; bounds default to the union of member bounds.
+   */
+  asGeometry(bounds?: Bounds3): Geometry {
+    if (this.materialized && this.materializedBounds === bounds) return this.materialized;
+    if (!this.format || this.totalVertices === 0) {
+      throw new Error("BatchedGeometryPool.asGeometry: pool has no packed geometry");
+    }
+    const vertices = new VertexBuffer(this.format, this.totalVertices);
+    vertices.floats.set(this.vertexFloats);
+    const indexBuffer = this.indexData.length > 0 ? new IndexBuffer(this.indexData) : null;
+    this.materialized = new Geometry(vertices, indexBuffer, this.topologyOf() ?? "triangles", bounds ?? this.unionBounds());
+    this.materializedBounds = bounds;
+    return this.materialized;
+  }
+
+  private materialized: Geometry | null = null;
+  private materializedBounds: Bounds3 | undefined;
+
+  private topologyOf(): Geometry["topology"] | undefined {
+    for (const geometry of this.entries.keys()) return geometry.topology;
+    return undefined;
+  }
+
+  private unionBounds(): Bounds3 {
+    const min: [number, number, number] = [Infinity, Infinity, Infinity];
+    const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+    for (const geometry of this.entries.keys()) {
+      for (let axis = 0; axis < 3; axis += 1) {
+        min[axis] = Math.min(min[axis], geometry.bounds.min[axis]!);
+        max[axis] = Math.max(max[axis], geometry.bounds.max[axis]!);
+      }
+    }
+    return { min, max };
   }
 
   /** One upload per build; subsequent calls return the live arenas. */
@@ -151,5 +206,7 @@ export class BatchedGeometryPool {
     this.needsUint32 = false;
     this.format = null;
     this.dirty = false;
+    this.materialized?.dispose();
+    this.materialized = null;
   }
 }

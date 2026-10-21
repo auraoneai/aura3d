@@ -5,7 +5,7 @@
 // to a `scatter` node under `A3D_QR_WORLD`; flag off consumes the model node
 // exactly as before.
 
-import type { AuraAssetRef, AuraColor, AuraModelNode, AuraModelOptions, AuraPrimitiveNode, AuraPrimitiveOptions, AuraTransformSpec, AuraVec3 } from "../nodes/types.js";
+import type { AuraAssetRef, AuraColor, AuraMaterialSpec, AuraModelNode, AuraModelOptions, AuraPrimitiveNode, AuraPrimitiveOptions, AuraTransformSpec, AuraVec3 } from "../nodes/types.js";
 import { AuraNodeBuilder } from "../nodes/builder.js";
 import { colorToRgba } from "../colorUtils.js";
 import { geometry } from "../nodes/geometry.js";
@@ -14,6 +14,7 @@ import { primitive } from "../nodes/primitives.js";
 import { createInstancedModelNode, type InstancedModelVec3 } from "../../instances-model/InstancedModel.js";
 import { defineAuraCustomGeometry, type AuraCustomGeometrySpec } from "../RootGeometry.js";
 import { material } from "./material.js";
+import { instancedMesh as instancedMeshFactory } from "./instancedMesh.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 
 
@@ -36,6 +37,18 @@ export const instances = lazyNamespace(() => ({
   torusKnot: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("torusKnot", options),
   polyhedron: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("polyhedron", options),
   roundedBox: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("roundedBox", options),
+  /**
+   * SG-01 (parity-L5): `instances.mesh(geometry, material, count)` — three.js
+   * `InstancedMesh` parity on the dense instance store (per-instance
+   * transforms/colors via `setMatrixAt`/`setColorAt`, `count` draw bound,
+   * `computeBoundingSphere`). `geometry` accepts a @aura3d/rendering
+   * `Geometry`, a builtin primitive name, or an `AuraCustomGeometrySpec`.
+   */
+  mesh: (
+    geometry: import("./instancedMesh.js").AuraInstancedGeometryInput,
+    material: AuraMaterialSpec | undefined,
+    count: number
+  ) => instancedMeshFactory(geometry, material, count),
   custom: (
     spec: AuraCustomGeometrySpec,
     options: Omit<AuraPrimitiveOptions, "geometry"> & {
