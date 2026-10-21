@@ -4206,7 +4206,9 @@ function boot(): void {
         batTipWorld: [...swingEvidence.batTipWorld],
         sweetSpotWorld: [...swingEvidence.sweetWorld],
         predictedContactWorld: [...swingDrive.predictedBallWorld],
-        contactMet: swingDrive.resolved
+        // Only meaningful mid-swing: a resolved flag carried from a finished
+        // swing must not read as "contact met" while the batter is back in stance.
+        contactMet: swingDrive.active && swingDrive.resolved
       },
       ball: {
         position: G.lastBallPos.map((n) => Number(n.toFixed(3))),
